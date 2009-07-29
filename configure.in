@@ -1,0 +1,188 @@
+#                                               -*- Autoconf -*-
+# Process this file with autoconf to produce a configure script.
+AC_PREREQ(2.61)
+AC_INIT([zsock],[dev])
+AC_CONFIG_AUX_DIR(config)
+AM_CONFIG_HEADER(src/platform.hpp)
+AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
+
+AM_PROG_CC_C_O
+
+# Checks for programs.
+AC_PROG_CXX
+AC_PROG_LIBTOOL
+
+# Checks for libraries.
+AC_CHECK_LIB(pthread, pthread_create)
+
+# Host speciffic checks
+AC_CANONICAL_HOST
+
+case "${host_os}" in
+    *linux*)
+        AC_DEFINE(ZS_HAVE_LINUX, 1, [Have Linux OS])
+        CPPFLAGS="-D_REENTRANT $CPPFLAGS"
+        sed < libtool > libtool-2 \
+        's/^hardcode_libdir_flag_spec.*$'/'hardcode_libdir_flag_spec=" "/'
+        mv libtool-2 libtool
+        chmod 755 libtool
+        AC_CHECK_LIB(uuid, uuid_generate)
+        ;;
+    *solaris*)
+        AC_DEFINE(ZS_HAVE_SOLARIS, 1, [Have Solaris OS])
+        AC_CHECK_LIB(socket, main)
+        AC_CHECK_LIB(nsl, main)
+        AC_CHECK_LIB(rt, main)
+        CPPFLAGS="-D_REENTRANT -D_PTHREADS $CPPFLAGS"
+        AC_MSG_CHECKING([wheter atomic operations can be used])
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+            [[#include <atomic.h>]],
+            [[uint32_t value;
+              atomic_cas_32 (&value, 0, 0);
+              return 0;]])],
+            [solaris_has_atomic=yes],
+            [solaris_has_atomic=no])
+        AC_MSG_RESULT([$solaris_has_atomic])
+        # Solaris 8 does not have atomic operations exported to user space.
+        if test "x$solaris_has_atomic" = "xno"; then
+            AC_DEFINE(ZS_FORCE_MUTEXES, 1, [Force to use mutexes])
+        fi
+        ;;
+    *freebsd*)
+        AC_DEFINE(ZS_HAVE_FREEBSD, 1, [Have FreeBSD OS])
+        CPPFLAGS="-D_THREAD_SAFE $CPPFLAGS"
+        LIBS="-pthread"
+        ;;
+    *darwin*)
+        AC_DEFINE(ZS_HAVE_OSX, 1, [Have DarwinOSX OS])
+        LIBS="-pthread"
+        ZS_EXTRA_CXXFLAGS+="-Wno-uninitialized"
+        ;;
+    *openbsd*)
+        AC_DEFINE(ZS_HAVE_OPENBSD, 1, [Have OpenBSD OS])
+        CPPFLAGS="-pthread $CPPFLAGS"
+        LIBS="-pthread"
+        ;;
+    *nto-qnx*)
+        AC_DEFINE(ZS_HAVE_QNXNTO, 1, [Have QNX Neutrino OS])
+        CPPFLAGS="-D_THREAD_SAFE $CPPFLAGS"
+        AC_CHECK_LIB(socket,main)
+        ;;
+    *aix*)
+        AC_DEFINE(ZS_HAVE_AIX, 1, [Have AIX OS])
+        if test "x$GXX" = "xyes"; then
+          CPPFLAGS="-D_THREAD_SAFE $CPPFLAGS"
+        fi
+        ;;
+    *hpux*)
+        AC_DEFINE(ZS_HAVE_HPUX, 1, [Have HPUX OS])
+        if test "x$GXX" = "xyes"; then
+          CPPFLAGS="-D_THREAD_SAFE $CPPFLAGS"
+        fi
+        AC_CHECK_LIB(rt, main)
+        sed < libtool > libtool-2 \
+        's/^hardcode_libdir_flag_spec.*$'/'hardcode_libdir_flag_spec=" "/'
+        mv libtool-2 libtool
+        chmod 755 libtool
+        ;;
+    *mingw32*)
+        AC_DEFINE(ZS_HAVE_WINDOWS, 1, [Have Windows OS])
+        AC_DEFINE(ZS_HAVE_MINGW32, 1, [Have MinGW32])
+        AC_CHECK_HEADERS(windows.h)
+        LIBS="-lwsock32 -lws2_32 -no-undefined"
+        CFLAGS="-std=c99"
+        install_man="no"
+        ;;
+    *)
+        AC_MSG_ERROR([Not supported os: $host.])
+        ;;
+esac
+
+# Check if we are running at sparc harware
+AC_MSG_CHECKING([wheter __sparc__ is defined])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+    [[#if defined __sparc__
+        //OK we are on sparc
+    #else
+        error: we are not on sparc
+    #endif
+    ]])],
+        [sparc=yes],
+        [sparc=no])
+
+AC_MSG_RESULT([$sparc])
+        
+if test "x$sparc" = "xyes"; then
+    CPPFLAGS="$CPPFLAGS -mcpu=v9"
+fi
+
+# Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS(errno.h arpa/inet.h netinet/tcp.h netinet/in.h stddef.h \
+stdlib.h string.h sys/socket.h sys/time.h unistd.h limits.h)
+
+# Check if we have eventfd.h header file.
+AC_CHECK_HEADERS(sys/eventfd.h, [AC_DEFINE(ZS_HAVE_EVENTFD, 1, [Have eventfd extension.])])
+
+# Check if we have ifaddrs.h header file.
+AC_CHECK_HEADERS(ifaddrs.h, [AC_DEFINE(ZS_HAVE_IFADDRS, 1, [Have ifaddrs.h header.])])
+
+# Use c++ in subsequent tests
+AC_LANG(C++)
+
+# Optional stuff
+AC_CHECK_PROG(have_pkg_config, pkg-config, yes, no)
+
+if test "x$have_pkg_config" != "xno"; then
+    #  First instance of PKG_CHECK_ has to be executed
+    PKG_CHECK_EXISTS([dummy_pkg], [], [])
+fi
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_HEADER_STDBOOL
+AC_C_CONST
+AC_C_INLINE
+AC_TYPE_SIZE_T
+AC_TYPE_SSIZE_T
+AC_HEADER_TIME
+AC_TYPE_UINT32_T
+AC_C_VOLATILE
+
+# Substs
+stdint="0"
+if test "x$HAVE_STDINT_H" = "xyes"; then
+    stdint="1"
+fi
+
+inttypes="0"
+if test "x$HAVE_INTTYPES_H" = "xyes"; then
+    inttypes="1"
+fi
+
+AC_SUBST(stdint)
+AC_SUBST(inttypes)
+
+# Subst ZS_EXTRA_CXXFLAGS
+AC_SUBST(ZS_EXTRA_CXXFLAGS)
+
+
+# Checks for library functions.
+AC_FUNC_MALLOC
+AC_TYPE_SIGNAL
+AC_CHECK_FUNCS(perror gettimeofday memset socket getifaddrs freeifaddrs)
+
+AC_OUTPUT(Makefile src/Makefile examples/Makefile examples/chat/Makefile)
+
+AC_MSG_RESULT([])
+AC_MSG_RESULT([ ******************************************************** ])
+AC_MSG_RESULT([                         0SOCKETS     ])
+AC_MSG_RESULT([ ******************************************************** ])
+AC_MSG_RESULT([  This software is distributed under the terms and ])
+AC_MSG_RESULT([  conditions of the LESSER GNU GENERAL PUBLIC LICENSE. ])
+AC_MSG_RESULT([  See the file COPYING and COPYING.LESSER for the full ])
+AC_MSG_RESULT([  license text. ])
+AC_MSG_RESULT([ ******************************************************** ])
+AC_MSG_RESULT([])
+AC_MSG_RESULT([ zsock install dir: $prefix])
+AC_MSG_RESULT([])
+

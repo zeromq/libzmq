@@ -1,0 +1,54 @@
+/*
+    Copyright (c) 2007-2009 FastMQ Inc.
+
+    This file is part of 0MQ.
+
+    0MQ is free software; you can redistribute it and/or modify it under
+    the terms of the Lesser GNU General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or
+    (at your option) any later version.
+
+    0MQ is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    Lesser GNU General Public License for more details.
+
+    You should have received a copy of the Lesser GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#ifndef __ZS_ZMQ_ENCODER_HPP_INCLUDED__
+#define __ZS_ZMQ_ENCODER_HPP_INCLUDED__
+
+#include "../include/zs.h"
+
+#include "encoder.hpp"
+
+namespace zs
+{
+    //  Encoder for 0MQ backend protocol. Converts messages into data batches.
+
+    class zmq_encoder_t : public encoder_t <zmq_encoder_t>
+    {
+    public:
+
+        zmq_encoder_t ();
+        ~zmq_encoder_t ();
+
+        void set_session (struct i_session *source_);
+
+    private:
+
+        bool size_ready ();
+        bool message_ready ();
+
+        struct i_session *source;
+        ::zs_msg in_progress;
+        unsigned char tmpbuf [9];
+
+        zmq_encoder_t (const zmq_encoder_t&);
+        void operator = (const zmq_encoder_t&);
+    };
+}
+
+#endif

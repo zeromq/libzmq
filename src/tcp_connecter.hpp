@@ -1,0 +1,65 @@
+/*
+    Copyright (c) 2007-2009 FastMQ Inc.
+
+    This file is part of 0MQ.
+
+    0MQ is free software; you can redistribute it and/or modify it under
+    the terms of the Lesser GNU General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or
+    (at your option) any later version.
+
+    0MQ is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    Lesser GNU General Public License for more details.
+
+    You should have received a copy of the Lesser GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#ifndef __ZS_TCP_CONNECTER_HPP_INCLUDED__
+#define __ZS_TCP_CONNECTER_HPP_INCLUDED__
+
+#include "fd.hpp"
+
+namespace zs
+{
+
+    //  The class encapsulating simple TCP listening socket.
+
+    class tcp_connecter_t
+    {
+    public:
+
+        tcp_connecter_t ();
+        ~tcp_connecter_t ();
+
+        //  Open TCP connecting socket. Address is in
+        //  <hostname>:<port-number> format. Returns -1 in case of error,
+        //  0 if connect was successfull immediately and 1 if async connect
+        //  was launched.
+        int open (const char *addr_);
+
+        //  Close the connecting socket.
+        int close ();
+
+        //  Get the file descriptor to poll on to get notified about
+        //  connection success.
+        fd_t get_fd ();
+
+        //  Get the file descriptor of newly created connection. Returns
+        //  retired_fd if the connection was unsuccessfull.
+        fd_t connect ();
+
+    private:
+
+        //  Underlying socket.
+        fd_t s;
+
+        tcp_connecter_t (const tcp_connecter_t&);
+        void operator = (const tcp_connecter_t&);
+    };
+
+}
+
+#endif

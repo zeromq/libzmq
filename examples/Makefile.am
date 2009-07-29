@@ -1,0 +1,2 @@
+SUBDIRS = chat
+DIST_SUBDIRS = chat
