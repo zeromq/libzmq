@@ -17,14 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_DUMMY_DISTRIBUTOR_HPP_INCLUDED__
-#define __ZS_DUMMY_DISTRIBUTOR_HPP_INCLUDED__
+#ifndef __ZMQ_DUMMY_DISTRIBUTOR_HPP_INCLUDED__
+#define __ZMQ_DUMMY_DISTRIBUTOR_HPP_INCLUDED__
 
 #include <vector>
 
 #include <i_demux.hpp>
 
-namespace zs
+namespace zmq
 {
 
     //  Fake message distributor. There can be only one pipe bound to it
@@ -45,7 +45,7 @@ namespace zs
         void attach_pipe (class pipe_writer_t *pipe_);
         void detach_pipe (class pipe_writer_t *pipe_);
         bool empty ();
-        bool send (struct zs_msg *msg_);
+        bool send (struct zmq_msg *msg_);
         void flush ();
 
     private:

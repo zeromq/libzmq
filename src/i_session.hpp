@@ -17,18 +17,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_I_SESSION_HPP_INCLUDED__
-#define __ZS_I_SESSION_HPP_INCLUDED__
+#ifndef __ZMQ_I_SESSION_HPP_INCLUDED__
+#define __ZMQ_I_SESSION_HPP_INCLUDED__
 
-namespace zs
+namespace zmq
 {
 
     struct i_session
     {
         virtual void set_engine (struct i_engine *engine_) = 0;
         virtual void shutdown () = 0;
-        virtual bool read (struct zs_msg *msg_) = 0;
-        virtual bool write (struct zs_msg *msg_) = 0;
+        virtual bool read (struct zmq_msg *msg_) = 0;
+        virtual bool write (struct zmq_msg *msg_) = 0;
         virtual void flush () = 0;
     };
 

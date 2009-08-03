@@ -23,7 +23,7 @@
 #include "config.hpp"
 #include "err.hpp"
 
-#ifdef ZS_HAVE_WINDOWS
+#ifdef ZMQ_HAVE_WINDOWS
 
 #include "windows.hpp"
 #error
@@ -38,18 +38,18 @@
 #include <netdb.h>
 #include <fcntl.h>
 
-zs::tcp_listener_t::tcp_listener_t () :
+zmq::tcp_listener_t::tcp_listener_t () :
     s (retired_fd)
 {
 }
 
-zs::tcp_listener_t::~tcp_listener_t ()
+zmq::tcp_listener_t::~tcp_listener_t ()
 {
     if (s != retired_fd)
         close ();
 }
 
-int zs::tcp_listener_t::open (const char *addr_)
+int zmq::tcp_listener_t::open (const char *addr_)
 {
     //  Convert the interface into sockaddr_in structure.
     sockaddr_in ip_address;
@@ -91,9 +91,9 @@ int zs::tcp_listener_t::open (const char *addr_)
     return 0;
 }
 
-int zs::tcp_listener_t::close ()
+int zmq::tcp_listener_t::close ()
 {
-    zs_assert (s != retired_fd);
+    zmq_assert (s != retired_fd);
     int rc = ::close (s);
     if (rc != 0)
         return -1;
@@ -101,14 +101,14 @@ int zs::tcp_listener_t::close ()
     return 0;
 }
 
-zs::fd_t zs::tcp_listener_t::get_fd ()
+zmq::fd_t zmq::tcp_listener_t::get_fd ()
 {
     return s;
 }
 
-zs::fd_t zs::tcp_listener_t::accept ()
+zmq::fd_t zmq::tcp_listener_t::accept ()
 {
-    zs_assert (s != retired_fd);
+    zmq_assert (s != retired_fd);
 
     //  Accept one incoming connection.
     fd_t sock = ::accept (s, NULL, NULL);
@@ -151,7 +151,7 @@ zs::fd_t zs::tcp_listener_t::accept ()
         sizeof (int));
     errno_assert (rc == 0);
 
-#ifdef ZS_HAVE_OPENVMS
+#ifdef ZMQ_HAVE_OPENVMS
     //  Disable delayed acknowledgements.
     flag = 1;
     rc = setsockopt (sock, IPPROTO_TCP, TCP_NODELACK, (char*) &flag,

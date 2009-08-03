@@ -19,14 +19,14 @@
 
 #include <string>
 
-#include "../include/zs.h"
+#include "../include/zmq.h"
 
 #include "session_stub.hpp"
 #include "i_engine.hpp"
 #include "listener.hpp"
 #include "err.hpp"
 
-zs::session_stub_t::session_stub_t (listener_t *listener_) :
+zmq::session_stub_t::session_stub_t (listener_t *listener_) :
     state (reading_identity),
     engine (NULL),
     listener (listener_),
@@ -34,42 +34,42 @@ zs::session_stub_t::session_stub_t (listener_t *listener_) :
 {
 }
 
-void zs::session_stub_t::terminate ()
+void zmq::session_stub_t::terminate ()
 {
     if (engine)
         engine->terminate ();
     delete this;
 }
 
-void zs::session_stub_t::shutdown ()
+void zmq::session_stub_t::shutdown ()
 {
     if (engine)
         engine->shutdown ();
     delete this;
 }
 
-zs::session_stub_t::~session_stub_t ()
+zmq::session_stub_t::~session_stub_t ()
 {
 }
 
-void zs::session_stub_t::set_engine (i_engine *engine_)
+void zmq::session_stub_t::set_engine (i_engine *engine_)
 {
-    zs_assert (!engine_ || !engine);
+    zmq_assert (!engine_ || !engine);
     engine = engine_;
 }
 
-bool zs::session_stub_t::read (struct zs_msg *msg_)
+bool zmq::session_stub_t::read (struct zmq_msg *msg_)
 {
     //  No messages are sent to the connecting peer.
     return false;
 }
 
-bool zs::session_stub_t::write (struct zs_msg *msg_)
+bool zmq::session_stub_t::write (struct zmq_msg *msg_)
 {
     //  The first message arrived is the connection identity.
     if (state == reading_identity) {
-        identity = std::string ((const char*) zs_msg_data (msg_),
-            zs_msg_size (msg_));
+        identity = std::string ((const char*) zmq_msg_data (msg_),
+            zmq_msg_size (msg_));
         state = has_identity;
         return true;
     }
@@ -78,7 +78,7 @@ bool zs::session_stub_t::write (struct zs_msg *msg_)
     return false;
 }
 
-void zs::session_stub_t::flush ()
+void zmq::session_stub_t::flush ()
 {
     //  We have the identity. At this point we can find the correct session and
     //  attach it to the connection.
@@ -91,7 +91,7 @@ void zs::session_stub_t::flush ()
     }
 }
 
-zs::i_engine *zs::session_stub_t::detach_engine ()
+zmq::i_engine *zmq::session_stub_t::detach_engine ()
 {
     //  Ask engine to unregister from the poller.
     i_engine *e = engine;
@@ -99,12 +99,12 @@ zs::i_engine *zs::session_stub_t::detach_engine ()
     return e;
 }
 
-void zs::session_stub_t::set_index (int index_)
+void zmq::session_stub_t::set_index (int index_)
 {
     index = index_;
 }
 
-int zs::session_stub_t::get_index ()
+int zmq::session_stub_t::get_index ()
 {
     return index;
 }

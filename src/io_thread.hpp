@@ -17,8 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_IO_THREAD_HPP_INCLUDED__
-#define __ZS_IO_THREAD_HPP_INCLUDED__
+#ifndef __ZMQ_IO_THREAD_HPP_INCLUDED__
+#define __ZMQ_IO_THREAD_HPP_INCLUDED__
 
 #include <vector>
 
@@ -28,7 +28,7 @@
 #include "i_poll_events.hpp"
 #include "fd_signaler.hpp"
 
-namespace zs
+namespace zmq
 {
 
     //  Generic part of the I/O thread. Polling-mechanism-specific features
@@ -49,7 +49,7 @@ namespace zs
         //  Wait till undelying thread terminates.
         void join ();
 
-        //  To be called when the whole infrastrucure is being closed (zs_term).
+        //  To be called when the whole infrastrucure is being closed (zmq_term).
         //  It's vital to call the individual commands in this sequence:
         //  stop, join, shutdown.
         void shutdown ();

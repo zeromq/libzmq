@@ -17,10 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_I_SIGNALER_HPP_INCLUDED__
-#define __ZS_I_SIGNALER_HPP_INCLUDED__
+#ifndef __ZMQ_I_SIGNALER_HPP_INCLUDED__
+#define __ZMQ_I_SIGNALER_HPP_INCLUDED__
 
-namespace zs
+namespace zmq
 {
     //  Virtual interface used to send signals. Individual implementations
     //  may restrict the number of possible signal types to send.

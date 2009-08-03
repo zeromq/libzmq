@@ -17,14 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_FAIR_AGGREGATOR_HPP_INCLUDED__
-#define __ZS_FAIR_AGGREGATOR_HPP_INCLUDED__
+#ifndef __ZMQ_FAIR_AGGREGATOR_HPP_INCLUDED__
+#define __ZMQ_FAIR_AGGREGATOR_HPP_INCLUDED__
 
 #include <vector>
 
 #include "i_mux.hpp"
 
-namespace zs
+namespace zmq
 {
 
     //  Object to aggregate messages from inbound pipes.
@@ -44,7 +44,7 @@ namespace zs
         bool empty ();
         void deactivate (class pipe_reader_t *pipe_);
         void reactivate (class pipe_reader_t *pipe_);
-        bool recv (struct zs_msg *msg_);
+        bool recv (struct zmq_msg *msg_);
 
 
     private:

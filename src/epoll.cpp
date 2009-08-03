@@ -19,7 +19,7 @@
 
 #include "platform.hpp"
 
-#ifdef ZS_HAVE_LINUX
+#ifdef ZMQ_HAVE_LINUX
 
 #include <sys/epoll.h>
 #include <stdlib.h>
@@ -32,14 +32,14 @@
 #include "config.hpp"
 #include "i_poll_events.hpp"
 
-zs::epoll_t::epoll_t () :
+zmq::epoll_t::epoll_t () :
     stopping (false)
 {
     epoll_fd = epoll_create (1);
     errno_assert (epoll_fd != -1);
 }
 
-zs::epoll_t::~epoll_t ()
+zmq::epoll_t::~epoll_t ()
 {
     close (epoll_fd);
 
@@ -47,10 +47,10 @@ zs::epoll_t::~epoll_t ()
         delete *it;
 }
 
-zs::handle_t zs::epoll_t::add_fd (fd_t fd_, i_poll_events *events_)
+zmq::handle_t zmq::epoll_t::add_fd (fd_t fd_, i_poll_events *events_)
 {
     poll_entry_t *pe = new poll_entry_t;
-    zs_assert (pe != NULL);
+    zmq_assert (pe != NULL);
 
     //  The memset is not actually needed. It's here to prevent debugging
     //  tools to complain about using uninitialised memory.
@@ -72,7 +72,7 @@ zs::handle_t zs::epoll_t::add_fd (fd_t fd_, i_poll_events *events_)
     return handle;
 }
 
-void zs::epoll_t::rm_fd (handle_t handle_)
+void zmq::epoll_t::rm_fd (handle_t handle_)
 {
     poll_entry_t *pe = (poll_entry_t*) handle_.ptr;
     int rc = epoll_ctl (epoll_fd, EPOLL_CTL_DEL, pe->fd, &pe->ev);
@@ -84,7 +84,7 @@ void zs::epoll_t::rm_fd (handle_t handle_)
     load.sub (1);
 }
 
-void zs::epoll_t::set_pollin (handle_t handle_)
+void zmq::epoll_t::set_pollin (handle_t handle_)
 {
     poll_entry_t *pe = (poll_entry_t*) handle_.ptr;
     pe->ev.events |= EPOLLIN;
@@ -92,7 +92,7 @@ void zs::epoll_t::set_pollin (handle_t handle_)
     errno_assert (rc != -1);
 }
 
-void zs::epoll_t::reset_pollin (handle_t handle_)
+void zmq::epoll_t::reset_pollin (handle_t handle_)
 {
     poll_entry_t *pe = (poll_entry_t*) handle_.ptr;
     pe->ev.events &= ~((short) EPOLLIN);
@@ -100,7 +100,7 @@ void zs::epoll_t::reset_pollin (handle_t handle_)
     errno_assert (rc != -1);
 }
 
-void zs::epoll_t::set_pollout (handle_t handle_)
+void zmq::epoll_t::set_pollout (handle_t handle_)
 {
     poll_entry_t *pe = (poll_entry_t*) handle_.ptr;
     pe->ev.events |= EPOLLOUT;
@@ -108,7 +108,7 @@ void zs::epoll_t::set_pollout (handle_t handle_)
     errno_assert (rc != -1);
 }
 
-void zs::epoll_t::reset_pollout (handle_t handle_)
+void zmq::epoll_t::reset_pollout (handle_t handle_)
 {
     poll_entry_t *pe = (poll_entry_t*) handle_.ptr;
     pe->ev.events &= ~((short) EPOLLOUT);
@@ -116,12 +116,12 @@ void zs::epoll_t::reset_pollout (handle_t handle_)
     errno_assert (rc != -1);
 }
 
-void zs::epoll_t::add_timer (i_poll_events *events_)
+void zmq::epoll_t::add_timer (i_poll_events *events_)
 {
      timers.push_back (events_);
 }
 
-void zs::epoll_t::cancel_timer (i_poll_events *events_)
+void zmq::epoll_t::cancel_timer (i_poll_events *events_)
 {
     timers_t::iterator it = std::find (timers.begin (), timers.end (), events_);
     if (it == timers.end ())
@@ -129,27 +129,27 @@ void zs::epoll_t::cancel_timer (i_poll_events *events_)
     timers.erase (it);
 }
 
-int zs::epoll_t::get_load ()
+int zmq::epoll_t::get_load ()
 {
     return load.get ();
 }
 
-void zs::epoll_t::start ()
+void zmq::epoll_t::start ()
 {
     worker.start (worker_routine, this);
 }
 
-void zs::epoll_t::stop ()
+void zmq::epoll_t::stop ()
 {
     stopping = true;
 }
 
-void zs::epoll_t::join ()
+void zmq::epoll_t::join ()
 {
     worker.stop ();
 }
 
-void zs::epoll_t::loop ()
+void zmq::epoll_t::loop ()
 {
     epoll_event ev_buf [max_io_events];
 
@@ -206,7 +206,7 @@ void zs::epoll_t::loop ()
     }
 }
 
-void zs::epoll_t::worker_routine (void *arg_)
+void zmq::epoll_t::worker_routine (void *arg_)
 {
     ((epoll_t*) arg_)->loop ();
 }

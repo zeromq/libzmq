@@ -19,7 +19,7 @@
 
 #include "platform.hpp"
 
-#if defined ZS_HAVE_SOLARIS || defined ZS_HAVE_HPUX
+#if defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_HPUX
 
 #include <sys/devpoll.h>
 #include <sys/time.h>
@@ -35,7 +35,7 @@
 #include "err.hpp"
 #include "config.hpp"
 
-zs::devpoll_t::devpoll_t ()
+zmq::devpoll_t::devpoll_t ()
 {
     //  Get limit on open files
     struct rlimit rl;
@@ -50,19 +50,19 @@ zs::devpoll_t::devpoll_t ()
     errno_assert (devpoll_fd != -1);
 }
 
-zs::devpoll_t::~devpoll_t ()
+zmq::devpoll_t::~devpoll_t ()
 {
     close (devpoll_fd);
 }
 
-void zs::devpoll_t::devpoll_ctl (fd_t fd_, short events_)
+void zmq::devpoll_t::devpoll_ctl (fd_t fd_, short events_)
 {
     struct pollfd pfd = {fd_, events_, 0};
     ssize_t rc = write (devpoll_fd, &pfd, sizeof pfd);
-    zs_assert (rc == sizeof pfd);
+    zmq_assert (rc == sizeof pfd);
 }
 
-zs::handle_t zs::devpoll_t::add_fd (fd_t fd_, i_poll_events *reactor_)
+zmq::handle_t zmq::devpoll_t::add_fd (fd_t fd_, i_poll_events *reactor_)
 {
     assert (!fd_table [fd_].valid);
 
@@ -82,7 +82,7 @@ zs::handle_t zs::devpoll_t::add_fd (fd_t fd_, i_poll_events *reactor_)
     return handle;
 }
 
-void zs::devpoll_t::rm_fd (handle_t handle_)
+void zmq::devpoll_t::rm_fd (handle_t handle_)
 {
     assert (fd_table [handle_.fd].valid);
 
@@ -93,7 +93,7 @@ void zs::devpoll_t::rm_fd (handle_t handle_)
     load.sub (1);
 }
 
-void zs::devpoll_t::set_pollin (handle_t handle_)
+void zmq::devpoll_t::set_pollin (handle_t handle_)
 {
     fd_t fd = handle_.fd;
     devpoll_ctl (fd, POLLREMOVE);
@@ -101,7 +101,7 @@ void zs::devpoll_t::set_pollin (handle_t handle_)
     devpoll_ctl (fd, fd_table [fd].events);
 }
 
-void zs::devpoll_t::reset_pollin (handle_t handle_)
+void zmq::devpoll_t::reset_pollin (handle_t handle_)
 {
     fd_t fd = handle_.fd;
     devpoll_ctl (fd, POLLREMOVE);
@@ -109,7 +109,7 @@ void zs::devpoll_t::reset_pollin (handle_t handle_)
     devpoll_ctl (fd, fd_table [fd].events);
 }
 
-void zs::devpoll_t::set_pollout (handle_t handle_)
+void zmq::devpoll_t::set_pollout (handle_t handle_)
 {
     fd_t fd = handle_.fd;
     devpoll_ctl (fd, POLLREMOVE);
@@ -117,7 +117,7 @@ void zs::devpoll_t::set_pollout (handle_t handle_)
     devpoll_ctl (fd, fd_table [fd].events);
 }
 
-void zs::devpoll_t::reset_pollout (handle_t handle_)
+void zmq::devpoll_t::reset_pollout (handle_t handle_)
 {
     fd_t fd = handle_.fd;
     devpoll_ctl (fd, POLLREMOVE);
@@ -125,39 +125,39 @@ void zs::devpoll_t::reset_pollout (handle_t handle_)
     devpoll_ctl (fd, fd_table [fd].events);
 }
 
-void zs::devpoll_t::add_timer (i_poll_events *events_)
+void zmq::devpoll_t::add_timer (i_poll_events *events_)
 {
      timers.push_back (events_);
 }
 
-void zs::devpoll_t::cancel_timer (i_poll_events *events_)
+void zmq::devpoll_t::cancel_timer (i_poll_events *events_)
 {
     timers_t::iterator it = std::find (timers.begin (), timers.end (), events_);
     if (it != timers.end ())
         timers.erase (it);
 }
 
-int zs::devpoll_t::get_load ()
+int zmq::devpoll_t::get_load ()
 {
     return load.get ();
 }
 
-void zs::devpoll_t::start ()
+void zmq::devpoll_t::start ()
 {
     worker.start (worker_routine, this);
 }
 
-void zs::devpoll_t::stop ()
+void zmq::devpoll_t::stop ()
 {
     stopping = true;
 }
 
-void zs::devpoll_t::join ()
+void zmq::devpoll_t::join ()
 {
     worker.stop ();
 }
 
-bool zs::devpoll_t::loop ()
+bool zmq::devpoll_t::loop ()
 {
     //  According to the poll(7d) man page, we can retrieve
     //  no more then (OPEN_MAX - 1) events.
@@ -216,7 +216,7 @@ bool zs::devpoll_t::loop ()
     }
 }
 
-void zs::devpoll_t::worker_routine (void *arg_)
+void zmq::devpoll_t::worker_routine (void *arg_)
 {
     ((devpoll_t*) arg_)->loop ();
 }

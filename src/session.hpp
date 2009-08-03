@@ -17,15 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_SESSION_HPP_INCLUDED__
-#define __ZS_SESSION_HPP_INCLUDED__
+#ifndef __ZMQ_SESSION_HPP_INCLUDED__
+#define __ZMQ_SESSION_HPP_INCLUDED__
 
 #include "i_session.hpp"
 #include "safe_object.hpp"
 #include "stdint.hpp"
 #include "atomic_counter.hpp"
 
-namespace zs
+namespace zmq
 {
 
     //  Object that encapsulates both mux and demux.
@@ -42,8 +42,8 @@ namespace zs
         //  i_session implementation
         void set_engine (struct i_engine *engine_);
         void shutdown ();
-        bool read (struct zs_msg *msg_);
-        bool write (struct zs_msg *msg_);
+        bool read (struct zmq_msg *msg_);
+        bool write (struct zmq_msg *msg_);
         void flush ();
 
         //  Called by the engine when it is being closed.

@@ -19,18 +19,18 @@
 
 #include "ypollset.hpp"
 
-zs::ypollset_t::ypollset_t ()
+zmq::ypollset_t::ypollset_t ()
 {
 }
 
-void zs::ypollset_t::signal (int signal_)
+void zmq::ypollset_t::signal (int signal_)
 {
-    zs_assert (signal_ >= 0 && signal_ < wait_signal);
+    zmq_assert (signal_ >= 0 && signal_ < wait_signal);
     if (bits.btsr (signal_, wait_signal))
         sem.post (); 
 }
 
-zs::ypollset_t::signals_t zs::ypollset_t::poll ()
+zmq::ypollset_t::signals_t zmq::ypollset_t::poll ()
 {
     signals_t result = 0;
     while (!result) {
@@ -50,7 +50,7 @@ zs::ypollset_t::signals_t zs::ypollset_t::poll ()
     return result;      
 }
 
-zs::ypollset_t::signals_t zs::ypollset_t::check ()
+zmq::ypollset_t::signals_t zmq::ypollset_t::check ()
 {
     return bits.xchg (0);
 }

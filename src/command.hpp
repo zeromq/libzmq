@@ -17,12 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_COMMAND_HPP_INCLUDED__
-#define __ZS_COMMAND_HPP_INCLUDED__
+#ifndef __ZMQ_COMMAND_HPP_INCLUDED__
+#define __ZMQ_COMMAND_HPP_INCLUDED__
 
 #include "stdint.hpp"
 
-namespace zs
+namespace zmq
 {
 
     //  This structure defines the commands that can be sent between threads.

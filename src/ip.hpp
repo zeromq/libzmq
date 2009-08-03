@@ -17,12 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_IP_HPP_INCLUDED__
-#define __ZS_IP_HPP_INCLUDED__
+#ifndef __ZMQ_IP_HPP_INCLUDED__
+#define __ZMQ_IP_HPP_INCLUDED__
 
 #include "platform.hpp"
 
-#ifdef ZS_HAVE_WINDOWS
+#ifdef ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
 #else
 #include <sys/types.h>
@@ -32,7 +32,7 @@
 #include <netdb.h>
 #endif
 
-namespace zs
+namespace zmq
 {
 
     //  Resolves network interface name in <nic-name>:<port> format. Symbol "*"

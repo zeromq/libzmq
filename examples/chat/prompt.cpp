@@ -23,7 +23,7 @@
 
 using namespace std;
 
-#include <zs.hpp>
+#include <zmq.hpp>
 
 int main (int argc, const char *argv [])
 {
@@ -38,8 +38,8 @@ int main (int argc, const char *argv [])
     const char *user_name = argv [2];
 
     //  Initialise 0MQ infrastructure and connect to the chatroom.
-    zs::context_t ctx (1, 1);
-    zs::socket_t s (ctx, ZS_PUB);
+    zmq::context_t ctx (1, 1);
+    zmq::socket_t s (ctx, ZMQ_PUB);
     s.connect (chatroom_in_address);
 
     while (true) {
@@ -52,7 +52,7 @@ int main (int argc, const char *argv [])
         text = text + ": " + textbuf;
 
         //  Create the message (terminating zero is part of the message)
-        zs::message_t message (text.size () + 1);
+        zmq::message_t message (text.size () + 1);
         memcpy (message.data (), text.c_str (), text.size () + 1);
 
         //  Send the message

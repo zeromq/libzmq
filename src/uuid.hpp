@@ -17,22 +17,22 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_UUID_HPP_INCLUDED__
-#define __ZS_UUID_HPP_INCLUDED__
+#ifndef __ZMQ_UUID_HPP_INCLUDED__
+#define __ZMQ_UUID_HPP_INCLUDED__
 
 #include "platform.hpp"
 
-#if defined ZS_HAVE_WINDOWS
+#if defined ZMQ_HAVE_WINDOWS
 #include <rpcdce.h>
-#elif defined ZS_HAVE_FREEBSD
+#elif defined ZMQ_HAVE_FREEBSD
 #include <uuid.h>
-#elif defined ZS_HAVE_LINUX || defined ZS_HAVE_SOLARIS || defined ZS_HAVE_OSX
+#elif defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_OSX
 #include <uuid/uuid.h>
 #else
 #include <stdint.h>
 #endif
 
-namespace zs
+namespace zmq
 {
 
     //  This class provides RFC 4122 (a Universally Unique IDentifier)
@@ -55,13 +55,13 @@ namespace zs
         //  The length of textual representation of UUID.
         enum { uuid_string_len = 36 };
 
-#if defined ZS_HAVE_WINDOWS
+#if defined ZMQ_HAVE_WINDOWS
         ::UUID uuid;
         char *uuid_str;
-#elif defined ZS_HAVE_FREEBSD
+#elif defined ZMQ_HAVE_FREEBSD
         ::uuid_t uuid;
         char *uuid_str;
-#elif defined ZS_HAVE_LINUX || defined ZS_HAVE_SOLARIS || defined ZS_HAVE_OSX
+#elif defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_OSX
         ::uuid_t uuid;
         char uuid_buf [uuid_string_len + 1];
 #else

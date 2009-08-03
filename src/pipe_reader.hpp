@@ -17,13 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_PIPE_READER_HPP_INCLUDED__
-#define __ZS_PIPE_READER_HPP_INCLUDED__
+#ifndef __ZMQ_PIPE_READER_HPP_INCLUDED__
+#define __ZMQ_PIPE_READER_HPP_INCLUDED__
 
 #include "object.hpp"
 #include "stdint.hpp"
 
-namespace zs
+namespace zmq
 {
 
     class pipe_reader_t : public object_t
@@ -41,7 +41,7 @@ namespace zs
         int get_index ();
 
         //  Reads a message to the underlying pipe.
-        bool read (struct zs_msg *msg_);
+        bool read (struct zmq_msg *msg_);
 
         //  Asks pipe to destroy itself.
         void terminate ();

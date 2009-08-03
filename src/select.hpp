@@ -17,17 +17,17 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_SELECT_HPP_INCLUDED__
-#define __ZS_SELECT_HPP_INCLUDED__
+#ifndef __ZMQ_SELECT_HPP_INCLUDED__
+#define __ZMQ_SELECT_HPP_INCLUDED__
 
 #include "platform.hpp"
 
 #include <stddef.h>
 #include <vector>
 
-#ifdef ZS_HAVE_WINDOWS
+#ifdef ZMQ_HAVE_WINDOWS
 #include "winsock2.h"
-#elif defined ZS_HAVE_OPENVMS
+#elif defined ZMQ_HAVE_OPENVMS
 #include <sys/types.h>
 #include <sys/time.h>
 #else
@@ -39,7 +39,7 @@
 #include "thread.hpp"
 #include "atomic_counter.hpp"
 
-namespace zs
+namespace zmq
 {
 
     //  Implements socket polling mechanism using POSIX.1-2001 select()

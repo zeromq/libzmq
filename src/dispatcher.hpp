@@ -17,8 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_DISPATCHER_HPP_INCLUDED__
-#define __ZS_DISPATCHER_HPP_INCLUDED__
+#ifndef __ZMQ_DISPATCHER_HPP_INCLUDED__
+#define __ZMQ_DISPATCHER_HPP_INCLUDED__
 
 #include <vector>
 #include <map>
@@ -31,7 +31,7 @@
 #include "mutex.hpp"
 #include "stdint.hpp"
 
-namespace zs
+namespace zmq
 {
 
     //  Dispatcher implements bidirectional thread-safe passing of commands
@@ -51,7 +51,7 @@ namespace zs
         //  signalers.
         dispatcher_t (int app_threads_, int io_threads_);
 
-        //  To be called to terminate the whole infrastructure (zs_term).
+        //  To be called to terminate the whole infrastructure (zmq_term).
         void shutdown ();
 
         //  Create a socket engine.

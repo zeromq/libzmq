@@ -17,12 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_EPOLL_HPP_INCLUDED__
-#define __ZS_EPOLL_HPP_INCLUDED__
+#ifndef __ZMQ_EPOLL_HPP_INCLUDED__
+#define __ZMQ_EPOLL_HPP_INCLUDED__
 
 #include "platform.hpp"
 
-#ifdef ZS_HAVE_LINUX
+#ifdef ZMQ_HAVE_LINUX
 
 #include <vector>
 #include <sys/epoll.h>
@@ -33,7 +33,7 @@
 #include "thread.hpp"
 #include "atomic_counter.hpp"
 
-namespace zs
+namespace zmq
 {
 
     //  This class implements socket polling mechanism using the Linux-specific

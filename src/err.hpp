@@ -17,8 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_ERR_HPP_INCLUDED__
-#define __ZS_ERR_HPP_INCLUDED__
+#ifndef __ZMQ_ERR_HPP_INCLUDED__
+#define __ZMQ_ERR_HPP_INCLUDED__
 
 #include <assert.h>
 #include <errno.h>
@@ -27,15 +27,15 @@
 
 #include "platform.hpp"
 
-#ifdef ZS_HAVE_WINDOWS
+#ifdef ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
 #else
 #include <netdb.h>
 #endif
 
-#ifdef ZS_HAVE_WINDOWS
+#ifdef ZMQ_HAVE_WINDOWS
 
-namespace zs
+namespace zmq
 {
 
     const char *wsa_error ();
@@ -45,7 +45,7 @@ namespace zs
 
 //  Provides convenient way to check WSA-style errors on Windows.
 #define wsa_assert(x) do { if (!(x)){\
-    const char *errstr = zs::wsa_error ();\
+    const char *errstr = zmq::wsa_error ();\
     if (errstr != NULL) {\
     fprintf (stderr, "Assertion failed: %s (%s:%d)\n", errstr, \
         __FILE__, __LINE__);\
@@ -56,7 +56,7 @@ namespace zs
 //  Provides convenient way to check GetLastError-style errors on Windows.
 #define win_assert(x) do { if (!(x)) {\
     char errstr [256];\
-    zs::win_error (errstr, 256);\
+    zmq::win_error (errstr, 256);\
     fprintf (stderr, "Assertion failed: %s (%s:%d)\n", errstr, \
         __FILE__, __LINE__);\
     abort ();\
@@ -67,7 +67,7 @@ namespace zs
 //  This macro works in exactly the same way as the normal assert. It is used
 //  in its stead because standard assert on Win32 in broken - it prints nothing
 //  when used within the scope of JNI library.
-#define zs_assert(x) do { if (!(x)){\
+#define zmq_assert(x) do { if (!(x)){\
     fprintf (stderr, "Assertion failed: %s (%s:%d)\n", #x, \
         __FILE__, __LINE__);\
         abort ();\

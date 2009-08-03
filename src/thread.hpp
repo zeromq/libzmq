@@ -17,18 +17,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_THREAD_HPP_INCLUDED__
-#define __ZS_THREAD_HPP_INCLUDED__
+#ifndef __ZMQ_THREAD_HPP_INCLUDED__
+#define __ZMQ_THREAD_HPP_INCLUDED__
 
 #include "platform.hpp"
 
-#ifdef ZS_HAVE_WINDOWS
+#ifdef ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
 #else
 #include <pthread.h>
 #endif
 
-namespace zs
+namespace zmq
 {
 
     typedef void (thread_fn) (void*);
@@ -57,7 +57,7 @@ namespace zs
 
     private:
 
-#ifdef ZS_HAVE_WINDOWS
+#ifdef ZMQ_HAVE_WINDOWS
         static unsigned int __stdcall thread_routine (void *arg_);
         HANDLE descriptor;
 #else

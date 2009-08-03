@@ -1,4 +1,4 @@
-include_HEADERS = include/zs.h include/zs.hpp
+include_HEADERS = include/zmq.h include/zmq.hpp
 
 SUBDIRS = src examples
 DIST_SUBDIRS = src examples

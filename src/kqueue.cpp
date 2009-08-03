@@ -19,7 +19,7 @@
 
 #include "platform.hpp"
 
-#if defined ZS_HAVE_FREEBSD || defined ZS_HAVE_OPENBSD || defined ZS_HAVE_OSX
+#if defined ZMQ_HAVE_FREEBSD || defined ZMQ_HAVE_OPENBSD || defined ZMQ_HAVE_OSX
 
 #include <sys/time.h>
 #include <sys/types.h>
@@ -33,19 +33,19 @@
 #include "config.hpp"
 #include "i_poll_events.hpp"
 
-zs::kqueue_t::kqueue_t ()
+zmq::kqueue_t::kqueue_t ()
 {
     //  Create event queue
     kqueue_fd = kqueue ();
     errno_assert (kqueue_fd != -1);
 }
 
-zs::kqueue_t::~kqueue_t ()
+zmq::kqueue_t::~kqueue_t ()
 {
     close (kqueue_fd);
 }
 
-void zs::kqueue_t::kevent_add (fd_t fd_, short filter_, void *udata_)
+void zmq::kqueue_t::kevent_add (fd_t fd_, short filter_, void *udata_)
 {
     struct kevent ev;
 
@@ -54,7 +54,7 @@ void zs::kqueue_t::kevent_add (fd_t fd_, short filter_, void *udata_)
     errno_assert (rc != -1);
 }
 
-void zs::kqueue_t::kevent_delete (fd_t fd_, short filter_)
+void zmq::kqueue_t::kevent_delete (fd_t fd_, short filter_)
 {
     struct kevent ev;
 
@@ -63,10 +63,10 @@ void zs::kqueue_t::kevent_delete (fd_t fd_, short filter_)
     errno_assert (rc != -1);
 }
 
-zs::handle_t zs::kqueue_t::add_fd (fd_t fd_, i_poll_events *reactor_)
+zmq::handle_t zmq::kqueue_t::add_fd (fd_t fd_, i_poll_events *reactor_)
 {
     poll_entry_t *pe = new poll_entry_t;
-    zs_assert (pe != NULL);
+    zmq_assert (pe != NULL);
 
     pe->fd = fd_;
     pe->flag_pollin = 0;
@@ -78,7 +78,7 @@ zs::handle_t zs::kqueue_t::add_fd (fd_t fd_, i_poll_events *reactor_)
     return handle;
 }
 
-void zs::kqueue_t::rm_fd (handle_t handle_)
+void zmq::kqueue_t::rm_fd (handle_t handle_)
 {
     poll_entry_t *pe = (poll_entry_t*) handle_.ptr;
     if (pe->flag_pollin)
@@ -89,67 +89,67 @@ void zs::kqueue_t::rm_fd (handle_t handle_)
     retired.push_back (pe);
 }
 
-void zs::kqueue_t::set_pollin (handle_t handle_)
+void zmq::kqueue_t::set_pollin (handle_t handle_)
 {
     poll_entry_t *pe = (poll_entry_t*) handle_.ptr;
     pe->flag_pollin = true;
     kevent_add (pe->fd, EVFILT_READ, pe);
 }
 
-void zs::kqueue_t::reset_pollin (handle_t handle_)
+void zmq::kqueue_t::reset_pollin (handle_t handle_)
 {
     poll_entry_t *pe = (poll_entry_t*) handle_.ptr;
     pe->flag_pollin = false;
     kevent_delete (pe->fd, EVFILT_READ);
 }
 
-void zs::kqueue_t::set_pollout (handle_t handle_)
+void zmq::kqueue_t::set_pollout (handle_t handle_)
 {
     poll_entry_t *pe = (poll_entry_t*) handle_.ptr;
     pe->flag_pollout = true;
     kevent_add (pe->fd, EVFILT_WRITE, pe);
 }
 
-void zs::kqueue_t::reset_pollout (handle_t handle_)
+void zmq::kqueue_t::reset_pollout (handle_t handle_)
 {
     poll_entry_t *pe = (poll_entry_t*) handle_.ptr;
     pe->flag_pollout = false;
     kevent_delete (pe->fd, EVFILT_WRITE);
 }
 
-void zs::kqueue_t::add_timer (i_poll_events *events_)
+void zmq::kqueue_t::add_timer (i_poll_events *events_)
 {
      timers.push_back (events_);
 }
 
-void zs::kqueue_t::cancel_timer (i_poll_events *events_)
+void zmq::kqueue_t::cancel_timer (i_poll_events *events_)
 {
     timers_t::iterator it = std::find (timers.begin (), timers.end (), events_);
     if (it != timers.end ())
         timers.erase (it);
 }
 
-int zs::kqueue_t::get_load ()
+int zmq::kqueue_t::get_load ()
 {
     return load.get ();
 }
 
-void zs::kqueue_t::start ()
+void zmq::kqueue_t::start ()
 {
     worker.start (worker_routine, this);
 }
 
-void zs::kqueue_t::stop ()
+void zmq::kqueue_t::stop ()
 {
     stopping = true;
 }
 
-void zs::kqueue_t::join ()
+void zmq::kqueue_t::join ()
 {
     worker.stop ();
 }
 
-void zs::kqueue_t::loop ()
+void zmq::kqueue_t::loop ()
 {
     while (!stopping) {
 
@@ -206,7 +206,7 @@ void zs::kqueue_t::loop ()
     }
 }
 
-void zs::kqueue_t::worker_routine (void *arg_)
+void zmq::kqueue_t::worker_routine (void *arg_)
 {
     ((kqueue_t*) arg_)->loop ();
 }

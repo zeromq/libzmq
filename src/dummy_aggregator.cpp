@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zs.h"
+#include "../include/zmq.h"
 
 #include "dummy_aggregator.hpp"
 #include "err.hpp"
@@ -30,27 +30,27 @@
     pipes [i1_]->set_index (i1_);\
     pipes [i2_]->set_index (i2_);
 
-zs::dummy_aggregator_t::dummy_aggregator_t () :
+zmq::dummy_aggregator_t::dummy_aggregator_t () :
     session (NULL),
     pipe (NULL),
     active (false)
 {
 }
 
-void zs::dummy_aggregator_t::set_session (session_t *session_)
+void zmq::dummy_aggregator_t::set_session (session_t *session_)
 {
-    zs_assert (!session);
+    zmq_assert (!session);
     session = session_;
 }
 
-void zs::dummy_aggregator_t::shutdown ()
+void zmq::dummy_aggregator_t::shutdown ()
 {
     //  No need to deallocate the pipe here. It'll be deallocated during the
     //  shutdown of the dispatcher.
     delete this;
 }
 
-void zs::dummy_aggregator_t::terminate ()
+void zmq::dummy_aggregator_t::terminate ()
 {
     if (pipe)
         pipe->terminate ();
@@ -58,13 +58,13 @@ void zs::dummy_aggregator_t::terminate ()
    delete this;
 }
 
-zs::dummy_aggregator_t::~dummy_aggregator_t ()
+zmq::dummy_aggregator_t::~dummy_aggregator_t ()
 {
 }
 
-void zs::dummy_aggregator_t::attach_pipe (pipe_reader_t *pipe_)
+void zmq::dummy_aggregator_t::attach_pipe (pipe_reader_t *pipe_)
 {
-    zs_assert (!pipe);
+    zmq_assert (!pipe);
     pipe = pipe_;
     active = true;
 
@@ -73,22 +73,22 @@ void zs::dummy_aggregator_t::attach_pipe (pipe_reader_t *pipe_)
     session->revive ();
 }
 
-void zs::dummy_aggregator_t::detach_pipe (pipe_reader_t *pipe_)
+void zmq::dummy_aggregator_t::detach_pipe (pipe_reader_t *pipe_)
 {
-    zs_assert (pipe == pipe_);
+    zmq_assert (pipe == pipe_);
     deactivate (pipe_);
     pipe = NULL;
 }
 
-bool zs::dummy_aggregator_t::empty ()
+bool zmq::dummy_aggregator_t::empty ()
 {
     return pipe == NULL;
 }
 
-bool zs::dummy_aggregator_t::recv (zs_msg *msg_)
+bool zmq::dummy_aggregator_t::recv (zmq_msg *msg_)
 {
     //  Deallocate old content of the message.
-    zs_msg_close (msg_);
+    zmq_msg_close (msg_);
         
     //  Try to read from the pipe.
     if (pipe && pipe->read (msg_))
@@ -96,16 +96,16 @@ bool zs::dummy_aggregator_t::recv (zs_msg *msg_)
 
     //  No message is available. Initialise the output parameter
     //  to be a 0-byte message.
-    zs_msg_init (msg_);
+    zmq_msg_init (msg_);
     return false;
 }
 
-void zs::dummy_aggregator_t::deactivate (pipe_reader_t *pipe_)
+void zmq::dummy_aggregator_t::deactivate (pipe_reader_t *pipe_)
 {
     active = false;
 }
 
-void zs::dummy_aggregator_t::reactivate (pipe_reader_t *pipe_)
+void zmq::dummy_aggregator_t::reactivate (pipe_reader_t *pipe_)
 {
     active = true;
 }

@@ -21,7 +21,7 @@
 #include "platform.hpp"
 #include "err.hpp"
 
-#ifdef ZS_HAVE_WINDOWS
+#ifdef ZMQ_HAVE_WINDOWS
 
 #include "windows.hpp"
 #error
@@ -36,27 +36,27 @@
 #include <netdb.h>
 #include <fcntl.h>
 
-zs::tcp_socket_t::tcp_socket_t () :
+zmq::tcp_socket_t::tcp_socket_t () :
     s (retired_fd)
 {
 }
 
-zs::tcp_socket_t::~tcp_socket_t ()
+zmq::tcp_socket_t::~tcp_socket_t ()
 {
     if (s != retired_fd)
         close ();
 }
 
-int zs::tcp_socket_t::open (fd_t fd_)
+int zmq::tcp_socket_t::open (fd_t fd_)
 {
     assert (s == retired_fd);
     s = fd_;
     return 0;
 }
 
-int zs::tcp_socket_t::close ()
+int zmq::tcp_socket_t::close ()
 {
-    zs_assert (s != retired_fd);
+    zmq_assert (s != retired_fd);
     int rc = ::close (s);
     if (rc != 0)
         return -1;
@@ -64,12 +64,12 @@ int zs::tcp_socket_t::close ()
     return 0;
 }
 
-zs::fd_t zs::tcp_socket_t::get_fd ()
+zmq::fd_t zmq::tcp_socket_t::get_fd ()
 {
     return s;
 }
 
-int zs::tcp_socket_t::write (const void *data, int size)
+int zmq::tcp_socket_t::write (const void *data, int size)
 {
     ssize_t nbytes = send (s, data, size, 0);
 
@@ -88,7 +88,7 @@ int zs::tcp_socket_t::write (const void *data, int size)
     return (size_t) nbytes;
 }
 
-int zs::tcp_socket_t::read (void *data, int size)
+int zmq::tcp_socket_t::read (void *data, int size)
 {
     ssize_t nbytes = recv (s, data, size, 0);
 

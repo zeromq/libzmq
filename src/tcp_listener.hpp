@@ -17,12 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_TCP_LISTENER_HPP_INCLUDED__
-#define __ZS_TCP_LISTENER_HPP_INCLUDED__
+#ifndef __ZMQ_TCP_LISTENER_HPP_INCLUDED__
+#define __ZMQ_TCP_LISTENER_HPP_INCLUDED__
 
 #include "fd.hpp"
 
-namespace zs
+namespace zmq
 {
 
     //  The class encapsulating simple TCP listening socket.

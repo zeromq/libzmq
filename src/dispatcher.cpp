@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zs.h"
+#include "../include/zmq.h"
 
 #include "dispatcher.hpp"
 #include "app_thread.hpp"
@@ -30,27 +30,27 @@
 #include "session.hpp"
 #include "i_api.hpp"
 
-#if defined ZS_HAVE_WINDOWS
+#if defined ZMQ_HAVE_WINDOWS
 #include "windows.h"
 #endif
 
-zs::dispatcher_t::dispatcher_t (int app_threads_, int io_threads_)
+zmq::dispatcher_t::dispatcher_t (int app_threads_, int io_threads_)
 {
-#ifdef ZS_HAVE_WINDOWS
+#ifdef ZMQ_HAVE_WINDOWS
     //  Intialise Windows sockets. Note that WSAStartup can be called multiple
     //  times given that WSACleanup will be called for each WSAStartup.
     WORD version_requested = MAKEWORD (2, 2);
     WSADATA wsa_data;
     int rc = WSAStartup (version_requested, &wsa_data);
-    zs_assert (rc == 0);
-    zs_assert (LOBYTE (wsa_data.wVersion) == 2 &&
+    zmq_assert (rc == 0);
+    zmq_assert (LOBYTE (wsa_data.wVersion) == 2 &&
         HIBYTE (wsa_data.wVersion) == 2);
 #endif
 
     //  Create application thread proxies.
     for (int i = 0; i != app_threads_; i++) {
         app_thread_t *app_thread = new app_thread_t (this, i);
-        zs_assert (app_thread);
+        zmq_assert (app_thread);
         app_threads.push_back (app_thread);
         signalers.push_back (app_thread->get_signaler ());
     }
@@ -58,26 +58,26 @@ zs::dispatcher_t::dispatcher_t (int app_threads_, int io_threads_)
     //  Create I/O thread objects.
     for (int i = 0; i != io_threads_; i++) {
         io_thread_t *io_thread = new io_thread_t (this, i + app_threads_);
-        zs_assert (io_thread);
+        zmq_assert (io_thread);
         io_threads.push_back (io_thread);
         signalers.push_back (io_thread->get_signaler ());
     }
 
     //  Create command pipe matrix.
     command_pipes = new command_pipe_t [signalers.size () * signalers.size ()];
-    zs_assert (command_pipes);
+    zmq_assert (command_pipes);
 
     //  Launch I/O threads.
     for (int i = 0; i != io_threads_; i++)
         io_threads [i]->start ();
 }
 
-void zs::dispatcher_t::shutdown ()
+void zmq::dispatcher_t::shutdown ()
 {
      delete this;
 }
 
-zs::dispatcher_t::~dispatcher_t ()
+zmq::dispatcher_t::~dispatcher_t ()
 {
     //  Ask I/O threads to terminate.
     for (io_threads_t::size_type i = 0; i != io_threads.size (); i++)
@@ -103,19 +103,19 @@ zs::dispatcher_t::~dispatcher_t ()
         delete it->writer;
     }
 
-#ifdef ZS_HAVE_WINDOWS
+#ifdef ZMQ_HAVE_WINDOWS
     //  On Windows, uninitialise socket layer.
     int rc = WSACleanup ();
     wsa_assert (rc != SOCKET_ERROR);
 #endif
 }
 
-int zs::dispatcher_t::thread_slot_count ()
+int zmq::dispatcher_t::thread_slot_count ()
 {
     return signalers.size ();
 }
 
-zs::i_api *zs::dispatcher_t::create_socket (int type_)
+zmq::i_api *zmq::dispatcher_t::create_socket (int type_)
 {
     threads_sync.lock ();
     app_thread_t *thread = choose_app_thread ();
@@ -128,7 +128,7 @@ zs::i_api *zs::dispatcher_t::create_socket (int type_)
     return s;
 }
 
-zs::app_thread_t *zs::dispatcher_t::choose_app_thread ()
+zmq::app_thread_t *zmq::dispatcher_t::choose_app_thread ()
 {
     //  Check whether thread ID is already assigned. If so, return it.
     for (app_threads_t::size_type i = 0; i != app_threads.size (); i++)
@@ -145,9 +145,9 @@ zs::app_thread_t *zs::dispatcher_t::choose_app_thread ()
     return NULL;
 }
 
-zs::io_thread_t *zs::dispatcher_t::choose_io_thread (uint64_t taskset_)
+zmq::io_thread_t *zmq::dispatcher_t::choose_io_thread (uint64_t taskset_)
 {
-    zs_assert (io_threads.size () > 0);
+    zmq_assert (io_threads.size () > 0);
 
     //  Find the I/O thread with minimum load.
     int min_load = io_threads [0]->get_load ();
@@ -165,19 +165,19 @@ zs::io_thread_t *zs::dispatcher_t::choose_io_thread (uint64_t taskset_)
     return io_threads [result];
 }
 
-void zs::dispatcher_t::create_pipe (object_t *reader_parent_,
+void zmq::dispatcher_t::create_pipe (object_t *reader_parent_,
     object_t *writer_parent_, uint64_t hwm_, uint64_t lwm_,
     pipe_reader_t **reader_, pipe_writer_t **writer_)
 {
     //  Create the pipe, reader & writer triple.
     pipe_t *pipe = new pipe_t;
-    zs_assert (pipe);
+    zmq_assert (pipe);
     pipe_reader_t *reader = new pipe_reader_t (reader_parent_, pipe,
         hwm_, lwm_);
-    zs_assert (reader);
+    zmq_assert (reader);
     pipe_writer_t *writer = new pipe_writer_t (writer_parent_, pipe, reader,
         hwm_, lwm_);
-    zs_assert (writer);
+    zmq_assert (writer);
     reader->set_peer (writer);
 
     //  Store the pipe in the repository.
@@ -191,7 +191,7 @@ void zs::dispatcher_t::create_pipe (object_t *reader_parent_,
     *writer_ = writer;
 }
 
-void zs::dispatcher_t::destroy_pipe (pipe_t *pipe_)
+void zmq::dispatcher_t::destroy_pipe (pipe_t *pipe_)
 {
     //  Remove the pipe from the repository.
     pipe_info_t info;
@@ -203,13 +203,13 @@ void zs::dispatcher_t::destroy_pipe (pipe_t *pipe_)
     pipes_sync.unlock ();
 
     //  Deallocate the pipe and associated pipe reader & pipe writer.
-    zs_assert (info.pipe == pipe_);
+    zmq_assert (info.pipe == pipe_);
     delete info.pipe;
     delete info.reader;
     delete info.writer;
 }
 
-int zs::dispatcher_t::register_inproc_endpoint (const char *endpoint_,
+int zmq::dispatcher_t::register_inproc_endpoint (const char *endpoint_,
     session_t *session_)
 {
    inproc_endpoint_sync.lock ();
@@ -227,7 +227,7 @@ int zs::dispatcher_t::register_inproc_endpoint (const char *endpoint_,
    return 0;
 }
 
-zs::object_t *zs::dispatcher_t::get_inproc_endpoint (const char *endpoint_)
+zmq::object_t *zmq::dispatcher_t::get_inproc_endpoint (const char *endpoint_)
 {
     inproc_endpoint_sync.lock ();
     inproc_endpoints_t::iterator it = inproc_endpoints.find (endpoint_);
@@ -245,7 +245,7 @@ zs::object_t *zs::dispatcher_t::get_inproc_endpoint (const char *endpoint_)
     return session;
 }
 
-void zs::dispatcher_t::unregister_inproc_endpoints (session_t *session_)
+void zmq::dispatcher_t::unregister_inproc_endpoints (session_t *session_)
 {
     inproc_endpoint_sync.lock ();
 

@@ -17,30 +17,30 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZSOCKETS_HPP_INCLUDED__
-#define __ZSOCKETS_HPP_INCLUDED__
+#ifndef __ZMQ_HPP_INCLUDED__
+#define __ZMQ_HPP_INCLUDED__
 
-#include "zs.h"
+#include "zmq.h"
 
 #include <assert.h>
 
-namespace zs
+namespace zmq
 {
 
-    typedef zs_free_fn free_fn;
+    typedef zmq_free_fn free_fn;
 
     enum message_type_t
     {
         message_data = 1 << 0,
-        message_gap = 1 << ZS_GAP,
-        message_delimiter = 1 << ZS_DELIMITER
+        message_gap = 1 << ZMQ_GAP,
+        message_delimiter = 1 << ZMQ_DELIMITER
     };
 
     //  A message. Caution: Don't change the body of the message once you've
     //  copied it - the behaviour is undefined. Don't change the body of the
     //  received message either - other threads may be accessing it in parallel.
 
-    class message_t : private zs_msg
+    class message_t : private zmq_msg
     {
         friend class socket_t;
 
@@ -49,7 +49,7 @@ namespace zs
         //  Creates message size_ bytes long.
         inline message_t (size_t size_ = 0)
         {
-            int rc = zs_msg_init_size (this, size_);
+            int rc = zmq_msg_init_size (this, size_);
             assert (rc == 0);
         }
 
@@ -60,14 +60,14 @@ namespace zs
         inline message_t (void *data_, size_t size_, 
             free_fn *ffn_)
         {
-            int rc = zs_msg_init_data (this, data_, size_, ffn_);
+            int rc = zmq_msg_init_data (this, data_, size_, ffn_);
             assert (rc == 0);
         }
 
         //  Destroys the message.
         inline ~message_t ()
         {
-            int rc = zs_msg_close (this);
+            int rc = zmq_msg_close (this);
             assert (rc == 0);
         }
 
@@ -76,9 +76,9 @@ namespace zs
         //  to reuse once-allocated message for multiple times.
         inline void rebuild (size_t size_)
         {
-            int rc = zs_msg_close (this);
+            int rc = zmq_msg_close (this);
             assert (rc == 0);
-            rc = zs_msg_init_size (this, size_);
+            rc = zmq_msg_init_size (this, size_);
             assert (rc == 0);
         }
 
@@ -87,9 +87,9 @@ namespace zs
         //  deallocation mechanism.
         inline void rebuild (void *data_, size_t size_, free_fn *ffn_)
         {
-            int rc = zs_msg_close (this);
+            int rc = zmq_msg_close (this);
             assert (rc == 0);
-            rc = zs_msg_init_data (this, data_, size_, ffn_);
+            rc = zmq_msg_init_data (this, data_, size_, ffn_);
             assert (rc == 0);
         }
 
@@ -99,7 +99,7 @@ namespace zs
         //  of data after the operation.
         inline void move_to (message_t *msg_)
         {
-            int rc = zs_msg_move (this, (zs_msg*) msg_);
+            int rc = zmq_msg_move (this, (zmq_msg*) msg_);
             assert (rc == 0);
         }
 
@@ -108,26 +108,26 @@ namespace zs
         //  these get deallocated.
         inline void copy_to (message_t *msg_)
         {
-            int rc = zs_msg_copy (this, (zs_msg*) msg_);
+            int rc = zmq_msg_copy (this, (zmq_msg*) msg_);
             assert (rc == 0);
         }
 
         //  Returns message type.
         inline message_type_t type ()
         {
-            return (message_type_t) (1 << zs_msg_type (this));
+            return (message_type_t) (1 << zmq_msg_type (this));
         }
 
         //  Returns pointer to message's data buffer.
         inline void *data ()
         {
-            return zs_msg_data (this);
+            return zmq_msg_data (this);
         }
 
         //  Returns the size of message data buffer.
         inline size_t size ()
         {
-            return zs_msg_size (this);
+            return zmq_msg_size (this);
         }
 
     private:
@@ -146,13 +146,13 @@ namespace zs
 
         inline context_t (int app_threads_, int io_threads_)
         {
-            ptr = zs_init (app_threads_, io_threads_);
+            ptr = zmq_init (app_threads_, io_threads_);
             assert (ptr);
         }
 
         inline ~context_t ()
         {
-            int rc = zs_term (ptr);
+            int rc = zmq_term (ptr);
             assert (rc == 0);
         }
 
@@ -171,49 +171,49 @@ namespace zs
 
         inline socket_t (context_t &context_, int type_ = 0)
         {
-            ptr = zs_socket (context_.ptr, type_);
+            ptr = zmq_socket (context_.ptr, type_);
             assert (ptr);
         }
 
         inline ~socket_t ()
         {
-            int rc = zs_close (ptr);
+            int rc = zmq_close (ptr);
             assert (rc == 0);
         }
 
-        inline void bind (const char *addr_, zs_opts *opts_ = NULL)
+        inline void bind (const char *addr_, zmq_opts *opts_ = NULL)
         {
-            int rc = zs_bind (ptr, addr_, opts_);
+            int rc = zmq_bind (ptr, addr_, opts_);
             assert (rc == 0);
         }
 
-        inline void connect (const char *addr_, zs_opts *opts_ = NULL)
+        inline void connect (const char *addr_, zmq_opts *opts_ = NULL)
         {
-            int rc = zs_connect (ptr, addr_, opts_);
+            int rc = zmq_connect (ptr, addr_, opts_);
             assert (rc == 0);
         }
 
         inline void subscribe (const char *criteria_)
         {
-            int rc = zs_subscribe (ptr, criteria_);
+            int rc = zmq_subscribe (ptr, criteria_);
             assert (rc == 0);
         }
 
         inline void send (message_t &msg_, int flags_ = 0)
         {
-            int rc = zs_send (ptr, &msg_, flags_);
+            int rc = zmq_send (ptr, &msg_, flags_);
             assert (rc == 0);
         }
 
         inline void flush ()
         {
-            int rc = zs_flush (ptr);
+            int rc = zmq_flush (ptr);
             assert (rc == 0);
         }
 
         inline void recv (message_t *msg_, int flags_ = 0)
         {
-            int rc = zs_recv (ptr, msg_, flags_);
+            int rc = zmq_recv (ptr, msg_, flags_);
             assert (rc == 0);
         }
 

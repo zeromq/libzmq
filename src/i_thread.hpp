@@ -17,10 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_I_THREAD_HPP_INCLUDED__
-#define __ZS_I_THREAD_HPP_INCLUDED__
+#ifndef __ZMQ_I_THREAD_HPP_INCLUDED__
+#define __ZMQ_I_THREAD_HPP_INCLUDED__
 
-namespace zs
+namespace zmq
 {
 
     //  Interface used by session object to communicate with the thread

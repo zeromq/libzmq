@@ -17,12 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_OBJECT_HPP_INCLUDED__
-#define __ZS_OBJECT_HPP_INCLUDED__
+#ifndef __ZMQ_OBJECT_HPP_INCLUDED__
+#define __ZMQ_OBJECT_HPP_INCLUDED__
 
 #include "stdint.hpp"
 
-namespace zs
+namespace zmq
 {
 
     //  Base class for all objects that participate in inter-thread

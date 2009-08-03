@@ -17,14 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zs.h"
+#include "../include/zmq.h"
 
 #include "pipe_reader.hpp"
 #include "pipe.hpp"
 #include "err.hpp"
 #include "i_mux.hpp"
 
-zs::pipe_reader_t::pipe_reader_t (object_t *parent_, pipe_t *pipe_,
+zmq::pipe_reader_t::pipe_reader_t (object_t *parent_, pipe_t *pipe_,
       uint64_t hwm_, uint64_t lwm_) :
     object_t (parent_),
     pipe (pipe_),
@@ -39,37 +39,37 @@ zs::pipe_reader_t::pipe_reader_t (object_t *parent_, pipe_t *pipe_,
 {
 }
 
-void zs::pipe_reader_t::set_peer (object_t *peer_)
+void zmq::pipe_reader_t::set_peer (object_t *peer_)
 {
     peer = peer_;
 }
 
-zs::pipe_reader_t::~pipe_reader_t ()
+zmq::pipe_reader_t::~pipe_reader_t ()
 {
 }
 
-void zs::pipe_reader_t::set_mux (i_mux *mux_)
+void zmq::pipe_reader_t::set_mux (i_mux *mux_)
 {
     mux = mux_;
 }
 
-void zs::pipe_reader_t::set_index (int index_)
+void zmq::pipe_reader_t::set_index (int index_)
 {
     index = index_;
 }
 
-int zs::pipe_reader_t::get_index ()
+int zmq::pipe_reader_t::get_index ()
 {
     return index;
 }
 
-void zs::pipe_reader_t::process_tail (uint64_t bytes_)
+void zmq::pipe_reader_t::process_tail (uint64_t bytes_)
 {
     tail = bytes_;
     mux->reactivate (this);
 }
 
-bool zs::pipe_reader_t::read (struct zs_msg *msg_)
+bool zmq::pipe_reader_t::read (struct zmq_msg *msg_)
 {
     //  Read a message.
     if (!pipe->read (msg_)) {
@@ -78,7 +78,7 @@ bool zs::pipe_reader_t::read (struct zs_msg *msg_)
     }
 
     //  If successfull, adjust the head of the pipe.
-    head += zs_msg_size (msg_);
+    head += zmq_msg_size (msg_);
 
     //  If pipe writer wasn't notified about the head position for long enough,
     //  notify it.
@@ -87,7 +87,7 @@ bool zs::pipe_reader_t::read (struct zs_msg *msg_)
         last_sent_head = head;
     }
 
-    if (zs_msg_type (msg_) == ZS_DELIMITER) {
+    if (zmq_msg_type (msg_) == ZMQ_DELIMITER) {
 
         //  Detach the pipe from the mux and send termination request to
         //  the pipe writer.
@@ -100,7 +100,7 @@ bool zs::pipe_reader_t::read (struct zs_msg *msg_)
     return true;
 }
 
-void zs::pipe_reader_t::terminate ()
+void zmq::pipe_reader_t::terminate ()
 {
     //  Detach the pipe from the mux and send termination request to
     //  the pipe writer.
@@ -111,7 +111,7 @@ void zs::pipe_reader_t::terminate ()
     send_terminate (peer);
 }
 
-void zs::pipe_reader_t::process_terminate_ack ()
+void zmq::pipe_reader_t::process_terminate_ack ()
 {
     //  Ask dispatcher to deallocate the pipe.
     destroy_pipe (pipe);

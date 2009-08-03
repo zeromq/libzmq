@@ -19,7 +19,7 @@
 
 #include "safe_object.hpp"
 
-zs::safe_object_t::safe_object_t (class dispatcher_t *dispatcher_,
+zmq::safe_object_t::safe_object_t (class dispatcher_t *dispatcher_,
       int thread_slot_) :
     object_t (dispatcher_, thread_slot_),
     processed_seqnum (0),
@@ -27,14 +27,14 @@ zs::safe_object_t::safe_object_t (class dispatcher_t *dispatcher_,
 {
 }
 
-zs::safe_object_t::safe_object_t (object_t *parent_) :
+zmq::safe_object_t::safe_object_t (object_t *parent_) :
     object_t (parent_),
     processed_seqnum (0),
     terminating (false)
 {
 }
 
-void zs::safe_object_t::inc_seqnum ()
+void zmq::safe_object_t::inc_seqnum ()
 {
     //  This function is called from the sender thread to ensure that this
     //  object will still exist when the command sent to it arrives in the
@@ -42,7 +42,7 @@ void zs::safe_object_t::inc_seqnum ()
     sent_seqnum.add (1);
 }
 
-void zs::safe_object_t::process_command (struct command_t &cmd_)
+void zmq::safe_object_t::process_command (struct command_t &cmd_)
 {
     object_t::process_command (cmd_);
 
@@ -55,7 +55,7 @@ void zs::safe_object_t::process_command (struct command_t &cmd_)
         delete this;
 }
 
-void zs::safe_object_t::terminate ()
+void zmq::safe_object_t::terminate ()
 {
     //  Wait till all commands sent to this session are processed.
     terminating = true;
@@ -66,11 +66,11 @@ void zs::safe_object_t::terminate ()
         delete this;
 }
 
-bool zs::safe_object_t::is_terminating ()
+bool zmq::safe_object_t::is_terminating ()
 {
     return terminating;
 }
 
-zs::safe_object_t::~safe_object_t ()
+zmq::safe_object_t::~safe_object_t ()
 {
 }

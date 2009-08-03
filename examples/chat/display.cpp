@@ -23,7 +23,7 @@
 
 using namespace std;
 
-#include <zs.hpp>
+#include <zmq.hpp>
 
 int main (int argc, const char *argv [])
 {
@@ -38,17 +38,17 @@ int main (int argc, const char *argv [])
 
     //  Initialise 0MQ infrastructure, connect to the chatroom and ask for all
     //  messages and gap notifications.
-    zs::context_t ctx (1, 1);
-    zs::socket_t s (ctx, ZS_SUB);
+    zmq::context_t ctx (1, 1);
+    zmq::socket_t s (ctx, ZMQ_SUB);
     s.connect (chatroom_out_address);
     s.subscribe ("*");
     
     while (true) {
 
         //  Get a message and print it to the console.
-        zs::message_t message;
+        zmq::message_t message;
         s.recv (&message);
-        if (message.type () == zs::message_gap)
+        if (message.type () == zmq::message_gap)
             cout << "Problems connecting to the chatroom..." << endl;
         else
             cout << (char*) message.data () << flush;

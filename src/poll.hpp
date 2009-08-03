@@ -17,15 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_POLL_HPP_INCLUDED__
-#define __ZS_POLL_HPP_INCLUDED__
+#ifndef __ZMQ_POLL_HPP_INCLUDED__
+#define __ZMQ_POLL_HPP_INCLUDED__
 
 #include "platform.hpp"
 
-#if defined ZS_HAVE_LINUX || defined ZS_HAVE_FREEBSD ||\
-    defined ZS_HAVE_OPENBSD || defined ZS_HAVE_SOLARIS ||\
-    defined ZS_HAVE_OSX || defined ZS_HAVE_QNXNTO ||\
-    defined ZS_HAVE_HPUX || defined ZS_HAVE_AIX
+#if defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD ||\
+    defined ZMQ_HAVE_OPENBSD || defined ZMQ_HAVE_SOLARIS ||\
+    defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_QNXNTO ||\
+    defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_AIX
 
 #include <poll.h>
 #include <stddef.h>
@@ -36,7 +36,7 @@
 #include "thread.hpp"
 #include "atomic_counter.hpp"
 
-namespace zs
+namespace zmq
 {
 
     //  Implements socket polling mechanism using the POSIX.1-2001

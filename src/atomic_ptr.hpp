@@ -18,34 +18,34 @@
 */
 
 
-#ifndef __ZS_ATOMIC_PTR_HPP_INCLUDED__
-#define __ZS_ATOMIC_PTR_HPP_INCLUDED__
+#ifndef __ZMQ_ATOMIC_PTR_HPP_INCLUDED__
+#define __ZMQ_ATOMIC_PTR_HPP_INCLUDED__
 
 #include "platform.hpp"
 
-#if defined ZS_FORCE_MUTEXES
-#define ZS_ATOMIC_PTR_MUTEX
+#if defined ZMQ_FORCE_MUTEXES
+#define ZMQ_ATOMIC_PTR_MUTEX
 #elif (defined __i386__ || defined __x86_64__) && defined __GNUC__
-#define ZS_ATOMIC_PTR_X86
+#define ZMQ_ATOMIC_PTR_X86
 #elif 0 && defined __sparc__ && defined __GNUC__
-#define ZS_ATOMIC_PTR_SPARC
-#elif defined ZS_HAVE_WINDOWS
-#define ZS_ATOMIC_PTR_WINDOWS
-#elif defined ZS_HAVE_SOLARIS
-#define ZS_ATOMIC_PTR_SOLARIS
+#define ZMQ_ATOMIC_PTR_SPARC
+#elif defined ZMQ_HAVE_WINDOWS
+#define ZMQ_ATOMIC_PTR_WINDOWS
+#elif defined ZMQ_HAVE_SOLARIS
+#define ZMQ_ATOMIC_PTR_SOLARIS
 #else
-#define ZS_ATOMIC_PTR_MUTEX
+#define ZMQ_ATOMIC_PTR_MUTEX
 #endif
 
-#if defined ZS_ATOMIC_PTR_MUTEX
+#if defined ZMQ_ATOMIC_PTR_MUTEX
 #include "mutex.hpp"
-#elif defined ZS_ATOMIC_PTR_WINDOWS
+#elif defined ZMQ_ATOMIC_PTR_WINDOWS
 #include "windows.hpp"
-#elif defined ZS_ATOMIC_PTR_SOLARIS
+#elif defined ZMQ_ATOMIC_PTR_SOLARIS
 #include <atomic.h>
 #endif
 
-namespace zs
+namespace zmq
 {
 
     //  This class encapsulates several atomic operations on pointers.
@@ -77,18 +77,18 @@ namespace zs
         //  to the 'val' value. Old value is returned.
         inline T *xchg (T *val_)
         {
-#if defined ZS_ATOMIC_PTR_WINDOWS
+#if defined ZMQ_ATOMIC_PTR_WINDOWS
             return (T*) InterlockedExchangePointer (&ptr, val_);
-#elif defined ZS_ATOMIC_PTR_SOLARIS
+#elif defined ZMQ_ATOMIC_PTR_SOLARIS
             return (T*) atomic_swap_ptr (&ptr, val_);
-#elif defined ZS_ATOMIC_PTR_X86
+#elif defined ZMQ_ATOMIC_PTR_X86
             T *old;
             __asm__ volatile (
                 "lock; xchg %0, %2"
                 : "=r" (old), "=m" (ptr)
                 : "m" (ptr), "0" (val_));
             return old;
-#elif defined ZS_ATOMIC_PTR_SPARC
+#elif defined ZMQ_ATOMIC_PTR_SPARC
             T* newptr = val_;
             volatile T** ptrin = &ptr;
             T* tmp;
@@ -105,7 +105,7 @@ namespace zs
                 : "r" (ptrin)
                 : "cc");
             return prev;
-#elif defined ZS_ATOMIC_PTR_MUTEX
+#elif defined ZMQ_ATOMIC_PTR_MUTEX
             sync.lock ();
             T *old = (T*) ptr;
             ptr = val_;
@@ -122,12 +122,12 @@ namespace zs
         //  is returned.
         inline T *cas (T *cmp_, T *val_)
         {
-#if defined ZS_ATOMIC_PTR_WINDOWS
+#if defined ZMQ_ATOMIC_PTR_WINDOWS
             return (T*) InterlockedCompareExchangePointer (
                 (volatile PVOID*) &ptr, val_, cmp_);
-#elif defined ZS_ATOMIC_PTR_SOLARIS
+#elif defined ZMQ_ATOMIC_PTR_SOLARIS
             return (T*) atomic_cas_ptr (&ptr, cmp_, val_);
-#elif defined ZS_ATOMIC_PTR_X86
+#elif defined ZMQ_ATOMIC_PTR_X86
             T *old;
             __asm__ volatile (
                 "lock; cmpxchg %2, %3"
@@ -135,7 +135,7 @@ namespace zs
                 : "r" (val_), "m" (ptr), "0" (cmp_)
                 : "cc");
             return old;
-#elif defined ZS_ATOMIC_PTR_SPARC
+#elif defined ZMQ_ATOMIC_PTR_SPARC
             volatile T** ptrin = &ptr;
             volatile T* prev = ptr;
             __asm__ __volatile__(
@@ -144,7 +144,7 @@ namespace zs
                 : "r" (cmp_), "r" (val_), "r" (ptrin)
                 : "cc");
             return prev;
-#elif defined ZS_ATOMIC_PTR_MUTEX
+#elif defined ZMQ_ATOMIC_PTR_MUTEX
             sync.lock ();
             T *old = (T*) ptr;
             if (ptr == cmp_)
@@ -159,7 +159,7 @@ namespace zs
     private:
 
         volatile T *ptr;
-#if defined ZS_ATOMIC_PTR_MUTEX
+#if defined ZMQ_ATOMIC_PTR_MUTEX
         mutex_t sync;
 #endif
 
@@ -170,20 +170,20 @@ namespace zs
 }
 
 //  Remove macros local to this file.
-#if defined ZS_ATOMIC_PTR_WINDOWS
-#undef ZS_ATOMIC_PTR_WINDOWS
+#if defined ZMQ_ATOMIC_PTR_WINDOWS
+#undef ZMQ_ATOMIC_PTR_WINDOWS
 #endif
-#if defined ZS_ATOMIC_PTR_SOLARIS
-#undef ZS_ATOMIC_PTR_SOLARIS
+#if defined ZMQ_ATOMIC_PTR_SOLARIS
+#undef ZMQ_ATOMIC_PTR_SOLARIS
 #endif
-#if defined ZS_ATOMIC_PTR_X86
-#undef ZS_ATOMIC_PTR_X86
+#if defined ZMQ_ATOMIC_PTR_X86
+#undef ZMQ_ATOMIC_PTR_X86
 #endif
-#if defined ZS_ATOMIC_PTR_SPARC
-#undef ZS_ATOMIC_PTR_SPARC
+#if defined ZMQ_ATOMIC_PTR_SPARC
+#undef ZMQ_ATOMIC_PTR_SPARC
 #endif
-#if defined ZS_ATOMIC_PTR_MUTEX
-#undef ZS_ATOMIC_PTR_MUTEX
+#if defined ZMQ_ATOMIC_PTR_MUTEX
+#undef ZMQ_ATOMIC_PTR_MUTEX
 #endif
 
 #endif

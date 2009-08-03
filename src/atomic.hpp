@@ -17,24 +17,24 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_ATOMIC_HPP_INCLUDED__
-#define __ZS_ATOMIC_HPP_INCLUDED__
+#ifndef __ZMQ_ATOMIC_HPP_INCLUDED__
+#define __ZMQ_ATOMIC_HPP_INCLUDED__
 
 #include "stdint.hpp"
 
-#if defined ZS_FORCE_MUTEXES
-#define ZS_ATOMIC_MUTEX
+#if defined ZMQ_FORCE_MUTEXES
+#define ZMQ_ATOMIC_MUTEX
 #elif (defined __i386__ || defined __x86_64__) && defined __GNUC__
-#define ZS_ATOMIC_X86
+#define ZMQ_ATOMIC_X86
 #elif defined ZMQ_HAVE_WINDOWS
-#define ZS_ATOMIC_WINDOWS
+#define ZMQ_ATOMIC_WINDOWS
 #elif defined ZMQ_HAVE_SOLARIS
-#define ZS_ATOMIC_SOLARIS
+#define ZMQ_ATOMIC_SOLARIS
 #else
-#define ZS_ATOMIC_MUTEX
+#define ZMQ_ATOMIC_MUTEX
 #endif
 
-namespace zs
+namespace zmq
 {
 
     //  Atomic assignement.
@@ -56,11 +56,11 @@ namespace zs
     //  Atomic addition. Returns the old value.
     inline uint32_t atomic_uint32_add (volatile uint32_t *p_, uint32_t delta_)
     {
-#if defined ZS_ATOMIC_WINDOWS
+#if defined ZMQ_ATOMIC_WINDOWS
         return InterlockedExchangeAdd ((LONG*) &value, increment_);
-#elif defined ZS_ATOMIC_SOLARIS
+#elif defined ZMQ_ATOMIC_SOLARIS
         return atomic_add_32_nv (&value, increment_) - delta_;
-#elif defined ZS_ATOMIC_X86
+#elif defined ZMQ_ATOMIC_X86
         uint32_t old;
         __asm__ volatile (
             "lock; xadd %0, %1\n\t"
@@ -80,13 +80,13 @@ namespace zs
     //  Atomic subtraction. Returns the old value.
     inline uint32_t atomic_uint32_sub (volatile uint32_t *p_, uint32_t delta_)
     {
-#if defined ZS_ATOMIC_WINDOWS
+#if defined ZMQ_ATOMIC_WINDOWS
         LONG delta = - ((LONG) delta_);
         return InterlockedExchangeAdd ((LONG*) &value, delta);
-#elif defined ZS_ATOMIC_SOLARIS
+#elif defined ZMQ_ATOMIC_SOLARIS
         int32_t delta = - ((int32_t) delta_);
         return atomic_add_32_nv (&value, delta) + delta_;
-#elif defined ZS_ATOMIC_X86
+#elif defined ZMQ_ATOMIC_X86
         uint32_t old = -delta_;
         __asm__ volatile ("lock; xaddl %0,%1"
             : "=r" (old), "=m" (*p_)
@@ -116,11 +116,11 @@ namespace zs
     template <typename T>
     inline void *atomic_ptr_xchg (volatile T **p_, T *value_)
     {
-#if defined ZS_ATOMIC_WINDOWS
+#if defined ZMQ_ATOMIC_WINDOWS
         return InterlockedExchangePointer (p_, value_);
-#elif defined ZS_ATOMIC_SOLARIS
+#elif defined ZMQ_ATOMIC_SOLARIS
         return atomic_swap_ptr (p_, value_);
-#elif defined ZS_ATOMIC_X86
+#elif defined ZMQ_ATOMIC_X86
         void *old;
         __asm__ volatile (
             "lock; xchg %0, %2"
@@ -144,11 +144,11 @@ namespace zs
     template <typename T>
     inline void *atomic_ptr_cas (volatile T **p_, T *cmp_, T *value_)
     {
-#if defined ZS_ATOMIC_WINDOWS
+#if defined ZMQ_ATOMIC_WINDOWS
         return InterlockedCompareExchangePointer (p_, value_, cmp_);
-#elif defined ZS_ATOMIC_SOLARIS
+#elif defined ZMQ_ATOMIC_SOLARIS
         return atomic_cas_ptr (p_, cmp_, value_);
-#elif defined ZS_ATOMIC_X86
+#elif defined ZMQ_ATOMIC_X86
         void *old;
         __asm__ volatile (
             "lock; cmpxchg %2, %3"
@@ -167,7 +167,7 @@ namespace zs
 #endif
     }
 
-#if defined ZS_ATOMIC_X86 && defined __x86_64__
+#if defined ZMQ_ATOMIC_X86 && defined __x86_64__
     typedef uint64_t atomic_bitmap_t;
 #else
     typedef uint32_t atomic_bitmap_t;
@@ -187,7 +187,7 @@ namespace zs
     inline bool atomic_bitmap_btsr (volatile atomic_bitmap_t *p_,
         int set_index_, int reset_index_)
     {
-#if defined ZS_ATOMIC_WINDOWS
+#if defined ZMQ_ATOMIC_WINDOWS
         while (true) {
             atomic_bitmap_t oldval = *p_;
             atomic_bitmap_t newval = (oldval | (atomic_bitmap_t (1) <<
@@ -197,7 +197,7 @@ namespace zs
                 return (oldval & (atomic_bitmap_t (1) << reset_index_)) ?
                     true : false; 
         }
-#elif defined ZS_ATOMIC_SOLARIS
+#elif defined ZMQ_ATOMIC_SOLARIS
         while (true) {
             atomic_bitmap_t oldval = *p_;
             atomic_bitmap_t newval = (oldval | (atomic_bitmap_t (1) <<
@@ -206,7 +206,7 @@ namespace zs
                 return (oldval & (atomic_bitmap_t (1) << reset_index_)) ?
                     true : false; 
         }
-#elif defined ZS_ATOMIC_X86
+#elif defined ZMQ_ATOMIC_X86
         atomic_bitmap_t oldval, dummy;
         __asm__ volatile (
             "mov %0, %1\n\t"
@@ -236,11 +236,11 @@ namespace zs
     inline atomic_bitmap_t atomic_bitmap_xchg (volatile atomic_bitmap_t *p_,
         atomic_bitmap_t newval_)
     {
-#if defined ZS_ATOMIC_WINDOWS
+#if defined ZMQ_ATOMIC_WINDOWS
         return InterlockedExchange ((volatile LONG*) p_, newval_);
-#elif defined ZS_ATOMIC_SOLARIS
+#elif defined ZMQ_ATOMIC_SOLARIS
         return atomic_swap_32 (p_, newval_);
-#elif defined ZS_ATOMIC_X86
+#elif defined ZMQ_ATOMIC_X86
         atomic_bitmap_t oldval = newval_;
         __asm__ volatile (
             "lock; xchg %0, %1"
@@ -263,7 +263,7 @@ namespace zs
     inline atomic_bitmap_t atomic_bitmap_izte (volatile atomic_bitmap_t *p_,
             atomic_bitmap_t thenval_,  atomic_bitmap_t elseval_)
     {
-#if defined ZS_ATOMIC_WINDOWS
+#if defined ZMQ_ATOMIC_WINDOWS
         while (true) {
             atomic_bitmap_t oldval = *p_;
             atomic_bitmap_t newval = (oldval ? elseval_ : thenval_); 
@@ -271,14 +271,14 @@ namespace zs
                   oldval) == (LONG) oldval)
                 return oldval;
         }
-#elif defined ZS_ATOMIC_SOLARIS
+#elif defined ZMQ_ATOMIC_SOLARIS
         while (true) {
             atomic_bitmap_t oldval = *p_;
             atomic_bitmap_t newval = (oldval ? elseval_ : thenval_); 
             if (atomic_cas_32 (p_, oldval, newval) == oldval)
                 return oldval;
         }
-#elif defined ZS_ATOMIC_X86
+#elif defined ZMQ_ATOMIC_X86
         atomic_bitmap_t oldval;
         atomic_bitmap_t dummy;
         __asm__ volatile (

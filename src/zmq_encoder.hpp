@@ -17,14 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_ZMQ_ENCODER_HPP_INCLUDED__
-#define __ZS_ZMQ_ENCODER_HPP_INCLUDED__
+#ifndef __ZMQ_ZMQ_ENCODER_HPP_INCLUDED__
+#define __ZMQ_ZMQ_ENCODER_HPP_INCLUDED__
 
-#include "../include/zs.h"
+#include "../include/zmq.h"
 
 #include "encoder.hpp"
 
-namespace zs
+namespace zmq
 {
     //  Encoder for 0MQ backend protocol. Converts messages into data batches.
 
@@ -43,7 +43,7 @@ namespace zs
         bool message_ready ();
 
         struct i_session *source;
-        ::zs_msg in_progress;
+        ::zmq_msg in_progress;
         unsigned char tmpbuf [9];
 
         zmq_encoder_t (const zmq_encoder_t&);

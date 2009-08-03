@@ -17,21 +17,21 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_SIMPLE_SEMAPHORE_HPP_INCLUDED__
-#define __ZS_SIMPLE_SEMAPHORE_HPP_INCLUDED__
+#ifndef __ZMQ_SIMPLE_SEMAPHORE_HPP_INCLUDED__
+#define __ZMQ_SIMPLE_SEMAPHORE_HPP_INCLUDED__
 
 #include "platform.hpp"
 #include "err.hpp"
 
-#if defined ZS_HAVE_LINUX || defined ZS_HAVE_OSX || defined ZS_HAVE_OPENVMS
+#if defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_OPENVMS
 #include <pthread.h>
-#elif defined ZS_HAVE_WINDOWS
+#elif defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
 #else
 #include <semaphore.h>
 #endif
 
-namespace zs
+namespace zmq
 {
 
     //  Simple semaphore. Only single thread may be waiting at any given time.
@@ -39,7 +39,7 @@ namespace zs
     //  was matched by corresponding wait and the waiting thread was
     //  released.
 
-#if defined ZS_HAVE_LINUX || defined ZS_HAVE_OSX || defined ZS_HAVE_OPENVMS
+#if defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_OPENVMS
 
     //  On platforms that allow for double locking of a mutex from the same
     //  thread, simple semaphore is implemented using mutex, as it is more

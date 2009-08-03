@@ -22,13 +22,13 @@
 #include <string.h>
 #include <algorithm>
 
-#ifdef ZS_HAVE_WINDOWS
+#ifdef ZMQ_HAVE_WINDOWS
 #include "winsock2.h"
-#elif defined ZS_HAVE_HPUX
+#elif defined ZMQ_HAVE_HPUX
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/time.h>
-#elif defined ZS_HAVE_OPENVMS
+#elif defined ZMQ_HAVE_OPENVMS
 #include <sys/types.h>
 #include <sys/time.h>
 #else
@@ -40,7 +40,7 @@
 #include "config.hpp"
 #include "i_poll_events.hpp"
 
-zs::select_t::select_t () :
+zmq::select_t::select_t () :
     maxfd (retired_fd),
     retired (false),
     stopping (false)
@@ -51,7 +51,7 @@ zs::select_t::select_t () :
     FD_ZERO (&source_set_err);
 }
 
-zs::handle_t zs::select_t::add_fd (fd_t fd_, i_poll_events *events_)
+zmq::handle_t zmq::select_t::add_fd (fd_t fd_, i_poll_events *events_)
 {
     //  Store the file descriptor.
     fd_entry_t entry = {fd_, events_};
@@ -72,7 +72,7 @@ zs::handle_t zs::select_t::add_fd (fd_t fd_, i_poll_events *events_)
     return handle;
 }
 
-void zs::select_t::rm_fd (handle_t handle_)
+void zmq::select_t::rm_fd (handle_t handle_)
 {
     //  Get file descriptor.
     fd_t fd = handle_.fd;
@@ -82,7 +82,7 @@ void zs::select_t::rm_fd (handle_t handle_)
     for (it = fds.begin (); it != fds.end (); it ++)
         if (it->fd == fd)
             break;
-    zs_assert (it != fds.end ());
+    zmq_assert (it != fds.end ());
     it->fd = retired_fd;
     retired = true;
 
@@ -109,59 +109,59 @@ void zs::select_t::rm_fd (handle_t handle_)
     load.sub (1);
 }
 
-void zs::select_t::set_pollin (handle_t handle_)
+void zmq::select_t::set_pollin (handle_t handle_)
 {
     FD_SET (handle_.fd, &source_set_in);
 }
 
-void zs::select_t::reset_pollin (handle_t handle_)
+void zmq::select_t::reset_pollin (handle_t handle_)
 {
     FD_CLR (handle_.fd, &source_set_in);
 }
 
-void zs::select_t::set_pollout (handle_t handle_)
+void zmq::select_t::set_pollout (handle_t handle_)
 {
     FD_SET (handle_.fd, &source_set_out);
 }
 
-void zs::select_t::reset_pollout (handle_t handle_)
+void zmq::select_t::reset_pollout (handle_t handle_)
 {
     FD_CLR (handle_.fd, &source_set_out);
 }
 
-void zs::select_t::add_timer (i_poll_events *events_)
+void zmq::select_t::add_timer (i_poll_events *events_)
 {
     timers.push_back (events_);
 }
 
-void zs::select_t::cancel_timer (i_poll_events *events_)
+void zmq::select_t::cancel_timer (i_poll_events *events_)
 {
     timers_t::iterator it = std::find (timers.begin (), timers.end (), events_);
     if (it != timers.end ())
         timers.erase (it);
 }
 
-int zs::select_t::get_load ()
+int zmq::select_t::get_load ()
 {
     return load.get ();
 }
 
-void zs::select_t::start ()
+void zmq::select_t::start ()
 {
     worker.start (worker_routine, this);
 }
 
-void zs::select_t::stop ()
+void zmq::select_t::stop ()
 {
     stopping = true;
 }
 
-void zs::select_t::join ()
+void zmq::select_t::join ()
 {
     worker.stop ();
 }
 
-void zs::select_t::loop ()
+void zmq::select_t::loop ()
 {
     while (!stopping) {
 
@@ -179,7 +179,7 @@ void zs::select_t::loop ()
         int rc = select (maxfd + 1, &readfds, &writefds, &exceptfds,
             timers.empty () ? NULL : &timeout);
 
-#ifdef ZS_HAVE_WINDOWS
+#ifdef ZMQ_HAVE_WINDOWS
         wsa_assert (rc != SOCKET_ERROR);
 #else
         if (rc == -1 && errno == EINTR)
@@ -230,7 +230,7 @@ void zs::select_t::loop ()
     }
 }
 
-void zs::select_t::worker_routine (void *arg_)
+void zmq::select_t::worker_routine (void *arg_)
 {
     ((select_t*) arg_)->loop ();
 }

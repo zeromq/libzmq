@@ -24,7 +24,7 @@
 #include "simple_semaphore.hpp"
 #include "zmq_tcp_engine.hpp"
 
-zs::connecter_t::connecter_t (io_thread_t *thread_, const char *addr_,
+zmq::connecter_t::connecter_t (io_thread_t *thread_, const char *addr_,
       session_t *session_) :
     io_object_t (thread_),
     state (idle),
@@ -36,24 +36,24 @@ zs::connecter_t::connecter_t (io_thread_t *thread_, const char *addr_,
 {
 }
 
-void zs::connecter_t::terminate ()
+void zmq::connecter_t::terminate ()
 {
     delete this;
 }
 
-void zs::connecter_t::shutdown ()
+void zmq::connecter_t::shutdown ()
 {
     delete this;
 }
 
-zs::connecter_t::~connecter_t ()
+zmq::connecter_t::~connecter_t ()
 {
 }
 
-void zs::connecter_t::process_reg (simple_semaphore_t *smph_)
+void zmq::connecter_t::process_reg (simple_semaphore_t *smph_)
 {
     //  Fet poller pointer for further use.
-    zs_assert (!poller);
+    zmq_assert (!poller);
     poller = get_poller ();
 
     //  Ask the session to register itself with the I/O thread. Note that
@@ -71,10 +71,10 @@ void zs::connecter_t::process_reg (simple_semaphore_t *smph_)
     timer_event ();
 }
 
-void zs::connecter_t::process_unreg (simple_semaphore_t *smph_)
+void zmq::connecter_t::process_unreg (simple_semaphore_t *smph_)
 {
     //  Unregister connecter/engine from the poller.
-    zs_assert (poller);
+    zmq_assert (poller);
     if (state == connecting)
         poller->rm_fd (handle);
     else if (state == waiting)
@@ -87,22 +87,22 @@ void zs::connecter_t::process_unreg (simple_semaphore_t *smph_)
         smph_->post ();
 }
 
-void zs::connecter_t::in_event ()
+void zmq::connecter_t::in_event ()
 {
     //  Error occured in asynchronous connect. Retry to connect after a while.
     if (state == connecting) {
         fd_t fd = tcp_connecter.connect ();
-        zs_assert (fd == retired_fd);
+        zmq_assert (fd == retired_fd);
         poller->rm_fd (handle);
         poller->add_timer (this);
         state = waiting;
         return;
     }
 
-    zs_assert (false);
+    zmq_assert (false);
 }
 
-void zs::connecter_t::out_event ()
+void zmq::connecter_t::out_event ()
 {
     if (state == connecting) {
 
@@ -116,18 +116,18 @@ void zs::connecter_t::out_event ()
 
         poller->rm_fd (handle);
         engine = new zmq_tcp_engine_t (fd);
-        zs_assert (engine);
+        zmq_assert (engine);
         engine->attach (poller, this);
         state = sending;
         return;
     }
 
-    zs_assert (false);
+    zmq_assert (false);
 }
 
-void zs::connecter_t::timer_event ()
+void zmq::connecter_t::timer_event ()
 {
-    zs_assert (state == waiting);
+    zmq_assert (state == waiting);
 
     //  Initiate async connect and start polling for its completion. If async
     //  connect fails instantly, try to reconnect after a while.
@@ -147,21 +147,21 @@ void zs::connecter_t::timer_event ()
     }
 }
 
-void zs::connecter_t::set_engine (struct i_engine *engine_)
+void zmq::connecter_t::set_engine (struct i_engine *engine_)
 {
     engine = engine_;
 }
 
-bool zs::connecter_t::read (zs_msg *msg_)
+bool zmq::connecter_t::read (zmq_msg *msg_)
 {
-    zs_assert (state == sending);
+    zmq_assert (state == sending);
 
     //  Deallocate old content of the message just in case.
-    zs_msg_close (msg_);
+    zmq_msg_close (msg_);
 
     //  Send the identity.
-    zs_msg_init_size (msg_, identity.size ());
-    memcpy (zs_msg_data (msg_), identity.c_str (), identity.size ());
+    zmq_msg_init_size (msg_, identity.size ());
+    memcpy (zmq_msg_data (msg_), identity.c_str (), identity.size ());
 
     //  Ask engine to unregister from the poller.
     i_engine *e = engine;
@@ -177,13 +177,13 @@ bool zs::connecter_t::read (zs_msg *msg_)
     return true;    
 }
 
-bool zs::connecter_t::write (struct zs_msg *msg_)
+bool zmq::connecter_t::write (struct zmq_msg *msg_)
 {
     //  No incoming messages are accepted till identity is sent.
     return false;
 }
 
-void zs::connecter_t::flush ()
+void zmq::connecter_t::flush ()
 {
     //  No incoming messages are accepted till identity is sent.
 }

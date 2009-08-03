@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zs.h"
+#include "../include/zmq.h"
 
 #include "data_distributor.hpp"
 #include "pipe_writer.hpp"
@@ -25,25 +25,25 @@
 #include "session.hpp"
 #include "msg.hpp"
 
-zs::data_distributor_t::data_distributor_t () :
+zmq::data_distributor_t::data_distributor_t () :
     session (NULL)
 {
 }
 
-void zs::data_distributor_t::set_session (session_t *session_)
+void zmq::data_distributor_t::set_session (session_t *session_)
 {
-    zs_assert (!session);
+    zmq_assert (!session);
     session = session_;
 }
 
-void zs::data_distributor_t::shutdown ()
+void zmq::data_distributor_t::shutdown ()
 {
     //  No need to deallocate pipes here. They'll be deallocated during the
     //  shutdown of the dispatcher.
     delete this;
 }
 
-void zs::data_distributor_t::terminate ()
+void zmq::data_distributor_t::terminate ()
 {
     //  Pipe unregisters itself during the call to terminate, so the pipes
     //  list shinks by one in each iteration.
@@ -53,11 +53,11 @@ void zs::data_distributor_t::terminate ()
    delete this;
 }
 
-zs::data_distributor_t::~data_distributor_t ()
+zmq::data_distributor_t::~data_distributor_t ()
 {
 }
 
-void zs::data_distributor_t::attach_pipe (pipe_writer_t *pipe_)
+void zmq::data_distributor_t::attach_pipe (pipe_writer_t *pipe_)
 {
     //  Associate demux with a new pipe.
     pipe_->set_demux (this);
@@ -65,7 +65,7 @@ void zs::data_distributor_t::attach_pipe (pipe_writer_t *pipe_)
     pipes.push_back (pipe_);
 }
 
-void zs::data_distributor_t::detach_pipe (pipe_writer_t *pipe_)
+void zmq::data_distributor_t::detach_pipe (pipe_writer_t *pipe_)
 {
     //  Release the reference to the pipe.
     int index = pipe_->get_index ();
@@ -75,19 +75,19 @@ void zs::data_distributor_t::detach_pipe (pipe_writer_t *pipe_)
     pipes.pop_back ();
 }
 
-bool zs::data_distributor_t::empty ()
+bool zmq::data_distributor_t::empty ()
 {
     return pipes.empty ();
 }
 
-bool zs::data_distributor_t::send (zs_msg *msg_)
+bool zmq::data_distributor_t::send (zmq_msg *msg_)
 {
     int pipes_count = pipes.size ();
 
     //  If there are no pipes available, simply drop the message.
     if (pipes_count == 0) {
-        zs_msg_close (msg_);
-        zs_msg_init (msg_);
+        zmq_msg_close (msg_);
+        zmq_msg_init (msg_);
         return true;
     }
 
@@ -98,10 +98,10 @@ bool zs::data_distributor_t::send (zs_msg *msg_)
 //            return false;
 
     //  For VSMs the copying is straighforward.
-    if (msg_->content == (zs_msg_content*) ZS_VSM) {
+    if (msg_->content == (zmq_msg_content*) ZMQ_VSM) {
         for (pipes_t::iterator it = pipes.begin (); it != pipes.end (); it ++)
             write_to_pipe (*it, msg_);
-        zs_msg_init (msg_);
+        zmq_msg_init (msg_);
         return true;
     }
 
@@ -110,7 +110,7 @@ bool zs::data_distributor_t::send (zs_msg *msg_)
     //  operations) needed.
     if (pipes_count == 1) {
         write_to_pipe (*pipes.begin (), msg_);
-        zs_msg_init (msg_);
+        zmq_msg_init (msg_);
         return true;
     }
 
@@ -130,12 +130,12 @@ bool zs::data_distributor_t::send (zs_msg *msg_)
         write_to_pipe (*it, msg_);
 
     //  Detach the original message from the data buffer.
-    zs_msg_init (msg_);
+    zmq_msg_init (msg_);
 
     return true;
 }
 
-void zs::data_distributor_t::flush ()
+void zmq::data_distributor_t::flush ()
 {
     //  Flush all pipes. If there's large number of pipes, it can be pretty
     //  inefficient (especially if there's new message only in a single pipe).
@@ -144,12 +144,12 @@ void zs::data_distributor_t::flush ()
         (*it)->flush ();
 }
 
-void zs::data_distributor_t::write_to_pipe (class pipe_writer_t *pipe_,
-    struct zs_msg *msg_)
+void zmq::data_distributor_t::write_to_pipe (class pipe_writer_t *pipe_,
+    struct zmq_msg *msg_)
 {
     if (!pipe_->write (msg_)) {
         //  TODO: Push gap notification to the pipe.
-        zs_assert (false);
+        zmq_assert (false);
     }
 }
 

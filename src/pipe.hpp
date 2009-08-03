@@ -17,20 +17,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_PIPE_HPP_INCLUDED__
-#define __ZS_PIPE_HPP_INCLUDED__
+#ifndef __ZMQ_PIPE_HPP_INCLUDED__
+#define __ZMQ_PIPE_HPP_INCLUDED__
 
-#include "../include/zs.h"
+#include "../include/zmq.h"
 
 #include "ypipe.hpp"
 #include "config.hpp"
 
-namespace zs
+namespace zmq
 {
 
     //  Message pipe. A simple wrapper on top of ypipe.
 
-    class pipe_t : public ypipe_t <zs_msg, false, message_pipe_granularity>
+    class pipe_t : public ypipe_t <zmq_msg, false, message_pipe_granularity>
     {
         //  Dispatcher is a friend so that it can create & destroy the pipes.
         //  By making constructor & destructor private we are sure that nobody

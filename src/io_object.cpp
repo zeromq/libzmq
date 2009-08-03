@@ -21,17 +21,17 @@
 #include "io_thread.hpp"
 #include "i_poller.hpp"
 
-zs::io_object_t::io_object_t (io_thread_t *thread_) :
+zmq::io_object_t::io_object_t (io_thread_t *thread_) :
     object_t (thread_),
     thread (thread_)
 {
 }
 
-zs::io_object_t::~io_object_t ()
+zmq::io_object_t::~io_object_t ()
 {
 }
 
-zs::i_poller *zs::io_object_t::get_poller ()
+zmq::i_poller *zmq::io_object_t::get_poller ()
 {
     return thread->get_poller ();
 }

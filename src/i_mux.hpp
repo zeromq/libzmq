@@ -17,10 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_I_MUX_HPP_INCLUDED__
-#define __ZS_I_MUX_HPP_INCLUDED__
+#ifndef __ZMQ_I_MUX_HPP_INCLUDED__
+#define __ZMQ_I_MUX_HPP_INCLUDED__
 
-namespace zs
+namespace zmq
 {
 
     struct i_mux
@@ -28,7 +28,8 @@ namespace zs
         //  Attaches mux to a particular session.
         virtual void set_session (class session_t *session_) = 0;
 
-        //  To be called when the whole infrastrucure is being closed (zs_term).
+        //  To be called when the whole infrastrucure
+        //  is being closed (zmq_term).
         virtual void shutdown () = 0;
 
         //  To be called when session is being closed.
@@ -51,7 +52,7 @@ namespace zs
 
         //  Receives a message. Returns false when there is no message
         //  to receive.
-        virtual bool recv (struct zs_msg *msg_) = 0;
+        virtual bool recv (struct zmq_msg *msg_) = 0;
     };
 
 }

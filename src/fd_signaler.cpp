@@ -22,20 +22,20 @@
 #include "err.hpp"
 #include "fd.hpp"
 
-#if defined ZS_HAVE_OPENVMS
+#if defined ZMQ_HAVE_OPENVMS
 #include <netinet/tcp.h>
-#elif defined ZS_HAVE_WINDOWS 
+#elif defined ZMQ_HAVE_WINDOWS 
 #include "windows.hpp"
 #else
 #include <unistd.h>
 #include <fcntl.h>
 #endif
 
-#if defined ZS_HAVE_EVENTFD
+#if defined ZMQ_HAVE_EVENTFD
 
 #include <sys/eventfd.h>
 
-zs::fd_signaler_t::fd_signaler_t ()
+zmq::fd_signaler_t::fd_signaler_t ()
 {
     //  Create eventfd object.
     fd = eventfd (0, 0);
@@ -49,22 +49,22 @@ zs::fd_signaler_t::fd_signaler_t ()
     errno_assert (rc != -1);
 }
 
-zs::fd_signaler_t::~fd_signaler_t ()
+zmq::fd_signaler_t::~fd_signaler_t ()
 {
     int rc = close (fd);
     errno_assert (rc != -1);
 }
 
-void zs::fd_signaler_t::signal (int signal_)
+void zmq::fd_signaler_t::signal (int signal_)
 {
-    zs_assert (signal_ >= 0 && signal_ < 64);
+    zmq_assert (signal_ >= 0 && signal_ < 64);
     signals_t inc = 1;
     inc <<= signal_;
     ssize_t sz = write (fd, &inc, sizeof (signals_t));
     errno_assert (sz == sizeof (signals_t));
 }
 
-zs::fd_signaler_t::signals_t zs::fd_signaler_t::check ()
+zmq::fd_signaler_t::signals_t zmq::fd_signaler_t::check ()
 {
     signals_t val;
     ssize_t sz = read (fd, &val, sizeof (signals_t));
@@ -75,14 +75,14 @@ zs::fd_signaler_t::signals_t zs::fd_signaler_t::check ()
     return val;
 }
 
-zs::fd_t zs::fd_signaler_t::get_fd ()
+zmq::fd_t zmq::fd_signaler_t::get_fd ()
 {
     return fd;
 }
 
-#elif defined ZS_HAVE_WINDOWS
+#elif defined ZMQ_HAVE_WINDOWS
 
-zs::fd_signaler_t::fd_signaler_t ()
+zmq::fd_signaler_t::fd_signaler_t ()
 {
     struct sockaddr_in addr;
     SOCKET listener;
@@ -124,7 +124,7 @@ zs::fd_signaler_t::fd_signaler_t ()
     wsa_assert (rc != SOCKET_ERROR);
 }
 
-zs::fd_signaler_t::~fd_signaler_t ()
+zmq::fd_signaler_t::~fd_signaler_t ()
 {
     int rc = closesocket (w);
     wsa_assert (rc != SOCKET_ERROR);
@@ -133,15 +133,15 @@ zs::fd_signaler_t::~fd_signaler_t ()
     wsa_assert (rc != SOCKET_ERROR);
 }
 
-void zs::fd_signaler_t::signal (int signal_)
+void zmq::fd_signaler_t::signal (int signal_)
 {
-    zs_assert (signal_ >= 0 && signal_ < 64);
+    zmq_assert (signal_ >= 0 && signal_ < 64);
     char c = (char) signal_;
     int rc = send (w, &c, 1, 0);
     win_assert (rc != SOCKET_ERROR);
 }
 
-zs::fd_signaler_t::signals_t zs::fd_signaler_t::check ()
+zmq::fd_signaler_t::signals_t zmq::fd_signaler_t::check ()
 {
     char buffer [32];      
     int nbytes = recv (r, buffer, 32, 0);
@@ -149,13 +149,13 @@ zs::fd_signaler_t::signals_t zs::fd_signaler_t::check ()
 
     signals_t signals = 0;
     for (int pos = 0; pos != nbytes; pos++) {
-        zs_assert (buffer [pos] < 64);
+        zmq_assert (buffer [pos] < 64);
         signals |= (1 << (buffer [pos]));
     }
     return signals;
 }
 
-zs::fd_t zs::fd_signaler_t::get_fd ()
+zmq::fd_t zmq::fd_signaler_t::get_fd ()
 {
     return r;
 }
@@ -165,7 +165,7 @@ zs::fd_t zs::fd_signaler_t::get_fd ()
 #include <sys/types.h>
 #include <sys/socket.h>
 
-zs::fd_signaler_t::fd_signaler_t ()
+zmq::fd_signaler_t::fd_signaler_t ()
 {
     int sv [2];
     int rc = socketpair (AF_UNIX, SOCK_STREAM, 0, sv);
@@ -181,43 +181,43 @@ zs::fd_signaler_t::fd_signaler_t ()
     errno_assert (rc != -1);
 }
 
-zs::fd_signaler_t::~fd_signaler_t ()
+zmq::fd_signaler_t::~fd_signaler_t ()
 {
     close (w);
     close (r);
 }
 
-void zs::fd_signaler_t::signal (int signal_)
+void zmq::fd_signaler_t::signal (int signal_)
 {
-    zs_assert (signal_ >= 0 && signal_ < 64);
+    zmq_assert (signal_ >= 0 && signal_ < 64);
     unsigned char c = (unsigned char) signal_;
     ssize_t nbytes = send (w, &c, 1, 0);
     errno_assert (nbytes == 1);
 }
 
-zs::fd_signaler_t::signals_t zs::fd_signaler_t::check ()
+zmq::fd_signaler_t::signals_t zmq::fd_signaler_t::check ()
 {
     unsigned char buffer [32];
     ssize_t nbytes = recv (r, buffer, 32, 0);
     errno_assert (nbytes != -1);
     signals_t signals = 0;
     for (int pos = 0; pos != nbytes; pos ++) {
-        zs_assert (buffer [pos] < 64);
+        zmq_assert (buffer [pos] < 64);
         signals |= (1 << (buffer [pos]));
     }
     return signals;
 }
 
-zs::fd_t zs::fd_signaler_t::get_fd ()
+zmq::fd_t zmq::fd_signaler_t::get_fd ()
 {
     return r;
 }
 
 #endif
 
-#if defined ZS_HAVE_OPENVMS
+#if defined ZMQ_HAVE_OPENVMS
 
-int zs::fd_signaler_t::socketpair (int domain_, int type_, int protocol_,
+int zmq::fd_signaler_t::socketpair (int domain_, int type_, int protocol_,
     int sv_ [2])
 {
     int listener;
@@ -226,7 +226,7 @@ int zs::fd_signaler_t::socketpair (int domain_, int type_, int protocol_,
     int rc;
     int on = 1;
 
-    zs_assert (type_ == SOCK_STREAM);
+    zmq_assert (type_ == SOCK_STREAM);
 
     //  Fill in the localhost address (127.0.0.1).
     memset (&lcladdr, 0, sizeof (lcladdr));

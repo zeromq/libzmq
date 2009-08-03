@@ -17,12 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_IO_OBJECT_HPP_INCLUDED__
-#define __ZS_IO_OBJECT_HPP_INCLUDED__
+#ifndef __ZMQ_IO_OBJECT_HPP_INCLUDED__
+#define __ZMQ_IO_OBJECT_HPP_INCLUDED__
 
 #include "object.hpp"
 
-namespace zs
+namespace zmq
 {
 
     //  All objects running within the context of an I/O thread should be

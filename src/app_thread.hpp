@@ -17,8 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_APP_THREAD_HPP_INCLUDED__
-#define __ZS_APP_THREAD_HPP_INCLUDED__
+#ifndef __ZMQ_APP_THREAD_HPP_INCLUDED__
+#define __ZMQ_APP_THREAD_HPP_INCLUDED__
 
 #include <vector>
 
@@ -27,7 +27,7 @@
 #include "object.hpp"
 #include "ypollset.hpp"
 
-namespace zs
+namespace zmq
 {
 
     class app_thread_t : public object_t, public i_thread
@@ -36,7 +36,7 @@ namespace zs
 
         app_thread_t (class dispatcher_t *dispatcher_, int thread_slot_);
 
-        //  To be called when the whole infrastrucure is being closed (zs_term).
+        //  To be called when the whole infrastrucure is being closed.
         void shutdown ();
 
         //  Returns signaler associated with this application thread.

@@ -17,8 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_LISTENER_HPP_INCLUDED__
-#define __ZS_LISTENER_HPP_INCLUDED__
+#ifndef __ZMQ_LISTENER_HPP_INCLUDED__
+#define __ZMQ_LISTENER_HPP_INCLUDED__
 
 #include <map>
 #include <vector>
@@ -30,7 +30,7 @@
 #include "i_poll_events.hpp"
 #include "stdint.hpp"
 
-namespace zs
+namespace zmq
 {
 
     class listener_t : public io_object_t, public i_poll_events

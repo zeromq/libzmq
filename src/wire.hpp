@@ -17,12 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_WIRE_HPP_INCLUDED__
-#define __ZS_WIRE_HPP_INCLUDED__
+#ifndef __ZMQ_WIRE_HPP_INCLUDED__
+#define __ZMQ_WIRE_HPP_INCLUDED__
 
 #include "stdint.hpp"
 
-namespace zs
+namespace zmq
 {
 
     //  Helper functions to convert different integer types to/from network

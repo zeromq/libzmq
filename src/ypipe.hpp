@@ -17,14 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_YPIPE_HPP_INCLUDED__
-#define __ZS_YPIPE_HPP_INCLUDED__
+#ifndef __ZMQ_YPIPE_HPP_INCLUDED__
+#define __ZMQ_YPIPE_HPP_INCLUDED__
 
 #include "atomic_ptr.hpp"
 #include "yqueue.hpp"
 #include "platform.hpp"
 
-namespace zs
+namespace zmq
 {
 
     //  Lock-free queue implementation.
@@ -58,7 +58,7 @@ namespace zs
         }
 
         //  Following function (write) deliberately copies uninitialised data
-        //  when used with zs_msg. Initialising the VSM body for
+        //  when used with zmq_msg. Initialising the VSM body for
         //  non-VSM messages won't be good for performance.
 
 #ifdef ZMQ_HAVE_OPENVMS

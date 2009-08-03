@@ -19,10 +19,10 @@
 
 #include "platform.hpp"
 
-#if defined ZS_HAVE_LINUX || defined ZS_HAVE_FREEBSD ||\
-    defined ZS_HAVE_OPENBSD || defined ZS_HAVE_SOLARIS ||\
-    defined ZS_HAVE_OSX || defined ZS_HAVE_QNXNTO ||\
-    defined ZS_HAVE_HPUX || defined ZS_HAVE_AIX
+#if defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD ||\
+    defined ZMQ_HAVE_OPENBSD || defined ZMQ_HAVE_SOLARIS ||\
+    defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_QNXNTO ||\
+    defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_AIX
 
 #include <sys/types.h>
 #include <sys/time.h>
@@ -35,7 +35,7 @@
 #include "config.hpp"
 #include "i_poll_events.hpp"
 
-zs::poll_t::poll_t () :
+zmq::poll_t::poll_t () :
     retired (false),
     stopping (false)
 {
@@ -50,7 +50,7 @@ zs::poll_t::poll_t () :
         fd_table [i].index = retired_fd;
 }
 
-zs::handle_t zs::poll_t::add_fd (fd_t fd_, i_poll_events *events_)
+zmq::handle_t zmq::poll_t::add_fd (fd_t fd_, i_poll_events *events_)
 {
     pollfd pfd = {fd_, 0, 0};
     pollset.push_back (pfd);
@@ -67,7 +67,7 @@ zs::handle_t zs::poll_t::add_fd (fd_t fd_, i_poll_events *events_)
     return handle;
 }
 
-void zs::poll_t::rm_fd (handle_t handle_)
+void zmq::poll_t::rm_fd (handle_t handle_)
 {
     fd_t index = fd_table [handle_.fd].index;
     assert (index != retired_fd);
@@ -81,63 +81,63 @@ void zs::poll_t::rm_fd (handle_t handle_)
     load.sub (1);
 }
 
-void zs::poll_t::set_pollin (handle_t handle_)
+void zmq::poll_t::set_pollin (handle_t handle_)
 {
     int index = fd_table [handle_.fd].index;
     pollset [index].events |= POLLIN;
 }
 
-void zs::poll_t::reset_pollin (handle_t handle_)
+void zmq::poll_t::reset_pollin (handle_t handle_)
 {
     int index = fd_table [handle_.fd].index;
     pollset [index].events &= ~((short) POLLIN);
 }
 
-void zs::poll_t::set_pollout (handle_t handle_)
+void zmq::poll_t::set_pollout (handle_t handle_)
 {
     int index = fd_table [handle_.fd].index;
     pollset [index].events |= POLLOUT;
 }
 
-void zs::poll_t::reset_pollout (handle_t handle_)
+void zmq::poll_t::reset_pollout (handle_t handle_)
 {
     int index = fd_table [handle_.fd].index;
     pollset [index].events &= ~((short) POLLOUT);
 }
 
-void zs::poll_t::add_timer (i_poll_events *events_)
+void zmq::poll_t::add_timer (i_poll_events *events_)
 {
      timers.push_back (events_);
 }
 
-void zs::poll_t::cancel_timer (i_poll_events *events_)
+void zmq::poll_t::cancel_timer (i_poll_events *events_)
 {
     timers_t::iterator it = std::find (timers.begin (), timers.end (), events_);
     if (it != timers.end ())
         timers.erase (it);
 }
 
-int zs::poll_t::get_load ()
+int zmq::poll_t::get_load ()
 {
     return load.get ();
 }
 
-void zs::poll_t::start ()
+void zmq::poll_t::start ()
 {
     worker.start (worker_routine, this);
 }
 
-void zs::poll_t::stop ()
+void zmq::poll_t::stop ()
 {
     stopping = true;
 }
 
-void zs::poll_t::join ()
+void zmq::poll_t::join ()
 {
     worker.stop ();
 }
 
-void zs::poll_t::loop ()
+void zmq::poll_t::loop ()
 {
     while (!stopping) {
 
@@ -166,7 +166,7 @@ void zs::poll_t::loop ()
         for (pollset_t::iterator it = pollset.begin ();
                 it != pollset.end (); it ++) {
 
-            zs_assert (!(it->revents & POLLNVAL));
+            zmq_assert (!(it->revents & POLLNVAL));
             if (it->fd == retired_fd)
                continue;
             if (it->revents & (POLLERR | POLLHUP))
@@ -197,7 +197,7 @@ void zs::poll_t::loop ()
     }
 }
 
-void zs::poll_t::worker_routine (void *arg_)
+void zmq::poll_t::worker_routine (void *arg_)
 {
     ((poll_t*) arg_)->loop ();
 }

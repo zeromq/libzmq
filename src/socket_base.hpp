@@ -17,8 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_SOCKET_BASE_HPP_INCLUDED__
-#define __ZS_SOCKET_BASE_HPP_INCLUDED__
+#ifndef __ZMQ_SOCKET_BASE_HPP_INCLUDED__
+#define __ZMQ_SOCKET_BASE_HPP_INCLUDED__
 
 #include <vector>
 
@@ -26,7 +26,7 @@
 #include "i_api.hpp"
 #include "object.hpp"
 
-namespace zs
+namespace zmq
 {
 
     class socket_base_t : public object_t, public i_engine, public i_api
@@ -46,12 +46,12 @@ namespace zs
         void shutdown ();
 
         // i_api interface implementation.
-        int bind (const char *addr_, struct zs_opts *opts_);
-        int connect (const char *addr_, struct zs_opts *opts_);
+        int bind (const char *addr_, struct zmq_opts *opts_);
+        int connect (const char *addr_, struct zmq_opts *opts_);
         int subscribe (const char *criteria_);
-        int send (struct zs_msg *msg_, int flags_);
+        int send (struct zmq_msg *msg_, int flags_);
         int flush ();
-        int recv (struct zs_msg *msg_, int flags_);
+        int recv (struct zmq_msg *msg_, int flags_);
         int close ();
 
     protected:

@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zs.h"
+#include "../include/zmq.h"
 
 #include "load_balancer.hpp"
 #include "pipe_writer.hpp"
@@ -25,26 +25,26 @@
 #include "session.hpp"
 #include "msg.hpp"
 
-zs::load_balancer_t::load_balancer_t () :
+zmq::load_balancer_t::load_balancer_t () :
     session (NULL),
     current (0)
 {
 }
 
-void zs::load_balancer_t::set_session (session_t *session_)
+void zmq::load_balancer_t::set_session (session_t *session_)
 {
-    zs_assert (!session);
+    zmq_assert (!session);
     session = session_;
 }
 
-void zs::load_balancer_t::shutdown ()
+void zmq::load_balancer_t::shutdown ()
 {
     //  No need to deallocate pipes here. They'll be deallocated during the
     //  shutdown of the dispatcher.
     delete this;
 }
 
-void zs::load_balancer_t::terminate ()
+void zmq::load_balancer_t::terminate ()
 {
     //  Pipe unregisters itself during the call to terminate, so the pipes
     //  list shinks by one in each iteration.
@@ -54,11 +54,11 @@ void zs::load_balancer_t::terminate ()
    delete this;
 }
 
-zs::load_balancer_t::~load_balancer_t ()
+zmq::load_balancer_t::~load_balancer_t ()
 {
 }
 
-void zs::load_balancer_t::attach_pipe (pipe_writer_t *pipe_)
+void zmq::load_balancer_t::attach_pipe (pipe_writer_t *pipe_)
 {
     //  Associate demux with a new pipe.
     pipe_->set_demux (this);
@@ -66,7 +66,7 @@ void zs::load_balancer_t::attach_pipe (pipe_writer_t *pipe_)
     pipes.push_back (pipe_);
 }
 
-void zs::load_balancer_t::detach_pipe (pipe_writer_t *pipe_)
+void zmq::load_balancer_t::detach_pipe (pipe_writer_t *pipe_)
 {
     //  Release the reference to the pipe.
     int index = pipe_->get_index ();
@@ -76,12 +76,12 @@ void zs::load_balancer_t::detach_pipe (pipe_writer_t *pipe_)
     pipes.pop_back ();
 }
 
-bool zs::load_balancer_t::empty ()
+bool zmq::load_balancer_t::empty ()
 {
     return pipes.empty ();
 }
 
-bool zs::load_balancer_t::send (zs_msg *msg_)
+bool zmq::load_balancer_t::send (zmq_msg *msg_)
 {
     //  If there are no pipes, message cannot be sent.
     if (pipes.size () == 0)
@@ -105,12 +105,12 @@ bool zs::load_balancer_t::send (zs_msg *msg_)
     current = (current + 1) % pipes.size ();
 
     //  Detach the original message from the data buffer.
-    zs_msg_init (msg_);
+    zmq_msg_init (msg_);
 
     return true;
 }
 
-void zs::load_balancer_t::flush ()
+void zmq::load_balancer_t::flush ()
 {
     //  Flush all pipes. If there's large number of pipes, it can be pretty
     //  inefficient (especially if there's new message only in a single pipe).
@@ -119,12 +119,12 @@ void zs::load_balancer_t::flush ()
         (*it)->flush ();
 }
 
-void zs::load_balancer_t::write_to_pipe (class pipe_writer_t *pipe_,
-    struct zs_msg *msg_)
+void zmq::load_balancer_t::write_to_pipe (class pipe_writer_t *pipe_,
+    struct zmq_msg *msg_)
 {
     if (!pipe_->write (msg_)) {
         //  TODO: Push gap notification to the pipe.
-        zs_assert (false);
+        zmq_assert (false);
     }
 }
 

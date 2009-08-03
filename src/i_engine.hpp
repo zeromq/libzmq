@@ -17,10 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_I_ENGINE_HPP_INCLUDED__
-#define __ZS_I_ENGINE_HPP_INCLUDED__
+#ifndef __ZMQ_I_ENGINE_HPP_INCLUDED__
+#define __ZMQ_I_ENGINE_HPP_INCLUDED__
 
-namespace zs
+namespace zmq
 {
 
     //  Generic interface to access engines from MD objects.
@@ -44,7 +44,7 @@ namespace zs
         //  Called by normal object termination process.
         virtual void terminate () = 0;
 
-        //  To be called by MD when terminal shutdown (zs_term) is in progress.
+        //  To be called by MD when terminal shutdown (zmq_term) is in progress.
         virtual void shutdown () = 0;
     };
 

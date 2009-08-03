@@ -21,34 +21,34 @@
 #include "i_session.hpp"
 #include "wire.hpp"
 
-zs::zmq_encoder_t::zmq_encoder_t () :
+zmq::zmq_encoder_t::zmq_encoder_t () :
     source (NULL)
 {
-    zs_msg_init (&in_progress);
+    zmq_msg_init (&in_progress);
 
     //  Write 0 bytes to the batch and go to message_ready state.
     next_step (NULL, 0, &zmq_encoder_t::message_ready, true);
 }
 
-zs::zmq_encoder_t::~zmq_encoder_t ()
+zmq::zmq_encoder_t::~zmq_encoder_t ()
 {
-    zs_msg_close (&in_progress);
+    zmq_msg_close (&in_progress);
 }
 
-void zs::zmq_encoder_t::set_session (i_session *source_)
+void zmq::zmq_encoder_t::set_session (i_session *source_)
 {
     source = source_;
 }
 
-bool zs::zmq_encoder_t::size_ready ()
+bool zmq::zmq_encoder_t::size_ready ()
 {
     //  Write message body into the buffer.
-    next_step (zs_msg_data (&in_progress), zs_msg_size (&in_progress),
+    next_step (zmq_msg_data (&in_progress), zmq_msg_size (&in_progress),
         &zmq_encoder_t::message_ready, false);
     return true;
 }
 
-bool zs::zmq_encoder_t::message_ready ()
+bool zmq::zmq_encoder_t::message_ready ()
 {
     //  Read new message from the dispatcher. If there is none, return false.
     //  Note that new state is set only if write is successful. That way
@@ -57,7 +57,7 @@ bool zs::zmq_encoder_t::message_ready ()
     if (!source->read (&in_progress)) {
         return false;
     }
-    size_t size = zs_msg_size (&in_progress);
+    size_t size = zmq_msg_size (&in_progress);
 
     //  For messages less than 255 bytes long, write one byte of message size.
     //  For longer messages write 0xff escape character followed by 8-byte

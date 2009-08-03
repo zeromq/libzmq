@@ -17,13 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_PIPE_WRITER_HPP_INCLUDED__
-#define __ZS_PIPE_WRITER_HPP_INCLUDED__
+#ifndef __ZMQ_PIPE_WRITER_HPP_INCLUDED__
+#define __ZMQ_PIPE_WRITER_HPP_INCLUDED__
 
 #include "object.hpp"
 #include "stdint.hpp"
 
-namespace zs
+namespace zmq
 {
 
     class pipe_writer_t : public object_t
@@ -42,7 +42,7 @@ namespace zs
 
         //  Writes a message to the underlying pipe. Returns false if the
         //  message cannot be written to the pipe at the moment.
-        bool write (struct zs_msg *msg_);
+        bool write (struct zmq_msg *msg_);
 
         //  Flush the messages downsteam.
         void flush ();

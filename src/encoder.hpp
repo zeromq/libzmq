@@ -17,14 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_ENCODER_HPP_INCLUDED__
-#define __ZS_ENCODER_HPP_INCLUDED__
+#ifndef __ZMQ_ENCODER_HPP_INCLUDED__
+#define __ZMQ_ENCODER_HPP_INCLUDED__
 
 #include <stddef.h>
 #include <string.h>
 #include <algorithm>
 
-namespace zs
+namespace zmq
 {
 
     //  Helper base class for encoders. It implements the state machine that

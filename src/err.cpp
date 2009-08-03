@@ -20,9 +20,9 @@
 #include "err.hpp"
 #include "platform.hpp"
 
-#ifdef ZS_HAVE_WINDOWS
+#ifdef ZMQ_HAVE_WINDOWS
 
-const char *zs::wsa_error()
+const char *zmq::wsa_error()
 {
     int errcode = WSAGetLastError ();
     //  TODO: This is not a generic way to handle this...
@@ -134,13 +134,13 @@ const char *zs::wsa_error()
             "Valid name no data record of requested" :
         "error not defined"; 
 }
-void zs::win_error (char *buffer_, size_t buffer_size_)
+void zmq::win_error (char *buffer_, size_t buffer_size_)
 {
     DWORD errcode = GetLastError ();
     DWORD rc = FormatMessageA (FORMAT_MESSAGE_FROM_SYSTEM |
         FORMAT_MESSAGE_IGNORE_INSERTS, NULL, errcode, MAKELANGID(LANG_NEUTRAL,
         SUBLANG_DEFAULT), buffer_, buffer_size_, NULL );
-    zs_assert (rc);
+    zmq_assert (rc);
 }
 
 #endif

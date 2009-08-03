@@ -17,12 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_SUB_HPP_INCLUDED__
-#define __ZS_SUB_HPP_INCLUDED__
+#ifndef __ZMQ_SUB_HPP_INCLUDED__
+#define __ZMQ_SUB_HPP_INCLUDED__
 
 #include "socket_base.hpp"
 
-namespace zs
+namespace zmq
 {
 
     class sub_t : public socket_base_t
@@ -32,7 +32,7 @@ namespace zs
         sub_t (class app_thread_t *thread_, class session_t *session_);
 
         //  i_api overloads.
-        int send (struct zs_msg *msg_, int flags_);
+        int send (struct zmq_msg *msg_, int flags_);
         int flush ();
 
     private:

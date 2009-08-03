@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zs.h"
+#include "../include/zmq.h"
 
 #include "io_thread.hpp"
 #include "command.hpp"
@@ -34,49 +34,49 @@
 #include "simple_semaphore.hpp"
 #include "session.hpp"
 
-zs::io_thread_t::io_thread_t (dispatcher_t *dispatcher_, int thread_slot_) :
+zmq::io_thread_t::io_thread_t (dispatcher_t *dispatcher_, int thread_slot_) :
     object_t (dispatcher_, thread_slot_)
 {
-#if defined ZS_FORCE_SELECT
+#if defined ZMQ_FORCE_SELECT
     poller = new select_t;
-#elif defined ZS_FORCE_POLL
+#elif defined ZMQ_FORCE_POLL
     poller = new poll_t;
-#elif defined ZS_FORCE_EPOLL
+#elif defined ZMQ_FORCE_EPOLL
     poller = new epoll_t;
-#elif defined ZS_FORCE_DEVPOLL
+#elif defined ZMQ_FORCE_DEVPOLL
     poller = new devpoll_t;
-#elif defined ZS_FORCE_KQUEUE
+#elif defined ZMQ_FORCE_KQUEUE
     poller = new kqueue_t;
-#elif defined ZS_HAVE_LINUX
+#elif defined ZMQ_HAVE_LINUX
     poller = new epoll_t;
-#elif defined ZS_HAVE_WINDOWS
+#elif defined ZMQ_HAVE_WINDOWS
     poller = new select_t;
-#elif defined ZS_HAVE_FREEBSD
+#elif defined ZMQ_HAVE_FREEBSD
     poller = new kqueue_t;
-#elif defined ZS_HAVE_OPENBSD
+#elif defined ZMQ_HAVE_OPENBSD
     poller = new kqueue_t;
-#elif defined ZS_HAVE_SOLARIS
+#elif defined ZMQ_HAVE_SOLARIS
     poller = new devpoll_t;
-#elif defined ZS_HAVE_OSX
+#elif defined ZMQ_HAVE_OSX
     poller = new kqueue_t;
-#elif defined ZS_HAVE_QNXNTO
+#elif defined ZMQ_HAVE_QNXNTO
     poller = new poll_t;
-#elif defined ZS_HAVE_AIX
+#elif defined ZMQ_HAVE_AIX
     poller = new poll_t;
-#elif defined ZS_HAVE_HPUX
+#elif defined ZMQ_HAVE_HPUX
     poller = new devpoll_t;
-#elif defined ZS_HAVE_OPENVMS
+#elif defined ZMQ_HAVE_OPENVMS
     poller = new select_t;
 #else
 #error Unsupported platform
 #endif
-    zs_assert (poller);
+    zmq_assert (poller);
 
     signaler_handle = poller->add_fd (signaler.get_fd (), this);
     poller->set_pollin (signaler_handle);
 }
 
-void zs::io_thread_t::shutdown ()
+void zmq::io_thread_t::shutdown ()
 {
     //  Deallocate all the sessions associated with the thread.
     while (!sessions.empty ())
@@ -85,42 +85,42 @@ void zs::io_thread_t::shutdown ()
     delete this;
 }
 
-zs::io_thread_t::~io_thread_t ()
+zmq::io_thread_t::~io_thread_t ()
 {
     delete poller;
 }
 
-void zs::io_thread_t::start ()
+void zmq::io_thread_t::start ()
 {
     //  Start the underlying I/O thread.
     poller->start ();
 }
 
-void zs::io_thread_t::stop ()
+void zmq::io_thread_t::stop ()
 {
     send_stop ();
 }
 
-void zs::io_thread_t::join ()
+void zmq::io_thread_t::join ()
 {
     poller->join ();
 }
 
-zs::i_signaler *zs::io_thread_t::get_signaler ()
+zmq::i_signaler *zmq::io_thread_t::get_signaler ()
 {
     return &signaler;
 }
 
-int zs::io_thread_t::get_load ()
+int zmq::io_thread_t::get_load ()
 {
     return poller->get_load ();
 }
 
-void zs::io_thread_t::in_event ()
+void zmq::io_thread_t::in_event ()
 {
     //  Find out which threads are sending us commands.
     fd_signaler_t::signals_t signals = signaler.check ();
-    zs_assert (signals);
+    zmq_assert (signals);
 
     //  Iterate through all the threads in the process and find out
     //  which of them sent us commands.
@@ -137,25 +137,25 @@ void zs::io_thread_t::in_event ()
     }
 }
 
-void zs::io_thread_t::out_event ()
+void zmq::io_thread_t::out_event ()
 {
     //  We are never polling for POLLOUT here. This function is never called.
-    zs_assert (false);
+    zmq_assert (false);
 }
 
-void zs::io_thread_t::timer_event ()
+void zmq::io_thread_t::timer_event ()
 {
     //  No timers here. This function is never called.
-    zs_assert (false);
+    zmq_assert (false);
 }
 
-void zs::io_thread_t::attach_session (session_t *session_)
+void zmq::io_thread_t::attach_session (session_t *session_)
 {
     session_->set_index (sessions.size ());
     sessions.push_back (session_); 
 }
 
-void zs::io_thread_t::detach_session (session_t *session_)
+void zmq::io_thread_t::detach_session (session_t *session_)
 {
     //  O(1) removal of the session from the list.
     sessions_t::size_type i = session_->get_index ();
@@ -164,13 +164,13 @@ void zs::io_thread_t::detach_session (session_t *session_)
     sessions.pop_back ();
 }
 
-zs::i_poller *zs::io_thread_t::get_poller ()
+zmq::i_poller *zmq::io_thread_t::get_poller ()
 {
-    zs_assert (poller);
+    zmq_assert (poller);
     return poller;
 }
 
-void zs::io_thread_t::process_stop ()
+void zmq::io_thread_t::process_stop ()
 {
     poller->rm_fd (signaler_handle);
     poller->stop ();

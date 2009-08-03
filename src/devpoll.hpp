@@ -17,12 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_DEVPOLL_HPP_INCLUDED__
-#define __ZS_DEVPOLL_HPP_INCLUDED__
+#ifndef __ZMQ_DEVPOLL_HPP_INCLUDED__
+#define __ZMQ_DEVPOLL_HPP_INCLUDED__
 
 #include "platform.hpp"
 
-#if defined ZS_HAVE_SOLARIS || ZS_HAVE_HPUX
+#if defined ZMQ_HAVE_SOLARIS || ZMQ_HAVE_HPUX
 
 #include <vector>
 
@@ -31,7 +31,7 @@
 #include "thread.hpp"
 #include "atomic_counter.hpp"
 
-namespace zs
+namespace zmq
 {
 
     //  Implements socket polling mechanism using the Solaris-specific

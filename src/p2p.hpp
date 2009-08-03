@@ -17,12 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_P2P_HPP_INCLUDED__
-#define __ZS_P2P_HPP_INCLUDED__
+#ifndef __ZMQ_P2P_HPP_INCLUDED__
+#define __ZMQ_P2P_HPP_INCLUDED__
 
 #include "socket_base.hpp"
 
-namespace zs
+namespace zmq
 {
 
     class p2p_t : public socket_base_t

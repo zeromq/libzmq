@@ -27,7 +27,7 @@
 #include "dummy_aggregator.hpp"
 #include "dummy_distributor.hpp"
 
-zs::listener_t::listener_t (io_thread_t *thread_, const char *addr_,
+zmq::listener_t::listener_t (io_thread_t *thread_, const char *addr_,
       session_t *peer_, bool has_in_, bool has_out_, uint64_t taskset_) :
     io_object_t (thread_),
     poller (NULL),
@@ -39,30 +39,30 @@ zs::listener_t::listener_t (io_thread_t *thread_, const char *addr_,
 {
 }
 
-void zs::listener_t::terminate ()
+void zmq::listener_t::terminate ()
 {
     for (session_stubs_t::size_type i = 0; i != session_stubs.size (); i++)
         session_stubs [i]->terminate ();
     delete this;
 }
 
-void zs::listener_t::shutdown ()
+void zmq::listener_t::shutdown ()
 {
     for (session_stubs_t::size_type i = 0; i != session_stubs.size (); i++)
         session_stubs [i]->shutdown ();
     delete this;
 }
 
-zs::listener_t::~listener_t ()
+zmq::listener_t::~listener_t ()
 {
 }
 
-void zs::listener_t::got_identity (session_stub_t *session_stub_,
+void zmq::listener_t::got_identity (session_stub_t *session_stub_,
     const char *identity_)
 {
     //  Get the engine allready disconnected from the stub and poller.
     i_engine *engine = session_stub_->detach_engine ();
-    zs_assert (engine);
+    zmq_assert (engine);
 
     //  Find the corresponding session.
     session_t *session;
@@ -89,11 +89,11 @@ void zs::listener_t::got_identity (session_stub_t *session_stub_,
         //  sure that the peer session won't get deallocated till it processes
         //  the subsequent bind command.
         i_mux *mux = new dummy_aggregator_t;
-        zs_assert (mux);
+        zmq_assert (mux);
         i_demux *demux = new dummy_distributor_t;
-        zs_assert (demux);
+        zmq_assert (demux);
         session = new session_t (io_thread, io_thread, mux, demux, false, true);
-        zs_assert (session);
+        zmq_assert (session);
         session->inc_seqnum ();
         session->inc_seqnum ();
         peer->inc_seqnum ();
@@ -104,14 +104,14 @@ void zs::listener_t::got_identity (session_stub_t *session_stub_,
     send_engine (session, engine);
 }
 
-void zs::listener_t::process_reg (simple_semaphore_t *smph_)
+void zmq::listener_t::process_reg (simple_semaphore_t *smph_)
 {
-    zs_assert (!poller);
+    zmq_assert (!poller);
     poller = get_poller ();
 
     //  Open the listening socket.
     int rc = tcp_listener.open (addr.c_str ());
-    zs_assert (rc == 0);
+    zmq_assert (rc == 0);
 
     //  Unlock the application thread that created the listener.
     if (smph_)
@@ -122,10 +122,10 @@ void zs::listener_t::process_reg (simple_semaphore_t *smph_)
     poller->set_pollin (handle);
 }
 
-void zs::listener_t::process_unreg (simple_semaphore_t *smph_)
+void zmq::listener_t::process_unreg (simple_semaphore_t *smph_)
 {
     //  Disassociate listener from the poller.
-    zs_assert (poller);
+    zmq_assert (poller);
     poller->rm_fd (handle);
     poller = NULL;
 
@@ -134,7 +134,7 @@ void zs::listener_t::process_unreg (simple_semaphore_t *smph_)
         smph_->post ();
 }
 
-void zs::listener_t::in_event ()
+void zmq::listener_t::in_event ()
 {
     fd_t fd = tcp_listener.accept ();
 
@@ -146,25 +146,25 @@ void zs::listener_t::in_event ()
     //  Create an session stub for the engine to take care for it till its
     //  identity is retreived.
     session_stub_t *session_stub = new session_stub_t (this);
-    zs_assert (session_stub);
+    zmq_assert (session_stub);
     session_stub->set_index (session_stubs.size ());
     session_stubs.push_back (session_stub);
 
     //  Create an engine to encaspulate the socket. Engine will register itself
     //  with the stub so the stub will be able to free it in case of shutdown.
     zmq_tcp_engine_t *engine = new zmq_tcp_engine_t (fd);
-    zs_assert (engine);
+    zmq_assert (engine);
     engine->attach (poller, session_stub);
 }
 
-void zs::listener_t::out_event ()
+void zmq::listener_t::out_event ()
 {
-    zs_assert (false);
+    zmq_assert (false);
 }
 
-void zs::listener_t::timer_event ()
+void zmq::listener_t::timer_event ()
 {
-    zs_assert (false);
+    zmq_assert (false);
 }
 
 

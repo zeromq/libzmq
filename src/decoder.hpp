@@ -17,14 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_DECODER_HPP_INCLUDED__
-#define __ZS_DECODER_HPP_INCLUDED__
+#ifndef __ZMQ_DECODER_HPP_INCLUDED__
+#define __ZMQ_DECODER_HPP_INCLUDED__
 
 #include <stddef.h>
 #include <string.h>
 #include <algorithm>
 
-namespace zs
+namespace zmq
 {
 
     //  Helper base class for decoders that know the amount of data to read

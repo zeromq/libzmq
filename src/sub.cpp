@@ -17,27 +17,27 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zs.h"
+#include "../include/zmq.h"
 
 #include "sub.hpp"
 #include "app_thread.hpp"
 #include "session.hpp"
 #include "err.hpp"
 
-zs::sub_t::sub_t (app_thread_t *thread_, session_t *session_) :
+zmq::sub_t::sub_t (app_thread_t *thread_, session_t *session_) :
     socket_base_t (thread_, session_)
 {
     disable_out ();
 }
 
-int zs::sub_t::send (struct zs_msg *msg_, int flags_)
+int zmq::sub_t::send (struct zmq_msg *msg_, int flags_)
 {
     //  Subscriber socket has no send function.
     errno = ENOTSUP;
     return -1;
 }
 
-int zs::sub_t::flush ()
+int zmq::sub_t::flush ()
 {
     //  Subscriber socket has no flush function.
     errno = ENOTSUP;

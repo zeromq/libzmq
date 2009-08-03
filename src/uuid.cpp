@@ -21,68 +21,68 @@
 #include "uuid.hpp"
 #include "err.hpp"
 
-#if defined ZS_HAVE_WINDOWS
+#if defined ZMQ_HAVE_WINDOWS
 
 #include <rpcdce.h>
 
-zs::uuid_t::uuid_t ()
+zmq::uuid_t::uuid_t ()
 {
     RPC_STATUS ret = UuidCreate (&uuid);
-    zs_assert (ret == RPC_S_OK);
+    zmq_assert (ret == RPC_S_OK);
     ret = UuidToString (&uuid, &uuid_str);
-    zs_assert (ret == RPC_S_OK);
+    zmq_assert (ret == RPC_S_OK);
 }
 
-zs::uuid_t::~uuid_t ()
+zmq::uuid_t::~uuid_t ()
 {
     RPC_STATUS ret = RpcStringFree(&uuid_str);
     assert (ret == RPC_S_OK);
 }
 
-const char *zs::uuid_t::to_string ()
+const char *zmq::uuid_t::to_string ()
 {
     return uuid_str;
 }
 
-#elif defined ZS_HAVE_FREEBSD
+#elif defined ZMQ_HAVE_FREEBSD
 
 #include <stdlib.h>
 #include <uuid.h>
 
-zs::uuid_t::uuid_t ()
+zmq::uuid_t::uuid_t ()
 {
     uint32_t status;
     uuid_create (&uuid, &status);
-    zs_assert (status == uuid_s_ok);
+    zmq_assert (status == uuid_s_ok);
     uuid_to_string (&uuid, &uuid_str, &status);
-    zs_assert (status == uuid_s_ok);
+    zmq_assert (status == uuid_s_ok);
 }
 
-zs::uuid_t::~uuid_t ()
+zmq::uuid_t::~uuid_t ()
 {
     free (uuid_str);
 }
 
-const char *zs::uuid_t::to_string ()
+const char *zmq::uuid_t::to_string ()
 {
     return uuid_str;
 }
 
-#elif defined ZS_HAVE_LINUX || defined ZS_HAVE_SOLARIS || defined ZS_HAVE_OSX
+#elif defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_OSX
 
 #include <uuid/uuid.h>
 
-zs::uuid_t::uuid_t ()
+zmq::uuid_t::uuid_t ()
 {
     uuid_generate (uuid);
     uuid_unparse (uuid, uuid_buf);
 }
 
-zs::uuid_t::~uuid_t ()
+zmq::uuid_t::~uuid_t ()
 {
 }
 
-const char *zs::uuid_t::to_string ()
+const char *zmq::uuid_t::to_string ()
 {
     return uuid_buf;
 }
@@ -93,11 +93,11 @@ const char *zs::uuid_t::to_string ()
 #include <string.h>
 #include <openssl/rand.h>
 
-zs::uuid_t::uuid_t ()
+zmq::uuid_t::uuid_t ()
 {
     unsigned char rand_buf [16];
     int ret = RAND_bytes (rand_buf, sizeof rand_buf);
-    zs_assert (ret == 1);
+    zmq_assert (ret == 1);
 
     //  Read in UUID fields.
     memcpy (&time_low, rand_buf, sizeof time_low);
@@ -124,11 +124,11 @@ zs::uuid_t::uuid_t ()
         node [0], node [1], node [2], node [3], node [4], node [5]);
 }
 
-zs::uuid_t::~uuid_t ()
+zmq::uuid_t::~uuid_t ()
 {
 }
 
-const char *zs::uuid_t::to_string ()
+const char *zmq::uuid_t::to_string ()
 {
     return uuid_buf;
 }

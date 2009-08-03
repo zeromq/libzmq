@@ -17,14 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_YQUEUE_HPP_INCLUDED__
-#define __ZS_YQUEUE_HPP_INCLUDED__
+#ifndef __ZMQ_YQUEUE_HPP_INCLUDED__
+#define __ZMQ_YQUEUE_HPP_INCLUDED__
 
 #include <stddef.h>
 
 #include "err.hpp"
 
-namespace zs
+namespace zmq
 {
 
     //  yqueue is an efficient queue implementation. The main goal is
@@ -48,7 +48,7 @@ namespace zs
         inline yqueue_t ()
         {
              begin_chunk = new chunk_t;
-             zs_assert (begin_chunk);
+             zmq_assert (begin_chunk);
              begin_pos = 0;
              back_chunk = NULL;
              back_pos = 0;
@@ -92,7 +92,7 @@ namespace zs
                 return;
 
             end_chunk->next = new chunk_t;
-            zs_assert (end_chunk->next);
+            zmq_assert (end_chunk->next);
             end_chunk = end_chunk->next;
             end_pos = 0;
         }

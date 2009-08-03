@@ -17,14 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_SESSION_STUB_HPP_INCLUDED__
-#define __ZS_SESSION_STUB_HPP_INCLUDED__
+#ifndef __ZMQ_SESSION_STUB_HPP_INCLUDED__
+#define __ZMQ_SESSION_STUB_HPP_INCLUDED__
 
 #include <string>
 
 #include "i_session.hpp"
 
-namespace zs
+namespace zmq
 {
 
     //  This class is used instead of regular session till the identity of
@@ -41,8 +41,8 @@ namespace zs
         void set_engine (struct i_engine *engine_);
         void terminate ();
         void shutdown ();
-        bool read (struct zs_msg *msg_);
-        bool write (struct zs_msg *msg_);
+        bool read (struct zmq_msg *msg_);
+        bool write (struct zmq_msg *msg_);
         void flush ();
 
         //  Detaches engine from the stub. Returns it to the caller.

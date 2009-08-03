@@ -18,35 +18,35 @@
 */
 
 
-#ifndef __ZS_ATOMIC_COUNTER_HPP_INCLUDED__
-#define __ZS_ATOMIC_COUNTER_HPP_INCLUDED__
+#ifndef __ZMQ_ATOMIC_COUNTER_HPP_INCLUDED__
+#define __ZMQ_ATOMIC_COUNTER_HPP_INCLUDED__
 
 #include "stdint.hpp"
 #include "platform.hpp"
 
-#if defined ZS_FORCE_MUTEXES
-#define ZS_ATOMIC_COUNTER_MUTEX
+#if defined ZMQ_FORCE_MUTEXES
+#define ZMQ_ATOMIC_COUNTER_MUTEX
 #elif (defined __i386__ || defined __x86_64__) && defined __GNUC__
-#define ZS_ATOMIC_COUNTER_X86
+#define ZMQ_ATOMIC_COUNTER_X86
 #elif 0 && defined __sparc__ && defined __GNUC__
-#define ZS_ATOMIC_COUNTER_SPARC
-#elif defined ZS_HAVE_WINDOWS
-#define ZS_ATOMIC_COUNTER_WINDOWS
-#elif defined ZS_HAVE_SOLARIS
-#define ZS_ATOMIC_COUNTER_SOLARIS
+#define ZMQ_ATOMIC_COUNTER_SPARC
+#elif defined ZMQ_HAVE_WINDOWS
+#define ZMQ_ATOMIC_COUNTER_WINDOWS
+#elif defined ZMQ_HAVE_SOLARIS
+#define ZMQ_ATOMIC_COUNTER_SOLARIS
 #else
-#define ZS_ATOMIC_COUNTER_MUTEX
+#define ZMQ_ATOMIC_COUNTER_MUTEX
 #endif
 
-#if defined ZS_ATOMIC_COUNTER_MUTEX
+#if defined ZMQ_ATOMIC_COUNTER_MUTEX
 #include "mutex.hpp"
-#elif defined ZS_ATOMIC_COUNTER_WINDOWS
+#elif defined ZMQ_ATOMIC_COUNTER_WINDOWS
 #include "windows.hpp"
-#elif defined ZS_ATOMIC_COUNTER_SOLARIS
+#elif defined ZMQ_ATOMIC_COUNTER_SOLARIS
 #include <atomic.h>
 #endif
 
-namespace zs
+namespace zmq
 {
 
     //  This class represents an integer that can be incremented/decremented
@@ -78,18 +78,18 @@ namespace zs
         {
             integer_t old_value;
 
-#if defined ZS_ATOMIC_COUNTER_WINDOWS
+#if defined ZMQ_ATOMIC_COUNTER_WINDOWS
             old_value = InterlockedExchangeAdd ((LONG*) &value, increment_);
-#elif defined ZS_ATOMIC_COUNTER_SOLARIS
+#elif defined ZMQ_ATOMIC_COUNTER_SOLARIS
             integer_t new_value = atomic_add_32_nv (&value, increment_);
             old_value = new_value - increment_;
-#elif defined ZS_ATOMIC_COUNTER_X86
+#elif defined ZMQ_ATOMIC_COUNTER_X86
             __asm__ volatile (
                 "lock; xadd %0, %1          \n\t"
                 : "=r" (old_value), "=m" (value)
                 : "0" (increment_), "m" (value)
                 : "cc", "memory");
-#elif defined ZS_ATOMIC_COUNTER_SPARC
+#elif defined ZMQ_ATOMIC_COUNTER_SPARC
             integer_t tmp;
             __asm__ volatile (
                 "ld [%4], %0                \n\t"
@@ -102,7 +102,7 @@ namespace zs
                 : "=&r" (old_value), "=&r" (tmp), "=m" (value)
                 : "r" (increment_), "r" (&value)
                 : "cc", "memory");
-#elif defined ZS_ATOMIC_COUNTER_MUTEX
+#elif defined ZMQ_ATOMIC_COUNTER_MUTEX
             sync.lock ();
             old_value = value;
             value += increment_;
@@ -116,15 +116,15 @@ namespace zs
         //  Atomic subtraction. Returns false if the counter drops to zero.
         inline bool sub (integer_t decrement)
         {
-#if defined ZS_ATOMIC_COUNTER_WINDOWS
+#if defined ZMQ_ATOMIC_COUNTER_WINDOWS
             LONG delta = - ((LONG) decrement);
             integer_t old = InterlockedExchangeAdd ((LONG*) &value, delta);
             return old - decrement != 0;
-#elif defined ZS_ATOMIC_COUNTER_SOLARIS
+#elif defined ZMQ_ATOMIC_COUNTER_SOLARIS
             int32_t delta = - ((int32_t) decrement);
             integer_t nv = atomic_add_32_nv (&value, delta);
             return nv != 0;
-#elif defined ZS_ATOMIC_COUNTER_X86
+#elif defined ZMQ_ATOMIC_COUNTER_X86
             integer_t oldval = -decrement;
             volatile integer_t *val = &value;
             __asm__ volatile ("lock; xaddl %0,%1"
@@ -132,7 +132,7 @@ namespace zs
                 : "0" (oldval), "m" (*val)
                 : "cc");
             return oldval != decrement;
-#elif defined ZS_ATOMIC_COUNTER_SPARC
+#elif defined ZMQ_ATOMIC_COUNTER_SPARC
             volatile integer_t *val = &value;
             integer_t tmp;
             integer_t result;
@@ -148,7 +148,7 @@ namespace zs
                 : "r" (val)
                 : "cc");
             return result <= decrement;
-#elif defined ZS_ATOMIC_COUNTER_MUTEX
+#elif defined ZMQ_ATOMIC_COUNTER_MUTEX
             sync.lock ();
             value -= decrement;
             bool result = value ? true : false;
@@ -167,7 +167,7 @@ namespace zs
     private:
 
         volatile integer_t value;
-#if defined ZS_ATOMIC_COUNTER_MUTEX
+#if defined ZMQ_ATOMIC_COUNTER_MUTEX
         mutex_t sync;
 #endif
 
@@ -178,20 +178,20 @@ namespace zs
 }
 
 //  Remove macros local to this file.
-#if defined ZS_ATOMIC_COUNTER_WINDOWS
-#undef ZS_ATOMIC_COUNTER_WINDOWS
+#if defined ZMQ_ATOMIC_COUNTER_WINDOWS
+#undef ZMQ_ATOMIC_COUNTER_WINDOWS
 #endif
-#if defined ZS_ATOMIC_COUNTER_SOLARIS
-#undef ZS_ATOMIC_COUNTER_SOLARIS
+#if defined ZMQ_ATOMIC_COUNTER_SOLARIS
+#undef ZMQ_ATOMIC_COUNTER_SOLARIS
 #endif
-#if defined ZS_ATOMIC_COUNTER_X86
-#undef ZS_ATOMIC_COUNTER_X86
+#if defined ZMQ_ATOMIC_COUNTER_X86
+#undef ZMQ_ATOMIC_COUNTER_X86
 #endif
-#if defined ZS_ATOMIC_COUNTER_SPARC
-#undef ZS_ATOMIC_COUNTER_SPARC
+#if defined ZMQ_ATOMIC_COUNTER_SPARC
+#undef ZMQ_ATOMIC_COUNTER_SPARC
 #endif
-#if defined ZS_ATOMIC_COUNTER_MUTEX
-#undef ZS_ATOMIC_COUNTER_MUTEX
+#if defined ZMQ_ATOMIC_COUNTER_MUTEX
+#undef ZMQ_ATOMIC_COUNTER_MUTEX
 #endif
 
 #endif

@@ -17,20 +17,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zs.h"
+#include "../include/zmq.h"
 
 #include "pub.hpp"
 #include "app_thread.hpp"
 #include "session.hpp"
 #include "err.hpp"
 
-zs::pub_t::pub_t (app_thread_t *thread_, session_t *session_) :
+zmq::pub_t::pub_t (app_thread_t *thread_, session_t *session_) :
     socket_base_t (thread_, session_)
 {
     disable_in ();
 }
 
-int zs::pub_t::recv (struct zs_msg *msg_, int flags_)
+int zmq::pub_t::recv (struct zmq_msg *msg_, int flags_)
 {
     //  Publisher socket has no recv function.
     errno = ENOTSUP;

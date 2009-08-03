@@ -23,7 +23,7 @@
 
 using namespace std;
 
-#include <zs.hpp>
+#include <zmq.hpp>
 
 int main (int argc, const char *argv [])
 {
@@ -38,19 +38,19 @@ int main (int argc, const char *argv [])
     const char *out_interface = argv [2];
 
     //  Initialise 0MQ infrastructure
-    zs::context_t ctx (1, 1);
+    zmq::context_t ctx (1, 1);
 
     //  Create two sockets. One for receiving messages from 'propmt'
     //  applications, one for sending messages to 'display' applications
-    zs::socket_t in_socket (ctx, ZS_SUB);
+    zmq::socket_t in_socket (ctx, ZMQ_SUB);
     in_socket.bind (in_interface);
-    zs::socket_t out_socket (ctx, ZS_PUB);
+    zmq::socket_t out_socket (ctx, ZMQ_PUB);
     out_socket.bind (out_interface);
 
     while (true) {
 
         //  Get a message
-        zs::message_t in_message;
+        zmq::message_t in_message;
         in_socket.recv (&in_message);
 
         //  Get the current time. Replace the newline character at the end
@@ -62,7 +62,7 @@ int main (int argc, const char *argv [])
         timebuf [strlen (timebuf) - 1] = ' ';
 
         //  Create and fill in the message
-        zs::message_t out_message (strlen (timebuf) + in_message.size ());
+        zmq::message_t out_message (strlen (timebuf) + in_message.size ());
         char *data = (char*) out_message.data ();
         memcpy (data, timebuf, strlen (timebuf));
         data += strlen (timebuf);

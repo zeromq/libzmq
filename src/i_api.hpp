@@ -17,20 +17,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_I_API_HPP_INCLUDED__
-#define __ZS_I_API_HPP_INCLUDED__
+#ifndef __ZMQ_I_API_HPP_INCLUDED__
+#define __ZMQ_I_API_HPP_INCLUDED__
 
-namespace zs
+namespace zmq
 {
 
     struct i_api
     {
-        virtual int bind (const char *addr_, struct zs_opts *opts_) = 0;
-        virtual int connect (const char *addr_, struct zs_opts *opts_) = 0;
+        virtual int bind (const char *addr_, struct zmq_opts *opts_) = 0;
+        virtual int connect (const char *addr_, struct zmq_opts *opts_) = 0;
         virtual int subscribe (const char *criteria_) = 0;
-        virtual int send (struct zs_msg *msg_, int flags_) = 0;
+        virtual int send (struct zmq_msg *msg_, int flags_) = 0;
         virtual int flush () = 0;
-        virtual int recv (struct zs_msg *msg_, int flags_) = 0;
+        virtual int recv (struct zmq_msg *msg_, int flags_) = 0;
         virtual int close () = 0;
     };
 

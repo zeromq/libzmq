@@ -19,29 +19,29 @@
 
 #include "pipe.hpp"
 
-zs::pipe_t::pipe_t () :
-    ypipe_t <zs_msg, false, message_pipe_granularity> (false),
+zmq::pipe_t::pipe_t () :
+    ypipe_t <zmq_msg, false, message_pipe_granularity> (false),
     index (-1)
 {
 }
 
-zs::pipe_t::~pipe_t ()
+zmq::pipe_t::~pipe_t ()
 {
     //  Flush any outstanding messages to the pipe.
     flush ();
 
     //  Deallocate all the messages in the pipe.
-    zs_msg msg;
+    zmq_msg msg;
     while (read (&msg))
-        zs_msg_close (&msg);
+        zmq_msg_close (&msg);
 }
 
-void zs::pipe_t::set_index (int index_)
+void zmq::pipe_t::set_index (int index_)
 {
     index = index_;
 }
 
-int zs::pipe_t::get_index ()
+int zmq::pipe_t::get_index ()
 {
     return index;
 }

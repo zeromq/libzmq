@@ -1,6 +1,6 @@
-lib_LTLIBRARIES = libzs.la
+lib_LTLIBRARIES = libzmq.la
 
-libzs_la_SOURCES = \
+libzmq_la_SOURCES = \
     app_thread.hpp \
     atomic_bitmap.hpp \
     atomic_counter.hpp \
@@ -109,10 +109,10 @@ libzs_la_SOURCES = \
     zmq_decoder.cpp \
     zmq_encoder.cpp \
     zmq_tcp_engine.cpp \
-    zs.cpp
+    zmq.cpp
 
-libzs_la_LDFLAGS = -version-info 0:0:0
-libzs_la_CXXFLAGS = -Wall -pedantic -Werror @ZS_EXTRA_CXXFLAGS@
+libzmq_la_LDFLAGS = -version-info 0:0:0
+libzmq_la_CXXFLAGS = -Wall -pedantic -Werror @ZMQ_EXTRA_CXXFLAGS@
 
 dist-hook:
 		-rm $(distdir)/src/platform.hpp

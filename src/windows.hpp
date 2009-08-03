@@ -17,8 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_WINDOWS_HPP_INCLUDED__
-#define __ZS_WINDOWS_HPP_INCLUDED__
+#ifndef __ZMQ_WINDOWS_HPP_INCLUDED__
+#define __ZMQ_WINDOWS_HPP_INCLUDED__
 
 // The purpose of this header file is to turn on only the items actually needed
 // on the windows platform.

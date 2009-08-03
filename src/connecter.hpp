@@ -17,12 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_CONNECTER_HPP_INCLUDED__
-#define __ZS_CONNECTER_HPP_INCLUDED__
+#ifndef __ZMQ_CONNECTER_HPP_INCLUDED__
+#define __ZMQ_CONNECTER_HPP_INCLUDED__
 
 #include <string>
 
-#include "../include/zs.h"
+#include "../include/zmq.h"
 
 #include "i_poller.hpp"
 #include "io_object.hpp"
@@ -30,7 +30,7 @@
 #include "i_session.hpp"
 #include "tcp_connecter.hpp"
 
-namespace zs
+namespace zmq
 {
 
     class connecter_t : public io_object_t, public i_poll_events,
@@ -55,8 +55,8 @@ namespace zs
         //  i_session implementation
         void set_engine (struct i_engine *engine_);
         //  void shutdown ();
-        bool read (struct zs_msg *msg_);
-        bool write (struct zs_msg *msg_);
+        bool read (struct zmq_msg *msg_);
+        bool write (struct zmq_msg *msg_);
         void flush ();
 
     private:

@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.61)
-AC_INIT([zsock],[dev])
+AC_INIT([zeromq],[dev])
 AC_CONFIG_AUX_DIR(config)
 AM_CONFIG_HEADER(src/platform.hpp)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
@@ -20,7 +20,7 @@ AC_CANONICAL_HOST
 
 case "${host_os}" in
     *linux*)
-        AC_DEFINE(ZS_HAVE_LINUX, 1, [Have Linux OS])
+        AC_DEFINE(ZMQ_HAVE_LINUX, 1, [Have Linux OS])
         CPPFLAGS="-D_REENTRANT $CPPFLAGS"
         sed < libtool > libtool-2 \
         's/^hardcode_libdir_flag_spec.*$'/'hardcode_libdir_flag_spec=" "/'
@@ -29,7 +29,7 @@ case "${host_os}" in
         AC_CHECK_LIB(uuid, uuid_generate)
         ;;
     *solaris*)
-        AC_DEFINE(ZS_HAVE_SOLARIS, 1, [Have Solaris OS])
+        AC_DEFINE(ZMQ_HAVE_SOLARIS, 1, [Have Solaris OS])
         AC_CHECK_LIB(socket, main)
         AC_CHECK_LIB(nsl, main)
         AC_CHECK_LIB(rt, main)
@@ -45,37 +45,37 @@ case "${host_os}" in
         AC_MSG_RESULT([$solaris_has_atomic])
         # Solaris 8 does not have atomic operations exported to user space.
         if test "x$solaris_has_atomic" = "xno"; then
-            AC_DEFINE(ZS_FORCE_MUTEXES, 1, [Force to use mutexes])
+            AC_DEFINE(ZMQ_FORCE_MUTEXES, 1, [Force to use mutexes])
         fi
         ;;
     *freebsd*)
-        AC_DEFINE(ZS_HAVE_FREEBSD, 1, [Have FreeBSD OS])
+        AC_DEFINE(ZMQ_HAVE_FREEBSD, 1, [Have FreeBSD OS])
         CPPFLAGS="-D_THREAD_SAFE $CPPFLAGS"
         LIBS="-pthread"
         ;;
     *darwin*)
-        AC_DEFINE(ZS_HAVE_OSX, 1, [Have DarwinOSX OS])
+        AC_DEFINE(ZMQ_HAVE_OSX, 1, [Have DarwinOSX OS])
         LIBS="-pthread"
-        ZS_EXTRA_CXXFLAGS+="-Wno-uninitialized"
+        ZMQ_EXTRA_CXXFLAGS+="-Wno-uninitialized"
         ;;
     *openbsd*)
-        AC_DEFINE(ZS_HAVE_OPENBSD, 1, [Have OpenBSD OS])
+        AC_DEFINE(ZMQ_HAVE_OPENBSD, 1, [Have OpenBSD OS])
         CPPFLAGS="-pthread $CPPFLAGS"
         LIBS="-pthread"
         ;;
     *nto-qnx*)
-        AC_DEFINE(ZS_HAVE_QNXNTO, 1, [Have QNX Neutrino OS])
+        AC_DEFINE(ZMQ_HAVE_QNXNTO, 1, [Have QNX Neutrino OS])
         CPPFLAGS="-D_THREAD_SAFE $CPPFLAGS"
         AC_CHECK_LIB(socket,main)
         ;;
     *aix*)
-        AC_DEFINE(ZS_HAVE_AIX, 1, [Have AIX OS])
+        AC_DEFINE(ZMQ_HAVE_AIX, 1, [Have AIX OS])
         if test "x$GXX" = "xyes"; then
           CPPFLAGS="-D_THREAD_SAFE $CPPFLAGS"
         fi
         ;;
     *hpux*)
-        AC_DEFINE(ZS_HAVE_HPUX, 1, [Have HPUX OS])
+        AC_DEFINE(ZMQ_HAVE_HPUX, 1, [Have HPUX OS])
         if test "x$GXX" = "xyes"; then
           CPPFLAGS="-D_THREAD_SAFE $CPPFLAGS"
         fi
@@ -86,8 +86,8 @@ case "${host_os}" in
         chmod 755 libtool
         ;;
     *mingw32*)
-        AC_DEFINE(ZS_HAVE_WINDOWS, 1, [Have Windows OS])
-        AC_DEFINE(ZS_HAVE_MINGW32, 1, [Have MinGW32])
+        AC_DEFINE(ZMQ_HAVE_WINDOWS, 1, [Have Windows OS])
+        AC_DEFINE(ZMQ_HAVE_MINGW32, 1, [Have MinGW32])
         AC_CHECK_HEADERS(windows.h)
         LIBS="-lwsock32 -lws2_32 -no-undefined"
         CFLAGS="-std=c99"
@@ -122,10 +122,10 @@ AC_CHECK_HEADERS(errno.h arpa/inet.h netinet/tcp.h netinet/in.h stddef.h \
 stdlib.h string.h sys/socket.h sys/time.h unistd.h limits.h)
 
 # Check if we have eventfd.h header file.
-AC_CHECK_HEADERS(sys/eventfd.h, [AC_DEFINE(ZS_HAVE_EVENTFD, 1, [Have eventfd extension.])])
+AC_CHECK_HEADERS(sys/eventfd.h, [AC_DEFINE(ZMQ_HAVE_EVENTFD, 1, [Have eventfd extension.])])
 
 # Check if we have ifaddrs.h header file.
-AC_CHECK_HEADERS(ifaddrs.h, [AC_DEFINE(ZS_HAVE_IFADDRS, 1, [Have ifaddrs.h header.])])
+AC_CHECK_HEADERS(ifaddrs.h, [AC_DEFINE(ZMQ_HAVE_IFADDRS, 1, [Have ifaddrs.h header.])])
 
 # Use c++ in subsequent tests
 AC_LANG(C++)
@@ -162,8 +162,8 @@ fi
 AC_SUBST(stdint)
 AC_SUBST(inttypes)
 
-# Subst ZS_EXTRA_CXXFLAGS
-AC_SUBST(ZS_EXTRA_CXXFLAGS)
+# Subst ZMQ_EXTRA_CXXFLAGS
+AC_SUBST(ZMQ_EXTRA_CXXFLAGS)
 
 
 # Checks for library functions.
@@ -175,7 +175,7 @@ AC_OUTPUT(Makefile src/Makefile examples/Makefile examples/chat/Makefile)
 
 AC_MSG_RESULT([])
 AC_MSG_RESULT([ ******************************************************** ])
-AC_MSG_RESULT([                         0SOCKETS     ])
+AC_MSG_RESULT([                            0MQ     ])
 AC_MSG_RESULT([ ******************************************************** ])
 AC_MSG_RESULT([  This software is distributed under the terms and ])
 AC_MSG_RESULT([  conditions of the LESSER GNU GENERAL PUBLIC LICENSE. ])
@@ -183,6 +183,6 @@ AC_MSG_RESULT([  See the file COPYING and COPYING.LESSER for the full ])
 AC_MSG_RESULT([  license text. ])
 AC_MSG_RESULT([ ******************************************************** ])
 AC_MSG_RESULT([])
-AC_MSG_RESULT([ zsock install dir: $prefix])
+AC_MSG_RESULT([ 0MQ install dir: $prefix])
 AC_MSG_RESULT([])
 

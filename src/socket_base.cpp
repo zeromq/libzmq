@@ -19,7 +19,7 @@
 
 #include <string>
 
-#include "../include/zs.h"
+#include "../include/zmq.h"
 
 #include "socket_base.hpp"
 #include "app_thread.hpp"
@@ -33,7 +33,7 @@
 #include "dummy_aggregator.hpp"
 #include "dummy_distributor.hpp"
 
-zs::socket_base_t::socket_base_t (app_thread_t *thread_, session_t *session_) :
+zmq::socket_base_t::socket_base_t (app_thread_t *thread_, session_t *session_) :
     object_t (thread_),
     thread (thread_),
     session (session_),
@@ -43,7 +43,7 @@ zs::socket_base_t::socket_base_t (app_thread_t *thread_, session_t *session_) :
     session->set_engine (this);
 }
 
-void zs::socket_base_t::shutdown ()
+void zmq::socket_base_t::shutdown ()
 {
     //  Destroy all the I/O objects created from this socket.
     for (io_objects_t::size_type i = 0; i != io_objects.size (); i++)
@@ -52,13 +52,13 @@ void zs::socket_base_t::shutdown ()
     delete this;
 }
 
-void zs::socket_base_t::schedule_terminate ()
+void zmq::socket_base_t::schedule_terminate ()
 {
     //  Terminate is never scheduled on socket engines.
-    zs_assert (false);
+    zmq_assert (false);
 }
 
-void zs::socket_base_t::terminate ()
+void zmq::socket_base_t::terminate ()
 {
     //  Destroy all the I/O objects created from this socket.
     //  First unregister the object from I/O thread, then terminate it in
@@ -70,27 +70,27 @@ void zs::socket_base_t::terminate ()
         io_objects [i]->terminate ();
     }
 
-    zs_assert (session);
+    zmq_assert (session);
     session->disconnected ();
 
     delete this;
 }
 
-zs::socket_base_t::~socket_base_t ()
+zmq::socket_base_t::~socket_base_t ()
 {
 }
 
-void zs::socket_base_t::disable_in ()
+void zmq::socket_base_t::disable_in ()
 {
     has_in = false;
 }
 
-void zs::socket_base_t::disable_out ()
+void zmq::socket_base_t::disable_out ()
 {
     has_out = false;
 }
 
-int zs::socket_base_t::bind (const char *addr_, zs_opts *opts_)
+int zmq::socket_base_t::bind (const char *addr_, zmq_opts *opts_)
 {
     thread->process_commands (false);
 
@@ -136,7 +136,7 @@ int zs::socket_base_t::bind (const char *addr_, zs_opts *opts_)
     }
 }
 
-int zs::socket_base_t::connect (const char *addr_, zs_opts *opts_)
+int zmq::socket_base_t::connect (const char *addr_, zmq_opts *opts_)
 {
     thread->process_commands (false);
 
@@ -148,14 +148,14 @@ int zs::socket_base_t::connect (const char *addr_, zs_opts *opts_)
         //  session.
         io_thread_t *io_thread = choose_io_thread (opts_ ? opts_->taskset : 0);
         i_mux *mux = new dummy_aggregator_t;
-        zs_assert (mux);
+        zmq_assert (mux);
         i_demux *demux = new dummy_distributor_t;
-        zs_assert (demux);
+        zmq_assert (demux);
         session_t *peer = new session_t (io_thread, io_thread, mux, demux,
             false, true);
-        zs_assert (peer);
+        zmq_assert (peer);
         connecter_t *connecter = new connecter_t (io_thread, addr_, peer);
-        zs_assert (connecter);
+        zmq_assert (connecter);
 
         //  Increment session's command sequence number so that it won't get
         //  deallocated till the subsequent bind command arrives.
@@ -202,20 +202,20 @@ int zs::socket_base_t::connect (const char *addr_, zs_opts *opts_)
     }
 }
 
-int zs::socket_base_t::subscribe (const char *criteria_)
+int zmq::socket_base_t::subscribe (const char *criteria_)
 {
     //  No implementation at the moment...
     errno = ENOTSUP;
     return -1;
 }
 
-int zs::socket_base_t::send (zs_msg *msg_, int flags_)
+int zmq::socket_base_t::send (zmq_msg *msg_, int flags_)
 {
     thread->process_commands (false);
     while (true) {
         if (session->write (msg_))
             return 0;
-        if (flags_ & ZS_NOBLOCK) {
+        if (flags_ & ZMQ_NOBLOCK) {
             errno = EAGAIN;
             return -1;
         }
@@ -223,20 +223,20 @@ int zs::socket_base_t::send (zs_msg *msg_, int flags_)
     }
 }
 
-int zs::socket_base_t::flush ()
+int zmq::socket_base_t::flush ()
 {
     thread->process_commands (false);
     session->flush ();
     return 0;
 }
 
-int zs::socket_base_t::recv (zs_msg *msg_, int flags_)
+int zmq::socket_base_t::recv (zmq_msg *msg_, int flags_)
 {
     thread->process_commands (false);
     while (true) {
         if (session->read (msg_))
             return 0;
-        if (flags_ & ZS_NOBLOCK) {
+        if (flags_ & ZMQ_NOBLOCK) {
             errno = EAGAIN;
             return -1;
         }
@@ -244,23 +244,23 @@ int zs::socket_base_t::recv (zs_msg *msg_, int flags_)
     }
 }
 
-int zs::socket_base_t::close ()
+int zmq::socket_base_t::close ()
 {
     terminate ();
     return 0;
 }
 
-void zs::socket_base_t::attach (struct i_poller *poller_, i_session *session_)
+void zmq::socket_base_t::attach (struct i_poller *poller_, i_session *session_)
 {
-    zs_assert (false);
+    zmq_assert (false);
 }
 
-void zs::socket_base_t::detach ()
+void zmq::socket_base_t::detach ()
 {
-    zs_assert (false);
+    zmq_assert (false);
 }
 
-void zs::socket_base_t::revive ()
+void zmq::socket_base_t::revive ()
 {
     //  We can ignore the event safely here.
 }

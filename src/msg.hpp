@@ -17,31 +17,31 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_MSG_HPP_INCLUDE__
-#define __ZS_MSG_HPP_INCLUDE__
+#ifndef __ZMQ_MSG_HPP_INCLUDE__
+#define __ZMQ_MSG_HPP_INCLUDE__
 
 #include <stddef.h>
 
-#include "../include/zs.h"
+#include "../include/zmq.h"
 
 #include "atomic_counter.hpp"
 
-//namespace zs
+//namespace zmq
 //{
 
     //  Shared message buffer. Message data are either allocated in one
-    //  continguous block along with this structure - thus avoiding one
+    //  continuous block along with this structure - thus avoiding one
     //  malloc/free pair or they are stored in used-supplied memory.
     //  In the latter case, ffn member stores pointer to the function to be
     //  used to deallocate the data. If the buffer is actually shared (there
     //  are at least 2 references to it) refcount member contains number of
     //  references.
-    struct zs_msg_content
+    struct zmq_msg_content
     {
         void *data;
         size_t size;
-        zs_free_fn *ffn;
-        zs::atomic_counter_t refcnt;
+        zmq_free_fn *ffn;
+        zmq::atomic_counter_t refcnt;
     };
 
 //}

@@ -17,19 +17,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_MUTEX_HPP_INCLUDED__
-#define __ZS_MUTEX_HPP_INCLUDED__
+#ifndef __ZMQ_MUTEX_HPP_INCLUDED__
+#define __ZMQ_MUTEX_HPP_INCLUDED__
 
 #include "platform.hpp"
 #include "err.hpp"
 
 //  Mutex class encapsulates OS mutex in a platform-independent way.
 
-#ifdef ZS_HAVE_WINDOWS
+#ifdef ZMQ_HAVE_WINDOWS
 
 #include "windows.hpp"
 
-namespace zs
+namespace zmq
 {
 
     class mutex_t
@@ -70,7 +70,7 @@ namespace zs
 
 #include <pthread.h>
 
-namespace zs
+namespace zmq
 {
 
     class mutex_t

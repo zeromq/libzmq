@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zs.h"
+#include "../include/zmq.h"
 
 #include "session.hpp"
 #include "i_engine.hpp"
@@ -30,7 +30,7 @@
 #include "pipe_writer.hpp"
 #include "simple_semaphore.hpp"
 
-zs::session_t::session_t (object_t *parent_, i_thread *thread_,
+zmq::session_t::session_t (object_t *parent_, i_thread *thread_,
       i_mux *mux_, i_demux *demux_,
       bool terminate_on_disconnect_, bool terminate_on_no_pipes_) :
     safe_object_t (parent_),
@@ -45,7 +45,7 @@ zs::session_t::session_t (object_t *parent_, i_thread *thread_,
 {
     //  At least one way to terminate the session should be allowed. Otherwise
     //  the session can be orphaned forever.
-    zs_assert (terminate_on_disconnect || terminate_on_no_pipes_delayed);
+    zmq_assert (terminate_on_disconnect || terminate_on_no_pipes_delayed);
 
     //  Give the mux and the demux callback pointer to ourselves.
     if (mux)
@@ -54,7 +54,7 @@ zs::session_t::session_t (object_t *parent_, i_thread *thread_,
         demux->set_session (this);
 }
 
-void zs::session_t::shutdown ()
+void zmq::session_t::shutdown ()
 {
     //  Session may live even without an associated engine, thus we have
     //  to check if for NULL value.
@@ -70,7 +70,7 @@ void zs::session_t::shutdown ()
     delete this;
 }
 
-void zs::session_t::disconnected ()
+void zmq::session_t::disconnected ()
 {
     //  It's engine who calls this function so there's no need to deallocate
     //  the engine. Just drop the reference.
@@ -84,7 +84,7 @@ void zs::session_t::disconnected ()
     terminate ();
 }
 
-void zs::session_t::bind (object_t *peer_, bool in_, bool out_)
+void zmq::session_t::bind (object_t *peer_, bool in_, bool out_)
 {
     //  Create the out pipe (if required).
     pipe_reader_t *pipe_reader = NULL;
@@ -107,13 +107,13 @@ void zs::session_t::bind (object_t *peer_, bool in_, bool out_)
     send_bind (peer_, pipe_reader, in_ ? this : NULL);
 }
 
-void zs::session_t::revive ()
+void zmq::session_t::revive ()
 {
     if (engine)
         engine->revive ();
 }
 
-void zs::session_t::terminate ()
+void zmq::session_t::terminate ()
 {
     //  Terminate is always called by engine, thus it'll terminate itself,
     //  we just have to drop the pointer.
@@ -138,7 +138,7 @@ void zs::session_t::terminate ()
     safe_object_t::terminate ();
 }
 
-zs::session_t::~session_t ()
+zmq::session_t::~session_t ()
 {
     //  When session is actually deallocated it unregisters from its thread.
     //  Unregistration cannot be done earlier as it would result in memory
@@ -146,44 +146,44 @@ zs::session_t::~session_t ()
     thread->detach_session (this);
 }
 
-void zs::session_t::set_engine (i_engine *engine_)
+void zmq::session_t::set_engine (i_engine *engine_)
 {
-    zs_assert (!engine || !engine_);
+    zmq_assert (!engine || !engine_);
     engine = engine_;
 }
 
-void zs::session_t::set_index (int index_)
+void zmq::session_t::set_index (int index_)
 {
     index = index_;
 }
 
-int zs::session_t::get_index ()
+int zmq::session_t::get_index ()
 {
     return index;
 }
 
-bool zs::session_t::write (zs_msg *msg_)
+bool zmq::session_t::write (zmq_msg *msg_)
 {
     return demux->send (msg_);
 }
 
-void zs::session_t::flush ()
+void zmq::session_t::flush ()
 {
     demux->flush ();
 }
 
-bool zs::session_t::read (zs_msg *msg_)
+bool zmq::session_t::read (zmq_msg *msg_)
 {
     bool retrieved = mux->recv (msg_);
     if (terminate_on_no_pipes && mux->empty () && demux->empty ()) {
-        zs_assert (engine);
+        zmq_assert (engine);
         engine->schedule_terminate ();
         terminate ();
     }
     return retrieved;
 }
 
-void zs::session_t::process_bind (pipe_reader_t *reader_, session_t *peer_)
+void zmq::session_t::process_bind (pipe_reader_t *reader_, session_t *peer_)
 {
     if (is_terminating ()) {
 
@@ -223,9 +223,9 @@ void zs::session_t::process_bind (pipe_reader_t *reader_, session_t *peer_)
     }
 }
 
-void zs::session_t::process_reg (simple_semaphore_t *smph_)
+void zmq::session_t::process_reg (simple_semaphore_t *smph_)
 {
-    zs_assert (!is_terminating ());
+    zmq_assert (!is_terminating ());
 
     //  Add the session to the list of sessions associated with this I/O thread.
     //  This way the session will be deallocated on the terminal shutdown.
@@ -236,10 +236,10 @@ void zs::session_t::process_reg (simple_semaphore_t *smph_)
         smph_->post ();
 }
 
-void zs::session_t::process_reg_and_bind (session_t *peer_,
+void zmq::session_t::process_reg_and_bind (session_t *peer_,
     bool flow_in_, bool flow_out_)
 {
-    zs_assert (!is_terminating ());
+    zmq_assert (!is_terminating ());
 
     //  Add the session to the list of sessions associated with this I/O thread.
     //  This way the session will be deallocated on the terminal shutdown.
@@ -260,7 +260,7 @@ void zs::session_t::process_reg_and_bind (session_t *peer_,
     send_bind (peer_, pipe_reader, flow_in_ ? this : NULL);
 }
 
-void zs::session_t::process_engine (i_engine *engine_)
+void zmq::session_t::process_engine (i_engine *engine_)
 {
     if (is_terminating ()) {
 

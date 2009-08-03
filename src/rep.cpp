@@ -17,13 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zs.h"
+#include "../include/zmq.h"
 
 #include "rep.hpp"
 #include "app_thread.hpp"
 #include "session.hpp"
 
-zs::rep_t::rep_t (app_thread_t *thread_, session_t *session_) :
+zmq::rep_t::rep_t (app_thread_t *thread_, session_t *session_) :
     socket_base_t (thread_, session_)
 {
 }

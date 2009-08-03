@@ -17,14 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_LOAD_BALANCER_HPP_INCLUDED__
-#define __ZS_LOAD_BALANCER_HPP_INCLUDED__
+#ifndef __ZMQ_LOAD_BALANCER_HPP_INCLUDED__
+#define __ZMQ_LOAD_BALANCER_HPP_INCLUDED__
 
 #include <vector>
 
 #include <i_demux.hpp>
 
-namespace zs
+namespace zmq
 {
 
     //  Object to distribute messages to outbound pipes.
@@ -42,7 +42,7 @@ namespace zs
         void attach_pipe (class pipe_writer_t *pipe_);
         void detach_pipe (class pipe_writer_t *pipe_);
         bool empty ();
-        bool send (struct zs_msg *msg_);
+        bool send (struct zmq_msg *msg_);
         void flush ();
 
     private:
@@ -55,7 +55,7 @@ namespace zs
 
         //  Writes the message to the pipe if possible. If it isn't, writes
         //  a gap notification to the pipe.
-        void write_to_pipe (class pipe_writer_t *pipe_, struct zs_msg *msg_);
+        void write_to_pipe (class pipe_writer_t *pipe_, struct zmq_msg *msg_);
 
         //  The list of outbound pipes.
         typedef std::vector <class pipe_writer_t*> pipes_t;

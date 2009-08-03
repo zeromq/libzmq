@@ -22,7 +22,7 @@
 #include "i_session.hpp"
 #include "err.hpp"
 
-zs::zmq_tcp_engine_t::zmq_tcp_engine_t (fd_t fd_) :
+zmq::zmq_tcp_engine_t::zmq_tcp_engine_t (fd_t fd_) :
     poller (NULL),
     session (NULL),
     terminating (false),
@@ -33,20 +33,20 @@ zs::zmq_tcp_engine_t::zmq_tcp_engine_t (fd_t fd_) :
 {
     //  Allocate read & write buffer.
     inbuf = new unsigned char [in_batch_size];
-    zs_assert (inbuf);
+    zmq_assert (inbuf);
     outbuf = new unsigned char [out_batch_size];
-    zs_assert (outbuf);
+    zmq_assert (outbuf);
 
     //  Attach the socket.
     int rc = socket.open (fd_);
-    zs_assert (rc == 0);
+    zmq_assert (rc == 0);
 }
 
-void zs::zmq_tcp_engine_t::attach (i_poller *poller_, i_session *session_)
+void zmq::zmq_tcp_engine_t::attach (i_poller *poller_, i_session *session_)
 {
-    zs_assert (!poller);
+    zmq_assert (!poller);
     poller = poller_;
-    zs_assert (!session);
+    zmq_assert (!session);
     session = session_;
     encoder.set_session (session);
     decoder.set_session (session);
@@ -63,47 +63,47 @@ void zs::zmq_tcp_engine_t::attach (i_poller *poller_, i_session *session_)
     in_event ();
 }
 
-void zs::zmq_tcp_engine_t::detach ()
+void zmq::zmq_tcp_engine_t::detach ()
 {
-    zs_assert (poller);
+    zmq_assert (poller);
     poller->rm_fd (handle);
     poller = NULL;
-    zs_assert (session);
+    zmq_assert (session);
     session->set_engine (NULL);
     session = NULL;
     encoder.set_session (NULL);
     decoder.set_session (NULL);
 }
 
-void zs::zmq_tcp_engine_t::revive ()
+void zmq::zmq_tcp_engine_t::revive ()
 {
-    zs_assert (poller);
+    zmq_assert (poller);
     poller->set_pollout (handle);
 }
 
-void zs::zmq_tcp_engine_t::schedule_terminate ()
+void zmq::zmq_tcp_engine_t::schedule_terminate ()
 {
     terminating = true;
 }
 
-void zs::zmq_tcp_engine_t::terminate ()
+void zmq::zmq_tcp_engine_t::terminate ()
 {
     delete this;
 }
 
-void zs::zmq_tcp_engine_t::shutdown ()
+void zmq::zmq_tcp_engine_t::shutdown ()
 {
     delete this;
 }
 
-zs::zmq_tcp_engine_t::~zmq_tcp_engine_t ()
+zmq::zmq_tcp_engine_t::~zmq_tcp_engine_t ()
 {
     detach ();
     delete [] outbuf;
     delete [] inbuf;
 }
 
-void zs::zmq_tcp_engine_t::in_event ()
+void zmq::zmq_tcp_engine_t::in_event ()
 {
     //  If there's no data to process in the buffer, read new data.
     if (inpos == insize) {
@@ -139,7 +139,7 @@ void zs::zmq_tcp_engine_t::in_event ()
         session->flush ();
 }
 
-void zs::zmq_tcp_engine_t::out_event ()
+void zmq::zmq_tcp_engine_t::out_event ()
 {
     //  If write buffer is empty, try to read new data from the encoder.
     if (outpos == outsize) {
@@ -173,13 +173,13 @@ void zs::zmq_tcp_engine_t::out_event ()
     }
 }
 
-void zs::zmq_tcp_engine_t::timer_event ()
+void zmq::zmq_tcp_engine_t::timer_event ()
 {
-    zs_assert (false);
+    zmq_assert (false);
 }
 
-void zs::zmq_tcp_engine_t::error ()
+void zmq::zmq_tcp_engine_t::error ()
 {
-    zs_assert (false);
+    zmq_assert (false);
 }
 

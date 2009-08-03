@@ -18,14 +18,14 @@
 */
 
 
-#ifndef __ZS_ZMQ_DECODER_HPP_INCLUDED__
-#define __ZS_ZMQ_DECODER_HPP_INCLUDED__
+#ifndef __ZMQ_ZMQ_DECODER_HPP_INCLUDED__
+#define __ZMQ_ZMQ_DECODER_HPP_INCLUDED__
 
-#include "../include/zs.h"
+#include "../include/zmq.h"
 
 #include "decoder.hpp"
 
-namespace zs
+namespace zmq
 {
     //  Decoder for 0MQ backend protocol. Converts data batches into messages.
 
@@ -46,7 +46,7 @@ namespace zs
 
         struct i_session *destination;
         unsigned char tmpbuf [8];
-        ::zs_msg in_progress;
+        ::zmq_msg in_progress;
 
         zmq_decoder_t (const zmq_decoder_t&);
         void operator = (const zmq_decoder_t&);

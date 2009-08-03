@@ -17,15 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_FD_SIGNALER_HPP_INCLUDED__
-#define __ZS_FD_SIGNALER_HPP_INCLUDED__
+#ifndef __ZMQ_FD_SIGNALER_HPP_INCLUDED__
+#define __ZMQ_FD_SIGNALER_HPP_INCLUDED__
 
 #include "platform.hpp"
 #include "i_signaler.hpp"
 #include "fd.hpp"
 #include "stdint.hpp"
 
-namespace zs
+namespace zmq
 {
 
     //  This object can be used to send individual signals from one thread to
@@ -73,7 +73,7 @@ namespace zs
 
 #endif
 
-#if defined ZS_HAVE_EVENTFD
+#if defined ZMQ_HAVE_EVENTFD
         //  Eventfd descriptor.
         fd_t fd;
 #else

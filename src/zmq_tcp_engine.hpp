@@ -17,8 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_ZMQ_TCP_ENGINE_HPP_INCLUDED__
-#define __ZS_ZMQ_TCP_ENGINE_HPP_INCLUDED__
+#ifndef __ZMQ_ZMQ_TCP_ENGINE_HPP_INCLUDED__
+#define __ZMQ_ZMQ_TCP_ENGINE_HPP_INCLUDED__
 
 #include "i_engine.hpp"
 #include "i_poller.hpp"
@@ -28,7 +28,7 @@
 #include "zmq_encoder.hpp"
 #include "zmq_decoder.hpp"
 
-namespace zs
+namespace zmq
 {
 
     class zmq_tcp_engine_t : public i_engine, public i_poll_events

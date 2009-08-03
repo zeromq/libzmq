@@ -17,14 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_YPOLLSET_HPP_INCLUDED__
-#define __ZS_YPOLLSET_HPP_INCLUDED__
+#ifndef __ZMQ_YPOLLSET_HPP_INCLUDED__
+#define __ZMQ_YPOLLSET_HPP_INCLUDED__
 
 #include "i_signaler.hpp"
 #include "simple_semaphore.hpp"
 #include "atomic_bitmap.hpp"
 
-namespace zs
+namespace zmq
 {
 
     //  ypollset allows for rapid polling for up to constant number of  

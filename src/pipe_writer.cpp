@@ -17,13 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zs.h"
+#include "../include/zmq.h"
 
 #include "pipe_writer.hpp"
 #include "pipe.hpp"
 #include "i_demux.hpp"
 
-zs::pipe_writer_t::pipe_writer_t (object_t *parent_, pipe_t *pipe_,
+zmq::pipe_writer_t::pipe_writer_t (object_t *parent_, pipe_t *pipe_,
       object_t *peer_, uint64_t hwm_, uint64_t lwm_) :
     object_t (parent_),
     pipe (pipe_),
@@ -37,34 +37,34 @@ zs::pipe_writer_t::pipe_writer_t (object_t *parent_, pipe_t *pipe_,
 {
 }
 
-zs::pipe_writer_t::~pipe_writer_t ()
+zmq::pipe_writer_t::~pipe_writer_t ()
 {
 }
 
-void zs::pipe_writer_t::set_demux (i_demux *demux_)
+void zmq::pipe_writer_t::set_demux (i_demux *demux_)
 {
     demux = demux_;
 }
 
-void zs::pipe_writer_t::set_index (int index_)
+void zmq::pipe_writer_t::set_index (int index_)
 {
     index = index_;
 }
 
-int zs::pipe_writer_t::get_index ()
+int zmq::pipe_writer_t::get_index ()
 {
     return index;
 }
 
-bool zs::pipe_writer_t::write (zs_msg *msg_)
+bool zmq::pipe_writer_t::write (zmq_msg *msg_)
 {
-    size_t msg_size = zs_msg_size (msg_);
+    size_t msg_size = zmq_msg_size (msg_);
 
     //  If message won't fit into the in-memory pipe, there's no way
     //  to pass it further.
     //  TODO: It should be discarded and 'oversized' notification should be
     //        placed into the pipe.
-    zs_assert (!hwm || msg_size <= hwm);
+    zmq_assert (!hwm || msg_size <= hwm);
 
     //  If there's not enough space in the pipe at the moment, return false.
     if (hwm && tail + msg_size - head > hwm)
@@ -78,18 +78,18 @@ bool zs::pipe_writer_t::write (zs_msg *msg_)
     return true;
 }
 
-void zs::pipe_writer_t::flush ()
+void zmq::pipe_writer_t::flush ()
 {
     if (!pipe->flush ())
         send_tail (peer, tail);
 }
 
-void zs::pipe_writer_t::process_head (uint64_t bytes_)
+void zmq::pipe_writer_t::process_head (uint64_t bytes_)
 {
     head = bytes_;
 }
 
-void zs::pipe_writer_t::terminate ()
+void zmq::pipe_writer_t::terminate ()
 {
     //  Disconnect from the associated demux.
     if (demux) {
@@ -99,15 +99,15 @@ void zs::pipe_writer_t::terminate ()
 
     //  Push the delimiter to the pipe. Delimiter is a notification for pipe
     //  reader that there will be no more messages in the pipe.
-    zs_msg delimiter;
-    delimiter.content = (zs_msg_content*) ZS_DELIMITER;
+    zmq_msg delimiter;
+    delimiter.content = (zmq_msg_content*) ZMQ_DELIMITER;
     delimiter.shared = false;
     delimiter.vsm_size = 0;
     pipe->write (delimiter);
     flush ();
 }
 
-void zs::pipe_writer_t::process_terminate ()
+void zmq::pipe_writer_t::process_terminate ()
 {
     //  Disconnect from the associated demux.
     if (demux) {

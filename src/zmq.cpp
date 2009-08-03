@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zs.h"
+#include "../include/zmq.h"
 
 #include <errno.h>
 #include <stdlib.h>
@@ -28,21 +28,21 @@
 #include "dispatcher.hpp"
 #include "msg.hpp"
 
-int zs_msg_init (zs_msg *msg_)
+int zmq_msg_init (zmq_msg *msg_)
 {
-    msg_->content = (zs_msg_content*) ZS_VSM;
+    msg_->content = (zmq_msg_content*) ZMQ_VSM;
     msg_->vsm_size = 0;
     return 0;
 }
 
-int zs_msg_init_size (zs_msg *msg_, size_t size_)
+int zmq_msg_init_size (zmq_msg *msg_, size_t size_)
 {
-    if (size_ <= ZS_MAX_VSM_SIZE) {
-        msg_->content = (zs_msg_content*) ZS_VSM;
+    if (size_ <= ZMQ_MAX_VSM_SIZE) {
+        msg_->content = (zmq_msg_content*) ZMQ_VSM;
         msg_->vsm_size = (uint16_t) size_;
     }
     else {
-        msg_->content = (zs_msg_content*) malloc (sizeof (zs_msg_content) +
+        msg_->content = (zmq_msg_content*) malloc (sizeof (zmq_msg_content) +
             size_);
         if (!msg_->content) {
             errno = ENOMEM;
@@ -53,29 +53,30 @@ int zs_msg_init_size (zs_msg *msg_, size_t size_)
         msg_->content->data = (void*) (msg_->content + 1);
         msg_->content->size = size_;
         msg_->content->ffn = NULL;
-        new (&msg_->content->refcnt) zs::atomic_counter_t ();
+        new (&msg_->content->refcnt) zmq::atomic_counter_t ();
     }
     return 0;
 }
 
-int zs_msg_init_data (zs_msg *msg_, void *data_, size_t size_, zs_free_fn *ffn_)
+int zmq_msg_init_data (zmq_msg *msg_, void *data_, size_t size_,
+    zmq_free_fn *ffn_)
 {
     msg_->shared = 0;
-    msg_->content = (zs_msg_content*) malloc (sizeof (zs_msg_content));
-    zs_assert (msg_->content);
+    msg_->content = (zmq_msg_content*) malloc (sizeof (zmq_msg_content));
+    zmq_assert (msg_->content);
     msg_->content->data = data_;
     msg_->content->size = size_;
     msg_->content->ffn = ffn_;
-    new (&msg_->content->refcnt) zs::atomic_counter_t ();
+    new (&msg_->content->refcnt) zmq::atomic_counter_t ();
     return 0;
 }
 
-int zs_msg_close (zs_msg *msg_)
+int zmq_msg_close (zmq_msg *msg_)
 {
     //  For VSMs and delimiters there are no resources to free
-    if (msg_->content == (zs_msg_content*) ZS_DELIMITER ||
-          msg_->content == (zs_msg_content*) ZS_VSM ||
-          msg_->content == (zs_msg_content*) ZS_GAP)
+    if (msg_->content == (zmq_msg_content*) ZMQ_DELIMITER ||
+          msg_->content == (zmq_msg_content*) ZMQ_VSM ||
+          msg_->content == (zmq_msg_content*) ZMQ_GAP)
         return 0;
 
     //  If the content is not shared, or if it is shared and the reference
@@ -94,23 +95,23 @@ int zs_msg_close (zs_msg *msg_)
     return 0;
 }
 
-int zs_msg_move (zs_msg *dest_, zs_msg *src_)
+int zmq_msg_move (zmq_msg *dest_, zmq_msg *src_)
 {
-    zs_msg_close (dest_);
+    zmq_msg_close (dest_);
     *dest_ = *src_;
-    zs_msg_init (src_);
+    zmq_msg_init (src_);
     return 0;
 }
 
-int zs_msg_copy (zs_msg *dest_, zs_msg *src_)
+int zmq_msg_copy (zmq_msg *dest_, zmq_msg *src_)
 {
-    zs_msg_close (dest_);
+    zmq_msg_close (dest_);
 
     //  VSMs and delimiters require no special handling.
     if (src_->content !=
-          (zs_msg_content*) ZS_DELIMITER &&
-          src_->content != (zs_msg_content*) ZS_VSM &&
-          src_->content != (zs_msg_content*) ZS_GAP) {
+          (zmq_msg_content*) ZMQ_DELIMITER &&
+          src_->content != (zmq_msg_content*) ZMQ_VSM &&
+          src_->content != (zmq_msg_content*) ZMQ_GAP) {
 
         //  One reference is added to shared messages. Non-shared messages
         //  are turned into shared messages and reference count is set to 2.
@@ -126,32 +127,32 @@ int zs_msg_copy (zs_msg *dest_, zs_msg *src_)
     return 0;
 }
 
-void *zs_msg_data (zs_msg *msg_)
+void *zmq_msg_data (zmq_msg *msg_)
 {
-    if (msg_->content == (zs_msg_content*) ZS_VSM)
+    if (msg_->content == (zmq_msg_content*) ZMQ_VSM)
         return msg_->vsm_data;
     if (msg_->content ==
-          (zs_msg_content*) ZS_DELIMITER ||
-          msg_->content == (zs_msg_content*) ZS_GAP)
+          (zmq_msg_content*) ZMQ_DELIMITER ||
+          msg_->content == (zmq_msg_content*) ZMQ_GAP)
         return NULL;
     return msg_->content->data;
 }
 
-size_t zs_msg_size (zs_msg *msg_)
+size_t zmq_msg_size (zmq_msg *msg_)
 {
-    if (msg_->content == (zs_msg_content*) ZS_VSM)
+    if (msg_->content == (zmq_msg_content*) ZMQ_VSM)
         return msg_->vsm_size;
     if (msg_->content ==
-          (zs_msg_content*) ZS_DELIMITER ||
-          msg_->content == (zs_msg_content*) ZS_GAP)
+          (zmq_msg_content*) ZMQ_DELIMITER ||
+          msg_->content == (zmq_msg_content*) ZMQ_GAP)
         return 0;
     return msg_->content->size;
 }
 
-int zs_msg_type (zs_msg *msg_)
+int zmq_msg_type (zmq_msg *msg_)
 {
     //  If it's a genuine message, return 0.
-    if (msg_->content >= (zs_msg_content*) ZS_VSM)
+    if (msg_->content >= (zmq_msg_content*) ZMQ_VSM)
             return 0;
 
     //   Trick the compiler to believe that content is an integer.
@@ -159,7 +160,7 @@ int zs_msg_type (zs_msg *msg_)
     return (((const unsigned char*) msg_->content) - offset);
 }
 
-void *zs_init (int app_threads_, int io_threads_)
+void *zmq_init (int app_threads_, int io_threads_)
 {
     //  There should be at least a single thread managed by the dispatcher.
     if (app_threads_ < 0 || io_threads_ < 0 ||
@@ -168,55 +169,55 @@ void *zs_init (int app_threads_, int io_threads_)
         return NULL;
     }
 
-    zs::dispatcher_t *dispatcher =
-        new zs::dispatcher_t (app_threads_, io_threads_);
-    zs_assert (dispatcher);
+    zmq::dispatcher_t *dispatcher =
+        new zmq::dispatcher_t (app_threads_, io_threads_);
+    zmq_assert (dispatcher);
     return (void*) dispatcher;
 }
 
-int zs_term (void *context_)
+int zmq_term (void *context_)
 {
-    ((zs::dispatcher_t*) context_)->shutdown ();
+    ((zmq::dispatcher_t*) context_)->shutdown ();
     return 0;
 }
 
-void *zs_socket (void *context_, int type_)
+void *zmq_socket (void *context_, int type_)
 {
-    return (void*) (((zs::dispatcher_t*) context_)->create_socket (type_));
+    return (void*) (((zmq::dispatcher_t*) context_)->create_socket (type_));
 }
 
-int zs_close (void *s_)
+int zmq_close (void *s_)
 {
-    ((zs::i_api*) s_)->close ();
+    ((zmq::i_api*) s_)->close ();
     return 0;
 }
 
-int zs_bind (void *s_, const char *addr_, zs_opts *opts_)
+int zmq_bind (void *s_, const char *addr_, zmq_opts *opts_)
 {
-    return (((zs::i_api*) s_)->bind (addr_, opts_));
+    return (((zmq::i_api*) s_)->bind (addr_, opts_));
 }
 
-int zs_connect (void *s_, const char *addr_, zs_opts *opts_)
+int zmq_connect (void *s_, const char *addr_, zmq_opts *opts_)
 {
-    return (((zs::i_api*) s_)->connect (addr_, opts_));
+    return (((zmq::i_api*) s_)->connect (addr_, opts_));
 }
 
-int zs_subscribe (void *s_, const char *criteria_)
+int zmq_subscribe (void *s_, const char *criteria_)
 {
-    return (((zs::i_api*) s_)->subscribe (criteria_));
+    return (((zmq::i_api*) s_)->subscribe (criteria_));
 }
 
-int zs_send (void *s_, zs_msg *msg_, int flags_)
+int zmq_send (void *s_, zmq_msg *msg_, int flags_)
 {
-    return (((zs::i_api*) s_)->send (msg_, flags_));
+    return (((zmq::i_api*) s_)->send (msg_, flags_));
 }
 
-int zs_flush (void *s_)
+int zmq_flush (void *s_)
 {
-    return (((zs::i_api*) s_)->flush ());
+    return (((zmq::i_api*) s_)->flush ());
 }
 
-int zs_recv (void *s_, zs_msg *msg_, int flags_)
+int zmq_recv (void *s_, zmq_msg *msg_, int flags_)
 {
-    return (((zs::i_api*) s_)->recv (msg_, flags_));
+    return (((zmq::i_api*) s_)->recv (msg_, flags_));
 }

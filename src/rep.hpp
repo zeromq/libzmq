@@ -17,12 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZS_REP_HPP_INCLUDED__
-#define __ZS_REP_HPP_INCLUDED__
+#ifndef __ZMQ_REP_HPP_INCLUDED__
+#define __ZMQ_REP_HPP_INCLUDED__
 
 #include "socket_base.hpp"
 
-namespace zs
+namespace zmq
 {
 
     class rep_t : public socket_base_t
