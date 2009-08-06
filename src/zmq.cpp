@@ -176,7 +176,7 @@ void *zmq_init (int app_threads_, int io_threads_)
 
 int zmq_term (void *context_)
 {
-    ((zmq::context_t*) context_)->shutdown ();
+    delete (zmq::context_t*) context_;
     return 0;
 }
 

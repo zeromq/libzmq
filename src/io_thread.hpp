@@ -23,7 +23,6 @@
 #include <vector>
 
 #include "object.hpp"
-#include "i_thread.hpp"
 #include "i_poller.hpp"
 #include "i_poll_events.hpp"
 #include "fd_signaler.hpp"
@@ -34,25 +33,21 @@ namespace zmq
     //  Generic part of the I/O thread. Polling-mechanism-specific features
     //  are implemented in separate "polling objects".
 
-    class io_thread_t : public object_t, public i_poll_events, public i_thread
+    class io_thread_t : public object_t, public i_poll_events
     {
     public:
 
         io_thread_t (class context_t *context_, int thread_slot_);
+
+        //  Clean-up. If the thread was started, it's neccessary to call 'stop'
+        //  before invoking destructor. Otherwise the destructor would hang up.
+        ~io_thread_t ();
 
         //  Launch the physical thread.
         void start ();
 
         //  Ask underlying thread to stop.
         void stop ();
-
-        //  Wait till undelying thread terminates.
-        void join ();
-
-        //  To be called when the whole infrastrucure is being closed (zmq_term).
-        //  It's vital to call the individual commands in this sequence:
-        //  stop, join, shutdown.
-        void shutdown ();
 
         //  Returns signaler associated with this I/O thread.
         i_signaler *get_signaler ();
@@ -62,9 +57,7 @@ namespace zmq
         void out_event ();
         void timer_event ();
 
-        //  i_thread implementation.
-        void attach_session (class session_t *session_);
-        void detach_session (class session_t *session_);
+        //  ???
         struct i_poller *get_poller ();
 
         //  Command handlers.
@@ -75,9 +68,6 @@ namespace zmq
 
     private:
 
-        //  Clean-up.
-        ~io_thread_t ();
-
         //  Poll thread gets notifications about incoming commands using
         //  this signaler.
         fd_signaler_t signaler;
@@ -87,11 +77,6 @@ namespace zmq
 
         //  I/O multiplexing is performed using a poller object.
         i_poller *poller;
-
-        //  Vector of all sessions associated with this app thread.
-        typedef std::vector <class session_t*> sessions_t;
-        sessions_t sessions;
-
     };
 
 }

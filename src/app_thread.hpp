@@ -22,7 +22,7 @@
 
 #include <vector>
 
-#include "i_thread.hpp"
+#include "i_socket.hpp"
 #include "stdint.hpp"
 #include "object.hpp"
 #include "ypollset.hpp"
@@ -30,23 +30,18 @@
 namespace zmq
 {
 
-    class app_thread_t : public object_t, public i_thread
+    class app_thread_t : public object_t
     {
     public:
 
         app_thread_t (class context_t *context_, int thread_slot_);
 
-        //  To be called when the whole infrastrucure is being closed.
-        void shutdown ();
+        ~app_thread_t ();
 
         //  Returns signaler associated with this application thread.
         i_signaler *get_signaler ();
 
-        //  Create socket engine in this thread. Return false if the calling
-        //  thread doesn't match the thread handled by this app thread object.
-        struct i_api *create_socket (int type_);
-
-        //  Nota bene: The following two functions are accessed from different
+        //  Nota bene: Following two functions are accessed from different
         //  threads. The caller (context) is responsible for synchronisation
         //  of accesses.
 
@@ -61,24 +56,16 @@ namespace zmq
         //  set to true, returns only after at least one command was processed.
         void process_commands (bool block_);
 
-        //  i_thread implementation.
-        void attach_session (class session_t *session_);
-        void detach_session (class session_t *session_);
-        struct i_poller *get_poller ();
-
     private:
 
-        //  Clean-up.
-        ~app_thread_t ();
+        //  All the sockets created from this application thread.
+        typedef std::vector <i_socket*> sockets_t;
+        sockets_t sockets;
 
         //  Thread ID associated with this slot.
         //  TODO: Virtualise pid_t!
         //  TODO: Check whether getpid returns unique ID for each thread.
         int tid;
-
-        //  Vector of all sessionss associated with this app thread.
-        typedef std::vector <class session_t*> sessions_t;
-        sessions_t sessions;
 
         //  App thread's signaler object.
         ypollset_t pollset;

@@ -17,13 +17,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zmq.h"
+#ifndef __ZMQ_I_SOCKET_HPP_INCLUDED__
+#define __ZMQ_I_SOCKET_HPP_INCLUDED__
 
-#include "req.hpp"
-#include "app_thread.hpp"
-#include "session.hpp"
-
-zmq::req_t::req_t (app_thread_t *thread_, session_t *session_) :
-    socket_base_t (thread_, session_)
+namespace zmq
 {
+
+    struct i_socket
+    {
+        virtual ~i_socket () {};
+
+        //  Start shutting down the socket.
+        virtual void stop () = 0;
+    };
+
 }
+
+#endif

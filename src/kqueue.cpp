@@ -42,6 +42,10 @@ zmq::kqueue_t::kqueue_t ()
 
 zmq::kqueue_t::~kqueue_t ()
 {
+    //  Make sure there are no fds registered on shutdown.
+    zmq_assert (load.get () == 0);
+
+    worker.stop ();
     close (kqueue_fd);
 }
 
@@ -142,11 +146,6 @@ void zmq::kqueue_t::start ()
 void zmq::kqueue_t::stop ()
 {
     stopping = true;
-}
-
-void zmq::kqueue_t::join ()
-{
-    worker.stop ();
 }
 
 void zmq::kqueue_t::loop ()

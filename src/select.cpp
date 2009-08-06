@@ -51,6 +51,14 @@ zmq::select_t::select_t () :
     FD_ZERO (&source_set_err);
 }
 
+zmq::select_t::~select_t ()
+{
+    //  Make sure there are no fds registered on shutdown.
+    zmq_assert (load.get () == 0);
+
+    worker.stop ();
+}
+
 zmq::handle_t zmq::select_t::add_fd (fd_t fd_, i_poll_events *events_)
 {
     //  Store the file descriptor.
@@ -154,11 +162,6 @@ void zmq::select_t::start ()
 void zmq::select_t::stop ()
 {
     stopping = true;
-}
-
-void zmq::select_t::join ()
-{
-    worker.stop ();
 }
 
 void zmq::select_t::loop ()

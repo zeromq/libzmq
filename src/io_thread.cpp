@@ -30,9 +30,7 @@
 #include "devpoll.hpp"
 #include "kqueue.hpp"
 #include "context.hpp"
-#include "session.hpp"
 #include "simple_semaphore.hpp"
-#include "session.hpp"
 
 zmq::io_thread_t::io_thread_t (context_t *context_, int thread_slot_) :
     object_t (context_, thread_slot_)
@@ -76,15 +74,6 @@ zmq::io_thread_t::io_thread_t (context_t *context_, int thread_slot_) :
     poller->set_pollin (signaler_handle);
 }
 
-void zmq::io_thread_t::shutdown ()
-{
-    //  Deallocate all the sessions associated with the thread.
-    while (!sessions.empty ())
-        sessions [0]->shutdown ();
-
-    delete this;
-}
-
 zmq::io_thread_t::~io_thread_t ()
 {
     delete poller;
@@ -99,11 +88,6 @@ void zmq::io_thread_t::start ()
 void zmq::io_thread_t::stop ()
 {
     send_stop ();
-}
-
-void zmq::io_thread_t::join ()
-{
-    poller->join ();
 }
 
 zmq::i_signaler *zmq::io_thread_t::get_signaler ()
@@ -147,21 +131,6 @@ void zmq::io_thread_t::timer_event ()
 {
     //  No timers here. This function is never called.
     zmq_assert (false);
-}
-
-void zmq::io_thread_t::attach_session (session_t *session_)
-{
-    session_->set_index (sessions.size ());
-    sessions.push_back (session_); 
-}
-
-void zmq::io_thread_t::detach_session (session_t *session_)
-{
-    //  O(1) removal of the session from the list.
-    sessions_t::size_type i = session_->get_index ();
-    sessions [i] = sessions [sessions.size () - 1];
-    sessions [i]->set_index (i);
-    sessions.pop_back ();
 }
 
 zmq::i_poller *zmq::io_thread_t::get_poller ()

@@ -44,7 +44,7 @@ namespace zmq
     public:
 
         epoll_t ();
-        virtual ~epoll_t ();
+        ~epoll_t ();
 
         //  i_poller implementation.
         handle_t add_fd (fd_t fd_, i_poll_events *events_);
@@ -58,7 +58,6 @@ namespace zmq
         int get_load ();
         void start ();
         void stop ();
-        void join ();
 
     private:
 

@@ -20,12 +20,8 @@
 #include "object.hpp"
 #include "context.hpp"
 #include "err.hpp"
-#include "pipe_reader.hpp"
-#include "pipe_writer.hpp"
-#include "session.hpp"
 #include "io_thread.hpp"
 #include "simple_semaphore.hpp"
-#include "i_engine.hpp"
 
 zmq::object_t::object_t (context_t *context_, int thread_slot_) :
     context (context_),
@@ -101,35 +97,6 @@ void zmq::object_t::process_command (command_t &cmd_)
     default:
         zmq_assert (false);
     }
-}
-
-void zmq::object_t::create_pipe (object_t *reader_parent_,
-    object_t *writer_parent_, uint64_t hwm_, uint64_t lwm_,
-    pipe_reader_t **reader_, pipe_writer_t **writer_)
-{
-    context->create_pipe (reader_parent_, writer_parent_, hwm_, lwm_,
-        reader_, writer_);
-}
-
-void zmq::object_t::destroy_pipe (pipe_t *pipe_)
-{
-    context->destroy_pipe (pipe_);
-}
-
-int zmq::object_t::register_inproc_endpoint (const char *endpoint_,
-    session_t *session_)
-{
-    return context->register_inproc_endpoint (endpoint_, session_);
-}
-
-zmq::object_t *zmq::object_t::get_inproc_endpoint (const char *endpoint_)
-{
-    return context->get_inproc_endpoint (endpoint_);
-}
-
-void zmq::object_t::unregister_inproc_endpoints (session_t *session_)
-{
-    context->unregister_inproc_endpoints (session_);
 }
 
 zmq::io_thread_t *zmq::object_t::choose_io_thread (uint64_t taskset_)

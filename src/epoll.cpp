@@ -41,8 +41,11 @@ zmq::epoll_t::epoll_t () :
 
 zmq::epoll_t::~epoll_t ()
 {
-    close (epoll_fd);
+    //  Make sure there are no fds registered on shutdown.
+    zmq_assert (load.get () == 0);
 
+    worker.stop ();
+    close (epoll_fd);
     for (retired_t::iterator it = retired.begin (); it != retired.end (); it ++)
         delete *it;
 }
@@ -142,11 +145,6 @@ void zmq::epoll_t::start ()
 void zmq::epoll_t::stop ()
 {
     stopping = true;
-}
-
-void zmq::epoll_t::join ()
-{
-    worker.stop ();
 }
 
 void zmq::epoll_t::loop ()

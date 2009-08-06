@@ -7,53 +7,30 @@ libzmq_la_SOURCES = \
     atomic_ptr.hpp \
     command.hpp \
     config.hpp \
-    connecter.hpp \
     context.hpp \
-    data_distributor.hpp \
     decoder.hpp \
     devpoll.hpp \
-    dummy_aggregator.hpp \
-    dummy_distributor.hpp \
     encoder.hpp \
     epoll.hpp \
     err.hpp \
-    fair_aggregator.hpp \
     fd.hpp \
     fd_signaler.hpp \
-    io_object.hpp \
     io_thread.hpp \
     ip.hpp \
     i_api.hpp \
-    i_demux.hpp \
-    i_mux.hpp \
     i_poller.hpp \
     i_poll_events.hpp \
-    i_session.hpp \
     i_signaler.hpp \
-    i_engine.hpp \
-    i_thread.hpp \
-    listener.hpp \
+    i_socket.hpp \
     kqueue.hpp \
-    load_balancer.hpp \
     msg.hpp \
     mutex.hpp \
     object.hpp \
-    p2p.hpp \
     pipe.hpp \
-    pipe_reader.hpp \
-    pipe_writer.hpp \
     platform.hpp \
     poll.hpp \
-    pub.hpp \
-    rep.hpp \
-    req.hpp \
-    safe_object.hpp \
     select.hpp \
-    session.hpp \
-    session_stub.hpp \
     simple_semaphore.hpp \
-    socket_base.hpp \
-    sub.hpp \
     stdint.hpp \
     tcp_connecter.hpp \
     tcp_listener.hpp \
@@ -65,50 +42,24 @@ libzmq_la_SOURCES = \
     ypipe.hpp \
     ypollset.hpp \
     yqueue.hpp \
-    zmq_decoder.hpp \
-    zmq_encoder.hpp \
-    zmq_tcp_engine.hpp \
     app_thread.cpp \
-    connecter.cpp \
     context.cpp \
-    data_distributor.cpp \
     devpoll.hpp \
-    dummy_aggregator.cpp \
-    dummy_distributor.cpp \
     epoll.cpp \
     err.cpp \
-    fair_aggregator.cpp \
     fd_signaler.cpp \
-    io_object.cpp \
     io_thread.cpp \
     ip.cpp \
     kqueue.cpp \
-    listener.cpp \
-    load_balancer.cpp \
     object.cpp \
-    p2p.cpp \
-    pipe.cpp \
-    pipe_reader.cpp \
-    pipe_writer.cpp \
     poll.cpp \
-    pub.cpp \
-    rep.cpp \
-    req.cpp \
-    safe_object.cpp \
     select.cpp \
-    session.cpp \
-    session_stub.cpp \
-    socket_base.cpp \
-    sub.cpp \
     tcp_connecter.cpp \
     tcp_listener.cpp \
     tcp_socket.cpp \
     thread.cpp \
     uuid.cpp \
     ypollset.cpp \
-    zmq_decoder.cpp \
-    zmq_encoder.cpp \
-    zmq_tcp_engine.cpp \
     zmq.cpp
 
 libzmq_la_LDFLAGS = -version-info 0:0:0

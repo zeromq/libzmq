@@ -44,14 +44,6 @@ namespace zmq
         //  Derived object can use following functions to interact with
         //  global repositories. See context.hpp for function details.
         int thread_slot_count ();
-        void create_pipe (class object_t *reader_parent_,
-            class object_t *writer_parent_, uint64_t hwm_, uint64_t lwm_,
-            class pipe_reader_t **reader_, class pipe_writer_t **writer_);
-        void destroy_pipe (class pipe_t *pipe_);
-        int register_inproc_endpoint (const char *endpoint_,
-            class session_t *session_);
-        class object_t *get_inproc_endpoint (const char *endpoint_);
-        void unregister_inproc_endpoints (class session_t *session_);
         class io_thread_t *choose_io_thread (uint64_t taskset_);
 
         //  Derived object can use these functions to send commands

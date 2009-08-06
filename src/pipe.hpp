@@ -28,29 +28,10 @@
 namespace zmq
 {
 
-    //  Message pipe. A simple wrapper on top of ypipe.
-
+    //  Message pipe.
     class pipe_t : public ypipe_t <zmq_msg, false, message_pipe_granularity>
     {
-        //  Context is a friend so that it can create & destroy the pipes.
-        //  By making constructor & destructor private we are sure that nobody
-        //  except context messes with pipes.
-        friend class context_t;
-
-    private:
-
-        pipe_t ();
-        ~pipe_t ();
-
-        void set_index (int index_);
-        int get_index ();
-
-        //  Index of the pipe in context's array of pipes.
-        int index;
-
-        pipe_t (const pipe_t&);
-        void operator = (const pipe_t&);
-    }; 
+    };
 
 }
 

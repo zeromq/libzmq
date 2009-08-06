@@ -75,13 +75,8 @@ namespace zmq
         //  This method is called from a foreign thread.
         virtual void start () = 0;
 
-        //  Ask underlying I/O thread to stop. This method is called from
-        //  underlying thread (callback from io_thread object).
+        //  Ask underlying I/O thread to stop.
         virtual void stop () = 0;
-
-        //  Wait for termination of undelying I/O thread.
-        //  This method is called from a foreign thread.
-        virtual void join () = 0;
     };
 
 }

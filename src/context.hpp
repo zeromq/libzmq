@@ -52,9 +52,9 @@ namespace zmq
         context_t (int app_threads_, int io_threads_);
 
         //  To be called to terminate the whole infrastructure (zmq_term).
-        void shutdown ();
+        ~context_t ();
 
-        //  Create a socket engine.
+        //  Create a socket.
         struct i_api *create_socket (int type_);
 
         //  Returns number of thread slots in the context. To be used by
@@ -81,36 +81,11 @@ namespace zmq
                 destination_].read (command_);
         }
 
-        //  Creates new pipe.
-        void create_pipe (class object_t *reader_parent_,
-            class object_t *writer_parent_, uint64_t hwm_, uint64_t lwm_,
-            class pipe_reader_t **reader_, class pipe_writer_t **writer_);
-
-        //  Deallocates the pipe.
-        void destroy_pipe (class pipe_t *pipe_);
-
-        //  Registers existing session object as an inproc endpoint.
-        int register_inproc_endpoint (const char *endpoint_,
-            class session_t *session_);
-
-        //  Retrieves an inproc endpoint. Increments the command sequence number
-        //  of the object by one. Caller is thus bound to send the command
-        //  to the connection after invoking this function. Returns NULL if
-        //  the endpoint doesn't exist.
-        class object_t *get_inproc_endpoint (const char *endpoint_);
-
-        //  Removes all the inproc endpoints associated with the given session
-        //  object from the global repository.
-        void unregister_inproc_endpoints (class session_t *session_);
-
         //  Returns the I/O thread that is the least busy at the moment.
         //  Taskset specifies which I/O threads are eligible (0 = all).
         class io_thread_t *choose_io_thread (uint64_t taskset_);
 
     private:
-
-        //  Clean-up.
-        ~context_t ();
 
         //  Returns the app thread associated with the current thread.
         //  NULL if we are out of app thread slots.
@@ -136,29 +111,6 @@ namespace zmq
 
         //  Synchronisation of accesses to shared thread data.
         mutex_t threads_sync;
-
-        //  Global repository of pipes. It's used only on terminal shutdown
-        //  to deallocate all the pipes irrespective of whether they are
-        //  referenced from pipe_reader, pipe_writer or both.
-        struct pipe_info_t
-        {
-            class pipe_t *pipe;
-            class pipe_reader_t *reader;
-            class pipe_writer_t *writer;
-        };
-        typedef std::vector <pipe_info_t> pipes_t;
-        pipes_t pipes;
-
-        //  Synchronisation of access to global repository of pipes.
-        mutex_t pipes_sync;
-
-        //  Global repository of available inproc endpoints.
-        typedef std::map <std::string, class session_t*> inproc_endpoints_t;
-        inproc_endpoints_t inproc_endpoints;
-
-        //  Synchronisation of access to the global repository
-        //  of inproc endpoints.
-        mutex_t inproc_endpoint_sync;
 
         context_t (const context_t&);
         void operator = (const context_t&);

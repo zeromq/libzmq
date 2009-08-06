@@ -50,6 +50,14 @@ zmq::poll_t::poll_t () :
         fd_table [i].index = retired_fd;
 }
 
+zmq::poll_t::~poll_t ()
+{
+    //  Make sure there are no fds registered on shutdown.
+    zmq_assert (load.get () == 0);
+
+    worker.stop ();
+}
+
 zmq::handle_t zmq::poll_t::add_fd (fd_t fd_, i_poll_events *events_)
 {
     pollfd pfd = {fd_, 0, 0};
@@ -130,11 +138,6 @@ void zmq::poll_t::start ()
 void zmq::poll_t::stop ()
 {
     stopping = true;
-}
-
-void zmq::poll_t::join ()
-{
-    worker.stop ();
 }
 
 void zmq::poll_t::loop ()
