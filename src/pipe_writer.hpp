@@ -28,10 +28,10 @@ namespace zmq
 
     class pipe_writer_t : public object_t
     {
-        //  Dispatcher is a friend so that it can create & destroy the writer.
+        //  Context is a friend so that it can create & destroy the writer.
         //  By making constructor & destructor private we are sure that nobody
-        //  except dispatcher messes with writers.
-        friend class dispatcher_t;
+        //  except context messes with writers.
+        friend class context_t;
 
     public:
 

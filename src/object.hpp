@@ -32,7 +32,7 @@ namespace zmq
     {
     public:
 
-        object_t (class dispatcher_t *dispatcher_, int thread_slot_);
+        object_t (class context_t *context_, int thread_slot_);
         object_t (object_t *parent_);
         ~object_t ();
 
@@ -42,7 +42,7 @@ namespace zmq
     protected:
 
         //  Derived object can use following functions to interact with
-        //  global repositories. See dispatcher.hpp for function details.
+        //  global repositories. See context.hpp for function details.
         int thread_slot_count ();
         void create_pipe (class object_t *reader_parent_,
             class object_t *writer_parent_, uint64_t hwm_, uint64_t lwm_,
@@ -87,7 +87,7 @@ namespace zmq
         virtual void process_terminate_ack ();
 
         //  Pointer to the root of the infrastructure.
-        class dispatcher_t *dispatcher;
+        class context_t *context;
 
         //  Slot ID of the thread the object belongs to.
         int thread_slot;

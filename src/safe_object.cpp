@@ -19,9 +19,9 @@
 
 #include "safe_object.hpp"
 
-zmq::safe_object_t::safe_object_t (class dispatcher_t *dispatcher_,
-      int thread_slot_) :
-    object_t (dispatcher_, thread_slot_),
+zmq::safe_object_t::safe_object_t (class context_t *context_,
+        int thread_slot_) :
+    object_t (context_, thread_slot_),
     processed_seqnum (0),
     terminating (false)
 {

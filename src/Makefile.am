@@ -8,10 +8,10 @@ libzmq_la_SOURCES = \
     command.hpp \
     config.hpp \
     connecter.hpp \
+    context.hpp \
     data_distributor.hpp \
     decoder.hpp \
     devpoll.hpp \
-    dispatcher.hpp \
     dummy_aggregator.hpp \
     dummy_distributor.hpp \
     encoder.hpp \
@@ -70,9 +70,9 @@ libzmq_la_SOURCES = \
     zmq_tcp_engine.hpp \
     app_thread.cpp \
     connecter.cpp \
+    context.cpp \
     data_distributor.cpp \
     devpoll.hpp \
-    dispatcher.cpp \
     dummy_aggregator.cpp \
     dummy_distributor.cpp \
     epoll.cpp \

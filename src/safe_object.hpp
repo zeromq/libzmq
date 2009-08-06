@@ -36,7 +36,7 @@ namespace zmq
     {
     public:
 
-        safe_object_t (class dispatcher_t *dispatcher_, int thread_slot_);
+        safe_object_t (class context_t *context_, int thread_slot_);
         safe_object_t (object_t *parent_);
 
         void inc_seqnum ();

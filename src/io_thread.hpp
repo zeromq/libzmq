@@ -38,7 +38,7 @@ namespace zmq
     {
     public:
 
-        io_thread_t (class dispatcher_t *dispatcher_, int thread_slot_);
+        io_thread_t (class context_t *context_, int thread_slot_);
 
         //  Launch the physical thread.
         void start ();

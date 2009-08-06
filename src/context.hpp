@@ -17,8 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_DISPATCHER_HPP_INCLUDED__
-#define __ZMQ_DISPATCHER_HPP_INCLUDED__
+#ifndef __ZMQ_CONTEXT_HPP_INCLUDED__
+#define __ZMQ_CONTEXT_HPP_INCLUDED__
 
 #include <vector>
 #include <map>
@@ -37,19 +37,19 @@ namespace zmq
     //  Dispatcher implements bidirectional thread-safe passing of commands
     //  between N threads. It consists of a ypipes to pass commands and
     //  signalers to wake up the receiver thread when new commands are
-    //  available. Note that dispatcher is inefficient for passing messages
+    //  available. Note that context is inefficient for passing messages
     //  within a thread (sender thread = receiver thread). The optimisation is
     //  not part of the class and should be implemented by individual threads
     //  (presumably by calling the command handling function directly).
     
-    class dispatcher_t
+    class context_t
     {
     public:
 
-        //  Create the dispatcher object. Matrix of pipes to communicate between
+        //  Create the context object. Matrix of pipes to communicate between
         //  each socket and each I/O thread is created along with appropriate
         //  signalers.
-        dispatcher_t (int app_threads_, int io_threads_);
+        context_t (int app_threads_, int io_threads_);
 
         //  To be called to terminate the whole infrastructure (zmq_term).
         void shutdown ();
@@ -57,12 +57,12 @@ namespace zmq
         //  Create a socket engine.
         struct i_api *create_socket (int type_);
 
-        //  Returns number of thread slots in the dispatcher. To be used by
+        //  Returns number of thread slots in the context. To be used by
         //  individual threads to find out how many distinct signals can be
         //  received.
         int thread_slot_count ();
 
-        //  Write command to the dispatcher.
+        //  Send command from the source to the destination.
         inline void write (int source_, int destination_,
             const command_t &command_)
         {
@@ -73,7 +73,7 @@ namespace zmq
                 signalers [destination_]->signal (source_);
         }
 
-        //  Read command from the dispatcher. Returns false if there is no
+        //  Receive command from the source. Returns false if there is no
         //  command available.
         inline bool read (int source_,  int destination_, command_t *command_)
         {
@@ -110,7 +110,7 @@ namespace zmq
     private:
 
         //  Clean-up.
-        ~dispatcher_t ();
+        ~context_t ();
 
         //  Returns the app thread associated with the current thread.
         //  NULL if we are out of app thread slots.
@@ -160,8 +160,8 @@ namespace zmq
         //  of inproc endpoints.
         mutex_t inproc_endpoint_sync;
 
-        dispatcher_t (const dispatcher_t&);
-        void operator = (const dispatcher_t&);
+        context_t (const context_t&);
+        void operator = (const context_t&);
     };
     
 }

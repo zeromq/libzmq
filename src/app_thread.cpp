@@ -26,7 +26,7 @@
 #endif
 
 #include "app_thread.hpp"
-#include "dispatcher.hpp"
+#include "context.hpp"
 #include "err.hpp"
 #include "session.hpp"
 #include "pipe.hpp"
@@ -51,8 +51,8 @@
 #define ZMQ_DELAY_COMMANDS
 #endif
 
-zmq::app_thread_t::app_thread_t (dispatcher_t *dispatcher_, int thread_slot_) :
-    object_t (dispatcher_, thread_slot_),
+zmq::app_thread_t::app_thread_t (context_t *context_, int thread_slot_) :
+    object_t (context_, thread_slot_),
     tid (0),
     last_processing_time (0)
 {
@@ -213,7 +213,7 @@ void zmq::app_thread_t::process_commands (bool block_)
         for (int i = 0; i != thread_slot_count (); i++) {
             if (signals & (ypollset_t::signals_t (1) << i)) {
                 command_t cmd;
-                while (dispatcher->read (i, get_thread_slot (), &cmd))
+                while (context->read (i, get_thread_slot (), &cmd))
                     cmd.destination->process_command (cmd);
             }
         }

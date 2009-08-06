@@ -32,10 +32,10 @@ namespace zmq
 
     class pipe_t : public ypipe_t <zmq_msg, false, message_pipe_granularity>
     {
-        //  Dispatcher is a friend so that it can create & destroy the pipes.
+        //  Context is a friend so that it can create & destroy the pipes.
         //  By making constructor & destructor private we are sure that nobody
-        //  except dispatcher messes with pipes.
-        friend class dispatcher_t;
+        //  except context messes with pipes.
+        friend class context_t;
 
     private:
 
@@ -45,7 +45,7 @@ namespace zmq
         void set_index (int index_);
         int get_index ();
 
-        //  Index of the pipe in dispatcher's array of pipes.
+        //  Index of the pipe in context's array of pipes.
         int index;
 
         pipe_t (const pipe_t&);

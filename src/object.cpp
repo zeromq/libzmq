@@ -18,7 +18,7 @@
 */
 
 #include "object.hpp"
-#include "dispatcher.hpp"
+#include "context.hpp"
 #include "err.hpp"
 #include "pipe_reader.hpp"
 #include "pipe_writer.hpp"
@@ -27,14 +27,14 @@
 #include "simple_semaphore.hpp"
 #include "i_engine.hpp"
 
-zmq::object_t::object_t (dispatcher_t *dispatcher_, int thread_slot_) :
-    dispatcher (dispatcher_),
+zmq::object_t::object_t (context_t *context_, int thread_slot_) :
+    context (context_),
     thread_slot (thread_slot_)
 {
 }
 
 zmq::object_t::object_t (object_t *parent_) :
-    dispatcher (parent_->dispatcher),
+    context (parent_->context),
     thread_slot (parent_->thread_slot)
 {
 }
@@ -45,7 +45,7 @@ zmq::object_t::~object_t ()
 
 int zmq::object_t::thread_slot_count ()
 {
-    return dispatcher->thread_slot_count ();
+    return context->thread_slot_count ();
 }
 
 int zmq::object_t::get_thread_slot ()
@@ -107,34 +107,34 @@ void zmq::object_t::create_pipe (object_t *reader_parent_,
     object_t *writer_parent_, uint64_t hwm_, uint64_t lwm_,
     pipe_reader_t **reader_, pipe_writer_t **writer_)
 {
-    dispatcher->create_pipe (reader_parent_, writer_parent_, hwm_, lwm_,
+    context->create_pipe (reader_parent_, writer_parent_, hwm_, lwm_,
         reader_, writer_);
 }
 
 void zmq::object_t::destroy_pipe (pipe_t *pipe_)
 {
-    dispatcher->destroy_pipe (pipe_);
+    context->destroy_pipe (pipe_);
 }
 
 int zmq::object_t::register_inproc_endpoint (const char *endpoint_,
     session_t *session_)
 {
-    return dispatcher->register_inproc_endpoint (endpoint_, session_);
+    return context->register_inproc_endpoint (endpoint_, session_);
 }
 
 zmq::object_t *zmq::object_t::get_inproc_endpoint (const char *endpoint_)
 {
-    return dispatcher->get_inproc_endpoint (endpoint_);
+    return context->get_inproc_endpoint (endpoint_);
 }
 
 void zmq::object_t::unregister_inproc_endpoints (session_t *session_)
 {
-    dispatcher->unregister_inproc_endpoints (session_);
+    context->unregister_inproc_endpoints (session_);
 }
 
 zmq::io_thread_t *zmq::object_t::choose_io_thread (uint64_t taskset_)
 {
-    return dispatcher->choose_io_thread (taskset_);
+    return context->choose_io_thread (taskset_);
 }
 
 void zmq::object_t::send_stop ()
@@ -144,7 +144,7 @@ void zmq::object_t::send_stop ()
     command_t cmd;
     cmd.destination = this;
     cmd.type = command_t::stop;
-    dispatcher->write (thread_slot, thread_slot, cmd);
+    context->write (thread_slot, thread_slot, cmd);
 }
 
 void zmq::object_t::send_bind (object_t *destination_, pipe_reader_t *reader_,
@@ -289,6 +289,6 @@ void zmq::object_t::send_command (command_t &cmd_)
     if (destination_thread_slot == thread_slot)
         cmd_.destination->process_command (cmd_);
     else 
-        dispatcher->write (thread_slot, destination_thread_slot, cmd_);
+        context->write (thread_slot, destination_thread_slot, cmd_);
 }
 

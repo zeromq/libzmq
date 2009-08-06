@@ -19,7 +19,7 @@
 
 #include "../include/zmq.h"
 
-#include "dispatcher.hpp"
+#include "context.hpp"
 #include "app_thread.hpp"
 #include "io_thread.hpp"
 #include "platform.hpp"
@@ -34,7 +34,7 @@
 #include "windows.h"
 #endif
 
-zmq::dispatcher_t::dispatcher_t (int app_threads_, int io_threads_)
+zmq::context_t::context_t (int app_threads_, int io_threads_)
 {
 #ifdef ZMQ_HAVE_WINDOWS
     //  Intialise Windows sockets. Note that WSAStartup can be called multiple
@@ -72,12 +72,12 @@ zmq::dispatcher_t::dispatcher_t (int app_threads_, int io_threads_)
         io_threads [i]->start ();
 }
 
-void zmq::dispatcher_t::shutdown ()
+void zmq::context_t::shutdown ()
 {
      delete this;
 }
 
-zmq::dispatcher_t::~dispatcher_t ()
+zmq::context_t::~context_t ()
 {
     //  Ask I/O threads to terminate.
     for (io_threads_t::size_type i = 0; i != io_threads.size (); i++)
@@ -110,12 +110,12 @@ zmq::dispatcher_t::~dispatcher_t ()
 #endif
 }
 
-int zmq::dispatcher_t::thread_slot_count ()
+int zmq::context_t::thread_slot_count ()
 {
     return signalers.size ();
 }
 
-zmq::i_api *zmq::dispatcher_t::create_socket (int type_)
+zmq::i_api *zmq::context_t::create_socket (int type_)
 {
     threads_sync.lock ();
     app_thread_t *thread = choose_app_thread ();
@@ -128,14 +128,14 @@ zmq::i_api *zmq::dispatcher_t::create_socket (int type_)
     return s;
 }
 
-zmq::app_thread_t *zmq::dispatcher_t::choose_app_thread ()
+zmq::app_thread_t *zmq::context_t::choose_app_thread ()
 {
     //  Check whether thread ID is already assigned. If so, return it.
     for (app_threads_t::size_type i = 0; i != app_threads.size (); i++)
         if (app_threads [i]->is_current ())
             return app_threads [i];
 
-    //  Check whether there's an unused thread slot in the dispatcher.
+    //  Check whether there's an unused thread slot in the cotext.
     for (app_threads_t::size_type i = 0; i != app_threads.size (); i++)
         if (app_threads [i]->make_current ())
             return app_threads [i];
@@ -145,7 +145,7 @@ zmq::app_thread_t *zmq::dispatcher_t::choose_app_thread ()
     return NULL;
 }
 
-zmq::io_thread_t *zmq::dispatcher_t::choose_io_thread (uint64_t taskset_)
+zmq::io_thread_t *zmq::context_t::choose_io_thread (uint64_t taskset_)
 {
     zmq_assert (io_threads.size () > 0);
 
@@ -165,7 +165,7 @@ zmq::io_thread_t *zmq::dispatcher_t::choose_io_thread (uint64_t taskset_)
     return io_threads [result];
 }
 
-void zmq::dispatcher_t::create_pipe (object_t *reader_parent_,
+void zmq::context_t::create_pipe (object_t *reader_parent_,
     object_t *writer_parent_, uint64_t hwm_, uint64_t lwm_,
     pipe_reader_t **reader_, pipe_writer_t **writer_)
 {
@@ -191,7 +191,7 @@ void zmq::dispatcher_t::create_pipe (object_t *reader_parent_,
     *writer_ = writer;
 }
 
-void zmq::dispatcher_t::destroy_pipe (pipe_t *pipe_)
+void zmq::context_t::destroy_pipe (pipe_t *pipe_)
 {
     //  Remove the pipe from the repository.
     pipe_info_t info;
@@ -209,7 +209,7 @@ void zmq::dispatcher_t::destroy_pipe (pipe_t *pipe_)
     delete info.writer;
 }
 
-int zmq::dispatcher_t::register_inproc_endpoint (const char *endpoint_,
+int zmq::context_t::register_inproc_endpoint (const char *endpoint_,
     session_t *session_)
 {
    inproc_endpoint_sync.lock ();
@@ -227,7 +227,7 @@ int zmq::dispatcher_t::register_inproc_endpoint (const char *endpoint_,
    return 0;
 }
 
-zmq::object_t *zmq::dispatcher_t::get_inproc_endpoint (const char *endpoint_)
+zmq::object_t *zmq::context_t::get_inproc_endpoint (const char *endpoint_)
 {
     inproc_endpoint_sync.lock ();
     inproc_endpoints_t::iterator it = inproc_endpoints.find (endpoint_);
@@ -245,7 +245,7 @@ zmq::object_t *zmq::dispatcher_t::get_inproc_endpoint (const char *endpoint_)
     return session;
 }
 
-void zmq::dispatcher_t::unregister_inproc_endpoints (session_t *session_)
+void zmq::context_t::unregister_inproc_endpoints (session_t *session_)
 {
     inproc_endpoint_sync.lock ();
 

@@ -113,6 +113,6 @@ void zmq::pipe_reader_t::terminate ()
 
 void zmq::pipe_reader_t::process_terminate_ack ()
 {
-    //  Ask dispatcher to deallocate the pipe.
+    //  Ask context to deallocate the pipe.
     destroy_pipe (pipe);
 }

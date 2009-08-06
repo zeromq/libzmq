@@ -34,7 +34,7 @@ namespace zmq
     {
     public:
 
-        app_thread_t (class dispatcher_t *dispatcher_, int thread_slot_);
+        app_thread_t (class context_t *context_, int thread_slot_);
 
         //  To be called when the whole infrastrucure is being closed.
         void shutdown ();
@@ -47,7 +47,7 @@ namespace zmq
         struct i_api *create_socket (int type_);
 
         //  Nota bene: The following two functions are accessed from different
-        //  threads. The caller (dispatcher) is responsible for synchronisation
+        //  threads. The caller (context) is responsible for synchronisation
         //  of accesses.
 
         //  Returns true is current thread is associated with the app thread.
