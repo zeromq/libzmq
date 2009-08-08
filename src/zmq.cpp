@@ -25,7 +25,7 @@
 
 #include "i_api.hpp"
 #include "err.hpp"
-#include "context.hpp"
+#include "dispatcher.hpp"
 #include "msg.hpp"
 
 int zmq_msg_init (zmq_msg *msg_)
@@ -162,27 +162,28 @@ int zmq_msg_type (zmq_msg *msg_)
 
 void *zmq_init (int app_threads_, int io_threads_)
 {
-    //  There should be at least a single thread managed by the context.
+    //  There should be at least a single thread managed by the dispatcher.
     if (app_threads_ < 0 || io_threads_ < 0 ||
           app_threads_ + io_threads_ == 0) {
         errno = EINVAL;
         return NULL;
     }
 
-    zmq::context_t *context = new zmq::context_t (app_threads_, io_threads_);
-    zmq_assert (context);
-    return (void*) context;
+    zmq::dispatcher_t *dispatcher = new zmq::dispatcher_t (app_threads_,
+        io_threads_);
+    zmq_assert (dispatcher);
+    return (void*) dispatcher;
 }
 
-int zmq_term (void *context_)
+int zmq_term (void *dispatcher_)
 {
-    delete (zmq::context_t*) context_;
+    delete (zmq::dispatcher_t*) dispatcher_;
     return 0;
 }
 
-void *zmq_socket (void *context_, int type_)
+void *zmq_socket (void *dispatcher_, int type_)
 {
-    return (void*) (((zmq::context_t*) context_)->create_socket (type_));
+    return (void*) (((zmq::dispatcher_t*) dispatcher_)->create_socket (type_));
 }
 
 int zmq_close (void *s_)

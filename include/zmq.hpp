@@ -38,7 +38,7 @@ namespace zmq
         message_delimiter = 1 << ZMQ_DELIMITER
     };
 
-    class no_memory : public exception
+    class no_memory : public std::exception
     {
         virtual const char *what ()
         {
@@ -46,7 +46,7 @@ namespace zmq
         }
     };
 
-    class invalid_argument : public exception
+    class invalid_argument : public std::exception
     {
         virtual const char *what ()
         {
@@ -54,7 +54,7 @@ namespace zmq
         }
     };
 
-    class too_many_threads : public exception
+    class too_many_threads : public std::exception
     {
         virtual const char *what ()
         {
@@ -62,7 +62,7 @@ namespace zmq
         }
     };
 
-    class address_in_use : public exception
+    class address_in_use : public std::exception
     {
         virtual const char *what ()
         {

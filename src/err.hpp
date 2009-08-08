@@ -80,6 +80,12 @@ namespace zmq
     abort ();\
 }} while (false)
 
+// Provides convenient way to check for POSIX errors.
+#define posix_assert(x) do {\
+fprintf (stderr, "%s (%s:%d)\n", strerror (x), __FILE__, __LINE__);\
+abort ();\
+} while (false)
+
 // Provides convenient way to check for errors from getaddrinfo.
 #define gai_assert(x) do { if (x) {\
     const char *errstr = gai_strerror (x);\

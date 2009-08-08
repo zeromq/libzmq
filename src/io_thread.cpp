@@ -29,11 +29,11 @@
 #include "select.hpp"
 #include "devpoll.hpp"
 #include "kqueue.hpp"
-#include "context.hpp"
+#include "dispatcher.hpp"
 #include "simple_semaphore.hpp"
 
-zmq::io_thread_t::io_thread_t (context_t *context_, int thread_slot_) :
-    object_t (context_, thread_slot_)
+zmq::io_thread_t::io_thread_t (dispatcher_t *dispatcher_, int thread_slot_) :
+    object_t (dispatcher_, thread_slot_)
 {
 #if defined ZMQ_FORCE_SELECT
     poller = new select_t;
@@ -115,7 +115,7 @@ void zmq::io_thread_t::in_event ()
 
             //  Read all the commands from particular thread.
             command_t cmd;
-            while (context->read (source_thread_slot, thread_slot, &cmd))
+            while (dispatcher->read (source_thread_slot, thread_slot, &cmd))
                 cmd.destination->process_command (cmd);
         }
     }

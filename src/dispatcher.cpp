@@ -19,7 +19,7 @@
 
 #include "../include/zmq.h"
 
-#include "context.hpp"
+#include "dispatcher.hpp"
 #include "i_api.hpp"
 #include "app_thread.hpp"
 #include "io_thread.hpp"
@@ -31,7 +31,7 @@
 #include "windows.h"
 #endif
 
-zmq::context_t::context_t (int app_threads_, int io_threads_)
+zmq::dispatcher_t::dispatcher_t (int app_threads_, int io_threads_)
 {
 #ifdef ZMQ_HAVE_WINDOWS
     //  Intialise Windows sockets. Note that WSAStartup can be called multiple
@@ -69,7 +69,7 @@ zmq::context_t::context_t (int app_threads_, int io_threads_)
         io_threads [i]->start ();
 }
 
-zmq::context_t::~context_t ()
+zmq::dispatcher_t::~dispatcher_t ()
 {
     //  Close all application theads, sockets, io_objects etc.
     for (app_threads_t::size_type i = 0; i != app_threads.size (); i++)
@@ -93,12 +93,12 @@ zmq::context_t::~context_t ()
 #endif
 }
 
-int zmq::context_t::thread_slot_count ()
+int zmq::dispatcher_t::thread_slot_count ()
 {
     return signalers.size ();
 }
 
-zmq::i_api *zmq::context_t::create_socket (int type_)
+zmq::i_api *zmq::dispatcher_t::create_socket (int type_)
 {
     threads_sync.lock ();
     app_thread_t *thread = choose_app_thread ();
@@ -106,16 +106,12 @@ zmq::i_api *zmq::context_t::create_socket (int type_)
         threads_sync.unlock ();
         return NULL;
     }
-
-    zmq_assert (false);
-    i_api *s = NULL;
-    //i_api *s = thread->create_socket (type_);
-
     threads_sync.unlock ();
-    return s;
+
+    return thread->create_socket (type_);
 }
 
-zmq::app_thread_t *zmq::context_t::choose_app_thread ()
+zmq::app_thread_t *zmq::dispatcher_t::choose_app_thread ()
 {
     //  Check whether thread ID is already assigned. If so, return it.
     for (app_threads_t::size_type i = 0; i != app_threads.size (); i++)
@@ -132,7 +128,7 @@ zmq::app_thread_t *zmq::context_t::choose_app_thread ()
     return NULL;
 }
 
-zmq::io_thread_t *zmq::context_t::choose_io_thread (uint64_t taskset_)
+zmq::io_thread_t *zmq::dispatcher_t::choose_io_thread (uint64_t taskset_)
 {
     zmq_assert (io_threads.size () > 0);
 

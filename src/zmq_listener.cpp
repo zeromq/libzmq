@@ -16,26 +16,20 @@
     You should have received a copy of the Lesser GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
- 
-#ifndef __ZMQ_I_API_HPP_INCLUDED__
-#define __ZMQ_I_API_HPP_INCLUDED__
- 
-namespace zmq
-{
- 
-    struct i_api
-    {
-        virtual ~i_api () {}
 
-        virtual int bind (const char *addr_, struct zmq_opts *opts_) = 0;
-        virtual int connect (const char *addr_, struct zmq_opts *opts_) = 0;
-        virtual int subscribe (const char *criteria_) = 0;
-        virtual int send (struct zmq_msg *msg_, int flags_) = 0;
-        virtual int flush () = 0;
-        virtual int recv (struct zmq_msg *msg_, int flags_) = 0;
-        virtual int close () = 0;
-    };
- 
+#include "zmq_listener.hpp"
+#include "err.hpp"
+
+zmq::zmq_listener_t::zmq_listener_t (object_t *parent_, object_t *owner_) :
+    io_object_t (parent_, owner_)
+{
 }
- 
-#endif
+
+zmq::zmq_listener_t::~zmq_listener_t ()
+{
+}
+
+void zmq::zmq_listener_t::process_plug ()
+{
+    //  TODO:  Register with the I/O thread here.
+}

@@ -32,7 +32,7 @@ namespace zmq
     {
     public:
 
-        object_t (class context_t *context_, int thread_slot_);
+        object_t (class dispatcher_t *dispatcher_, int thread_slot_);
         object_t (object_t *parent_);
         ~object_t ();
 
@@ -42,44 +42,32 @@ namespace zmq
     protected:
 
         //  Derived object can use following functions to interact with
-        //  global repositories. See context.hpp for function details.
+        //  global repositories. See dispatcher.hpp for function details.
         int thread_slot_count ();
         class io_thread_t *choose_io_thread (uint64_t taskset_);
 
         //  Derived object can use these functions to send commands
         //  to other objects.
         void send_stop ();
-        void send_bind (object_t *destination_, class pipe_reader_t *reader_,
-            class session_t *peer_);
-        void send_head (object_t *destination_, uint64_t bytes_);
-        void send_tail (object_t *destination_, uint64_t bytes_);
-        void send_reg (object_t *destination_,
-            class simple_semaphore_t *smph_);
-        void send_reg_and_bind (object_t *destination_, class session_t *peer_,
-            bool flow_in_, bool flow_out_);
-        void send_unreg (object_t *destination_,
-            class simple_semaphore_t *smph_);
-        void send_engine (object_t *destination_, struct i_engine *engine_);
-        void send_terminate (object_t *destination_);
-        void send_terminate_ack (object_t *destination_);
+        void send_plug (object_t *destination_);
+        void send_own (object_t *destination_, object_t *object_);
+        void send_bind (object_t *destination_);
+        void send_term_req (object_t *destination_, object_t *object_);
+        void send_term (object_t *destination_);
+        void send_term_ack (object_t *destination_);
 
         //  These handlers can be overloaded by the derived objects. They are
         //  called when command arrives from another thread.
         virtual void process_stop ();
-        virtual void process_bind (class pipe_reader_t *reader_,
-            class session_t *peer_);
-        virtual void process_head (uint64_t bytes_);
-        virtual void process_tail (uint64_t bytes_);
-        virtual void process_reg (class simple_semaphore_t *smph_);
-        virtual void process_reg_and_bind (class session_t *peer_,
-            bool flow_in_, bool flow_out_);
-        virtual void process_unreg (class simple_semaphore_t *smph_);
-        virtual void process_engine (struct i_engine *engine_);
-        virtual void process_terminate ();
-        virtual void process_terminate_ack ();
+        virtual void process_plug ();
+        virtual void process_own (object_t *object_);
+        virtual void process_bind ();
+        virtual void process_term_req (object_t *object_);
+        virtual void process_term ();
+        virtual void process_term_ack ();
 
         //  Pointer to the root of the infrastructure.
-        class context_t *context;
+        class dispatcher_t *dispatcher;
 
         //  Slot ID of the thread the object belongs to.
         int thread_slot;

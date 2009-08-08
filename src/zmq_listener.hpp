@@ -17,18 +17,28 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_I_SOCKET_HPP_INCLUDED__
-#define __ZMQ_I_SOCKET_HPP_INCLUDED__
+#ifndef __ZMQ_ZMQ_LISTENER_HPP_INCLUDED__
+#define __ZMQ_ZMQ_LISTENER_HPP_INCLUDED__
+
+#include "io_object.hpp"
 
 namespace zmq
 {
 
-    struct i_socket
+    class zmq_listener_t : public io_object_t
     {
-        virtual ~i_socket () {};
+    public:
 
-        //  Start shutting down the socket.
-        virtual void stop () = 0;
+        zmq_listener_t (object_t *parent_, object_t *owner_);
+        ~zmq_listener_t ();
+
+    private:
+
+        //  Handlers for incoming commands.
+        void process_plug ();
+
+        zmq_listener_t (const zmq_listener_t&);
+        void operator = (const zmq_listener_t&);
     };
 
 }

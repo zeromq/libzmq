@@ -35,60 +35,49 @@ namespace zmq
         enum type_t
         {
             stop,
+            plug,
+            own,
             bind,
-            head,
-            tail,
-            reg,
-            reg_and_bind,
-            unreg,
-            engine,
-            terminate,
-            terminate_ack
+            term_req,
+            term,
+            term_ack
+
         } type;
 
         union {
 
+            //  Sent to I/O thread to let it know that it should
+            //  terminate itself.
             struct {
             } stop;
 
+            //  Sent to I/O object to make it register with its I/O thread.
             struct {
-                class pipe_reader_t *reader;
-                class session_t *peer;
+            } plug;
+
+            //  Sent to socket to let it know about the newly created object.
+            struct {
+                class object_t *object;
+            } own;
+
+            //  Sent between objects to establish pipe(s) between them.
+            struct {
             } bind;
 
+            //  Sent by I/O object ot the socket to request the shutdown of
+            //  the I/O object.
             struct {
-                uint64_t bytes;
-            } tail;
+                class object_t *object;
+            } term_req;
 
+            //  Sent by socket to I/O object to start its shutdown.
             struct {
-                uint64_t bytes;
-            } head;
+            } term;
 
+            //  Sent by I/O object to the socket to acknowledge it has
+            //  shut down.
             struct {
-                class simple_semaphore_t *smph;
-            } reg;
-
-            struct {
-                class session_t *peer;
-                bool flow_in;
-                bool flow_out;
-            } reg_and_bind;
-
-            struct {
-                class simple_semaphore_t *smph;
-            } unreg;
-
-            //  TODO: Engine object won't be deallocated on terminal shutdown
-            //  while the command is still on the fly!
-            struct {
-                class i_engine *engine;
-            } engine;
-
-            struct {
-            } terminate;
-
-            struct {
-            } terminate_ack;
+            } term_ack;
 
         } args;
     };

@@ -22,7 +22,6 @@
 
 #include <vector>
 
-#include "i_socket.hpp"
 #include "stdint.hpp"
 #include "object.hpp"
 #include "ypollset.hpp"
@@ -34,7 +33,7 @@ namespace zmq
     {
     public:
 
-        app_thread_t (class context_t *context_, int thread_slot_);
+        app_thread_t (class dispatcher_t *dispatcher_, int thread_slot_);
 
         ~app_thread_t ();
 
@@ -42,7 +41,7 @@ namespace zmq
         i_signaler *get_signaler ();
 
         //  Nota bene: Following two functions are accessed from different
-        //  threads. The caller (context) is responsible for synchronisation
+        //  threads. The caller (dispatcher) is responsible for synchronisation
         //  of accesses.
 
         //  Returns true is current thread is associated with the app thread.
@@ -56,10 +55,16 @@ namespace zmq
         //  set to true, returns only after at least one command was processed.
         void process_commands (bool block_);
 
+        //  Create a socket of a specified type.
+        struct i_api *create_socket (int type_);
+
+        //  Unregister the socket from the app_thread (called by socket itself).
+        void remove_socket (struct i_api *socket_);
+
     private:
 
         //  All the sockets created from this application thread.
-        typedef std::vector <i_socket*> sockets_t;
+        typedef std::vector <struct i_api*> sockets_t;
         sockets_t sockets;
 
         //  Thread ID associated with this slot.
