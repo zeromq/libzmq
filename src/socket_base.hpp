@@ -23,29 +23,28 @@
 #include <set>
 #include <string>
 
-#include "i_api.hpp"
 #include "object.hpp"
 #include "stdint.hpp"
 
 namespace zmq
 {
 
-    class socket_base_t : public object_t, public i_api
+    class socket_base_t : public object_t
     {
     public:
 
         socket_base_t (class app_thread_t *parent_);
         ~socket_base_t ();
 
-        //  i_api interface implementation.
-        int setsockopt (int option_, void *optval_, size_t optvallen_);
-        int bind (const char *addr_);
-        int connect (const char *addr_);
-        int subscribe (const char *criteria_);
-        int send (struct zmq_msg *msg_, int flags_);
-        int flush ();
-        int recv (struct zmq_msg *msg_, int flags_);
-        int close ();
+        //  Interface for communication with the API layer.
+        virtual int setsockopt (int option_, void *optval_, size_t optvallen_);
+        virtual int bind (const char *addr_);
+        virtual int connect (const char *addr_);
+        virtual int subscribe (const char *criteria_);
+        virtual int send (struct zmq_msg *msg_, int flags_);
+        virtual int flush ();
+        virtual int recv (struct zmq_msg *msg_, int flags_);
+        virtual int close ();
 
     private:
 

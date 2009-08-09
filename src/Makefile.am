@@ -18,11 +18,9 @@ libzmq_la_SOURCES = \
     io_object.hpp \
     io_thread.hpp \
     ip.hpp \
-    i_api.hpp \
     i_poller.hpp \
     i_poll_events.hpp \
     i_signaler.hpp \
-    i_socket.hpp \
     kqueue.hpp \
     msg.hpp \
     mutex.hpp \

@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <new>
 
-#include "i_api.hpp"
+#include "socket_base.hpp"
 #include "err.hpp"
 #include "dispatcher.hpp"
 #include "msg.hpp"
@@ -188,41 +188,42 @@ void *zmq_socket (void *dispatcher_, int type_)
 
 int zmq_close (void *s_)
 {
-    ((zmq::i_api*) s_)->close ();
+    ((zmq::socket_base_t*) s_)->close ();
     return 0;
 }
 
 int zmq_setsockopt (void *s_, int option_, void *optval_, size_t optvallen_)
 {
-    return (((zmq::i_api*) s_)->setsockopt (option_, optval_, optvallen_));
+    return (((zmq::socket_base_t*) s_)->setsockopt (option_, optval_,
+        optvallen_));
 }
 
 int zmq_bind (void *s_, const char *addr_)
 {
-    return (((zmq::i_api*) s_)->bind (addr_));
+    return (((zmq::socket_base_t*) s_)->bind (addr_));
 }
 
 int zmq_connect (void *s_, const char *addr_)
 {
-    return (((zmq::i_api*) s_)->connect (addr_));
+    return (((zmq::socket_base_t*) s_)->connect (addr_));
 }
 
 int zmq_subscribe (void *s_, const char *criteria_)
 {
-    return (((zmq::i_api*) s_)->subscribe (criteria_));
+    return (((zmq::socket_base_t*) s_)->subscribe (criteria_));
 }
 
 int zmq_send (void *s_, zmq_msg *msg_, int flags_)
 {
-    return (((zmq::i_api*) s_)->send (msg_, flags_));
+    return (((zmq::socket_base_t*) s_)->send (msg_, flags_));
 }
 
 int zmq_flush (void *s_)
 {
-    return (((zmq::i_api*) s_)->flush ());
+    return (((zmq::socket_base_t*) s_)->flush ());
 }
 
 int zmq_recv (void *s_, zmq_msg *msg_, int flags_)
 {
-    return (((zmq::i_api*) s_)->recv (msg_, flags_));
+    return (((zmq::socket_base_t*) s_)->recv (msg_, flags_));
 }

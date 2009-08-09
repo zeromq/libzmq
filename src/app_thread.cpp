@@ -28,7 +28,6 @@
 #endif
 
 #include "app_thread.hpp"
-#include "i_api.hpp"
 #include "dispatcher.hpp"
 #include "err.hpp"
 #include "pipe.hpp"
@@ -130,7 +129,7 @@ void zmq::app_thread_t::process_commands (bool block_)
     }
 }
 
-zmq::i_api *zmq::app_thread_t::create_socket (int type_)
+zmq::socket_base_t *zmq::app_thread_t::create_socket (int type_)
 {
     //  TODO: type is ignored for the time being.
     socket_base_t *s = new socket_base_t (this);
@@ -139,7 +138,7 @@ zmq::i_api *zmq::app_thread_t::create_socket (int type_)
     return s;
 }
 
-void zmq::app_thread_t::remove_socket (i_api *socket_)
+void zmq::app_thread_t::remove_socket (socket_base_t *socket_)
 {
     //  TODO: To speed this up we can possibly use the system where each socket
     //        holds its index (see I/O scheduler implementation).

@@ -55,7 +55,7 @@ namespace zmq
         ~dispatcher_t ();
 
         //  Create a socket.
-        struct i_api *create_socket (int type_);
+        class socket_base_t *create_socket (int type_);
 
         //  Returns number of thread slots in the dispatcher. To be used by
         //  individual threads to find out how many distinct signals can be

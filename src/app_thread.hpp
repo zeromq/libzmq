@@ -56,15 +56,15 @@ namespace zmq
         void process_commands (bool block_);
 
         //  Create a socket of a specified type.
-        struct i_api *create_socket (int type_);
+        class socket_base_t *create_socket (int type_);
 
         //  Unregister the socket from the app_thread (called by socket itself).
-        void remove_socket (struct i_api *socket_);
+        void remove_socket (class socket_base_t *socket_);
 
     private:
 
         //  All the sockets created from this application thread.
-        typedef std::vector <struct i_api*> sockets_t;
+        typedef std::vector <class socket_base_t*> sockets_t;
         sockets_t sockets;
 
         //  Thread ID associated with this slot.

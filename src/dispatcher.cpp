@@ -20,7 +20,6 @@
 #include "../include/zmq.h"
 
 #include "dispatcher.hpp"
-#include "i_api.hpp"
 #include "app_thread.hpp"
 #include "io_thread.hpp"
 #include "platform.hpp"
@@ -98,7 +97,7 @@ int zmq::dispatcher_t::thread_slot_count ()
     return signalers.size ();
 }
 
-zmq::i_api *zmq::dispatcher_t::create_socket (int type_)
+zmq::socket_base_t *zmq::dispatcher_t::create_socket (int type_)
 {
     threads_sync.lock ();
     app_thread_t *thread = choose_app_thread ();
