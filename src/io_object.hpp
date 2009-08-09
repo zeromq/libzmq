@@ -21,6 +21,7 @@
 #define __ZMQ_IO_OBJECT_HPP_INCLUDED__
 
 #include "object.hpp"
+#include "i_poller.hpp"
 
 namespace zmq
 {
@@ -31,7 +32,7 @@ namespace zmq
 
         //  I/O object will live in the thread inherited from the parent.
         //  However, it's lifetime is managed by the owner.
-        io_object_t (object_t *parent_, object_t *owner_);
+        io_object_t (class io_thread_t *parent_, object_t *owner_);
 
     protected:
 
@@ -44,14 +45,26 @@ namespace zmq
         //  of I/O object correctly.
         virtual ~io_object_t ();
 
-    private:
-
-        //  Handlers for incoming commands.
-        void process_term ();
+        //  Methods to access underlying poller object.
+        handle_t add_fd (fd_t fd_, struct i_poll_events *events_);
+        void rm_fd (handle_t handle_);
+        void set_pollin (handle_t handle_);
+        void reset_pollin (handle_t handle_);
+        void set_pollout (handle_t handle_);
+        void reset_pollout (handle_t handle_);
+        void add_timer (struct i_poll_events *events_);
+        void cancel_timer (struct i_poll_events *events_);
 
         //  Socket owning this I/O object. It is responsible for destroying
         //  it when it's being closed.
         object_t *owner;
+
+    private:
+
+        struct i_poller *poller;
+
+        //  Handlers for incoming commands.
+        void process_term ();
 
         io_object_t (const io_object_t&);
         void operator = (const io_object_t&);

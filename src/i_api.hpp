@@ -27,8 +27,10 @@ namespace zmq
     {
         virtual ~i_api () {}
 
-        virtual int bind (const char *addr_, struct zmq_opts *opts_) = 0;
-        virtual int connect (const char *addr_, struct zmq_opts *opts_) = 0;
+        virtual int setsockopt (int option_, void *optval_,
+            size_t optvallen_) = 0;
+        virtual int bind (const char *addr_) = 0;
+        virtual int connect (const char *addr_) = 0;
         virtual int subscribe (const char *criteria_) = 0;
         virtual int send (struct zmq_msg *msg_, int flags_) = 0;
         virtual int flush () = 0;

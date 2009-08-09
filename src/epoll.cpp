@@ -41,10 +41,12 @@ zmq::epoll_t::epoll_t () :
 
 zmq::epoll_t::~epoll_t ()
 {
+    //  Wait till the worker thread exits.
+    worker.stop ();
+
     //  Make sure there are no fds registered on shutdown.
     zmq_assert (load.get () == 0);
 
-    worker.stop ();
     close (epoll_fd);
     for (retired_t::iterator it = retired.begin (); it != retired.end (); it ++)
         delete *it;

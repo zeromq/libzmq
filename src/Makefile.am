@@ -44,6 +44,7 @@ libzmq_la_SOURCES = \
     ypipe.hpp \
     ypollset.hpp \
     yqueue.hpp \
+    zmq_engine.hpp \
     zmq_listener.hpp \
     app_thread.cpp \
     devpoll.cpp \
@@ -66,6 +67,7 @@ libzmq_la_SOURCES = \
     uuid.cpp \
     ypollset.cpp \
     zmq.cpp \
+    zmq_engine.cpp \
     zmq_listener.cpp
 
 libzmq_la_LDFLAGS = -version-info 0:0:0

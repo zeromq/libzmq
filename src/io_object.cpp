@@ -18,15 +18,58 @@
 */
 
 #include "io_object.hpp"
+#include "io_thread.hpp"
 
-zmq::io_object_t::io_object_t (object_t *parent_, object_t *owner_) :
+zmq::io_object_t::io_object_t (io_thread_t *parent_, object_t *owner_) :
     object_t (parent_),
     owner (owner_)
 {
+    //  Retrieve the poller from the thread we are running in.
+    poller = parent_->get_poller ();
 }
 
 zmq::io_object_t::~io_object_t ()
 {
+}
+
+zmq::handle_t zmq::io_object_t::add_fd (fd_t fd_, i_poll_events *events_)
+{
+    return poller->add_fd (fd_, events_);
+}
+
+void zmq::io_object_t::rm_fd (handle_t handle_)
+{
+    poller->rm_fd (handle_);
+}
+
+void zmq::io_object_t::set_pollin (handle_t handle_)
+{
+    poller->set_pollin (handle_);
+}
+
+void zmq::io_object_t::reset_pollin (handle_t handle_)
+{
+    poller->reset_pollin (handle_);
+}
+
+void zmq::io_object_t::set_pollout (handle_t handle_)
+{
+    poller->set_pollout (handle_);
+}
+
+void zmq::io_object_t::reset_pollout (handle_t handle_)
+{
+    poller->reset_pollout (handle_);
+}
+
+void zmq::io_object_t::add_timer (i_poll_events *events_)
+{
+    poller->add_timer (events_);
+}
+
+void zmq::io_object_t::cancel_timer (i_poll_events *events_)
+{
+    poller->cancel_timer (events_);
 }
 
 void zmq::io_object_t::term ()

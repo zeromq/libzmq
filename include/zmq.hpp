@@ -230,9 +230,15 @@ namespace zmq
             assert (rc == 0);
         }
 
-        inline void bind (const char *addr_, zmq_opts *opts_ = NULL)
+        template <typename T> inline void setsockopt (int option_, T &value_)
         {
-            int rc = zmq_bind (ptr, addr_, opts_);
+            int rc = zmq_setsockopt (ptr, option_, (void*) &value_, sizeof (T));
+            assert (rc == 0);
+        }
+
+        inline void bind (const char *addr_)
+        {
+            int rc = zmq_bind (ptr, addr_);
             if (rc == -1) {
                 assert (errno == EINVAL || errno == EADDRINUSE);
                 if (errno == EINVAL)
@@ -242,9 +248,9 @@ namespace zmq
             }
         }
 
-        inline void connect (const char *addr_, zmq_opts *opts_ = NULL)
+        inline void connect (const char *addr_)
         {
-            int rc = zmq_connect (ptr, addr_, opts_);
+            int rc = zmq_connect (ptr, addr_);
             if (rc == -1) {
                 assert (errno == EINVAL || errno == EADDRINUSE);
                 if (errno == EINVAL)

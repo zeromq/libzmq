@@ -57,7 +57,7 @@ namespace zmq
         void out_event ();
         void timer_event ();
 
-        //  ???
+        //  Used by io_objects to retrieve the assciated poller object.
         struct i_poller *get_poller ();
 
         //  Command handlers.

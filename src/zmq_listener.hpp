@@ -29,10 +29,11 @@ namespace zmq
     {
     public:
 
-        zmq_listener_t (object_t *parent_, object_t *owner_);
-        ~zmq_listener_t ();
+        zmq_listener_t (class io_thread_t *parent_, object_t *owner_);
 
     private:
+
+        ~zmq_listener_t ();
 
         //  Handlers for incoming commands.
         void process_plug ();

@@ -17,24 +17,19 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "zmq_listener.hpp"
 #include "zmq_engine.hpp"
 #include "io_thread.hpp"
-#include "err.hpp"
 
-zmq::zmq_listener_t::zmq_listener_t (io_thread_t *parent_, object_t *owner_) :
+zmq::zmq_engine_t::zmq_engine_t (io_thread_t *parent_, object_t *owner_) :
     io_object_t (parent_, owner_)
 {
 }
 
-zmq::zmq_listener_t::~zmq_listener_t ()
+zmq::zmq_engine_t::~zmq_engine_t ()
 {
 }
 
-void zmq::zmq_listener_t::process_plug ()
+void zmq::zmq_engine_t::process_plug ()
 {
-    //  TODO: Testing code follows...
-    object_t *engine = new zmq_engine_t (choose_io_thread (0), owner);
-    send_plug (engine);
-    send_own (owner, engine);
 }
+

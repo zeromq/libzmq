@@ -20,7 +20,7 @@
 #ifndef __ZMQ_SOCKET_BASE_HPP_INCLUDED__
 #define __ZMQ_SOCKET_BASE_HPP_INCLUDED__
 
-#include <vector>
+#include <set>
 
 #include "i_api.hpp"
 #include "object.hpp"
@@ -36,8 +36,9 @@ namespace zmq
         ~socket_base_t ();
 
         //  i_api interface implementation.
-        int bind (const char *addr_, struct zmq_opts *opts_);
-        int connect (const char *addr_, struct zmq_opts *opts_);
+        int setsockopt (int option_, void *optval_, size_t optvallen_);
+        int bind (const char *addr_);
+        int connect (const char *addr_);
         int subscribe (const char *criteria_);
         int send (struct zmq_msg *msg_, int flags_);
         int flush ();
@@ -53,7 +54,7 @@ namespace zmq
 
         //  List of all I/O objects owned by this socket. The socket is
         //  responsible for deallocating them before it quits.
-        typedef std::vector <object_t*> io_objects_t;
+        typedef std::set <object_t*> io_objects_t;
         io_objects_t io_objects;
 
         //  Number of I/O objects that were already asked to terminate

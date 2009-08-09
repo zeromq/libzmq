@@ -192,14 +192,19 @@ int zmq_close (void *s_)
     return 0;
 }
 
-int zmq_bind (void *s_, const char *addr_, zmq_opts *opts_)
+int zmq_setsockopt (void *s_, int option_, void *optval_, size_t optvallen_)
 {
-    return (((zmq::i_api*) s_)->bind (addr_, opts_));
+    return (((zmq::i_api*) s_)->setsockopt (option_, optval_, optvallen_));
 }
 
-int zmq_connect (void *s_, const char *addr_, zmq_opts *opts_)
+int zmq_bind (void *s_, const char *addr_)
 {
-    return (((zmq::i_api*) s_)->connect (addr_, opts_));
+    return (((zmq::i_api*) s_)->bind (addr_));
+}
+
+int zmq_connect (void *s_, const char *addr_)
+{
+    return (((zmq::i_api*) s_)->connect (addr_));
 }
 
 int zmq_subscribe (void *s_, const char *criteria_)

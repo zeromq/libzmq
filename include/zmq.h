@@ -42,6 +42,14 @@ extern "C" {
 #define ZMQ_DELIMITER 31
 #define ZMQ_VSM 32
 
+//  Socket options.
+#define ZMQ_HWM 1
+#define ZMQ_LWM 2
+#define ZMQ_SWAP 3
+#define ZMQ_MASK 4
+#define ZMQ_AFFINITY 5
+#define ZMQ_SESSIONID 6
+
 //  The operation should be performed in non-blocking mode. I.e. if it cannot
 //  be processed immediately, error should be returned with errno set to EAGAIN.
 #define ZMQ_NOBLOCK 1
@@ -92,18 +100,6 @@ struct zmq_msg
     unsigned char shared;
     uint16_t vsm_size;
     unsigned char vsm_data [ZMQ_MAX_VSM_SIZE];
-};
-
-//  TODO: Different options...
-struct zmq_opts
-{
-    uint64_t hwm;
-    uint64_t lwm;
-    uint64_t swap;
-    uint64_t mask;
-    uint64_t taskset;
-    const char *identity;
-    const char *args;
 };
 
 //  Initialise an empty message (zero bytes long).
@@ -165,11 +161,15 @@ ZMQ_EXPORT void *zmq_socket (void *context, int type);
 //  Close the socket.
 ZMQ_EXPORT int zmq_close (void *s);
 
+//  Sets an option on the socket.
+ZMQ_EXPORT int zmq_setsockopt (void *s, int option_, void *optval_,
+    size_t optvallen_); 
+
 //  Bind the socket to a particular address.
-ZMQ_EXPORT int zmq_bind (void *s, const char *addr, zmq_opts *opts);
+ZMQ_EXPORT int zmq_bind (void *s, const char *addr);
 
 //  Connect the socket to a particular address.
-ZMQ_EXPORT int zmq_connect (void *s, const char *addr, zmq_opts *opts);
+ZMQ_EXPORT int zmq_connect (void *s, const char *addr);
 
 //  Subscribe for the subset of messages identified by 'criteria' argument.
 ZMQ_EXPORT int zmq_subscribe (void *s, const char *criteria);

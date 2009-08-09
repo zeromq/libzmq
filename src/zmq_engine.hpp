@@ -17,24 +17,31 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "zmq_listener.hpp"
-#include "zmq_engine.hpp"
-#include "io_thread.hpp"
-#include "err.hpp"
+#ifndef __ZMQ_ZMQ_ENGINE_HPP_INCLUDED__
+#define __ZMQ_ZMQ_ENGINE_HPP_INCLUDED__
 
-zmq::zmq_listener_t::zmq_listener_t (io_thread_t *parent_, object_t *owner_) :
-    io_object_t (parent_, owner_)
+#include "io_object.hpp"
+
+namespace zmq
 {
+
+    class zmq_engine_t : public io_object_t
+    {
+    public:
+
+        zmq_engine_t (class io_thread_t *parent_, object_t *owner_);
+
+    private:
+
+        ~zmq_engine_t ();
+
+        //  Handlers for incoming commands.
+        void process_plug ();
+
+        zmq_engine_t (const zmq_engine_t&);
+        void operator = (const zmq_engine_t&);
+    };
+
 }
 
-zmq::zmq_listener_t::~zmq_listener_t ()
-{
-}
-
-void zmq::zmq_listener_t::process_plug ()
-{
-    //  TODO: Testing code follows...
-    object_t *engine = new zmq_engine_t (choose_io_thread (0), owner);
-    send_plug (engine);
-    send_own (owner, engine);
-}
+#endif
