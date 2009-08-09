@@ -21,9 +21,11 @@
 #define __ZMQ_SOCKET_BASE_HPP_INCLUDED__
 
 #include <set>
+#include <string>
 
 #include "i_api.hpp"
 #include "object.hpp"
+#include "stdint.hpp"
 
 namespace zmq
 {
@@ -63,6 +65,14 @@ namespace zmq
 
         //  Application thread the socket lives in.
         class app_thread_t *app_thread;
+
+        //  Socket options.
+        int64_t hwm;
+        int64_t lwm;
+        int64_t swap;
+        uint64_t mask;
+        uint64_t affinity;
+        std::string session_id;
 
         socket_base_t (const socket_base_t&);
         void operator = (const socket_base_t&);

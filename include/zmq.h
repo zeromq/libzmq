@@ -162,6 +162,7 @@ ZMQ_EXPORT void *zmq_socket (void *context, int type);
 ZMQ_EXPORT int zmq_close (void *s);
 
 //  Sets an option on the socket.
+//  EINVAL - unknown option, a value with incorrect length or an invalid value.
 ZMQ_EXPORT int zmq_setsockopt (void *s, int option_, void *optval_,
     size_t optvallen_); 
 
