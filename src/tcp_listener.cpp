@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <string.h>
+
 #include "tcp_listener.hpp"
 #include "platform.hpp"
 #include "ip.hpp"
@@ -41,6 +43,7 @@
 zmq::tcp_listener_t::tcp_listener_t () :
     s (retired_fd)
 {
+    memset (&addr, 0, sizeof (addr));
 }
 
 zmq::tcp_listener_t::~tcp_listener_t ()
@@ -49,14 +52,14 @@ zmq::tcp_listener_t::~tcp_listener_t ()
         close ();
 }
 
-int zmq::tcp_listener_t::open (const char *addr_)
+int zmq::tcp_listener_t::set_address (const char *addr_)
 {
     //  Convert the interface into sockaddr_in structure.
-    sockaddr_in ip_address;
-    int rc = resolve_ip_interface (&ip_address, addr_);
-    if (rc != 0)
-        return -1;
-    
+    return resolve_ip_interface (&addr, addr_);
+}
+
+int zmq::tcp_listener_t::open ()
+{
     //  Create a listening socket.
     s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (s == -1)
@@ -64,7 +67,7 @@ int zmq::tcp_listener_t::open (const char *addr_)
 
     //  Allow reusing of the address.
     int flag = 1;
-    rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
+    int rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
     errno_assert (rc == 0);
 
     //  Set the non-blocking flag.
@@ -75,7 +78,7 @@ int zmq::tcp_listener_t::open (const char *addr_)
     errno_assert (rc != -1);
 
     //  Bind the socket to the network interface and port.
-    rc = bind (s, (struct sockaddr*) &ip_address, sizeof (ip_address));
+    rc = bind (s, (struct sockaddr*) &addr, sizeof (addr));
     if (rc != 0) {
         close ();
         return -1;

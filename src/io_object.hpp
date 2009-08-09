@@ -22,11 +22,12 @@
 
 #include "object.hpp"
 #include "i_poller.hpp"
+#include "i_poll_events.hpp"
 
 namespace zmq
 {
 
-    class io_object_t : public object_t
+    class io_object_t : public object_t, public i_poll_events
     {
     public:
 
@@ -45,6 +46,11 @@ namespace zmq
         //  of I/O object correctly.
         virtual ~io_object_t ();
 
+        //  Handlers for incoming commands. It vital that every I/O object
+        //  invokes io_object_t::process_plug at the end of it's own plug
+        //  handler.
+        void process_plug ();
+
         //  Methods to access underlying poller object.
         handle_t add_fd (fd_t fd_, struct i_poll_events *events_);
         void rm_fd (handle_t handle_);
@@ -55,11 +61,24 @@ namespace zmq
         void add_timer (struct i_poll_events *events_);
         void cancel_timer (struct i_poll_events *events_);
 
+        //  i_poll_events interface implementation.
+        void in_event ();
+        void out_event ();
+        void timer_event ();
+
         //  Socket owning this I/O object. It is responsible for destroying
         //  it when it's being closed.
         object_t *owner;
 
+        //  Set to true when object is plugged in. It's responsibility
+        //  of derived object to set the property after the feat.
+        bool plugged_in;
+
     private:
+
+        //  Set to true when object was terminated before it was plugged in.
+        //  In such case destruction is delayed till 'plug' command arrives.
+        bool terminated;
 
         struct i_poller *poller;
 

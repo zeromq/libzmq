@@ -70,7 +70,11 @@ int zmq::socket_base_t::bind (const char *addr_)
 {
     //  TODO: The taskset should be taken from socket options.
     uint64_t taskset = 0;
-    object_t *listener = new zmq_listener_t (choose_io_thread (taskset), this);
+    zmq_listener_t *listener = new zmq_listener_t (choose_io_thread (taskset), this);
+    int rc = listener->set_address (addr_);
+    if (rc != 0)
+        return -1;
+
     send_plug (listener);
     send_own (this, listener);
     return 0;

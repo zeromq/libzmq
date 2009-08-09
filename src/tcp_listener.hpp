@@ -21,6 +21,7 @@
 #define __ZMQ_TCP_LISTENER_HPP_INCLUDED__
 
 #include "fd.hpp"
+#include "ip.hpp"
 
 namespace zmq
 {
@@ -34,10 +35,13 @@ namespace zmq
         tcp_listener_t ();
         ~tcp_listener_t ();
 
-        //  Open TCP listining socket. Address is in
+        //  Set up the address to listen on. Address is in
         //  <interface-name>:<port-number> format. Interface name may be '*'
         //  to bind to all the interfaces.
-        int open (const char *addr_);
+        int set_address (const char *addr_);
+
+        //  Open TCP listining socket. 
+        int open ();
 
         //  Close the listening socket.
         int close ();
@@ -52,6 +56,9 @@ namespace zmq
         fd_t accept ();
 
     private:
+
+        //  IP address/port to listen on.
+        sockaddr_in addr;
 
         //  Underlying socket.
         fd_t s;

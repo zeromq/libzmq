@@ -29,12 +29,46 @@ zmq::zmq_listener_t::zmq_listener_t (io_thread_t *parent_, object_t *owner_) :
 
 zmq::zmq_listener_t::~zmq_listener_t ()
 {
+    if (plugged_in)
+        rm_fd (handle);
+}
+
+int zmq::zmq_listener_t::set_address (const char *addr_)
+{
+     return tcp_listener.set_address (addr_);
 }
 
 void zmq::zmq_listener_t::process_plug ()
 {
-    //  TODO: Testing code follows...
+    //  Open the listening socket.
+    int rc = tcp_listener.open ();
+    zmq_assert (rc == 0);
+
+    //  Start polling for incoming connections.
+    handle = add_fd (tcp_listener.get_fd (), this);
+    set_pollin (handle);
+
+    io_object_t::process_plug ();
+}
+
+void zmq::zmq_listener_t::in_event ()
+{
+    fd_t fd = tcp_listener.accept ();
+
+    //  If connection was reset by the peer in the meantime, just ignore it.
+    //  TODO: Handle specific errors like ENFILE/EMFILE etc.
+    if (fd == retired_fd)
+        return;
+
+    //  TODO
+    zmq_assert (false);
+
+/*
     object_t *engine = new zmq_engine_t (choose_io_thread (0), owner);
     send_plug (engine);
     send_own (owner, engine);
+*/
 }
+
+
+

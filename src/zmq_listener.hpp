@@ -20,7 +20,10 @@
 #ifndef __ZMQ_ZMQ_LISTENER_HPP_INCLUDED__
 #define __ZMQ_ZMQ_LISTENER_HPP_INCLUDED__
 
+#include <string>
+
 #include "io_object.hpp"
+#include "tcp_listener.hpp"
 
 namespace zmq
 {
@@ -31,12 +34,24 @@ namespace zmq
 
         zmq_listener_t (class io_thread_t *parent_, object_t *owner_);
 
+        //  Set IP address to listen on.
+        int set_address (const char *addr_);
+
     private:
 
         ~zmq_listener_t ();
 
         //  Handlers for incoming commands.
         void process_plug ();
+
+        //  Handle I/O events.
+        void in_event ();
+
+        //  Actual listening socket.
+        tcp_listener_t tcp_listener;
+
+        //  Handle corresponding to the listening socket.
+        handle_t handle;
 
         zmq_listener_t (const zmq_listener_t&);
         void operator = (const zmq_listener_t&);
