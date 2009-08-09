@@ -25,6 +25,7 @@
 #include "app_thread.hpp"
 #include "err.hpp"
 #include "zmq_listener.hpp"
+#include "zmq_connecter.hpp"
 #include "io_thread.hpp"
 #include "config.hpp"
 
@@ -127,7 +128,6 @@ int zmq::socket_base_t::setsockopt (int option_, void *optval_,
 
 int zmq::socket_base_t::bind (const char *addr_)
 {
-    //  TODO: The taskset should be taken from socket options.
     zmq_listener_t *listener =
         new zmq_listener_t (choose_io_thread (affinity), this);
     int rc = listener->set_address (addr_);
@@ -141,7 +141,15 @@ int zmq::socket_base_t::bind (const char *addr_)
 
 int zmq::socket_base_t::connect (const char *addr_)
 {
-    zmq_assert (false);
+    zmq_connecter_t *connecter =
+        new zmq_connecter_t (choose_io_thread (affinity), this);
+    int rc = connecter->set_address (addr_);
+    if (rc != 0)
+        return -1;
+
+    send_plug (connecter);
+    send_own (this, connecter);
+    return 0;
 }
 
 int zmq::socket_base_t::subscribe (const char *criteria_)

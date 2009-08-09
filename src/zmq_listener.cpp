@@ -29,8 +29,6 @@ zmq::zmq_listener_t::zmq_listener_t (io_thread_t *parent_, object_t *owner_) :
 
 zmq::zmq_listener_t::~zmq_listener_t ()
 {
-    if (plugged_in)
-        rm_fd (handle);
 }
 
 int zmq::zmq_listener_t::set_address (const char *addr_)
@@ -45,10 +43,15 @@ void zmq::zmq_listener_t::process_plug ()
     zmq_assert (rc == 0);
 
     //  Start polling for incoming connections.
-    handle = add_fd (tcp_listener.get_fd (), this);
+    handle = add_fd (tcp_listener.get_fd ());
     set_pollin (handle);
 
     io_object_t::process_plug ();
+}
+
+void zmq::zmq_listener_t::process_unplug ()
+{
+    rm_fd (handle);
 }
 
 void zmq::zmq_listener_t::in_event ()

@@ -21,6 +21,7 @@
 #define __ZMQ_TCP_CONNECTER_HPP_INCLUDED__
 
 #include "fd.hpp"
+#include "ip.hpp"
 
 namespace zmq
 {
@@ -34,11 +35,14 @@ namespace zmq
         tcp_connecter_t ();
         ~tcp_connecter_t ();
 
+        //  Set IP address/port to connect to.
+        int set_address (const char *addr_);
+
         //  Open TCP connecting socket. Address is in
         //  <hostname>:<port-number> format. Returns -1 in case of error,
         //  0 if connect was successfull immediately and 1 if async connect
         //  was launched.
-        int open (const char *addr_);
+        int open ();
 
         //  Close the connecting socket.
         int close ();
@@ -52,6 +56,9 @@ namespace zmq
         fd_t connect ();
 
     private:
+
+        //  Address to connect to.
+        sockaddr_in addr;
 
         //  Underlying socket.
         fd_t s;

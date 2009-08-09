@@ -51,15 +51,20 @@ namespace zmq
         //  handler.
         void process_plug ();
 
+        //  io_object_t defines a new handler used to disconnect the object
+        //  from the poller object. Implement the handlen in the derived
+        //  classes to ensure sane cleanup.
+        virtual void process_unplug () = 0;
+
         //  Methods to access underlying poller object.
-        handle_t add_fd (fd_t fd_, struct i_poll_events *events_);
+        handle_t add_fd (fd_t fd_);
         void rm_fd (handle_t handle_);
         void set_pollin (handle_t handle_);
         void reset_pollin (handle_t handle_);
         void set_pollout (handle_t handle_);
         void reset_pollout (handle_t handle_);
-        void add_timer (struct i_poll_events *events_);
-        void cancel_timer (struct i_poll_events *events_);
+        void add_timer ();
+        void cancel_timer ();
 
         //  i_poll_events interface implementation.
         void in_event ();
@@ -70,11 +75,10 @@ namespace zmq
         //  it when it's being closed.
         object_t *owner;
 
-        //  Set to true when object is plugged in. It's responsibility
-        //  of derived object to set the property after the feat.
-        bool plugged_in;
-
     private:
+
+        //  Set to true when object is plugged in.
+        bool plugged_in;
 
         //  Set to true when object was terminated before it was plugged in.
         //  In such case destruction is delayed till 'plug' command arrives.

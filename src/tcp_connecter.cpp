@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <string>
+
 #include "tcp_connecter.hpp"
 #include "platform.hpp"
 #include "ip.hpp"
@@ -40,6 +42,7 @@
 zmq::tcp_connecter_t::tcp_connecter_t () :
     s (retired_fd)
 {
+    memset (&addr, 0, sizeof (addr));
 }
 
 zmq::tcp_connecter_t::~tcp_connecter_t ()
@@ -48,15 +51,15 @@ zmq::tcp_connecter_t::~tcp_connecter_t ()
         close ();
 }
 
-int zmq::tcp_connecter_t::open (const char *addr_)
+int zmq::tcp_connecter_t::set_address (const char *addr_)
+{
+    //  Convert the hostname into sockaddr_in structure.
+    return resolve_ip_hostname (&addr, addr_);
+}
+
+int zmq::tcp_connecter_t::open ()
 {
     zmq_assert (s == retired_fd);
-
-    //  Convert the hostname into sockaddr_in structure.
-    sockaddr_in address;
-    int rc = resolve_ip_hostname (&address, addr_);
-    if (rc != 0)
-        return -1;
 
     //  Create the socket.
     s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -67,7 +70,7 @@ int zmq::tcp_connecter_t::open (const char *addr_)
     int flags = fcntl (s, F_GETFL, 0);
     if (flags == -1) 
         flags = 0;
-    rc = fcntl (s, F_SETFL, flags | O_NONBLOCK);
+    int rc = fcntl (s, F_SETFL, flags | O_NONBLOCK);
     errno_assert (rc != -1);
 
     //  Disable Nagle's algorithm.
@@ -83,7 +86,7 @@ int zmq::tcp_connecter_t::open (const char *addr_)
 #endif
 
     //  Connect to the remote peer.
-    rc = ::connect (s, (sockaddr*) &address, sizeof address);
+    rc = ::connect (s, (sockaddr*) &addr, sizeof (addr));
 
     //  Connect was successfull immediately.
     if (rc == 0)
@@ -91,7 +94,7 @@ int zmq::tcp_connecter_t::open (const char *addr_)
 
     //  Asynchronous connect was launched.
     if (rc == -1 && errno == EINPROGRESS)
-        return 1;
+        return -1;
 
     //  Error occured.
     int err = errno;
@@ -125,7 +128,6 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
     if (rc == -1)
         err = errno;
     if (err != 0) {
-        close ();
         errno = err;
         return retired_fd;
     }

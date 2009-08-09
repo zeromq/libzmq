@@ -52,9 +52,9 @@ void zmq::io_object_t::process_plug ()
     plugged_in = true;
 }
 
-zmq::handle_t zmq::io_object_t::add_fd (fd_t fd_, i_poll_events *events_)
+zmq::handle_t zmq::io_object_t::add_fd (fd_t fd_)
 {
-    return poller->add_fd (fd_, events_);
+    return poller->add_fd (fd_, this);
 }
 
 void zmq::io_object_t::rm_fd (handle_t handle_)
@@ -82,14 +82,14 @@ void zmq::io_object_t::reset_pollout (handle_t handle_)
     poller->reset_pollout (handle_);
 }
 
-void zmq::io_object_t::add_timer (i_poll_events *events_)
+void zmq::io_object_t::add_timer ()
 {
-    poller->add_timer (events_);
+    poller->add_timer (this);
 }
 
-void zmq::io_object_t::cancel_timer (i_poll_events *events_)
+void zmq::io_object_t::cancel_timer ()
 {
-    poller->cancel_timer (events_);
+    poller->cancel_timer (this);
 }
 
 void zmq::io_object_t::in_event ()
@@ -126,5 +126,6 @@ void zmq::io_object_t::process_term ()
     //  Otherwise, destroy the object and acknowledge the termination
     //  straight away.
     send_term_ack (owner);
+    process_unplug ();
     delete this;
 }

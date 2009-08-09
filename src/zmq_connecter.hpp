@@ -17,27 +17,27 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_ZMQ_LISTENER_HPP_INCLUDED__
-#define __ZMQ_ZMQ_LISTENER_HPP_INCLUDED__
+#ifndef __ZMQ_ZMQ_CONNECTER_HPP_INCLUDED__
+#define __ZMQ_ZMQ_CONNECTER_HPP_INCLUDED__
 
 #include "io_object.hpp"
-#include "tcp_listener.hpp"
+#include "tcp_connecter.hpp"
 
 namespace zmq
 {
 
-    class zmq_listener_t : public io_object_t
+    class zmq_connecter_t : public io_object_t
     {
     public:
 
-        zmq_listener_t (class io_thread_t *parent_, object_t *owner_);
+        zmq_connecter_t (class io_thread_t *parent_, object_t *owner_);
 
-        //  Set IP address to listen on.
+        //  Set IP address to connect to.
         int set_address (const char *addr_);
 
     private:
 
-        ~zmq_listener_t ();
+        ~zmq_connecter_t ();
 
         //  Handlers for incoming commands.
         void process_plug ();
@@ -45,15 +45,24 @@ namespace zmq
 
         //  Handlers for I/O events.
         void in_event ();
+        void out_event ();
+        void timer_event ();
 
-        //  Actual listening socket.
-        tcp_listener_t tcp_listener;
+        //  Internal function to start the actual connection establishment.
+        void start_connecting ();
+
+        //  Actual connecting socket.
+        tcp_connecter_t tcp_connecter;
 
         //  Handle corresponding to the listening socket.
         handle_t handle;
 
-        zmq_listener_t (const zmq_listener_t&);
-        void operator = (const zmq_listener_t&);
+        //  True, if we are waiting for a period of time before trying to
+        //  reconnect.
+        bool waiting;
+
+        zmq_connecter_t (const zmq_connecter_t&);
+        void operator = (const zmq_connecter_t&);
     };
 
 }
