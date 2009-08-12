@@ -20,17 +20,21 @@
 #ifndef __ZMQ_ZMQ_CONNECTER_HPP_INCLUDED__
 #define __ZMQ_ZMQ_CONNECTER_HPP_INCLUDED__
 
+#include "owned.hpp"
 #include "io_object.hpp"
 #include "tcp_connecter.hpp"
+#include "options.hpp"
+#include "stdint.hpp"
 
 namespace zmq
 {
 
-    class zmq_connecter_t : public io_object_t
+    class zmq_connecter_t : public owned_t, public io_object_t
     {
     public:
 
-        zmq_connecter_t (class io_thread_t *parent_, object_t *owner_);
+        zmq_connecter_t (class io_thread_t *parent_, object_t *owner_,
+            const options_t &options_);
 
         //  Set IP address to connect to.
         int set_address (const char *addr_);
@@ -57,9 +61,12 @@ namespace zmq
         //  Handle corresponding to the listening socket.
         handle_t handle;
 
-        //  True, if we are waiting for a period of time before trying to
-        //  reconnect.
-        bool waiting;
+        //  If true file descriptor is registered with the poller and 'handle'
+        //  contains valid value.
+        bool handle_valid;
+
+        //  Associated socket options.
+        options_t options;
 
         zmq_connecter_t (const zmq_connecter_t&);
         void operator = (const zmq_connecter_t&);

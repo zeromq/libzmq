@@ -20,41 +20,31 @@
 #ifndef __ZMQ_IO_OBJECT_HPP_INCLUDED__
 #define __ZMQ_IO_OBJECT_HPP_INCLUDED__
 
-#include "object.hpp"
+#include <stddef.h>
+
 #include "i_poller.hpp"
 #include "i_poll_events.hpp"
 
 namespace zmq
 {
 
-    class io_object_t : public object_t, public i_poll_events
+    //  Simple base class for objects that live in I/O threads.
+    //  It makes communication with the poller object easier and
+    //  makes defining unneeded event handlers unnecessary.
+
+    class io_object_t : public i_poll_events
     {
     public:
 
-        //  I/O object will live in the thread inherited from the parent.
-        //  However, it's lifetime is managed by the owner.
-        io_object_t (class io_thread_t *parent_, object_t *owner_);
+        io_object_t (class io_thread_t *io_thread_ = NULL);
+        ~io_object_t ();
 
     protected:
 
-        //  Ask owner socket to terminate this I/O object. This may not happen
-        void term ();
-
-        //  I/O object destroys itself. No point in allowing others to invoke
-        //  the destructor. At the same time, it has to be virtual so that
-        //  generic io_object deallocation mechanism destroys specific type
-        //  of I/O object correctly.
-        virtual ~io_object_t ();
-
-        //  Handlers for incoming commands. It vital that every I/O object
-        //  invokes io_object_t::process_plug at the end of it's own plug
-        //  handler.
-        void process_plug ();
-
-        //  io_object_t defines a new handler used to disconnect the object
-        //  from the poller object. Implement the handlen in the derived
-        //  classes to ensure sane cleanup.
-        virtual void process_unplug () = 0;
+        //  Derived class can init/swap the underlying I/O thread.
+        //  Caution: Remove all the file descriptors from the old I/O thread
+        //  before swapping to the new one!
+        void set_io_thread (class io_thread_t *io_thread_);
 
         //  Methods to access underlying poller object.
         handle_t add_fd (fd_t fd_);
@@ -71,23 +61,9 @@ namespace zmq
         void out_event ();
         void timer_event ();
 
-        //  Socket owning this I/O object. It is responsible for destroying
-        //  it when it's being closed.
-        object_t *owner;
-
     private:
 
-        //  Set to true when object is plugged in.
-        bool plugged_in;
-
-        //  Set to true when object was terminated before it was plugged in.
-        //  In such case destruction is delayed till 'plug' command arrives.
-        bool terminated;
-
         struct i_poller *poller;
-
-        //  Handlers for incoming commands.
-        void process_term ();
 
         io_object_t (const io_object_t&);
         void operator = (const io_object_t&);

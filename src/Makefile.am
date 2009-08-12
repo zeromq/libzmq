@@ -15,6 +15,7 @@ libzmq_la_SOURCES = \
     err.hpp \
     fd.hpp \
     fd_signaler.hpp \
+    i_inout.hpp \
     io_object.hpp \
     io_thread.hpp \
     ip.hpp \
@@ -25,10 +26,13 @@ libzmq_la_SOURCES = \
     msg.hpp \
     mutex.hpp \
     object.hpp \
+    options.hpp \
+    owner.hpp \
     pipe.hpp \
     platform.hpp \
     poll.hpp \
     select.hpp \
+    session.hpp \
     simple_semaphore.hpp \
     socket_base.hpp \
     stdint.hpp \
@@ -43,7 +47,10 @@ libzmq_la_SOURCES = \
     ypollset.hpp \
     yqueue.hpp \
     zmq_connecter.hpp \
+    zmq_decoder.hpp \
+    zmq_encoder.hpp \
     zmq_engine.hpp \
+    zmq_init.hpp \
     zmq_listener.hpp \
     app_thread.cpp \
     devpoll.cpp \
@@ -56,8 +63,11 @@ libzmq_la_SOURCES = \
     ip.cpp \
     kqueue.cpp \
     object.cpp \
+    options.cpp \
+    owned.cpp \
     poll.cpp \
     select.cpp \
+    session.cpp \
     socket_base.cpp \
     tcp_connecter.cpp \
     tcp_listener.cpp \
@@ -67,7 +77,10 @@ libzmq_la_SOURCES = \
     ypollset.cpp \
     zmq.cpp \
     zmq_connecter.cpp \
+    zmq_decoder.cpp \
+    zmq_encoder.cpp \
     zmq_engine.cpp \
+    zmq_init.cpp \
     zmq_listener.cpp
 
 libzmq_la_LDFLAGS = -version-info 0:0:0

@@ -32,12 +32,7 @@
 zmq::socket_base_t::socket_base_t (app_thread_t *parent_) :
     object_t (parent_),
     pending_term_acks (0),
-    app_thread (parent_),
-    hwm (0),
-    lwm (0),
-    swap (0),
-    mask (0),
-    affinity (0)
+    app_thread (parent_)
 {    
 }
 
@@ -77,7 +72,7 @@ int zmq::socket_base_t::setsockopt (int option_, void *optval_,
             errno = EINVAL;
             return -1;
         }
-        hwm = *((int64_t*) optval_);
+        options.hwm = *((int64_t*) optval_);
         return 0;
 
     case ZMQ_LWM:
@@ -85,7 +80,7 @@ int zmq::socket_base_t::setsockopt (int option_, void *optval_,
             errno = EINVAL;
             return -1;
         }
-        lwm = *((int64_t*) optval_);
+        options.lwm = *((int64_t*) optval_);
         return 0;
 
     case ZMQ_SWAP:
@@ -93,7 +88,7 @@ int zmq::socket_base_t::setsockopt (int option_, void *optval_,
             errno = EINVAL;
             return -1;
         }
-        swap = *((int64_t*) optval_);
+        options.swap = *((int64_t*) optval_);
         return 0;
 
     case ZMQ_MASK:
@@ -101,7 +96,7 @@ int zmq::socket_base_t::setsockopt (int option_, void *optval_,
             errno = EINVAL;
             return -1;
         }
-        mask = (uint64_t) *((int64_t*) optval_);
+        options.mask = (uint64_t) *((int64_t*) optval_);
         return 0;
 
     case ZMQ_AFFINITY:
@@ -109,15 +104,15 @@ int zmq::socket_base_t::setsockopt (int option_, void *optval_,
             errno = EINVAL;
             return -1;
         }
-        affinity = (uint64_t) *((int64_t*) optval_);
+        options.affinity = (uint64_t) *((int64_t*) optval_);
         return 0;
 
-    case ZMQ_SESSIONID:
+    case ZMQ_IDENTITY:
         if (optvallen_ != sizeof (const char*)) {
             errno = EINVAL;
             return -1;
         }
-        session_id = (const char*) optval_;
+        options.identity = (const char*) optval_;
         return 0;
 
     default:
@@ -128,8 +123,8 @@ int zmq::socket_base_t::setsockopt (int option_, void *optval_,
 
 int zmq::socket_base_t::bind (const char *addr_)
 {
-    zmq_listener_t *listener =
-        new zmq_listener_t (choose_io_thread (affinity), this);
+    zmq_listener_t *listener = new zmq_listener_t (
+        choose_io_thread (options.affinity), this, options);
     int rc = listener->set_address (addr_);
     if (rc != 0)
         return -1;
@@ -141,8 +136,8 @@ int zmq::socket_base_t::bind (const char *addr_)
 
 int zmq::socket_base_t::connect (const char *addr_)
 {
-    zmq_connecter_t *connecter =
-        new zmq_connecter_t (choose_io_thread (affinity), this);
+    zmq_connecter_t *connecter = new zmq_connecter_t (
+        choose_io_thread (options.affinity), this, options);
     int rc = connecter->set_address (addr_);
     if (rc != 0)
         return -1;

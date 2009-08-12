@@ -17,50 +17,39 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_ZMQ_LISTENER_HPP_INCLUDED__
-#define __ZMQ_ZMQ_LISTENER_HPP_INCLUDED__
+#ifndef __ZMQ_SESSION_HPP_INCLUDED__
+#define __ZMQ_SESSION_HPP_INCLUDED__
 
+#include "i_inout.hpp"
 #include "owned.hpp"
-#include "io_object.hpp"
-#include "tcp_listener.hpp"
-#include "options.hpp"
-#include "stdint.hpp"
 
 namespace zmq
 {
 
-    class zmq_listener_t : public owned_t, public io_object_t
+    class session_t : public owned_t, public i_inout
     {
     public:
 
-        zmq_listener_t (class io_thread_t *parent_, object_t *owner_,
-            const options_t &options_);
-
-        //  Set IP address to listen on.
-        int set_address (const char *addr_);
+        session_t (object_t *parent_, object_t *owner_,
+            class zmq_engine_t *engine_);
 
     private:
 
-        ~zmq_listener_t ();
+        ~session_t ();
+
+        //  i_inout interface implementation.
+        bool read (::zmq_msg *msg_);
+        bool write (::zmq_msg *msg_);
+        void flush ();
 
         //  Handlers for incoming commands.
         void process_plug ();
         void process_unplug ();
 
-        //  Handlers for I/O events.
-        void in_event ();
+        class zmq_engine_t *engine;
 
-        //  Actual listening socket.
-        tcp_listener_t tcp_listener;
-
-        //  Handle corresponding to the listening socket.
-        handle_t handle;
-
-        //  Associated socket options.
-        options_t options;
-
-        zmq_listener_t (const zmq_listener_t&);
-        void operator = (const zmq_listener_t&);
+        session_t (const session_t&);
+        void operator = (const session_t&);
     };
 
 }

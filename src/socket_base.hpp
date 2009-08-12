@@ -24,6 +24,7 @@
 #include <string>
 
 #include "object.hpp"
+#include "options.hpp"
 #include "stdint.hpp"
 
 namespace zmq
@@ -66,12 +67,7 @@ namespace zmq
         class app_thread_t *app_thread;
 
         //  Socket options.
-        int64_t hwm;
-        int64_t lwm;
-        int64_t swap;
-        uint64_t mask;
-        uint64_t affinity;
-        std::string session_id;
+        options_t options;
 
         socket_base_t (const socket_base_t&);
         void operator = (const socket_base_t&);

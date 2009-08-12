@@ -48,7 +48,7 @@ extern "C" {
 #define ZMQ_SWAP 3
 #define ZMQ_MASK 4
 #define ZMQ_AFFINITY 5
-#define ZMQ_SESSIONID 6
+#define ZMQ_IDENTITY 6
 
 //  The operation should be performed in non-blocking mode. I.e. if it cannot
 //  be processed immediately, error should be returned with errno set to EAGAIN.
