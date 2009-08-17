@@ -147,11 +147,6 @@ int zmq::socket_base_t::connect (const char *addr_)
     return 0;
 }
 
-int zmq::socket_base_t::subscribe (const char *criteria_)
-{
-    zmq_assert (false);
-}
-
 int zmq::socket_base_t::send (struct zmq_msg *msg_, int flags_)
 {
     zmq_assert (false);

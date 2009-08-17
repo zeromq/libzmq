@@ -260,12 +260,6 @@ namespace zmq
             }
         }
 
-        inline void subscribe (const char *criteria_)
-        {
-            int rc = zmq_subscribe (ptr, criteria_);
-            assert (rc == 0);
-        }
-
         inline int send (message_t &msg_, int flags_ = 0)
         {
             int rc = zmq_send (ptr, &msg_, flags_);

@@ -172,9 +172,6 @@ ZMQ_EXPORT int zmq_bind (void *s, const char *addr);
 //  Connect the socket to a particular address.
 ZMQ_EXPORT int zmq_connect (void *s, const char *addr);
 
-//  Subscribe for the subset of messages identified by 'criteria' argument.
-ZMQ_EXPORT int zmq_subscribe (void *s, const char *criteria);
-
 //  Send the message 'msg' to the socket 's'. 'flags' argument can be
 //  combination of following values:
 //  ZMQ_NOBLOCK - if message cannot be sent, return immediately.

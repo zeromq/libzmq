@@ -208,11 +208,6 @@ int zmq_connect (void *s_, const char *addr_)
     return (((zmq::socket_base_t*) s_)->connect (addr_));
 }
 
-int zmq_subscribe (void *s_, const char *criteria_)
-{
-    return (((zmq::socket_base_t*) s_)->subscribe (criteria_));
-}
-
 int zmq_send (void *s_, zmq_msg *msg_, int flags_)
 {
     return (((zmq::socket_base_t*) s_)->send (msg_, flags_));

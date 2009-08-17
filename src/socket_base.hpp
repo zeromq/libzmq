@@ -41,7 +41,6 @@ namespace zmq
         virtual int setsockopt (int option_, void *optval_, size_t optvallen_);
         virtual int bind (const char *addr_);
         virtual int connect (const char *addr_);
-        virtual int subscribe (const char *criteria_);
         virtual int send (struct zmq_msg *msg_, int flags_);
         virtual int flush ();
         virtual int recv (struct zmq_msg *msg_, int flags_);

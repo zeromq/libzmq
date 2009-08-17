@@ -41,7 +41,6 @@ int main (int argc, const char *argv [])
     zmq::context_t ctx (1, 1);
     zmq::socket_t s (ctx, ZMQ_SUB);
     s.connect (chatroom_out_address);
-    s.subscribe ("*");
     
     while (true) {
 
