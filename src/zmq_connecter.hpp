@@ -33,7 +33,7 @@ namespace zmq
     {
     public:
 
-        zmq_connecter_t (class io_thread_t *parent_, object_t *owner_,
+        zmq_connecter_t (class io_thread_t *parent_, socket_base_t *owner_,
             const options_t &options_);
 
         //  Set IP address to connect to.

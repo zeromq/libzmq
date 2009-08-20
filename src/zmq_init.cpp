@@ -22,8 +22,8 @@
 #include "session.hpp"
 #include "err.hpp"
 
-zmq::zmq_init_t::zmq_init_t (io_thread_t *parent_, object_t *owner_, fd_t fd_,
-      bool connected_, const options_t &options_) :
+zmq::zmq_init_t::zmq_init_t (io_thread_t *parent_, socket_base_t *owner_,
+      fd_t fd_, bool connected_, const options_t &options_) :
     owned_t (parent_, owner_),
     connected (connected_),
     options (options_)
@@ -81,13 +81,15 @@ void zmq::zmq_init_t::flush ()
 
 void zmq::zmq_init_t::process_plug ()
 {
+    zmq_assert (engine);
     engine->plug (this);
     owned_t::process_plug ();
 }
 
 void zmq::zmq_init_t::process_unplug ()
 {
-    engine->unplug ();
+    if (engine)
+        engine->unplug ();
 }
 
 void zmq::zmq_init_t::create_session ()

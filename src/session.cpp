@@ -21,7 +21,7 @@
 #include "zmq_engine.hpp"
 #include "err.hpp"
 
-zmq::session_t::session_t (object_t *parent_, object_t *owner_,
+zmq::session_t::session_t (object_t *parent_, socket_base_t *owner_,
       zmq_engine_t *engine_) :
     owned_t (parent_, owner_),
     engine (engine_)
@@ -48,11 +48,14 @@ void zmq::session_t::flush ()
 
 void zmq::session_t::process_plug ()
 {
+    zmq_assert (engine);
     engine->plug (this);
     owned_t::process_plug ();
 }
 
 void zmq::session_t::process_unplug ()
 {
+    zmq_assert (engine);
     engine->unplug ();
+    delete engine;
 }

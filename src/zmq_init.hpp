@@ -44,7 +44,7 @@ namespace zmq
         //  Set 'connected' to true if the connection was created by 'connect'
         //  function. If it was accepted from a listening socket, set it to
         //  false.
-        zmq_init_t (class io_thread_t *parent_, object_t *owner_, fd_t fd_,
+        zmq_init_t (class io_thread_t *parent_, socket_base_t *owner_, fd_t fd_,
             bool connected_, const options_t &options);
         ~zmq_init_t ();
 

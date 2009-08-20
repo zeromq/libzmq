@@ -22,8 +22,8 @@
 #include "io_thread.hpp"
 #include "err.hpp"
 
-zmq::zmq_connecter_t::zmq_connecter_t (io_thread_t *parent_, object_t *owner_,
-      const options_t &options_) :
+zmq::zmq_connecter_t::zmq_connecter_t (io_thread_t *parent_,
+      socket_base_t *owner_, const options_t &options_) :
     owned_t (parent_, owner_),
     io_object_t (parent_),
     handle_valid (false),

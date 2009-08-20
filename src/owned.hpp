@@ -20,7 +20,9 @@
 #ifndef __ZMQ_OWNED_HPP_INCLUDED__
 #define __ZMQ_OWNED_HPP_INCLUDED__
 
-#include "object.hpp"
+#include "socket_base.hpp"
+#include "atomic_counter.hpp"
+#include "stdint.hpp"
 
 namespace zmq
 {
@@ -34,7 +36,12 @@ namespace zmq
 
         //  The object will live in parent's thread, however, its lifetime
         //  will be managed by its owner socket.
-        owned_t (object_t *parent_, object_t *owner_);
+        owned_t (object_t *parent_, socket_base_t *owner_);
+
+        //  When another owned object wants to send command to this object
+        //  it calls this function to let it know it should not shut down
+        //  before the command is delivered.
+        void inc_seqnum ();
 
     protected:
 
@@ -57,21 +64,27 @@ namespace zmq
         //  classes to ensure sane cleanup.
         virtual void process_unplug () = 0;
 
-        //  Socket owning this object. It is responsible for destroying
-        //  it when it's being closed.
-        object_t *owner;
+        //  Socket owning this object. When the socket is being closed it's
+        //  responsible for shutting down this object.
+        socket_base_t *owner;
 
     private:
 
         //  Handlers for incoming commands.
         void process_term ();
 
-        //  Set to true when object is plugged in.
-        bool plugged_in;
+        //  Generic command handler (to be called from all command handlers
+        //  once the processing is done).
+        void finalise_command ();
 
-        //  Set to true when object was terminated before it was plugged in.
-        //  In such case destruction is delayed till 'plug' command arrives.
-        bool terminated;
+        //  Sequence number of the last command sent to this object.
+        atomic_counter_t sent_seqnum;
+
+        //  Sequence number of the last command processed by this object.
+        uint64_t processed_seqnum;
+
+        //  If true, the object is already shutting down.
+        bool shutting_down;
 
         owned_t (const owned_t&);
         void operator = (const owned_t&);

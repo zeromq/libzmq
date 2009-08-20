@@ -73,7 +73,6 @@ void zmq::zmq_engine_t::in_event ()
 
         //  Read as much data as possible to the read buffer.
         insize = tcp_socket.read (inbuf, in_batch_size);
-printf ("%d bytes read\n", (int) insize);
         inpos = 0;
 
         //  Check whether the peer has closed the connection.
@@ -132,5 +131,5 @@ void zmq::zmq_engine_t::out_event ()
 
 void zmq::zmq_engine_t::error ()
 {
-    zmq_assert (false);
+//    zmq_assert (false);
 }

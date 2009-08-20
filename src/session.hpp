@@ -30,7 +30,7 @@ namespace zmq
     {
     public:
 
-        session_t (object_t *parent_, object_t *owner_,
+        session_t (object_t *parent_, socket_base_t *owner_,
             class zmq_engine_t *engine_);
 
     private:

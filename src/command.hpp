@@ -37,11 +37,11 @@ namespace zmq
             stop,
             plug,
             own,
+            attach,
             bind,
             term_req,
             term,
             term_ack
-
         } type;
 
         union {
@@ -57,8 +57,13 @@ namespace zmq
 
             //  Sent to socket to let it know about the newly created object.
             struct {
-                class object_t *object;
+                class owned_t *object;
             } own;
+
+            //  Attach the engine to the session.
+            struct {
+                class zmq_engine_t *engine;
+            } attach;
 
             //  Sent between objects to establish pipe(s) between them.
             struct {
@@ -67,7 +72,7 @@ namespace zmq
             //  Sent by I/O object ot the socket to request the shutdown of
             //  the I/O object.
             struct {
-                class object_t *object;
+                class owned_t *object;
             } term_req;
 
             //  Sent by socket to I/O object to start its shutdown.
