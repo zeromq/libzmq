@@ -45,7 +45,7 @@ namespace zmq
 
         struct i_inout *destination;
         unsigned char tmpbuf [8];
-        ::zmq_msg in_progress;
+        ::zmq_msg_t in_progress;
 
         zmq_decoder_t (const zmq_decoder_t&);
         void operator = (const zmq_decoder_t&);

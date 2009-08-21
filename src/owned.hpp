@@ -59,6 +59,10 @@ namespace zmq
         //  handler.
         void process_plug ();
 
+        //  It's vital that session invokes io_object_t::process_attach
+        //  at the end of it's own attach handler.
+        void process_attach (class zmq_engine_t *engine_);
+
         //  io_object_t defines a new handler used to disconnect the object
         //  from the poller object. Implement the handlen in the derived
         //  classes to ensure sane cleanup.

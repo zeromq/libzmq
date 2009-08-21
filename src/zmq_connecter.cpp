@@ -18,16 +18,18 @@
 */
 
 #include "zmq_connecter.hpp"
-#include "zmq_init.hpp"
+#include "zmq_connecter_init.hpp"
 #include "io_thread.hpp"
 #include "err.hpp"
 
 zmq::zmq_connecter_t::zmq_connecter_t (io_thread_t *parent_,
-      socket_base_t *owner_, const options_t &options_) :
+      socket_base_t *owner_, const options_t &options_,
+      const char *session_name_) :
     owned_t (parent_, owner_),
     io_object_t (parent_),
     handle_valid (false),
-    options (options_)
+    options (options_),
+    session_name (session_name_)
 {
 }
 
@@ -76,7 +78,8 @@ void zmq::zmq_connecter_t::out_event ()
 
     //  Create an init object. 
     io_thread_t *io_thread = choose_io_thread (options.affinity);
-    zmq_init_t *init = new zmq_init_t (io_thread, owner, fd, true, options);
+    zmq_connecter_init_t *init = new zmq_connecter_init_t (io_thread, owner,
+        fd, options, session_name.c_str ());
     zmq_assert (init);
     send_plug (init);
     send_own (owner, init);

@@ -22,9 +22,10 @@
 #include "err.hpp"
 
 zmq::session_t::session_t (object_t *parent_, socket_base_t *owner_,
-      zmq_engine_t *engine_) :
+      const char *name_) :
     owned_t (parent_, owner_),
-    engine (engine_)
+    engine (NULL),
+    name (name_)
 {
 }
 
@@ -32,12 +33,12 @@ zmq::session_t::~session_t ()
 {
 }
 
-bool zmq::session_t::read (::zmq_msg *msg_)
+bool zmq::session_t::read (::zmq_msg_t *msg_)
 {
     return false;
 }
 
-bool zmq::session_t::write (::zmq_msg *msg_)
+bool zmq::session_t::write (::zmq_msg_t *msg_)
 {
     return false;
 }
@@ -48,14 +49,34 @@ void zmq::session_t::flush ()
 
 void zmq::session_t::process_plug ()
 {
-    zmq_assert (engine);
-    engine->plug (this);
+    //  Register the session with the socket.
+    bool ok = owner->register_session (name.c_str (), this);
+
+    //  There's already a session with the specified identity.
+    //  We should syslog it and drop the session. TODO
+    zmq_assert (ok);
+
     owned_t::process_plug ();
 }
 
 void zmq::session_t::process_unplug ()
 {
-    zmq_assert (engine);
-    engine->unplug ();
-    delete engine;
+    //  Unregister the session from the socket.
+    bool ok = owner->unregister_session (name.c_str ());
+    zmq_assert (ok);
+
+    if (engine) {
+        engine->unplug ();
+        delete engine;
+        engine = NULL;
+    }
+}
+
+void zmq::session_t::process_attach (class zmq_engine_t *engine_)
+{
+    zmq_assert (engine_);
+    engine = engine_;
+    engine->plug (this);
+
+    owned_t::process_attach (engine_);
 }

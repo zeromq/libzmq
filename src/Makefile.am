@@ -23,7 +23,7 @@ libzmq_la_SOURCES = \
     i_poll_events.hpp \
     i_signaler.hpp \
     kqueue.hpp \
-    msg.hpp \
+    msg_content.hpp \
     mutex.hpp \
     object.hpp \
     options.hpp \
@@ -47,11 +47,12 @@ libzmq_la_SOURCES = \
     ypollset.hpp \
     yqueue.hpp \
     zmq_connecter.hpp \
+    zmq_connecter_init.hpp \
     zmq_decoder.hpp \
     zmq_encoder.hpp \
     zmq_engine.hpp \
-    zmq_init.hpp \
     zmq_listener.hpp \
+    zmq_listener_init.hpp \
     app_thread.cpp \
     devpoll.cpp \
     dispatcher.cpp \
@@ -77,11 +78,12 @@ libzmq_la_SOURCES = \
     ypollset.cpp \
     zmq.cpp \
     zmq_connecter.cpp \
+    zmq_connecter_init.cpp \
     zmq_decoder.cpp \
     zmq_encoder.cpp \
     zmq_engine.cpp \
-    zmq_init.cpp \
-    zmq_listener.cpp
+    zmq_listener.cpp \
+    zmq_listener_init.cpp
 
 libzmq_la_LDFLAGS = -version-info 0:0:0
 libzmq_la_CXXFLAGS = -Wall -pedantic -Werror @ZMQ_EXTRA_CXXFLAGS@

@@ -131,9 +131,8 @@ void zmq::object_t::send_own (socket_base_t *destination_, owned_t *object_)
 
 void zmq::object_t::send_attach (session_t *destination_, zmq_engine_t *engine_)
 {
-    //  Let the object know that it cannot shut down till it gets this command.
-    destination_->inc_seqnum ();
-
+    //  The assumption here is that command sequence number of the destination
+    //  object was already incremented in find_session function.
     command_t cmd;
     cmd.destination = destination_;
     cmd.type = command_t::attach;

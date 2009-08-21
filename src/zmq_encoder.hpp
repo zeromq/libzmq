@@ -43,7 +43,7 @@ namespace zmq
         bool message_ready ();
 
         struct i_inout *source;
-        ::zmq_msg in_progress;
+        ::zmq_msg_t in_progress;
         unsigned char tmpbuf [9];
 
         zmq_encoder_t (const zmq_encoder_t&);

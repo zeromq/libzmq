@@ -17,27 +17,33 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_SESSION_HPP_INCLUDED__
-#define __ZMQ_SESSION_HPP_INCLUDED__
+#ifndef __ZMQ_ZMQ_LISTENER_INIT_HPP_INCLUDED__
+#define __ZMQ_ZMQ_LISTENER_INIT_HPP_INCLUDED__
 
 #include <string>
 
 #include "i_inout.hpp"
 #include "owned.hpp"
+#include "zmq_engine.hpp"
+#include "stdint.hpp"
+#include "fd.hpp"
 #include "options.hpp"
 
 namespace zmq
 {
 
-    class session_t : public owned_t, public i_inout
+    //  The class handles initialisation phase of native 0MQ wire-level
+    //  protocol on the listening side of the connection.
+
+    class zmq_listener_init_t : public owned_t, public i_inout
     {
     public:
 
-        session_t (object_t *parent_, socket_base_t *owner_, const char *name_);
+        zmq_listener_init_t (class io_thread_t *parent_, socket_base_t *owner_,
+            fd_t fd_, const options_t &options);
+        ~zmq_listener_init_t ();
 
     private:
-
-        ~session_t ();
 
         //  i_inout interface implementation.
         bool read (::zmq_msg_t *msg_);
@@ -47,16 +53,17 @@ namespace zmq
         //  Handlers for incoming commands.
         void process_plug ();
         void process_unplug ();
-        void process_attach (class zmq_engine_t *engine_);
 
-        class zmq_engine_t *engine;
+        //  Engine is created by zmq_listener_init_t object. Once the
+        //  initialisation phase is over it is passed to a session object,
+        //  possibly running in a different I/O thread.
+        zmq_engine_t *engine;
 
-        //  The name of the session. One that is used to register it with
-        //  socket-level repository of sessions.
-        std::string name;
+        //  Associated socket options.
+        options_t options;
 
-        session_t (const session_t&);
-        void operator = (const session_t&);
+        zmq_listener_init_t (const zmq_listener_init_t&);
+        void operator = (const zmq_listener_init_t&);
     };
 
 }

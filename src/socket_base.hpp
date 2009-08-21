@@ -40,23 +40,22 @@ namespace zmq
         ~socket_base_t ();
 
         //  Interface for communication with the API layer.
-        virtual int setsockopt (int option_, void *optval_, size_t optvallen_);
+        virtual int setsockopt (int option_, const void *optval_,
+            size_t optvallen_);
         virtual int bind (const char *addr_);
         virtual int connect (const char *addr_);
-        virtual int send (struct zmq_msg *msg_, int flags_);
+        virtual int send (struct zmq_msg_t *msg_, int flags_);
         virtual int flush ();
-        virtual int recv (struct zmq_msg *msg_, int flags_);
+        virtual int recv (struct zmq_msg_t *msg_, int flags_);
         virtual int close ();
 
-        //  Functions that owned objects use to manipulate socket's list
-        //  of existing sessions.
-        //  Note that this functionality cannot be implemented via inter-thread
+        //  The list of sessions cannot be accessed via inter-thread
         //  commands as it is unacceptable to wait for the completion of the
         //  action till user application yields control of the application
         //  thread to 0MQ.
-        void register_session (const char *name_, class session_t *session_);
-        void unregister_session (const char *name_);
-        class session_t *get_session (const char *name_);
+        bool register_session (const char *name_, class session_t *session_);
+        bool unregister_session (const char *name_);
+        class session_t *find_session (const char *name_);
 
     private:
 
@@ -80,10 +79,17 @@ namespace zmq
         //  Socket options.
         options_t options;
 
+        //  If true, socket is already shutting down. No new work should be
+        //  started.
+        bool shutting_down;
+
         //  List of existing sessions. This list is never referenced from within
         //  the socket, instead it is used by I/O objects owned by the session.
         //  As those objects can live in different threads, the access is
         //  synchronised using 'sessions_sync' mutex.
+        //  Local sessions are those named by the local instance of 0MQ.
+        //  Remote sessions are the sessions who's identities are provided by
+        //  the remote party.
         typedef std::map <std::string, session_t*> sessions_t;
         sessions_t sessions;
         mutex_t sessions_sync;

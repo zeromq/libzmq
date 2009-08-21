@@ -74,7 +74,7 @@ namespace zmq
     //  copied it - the behaviour is undefined. Don't change the body of the
     //  received message either - other threads may be accessing it in parallel.
 
-    class message_t : private zmq_msg
+    class message_t : private zmq_msg_t
     {
         friend class socket_t;
 
@@ -139,7 +139,7 @@ namespace zmq
         //  of data after the operation.
         inline void move_to (message_t *msg_)
         {
-            int rc = zmq_msg_move (this, (zmq_msg*) msg_);
+            int rc = zmq_msg_move (this, (zmq_msg_t*) msg_);
             assert (rc == 0);
         }
 
@@ -148,7 +148,7 @@ namespace zmq
         //  these get deallocated.
         inline void copy_to (message_t *msg_)
         {
-            int rc = zmq_msg_copy (this, (zmq_msg*) msg_);
+            int rc = zmq_msg_copy (this, (zmq_msg_t*) msg_);
             assert (rc == 0);
         }
 
@@ -230,9 +230,10 @@ namespace zmq
             assert (rc == 0);
         }
 
-        template <typename T> inline void setsockopt (int option_, T &value_)
+        inline void setsockopt (int option_, const void *optval_,
+            size_t optvallen_)
         {
-            int rc = zmq_setsockopt (ptr, option_, (void*) &value_, sizeof (T));
+            int rc = zmq_setsockopt (ptr, option_, optval_, optvallen_);
             assert (rc == 0);
         }
 

@@ -18,7 +18,7 @@
 */
 
 #include "zmq_listener.hpp"
-#include "zmq_init.hpp"
+#include "zmq_listener_init.hpp"
 #include "io_thread.hpp"
 #include "err.hpp"
 
@@ -68,7 +68,8 @@ void zmq::zmq_listener_t::in_event ()
 
     //  Create an init object. 
     io_thread_t *io_thread = choose_io_thread (options.affinity);
-    zmq_init_t *init = new zmq_init_t (io_thread, owner, fd, false, options);
+    zmq_listener_init_t *init = new zmq_listener_init_t (io_thread, owner,
+        fd, options);
     zmq_assert (init);
     send_plug (init);
     send_own (owner, init);

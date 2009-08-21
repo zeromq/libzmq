@@ -20,6 +20,8 @@
 #ifndef __ZMQ_ZMQ_CONNECTER_HPP_INCLUDED__
 #define __ZMQ_ZMQ_CONNECTER_HPP_INCLUDED__
 
+#include <string>
+
 #include "owned.hpp"
 #include "io_object.hpp"
 #include "tcp_connecter.hpp"
@@ -34,14 +36,13 @@ namespace zmq
     public:
 
         zmq_connecter_t (class io_thread_t *parent_, socket_base_t *owner_,
-            const options_t &options_);
+            const options_t &options_, const char *session_name_);
+        ~zmq_connecter_t ();
 
         //  Set IP address to connect to.
         int set_address (const char *addr_);
 
     private:
-
-        ~zmq_connecter_t ();
 
         //  Handlers for incoming commands.
         void process_plug ();
@@ -67,6 +68,9 @@ namespace zmq
 
         //  Associated socket options.
         options_t options;
+
+        //  Name of the session associated with the connecter.
+        std::string session_name;
 
         zmq_connecter_t (const zmq_connecter_t&);
         void operator = (const zmq_connecter_t&);

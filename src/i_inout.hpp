@@ -27,8 +27,8 @@ namespace zmq
 
     struct i_inout
     {
-        virtual bool read (::zmq_msg *msg_) = 0;
-        virtual bool write (::zmq_msg *msg_) = 0;
+        virtual bool read (::zmq_msg_t *msg_) = 0;
+        virtual bool write (::zmq_msg_t *msg_) = 0;
         virtual void flush () = 0;
     };
 

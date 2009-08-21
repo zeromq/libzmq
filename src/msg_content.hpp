@@ -26,8 +26,8 @@
 
 #include "atomic_counter.hpp"
 
-//namespace zmq
-//{
+namespace zmq
+{
 
     //  Shared message buffer. Message data are either allocated in one
     //  continuous block along with this structure - thus avoiding one
@@ -36,7 +36,8 @@
     //  used to deallocate the data. If the buffer is actually shared (there
     //  are at least 2 references to it) refcount member contains number of
     //  references.
-    struct zmq_msg_content
+
+    struct msg_content_t
     {
         void *data;
         size_t size;
@@ -44,6 +45,6 @@
         zmq::atomic_counter_t refcnt;
     };
 
-//}
+}
 
 #endif

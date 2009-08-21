@@ -47,6 +47,14 @@ void zmq::owned_t::process_plug ()
     finalise_command ();
 }
 
+void zmq::owned_t::process_attach (zmq_engine_t *engine_)
+{
+    //  Keep track of how many commands were processed so far.
+    processed_seqnum++;
+
+    finalise_command ();
+}
+
 void zmq::owned_t::term ()
 {
     send_term_req (owner, this);
@@ -65,8 +73,8 @@ void zmq::owned_t::finalise_command ()
     //  If termination request was already received and there are no more
     //  commands to wait for, terminate the object.
     if (shutting_down && processed_seqnum == sent_seqnum.get ()) {
-        send_term_ack (owner);
         process_unplug ();
+        send_term_ack (owner);
         delete this;
     }
 }
