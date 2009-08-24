@@ -159,6 +159,59 @@ if test "x$HAVE_INTTYPES_H" = "xyes"; then
     inttypes="1"
 fi
 
+# Python
+pyzmq="no"
+
+AC_ARG_WITH(python_headersdir,
+    AC_HELP_STRING([--with-python-headersdir], [Python.h header file location]),
+        [python_headersdir="$withval"], [python_headersdir="no"])
+
+AC_ARG_WITH([python], [AS_HELP_STRING([--with-python], [build Python language binding [default=no]])], [with_python=yes], [with_python=no])
+if test "x$with_python" != "xno"; then
+    AM_PATH_PYTHON([2.4], , [:])
+    if test "x$PYTHON" = "x:"; then
+        AC_MSG_ERROR([To run configure with --with-python option, Python has to be installed.]);
+    fi
+
+    if test "x$python_headersdir" != "xno"; then
+        PYTHON_INCLUDES="-I${python_headersdir}"
+        PYTHON_SETUP_INCLUDES="${python_headersdir}"
+
+        AC_CHECK_HEADERS($python_headersdir/Python.h, [] , 
+            [AC_MSG_ERROR([To run configure with --with-python option, Python.h has to be usable.])])
+
+    else 
+        py_prefix=`$PYTHON -c "import sys; print sys.prefix"`
+        py_exec_prefix=`$PYTHON -c "import sys; print sys.exec_prefix"`
+        PYTHON_INCLUDES="-I${py_prefix}/include/python${PYTHON_VERSION}"
+        PYTHON_SETUP_INCLUDES="${py_prefix}/include/python${PYTHON_VERSION}"
+
+        if test "$py_prefix" != "$py_exec_prefix"; then
+            PYTHON_INCLUDES="${PYTHON_INCLUDES} -I${py_exec_prefix}/include/python${PYTHON_VERSION}"
+        fi
+
+        AC_CHECK_HEADERS($py_prefix/include/python${PYTHON_VERSION}/Python.h, [] , 
+            [AC_MSG_ERROR([To run configure with --with-python option, Python.h has to be usable.])])
+    fi
+
+    AC_SUBST(PYTHON_INCLUDES)
+    AC_SUBST(PYTHON_SETUP_INCLUDES)
+
+    pyzmq="yes"
+fi
+
+if test "x$pyzmq" != "xyes"; then
+        AC_CHECK_PROG(have_python, python, yes, no)
+        if test "x$have_python" != "xyes"; then
+            AC_MSG_ERROR([Could not find python.])
+        fi
+    fi
+    
+    #  Generate version.c
+    AC_CONFIG_COMMANDS([version.c],
+        [python third-party/openpgm/libpgm-1.0.0/openpgm/pgm/version_generator.py > \
+            third-party/openpgm/libpgm-1.0.0/openpgm/pgm/version.c])
+
 AC_SUBST(stdint)
 AC_SUBST(inttypes)
 
@@ -171,7 +224,8 @@ AC_FUNC_MALLOC
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(perror gettimeofday memset socket getifaddrs freeifaddrs)
 
-AC_OUTPUT(Makefile src/Makefile examples/Makefile examples/chat/Makefile)
+AC_OUTPUT(Makefile src/Makefile examples/Makefile examples/chat/Makefile python/Makefile \
+python/setup.py)
 
 AC_MSG_RESULT([])
 AC_MSG_RESULT([ ******************************************************** ])
@@ -184,5 +238,8 @@ AC_MSG_RESULT([  license text. ])
 AC_MSG_RESULT([ ******************************************************** ])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([ 0MQ install dir: $prefix])
+AC_MSG_RESULT([   Python language binding: $pyzmq])
 AC_MSG_RESULT([])
+
+AM_CONDITIONAL(BUILD_PYTHON, test "x$pyzmq" = "xyes")
 
