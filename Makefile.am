@@ -1,4 +1,9 @@
 include_HEADERS = include/zmq.h include/zmq.hpp
 
-SUBDIRS = src examples python
-DIST_SUBDIRS = src examples python
+
+if BUILD_PYTHON
+DIR_P = python
+endif
+
+SUBDIRS = src examples $(DIR_P)
+DIST_SUBDIRS = src examples $(DIR_P)
