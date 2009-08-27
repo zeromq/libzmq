@@ -19,6 +19,7 @@ libzmq_la_SOURCES = \
     io_object.hpp \
     io_thread.hpp \
     ip.hpp \
+    i_endpoint.hpp \
     i_poller.hpp \
     i_poll_events.hpp \
     i_signaler.hpp \
@@ -66,6 +67,7 @@ libzmq_la_SOURCES = \
     object.cpp \
     options.cpp \
     owned.cpp \
+    pipe.cpp \
     poll.cpp \
     select.cpp \
     session.cpp \

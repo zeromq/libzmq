@@ -67,7 +67,7 @@ extern "C" {
 //  single accept. There's no message routing or message filtering involved.
 #define ZMQ_P2P 0
 
-//  Socket to distribute data. Recv fuction is not implemeted for this socket
+//  Socket to distribute data. Recv fuction is not implemented for this socket
 //  type. Messages are distributed in fanout fashion to all peers.
 #define ZMQ_PUB 1
 

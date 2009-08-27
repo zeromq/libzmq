@@ -42,6 +42,10 @@ namespace zmq
         void in_event ();
         void out_event ();
 
+        //  This method is called by the session to signalise that there
+        //  are messages to send available.
+        void revive ();
+
     private:
 
         //  Function to handle network disconnections.

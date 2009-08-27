@@ -39,6 +39,7 @@ namespace zmq
             own,
             attach,
             bind,
+            revive,
             term_req,
             term,
             term_ack
@@ -65,9 +66,17 @@ namespace zmq
                 class zmq_engine_t *engine;
             } attach;
 
-            //  Sent between objects to establish pipe(s) between them.
+            //  Sent from session to socket to establish pipe(s) between them.
             struct {
+                class owned_t *session;
+                class reader_t *in_pipe;
+                class writer_t *out_pipe;
             } bind;
+
+            //  Sent by pipe writer to inform dormant pipe reader that there
+            //  are messages in the pipe.
+            struct {
+            } revive;
 
             //  Sent by I/O object ot the socket to request the shutdown of
             //  the I/O object.

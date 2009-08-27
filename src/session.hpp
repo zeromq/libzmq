@@ -23,17 +23,22 @@
 #include <string>
 
 #include "i_inout.hpp"
+#include "i_endpoint.hpp"
 #include "owned.hpp"
 #include "options.hpp"
 
 namespace zmq
 {
 
-    class session_t : public owned_t, public i_inout
+    class session_t : public owned_t, public i_inout, public i_endpoint
     {
     public:
 
-        session_t (object_t *parent_, socket_base_t *owner_, const char *name_);
+        session_t (object_t *parent_, socket_base_t *owner_, const char *name_,
+            const options_t &options_);
+
+        void set_inbound_pipe (class reader_t *pipe_);
+        void set_outbound_pipe (class writer_t *pipe_);
 
     private:
 
@@ -44,16 +49,31 @@ namespace zmq
         bool write (::zmq_msg_t *msg_);
         void flush ();
 
+        //  i_endpoint interface implementation.
+        void revive (class reader_t *pipe_);
+
         //  Handlers for incoming commands.
         void process_plug ();
         void process_unplug ();
         void process_attach (class zmq_engine_t *engine_);
+
+        //  Inbound pipe, i.e. one the session is getting messages from.
+        class reader_t *in_pipe;
+
+        //  If true, in_pipe is active. Otherwise there are no messages to get.
+        bool active;
+
+        //  Outbound pipe, i.e. one the socket is sending messages to.
+        class writer_t *out_pipe;
 
         class zmq_engine_t *engine;
 
         //  The name of the session. One that is used to register it with
         //  socket-level repository of sessions.
         std::string name;
+
+        //  Inherited socket options.
+        options_t options;
 
         session_t (const session_t&);
         void operator = (const session_t&);

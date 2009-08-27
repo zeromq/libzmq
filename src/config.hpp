@@ -38,6 +38,14 @@ namespace zmq
         //  footprint of dispatcher.
         command_pipe_granularity = 4,
 
+        //  Determines how often does socket poll for new commands when it
+        //  still has unprocessed messages to handle. Thus, if it is set to 100,
+        //  socket will process 100 inbound messages before doing the poll.
+        //  If there are no unprocessed messages available, poll is done
+        //  immediately. Decreasing the value trades overall latency for more
+        //  real-time behaviour (less latency peaks).
+        inbound_poll_rate = 100,
+
         //  Maximal batching size for engines with receiving functionality.
         //  So, if there are 10 messages that fit into the batch size, all of
         //  them may be read by a single 'recv' system call, thus avoiding

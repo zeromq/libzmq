@@ -88,7 +88,7 @@ namespace zmq
             back_chunk = end_chunk;
             back_pos = end_pos;
 
-            if (++ end_pos != N)
+            if (++end_pos != N)
                 return;
 
             end_chunk->next = new chunk_t;

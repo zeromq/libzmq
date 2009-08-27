@@ -24,7 +24,6 @@
 
 namespace zmq
 {
-
     //  Base class for all objects that participate in inter-thread
     //  communication.
 
@@ -58,7 +57,9 @@ namespace zmq
             class owned_t *object_);
         void send_attach (class session_t *destination_,
             class zmq_engine_t *engine_);
-        void send_bind (object_t *destination_);
+        void send_bind (object_t *destination_, class owned_t *session_,
+            class reader_t *in_pipe_, class writer_t *out_pipe_);
+        void send_revive (class object_t *destination_);
         void send_term_req (class socket_base_t *destination_,
             class owned_t *object_);
         void send_term (class owned_t *destination_);
@@ -70,7 +71,9 @@ namespace zmq
         virtual void process_plug ();
         virtual void process_own (class owned_t *object_);
         virtual void process_attach (class zmq_engine_t *engine_);
-        virtual void process_bind ();
+        virtual void process_bind (class owned_t *session_,
+            class reader_t *in_pipe_, class writer_t *out_pipe_);
+        virtual void process_revive ();
         virtual void process_term_req (class owned_t *object_);
         virtual void process_term ();
         virtual void process_term_ack ();

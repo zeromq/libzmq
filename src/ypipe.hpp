@@ -43,9 +43,9 @@ namespace zmq
     {
     public:
 
-        //  Initialises the pipe. If 'dead' is set to true, the pipe is
-        //  created in dead state.
-        inline ypipe_t (bool dead_ = true) :
+        //  Initialises the pipe. In D scenario it is created in dead state.
+        //  Otherwise it's alive.
+        inline ypipe_t () :
             stop (false)
         {
             //  Insert terminator element into the queue.
@@ -54,7 +54,7 @@ namespace zmq
             //  Let all the pointers to point to the terminator
             //  (unless pipe is dead, in which case c is set to NULL).
             r = w = &queue.back ();
-            c.set (dead_ ? NULL : &queue.back ());
+            c.set (D ? NULL : &queue.back ());
         }
 
         //  Following function (write) deliberately copies uninitialised data
@@ -110,7 +110,7 @@ namespace zmq
         //  available.
         inline bool read (T *value_)
         {
-            //  Was the value was prefetched already? If so, return it.
+            //  Was the value prefetched already? If so, return it.
             if (&queue.front () != r) {
                  *value_ = queue.front ();
                  queue.pop ();
@@ -159,14 +159,14 @@ namespace zmq
 
                 //  If there are no elements prefetched, exit.
                 //  During pipe's lifetime r should never be NULL, however,
-                //  during pipe shutdown when retrieving messages from it
-                //  to deallocate them, this can happen.
+                //  it can happen during pipe shutdown when messages
+                //  are being deallocated.
                 if (&queue.front () == r || !r)
                     return false;
             }
 
-            //  There was at least one value prefetched -
-            //  return it to the caller.
+            //  There was at least one value prefetched.
+            //  Return it to the caller.
             *value_ = queue.front ();
             queue.pop ();
             return true;
@@ -188,8 +188,8 @@ namespace zmq
         //  exclusively by reader thread.
         T *r;
 
-        //  The single contention point of contention between writer and
-        //  reader thread. Points past the last flushed item. If it is NULL,
+        //  The single point of contention between writer and reader thread.
+        //  Points past the last flushed item. If it is NULL,
         //  reader is asleep. This pointer should be always accessed using
         //  atomic operations.
         atomic_ptr_t <T> c;

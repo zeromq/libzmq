@@ -77,7 +77,7 @@ bool zmq::app_thread_t::make_current ()
     return true;
 }
 
-void zmq::app_thread_t::process_commands (bool block_)
+void zmq::app_thread_t::process_commands (bool block_, bool throttle_)
 {
     ypollset_t::signals_t signals;
     if (block_)
@@ -91,24 +91,26 @@ void zmq::app_thread_t::process_commands (bool block_)
         //  depending on CPU speed: It's ~1ms on 3GHz CPU, ~2ms on 1.5GHz CPU
         //  etc. The optimisation makes sense only on platforms where getting
         //  a timestamp is a very cheap operation (tens of nanoseconds).
+        if (throttle_) {
 
-        //  Get timestamp counter.
+            //  Get timestamp counter.
 #if defined __GNUC__
-        uint32_t low;
-        uint32_t high;
-        __asm__ volatile ("rdtsc" : "=a" (low), "=d" (high));
-        uint64_t current_time = (uint64_t) high << 32 | low;
+            uint32_t low;
+            uint32_t high;
+            __asm__ volatile ("rdtsc" : "=a" (low), "=d" (high));
+            uint64_t current_time = (uint64_t) high << 32 | low;
 #elif defined _MSC_VER
-        uint64_t current_time = __rdtsc ();
+            uint64_t current_time = __rdtsc ();
 #else
 #error
 #endif
 
-        //  Check whether certain time have elapsed since last command
-        //  processing.
-        if (current_time - last_processing_time <= max_command_delay)
-            return;
-        last_processing_time = current_time;
+            //  Check whether certain time have elapsed since last command
+            //  processing.
+            if (current_time - last_processing_time <= max_command_delay)
+                return;
+            last_processing_time = current_time;
+        }
 #endif
 
         //  Check whether there are any commands pending for this thread.

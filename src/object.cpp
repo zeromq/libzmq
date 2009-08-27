@@ -20,6 +20,7 @@
 #include "object.hpp"
 #include "dispatcher.hpp"
 #include "err.hpp"
+#include "pipe.hpp"
 #include "io_thread.hpp"
 #include "simple_semaphore.hpp"
 #include "owned.hpp"
@@ -57,6 +58,10 @@ void zmq::object_t::process_command (command_t &cmd_)
 {
     switch (cmd_.type) {
 
+    case command_t::revive:
+        process_revive ();
+        break;
+
     case command_t::stop:
         process_stop ();
         break;
@@ -74,7 +79,8 @@ void zmq::object_t::process_command (command_t &cmd_)
         return;
 
     case command_t::bind:
-        process_bind ();
+        process_bind (cmd_.args.bind.session,
+            cmd_.args.bind.in_pipe, cmd_.args.bind.out_pipe);
         return;
 
     case command_t::term_req:
@@ -140,11 +146,23 @@ void zmq::object_t::send_attach (session_t *destination_, zmq_engine_t *engine_)
     send_command (cmd);
 }
 
-void zmq::object_t::send_bind (object_t *destination_)
+void zmq::object_t::send_bind (object_t *destination_, owned_t *session_,
+    reader_t *in_pipe_, writer_t *out_pipe_)
 {
     command_t cmd;
     cmd.destination = destination_;
     cmd.type = command_t::bind;
+    cmd.args.bind.session = session_;
+    cmd.args.bind.in_pipe = in_pipe_;
+    cmd.args.bind.out_pipe = out_pipe_;
+    send_command (cmd);
+}
+
+void zmq::object_t::send_revive (object_t *destination_)
+{
+    command_t cmd;
+    cmd.destination = destination_;
+    cmd.type = command_t::revive;
     send_command (cmd);
 }
 
@@ -194,7 +212,13 @@ void zmq::object_t::process_attach (zmq_engine_t *engine_)
     zmq_assert (false);
 }
 
-void zmq::object_t::process_bind ()
+void zmq::object_t::process_bind (owned_t *session_,
+    reader_t *in_pipe_, writer_t *out_pipe_)
+{
+    zmq_assert (false);
+}
+
+void zmq::object_t::process_revive ()
 {
     zmq_assert (false);
 }

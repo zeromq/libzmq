@@ -59,7 +59,8 @@ bool zmq::zmq_listener_init_t::write (::zmq_msg_t *msg_)
     session_t *session = owner->find_session (session_name.c_str ());
     if (!session) {
         io_thread_t *io_thread = choose_io_thread (options.affinity);
-        session = new session_t (io_thread, owner, session_name.c_str ());
+        session = new session_t (io_thread, owner, session_name.c_str (),
+            options);
         zmq_assert (session);
         send_plug (session);
         send_own (owner, session);

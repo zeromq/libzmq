@@ -129,7 +129,12 @@ void zmq::zmq_engine_t::out_event ()
     }
 }
 
+void zmq::zmq_engine_t::revive ()
+{
+    set_pollout (handle);
+}
+
 void zmq::zmq_engine_t::error ()
 {
-//    zmq_assert (false);
+    zmq_assert (false);
 }

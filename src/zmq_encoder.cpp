@@ -54,9 +54,9 @@ bool zmq::zmq_encoder_t::message_ready ()
     //  Note that new state is set only if write is successful. That way
     //  unsuccessful write will cause retry on the next state machine
     //  invocation.
-    if (!source->read (&in_progress)) {
+    if (!source->read (&in_progress))
         return false;
-    }
+
     size_t size = zmq_msg_size (&in_progress);
 
     //  For messages less than 255 bytes long, write one byte of message size.
