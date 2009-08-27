@@ -212,6 +212,8 @@ if test "x$pyzmq" != "xyes"; then
         [python third-party/openpgm/libpgm-1.0.0/openpgm/pgm/version_generator.py > \
             third-party/openpgm/libpgm-1.0.0/openpgm/pgm/version.c])
 
+AM_CONDITIONAL(BUILD_PYTHON, test "x$pyzmq" = "xyes")
+
 AC_SUBST(stdint)
 AC_SUBST(inttypes)
 
@@ -240,6 +242,4 @@ AC_MSG_RESULT([])
 AC_MSG_RESULT([ 0MQ install dir: $prefix])
 AC_MSG_RESULT([   Python language binding: $pyzmq])
 AC_MSG_RESULT([])
-
-AM_CONDITIONAL(BUILD_PYTHON, test "x$pyzmq" = "xyes")
 
