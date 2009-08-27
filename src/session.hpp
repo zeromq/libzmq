@@ -48,6 +48,7 @@ namespace zmq
         bool read (::zmq_msg_t *msg_);
         bool write (::zmq_msg_t *msg_);
         void flush ();
+        void detach ();
 
         //  i_endpoint interface implementation.
         void revive (class reader_t *pipe_);

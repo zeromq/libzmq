@@ -42,8 +42,9 @@ namespace zmq
         //  Reads a message to the underlying pipe.
         bool read (struct zmq_msg_t *msg_);
 
-        //  Mnaipulation of index of the pipe.
         void set_endpoint (i_endpoint *endpoint_);
+
+        //  Mnaipulation of index of the pipe.
         void set_index (int index_);
         int get_index ();
 

@@ -49,6 +49,7 @@ namespace zmq
         bool read (::zmq_msg_t *msg_);
         bool write (::zmq_msg_t *msg_);
         void flush ();
+        void detach ();
 
         //  Handlers for incoming commands.
         void process_plug ();
@@ -61,6 +62,10 @@ namespace zmq
 
         //  Associated socket options.
         options_t options;
+
+        //  Indetity on the other end of the connection.
+        bool has_peer_identity;
+        std::string peer_identity;
 
         zmq_listener_init_t (const zmq_listener_init_t&);
         void operator = (const zmq_listener_init_t&);

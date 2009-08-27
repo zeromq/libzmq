@@ -136,5 +136,8 @@ void zmq::zmq_engine_t::revive ()
 
 void zmq::zmq_engine_t::error ()
 {
-    zmq_assert (false);
+    zmq_assert (inout);
+    inout->detach ();
+    unplug ();
+    delete this;
 }

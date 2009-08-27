@@ -73,4 +73,3 @@ bool zmq::zmq_encoder_t::message_ready ()
     }
     return true;
 }
-

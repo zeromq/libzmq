@@ -27,9 +27,17 @@ namespace zmq
 
     struct i_inout
     {
+        //  Engine asks to get a message to send to the network.
         virtual bool read (::zmq_msg_t *msg_) = 0;
+
+        //  Engine sends the incoming message further on downstream.
         virtual bool write (::zmq_msg_t *msg_) = 0;
+
+        //  Flush all the previously written messages downstream.
         virtual void flush () = 0;
+    
+        //  Drop all the references to the engine.
+        virtual void detach () = 0;
     };
 
 }

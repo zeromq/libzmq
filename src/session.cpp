@@ -26,7 +26,7 @@ zmq::session_t::session_t (object_t *parent_, socket_base_t *owner_,
       const char *name_, const options_t &options_) :
     owned_t (parent_, owner_),
     in_pipe (NULL),
-    active (false),
+    active (true),
     out_pipe (NULL),
     engine (NULL),
     name (name_),
@@ -74,6 +74,16 @@ void zmq::session_t::flush ()
     out_pipe->flush ();
 }
 
+void zmq::session_t::detach ()
+{
+    //  Engine is terminating itself.
+    engine = NULL;
+
+    //  TODO: In the case od anonymous connection, terminate the session.
+//    if (anonymous)
+//        term ();
+}
+
 void zmq::session_t::revive (reader_t *pipe_)
 {
     zmq_assert (in_pipe == pipe_);
@@ -98,6 +108,7 @@ void zmq::session_t::process_plug ()
         pipe_t *inbound = new pipe_t (this, owner, options.hwm, options.lwm);
         zmq_assert (inbound);
         in_pipe = &inbound->reader;
+        in_pipe->set_endpoint (this);
         pipe_t *outbound = new pipe_t (owner, this, options.hwm, options.lwm);
         zmq_assert (outbound);
         out_pipe = &outbound->writer;

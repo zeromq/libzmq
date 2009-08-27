@@ -80,6 +80,12 @@ void zmq::zmq_connecter_init_t::flush ()
     zmq_assert (false);
 }
 
+void zmq::zmq_connecter_init_t::detach ()
+{
+    //  TODO: Engine is closing down. Init object is to be closed as well.
+    zmq_assert (false);
+}
+
 void zmq::zmq_connecter_init_t::process_plug ()
 {
     zmq_assert (engine);
