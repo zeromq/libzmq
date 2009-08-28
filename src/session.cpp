@@ -36,6 +36,11 @@ zmq::session_t::session_t (object_t *parent_, socket_base_t *owner_,
 
 zmq::session_t::~session_t ()
 {
+    //  Ask associated pipes to terminate.
+    if (in_pipe)
+        in_pipe->term ();
+    if (out_pipe)
+        out_pipe->term ();
 }
 
 void zmq::session_t::set_inbound_pipe (reader_t *pipe_)
@@ -49,6 +54,7 @@ void zmq::session_t::set_outbound_pipe (writer_t *pipe_)
 {
     zmq_assert (!out_pipe);
     out_pipe = pipe_;
+    out_pipe->set_endpoint (this);
 }
 
 
@@ -92,6 +98,17 @@ void zmq::session_t::revive (reader_t *pipe_)
         engine->revive ();
 }
 
+void zmq::session_t::detach_inpipe (reader_t *pipe_)
+{
+    active = false;
+    in_pipe = NULL;
+}
+
+void zmq::session_t::detach_outpipe (writer_t *pipe_)
+{
+    out_pipe = NULL;
+}
+
 void zmq::session_t::process_plug ()
 {
     //  Register the session with the socket.
@@ -112,6 +129,7 @@ void zmq::session_t::process_plug ()
         pipe_t *outbound = new pipe_t (owner, this, options.hwm, options.lwm);
         zmq_assert (outbound);
         out_pipe = &outbound->writer;
+        out_pipe->set_endpoint (this);
         send_bind (owner, this, &outbound->reader, &inbound->writer);
     }
 

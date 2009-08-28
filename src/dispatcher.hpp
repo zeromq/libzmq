@@ -21,6 +21,7 @@
 #define __ZMQ_DISPATCHER_HPP_INCLUDED__
 
 #include <vector>
+#include <set>
 #include <map>
 #include <string>
 
@@ -85,6 +86,11 @@ namespace zmq
         //  Taskset specifies which I/O threads are eligible (0 = all).
         class io_thread_t *choose_io_thread (uint64_t taskset_);
 
+        //  All pipes are registered with the dispatcher so that even the
+        //  orphaned pipes can be deallocated on the terminal shutdown.
+        void register_pipe (class pipe_t *pipe_);
+        void unregister_pipe (class pipe_t *pipe_);
+
     private:
 
         //  Returns the app thread associated with the current thread.
@@ -111,6 +117,18 @@ namespace zmq
 
         //  Synchronisation of accesses to shared thread data.
         mutex_t threads_sync;
+
+        //  As pipes may reside in orphaned state in particular moments
+        //  of the pipe shutdown process, i.e. neither pipe reader nor
+        //  pipe writer hold reference to the pipe, we have to hold references
+        //  to all pipes in dispatcher so that we can deallocate them
+        //  during terminal shutdown even though it conincides with the
+        //  pipe being in the orphaned state.
+        typedef std::set <class pipe_t*> pipes_t;
+        pipes_t pipes;
+
+        // Synchronisation of access to the pipes repository.
+        mutex_t pipes_sync;
 
         dispatcher_t (const dispatcher_t&);
         void operator = (const dispatcher_t&);

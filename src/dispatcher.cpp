@@ -83,6 +83,10 @@ zmq::dispatcher_t::~dispatcher_t ()
     for (io_threads_t::size_type i = 0; i != io_threads.size (); i++)
         delete io_threads [i];
 
+    //  Deallocate all the orphaned pipes.
+    for (pipes_t::iterator it = pipes.begin (); it != pipes.end (); it++)
+        delete *it;
+
     delete [] command_pipes;
 
 #ifdef ZMQ_HAVE_WINDOWS
@@ -145,4 +149,20 @@ zmq::io_thread_t *zmq::dispatcher_t::choose_io_thread (uint64_t taskset_)
     }
 
     return io_threads [result];
+}
+
+void zmq::dispatcher_t::register_pipe (class pipe_t *pipe_)
+{
+    pipes_sync.lock ();
+    bool inserted = pipes.insert (pipe_).second;
+    zmq_assert (inserted);
+    pipes_sync.unlock ();
+}
+
+void zmq::dispatcher_t::unregister_pipe (class pipe_t *pipe_)
+{
+    pipes_sync.lock ();
+    pipes_t::size_type erased = pipes.erase (pipe_);
+    zmq_assert (erased == 1);
+    pipes_sync.unlock ();
 }

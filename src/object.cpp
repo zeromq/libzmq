@@ -83,6 +83,14 @@ void zmq::object_t::process_command (command_t &cmd_)
             cmd_.args.bind.in_pipe, cmd_.args.bind.out_pipe);
         return;
 
+    case command_t::pipe_term:
+        process_pipe_term ();
+        return;
+
+    case command_t::pipe_term_ack:
+        process_pipe_term_ack ();
+        return;
+
     case command_t::term_req:
         process_term_req (cmd_.args.term_req.object);
         return;
@@ -98,6 +106,16 @@ void zmq::object_t::process_command (command_t &cmd_)
     default:
         zmq_assert (false);
     }
+}
+
+void zmq::object_t::register_pipe (class pipe_t *pipe_)
+{
+    dispatcher->register_pipe (pipe_);
+}
+
+void zmq::object_t::unregister_pipe (class pipe_t *pipe_)
+{
+    dispatcher->unregister_pipe (pipe_);
 }
 
 zmq::io_thread_t *zmq::object_t::choose_io_thread (uint64_t taskset_)
@@ -166,6 +184,22 @@ void zmq::object_t::send_revive (object_t *destination_)
     send_command (cmd);
 }
 
+void zmq::object_t::send_pipe_term (writer_t *destination_)
+{
+    command_t cmd;
+    cmd.destination = destination_;
+    cmd.type = command_t::pipe_term;
+    send_command (cmd);
+}
+
+void zmq::object_t::send_pipe_term_ack (reader_t *destination_)
+{
+    command_t cmd;
+    cmd.destination = destination_;
+    cmd.type = command_t::pipe_term_ack;
+    send_command (cmd);
+}
+
 void zmq::object_t::send_term_req (socket_base_t *destination_,
     owned_t *object_)
 {
@@ -219,6 +253,16 @@ void zmq::object_t::process_bind (owned_t *session_,
 }
 
 void zmq::object_t::process_revive ()
+{
+    zmq_assert (false);
+}
+
+void zmq::object_t::process_pipe_term ()
+{
+    zmq_assert (false);
+}
+
+void zmq::object_t::process_pipe_term_ack ()
 {
     zmq_assert (false);
 }

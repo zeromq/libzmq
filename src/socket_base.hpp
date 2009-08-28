@@ -24,7 +24,6 @@
 #include <map>
 #include <vector>
 #include <string>
-#include <utility>
 
 #include "i_endpoint.hpp"
 #include "object.hpp"
@@ -62,6 +61,8 @@ namespace zmq
 
         //  i_endpoint interface implementation.
         void revive (class reader_t *pipe_);
+        void detach_inpipe (class reader_t *pipe_);
+        void detach_outpipe (class writer_t *pipe_);
 
     private:
 
@@ -86,10 +87,7 @@ namespace zmq
         io_objects_t io_objects;
 
         //  Inbound pipes, i.e. those the socket is getting messages from.
-        //  The second member in the pair indicates the object on the other
-        //  side of the pipe.
-        typedef std::vector <std::pair <class reader_t*, owned_t*> >
-            in_pipes_t;
+        typedef std::vector <class reader_t*> in_pipes_t;
         in_pipes_t in_pipes;
 
         //  Index of the next inbound pipe to read messages from.
@@ -100,10 +98,7 @@ namespace zmq
         in_pipes_t::size_type active;
 
         //  Outbound pipes, i.e. those the socket is sending messages to.
-        //  The second member in the pair indicates the object on the other
-        //  side of the pipe.
-        typedef std::vector <std::pair <class writer_t*, owned_t*> >
-            out_pipes_t;
+        typedef std::vector <class writer_t*> out_pipes_t;
         out_pipes_t out_pipes;
 
         //  Number of I/O objects that were already asked to terminate

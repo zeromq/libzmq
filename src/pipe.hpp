@@ -39,25 +39,29 @@ namespace zmq
             uint64_t hwm_, uint64_t lwm_);
         ~reader_t ();
 
+        void set_endpoint (i_endpoint *endpoint_);
+
         //  Reads a message to the underlying pipe.
         bool read (struct zmq_msg_t *msg_);
-
-        void set_endpoint (i_endpoint *endpoint_);
 
         //  Mnaipulation of index of the pipe.
         void set_index (int index_);
         int get_index ();
 
+        //  Ask pipe to terminate.
+        void term ();
+
     private:
 
         //  Command handlers.
         void process_revive ();
+        void process_pipe_term_ack ();
 
         //  The underlying pipe.
         class pipe_t *pipe;
 
         //  Pipe writer associated with the other side of the pipe.
-        class object_t *peer;
+        class writer_t *peer;
 
         //  High and low watermarks for in-memory storage (in bytes).
         uint64_t hwm;
@@ -86,6 +90,8 @@ namespace zmq
             uint64_t hwm_, uint64_t lwm_);
         ~writer_t ();
 
+        void set_endpoint (i_endpoint *endpoint_);
+
         //  Checks whether message with specified size can be written to the
         //  pipe. If writing the message would cause high watermark to be
         //  exceeded, the function returns false.
@@ -98,13 +104,23 @@ namespace zmq
         //  Flush the messages downsteam.
         void flush ();
 
+        //  Mnaipulation of index of the pipe.
+        void set_index (int index_);
+        int get_index ();
+
+        //  Ask pipe to terminate.
+        void term ();
+
     private:
+
+        //  Command handlers.
+        void process_pipe_term ();
 
         //  The underlying pipe.
         class pipe_t *pipe;
 
         //  Pipe reader associated with the other side of the pipe.
-        class object_t *peer;
+        class reader_t *peer;
 
         //  High and low watermarks for in-memory storage (in bytes).
         uint64_t hwm;
@@ -113,6 +129,12 @@ namespace zmq
         //  Positions of head and tail of the pipe (in bytes).
         uint64_t head;
         uint64_t tail;
+
+        //  Index of the pipe in the socket's list of outbound pipes.
+        int index;
+
+        //  Endpoint (either session or socket) the pipe is attached to.
+        i_endpoint *endpoint;
 
         writer_t (const writer_t&);
         void operator = (const writer_t&);

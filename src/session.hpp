@@ -52,6 +52,8 @@ namespace zmq
 
         //  i_endpoint interface implementation.
         void revive (class reader_t *pipe_);
+        void detach_inpipe (class reader_t *pipe_);
+        void detach_outpipe (class writer_t *pipe_);
 
         //  Handlers for incoming commands.
         void process_plug ();

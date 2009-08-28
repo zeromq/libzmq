@@ -40,6 +40,8 @@ namespace zmq
             attach,
             bind,
             revive,
+            pipe_term,
+            pipe_term_ack,
             term_req,
             term,
             term_ack
@@ -77,6 +79,15 @@ namespace zmq
             //  are messages in the pipe.
             struct {
             } revive;
+
+            //  Sent by pipe reader to pipe writer to ask it to terminate
+            //  its end of the pipe.
+            struct {
+            } pipe_term;
+
+            //  Pipe writer acknowledges pipe_term command.
+            struct {
+            } pipe_term_ack;
 
             //  Sent by I/O object ot the socket to request the shutdown of
             //  the I/O object.
