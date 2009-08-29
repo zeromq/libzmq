@@ -61,6 +61,9 @@
 /* Define to 1 if you have the `perror' function. */
 #undef HAVE_PERROR
 
+/* Define to 1 if you have the <ruby.h> header file. */
+#undef HAVE_RUBY_H
+
 /* Define to 1 if you have the `socket' function. */
 #undef HAVE_SOCKET
 

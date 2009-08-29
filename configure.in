@@ -6,6 +6,10 @@ AC_CONFIG_AUX_DIR(config)
 AM_CONFIG_HEADER(src/platform.hpp)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 
+# librbzmq -version-info
+RBLTVER="1:0:0"
+AC_SUBST(RBLTVER)
+
 AM_PROG_CC_C_O
 
 # Checks for programs.
@@ -22,7 +26,7 @@ case "${host_os}" in
     *linux*)
         AC_DEFINE(ZMQ_HAVE_LINUX, 1, [Have Linux OS])
         CPPFLAGS="-D_REENTRANT $CPPFLAGS"
-        sed < libtool > libtool-2 \
+       sed < libtool > libtool-2 \
         's/^hardcode_libdir_flag_spec.*$'/'hardcode_libdir_flag_spec=" "/'
         mv libtool-2 libtool
         chmod 755 libtool
@@ -200,6 +204,49 @@ if test "x$with_python" != "xno"; then
     pyzmq="yes"
 fi
 
+# RUBY
+rbzmq="no"
+
+AC_ARG_WITH(ruby_headersdir,
+    AC_HELP_STRING([--with-ruby-headersdir], [ruby.h header file location]),
+        [ruby_headersdir="$withval"], [ruby_headersdir="no"])
+
+if test "x$ruby_headersdir" != "xno"; then
+    CPPFLAGS="${CPPFLAGS} -I${ruby_headersdir}"
+fi
+
+AC_ARG_WITH(ruby_libdir,
+    AC_HELP_STRING([--with-ruby-libdir],[libruby library file location]),
+        [ruby_libdir="$withval"], [ruby_libdir="no"])
+
+if test "x$ruby_libdir" != "xno"; then
+    LDFLAGS="${LDFLAGS} -L${ruby_libdir}"
+fi
+
+AC_ARG_WITH([ruby], [AS_HELP_STRING([--with-ruby], [build ruby language binding [default=no]])], [with_ruby=yes], [with_ruby=no])
+if test "x$with_ruby" != "xno"; then
+    AC_CHECK_HEADERS([ruby.h], [], 
+        [AC_MSG_ERROR([Could not find Ruby header files, Please specify their location with --with-ruby-headersdir.])])
+
+    AC_SEARCH_LIBS(ruby_init,[ruby ruby1.8 ruby18],, 
+        [AC_MSG_ERROR([Could not link with Ruby library. Please specify their location with --with-ruby-libdir.])])
+   
+    rbzmq="yes"
+fi
+
+AC_ARG_WITH([rubydir], [AS_HELP_STRING([--with-rubydir],
+    [librbzmq install dir [default=EPREFIX/lib]])],
+    [rubydir="$withval"], [rubydir="_default_"])
+
+if test "$rubydir" = "_default_"; then
+    rubydir=${libdir}
+else
+    rubydir=${rubydir}
+fi
+
+RUBYDIR="$rubydir"
+AC_SUBST([RUBYDIR])
+
 if test "x$pyzmq" != "xyes"; then
         AC_CHECK_PROG(have_python, python, yes, no)
         if test "x$have_python" != "xyes"; then
@@ -220,6 +267,8 @@ AC_SUBST(inttypes)
 # Subst ZMQ_EXTRA_CXXFLAGS
 AC_SUBST(ZMQ_EXTRA_CXXFLAGS)
 
+AM_CONDITIONAL(BUILD_PYTHON, test "x$pyzmq" = "xyes")
+AM_CONDITIONAL(BUILD_RUBY, test "x$rbzmq" = "xyes")
 
 # Checks for library functions.
 AC_FUNC_MALLOC
@@ -227,7 +276,7 @@ AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(perror gettimeofday memset socket getifaddrs freeifaddrs)
 
 AC_OUTPUT(Makefile src/Makefile examples/Makefile examples/chat/Makefile python/Makefile \
-python/setup.py)
+python/setup.py ruby/Makefile)
 
 AC_MSG_RESULT([])
 AC_MSG_RESULT([ ******************************************************** ])
@@ -241,5 +290,9 @@ AC_MSG_RESULT([ ******************************************************** ])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([ 0MQ install dir: $prefix])
 AC_MSG_RESULT([   Python language binding: $pyzmq])
+AC_MSG_RESULT([   Ruby language binding: $rbzmq])
+if test "x$rbzmq" = "xyes"; then
+AC_MSG_RESULT([   Ruby library install dir: $rubydir])
+fi
 AC_MSG_RESULT([])
 

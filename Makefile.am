@@ -5,5 +5,9 @@ if BUILD_PYTHON
 DIR_P = python
 endif
 
-SUBDIRS = src examples $(DIR_P)
-DIST_SUBDIRS = src examples $(DIR_P)
+if BUILD_RUBY
+DIR_R = ruby
+endif
+
+SUBDIRS = src examples $(DIR_P) $(DIR_R)
+DIST_SUBDIRS = src examples $(DIR_P) $(DIR_R)
