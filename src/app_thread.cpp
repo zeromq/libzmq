@@ -44,7 +44,7 @@
 
 zmq::app_thread_t::app_thread_t (dispatcher_t *dispatcher_, int thread_slot_) :
     object_t (dispatcher_, thread_slot_),
-    tid (0),
+    associated (false),
     last_processing_time (0)
 {
 }
@@ -63,7 +63,8 @@ zmq::i_signaler *zmq::app_thread_t::get_signaler ()
 
 bool zmq::app_thread_t::is_current ()
 {
-    return !sockets.empty () && tid == getpid ();
+    return !sockets.empty () && associated &&
+        thread_t::equal (tid, thread_t::id ());
 }
 
 bool zmq::app_thread_t::make_current ()
@@ -73,7 +74,8 @@ bool zmq::app_thread_t::make_current ()
     if (!sockets.empty ())
         return false;
 
-    tid = getpid ();
+    associated = true;
+    tid = thread_t::id ();
     return true;
 }
 

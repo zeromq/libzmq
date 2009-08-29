@@ -25,6 +25,7 @@
 #include "stdint.hpp"
 #include "object.hpp"
 #include "ypollset.hpp"
+#include "thread.hpp"
 
 namespace zmq
 {
@@ -69,10 +70,12 @@ namespace zmq
         typedef std::vector <class socket_base_t*> sockets_t;
         sockets_t sockets;
 
+        //  If false, app_thread_t object is not associated with any OS thread.
+        //  In such case, 'tid' member contains a bogus value.
+        bool associated;
+
         //  Thread ID associated with this slot.
-        //  TODO: Virtualise pid_t!
-        //  TODO: Check whether getpid returns unique ID for each thread.
-        int tid;
+        thread_t::id_t tid;
 
         //  App thread's signaler object.
         ypollset_t pollset;
