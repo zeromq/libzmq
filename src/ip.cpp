@@ -285,7 +285,8 @@ int zmq::resolve_ip_hostname (sockaddr_in *addr_, const char *hostname_)
     //  Separate the hostname.
     std::string hostname (hostname_, delimiter - hostname_);
 
-    //  Resolve host name.
+    //  Resolve host name. Some of the error info is lost in case of error,
+    //  however, there's no way to report EAI errors via errno.
     addrinfo req;
     memset (&req, 0, sizeof (req));
     req.ai_family = AF_INET;

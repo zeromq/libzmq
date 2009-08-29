@@ -55,11 +55,10 @@ zmq::tcp_listener_t::~tcp_listener_t ()
 int zmq::tcp_listener_t::set_address (const char *addr_)
 {
     //  Convert the interface into sockaddr_in structure.
-    return resolve_ip_interface (&addr, addr_);
-}
+    int rc = resolve_ip_interface (&addr, addr_);
+    if (rc != 0)
+        return rc;
 
-int zmq::tcp_listener_t::open ()
-{
     //  Create a listening socket.
     s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (s == -1)
@@ -67,7 +66,7 @@ int zmq::tcp_listener_t::open ()
 
     //  Allow reusing of the address.
     int flag = 1;
-    int rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
+    rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
     errno_assert (rc == 0);
 
     //  Set the non-blocking flag.

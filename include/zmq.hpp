@@ -24,6 +24,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <string.h>
 #include <exception>
 
 namespace zmq
@@ -38,36 +39,21 @@ namespace zmq
         message_delimiter = 1 << ZMQ_DELIMITER
     };
 
-    class no_memory : public std::exception
+    //  The class masquerades POSIX-style errno error as a C++ exception.
+    class error_t : public std::exception
     {
-        virtual const char *what ()
-        {
-            return "Out of memory";
-        }
-    };
+    public:
 
-    class invalid_argument : public std::exception
-    {
-        virtual const char *what ()
-        {
-            return "Invalid argument";
-        }
-    };
+        error_t () : errnum (errno) {}
 
-    class too_many_threads : public std::exception
-    {
-        virtual const char *what ()
+        virtual const char *what () const throw ()
         {
-            return "Too many threads";
+            return strerror (errnum);
         }
-    };
 
-    class address_in_use : public std::exception
-    {
-        virtual const char *what ()
-        {
-            return "Address in use";
-        }
+    private:
+
+        int errnum;
     };
 
     //  A message. Caution: Don't change the body of the message once you've
@@ -84,10 +70,8 @@ namespace zmq
         inline message_t (size_t size_ = 0)
         {
             int rc = zmq_msg_init_size (this, size_);
-            if (rc == -1) {
-                assert (errno == ENOMEM);
-                throw no_memory ();
-            }
+            if (rc != 0)
+                throw error_t ();
         }
 
         //  Creates message from the supplied buffer. 0MQ takes care of
@@ -98,14 +82,16 @@ namespace zmq
             free_fn *ffn_)
         {
             int rc = zmq_msg_init_data (this, data_, size_, ffn_);
-            assert (rc == 0);
+            if (rc != 0)
+                throw error_t ();
         }
 
         //  Destroys the message.
         inline ~message_t ()
         {
             int rc = zmq_msg_close (this);
-            assert (rc == 0);
+            if (rc != 0)
+                throw error_t ();
         }
 
         //  Destroys old content of the message and allocates buffer for the
@@ -114,12 +100,11 @@ namespace zmq
         inline void rebuild (size_t size_)
         {
             int rc = zmq_msg_close (this);
-            assert (rc == 0);
+            if (rc != 0)
+                throw error_t ();
             rc = zmq_msg_init_size (this, size_);
-            if (rc == -1) {
-                assert (errno == ENOMEM);
-                throw no_memory ();
-            }
+            if (rc != 0)
+                throw error_t ();
         }
 
         //  Same as above, however, the message is rebuilt from the supplied
@@ -128,9 +113,11 @@ namespace zmq
         inline void rebuild (void *data_, size_t size_, free_fn *ffn_)
         {
             int rc = zmq_msg_close (this);
-            assert (rc == 0);
+            if (rc != 0)
+                throw error_t ();
             rc = zmq_msg_init_data (this, data_, size_, ffn_);
-            assert (rc == 0);
+            if (rc != 0)
+                throw error_t ();
         }
 
         //  Moves the message content from one message to the another. If the
@@ -140,7 +127,8 @@ namespace zmq
         inline void move_to (message_t *msg_)
         {
             int rc = zmq_msg_move (this, (zmq_msg_t*) msg_);
-            assert (rc == 0);
+            if (rc != 0)
+                throw error_t ();
         }
 
         //  Copies the message content from one message to the another. If the
@@ -149,7 +137,8 @@ namespace zmq
         inline void copy_to (message_t *msg_)
         {
             int rc = zmq_msg_copy (this, (zmq_msg_t*) msg_);
-            assert (rc == 0);
+            if (rc != 0)
+                throw error_t ();
         }
 
         //  Returns message type.
@@ -187,10 +176,8 @@ namespace zmq
         inline context_t (int app_threads_, int io_threads_)
         {
             ptr = zmq_init (app_threads_, io_threads_);
-            if (ptr == NULL) {
-                assert (errno == EINVAL);
-                throw invalid_argument ();
-            }
+            if (ptr == NULL)
+                throw error_t ();
         }
 
         inline ~context_t ()
@@ -215,70 +202,64 @@ namespace zmq
         inline socket_t (context_t &context_, int type_ = 0)
         {
             ptr = zmq_socket (context_.ptr, type_);
-            if (ptr == NULL) {
-                assert (errno == EMFILE || errno == EINVAL);
-                if (errno == EMFILE)
-                    throw too_many_threads ();
-                else
-                    throw invalid_argument ();
-            }
+            if (ptr == NULL)
+                throw error_t ();
         }
 
         inline ~socket_t ()
         {
             int rc = zmq_close (ptr);
-            assert (rc == 0);
+            if (rc != 0)
+                throw error_t ();
         }
 
         inline void setsockopt (int option_, const void *optval_,
             size_t optvallen_)
         {
             int rc = zmq_setsockopt (ptr, option_, optval_, optvallen_);
-            assert (rc == 0);
+            if (rc != 0)
+                throw error_t ();
         }
 
         inline void bind (const char *addr_)
         {
             int rc = zmq_bind (ptr, addr_);
-            if (rc == -1) {
-                assert (errno == EINVAL || errno == EADDRINUSE);
-                if (errno == EINVAL)
-                    throw invalid_argument ();
-                else
-                    throw address_in_use ();
-            }
+            if (rc != 0)
+                throw error_t ();
         }
 
         inline void connect (const char *addr_)
         {
             int rc = zmq_connect (ptr, addr_);
-            if (rc == -1) {
-                assert (errno == EINVAL || errno == EADDRINUSE);
-                if (errno == EINVAL)
-                    throw invalid_argument ();
-                else
-                    throw address_in_use ();
-            }
+            if (rc != 0)
+                throw error_t ();
         }
 
-        inline int send (message_t &msg_, int flags_ = 0)
+        inline bool send (message_t &msg_, int flags_ = 0)
         {
             int rc = zmq_send (ptr, &msg_, flags_);
-            assert (rc == 0 || (rc == -1 && errno == EAGAIN));
-            return rc;
+            if (rc == 0)
+                return true;
+            if (rc == -1 && errno == EAGAIN)
+                return false;
+            throw error_t ();
         }
 
         inline void flush ()
         {
             int rc = zmq_flush (ptr);
-            assert (rc == 0);
+            if (rc != 0)
+                throw error_t ();
         }
 
-        inline int recv (message_t *msg_, int flags_ = 0)
+        inline bool recv (message_t *msg_, int flags_ = 0)
         {
             int rc = zmq_recv (ptr, msg_, flags_);
-            assert (rc == 0 || (rc == -1 && errno == EAGAIN));
-            return rc;
+            if (rc == 0)
+                return true;
+            if (rc == -1 && errno == EAGAIN)
+                return false;
+            throw error_t ();
         }
 
     private:

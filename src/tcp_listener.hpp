@@ -35,13 +35,10 @@ namespace zmq
         tcp_listener_t ();
         ~tcp_listener_t ();
 
-        //  Set up the address to listen on. Address is in
+        //  Start listening on the interface. Address is in
         //  <interface-name>:<port-number> format. Interface name may be '*'
         //  to bind to all the interfaces.
         int set_address (const char *addr_);
-
-        //  Open TCP listining socket. 
-        int open ();
 
         //  Close the listening socket.
         int close ();

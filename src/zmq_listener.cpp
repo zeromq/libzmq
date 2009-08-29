@@ -41,10 +41,6 @@ int zmq::zmq_listener_t::set_address (const char *addr_)
 
 void zmq::zmq_listener_t::process_plug ()
 {
-    //  Open the listening socket.
-    int rc = tcp_listener.open ();
-    zmq_assert (rc == 0);
-
     //  Start polling for incoming connections.
     handle = add_fd (tcp_listener.get_fd ());
     set_pollin (handle);
