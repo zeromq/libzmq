@@ -58,7 +58,7 @@ namespace zmq
         //  Handlers for incoming commands.
         void process_plug ();
         void process_unplug ();
-        void process_attach (class zmq_engine_t *engine_);
+        void process_attach (struct i_engine *engine_);
 
         //  Inbound pipe, i.e. one the session is getting messages from.
         class reader_t *in_pipe;
@@ -69,7 +69,7 @@ namespace zmq
         //  Outbound pipe, i.e. one the socket is sending messages to.
         class writer_t *out_pipe;
 
-        class zmq_engine_t *engine;
+        struct i_engine *engine;
 
         //  The name of the session. One that is used to register it with
         //  socket-level repository of sessions.

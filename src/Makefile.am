@@ -20,6 +20,7 @@ libzmq_la_SOURCES = \
     io_thread.hpp \
     ip.hpp \
     i_endpoint.hpp \
+    i_engine.hpp \
     i_poller.hpp \
     i_poll_events.hpp \
     i_signaler.hpp \

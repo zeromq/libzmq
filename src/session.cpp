@@ -18,7 +18,7 @@
 */
 
 #include "session.hpp"
-#include "zmq_engine.hpp"
+#include "i_engine.hpp"
 #include "err.hpp"
 #include "pipe.hpp"
 
@@ -149,7 +149,7 @@ void zmq::session_t::process_unplug ()
     }
 }
 
-void zmq::session_t::process_attach (class zmq_engine_t *engine_)
+void zmq::session_t::process_attach (i_engine *engine_)
 {
     zmq_assert (engine_);
     engine = engine_;

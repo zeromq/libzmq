@@ -47,7 +47,7 @@ void zmq::owned_t::process_plug ()
     finalise_command ();
 }
 
-void zmq::owned_t::process_attach (zmq_engine_t *engine_)
+void zmq::owned_t::process_attach (struct i_engine *engine_)
 {
     //  Keep track of how many commands were processed so far.
     processed_seqnum++;

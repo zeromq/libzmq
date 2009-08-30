@@ -20,6 +20,7 @@
 #ifndef __ZMQ_ZMQ_ENGINE_HPP_INCLUDED__
 #define __ZMQ_ZMQ_ENGINE_HPP_INCLUDED__
 
+#include "i_engine.hpp"
 #include "io_object.hpp"
 #include "tcp_socket.hpp"
 #include "zmq_encoder.hpp"
@@ -28,23 +29,21 @@
 namespace zmq
 {
 
-    class zmq_engine_t : public io_object_t
+    class zmq_engine_t : public io_object_t, public i_engine
     {
     public:
 
         zmq_engine_t (class io_thread_t *parent_, fd_t fd_);
         ~zmq_engine_t ();
 
+        //  i_engine interface implementation.
         void plug (struct i_inout *inout_);
         void unplug ();
+        void revive ();
 
         //  i_poll_events interface implementation.
         void in_event ();
         void out_event ();
-
-        //  This method is called by the session to signalise that there
-        //  are messages to send available.
-        void revive ();
 
     private:
 

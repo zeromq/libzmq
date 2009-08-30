@@ -275,8 +275,7 @@ AC_FUNC_MALLOC
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(perror gettimeofday memset socket getifaddrs freeifaddrs)
 
-AC_OUTPUT(Makefile src/Makefile examples/Makefile examples/chat/Makefile python/Makefile \
-python/setup.py ruby/Makefile)
+AC_OUTPUT(Makefile src/Makefile python/Makefile python/setup.py ruby/Makefile)
 
 AC_MSG_RESULT([])
 AC_MSG_RESULT([ ******************************************************** ])

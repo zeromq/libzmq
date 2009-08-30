@@ -26,7 +26,6 @@
 #include "owned.hpp"
 #include "session.hpp"
 #include "socket_base.hpp"
-#include "zmq_engine.hpp"  //  TODO: remove this line
 
 zmq::object_t::object_t (dispatcher_t *dispatcher_, int thread_slot_) :
     dispatcher (dispatcher_),
@@ -153,7 +152,7 @@ void zmq::object_t::send_own (socket_base_t *destination_, owned_t *object_)
     send_command (cmd);
 }
 
-void zmq::object_t::send_attach (session_t *destination_, zmq_engine_t *engine_)
+void zmq::object_t::send_attach (session_t *destination_, i_engine *engine_)
 {
     //  The assumption here is that command sequence number of the destination
     //  object was already incremented in find_session function.
@@ -241,7 +240,7 @@ void zmq::object_t::process_own (owned_t *object_)
     zmq_assert (false);
 }
 
-void zmq::object_t::process_attach (zmq_engine_t *engine_)
+void zmq::object_t::process_attach (i_engine *engine_)
 {
     zmq_assert (false);
 }
