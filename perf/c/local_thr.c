@@ -17,10 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <zmq.hpp>
+#include <zmq.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <stdint.h>
 #include <sys/time.h>
 
 int main (int argc, char *argv [])
@@ -32,9 +33,11 @@ int main (int argc, char *argv [])
     void *s;
     int rc;
     int i;
-    zmq_msg_t msg;
-    long long elapsed;
-    long long throughput;
+    struct zmq_msg_t msg;
+    struct timeval start;
+    struct timeval end;
+    uint64_t elapsed;
+    uint64_t throughput;
 
     if (argc != 4) {
         printf ("usage: local_thr <bind-to> <message-count> "
@@ -61,7 +64,6 @@ int main (int argc, char *argv [])
     assert (rc == 0);
     assert (zmq_msg_size (&msg) == message_size);
 
-    timeval start;
     rc = gettimeofday (&start, NULL);
     assert (rc == 0);
 
@@ -71,17 +73,16 @@ int main (int argc, char *argv [])
         assert (zmq_msg_size (&msg) == message_size);
     }
 
-    timeval end;
     rc = gettimeofday (&end, NULL);
     assert (rc == 0);
 
     end.tv_sec -= start.tv_sec;
     start.tv_sec = 0;
 
-    elapsed = (end.tv_sec * 1000000 + end.tv_usec) -
-        (start.tv_sec * 1000000 + start.tv_usec);
+    elapsed = ((uint64_t) end.tv_sec * 1000000 + end.tv_usec) -
+        ((uint64_t) start.tv_sec * 1000000 + start.tv_usec);
 
-    throughput = (long long) message_count * 1000000 / elapsed;
+    throughput = (uint64_t) message_count * 1000000 / elapsed;
 
     printf ("message size: %d [B]\n", (int) message_size);
     printf ("message count: %d\n", (int) message_count);

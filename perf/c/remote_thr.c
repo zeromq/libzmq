@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <zmq.hpp>
+#include <zmq.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -32,7 +32,7 @@ int main (int argc, char *argv [])
     void *s;
     int rc;
     int i;
-    zmq_msg_t msg;
+    struct zmq_msg_t msg;
 
     if (argc != 4) {
         printf ("usage: remote_thr <connect-to> <message-count> "

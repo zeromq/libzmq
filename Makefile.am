@@ -8,5 +8,5 @@ if BUILD_RUBY
 DIR_R = ruby
 endif
 
-SUBDIRS = src $(DIR_P) $(DIR_R)
-DIST_SUBDIRS = src $(DIR_P) $(DIR_R)
+SUBDIRS = src perf $(DIR_P) $(DIR_R)
+DIST_SUBDIRS = src perf $(DIR_P) $(DIR_R)

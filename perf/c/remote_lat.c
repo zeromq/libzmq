@@ -32,7 +32,9 @@ int main (int argc, char *argv [])
     void *s;
     int rc;
     int i;
-    zmq_msg_t msg;
+    struct zmq_msg_t msg;
+    struct timeval start;
+    struct timeval end;
     double elapsed;
     double latency;
 
@@ -54,7 +56,6 @@ int main (int argc, char *argv [])
     rc = zmq_connect (s, connect_to);
     assert (rc == 0);
 
-    timeval start;
     rc = gettimeofday (&start, NULL);
     assert (rc == 0);
 
@@ -70,8 +71,6 @@ int main (int argc, char *argv [])
         assert (rc == 0);
     }
 
-
-    timeval end;
     rc = gettimeofday (&end, NULL);
     assert (rc == 0);
 

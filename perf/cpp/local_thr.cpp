@@ -21,6 +21,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <sys/time.h>
 
 int main (int argc, char *argv [])
@@ -32,7 +34,7 @@ int main (int argc, char *argv [])
     }
     const char *bind_to = argv [1];
     int message_count = atoi (argv [2]);
-    int message_size = atoi (argv [3]);
+    size_t message_size = (size_t) atoi (argv [3]);
 
     zmq::context_t ctx (1, 1);
 
@@ -59,10 +61,10 @@ int main (int argc, char *argv [])
     end.tv_sec -= start.tv_sec;
     start.tv_sec = 0;
 
-    long long elapsed = (end.tv_sec * 1000000 + end.tv_usec) -
-        (start.tv_sec * 1000000 + start.tv_usec);
+    uint64_t elapsed = ((uint64_t) end.tv_sec * 1000000 + end.tv_usec) -
+        ((uint64_t) start.tv_sec * 1000000 + start.tv_usec);
 
-    long long throughput = (long long) message_count * 1000000 / elapsed;
+    uint64_t throughput = (uint64_t) message_count * 1000000 / elapsed;
 
     printf ("message size: %d [B]\n", (int) message_size);
     printf ("message count: %d\n", (int) message_count);

@@ -32,7 +32,7 @@ int main (int argc, char *argv [])
     void *s;
     int rc;
     int i;
-    zmq_msg_t msg;
+    struct zmq_msg_t msg;
 
     if (argc != 4) {
         printf ("usage: local_lat <bind-to> <roundtrip-count> "

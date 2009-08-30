@@ -103,41 +103,41 @@ struct zmq_msg_t
 };
 
 //  Initialise an empty message (zero bytes long).
-ZMQ_EXPORT int zmq_msg_init (zmq_msg_t *msg);
+ZMQ_EXPORT int zmq_msg_init (struct zmq_msg_t *msg);
 
 //  Initialise a message 'size' bytes long.
 //
 //  Errors: ENOMEM - the size is too large to allocate.
-ZMQ_EXPORT int zmq_msg_init_size (zmq_msg_t *msg, size_t size);
+ZMQ_EXPORT int zmq_msg_init_size (struct zmq_msg_t *msg, size_t size);
 
 //  Initialise a message from an existing buffer. Message isn't copied,
 //  instead 0SOCKETS infrastructure take ownership of the buffer and call
 //  deallocation functio (ffn) once it's not needed anymore.
-ZMQ_EXPORT int zmq_msg_init_data (zmq_msg_t *msg, void *data, size_t size,
-    zmq_free_fn *ffn);
+ZMQ_EXPORT int zmq_msg_init_data (struct zmq_msg_t *msg, void *data,
+    size_t size, zmq_free_fn *ffn);
 
 //  Deallocate the message.
-ZMQ_EXPORT int zmq_msg_close (zmq_msg_t *msg);
+ZMQ_EXPORT int zmq_msg_close (struct zmq_msg_t *msg);
 
 //  Move the content of the message from 'src' to 'dest'. The content isn't
 //  copied, just moved. 'src' is an empty message after the call. Original
 //  content of 'dest' message is deallocated.
-ZMQ_EXPORT int zmq_msg_move (zmq_msg_t *dest, zmq_msg_t *src);
+ZMQ_EXPORT int zmq_msg_move (struct zmq_msg_t *dest, struct zmq_msg_t *src);
 
 //  Copy the 'src' message to 'dest'. The content isn't copied, instead
 //  reference count is increased. Don't modify the message data after the
 //  call as they are shared between two messages. Original content of 'dest'
 //  message is deallocated.
-ZMQ_EXPORT int zmq_msg_copy (zmq_msg_t *dest, zmq_msg_t *src);
+ZMQ_EXPORT int zmq_msg_copy (struct zmq_msg_t *dest, struct zmq_msg_t *src);
 
 //  Returns pointer to message data.
-ZMQ_EXPORT void *zmq_msg_data (zmq_msg_t *msg);
+ZMQ_EXPORT void *zmq_msg_data (struct zmq_msg_t *msg);
 
 //  Return size of message data (in bytes).
-ZMQ_EXPORT size_t zmq_msg_size (zmq_msg_t *msg);
+ZMQ_EXPORT size_t zmq_msg_size (struct zmq_msg_t *msg);
 
 //  Returns type of the message.
-ZMQ_EXPORT int zmq_msg_type (zmq_msg_t *msg);
+ZMQ_EXPORT int zmq_msg_type (struct zmq_msg_t *msg);
 
 //  Initialise 0SOCKETS context. 'app_threads' specifies maximal number
 //  of application threads that can have open sockets at the same time.
@@ -182,7 +182,7 @@ ZMQ_EXPORT int zmq_connect (void *s, const char *addr);
 //  Errors: EAGAIN - message cannot be sent at the moment (applies only to
 //                   non-blocking send).
 //          ENOTSUP - function isn't supported by particular socket type.
-ZMQ_EXPORT int zmq_send (void *s, zmq_msg_t *msg, int flags);
+ZMQ_EXPORT int zmq_send (void *s, struct zmq_msg_t *msg, int flags);
 
 //  Flush the messages that were send using ZMQ_NOFLUSH flag down the stream.
 //
@@ -196,7 +196,7 @@ ZMQ_EXPORT int zmq_flush (void *s);
 //  Errors: EAGAIN - message cannot be received at the moment (applies only to
 //                   non-blocking receive).
 //          ENOTSUP - function isn't supported by particular socket type.
-ZMQ_EXPORT int zmq_recv (void *s, zmq_msg_t *msg, int flags);
+ZMQ_EXPORT int zmq_recv (void *s, struct zmq_msg_t *msg, int flags);
 
 #ifdef __cplusplus
 }

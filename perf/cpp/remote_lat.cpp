@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <stddef.h>
 #include <sys/time.h>
 
 int main (int argc, char *argv [])
@@ -32,7 +33,7 @@ int main (int argc, char *argv [])
     }
     const char *connect_to = argv [1];
     int roundtrip_count = atoi (argv [2]);
-    int message_size = atoi (argv [3]);
+    size_t message_size = (size_t) atoi (argv [3]);
 
     zmq::context_t ctx (1, 1);
 
