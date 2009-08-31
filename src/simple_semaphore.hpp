@@ -53,32 +53,32 @@ namespace zmq
         inline simple_semaphore_t ()
         {
             int rc = pthread_mutex_init (&mutex, NULL);
-	    errno_assert (rc == 0);
+            posix_assert (rc);
             rc = pthread_mutex_lock (&mutex);
-	    errno_assert (rc == 0);
+            posix_assert (rc);
         }
 
         //  Destroy the semaphore.
         inline ~simple_semaphore_t ()
         {
             int rc = pthread_mutex_unlock (&mutex);
-            errno_assert (rc == 0);
+            posix_assert (rc);
             rc = pthread_mutex_destroy (&mutex);
-            errno_assert (rc == 0);
+            posix_assert (rc);
         }
 
         //  Wait for the semaphore.
         inline void wait ()
         {
              int rc = pthread_mutex_lock (&mutex);
-             errno_assert (rc == 0);
+             posix_assert (rc);
         }
 
         //  Post the semaphore.
         inline void post ()
         {
             int rc = pthread_mutex_unlock (&mutex);
-            errno_assert (rc == 0);
+            posix_assert (rc);
         }
 
     private:
