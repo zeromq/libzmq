@@ -64,7 +64,7 @@ int main (int argc, char *argv [])
 
     printf ("message size: %d [B]\n", (int) message_size);
     printf ("roundtrip count: %d\n", (int) roundtrip_count);
-    printf ("average latency: %3f [us]\n", (double) latency);
+    printf ("average latency: %.3f [us]\n", (double) latency);
 
     return 0;
 }

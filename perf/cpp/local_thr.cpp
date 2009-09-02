@@ -71,7 +71,7 @@ int main (int argc, char *argv [])
     printf ("message size: %d [B]\n", (int) message_size);
     printf ("message count: %d\n", (int) message_count);
     printf ("mean throughput: %d [msg/s]\n", (int) throughput);
-    printf ("mean throughput: %3f [Mb/s]\n", (double) megabits);
+    printf ("mean throughput: %.3f [Mb/s]\n", (double) megabits);
 
     return 0;
 }

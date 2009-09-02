@@ -36,11 +36,8 @@ zmq::session_t::session_t (object_t *parent_, socket_base_t *owner_,
 
 zmq::session_t::~session_t ()
 {
-    //  Ask associated pipes to terminate.
-    if (in_pipe)
-        in_pipe->term ();
-    if (out_pipe)
-        out_pipe->term ();
+    zmq_assert (!in_pipe);
+    zmq_assert (!out_pipe);
 }
 
 bool zmq::session_t::read (::zmq_msg_t *msg_)
@@ -82,6 +79,7 @@ void zmq::session_t::attach_inpipe (reader_t *pipe_)
     active = true;
     in_pipe->set_endpoint (this);
 }
+
 void zmq::session_t::attach_outpipe (writer_t *pipe_)
 {
     zmq_assert (!out_pipe);
@@ -140,6 +138,16 @@ void zmq::session_t::process_unplug ()
     //  Unregister the session from the socket.
     bool ok = owner->unregister_session (name.c_str ());
     zmq_assert (ok);
+
+    //  Ask associated pipes to terminate.
+    if (in_pipe) {
+        in_pipe->term ();
+        in_pipe = NULL;
+    }
+    if (out_pipe) {
+        out_pipe->term ();
+        out_pipe = NULL;
+    }
 
     if (engine) {
         engine->unplug ();

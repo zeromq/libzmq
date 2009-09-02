@@ -63,5 +63,8 @@ int main (int argc, char *argv [])
 
     sleep (10);
 
+    rc = zmq_term (ctx);
+    assert (rc == 0);
+
     return 0;
 }

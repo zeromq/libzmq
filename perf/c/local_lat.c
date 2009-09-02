@@ -52,19 +52,24 @@ int main (int argc, char *argv [])
     rc = zmq_bind (s, bind_to);
     assert (rc == 0);
 
+    rc = zmq_msg_init (&msg);
+    assert (rc == 0);
+
     for (i = 0; i != roundtrip_count; i++) {
-        rc = zmq_msg_init (&msg);
-        assert (rc == 0);
         rc = zmq_recv (s, &msg, 0);
         assert (rc == 0);
         assert (zmq_msg_size (&msg) == message_size);
         rc = zmq_send (s, &msg, 0);
         assert (rc == 0);
-        rc = zmq_msg_close (&msg);
-        assert (rc == 0);
     }
 
+    rc = zmq_msg_close (&msg);
+    assert (rc == 0);
+
     sleep (1);
+
+    rc = zmq_term (ctx);
+    assert (rc == 0);
 
     return 0;
 }

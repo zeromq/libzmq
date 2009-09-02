@@ -59,17 +59,19 @@ int main (int argc, char *argv [])
     rc = gettimeofday (&start, NULL);
     assert (rc == 0);
 
+    rc = zmq_msg_init_size (&msg, message_size);
+    assert (rc == 0);
+
     for (i = 0; i != roundtrip_count; i++) {
-        rc = zmq_msg_init_size (&msg, message_size);
-        assert (rc == 0);
         rc = zmq_send (s, &msg, 0);
         assert (rc == 0);
         rc = zmq_recv (s, &msg, 0);
         assert (rc == 0);
         assert (zmq_msg_size (&msg) == message_size);
-        rc = zmq_msg_close (&msg);
-        assert (rc == 0);
     }
+
+    rc = zmq_msg_close (&msg);
+    assert (rc == 0);
 
     rc = gettimeofday (&end, NULL);
     assert (rc == 0);
@@ -83,7 +85,10 @@ int main (int argc, char *argv [])
 
     printf ("message size: %d [B]\n", (int) message_size);
     printf ("roundtrip count: %d\n", (int) roundtrip_count);
-    printf ("average latency: %3f [us]\n", (double) latency);
+    printf ("average latency: %.3f [us]\n", (double) latency);
+
+    rc = zmq_term (ctx);
+    assert (rc == 0);
 
     return 0;
 }
