@@ -259,7 +259,58 @@ if test "x$pyzmq" != "xyes"; then
         [python third-party/openpgm/libpgm-1.0.0/openpgm/pgm/version_generator.py > \
             third-party/openpgm/libpgm-1.0.0/openpgm/pgm/version.c])
 
+# Java language binding
+jzmq="no"
+AC_ARG_WITH([java], [AS_HELP_STRING([--with-java], [build Java language binding [default=no]])], [with_java=yes], [with_java=no])
+if test "x$with_java" != "xno"; then
+    AC_PATH_PROG(JAVAC, javac, "no",[$PATH:$JAVA_HOME/bin])
+    if test "x$JAVAC" = "xno"; then
+        AC_MSG_ERROR([To run configure with --with-java option, javac has to be on the path.]);
+    fi
+
+    AC_PATH_PROG(JAVAH, javah, "no",[$PATH:$JAVA_HOME/bin])
+    if test "x$JAVAH" = "xno"; then
+        AC_MSG_ERROR([To run configure with --with-java option, javah has to be on the path.]);
+    fi
+
+    AC_PATH_PROG(JAR, jar, "no", [$PATH:$JAVA_HOME/bin])
+    if test "x$JAR" = "xno"; then
+        AC_MSG_ERROR([To run configure with --with-java option, jar has to be on the path.]);
+    fi
+
+    if test "x$JAVA_HOME" = "x"; then
+        AC_MSG_ERROR([To run configure with --with-java, please set the JAVA_HOME variable to your JDK environment.]);
+    fi
+
+    AC_MSG_CHECKING([for jni.h in a $JAVA_HOME/include dir])
+    if test -f $JAVA_HOME/include/jni.h; then
+        AC_MSG_RESULT([yes])
+    else
+        AC_MSG_ERROR([Could not find jni.h in $JAVA_HOME/include directory.]);
+    fi
+
+    JAVAROOT=./
+    AC_SUBST(JAVAROOT)
+
+    case "${host_os}" in
+        *solaris*)
+            JAVA_INCLUDE="-I.. -I${JAVA_HOME}/include -I ${JAVA_HOME}/include/solaris"
+        ;;
+        *openbsd*)
+            JAVA_INCLUDE="-I.. -I${JAVA_HOME}/include -I ${JAVA_HOME}/include/openbsd"
+        ;;
+        *)
+            JAVA_INCLUDE="-I.. -I${JAVA_HOME}/include -I ${JAVA_HOME}/include/linux"
+        ;;
+    esac
+
+    AC_SUBST(JAVA_INCLUDE)
+
+    jzmq="yes"
+fi
+
 AM_CONDITIONAL(BUILD_PYTHON, test "x$pyzmq" = "xyes")
+AM_CONDITIONAL(BUILD_JAVA, test "x$jzmq" = "xyes")
 
 AC_SUBST(stdint)
 AC_SUBST(inttypes)
@@ -276,7 +327,7 @@ AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(perror gettimeofday memset socket getifaddrs freeifaddrs)
 
 AC_OUTPUT(Makefile src/Makefile python/Makefile python/setup.py ruby/Makefile \
-    perf/Makefile perf/c/Makefile perf/cpp/Makefile)
+    java/Makefile perf/Makefile perf/c/Makefile perf/cpp/Makefile)
 
 AC_MSG_RESULT([])
 AC_MSG_RESULT([ ******************************************************** ])
@@ -294,5 +345,6 @@ AC_MSG_RESULT([   Ruby language binding: $rbzmq])
 if test "x$rbzmq" = "xyes"; then
 AC_MSG_RESULT([   Ruby library install dir: $rubydir])
 fi
+AC_MSG_RESULT([   Java language binding: $jzmq])
 AC_MSG_RESULT([])
 

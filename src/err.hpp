@@ -22,6 +22,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -81,10 +82,10 @@ namespace zmq
 }} while (false)
 
 // Provides convenient way to check for POSIX errors.
-#define posix_assert(x) do {\
-fprintf (stderr, "%s (%s:%d)\n", strerror (x), __FILE__, __LINE__);\
-abort ();\
-} while (false)
+#define posix_assert(x) do { if ((x)) {\
+    fprintf (stderr, "%s (%s:%d)\n", strerror (x), __FILE__, __LINE__);\
+    abort ();\
+}} while (false)
 
 // Provides convenient way to check for errors from getaddrinfo.
 #define gai_assert(x) do { if (x) {\

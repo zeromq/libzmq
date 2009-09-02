@@ -8,5 +8,9 @@ if BUILD_RUBY
 DIR_R = ruby
 endif
 
-SUBDIRS = src perf $(DIR_P) $(DIR_R)
-DIST_SUBDIRS = src perf $(DIR_P) $(DIR_R)
+if BUILD_JAVA
+DIR_J = java
+endif
+
+SUBDIRS = src perf $(DIR_P) $(DIR_R) $(DIR_J)
+DIST_SUBDIRS = src perf $(DIR_P) $(DIR_R) $(DIR_J)
