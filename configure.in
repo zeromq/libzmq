@@ -18,6 +18,7 @@ AC_PROG_LIBTOOL
 
 # Checks for libraries.
 AC_CHECK_LIB(pthread, pthread_create)
+AC_CHECK_LIB(stdc++, malloc)
 
 # Host speciffic checks
 AC_CANONICAL_HOST
