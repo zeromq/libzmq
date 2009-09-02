@@ -20,39 +20,40 @@
 import sys
 from datetime import datetime
 import libpyzmq
-import time
-
 
 def main ():
-    if len(sys.argv) != 5:
-        print ('usage: py_remote_lat <in-interface> ' +
-            '<out-interface> <message-size> <roundtrip-count>')
+    if len(sys.argv) != 4:
+        print 'usage: remote_lat <connect-to> <roundtrip-count> <message-size>'
         sys.exit (1)
 
     try:
-        message_size = int (sys.argv [3])
-        roundtrip_count = int (sys.argv [4])
+        connect_to = sys.argv [1]
+        message_size = int (sys.argv [2])
+        roundtrip_count = int (sys.argv [3])
     except (ValueError, OverflowError), e:
         print 'message-size and message-count must be integers'
         sys.exit (1)
 
-    z = libpyzmq.Zmq ()
+    ctx = libpyzmq.Context (1, 1);   
+    s = libpyzmq.Socket (ctx, libpyzmq.REQ)
+    s.connect (connect_to)
 
-    context = z.context (1,1)
- 
-    in_socket = z.socket (context, libpyzmq.ZMQ_SUB)
-    out_socket = z.socket (context, libpyzmq.ZMQ_PUB)
-    
-    z.connect (in_socket, addr = in_interface)
-    z.connect (out_socket, addr = out_interface)
-        
+    msg = ''.join ([' ' for n in range (0, message_size)])
+
+    start = datetime.now ()
+
     for i in range (0, roundtrip_count):
-        list = z.receive (in_socket, True)
-        message = list [1]
-        z.send (out_socket, message, True)
- 
-    time.sleep (2)
+        s.send (msg)
+        msg = s.recv ()
+        assert len (msg) == message_size
 
+    end = datetime.now ()
+    delta = (end - start).microseconds + 1000000 * (end - start).seconds
+    latency = delta / roundtrip_count / 2
+
+    print "message size: %.0f [B]" % (message_size, )
+    print "roundtrip count: %.0f" % (roundtrip_count, )
+    print "mean latency: %.3f [us]" % (latency, )
 
 if __name__ == "__main__":
     main ()

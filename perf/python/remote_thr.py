@@ -18,33 +18,32 @@
 #
 
 import sys
-from datetime import datetime
 import libpyzmq
 import time
 
 def main ():
     if len (sys.argv) != 4:
-        print 'usage: py_remote_thr <out-interface> <message-size> <message-count>'
+        print 'usage: remote_thr <connect-to> <message-size> <message-count>'
         sys.exit (1)
 
     try:
+        connect_to = argv [1]
         message_size = int (sys.argv [2])
         message_count = int (sys.argv [3])
     except (ValueError, OverflowError), e:
         print 'message-size and message-count must be integers'
         sys.exit (1)
 
-    z = libpyzmq.Zmq ()
-    context = z.context (1,1);
-    out_socket = z.socket (context, libpyzmq.ZMQ_PUB)
-    z.bind (out_socket, addr = sys.argv [1])
+    ctx = libpyzmq.Context (1, 1);   
+    s = libpyzmq.Socket (ctx, libpyzmq.P2P)
+    s.connect (connect_to)
 
-	msg = z.init_msg_data (string_msg, type)
+    msg = ''.join ([' ' for n in range (0, message_size)])
 
     for i in range (0, message_count):
-        z.send (out_socket, msg, True)
+        s.send (msg)
 
-    time.sleep (2)
+    time.sleep (10)
 
 if __name__ == "__main__":
     main ()

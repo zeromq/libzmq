@@ -23,46 +23,42 @@ import libpyzmq
 
 def main ():
     if len (sys.argv) != 4:
-        print ('usage: py_local_thr <in_interface> <message-size> ' +
-            '<message-count>')
+        print 'usage: local_thr <bind-to> <message-size> <message-count>'
         sys.exit (1)
 
     try:
+        bind_to = sys.argv [1]
         message_size = int (sys.argv [2])
         message_count = int (sys.argv [3])
     except (ValueError, OverflowError), e:
         print 'message-size and message-count must be integers'
         sys.exit (1)
 
-    print "message size:", message_size, "[B]"
-    print "message count:", message_count
+    ctx = libpyzmq.Context (1, 1);   
+    s = libpyzmq.Socket (ctx, libpyzmq.P2P)
+    s.bind (bind_to)
 
-    z = libpyzmq.Zmq ()
+    msg = s.recv ()
+    assert len (msg) == message_size
 
-    context = z.context (1,1)
-    in_socket = z.socket (context, libpyzmq.ZMQ_SUB)
-    z.connect (in_socketaddr = sys.argv [1])
-    
-
-    list = z.receive (in_socket, True)
-    msg = list [1]
-    assert len(msg) == message_size
     start = datetime.now ()
+
     for i in range (1, message_count):
-        list = z.receive (in_socket, True)
-        msg = list [1]
-        assert len(msg) == message_size
+        msg = s.recv ()
+        assert len (msg) == message_size
+ 
     end = datetime.now()
 
-    delta = end - start
-    delta_us = delta.seconds * 1000000 + delta.microseconds
-    if delta_us == 0:
-    	delta_us = 1
-    message_thr = (1000000.0 * float (message_count)) / float (delta_us)
-    megabit_thr = (message_thr * float (message_size) * 8.0) / 1000000.0;
+    elapsed = (end - start).seconds * 1000000 + (end - start).microseconds
+    if elapsed == 0:
+    	elapsed = 1
+    throughput = (1000000.0 * float (message_count)) / float (elapsed)
+    megabits = float (throughput * message_size * 8) / 1000000
 
-    print "Your average throughput is %.0f [msg/s]" % (message_thr, )
-    print "Your average throughput is %.2f [Mb/s]" % (megabit_thr, )
+    print "message size: %.0f [B]" % (message_size, )
+    print "message count: %.0f" % (message_count, )
+    print "mean throughput: %.0f [msg/s]" % (throughput, )
+    print "mean throughput: %.3f [Mb/s]" % (megabits, )
 
 if __name__ == "__main__":
     main ()

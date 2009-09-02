@@ -173,7 +173,7 @@ int zmq::socket_base_t::connect (const char *addr_)
     pipe_t *in_pipe = new pipe_t (this, session, options.hwm, options.lwm);
     zmq_assert (in_pipe);
     in_pipe->reader.set_endpoint (this);
-    session->set_outbound_pipe (&in_pipe->writer);
+    session->attach_outpipe (&in_pipe->writer);
     in_pipes.push_back (&in_pipe->reader);
     in_pipes.back ()->set_index (active);
     in_pipes [active]->set_index (in_pipes.size () - 1);
@@ -184,7 +184,7 @@ int zmq::socket_base_t::connect (const char *addr_)
     pipe_t *out_pipe = new pipe_t (session, this, options.hwm, options.lwm);
     zmq_assert (out_pipe);
     out_pipe->writer.set_endpoint (this);
-    session->set_inbound_pipe (&out_pipe->reader);
+    session->attach_inpipe (&out_pipe->reader);
     out_pipes.push_back (&out_pipe->writer);
 
     //  Activate the session.
@@ -327,6 +327,22 @@ zmq::session_t *zmq::socket_base_t::find_session (const char *name_)
     return it->second;    
 }
 
+void zmq::socket_base_t::attach_inpipe (class reader_t *pipe_)
+{
+    pipe_->set_endpoint (this);
+    in_pipes.push_back (pipe_);
+    in_pipes.back ()->set_index (active);
+    in_pipes [active]->set_index (in_pipes.size () - 1);
+    std::swap (in_pipes.back (), in_pipes [active]);
+    active++;
+}
+
+void zmq::socket_base_t::attach_outpipe (class writer_t *pipe_)
+{
+    pipe_->set_endpoint (this);
+    out_pipes.push_back (pipe_);
+}
+
 void zmq::socket_base_t::revive (reader_t *pipe_)
 {
     //  Move the pipe to the list of active pipes.
@@ -372,15 +388,9 @@ void zmq::socket_base_t::process_bind (owned_t *session_,
     reader_t *in_pipe_, writer_t *out_pipe_)
 {
     zmq_assert (in_pipe_);
-    in_pipe_->set_endpoint (this);
-    in_pipes.push_back (in_pipe_);
-    in_pipes.back ()->set_index (active);
-    in_pipes [active]->set_index (in_pipes.size () - 1);
-    std::swap (in_pipes.back (), in_pipes [active]);
-    active++;
+    attach_inpipe (in_pipe_);
     zmq_assert (out_pipe_);
-    out_pipe_->set_endpoint (this);
-    out_pipes.push_back (out_pipe_);
+    attach_outpipe (out_pipe_);
 }
 
 void zmq::socket_base_t::process_term_req (owned_t *object_)

@@ -37,13 +37,6 @@ namespace zmq
         session_t (object_t *parent_, socket_base_t *owner_, const char *name_,
             const options_t &options_);
 
-        void set_inbound_pipe (class reader_t *pipe_);
-        void set_outbound_pipe (class writer_t *pipe_);
-
-    private:
-
-        ~session_t ();
-
         //  i_inout interface implementation.
         bool read (::zmq_msg_t *msg_);
         bool write (::zmq_msg_t *msg_);
@@ -51,9 +44,15 @@ namespace zmq
         void detach ();
 
         //  i_endpoint interface implementation.
+        void attach_inpipe (class reader_t *pipe_);
+        void attach_outpipe (class writer_t *pipe_);
         void revive (class reader_t *pipe_);
         void detach_inpipe (class reader_t *pipe_);
         void detach_outpipe (class writer_t *pipe_);
+
+    private:
+
+        ~session_t ();
 
         //  Handlers for incoming commands.
         void process_plug ();

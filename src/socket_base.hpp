@@ -60,6 +60,8 @@ namespace zmq
         class session_t *find_session (const char *name_);
 
         //  i_endpoint interface implementation.
+        void attach_inpipe (class reader_t *pipe_);
+        void attach_outpipe (class writer_t *pipe_);
         void revive (class reader_t *pipe_);
         void detach_inpipe (class reader_t *pipe_);
         void detach_outpipe (class writer_t *pipe_);

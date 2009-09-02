@@ -25,6 +25,8 @@ namespace zmq
 
     struct i_endpoint
     {
+        virtual void attach_inpipe (class reader_t *pipe_) = 0;
+        virtual void attach_outpipe (class writer_t *pipe_) = 0;
         virtual void revive (class reader_t *pipe_) = 0;
         virtual void detach_inpipe (class reader_t *pipe_) = 0;
         virtual void detach_outpipe (class writer_t *pipe_) = 0;

@@ -111,7 +111,7 @@ ZMQ_EXPORT int zmq_msg_init (struct zmq_msg_t *msg);
 ZMQ_EXPORT int zmq_msg_init_size (struct zmq_msg_t *msg, size_t size);
 
 //  Initialise a message from an existing buffer. Message isn't copied,
-//  instead 0SOCKETS infrastructure take ownership of the buffer and call
+//  instead 0MQ infrastructure take ownership of the buffer and call
 //  deallocation functio (ffn) once it's not needed anymore.
 ZMQ_EXPORT int zmq_msg_init_data (struct zmq_msg_t *msg, void *data,
     size_t size, zmq_free_fn *ffn);
@@ -139,7 +139,7 @@ ZMQ_EXPORT size_t zmq_msg_size (struct zmq_msg_t *msg);
 //  Returns type of the message.
 ZMQ_EXPORT int zmq_msg_type (struct zmq_msg_t *msg);
 
-//  Initialise 0SOCKETS context. 'app_threads' specifies maximal number
+//  Initialise 0MQ context. 'app_threads' specifies maximal number
 //  of application threads that can have open sockets at the same time.
 //  'io_threads' specifies the size of thread pool to handle I/O operations.
 //
@@ -147,7 +147,7 @@ ZMQ_EXPORT int zmq_msg_type (struct zmq_msg_t *msg);
 //                   threads declared at all.
 ZMQ_EXPORT void *zmq_init (int app_threads, int io_threads);
 
-//  Deinitialise 0SOCKETS context including all the open sockets. Closing
+//  Deinitialise 0MQ context including all the open sockets. Closing
 //  sockets after zmq_term has been called will result in undefined behaviour.
 ZMQ_EXPORT int zmq_term (void *context);
 

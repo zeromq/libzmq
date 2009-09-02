@@ -43,21 +43,6 @@ zmq::session_t::~session_t ()
         out_pipe->term ();
 }
 
-void zmq::session_t::set_inbound_pipe (reader_t *pipe_)
-{
-    zmq_assert (!in_pipe);
-    in_pipe = pipe_;
-    active = true;
-    in_pipe->set_endpoint (this);
-}
-void zmq::session_t::set_outbound_pipe (writer_t *pipe_)
-{
-    zmq_assert (!out_pipe);
-    out_pipe = pipe_;
-    out_pipe->set_endpoint (this);
-}
-
-
 bool zmq::session_t::read (::zmq_msg_t *msg_)
 {
     if (!active)
@@ -88,6 +73,20 @@ void zmq::session_t::detach ()
     //  TODO: In the case od anonymous connection, terminate the session.
 //    if (anonymous)
 //        term ();
+}
+
+void zmq::session_t::attach_inpipe (reader_t *pipe_)
+{
+    zmq_assert (!in_pipe);
+    in_pipe = pipe_;
+    active = true;
+    in_pipe->set_endpoint (this);
+}
+void zmq::session_t::attach_outpipe (writer_t *pipe_)
+{
+    zmq_assert (!out_pipe);
+    out_pipe = pipe_;
+    out_pipe->set_endpoint (this);
 }
 
 void zmq::session_t::revive (reader_t *pipe_)

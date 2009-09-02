@@ -38,6 +38,7 @@ int main (int argc, char *argv [])
     struct timeval end;
     uint64_t elapsed;
     uint64_t throughput;
+    double megabits;
 
     if (argc != 4) {
         printf ("usage: local_thr <bind-to> <message-count> "
@@ -81,12 +82,15 @@ int main (int argc, char *argv [])
 
     elapsed = ((uint64_t) end.tv_sec * 1000000 + end.tv_usec) -
         ((uint64_t) start.tv_sec * 1000000 + start.tv_usec);
-
+    if (elapsed == 0)
+        elapsed = 1;
     throughput = (uint64_t) message_count * 1000000 / elapsed;
+    megabits = (double) (throughput * message_size * 8) / 1000000;
 
     printf ("message size: %d [B]\n", (int) message_size);
     printf ("message count: %d\n", (int) message_count);
     printf ("mean throughput: %d [msg/s]\n", (int) throughput);
+    printf ("mean throughput: %3f [Mb/s]\n", (double) megabits);
 
     return 0;
 }
