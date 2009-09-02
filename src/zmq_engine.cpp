@@ -58,6 +58,9 @@ void zmq::zmq_engine_t::plug (i_inout *inout_)
     set_pollout (handle);
 
     inout = inout_;
+
+    //  Flush all the data that may have been already received downstream.
+    in_event ();
 }
 
 void zmq::zmq_engine_t::unplug ()
