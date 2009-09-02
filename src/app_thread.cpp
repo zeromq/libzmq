@@ -138,16 +138,16 @@ zmq::socket_base_t *zmq::app_thread_t::create_socket (int type_)
     //  TODO: type is ignored for the time being.
     socket_base_t *s = new socket_base_t (this);
     zmq_assert (s);
+    s->set_index (sockets.size ());
     sockets.push_back (s);
     return s;
 }
 
 void zmq::app_thread_t::remove_socket (socket_base_t *socket_)
 {
-    //  TODO: To speed this up we can possibly use the system where each socket
-    //        holds its index (see I/O scheduler implementation).
-    sockets_t::iterator it = std::find (sockets.begin (), sockets.end (),
-        socket_);
-    zmq_assert (it != sockets.end ());
-    sockets.erase (it);
+    int i = socket_->get_index ();
+    socket_->set_index (-1);
+    sockets [i] = sockets.back ();
+    sockets [i]->set_index (i);
+    sockets.pop_back ();
 }

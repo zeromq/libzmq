@@ -66,6 +66,10 @@ namespace zmq
         void detach_inpipe (class reader_t *pipe_);
         void detach_outpipe (class writer_t *pipe_);
 
+        //  Manipulating index in the app_thread's list of sockets.
+        void set_index (int index);
+        int get_index ();
+
     private:
 
         //  Handlers for incoming commands.
@@ -130,6 +134,9 @@ namespace zmq
         typedef std::map <std::string, session_t*> sessions_t;
         sessions_t sessions;
         mutex_t sessions_sync;
+
+        //  Index of the socket in the app_thread's list of sockets.
+        int index;
 
         socket_base_t (const socket_base_t&);
         void operator = (const socket_base_t&);

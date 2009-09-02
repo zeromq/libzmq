@@ -42,7 +42,8 @@ zmq::socket_base_t::socket_base_t (app_thread_t *parent_) :
     pending_term_acks (0),
     ticks (0),
     app_thread (parent_),
-    shutting_down (false)
+    shutting_down (false),
+    index (-1)
 {
 }
 
@@ -377,6 +378,17 @@ void zmq::socket_base_t::detach_outpipe (class writer_t *pipe_)
     out_pipes [out_pipes.size () - 1]->set_index (index);
     std::swap (out_pipes [index], out_pipes [out_pipes.size () - 1]);
     out_pipes.pop_back ();
+}
+
+void zmq::socket_base_t::set_index (int index_)
+{
+    index = index_;
+}
+
+int zmq::socket_base_t::get_index ()
+{
+    zmq_assert (index != -1);
+    return index;
 }
 
 void zmq::socket_base_t::process_own (owned_t *object_)
