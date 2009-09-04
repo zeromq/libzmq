@@ -30,7 +30,9 @@
 #include "windows.h"
 #endif
 
-zmq::dispatcher_t::dispatcher_t (int app_threads_, int io_threads_)
+zmq::dispatcher_t::dispatcher_t (int app_threads_, int io_threads_) :
+    sockets (0),
+    terminated (false)
 {
 #ifdef ZMQ_HAVE_WINDOWS
     //  Intialise Windows sockets. Note that WSAStartup can be called multiple
@@ -66,6 +68,20 @@ zmq::dispatcher_t::dispatcher_t (int app_threads_, int io_threads_)
     //  Launch I/O threads.
     for (int i = 0; i != io_threads_; i++)
         io_threads [i]->start ();
+}
+
+int zmq::dispatcher_t::term ()
+{
+    term_sync.lock ();
+    zmq_assert (!terminated);
+    terminated = true;
+    bool destroy = (sockets == 0);
+    term_sync.unlock ();
+    
+    if (destroy)
+        delete this;
+
+    return 0;
 }
 
 zmq::dispatcher_t::~dispatcher_t ()
@@ -111,7 +127,25 @@ zmq::socket_base_t *zmq::dispatcher_t::create_socket (int type_)
     }
     threads_sync.unlock ();
 
+    term_sync.lock ();
+    sockets++;
+    term_sync.unlock ();
+
     return thread->create_socket (type_);
+}
+
+void zmq::dispatcher_t::destroy_socket ()
+{
+    //  If zmq_term was already called and there are no more sockets,
+    //  terminate the whole 0MQ infrastructure.
+    term_sync.lock ();
+    zmq_assert (sockets > 0);
+    sockets--;
+    bool destroy = (sockets == 0 && terminated);
+    term_sync.unlock ();
+
+    if (destroy)
+       delete this;
 }
 
 zmq::app_thread_t *zmq::dispatcher_t::choose_app_thread ()

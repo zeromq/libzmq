@@ -54,7 +54,12 @@ bool zmq::session_t::read (::zmq_msg_t *msg_)
 
 bool zmq::session_t::write (::zmq_msg_t *msg_)
 {
-    return out_pipe->write (msg_);
+    if (out_pipe->write (msg_)) {
+        zmq_msg_init (msg_);
+        return true;
+    }
+
+    return false;
 }
 
 void zmq::session_t::flush ()

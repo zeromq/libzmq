@@ -27,7 +27,7 @@ def main ():
         sys.exit (1)
 
     try:
-        connect_to = argv [1]
+        connect_to = sys.argv [1]
         message_size = int (sys.argv [2])
         message_count = int (sys.argv [3])
     except (ValueError, OverflowError), e:

@@ -35,13 +35,13 @@ int main (int argc, char *argv [])
     struct zmq_msg_t msg;
 
     if (argc != 4) {
-        printf ("usage: remote_thr <connect-to> <message-count> "
-            "<message-size>\n");
+        printf ("usage: remote_thr <connect-to> <message-size> "
+            "<message-count>\n");
         return 1;
     }
     connect_to = argv [1];
-    message_count = atoi (argv [2]);
-    message_size = atoi (argv [3]);
+    message_size = atoi (argv [2]);
+    message_count = atoi (argv [3]);
 
     ctx = zmq_init (1, 1);
     assert (ctx);
@@ -62,6 +62,9 @@ int main (int argc, char *argv [])
     }
 
     sleep (10);
+
+    rc = zmq_close (s);
+    assert (rc == 0);
 
     rc = zmq_term (ctx);
     assert (rc == 0);

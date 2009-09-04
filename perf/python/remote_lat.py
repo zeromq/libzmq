@@ -23,7 +23,7 @@ import libpyzmq
 
 def main ():
     if len(sys.argv) != 4:
-        print 'usage: remote_lat <connect-to> <roundtrip-count> <message-size>'
+        print 'usage: remote_lat <connect-to> <message-size> <roundtrip-count>'
         sys.exit (1)
 
     try:
@@ -49,7 +49,7 @@ def main ():
 
     end = datetime.now ()
     delta = (end - start).microseconds + 1000000 * (end - start).seconds
-    latency = delta / roundtrip_count / 2
+    latency = float (delta) / roundtrip_count / 2
 
     print "message size: %.0f [B]" % (message_size, )
     print "roundtrip count: %.0f" % (roundtrip_count, )

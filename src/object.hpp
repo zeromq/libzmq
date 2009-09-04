@@ -40,6 +40,7 @@ namespace zmq
         ~object_t ();
 
         int get_thread_slot ();
+        dispatcher_t *get_dispatcher ();
         void process_command (struct command_t &cmd_);
 
         //  Allow pipe to access corresponding dispatcher functions.

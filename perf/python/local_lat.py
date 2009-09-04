@@ -23,13 +23,13 @@ import libpyzmq
 
 def main ():
     if len (sys.argv) != 4:
-        print 'usage: local_lat <bind-to> <roundtrip-count> <message-size>'
+        print 'usage: local_lat <bind-to> <message-size> <roundtrip-count>'
         sys.exit (1)
 
     try:
         bind_to = sys.argv [1]
-        roundtrip_count = int (sys.argv [2])
-        message_size = int (sys.argv [3])
+        message_size = int (sys.argv [2])
+        roundtrip_count = int (sys.argv [3])
     except (ValueError, OverflowError), e:
         print 'message-size and roundtrip-count must be integers'
         sys.exit (1)

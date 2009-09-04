@@ -41,13 +41,12 @@ int main (int argc, char *argv [])
     double megabits;
 
     if (argc != 4) {
-        printf ("usage: local_thr <bind-to> <message-count> "
-            "<message-size>\n");
+        printf ("usage: local_thr <bind-to> <message-size> <message-count>\n");
         return 1;
     }
     bind_to = argv [1];
-    message_count = atoi (argv [2]);
-    message_size = atoi (argv [3]);
+    message_size = atoi (argv [2]);
+    message_count = atoi (argv [3]);
 
     ctx = zmq_init (1, 1);
     assert (ctx);
@@ -91,6 +90,9 @@ int main (int argc, char *argv [])
     printf ("message count: %d\n", (int) message_count);
     printf ("mean throughput: %d [msg/s]\n", (int) throughput);
     printf ("mean throughput: %.3f [Mb/s]\n", (double) megabits);
+
+    rc = zmq_close (s);
+    assert (rc == 0);
 
     rc = zmq_term (ctx);
     assert (rc == 0);

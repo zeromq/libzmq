@@ -183,8 +183,7 @@ void *zmq_init (int app_threads_, int io_threads_)
 
 int zmq_term (void *dispatcher_)
 {
-    delete (zmq::dispatcher_t*) dispatcher_;
-    return 0;
+    return ((zmq::dispatcher_t*) dispatcher_)->term ();
 }
 
 void *zmq_socket (void *dispatcher_, int type_)

@@ -53,6 +53,11 @@ int zmq::object_t::get_thread_slot ()
     return thread_slot;
 }
 
+zmq::dispatcher_t *zmq::object_t::get_dispatcher ()
+{
+    return dispatcher;
+}
+
 void zmq::object_t::process_command (command_t &cmd_)
 {
     switch (cmd_.type) {
