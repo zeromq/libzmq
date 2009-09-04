@@ -77,7 +77,6 @@ bool zmq::zmq_connecter_init_t::write (::zmq_msg_t *msg_)
 void zmq::zmq_connecter_init_t::flush ()
 {
     //  We are not expecting any messages. No point in flushing.
-    zmq_assert (false);
 }
 
 void zmq::zmq_connecter_init_t::detach ()

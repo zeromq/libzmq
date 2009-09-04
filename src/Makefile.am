@@ -1,5 +1,9 @@
 lib_LTLIBRARIES = libzmq.la
 
+pkginclude_HEADERS = \
+    ../include/zmq.h \
+    ../include/zmq.hpp
+
 libzmq_la_SOURCES = \
     app_thread.hpp \
     atomic_bitmap.hpp \
@@ -29,7 +33,7 @@ libzmq_la_SOURCES = \
     mutex.hpp \
     object.hpp \
     options.hpp \
-    owner.hpp \
+    owned.hpp \
     pipe.hpp \
     platform.hpp \
     poll.hpp \

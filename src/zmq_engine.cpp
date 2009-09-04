@@ -97,11 +97,8 @@ void zmq::zmq_engine_t::in_event ()
     if (inpos < insize)
         reset_pollin (handle);
 
-    //  If at least one byte was processed, flush all messages the decoder
-    //  may have produced.
-    if (nbytes > 0)
-        inout->flush ();
-
+    //  Flush all messages the decoder may have produced.
+    inout->flush ();
 }
 
 void zmq::zmq_engine_t::out_event ()

@@ -62,7 +62,8 @@ bool zmq::zmq_listener_init_t::write (::zmq_msg_t *msg_)
 
 void zmq::zmq_listener_init_t::flush ()
 {
-    zmq_assert (has_peer_identity);
+    if (!has_peer_identity)
+        return;
 
     //  Initialisation is done. Disconnect the engine from the init object.
     engine->unplug ();
