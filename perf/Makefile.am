@@ -1,2 +1,2 @@
-SUBDIRS = c cpp
-DIST_SUBDIRS = c cpp
+SUBDIRS = c cpp python
+DIST_SUBDIRS = c cpp python
