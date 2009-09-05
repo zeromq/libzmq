@@ -58,13 +58,13 @@ int main (int argc, char *argv [])
     end.tv_sec -= start.tv_sec;
     start.tv_sec = 0;
 
-    double usec_elapsed = (end.tv_sec * 1000000 + end.tv_usec) -
+    double elapsed = (end.tv_sec * 1000000 + end.tv_usec) -
         (start.tv_sec * 1000000 + start.tv_usec);
-    double latency = usec_elapsed / (roundtrip_count * 2);
+    double latency = elapsed / (roundtrip_count * 2);
 
     printf ("message size: %d [B]\n", (int) message_size);
     printf ("roundtrip count: %d\n", (int) roundtrip_count);
-    printf ("average latency: %.3f [us]\n", (double) latency);
+    printf ("mean latency: %.3f [us]\n", (double) latency);
 
     return 0;
 }

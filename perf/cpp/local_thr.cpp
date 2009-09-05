@@ -49,7 +49,7 @@ int main (int argc, char *argv [])
     int rc = gettimeofday (&start, NULL);
     assert (rc == 0);
 
-    for (int i = 0; i != message_count - 1; i++) {
+    for (int i = 1; i != message_count; i++) {
         s.recv (&msg);
         assert (msg.size () == message_size);
     }

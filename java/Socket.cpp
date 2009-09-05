@@ -26,13 +26,9 @@
 #include "org_zmq_Socket.h"
 
 static jfieldID socket_handle_fid = NULL;
-static jclass msg_class = NULL;
-static jmethodID msg_constructor;
-static jmethodID get_msg_handle_mid = NULL;
 static jmethodID create_socket_mid = NULL;
 
-static void
-raise_exception (JNIEnv *env, int err)
+static void raise_exception (JNIEnv *env, int err)
 {
     //  Get exception class.
     jclass exception_class = env->FindClass ("java/lang/Exception");
@@ -49,9 +45,8 @@ raise_exception (JNIEnv *env, int err)
     env->DeleteLocalRef (exception_class);
 }
 
-JNIEXPORT void JNICALL
-Java_org_zmq_Socket_construct (JNIEnv *env, jobject obj, jobject context,
-                               jint type)
+JNIEXPORT void JNICALL Java_org_zmq_Socket_construct (JNIEnv *env, jobject obj,
+    jobject context, jint type)
 {
     if (socket_handle_fid == NULL) {
         jclass cls = env->GetObjectClass (obj);
@@ -69,30 +64,14 @@ Java_org_zmq_Socket_construct (JNIEnv *env, jobject obj, jobject context,
         env->DeleteLocalRef (cls);
     }
 
-    if (msg_class == NULL) {
-        jclass cls = env->FindClass ("org/zmq/Message");
-        assert (cls);
-
-        msg_constructor = env->GetMethodID (cls, "<init>", "()V");
-        assert (msg_constructor);
-
-        get_msg_handle_mid = env->GetMethodID (cls, "getMsgHandle", "()J");
-        assert (get_msg_handle_mid);
-
-        msg_class = (jclass) env->NewGlobalRef (cls);
-        assert (msg_class);
-        env->DeleteLocalRef (cls);
-    }
-
-    void *s = (void *) env->CallLongMethod (context, create_socket_mid, type);
+    void *s = (void*) env->CallLongMethod (context, create_socket_mid, type);
     if (env->ExceptionCheck ())
         return;
 
     env->SetLongField (obj, socket_handle_fid, (jlong) s);
 }
 
-JNIEXPORT void JNICALL
-Java_org_zmq_Socket_finalize (JNIEnv *env, jobject obj)
+JNIEXPORT void JNICALL Java_org_zmq_Socket_finalize (JNIEnv *env, jobject obj)
 {
     void *s = (void*) env->GetLongField (obj, socket_handle_fid);
     assert (s);
@@ -100,8 +79,8 @@ Java_org_zmq_Socket_finalize (JNIEnv *env, jobject obj)
     assert (rc == 0);
 }
 
-JNIEXPORT void JNICALL
-Java_org_zmq_Socket_setHwm (JNIEnv *env, jobject obj, jlong hwm)
+JNIEXPORT void JNICALL Java_org_zmq_Socket_setHwm (JNIEnv *env, jobject obj,
+    jlong hwm)
 {
     void *s = (void*) env->GetLongField (obj, socket_handle_fid);
     assert (s);
@@ -110,8 +89,8 @@ Java_org_zmq_Socket_setHwm (JNIEnv *env, jobject obj, jlong hwm)
         raise_exception (env, errno);
 }
 
-JNIEXPORT void JNICALL
-Java_org_zmq_Socket_setLwm (JNIEnv *env, jobject obj, jlong lwm)
+JNIEXPORT void JNICALL Java_org_zmq_Socket_setLwm (JNIEnv *env, jobject obj,
+    jlong lwm)
 {
     void *s = (void*) env->GetLongField (obj, socket_handle_fid);
     assert (s);
@@ -121,8 +100,8 @@ Java_org_zmq_Socket_setLwm (JNIEnv *env, jobject obj, jlong lwm)
         raise_exception (env, errno);
 }
 
-JNIEXPORT void JNICALL
-Java_org_zmq_Socket_setSwap (JNIEnv *env, jobject obj, jlong swap_size)
+JNIEXPORT void JNICALL Java_org_zmq_Socket_setSwap (JNIEnv *env, jobject obj,
+    jlong swap_size)
 {
     void *s = (void*) env->GetLongField (obj, socket_handle_fid);
     assert (s);
@@ -132,8 +111,8 @@ Java_org_zmq_Socket_setSwap (JNIEnv *env, jobject obj, jlong swap_size)
         raise_exception (env, errno);
 }
 
-JNIEXPORT void JNICALL
-Java_org_zmq_Socket_setMask (JNIEnv *env, jobject obj, jlong mask)
+JNIEXPORT void JNICALL Java_org_zmq_Socket_setMask (JNIEnv *env, jobject obj,
+    jlong mask)
 {
     void *s = (void*) env->GetLongField (obj, socket_handle_fid);
     assert (s);
@@ -143,8 +122,8 @@ Java_org_zmq_Socket_setMask (JNIEnv *env, jobject obj, jlong mask)
         raise_exception (env, errno);
 }
 
-JNIEXPORT void JNICALL
-Java_org_zmq_Socket_setAffinity (JNIEnv *env, jobject obj, jlong affinity)
+JNIEXPORT void JNICALL Java_org_zmq_Socket_setAffinity (JNIEnv *env,
+    jobject obj, jlong affinity)
 {
     void *s = (void*) env->GetLongField (obj, socket_handle_fid);
     assert (s);
@@ -154,8 +133,8 @@ Java_org_zmq_Socket_setAffinity (JNIEnv *env, jobject obj, jlong affinity)
         raise_exception (env, errno);
 }
 
-JNIEXPORT void JNICALL
-Java_org_zmq_Socket_setIdentity (JNIEnv *env, jobject obj, jstring identity)
+JNIEXPORT void JNICALL Java_org_zmq_Socket_setIdentity (JNIEnv *env,
+    jobject obj, jstring identity)
 {
     void *s = (void*) env->GetLongField (obj, socket_handle_fid);
     assert (s);
@@ -176,8 +155,8 @@ Java_org_zmq_Socket_setIdentity (JNIEnv *env, jobject obj, jstring identity)
         raise_exception (env, errno);
 }
 
-JNIEXPORT void JNICALL
-Java_org_zmq_Socket_bind (JNIEnv *env, jobject obj, jstring addr)
+JNIEXPORT void JNICALL Java_org_zmq_Socket_bind (JNIEnv *env, jobject obj,
+    jstring addr)
 {
     void *s = (void*) env->GetLongField (obj, socket_handle_fid);
     assert (s);
@@ -188,8 +167,10 @@ Java_org_zmq_Socket_bind (JNIEnv *env, jobject obj, jstring addr)
     }
 
     const char *c_addr = env->GetStringUTFChars (addr, NULL);
-    if (c_addr == NULL)
+    if (c_addr == NULL) {
+        raise_exception (env, EINVAL);
         return;
+    }
 
     int rc = zmq_bind (s, c_addr);
     env->ReleaseStringUTFChars (addr, c_addr);
@@ -198,8 +179,8 @@ Java_org_zmq_Socket_bind (JNIEnv *env, jobject obj, jstring addr)
         raise_exception (env, errno);
 }
 
-JNIEXPORT void JNICALL
-Java_org_zmq_Socket_connect (JNIEnv *env, jobject obj, jstring addr)
+JNIEXPORT void JNICALL Java_org_zmq_Socket_connect (JNIEnv *env, jobject obj,
+    jstring addr)
 {
     void *s = (void*) env->GetLongField (obj, socket_handle_fid);
     assert (s);
@@ -210,8 +191,10 @@ Java_org_zmq_Socket_connect (JNIEnv *env, jobject obj, jstring addr)
     }
 
     const char *c_addr = env->GetStringUTFChars (addr, NULL);
-    if (c_addr == NULL)
+    if (c_addr == NULL) {
+        raise_exception (env, EINVAL);
         return;
+    }
 
     int rc = zmq_connect (s, c_addr);
     env->ReleaseStringUTFChars (addr, c_addr);
@@ -220,57 +203,80 @@ Java_org_zmq_Socket_connect (JNIEnv *env, jobject obj, jstring addr)
         raise_exception (env, errno);
 }
 
-JNIEXPORT jint JNICALL
-Java_org_zmq_Socket_send (JNIEnv *env, jobject obj, jobject msg, jlong flags)
+JNIEXPORT jboolean JNICALL Java_org_zmq_Socket_send (JNIEnv *env, jobject obj,
+    jbyteArray msg, jlong flags)
 {
     void *s = (void*) env->GetLongField (obj, socket_handle_fid);
     assert (s);
 
-    zmq_msg_t *zmq_msg = (zmq_msg_t *)
-        env->CallLongMethod (msg, get_msg_handle_mid);
+    jsize size = env->GetArrayLength (msg); 
+    jbyte *data = env->GetByteArrayElements (msg, 0);
 
-    if (env->ExceptionCheck ())
-        return -1;
+    zmq_msg_t message;
+    int rc = zmq_msg_init_size (&message, size);
+    assert (rc == 0);
+    memcpy (zmq_msg_data (&message), data, size);
 
-    int rc = zmq_send (s, zmq_msg, (int) flags);
+    env->ReleaseByteArrayElements (msg, data, 0);
+
+    rc = zmq_send (s, &message, (int) flags);
+        
+    if (rc == -1 && errno == EAGAIN) {
+        rc = zmq_msg_close (&message);
+        assert (rc == 0);
+        return JNI_FALSE;
+    }
+    
     if (rc == -1) {
         raise_exception (env, errno);
-        return -1;
+        rc = zmq_msg_close (&message);
+        assert (rc == 0);
+        return JNI_FALSE;
     }
 
-    return rc;
+    rc = zmq_msg_close (&message);
+    assert (rc == 0);
+    return JNI_TRUE;
 }
 
-JNIEXPORT void JNICALL
-Java_org_zmq_Socket_flush (JNIEnv *env, jobject obj)
+JNIEXPORT void JNICALL Java_org_zmq_Socket_flush (JNIEnv *env, jobject obj)
 {
     void *s = (void*) env->GetLongField (obj, socket_handle_fid);
     assert (s);
 
-    zmq_flush (s);
-}
+    int rc = zmq_flush (s);
 
-JNIEXPORT jobject JNICALL
-Java_org_zmq_Socket_recv (JNIEnv *env, jobject obj, jlong flags)
-{
-    void *s = (void*) env->GetLongField (obj, socket_handle_fid);
-    assert (s);
-
-    jobject msg = env->NewObject (msg_class, msg_constructor);
-    if (msg == NULL)
-        return NULL;
-
-    zmq_msg_t *zmq_msg = (zmq_msg_t*)
-        env->CallLongMethod (msg, get_msg_handle_mid);
-
-    if (env->ExceptionCheck ())
-        return NULL;
-
-    int rc = zmq_recv (s, zmq_msg, (int) flags);
     if (rc == -1) {
         raise_exception (env, errno);
+        return ;
+    }
+}
+
+JNIEXPORT jbyteArray JNICALL Java_org_zmq_Socket_recv (JNIEnv *env, jobject obj,
+    jlong flags)
+{
+    void *s = (void*) env->GetLongField (obj, socket_handle_fid);
+    assert (s);
+
+    zmq_msg_t message;
+    zmq_msg_init (&message);
+    int rc = zmq_recv (s, &message, (int) flags);
+
+    if (rc == -1 && errno == EAGAIN) {
+        zmq_msg_close (&message);
         return NULL;
     }
 
-    return msg;
+    if (rc == -1) {
+        raise_exception (env, errno);
+        zmq_msg_close (&message);
+        return NULL;
+    }
+
+    jbyteArray data = env->NewByteArray (zmq_msg_size (&message));
+    assert (data);
+    env->SetByteArrayRegion (data, 0, zmq_msg_size (&message),
+        (jbyte*) zmq_msg_data (&message));
+
+    return data;
 }

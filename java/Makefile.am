@@ -12,20 +12,17 @@ jar_DATA = $(jarfile)
 
 dist_noinst_JAVA = \
 	org/zmq/Context.java \
-	org/zmq/Socket.java \
-	org/zmq/Message.java
+	org/zmq/Socket.java
 
 lib_LTLIBRARIES = libjzmq.la
 libjzmq_la_SOURCES = \
 	Context.cpp \
     org_zmq_Context.h \
 	Socket.cpp \
-    org_zmq_Socket.h \
-	Message.cpp \
-    org_zmq_Message.h
+    org_zmq_Socket.h
 
 libjzmq_la_CXXFLAGS = -I$(top_builddir)/src/libzmq \
-@JAVA_INCLUDE@ -I$(top_builddir)/include -I$(top_srcdir)/libjzmq -Wall -I /usr/lib/jvm/java-6-openjdk/include
+@JAVA_INCLUDE@ -I$(top_builddir)/include -I$(top_srcdir)/libjzmq -Wall
 libjzmq_la_LDFLAGS = -version-info 0:0:0
 libjzmq_la_LIBADD = $(top_builddir)/src/libzmq.la
 
@@ -33,17 +30,13 @@ BUILT_SOURCES = \
     org/zmq/Context.class \
     org_zmq_Context.h \
 	org/zmq/Socket.class \
-    org_zmq_Socket.h \
-	org/zmq/Message.class \
-    org_zmq_Message.h
+    org_zmq_Socket.h
 
 CLEANFILES = \
 	org/zmq/Context.class \
 	org_zmq_Context.h \
 	org/zmq/Socket.class \
 	org_zmq_Socket.h \
-	org/zmq/Message.class \
-	org_zmq_Message.h \
 	Zmq.jar
 
 $(srcdir)/Context.cpp: org_zmq_Context.h
@@ -59,13 +52,6 @@ org_zmq_Socket.h: org/zmq/Socket.class
 	$(CLASSPATH_ENV) $(JAVAH) -jni -classpath . org.zmq.Socket
 
 ./org/zmq/Socket.class: classdist_noinst.stamp
-
-$(srcdir)/Message.cpp: org_zmq_Message.h
-
-org_zmq_Message.h: org/zmq/Message.class
-	$(CLASSPATH_ENV) $(JAVAH) -jni -classpath . org.zmq.Message
-
-./org/zmq/Message.class: classdist_noinst.stamp
 
 dist-hook:
 	-rm $(distdir)/*.h

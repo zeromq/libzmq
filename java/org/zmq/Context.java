@@ -34,6 +34,9 @@ public class Context {
         construct (appThreads, ioThreads);
     }
 
+    /**
+     * Internal function. Do not use directly!
+     */
     public native long createSocket (int type);
 
     /** Initialize the JNI interface */

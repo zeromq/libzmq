@@ -27,8 +27,7 @@
 
 static jfieldID ctx_handle_fid = NULL;
 
-static void
-raise_exception (JNIEnv *env, int err)
+static void raise_exception (JNIEnv *env, int err)
 {
     //  Get exception class.
     jclass exception_class = env->FindClass ("java/lang/Exception");
@@ -45,9 +44,8 @@ raise_exception (JNIEnv *env, int err)
     env->DeleteLocalRef (exception_class);
 }
 
-JNIEXPORT void JNICALL
-Java_org_zmq_Context_construct (JNIEnv *env, jobject obj,
-                                jint app_threads, jint io_threads)
+JNIEXPORT void JNICALL Java_org_zmq_Context_construct (JNIEnv *env, jobject obj,
+    jint app_threads, jint io_threads)
 {
     if (ctx_handle_fid == NULL) {
         jclass cls = env->GetObjectClass (obj);
@@ -66,8 +64,7 @@ Java_org_zmq_Context_construct (JNIEnv *env, jobject obj,
     env->SetLongField (obj, ctx_handle_fid, (jlong) ctx);
 }
 
-JNIEXPORT void JNICALL
-Java_org_zmq_Context_finalize (JNIEnv *env, jobject obj)
+JNIEXPORT void JNICALL Java_org_zmq_Context_finalize (JNIEnv *env, jobject obj)
 {
     void *ctx = (void*) env->GetLongField (obj, ctx_handle_fid);
     assert (ctx);
@@ -76,8 +73,8 @@ Java_org_zmq_Context_finalize (JNIEnv *env, jobject obj)
     assert (rc == 0);
 }
 
-JNIEXPORT jlong JNICALL
-Java_org_zmq_Context_createSocket (JNIEnv *env, jobject obj, jint type)
+JNIEXPORT jlong JNICALL Java_org_zmq_Context_createSocket (JNIEnv *env,
+    jobject obj, jint type)
 {
     void *ctx = (void*) env->GetLongField (obj, ctx_handle_fid);
     assert (ctx);

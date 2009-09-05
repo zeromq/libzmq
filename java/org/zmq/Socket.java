@@ -19,26 +19,26 @@
 
 package org.zmq;
 
-public class Socket {
+public class Socket
+{
+
     static {
         System.loadLibrary("jzmq");
     }
 
-    public static final int ZMQ_MAX_VSM_SIZE = 30;
+    public static final int NOBLOCK = 1;
 
-    public static final int ZMQ_GAP = 1;
+    public static final int NOFLUSH = 2;
 
-    public static final int ZMQ_DELIMITER = 31;
+    public static final int P2P = 0;
 
-    public static final int ZMQ_NOBLOCK = 1;
+    public static final int PUB = 1;
 
-    public static final int ZMQ_NOFLUSH = 2;
+    public static final int SUB = 2;
 
-    public static final int ZMQ_P2P = 0;
+    public static final int REQ = 3;
 
-    public static final int ZMQ_PUB = 1;
-
-    public static final int ZMQ_SUB = 2;
+    public static final int REP = 4;
 
     /**
      * Class constructor.
@@ -47,7 +47,6 @@ public class Socket {
      * @param type
      */
     public Socket (Context context, int type) {
-        ctx = context;
         construct (context, type);
     }
 
@@ -94,46 +93,45 @@ public class Socket {
     public native void setIdentity (String identity);
 
     /**
+     * Bind to network interface. Start listening for new connections.
+     *
      * @param addr
      */
     public native void bind (String addr);
 
     /**
-     * Connect.
+     * Connect to remote application.
      *
      * @param addr
      */
     public native void connect (String addr);
 
     /**
-     * Send.
+     * Send the message.
      *
-     * @param message
-     * @param block
+     * @param msg
+     * @param flags
      */
-    public native int send (Message msg, long flags);
+    public native boolean send (byte [] msg, long flags);
 
     /**
-     * Flush all messages sent with flush flag false down the stream.
+     * Flush the messages down the stream.
      */
     public native void flush ();
 
     /**
      * Receive message.
      *
-     * @param block
+     * @param flags
      * @return
      */
-    public native Message recv (long flags);
+    public native byte [] recv (long flags);
 
     /** Initialize JNI driver */
     protected native void construct (Context context, int type);
 
     /** Free all resources used by JNI driver. */
     protected native void finalize ();
-
-    /** Keep reference to ZMQ context so it is not garbage collected */
-    private Context ctx;
 
     /** Opaque data used by JNI driver. */
     private long socketHandle;
