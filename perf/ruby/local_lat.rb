@@ -18,58 +18,24 @@
 
 require 'librbzmq'
 
-class AssertionFailure < StandardError
+if ARGV.length != 3
+	puts "usage: local_lat <bind-to> <message-size> <roundtrip-count>"
+	Process.exit
+end
+    
+bind_to = ARGV[0]
+message_size = ARGV[1].to_i
+roundtrip_count = ARGV[2].to_i
+			
+ctx = Context.new(1, 1)
+s = Socket.new(ctx, REP);
+s.bind(bind_to);
+
+for i in 0...roundtrip_count do
+    msg = s.recv(0)
+    s.send(msg, 0)
 end
 
-def assert(bool, message = 'assertion failure')
-    raise AssertionFailure.new(message) unless bool
-end
+sleep 1
 
-	if ARGV.length != 4
-		puts "usage: local_lat <in-interface> <out-interface> <message-size>
-		<roundtrip-count>"
-		Process.exit
-    end
-        
-	in_interface = ARGV[0]
-	out_interface = ARGV[1]
-	message_size = ARGV[2]
-	roundtrip_count = ARGV[3]
-				
-	#  Print out the test parameters.
-    puts "message size: #{message_size} [B]"
-    puts "roundtrip count: #{roundtrip_count}"
 
-	#  Create 0MQ transport.
-    rb_zmq = Zmq.new()
-    
-    #  Create the wiring.
-    context = rb_zmq.context(1,1)
-    in_socket = rb_zmq.socket(context, ZMQ_SUB)
-    out_socket = rb_zmq.socket(context, ZMQ_PUB)
-    
-    #  Bind.
-    rb_zmq.bind(in_socket, in_interface.to_s)
-    rb_zmq.bind(out_socket, out_interface.to_s)
-
-    #  Create message data to send.
-	out_msg = rb_zmq.msg_init_size(message_size.to_i)
-		
-   	#  Get initial timestamp.
-    start_time = Time.now
-
-	#  The message loop.
-    for i in 0...roundtrip_count.to_i do
-		rb_zmq.send(out_socket, out_msg, ZMQ_NOBLOCK)
-		in_buf = rb_zmq.recv(in_socket, ZMQ_NOBLOCK)
-        assert(rb_zmq.msg_size(in_buf.msg) == message_size.to_i)
-   	end
-
-    #  Get final timestamp.
-  	end_time = Time.now
-
-    #  Compute and print out the latency.
-    latency = (end_time.to_f - start_time.to_f) *1000000 / 
-    	roundtrip_count.to_i / 2
-    puts "Your average latency is " +  "%0.2f" % latency  + "[us]"
-    

@@ -18,44 +18,36 @@
 
 require 'librbzmq'
 
-class AssertionFailure < StandardError
+if ARGV.length != 3
+	puts "usage: remote_lat <connect-to> <message-size> <roundtrip-count>"
+    Process.exit
 end
 
-def assert(bool, message = 'assertion failure')
-    raise AssertionFailure.new(message) unless bool
+connect_to = ARGV[0]
+message_size = ARGV[1].to_i
+roundtrip_count = ARGV[2].to_i
+					
+ctx = Context.new(1, 1)
+s = Socket.new(ctx, REQ);
+s.connect(connect_to);
+
+msg = "#{'0'*message_size}"
+
+start_time = Time.now
+
+for i in 0...roundtrip_count do
+    s.send(msg, 0)
+    msg = s.recv(0)
 end
 
-	if ARGV.length != 4
-		puts "usage: remote_lat <in-interface> <out-interface>" + \
-		" <message-size> <roundtrip-count>"
-        Process.exit
-    end
+end_time = Time.now
 
-	in_interface = ARGV[0]
-  	out_interface = ARGV[1]
-	message_size = ARGV[2]
-	roundtrip_count = ARGV[3]
-						
-	#  Create 0MQ transport.
-    rb_zmq = Zmq.new()
-    
-    #  Create the wiring.
-    context = rb_zmq.context(1,1)
-    in_socket = rb_zmq.socket(context, ZMQ_SUB)
-    out_socket = rb_zmq.socket(context, ZMQ_PUB)
-    
-    #  Connect.
-    rb_zmq.connect(in_socket, in_interface.to_s)
-    rb_zmq.connect(out_socket, out_interface.to_s)
-	    
-    #  The message loop.
-    for i in 0...roundtrip_count.to_i do
-    	data = rb_zmq.recv(in_socket, ZMQ_NOBLOCK)
-    	assert(rb_zmq.msg_size(data.msg) == message_size.to_i)
-        rb_zmq.send(out_socket, data.msg, ZMQ_NOBLOCK)	        
-    end
+elapsed = (end_time.to_f - start_time.to_f) * 1000000
+latency = elapsed / roundtrip_count / 2
 
-	#  Wait till all messages are sent.
-	sleep 2
-	
+puts "message size: %i [B]" % message_size
+puts "roundtrip count: %i" % roundtrip_count
+puts "mean latency: %.3f [us]" % latency
+
+
 
