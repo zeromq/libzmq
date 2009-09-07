@@ -27,13 +27,13 @@
 int main (int argc, char *argv [])
 {
     if (argc != 4) {
-        printf ("usage: local_lat <bind-to> <roundtrip-count> "
-            "<message-size>\n");
+        printf ("usage: local_lat <bind-to> <message-size> "
+            "<roundtrip-count>\n");
         return 1;
     }
     const char *bind_to = argv [1];
-    int roundtrip_count = atoi (argv [2]);
-    size_t message_size = (size_t) atoi (argv [3]);
+    size_t message_size = (size_t) atoi (argv [2]);
+    int roundtrip_count = atoi (argv [3]);
 
     zmq::context_t ctx (1, 1);
 

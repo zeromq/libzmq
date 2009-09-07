@@ -52,11 +52,17 @@ namespace zmq
         //  signalers.
         dispatcher_t (int app_threads_, int io_threads_);
 
-        //  To be called to terminate the whole infrastructure (zmq_term).
-        ~dispatcher_t ();
+        //  This function is called when user invokes zmq_term. If there are
+        //  no more sockets open it'll cause all the infrastructure to be shut
+        //  down. If there are open sockets still, the deallocation happens
+        //  after the last one is closed.
+        int term ();
 
         //  Create a socket.
         class socket_base_t *create_socket (int type_);
+
+        //  Destroy a socket.
+        void destroy_socket ();
 
         //  Returns number of thread slots in the dispatcher. To be used by
         //  individual threads to find out how many distinct signals can be
@@ -93,6 +99,8 @@ namespace zmq
 
     private:
 
+        ~dispatcher_t ();
+
         //  Returns the app thread associated with the current thread.
         //  NULL if we are out of app thread slots.
         class app_thread_t *choose_app_thread ();
@@ -127,8 +135,19 @@ namespace zmq
         typedef std::set <class pipe_t*> pipes_t;
         pipes_t pipes;
 
-        // Synchronisation of access to the pipes repository.
+        //  Synchronisation of access to the pipes repository.
         mutex_t pipes_sync;
+
+        //  Number of sockets alive.
+        int sockets;
+
+        //  If true, zmq_term was already called. When last socket is closed
+        //  the whole 0MQ infrastructure should be deallocated.
+        bool terminated;
+
+        //  Synchronisation of access to the termination data (socket count
+        //  and 'terminated' flag).
+        mutex_t term_sync;
 
         dispatcher_t (const dispatcher_t&);
         void operator = (const dispatcher_t&);

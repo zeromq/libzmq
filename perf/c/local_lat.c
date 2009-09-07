@@ -35,13 +35,13 @@ int main (int argc, char *argv [])
     struct zmq_msg_t msg;
 
     if (argc != 4) {
-        printf ("usage: local_lat <bind-to> <roundtrip-count> "
-            "<message-size>\n");
+        printf ("usage: local_lat <bind-to> <message-size> "
+            "<roundtrip-count>\n");
         return 1;
     }
     bind_to = argv [1];
-    roundtrip_count = atoi (argv [2]);
-    message_size = atoi (argv [3]);
+    message_size = atoi (argv [2]);
+    roundtrip_count = atoi (argv [3]);
 
     ctx = zmq_init (1, 1);
     assert (ctx);
@@ -67,6 +67,9 @@ int main (int argc, char *argv [])
     assert (rc == 0);
 
     sleep (1);
+
+    rc = zmq_close (s);
+    assert (rc == 0);
 
     rc = zmq_term (ctx);
     assert (rc == 0);

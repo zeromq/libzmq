@@ -28,13 +28,13 @@
 int main (int argc, char *argv [])
 {
     if (argc != 4) {
-        printf ("usage: local_thr <bind-to> <message-count> "
-            "<message-size>\n");
+        printf ("usage: local_thr <bind-to> <message-size> "
+            "<message-count>\n");
         return 1;
     }
     const char *bind_to = argv [1];
-    int message_count = atoi (argv [2]);
-    size_t message_size = (size_t) atoi (argv [3]);
+    size_t message_size = (size_t) atoi (argv [2]);
+    int message_count = atoi (argv [3]);
 
     zmq::context_t ctx (1, 1);
 

@@ -51,9 +51,7 @@ zmq::app_thread_t::app_thread_t (dispatcher_t *dispatcher_, int thread_slot_) :
 
 zmq::app_thread_t::~app_thread_t ()
 {
-    //  Destroy all the sockets owned by this application thread.
-    for (sockets_t::iterator it = sockets.begin (); it != sockets.end (); it ++)
-        delete *it;
+    zmq_assert (sockets.empty ());
 }
 
 zmq::i_signaler *zmq::app_thread_t::get_signaler ()

@@ -24,7 +24,7 @@
 
 #include "socket_base.hpp"
 #include "app_thread.hpp"
-#include "err.hpp"
+#include "dispatcher.hpp"
 #include "zmq_listener.hpp"
 #include "zmq_connecter.hpp"
 #include "msg_content.hpp"
@@ -34,6 +34,7 @@
 #include "owned.hpp"
 #include "uuid.hpp"
 #include "pipe.hpp"
+#include "err.hpp"
 
 zmq::socket_base_t::socket_base_t (app_thread_t *parent_) :
     object_t (parent_),
@@ -288,7 +289,16 @@ int zmq::socket_base_t::recv (::zmq_msg_t *msg_, int flags_)
 int zmq::socket_base_t::close ()
 {
     app_thread->remove_socket (this);
+
+    //  Pointer to the dispatcher must be retrieved before the socket is
+    //  deallocated. Afterwards it is not available.
+    dispatcher_t *dispatcher = get_dispatcher ();
     delete this;
+
+    //  This function must be called after the socket is completely deallocated
+    //  as it may cause termination of the whole 0MQ infrastructure.
+    dispatcher->destroy_socket ();
+
     return 0;
 }
 

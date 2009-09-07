@@ -39,13 +39,13 @@ int main (int argc, char *argv [])
     double latency;
 
     if (argc != 4) {
-        printf ("usage: remote_lat <connect-to> <roundtrip-count> "
-            "<message-size>\n");
+        printf ("usage: remote_lat <connect-to> <message-size> "
+            "<roundtrip-count>\n");
         return 1;
     }
     connect_to = argv [1];
-    roundtrip_count = atoi (argv [2]);
-    message_size = atoi (argv [3]);
+    message_size = atoi (argv [2]);
+    roundtrip_count = atoi (argv [3]);
 
     ctx = zmq_init (1, 1);
     assert (ctx);
@@ -86,6 +86,9 @@ int main (int argc, char *argv [])
     printf ("message size: %d [B]\n", (int) message_size);
     printf ("roundtrip count: %d\n", (int) roundtrip_count);
     printf ("average latency: %.3f [us]\n", (double) latency);
+
+    rc = zmq_close (s);
+    assert (rc == 0);
 
     rc = zmq_term (ctx);
     assert (rc == 0);

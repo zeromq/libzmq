@@ -33,7 +33,6 @@ struct context_t
 
 PyObject *context_new (PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-printf ("context_new\n");
     context_t *self = (context_t*) type->tp_alloc (type, 0);
 
     if (self)
@@ -45,34 +44,27 @@ printf ("context_new\n");
 
 int context_init (context_t *self, PyObject *args, PyObject *kwdict)
 {
-printf ("context_init\n");
     int app_threads;
     int io_threads;
     static const char *kwlist [] = {"app_threads", "io_threads", NULL};
     if (!PyArg_ParseTupleAndKeywords (args, kwdict, "ii", (char**) kwlist,
           &app_threads, &io_threads)) {
         PyErr_SetString (PyExc_SystemError, "invalid arguments");
-printf ("context_init err1\n");
         return -1; // ?
     }
-
-printf ("app_threads=%d io_threads=%d\n", app_threads,  io_threads);
 
     assert (!self->handle);
     self->handle = zmq_init (app_threads, io_threads);
     if (!self->handle) {
         PyErr_SetString (PyExc_SystemError, strerror (errno));
         return -1; // ?
-printf ("context_init err2\n");
     }
 
-printf ("context_init ok\n");
     return 0;
 }
 
 void context_dealloc (context_t *self)
 {
-printf ("context_dealloc\n");
     if (self->handle) {
         int rc = zmq_term (self->handle);
         if (rc != 0)
@@ -90,7 +82,6 @@ struct socket_t
 
 PyObject *socket_new (PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-printf ("socket_new\n");
     socket_t *self = (socket_t*) type->tp_alloc (type, 0);
 
     if (self)
@@ -101,7 +92,6 @@ printf ("socket_new\n");
 
 int socket_init (socket_t *self, PyObject *args, PyObject *kwdict)
 {
-printf ("socket_init\n");
     context_t *context;
     int socket_type;
     static const char *kwlist [] = {"context", "type", NULL};
@@ -124,7 +114,6 @@ printf ("socket_init\n");
 
 void socket_dealloc (socket_t *self)
 {
-printf ("socket_dealloc\n");
     if (self->handle) {
         int rc = zmq_close (self->handle);
         if (rc != 0)
@@ -340,7 +329,7 @@ static PyTypeObject context_type =
     0,                               /* tp_dictoffset */
     (initproc) context_init,         /* tp_init */
     0,                               /* tp_alloc */
-    context_new,                     /* tp_new */
+    context_new                      /* tp_new */
 };
 
 static PyMethodDef socket_methods [] =
@@ -390,7 +379,7 @@ static PyTypeObject socket_type =
 {
     PyObject_HEAD_INIT (NULL)
     0,
-    "libpyzmq.Socket" ,              /* tp_name */
+    "libpyzmq.Socket",               /* tp_name */
     sizeof (socket_t),               /* tp_basicsize */
     0,                               /* tp_itemsize */
     (destructor) socket_dealloc,     /* tp_dealloc */
@@ -426,7 +415,7 @@ static PyTypeObject socket_type =
     0,                               /* tp_dictoffset */
     (initproc) socket_init,          /* tp_init */
     0,                               /* tp_alloc */
-    socket_new,                      /* tp_new */
+    socket_new                       /* tp_new */
 };
 
 static PyMethodDef module_methods [] = {{ NULL, NULL, 0, NULL }};
@@ -442,8 +431,10 @@ static const char* libpyzmq_doc =
 
 PyMODINIT_FUNC initlibpyzmq ()
 {
-    if (PyType_Ready (&context_type) < 0 && PyType_Ready (&socket_type) < 0)
-        return;
+    int rc = PyType_Ready (&context_type);
+    assert (rc == 0);
+    rc = PyType_Ready (&socket_type);
+    assert (rc == 0);
 
     PyObject *module = Py_InitModule3 ("libpyzmq", module_methods,
         libpyzmq_doc);
@@ -451,8 +442,8 @@ PyMODINIT_FUNC initlibpyzmq ()
         return;
 
     Py_INCREF (&context_type);
-    Py_INCREF (&socket_type);
     PyModule_AddObject (module, "Context", (PyObject*) &context_type);
+    Py_INCREF (&socket_type);
     PyModule_AddObject (module, "Socket", (PyObject*) &socket_type);
 
     PyObject *dict = PyModule_GetDict (module);
