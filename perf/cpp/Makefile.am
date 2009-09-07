@@ -1,6 +1,6 @@
-INCLUDES = -I$(top_builddir)/include
+INCLUDES = -I$(top_srcdir)/cpp -I$(top_srcdir)/c
 
-bin_PROGRAMS = local_lat remote_lat local_thr remote_thr
+noinst_PROGRAMS = local_lat remote_lat local_thr remote_thr
 
 local_lat_LDADD = $(top_builddir)/src/libzmq.la
 local_lat_SOURCES = local_lat.cpp

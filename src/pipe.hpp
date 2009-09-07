@@ -20,7 +20,7 @@
 #ifndef __ZMQ_PIPE_HPP_INCLUDED__
 #define __ZMQ_PIPE_HPP_INCLUDED__
 
-#include "../include/zmq.h"
+#include "../c/zmq.h"
 
 #include "stdint.hpp"
 #include "i_endpoint.hpp"

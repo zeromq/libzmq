@@ -18,7 +18,13 @@
 
 # Script to generate all required files from fresh svn checkout.
 
-
+pkg-config --version > /dev/null 2>&1
+if  [ $? -ne 0 ]; then
+    echo
+    echo "Could not find pkg-config, pkg.m4 macro is probably not installed."
+    echo
+    exit 1
+fi
 
 autoreconf --install --force --verbose -I config
 

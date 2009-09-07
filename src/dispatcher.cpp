@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zmq.h"
+#include "../c/zmq.h"
 
 #include "dispatcher.hpp"
 #include "app_thread.hpp"

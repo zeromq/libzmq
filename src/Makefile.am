@@ -1,8 +1,17 @@
 lib_LTLIBRARIES = libzmq.la
 
-pkginclude_HEADERS = \
-    ../include/zmq.h \
-    ../include/zmq.hpp
+
+if BUILD_CPP
+include_HEADERS = ../cpp/zmq.hpp ../c/zmq.h
+endif
+
+if BUILD_C
+if BUILD_CPP
+
+else
+include_HEADERS = ../c/zmq.h
+endif
+endif
 
 libzmq_la_SOURCES = \
     app_thread.hpp \

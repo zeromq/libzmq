@@ -164,11 +164,29 @@ if test "x$HAVE_INTTYPES_H" = "xyes"; then
     inttypes="1"
 fi
 
+# c 
+czmq="no"
+AC_ARG_WITH([c], [AS_HELP_STRING([--with-c], 
+    [build c language binding [default=no]])], [c=yes], [c=no])
+
+if test "x$c" != "xno"; then
+    czmq="yes" 
+fi
+
+# c++
+cppzmq="no"
+AC_ARG_WITH([cpp], [AS_HELP_STRING([--with-cpp], 
+    [build c++ language binding [default=no]])], [cpp=yes], [cpp=no])
+
+if test "x$cpp" != "xno"; then
+    cppzmq="yes" 
+fi
+
 # Python
 pyzmq="no"
 
 AC_ARG_WITH(python_headersdir,
-    AC_HELP_STRING([--with-python-headersdir], [Python.h header file location]),
+    AS_HELP_STRING([--with-python-headersdir], [Python.h header file location]),
         [python_headersdir="$withval"], [python_headersdir="no"])
 
 AC_ARG_WITH([python], [AS_HELP_STRING([--with-python], [build Python language binding [default=no]])], [with_python=yes], [with_python=no])
@@ -209,7 +227,7 @@ fi
 rbzmq="no"
 
 AC_ARG_WITH(ruby_headersdir,
-    AC_HELP_STRING([--with-ruby-headersdir], [ruby.h header file location]),
+    AS_HELP_STRING([--with-ruby-headersdir], [ruby.h header file location]),
         [ruby_headersdir="$withval"], [ruby_headersdir="no"])
 
 if test "x$ruby_headersdir" != "xno"; then
@@ -217,7 +235,7 @@ if test "x$ruby_headersdir" != "xno"; then
 fi
 
 AC_ARG_WITH(ruby_libdir,
-    AC_HELP_STRING([--with-ruby-libdir],[libruby library file location]),
+    AS_HELP_STRING([--with-ruby-libdir],[libruby library file location]),
         [ruby_libdir="$withval"], [ruby_libdir="no"])
 
 if test "x$ruby_libdir" != "xno"; then
@@ -249,17 +267,12 @@ RUBYDIR="$rubydir"
 AC_SUBST([RUBYDIR])
 
 if test "x$pyzmq" != "xyes"; then
-        AC_CHECK_PROG(have_python, python, yes, no)
-        if test "x$have_python" != "xyes"; then
-            AC_MSG_ERROR([Could not find python.])
-        fi
+    AC_CHECK_PROG(have_python, python, yes, no)
+    if test "x$have_python" != "xyes"; then
+        AC_MSG_ERROR([Could not find python.])
     fi
+fi
     
-    #  Generate version.c
-    AC_CONFIG_COMMANDS([version.c],
-        [python third-party/openpgm/libpgm-1.0.0/openpgm/pgm/version_generator.py > \
-            third-party/openpgm/libpgm-1.0.0/openpgm/pgm/version.c])
-
 # Java language binding
 jzmq="no"
 AC_ARG_WITH([java], [AS_HELP_STRING([--with-java], [build Java language binding [default=no]])], [with_java=yes], [with_java=no])
@@ -312,6 +325,10 @@ fi
 
 AM_CONDITIONAL(BUILD_PYTHON, test "x$pyzmq" = "xyes")
 AM_CONDITIONAL(BUILD_JAVA, test "x$jzmq" = "xyes")
+AM_CONDITIONAL(BUILD_PYTHON, test "x$pyzmq" = "xyes")
+AM_CONDITIONAL(BUILD_RUBY, test "x$rbzmq" = "xyes")
+AM_CONDITIONAL(BUILD_C, test "x$czmq" = "xyes")
+AM_CONDITIONAL(BUILD_CPP, test "x$cppzmq" = "xyes")
 
 AC_SUBST(stdint)
 AC_SUBST(inttypes)
@@ -319,8 +336,6 @@ AC_SUBST(inttypes)
 # Subst ZMQ_EXTRA_CXXFLAGS
 AC_SUBST(ZMQ_EXTRA_CXXFLAGS)
 
-AM_CONDITIONAL(BUILD_PYTHON, test "x$pyzmq" = "xyes")
-AM_CONDITIONAL(BUILD_RUBY, test "x$rbzmq" = "xyes")
 
 # Checks for library functions.
 AC_FUNC_MALLOC
@@ -342,6 +357,8 @@ AC_MSG_RESULT([  license text. ])
 AC_MSG_RESULT([ ******************************************************** ])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([ 0MQ install dir: $prefix])
+AC_MSG_RESULT([   C language binding: $czmq])
+AC_MSG_RESULT([   C++ language binding: $cppzmq])
 AC_MSG_RESULT([   Python language binding: $pyzmq])
 AC_MSG_RESULT([   Ruby language binding: $rbzmq])
 if test "x$rbzmq" = "xyes"; then
