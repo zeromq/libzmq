@@ -26,8 +26,79 @@
 
 #ifdef ZMQ_HAVE_WINDOWS
 
-#include "windows.hpp"
-#error
+zmq::tcp_connecter_t::tcp_connecter_t () :
+    s (retired_fd)
+{
+    memset (&addr, 0, sizeof (addr));
+}
+
+zmq::tcp_connecter_t::~tcp_connecter_t ()
+{
+    if (s != retired_fd)
+        close ();
+}
+
+int zmq::tcp_connecter_t::set_address (const char *addr_)
+{
+    //  Convert the hostname into sockaddr_in structure.
+    return resolve_ip_hostname (&addr, addr_);
+}
+
+int zmq::tcp_connecter_t::open ()
+{
+    zmq_assert (s == retired_fd);
+
+    //  Create the socket.
+    s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    //  TODO: Convert error to errno.
+    wsa_assert (s != INVALID_SOCKET);
+
+    // Set to non-blocking mode.
+    unsigned long argp = 1;
+    int rc = ioctlsocket (s, FIONBIO, &argp);
+    wsa_assert (rc != SOCKET_ERROR);
+
+    //  Disable Nagle's algorithm.
+    int flag = 1;
+    rc = setsockopt (s, IPPROTO_TCP, TCP_NODELAY, (char*) &flag,
+        sizeof (int));
+    wsa_assert (rc != SOCKET_ERROR);
+
+    //  Connect to the remote peer.
+    rc = ::connect (s, (sockaddr*) &addr, sizeof addr);
+
+    //  Connect was successfull immediately.
+    if (rc == 0)
+        return 0;
+
+    //  Asynchronous connect was launched.
+    if (rc == SOCKET_ERROR && (WSAGetLastError () == WSAEINPROGRESS ||
+          WSAGetLastError () == WSAEWOULDBLOCK)) {
+        errno = EAGAIN;
+        return -1;
+    }
+    
+    //  TODO: Convert error to errno.
+    wsa_assert (rc == 0);
+
+    return -1;
+}
+
+int zmq::tcp_connecter_t::close ()
+{
+    zmq_assert (s != retired_fd);
+    int rc = closesocket (s);
+    wsa_assert (rc != SOCKET_ERROR);
+    s = retired_fd;
+    return 0;
+}
+
+zmq::fd_t zmq::tcp_connecter_t::get_fd ()
+{
+    return s;
+}
+
+// connect
 
 #else
 

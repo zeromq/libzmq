@@ -21,6 +21,7 @@
 #include "platform.hpp"
 #include "err.hpp"
 #include "fd.hpp"
+#include "ip.hpp"
 
 #if defined ZMQ_HAVE_OPENVMS
 #include <netinet/tcp.h>

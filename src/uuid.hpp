@@ -21,15 +21,12 @@
 #define __ZMQ_UUID_HPP_INCLUDED__
 
 #include "platform.hpp"
+#include "stdint.hpp"
 
-#if defined ZMQ_HAVE_WINDOWS
-#include <rpcdce.h>
-#elif defined ZMQ_HAVE_FREEBSD
+#if defined ZMQ_HAVE_FREEBSD
 #include <uuid.h>
 #elif defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_OSX
 #include <uuid/uuid.h>
-#else
-#include <stdint.h>
 #endif
 
 namespace zmq
@@ -56,8 +53,8 @@ namespace zmq
         enum { uuid_string_len = 36 };
 
 #if defined ZMQ_HAVE_WINDOWS
-        ::UUID uuid;
-        char *uuid_str;
+		::UUID uuid;
+        RPC_CSTR uuid_str;
 #elif defined ZMQ_HAVE_FREEBSD
         ::uuid_t uuid;
         char *uuid_str;

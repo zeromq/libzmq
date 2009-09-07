@@ -27,7 +27,6 @@
 
 #ifdef ZMQ_HAVE_WINDOWS
 
-#include "windows.hpp"
 #error
 
 #else

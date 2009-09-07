@@ -22,6 +22,8 @@
 
 #include <string>
 
+#include "stdint.hpp"
+
 namespace zmq
 {
 

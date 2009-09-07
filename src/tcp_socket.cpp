@@ -23,8 +23,75 @@
 
 #ifdef ZMQ_HAVE_WINDOWS
 
-#include "windows.hpp"
-#error
+zmq::tcp_socket_t::tcp_socket_t () :
+    s (retired_fd)
+{
+}
+
+zmq::tcp_socket_t::~tcp_socket_t ()
+{
+    if (s != retired_fd)
+        close ();
+}
+
+int zmq::tcp_socket_t::open (fd_t fd_)
+{
+    zmq_assert (s == retired_fd);
+    s = fd_;
+    return 0;
+}
+
+int zmq::tcp_socket_t::close ()
+{
+    zmq_assert (s != retired_fd);
+    int rc = closesocket (s);
+    wsa_assert (rc != SOCKET_ERROR);
+    s = retired_fd;
+    return 0;
+}
+
+int zmq::tcp_socket_t::write (const void *data, int size)
+{
+    int nbytes = send (s, (char*) data, size, 0);
+
+    //  If not a single byte can be written to the socket in non-blocking mode
+    //  we'll get an error (this may happen during the speculative write).
+    if (nbytes == SOCKET_ERROR && WSAGetLastError () == WSAEWOULDBLOCK)
+        return 0;
+		
+    //  Signalise peer failure.
+    if (nbytes == SOCKET_ERROR && WSAGetLastError () == WSAECONNRESET)
+        return -1;
+
+    wsa_assert (nbytes != SOCKET_ERROR);
+
+    return (size_t) nbytes;
+}
+
+int zmq::tcp_socket_t::read (void *data, int size)
+{
+    int nbytes = recv (s, (char*) data, size, 0);
+
+    //  If not a single byte can be read from the socket in non-blocking mode
+    //  we'll get an error (this may happen during the speculative read).
+    if (nbytes == SOCKET_ERROR && WSAGetLastError () == WSAEWOULDBLOCK)
+        return 0;
+
+    //  Connection failure.
+    if (nbytes == -1 && (
+          WSAGetLastError () == WSAECONNRESET ||
+          WSAGetLastError () == WSAECONNREFUSED ||
+          WSAGetLastError () == WSAENOTCONN))
+        return -1;
+
+    wsa_assert (nbytes != SOCKET_ERROR);
+
+    //  Orderly shutdown by the other peer.
+    if (nbytes == 0)
+        return -1; 
+
+    return (size_t) nbytes;
+}
 
 #else
 
@@ -113,4 +180,3 @@ int zmq::tcp_socket_t::read (void *data, int size)
 }
 
 #endif
-

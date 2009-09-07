@@ -21,6 +21,8 @@
 
 #include "../include/zmq.h"
 
+#include "platform.hpp"
+
 #if defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
 #else

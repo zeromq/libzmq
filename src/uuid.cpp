@@ -23,25 +23,28 @@
 
 #if defined ZMQ_HAVE_WINDOWS
 
-#include <rpcdce.h>
-
 zmq::uuid_t::uuid_t ()
 {
     RPC_STATUS ret = UuidCreate (&uuid);
     zmq_assert (ret == RPC_S_OK);
     ret = UuidToString (&uuid, &uuid_str);
     zmq_assert (ret == RPC_S_OK);
+
+	/*
+	HRESULT hr = CoCreateGUID (&uuid);
+	zmq_assert (hr == S_OK);
+	int rc = StringFromGUID2 (uuid, uuid_str, 40);
+	zmq_assert (rc != 0);
+	*/
 }
 
 zmq::uuid_t::~uuid_t ()
 {
-    RPC_STATUS ret = RpcStringFree(&uuid_str);
-    assert (ret == RPC_S_OK);
 }
 
 const char *zmq::uuid_t::to_string ()
 {
-    return uuid_str;
+    return (char*) uuid_str;
 }
 
 #elif defined ZMQ_HAVE_FREEBSD
