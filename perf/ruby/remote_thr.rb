@@ -18,38 +18,24 @@
 
 require 'librbzmq'
 
-class AssertionFailure < StandardError
+if ARGV.length != 3
+	puts "usage: remote_thr <connect-to> <message-size> <message-count>"
+	Process.exit
+end
+    
+connect_to = ARGV[0]
+message_size = ARGV[1].to_i
+message_count = ARGV[2].to_i
+			
+ctx = Context.new(1, 1)
+s = Socket.new(ctx, PUB);
+s.connect(connect_to);
+
+msg = "#{'0'*message_size}"
+
+for i in 0...message_count do
+	s.send(msg, 0)
 end
 
-def assert(bool, message = 'assertion failure')
-    raise AssertionFailure.new(message) unless bool
-end
+sleep 10
 
-	if ARGV.length != 3
-		puts "usage: remote_thr <out-interface> <message-size> <message-count>"
-		Process.exit
-    end
-        
-	out_interface = ARGV[0]
-	message_size = ARGV[1]
-	message_count = ARGV[2]
-				
-	#  Create 0MQ transport.
-    rb_zmq = Zmq.new();
-    
-    #  Create the wiring.
-    context = rb_zmq.context(1,1);
-    out_socket = rb_zmq.socket(context, ZMQ_PUB);
-    rb_zmq.bind(out_socket, out_interface.to_s);
-	    
-    #  Create message data to send.
-	out_msg = rb_zmq.msg_init_size(message_size.to_s);
-	
-	#  The message loop.
-    for i in 0...message_count.to_i + 1 do
-    	rb_zmq.send(out_socket, out_msg, ZMQ_NOBLOCK);
-   	end
-   	
-    #  Wait till all messages are sent.
-    sleep 2
-    
