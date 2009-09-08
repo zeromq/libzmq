@@ -30,10 +30,12 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <limits.h>
+#include <algorithm>
 
 #include "devpoll.hpp"
 #include "err.hpp"
 #include "config.hpp"
+#include "i_poll_events.hpp"
 
 zmq::devpoll_t::devpoll_t ()
 {
@@ -156,11 +158,11 @@ void zmq::devpoll_t::stop ()
     stopping = true;
 }
 
-bool zmq::devpoll_t::loop ()
+void zmq::devpoll_t::loop ()
 {
     //  According to the poll(7d) man page, we can retrieve
     //  no more then (OPEN_MAX - 1) events.
-    int nfds = std::min (max_io_events, OPEN_MAX - 1);
+    int nfds = std::min ((int) max_io_events, OPEN_MAX - 1);
 
     while (!stopping) {
 

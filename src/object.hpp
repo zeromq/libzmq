@@ -37,7 +37,7 @@ namespace zmq
 
         object_t (class dispatcher_t *dispatcher_, int thread_slot_);
         object_t (object_t *parent_);
-        ~object_t ();
+        virtual ~object_t ();
 
         int get_thread_slot ();
         dispatcher_t *get_dispatcher ();
