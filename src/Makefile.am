@@ -1,5 +1,7 @@
 lib_LTLIBRARIES = libzmq.la
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libzmq.pc
 
 if BUILD_CPP
 include_HEADERS = ../cpp/zmq.hpp ../c/zmq.h

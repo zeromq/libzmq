@@ -372,7 +372,7 @@ AC_CHECK_FUNCS(perror gettimeofday memset socket getifaddrs freeifaddrs)
 
 AC_OUTPUT(Makefile src/Makefile python/Makefile python/setup.py ruby/Makefile \
     java/Makefile perf/Makefile perf/c/Makefile perf/cpp/Makefile \
-    perf/python/Makefile perf/ruby/Makefile perf/java/Makefile)
+    perf/python/Makefile perf/ruby/Makefile perf/java/Makefile src/libzmq.pc)
 
 AC_MSG_RESULT([])
 AC_MSG_RESULT([ ******************************************************** ])
