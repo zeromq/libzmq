@@ -34,7 +34,14 @@ static void raise_exception (JNIEnv *env, int err)
     assert (exception_class);
 
     //  Get text description of the exception.
+#if defined _MSC_VER
+#pragma warning (push)
+#pragma warning (disable:4996)
+#endif
     const char *err_msg = strerror (err);
+#if defined _MSC_VER
+#pragma warning (pop)
+#endif
 
     //  Raise the exception.
     int rc = env->ThrowNew (exception_class, err_msg);
