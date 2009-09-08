@@ -25,6 +25,11 @@
 
 #include "../c/zmq.h"
 
+#if defined _MSC_VER
+#pragma warning (push)
+#pragma warning (disable:4996)
+#endif
+
 struct context_t
 {
     PyObject_HEAD
@@ -489,3 +494,7 @@ PyMODINIT_FUNC initlibpyzmq ()
     PyDict_SetItemString (dict, "IDENTITY", t);
     Py_DECREF (t);    
 }
+
+#if defined _MSC_VER
+#pragma warning (pop)
+#endif
