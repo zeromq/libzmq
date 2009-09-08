@@ -27,6 +27,13 @@
 #include "err.hpp"
 #include "dispatcher.hpp"
 #include "msg_content.hpp"
+#include "platform.hpp"
+#include "stdint.hpp"
+
+#if !defined ZMQ_HAVE_WINDOWS
+#include <unistd.h>
+#include <sys/time.h>
+#endif
 
 int zmq_msg_init (zmq_msg_t *msg_)
 {
@@ -39,7 +46,7 @@ int zmq_msg_init_size (zmq_msg_t *msg_, size_t size_)
 {
     if (size_ <= ZMQ_MAX_VSM_SIZE) {
         msg_->content = (zmq::msg_content_t*) ZMQ_VSM;
-        msg_->vsm_size = (uint16_t) size_;
+        msg_->vsm_size = (uint8_t) size_;
     }
     else {
         msg_->content =
@@ -227,4 +234,62 @@ int zmq_flush (void *s_)
 int zmq_recv (void *s_, zmq_msg_t *msg_, int flags_)
 {
     return (((zmq::socket_base_t*) s_)->recv (msg_, flags_));
+}
+
+#if defined ZMQ_HAVE_WINDOWS
+
+static uint64_t now ()
+{    
+    //  Get the high resolution counter's accuracy.
+    LARGE_INTEGER ticksPerSecond;
+    QueryPerformanceFrequency (&ticksPerSecond);
+
+    //  What time is it?
+    LARGE_INTEGER tick;
+    QueryPerformanceCounter (&tick);
+
+    //  Convert the tick number into the number of seconds
+    //  since the system was started.
+    double ticks_div = (double) (ticksPerSecond.QuadPart / 1000000);     
+    return (uint64_t) (tick.QuadPart / ticks_div);
+}
+
+void zmq_sleep (int seconds_)
+{
+    Sleep (seconds_ * 1000);
+}
+
+#else
+
+static uint64_t now ()
+{
+    struct timeval tv;
+    int rc;
+
+    rc = gettimeofday (&tv, NULL);
+    assert (rc == 0);
+    return (tv.tv_sec * (uint64_t) 1000000 + tv.tv_usec);
+}
+
+void zmq_sleep (int seconds_)
+{
+    sleep (seconds_);
+}
+
+#endif
+
+void *zmq_stopwatch_start ()
+{
+    uint64_t *watch = (uint64_t*) malloc (sizeof (uint64_t));
+    zmq_assert (watch);
+    *watch = now ();
+    return (void*) watch;
+}
+
+unsigned long zmq_stopwatch_stop (void *watch_)
+{
+    uint64_t end = now ();
+    uint64_t start = *(uint64_t*) watch_;
+    free (watch_);
+    return (unsigned long) (end - start);
 }

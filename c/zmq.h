@@ -26,7 +26,7 @@ extern "C" {
 
 #include <stddef.h>
 
-#if defined MSC_VER && defined ZMQ_BUILDING_LIBZMQ
+#if defined ZMQ_BUILDING_LIBZMQ_WITH_MSVC
 #define ZMQ_EXPORT __declspec(dllexport)
 #else
 #define ZMQ_EXPORT
@@ -198,6 +198,12 @@ ZMQ_EXPORT int zmq_flush (void *s);
 //                   non-blocking receive).
 //          ENOTSUP - function isn't supported by particular socket type.
 ZMQ_EXPORT int zmq_recv (void *s, struct zmq_msg_t *msg, int flags);
+
+//  Helper functions used by perf tests so that they don't have to care
+//  about minutiae of time-related functions on different OS platforms.
+ZMQ_EXPORT void *zmq_stopwatch_start ();
+ZMQ_EXPORT unsigned long zmq_stopwatch_stop (void *watch_);
+ZMQ_EXPORT void zmq_sleep (int seconds_);
 
 #ifdef __cplusplus
 }

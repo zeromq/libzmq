@@ -21,8 +21,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <stdint.h>
-#include <sys/time.h>
 
 int main (int argc, char *argv [])
 {
@@ -34,10 +32,9 @@ int main (int argc, char *argv [])
     int rc;
     int i;
     struct zmq_msg_t msg;
-    struct timeval start;
-    struct timeval end;
-    uint64_t elapsed;
-    uint64_t throughput;
+    void *watch;
+    unsigned long elapsed;
+    unsigned long throughput;
     double megabits;
 
     if (argc != 4) {
@@ -64,8 +61,7 @@ int main (int argc, char *argv [])
     assert (rc == 0);
     assert (zmq_msg_size (&msg) == message_size);
 
-    rc = gettimeofday (&start, NULL);
-    assert (rc == 0);
+    watch = zmq_stopwatch_start ();
 
     for (i = 0; i != message_count - 1; i++) {
         rc = zmq_recv (s, &msg, 0);
@@ -73,17 +69,11 @@ int main (int argc, char *argv [])
         assert (zmq_msg_size (&msg) == message_size);
     }
 
-    rc = gettimeofday (&end, NULL);
-    assert (rc == 0);
-
-    end.tv_sec -= start.tv_sec;
-    start.tv_sec = 0;
-
-    elapsed = ((uint64_t) end.tv_sec * 1000000 + end.tv_usec) -
-        ((uint64_t) start.tv_sec * 1000000 + start.tv_usec);
+    elapsed = zmq_stopwatch_stop (watch);
     if (elapsed == 0)
         elapsed = 1;
-    throughput = (uint64_t) message_count * 1000000 / elapsed;
+
+    throughput = (double) message_count / (double) elapsed * 1000000;
     megabits = (double) (throughput * message_size * 8) / 1000000;
 
     printf ("message size: %d [B]\n", (int) message_size);

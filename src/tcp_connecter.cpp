@@ -98,7 +98,23 @@ zmq::fd_t zmq::tcp_connecter_t::get_fd ()
     return s;
 }
 
-// connect
+zmq::fd_t zmq::tcp_connecter_t::connect ()
+{
+    //  Nonblocking connect have finished. Check whether an error occured.
+    int err = 0;
+    socklen_t len = sizeof err;
+    int rc = getsockopt (s, SOL_SOCKET, SO_ERROR, (char*) &err, &len);
+    zmq_assert (rc == 0);
+    if (err != 0) {
+        errno = err;
+        return retired_fd;
+    }
+
+    //  Return the newly connected socket.
+    fd_t result = s;
+    s = retired_fd;
+    return result;
+}
 
 #else
 

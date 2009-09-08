@@ -151,7 +151,7 @@ zmq::fd_signaler_t::signals_t zmq::fd_signaler_t::check ()
     signals_t signals = 0;
     for (int pos = 0; pos != nbytes; pos++) {
         zmq_assert (buffer [pos] < 64);
-        signals |= (1 << (buffer [pos]));
+        signals |= (signals_t (1) << (buffer [pos]));
     }
     return signals;
 }

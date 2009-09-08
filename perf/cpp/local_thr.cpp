@@ -22,8 +22,6 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stddef.h>
-#include <stdint.h>
-#include <sys/time.h>
 
 int main (int argc, char *argv [])
 {
@@ -45,27 +43,17 @@ int main (int argc, char *argv [])
     s.recv (&msg);
     assert (msg.size () == message_size);
 
-    timeval start;
-    int rc = gettimeofday (&start, NULL);
-    assert (rc == 0);
+    void *watch = zmq_stopwatch_start ();
 
     for (int i = 1; i != message_count; i++) {
         s.recv (&msg);
         assert (msg.size () == message_size);
     }
 
-    timeval end;
-    rc = gettimeofday (&end, NULL);
-    assert (rc == 0);
+    unsigned long elapsed = zmq_stopwatch_stop (watch);
 
-    end.tv_sec -= start.tv_sec;
-    start.tv_sec = 0;
-
-    uint64_t elapsed = ((uint64_t) end.tv_sec * 1000000 + end.tv_usec) -
-        ((uint64_t) start.tv_sec * 1000000 + start.tv_usec);
-    if (elapsed == 0)
-        elapsed = 1;
-    uint64_t throughput = (uint64_t) message_count * 1000000 / elapsed;
+    unsigned long throughput = (unsigned long)
+        ((double) message_count / (double) elapsed * 1000000);
     double megabits = (double) (throughput * message_size * 8) / 1000000;
 
     printf ("message size: %d [B]\n", (int) message_size);

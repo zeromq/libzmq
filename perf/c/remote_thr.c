@@ -20,7 +20,6 @@
 #include <zmq.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <assert.h>
 
 int main (int argc, char *argv [])
@@ -61,7 +60,7 @@ int main (int argc, char *argv [])
         assert (rc == 0);
     }
 
-    sleep (10);
+    zmq_sleep (10);
 
     rc = zmq_close (s);
     assert (rc == 0);

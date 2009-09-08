@@ -27,7 +27,94 @@
 
 #ifdef ZMQ_HAVE_WINDOWS
 
-#error
+zmq::tcp_listener_t::tcp_listener_t () :
+    s (retired_fd)
+{
+    memset (&addr, 0, sizeof (addr));
+}
+
+zmq::tcp_listener_t::~tcp_listener_t ()
+{
+    if (s != retired_fd)
+        close ();
+}
+
+int zmq::tcp_listener_t::set_address (const char *addr_)
+{
+    //  Convert the interface into sockaddr_in structure.
+    int rc = resolve_ip_interface (&addr, addr_);
+    if (rc != 0)
+        return rc;
+
+    //  Create a listening socket.
+    s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    //  TODO: Convert error code to errno.
+    wsa_assert (s != INVALID_SOCKET);
+
+    //  Allow reusing of the address.
+    int flag = 1;
+    rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR,
+        (const char*) &flag, sizeof (int));
+    wsa_assert (rc != SOCKET_ERROR);
+
+    //  Set the non-blocking flag.
+    flag = 1;
+    rc = ioctlsocket (s, FIONBIO, (u_long*) &flag);
+    wsa_assert (rc != SOCKET_ERROR);
+
+    //  Bind the socket to the network interface and port.
+    rc = bind (s, (struct sockaddr*) &addr, sizeof (addr));
+    //  TODO: Convert error code to errno.
+    wsa_assert (rc != SOCKET_ERROR);
+
+    //  Listen for incomming connections.
+    rc = listen (s, 1);
+    //  TODO: Convert error code to errno.
+    wsa_assert (rc != SOCKET_ERROR);
+
+    return 0;
+}
+
+int zmq::tcp_listener_t::close ()
+{
+    zmq_assert (s != retired_fd);
+    int rc = closesocket (s);
+    wsa_assert (rc != SOCKET_ERROR);
+    s = retired_fd;
+    return 0;
+}
+
+zmq::fd_t zmq::tcp_listener_t::get_fd ()
+{
+    return s;
+}
+
+zmq::fd_t zmq::tcp_listener_t::accept ()
+{
+    zmq_assert (s != retired_fd);
+
+    //  Accept one incoming connection.
+    fd_t sock = ::accept (s, NULL, NULL);
+    if (sock == INVALID_SOCKET && 
+          (WSAGetLastError () == WSAEWOULDBLOCK ||
+          WSAGetLastError () == WSAECONNRESET))
+        return retired_fd;
+
+    zmq_assert (sock != INVALID_SOCKET);
+
+    // Set to non-blocking mode.
+    unsigned long argp = 1;
+    int rc = ioctlsocket (sock, FIONBIO, &argp);
+    wsa_assert (rc != SOCKET_ERROR);
+
+    //  Disable Nagle's algorithm.
+    int flag = 1;
+    rc = setsockopt (sock, IPPROTO_TCP, TCP_NODELAY, (char*) &flag,
+        sizeof (int));
+    wsa_assert (rc != SOCKET_ERROR);
+
+    return sock;
+}
 
 #else
 

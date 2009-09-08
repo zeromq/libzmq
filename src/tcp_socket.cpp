@@ -50,6 +50,11 @@ int zmq::tcp_socket_t::close ()
     return 0;
 }
 
+zmq::fd_t zmq::tcp_socket_t::get_fd ()
+{
+    return s;
+}
+
 int zmq::tcp_socket_t::write (const void *data, int size)
 {
     int nbytes = send (s, (char*) data, size, 0);

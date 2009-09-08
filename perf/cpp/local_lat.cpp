@@ -20,7 +20,6 @@
 #include <zmq.hpp>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <assert.h>
 #include <stddef.h>
 
@@ -47,7 +46,7 @@ int main (int argc, char *argv [])
         s.send (msg);
     }
 
-    sleep (1);
+    zmq_sleep (1);
 
     return 0;
 }

@@ -21,7 +21,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <sys/time.h>
 
 int main (int argc, char *argv [])
 {
@@ -33,9 +32,8 @@ int main (int argc, char *argv [])
     int rc;
     int i;
     struct zmq_msg_t msg;
-    struct timeval start;
-    struct timeval end;
-    double elapsed;
+    void *watch;
+    unsigned long elapsed;
     double latency;
 
     if (argc != 4) {
@@ -56,8 +54,7 @@ int main (int argc, char *argv [])
     rc = zmq_connect (s, connect_to);
     assert (rc == 0);
 
-    rc = gettimeofday (&start, NULL);
-    assert (rc == 0);
+    watch = zmq_stopwatch_start ();
 
     rc = zmq_msg_init_size (&msg, message_size);
     assert (rc == 0);
@@ -73,15 +70,9 @@ int main (int argc, char *argv [])
     rc = zmq_msg_close (&msg);
     assert (rc == 0);
 
-    rc = gettimeofday (&end, NULL);
-    assert (rc == 0);
+    elapsed = zmq_stopwatch_stop (watch);
 
-    end.tv_sec -= start.tv_sec;
-    start.tv_sec = 0;
-
-    elapsed = (end.tv_sec * 1000000 + end.tv_usec) -
-        (start.tv_sec * 1000000 + start.tv_usec);
-    latency = elapsed / (roundtrip_count * 2);
+    latency = (double) elapsed / (roundtrip_count * 2);
 
     printf ("message size: %d [B]\n", (int) message_size);
     printf ("roundtrip count: %d\n", (int) roundtrip_count);
