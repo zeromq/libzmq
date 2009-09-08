@@ -73,7 +73,8 @@ int main (int argc, char *argv [])
     if (elapsed == 0)
         elapsed = 1;
 
-    throughput = (double) message_count / (double) elapsed * 1000000;
+    throughput = (unsigned long)
+        ((double) message_count / (double) elapsed * 1000000);
     megabits = (double) (throughput * message_size * 8) / 1000000;
 
     printf ("message size: %d [B]\n", (int) message_size);
