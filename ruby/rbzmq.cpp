@@ -20,8 +20,9 @@
 #include <assert.h>
 #include <errno.h>
 #include <string.h>
-#include <zmq.h>
 #include <ruby.h>
+
+#include "../c/zmq.h"
 
 static void context_free (void *ctx)
 {

@@ -101,7 +101,7 @@ libzmq_la_SOURCES = \
     zmq_listener.cpp \
     zmq_listener_init.cpp
 
-libzmq_la_LDFLAGS = -version-info 0:0:0
+libzmq_la_LDFLAGS = -version-info @LTVER@
 libzmq_la_CXXFLAGS = -Wall -pedantic -Werror @ZMQ_EXTRA_CXXFLAGS@
 
 dist-hook:

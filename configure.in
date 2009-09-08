@@ -6,15 +6,25 @@ AC_CONFIG_AUX_DIR(config)
 AM_CONFIG_HEADER(src/platform.hpp)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 
+# libzmq -version-info
+LTVER="0:0:0"
+AC_SUBST(LTVER)
+
 # librbzmq -version-info
-RBLTVER="1:0:0"
+RBLTVER="0:0:0"
 AC_SUBST(RBLTVER)
+
+# libjzmq -version-info
+JLTVER="0:0:0"
+AC_SUBST(JLTVER)
 
 AM_PROG_CC_C_O
 
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_LIBTOOL
+AC_PROG_SED
+AC_PROG_AWK
 
 # Checks for libraries.
 AC_CHECK_LIB(pthread, pthread_create)
@@ -184,7 +194,6 @@ fi
 
 # Python
 pyzmq="no"
-
 AC_ARG_WITH(python_headersdir,
     AS_HELP_STRING([--with-python-headersdir], [Python.h header file location]),
         [python_headersdir="$withval"], [python_headersdir="no"])
@@ -225,7 +234,6 @@ fi
 
 # RUBY
 rbzmq="no"
-
 AC_ARG_WITH(ruby_headersdir,
     AS_HELP_STRING([--with-ruby-headersdir], [ruby.h header file location]),
         [ruby_headersdir="$withval"], [ruby_headersdir="no"])
@@ -321,6 +329,25 @@ if test "x$with_java" != "xno"; then
     AC_SUBST(JAVA_INCLUDE)
 
     jzmq="yes"
+else
+# Workaround to be able to run make dist without real JAVAH
+    JAVAH=true
+    JAVAC=true
+    JAR=true
+fi
+
+# Perf
+perf="no"
+AC_ARG_WITH([perf], [AS_HELP_STRING([--with-perf], 
+    [build performance tests [default=no]])], [with_perf=yes], [with_perf=no])
+
+if test "x$with_perf" != "xno"; then
+    perf="yes"
+
+    if test "x$czmq" = "xno" -a "x$cppzmq" = "xno" -a "x$pyzmq" = "xno" -a \
+          "x$jzmq" = "xno" -a "x$rbzmq" = "xno"; then
+        AC_MSG_ERROR([To run configure with --with-perf option chose at least one language binding.]);
+    fi
 fi
 
 AM_CONDITIONAL(BUILD_PYTHON, test "x$pyzmq" = "xyes")
@@ -329,6 +356,7 @@ AM_CONDITIONAL(BUILD_PYTHON, test "x$pyzmq" = "xyes")
 AM_CONDITIONAL(BUILD_RUBY, test "x$rbzmq" = "xyes")
 AM_CONDITIONAL(BUILD_C, test "x$czmq" = "xyes")
 AM_CONDITIONAL(BUILD_CPP, test "x$cppzmq" = "xyes")
+AM_CONDITIONAL(BUILD_PERF, test "x$perf" = "xyes") 
 
 AC_SUBST(stdint)
 AC_SUBST(inttypes)
@@ -344,7 +372,7 @@ AC_CHECK_FUNCS(perror gettimeofday memset socket getifaddrs freeifaddrs)
 
 AC_OUTPUT(Makefile src/Makefile python/Makefile python/setup.py ruby/Makefile \
     java/Makefile perf/Makefile perf/c/Makefile perf/cpp/Makefile \
-    perf/python/Makefile)
+    perf/python/Makefile perf/ruby/Makefile perf/java/Makefile)
 
 AC_MSG_RESULT([])
 AC_MSG_RESULT([ ******************************************************** ])
@@ -365,5 +393,6 @@ if test "x$rbzmq" = "xyes"; then
 AC_MSG_RESULT([   Ruby library install dir: $rubydir])
 fi
 AC_MSG_RESULT([   Java language binding: $jzmq])
+AC_MSG_RESULT([   performance tests: $perf]) 
 AC_MSG_RESULT([])
 

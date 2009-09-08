@@ -10,5 +10,9 @@ if BUILD_JAVA
 DIR_J = java
 endif
 
-SUBDIRS = src perf $(DIR_P) $(DIR_R) $(DIR_J)
-DIST_SUBDIRS = src perf $(DIR_P) $(DIR_R) $(DIR_J)
+if BUILD_PERF
+DIR_PERF = perf
+endif
+
+SUBDIRS = src $(DIR_P) $(DIR_R) $(DIR_J) $(DIR_PERF)
+DIST_SUBDIRS = src python ruby java perf

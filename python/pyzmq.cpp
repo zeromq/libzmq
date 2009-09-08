@@ -23,7 +23,7 @@
 #include <string.h>
 #include <Python.h>
 
-#include "../include/zmq.h"
+#include "../c/zmq.h"
 
 struct context_t
 {
