@@ -41,7 +41,7 @@ case "${host_os}" in
         's/^hardcode_libdir_flag_spec.*$'/'hardcode_libdir_flag_spec=" "/'
         mv libtool-2 libtool
         chmod 755 libtool
-        AC_CHECK_LIB(uuid, uuid_generate)
+        AC_CHECK_LIB(uuid, main, , [AC_MSG_ERROR([Could not link with libuuid, install develop version.])])
         ;;
     *solaris*)
         AC_DEFINE(ZMQ_HAVE_SOLARIS, 1, [Have Solaris OS])
