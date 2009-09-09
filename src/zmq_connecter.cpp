@@ -68,13 +68,8 @@ void zmq::zmq_connecter_t::out_event ()
     rm_fd (handle);
     handle_valid = false;
 
-    //  If there was error during the connecting, close the socket and wait
-    //  for a while before trying to reconnect.
-    if (fd == retired_fd) {
-        tcp_connecter.close ();
-        add_timer ();
-        return;
-    }
+    //  TODO: Handle the error condition by eventual reconnect.
+    zmq_assert (fd != retired_fd);
 
     //  Create an init object. 
     io_thread_t *io_thread = choose_io_thread (options.affinity);
@@ -90,8 +85,7 @@ void zmq::zmq_connecter_t::out_event ()
 
 void zmq::zmq_connecter_t::timer_event ()
 {
-    //  Reconnect period have elapsed.
-    start_connecting ();
+    zmq_assert (false);
 }
 
 void zmq::zmq_connecter_t::start_connecting ()
@@ -106,14 +100,13 @@ void zmq::zmq_connecter_t::start_connecting ()
     }
 
     //  Connection establishment may be dealyed. Poll for its completion.
-    else if (rc == -1 && errno == EAGAIN) {
+    else if (rc == -1 && errno == EINPROGRESS) {
         handle = add_fd (tcp_connecter.get_fd ());
         handle_valid = true;
         set_pollout (handle);
         return;
     }
 
-    //  If none of the above is true, synchronous error occured.
-    //  Wait for a while and retry.
-    add_timer ();
+    //  TODO: Handle the error condition by eventual reconnect.
+    zmq_assert (false);
 }
