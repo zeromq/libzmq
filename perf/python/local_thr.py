@@ -18,7 +18,7 @@
 #
 
 import sys
-from datetime import datetime
+import time
 import libpyzmq
 
 def main ():
@@ -41,15 +41,15 @@ def main ():
     msg = s.recv ()
     assert len (msg) == message_size
 
-    start = datetime.now ()
+    start = time.clock ()
 
     for i in range (1, message_count):
         msg = s.recv ()
         assert len (msg) == message_size
  
-    end = datetime.now()
+    end = time.clock ()
 
-    elapsed = (end - start).seconds * 1000000 + (end - start).microseconds
+    elapsed = (end - start) * 1000000
     if elapsed == 0:
     	elapsed = 1
     throughput = (1000000.0 * float (message_count)) / float (elapsed)
