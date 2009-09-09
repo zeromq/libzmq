@@ -62,7 +62,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="../../lib/libjzmq.dll"
+				OutputFile="../../lib/jzmq.dll"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
 			/>
@@ -87,7 +87,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Creating JAR archive"
-				CommandLine="jar -cfv ..\..\lib\zmq.jar ..\..\java\org\zmq\Context.class ..\..\java\org\zmq\Socket.class"
+				CommandLine="cd ..\..\java&#x0D;&#x0A;jar -cfv ..\lib\zmq.jar org\zmq\Context.class org\zmq\Socket.class&#x0D;&#x0A;cd ..\msvc\java"
 			/>
 		</Configuration>
 		<Configuration
@@ -138,7 +138,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="../../lib/libjzmq.dll"
+				OutputFile="../../lib/jzmq.dll"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -165,7 +165,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Creating JAR archive"
-				CommandLine="jar -cfv ..\..\lib\zmq.jar ..\..\java\org\zmq\Context.class ..\..\java\org\zmq\Socket.class"
+				CommandLine="cd ..\..\java&#x0D;&#x0A;jar -cfv ..\lib\zmq.jar org\zmq\Context.class org\zmq\Socket.class&#x0D;&#x0A;cd ..\msvc\java"
 			/>
 		</Configuration>
 	</Configurations>
