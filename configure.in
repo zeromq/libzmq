@@ -48,6 +48,7 @@ case "${host_os}" in
         AC_CHECK_LIB(socket, main)
         AC_CHECK_LIB(nsl, main)
         AC_CHECK_LIB(rt, main)
+        AC_CHECK_LIB(uuid, main)
         CPPFLAGS="-D_REENTRANT -D_PTHREADS $CPPFLAGS"
         AC_MSG_CHECKING([wheter atomic operations can be used])
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
