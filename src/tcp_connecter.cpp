@@ -180,8 +180,10 @@ int zmq::tcp_connecter_t::open ()
         return 0;
 
     //  Asynchronous connect was launched.
-    if (rc == -1 && errno == EINPROGRESS)
+    if (rc == -1 && errno == EINPROGRESS) {
+        errno = EAGAIN;
         return -1;
+    }
 
     //  Error occured.
     int err = errno;

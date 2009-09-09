@@ -100,7 +100,7 @@ void zmq::zmq_connecter_t::start_connecting ()
     }
 
     //  Connection establishment may be dealyed. Poll for its completion.
-    else if (rc == -1 && errno == EINPROGRESS) {
+    else if (rc == -1 && errno == EAGAIN) {
         handle = add_fd (tcp_connecter.get_fd ());
         handle_valid = true;
         set_pollout (handle);
