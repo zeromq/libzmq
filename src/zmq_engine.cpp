@@ -66,6 +66,8 @@ void zmq::zmq_engine_t::plug (i_inout *inout_)
 void zmq::zmq_engine_t::unplug ()
 {
     rm_fd (handle);
+    encoder.set_inout (NULL);
+    decoder.set_inout (NULL);
     inout = NULL;
 }
 

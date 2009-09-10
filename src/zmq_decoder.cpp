@@ -70,7 +70,7 @@ bool zmq::zmq_decoder_t::message_ready ()
 {
     //  Message is completely read. Push it further and start reading
     //  new message.
-    if (!destination->write (&in_progress))
+    if (!destination || !destination->write (&in_progress))
         return false;
 
     next_step (tmpbuf, 1, &zmq_decoder_t::one_byte_size_ready);
