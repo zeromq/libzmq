@@ -106,6 +106,11 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
     int rc = getsockopt (s, SOL_SOCKET, SO_ERROR, (char*) &err, &len);
     zmq_assert (rc == 0);
     if (err != 0) {
+
+        //  Assert that the error was caused by the networking problems
+        //  rather than 0MQ bug.
+        zmq_assert (err == ECONNREFUSED);
+
         errno = err;
         return retired_fd;
     }
@@ -217,6 +222,11 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
     if (rc == -1)
         err = errno;
     if (err != 0) {
+
+        //  Assert that the error was caused by the networking problems
+        //  rather than 0MQ bug.
+        zmq_assert (err == ECONNREFUSED);
+
         errno = err;
         return retired_fd;
     }
