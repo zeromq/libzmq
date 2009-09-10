@@ -16,3 +16,6 @@ endif
 
 SUBDIRS = src $(DIR_P) $(DIR_R) $(DIR_J) $(DIR_PERF)
 DIST_SUBDIRS = src python ruby java perf
+
+dist-hook:
+		-rm -rf $(distdir)/third-party/openpgm/$pgm_basename

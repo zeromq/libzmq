@@ -30,6 +30,18 @@ AC_PROG_AWK
 AC_CHECK_LIB(pthread, pthread_create)
 AC_CHECK_LIB(stdc++, malloc)
 
+# Extra CXXFLAGS are appended at the end of CXXFLAGS for libzmq.
+LIBZMQ_EXTRA_CXXFLAGS=""
+
+# Extra LDFLAGS are appended at the end of LDFLAGS for libzmq.
+LIBZMQ_EXTRA_LDFLAFS=""
+
+# By default compiling with -pedantic except QNX and OSX.
+pedantic="yes"
+
+#By default compiling with -Werror except OSX.
+werror="yes"
+
 # Host speciffic checks
 AC_CANONICAL_HOST
 
@@ -70,9 +82,11 @@ case "${host_os}" in
         LIBS="-pthread"
         ;;
     *darwin*)
+        pedantic="no"
+        werror="no"
         AC_DEFINE(ZMQ_HAVE_OSX, 1, [Have DarwinOSX OS])
         LIBS="-pthread"
-        ZMQ_EXTRA_CXXFLAGS+="-Wno-uninitialized"
+        LIBZMQ_EXTRA_CXXFLAGS+="-Wno-uninitialized"
         ;;
     *openbsd*)
         AC_DEFINE(ZMQ_HAVE_OPENBSD, 1, [Have OpenBSD OS])
@@ -80,6 +94,7 @@ case "${host_os}" in
         LIBS="-pthread"
         ;;
     *nto-qnx*)
+        pedantic="no"
         AC_DEFINE(ZMQ_HAVE_QNXNTO, 1, [Have QNX Neutrino OS])
         CPPFLAGS="-D_THREAD_SAFE $CPPFLAGS"
         AC_CHECK_LIB(socket,main)
@@ -102,17 +117,27 @@ case "${host_os}" in
         chmod 755 libtool
         ;;
     *mingw32*)
+        pedantic="no"
         AC_DEFINE(ZMQ_HAVE_WINDOWS, 1, [Have Windows OS])
         AC_DEFINE(ZMQ_HAVE_MINGW32, 1, [Have MinGW32])
         AC_CHECK_HEADERS(windows.h)
         LIBS="-lwsock32 -lws2_32 -no-undefined"
         CFLAGS="-std=c99"
-        install_man="no"
         ;;
     *)
         AC_MSG_ERROR([Not supported os: $host.])
         ;;
 esac
+
+# If not on QNX nor OSX add -pedantic into LIBZMQ_EXTRA_CXXFLAGS.
+if test "x$pedantic" = "xyes"; then
+    LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -pedantic"
+fi
+
+# If not on QNX nor --with-pgm add -Werror into LIBZMQ_EXTRA_CXXFLAGS.
+if test "x$werror" = "xyes" -a "x$pgm_ext" = "xno"; then
+    LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Werror"
+fi
 
 # Check if we are running at sparc harware
 AC_MSG_CHECKING([wheter __sparc__ is defined])
@@ -337,6 +362,85 @@ else
     JAR=true
 fi
 
+#  PGM extension
+pgm_ext="no"
+pgm_name=""
+pgm_basename="libpgm-1.2.14"
+AC_SUBST(pgm_basename)
+AC_ARG_WITH([pgm], [AS_HELP_STRING([--with-pgm], 
+    [build libzmq with PGM extension [default=no]])], 
+    [with_pgm_ext=yes], [with_pgm_ext=no])
+if test "x$with_pgm_ext" != "xno"; then
+
+    #  Test if we have pkg-config
+    if test "x$have_pkg_config" != "xyes"; then
+        AC_MSG_ERROR([To run configure with --with-pgm option, pkg-config has to be installed.]);
+    fi
+
+     case "${host_os}" in
+        *linux*)
+            LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Wno-variadic-macros -Wno-long-long "
+        ;;
+        *solaris*)
+        ;;
+        *)
+            AC_MSG_ERROR([PGM extesion is not supported on this platform $host.])
+        ;;
+    esac
+
+    AC_CHECK_PROG(have_tar, tar, yes, no)
+    if test "x$have_tar" != "xyes"; then
+        AC_MSG_ERROR([Could not find tar.])
+    fi
+
+    AC_CHECK_PROG(have_bunzip2, bunzip2, yes, no)
+    if test "x$have_bunzip2" != "xyes"; then
+        AC_MSG_ERROR([Could not find bunzip2.])
+    fi
+
+    AC_CHECK_PROG(have_perl, perl, yes, no)
+    if test "x$have_perl" != "xyes"; then
+        AC_MSG_ERROR([Could not find perl.])
+    fi
+
+    if test "x$pyzmq" != "xyes"; then
+        AC_CHECK_PROG(have_python, python, yes, no)
+        if test "x$have_python" != "xyes"; then
+            AC_MSG_ERROR([Could not find python.])
+        fi
+    fi
+
+    #  Unpack libpgm-1.0.0rc8.tar.bz2
+    AC_MSG_CHECKING([Unpacking ${pgm_basename}.tar.bz2])
+
+    if tar -xjf foreign/openpgm/${pgm_basename}.tar.bz2 -C foreign/openpgm/; then
+        AC_MSG_RESULT([yes])
+    else
+        AC_MSG_ERROR([Could not unpack foreign/openpgm/${pgm_basename}.tar.bz2 file])
+    fi
+
+    #  Generate galois_tables.c
+    AC_CONFIG_COMMANDS([galois_tables.c], 
+        [perl foreign/openpgm/libpgm-1.2.14/openpgm/pgm/galois_generator.pl > \
+            foreign/openpgm/libpgm-1.2.14/openpgm/pgm/galois_tables.c])
+
+    #  Generate version.c
+    AC_CONFIG_COMMANDS([version.c],
+        [python foreign/openpgm/libpgm-1.2.14/openpgm/pgm/version_generator.py > \
+            foreign/openpgm/libpgm-1.2.14/openpgm/pgm/version.c])
+
+    #  Check for OpenPGM nedded libraries.
+    PKG_CHECK_MODULES([GLIB], [glib-2.0 gthread-2.0])
+
+    LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} ${GLIB_CFLAGS} "
+
+    LIBZMQ_EXTRA_LDFLAFS="${LIBZMQ_EXTRA_LDFLAFS} ${GLIB_LIBS}"
+
+    AC_DEFINE(ZMQ_HAVE_OPENPGM, 1, [Have OpenPGM extension.])
+    pgm_name="$pgm_basename"
+    pgm_ext="yes"
+fi
+
 # Perf
 perf="no"
 AC_ARG_WITH([perf], [AS_HELP_STRING([--with-perf], 
@@ -357,13 +461,15 @@ AM_CONDITIONAL(BUILD_PYTHON, test "x$pyzmq" = "xyes")
 AM_CONDITIONAL(BUILD_RUBY, test "x$rbzmq" = "xyes")
 AM_CONDITIONAL(BUILD_C, test "x$czmq" = "xyes")
 AM_CONDITIONAL(BUILD_CPP, test "x$cppzmq" = "xyes")
+AM_CONDITIONAL(BUILD_PGM, test "x$pgm_ext" = "xyes")
 AM_CONDITIONAL(BUILD_PERF, test "x$perf" = "xyes") 
 
 AC_SUBST(stdint)
 AC_SUBST(inttypes)
 
-# Subst ZMQ_EXTRA_CXXFLAGS
-AC_SUBST(ZMQ_EXTRA_CXXFLAGS)
+# Subst LIBZMQ_EXTRA_CXXFLAGS & LDFLAGS
+AC_SUBST(LIBZMQ_EXTRA_CXXFLAGS)
+AC_SUBST(LIBZMQ_EXTRA_LDFLAFS)
 
 
 # Checks for library functions.
@@ -394,6 +500,11 @@ if test "x$rbzmq" = "xyes"; then
 AC_MSG_RESULT([   Ruby library install dir: $rubydir])
 fi
 AC_MSG_RESULT([   Java language binding: $jzmq])
+if test "x$pgm_ext" = "xyes"; then
+AC_MSG_RESULT([   PGM extension: $pgm_ext ($pgm_name)])
+else
+AC_MSG_RESULT([   PGM extension: $pgm_ext])
+fi
 AC_MSG_RESULT([   performance tests: $perf]) 
 AC_MSG_RESULT([])
 

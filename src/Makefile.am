@@ -15,7 +15,24 @@ include_HEADERS = ../c/zmq.h
 endif
 endif
 
-libzmq_la_SOURCES = \
+if BUILD_PGM
+pgm_sources = ../foreign/openpgm/@pgm_basename@/openpgm/pgm/packet.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/timer.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/if.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/gsi.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/signal.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/txwi.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/rxwi.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/transport.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/rate_control.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/async.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/checksum.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/reed_solomon.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/version.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/galois_tables.c
+endif
+
+libzmq_la_SOURCES = $(pgm_sources) \
     app_thread.hpp \
     atomic_bitmap.hpp \
     atomic_counter.hpp \
@@ -104,7 +121,50 @@ libzmq_la_SOURCES = \
     zmq_listener_init.cpp
 
 libzmq_la_LDFLAGS = -version-info @LTVER@
-libzmq_la_CXXFLAGS = -Wall -pedantic -Werror @ZMQ_EXTRA_CXXFLAGS@
+
+if BUILD_PGM
+libzmq_la_CXXFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/include/ -Wall @LIBZMQ_EXTRA_CXXFLAGS@
+libzmq_la_CFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/include/ @LIBZMQ_EXTRA_CXXFLAGS@ \
+    -pipe \
+    -Wall \
+    -Wextra \
+    -Wfloat-equal \
+    -Wshadow \
+    -Wunsafe-loop-optimizations \
+    -Wpointer-arith \
+    -Wbad-function-cast \
+    -Wcast-qual \
+    -Wcast-align \
+    -Wwrite-strings \
+    -Waggregate-return \
+    -Wstrict-prototypes \
+    -Wold-style-definition \
+    -Wmissing-prototypes \
+    -Wmissing-declarations \
+    -Wmissing-noreturn \
+    -Wmissing-format-attribute \
+    -Wredundant-decls \
+    -Wnested-externs \
+    -Winline \
+    -pedantic \
+    -std=gnu99 \
+    --param max-inline-insns-single=600 \
+    -D_REENTRANT \
+    -D_GNU_SOURCE \
+    -D__need_IOV_MAX \
+    -DCONFIG_HAVE_EPOLL \
+    -DCONFIG_HAVE_RTC \
+    -DCONFIG_HAVE_TSC \
+    -DCONFIG_HAVE_IFR_NETMASK \
+    -DCONFIG_HAVE_GETIFADDRS \
+    -DCONFIG_HAVE_GETHOSTBYNAME2 \
+    -DCONFIG_HAVE_GETPROTOBYNAME_R \
+    -DCONFIG_HAVE_SIGHANDLER_T \
+    -DCONFIG_BIND_INADDR_ANY \
+    -DCONFIG_GALOIS_MUL_LUT
+else
+libzmq_la_CXXFLAGS = -Wall @LIBZMQ_EXTRA_CXXFLAGS@
+endif
 
 dist-hook:
 		-rm $(distdir)/src/platform.hpp
