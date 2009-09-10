@@ -28,7 +28,7 @@ message_size = ARGV[1].to_i
 message_count = ARGV[2].to_i
 			
 ctx = Context.new(1, 1)
-s = Socket.new(ctx, PUB);
+s = Socket.new(ctx, P2P);
 s.connect(connect_to);
 
 msg = "#{'0'*message_size}"

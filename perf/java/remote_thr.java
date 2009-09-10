@@ -36,7 +36,7 @@ class remote_thr
 
          org.zmq.Context ctx = new org.zmq.Context (1, 1);
 
-         org.zmq.Socket s = new org.zmq.Socket (ctx, org.zmq.Socket.PUB);
+         org.zmq.Socket s = new org.zmq.Socket (ctx, org.zmq.Socket.P2P);
          s.connect (connectTo);
 
          byte msg [] = new byte [messageSize];

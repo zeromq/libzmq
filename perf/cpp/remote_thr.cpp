@@ -36,7 +36,7 @@ int main (int argc, char *argv [])
 
     zmq::context_t ctx (1, 1);
 
-    zmq::socket_t s (ctx, ZMQ_REQ);
+    zmq::socket_t s (ctx, ZMQ_P2P);
     s.connect (connect_to);
 
     for (int i = 0; i != message_count; i++) {

@@ -35,7 +35,7 @@ class local_thr
 
          org.zmq.Context ctx = new org.zmq.Context (1, 1);
 
-         org.zmq.Socket s = new org.zmq.Socket (ctx, org.zmq.Socket.SUB);
+         org.zmq.Socket s = new org.zmq.Socket (ctx, org.zmq.Socket.P2P);
          s.bind (bindTo);
 
          byte [] data = s.recv (0);

@@ -28,7 +28,7 @@ message_size = ARGV[1].to_i
 message_count = ARGV[2].to_i
 					
 ctx = Context.new(1, 1)
-s = Socket.new(ctx, SUB);
+s = Socket.new(ctx, P2P);
 s.bind(bind_to);
 
 msg = s.recv(0)
