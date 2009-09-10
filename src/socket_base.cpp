@@ -140,6 +140,11 @@ int zmq::socket_base_t::setsockopt (int option_, const void *optval_,
         options.identity.assign ((const char*) optval_, optvallen_);
         return 0;
 
+    case ZMQ_SUBSCRIBE:
+    case ZMQ_UNSUBSCRIBE:
+        errno = ENOTSUP;
+        return -1;
+
     default:
         errno = EINVAL;
         return -1;

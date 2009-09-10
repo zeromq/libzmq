@@ -53,6 +53,7 @@ libzmq_la_SOURCES = \
     simple_semaphore.hpp \
     socket_base.hpp \
     stdint.hpp \
+    sub.hpp \
     tcp_connecter.hpp \
     tcp_listener.hpp \
     tcp_socket.hpp \
@@ -88,6 +89,7 @@ libzmq_la_SOURCES = \
     select.cpp \
     session.cpp \
     socket_base.cpp \
+    sub.cpp \
     tcp_connecter.cpp \
     tcp_listener.cpp \
     tcp_socket.cpp \
