@@ -39,7 +39,7 @@ namespace zmq
     public:
 
         socket_base_t (class app_thread_t *parent_);
-        ~socket_base_t ();
+        virtual ~socket_base_t ();
 
         //  Interface for communication with the API layer.
         virtual int setsockopt (int option_, const void *optval_,

@@ -35,6 +35,7 @@
 #include "pipe.hpp"
 #include "config.hpp"
 #include "socket_base.hpp"
+#include "sub.hpp"
 
 //  If the RDTSC is available we use it to prevent excessive
 //  polling for commands. The nice thing here is that it will work on any
@@ -135,8 +136,21 @@ void zmq::app_thread_t::process_commands (bool block_, bool throttle_)
 
 zmq::socket_base_t *zmq::app_thread_t::create_socket (int type_)
 {
-    //  TODO: type is ignored for the time being.
-    socket_base_t *s = new socket_base_t (this);
+    socket_base_t *s = NULL;
+    switch (type_) {
+    case ZMQ_SUB:
+        s = new sub_t (this);
+        break;
+    case ZMQ_P2P:
+    case ZMQ_PUB:
+    case ZMQ_REQ:
+    case ZMQ_REP:
+        s = new socket_base_t (this);
+        break;
+    default:
+        //  TODO: This should be EINVAL.
+        zmq_assert (false);
+    }
     zmq_assert (s);
     s->set_index (sockets.size ());
     sockets.push_back (s);

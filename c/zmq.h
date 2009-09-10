@@ -50,6 +50,8 @@ extern "C" {
 #define ZMQ_MASK 4
 #define ZMQ_AFFINITY 5
 #define ZMQ_IDENTITY 6
+#define ZMQ_SUBSCRIBE 7
+#define ZMQ_UNSUBSCRIBE 8
 
 //  The operation should be performed in non-blocking mode. I.e. if it cannot
 //  be processed immediately, error should be returned with errno set to EAGAIN.
