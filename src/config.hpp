@@ -70,8 +70,10 @@ namespace zmq
 
         //  Maximal number of non-accepted connections that can be held by
         //  TCP listener object.
-        tcp_connection_backlog = 10
+        tcp_connection_backlog = 10,
 
+        //  Maximum transport data unit size for PGM (TPDU).
+        pgm_max_tpdu = 1500
     };
 
 }
