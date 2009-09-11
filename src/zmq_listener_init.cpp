@@ -70,7 +70,9 @@ void zmq::zmq_listener_init_t::flush ()
 
     //  Have a look whether the session already exists. If it does, attach it
     //  to the engine. If it doesn't create it first.
-    session_t *session = owner->find_session (peer_identity.c_str ());
+    session_t *session = NULL;
+    if (!peer_identity.empty ())
+        session = owner->find_session (peer_identity.c_str ());
     if (!session) {
         io_thread_t *io_thread = choose_io_thread (options.affinity);
         session = new session_t (io_thread, owner, peer_identity.c_str (),

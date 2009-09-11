@@ -72,9 +72,9 @@ void zmq::session_t::detach ()
     //  Engine is terminating itself.
     engine = NULL;
 
-    //  TODO: In the case od anonymous connection, terminate the session.
-//    if (anonymous)
-//        term ();
+    //  In the case od anonymous connection, terminate the session.
+    if (name.empty ())
+        term ();
 }
 
 void zmq::session_t::attach_inpipe (reader_t *pipe_)
@@ -114,11 +114,13 @@ void zmq::session_t::detach_outpipe (writer_t *pipe_)
 void zmq::session_t::process_plug ()
 {
     //  Register the session with the socket.
-    bool ok = owner->register_session (name.c_str (), this);
+    if (!name.empty ()) {
+        bool ok = owner->register_session (name.c_str (), this);
 
-    //  There's already a session with the specified identity.
-    //  We should syslog it and drop the session. TODO
-    zmq_assert (ok);
+        //  There's already a session with the specified identity.
+        //  We should syslog it and drop the session. TODO
+        zmq_assert (ok);
+    }
 
     //  If session is created by 'connect' function, it has the pipes set
     //  already. Otherwise, it's being created by the listener and the pipes
@@ -141,8 +143,10 @@ void zmq::session_t::process_plug ()
 void zmq::session_t::process_unplug ()
 {
     //  Unregister the session from the socket.
-    bool ok = owner->unregister_session (name.c_str ());
-    zmq_assert (ok);
+    if (!name.empty ()) {
+        bool ok = owner->unregister_session (name.c_str ());
+        zmq_assert (ok);
+    }
 
     //  Ask associated pipes to terminate.
     if (in_pipe) {
@@ -163,6 +167,7 @@ void zmq::session_t::process_unplug ()
 
 void zmq::session_t::process_attach (i_engine *engine_)
 {
+    zmq_assert (!engine);
     zmq_assert (engine_);
     engine = engine_;
     engine->plug (this);

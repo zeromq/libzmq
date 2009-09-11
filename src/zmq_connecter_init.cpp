@@ -55,7 +55,9 @@ bool zmq::zmq_connecter_init_t::read (::zmq_msg_t *msg_)
     //  Find the session associated with this connecter. If it doesn't exist
     //  drop the newly created connection. If it does, attach it to the
     //  connection.
-    session_t *session = owner->find_session (session_name.c_str ());
+    session_t *session = NULL;
+    if (!session_name.empty ())
+        session = owner->find_session (session_name.c_str ());
     if (!session) {
         //  TODO
         zmq_assert (false);

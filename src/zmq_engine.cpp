@@ -50,6 +50,8 @@ zmq::zmq_engine_t::~zmq_engine_t ()
 
 void zmq::zmq_engine_t::plug (i_inout *inout_)
 {
+    zmq_assert (!inout);
+
     encoder.set_inout (inout_);
     decoder.set_inout (inout_);
 
