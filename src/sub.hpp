@@ -41,9 +41,15 @@ namespace zmq
 
     private:
 
-        //  List of all the active subscriptions.
+        //  Number of active "*" subscriptions.
+        int all_count;
+
+        //  List of all prefix subscriptions.
         typedef std::multiset <std::string> subscriptions_t;
-        subscriptions_t subscriptions;
+        subscriptions_t prefixes;
+
+        //  List of all exact match subscriptions.
+        subscriptions_t topics;
     };
 
 }
