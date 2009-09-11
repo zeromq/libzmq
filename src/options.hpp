@@ -37,12 +37,6 @@ namespace zmq
         uint64_t mask;
         uint64_t affinity;
         std::string identity;
-
-        //  Maximum tranfer rate [kb/s].
-        uint32_t rate;
-
-        //  Reliability time interval [s].
-        uint32_t recovery_ivl;
     };
 
 }

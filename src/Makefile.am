@@ -62,8 +62,6 @@ libzmq_la_SOURCES = $(pgm_sources) \
     object.hpp \
     options.hpp \
     owned.hpp \
-    pgm_sender.hpp \
-    pgm_socket.hpp \
     pipe.hpp \
     platform.hpp \
     poll.hpp \
@@ -103,8 +101,6 @@ libzmq_la_SOURCES = $(pgm_sources) \
     object.cpp \
     options.cpp \
     owned.cpp \
-    pgm_sender.cpp \
-    pgm_socket.cpp \
     pipe.cpp \
     poll.cpp \
     select.cpp \
@@ -126,7 +122,7 @@ libzmq_la_SOURCES = $(pgm_sources) \
     zmq_listener.cpp \
     zmq_listener_init.cpp
 
-libzmq_la_LDFLAGS = -version-info @LTVER@ @LIBZMQ_EXTRA_LDFLAFS@
+libzmq_la_LDFLAGS = -version-info @LTVER@
 
 if BUILD_PGM
 libzmq_la_CXXFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/include/ -Wall @LIBZMQ_EXTRA_CXXFLAGS@
