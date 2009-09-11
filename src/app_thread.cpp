@@ -35,6 +35,7 @@
 #include "pipe.hpp"
 #include "config.hpp"
 #include "socket_base.hpp"
+#include "pub.hpp"
 #include "sub.hpp"
 
 //  If the RDTSC is available we use it to prevent excessive
@@ -138,11 +139,13 @@ zmq::socket_base_t *zmq::app_thread_t::create_socket (int type_)
 {
     socket_base_t *s = NULL;
     switch (type_) {
+    case ZMQ_PUB:
+        s = new pub_t (this);
+        break;
     case ZMQ_SUB:
         s = new sub_t (this);
         break;
     case ZMQ_P2P:
-    case ZMQ_PUB:
     case ZMQ_REQ:
     case ZMQ_REP:
         s = new socket_base_t (this);

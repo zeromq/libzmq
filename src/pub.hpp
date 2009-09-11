@@ -17,41 +17,23 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_SUB_INCLUDED__
-#define __ZMQ_SUB_INCLUDED__
-
-#include <set>
-#include <string>
+#ifndef __ZMQ_PUB_INCLUDED__
+#define __ZMQ_PUB_INCLUDED__
 
 #include "socket_base.hpp"
 
 namespace zmq
 {
 
-    class sub_t : public socket_base_t
+    class pub_t : public socket_base_t
     {
     public:
 
-        sub_t (class app_thread_t *parent_);
-        ~sub_t ();
+        pub_t (class app_thread_t *parent_);
+        ~pub_t ();
 
         //  Overloads of API functions from socket_base_t.
-        int setsockopt (int option_, const void *optval_, size_t optvallen_);
-        int send (struct zmq_msg_t *msg_, int flags_);
-        int flush ();
         int recv (struct zmq_msg_t *msg_, int flags_);
-
-    private:
-
-        //  Number of active "*" subscriptions.
-        int all_count;
-
-        //  List of all prefix subscriptions.
-        typedef std::multiset <std::string> subscriptions_t;
-        subscriptions_t prefixes;
-
-        //  List of all exact match subscriptions.
-        subscriptions_t topics;
     };
 
 }

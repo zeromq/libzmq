@@ -78,6 +78,18 @@ int zmq::sub_t::setsockopt (int option_, const void *optval_,
     return socket_base_t::setsockopt (option_, optval_, optvallen_);
 }
 
+int zmq::sub_t::send (struct zmq_msg_t *msg_, int flags_)
+{
+    errno = EFAULT;
+    return -1;
+}
+
+int zmq::sub_t::flush ()
+{
+    errno = EFAULT;
+    return -1;
+}
+
 int zmq::sub_t::recv (struct zmq_msg_t *msg_, int flags_)
 {
     while (true) {

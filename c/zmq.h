@@ -184,12 +184,12 @@ ZMQ_EXPORT int zmq_connect (void *s, const char *addr);
 //
 //  Errors: EAGAIN - message cannot be sent at the moment (applies only to
 //                   non-blocking send).
-//          ENOTSUP - function isn't supported by particular socket type.
+//          EFAULT - function isn't supported by particular socket type.
 ZMQ_EXPORT int zmq_send (void *s, struct zmq_msg_t *msg, int flags);
 
 //  Flush the messages that were send using ZMQ_NOFLUSH flag down the stream.
 //
-//  Errors: ENOTSUP - function isn't supported by particular socket type.
+//  Errors: FAULT - function isn't supported by particular socket type.
 ZMQ_EXPORT int zmq_flush (void *s);
 
 //  Send a message from the socket 's'. 'flags' argument can be combination
@@ -198,7 +198,7 @@ ZMQ_EXPORT int zmq_flush (void *s);
 //
 //  Errors: EAGAIN - message cannot be received at the moment (applies only to
 //                   non-blocking receive).
-//          ENOTSUP - function isn't supported by particular socket type.
+//          EFAULT - function isn't supported by particular socket type.
 ZMQ_EXPORT int zmq_recv (void *s, struct zmq_msg_t *msg, int flags);
 
 //  Helper functions used by perf tests so that they don't have to care

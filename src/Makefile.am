@@ -65,6 +65,7 @@ libzmq_la_SOURCES = $(pgm_sources) \
     pipe.hpp \
     platform.hpp \
     poll.hpp \
+    pub.hpp \
     select.hpp \
     session.hpp \
     simple_semaphore.hpp \
@@ -103,6 +104,7 @@ libzmq_la_SOURCES = $(pgm_sources) \
     owned.cpp \
     pipe.cpp \
     poll.cpp \
+    pub.cpp \
     select.cpp \
     session.cpp \
     socket_base.cpp \
