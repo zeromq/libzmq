@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stddef.h>
+#include <stdint.h>
 
 int main (int argc, char *argv [])
 {
@@ -34,9 +35,19 @@ int main (int argc, char *argv [])
     size_t message_size = (size_t) atoi (argv [2]);
     int message_count = atoi (argv [3]);
 
+    //  appl threads, io threads
     zmq::context_t ctx (1, 1);
 
-    zmq::socket_t s (ctx, ZMQ_P2P);
+    zmq::socket_t s (ctx, ZMQ_PUB);
+    
+    //  10Mb/s
+    uint32_t rate = 10000;
+    s.setsockopt (ZMQ_RATE, &rate, sizeof (rate));
+
+    //  10s
+    uint32_t recovery_ivl = 10;
+    s.setsockopt (ZMQ_RECOVERY_IVL, &recovery_ivl, sizeof (recovery_ivl));
+
     s.connect (connect_to);
 
     for (int i = 0; i != message_count; i++) {
