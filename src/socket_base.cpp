@@ -142,7 +142,7 @@ int zmq::socket_base_t::setsockopt (int option_, const void *optval_,
 
     case ZMQ_SUBSCRIBE:
     case ZMQ_UNSUBSCRIBE:
-        errno = ENOTSUP;
+        errno = EFAULT;
         return -1;
 
     default:
