@@ -38,7 +38,7 @@ namespace zmq
     {
     public:
 
-        socket_base_t (class app_thread_t *parent_);
+        socket_base_t (class app_thread_t *parent_, int type_);
         virtual ~socket_base_t ();
 
         //  Interface for communication with the API layer.
@@ -86,6 +86,9 @@ namespace zmq
         //  Gets a message from one of the inbound pipes. Implementation of
         //  fair queueing.
         bool fetch (struct zmq_msg_t *msg_);
+
+        //  Type of the socket.
+        int type;
 
         //  List of all I/O objects owned by this socket. The socket is
         //  responsible for deallocating them before it quits.

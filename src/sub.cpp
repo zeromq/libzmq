@@ -23,7 +23,7 @@
 #include "err.hpp"
 
 zmq::sub_t::sub_t (class app_thread_t *parent_) :
-    socket_base_t (parent_),
+    socket_base_t (parent_, ZMQ_SUB),
     all_count (0)
 {
 }

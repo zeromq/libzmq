@@ -17,5 +17,7 @@ endif
 SUBDIRS = src $(DIR_P) $(DIR_R) $(DIR_J) $(DIR_PERF)
 DIST_SUBDIRS = src python ruby java perf
 
+EXTRA_DIST =  $(top_srcdir)/foreign/openpgm/@pgm_basename@.tar.bz2
+
 dist-hook:
-		-rm -rf $(distdir)/third-party/openpgm/$pgm_basename
+		-rm -rf $(distdir)/foreign/openpgm/@pgm_basename@

@@ -145,7 +145,7 @@ zmq::socket_base_t *zmq::app_thread_t::create_socket (int type_)
     case ZMQ_PUB:
     case ZMQ_REQ:
     case ZMQ_REP:
-        s = new socket_base_t (this);
+        s = new socket_base_t (this, type_);
         break;
     default:
         //  TODO: This should be EINVAL.
