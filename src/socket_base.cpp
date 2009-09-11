@@ -357,6 +357,7 @@ void zmq::socket_base_t::attach_outpipe (class writer_t *pipe_)
 {
     pipe_->set_endpoint (this);
     out_pipes.push_back (pipe_);
+    pipe_->set_index (out_pipes.size () - 1);
 }
 
 void zmq::socket_base_t::revive (reader_t *pipe_)
