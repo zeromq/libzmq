@@ -68,6 +68,7 @@ void zmq::reader_t::set_index (int index_)
 
 int zmq::reader_t::get_index ()
 {
+    zmq_assert (index != -1);
     return index;
 }
 
@@ -112,6 +113,7 @@ void zmq::writer_t::set_index (int index_)
 
 int zmq::writer_t::get_index ()
 {
+    zmq_assert (index != -1);
     return index;
 }
 
