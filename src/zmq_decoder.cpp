@@ -20,6 +20,7 @@
 #include "zmq_decoder.hpp"
 #include "i_inout.hpp"
 #include "wire.hpp"
+#include "err.hpp"
 
 zmq::zmq_decoder_t::zmq_decoder_t () :
     destination (NULL)
@@ -48,7 +49,11 @@ bool zmq::zmq_decoder_t::one_byte_size_ready ()
     if (*tmpbuf == 0xff)
         next_step (tmpbuf, 8, &zmq_decoder_t::eight_byte_size_ready);
     else {
-        zmq_msg_init_size (&in_progress, *tmpbuf);
+
+        //  TODO:  Handle over-sized message decently.
+        int rc = zmq_msg_init_size (&in_progress, *tmpbuf);
+        errno_assert (rc == 0);
+
         next_step (zmq_msg_data (&in_progress), *tmpbuf,
             &zmq_decoder_t::message_ready);
     }
@@ -60,7 +65,11 @@ bool zmq::zmq_decoder_t::eight_byte_size_ready ()
     //  8-byte size is read. Allocate the buffer for message body and
     //  read the message data into it.
     size_t size = (size_t) get_uint64 (tmpbuf);
-    zmq_msg_init_size (&in_progress, size);
+
+    //  TODO:  Handle over-sized message decently.
+    int rc = zmq_msg_init_size (&in_progress, size);
+    errno_assert (rc == 0);
+
     next_step (zmq_msg_data (&in_progress), size,
         &zmq_decoder_t::message_ready);
     return true;

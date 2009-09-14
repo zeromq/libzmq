@@ -93,8 +93,11 @@ void zmq::zmq_listener_init_t::flush ()
 
 void zmq::zmq_listener_init_t::detach ()
 {
-    //  TODO: Engine is closing down. Init object is to be closed as well.
-    zmq_assert (false);
+    //  This function is called by engine when disconnection occurs.
+    //  The engine will destroy itself, so we just drop the pointer here and
+    //  start termination of the init object.
+    engine = NULL;
+    term ();
 }
 
 void zmq::zmq_listener_init_t::process_plug ()
