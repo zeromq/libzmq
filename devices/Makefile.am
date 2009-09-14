@@ -1,0 +1,6 @@
+if BUILD_FORWARDER
+FORWARDER_DIR = forwarder
+endif
+
+SUBDIRS = $(FORWARDER_DIR)
+DIST_SUBDIRS = forwarder

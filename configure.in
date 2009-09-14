@@ -441,6 +441,16 @@ if test "x$with_pgm_ext" != "xno"; then
     pgm_ext="yes"
 fi
 
+# forwarder device
+forwarder="no"
+AC_ARG_WITH([forwarder], [AS_HELP_STRING([--with-forwarder], 
+    [build forwarder device [default=no]])], [with_forwarder=yes], [with_forwarder=no])
+
+if test "x$with_forwarder" != "xno"; then
+    forwarder="yes"
+fi
+
+
 # Perf
 perf="no"
 AC_ARG_WITH([perf], [AS_HELP_STRING([--with-perf], 
@@ -462,6 +472,7 @@ AM_CONDITIONAL(BUILD_RUBY, test "x$rbzmq" = "xyes")
 AM_CONDITIONAL(BUILD_C, test "x$czmq" = "xyes")
 AM_CONDITIONAL(BUILD_CPP, test "x$cppzmq" = "xyes")
 AM_CONDITIONAL(BUILD_PGM, test "x$pgm_ext" = "xyes")
+AM_CONDITIONAL(BUILD_FORWARDER, test "x$forwarder" = "xyes") 
 AM_CONDITIONAL(BUILD_PERF, test "x$perf" = "xyes") 
 
 AC_SUBST(stdint)
@@ -479,7 +490,8 @@ AC_CHECK_FUNCS(perror gettimeofday memset socket getifaddrs freeifaddrs)
 
 AC_OUTPUT(Makefile src/Makefile python/Makefile python/setup.py ruby/Makefile \
     java/Makefile perf/Makefile perf/c/Makefile perf/cpp/Makefile \
-    perf/python/Makefile perf/ruby/Makefile perf/java/Makefile src/libzmq.pc)
+    perf/python/Makefile perf/ruby/Makefile perf/java/Makefile src/libzmq.pc \
+    devices/Makefile devices/forwarder/Makefile)
 
 AC_MSG_RESULT([])
 AC_MSG_RESULT([ ******************************************************** ])
@@ -492,19 +504,26 @@ AC_MSG_RESULT([  license text. ])
 AC_MSG_RESULT([ ******************************************************** ])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([ 0MQ install dir: $prefix])
-AC_MSG_RESULT([   C language binding: $czmq])
-AC_MSG_RESULT([   C++ language binding: $cppzmq])
-AC_MSG_RESULT([   Python language binding: $pyzmq])
-AC_MSG_RESULT([   Ruby language binding: $rbzmq])
+AC_MSG_RESULT([   Language bindings:])
+AC_MSG_RESULT([     C: $czmq])
+AC_MSG_RESULT([     C++: $cppzmq])
+AC_MSG_RESULT([     Java: $jzmq])
+AC_MSG_RESULT([     Python: $pyzmq])
+AC_MSG_RESULT([     Ruby: $rbzmq])
 if test "x$rbzmq" = "xyes"; then
-AC_MSG_RESULT([   Ruby library install dir: $rubydir])
+AC_MSG_RESULT([       Ruby library install dir: $rubydir])
 fi
-AC_MSG_RESULT([   Java language binding: $jzmq])
+AC_MSG_RESULT([   Network protocols:])
+AC_MSG_RESULT([     TCP: yes])
 if test "x$pgm_ext" = "xyes"; then
-AC_MSG_RESULT([   PGM extension: $pgm_ext ($pgm_name)])
+AC_MSG_RESULT([     PGM: $pgm_ext ($pgm_name)])
 else
-AC_MSG_RESULT([   PGM extension: $pgm_ext])
+AC_MSG_RESULT([     PGM: $pgm_ext])
 fi
-AC_MSG_RESULT([   performance tests: $perf]) 
+AC_MSG_RESULT([   Devices:])
+AC_MSG_RESULT([     forwarder: $forwarder])
+AC_MSG_RESULT([   Performance tests: $perf]) 
+AC_MSG_RESULT([])
+AC_MSG_RESULT([ ******************************************************** ])
 AC_MSG_RESULT([])
 
