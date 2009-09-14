@@ -23,7 +23,7 @@
 #include "err.hpp"
 
 zmq::pub_t::pub_t (class app_thread_t *parent_) :
-    socket_base_t (parent_)
+    socket_base_t (parent_, ZMQ_SUB)
 {
 }
 
