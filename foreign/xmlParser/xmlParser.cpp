@@ -78,10 +78,16 @@
  *
  ****************************************************************************
  */
+
+#if defined _MSC_VER
+#pragma warning (push)
+#pragma warning (disable:4996)
+#endif
+
 #ifndef _CRT_SECURE_NO_DEPRECATE
 #define _CRT_SECURE_NO_DEPRECATE
 #endif
-#include <zmq/xmlParser.hpp>
+#include "xmlParser.hpp"
 #ifdef _XMLWINDOWS
 //#ifdef _DEBUG
 //#define _CRTDBG_MAP_ALLOC
@@ -2885,4 +2891,8 @@ unsigned char *XMLParserBase64Tool::decode(XMLCSTR data, int *outlen, XMLError *
     if(!decode(data,(unsigned char*)buf,len,xe)){ return NULL; }
     return (unsigned char*)buf;
 }
+
+#if defined _MSC_VER
+#pragma warning (pop)
+#endif
 

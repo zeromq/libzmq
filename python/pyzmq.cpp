@@ -484,9 +484,6 @@ PyMODINIT_FUNC initlibpyzmq ()
     t = PyInt_FromLong (ZMQ_SWAP);
     PyDict_SetItemString (dict, "SWAP", t);
     Py_DECREF (t);
-    t = PyInt_FromLong (ZMQ_MASK);
-    PyDict_SetItemString (dict, "MASK", t);
-    Py_DECREF (t);
     t = PyInt_FromLong (ZMQ_AFFINITY);
     PyDict_SetItemString (dict, "AFFINITY", t);
     Py_DECREF (t);
