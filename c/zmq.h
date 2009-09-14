@@ -44,16 +44,15 @@ extern "C" {
 #define ZMQ_VSM 32
 
 //  Socket options.
-#define ZMQ_HWM 1
-#define ZMQ_LWM 2
-#define ZMQ_SWAP 3
-#define ZMQ_MASK 4
-#define ZMQ_AFFINITY 5
-#define ZMQ_IDENTITY 6
-#define ZMQ_SUBSCRIBE 7
-#define ZMQ_UNSUBSCRIBE 8
-#define ZMQ_RATE 9
-#define ZMQ_RECOVERY_IVL 10
+#define ZMQ_HWM 1                  //  int64_t
+#define ZMQ_LWM 2                  //  int64_t
+#define ZMQ_SWAP 3                 //  int64_t
+#define ZMQ_AFFINITY 4             //  int64_t
+#define ZMQ_IDENTITY 5             //  string
+#define ZMQ_SUBSCRIBE 6            //  string
+#define ZMQ_UNSUBSCRIBE 7          //  string
+#define ZMQ_RATE 8                 //  int64_t
+#define ZMQ_RECOVERY_IVL 9         //  int64_t
 
 //  The operation should be performed in non-blocking mode. I.e. if it cannot
 //  be processed immediately, error should be returned with errno set to EAGAIN.

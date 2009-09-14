@@ -86,80 +86,60 @@ JNIEXPORT void JNICALL Java_org_zmq_Socket_finalize (JNIEnv *env, jobject obj)
     assert (rc == 0);
 }
 
-JNIEXPORT void JNICALL Java_org_zmq_Socket_setHwm (JNIEnv *env, jobject obj,
-    jlong hwm)
+JNIEXPORT void JNICALL Java_org_zmq_Socket_setsockopt__IJ (JNIEnv *env,
+    jobject obj, jint option, jlong optval)
 {
-    void *s = (void*) env->GetLongField (obj, socket_handle_fid);
-    assert (s);
-    int rc = zmq_setsockopt (s, ZMQ_HWM, &hwm, sizeof hwm);
-    if (rc == -1)
-        raise_exception (env, errno);
-}
+    switch (option) {
+    case ZMQ_HWM:
+    case ZMQ_LWM:
+    case ZMQ_SWAP:
+    case ZMQ_AFFINITY:
+    case ZMQ_RATE:
+    case ZMQ_RECOVERY_IVL:
+        {
+            void *s = (void*) env->GetLongField (obj, socket_handle_fid);
+            assert (s);
 
-JNIEXPORT void JNICALL Java_org_zmq_Socket_setLwm (JNIEnv *env, jobject obj,
-    jlong lwm)
-{
-    void *s = (void*) env->GetLongField (obj, socket_handle_fid);
-    assert (s);
-
-    int rc = zmq_setsockopt (s, ZMQ_LWM, &lwm, sizeof lwm);
-    if (rc == -1)
-        raise_exception (env, errno);
-}
-
-JNIEXPORT void JNICALL Java_org_zmq_Socket_setSwap (JNIEnv *env, jobject obj,
-    jlong swap_size)
-{
-    void *s = (void*) env->GetLongField (obj, socket_handle_fid);
-    assert (s);
-
-    int rc = zmq_setsockopt (s, ZMQ_SWAP, &swap_size, sizeof swap_size);
-    if (rc == -1)
-        raise_exception (env, errno);
-}
-
-JNIEXPORT void JNICALL Java_org_zmq_Socket_setMask (JNIEnv *env, jobject obj,
-    jlong mask)
-{
-    void *s = (void*) env->GetLongField (obj, socket_handle_fid);
-    assert (s);
-
-    int rc = zmq_setsockopt (s, ZMQ_MASK, &mask, sizeof mask);
-    if (rc == -1)
-        raise_exception (env, errno);
-}
-
-JNIEXPORT void JNICALL Java_org_zmq_Socket_setAffinity (JNIEnv *env,
-    jobject obj, jlong affinity)
-{
-    void *s = (void*) env->GetLongField (obj, socket_handle_fid);
-    assert (s);
-
-    int rc = zmq_setsockopt (s, ZMQ_AFFINITY, &affinity, sizeof affinity);
-    if (rc == -1)
-        raise_exception (env, errno);
-}
-
-JNIEXPORT void JNICALL Java_org_zmq_Socket_setIdentity (JNIEnv *env,
-    jobject obj, jstring identity)
-{
-    void *s = (void*) env->GetLongField (obj, socket_handle_fid);
-    assert (s);
-
-    if (identity == NULL) {
+            int64_t value = optval;
+            int rc = zmq_setsockopt (s, option, &value, sizeof (value));
+            if (rc != 0)
+                raise_exception (env, errno);
+            return;
+        }
+    default:
         raise_exception (env, EINVAL);
         return;
     }
+}
 
-    const char *c_identity = env->GetStringUTFChars (identity, NULL);
-    if (c_identity == NULL)
+JNIEXPORT void JNICALL Java_org_zmq_Socket_setsockopt__ILjava_lang_String_2 (
+    JNIEnv *env, jobject obj, jint option, jstring optval)
+{
+    switch (option) {
+    case ZMQ_IDENTITY:
+    case ZMQ_SUBSCRIBE:
+    case ZMQ_UNSUBSCRIBE:
+        {
+            if (optval == NULL) {
+                raise_exception (env, EINVAL);
+                return;
+            }
+
+            void *s = (void*) env->GetLongField (obj, socket_handle_fid);
+            assert (s);
+
+            const char *value = env->GetStringUTFChars (optval, NULL);
+            assert (value);
+            int rc = zmq_setsockopt (s, option, value, strlen (value));
+            env->ReleaseStringUTFChars (optval, value);
+            if (rc != 0)
+                raise_exception (env, errno);
+            return;
+        }
+    default:
+        raise_exception (env, EINVAL);
         return;
-
-    int rc = zmq_setsockopt (s, ZMQ_IDENTITY, c_identity, sizeof c_identity);
-    env->ReleaseStringUTFChars (identity, c_identity);
-
-    if (rc == -1)
-        raise_exception (env, errno);
+    }
 }
 
 JNIEXPORT void JNICALL Java_org_zmq_Socket_bind (JNIEnv *env, jobject obj,

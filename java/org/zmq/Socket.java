@@ -27,18 +27,23 @@ public class Socket
     }
 
     public static final int NOBLOCK = 1;
-
     public static final int NOFLUSH = 2;
 
     public static final int P2P = 0;
-
     public static final int PUB = 1;
-
     public static final int SUB = 2;
-
     public static final int REQ = 3;
-
     public static final int REP = 4;
+
+    public static final int HWM = 1;
+    public static final int LWM = 2;
+    public static final int SWAP = 3;
+    public static final int AFFINITY = 4;
+    public static final int IDENTITY = 5;
+    public static final int SUBSCRIBE = 6;
+    public static final int UNSUBSCRIBE = 7;
+    public static final int RATE = 8;
+    public static final int RECOVERY_IVL = 9;
 
     /**
      * Class constructor.
@@ -51,46 +56,13 @@ public class Socket
     }
 
     /**
-     * Set the high watermark on the socket.
+     * Set the socket option value.
      *
-     * @param hwm high watermark.
+     * @param option ID of the option to set
+     * @param optval value to set the option to
      */
-    public native void setHwm (long hwm);
-
-    /**
-     * Set the low watermark on the socket.
-     *
-     * @param lwm low watermark.
-     */
-    public native void setLwm (long lwm);
-
-    /**
-     * Set swap size.
-     *
-     * @param swap_size swap size.
-     */
-    public native void setSwap (long swap_size);
-
-    /**
-     * Set reception mask.
-     *
-     * @param mask mask.
-     */
-    public native void setMask (long mask);
-
-    /**
-     * Set affinity.
-     *
-     * @param affinity
-     */
-    public native void setAffinity (long affinity);
-
-    /**
-     * Set identity.
-     *
-     * @param identity
-     */
-    public native void setIdentity (String identity);
+     public native void setsockopt (int option, long optval);
+     public native void setsockopt (int option, String optval);
 
     /**
      * Bind to network interface. Start listening for new connections.

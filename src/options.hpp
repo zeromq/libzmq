@@ -34,7 +34,6 @@ namespace zmq
         int64_t hwm;
         int64_t lwm;
         int64_t swap;
-        uint64_t mask;
         uint64_t affinity;
         std::string identity;
 

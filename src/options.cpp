@@ -23,9 +23,8 @@ zmq::options_t::options_t () :
     hwm (0),
     lwm (0),
     swap (0),
-    mask (0),
     affinity (0),
-    rate (0),
-    recovery_ivl (0)
+    rate (100),
+    recovery_ivl (10)
 {
 }
