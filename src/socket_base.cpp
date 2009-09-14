@@ -281,7 +281,7 @@ int zmq::socket_base_t::connect (const char *addr_)
 #endif
 
     //  Unknown address type.
-    errno = ENOTSUP;
+    errno = EFAULT;
     return -1;
 }
 
