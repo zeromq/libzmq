@@ -17,8 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <iostream>
-
 #include <string>
 #include <algorithm>
 
@@ -254,7 +252,7 @@ int zmq::socket_base_t::connect (const char *addr_)
 
 #if defined ZMQ_HAVE_OPENPGM
     if (addr_type == "pgm") {
-        
+
         switch (type) {
         case ZMQ_PUB:
         {
@@ -267,7 +265,7 @@ int zmq::socket_base_t::connect (const char *addr_)
                 delete pgm_sender;
                 return -1;
             }
-    
+
             //  Reserve a sequence number for following 'attach' command.
             session->inc_seqnum ();
             send_attach (session, pgm_sender);
