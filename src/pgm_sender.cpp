@@ -108,6 +108,7 @@ void zmq::pgm_sender_t::unplug ()
 void zmq::pgm_sender_t::revive ()
 {
     set_pollout (handle);
+    out_event ();
 }
 
 zmq::pgm_sender_t::~pgm_sender_t ()
@@ -181,28 +182,6 @@ void zmq::pgm_sender_t::out_event ()
 
 }
 
-/*
-void zmq::bp_pgm_sender_t::revive (pipe_t *pipe_)
-{
-    //  We have some messages in encoder.
-    if (!shutting_down) {
-                
-        //  Forward the revive command to the pipe. 
-        engine_base_t <false, true>::revive (pipe_);
-
-        //  There is at least one engine (that one which sent revive) that 
-        //  has messages ready. Try to write data to the socket, thus 
-        //  eliminating one polling for POLLOUT event.
-        //  Note that if write_size is zero it means that buffer is empty and
-        //  we can read data from encoder.
-        if (!write_size) {
-            poller->set_pollout (handle);
-            out_event (handle);
-        }
-    }
-}
-
-*/
 size_t zmq::pgm_sender_t::write_one_pkt_with_offset (unsigned char *data_, 
     size_t size_, uint16_t offset_)
 {
