@@ -17,14 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_BP_PGM_SENDER_HPP_INCLUDED__
-#define __ZMQ_BP_PGM_SENDER_HPP_INCLUDED__
+#ifndef __ZMQ_PGM_SENDER_HPP_INCLUDED__
+#define __ZMQ_PGM_SENDER_HPP_INCLUDED__
 
 #include "platform.hpp"
 
 #if defined ZMQ_HAVE_OPENPGM
-
-#include <vector>
 
 #include "stdint.hpp"
 #include "io_object.hpp"
@@ -83,14 +81,10 @@ namespace zmq
         i_inout *inout;
 
         //  Output buffer from pgm_socket.
-#ifdef ZMQ_HAVE_WINDOWS
-        unsigned char out_buffer [pgm_win_max_apdu];
-#else
         unsigned char *out_buffer;
         
         //  Output buffer size.
         size_t out_buffer_size;
-#endif
 
         size_t write_size;
         size_t write_pos;
@@ -103,7 +97,6 @@ namespace zmq
     };
 
 }
-
 #endif
 
 #endif
