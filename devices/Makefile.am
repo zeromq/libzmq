@@ -1,6 +1,6 @@
 if BUILD_FORWARDER
-FORWARDER_DIR = forwarder
+FORWARDER_DIR = zmq_forwarder
 endif
 
 SUBDIRS = $(FORWARDER_DIR)
-DIST_SUBDIRS = forwarder
+DIST_SUBDIRS = zmq_forwarder
