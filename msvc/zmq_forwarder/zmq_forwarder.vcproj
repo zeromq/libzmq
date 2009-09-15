@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="forwarder"
-	ProjectGUID="{7529DFB2-685C-4534-B40E-0B148509178A}"
-	RootNamespace="forwarder"
+	Name="zmq_forwarder"
+	ProjectGUID="{EFE471DE-6747-4B2E-B084-F7E45A16CD03}"
+	RootNamespace="zmq_forwarder"
 	TargetFrameworkVersion="196613"
 	>
 	<Platforms>
@@ -164,7 +164,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\devices\forwarder\forwarder.cpp"
+				RelativePath="..\..\devices\zmq_forwarder\zmq_forwarder.cpp"
 				>
 			</File>
 		</Filter>
