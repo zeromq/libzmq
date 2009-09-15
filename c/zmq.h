@@ -44,16 +44,15 @@ extern "C" {
 #define ZMQ_VSM 32
 
 //  Socket options.
-#define ZMQ_HWM 1
-#define ZMQ_LWM 2
-#define ZMQ_SWAP 3
-#define ZMQ_MASK 4
-#define ZMQ_AFFINITY 5
-#define ZMQ_IDENTITY 6
-#define ZMQ_SUBSCRIBE 7
-#define ZMQ_UNSUBSCRIBE 8
-#define ZMQ_RATE 9
-#define ZMQ_RECOVERY_IVL 10
+#define ZMQ_HWM 1                  //  int64_t
+#define ZMQ_LWM 2                  //  int64_t
+#define ZMQ_SWAP 3                 //  int64_t
+#define ZMQ_AFFINITY 4             //  int64_t
+#define ZMQ_IDENTITY 5             //  string
+#define ZMQ_SUBSCRIBE 6            //  string
+#define ZMQ_UNSUBSCRIBE 7          //  string
+#define ZMQ_RATE 8                 //  int64_t
+#define ZMQ_RECOVERY_IVL 9         //  int64_t
 
 //  The operation should be performed in non-blocking mode. I.e. if it cannot
 //  be processed immediately, error should be returned with errno set to EAGAIN.
@@ -186,12 +185,12 @@ ZMQ_EXPORT int zmq_connect (void *s, const char *addr);
 //
 //  Errors: EAGAIN - message cannot be sent at the moment (applies only to
 //                   non-blocking send).
-//          ENOTSUP - function isn't supported by particular socket type.
+//          EFAULT - function isn't supported by particular socket type.
 ZMQ_EXPORT int zmq_send (void *s, struct zmq_msg_t *msg, int flags);
 
 //  Flush the messages that were send using ZMQ_NOFLUSH flag down the stream.
 //
-//  Errors: ENOTSUP - function isn't supported by particular socket type.
+//  Errors: FAULT - function isn't supported by particular socket type.
 ZMQ_EXPORT int zmq_flush (void *s);
 
 //  Send a message from the socket 's'. 'flags' argument can be combination
@@ -200,7 +199,7 @@ ZMQ_EXPORT int zmq_flush (void *s);
 //
 //  Errors: EAGAIN - message cannot be received at the moment (applies only to
 //                   non-blocking receive).
-//          ENOTSUP - function isn't supported by particular socket type.
+//          EFAULT - function isn't supported by particular socket type.
 ZMQ_EXPORT int zmq_recv (void *s, struct zmq_msg_t *msg, int flags);
 
 //  Helper functions used by perf tests so that they don't have to care

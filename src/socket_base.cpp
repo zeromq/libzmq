@@ -123,14 +123,6 @@ int zmq::socket_base_t::setsockopt (int option_, const void *optval_,
         options.swap = *((int64_t*) optval_);
         return 0;
 
-    case ZMQ_MASK:
-        if (optvallen_ != sizeof (int64_t)) {
-            errno = EINVAL;
-            return -1;
-        }
-        options.mask = (uint64_t) *((int64_t*) optval_);
-        return 0;
-
     case ZMQ_AFFINITY:
         if (optvallen_ != sizeof (int64_t)) {
             errno = EINVAL;
@@ -149,19 +141,19 @@ int zmq::socket_base_t::setsockopt (int option_, const void *optval_,
         return -1;
 
     case ZMQ_RATE:
-        if (optvallen_ != sizeof (uint32_t)) {
+        if (optvallen_ != sizeof (int64_t)) {
             errno = EINVAL;
             return -1;
         }
-        options.rate = *((int32_t*) optval_);
+        options.rate = (uint32_t) *((int64_t*) optval_);
         return 0;
         
     case ZMQ_RECOVERY_IVL:
-        if (optvallen_ != sizeof (uint32_t)) {
+        if (optvallen_ != sizeof (int64_t)) {
             errno = EINVAL;
             return -1;
         }
-        options.recovery_ivl = *((int32_t*) optval_);
+        options.recovery_ivl = (uint32_t) *((int64_t*) optval_);
         return 0;
 
     default:
@@ -287,7 +279,7 @@ int zmq::socket_base_t::connect (const char *addr_)
 #endif
 
     //  Unknown address type.
-    errno = ENOTSUP;
+    errno = EFAULT;
     return -1;
 }
 

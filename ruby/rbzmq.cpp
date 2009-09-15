@@ -280,11 +280,12 @@ extern "C" void Init_librbzmq ()
     rb_define_global_const ("HWM", INT2NUM (ZMQ_HWM));
     rb_define_global_const ("LWM", INT2NUM (ZMQ_LWM));
     rb_define_global_const ("SWAP", INT2NUM (ZMQ_SWAP));
-    rb_define_global_const ("MASK", INT2NUM (ZMQ_MASK));
     rb_define_global_const ("AFFINITY", INT2NUM (ZMQ_AFFINITY));
     rb_define_global_const ("IDENTITY", INT2NUM (ZMQ_IDENTITY));
+
     rb_define_global_const ("NOBLOCK", INT2NUM (ZMQ_NOBLOCK));
     rb_define_global_const ("NOFLUSH", INT2NUM (ZMQ_NOFLUSH));
+
     rb_define_global_const ("P2P", INT2NUM (ZMQ_P2P));
     rb_define_global_const ("SUB", INT2NUM (ZMQ_SUB));
     rb_define_global_const ("PUB", INT2NUM (ZMQ_PUB));

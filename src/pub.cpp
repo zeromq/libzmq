@@ -17,33 +17,23 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_OPTIONS_HPP_INCLUDED__
-#define __ZMQ_OPTIONS_HPP_INCLUDED__
+#include "../c/zmq.h"
 
-#include <string>
+#include "pub.hpp"
+#include "err.hpp"
 
-#include "stdint.hpp"
-
-namespace zmq
+zmq::pub_t::pub_t (class app_thread_t *parent_) :
+    socket_base_t (parent_, ZMQ_SUB)
 {
-
-    struct options_t
-    {
-        options_t ();
-
-        int64_t hwm;
-        int64_t lwm;
-        int64_t swap;
-        uint64_t affinity;
-        std::string identity;
-
-        //  Maximum tranfer rate [kb/s].
-        uint32_t rate;
-
-        //  Reliability time interval [s].
-        uint32_t recovery_ivl;
-    };
-
 }
 
-#endif
+zmq::pub_t::~pub_t ()
+{
+}
+
+int zmq::pub_t::recv (struct zmq_msg_t *msg_, int flags_)
+{
+    errno = EFAULT;
+    return -1;
+}
+

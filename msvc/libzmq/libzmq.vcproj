@@ -230,6 +230,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\pub.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\select.cpp"
 				>
 			</File>

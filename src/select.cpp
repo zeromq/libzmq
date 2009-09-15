@@ -53,10 +53,10 @@ zmq::select_t::select_t () :
 
 zmq::select_t::~select_t ()
 {
+    worker.stop ();
+
     //  Make sure there are no fds registered on shutdown.
     zmq_assert (load.get () == 0);
-
-    worker.stop ();
 }
 
 zmq::handle_t zmq::select_t::add_fd (fd_t fd_, i_poll_events *events_)
