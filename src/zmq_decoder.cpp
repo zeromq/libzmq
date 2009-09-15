@@ -36,6 +36,16 @@ zmq::zmq_decoder_t::~zmq_decoder_t ()
     zmq_msg_close (&in_progress);
 }
 
+void zmq::zmq_decoder_t::reset ()
+{
+    //  Free and reinit message buffer.
+    zmq_msg_close (&in_progress);
+    zmq_msg_init (&in_progress);
+
+    //  Restart the FSM.
+    next_step (tmpbuf, 1, &zmq_decoder_t::one_byte_size_ready);
+}
+
 void zmq::zmq_decoder_t::set_inout (i_inout *destination_)
 {
     destination = destination_;

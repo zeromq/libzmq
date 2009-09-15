@@ -37,6 +37,8 @@ namespace zmq
 
         void set_inout (struct i_inout *destination_);
 
+        //  Clears any partially decoded messages.
+        void reset ();
     private:
 
         bool one_byte_size_ready ();
