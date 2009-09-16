@@ -54,10 +54,11 @@ zmq::devpoll_t::devpoll_t ()
 
 zmq::devpoll_t::~devpoll_t ()
 {
+    worker.stop ();
+
     //  Make sure there are no fds registered on shutdown.
     zmq_assert (load.get () == 0);
 
-    worker.stop ();
     close (devpoll_fd);
 }
 
