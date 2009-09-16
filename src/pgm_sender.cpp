@@ -90,11 +90,6 @@ void zmq::pgm_sender_t::plug (i_inout *inout_)
     set_pollout (handle);
 
     inout = inout_;
-
-    zmq_log (1, "plug: downlink_socket_fd %i, uplink_socket_fd %i, %s(%i)",
-        downlink_socket_fd, uplink_socket_fd, __FILE__, __LINE__);
-
-    std::cout << std::flush;
 }
 
 void zmq::pgm_sender_t::unplug ()
@@ -185,7 +180,7 @@ void zmq::pgm_sender_t::out_event ()
 size_t zmq::pgm_sender_t::write_one_pkt_with_offset (unsigned char *data_, 
     size_t size_, uint16_t offset_)
 {
-    zmq_log (1, "data_size %i, first message offset %i, %s(%i)",
+    zmq_log (1, "data_size %i, first message offset %i, %s(%i)\n",
         (int) size_, offset_, __FILE__, __LINE__);
 
     std::cout << std::flush;

@@ -25,6 +25,7 @@ zmq::options_t::options_t () :
     swap (0),
     affinity (0),
     rate (100),
-    recovery_ivl (10)
+    recovery_ivl (10),
+    use_multicast_loop (false)
 {
 }
