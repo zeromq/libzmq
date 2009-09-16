@@ -64,7 +64,7 @@ namespace zmq
         ssize_t receive_with_offset (void **data_);
 
         //  Message decoder.
-        zmq_decoder_t decoder;
+        zmq_decoder_t *decoder;
        
         //  PGM socket.
         pgm_socket_t pgm_socket;
