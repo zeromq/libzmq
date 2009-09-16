@@ -139,7 +139,7 @@ PyObject *socket_setsockopt (socket_t *self, PyObject *args, PyObject *kwdict)
         return NULL;
     }
 
-    int rc;
+    int rc = 0;
 
     switch (option) {
     case ZMQ_HWM:
