@@ -23,14 +23,15 @@
 #include "pipe.hpp"
 
 zmq::session_t::session_t (object_t *parent_, socket_base_t *owner_,
-      const char *name_, const options_t &options_) :
+      const char *name_, const options_t &options_, bool reconnect_) :
     owned_t (parent_, owner_),
     in_pipe (NULL),
     active (true),
     out_pipe (NULL),
     engine (NULL),
     name (name_),
-    options (options_)
+    options (options_),
+    reconnect (reconnect_)
 {
 }
 
@@ -69,7 +70,9 @@ void zmq::session_t::flush ()
 
 void zmq::session_t::detach ()
 {
-    //  Engine is terminating itself.
+    //  TODO:  Start reconnection process here.
+
+    //  Engine is terminating itself. No need to deallocate it from here.
     engine = NULL;
 
     //  In the case od anonymous connection, terminate the session.

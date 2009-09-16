@@ -236,7 +236,7 @@ int zmq::socket_base_t::connect (const char *addr_)
     //  Create the session.
     io_thread_t *io_thread = choose_io_thread (options.affinity);
     session_t *session = new session_t (io_thread, this, session_name.c_str (),
-        options);
+        options, true);
     zmq_assert (session);
 
     //  Create inbound pipe.
@@ -267,7 +267,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         //  it can bind the new connection to the session once it is established.
         zmq_connecter_t *connecter = new zmq_connecter_t (
             choose_io_thread (options.affinity), this, options,
-            session_name.c_str ());
+            session_name.c_str (), false);
         int rc = connecter->set_address (addr_args.c_str ());
         if (rc != 0) {
             delete connecter;

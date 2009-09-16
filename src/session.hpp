@@ -35,7 +35,7 @@ namespace zmq
     public:
 
         session_t (object_t *parent_, socket_base_t *owner_, const char *name_,
-            const options_t &options_);
+            const options_t &options_, bool reconnect_);
 
         //  i_inout interface implementation.
         bool read (::zmq_msg_t *msg_);
@@ -76,6 +76,9 @@ namespace zmq
 
         //  Inherited socket options.
         options_t options;
+
+        //  If true, reconnection is required after connection breaks.
+        bool reconnect;
 
         session_t (const session_t&);
         void operator = (const session_t&);

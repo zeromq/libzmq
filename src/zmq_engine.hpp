@@ -25,6 +25,7 @@
 #include "tcp_socket.hpp"
 #include "zmq_encoder.hpp"
 #include "zmq_decoder.hpp"
+#include "options.hpp"
 
 namespace zmq
 {

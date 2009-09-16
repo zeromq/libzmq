@@ -36,7 +36,7 @@ namespace zmq
     public:
 
         zmq_connecter_t (class io_thread_t *parent_, socket_base_t *owner_,
-            const options_t &options_, const char *session_name_);
+            const options_t &options_, const char *session_name_, bool wait_);
         ~zmq_connecter_t ();
 
         //  Set IP address to connect to.
@@ -65,6 +65,9 @@ namespace zmq
         //  If true file descriptor is registered with the poller and 'handle'
         //  contains valid value.
         bool handle_valid;
+
+        //  If true, connecter is waiting a while before trying to connect.
+        bool wait;
 
         //  Associated socket options.
         options_t options;

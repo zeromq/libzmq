@@ -24,10 +24,11 @@
 
 zmq::zmq_connecter_t::zmq_connecter_t (io_thread_t *parent_,
       socket_base_t *owner_, const options_t &options_,
-      const char *session_name_) :
+      const char *session_name_, bool wait_) :
     owned_t (parent_, owner_),
     io_object_t (parent_),
     handle_valid (false),
+    wait (wait_),
     options (options_),
     session_name (session_name_)
 {
@@ -44,12 +45,17 @@ int zmq::zmq_connecter_t::set_address (const char *addr_)
 
 void zmq::zmq_connecter_t::process_plug ()
 {
-    start_connecting ();
+    if (wait)
+        add_timer ();
+    else
+        start_connecting ();
     owned_t::process_plug ();
 }
 
 void zmq::zmq_connecter_t::process_unplug ()
 {
+    if (wait)
+        cancel_timer ();
     if (handle_valid)
         rm_fd (handle);
 }
@@ -68,8 +74,13 @@ void zmq::zmq_connecter_t::out_event ()
     rm_fd (handle);
     handle_valid = false;
 
-    //  TODO: Handle the error condition by eventual reconnect.
-    zmq_assert (fd != retired_fd);
+    //  Handle the error condition by attempt to reconnect.
+    if (fd == retired_fd) {
+        tcp_connecter.close ();
+        wait = true;
+        add_timer ();
+        return;
+    }
 
     //  Create an init object. 
     io_thread_t *io_thread = choose_io_thread (options.affinity);
@@ -85,7 +96,8 @@ void zmq::zmq_connecter_t::out_event ()
 
 void zmq::zmq_connecter_t::timer_event ()
 {
-    zmq_assert (false);
+    wait = false;
+    start_connecting ();
 }
 
 void zmq::zmq_connecter_t::start_connecting ()

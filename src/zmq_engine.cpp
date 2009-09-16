@@ -18,6 +18,7 @@
 */
 
 #include "zmq_engine.hpp"
+#include "zmq_connecter.hpp"
 #include "io_thread.hpp"
 #include "i_inout.hpp"
 #include "config.hpp"

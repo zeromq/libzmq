@@ -76,7 +76,7 @@ void zmq::zmq_listener_init_t::flush ()
     if (!session) {
         io_thread_t *io_thread = choose_io_thread (options.affinity);
         session = new session_t (io_thread, owner, peer_identity.c_str (),
-            options);
+            options, false);
         zmq_assert (session);
         send_plug (session);
         send_own (owner, session);

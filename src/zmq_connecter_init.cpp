@@ -18,6 +18,7 @@
 */
 
 #include "zmq_connecter_init.hpp"
+#include "zmq_connecter.hpp"
 #include "io_thread.hpp"
 #include "session.hpp"
 #include "err.hpp"
@@ -83,8 +84,25 @@ void zmq::zmq_connecter_init_t::flush ()
 
 void zmq::zmq_connecter_init_t::detach ()
 {
-    //  TODO: Engine is closing down. Init object is to be closed as well.
-    zmq_assert (false);
+    //  TODO: Start reconnection process here.
+/*
+    //  Create a connecter object to attempt reconnect. Ask it to wait for a
+    //  while before reconnecting.
+    io_thread_t *io_thread = choose_io_thread (options.affinity);
+    zmq_connecter_t *connecter = new zmq_connecter_t (io_thread, owner,
+        options, session_name.c_str (), true);
+    connecter->set_address (...);
+    zmq_assert (connecter);
+    send_plug (connecter);
+    send_own (owner, connecter);
+*/
+
+    //  This function is called by engine when disconnection occurs.
+    //  The engine will destroy itself, so we just drop the pointer here and
+    //  start termination of the init object.
+    engine = NULL;
+    term ();
+
 }
 
 void zmq::zmq_connecter_init_t::process_plug ()

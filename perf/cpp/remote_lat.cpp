@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stddef.h>
+#include <string.h>
 
 int main (int argc, char *argv [])
 {
@@ -39,10 +40,12 @@ int main (int argc, char *argv [])
     zmq::socket_t s (ctx, ZMQ_REQ);
     s.connect (connect_to);
 
+    zmq::message_t msg (message_size);
+    memset (msg.data (), 0, message_size);
+
     void *watch = zmq_stopwatch_start ();
 
     for (int i = 0; i != roundtrip_count; i++) {
-        zmq::message_t msg (message_size);
         s.send (msg);
         s.recv (&msg);
         assert (msg.size () == message_size);
