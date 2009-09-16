@@ -65,7 +65,13 @@ int zmq::tcp_socket_t::write (const void *data, int size)
         return 0;
 		
     //  Signalise peer failure.
-    if (nbytes == SOCKET_ERROR && WSAGetLastError () == WSAECONNRESET)
+    if (nbytes == -1 && (
+          WSAGetLastError () == WSAENETDOWN ||
+          WSAGetLastError () == WSAENETRESET ||
+          WSAGetLastError () == WSAEHOSTUNREACH ||
+          WSAGetLastError () == WSAECONNABORTED ||
+          WSAGetLastError () == WSAETIMEDOUT ||
+          WSAGetLastError () == WSAECONNRESET))
         return -1;
 
     wsa_assert (nbytes != SOCKET_ERROR);
@@ -84,6 +90,10 @@ int zmq::tcp_socket_t::read (void *data, int size)
 
     //  Connection failure.
     if (nbytes == -1 && (
+          WSAGetLastError () == WSAENETDOWN ||
+          WSAGetLastError () == WSAENETRESET ||
+          WSAGetLastError () == WSAECONNABORTED ||
+          WSAGetLastError () == WSAETIMEDOUT ||
           WSAGetLastError () == WSAECONNRESET ||
           WSAGetLastError () == WSAECONNREFUSED ||
           WSAGetLastError () == WSAENOTCONN))
