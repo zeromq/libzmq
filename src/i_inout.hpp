@@ -20,7 +20,7 @@
 #ifndef __ZMQ_I_INOUT_HPP_INCLUDED__
 #define __ZMQ_I_INOUT_HPP_INCLUDED__
 
-#include "../c/zmq.h"
+#include "../bindings/c/zmq.h"
 
 namespace zmq
 {

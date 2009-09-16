@@ -4,14 +4,14 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libzmq.pc
 
 if BUILD_CPP
-include_HEADERS = ../cpp/zmq.hpp ../c/zmq.h
+include_HEADERS = ../bindings/cpp/zmq.hpp ../bindings/c/zmq.h
 endif
 
 if BUILD_C
 if BUILD_CPP
 
 else
-include_HEADERS = ../c/zmq.h
+include_HEADERS = ../bindings/c/zmq.h
 endif
 endif
 

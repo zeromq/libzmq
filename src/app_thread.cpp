@@ -19,7 +19,7 @@
 
 #include <algorithm>
 
-#include "../c/zmq.h"
+#include "../bindings/c/zmq.h"
 
 #include "platform.hpp"
 

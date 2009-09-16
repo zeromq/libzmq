@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../c/zmq.h"
+#include "../bindings/c/zmq.h"
 
 #include <errno.h>
 #include <stdlib.h>

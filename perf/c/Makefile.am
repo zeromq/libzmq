@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_builddir)/c
+INCLUDES = -I$(top_builddir)/bindings/c
 
 noinst_PROGRAMS = local_lat remote_lat local_thr remote_thr
 

@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../../cpp/zmq.hpp"
+#include "../../bindings/cpp/zmq.hpp"
 #include "../../foreign/xmlParser/xmlParser.cpp"
 
 int main (int argc, char *argv [])

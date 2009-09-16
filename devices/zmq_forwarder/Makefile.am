@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_builddir)/c -I$(top_builddir)/cpp
+INCLUDES = -I$(top_builddir)/bindings/c
 
 bin_PROGRAMS = zmq_forwarder
 

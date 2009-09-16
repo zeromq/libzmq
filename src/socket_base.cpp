@@ -20,7 +20,7 @@
 #include <string>
 #include <algorithm>
 
-#include "../c/zmq.h"
+#include "../bindings/c/zmq.h"
 
 #include "socket_base.hpp"
 #include "app_thread.hpp"
