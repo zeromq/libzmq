@@ -107,6 +107,8 @@ void zmq::zmq_connecter_t::start_connecting ()
 
     //  Connect may succeed in synchronous manner.
     if (rc == 0) {
+        handle = add_fd (tcp_connecter.get_fd ());
+        handle_valid = true;
         out_event ();
         return;
     }
