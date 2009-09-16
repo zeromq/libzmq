@@ -139,15 +139,30 @@ PyObject *socket_setsockopt (socket_t *self, PyObject *args, PyObject *kwdict)
         return NULL;
     }
 
-    int rc;
-	if (PyInt_Check (optval)) {
-        int val = PyInt_AsLong (optval);
-	    rc = zmq_setsockopt (self->handle, option, &val, sizeof (int));
-    }
-	if (PyString_Check (optval))
-	    rc = zmq_setsockopt (self->handle, option, PyString_AsString (optval), 
-    		PyString_Size (optval));
-    else {
+    int rc = 0;
+
+    switch (option) {
+    case ZMQ_HWM:
+    case ZMQ_LWM:
+    case ZMQ_SWAP:
+    case ZMQ_AFFINITY:
+    case ZMQ_RATE:
+    case ZMQ_RECOVERY_IVL:
+    case ZMQ_MCAST_LOOP:
+        {
+            int val = PyInt_AsLong (optval);
+            rc = zmq_setsockopt (self->handle, option, &val, sizeof (int));
+            break;
+        }
+    case ZMQ_IDENTITY:
+    case ZMQ_SUBSCRIBE:
+    case ZMQ_UNSUBSCRIBE:
+
+        rc = zmq_setsockopt (self->handle, option, PyString_AsString (optval), 
+            PyString_Size (optval));
+        break;
+
+    default:
         rc = -1;
         errno = EINVAL;
     }
