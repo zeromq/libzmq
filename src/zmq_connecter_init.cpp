@@ -60,9 +60,13 @@ bool zmq::zmq_connecter_init_t::read (::zmq_msg_t *msg_)
     if (!session_name.empty ())
         session = owner->find_session (session_name.c_str ());
     if (!session) {
-        //  TODO
+
+        //  TODO:
+        //  The socket is already closing. The session is already shut down,
+        //  so no point in continuing with connecting. Shut the connection down.
         zmq_assert (false);
     }
+
     send_attach (session, engine);
     engine = NULL;
 
