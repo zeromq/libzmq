@@ -101,6 +101,12 @@ int zmq::sub_t::recv (struct zmq_msg_t *msg_, int flags_)
         if (rc != 0 && errno == EAGAIN)
             return -1;
 
+        //  If there is no subscription return -1/EAGAIN.
+        if (!all_count && prefixes.empty () && topics.empty ()) {
+            errno = EAGAIN;
+            return -1; 
+        }
+
         //  If there is at least one "*" subscription, the message matches.
         if (all_count)
             return 0;

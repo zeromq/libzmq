@@ -386,12 +386,14 @@ int zmq::pgm_socket_t::open_transport (void)
             return -1;
         }
     }
-
+    
     //  Enable multicast loopback.
-    rc = pgm_transport_set_multicast_loop (g_transport, true);
-    if (rc != 0) {
-        errno = EINVAL;
-        return -1;
+    if (options.use_multicast_loop) {
+        rc = pgm_transport_set_multicast_loop (g_transport, true);
+        if (rc != 0) {
+            errno = EINVAL;
+            return -1;
+        }
     }
 
     //  Bind a transport to the specified network devices.
@@ -486,6 +488,7 @@ int zmq::pgm_socket_t::get_sender_fds (int *send_fd_, int *receive_fd_)
 //  Send one APDU, transmit window owned memory.
 size_t zmq::pgm_socket_t::send (unsigned char *data_, size_t data_len_)
 {
+
     iovec iov = {data_,data_len_};
 
     ssize_t nbytes = pgm_transport_send_packetv (g_transport, &iov, 1, 
@@ -561,7 +564,6 @@ void zmq::pgm_socket_t::free_buffer (void *data_)
 //  returned.
 ssize_t zmq::pgm_socket_t::receive (void **raw_data_)
 {
- 
     //  We just sent all data from pgm_transport_recvmsgv up 
     //  and have to return 0 that another engine in this thread is scheduled.
     if (nbytes_rec == nbytes_processed && nbytes_rec > 0) {
@@ -575,7 +577,7 @@ ssize_t zmq::pgm_socket_t::receive (void **raw_data_)
     }
 
     //  If we have are going first time or if we have processed all pgm_msgv_t
-    //  structure previaously read from the pgm socket.
+    //  structure previously read from the pgm socket.
     if (nbytes_rec == nbytes_processed) {
 
         //  Check program flow.
@@ -615,6 +617,7 @@ ssize_t zmq::pgm_socket_t::receive (void **raw_data_)
         }
    
         zmq_log (4, "received %i bytes\n", (int)nbytes_rec);
+
     }
 
     zmq_assert (nbytes_rec > 0);

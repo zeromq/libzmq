@@ -17,32 +17,35 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_PGM_SENDER_HPP_INCLUDED__
-#define __ZMQ_PGM_SENDER_HPP_INCLUDED__
+#ifndef __ZMQ_PGM_RECEIVER_HPP_INCLUDED__
+#define __ZMQ_PGM_RECEIVER_HPP_INCLUDED__
 
 #include "platform.hpp"
 
 #if defined ZMQ_HAVE_OPENPGM
 
-#include "stdint.hpp"
 #include "io_object.hpp"
 #include "i_engine.hpp"
 #include "options.hpp"
+#include "zmq_decoder.hpp"
 #include "pgm_socket.hpp"
-#include "zmq_encoder.hpp"
 
 namespace zmq
 {
 
-    class pgm_sender_t : public io_object_t, public i_engine
+    class pgm_receiver_t : public io_object_t, public i_engine
     {
-
+    
     public:
-        pgm_sender_t (class io_thread_t *parent_, const options_t &options_, 
+
+        //  Creates gm_engine. Underlying PGM connection is initialised
+        //  using network_ parameter.
+        pgm_receiver_t (class io_thread_t *parent_, const options_t &options_,
             const char *session_name_);
-        ~pgm_sender_t ();
+        ~pgm_receiver_t ();
 
         int init (const char *network_);
+        void reconnect ();
 
         //  i_engine interface implementation.
         void plug (struct i_inout *inout_);
@@ -54,16 +57,15 @@ namespace zmq
         void out_event ();
 
     private:
+        //  Read exactly iov_len_ count APDUs, function returns number
+        //  of bytes received. Note that if we did not join message stream 
+        //  before and there is not message beginning in the APDUs being 
+        //  received iov_len for such a APDUs will be 0.
+        ssize_t receive_with_offset (void **data_);
 
-        //  Send one APDU with first message offset information. 
-        //  Note that first 2 bytes in data_ are used to store the offset_
-        //  and thus user data has to start at data_ + sizeof (uint16_t).
-        size_t write_one_pkt_with_offset (unsigned char *data_, size_t size_,
-            uint16_t offset_);
-
-        //  Message encoder.
-        zmq_encoder_t encoder;
-
+        //  Message decoder.
+        zmq_decoder_t decoder;
+       
         //  PGM socket.
         pgm_socket_t pgm_socket;
 
@@ -73,30 +75,24 @@ namespace zmq
         //  Name of the session associated with the connecter.
         std::string session_name;
 
-        //  Poll handle associated with PGM socket.
-        handle_t handle;
-        handle_t uplink_handle;
+        // If receiver joined the messages stream.
+        bool joined;
 
         //  Parent session.
         i_inout *inout;
 
-        //  Output buffer from pgm_socket.
-        unsigned char *out_buffer;
-        
-        //  Output buffer size.
-        size_t out_buffer_size;
+        //  Poll handle associated with PGM socket.
+        handle_t socket_handle;
 
-        size_t write_size;
-        size_t write_pos;
+        //  Poll handle associated with engine PGM waiting pipe.
+        handle_t pipe_handle;
 
-        //  Offset of the first mesage in data chunk taken from encoder.
-        int first_message_offset;
-
-        pgm_sender_t (const pgm_sender_t&);
-        void operator = (const pgm_sender_t&);
+        pgm_receiver_t (const pgm_receiver_t&);
+        void operator = (const pgm_receiver_t&);
     };
 
 }
+
 #endif
 
 #endif

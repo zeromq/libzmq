@@ -62,6 +62,7 @@ libzmq_la_SOURCES = $(pgm_sources) \
     object.hpp \
     options.hpp \
     owned.hpp \
+    pgm_receiver.hpp \
     pgm_sender.hpp \
     pgm_socket.hpp \
     pipe.hpp \
@@ -104,6 +105,7 @@ libzmq_la_SOURCES = $(pgm_sources) \
     object.cpp \
     options.cpp \
     owned.cpp \
+    pgm_receiver.cpp \
     pgm_sender.cpp \
     pgm_socket.cpp \
     pipe.cpp \

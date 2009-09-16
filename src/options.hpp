@@ -37,11 +37,14 @@ namespace zmq
         uint64_t affinity;
         std::string identity;
 
-        //  Maximum tranfer rate [kb/s].
+        //  Maximum tranfer rate [kb/s]. Default 100kb/s.
         uint32_t rate;
 
-        //  Reliability time interval [s].
+        //  Reliability time interval [s]. Default 10s.
         uint32_t recovery_ivl;
+
+        //  Enable multicast loopback. Default disabled (false).
+        bool use_multicast_loop;
     };
 
 }
