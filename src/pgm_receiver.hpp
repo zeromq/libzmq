@@ -44,7 +44,7 @@ namespace zmq
             const char *session_name_);
         ~pgm_receiver_t ();
 
-        int init (const char *network_);
+        int init (bool udp_encapsulation_, const char *network_);
         void reconnect ();
 
         //  i_engine interface implementation.

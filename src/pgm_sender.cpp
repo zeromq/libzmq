@@ -59,9 +59,9 @@ zmq::pgm_sender_t::pgm_sender_t (io_thread_t *parent_,
 
 }
 
-int zmq::pgm_sender_t::init (const char *network_)
+int zmq::pgm_sender_t::init (bool udp_encapsulation_, const char *network_)
 {
-    return pgm_socket.init (network_);
+    return pgm_socket.init (udp_encapsulation_, network_);
 }
 
 void zmq::pgm_sender_t::plug (i_inout *inout_)
@@ -157,7 +157,7 @@ void zmq::pgm_sender_t::out_event ()
 
         //  We can write all data or 0 which means rate limit reached.
         if (write_size - write_pos != nbytes && nbytes != 0) {
-            zmq_log (1, "write_size - write_pos %i, nbytes %i, %s(%i)",
+            zmq_log (2, "write_size - write_pos %i, nbytes %i, %s(%i)",
                 (int)(write_size - write_pos), (int)nbytes, __FILE__, __LINE__);
             assert (false);
         }
@@ -180,10 +180,8 @@ void zmq::pgm_sender_t::out_event ()
 size_t zmq::pgm_sender_t::write_one_pkt_with_offset (unsigned char *data_, 
     size_t size_, uint16_t offset_)
 {
-    zmq_log (1, "data_size %i, first message offset %i, %s(%i)\n",
+    zmq_log (4, "data_size %i, first message offset %i, %s(%i)\n",
         (int) size_, offset_, __FILE__, __LINE__);
-
-    std::cout << std::flush;
 
     //  Put offset information in the buffer.
     put_uint16 (data_, offset_);

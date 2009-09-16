@@ -61,12 +61,12 @@ zmq::pgm_receiver_t::~pgm_receiver_t ()
         delete decoder;
 }
 
-int zmq::pgm_receiver_t::init (const char *network_)
+int zmq::pgm_receiver_t::init (bool udp_encapsulation_, const char *network_)
 {
     decoder = new zmq_decoder_t;
     zmq_assert (decoder);
 
-    return pgm_socket.init (network_);
+    return pgm_socket.init (udp_encapsulation_, network_);
 }
 
 void zmq::pgm_receiver_t::plug (i_inout *inout_)
