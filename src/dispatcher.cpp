@@ -100,8 +100,8 @@ zmq::dispatcher_t::~dispatcher_t ()
         delete io_threads [i];
 
     //  Deallocate all the orphaned pipes.
-    for (pipes_t::iterator it = pipes.begin (); it != pipes.end (); it++)
-        delete *it;
+    while (!pipes.empty ())
+        delete *pipes.begin ();
 
     delete [] command_pipes;
 
