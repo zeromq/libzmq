@@ -44,6 +44,7 @@ public class Socket
     public static final int UNSUBSCRIBE = 7;
     public static final int RATE = 8;
     public static final int RECOVERY_IVL = 9;
+    public static final int MCAST_LOOP = 10;
 
     /**
      * Class constructor.

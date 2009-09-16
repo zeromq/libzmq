@@ -53,7 +53,7 @@ extern "C" {
 #define ZMQ_UNSUBSCRIBE 7          //  string
 #define ZMQ_RATE 8                 //  int64_t
 #define ZMQ_RECOVERY_IVL 9         //  int64_t
-#define ZMQ_MCAST_LOOP 10          //  boolean
+#define ZMQ_MCAST_LOOP 10          //  int64_t
 
 //  The operation should be performed in non-blocking mode. I.e. if it cannot
 //  be processed immediately, error should be returned with errno set to EAGAIN.

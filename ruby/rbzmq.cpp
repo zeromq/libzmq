@@ -282,6 +282,11 @@ extern "C" void Init_librbzmq ()
     rb_define_global_const ("SWAP", INT2NUM (ZMQ_SWAP));
     rb_define_global_const ("AFFINITY", INT2NUM (ZMQ_AFFINITY));
     rb_define_global_const ("IDENTITY", INT2NUM (ZMQ_IDENTITY));
+    rb_define_global_const ("SUBSCRIBE", INT2NUM (ZMQ_SUBSCRIBE));
+    rb_define_global_const ("UNSUBSCRIBE", INT2NUM (ZMQ_UNSUBSCRIBE));
+    rb_define_global_const ("RATE", INT2NUM (ZMQ_RATE));
+    rb_define_global_const ("RECOVERY_IVL", INT2NUM (ZMQ_RECOVERY_IVL));
+    rb_define_global_const ("MCAST_LOOP", INT2NUM (ZMQ_MCAST_LOOP));
 
     rb_define_global_const ("NOBLOCK", INT2NUM (ZMQ_NOBLOCK));
     rb_define_global_const ("NOFLUSH", INT2NUM (ZMQ_NOFLUSH));

@@ -35,7 +35,11 @@ def main ():
         sys.exit (1)
 
     ctx = libpyzmq.Context (1, 1);   
-    s = libpyzmq.Socket (ctx, libpyzmq.P2P)
+    s = libpyzmq.Socket (ctx, libpyzmq.PUB)
+
+    #  Add your socket options here.
+    #  For example ZMQ_RATE, ZMQ_RECOVERY_IVL and ZMQ_MCAST_LOOP for PGM.
+
     s.connect (connect_to)
 
     msg = ''.join ([' ' for n in range (0, message_size)])

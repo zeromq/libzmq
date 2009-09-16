@@ -21,33 +21,37 @@ import org.zmq.*;
 
 class remote_thr
 {
-     public static void main (String [] args)
-     {
-         if (args.length != 3) {
-             System.out.println ("usage: remote_thr <connect-to> " +
-                 "<message-size> <message-count>");
-             return;
-         }
+    public static void main (String [] args)
+    {
+        if (args.length != 3) {
+            System.out.println ("usage: remote_thr <connect-to> " +
+                "<message-size> <message-count>");
+            return;
+        }
 
-         //  Parse the command line arguments.
-         String connectTo = args [0];
-         int messageSize = Integer.parseInt (args [1]);
-         int messageCount = Integer.parseInt (args [2]);
+        //  Parse the command line arguments.
+        String connectTo = args [0];
+        int messageSize = Integer.parseInt (args [1]);
+        int messageCount = Integer.parseInt (args [2]);
 
-         org.zmq.Context ctx = new org.zmq.Context (1, 1);
+        org.zmq.Context ctx = new org.zmq.Context (1, 1);
 
-         org.zmq.Socket s = new org.zmq.Socket (ctx, org.zmq.Socket.P2P);
-         s.connect (connectTo);
+        org.zmq.Socket s = new org.zmq.Socket (ctx, org.zmq.Socket.PUB);
 
-         byte msg [] = new byte [messageSize];
-         for (int i = 0; i != messageCount; i++)
-             s.send (msg, 0);
+       //  Add your socket options here.
+       //  For example ZMQ_RATE, ZMQ_RECOVERY_IVL and ZMQ_MCAST_LOOP for PGM.
 
-         try {
-             Thread.sleep (10000);
-         }
-         catch (InterruptedException e) {
-             e.printStackTrace ();
-         }
+        s.connect (connectTo);
+
+        byte msg [] = new byte [messageSize];
+        for (int i = 0; i != messageCount; i++)
+            s.send (msg, 0);
+
+        try {
+            Thread.sleep (10000);
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace ();
+        }
     }
 }

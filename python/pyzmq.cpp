@@ -453,7 +453,7 @@ PyMODINIT_FUNC initlibpyzmq ()
 
     PyObject *dict = PyModule_GetDict (module);
     assert (dict);
-	PyObject *t;
+    PyObject *t;
     t = PyInt_FromLong (ZMQ_NOBLOCK);
     PyDict_SetItemString (dict, "NOBLOCK", t);
     Py_DECREF (t);
@@ -489,7 +489,23 @@ PyMODINIT_FUNC initlibpyzmq ()
     Py_DECREF (t);
     t = PyInt_FromLong (ZMQ_IDENTITY);
     PyDict_SetItemString (dict, "IDENTITY", t);
+    Py_DECREF (t);
+    t = PyInt_FromLong (ZMQ_SUBSCRIBE);
+    PyDict_SetItemString (dict, "SUBSCRIBE", t);
+    Py_DECREF (t);
+    t = PyInt_FromLong (ZMQ_UNSUBSCRIBE);
+    PyDict_SetItemString (dict, "UNSUBSCRIBE", t);
+    Py_DECREF (t);
+    t = PyInt_FromLong (ZMQ_RATE);
+    PyDict_SetItemString (dict, "RATE", t);
     Py_DECREF (t);    
+    t = PyInt_FromLong (ZMQ_RECOVERY_IVL);
+    PyDict_SetItemString (dict, "RECOVERY_IVL", t);
+    Py_DECREF (t);
+    t = PyInt_FromLong (ZMQ_MCAST_LOOP);
+    PyDict_SetItemString (dict, "MCAST_LOOP", t);
+    Py_DECREF (t);
+
 }
 
 #if defined _MSC_VER

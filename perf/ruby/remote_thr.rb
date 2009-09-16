@@ -28,7 +28,11 @@ message_size = ARGV[1].to_i
 message_count = ARGV[2].to_i
 			
 ctx = Context.new(1, 1)
-s = Socket.new(ctx, P2P);
+s = Socket.new(ctx, PUB);
+
+#  Add your socket options here.
+#  For example ZMQ_RATE, ZMQ_RECOVERY_IVL and ZMQ_MCAST_LOOP for PGM.
+
 s.connect(connect_to);
 
 msg = "#{'0'*message_size}"
