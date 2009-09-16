@@ -208,7 +208,7 @@ int zmq::socket_base_t::bind (const char *addr_)
     }
 
 #if defined ZMQ_HAVE_OPENPGM
-    if (addr_type == "pgm") {
+    if (addr_type == "pgm" || addr_type == "udp") {
         //  In the case of PGM bind behaves the same like connect.
         return connect (addr_); 
     }
@@ -287,7 +287,12 @@ int zmq::socket_base_t::connect (const char *addr_)
     }
 
 #if defined ZMQ_HAVE_OPENPGM
-    if (addr_type == "pgm") {
+    if (addr_type == "pgm" || addr_type == "udp") {
+
+        //  For udp, pgm transport with udp encapsulation is used.
+        bool udp_encapsulation = false;
+        if (addr_type == "udp")
+            udp_encapsulation = true;
 
         switch (type) {
 
@@ -298,7 +303,7 @@ int zmq::socket_base_t::connect (const char *addr_)
                 new pgm_sender_t (choose_io_thread (options.affinity), options, 
                 session_name.c_str ());
 
-            int rc = pgm_sender->init (addr_args.c_str ());
+            int rc = pgm_sender->init (udp_encapsulation, addr_args.c_str ());
             if (rc != 0) {
                 delete pgm_sender;
                 return -1;
@@ -320,7 +325,7 @@ int zmq::socket_base_t::connect (const char *addr_)
                 new pgm_receiver_t (choose_io_thread (options.affinity), options, 
                 session_name.c_str ());
 
-            int rc = pgm_receiver->init (addr_args.c_str ());
+            int rc = pgm_receiver->init (udp_encapsulation, addr_args.c_str ());
             if (rc != 0) {
                 delete pgm_receiver;
                 return -1;

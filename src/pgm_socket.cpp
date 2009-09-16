@@ -68,24 +68,12 @@ zmq::pgm_socket_t::pgm_socket_t (bool receiver_, const options_t &options_) :
     
 }
 
-int zmq::pgm_socket_t::init (const char *network_)
+int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
 {
-    //  Check if we are encapsulating into UDP, natwork string has to 
-    //  start with udp:.
-    const char *network_ptr = network_;
-
-    if (strlen (network_) >= 4 && network_ [0] == 'u' && 
-          network_ [1] == 'd' && network_ [2] == 'p' && 
-          network_ [3] == ':') {
-    
-        //  Shift interface_ptr after ':'.
-        network_ptr += 4;
-
-        udp_encapsulation = true;
-    }
+    udp_encapsulation = udp_encapsulation_;
  
     //  Parse port number.
-    const char *port_delim = strchr (network_ptr, ':');
+    const char *port_delim = strchr (network_, ':');
     if (!port_delim) {
         errno = EINVAL;
         return -1;
@@ -93,20 +81,13 @@ int zmq::pgm_socket_t::init (const char *network_)
 
     port_number = atoi (port_delim + 1);
   
-    //  Store interface string.
-    if (port_delim <= network_ptr) {
-        errno = EINVAL;
-        return -1;
-    }
-
-    if (port_delim - network_ptr >= (int) sizeof (network) - 1) {
+    if (port_delim - network_ >= (int) sizeof (network) - 1) {
         errno = EINVAL;
         return -1;
     }
 
     memset (network, '\0', sizeof (network));
-    memcpy (network, network_ptr, port_delim - network_ptr);
-
+    memcpy (network, network_, port_delim - network_);
 
     zmq_log (1, "parsed: network  %s, port %i, udp encaps. %s, %s(%i)\n", 
         network, port_number, udp_encapsulation ? "yes" : "no",
@@ -364,7 +345,7 @@ int zmq::pgm_socket_t::open_transport (void)
             return -1;
         }
 
-        zmq_log (1, "Preallocated %i slices in TX window. %s(%i)\n", 
+        zmq_log (2, "Preallocated %i slices in TX window. %s(%i)\n", 
             to_preallocate, __FILE__, __LINE__);
 
         //  Set interval of background SPM packets [us].
@@ -611,7 +592,7 @@ ssize_t zmq::pgm_socket_t::receive (void **raw_data_)
 
         //  Catch the rest of the errors.
         if (nbytes_rec <= 0) {
-            zmq_log (1, "received %i B, errno %i, %s(%i)", (int)nbytes_rec, 
+            zmq_log (2, "received %i B, errno %i, %s(%i)", (int)nbytes_rec, 
                 errno, __FILE__, __LINE__);
             errno_assert (nbytes_rec > 0);
         }

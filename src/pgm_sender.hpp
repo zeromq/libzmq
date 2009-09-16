@@ -42,7 +42,7 @@ namespace zmq
             const char *session_name_);
         ~pgm_sender_t ();
 
-        int init (const char *network_);
+        int init (bool udp_encapsulation_, const char *network_);
 
         //  i_engine interface implementation.
         void plug (struct i_inout *inout_);

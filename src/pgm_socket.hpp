@@ -52,7 +52,7 @@ namespace zmq
         ~pgm_socket_t ();
 
         //  Initialize PGM network structures (GSI, GSRs).
-        int init (const char *network_);
+        int init (bool udp_encapsulation_, const char *network_);
 
         //  Open PGM transport. Parameters are the same as in constructor.
         int open_transport (void);
