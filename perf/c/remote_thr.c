@@ -45,8 +45,11 @@ int main (int argc, char *argv [])
     ctx = zmq_init (1, 1);
     assert (ctx);
 
-    s = zmq_socket (ctx, ZMQ_P2P);
+    s = zmq_socket (ctx, ZMQ_PUB);
     assert (s);
+
+    //  Add your socket options here.
+    //  For example ZMQ_RATE, ZMQ_RECOVERY_IVL and ZMQ_MCAST_LOOP for PGM.
 
     rc = zmq_connect (s, connect_to);
     assert (rc == 0);

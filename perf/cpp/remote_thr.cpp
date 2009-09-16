@@ -36,7 +36,11 @@ int main (int argc, char *argv [])
 
     zmq::context_t ctx (1, 1);
 
-    zmq::socket_t s (ctx, ZMQ_P2P);
+    zmq::socket_t s (ctx, ZMQ_PUB);
+
+    //  Add your socket options here.
+    //  For example ZMQ_RATE, ZMQ_RECOVERY_IVL and ZMQ_MCAST_LOOP for PGM.
+
     s.connect (connect_to);
 
     for (int i = 0; i != message_count; i++) {

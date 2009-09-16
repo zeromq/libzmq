@@ -36,7 +36,13 @@ int main (int argc, char *argv [])
 
     zmq::context_t ctx (1, 1);
 
-    zmq::socket_t s (ctx, ZMQ_P2P);
+    zmq::socket_t s (ctx, ZMQ_SUB);
+
+    s.setsockopt (ZMQ_SUBSCRIBE , "*", 1);
+
+    //  Add your socket options here.
+    //  For example ZMQ_RATE, ZMQ_RECOVERY_IVL and ZMQ_MCAST_LOOP for PGM.
+
     s.bind (bind_to);
 
     zmq::message_t msg;

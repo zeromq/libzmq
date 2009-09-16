@@ -158,11 +158,18 @@ int zmq::socket_base_t::setsockopt (int option_, const void *optval_,
         return 0;
 
     case ZMQ_MCAST_LOOP:
-        if (optvallen_ != sizeof (bool)) {
+        if (optvallen_ != sizeof (int64_t)) {
             errno = EINVAL;
             return -1;
         }
-        options.use_multicast_loop = optval_;
+
+        if ((int64_t) *((int64_t*) optval_) == 0 ||
+              (int64_t) *((int64_t*) optval_) == 1) {
+            options.use_multicast_loop = (bool) *((int64_t*) optval_);
+        } else {
+            errno = EINVAL;
+            return -1;
+        }
         return 0;
 
     default:

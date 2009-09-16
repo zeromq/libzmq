@@ -98,6 +98,7 @@ JNIEXPORT void JNICALL Java_org_zmq_Socket_setsockopt__IJ (JNIEnv *env,
     case ZMQ_AFFINITY:
     case ZMQ_RATE:
     case ZMQ_RECOVERY_IVL:
+    case ZMQ_MCAST_LOOP:
         {
             void *s = (void*) env->GetLongField (obj, socket_handle_fid);
             assert (s);
