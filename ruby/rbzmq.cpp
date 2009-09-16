@@ -83,74 +83,52 @@ static VALUE socket_initialize (VALUE self_, VALUE context_, VALUE type_)
     return self_;
 }
 
-/*
-static VALUE rb_setsockopt (VALUE self_, VALUE socket_, VALUE option_,
+
+static VALUE socket_setsockopt (VALUE self_, VALUE option_,
     VALUE optval_)
 {
-	//  Get the socket.
-    void* socket;
-    Data_Get_Struct (socket_, void*, socket);
-    
+
     int rc = 0;
 
-	if (TYPE (optval_) == T_STRING) {
+    switch (NUM2INT (option_)) {
+    case ZMQ_HWM:
+    case ZMQ_LWM:
+    case ZMQ_SWAP:
+    case ZMQ_AFFINITY:
+    case ZMQ_RATE:
+    case ZMQ_RECOVERY_IVL:
+    case ZMQ_MCAST_LOOP:
+        {
+            long optval = FIX2LONG (optval_);
 
-		//  Forward the code to native 0MQ library.
-		rc = zmq_setsockopt (socket, NUM2INT (option_), 
-			(void *) StringValueCStr (optval_), RSTRING_LEN (optval_));	
-	
-	}
-	else if (TYPE (optval_) == T_FLOAT) {
+            //  Forward the code to native 0MQ library.
+            rc = zmq_setsockopt (DATA_PTR (self_), NUM2INT (option_), 
+                (void *) &optval, 4);
+        }
 
-		double optval = NUM2DBL (optval_);
-		
-		//  Forward the code to native 0MQ library.
-		rc = zmq_setsockopt (socket, NUM2INT (option_), 
-			(void*) &optval, 8);	
-	}
-	
-	else if (TYPE (optval_) == T_FIXNUM) {
+        break;
+    case ZMQ_IDENTITY:
+    case ZMQ_SUBSCRIBE:
+    case ZMQ_UNSUBSCRIBE:
 
-		long optval = FIX2LONG (optval_);
-		
-		//  Forward the code to native 0MQ library.
-		rc = zmq_setsockopt (socket, NUM2INT (option_), 
-			(void *) &optval, 4);	
-	
-	}
-	
-	else if (TYPE (optval_) == T_BIGNUM) {
+        //  Forward the code to native 0MQ library.
+        rc = zmq_setsockopt (DATA_PTR (self_), NUM2INT (option_), 
+	    (void *) StringValueCStr (optval_), RSTRING_LEN (optval_));	
+        break;
 
-		long optval = NUM2LONG (optval_);
-		
-		//  Forward the code to native 0MQ library.
-		rc = zmq_setsockopt (socket, NUM2INT (option_), 
-			(void *) &optval, 4);	
-	
-	}
-	else if (TYPE (optval_) == T_ARRAY) {
+    default:
+        rc = -1;
+        errno = EINVAL;
+    }
 
-		//  Forward the code to native 0MQ library.
-		rc = zmq_setsockopt (socket, NUM2INT (option_), 
-			(void *) RARRAY_PTR (optval_), RARRAY_LEN (optval_));	
-	
-	}
-	
-	else if (TYPE (optval_) == T_STRUCT) {
+    if (rc != 0) {
+        rb_raise (rb_eRuntimeError, strerror (errno));
+        return Qnil;
+    }
 
-		//  Forward the code to native 0MQ library.
-		rc = zmq_setsockopt (socket, NUM2INT (option_), 
-			(void *) RSTRUCT_PTR (optval_), RSTRUCT_LEN (optval_));	
-	
-	}
-	else 
-		rb_raise(rb_eRuntimeError, "Unknown type");    			
-    
-    assert (rc == 0);
-    
     return self_;
 }
-*/
+
 
 static VALUE socket_bind (VALUE self_, VALUE addr_)
 {
@@ -264,8 +242,8 @@ extern "C" void Init_librbzmq ()
     rb_define_alloc_func (socket_type, socket_alloc);
     rb_define_method (socket_type, "initialize",
         (VALUE(*)(...)) socket_initialize, 2);
-//    rb_define_method (socket_type, "setsockopt",
-//        (VALUE(*)(...)) socket_setsockopt, 2);
+    rb_define_method (socket_type, "setsockopt",
+        (VALUE(*)(...)) socket_setsockopt, 2);
     rb_define_method (socket_type, "bind",
         (VALUE(*)(...)) socket_bind, 1);
     rb_define_method (socket_type, "connect",

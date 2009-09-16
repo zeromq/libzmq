@@ -29,7 +29,7 @@ message_count = ARGV[2].to_i
 					
 ctx = Context.new(1, 1)
 s = Socket.new(ctx, SUB);
-s.setsockopt (SUBSCRIBE, "*");
+s.setsockopt(SUBSCRIBE, "*");
 
 #  Add your socket options here.
 #  For example ZMQ_RATE, ZMQ_RECOVERY_IVL and ZMQ_MCAST_LOOP for PGM.
