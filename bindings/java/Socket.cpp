@@ -22,7 +22,7 @@
 #include <assert.h>
 #include <errno.h>
 
-#include "../src/stdint.hpp"
+#include "../../src/stdint.hpp"
 
 #include "zmq.h"
 #include "org_zmq_Socket.h"
