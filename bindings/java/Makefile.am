@@ -21,8 +21,7 @@ libjzmq_la_SOURCES = \
 	Socket.cpp \
     org_zmq_Socket.h
 
-libjzmq_la_CXXFLAGS = -I$(top_srcdir)/src/libzmq \
-@JAVA_INCLUDE@ -I$(top_srcdir)/bindings/c -Wall
+libjzmq_la_CXXFLAGS = @JAVA_INCLUDE@ -I$(top_srcdir)/bindings/c -Wall
 libjzmq_la_LDFLAGS = -version-info @JLTVER@
 libjzmq_la_LIBADD = $(top_builddir)/src/libzmq.la
 
