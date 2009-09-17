@@ -30,6 +30,8 @@
 #pragma warning (disable:4996)
 #endif
 
+extern PyTypeObject context_type;
+
 struct context_t
 {
     PyObject_HEAD
@@ -55,14 +57,14 @@ int context_init (context_t *self, PyObject *args, PyObject *kwdict)
     if (!PyArg_ParseTupleAndKeywords (args, kwdict, "ii", (char**) kwlist,
           &app_threads, &io_threads)) {
         PyErr_SetString (PyExc_SystemError, "invalid arguments");
-        return -1; // ?
+        return -1;
     }
 
     assert (!self->handle);
     self->handle = zmq_init (app_threads, io_threads);
     if (!self->handle) {
         PyErr_SetString (PyExc_SystemError, strerror (errno));
-        return -1; // ?
+        return -1;
     }
 
     return 0;
@@ -78,6 +80,8 @@ void context_dealloc (context_t *self)
 
     self->ob_type->tp_free ((PyObject*) self);
 }
+
+extern PyTypeObject socket_type;
 
 struct socket_t
 {
@@ -100,18 +104,17 @@ int socket_init (socket_t *self, PyObject *args, PyObject *kwdict)
     context_t *context;
     int socket_type;
     static const char *kwlist [] = {"context", "type", NULL};
-    if (!PyArg_ParseTupleAndKeywords (args, kwdict, "Oi", (char**) kwlist,
-          &context, &socket_type)) {
+    if (!PyArg_ParseTupleAndKeywords (args, kwdict, "O!i", (char**) kwlist,
+          &context_type, &context, &socket_type)) {
         PyErr_SetString (PyExc_SystemError, "invalid arguments");
-        return NULL;
+        return -1;
     }
-    //  TODO: Check whether 'context' is really a libpyzmq.Context object.
 	
     assert (!self->handle);
     self->handle = zmq_socket (context->handle, socket_type);
     if (!self->handle) {
         PyErr_SetString (PyExc_SystemError, strerror (errno));
-        return -1; // ?
+        return -1;
     }
 
     return 0;
@@ -157,7 +160,6 @@ PyObject *socket_setsockopt (socket_t *self, PyObject *args, PyObject *kwdict)
     case ZMQ_IDENTITY:
     case ZMQ_SUBSCRIBE:
     case ZMQ_UNSUBSCRIBE:
-
         rc = zmq_setsockopt (self->handle, option, PyString_AsString (optval), 
             PyString_Size (optval));
         break;
@@ -309,7 +311,7 @@ static PyMethodDef context_methods [] =
     }
 };
 
-static PyTypeObject context_type =
+PyTypeObject context_type =
 {
     PyObject_HEAD_INIT (NULL)
     0,
@@ -395,7 +397,7 @@ static PyMethodDef socket_methods [] =
     }
 };
 
-static PyTypeObject socket_type =
+PyTypeObject socket_type =
 {
     PyObject_HEAD_INIT (NULL)
     0,
