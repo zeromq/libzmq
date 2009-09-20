@@ -173,17 +173,17 @@ int zmq_msg_type (zmq_msg_t *msg_)
     return (((const unsigned char*) msg_->content) - offset);
 }
 
-void *zmq_init (int app_threads_, int io_threads_)
+void *zmq_init (int app_threads_, int io_threads_, int flags_)
 {
     //  There should be at least a single thread managed by the dispatcher.
-    if (app_threads_ < 0 || io_threads_ < 0 ||
-          app_threads_ + io_threads_ == 0) {
+    if (app_threads_ <= 0 || io_threads_ <= 0 ||
+          app_threads_ > 63 || io_threads_ > 63) {
         errno = EINVAL;
         return NULL;
     }
 
     zmq::dispatcher_t *dispatcher = new zmq::dispatcher_t (app_threads_,
-        io_threads_);
+        io_threads_, flags_);
     zmq_assert (dispatcher);
     return (void*) dispatcher;
 }

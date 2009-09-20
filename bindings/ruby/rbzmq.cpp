@@ -38,10 +38,11 @@ static VALUE context_alloc (VALUE class_)
 }
 
 static VALUE context_initialize (VALUE self_, VALUE app_threads_,
-    VALUE io_threads_)
+    VALUE io_threads_, VALUE flags_)
 {
     assert (!DATA_PTR (self_));
-    void *ctx = zmq_init (NUM2INT (app_threads_), NUM2INT (io_threads_));
+    void *ctx = zmq_init (NUM2INT (app_threads_), NUM2INT (io_threads_),
+        NUM2INT (flags_));
     if (!ctx) {
         rb_raise (rb_eRuntimeError, strerror (errno));
         return Qnil;
@@ -105,8 +106,8 @@ static VALUE socket_setsockopt (VALUE self_, VALUE option_,
             rc = zmq_setsockopt (DATA_PTR (self_), NUM2INT (option_), 
                 (void *) &optval, 4);
         }
-
         break;
+
     case ZMQ_IDENTITY:
     case ZMQ_SUBSCRIBE:
     case ZMQ_UNSUBSCRIBE:
@@ -236,7 +237,7 @@ extern "C" void Init_librbzmq ()
     VALUE context_type = rb_define_class ("Context", rb_cObject);
     rb_define_alloc_func (context_type, context_alloc);
     rb_define_method (context_type, "initialize",
-        (VALUE(*)(...)) context_initialize, 2);
+        (VALUE(*)(...)) context_initialize, 3);
 
     VALUE socket_type = rb_define_class ("Socket", rb_cObject);
     rb_define_alloc_func (socket_type, socket_alloc);
@@ -274,4 +275,6 @@ extern "C" void Init_librbzmq ()
     rb_define_global_const ("PUB", INT2NUM (ZMQ_PUB));
     rb_define_global_const ("REQ", INT2NUM (ZMQ_REQ));
     rb_define_global_const ("REP", INT2NUM (ZMQ_REP));
+
+    rb_define_global_const ("POLL", INT2NUM (ZMQ_POLL));
 }

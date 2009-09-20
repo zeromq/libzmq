@@ -24,14 +24,16 @@ public class Context {
         System.loadLibrary("jzmq");
     }
 
+    public static final int POLL = 1;
+
     /**
      * Class constructor.
      *
      * @param appThreads maximum number of application threads.
      * @param ioThreads size of the threads pool to handle I/O operations.
      */
-    public Context (int appThreads, int ioThreads) {
-        construct (appThreads, ioThreads);
+    public Context (int appThreads, int ioThreads, int flags) {
+        construct (appThreads, ioThreads, flags);
     }
 
     /**
@@ -40,7 +42,7 @@ public class Context {
     public native long createSocket (int type);
 
     /** Initialize the JNI interface */
-    protected native void construct (int appThreads, int ioThreads);
+    protected native void construct (int appThreads, int ioThreads, int flags);
 
     /** Free resources used by JNI driver. */
     protected native void finalize ();

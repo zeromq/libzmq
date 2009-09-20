@@ -180,9 +180,9 @@ namespace zmq
 
     public:
 
-        inline context_t (int app_threads_, int io_threads_)
+        inline context_t (int app_threads_, int io_threads_, int flags_ = 0)
         {
-            ptr = zmq_init (app_threads_, io_threads_);
+            ptr = zmq_init (app_threads_, io_threads_, flags_);
             if (ptr == NULL)
                 throw error_t ();
         }

@@ -52,7 +52,7 @@ static void raise_exception (JNIEnv *env, int err)
 }
 
 JNIEXPORT void JNICALL Java_org_zmq_Context_construct (JNIEnv *env, jobject obj,
-    jint app_threads, jint io_threads)
+    jint app_threads, jint io_threads, jint flags)
 {
     if (ctx_handle_fid == NULL) {
         jclass cls = env->GetObjectClass (obj);
@@ -62,7 +62,7 @@ JNIEXPORT void JNICALL Java_org_zmq_Context_construct (JNIEnv *env, jobject obj,
         env->DeleteLocalRef (cls);
     }
 
-    void *ctx = zmq_init (app_threads, io_threads);
+    void *ctx = zmq_init (app_threads, io_threads, flags);
     if (ctx == NULL) {
         raise_exception (env, errno);
         return;

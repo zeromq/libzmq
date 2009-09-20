@@ -85,6 +85,12 @@ zmq::fd_t zmq::fd_signaler_t::get_fd ()
 
 zmq::fd_signaler_t::fd_signaler_t ()
 {
+    //  Windows have no 'socketpair' function.
+    //  Here we create the socketpair by hand.
+
+    //  TODO: Check Windows pipe (CreatePipe). It'll presumably be more
+    //  efficient than the socketpair.
+
     struct sockaddr_in addr;
     SOCKET listener;
     int addrlen = sizeof (addr);

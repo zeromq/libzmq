@@ -91,6 +91,10 @@ extern "C" {
 //  the peer that the previous recv delivered message from.
 #define ZMQ_REP 4
 
+//  Option specifying that the sockets should be pollable. This may be a little
+//  less efficient that raw non-pollable sockets.
+#define ZMQ_POLL 1
+
 //  Prototype for the message body deallocation functions.
 //  It is deliberately defined in the way to comply with standard C free.
 typedef void (zmq_free_fn) (void *data);
@@ -150,7 +154,7 @@ ZMQ_EXPORT int zmq_msg_type (struct zmq_msg_t *msg);
 //
 //  Errors: EINVAL - one of the arguments is less than zero or there are no
 //                   threads declared at all.
-ZMQ_EXPORT void *zmq_init (int app_threads, int io_threads);
+ZMQ_EXPORT void *zmq_init (int app_threads, int io_threads, int flags);
 
 //  Deinitialise 0MQ context including all the open sockets. Closing
 //  sockets after zmq_term has been called will result in undefined behaviour.

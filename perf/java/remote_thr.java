@@ -34,7 +34,7 @@ class remote_thr
         int messageSize = Integer.parseInt (args [1]);
         int messageCount = Integer.parseInt (args [2]);
 
-        org.zmq.Context ctx = new org.zmq.Context (1, 1);
+        org.zmq.Context ctx = new org.zmq.Context (1, 1, 0);
 
         org.zmq.Socket s = new org.zmq.Socket (ctx, org.zmq.Socket.PUB);
 

@@ -27,7 +27,7 @@ connect_to = ARGV[0]
 message_size = ARGV[1].to_i
 message_count = ARGV[2].to_i
 			
-ctx = Context.new(1, 1)
+ctx = Context.new(1, 1, 0)
 s = Socket.new(ctx, PUB);
 
 #  Add your socket options here.

@@ -50,7 +50,7 @@ namespace zmq
         //  Create the dispatcher object. Matrix of pipes to communicate between
         //  each socket and each I/O thread is created along with appropriate
         //  signalers.
-        dispatcher_t (int app_threads_, int io_threads_);
+        dispatcher_t (int app_threads_, int io_threads_, int flags_);
 
         //  This function is called when user invokes zmq_term. If there are
         //  no more sockets open it'll cause all the infrastructure to be shut

@@ -27,7 +27,7 @@ bind_to = ARGV[0]
 message_size = ARGV[1].to_i
 roundtrip_count = ARGV[2].to_i
 			
-ctx = Context.new(1, 1)
+ctx = Context.new(1, 1, 0)
 s = Socket.new(ctx, REP);
 s.bind(bind_to);
 

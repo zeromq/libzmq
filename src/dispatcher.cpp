@@ -30,7 +30,8 @@
 #include "windows.h"
 #endif
 
-zmq::dispatcher_t::dispatcher_t (int app_threads_, int io_threads_) :
+zmq::dispatcher_t::dispatcher_t (int app_threads_, int io_threads_,
+      int flags_) :
     sockets (0),
     terminated (false)
 {
@@ -47,7 +48,7 @@ zmq::dispatcher_t::dispatcher_t (int app_threads_, int io_threads_) :
 
     //  Create application thread proxies.
     for (int i = 0; i != app_threads_; i++) {
-        app_thread_t *app_thread = new app_thread_t (this, i);
+        app_thread_t *app_thread = new app_thread_t (this, i, flags_);
         zmq_assert (app_thread);
         app_threads.push_back (app_thread);
         signalers.push_back (app_thread->get_signaler ());
@@ -55,7 +56,8 @@ zmq::dispatcher_t::dispatcher_t (int app_threads_, int io_threads_) :
 
     //  Create I/O thread objects.
     for (int i = 0; i != io_threads_; i++) {
-        io_thread_t *io_thread = new io_thread_t (this, i + app_threads_);
+        io_thread_t *io_thread = new io_thread_t (this, i + app_threads_,
+            flags_);
         zmq_assert (io_thread);
         io_threads.push_back (io_thread);
         signalers.push_back (io_thread->get_signaler ());

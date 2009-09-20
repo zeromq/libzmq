@@ -53,15 +53,16 @@ int context_init (context_t *self, PyObject *args, PyObject *kwdict)
 {
     int app_threads;
     int io_threads;
-    static const char *kwlist [] = {"app_threads", "io_threads", NULL};
-    if (!PyArg_ParseTupleAndKeywords (args, kwdict, "ii", (char**) kwlist,
-          &app_threads, &io_threads)) {
+    int flags = 0;
+    static const char *kwlist [] = {"app_threads", "io_threads", "flags", NULL};
+    if (!PyArg_ParseTupleAndKeywords (args, kwdict, "ii|i", (char**) kwlist,
+          &app_threads, &io_threads, &flags)) {
         PyErr_SetString (PyExc_SystemError, "invalid arguments");
         return -1;
     }
 
     assert (!self->handle);
-    self->handle = zmq_init (app_threads, io_threads);
+    self->handle = zmq_init (app_threads, io_threads, flags);
     if (!self->handle) {
         PyErr_SetString (PyExc_SystemError, strerror (errno));
         return -1;
@@ -522,7 +523,9 @@ PyMODINIT_FUNC initlibpyzmq ()
     t = PyInt_FromLong (ZMQ_MCAST_LOOP);
     PyDict_SetItemString (dict, "MCAST_LOOP", t);
     Py_DECREF (t);
-
+    t = PyInt_FromLong (ZMQ_POLL);
+    PyDict_SetItemString (dict, "POLL", t);
+    Py_DECREF (t);
 }
 
 #if defined _MSC_VER

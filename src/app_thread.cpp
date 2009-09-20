@@ -46,7 +46,8 @@
 #define ZMQ_DELAY_COMMANDS
 #endif
 
-zmq::app_thread_t::app_thread_t (dispatcher_t *dispatcher_, int thread_slot_) :
+zmq::app_thread_t::app_thread_t (dispatcher_t *dispatcher_, int thread_slot_,
+      int flags_) :
     object_t (dispatcher_, thread_slot_),
     associated (false),
     last_processing_time (0)

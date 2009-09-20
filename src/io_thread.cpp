@@ -32,7 +32,8 @@
 #include "dispatcher.hpp"
 #include "simple_semaphore.hpp"
 
-zmq::io_thread_t::io_thread_t (dispatcher_t *dispatcher_, int thread_slot_) :
+zmq::io_thread_t::io_thread_t (dispatcher_t *dispatcher_, int thread_slot_,
+      int flags_) :
     object_t (dispatcher_, thread_slot_)
 {
 #if defined ZMQ_FORCE_SELECT
