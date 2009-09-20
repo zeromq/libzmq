@@ -104,7 +104,7 @@ int zmq::io_thread_t::get_load ()
 void zmq::io_thread_t::in_event ()
 {
     //  Find out which threads are sending us commands.
-    fd_signaler_t::signals_t signals = signaler.check ();
+    uint64_t signals = signaler.check ();
     zmq_assert (signals);
 
     //  Iterate through all the threads in the process and find out
@@ -112,7 +112,7 @@ void zmq::io_thread_t::in_event ()
     int slot_count = thread_slot_count ();
     for (int source_thread_slot = 0;
           source_thread_slot != slot_count; source_thread_slot++) {
-        if (signals & (fd_signaler_t::signals_t (1) << source_thread_slot)) {
+        if (signals & (uint64_t (1) << source_thread_slot)) {
 
             //  Read all the commands from particular thread.
             command_t cmd;

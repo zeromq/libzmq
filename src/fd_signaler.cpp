@@ -59,16 +59,16 @@ zmq::fd_signaler_t::~fd_signaler_t ()
 void zmq::fd_signaler_t::signal (int signal_)
 {
     zmq_assert (signal_ >= 0 && signal_ < 64);
-    signals_t inc = 1;
+    uint64_t inc = 1;
     inc <<= signal_;
-    ssize_t sz = write (fd, &inc, sizeof (signals_t));
-    errno_assert (sz == sizeof (signals_t));
+    ssize_t sz = write (fd, &inc, sizeof (uint64_t));
+    errno_assert (sz == sizeof (uint64_t));
 }
 
-zmq::fd_signaler_t::signals_t zmq::fd_signaler_t::check ()
+uint64_t zmq::fd_signaler_t::check ()
 {
-    signals_t val;
-    ssize_t sz = read (fd, &val, sizeof (signals_t));
+    uint64_t val;
+    ssize_t sz = read (fd, &val, sizeof (uint64_t));
     if (sz == -1 && (errno == EAGAIN || errno == EWOULDBLOCK ||
           errno == EINTR))
         return 0;
@@ -148,16 +148,30 @@ void zmq::fd_signaler_t::signal (int signal_)
     win_assert (rc != SOCKET_ERROR);
 }
 
-zmq::fd_signaler_t::signals_t zmq::fd_signaler_t::check ()
+uint64_t zmq::fd_signaler_t::poll ()
 {
-    char buffer [32];      
+    //  If there are signals available, return straight away.
+    uint64_t signals = check ();
+    if (signals)
+        return signals;
+
+    //  If there are no signals, wait until at least one signal arrives.
+    unsigned char sig;
+    int nbytes = recv (r, &sig, 1, MSG_WAITALL);
+    win_assert (nbytes != -1);
+    return uint64_t (1) << sig;
+}
+
+uint64_t zmq::fd_signaler_t::check ()
+{
+    unsigned char buffer [32];      
     int nbytes = recv (r, buffer, 32, 0);
     win_assert (nbytes != -1);
 
-    signals_t signals = 0;
+    uint64_t signals = 0;
     for (int pos = 0; pos != nbytes; pos++) {
         zmq_assert (buffer [pos] < 64);
-        signals |= (signals_t (1) << (buffer [pos]));
+        signals |= (uint64_t (1) << (buffer [pos]));
     }
     return signals;
 }
@@ -202,15 +216,30 @@ void zmq::fd_signaler_t::signal (int signal_)
     errno_assert (nbytes == 1);
 }
 
-zmq::fd_signaler_t::signals_t zmq::fd_signaler_t::check ()
+uint64_t zmq::fd_signaler_t::poll ()
+{
+    //  If there are signals available, return straight away.
+    uint64_t signals = check ();
+    if (signals)
+        return signals;
+
+    //  If there are no signals, wait until at least one signal arrives.
+    unsigned char sig;
+    ssize_t nbytes = recv (r, &sig, 1, MSG_WAITALL);
+    errno_assert (nbytes != -1);
+    return uint64_t (1) << sig;
+}
+
+uint64_t zmq::fd_signaler_t::check ()
 {
     unsigned char buffer [32];
     ssize_t nbytes = recv (r, buffer, 32, 0);
     errno_assert (nbytes != -1);
-    signals_t signals = 0;
+
+    uint64_t signals = 0;
     for (int pos = 0; pos != nbytes; pos ++) {
         zmq_assert (buffer [pos] < 64);
-        signals |= (1 << (buffer [pos]));
+        signals |= (uint64_t (1) << (buffer [pos]));
     }
     return signals;
 }

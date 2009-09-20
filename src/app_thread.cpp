@@ -84,7 +84,7 @@ bool zmq::app_thread_t::make_current ()
 
 void zmq::app_thread_t::process_commands (bool block_, bool throttle_)
 {
-    ypollset_t::signals_t signals;
+    uint64_t signals;
     if (block_)
         signals = pollset.poll ();
     else {
@@ -127,7 +127,7 @@ void zmq::app_thread_t::process_commands (bool block_, bool throttle_)
         //  Traverse all the possible sources of commands and process
         //  all the commands from all of them.
         for (int i = 0; i != thread_slot_count (); i++) {
-            if (signals & (ypollset_t::signals_t (1) << i)) {
+            if (signals & (uint64_t (1) << i)) {
                 command_t cmd;
                 while (dispatcher->read (i, get_thread_slot (), &cmd))
                     cmd.destination->process_command (cmd);

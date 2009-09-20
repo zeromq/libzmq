@@ -30,7 +30,7 @@ void zmq::ypollset_t::signal (int signal_)
         sem.post (); 
 }
 
-zmq::ypollset_t::signals_t zmq::ypollset_t::poll ()
+uint64_t zmq::ypollset_t::poll ()
 {
     signals_t result = 0;
     while (!result) {
@@ -47,10 +47,10 @@ zmq::ypollset_t::signals_t zmq::ypollset_t::poll ()
         //  operation (set and reset). In such case looping can occur
         //  sporadically.
     }
-    return result;      
+    return (uint64_t) result;      
 }
 
-zmq::ypollset_t::signals_t zmq::ypollset_t::check ()
+uint64_t zmq::ypollset_t::check ()
 {
-    return bits.xchg (0);
+    return (uint64_t) bits.xchg (0);
 }

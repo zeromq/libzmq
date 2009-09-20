@@ -37,22 +37,16 @@ namespace zmq
     {
     public:
 
-        typedef uint64_t signals_t;
-
         //  Initialise the object.
         fd_signaler_t ();
 
         //  Destroy the object.
         ~fd_signaler_t ();
 
-        //  Send specific signal.
+        //  i_signaler interface implementation.
         void signal (int signal_);
-
-        //  Retrieves signals. Returns a set of signals in form of a bitmap.
-        //  Signal with index 0 corresponds to value 1, index 1 to value 2,
-        //  index 2 to value 4 etc. If there is no signal available,
-        //  it returns zero immediately.
-        signals_t check ();
+        uint64_t poll ();
+        uint64_t check ();
 
         //  Get the file descriptor associated with the object.
         fd_t get_fd ();

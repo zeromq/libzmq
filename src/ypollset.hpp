@@ -35,24 +35,18 @@ namespace zmq
     {
     public:
 
-        typedef atomic_bitmap_t::bitmap_t signals_t;
-
         //  Create the pollset.
         ypollset_t ();
 
-        //  Send a signal to the pollset (i_singnaler implementation).
+        //  i_signaler interface implementation.
         void signal (int signal_);
-
-        //  Wait for signal. Returns a set of signals in form of a bitmap.
-        //  Signal with index 0 corresponds to value 1, index 1 to value 2,
-        //  index 2 to value 3 etc.
-        signals_t poll ();
-
-        //  Same as poll, however, if there is no signal available,
-        //  function returns zero immediately instead of waiting for a signal.
-        signals_t check ();
+        uint64_t poll ();
+        uint64_t check ();
 
     private:
+
+        //  Internal representation of signal bitmap.
+        typedef atomic_bitmap_t::bitmap_t signals_t;
 
         //  Wait signal is carried in the most significant bit of integer.
         enum {wait_signal = sizeof (signals_t) * 8 - 1};

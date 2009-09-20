@@ -20,6 +20,8 @@
 #ifndef __ZMQ_I_SIGNALER_HPP_INCLUDED__
 #define __ZMQ_I_SIGNALER_HPP_INCLUDED__
 
+#include "stdint.hpp"
+
 namespace zmq
 {
     //  Virtual interface used to send signals. Individual implementations
@@ -31,6 +33,15 @@ namespace zmq
 
         //  Send a signal with a specific ID.
         virtual void signal (int signal_) = 0;
+
+        //  Wait for signal. Returns a set of signals in form of a bitmap.
+        //  Signal with index 0 corresponds to value 1, index 1 to value 2,
+        //  index 2 to value 3 etc.
+        uint64_t poll ();
+
+        //  Same as poll, however, if there is no signal available,
+        //  function returns zero immediately instead of waiting for a signal.
+        uint64_t check ();
     };
 
 }
