@@ -31,6 +31,8 @@
 
 #include "app_thread.hpp"
 #include "dispatcher.hpp"
+#include "fd_signaler.hpp"
+#include "ypollset.hpp"
 #include "err.hpp"
 #include "pipe.hpp"
 #include "config.hpp"
@@ -52,16 +54,26 @@ zmq::app_thread_t::app_thread_t (dispatcher_t *dispatcher_, int thread_slot_,
     associated (false),
     last_processing_time (0)
 {
+    if (flags_ & ZMQ_POLL) {
+        signaler = new fd_signaler_t;
+        zmq_assert (signaler);
+    }
+    else {
+        signaler = new ypollset_t;
+        zmq_assert (signaler);
+    }
 }
 
 zmq::app_thread_t::~app_thread_t ()
 {
     zmq_assert (sockets.empty ());
+    zmq_assert (signaler);
+    delete signaler;
 }
 
 zmq::i_signaler *zmq::app_thread_t::get_signaler ()
 {
-    return &pollset;
+    return signaler;
 }
 
 bool zmq::app_thread_t::is_current ()
@@ -86,7 +98,7 @@ void zmq::app_thread_t::process_commands (bool block_, bool throttle_)
 {
     uint64_t signals;
     if (block_)
-        signals = pollset.poll ();
+        signals = signaler->poll ();
     else {
 
 #if defined ZMQ_DELAY_COMMANDS
@@ -119,7 +131,7 @@ void zmq::app_thread_t::process_commands (bool block_, bool throttle_)
 #endif
 
         //  Check whether there are any commands pending for this thread.
-        signals = pollset.check ();
+        signals = signaler->check ();
     }
 
     if (signals) {

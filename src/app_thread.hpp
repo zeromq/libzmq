@@ -24,7 +24,6 @@
 
 #include "stdint.hpp"
 #include "object.hpp"
-#include "ypollset.hpp"
 #include "thread.hpp"
 
 namespace zmq
@@ -40,7 +39,7 @@ namespace zmq
         ~app_thread_t ();
 
         //  Returns signaler associated with this application thread.
-        i_signaler *get_signaler ();
+        struct i_signaler *get_signaler ();
 
         //  Nota bene: Following two functions are accessed from different
         //  threads. The caller (dispatcher) is responsible for synchronisation
@@ -79,7 +78,7 @@ namespace zmq
         thread_t::id_t tid;
 
         //  App thread's signaler object.
-        ypollset_t pollset;
+        struct i_signaler *signaler;
 
         //  Timestamp of when commands were processed the last time.
         uint64_t last_processing_time;

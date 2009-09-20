@@ -37,11 +37,11 @@ namespace zmq
         //  Wait for signal. Returns a set of signals in form of a bitmap.
         //  Signal with index 0 corresponds to value 1, index 1 to value 2,
         //  index 2 to value 3 etc.
-        uint64_t poll ();
+        virtual uint64_t poll () = 0;
 
         //  Same as poll, however, if there is no signal available,
         //  function returns zero immediately instead of waiting for a signal.
-        uint64_t check ();
+        virtual uint64_t check () = 0;
     };
 
 }

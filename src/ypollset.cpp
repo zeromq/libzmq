@@ -23,6 +23,10 @@ zmq::ypollset_t::ypollset_t ()
 {
 }
 
+zmq::ypollset_t::~ypollset_t ()
+{
+}
+
 void zmq::ypollset_t::signal (int signal_)
 {
     zmq_assert (signal_ >= 0 && signal_ < wait_signal);

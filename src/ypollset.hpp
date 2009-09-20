@@ -35,8 +35,8 @@ namespace zmq
     {
     public:
 
-        //  Create the pollset.
         ypollset_t ();
+        ~ypollset_t ();
 
         //  i_signaler interface implementation.
         void signal (int signal_);

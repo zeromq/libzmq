@@ -37,10 +37,7 @@ namespace zmq
     {
     public:
 
-        //  Initialise the object.
         fd_signaler_t ();
-
-        //  Destroy the object.
         ~fd_signaler_t ();
 
         //  i_signaler interface implementation.
