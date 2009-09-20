@@ -85,11 +85,8 @@ zmq::fd_t zmq::fd_signaler_t::get_fd ()
 
 zmq::fd_signaler_t::fd_signaler_t ()
 {
-    //  Windows have no 'socketpair' function.
-    //  Here we create the socketpair by hand.
-
-    //  TODO: Check Windows pipe (CreatePipe). It'll presumably be more
-    //  efficient than the socketpair.
+    //  Windows have no 'socketpair' function. CreatePipe is no good as pipe
+    //  handles cannot be polled on. Here we create the socketpair by hand.
 
     struct sockaddr_in addr;
     SOCKET listener;
@@ -157,7 +154,7 @@ uint64_t zmq::fd_signaler_t::poll ()
 
     //  If there are no signals, wait until at least one signal arrives.
     unsigned char sig;
-    int nbytes = recv (r, &sig, 1, MSG_WAITALL);
+    int nbytes = recv (r, (char*) &sig, 1, MSG_WAITALL);
     win_assert (nbytes != -1);
     return uint64_t (1) << sig;
 }
@@ -165,7 +162,7 @@ uint64_t zmq::fd_signaler_t::poll ()
 uint64_t zmq::fd_signaler_t::check ()
 {
     unsigned char buffer [32];      
-    int nbytes = recv (r, buffer, 32, 0);
+    int nbytes = recv (r, (char*) buffer, 32, 0);
     win_assert (nbytes != -1);
 
     uint64_t signals = 0;
