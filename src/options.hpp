@@ -22,6 +22,7 @@
 
 #include <string>
 
+#include "stddef.h"
 #include "stdint.hpp"
 
 namespace zmq
@@ -30,6 +31,8 @@ namespace zmq
     struct options_t
     {
         options_t ();
+
+        int setsockopt (int option_, const void *optval_, size_t optvallen_);
 
         int64_t hwm;
         int64_t lwm;

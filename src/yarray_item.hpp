@@ -17,20 +17,44 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_I_ENDPOINT_HPP_INCLUDED__
-#define __ZMQ_I_ENDPOINT_HPP_INCLUDED__
+#ifndef __ZMQ_YARRAY_ITEM_INCLUDED__
+#define __ZMQ_YARRAY_ITEM_INCLUDED__
 
 namespace zmq
 {
 
-    struct i_endpoint
+    //  Base class for objects stored in yarray. Note that each object can
+    //  be stored in at most one yarray.
+
+    class yarray_item_t
     {
-        virtual void attach_pipes (class reader_t *inpipe_,
-            class writer_t *outpipe_) = 0;
-        virtual void detach_inpipe (class reader_t *pipe_) = 0;
-        virtual void detach_outpipe (class writer_t *pipe_) = 0;
-        virtual void kill (class reader_t *pipe_) = 0;
-        virtual void revive (class reader_t *pipe_) = 0;
+    public:
+
+        inline yarray_item_t () :
+            yarray_index (-1)
+        {
+        }
+
+        inline ~yarray_item_t ()
+        {
+        }
+
+        inline void set_yarray_index (int index_)
+        {
+            yarray_index = index_;
+        }
+
+        inline int get_yarray_index ()
+        {
+            return yarray_index;
+        }
+
+    private:
+
+        int yarray_index;
+
+        yarray_item_t (const yarray_item_t&);
+        void operator = (const yarray_item_t&);
     };
 
 }

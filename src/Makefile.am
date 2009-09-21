@@ -68,7 +68,10 @@ libzmq_la_SOURCES = $(pgm_sources) \
     pipe.hpp \
     platform.hpp \
     poll.hpp \
+    p2p.hpp \
     pub.hpp \
+    rep.hpp \
+    req.hpp \
     select.hpp \
     session.hpp \
     simple_semaphore.hpp \
@@ -82,6 +85,8 @@ libzmq_la_SOURCES = $(pgm_sources) \
     uuid.hpp \
     windows.hpp \
     wire.hpp \
+    yarray.hpp \
+    yarray_item.hpp \
     ypipe.hpp \
     ypollset.hpp \
     yqueue.hpp \
@@ -108,9 +113,12 @@ libzmq_la_SOURCES = $(pgm_sources) \
     pgm_receiver.cpp \
     pgm_sender.cpp \
     pgm_socket.cpp \
+    p2p.cpp \
     pipe.cpp \
     poll.cpp \
     pub.cpp \
+    rep.cpp \
+    req.cpp \
     select.cpp \
     session.cpp \
     socket_base.cpp \

@@ -46,11 +46,7 @@ bool zmq::session_t::read (::zmq_msg_t *msg_)
     if (!active)
         return false;
 
-    bool fetched = in_pipe->read (msg_);
-    if (!fetched)
-        active = false;
-
-    return fetched;
+    return in_pipe->read (msg_);
 }
 
 bool zmq::session_t::write (::zmq_msg_t *msg_)
@@ -84,27 +80,21 @@ void zmq::session_t::detach ()
         term ();
 }
 
-void zmq::session_t::attach_inpipe (reader_t *pipe_)
+void zmq::session_t::attach_pipes (class reader_t *inpipe_,
+    class writer_t *outpipe_)
 {
-    zmq_assert (!in_pipe);
-    in_pipe = pipe_;
-    active = true;
-    in_pipe->set_endpoint (this);
-}
+    if (inpipe_) {
+        zmq_assert (!in_pipe);
+        in_pipe = inpipe_;
+        active = true;
+        in_pipe->set_endpoint (this);
+    }
 
-void zmq::session_t::attach_outpipe (writer_t *pipe_)
-{
-    zmq_assert (!out_pipe);
-    out_pipe = pipe_;
-    out_pipe->set_endpoint (this);
-}
-
-void zmq::session_t::revive (reader_t *pipe_)
-{
-    zmq_assert (in_pipe == pipe_);
-    active = true;
-    if (engine)
-        engine->revive ();
+    if (outpipe_) {
+        zmq_assert (!out_pipe);
+        out_pipe = outpipe_;
+        out_pipe->set_endpoint (this);
+    }
 }
 
 void zmq::session_t::detach_inpipe (reader_t *pipe_)
@@ -116,6 +106,19 @@ void zmq::session_t::detach_inpipe (reader_t *pipe_)
 void zmq::session_t::detach_outpipe (writer_t *pipe_)
 {
     out_pipe = NULL;
+}
+
+void zmq::session_t::kill (reader_t *pipe_)
+{
+    active = false;
+}
+
+void zmq::session_t::revive (reader_t *pipe_)
+{
+    zmq_assert (in_pipe == pipe_);
+    active = true;
+    if (engine)
+        engine->revive ();
 }
 
 void zmq::session_t::process_plug ()

@@ -24,6 +24,7 @@
 
 #include "stdint.hpp"
 #include "object.hpp"
+#include "yarray.hpp"
 #include "thread.hpp"
 
 namespace zmq
@@ -67,7 +68,7 @@ namespace zmq
     private:
 
         //  All the sockets created from this application thread.
-        typedef std::vector <class socket_base_t*> sockets_t;
+        typedef yarray_t <socket_base_t> sockets_t;
         sockets_t sockets;
 
         //  If false, app_thread_t object is not associated with any OS thread.

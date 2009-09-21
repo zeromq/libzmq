@@ -17,11 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_SUB_INCLUDED__
-#define __ZMQ_SUB_INCLUDED__
-
-#include <set>
-#include <string>
+#ifndef __ZMQ_REP_INCLUDED__
+#define __ZMQ_REP_INCLUDED__
 
 #include "socket_base.hpp"
 #include "yarray.hpp"
@@ -29,14 +26,12 @@
 namespace zmq
 {
 
-    class sub_t : public socket_base_t
+    class rep_t : public socket_base_t
     {
     public:
 
-        sub_t (class app_thread_t *parent_);
-        ~sub_t ();
-
-    protected:
+        rep_t (class app_thread_t *parent_);
+        ~rep_t ();
 
         //  Overloads of functions from socket_base_t.
         bool xrequires_in ();
@@ -53,33 +48,30 @@ namespace zmq
 
     private:
 
-        //  Helper function to return one message choosed using
-        //  fair queueing algorithm.
-        int fq (struct zmq_msg_t *msg_, int flags_);
-
-        //  Inbound pipes, i.e. those the socket is getting messages from.
+        //  List in outbound and inbound pipes. Note that the two lists are
+        //  always in sync. I.e. outpipe with index N communicates with the
+        //  same session as inpipe with index N.
+        typedef yarray_t <class writer_t> out_pipes_t;
+        out_pipes_t out_pipes;
         typedef yarray_t <class reader_t> in_pipes_t;
         in_pipes_t in_pipes;
 
-        //  Number of active inbound pipes. Active pipes are stored in the
-        //  initial section of the in_pipes array.
+        //  Number of active inpipes. All the active inpipes are located at the
+        //  beginning of the in_pipes array.
         in_pipes_t::size_type active;
 
-        //  Index of the next inbound pipe to read messages from.
+        //  Index of the next inbound pipe to read a request from.
         in_pipes_t::size_type current;
 
-        //  Number of active "*" subscriptions.
-        int all_count;
+        //  If true, request was already received and reply wasn't sent yet.
+        bool waiting_for_reply;
 
-        //  List of all prefix subscriptions.
-        typedef std::multiset <std::string> subscriptions_t;
-        subscriptions_t prefixes;
+        //  Pipe we are going to send reply to.
+        class writer_t *reply_pipe;
 
-        //  List of all exact match subscriptions.
-        subscriptions_t topics;
+        rep_t (const rep_t&);
+        void operator = (const rep_t&);
 
-        sub_t (const sub_t&);
-        void operator = (const sub_t&);
     };
 
 }

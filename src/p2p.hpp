@@ -17,26 +17,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_SUB_INCLUDED__
-#define __ZMQ_SUB_INCLUDED__
-
-#include <set>
-#include <string>
+#ifndef __ZMQ_P2P_INCLUDED__
+#define __ZMQ_P2P_INCLUDED__
 
 #include "socket_base.hpp"
-#include "yarray.hpp"
 
 namespace zmq
 {
 
-    class sub_t : public socket_base_t
+    class p2p_t : public socket_base_t
     {
     public:
 
-        sub_t (class app_thread_t *parent_);
-        ~sub_t ();
-
-    protected:
+        p2p_t (class app_thread_t *parent_);
+        ~p2p_t ();
 
         //  Overloads of functions from socket_base_t.
         bool xrequires_in ();
@@ -53,33 +47,8 @@ namespace zmq
 
     private:
 
-        //  Helper function to return one message choosed using
-        //  fair queueing algorithm.
-        int fq (struct zmq_msg_t *msg_, int flags_);
-
-        //  Inbound pipes, i.e. those the socket is getting messages from.
-        typedef yarray_t <class reader_t> in_pipes_t;
-        in_pipes_t in_pipes;
-
-        //  Number of active inbound pipes. Active pipes are stored in the
-        //  initial section of the in_pipes array.
-        in_pipes_t::size_type active;
-
-        //  Index of the next inbound pipe to read messages from.
-        in_pipes_t::size_type current;
-
-        //  Number of active "*" subscriptions.
-        int all_count;
-
-        //  List of all prefix subscriptions.
-        typedef std::multiset <std::string> subscriptions_t;
-        subscriptions_t prefixes;
-
-        //  List of all exact match subscriptions.
-        subscriptions_t topics;
-
-        sub_t (const sub_t&);
-        void operator = (const sub_t&);
+        p2p_t (const p2p_t&);
+        void operator = (const p2p_t&);
     };
 
 }

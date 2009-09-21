@@ -17,11 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_SUB_INCLUDED__
-#define __ZMQ_SUB_INCLUDED__
-
-#include <set>
-#include <string>
+#ifndef __ZMQ_REQ_INCLUDED__
+#define __ZMQ_REQ_INCLUDED__
 
 #include "socket_base.hpp"
 #include "yarray.hpp"
@@ -29,14 +26,12 @@
 namespace zmq
 {
 
-    class sub_t : public socket_base_t
+    class req_t : public socket_base_t
     {
     public:
 
-        sub_t (class app_thread_t *parent_);
-        ~sub_t ();
-
-    protected:
+        req_t (class app_thread_t *parent_);
+        ~req_t ();
 
         //  Overloads of functions from socket_base_t.
         bool xrequires_in ();
@@ -53,33 +48,35 @@ namespace zmq
 
     private:
 
-        //  Helper function to return one message choosed using
-        //  fair queueing algorithm.
-        int fq (struct zmq_msg_t *msg_, int flags_);
-
-        //  Inbound pipes, i.e. those the socket is getting messages from.
+        //  List in outbound and inbound pipes. Note that the two lists are
+        //  always in sync. I.e. outpipe with index N communicates with the
+        //  same session as inpipe with index N.
+        //
+        //  TODO: Once we have queue limits in place, list of active outpipes
+        //  is to be held (presumably by stacking active outpipes at
+        //  the beginning of the array). We don't have to do the same thing for
+        //  inpipes, because we know which pipe we want to read the
+        //  reply from.
+        typedef yarray_t <class writer_t> out_pipes_t;
+        out_pipes_t out_pipes;
         typedef yarray_t <class reader_t> in_pipes_t;
         in_pipes_t in_pipes;
 
-        //  Number of active inbound pipes. Active pipes are stored in the
-        //  initial section of the in_pipes array.
-        in_pipes_t::size_type active;
+        //  Req_t load-balances the requests - 'current' points to the session
+        //  that's processing the request at the moment.
+        out_pipes_t::size_type current;
 
-        //  Index of the next inbound pipe to read messages from.
-        in_pipes_t::size_type current;
+        //  If true, request was already sent and reply wasn't received yet.
+        bool waiting_for_reply;
 
-        //  Number of active "*" subscriptions.
-        int all_count;
+        //  True, if read can be attempted from the reply pipe.
+        bool reply_pipe_active;
 
-        //  List of all prefix subscriptions.
-        typedef std::multiset <std::string> subscriptions_t;
-        subscriptions_t prefixes;
+        //  Pipe we are awaiting the reply from.
+        class reader_t *reply_pipe;
 
-        //  List of all exact match subscriptions.
-        subscriptions_t topics;
-
-        sub_t (const sub_t&);
-        void operator = (const sub_t&);
+        req_t (const req_t&);
+        void operator = (const req_t&);
     };
 
 }

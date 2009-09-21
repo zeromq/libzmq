@@ -28,7 +28,6 @@ zmq::reader_t::reader_t (object_t *parent_, pipe_t *pipe_,
     peer (&pipe_->writer),
     hwm (hwm_),
     lwm (lwm_),
-    index (-1),
     endpoint (NULL)
 {
 }
@@ -39,8 +38,10 @@ zmq::reader_t::~reader_t ()
 
 bool zmq::reader_t::read (zmq_msg_t *msg_)
 {
-    if (!pipe->read (msg_))
+    if (!pipe->read (msg_)) {
+        endpoint->kill (this);
         return false;
+    }
 
     //  If delimiter was read, start termination process of the pipe.
     unsigned char *offset = 0;
@@ -59,17 +60,6 @@ bool zmq::reader_t::read (zmq_msg_t *msg_)
 void zmq::reader_t::set_endpoint (i_endpoint *endpoint_)
 {
     endpoint = endpoint_;
-}
-
-void zmq::reader_t::set_index (int index_)
-{
-    index = index_;
-}
-
-int zmq::reader_t::get_index ()
-{
-    zmq_assert (index != -1);
-    return index;
 }
 
 void zmq::reader_t::term ()
@@ -96,7 +86,6 @@ zmq::writer_t::writer_t (object_t *parent_, pipe_t *pipe_,
     peer (&pipe_->reader),
     hwm (hwm_),
     lwm (lwm_),
-    index (-1),
     endpoint (NULL)
 {
 }
@@ -104,17 +93,6 @@ zmq::writer_t::writer_t (object_t *parent_, pipe_t *pipe_,
 void zmq::writer_t::set_endpoint (i_endpoint *endpoint_)
 {
     endpoint = endpoint_;
-}
-
-void zmq::writer_t::set_index (int index_)
-{
-    index = index_;
-}
-
-int zmq::writer_t::get_index ()
-{
-    zmq_assert (index != -1);
-    return index;
 }
 
 zmq::writer_t::~writer_t ()

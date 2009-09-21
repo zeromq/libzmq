@@ -17,7 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "../bindings/c/zmq.h"
+
 #include "options.hpp"
+#include "err.hpp"
 
 zmq::options_t::options_t () :
     hwm (0),
@@ -28,4 +31,81 @@ zmq::options_t::options_t () :
     recovery_ivl (10),
     use_multicast_loop (false)
 {
+}
+
+int zmq::options_t::setsockopt (int option_, const void *optval_,
+    size_t optvallen_)
+{
+    switch (option_) {
+
+    case ZMQ_HWM:
+        if (optvallen_ != sizeof (int64_t)) {
+            errno = EINVAL;
+            return -1;
+        }
+        hwm = *((int64_t*) optval_);
+        return 0;
+
+    case ZMQ_LWM:
+        if (optvallen_ != sizeof (int64_t)) {
+            errno = EINVAL;
+            return -1;
+        }
+        lwm = *((int64_t*) optval_);
+        return 0;
+
+    case ZMQ_SWAP:
+        if (optvallen_ != sizeof (int64_t)) {
+            errno = EINVAL;
+            return -1;
+        }
+        swap = *((int64_t*) optval_);
+        return 0;
+
+    case ZMQ_AFFINITY:
+        if (optvallen_ != sizeof (int64_t)) {
+            errno = EINVAL;
+            return -1;
+        }
+        affinity = (uint64_t) *((int64_t*) optval_);
+        return 0;
+
+    case ZMQ_IDENTITY:
+        identity.assign ((const char*) optval_, optvallen_);
+        return 0;
+
+    case ZMQ_RATE:
+        if (optvallen_ != sizeof (int64_t)) {
+            errno = EINVAL;
+            return -1;
+        }
+        rate = (uint32_t) *((int64_t*) optval_);
+        return 0;
+        
+    case ZMQ_RECOVERY_IVL:
+        if (optvallen_ != sizeof (int64_t)) {
+            errno = EINVAL;
+            return -1;
+        }
+        recovery_ivl = (uint32_t) *((int64_t*) optval_);
+        return 0;
+
+    case ZMQ_MCAST_LOOP:
+        if (optvallen_ != sizeof (int64_t)) {
+            errno = EINVAL;
+            return -1;
+        }
+        if ((int64_t) *((int64_t*) optval_) == 0)
+            use_multicast_loop = false;
+        else if ((int64_t) *((int64_t*) optval_) == 1)
+            use_multicast_loop = true;
+        else {
+            errno = EINVAL;
+            return -1;
+        }
+        return 0;
+    }
+
+    errno = EINVAL;
+    return -1;
 }

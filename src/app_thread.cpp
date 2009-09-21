@@ -39,6 +39,9 @@
 #include "socket_base.hpp"
 #include "pub.hpp"
 #include "sub.hpp"
+#include "req.hpp"
+#include "rep.hpp"
+#include "p2p.hpp"
 
 //  If the RDTSC is available we use it to prevent excessive
 //  polling for commands. The nice thing here is that it will work on any
@@ -158,26 +161,27 @@ zmq::socket_base_t *zmq::app_thread_t::create_socket (int type_)
     case ZMQ_SUB:
         s = new sub_t (this);
         break;
-    case ZMQ_P2P:
     case ZMQ_REQ:
+        s = new req_t (this);
+        break;
     case ZMQ_REP:
-        s = new socket_base_t (this, type_);
+        s = new rep_t (this);
+        break;
+    case ZMQ_P2P:
+        s = new p2p_t (this);
         break;
     default:
         //  TODO: This should be EINVAL.
         zmq_assert (false);
     }
     zmq_assert (s);
-    s->set_index (sockets.size ());
+
     sockets.push_back (s);
+
     return s;
 }
 
 void zmq::app_thread_t::remove_socket (socket_base_t *socket_)
 {
-    int i = socket_->get_index ();
-    socket_->set_index (-1);
-    sockets [i] = sockets.back ();
-    sockets [i]->set_index (i);
-    sockets.pop_back ();
+    sockets.erase (socket_);
 }

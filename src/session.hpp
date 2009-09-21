@@ -44,11 +44,11 @@ namespace zmq
         void detach ();
 
         //  i_endpoint interface implementation.
-        void attach_inpipe (class reader_t *pipe_);
-        void attach_outpipe (class writer_t *pipe_);
-        void revive (class reader_t *pipe_);
+        void attach_pipes (class reader_t *inpipe_, class writer_t *outpipe_);
         void detach_inpipe (class reader_t *pipe_);
         void detach_outpipe (class writer_t *pipe_);
+        void kill (class reader_t *pipe_);
+        void revive (class reader_t *pipe_);
 
     private:
 

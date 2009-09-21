@@ -21,6 +21,7 @@
 #define __ZMQ_PUB_INCLUDED__
 
 #include "socket_base.hpp"
+#include "yarray.hpp"
 
 namespace zmq
 {
@@ -32,8 +33,27 @@ namespace zmq
         pub_t (class app_thread_t *parent_);
         ~pub_t ();
 
-        //  Overloads of API functions from socket_base_t.
-        int recv (struct zmq_msg_t *msg_, int flags_);
+        //  Overloads of functions from socket_base_t.
+        bool xrequires_in ();
+        bool xrequires_out ();
+        void xattach_pipes (class reader_t *inpipe_, class writer_t *outpipe_);
+        void xdetach_inpipe (class reader_t *pipe_);
+        void xdetach_outpipe (class writer_t *pipe_);
+        void xkill (class reader_t *pipe_);
+        void xrevive (class reader_t *pipe_);
+        int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
+        int xsend (struct zmq_msg_t *msg_, int flags_);
+        int xflush ();
+        int xrecv (struct zmq_msg_t *msg_, int flags_);
+
+    private:
+
+        //  Outbound pipes, i.e. those the socket is sending messages to.
+        typedef yarray_t <class writer_t> out_pipes_t;
+        out_pipes_t out_pipes;
+
+        pub_t (const pub_t&);
+        void operator = (const pub_t&);
     };
 
 }

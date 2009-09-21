@@ -24,6 +24,7 @@
 
 #include "stdint.hpp"
 #include "i_endpoint.hpp"
+#include "yarray_item.hpp"
 #include "ypipe.hpp"
 #include "config.hpp"
 #include "object.hpp"
@@ -31,7 +32,7 @@
 namespace zmq
 {
 
-    class reader_t : public object_t
+    class reader_t : public object_t, public yarray_item_t
     {
     public:
 
@@ -43,10 +44,6 @@ namespace zmq
 
         //  Reads a message to the underlying pipe.
         bool read (struct zmq_msg_t *msg_);
-
-        //  Mnaipulation of index of the pipe.
-        void set_index (int index_);
-        int get_index ();
 
         //  Ask pipe to terminate.
         void term ();
@@ -72,9 +69,6 @@ namespace zmq
         uint64_t tail;
         uint64_t last_sent_head;
 
-        //  Index of the pipe in the socket's list of inbound pipes.
-        int index;
-
         //  Endpoint (either session or socket) the pipe is attached to.
         i_endpoint *endpoint;
 
@@ -82,7 +76,7 @@ namespace zmq
         void operator = (const reader_t&);
     };
 
-    class writer_t : public object_t
+    class writer_t : public object_t, public yarray_item_t
     {
     public:
 
@@ -103,10 +97,6 @@ namespace zmq
 
         //  Flush the messages downsteam.
         void flush ();
-
-        //  Mnaipulation of index of the pipe.
-        void set_index (int index_);
-        int get_index ();
 
         //  Ask pipe to terminate.
         void term ();
@@ -129,9 +119,6 @@ namespace zmq
         //  Positions of head and tail of the pipe (in bytes).
         uint64_t head;
         uint64_t tail;
-
-        //  Index of the pipe in the socket's list of outbound pipes.
-        int index;
 
         //  Endpoint (either session or socket) the pipe is attached to.
         i_endpoint *endpoint;
