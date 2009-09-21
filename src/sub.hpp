@@ -39,8 +39,6 @@ namespace zmq
     protected:
 
         //  Overloads of functions from socket_base_t.
-        bool xrequires_in ();
-        bool xrequires_out ();
         void xattach_pipes (class reader_t *inpipe_, class writer_t *outpipe_);
         void xdetach_inpipe (class reader_t *pipe_);
         void xdetach_outpipe (class writer_t *pipe_);

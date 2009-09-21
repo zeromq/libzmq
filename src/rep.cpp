@@ -24,26 +24,18 @@
 #include "pipe.hpp"
 
 zmq::rep_t::rep_t (class app_thread_t *parent_) :
-    socket_base_t (parent_, ZMQ_REP),
+    socket_base_t (parent_),
     active (0),
     current (0),
     waiting_for_reply (false),
     reply_pipe (NULL)
 {
+    options.requires_in = true;
+    options.requires_out = true;
 }
 
 zmq::rep_t::~rep_t ()
 {
-}
-
-bool zmq::rep_t::xrequires_in ()
-{
-    return true;
-}
-
-bool zmq::rep_t::xrequires_out ()
-{
-    return true;
 }
 
 void zmq::rep_t::xattach_pipes (class reader_t *inpipe_,

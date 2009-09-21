@@ -222,22 +222,22 @@ void zmq::fd_signaler_t::signal (int signal_)
 
 uint64_t zmq::fd_signaler_t::poll ()
 {
-    //  If there are signals available, return straight away.
-    uint64_t signals = check ();
-    if (signals)
-        return signals;
+    unsigned char buffer [64];
+    ssize_t nbytes = recv (r, buffer, 64, 0);
+    zmq_assert (nbytes != -1);
 
-    //  If there are no signals, wait until at least one signal arrives.
-    unsigned char sig;
-    ssize_t nbytes = recv (r, &sig, 1, 0);
-    errno_assert (nbytes != -1);
-    return uint64_t (1) << sig;
+    uint64_t signals = 0;
+    for (int pos = 0; pos != nbytes; pos ++) {
+        zmq_assert (buffer [pos] < 64);
+        signals |= (uint64_t (1) << (buffer [pos]));
+    }
+    return signals;
 }
 
 uint64_t zmq::fd_signaler_t::check ()
 {
-    unsigned char buffer [32];
-    ssize_t nbytes = recv (r, buffer, 32, MSG_DONTWAIT);
+    unsigned char buffer [64];
+    ssize_t nbytes = recv (r, buffer, 64, MSG_DONTWAIT);
     if (nbytes == -1 && errno == EAGAIN)
         return 0;
     zmq_assert (nbytes != -1);

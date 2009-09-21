@@ -40,7 +40,7 @@ namespace zmq
     {
     public:
 
-        socket_base_t (class app_thread_t *parent_, int type_);
+        socket_base_t (class app_thread_t *parent_);
 
         //  Interface for communication with the API layer.
         int setsockopt (int option_, const void *optval_,
@@ -73,8 +73,6 @@ namespace zmq
         virtual ~socket_base_t ();
 
         //  Pipe management is done by individual socket types.
-        virtual bool xrequires_in () = 0;
-        virtual bool xrequires_out () = 0;
         virtual void xattach_pipes (class reader_t *inpipe_,
             class writer_t *outpipe_) = 0;
         virtual void xdetach_inpipe (class reader_t *pipe_) = 0;
@@ -89,6 +87,9 @@ namespace zmq
         virtual int xflush () = 0;
         virtual int xrecv (struct zmq_msg_t *msg_, int options_) = 0;
 
+        //  Socket options.
+        options_t options;
+
     private:
 
         //  Handlers for incoming commands.
@@ -97,9 +98,6 @@ namespace zmq
             class reader_t *in_pipe_, class writer_t *out_pipe_);
         void process_term_req (class owned_t *object_);
         void process_term_ack ();
-
-        //  Type of the socket.
-        int type;
 
         //  List of all I/O objects owned by this socket. The socket is
         //  responsible for deallocating them before it quits.
@@ -115,9 +113,6 @@ namespace zmq
 
         //  Application thread the socket lives in.
         class app_thread_t *app_thread;
-
-        //  Socket options.
-        options_t options;
 
         //  If true, socket is already shutting down. No new work should be
         //  started.

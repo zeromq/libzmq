@@ -23,22 +23,14 @@
 #include "err.hpp"
 
 zmq::p2p_t::p2p_t (class app_thread_t *parent_) :
-    socket_base_t (parent_, ZMQ_P2P)
+    socket_base_t (parent_)
 {
+    options.requires_in = true;
+    options.requires_out = true;
 }
 
 zmq::p2p_t::~p2p_t ()
 {
-}
-
-bool zmq::p2p_t::xrequires_in ()
-{
-    return true;
-}
-
-bool zmq::p2p_t::xrequires_out ()
-{
-    return true;
 }
 
 void zmq::p2p_t::xattach_pipes (class reader_t *inpipe_,

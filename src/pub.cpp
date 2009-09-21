@@ -25,8 +25,10 @@
 #include "pipe.hpp"
 
 zmq::pub_t::pub_t (class app_thread_t *parent_) :
-    socket_base_t (parent_, ZMQ_PUB)
+    socket_base_t (parent_)
 {
+    options.requires_in = false;
+    options.requires_out = true;
 }
 
 zmq::pub_t::~pub_t ()
@@ -34,16 +36,6 @@ zmq::pub_t::~pub_t ()
     for (out_pipes_t::size_type i = 0; i != out_pipes.size (); i++)
         out_pipes [i]->term ();
     out_pipes.clear ();
-}
-
-bool zmq::pub_t::xrequires_in ()
-{
-    return false;
-}
-
-bool zmq::pub_t::xrequires_out ()
-{
-    return true;
 }
 
 void zmq::pub_t::xattach_pipes (class reader_t *inpipe_,

@@ -88,10 +88,6 @@ int zmq::dispatcher_t::term ()
 
 zmq::dispatcher_t::~dispatcher_t ()
 {
-    //  Close all application theads, sockets, io_objects etc.
-    for (app_threads_t::size_type i = 0; i != app_threads.size (); i++)
-        delete app_threads [i];
-
     //  Ask I/O threads to terminate. If stop signal wasn't sent to I/O
     //  thread subsequent invocation of destructor would hang-up.
     for (io_threads_t::size_type i = 0; i != io_threads.size (); i++)
@@ -100,6 +96,10 @@ zmq::dispatcher_t::~dispatcher_t ()
     //  Wait till I/O threads actually terminate.
     for (io_threads_t::size_type i = 0; i != io_threads.size (); i++)
         delete io_threads [i];
+
+    //  Close all application theads, sockets, io_objects etc.
+    for (app_threads_t::size_type i = 0; i != app_threads.size (); i++)
+        delete app_threads [i];
 
     //  Deallocate all the orphaned pipes.
     while (!pipes.empty ())

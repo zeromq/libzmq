@@ -29,7 +29,9 @@ zmq::options_t::options_t () :
     affinity (0),
     rate (100),
     recovery_ivl (10),
-    use_multicast_loop (false)
+    use_multicast_loop (false),
+    requires_in (false),
+    requires_out (false)
 {
 }
 
