@@ -30,6 +30,8 @@
 #include "zmq_decoder.hpp"
 #include "pgm_socket.hpp"
 
+#include <map>
+
 namespace zmq
 {
 
@@ -45,7 +47,6 @@ namespace zmq
         ~pgm_receiver_t ();
 
         int init (bool udp_encapsulation_, const char *network_);
-        void reconnect ();
 
         //  i_engine interface implementation.
         void plug (struct i_inout *inout_);
@@ -57,15 +58,28 @@ namespace zmq
         void out_event ();
 
     private:
-        //  Read exactly iov_len_ count APDUs, function returns number
-        //  of bytes received. Note that if we did not join message stream 
-        //  before and there is not message beginning in the APDUs being 
-        //  received iov_len for such a APDUs will be 0.
-        ssize_t receive_with_offset (void **data_);
 
-        //  Message decoder.
-        zmq_decoder_t *decoder;
-       
+        //  Map to hold TSI, joined and decoder for each peer.
+        struct peer_info_t {
+            bool joined;
+            zmq_decoder_t *decoder;
+        };
+
+        struct tsi_comp {
+            bool operator () (const pgm_tsi_t &ltsi, const pgm_tsi_t &rtsi) const
+            {
+                if (ltsi.sport < rtsi.sport)
+                    return true;
+
+                return (std::lexicographical_compare (ltsi.gsi.identifier, 
+                    ltsi.gsi.identifier + 6, 
+                    rtsi.gsi.identifier, rtsi.gsi.identifier + 6));
+            }
+        };
+
+        typedef std::map <pgm_tsi_t, peer_info_t, tsi_comp> peer_t;
+        peer_t peers;
+
         //  PGM socket.
         pgm_socket_t pgm_socket;
 
@@ -74,9 +88,6 @@ namespace zmq
 
         //  Name of the session associated with the connecter.
         std::string session_name;
-
-        // If receiver joined the messages stream.
-        bool joined;
 
         //  Parent session.
         i_inout *inout;
