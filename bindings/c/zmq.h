@@ -24,6 +24,7 @@
 extern "C" {
 #endif
 
+#include <errno.h>
 #include <stddef.h>
 
 //  Microsoft Visual Studio uses non-standard way to export/import symbols.
@@ -43,9 +44,18 @@ extern "C" {
 //  different OSes. The assumption is that error_t is at least 32-bit type.
 #define ZMQ_HAUSNUMERO 156384712
 
-#define EMTHREAD (ZMQ_HAUSNUMERO + 1)
-#define EFSM (ZMQ_HAUSNUMERO + 2)
-#define ENOCOMPATPROTO (ZMQ_HAUSNUMERO + 3)
+//  On Windows platform some of the standard POSIX errnos are not defined.
+#ifndef ENOTSUP
+#define ENOTSUP (ZMQ_HAUSNUMERO + 1)
+#endif
+#ifndef EPROTONOSUPPORT
+#define EPROTONOSUPPORT (ZMQ_HAUSNUMERO + 2)
+#endif
+
+//  Native 0MQ error codes.
+#define EMTHREAD (ZMQ_HAUSNUMERO + 50)
+#define EFSM (ZMQ_HAUSNUMERO + 51)
+#define ENOCOMPATPROTO (ZMQ_HAUSNUMERO + 52)
 
 //  Resolves system errors and 0MQ errors to human-readable string.
 ZMQ_EXPORT const char *zmq_strerror (int errnum);

@@ -39,6 +39,12 @@
 const char *zmq_strerror (int errnum_)
 {
     switch (errnum_) {
+#if defined ZMQ_HAVE_WINDOWS
+    case ENOTSUP:
+        return "Not supported";
+    case EPROTONOSUPPORT:
+        return "Protocol not supported";
+#endif
     case EMTHREAD:
         return "Number of preallocated application threads exceeded";
     case EFSM:
@@ -46,7 +52,14 @@ const char *zmq_strerror (int errnum_)
     case ENOCOMPATPROTO:
         return "The protocol is not compatible with the socket type";
     default:
+#if defined _MSC_VER
+#pragma warning (push)
+#pragma warning (disable:4996)
+#endif
         return strerror (errnum_);
+#if defined _MSC_VER
+#pragma warning (pop)
+#endif
     }
 }
 
