@@ -23,8 +23,8 @@
 #include <errno.h>
 
 #include "../../src/stdint.hpp"
+#include "../c/zmq.h"
 
-#include "zmq.h"
 #include "org_zmq_Socket.h"
 
 static jfieldID socket_handle_fid = NULL;
@@ -37,14 +37,7 @@ static void raise_exception (JNIEnv *env, int err)
     assert (exception_class);
 
     //  Get text description of the exception.
-#if defined _MSC_VER
-#pragma warning (push)
-#pragma warning (disable:4996)
-#endif
-    const char *err_msg = strerror (err);
-#if defined _MSC_VER
-#pragma warning (pop)
-#endif
+    const char *err_msg = zmq_strerror (err);
 
     //  Raise the exception.
     int rc = env->ThrowNew (exception_class, err_msg);

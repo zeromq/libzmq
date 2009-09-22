@@ -64,7 +64,7 @@ int context_init (context_t *self, PyObject *args, PyObject *kwdict)
     assert (!self->handle);
     self->handle = zmq_init (app_threads, io_threads, flags);
     if (!self->handle) {
-        PyErr_SetString (PyExc_SystemError, strerror (errno));
+        PyErr_SetString (PyExc_SystemError, zmq_strerror (errno));
         return -1;
     }
 
@@ -76,7 +76,7 @@ void context_dealloc (context_t *self)
     if (self->handle) {
         int rc = zmq_term (self->handle);
         if (rc != 0)
-            PyErr_SetString (PyExc_SystemError, strerror (errno));
+            PyErr_SetString (PyExc_SystemError, zmq_strerror (errno));
     }
 
     self->ob_type->tp_free ((PyObject*) self);
@@ -114,7 +114,7 @@ int socket_init (socket_t *self, PyObject *args, PyObject *kwdict)
     assert (!self->handle);
     self->handle = zmq_socket (context->handle, socket_type);
     if (!self->handle) {
-        PyErr_SetString (PyExc_SystemError, strerror (errno));
+        PyErr_SetString (PyExc_SystemError, zmq_strerror (errno));
         return -1;
     }
 
@@ -126,7 +126,7 @@ void socket_dealloc (socket_t *self)
     if (self->handle) {
         int rc = zmq_close (self->handle);
         if (rc != 0)
-            PyErr_SetString (PyExc_SystemError, strerror (errno));
+            PyErr_SetString (PyExc_SystemError, zmq_strerror (errno));
     }
 
     self->ob_type->tp_free ((PyObject*) self);
@@ -171,7 +171,7 @@ PyObject *socket_setsockopt (socket_t *self, PyObject *args, PyObject *kwdict)
     }
 
     if (rc != 0) {
-        PyErr_SetString (PyExc_SystemError, strerror (errno));
+        PyErr_SetString (PyExc_SystemError, zmq_strerror (errno));
         return NULL;
     }
 
@@ -191,7 +191,7 @@ PyObject *socket_bind (socket_t *self, PyObject *args, PyObject *kwdict)
 
     int rc = zmq_bind (self->handle, addr);
     if (rc != 0) {
-        PyErr_SetString (PyExc_SystemError, strerror (errno));
+        PyErr_SetString (PyExc_SystemError, zmq_strerror (errno));
         return NULL;
     }
 
@@ -211,7 +211,7 @@ PyObject *socket_connect (socket_t *self, PyObject *args, PyObject *kwdict)
 
     int rc = zmq_connect (self->handle, addr);
     if (rc != 0) {
-        PyErr_SetString (PyExc_SystemError, strerror (errno));
+        PyErr_SetString (PyExc_SystemError, zmq_strerror (errno));
         return NULL;
     }
 
@@ -233,7 +233,7 @@ PyObject *socket_send (socket_t *self, PyObject *args, PyObject *kwdict)
     zmq_msg_t data;
     int rc = zmq_msg_init_size (&data, PyString_Size (msg));
     if (rc != 0) {
-        PyErr_SetString (PyExc_SystemError, strerror (errno));
+        PyErr_SetString (PyExc_SystemError, zmq_strerror (errno));
         return NULL;
     }
     memcpy (zmq_msg_data (&data), PyString_AsString (msg),
@@ -247,7 +247,7 @@ PyObject *socket_send (socket_t *self, PyObject *args, PyObject *kwdict)
         return PyBool_FromLong (0);
 
     if (rc != 0) {
-        PyErr_SetString (PyExc_SystemError, strerror (errno));
+        PyErr_SetString (PyExc_SystemError, zmq_strerror (errno));
         return NULL;
     }
 
@@ -264,7 +264,7 @@ PyObject *socket_flush (socket_t *self, PyObject *args, PyObject *kwdict)
 
     int rc = zmq_flush (self->handle);
     if (rc != 0) {
-        PyErr_SetString (PyExc_SystemError, strerror (errno));
+        PyErr_SetString (PyExc_SystemError, zmq_strerror (errno));
         return NULL;
     }
 
