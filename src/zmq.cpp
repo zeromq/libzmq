@@ -19,6 +19,7 @@
 
 #include "../bindings/c/zmq.h"
 
+#include <string.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <new>
@@ -34,6 +35,20 @@
 #include <unistd.h>
 #include <sys/time.h>
 #endif
+
+const char *zmq_strerror (int errnum_)
+{
+    switch (errnum_) {
+    case EMTHREAD:
+        return "Number of preallocated application threads exceeded";
+    case EFSM:
+        return "Operation cannot be accomplished in current state";
+    case ENOCOMPATPROTO:
+        return "The protocol is not compatible with the socket type";
+    default:
+        return strerror (errnum_);
+    }
+}
 
 int zmq_msg_init (zmq_msg_t *msg_)
 {

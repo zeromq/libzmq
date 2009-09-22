@@ -100,8 +100,8 @@ int zmq::socket_base_t::bind (const char *addr_)
     }
 #endif
 
-    //  Unknown address type.
-    errno = EFAULT;
+    //  Unknown protocol.
+    errno = EPROTONOSUPPORT;
     return -1;
 }
 
@@ -185,7 +185,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         //  If the socket type requires bi-directional communication
         //  multicast is not an option (it is uni-directional).
         if (options.requires_in && options.requires_out) {
-            errno = EFAULT;
+            errno = ENOCOMPATPROTO;
             return -1;
         }
 
@@ -235,8 +235,8 @@ int zmq::socket_base_t::connect (const char *addr_)
     }
 #endif
 
-    //  Unknown address type.
-    errno = EFAULT;
+    //  Unknown protoco.
+    errno = EPROTONOSUPPORT;
     return -1;
 }
 

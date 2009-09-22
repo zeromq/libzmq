@@ -152,7 +152,7 @@ int zmq::pub_t::xflush ()
 
 int zmq::pub_t::xrecv (struct zmq_msg_t *msg_, int flags_)
 {
-    errno = EFAULT;
+    errno = ENOTSUP;
     return -1;
 }
 

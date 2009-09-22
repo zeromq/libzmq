@@ -36,6 +36,21 @@ extern "C" {
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
+//  0MQ errors.
+////////////////////////////////////////////////////////////////////////////////
+
+//  A number random anough not to collide with different errno ranges on
+//  different OSes. The assumption is that error_t is at least 32-bit type.
+#define ZMQ_HAUSNUMERO 156384712
+
+#define EMTHREAD (ZMQ_HAUSNUMERO + 1)
+#define EFSM (ZMQ_HAUSNUMERO + 2)
+#define ENOCOMPATPROTO (ZMQ_HAUSNUMERO + 3)
+
+//  Resolves system errors and 0MQ errors to human-readable string.
+ZMQ_EXPORT const char *zmq_strerror (int errnum);
+
+////////////////////////////////////////////////////////////////////////////////
 //  0MQ message definition.
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -154,8 +169,8 @@ ZMQ_EXPORT int zmq_term (void *context);
 //  Open a socket. 'type' is one of the socket types defined above.
 //
 //  Errors: EINVAL - invalid socket type.
-//          EMFILE - the number of application threads entitled to hold open
-//                   sockets at the same time was exceeded.
+//          EMTHREAD - the number of application threads entitled to hold open
+//                     sockets at the same time was exceeded.
 ZMQ_EXPORT void *zmq_socket (void *context, int type);
 
 //  Destroying the socket.
@@ -276,9 +291,15 @@ ZMQ_EXPORT int zmq_setsockopt (void *s, int option, const void *optval,
 //              "udp://192.168.0.111;224.1.1.1:5555".
 
 //  Bind the socket to a particular address.
+//
+//  Errors: EPROTONOSUPPORT - unsupported protocol.
+//          ENOCOMPATPROTO - protocol is not compatible with the socket type.
 ZMQ_EXPORT int zmq_bind (void *s, const char *addr);
 
 //  Connect the socket to a particular address.
+//
+//  Errors: EPROTONOSUPPORT - unsupported protocol.
+//          ENOCOMPATPROTO - protocol is not compatible with the socket type.
 ZMQ_EXPORT int zmq_connect (void *s, const char *addr);
 
 //  Sending and receiving messages.
@@ -303,12 +324,14 @@ ZMQ_EXPORT int zmq_connect (void *s, const char *addr);
 //
 //  Errors: EAGAIN - message cannot be sent at the moment (applies only to
 //                   non-blocking send).
-//          EFAULT - function isn't supported by particular socket type.
+//          ENOTSUP - function isn't supported by particular socket type.
+//          EFSM - function cannot be called at the moment. 
 ZMQ_EXPORT int zmq_send (void *s, struct zmq_msg_t *msg, int flags);
 
 //  Flush the messages that were send using ZMQ_NOFLUSH flag down the stream.
 //
-//  Errors: FAULT - function isn't supported by particular socket type.
+//  Errors: ENOTSUP - function isn't supported by particular socket type.
+//          EFSM - function cannot be called at the moment. 
 ZMQ_EXPORT int zmq_flush (void *s);
 
 //  Send a message from the socket 's'. 'flags' argument can be combination
@@ -316,7 +339,8 @@ ZMQ_EXPORT int zmq_flush (void *s);
 //
 //  Errors: EAGAIN - message cannot be received at the moment (applies only to
 //                   non-blocking receive).
-//          EFAULT - function isn't supported by particular socket type.
+//          ENOTSUP - function isn't supported by particular socket type.
+//          EFSM - function cannot be called at the moment. 
 ZMQ_EXPORT int zmq_recv (void *s, struct zmq_msg_t *msg, int flags);
 
 ////////////////////////////////////////////////////////////////////////////////

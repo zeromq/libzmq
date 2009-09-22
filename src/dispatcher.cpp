@@ -163,7 +163,7 @@ zmq::app_thread_t *zmq::dispatcher_t::choose_app_thread ()
             return app_threads [i];
 
     //  Thread limit was exceeded.
-    errno = EMFILE;
+    errno = EMTHREAD;
     return NULL;
 }
 

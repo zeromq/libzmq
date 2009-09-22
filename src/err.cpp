@@ -24,11 +24,16 @@
 
 const char *zmq::wsa_error()
 {
+
+
     int errcode = WSAGetLastError ();
     //  TODO: This is not a generic way to handle this...
     if (errcode == WSAEWOULDBLOCK)
         return NULL;
 
+    //  TODO:  It seems that list of Windows socket errors is longer than this.
+    //         Investigate whether there's a way to convert it into the string
+    //         automatically (wsaError->HRESULT->string?).
     return
         (errcode == WSABASEERR) ?
             "No Error" : 

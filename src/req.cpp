@@ -120,12 +120,12 @@ int zmq::req_t::xsend (struct zmq_msg_t *msg_, int flags_)
     //  If we've sent a request and we still haven't got the reply,
     //  we can't send another request.
     if (waiting_for_reply) {
-        errno = EFAULT;
+        errno = EFSM;
         return -1;
     }
 
     if (out_pipes.empty ()) {
-        errno = EFAULT;
+        errno = EAGAIN;
         return -1;
     }
 
@@ -166,7 +166,7 @@ int zmq::req_t::xsend (struct zmq_msg_t *msg_, int flags_)
 
 int zmq::req_t::xflush ()
 {
-    errno = EFAULT;
+    errno = ENOTSUP;
     return -1;
 }
 
@@ -178,7 +178,7 @@ int zmq::req_t::xrecv (struct zmq_msg_t *msg_, int flags_)
     //  If request wasn't send, we can't wait for reply.
     if (!waiting_for_reply) {
         zmq_msg_init (msg_);
-        errno = EFAULT;
+        errno = EFSM;
         return -1;
     }
 

@@ -137,7 +137,7 @@ int zmq::rep_t::xsetsockopt (int option_, const void *optval_,
 int zmq::rep_t::xsend (struct zmq_msg_t *msg_, int flags_)
 {
     if (!waiting_for_reply) {
-        errno = EFAULT;
+        errno = EFSM;
         return -1;
     }
 
@@ -161,7 +161,7 @@ int zmq::rep_t::xsend (struct zmq_msg_t *msg_, int flags_)
 
 int zmq::rep_t::xflush ()
 {
-    errno = EFAULT;
+    errno = ENOTSUP;
     return -1;
 }
 
@@ -171,7 +171,7 @@ int zmq::rep_t::xrecv (struct zmq_msg_t *msg_, int flags_)
     zmq_msg_close (msg_);
 
     if (waiting_for_reply) {
-        errno = EFAULT;
+        errno = EFSM;
         return -1;
     }
 
