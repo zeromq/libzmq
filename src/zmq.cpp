@@ -84,8 +84,7 @@ int zmq_msg_close (zmq_msg_t *msg_)
 {
     //  For VSMs and delimiters there are no resources to free.
     if (msg_->content == (zmq::msg_content_t*) ZMQ_DELIMITER ||
-          msg_->content == (zmq::msg_content_t*) ZMQ_VSM ||
-          msg_->content == (zmq::msg_content_t*) ZMQ_GAP)
+          msg_->content == (zmq::msg_content_t*) ZMQ_VSM)
         return 0;
 
     //  If the content is not shared, or if it is shared and the reference.
@@ -118,10 +117,8 @@ int zmq_msg_copy (zmq_msg_t *dest_, zmq_msg_t *src_)
     zmq_msg_close (dest_);
 
     //  VSMs and delimiters require no special handling.
-    if (src_->content !=
-          (zmq::msg_content_t*) ZMQ_DELIMITER &&
-          src_->content != (zmq::msg_content_t*) ZMQ_VSM &&
-          src_->content != (zmq::msg_content_t*) ZMQ_GAP) {
+    if (src_->content != (zmq::msg_content_t*) ZMQ_DELIMITER &&
+          src_->content != (zmq::msg_content_t*) ZMQ_VSM) {
 
         //  One reference is added to shared messages. Non-shared messages
         //  are turned into shared messages and reference count is set to 2.
@@ -142,9 +139,7 @@ void *zmq_msg_data (zmq_msg_t *msg_)
 {
     if (msg_->content == (zmq::msg_content_t*) ZMQ_VSM)
         return msg_->vsm_data;
-    if (msg_->content ==
-          (zmq::msg_content_t*) ZMQ_DELIMITER ||
-          msg_->content == (zmq::msg_content_t*) ZMQ_GAP)
+    if (msg_->content == (zmq::msg_content_t*) ZMQ_DELIMITER)
         return NULL;
 
     return ((zmq::msg_content_t*) msg_->content)->data;
@@ -154,23 +149,10 @@ size_t zmq_msg_size (zmq_msg_t *msg_)
 {
     if (msg_->content == (zmq::msg_content_t*) ZMQ_VSM)
         return msg_->vsm_size;
-    if (msg_->content ==
-          (zmq::msg_content_t*) ZMQ_DELIMITER ||
-          msg_->content == (zmq::msg_content_t*) ZMQ_GAP)
+    if (msg_->content == (zmq::msg_content_t*) ZMQ_DELIMITER)
         return 0;
 
     return ((zmq::msg_content_t*) msg_->content)->size;
-}
-
-int zmq_msg_type (zmq_msg_t *msg_)
-{
-    //  If it's a genuine message, return 0.
-    if (msg_->content >= (zmq::msg_content_t*) ZMQ_VSM)
-            return 0;
-
-    //   Trick the compiler to believe that content is an integer.
-    unsigned char *offset = 0;
-    return (((const unsigned char*) msg_->content) - offset);
 }
 
 void *zmq_init (int app_threads_, int io_threads_, int flags_)

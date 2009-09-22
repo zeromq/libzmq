@@ -32,13 +32,6 @@ namespace zmq
 
     typedef zmq_free_fn free_fn;
 
-    enum message_type_t
-    {
-        message_data = 1 << 0,
-        message_gap = 1 << ZMQ_GAP,
-        message_delimiter = 1 << ZMQ_DELIMITER
-    };
-
     //  The class masquerades POSIX-style errno error as a C++ exception.
     class error_t : public std::exception
     {
@@ -146,12 +139,6 @@ namespace zmq
             int rc = zmq_msg_copy (this, (zmq_msg_t*) msg_);
             if (rc != 0)
                 throw error_t ();
-        }
-
-        //  Returns message type.
-        inline message_type_t type ()
-        {
-            return (message_type_t) (1 << zmq_msg_type (this));
         }
 
         //  Returns pointer to message's data buffer.
