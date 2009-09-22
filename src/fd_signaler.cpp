@@ -70,6 +70,7 @@ uint64_t zmq::fd_signaler_t::poll ()
     //  TODO: Can we do a blocking read on non-blocking eventfd?
     //  It's not needed as for now, so let it stay unimplemented.
     zmq_assert (false);
+    return 0;
 }
 
 uint64_t zmq::fd_signaler_t::check ()
@@ -129,7 +130,13 @@ zmq::fd_signaler_t::fd_signaler_t ()
     //  Accept connection from w.
     r = accept (listener, NULL, NULL);
     wsa_assert (r != INVALID_SOCKET);
-            
+
+    //  Set the read site of the pair to non-blocking mode.
+    //unsigned long argp = 1;
+    //rc = ioctlsocket (r, FIONBIO, &argp);
+    //wsa_assert (rc != SOCKET_ERROR);
+
+    //  We don't need the listening socket anymore. Close it.
     rc = closesocket (listener);
     wsa_assert (rc != SOCKET_ERROR);
 }
@@ -156,25 +163,19 @@ void zmq::fd_signaler_t::signal (int signal_)
 
 uint64_t zmq::fd_signaler_t::poll ()
 {
-    //  If there are signals available, return straight away.
-    uint64_t signals = check ();
-    if (signals)
-        return signals;
-
-    //  If there are no signals, wait until at least one signal arrives.
-    unsigned char sig;
-    int nbytes = recv (r, (char*) &sig, 1, 0);
-    win_assert (nbytes != -1);
-    return uint64_t (1) << sig;
+    //  TODO: Can we do a blocking read on non-blocking socket?
+    //  It's not needed as for now, so let it stay unimplemented.
+    zmq_assert (false);
+    return 0;
 }
 
 uint64_t zmq::fd_signaler_t::check ()
 {
-    unsigned char buffer [32];      
-    int nbytes = recv (r, (char*) buffer, 32, MSG_DONTWAIT);
-    if (nbytes == -1 && errno == EAGAIN)
+    unsigned char buffer [32];
+    int nbytes = recv (r, (char*) buffer, 32, 0);
+    if (nbytes == -1 && WSAGetLastError () == WSAEWOULDBLOCK)
         return 0;
-    win_assert (nbytes != -1);
+    wsa_assert (nbytes != -1);
 
     uint64_t signals = 0;
     for (int pos = 0; pos != nbytes; pos++) {

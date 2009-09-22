@@ -155,6 +155,8 @@ int zmq::rep_t::xsend (struct zmq_msg_t *msg_, int flags_)
     //  Detach the message from the data buffer.
     int rc = zmq_msg_init (msg_);
     zmq_assert (rc == 0);
+
+    return 0;
 }
 
 int zmq::rep_t::xflush ()
