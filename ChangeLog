@@ -1,16 +1,22 @@
+Version 2.0-alpha3
+
+ZMQII-17  Allow multiple senders for sigle mcast group aka multicast bus.
+ZMQII-16  Change "struct zmq_msg_t" to "zmq_msg_t" in C binding.
+ZMQII-15  Implement REQ/REP sockets.
+ZMQII-14  Change default for ZMQ_MCAST_LOOP to true.
 
 Version 2.0-alpha2
 
-ZMQII-11 Implement forwarder device
-ZMQII-10 Make connections interrupted during the init phase be closed silently
-ZMQII-8 Failure during orphan pipe deallocation
-ZMQII-7 Pipe detach fails on shutdown
-ZMQII-6 connection refused in tcp_connecter::connect leads to assert
-ZMQII-5 Only one consumer in a process gets the message
-ZMQII-4 Failure in dev/poll poller
-ZMQII-3 Implement message filtering
-ZMQII-2 SIGSEGV in zmq_connecter_init_t::read
-ZMQII-1 Win32 - failure on shutdown
+ZMQII-11  Implement forwarder device
+ZMQII-10  Make connections interrupted during the init phase be closed silently
+ZMQII-8  Failure during orphan pipe deallocation
+ZMQII-7  Pipe detach fails on shutdown
+ZMQII-6  connection refused in tcp_connecter::connect leads to assert
+ZMQII-5  Only one consumer in a process gets the message
+ZMQII-4  Failure in dev/poll poller
+ZMQII-3  Implement message filtering
+ZMQII-2  SIGSEGV in zmq_connecter_init_t::read
+ZMQII-1  Win32 - failure on shutdown
 
 Version 2.0-alpha1
 
