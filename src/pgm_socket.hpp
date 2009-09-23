@@ -77,7 +77,7 @@ namespace zmq
         void free_buffer (void *data_);
 
         //  Receive data from pgm socket.
-        ssize_t receive (void **data_);
+        ssize_t receive (void **data_, const pgm_tsi_t **tsi_);
 
         //  POLLIN on sender side should mean NAK or SPMR receiving. 
         //  process_upstream function is used to handle such a situation.
@@ -90,21 +90,18 @@ namespace zmq
 
     private:
         
-        //  Associated socket options.
-        options_t options;
-
         //  Returns max tsdu size without fragmentation.
         size_t get_max_tsdu_size (void);
 
         //  Returns maximum count of apdus which fills readbuf_size_
         size_t get_max_apdu_at_once (size_t readbuf_size_);
 
-        //  Return true if TSI has empty GSI ('\0') and sport 0.
-        bool tsi_empty (const pgm_tsi_t *tsi_);
+        //  Compute gsi from string.
+        int pgm_create_custom_gsi (const char *data_, pgm_gsi_t *gsi_);
 
-        //  Compare TSIs, return true if equal.
-        bool tsi_equal (const pgm_tsi_t *tsi_a_, const pgm_tsi_t *tsi_b_);
-        
+        //  Associated socket options.
+        options_t options;
+       
         //  true when pgm_socket should create receiving side.
         bool receiver;
 
@@ -140,10 +137,10 @@ namespace zmq
         enum {pgm_receiver_fd_count = 2};
 
         //  TSI of the actual peer.
-        pgm_tsi_t tsi;
+//        pgm_tsi_t tsi;
 
         //  Previous peer TSI.
-        pgm_tsi_t retired_tsi;
+//        pgm_tsi_t retired_tsi;
 
 #endif
     };
