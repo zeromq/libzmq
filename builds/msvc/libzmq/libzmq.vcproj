@@ -222,6 +222,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\p2p.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\pgm_receiver.cpp"
 				>
 			</File>
@@ -243,6 +247,14 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\pub.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\rep.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\req.cpp"
 				>
 			</File>
 			<File
@@ -440,6 +452,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\p2p.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\pgm_receiver.hpp"
 				>
 			</File>
@@ -461,6 +477,18 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\poll.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\pub.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\rep.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\req.hpp"
 				>
 			</File>
 			<File
