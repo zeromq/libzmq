@@ -25,6 +25,8 @@
 #include <vector>
 #include <string>
 
+#include "../bindings/c/zmq.h"
+
 #include "i_endpoint.hpp"
 #include "object.hpp"
 #include "yarray_item.hpp"
@@ -47,9 +49,9 @@ namespace zmq
             size_t optvallen_);
         int bind (const char *addr_);
         int connect (const char *addr_);
-        int send (struct zmq_msg_t *msg_, int flags_);
+        int send (zmq_msg_t *msg_, int flags_);
         int flush ();
-        int recv (struct zmq_msg_t *msg_, int flags_);
+        int recv (zmq_msg_t *msg_, int flags_);
         int close ();
 
         //  The list of sessions cannot be accessed via inter-thread
@@ -83,9 +85,9 @@ namespace zmq
         //  Actual algorithms are to be defined by individual socket types.
         virtual int xsetsockopt (int option_, const void *optval_,
             size_t optvallen_) = 0;
-        virtual int xsend (struct zmq_msg_t *msg_, int options_) = 0;
+        virtual int xsend (zmq_msg_t *msg_, int options_) = 0;
         virtual int xflush () = 0;
-        virtual int xrecv (struct zmq_msg_t *msg_, int options_) = 0;
+        virtual int xrecv (zmq_msg_t *msg_, int options_) = 0;
 
         //  Socket options.
         options_t options;

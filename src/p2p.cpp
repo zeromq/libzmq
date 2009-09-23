@@ -66,7 +66,7 @@ int zmq::p2p_t::xsetsockopt (int option_, const void *optval_,
     return -1;
 }
 
-int zmq::p2p_t::xsend (struct zmq_msg_t *msg_, int flags_)
+int zmq::p2p_t::xsend (zmq_msg_t *msg_, int flags_)
 {
     zmq_assert (false);
     return 0;
@@ -78,7 +78,7 @@ int zmq::p2p_t::xflush ()
     return 0;
 }
 
-int zmq::p2p_t::xrecv (struct zmq_msg_t *msg_, int flags_)
+int zmq::p2p_t::xrecv (zmq_msg_t *msg_, int flags_)
 {
     zmq_assert (false);
     return 0;

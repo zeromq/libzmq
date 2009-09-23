@@ -72,7 +72,7 @@ int zmq::pub_t::xsetsockopt (int option_, const void *optval_,
     return -1;
 }
 
-int zmq::pub_t::xsend (struct zmq_msg_t *msg_, int flags_)
+int zmq::pub_t::xsend (zmq_msg_t *msg_, int flags_)
 {
     out_pipes_t::size_type pipes_count = out_pipes.size ();
 
@@ -150,7 +150,7 @@ int zmq::pub_t::xflush ()
     return 0;
 }
 
-int zmq::pub_t::xrecv (struct zmq_msg_t *msg_, int flags_)
+int zmq::pub_t::xrecv (zmq_msg_t *msg_, int flags_)
 {
     errno = ENOTSUP;
     return -1;

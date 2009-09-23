@@ -45,15 +45,15 @@ namespace zmq
         void xkill (class reader_t *pipe_);
         void xrevive (class reader_t *pipe_);
         int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
-        int xsend (struct zmq_msg_t *msg_, int flags_);
+        int xsend (zmq_msg_t *msg_, int flags_);
         int xflush ();
-        int xrecv (struct zmq_msg_t *msg_, int flags_);
+        int xrecv (zmq_msg_t *msg_, int flags_);
 
     private:
 
         //  Helper function to return one message choosed using
         //  fair queueing algorithm.
-        int fq (struct zmq_msg_t *msg_, int flags_);
+        int fq (zmq_msg_t *msg_, int flags_);
 
         //  Inbound pipes, i.e. those the socket is getting messages from.
         typedef yarray_t <class reader_t> in_pipes_t;

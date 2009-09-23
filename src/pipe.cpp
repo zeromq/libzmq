@@ -106,7 +106,7 @@ bool zmq::writer_t::check_write (uint64_t size_)
     return true;
 }
 
-bool zmq::writer_t::write (struct zmq_msg_t *msg_)
+bool zmq::writer_t::write (zmq_msg_t *msg_)
 {
     pipe->write (*msg_);
     return true;

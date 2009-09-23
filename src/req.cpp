@@ -115,7 +115,7 @@ int zmq::req_t::xsetsockopt (int option_, const void *optval_,
     return -1;
 }
 
-int zmq::req_t::xsend (struct zmq_msg_t *msg_, int flags_)
+int zmq::req_t::xsend (zmq_msg_t *msg_, int flags_)
 {
     //  If we've sent a request and we still haven't got the reply,
     //  we can't send another request.
@@ -170,7 +170,7 @@ int zmq::req_t::xflush ()
     return -1;
 }
 
-int zmq::req_t::xrecv (struct zmq_msg_t *msg_, int flags_)
+int zmq::req_t::xrecv (zmq_msg_t *msg_, int flags_)
 {
     //  Deallocate old content of the message.
     zmq_msg_close (msg_);

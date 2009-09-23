@@ -31,7 +31,7 @@ int main (int argc, char *argv [])
     void *s;
     int rc;
     int i;
-    struct zmq_msg_t msg;
+    zmq_msg_t msg;
     void *watch;
     unsigned long elapsed;
     unsigned long throughput;

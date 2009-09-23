@@ -43,7 +43,7 @@ namespace zmq
         void set_endpoint (i_endpoint *endpoint_);
 
         //  Reads a message to the underlying pipe.
-        bool read (struct zmq_msg_t *msg_);
+        bool read (zmq_msg_t *msg_);
 
         //  Ask pipe to terminate.
         void term ();
@@ -93,7 +93,7 @@ namespace zmq
 
         //  Writes a message to the underlying pipe. Returns false if the
         //  message cannot be written because high watermark was reached.
-        bool write (struct zmq_msg_t *msg_);
+        bool write (zmq_msg_t *msg_);
 
         //  Flush the messages downsteam.
         void flush ();
