@@ -134,11 +134,6 @@ if test "x$pedantic" = "xyes"; then
     LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -pedantic"
 fi
 
-# If not on QNX nor --with-pgm add -Werror into LIBZMQ_EXTRA_CXXFLAGS.
-if test "x$werror" = "xyes" -a "x$pgm_ext" = "xno"; then
-    LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Werror"
-fi
-
 # Check if we are running at sparc harware
 AC_MSG_CHECKING([wheter __sparc__ is defined])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
@@ -363,14 +358,26 @@ else
 fi
 
 #  PGM extension
-pgm_ext="no"
-pgm_name=""
-pgm_basename="libpgm-1.2.14"
-AC_SUBST(pgm_basename)
+pgm1_ext="no"
+pgm2_ext="no"
+
+pgm_basename=""
+
 AC_ARG_WITH([pgm], [AS_HELP_STRING([--with-pgm], 
-    [build libzmq with PGM extension [default=no]])], 
-    [with_pgm_ext=yes], [with_pgm_ext=no])
-if test "x$with_pgm_ext" != "xno"; then
+    [build libzmq with PGM v1 extension [default=no]])], 
+    [with_pgm1_ext=yes], [with_pgm1_ext=no])
+
+AC_ARG_WITH([pgm2], [AS_HELP_STRING([--with-pgm2], 
+    [build libzmq with PGM v2 extension [default=no]])], 
+    [with_pgm2_ext=yes], [with_pgm2_ext=no])
+
+if test "x$with_pgm1_ext" != "xno" -a "x$with_pgm2_ext" != "xno"; then
+    AC_MSG_ERROR([Can not configure --with-pgm and --with-pgm2.]);
+fi
+
+if test "x$with_pgm1_ext" != "xno"; then
+
+    pgm_basename="libpgm-1.2.14"
 
     #  Test if we have pkg-config
     if test "x$have_pkg_config" != "xyes"; then
@@ -391,7 +398,7 @@ if test "x$with_pgm_ext" != "xno"; then
     AC_CHECK_HEADERS(openssl/md5.h, [] , 
         [AC_MSG_ERROR([To run configure with --with-pgm option, openssl/md5.h has to be usable.])])
 
-    AC_CHECK_LIB(ssl, MD5_Init, , [AC_MSG_ERROR([Could not link with libuuid, install develop version.])])
+    AC_CHECK_LIB(ssl, MD5_Init, , [AC_MSG_ERROR([Could not link with libssl, install develop version.])])
 
     AC_CHECK_PROG(have_tar, tar, yes, no)
     if test "x$have_tar" != "xyes"; then
@@ -454,9 +461,70 @@ if test "x$with_pgm_ext" != "xno"; then
 
     LIBZMQ_EXTRA_LDFLAFS="${LIBZMQ_EXTRA_LDFLAFS} ${GLIB_LIBS}"
 
-    AC_DEFINE(ZMQ_HAVE_OPENPGM, 1, [Have OpenPGM extension.])
-    pgm_name="$pgm_basename"
-    pgm_ext="yes"
+    AC_DEFINE(ZMQ_HAVE_OPENPGM, 1, [Have OpenPGM v1 or v2 extension.])
+    AC_DEFINE(ZMQ_HAVE_OPENPGM1, 1, [Have OpenPGM v1 extension.])
+    pgm1_ext="yes"
+fi
+
+if test "x$with_pgm2_ext" != "xno"; then
+
+    pgm_basename="libpgm-dev"
+
+    #  Test if we have pkg-config
+    if test "x$have_pkg_config" != "xyes"; then
+        AC_MSG_ERROR([To run configure with --with-pgm2 option, pkg-config has to be installed.]);
+    fi
+
+     case "${host_os}" in
+        *linux*)
+            LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Wno-variadic-macros -Wno-long-long "
+        ;;
+        *solaris*)
+        ;;
+        *)
+            AC_MSG_ERROR([PGM extesion is not supported on this platform $host.])
+        ;;
+    esac
+
+    AC_CHECK_HEADERS(openssl/md5.h, [] , 
+        [AC_MSG_ERROR([To run configure with --with-pgm2 option, openssl/md5.h has to be usable.])])
+
+    AC_CHECK_LIB(ssl, MD5_Init, , [AC_MSG_ERROR([Could not link with libssl, install develop version.])])
+
+    if test "x$pyzmq" != "xyes"; then
+        AC_CHECK_PROG(have_python, python, yes, no)
+        if test "x$have_python" != "xyes"; then
+            AC_MSG_ERROR([Could not find python.])
+        fi
+    fi
+
+    #  Generate galois_tables.c
+    AC_CONFIG_COMMANDS([galois_tables2.c], 
+        [perl foreign/openpgm/libpgm-dev/openpgm/pgm/galois_generator.pl > \
+            foreign/openpgm/libpgm-dev/openpgm/pgm/galois_tables.c])
+
+    #  Generate version.c
+    AC_CONFIG_COMMANDS([version2.c],
+        [python foreign/openpgm/libpgm-dev/openpgm/pgm/version_generator.py > \
+            foreign/openpgm/libpgm-dev/openpgm/pgm/version.c])
+
+    #  Check for OpenPGM nedded libraries.
+    PKG_CHECK_MODULES([GLIB], [glib-2.0 gthread-2.0])
+
+    LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} ${GLIB_CFLAGS} "
+
+    LIBZMQ_EXTRA_LDFLAFS="${LIBZMQ_EXTRA_LDFLAFS} ${GLIB_LIBS}"
+
+    AC_DEFINE(ZMQ_HAVE_OPENPGM, 1, [Have OpenPGM v1 or v2 extension.])
+    AC_DEFINE(ZMQ_HAVE_OPENPGM2, 1, [Have OpenPGM v2 extension.])
+    pgm2_ext="yes"
+fi
+
+AC_SUBST(pgm_basename)
+
+# If not on QNX nor --with-pgm/2add -Werror into LIBZMQ_EXTRA_CXXFLAGS.
+if test "x$werror" = "xyes" -a "x$pgm1_ext" = "xno" -a "x$pgm2_ext" = "xno"; then
+    LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Werror"
 fi
 
 # forwarder device
@@ -489,7 +557,9 @@ AM_CONDITIONAL(BUILD_PYTHON, test "x$pyzmq" = "xyes")
 AM_CONDITIONAL(BUILD_RUBY, test "x$rbzmq" = "xyes")
 AM_CONDITIONAL(BUILD_C, test "x$czmq" = "xyes")
 AM_CONDITIONAL(BUILD_CPP, test "x$cppzmq" = "xyes")
-AM_CONDITIONAL(BUILD_PGM, test "x$pgm_ext" = "xyes")
+AM_CONDITIONAL(BUILD_PGM1, test "x$pgm1_ext" = "xyes")
+AM_CONDITIONAL(BUILD_PGM2, test "x$pgm2_ext" = "xyes")
+AM_CONDITIONAL(BUILD_NO_PGM, test "x$pgm2_ext" = "xno" -a "x$pgm1_ext" = "xno")
 AM_CONDITIONAL(BUILD_FORWARDER, test "x$forwarder" = "xyes") 
 AM_CONDITIONAL(BUILD_PERF, test "x$perf" = "xyes") 
 
@@ -534,10 +604,14 @@ AC_MSG_RESULT([       Ruby library install dir: $rubydir])
 fi
 AC_MSG_RESULT([   Network protocols:])
 AC_MSG_RESULT([     TCP: yes])
-if test "x$pgm_ext" = "xyes"; then
-AC_MSG_RESULT([     PGM: $pgm_ext ($pgm_name)])
-else
-AC_MSG_RESULT([     PGM: $pgm_ext])
+if test "x$pgm1_ext" = "xyes"; then
+AC_MSG_RESULT([     PGM: $pgm1_ext ($pgm_basename)])
+fi
+if test "x$pgm2_ext" = "xyes"; then
+AC_MSG_RESULT([     PGM: $pgm2_ext ($pgm_basename)])
+fi
+if test "x$pgm1_ext" = "xno" -a "x$pgm2_ext" = "xno"; then
+AC_MSG_RESULT([     PGM: no])
 fi
 AC_MSG_RESULT([   Devices:])
 AC_MSG_RESULT([     forwarder: $forwarder])

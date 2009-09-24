@@ -22,7 +22,7 @@
 
 #include "platform.hpp"
 
-#if defined ZMQ_HAVE_OPENPGM
+#if defined ZMQ_HAVE_OPENPGM1
 
 #ifdef ZMQ_HAVE_LINUX
 #include <glib.h>

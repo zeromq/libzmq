@@ -15,7 +15,7 @@ include_HEADERS = ../bindings/c/zmq.h
 endif
 endif
 
-if BUILD_PGM
+if BUILD_PGM1
 pgm_sources = ../foreign/openpgm/@pgm_basename@/openpgm/pgm/packet.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/timer.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/if.c \
@@ -30,6 +30,38 @@ pgm_sources = ../foreign/openpgm/@pgm_basename@/openpgm/pgm/packet.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/reed_solomon.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/version.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/galois_tables.c
+endif
+
+if BUILD_PGM2
+pgm_sources = ../foreign/openpgm/@pgm_basename@/openpgm/pgm/packet.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/time.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/if.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/getifaddrs.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/getnodeaddr.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/indextoaddr.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/indextoname.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/nametoindex.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/inet_network.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/md5.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/gsi.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/tsi.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/signal.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/txwi.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/rxwi.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/transport.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/source.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/receiver.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/recv.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/pgm.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/timer.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/net.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/rate_control.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/async.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/checksum.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/reed_solomon.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/galois_tables.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/wsastrerror.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/glib-compat.c
 endif
 
 libzmq_la_SOURCES = $(pgm_sources) \
@@ -140,7 +172,7 @@ libzmq_la_SOURCES = $(pgm_sources) \
 
 libzmq_la_LDFLAGS = -version-info @LTVER@ @LIBZMQ_EXTRA_LDFLAFS@
 
-if BUILD_PGM
+if BUILD_PGM1
 libzmq_la_CXXFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/include/ -Wall @LIBZMQ_EXTRA_CXXFLAGS@
 libzmq_la_CFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/include/ @LIBZMQ_EXTRA_CXXFLAGS@ \
     -pipe \
@@ -180,7 +212,58 @@ libzmq_la_CFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/in
     -DCONFIG_HAVE_SIGHANDLER_T \
     -DCONFIG_BIND_INADDR_ANY \
     -DCONFIG_GALOIS_MUL_LUT
-else
+endif
+
+if BUILD_PGM2
+libzmq_la_CXXFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/include/ -Wall @LIBZMQ_EXTRA_CXXFLAGS@
+libzmq_la_CFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/include/ @LIBZMQ_EXTRA_CXXFLAGS@ \
+    -pipe \
+    -Wall \
+    -Wextra \
+    -Wfloat-equal \
+    -Wshadow \
+    -Wunsafe-loop-optimizations \
+    -Wpointer-arith \
+    -Wbad-function-cast \
+    -Wcast-qual \
+    -Wcast-align \
+    -Wwrite-strings \
+    -Waggregate-return \
+    -Wstrict-prototypes \
+    -Wold-style-definition \
+    -Wmissing-prototypes \
+    -Wmissing-declarations \
+    -Wmissing-noreturn \
+    -Wmissing-format-attribute \
+    -Wredundant-decls \
+    -Wnested-externs \
+    -Winline \
+    -pedantic \
+    -std=gnu99 \
+    --param max-inline-insns-single=600 \
+    -D_REENTRANT \
+    -D_GNU_SOURCE \
+    -D__need_IOV_MAX \
+    -DCONFIG_HAVE_PSELECT \
+    -DCONFIG_HAVE_POLL \
+    -DCONFIG_HAVE_PPOLL \
+    -DCONFIG_HAVE_EPOLL \
+    -DCONFIG_HAVE_CLOCK_GETTIME \
+    -DCONFIG_HAVE_CLOCK_NANOSLEEP \
+    -DCONFIG_HAVE_NANOSLEEP \
+    -DCONFIG_HAVE_USLEEP \
+    -DCONFIG_HAVE_RTC \
+    -DCONFIG_HAVE_TSC \
+    -DCONFIG_HAVE_IFR_NETMASK \
+    -DCONFIG_HAVE_GETIFADDRS \
+    -DCONFIG_HAVE_GETHOSTBYNAME2 \
+    -DCONFIG_HAVE_GETPROTOBYNAME_R \
+    -DCONFIG_BIND_INADDR_ANY \
+    -DCONFIG_GALOIS_MUL_LUT \
+    -DGETTEXT_PACKAGE=\'"pgm"\'
+endif
+
+if BUILD_NO_PGM
 libzmq_la_CXXFLAGS = -Wall @LIBZMQ_EXTRA_CXXFLAGS@
 endif
 

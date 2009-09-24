@@ -19,7 +19,7 @@
 
 #include "platform.hpp"
 
-#if defined ZMQ_HAVE_OPENPGM
+#if defined ZMQ_HAVE_OPENPGM1
 
 #include <iostream>
 

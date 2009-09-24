@@ -93,7 +93,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         return 0;
     }
 
-#if defined ZMQ_HAVE_OPENPGM
+#if defined ZMQ_HAVE_OPENPGM1
     if (addr_type == "pgm" || addr_type == "udp") {
         //  In the case of PGM bind behaves the same like connect.
         return connect (addr_); 
@@ -179,7 +179,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         return 0;
     }
 
-#if defined ZMQ_HAVE_OPENPGM
+#if defined ZMQ_HAVE_OPENPGM1
     if (addr_type == "pgm" || addr_type == "udp") {
 
         //  If the socket type requires bi-directional communication

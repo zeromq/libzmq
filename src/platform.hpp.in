@@ -178,8 +178,14 @@
 /* Have OpenBSD OS */
 #undef ZMQ_HAVE_OPENBSD
 
-/* Have OpenPGM extension. */
+/* Have OpenPGM v1 or v2 extension. */
 #undef ZMQ_HAVE_OPENPGM
+
+/* Have OpenPGM v1 extension. */
+#undef ZMQ_HAVE_OPENPGM1
+
+/* Have OpenPGM v2 extension. */
+#undef ZMQ_HAVE_OPENPGM2
 
 /* Have DarwinOSX OS */
 #undef ZMQ_HAVE_OSX
