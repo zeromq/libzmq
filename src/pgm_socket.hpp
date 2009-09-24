@@ -22,7 +22,7 @@
 
 #include "platform.hpp"
 
-#if defined ZMQ_HAVE_OPENPGM1
+#if defined ZMQ_HAVE_OPENPGM
 
 #ifdef ZMQ_HAVE_LINUX
 #include <glib.h>
@@ -135,13 +135,6 @@ namespace zmq
     
         //  Receiver transport uses 2 fd.
         enum {pgm_receiver_fd_count = 2};
-
-        //  TSI of the actual peer.
-//        pgm_tsi_t tsi;
-
-        //  Previous peer TSI.
-//        pgm_tsi_t retired_tsi;
-
 #endif
     };
 }

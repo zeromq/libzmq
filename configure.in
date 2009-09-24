@@ -129,11 +129,6 @@ case "${host_os}" in
         ;;
 esac
 
-# If not on QNX nor OSX add -pedantic into LIBZMQ_EXTRA_CXXFLAGS.
-if test "x$pedantic" = "xyes"; then
-    LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -pedantic"
-fi
-
 # Check if we are running at sparc harware
 AC_MSG_CHECKING([wheter __sparc__ is defined])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
@@ -521,6 +516,11 @@ if test "x$with_pgm2_ext" != "xno"; then
 fi
 
 AC_SUBST(pgm_basename)
+
+# If not on QNX nor OSX nor PGM add -pedantic into LIBZMQ_EXTRA_CXXFLAGS.
+if test "x$pedantic" = "xyes" -a "x$pgm1_ext" = "xno" -a "x$pgm2_ext" = "xno"; then
+    LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -pedantic"
+fi
 
 # If not on QNX nor --with-pgm/2add -Werror into LIBZMQ_EXTRA_CXXFLAGS.
 if test "x$werror" = "xyes" -a "x$pgm1_ext" = "xno" -a "x$pgm2_ext" = "xno"; then
