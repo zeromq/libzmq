@@ -119,16 +119,28 @@ namespace zmq
         pgm_msgv_t *pgm_msgv;
 
         // How many bytes were read from pgm socket.
+#ifdef ZMQ_HAVE_OPENPGM1
         ssize_t nbytes_rec;
+#elif defined ZMQ_HAVE_OPENPGM2
+        size_t nbytes_rec;
+#endif
 
         //  How many bytes were processed from last pgm socket read.
+#ifdef ZMQ_HAVE_OPENPGM1
         ssize_t nbytes_processed;
+#elif defined ZMQ_HAVE_OPENPGM2
+        size_t nbytes_processed;
+#endif
         
         //  How many messages from pgm_msgv were already sent up.
+#ifdef ZMQ_HAVE_OPENPGM1
         ssize_t pgm_msgv_processed;
+#elif defined ZMQ_HAVE_OPENPGM2
+        size_t pgm_msgv_processed;
+#endif
 
         //  Size of pgm_msgv array.
-        ssize_t pgm_msgv_len;
+        size_t pgm_msgv_len;
 
         //  Sender transport uses 2 fd.
         enum {pgm_sender_fd_count = 2};

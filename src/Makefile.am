@@ -260,7 +260,8 @@ libzmq_la_CFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/in
     -DCONFIG_HAVE_GETPROTOBYNAME_R \
     -DCONFIG_BIND_INADDR_ANY \
     -DCONFIG_GALOIS_MUL_LUT \
-    -DGETTEXT_PACKAGE=\'"pgm"\'
+    -DGETTEXT_PACKAGE='"pgm"' \
+    -DG_LOG_DOMAIN='"Pgm"'
 endif
 
 if BUILD_NO_PGM
