@@ -76,6 +76,9 @@ namespace zmq
         //  Poll handle associated with PGM socket.
         handle_t handle;
         handle_t uplink_handle;
+#ifdef ZMQ_HAVE_OPENPGM2
+        handle_t rdata_notify_handle;
+#endif
 
         //  Parent session.
         i_inout *inout;

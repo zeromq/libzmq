@@ -153,7 +153,6 @@ void zmq::pgm_receiver_t::in_event ()
         // information (sizeof uint16_t).
         raw_data +=  sizeof (uint16_t);
         nbytes -= sizeof (uint16_t);
-        zmq_assert (apdu_offset <= nbytes);
 
         //  New peer.
         if (it == peers.end ()) {
@@ -174,6 +173,7 @@ void zmq::pgm_receiver_t::in_event ()
         //  Now is the possibility to join the stream.
         if (!it->second.joined) {
  
+            zmq_assert (apdu_offset <= nbytes);
             zmq_assert (it->second.decoder == NULL);
 
             //  We have to move data to the begining of the first message.

@@ -65,7 +65,7 @@ namespace zmq
 
         //   Get sender and receiver fds and store it to user allocated 
         //   memory. Receive fd is used to process NAKs from peers.
-        int get_sender_fds (int *send_fd_, int *receive_fd_);
+        int get_sender_fds (int *send_fd_, int *receive_fd_, int *rdata_notify_fd_ = NULL);
 
         //  Send data as one APDU, transmit window owned memory.
         size_t send (unsigned char *data_, size_t data_len_);
@@ -143,8 +143,12 @@ namespace zmq
         size_t pgm_msgv_len;
 
         //  Sender transport uses 2 fd.
+#ifdef ZMQ_HAVE_OPENPGM1
         enum {pgm_sender_fd_count = 2};
-    
+#elif ZMQ_HAVE_OPENPGM2
+        enum {pgm_sender_fd_count = 3};
+#endif
+
         //  Receiver transport uses 2 fd.
         enum {pgm_receiver_fd_count = 2};
 #endif
