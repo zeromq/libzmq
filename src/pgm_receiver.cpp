@@ -160,8 +160,13 @@ void zmq::pgm_receiver_t::in_event ()
             peer_info_t peer_info = {false, NULL};
             it = peers.insert (std::make_pair (*tsi, peer_info)).first;
 
+#ifdef ZMQ_HAVE_OPENPGM1
             zmq_log (1, "New peer TSI: %s, %s(%i).\n", pgm_print_tsi (tsi),
                 __FILE__, __LINE__);
+#elif ZMQ_HAVE_OPENPGM2
+            zmq_log (1, "New peer TSI: %s, %s(%i).\n", pgm_tsi_print (tsi),
+                __FILE__, __LINE__);
+#endif
         }
 
         //  There is not beginning of the message in current APDU and we
@@ -187,8 +192,13 @@ void zmq::pgm_receiver_t::in_event ()
             it->second.decoder = new zmq_decoder_t;
             it->second.decoder->set_inout (inout);
 
+#ifdef ZMQ_HAVE_OPENPGM1
             zmq_log (1, "Peer %s joined into the stream, %s(%i)\n", 
                 pgm_print_tsi (tsi), __FILE__, __LINE__);
+#elif ZMQ_HAVE_OPENPGM2
+             zmq_log (1, "Peer %s joined into the stream, %s(%i)\n", 
+                pgm_tsi_print (tsi), __FILE__, __LINE__);
+#endif
         }
 
         if (nbytes > 0) {
