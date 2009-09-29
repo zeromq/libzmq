@@ -344,8 +344,8 @@ ZMQ_EXPORT int zmq_send (void *s, zmq_msg_t *msg, int flags);
 //          EFSM - function cannot be called at the moment. 
 ZMQ_EXPORT int zmq_flush (void *s);
 
-//  Send a message from the socket 's'. 'flags' argument can be combination
-//  of the flags described above.
+//  Receive a message from the socket 's'. 'flags' argument can be combination
+//  of the flags described above with the exception of ZMQ_NOFLUSH.
 //
 //  Errors: EAGAIN - message cannot be received at the moment (applies only to
 //                   non-blocking receive).
