@@ -42,6 +42,9 @@ namespace zmq
 
         void set_endpoint (i_endpoint *endpoint_);
 
+        //  Returns true if there is at least one message to read in the pipe.
+        bool check_read ();
+
         //  Reads a message to the underlying pipe.
         bool read (zmq_msg_t *msg_);
 
