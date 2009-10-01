@@ -48,8 +48,10 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
 
     //  Create a listening socket.
     s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    //  TODO: Convert error code to errno.
-    wsa_assert (s != INVALID_SOCKET);
+    if (s == INVALID_SOCKET) {
+        wsa_error_to_errno ();
+        return -1;
+    }
 
     //  Allow reusing of the address.
     int flag = 1;
@@ -65,12 +67,17 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
     //  Bind the socket to the network interface and port.
     rc = bind (s, (struct sockaddr*) &addr, sizeof (addr));
     //  TODO: Convert error code to errno.
-    wsa_assert (rc != SOCKET_ERROR);
+    if (rc == SOCKET_ERROR) {
+        wsa_error_to_errno ();
+        return -1;
+    }
 
     //  Listen for incomming connections.
     rc = listen (s, 1);
-    //  TODO: Convert error code to errno.
-    wsa_assert (rc != SOCKET_ERROR);
+    if (rc == SOCKET_ERROR) {
+        wsa_error_to_errno ();
+        return -1;
+    }
 
     return 0;
 }

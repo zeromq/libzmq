@@ -50,8 +50,10 @@ int zmq::tcp_connecter_t::open ()
 
     //  Create the socket.
     s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    //  TODO: Convert error to errno.
-    wsa_assert (s != INVALID_SOCKET);
+    if (s == INVALID_SOCKET) {
+        wsa_error_to_errno ();
+        return -1;
+    }
 
     // Set to non-blocking mode.
     unsigned long argp = 1;
@@ -78,9 +80,7 @@ int zmq::tcp_connecter_t::open ()
         return -1;
     }
     
-    //  TODO: Convert error to errno.
-    wsa_assert (rc == 0);
-
+    wsa_error_to_errno ();
     return -1;
 }
 

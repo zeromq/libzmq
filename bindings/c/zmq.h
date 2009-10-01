@@ -51,6 +51,18 @@ extern "C" {
 #ifndef EPROTONOSUPPORT
 #define EPROTONOSUPPORT (ZMQ_HAUSNUMERO + 2)
 #endif
+#ifndef ENOBUFS
+#define ENOBUFS (ZMQ_HAUSNUMERO + 3)
+#endif
+#ifndef ENETDOWN
+#define ENETDOWN (ZMQ_HAUSNUMERO + 4)
+#endif
+#ifndef EADDRINUSE
+#define EADDRINUSE (ZMQ_HAUSNUMERO + 5)
+#endif
+#ifndef EADDRNOTAVAIL
+#define EADDRNOTAVAIL (ZMQ_HAUSNUMERO + 6)
+#endif
 
 //  Native 0MQ error codes.
 #define EMTHREAD (ZMQ_HAUSNUMERO + 50)

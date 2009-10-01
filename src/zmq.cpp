@@ -49,6 +49,14 @@ const char *zmq_strerror (int errnum_)
         return "Not supported";
     case EPROTONOSUPPORT:
         return "Protocol not supported";
+    case ENOBUFS:
+        return "No buffer space available";
+    case ENETDOWN:
+        return "Network is down";
+    case EADDRINUSE:
+        return "Address in use";
+    case EADDRNOTAVAIL:
+        return "Address not available";
 #endif
     case EMTHREAD:
         return "Number of preallocated application threads exceeded";
