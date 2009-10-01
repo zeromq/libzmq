@@ -354,6 +354,39 @@ ZMQ_EXPORT int zmq_flush (void *s);
 ZMQ_EXPORT int zmq_recv (void *s, zmq_msg_t *msg, int flags);
 
 ////////////////////////////////////////////////////////////////////////////////
+//  I/O multiplexing.
+////////////////////////////////////////////////////////////////////////////////
+
+#define ZMQ_POLLIN 1
+#define ZMQ_POLLOUT 2
+
+//  'socket' is a 0MQ socket we want to poll on. If set to NULL, native file
+//  descriptor (socket) 'fd' will be used instead. 'events' defines event we
+//  are going to poll on - combination of ZMQ_POLLIN and ZMQ_POLLOUT. Error
+//  event does not exist for portability reasons. Errors from native sockets
+//  are reported as ZMQ_POLLIN. It's client's responsibilty to identify the
+//  error afterwards. 'revents' field is filled in after function returns. It's
+//  a combination of ZMQ_POLLIN and/or ZMQ_POLLOUT depending on the state of the
+//  socket.
+typedef struct
+{
+    void *socket;
+    int fd;
+    short events;
+    short revents;
+} zmq_pollitem_t;
+
+//  Polls for the items specified by 'items'. Number of items in the array is
+//  determined by 'nitems' argument. Returns number of items signaled, -1
+//  in the case of error.
+//
+//  Errors: EFAULT - there's a 0MQ socket in the pollset belonging to
+//                   a different thread.
+//          ENOTSUP - 0MQ context was initialised without ZMQ_POLL flag.
+//                    I/O multiplexing is disabled.
+ZMQ_EXPORT int zmq_poll (zmq_pollitem_t *items, int nitems);
+
+////////////////////////////////////////////////////////////////////////////////
 //  Helper functions.
 ////////////////////////////////////////////////////////////////////////////////
 

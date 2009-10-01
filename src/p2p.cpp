@@ -84,4 +84,15 @@ int zmq::p2p_t::xrecv (zmq_msg_t *msg_, int flags_)
     return 0;
 }
 
+bool zmq::p2p_t::xhas_in ()
+{
+    zmq_assert (false);
+    return false;
+}
+
+bool zmq::p2p_t::xhas_out ()
+{
+    zmq_assert (false);
+    return false;
+}
 

@@ -195,4 +195,21 @@ int zmq::rep_t::xrecv (zmq_msg_t *msg_, int flags_)
     return -1;
 }
 
+bool zmq::rep_t::xhas_in ()
+{
+    for (int count = active; count != 0; count--) {
+        if (in_pipes [current]->check_read ())
+            return !waiting_for_reply;
+        current++;
+        if (current >= active)
+            current = 0;
+    }
+
+    return false;
+}
+
+bool zmq::rep_t::xhas_out ()
+{
+    return waiting_for_reply;
+}
 

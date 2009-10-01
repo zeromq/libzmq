@@ -195,4 +195,17 @@ int zmq::req_t::xrecv (zmq_msg_t *msg_, int flags_)
     return 0;
 }
 
+bool zmq::req_t::xhas_in ()
+{
+    if (reply_pipe->check_read ())
+        return waiting_for_reply;
+
+    return false;
+}
+
+bool zmq::req_t::xhas_out ()
+{
+    return !waiting_for_reply;
+}
+
 

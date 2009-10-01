@@ -21,6 +21,7 @@
 #define __ZMQ_I_SIGNALER_HPP_INCLUDED__
 
 #include "stdint.hpp"
+#include "fd.hpp"
 
 namespace zmq
 {
@@ -42,6 +43,11 @@ namespace zmq
         //  Same as poll, however, if there is no signal available,
         //  function returns zero immediately instead of waiting for a signal.
         virtual uint64_t check () = 0;
+
+        //  Returns file descriptor that allows waiting for signals. Specific
+        //  signalers may not support this functionality. If so, the function
+        //  returns retired_fd.
+        virtual fd_t get_fd () = 0;
     };
 
 }

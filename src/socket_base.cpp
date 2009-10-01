@@ -364,6 +364,21 @@ int zmq::socket_base_t::close ()
     return 0;
 }
 
+zmq::app_thread_t *zmq::socket_base_t::get_thread ()
+{
+    return app_thread;
+}
+
+bool zmq::socket_base_t::has_in ()
+{
+    return xhas_in ();
+}
+
+bool zmq::socket_base_t::has_out ()
+{
+    return xhas_out ();
+}
+
 bool zmq::socket_base_t::register_session (const char *name_,
     session_t *session_)
 {

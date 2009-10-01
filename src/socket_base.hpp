@@ -54,6 +54,16 @@ namespace zmq
         int recv (zmq_msg_t *msg_, int flags_);
         int close ();
 
+        //  This function is used by the polling mechanism to determine
+        //  whether the socket belongs to the application thread the poll
+        //  is called from.
+        class app_thread_t *get_thread ();
+
+        //  These functions are used by the polling mechanism to determine
+        //  which events are to be reported from this socket.
+        bool has_in ();
+        bool has_out ();
+
         //  The list of sessions cannot be accessed via inter-thread
         //  commands as it is unacceptable to wait for the completion of the
         //  action till user application yields control of the application
@@ -88,6 +98,8 @@ namespace zmq
         virtual int xsend (zmq_msg_t *msg_, int options_) = 0;
         virtual int xflush () = 0;
         virtual int xrecv (zmq_msg_t *msg_, int options_) = 0;
+        virtual bool xhas_in () = 0;
+        virtual bool xhas_out () = 0;
 
         //  Socket options.
         options_t options;
