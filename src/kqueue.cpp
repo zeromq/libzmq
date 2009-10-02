@@ -68,7 +68,8 @@ void zmq::kqueue_t::kevent_delete (fd_t fd_, short filter_)
     errno_assert (rc != -1);
 }
 
-zmq::handle_t zmq::kqueue_t::add_fd (fd_t fd_, i_poll_events *reactor_)
+zmq::kqueue_t::handle_t zmq::kqueue_t::add_fd (fd_t fd_,
+    i_poll_events *reactor_)
 {
     poll_entry_t *pe = new poll_entry_t;
     zmq_assert (pe != NULL);
@@ -78,14 +79,12 @@ zmq::handle_t zmq::kqueue_t::add_fd (fd_t fd_, i_poll_events *reactor_)
     pe->flag_pollout = 0;
     pe->reactor = reactor_;
 
-    handle_t handle;
-    handle.ptr = pe;
-    return handle;
+    return pe;
 }
 
 void zmq::kqueue_t::rm_fd (handle_t handle_)
 {
-    poll_entry_t *pe = (poll_entry_t*) handle_.ptr;
+    poll_entry_t *pe = (poll_entry_t*) handle_;
     if (pe->flag_pollin)
         kevent_delete (pe->fd, EVFILT_READ);
     if (pe->flag_pollout)
@@ -96,28 +95,28 @@ void zmq::kqueue_t::rm_fd (handle_t handle_)
 
 void zmq::kqueue_t::set_pollin (handle_t handle_)
 {
-    poll_entry_t *pe = (poll_entry_t*) handle_.ptr;
+    poll_entry_t *pe = (poll_entry_t*) handle_;
     pe->flag_pollin = true;
     kevent_add (pe->fd, EVFILT_READ, pe);
 }
 
 void zmq::kqueue_t::reset_pollin (handle_t handle_)
 {
-    poll_entry_t *pe = (poll_entry_t*) handle_.ptr;
+    poll_entry_t *pe = (poll_entry_t*) handle_;
     pe->flag_pollin = false;
     kevent_delete (pe->fd, EVFILT_READ);
 }
 
 void zmq::kqueue_t::set_pollout (handle_t handle_)
 {
-    poll_entry_t *pe = (poll_entry_t*) handle_.ptr;
+    poll_entry_t *pe = (poll_entry_t*) handle_;
     pe->flag_pollout = true;
     kevent_add (pe->fd, EVFILT_WRITE, pe);
 }
 
 void zmq::kqueue_t::reset_pollout (handle_t handle_)
 {
-    poll_entry_t *pe = (poll_entry_t*) handle_.ptr;
+    poll_entry_t *pe = (poll_entry_t*) handle_;
     pe->flag_pollout = false;
     kevent_delete (pe->fd, EVFILT_WRITE);
 }

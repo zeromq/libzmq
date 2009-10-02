@@ -59,7 +59,7 @@ zmq::select_t::~select_t ()
     zmq_assert (load.get () == 0);
 }
 
-zmq::handle_t zmq::select_t::add_fd (fd_t fd_, i_poll_events *events_)
+zmq::select_t::handle_t zmq::select_t::add_fd (fd_t fd_, i_poll_events *events_)
 {
     //  Store the file descriptor.
     fd_entry_t entry = {fd_, events_};
@@ -75,38 +75,33 @@ zmq::handle_t zmq::select_t::add_fd (fd_t fd_, i_poll_events *events_)
     //  Increase the load metric of the thread.
     load.add (1);
 
-    handle_t handle;
-    handle.fd = fd_;
-    return handle;
+    return fd_;
 }
 
 void zmq::select_t::rm_fd (handle_t handle_)
 {
-    //  Get file descriptor.
-    fd_t fd = handle_.fd;
-
     //  Mark the descriptor as retired.
     fd_set_t::iterator it;
     for (it = fds.begin (); it != fds.end (); it ++)
-        if (it->fd == fd)
+        if (it->fd == handle_)
             break;
     zmq_assert (it != fds.end ());
     it->fd = retired_fd;
     retired = true;
 
     //  Stop polling on the descriptor.
-    FD_CLR (fd, &source_set_in);
-    FD_CLR (fd, &source_set_out);
-    FD_CLR (fd, &source_set_err);
+    FD_CLR (handle_, &source_set_in);
+    FD_CLR (handle_, &source_set_out);
+    FD_CLR (handle_, &source_set_err);
 
     //  Discard all events generated on this file descriptor.
-    FD_CLR (fd, &readfds);
-    FD_CLR (fd, &writefds);
-    FD_CLR (fd, &exceptfds);
+    FD_CLR (handle_, &readfds);
+    FD_CLR (handle_, &writefds);
+    FD_CLR (handle_, &exceptfds);
 
     //  Adjust the maxfd attribute if we have removed the
     //  highest-numbered file descriptor.
-    if (fd == maxfd) {
+    if (handle_ == maxfd) {
         maxfd = retired_fd;
         for (fd_set_t::iterator it = fds.begin (); it != fds.end (); it ++)
             if (it->fd > maxfd)
@@ -119,22 +114,22 @@ void zmq::select_t::rm_fd (handle_t handle_)
 
 void zmq::select_t::set_pollin (handle_t handle_)
 {
-    FD_SET (handle_.fd, &source_set_in);
+    FD_SET (handle_, &source_set_in);
 }
 
 void zmq::select_t::reset_pollin (handle_t handle_)
 {
-    FD_CLR (handle_.fd, &source_set_in);
+    FD_CLR (handle_, &source_set_in);
 }
 
 void zmq::select_t::set_pollout (handle_t handle_)
 {
-    FD_SET (handle_.fd, &source_set_out);
+    FD_SET (handle_, &source_set_out);
 }
 
 void zmq::select_t::reset_pollout (handle_t handle_)
 {
-    FD_CLR (handle_.fd, &source_set_out);
+    FD_CLR (handle_, &source_set_out);
 }
 
 void zmq::select_t::add_timer (i_poll_events *events_)

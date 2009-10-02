@@ -69,7 +69,8 @@ void zmq::devpoll_t::devpoll_ctl (fd_t fd_, short events_)
     zmq_assert (rc == sizeof pfd);
 }
 
-zmq::handle_t zmq::devpoll_t::add_fd (fd_t fd_, i_poll_events *reactor_)
+zmq::devpoll_t::handle_t zmq::devpoll_t::add_fd (fd_t fd_,
+    i_poll_events *reactor_)
 {
     assert (!fd_table [fd_].valid);
 
@@ -84,17 +85,15 @@ zmq::handle_t zmq::devpoll_t::add_fd (fd_t fd_, i_poll_events *reactor_)
     //  Increase the load metric of the thread.
     load.add (1);
 
-    handle_t handle;
-    handle.fd = fd_;
-    return handle;
+    return fd_;
 }
 
 void zmq::devpoll_t::rm_fd (handle_t handle_)
 {
-    assert (fd_table [handle_.fd].valid);
+    assert (fd_table [handle_].valid);
 
-    devpoll_ctl (handle_.fd, POLLREMOVE);
-    fd_table [handle_.fd].valid = false;
+    devpoll_ctl (handle_, POLLREMOVE);
+    fd_table [handle_].valid = false;
 
     //  Decrease the load metric of the thread.
     load.sub (1);
@@ -102,34 +101,30 @@ void zmq::devpoll_t::rm_fd (handle_t handle_)
 
 void zmq::devpoll_t::set_pollin (handle_t handle_)
 {
-    fd_t fd = handle_.fd;
-    devpoll_ctl (fd, POLLREMOVE);
-    fd_table [fd].events |= POLLIN;
-    devpoll_ctl (fd, fd_table [fd].events);
+    devpoll_ctl (handle_, POLLREMOVE);
+    fd_table [handle_].events |= POLLIN;
+    devpoll_ctl (handle_, fd_table [handle_].events);
 }
 
 void zmq::devpoll_t::reset_pollin (handle_t handle_)
 {
-    fd_t fd = handle_.fd;
-    devpoll_ctl (fd, POLLREMOVE);
-    fd_table [fd].events &= ~((short) POLLIN);
-    devpoll_ctl (fd, fd_table [fd].events);
+    devpoll_ctl (handle_, POLLREMOVE);
+    fd_table [handle_].events &= ~((short) POLLIN);
+    devpoll_ctl (handle_, fd_table [handle_].events);
 }
 
 void zmq::devpoll_t::set_pollout (handle_t handle_)
 {
-    fd_t fd = handle_.fd;
-    devpoll_ctl (fd, POLLREMOVE);
-    fd_table [fd].events |= POLLOUT;
-    devpoll_ctl (fd, fd_table [fd].events);
+    devpoll_ctl (handle_, POLLREMOVE);
+    fd_table [handle_].events |= POLLOUT;
+    devpoll_ctl (handle_, fd_table [handle_].events);
 }
 
 void zmq::devpoll_t::reset_pollout (handle_t handle_)
 {
-    fd_t fd = handle_.fd;
-    devpoll_ctl (fd, POLLREMOVE);
-    fd_table [fd].events &= ~((short) POLLOUT);
-    devpoll_ctl (fd, fd_table [fd].events);
+    devpoll_ctl (handle_, POLLREMOVE);
+    fd_table [handle_].events &= ~((short) POLLOUT);
+    devpoll_ctl (handle_, fd_table [handle_].events);
 }
 
 void zmq::devpoll_t::add_timer (i_poll_events *events_)

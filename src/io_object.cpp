@@ -36,7 +36,7 @@ void zmq::io_object_t::set_io_thread (io_thread_t *io_thread_)
     poller = io_thread_->get_poller ();
 }
 
-zmq::handle_t zmq::io_object_t::add_fd (fd_t fd_)
+zmq::io_object_t::handle_t zmq::io_object_t::add_fd (fd_t fd_)
 {
     return poller->add_fd (fd_, this);
 }

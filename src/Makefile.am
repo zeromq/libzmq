@@ -85,7 +85,6 @@ libzmq_la_SOURCES = $(pgm_sources) \
     ip.hpp \
     i_endpoint.hpp \
     i_engine.hpp \
-    i_poller.hpp \
     i_poll_events.hpp \
     i_signaler.hpp \
     kqueue.hpp \
@@ -100,6 +99,7 @@ libzmq_la_SOURCES = $(pgm_sources) \
     pipe.hpp \
     platform.hpp \
     poll.hpp \
+    poller.hpp \
     p2p.hpp \
     pub.hpp \
     rep.hpp \

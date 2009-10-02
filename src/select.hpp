@@ -34,7 +34,6 @@
 #include <sys/select.h>
 #endif
 
-#include "i_poller.hpp"
 #include "fd.hpp"
 #include "thread.hpp"
 #include "atomic_counter.hpp"
@@ -45,22 +44,24 @@ namespace zmq
     //  Implements socket polling mechanism using POSIX.1-2001 select()
     //  function.
 
-    class select_t : public i_poller
+    class select_t
     {
     public:
+
+        typedef fd_t handle_t;
 
         select_t ();
         ~select_t ();
 
-        //  i_poller implementation.
-        handle_t add_fd (fd_t fd_, i_poll_events *events_);
+        //  "poller" concept.
+        handle_t add_fd (fd_t fd_, struct i_poll_events *events_);
         void rm_fd (handle_t handle_);
         void set_pollin (handle_t handle_);
         void reset_pollin (handle_t handle_);
         void set_pollout (handle_t handle_);
         void reset_pollout (handle_t handle_);
-        void add_timer (i_poll_events *events_);
-        void cancel_timer (i_poll_events *events_);
+        void add_timer (struct i_poll_events *events_);
+        void cancel_timer (struct i_poll_events *events_);
         int get_load ();
         void start ();
         void stop ();
