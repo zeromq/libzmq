@@ -16,7 +16,7 @@ endif
 endif
 
 if BUILD_PGM1
-pgm_sources = ../foreign/openpgm/@pgm_basename@/openpgm/pgm/packet.c \
+nodist_pgm_sources = ../foreign/openpgm/@pgm_basename@/openpgm/pgm/packet.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/timer.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/if.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/gsi.c \
@@ -33,7 +33,7 @@ pgm_sources = ../foreign/openpgm/@pgm_basename@/openpgm/pgm/packet.c \
 endif
 
 if BUILD_PGM2
-pgm_sources = ../foreign/openpgm/@pgm_basename@/openpgm/pgm/packet.c \
+nodist_pgm_sources = ../foreign/openpgm/@pgm_basename@/openpgm/pgm/packet.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/time.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/if.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/getifaddrs.c \
