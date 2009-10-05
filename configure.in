@@ -436,10 +436,10 @@ if test "x$with_pgm1_ext" != "xno"; then
 
     AC_MSG_CHECKING([Patching ${pgm_basename}])
 
-    if patch --silent -p0 < foreign/openpgm/create_custom_gsi.patch; then
+    if patch --silent -p0 < foreign/openpgm/create_custom_gsi_1.patch; then
         AC_MSG_RESULT([yes])
     else
-        AC_MSG_ERROR([Could not apply foreign/openpgm/create_custom_gsi.patch file.])
+        AC_MSG_ERROR([Could not apply foreign/openpgm/create_custom_gsi_1.patch file.])
     fi
 
     #  Generate galois_tables.c
