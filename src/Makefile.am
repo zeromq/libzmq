@@ -16,7 +16,7 @@ endif
 endif
 
 if BUILD_PGM1
-nodist_pgm_sources = ../foreign/openpgm/@pgm_basename@/openpgm/pgm/packet.c \
+pgm_sources = ../foreign/openpgm/@pgm_basename@/openpgm/pgm/packet.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/timer.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/if.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/gsi.c \
@@ -33,7 +33,7 @@ nodist_pgm_sources = ../foreign/openpgm/@pgm_basename@/openpgm/pgm/packet.c \
 endif
 
 if BUILD_PGM2
-nodist_pgm_sources = ../foreign/openpgm/@pgm_basename@/openpgm/pgm/packet.c \
+pgm_sources = ../foreign/openpgm/@pgm_basename@/openpgm/pgm/packet.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/time.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/if.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/getifaddrs.c \
@@ -64,8 +64,9 @@ nodist_pgm_sources = ../foreign/openpgm/@pgm_basename@/openpgm/pgm/packet.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/glib-compat.c
 endif
 
-libzmq_la_SOURCES = $(pgm_sources) \
-    app_thread.hpp \
+nodist_libzmq_la_SOURCES = $(pgm_sources)
+
+libzmq_la_SOURCES = app_thread.hpp \
     atomic_bitmap.hpp \
     atomic_counter.hpp \
     atomic_ptr.hpp \
@@ -269,6 +270,6 @@ libzmq_la_CXXFLAGS = -Wall @LIBZMQ_EXTRA_CXXFLAGS@
 endif
 
 dist-hook:
-		-rm $(distdir)/src/platform.hpp
+		-rm $(distdir)/platform.hpp
 
 

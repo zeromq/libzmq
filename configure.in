@@ -1,10 +1,10 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.61)
-AC_INIT([zeromq],[dev])
+AC_INIT([zeromq],[dev],[http://www.zeromq.org])
 AC_CONFIG_AUX_DIR(config)
 AM_CONFIG_HEADER(src/platform.hpp)
-AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
+AM_INIT_AUTOMAKE(tar-ustar)
 
 # libzmq -version-info
 LTVER="0:0:0"
@@ -22,6 +22,7 @@ AM_PROG_CC_C_O
 
 # Checks for programs.
 AC_PROG_CXX
+AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
 AC_PROG_SED
 AC_PROG_AWK
@@ -356,6 +357,12 @@ fi
 pgm1_ext="no"
 pgm2_ext="no"
 
+pgm1_basename="libpgm-1.2.14"
+pgm2_basename="libpgm-dev"
+
+AC_SUBST(pgm1_basename)
+AC_SUBST(pgm2_basename)
+
 pgm_basename=""
 
 AC_ARG_WITH([pgm], [AS_HELP_STRING([--with-pgm], 
@@ -372,7 +379,7 @@ fi
 
 if test "x$with_pgm1_ext" != "xno"; then
 
-    pgm_basename="libpgm-1.2.14"
+    pgm_basename=${pgm1_basename}
 
     #  Test if we have pkg-config
     if test "x$have_pkg_config" != "xyes"; then
@@ -466,7 +473,7 @@ fi
 
 if test "x$with_pgm2_ext" != "xno"; then
 
-    pgm_basename="libpgm-dev"
+    pgm_basename=${pgm2_basename}
 
     #  Test if we have pkg-config
     if test "x$have_pkg_config" != "xyes"; then
