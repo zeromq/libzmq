@@ -36,9 +36,6 @@
 /* Define to 1 if you have the `socket' library (-lsocket). */
 #undef HAVE_LIBSOCKET
 
-/* Define to 1 if you have the `ssl' library (-lssl). */
-#undef HAVE_LIBSSL
-
 /* Define to 1 if you have the `stdc++' library (-lstdc++). */
 #undef HAVE_LIBSTDC__
 
@@ -63,9 +60,6 @@
 
 /* Define to 1 if you have the <netinet/tcp.h> header file. */
 #undef HAVE_NETINET_TCP_H
-
-/* Define to 1 if you have the <openssl/md5.h> header file. */
-#undef HAVE_OPENSSL_MD5_H
 
 /* Define to 1 if you have the `perror' function. */
 #undef HAVE_PERROR

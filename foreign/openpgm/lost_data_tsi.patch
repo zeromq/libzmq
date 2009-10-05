@@ -1,4 +1,4 @@
---- libpgm-1.2.14/openpgm/pgm/transport.c	2009-08-27 04:54:04.000000000 +0200
+--- foreign/openpgm/libpgm-1.2.14/openpgm/pgm/transport.c	2009-08-27 04:54:04.000000000 +0200
 +++ foreign/openpgm/libpgm-1.2.14/openpgm/pgm/transport.c	2009-09-22 14:36:07.713124619 +0200
 @@ -2342,6 +2342,7 @@
  			if (waiting_rxw->ack_cumulative_losses != waiting_rxw->cumulative_losses)
@@ -64,7 +64,7 @@
  		rxw->pgm_sock_err.lost_count = rxw->cumulative_losses - rxw->ack_cumulative_losses;
  		rxw->ack_cumulative_losses = rxw->cumulative_losses;
  
---- libpgm-1.2.14/openpgm/pgm/include/pgm/transport.h	2009-08-27 04:53:23.000000000 +0200
+--- foreign/openpgm/libpgm-1.2.14/openpgm/pgm/include/pgm/transport.h	2009-08-27 04:53:23.000000000 +0200
 +++ foreign/openpgm/libpgm-1.2.14/openpgm/pgm/include/pgm/transport.h	2009-09-21 15:49:36.000000000 +0200
 @@ -205,6 +205,7 @@
      gboolean		is_bound;

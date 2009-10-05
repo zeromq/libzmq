@@ -96,9 +96,6 @@ namespace zmq
         //  Returns maximum count of apdus which fills readbuf_size_
         size_t get_max_apdu_at_once (size_t readbuf_size_);
 
-        //  Compute gsi from string.
-        int pgm_create_custom_gsi (const char *data_, pgm_gsi_t *gsi_);
-
         //  Associated socket options.
         options_t options;
        

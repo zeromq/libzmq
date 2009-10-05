@@ -390,11 +390,6 @@ if test "x$with_pgm1_ext" != "xno"; then
         ;;
     esac
 
-    AC_CHECK_HEADERS(openssl/md5.h, [] , 
-        [AC_MSG_ERROR([To run configure with --with-pgm option, openssl/md5.h has to be usable.])])
-
-    AC_CHECK_LIB(ssl, MD5_Init, , [AC_MSG_ERROR([Could not link with libssl, install develop version.])])
-
     AC_CHECK_PROG(have_tar, tar, yes, no)
     if test "x$have_tar" != "xyes"; then
         AC_MSG_ERROR([Could not find tar.])
@@ -439,6 +434,14 @@ if test "x$with_pgm1_ext" != "xno"; then
         AC_MSG_ERROR([Could not apply foreign/openpgm/lost_data_tsi.patch file.])
     fi
 
+    AC_MSG_CHECKING([Patching ${pgm_basename}])
+
+    if patch --silent -p0 < foreign/openpgm/create_custom_gsi.patch; then
+        AC_MSG_RESULT([yes])
+    else
+        AC_MSG_ERROR([Could not apply foreign/openpgm/create_custom_gsi.patch file.])
+    fi
+
     #  Generate galois_tables.c
     AC_CONFIG_COMMANDS([galois_tables.c], 
         [perl foreign/openpgm/libpgm-1.2.14/openpgm/pgm/galois_generator.pl > \
@@ -480,11 +483,6 @@ if test "x$with_pgm2_ext" != "xno"; then
             AC_MSG_ERROR([PGM extesion is not supported on this platform $host.])
         ;;
     esac
-
-    AC_CHECK_HEADERS(openssl/md5.h, [] , 
-        [AC_MSG_ERROR([To run configure with --with-pgm2 option, openssl/md5.h has to be usable.])])
-
-    AC_CHECK_LIB(ssl, MD5_Init, , [AC_MSG_ERROR([Could not link with libssl, install develop version.])])
 
     if test "x$pyzmq" != "xyes"; then
         AC_CHECK_PROG(have_python, python, yes, no)

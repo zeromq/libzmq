@@ -22,11 +22,10 @@
 #ifdef ZMQ_HAVE_OPENPGM
 
 #ifdef ZMQ_HAVE_LINUX
-//  TODO: add this into platform.hpp?
+//  TODO: needed for pgm - add this into platform.hpp?
 #define CONFIG_HAVE_POLL
 
 #include <pgm/pgm.h>
-#include <openssl/md5.h>
 #endif
 
 #include <string>
@@ -67,21 +66,6 @@ zmq::pgm_socket_t::pgm_socket_t (bool receiver_, const options_t &options_) :
     pgm_msgv_len (0)
 {
     
-}
-
-int zmq::pgm_socket_t::pgm_create_custom_gsi (const char *data_, pgm_gsi_t *gsi_)
-{
-
-    unsigned char result_md5 [16];
-
-    MD5_CTX ctx;
-    MD5_Init (&ctx);
-    MD5_Update (&ctx, data_, strlen (data_));
-    MD5_Final (result_md5, &ctx);
-
-    memcpy (gsi_, result_md5 + 10, 6);
-
-    return 0;
 }
 
 int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
