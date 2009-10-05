@@ -27,6 +27,8 @@
 #include <uuid.h>
 #elif defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_OSX
 #include <uuid/uuid.h>
+#elif defined ZMQ_HAVE_WINDOWS
+#include <Rpc.h>
 #endif
 
 namespace zmq
@@ -53,7 +55,10 @@ namespace zmq
         enum { uuid_string_len = 36 };
 
 #if defined ZMQ_HAVE_WINDOWS
-		::UUID uuid;
+#ifdef ZMQ_HAVE_MINGW32
+        typedef unsigned char* RPC_CSTR;
+#endif
+        ::UUID uuid;
         RPC_CSTR uuid_str;
 #elif defined ZMQ_HAVE_FREEBSD
         ::uuid_t uuid;

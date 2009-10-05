@@ -54,14 +54,16 @@ case "${host_os}" in
         's/^hardcode_libdir_flag_spec.*$'/'hardcode_libdir_flag_spec=" "/'
         mv libtool-2 libtool
         chmod 755 libtool
-        AC_CHECK_LIB(uuid, main, , [AC_MSG_ERROR([Could not link with libuuid, install develop version.])])
+        AC_CHECK_LIB(uuid, main, , 
+            [AC_MSG_ERROR([Could not link with libuuid, install develop version.])])
         ;;
     *solaris*)
         AC_DEFINE(ZMQ_HAVE_SOLARIS, 1, [Have Solaris OS])
         AC_CHECK_LIB(socket, main)
         AC_CHECK_LIB(nsl, main)
         AC_CHECK_LIB(rt, main)
-        AC_CHECK_LIB(uuid, main)
+        AC_CHECK_LIB(uuid, main, ,
+            [AC_MSG_ERROR([Could not link with libuuid, install develop version.])])
         CPPFLAGS="-D_REENTRANT -D_PTHREADS $CPPFLAGS"
         AC_MSG_CHECKING([wheter atomic operations can be used])
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
@@ -118,12 +120,13 @@ case "${host_os}" in
         chmod 755 libtool
         ;;
     *mingw32*)
-        pedantic="no"
         AC_DEFINE(ZMQ_HAVE_WINDOWS, 1, [Have Windows OS])
         AC_DEFINE(ZMQ_HAVE_MINGW32, 1, [Have MinGW32])
         AC_CHECK_HEADERS(windows.h)
-        LIBS="-lwsock32 -lws2_32 -no-undefined"
-        CFLAGS="-std=c99"
+        AC_CHECK_LIB(Rpcrt4, main, ,
+            [AC_MSG_ERROR([Could not link with Rpcrt4.dll.])])
+        LIBS="${LIBS} -lwsock32 -lws2_32"
+        CFLAGS="${CFLAGS} -std=c99"
         ;;
     *)
         AC_MSG_ERROR([Not supported os: $host.])

@@ -28,8 +28,8 @@
 
 namespace zmq
 {
-#ifdef _MSC_VER
-#if (_MSC_VER <= 1400)
+#ifdef ZMQ_HAVE_WINDOWS
+#if defined _MSC_VER &&_MSC_VER <= 1400
     typedef UINT_PTR fd_t;
     enum {retired_fd = (fd_t)(~0)}
 #else
