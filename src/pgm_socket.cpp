@@ -129,6 +129,8 @@ int zmq::pgm_socket_t::open_transport (void)
     int pgm_ok = 0;
 #elif defined ZMQ_HAVE_OPENPGM2
     int pgm_ok = true;
+
+    GError *pgm_error = NULL;
 #endif
 
     //  Init PGM transport.
@@ -146,18 +148,25 @@ int zmq::pgm_socket_t::open_transport (void)
     //  PGM transport GSI.
     pgm_gsi_t gsi;
  
+    std::string gsi_base;
+
     if (options.identity.size () > 0) {
 
         //  Create gsi from identity string.
-        rc = pgm_create_custom_gsi (options.identity.c_str (), &gsi);
-
+        gsi_base = options.identity;
     } else {
 
         //  Generate random gsi.
-        rc = pgm_create_custom_gsi (uuid_t ().to_string (), &gsi);
+        gsi_base = uuid_t ().to_string ();
     }
 
-    if (rc != 0) {
+#ifdef ZMQ_HAVE_OPENPGM1
+        rc = pgm_create_custom_gsi (gsi_base.c_str (), &gsi);
+#elif defined ZMQ_HAVE_OPENPGM2
+        rc = pgm_gsi_create_from_string (gsi_base.c_str (), &gsi);
+#endif
+
+    if (rc != pgm_ok) {
         errno = EINVAL;
         return -1;
     }
@@ -186,7 +195,6 @@ int zmq::pgm_socket_t::open_transport (void)
     }
 #elif defined ZMQ_HAVE_OPENPGM2
     struct pgm_transport_info_t *res = NULL;
-    GError *pgm_error = NULL;
 
     if (!pgm_if_get_transport_info (network, NULL, &res, &pgm_error)) {
         errno = EINVAL;
@@ -574,7 +582,7 @@ size_t zmq::pgm_socket_t::send (unsigned char *data_, size_t data_len_)
         zmq_log (1, "status %i, data_len %i, wrote %iB, %s(%i)\n", 
             (int) status, (int) data_len_, (int) nbytes, __FILE__, __LINE__);
 
-        zmq_assert (status == PGM_IO_STATUS_AGAIN2);
+        zmq_assert (status == PGM_IO_STATUS_RATE_LIMITED);
         zmq_assert (nbytes == 0);
     }
 #endif
@@ -728,7 +736,7 @@ ssize_t zmq::pgm_socket_t::receive (void **raw_data_, const pgm_tsi_t **tsi_)
 
         //  In a case when no ODATA/RDATA fired POLLIN event (SPM...)
         //  pgm_recvmsg returns ?.
-        if (status == PGM_IO_STATUS_AGAIN ||
+/*        if (status == PGM_IO_STATUS_AGAIN ||
               status == PGM_IO_STATUS_AGAIN2) {
        
             zmq_assert (nbytes_rec == 0);
@@ -738,7 +746,7 @@ ssize_t zmq::pgm_socket_t::receive (void **raw_data_, const pgm_tsi_t **tsi_)
             nbytes_rec = 0;
             return 0;
         }
-
+*/
         //  Data loss.
         if (status == PGM_IO_STATUS_RESET) {
 
@@ -840,7 +848,7 @@ void zmq::pgm_socket_t::process_upstream (void)
         (int) status, (int) dummy_bytes, __FILE__, __LINE__);
 
     //  No data should be returned.
-    zmq_assert (dummy_bytes == 0 && status == PGM_IO_STATUS_AGAIN);
+    zmq_assert (dummy_bytes == 0 && status == PGM_IO_STATUS_WOULD_BLOCK);
 #endif
     
 }
