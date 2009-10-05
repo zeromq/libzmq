@@ -41,6 +41,7 @@ namespace zmq
 
     const char *wsa_error ();
     void win_error (char *buffer_, size_t buffer_size_);
+    void wsa_error_to_errno ();
   
 }
 

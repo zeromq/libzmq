@@ -58,3 +58,8 @@ uint64_t zmq::ypollset_t::check ()
 {
     return (uint64_t) bits.xchg (0);
 }
+
+zmq::fd_t zmq::ypollset_t::get_fd ()
+{
+    return retired_fd;
+}

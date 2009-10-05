@@ -156,3 +156,14 @@ int zmq::pub_t::xrecv (zmq_msg_t *msg_, int flags_)
     return -1;
 }
 
+bool zmq::pub_t::xhas_in ()
+{
+    return false;
+}
+
+bool zmq::pub_t::xhas_out ()
+{
+    //  TODO: Reimplement when queue limits are added.
+    return true;
+}
+

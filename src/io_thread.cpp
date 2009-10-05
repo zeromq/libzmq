@@ -24,11 +24,6 @@
 #include "platform.hpp"
 #include "err.hpp"
 #include "command.hpp"
-#include "epoll.hpp"
-#include "poll.hpp"
-#include "select.hpp"
-#include "devpoll.hpp"
-#include "kqueue.hpp"
 #include "dispatcher.hpp"
 #include "simple_semaphore.hpp"
 
@@ -36,39 +31,7 @@ zmq::io_thread_t::io_thread_t (dispatcher_t *dispatcher_, int thread_slot_,
       int flags_) :
     object_t (dispatcher_, thread_slot_)
 {
-#if defined ZMQ_FORCE_SELECT
-    poller = new select_t;
-#elif defined ZMQ_FORCE_POLL
-    poller = new poll_t;
-#elif defined ZMQ_FORCE_EPOLL
-    poller = new epoll_t;
-#elif defined ZMQ_FORCE_DEVPOLL
-    poller = new devpoll_t;
-#elif defined ZMQ_FORCE_KQUEUE
-    poller = new kqueue_t;
-#elif defined ZMQ_HAVE_LINUX
-    poller = new epoll_t;
-#elif defined ZMQ_HAVE_WINDOWS
-    poller = new select_t;
-#elif defined ZMQ_HAVE_FREEBSD
-    poller = new kqueue_t;
-#elif defined ZMQ_HAVE_OPENBSD
-    poller = new kqueue_t;
-#elif defined ZMQ_HAVE_SOLARIS
-    poller = new devpoll_t;
-#elif defined ZMQ_HAVE_OSX
-    poller = new kqueue_t;
-#elif defined ZMQ_HAVE_QNXNTO
-    poller = new poll_t;
-#elif defined ZMQ_HAVE_AIX
-    poller = new poll_t;
-#elif defined ZMQ_HAVE_HPUX
-    poller = new devpoll_t;
-#elif defined ZMQ_HAVE_OPENVMS
-    poller = new select_t;
-#else
-#error Unsupported platform
-#endif
+    poller = new poller_t;
     zmq_assert (poller);
 
     signaler_handle = poller->add_fd (signaler.get_fd (), this);
@@ -134,7 +97,7 @@ void zmq::io_thread_t::timer_event ()
     zmq_assert (false);
 }
 
-zmq::i_poller *zmq::io_thread_t::get_poller ()
+zmq::poller_t *zmq::io_thread_t::get_poller ()
 {
     zmq_assert (poller);
     return poller;

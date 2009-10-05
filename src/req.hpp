@@ -43,6 +43,8 @@ namespace zmq
         int xsend (zmq_msg_t *msg_, int flags_);
         int xflush ();
         int xrecv (zmq_msg_t *msg_, int flags_);
+        bool xhas_in ();
+        bool xhas_out ();
 
     private:
 

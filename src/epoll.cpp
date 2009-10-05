@@ -52,7 +52,7 @@ zmq::epoll_t::~epoll_t ()
         delete *it;
 }
 
-zmq::handle_t zmq::epoll_t::add_fd (fd_t fd_, i_poll_events *events_)
+zmq::epoll_t::handle_t zmq::epoll_t::add_fd (fd_t fd_, i_poll_events *events_)
 {
     poll_entry_t *pe = new poll_entry_t;
     zmq_assert (pe != NULL);
@@ -72,14 +72,12 @@ zmq::handle_t zmq::epoll_t::add_fd (fd_t fd_, i_poll_events *events_)
     //  Increase the load metric of the thread.
     load.add (1);
 
-    handle_t handle;
-    handle.ptr = pe;
-    return handle;
+    return pe;
 }
 
 void zmq::epoll_t::rm_fd (handle_t handle_)
 {
-    poll_entry_t *pe = (poll_entry_t*) handle_.ptr;
+    poll_entry_t *pe = (poll_entry_t*) handle_;
     int rc = epoll_ctl (epoll_fd, EPOLL_CTL_DEL, pe->fd, &pe->ev);
     errno_assert (rc != -1);
     pe->fd = retired_fd;
@@ -91,7 +89,7 @@ void zmq::epoll_t::rm_fd (handle_t handle_)
 
 void zmq::epoll_t::set_pollin (handle_t handle_)
 {
-    poll_entry_t *pe = (poll_entry_t*) handle_.ptr;
+    poll_entry_t *pe = (poll_entry_t*) handle_;
     pe->ev.events |= EPOLLIN;
     int rc = epoll_ctl (epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
     errno_assert (rc != -1);
@@ -99,7 +97,7 @@ void zmq::epoll_t::set_pollin (handle_t handle_)
 
 void zmq::epoll_t::reset_pollin (handle_t handle_)
 {
-    poll_entry_t *pe = (poll_entry_t*) handle_.ptr;
+    poll_entry_t *pe = (poll_entry_t*) handle_;
     pe->ev.events &= ~((short) EPOLLIN);
     int rc = epoll_ctl (epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
     errno_assert (rc != -1);
@@ -107,7 +105,7 @@ void zmq::epoll_t::reset_pollin (handle_t handle_)
 
 void zmq::epoll_t::set_pollout (handle_t handle_)
 {
-    poll_entry_t *pe = (poll_entry_t*) handle_.ptr;
+    poll_entry_t *pe = (poll_entry_t*) handle_;
     pe->ev.events |= EPOLLOUT;
     int rc = epoll_ctl (epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
     errno_assert (rc != -1);
@@ -115,7 +113,7 @@ void zmq::epoll_t::set_pollout (handle_t handle_)
 
 void zmq::epoll_t::reset_pollout (handle_t handle_)
 {
-    poll_entry_t *pe = (poll_entry_t*) handle_.ptr;
+    poll_entry_t *pe = (poll_entry_t*) handle_;
     pe->ev.events &= ~((short) EPOLLOUT);
     int rc = epoll_ctl (epoll_fd, EPOLL_CTL_MOD, pe->fd, &pe->ev);
     errno_assert (rc != -1);

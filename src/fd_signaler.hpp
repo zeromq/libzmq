@@ -44,8 +44,6 @@ namespace zmq
         void signal (int signal_);
         uint64_t poll ();
         uint64_t check ();
-
-        //  Get the file descriptor associated with the object.
         fd_t get_fd ();
 
     private:

@@ -22,7 +22,7 @@
 
 #include <stddef.h>
 
-#include "i_poller.hpp"
+#include "poller.hpp"
 #include "i_poll_events.hpp"
 
 namespace zmq
@@ -40,6 +40,8 @@ namespace zmq
         ~io_object_t ();
 
     protected:
+
+        typedef poller_t::handle_t handle_t;
 
         //  Derived class can init/swap the underlying I/O thread.
         //  Caution: Remove all the file descriptors from the old I/O thread
@@ -63,7 +65,7 @@ namespace zmq
 
     private:
 
-        struct i_poller *poller;
+        poller_t *poller;
 
         io_object_t (const io_object_t&);
         void operator = (const io_object_t&);

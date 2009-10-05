@@ -200,6 +200,11 @@ namespace zmq
                 throw error_t ();
         }
 
+        inline operator void* ()
+        {
+            return ptr;
+        }
+
         inline void setsockopt (int option_, const void *optval_,
             size_t optvallen_)
         {

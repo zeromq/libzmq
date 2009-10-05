@@ -23,7 +23,7 @@
 #include <vector>
 
 #include "object.hpp"
-#include "i_poller.hpp"
+#include "poller.hpp"
 #include "i_poll_events.hpp"
 #include "fd_signaler.hpp"
 
@@ -59,7 +59,7 @@ namespace zmq
         void timer_event ();
 
         //  Used by io_objects to retrieve the assciated poller object.
-        struct i_poller *get_poller ();
+        poller_t *get_poller ();
 
         //  Command handlers.
         void process_stop ();
@@ -74,10 +74,10 @@ namespace zmq
         fd_signaler_t signaler;
 
         //  Handle associated with signaler's file descriptor.
-        handle_t signaler_handle;
+        poller_t::handle_t signaler_handle;
 
         //  I/O multiplexing is performed using a poller object.
-        i_poller *poller;
+        poller_t *poller;
     };
 
 }

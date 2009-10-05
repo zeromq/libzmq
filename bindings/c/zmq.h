@@ -51,6 +51,18 @@ extern "C" {
 #ifndef EPROTONOSUPPORT
 #define EPROTONOSUPPORT (ZMQ_HAUSNUMERO + 2)
 #endif
+#ifndef ENOBUFS
+#define ENOBUFS (ZMQ_HAUSNUMERO + 3)
+#endif
+#ifndef ENETDOWN
+#define ENETDOWN (ZMQ_HAUSNUMERO + 4)
+#endif
+#ifndef EADDRINUSE
+#define EADDRINUSE (ZMQ_HAUSNUMERO + 5)
+#endif
+#ifndef EADDRNOTAVAIL
+#define EADDRNOTAVAIL (ZMQ_HAUSNUMERO + 6)
+#endif
 
 //  Native 0MQ error codes.
 #define EMTHREAD (ZMQ_HAUSNUMERO + 50)
@@ -344,14 +356,47 @@ ZMQ_EXPORT int zmq_send (void *s, zmq_msg_t *msg, int flags);
 //          EFSM - function cannot be called at the moment. 
 ZMQ_EXPORT int zmq_flush (void *s);
 
-//  Send a message from the socket 's'. 'flags' argument can be combination
-//  of the flags described above.
+//  Receive a message from the socket 's'. 'flags' argument can be combination
+//  of the flags described above with the exception of ZMQ_NOFLUSH.
 //
 //  Errors: EAGAIN - message cannot be received at the moment (applies only to
 //                   non-blocking receive).
 //          ENOTSUP - function isn't supported by particular socket type.
 //          EFSM - function cannot be called at the moment. 
 ZMQ_EXPORT int zmq_recv (void *s, zmq_msg_t *msg, int flags);
+
+////////////////////////////////////////////////////////////////////////////////
+//  I/O multiplexing.
+////////////////////////////////////////////////////////////////////////////////
+
+#define ZMQ_POLLIN 1
+#define ZMQ_POLLOUT 2
+
+//  'socket' is a 0MQ socket we want to poll on. If set to NULL, native file
+//  descriptor (socket) 'fd' will be used instead. 'events' defines event we
+//  are going to poll on - combination of ZMQ_POLLIN and ZMQ_POLLOUT. Error
+//  event does not exist for portability reasons. Errors from native sockets
+//  are reported as ZMQ_POLLIN. It's client's responsibilty to identify the
+//  error afterwards. 'revents' field is filled in after function returns. It's
+//  a combination of ZMQ_POLLIN and/or ZMQ_POLLOUT depending on the state of the
+//  socket.
+typedef struct
+{
+    void *socket;
+    int fd;
+    short events;
+    short revents;
+} zmq_pollitem_t;
+
+//  Polls for the items specified by 'items'. Number of items in the array is
+//  determined by 'nitems' argument. Returns number of items signaled, -1
+//  in the case of error.
+//
+//  Errors: EFAULT - there's a 0MQ socket in the pollset belonging to
+//                   a different thread.
+//          ENOTSUP - 0MQ context was initialised without ZMQ_POLL flag.
+//                    I/O multiplexing is disabled.
+ZMQ_EXPORT int zmq_poll (zmq_pollitem_t *items, int nitems);
 
 ////////////////////////////////////////////////////////////////////////////////
 //  Helper functions.

@@ -106,16 +106,12 @@ namespace zmq
             return true;
         }
 
-        //  Reads an item from the pipe. Returns false if there is no value.
-        //  available.
-        inline bool read (T *value_)
+        //  Check whether item is available for reading.
+        inline bool check_read ()
         {
-            //  Was the value prefetched already? If so, return it.
-            if (&queue.front () != r) {
-                 *value_ = queue.front ();
-                 queue.pop ();
+            //  Was the value prefetched already? If so, return.
+            if (&queue.front () != r)
                  return true;
-            }
 
             //  There's no prefetched value, so let us prefetch more values.
             //  (Note that D is a template parameter. Becaue of that one of
@@ -164,6 +160,18 @@ namespace zmq
                 if (&queue.front () == r || !r)
                     return false;
             }
+
+            //  There was at least one value prefetched.
+            return true;
+        }
+
+        //  Reads an item from the pipe. Returns false if there is no value.
+        //  available.
+        inline bool read (T *value_)
+        {
+            //  Try to prefetch a value.
+            if (!check_read ())
+                return false;
 
             //  There was at least one value prefetched.
             //  Return it to the caller.

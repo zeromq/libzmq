@@ -197,3 +197,16 @@ int zmq::sub_t::fq (zmq_msg_t *msg_, int flags_)
     errno = EAGAIN;
     return -1;
 }
+
+bool zmq::sub_t::xhas_in ()
+{
+    //  TODO:  This is more complex as we have to ignore all the messages that
+    //         don't fit the filter.
+    zmq_assert (false);
+    return false;
+}
+
+bool zmq::sub_t::xhas_out ()
+{
+    return false;
+}

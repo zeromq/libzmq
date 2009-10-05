@@ -36,6 +36,17 @@ zmq::reader_t::~reader_t ()
 {
 }
 
+bool zmq::reader_t::check_read ()
+{
+    //  Check if there's an item in the pipe.
+    if (pipe->check_read ())
+        return true;
+
+    //  If not, deactivate the pipe.
+    endpoint->kill (this);
+    return false;
+}
+
 bool zmq::reader_t::read (zmq_msg_t *msg_)
 {
     if (!pipe->read (msg_)) {

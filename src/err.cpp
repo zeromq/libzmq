@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "../bindings/c/zmq.h"
+
 #include "err.hpp"
 #include "platform.hpp"
 
@@ -24,8 +26,6 @@
 
 const char *zmq::wsa_error()
 {
-
-
     int errcode = WSAGetLastError ();
     //  TODO: This is not a generic way to handle this...
     if (errcode == WSAEWOULDBLOCK)
@@ -146,6 +146,45 @@ void zmq::win_error (char *buffer_, size_t buffer_size_)
         FORMAT_MESSAGE_IGNORE_INSERTS, NULL, errcode, MAKELANGID(LANG_NEUTRAL,
         SUBLANG_DEFAULT), buffer_, buffer_size_, NULL );
     zmq_assert (rc);
+}
+
+void zmq::wsa_error_to_errno ()
+{
+    int errcode = WSAGetLastError ();
+    switch (errcode) {
+    case WSAEINPROGRESS:
+        errno = EAGAIN;
+        return;
+    case WSAEBADF:
+        errno = EBADF;
+        return;
+    case WSAEINVAL:
+        errno = EINVAL;
+        return;
+    case WSAEMFILE:
+        errno = EMFILE;
+        return;
+    case WSAEFAULT:
+        errno = EFAULT;
+        return;
+    case WSAEPROTONOSUPPORT:
+        errno = EPROTONOSUPPORT;
+        return;
+    case WSAENOBUFS:
+        errno = ENOBUFS;
+        return;
+    case WSAENETDOWN:
+        errno = ENETDOWN;
+        return;
+    case WSAEADDRINUSE:
+        errno = EADDRINUSE;
+        return;
+    case WSAEADDRNOTAVAIL:
+        errno = EADDRNOTAVAIL;
+        return;
+    default:
+        wsa_assert (false);
+    }
 }
 
 #endif

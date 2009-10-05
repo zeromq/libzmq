@@ -58,7 +58,7 @@ zmq::poll_t::~poll_t ()
     zmq_assert (load.get () == 0);
 }
 
-zmq::handle_t zmq::poll_t::add_fd (fd_t fd_, i_poll_events *events_)
+zmq::poll_t::handle_t zmq::poll_t::add_fd (fd_t fd_, i_poll_events *events_)
 {
     pollfd pfd = {fd_, 0, 0};
     pollset.push_back (pfd);
@@ -70,19 +70,17 @@ zmq::handle_t zmq::poll_t::add_fd (fd_t fd_, i_poll_events *events_)
     //  Increase the load metric of the thread.
     load.add (1);
 
-    handle_t handle;
-    handle.fd = fd_;
-    return handle;
+    return fd_;
 }
 
 void zmq::poll_t::rm_fd (handle_t handle_)
 {
-    fd_t index = fd_table [handle_.fd].index;
+    fd_t index = fd_table [handle_].index;
     assert (index != retired_fd);
 
     //  Mark the fd as unused.
     pollset [index].fd = retired_fd;
-    fd_table [handle_.fd].index = retired_fd;
+    fd_table [handle_].index = retired_fd;
     retired = true;
 
     //  Decrease the load metric of the thread.
@@ -91,25 +89,25 @@ void zmq::poll_t::rm_fd (handle_t handle_)
 
 void zmq::poll_t::set_pollin (handle_t handle_)
 {
-    int index = fd_table [handle_.fd].index;
+    int index = fd_table [handle_].index;
     pollset [index].events |= POLLIN;
 }
 
 void zmq::poll_t::reset_pollin (handle_t handle_)
 {
-    int index = fd_table [handle_.fd].index;
+    int index = fd_table [handle_].index;
     pollset [index].events &= ~((short) POLLIN);
 }
 
 void zmq::poll_t::set_pollout (handle_t handle_)
 {
-    int index = fd_table [handle_.fd].index;
+    int index = fd_table [handle_].index;
     pollset [index].events |= POLLOUT;
 }
 
 void zmq::poll_t::reset_pollout (handle_t handle_)
 {
-    int index = fd_table [handle_.fd].index;
+    int index = fd_table [handle_].index;
     pollset [index].events &= ~((short) POLLOUT);
 }
 

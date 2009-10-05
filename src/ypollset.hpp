@@ -42,6 +42,7 @@ namespace zmq
         void signal (int signal_);
         uint64_t poll ();
         uint64_t check ();
+        fd_t get_fd ();
 
     private:
 
