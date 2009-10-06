@@ -21,6 +21,10 @@
 
 #if defined ZMQ_HAVE_OPENPGM
 
+#ifdef ZMQ_HAVE_WINDOWS
+#include "windows.hpp"
+#endif
+
 #include <iostream>
 
 #include "io_thread.hpp"
@@ -42,7 +46,6 @@
         { printf (__VA_ARGS__);}} while (0)
 #endif
 
-#ifdef ZMQ_HAVE_LINUX
 zmq::pgm_sender_t::pgm_sender_t (io_thread_t *parent_, 
       const options_t &options_, const char *session_name_) :
     io_object_t (parent_),
@@ -213,4 +216,3 @@ size_t zmq::pgm_sender_t::write_one_pkt_with_offset (unsigned char *data_,
 }
 #endif
 
-#endif

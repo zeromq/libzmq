@@ -43,6 +43,9 @@ pedantic="yes"
 #By default compiling with -Werror except OSX.
 werror="yes"
 
+#Whether we are on mingw or not.
+on_mingw32="no"
+
 # Host speciffic checks
 AC_CANONICAL_HOST
 
@@ -125,8 +128,11 @@ case "${host_os}" in
         AC_CHECK_HEADERS(windows.h)
         AC_CHECK_LIB(Rpcrt4, main, ,
             [AC_MSG_ERROR([Could not link with Rpcrt4.dll.])])
+        AC_CHECK_LIB(Iphlpapi, main, ,
+            [AC_MSG_ERROR([Could not link with Iphlpapi.dll.])])
         LIBS="${LIBS} -lwsock32 -lws2_32"
         CFLAGS="${CFLAGS} -std=c99"
+        on_mingw32="yes"
         ;;
     *)
         AC_MSG_ERROR([Not supported os: $host.])
@@ -393,8 +399,6 @@ if test "x$with_pgm1_ext" != "xno"; then
         *linux*)
             LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Wno-variadic-macros -Wno-long-long "
         ;;
-        *solaris*)
-        ;;
         *)
             AC_MSG_ERROR([PGM extesion is not supported on this platform $host.])
         ;;
@@ -487,7 +491,8 @@ if test "x$with_pgm2_ext" != "xno"; then
         *linux*)
             LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Wno-variadic-macros -Wno-long-long "
         ;;
-        *solaris*)
+        *mingw32*)
+            LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Wno-variadic-macros -Wno-long-long "
         ;;
         *)
             AC_MSG_ERROR([PGM extesion is not supported on this platform $host.])
@@ -570,6 +575,7 @@ AM_CONDITIONAL(BUILD_PGM2, test "x$pgm2_ext" = "xyes")
 AM_CONDITIONAL(BUILD_NO_PGM, test "x$pgm2_ext" = "xno" -a "x$pgm1_ext" = "xno")
 AM_CONDITIONAL(BUILD_FORWARDER, test "x$forwarder" = "xyes") 
 AM_CONDITIONAL(BUILD_PERF, test "x$perf" = "xyes") 
+AM_CONDITIONAL(ON_MINGW, test "x$on_mingw32" = "xyes")
 
 AC_SUBST(stdint)
 AC_SUBST(inttypes)

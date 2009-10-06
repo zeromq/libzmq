@@ -217,6 +217,39 @@ endif
 
 if BUILD_PGM2
 libzmq_la_CXXFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/include/ -Wall @LIBZMQ_EXTRA_CXXFLAGS@
+
+if ON_MINGW
+libpgm_diff_flags = \
+    -D_WIN32_WINNT=0x0501 \
+    -DCONFIG_HAVE_IFR_NETMASK \
+    -DCONFIG_BIND_INADDR_ANY \
+    -DCONFIG_GALOIS_MUL_LUT \
+    -DGETTEXT_PACKAGE='"pgm"' \
+    -DG_LOG_DOMAIN='"Pgm"'
+
+else
+libpgm_diff_flags = \
+    -D__need_IOV_MAX \
+    -DCONFIG_HAVE_PSELECT \
+    -DCONFIG_HAVE_POLL \
+    -DCONFIG_HAVE_PPOLL \
+    -DCONFIG_HAVE_EPOLL \
+    -DCONFIG_HAVE_CLOCK_GETTIME \
+    -DCONFIG_HAVE_CLOCK_NANOSLEEP \
+    -DCONFIG_HAVE_NANOSLEEP \
+    -DCONFIG_HAVE_USLEEP \
+    -DCONFIG_HAVE_RTC \
+    -DCONFIG_HAVE_TSC \
+    -DCONFIG_HAVE_IFR_NETMASK \
+    -DCONFIG_HAVE_GETIFADDRS \
+    -DCONFIG_HAVE_GETHOSTBYNAME2 \
+    -DCONFIG_HAVE_GETPROTOBYNAME_R \
+    -DCONFIG_BIND_INADDR_ANY \
+    -DCONFIG_GALOIS_MUL_LUT \
+    -DGETTEXT_PACKAGE='"pgm"' \
+    -DG_LOG_DOMAIN='"Pgm"'
+endif
+
 libzmq_la_CFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/include/ @LIBZMQ_EXTRA_CXXFLAGS@ \
     -pipe \
     -Wall \
@@ -244,25 +277,7 @@ libzmq_la_CFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/in
     --param max-inline-insns-single=600 \
     -D_REENTRANT \
     -D_GNU_SOURCE \
-    -D__need_IOV_MAX \
-    -DCONFIG_HAVE_PSELECT \
-    -DCONFIG_HAVE_POLL \
-    -DCONFIG_HAVE_PPOLL \
-    -DCONFIG_HAVE_EPOLL \
-    -DCONFIG_HAVE_CLOCK_GETTIME \
-    -DCONFIG_HAVE_CLOCK_NANOSLEEP \
-    -DCONFIG_HAVE_NANOSLEEP \
-    -DCONFIG_HAVE_USLEEP \
-    -DCONFIG_HAVE_RTC \
-    -DCONFIG_HAVE_TSC \
-    -DCONFIG_HAVE_IFR_NETMASK \
-    -DCONFIG_HAVE_GETIFADDRS \
-    -DCONFIG_HAVE_GETHOSTBYNAME2 \
-    -DCONFIG_HAVE_GETPROTOBYNAME_R \
-    -DCONFIG_BIND_INADDR_ANY \
-    -DCONFIG_GALOIS_MUL_LUT \
-    -DGETTEXT_PACKAGE='"pgm"' \
-    -DG_LOG_DOMAIN='"Pgm"'
+    ${libpgm_diff_flags}
 endif
 
 if BUILD_NO_PGM

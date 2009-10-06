@@ -24,6 +24,10 @@
 
 #if defined ZMQ_HAVE_OPENPGM
 
+#ifdef ZMQ_HAVE_WINDOWS
+#include "windows.hpp"
+#endif
+
 #include "stdint.hpp"
 #include "io_object.hpp"
 #include "i_engine.hpp"

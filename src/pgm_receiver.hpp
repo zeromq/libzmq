@@ -24,13 +24,19 @@
 
 #if defined ZMQ_HAVE_OPENPGM
 
+#ifdef ZMQ_HAVE_WINDOWS
+#include "windows.hpp"
+#endif
+
+#include <map>
+#include <pgm/pgm.h>
+
 #include "io_object.hpp"
 #include "i_engine.hpp"
 #include "options.hpp"
 #include "zmq_decoder.hpp"
 #include "pgm_socket.hpp"
 
-#include <map>
 
 namespace zmq
 {

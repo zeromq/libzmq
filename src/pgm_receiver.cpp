@@ -21,6 +21,11 @@
 
 #if defined ZMQ_HAVE_OPENPGM
 
+#ifdef ZMQ_HAVE_WINDOWS
+#include "windows.hpp"
+#endif
+
+#include <pgm/pgm.h>
 #include <iostream>
 
 #include "pgm_receiver.hpp"

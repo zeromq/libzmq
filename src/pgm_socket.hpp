@@ -24,12 +24,11 @@
 
 #if defined ZMQ_HAVE_OPENPGM
 
-#ifdef ZMQ_HAVE_LINUX
-#include <glib.h>
-#include <pgm/pgm.h>
-#else
-#include <Winsock2.h>
+#ifdef ZMQ_HAVE_WINDOWS
+#include "windows.hpp"
 #endif
+
+#include <pgm/pgm.h>
 
 #include "stdint.hpp"
 #include "options.hpp"
@@ -39,8 +38,6 @@ namespace zmq
     //  Encapsulates PGM socket.
     class pgm_socket_t
     {
-
-#ifdef ZMQ_HAVE_LINUX
 
     public:
         //  If receiver_ is true PGM transport is not generating SPM packets.
@@ -148,9 +145,9 @@ namespace zmq
 
         //  Receiver transport uses 2 fd.
         enum {pgm_receiver_fd_count = 2};
-#endif
     };
 }
 #endif
 
 #endif
+

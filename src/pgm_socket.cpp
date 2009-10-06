@@ -21,13 +21,17 @@
 
 #ifdef ZMQ_HAVE_OPENPGM
 
-#ifdef ZMQ_HAVE_LINUX
-//  TODO: needed for pgm - add this into platform.hpp?
-#define CONFIG_HAVE_POLL
-
-#include <pgm/pgm.h>
+#ifdef ZMQ_HAVE_WINDOWS
+#include "windows.hpp"
 #endif
 
+#ifdef ZMQ_HAVE_LINUX
+#include <poll.h>
+//  Has to be defined befiore including pgm/pgm.h
+#define CONFIG_HAVE_POLL
+#endif
+
+#include <pgm/pgm.h>
 #include <string>
 #include <iostream>
 
@@ -50,8 +54,6 @@
 #   define zmq_log(n, ...)    do { if ((n) <= PGM_SOCKET_DEBUG_LEVEL) \
         { printf (__VA_ARGS__);}} while (0)
 #endif
-
-#ifdef ZMQ_HAVE_LINUX
 
 zmq::pgm_socket_t::pgm_socket_t (bool receiver_, const options_t &options_) :
     g_transport (NULL),
@@ -480,7 +482,9 @@ void zmq::pgm_socket_t::close_transport (void)
 int zmq::pgm_socket_t::get_receiver_fds (int *recv_fd_, 
     int *waiting_pipe_fd_)
 {
-
+#ifdef ZMQ_HAVE_WINDOWS
+    zmq_assert (false);
+#else
     //  For POLLIN there are 2 pollfds in pgm_transport.
     int fds_array_size = pgm_receiver_fd_count;
     pollfd *fds = new pollfd [fds_array_size];
@@ -500,7 +504,7 @@ int zmq::pgm_socket_t::get_receiver_fds (int *recv_fd_,
     *waiting_pipe_fd_ = fds [1].fd;
 
     delete [] fds;
-
+#endif
     return pgm_receiver_fd_count;
 }
 
@@ -520,6 +524,9 @@ int zmq::pgm_socket_t::get_sender_fds (int *send_fd_, int *receive_fd_,
     zmq_assert (rdata_notify_fd_);
 #endif
 
+#ifdef ZMQ_HAVE_WINDOWS
+    zmq_assert (false);
+#else
     //  Preallocate pollfds array.
     int fds_array_size = pgm_sender_fd_count;
     pollfd *fds = new pollfd [fds_array_size];
@@ -546,6 +553,7 @@ int zmq::pgm_socket_t::get_sender_fds (int *send_fd_, int *receive_fd_,
 #endif
 
     delete [] fds;
+#endif
 
     return pgm_sender_fd_count;
 }
@@ -855,4 +863,3 @@ void zmq::pgm_socket_t::process_upstream (void)
 
 #endif
 
-#endif
