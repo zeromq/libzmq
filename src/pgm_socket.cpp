@@ -165,7 +165,7 @@ int zmq::pgm_socket_t::open_transport (void)
 #ifdef ZMQ_HAVE_OPENPGM1
         rc = pgm_create_custom_gsi (gsi_base.c_str (), &gsi);
 #elif defined ZMQ_HAVE_OPENPGM2
-        rc = pgm_gsi_create_from_string (gsi_base.c_str (), &gsi);
+        rc = pgm_gsi_create_from_string (&gsi, gsi_base.c_str (), -1);
 #endif
 
     if (rc != pgm_ok) {

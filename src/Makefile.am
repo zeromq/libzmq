@@ -224,6 +224,7 @@ libpgm_diff_flags = \
     -DCONFIG_HAVE_IFR_NETMASK \
     -DCONFIG_BIND_INADDR_ANY \
     -DCONFIG_GALOIS_MUL_LUT \
+    -DIF_NAMESIZE=256 \
     -DGETTEXT_PACKAGE='"pgm"' \
     -DG_LOG_DOMAIN='"Pgm"'
 
