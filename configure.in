@@ -126,11 +126,12 @@ case "${host_os}" in
         AC_DEFINE(ZMQ_HAVE_WINDOWS, 1, [Have Windows OS])
         AC_DEFINE(ZMQ_HAVE_MINGW32, 1, [Have MinGW32])
         AC_CHECK_HEADERS(windows.h)
+        AC_CHECK_LIB(ws2_32, main, ,
+            [AC_MSG_ERROR([Could not link with ws2_32.dll.])])
         AC_CHECK_LIB(Rpcrt4, main, ,
             [AC_MSG_ERROR([Could not link with Rpcrt4.dll.])])
         AC_CHECK_LIB(Iphlpapi, main, ,
             [AC_MSG_ERROR([Could not link with Iphlpapi.dll.])])
-        LIBS="${LIBS} -lwsock32 -lws2_32"
         CFLAGS="${CFLAGS} -std=c99"
         on_mingw32="yes"
         ;;
