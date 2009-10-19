@@ -163,8 +163,31 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS(errno.h arpa/inet.h netinet/tcp.h netinet/in.h stddef.h \
 stdlib.h string.h sys/socket.h sys/time.h unistd.h limits.h)
 
-# Check if we have eventfd.h header file.
-AC_CHECK_HEADERS(sys/eventfd.h, [AC_DEFINE(ZMQ_HAVE_EVENTFD, 1, [Have eventfd extension.])])
+# Force not to use eventfd
+AC_ARG_ENABLE([eventfd], [AS_HELP_STRING([--disable-eventfd], [disable eventfd [default=no]])],
+    [disable_eventfd=yes], [disable_eventfd=no])
+
+eventfd_headers="no"
+eventfd_can_run="no"
+
+if test "x$disable_eventfd" != "xyes"; then
+    # Check if we have eventfd.h header file.
+    AC_CHECK_HEADERS(sys/eventfd.h, [eventfd_headers=yes])
+
+    AC_MSG_CHECKING([for sys/eventfd.h functionality])
+
+    AC_RUN_IFELSE(
+        [AC_LANG_PROGRAM([[#include <sys/eventfd.h>
+          #include <assert.h>]],
+        [[int fd = eventfd (0, 0); assert (fd != -1);]])],
+        [eventfd_can_run=yes], [], eventfd_can_run=no)
+
+    AC_MSG_RESULT([$eventfd_can_run])
+
+    if test "x$eventfd_headers" = "xyes" -a "x$eventfd_can_run" = "xyes"; then
+        AC_DEFINE(ZMQ_HAVE_EVENTFD, 1,[Have eventfd extension.])
+    fi
+fi
 
 # Check if we have ifaddrs.h header file.
 AC_CHECK_HEADERS(ifaddrs.h, [AC_DEFINE(ZMQ_HAVE_IFADDRS, 1, [Have ifaddrs.h header.])])
