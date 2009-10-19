@@ -406,8 +406,20 @@ AC_ARG_WITH([pgm2], [AS_HELP_STRING([--with-pgm2],
     [build libzmq with PGM v2 extension [default=no]])], 
     [with_pgm2_ext=yes], [with_pgm2_ext=no])
 
+AC_ARG_WITH([pgm2-examples], [AS_HELP_STRING([--with-pgm2-examples], 
+    [build PGM v2 examples [default=no]])], 
+    [with_pgm2_examples=yes], [with_pgm2_examples=no])
+
 if test "x$with_pgm1_ext" != "xno" -a "x$with_pgm2_ext" != "xno"; then
     AC_MSG_ERROR([Can not configure --with-pgm and --with-pgm2.]);
+fi
+
+if test "x$with_pgm2_ext" = "xno" -a "x$with_pgm2_examples" = "xyes"; then
+    AC_MSG_ERROR([Can not configure --with-pgm2-examples without --with-pgm2.]);
+fi
+
+if test "x$c" = "xno" -a "x$with_pgm2_examples" = "xyes"; then
+    AC_MSG_ERROR([Can not configure --with-pgm2-examples without --with-c.]);
 fi
 
 if test "x$with_pgm1_ext" != "xno"; then
@@ -588,6 +600,10 @@ if test "x$with_perf" != "xno"; then
     fi
 fi
 
+if test "x$with_perf" = "xno" -a "x$with_pgm2_examples" = "xyes"; then
+    AC_MSG_ERROR([Can not configure --with-pgm2-examples without --with-perf.]);
+fi
+
 AM_CONDITIONAL(BUILD_PYTHON, test "x$pyzmq" = "xyes")
 AM_CONDITIONAL(BUILD_JAVA, test "x$jzmq" = "xyes")
 AM_CONDITIONAL(BUILD_PYTHON, test "x$pyzmq" = "xyes")
@@ -600,6 +616,7 @@ AM_CONDITIONAL(BUILD_NO_PGM, test "x$pgm2_ext" = "xno" -a "x$pgm1_ext" = "xno")
 AM_CONDITIONAL(BUILD_FORWARDER, test "x$forwarder" = "xyes") 
 AM_CONDITIONAL(BUILD_PERF, test "x$perf" = "xyes") 
 AM_CONDITIONAL(ON_MINGW, test "x$on_mingw32" = "xyes")
+AM_CONDITIONAL(BUILD_PGM2_EXAMPLES, test "x$with_pgm2_ext" = "xyes")
 
 AC_SUBST(stdint)
 AC_SUBST(inttypes)
