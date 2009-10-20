@@ -239,7 +239,10 @@ PyObject *socket_send (socket_t *self, PyObject *args, PyObject *kwdict)
     memcpy (zmq_msg_data (&data), PyString_AsString (msg),
         zmq_msg_size (&data));
 
+    Py_BEGIN_ALLOW_THREADS
     rc = zmq_send (self->handle, &data, flags);
+    Py_END_ALLOW_THREADS
+
     int rc2 = zmq_msg_close (&data);
     assert (rc2 == 0);
 
@@ -286,7 +289,9 @@ PyObject *socket_recv (socket_t *self, PyObject *args, PyObject *kwdict)
     int rc = zmq_msg_init (&msg);
     assert (rc == 0);
 
+    Py_BEGIN_ALLOW_THREADS
     rc = zmq_recv (self->handle, &msg, flags);
+    Py_END_ALLOW_THREADS
 
     if (rc != 0 && errno == EAGAIN) {
         Py_INCREF (Py_None);
