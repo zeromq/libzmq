@@ -67,20 +67,37 @@ void zmq::fd_signaler_t::signal (int signal_)
 
 uint64_t zmq::fd_signaler_t::poll ()
 {
-    //  TODO: Can we do a blocking read on non-blocking eventfd?
-    //  It's not needed as for now, so let it stay unimplemented.
-    zmq_assert (false);
-    return 0;
+    //  Set to blocking mode.
+    int flags = fcntl (fd, F_GETFL, 0);
+    if (flags == -1)
+        flags = 0;
+    int rc = fcntl (fd, F_SETFL, flags & ~O_NONBLOCK);
+    errno_assert (rc != -1);
+
+    uint64_t signals;
+    ssize_t sz;
+    while (true) {
+        sz = read (fd, &signals, sizeof (uint64_t));
+        if (sz == 0 || (errno != EAGAIN && errno != EINTR))
+            break;
+    }
+    errno_assert (sz != -1);
+
+    //  Set to non-blocking mode.
+    rc = fcntl (fd, F_SETFL, flags | O_NONBLOCK);
+    errno_assert (rc != -1);
+
+    return signals;
 }
 
 uint64_t zmq::fd_signaler_t::check ()
 {
-    uint64_t val;
-    ssize_t sz = read (fd, &val, sizeof (uint64_t));
+    uint64_t signals;
+    ssize_t sz = read (fd, &signals, sizeof (uint64_t));
     if (sz == -1 && (errno == EAGAIN || errno == EINTR))
         return 0;
     errno_assert (sz != -1);
-    return val;
+    return signals;
 }
 
 zmq::fd_t zmq::fd_signaler_t::get_fd ()
