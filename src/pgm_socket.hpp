@@ -58,7 +58,7 @@ namespace zmq
         void close_transport (void);
         
         //   Get receiver fds and store them into user allocated memory.
-        int get_receiver_fds (int *recv_fd_, int *waiting_pipe_fd_);
+        int get_receiver_fds (int *receive_fd_, int *waiting_pipe_fd_);
 
         //   Get sender and receiver fds and store it to user allocated 
         //   memory. Receive fd is used to process NAKs from peers.
