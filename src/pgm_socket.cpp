@@ -515,8 +515,8 @@ int zmq::pgm_socket_t::get_receiver_fds (int *receive_fd_,
     zmq_assert (!g_transport->can_send_data);
 
     //  Take FDs directly from transport.
-    *receive_fd_ = g_transport->recv_sock;
-    *waiting_pipe_fd_ = pgm_notify_get_fd (&g_transport->pending_notify);
+    *receive_fd_ = pgm_transport_get_recv_fd (g_transport);
+    *waiting_pipe_fd_ = pgm_transport_get_pending_fd (g_transport);
 #endif
 
     return pgm_receiver_fd_count;
@@ -567,9 +567,9 @@ int zmq::pgm_socket_t::get_sender_fds (int *send_fd_, int *receive_fd_,
     zmq_assert (!g_transport->can_recv_data);
 
     //  Take FDs directly from transport.
-    *receive_fd_ = g_transport->recv_sock;
-    *rdata_notify_fd_ = pgm_notify_get_fd (&g_transport->rdata_notify);
-    *send_fd_ = g_transport->send_sock;
+    *receive_fd_ = pgm_transport_get_recv_fd (g_transport);
+    *rdata_notify_fd_ = pgm_transport_get_repair_fd (g_transport);
+    *send_fd_ = pgm_transport_get_send_fd (g_transport);
 #endif
 
     return pgm_sender_fd_count;
@@ -761,9 +761,8 @@ ssize_t zmq::pgm_socket_t::receive (void **raw_data_, const pgm_tsi_t **tsi_)
 
         //  In a case when no ODATA/RDATA fired POLLIN event (SPM...)
         //  pgm_recvmsg returns ?.
-/*        if (status == PGM_IO_STATUS_AGAIN ||
-              status == PGM_IO_STATUS_AGAIN2) {
-       
+        if (status == PGM_IO_STATUS_TIMER_PENDING) {
+
             zmq_assert (nbytes_rec == 0);
 
             //  In case if no RDATA/ODATA caused POLLIN 0 is 
@@ -771,7 +770,7 @@ ssize_t zmq::pgm_socket_t::receive (void **raw_data_, const pgm_tsi_t **tsi_)
             nbytes_rec = 0;
             return 0;
         }
-*/
+
         //  Data loss.
         if (status == PGM_IO_STATUS_RESET) {
 
@@ -873,7 +872,7 @@ void zmq::pgm_socket_t::process_upstream (void)
         (int) status, (int) dummy_bytes, __FILE__, __LINE__);
 
     //  No data should be returned.
-    zmq_assert (dummy_bytes == 0 && status == PGM_IO_STATUS_WOULD_BLOCK);
+    zmq_assert (dummy_bytes == 0 && status == PGM_IO_STATUS_TIMER_PENDING);
 #endif
     
 }
