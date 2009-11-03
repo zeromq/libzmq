@@ -47,6 +47,11 @@
 
 #include <windows.h>
 
+//  MSVC++ 2005 on Win2000 does not define _WIN32_WINNT.
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT WINVER
+#endif
+
 //  Enable winsock (not included when WIN32_LEAN_AND_MEAN is defined).
 #if(_WIN32_WINNT >= 0x0400)
 #include <winsock2.h>

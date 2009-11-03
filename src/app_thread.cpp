@@ -25,6 +25,9 @@
 
 #if defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
+#if defined _MSC_VER
+#include <intrin.h>
+#endif
 #else
 #include <unistd.h>
 #endif
