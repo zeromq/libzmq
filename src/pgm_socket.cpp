@@ -617,7 +617,7 @@ size_t zmq::pgm_socket_t::send (unsigned char *data_, size_t data_len_)
     
     // We have to write all data as one packet.
     if (nbytes > 0) {
-        zmq_log (1, "data sent %i, %s(%i)\n", (int) nbytes, 
+        zmq_log (1, "data sent %iB, %s(%i)\n", (int) nbytes, 
             __FILE__, __LINE__);
         zmq_assert ((ssize_t) nbytes == (ssize_t) data_len_);
     }
@@ -872,7 +872,8 @@ void zmq::pgm_socket_t::process_upstream (void)
         (int) status, (int) dummy_bytes, __FILE__, __LINE__);
 
     //  No data should be returned.
-    zmq_assert (dummy_bytes == 0 && status == PGM_IO_STATUS_TIMER_PENDING);
+    zmq_assert (dummy_bytes == 0 && (status == PGM_IO_STATUS_TIMER_PENDING || 
+        status == PGM_IO_STATUS_RATE_LIMITED));
 #endif
     
 }
