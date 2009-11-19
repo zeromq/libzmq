@@ -81,7 +81,11 @@ void zmq::reader_t::term ()
 
 void zmq::reader_t::process_revive ()
 {
-    endpoint->revive (this);
+    //  Beacuse of command throttling mechanism, incoming termination request
+    //  may not have been processed before subsequent send.
+    //  In that case endpoint is NULL.
+    if (endpoint)
+        endpoint->revive (this);
 }
 
 void zmq::reader_t::process_pipe_term_ack ()
