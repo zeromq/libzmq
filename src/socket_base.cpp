@@ -158,10 +158,10 @@ int zmq::socket_base_t::connect (const char *addr_)
             out_pipe ? &out_pipe->writer : NULL);
 
         //  Attach the pipes to the peer socket. Note that peer's seqnum
-        //  was incremented in find_endpoint function. When this command
-        //  is delivered, peer will consider the seqnum to be processed.
+        //  was incremented in find_endpoint function. The callee is notified
+        //  about the fact via the last parameter.
         send_bind (peer, out_pipe ? &out_pipe->reader : NULL,
-            in_pipe ? &in_pipe->writer : NULL);
+            in_pipe ? &in_pipe->writer : NULL, true);
 
         return 0;
     }
@@ -509,8 +509,16 @@ void zmq::socket_base_t::process_own (owned_t *object_)
     io_objects.insert (object_);
 }
 
-void zmq::socket_base_t::process_bind (reader_t *in_pipe_, writer_t *out_pipe_)
+void zmq::socket_base_t::process_bind (reader_t *in_pipe_, writer_t *out_pipe_,
+     bool adjust_seqnum_)
 {
+    //  In case of inproc transport, the seqnum should catch up here.
+    //  For other transports the seqnum modification can be optimised out
+    //  because final handshaking between the socket and the session ensures
+    //  that no 'bind' command will be left unprocessed.
+    if (adjust_seqnum_)
+        processed_seqnum++;
+
     attach_pipes (in_pipe_, out_pipe_);
 }
 

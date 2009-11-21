@@ -155,8 +155,10 @@ void zmq::session_t::process_plug ()
             out_pipe->set_endpoint (this);
         }
 
+        //  Note that initial call to inc_seqnum was optimised out. Last
+        //  parameter conveys the fact to the callee.
         send_bind (owner, outbound ? &outbound->reader : NULL,
-            inbound ? &inbound->writer : NULL);
+            inbound ? &inbound->writer : NULL, false);
     }
 
     owned_t::process_plug ();
