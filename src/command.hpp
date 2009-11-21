@@ -70,7 +70,6 @@ namespace zmq
 
             //  Sent from session to socket to establish pipe(s) between them.
             struct {
-                class owned_t *session;
                 class reader_t *in_pipe;
                 class writer_t *out_pipe;
             } bind;

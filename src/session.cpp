@@ -155,7 +155,7 @@ void zmq::session_t::process_plug ()
             out_pipe->set_endpoint (this);
         }
 
-        send_bind (owner, this, outbound ? &outbound->reader : NULL,
+        send_bind (owner, outbound ? &outbound->reader : NULL,
             inbound ? &inbound->writer : NULL);
     }
 

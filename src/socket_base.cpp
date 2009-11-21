@@ -160,8 +160,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         //  Attach the pipes to the peer socket. Note that peer's seqnum
         //  was incremented in find_endpoint function. When this command
         //  is delivered, peer will consider the seqnum to be processed.
-        //  TODO: Seems that 'session' parameter is unused...
-        send_bind (peer, NULL, out_pipe ? &out_pipe->reader : NULL,
+        send_bind (peer, out_pipe ? &out_pipe->reader : NULL,
             in_pipe ? &in_pipe->writer : NULL);
 
         return 0;
@@ -510,8 +509,7 @@ void zmq::socket_base_t::process_own (owned_t *object_)
     io_objects.insert (object_);
 }
 
-void zmq::socket_base_t::process_bind (owned_t *session_,
-    reader_t *in_pipe_, writer_t *out_pipe_)
+void zmq::socket_base_t::process_bind (reader_t *in_pipe_, writer_t *out_pipe_)
 {
     attach_pipes (in_pipe_, out_pipe_);
 }
