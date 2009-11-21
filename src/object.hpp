@@ -49,6 +49,12 @@ namespace zmq
 
     protected:
 
+        //  Using following function, socket is able to access global
+        //  repository of inproc endpoints.
+        int register_endpoint (const char *addr_, class socket_base_t *socket_);
+        void unregister_endpoints (class socket_base_t *socket_);
+        class socket_base_t *find_endpoint (const char *addr_);
+
         //  Derived object can use following functions to interact with
         //  global repositories. See dispatcher.hpp for function details.
         int thread_slot_count ();

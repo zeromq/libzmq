@@ -33,6 +33,7 @@
 #include "mutex.hpp"
 #include "options.hpp"
 #include "stdint.hpp"
+#include "atomic_counter.hpp"
 
 namespace zmq
 {
@@ -53,6 +54,11 @@ namespace zmq
         int flush ();
         int recv (zmq_msg_t *msg_, int flags_);
         int close ();
+
+        //  When another owned object wants to send command to this object
+        //  it calls this function to let it know it should not shut down
+        //  before the command is delivered.
+        void inc_seqnum ();
 
         //  This function is used by the polling mechanism to determine
         //  whether the socket belongs to the application thread the poll
@@ -131,6 +137,12 @@ namespace zmq
         //  If true, socket is already shutting down. No new work should be
         //  started.
         bool shutting_down;
+
+        //  Sequence number of the last command sent to this object.
+        atomic_counter_t sent_seqnum;
+
+        //  Sequence number of the last command processed by this object.
+        uint64_t processed_seqnum;
 
         //  List of existing sessions. This list is never referenced from within
         //  the socket, instead it is used by I/O objects owned by the session.

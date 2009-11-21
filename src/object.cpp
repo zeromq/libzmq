@@ -122,6 +122,21 @@ void zmq::object_t::unregister_pipe (class pipe_t *pipe_)
     dispatcher->unregister_pipe (pipe_);
 }
 
+int zmq::object_t::register_endpoint (const char *addr_, socket_base_t *socket_)
+{
+    return dispatcher->register_endpoint (addr_, socket_);
+}
+
+void zmq::object_t::unregister_endpoints (socket_base_t *socket_)
+{
+    return dispatcher->unregister_endpoints (socket_);
+}
+
+zmq::socket_base_t *zmq::object_t::find_endpoint (const char *addr_)
+{
+    return dispatcher->find_endpoint (addr_);
+}
+
 zmq::io_thread_t *zmq::object_t::choose_io_thread (uint64_t taskset_)
 {
     return dispatcher->choose_io_thread (taskset_);

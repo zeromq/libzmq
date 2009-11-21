@@ -97,6 +97,11 @@ namespace zmq
         void register_pipe (class pipe_t *pipe_);
         void unregister_pipe (class pipe_t *pipe_);
 
+        //  Management of inproc endpoints.
+        int register_endpoint (const char *addr_, class socket_base_t *socket_);
+        void unregister_endpoints (class socket_base_t *socket_);
+        class socket_base_t *find_endpoint (const char *addr_);
+
     private:
 
         ~dispatcher_t ();
@@ -148,6 +153,13 @@ namespace zmq
         //  Synchronisation of access to the termination data (socket count
         //  and 'terminated' flag).
         mutex_t term_sync;
+
+        //  List of inproc endpoints within this context.
+        typedef std::map <std::string, class socket_base_t*> endpoints_t;
+        endpoints_t endpoints;
+
+        //  Synchronisation of access to the list of inproc endpoints.
+        mutex_t endpoints_sync;
 
         dispatcher_t (const dispatcher_t&);
         void operator = (const dispatcher_t&);
