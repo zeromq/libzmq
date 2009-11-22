@@ -42,6 +42,22 @@ groff -man -Tps man3/zmq_recv.3 > man3/zmq_recv.3.ps
 ps2pdf man3/zmq_recv.3.ps zmq_recv.pdf
 groff -man -Tps man3/zmq_poll.3 > man3/zmq_poll.3.ps
 ps2pdf man3/zmq_poll.3.ps zmq_poll.pdf
+groff -man -Tps man3/zmq_msg_init.3 > man3/zmq_msg_init.3.ps
+ps2pdf man3/zmq_msg_init.3.ps zmq_msg_init.pdf
+groff -man -Tps man3/zmq_msg_init_size.3 > man3/zmq_msg_init_size.3.ps
+ps2pdf man3/zmq_msg_init_size.3.ps zmq_msg_init_size.pdf
+groff -man -Tps man3/zmq_msg_init_data.3 > man3/zmq_msg_init_data.3.ps
+ps2pdf man3/zmq_msg_init_data.3.ps zmq_msg_init_data.pdf
+groff -man -Tps man3/zmq_msg_close.3 > man3/zmq_msg_close.3.ps
+ps2pdf man3/zmq_msg_close.3.ps zmq_msg_close.pdf
+groff -man -Tps man3/zmq_msg_move.3 > man3/zmq_msg_move.3.ps
+ps2pdf man3/zmq_msg_move.3.ps zmq_msg_move.pdf
+groff -man -Tps man3/zmq_msg_copy.3 > man3/zmq_msg_copy.3.ps
+ps2pdf man3/zmq_msg_copy.3.ps zmq_msg_copy.pdf
+groff -man -Tps man3/zmq_msg_data.3 > man3/zmq_msg_data.3.ps
+ps2pdf man3/zmq_msg_data.3.ps zmq_msg_data.pdf
+groff -man -Tps man3/zmq_msg_size.3 > man3/zmq_msg_size.3.ps
+ps2pdf man3/zmq_msg_size.3.ps zmq_msg_size.pdf
 
 groff -man -Tps man7/zmq.7 > man7/zmq.7.ps
 ps2pdf man7/zmq.7.ps zmq.pdf
