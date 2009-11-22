@@ -25,7 +25,7 @@ Function returns context handle is successful. Otherwise it returns NULL and
 sets errno to one of the values below.
 .SH ERRORS
 .IP "\fBEINVAL\fP"
-- there's less than one application thread allocated, or number of I/O threads
+there's less than one application thread allocated, or number of I/O threads
 is negative.
 .SH EXAMPLE
 .nf
@@ -34,5 +34,6 @@ assert (ctx);
 .fi
 .SH SEE ALSO
 .BR zmq_term (3)
+.BR zmq_socket (3)
 .SH AUTHOR
 Martin Sustrik <sustrik at 250bpm dot com>

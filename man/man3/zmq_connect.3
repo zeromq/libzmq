@@ -1,12 +1,47 @@
 .TH zmq_connect 3 "" "(c)2007-2009 FastMQ Inc." "0MQ User Manuals"
 .SH NAME
-zmq_connect \- connects the socket to the specified address
+zmq_connect \- connect the socket to the specified peer
 .SH SYNOPSIS
 .B int zmq_connect (void *s, const char *addr);
 .SH DESCRIPTION
+The function connect socket
+.IR s to the peer identified by
+.IR addr .
+Actual semantics of the  command depend on the underlying transport mechanism,
+however, in cases where peers connect in an asymetric manner,
+.IR zmq_bind
+should be called first,
+.IR zmq_connect
+afterwards. For actual formats of
+.IR addr
+parameter for different types of transport have a look at
+.IR zmq(7) .
+Note that single socket can be connected (and bound) to
+arbitrary number of peers using different transport mechanisms.
 .SH RETURN VALUE
+In case of success the function returns zero. Otherwise it returns -1 and
+sets
+.IR errno
+to the appropriate value.
 .SH ERRORS
+.IP "\fBEPROTONOSUPPORT\fP"
+unsupported protocol.
+.IP "\fBENOCOMPATPROTO\fP"
+protocol is not compatible with the socket type.
+.IP "\fBECONNREFUSED\fP"
+no-one listening on the remote address.
 .SH EXAMPLE
+.nf
+void *s = zmq_socket (context, ZMQ_SUB);
+assert (s);
+int rc = zmq_connect (s, "inproc://my_publisher");
+assert (rc == 0);
+rc = zmq_connect (s, "tcp://server001:5555");
+assert (rc == 0);
+.fi
 .SH SEE ALSO
+.BR zmq_bind (3)
+.BR zmq_socket (3)
+.BR zmq (7)
 .SH AUTHOR
 Martin Sustrik <sustrik at 250bpm dot com>

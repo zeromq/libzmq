@@ -4,9 +4,65 @@ zmq_socket \- creates 0MQ socket
 .SH SYNOPSIS
 .B void *zmq_socket (void *context, int type);
 .SH DESCRIPTION
+Open a socket within the specified
+.IR context .
+To create a context, use
+.IR zmq_init
+function.
+.IR type
+argument can be one of the values defined below. Note that each socket is owned
+by exactly one thread (the one that it was created from) and should not be used
+from any other thread.
+
+.IP "\fBZMQ_P2P\fP"
+Socket to communicate with a single peer. Allows for only a single connect or a
+single bind. There's no message routing or message filtering involved.
+
+.IP "\fBZMQ_PUB\fP"
+Socket to distribute data. Recv fuction is not implemented for this socket
+type. Messages are distributed in fanout fashion to all the peers.
+
+.IP "\fBZMQ_SUB\fP"
+Socket to subscribe for data. Send function is not implemented for this
+socket type. Initially, socket is subscribed for no messages. Use ZMQ_SUBSCRIBE
+option to specify which messages to subscribe for.
+
+.IP "\fBZMQ_REQ\fP"
+Socket to send requests and receive replies. Requests are load-balanced among
+all the peers. This socket type allows only an alternated sequence of
+send's and recv's.
+
+.IP "\fBZMQ_REP\fP"
+Socket to receive requests and send replies. This socket type allows
+only an alternated sequence of recv's and send's. Each send is routed to
+the peer that issued the last received request.
+
 .SH RETURN VALUE
+Function returns socket handle is successful. Otherwise it returns NULL and
+sets errno to one of the values below.
 .SH ERRORS
+.IP "\fBEINVAL\fP"
+invalid socket type.
+.IP "\fBEMTHREAD\fP"
+the number of application threads allowed to own 0MQ sockets was exceeded. See
+.IR app_threads
+parameter to
+.IR zmq_init
+function.
 .SH EXAMPLE
+.nf
+void *s = zmq_socket (context, ZMQ_PUB);
+assert (s);
+int rc = zmq_bind (s, "tcp://192.168.0.1:5555");
+assert (rc == 0);
+.fi
 .SH SEE ALSO
+.BR zmq_init (3)
+.BR zmq_setsockopt (3)
+.BR zmq_bind (3)
+.BR zmq_connect (3)
+.BR zmq_send (3)
+.BR zmq_flush (3)
+.BR zmq_recv (3)
 .SH AUTHOR
 Martin Sustrik <sustrik at 250bpm dot com>

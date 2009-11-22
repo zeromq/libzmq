@@ -180,7 +180,7 @@ ZMQ_EXPORT int zmq_term (void *context);
 
 //  Socket to send requests and receive replies. Requests are
 //  load-balanced among all the peers. This socket type allows
-//  only an alternated sequence of send's and recv's
+//  only an alternated sequence of send's and recv's.
 #define ZMQ_REQ 3
 
 //  Socket to receive requests and send replies. This socket type allows
