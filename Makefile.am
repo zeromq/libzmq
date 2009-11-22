@@ -2,8 +2,12 @@ if BUILD_PERF
 DIR_PERF = perf
 endif
 
-SUBDIRS = src $(DIR_PERF) devices bindings
-DIST_SUBDIRS = src perf devices bindings
+if INSTALL_MAN
+DIR_MAN = man
+endif
+
+SUBDIRS = src $(DIR_MAN) $(DIR_PERF) devices bindings
+DIST_SUBDIRS = src man perf devices bindings
 
 EXTRA_DIST =  $(top_srcdir)/foreign/openpgm/@pgm1_basename@.tar.bz2 \
 $(top_srcdir)/foreign/openpgm/@pgm2_basename@ \
