@@ -58,6 +58,8 @@ groff -man -Tps man3/zmq_msg_data.3 > man3/zmq_msg_data.3.ps
 ps2pdf man3/zmq_msg_data.3.ps zmq_msg_data.pdf
 groff -man -Tps man3/zmq_msg_size.3 > man3/zmq_msg_size.3.ps
 ps2pdf man3/zmq_msg_size.3.ps zmq_msg_size.pdf
+groff -man -Tps man3/zmq_strerror.3 > man3/zmq_strerror.3.ps
+ps2pdf man3/zmq_strerror.3.ps zmq_strerror.pdf
 
 groff -man -Tps man7/zmq.7 > man7/zmq.7.ps
 ps2pdf man7/zmq.7.ps zmq.pdf
