@@ -4,9 +4,27 @@ zmq_msg_size \- retrieves size of the message content
 .SH SYNOPSIS
 .B size_t zmq_msg_size (zmq_msg_t *msg);
 .SH DESCRIPTION
+Returns size of the message data. Always use this function to get the size,
+never use
+.IR zmq_msg_t
+members directly.
 .SH RETURN VALUE
+Size of the message data (bytes).
 .SH ERRORS
+No errors are defined.
 .SH EXAMPLE
+.nf
+zmq_msg_t msg;
+rc = zmq_msg_init (&msg);
+assert (rc == 0);
+rc = zmq_recv (s, &msg, 0);
+assert (rc == 0);
+size_t msg_size = zmq_msg_size (&msg);
+.fi
 .SH SEE ALSO
+.BR zmq_msg_init (3)
+.BR zmq_msg_init_size (3)
+.BR zmq_msg_init_data (3)
+.BR zmq_msg_close (3)
 .SH AUTHOR
 Martin Sustrik <sustrik at 250bpm dot com>
