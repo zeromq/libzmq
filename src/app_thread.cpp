@@ -40,11 +40,13 @@
 #include "pipe.hpp"
 #include "config.hpp"
 #include "socket_base.hpp"
+#include "p2p.hpp"
 #include "pub.hpp"
 #include "sub.hpp"
 #include "req.hpp"
 #include "rep.hpp"
-#include "p2p.hpp"
+#include "upstream.hpp"
+#include "downstream.hpp"
 
 //  If the RDTSC is available we use it to prevent excessive
 //  polling for commands. The nice thing here is that it will work on any
@@ -158,6 +160,9 @@ zmq::socket_base_t *zmq::app_thread_t::create_socket (int type_)
 {
     socket_base_t *s = NULL;
     switch (type_) {
+    case ZMQ_P2P:
+        s = new p2p_t (this);
+        break;
     case ZMQ_PUB:
         s = new pub_t (this);
         break;
@@ -170,8 +175,11 @@ zmq::socket_base_t *zmq::app_thread_t::create_socket (int type_)
     case ZMQ_REP:
         s = new rep_t (this);
         break;
-    case ZMQ_P2P:
-        s = new p2p_t (this);
+    case ZMQ_UPSTREAM:
+        s = new upstream_t (this);
+        break;
+    case ZMQ_DOWNSTREAM:
+        s = new downstream_t (this);
         break;
     default:
         //  TODO: This should be EINVAL.

@@ -23,7 +23,7 @@
 int main (int argc, char *argv [])
 {
     if (argc != 2) {
-        fprintf (stderr, "usage: zmq_forwarder <config-file>\n");
+        fprintf (stderr, "usage: zmq_streamer <config-file>\n");
         return 1;
     }
 
@@ -33,9 +33,9 @@ int main (int argc, char *argv [])
         return 1;
     }
 
-    if (strcmp (root.getName (), "forwarder") != 0) {
+    if (strcmp (root.getName (), "streamer") != 0) {
         fprintf (stderr, "root element in the configuration file should be "
-            "named 'forwarder'\n");
+            "named 'streamer'\n");
         return 1;
     }
 
@@ -53,9 +53,8 @@ int main (int argc, char *argv [])
 
     //  TODO: make the number of I/O threads configurable.
     zmq::context_t ctx (1, 1);
-    zmq::socket_t in_socket (ctx, ZMQ_SUB);
-    in_socket.setsockopt (ZMQ_SUBSCRIBE, "*", 1);
-    zmq::socket_t out_socket (ctx, ZMQ_PUB);
+    zmq::socket_t in_socket (ctx, ZMQ_UPSTREAM);
+    zmq::socket_t out_socket (ctx, ZMQ_DOWNSTREAM);
 
     int n = 0;
     while (true) {

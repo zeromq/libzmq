@@ -188,6 +188,12 @@ ZMQ_EXPORT int zmq_term (void *context);
 //  the peer that issued the last received request.
 #define ZMQ_REP 4
 
+//  Socket to receive messages from up the stream.
+#define ZMQ_UPSTREAM 5
+
+//  Socket to send messages downstream.
+#define ZMQ_DOWNSTREAM 6
+
 //  Open a socket. 'type' is one of the socket types defined above.
 //
 //  Errors: EINVAL - invalid socket type.

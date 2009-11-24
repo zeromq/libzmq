@@ -37,6 +37,15 @@ Socket to receive requests and send replies. This socket type allows
 only an alternated sequence of recv's and send's. Each send is routed to
 the peer that issued the last received request.
 
+.IP "\fBZMQ_UPSTREAM\fP"
+Socket to receive messages from up the stream. Messages are fair-queued
+from among all the connected peers. Send function is not implemented for
+this socket type. 
+
+.IP "\fBZMQ_DOWNSTREAM\fP"
+Socket to send messages down stream. Messages are load-balanced among all the
+connected peers. Send function is not implemented for this socket type. 
+
 .SH RETURN VALUE
 Function returns socket handle is successful. Otherwise it returns NULL and
 sets errno to one of the values below.

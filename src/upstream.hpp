@@ -17,8 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_REP_HPP_INCLUDED__
-#define __ZMQ_REP_HPP_INCLUDED__
+#ifndef __ZMQ_UPSTREAM_HPP_INCLUDED__
+#define __ZMQ_UPSTREAM_HPP_INCLUDED__
 
 #include "socket_base.hpp"
 #include "yarray.hpp"
@@ -26,12 +26,12 @@
 namespace zmq
 {
 
-    class rep_t : public socket_base_t
+    class upstream_t : public socket_base_t
     {
     public:
 
-        rep_t (class app_thread_t *parent_);
-        ~rep_t ();
+        upstream_t (class app_thread_t *parent_);
+        ~upstream_t ();
 
         //  Overloads of functions from socket_base_t.
         void xattach_pipes (class reader_t *inpipe_, class writer_t *outpipe_);
@@ -48,29 +48,19 @@ namespace zmq
 
     private:
 
-        //  List in outbound and inbound pipes. Note that the two lists are
-        //  always in sync. I.e. outpipe with index N communicates with the
-        //  same session as inpipe with index N.
-        typedef yarray_t <class writer_t> out_pipes_t;
-        out_pipes_t out_pipes;
-        typedef yarray_t <class reader_t> in_pipes_t;
-        in_pipes_t in_pipes;
+        //  Inbound pipes.
+        typedef yarray_t <class reader_t> pipes_t;
+        pipes_t pipes;
 
-        //  Number of active inpipes. All the active inpipes are located at the
-        //  beginning of the in_pipes array.
-        in_pipes_t::size_type active;
+        //  Number of active pipes. All the active pipes are located at the
+        //  beginning of the pipes array.
+        pipes_t::size_type active;
 
-        //  Index of the next inbound pipe to read a request from.
-        in_pipes_t::size_type current;
+        //  Index of the next bound pipe to read a message from.
+        pipes_t::size_type current;
 
-        //  If true, request was already received and reply wasn't sent yet.
-        bool waiting_for_reply;
-
-        //  Pipe we are going to send reply to.
-        class writer_t *reply_pipe;
-
-        rep_t (const rep_t&);
-        void operator = (const rep_t&);
+        upstream_t (const upstream_t&);
+        void operator = (const upstream_t&);
 
     };
 

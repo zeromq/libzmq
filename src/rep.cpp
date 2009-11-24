@@ -71,7 +71,7 @@ void zmq::rep_t::xdetach_inpipe (class reader_t *pipe_)
     }
 
     //  Now both inpipe and outpipe are detached. Remove them from the lists.
-    if (in_pipes.index (pipe_) < active)
+    if (index < active)
         active--;
     in_pipes.erase (index);
     out_pipes.erase (index);

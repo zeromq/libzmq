@@ -34,6 +34,8 @@ public class Socket
     public static final int SUB = 2;
     public static final int REQ = 3;
     public static final int REP = 4;
+    public static final int UPSTREAM = 4;
+    public static final int DOWNSTREAM = 4;
 
     public static final int HWM = 1;
     public static final int LWM = 2;
