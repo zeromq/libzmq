@@ -50,12 +50,17 @@ bool zmq::zmq_encoder_t::size_ready ()
 
 bool zmq::zmq_encoder_t::message_ready ()
 {
+    //  Destroy content of the old message.
+    zmq_msg_close(&in_progress);
+
     //  Read new message from the dispatcher. If there is none, return false.
     //  Note that new state is set only if write is successful. That way
     //  unsuccessful write will cause retry on the next state machine
     //  invocation.
-    if (!source || !source->read (&in_progress))
+    if (!source || !source->read (&in_progress)) {
+        zmq_msg_init (&in_progress);
         return false;
+    }
 
     size_t size = zmq_msg_size (&in_progress);
 
