@@ -63,6 +63,9 @@ extern "C" {
 #ifndef EADDRNOTAVAIL
 #define EADDRNOTAVAIL (ZMQ_HAUSNUMERO + 6)
 #endif
+#ifndef ECONNREFUSED
+#define ECONNREFUSED (ZMQ_HAUSNUMERO + 7)
+#endif
 
 //  Native 0MQ error codes.
 #define EMTHREAD (ZMQ_HAUSNUMERO + 50)
