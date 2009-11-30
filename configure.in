@@ -396,7 +396,7 @@ pgm1_ext="no"
 pgm2_ext="no"
 
 pgm1_basename="libpgm-1.2.14"
-pgm2_basename="libpgm-dev"
+pgm2_basename="libpgm-2.0.17rc2"
 
 AC_SUBST(pgm1_basename)
 AC_SUBST(pgm2_basename)
@@ -472,7 +472,7 @@ if test "x$with_pgm1_ext" != "xno"; then
         fi
     fi
 
-    #  Unpack libpgm-1.0.0rc8.tar.bz2
+    #  Unpack libpgm1
     AC_MSG_CHECKING([Unpacking ${pgm_basename}.tar.bz2])
 
     if tar -xjf foreign/openpgm/${pgm_basename}.tar.bz2 -C foreign/openpgm/; then
@@ -540,6 +540,15 @@ if test "x$with_pgm2_ext" != "xno"; then
         ;;
     esac
 
+    #  Unpack libpgm2
+    AC_MSG_CHECKING([Unpacking ${pgm_basename}.tar.bz2])
+
+    if tar -xjf foreign/openpgm/${pgm_basename}.tar.bz2 -C foreign/openpgm/; then
+        AC_MSG_RESULT([yes])
+    else
+        AC_MSG_ERROR([Could not unpack foreign/openpgm/${pgm_basename}.tar.bz2 file.])
+    fi
+
     if test "x$pyzmq" != "xyes"; then
         AC_CHECK_PROG(have_python, python, yes, no)
         if test "x$have_python" != "xyes"; then
@@ -549,13 +558,13 @@ if test "x$with_pgm2_ext" != "xno"; then
 
     #  Generate galois_tables.c
     AC_CONFIG_COMMANDS([galois_tables2.c], 
-        [perl foreign/openpgm/libpgm-dev/openpgm/pgm/galois_generator.pl > \
-            foreign/openpgm/libpgm-dev/openpgm/pgm/galois_tables.c])
+        [perl foreign/openpgm/libpgm-2.0.17rc2/openpgm/pgm/galois_generator.pl > \
+            foreign/openpgm/libpgm-2.0.17rc2/openpgm/pgm/galois_tables.c])
 
     #  Generate version.c
     AC_CONFIG_COMMANDS([version2.c],
-        [python foreign/openpgm/libpgm-dev/openpgm/pgm/version_generator.py > \
-            foreign/openpgm/libpgm-dev/openpgm/pgm/version.c])
+        [python foreign/openpgm/libpgm-2.0.17rc2/openpgm/pgm/version_generator.py > \
+            foreign/openpgm/libpgm-2.0.17rc2/openpgm/pgm/version.c])
 
     #  Check for OpenPGM nedded libraries.
     PKG_CHECK_MODULES([GLIB], [glib-2.0 gthread-2.0])
