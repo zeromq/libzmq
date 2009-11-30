@@ -1,0 +1,25 @@
+.TH zmq_term 3 "" "(c)2007-2009 FastMQ Inc." "0MQ User Manuals"
+.SH NAME
+zmq_init \- terminates 0MQ context
+.SH SYNOPSIS
+.B int zmq_term (void *context);
+.SH DESCRIPTION
+Destroys 0MQ context. However, if there are still any sockets open within
+the context,
+.IR zmq_term
+succeeds but shutdown of the context is delayed till the last socket is closed.
+.SH RETURN VALUE
+Function returns zero is successful. Otherwise it returns -1 and
+sets errno to one of the values below.
+.SH ERRORS
+No errors are defined.
+.SH EXAMPLE
+.nf
+int rc = zmq_term (context);
+assert (rc == 0);
+.fi
+.SH SEE ALSO
+.BR zmq_init (3)
+.BR zmq_close (3)
+.SH AUTHOR
+Martin Sustrik <sustrik at 250bpm dot com>

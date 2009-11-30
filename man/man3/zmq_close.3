@@ -1,0 +1,27 @@
+.TH zmq_close 3 "" "(c)2007-2009 FastMQ Inc." "0MQ User Manuals"
+.SH NAME
+zmq_close \- destroys 0MQ socket
+.SH SYNOPSIS
+.B int zmq_close (void *s);
+.SH DESCRIPTION
+Destroys 0MQ socket (one created using
+.IR zmq_socket
+function). All sockets have to be properly closed before the application
+terminates, otherwise memory leaks will occur.
+.SH RETURN VALUE
+In case of success the function returns zero. Otherwise it returns -1 and
+sets
+.IR errno
+to the appropriate value.
+.SH ERRORS
+No errors are defined.
+.SH EXAMPLE
+.nf
+int rc = zmq_close (s);
+assert (rc == 0);
+.fi
+.SH SEE ALSO
+.BR zmq_socket (3)
+.BR zmq_term (3)
+.SH AUTHOR
+Martin Sustrik <sustrik at 250bpm dot com>

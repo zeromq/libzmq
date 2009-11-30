@@ -51,6 +51,9 @@ bool zmq::zmq_decoder_t::one_byte_size_ready ()
     else {
 
         //  TODO:  Handle over-sized message decently.
+        //  in_progress is initialised at this point so in theory we should
+        //  close it before calling zmq_msg_init_size, however, it's a 0-byte
+        //  message and thus we can treat it as uninitialised...
         int rc = zmq_msg_init_size (&in_progress, *tmpbuf);
         errno_assert (rc == 0);
 
@@ -67,6 +70,9 @@ bool zmq::zmq_decoder_t::eight_byte_size_ready ()
     size_t size = (size_t) get_uint64 (tmpbuf);
 
     //  TODO:  Handle over-sized message decently.
+    //  in_progress is initialised at this point so in theory we should
+    //  close it before calling zmq_msg_init_size, however, it's a 0-byte
+    //  message and thus we can treat it as uninitialised...
     int rc = zmq_msg_init_size (&in_progress, size);
     errno_assert (rc == 0);
 
@@ -78,7 +84,7 @@ bool zmq::zmq_decoder_t::eight_byte_size_ready ()
 bool zmq::zmq_decoder_t::message_ready ()
 {
     //  Message is completely read. Push it further and start reading
-    //  new message.
+    //  new message. (in_progress is a 0-byte message after this point.)
     if (!destination || !destination->write (&in_progress))
         return false;
 

@@ -1,0 +1,39 @@
+.TH zmq_init 3 "" "(c)2007-2009 FastMQ Inc." "0MQ User Manuals"
+.SH NAME
+zmq_init \- initialises 0MQ context
+.SH SYNOPSIS
+.B void *zmq_init (int app_threads, int io_threads, int flags);
+.SH DESCRIPTION
+Initialises 0MQ context. 
+.IR app_threads
+specifies maximal number of application threads that can own open sockets
+at the same time. At least one application thread should be defined.
+.IR io_threads
+specifies the size of thread pool to handle I/O operations. The value shouldn't
+be negative. Zero can be used in case only in-process messaging is going to be
+used, i.e. there will be no I/O traffic.
+'flags' argument is a combination of the flags defined below:
+
+.IP "\fBZMQ_POLL\fP"
+flag specifying that the sockets within this context should be pollable (see
+.IR zmq_poll
+). Pollable sockets may add a little latency to the message transfer when
+compared to non-pollable sockets.
+
+.SH RETURN VALUE
+Function returns context handle is successful. Otherwise it returns NULL and
+sets errno to one of the values below.
+.SH ERRORS
+.IP "\fBEINVAL\fP"
+there's less than one application thread allocated, or number of I/O threads
+is negative.
+.SH EXAMPLE
+.nf
+void *ctx = zmq_init (1, 1, ZMQ_POLL);
+assert (ctx);
+.fi
+.SH SEE ALSO
+.BR zmq_term (3)
+.BR zmq_socket (3)
+.SH AUTHOR
+Martin Sustrik <sustrik at 250bpm dot com>

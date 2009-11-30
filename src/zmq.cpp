@@ -198,8 +198,10 @@ size_t zmq_msg_size (zmq_msg_t *msg_)
 
 void *zmq_init (int app_threads_, int io_threads_, int flags_)
 {
-    //  There should be at least a single thread managed by the dispatcher.
-    if (app_threads_ <= 0 || io_threads_ <= 0 ||
+    //  There should be at least a single application thread managed
+    //  by the dispatcher. There's no need for I/O threads if 0MQ is used
+    //  only for inproc messaging
+    if (app_threads_ < 1 || io_threads_ < 0 ||
           app_threads_ > 63 || io_threads_ > 63) {
         errno = EINVAL;
         return NULL;

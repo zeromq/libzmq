@@ -37,7 +37,8 @@
 #include "config.hpp"
 #include "i_poll_events.hpp"
 
-zmq::devpoll_t::devpoll_t ()
+zmq::devpoll_t::devpoll_t () :
+    stopping (false)
 {
     //  Get limit on open files
     struct rlimit rl;

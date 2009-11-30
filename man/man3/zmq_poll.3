@@ -1,0 +1,65 @@
+.TH zmq_poll 3 "" "(c)2007-2009 FastMQ Inc." "0MQ User Manuals"
+.SH NAME
+zmq_poll \- polls for events on a set of 0MQ and POSIX sockets
+.SH SYNOPSIS
+.B int zmq_poll (zmq_pollitem_t *items, int nitems);
+.SH DESCRIPTION
+Waits for the events specified by 
+.IR items
+parameter. Number of items in the array is determined by
+.IR nitems
+argument. Each item in the array looks like this:
+
+.nf
+typedef struct
+{
+    void *socket;
+    int fd;
+    short events;
+    short revents;
+} zmq_pollitem_t;
+.fi
+
+0MQ socket to poll on is specified by
+.IR socket .
+In case you want to poll on standard POSIX socket, set
+.IR socket
+to NULL and fill the POSIX file descriptor to
+.IR fd .
+.IR events
+specifies which events to wait for. It's a combination of the values below.
+Once the call exits,
+.IR revent
+will be filled with events that have actually occured on the socket. The field
+will contain a combination of the following values.
+
+.IP "\fBZMQ_POLLIN\fP"
+poll for incoming messages.
+.IP "\fBZMQ_POLLOUT\fP"
+wait while message can be set socket. Poll will return if a message of at least
+one byte can be written to the socket. However, there is no guarantee that
+arbitrarily large message can be sent.
+
+.SH RETURN VALUE
+Function returns number of items signaled or -1 in the case of error.
+.SH ERRORS
+.IP "\fBEFAULT\fP"
+there's a 0MQ socket in the pollset belonging to a different application thread.
+.IP "\fBENOTSUP\fP"
+0MQ context was initialised without ZMQ_POLL flag. I/O multiplexing is disabled.
+.SH EXAMPLE
+.nf
+zmq_pollitem_t items [2];
+items [0].socket = s;
+items [0].events = POLLIN;
+items [1].socket = NULL;
+items [1].fd = my_fd;
+items [1].events = POLLIN;
+
+int rc = zmq_poll (items, 2);
+assert (rc != -1);
+.fi
+.SH SEE ALSO
+.BR zmq_socket (3)
+.SH AUTHOR
+Martin Sustrik <sustrik at 250bpm dot com>

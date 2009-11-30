@@ -23,7 +23,11 @@
 #include "platform.hpp"
 #include "err.hpp"
 
-#if defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_OPENVMS
+#if 0 //defined ZMQ_HAVE_LINUX
+#include <sys/syscall.h>
+#include <unistd.h>
+#include <linux/futex.h>
+#elif defined ZMQ_HAVE_LINUX ||defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_OPENVMS
 #include <pthread.h>
 #elif defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
@@ -33,13 +37,63 @@
 
 namespace zmq
 {
-
     //  Simple semaphore. Only single thread may be waiting at any given time.
     //  Also, the semaphore may not be posted before the previous post
     //  was matched by corresponding wait and the waiting thread was
     //  released.
 
-#if defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_OPENVMS
+#if 0 //defined ZMQ_HAVE_LINUX
+
+    //  In theory, using private futexes should be more efficient on Linux
+    //  platform than using mutexes. However, in uncontended cases of TCP
+    //  transport on loopback interface we haven't seen any latency improvement.
+    //  The code is commented out waiting for more thorough testing.
+
+    class simple_semaphore_t
+    { 
+    public:
+
+        //  Initialise the semaphore.
+        inline simple_semaphore_t () :
+            dummy (0)
+        {
+        }
+
+        //  Destroy the semaphore.
+        inline ~simple_semaphore_t ()
+        {
+        }
+
+        //  Wait for the semaphore.
+        inline void wait ()
+        {
+            int rc = syscall (SYS_futex, &dummy, (int) FUTEX_WAIT_PRIVATE,
+                (int) 0, NULL, NULL, (int) 0);
+            zmq_assert (rc == 0);
+        }
+
+        //  Post the semaphore.
+        inline void post ()
+        {
+            while (true) {
+                int rc = syscall (SYS_futex, &dummy, (int) FUTEX_WAKE_PRIVATE,
+                    (int) 1, NULL, NULL, (int) 0);
+                zmq_assert (rc != -1 && rc <= 1);
+                if (rc == 1)
+                    break;
+            }
+        }
+
+    private:
+
+        int dummy;
+
+        //  Disable copying of the object.
+        simple_semaphore_t (const simple_semaphore_t&);
+        void operator = (const simple_semaphore_t&);
+    };
+
+#elif defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_OPENVMS
 
     //  On platforms that allow for double locking of a mutex from the same
     //  thread, simple semaphore is implemented using mutex, as it is more

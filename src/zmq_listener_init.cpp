@@ -55,7 +55,6 @@ bool zmq::zmq_listener_init_t::write (::zmq_msg_t *msg_)
     has_peer_identity = true;
     peer_identity.assign ((const char*) zmq_msg_data (msg_),
         zmq_msg_size (msg_));
-    
 
     return true;
 }

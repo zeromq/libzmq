@@ -71,7 +71,7 @@ void zmq::rep_t::xdetach_inpipe (class reader_t *pipe_)
     }
 
     //  Now both inpipe and outpipe are detached. Remove them from the lists.
-    if (in_pipes.index (pipe_) < active)
+    if (index < active)
         active--;
     in_pipes.erase (index);
     out_pipes.erase (index);
@@ -178,14 +178,15 @@ int zmq::rep_t::xrecv (zmq_msg_t *msg_, int flags_)
     //  Round-robin over the pipes to get next message.
     for (int count = active; count != 0; count--) {
         bool fetched = in_pipes [current]->read (msg_);
-        current++;
-        if (current >= active)
-            current = 0;
         if (fetched) {
             reply_pipe = out_pipes [current];
             waiting_for_reply = true;
-            return 0;
         }
+        current++;
+        if (current >= active)
+            current = 0;
+        if (fetched)
+            return 0;
     }
 
     //  No message is available. Initialise the output parameter

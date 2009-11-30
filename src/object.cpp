@@ -83,8 +83,8 @@ void zmq::object_t::process_command (command_t &cmd_)
         return;
 
     case command_t::bind:
-        process_bind (cmd_.args.bind.session,
-            cmd_.args.bind.in_pipe, cmd_.args.bind.out_pipe);
+        process_bind (cmd_.args.bind.in_pipe, cmd_.args.bind.out_pipe,
+            cmd_.args.bind.adjust_seqnum);
         return;
 
     case command_t::pipe_term:
@@ -120,6 +120,21 @@ void zmq::object_t::register_pipe (class pipe_t *pipe_)
 void zmq::object_t::unregister_pipe (class pipe_t *pipe_)
 {
     dispatcher->unregister_pipe (pipe_);
+}
+
+int zmq::object_t::register_endpoint (const char *addr_, socket_base_t *socket_)
+{
+    return dispatcher->register_endpoint (addr_, socket_);
+}
+
+void zmq::object_t::unregister_endpoints (socket_base_t *socket_)
+{
+    return dispatcher->unregister_endpoints (socket_);
+}
+
+zmq::socket_base_t *zmq::object_t::find_endpoint (const char *addr_)
+{
+    return dispatcher->find_endpoint (addr_);
 }
 
 zmq::io_thread_t *zmq::object_t::choose_io_thread (uint64_t taskset_)
@@ -168,15 +183,15 @@ void zmq::object_t::send_attach (session_t *destination_, i_engine *engine_)
     send_command (cmd);
 }
 
-void zmq::object_t::send_bind (object_t *destination_, owned_t *session_,
-    reader_t *in_pipe_, writer_t *out_pipe_)
+void zmq::object_t::send_bind (object_t *destination_,
+    reader_t *in_pipe_, writer_t *out_pipe_, bool adjust_seqnum_)
 {
     command_t cmd;
     cmd.destination = destination_;
     cmd.type = command_t::bind;
-    cmd.args.bind.session = session_;
     cmd.args.bind.in_pipe = in_pipe_;
     cmd.args.bind.out_pipe = out_pipe_;
+    cmd.args.bind.adjust_seqnum = adjust_seqnum_;
     send_command (cmd);
 }
 
@@ -250,8 +265,8 @@ void zmq::object_t::process_attach (i_engine *engine_)
     zmq_assert (false);
 }
 
-void zmq::object_t::process_bind (owned_t *session_,
-    reader_t *in_pipe_, writer_t *out_pipe_)
+void zmq::object_t::process_bind (reader_t *in_pipe_, writer_t *out_pipe_,
+    bool adjust_seqnum_)
 {
     zmq_assert (false);
 }

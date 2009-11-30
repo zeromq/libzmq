@@ -49,6 +49,12 @@ namespace zmq
 
     protected:
 
+        //  Using following function, socket is able to access global
+        //  repository of inproc endpoints.
+        int register_endpoint (const char *addr_, class socket_base_t *socket_);
+        void unregister_endpoints (class socket_base_t *socket_);
+        class socket_base_t *find_endpoint (const char *addr_);
+
         //  Derived object can use following functions to interact with
         //  global repositories. See dispatcher.hpp for function details.
         int thread_slot_count ();
@@ -62,8 +68,8 @@ namespace zmq
             class owned_t *object_);
         void send_attach (class session_t *destination_,
             struct i_engine *engine_);
-        void send_bind (object_t *destination_, class owned_t *session_,
-            class reader_t *in_pipe_, class writer_t *out_pipe_);
+        void send_bind (object_t *destination_, class reader_t *in_pipe_,
+             class writer_t *out_pipe_, bool adjust_seqnum_);
         void send_revive (class object_t *destination_);
         void send_pipe_term (class writer_t *destination_);
         void send_pipe_term_ack (class reader_t *destination_);
@@ -78,8 +84,8 @@ namespace zmq
         virtual void process_plug ();
         virtual void process_own (class owned_t *object_);
         virtual void process_attach (struct i_engine *engine_);
-        virtual void process_bind (class owned_t *session_,
-            class reader_t *in_pipe_, class writer_t *out_pipe_);
+        virtual void process_bind (class reader_t *in_pipe_,
+            class writer_t *out_pipe_, bool adjust_seqnum_);
         virtual void process_revive ();
         virtual void process_pipe_term ();
         virtual void process_pipe_term_ack ();

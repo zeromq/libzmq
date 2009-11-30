@@ -77,6 +77,7 @@ libzmq_la_SOURCES = app_thread.hpp \
     decoder.hpp \
     devpoll.hpp \
     dispatcher.hpp \
+    downstream.hpp \
     encoder.hpp \
     epoll.hpp \
     err.hpp \
@@ -117,6 +118,7 @@ libzmq_la_SOURCES = app_thread.hpp \
     tcp_listener.hpp \
     tcp_socket.hpp \
     thread.hpp \
+    upstream.hpp \
     uuid.hpp \
     windows.hpp \
     wire.hpp \
@@ -135,6 +137,7 @@ libzmq_la_SOURCES = app_thread.hpp \
     app_thread.cpp \
     devpoll.cpp \
     dispatcher.cpp \
+    downstream.cpp \
     epoll.cpp \
     err.cpp \
     fd_signaler.cpp \
@@ -162,6 +165,7 @@ libzmq_la_SOURCES = app_thread.hpp \
     tcp_listener.cpp \
     tcp_socket.cpp \
     thread.cpp \
+    upstream.cpp \
     uuid.cpp \
     ypollset.cpp \
     zmq.cpp \

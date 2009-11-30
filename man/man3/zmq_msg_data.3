@@ -1,0 +1,27 @@
+.TH zmq_msg_data 3 "" "(c)2007-2009 FastMQ Inc." "0MQ User Manuals"
+.SH NAME
+zmq_msg_data \- retrieves pointer to the message content
+.SH SYNOPSIS
+.B void *zmq_msg_data (zmq_msg_t *msg);
+.SH DESCRIPTION
+Returns pointer to message data. Always use this function to access the data,
+never use
+.IR zmq_msg_t
+members directly.
+.SH RETURN VALUE
+Pointer to the message data.
+.SH ERRORS
+No errors are defined.
+.SH EXAMPLE
+.nf
+zmq_msg_t msg;
+rc = zmq_msg_init_size (&msg, 100);
+memset (zmq_msg_data (&msg), 0, 100);
+.fi
+.SH SEE ALSO
+.BR zmq_msg_init (3)
+.BR zmq_msg_init_size (3)
+.BR zmq_msg_init_data (3)
+.BR zmq_msg_close (3)
+.SH AUTHOR
+Martin Sustrik <sustrik at 250bpm dot com>

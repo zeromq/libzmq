@@ -33,7 +33,8 @@
 #include "config.hpp"
 #include "i_poll_events.hpp"
 
-zmq::kqueue_t::kqueue_t ()
+zmq::kqueue_t::kqueue_t () :
+    stopping (false)
 {
     //  Create event queue
     kqueue_fd = kqueue ();

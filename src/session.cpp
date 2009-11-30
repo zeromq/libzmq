@@ -51,10 +51,6 @@ bool zmq::session_t::read (::zmq_msg_t *msg_)
 
 bool zmq::session_t::write (::zmq_msg_t *msg_)
 {
-    //  The communication is unidirectional.
-    //  We don't expect any message to arrive.
-    zmq_assert (out_pipe);
-
     if (out_pipe->write (msg_)) {
         zmq_msg_init (msg_);
         return true;
@@ -155,8 +151,10 @@ void zmq::session_t::process_plug ()
             out_pipe->set_endpoint (this);
         }
 
-        send_bind (owner, this, outbound ? &outbound->reader : NULL,
-            inbound ? &inbound->writer : NULL);
+        //  Note that initial call to inc_seqnum was optimised out. Last
+        //  parameter conveys the fact to the callee.
+        send_bind (owner, outbound ? &outbound->reader : NULL,
+            inbound ? &inbound->writer : NULL, false);
     }
 
     owned_t::process_plug ();

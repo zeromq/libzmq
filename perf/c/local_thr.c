@@ -79,6 +79,9 @@ int main (int argc, char *argv [])
     if (elapsed == 0)
         elapsed = 1;
 
+    rc = zmq_msg_close (&msg);
+    assert (rc == 0);
+
     throughput = (unsigned long)
         ((double) message_count / (double) elapsed * 1000000);
     megabits = (double) (throughput * message_size * 8) / 1000000;

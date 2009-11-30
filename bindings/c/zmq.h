@@ -63,6 +63,9 @@ extern "C" {
 #ifndef EADDRNOTAVAIL
 #define EADDRNOTAVAIL (ZMQ_HAUSNUMERO + 6)
 #endif
+#ifndef ECONNREFUSED
+#define ECONNREFUSED (ZMQ_HAUSNUMERO + 7)
+#endif
 
 //  Native 0MQ error codes.
 #define EMTHREAD (ZMQ_HAUSNUMERO + 50)
@@ -180,13 +183,19 @@ ZMQ_EXPORT int zmq_term (void *context);
 
 //  Socket to send requests and receive replies. Requests are
 //  load-balanced among all the peers. This socket type allows
-//  only an alternated sequence of send's and recv's
+//  only an alternated sequence of send's and recv's.
 #define ZMQ_REQ 3
 
 //  Socket to receive requests and send replies. This socket type allows
 //  only an alternated sequence of recv's and send's. Each send is routed to
 //  the peer that issued the last received request.
 #define ZMQ_REP 4
+
+//  Socket to receive messages from up the stream.
+#define ZMQ_UPSTREAM 5
+
+//  Socket to send messages downstream.
+#define ZMQ_DOWNSTREAM 6
 
 //  Open a socket. 'type' is one of the socket types defined above.
 //

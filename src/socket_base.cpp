@@ -43,7 +43,9 @@ zmq::socket_base_t::socket_base_t (app_thread_t *parent_) :
     pending_term_acks (0),
     ticks (0),
     app_thread (parent_),
-    shutting_down (false)
+    shutting_down (false),
+    sent_seqnum (0),
+    processed_seqnum (0)
 {
 }
 
@@ -80,6 +82,9 @@ int zmq::socket_base_t::bind (const char *addr_)
 
     addr_type = addr.substr (0, pos);
     addr_args = addr.substr (pos + 3);
+
+    if (addr_type == "inproc")
+        return register_endpoint (addr_args.c_str (), this);
 
     if (addr_type == "tcp") {
         zmq_listener_t *listener = new zmq_listener_t (
@@ -125,6 +130,41 @@ int zmq::socket_base_t::connect (const char *addr_)
 
     addr_type = addr.substr (0, pos);
     addr_args = addr.substr (pos + 3);
+
+    if (addr_type == "inproc") {
+
+        //  Find the peer socket.
+        socket_base_t *peer = find_endpoint (addr_args.c_str ());
+        if (!peer)
+            return -1;
+
+        pipe_t *in_pipe = NULL;
+        pipe_t *out_pipe = NULL;
+
+        //  Create inbound pipe, if required.
+        if (options.requires_in) {
+            in_pipe = new pipe_t (this, peer, options.hwm, options.lwm);
+            zmq_assert (in_pipe);
+        }
+
+        //  Create outbound pipe, if required.
+        if (options.requires_out) {
+            out_pipe = new pipe_t (peer, this, options.hwm, options.lwm);
+            zmq_assert (out_pipe);
+        }
+
+        //  Attach the pipes to this socket object.
+        attach_pipes (in_pipe ? &in_pipe->reader : NULL,
+            out_pipe ? &out_pipe->writer : NULL);
+
+        //  Attach the pipes to the peer socket. Note that peer's seqnum
+        //  was incremented in find_endpoint function. The callee is notified
+        //  about the fact via the last parameter.
+        send_bind (peer, out_pipe ? &out_pipe->reader : NULL,
+            in_pipe ? &in_pipe->writer : NULL, true);
+
+        return 0;
+    }
 
     //  Create the session.
     io_thread_t *io_thread = choose_io_thread (options.affinity);
@@ -319,13 +359,24 @@ int zmq::socket_base_t::recv (::zmq_msg_t *msg_, int flags_)
 
 int zmq::socket_base_t::close ()
 {
+    shutting_down = true;
+
+    //  Let the thread know that the socket is no longer available.
     app_thread->remove_socket (this);
 
     //  Pointer to the dispatcher must be retrieved before the socket is
     //  deallocated. Afterwards it is not available.
     dispatcher_t *dispatcher = get_dispatcher ();
 
-    shutting_down = true;
+    //  Unregister all inproc endpoints associated with this socket.
+    //  From this point we are sure that inc_seqnum won't be called again
+    //  on this object.
+    dispatcher->unregister_endpoints (this);
+
+    //  Wait till all undelivered commands are delivered. This should happen
+    //  very quickly. There's no way to wait here for extensive period of time.
+    while (processed_seqnum != sent_seqnum.get ())
+        app_thread->process_commands (true, false);
 
     while (true) {
 
@@ -362,6 +413,12 @@ int zmq::socket_base_t::close ()
     dispatcher->destroy_socket ();
 
     return 0;
+}
+
+void zmq::socket_base_t::inc_seqnum ()
+{
+    //  NB: This function may be called from a different thread!
+    sent_seqnum.add (1);
 }
 
 zmq::app_thread_t *zmq::socket_base_t::get_thread ()
@@ -452,9 +509,16 @@ void zmq::socket_base_t::process_own (owned_t *object_)
     io_objects.insert (object_);
 }
 
-void zmq::socket_base_t::process_bind (owned_t *session_,
-    reader_t *in_pipe_, writer_t *out_pipe_)
+void zmq::socket_base_t::process_bind (reader_t *in_pipe_, writer_t *out_pipe_,
+     bool adjust_seqnum_)
 {
+    //  In case of inproc transport, the seqnum should catch up here.
+    //  For other transports the seqnum modification can be optimised out
+    //  because final handshaking between the socket and the session ensures
+    //  that no 'bind' command will be left unprocessed.
+    if (adjust_seqnum_)
+        processed_seqnum++;
+
     attach_pipes (in_pipe_, out_pipe_);
 }
 

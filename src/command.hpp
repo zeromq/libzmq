@@ -69,10 +69,12 @@ namespace zmq
             } attach;
 
             //  Sent from session to socket to establish pipe(s) between them.
+            //  If adjust_seqnum is true, caller have used inc_seqnum beforehand
+            //  and thus the callee should take care of catching up.
             struct {
-                class owned_t *session;
                 class reader_t *in_pipe;
                 class writer_t *out_pipe;
+                bool adjust_seqnum;
             } bind;
 
             //  Sent by pipe writer to inform dormant pipe reader that there
