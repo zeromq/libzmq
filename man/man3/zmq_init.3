@@ -12,8 +12,9 @@ at the same time. At least one application thread should be defined.
 specifies the size of thread pool to handle I/O operations. The value shouldn't
 be negative. Zero can be used in case only in-process messaging is going to be
 used, i.e. there will be no I/O traffic.
-'flags' argument is a combination of the flags defined below:
 
+.IR flags 
+argument is a combination of the flags defined below:
 .IP "\fBZMQ_POLL\fP"
 flag specifying that the sockets within this context should be pollable (see
 .IR zmq_poll
