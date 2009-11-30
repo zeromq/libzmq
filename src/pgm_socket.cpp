@@ -358,7 +358,7 @@ int zmq::pgm_socket_t::open_transport (void)
     //  Sender transport.
     } else {
 
-        //  Set transport->can_recv = FALSE, waiting_pipe wont not be read.
+        //  Set transport->can_recv = FALSE, waiting_pipe will not be read.
         rc = pgm_transport_set_send_only (g_transport, TRUE);
         if (rc != pgm_ok) {
             errno = EINVAL;

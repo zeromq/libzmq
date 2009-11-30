@@ -130,8 +130,12 @@ void zmq::pgm_sender_t::revive ()
 
 zmq::pgm_sender_t::~pgm_sender_t ()
 {
+    zmq_log (4, "pgm_sender_t destructor, %s(%i)\n",
+        __FILE__, __LINE__);
+
     if (out_buffer) {
         pgm_socket.free_buffer (out_buffer);
+        out_buffer = NULL;
     }
 }
 
