@@ -36,10 +36,11 @@ namespace zmq
     {
     public:
 
-        reader_t (class object_t *parent_, class pipe_t *pipe_,
+        reader_t (class object_t *parent_,
             uint64_t hwm_, uint64_t lwm_);
         ~reader_t ();
 
+        void set_pipe (class pipe_t *pipe_);
         void set_endpoint (i_endpoint *endpoint_);
 
         //  Returns true if there is at least one message to read in the pipe.
@@ -83,10 +84,11 @@ namespace zmq
     {
     public:
 
-        writer_t (class object_t *parent_, class pipe_t *pipe_,
+        writer_t (class object_t *parent_,
             uint64_t hwm_, uint64_t lwm_);
         ~writer_t ();
 
+        void set_pipe (class pipe_t *pipe_);
         void set_endpoint (i_endpoint *endpoint_);
 
         //  Checks whether message with specified size can be written to the
