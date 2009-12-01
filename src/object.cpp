@@ -83,8 +83,7 @@ void zmq::object_t::process_command (command_t &cmd_)
         return;
 
     case command_t::bind:
-        process_bind (cmd_.args.bind.in_pipe, cmd_.args.bind.out_pipe,
-            cmd_.args.bind.adjust_seqnum);
+        process_bind (cmd_.args.bind.in_pipe, cmd_.args.bind.out_pipe);
         return;
 
     case command_t::pipe_term:
@@ -183,15 +182,14 @@ void zmq::object_t::send_attach (session_t *destination_, i_engine *engine_)
     send_command (cmd);
 }
 
-void zmq::object_t::send_bind (object_t *destination_,
-    reader_t *in_pipe_, writer_t *out_pipe_, bool adjust_seqnum_)
+void zmq::object_t::send_bind (socket_base_t *destination_,
+    reader_t *in_pipe_, writer_t *out_pipe_)
 {
     command_t cmd;
     cmd.destination = destination_;
     cmd.type = command_t::bind;
     cmd.args.bind.in_pipe = in_pipe_;
     cmd.args.bind.out_pipe = out_pipe_;
-    cmd.args.bind.adjust_seqnum = adjust_seqnum_;
     send_command (cmd);
 }
 
@@ -265,8 +263,7 @@ void zmq::object_t::process_attach (i_engine *engine_)
     zmq_assert (false);
 }
 
-void zmq::object_t::process_bind (reader_t *in_pipe_, writer_t *out_pipe_,
-    bool adjust_seqnum_)
+void zmq::object_t::process_bind (reader_t *in_pipe_, writer_t *out_pipe_)
 {
     zmq_assert (false);
 }
