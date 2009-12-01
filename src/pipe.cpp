@@ -34,13 +34,16 @@ zmq::reader_t::reader_t (object_t *parent_,
 
 zmq::reader_t::~reader_t ()
 {
+    if (pipe)
+        unregister_pipe (pipe);
 }
 
 void zmq::reader_t::set_pipe (pipe_t *pipe_)
 {
     zmq_assert (!pipe);
     pipe = pipe_;
-    peer = &pipe_->writer;
+    peer = &pipe->writer;
+    register_pipe (pipe);
 }
 
 bool zmq::reader_t::check_read ()
@@ -125,7 +128,7 @@ void zmq::writer_t::set_pipe (pipe_t *pipe_)
 {
     zmq_assert (!pipe);
     pipe = pipe_;
-    peer = &pipe_->reader;
+    peer = &pipe->reader;
 }
 
 bool zmq::writer_t::check_write (uint64_t size_)
@@ -180,7 +183,6 @@ zmq::pipe_t::pipe_t (object_t *reader_parent_, object_t *writer_parent_,
 {
     reader.set_pipe (this);
     writer.set_pipe (this);
-    reader.register_pipe (this);
 }
 
 zmq::pipe_t::~pipe_t ()
@@ -191,6 +193,4 @@ zmq::pipe_t::~pipe_t ()
     zmq_msg_t msg;
     while (read (&msg))
        zmq_msg_close (&msg);
-
-    reader.unregister_pipe (this);
 }
