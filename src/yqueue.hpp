@@ -60,11 +60,13 @@ namespace zmq
         inline ~yqueue_t ()
         {
             while (true) {
+                if (begin_chunk == end_chunk) {
+                    delete begin_chunk;
+                    break;
+                } 
                 chunk_t *o = begin_chunk;
                 begin_chunk = begin_chunk->next;
                 delete o;
-                if (o == end_chunk)
-                    break;
             }
         }
 
