@@ -63,13 +63,14 @@ namespace zmq
         //  Derived object can use these functions to send commands
         //  to other objects.
         void send_stop ();
-        void send_plug (class owned_t *destination_);
+        void send_plug (class owned_t *destination_, bool inc_seqnum_ = true);
         void send_own (class socket_base_t *destination_,
             class owned_t *object_);
         void send_attach (class session_t *destination_,
-            struct i_engine *engine_);
+            struct i_engine *engine_, bool inc_seqnum_ = true);
         void send_bind (class socket_base_t *destination_,
-             class reader_t *in_pipe_, class writer_t *out_pipe_);
+             class reader_t *in_pipe_, class writer_t *out_pipe_,
+             bool inc_seqnum_ = true);
         void send_revive (class object_t *destination_);
         void send_pipe_term (class writer_t *destination_);
         void send_pipe_term_ack (class reader_t *destination_);
@@ -92,6 +93,11 @@ namespace zmq
         virtual void process_term_req (class owned_t *object_);
         virtual void process_term ();
         virtual void process_term_ack ();
+
+        //  Special handler called after a command that requires a seqnum
+        //  was processed. The implementation should catch up with its counter
+        //  of processed commands here.
+        virtual void process_seqnum ();
 
         //  Pointer to the root of the infrastructure.
         class dispatcher_t *dispatcher;

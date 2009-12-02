@@ -161,7 +161,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         //  was incremented in find_endpoint function. The callee is notified
         //  about the fact via the last parameter.
         send_bind (peer, out_pipe ? &out_pipe->reader : NULL,
-            in_pipe ? &in_pipe->writer : NULL);
+            in_pipe ? &in_pipe->writer : NULL, false);
 
         return 0;
     }
@@ -247,8 +247,6 @@ int zmq::socket_base_t::connect (const char *addr_)
                 return -1;
             }
 
-            //  Reserve a sequence number for following 'attach' command.
-            session->inc_seqnum ();
             send_attach (session, pgm_sender);
         }
         else if (options.requires_in) {
@@ -264,8 +262,6 @@ int zmq::socket_base_t::connect (const char *addr_)
                 return -1;
             }
 
-            //  Reserve a sequence number for following 'attach' command.
-            session->inc_seqnum ();
             send_attach (session, pgm_receiver);
         }
         else
@@ -511,7 +507,6 @@ void zmq::socket_base_t::process_own (owned_t *object_)
 
 void zmq::socket_base_t::process_bind (reader_t *in_pipe_, writer_t *out_pipe_)
 {
-    processed_seqnum++;
     attach_pipes (in_pipe_, out_pipe_);
 }
 
@@ -540,5 +535,10 @@ void zmq::socket_base_t::process_term_ack ()
 {
     zmq_assert (pending_term_acks);
     pending_term_acks--;
+}
+
+void zmq::socket_base_t::process_seqnum ()
+{
+    processed_seqnum++;
 }
 

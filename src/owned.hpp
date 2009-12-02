@@ -54,15 +54,6 @@ namespace zmq
         //  of the owned object correctly.
         virtual ~owned_t ();
 
-        //  Handlers for incoming commands. It's vital that every I/O object
-        //  invokes io_object_t::process_plug at the end of it's own plug
-        //  handler.
-        void process_plug ();
-
-        //  It's vital that session invokes io_object_t::process_attach
-        //  at the end of it's own attach handler.
-        void process_attach (struct i_engine *engine_);
-
         //  io_object_t defines a new handler used to disconnect the object
         //  from the poller object. Implement the handlen in the derived
         //  classes to ensure sane cleanup.
@@ -76,10 +67,9 @@ namespace zmq
 
         //  Handlers for incoming commands.
         void process_term ();
+        void process_seqnum ();
 
-        //  Generic command handler (to be called from all command handlers
-        //  once the processing is done).
-        void finalise_command ();
+        void finalise ();
 
         //  Sequence number of the last command sent to this object.
         atomic_counter_t sent_seqnum;

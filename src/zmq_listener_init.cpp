@@ -83,7 +83,10 @@ void zmq::zmq_listener_init_t::flush ()
         //  Reserve a sequence number for following 'attach' command.
         session->inc_seqnum ();
     }
-    send_attach (session, engine);
+
+    //  No need to increment seqnum as it was laready incremented above.
+    send_attach (session, engine, false);
+
     engine = NULL;
 
     //  Destroy the init object.
@@ -103,7 +106,6 @@ void zmq::zmq_listener_init_t::process_plug ()
 {
     zmq_assert (engine);
     engine->plug (this);
-    owned_t::process_plug ();
 }
 
 void zmq::zmq_listener_init_t::process_unplug ()

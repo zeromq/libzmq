@@ -252,6 +252,8 @@ zmq::socket_base_t *zmq::dispatcher_t::find_endpoint (const char *addr_)
 
      //  Increment the command sequence number of the peer so that it won't
      //  get deallocated until "bind" command is issued by the caller.
+     //  The subsequent 'bind' has to be called with inc_seqnum parameter
+     //  set to false, so that the seqnum isn't incremented twice.
      endpoint->inc_seqnum ();
 
      endpoints_sync.unlock ();

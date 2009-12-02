@@ -67,7 +67,8 @@ bool zmq::zmq_connecter_init_t::read (::zmq_msg_t *msg_)
         zmq_assert (false);
     }
 
-    send_attach (session, engine);
+    //  No need to increment seqnum as it was alredy incremented above.
+    send_attach (session, engine, false);
     engine = NULL;
 
     //  Destroy the init object.
@@ -113,7 +114,6 @@ void zmq::zmq_connecter_init_t::process_plug ()
 {
     zmq_assert (engine);
     engine->plug (this);
-    owned_t::process_plug ();
 }
 
 void zmq::zmq_connecter_init_t::process_unplug ()

@@ -39,22 +39,6 @@ void zmq::owned_t::inc_seqnum ()
     sent_seqnum.add (1);
 }
 
-void zmq::owned_t::process_plug ()
-{
-    //  Keep track of how many commands were processed so far.
-    processed_seqnum++;
-
-    finalise_command ();
-}
-
-void zmq::owned_t::process_attach (struct i_engine *engine_)
-{
-    //  Keep track of how many commands were processed so far.
-    processed_seqnum++;
-
-    finalise_command ();
-}
-
 void zmq::owned_t::term ()
 {
     send_term_req (owner, this);
@@ -64,11 +48,17 @@ void zmq::owned_t::process_term ()
 {
     zmq_assert (!shutting_down);
     shutting_down = true;
-
-    finalise_command ();
+    finalise ();
 }
 
-void zmq::owned_t::finalise_command ()
+void zmq::owned_t::process_seqnum ()
+{
+    //  Catch up with counter of processed commands.
+    processed_seqnum++;
+    finalise ();
+}
+
+void zmq::owned_t::finalise ()
 {
     //  If termination request was already received and there are no more
     //  commands to wait for, terminate the object.

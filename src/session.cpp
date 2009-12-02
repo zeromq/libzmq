@@ -151,12 +151,9 @@ void zmq::session_t::process_plug ()
             out_pipe->set_endpoint (this);
         }
 
-        owner->inc_seqnum ();
         send_bind (owner, outbound ? &outbound->reader : NULL,
             inbound ? &inbound->writer : NULL);
     }
-
-    owned_t::process_plug ();
 }
 
 void zmq::session_t::process_unplug ()
@@ -190,6 +187,4 @@ void zmq::session_t::process_attach (i_engine *engine_)
     zmq_assert (engine_);
     engine = engine_;
     engine->plug (this);
-
-    owned_t::process_attach (engine_);
 }

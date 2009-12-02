@@ -117,6 +117,7 @@ namespace zmq
         void process_bind (class reader_t *in_pipe_, class writer_t *out_pipe_);
         void process_term_req (class owned_t *object_);
         void process_term_ack ();
+        void process_seqnum ();
 
         //  List of all I/O objects owned by this socket. The socket is
         //  responsible for deallocating them before it quits.

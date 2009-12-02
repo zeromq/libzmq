@@ -49,7 +49,6 @@ void zmq::zmq_connecter_t::process_plug ()
         add_timer ();
     else
         start_connecting ();
-    owned_t::process_plug ();
 }
 
 void zmq::zmq_connecter_t::process_unplug ()

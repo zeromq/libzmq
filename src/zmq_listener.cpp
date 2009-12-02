@@ -44,8 +44,6 @@ void zmq::zmq_listener_t::process_plug ()
     //  Start polling for incoming connections.
     handle = add_fd (tcp_listener.get_fd ());
     set_pollin (handle);
-
-    owned_t::process_plug ();
 }
 
 void zmq::zmq_listener_t::process_unplug ()
