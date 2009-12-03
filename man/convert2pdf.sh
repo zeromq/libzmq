@@ -19,6 +19,8 @@
 
 groff -man -Tps man1/zmq_forwarder.1 > man1/zmq_forwarder.1.ps
 ps2pdf man1/zmq_forwarder.1.ps zmq_forwarder.pdf
+groff -man -Tps man1/zmq_streamer.1 > man1/zmq_streamer.1.ps
+ps2pdf man1/zmq_streamer.1.ps zmq_streamer.pdf
 
 groff -man -Tps man3/zmq_init.3 > man3/zmq_init.3.ps
 ps2pdf man3/zmq_init.3.ps zmq_init.pdf
@@ -63,4 +65,20 @@ ps2pdf man3/zmq_strerror.3.ps zmq_strerror.pdf
 
 groff -man -Tps man7/zmq.7 > man7/zmq.7.ps
 ps2pdf man7/zmq.7.ps zmq.pdf
+groff -man -Tps man7/zmq_cpp.7 > man7/zmq_cpp.7.ps
+ps2pdf man7/zmq_cpp.7.ps zmq_cpp.pdf
+groff -man -Tps man7/zmq_python.7 > man7/zmq_python.7.ps
+ps2pdf man7/zmq_python.7.ps zmq_python.pdf
+groff -man -Tps man7/zmq_ruby.7 > man7/zmq_ruby.7.ps
+ps2pdf man7/zmq_ruby.7.ps zmq_ruby.pdf
+groff -man -Tps man7/zmq_cl.7 > man7/zmq_cl.7.ps
+ps2pdf man7/zmq_cl.7.ps zmq_cl.pdf
+groff -man -Tps man7/zmq_tcp.7 > man7/zmq_tcp.7.ps
+ps2pdf man7/zmq_tcp.7.ps zmq_tcp.pdf
+groff -man -Tps man7/zmq_udp.7 > man7/zmq_udp.7.ps
+ps2pdf man7/zmq_udp.7.ps zmq_udp.pdf
+groff -man -Tps man7/zmq_pgm.7 > man7/zmq_pgm.7.ps
+ps2pdf man7/zmq_pgm.7.ps zmq_pgm.pdf
+groff -man -Tps man7/zmq_inproc.7 > man7/zmq_inproc.7.ps
+ps2pdf man7/zmq_inproc.7.ps zmq_inproc.pdf
 
