@@ -137,14 +137,12 @@ namespace zmq
                     stop = false;
                     return false;
                 }
-                else {
 
-                    //  We want to do only a single prefetch in D scenario
-                    //  before going asleep. Thus, we set stop variable to true
-                    //  so that we can return false next time the prefetch is
-                    //  attempted.
-                    stop = true;
-                }
+                //  We want to do only a single prefetch in D scenario
+                //  before going asleep. Thus, we set stop variable to true
+                //  so that we can return false next time the prefetch is
+                //  attempted.
+                stop = true;
             }
             else {
 

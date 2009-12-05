@@ -31,8 +31,13 @@ namespace zmq
 {
 
     typedef zmq_free_fn free_fn;
+    typedef zmq_pollitem_t pollitem_t;
 
-    //  The class masquerades POSIX-style errno error as a C++ exception.
+    inline int poll (zmq_pollitem_t *items_, int nitems_)
+    {
+        return zmq_poll (items_, nitems_);
+    }
+
     class error_t : public std::exception
     {
     public:
@@ -49,37 +54,33 @@ namespace zmq
         int errnum;
     };
 
-    //  A message. Caution: Don't change the body of the message once you've
-    //  copied it - the behaviour is undefined. Don't change the body of the
-    //  received message either - other threads may be accessing it in parallel.
-
     class message_t : private zmq_msg_t
     {
         friend class socket_t;
 
     public:
 
-        //  Creates message size_ bytes long.
-        inline message_t (size_t size_ = 0)
+        inline message_t ()
+        {
+            int rc = zmq_msg_init (this);
+            if (rc != 0)
+                throw error_t ();
+        }
+
+        inline message_t (size_t size_)
         {
             int rc = zmq_msg_init_size (this, size_);
             if (rc != 0)
                 throw error_t ();
         }
 
-        //  Creates message from the supplied buffer. 0MQ takes care of
-        //  deallocating the buffer once it is not needed. The deallocation
-        //  function is supplied in ffn_ parameter. If ffn_ is NULL, no
-        //  deallocation happens - this is useful for sending static buffers.
-        inline message_t (void *data_, size_t size_, 
-            free_fn *ffn_)
+        inline message_t (void *data_, size_t size_, free_fn *ffn_)
         {
             int rc = zmq_msg_init_data (this, data_, size_, ffn_);
             if (rc != 0)
                 throw error_t ();
         }
 
-        //  Destroys the message.
         inline ~message_t ()
         {
             int rc = zmq_msg_close (this);
@@ -87,9 +88,16 @@ namespace zmq
                 throw error_t ();
         }
 
-        //  Destroys old content of the message and allocates buffer for the
-        //  new message body. Having this as a separate function allows user
-        //  to reuse once-allocated message for multiple times.
+        inline void rebuild ()
+        {
+            int rc = zmq_msg_close (this);
+            if (rc != 0)
+                throw error_t ();
+            rc = zmq_msg_init (this);
+            if (rc != 0)
+                throw error_t ();
+        }
+
         inline void rebuild (size_t size_)
         {
             int rc = zmq_msg_close (this);
@@ -100,9 +108,6 @@ namespace zmq
                 throw error_t ();
         }
 
-        //  Same as above, however, the message is rebuilt from the supplied
-        //  buffer. See appropriate constructor for discussion of buffer
-        //  deallocation mechanism.
         inline void rebuild (void *data_, size_t size_, free_fn *ffn_)
         {
             int rc = zmq_msg_close (this);
@@ -113,34 +118,25 @@ namespace zmq
                 throw error_t ();
         }
 
-        //  Moves the message content from one message to the another. If the
-        //  destination message have contained data prior to the operation
-        //  these get deallocated. The source message will contain 0 bytes
-        //  of data after the operation.
-        inline void move_to (message_t *msg_)
+        inline void move (message_t *msg_)
         {
             int rc = zmq_msg_move (this, (zmq_msg_t*) msg_);
             if (rc != 0)
                 throw error_t ();
         }
 
-        //  Copies the message content from one message to the another. If the
-        //  destination message have contained data prior to the operation
-        //  these get deallocated.
-        inline void copy_to (message_t *msg_)
+        inline void copy (message_t *msg_)
         {
             int rc = zmq_msg_copy (this, (zmq_msg_t*) msg_);
             if (rc != 0)
                 throw error_t ();
         }
 
-        //  Returns pointer to message's data buffer.
         inline void *data ()
         {
             return zmq_msg_data (this);
         }
 
-        //  Returns the size of message data buffer.
         inline size_t size ()
         {
             return zmq_msg_size (this);
@@ -177,7 +173,6 @@ namespace zmq
 
         void *ptr;
 
-        //  Disable copying.
         context_t (const context_t&);
         void operator = (const context_t&);
     };
@@ -186,7 +181,7 @@ namespace zmq
     {
     public:
 
-        inline socket_t (context_t &context_, int type_ = 0)
+        inline socket_t (context_t &context_, int type_)
         {
             ptr = zmq_socket (context_.ptr, type_);
             if (ptr == NULL)
@@ -258,7 +253,6 @@ namespace zmq
 
         void *ptr;
 
-        //  Disable copying.
         socket_t (const socket_t&);
         void operator = (const socket_t&);
     };
