@@ -605,7 +605,7 @@ if test "x$werror" = "xyes" -a "x$pgm1_ext" = "xno" -a "x$pgm2_ext" = "xno"; the
     LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Werror"
 fi
 
-# forwarder device
+# Forwarder device
 forwarder="no"
 AC_ARG_WITH([forwarder], [AS_HELP_STRING([--with-forwarder], 
     [build forwarder device [default=no]])], [with_forwarder=yes], [with_forwarder=no])
@@ -614,7 +614,7 @@ if test "x$with_forwarder" != "xno"; then
     forwarder="yes"
 fi
 
-# streamer device
+# Streamer device
 streamer="no"
 AC_ARG_WITH([streamer], [AS_HELP_STRING([--with-streamer], 
     [build streamer device [default=no]])], [with_streamer=yes], [with_streamer=no])
@@ -641,6 +641,13 @@ if test "x$with_perf" = "xno" -a "x$with_pgm2_examples" = "xyes"; then
     AC_MSG_ERROR([Can not configure --with-pgm2-examples without --with-perf.]);
 fi
 
+# Chat example
+chat="no"
+AC_ARG_WITH([chat], [AS_HELP_STRING([--with-chat], [build chatroom example [default=no]])], [with_chat=yes], [with_chat=no])
+if test "x$with_chat" != "xno"; then
+    chat="yes"
+fi
+
 AM_CONDITIONAL(BUILD_PYTHON, test "x$pyzmq" = "xyes")
 AM_CONDITIONAL(BUILD_JAVA, test "x$jzmq" = "xyes")
 AM_CONDITIONAL(BUILD_PYTHON, test "x$pyzmq" = "xyes")
@@ -653,7 +660,8 @@ AM_CONDITIONAL(BUILD_PGM2, test "x$pgm2_ext" = "xyes")
 AM_CONDITIONAL(BUILD_NO_PGM, test "x$pgm2_ext" = "xno" -a "x$pgm1_ext" = "xno")
 AM_CONDITIONAL(BUILD_FORWARDER, test "x$forwarder" = "xyes")
 AM_CONDITIONAL(BUILD_STREAMER, test "x$streamer" = "xyes")  
-AM_CONDITIONAL(BUILD_PERF, test "x$perf" = "xyes") 
+AM_CONDITIONAL(BUILD_PERF, test "x$perf" = "xyes")
+AM_CONDITIONAL(BUILD_CHAT, test "x$chat" = "xyes")
 AM_CONDITIONAL(ON_MINGW, test "x$on_mingw32" = "xyes")
 AM_CONDITIONAL(BUILD_PGM2_EXAMPLES, test "x$with_pgm2_ext" = "xyes")
 AM_CONDITIONAL(INSTALL_MAN, test "x$install_man" = "xyes")
@@ -677,7 +685,8 @@ AC_OUTPUT(Makefile src/Makefile man/Makefile bindings/python/Makefile \
     bindings/java/Makefile perf/Makefile perf/c/Makefile perf/cpp/Makefile \
     perf/python/Makefile perf/ruby/Makefile perf/java/Makefile src/libzmq.pc \
     devices/Makefile devices/zmq_forwarder/Makefile \
-    devices/zmq_streamer/Makefile bindings/Makefile)
+    devices/zmq_streamer/Makefile bindings/Makefile \
+    examples/Makefile examples/chat/Makefile)
 
 AC_MSG_RESULT([])
 AC_MSG_RESULT([ ******************************************************** ])
@@ -715,9 +724,11 @@ if test "x$pgm1_ext" = "xno" -a "x$pgm2_ext" = "xno"; then
 AC_MSG_RESULT([     PGM: no])
 fi
 AC_MSG_RESULT([   Devices:])
-AC_MSG_RESULT([     forwarder: $forwarder])
-AC_MSG_RESULT([     streamer: $streamer])
-AC_MSG_RESULT([   Performance tests: $perf]) 
+AC_MSG_RESULT([     Forwarder: $forwarder])
+AC_MSG_RESULT([     Streamer: $streamer])
+AC_MSG_RESULT([   Performance tests: $perf])
+AC_MSG_RESULT([   Examples:])
+AC_MSG_RESULT([     Chat: $chat])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([ ******************************************************** ])
 AC_MSG_RESULT([])

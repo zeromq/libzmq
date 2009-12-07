@@ -6,8 +6,8 @@ if INSTALL_MAN
 DIR_MAN = man
 endif
 
-SUBDIRS = src $(DIR_MAN) $(DIR_PERF) devices bindings
-DIST_SUBDIRS = src man perf devices bindings
+SUBDIRS = src $(DIR_MAN) $(DIR_PERF) devices bindings examples
+DIST_SUBDIRS = src man perf devices bindings examples
 
 EXTRA_DIST =  $(top_srcdir)/foreign/openpgm/@pgm1_basename@.tar.bz2 \
 $(top_srcdir)/foreign/openpgm/@pgm2_basename@.tar.bz2 \
