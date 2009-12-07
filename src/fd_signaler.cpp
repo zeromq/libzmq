@@ -81,7 +81,7 @@ uint64_t zmq::fd_signaler_t::poll ()
         if (sz == -1) {
             if (errno == EAGAIN || errno == EINTR)
                 continue;
-            zmq_assert (false);
+            errno_assert (false);
         }
         break;
     }
