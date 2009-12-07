@@ -78,10 +78,13 @@ uint64_t zmq::fd_signaler_t::poll ()
     ssize_t sz;
     while (true) {
         sz = read (fd, &signals, sizeof (uint64_t));
-        if (sz == 0 || (errno != EAGAIN && errno != EINTR))
-            break;
+        if (sz == -1) {
+            if (errno == EAGAIN || errno == EINTR)
+                continue;
+            zmq_assert (false);
+        }
+        break;
     }
-    errno_assert (sz != -1);
 
     //  Set to non-blocking mode.
     rc = fcntl (fd, F_SETFL, flags | O_NONBLOCK);
