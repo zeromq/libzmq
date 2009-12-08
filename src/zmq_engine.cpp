@@ -26,17 +26,19 @@
 
 zmq::zmq_engine_t::zmq_engine_t (io_thread_t *parent_, fd_t fd_) :
     io_object_t (parent_),
+    inbuf (NULL),
     insize (0),
     inpos (0),
+    outbuf (NULL),
     outsize (0),
     outpos (0),
     inout (NULL)
 {
     //  Allocate read & write buffer.
-    inbuf = (unsigned char*) malloc (in_batch_size);
-    zmq_assert (inbuf);
-    outbuf = (unsigned char*) malloc (out_batch_size);
-    zmq_assert (outbuf);
+    inbuf_storage = (unsigned char*) malloc (in_batch_size);
+    zmq_assert (inbuf_storage);
+    outbuf_storage = (unsigned char*) malloc (out_batch_size);
+    zmq_assert (outbuf_storage);
 
     //  Initialise the underlying socket.
     int rc = tcp_socket.open (fd_);
@@ -45,8 +47,8 @@ zmq::zmq_engine_t::zmq_engine_t (io_thread_t *parent_, fd_t fd_) :
 
 zmq::zmq_engine_t::~zmq_engine_t ()
 {
-    free (outbuf);
-    free (inbuf);
+    free (outbuf_storage);
+    free (inbuf_storage);
 }
 
 void zmq::zmq_engine_t::plug (i_inout *inout_)
@@ -80,11 +82,12 @@ void zmq::zmq_engine_t::in_event ()
     if (inpos == insize) {
 
         //  Read as much data as possible to the read buffer.
+        inbuf = inbuf_storage;
         insize = tcp_socket.read (inbuf, in_batch_size);
         inpos = 0;
 
         //  Check whether the peer has closed the connection.
-        if (insize == -1) {
+        if (insize == (size_t) -1) {
             insize = 0;
             error ();
             return;
@@ -111,7 +114,9 @@ void zmq::zmq_engine_t::out_event ()
     //  If write buffer is empty, try to read new data from the encoder.
     if (outpos == outsize) {
 
-        outsize = encoder.read (outbuf, out_batch_size);
+        outbuf = outbuf_storage;
+        outsize = out_batch_size;
+        encoder.read (&outbuf, &outsize);
         outpos = 0;
 
         //  If there is no data to send, stop polling for output.

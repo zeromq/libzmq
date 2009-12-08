@@ -24,6 +24,8 @@
 #include <string.h>
 #include <algorithm>
 
+#include <stdio.h>
+
 namespace zmq
 {
 
@@ -44,17 +46,31 @@ namespace zmq
         //  NULL, it is filled by offset of the first message in the batch.
         //  If there's no beginning of a message in the batch, offset is
         //  set to -1.
-        inline size_t read (unsigned char *data_, size_t size_,
+        inline void read (unsigned char **data_, size_t *size_,
             int *offset_ = NULL)
         {
             int offset = -1;
             size_t pos = 0;
 
-            while (pos < size_) {
+            while (pos < *size_) {
+
+                //  If we are able to fill whole buffer in a single go, let's
+                //  use zero-copy. There's no disadvantage to it as we cannot
+                //  stuck multiple messages into the buffer anyway.
+                if (pos == 0 && to_write >= *size_) {
+                    *data_ = write_pos;
+                    write_pos += *size_;
+                    to_write -= *size_;
+
+                    //  TODO: manage beginning & offset here.
+
+                    return;
+                }
+
                 if (to_write) {
 
-                    size_t to_copy = std::min (to_write, size_ - pos);
-                    memcpy (data_ + pos, write_pos, to_copy);
+                    size_t to_copy = std::min (to_write, *size_ - pos);
+                    memcpy (*data_ + pos, write_pos, to_copy);
                     pos += to_copy;
                     write_pos += to_copy;
                     to_write -= to_copy;
@@ -70,10 +86,12 @@ namespace zmq
                 }
             }
 
+            //  Return offset of the first message in the buffer.
             if (offset_)
                 *offset_ = offset;
 
-            return pos;
+            //  Return the size of the filled-in portion of the buffer.
+            *size_ = pos;
         }
     protected:
 

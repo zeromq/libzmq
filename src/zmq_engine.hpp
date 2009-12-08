@@ -20,6 +20,8 @@
 #ifndef __ZMQ_ZMQ_ENGINE_HPP_INCLUDED__
 #define __ZMQ_ZMQ_ENGINE_HPP_INCLUDED__
 
+#include <stddef.h>
+
 #include "i_engine.hpp"
 #include "io_object.hpp"
 #include "tcp_socket.hpp"
@@ -54,13 +56,15 @@ namespace zmq
         tcp_socket_t tcp_socket;
         handle_t handle;
 
+        unsigned char *inbuf_storage;
         unsigned char *inbuf;
-        int insize;
-        int inpos;
+        size_t insize;
+        size_t inpos;
 
+        unsigned char *outbuf_storage;
         unsigned char *outbuf;
-        int outsize;
-        int outpos;
+        size_t outsize;
+        size_t outpos;
 
         i_inout *inout;
 
