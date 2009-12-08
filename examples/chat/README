@@ -1,0 +1,42 @@
+
+This example is a simple instant messaging implementation. There are multiple
+partipants in the chat, both sending and reading messages. The sending
+application 'prompt' is separated from the application displayinf the chat
+'display' so that there's no need for sophisticated GUI.
+
+To run the example you'll need both applications plus the 'forwarder' device
+that will play role of messaging server (chatroom). Build it this way:
+
+$ ./autogen.sh
+$ ./configure --with-chat --with-forwarder
+$ make
+$ sudo make install
+
+Once it is build create the configuration file (say config.xml) for the
+forwarder describing which network endpoints are to be used for incoming and
+outgoing messages:
+
+<forwarder>
+    <in>
+        <bind addr = "tcp://eth0:5555"/>
+    </in>
+    <out>
+        <bind addr = "tcp://eth0:5556"/>
+    </out>
+</forwarder>
+
+You are of course free to define mutliple endpoints for either incoming or
+outgoing messages.
+
+Now start the forwarder:
+
+$ zmq_forwarder ./config.xml
+
+At this point the messaging server is ready to accept connections from
+messaging clients. When starting the sending application, specify your name
+so that messages can be attributed to you:
+
+$ ./prompt tcp://myserver:5555 "John Doe"
+
+$ ./display tcp://myserver:5556
+
