@@ -61,10 +61,8 @@ namespace zmq
                     *data_ = write_pos;
                     write_pos += *size_;
                     to_write -= *size_;
-
-                    //  TODO: manage beginning & offset here.
-
-                    return;
+                    pos = *size_;
+                    break;
                 }
 
                 if (to_write) {
