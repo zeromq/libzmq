@@ -2,9 +2,102 @@
 .SH NAME
 C++ API for 0MQ lightweight messaging kernel
 .SH SYNOPSIS
-.SH DESCRIPTION
+
+This manual page explains how C++ API maps to underlying C API. To learn about
+individual functions and parameters check appropriate C API manual
+pages.
+
+For example, to understand
+.IR zmq::socket_t::setsockopt
+function check
+.BR zmq_setsockopt(3) .
+
+All 0MQ constants defined with C API are available with C++ API.
+
+.SH zmq::context_t
+
+This class encapsulates the functions dealing with initialisation and
+termination of 0MQ context. Constructor of the class invokes
+.BR zmq_init(3)
+while destructor calls
+.BR zmq_term(3) .
+
+.SH zmq::socket_t
+
+This class encapsulates all the functions to deal with 0MQ sockets. Constructor
+calls
+.BR zmq_socket(3) ,
+destructor calls
+.BR zmq_close(3) .
+Other functions of the class are mapped to C functions with corresponding names.
+.IR zmq::socket_t::bind
+calls
+.BR zmq_bind(3)
+etc.
+
+.SH zmq::message_t
+
+This class encapsulates 
+.IR zmq_msg_t
+structure and all the C functions that deal with 0MQ messages.
+Constructors of the class invoke corresponding initialisation functions (
+.BR zmq_init(3) ,
+.BR zmq_init_size(3)
+and
+.BR zmq_init_data(3) ,
+while destructor invokes
+.BR zmq_msg_close(3)
+function.
+
+Remaining functions are mapped to C functions with corresponding names.
+For instance,
+.IR zmq::message_t::copy
+is mapped to
+.BR zmq_msg_copy(3)
+etc.
+
+C++ provides an additional function not avialable with C API.
+.IR zmq::message_t::rebuild
+is equivalent to calling
+.BR zmq_close(3)
+followed by
+.BR zmq_init(3) ,
+.BR zmq_init_size (3)
+or
+.BR zmq_init_data(3) .
+It provides a way to reuse existing
+.IR zmq::message_t
+instances to store different message content.
+
+.SH zmq::error_t
+
+All the errors reported using
+.IR errno
+mechanism in C API are automatically converted to exceptions in C++ API.
+.IR zmq::error_t
+is derived from
+.IR std::exception
+and uses
+.BR zmq_strerror(3)
+function to convert the error code to human-readable string.
+
+.SH zmq::poll
+
+.IR zmq::poll
+function is a namespaced equivalent of raw C
+.BR zmq_poll(3)
+function.
+
+.SH EXAMPLE
+.nf
+zmq::context_t ctx (1, 1);
+zmq::socket_t s (ctx, ZMQ_PUB);
+s.connect ("tcp://192.168.0.115:5555");
+zmq::message_t msg (100);
+memset (msg.data (), 0, 100);
+s.send (msg);
+.fi
 .SH "SEE ALSO"
 .BR zmq(7)
 .SH AUTHOR
 Martin Sustrik <sustrik at 250bpm dot com>
-
