@@ -24,8 +24,6 @@
 #include <string.h>
 #include <algorithm>
 
-#include <stdio.h>
-
 namespace zmq
 {
 
@@ -42,10 +40,12 @@ namespace zmq
         }
 
         //  The function tries to fill the supplied chunk by binary data.
-        //  Returns the size of data actually filled in. If offset is not
-        //  NULL, it is filled by offset of the first message in the batch.
-        //  If there's no beginning of a message in the batch, offset is
-        //  set to -1.
+        //  If offset is not NULL, it is filled by offset of the first message
+        //  in the batch. If there's no beginning of a message in the batch,
+        //  offset is set to -1. Both data_ and size_ are in/out parameters.
+        //  Upon exit, data_ contains actual position of the data read (may
+        //  be different from the position requested) and size_ contains number
+        //  of bytes actually provided.
         inline void read (unsigned char **data_, size_t *size_,
             int *offset_ = NULL)
         {

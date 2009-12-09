@@ -1,7 +1,7 @@
 
 This example is a simple instant messaging implementation. There are multiple
 partipants in the chat, both sending and reading messages. The sending
-application 'prompt' is separated from the application displayinf the chat
+application 'prompt' is separated from the application displaying the chat
 'display' so that there's no need for sophisticated GUI.
 
 To run the example you'll need both applications plus the 'forwarder' device
@@ -12,7 +12,7 @@ $ ./configure --with-chat --with-forwarder
 $ make
 $ sudo make install
 
-Once it is build create the configuration file (say config.xml) for the
+Once it is built create the configuration file (say config.xml) for the
 forwarder describing which network endpoints are to be used for incoming and
 outgoing messages:
 
