@@ -56,12 +56,18 @@ namespace zmq
 
                 //  If we are able to fill whole buffer in a single go, let's
                 //  use zero-copy. There's no disadvantage to it as we cannot
-                //  stuck multiple messages into the buffer anyway.
+                //  stuck multiple messages into the buffer anyway. Note that
+                //  subsequent write(s) are non-blocking, thus each single
+                //  write writes at most SO_SNDBUF bytes at once not depending
+                //  on how large is the chunk returned from here.
+                //  As a consequence, large messages being sent won't block
+                //  other engines running in the same I/O thread for excessive
+                //  amounts of time.
                 if (pos == 0 && to_write >= *size_) {
                     *data_ = write_pos;
-                    write_pos += *size_;
-                    to_write -= *size_;
-                    pos = *size_;
+                    write_pos += to_write;
+                    pos = to_write;
+                    to_write = 0;
                     break;
                 }
 
