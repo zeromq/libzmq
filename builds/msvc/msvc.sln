@@ -78,6 +78,16 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zmq_forwarder", "zmq_forwar
 		{641C5F36-32EE-4323-B740-992B651CF9D6} = {641C5F36-32EE-4323-B740-992B651CF9D6}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "display", "display\display.vcproj", "{1069FAF7-996A-4B76-AF88-F1D9783FF340}"
+	ProjectSection(ProjectDependencies) = postProject
+		{641C5F36-32EE-4323-B740-992B651CF9D6} = {641C5F36-32EE-4323-B740-992B651CF9D6}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "prompt", "prompt\prompt.vcproj", "{95EE421B-EBA2-4A16-8855-A978F463241E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{641C5F36-32EE-4323-B740-992B651CF9D6} = {641C5F36-32EE-4323-B740-992B651CF9D6}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -147,6 +157,14 @@ Global
 		{EFE471DE-6747-4B2E-B084-F7E45A16CD03}.Debug|Win32.Build.0 = Debug|Win32
 		{EFE471DE-6747-4B2E-B084-F7E45A16CD03}.Release|Win32.ActiveCfg = Release|Win32
 		{EFE471DE-6747-4B2E-B084-F7E45A16CD03}.Release|Win32.Build.0 = Release|Win32
+		{1069FAF7-996A-4B76-AF88-F1D9783FF340}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1069FAF7-996A-4B76-AF88-F1D9783FF340}.Debug|Win32.Build.0 = Debug|Win32
+		{1069FAF7-996A-4B76-AF88-F1D9783FF340}.Release|Win32.ActiveCfg = Release|Win32
+		{1069FAF7-996A-4B76-AF88-F1D9783FF340}.Release|Win32.Build.0 = Release|Win32
+		{95EE421B-EBA2-4A16-8855-A978F463241E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{95EE421B-EBA2-4A16-8855-A978F463241E}.Debug|Win32.Build.0 = Debug|Win32
+		{95EE421B-EBA2-4A16-8855-A978F463241E}.Release|Win32.ActiveCfg = Release|Win32
+		{95EE421B-EBA2-4A16-8855-A978F463241E}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

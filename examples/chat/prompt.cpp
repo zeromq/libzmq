@@ -42,7 +42,12 @@ int main (int argc, const char *argv [])
     //  Prepare a message buffer. Place username at the beginning
     //  of the message.
     char textbuf [1024];
+#ifdef _MSC_VER
+    _snprintf_s (textbuf, sizeof (textbuf), sizeof (textbuf), "%s: ",
+        username);
+#else
     snprintf (textbuf, sizeof (textbuf), "%s: ", username);
+#endif
     size_t prefixsz = strlen (textbuf);
     char *text = textbuf + prefixsz;
     
