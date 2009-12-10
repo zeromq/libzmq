@@ -26,6 +26,9 @@ extern "C" {
 
 #include <errno.h>
 #include <stddef.h>
+#if defined _WIN32
+#include "winsock2.h"
+#endif
 
 //  Microsoft Visual Studio uses non-standard way to export/import symbols.
 #if defined ZMQ_BUILDING_LIBZMQ_WITH_MSVC
@@ -185,7 +188,11 @@ ZMQ_EXPORT int zmq_recv (void *s, zmq_msg_t *msg, int flags);
 typedef struct
 {
     void *socket;
+#if defined _WIN32
+    SOCKET fd;
+#else
     int fd;
+#endif
     short events;
     short revents;
 } zmq_pollitem_t;
