@@ -27,6 +27,7 @@
 #include <stdio.h>
 
 #include "platform.hpp"
+#include "likely.hpp"
 
 #ifdef ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
@@ -46,53 +47,71 @@ namespace zmq
 }
 
 //  Provides convenient way to check WSA-style errors on Windows.
-#define wsa_assert(x) do { if (!(x)){\
-    const char *errstr = zmq::wsa_error ();\
-    if (errstr != NULL) {\
-    fprintf (stderr, "Assertion failed: %s (%s:%d)\n", errstr, \
-        __FILE__, __LINE__);\
-        abort ();\
-    }\
-}} while (false)
+#define wsa_assert(x) \
+    do {\
+        if (unlikely (!(x))) {\
+            const char *errstr = zmq::wsa_error ();\
+            if (errstr != NULL) {\
+                fprintf (stderr, "Assertion failed: %s (%s:%d)\n", errstr, \
+                    __FILE__, __LINE__);\
+                abort ();\
+            }\
+        }\
+    } while (false)
 
-//  Provides convenient way to check GetLastError-style errors on Windows.
-#define win_assert(x) do { if (!(x)) {\
-    char errstr [256];\
-    zmq::win_error (errstr, 256);\
-    fprintf (stderr, "Assertion failed: %s (%s:%d)\n", errstr, \
-        __FILE__, __LINE__);\
-    abort ();\
-}} while (false)
+// Provides convenient way to check GetLastError-style errors on Windows.
+#define win_assert(x) \
+    do {\
+        if (unlikely (!(x))) {\
+            char errstr [256];\
+            zmq::win_error (errstr, 256);\
+            fprintf (stderr, "Assertion failed: %s (%s:%d)\n", errstr, \
+                __FILE__, __LINE__);\
+            abort ();\
+        }\
+    } while (false)
 
 #endif
 
 //  This macro works in exactly the same way as the normal assert. It is used
 //  in its stead because standard assert on Win32 in broken - it prints nothing
 //  when used within the scope of JNI library.
-#define zmq_assert(x) do { if (!(x)){\
-    fprintf (stderr, "Assertion failed: %s (%s:%d)\n", #x, \
-        __FILE__, __LINE__);\
-        abort ();\
-}} while (false) 
+#define zmq_assert(x) \
+    do {\
+        if (unlikely (!(x))) {\
+            fprintf (stderr, "Assertion failed: %s (%s:%d)\n", #x, \
+                __FILE__, __LINE__);\
+            abort ();\
+        }\
+    } while (false) 
 
 //  Provides convenient way to check for errno-style errors.
-#define errno_assert(x) do { if (!(x)) {\
-    perror (NULL);\
-    fprintf (stderr, "%s (%s:%d)\n", #x, __FILE__, __LINE__);\
-    abort ();\
-}} while (false)
+#define errno_assert(x) \
+    do {\
+        if (unlikely (!(x))) {\
+            perror (NULL);\
+            fprintf (stderr, "%s (%s:%d)\n", #x, __FILE__, __LINE__);\
+            abort ();\
+        }\
+    } while (false)
 
 // Provides convenient way to check for POSIX errors.
-#define posix_assert(x) do { if ((x)) {\
-    fprintf (stderr, "%s (%s:%d)\n", strerror (x), __FILE__, __LINE__);\
-    abort ();\
-}} while (false)
+#define posix_assert(x) \
+    do {\
+        if (unlikely (x)) {\
+            fprintf (stderr, "%s (%s:%d)\n", strerror (x), __FILE__, __LINE__);\
+            abort ();\
+        }\
+    } while (false)
 
 // Provides convenient way to check for errors from getaddrinfo.
-#define gai_assert(x) do { if (x) {\
-    const char *errstr = gai_strerror (x);\
-    fprintf (stderr, "%s (%s:%d)\n", errstr, __FILE__, __LINE__);\
-    abort ();\
-}} while (false)
+#define gai_assert(x) \
+    do {\
+        if (unlikely (x)) {\
+            const char *errstr = gai_strerror (x);\
+            fprintf (stderr, "%s (%s:%d)\n", errstr, __FILE__, __LINE__);\
+            abort ();\
+        }\
+    } while (false)
 
 #endif
