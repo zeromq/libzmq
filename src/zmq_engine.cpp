@@ -24,7 +24,8 @@
 #include "config.hpp"
 #include "err.hpp"
 
-zmq::zmq_engine_t::zmq_engine_t (io_thread_t *parent_, fd_t fd_) :
+zmq::zmq_engine_t::zmq_engine_t (io_thread_t *parent_, fd_t fd_,
+      const options_t &options_) :
     io_object_t (parent_),
     inbuf (NULL),
     insize (0),
@@ -32,7 +33,8 @@ zmq::zmq_engine_t::zmq_engine_t (io_thread_t *parent_, fd_t fd_) :
     outbuf (NULL),
     outsize (0),
     outpos (0),
-    inout (NULL)
+    inout (NULL),
+    options (options_)
 {
     //  Allocate read & write buffer.
     inbuf_storage = (unsigned char*) malloc (in_batch_size);
@@ -41,7 +43,7 @@ zmq::zmq_engine_t::zmq_engine_t (io_thread_t *parent_, fd_t fd_) :
     zmq_assert (outbuf_storage);
 
     //  Initialise the underlying socket.
-    int rc = tcp_socket.open (fd_);
+    int rc = tcp_socket.open (fd_, options.sndbuf, options.rcvbuf);
     zmq_assert (rc == 0);
 }
 

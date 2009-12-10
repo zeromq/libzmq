@@ -36,7 +36,8 @@ namespace zmq
     {
     public:
 
-        zmq_engine_t (class io_thread_t *parent_, fd_t fd_);
+        zmq_engine_t (class io_thread_t *parent_, fd_t fd_,
+            const options_t &options_);
         ~zmq_engine_t ();
 
         //  i_engine interface implementation.
@@ -70,6 +71,8 @@ namespace zmq
 
         zmq_encoder_t encoder;
         zmq_decoder_t decoder;
+
+        options_t options;
 
         zmq_engine_t (const zmq_engine_t&);
         void operator = (const zmq_engine_t&);

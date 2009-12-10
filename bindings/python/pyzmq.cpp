@@ -534,6 +534,12 @@ PyMODINIT_FUNC initlibpyzmq ()
     t = PyInt_FromLong (ZMQ_MCAST_LOOP);
     PyDict_SetItemString (dict, "MCAST_LOOP", t);
     Py_DECREF (t);
+    t = PyInt_FromLong (ZMQ_SNDBUF);
+    PyDict_SetItemString (dict, "SNDBUF", t);
+    Py_DECREF (t);
+    t = PyInt_FromLong (ZMQ_RCVBUF);
+    PyDict_SetItemString (dict, "RCVBUF", t);
+    Py_DECREF (t);
     t = PyInt_FromLong (ZMQ_POLL);
     PyDict_SetItemString (dict, "POLL", t);
     Py_DECREF (t);

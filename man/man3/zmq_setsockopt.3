@@ -17,6 +17,7 @@ High watermark for the message pipes associated with the socket. The water
 mark cannot be exceeded. If the messages don't fit into the pipe emergency
 mechanisms of the particular socket type are used (block, drop etc.) If HWM
 is set to zero, there are no limits for the content of the pipe.
+
 Type: int64_t  Unit: bytes  Default: 0
 
 .IP "\fBZMQ_LWM\fP"
@@ -24,6 +25,7 @@ Low watermark makes sense only if high watermark is defined (i.e. is non-zero).
 When the emergency state is reached when messages overflow the pipe, the
 emergency lasts till the size of the pipe decreases to low watermark.
 At that point normal state is resumed.
+
 Type: int64_t  Unit: bytes  Default: 0
 
 .IP "\fBZMQ_SWAP\fP"
@@ -31,6 +33,7 @@ Swap allows the pipe to exceed high watermark. However, the data are written
 to the disk rather than held in the memory. Until high watermark is
 exceeded there is no disk activity involved though. The value of the option
 defines maximal size of the swap file.
+
 Type: int64_t  Unit: bytes  Default: 0
 
 .IP "\fBZMQ_AFFINITY\fP"
@@ -41,6 +44,7 @@ fairly among the threads in the thread pool. For non-zero values, the lowest
 bit corresponds to the thread 1, second lowest bit to the thread 2 etc.
 Thus, value of 3 means that from now on newly created sockets will handle
 I/O activity exclusively using threads no. 1 and 2.
+
 Type: int64_t  Unit: N/A (bitmap)  Default: 0
 
 .IP "\fBZMQ_IDENTITY\fP"
@@ -50,6 +54,7 @@ separated from other runs. However, with identity application reconnects to
 existing infrastructure left by the previous run. Thus it may receive
 messages that were sent in the meantime, it shares pipe limits with the
 previous run etc.
+
 Type: string  Unit: N/A  Default: NULL
 
 .IP "\fBZMQ_SUBSCRIBE\fP"
@@ -61,6 +66,7 @@ specific topic ("x.y.z") and/or messages with specific topic prefix
 the very beginning of the message. Multiple filters can be attached to
 a single 'sub' socket. In that case message passes if it matches at least
 one of the filters.
+
 Type: string  Unit: N/A  Default: N/A
 
 .IP "\fBZMQ_UNSUBSCRIBE\fP"
@@ -69,12 +75,14 @@ The filter specified must match the string passed to ZMQ_SUBSCRIBE options
 exactly. If there were several instances of the same filter created,
 this options removes only one of them, leaving the rest in place
 and functional.
+
 Type: string  Unit: N/A  Default: N/A
 
 .IP "\fBZMQ_RATE\fP"
 This option applies only to sending side of multicast transports (pgm & udp).
 It specifies maximal outgoing data rate that an individual sender socket
 can send.
+
 Type: uint64_t  Unit: kilobits/second  Default: 100
 
 .IP "\fBZMQ_RECOVERY_IVL\fP"
@@ -84,6 +92,7 @@ Keep in mind that large recovery intervals at high data rates result in
 very large recovery buffers, meaning that you can easily overload your box
 by setting say 1 minute recovery interval at 1Gb/s rate (requires
 7GB in-memory buffer).
+
 Type: uint64_t Unit: seconds Default: 10 
 
 .IP "\fBZMQ_MCAST_LOOP\fP"
@@ -92,7 +101,22 @@ means that the mutlicast packets can be received on the box they were sent
 from. Setting the value to 0 disables the loopback functionality which
 can have negative impact on the performance. If possible, disable
 the loopback in production environments.
+
 Type: uint64_t Unit: N/A (boolean value) Default: 1
+
+.IP "\fBZMQ_SNDBUF\fP"
+Sets the underlying kernel transmit buffer size to the specified size. See
+.IR SO_SNDBUF
+POSIX socket option. Value of zero means leaving the OS default unchanged.
+
+Type: uint64_t Unit: bytes Default: 0
+
+.IP "\fBZMQ_RCVBUF\fP"
+Sets the underlying kernel receive buffer size to the specified size. See
+.IR SO_RCVBUF
+POSIX socket option. Value of zero means leaving the OS default unchanged.
+
+Type: uint64_t Unit: bytes Default: 0
 
 .SH RETURN VALUE
 In case of success the function returns zero. Otherwise it returns -1 and

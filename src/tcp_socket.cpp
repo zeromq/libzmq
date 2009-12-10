@@ -34,7 +34,7 @@ zmq::tcp_socket_t::~tcp_socket_t ()
         close ();
 }
 
-int zmq::tcp_socket_t::open (fd_t fd_)
+int zmq::tcp_socket_t::open (fd_t fd_, uint64_t sndbuf_, uint64_t rcvbuf_)
 {
     zmq_assert (s == retired_fd);
     s = fd_;
@@ -129,10 +129,23 @@ zmq::tcp_socket_t::~tcp_socket_t ()
         close ();
 }
 
-int zmq::tcp_socket_t::open (fd_t fd_)
+int zmq::tcp_socket_t::open (fd_t fd_, uint64_t sndbuf_, uint64_t rcvbuf_)
 {
     assert (s == retired_fd);
     s = fd_;
+
+    if (sndbuf_) {
+        int sz = (int) sndbuf_;
+        int rc = setsockopt (s, SOL_SOCKET, SO_SNDBUF, &sz, sizeof (int));
+        errno_assert (rc == 0);
+    }
+
+    if (rcvbuf_) {
+        int sz = (int) rcvbuf_;
+        int rc = setsockopt (s, SOL_SOCKET, SO_RCVBUF, &sz, sizeof (int));
+        errno_assert (rc == 0);
+    }
+
     return 0;
 }
 

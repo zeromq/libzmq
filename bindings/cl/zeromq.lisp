@@ -158,6 +158,8 @@
 (defconstant rate 8)
 (defconstant recovery-ivl 9)
 (defconstant mcast-loop 10)
+(defconstant sndbuf 11)
+(defconstant rcvbuf 12)
 
 (defcfun* ("zmq_setsockopt" %setsockopt) :int
   (s		:pointer)

@@ -159,6 +159,8 @@ ZMQ_EXPORT int zmq_term (void *context);
 #define ZMQ_RATE 8
 #define ZMQ_RECOVERY_IVL 9
 #define ZMQ_MCAST_LOOP 10
+#define ZMQ_SNDBUF 11
+#define ZMQ_RCVBUF 12
 
 #define ZMQ_NOBLOCK 1
 #define ZMQ_NOFLUSH 2

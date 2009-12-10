@@ -31,7 +31,7 @@ zmq::zmq_connecter_init_t::zmq_connecter_init_t (io_thread_t *parent_,
     session_name (session_name_)
 {
     //  Create associated engine object.
-    engine = new zmq_engine_t (parent_, fd_);
+    engine = new zmq_engine_t (parent_, fd_, options);
     zmq_assert (engine);
 }
 

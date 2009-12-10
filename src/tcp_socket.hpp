@@ -21,6 +21,7 @@
 #define __ZMQ_TCP_SOCKET_HPP_INCLUDED__
 
 #include "fd.hpp"
+#include "stdint.hpp"
 
 namespace zmq
 {
@@ -35,7 +36,7 @@ namespace zmq
         ~tcp_socket_t ();
 
         //  Associates a socket with a native socket descriptor.
-        int open (fd_t fd_);
+        int open (fd_t fd_, uint64_t sndbuf_, uint64_t rcvbuf_);
          
         //  Closes the underlying socket.
         int close ();

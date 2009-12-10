@@ -30,6 +30,8 @@ zmq::options_t::options_t () :
     rate (100),
     recovery_ivl (10),
     use_multicast_loop (true),
+    sndbuf (0),
+    rcvbuf (0),
     requires_in (false),
     requires_out (false)
 {
@@ -105,6 +107,22 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             errno = EINVAL;
             return -1;
         }
+        return 0;
+
+    case ZMQ_SNDBUF:
+        if (optvallen_ != sizeof (uint64_t)) {
+            errno = EINVAL;
+            return -1;
+        }
+        sndbuf = *((uint64_t*) optval_);
+        return 0;
+
+    case ZMQ_RCVBUF:
+        if (optvallen_ != sizeof (uint64_t)) {
+            errno = EINVAL;
+            return -1;
+        }
+        rcvbuf = *((uint64_t*) optval_);
         return 0;
     }
 

@@ -49,6 +49,9 @@ namespace zmq
         //  Enable multicast loopback. Default disabled (false).
         bool use_multicast_loop;
 
+        uint64_t sndbuf;
+        uint64_t rcvbuf;
+
         //  These options are never set by the user directly. Instead they are
         //  provided by the specific socket type.
         bool requires_in;

@@ -29,7 +29,7 @@ zmq::zmq_listener_init_t::zmq_listener_init_t (io_thread_t *parent_,
     has_peer_identity (false)
 {
     //  Create associated engine object.
-    engine = new zmq_engine_t (parent_, fd_);
+    engine = new zmq_engine_t (parent_, fd_, options);
     zmq_assert (engine);
 }
 
