@@ -38,6 +38,21 @@ int zmq::tcp_socket_t::open (fd_t fd_, uint64_t sndbuf_, uint64_t rcvbuf_)
 {
     zmq_assert (s == retired_fd);
     s = fd_;
+
+    if (sndbuf_) {
+        int sz = (int) sndbuf_;
+        int rc = setsockopt (s, SOL_SOCKET, SO_SNDBUF,
+            (char*) &sz, sizeof (int));
+        errno_assert (rc == 0);
+    }
+
+    if (rcvbuf_) {
+        int sz = (int) rcvbuf_;
+        int rc = setsockopt (s, SOL_SOCKET, SO_RCVBUF,
+            (char*) &sz, sizeof (int));
+        errno_assert (rc == 0);
+    }
+
     return 0;
 }
 
