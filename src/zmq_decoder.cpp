@@ -22,7 +22,8 @@
 #include "wire.hpp"
 #include "err.hpp"
 
-zmq::zmq_decoder_t::zmq_decoder_t () :
+zmq::zmq_decoder_t::zmq_decoder_t (size_t bufsize_) :
+    decoder_t <zmq_decoder_t> (bufsize_),
     destination (NULL)
 {
     zmq_msg_init (&in_progress);

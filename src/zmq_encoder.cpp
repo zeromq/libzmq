@@ -21,7 +21,8 @@
 #include "i_inout.hpp"
 #include "wire.hpp"
 
-zmq::zmq_encoder_t::zmq_encoder_t () :
+zmq::zmq_encoder_t::zmq_encoder_t (size_t bufsize_) :
+    encoder_t <zmq_encoder_t> (bufsize_),
     source (NULL)
 {
     zmq_msg_init (&in_progress);

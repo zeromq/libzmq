@@ -57,20 +57,15 @@ namespace zmq
         tcp_socket_t tcp_socket;
         handle_t handle;
 
-        unsigned char *inbuf_storage;
-        unsigned char *inbuf;
+        unsigned char *inpos;
         size_t insize;
-        size_t inpos;
+        zmq_decoder_t decoder;
 
-        unsigned char *outbuf_storage;
-        unsigned char *outbuf;
+        unsigned char *outpos;
         size_t outsize;
-        size_t outpos;
+        zmq_encoder_t encoder;
 
         i_inout *inout;
-
-        zmq_encoder_t encoder;
-        zmq_decoder_t decoder;
 
         options_t options;
 

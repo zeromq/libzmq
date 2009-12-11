@@ -32,7 +32,7 @@ namespace zmq
     {
     public:
 
-        zmq_encoder_t ();
+        zmq_encoder_t (size_t bufsize_);
         ~zmq_encoder_t ();
 
         void set_inout (struct i_inout *source_);
