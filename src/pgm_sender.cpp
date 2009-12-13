@@ -74,19 +74,13 @@ void zmq::pgm_sender_t::plug (i_inout *inout_)
     //  Alocate 2 fds for PGM socket.
     int downlink_socket_fd = 0;
     int uplink_socket_fd = 0;
-#ifdef ZMQ_HAVE_OPENPGM2
     int rdata_notify_fd = 0;
-#endif
 
     encoder.set_inout (inout_);
 
     //  Fill fds from PGM transport.
-#ifdef ZMQ_HAVE_OPENPGM1
-    pgm_socket.get_sender_fds (&downlink_socket_fd, &uplink_socket_fd);
-#elif ZMQ_HAVE_OPENPGM2
     pgm_socket.get_sender_fds 
         (&downlink_socket_fd, &uplink_socket_fd, &rdata_notify_fd);
-#endif
 
     //  Add downlink_socket_fd into poller.
     handle = add_fd (downlink_socket_fd);
@@ -95,16 +89,12 @@ void zmq::pgm_sender_t::plug (i_inout *inout_)
     uplink_handle = add_fd (uplink_socket_fd);
 
     //  Add rdata_notify_fd into the poller.
-#ifdef ZMQ_HAVE_OPENPGM2
     rdata_notify_handle = add_fd (rdata_notify_fd);   
-#endif
 
     //  Set POLLIN. We wont never want to stop polling for uplink = we never
     //  want to stop porocess NAKs.
     set_pollin (uplink_handle);
-#ifdef ZMQ_HAVE_OPENPGM2
     set_pollin (rdata_notify_handle);
-#endif
 
     //  Set POLLOUT for downlink_socket_handle.
     set_pollout (handle);
@@ -116,9 +106,7 @@ void zmq::pgm_sender_t::unplug ()
 {
     rm_fd (handle);
     rm_fd (uplink_handle);
-#ifdef ZMQ_HAVE_OPENPGM2
     rm_fd (rdata_notify_handle);
-#endif
     encoder.set_inout (NULL);
     inout = NULL;
 }
@@ -195,12 +183,6 @@ void zmq::pgm_sender_t::out_event ()
             zmq_log (1, "pgm rate limit reached, %s(%i)\n", __FILE__, __LINE__);
         }
 
-#ifdef ZMQ_HAVE_OPENPGM1
-        //  After sending data slice is owned by tx window.
-        if (nbytes) {
-            out_buffer = NULL;
-        }
-#endif
         write_pos += nbytes;
     }
 

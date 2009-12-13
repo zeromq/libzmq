@@ -407,32 +407,21 @@ if test "x$clzmq" = "xyes"; then
 fi
 
 #  PGM extension
-pgm1_ext="no"
 pgm2_ext="no"
 
-pgm1_basename="libpgm-1.2.14"
 pgm2_basename="libpgm-2.0.17rc2"
 
-AC_SUBST(pgm1_basename)
 AC_SUBST(pgm2_basename)
 
 pgm_basename=""
 
 AC_ARG_WITH([pgm], [AS_HELP_STRING([--with-pgm], 
-    [build libzmq with PGM v1 extension [default=no]])], 
-    [with_pgm1_ext=yes], [with_pgm1_ext=no])
-
-AC_ARG_WITH([pgm2], [AS_HELP_STRING([--with-pgm2], 
-    [build libzmq with PGM v2 extension [default=no]])], 
+    [build libzmq with PGM extension [default=no]])], 
     [with_pgm2_ext=yes], [with_pgm2_ext=no])
 
-AC_ARG_WITH([pgm2-examples], [AS_HELP_STRING([--with-pgm2-examples], 
-    [build PGM v2 examples [default=no]])], 
+AC_ARG_WITH([pgm-examples], [AS_HELP_STRING([--with-pgm-examples], 
+    [build PGM examples [default=no]])], 
     [with_pgm2_examples=yes], [with_pgm2_examples=no])
-
-if test "x$with_pgm1_ext" != "xno" -a "x$with_pgm2_ext" != "xno"; then
-    AC_MSG_ERROR([Can not configure --with-pgm and --with-pgm2.]);
-fi
 
 if test "x$with_pgm2_ext" = "xno" -a "x$with_pgm2_examples" = "xyes"; then
     AC_MSG_ERROR([Can not configure --with-pgm2-examples without --with-pgm2.]);
@@ -440,98 +429,6 @@ fi
 
 if test "x$c" = "xno" -a "x$with_pgm2_examples" = "xyes"; then
     AC_MSG_ERROR([Can not configure --with-pgm2-examples without --with-c.]);
-fi
-
-if test "x$with_pgm1_ext" != "xno"; then
-
-    pgm_basename=${pgm1_basename}
-
-    #  Test if we have pkg-config
-    if test "x$have_pkg_config" != "xyes"; then
-        AC_MSG_ERROR([To run configure with --with-pgm option, pkg-config has to be installed.]);
-    fi
-
-     case "${host_os}" in
-        *linux*)
-            LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Wno-variadic-macros -Wno-long-long "
-        ;;
-        *)
-            AC_MSG_ERROR([PGM extesion is not supported on this platform $host.])
-        ;;
-    esac
-
-    AC_CHECK_PROG(have_tar, tar, yes, no)
-    if test "x$have_tar" != "xyes"; then
-        AC_MSG_ERROR([Could not find tar.])
-    fi
-
-    AC_CHECK_PROG(have_patch, patch, yes, no)
-    if test "x$have_patch" != "xyes"; then
-        AC_MSG_ERROR([Could not find patch.])
-    fi
-
-    AC_CHECK_PROG(have_bunzip2, bunzip2, yes, no)
-    if test "x$have_bunzip2" != "xyes"; then
-        AC_MSG_ERROR([Could not find bunzip2.])
-    fi
-
-    AC_CHECK_PROG(have_perl, perl, yes, no)
-    if test "x$have_perl" != "xyes"; then
-        AC_MSG_ERROR([Could not find perl.])
-    fi
-
-    if test "x$pyzmq" != "xyes"; then
-        AC_CHECK_PROG(have_python, python, yes, no)
-        if test "x$have_python" != "xyes"; then
-            AC_MSG_ERROR([Could not find python.])
-        fi
-    fi
-
-    #  Unpack libpgm1
-    AC_MSG_CHECKING([Unpacking ${pgm_basename}.tar.bz2])
-
-    if tar -xjf foreign/openpgm/${pgm_basename}.tar.bz2 -C foreign/openpgm/; then
-        AC_MSG_RESULT([yes])
-    else
-        AC_MSG_ERROR([Could not unpack foreign/openpgm/${pgm_basename}.tar.bz2 file.])
-    fi
-
-    AC_MSG_CHECKING([Patching ${pgm_basename}])
-
-    if patch --silent -p0 < foreign/openpgm/lost_data_tsi.patch; then
-        AC_MSG_RESULT([yes])
-    else
-        AC_MSG_ERROR([Could not apply foreign/openpgm/lost_data_tsi.patch file.])
-    fi
-
-    AC_MSG_CHECKING([Patching ${pgm_basename}])
-
-    if patch --silent -p0 < foreign/openpgm/create_custom_gsi_1.patch; then
-        AC_MSG_RESULT([yes])
-    else
-        AC_MSG_ERROR([Could not apply foreign/openpgm/create_custom_gsi_1.patch file.])
-    fi
-
-    #  Generate galois_tables.c
-    AC_CONFIG_COMMANDS([galois_tables.c], 
-        [perl foreign/openpgm/libpgm-1.2.14/openpgm/pgm/galois_generator.pl > \
-            foreign/openpgm/libpgm-1.2.14/openpgm/pgm/galois_tables.c])
-
-    #  Generate version.c
-    AC_CONFIG_COMMANDS([version.c],
-        [python foreign/openpgm/libpgm-1.2.14/openpgm/pgm/version_generator.py > \
-            foreign/openpgm/libpgm-1.2.14/openpgm/pgm/version.c])
-
-    #  Check for OpenPGM nedded libraries.
-    PKG_CHECK_MODULES([GLIB], [glib-2.0 gthread-2.0])
-
-    LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} ${GLIB_CFLAGS} "
-
-    LIBZMQ_EXTRA_LDFLAFS="${LIBZMQ_EXTRA_LDFLAFS} ${GLIB_LIBS}"
-
-    AC_DEFINE(ZMQ_HAVE_OPENPGM, 1, [Have OpenPGM v1 or v2 extension.])
-    AC_DEFINE(ZMQ_HAVE_OPENPGM1, 1, [Have OpenPGM v1 extension.])
-    pgm1_ext="yes"
 fi
 
 if test "x$with_pgm2_ext" != "xno"; then
@@ -596,12 +493,12 @@ fi
 AC_SUBST(pgm_basename)
 
 # If not on QNX nor OSX nor PGM add -pedantic into LIBZMQ_EXTRA_CXXFLAGS.
-if test "x$pedantic" = "xyes" -a "x$pgm1_ext" = "xno" -a "x$pgm2_ext" = "xno"; then
+if test "x$pedantic" = "xyes" -a "x$pgm2_ext" = "xno"; then
     LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -pedantic"
 fi
 
-# If not on QNX nor --with-pgm/2add -Werror into LIBZMQ_EXTRA_CXXFLAGS.
-if test "x$werror" = "xyes" -a "x$pgm1_ext" = "xno" -a "x$pgm2_ext" = "xno"; then
+# If not on QNX nor --with-pgm2 add -Werror into LIBZMQ_EXTRA_CXXFLAGS.
+if test "x$werror" = "xyes" -a "x$pgm2_ext" = "xno"; then
     LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Werror"
 fi
 
@@ -655,9 +552,8 @@ AM_CONDITIONAL(BUILD_RUBY, test "x$rbzmq" = "xyes")
 AM_CONDITIONAL(BUILD_C, test "x$czmq" = "xyes")
 AM_CONDITIONAL(BUILD_CL, test "x$clzmq" = "xyes")
 AM_CONDITIONAL(BUILD_CPP, test "x$cppzmq" = "xyes")
-AM_CONDITIONAL(BUILD_PGM1, test "x$pgm1_ext" = "xyes")
 AM_CONDITIONAL(BUILD_PGM2, test "x$pgm2_ext" = "xyes")
-AM_CONDITIONAL(BUILD_NO_PGM, test "x$pgm2_ext" = "xno" -a "x$pgm1_ext" = "xno")
+AM_CONDITIONAL(BUILD_NO_PGM, test "x$pgm2_ext" = "xno")
 AM_CONDITIONAL(BUILD_FORWARDER, test "x$forwarder" = "xyes")
 AM_CONDITIONAL(BUILD_STREAMER, test "x$streamer" = "xyes")  
 AM_CONDITIONAL(BUILD_PERF, test "x$perf" = "xyes")
@@ -712,17 +608,11 @@ AC_MSG_RESULT([     Ruby: $rbzmq])
 if test "x$rbzmq" = "xyes"; then
 AC_MSG_RESULT([       Ruby library install dir: $rubydir])
 fi
-AC_MSG_RESULT([   Network protocols:])
-AC_MSG_RESULT([     TCP: yes])
-if test "x$pgm1_ext" = "xyes"; then
-AC_MSG_RESULT([     PGM: $pgm1_ext ($pgm_basename)])
-fi
-if test "x$pgm2_ext" = "xyes"; then
-AC_MSG_RESULT([     PGM: $pgm2_ext ($pgm_basename)])
-fi
-if test "x$pgm1_ext" = "xno" -a "x$pgm2_ext" = "xno"; then
-AC_MSG_RESULT([     PGM: no])
-fi
+AC_MSG_RESULT([   Transports:])
+AC_MSG_RESULT([     tcp: yes])
+AC_MSG_RESULT([     udp: $pgm2_ext])
+AC_MSG_RESULT([     pgm: $pgm2_ext])
+AC_MSG_RESULT([     inproc: yes])
 AC_MSG_RESULT([   Devices:])
 AC_MSG_RESULT([     Forwarder: $forwarder])
 AC_MSG_RESULT([     Streamer: $streamer])
