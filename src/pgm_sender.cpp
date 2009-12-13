@@ -32,20 +32,6 @@
 #include "err.hpp"
 #include "wire.hpp"
 
-//#define PGM_SENDER_DEBUG
-//#define PGM_SENDER_DEBUG_LEVEL 1
-
-// level 1 = key behaviour
-// level 2 = processing flow
-// level 4 = infos
-
-#ifndef PGM_SENDER_DEBUG
-#   define zmq_log(n, ...)  while (0)
-#else
-#   define zmq_log(n, ...)    do { if ((n) <= PGM_SENDER_DEBUG_LEVEL) \
-        { printf (__VA_ARGS__);}} while (0)
-#endif
-
 zmq::pgm_sender_t::pgm_sender_t (io_thread_t *parent_, 
       const options_t &options_, const char *session_name_) :
     io_object_t (parent_),
@@ -119,9 +105,6 @@ void zmq::pgm_sender_t::revive ()
 
 zmq::pgm_sender_t::~pgm_sender_t ()
 {
-    zmq_log (4, "pgm_sender_t destructor, %s(%i)\n",
-        __FILE__, __LINE__);
-
     if (out_buffer) {
         pgm_socket.free_buffer (out_buffer);
         out_buffer = NULL;
@@ -171,17 +154,8 @@ void zmq::pgm_sender_t::out_event ()
         size_t nbytes = write_one_pkt_with_offset (out_buffer + write_pos, 
             write_size - write_pos, (uint16_t) first_message_offset);
 
-        //  We can write all data or 0 which means rate limit reached.
-        if (write_size - write_pos != nbytes && nbytes != 0) {
-            zmq_log (2, "write_size - write_pos %i, nbytes %i, %s(%i)",
-                (int)(write_size - write_pos), (int)nbytes, __FILE__, __LINE__);
-            assert (false);
-        }
-
-        //  PGM rate limit reached nbytes is 0.
-        if (!nbytes) {
-            zmq_log (1, "pgm rate limit reached, %s(%i)\n", __FILE__, __LINE__);
-        }
+        //  We can write either all data or 0 which means rate limit reached.
+        zmq_assert (write_size - write_pos == nbytes || nbytes == 0);
 
         write_pos += nbytes;
     }
@@ -191,9 +165,6 @@ void zmq::pgm_sender_t::out_event ()
 size_t zmq::pgm_sender_t::write_one_pkt_with_offset (unsigned char *data_, 
     size_t size_, uint16_t offset_)
 {
-    zmq_log (4, "data_size %i, first message offset %i, %s(%i)\n",
-        (int) size_, offset_, __FILE__, __LINE__);
-
     //  Put offset information in the buffer.
     put_uint16 (data_, offset_);
    

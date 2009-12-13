@@ -37,7 +37,6 @@
 #include "zmq_decoder.hpp"
 #include "pgm_socket.hpp"
 
-
 namespace zmq
 {
 
@@ -66,13 +65,16 @@ namespace zmq
     private:
 
         //  Map to hold TSI, joined and decoder for each peer.
-        struct peer_info_t {
+        struct peer_info_t
+        {
             bool joined;
             zmq_decoder_t *decoder;
         };
 
-        struct tsi_comp {
-            bool operator () (const pgm_tsi_t &ltsi, const pgm_tsi_t &rtsi) const
+        struct tsi_comp
+        {
+            inline bool operator () (const pgm_tsi_t &ltsi,
+                const pgm_tsi_t &rtsi) const
             {
                 if (ltsi.sport < rtsi.sport)
                     return true;

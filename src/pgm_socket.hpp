@@ -52,18 +52,18 @@ namespace zmq
         int init (bool udp_encapsulation_, const char *network_);
 
         //  Open PGM transport. Parameters are the same as in constructor.
-        int open_transport (void);
+        int open_transport ();
 
         //  Close transport.
-        void close_transport (void);
+        void close_transport ();
         
         //   Get receiver fds and store them into user allocated memory.
-        int get_receiver_fds (int *receive_fd_, int *waiting_pipe_fd_);
+        void get_receiver_fds (int *receive_fd_, int *waiting_pipe_fd_);
 
         //   Get sender and receiver fds and store it to user allocated 
         //   memory. Receive fd is used to process NAKs from peers.
-        int get_sender_fds (int *send_fd_, int *receive_fd_,
-            int *rdata_notify_fd_ = NULL);
+        void get_sender_fds (int *send_fd_, int *receive_fd_,
+            int *rdata_notify_fd_);
 
         //  Send data as one APDU, transmit window owned memory.
         size_t send (unsigned char *data_, size_t data_len_);
@@ -79,17 +79,15 @@ namespace zmq
 
         //  POLLIN on sender side should mean NAK or SPMR receiving. 
         //  process_upstream function is used to handle such a situation.
-        void process_upstream (void);
+        void process_upstream ();
 
-    protected:
+    private:
     
         //  OpenPGM transport
         pgm_transport_t* transport;
-
-    private:
         
         //  Returns max tsdu size without fragmentation.
-        size_t get_max_tsdu_size (void);
+        size_t get_max_tsdu_size ();
 
         //  Returns maximum count of apdus which fills readbuf_size_
         size_t get_max_apdu_at_once (size_t readbuf_size_);
@@ -124,12 +122,6 @@ namespace zmq
 
         //  Size of pgm_msgv array.
         size_t pgm_msgv_len;
-
-        //  Sender transport uses 2 fd.
-        enum {pgm_sender_fd_count = 3};
-
-        //  Receiver transport uses 2 fd.
-        enum {pgm_receiver_fd_count = 2};
     };
 }
 #endif

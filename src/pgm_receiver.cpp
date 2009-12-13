@@ -34,20 +34,6 @@
 #include "wire.hpp"
 #include "i_inout.hpp"
 
-//#define PGM_RECEIVER_DEBUG
-//#define PGM_RECEIVER_DEBUG_LEVEL 1
-
-// level 1 = key behaviour
-// level 2 = processing flow
-// level 4 = infos
-
-#ifndef PGM_RECEIVER_DEBUG
-#   define zmq_log(n, ...)  while (0)
-#else
-#   define zmq_log(n, ...)    do { if ((n) <= PGM_RECEIVER_DEBUG_LEVEL) \
-        { printf (__VA_ARGS__);}} while (0)
-#endif
-
 zmq::pgm_receiver_t::pgm_receiver_t (class io_thread_t *parent_, 
       const options_t &options_, const char *session_name_) :
     io_object_t (parent_),
@@ -161,12 +147,8 @@ void zmq::pgm_receiver_t::in_event ()
 
         //  New peer.
         if (it == peers.end ()) {
-
             peer_info_t peer_info = {false, NULL};
             it = peers.insert (std::make_pair (*tsi, peer_info)).first;
-
-            zmq_log (1, "New peer TSI: %s, %s(%i).\n", pgm_tsi_print (tsi),
-                __FILE__, __LINE__);
         }
 
         //  There is not beginning of the message in current APDU and we
@@ -191,9 +173,6 @@ void zmq::pgm_receiver_t::in_event ()
             //  Create and connect decoder for joined peer.
             it->second.decoder = new zmq_decoder_t (0);
             it->second.decoder->set_inout (inout);
-
-            zmq_log (1, "Peer %s joined into the stream, %s(%i)\n", 
-                pgm_tsi_print (tsi), __FILE__, __LINE__);
         }
 
         if (nbytes > 0) {
