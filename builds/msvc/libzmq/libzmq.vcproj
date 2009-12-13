@@ -302,6 +302,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\xrep.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\xreq.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\ypollset.cpp"
 				>
 			</File>
@@ -380,11 +388,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\encoder.hpp"
+				RelativePath="..\..\..\src\downstream.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\downstream.hpp"
+				RelativePath="..\..\..\src\encoder.hpp"
 				>
 			</File>
 			<File
@@ -557,6 +565,14 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\wire.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\xrep.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\xreq.hpp"
 				>
 			</File>
 			<File

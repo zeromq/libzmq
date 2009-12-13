@@ -70,26 +70,31 @@ int zmq::xreq_t::xsetsockopt (int option_, const void *optval_,
 int zmq::xreq_t::xsend (zmq_msg_t *msg_, int flags_)
 {
     zmq_assert (false);
+    return -1;
 }
 
 int zmq::xreq_t::xflush ()
 {
     zmq_assert (false);
+    return -1;
 }
 
 int zmq::xreq_t::xrecv (zmq_msg_t *msg_, int flags_)
 {
     zmq_assert (false);
+    return -1;
 }
 
 bool zmq::xreq_t::xhas_in ()
 {
     zmq_assert (false);
+    return false;
 }
 
 bool zmq::xreq_t::xhas_out ()
 {
     zmq_assert (false);
+    return false;
 }
 
 
