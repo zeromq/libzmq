@@ -49,6 +49,7 @@
 zmq::pgm_sender_t::pgm_sender_t (io_thread_t *parent_, 
       const options_t &options_, const char *session_name_) :
     io_object_t (parent_),
+    encoder (0),
     pgm_socket (false, options_),
     options (options_),
     session_name (session_name_),
@@ -162,8 +163,9 @@ void zmq::pgm_sender_t::out_event ()
 
         //  First two bytes /sizeof (uint16_t)/ are used to store message 
         //  offset in following steps.
-        write_size = encoder.read (out_buffer + sizeof (uint16_t), 
-            out_buffer_size - sizeof (uint16_t), &first_message_offset);
+        unsigned char *bf = out_buffer + sizeof (uint16_t);
+        write_size = out_buffer_size - sizeof (uint16_t);
+        encoder.get_data (&bf, &write_size, &first_message_offset);
         write_pos = 0;
 
         //  If there are no data to write stop polling for output.

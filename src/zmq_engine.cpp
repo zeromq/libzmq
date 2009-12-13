@@ -106,7 +106,9 @@ void zmq::zmq_engine_t::out_event ()
 {
     //  If write buffer is empty, try to read new data from the encoder.
     if (!outsize) {
-        encoder.get_buffer (&outpos, &outsize);
+
+        outpos = NULL;
+        encoder.get_data (&outpos, &outsize);
         
         //  If there is no data to send, stop polling for output.
         if (outsize == 0) {

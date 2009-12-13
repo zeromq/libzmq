@@ -50,12 +50,18 @@ namespace zmq
             free (buf);
         }
 
-        //  The function returns a batch of binary data. If offset is not NULL,
-        //  it is filled by offset of the first message in the batch. If there's
-        //  no beginning of a message in the batch, offset is set to -1.
-        inline void get_buffer (unsigned char **data_, size_t *size_,
+        //  The function returns a batch of binary data. The data
+        //  are filled to a supplied buffer. If no buffer is supplied (data_
+        //  points to NULL) decoder object will provide buffer of its own.
+        //  If offset is not NULL, it is filled by offset of the first message
+        //  in the batch.If there's no beginning of a message in the batch,
+        //  offset is set to -1.
+        inline void get_data (unsigned char **data_, size_t *size_,
             int *offset_ = NULL)
         {
+            unsigned char *buffer = !*data_ ? buf : *data_;
+            size_t buffersize = !*data_ ? bufsize : *size_;
+
             size_t pos = 0;
             if (offset_)
                 *offset_ = -1;
@@ -67,7 +73,7 @@ namespace zmq
                 //  in the buffer.
                 if (!to_write) {
                     if (!(static_cast <T*> (this)->*next) ()) {
-                        *data_ = buf;
+                        *data_ = buffer;
                         *size_ = pos;
                         return;
                     }
@@ -91,7 +97,7 @@ namespace zmq
                 //  As a consequence, large messages being sent won't block
                 //  other engines running in the same I/O thread for excessive
                 //  amounts of time.
-                if (!pos && to_write >= bufsize) {
+                if (!pos && !*data_ && to_write >= buffersize) {
                     *data_ = write_pos;
                     *size_ = to_write;
                     write_pos = NULL;
@@ -100,13 +106,13 @@ namespace zmq
                 }
 
                 //  Copy data to the buffer. If the buffer is full, return.
-                size_t to_copy = std::min (to_write, bufsize - pos);
-                memcpy (buf + pos, write_pos, to_copy);
+                size_t to_copy = std::min (to_write, buffersize - pos);
+                memcpy (buffer + pos, write_pos, to_copy);
                 pos += to_copy;
                 write_pos += to_copy;
                 to_write -= to_copy;
-                if (pos == bufsize) {
-                    *data_ = buf;
+                if (pos == buffersize) {
+                    *data_ = buffer;
                     *size_ = pos;
                     return;
                 }

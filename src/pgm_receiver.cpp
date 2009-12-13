@@ -194,7 +194,7 @@ void zmq::pgm_receiver_t::in_event ()
             it->second.joined = true;
 
             //  Create and connect decoder for joined peer.
-            it->second.decoder = new zmq_decoder_t;
+            it->second.decoder = new zmq_decoder_t (0);
             it->second.decoder->set_inout (inout);
 
 #ifdef ZMQ_HAVE_OPENPGM1
@@ -209,7 +209,8 @@ void zmq::pgm_receiver_t::in_event ()
         if (nbytes > 0) {
         
             //  Push all the data to the decoder.
-            it->second.decoder->write (raw_data, nbytes);
+            //  TODO: process_buffer may not process entire buffer!
+            it->second.decoder->process_buffer (raw_data, nbytes);
         }
 
     } while (nbytes > 0);
