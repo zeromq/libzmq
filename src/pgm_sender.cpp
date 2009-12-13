@@ -46,7 +46,6 @@ zmq::pgm_sender_t::pgm_sender_t (io_thread_t *parent_,
     write_pos (0), 
     first_message_offset (-1)
 {
-
 }
 
 int zmq::pgm_sender_t::init (bool udp_encapsulation_, const char *network_)
@@ -56,7 +55,6 @@ int zmq::pgm_sender_t::init (bool udp_encapsulation_, const char *network_)
 
 void zmq::pgm_sender_t::plug (i_inout *inout_)
 {
-    
     //  Alocate 2 fds for PGM socket.
     int downlink_socket_fd = 0;
     int uplink_socket_fd = 0;
@@ -119,7 +117,6 @@ void zmq::pgm_sender_t::in_event ()
 
 void zmq::pgm_sender_t::out_event ()
 {
-
     //  POLLOUT event from send socket. If write buffer is empty, 
     //  try to read new data from the encoder.
     if (write_pos == write_size) {
@@ -159,7 +156,6 @@ void zmq::pgm_sender_t::out_event ()
 
         write_pos += nbytes;
     }
-
 }
 
 size_t zmq::pgm_sender_t::write_one_pkt_with_offset (unsigned char *data_, 

@@ -105,6 +105,8 @@ libzmq_la_SOURCES = app_thread.hpp \
     uuid.hpp \
     windows.hpp \
     wire.hpp \
+    xrep.hpp \
+    xreq.hpp \
     yarray.hpp \
     yarray_item.hpp \
     ypipe.hpp \
@@ -150,6 +152,8 @@ libzmq_la_SOURCES = app_thread.hpp \
     thread.cpp \
     upstream.cpp \
     uuid.cpp \
+    xrep.cpp \
+    xreq.cpp \
     ypollset.cpp \
     zmq.cpp \
     zmq_connecter.cpp \

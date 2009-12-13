@@ -29,7 +29,7 @@ int main (int argc, char *argv [])
 
     XMLNode root = XMLNode::parseFile (argv [1]);
     if (root.isEmpty ()) {
-        fprintf (stderr, "configuration file not found\n");
+        fprintf (stderr, "configuration file not found or not an XML file\n");
         return 1;
     }
 

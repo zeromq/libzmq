@@ -130,8 +130,10 @@
 (defconstant sub 2)
 (defconstant req 3)
 (defconstant rep 4)
-(defconstant upstream 5)
-(defconstant downstream 6)
+(defconstant xreq 5)
+(defconstant xrep 6)
+(defconstant upstream 7)
+(defconstant downstream 8)
 
 (defcfun* ("zmq_socket" socket) :pointer
   (context	:pointer)

@@ -45,6 +45,8 @@
 #include "sub.hpp"
 #include "req.hpp"
 #include "rep.hpp"
+#include "xreq.hpp"
+#include "xrep.hpp"
 #include "upstream.hpp"
 #include "downstream.hpp"
 
@@ -175,6 +177,12 @@ zmq::socket_base_t *zmq::app_thread_t::create_socket (int type_)
     case ZMQ_REP:
         s = new rep_t (this);
         break;
+    case ZMQ_XREQ:
+        s = new xreq_t (this);
+        break;
+    case ZMQ_XREP:
+        s = new xrep_t (this);
+        break;       
     case ZMQ_UPSTREAM:
         s = new upstream_t (this);
         break;

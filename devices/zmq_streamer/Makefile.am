@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_builddir)/bindings/c
+INCLUDES = -I$(top_srcdir)/bindings/cpp -I$(top_srcdir)/bindings/c
 
 bin_PROGRAMS = zmq_streamer
 

@@ -277,6 +277,8 @@ extern "C" void Init_librbzmq ()
     rb_define_global_const ("PUB", INT2NUM (ZMQ_PUB));
     rb_define_global_const ("REQ", INT2NUM (ZMQ_REQ));
     rb_define_global_const ("REP", INT2NUM (ZMQ_REP));
+    rb_define_global_const ("XREQ", INT2NUM (ZMQ_XREQ));
+    rb_define_global_const ("XREP", INT2NUM (ZMQ_XREP));
     rb_define_global_const ("UPSTREAM", INT2NUM (ZMQ_UPSTREAM));
     rb_define_global_const ("DOWNSTREAM", INT2NUM (ZMQ_DOWNSTREAM));
 

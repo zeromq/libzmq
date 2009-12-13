@@ -6,5 +6,9 @@ if BUILD_STREAMER
 STREAMER_DIR = zmq_streamer
 endif
 
-SUBDIRS = $(FORWARDER_DIR) $(STREAMER_DIR)
-DIST_SUBDIRS = zmq_forwarder zmq_streamer
+if BUILD_QUEUE
+QUEUE_DIR = zmq_queue
+endif
+
+SUBDIRS = $(FORWARDER_DIR) $(STREAMER_DIR) $(QUEUE_DIR)
+DIST_SUBDIRS = zmq_forwarder zmq_streamer zmq_queue

@@ -520,6 +520,15 @@ if test "x$with_streamer" != "xno"; then
     streamer="yes"
 fi
 
+# Queue device
+queue="no"
+AC_ARG_WITH([queue], [AS_HELP_STRING([--with-queue], 
+    [build queue device [default=no]])], [with_queue=yes], [with_queue=no])
+
+if test "x$with_queue" != "xno"; then
+    queue="yes"
+fi
+
 # Perf
 perf="no"
 AC_ARG_WITH([perf], [AS_HELP_STRING([--with-perf], 
@@ -555,7 +564,8 @@ AM_CONDITIONAL(BUILD_CPP, test "x$cppzmq" = "xyes")
 AM_CONDITIONAL(BUILD_PGM2, test "x$pgm2_ext" = "xyes")
 AM_CONDITIONAL(BUILD_NO_PGM, test "x$pgm2_ext" = "xno")
 AM_CONDITIONAL(BUILD_FORWARDER, test "x$forwarder" = "xyes")
-AM_CONDITIONAL(BUILD_STREAMER, test "x$streamer" = "xyes")  
+AM_CONDITIONAL(BUILD_STREAMER, test "x$streamer" = "xyes")
+AM_CONDITIONAL(BUILD_QUEUE, test "x$queue" = "xyes")  
 AM_CONDITIONAL(BUILD_PERF, test "x$perf" = "xyes")
 AM_CONDITIONAL(BUILD_CHAT, test "x$chat" = "xyes")
 AM_CONDITIONAL(ON_MINGW, test "x$on_mingw32" = "xyes")
@@ -581,7 +591,7 @@ AC_OUTPUT(Makefile src/Makefile man/Makefile bindings/python/Makefile \
     bindings/java/Makefile perf/Makefile perf/c/Makefile perf/cpp/Makefile \
     perf/python/Makefile perf/ruby/Makefile perf/java/Makefile src/libzmq.pc \
     devices/Makefile devices/zmq_forwarder/Makefile \
-    devices/zmq_streamer/Makefile bindings/Makefile \
+    devices/zmq_streamer/Makefile devices/zmq_queue/Makefile bindings/Makefile \
     examples/Makefile examples/chat/Makefile)
 
 AC_MSG_RESULT([])
@@ -616,6 +626,7 @@ AC_MSG_RESULT([     inproc: yes])
 AC_MSG_RESULT([   Devices:])
 AC_MSG_RESULT([     Forwarder: $forwarder])
 AC_MSG_RESULT([     Streamer: $streamer])
+AC_MSG_RESULT([     Queue: $queue])
 AC_MSG_RESULT([   Performance tests: $perf])
 AC_MSG_RESULT([   Examples:])
 AC_MSG_RESULT([     Chat: $chat])

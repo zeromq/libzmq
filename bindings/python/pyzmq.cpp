@@ -498,6 +498,12 @@ PyMODINIT_FUNC initlibpyzmq ()
     t = PyInt_FromLong (ZMQ_REP);
     PyDict_SetItemString (dict, "REP", t);
     Py_DECREF (t);
+    t = PyInt_FromLong (ZMQ_XREQ);
+    PyDict_SetItemString (dict, "XREQ", t);
+    Py_DECREF (t);
+    t = PyInt_FromLong (ZMQ_XREP);
+    PyDict_SetItemString (dict, "XREP", t);
+    Py_DECREF (t);
     t = PyInt_FromLong (ZMQ_UPSTREAM);
     PyDict_SetItemString (dict, "UPSTREAM", t);
     Py_DECREF (t);
