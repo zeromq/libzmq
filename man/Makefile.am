@@ -1,4 +1,4 @@
-dist_man_MANS = man1/zmq_forwarder.1 man1/zmq_streamer.1 \
+dist_man_MANS = man1/zmq_forwarder.1 man1/zmq_streamer.1 man1/zmq_queue.1 \
     man3/zmq_init.3 man3/zmq_term.3 \
     man3/zmq_socket.3 man3/zmq_close.3 man3/zmq_setsockopt.3 man3/zmq_bind.3 \
     man3/zmq_connect.3 man3/zmq_send.3 man3/zmq_flush.3 man3/zmq_recv.3 \

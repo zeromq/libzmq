@@ -21,6 +21,8 @@ groff -man -Tps man1/zmq_forwarder.1 > man1/zmq_forwarder.1.ps
 ps2pdf man1/zmq_forwarder.1.ps zmq_forwarder.pdf
 groff -man -Tps man1/zmq_streamer.1 > man1/zmq_streamer.1.ps
 ps2pdf man1/zmq_streamer.1.ps zmq_streamer.pdf
+groff -man -Tps man1/zmq_queue.1 > man1/zmq_queue.1.ps
+ps2pdf man1/zmq_queue.1.ps zmq_queue.pdf
 
 groff -man -Tps man3/zmq_init.3 > man3/zmq_init.3.ps
 ps2pdf man3/zmq_init.3.ps zmq_init.pdf
