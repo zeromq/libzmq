@@ -66,7 +66,6 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
 
     //  Bind the socket to the network interface and port.
     rc = bind (s, (struct sockaddr*) &addr, sizeof (addr));
-    //  TODO: Convert error code to errno.
     if (rc == SOCKET_ERROR) {
         wsa_error_to_errno ();
         return -1;

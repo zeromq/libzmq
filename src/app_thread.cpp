@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <new>
 #include <algorithm>
 
 #include "../bindings/c/zmq.h"
@@ -65,11 +66,11 @@ zmq::app_thread_t::app_thread_t (dispatcher_t *dispatcher_, int thread_slot_,
     last_processing_time (0)
 {
     if (flags_ & ZMQ_POLL) {
-        signaler = new fd_signaler_t;
+        signaler = new (std::nothrow) fd_signaler_t;
         zmq_assert (signaler);
     }
     else {
-        signaler = new ypollset_t;
+        signaler = new (std::nothrow) ypollset_t;
         zmq_assert (signaler);
     }
 }
@@ -163,31 +164,31 @@ zmq::socket_base_t *zmq::app_thread_t::create_socket (int type_)
     socket_base_t *s = NULL;
     switch (type_) {
     case ZMQ_P2P:
-        s = new p2p_t (this);
+        s = new (std::nothrow) p2p_t (this);
         break;
     case ZMQ_PUB:
-        s = new pub_t (this);
+        s = new (std::nothrow) pub_t (this);
         break;
     case ZMQ_SUB:
-        s = new sub_t (this);
+        s = new (std::nothrow) sub_t (this);
         break;
     case ZMQ_REQ:
-        s = new req_t (this);
+        s = new (std::nothrow) req_t (this);
         break;
     case ZMQ_REP:
-        s = new rep_t (this);
+        s = new (std::nothrow) rep_t (this);
         break;
     case ZMQ_XREQ:
-        s = new xreq_t (this);
+        s = new (std::nothrow) xreq_t (this);
         break;
     case ZMQ_XREP:
-        s = new xrep_t (this);
+        s = new (std::nothrow) xrep_t (this);
         break;       
     case ZMQ_UPSTREAM:
-        s = new upstream_t (this);
+        s = new (std::nothrow) upstream_t (this);
         break;
     case ZMQ_DOWNSTREAM:
-        s = new downstream_t (this);
+        s = new (std::nothrow) downstream_t (this);
         break;
     default:
         //  TODO: This should be EINVAL.

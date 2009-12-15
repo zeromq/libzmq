@@ -86,6 +86,7 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
     //  in_batch_size configured in confing.hpp
     if (receiver) {
         pgm_msgv_len = get_max_apdu_at_once (in_batch_size);
+        //  TODO: use malloc instead of new
         pgm_msgv = new pgm_msgv_t [pgm_msgv_len];
     }
 
@@ -443,6 +444,7 @@ void *zmq::pgm_socket_t::get_buffer (size_t *size_)
     *size_ = get_max_tsdu_size ();
 
     //  Allocate buffer.
+    //  TODO: use malloc instead of new
     unsigned char *apdu_buff = new unsigned char [*size_]; 
     zmq_assert (apdu_buff);
     return apdu_buff;

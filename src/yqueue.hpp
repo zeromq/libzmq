@@ -20,6 +20,7 @@
 #ifndef __ZMQ_YQUEUE_HPP_INCLUDED__
 #define __ZMQ_YQUEUE_HPP_INCLUDED__
 
+#include <new>
 #include <stddef.h>
 
 #include "err.hpp"
@@ -47,7 +48,7 @@ namespace zmq
         //  Create the queue.
         inline yqueue_t ()
         {
-             begin_chunk = new chunk_t;
+             begin_chunk = new (std::nothrow) chunk_t;
              zmq_assert (begin_chunk);
              begin_pos = 0;
              back_chunk = NULL;
@@ -93,7 +94,7 @@ namespace zmq
             if (++end_pos != N)
                 return;
 
-            end_chunk->next = new chunk_t;
+            end_chunk->next = new (std::nothrow) chunk_t;
             zmq_assert (end_chunk->next);
             end_chunk = end_chunk->next;
             end_pos = 0;

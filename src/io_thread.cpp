@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <new>
+
 #include "../bindings/c/zmq.h"
 
 #include "io_thread.hpp"
@@ -31,7 +33,7 @@ zmq::io_thread_t::io_thread_t (dispatcher_t *dispatcher_, int thread_slot_,
       int flags_) :
     object_t (dispatcher_, thread_slot_)
 {
-    poller = new poller_t;
+    poller = new (std::nothrow) poller_t;
     zmq_assert (poller);
 
     signaler_handle = poller->add_fd (signaler.get_fd (), this);

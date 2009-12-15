@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <new>
+
 #include "session.hpp"
 #include "i_engine.hpp"
 #include "err.hpp"
@@ -157,14 +159,16 @@ void zmq::session_t::process_plug ()
         pipe_t *outbound = NULL;
 
         if (options.requires_out) {
-            inbound = new pipe_t (this, owner, options.hwm, options.lwm);
+            inbound = new (std::nothrow) pipe_t (this, owner,
+                options.hwm, options.lwm);
             zmq_assert (inbound);
             in_pipe = &inbound->reader;
             in_pipe->set_endpoint (this);
         }
 
         if (options.requires_in) {
-            outbound = new pipe_t (owner, this, options.hwm, options.lwm);
+            outbound = new (std::nothrow) pipe_t (owner, this,
+                options.hwm, options.lwm);
             zmq_assert (outbound);
             out_pipe = &outbound->writer;
             out_pipe->set_endpoint (this);

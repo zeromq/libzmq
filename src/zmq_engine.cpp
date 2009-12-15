@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <new>
+
 #include "zmq_engine.hpp"
 #include "zmq_connecter.hpp"
 #include "io_thread.hpp"
@@ -155,7 +157,7 @@ void zmq::zmq_engine_t::error ()
 
         //  Create a connecter object to attempt reconnect.
         //  Ask it to wait for a while before reconnecting.
-        reconnecter = new zmq_connecter_t (
+        reconnecter = new (std::nothrow) zmq_connecter_t (
             inout->get_io_thread (), inout->get_owner (),
             options, inout->get_session_name (), true);
         zmq_assert (reconnecter);

@@ -208,8 +208,8 @@ void *zmq_init (int app_threads_, int io_threads_, int flags_)
         return NULL;
     }
 
-    zmq::dispatcher_t *dispatcher = new zmq::dispatcher_t (app_threads_,
-        io_threads_, flags_);
+    zmq::dispatcher_t *dispatcher = new (std::nothrow) zmq::dispatcher_t (
+        app_threads_, io_threads_, flags_);
     zmq_assert (dispatcher);
     return (void*) dispatcher;
 }

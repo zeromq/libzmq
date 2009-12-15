@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <new>
 #include <string>
 #include <algorithm>
 
@@ -87,8 +88,9 @@ int zmq::socket_base_t::bind (const char *addr_)
         return register_endpoint (addr_args.c_str (), this);
 
     if (addr_type == "tcp") {
-        zmq_listener_t *listener = new zmq_listener_t (
+        zmq_listener_t *listener = new (std::nothrow) zmq_listener_t (
             choose_io_thread (options.affinity), this, options);
+        zmq_assert (listener);
         int rc = listener->set_address (addr_args.c_str ());
         if (rc != 0)
             return -1;
@@ -143,13 +145,15 @@ int zmq::socket_base_t::connect (const char *addr_)
 
         //  Create inbound pipe, if required.
         if (options.requires_in) {
-            in_pipe = new pipe_t (this, peer, options.hwm, options.lwm);
+            in_pipe = new (std::nothrow) pipe_t (this, peer,
+                options.hwm, options.lwm);
             zmq_assert (in_pipe);
         }
 
         //  Create outbound pipe, if required.
         if (options.requires_out) {
-            out_pipe = new pipe_t (peer, this, options.hwm, options.lwm);
+            out_pipe = new (std::nothrow) pipe_t (peer, this,
+                options.hwm, options.lwm);
             zmq_assert (out_pipe);
         }
 
@@ -168,8 +172,8 @@ int zmq::socket_base_t::connect (const char *addr_)
 
     //  Create the session.
     io_thread_t *io_thread = choose_io_thread (options.affinity);
-    session_t *session = new session_t (io_thread, this, session_name.c_str (),
-        options, true);
+    session_t *session = new (std::nothrow) session_t (io_thread, this,
+        session_name.c_str (), options, true);
     zmq_assert (session);
 
     pipe_t *in_pipe = NULL;
@@ -177,14 +181,16 @@ int zmq::socket_base_t::connect (const char *addr_)
 
     //  Create inbound pipe, if required.
     if (options.requires_in) {
-        in_pipe = new pipe_t (this, session, options.hwm, options.lwm);
+        in_pipe = new (std::nothrow) pipe_t (this, session,
+            options.hwm, options.lwm);
         zmq_assert (in_pipe);
 
     }
 
     //  Create outbound pipe, if required.
     if (options.requires_out) {
-        out_pipe = new pipe_t (session, this, options.hwm, options.lwm);
+        out_pipe = new (std::nothrow) pipe_t (session, this,
+            options.hwm, options.lwm);
         zmq_assert (out_pipe);
     }
 
@@ -205,9 +211,10 @@ int zmq::socket_base_t::connect (const char *addr_)
         //  Create the connecter object. Supply it with the session name
         //  so that it can bind the new connection to the session once
         //  it is established.
-        zmq_connecter_t *connecter = new zmq_connecter_t (
+        zmq_connecter_t *connecter = new (std::nothrow) zmq_connecter_t (
             choose_io_thread (options.affinity), this, options,
             session_name.c_str (), false);
+        zmq_assert (connecter);
         int rc = connecter->set_address (addr_args.c_str ());
         if (rc != 0) {
             delete connecter;
@@ -237,9 +244,10 @@ int zmq::socket_base_t::connect (const char *addr_)
         if (options.requires_out) {
 
             //  PGM sender.
-            pgm_sender_t *pgm_sender = 
-                new pgm_sender_t (choose_io_thread (options.affinity), options, 
+            pgm_sender_t *pgm_sender =  new (std::nothrow) pgm_sender_t (
+                choose_io_thread (options.affinity), options,
                 session_name.c_str ());
+            zmq_assert (pgm_sender);
 
             int rc = pgm_sender->init (udp_encapsulation, addr_args.c_str ());
             if (rc != 0) {
@@ -252,9 +260,10 @@ int zmq::socket_base_t::connect (const char *addr_)
         else if (options.requires_in) {
 
             //  PGM receiver.
-            pgm_receiver_t *pgm_receiver = 
-                new pgm_receiver_t (choose_io_thread (options.affinity), options, 
+            pgm_receiver_t *pgm_receiver =  new (std::nothrow) pgm_receiver_t (
+                choose_io_thread (options.affinity), options, 
                 session_name.c_str ());
+            zmq_assert (pgm_receiver);
 
             int rc = pgm_receiver->init (udp_encapsulation, addr_args.c_str ());
             if (rc != 0) {

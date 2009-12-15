@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <new>
+
 #include "zmq_listener_init.hpp"
 #include "io_thread.hpp"
 #include "session.hpp"
@@ -29,7 +31,8 @@ zmq::zmq_listener_init_t::zmq_listener_init_t (io_thread_t *parent_,
     has_peer_identity (false)
 {
     //  Create associated engine object.
-    engine = new zmq_engine_t (parent_, fd_, options, false, NULL);
+    engine = new (std::nothrow) zmq_engine_t (parent_, fd_, options,
+        false, NULL);
     zmq_assert (engine);
 }
 
@@ -74,8 +77,8 @@ void zmq::zmq_listener_init_t::flush ()
         session = owner->find_session (peer_identity.c_str ());
     if (!session) {
         io_thread_t *io_thread = choose_io_thread (options.affinity);
-        session = new session_t (io_thread, owner, peer_identity.c_str (),
-            options, false);
+        session = new (std::nothrow) session_t (io_thread, owner,
+            peer_identity.c_str (), options, false);
         zmq_assert (session);
         send_plug (session);
         send_own (owner, session);

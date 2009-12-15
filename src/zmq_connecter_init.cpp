@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <new>
+
 #include "zmq_connecter_init.hpp"
 #include "zmq_connecter.hpp"
 #include "io_thread.hpp"
@@ -31,7 +33,8 @@ zmq::zmq_connecter_init_t::zmq_connecter_init_t (io_thread_t *parent_,
     session_name (session_name_)
 {
     //  Create associated engine object.
-    engine = new zmq_engine_t (parent_, fd_, options, true, address_);
+    engine = new (std::nothrow) zmq_engine_t (parent_, fd_, options, true,
+        address_);
     zmq_assert (engine);
 }
 
