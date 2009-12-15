@@ -40,7 +40,7 @@ namespace zmq
         ~zmq_connecter_t ();
 
         //  Set IP address to connect to.
-        int set_address (const char *addr_);
+        int set_address (const char *address_);
 
     private:
 
@@ -74,6 +74,9 @@ namespace zmq
 
         //  Name of the session associated with the connecter.
         std::string session_name;
+
+        //  Address to connect to.
+        std::string address;
 
         zmq_connecter_t (const zmq_connecter_t&);
         void operator = (const zmq_connecter_t&);

@@ -22,6 +22,7 @@
 
 #include <stddef.h>
 
+#include "stdint.hpp"
 #include "poller.hpp"
 #include "i_poll_events.hpp"
 

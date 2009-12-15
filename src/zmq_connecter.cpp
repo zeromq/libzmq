@@ -38,9 +38,13 @@ zmq::zmq_connecter_t::~zmq_connecter_t ()
 {
 }
 
-int zmq::zmq_connecter_t::set_address (const char *addr_)
+int zmq::zmq_connecter_t::set_address (const char *address_)
 {
-     return tcp_connecter.set_address (addr_);
+     int rc = tcp_connecter.set_address (address_);
+     if (rc != 0)
+         return rc;
+     address = address_;
+     return 0;
 }
 
 void zmq::zmq_connecter_t::process_plug ()
@@ -84,7 +88,7 @@ void zmq::zmq_connecter_t::out_event ()
     //  Create an init object. 
     io_thread_t *io_thread = choose_io_thread (options.affinity);
     zmq_connecter_init_t *init = new zmq_connecter_init_t (io_thread, owner,
-        fd, options, session_name.c_str ());
+        fd, options, session_name.c_str (), address.c_str ());
     zmq_assert (init);
     send_plug (init);
     send_own (owner, init);

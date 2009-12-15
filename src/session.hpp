@@ -41,7 +41,10 @@ namespace zmq
         bool read (::zmq_msg_t *msg_);
         bool write (::zmq_msg_t *msg_);
         void flush ();
-        void detach ();
+        void detach (owned_t *reconnecter_);
+        class io_thread_t *get_io_thread ();
+        class socket_base_t *get_owner ();
+        const char *get_session_name ();
 
         //  i_endpoint interface implementation.
         void attach_pipes (class reader_t *inpipe_, class writer_t *outpipe_);

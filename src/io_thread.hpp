@@ -22,6 +22,7 @@
 
 #include <vector>
 
+#include "stdint.hpp"
 #include "object.hpp"
 #include "poller.hpp"
 #include "i_poll_events.hpp"

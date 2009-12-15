@@ -29,7 +29,7 @@ zmq::zmq_listener_init_t::zmq_listener_init_t (io_thread_t *parent_,
     has_peer_identity (false)
 {
     //  Create associated engine object.
-    engine = new zmq_engine_t (parent_, fd_, options);
+    engine = new zmq_engine_t (parent_, fd_, options, false, NULL);
     zmq_assert (engine);
 }
 
@@ -93,13 +93,31 @@ void zmq::zmq_listener_init_t::flush ()
     term ();
 }
 
-void zmq::zmq_listener_init_t::detach ()
+void zmq::zmq_listener_init_t::detach (owned_t *reconnecter_)
 {
+    //  On the listening side of the connection we are never reconnecting.
+    zmq_assert (reconnecter_ == NULL);
+
     //  This function is called by engine when disconnection occurs.
     //  The engine will destroy itself, so we just drop the pointer here and
     //  start termination of the init object.
     engine = NULL;
     term ();
+}
+
+zmq::io_thread_t *zmq::zmq_listener_init_t::get_io_thread ()
+{
+    return choose_io_thread (options.affinity);
+}
+
+class zmq::socket_base_t *zmq::zmq_listener_init_t::get_owner ()
+{
+    return owner;
+}
+
+const char *zmq::zmq_listener_init_t::get_session_name ()
+{
+    zmq_assert (false);
 }
 
 void zmq::zmq_listener_init_t::process_plug ()

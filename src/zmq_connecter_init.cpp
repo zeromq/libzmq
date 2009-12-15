@@ -25,13 +25,13 @@
 
 zmq::zmq_connecter_init_t::zmq_connecter_init_t (io_thread_t *parent_,
       socket_base_t *owner_, fd_t fd_, const options_t &options_,
-      const char *session_name_) :
+      const char *session_name_, const char *address_) :
     owned_t (parent_, owner_),
     options (options_),
     session_name (session_name_)
 {
     //  Create associated engine object.
-    engine = new zmq_engine_t (parent_, fd_, options);
+    engine = new zmq_engine_t (parent_, fd_, options, true, address_);
     zmq_assert (engine);
 }
 
@@ -87,27 +87,33 @@ void zmq::zmq_connecter_init_t::flush ()
     //  We are not expecting any messages. No point in flushing.
 }
 
-void zmq::zmq_connecter_init_t::detach ()
+void zmq::zmq_connecter_init_t::detach (owned_t *reconnecter_)
 {
-    //  TODO: Start reconnection process here.
-/*
-    //  Create a connecter object to attempt reconnect. Ask it to wait for a
-    //  while before reconnecting.
-    io_thread_t *io_thread = choose_io_thread (options.affinity);
-    zmq_connecter_t *connecter = new zmq_connecter_t (io_thread, owner,
-        options, session_name.c_str (), true);
-    connecter->set_address (...);
-    zmq_assert (connecter);
-    send_plug (connecter);
-    send_own (owner, connecter);
-*/
+    //  Plug in the reconnecter object.
+    zmq_assert (reconnecter_);
+    send_plug (reconnecter_);
+    send_own (owner, reconnecter_);
 
     //  This function is called by engine when disconnection occurs.
     //  The engine will destroy itself, so we just drop the pointer here and
     //  start termination of the init object.
     engine = NULL;
     term ();
+}
 
+zmq::io_thread_t *zmq::zmq_connecter_init_t::get_io_thread ()
+{
+    return choose_io_thread (options.affinity);
+}
+
+class zmq::socket_base_t *zmq::zmq_connecter_init_t::get_owner ()
+{
+    return owner;
+}
+
+const char *zmq::zmq_connecter_init_t::get_session_name ()
+{
+    return session_name.c_str ();
 }
 
 void zmq::zmq_connecter_init_t::process_plug ()

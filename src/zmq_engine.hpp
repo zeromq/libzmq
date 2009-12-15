@@ -37,7 +37,7 @@ namespace zmq
     public:
 
         zmq_engine_t (class io_thread_t *parent_, fd_t fd_,
-            const options_t &options_);
+            const options_t &options_, bool reconnect_, const char *address_);
         ~zmq_engine_t ();
 
         //  i_engine interface implementation.
@@ -68,6 +68,9 @@ namespace zmq
         i_inout *inout;
 
         options_t options;
+
+        bool reconnect;
+        std::string address;
 
         zmq_engine_t (const zmq_engine_t&);
         void operator = (const zmq_engine_t&);

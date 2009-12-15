@@ -55,9 +55,10 @@ namespace zmq
         void unregister_endpoints (class socket_base_t *socket_);
         class socket_base_t *find_endpoint (const char *addr_);
 
-        //  Derived object can use following functions to interact with
-        //  global repositories. See dispatcher.hpp for function details.
+        //  Returns number of thead slots in the dispatcher.
         int thread_slot_count ();
+
+        //  Chooses least loaded I/O thread.
         class io_thread_t *choose_io_thread (uint64_t taskset_);
 
         //  Derived object can use these functions to send commands

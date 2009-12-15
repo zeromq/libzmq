@@ -36,8 +36,19 @@ namespace zmq
         //  Flush all the previously written messages downstream.
         virtual void flush () = 0;
     
-        //  Drop all the references to the engine.
-        virtual void detach () = 0;
+        //  Drop all the references to the engine. The parameter is the object
+        //  to use to reconnect. If reconnection is not required, the argument
+        //  is set to NULL.
+        virtual void detach (class owned_t *reconnecter_) = 0;
+
+        //  Returns least loaded I/O thread.
+        virtual class io_thread_t *get_io_thread () = 0;
+
+        //  Return pointer to the owning socket.
+        virtual class socket_base_t *get_owner () = 0;
+
+        //  Returns the name of associated session.
+        virtual const char *get_session_name () = 0;
     };
 
 }

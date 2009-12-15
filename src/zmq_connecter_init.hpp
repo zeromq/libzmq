@@ -40,7 +40,8 @@ namespace zmq
     public:
 
         zmq_connecter_init_t (class io_thread_t *parent_, socket_base_t *owner_,
-            fd_t fd_, const options_t &options, const char *session_name_);
+            fd_t fd_, const options_t &options, const char *session_name_,
+            const char *address_);
         ~zmq_connecter_init_t ();
 
     private:
@@ -49,7 +50,10 @@ namespace zmq
         bool read (::zmq_msg_t *msg_);
         bool write (::zmq_msg_t *msg_);
         void flush ();
-        void detach ();
+        void detach (owned_t *reconnecter_);
+        class io_thread_t *get_io_thread ();
+        class socket_base_t *get_owner ();
+        const char *get_session_name ();
 
         //  Handlers for incoming commands.
         void process_plug ();
@@ -63,8 +67,7 @@ namespace zmq
         //  Associated socket options.
         options_t options;
 
-        //  Name of the session to bind new connection to. Makes sense only
-        //  when 'connected' is true.
+        //  Name of the session to bind new connection to.
         std::string session_name;
 
         zmq_connecter_init_t (const zmq_connecter_init_t&);

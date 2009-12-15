@@ -65,9 +65,13 @@ void zmq::session_t::flush ()
         out_pipe->flush ();
 }
 
-void zmq::session_t::detach ()
+void zmq::session_t::detach (owned_t *reconnecter_)
 {
-    //  TODO:  Start reconnection process here.
+    //  Plug in the reconnecter object if any.
+    if (reconnecter_) {
+        send_plug (reconnecter_);
+        send_own (owner, reconnecter_);
+    }
 
     //  Engine is terminating itself. No need to deallocate it from here.
     engine = NULL;
@@ -75,6 +79,21 @@ void zmq::session_t::detach ()
     //  In the case od anonymous connection, terminate the session.
     if (name.empty ())
         term ();
+}
+
+zmq::io_thread_t *zmq::session_t::get_io_thread ()
+{
+    return choose_io_thread (options.affinity);
+}
+
+class zmq::socket_base_t *zmq::session_t::get_owner ()
+{
+    return owner;
+}
+
+const char *zmq::session_t::get_session_name ()
+{
+    return name.c_str ();
 }
 
 void zmq::session_t::attach_pipes (class reader_t *inpipe_,
