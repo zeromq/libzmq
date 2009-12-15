@@ -198,6 +198,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\fq.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\io_object.cpp"
 				>
 			</File>
@@ -211,6 +215,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\kqueue.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\lb.cpp"
 				>
 			</File>
 			<File
@@ -412,6 +420,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\fq.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\i_endpoint.hpp"
 				>
 			</File>
@@ -449,6 +461,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\kqueue.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\lb.hpp"
 				>
 			</File>
 			<File
