@@ -120,6 +120,8 @@ void zmq::zmq_connecter_t::start_connecting ()
         return;
     }
 
-    //  TODO: Handle the error condition by eventual reconnect.
-    zmq_assert (false);
+    //  Handle any other error condition by eventual reconnect.
+    tcp_connecter.close ();
+    wait = true;
+    add_timer ();
 }
