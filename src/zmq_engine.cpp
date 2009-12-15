@@ -29,10 +29,10 @@ zmq::zmq_engine_t::zmq_engine_t (io_thread_t *parent_, fd_t fd_,
     io_object_t (parent_),
     inpos (NULL),
     insize (0),
-    decoder (in_batch_size),
+    decoder (in_batch_size, NULL, 0),
     outpos (NULL),
     outsize (0),
-    encoder (out_batch_size),
+    encoder (out_batch_size, false),
     inout (NULL),
     options (options_)
 {

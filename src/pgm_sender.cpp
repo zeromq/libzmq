@@ -35,7 +35,7 @@
 zmq::pgm_sender_t::pgm_sender_t (io_thread_t *parent_, 
       const options_t &options_, const char *session_name_) :
     io_object_t (parent_),
-    encoder (0),
+    encoder (0, false),
     pgm_socket (false, options_),
     options (options_),
     session_name (session_name_),

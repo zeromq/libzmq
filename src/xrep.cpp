@@ -21,7 +21,6 @@
 
 #include "xrep.hpp"
 #include "err.hpp"
-#include "pipe.hpp"
 
 zmq::xrep_t::xrep_t (class app_thread_t *parent_) :
     socket_base_t (parent_)
@@ -37,12 +36,16 @@ zmq::xrep_t::~xrep_t ()
 void zmq::xrep_t::xattach_pipes (class reader_t *inpipe_,
     class writer_t *outpipe_)
 {
+    zmq_assert (inpipe_ && outpipe_);
+    fq.attach (inpipe_);
+
     zmq_assert (false);
 }
 
 void zmq::xrep_t::xdetach_inpipe (class reader_t *pipe_)
 {
-    zmq_assert (false);
+    zmq_assert (pipe_);
+    fq.detach (pipe_);
 }
 
 void zmq::xrep_t::xdetach_outpipe (class writer_t *pipe_)
@@ -52,12 +55,12 @@ void zmq::xrep_t::xdetach_outpipe (class writer_t *pipe_)
 
 void zmq::xrep_t::xkill (class reader_t *pipe_)
 {
-    zmq_assert (false);
+    fq.kill (pipe_);
 }
 
 void zmq::xrep_t::xrevive (class reader_t *pipe_)
 {
-    zmq_assert (false);
+    fq.revive (pipe_);
 }
 
 int zmq::xrep_t::xsetsockopt (int option_, const void *optval_,
@@ -81,14 +84,12 @@ int zmq::xrep_t::xflush ()
 
 int zmq::xrep_t::xrecv (zmq_msg_t *msg_, int flags_)
 {
-    zmq_assert (false);
-    return -1;
+    return fq.recv (msg_, flags_);
 }
 
 bool zmq::xrep_t::xhas_in ()
 {
-    zmq_assert (false);
-    return false;
+    return fq.has_in ();
 }
 
 bool zmq::xrep_t::xhas_out ()

@@ -21,7 +21,7 @@
 #define __ZMQ_DOWNSTREAM_HPP_INCLUDED__
 
 #include "socket_base.hpp"
-#include "yarray.hpp"
+#include "lb.hpp"
 
 namespace zmq
 {
@@ -48,12 +48,8 @@ namespace zmq
 
     private:
 
-        //  List of outbound pipes.
-        typedef yarray_t <class writer_t> pipes_t;
-        pipes_t pipes;
-
-        //  Points to the last pipe that the most recent message was sent to.
-        pipes_t::size_type current;
+        //  Load balancer managing the outbound pipes.
+        lb_t lb;
 
         downstream_t (const downstream_t&);
         void operator = (const downstream_t&);

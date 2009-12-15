@@ -24,7 +24,7 @@
 #include <string>
 
 #include "socket_base.hpp"
-#include "yarray.hpp"
+#include "fq.hpp"
 
 namespace zmq
 {
@@ -53,26 +53,15 @@ namespace zmq
 
     private:
 
-        //  Helper function to return one message choosed using
-        //  fair queueing algorithm.
-        int fq (zmq_msg_t *msg_, int flags_);
-
-        //  Inbound pipes, i.e. those the socket is getting messages from.
-        typedef yarray_t <class reader_t> in_pipes_t;
-        in_pipes_t in_pipes;
-
-        //  Number of active inbound pipes. Active pipes are stored in the
-        //  initial section of the in_pipes array.
-        in_pipes_t::size_type active;
-
-        //  Index of the next inbound pipe to read messages from.
-        in_pipes_t::size_type current;
+        //  Fair queueing object for inbound pipes.
+         fq_t fq;
 
         //  Number of active "*" subscriptions.
         int all_count;
 
-        //  List of all prefix subscriptions.
         typedef std::multiset <std::string> subscriptions_t;
+
+        //  List of all prefix subscriptions.
         subscriptions_t prefixes;
 
         //  List of all exact match subscriptions.

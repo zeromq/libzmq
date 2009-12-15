@@ -21,7 +21,8 @@
 #define __ZMQ_XREQ_HPP_INCLUDED__
 
 #include "socket_base.hpp"
-#include "yarray.hpp"
+#include "fq.hpp"
+#include "lb.hpp"
 
 namespace zmq
 {
@@ -47,6 +48,11 @@ namespace zmq
         bool xhas_out ();
 
     private:
+
+        //  Messages are fair-queued from inbound pipes. And load-balanced to
+        //  the outbound pipes.
+        fq_t fq;
+        lb_t lb;
 
         xreq_t (const xreq_t&);
         void operator = (const xreq_t&);

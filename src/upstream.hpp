@@ -21,7 +21,7 @@
 #define __ZMQ_UPSTREAM_HPP_INCLUDED__
 
 #include "socket_base.hpp"
-#include "yarray.hpp"
+#include "fq.hpp"
 
 namespace zmq
 {
@@ -48,16 +48,8 @@ namespace zmq
 
     private:
 
-        //  Inbound pipes.
-        typedef yarray_t <class reader_t> pipes_t;
-        pipes_t pipes;
-
-        //  Number of active pipes. All the active pipes are located at the
-        //  beginning of the pipes array.
-        pipes_t::size_type active;
-
-        //  Index of the next bound pipe to read a message from.
-        pipes_t::size_type current;
+        //  Fair queueing object for inbound pipes.
+        fq_t fq;
 
         upstream_t (const upstream_t&);
         void operator = (const upstream_t&);

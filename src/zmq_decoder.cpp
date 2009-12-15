@@ -17,16 +17,31 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <stdlib.h>
+#include <string.h>
+
 #include "zmq_decoder.hpp"
 #include "i_inout.hpp"
 #include "wire.hpp"
 #include "err.hpp"
 
-zmq::zmq_decoder_t::zmq_decoder_t (size_t bufsize_) :
+zmq::zmq_decoder_t::zmq_decoder_t (size_t bufsize_,
+      void *prefix_, size_t prefix_size_) :
     decoder_t <zmq_decoder_t> (bufsize_),
     destination (NULL)
 {
     zmq_msg_init (&in_progress);
+
+    if (!prefix_) {
+        prefix = NULL;
+        prefix_size = 0;
+    }
+    else {
+        prefix = malloc (prefix_size_);
+        zmq_assert (prefix);
+        memcpy (prefix, prefix_, prefix_size_);
+        prefix_size = prefix_size_;
+    }
 
     //  At the beginning, read one byte and go to one_byte_size_ready state.
     next_step (tmpbuf, 1, &zmq_decoder_t::one_byte_size_ready);
@@ -34,6 +49,9 @@ zmq::zmq_decoder_t::zmq_decoder_t (size_t bufsize_) :
 
 zmq::zmq_decoder_t::~zmq_decoder_t ()
 {
+    if (prefix)
+        free (prefix);
+
     zmq_msg_close (&in_progress);
 }
 
@@ -55,11 +73,15 @@ bool zmq::zmq_decoder_t::one_byte_size_ready ()
         //  in_progress is initialised at this point so in theory we should
         //  close it before calling zmq_msg_init_size, however, it's a 0-byte
         //  message and thus we can treat it as uninitialised...
-        int rc = zmq_msg_init_size (&in_progress, *tmpbuf);
+        int rc = zmq_msg_init_size (&in_progress, prefix_size + *tmpbuf);
         errno_assert (rc == 0);
 
-        next_step (zmq_msg_data (&in_progress), *tmpbuf,
-            &zmq_decoder_t::message_ready);
+        //  Fill in the message prefix if any.
+        if (prefix)
+            memcpy (zmq_msg_data (&in_progress), prefix, prefix_size);
+
+        next_step ((unsigned char*) zmq_msg_data (&in_progress) + prefix_size,
+            *tmpbuf, &zmq_decoder_t::message_ready);
     }
     return true;
 }
@@ -74,11 +96,15 @@ bool zmq::zmq_decoder_t::eight_byte_size_ready ()
     //  in_progress is initialised at this point so in theory we should
     //  close it before calling zmq_msg_init_size, however, it's a 0-byte
     //  message and thus we can treat it as uninitialised...
-    int rc = zmq_msg_init_size (&in_progress, size);
+    int rc = zmq_msg_init_size (&in_progress, prefix_size + size);
     errno_assert (rc == 0);
 
-    next_step (zmq_msg_data (&in_progress), size,
-        &zmq_decoder_t::message_ready);
+    //  Fill in the message prefix if any.
+    if (prefix)
+        memcpy (zmq_msg_data (&in_progress), prefix, prefix_size);
+
+    next_step ((unsigned char*) zmq_msg_data (&in_progress) + prefix_size ,
+        size, &zmq_decoder_t::message_ready);
     return true;
 }
 

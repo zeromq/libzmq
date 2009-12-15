@@ -66,6 +66,7 @@ libzmq_la_SOURCES = app_thread.hpp \
     err.hpp \
     fd.hpp \
     fd_signaler.hpp \
+    fq.hpp \
     i_inout.hpp \
     io_object.hpp \
     io_thread.hpp \
@@ -75,6 +76,7 @@ libzmq_la_SOURCES = app_thread.hpp \
     i_poll_events.hpp \
     i_signaler.hpp \
     kqueue.hpp \
+    lb.hpp \
     msg_content.hpp \
     mutex.hpp \
     object.hpp \
@@ -126,10 +128,12 @@ libzmq_la_SOURCES = app_thread.hpp \
     epoll.cpp \
     err.cpp \
     fd_signaler.cpp \
+    fq.cpp \
     io_object.cpp \
     io_thread.cpp \
     ip.cpp \
     kqueue.cpp \
+    lb.cpp \
     object.cpp \
     options.cpp \
     owned.cpp \

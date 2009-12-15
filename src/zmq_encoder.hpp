@@ -32,7 +32,7 @@ namespace zmq
     {
     public:
 
-        zmq_encoder_t (size_t bufsize_);
+        zmq_encoder_t (size_t bufsize_, bool trim_prefix_);
         ~zmq_encoder_t ();
 
         void set_inout (struct i_inout *source_);
@@ -45,6 +45,8 @@ namespace zmq
         struct i_inout *source;
         ::zmq_msg_t in_progress;
         unsigned char tmpbuf [9];
+
+        bool trim_prefix;
 
         zmq_encoder_t (const zmq_encoder_t&);
         void operator = (const zmq_encoder_t&);

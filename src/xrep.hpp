@@ -21,7 +21,7 @@
 #define __ZMQ_XREP_HPP_INCLUDED__
 
 #include "socket_base.hpp"
-#include "yarray.hpp"
+#include "fq.hpp"
 
 namespace zmq
 {
@@ -47,6 +47,9 @@ namespace zmq
         bool xhas_out ();
 
     private:
+
+        //  Inbound messages are fair-queued.
+        fq_t fq;
 
         xrep_t (const xrep_t&);
         void operator = (const xrep_t&);
