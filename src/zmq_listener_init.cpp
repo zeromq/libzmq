@@ -121,6 +121,7 @@ class zmq::socket_base_t *zmq::zmq_listener_init_t::get_owner ()
 const char *zmq::zmq_listener_init_t::get_session_name ()
 {
     zmq_assert (false);
+    return NULL;
 }
 
 void zmq::zmq_listener_init_t::process_plug ()
