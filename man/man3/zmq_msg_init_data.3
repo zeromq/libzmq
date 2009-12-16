@@ -3,8 +3,8 @@
 zmq_msg_init \- initialises 0MQ message from the given data
 .SH SYNOPSIS
 .nf
-.B typedef void (zmq_free_fn) (void *data);
-.B int zmq_msg_init_data (zmq_msg_t *msg, void *data, size_t size, zmq_free_fn *ffn);
+.B typedef void (zmq_free_fn) (void *data, void *hint);
+.B int zmq_msg_init_data (zmq_msg_t *msg, void *data, size_t size, zmq_free_fn *ffn, void *hint);
 .fi
 .SH DESCRIPTION
 Initialise a message from a supplied buffer. Message isn't copied,
@@ -14,12 +14,15 @@ instead 0MQ infrastructure takes ownership of the buffer located at address
 bytes long. 
 Deallocation function (
 .IR ffn
-) will be called once the data are not needed anymore. Note that deallocation
-function prototype is designed so that it complies with standard C
-.IR free
-function. When using a static constant buffer,
+) will be called once the data are not needed anymore. When using a static
+constant buffer,
 .IR ffn
-may be NULL to prevent subsequent deallocation.
+may be NULL to prevent subsequent deallocation. If needed, additional
+.IR hint
+can be passed to the initialisation function. It's an opaque pointer that will
+be later on passed to
+.IR ffn
+as a second argument.
 .SH RETURN VALUE
 In case of success the function returns zero. Otherwise it returns -1 and
 sets
@@ -29,11 +32,15 @@ to the appropriate value.
 No errors are defined.
 .SH EXAMPLE
 .nf
+void my_free (void *data, void *hint) {free (data);}
+
+        ...
+
 void *data = malloc (6);
 assert (data);
 memcpy (data, "ABCDEF", 6);
 zmq_msg_t msg;
-rc = zmq_msg_init_data (&msg, data, 6, free);
+rc = zmq_msg_init_data (&msg, data, 6, my_free, NULL);
 assert (rc == 0);
 rc = zmq_send (s, &msg, 0);
 assert (rc == 0);
