@@ -25,8 +25,8 @@ major=0
 # awk '{if (match($$0,/\.so\.[0-9]+$$/)) print substr($$0,RSTART+4)}'`
 
 
-pkg     := cl-zeromq
-debpkg  := cl-zeromq
+pkg           := cl-zeromq
+debpkg        := cl-zeromq
 clc-source    := usr/share/common-lisp/source
 clc-systems   := usr/share/common-lisp/systems
 clc-cl-zeromq := $(clc-source)/$(pkg)
@@ -93,9 +93,10 @@ install: build
 
 	# Add here commands to install the package into debian/tmp
 	$(MAKE) DESTDIR=$(CURDIR)/debian/tmp install
-	(cd $(CURDIR)/debian/tmp;find *)
+
 
 # Build architecture-independent files here.
+
 binary-indep: build install
 # We have nothing to do by default.
 
