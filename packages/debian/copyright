@@ -1,0 +1,18 @@
+This package was debianized by Peter Busser <peter@mirabilix.nl> on
+Tue, 15 Dec 2009 16:11:38 +0100.
+
+It was downloaded from http://www.zeromq.org/
+
+Upstream Author(s): iMatix Corporation
+
+Copyright:
+  Copyright (C) 2007-2009 by iMatix Corporation
+
+License:
+
+The Debian packaging is (C) 2009, Peter Busser <peter@bigboy.mirabilix.nl>
+
+It is licensed under the LGPL3, see `/usr/share/common-licenses/GPL-3' and
+`/usr/share/common-licenses/LGPL-3'.
+
+

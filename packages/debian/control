@@ -1,0 +1,123 @@
+Source: zeromq
+Priority: extra
+Maintainer: Peter Busser <peter@mirabilix.nl>
+Build-Depends: debhelper (>= 7), uuid-dev, autoconf, pkg-config, automake, libtool, libglib2.0-dev, python-all-dev, python-dev, python-central
+Standards-Version: 3.7.3
+Section: libs
+Homepage: http://www.zeromq.org/
+Vcs-Git: git://githumb.com/sustrik/zeromq2.git
+
+Package: libzeromq-dev
+Section: libdevel
+Architecture: any
+Depends: libzeromq0 (= ${binary:Version})
+Description: Library for ZeroMQ
+ ZeroMQ is a very fast, thin messaging implementation which supports different
+ messaging models. It reaches 13.4 microseconds end-to-end latencies and up to
+ 4,100,000 messages a second today. It requires only a couple of pages in
+ resident memory. It supports different wire protocols: TCP, PGM, AMQP, and
+ SCTP.
+ .
+ There are C, C++, Lisp, Java, Python, Ruby, and .NET language APis.
+ .
+ It is fully distributed: no central servers to crash, millions of WAN and
+ LAN nodes. It is an extensible framework: kernel-style drivers for custom
+ hardware, protocols, or applications.
+ .
+ This package contains ZeroMQ related development libraries and header files.
+
+Package: libzeromq0
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: 
+ ZeroMQ is a very fast, thin messaging implementation which supports different
+ messaging models. It reaches 13.4 microseconds end-to-end latencies and up to
+ 4,100,000 messages a second today. It requires only a couple of pages in
+ resident memory. It supports different wire protocols: TCP, PGM, AMQP, and
+ SCTP.
+ .
+ There are C, C++, Lisp, Java, Python, Ruby, and .NET language APis.
+ .
+ It is fully distributed: no central servers to crash, millions of WAN and
+ LAN nodes. It is an extensible framework: kernel-style drivers for custom
+ hardware, protocols, or applications.
+ .
+ This package contains the ZeroMQ shared library.
+
+Package: cl-zeromq
+Section: devel
+Architecture: all
+Depends: libzeromq0 (= ${binary:Version}), common-lisp-controller, cl-cffi, cl-trivial-garbage, cl-iolib
+Description: 
+ ZeroMQ is a very fast, thin messaging implementation which supports different
+ messaging models. It reaches 13.4 microseconds end-to-end latencies and up to
+ 4,100,000 messages a second today. It requires only a couple of pages in
+ resident memory. It supports different wire protocols: TCP, PGM, AMQP, and
+ SCTP.
+ .
+ There are C, C++, Lisp, Java, Python, Ruby, and .NET language APis.
+ .
+ It is fully distributed: no central servers to crash, millions of WAN and
+ LAN nodes. It is an extensible framework: kernel-style drivers for custom
+ hardware, protocols, or applications.
+ .
+ This package contains the ZeroMQ Common Lisp bindings.
+
+Package: zeromq-utils
+Section: utils
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: 
+ ZeroMQ is a very fast, thin messaging implementation which supports different
+ messaging models. It reaches 13.4 microseconds end-to-end latencies and up to
+ 4,100,000 messages a second today. It requires only a couple of pages in
+ resident memory. It supports different wire protocols: TCP, PGM, AMQP, and
+ SCTP.
+ .
+ There are C, C++, Lisp, Java, Python, Ruby, and .NET language APis.
+ .
+ It is fully distributed: no central servers to crash, millions of WAN and
+ LAN nodes. It is an extensible framework: kernel-style drivers for custom
+ hardware, protocols, or applications.
+ .
+ This package contains a few ZeroMQ related utilities.
+
+Package: libzeromq-ruby
+Section: ruby
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: 
+ ZeroMQ is a very fast, thin messaging implementation which supports different
+ messaging models. It reaches 13.4 microseconds end-to-end latencies and up to
+ 4,100,000 messages a second today. It requires only a couple of pages in
+ resident memory. It supports different wire protocols: TCP, PGM, AMQP, and
+ SCTP.
+ .
+ There are C, C++, Lisp, Java, Python, Ruby, and .NET language APis.
+ .
+ It is fully distributed: no central servers to crash, millions of WAN and
+ LAN nodes. It is an extensible framework: kernel-style drivers for custom
+ hardware, protocols, or applications.
+ .
+ This package contains the Ruby bindings for ZeroMQ.
+
+Package: libzeromq-python
+Section: python
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: 
+ ZeroMQ is a very fast, thin messaging implementation which supports different
+ messaging models. It reaches 13.4 microseconds end-to-end latencies and up to
+ 4,100,000 messages a second today. It requires only a couple of pages in
+ resident memory. It supports different wire protocols: TCP, PGM, AMQP, and
+ SCTP.
+ .
+ There are C, C++, Lisp, Java, Python, Ruby, and .NET language APis.
+ .
+ It is fully distributed: no central servers to crash, millions of WAN and
+ LAN nodes. It is an extensible framework: kernel-style drivers for custom
+ hardware, protocols, or applications.
+ .
+ This package contains the Python bindings for ZeroMQ.
+

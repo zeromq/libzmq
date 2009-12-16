@@ -1,0 +1,6 @@
+zeromq (1.9-1m) unstable; urgency=low
+
+  * Initial release.
+
+ -- Peter Busser <peter@mirabilix.nl>  Tue, 15 Dec 2009 16:11:38 +0100
+
