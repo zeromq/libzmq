@@ -106,12 +106,12 @@ typedef struct
     unsigned char vsm_data [ZMQ_MAX_VSM_SIZE];
 } zmq_msg_t;
 
-typedef void (zmq_free_fn) (void *data);
+typedef void (zmq_free_fn) (void *data, void *hint);
 
 ZMQ_EXPORT int zmq_msg_init (zmq_msg_t *msg);
 ZMQ_EXPORT int zmq_msg_init_size (zmq_msg_t *msg, size_t size);
 ZMQ_EXPORT int zmq_msg_init_data (zmq_msg_t *msg, void *data,
-    size_t size, zmq_free_fn *ffn);
+    size_t size, zmq_free_fn *ffn, void *hint);
 ZMQ_EXPORT int zmq_msg_close (zmq_msg_t *msg);
 ZMQ_EXPORT int zmq_msg_move (zmq_msg_t *dest, zmq_msg_t *src);
 ZMQ_EXPORT int zmq_msg_copy (zmq_msg_t *dest, zmq_msg_t *src);

@@ -74,9 +74,10 @@ namespace zmq
                 throw error_t ();
         }
 
-        inline message_t (void *data_, size_t size_, free_fn *ffn_)
+        inline message_t (void *data_, size_t size_, free_fn *ffn_,
+            void *hint_ = NULL)
         {
-            int rc = zmq_msg_init_data (this, data_, size_, ffn_);
+            int rc = zmq_msg_init_data (this, data_, size_, ffn_, hint_);
             if (rc != 0)
                 throw error_t ();
         }
@@ -108,12 +109,13 @@ namespace zmq
                 throw error_t ();
         }
 
-        inline void rebuild (void *data_, size_t size_, free_fn *ffn_)
+        inline void rebuild (void *data_, size_t size_, free_fn *ffn_,
+            void *hint_ = NULL)
         {
             int rc = zmq_msg_close (this);
             if (rc != 0)
                 throw error_t ();
-            rc = zmq_msg_init_data (this, data_, size_, ffn_);
+            rc = zmq_msg_init_data (this, data_, size_, ffn_, hint_);
             if (rc != 0)
                 throw error_t ();
         }

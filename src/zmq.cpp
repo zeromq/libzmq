@@ -103,13 +103,14 @@ int zmq_msg_init_size (zmq_msg_t *msg_, size_t size_)
         content->data = (void*) (content + 1);
         content->size = size_;
         content->ffn = NULL;
+        content->hint = NULL;
         new (&content->refcnt) zmq::atomic_counter_t ();
     }
     return 0;
 }
 
 int zmq_msg_init_data (zmq_msg_t *msg_, void *data_, size_t size_,
-    zmq_free_fn *ffn_)
+    zmq_free_fn *ffn_, void *hint_)
 {
     msg_->shared = 0;
     msg_->content = (zmq::msg_content_t*) malloc (sizeof (zmq::msg_content_t));
@@ -118,6 +119,7 @@ int zmq_msg_init_data (zmq_msg_t *msg_, void *data_, size_t size_,
     content->data = data_;
     content->size = size_;
     content->ffn = ffn_;
+    content->hint = hint_;
     new (&content->refcnt) zmq::atomic_counter_t ();
     return 0;
 }
@@ -139,7 +141,7 @@ int zmq_msg_close (zmq_msg_t *msg_)
         content->refcnt.~atomic_counter_t ();
 
         if (content->ffn)
-            content->ffn (content->data);
+            content->ffn (content->data, content->hint);
         free (content);
     }
 

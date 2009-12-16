@@ -42,6 +42,7 @@ namespace zmq
         void *data;
         size_t size;
         zmq_free_fn *ffn;
+        void *hint;
         zmq::atomic_counter_t refcnt;
     };
 
