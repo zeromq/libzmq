@@ -141,13 +141,11 @@ int zmq::pgm_socket_t::open_transport ()
         return -1;
     }
 
-    //zmq_log (1, "Transport GSI: %s, %s(%i)\n", pgm_print_gsi (&gsi),
-    //    __FILE__, __LINE__);
-
     struct pgm_transport_info_t *res = NULL;
 
     if (!pgm_if_get_transport_info (network, NULL, &res, &pgm_error)) {
         errno = EINVAL;
+	    g_error_free (pgm_error);
         return -1;
     }
 
@@ -160,10 +158,11 @@ int zmq::pgm_socket_t::open_transport ()
         res->ti_udp_encap_mcast_port = port_number;
     }
 
-    if (!pgm_transport_create (&transport, res, &pgm_error)) { 
+    if (!pgm_transport_create (&transport, res, &pgm_error)) {
         pgm_if_free_transport_info (res);
         //  TODO: tranlate errors from glib into errnos.
         errno = EINVAL;
+        g_error_free (pgm_error);
         return -1;
     }
 
@@ -318,6 +317,8 @@ int zmq::pgm_socket_t::open_transport ()
     //  Bind a transport to the specified network devices.
     if (!pgm_transport_bind (transport, &pgm_error)) {
         //  TODO: tranlate errors from glib into errnos.
+        errno = EINVAL;
+        g_error_free (pgm_error);
         return -1;
     }
 
@@ -514,6 +515,8 @@ ssize_t zmq::pgm_socket_t::receive (void **raw_data_, const pgm_tsi_t **tsi_)
             nbytes_rec = 0;
 
             //  In case of dala loss -1 is returned.
+            errno = EINVAL;
+            g_error_free (pgm_error);
             return -1;
         }
 
