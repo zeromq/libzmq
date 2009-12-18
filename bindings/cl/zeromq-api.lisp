@@ -17,28 +17,51 @@
 
 (in-package :zeromq)
 
+;; Stolen from CFFI. Uses custom allocator (alloc-fn) instead of foreign-alloc
+(defun copy-lisp-string-octets (string alloc-fn &key (encoding cffi::*default-foreign-encoding*)
+                             (null-terminated-p t) (start 0) end)
+  "Allocate a foreign string containing Lisp string STRING.
+The string must be freed with FOREIGN-STRING-FREE."
+  (check-type string string)
+  (cffi::with-checked-simple-vector ((string (coerce string 'babel:unicode-string))
+				     (start start) (end end))
+    (declare (type simple-string string))
+    (let* ((mapping (cffi::lookup-mapping cffi::*foreign-string-mappings* encoding))
+           (count (funcall (cffi::octet-counter mapping) string start end 0))
+           (length (if null-terminated-p
+                       (+ count (cffi::null-terminator-len encoding))
+                       count))
+	   (ptr (funcall alloc-fn length)))
+      (funcall (cffi::encoder mapping) string start end ptr 0)
+      (when null-terminated-p
+        (dotimes (i (cffi::null-terminator-len encoding))
+          (setf (mem-ref ptr :char (+ count i)) 0)))
+      (values ptr length))))
+
 (defclass msg ()
-  ((raw		:accessor msg-raw :initform nil)
-   (shared	:accessor msg-shared :initform 0 :initarg :shared)))
+  ((raw		:accessor msg-raw :initform nil)))
 
 (defmethod initialize-instance :after ((inst msg) &key size data)
   (let ((obj (foreign-alloc 'msg)))
-    (with-slots (raw shared) inst
-      (setf raw obj)
-      (tg:finalize inst (lambda ()
-			  (%msg-close raw)
-			  (foreign-free raw)))
-      (when shared
-	(setf (foreign-slot-value obj 'msg 'shared) (if shared 1 0)))
-      (cond (size (%msg-init-size raw size))
-	    (data
-	     (multiple-value-bind (ptr len)
-		 (etypecase data
-		   (string (foreign-string-alloc data))
-		   (array (values (foreign-alloc :uchar :initial-contents data)
-				  (length data))))
-	       (msg-init-data raw ptr len (callback zmq-free))))
-	    (t (msg-init raw))))))
+    (tg:finalize inst (lambda ()
+			(%msg-close obj)
+			(foreign-free obj)))
+    (cond (size (%msg-init-size obj size))
+	  (data
+	   (etypecase data
+	     (string (copy-lisp-string-octets
+		      data (lambda (sz)
+			     (%msg-init-size obj sz)
+			     (%msg-data obj))))
+	     (array (progn
+		      (%msg-init-size obj (length data))
+		      (let ((ptr (%msg-data obj))
+			    (i -1))
+			(map nil (lambda (x)
+				   (setf (mem-aref ptr :uchar (incf i)) x))
+			     data))))))
+	  (t (msg-init obj)))
+    (setf (msg-raw inst) obj)))
 
 (defclass pollitem ()
   ((raw		:accessor pollitem-raw :initform nil)
