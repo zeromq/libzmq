@@ -77,15 +77,16 @@
   (msg	msg)
   (size	:long))
 
-(defcallback zmq-free :void ((ptr :pointer))
+(defcallback zmq-free :void ((ptr :pointer) (hint :pointer))
+  (declare (ignorable hint))
   (foreign-free ptr))
 
-;;typedef void (zmq_free_fn) (void *data);
 (defcfun ("zmq_msg_init_data" msg-init-data) :int
   (msg	msg)
   (data	:pointer)
   (size	:long)
-  (ffn	:pointer))			; zmq_free_fn
+  (ffn	:pointer)			; zmq_free_fn
+  (hint	:pointer))
 
 (defcfun* ("zmq_msg_close" %msg-close) :int
   (msg	msg))
