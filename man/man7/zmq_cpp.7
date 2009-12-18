@@ -41,10 +41,10 @@ This class encapsulates
 .IR zmq_msg_t
 structure and all the C functions that deal with 0MQ messages.
 Constructors of the class invoke corresponding initialisation functions (
-.BR zmq_init(3) ,
-.BR zmq_init_size(3)
+.BR zmq_msg_init(3) ,
+.BR zmq_msg_init_size(3)
 and
-.BR zmq_init_data(3) ,
+.BR zmq_msg_init_data(3) ,
 while destructor invokes
 .BR zmq_msg_close(3)
 function.
@@ -61,10 +61,10 @@ C++ provides an additional function not avialable with C API.
 is equivalent to calling
 .BR zmq_close(3)
 followed by
-.BR zmq_init(3) ,
-.BR zmq_init_size (3)
+.BR zmq_msg_init(3) ,
+.BR zmq_msg_init_size (3)
 or
-.BR zmq_init_data(3) .
+.BR zmq_msg_init_data(3) .
 It provides a way to reuse existing
 .IR zmq::message_t
 instances to store different message content.
