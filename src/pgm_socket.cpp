@@ -144,9 +144,22 @@ int zmq::pgm_socket_t::open_transport ()
     struct pgm_transport_info_t *res = NULL;
 
     if (!pgm_if_get_transport_info (network, NULL, &res, &pgm_error)) {
-        errno = EINVAL;
-	    g_error_free (pgm_error);
-        return -1;
+
+        if (pgm_error->code == PGM_IF_ERROR_INVAL ||
+              pgm_error->code == PGM_IF_ERROR_XDEV ||
+              pgm_error->code == PGM_IF_ERROR_NODEV ||
+              pgm_error->code == PGM_IF_ERROR_NOTUNIQ ||
+              pgm_error->code == PGM_IF_ERROR_ADDRFAMILY ||
+              pgm_error->code == PGM_IF_ERROR_FAMILY ||
+              pgm_error->code == PGM_IF_ERROR_NODATA ||
+              pgm_error->code == PGM_IF_ERROR_NONAME ||
+              pgm_error->code == PGM_IF_ERROR_SERVICE) {
+            errno = EINVAL;
+	        g_error_free (pgm_error);
+            return -1;
+        }
+
+        zmq_assert (false);
     }
 
     res->ti_gsi = gsi;
@@ -159,11 +172,16 @@ int zmq::pgm_socket_t::open_transport ()
     }
 
     if (!pgm_transport_create (&transport, res, &pgm_error)) {
-        pgm_if_free_transport_info (res);
-        //  TODO: tranlate errors from glib into errnos.
-        errno = EINVAL;
-        g_error_free (pgm_error);
-        return -1;
+        if (pgm_error->code == PGM_TRANSPORT_ERROR_INVAL ||
+              pgm_error->code == PGM_TRANSPORT_ERROR_PERM ||
+              pgm_error->code == PGM_TRANSPORT_ERROR_NODEV) {
+            pgm_if_free_transport_info (res);
+            g_error_free (pgm_error);
+            errno = EINVAL;
+            return -1;
+        }
+
+        zmq_assert (false);
     }
 
     pgm_if_free_transport_info (res);
@@ -316,10 +334,21 @@ int zmq::pgm_socket_t::open_transport ()
 
     //  Bind a transport to the specified network devices.
     if (!pgm_transport_bind (transport, &pgm_error)) {
-        //  TODO: tranlate errors from glib into errnos.
-        errno = EINVAL;
-        g_error_free (pgm_error);
-        return -1;
+        if (pgm_error->code == PGM_IF_ERROR_INVAL ||
+              pgm_error->code == PGM_IF_ERROR_XDEV ||
+              pgm_error->code == PGM_IF_ERROR_NODEV ||
+              pgm_error->code == PGM_IF_ERROR_NOTUNIQ ||
+              pgm_error->code == PGM_IF_ERROR_ADDRFAMILY ||
+              pgm_error->code == PGM_IF_ERROR_FAMILY ||
+              pgm_error->code == PGM_IF_ERROR_NODATA ||
+              pgm_error->code == PGM_IF_ERROR_NONAME ||
+              pgm_error->code == PGM_IF_ERROR_SERVICE) {
+            g_error_free (pgm_error);
+            errno = EINVAL;
+            return -1;
+        }
+
+        zmq_assert (false);
     }
 
     return 0;
@@ -492,7 +521,11 @@ ssize_t zmq::pgm_socket_t::receive (void **raw_data_, const pgm_tsi_t **tsi_)
 
         const PGMIOStatus status = pgm_recvmsgv (transport, pgm_msgv,
             pgm_msgv_len, MSG_DONTWAIT, &nbytes_rec, &pgm_error);
-     
+
+        if (status == PGM_IO_STATUS_ERROR) {
+            zmq_assert (false);
+        }
+
         //  In a case when no ODATA/RDATA fired POLLIN event (SPM...)
         //  pgm_recvmsg returns ?.
         if (status == PGM_IO_STATUS_TIMER_PENDING) {
@@ -520,7 +553,6 @@ ssize_t zmq::pgm_socket_t::receive (void **raw_data_, const pgm_tsi_t **tsi_)
             return -1;
         }
 
-        //  Catch the rest of the errors. 
         zmq_assert (status == PGM_IO_STATUS_NORMAL);
     }
 
@@ -555,6 +587,10 @@ void zmq::pgm_socket_t::process_upstream ()
 
     PGMIOStatus status = pgm_recvmsgv (transport, &dummy_msg,
         1, MSG_DONTWAIT, &dummy_bytes, &pgm_error);
+
+    if (status == PGM_IO_STATUS_ERROR) {
+        zmq_assert (false);
+    }
 
     //  No data should be returned.
     zmq_assert (dummy_bytes == 0 && (status == PGM_IO_STATUS_TIMER_PENDING || 

@@ -17,11 +17,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <Python.h>
 #include <stddef.h>
 #include <assert.h>
 #include <errno.h>
 #include <string.h>
-#include <Python.h>
 
 #include "../c/zmq.h"
 

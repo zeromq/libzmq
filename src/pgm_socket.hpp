@@ -50,12 +50,6 @@ namespace zmq
 
         //  Initialize PGM network structures (GSI, GSRs).
         int init (bool udp_encapsulation_, const char *network_);
-
-        //  Open PGM transport. Parameters are the same as in constructor.
-        int open_transport ();
-
-        //  Close transport.
-        void close_transport ();
         
         //   Get receiver fds and store them into user allocated memory.
         void get_receiver_fds (int *receive_fd_, int *waiting_pipe_fd_);
@@ -82,6 +76,12 @@ namespace zmq
         void process_upstream ();
 
     private:
+
+        //  Open PGM transport.
+        int open_transport ();
+
+        //  Close transport.
+        void close_transport ();
     
         //  OpenPGM transport
         pgm_transport_t* transport;
