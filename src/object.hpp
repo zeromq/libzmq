@@ -29,10 +29,6 @@ namespace zmq
 
     class object_t
     {
-        //  Repository of sessions needs to use caller's send_* functions
-        //  when creating new session. TODO: Get rid of this dependency.
-        friend class socket_base_t;
-
     public:
 
         object_t (class dispatcher_t *dispatcher_, int thread_slot_);

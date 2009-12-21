@@ -191,8 +191,8 @@ zmq::socket_base_t *zmq::app_thread_t::create_socket (int type_)
         s = new (std::nothrow) downstream_t (this);
         break;
     default:
-        //  TODO: This should be EINVAL.
-        zmq_assert (false);
+        errno = EINVAL;
+        return NULL;
     }
     zmq_assert (s);
 
