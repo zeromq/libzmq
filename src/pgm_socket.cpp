@@ -145,7 +145,8 @@ int zmq::pgm_socket_t::open_transport ()
 
     if (!pgm_if_get_transport_info (network, NULL, &res, &pgm_error)) {
 
-        if (pgm_error->code == PGM_IF_ERROR_INVAL ||
+        if (pgm_error->domain == PGM_IF_ERROR && (
+              pgm_error->code == PGM_IF_ERROR_INVAL ||
               pgm_error->code == PGM_IF_ERROR_XDEV ||
               pgm_error->code == PGM_IF_ERROR_NODEV ||
               pgm_error->code == PGM_IF_ERROR_NOTUNIQ ||
@@ -153,7 +154,7 @@ int zmq::pgm_socket_t::open_transport ()
               pgm_error->code == PGM_IF_ERROR_FAMILY ||
               pgm_error->code == PGM_IF_ERROR_NODATA ||
               pgm_error->code == PGM_IF_ERROR_NONAME ||
-              pgm_error->code == PGM_IF_ERROR_SERVICE) {
+              pgm_error->code == PGM_IF_ERROR_SERVICE)) {
             errno = EINVAL;
 	        g_error_free (pgm_error);
             return -1;
@@ -172,9 +173,10 @@ int zmq::pgm_socket_t::open_transport ()
     }
 
     if (!pgm_transport_create (&transport, res, &pgm_error)) {
-        if (pgm_error->code == PGM_TRANSPORT_ERROR_INVAL ||
+        if (pgm_error->domain == PGM_TRANSPORT_ERROR && (
+              pgm_error->code == PGM_TRANSPORT_ERROR_INVAL ||
               pgm_error->code == PGM_TRANSPORT_ERROR_PERM ||
-              pgm_error->code == PGM_TRANSPORT_ERROR_NODEV) {
+              pgm_error->code == PGM_TRANSPORT_ERROR_NODEV)) {
             pgm_if_free_transport_info (res);
             g_error_free (pgm_error);
             errno = EINVAL;
@@ -334,7 +336,8 @@ int zmq::pgm_socket_t::open_transport ()
 
     //  Bind a transport to the specified network devices.
     if (!pgm_transport_bind (transport, &pgm_error)) {
-        if (pgm_error->code == PGM_IF_ERROR_INVAL ||
+        if (pgm_error->domain == PGM_IF_ERROR && (
+              pgm_error->code == PGM_IF_ERROR_INVAL ||
               pgm_error->code == PGM_IF_ERROR_XDEV ||
               pgm_error->code == PGM_IF_ERROR_NODEV ||
               pgm_error->code == PGM_IF_ERROR_NOTUNIQ ||
@@ -342,7 +345,7 @@ int zmq::pgm_socket_t::open_transport ()
               pgm_error->code == PGM_IF_ERROR_FAMILY ||
               pgm_error->code == PGM_IF_ERROR_NODATA ||
               pgm_error->code == PGM_IF_ERROR_NONAME ||
-              pgm_error->code == PGM_IF_ERROR_SERVICE) {
+              pgm_error->code == PGM_IF_ERROR_SERVICE)) {
             g_error_free (pgm_error);
             errno = EINVAL;
             return -1;
