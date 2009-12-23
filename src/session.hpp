@@ -34,8 +34,14 @@ namespace zmq
     {
     public:
 
-        session_t (object_t *parent_, socket_base_t *owner_, const char *name_,
-            const options_t &options_, bool reconnect_);
+        //  Creates unnamed session.
+        session_t (object_t *parent_, socket_base_t *owner_,
+            const options_t &options_);
+
+        //  Creates named session. If name is NULL, transient session with
+        //  auto-generated name is created.
+        session_t (object_t *parent_, socket_base_t *owner_,
+            const options_t &options_, const char *name_);
 
         //  i_inout interface implementation.
         bool read (::zmq_msg_t *msg_);
@@ -44,7 +50,7 @@ namespace zmq
         void detach (owned_t *reconnecter_);
         class io_thread_t *get_io_thread ();
         class socket_base_t *get_owner ();
-        const char *get_session_name ();
+        uint64_t get_ordinal ();
 
         //  i_endpoint interface implementation.
         void attach_pipes (class reader_t *inpipe_, class writer_t *outpipe_);
@@ -73,15 +79,21 @@ namespace zmq
 
         struct i_engine *engine;
 
+        enum {
+            transient,
+            named,
+            unnamed
+        } type;
+
+        //  Ordinal of the session (if any).
+        uint64_t ordinal;
+
         //  The name of the session. One that is used to register it with
         //  socket-level repository of sessions.
         std::string name;
 
         //  Inherited socket options.
         options_t options;
-
-        //  If true, reconnection is required after connection breaks.
-        bool reconnect;
 
         session_t (const session_t&);
         void operator = (const session_t&);

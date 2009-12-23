@@ -115,12 +115,11 @@ libzmq_la_SOURCES = app_thread.hpp \
     ypollset.hpp \
     yqueue.hpp \
     zmq_connecter.hpp \
-    zmq_connecter_init.hpp \
     zmq_decoder.hpp \
     zmq_encoder.hpp \
     zmq_engine.hpp \
+    zmq_init.hpp \
     zmq_listener.hpp \
-    zmq_listener_init.hpp \
     app_thread.cpp \
     devpoll.cpp \
     dispatcher.cpp \
@@ -161,12 +160,11 @@ libzmq_la_SOURCES = app_thread.hpp \
     ypollset.cpp \
     zmq.cpp \
     zmq_connecter.cpp \
-    zmq_connecter_init.cpp \
     zmq_decoder.cpp \
     zmq_encoder.cpp \
     zmq_engine.cpp \
-    zmq_listener.cpp \
-    zmq_listener_init.cpp
+    zmq_init.cpp \
+    zmq_listener.cpp
 
 libzmq_la_LDFLAGS = -version-info @LTVER@ @LIBZMQ_EXTRA_LDFLAFS@
 

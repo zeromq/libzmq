@@ -22,6 +22,8 @@
 
 #include "../bindings/c/zmq.h"
 
+#include "stdint.hpp"
+
 namespace zmq
 {
 
@@ -47,8 +49,8 @@ namespace zmq
         //  Return pointer to the owning socket.
         virtual class socket_base_t *get_owner () = 0;
 
-        //  Returns the name of associated session.
-        virtual const char *get_session_name () = 0;
+        //  Return ordinal number of the session.
+        virtual uint64_t get_ordinal () = 0;
     };
 
 }

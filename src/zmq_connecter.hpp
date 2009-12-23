@@ -36,7 +36,7 @@ namespace zmq
     public:
 
         zmq_connecter_t (class io_thread_t *parent_, socket_base_t *owner_,
-            const options_t &options_, const char *session_name_, bool wait_);
+            const options_t &options_, uint64_t session_ordinal_, bool wait_);
         ~zmq_connecter_t ();
 
         //  Set IP address to connect to.
@@ -69,11 +69,11 @@ namespace zmq
         //  If true, connecter is waiting a while before trying to connect.
         bool wait;
 
+        //  Ordinal of the session to attach to.
+        uint64_t session_ordinal;
+
         //  Associated socket options.
         options_t options;
-
-        //  Name of the session associated with the connecter.
-        std::string session_name;
 
         //  Address to connect to.
         std::string address;

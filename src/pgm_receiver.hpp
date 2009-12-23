@@ -47,8 +47,7 @@ namespace zmq
 
         //  Creates gm_engine. Underlying PGM connection is initialised
         //  using network_ parameter.
-        pgm_receiver_t (class io_thread_t *parent_, const options_t &options_,
-            const char *session_name_);
+        pgm_receiver_t (class io_thread_t *parent_, const options_t &options_);
         ~pgm_receiver_t ();
 
         int init (bool udp_encapsulation_, const char *network_);
@@ -93,9 +92,6 @@ namespace zmq
 
         //  Socket options.
         options_t options;
-
-        //  Name of the session associated with the connecter.
-        std::string session_name;
 
         //  Parent session.
         i_inout *inout;

@@ -25,16 +25,41 @@
 #include "pipe.hpp"
 
 zmq::session_t::session_t (object_t *parent_, socket_base_t *owner_,
-      const char *name_, const options_t &options_, bool reconnect_) :
+      const options_t &options_) :
     owned_t (parent_, owner_),
     in_pipe (NULL),
     active (true),
     out_pipe (NULL),
     engine (NULL),
-    name (name_),
-    options (options_),
-    reconnect (reconnect_)
+    options (options_)
 {
+    type = unnamed;
+    
+    //  It's possible to register the session at this point as it will be
+    //  searched for only on reconnect, i.e. no race condition (session found
+    //  before it is plugged into it's I/O thread) is possible.
+    ordinal = owner->register_session (this);
+}
+
+zmq::session_t::session_t (object_t *parent_, socket_base_t *owner_,
+      const options_t &options_, const char *name_) :
+    owned_t (parent_, owner_),
+    in_pipe (NULL),
+    active (true),
+    out_pipe (NULL),
+    engine (NULL),
+    options (options_)
+{
+    if (name_) {
+        type = named;
+        name = name_;
+        ordinal = 0;
+    }
+    else {
+        type = transient;
+        //  TODO: Generate unique name here.
+        ordinal = 0;
+    }
 }
 
 zmq::session_t::~session_t ()
@@ -78,8 +103,8 @@ void zmq::session_t::detach (owned_t *reconnecter_)
     //  Engine is terminating itself. No need to deallocate it from here.
     engine = NULL;
 
-    //  In the case od anonymous connection, terminate the session.
-    if (name.empty ())
+    //  Terminate transient session.
+    if (type == transient)
         term ();
 }
 
@@ -93,9 +118,11 @@ class zmq::socket_base_t *zmq::session_t::get_owner ()
     return owner;
 }
 
-const char *zmq::session_t::get_session_name ()
+uint64_t zmq::session_t::get_ordinal ()
 {
-    return name.c_str ();
+    zmq_assert (type == unnamed);
+    zmq_assert (ordinal);
+    return ordinal;
 }
 
 void zmq::session_t::attach_pipes (class reader_t *inpipe_,
@@ -181,11 +208,12 @@ void zmq::session_t::process_plug ()
 
 void zmq::session_t::process_unplug ()
 {
-    //  Unregister the session from the socket.
-    if (!name.empty ()) {
-        bool ok = owner->unregister_session (name.c_str ());
-        zmq_assert (ok);
-    }
+    //  Unregister the session from the socket. There's nothing to do here
+    //  for transient sessions.
+    if (type == unnamed)
+        owner->unregister_session (ordinal);
+    else if (type == named)
+        owner->unregister_session (name.c_str ());
 
     //  Ask associated pipes to terminate.
     if (in_pipe) {

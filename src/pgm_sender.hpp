@@ -42,8 +42,7 @@ namespace zmq
     {
 
     public:
-        pgm_sender_t (class io_thread_t *parent_, const options_t &options_, 
-            const char *session_name_);
+        pgm_sender_t (class io_thread_t *parent_, const options_t &options_);
         ~pgm_sender_t ();
 
         int init (bool udp_encapsulation_, const char *network_);
@@ -73,9 +72,6 @@ namespace zmq
 
         //  Socket options.
         options_t options;
-
-        //  Name of the session associated with the connecter.
-        std::string session_name;
 
         //  Poll handle associated with PGM socket.
         handle_t handle;

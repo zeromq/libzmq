@@ -17,34 +17,36 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_ZMQ_CONNECTER_INIT_HPP_INCLUDED__
-#define __ZMQ_ZMQ_CONNECTER_INIT_HPP_INCLUDED__
+#ifndef __ZMQ_ZMQ_INIT_HPP_INCLUDED__
+#define __ZMQ_ZMQ_INIT_HPP_INCLUDED__
 
 #include <string>
 
 #include "i_inout.hpp"
+#include "i_engine.hpp"
 #include "owned.hpp"
-#include "zmq_engine.hpp"
-#include "stdint.hpp"
 #include "fd.hpp"
+#include "stdint.hpp"
 #include "options.hpp"
+#include "stdint.hpp"
 
 namespace zmq
 {
 
-    //  The class handles initialisation phase of native 0MQ wire-level
-    //  protocol on the connecting side of the connection.
+    //  The class handles initialisation phase of 0MQ wire-level protocol.
 
-    class zmq_connecter_init_t : public owned_t, public i_inout
+    class zmq_init_t : public owned_t, public i_inout
     {
     public:
 
-        zmq_connecter_init_t (class io_thread_t *parent_, socket_base_t *owner_,
-            fd_t fd_, const options_t &options, const char *session_name_,
-            const char *address_);
-        ~zmq_connecter_init_t ();
+        zmq_init_t (class io_thread_t *parent_, socket_base_t *owner_,
+            fd_t fd_, const options_t &options_, bool reconnect_,
+            const char *address_, uint64_t session_ordinal_);
+        ~zmq_init_t ();
 
     private:
+
+        void finalise ();
 
         //  i_inout interface implementation.
         bool read (::zmq_msg_t *msg_);
@@ -53,25 +55,33 @@ namespace zmq
         void detach (owned_t *reconnecter_);
         class io_thread_t *get_io_thread ();
         class socket_base_t *get_owner ();
-        const char *get_session_name ();
+        uint64_t get_ordinal ();
 
         //  Handlers for incoming commands.
         void process_plug ();
         void process_unplug ();
 
-        //  Engine is created by zmq_connecter_init_t object. Once the
-        //  initialisation phase is over it is passed to a session object,
-        //  possibly running in a different I/O thread.
-        zmq_engine_t *engine;
+        //  Associated wite-protocol engine.
+        i_engine *engine;
+
+        //  True if our own identity was already sent to the peer.
+        bool sent;
+
+        //  True if peer's identity was already received.
+        bool received;
+
+        //  Identity of the peer socket.
+        std::string peer_identity;
+
+        //  TCP connecter creates session before the name of the peer is known.
+        //  Thus we know only its ordinal number.
+        uint64_t session_ordinal;
 
         //  Associated socket options.
         options_t options;
 
-        //  Name of the session to bind new connection to.
-        std::string session_name;
-
-        zmq_connecter_init_t (const zmq_connecter_init_t&);
-        void operator = (const zmq_connecter_init_t&);
+        zmq_init_t (const zmq_init_t&);
+        void operator = (const zmq_init_t&);
     };
 
 }

@@ -159,7 +159,7 @@ void zmq::zmq_engine_t::error ()
         //  Ask it to wait for a while before reconnecting.
         reconnecter = new (std::nothrow) zmq_connecter_t (
             inout->get_io_thread (), inout->get_owner (),
-            options, inout->get_session_name (), true);
+            options, inout->get_ordinal (), true);
         zmq_assert (reconnecter);
         reconnecter->set_address (address.c_str ());
     }

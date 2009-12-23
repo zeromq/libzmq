@@ -37,11 +37,10 @@
 #include "i_inout.hpp"
 
 zmq::pgm_receiver_t::pgm_receiver_t (class io_thread_t *parent_, 
-      const options_t &options_, const char *session_name_) :
+      const options_t &options_) :
     io_object_t (parent_),
     pgm_socket (true, options_),
     options (options_),
-    session_name (session_name_),
     inout (NULL)
 {
 }
