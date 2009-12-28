@@ -330,10 +330,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\zmq_connecter_init.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\src\zmq_decoder.cpp"
 				>
 			</File>
@@ -346,11 +342,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\zmq_listener.cpp"
+				RelativePath="..\..\..\src\zmq_init.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\zmq_listener_init.cpp"
+				RelativePath="..\..\..\src\zmq_listener.cpp"
 				>
 			</File>
 		</Filter>
@@ -608,10 +604,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\zmq_connecter_init.hpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\src\zmq_decoder.hpp"
 				>
 			</File>
@@ -624,11 +616,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\zmq_listener.hpp"
+				RelativePath="..\..\..\src\zmq_init.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\zmq_listener_init.hpp"
+				RelativePath="..\..\..\src\zmq_listener.hpp"
 				>
 			</File>
 		</Filter>

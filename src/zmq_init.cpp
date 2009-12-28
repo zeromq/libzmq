@@ -119,6 +119,7 @@ class zmq::socket_base_t *zmq::zmq_init_t::get_owner ()
 uint64_t zmq::zmq_init_t::get_ordinal ()
 {
     zmq_assert (false);
+    return 0;
 }
 
 void zmq::zmq_init_t::process_plug ()
