@@ -56,16 +56,11 @@ namespace zmq
         //  Fair queueing object for inbound pipes.
          fq_t fq;
 
-        //  Number of active "*" subscriptions.
+        //  Number of active * subscriptions.
         int all_count;
 
         typedef std::multiset <std::string> subscriptions_t;
-
-        //  List of all prefix subscriptions.
-        subscriptions_t prefixes;
-
-        //  List of all exact match subscriptions.
-        subscriptions_t topics;
+        subscriptions_t subscriptions;
 
         sub_t (const sub_t&);
         void operator = (const sub_t&);

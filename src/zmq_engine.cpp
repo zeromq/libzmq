@@ -101,8 +101,11 @@ void zmq::zmq_engine_t::in_event ()
     insize -= processed;
 
     //  Stop polling for input if we got stuck.
-    if (processed < insize)
-        reset_pollin (handle);
+    if (processed < insize) {
+        zmq_assert (false);
+        //  TODO: This may happen is queue limits are implemented.
+        //  reset_pollin (handle);
+    }
 
     //  Flush all messages the decoder may have produced.
     inout->flush ();
