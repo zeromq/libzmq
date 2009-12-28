@@ -30,7 +30,6 @@
 
 #include <pgm/pgm.h>
 
-#include "stdint.hpp"
 #include "options.hpp"
 
 namespace zmq
@@ -62,11 +61,8 @@ namespace zmq
         //  Send data as one APDU, transmit window owned memory.
         size_t send (unsigned char *data_, size_t data_len_);
 
-        //  Allocates one slice for packet in tx window.
-        void *get_buffer (size_t *size_);
-
-        //  Fees memory allocated by get_buffer.
-        void free_buffer (void *data_);
+        //  Returns max tsdu size without fragmentation.
+        size_t get_max_tsdu_size ();
 
         //  Receive data from pgm socket.
         ssize_t receive (void **data_, const pgm_tsi_t **tsi_);
@@ -76,21 +72,9 @@ namespace zmq
         void process_upstream ();
 
     private:
-
-        //  Open PGM transport.
-        int open_transport ();
-
-        //  Close transport.
-        void close_transport ();
     
         //  OpenPGM transport
         pgm_transport_t* transport;
-        
-        //  Returns max tsdu size without fragmentation.
-        size_t get_max_tsdu_size ();
-
-        //  Returns maximum count of apdus which fills readbuf_size_
-        size_t get_max_apdu_at_once (size_t readbuf_size_);
 
         //  Associated socket options.
         options_t options;
@@ -98,18 +82,12 @@ namespace zmq
         //  true when pgm_socket should create receiving side.
         bool receiver;
 
-        //  TIBCO Rendezvous format network info.
-        char network [256];
-
-        //  PGM transport port number.
-        uint16_t port_number;
-
-        //  If we are using UDP encapsulation.
-        bool udp_encapsulation;
-
-        //  Array of pgm_msgv_t structures to store received data 
+        //  Array of pgm_msgv_t structures to store received data
         //  from the socket (pgm_transport_recvmsgv).
         pgm_msgv_t *pgm_msgv;
+
+        //  Size of pgm_msgv array.
+        size_t pgm_msgv_len;
 
         // How many bytes were read from pgm socket.
         size_t nbytes_rec;
@@ -119,9 +97,6 @@ namespace zmq
         
         //  How many messages from pgm_msgv were already sent up.
         size_t pgm_msgv_processed;
-
-        //  Size of pgm_msgv array.
-        size_t pgm_msgv_len;
     };
 }
 #endif

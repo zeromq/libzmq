@@ -42,6 +42,7 @@ namespace zmq
     {
 
     public:
+
         pgm_sender_t (class io_thread_t *parent_, const options_t &options_);
         ~pgm_sender_t ();
 
@@ -58,12 +59,6 @@ namespace zmq
 
     private:
 
-        //  Send one APDU with first message offset information. 
-        //  Note that first 2 bytes in data_ are used to store the offset_
-        //  and thus user data has to start at data_ + sizeof (uint16_t).
-        size_t write_one_pkt_with_offset (unsigned char *data_, size_t size_,
-            uint16_t offset_);
-
         //  Message encoder.
         zmq_encoder_t encoder;
 
@@ -78,20 +73,15 @@ namespace zmq
         handle_t uplink_handle;
         handle_t rdata_notify_handle;
 
-        //  Parent session.
-        i_inout *inout;
-
         //  Output buffer from pgm_socket.
         unsigned char *out_buffer;
         
         //  Output buffer size.
         size_t out_buffer_size;
 
+        //  Number of bytes in the buffer to be written to the socket.
+        //  If zero, there are no data to be sent.
         size_t write_size;
-        size_t write_pos;
-
-        //  Offset of the first mesage in data chunk taken from encoder.
-        int first_message_offset;
 
         pgm_sender_t (const pgm_sender_t&);
         void operator = (const pgm_sender_t&);

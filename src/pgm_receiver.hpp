@@ -29,7 +29,7 @@
 #endif
 
 #include <map>
-#include <pgm/pgm.h>
+#include <algorithm>
 
 #include "io_object.hpp"
 #include "i_engine.hpp"
@@ -45,8 +45,6 @@ namespace zmq
     
     public:
 
-        //  Creates gm_engine. Underlying PGM connection is initialised
-        //  using network_ parameter.
         pgm_receiver_t (class io_thread_t *parent_, const options_t &options_);
         ~pgm_receiver_t ();
 
@@ -59,11 +57,12 @@ namespace zmq
 
         //  i_poll_events interface implementation.
         void in_event ();
-        void out_event ();
 
     private:
 
-        //  Map to hold TSI, joined and decoder for each peer.
+        //  If joined is true we are already getting messages from the peer.
+        //  It it's false, we are getting data but still we haven't seen
+        //  beginning of a message.
         struct peer_info_t
         {
             bool joined;
@@ -84,8 +83,8 @@ namespace zmq
             }
         };
 
-        typedef std::map <pgm_tsi_t, peer_info_t, tsi_comp> peer_t;
-        peer_t peers;
+        typedef std::map <pgm_tsi_t, peer_info_t, tsi_comp> peers_t;
+        peers_t peers;
 
         //  PGM socket.
         pgm_socket_t pgm_socket;
