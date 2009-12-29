@@ -69,6 +69,9 @@ extern "C" {
 #ifndef ECONNREFUSED
 #define ECONNREFUSED (ZMQ_HAUSNUMERO + 7)
 #endif
+#ifndef EINPROGRESS
+#define EINPROGRESS (ZMQ_HAUSNUMERO + 8)
+#endif
 
 //  Native 0MQ error codes.
 #define EMTHREAD (ZMQ_HAUSNUMERO + 50)
