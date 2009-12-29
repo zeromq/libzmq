@@ -51,10 +51,10 @@ there's a 0MQ socket in the pollset belonging to a different application thread.
 .nf
 zmq_pollitem_t items [2];
 items [0].socket = s;
-items [0].events = POLLIN;
+items [0].events = ZMQ_POLLIN;
 items [1].socket = NULL;
 items [1].fd = my_fd;
-items [1].events = POLLIN;
+items [1].events = ZMQ_POLLIN;
 
 int rc = zmq_poll (items, 2);
 assert (rc != -1);
