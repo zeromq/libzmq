@@ -150,10 +150,7 @@ int zmq::sub_t::xrecv (zmq_msg_t *msg_, int flags_)
 
 bool zmq::sub_t::xhas_in ()
 {
-    //  TODO:  This is more complex as we have to ignore all the messages that
-    //         don't fit the filter.
-    zmq_assert (false);
-    return false;
+    return fq.has_in ();
 }
 
 bool zmq::sub_t::xhas_out ()
