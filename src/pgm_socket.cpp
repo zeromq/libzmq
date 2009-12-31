@@ -46,10 +46,10 @@ zmq::pgm_socket_t::pgm_socket_t (bool receiver_, const options_t &options_) :
     options (options_),
     receiver (receiver_),
     pgm_msgv (NULL),
+    pgm_msgv_len (0),
     nbytes_rec (0),
     nbytes_processed (0),
-    pgm_msgv_processed (0),
-    pgm_msgv_len (0)
+    pgm_msgv_processed (0)
 {
 }
 
