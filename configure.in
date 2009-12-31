@@ -488,6 +488,9 @@ if test "x$with_pgm2_ext" != "xno"; then
     AC_DEFINE(ZMQ_HAVE_OPENPGM, 1, [Have OpenPGM v1 or v2 extension.])
     AC_DEFINE(ZMQ_HAVE_OPENPGM2, 1, [Have OpenPGM v2 extension.])
     pgm2_ext="yes"
+else
+    #  Fallback for make dist.
+    pgm_basename=${pgm2_basename}
 fi
 
 AC_SUBST(pgm_basename)
