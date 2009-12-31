@@ -77,6 +77,7 @@ libzmq_la_SOURCES = app_thread.hpp \
     i_signaler.hpp \
     kqueue.hpp \
     lb.hpp \
+    likely.hpp \
     msg_content.hpp \
     mutex.hpp \
     object.hpp \
