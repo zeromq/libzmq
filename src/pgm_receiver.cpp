@@ -153,7 +153,7 @@ void zmq::pgm_receiver_t::in_event ()
     
         //  Push all the data to the decoder.
         //  TODO: process_buffer may not process entire buffer!
-        size_t processed = it->second.decoder->process_buffer (data, received);
+        ssize_t processed = it->second.decoder->process_buffer (data, received);
         zmq_assert (processed == received);
 
         //  Flush any messages decoder may have produced.
