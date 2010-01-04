@@ -26,8 +26,13 @@ if  [ $? -ne 0 ]; then
     exit 1
 fi
 
+mkdir config
+if [ $? -ne 0 ]; then
+    echo
+    echo "Cannot create config directory."
+    echo
+fi
 autoreconf --install --force --verbose -I config
-
 if [ $? -ne 0 ]; then
     echo
     echo "Could not run autoreconf, check autotools installation."
