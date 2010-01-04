@@ -33,9 +33,9 @@ namespace zmq
     typedef zmq_free_fn free_fn;
     typedef zmq_pollitem_t pollitem_t;
 
-    inline int poll (zmq_pollitem_t *items_, int nitems_)
+    inline int poll (zmq_pollitem_t *items_, int nitems_, long timeout_ = -1)
     {
-        return zmq_poll (items_, nitems_);
+        return zmq_poll (items_, nitems_, timeout_);
     }
 
     class error_t : public std::exception
