@@ -409,7 +409,7 @@ fi
 #  PGM extension
 pgm2_ext="no"
 
-pgm2_basename="libpgm-2.0.18rc3"
+pgm2_basename="libpgm-2.0.19rc4"
 
 AC_SUBST(pgm2_basename)
 
@@ -470,13 +470,13 @@ if test "x$with_pgm2_ext" != "xno"; then
 
     #  Generate galois_tables.c
     AC_CONFIG_COMMANDS([galois_tables2.c], 
-        [perl foreign/openpgm/libpgm-2.0.18rc3/openpgm/pgm/galois_generator.pl > \
-            foreign/openpgm/libpgm-2.0.18rc3/openpgm/pgm/galois_tables.c])
+        [perl foreign/openpgm/libpgm-2.0.19rc4/openpgm/pgm/galois_generator.pl > \
+            foreign/openpgm/libpgm-2.0.19rc4/openpgm/pgm/galois_tables.c])
 
     #  Generate version.c
     AC_CONFIG_COMMANDS([version2.c],
-        [python foreign/openpgm/libpgm-2.0.18rc3/openpgm/pgm/version_generator.py > \
-            foreign/openpgm/libpgm-2.0.18rc3/openpgm/pgm/version.c])
+        [python foreign/openpgm/libpgm-2.0.19rc4/openpgm/pgm/version_generator.py > \
+            foreign/openpgm/libpgm-2.0.19rc4/openpgm/pgm/version.c])
 
     #  Check for OpenPGM nedded libraries.
     PKG_CHECK_MODULES([GLIB], [glib-2.0 gthread-2.0])
