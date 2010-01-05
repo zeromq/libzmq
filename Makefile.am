@@ -1,3 +1,5 @@
+ACLOCAL_AMFLAGS = -I config
+
 if BUILD_PERF
 DIR_PERF = perf
 endif
