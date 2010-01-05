@@ -375,13 +375,15 @@ void zmq::pgm_socket_t::get_receiver_fds (int *receive_fd_,
 //  sender_fd is from pgm_transport->send_sock.
 //  receive_fd_ is from  transport->recv_sock.
 //  rdata_notify_fd_ is from transport->rdata_notify.
+//  pending_notify_fd_ is from transport->pending_notify.
 void zmq::pgm_socket_t::get_sender_fds (int *send_fd_, int *receive_fd_, 
-    int *rdata_notify_fd_)
+    int *rdata_notify_fd_, int *pending_notify_fd_)
 {
     zmq_assert (send_fd_);
     zmq_assert (receive_fd_);
 
     zmq_assert (rdata_notify_fd_);
+    zmq_assert (pending_notify_fd_);
 
     //  recv_sock2 should not be used - check it.
     zmq_assert (transport->recv_sock2 == -1);
@@ -390,10 +392,12 @@ void zmq::pgm_socket_t::get_sender_fds (int *send_fd_, int *receive_fd_,
     zmq_assert (transport->can_send_data);
     zmq_assert (!transport->can_recv_data);
 
-    //  Take FDs directly from transport.
-    *receive_fd_ = pgm_transport_get_recv_fd (transport);
-    *rdata_notify_fd_ = pgm_transport_get_repair_fd (transport);
+    //  Take FDs from transport.
     *send_fd_ = pgm_transport_get_send_fd (transport);
+    *receive_fd_ = pgm_transport_get_recv_fd (transport);
+
+    *rdata_notify_fd_ = pgm_transport_get_repair_fd (transport);
+    *pending_notify_fd_ = pgm_transport_get_pending_fd (transport);
 }
 
 //  Send one APDU, transmit window owned memory.

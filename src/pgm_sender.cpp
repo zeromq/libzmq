@@ -54,6 +54,8 @@ int zmq::pgm_sender_t::init (bool udp_encapsulation_, const char *network_)
     out_buffer_size = pgm_socket.get_max_tsdu_size ();
     out_buffer = (unsigned char*) malloc (out_buffer_size);
     zmq_assert (out_buffer);
+
+    return rc;
 }
 
 void zmq::pgm_sender_t::plug (i_inout *inout_)
@@ -62,20 +64,24 @@ void zmq::pgm_sender_t::plug (i_inout *inout_)
     int downlink_socket_fd = 0;
     int uplink_socket_fd = 0;
     int rdata_notify_fd = 0;
+    int pending_notify_fd = 0;
 
     encoder.set_inout (inout_);
 
     //  Fill fds from PGM transport and add them to the poller.
     pgm_socket.get_sender_fds (&downlink_socket_fd, &uplink_socket_fd,
-        &rdata_notify_fd);
+        &rdata_notify_fd, &pending_notify_fd);
+
     handle = add_fd (downlink_socket_fd);
     uplink_handle = add_fd (uplink_socket_fd);
     rdata_notify_handle = add_fd (rdata_notify_fd);   
+    pending_notify_handle = add_fd (pending_notify_fd);
 
     //  Set POLLIN. We wont never want to stop polling for uplink = we never
     //  want to stop porocess NAKs.
     set_pollin (uplink_handle);
     set_pollin (rdata_notify_handle);
+    set_pollin (pending_notify_handle);
 
     //  Set POLLOUT for downlink_socket_handle.
     set_pollout (handle);
@@ -86,6 +92,7 @@ void zmq::pgm_sender_t::unplug ()
     rm_fd (handle);
     rm_fd (uplink_handle);
     rm_fd (rdata_notify_handle);
+    rm_fd (pending_notify_handle);
     encoder.set_inout (NULL);
 }
 

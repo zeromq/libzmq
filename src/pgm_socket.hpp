@@ -56,7 +56,7 @@ namespace zmq
         //   Get sender and receiver fds and store it to user allocated 
         //   memory. Receive fd is used to process NAKs from peers.
         void get_sender_fds (int *send_fd_, int *receive_fd_,
-            int *rdata_notify_fd_);
+            int *rdata_notify_fd_, int *pending_notify_fd_);
 
         //  Send data as one APDU, transmit window owned memory.
         size_t send (unsigned char *data_, size_t data_len_);

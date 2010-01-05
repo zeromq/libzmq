@@ -72,6 +72,7 @@ namespace zmq
         handle_t handle;
         handle_t uplink_handle;
         handle_t rdata_notify_handle;
+        handle_t pending_notify_handle;
 
         //  Output buffer from pgm_socket.
         unsigned char *out_buffer;
