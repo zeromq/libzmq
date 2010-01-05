@@ -51,7 +51,7 @@ int main (int argc, char *argv [])
     s = zmq_socket (ctx, ZMQ_SUB);
     assert (s);
 
-    rc = zmq_setsockopt (s, ZMQ_SUBSCRIBE , "*", 1);
+    rc = zmq_setsockopt (s, ZMQ_SUBSCRIBE , "", 0);
     assert (rc == 0);
 
     //  Add your socket options here.

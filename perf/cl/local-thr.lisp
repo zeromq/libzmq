@@ -30,7 +30,7 @@
 
 (zmq::with-context (ctx 1 1)
   (zmq:with-socket (s ctx zmq:sub)
-    (zmq:setsockopt s zmq:subscribe "*")
+    (zmq:setsockopt s zmq:subscribe "")
     (zmq:setsockopt s zmq:rate *rate*)
     (zmq:bind s *bind-address*)
     (let ((msg (make-instance 'zmq:msg)))

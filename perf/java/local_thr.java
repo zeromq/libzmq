@@ -37,7 +37,7 @@ class local_thr
 
         org.zmq.Socket s = new org.zmq.Socket (ctx, org.zmq.Socket.SUB);
 
-        s.setsockopt (org.zmq.Socket.SUBSCRIBE , "*");
+        s.setsockopt (org.zmq.Socket.SUBSCRIBE , "");
 
         //  Add your socket options here.
         //  For example ZMQ_RATE, ZMQ_RECOVERY_IVL and ZMQ_MCAST_LOOP for PGM.

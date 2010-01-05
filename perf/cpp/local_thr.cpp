@@ -38,7 +38,7 @@ int main (int argc, char *argv [])
 
     zmq::socket_t s (ctx, ZMQ_SUB);
 
-    s.setsockopt (ZMQ_SUBSCRIBE , "*", 1);
+    s.setsockopt (ZMQ_SUBSCRIBE , "", 0);
 
     //  Add your socket options here.
     //  For example ZMQ_RATE, ZMQ_RECOVERY_IVL and ZMQ_MCAST_LOOP for PGM.
