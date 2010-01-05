@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2009 FastMQ Inc.
+    Copyright (c) 2007-2010 iMatix Corporation
 
     This file is part of 0MQ.
 
@@ -264,7 +264,7 @@ int zmq_recv (void *s_, zmq_msg_t *msg_, int flags_)
     return (((zmq::socket_base_t*) s_)->recv (msg_, flags_));
 }
 
-int zmq_poll (zmq_pollitem_t *items_, int nitems_)
+int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 {
 #if defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD ||\
     defined ZMQ_HAVE_OPENBSD || defined ZMQ_HAVE_SOLARIS ||\
@@ -321,6 +321,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_)
         npollfds++;
     }
 
+    int timeout = timeout_ > 0 ? timeout_ / 1000 : -1;
     int nevents = 0;
     bool initial = true;
     while (!nevents) {
@@ -328,10 +329,16 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_)
         //  Wait for activity. In the first iteration just check for events,
         //  don't wait. Waiting would prevent exiting on any events that may
         //  already be signaled on 0MQ sockets.
-        int rc = poll (pollfds, npollfds, initial ? 0 : -1);
+        int rc = poll (pollfds, npollfds, initial ? 0 : timeout);
         if (rc == -1 && errno == EINTR)
             continue;
         errno_assert (rc >= 0);
+
+        //  If timeout was hit with no events signaled, return zero.
+        if (!initial && rc == 0)
+            return 0;
+
+        //  From now on, perform blocking polling.
         initial = false;
 
         //  Process 0MQ commands if needed.
@@ -426,6 +433,8 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_)
             maxfd = notify_fd;
     }
 
+    timeval timeout = {timeout_ / 1000000, timeout_ % 1000000};
+    timeval zero_timeout = {0, 0};
     int nevents = 0;
     bool initial = true;
     while (!nevents) {
@@ -433,17 +442,21 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_)
         //  Wait for activity. In the first iteration just check for events,
         //  don't wait. Waiting would prevent exiting on any events that may
         //  already be signaled on 0MQ sockets.
-        timeval timeout = {0, 0};
         int rc = select (maxfd, &pollset_in, &pollset_out, &pollset_err,
-            initial ? &timeout : NULL);
+            initial ? &zero_timeout : &timeout);
 #if defined ZMQ_HAVE_WINDOWS
         wsa_assert (rc != SOCKET_ERROR);
 #else
         if (rc == -1 && errno == EINTR)
             continue;
 #endif
-
         errno_assert (rc >= 0);
+
+        //  If timeout was hit with no events signaled, return zero.
+        if (!initial && rc == 0)
+            return 0;
+
+        //  From now on, perform blocking select.
         initial = false;
 
         //  Process 0MQ commands if needed.

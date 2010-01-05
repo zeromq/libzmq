@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2009 FastMQ Inc.
+    Copyright (c) 2007-2010 iMatix Corporation
 
     This file is part of 0MQ.
 
@@ -202,7 +202,7 @@ typedef struct
     short revents;
 } zmq_pollitem_t;
 
-ZMQ_EXPORT int zmq_poll (zmq_pollitem_t *items, int nitems);
+ZMQ_EXPORT int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
 
 ////////////////////////////////////////////////////////////////////////////////
 //  Helper functions.
