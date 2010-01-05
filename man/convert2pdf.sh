@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (c) 2007-2009 FastMQ Inc.
+# Copyright (c) 2007-2010 iMatix Corporation
 #
 # This file is part of 0MQ.
 #
