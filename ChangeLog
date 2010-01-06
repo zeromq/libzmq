@@ -1,3 +1,13 @@
+
+Version 2.0-beta1
+
+ZMQII-27  Allow setting SNDBUF and RCVBUF size from 0MQ API
+ZMQII-22  Deadlock on zmq_close
+ZMQII-25  Implement streamed request/reply
+ZMQII-24  SEGFAULT when anonymous session disconnects
+ZMQII-26  Use zero-copy for large messages
+ZMQII-19  add --disable-eventfd configure option 
+
 Version 2.0-alpha3
 
 ZMQII-17  Allow multiple senders for sigle mcast group aka multicast bus.
