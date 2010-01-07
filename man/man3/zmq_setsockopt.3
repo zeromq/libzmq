@@ -60,12 +60,10 @@ Type: string  Unit: N/A  Default: NULL
 .IP "\fBZMQ_SUBSCRIBE\fP"
 Applicable only to ZMQ_SUB socket type. It establishes new message filter.
 When ZMQ_SUB socket is created all the incoming messages are filtered out.
-This option allows you to subscribe for all messages ("*"), messages with
-specific topic ("x.y.z") and/or messages with specific topic prefix
-("x.y.*"). Topic is one-byte-size-prefixed string located at
-the very beginning of the message. Multiple filters can be attached to
-a single 'sub' socket. In that case message passes if it matches at least
-one of the filters.
+This option allows you to subscribe for all messages (""), or messages 
+beginning with specific prefix (e.g. "animals.mammals.dogs."). Multiple
+filters can be attached to a single 'sub' socket. In that case message passes
+if it matches at least one of the filters.
 
 Type: string  Unit: N/A  Default: N/A
 

@@ -33,7 +33,10 @@
 #include "err.hpp"
 #include "fd.hpp"
 
-#if defined ZMQ_HAVE_LINUX
+#if defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD ||\
+    defined ZMQ_HAVE_OPENBSD || defined ZMQ_HAVE_SOLARIS ||\
+    defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_QNXNTO ||\
+    defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_AIX
 #include <poll.h>
 #endif
 
