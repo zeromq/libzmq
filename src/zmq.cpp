@@ -338,8 +338,10 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         errno_assert (rc >= 0);
 
         //  If timeout was hit with no events signaled, return zero.
-        if (!initial && rc == 0)
+        if (!initial && rc == 0) {
+            free (pollfds);
             return 0;
+        }
 
         //  From now on, perform blocking polling.
         initial = false;
