@@ -334,7 +334,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         //  already be signaled on 0MQ sockets.
         int rc = poll (pollfds, npollfds, initial ? 0 : timeout);
         if (rc == -1 && errno == EINTR)
-            continue;
+            break;
         errno_assert (rc >= 0);
 
         //  If timeout was hit with no events signaled, return zero.
@@ -453,7 +453,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         wsa_assert (rc != SOCKET_ERROR);
 #else
         if (rc == -1 && errno == EINTR)
-            continue;
+            break;
 #endif
         errno_assert (rc >= 0);
 
