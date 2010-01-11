@@ -36,7 +36,7 @@ int main (int argc, const char *argv [])
     //  Initialise 0MQ infrastructure.
     zmq::context_t ctx (1, 1);
     zmq::socket_t s (ctx, ZMQ_SUB);
-    s.setsockopt (ZMQ_SUBSCRIBE, "*", 1);
+    s.setsockopt (ZMQ_SUBSCRIBE, "", 0);
     s.connect (address);
     
     while (true) {

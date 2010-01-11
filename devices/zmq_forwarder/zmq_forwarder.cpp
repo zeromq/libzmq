@@ -54,7 +54,7 @@ int main (int argc, char *argv [])
     //  TODO: make the number of I/O threads configurable.
     zmq::context_t ctx (1, 1);
     zmq::socket_t in_socket (ctx, ZMQ_SUB);
-    in_socket.setsockopt (ZMQ_SUBSCRIBE, "*", 1);
+    in_socket.setsockopt (ZMQ_SUBSCRIBE, "", 0);
     zmq::socket_t out_socket (ctx, ZMQ_PUB);
 
     int n = 0;
