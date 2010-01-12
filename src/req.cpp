@@ -197,7 +197,7 @@ int zmq::req_t::xrecv (zmq_msg_t *msg_, int flags_)
 
 bool zmq::req_t::xhas_in ()
 {
-    if (reply_pipe->check_read ())
+    if (reply_pipe && reply_pipe->check_read ())
         return waiting_for_reply;
 
     return false;
