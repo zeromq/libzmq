@@ -29,6 +29,8 @@ namespace zmq
 
     struct i_inout
     {
+        virtual ~i_inout () {}
+
         //  Engine asks to get a message to send to the network.
         virtual bool read (::zmq_msg_t *msg_) = 0;
 
