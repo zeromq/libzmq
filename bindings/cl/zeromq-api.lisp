@@ -146,7 +146,7 @@ The string must be freed with FOREIGN-STRING-FREE."
 	       (setf (mem-aref int :long 0) value)
 	       (%setsockopt socket option int (foreign-type-size :long))))))
 
-(defun poll (items)
+(defun poll (items &optional (timeout -1))
   (let ((len (length items)))
     (with-foreign-object (%items 'pollitem len)
       (dotimes (i len)
@@ -156,14 +156,16 @@ The string must be freed with FOREIGN-STRING-FREE."
 	    (setf socket (pollitem-socket item)
 		  fd (pollitem-fd item)
 		  events (pollitem-events item)))))
-      (let ((ret (%poll %items len)))
-	(if (> ret 0)
+      (let ((ret (%poll %items len timeout)))
+	(cond
+	  ((zerop ret) nil)
+	  ((> ret 0)
 	    (loop for i below len
 	       for revent = (foreign-slot-value (mem-aref %items 'pollitem i)
 						'pollitem
 						'revents)
-	       collect (setf (pollitem-revents (nth i items)) revent))
-	    (error (convert-from-foreign (%strerror *errno*) :string)))))))
+	       collect (setf (pollitem-revents (nth i items)) revent)))
+	  (t (error (convert-from-foreign (%strerror *errno*) :string))))))))
 
 (defmacro with-polls (list &body body)
   `(let ,(loop for (name . polls) in list

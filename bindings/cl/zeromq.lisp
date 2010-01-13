@@ -231,7 +231,8 @@
 
 (defcfun ("zmq_poll" %poll) :int
   (items	:pointer)
-  (nitems	:int))
+  (nitems	:int)
+  (timeout	:long))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Helper functions.
