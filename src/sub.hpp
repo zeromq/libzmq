@@ -23,6 +23,8 @@
 #include <set>
 #include <string>
 
+#include "../bindings/c/zmq.h"
+
 #include "socket_base.hpp"
 #include "fq.hpp"
 
@@ -53,6 +55,9 @@ namespace zmq
 
     private:
 
+        //  Check whether the message matches at least one subscription.
+        bool match (zmq_msg_t *msg_);
+
         //  Fair queueing object for inbound pipes.
          fq_t fq;
 
@@ -61,6 +66,11 @@ namespace zmq
 
         typedef std::multiset <std::string> subscriptions_t;
         subscriptions_t subscriptions;
+
+        //  If true, 'message' contains a matching message to return on the
+        //  next recv call.
+        bool has_message;
+        zmq_msg_t message;
 
         sub_t (const sub_t&);
         void operator = (const sub_t&);

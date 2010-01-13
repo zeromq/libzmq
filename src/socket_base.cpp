@@ -331,9 +331,7 @@ int zmq::socket_base_t::recv (::zmq_msg_t *msg_, int flags_)
     }
     else  {
         while (rc != 0) {
-            if (errno == EINPROGRESS)
-                app_thread->process_commands (false, true);
-            else if (errno == EAGAIN)
+            if (errno == EAGAIN)
                 app_thread->process_commands (true, false);
             else
                 return -1;
