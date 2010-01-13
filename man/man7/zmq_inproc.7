@@ -2,8 +2,40 @@
 .SH NAME
 In-process (inter-thread) tranport for 0MQ
 .SH SYNOPSIS
-.SH DESCRIPTION
+
+In-process transport is optimised for passing messages betweem threads in the
+same process.
+
+Messages are passed directly from one application thread to
+another application thread. There are no intervening I/O threads involved.
+Thus, if you are using 0MQ for in-process messaging only, you can initialise
+the library (
+.IR zmq_init
+) with zero I/O worker threads.
+
+.SH CONNECTION STRING
+
+Connection string for inproc transport is "inproc://" followed by an arbitrary
+string. There are no restrictions on the string format:
+
+.nf
+    inproc://my_endpoint
+    inproc://feeds/opra/cboe
+    inproc://feeds.opra.nasdaq
+    inproc://!&W#($)_@_123*((^^^
+.fi
+
+.SH WIRE FORMAT
+
+In-process transport transfers messages via memory thus there is no need for a
+wire format specification.
+
 .SH "SEE ALSO"
+
+.BR zmq_tcp (7)
+.BR zmq_udp (7)
+.BR zmq_pgm (7)
+
 .SH AUTHOR
 Martin Sustrik <sustrik at 250bpm dot com>
 

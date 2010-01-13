@@ -2,8 +2,38 @@
 .SH NAME
 UDP-based tranport for 0MQ
 .SH SYNOPSIS
-.SH DESCRIPTION
+
+UDP transport is exactly the same as PGM transport except that PGM packets
+are encapsulated in UDP packets. Rationale for this transport is that user-space
+implementation of PGM requires right to create raw sockets (PGM is located
+directly on top of IP layer in the netwroking stack), which is often not
+available. UDP encapsulation solves this problem, however, it adds some overhead
+related to creating and transferring UDP packet headers.
+
+.SH CONNECTION STRING
+
+Connection string for UDP transport is "udp://" followed by an IP adress
+of the NIC to use, semicolon, IP adress of the multicast group, colon and
+port numbrt. IP address of the NIC can be either its numeric representation
+or the name of the NIC as reported by operating system. IP address of the
+mutlicast group should be specified in the numeric representation. For example:
+
+.nf
+    udp://eth0:224.0.0.1:5555
+    udp://lo:230.0.0.0:6666
+    udp://192.168.0.111:224.0.0.1:5555
+.fi
+
+.SH WIRE FORMAT
+
+Same as with PGM transport except for UDP packet headers.
+
 .SH "SEE ALSO"
+
+.BR zmq_pgm (7)
+.BR zmq_tcp (7)
+.BR zmq_inproc (7)
+
 .SH AUTHOR
 Martin Sustrik <sustrik at 250bpm dot com>
 
