@@ -18,6 +18,11 @@ a NIC name or a hostname (resolved by DNS):
     tcp://lo:32768
 .fi
 
+Note that NIC names are not standardised by POSIX. They tend to be rather
+arbitrary and platform dependent. Say, "eth0" on Linux would correspond to "en0"
+on OSX and "e1000g" on Solaris. On Windows platform, as there are no short NIC
+names available, you have to use numeric IP addresses instead.
+
 .SH WIRE FORMAT
 
 A message consists of a message length followed by message data.
