@@ -452,31 +452,25 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             maxfd = notify_fd;
     }
 
+    bool block = (timeout_ < 0);
     timeval timeout = {timeout_ / 1000000, timeout_ % 1000000};
     timeval zero_timeout = {0, 0};
     int nevents = 0;
-    bool initial = true;
-    while (!nevents) {
 
-        //  Wait for activity. In the first iteration just check for events,
-        //  don't wait. Waiting would prevent exiting on any events that may
-        //  already be signaled on 0MQ sockets.
-        int rc = select (maxfd, &pollset_in, &pollset_out, &pollset_err,
-            initial ? &zero_timeout : &timeout);
+    //  First iteration just check for events, don't block. Waiting would
+    //  prevent exiting on any events that may already been signaled on
+    //  0MQ sockets.
+    int rc = select (maxfd, &pollset_in, &pollset_out, &pollset_err,
+        &zero_timeout);
 #if defined ZMQ_HAVE_WINDOWS
-        wsa_assert (rc != SOCKET_ERROR);
+    wsa_assert (rc != SOCKET_ERROR);
 #else
-        if (rc == -1 && errno == EINTR)
-            break;
+    if (rc == -1 && errno == EINTR)
+        break;
+    errno_assert (rc >= 0);
 #endif
-        errno_assert (rc >= 0);
 
-        //  If timeout was hit with no events signaled, return zero.
-        if (!initial && rc == 0)
-            return 0;
-
-        //  From now on, perform blocking select.
-        initial = false;
+    while (true) {
 
         //  Process 0MQ commands if needed.
         if (nsockets && FD_ISSET (notify_fd, &pollset_in))
@@ -507,6 +501,32 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             if (items_ [i].revents)
                 nevents++;
         }
+
+        //  If there's at least one event, or if we are asked not to block,
+        //  return immediately.
+        if (nevents || (timeout.tv_sec == 0 && timeout.tv_usec == 0))
+            break;
+
+        //  Wait for events.
+        int rc = select (maxfd, &pollset_in, &pollset_out, &pollset_err,
+            block ? NULL : &timeout);
+#if defined ZMQ_HAVE_WINDOWS
+        wsa_assert (rc != SOCKET_ERROR);
+#else
+        if (rc == -1 && errno == EINTR)
+            break;
+        errno_assert (rc >= 0);
+#endif
+        
+        //  If timeout was hit with no events signaled, return zero.
+        if (rc == 0)
+            break;
+
+        //  If timeout was already applied, we don't want to poll anymore.
+        //  Setting timeout to zero will cause termination of the function
+        //  once the events we've got are processed.
+        if (!block)
+            timeout = zero_timeout;
     }
 
     return nevents;
