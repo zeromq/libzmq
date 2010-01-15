@@ -19,6 +19,8 @@
 
 #include <string.h>
 
+#include "../bindings/c/zmq.h"
+
 #include "tcp_listener.hpp"
 #include "platform.hpp"
 #include "ip.hpp"
@@ -39,7 +41,7 @@ zmq::tcp_listener_t::~tcp_listener_t ()
         close ();
 }
 
-int zmq::tcp_listener_t::set_address (cosnt char *protocol_, const char *addr_)
+int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
 {
     //  IPC protocol is not supported on Windows platform.
     if (strcmp (protocol_, "tcp") != 0 ) {
