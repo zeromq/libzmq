@@ -41,11 +41,13 @@ zmq::zmq_connecter_t::~zmq_connecter_t ()
 {
 }
 
-int zmq::zmq_connecter_t::set_address (const char *address_)
+int zmq::zmq_connecter_t::set_address (const char *protocol_,
+    const char *address_)
 {
-     int rc = tcp_connecter.set_address (address_);
+     int rc = tcp_connecter.set_address (protocol_, address_);
      if (rc != 0)
          return rc;
+     protocol = protocol_;
      address = address_;
      return 0;
 }
@@ -91,7 +93,8 @@ void zmq::zmq_connecter_t::out_event ()
     //  Create an init object. 
     zmq_init_t *init = new (std::nothrow) zmq_init_t (
         choose_io_thread (options.affinity), owner,
-        fd, options, true, address.c_str (), session_ordinal);
+        fd, options, true, protocol.c_str (), address.c_str (),
+        session_ordinal);
     zmq_assert (init);
     send_plug (init);
     send_own (owner, init);
@@ -128,7 +131,6 @@ void zmq::zmq_connecter_t::start_connecting ()
     }
 
     //  Handle any other error condition by eventual reconnect.
-    tcp_connecter.close ();
     wait = true;
     add_timer ();
 }

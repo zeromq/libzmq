@@ -25,7 +25,7 @@
 
 zmq::zmq_init_t::zmq_init_t (io_thread_t *parent_, socket_base_t *owner_,
       fd_t fd_, const options_t &options_, bool reconnect_,
-      const char *address_, uint64_t session_ordinal_) :
+      const char *protocol_, const char *address_, uint64_t session_ordinal_) :
     owned_t (parent_, owner_),
     sent (false),
     received (false),
@@ -34,7 +34,7 @@ zmq::zmq_init_t::zmq_init_t (io_thread_t *parent_, socket_base_t *owner_,
 {
     //  Create the engine object for this connection.
     engine = new (std::nothrow) zmq_engine_t (parent_, fd_, options,
-        reconnect_, address_);
+        reconnect_, protocol_, address_);
     zmq_assert (engine);
 }
 

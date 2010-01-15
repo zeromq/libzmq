@@ -35,8 +35,8 @@ namespace zmq
         tcp_connecter_t ();
         ~tcp_connecter_t ();
 
-        //  Set IP address/port to connect to.
-        int set_address (const char *addr_);
+        //  Set address to connect to.
+        int set_address (const char *protocol, const char *addr_);
 
         //  Open TCP connecting socket. Address is in
         //  <hostname>:<port-number> format. Returns -1 in case of error,

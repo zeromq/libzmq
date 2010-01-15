@@ -7,7 +7,7 @@ dist_man_MANS = man1/zmq_forwarder.1 man1/zmq_streamer.1 man1/zmq_queue.1 \
     man3/zmq_msg_data.3 man3/zmq_msg_size.3 man3/zmq_strerror.3 \
     man7/zmq.7 man7/zmq_cpp.7 man7/zmq_python.7 man7/zmq_ruby.7 \
     man7/zmq_cl.7 man7/zmq_tcp.7 man7/zmq_udp.7 man7/zmq_pgm.7 \
-    man7/zmq_inproc.7
+    man7/zmq_inproc.7 man7/zmq_ipc.7
 
 distclean-local:
 		-rm  *.pdf

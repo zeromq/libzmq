@@ -41,7 +41,8 @@ namespace zmq
 
         zmq_init_t (class io_thread_t *parent_, socket_base_t *owner_,
             fd_t fd_, const options_t &options_, bool reconnect_,
-            const char *address_, uint64_t session_ordinal_);
+            const char *protocol_, const char *address_,
+            uint64_t session_ordinal_);
         ~zmq_init_t ();
 
     private:

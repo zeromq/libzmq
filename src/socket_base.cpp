@@ -87,11 +87,19 @@ int zmq::socket_base_t::bind (const char *addr_)
     if (addr_type == "inproc")
         return register_endpoint (addr_args.c_str (), this);
 
-    if (addr_type == "tcp") {
+    if (addr_type == "tcp" || addr_type == "ipc") {
+
+#if defined ZMQ_HAVE_WINDOWS || defined ZMQ_HAVE_OPENVMS
+        if (addr_type == "ipc") {
+            errno = EPROTONOSUPPORT;
+            return -1;
+        }
+#endif
+
         zmq_listener_t *listener = new (std::nothrow) zmq_listener_t (
             choose_io_thread (options.affinity), this, options);
         zmq_assert (listener);
-        int rc = listener->set_address (addr_args.c_str ());
+        int rc = listener->set_address (addr_type.c_str(), addr_args.c_str ());
         if (rc != 0)
             return -1;
 
@@ -202,7 +210,14 @@ int zmq::socket_base_t::connect (const char *addr_)
     send_plug (session);
     send_own (this, session);
 
-    if (addr_type == "tcp") {
+    if (addr_type == "tcp" || addr_type == "ipc") {
+
+#if defined ZMQ_HAVE_WINDOWS || defined ZMQ_HAVE_OPENVMS
+        if (addr_type == "ipc") {
+            errno = EPROTONOSUPPORT;
+            return -1;
+        }
+#endif
 
         //  Create the connecter object. Supply it with the session name
         //  so that it can bind the new connection to the session once
@@ -211,7 +226,7 @@ int zmq::socket_base_t::connect (const char *addr_)
             choose_io_thread (options.affinity), this, options,
             session->get_ordinal (), false);
         zmq_assert (connecter);
-        int rc = connecter->set_address (addr_args.c_str ());
+        int rc = connecter->set_address (addr_type.c_str(), addr_args.c_str ());
         if (rc != 0) {
             delete connecter;
             return -1;

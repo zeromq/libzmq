@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <string.h>
+
 #include <string>
 
 #include "tcp_connecter.hpp"
@@ -38,10 +40,13 @@ zmq::tcp_connecter_t::~tcp_connecter_t ()
         close ();
 }
 
-int zmq::tcp_connecter_t::set_address (const char *addr_)
+int zmq::tcp_connecter_t::set_address (const char *protocol_, const char *addr_)
 {
-    //  Convert the hostname into sockaddr_in structure.
-    return resolve_ip_hostname (&addr, addr_);
+    if (strcmp (protocol_, "tcp") == 0)
+        return resolve_ip_hostname ((sockaddr_in*) &addr, addr_);
+
+    errno = EPROTONOSUPPORT;
+    return -1;    
 }
 
 int zmq::tcp_connecter_t::open ()
@@ -67,7 +72,7 @@ int zmq::tcp_connecter_t::open ()
     wsa_assert (rc != SOCKET_ERROR);
 
     //  Connect to the remote peer.
-    rc = ::connect (s, (sockaddr*) &addr, sizeof addr);
+    rc = ::connect (s, (sockaddr*) &addr, sizeof (sockaddr_in));
 
     //  Connect was successfull immediately.
     if (rc == 0)
@@ -143,58 +148,94 @@ zmq::tcp_connecter_t::~tcp_connecter_t ()
         close ();
 }
 
-int zmq::tcp_connecter_t::set_address (const char *addr_)
+int zmq::tcp_connecter_t::set_address (const char *protocol_, const char *addr_)
 {
-    //  Convert the hostname into sockaddr_in structure.
-    return resolve_ip_hostname (&addr, addr_);
+    if (strcmp (protocol_, "tcp") == 0)
+        return resolve_ip_hostname ((struct sockaddr_in*)&addr, addr_);
+    else if (strcmp (protocol_, "ipc") == 0)
+        return resolve_local_path (( struct sockaddr_un*)&addr, addr_);
+
+    errno = EPROTONOSUPPORT;
+    return -1;
 }
 
 int zmq::tcp_connecter_t::open ()
 {
     zmq_assert (s == retired_fd);
+    struct sockaddr *sa = (struct sockaddr*) &addr;
 
-    //  Create the socket.
-    s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (s == -1)
-        return -1;
+    if (AF_INET == sa->sa_family) {
 
-    // Set to non-blocking mode.
-    int flags = fcntl (s, F_GETFL, 0);
-    if (flags == -1) 
-        flags = 0;
-    int rc = fcntl (s, F_SETFL, flags | O_NONBLOCK);
-    errno_assert (rc != -1);
+        //  Create the socket.
+        s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        if (s == -1)
+            return -1;
 
-    //  Disable Nagle's algorithm.
-    int flag = 1;
-    rc = setsockopt (s, IPPROTO_TCP, TCP_NODELAY, (char*) &flag, sizeof (int));
-    errno_assert (rc == 0);
+        // Set to non-blocking mode.
+        int flags = fcntl (s, F_GETFL, 0);
+        if (flags == -1) 
+            flags = 0;
+        int rc = fcntl (s, F_SETFL, flags | O_NONBLOCK);
+        errno_assert (rc != -1);
+
+        //  Disable Nagle's algorithm.
+        int flag = 1;
+        rc = setsockopt (s, IPPROTO_TCP, TCP_NODELAY, (char*) &flag, sizeof (int));
+        errno_assert (rc == 0);
 
 #ifdef ZMQ_HAVE_OPENVMS
-    //  Disable delayed acknowledgements.
-    flag = 1;
-    rc = setsockopt (s, IPPROTO_TCP, TCP_NODELACK, (char*) &flag, sizeof (int));
-    errno_assert (rc != SOCKET_ERROR);
+        //  Disable delayed acknowledgements.
+        flag = 1;
+        rc = setsockopt (s, IPPROTO_TCP, TCP_NODELACK, (char*) &flag, sizeof (int));
+        errno_assert (rc != SOCKET_ERROR);
 #endif
 
-    //  Connect to the remote peer.
-    rc = ::connect (s, (sockaddr*) &addr, sizeof (addr));
+        //  Connect to the remote peer.
+        rc = ::connect (s, (struct sockaddr*) &addr, sizeof (sockaddr_in));
 
-    //  Connect was successfull immediately.
-    if (rc == 0)
-        return 0;
+        //  Connect was successfull immediately.
+        if (rc == 0)
+            return 0;
 
-    //  Asynchronous connect was launched.
-    if (rc == -1 && errno == EINPROGRESS) {
-        errno = EAGAIN;
+        //  Asynchronous connect was launched.
+        if (rc == -1 && errno == EINPROGRESS) {
+            errno = EAGAIN;
+            return -1;
+        }
+
+        //  Error occured.
+        int err = errno;
+        close ();
+        errno = err;
+        return -1;
+    }
+    else if (AF_LOCAL == sa->sa_family) {
+        s = socket (AF_LOCAL, SOCK_STREAM, 0);
+        if (s == -1)
+            return -1;
+
+        //  Set the non-blocking flag.
+        int flag = fcntl (s, F_GETFL, 0);
+        if (flag == -1) 
+            flag = 0;
+        int rc = fcntl (s, F_SETFL, flag | O_NONBLOCK);
+        errno_assert (rc != -1);
+
+        //  Connect to the remote peer.
+        rc = ::connect (s, (struct sockaddr*) &addr, sizeof (sockaddr_un));
+
+        //  Connect was successfull immediately.
+        if (rc == 0)
+            return 0;
+
+        //  Error occured.
+        int err = errno;
+        close ();
+        errno = err;
         return -1;
     }
 
-    //  Error occured.
-    int err = errno;
-    close ();
-    errno = err;
-    return -1;
+    zmq_assert (false);
 }
 
 int zmq::tcp_connecter_t::close ()

@@ -39,8 +39,8 @@ namespace zmq
             const options_t &options_, uint64_t session_ordinal_, bool wait_);
         ~zmq_connecter_t ();
 
-        //  Set IP address to connect to.
-        int set_address (const char *address_);
+        //  Set address to connect to.
+        int set_address (const char *protocol_, const char *address_);
 
     private:
 
@@ -75,7 +75,8 @@ namespace zmq
         //  Associated socket options.
         options_t options;
 
-        //  Address to connect to.
+        //  Protocol and address to connect to.
+        std::string protocol;
         std::string address;
 
         zmq_connecter_t (const zmq_connecter_t&);

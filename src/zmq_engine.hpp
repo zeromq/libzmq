@@ -22,6 +22,8 @@
 
 #include <stddef.h>
 
+#include <string>
+
 #include "i_engine.hpp"
 #include "io_object.hpp"
 #include "tcp_socket.hpp"
@@ -37,7 +39,8 @@ namespace zmq
     public:
 
         zmq_engine_t (class io_thread_t *parent_, fd_t fd_,
-            const options_t &options_, bool reconnect_, const char *address_);
+            const options_t &options_, bool reconnect_, 
+            const char *protocol_, const char *address_);
         ~zmq_engine_t ();
 
         //  i_engine interface implementation.
@@ -70,6 +73,7 @@ namespace zmq
         options_t options;
 
         bool reconnect;
+        std::string protocol;
         std::string address;
 
         zmq_engine_t (const zmq_engine_t&);

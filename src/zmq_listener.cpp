@@ -36,9 +36,9 @@ zmq::zmq_listener_t::~zmq_listener_t ()
 {
 }
 
-int zmq::zmq_listener_t::set_address (const char *addr_)
+int zmq::zmq_listener_t::set_address (const char *protocol_, const char *addr_)
 {
-     return tcp_listener.set_address (addr_);
+     return tcp_listener.set_address (protocol_, addr_);
 }
 
 void zmq::zmq_listener_t::process_plug ()
@@ -65,7 +65,7 @@ void zmq::zmq_listener_t::in_event ()
     //  Create an init object. 
     io_thread_t *io_thread = choose_io_thread (options.affinity);
     zmq_init_t *init = new (std::nothrow) zmq_init_t (
-        io_thread, owner, fd, options, false, NULL, 0);
+        io_thread, owner, fd, options, false, NULL, NULL, 0);
     zmq_assert (init);
     send_plug (init);
     send_own (owner, init);

@@ -36,8 +36,8 @@ namespace zmq
         zmq_listener_t (class io_thread_t *parent_, socket_base_t *owner_,
             const options_t &options_);
 
-        //  Set IP address to listen on.
-        int set_address (const char *addr_);
+        //  Set address to listen on.
+        int set_address (const char* protocol_, const char *addr_);
 
     private:
 

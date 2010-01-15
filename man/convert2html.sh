@@ -51,4 +51,5 @@ groff -man -Thtml man7/zmq_tcp.7 > man7/zmq_tcp.7.html
 groff -man -Thtml man7/zmq_udp.7 > man7/zmq_udp.7.html
 groff -man -Thtml man7/zmq_pgm.7 > man7/zmq_pgm.7.html
 groff -man -Thtml man7/zmq_inproc.7 > man7/zmq_inproc.7.html
+groff -man -Thtml man7/zmq_ipc.7 > man7/zmq_ipc.7.html
 

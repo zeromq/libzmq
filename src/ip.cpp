@@ -309,3 +309,20 @@ int zmq::resolve_ip_hostname (sockaddr_in *addr_, const char *hostname_)
 
     return 0;
 }
+
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+
+int zmq::resolve_local_path (sockaddr_un *addr_, const char *path_)
+{
+    if (strlen (path_) >= sizeof (addr_->sun_path))
+    {
+        errno = ENAMETOOLONG;
+        return -1;
+    }
+    strcpy (addr_->sun_path, path_);
+    addr_->sun_family = AF_LOCAL;
+    return 0;
+}
+
+#endif
+

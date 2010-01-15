@@ -27,7 +27,8 @@
 #include "err.hpp"
 
 zmq::zmq_engine_t::zmq_engine_t (io_thread_t *parent_, fd_t fd_,
-      const options_t &options_, bool reconnect_, const char *address_) :
+      const options_t &options_, bool reconnect_, 
+      const char *protocol_, const char *address_) :
     io_object_t (parent_),
     inpos (NULL),
     insize (0),
@@ -39,8 +40,10 @@ zmq::zmq_engine_t::zmq_engine_t (io_thread_t *parent_, fd_t fd_,
     options (options_),
     reconnect (reconnect_)
 {
-    if (reconnect)
+    if (reconnect) {
+        protocol = protocol_;
         address = address_;
+    }
 
     //  Initialise the underlying socket.
     int rc = tcp_socket.open (fd_, options.sndbuf, options.rcvbuf);
@@ -166,7 +169,7 @@ void zmq::zmq_engine_t::error ()
             inout->get_io_thread (), inout->get_owner (),
             options, inout->get_ordinal (), true);
         zmq_assert (reconnecter);
-        reconnecter->set_address (address.c_str ());
+        reconnecter->set_address (protocol.c_str(), address.c_str ());
     }
 
     inout->detach (reconnecter);

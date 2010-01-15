@@ -83,4 +83,6 @@ groff -man -Tps man7/zmq_pgm.7 > man7/zmq_pgm.7.ps
 ps2pdf man7/zmq_pgm.7.ps zmq_pgm.pdf
 groff -man -Tps man7/zmq_inproc.7 > man7/zmq_inproc.7.ps
 ps2pdf man7/zmq_inproc.7.ps zmq_inproc.pdf
+groff -man -Tps man7/zmq_ipc.7 > man7/zmq_ipc.7.ps
+ps2pdf man7/zmq_ipc.7.ps zmq_ipc.pdf
 

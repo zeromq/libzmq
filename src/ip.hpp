@@ -32,6 +32,10 @@
 #include <netdb.h>
 #endif
 
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+#include <sys/un.h>
+#endif
+
 namespace zmq
 {
 
@@ -42,6 +46,11 @@ namespace zmq
     //  This function resolves a string in <hostname>:<port-number> format.
     //  Hostname can be either the name of the host or its IP address.
     int resolve_ip_hostname (sockaddr_in *addr_, const char *hostname_);
+
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+    // This function sets up the sockaddr_un structure with the pathname_
+    int resolve_local_path( sockaddr_un * addr_, const char* pathname_);
+#endif
 }
 
 #endif 
