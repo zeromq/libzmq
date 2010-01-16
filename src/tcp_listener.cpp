@@ -207,7 +207,7 @@ int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
             return -1;
 
         //  Create a listening socket.
-        s = socket (AF_LOCAL, SOCK_STREAM, 0);
+        s = socket (AF_UNIX, SOCK_STREAM, 0);
         if (s == -1)
             return -1;
 
@@ -250,9 +250,8 @@ int zmq::tcp_listener_t::close ()
 
     //  If there's an underlying UNIX domain socket, get rid of the file it
     //  is associated with.
-    struct sockaddr *sa = (struct sockaddr*) &addr;
-    if (AF_LOCAL == sa->sa_family) {
-        struct sockaddr_un *sun = (struct sockaddr_un*) &addr;
+    struct sockaddr_un *sun = (struct sockaddr_un*) &addr;
+    if (AF_UNIX == sun->sun_family) {
         rc = ::unlink(sun->sun_path);
         if (rc != 0)
             return -1;

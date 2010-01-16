@@ -211,8 +211,10 @@ int zmq::tcp_connecter_t::open ()
         errno = err;
         return -1;
     }
-    else if (AF_LOCAL == sa->sa_family) {
-        s = socket (AF_LOCAL, SOCK_STREAM, 0);
+    else if (AF_UNIX == sa->sa_family) {
+
+        //  Create the socket.
+        s = socket (AF_UNIX, SOCK_STREAM, 0);
         if (s == -1)
             return -1;
 

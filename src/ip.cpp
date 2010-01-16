@@ -320,7 +320,7 @@ int zmq::resolve_local_path (sockaddr_un *addr_, const char *path_)
         return -1;
     }
     strcpy (addr_->sun_path, path_);
-    addr_->sun_family = AF_LOCAL;
+    addr_->sun_family = AF_UNIX;
     return 0;
 }
 
