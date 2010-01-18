@@ -20,7 +20,6 @@
 #include <zmq.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 
 int main (int argc, char *argv [])
 {
@@ -43,33 +42,57 @@ int main (int argc, char *argv [])
     message_count = atoi (argv [3]);
 
     ctx = zmq_init (1, 1, 0);
-    assert (ctx);
+    if (!ctx) {
+        printf ("error in zmq_recv: %s\n", zmq_strerror (errno));
+        return -1;
+    }
 
     s = zmq_socket (ctx, ZMQ_PUB);
-    assert (s);
+    if (!s) {
+        printf ("error in zmq_socket: %s\n", zmq_strerror (errno));
+        return -1;
+    }
 
     //  Add your socket options here.
     //  For example ZMQ_RATE, ZMQ_RECOVERY_IVL and ZMQ_MCAST_LOOP for PGM.
 
     rc = zmq_connect (s, connect_to);
-    assert (rc == 0);
+    if (rc != 0) {
+        printf ("error in zmq_connect: %s\n", zmq_strerror (errno));
+        return -1;
+    }
 
     for (i = 0; i != message_count; i++) {
         rc = zmq_msg_init_size (&msg, message_size);
-        assert (rc == 0);
+        if (rc != 0) {
+            printf ("error in zmq_msg_init_size: %s\n", zmq_strerror (errno));
+            return -1;
+        }
         rc = zmq_send (s, &msg, 0);
-        assert (rc == 0);
+        if (rc != 0) {
+            printf ("error in zmq_send: %s\n", zmq_strerror (errno));
+            return -1;
+        }
         rc = zmq_msg_close (&msg);
-        assert (rc == 0);
+        if (rc != 0) {
+            printf ("error in zmq_msg_close: %s\n", zmq_strerror (errno));
+            return -1;
+        }
     }
 
     zmq_sleep (10);
 
     rc = zmq_close (s);
-    assert (rc == 0);
+    if (rc != 0) {
+        printf ("error in zmq_close: %s\n", zmq_strerror (errno));
+        return -1;
+    }
 
     rc = zmq_term (ctx);
-    assert (rc == 0);
+    if (rc != 0) {
+        printf ("error in zmq_term: %s\n", zmq_strerror (errno));
+        return -1;
+    }
 
     return 0;
 }

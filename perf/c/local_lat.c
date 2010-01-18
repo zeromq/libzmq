@@ -20,7 +20,6 @@
 #include <zmq.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 
 int main (int argc, char *argv [])
 {
@@ -43,35 +42,65 @@ int main (int argc, char *argv [])
     roundtrip_count = atoi (argv [3]);
 
     ctx = zmq_init (1, 1, 0);
-    assert (ctx);
+    if (!ctx) {
+        printf ("error in zmq_init: %s\n", zmq_strerror (errno));
+        return -1;
+    }
 
     s = zmq_socket (ctx, ZMQ_REP);
-    assert (s);
+    if (!s) {
+        printf ("error in zmq_socket: %s\n", zmq_strerror (errno));
+        return -1;
+    }
 
     rc = zmq_bind (s, bind_to);
-    assert (rc == 0);
+    if (rc != 0) {
+        printf ("error in zmq_bind: %s\n", zmq_strerror (errno));
+        return -1;
+    }
 
     rc = zmq_msg_init (&msg);
-    assert (rc == 0);
+    if (rc != 0) {
+        printf ("error in zmq_msg_init: %s\n", zmq_strerror (errno));
+        return -1;
+    }
 
     for (i = 0; i != roundtrip_count; i++) {
         rc = zmq_recv (s, &msg, 0);
-        assert (rc == 0);
-        assert (zmq_msg_size (&msg) == message_size);
+        if (rc != 0) {
+            printf ("error in zmq_recv: %s\n", zmq_strerror (errno));
+            return -1;
+        }
+        if (zmq_msg_size (&msg) != message_size) {
+            printf ("message of incorrect size received\n");
+            return -1;
+        }
         rc = zmq_send (s, &msg, 0);
-        assert (rc == 0);
+        if (rc != 0) {
+            printf ("error in zmq_send: %s\n", zmq_strerror (errno));
+            return -1;
+        }
     }
 
     rc = zmq_msg_close (&msg);
-    assert (rc == 0);
+    if (rc != 0) {
+        printf ("error in zmq_msg_close: %s\n", zmq_strerror (errno));
+        return -1;
+    }
 
     zmq_sleep (1);
 
     rc = zmq_close (s);
-    assert (rc == 0);
+    if (rc != 0) {
+        printf ("error in zmq_close: %s\n", zmq_strerror (errno));
+        return -1;
+    }
 
     rc = zmq_term (ctx);
-    assert (rc == 0);
+    if (rc != 0) {
+        printf ("error in zmq_term: %s\n", zmq_strerror (errno));
+        return -1;
+    }
 
     return 0;
 }
