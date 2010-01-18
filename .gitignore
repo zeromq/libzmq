@@ -16,3 +16,16 @@ autom4te.cache
 .*
 src/platform.hpp
 src/stamp-h1
+devices/zmq_forwarder/zmq_forwarder
+devices/zmq_queue/zmq_queue
+devices/zmq_streamer/zmq_streamer
+examples/chat/display
+examples/chat/prompt
+perf/c/local_lat
+perf/c/local_thr
+perf/c/remote_lat
+perf/c/remote_thr
+perf/cpp/local_lat
+perf/cpp/local_thr
+perf/cpp/remote_lat
+perf/cpp/remote_thr

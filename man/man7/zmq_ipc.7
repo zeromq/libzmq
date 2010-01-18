@@ -1,14 +1,14 @@
 .TH zmq_ipc 7 "" "(c)2007-2010 iMatix Corporation" "0MQ User Manuals"
 .SH NAME
-Inter-process tranport for 0MQ
+Inter-process transport for 0MQ
 .SH SYNOPSIS
 
-In-process transport is optimised for passing messages between processes on the
-same physical machine.
+Inter-process transport is optimised for passing messages between processes on
+the same physical machine.
 
 .SH CONNECTION STRING
 
-Connection string for inproc transport is "inproc://" followed by a file name.
+Connection string for inproc transport is "ipc://" followed by a file name.
 The file will be used as placeholder for a message endpoint. (UNIX domain
 sockets associate a file with the listening socket in a similar way.)
 

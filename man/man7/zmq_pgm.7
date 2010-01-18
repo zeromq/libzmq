@@ -1,6 +1,6 @@
 .TH zmq_pgm 7 "" "(c)2007-2010 iMatix Corporation" "0MQ User Manuals"
 .SH NAME
-PGM-based tranport for 0MQ
+PGM-based transport for 0MQ
 .SH SYNOPSIS
 
 PGM is a protocol for reliable multicast (RFC3208). 0MQ's PGM transport allows
@@ -20,11 +20,11 @@ PGM transport can be used only with ZMQ_PUB and ZMQ_SUB sockets.
 
 .SH CONNECTION STRING
 
-Connection string for PGM transport is "pgm://" followed by an IP adress
-of the NIC to use, semicolon, IP adress of the multicast group, colon and
-port numbrt. IP address of the NIC can be either its numeric representation
+Connection string for PGM transport is "pgm://" followed by an IP address
+of the NIC to use, semicolon, IP address of the multicast group, colon and
+port number. IP address of the NIC can be either its numeric representation
 or the name of the NIC as reported by operating system. IP address of the
-mutlicast group should be specified in the numeric representation. For example:
+multicast group should be specified in the numeric representation. For example:
 
 .nf
     pgm://eth0:224.0.0.1:5555
