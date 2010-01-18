@@ -267,7 +267,7 @@ int zmq::resolve_ip_interface (sockaddr_in* addr_, char const *interface_)
     addr_->sin_port = htons ((uint16_t) atoi (delimiter + 1));
     if (!addr_->sin_port) {
         errno = EINVAL;
-        return 0;
+        return -1;
     }
 
     return 0;
