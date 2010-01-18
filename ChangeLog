@@ -1,3 +1,14 @@
+Version 2.0-beta2
+
+ZMQII-29  Add timeout to zmq_poll function
+ZMQII-30  Build fails on MacOS X
+ZMQII-31  memory leak in zmq_poll (on timeout)
+ZMQII-33  zmq_poll may exceed timeout if signal interrupts the waiting
+ZMQII-34  ensure that poll won't return POLLIN event when the message will be filtered out anyway
+ZMQII-36  Chat example & forwarder broken because of changes subscribe semantics
+ZMQII-37  SIGSEGV when polling on REQ socket
+ZMQII-38  Compiler complains about missing virtual constructors
+ZMQII-39  Implement IPC transport  
 
 Version 2.0-beta1
 
