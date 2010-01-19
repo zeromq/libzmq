@@ -18,15 +18,15 @@ mark cannot be exceeded. If the messages don't fit into the pipe emergency
 mechanisms of the particular socket type are used (block, drop etc.) If HWM
 is set to zero, there are no limits for the content of the pipe.
 
-Type: int64_t  Unit: bytes  Default: 0
+Type: int64_t  Unit: messages  Default: 0
 
 .IP "\fBZMQ_LWM\fP"
 Low watermark makes sense only if high watermark is defined (i.e. is non-zero).
 When the emergency state is reached when messages overflow the pipe, the
-emergency lasts till the size of the pipe decreases to low watermark.
-At that point normal state is resumed.
+emergency lasts at most till the size of the pipe decreases to low watermark.
+Normal state is resumed at that point.
 
-Type: int64_t  Unit: bytes  Default: 0
+Type: int64_t  Unit: messages  Default: 0
 
 .IP "\fBZMQ_SWAP\fP"
 Swap allows the pipe to exceed high watermark. However, the data are written
@@ -126,7 +126,7 @@ to the appropriate value.
 unknown option, a value with incorrect length or invalid value.
 .SH EXAMPLE
 .nf
-int rc = zmq_setsockopt (s, ZMQ_SUBSCRIBE, "*", 1);
+int rc = zmq_setsockopt (s, ZMQ_SUBSCRIBE, "", 0);
 assert (rc == 0);
 .fi
 .SH SEE ALSO
