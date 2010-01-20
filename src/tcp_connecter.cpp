@@ -240,6 +240,7 @@ int zmq::tcp_connecter_t::open ()
     }
 
     zmq_assert (false);
+    return -1;
 }
 
 int zmq::tcp_connecter_t::close ()
