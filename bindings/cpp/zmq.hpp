@@ -35,7 +35,10 @@ namespace zmq
 
     inline int poll (zmq_pollitem_t *items_, int nitems_, long timeout_ = -1)
     {
-        return zmq_poll (items_, nitems_, timeout_);
+        int rc = zmq_poll (items_, nitems_, timeout_);
+        if (rc < 0)
+            throw error_t ();
+        return rc;
     }
 
     class error_t : public std::exception
