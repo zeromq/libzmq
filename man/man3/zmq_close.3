@@ -7,7 +7,10 @@ zmq_close \- destroys 0MQ socket
 Destroys 0MQ socket (one created using
 .IR zmq_socket
 function). All sockets have to be properly closed before the application
-terminates, otherwise memory leaks will occur.
+terminates, otherwise memory leaks will occur. Note that any outbound messages
+that haven't been psuhed to the network yet and any inbound messages that
+haven't been received by the application yet will be dropped on the socket
+shutdown.
 .SH RETURN VALUE
 In case of success the function returns zero. Otherwise it returns -1 and
 sets
