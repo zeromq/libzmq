@@ -18,6 +18,14 @@ socket option.
 
 PGM transport can be used only with ZMQ_PUB and ZMQ_SUB sockets.
 
+Caution: PGM protocol runs directly on top of IP protocol and thus needs to
+open raw IP socket. On some operating systems this operation requires special
+privileges. On Linux, for example, you would need to either run your application
+as root or set adequate capabilities for your executable. Alternative approach
+is to use UDP transport,
+.IR zmq_udp(7) ,
+that stacks PGM on top of UDP and thus needs no special privileges.
+
 .SH CONNECTION STRING
 
 Connection string for PGM transport is "pgm://" followed by an IP address
