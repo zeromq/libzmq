@@ -69,6 +69,8 @@ groff -man -Tps man7/zmq.7 > man7/zmq.7.ps
 ps2pdf man7/zmq.7.ps zmq.pdf
 groff -man -Tps man7/zmq_cpp.7 > man7/zmq_cpp.7.ps
 ps2pdf man7/zmq_cpp.7.ps zmq_cpp.pdf
+groff -man -Tps man7/zmq_java.7 > man7/zmq_java.7.ps
+ps2pdf man7/zmq_java.7.ps zmq_java.pdf
 groff -man -Tps man7/zmq_python.7 > man7/zmq_python.7.ps
 ps2pdf man7/zmq_python.7.ps zmq_python.pdf
 groff -man -Tps man7/zmq_ruby.7 > man7/zmq_ruby.7.ps

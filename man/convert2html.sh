@@ -44,6 +44,7 @@ groff -man -Thtml man3/zmq_strerror.3 > man3/zmq_strerror.3.html
 
 groff -man -Thtml man7/zmq.7 > man7/zmq.7.html
 groff -man -Thtml man7/zmq_cpp.7 > man7/zmq_cpp.7.html
+groff -man -Thtml man7/zmq_java.7 > man7/zmq_java.7.html
 groff -man -Thtml man7/zmq_python.7 > man7/zmq_python.7.html
 groff -man -Thtml man7/zmq_ruby.7 > man7/zmq_ruby.7.html
 groff -man -Thtml man7/zmq_cl.7 > man7/zmq_cl.7.html
