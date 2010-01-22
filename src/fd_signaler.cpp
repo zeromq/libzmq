@@ -127,7 +127,9 @@ zmq::fd_signaler_t::fd_signaler_t ()
 
     memset (&addr, 0, sizeof (addr));
     addr.sin_family = AF_INET;
-    resolve_ip_hostname (&addr, "127.0.0.1:0");
+    //resolve_ip_hostname (&addr, "127.0.0.1:0");
+    addr.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
+    addr.sin_port = 0;
             
     int rc = bind (listener, (const struct sockaddr*) &addr, sizeof (addr));
     wsa_assert (rc != SOCKET_ERROR);
