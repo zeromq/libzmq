@@ -36,12 +36,6 @@
 //  On Solaris platform, network interface name can be queried by ioctl.
 static int resolve_nic_name (in_addr* addr_, char const *interface_)
 {
-    //  * resolves to INADDR_ANY
-    if (!interface_ || (strlen (interface_) == 1 && *interface_ == '*')) {
-        addr_->s_addr = htonl (INADDR_ANY);
-        return 0;
-    }
-
     //  Create a socket.
     int fd = socket (AF_INET, SOCK_DGRAM, 0);
     zmq_assert (fd != -1);
@@ -87,14 +81,9 @@ static int resolve_nic_name (in_addr* addr_, char const *interface_)
     free (ifr);
     close (fd);
 
-    //  If interface was not found among interface names, we assume it's
-    //  specified in the form of IP address.
     if (!found) {
-        rc = inet_pton (AF_INET, interface_, addr_);
-        if (rc != 1) {
-            errno = EINVAL;
-            return -1;
-        }
+        errno = ENODEV;
+        return -1;
     }
 
     return 0;
@@ -111,12 +100,6 @@ static int resolve_nic_name (in_addr* addr_, char const *interface_)
 
 static int resolve_nic_name (in_addr* addr_, char const *interface_)
 {
-    //  * resolves to INADDR_ANY
-    if (!interface_ || (strlen (interface_) == 1 && *interface_ == '*')) {
-        addr_->s_addr = htonl (INADDR_ANY);
-        return 0;
-    }
-
     //  Create a socket.
     int sd = socket (AF_INET, SOCK_DGRAM, 0);
     zmq_assert (sd != -1);
@@ -129,48 +112,17 @@ static int resolve_nic_name (in_addr* addr_, char const *interface_)
     //  Fetch interface address.
     int rc = ioctl (sd, SIOCGIFADDR, (caddr_t) &ifr, sizeof (struct ifreq));
 
-    if(rc != -1) {
-        struct sockaddr *sa = (struct sockaddr *) &ifr.ifr_addr;
-        *addr_ = ((sockaddr_in*)sa)->sin_addr;
-    }
-    else {
-
-        //  Assume interface_ is in IP format xxx.xxx.xxx.xxx.
-        rc = inet_pton (AF_INET, interface_, addr_);
-        if (rc != 0) {
-            errno = EINVAL;
-            return -1;
-        }
-    }
-
     //  Clean up.
     close (sd);
 
-    return 0;
-}
-
-#elif defined ZMQ_HAVE_WINDOWS
-
-static int resolve_nic_name (in_addr* addr_, char const *interface_)
-{
-    //  * resolves to INADDR_ANY
-    if (!interface_ || (strlen (interface_) == 1 && *interface_ == '*')) {
-        addr_->s_addr = htonl (INADDR_ANY);
-        return 0;
-    }
-
-    //  Windows doesn't use sensible NIC names. Thus, we expect IP address of
-    //  the NIC instead.
-    in_addr addr;
-    ((sockaddr_in*) addr_)->sin_family = AF_INET;
-    addr.S_un.S_addr = inet_addr ((const char *) interface_);
-    if (addr.S_un.S_addr == INADDR_NONE) {
-        errno = EINVAL;
+    if (rc == -1) {
+        errno = ENODEV;
         return -1;
     }
-    *addr_ = addr;
 
-    return 0;
+    struct sockaddr *sa = (struct sockaddr *) &ifr.ifr_addr;
+    *addr_ = ((sockaddr_in*)sa)->sin_addr;
+    return 0;    
 }
 
 #elif ((defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD ||\
@@ -183,15 +135,6 @@ static int resolve_nic_name (in_addr* addr_, char const *interface_)
 //  using getifaddrs function.
 static int resolve_nic_name (in_addr* addr_, char const *interface_)
 {
-    //  * resolves to INADDR_ANY
-    if (!interface_ || (strlen (interface_) == 1 && *interface_ == '*')) {
-        addr_->s_addr = htonl (INADDR_ANY);
-        return 0;
-    }
-
-    //  Initialuse the output parameter.
-    memset (addr_, 0, sizeof (in_addr));
-
     //  Get the addresses.
     ifaddrs* ifa = NULL;
     int rc = getifaddrs (&ifa);
@@ -211,14 +154,9 @@ static int resolve_nic_name (in_addr* addr_, char const *interface_)
     //  Clean-up;
     freeifaddrs (ifa);
 
-    //  If interface was not found among interface names, we assume it's
-    //  specified in the form of IP address.
     if (!found) {
-        rc = inet_pton (AF_INET, interface_, addr_);
-        if (rc != 1) {
-            errno = EINVAL;
-            return -1;
-        }
+        errno = ENODEV;
+        return -1;
     }
 
     return 0;
@@ -226,52 +164,76 @@ static int resolve_nic_name (in_addr* addr_, char const *interface_)
 
 #else
 
-//  On other platforms interface name is interpreted as raw IP address.
+//  On other platforms we assume there are no sane interface names.
+//  This is true especially of Windows.
 static int resolve_nic_name (in_addr* addr_, char const *interface_)
 {
-    //  * resolves to INADDR_ANY
-    if (!interface_ || (strlen (interface_) == 1 && *interface_ == '*')) {
-        addr_->s_addr = htonl (INADDR_ANY);
-        return 0;
-    }
-
-    //  Convert IP address into sockaddr_in structure.
-    int rc = inet_pton (AF_INET, interface_, addr_);
-    zmq_assert (rc != 0);
-    errno_assert (rc == 1);
-
-    return 0;
+    errno = ENODEV;
+    return -1;
 }
 
 #endif
 
 int zmq::resolve_ip_interface (sockaddr_storage* addr_, char const *interface_)
 {
-    sockaddr_in *addr = (sockaddr_in*) addr_;
-
-    //  Find the ':' that separates NIC name from port.
-    const char *delimiter = strchr (interface_, ':');
+    //  Find the end ':' that separates NIC name from service.
+    const char *delimiter = strrchr (interface_, ':');
     if (!delimiter) {
         errno = EINVAL;
         return -1;
     }
 
-    //  Clean the structure and fill in protocol family.
-    memset (addr, 0, sizeof (sockaddr_in));
-    addr->sin_family = AF_INET;
+    //  Separate the name/port
+    std::string interface (interface_, delimiter - interface_);
+    std::string service (delimiter + 1);
 
-    //  Resolve the name of the NIC.
-    std::string nic_name (interface_, delimiter - interface_);
-    if (resolve_nic_name (&addr->sin_addr, nic_name.c_str ()) != 0)
-        return -1;
+    //  Initialize the output parameter.
+    memset (addr_, 0, sizeof (*addr_));
 
-    //  Resolve the port.
-    addr->sin_port = htons ((uint16_t) atoi (delimiter + 1));
-    if (!addr->sin_port) {
+    //  Initialise IPv4-format family/port.
+    sockaddr_in ip4_addr;
+    ip4_addr.sin_family = AF_INET;
+    ip4_addr.sin_port = htons ((uint16_t) atoi (service.c_str()));
+
+    //  Initialize temporary output pointers with ip4_addr
+    sockaddr *out_addr = (sockaddr *) &ip4_addr;
+    size_t out_addrlen = sizeof (ip4_addr);
+
+    //  0 is not a valid port.
+    if (!ip4_addr.sin_port) {
         errno = EINVAL;
         return -1;
     }
 
+    //  * resolves to INADDR_ANY.
+    if (interface.compare("*") == 0) {
+        ip4_addr.sin_addr.s_addr = htonl (INADDR_ANY);
+        zmq_assert (out_addrlen <= sizeof (*addr_));
+        memcpy (addr_, out_addr, out_addrlen);
+        return 0;
+    }
+
+    //  Try to resolve the string as a NIC name.
+    int rc = resolve_nic_name (&ip4_addr.sin_addr, interface.c_str());
+    if (rc != 0 && errno != ENODEV)
+        return rc;
+    if (rc == 0) {
+        zmq_assert (out_addrlen <= sizeof (*addr_));
+        memcpy (addr_, out_addr, out_addrlen);
+        return 0;
+    }
+
+    //  There's no such interface name. Assume literal address.
+    rc = inet_pton (AF_INET, interface.c_str(), &ip4_addr.sin_addr);
+    if (rc == 0) {
+        errno = ENODEV;
+        return -1;
+    }
+    if (rc < 0)
+        return -1;
+
+    zmq_assert (out_addrlen <= sizeof (*addr_));
+    memcpy (addr_, out_addr, out_addrlen);
     return 0;
 }
 
