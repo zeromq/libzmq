@@ -33,14 +33,6 @@ namespace zmq
     typedef zmq_free_fn free_fn;
     typedef zmq_pollitem_t pollitem_t;
 
-    inline int poll (zmq_pollitem_t *items_, int nitems_, long timeout_ = -1)
-    {
-        int rc = zmq_poll (items_, nitems_, timeout_);
-        if (rc < 0)
-            throw error_t ();
-        return rc;
-    }
-
     class error_t : public std::exception
     {
     public:
@@ -56,6 +48,14 @@ namespace zmq
 
         int errnum;
     };
+
+    inline int poll (zmq_pollitem_t *items_, int nitems_, long timeout_ = -1)
+    {
+        int rc = zmq_poll (items_, nitems_, timeout_);
+        if (rc < 0)
+            throw error_t ();
+        return rc;
+    }
 
     class message_t : private zmq_msg_t
     {
