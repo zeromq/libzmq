@@ -50,12 +50,12 @@ int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
     }
 
     //  Convert the interface into sockaddr_in structure.
-    int rc = resolve_ip_interface ((sockaddr_in*) &addr, addr_);
+    int rc = resolve_ip_interface (&addr, addr_);
     if (rc != 0)
         return rc;
 
     //  Create a listening socket.
-    s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    s = socket (addr.ss_family, SOCK_STREAM, IPPROTO_TCP);
     if (s == INVALID_SOCKET) {
         wsa_error_to_errno ();
         return -1;
@@ -73,7 +73,7 @@ int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
     wsa_assert (rc != SOCKET_ERROR);
 
     //  Bind the socket to the network interface and port.
-    rc = bind (s, (struct sockaddr*) &addr, sizeof (sockaddr_in));
+    rc = bind (s, (struct sockaddr*) &addr, sizeof (addr));
     if (rc == SOCKET_ERROR) {
         wsa_error_to_errno ();
         return -1;
@@ -157,13 +157,13 @@ int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
 {
     if (strcmp (protocol_, "tcp") == 0 ) {
 
-        //  Convert the interface into sockaddr_in structure.
-        int rc = resolve_ip_interface ((struct sockaddr_in*) &addr, addr_);
+        //  Resolve the sockaddr to bind to.
+        int rc = resolve_ip_interface (&addr, addr_);
         if (rc != 0)
             return -1;
 
         //  Create a listening socket.
-        s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        s = socket (addr.ss_family, SOCK_STREAM, IPPROTO_TCP);
         if (s == -1)
             return -1;
 
@@ -180,7 +180,7 @@ int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
         errno_assert (rc != -1);
 
         //  Bind the socket to the network interface and port.
-        rc = bind (s, (struct sockaddr*) &addr, sizeof (sockaddr_in));
+        rc = bind (s, (struct sockaddr*) &addr, sizeof (addr));
         if (rc != 0) {
             close ();
             return -1;
@@ -305,7 +305,7 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
     errno_assert (rc != -1);
 
     struct sockaddr *sa = (struct sockaddr*) &addr;
-    if (AF_INET == sa->sa_family) {
+    if (AF_UNIX != sa->sa_family) {
 
         //  Disable Nagle's algorithm.
         int flag = 1;

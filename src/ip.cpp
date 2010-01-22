@@ -245,8 +245,10 @@ static int resolve_nic_name (in_addr* addr_, char const *interface_)
 
 #endif
 
-int zmq::resolve_ip_interface (sockaddr_in* addr_, char const *interface_)
+int zmq::resolve_ip_interface (sockaddr_storage* addr_, char const *interface_)
 {
+    sockaddr_in *addr = (sockaddr_in*) addr_;
+
     //  Find the ':' that separates NIC name from port.
     const char *delimiter = strchr (interface_, ':');
     if (!delimiter) {
@@ -255,17 +257,17 @@ int zmq::resolve_ip_interface (sockaddr_in* addr_, char const *interface_)
     }
 
     //  Clean the structure and fill in protocol family.
-    memset (addr_, 0, sizeof (sockaddr_in));
-    addr_->sin_family = AF_INET;
+    memset (addr, 0, sizeof (sockaddr_in));
+    addr->sin_family = AF_INET;
 
     //  Resolve the name of the NIC.
     std::string nic_name (interface_, delimiter - interface_);
-    if (resolve_nic_name (&addr_->sin_addr, nic_name.c_str ()) != 0)
+    if (resolve_nic_name (&addr->sin_addr, nic_name.c_str ()) != 0)
         return -1;
 
     //  Resolve the port.
-    addr_->sin_port = htons ((uint16_t) atoi (delimiter + 1));
-    if (!addr_->sin_port) {
+    addr->sin_port = htons ((uint16_t) atoi (delimiter + 1));
+    if (!addr->sin_port) {
         errno = EINVAL;
         return -1;
     }
@@ -273,8 +275,10 @@ int zmq::resolve_ip_interface (sockaddr_in* addr_, char const *interface_)
     return 0;
 }
 
-int zmq::resolve_ip_hostname (sockaddr_in *addr_, const char *hostname_)
+int zmq::resolve_ip_hostname (sockaddr_storage *addr_, const char *hostname_)
 {
+    sockaddr_in *addr = (sockaddr_in*) addr_;
+
     //  Find the ':' that separates hostname name from port.
     const char *delimiter = strchr (hostname_, ':');
     if (!delimiter) {
@@ -297,12 +301,12 @@ int zmq::resolve_ip_hostname (sockaddr_in *addr_, const char *hostname_)
         return -1;
     }
     zmq_assert (res->ai_addr->sa_family == AF_INET);
-    memcpy (addr_, res->ai_addr, sizeof (sockaddr_in));
+    memcpy (addr, res->ai_addr, sizeof (sockaddr_in));
     freeaddrinfo (res);
     
     //  Fill in the port number.
-    addr_->sin_port = htons ((uint16_t) atoi (delimiter + 1));
-    if (!addr_->sin_port) {
+    addr->sin_port = htons ((uint16_t) atoi (delimiter + 1));
+    if (!addr->sin_port) {
         errno = EINVAL;
         return -1;
     }

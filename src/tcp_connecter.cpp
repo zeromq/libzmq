@@ -45,7 +45,7 @@ zmq::tcp_connecter_t::~tcp_connecter_t ()
 int zmq::tcp_connecter_t::set_address (const char *protocol_, const char *addr_)
 {
     if (strcmp (protocol_, "tcp") == 0)
-        return resolve_ip_hostname ((sockaddr_in*) &addr, addr_);
+        return resolve_ip_hostname (&addr, addr_);
 
     errno = EPROTONOSUPPORT;
     return -1;    
@@ -56,7 +56,7 @@ int zmq::tcp_connecter_t::open ()
     zmq_assert (s == retired_fd);
 
     //  Create the socket.
-    s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    s = socket (addr.ss_family, SOCK_STREAM, IPPROTO_TCP);
     if (s == INVALID_SOCKET) {
         wsa_error_to_errno ();
         return -1;
@@ -74,7 +74,7 @@ int zmq::tcp_connecter_t::open ()
     wsa_assert (rc != SOCKET_ERROR);
 
     //  Connect to the remote peer.
-    rc = ::connect (s, (sockaddr*) &addr, sizeof (sockaddr_in));
+    rc = ::connect (s, (sockaddr*) &addr, sizeof (addr));
 
     //  Connect was successfull immediately.
     if (rc == 0)
@@ -153,7 +153,7 @@ zmq::tcp_connecter_t::~tcp_connecter_t ()
 int zmq::tcp_connecter_t::set_address (const char *protocol_, const char *addr_)
 {
     if (strcmp (protocol_, "tcp") == 0)
-        return resolve_ip_hostname ((struct sockaddr_in*)&addr, addr_);
+        return resolve_ip_hostname (&addr, addr_);
     else if (strcmp (protocol_, "ipc") == 0)
         return resolve_local_path (( struct sockaddr_un*)&addr, addr_);
 
@@ -166,10 +166,10 @@ int zmq::tcp_connecter_t::open ()
     zmq_assert (s == retired_fd);
     struct sockaddr *sa = (struct sockaddr*) &addr;
 
-    if (AF_INET == sa->sa_family) {
+    if (AF_UNIX != sa->sa_family) {
 
         //  Create the socket.
-        s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        s = socket (sa->sa_family, SOCK_STREAM, IPPROTO_TCP);
         if (s == -1)
             return -1;
 
@@ -193,7 +193,7 @@ int zmq::tcp_connecter_t::open ()
 #endif
 
         //  Connect to the remote peer.
-        rc = ::connect (s, (struct sockaddr*) &addr, sizeof (sockaddr_in));
+        rc = ::connect (s, (struct sockaddr*) &addr, sizeof (addr));
 
         //  Connect was successfull immediately.
         if (rc == 0)
@@ -211,9 +211,10 @@ int zmq::tcp_connecter_t::open ()
         errno = err;
         return -1;
     }
-    else if (AF_UNIX == sa->sa_family) {
+    else {
 
         //  Create the socket.
+        zmq_assert (AF_UNIX == sa->sa_family);
         s = socket (AF_UNIX, SOCK_STREAM, 0);
         if (s == -1)
             return -1;

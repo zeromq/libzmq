@@ -58,7 +58,7 @@ namespace zmq
     private:
 
         //  Address to connect to.
-        sockaddr_in addr;
+        sockaddr_storage addr;
 
         //  Underlying socket.
         fd_t s;
