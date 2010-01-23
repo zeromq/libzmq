@@ -246,42 +246,48 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
 int zmq::resolve_ip_hostname (sockaddr_storage *addr_, socklen_t *addr_len_,
     const char *hostname_)
 {
-    sockaddr_in *addr = (sockaddr_in*) addr_;
-
-    //  Find the ':' that separates hostname name from port.
+    //  Find the ':' that separates hostname name from service.
     const char *delimiter = strchr (hostname_, ':');
     if (!delimiter) {
         errno = EINVAL;
         return -1;
     }
 
-    //  Separate the hostname.
+    //  Separate the hostname and service.
     std::string hostname (hostname_, delimiter - hostname_);
+    std::string service (delimiter + 1);
+
+    //  Setup the query.
+    addrinfo req;
+    memset (&req, 0, sizeof (req));
+
+    //  Don't specify the family. We want both IPv4 and IPv6.
+    req.ai_family = AF_UNSPEC;
+
+    //  Need to choose one to avoid duplicate results from getaddrinfo() - this
+    //  doesn't really matter, since it's not included in the addr-output.
+    req.ai_socktype = SOCK_STREAM;
+    
+    //  Avoid named services due to unclear socktype, and don't pick IPv6
+    //  addresses if we don't have a local IPv6 address configured.
+    req.ai_flags = AI_NUMERICSERV | AI_ADDRCONFIG;
 
     //  Resolve host name. Some of the error info is lost in case of error,
     //  however, there's no way to report EAI errors via errno.
-    addrinfo req;
-    memset (&req, 0, sizeof (req));
-    req.ai_family = AF_INET;
-    *addr_len_ = sizeof (*addr_);
-
     addrinfo *res;
-    int rc = getaddrinfo (hostname.c_str (), NULL, &req, &res);
+    int rc = getaddrinfo (hostname.c_str (), service.c_str (), &req, &res);
     if (rc) {
         errno = EINVAL;
         return -1;
     }
-    zmq_assert (res->ai_addr->sa_family == AF_INET);
-    memcpy (addr, res->ai_addr, sizeof (sockaddr_in));
+
+    //  Copy first result to output addr with hostname and service.
+    zmq_assert (res->ai_addrlen <= sizeof (*addr_));
+    memcpy (addr_, res->ai_addr, res->ai_addrlen);
+    *addr_len_ = res->ai_addrlen;
+ 
     freeaddrinfo (res);
     
-    //  Fill in the port number.
-    addr->sin_port = htons ((uint16_t) atoi (delimiter + 1));
-    if (!addr->sin_port) {
-        errno = EINVAL;
-        return -1;
-    }
-
     return 0;
 }
 
