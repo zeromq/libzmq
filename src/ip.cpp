@@ -185,7 +185,7 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
     }
 
     //  Separate the name/port.
-    std::string interface (interface_, delimiter - interface_);
+    std::string iface (interface_, delimiter - interface_);
     std::string service (delimiter + 1);
 
     //  Initialize the output parameter.
@@ -195,7 +195,6 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
     sockaddr_in ip4_addr;
     ip4_addr.sin_family = AF_INET;
     ip4_addr.sin_port = htons ((uint16_t) atoi (service.c_str()));
-
 
     //  Initialize temporary output pointers with ip4_addr
     sockaddr *out_addr = (sockaddr *) &ip4_addr;
@@ -208,7 +207,7 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
     }
 
     //  * resolves to INADDR_ANY.
-    if (interface.compare("*") == 0) {
+    if (iface.compare("*") == 0) {
         ip4_addr.sin_addr.s_addr = htonl (INADDR_ANY);
         zmq_assert (out_addrlen <= sizeof (*addr_));
         memcpy (addr_, out_addr, out_addrlen);
@@ -217,7 +216,7 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
     }
 
     //  Try to resolve the string as a NIC name.
-    int rc = resolve_nic_name (&ip4_addr.sin_addr, interface.c_str());
+    int rc = resolve_nic_name (&ip4_addr.sin_addr, iface.c_str());
     if (rc != 0 && errno != ENODEV)
         return rc;
     if (rc == 0) {
@@ -227,15 +226,24 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
         return 0;
     }
 
+#if defined ZMQ_HAVE_WINDOWS
+    //  Old versions of Windows don't support inet_pton
+    //  so let's rather use inet_addr instead.
+    ip4_addr.sin_addr.S_un.S_addr = inet_addr (iface.c_str ());
+    if (ip4_addr.sin_addr.S_un.S_addr == INADDR_NONE) {
+        errno = ENODEV;
+        return -1;
+    }
+#else
     //  There's no such interface name. Assume literal address.
-    rc = inet_pton (AF_INET, interface.c_str(), &ip4_addr.sin_addr);
-
+    rc = inet_pton (AF_INET, iface.c_str(), &ip4_addr.sin_addr);
     if (rc == 0) {
         errno = ENODEV;
         return -1;
     }
     if (rc < 0)
         return -1;
+#endif
 
     zmq_assert (out_addrlen <= sizeof (*addr_));
     memcpy (addr_, out_addr, out_addrlen);
