@@ -174,7 +174,8 @@ static int resolve_nic_name (in_addr* addr_, char const *interface_)
 
 #endif
 
-int zmq::resolve_ip_interface (sockaddr_storage* addr_, char const *interface_)
+int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
+    char const *interface_)
 {
     //  Find the end ':' that separates NIC name from service.
     const char *delimiter = strrchr (interface_, ':');
@@ -183,7 +184,7 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, char const *interface_)
         return -1;
     }
 
-    //  Separate the name/port
+    //  Separate the name/port.
     std::string interface (interface_, delimiter - interface_);
     std::string service (delimiter + 1);
 
@@ -194,6 +195,7 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, char const *interface_)
     sockaddr_in ip4_addr;
     ip4_addr.sin_family = AF_INET;
     ip4_addr.sin_port = htons ((uint16_t) atoi (service.c_str()));
+
 
     //  Initialize temporary output pointers with ip4_addr
     sockaddr *out_addr = (sockaddr *) &ip4_addr;
@@ -210,6 +212,7 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, char const *interface_)
         ip4_addr.sin_addr.s_addr = htonl (INADDR_ANY);
         zmq_assert (out_addrlen <= sizeof (*addr_));
         memcpy (addr_, out_addr, out_addrlen);
+        *addr_len_ = out_addrlen;
         return 0;
     }
 
@@ -220,11 +223,13 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, char const *interface_)
     if (rc == 0) {
         zmq_assert (out_addrlen <= sizeof (*addr_));
         memcpy (addr_, out_addr, out_addrlen);
+        *addr_len_ = out_addrlen;
         return 0;
     }
 
     //  There's no such interface name. Assume literal address.
     rc = inet_pton (AF_INET, interface.c_str(), &ip4_addr.sin_addr);
+
     if (rc == 0) {
         errno = ENODEV;
         return -1;
@@ -234,10 +239,12 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, char const *interface_)
 
     zmq_assert (out_addrlen <= sizeof (*addr_));
     memcpy (addr_, out_addr, out_addrlen);
+    *addr_len_ = out_addrlen;
     return 0;
 }
 
-int zmq::resolve_ip_hostname (sockaddr_storage *addr_, const char *hostname_)
+int zmq::resolve_ip_hostname (sockaddr_storage *addr_, socklen_t *addr_len_,
+    const char *hostname_)
 {
     sockaddr_in *addr = (sockaddr_in*) addr_;
 
@@ -256,6 +263,8 @@ int zmq::resolve_ip_hostname (sockaddr_storage *addr_, const char *hostname_)
     addrinfo req;
     memset (&req, 0, sizeof (req));
     req.ai_family = AF_INET;
+    *addr_len_ = sizeof (*addr_);
+
     addrinfo *res;
     int rc = getaddrinfo (hostname.c_str (), NULL, &req, &res);
     if (rc) {
@@ -278,15 +287,18 @@ int zmq::resolve_ip_hostname (sockaddr_storage *addr_, const char *hostname_)
 
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
 
-int zmq::resolve_local_path (sockaddr_un *addr_, const char *path_)
+int zmq::resolve_local_path (sockaddr_storage *addr_, socklen_t *addr_len_,
+    const char *path_)
 {
-    if (strlen (path_) >= sizeof (addr_->sun_path))
+    sockaddr_un *un = (sockaddr_un*) addr_;
+    if (strlen (path_) >= sizeof (un->sun_path))
     {
         errno = ENAMETOOLONG;
         return -1;
     }
-    strcpy (addr_->sun_path, path_);
-    addr_->sun_family = AF_UNIX;
+    strcpy (un->sun_path, path_);
+    un->sun_family = AF_UNIX;
+    *addr_len_ = sizeof (sockaddr_un);
     return 0;
 }
 

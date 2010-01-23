@@ -59,6 +59,7 @@ namespace zmq
 
         //  Address to connect to.
         sockaddr_storage addr;
+        socklen_t addr_len;
 
         //  Underlying socket.
         fd_t s;

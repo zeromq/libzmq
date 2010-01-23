@@ -54,6 +54,7 @@ namespace zmq
 
         //  Address to listen on.
         sockaddr_storage addr;
+        socklen_t addr_len;
 
         //  Underlying socket.
         fd_t s;

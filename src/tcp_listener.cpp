@@ -33,6 +33,7 @@ zmq::tcp_listener_t::tcp_listener_t () :
     s (retired_fd)
 {
     memset (&addr, 0, sizeof (addr));
+    addr_len = 0;
 }
 
 zmq::tcp_listener_t::~tcp_listener_t ()
@@ -50,7 +51,7 @@ int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
     }
 
     //  Convert the interface into sockaddr_in structure.
-    int rc = resolve_ip_interface (&addr, addr_);
+    int rc = resolve_ip_interface (&addr, &addr_len, addr_);
     if (rc != 0)
         return rc;
 
@@ -73,7 +74,7 @@ int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
     wsa_assert (rc != SOCKET_ERROR);
 
     //  Bind the socket to the network interface and port.
-    rc = bind (s, (struct sockaddr*) &addr, sizeof (addr));
+    rc = bind (s, (struct sockaddr*) &addr, addr_len);
     if (rc == SOCKET_ERROR) {
         wsa_error_to_errno ();
         return -1;
@@ -158,7 +159,7 @@ int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
     if (strcmp (protocol_, "tcp") == 0 ) {
 
         //  Resolve the sockaddr to bind to.
-        int rc = resolve_ip_interface (&addr, addr_);
+        int rc = resolve_ip_interface (&addr, &addr_len, addr_);
         if (rc != 0)
             return -1;
 
@@ -180,7 +181,7 @@ int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
         errno_assert (rc != -1);
 
         //  Bind the socket to the network interface and port.
-        rc = bind (s, (struct sockaddr*) &addr, sizeof (addr));
+        rc = bind (s, (struct sockaddr*) &addr, addr_len);
         if (rc != 0) {
             close ();
             return -1;
@@ -202,7 +203,7 @@ int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
         ::unlink (addr_);
 
         //  Convert the address into sockaddr_un structure.
-        int rc = resolve_local_path ((struct sockaddr_un*) &addr, addr_);
+        int rc = resolve_local_path (&addr, &addr_len, addr_);
         if (rc != 0)
             return -1;
 

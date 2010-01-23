@@ -34,6 +34,7 @@ zmq::tcp_connecter_t::tcp_connecter_t () :
     s (retired_fd)
 {
     memset (&addr, 0, sizeof (addr));
+    addr_len = 0;
 }
 
 zmq::tcp_connecter_t::~tcp_connecter_t ()
@@ -45,7 +46,7 @@ zmq::tcp_connecter_t::~tcp_connecter_t ()
 int zmq::tcp_connecter_t::set_address (const char *protocol_, const char *addr_)
 {
     if (strcmp (protocol_, "tcp") == 0)
-        return resolve_ip_hostname (&addr, addr_);
+        return resolve_ip_hostname (&addr, &addr_len, addr_);
 
     errno = EPROTONOSUPPORT;
     return -1;    
@@ -74,7 +75,7 @@ int zmq::tcp_connecter_t::open ()
     wsa_assert (rc != SOCKET_ERROR);
 
     //  Connect to the remote peer.
-    rc = ::connect (s, (sockaddr*) &addr, sizeof (addr));
+    rc = ::connect (s, (sockaddr*) &addr, addr_len);
 
     //  Connect was successfull immediately.
     if (rc == 0)
@@ -153,9 +154,9 @@ zmq::tcp_connecter_t::~tcp_connecter_t ()
 int zmq::tcp_connecter_t::set_address (const char *protocol_, const char *addr_)
 {
     if (strcmp (protocol_, "tcp") == 0)
-        return resolve_ip_hostname (&addr, addr_);
+        return resolve_ip_hostname (&addr, &addr_len, addr_);
     else if (strcmp (protocol_, "ipc") == 0)
-        return resolve_local_path (( struct sockaddr_un*)&addr, addr_);
+        return resolve_local_path (&addr, &addr_len, addr_);
 
     errno = EPROTONOSUPPORT;
     return -1;
@@ -182,18 +183,20 @@ int zmq::tcp_connecter_t::open ()
 
         //  Disable Nagle's algorithm.
         int flag = 1;
-        rc = setsockopt (s, IPPROTO_TCP, TCP_NODELAY, (char*) &flag, sizeof (int));
+        rc = setsockopt (s, IPPROTO_TCP, TCP_NODELAY, (char*) &flag,
+            sizeof (int));
         errno_assert (rc == 0);
 
 #ifdef ZMQ_HAVE_OPENVMS
         //  Disable delayed acknowledgements.
         flag = 1;
-        rc = setsockopt (s, IPPROTO_TCP, TCP_NODELACK, (char*) &flag, sizeof (int));
+        rc = setsockopt (s, IPPROTO_TCP, TCP_NODELACK, (char*) &flag,
+            sizeof (int));
         errno_assert (rc != SOCKET_ERROR);
 #endif
 
         //  Connect to the remote peer.
-        rc = ::connect (s, (struct sockaddr*) &addr, sizeof (addr));
+        rc = ::connect (s, (struct sockaddr*) &addr, addr_len);
 
         //  Connect was successfull immediately.
         if (rc == 0)
