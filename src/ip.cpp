@@ -229,17 +229,6 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
     //  There's no such interface name. Assume literal address.
     addrinfo *res = NULL;
 
-#if defined ZMQ_HAVE_WINDOWS
-    //  Old versions of Windows don't support inet_pton
-    //  so let's rather use inet_addr instead.
-    //  TODO: This code obviously doesn't work for IPv6 addresses...
-    ip4_addr.sin_addr.S_un.S_addr = inet_addr (iface.c_str ());
-    if (ip4_addr.sin_addr.S_un.S_addr == INADDR_NONE) {
-        errno = ENODEV;
-        return -1;
-    }
-#else
-
     //  Set up the query.
     addrinfo req;
     memset (&req, 0, sizeof (req));
@@ -263,13 +252,9 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
     }
 
     //  Use the first result.
-    out_addr = res->ai_addr;
-    out_addrlen = res->ai_addrlen;
-#endif
-
-    zmq_assert (out_addrlen <= sizeof (*addr_));
-    memcpy (addr_, out_addr, out_addrlen);
-    *addr_len_ = out_addrlen;
+    zmq_assert (res->ai_addrlen <= sizeof (*addr_));
+    memcpy (addr_, res->ai_addr, res->ai_addrlen);
+    *addr_len_ = res->ai_addrlen;
 
     //  Cleanup getaddrinfo after copying the possibly referenced result.
     if (res)
