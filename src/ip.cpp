@@ -177,7 +177,7 @@ static int resolve_nic_name (in_addr* addr_, char const *interface_)
 int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
     char const *interface_)
 {
-    //  Find the end ':' that separates NIC name from service.
+    //  Find the ':' at end that separates NIC name from service.
     const char *delimiter = strrchr (interface_, ':');
     if (!delimiter) {
         errno = EINVAL;
@@ -226,28 +226,55 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
         return 0;
     }
 
+    //  There's no such interface name. Assume literal address.
+    addrinfo *res = NULL;
+
 #if defined ZMQ_HAVE_WINDOWS
     //  Old versions of Windows don't support inet_pton
     //  so let's rather use inet_addr instead.
+    //  TODO: This code obviously doesn't work for IPv6 addresses...
     ip4_addr.sin_addr.S_un.S_addr = inet_addr (iface.c_str ());
     if (ip4_addr.sin_addr.S_un.S_addr == INADDR_NONE) {
         errno = ENODEV;
         return -1;
     }
 #else
-    //  There's no such interface name. Assume literal address.
-    rc = inet_pton (AF_INET, iface.c_str(), &ip4_addr.sin_addr);
-    if (rc == 0) {
+
+    //  Set up the query.
+    addrinfo req;
+    memset (&req, 0, sizeof (req));
+
+    //  We don't care about family. IPv4 is as good as IPv6.
+    req.ai_family = AF_UNSPEC;
+
+    //  Arbitrary, not used in the output, but avoids duplicate results.
+    req.ai_socktype = SOCK_STREAM;
+
+    //  Restrict hostname/service to literals to avoid any DNS lookups or
+    //  service-name irregularity due to indeterminate socktype.
+    req.ai_flags = AI_PASSIVE | AI_NUMERICHOST | AI_NUMERICSERV;
+
+    //  Resolve the literal address. Some of the error info is lost in case
+    //  of error, however, there's no way to report EAI errors via errno.
+    rc = getaddrinfo (iface.c_str(), service.c_str(), &req, &res);
+    if (rc) {
         errno = ENODEV;
         return -1;
     }
-    if (rc < 0)
-        return -1;
+
+    //  Use the first result.
+    out_addr = res->ai_addr;
+    out_addrlen = res->ai_addrlen;
 #endif
 
     zmq_assert (out_addrlen <= sizeof (*addr_));
     memcpy (addr_, out_addr, out_addrlen);
     *addr_len_ = out_addrlen;
+
+    //  Cleanup getaddrinfo after copying the possibly referenced result.
+    if (res)
+        freeaddrinfo (res);
+
     return 0;
 }
 
@@ -265,7 +292,7 @@ int zmq::resolve_ip_hostname (sockaddr_storage *addr_, socklen_t *addr_len_,
     std::string hostname (hostname_, delimiter - hostname_);
     std::string service (delimiter + 1);
 
-    //  Setup the query.
+    //  Set up the query.
     addrinfo req;
     memset (&req, 0, sizeof (req));
 
