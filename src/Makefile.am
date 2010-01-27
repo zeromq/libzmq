@@ -180,6 +180,7 @@ libpgm_diff_flags = \
     -DCONFIG_GALOIS_MUL_LUT \
     -DIF_NAMESIZE=256 \
     -DPGM_GNUC_INTERNAL=G_GNUC_INTERNAL \
+    -DCONFIG_HAVE_WSACMSGHDR \
     -DGETTEXT_PACKAGE='"pgm"' \
     -DG_LOG_DOMAIN='"Pgm"'
 
