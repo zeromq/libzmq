@@ -46,7 +46,8 @@ pgm_sources = ../foreign/openpgm/@pgm_basename@/openpgm/pgm/packet.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/wsastrerror.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/glib-compat.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/backtrace.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/log.c
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/log.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/sockaddr.c
 endif
 
 nodist_libzmq_la_SOURCES = $(pgm_sources)
@@ -170,7 +171,6 @@ libzmq_la_SOURCES = app_thread.hpp \
 libzmq_la_LDFLAGS = -version-info @LTVER@ @LIBZMQ_EXTRA_LDFLAFS@
 
 if BUILD_PGM2
-libzmq_la_CXXFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/include/ -Wall @LIBZMQ_EXTRA_CXXFLAGS@
 
 if ON_MINGW
 libpgm_diff_flags = \
@@ -179,6 +179,7 @@ libpgm_diff_flags = \
     -DCONFIG_BIND_INADDR_ANY \
     -DCONFIG_GALOIS_MUL_LUT \
     -DIF_NAMESIZE=256 \
+    -DPGM_GNUC_INTERNAL=G_GNUC_INTERNAL \
     -DGETTEXT_PACKAGE='"pgm"' \
     -DG_LOG_DOMAIN='"Pgm"'
 
@@ -201,6 +202,11 @@ libpgm_diff_flags = \
     -DCONFIG_HAVE_GETPROTOBYNAME_R \
     -DCONFIG_BIND_INADDR_ANY \
     -DCONFIG_GALOIS_MUL_LUT \
+    -DCONFIG_HAVE_MCAST_JOIN \
+    -DCONFIG_HAVE_IP_MREQN \
+    -DCONFIG_HAVE_SPRINTF_GROUPING \
+    -DCONFIG_HAVE_HPET \
+    -DPGM_GNUC_INTERNAL=G_GNUC_INTERNAL \
     -DGETTEXT_PACKAGE='"pgm"' \
     -DG_LOG_DOMAIN='"Pgm"'
 endif
@@ -233,6 +239,9 @@ libzmq_la_CFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/in
     -D_REENTRANT \
     -D_GNU_SOURCE \
     ${libpgm_diff_flags}
+
+libzmq_la_CXXFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/include/ \
+    -Wall @LIBZMQ_EXTRA_CXXFLAGS@ ${libpgm_diff_flags}
 endif
 
 if BUILD_NO_PGM
