@@ -295,8 +295,8 @@ int zmq::fd_signaler_t::socketpair (int domain_, int type_, int protocol_,
     //  Fill in the localhost address (127.0.0.1).
     memset (&lcladdr, 0, sizeof (lcladdr));
     lcladdr.sin_family = AF_INET;
-    lcladdr.sin_addr.s_addr = 0x0100007f;
-    lcladdr.sin_port = INADDR_ANY;
+    lcladdr.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
+    lcladdr.sin_port = 0;
 
     listener = socket (AF_INET, SOCK_STREAM, 0);
     errno_assert (listener != -1);
