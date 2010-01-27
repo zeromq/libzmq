@@ -65,4 +65,8 @@
 #include <ipexport.h>
 #include <process.h>
 
+//  On mingw environment AI_NUMERICSERV is not defined, needed in ip.cpp.
+#ifndef AI_NUMERICSERV
+#define AI_NUMERICSERV 0x0400
+#endif
 #endif
