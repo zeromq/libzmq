@@ -13,6 +13,9 @@ autom4te.cache
 *.lo
 *.loT
 *.la
+*.html
+*.pdf
+*.ps
 .*
 src/platform.hpp
 src/stamp-h1

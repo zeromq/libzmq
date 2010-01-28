@@ -392,21 +392,6 @@ else
     JAR=true
 fi
 
-# Common Lisp
-cldir=""
-AC_ARG_WITH([cl], [AS_HELP_STRING([--with-cl],
-    [build Common Lisp language binding and install it into specified ASDF central registry [default=no]])],
-    [cldir="$withval";clzmq="yes"], [clzmq="no"])
-
-if test "x$clzmq" = "xyes"; then
-    if test "x$cldir" = "xyes"; then
-        AC_MSG_ERROR([Please, specify ASDF central registry path])
-    fi
-
-    CLDIR=${cldir}
-    AC_SUBST([CLDIR])
-fi
-
 #  PGM extension
 pgm2_ext="no"
 
@@ -563,7 +548,6 @@ AM_CONDITIONAL(BUILD_JAVA, test "x$jzmq" = "xyes")
 AM_CONDITIONAL(BUILD_PYTHON, test "x$pyzmq" = "xyes")
 AM_CONDITIONAL(BUILD_RUBY, test "x$rbzmq" = "xyes")
 AM_CONDITIONAL(BUILD_C, test "x$czmq" = "xyes")
-AM_CONDITIONAL(BUILD_CL, test "x$clzmq" = "xyes")
 AM_CONDITIONAL(BUILD_CPP, test "x$cppzmq" = "xyes")
 AM_CONDITIONAL(BUILD_PGM2, test "x$pgm2_ext" = "xyes")
 AM_CONDITIONAL(BUILD_NO_PGM, test "x$pgm2_ext" = "xno")
@@ -591,7 +575,6 @@ AC_CHECK_FUNCS(perror gettimeofday memset socket getifaddrs freeifaddrs)
 
 AC_OUTPUT(Makefile src/Makefile man/Makefile bindings/python/Makefile \
     bindings/python/setup.py bindings/ruby/Makefile \
-    bindings/cl/Makefile perf/cl/Makefile \
     bindings/java/Makefile perf/Makefile perf/c/Makefile perf/cpp/Makefile \
     perf/python/Makefile perf/ruby/Makefile perf/java/Makefile src/libzmq.pc \
     devices/Makefile devices/zmq_forwarder/Makefile \
@@ -612,10 +595,6 @@ AC_MSG_RESULT([ 0MQ install dir: $prefix])
 AC_MSG_RESULT([   Language bindings:])
 AC_MSG_RESULT([     C: $czmq])
 AC_MSG_RESULT([     C++: $cppzmq])
-AC_MSG_RESULT([     Common Lisp: $clzmq])
-if test "x$clzmq" = "xyes"; then
-AC_MSG_RESULT([       ASDF central registry: $cldir])
-fi
 AC_MSG_RESULT([     Java: $jzmq])
 AC_MSG_RESULT([     Python: $pyzmq])
 AC_MSG_RESULT([     Ruby: $rbzmq])
