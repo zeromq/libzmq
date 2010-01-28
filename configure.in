@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.61)
-AC_INIT([zeromq],[2.0-beta2],[http://www.zeromq.org])
+AC_INIT([zeromq],[dev],[http://www.zeromq.org])
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
 AM_CONFIG_HEADER(src/platform.hpp)
@@ -395,7 +395,7 @@ fi
 #  PGM extension
 pgm2_ext="no"
 
-pgm2_basename="libpgm-2.0.20rc5"
+pgm2_basename="libpgm-2.0.21rc6"
 
 AC_SUBST(pgm2_basename)
 
@@ -456,13 +456,13 @@ if test "x$with_pgm2_ext" != "xno"; then
 
     #  Generate galois_tables.c
     AC_CONFIG_COMMANDS([galois_tables2.c], 
-        [perl foreign/openpgm/libpgm-2.0.20rc5/openpgm/pgm/galois_generator.pl > \
-            foreign/openpgm/libpgm-2.0.20rc5/openpgm/pgm/galois_tables.c])
+        [perl foreign/openpgm/libpgm-2.0.21rc6/openpgm/pgm/galois_generator.pl > \
+            foreign/openpgm/libpgm-2.0.21rc6/openpgm/pgm/galois_tables.c])
 
     #  Generate version.c
     AC_CONFIG_COMMANDS([version2.c],
-        [python foreign/openpgm/libpgm-2.0.20rc5/openpgm/pgm/version_generator.py > \
-            foreign/openpgm/libpgm-2.0.20rc5/openpgm/pgm/version.c])
+        [python foreign/openpgm/libpgm-2.0.21rc6/openpgm/pgm/version_generator.py > \
+            foreign/openpgm/libpgm-2.0.21rc6/openpgm/pgm/version.c])
 
     #  Check for OpenPGM nedded libraries.
     PKG_CHECK_MODULES([GLIB], [glib-2.0 gthread-2.0])
@@ -557,7 +557,7 @@ AM_CONDITIONAL(BUILD_QUEUE, test "x$queue" = "xyes")
 AM_CONDITIONAL(BUILD_PERF, test "x$perf" = "xyes")
 AM_CONDITIONAL(BUILD_CHAT, test "x$chat" = "xyes")
 AM_CONDITIONAL(ON_MINGW, test "x$on_mingw32" = "xyes")
-AM_CONDITIONAL(BUILD_PGM2_EXAMPLES, test "x$with_pgm2_ext" = "xyes")
+AM_CONDITIONAL(BUILD_PGM2_EXAMPLES, test "x$with_pgm2_examples" = "xyes")
 AM_CONDITIONAL(INSTALL_MAN, test "x$install_man" = "xyes")
 
 AC_SUBST(stdint)
