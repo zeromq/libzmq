@@ -58,10 +58,6 @@ case "${host_os}" in
     *linux*)
         AC_DEFINE(ZMQ_HAVE_LINUX, 1, [Have Linux OS])
         CPPFLAGS="-D_REENTRANT $CPPFLAGS"
-       sed < libtool > libtool-2 \
-        's/^hardcode_libdir_flag_spec.*$'/'hardcode_libdir_flag_spec=" "/'
-        mv libtool-2 libtool
-        chmod 755 libtool
         AC_CHECK_LIB(uuid, main, , 
             [AC_MSG_ERROR([Could not link with libuuid, install develop version.])])
         ;;
@@ -122,10 +118,6 @@ case "${host_os}" in
           CPPFLAGS="-D_THREAD_SAFE $CPPFLAGS"
         fi
         AC_CHECK_LIB(rt, main)
-        sed < libtool > libtool-2 \
-        's/^hardcode_libdir_flag_spec.*$'/'hardcode_libdir_flag_spec=" "/'
-        mv libtool-2 libtool
-        chmod 755 libtool
         ;;
     *mingw32*)
         AC_DEFINE(ZMQ_HAVE_WINDOWS, 1, [Have Windows OS])
@@ -580,6 +572,16 @@ AC_OUTPUT(Makefile src/Makefile man/Makefile bindings/python/Makefile \
     devices/Makefile devices/zmq_forwarder/Makefile \
     devices/zmq_streamer/Makefile devices/zmq_queue/Makefile bindings/Makefile \
     examples/Makefile examples/chat/Makefile)
+
+#  On Linux patch libtool to delete hardcoded paths (rpath).
+case "${host_os}" in
+    *linux*)
+        sed < libtool > libtool-2 \
+        's/^hardcode_libdir_flag_spec.*$'/'hardcode_libdir_flag_spec=" "/'
+        mv libtool-2 libtool
+        chmod 755 libtool
+        ;;
+esac
 
 AC_MSG_RESULT([])
 AC_MSG_RESULT([ ******************************************************** ])
