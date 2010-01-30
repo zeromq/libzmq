@@ -47,6 +47,11 @@ namespace zmq
 
     private:
 
+        class reader_t *inpipe;
+        class writer_t *outpipe;
+
+        bool alive;
+
         p2p_t (const p2p_t&);
         void operator = (const p2p_t&);
     };
