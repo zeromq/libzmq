@@ -26,7 +26,6 @@
 
 zmq::sub_t::sub_t (class app_thread_t *parent_) :
     socket_base_t (parent_),
-    all_count (0),
     has_message (false)
 {
     options.requires_in = true;
@@ -72,30 +71,14 @@ int zmq::sub_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
     if (option_ == ZMQ_SUBSCRIBE) {
-        if (!optvallen_)
-            all_count++;
-        else 
-            subscriptions.insert (std::string ((const char*) optval_,
-                optvallen_));
+        subscriptions.add ((unsigned char*) optval_, optvallen_);
         return 0;
     }
     
     if (option_ == ZMQ_UNSUBSCRIBE) {
-        if (!optvallen_) {
-            if (!all_count) {
-                errno = EINVAL;
-                return -1;
-            }
-            all_count--;
-        }
-        else {
-            subscriptions_t::iterator it = subscriptions.find (
-                std::string ((const char*) optval_, optvallen_));
-            if (it == subscriptions.end ()) {
-                errno = EINVAL;
-                return -1;
-            }
-            subscriptions.erase (it);
+        if (!subscriptions.rm ((unsigned char*) optval_, optvallen_)) {
+            errno = EINVAL;
+            return -1;
         }
         return 0;
     }
@@ -181,21 +164,6 @@ bool zmq::sub_t::xhas_out ()
 
 bool zmq::sub_t::match (zmq_msg_t *msg_)
 {
-    //  If there is at least one * subscription, the message matches.
-    if (all_count)
-        return true;
-
-    //  Check whether the message matches at least one prefix subscription.
-    //  TODO: Make this efficient - O(log(n)) where n is number of characters in
-    //  the longest subscription string.
-    for (subscriptions_t::iterator it = subscriptions.begin ();
-          it != subscriptions.end (); it++) {
-        size_t msg_size = zmq_msg_size (msg_);
-        size_t sub_size = it->size ();
-        if (sub_size <= msg_size &&
-              memcmp (zmq_msg_data (msg_), it->data (), sub_size) == 0)
-            return true;
-    }
-
-    return false;
+    return subscriptions.check ((unsigned char*) zmq_msg_data (msg_),
+        zmq_msg_size (msg_));
 }

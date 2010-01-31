@@ -20,11 +20,9 @@
 #ifndef __ZMQ_SUB_HPP_INCLUDED__
 #define __ZMQ_SUB_HPP_INCLUDED__
 
-#include <set>
-#include <string>
-
 #include "../bindings/c/zmq.h"
 
+#include "prefix_tree.hpp"
 #include "socket_base.hpp"
 #include "fq.hpp"
 
@@ -59,13 +57,10 @@ namespace zmq
         bool match (zmq_msg_t *msg_);
 
         //  Fair queueing object for inbound pipes.
-         fq_t fq;
+        fq_t fq;
 
-        //  Number of active * subscriptions.
-        int all_count;
-
-        typedef std::multiset <std::string> subscriptions_t;
-        subscriptions_t subscriptions;
+        //  The repository of subscriptions.
+        prefix_tree_t subscriptions;
 
         //  If true, 'message' contains a matching message to return on the
         //  next recv call.

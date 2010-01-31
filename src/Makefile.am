@@ -92,6 +92,7 @@ libzmq_la_SOURCES = app_thread.hpp \
     poll.hpp \
     poller.hpp \
     p2p.hpp \
+    prefix_tree.hpp \
     pub.hpp \
     rep.hpp \
     req.hpp \
@@ -142,6 +143,7 @@ libzmq_la_SOURCES = app_thread.hpp \
     pgm_sender.cpp \
     pgm_socket.cpp \
     p2p.cpp \
+    prefix_tree.cpp \
     pipe.cpp \
     poll.cpp \
     pub.cpp \
