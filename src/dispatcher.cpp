@@ -134,11 +134,15 @@ zmq::socket_base_t *zmq::dispatcher_t::create_socket (int type_)
     }
     threads_sync.unlock ();
 
+    socket_base_t *s = thread->create_socket (type_);
+    if (!s)
+        return NULL;
+
     term_sync.lock ();
     sockets++;
     term_sync.unlock ();
 
-    return thread->create_socket (type_);
+    return s;
 }
 
 void zmq::dispatcher_t::destroy_socket ()
