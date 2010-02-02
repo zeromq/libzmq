@@ -176,23 +176,22 @@ zmq::app_thread_t *zmq::dispatcher_t::choose_app_thread ()
     return NULL;
 }
 
-zmq::io_thread_t *zmq::dispatcher_t::choose_io_thread (uint64_t taskset_)
+zmq::io_thread_t *zmq::dispatcher_t::choose_io_thread (uint64_t affinity_)
 {
-    zmq_assert (io_threads.size () > 0);
-
     //  Find the I/O thread with minimum load.
-    int min_load = io_threads [0]->get_load ();
+    zmq_assert (io_threads.size () > 0);
+    int min_load = -1;
     io_threads_t::size_type result = 0;
-    for (io_threads_t::size_type i = 1; i != io_threads.size (); i++) {
-        if (!taskset_ || (taskset_ & (uint64_t (1) << i))) {
+    for (io_threads_t::size_type i = 0; i != io_threads.size (); i++) {
+        if (!affinity_ || (affinity_ & (uint64_t (1) << i))) {
             int load = io_threads [i]->get_load ();
-            if (load < min_load) {
+            if (min_load == -1 || load < min_load) {
                 min_load = load;
                 result = i;
             }
         }
     }
-
+    zmq_assert (min_load != -1);
     return io_threads [result];
 }
 
