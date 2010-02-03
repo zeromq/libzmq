@@ -47,7 +47,8 @@ pgm_sources = ../foreign/openpgm/@pgm_basename@/openpgm/pgm/packet.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/glib-compat.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/backtrace.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/log.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/sockaddr.c
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/sockaddr.c \
+    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/version.c
 endif
 
 nodist_libzmq_la_SOURCES = $(pgm_sources)
