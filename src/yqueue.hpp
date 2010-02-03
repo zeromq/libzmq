@@ -24,6 +24,7 @@
 #include <stddef.h>
 
 #include "err.hpp"
+#include "atomic_ptr.hpp"
 
 namespace zmq
 {
@@ -37,9 +38,9 @@ namespace zmq
     //  pop on the empty queue and that both threads don't access the same
     //  element in unsynchronised manner.
     //
-    //  T is the type of the object in the queue
+    //  T is the type of the object in the queue.
     //  N is granularity of the queue (how many pushes have to be done till
-    //  actual memory allocation is required)
+    //  actual memory allocation is required).
 
     template <typename T, int N> class yqueue_t
     {
@@ -69,6 +70,10 @@ namespace zmq
                 begin_chunk = begin_chunk->next;
                 delete o;
             }
+
+            chunk_t *sc = spare_chunk.xchg (NULL);
+            if (sc)
+                delete sc;
         }
 
         //  Returns reference to the front element of the queue.
@@ -94,8 +99,13 @@ namespace zmq
             if (++end_pos != N)
                 return;
 
-            end_chunk->next = new (std::nothrow) chunk_t;
-            zmq_assert (end_chunk->next);
+            chunk_t *sc = spare_chunk.xchg (NULL);
+            if (sc) {
+                end_chunk->next = sc;
+            } else {
+                end_chunk->next = new (std::nothrow) chunk_t;
+                zmq_assert (end_chunk->next);
+            }
             end_chunk = end_chunk->next;
             end_pos = 0;
         }
@@ -107,7 +117,13 @@ namespace zmq
                 chunk_t *o = begin_chunk;
                 begin_chunk = begin_chunk->next;
                 begin_pos = 0;
-                delete o;
+
+                //  'o' has been more recently used than spare_chunk,
+                //  so for cache reasons we'll get rid of the spare and
+                //  use 'o' as the spare.
+                chunk_t *cs = spare_chunk.xchg (o);
+                if (cs)
+                    delete cs;
             }
         }
 
@@ -130,6 +146,11 @@ namespace zmq
         int back_pos;
         chunk_t *end_chunk;
         int end_pos;
+
+        //  People are likely to produce and consume at similar rates.  In
+        //  this scenario holding onto the most recently freed chunk saves
+        //  us from having to call new/delete.
+        atomic_ptr_t<chunk_t> spare_chunk;
 
         //  Disable copying of yqueue.
         yqueue_t (const yqueue_t&);
