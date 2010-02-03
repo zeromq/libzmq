@@ -78,33 +78,35 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
     nbytes_processed = 0;
     pgm_msgv_processed = 0;
 
+    int rc;
     GError *pgm_error = NULL;
 
-    //  Init PGM transport.
+    //  Init PGM transport if not already done.
     //  Ensure threading enabled, ensure timer enabled and find PGM protocol id.
     //
     //  Note that if you want to use gettimeofday and sleep for openPGM timing,
     //  set environment variables PGM_TIMER to "GTOD" 
     //  and PGM_SLEEP to "USLEEP".
-    int rc = pgm_init (&pgm_error);
-    if (rc != TRUE) {
+    if (!pgm_supported ()) {
+        rc = pgm_init (&pgm_error);
+        if (rc != TRUE) {
+            if (pgm_error->domain == PGM_IF_ERROR && (
+                  pgm_error->code == PGM_IF_ERROR_INVAL ||
+                  pgm_error->code == PGM_IF_ERROR_XDEV ||
+                  pgm_error->code == PGM_IF_ERROR_NODEV ||
+                  pgm_error->code == PGM_IF_ERROR_NOTUNIQ ||
+                  pgm_error->code == PGM_IF_ERROR_ADDRFAMILY ||
+                  pgm_error->code == PGM_IF_ERROR_FAMILY ||
+                  pgm_error->code == PGM_IF_ERROR_NODATA ||
+                  pgm_error->code == PGM_IF_ERROR_NONAME ||
+                  pgm_error->code == PGM_IF_ERROR_SERVICE)) {
+                errno = EINVAL;
+	            g_error_free (pgm_error);
+                return -1;
+            }
 
-        if (pgm_error->domain == PGM_IF_ERROR && (
-              pgm_error->code == PGM_IF_ERROR_INVAL ||
-              pgm_error->code == PGM_IF_ERROR_XDEV ||
-              pgm_error->code == PGM_IF_ERROR_NODEV ||
-              pgm_error->code == PGM_IF_ERROR_NOTUNIQ ||
-              pgm_error->code == PGM_IF_ERROR_ADDRFAMILY ||
-              pgm_error->code == PGM_IF_ERROR_FAMILY ||
-              pgm_error->code == PGM_IF_ERROR_NODATA ||
-              pgm_error->code == PGM_IF_ERROR_NONAME ||
-              pgm_error->code == PGM_IF_ERROR_SERVICE)) {
-            errno = EINVAL;
-	        g_error_free (pgm_error);
-            return -1;
+            zmq_assert (false);
         }
-
-        zmq_assert (false);
     }
 
     //  PGM transport GSI.

@@ -258,6 +258,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\prefix_tree.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\pub.cpp"
 				>
 			</File>
@@ -509,6 +513,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\poll.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\prefix_tree.hpp"
 				>
 			</File>
 			<File
