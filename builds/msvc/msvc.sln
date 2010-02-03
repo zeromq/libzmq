@@ -98,6 +98,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zmq_queue", "zmq_queue\zmq_
 		{641C5F36-32EE-4323-B740-992B651CF9D6} = {641C5F36-32EE-4323-B740-992B651CF9D6}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ruby", "ruby\ruby.vcproj", "{A758A62C-48E3-4C30-ACD2-63AA93391D07}"
+	ProjectSection(ProjectDependencies) = postProject
+		{641C5F36-32EE-4323-B740-992B651CF9D6} = {641C5F36-32EE-4323-B740-992B651CF9D6}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -183,6 +188,10 @@ Global
 		{076F7B8B-5175-4CA9-BC2B-438E37F7F43E}.Debug|Win32.Build.0 = Debug|Win32
 		{076F7B8B-5175-4CA9-BC2B-438E37F7F43E}.Release|Win32.ActiveCfg = Release|Win32
 		{076F7B8B-5175-4CA9-BC2B-438E37F7F43E}.Release|Win32.Build.0 = Release|Win32
+		{A758A62C-48E3-4C30-ACD2-63AA93391D07}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A758A62C-48E3-4C30-ACD2-63AA93391D07}.Debug|Win32.Build.0 = Debug|Win32
+		{A758A62C-48E3-4C30-ACD2-63AA93391D07}.Release|Win32.ActiveCfg = Release|Win32
+		{A758A62C-48E3-4C30-ACD2-63AA93391D07}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
