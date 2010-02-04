@@ -30,6 +30,7 @@
 #endif
 
 #include <stdlib.h>
+#include <string.h>
 #include <string>
 
 #include "options.hpp"
@@ -131,8 +132,11 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
     }
 
     struct pgm_transport_info_t *res = NULL;
-
-    if (!pgm_if_get_transport_info (network, NULL, &res, &pgm_error)) {
+    struct pgm_transport_info_t hint;
+    memset (&hint, 0, sizeof (hint));
+    hint.ti_family = AF_INET;
+    
+    if (!pgm_if_get_transport_info (network, &hint, &res, &pgm_error)) {
 
         if (pgm_error->domain == PGM_IF_ERROR && (
               pgm_error->code == PGM_IF_ERROR_INVAL ||
