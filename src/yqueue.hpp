@@ -20,7 +20,7 @@
 #ifndef __ZMQ_YQUEUE_HPP_INCLUDED__
 #define __ZMQ_YQUEUE_HPP_INCLUDED__
 
-#include <new>
+#include <stdlib.h>
 #include <stddef.h>
 
 #include "err.hpp"
@@ -49,7 +49,7 @@ namespace zmq
         //  Create the queue.
         inline yqueue_t ()
         {
-             begin_chunk = new (std::nothrow) chunk_t;
+             begin_chunk = (chunk_t*) malloc (sizeof (chunk_t));
              zmq_assert (begin_chunk);
              begin_pos = 0;
              back_chunk = NULL;
@@ -63,17 +63,17 @@ namespace zmq
         {
             while (true) {
                 if (begin_chunk == end_chunk) {
-                    delete begin_chunk;
+                    free (begin_chunk);
                     break;
                 } 
                 chunk_t *o = begin_chunk;
                 begin_chunk = begin_chunk->next;
-                delete o;
+                free (o);
             }
 
             chunk_t *sc = spare_chunk.xchg (NULL);
             if (sc)
-                delete sc;
+                free (sc);
         }
 
         //  Returns reference to the front element of the queue.
@@ -103,7 +103,7 @@ namespace zmq
             if (sc) {
                 end_chunk->next = sc;
             } else {
-                end_chunk->next = new (std::nothrow) chunk_t;
+                end_chunk->next = (chunk_t*) malloc (sizeof (chunk_t));
                 zmq_assert (end_chunk->next);
             }
             end_chunk = end_chunk->next;
@@ -123,7 +123,7 @@ namespace zmq
                 //  use 'o' as the spare.
                 chunk_t *cs = spare_chunk.xchg (o);
                 if (cs)
-                    delete cs;
+                    free (cs);
             }
         }
 
