@@ -275,7 +275,7 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
 
         //  Assert that the error was caused by the networking problems
         //  rather than 0MQ bug.
-        zmq_assert (err == ECONNREFUSED);
+        zmq_assert (err == ECONNREFUSED || err == ETIMEDOUT);
 
         errno = err;
         return retired_fd;
