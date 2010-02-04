@@ -73,8 +73,6 @@ groff -man -Tps man7/zmq_java.7 > man7/zmq_java.7.ps
 ps2pdf man7/zmq_java.7.ps zmq_java.pdf
 groff -man -Tps man7/zmq_python.7 > man7/zmq_python.7.ps
 ps2pdf man7/zmq_python.7.ps zmq_python.pdf
-groff -man -Tps man7/zmq_ruby.7 > man7/zmq_ruby.7.ps
-ps2pdf man7/zmq_ruby.7.ps zmq_ruby.pdf
 groff -man -Tps man7/zmq_cl.7 > man7/zmq_cl.7.ps
 ps2pdf man7/zmq_cl.7.ps zmq_cl.pdf
 groff -man -Tps man7/zmq_tcp.7 > man7/zmq_tcp.7.ps

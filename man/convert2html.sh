@@ -46,7 +46,6 @@ groff -man -Thtml man7/zmq.7 > man7/zmq.7.html
 groff -man -Thtml man7/zmq_cpp.7 > man7/zmq_cpp.7.html
 groff -man -Thtml man7/zmq_java.7 > man7/zmq_java.7.html
 groff -man -Thtml man7/zmq_python.7 > man7/zmq_python.7.html
-groff -man -Thtml man7/zmq_ruby.7 > man7/zmq_ruby.7.html
 groff -man -Thtml man7/zmq_cl.7 > man7/zmq_cl.7.html
 groff -man -Thtml man7/zmq_tcp.7 > man7/zmq_tcp.7.html
 groff -man -Thtml man7/zmq_udp.7 > man7/zmq_udp.7.html
