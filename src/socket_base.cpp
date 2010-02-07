@@ -494,7 +494,7 @@ uint64_t zmq::socket_base_t::register_session (session_t *session_)
     sessions_sync.lock ();
     uint64_t ordinal = next_ordinal;
     next_ordinal++;
-    unnamed_sessions.insert (std::make_pair (ordinal, session_)).second;
+    unnamed_sessions.insert (std::make_pair (ordinal, session_));
     sessions_sync.unlock ();
     return ordinal;
 }
