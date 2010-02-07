@@ -146,12 +146,13 @@ zmq::io_thread_t *zmq::object_t::choose_io_thread (uint64_t taskset_)
 
 void zmq::object_t::send_stop ()
 {
-    //  Send command goes always to the current object. To-self pipe is
-    //  used exclusively for sending this command.
+    //  'stop' command goes always from administrative thread to
+    //  the current object. 
+    int admin_thread_id = dispatcher->thread_slot_count () - 1;
     command_t cmd;
     cmd.destination = this;
     cmd.type = command_t::stop;
-    dispatcher->write (thread_slot, thread_slot, cmd);
+    dispatcher->write (admin_thread_id, thread_slot, cmd);
 }
 
 void zmq::object_t::send_plug (owned_t *destination_, bool inc_seqnum_)
@@ -314,9 +315,6 @@ void zmq::object_t::process_seqnum ()
 void zmq::object_t::send_command (command_t &cmd_)
 {
     int destination_thread_slot = cmd_.destination->get_thread_slot ();
-    if (destination_thread_slot == thread_slot)
-        cmd_.destination->process_command (cmd_);
-    else 
-        dispatcher->write (thread_slot, destination_thread_slot, cmd_);
+    dispatcher->write (thread_slot, destination_thread_slot, cmd_);
 }
 

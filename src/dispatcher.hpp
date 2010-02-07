@@ -70,23 +70,11 @@ namespace zmq
         int thread_slot_count ();
 
         //  Send command from the source to the destination.
-        inline void write (int source_, int destination_,
-            const command_t &command_)
-        {
-            command_pipe_t &pipe =
-                command_pipes [source_ * signalers.size () + destination_];
-            pipe.write (command_);
-            if (!pipe.flush ())
-                signalers [destination_]->signal (source_);
-        }
+        void write (int source_, int destination_, const command_t &command_);
 
         //  Receive command from the source. Returns false if there is no
         //  command available.
-        inline bool read (int source_,  int destination_, command_t *command_)
-        {
-            return command_pipes [source_ * signalers.size () +
-                destination_].read (command_);
-        }
+        bool read (int source_,  int destination_, command_t *command_);
 
         //  Returns the I/O thread that is the least busy at the moment.
         //  Taskset specifies which I/O threads are eligible (0 = all).
