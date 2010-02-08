@@ -62,7 +62,6 @@
 zmq::app_thread_t::app_thread_t (dispatcher_t *dispatcher_, int thread_slot_,
       int flags_) :
     object_t (dispatcher_, thread_slot_),
-    associated (false),
     last_processing_time (0)
 {
     if (flags_ & ZMQ_POLL) {
@@ -85,24 +84,6 @@ zmq::app_thread_t::~app_thread_t ()
 zmq::i_signaler *zmq::app_thread_t::get_signaler ()
 {
     return signaler;
-}
-
-bool zmq::app_thread_t::is_current ()
-{
-    return !sockets.empty () && associated &&
-        thread_t::equal (tid, thread_t::id ());
-}
-
-bool zmq::app_thread_t::make_current ()
-{
-    //  If there are object managed by this slot we cannot assign the slot
-    //  to a different thread.
-    if (!sockets.empty ())
-        return false;
-
-    associated = true;
-    tid = thread_t::id ();
-    return true;
 }
 
 void zmq::app_thread_t::process_commands (bool block_, bool throttle_)
@@ -191,6 +172,8 @@ zmq::socket_base_t *zmq::app_thread_t::create_socket (int type_)
         s = new (std::nothrow) downstream_t (this);
         break;
     default:
+        if (sockets.empty ())
+            dispatcher->no_sockets (this);
         errno = EINVAL;
         return NULL;
     }
@@ -204,4 +187,6 @@ zmq::socket_base_t *zmq::app_thread_t::create_socket (int type_)
 void zmq::app_thread_t::remove_socket (socket_base_t *socket_)
 {
     sockets.erase (socket_);
+    if (sockets.empty ())
+        dispatcher->no_sockets (this);
 }

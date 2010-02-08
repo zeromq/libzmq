@@ -31,6 +31,7 @@
 #include "config.hpp"
 #include "mutex.hpp"
 #include "stdint.hpp"
+#include "thread.hpp"
 
 namespace zmq
 {
@@ -64,6 +65,10 @@ namespace zmq
         //  Destroy a socket.
         void destroy_socket ();
 
+        //  Called by app_thread_t when it has no more sockets. The function
+        //  should disassociate the object from the current OS thread.
+        void no_sockets (class app_thread_t *thread_);
+
         //  Returns number of thread slots in the dispatcher. To be used by
         //  individual threads to find out how many distinct signals can be
         //  received.
@@ -94,13 +99,26 @@ namespace zmq
 
         ~dispatcher_t ();
 
-        //  Returns the app thread associated with the current thread.
-        //  NULL if we are out of app thread slots.
-        class app_thread_t *choose_app_thread ();
+        struct app_thread_info_t
+        {
+            //  If false, 0MQ application thread is free, there's no associated
+            //  OS thread.
+            bool associated;
+
+            //  ID of the associated OS thread. If 'associated' is false,
+            //  this field contains bogus data.
+            thread_t::id_t tid;
+
+            //  Pointer to the 0MQ application thread object.
+            class app_thread_t *app_thread;
+        };
 
         //  Application threads.
-        typedef std::vector <class app_thread_t*> app_threads_t;
+        typedef std::vector <app_thread_info_t> app_threads_t;
         app_threads_t app_threads;
+
+        //  Synchronisation of accesses to shared application thread data.
+        mutex_t app_threads_sync;
 
         //  I/O threads.
         typedef std::vector <class io_thread_t*> io_threads_t;
@@ -115,9 +133,6 @@ namespace zmq
 
         //  NxN matrix of command pipes.
         command_pipe_t *command_pipes;
-
-        //  Synchronisation of accesses to shared thread data.
-        mutex_t threads_sync;
 
         //  As pipes may reside in orphaned state in particular moments
         //  of the pipe shutdown process, i.e. neither pipe reader nor

@@ -25,7 +25,6 @@
 #include "stdint.hpp"
 #include "object.hpp"
 #include "yarray.hpp"
-#include "thread.hpp"
 
 namespace zmq
 {
@@ -41,17 +40,6 @@ namespace zmq
 
         //  Returns signaler associated with this application thread.
         struct i_signaler *get_signaler ();
-
-        //  Nota bene: Following two functions are accessed from different
-        //  threads. The caller (dispatcher) is responsible for synchronisation
-        //  of accesses.
-
-        //  Returns true is current thread is associated with the app thread.
-        bool is_current ();
-
-        //  Tries to associate current thread with the app thread object.
-        //  Returns true is successfull, false otherwise.
-        bool make_current ();
 
         //  Processes commands sent to this thread (if any). If 'block' is
         //  set to true, returns only after at least one command was processed.
@@ -70,13 +58,6 @@ namespace zmq
         //  All the sockets created from this application thread.
         typedef yarray_t <socket_base_t> sockets_t;
         sockets_t sockets;
-
-        //  If false, app_thread_t object is not associated with any OS thread.
-        //  In such case, 'tid' member contains a bogus value.
-        bool associated;
-
-        //  Thread ID associated with this slot.
-        thread_t::id_t tid;
 
         //  App thread's signaler object.
         struct i_signaler *signaler;
