@@ -81,6 +81,8 @@ void zmq::zmq_engine_t::unplug ()
 
 void zmq::zmq_engine_t::in_event ()
 {
+    bool disconnection = false;
+
     //  If there's no data to process in the buffer...
     if (!insize) {
 
@@ -91,8 +93,7 @@ void zmq::zmq_engine_t::in_event ()
         //  Check whether the peer has closed the connection.
         if (insize == (size_t) -1) {
             insize = 0;
-            error ();
-            return;
+            disconnection = true;
         }
     }
 
@@ -114,6 +115,9 @@ void zmq::zmq_engine_t::in_event ()
 
     //  Flush all messages the decoder may have produced.
     inout->flush ();
+
+    if (disconnection)
+        error ();
 }
 
 void zmq::zmq_engine_t::out_event ()
