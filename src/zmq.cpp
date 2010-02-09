@@ -45,6 +45,10 @@
 #include <sys/time.h>
 #endif
 
+#if defined ZMQ_HAVE_OPENPGM
+#include <pgm/pgm.h>
+#endif
+
 const char *zmq_strerror (int errnum_)
 {
     switch (errnum_) {
@@ -213,6 +217,37 @@ void *zmq_init (int app_threads_, int io_threads_, int flags_)
         return NULL;
     }
 
+#if defined ZMQ_HAVE_OPENPGM
+    //  Unfortunately, OpenPGM doesn't support refcounted init/shutdown, thus,
+    //  let's fail if it was initialised beforehand.
+    zmq_assert (!pgm_supported ());
+
+    //  Init PGM transport. Ensure threading and timer are enabled. Find PGM
+    //  protocol ID. Note that if you want to use gettimeofday and sleep for
+    //  openPGM timing, set environment variables PGM_TIMER to "GTOD" and
+    //  PGM_SLEEP to "USLEEP".
+    GError *pgm_error = NULL;
+    int rc = pgm_init (&pgm_error);
+    if (rc != TRUE) {
+        if (pgm_error->domain == PGM_IF_ERROR && (
+              pgm_error->code == PGM_IF_ERROR_INVAL ||
+              pgm_error->code == PGM_IF_ERROR_XDEV ||
+              pgm_error->code == PGM_IF_ERROR_NODEV ||
+              pgm_error->code == PGM_IF_ERROR_NOTUNIQ ||
+              pgm_error->code == PGM_IF_ERROR_ADDRFAMILY ||
+              pgm_error->code == PGM_IF_ERROR_FAMILY ||
+              pgm_error->code == PGM_IF_ERROR_NODATA ||
+              pgm_error->code == PGM_IF_ERROR_NONAME ||
+              pgm_error->code == PGM_IF_ERROR_SERVICE)) {
+            g_error_free (pgm_error);
+            errno = EINVAL;
+            return NULL;
+        }
+        zmq_assert (false);
+    }
+#endif
+
+    //  Create 0MQ context.
     zmq::dispatcher_t *dispatcher = new (std::nothrow) zmq::dispatcher_t (
         app_threads_, io_threads_, flags_);
     zmq_assert (dispatcher);
@@ -221,7 +256,17 @@ void *zmq_init (int app_threads_, int io_threads_, int flags_)
 
 int zmq_term (void *dispatcher_)
 {
-    return ((zmq::dispatcher_t*) dispatcher_)->term ();
+    int rc = ((zmq::dispatcher_t*) dispatcher_)->term ();
+    int en = errno;
+
+#if defined ZMQ_HAVE_OPENPGM
+    //  Shut down the OpenPGM library.
+    if (pgm_shutdown () != TRUE)
+        zmq_assert (false);
+#endif
+
+    errno = en;
+    return rc;
 }
 
 void *zmq_socket (void *dispatcher_, int type_)
