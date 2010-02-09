@@ -1,6 +1,6 @@
 
 This example is a simple instant messaging implementation. There are multiple
-partipants in the chat, both sending and reading messages. The sending
+participants in the chat, both sending and reading messages. The sending
 application 'prompt' is separated from the application displaying the chat
 'display' so that there's no need for sophisticated GUI.
 
