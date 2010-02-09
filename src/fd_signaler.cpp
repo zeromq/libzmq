@@ -211,6 +211,84 @@ zmq::fd_t zmq::fd_signaler_t::get_fd ()
     return r;
 }
 
+#elif defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_AIX
+
+#include <sys/types.h>
+#include <sys/socket.h>
+
+zmq::fd_signaler_t::fd_signaler_t ()
+{
+    int sv [2];
+    int rc = socketpair (AF_UNIX, SOCK_STREAM, 0, sv);
+    errno_assert (rc == 0);
+    w = sv [0];
+    r = sv [1];
+
+    //  Set the reader to non-blocking mode.
+    int flags = fcntl (r, F_GETFL, 0);
+    if (flags == -1)
+        flags = 0;
+    rc = fcntl (r, F_SETFL, flags | O_NONBLOCK);
+    errno_assert (rc != -1);
+}
+
+zmq::fd_signaler_t::~fd_signaler_t ()
+{
+    close (w);
+    close (r);
+}
+
+void zmq::fd_signaler_t::signal (int signal_)
+{
+    zmq_assert (signal_ >= 0 && signal_ < 64);
+    unsigned char c = (unsigned char) signal_;
+    ssize_t nbytes = send (w, &c, 1, 0);
+    errno_assert (nbytes == 1);
+}
+
+uint64_t zmq::fd_signaler_t::poll ()
+{
+    //  Set the reader to blocking mode.
+    int flags = fcntl (fd, F_GETFL, 0);
+    if (flags == -1)
+        flags = 0;
+    int rc = fcntl (fd, F_SETFL, flags & ~O_NONBLOCK);
+    errno_assert (rc != -1);
+
+    //  Poll for events.
+    uint64_t signals = check ();
+
+    //  Set the reader to non-blocking mode.
+    flags = fcntl (r, F_GETFL, 0);
+    if (flags == -1)
+        flags = 0;
+    rc = fcntl (r, F_SETFL, flags | O_NONBLOCK);
+    errno_assert (rc != -1);
+
+    return signals;
+}
+
+uint64_t zmq::fd_signaler_t::check ()
+{
+    unsigned char buffer [64];
+    ssize_t nbytes = recv (r, buffer, 64, 0);
+    if (nbytes == -1 && errno == EAGAIN)
+        return 0;
+    zmq_assert (nbytes != -1);
+
+    uint64_t signals = 0;
+    for (int pos = 0; pos != nbytes; pos ++) {
+        zmq_assert (buffer [pos] < 64);
+        signals |= (uint64_t (1) << (buffer [pos]));
+    }
+    return signals;
+}
+
+zmq::fd_t zmq::fd_signaler_t::get_fd ()
+{
+    return r;
+}
+
 #else
 
 #include <sys/types.h>

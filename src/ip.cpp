@@ -96,8 +96,6 @@ static int resolve_nic_name (in_addr* addr_, char const *interface_)
 #include <sys/ioctl.h>
 #include <net/if.h>
 
-#include "formatting.hpp"
-
 static int resolve_nic_name (in_addr* addr_, char const *interface_)
 {
     //  Create a socket.
@@ -107,7 +105,7 @@ static int resolve_nic_name (in_addr* addr_, char const *interface_)
     struct ifreq ifr; 
 
     //  Copy interface name for ioctl get.
-    zmq_strncpy (ifr.ifr_name, interface_, sizeof (ifr.ifr_name));
+    strncpy (ifr.ifr_name, interface_, sizeof (ifr.ifr_name));
 
     //  Fetch interface address.
     int rc = ioctl (sd, SIOCGIFADDR, (caddr_t) &ifr, sizeof (struct ifreq));

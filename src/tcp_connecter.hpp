@@ -20,8 +20,15 @@
 #ifndef __ZMQ_TCP_CONNECTER_HPP_INCLUDED__
 #define __ZMQ_TCP_CONNECTER_HPP_INCLUDED__
 
+#include "platform.hpp"
 #include "fd.hpp"
-#include "ip.hpp"
+
+#ifdef ZMQ_HAVE_WINDOWS
+#include "windows.hpp"
+#else
+#include <sys/types.h>
+#include <sys/socket.h>
+#endif
 
 namespace zmq
 {
