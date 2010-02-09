@@ -322,7 +322,7 @@ fi
 RUBYDIR="$rubydir"
 AC_SUBST([RUBYDIR])
 
-if test "x$pyzmq" != "xyes"; then
+if test "x$pyzmq" = "xyes"; then
     AC_CHECK_PROG(have_python, python, yes, no)
     if test "x$have_python" != "xyes"; then
         AC_MSG_ERROR([Could not find python.])
