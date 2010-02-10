@@ -1,0 +1,155 @@
+zmq_setsockopt(3)
+=================
+
+
+NAME
+----
+
+zmq_setsockopt - sets a specified option on a 0MQ socket
+
+
+SYNOPSIS
+--------
+'int zmq_setsockopt (void *s, int option, const void *optval, size_t optvallen);'
+
+
+DESCRIPTION
+-----------
+Sets an option on the socket. 'option' argument specifies the option from the
+list below. 'optval' is a pointer to the value to set, 'optvallen' is the size
+of the value in bytes.
+
+*ZMQ_HWM*::
+High watermark for the message pipes associated with the socket. The water
+mark cannot be exceeded. If the messages don't fit into the pipe emergency
+mechanisms of the particular socket type are used (block, drop etc.) If HWM
+is set to zero, there are no limits for the content of the pipe.
++
+Type: int64_t  Unit: messages  Default: 0
+
+*ZMQ_LWM*::
+Low watermark makes sense only if high watermark is defined (i.e. is non-zero).
+When the emergency state is reached when messages overflow the pipe, the
+emergency lasts at most till the size of the pipe decreases to low watermark.
+Normal state is resumed at that point.
++
+Type: int64_t  Unit: messages  Default: 0
+
+*ZMQ_SWAP*::
+Swap allows the pipe to exceed high watermark. However, the data are written
+to the disk rather than held in the memory. Until high watermark is
+exceeded there is no disk activity involved though. The value of the option
+defines maximal size of the swap file.
++
+Type: int64_t  Unit: bytes  Default: 0
+
+*ZMQ_AFFINITY*::
+Affinity defines which threads in the thread pool will be used to handle
+newly created sockets. This way you can dedicate some of the threads (CPUs)
+to a specific work. Value of 0 means no affinity. Work is distributed
+fairly among the threads in the thread pool. For non-zero values, the lowest
+bit corresponds to the thread 1, second lowest bit to the thread 2 etc.
+Thus, value of 3 means that from now on newly created sockets will handle
+I/O activity exclusively using threads no. 1 and 2.
++
+Type: int64_t  Unit: N/A (bitmap)  Default: 0
+
+*ZMQ_IDENTITY*::
+Identity of the socket. Identity is important when restarting applications.
+If the socket has no identity, each run of the application is completely
+separated from other runs. However, with identity application reconnects to
+existing infrastructure left by the previous run. Thus it may receive
+messages that were sent in the meantime, it shares pipe limits with the
+previous run etc.
++
+Type: string  Unit: N/A  Default: NULL
+
+*ZMQ_SUBSCRIBE*::
+Applicable only to ZMQ_SUB socket type. It establishes new message filter.
+When ZMQ_SUB socket is created all the incoming messages are filtered out.
+This option allows you to subscribe for all messages (""), or messages 
+beginning with specific prefix (e.g. "animals.mammals.dogs."). Multiple
+filters can be attached to a single 'sub' socket. In that case message passes
+if it matches at least one of the filters.
++
+Type: string  Unit: N/A  Default: N/A
+
+*ZMQ_UNSUBSCRIBE*::
+Applicable only to ZMQ_SUB socket type. Removes existing message filter.
+The filter specified must match the string passed to ZMQ_SUBSCRIBE options
+exactly. If there were several instances of the same filter created,
+this options removes only one of them, leaving the rest in place
+and functional.
++
+Type: string  Unit: N/A  Default: N/A
+
+*ZMQ_RATE*::
+This option applies only to sending side of multicast transports (pgm & udp).
+It specifies maximal outgoing data rate that an individual sender socket
+can send.
++
+Type: uint64_t  Unit: kilobits/second  Default: 100
+
+*ZMQ_RECOVERY_IVL*::
+This option applies only to multicast transports (pgm & udp). It specifies
+how long can the receiver socket survive when the sender is inaccessible.
+Keep in mind that large recovery intervals at high data rates result in
+very large recovery buffers, meaning that you can easily overload your box
+by setting say 1 minute recovery interval at 1Gb/s rate (requires
+7GB in-memory buffer).
++
+Type: uint64_t Unit: seconds Default: 10 
+
+*ZMQ_MCAST_LOOP*::
+This option applies only to multicast transports (pgm & udp). Value of 1
+means that the mutlicast packets can be received on the box they were sent
+from. Setting the value to 0 disables the loopback functionality which
+can have negative impact on the performance. If possible, disable
+the loopback in production environments.
++
+Type: uint64_t Unit: N/A (boolean value) Default: 1
+
+*ZMQ_SNDBUF*::
+Sets the underlying kernel transmit buffer size to the specified size. See
+'SO_SNDBUF' POSIX socket option. Value of zero means leaving the OS default
+unchanged.
++
+Type: uint64_t Unit: bytes Default: 0
+
+*ZMQ_RCVBUF*::
+Sets the underlying kernel receive buffer size to the specified size. See
+'SO_RCVBUF' POSIX socket option. Value of zero means leaving the OS default
+unchanged.
++
+Type: uint64_t Unit: bytes Default: 0
+
+
+RETURN VALUE
+------------
+In case of success the function returns zero. Otherwise it returns -1 and
+sets 'errno' to the appropriate value.
+
+
+ERRORS
+------
+*EINVAL*::
+unknown option, a value with incorrect length or invalid value.
+
+
+EXAMPLE
+-------
+----
+int rc = zmq_setsockopt (s, ZMQ_SUBSCRIBE, "", 0);
+assert (rc == 0);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_socket[3]
+linkzmq:zmq[7]
+
+
+AUTHOR
+------
+Martin Sustrik <sustrik at 250bpm dot com>

@@ -1,0 +1,50 @@
+zmq_strerror(3)
+===============
+
+
+NAME
+----
+zmq_strerror - returns string describing the error number
+
+
+SYNOPSIS
+--------
+'const char *zmq_strerror (int errnum);'
+
+
+DESCRIPTION
+-----------
+As 0MQ defines few additional (non-POSIX) error codes, standard
+'strerror' isn't capable of translating those errors into human readable
+strings. Instead, 'zmq_strerror' should be used.
+
+
+RETURN VALUE
+------------
+Returns string describing the error number.
+
+
+ERRORS
+------
+No errors are defined.
+
+
+EXAMPLE
+-------
+----
+void *ctx = zmq_init (1, 1, 0);
+if (!ctx) {
+    printf ("error occured during zmq_init: %s\\n", zmq_strerror (errno));
+    abort ();
+}
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq[7]
+
+
+AUTHOR
+------
+Martin Sustrik <sustrik at 250bpm dot com>

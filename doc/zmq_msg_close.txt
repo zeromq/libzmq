@@ -1,0 +1,53 @@
+zmq_msg_close(3)
+================
+
+
+NAME
+----
+zmq_msg_close - destroys 0MQ message
+
+
+SYNOPSIS
+--------
+'int zmq_msg_close (zmq_msg_t *msg);'
+
+
+DESCRIPTION
+-----------
+Deallocates message 'msg' including any associated buffers (unless the buffer
+is shared with another message). Not calling this function can result in
+memory leaks.
+
+
+RETURN VALUE
+------------
+In case of success the function returns zero. Otherwise it returns -1 and sets
+'errno' to the appropriate value.
+
+
+ERRORS
+------
+No errors are defined.
+
+
+EXAMPLE
+-------
+----
+zmq_msg_t msg;
+rc = zmq_msg_init_size (&msg, 1000000);
+assert (rc = 0);
+rc = zmq_msg_close (&msg);
+assert (rc = 0);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_msg_init[3]
+linkzmq:zmq_msg_init_size[3]
+linkzmq:zmq_msg_init_data[3]
+
+
+AUTHOR
+------
+Martin Sustrik <sustrik at 250bpm dot com>

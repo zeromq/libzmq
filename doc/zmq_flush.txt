@@ -1,0 +1,59 @@
+zmq_flush(3)
+============
+
+
+NAME
+----
+zmq_flush - flushes pre-sent messages to the socket
+
+
+SYNOPSIS
+--------
+'int zmq_flush (void *s);'
+
+
+DESCRIPTION
+-----------
+Flushes all the pre-sent messages - i.e. those that have been sent with
+ZMQ_NOFLUSH flag - to the socket. This functionality improves performance in
+cases where several messages are sent during a single business operation.
+It should not be used as a transaction - ACID properties are not guaranteed.
+Note that calling 'zmq_send' without ZMQ_NOFLUSH flag automatically flushes all
+previously pre-sent messages.
+
+
+RETURN VALUE
+------------
+In case of success the function returns zero. Otherwise it returns -1 and
+sets 'errno' to the appropriate value.
+
+
+ERRORS
+------
+*ENOTSUP*::
+function isn't supported by particular socket type.
+*EFSM*::
+function cannot be called at the moment, because socket is not in the
+approprite state.
+
+
+EXAMPLE
+-------
+----
+rc = zmq_send (s, &msg1, ZMQ_NOFLUSH);
+assert (rc == 0);
+rc = zmq_send (s, &msg2, ZMQ_NOFLUSH);
+assert (rc == 0);
+rc = zmq_flush (s);
+assert (rc == 0);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_send[3]
+
+
+AUTHOR
+------
+Martin Sustrik <sustrik at 250bpm dot com>

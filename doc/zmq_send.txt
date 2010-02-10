@@ -1,0 +1,77 @@
+zmq_send(3)
+===========
+
+
+NAME
+----
+zmq_send - sends a message
+
+
+SYNOPSIS
+--------
+'int zmq_send (void *s, zmq_msg_t *msg, int flags);'
+
+
+DESCRIPTION
+-----------
+Send the message 'msg' to the socket 's'.  'flags' argument can be combination
+the flags described below.
+
+*ZMQ_NOBLOCK*::
+The flag specifies that the operation should be performed in non-blocking mode.
+I.e. if it cannot be processed immediately, error should be returned with
+'errno' set to EAGAIN.
+
+*ZMQ_NOFLUSH*::
+The flag specifies that 'zmq_send' should not flush the message downstream
+immediately. Instead, it should batch ZMQ_NOFLUSH messages and send them
+downstream only once 'zmq_flush' is invoked. This is an optimisation for cases
+where several messages are sent in a single business transaction. However, the
+effect is measurable only in extremely high-perf scenarios (million messages a
+second or so).  If that's not your case, use standard flushing send instead.
+
+
+RETURN VALUE
+------------
+In case of success the function returns zero. Otherwise it returns -1 and
+sets 'errno' to the appropriate value.
+
+
+ERRORS
+------
+*EAGAIN*::
+it's a non-blocking send and message cannot be sent at the moment.
+*ENOTSUP*::
+function isn't supported by particular socket type.
+*EFSM*::
+function cannot be called at the moment, because socket is not in the
+appropriate state. This error may occur with sockets that switch between
+several states (e.g. ZMQ_REQ).
+
+
+EXAMPLE
+-------
+----
+zmq_msg_t msg;
+int rc = zmq_msg_init_size (&msg, 6);
+assert (rc == 0);
+memset (zmq_msg_data (&msg), 'A', 6);
+rc = zmq_send (s, &msg, 0);
+assert (rc == 0);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_flush[3]
+linkzmq:zmq_recv[3]
+linkzmq:zmq_msg_init[3]
+linkzmq:zmq_msg_init_size[3]
+linkzmq:zmq_msg_init_data[3]
+linkzmq:zmq_msg_data[3]
+linkzmq:zmq_msg_size[3]
+
+
+AUTHOR
+------
+Martin Sustrik <sustrik at 250bpm dot com>

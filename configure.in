@@ -50,9 +50,20 @@ on_mingw32="no"
 # Host speciffic checks
 AC_CANONICAL_HOST
 
-# Whether or not install manual pages.
-# Note that on MinGW manpages are not installed.
+# Determine whether or not documentation should be built.
+build_doc="yes"
 install_man="yes"
+if test ! -f "doc/zmq.html"; then
+# We are building from git.
+# Check for asciidoc and xmlto and don't build the docs if these are not installed.
+    AC_CHECK_PROG(have_asciidoc, asciidoc, yes, no)
+    AC_CHECK_PROG(have_xmlto, xmlto, yes, no)
+    if test "x$have_asciidoc" = "xno" -o "x$have_xmlto" = "xno"; then
+        build_doc="no"
+        install_man="no"
+        AC_MSG_WARN([You are building from git and asciidoc is not installed. Documentation will not be built or installed.])
+    fi
+fi
 
 case "${host_os}" in
     *linux*)
@@ -551,6 +562,7 @@ AM_CONDITIONAL(BUILD_CHAT, test "x$chat" = "xyes")
 AM_CONDITIONAL(ON_MINGW, test "x$on_mingw32" = "xyes")
 AM_CONDITIONAL(BUILD_PGM2_EXAMPLES, test "x$with_pgm2_examples" = "xyes")
 AM_CONDITIONAL(INSTALL_MAN, test "x$install_man" = "xyes")
+AM_CONDITIONAL(BUILD_DOC, test "x$build_doc" = "xyes")
 
 AC_SUBST(stdint)
 AC_SUBST(inttypes)
@@ -565,7 +577,7 @@ AC_FUNC_MALLOC
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(perror gettimeofday memset socket getifaddrs freeifaddrs)
 
-AC_OUTPUT(Makefile src/Makefile man/Makefile bindings/python/Makefile \
+AC_OUTPUT(Makefile src/Makefile doc/Makefile bindings/python/Makefile \
     bindings/python/setup.py bindings/ruby/Makefile \
     bindings/java/Makefile perf/Makefile perf/c/Makefile perf/cpp/Makefile \
     perf/python/Makefile perf/ruby/Makefile perf/java/Makefile src/libzmq.pc \
@@ -615,6 +627,7 @@ AC_MSG_RESULT([     Queue: $queue])
 AC_MSG_RESULT([   Performance tests: $perf])
 AC_MSG_RESULT([   Examples:])
 AC_MSG_RESULT([     Chat: $chat])
+AC_MSG_RESULT([   Documentation: $build_doc])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([ ******************************************************** ])
 AC_MSG_RESULT([])

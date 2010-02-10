@@ -1,0 +1,89 @@
+zmq_cpp(7)
+==========
+
+
+NAME
+----
+zmq_cpp - interface between 0MQ and C++ applications
+
+
+SYNOPSIS
+--------
+This manual page explains how C++ API maps to underlying C API. To learn about
+individual functions and parameters check appropriate C API manual
+pages.
+
+For example, to understand 'zmq::socket_t::setsockopt' function check
+linkzmq:zmq_setsockopt[3].
+
+All 0MQ constants defined with C API are available with C++ API.
+
+
+zmq::context_t
+--------------
+This class encapsulates the functions dealing with initialisation and
+termination of 0MQ context. Constructor of the class invokes
+linkzmq:zmq_init[3] while destructor calls linkzmq:zmq_term[3].
+
+
+zmq::socket_t
+-------------
+This class encapsulates all the functions to deal with 0MQ sockets. Constructor
+calls linkzmq:zmq_socket[3], destructor calls linkzmq:zmq_close[3].  Other
+functions of the class are mapped to C functions with corresponding names.
+'zmq::socket_t::bind' calls linkzmq:zmq_bind[3] etc.
+
+
+zmq::message_t
+--------------
+This class encapsulates 'zmq_msg_t' structure and all the C functions that deal
+with 0MQ messages.  Constructors of the class invoke corresponding
+initialisation functions linkzmq:zmq_msg_init[3], linkzmq:zmq_msg_init_size[3]
+and linkzmq:zmq_msg_init_data[3], while destructor invokes
+linkzmq:zmq_msg_close[3] function.
+
+Remaining functions are mapped to C functions with corresponding names.
+For instance, 'zmq::message_t::copy' is mapped to linkzmq:zmq_msg_copy[3]
+etc.
+
+C++ provides an additional function not available with C API.
+'zmq::message_t::rebuild' is equivalent to calling linkzmq:zmq_close[3]
+followed by linkzmq:zmq_msg_init[3], linkzmq:zmq_msg_init_size[3] or
+linkzmq:zmq_msg_init_data[3].  It provides a way to reuse existing
+'zmq::message_t' instances to store different message content.
+
+
+zmq::error_t
+------------
+All the errors reported using 'errno' mechanism in C API are automatically
+converted to exceptions in C++ API.  'zmq::error_t' is derived from
+'std::exception' and uses linkzmq:zmq_strerror[3] function to convert the error
+code to human-readable string.
+
+
+zmq::poll
+---------
+'zmq::poll' function is a namespaced equivalent of raw C linkzmq:zmq_poll[3]
+function.
+
+
+EXAMPLE
+-------
+----
+zmq::context_t ctx (1, 1);
+zmq::socket_t s (ctx, ZMQ_PUB);
+s.connect ("tcp://192.168.0.115:5555");
+zmq::message_t msg (100);
+memset (msg.data (), 0, 100);
+s.send (msg);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq[7]
+
+
+AUTHOR
+------
+Martin Sustrik <sustrik at 250bpm dot com>

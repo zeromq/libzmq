@@ -1,0 +1,66 @@
+zmq_recv(3)
+===========
+
+
+NAME
+----
+zmq_recv - retrieves a message from the socket
+
+
+SYNOPSIS
+--------
+'int zmq_recv (void *s, zmq_msg_t *msg, int flags);'
+
+
+DESCRIPTION
+-----------
+Receive a message from the socket 's', store it in
+'msg' .  Any content previously in 'msg' will be properly deallocated.  'flags'
+argument can be combination of the flags described below.
+
+*ZMQ_NOBLOCK*::
+The flag specifies that the operation should be performed in
+non-blocking mode. I.e. if it cannot be processed immediately,
+error should be returned with 'errno' set to EAGAIN.
+
+
+RETURN VALUE
+------------
+In case of success the function returns zero. Otherwise it returns -1 and
+sets 'errno' to the appropriate value.
+
+
+ERRORS
+------
+*EAGAIN*::
+it's a non-blocking receive and there's no message available at the moment.
+*ENOTSUP*::
+function isn't supported by particular socket type.
+*EFSM*::
+function cannot be called at the moment, because socket is not in the
+appropriate state. This error may occur with sockets that switch between
+several states (e.g. ZMQ_REQ).
+
+
+EXAMPLE
+-------
+----
+zmq_msg_t msg;
+int rc = zmq_msg_init (&msg);
+assert (rc == 0);
+rc = zmq_recv (s, &msg, 0);
+assert (rc == 0);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_send[3]
+linkzmq:zmq_msg_init[3]
+linkzmq:zmq_msg_data[3]
+linkzmq:zmq_msg_size[3]
+
+
+AUTHOR
+------
+Martin Sustrik <sustrik at 250bpm dot com>

@@ -1,0 +1,32 @@
+zmq_forwarder(1)
+================
+
+
+NAME
+----
+zmq_forwarder - forwards the stream of PUB/SUB messages
+
+
+SYNOPSIS
+--------
+*
+
+
+DESCRIPTION
+-----------
+*
+
+
+OPTIONS
+-------
+*
+
+
+SEE ALSO
+--------
+*
+
+
+AUTHOR
+------
+Martin Sustrik <sustrik at 250bpm dot com>

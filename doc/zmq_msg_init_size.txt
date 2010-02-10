@@ -1,0 +1,61 @@
+zmq_msg_init_size(3)
+====================
+
+
+NAME
+----
+zmq_msg_init_size - initialises 0MQ message of a specified size
+
+
+SYNOPSIS
+--------
+'int zmq_msg_init_size (zmq_msg_t *msg, size_t size);'
+
+
+DESCRIPTION
+-----------
+Initialises 0MQ message 'size' bytes long. The implementation chooses whether
+it is more efficient to store message content on the stack (small messages) or
+on the heap (large messages).  Therefore, never access message data directly
+via 'zmq_msg_t' members, rather use 'zmq_msg_data' and 'zmq_msg_size' functions
+to get message data and size.  Note that the message data are not nullified to
+avoid the associated performance impact. Thus you should expect your message to
+contain bogus data after this call.
+
+
+RETURN VALUE
+------------
+In case of success the function returns zero. Otherwise it returns -1 and
+sets 'errno' to the appropriate value.
+
+
+ERRORS
+------
+*ENOMEM*::
+memory to hold the message cannot be allocated.
+
+
+EXAMPLE
+-------
+----
+zmq_msg_t msg;
+rc = zmq_msg_init_size (&msg, 6);
+assert (rc == 0);
+memcpy (zmq_msg_data (&msg), "ABCDEF", 6);
+rc = zmq_send (s, &msg, 0);
+assert (rc == 0);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_msg_close[3]
+linkzmq:zmq_msg_init[3]
+linkzmq:zmq_msg_init_data[3]
+linkzmq:zmq_msg_data[3]
+linkzmq:zmq_msg_size[3]
+
+
+AUTHOR
+------
+Martin Sustrik <sustrik at 250bpm dot com>

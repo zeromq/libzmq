@@ -1,0 +1,27 @@
+zmq_python(7)
+=============
+
+
+NAME
+----
+zmq_python - interface between 0MQ and Python applications
+
+
+SYNOPSIS
+--------
+*
+
+
+DESCRIPTION
+-----------
+*
+
+
+SEE ALSO
+--------
+*
+
+
+AUTHOR
+------
+Martin Sustrik <sustrik at 250bpm dot com>

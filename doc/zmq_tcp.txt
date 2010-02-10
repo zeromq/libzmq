@@ -1,0 +1,93 @@
+zmq_tcp(7)
+==========
+
+
+NAME
+----
+zmq_tcp - 0MQ unicast TCP transport over the network
+
+
+SYNOPSIS
+--------
+TCP is an ubiquitous unicast transport. When connecting distributed
+applications, you will mostly use TCP transport.
+
+
+CONNECTION STRING
+-----------------
+Connection string for TCP transport is "tcp://" followed by an IP address,
+colon and port number. IP address can be either its numeric representation,
+a NIC name or a hostname (resolved by DNS):
+
+----
+    tcp://192.168.0.111:5555
+    tcp://myserver001:80
+    tcp://lo:32768
+----
+
+Note that NIC names are not standardised by POSIX. They tend to be rather
+arbitrary and platform dependent. Say, "eth0" on Linux would correspond to "en0"
+on OSX and "e1000g" on Solaris. On Windows platform, as there are no short NIC
+names available, you have to use numeric IP addresses instead.
+
+
+WIRE FORMAT
+-----------
+A message consists of a message length followed by message data.
+Size of message data MUST correspond to the message length.
+
+For messages of 0 to 254 octets, the length is represented by single octet. 
+
+For messages of 255 or more octets the length is represented by a single octet
+%xFF followed by a 64-bit unsigned integer length in network byte order.
+
+The protocol can be defined by this BNF grammar:
+
+----
+    frame   = length data
+    length  = OCTET | escape 8*OCTET
+    escape  = %xFF
+    data    = *OCTET
+----
+
+Binary layout of a message (up to 254 bytes long):
+
+----
+0                   1                   2                   3
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Message size  |                Message body               ... |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Message body ...
++-+-+-+-+-+-+- ...
+----
+
+Binary layout of a larger message:
+
+----
+0                   1                   2                   3
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     0xff      |                Message size               ... |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Message size                       ... |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Message size |                Message body               ... |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Message body ...
++-+-+-+-+-+-+-+ ...
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_udp[7]
+linkzmq:zmq_pgm[7]
+linkzmq:zmq_ipc[7]
+linkzmq:zmq_inproc[7]
+
+
+AUTHOR
+------
+Martin Sustrik <sustrik at 250bpm dot com>
+

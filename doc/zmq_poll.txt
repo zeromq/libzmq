@@ -1,0 +1,85 @@
+zmq_poll(3)
+===========
+
+
+NAME
+----
+zmq_poll - polls for events on a set of 0MQ and POSIX sockets
+
+
+SYNOPSIS
+--------
+'int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);'
+
+
+DESCRIPTION
+-----------
+Waits for the events specified by 'items' parameter. Number of items in the
+array is determined by 'nitems' argument. Each item in the array looks like
+this:
+
+----
+typedef struct
+{
+    void *socket;
+    int fd;
+    short events;
+    short revents;
+} zmq_pollitem_t;
+----
+
+0MQ socket to poll on is specified by 'socket'.  In case you want to poll on
+standard POSIX socket, set 'socket' to NULL and fill the POSIX file descriptor
+to 'fd'.  'events' specifies which events to wait for. It's a combination of
+the values below.  Once the call exits, 'revents' will be filled with events
+that have actually occured on the socket. The field will contain a combination
+of the values below.
+
+*ZMQ_POLLIN*::
+poll for incoming messages.
+*ZMQ_POLLOUT*::
+wait while message can be set socket. Poll will return if a message of at least
+one byte can be written to the socket. However, there is no guarantee that
+arbitrarily large message can be sent.
+
+'timeout' argument specifies an upper limit on the time for which 'zmq_poll'
+will block, in microseconds. Specifying a negative value in timeout means an
+infinite timeout.
+
+
+RETURN VALUE
+------------
+Function returns number of items signaled or -1 in the case of error.
+
+
+ERRORS
+------
+*EFAULT*::
+there's a 0MQ socket in the pollset belonging to a different application thread.
+*ENOTSUP*::
+0MQ context was initialised without ZMQ_POLL flag. I/O multiplexing is disabled.
+
+
+EXAMPLE
+-------
+----
+zmq_pollitem_t items [2];
+items [0].socket = s;
+items [0].events = ZMQ_POLLIN;
+items [1].socket = NULL;
+items [1].fd = my_fd;
+items [1].events = ZMQ_POLLIN;
+
+int rc = zmq_poll (items, 2);
+assert (rc != -1);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_socket[3]
+
+
+AUTHOR
+------
+Martin Sustrik <sustrik at 250bpm dot com>

@@ -1,0 +1,52 @@
+zmq_close(3)
+============
+
+
+NAME
+----
+zmq_close - destroys 0MQ socket
+
+
+SYNOPSIS
+--------
+'int zmq_close (void *s);'
+
+
+DESCRIPTION
+-----------
+Destroys 0MQ socket (one created using
+'zmq_socket' function). All sockets have to be properly closed before the
+application terminates, otherwise memory leaks will occur. Note that any
+outbound messages that haven't been psuhed to the network yet and any inbound
+messages that haven't been received by the application yet will be dropped on
+the socket shutdown.
+
+
+RETURN VALUE
+------------
+In case of success the function returns zero. Otherwise it returns -1 and
+sets 'errno' to the appropriate value.
+
+
+ERRORS
+------
+No errors are defined.
+
+
+EXAMPLE
+-------
+----
+int rc = zmq_close (s);
+assert (rc == 0);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_socket[3]
+linkzmq:zmq_term[3]
+
+
+AUTHOR
+------
+Martin Sustrik <sustrik at 250bpm dot com>

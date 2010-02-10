@@ -1,0 +1,32 @@
+zmq_queue(1)
+============
+
+
+NAME
+----
+zmq_queue - forwards REQ/REP messages
+
+
+SYNOPSIS
+--------
+*
+
+
+DESCRIPTION
+-----------
+*
+
+
+OPTIONS
+-------
+*
+
+
+SEE ALSO
+--------
+*
+
+
+AUTHOR
+------
+Martin Sustrik <sustrik at 250bpm dot com>

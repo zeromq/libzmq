@@ -1,0 +1,49 @@
+zmq_term(3)
+===========
+
+
+NAME
+----
+zmq_term - terminates 0MQ context
+
+
+SYNOPSIS
+--------
+'int zmq_term (void *context);'
+
+
+DESCRIPTION
+-----------
+Destroys 0MQ context. However, if there are still any sockets open within
+the context, 'zmq_term' succeeds but shutdown of the context is delayed till
+the last socket is closed.
+
+
+RETURN VALUE
+------------
+Function returns zero is successful. Otherwise it returns -1 and sets errno to
+one of the values below.
+
+
+ERRORS
+------
+No errors are defined.
+
+
+EXAMPLE
+-------
+----
+int rc = zmq_term (context);
+assert (rc == 0);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_init[3]
+linkzmq:zmq_close[3]
+
+
+AUTHOR
+------
+Martin Sustrik <sustrik at 250bpm dot com>
