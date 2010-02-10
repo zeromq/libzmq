@@ -268,7 +268,11 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
     //  Following code should handle both Berkeley-derived socket
     //  implementations and Solaris.
     int err = 0;
-    socklen_t len = sizeof err;
+#if defined ZMQ_HAVE_HPUX
+    int len = sizeof (err);
+#else
+    socklen_t len = sizeof (err);
+#endif
     int rc = getsockopt (s, SOL_SOCKET, SO_ERROR, (char*) &err, &len);
     if (rc == -1)
         err = errno;

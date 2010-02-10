@@ -249,10 +249,10 @@ void zmq::fd_signaler_t::signal (int signal_)
 uint64_t zmq::fd_signaler_t::poll ()
 {
     //  Set the reader to blocking mode.
-    int flags = fcntl (fd, F_GETFL, 0);
+    int flags = fcntl (r, F_GETFL, 0);
     if (flags == -1)
         flags = 0;
-    int rc = fcntl (fd, F_SETFL, flags & ~O_NONBLOCK);
+    int rc = fcntl (r, F_SETFL, flags & ~O_NONBLOCK);
     errno_assert (rc != -1);
 
     //  Poll for events.
