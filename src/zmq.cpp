@@ -505,32 +505,32 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     //  First iteration just check for events, don't block. Waiting would
     //  prevent exiting on any events that may already been signaled on
     //  0MQ sockets.
-    int rc = select (maxfd, &pollset_in, &pollset_out, &pollset_err,
-        &zero_timeout);
+    fd_set inset, outset, errset;
+    memcpy (&inset, &pollset_in, sizeof (fd_set));
+    memcpy (&outset, &pollset_out, sizeof (fd_set));
+    memcpy (&errset, &pollset_err, sizeof (fd_set));
+    int rc = select (maxfd, &inset, &outset, &errset, &zero_timeout);
 #if defined ZMQ_HAVE_WINDOWS
     wsa_assert (rc != SOCKET_ERROR);
 #else
-    if (rc == -1 && errno == EINTR)
-        break;
-    errno_assert (rc >= 0);
+    errno_assert (rc != -1 || errno != EINTR);
 #endif
 
     while (true) {
 
         //  Process 0MQ commands if needed.
-        if (nsockets && FD_ISSET (notify_fd, &pollset_in))
+        if (nsockets && FD_ISSET (notify_fd, &inset))
             app_thread->process_commands (false, false);
 
         //  Check for the events.
-        int pollfd_pos = 0;
         for (int i = 0; i != nitems_; i++) {
 
             //  If the poll item is a raw file descriptor, simply convert
             //  the events to zmq_pollitem_t-style format.
             if (!items_ [i].socket) {
                 items_ [i].revents =
-                    (FD_ISSET (items_ [i].fd, &pollset_in) ? ZMQ_POLLIN : 0) |
-                    (FD_ISSET (items_ [i].fd, &pollset_out) ? ZMQ_POLLOUT : 0);
+                    (FD_ISSET (items_ [i].fd, &inset) ? ZMQ_POLLIN : 0) |
+                    (FD_ISSET (items_ [i].fd, &outset) ? ZMQ_POLLOUT : 0);
                 if (items_ [i].revents)
                     nevents++;
                 continue;
@@ -553,14 +553,15 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             break;
 
         //  Wait for events.
-        int rc = select (maxfd, &pollset_in, &pollset_out, &pollset_err,
+        memcpy (&inset, &pollset_in, sizeof (fd_set));
+        memcpy (&outset, &pollset_out, sizeof (fd_set));
+        memcpy (&errset, &pollset_err, sizeof (fd_set));
+        int rc = select (maxfd, &inset, &outset, &errset,
             block ? NULL : &timeout);
 #if defined ZMQ_HAVE_WINDOWS
         wsa_assert (rc != SOCKET_ERROR);
 #else
-        if (rc == -1 && errno == EINTR)
-            break;
-        errno_assert (rc >= 0);
+        errno_assert (rc != -1 || errno != EINTR);
 #endif
         
         //  If timeout was hit with no events signaled, return zero.
