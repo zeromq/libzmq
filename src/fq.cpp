@@ -46,8 +46,11 @@ void zmq::fq_t::detach (reader_t *pipe_)
 {
     //  Remove the pipe from the list; adjust number of active pipes
     //  accordingly.
-    if (pipes.index (pipe_) < active)
+    if (pipes.index (pipe_) < active) {
         active--;
+        if (current == active)
+            current = 0;
+    }
     pipes.erase (pipe_);
 }
 
@@ -55,6 +58,8 @@ void zmq::fq_t::kill (reader_t *pipe_)
 {
     //  Move the pipe to the list of inactive pipes.
     active--;
+    if (current == active)
+        current = 0;
     pipes.swap (pipes.index (pipe_), active);
 }
 
