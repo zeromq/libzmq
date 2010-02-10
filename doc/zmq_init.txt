@@ -1,0 +1,61 @@
+zmq_init(3)
+===========
+
+
+NAME
+----
+zmq_init - initialises 0MQ context
+
+
+SYNOPSIS
+--------
+'void *zmq_init (int app_threads, int io_threads, int flags);'
+
+
+DESCRIPTION
+-----------
+Initialises 0MQ context. 'app_threads' specifies maximal number of application
+threads that can own open sockets at the same time. At least one application
+thread should be defined. 'io_threads' specifies the size of thread pool to
+handle I/O operations. The value shouldn't be negative. Zero can be used in
+case only in-process messaging is going to be used, i.e. there will be no I/O
+traffic.
+
+The 'flags' argument is a combination of the flags defined below:
+
+*ZMQ_POLL*::
+    flag specifying that the sockets within this context should be pollable
+    (see linkzmq:zmq_poll[3]). Pollable sockets may add a little latency to the
+    message transfer when compared to non-pollable sockets.
+
+
+RETURN VALUE
+------------
+Function returns context handle is successful. Otherwise it returns NULL and
+sets errno to one of the values below.
+
+
+ERRORS
+------
+*EINVAL*::
+    there's less than one application thread allocated, or number of I/O
+    threads is negative.
+
+
+EXAMPLE
+-------
+----
+void *ctx = zmq_init (1, 1, ZMQ_POLL);
+assert (ctx);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_term[3]
+linkzmq:zmq_socket[3]
+
+
+AUTHOR
+------
+Martin Sustrik <sustrik at 250bpm dot com>

@@ -1,0 +1,50 @@
+zmq_inproc(7)
+=============
+
+
+NAME
+----
+zmq_inproc - 0MQ transport to pass messages between threads
+
+
+SYNOPSIS
+--------
+In-process transport is optimised for passing messages between threads in the
+same process.
+
+Messages are passed directly from one application thread to
+another application thread. There are no intervening I/O threads involved.
+Thus, if you are using 0MQ for in-process messaging only, you can initialise
+the library (linkzmq:zmq_init[3]) with zero I/O worker threads.
+
+
+CONNECTION STRING
+-----------------
+Connection string for inproc transport is "inproc://" followed by an arbitrary
+string. There are no restrictions on the string format:
+
+----
+    inproc://my_endpoint
+    inproc://feeds/opra/cboe
+    inproc://feeds.opra.nasdaq
+    inproc://!&W#($)_@_123*((^^^
+----
+
+
+WIRE FORMAT
+-----------
+In-process transport transfers messages via memory thus there is no need for a
+wire format specification.
+
+
+SEE ALSO
+--------
+linkzmq:zmq_ipc[7]
+linkzmq:zmq_tcp[7]
+linkzmq:zmq_udp[7]
+linkzmq:zmq_pgm[7]
+
+
+AUTHOR
+------
+Martin Sustrik <sustrik at 250bpm dot com>

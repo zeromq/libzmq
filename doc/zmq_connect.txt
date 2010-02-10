@@ -1,0 +1,63 @@
+zmq_connect(3)
+==============
+
+
+NAME
+----
+zmq_connect - connect the socket to the specified peer
+
+
+SYNOPSIS
+--------
+'int zmq_connect (void *s, const char *addr);'
+
+
+DESCRIPTION
+-----------
+The function connect socket 's' to the peer identified by 'addr'.  Actual
+semantics of the  command depend on the underlying transport mechanism,
+however, in cases where peers connect in an asymmetric manner, 'zmq_bind'
+should be called first, 'zmq_connect' afterwards. Formats of the 'addr'
+parameter are defined by individual transports. For a list of supported
+transports have a look at linkzmq:zmq[7] manual page.
+
+Note that single socket can be connected (and bound) to
+arbitrary number of peers using different transport mechanisms.
+
+
+RETURN VALUE
+------------
+In case of success the function returns zero. Otherwise it returns -1 and
+sets 'errno' to the appropriate value.
+
+
+ERRORS
+------
+*EPROTONOSUPPORT*::
+unsupported protocol.
+*ENOCOMPATPROTO*::
+protocol is not compatible with the socket type.
+
+
+EXAMPLE
+-------
+----
+void *s = zmq_socket (context, ZMQ_SUB);
+assert (s);
+int rc = zmq_connect (s, "inproc://my_publisher");
+assert (rc == 0);
+rc = zmq_connect (s, "tcp://server001:5555");
+assert (rc == 0);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_bind[3]
+linkzmq:zmq_socket[3]
+linkzmq:zmq[7]
+
+
+AUTHOR
+------
+Martin Sustrik <sustrik at 250bpm dot com>

@@ -1,0 +1,50 @@
+zmq_msg_data(3)
+===============
+
+
+NAME
+----
+zmq_msg_data - retrieves pointer to the message content
+
+
+SYNOPSIS
+--------
+'void *zmq_msg_data (zmq_msg_t *msg);'
+
+
+DESCRIPTION
+-----------
+Returns pointer to message data. Always use this function to access the data,
+never use 'zmq_msg_t' members directly.
+
+
+RETURN VALUE
+------------
+Pointer to the message data.
+
+
+ERRORS
+------
+No errors are defined.
+
+
+EXAMPLE
+-------
+----
+zmq_msg_t msg;
+rc = zmq_msg_init_size (&msg, 100);
+memset (zmq_msg_data (&msg), 0, 100);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_msg_init[3]
+linkzmq:zmq_msg_init_size[3]
+linkzmq:zmq_msg_init_data[3]
+linkzmq:zmq_msg_close[3]
+
+
+AUTHOR
+------
+Martin Sustrik <sustrik at 250bpm dot com>

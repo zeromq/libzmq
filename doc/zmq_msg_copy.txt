@@ -1,0 +1,60 @@
+zmq_msg_copy(3)
+===============
+
+
+NAME
+----
+zmq_msg_copy - copies content of a message to another message
+
+
+SYNOPSIS
+--------
+'int zmq_msg_copy (zmq_msg_t *dest, zmq_msg_t *src);'
+
+
+DESCRIPTION
+-----------
+Copy the 'src' message to 'dest'.  The original content of
+'dest' is orderly deallocated.
+
+CAUTION: The implementation may choose not to physically copy the data, rather
+to share the buffer between two messages. Thus avoid modifying message data
+after the message was copied. Doing so can modify multiple message instances.
+If what you need is actual hard copy, allocate new message using
+'zmq_msg_size' and copy the data using 'memcpy'.
+
+
+RETURN VALUE
+------------
+In case of success the function returns zero. Otherwise it returns -1 and
+sets 'errno' to the appropriate value.
+
+
+ERRORS
+------
+No errors are defined.
+
+
+EXAMPLE
+-------
+----
+zmq_msg_t dest;
+rc = zmq_msg_init (&dest);
+assert (rc == 0);
+rc = zmq_msg_copy (&dest, &src);
+assert (rc == 0);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_msg_move[3]
+linkzmq:zmq_msg_init[3]
+linkzmq:zmq_msg_init_size[3]
+linkzmq:zmq_msg_init_data[3]
+linkzmq:zmq_msg_close[3]
+
+
+AUTHOR
+------
+Martin Sustrik <sustrik at 250bpm dot com>

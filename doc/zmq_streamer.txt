@@ -1,0 +1,32 @@
+zmq_streamer(1)
+===============
+
+
+NAME
+----
+zmq_streamer - forwards the stream of UPSTREAM/DOWNSTREAM messages
+
+
+SYNOPSIS
+--------
+*
+
+
+DESCRIPTION
+-----------
+*
+
+
+OPTIONS
+-------
+*
+
+
+SEE ALSO
+--------
+*
+
+
+AUTHOR
+------
+Martin Sustrik <sustrik at 250bpm dot com>

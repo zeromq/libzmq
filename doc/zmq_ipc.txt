@@ -1,0 +1,44 @@
+zmq_ipc(7)
+==========
+
+
+NAME
+----
+zmq_ipc - 0MQ transport to pass messages between processes
+
+
+SYNOPSIS
+--------
+Inter-process transport is optimised for passing messages between processes on
+the same physical machine.
+
+
+CONNECTION STRING
+-----------------
+Connection string for inproc transport is "ipc://" followed by a file name.
+The file will be used as placeholder for a message endpoint. (UNIX domain
+sockets associate a file with the listening socket in a similar way.)
+
+----
+    ipc:///tmp/my_ipc_endpoint
+    ipc:///tmp/prices.ipc
+----
+
+
+WIRE FORMAT
+-----------
+IPC transport doesn't transfer messages across the network thus there is no need
+for a wire format specification.
+
+
+SEE ALSO
+--------
+linkzmq:zmq_inproc[7]
+linkzmq:zmq_tcp[7]
+linkzmq:zmq_udp[7]
+linkzmq:zmq_pgm[7]
+
+
+AUTHOR
+------
+Martin Sustrik <sustrik at 250bpm dot com>

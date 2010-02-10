@@ -1,0 +1,55 @@
+zmq_msg_move(3)
+===============
+
+
+NAME
+----
+zmq_msg_move - moves content of a message to another message
+
+
+SYNOPSIS
+--------
+int zmq_msg_move (zmq_msg_t *dest, zmq_msg_t *src);
+
+
+DESCRIPTION
+-----------
+Move the content of the message from 'src' to 'dest'.  The content isn't
+copied, just moved.  'src' becomes an empty message after the call. Original
+content of 'dest' message is deallocated.
+
+
+RETURN VALUE
+------------
+In case of success the function returns zero. Otherwise it returns -1 and
+sets 'errno' to the appropriate value.
+
+
+ERRORS
+------
+No errors are defined.
+
+
+EXAMPLE
+-------
+----
+zmq_msg_t dest;
+rc = zmq_msg_init (&dest);
+assert (rc == 0);
+rc = zmq_msg_move (&dest, &src);
+assert (rc == 0);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_msg_copy[3]
+linkzmq:zmq_msg_init[3]
+linkzmq:zmq_msg_init_size[3]
+linkzmq:zmq_msg_init_data[3]
+linkzmq:zmq_msg_close[3]
+
+
+AUTHOR
+------
+Martin Sustrik <sustrik at 250bpm dot com>

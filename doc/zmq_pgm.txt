@@ -1,0 +1,106 @@
+zmq_pgm(7)
+==========
+
+
+NAME
+----
+zmq_pgm - 0MQ PGM reliable multicast transport
+
+
+SYNOPSIS
+--------
+PGM is a protocol for reliable multicast (RFC3208). 0MQ's PGM transport allows
+you to deliver messages to multiple destinations sending the data over
+the network once only. It makes sense to use PGM transport if the data,
+delivered to each destination separately, would seriously load or even overload
+the network.
+
+PGM sending is rate limited rather than controlled by receivers. Thus, to get
+optimal performance you should set ZMQ_RATE and ZMQ_RECOVERY_IVL socket options
+prior to using PGM transport. Also note that passing multicast packets via
+loopback interface has negative effect on the overall performance of the system.
+Thus, if not needed, you should turn multicast loopback off using ZMQ_MCAST_LOOP
+socket option.
+
+PGM transport can be used only with ZMQ_PUB and ZMQ_SUB sockets.
+
+CAUTION: PGM protocol runs directly on top of IP protocol and thus needs to
+open raw IP socket. On some operating systems this operation requires special
+privileges. On Linux, for example, you would need to either run your application
+as root or set adequate capabilities for your executable. Alternative approach
+is to use UDP transport, linkzmq:zmq_udp[7], that stacks PGM on top of UDP and
+thus needs no special privileges.
+
+
+CONNECTION STRING
+-----------------
+Connection string for PGM transport is "pgm://" followed by an IP address
+of the NIC to use, semicolon, IP address of the multicast group, colon and
+port number. IP address of the NIC can be either its numeric representation
+or the name of the NIC as reported by operating system. IP address of the
+multicast group should be specified in the numeric representation. For example:
+
+----
+    pgm://eth0;224.0.0.1:5555
+    pgm://lo;230.0.0.0:6666
+    pgm://192.168.0.111;224.0.0.1:5555
+----
+
+NOTE: NIC names are not standardised by POSIX. They tend to be rather arbitrary
+and platform dependent. Say, "eth0" on Linux would correspond to "en0" on OSX
+and "e1000g" on Solaris. On Windows platform, as there are no short NIC names
+available, you have to use numeric IP addresses instead.
+
+
+WIRE FORMAT
+-----------
+Consecutive PGM packets are interpreted as a single continuous stream of data.
+The data is then split into messages using the wire format described in
+linkzmq:zmq_tcp[7]. Thus, messages are not aligned with packet boundaries and
+each message can start at an arbitrary position within the packet and span
+several packets.
+
+Given this wire format, it would be impossible for late joining consumers to
+identify message boundaries. To solve this problem, each PGM packet payload
+starts with 16-bit unsigned integer in network byte order which specifies the
+offset of the first message in the packet. If there's no beginning of a message
+in the packet (it's a packet transferring inner part of a larger message)
+the value of the initial integer is 0xFFFF.
+
+Each packet thus looks like this:
+
+----
++-----------+------------+------------------+--------
+| IP header | PGM header | offset (16 bits) | data .....
++-----------+------------+------------------+--------
+----
+
+Following example shows how messages are arranged in subsequent packets:
+
+----
++---------------+--------+-----------+-----------------------------+
+| PGM/IPheaders | 0x0000 |   message 1   |   message 2 (part 1)    |
++---------------+--------+-----------+-----------------------------+
+
++---------------+--------+-----------------------------------------+
+| PGM/IPheaders | 0xFFFF |           message 2 (part 2)            |
++---------------+--------+-----------------------------------------+
+
++---------------+--------+--------------------------+-----------+
+| PGM/IPheaders | 0x0008 | message 2 (last 8 bytes) | message 3 |
++---------------+--------+--------------------------+-----------+
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_udp[7]
+linkzmq:zmq_tcp[7]
+linkzmq:zmq_ipc[7]
+linkzmq:zmq_inproc[7]
+linkzmq:zmq_setsockopt[3]
+
+
+AUTHOR
+------
+Martin Sustrik <sustrik at 250bpm dot com>
