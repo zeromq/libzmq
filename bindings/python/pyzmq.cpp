@@ -465,7 +465,7 @@ PyMODINIT_FUNC initlibpyzmq ()
     assert (rc == 0);
 
     PyObject *module = Py_InitModule3 ("libpyzmq", module_methods,
-        libpyzmq_doc);
+        (char*) libpyzmq_doc);
     if (!module)
         return;
 
