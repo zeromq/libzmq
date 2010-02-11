@@ -29,9 +29,11 @@ dist-hook : $(MAN_DOC) $(MAN_HTML)
 SUFFIXES=.html .txt .xml .1 .3 .7
 
 .txt.html:
-	asciidoc -d manpage -b xhtml11 -f asciidoc.conf $<
+	asciidoc -d manpage -b xhtml11 -f asciidoc.conf \
+		-azmq_version=@PACKAGE_VERSION@ $<
 .txt.xml:
-	asciidoc -d manpage -b docbook -f asciidoc.conf $<
+	asciidoc -d manpage -b docbook -f asciidoc.conf \
+		-azmq_version=@PACKAGE_VERSION@ $<
 .xml.1:
 	xmlto man $<
 .xml.3:

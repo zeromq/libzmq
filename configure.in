@@ -1,12 +1,38 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.61)
-AC_INIT([zeromq],[dev],[http://www.zeromq.org])
+#
+# Change the version number below after doing a public release.
+# The version in git should reflect the *next* version planned.
+# Version must be MAJOR.MINOR.PATCH otherwise things will break.
+#
+AC_INIT([zeromq],[0.0.0],[zeromq-dev@lists.zeromq.org])
+
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
 AM_CONFIG_HEADER(src/platform.hpp)
 AM_INIT_AUTOMAKE(tar-ustar)
 
+# This defines PACKAGE_VERSION_... in src/platform.hpp
+PV_MAJOR=`echo $PACKAGE_VERSION | cut -d . -f 1`
+PV_MINOR=`echo $PACKAGE_VERSION | cut -d . -f 2`
+PV_PATCH=`echo $PACKAGE_VERSION | cut -d . -f 3`
+AC_DEFINE_UNQUOTED([PACKAGE_VERSION_MAJOR],[$PV_MAJOR],
+    [0MQ major version])
+AC_DEFINE_UNQUOTED([PACKAGE_VERSION_MINOR],[$PV_MINOR],
+    [0MQ minor version])
+AC_DEFINE_UNQUOTED([PACKAGE_VERSION_PATCH],[$PV_PATCH],
+    [0MQ patchlevel])
+# This lets us use PACKAGE_VERSION in Makefiles
+AC_SUBST(PACKAGE_VERSION)
+
+#
+# Libtool -version-info (ABI version)
+#
+# Currently 0.0.0 ("unstable"). Don't change this unless you 
+# know exactly what you're doing and have read and understand
+# http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
+#
 # libzmq -version-info
 LTVER="0:0:0"
 AC_SUBST(LTVER)
