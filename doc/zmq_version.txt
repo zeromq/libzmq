@@ -1,0 +1,46 @@
+zmq_version(3)
+==============
+
+
+NAME
+----
+zmq_version - reports 0MQ version
+
+
+SYNOPSIS
+--------
+'void zmq_version (int *major, int *minor, int *patch);'
+
+
+DESCRIPTION
+-----------
+Returns current version of 0MQ. The functionality is useful for applications
+linking with 0MQ dynamically to make sure the right version of 0MQ is installed
+on the system.
+
+RETURN VALUE
+------------
+There is no return value.
+
+
+ERRORS
+------
+No errors are defined.
+
+
+EXAMPLE
+-------
+----
+int major, minor, patch;
+zmq_version (&major, &minor, &patch);
+printf ("Current 0MQ version is %d.%d.%d\n", major, minor, patch);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq[7]
+
+AUTHOR
+------
+Martin Sustrik <sustrik at 250bpm dot com>
