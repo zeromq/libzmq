@@ -30,6 +30,7 @@
 #include "msg_content.hpp"
 #include "platform.hpp"
 #include "stdint.hpp"
+#include "config.hpp"
 #include "err.hpp"
 #include "fd.hpp"
 
@@ -48,6 +49,13 @@
 #if defined ZMQ_HAVE_OPENPGM
 #include <pgm/pgm.h>
 #endif
+
+void zmq_version (int *major_, int *minor_, int *patch_)
+{
+    *major_ = zmq::version_major;
+    *minor_ = zmq::version_minor;
+    *patch_ = zmq::version_patch;
+}
 
 const char *zmq_strerror (int errnum_)
 {

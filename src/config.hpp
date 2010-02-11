@@ -27,6 +27,10 @@ namespace zmq
 
     enum 
     {
+        //  Current version of 0MQ.
+        version_major = 0,
+        version_minor = 0,
+        version_patch = 0,
 
         //  Number of new messages in message pipe needed to trigger new memory
         //  allocation. Setting this parameter to 256 decreases the impact of
