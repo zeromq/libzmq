@@ -100,8 +100,10 @@ int zmq::socket_base_t::bind (const char *addr_)
             choose_io_thread (options.affinity), this, options);
         zmq_assert (listener);
         int rc = listener->set_address (addr_type.c_str(), addr_args.c_str ());
-        if (rc != 0)
+        if (rc != 0) {
+            delete listener;
             return -1;
+        }
 
         send_plug (listener);
         send_own (this, listener);

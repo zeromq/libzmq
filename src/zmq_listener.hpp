@@ -35,13 +35,12 @@ namespace zmq
 
         zmq_listener_t (class io_thread_t *parent_, socket_base_t *owner_,
             const options_t &options_);
+        ~zmq_listener_t ();
 
         //  Set address to listen on.
         int set_address (const char* protocol_, const char *addr_);
 
     private:
-
-        ~zmq_listener_t ();
 
         //  Handlers for incoming commands.
         void process_plug ();
