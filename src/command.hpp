@@ -107,6 +107,9 @@ namespace zmq
         } args;
     };
 
+    //  Function to deallocate dynamically allocated components of the command.
+    void deallocate_command (command_t *cmd_);
+
 }    
 
 #endif

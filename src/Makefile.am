@@ -125,6 +125,7 @@ libzmq_la_SOURCES = app_thread.hpp \
     zmq_init.hpp \
     zmq_listener.hpp \
     app_thread.cpp \
+    command.cpp \
     devpoll.cpp \
     dispatcher.cpp \
     downstream.cpp \

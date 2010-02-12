@@ -117,6 +117,10 @@ zmq::dispatcher_t::~dispatcher_t ()
     while (!pipes.empty ())
         delete *pipes.begin ();
 
+    //  TODO: Deallocate any commands still in the pipes. Keep in mind that
+    //  simple reading from a pipe and deallocating commands won't do as
+    //  command pipe has template parameter D set to true, meaning that
+    //  read may return false even if there are still commands in the pipe.
     delete [] command_pipes;
 
 #ifdef ZMQ_HAVE_WINDOWS

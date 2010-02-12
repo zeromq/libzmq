@@ -77,17 +77,17 @@ void zmq::object_t::process_command (command_t &cmd_)
 
     case command_t::own:
         process_own (cmd_.args.own.object);
-        return;
+        break;
 
     case command_t::attach:
         process_attach (cmd_.args.attach.engine);
         process_seqnum ();
-        return;
+        break;
 
     case command_t::bind:
         process_bind (cmd_.args.bind.in_pipe, cmd_.args.bind.out_pipe);
         process_seqnum ();
-        return;
+        break;
 
     case command_t::pipe_term:
         process_pipe_term ();
@@ -95,23 +95,27 @@ void zmq::object_t::process_command (command_t &cmd_)
 
     case command_t::pipe_term_ack:
         process_pipe_term_ack ();
-        return;
+        break;
 
     case command_t::term_req:
         process_term_req (cmd_.args.term_req.object);
-        return;
+        break;
     
     case command_t::term:
         process_term ();
-        return;
+        break;
 
     case command_t::term_ack:
         process_term_ack ();
-        return;
+        break;
 
     default:
         zmq_assert (false);
     }
+
+    //  The assumption here is that each command is processed once only,
+    //  so deallocating it after processing is all right.
+    deallocate_command (&cmd_);
 }
 
 void zmq::object_t::register_pipe (class pipe_t *pipe_)
