@@ -32,10 +32,14 @@ namespace zmq
     {
     public:
 
-        zmq_encoder_t (size_t bufsize_, bool trim_prefix_);
+        zmq_encoder_t (size_t bufsize_);
         ~zmq_encoder_t ();
 
         void set_inout (struct i_inout *source_);
+
+        //  Once called, encoder will start trimming frefixes from outbound
+        //  messages.
+        void trim_prefix ();
 
     private:
 
@@ -46,7 +50,7 @@ namespace zmq
         ::zmq_msg_t in_progress;
         unsigned char tmpbuf [9];
 
-        bool trim_prefix;
+        bool trim;
 
         zmq_encoder_t (const zmq_encoder_t&);
         void operator = (const zmq_encoder_t&);

@@ -76,6 +76,12 @@ bool zmq::zmq_init_t::write (::zmq_msg_t *msg_)
         zmq_msg_size (msg_));
     received = true;
 
+    //  Once the initial handshaking is over, XREP sockets should start
+    //  tracerouting individual messages.
+    if (options.type == ZMQ_XREP)
+        engine->traceroute ((unsigned char*) peer_identity.data (),
+            peer_identity.size ());
+
     return true;
 }
 

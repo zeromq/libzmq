@@ -54,6 +54,7 @@ namespace zmq
         void plug (struct i_inout *inout_);
         void unplug ();
         void revive ();
+        void traceroute (unsigned char *identity_, size_t identity_size_);
 
         //  i_poll_events interface implementation.
         void in_event ();

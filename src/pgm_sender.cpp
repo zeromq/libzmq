@@ -36,7 +36,7 @@
 zmq::pgm_sender_t::pgm_sender_t (io_thread_t *parent_, 
       const options_t &options_) :
     io_object_t (parent_),
-    encoder (0, false),
+    encoder (0),
     pgm_socket (false, options_),
     options (options_),
     out_buffer (NULL),
@@ -100,6 +100,13 @@ void zmq::pgm_sender_t::revive ()
 {
     set_pollout (handle);
     out_event ();
+}
+
+void zmq::pgm_sender_t::traceroute (unsigned char *identity_,
+    size_t identity_size_)
+{
+    //  No need for tracerouting functionality in PGM socket at the moment.
+    zmq_assert (false);
 }
 
 zmq::pgm_sender_t::~pgm_sender_t ()

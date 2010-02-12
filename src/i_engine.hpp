@@ -20,6 +20,8 @@
 #ifndef __ZMQ_I_ENGINE_HPP_INCLUDED__
 #define __ZMQ_I_ENGINE_HPP_INCLUDED__
 
+#include <stddef.h>
+
 namespace zmq
 {
 
@@ -36,6 +38,12 @@ namespace zmq
         //  This method is called by the session to signalise that there
         //  are messages to send available.
         virtual void revive () = 0;
+
+        //  Start tracing the message route. Engine should add the identity
+        //  supplied to all inbound messages and trim identity from all the
+        //  outbound messages.
+        virtual void traceroute (unsigned char *identity_,
+            size_t identity_size_) = 0;
     };
 
 }

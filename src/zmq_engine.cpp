@@ -32,10 +32,10 @@ zmq::zmq_engine_t::zmq_engine_t (io_thread_t *parent_, fd_t fd_,
     io_object_t (parent_),
     inpos (NULL),
     insize (0),
-    decoder (in_batch_size, NULL, 0),
+    decoder (in_batch_size),
     outpos (NULL),
     outsize (0),
-    encoder (out_batch_size, false),
+    encoder (out_batch_size),
     inout (NULL),
     options (options_),
     reconnect (reconnect_)
@@ -158,6 +158,13 @@ void zmq::zmq_engine_t::revive ()
     //  Thus we try to write the data to socket avoiding polling for POLLOUT.
     //  Consequently, the latency should be better in request/reply scenarios.
     out_event ();
+}
+
+void zmq::zmq_engine_t::traceroute (unsigned char *identity_,
+    size_t identity_size_)
+{
+    encoder.trim_prefix ();
+    decoder.add_prefix (identity_, identity_size_);
 }
 
 void zmq::zmq_engine_t::error ()

@@ -34,10 +34,14 @@ namespace zmq
 
         //  If prefix is not NULL, it will be glued to the beginning of every
         //  decoded message.
-        zmq_decoder_t (size_t bufsize_, void *prefix_, size_t prefix_size_);
+        zmq_decoder_t (size_t bufsize_);
         ~zmq_decoder_t ();
 
         void set_inout (struct i_inout *destination_);
+
+        //  Once called, all decoded messages will be prefixed by the specified
+        //  prefix.
+        void add_prefix (unsigned char *prefix_, size_t prefix_size_);
 
     private:
 

@@ -21,10 +21,10 @@
 #include "i_inout.hpp"
 #include "wire.hpp"
 
-zmq::zmq_encoder_t::zmq_encoder_t (size_t bufsize_, bool trim_prefix_) :
+zmq::zmq_encoder_t::zmq_encoder_t (size_t bufsize_) :
     encoder_t <zmq_encoder_t> (bufsize_),
     source (NULL),
-    trim_prefix (trim_prefix_)
+    trim (false)
 {
     zmq_msg_init (&in_progress);
 
@@ -42,10 +42,15 @@ void zmq::zmq_encoder_t::set_inout (i_inout *source_)
     source = source_;
 }
 
+void zmq::zmq_encoder_t::trim_prefix ()
+{
+    trim = true;
+}
+
 bool zmq::zmq_encoder_t::size_ready ()
 {
     //  Write message body into the buffer.
-    if (!trim_prefix) {
+    if (!trim) {
         next_step (zmq_msg_data (&in_progress), zmq_msg_size (&in_progress),
             &zmq_encoder_t::message_ready, false);
     }
@@ -75,7 +80,7 @@ bool zmq::zmq_encoder_t::message_ready ()
     //  Get the message size. If the prefix is not to be sent, adjust the
     //  size accordingly.
     size_t size = zmq_msg_size (&in_progress);
-    if (trim_prefix)
+    if (trim)
         size -= *(unsigned char*) zmq_msg_data (&in_progress);
 
     //  For messages less than 255 bytes long, write one byte of message size.

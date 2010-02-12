@@ -25,23 +25,13 @@
 #include "wire.hpp"
 #include "err.hpp"
 
-zmq::zmq_decoder_t::zmq_decoder_t (size_t bufsize_,
-      void *prefix_, size_t prefix_size_) :
+zmq::zmq_decoder_t::zmq_decoder_t (size_t bufsize_) :
     decoder_t <zmq_decoder_t> (bufsize_),
-    destination (NULL)
+    destination (NULL),
+    prefix (NULL),
+    prefix_size (0)
 {
     zmq_msg_init (&in_progress);
-
-    if (!prefix_) {
-        prefix = NULL;
-        prefix_size = 0;
-    }
-    else {
-        prefix = malloc (prefix_size_);
-        zmq_assert (prefix);
-        memcpy (prefix, prefix_, prefix_size_);
-        prefix_size = prefix_size_;
-    }
 
     //  At the beginning, read one byte and go to one_byte_size_ready state.
     next_step (tmpbuf, 1, &zmq_decoder_t::one_byte_size_ready);
@@ -58,6 +48,15 @@ zmq::zmq_decoder_t::~zmq_decoder_t ()
 void zmq::zmq_decoder_t::set_inout (i_inout *destination_)
 {
     destination = destination_;
+}
+
+void zmq::zmq_decoder_t::add_prefix (unsigned char *prefix_,
+    size_t prefix_size_)
+{
+    prefix = malloc (prefix_size_);
+    zmq_assert (prefix);
+    memcpy (prefix, prefix_, prefix_size_);
+    prefix_size = prefix_size_;
 }
 
 bool zmq::zmq_decoder_t::one_byte_size_ready ()
