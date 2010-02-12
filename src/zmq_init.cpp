@@ -192,7 +192,8 @@ void zmq::zmq_init_t::finalise ()
         }
 
         //  No need to increment seqnum as it was laready incremented above.
-        send_attach (session, engine, false);
+        send_attach (session, engine, (unsigned char) peer_identity.size (),
+            (unsigned char*) peer_identity.data (), false);
 
         //  Destroy the init object.
         engine = NULL;

@@ -17,8 +17,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <stdlib.h>
+
 #include "command.hpp"
 
 void zmq::deallocate_command (command_t *cmd_)
 {
+    switch (cmd_->type) {
+    case command_t::attach:
+        if (cmd_->args.attach.peer_identity)
+            free (cmd_->args.attach.peer_identity);
+        break;
+    default:
+        /*  noop  */;
+    }
 }

@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <string.h>
+
 #include "object.hpp"
 #include "dispatcher.hpp"
 #include "err.hpp"
@@ -80,7 +82,9 @@ void zmq::object_t::process_command (command_t &cmd_)
         break;
 
     case command_t::attach:
-        process_attach (cmd_.args.attach.engine);
+        process_attach (cmd_.args.attach.engine,
+            cmd_.args.attach.peer_identity_size,
+            cmd_.args.attach.peer_identity);
         process_seqnum ();
         break;
 
@@ -180,6 +184,7 @@ void zmq::object_t::send_own (socket_base_t *destination_, owned_t *object_)
 }
 
 void zmq::object_t::send_attach (session_t *destination_, i_engine *engine_,
+    unsigned char peer_identity_size_, unsigned char *peer_identity_,
     bool inc_seqnum_)
 {
     if (inc_seqnum_)
@@ -189,6 +194,18 @@ void zmq::object_t::send_attach (session_t *destination_, i_engine *engine_,
     cmd.destination = destination_;
     cmd.type = command_t::attach;
     cmd.args.attach.engine = engine_;
+    if (!peer_identity_size_) {
+        cmd.args.attach.peer_identity_size = 0;
+        cmd.args.attach.peer_identity = NULL;
+    }
+    else {
+        cmd.args.attach.peer_identity_size = peer_identity_size_;
+        cmd.args.attach.peer_identity =
+            (unsigned char*) malloc (peer_identity_size_);
+        zmq_assert (cmd.args.attach.peer_identity_size);
+        memcpy (cmd.args.attach.peer_identity, peer_identity_,
+            peer_identity_size_);
+    }
     send_command (cmd);
 }
 
@@ -271,7 +288,8 @@ void zmq::object_t::process_own (owned_t *object_)
     zmq_assert (false);
 }
 
-void zmq::object_t::process_attach (i_engine *engine_)
+void zmq::object_t::process_attach (i_engine *engine_,
+    unsigned char peer_identity_size_, unsigned char *peer_identity_)
 {
     zmq_assert (false);
 }

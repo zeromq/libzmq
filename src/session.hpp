@@ -66,7 +66,8 @@ namespace zmq
         //  Handlers for incoming commands.
         void process_plug ();
         void process_unplug ();
-        void process_attach (struct i_engine *engine_);
+        void process_attach (struct i_engine *engine_,
+            unsigned char peer_identity_size_, unsigned char *peer_identity_);
 
         //  Inbound pipe, i.e. one the session is getting messages from.
         class reader_t *in_pipe;

@@ -232,7 +232,8 @@ void zmq::session_t::process_unplug ()
     }
 }
 
-void zmq::session_t::process_attach (i_engine *engine_)
+void zmq::session_t::process_attach (i_engine *engine_,
+    unsigned char peer_identity_size_, unsigned char *peer_identity_)
 {
     zmq_assert (!engine);
     zmq_assert (engine_);

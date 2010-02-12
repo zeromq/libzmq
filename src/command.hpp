@@ -66,6 +66,8 @@ namespace zmq
             //  Attach the engine to the session.
             struct {
                 struct i_engine *engine;
+                unsigned char peer_identity_size;
+                unsigned char *peer_identity;
             } attach;
 
             //  Sent from session to socket to establish pipe(s) between them.
