@@ -27,7 +27,6 @@
 zmq::pub_t::pub_t (class app_thread_t *parent_) :
     socket_base_t (parent_)
 {
-    options.type = ZMQ_PUB;
     options.requires_in = false;
     options.requires_out = true;
 }

@@ -23,7 +23,6 @@
 #include "err.hpp"
 
 zmq::options_t::options_t () :
-    type (-1),
     hwm (0),
     lwm (0),
     swap (0),
@@ -34,7 +33,8 @@ zmq::options_t::options_t () :
     sndbuf (0),
     rcvbuf (0),
     requires_in (false),
-    requires_out (false)
+    requires_out (false),
+    traceroute (false)
 {
 }
 

@@ -25,9 +25,12 @@
 zmq::xrep_t::xrep_t (class app_thread_t *parent_) :
     socket_base_t (parent_)
 {
-    options.type = ZMQ_XREP;
     options.requires_in = true;
     options.requires_out = true;
+
+    //  XREP socket adds identity to inbound messages and strips identity
+    //  from the outbound messages.
+    options.traceroute = true;
 }
 
 zmq::xrep_t::~xrep_t ()

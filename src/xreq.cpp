@@ -25,7 +25,6 @@
 zmq::xreq_t::xreq_t (class app_thread_t *parent_) :
     socket_base_t (parent_)
 {
-    options.type = ZMQ_REQ;
     options.requires_in = true;
     options.requires_out = true;
 }
