@@ -23,6 +23,7 @@
 #include "err.hpp"
 
 zmq::options_t::options_t () :
+    type (-1),
     hwm (0),
     lwm (0),
     swap (0),

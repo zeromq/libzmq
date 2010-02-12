@@ -30,6 +30,7 @@ zmq::req_t::req_t (class app_thread_t *parent_) :
     reply_pipe_active (false),
     reply_pipe (NULL)
 {
+    options.type = ZMQ_REQ;
     options.requires_in = true;
     options.requires_out = true;
 }

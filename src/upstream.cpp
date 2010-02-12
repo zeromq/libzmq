@@ -25,6 +25,7 @@
 zmq::upstream_t::upstream_t (class app_thread_t *parent_) :
     socket_base_t (parent_)
 {
+    options.type = ZMQ_UPSTREAM;
     options.requires_in = true;
     options.requires_out = false;
 }

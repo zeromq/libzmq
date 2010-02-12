@@ -29,6 +29,7 @@ zmq::p2p_t::p2p_t (class app_thread_t *parent_) :
     outpipe (NULL),
     alive (true)
 {
+    options.type = ZMQ_P2P;
     options.requires_in = true;
     options.requires_out = true;
 }

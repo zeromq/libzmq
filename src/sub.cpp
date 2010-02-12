@@ -28,6 +28,7 @@ zmq::sub_t::sub_t (class app_thread_t *parent_) :
     socket_base_t (parent_),
     has_message (false)
 {
+    options.type = ZMQ_SUB;
     options.requires_in = true;
     options.requires_out = false;
     zmq_msg_init (&message);

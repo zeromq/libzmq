@@ -34,6 +34,9 @@ namespace zmq
 
         int setsockopt (int option_, const void *optval_, size_t optvallen_);
 
+        //  Type of the associated socket. One of the constants defined in zmq.h
+        int type;
+
         int64_t hwm;
         int64_t lwm;
         int64_t swap;

@@ -30,6 +30,7 @@ zmq::rep_t::rep_t (class app_thread_t *parent_) :
     waiting_for_reply (false),
     reply_pipe (NULL)
 {
+    options.type = ZMQ_REP;
     options.requires_in = true;
     options.requires_out = true;
 }
