@@ -327,8 +327,23 @@ int zmq::socket_base_t::flush ()
 
 int zmq::socket_base_t::recv (::zmq_msg_t *msg_, int flags_)
 {
-    //  Get the message and return immediately if successfull.
+    //  Get the message.
     int rc = xrecv (msg_, flags_);
+
+    //  Once every inbound_poll_rate messages check for signals and process
+    //  incoming commands. This happens only if we are not polling altogether
+    //  because there are messages available all the time. If poll occurs,
+    //  ticks is set to zero and thus we avoid this code.
+    //
+    //  Note that 'recv' uses different command throttling algorithm (the one
+    //  described above) from the one used by 'send'. This is because counting
+    //  ticks is more efficient than doing rdtsc all the time.
+    if (++ticks == inbound_poll_rate) {
+        app_thread->process_commands (false, false);
+        ticks = 0;
+    }
+
+    //  If we have the message, return immediately.
     if (rc == 0)
         return 0;
 
@@ -346,27 +361,12 @@ int zmq::socket_base_t::recv (::zmq_msg_t *msg_, int flags_)
     }
     else  {
         while (rc != 0) {
-            if (errno == EAGAIN)
-                app_thread->process_commands (true, false);
-            else
+            if (errno != EAGAIN)
                 return -1;
+            app_thread->process_commands (true, false);
             rc = xrecv (msg_, flags_);
+            ticks = 0;
         }
-        ticks = 0;
-    }
-
-
-    //  Once every inbound_poll_rate messages check for signals and process
-    //  incoming commands. This happens only if we are not polling altogether
-    //  because there are messages available all the time. If poll occurs,
-    //  ticks is set to zero and thus we avoid this code.
-    //
-    //  Note that 'recv' uses different command throttling algorithm (the one
-    //  described above) from the one used by 'send'. This is because counting
-    //  ticks is more efficient than doing rdtsc all the time.
-    if (++ticks == inbound_poll_rate) {
-        app_thread->process_commands (false, false);
-        ticks = 0;
     }
 
     return rc;
