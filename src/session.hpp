@@ -81,20 +81,12 @@ namespace zmq
 
         struct i_engine *engine;
 
-        enum {
-            transient,
-            named,
-            unnamed
-        } type;
-
         //  Session is identified by ordinal in the case when it was created
         //  before connection to the peer was established and thus we are
         //  unaware of peer's identity.
         uint64_t ordinal;
 
-        //  Identity of the peer. If the peer is anonymous, unique name is
-        //  generated instead. Peer identity (or the generated name) is used
-        //  register the session with socket-level repository of sessions.
+        //  Identity of the peer.
         std::string peer_identity;
 
         //  Inherited socket options.

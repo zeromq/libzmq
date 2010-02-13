@@ -164,7 +164,9 @@ void zmq::zmq_init_t::finalise ()
         //  If the peer has a unique name, find the associated session. If it
         //  doesn't exist, create it.
         else if (!peer_identity.empty ()) {
-            session = owner->find_session (peer_identity.c_str ());
+            session = owner->find_session (
+                (unsigned char) peer_identity.size (),
+                (unsigned char*) peer_identity.data ());
             if (!session) {
                 session = new (std::nothrow) session_t (
                     choose_io_thread (options.affinity), owner, options,

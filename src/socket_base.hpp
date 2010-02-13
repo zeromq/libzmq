@@ -78,9 +78,12 @@ namespace zmq
         //  There are two distinct types of sessions: those identified by name
         //  and those identified by ordinal number. Thus two sets of session
         //  management functions.
-        bool register_session (const char *name_, class session_t *session_);
-        void unregister_session (const char *name_);
-        class session_t *find_session (const char *name_);
+        bool register_session (unsigned char peer_identity_size_,
+            unsigned char *peer_identity_, class session_t *session_);
+        void unregister_session (unsigned char peer_identity_size_,
+            unsigned char *peer_identity_);
+        class session_t *find_session (unsigned char peer_identity_size_,
+            unsigned char *peer_identity_);
         uint64_t register_session (class session_t *session_);
         void unregister_session (uint64_t ordinal_);
         class session_t *find_session (uint64_t ordinal_);
