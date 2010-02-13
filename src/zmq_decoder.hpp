@@ -23,6 +23,7 @@
 #include "../bindings/c/zmq.h"
 
 #include "decoder.hpp"
+#include "blob.hpp"
 
 namespace zmq
 {
@@ -41,7 +42,7 @@ namespace zmq
 
         //  Once called, all decoded messages will be prefixed by the specified
         //  prefix.
-        void add_prefix (unsigned char *prefix_, size_t prefix_size_);
+        void add_prefix (const blob_t &prefix_);
 
     private:
 
@@ -53,8 +54,7 @@ namespace zmq
         unsigned char tmpbuf [8];
         ::zmq_msg_t in_progress;
 
-        void *prefix;
-        size_t prefix_size;
+        blob_t prefix;
 
         zmq_decoder_t (const zmq_decoder_t&);
         void operator = (const zmq_decoder_t&);

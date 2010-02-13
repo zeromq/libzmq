@@ -83,8 +83,8 @@ void zmq::object_t::process_command (command_t &cmd_)
 
     case command_t::attach:
         process_attach (cmd_.args.attach.engine,
-            cmd_.args.attach.peer_identity_size,
-            cmd_.args.attach.peer_identity);
+            blob_t (cmd_.args.attach.peer_identity,
+            cmd_.args.attach.peer_identity_size));
         process_seqnum ();
         break;
 
@@ -184,8 +184,7 @@ void zmq::object_t::send_own (socket_base_t *destination_, owned_t *object_)
 }
 
 void zmq::object_t::send_attach (session_t *destination_, i_engine *engine_,
-    unsigned char peer_identity_size_, unsigned char *peer_identity_,
-    bool inc_seqnum_)
+    const blob_t &peer_identity_, bool inc_seqnum_)
 {
     if (inc_seqnum_)
         destination_->inc_seqnum ();
@@ -194,17 +193,17 @@ void zmq::object_t::send_attach (session_t *destination_, i_engine *engine_,
     cmd.destination = destination_;
     cmd.type = command_t::attach;
     cmd.args.attach.engine = engine_;
-    if (!peer_identity_size_) {
+    if (peer_identity_.empty ()) {
         cmd.args.attach.peer_identity_size = 0;
         cmd.args.attach.peer_identity = NULL;
     }
     else {
-        cmd.args.attach.peer_identity_size = peer_identity_size_;
+        cmd.args.attach.peer_identity_size = peer_identity_.size ();
         cmd.args.attach.peer_identity =
-            (unsigned char*) malloc (peer_identity_size_);
+            (unsigned char*) malloc (peer_identity_.size ());
         zmq_assert (cmd.args.attach.peer_identity_size);
-        memcpy (cmd.args.attach.peer_identity, peer_identity_,
-            peer_identity_size_);
+        memcpy (cmd.args.attach.peer_identity, peer_identity_.data (),
+            peer_identity_.size ());
     }
     send_command (cmd);
 }
@@ -289,7 +288,7 @@ void zmq::object_t::process_own (owned_t *object_)
 }
 
 void zmq::object_t::process_attach (i_engine *engine_,
-    unsigned char peer_identity_size_, unsigned char *peer_identity_)
+    const blob_t &peer_identity_)
 {
     zmq_assert (false);
 }

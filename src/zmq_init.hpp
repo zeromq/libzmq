@@ -20,8 +20,6 @@
 #ifndef __ZMQ_ZMQ_INIT_HPP_INCLUDED__
 #define __ZMQ_ZMQ_INIT_HPP_INCLUDED__
 
-#include <string>
-
 #include "i_inout.hpp"
 #include "i_engine.hpp"
 #include "owned.hpp"
@@ -29,6 +27,7 @@
 #include "stdint.hpp"
 #include "options.hpp"
 #include "stdint.hpp"
+#include "blob.hpp"
 
 namespace zmq
 {
@@ -72,7 +71,7 @@ namespace zmq
         bool received;
 
         //  Identity of the peer socket.
-        std::string peer_identity;
+        blob_t peer_identity;
 
         //  TCP connecter creates session before the name of the peer is known.
         //  Thus we know only its ordinal number.

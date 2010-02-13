@@ -267,7 +267,7 @@ int zmq::socket_base_t::connect (const char *addr_)
                 return -1;
             }
 
-            send_attach (session, pgm_sender, 0, NULL);
+            send_attach (session, pgm_sender, blob_t ());
         }
         else if (options.requires_in) {
 
@@ -282,7 +282,7 @@ int zmq::socket_base_t::connect (const char *addr_)
                 return -1;
             }
 
-            send_attach (session, pgm_receiver, 0, NULL);
+            send_attach (session, pgm_receiver, blob_t ());
         }
         else
             zmq_assert (false);
@@ -454,33 +454,29 @@ bool zmq::socket_base_t::has_out ()
     return xhas_out ();
 }
 
-bool zmq::socket_base_t::register_session (unsigned char peer_identity_size_,
-    unsigned char *peer_identity_, session_t *session_)
+bool zmq::socket_base_t::register_session (const blob_t &peer_identity_,
+    session_t *session_)
 {
     sessions_sync.lock ();
-    bool registered = named_sessions.insert (std::make_pair (std::string (
-            (char*) peer_identity_, peer_identity_size_), session_)).second;
+    bool registered = named_sessions.insert (
+        std::make_pair (peer_identity_, session_)).second;
     sessions_sync.unlock ();
     return registered;
 }
 
-void zmq::socket_base_t::unregister_session (unsigned char peer_identity_size_,
-    unsigned char *peer_identity_)
+void zmq::socket_base_t::unregister_session (const blob_t &peer_identity_)
 {
     sessions_sync.lock ();
-    named_sessions_t::iterator it = named_sessions.find (std::string (
-        (char*) peer_identity_, peer_identity_size_));
+    named_sessions_t::iterator it = named_sessions.find (peer_identity_);
     zmq_assert (it != named_sessions.end ());
     named_sessions.erase (it);
     sessions_sync.unlock ();
 }
 
-zmq::session_t *zmq::socket_base_t::find_session (
-    unsigned char peer_identity_size_, unsigned char *peer_identity_)
+zmq::session_t *zmq::socket_base_t::find_session (const blob_t &peer_identity_)
 {
     sessions_sync.lock ();
-    named_sessions_t::iterator it = named_sessions.find (std::string (
-        (char*) peer_identity_, peer_identity_size_));
+    named_sessions_t::iterator it = named_sessions.find (peer_identity_);
     if (it == named_sessions.end ()) {
         sessions_sync.unlock ();
         return NULL;

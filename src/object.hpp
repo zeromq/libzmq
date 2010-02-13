@@ -21,6 +21,7 @@
 #define __ZMQ_OBJECT_HPP_INCLUDED__
 
 #include "stdint.hpp"
+#include "blob.hpp"
 
 namespace zmq
 {
@@ -64,8 +65,8 @@ namespace zmq
         void send_own (class socket_base_t *destination_,
             class owned_t *object_);
         void send_attach (class session_t *destination_,
-            struct i_engine *engine_, unsigned char peer_identity_size_,
-            unsigned char *peer_identity_, bool inc_seqnum_ = true);
+             struct i_engine *engine_, const blob_t &peer_identity_,
+             bool inc_seqnum_ = true);
         void send_bind (class socket_base_t *destination_,
              class reader_t *in_pipe_, class writer_t *out_pipe_,
              bool inc_seqnum_ = true);
@@ -83,7 +84,7 @@ namespace zmq
         virtual void process_plug ();
         virtual void process_own (class owned_t *object_);
         virtual void process_attach (struct i_engine *engine_,
-             unsigned char peer_identity_size_, unsigned char *peer_identity_);
+            const blob_t &peer_identity_);
         virtual void process_bind (class reader_t *in_pipe_,
             class writer_t *out_pipe_);
         virtual void process_revive ();

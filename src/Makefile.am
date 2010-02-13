@@ -57,6 +57,7 @@ libzmq_la_SOURCES = app_thread.hpp \
     atomic_bitmap.hpp \
     atomic_counter.hpp \
     atomic_ptr.hpp \
+    blob.hpp \
     command.hpp \
     config.hpp \
     decoder.hpp \

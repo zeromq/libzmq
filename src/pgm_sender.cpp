@@ -102,8 +102,7 @@ void zmq::pgm_sender_t::revive ()
     out_event ();
 }
 
-void zmq::pgm_sender_t::traceroute (unsigned char *identity_,
-    size_t identity_size_)
+void zmq::pgm_sender_t::traceroute (const blob_t &identity_)
 {
     //  No need for tracerouting functionality in PGM socket at the moment.
     zmq_assert (false);

@@ -23,7 +23,6 @@
 #include <set>
 #include <map>
 #include <vector>
-#include <string>
 
 #include "../bindings/c/zmq.h"
 
@@ -35,6 +34,7 @@
 #include "stdint.hpp"
 #include "atomic_counter.hpp"
 #include "stdint.hpp"
+#include "blob.hpp"
 
 namespace zmq
 {
@@ -78,12 +78,10 @@ namespace zmq
         //  There are two distinct types of sessions: those identified by name
         //  and those identified by ordinal number. Thus two sets of session
         //  management functions.
-        bool register_session (unsigned char peer_identity_size_,
-            unsigned char *peer_identity_, class session_t *session_);
-        void unregister_session (unsigned char peer_identity_size_,
-            unsigned char *peer_identity_);
-        class session_t *find_session (unsigned char peer_identity_size_,
-            unsigned char *peer_identity_);
+        bool register_session (const blob_t &peer_identity_,
+            class session_t *session_);
+        void unregister_session (const blob_t &peer_identity_);
+        class session_t *find_session (const blob_t &peer_identity_);
         uint64_t register_session (class session_t *session_);
         void unregister_session (uint64_t ordinal_);
         class session_t *find_session (uint64_t ordinal_);
@@ -158,7 +156,7 @@ namespace zmq
         //  within the socket, instead they are used by I/O objects owned by
         //  the socket. As those objects can live in different threads,
         //  the access is synchronised by mutex.
-        typedef std::map <std::string, session_t*> named_sessions_t;
+        typedef std::map <blob_t, session_t*> named_sessions_t;
         named_sessions_t named_sessions;
         typedef std::map <uint64_t, session_t*> unnamed_sessions_t;
         unnamed_sessions_t unnamed_sessions;

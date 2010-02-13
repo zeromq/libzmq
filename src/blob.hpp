@@ -17,35 +17,16 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_I_ENGINE_HPP_INCLUDED__
-#define __ZMQ_I_ENGINE_HPP_INCLUDED__
+#ifndef __ZMQ_BLOB_HPP_INCLUDED__
+#define __ZMQ_BLOB_HPP_INCLUDED__
 
-#include <stddef.h>
-
-#include "blob.hpp"
+#include <string>
 
 namespace zmq
 {
 
-    struct i_engine
-    {
-        virtual ~i_engine () {}
-
-        //  Plug the engine to the session.
-        virtual void plug (struct i_inout *inout_) = 0;
-
-        //  Unplug the engine from the session.
-        virtual void unplug () = 0;
-
-        //  This method is called by the session to signalise that there
-        //  are messages to send available.
-        virtual void revive () = 0;
-
-        //  Start tracing the message route. Engine should add the identity
-        //  supplied to all inbound messages and trim identity from all the
-        //  outbound messages.
-        virtual void traceroute (const blob_t &identity_) = 0;
-    };
+    //  Object to hold dynamically allocated opaque binary data.
+    typedef std::basic_string <unsigned char> blob_t;
 
 }
 

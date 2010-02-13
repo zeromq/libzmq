@@ -40,24 +40,18 @@ zmq::session_t::session_t (object_t *parent_, socket_base_t *owner_,
 }
 
 zmq::session_t::session_t (object_t *parent_, socket_base_t *owner_,
-      const options_t &options_, unsigned char peer_identity_size_,
-      unsigned char *peer_identity_) :
+      const options_t &options_, const blob_t &peer_identity_) :
     owned_t (parent_, owner_),
     in_pipe (NULL),
     active (true),
     out_pipe (NULL),
     engine (NULL),
     ordinal (0),
+    peer_identity (peer_identity_),
     options (options_)
 {
-
-if (!peer_identity_size_)
-
-    //  If peer identity is not supplied, leave it empty.
-    if (peer_identity_size_) {
-        peer_identity.assign ((char*) peer_identity_, peer_identity_size_);
-        if (!owner->register_session (peer_identity_size_, peer_identity_,
-              this)) {
+    if (!peer_identity.empty ()) {
+        if (!owner->register_session (peer_identity, this)) {
 
             //  TODO: There's already a session with the specified
             //  identity. We should presumably syslog it and drop the
@@ -180,8 +174,7 @@ void zmq::session_t::process_unplug ()
     if (ordinal)
         owner->unregister_session (ordinal);
     else if (!peer_identity.empty ())
-        owner->unregister_session ((unsigned char) peer_identity.size (),
-            (unsigned char*) peer_identity.data ());
+        owner->unregister_session (peer_identity);
 
     //  Ask associated pipes to terminate.
     if (in_pipe) {
@@ -201,26 +194,23 @@ void zmq::session_t::process_unplug ()
 }
 
 void zmq::session_t::process_attach (i_engine *engine_,
-    unsigned char peer_identity_size_, unsigned char *peer_identity_)
+    const blob_t &peer_identity_)
 {
     if (!peer_identity.empty ()) {
 
         //  If we already know the peer name do nothing, just check whether
         //  it haven't changed.
-        zmq_assert (peer_identity.size () == peer_identity_size_);
-        zmq_assert (memcmp (peer_identity.data (), peer_identity_,
-            peer_identity_size_) == 0);
+        zmq_assert (peer_identity == peer_identity_);
     }
-    else if (peer_identity_size_) {
+    else if (!peer_identity_.empty ()) {
 
-        //  Remember the peer identity.
-        peer_identity.assign ((char*) peer_identity_, peer_identity_size_);
+        //  Store the peer identity.
+        peer_identity = peer_identity_;
 
         //  If the session is not registered with the ordinal, let's register
         //  it using the peer name.
         if (!ordinal) {
-            if (!owner->register_session (peer_identity_size_, peer_identity_,
-                  this)) {
+            if (!owner->register_session (peer_identity, this)) {
 
                 //  TODO: There's already a session with the specified
                 //  identity. We should presumably syslog it and drop the

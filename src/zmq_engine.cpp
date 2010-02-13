@@ -160,11 +160,10 @@ void zmq::zmq_engine_t::revive ()
     out_event ();
 }
 
-void zmq::zmq_engine_t::traceroute (unsigned char *identity_,
-    size_t identity_size_)
+void zmq::zmq_engine_t::traceroute (const blob_t &identity_)
 {
     encoder.trim_prefix ();
-    decoder.add_prefix (identity_, identity_size_);
+    decoder.add_prefix (identity_);
 }
 
 void zmq::zmq_engine_t::error ()

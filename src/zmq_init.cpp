@@ -72,15 +72,14 @@ bool zmq::zmq_init_t::write (::zmq_msg_t *msg_)
         return false;
 
     //  Retreieve the remote identity.
-    peer_identity.assign ((const char*) zmq_msg_data (msg_),
+    peer_identity.assign ((const unsigned char*) zmq_msg_data (msg_),
         zmq_msg_size (msg_));
     received = true;
 
     //  Once the initial handshaking is over, XREP sockets should start
     //  tracerouting individual messages.
     if (options.traceroute)
-        engine->traceroute ((unsigned char*) peer_identity.data (),
-            peer_identity.size ());
+        engine->traceroute (peer_identity);
 
     return true;
 }
@@ -164,14 +163,11 @@ void zmq::zmq_init_t::finalise ()
         //  If the peer has a unique name, find the associated session. If it
         //  doesn't exist, create it.
         else if (!peer_identity.empty ()) {
-            session = owner->find_session (
-                (unsigned char) peer_identity.size (),
-                (unsigned char*) peer_identity.data ());
+            session = owner->find_session (peer_identity);
             if (!session) {
                 session = new (std::nothrow) session_t (
                     choose_io_thread (options.affinity), owner, options,
-                    (unsigned char) peer_identity.size (),
-                    (unsigned char*) peer_identity.c_str ());
+                    peer_identity);
                 zmq_assert (session);
                 send_plug (session);
                 send_own (owner, session);
@@ -185,7 +181,7 @@ void zmq::zmq_init_t::finalise ()
         //  transient session.
         else {
             session = new (std::nothrow) session_t (
-                choose_io_thread (options.affinity), owner, options, 0, NULL);
+                choose_io_thread (options.affinity), owner, options, blob_t ());
             zmq_assert (session);
             send_plug (session);
             send_own (owner, session);
@@ -195,8 +191,7 @@ void zmq::zmq_init_t::finalise ()
         }
 
         //  No need to increment seqnum as it was already incremented above.
-        send_attach (session, engine, (unsigned char) peer_identity.size (),
-            (unsigned char*) peer_identity.data (), false);
+        send_attach (session, engine, peer_identity, false);
 
         //  Destroy the init object.
         engine = NULL;

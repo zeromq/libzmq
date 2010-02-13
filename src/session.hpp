@@ -20,12 +20,11 @@
 #ifndef __ZMQ_SESSION_HPP_INCLUDED__
 #define __ZMQ_SESSION_HPP_INCLUDED__
 
-#include <string>
-
 #include "i_inout.hpp"
 #include "i_endpoint.hpp"
 #include "owned.hpp"
 #include "options.hpp"
+#include "blob.hpp"
 
 namespace zmq
 {
@@ -38,11 +37,9 @@ namespace zmq
         session_t (object_t *parent_, socket_base_t *owner_,
             const options_t &options_);
 
-        //  Creates named session. If name is NULL, transient session with
-        //  auto-generated name is created.
+        //  Creates named session.
         session_t (object_t *parent_, socket_base_t *owner_,
-            const options_t &options_, unsigned char peer_identity_size_,
-            unsigned char *peer_identity_);
+            const options_t &options_, const blob_t &peer_identity_);
 
         //  i_inout interface implementation.
         bool read (::zmq_msg_t *msg_);
@@ -68,7 +65,7 @@ namespace zmq
         void process_plug ();
         void process_unplug ();
         void process_attach (struct i_engine *engine_,
-            unsigned char peer_identity_size_, unsigned char *peer_identity_);
+            const blob_t &peer_identity_);
 
         //  Inbound pipe, i.e. one the session is getting messages from.
         class reader_t *in_pipe;
@@ -87,7 +84,7 @@ namespace zmq
         uint64_t ordinal;
 
         //  Identity of the peer.
-        std::string peer_identity;
+        blob_t peer_identity;
 
         //  Inherited socket options.
         options_t options;
