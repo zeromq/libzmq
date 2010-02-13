@@ -28,6 +28,10 @@ void zmq::deallocate_command (command_t *cmd_)
         if (cmd_->args.attach.peer_identity)
             free (cmd_->args.attach.peer_identity);
         break;
+    case command_t::bind:
+        if (cmd_->args.bind.peer_identity)
+            free (cmd_->args.bind.peer_identity);
+        break;
     default:
         /*  noop  */;
     }

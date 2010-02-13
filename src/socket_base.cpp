@@ -171,7 +171,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         //  was incremented in find_endpoint function. The callee is notified
         //  about the fact via the last parameter.
         send_bind (peer, out_pipe ? &out_pipe->reader : NULL,
-            in_pipe ? &in_pipe->writer : NULL, false);
+            in_pipe ? &in_pipe->writer : NULL, options.identity, false);
 
         return 0;
     }
@@ -564,7 +564,8 @@ void zmq::socket_base_t::process_own (owned_t *object_)
     io_objects.insert (object_);
 }
 
-void zmq::socket_base_t::process_bind (reader_t *in_pipe_, writer_t *out_pipe_)
+void zmq::socket_base_t::process_bind (reader_t *in_pipe_, writer_t *out_pipe_,
+    const blob_t &peer_identity_)
 {
     attach_pipes (in_pipe_, out_pipe_);
 }

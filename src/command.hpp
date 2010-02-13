@@ -75,6 +75,8 @@ namespace zmq
             struct {
                 class reader_t *in_pipe;
                 class writer_t *out_pipe;
+                unsigned char peer_identity_size;
+                unsigned char *peer_identity;
             } bind;
 
             //  Sent by pipe writer to inform dormant pipe reader that there

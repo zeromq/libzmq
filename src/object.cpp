@@ -89,7 +89,9 @@ void zmq::object_t::process_command (command_t &cmd_)
         break;
 
     case command_t::bind:
-        process_bind (cmd_.args.bind.in_pipe, cmd_.args.bind.out_pipe);
+        process_bind (cmd_.args.bind.in_pipe, cmd_.args.bind.out_pipe,
+            blob_t (cmd_.args.bind.peer_identity,
+            cmd_.args.bind.peer_identity_size));
         process_seqnum ();
         break;
 
@@ -198,7 +200,9 @@ void zmq::object_t::send_attach (session_t *destination_, i_engine *engine_,
         cmd.args.attach.peer_identity = NULL;
     }
     else {
-        cmd.args.attach.peer_identity_size = peer_identity_.size ();
+        zmq_assert (peer_identity_.size () <= 0xff);
+        cmd.args.attach.peer_identity_size =
+            (unsigned char) peer_identity_.size ();
         cmd.args.attach.peer_identity =
             (unsigned char*) malloc (peer_identity_.size ());
         zmq_assert (cmd.args.attach.peer_identity_size);
@@ -209,7 +213,8 @@ void zmq::object_t::send_attach (session_t *destination_, i_engine *engine_,
 }
 
 void zmq::object_t::send_bind (socket_base_t *destination_,
-    reader_t *in_pipe_, writer_t *out_pipe_, bool inc_seqnum_)
+    reader_t *in_pipe_, writer_t *out_pipe_, const blob_t &peer_identity_,
+    bool inc_seqnum_)
 {
     if (inc_seqnum_)
         destination_->inc_seqnum ();
@@ -219,6 +224,20 @@ void zmq::object_t::send_bind (socket_base_t *destination_,
     cmd.type = command_t::bind;
     cmd.args.bind.in_pipe = in_pipe_;
     cmd.args.bind.out_pipe = out_pipe_;
+    if (peer_identity_.empty ()) {
+        cmd.args.bind.peer_identity_size = 0;
+        cmd.args.bind.peer_identity = NULL;
+    }
+    else {
+        zmq_assert (peer_identity_.size () <= 0xff);
+        cmd.args.bind.peer_identity_size =
+            (unsigned char) peer_identity_.size ();
+        cmd.args.bind.peer_identity =
+            (unsigned char*) malloc (peer_identity_.size ());
+        zmq_assert (cmd.args.bind.peer_identity_size);
+        memcpy (cmd.args.bind.peer_identity, peer_identity_.data (),
+            peer_identity_.size ());
+    }
     send_command (cmd);
 }
 
@@ -293,7 +312,8 @@ void zmq::object_t::process_attach (i_engine *engine_,
     zmq_assert (false);
 }
 
-void zmq::object_t::process_bind (reader_t *in_pipe_, writer_t *out_pipe_)
+void zmq::object_t::process_bind (reader_t *in_pipe_, writer_t *out_pipe_,
+    const blob_t &peer_identity_)
 {
     zmq_assert (false);
 }

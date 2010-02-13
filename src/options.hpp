@@ -20,10 +20,9 @@
 #ifndef __ZMQ_OPTIONS_HPP_INCLUDED__
 #define __ZMQ_OPTIONS_HPP_INCLUDED__
 
-#include <string>
-
 #include "stddef.h"
 #include "stdint.hpp"
+#include "blob.hpp"
 
 namespace zmq
 {
@@ -38,7 +37,7 @@ namespace zmq
         int64_t lwm;
         int64_t swap;
         uint64_t affinity;
-        std::string identity;
+        blob_t identity;
 
         //  Maximum tranfer rate [kb/s]. Default 100kb/s.
         uint32_t rate;

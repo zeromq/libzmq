@@ -245,7 +245,7 @@ void zmq::session_t::process_attach (i_engine *engine_,
         }
 
         send_bind (owner, outbound ? &outbound->reader : NULL,
-            inbound ? &inbound->writer : NULL);
+            inbound ? &inbound->writer : NULL, peer_identity);
     }
 
     //  Plug in the engine.

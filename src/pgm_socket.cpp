@@ -89,8 +89,11 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
 
     if (options.identity.size () > 0) {
 
-        //  Create gsi from identity string.
-        gsi_base = options.identity;
+        //  Create gsi from identity.
+        //  TODO: We assume that identity is standard C string here.
+        //  What if it contains binary zeroes?
+        gsi_base.assign ((const char*) options.identity.data (),
+            options.identity.size ());
     } else {
 
         //  Generate random gsi.

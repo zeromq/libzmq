@@ -76,7 +76,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         return 0;
 
     case ZMQ_IDENTITY:
-        identity.assign ((const char*) optval_, optvallen_);
+        identity.assign ((const unsigned char*) optval_, optvallen_);
         return 0;
 
     case ZMQ_RATE:

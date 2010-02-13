@@ -122,7 +122,8 @@ namespace zmq
 
         //  Handlers for incoming commands.
         void process_own (class owned_t *object_);
-        void process_bind (class reader_t *in_pipe_, class writer_t *out_pipe_);
+        void process_bind (class reader_t *in_pipe_, class writer_t *out_pipe_,
+            const blob_t &peer_identity_);
         void process_term_req (class owned_t *object_);
         void process_term_ack ();
         void process_seqnum ();
