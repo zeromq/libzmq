@@ -41,7 +41,8 @@ namespace zmq
         //  Creates named session. If name is NULL, transient session with
         //  auto-generated name is created.
         session_t (object_t *parent_, socket_base_t *owner_,
-            const options_t &options_, const char *name_);
+            const options_t &options_, unsigned char peer_identity_size_,
+            unsigned char *peer_identity_);
 
         //  i_inout interface implementation.
         bool read (::zmq_msg_t *msg_);
@@ -86,12 +87,15 @@ namespace zmq
             unnamed
         } type;
 
-        //  Ordinal of the session (if any).
+        //  Session is identified by ordinal in the case when it was created
+        //  before connection to the peer was established and thus we are
+        //  unaware of peer's identity.
         uint64_t ordinal;
 
-        //  The name of the session. One that is used to register it with
-        //  socket-level repository of sessions.
-        std::string name;
+        //  Identity of the peer. If the peer is anonymous, unique name is
+        //  generated instead. Peer identity (or the generated name) is used
+        //  register the session with socket-level repository of sessions.
+        std::string peer_identity;
 
         //  Inherited socket options.
         options_t options;

@@ -42,23 +42,23 @@ zmq::session_t::session_t (object_t *parent_, socket_base_t *owner_,
 }
 
 zmq::session_t::session_t (object_t *parent_, socket_base_t *owner_,
-      const options_t &options_, const char *name_) :
+      const options_t &options_, unsigned char peer_identity_size_,
+      unsigned char *peer_identity_) :
     owned_t (parent_, owner_),
     in_pipe (NULL),
     active (true),
     out_pipe (NULL),
     engine (NULL),
+    ordinal (0),
     options (options_)
 {
-    if (name_) {
+    if (peer_identity_size_) {
         type = named;
-        name = name_;
-        ordinal = 0;
+        peer_identity.assign ((char*) peer_identity_, peer_identity_size_);
     }
     else {
         type = transient;
         //  TODO: Generate unique name here.
-        ordinal = 0;
     }
 }
 
@@ -169,8 +169,8 @@ void zmq::session_t::revive (reader_t *pipe_)
 void zmq::session_t::process_plug ()
 {
     //  Register the session with the socket.
-    if (!name.empty ()) {
-        bool ok = owner->register_session (name.c_str (), this);
+    if (!peer_identity.empty ()) {
+        bool ok = owner->register_session (peer_identity.c_str (), this);
 
         //  There's already a session with the specified identity.
         //  We should syslog it and drop the session. TODO
@@ -213,7 +213,7 @@ void zmq::session_t::process_unplug ()
     if (type == unnamed)
         owner->unregister_session (ordinal);
     else if (type == named)
-        owner->unregister_session (name.c_str ());
+        owner->unregister_session (peer_identity.c_str ());
 
     //  Ask associated pipes to terminate.
     if (in_pipe) {

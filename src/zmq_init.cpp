@@ -168,7 +168,8 @@ void zmq::zmq_init_t::finalise ()
             if (!session) {
                 session = new (std::nothrow) session_t (
                     choose_io_thread (options.affinity), owner, options,
-                    peer_identity.c_str ());
+                    (unsigned char) peer_identity.size (),
+                    (unsigned char*) peer_identity.c_str ());
                 zmq_assert (session);
                 send_plug (session);
                 send_own (owner, session);
@@ -182,7 +183,7 @@ void zmq::zmq_init_t::finalise ()
         //  transient session.
         else {
             session = new (std::nothrow) session_t (
-                choose_io_thread (options.affinity), owner, options, NULL);
+                choose_io_thread (options.affinity), owner, options, 0, NULL);
             zmq_assert (session);
             send_plug (session);
             send_own (owner, session);
@@ -191,7 +192,7 @@ void zmq::zmq_init_t::finalise ()
             session->inc_seqnum ();
         }
 
-        //  No need to increment seqnum as it was laready incremented above.
+        //  No need to increment seqnum as it was already incremented above.
         send_attach (session, engine, (unsigned char) peer_identity.size (),
             (unsigned char*) peer_identity.data (), false);
 
