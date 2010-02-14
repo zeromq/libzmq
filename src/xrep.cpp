@@ -28,6 +28,10 @@ zmq::xrep_t::xrep_t (class app_thread_t *parent_) :
     options.requires_in = true;
     options.requires_out = true;
 
+    //  On connect, pipes are created only after initial handshaking.
+    //  That way we are aware of the peer's identity when binding to the pipes.
+    options.immediate_connect = false;
+
     //  XREP socket adds identity to inbound messages and strips identity
     //  from the outbound messages.
     options.traceroute = true;

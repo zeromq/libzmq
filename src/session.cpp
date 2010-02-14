@@ -220,33 +220,31 @@ void zmq::session_t::process_attach (i_engine *engine_,
         }
     }
 
-    //  If session is created by 'connect' function, it has the pipes set
-    //  already. Otherwise, it's being created by the listener and the pipes
-    //  are yet to be created.
-    if (!in_pipe && !out_pipe) {
+    //  Check whether the required pipes already exist. If not so, we'll
+    //  create them and bind them to the socket object.
+    reader_t *socket_reader = NULL;
+    writer_t *socket_writer = NULL;
 
-        pipe_t *inbound = NULL;
-        pipe_t *outbound = NULL;
-
-        if (options.requires_out) {
-            inbound = new (std::nothrow) pipe_t (this, owner,
-                options.hwm, options.lwm);
-            zmq_assert (inbound);
-            in_pipe = &inbound->reader;
-            in_pipe->set_endpoint (this);
-        }
-
-        if (options.requires_in) {
-            outbound = new (std::nothrow) pipe_t (owner, this,
-                options.hwm, options.lwm);
-            zmq_assert (outbound);
-            out_pipe = &outbound->writer;
-            out_pipe->set_endpoint (this);
-        }
-
-        send_bind (owner, outbound ? &outbound->reader : NULL,
-            inbound ? &inbound->writer : NULL, peer_identity);
+    if (options.requires_in && !out_pipe) {
+        pipe_t *pipe = new (std::nothrow) pipe_t (owner, this,
+            options.hwm, options.lwm);
+        zmq_assert (pipe);
+        out_pipe = &pipe->writer;
+        out_pipe->set_endpoint (this);
+        socket_reader = &pipe->reader;
     }
+
+    if (options.requires_out && !in_pipe) {
+        pipe_t *pipe = new (std::nothrow) pipe_t (this, owner,
+            options.hwm, options.lwm);
+        zmq_assert (pipe);
+        in_pipe = &pipe->reader;
+        in_pipe->set_endpoint (this);
+        socket_writer = &pipe->writer;
+    }
+
+    if (socket_reader || socket_writer)
+        send_bind (owner, socket_reader, socket_writer, peer_identity);
 
     //  Plug in the engine.
     zmq_assert (!engine);

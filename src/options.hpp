@@ -56,6 +56,12 @@ namespace zmq
         bool requires_in;
         bool requires_out;
 
+        //  If true, when connecting, pipes are created immediately without
+        //  waiting for the connection to be established. That way the socket
+        //  is not aware of the peer's identity, however, it is able to send
+        //  messages straight away.
+        bool immediate_connect;
+
         //  If true, socket requires tracerouting the messages.
         bool traceroute;
     };

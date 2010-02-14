@@ -32,6 +32,11 @@ zmq::rep_t::rep_t (class app_thread_t *parent_) :
 {
     options.requires_in = true;
     options.requires_out = true;
+
+    //  We don't need immediate connect. We'll be able to send messages
+    //  (replies) only when connection is established and thus requests
+    //  can arrive anyway.
+    options.immediate_connect = false;
 }
 
 zmq::rep_t::~rep_t ()
