@@ -17,19 +17,20 @@ dist_noinst_JAVA = \
 lib_LTLIBRARIES = libjzmq.la
 libjzmq_la_SOURCES = \
 	Context.cpp \
-    org_zmq_Context.h \
-	Socket.cpp \
-    org_zmq_Socket.h
+	Socket.cpp
+nodist_libjzmq_la_SOURCES = \
+	org_zmq_Context.h \
+	org_zmq_Socket.h
 
 libjzmq_la_CXXFLAGS = @JAVA_INCLUDE@ -I$(top_srcdir)/bindings/c -Wall
 libjzmq_la_LDFLAGS = -version-info @JLTVER@
 libjzmq_la_LIBADD = $(top_builddir)/src/libzmq.la
 
 BUILT_SOURCES = \
-    org/zmq/Context.class \
-    org_zmq_Context.h \
+	org/zmq/Context.class \
+	org_zmq_Context.h \
 	org/zmq/Socket.class \
-    org_zmq_Socket.h
+	org_zmq_Socket.h
 
 CLEANFILES = \
 	org/zmq/Context.class \
