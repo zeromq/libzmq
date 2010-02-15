@@ -17,7 +17,7 @@ autom4te.cache
 *.pdf
 *.ps
 .*
-src/platform.hpp
+src/platform.hpp*
 src/stamp-h1
 devices/zmq_forwarder/zmq_forwarder
 devices/zmq_queue/zmq_queue
@@ -37,3 +37,7 @@ doc/*.3
 doc/*.7
 doc/*.html
 doc/*.xml
+bindings/python/setup.py
+src/libzmq.pc
+foreign/openpgm/*
+!foreign/openpgm/*.tar.bz2
