@@ -1,6 +1,6 @@
 INCLUDES = -I$(top_builddir)/bindings/c
 
-if BUILD_PGM2_EXAMPLES
+if BUILD_PGM_EXAMPLES
 PGM_EXAMPLES_BINS = pgmsend pgmrecv
 endif
 
@@ -22,7 +22,7 @@ remote_thr_LDADD = $(top_builddir)/src/libzmq.la
 remote_thr_SOURCES = remote_thr.c
 remote_thr_CXXFLAGS = -Wall -pedantic -Werror
 
-if BUILD_PGM2_EXAMPLES
+if BUILD_PGM_EXAMPLES
 
 if ON_MINGW
 pgmexamples_diff_flags = \

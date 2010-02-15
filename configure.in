@@ -62,7 +62,7 @@ AC_CHECK_LIB(stdc++, malloc)
 LIBZMQ_EXTRA_CXXFLAGS=""
 
 # Extra LDFLAGS are appended at the end of LDFLAGS for libzmq.
-LIBZMQ_EXTRA_LDFLAFS=""
+LIBZMQ_EXTRA_LDFLAGS=""
 
 # By default compiling with -pedantic except QNX and OSX.
 pedantic="yes"
@@ -408,33 +408,29 @@ else
 fi
 
 #  PGM extension
-pgm2_ext="no"
+pgm_ext="no"
 
-pgm2_basename="libpgm-2.0.23rc8"
+pgm_basename="libpgm-2.0.23rc8"
 
-AC_SUBST(pgm2_basename)
-
-pgm_basename=""
+AC_SUBST(pgm_basename)
 
 AC_ARG_WITH([pgm], [AS_HELP_STRING([--with-pgm], 
     [build libzmq with PGM extension [default=no]])], 
-    [with_pgm2_ext=yes], [with_pgm2_ext=no])
+    [with_pgm_ext=yes], [with_pgm_ext=no])
 
 AC_ARG_WITH([pgm-examples], [AS_HELP_STRING([--with-pgm-examples], 
     [build PGM examples [default=no]])], 
-    [with_pgm2_examples=yes], [with_pgm2_examples=no])
+    [with_pgm_examples=yes], [with_pgm_examples=no])
 
-if test "x$with_pgm2_ext" = "xno" -a "x$with_pgm2_examples" = "xyes"; then
-    AC_MSG_ERROR([cannot configure --with-pgm2-examples without --with-pgm2.]);
+if test "x$with_pgm_ext" = "xno" -a "x$with_pgm_examples" = "xyes"; then
+    AC_MSG_ERROR([cannot configure --with-pgm-examples without --with-pgm.]);
 fi
 
-if test "x$c" = "xno" -a "x$with_pgm2_examples" = "xyes"; then
-    AC_MSG_ERROR([cannot configure --with-pgm2-examples without --with-c.]);
+if test "x$c" = "xno" -a "x$with_pgm_examples" = "xyes"; then
+    AC_MSG_ERROR([cannot configure --with-pgm-examples without --with-c.]);
 fi
 
-if test "x$with_pgm2_ext" != "xno"; then
-
-    pgm_basename=${pgm2_basename}
+if test "x$with_pgm_ext" != "xno"; then
 
     AC_MSG_CHECKING([if the PGM extension is supported on this platform])
     # OpenPGM is only supported by the vendor on x86 and AMD64 platforms...
@@ -484,39 +480,24 @@ if test "x$with_pgm2_ext" != "xno"; then
         fi
     fi
 
-    #  Unpack libpgm2
+    #  Unpack libpgm
     AC_MSG_NOTICE([Unpacking ${pgm_basename}.tar.bz2])
     if ! bunzip2 -c foreign/openpgm/${pgm_basename}.tar.bz2 | tar -xf - -C foreign/openpgm/; then
         AC_MSG_ERROR([cannot unpack the foreign/openpgm/${pgm_basename}.tar.bz2 file.])
     fi
 
-    #  Generate galois_tables.c
-    AC_CONFIG_COMMANDS([galois_tables2.c], 
-        [perl foreign/openpgm/libpgm-2.0.23rc8/openpgm/pgm/galois_generator.pl > \
-            foreign/openpgm/libpgm-2.0.23rc8/openpgm/pgm/galois_tables.c])
-
-    #  Generate version.c
-    AC_CONFIG_COMMANDS([version2.c],
-        [python foreign/openpgm/libpgm-2.0.23rc8/openpgm/pgm/version_generator.py > \
-            foreign/openpgm/libpgm-2.0.23rc8/openpgm/pgm/version.c])
-
     #  Success!
     AC_DEFINE(ZMQ_HAVE_OPENPGM, 1, [Have OpenPGM extension])
-    pgm2_ext="yes"
-else
-    #  Fallback for make dist.
-    pgm_basename=${pgm2_basename}
+    pgm_ext="yes"
 fi
 
-AC_SUBST(pgm_basename)
-
 # If not on QNX nor OSX nor PGM add -pedantic into LIBZMQ_EXTRA_CXXFLAGS.
-if test "x$pedantic" = "xyes" -a "x$pgm2_ext" = "xno"; then
+if test "x$pedantic" = "xyes" -a "x$pgm_ext" = "xno"; then
     LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -pedantic"
 fi
 
-# If not on QNX nor --with-pgm2 add -Werror into LIBZMQ_EXTRA_CXXFLAGS.
-if test "x$werror" = "xyes" -a "x$pgm2_ext" = "xno"; then
+# If not on QNX nor PGM add -Werror into LIBZMQ_EXTRA_CXXFLAGS.
+if test "x$werror" = "xyes" -a "x$pgm_ext" = "xno"; then
     LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Werror"
 fi
 
@@ -561,7 +542,7 @@ if test "x$with_perf" != "xno"; then
     fi
 fi
 
-if test "x$with_perf" = "xno" -a "x$with_pgm2_examples" = "xyes"; then
+if test "x$with_perf" = "xno" -a "x$with_pgm_examples" = "xyes"; then
     AC_MSG_ERROR([cannot configure --with-pgm-examples without --with-perf.]);
 fi
 
@@ -578,15 +559,15 @@ AM_CONDITIONAL(BUILD_PYTHON, test "x$pyzmq" = "xyes")
 AM_CONDITIONAL(BUILD_RUBY, test "x$rbzmq" = "xyes")
 AM_CONDITIONAL(BUILD_C, test "x$czmq" = "xyes")
 AM_CONDITIONAL(BUILD_CPP, test "x$cppzmq" = "xyes")
-AM_CONDITIONAL(BUILD_PGM2, test "x$pgm2_ext" = "xyes")
-AM_CONDITIONAL(BUILD_NO_PGM, test "x$pgm2_ext" = "xno")
+AM_CONDITIONAL(BUILD_PGM, test "x$pgm_ext" = "xyes")
+AM_CONDITIONAL(BUILD_NO_PGM, test "x$pgm_ext" = "xno")
 AM_CONDITIONAL(BUILD_FORWARDER, test "x$forwarder" = "xyes")
 AM_CONDITIONAL(BUILD_STREAMER, test "x$streamer" = "xyes")
 AM_CONDITIONAL(BUILD_QUEUE, test "x$queue" = "xyes")  
 AM_CONDITIONAL(BUILD_PERF, test "x$perf" = "xyes")
 AM_CONDITIONAL(BUILD_CHAT, test "x$chat" = "xyes")
 AM_CONDITIONAL(ON_MINGW, test "x$on_mingw32" = "xyes")
-AM_CONDITIONAL(BUILD_PGM2_EXAMPLES, test "x$with_pgm2_examples" = "xyes")
+AM_CONDITIONAL(BUILD_PGM_EXAMPLES, test "x$with_pgm_examples" = "xyes")
 AM_CONDITIONAL(INSTALL_MAN, test "x$install_man" = "xyes")
 AM_CONDITIONAL(BUILD_DOC, test "x$build_doc" = "xyes")
 
@@ -595,7 +576,7 @@ AC_SUBST(inttypes)
 
 # Subst LIBZMQ_EXTRA_CXXFLAGS & LDFLAGS
 AC_SUBST(LIBZMQ_EXTRA_CXXFLAGS)
-AC_SUBST(LIBZMQ_EXTRA_LDFLAFS)
+AC_SUBST(LIBZMQ_EXTRA_LDFLAGS)
 
 
 # Checks for library functions.
@@ -643,8 +624,8 @@ AC_MSG_RESULT([       Ruby library install dir: $rubydir])
 fi
 AC_MSG_RESULT([   Transports:])
 AC_MSG_RESULT([     tcp: yes])
-AC_MSG_RESULT([     udp: $pgm2_ext])
-AC_MSG_RESULT([     pgm: $pgm2_ext])
+AC_MSG_RESULT([     udp: $pgm_ext])
+AC_MSG_RESULT([     pgm: $pgm_ext])
 AC_MSG_RESULT([     inproc: yes])
 AC_MSG_RESULT([   Devices:])
 AC_MSG_RESULT([     Forwarder: $forwarder])
