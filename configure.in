@@ -273,7 +273,7 @@ AC_ARG_WITH([python], [AS_HELP_STRING([--with-python], [build Python language bi
 if test "x$with_python" != "xno"; then
     AM_PATH_PYTHON([2.4], , [:])
     if test "x$PYTHON" = "x:"; then
-        AC_MSG_ERROR([thhe --with-python option requires that python be installled.]);
+        AC_MSG_ERROR([the --with-python option requires that python be installled.]);
     fi
 
     if test "x$python_headersdir" != "xno"; then
