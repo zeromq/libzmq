@@ -233,11 +233,6 @@ AC_LANG(C++)
 # Optional stuff
 AC_CHECK_PROG(have_pkg_config, pkg-config, yes, no)
 
-if test "x$have_pkg_config" != "xno"; then
-    #  First instance of PKG_CHECK_ has to be executed
-    PKG_CHECK_EXISTS([dummy_pkg], [], [])
-fi
-
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
 AC_C_CONST
