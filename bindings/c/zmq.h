@@ -195,6 +195,7 @@ ZMQ_EXPORT int zmq_recv (void *s, zmq_msg_t *msg, int flags);
 
 #define ZMQ_POLLIN 1
 #define ZMQ_POLLOUT 2
+#define ZMQ_POLLERR 4
 
 typedef struct
 {
