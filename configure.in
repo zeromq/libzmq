@@ -175,23 +175,14 @@ case "${host_os}" in
         ;;
 esac
 
-# Check if we are running at sparc harware
-AC_MSG_CHECKING([wheter __sparc__ is defined])
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-    [[#if defined __sparc__
-        //OK we are on sparc
-    #else
-        error: we are not on sparc
-    #endif
-    ]])],
-        [sparc=yes],
-        [sparc=no])
-
-AC_MSG_RESULT([$sparc])
-        
-if test "x$sparc" = "xyes"; then
-    CPPFLAGS="$CPPFLAGS -mcpu=v9"
-fi
+# CPU-specific optimizations
+case "${host_cpu}" in
+    *sparc*)
+        CPPFLAGS="$CPPFLAGS -mcpu=v9"
+    ;;
+    *)
+    ;;
+esac
 
 # Checks for header files.
 AC_HEADER_STDC
