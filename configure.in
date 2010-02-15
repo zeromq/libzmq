@@ -445,37 +445,58 @@ if test "x$with_pgm2_ext" != "xno"; then
 
     pgm_basename=${pgm2_basename}
 
-    #  Test if we have pkg-config
-    if test "x$have_pkg_config" != "xyes"; then
-        AC_MSG_ERROR([To run configure with --with-pgm2 option, pkg-config has to be installed.]);
-    fi
-
-     case "${host_os}" in
-        *linux*)
-            LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Wno-variadic-macros -Wno-long-long "
-        ;;
-        *mingw32*)
-            LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Wno-variadic-macros -Wno-long-long "
+    AC_MSG_CHECKING([if the PGM extension is supported on this platform])
+    # OpenPGM is only supported by the vendor on x86 and AMD64 platforms...
+    case "${host_cpu}" in
+        i*86|x86_64)
+            # Supported
         ;;
         *)
-            AC_MSG_ERROR([PGM extesion is not supported on this platform $host.])
+            AC_MSG_ERROR([the PGM extension is not supported on the ${host_cpu} platform.])
         ;;
     esac
 
-    #  Unpack libpgm2
-    AC_MSG_CHECKING([Unpacking ${pgm_basename}.tar.bz2])
+    # ... and on Linux/Windows/Solaris systems.
+    case "${host_os}" in
+        *linux*|*mingw32*|*solaris*)
+            LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Wno-variadic-macros -Wno-long-long "
+        ;;
+        *)
+            AC_MSG_ERROR([the PGM extension is not supported on system ${host_os}.])
+        ;;
+    esac
+    AC_MSG_RESULT([yes])
 
-    if tar -xjf foreign/openpgm/${pgm_basename}.tar.bz2 -C foreign/openpgm/; then
-        AC_MSG_RESULT([yes])
-    else
-        AC_MSG_ERROR([Could not unpack foreign/openpgm/${pgm_basename}.tar.bz2 file.])
+    #  Test if we have pkg-config
+    if test "x$have_pkg_config" != "xyes"; then
+        AC_MSG_ERROR([the --with-pgm option requires that pkg-config be installed.]);
     fi
-
+    
+    #  Check for OpenPGM dependencies
+    PKG_CHECK_MODULES([GLIB], [glib-2.0 gthread-2.0])
+    LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} ${GLIB_CFLAGS} "
+    LIBZMQ_EXTRA_LDFLAGS="${LIBZMQ_EXTRA_LDFLAGS} ${GLIB_LIBS} "
+    
+    #  Bunzip2, Perl and Python are required duing PGM build
+    AC_CHECK_PROG(have_bunzip2, bunzip2, yes, no)
+    if test "x$have_bunzip2" != "xyes"; then
+        AC_MSG_ERROR([bunzip2 is required for building the PGM extension.])
+    fi
+    AC_CHECK_PROG(have_perl, perl, yes, no)
+    if test "x$have_perl" != "xyes"; then
+        AC_MSG_ERROR([perl is required for building the PGM extension.])
+    fi
     if test "x$pyzmq" != "xyes"; then
         AC_CHECK_PROG(have_python, python, yes, no)
         if test "x$have_python" != "xyes"; then
-            AC_MSG_ERROR([Could not find python.])
+            AC_MSG_ERROR([python is required for building the PGM extension.])
         fi
+    fi
+
+    #  Unpack libpgm2
+    AC_MSG_NOTICE([Unpacking ${pgm_basename}.tar.bz2])
+    if ! bunzip2 -c foreign/openpgm/${pgm_basename}.tar.bz2 | tar -xf - -C foreign/openpgm/; then
+        AC_MSG_ERROR([could not unpack the foreign/openpgm/${pgm_basename}.tar.bz2 file.])
     fi
 
     #  Generate galois_tables.c
@@ -488,15 +509,8 @@ if test "x$with_pgm2_ext" != "xno"; then
         [python foreign/openpgm/libpgm-2.0.23rc8/openpgm/pgm/version_generator.py > \
             foreign/openpgm/libpgm-2.0.23rc8/openpgm/pgm/version.c])
 
-    #  Check for OpenPGM nedded libraries.
-    PKG_CHECK_MODULES([GLIB], [glib-2.0 gthread-2.0])
-
-    LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} ${GLIB_CFLAGS} "
-
-    LIBZMQ_EXTRA_LDFLAFS="${LIBZMQ_EXTRA_LDFLAFS} ${GLIB_LIBS}"
-
-    AC_DEFINE(ZMQ_HAVE_OPENPGM, 1, [Have OpenPGM v1 or v2 extension.])
-    AC_DEFINE(ZMQ_HAVE_OPENPGM2, 1, [Have OpenPGM v2 extension.])
+    #  Success!
+    AC_DEFINE(ZMQ_HAVE_OPENPGM, 1, [Have OpenPGM extension])
     pgm2_ext="yes"
 else
     #  Fallback for make dist.
