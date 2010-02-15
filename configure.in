@@ -96,7 +96,7 @@ case "${host_os}" in
         AC_DEFINE(ZMQ_HAVE_LINUX, 1, [Have Linux OS])
         CPPFLAGS="-D_REENTRANT $CPPFLAGS"
         AC_CHECK_LIB(uuid, main, , 
-            [AC_MSG_ERROR([Could not link with libuuid, install develop version.])])
+            [AC_MSG_ERROR([cannot link with -luuid, install uuid-dev.])])
         ;;
     *solaris*)
         AC_DEFINE(ZMQ_HAVE_SOLARIS, 1, [Have Solaris OS])
@@ -104,7 +104,7 @@ case "${host_os}" in
         AC_CHECK_LIB(nsl, main)
         AC_CHECK_LIB(rt, main)
         AC_CHECK_LIB(uuid, main, ,
-            [AC_MSG_ERROR([Could not link with libuuid, install develop version.])])
+            [AC_MSG_ERROR([cannot link with -luuid, install uuid-dev.])])
         CPPFLAGS="-D_REENTRANT -D_PTHREADS $CPPFLAGS"
         AC_MSG_CHECKING([wheter atomic operations can be used])
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
@@ -161,17 +161,17 @@ case "${host_os}" in
         AC_DEFINE(ZMQ_HAVE_MINGW32, 1, [Have MinGW32])
         AC_CHECK_HEADERS(windows.h)
         AC_CHECK_LIB(ws2_32, main, ,
-            [AC_MSG_ERROR([Could not link with ws2_32.dll.])])
+            [AC_MSG_ERROR([cannot link with ws2_32.dll.])])
         AC_CHECK_LIB(Rpcrt4, main, ,
-            [AC_MSG_ERROR([Could not link with Rpcrt4.dll.])])
+            [AC_MSG_ERROR([cannot link with Rpcrt4.dll.])])
         AC_CHECK_LIB(Iphlpapi, main, ,
-            [AC_MSG_ERROR([Could not link with Iphlpapi.dll.])])
+            [AC_MSG_ERROR([cannot link with Iphlpapi.dll.])])
         CFLAGS="${CFLAGS} -std=c99"
         on_mingw32="yes"
         install_man="no"
         ;;
     *)
-        AC_MSG_ERROR([Not supported os: $host.])
+        AC_MSG_ERROR([unsupported system: ${host_os}.])
         ;;
 esac
 
@@ -273,7 +273,7 @@ AC_ARG_WITH([python], [AS_HELP_STRING([--with-python], [build Python language bi
 if test "x$with_python" != "xno"; then
     AM_PATH_PYTHON([2.4], , [:])
     if test "x$PYTHON" = "x:"; then
-        AC_MSG_ERROR([To run configure with --with-python option, Python has to be installed.]);
+        AC_MSG_ERROR([thhe --with-python option requires that python be installled.]);
     fi
 
     if test "x$python_headersdir" != "xno"; then
@@ -281,7 +281,7 @@ if test "x$with_python" != "xno"; then
         PYTHON_SETUP_INCLUDES="${python_headersdir}"
 
         AC_CHECK_HEADERS($python_headersdir/Python.h, [] , 
-            [AC_MSG_ERROR([To run configure with --with-python option, Python.h has to be usable.])])
+            [AC_MSG_ERROR([the --with-python option requires a usable Python.h.])])
 
     else 
         py_prefix=`$PYTHON -c "import sys; print sys.prefix"`
@@ -294,7 +294,7 @@ if test "x$with_python" != "xno"; then
         fi
 
         AC_CHECK_HEADERS($py_prefix/include/python${PYTHON_VERSION}/Python.h, [] , 
-            [AC_MSG_ERROR([To run configure with --with-python option, Python.h has to be usable.])])
+            [AC_MSG_ERROR([the --with-python option requires a usable Python.h.])])
     fi
 
     AC_SUBST(PYTHON_INCLUDES)
@@ -324,10 +324,10 @@ fi
 AC_ARG_WITH([ruby], [AS_HELP_STRING([--with-ruby], [build ruby language binding [default=no]])], [with_ruby=yes], [with_ruby=no])
 if test "x$with_ruby" != "xno"; then
     AC_CHECK_HEADERS([ruby.h], [], 
-        [AC_MSG_ERROR([Could not find Ruby header files, Please specify their location with --with-ruby-headersdir.])])
+        [AC_MSG_ERROR([cannot find Ruby header files. Please specify their location with --with-ruby-headersdir.])])
 
     AC_SEARCH_LIBS(ruby_init,[ruby ruby1.8 ruby18],, 
-        [AC_MSG_ERROR([Could not link with Ruby library. Please specify their location with --with-ruby-libdir.])])
+        [AC_MSG_ERROR([cannot link with Ruby library. Please specify it's location with --with-ruby-libdir.])])
    
     rbzmq="yes"
 fi
@@ -348,7 +348,7 @@ AC_SUBST([RUBYDIR])
 if test "x$pyzmq" = "xyes"; then
     AC_CHECK_PROG(have_python, python, yes, no)
     if test "x$have_python" != "xyes"; then
-        AC_MSG_ERROR([Could not find python.])
+        AC_MSG_ERROR([the --with-python option requires that python be installed.])
     fi
 fi
     
@@ -358,28 +358,28 @@ AC_ARG_WITH([java], [AS_HELP_STRING([--with-java], [build Java language binding 
 if test "x$with_java" != "xno"; then
     AC_PATH_PROG(JAVAC, javac, "no",[$PATH:$JAVA_HOME/bin])
     if test "x$JAVAC" = "xno"; then
-        AC_MSG_ERROR([To run configure with --with-java option, javac has to be on the path.]);
+        AC_MSG_ERROR([the --with-java option requires that javac be on the path.]);
     fi
 
     AC_PATH_PROG(JAVAH, javah, "no",[$PATH:$JAVA_HOME/bin])
     if test "x$JAVAH" = "xno"; then
-        AC_MSG_ERROR([To run configure with --with-java option, javah has to be on the path.]);
+        AC_MSG_ERROR([the --with-java option requires that javah be on the path.]);
     fi
 
     AC_PATH_PROG(JAR, jar, "no", [$PATH:$JAVA_HOME/bin])
     if test "x$JAR" = "xno"; then
-        AC_MSG_ERROR([To run configure with --with-java option, jar has to be on the path.]);
+        AC_MSG_ERROR([the --with-java option requires that jar be on the path.]);
     fi
 
     if test "x$JAVA_HOME" = "x"; then
-        AC_MSG_ERROR([To run configure with --with-java, please set the JAVA_HOME variable to your JDK environment.]);
+        AC_MSG_ERROR([the --with-java option requires the JAVA_HOME environment variable be set to your JDK location.]);
     fi
 
     AC_MSG_CHECKING([for jni.h in a $JAVA_HOME/include dir])
     if test -f $JAVA_HOME/include/jni.h; then
         AC_MSG_RESULT([yes])
     else
-        AC_MSG_ERROR([Could not find jni.h in $JAVA_HOME/include directory.]);
+        AC_MSG_ERROR([cannot find jni.h in the $JAVA_HOME/include directory.]);
     fi
 
     JAVAROOT=./
@@ -425,11 +425,11 @@ AC_ARG_WITH([pgm-examples], [AS_HELP_STRING([--with-pgm-examples],
     [with_pgm2_examples=yes], [with_pgm2_examples=no])
 
 if test "x$with_pgm2_ext" = "xno" -a "x$with_pgm2_examples" = "xyes"; then
-    AC_MSG_ERROR([Can not configure --with-pgm2-examples without --with-pgm2.]);
+    AC_MSG_ERROR([cannot configure --with-pgm2-examples without --with-pgm2.]);
 fi
 
 if test "x$c" = "xno" -a "x$with_pgm2_examples" = "xyes"; then
-    AC_MSG_ERROR([Can not configure --with-pgm2-examples without --with-c.]);
+    AC_MSG_ERROR([cannot configure --with-pgm2-examples without --with-c.]);
 fi
 
 if test "x$with_pgm2_ext" != "xno"; then
@@ -487,7 +487,7 @@ if test "x$with_pgm2_ext" != "xno"; then
     #  Unpack libpgm2
     AC_MSG_NOTICE([Unpacking ${pgm_basename}.tar.bz2])
     if ! bunzip2 -c foreign/openpgm/${pgm_basename}.tar.bz2 | tar -xf - -C foreign/openpgm/; then
-        AC_MSG_ERROR([could not unpack the foreign/openpgm/${pgm_basename}.tar.bz2 file.])
+        AC_MSG_ERROR([cannot unpack the foreign/openpgm/${pgm_basename}.tar.bz2 file.])
     fi
 
     #  Generate galois_tables.c
@@ -557,12 +557,12 @@ if test "x$with_perf" != "xno"; then
 
     if test "x$czmq" = "xno" -a "x$cppzmq" = "xno" -a "x$pyzmq" = "xno" -a \
           "x$jzmq" = "xno" -a "x$rbzmq" = "xno"; then
-        AC_MSG_ERROR([To run configure with --with-perf option chose at least one language binding.]);
+        AC_MSG_ERROR([the --with-perf option requires at least one language binding.]);
     fi
 fi
 
 if test "x$with_perf" = "xno" -a "x$with_pgm2_examples" = "xyes"; then
-    AC_MSG_ERROR([Can not configure --with-pgm2-examples without --with-perf.]);
+    AC_MSG_ERROR([cannot configure --with-pgm-examples without --with-perf.]);
 fi
 
 # Chat example
