@@ -281,7 +281,7 @@ if test "x$with_python" != "xno"; then
         PYTHON_SETUP_INCLUDES="${python_headersdir}"
 
         AC_CHECK_HEADERS($python_headersdir/Python.h, [] , 
-            [AC_MSG_ERROR([the --with-python option requires a usable Python.h.])])
+            [AC_MSG_ERROR([cannot find a usable Python.h in ${python_headersdir}.])])
 
     else 
         py_prefix=`$PYTHON -c "import sys; print sys.prefix"`
@@ -294,7 +294,7 @@ if test "x$with_python" != "xno"; then
         fi
 
         AC_CHECK_HEADERS($py_prefix/include/python${PYTHON_VERSION}/Python.h, [] , 
-            [AC_MSG_ERROR([the --with-python option requires a usable Python.h.])])
+            [AC_MSG_ERROR([cannot find a usable Python.h in $py_prefix/include/python${PYTHON_VERSION}.])])
     fi
 
     AC_SUBST(PYTHON_INCLUDES)
