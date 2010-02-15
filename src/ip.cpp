@@ -292,7 +292,6 @@ int zmq::resolve_ip_hostname (sockaddr_storage *addr_, socklen_t *addr_len_,
     
     //  Avoid named services due to unclear socktype, and don't pick IPv6
     //  addresses if we don't have a local IPv6 address configured.
-    req.ai_flags = AI_NUMERICSERV | AI_ADDRCONFIG;
 #if defined ZMQ_HAVE_OSX
    req.ai_flags = AI_ADDRCONFIG;
 #else
