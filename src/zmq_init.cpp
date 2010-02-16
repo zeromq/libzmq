@@ -74,12 +74,8 @@ bool zmq::zmq_init_t::write (::zmq_msg_t *msg_)
     //  Retreieve the remote identity.
     peer_identity.assign ((const unsigned char*) zmq_msg_data (msg_),
         zmq_msg_size (msg_));
+    engine->add_prefix (peer_identity);
     received = true;
-
-    //  Once the initial handshaking is over, XREP sockets should start
-    //  tracerouting individual messages.
-    if (options.traceroute)
-        engine->traceroute (peer_identity);
 
     return true;
 }

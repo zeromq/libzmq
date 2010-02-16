@@ -41,10 +41,11 @@ namespace zmq
         //  are messages to send available.
         virtual void revive () = 0;
 
-        //  Start tracing the message route. Engine should add the identity
-        //  supplied to all inbound messages and trim identity from all the
-        //  outbound messages.
-        virtual void traceroute (const blob_t &identity_) = 0;
+        //  Engine should add the prefix supplied to all inbound messages.
+        virtual void add_prefix (const blob_t &identity_) = 0;
+
+        //  Engine should trim prefix from all the outbound messages.
+        virtual void trim_prefix () = 0;
     };
 
 }

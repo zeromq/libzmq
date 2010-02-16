@@ -51,7 +51,8 @@ namespace zmq
         uint64_t get_ordinal ();
 
         //  i_endpoint interface implementation.
-        void attach_pipes (class reader_t *inpipe_, class writer_t *outpipe_);
+        void attach_pipes (class reader_t *inpipe_, class writer_t *outpipe_,
+            const blob_t &peer_identity_);
         void detach_inpipe (class reader_t *pipe_);
         void detach_outpipe (class writer_t *pipe_);
         void kill (class reader_t *pipe_);

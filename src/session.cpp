@@ -124,7 +124,7 @@ uint64_t zmq::session_t::get_ordinal ()
 }
 
 void zmq::session_t::attach_pipes (class reader_t *inpipe_,
-    class writer_t *outpipe_)
+    class writer_t *outpipe_, const blob_t &peer_identity_)
 {
     if (inpipe_) {
         zmq_assert (!in_pipe);
@@ -251,4 +251,9 @@ void zmq::session_t::process_attach (i_engine *engine_,
     zmq_assert (engine_);
     engine = engine_;
     engine->plug (this);
+
+    //  Once the initial handshaking is over tracerouting should trim prefixes
+    //  from outbound messages.
+    if (options.traceroute)
+        engine->trim_prefix ();
 }

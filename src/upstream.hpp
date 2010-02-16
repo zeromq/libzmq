@@ -34,7 +34,8 @@ namespace zmq
         ~upstream_t ();
 
         //  Overloads of functions from socket_base_t.
-        void xattach_pipes (class reader_t *inpipe_, class writer_t *outpipe_);
+        void xattach_pipes (class reader_t *inpipe_, class writer_t *outpipe_,
+            const blob_t &peer_identity_);
         void xdetach_inpipe (class reader_t *pipe_);
         void xdetach_outpipe (class writer_t *pipe_);
         void xkill (class reader_t *pipe_);

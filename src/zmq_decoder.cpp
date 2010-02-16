@@ -63,16 +63,22 @@ bool zmq::zmq_decoder_t::one_byte_size_ready ()
         //  in_progress is initialised at this point so in theory we should
         //  close it before calling zmq_msg_init_size, however, it's a 0-byte
         //  message and thus we can treat it as uninitialised...
-        int rc = zmq_msg_init_size (&in_progress, prefix.size () + *tmpbuf);
-        errno_assert (rc == 0);
-
-        //  Fill in the message prefix if any.
-        if (!prefix.empty ())
-            memcpy (zmq_msg_data (&in_progress), prefix.data (),
-                prefix.size ());
-
-        next_step ((unsigned char*) zmq_msg_data (&in_progress) +
-            prefix.size (), *tmpbuf, &zmq_decoder_t::message_ready);
+        if (prefix.empty ()) {
+            int rc = zmq_msg_init_size (&in_progress, *tmpbuf);
+            errno_assert (rc == 0);
+            next_step (zmq_msg_data (&in_progress), *tmpbuf,
+                &zmq_decoder_t::message_ready);
+        }
+        else {
+            int rc = zmq_msg_init_size (&in_progress,
+                *tmpbuf + 1 + prefix.size ());
+            errno_assert (rc == 0);
+            unsigned char *data = (unsigned char*) zmq_msg_data (&in_progress);
+            *data = (unsigned char) prefix.size ();
+            memcpy (data + 1, prefix.data (), *data);
+            next_step (data + *data + 1, *tmpbuf,
+                &zmq_decoder_t::message_ready);
+        }
     }
     return true;
 }
@@ -87,15 +93,21 @@ bool zmq::zmq_decoder_t::eight_byte_size_ready ()
     //  in_progress is initialised at this point so in theory we should
     //  close it before calling zmq_msg_init_size, however, it's a 0-byte
     //  message and thus we can treat it as uninitialised...
-    int rc = zmq_msg_init_size (&in_progress, prefix.size () + size);
-    errno_assert (rc == 0);
+    if (prefix.empty ()) {
+        int rc = zmq_msg_init_size (&in_progress, size);
+        errno_assert (rc == 0);
+        next_step (zmq_msg_data (&in_progress), size,
+            &zmq_decoder_t::message_ready);
+    }
+    else {
+        int rc = zmq_msg_init_size (&in_progress, size + 1 + prefix.size ());
+        errno_assert (rc == 0);
+        unsigned char *data = (unsigned char*) zmq_msg_data (&in_progress);
+        *data = (unsigned char) prefix.size ();
+        memcpy (data + 1, prefix.data (), *data);
+        next_step (data + *data + 1, size, &zmq_decoder_t::message_ready);
+    }
 
-    //  Fill in the message prefix if any.
-    if (!prefix.empty ())
-        memcpy (zmq_msg_data (&in_progress), prefix.data (), prefix.size ());
-
-    next_step ((unsigned char*) zmq_msg_data (&in_progress) + prefix.size (),
-        size, &zmq_decoder_t::message_ready);
     return true;
 }
 

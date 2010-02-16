@@ -87,7 +87,8 @@ namespace zmq
         class session_t *find_session (uint64_t ordinal_);
 
         //  i_endpoint interface implementation.
-        void attach_pipes (class reader_t *inpipe_, class writer_t *outpipe_);
+        void attach_pipes (class reader_t *inpipe_, class writer_t *outpipe_,
+            const blob_t &peer_identity_);
         void detach_inpipe (class reader_t *pipe_);
         void detach_outpipe (class writer_t *pipe_);
         void kill (class reader_t *pipe_);
@@ -100,7 +101,7 @@ namespace zmq
 
         //  Pipe management is done by individual socket types.
         virtual void xattach_pipes (class reader_t *inpipe_,
-            class writer_t *outpipe_) = 0;
+            class writer_t *outpipe_, const blob_t &peer_identity_) = 0;
         virtual void xdetach_inpipe (class reader_t *pipe_) = 0;
         virtual void xdetach_outpipe (class writer_t *pipe_) = 0;
         virtual void xkill (class reader_t *pipe_) = 0;

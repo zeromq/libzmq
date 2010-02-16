@@ -56,8 +56,9 @@ bool zmq::zmq_encoder_t::size_ready ()
     }
     else {
         size_t prefix_size = *(unsigned char*) zmq_msg_data (&in_progress);
-        next_step ((unsigned char*) zmq_msg_data (&in_progress) + prefix_size,
-            zmq_msg_size (&in_progress) - prefix_size,
+        next_step (
+            (unsigned char*) zmq_msg_data (&in_progress) + prefix_size + 1,
+            zmq_msg_size (&in_progress) - prefix_size - 1,
             &zmq_encoder_t::message_ready, false);
     }
     return true;
@@ -80,8 +81,14 @@ bool zmq::zmq_encoder_t::message_ready ()
     //  Get the message size. If the prefix is not to be sent, adjust the
     //  size accordingly.
     size_t size = zmq_msg_size (&in_progress);
-    if (trim)
-        size -= *(unsigned char*) zmq_msg_data (&in_progress);
+    if (trim) {
+        zmq_assert (size);
+        size_t prefix_size =
+            (*(unsigned char*) zmq_msg_data (&in_progress)) + 1;
+        zmq_assert (prefix_size <= size);
+        size -= prefix_size;
+    }
+
 
     //  For messages less than 255 bytes long, write one byte of message size.
     //  For longer messages write 0xff escape character followed by 8-byte

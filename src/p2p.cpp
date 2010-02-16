@@ -42,7 +42,7 @@ zmq::p2p_t::~p2p_t ()
 }
 
 void zmq::p2p_t::xattach_pipes (class reader_t *inpipe_,
-    class writer_t *outpipe_)
+    class writer_t *outpipe_, const blob_t &peer_identity_)
 {
     zmq_assert (!inpipe && !outpipe);
     inpipe = inpipe_;

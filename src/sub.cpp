@@ -39,7 +39,7 @@ zmq::sub_t::~sub_t ()
 }
 
 void zmq::sub_t::xattach_pipes (class reader_t *inpipe_,
-    class writer_t *outpipe_)
+    class writer_t *outpipe_, const blob_t &peer_identity_)
 {
     zmq_assert (inpipe_ && !outpipe_);
     fq.attach (inpipe_);

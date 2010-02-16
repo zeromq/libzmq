@@ -44,7 +44,7 @@ zmq::rep_t::~rep_t ()
 }
 
 void zmq::rep_t::xattach_pipes (class reader_t *inpipe_,
-    class writer_t *outpipe_)
+    class writer_t *outpipe_, const blob_t &peer_identity_)
 {
     zmq_assert (inpipe_ && outpipe_);
     zmq_assert (in_pipes.size () == out_pipes.size ());

@@ -160,10 +160,14 @@ void zmq::zmq_engine_t::revive ()
     out_event ();
 }
 
-void zmq::zmq_engine_t::traceroute (const blob_t &identity_)
+void zmq::zmq_engine_t::add_prefix (const blob_t &identity_)
+{    
+    decoder.add_prefix (identity_);
+}
+
+void zmq::zmq_engine_t::trim_prefix ()
 {
     encoder.trim_prefix ();
-    decoder.add_prefix (identity_);
 }
 
 void zmq::zmq_engine_t::error ()

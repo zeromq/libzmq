@@ -20,7 +20,10 @@
 #ifndef __ZMQ_XREP_HPP_INCLUDED__
 #define __ZMQ_XREP_HPP_INCLUDED__
 
+#include <map>
+
 #include "socket_base.hpp"
+#include "blob.hpp"
 #include "fq.hpp"
 
 namespace zmq
@@ -34,7 +37,8 @@ namespace zmq
         ~xrep_t ();
 
         //  Overloads of functions from socket_base_t.
-        void xattach_pipes (class reader_t *inpipe_, class writer_t *outpipe_);
+        void xattach_pipes (class reader_t *inpipe_, class writer_t *outpipe_,
+            const blob_t &peer_identity_);
         void xdetach_inpipe (class reader_t *pipe_);
         void xdetach_outpipe (class writer_t *pipe_);
         void xkill (class reader_t *pipe_);
@@ -50,6 +54,10 @@ namespace zmq
 
         //  Inbound messages are fair-queued.
         fq_t fq;
+
+        //  Outbound pipes indexed by the peer names.
+        typedef std::map <blob_t, class writer_t*> outpipes_t;
+        outpipes_t outpipes;
 
         xrep_t (const xrep_t&);
         void operator = (const xrep_t&);

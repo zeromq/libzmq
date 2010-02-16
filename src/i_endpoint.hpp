@@ -20,6 +20,8 @@
 #ifndef __ZMQ_I_ENDPOINT_HPP_INCLUDED__
 #define __ZMQ_I_ENDPOINT_HPP_INCLUDED__
 
+#include "blob.hpp"
+
 namespace zmq
 {
 
@@ -28,7 +30,7 @@ namespace zmq
         virtual ~i_endpoint () {}
 
         virtual void attach_pipes (class reader_t *inpipe_,
-            class writer_t *outpipe_) = 0;
+            class writer_t *outpipe_, const blob_t &peer_identity_) = 0;
         virtual void detach_inpipe (class reader_t *pipe_) = 0;
         virtual void detach_outpipe (class writer_t *pipe_) = 0;
         virtual void kill (class reader_t *pipe_) = 0;

@@ -169,7 +169,7 @@ int zmq::socket_base_t::connect (const char *addr_)
 
         //  Attach the pipes to this socket object.
         attach_pipes (in_pipe ? &in_pipe->reader : NULL,
-            out_pipe ? &out_pipe->writer : NULL);
+            out_pipe ? &out_pipe->writer : NULL, blob_t ());
 
         //  Attach the pipes to the peer socket. Note that peer's seqnum
         //  was incremented in find_endpoint function. The callee is notified
@@ -211,11 +211,11 @@ int zmq::socket_base_t::connect (const char *addr_)
 
         //  Attach the pipes to the socket object.
         attach_pipes (in_pipe ? &in_pipe->reader : NULL,
-            out_pipe ? &out_pipe->writer : NULL);
+            out_pipe ? &out_pipe->writer : NULL, blob_t ());
 
         //  Attach the pipes to the session object.
         session->attach_pipes (out_pipe ? &out_pipe->reader : NULL,
-            in_pipe ? &in_pipe->writer : NULL);
+            in_pipe ? &in_pipe->writer : NULL, blob_t ());
     }
 
     //  Activate the session.
@@ -553,13 +553,13 @@ void zmq::socket_base_t::revive (reader_t *pipe_)
 }
 
 void zmq::socket_base_t::attach_pipes (class reader_t *inpipe_,
-    class writer_t *outpipe_)
+    class writer_t *outpipe_, const blob_t &peer_identity_)
 {
     if (inpipe_)
         inpipe_->set_endpoint (this);
     if (outpipe_)
         outpipe_->set_endpoint (this);
-    xattach_pipes (inpipe_, outpipe_);
+    xattach_pipes (inpipe_, outpipe_, peer_identity_);
 }
 
 void zmq::socket_base_t::detach_inpipe (class reader_t *pipe_)
@@ -582,7 +582,7 @@ void zmq::socket_base_t::process_own (owned_t *object_)
 void zmq::socket_base_t::process_bind (reader_t *in_pipe_, writer_t *out_pipe_,
     const blob_t &peer_identity_)
 {
-    attach_pipes (in_pipe_, out_pipe_);
+    attach_pipes (in_pipe_, out_pipe_, peer_identity_);
 }
 
 void zmq::socket_base_t::process_term_req (owned_t *object_)
