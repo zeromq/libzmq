@@ -18,7 +18,11 @@
 
 require 'mkmf'
 dir_config('libzmq')
-have_library('libzmq')
-create_makefile("ruby")
+if have_library('libzmq', 'zmq_init')
+  puts "Cool, I found your zmq install..."
+  create_makefile("zmq")
+else
+  raise "Couldn't find zmq library. try setting --with-zmq-dir=<path> to tell me where it is."
+end
 
 
