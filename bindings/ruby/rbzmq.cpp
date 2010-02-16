@@ -69,8 +69,8 @@ static VALUE socket_initialize (VALUE self_, VALUE context_, VALUE type_)
 {
     assert (!DATA_PTR (self_));
 
-    if (strcmp (rb_obj_classname (context_), "Context") != 0) {
-        rb_raise (rb_eArgError, "expected Context object");
+    if (strcmp (rb_obj_classname (context_), "ZMQ::Context") != 0) {
+        rb_raise (rb_eArgError, "expected ZMQ::Context object");
         return Qnil;
     }
 
@@ -103,7 +103,7 @@ static VALUE socket_setsockopt (VALUE self_, VALUE option_,
             long optval = FIX2LONG (optval_);
 
             //  Forward the code to native 0MQ library.
-            rc = zmq_setsockopt (DATA_PTR (self_), NUM2INT (option_), 
+            rc = zmq_setsockopt (DATA_PTR (self_), NUM2INT (option_),
                 (void *) &optval, 4);
         }
         break;
@@ -113,8 +113,8 @@ static VALUE socket_setsockopt (VALUE self_, VALUE option_,
     case ZMQ_UNSUBSCRIBE:
 
         //  Forward the code to native 0MQ library.
-        rc = zmq_setsockopt (DATA_PTR (self_), NUM2INT (option_), 
-	    (void *) StringValueCStr (optval_), RSTRING_LEN (optval_));	
+        rc = zmq_setsockopt (DATA_PTR (self_), NUM2INT (option_),
+	    (void *) StringValueCStr (optval_), RSTRING_LEN (optval_));
         break;
 
     default:
@@ -170,7 +170,7 @@ static VALUE socket_send (VALUE self_, VALUE msg_, VALUE flags_)
         return Qnil;
     }
     memcpy (zmq_msg_data (&msg), RSTRING_PTR (msg_), RSTRING_LEN (msg_));
- 
+
     rc = zmq_send (DATA_PTR (self_), &msg, NUM2INT (flags_));
     if (rc != 0 && errno == EAGAIN) {
         rc = zmq_msg_close (&msg);
@@ -233,13 +233,16 @@ static VALUE socket_recv (VALUE self_, VALUE flags_)
 }
 
 extern "C" void Init_librbzmq ()
-{	
-    VALUE context_type = rb_define_class ("Context", rb_cObject);
+{
+    VALUE zmq_module = rb_define_module ("ZMQ");
+    VALUE context_type = rb_define_class_under (zmq_module, "Context",
+        rb_cObject);
     rb_define_alloc_func (context_type, context_alloc);
     rb_define_method (context_type, "initialize",
         (VALUE(*)(...)) context_initialize, 3);
 
-    VALUE socket_type = rb_define_class ("Socket", rb_cObject);
+    VALUE socket_type = rb_define_class_under (zmq_module, "Socket",
+        rb_cObject);
     rb_define_alloc_func (socket_type, socket_alloc);
     rb_define_method (socket_type, "initialize",
         (VALUE(*)(...)) socket_initialize, 2);
@@ -256,31 +259,31 @@ extern "C" void Init_librbzmq ()
     rb_define_method (socket_type, "recv",
         (VALUE(*)(...)) socket_recv, 1);
 
-    rb_define_global_const ("HWM", INT2NUM (ZMQ_HWM));
-    rb_define_global_const ("LWM", INT2NUM (ZMQ_LWM));
-    rb_define_global_const ("SWAP", INT2NUM (ZMQ_SWAP));
-    rb_define_global_const ("AFFINITY", INT2NUM (ZMQ_AFFINITY));
-    rb_define_global_const ("IDENTITY", INT2NUM (ZMQ_IDENTITY));
-    rb_define_global_const ("SUBSCRIBE", INT2NUM (ZMQ_SUBSCRIBE));
-    rb_define_global_const ("UNSUBSCRIBE", INT2NUM (ZMQ_UNSUBSCRIBE));
-    rb_define_global_const ("RATE", INT2NUM (ZMQ_RATE));
-    rb_define_global_const ("RECOVERY_IVL", INT2NUM (ZMQ_RECOVERY_IVL));
-    rb_define_global_const ("MCAST_LOOP", INT2NUM (ZMQ_MCAST_LOOP));
-    rb_define_global_const ("SNDBUF", INT2NUM (ZMQ_SNDBUF));
-    rb_define_global_const ("RCVBUF", INT2NUM (ZMQ_RCVBUF));
+    rb_define_const (zmq_module, "HWM", INT2NUM (ZMQ_HWM));
+    rb_define_const (zmq_module, "LWM", INT2NUM (ZMQ_LWM));
+    rb_define_const (zmq_module, "SWAP", INT2NUM (ZMQ_SWAP));
+    rb_define_const (zmq_module, "AFFINITY", INT2NUM (ZMQ_AFFINITY));
+    rb_define_const (zmq_module, "IDENTITY", INT2NUM (ZMQ_IDENTITY));
+    rb_define_const (zmq_module, "SUBSCRIBE", INT2NUM (ZMQ_SUBSCRIBE));
+    rb_define_const (zmq_module, "UNSUBSCRIBE", INT2NUM (ZMQ_UNSUBSCRIBE));
+    rb_define_const (zmq_module, "RATE", INT2NUM (ZMQ_RATE));
+    rb_define_const (zmq_module, "RECOVERY_IVL", INT2NUM (ZMQ_RECOVERY_IVL));
+    rb_define_const (zmq_module, "MCAST_LOOP", INT2NUM (ZMQ_MCAST_LOOP));
+    rb_define_const (zmq_module, "SNDBUF", INT2NUM (ZMQ_SNDBUF));
+    rb_define_const (zmq_module, "RCVBUF", INT2NUM (ZMQ_RCVBUF));
 
-    rb_define_global_const ("NOBLOCK", INT2NUM (ZMQ_NOBLOCK));
-    rb_define_global_const ("NOFLUSH", INT2NUM (ZMQ_NOFLUSH));
+    rb_define_const (zmq_module, "NOBLOCK", INT2NUM (ZMQ_NOBLOCK));
+    rb_define_const (zmq_module, "NOFLUSH", INT2NUM (ZMQ_NOFLUSH));
 
-    rb_define_global_const ("P2P", INT2NUM (ZMQ_P2P));
-    rb_define_global_const ("SUB", INT2NUM (ZMQ_SUB));
-    rb_define_global_const ("PUB", INT2NUM (ZMQ_PUB));
-    rb_define_global_const ("REQ", INT2NUM (ZMQ_REQ));
-    rb_define_global_const ("REP", INT2NUM (ZMQ_REP));
-    rb_define_global_const ("XREQ", INT2NUM (ZMQ_XREQ));
-    rb_define_global_const ("XREP", INT2NUM (ZMQ_XREP));
-    rb_define_global_const ("UPSTREAM", INT2NUM (ZMQ_UPSTREAM));
-    rb_define_global_const ("DOWNSTREAM", INT2NUM (ZMQ_DOWNSTREAM));
+    rb_define_const (zmq_module, "P2P", INT2NUM (ZMQ_P2P));
+    rb_define_const (zmq_module, "SUB", INT2NUM (ZMQ_SUB));
+    rb_define_const (zmq_module, "PUB", INT2NUM (ZMQ_PUB));
+    rb_define_const (zmq_module, "REQ", INT2NUM (ZMQ_REQ));
+    rb_define_const (zmq_module, "REP", INT2NUM (ZMQ_REP));
+    rb_define_const (zmq_module, "XREQ", INT2NUM (ZMQ_XREQ));
+    rb_define_const (zmq_module, "XREP", INT2NUM (ZMQ_XREP));
+    rb_define_const (zmq_module, "UPSTREAM", INT2NUM (ZMQ_UPSTREAM));
+    rb_define_const (zmq_module, "DOWNSTREAM", INT2NUM (ZMQ_DOWNSTREAM));
 
-    rb_define_global_const ("POLL", INT2NUM (ZMQ_POLL));
+    rb_define_const (zmq_module, "POLL", INT2NUM (ZMQ_POLL));
 }
