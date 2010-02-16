@@ -62,7 +62,7 @@ AC_CHECK_LIB(stdc++, malloc)
 LIBZMQ_EXTRA_CXXFLAGS=""
 
 # Extra LDFLAGS are appended at the end of LDFLAGS for libzmq.
-LIBZMQ_EXTRA_LDFLAFS=""
+LIBZMQ_EXTRA_LDFLAGS=""
 
 # By default compiling with -pedantic except QNX and OSX.
 pedantic="yes"
@@ -96,7 +96,7 @@ case "${host_os}" in
         AC_DEFINE(ZMQ_HAVE_LINUX, 1, [Have Linux OS])
         CPPFLAGS="-D_REENTRANT $CPPFLAGS"
         AC_CHECK_LIB(uuid, main, , 
-            [AC_MSG_ERROR([Could not link with libuuid, install develop version.])])
+            [AC_MSG_ERROR([cannot link with -luuid, install uuid-dev.])])
         ;;
     *solaris*)
         AC_DEFINE(ZMQ_HAVE_SOLARIS, 1, [Have Solaris OS])
@@ -104,7 +104,7 @@ case "${host_os}" in
         AC_CHECK_LIB(nsl, main)
         AC_CHECK_LIB(rt, main)
         AC_CHECK_LIB(uuid, main, ,
-            [AC_MSG_ERROR([Could not link with libuuid, install develop version.])])
+            [AC_MSG_ERROR([cannot link with -luuid, install uuid-dev.])])
         CPPFLAGS="-D_REENTRANT -D_PTHREADS $CPPFLAGS"
         AC_MSG_CHECKING([wheter atomic operations can be used])
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
@@ -161,37 +161,28 @@ case "${host_os}" in
         AC_DEFINE(ZMQ_HAVE_MINGW32, 1, [Have MinGW32])
         AC_CHECK_HEADERS(windows.h)
         AC_CHECK_LIB(ws2_32, main, ,
-            [AC_MSG_ERROR([Could not link with ws2_32.dll.])])
+            [AC_MSG_ERROR([cannot link with ws2_32.dll.])])
         AC_CHECK_LIB(Rpcrt4, main, ,
-            [AC_MSG_ERROR([Could not link with Rpcrt4.dll.])])
+            [AC_MSG_ERROR([cannot link with Rpcrt4.dll.])])
         AC_CHECK_LIB(Iphlpapi, main, ,
-            [AC_MSG_ERROR([Could not link with Iphlpapi.dll.])])
+            [AC_MSG_ERROR([cannot link with Iphlpapi.dll.])])
         CFLAGS="${CFLAGS} -std=c99"
         on_mingw32="yes"
         install_man="no"
         ;;
     *)
-        AC_MSG_ERROR([Not supported os: $host.])
+        AC_MSG_ERROR([unsupported system: ${host_os}.])
         ;;
 esac
 
-# Check if we are running at sparc harware
-AC_MSG_CHECKING([wheter __sparc__ is defined])
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-    [[#if defined __sparc__
-        //OK we are on sparc
-    #else
-        error: we are not on sparc
-    #endif
-    ]])],
-        [sparc=yes],
-        [sparc=no])
-
-AC_MSG_RESULT([$sparc])
-        
-if test "x$sparc" = "xyes"; then
-    CPPFLAGS="$CPPFLAGS -mcpu=v9"
-fi
+# CPU-specific optimizations
+case "${host_cpu}" in
+    *sparc*)
+        CPPFLAGS="$CPPFLAGS -mcpu=v9"
+    ;;
+    *)
+    ;;
+esac
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -232,11 +223,6 @@ AC_LANG(C++)
 
 # Optional stuff
 AC_CHECK_PROG(have_pkg_config, pkg-config, yes, no)
-
-if test "x$have_pkg_config" != "xno"; then
-    #  First instance of PKG_CHECK_ has to be executed
-    PKG_CHECK_EXISTS([dummy_pkg], [], [])
-fi
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
@@ -287,7 +273,7 @@ AC_ARG_WITH([python], [AS_HELP_STRING([--with-python], [build Python language bi
 if test "x$with_python" != "xno"; then
     AM_PATH_PYTHON([2.4], , [:])
     if test "x$PYTHON" = "x:"; then
-        AC_MSG_ERROR([To run configure with --with-python option, Python has to be installed.]);
+        AC_MSG_ERROR([the --with-python option requires that python be installled.]);
     fi
 
     if test "x$python_headersdir" != "xno"; then
@@ -295,7 +281,7 @@ if test "x$with_python" != "xno"; then
         PYTHON_SETUP_INCLUDES="${python_headersdir}"
 
         AC_CHECK_HEADERS($python_headersdir/Python.h, [] , 
-            [AC_MSG_ERROR([To run configure with --with-python option, Python.h has to be usable.])])
+            [AC_MSG_ERROR([cannot find a usable Python.h in ${python_headersdir}.])])
 
     else 
         py_prefix=`$PYTHON -c "import sys; print sys.prefix"`
@@ -308,7 +294,7 @@ if test "x$with_python" != "xno"; then
         fi
 
         AC_CHECK_HEADERS($py_prefix/include/python${PYTHON_VERSION}/Python.h, [] , 
-            [AC_MSG_ERROR([To run configure with --with-python option, Python.h has to be usable.])])
+            [AC_MSG_ERROR([cannot find a usable Python.h in $py_prefix/include/python${PYTHON_VERSION}.])])
     fi
 
     AC_SUBST(PYTHON_INCLUDES)
@@ -338,10 +324,10 @@ fi
 AC_ARG_WITH([ruby], [AS_HELP_STRING([--with-ruby], [build ruby language binding [default=no]])], [with_ruby=yes], [with_ruby=no])
 if test "x$with_ruby" != "xno"; then
     AC_CHECK_HEADERS([ruby.h], [], 
-        [AC_MSG_ERROR([Could not find Ruby header files, Please specify their location with --with-ruby-headersdir.])])
+        [AC_MSG_ERROR([cannot find Ruby header files. Please specify their location with --with-ruby-headersdir.])])
 
     AC_SEARCH_LIBS(ruby_init,[ruby ruby1.8 ruby18],, 
-        [AC_MSG_ERROR([Could not link with Ruby library. Please specify their location with --with-ruby-libdir.])])
+        [AC_MSG_ERROR([cannot link with Ruby library. Please specify it's location with --with-ruby-libdir.])])
    
     rbzmq="yes"
 fi
@@ -362,7 +348,7 @@ AC_SUBST([RUBYDIR])
 if test "x$pyzmq" = "xyes"; then
     AC_CHECK_PROG(have_python, python, yes, no)
     if test "x$have_python" != "xyes"; then
-        AC_MSG_ERROR([Could not find python.])
+        AC_MSG_ERROR([the --with-python option requires that python be installed.])
     fi
 fi
     
@@ -372,28 +358,28 @@ AC_ARG_WITH([java], [AS_HELP_STRING([--with-java], [build Java language binding 
 if test "x$with_java" != "xno"; then
     AC_PATH_PROG(JAVAC, javac, "no",[$PATH:$JAVA_HOME/bin])
     if test "x$JAVAC" = "xno"; then
-        AC_MSG_ERROR([To run configure with --with-java option, javac has to be on the path.]);
+        AC_MSG_ERROR([the --with-java option requires that javac be on the path.]);
     fi
 
     AC_PATH_PROG(JAVAH, javah, "no",[$PATH:$JAVA_HOME/bin])
     if test "x$JAVAH" = "xno"; then
-        AC_MSG_ERROR([To run configure with --with-java option, javah has to be on the path.]);
+        AC_MSG_ERROR([the --with-java option requires that javah be on the path.]);
     fi
 
     AC_PATH_PROG(JAR, jar, "no", [$PATH:$JAVA_HOME/bin])
     if test "x$JAR" = "xno"; then
-        AC_MSG_ERROR([To run configure with --with-java option, jar has to be on the path.]);
+        AC_MSG_ERROR([the --with-java option requires that jar be on the path.]);
     fi
 
     if test "x$JAVA_HOME" = "x"; then
-        AC_MSG_ERROR([To run configure with --with-java, please set the JAVA_HOME variable to your JDK environment.]);
+        AC_MSG_ERROR([the --with-java option requires the JAVA_HOME environment variable be set to your JDK location.]);
     fi
 
     AC_MSG_CHECKING([for jni.h in a $JAVA_HOME/include dir])
     if test -f $JAVA_HOME/include/jni.h; then
         AC_MSG_RESULT([yes])
     else
-        AC_MSG_ERROR([Could not find jni.h in $JAVA_HOME/include directory.]);
+        AC_MSG_ERROR([cannot find jni.h in the $JAVA_HOME/include directory.]);
     fi
 
     JAVAROOT=./
@@ -422,101 +408,96 @@ else
 fi
 
 #  PGM extension
-pgm2_ext="no"
+pgm_ext="no"
 
-pgm2_basename="libpgm-2.0.23rc8"
-
-AC_SUBST(pgm2_basename)
-
-pgm_basename=""
-
-AC_ARG_WITH([pgm], [AS_HELP_STRING([--with-pgm], 
-    [build libzmq with PGM extension [default=no]])], 
-    [with_pgm2_ext=yes], [with_pgm2_ext=no])
-
-AC_ARG_WITH([pgm-examples], [AS_HELP_STRING([--with-pgm-examples], 
-    [build PGM examples [default=no]])], 
-    [with_pgm2_examples=yes], [with_pgm2_examples=no])
-
-if test "x$with_pgm2_ext" = "xno" -a "x$with_pgm2_examples" = "xyes"; then
-    AC_MSG_ERROR([Can not configure --with-pgm2-examples without --with-pgm2.]);
-fi
-
-if test "x$c" = "xno" -a "x$with_pgm2_examples" = "xyes"; then
-    AC_MSG_ERROR([Can not configure --with-pgm2-examples without --with-c.]);
-fi
-
-if test "x$with_pgm2_ext" != "xno"; then
-
-    pgm_basename=${pgm2_basename}
-
-    #  Test if we have pkg-config
-    if test "x$have_pkg_config" != "xyes"; then
-        AC_MSG_ERROR([To run configure with --with-pgm2 option, pkg-config has to be installed.]);
-    fi
-
-     case "${host_os}" in
-        *linux*)
-            LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Wno-variadic-macros -Wno-long-long "
-        ;;
-        *mingw32*)
-            LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Wno-variadic-macros -Wno-long-long "
-        ;;
-        *)
-            AC_MSG_ERROR([PGM extesion is not supported on this platform $host.])
-        ;;
-    esac
-
-    #  Unpack libpgm2
-    AC_MSG_CHECKING([Unpacking ${pgm_basename}.tar.bz2])
-
-    if tar -xjf foreign/openpgm/${pgm_basename}.tar.bz2 -C foreign/openpgm/; then
-        AC_MSG_RESULT([yes])
-    else
-        AC_MSG_ERROR([Could not unpack foreign/openpgm/${pgm_basename}.tar.bz2 file.])
-    fi
-
-    if test "x$pyzmq" != "xyes"; then
-        AC_CHECK_PROG(have_python, python, yes, no)
-        if test "x$have_python" != "xyes"; then
-            AC_MSG_ERROR([Could not find python.])
-        fi
-    fi
-
-    #  Generate galois_tables.c
-    AC_CONFIG_COMMANDS([galois_tables2.c], 
-        [perl foreign/openpgm/libpgm-2.0.23rc8/openpgm/pgm/galois_generator.pl > \
-            foreign/openpgm/libpgm-2.0.23rc8/openpgm/pgm/galois_tables.c])
-
-    #  Generate version.c
-    AC_CONFIG_COMMANDS([version2.c],
-        [python foreign/openpgm/libpgm-2.0.23rc8/openpgm/pgm/version_generator.py > \
-            foreign/openpgm/libpgm-2.0.23rc8/openpgm/pgm/version.c])
-
-    #  Check for OpenPGM nedded libraries.
-    PKG_CHECK_MODULES([GLIB], [glib-2.0 gthread-2.0])
-
-    LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} ${GLIB_CFLAGS} "
-
-    LIBZMQ_EXTRA_LDFLAFS="${LIBZMQ_EXTRA_LDFLAFS} ${GLIB_LIBS}"
-
-    AC_DEFINE(ZMQ_HAVE_OPENPGM, 1, [Have OpenPGM v1 or v2 extension.])
-    AC_DEFINE(ZMQ_HAVE_OPENPGM2, 1, [Have OpenPGM v2 extension.])
-    pgm2_ext="yes"
-else
-    #  Fallback for make dist.
-    pgm_basename=${pgm2_basename}
-fi
+pgm_basename="libpgm-2.0.23rc8"
 
 AC_SUBST(pgm_basename)
 
+AC_ARG_WITH([pgm], [AS_HELP_STRING([--with-pgm], 
+    [build libzmq with PGM extension [default=no]])], 
+    [with_pgm_ext=yes], [with_pgm_ext=no])
+
+AC_ARG_WITH([pgm-examples], [AS_HELP_STRING([--with-pgm-examples], 
+    [build PGM examples [default=no]])], 
+    [with_pgm_examples=yes], [with_pgm_examples=no])
+
+if test "x$with_pgm_ext" = "xno" -a "x$with_pgm_examples" = "xyes"; then
+    AC_MSG_ERROR([cannot configure --with-pgm-examples without --with-pgm.]);
+fi
+
+if test "x$c" = "xno" -a "x$with_pgm_examples" = "xyes"; then
+    AC_MSG_ERROR([cannot configure --with-pgm-examples without --with-c.]);
+fi
+
+if test "x$with_pgm_ext" != "xno"; then
+
+    AC_MSG_CHECKING([if the PGM extension is supported on this platform])
+    # OpenPGM is only supported by the vendor on x86 and AMD64 platforms...
+    case "${host_cpu}" in
+        i*86|x86_64)
+            # Supported
+        ;;
+        *)
+            AC_MSG_ERROR([the PGM extension is not supported on the ${host_cpu} platform.])
+        ;;
+    esac
+
+    # ... and on Linux/Windows/Solaris systems.
+    case "${host_os}" in
+        *linux*|*mingw32*|*solaris*)
+            LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Wno-variadic-macros -Wno-long-long "
+        ;;
+        *)
+            AC_MSG_ERROR([the PGM extension is not supported on system ${host_os}.])
+        ;;
+    esac
+    AC_MSG_RESULT([yes])
+
+    #  Test if we have pkg-config
+    if test "x$have_pkg_config" != "xyes"; then
+        AC_MSG_ERROR([the --with-pgm option requires that pkg-config be installed.]);
+    fi
+    
+    #  Check for OpenPGM dependencies
+    PKG_CHECK_MODULES([GLIB], [glib-2.0 gthread-2.0])
+    LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} ${GLIB_CFLAGS} "
+    LIBZMQ_EXTRA_LDFLAGS="${LIBZMQ_EXTRA_LDFLAGS} ${GLIB_LIBS} "
+    
+    #  Bunzip2, Perl and Python are required duing PGM build
+    AC_CHECK_PROG(have_bunzip2, bunzip2, yes, no)
+    if test "x$have_bunzip2" != "xyes"; then
+        AC_MSG_ERROR([bunzip2 is required for building the PGM extension.])
+    fi
+    AC_CHECK_PROG(have_perl, perl, yes, no)
+    if test "x$have_perl" != "xyes"; then
+        AC_MSG_ERROR([perl is required for building the PGM extension.])
+    fi
+    if test "x$pyzmq" != "xyes"; then
+        AC_CHECK_PROG(have_python, python, yes, no)
+        if test "x$have_python" != "xyes"; then
+            AC_MSG_ERROR([python is required for building the PGM extension.])
+        fi
+    fi
+
+    #  Unpack libpgm
+    AC_MSG_NOTICE([Unpacking ${pgm_basename}.tar.bz2])
+    if ! bunzip2 -c foreign/openpgm/${pgm_basename}.tar.bz2 | tar -xf - -C foreign/openpgm/; then
+        AC_MSG_ERROR([cannot unpack the foreign/openpgm/${pgm_basename}.tar.bz2 file.])
+    fi
+
+    #  Success!
+    AC_DEFINE(ZMQ_HAVE_OPENPGM, 1, [Have OpenPGM extension])
+    pgm_ext="yes"
+fi
+
 # If not on QNX nor OSX nor PGM add -pedantic into LIBZMQ_EXTRA_CXXFLAGS.
-if test "x$pedantic" = "xyes" -a "x$pgm2_ext" = "xno"; then
+if test "x$pedantic" = "xyes" -a "x$pgm_ext" = "xno"; then
     LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -pedantic"
 fi
 
-# If not on QNX nor --with-pgm2 add -Werror into LIBZMQ_EXTRA_CXXFLAGS.
-if test "x$werror" = "xyes" -a "x$pgm2_ext" = "xno"; then
+# If not on QNX nor PGM add -Werror into LIBZMQ_EXTRA_CXXFLAGS.
+if test "x$werror" = "xyes" -a "x$pgm_ext" = "xno"; then
     LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Werror"
 fi
 
@@ -557,12 +538,12 @@ if test "x$with_perf" != "xno"; then
 
     if test "x$czmq" = "xno" -a "x$cppzmq" = "xno" -a "x$pyzmq" = "xno" -a \
           "x$jzmq" = "xno" -a "x$rbzmq" = "xno"; then
-        AC_MSG_ERROR([To run configure with --with-perf option chose at least one language binding.]);
+        AC_MSG_ERROR([the --with-perf option requires at least one language binding.]);
     fi
 fi
 
-if test "x$with_perf" = "xno" -a "x$with_pgm2_examples" = "xyes"; then
-    AC_MSG_ERROR([Can not configure --with-pgm2-examples without --with-perf.]);
+if test "x$with_perf" = "xno" -a "x$with_pgm_examples" = "xyes"; then
+    AC_MSG_ERROR([cannot configure --with-pgm-examples without --with-perf.]);
 fi
 
 # Chat example
@@ -578,15 +559,15 @@ AM_CONDITIONAL(BUILD_PYTHON, test "x$pyzmq" = "xyes")
 AM_CONDITIONAL(BUILD_RUBY, test "x$rbzmq" = "xyes")
 AM_CONDITIONAL(BUILD_C, test "x$czmq" = "xyes")
 AM_CONDITIONAL(BUILD_CPP, test "x$cppzmq" = "xyes")
-AM_CONDITIONAL(BUILD_PGM2, test "x$pgm2_ext" = "xyes")
-AM_CONDITIONAL(BUILD_NO_PGM, test "x$pgm2_ext" = "xno")
+AM_CONDITIONAL(BUILD_PGM, test "x$pgm_ext" = "xyes")
+AM_CONDITIONAL(BUILD_NO_PGM, test "x$pgm_ext" = "xno")
 AM_CONDITIONAL(BUILD_FORWARDER, test "x$forwarder" = "xyes")
 AM_CONDITIONAL(BUILD_STREAMER, test "x$streamer" = "xyes")
 AM_CONDITIONAL(BUILD_QUEUE, test "x$queue" = "xyes")  
 AM_CONDITIONAL(BUILD_PERF, test "x$perf" = "xyes")
 AM_CONDITIONAL(BUILD_CHAT, test "x$chat" = "xyes")
 AM_CONDITIONAL(ON_MINGW, test "x$on_mingw32" = "xyes")
-AM_CONDITIONAL(BUILD_PGM2_EXAMPLES, test "x$with_pgm2_examples" = "xyes")
+AM_CONDITIONAL(BUILD_PGM_EXAMPLES, test "x$with_pgm_examples" = "xyes")
 AM_CONDITIONAL(INSTALL_MAN, test "x$install_man" = "xyes")
 AM_CONDITIONAL(BUILD_DOC, test "x$build_doc" = "xyes")
 
@@ -595,7 +576,7 @@ AC_SUBST(inttypes)
 
 # Subst LIBZMQ_EXTRA_CXXFLAGS & LDFLAGS
 AC_SUBST(LIBZMQ_EXTRA_CXXFLAGS)
-AC_SUBST(LIBZMQ_EXTRA_LDFLAFS)
+AC_SUBST(LIBZMQ_EXTRA_LDFLAGS)
 
 
 # Checks for library functions.
@@ -643,8 +624,8 @@ AC_MSG_RESULT([       Ruby library install dir: $rubydir])
 fi
 AC_MSG_RESULT([   Transports:])
 AC_MSG_RESULT([     tcp: yes])
-AC_MSG_RESULT([     udp: $pgm2_ext])
-AC_MSG_RESULT([     pgm: $pgm2_ext])
+AC_MSG_RESULT([     udp: $pgm_ext])
+AC_MSG_RESULT([     pgm: $pgm_ext])
 AC_MSG_RESULT([     inproc: yes])
 AC_MSG_RESULT([   Devices:])
 AC_MSG_RESULT([     Forwarder: $forwarder])

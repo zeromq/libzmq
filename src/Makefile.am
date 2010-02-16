@@ -15,7 +15,7 @@ include_HEADERS = ../bindings/c/zmq.h
 endif
 endif
 
-if BUILD_PGM2
+if BUILD_PGM
 pgm_sources = ../foreign/openpgm/@pgm_basename@/openpgm/pgm/packet.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/time.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/if.c \
@@ -49,6 +49,12 @@ pgm_sources = ../foreign/openpgm/@pgm_basename@/openpgm/pgm/packet.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/log.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/sockaddr.c \
     ../foreign/openpgm/@pgm_basename@/openpgm/pgm/version.c
+
+../foreign/openpgm/@pgm_basename@/openpgm/pgm/version.c: ../foreign/openpgm/@pgm_basename@/openpgm/pgm/version_generator.py
+	python ../foreign/openpgm/@pgm_basename@/openpgm/pgm/version_generator.py > $@
+
+../foreign/openpgm/@pgm_basename@/openpgm/pgm/galois_tables.c: ../foreign/openpgm/@pgm_basename@/openpgm/pgm/galois_generator.pl
+	perl ../foreign/openpgm/@pgm_basename@/openpgm/pgm/galois_generator.pl > $@
 endif
 
 nodist_libzmq_la_SOURCES = $(pgm_sources)
@@ -173,9 +179,9 @@ libzmq_la_SOURCES = app_thread.hpp \
     zmq_init.cpp \
     zmq_listener.cpp
 
-libzmq_la_LDFLAGS = -version-info @LTVER@ @LIBZMQ_EXTRA_LDFLAFS@
+libzmq_la_LDFLAGS = -version-info @LTVER@ @LIBZMQ_EXTRA_LDFLAGS@
 
-if BUILD_PGM2
+if BUILD_PGM
 
 if ON_MINGW
 libpgm_diff_flags = \

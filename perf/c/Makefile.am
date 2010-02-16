@@ -1,6 +1,6 @@
 INCLUDES = -I$(top_builddir)/bindings/c
 
-if BUILD_PGM2_EXAMPLES
+if BUILD_PGM_EXAMPLES
 PGM_EXAMPLES_BINS = pgmsend pgmrecv
 endif
 
@@ -22,7 +22,7 @@ remote_thr_LDADD = $(top_builddir)/src/libzmq.la
 remote_thr_SOURCES = remote_thr.c
 remote_thr_CXXFLAGS = -Wall -pedantic -Werror
 
-if BUILD_PGM2_EXAMPLES
+if BUILD_PGM_EXAMPLES
 
 if ON_MINGW
 pgmexamples_diff_flags = \
@@ -64,7 +64,7 @@ pgmexamples_diff_flags = \
     -DG_LOG_DOMAIN='"Pgm"'
 endif
 
-pgmsend_SOURCES = ../../foreign/openpgm/@pgm_basename@/openpgm/pgm/examples/pgmsend.c
+nodist_pgmsend_SOURCES = ../../foreign/openpgm/@pgm_basename@/openpgm/pgm/examples/pgmsend.c
 pgmsend_LDADD = $(top_builddir)/src/libzmq.la
 pgmsend_CFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/include/ -Wall @LIBZMQ_EXTRA_CXXFLAGS@ \
     -pipe \
@@ -95,7 +95,7 @@ pgmsend_CFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/incl
     -D_GNU_SOURCE \
     ${pgmexamples_diff_flags}
 
-pgmrecv_SOURCES = ../../foreign/openpgm/@pgm_basename@/openpgm/pgm/examples/pgmrecv.c
+nodist_pgmrecv_SOURCES = ../../foreign/openpgm/@pgm_basename@/openpgm/pgm/examples/pgmrecv.c
 pgmrecv_LDADD = $(top_builddir)/src/libzmq.la
 pgmrecv_CFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/include/ -Wall @LIBZMQ_EXTRA_CXXFLAGS@ \
     -pipe \
