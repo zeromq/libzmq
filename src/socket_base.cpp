@@ -331,6 +331,7 @@ int zmq::socket_base_t::recv (::zmq_msg_t *msg_, int flags_)
 {
     //  Get the message.
     int rc = xrecv (msg_, flags_);
+    int err = errno;
 
     //  Once every inbound_poll_rate messages check for signals and process
     //  incoming commands. This happens only if we are not polling altogether
@@ -371,6 +372,7 @@ int zmq::socket_base_t::recv (::zmq_msg_t *msg_, int flags_)
         }
     }
 
+    errno = err;
     return rc;
 }
 
