@@ -85,11 +85,11 @@ void zmq::rep_t::xdetach_outpipe (class writer_t *pipe_)
 
     out_pipes_t::size_type index = out_pipes.index (pipe_);
 
-    //  TODO: If the connection we've got the request from disconnects,
-    //  there's nowhere to send the reply. DLQ?
-    if (waiting_for_reply && pipe_ == reply_pipe) {
-        zmq_assert (false);
-    }
+    //  If the connection we've got the request from disconnects,
+    //  there's nowhere to send the reply. Forget about the reply pipe.
+    //  Once the reply is sent it will be dropped.
+    if (waiting_for_reply && pipe_ == reply_pipe)
+        reply_pipe = NULL;
 
     //  If corresponding inpipe is still in place simply nullify the pointer
     //  to the outpipe.
@@ -146,9 +146,15 @@ int zmq::rep_t::xsend (zmq_msg_t *msg_, int flags_)
     //  overloads the buffer, connection should be torn down.
     zmq_assert (reply_pipe->check_write (zmq_msg_size (msg_)));
 
-    //  Push message to the selected pipe.
-    reply_pipe->write (msg_);
-    reply_pipe->flush ();
+    //  Push message to the selected pipe. If requester have disconnected
+    //  in the meantime, drop the reply.
+    if (reply_pipe) {
+        reply_pipe->write (msg_);
+        reply_pipe->flush ();
+    }
+    else {
+        zmq_close (msg_);
+    }
 
     waiting_for_reply = false;
     reply_pipe = NULL;
