@@ -91,10 +91,13 @@ if test ! -f "doc/zmq.html"; then
     fi
 fi
 
+# Set some default features required by 0MQ code.
+CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE -D_GNU_SOURCE -D_POSIX_C_SOURCE=200112L $CPPFLAGS"
+
+# OS-specific tests
 case "${host_os}" in
     *linux*)
         AC_DEFINE(ZMQ_HAVE_LINUX, 1, [Have Linux OS])
-        CPPFLAGS="-D_REENTRANT $CPPFLAGS"
         AC_CHECK_LIB(uuid, main, , 
             [AC_MSG_ERROR([cannot link with -luuid, install uuid-dev.])])
         ;;
@@ -105,7 +108,7 @@ case "${host_os}" in
         AC_CHECK_LIB(rt, main)
         AC_CHECK_LIB(uuid, main, ,
             [AC_MSG_ERROR([cannot link with -luuid, install uuid-dev.])])
-        CPPFLAGS="-D_REENTRANT -D_PTHREADS $CPPFLAGS"
+        CPPFLAGS="-D_PTHREADS $CPPFLAGS"
         AC_MSG_CHECKING([wheter atomic operations can be used])
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
             [[#include <atomic.h>]],
@@ -122,7 +125,6 @@ case "${host_os}" in
         ;;
     *freebsd*)
         AC_DEFINE(ZMQ_HAVE_FREEBSD, 1, [Have FreeBSD OS])
-        CPPFLAGS="-D_THREAD_SAFE $CPPFLAGS"
         LIBS="-pthread"
         ;;
     *darwin*)
@@ -134,26 +136,18 @@ case "${host_os}" in
         ;;
     *openbsd*)
         AC_DEFINE(ZMQ_HAVE_OPENBSD, 1, [Have OpenBSD OS])
-        CPPFLAGS="-pthread $CPPFLAGS"
         LIBS="-pthread"
         ;;
     *nto-qnx*)
         pedantic="no"
         AC_DEFINE(ZMQ_HAVE_QNXNTO, 1, [Have QNX Neutrino OS])
-        CPPFLAGS="-D_THREAD_SAFE $CPPFLAGS"
         AC_CHECK_LIB(socket,main)
         ;;
     *aix*)
         AC_DEFINE(ZMQ_HAVE_AIX, 1, [Have AIX OS])
-        if test "x$GXX" = "xyes"; then
-          CPPFLAGS="-D_THREAD_SAFE $CPPFLAGS"
-        fi
         ;;
     *hpux*)
         AC_DEFINE(ZMQ_HAVE_HPUX, 1, [Have HPUX OS])
-        if test "x$GXX" = "xyes"; then
-          CPPFLAGS="-D_THREAD_SAFE $CPPFLAGS"
-        fi
         AC_CHECK_LIB(rt, main)
         ;;
     *mingw32*)
