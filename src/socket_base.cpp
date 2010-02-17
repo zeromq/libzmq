@@ -350,30 +350,30 @@ int zmq::socket_base_t::recv (::zmq_msg_t *msg_, int flags_)
     if (rc == 0)
         return 0;
 
+    //  If we don't have the message, restore the original cause of the problem.
+    errno = err;
+
     //  If the message cannot be fetched immediately, there are two scenarios.
     //  For non-blocking recv, commands are processed in case there's a revive
     //  command already waiting int a command pipe. If it's not, return EAGAIN.
-    //  In blocking scenario, commands are processed over and over again until
-    //  we are able to fetch a message.
     if (flags_ & ZMQ_NOBLOCK) {
         if (errno != EAGAIN)
             return -1;
         app_thread->process_commands (false, false);
+        ticks = 0;
+        return xrecv (msg_, flags_);
+    }
+
+    //  In blocking scenario, commands are processed over and over again until
+    //  we are able to fetch a message.
+    while (rc != 0) {
+        if (errno != EAGAIN)
+            return -1;
+        app_thread->process_commands (true, false);
         rc = xrecv (msg_, flags_);
         ticks = 0;
     }
-    else  {
-        while (rc != 0) {
-            if (errno != EAGAIN)
-                return -1;
-            app_thread->process_commands (true, false);
-            rc = xrecv (msg_, flags_);
-            ticks = 0;
-        }
-    }
-
-    errno = err;
-    return rc;
+    return 0;
 }
 
 int zmq::socket_base_t::close ()
