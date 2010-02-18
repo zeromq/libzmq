@@ -26,6 +26,7 @@ MAINTAINERCLEANFILES = $(MAN_DOC) $(MAN_HTML)
 
 dist-hook : $(MAN_DOC) $(MAN_HTML)
 
+if BUILD_DOC
 SUFFIXES=.html .txt .xml .1 .3 .7
 
 .txt.html:
@@ -40,4 +41,4 @@ SUFFIXES=.html .txt .xml .1 .3 .7
 	xmlto man $<
 .xml.7:
 	xmlto man $<
-
+endif

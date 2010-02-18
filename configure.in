@@ -77,9 +77,9 @@ on_mingw32="no"
 AC_CANONICAL_HOST
 
 # Determine whether or not documentation should be built.
-build_doc="yes"
+build_doc="no"
 install_man="yes"
-if test ! -f "doc/zmq.html"; then
+if test -d ".git"; then
 # We are building from git.
 # Check for asciidoc and xmlto and don't build the docs if these are not installed.
     AC_CHECK_PROG(have_asciidoc, asciidoc, yes, no)
@@ -88,8 +88,17 @@ if test ! -f "doc/zmq.html"; then
         build_doc="no"
         install_man="no"
         AC_MSG_WARN([You are building from git and asciidoc is not installed. Documentation will not be built or installed.])
+    else
+        build_doc="yes"
     fi
 fi
+AC_MSG_CHECKING([whether to build documentation])
+AC_MSG_RESULT([$build_doc])
+AC_MSG_CHECKING([whether to install manpages])
+if test ! -f "./doc/zmq.7"; then
+    AC_MSG_ERROR([configure thinks we want to install manpages but they're not present. Help!])
+fi
+AC_MSG_RESULT([$install_man])
 
 # Set some default features required by 0MQ code.
 CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE $CPPFLAGS"
@@ -639,7 +648,6 @@ AC_MSG_RESULT([     Queue: $queue])
 AC_MSG_RESULT([   Performance tests: $perf])
 AC_MSG_RESULT([   Examples:])
 AC_MSG_RESULT([     Chat: $chat])
-AC_MSG_RESULT([   Documentation: $build_doc])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([ ******************************************************** ])
 AC_MSG_RESULT([])
