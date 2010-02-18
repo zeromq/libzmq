@@ -31,8 +31,8 @@
 #define ZMQ_ATOMIC_COUNTER_SPARC
 #elif defined ZMQ_HAVE_WINDOWS
 #define ZMQ_ATOMIC_COUNTER_WINDOWS
-#elif defined ZMQ_HAVE_SOLARIS
-#define ZMQ_ATOMIC_COUNTER_SOLARIS
+#elif (defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_NETBSD)
+#define ZMQ_ATOMIC_COUNTER_SYSTEM
 #else
 #define ZMQ_ATOMIC_COUNTER_MUTEX
 #endif
@@ -41,7 +41,7 @@
 #include "mutex.hpp"
 #elif defined ZMQ_ATOMIC_COUNTER_WINDOWS
 #include "windows.hpp"
-#elif defined ZMQ_ATOMIC_COUNTER_SOLARIS
+#elif defined ZMQ_ATOMIC_COUNTER_SYSTEM
 #include <atomic.h>
 #endif
 
@@ -79,7 +79,7 @@ namespace zmq
 
 #if defined ZMQ_ATOMIC_COUNTER_WINDOWS
             old_value = InterlockedExchangeAdd ((LONG*) &value, increment_);
-#elif defined ZMQ_ATOMIC_COUNTER_SOLARIS
+#elif defined ZMQ_ATOMIC_COUNTER_SYSTEM
             integer_t new_value = atomic_add_32_nv (&value, increment_);
             old_value = new_value - increment_;
 #elif defined ZMQ_ATOMIC_COUNTER_X86
@@ -119,7 +119,7 @@ namespace zmq
             LONG delta = - ((LONG) decrement);
             integer_t old = InterlockedExchangeAdd ((LONG*) &value, delta);
             return old - decrement != 0;
-#elif defined ZMQ_ATOMIC_COUNTER_SOLARIS
+#elif defined ZMQ_ATOMIC_COUNTER_SYSTEM
             int32_t delta = - ((int32_t) decrement);
             integer_t nv = atomic_add_32_nv (&value, delta);
             return nv != 0;
@@ -180,8 +180,8 @@ namespace zmq
 #if defined ZMQ_ATOMIC_COUNTER_WINDOWS
 #undef ZMQ_ATOMIC_COUNTER_WINDOWS
 #endif
-#if defined ZMQ_ATOMIC_COUNTER_SOLARIS
-#undef ZMQ_ATOMIC_COUNTER_SOLARIS
+#if defined ZMQ_ATOMIC_COUNTER_SYSTEM
+#undef ZMQ_ATOMIC_COUNTER_SYSTEM
 #endif
 #if defined ZMQ_ATOMIC_COUNTER_X86
 #undef ZMQ_ATOMIC_COUNTER_X86

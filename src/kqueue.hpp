@@ -22,7 +22,8 @@
 
 #include "platform.hpp"
 
-#if defined ZMQ_HAVE_FREEBSD || defined ZMQ_HAVE_OPENBSD || defined ZMQ_HAVE_OSX
+#if defined ZMQ_HAVE_FREEBSD || defined ZMQ_HAVE_OPENBSD ||\
+    defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_NETBSD
 
 #include <vector>
 

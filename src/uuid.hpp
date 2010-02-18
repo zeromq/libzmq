@@ -23,7 +23,7 @@
 #include "platform.hpp"
 #include "stdint.hpp"
 
-#if defined ZMQ_HAVE_FREEBSD
+#if defined ZMQ_HAVE_FREEBSD || defined ZMQ_HAVE_NETBSD
 #include <uuid.h>
 #elif defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_OSX
 #include <uuid/uuid.h>
@@ -60,7 +60,7 @@ namespace zmq
 #endif
         ::UUID uuid;
         RPC_CSTR uuid_str;
-#elif defined ZMQ_HAVE_FREEBSD
+#elif defined ZMQ_HAVE_FREEBSD || defined ZMQ_HAVE_NETBSD
         ::uuid_t uuid;
         char *uuid_str;
 #elif defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_OSX

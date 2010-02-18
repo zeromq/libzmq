@@ -31,8 +31,8 @@
 #define ZMQ_ATOMIC_PTR_SPARC
 #elif defined ZMQ_HAVE_WINDOWS
 #define ZMQ_ATOMIC_PTR_WINDOWS
-#elif defined ZMQ_HAVE_SOLARIS
-#define ZMQ_ATOMIC_PTR_SOLARIS
+#elif (defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_NETBSD)
+#define ZMQ_ATOMIC_PTR_SYSTEM
 #else
 #define ZMQ_ATOMIC_PTR_MUTEX
 #endif
@@ -41,7 +41,7 @@
 #include "mutex.hpp"
 #elif defined ZMQ_ATOMIC_PTR_WINDOWS
 #include "windows.hpp"
-#elif defined ZMQ_ATOMIC_PTR_SOLARIS
+#elif defined ZMQ_ATOMIC_PTR_SYSTEM
 #include <atomic.h>
 #endif
 
@@ -79,7 +79,7 @@ namespace zmq
         {
 #if defined ZMQ_ATOMIC_PTR_WINDOWS
             return (T*) InterlockedExchangePointer (&ptr, val_);
-#elif defined ZMQ_ATOMIC_PTR_SOLARIS
+#elif defined ZMQ_ATOMIC_PTR_SYSTEM
             return (T*) atomic_swap_ptr (&ptr, val_);
 #elif defined ZMQ_ATOMIC_PTR_X86
             T *old;
@@ -125,7 +125,7 @@ namespace zmq
 #if defined ZMQ_ATOMIC_PTR_WINDOWS
             return (T*) InterlockedCompareExchangePointer (
                 (volatile PVOID*) &ptr, val_, cmp_);
-#elif defined ZMQ_ATOMIC_PTR_SOLARIS
+#elif defined ZMQ_ATOMIC_PTR_SYSTEM
             return (T*) atomic_cas_ptr (&ptr, cmp_, val_);
 #elif defined ZMQ_ATOMIC_PTR_X86
             T *old;
@@ -173,8 +173,8 @@ namespace zmq
 #if defined ZMQ_ATOMIC_PTR_WINDOWS
 #undef ZMQ_ATOMIC_PTR_WINDOWS
 #endif
-#if defined ZMQ_ATOMIC_PTR_SOLARIS
-#undef ZMQ_ATOMIC_PTR_SOLARIS
+#if defined ZMQ_ATOMIC_PTR_SYSTEM
+#undef ZMQ_ATOMIC_PTR_SYSTEM
 #endif
 #if defined ZMQ_ATOMIC_PTR_X86
 #undef ZMQ_ATOMIC_PTR_X86

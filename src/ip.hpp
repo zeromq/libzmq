@@ -30,6 +30,16 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netdb.h>
+
+//  Some platforms (notably Darwin/OSX and NetBSD) do not define all AI_
+//  flags for getaddrinfo(). This can be worked around safely by defining
+//  these to 0.
+#ifndef AI_ADDRCONFIG
+#define AI_ADDRCONFIG 0
+#endif
+#ifndef AI_NUMERICSERV
+#define AI_NUMERICSERV 0
+#endif
 #endif
 
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS

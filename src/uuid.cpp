@@ -47,7 +47,7 @@ const char *zmq::uuid_t::to_string ()
     return (char*) uuid_str;
 }
 
-#elif defined ZMQ_HAVE_FREEBSD
+#elif defined ZMQ_HAVE_FREEBSD || defined ZMQ_HAVE_NETBSD
 
 #include <stdlib.h>
 #include <uuid.h>

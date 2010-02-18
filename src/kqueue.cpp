@@ -19,7 +19,8 @@
 
 #include "platform.hpp"
 
-#if defined ZMQ_HAVE_FREEBSD || defined ZMQ_HAVE_OPENBSD || defined ZMQ_HAVE_OSX
+#if defined ZMQ_HAVE_FREEBSD || defined ZMQ_HAVE_OPENBSD ||\
+    defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_NETBSD
 
 #include <sys/time.h>
 #include <sys/types.h>
@@ -33,6 +34,14 @@
 #include "err.hpp"
 #include "config.hpp"
 #include "i_poll_events.hpp"
+
+//  NetBSD defines (struct kevent).udata as intptr_t, everyone else
+//  as void *.
+#if defined ZMQ_HAVE_NETBSD
+#define kevent_udata_t intptr_t
+#else
+#define kevent_udata_t void *
+#endif
 
 zmq::kqueue_t::kqueue_t () :
     stopping (false)
@@ -56,7 +65,7 @@ void zmq::kqueue_t::kevent_add (fd_t fd_, short filter_, void *udata_)
 {
     struct kevent ev;
 
-    EV_SET (&ev, fd_, filter_, EV_ADD, 0, 0, udata_);
+    EV_SET (&ev, fd_, filter_, EV_ADD, 0, 0, (kevent_udata_t)udata_);
     int rc = kevent (kqueue_fd, &ev, 1, NULL, 0, NULL);
     errno_assert (rc != -1);
 }
@@ -65,7 +74,7 @@ void zmq::kqueue_t::kevent_delete (fd_t fd_, short filter_)
 {
     struct kevent ev;
 
-    EV_SET (&ev, fd_, filter_, EV_DELETE, 0, 0, NULL);
+    EV_SET (&ev, fd_, filter_, EV_DELETE, 0, 0, (kevent_udata_t)NULL);
     int rc = kevent (kqueue_fd, &ev, 1, NULL, 0, NULL);
     errno_assert (rc != -1);
 }
@@ -212,4 +221,6 @@ void zmq::kqueue_t::worker_routine (void *arg_)
     ((kqueue_t*) arg_)->loop ();
 }
 
+//  Don't pollute namespace with defines local to this file
+#undef kevent_udata_t
 #endif

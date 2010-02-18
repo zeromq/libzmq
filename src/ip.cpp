@@ -125,7 +125,8 @@ static int resolve_nic_name (in_addr* addr_, char const *interface_)
 
 #elif ((defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD ||\
     defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_OPENBSD ||\
-    defined ZMQ_HAVE_QNXNTO) && defined ZMQ_HAVE_IFADDRS)
+    defined ZMQ_HAVE_QNXNTO || defined ZMQ_HAVE_NETBSD)\
+    && defined ZMQ_HAVE_IFADDRS)
 
 #include <ifaddrs.h>
 
@@ -239,11 +240,7 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
 
     //  Restrict hostname/service to literals to avoid any DNS lookups or
     //  service-name irregularity due to indeterminate socktype.
-#if defined ZMQ_HAVE_OSX
-   req.ai_flags = AI_PASSIVE | AI_NUMERICHOST;
-#else
    req.ai_flags = AI_PASSIVE | AI_NUMERICHOST | AI_NUMERICSERV;
-#endif 
 
     //  Resolve the literal address. Some of the error info is lost in case
     //  of error, however, there's no way to report EAI errors via errno.
@@ -292,11 +289,7 @@ int zmq::resolve_ip_hostname (sockaddr_storage *addr_, socklen_t *addr_len_,
     
     //  Avoid named services due to unclear socktype, and don't pick IPv6
     //  addresses if we don't have a local IPv6 address configured.
-#if defined ZMQ_HAVE_OSX
-   req.ai_flags = AI_ADDRCONFIG;
-#else
    req.ai_flags = AI_NUMERICSERV | AI_ADDRCONFIG;
-#endif 
 
     //  Resolve host name. Some of the error info is lost in case of error,
     //  however, there's no way to report EAI errors via errno.

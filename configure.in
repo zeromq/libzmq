@@ -154,6 +154,19 @@ case "${host_os}" in
         AC_DEFINE(ZMQ_HAVE_OSX, 1, [Have DarwinOSX OS])
         LIBZMQ_EXTRA_CXXFLAGS+="-Wno-uninitialized"
         ;;
+    *netbsd*)
+        # Define on NetBSD to enable all library features
+        CPPFLAGS="-D_NETBSD_SOURCE $CPPFLAGS"
+        AC_DEFINE(ZMQ_HAVE_NETBSD, 1, [Have NetBSD OS])
+        # NetBSD 5.0 and newer provides atomic operations
+        netbsd_has_atomic=no
+        # XXX As of 5.0.1 the functions declared in atomic.h are
+        # missing "extern C", disable this until upstream fixes it.
+        # AC_CHECK_HEADERS(atomic.h, [netbsd_has_atomic=yes])
+        if test "x$netbsd_has_atomic" = "xno"; then
+            AC_DEFINE(ZMQ_FORCE_MUTEXES, 1, [Force to use mutexes])
+        fi
+        ;;
     *openbsd*)
         # Define on OpenBSD to enable all library features
         CPPFLAGS="-D_BSD_SOURCE $CPPFLAGS"
