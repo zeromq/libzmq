@@ -55,8 +55,12 @@ AC_PROG_SED
 AC_PROG_AWK
 
 # Checks for libraries.
-AC_CHECK_LIB(pthread, pthread_create)
-AC_CHECK_LIB(stdc++, malloc)
+AC_CHECK_LIB([pthread], [pthread_create])
+# If using GNU C++, libstdc++ must be available.
+if test "x$GXX" = "xyes"; then
+    AC_CHECK_LIB([stdc++], [main], ,
+        [AC_MSG_ERROR([cannot link with -lstdc++])], [-lm])
+fi
 
 # Extra CXXFLAGS are appended at the end of CXXFLAGS for libzmq.
 LIBZMQ_EXTRA_CXXFLAGS=""
@@ -139,7 +143,6 @@ case "${host_os}" in
         # Define on FreeBSD to enable all library features
         CPPFLAGS="-D__BSD_VISIBLE $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_FREEBSD, 1, [Have FreeBSD OS])
-        LIBS="-pthread"
         ;;
     *darwin*)
         # Define on Darwin to enable all library features
@@ -147,14 +150,12 @@ case "${host_os}" in
         pedantic="no"
         werror="no"
         AC_DEFINE(ZMQ_HAVE_OSX, 1, [Have DarwinOSX OS])
-        LIBS="-pthread"
         LIBZMQ_EXTRA_CXXFLAGS+="-Wno-uninitialized"
         ;;
     *openbsd*)
         # Define on OpenBSD to enable all library features
         CPPFLAGS="-D_BSD_SOURCE $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_OPENBSD, 1, [Have OpenBSD OS])
-        LIBS="-pthread"
         ;;
     *nto-qnx*)
         pedantic="no"
