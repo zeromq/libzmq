@@ -92,23 +92,26 @@ if test ! -f "doc/zmq.html"; then
 fi
 
 # Set some default features required by 0MQ code.
-CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE -D_GNU_SOURCE -D_POSIX_C_SOURCE=200112L $CPPFLAGS"
+CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE $CPPFLAGS"
 
 # OS-specific tests
 case "${host_os}" in
     *linux*)
+        # Define on Linux to enable all library features
+        CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_LINUX, 1, [Have Linux OS])
         AC_CHECK_LIB(uuid, main, , 
             [AC_MSG_ERROR([cannot link with -luuid, install uuid-dev.])])
         ;;
     *solaris*)
+        # Define on Solaris to enable all library features
+        CPPFLAGS="-D_POSIX_C_SOURCE=200112L -D_PTHREADS $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_SOLARIS, 1, [Have Solaris OS])
         AC_CHECK_LIB(socket, main)
         AC_CHECK_LIB(nsl, main)
         AC_CHECK_LIB(rt, main)
         AC_CHECK_LIB(uuid, main, ,
             [AC_MSG_ERROR([cannot link with -luuid, install uuid-dev.])])
-        CPPFLAGS="-D_PTHREADS $CPPFLAGS"
         AC_MSG_CHECKING([wheter atomic operations can be used])
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
             [[#include <atomic.h>]],
@@ -124,10 +127,14 @@ case "${host_os}" in
         fi
         ;;
     *freebsd*)
+        # Define on FreeBSD to enable all library features
+        CPPFLAGS="-D__BSD_VISIBLE $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_FREEBSD, 1, [Have FreeBSD OS])
         LIBS="-pthread"
         ;;
     *darwin*)
+        # Define on Darwin to enable all library features
+        CPPFLAGS="-D_DARWIN_C_SOURCE $CPPFLAGS"
         pedantic="no"
         werror="no"
         AC_DEFINE(ZMQ_HAVE_OSX, 1, [Have DarwinOSX OS])
@@ -135,6 +142,8 @@ case "${host_os}" in
         LIBZMQ_EXTRA_CXXFLAGS+="-Wno-uninitialized"
         ;;
     *openbsd*)
+        # Define on OpenBSD to enable all library features
+        CPPFLAGS="-D_BSD_SOURCE $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_OPENBSD, 1, [Have OpenBSD OS])
         LIBS="-pthread"
         ;;
@@ -147,6 +156,8 @@ case "${host_os}" in
         AC_DEFINE(ZMQ_HAVE_AIX, 1, [Have AIX OS])
         ;;
     *hpux*)
+        # Define on HP-UX to enable all library features
+        CPPFLAGS="-D_POSIX_C_SOURCE=200112L"
         AC_DEFINE(ZMQ_HAVE_HPUX, 1, [Have HPUX OS])
         AC_CHECK_LIB(rt, main)
         ;;
