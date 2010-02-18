@@ -127,7 +127,7 @@ case "${host_os}" in
         AC_CHECK_LIB(rt, main)
         AC_CHECK_LIB(uuid, main, ,
             [AC_MSG_ERROR([cannot link with -luuid, install uuid-dev.])])
-        AC_MSG_CHECKING([wheter atomic operations can be used])
+        AC_MSG_CHECKING([whether atomic operations can be used])
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
             [[#include <atomic.h>]],
             [[uint32_t value;
