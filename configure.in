@@ -58,8 +58,10 @@ AC_PROG_AWK
 AC_CHECK_LIB([pthread], [pthread_create])
 # If using GNU C++, libstdc++ must be available.
 if test "x$GXX" = "xyes"; then
+    # libstdc++ depends on libm on some platforms
+    AC_CHECK_LIB([m], [main])
     AC_CHECK_LIB([stdc++], [main], ,
-        [AC_MSG_ERROR([cannot link with -lstdc++])], [-lm])
+        [AC_MSG_ERROR([cannot link with -lstdc++])])
 fi
 
 # Extra CXXFLAGS are appended at the end of CXXFLAGS for libzmq.
