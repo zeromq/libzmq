@@ -198,9 +198,15 @@ void zmq::session_t::process_attach (i_engine *engine_,
 {
     if (!peer_identity.empty ()) {
 
-        //  If we already know the peer name do nothing, just check whether
-        //  it haven't changed.
-        zmq_assert (peer_identity == peer_identity_);
+        //  If both IDs are temporary, no checking is needed.
+        //  TODO: Old ID should be reused in this case...
+        if (peer_identity.empty () || peer_identity [0] != 0 ||
+            peer_identity_.empty () || peer_identity_ [0] != 0) {
+
+            //  If we already know the peer name do nothing, just check whether
+            //  it haven't changed.
+            zmq_assert (peer_identity == peer_identity_);
+        }
     }
     else if (!peer_identity_.empty ()) {
 
