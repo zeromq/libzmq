@@ -61,6 +61,8 @@ namespace zmq
     typedef devpoll_t poller_t;
 #elif defined ZMQ_HAVE_OPENVMS
     typedef select_t poller_t;
+#elif defined ZMQ_HAVE_CYGWIN
+    typedef select_t poller_t;
 #else
 #error Unsupported platform
 #endif

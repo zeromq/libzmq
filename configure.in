@@ -200,6 +200,9 @@ case "${host_os}" in
         on_mingw32="yes"
         install_man="no"
         ;;
+    *cygwin*)
+        AC_DEFINE(ZMQ_HAVE_CYGWIN, 1, [Have Cygwin])
+        ;;
     *)
         AC_MSG_ERROR([unsupported system: ${host_os}.])
         ;;
