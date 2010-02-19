@@ -25,6 +25,11 @@
 //  zmq directory to take place of platform.hpp generated from
 //  platform.hpp.in on platforms supported by GNU autotools.
 
+//  0MQ version information
+#define PACKAGE_VERSION_MAJOR 2
+#define PACKAGE_VERSION_MINOR 0
+#define PACKAGE_VERSION_PATCH 6
+
 #define ZMQ_HAVE_WINDOWS
 #define _WINSOCKAPI_
 #define NOMINMAX

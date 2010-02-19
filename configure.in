@@ -55,8 +55,14 @@ AC_PROG_SED
 AC_PROG_AWK
 
 # Checks for libraries.
-AC_CHECK_LIB(pthread, pthread_create)
-AC_CHECK_LIB(stdc++, malloc)
+AC_CHECK_LIB([pthread], [pthread_create])
+# If using GNU C++, libstdc++ must be available.
+if test "x$GXX" = "xyes"; then
+    # libstdc++ depends on libm on some platforms
+    AC_CHECK_LIB([m], [main])
+    AC_CHECK_LIB([stdc++], [main], ,
+        [AC_MSG_ERROR([cannot link with -lstdc++])])
+fi
 
 # Extra CXXFLAGS are appended at the end of CXXFLAGS for libzmq.
 LIBZMQ_EXTRA_CXXFLAGS=""
@@ -77,9 +83,9 @@ on_mingw32="no"
 AC_CANONICAL_HOST
 
 # Determine whether or not documentation should be built.
-build_doc="yes"
+build_doc="no"
 install_man="yes"
-if test ! -f "doc/zmq.html"; then
+if test -d ".git"; then
 # We are building from git.
 # Check for asciidoc and xmlto and don't build the docs if these are not installed.
     AC_CHECK_PROG(have_asciidoc, asciidoc, yes, no)
@@ -88,25 +94,40 @@ if test ! -f "doc/zmq.html"; then
         build_doc="no"
         install_man="no"
         AC_MSG_WARN([You are building from git and asciidoc is not installed. Documentation will not be built or installed.])
+    else
+        build_doc="yes"
     fi
 fi
+AC_MSG_CHECKING([whether to build documentation])
+AC_MSG_RESULT([$build_doc])
+AC_MSG_CHECKING([whether to install manpages])
+if test ! -f "./doc/zmq.7"; then
+    AC_MSG_ERROR([configure thinks we want to install manpages but they're not present. Help!])
+fi
+AC_MSG_RESULT([$install_man])
 
+# Set some default features required by 0MQ code.
+CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE $CPPFLAGS"
+
+# OS-specific tests
 case "${host_os}" in
     *linux*)
+        # Define on Linux to enable all library features
+        CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_LINUX, 1, [Have Linux OS])
-        CPPFLAGS="-D_REENTRANT $CPPFLAGS"
         AC_CHECK_LIB(uuid, main, , 
             [AC_MSG_ERROR([cannot link with -luuid, install uuid-dev.])])
         ;;
     *solaris*)
+        # Define on Solaris to enable all library features
+        CPPFLAGS="-D_POSIX_C_SOURCE=200112L -D_PTHREADS $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_SOLARIS, 1, [Have Solaris OS])
         AC_CHECK_LIB(socket, main)
         AC_CHECK_LIB(nsl, main)
         AC_CHECK_LIB(rt, main)
         AC_CHECK_LIB(uuid, main, ,
             [AC_MSG_ERROR([cannot link with -luuid, install uuid-dev.])])
-        CPPFLAGS="-D_REENTRANT -D_PTHREADS $CPPFLAGS"
-        AC_MSG_CHECKING([wheter atomic operations can be used])
+        AC_MSG_CHECKING([whether atomic operations can be used])
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
             [[#include <atomic.h>]],
             [[uint32_t value;
@@ -121,39 +142,48 @@ case "${host_os}" in
         fi
         ;;
     *freebsd*)
+        # Define on FreeBSD to enable all library features
+        CPPFLAGS="-D__BSD_VISIBLE $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_FREEBSD, 1, [Have FreeBSD OS])
-        CPPFLAGS="-D_THREAD_SAFE $CPPFLAGS"
-        LIBS="-pthread"
         ;;
     *darwin*)
+        # Define on Darwin to enable all library features
+        CPPFLAGS="-D_DARWIN_C_SOURCE $CPPFLAGS"
         pedantic="no"
         werror="no"
         AC_DEFINE(ZMQ_HAVE_OSX, 1, [Have DarwinOSX OS])
-        LIBS="-pthread"
         LIBZMQ_EXTRA_CXXFLAGS+="-Wno-uninitialized"
         ;;
+    *netbsd*)
+        # Define on NetBSD to enable all library features
+        CPPFLAGS="-D_NETBSD_SOURCE $CPPFLAGS"
+        AC_DEFINE(ZMQ_HAVE_NETBSD, 1, [Have NetBSD OS])
+        # NetBSD 5.0 and newer provides atomic operations
+        netbsd_has_atomic=no
+        # XXX As of 5.0.1 the functions declared in atomic.h are
+        # missing "extern C", disable this until upstream fixes it.
+        # AC_CHECK_HEADERS(atomic.h, [netbsd_has_atomic=yes])
+        if test "x$netbsd_has_atomic" = "xno"; then
+            AC_DEFINE(ZMQ_FORCE_MUTEXES, 1, [Force to use mutexes])
+        fi
+        ;;
     *openbsd*)
+        # Define on OpenBSD to enable all library features
+        CPPFLAGS="-D_BSD_SOURCE $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_OPENBSD, 1, [Have OpenBSD OS])
-        CPPFLAGS="-pthread $CPPFLAGS"
-        LIBS="-pthread"
         ;;
     *nto-qnx*)
         pedantic="no"
         AC_DEFINE(ZMQ_HAVE_QNXNTO, 1, [Have QNX Neutrino OS])
-        CPPFLAGS="-D_THREAD_SAFE $CPPFLAGS"
         AC_CHECK_LIB(socket,main)
         ;;
     *aix*)
         AC_DEFINE(ZMQ_HAVE_AIX, 1, [Have AIX OS])
-        if test "x$GXX" = "xyes"; then
-          CPPFLAGS="-D_THREAD_SAFE $CPPFLAGS"
-        fi
         ;;
     *hpux*)
+        # Define on HP-UX to enable all library features
+        CPPFLAGS="-D_POSIX_C_SOURCE=200112L"
         AC_DEFINE(ZMQ_HAVE_HPUX, 1, [Have HPUX OS])
-        if test "x$GXX" = "xyes"; then
-          CPPFLAGS="-D_THREAD_SAFE $CPPFLAGS"
-        fi
         AC_CHECK_LIB(rt, main)
         ;;
     *mingw32*)
@@ -634,7 +664,6 @@ AC_MSG_RESULT([     Queue: $queue])
 AC_MSG_RESULT([   Performance tests: $perf])
 AC_MSG_RESULT([   Examples:])
 AC_MSG_RESULT([     Chat: $chat])
-AC_MSG_RESULT([   Documentation: $build_doc])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([ ******************************************************** ])
 AC_MSG_RESULT([])

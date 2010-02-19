@@ -14,6 +14,6 @@ $(top_srcdir)/foreign/xmlParser/xmlParser.hpp
 
 dist-hook:
 		-rm -rf $(distdir)/foreign/openpgm/@pgm_basename@
-clean-local:
+distclean-local:
 		-rm -rf $(top_srcdir)/foreign/openpgm/@pgm_basename@
 

@@ -27,8 +27,8 @@ connect_to = ARGV[0]
 message_size = ARGV[1].to_i
 roundtrip_count = ARGV[2].to_i
 					
-ctx = Context.new(1, 1, 0)
-s = Socket.new(ctx, REQ);
+ctx = ZMQ::Context.new(1, 1, 0)
+s = ZMQ::Socket.new(ctx, ZMQ::REQ);
 s.connect(connect_to);
 
 msg = "#{'0'*message_size}"

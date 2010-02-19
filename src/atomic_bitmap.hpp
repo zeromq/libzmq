@@ -34,8 +34,8 @@
 #define ZMQ_ATOMIC_BITMAP_SPARC
 #elif defined ZMQ_HAVE_WINDOWS
 #define ZMQ_ATOMIC_BITMAP_WINDOWS
-#elif defined ZMQ_HAVE_SOLARIS
-#define ZMQ_ATOMIC_BITMAP_SOLARIS
+#elif (defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_NETBSD)
+#define ZMQ_ATOMIC_BITMAP_SYSTEM
 #else
 #define ZMQ_ATOMIC_BITMAP_MUTEX
 #endif
@@ -44,7 +44,7 @@
 #include "mutex.hpp"
 #elif defined ZMQ_ATOMIC_BITMAP_WINDOWS
 #include "windows.hpp"
-#elif defined ZMQ_ATOMIC_BITMAP_SOLARIS
+#elif defined ZMQ_ATOMIC_BITMAP_SYSTEM
 #include <atomic.h>
 #endif
 
@@ -89,7 +89,7 @@ namespace zmq
                     return (oldval & (bitmap_t (1) << reset_index_)) ?
                         true : false;
             }
-#elif defined ZMQ_ATOMIC_BITMAP_SOLARIS
+#elif defined ZMQ_ATOMIC_BITMAP_SYSTEM
             while (true) {
                 bitmap_t oldval = value;
                 bitmap_t newval = (oldval | (bitmap_t (1) << set_index_)) &
@@ -150,7 +150,7 @@ namespace zmq
             bitmap_t oldval;
 #if defined ZMQ_ATOMIC_BITMAP_WINDOWS
             oldval = InterlockedExchange ((volatile LONG*) &value, newval_);
-#elif defined ZMQ_ATOMIC_BITMAP_SOLARIS
+#elif defined ZMQ_ATOMIC_BITMAP_SYSTEM
             oldval = atomic_swap_32 (&value, newval_);
 #elif defined ZMQ_ATOMIC_BITMAP_X86
             oldval = newval_;
@@ -201,7 +201,7 @@ namespace zmq
                       newval, oldval) == (LONG) oldval)
                     return oldval;
             }
-#elif defined ZMQ_ATOMIC_BITMAP_SOLARIS
+#elif defined ZMQ_ATOMIC_BITMAP_SYSTEM
             while (true) {
                 bitmap_t oldval = value;
                 bitmap_t newval = oldval == 0 ? thenval_ : elseval_;
@@ -270,8 +270,8 @@ namespace zmq
 #if defined ZMQ_ATOMIC_BITMAP_WINDOWS
 #undef ZMQ_ATOMIC_BITMAP_WINDOWS
 #endif
-#if defined ZMQ_ATOMIC_BITMAP_SOLARIS
-#undef ZMQ_ATOMIC_BITMAP_SOLARIS
+#if defined ZMQ_ATOMIC_BITMAP_SYSTEM
+#undef ZMQ_ATOMIC_BITMAP_SYSTEM
 #endif
 #if defined ZMQ_ATOMIC_BITMAP_X86
 #undef ZMQ_ATOMIC_BITMAP_X86

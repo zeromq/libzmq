@@ -47,6 +47,8 @@ namespace zmq
     typedef kqueue_t poller_t;
 #elif defined ZMQ_HAVE_OPENBSD
     typedef kqueue_t poller_t;
+#elif defined ZMQ_HAVE_NETBSD
+    typedef kqueue_t poller_t;
 #elif defined ZMQ_HAVE_SOLARIS
     typedef devpoll_t poller_t;
 #elif defined ZMQ_HAVE_OSX
