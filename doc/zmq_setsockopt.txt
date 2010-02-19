@@ -60,9 +60,11 @@ If the socket has no identity, each run of the application is completely
 separated from other runs. However, with identity application reconnects to
 existing infrastructure left by the previous run. Thus it may receive
 messages that were sent in the meantime, it shares pipe limits with the
-previous run etc.
+previous run etc. Identity should be at least one byte and at most 255 bytes
+long. Identities starting with binary zero are reserver for use by 0MQ
+infrastructure.
 +
-Type: string  Unit: N/A  Default: NULL
+Type: BLOB  Unit: N/A  Default: NULL
 
 *ZMQ_SUBSCRIBE*::
 Applicable only to ZMQ_SUB socket type. It establishes new message filter.
@@ -72,7 +74,7 @@ beginning with specific prefix (e.g. "animals.mammals.dogs."). Multiple
 filters can be attached to a single 'sub' socket. In that case message passes
 if it matches at least one of the filters.
 +
-Type: string  Unit: N/A  Default: N/A
+Type: BLOB  Unit: N/A  Default: N/A
 
 *ZMQ_UNSUBSCRIBE*::
 Applicable only to ZMQ_SUB socket type. Removes existing message filter.
@@ -81,7 +83,7 @@ exactly. If there were several instances of the same filter created,
 this options removes only one of them, leaving the rest in place
 and functional.
 +
-Type: string  Unit: N/A  Default: N/A
+Type: BLOB  Unit: N/A  Default: N/A
 
 *ZMQ_RATE*::
 This option applies only to sending side of multicast transports (pgm & udp).

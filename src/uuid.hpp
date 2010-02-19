@@ -44,15 +44,15 @@ namespace zmq
         uuid_t ();
         ~uuid_t ();
 
+        //  The length of textual representation of UUID.
+        enum { uuid_string_len = 36 };
+
         //  Returns a pointer to buffer containing the textual
         //  representation of the UUID. The caller is reponsible to
         //  free the allocated memory.
         const char *to_string ();
 
     private:
-
-        //  The length of textual representation of UUID.
-        enum { uuid_string_len = 36 };
 
 #if defined ZMQ_HAVE_WINDOWS
 #ifdef ZMQ_HAVE_MINGW32

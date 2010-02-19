@@ -17,10 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <string.h>
+
 #include "zmq_init.hpp"
 #include "zmq_engine.hpp"
 #include "io_thread.hpp"
 #include "session.hpp"
+#include "uuid.hpp"
 #include "err.hpp"
 
 zmq::zmq_init_t::zmq_init_t (io_thread_t *parent_, socket_base_t *owner_,
@@ -71,10 +74,19 @@ bool zmq::zmq_init_t::write (::zmq_msg_t *msg_)
     if (received)
         return false;
 
-    //  Retreieve the remote identity.
-    peer_identity.assign ((const unsigned char*) zmq_msg_data (msg_),
-        zmq_msg_size (msg_));
-    engine->add_prefix (peer_identity);
+    //  Retreieve the remote identity. If it's empty, generate a unique name.
+    if (!zmq_msg_size (msg_)) {
+        unsigned char identity [uuid_t::uuid_string_len + 1];
+        identity [0] = 0;
+        memcpy (identity + 1, uuid_t ().to_string (), uuid_t::uuid_string_len);
+        peer_identity.assign (identity, uuid_t::uuid_string_len + 1);
+    }
+    else {
+        peer_identity.assign ((const unsigned char*) zmq_msg_data (msg_),
+            zmq_msg_size (msg_));
+    }
+    if (options.traceroute)
+        engine->add_prefix (peer_identity);
     received = true;
 
     return true;
@@ -155,10 +167,11 @@ void zmq::zmq_init_t::finalise ()
                 return;
             }
         }
+        else {
 
-        //  If the peer has a unique name, find the associated session. If it
-        //  doesn't exist, create it.
-        else if (!peer_identity.empty ()) {
+            //  If the peer has a unique name, find the associated session.
+            //  If it does not exist, create it.
+            zmq_assert (!peer_identity.empty ());
             session = owner->find_session (peer_identity);
             if (!session) {
                 session = new (std::nothrow) session_t (
@@ -171,19 +184,6 @@ void zmq::zmq_init_t::finalise ()
                 //  Reserve a sequence number for following 'attach' command.
                 session->inc_seqnum ();
             }
-        }
-
-        //  If the other party has no specific identity, let's create a
-        //  transient session.
-        else {
-            session = new (std::nothrow) session_t (
-                choose_io_thread (options.affinity), owner, options, blob_t ());
-            zmq_assert (session);
-            send_plug (session);
-            send_own (owner, session);
-
-            //  Reserve a sequence number for following 'attach' command.
-            session->inc_seqnum ();
         }
 
         //  No need to increment seqnum as it was already incremented above.

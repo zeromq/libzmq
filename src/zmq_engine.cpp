@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <string.h>
+
 #include <new>
 
 #include "zmq_engine.hpp"
@@ -161,7 +163,7 @@ void zmq::zmq_engine_t::revive ()
 }
 
 void zmq::zmq_engine_t::add_prefix (const blob_t &identity_)
-{    
+{
     decoder.add_prefix (identity_);
 }
 

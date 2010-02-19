@@ -89,7 +89,6 @@ bool zmq::zmq_encoder_t::message_ready ()
         size -= prefix_size;
     }
 
-
     //  For messages less than 255 bytes long, write one byte of message size.
     //  For longer messages write 0xff escape character followed by 8-byte
     //  message size.

@@ -50,7 +50,7 @@ zmq::session_t::session_t (object_t *parent_, socket_base_t *owner_,
     peer_identity (peer_identity_),
     options (options_)
 {
-    if (!peer_identity.empty ()) {
+    if (!peer_identity.empty () && peer_identity [0] != 0) {
         if (!owner->register_session (peer_identity, this)) {
 
             //  TODO: There's already a session with the specified
@@ -103,7 +103,7 @@ void zmq::session_t::detach (owned_t *reconnecter_)
     engine = NULL;
 
     //  Terminate transient session.
-    if (!ordinal && peer_identity.empty ())
+    if (!ordinal && (peer_identity.empty () || peer_identity [0] == 0))
         term ();
 }
 
@@ -173,7 +173,7 @@ void zmq::session_t::process_unplug ()
     //  Unregister the session from the socket.
     if (ordinal)
         owner->unregister_session (ordinal);
-    else if (!peer_identity.empty ())
+    else if (!peer_identity.empty () && peer_identity [0] != 0)
         owner->unregister_session (peer_identity);
 
     //  Ask associated pipes to terminate.
