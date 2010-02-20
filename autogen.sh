@@ -26,6 +26,14 @@ if  [ $? -ne 0 ]; then
     exit 1
 fi
 
+libtool --version > /dev/null 2>&1
+if  [ $? -ne 0 ]; then
+    echo
+    echo "Could not find libtool, libtool.m4 macro is probably not installed."
+    echo
+    exit 1
+fi
+
 mkdir -p config
 if [ $? -ne 0 ]; then
     echo

@@ -613,7 +613,6 @@ AC_SUBST(LIBZMQ_EXTRA_LDFLAGS)
 
 
 # Checks for library functions.
-AC_FUNC_MALLOC
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(perror gettimeofday memset socket getifaddrs freeifaddrs)
 
