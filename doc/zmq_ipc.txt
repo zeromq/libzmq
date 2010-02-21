@@ -15,8 +15,8 @@ the same physical machine.
 
 CONNECTION STRING
 -----------------
-Connection string for inproc transport is "ipc://" followed by a file name.
-The file will be used as placeholder for a message endpoint. (UNIX domain
+Connection string for inter-process transport is "ipc://" followed by a file
+name. The file will be used as placeholder for a message endpoint. (UNIX domain
 sockets associate a file with the listening socket in a similar way.)
 
 ----
