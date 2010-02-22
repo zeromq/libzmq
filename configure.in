@@ -158,11 +158,21 @@ case "${host_os}" in
         # Define on NetBSD to enable all library features
         CPPFLAGS="-D_NETBSD_SOURCE $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_NETBSD, 1, [Have NetBSD OS])
-        # NetBSD 5.0 and newer provides atomic operations
+        # NetBSD 5.0 and newer provides atomic operations but we can
+        # only use these on systems where PR #42842 has been fixed so
+        # we must try and link a test program using C++.
         netbsd_has_atomic=no
-        # XXX As of 5.0.1 the functions declared in atomic.h are
-        # missing "extern C", disable this until upstream fixes it.
-        # AC_CHECK_HEADERS(atomic.h, [netbsd_has_atomic=yes])
+        AC_MSG_CHECKING([whether atomic operations can be used])
+        AC_LANG_PUSH([C++])
+        AC_LINK_IFELSE([AC_LANG_PROGRAM(
+            [[#include <atomic.h>]],
+            [[uint32_t value;
+              atomic_cas_32 (&value, 0, 0);
+              return 0;]])],
+            [netbsd_has_atomic=yes],
+            [netbsd_has_atomic=no])
+        AC_LANG_POP([C++])
+        AC_MSG_RESULT([$netbsd_has_atomic])
         if test "x$netbsd_has_atomic" = "xno"; then
             AC_DEFINE(ZMQ_FORCE_MUTEXES, 1, [Force to use mutexes])
         fi
