@@ -383,11 +383,11 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     //  prevent exiting on any events that may already been signaled on
     //  0MQ sockets.
     int rc = poll (pollfds, npollfds, 0);
-    if (rc == -1 && errno == EINTR) {
+    if (rc == -1 && errno == EINTR && timeout_ >= 0) {
         free (pollfds);
         return 0;
     }
-    errno_assert (rc >= 0);
+    errno_assert (rc >= 0 || (rc == -1 && errno == EINTR));
 
     int timeout = timeout_ > 0 ? timeout_ / 1000 : -1;
     int nevents = 0;
@@ -427,15 +427,24 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 
         //  If there's at least one event, or if we are asked not to block,
         //  return immediately.
-        if (nevents || !timeout)
+        if (nevents || !timeout_)
             break;
 
-        //  Wait for events.
-        rc = poll (pollfds, npollfds, timeout);
-        if (rc == -1 && errno == EINTR)
+        //  Wait for events. Ignore interrupts if there's infinite timeout.
+        while (true) {
+            rc = poll (pollfds, npollfds, timeout);
+            if (rc == -1 && errno == EINTR) {
+                if (timeout_ < 0)
+                    continue;
+                else {
+                    rc = 0;
+                    break;
+                }
+            }
+            errno_assert (rc >= 0);
             break;
-        errno_assert (rc >= 0);
-
+        }
+        
         //  If timeout was hit with no events signaled, return zero.
         if (rc == 0)
             break;
@@ -523,7 +532,9 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 #if defined ZMQ_HAVE_WINDOWS
     wsa_assert (rc != SOCKET_ERROR);
 #else
-    errno_assert (rc != -1 || errno != EINTR);
+    if (rc == -1 && errno == EINTR && timeout_ >= 0)
+        return 0;
+    errno_assert (rc >= 0 || (rc == -1 && errno == EINTR));
 #endif
 
     while (true) {
@@ -562,17 +573,28 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         if (nevents || (timeout.tv_sec == 0 && timeout.tv_usec == 0))
             break;
 
-        //  Wait for events.
-        memcpy (&inset, &pollset_in, sizeof (fd_set));
-        memcpy (&outset, &pollset_out, sizeof (fd_set));
-        memcpy (&errset, &pollset_err, sizeof (fd_set));
-        int rc = select (maxfd, &inset, &outset, &errset,
-            block ? NULL : &timeout);
+        //  Wait for events. Ignore interrupts if there's infinite timeout.
+        while (true) {
+            memcpy (&inset, &pollset_in, sizeof (fd_set));
+            memcpy (&outset, &pollset_out, sizeof (fd_set));
+            memcpy (&errset, &pollset_err, sizeof (fd_set));
+            int rc = select (maxfd, &inset, &outset, &errset,
+                block ? NULL : &timeout);
 #if defined ZMQ_HAVE_WINDOWS
-        wsa_assert (rc != SOCKET_ERROR);
+            wsa_assert (rc != SOCKET_ERROR);
 #else
-        errno_assert (rc != -1 || errno != EINTR);
+            if (rc == -1 && errno == EINTR) {
+                if (timeout_ < 0)
+                    continue;
+                else {
+                    rc = 0;
+                    break;
+                }
+            }
+            errno_assert (rc >= 0);
 #endif
+            break;
+        }
         
         //  If timeout was hit with no events signaled, return zero.
         if (rc == 0)
