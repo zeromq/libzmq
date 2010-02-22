@@ -101,7 +101,7 @@ fi
 AC_MSG_CHECKING([whether to build documentation])
 AC_MSG_RESULT([$build_doc])
 AC_MSG_CHECKING([whether to install manpages])
-if test "x$install_man" = "xyes" -a ! -f "./doc/zmq.7"; then
+if test "x$build_doc" = "xno" -a "x$install_man" = "xyes" -a ! -f "./doc/zmq.7"; then
     AC_MSG_ERROR([configure thinks we want to install manpages but they're not present. Help!])
 fi
 AC_MSG_RESULT([$install_man])
