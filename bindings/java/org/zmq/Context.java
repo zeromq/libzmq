@@ -44,6 +44,8 @@ public class Context {
 
     /**
      * Get the underlying context handle.
+     * This is private because it is only accessed from JNI, where
+     * Java access controls are ignored.
      *
      * @return the internal 0MQ context handle.
      */

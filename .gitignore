@@ -9,6 +9,8 @@ config.log
 aclocal.m4
 autom4te.cache
 *.o
+*.class
+*.ncb
 *.lo
 *.loT
 *.la
@@ -16,6 +18,8 @@ autom4te.cache
 *.pdf
 *.ps
 .*
+*~
+.*~
 src/platform.hpp*
 src/stamp-h1
 devices/zmq_forwarder/zmq_forwarder
@@ -37,6 +41,11 @@ doc/*.7
 doc/*.html
 doc/*.xml
 bindings/python/setup.py
+bindings/java/org_zmq_*.h
 src/libzmq.pc
+lib/
+builds/msvc/*/*.user
+builds/msvc/*/Debug
+builds/msvc/*/Release
 foreign/openpgm/*
 !foreign/openpgm/*.tar.bz2

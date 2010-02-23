@@ -121,6 +121,8 @@ public class Socket {
 
     /**
      * Get the underlying socket handle.
+     * This is private because it is only accessed from JNI, where
+     * Java access controls are ignored.
      *
      * @return the internal 0MQ socket handle.
      */
