@@ -56,7 +56,7 @@ Compatible peer sockets: ZMQ_REQ, ZMQ_XREQ.
 Special socket type to be used in request/reply middleboxes such as
 linkzmq:zmq_queue[7]. Requests forwarded using this socket type should be
 tagged by a proper prefix identifying the original requester. Replies received
-by this socket are tagged with a proper postfix that can be use to route the
+by this socket are tagged with a proper prefix that can be use to route the
 reply back to the original requester.
 +
 Compatible peer sockets: ZMQ_REP, ZMQ_XREP.
