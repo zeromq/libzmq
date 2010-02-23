@@ -17,8 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdlib.h>
-#include <string.h>
 #include <assert.h>
 #include <errno.h>
 
@@ -26,9 +24,51 @@
 
 #include "org_zmq_Context.h"
 
+/** Handle to Java's Context::contextHandle. */
 static jfieldID ctx_handle_fid = NULL;
 
-static void raise_exception (JNIEnv *env, int err)
+/**
+ * Make sure we have a valid pointer to Java's Context::contextHandle.
+ */
+static void ensure_context (JNIEnv *env,
+			    jobject obj)
+{
+    if (ctx_handle_fid == NULL) {
+        jclass cls = env->GetObjectClass (obj);
+	assert (cls);
+	ctx_handle_fid = env->GetFieldID (cls, "contextHandle", "J");
+	assert (ctx_handle_fid);
+	env->DeleteLocalRef (cls);
+    }
+}
+
+/**
+ * Get the value of Java's Context::contextHandle.
+ */
+static void *get_context (JNIEnv *env,
+			  jobject obj)
+{
+    ensure_context (env, obj);
+    void *s = (void*) env->GetLongField (obj, ctx_handle_fid);
+    return s;
+}
+
+/**
+ * Set the value of Java's Context::contextHandle.
+ */
+static void put_context (JNIEnv *env,
+			 jobject obj,
+			 void *s)
+{
+    ensure_context (env, obj);
+    env->SetLongField (obj, ctx_handle_fid, (jlong) s);
+}
+
+/**
+ * Raise an exception that includes 0MQ's error message.
+ */
+static void raise_exception (JNIEnv *env,
+			     int err)
 {
     //  Get exception class.
     jclass exception_class = env->FindClass ("java/lang/Exception");
@@ -39,52 +79,42 @@ static void raise_exception (JNIEnv *env, int err)
 
     //  Raise the exception.
     int rc = env->ThrowNew (exception_class, err_msg);
-    assert (rc == 0);
-
-    //  Free the local ref.
     env->DeleteLocalRef (exception_class);
+
+    assert (rc == 0);
 }
 
-JNIEXPORT void JNICALL Java_org_zmq_Context_construct (JNIEnv *env, jobject obj,
-    jint app_threads, jint io_threads, jint flags)
+/**
+ * Called to construct a Java Context object.
+ */
+JNIEXPORT void JNICALL Java_org_zmq_Context_construct (JNIEnv *env,
+						       jobject obj,
+						       jint app_threads,
+						       jint io_threads,
+						       jint flags)
 {
-    if (ctx_handle_fid == NULL) {
-        jclass cls = env->GetObjectClass (obj);
-        assert (cls);
-        ctx_handle_fid = env->GetFieldID (cls, "contextHandle", "J");
-        assert (ctx_handle_fid);
-        env->DeleteLocalRef (cls);
-    }
+    void *c = get_context (env, obj);
+    assert (! c);
 
-    void *ctx = zmq_init (app_threads, io_threads, flags);
-    if (ctx == NULL) {
+    c = zmq_init (app_threads, io_threads, flags);
+    put_context(env, obj, c);
+
+    if (c == NULL) {
         raise_exception (env, errno);
         return;
     }
-
-    env->SetLongField (obj, ctx_handle_fid, (jlong) ctx);
 }
 
-JNIEXPORT void JNICALL Java_org_zmq_Context_finalize (JNIEnv *env, jobject obj)
+/**
+ * Called to destroy a Java Context object.
+ */
+JNIEXPORT void JNICALL Java_org_zmq_Context_finalize (JNIEnv *env,
+						      jobject obj)
 {
-    void *ctx = (void*) env->GetLongField (obj, ctx_handle_fid);
-    assert (ctx);
+    void *c = get_context (env, obj);
+    assert (c);
 
-    int rc = zmq_term (ctx);
+    int rc = zmq_term (c);
+    put_context (env, obj, NULL);
     assert (rc == 0);
-}
-
-JNIEXPORT jlong JNICALL Java_org_zmq_Context_createSocket (JNIEnv *env,
-    jobject obj, jint type)
-{
-    void *ctx = (void*) env->GetLongField (obj, ctx_handle_fid);
-    assert (ctx);
-
-    void *s = zmq_socket (ctx, type);
-    if (s == NULL) {
-        raise_exception (env, errno);
-        return -1;
-    }
-
-    return (jlong) s;
 }

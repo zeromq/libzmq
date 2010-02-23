@@ -36,16 +36,21 @@ public class Context {
         construct (appThreads, ioThreads, flags);
     }
 
-    /**
-     * Internal function. Do not use directly!
-     */
-    public native long createSocket (int type);
-
     /** Initialize the JNI interface */
     protected native void construct (int appThreads, int ioThreads, int flags);
 
-    /** Free resources used by JNI driver. */
+    /** Free all resources used by JNI interface. */
     protected native void finalize ();
+
+    /**
+     * Get the underlying context handle.
+     *
+     * @return the internal 0MQ context handle.
+     */
+    private long getContextHandle () {
+	return contextHandle;
+    }
+
 
     /** Opaque data used by JNI driver. */
     private long contextHandle;

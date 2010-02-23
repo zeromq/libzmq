@@ -1,4 +1,4 @@
-        /*
+/*
     Copyright (c) 2007-2010 iMatix Corporation
 
     This file is part of 0MQ.
@@ -19,9 +19,7 @@
 
 package org.zmq;
 
-public class Socket
-{
-
+public class Socket {
     static {
         System.loadLibrary("jzmq");
     }
@@ -52,44 +50,53 @@ public class Socket
     public static final int SNDBUF = 11;
     public static final int RCVBUF = 12;
 
+
     /**
      * Class constructor.
      *
-     * @param context
-     * @param type
+     * @param context a 0MQ context previously created.
+     * @param type the socket type.
      */
     public Socket (Context context, int type) {
         construct (context, type);
     }
 
     /**
-     * Set the socket option value.
+     * Set the socket option value, given as a long.
      *
-     * @param option ID of the option to set
-     * @param optval value to set the option to
+     * @param option ID of the option to set.
+     * @param optval value (as a long) to set the option to.
      */
-     public native void setsockopt (int option, long optval);
-     public native void setsockopt (int option, String optval);
+    public native void setsockopt (int option, long optval);
+
+    /**
+     * Set the socket option value, given as a String.
+     *
+     * @param option ID of the option to set.
+     * @param optval value (as a String) to set the option to.
+     */
+    public native void setsockopt (int option, String optval);
 
     /**
      * Bind to network interface. Start listening for new connections.
      *
-     * @param addr
+     * @param addr the endpoint to bind to.
      */
     public native void bind (String addr);
 
     /**
      * Connect to remote application.
      *
-     * @param addr
+     * @param addr the endpoint to connect to.
      */
     public native void connect (String addr);
 
     /**
-     * Send the message.
+     * Send a message.
      *
-     * @param msg
-     * @param flags
+     * @param msg the message to send, as an array of bytes.
+     * @param flags the flags to apply to the send operation.
+     * @return true if send was successful, false otherwise.
      */
     public native boolean send (byte [] msg, long flags);
 
@@ -99,18 +106,28 @@ public class Socket
     public native void flush ();
 
     /**
-     * Receive message.
+     * Receive a message.
      *
-     * @param flags
-     * @return
+     * @param flags the flags to apply to the receive operation.
+     * @return the message received, as an array of bytes; null on error.
      */
     public native byte [] recv (long flags);
 
-    /** Initialize JNI driver */
+    /** Initialize the JNI interface */
     protected native void construct (Context context, int type);
 
-    /** Free all resources used by JNI driver. */
+    /** Free all resources used by JNI interface. */
     protected native void finalize ();
+
+    /**
+     * Get the underlying socket handle.
+     *
+     * @return the internal 0MQ socket handle.
+     */
+    private long getSocketHandle () {
+	return socketHandle;
+    }
+
 
     /** Opaque data used by JNI driver. */
     private long socketHandle;
