@@ -191,16 +191,21 @@ int zmq::req_t::xrecv (zmq_msg_t *msg_, int flags_)
 
     waiting_for_reply = false;
     reply_pipe = NULL;
-
     return 0;
 }
 
 bool zmq::req_t::xhas_in ()
 {
-    if (reply_pipe && reply_pipe->check_read ())
-        return waiting_for_reply;
+    if (!waiting_for_reply || !reply_pipe_active)
+        return false;
 
-    return false;
+    zmq_assert (reply_pipe);    
+    if (!reply_pipe->check_read ()) {
+        reply_pipe_active = false;
+        return false;
+    }
+
+    return true;
 }
 
 bool zmq::req_t::xhas_out ()
