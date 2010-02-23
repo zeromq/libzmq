@@ -23,7 +23,6 @@
 #include "zmq.h"
 
 #include <assert.h>
-#include <errno.h>
 #include <string.h>
 #include <exception>
 
@@ -37,7 +36,7 @@ namespace zmq
     {
     public:
 
-        error_t () : errnum (errno) {}
+        error_t () : errnum (zmq_errno ()) {}
 
         virtual const char *what () const throw ()
         {
@@ -232,7 +231,7 @@ namespace zmq
             int rc = zmq_send (ptr, &msg_, flags_);
             if (rc == 0)
                 return true;
-            if (rc == -1 && errno == EAGAIN)
+            if (rc == -1 && zmq_errno () == EAGAIN)
                 return false;
             throw error_t ();
         }
@@ -249,7 +248,7 @@ namespace zmq
             int rc = zmq_recv (ptr, msg_, flags_);
             if (rc == 0)
                 return true;
-            if (rc == -1 && errno == EAGAIN)
+            if (rc == -1 && zmq_errno () == EAGAIN)
                 return false;
             throw error_t ();
         }
