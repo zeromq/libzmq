@@ -219,7 +219,7 @@ ZMQ_EXPORT int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
 //  of this function is to make the code 100% portable, including where 0MQ
 //  compiled with certain CRT library (on Windows) is linked to an application
 //  compiled with different CRT library.
-int zmq_errno ();
+ZMQ_EXPORT int zmq_errno ();
 
 ////////////////////////////////////////////////////////////////////////////////
 //  Helper functions.
