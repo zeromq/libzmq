@@ -615,6 +615,11 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 #endif
 }
 
+int zmq_errno ()
+{
+    return errno;
+}
+
 #if defined ZMQ_HAVE_WINDOWS
 
 static uint64_t now ()
