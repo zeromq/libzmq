@@ -316,6 +316,12 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
             errno = EINVAL;
             return -1;
         }
+        if (pgm_error->domain == PGM_TRANSPORT_ERROR && (
+              pgm_error->code == PGM_TRANSPORT_ERROR_FAILED)) {
+            g_error_free (pgm_error);
+            errno = EINVAL;
+            return -1;
+        }
 
         zmq_assert (false);
     }
