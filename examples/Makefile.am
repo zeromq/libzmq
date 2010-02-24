@@ -1,7 +1,0 @@
-
-if BUILD_CHAT
-DIR_CHAT = chat
-endif
-
-SUBDIRS = $(DIR_CHAT)
-DIST_SUBDIRS = chat

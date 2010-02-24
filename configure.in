@@ -589,13 +589,6 @@ if test "x$with_perf" = "xno" -a "x$with_pgm_examples" = "xyes"; then
     AC_MSG_ERROR([cannot configure --with-pgm-examples without --with-perf.]);
 fi
 
-# Chat example
-chat="no"
-AC_ARG_WITH([chat], [AS_HELP_STRING([--with-chat], [build chatroom example [default=no]])], [with_chat=yes], [with_chat=no])
-if test "x$with_chat" != "xno"; then
-    chat="yes"
-fi
-
 AM_CONDITIONAL(BUILD_PYTHON, test "x$pyzmq" = "xyes")
 AM_CONDITIONAL(BUILD_JAVA, test "x$jzmq" = "xyes")
 AM_CONDITIONAL(BUILD_PYTHON, test "x$pyzmq" = "xyes")
@@ -608,7 +601,6 @@ AM_CONDITIONAL(BUILD_FORWARDER, test "x$forwarder" = "xyes")
 AM_CONDITIONAL(BUILD_STREAMER, test "x$streamer" = "xyes")
 AM_CONDITIONAL(BUILD_QUEUE, test "x$queue" = "xyes")  
 AM_CONDITIONAL(BUILD_PERF, test "x$perf" = "xyes")
-AM_CONDITIONAL(BUILD_CHAT, test "x$chat" = "xyes")
 AM_CONDITIONAL(ON_MINGW, test "x$on_mingw32" = "xyes")
 AM_CONDITIONAL(BUILD_PGM_EXAMPLES, test "x$with_pgm_examples" = "xyes")
 AM_CONDITIONAL(INSTALL_MAN, test "x$install_man" = "xyes")
@@ -631,8 +623,7 @@ AC_OUTPUT(Makefile src/Makefile doc/Makefile bindings/python/Makefile \
     bindings/java/Makefile perf/Makefile perf/c/Makefile perf/cpp/Makefile \
     perf/python/Makefile perf/ruby/Makefile perf/java/Makefile src/libzmq.pc \
     devices/Makefile devices/zmq_forwarder/Makefile \
-    devices/zmq_streamer/Makefile devices/zmq_queue/Makefile bindings/Makefile \
-    examples/Makefile examples/chat/Makefile)
+    devices/zmq_streamer/Makefile devices/zmq_queue/Makefile bindings/Makefile)
 
 #  On Linux patch libtool to delete hardcoded paths (rpath).
 case "${host_os}" in
@@ -674,8 +665,6 @@ AC_MSG_RESULT([     Forwarder: $forwarder])
 AC_MSG_RESULT([     Streamer: $streamer])
 AC_MSG_RESULT([     Queue: $queue])
 AC_MSG_RESULT([   Performance tests: $perf])
-AC_MSG_RESULT([   Examples:])
-AC_MSG_RESULT([     Chat: $chat])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([ ******************************************************** ])
 AC_MSG_RESULT([])
