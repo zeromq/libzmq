@@ -49,3 +49,4 @@ builds/msvc/*/Debug
 builds/msvc/*/Release
 foreign/openpgm/*
 !foreign/openpgm/*.tar.bz2
+!foreign/openpgm/*.tar.gz

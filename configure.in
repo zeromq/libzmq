@@ -453,7 +453,7 @@ fi
 #  PGM extension
 pgm_ext="no"
 
-pgm_basename="libpgm-2.0.23rc8"
+pgm_basename="libpgm-2.0.24"
 
 AC_SUBST(pgm_basename)
 
@@ -507,10 +507,10 @@ if test "x$with_pgm_ext" != "xno"; then
     LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} ${GLIB_CFLAGS} "
     LIBZMQ_EXTRA_LDFLAGS="${LIBZMQ_EXTRA_LDFLAGS} ${GLIB_LIBS} "
     
-    #  Bunzip2, Perl and Python are required duing PGM build
-    AC_CHECK_PROG(have_bunzip2, bunzip2, yes, no)
-    if test "x$have_bunzip2" != "xyes"; then
-        AC_MSG_ERROR([bunzip2 is required for building the PGM extension.])
+    #  Gzip, Perl and Python are required duing PGM build
+    AC_CHECK_PROG(have_gzip, gzip, yes, no)
+    if test "x$have_gzip" != "xyes"; then
+        AC_MSG_ERROR([gzip is required for building the PGM extension.])
     fi
     AC_CHECK_PROG(have_perl, perl, yes, no)
     if test "x$have_perl" != "xyes"; then
@@ -524,9 +524,9 @@ if test "x$with_pgm_ext" != "xno"; then
     fi
 
     #  Unpack libpgm
-    AC_MSG_NOTICE([Unpacking ${pgm_basename}.tar.bz2])
-    if ! bunzip2 -c foreign/openpgm/${pgm_basename}.tar.bz2 | tar -xf - -C foreign/openpgm/; then
-        AC_MSG_ERROR([cannot unpack the foreign/openpgm/${pgm_basename}.tar.bz2 file.])
+    AC_MSG_NOTICE([Unpacking ${pgm_basename}.tar.gz])
+    if ! gzip -dc foreign/openpgm/${pgm_basename}.tar.gz | tar -xf - -C foreign/openpgm/; then
+        AC_MSG_ERROR([cannot unpack the foreign/openpgm/${pgm_basename}.tar.gz file.])
     fi
 
     #  Success!
