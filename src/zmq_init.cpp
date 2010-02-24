@@ -76,10 +76,10 @@ bool zmq::zmq_init_t::write (::zmq_msg_t *msg_)
 
     //  Retreieve the remote identity. If it's empty, generate a unique name.
     if (!zmq_msg_size (msg_)) {
-        unsigned char identity [uuid_t::uuid_string_len + 1];
+        unsigned char identity [uuid_t::uuid_blob_len + 1];
         identity [0] = 0;
-        memcpy (identity + 1, uuid_t ().to_string (), uuid_t::uuid_string_len);
-        peer_identity.assign (identity, uuid_t::uuid_string_len + 1);
+        memcpy (identity + 1, uuid_t ().to_blob (), uuid_t::uuid_blob_len);
+        peer_identity.assign (identity, uuid_t::uuid_blob_len + 1);
     }
     else {
         peer_identity.assign ((const unsigned char*) zmq_msg_data (msg_),

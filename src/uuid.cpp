@@ -27,15 +27,17 @@ zmq::uuid_t::uuid_t ()
 {
     RPC_STATUS ret = UuidCreate (&uuid);
     zmq_assert (ret == RPC_S_OK);
-    ret = UuidToString (&uuid, &uuid_str);
+    ret = UuidToString (&uuid, &string_buf);
     zmq_assert (ret == RPC_S_OK);
 
 	/*
 	HRESULT hr = CoCreateGUID (&uuid);
 	zmq_assert (hr == S_OK);
-	int rc = StringFromGUID2 (uuid, uuid_str, 40);
+	int rc = StringFromGUID2 (uuid, string_buf, 40);
 	zmq_assert (rc != 0);
 	*/
+
+    create_blob ();
 }
 
 zmq::uuid_t::~uuid_t ()
@@ -44,7 +46,7 @@ zmq::uuid_t::~uuid_t ()
 
 const char *zmq::uuid_t::to_string ()
 {
-    return (char*) uuid_str;
+    return (char*) string_buf;
 }
 
 #elif defined ZMQ_HAVE_FREEBSD || defined ZMQ_HAVE_NETBSD
@@ -57,18 +59,20 @@ zmq::uuid_t::uuid_t ()
     uint32_t status;
     uuid_create (&uuid, &status);
     zmq_assert (status == uuid_s_ok);
-    uuid_to_string (&uuid, &uuid_str, &status);
+    uuid_to_string (&uuid, &string_buf, &status);
     zmq_assert (status == uuid_s_ok);
+
+    create_blob ();
 }
 
 zmq::uuid_t::~uuid_t ()
 {
-    free (uuid_str);
+    free (string_buf);
 }
 
 const char *zmq::uuid_t::to_string ()
 {
-    return uuid_str;
+    return string_buf;
 }
 
 #elif defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_OSX
@@ -78,7 +82,9 @@ const char *zmq::uuid_t::to_string ()
 zmq::uuid_t::uuid_t ()
 {
     uuid_generate (uuid);
-    uuid_unparse (uuid, uuid_buf);
+    uuid_unparse (uuid, string_buf);
+
+    create_blob ();
 }
 
 zmq::uuid_t::~uuid_t ()
@@ -87,7 +93,7 @@ zmq::uuid_t::~uuid_t ()
 
 const char *zmq::uuid_t::to_string ()
 {
-    return uuid_buf;
+    return string_buf;
 }
 
 #else
@@ -117,7 +123,7 @@ zmq::uuid_t::uuid_t ()
     //  Store UUID type.
     clock_seq_hi_and_reserved = (clock_seq_hi_and_reserved & 0x3f) | 0x80;
 
-    snprintf (uuid_buf, sizeof uuid_buf,
+    snprintf (string_buf, sizeof string_buf,
         "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
         time_low,
         time_mid,
@@ -125,6 +131,8 @@ zmq::uuid_t::uuid_t ()
         clock_seq_hi_and_reserved,
         clock_seq_low,
         node [0], node [1], node [2], node [3], node [4], node [5]);
+
+    create_blob ();
 }
 
 zmq::uuid_t::~uuid_t ()
@@ -133,7 +141,66 @@ zmq::uuid_t::~uuid_t ()
 
 const char *zmq::uuid_t::to_string ()
 {
-    return uuid_buf;
+    return string_buf;
 }
 
 #endif
+
+const unsigned char *zmq::uuid_t::to_blob ()
+{
+    return blob_buf;
+}
+
+unsigned char zmq::uuid_t::convert_byte (const char *hexa_)
+{
+    unsigned char byte;
+
+    if (*hexa_ >= '0' && *hexa_ <= '9')
+        byte = *hexa_ - '0';
+    else if (*hexa_ >= 'A' && *hexa_ <= 'F')
+        byte = *hexa_ - 'A' + 10;
+    else if (*hexa_ >= 'a' && *hexa_ <= 'f')
+        byte = *hexa_ - 'a' + 10;
+    else
+        zmq_assert (false);
+
+    byte *= 16;
+
+    hexa_++;
+    if (*hexa_ >= '0' && *hexa_ <= '9')
+        byte += *hexa_ - '0';
+    else if (*hexa_ >= 'A' && *hexa_ <= 'F')
+        byte += *hexa_ - 'A' + 10;
+    else if (*hexa_ >= 'a' && *hexa_ <= 'f')
+        byte += *hexa_ - 'a' + 10;
+    else
+        zmq_assert (false);  
+
+    return byte;
+}
+
+void zmq::uuid_t::create_blob ()
+{
+    const char *buf = (const char*) string_buf;
+
+    blob_buf [0] = convert_byte (buf + 0);
+    blob_buf [1] = convert_byte (buf + 2);
+    blob_buf [2] = convert_byte (buf + 4);
+    blob_buf [3] = convert_byte (buf + 6);
+
+    blob_buf [4] = convert_byte (buf + 9);
+    blob_buf [5] = convert_byte (buf + 11);
+
+    blob_buf [6] = convert_byte (buf + 14);
+    blob_buf [7] = convert_byte (buf + 16);
+
+    blob_buf [8] = convert_byte (buf + 19);
+    blob_buf [9] = convert_byte (buf + 21);
+
+    blob_buf [10] = convert_byte (buf + 24);
+    blob_buf [11] = convert_byte (buf + 26);
+    blob_buf [12] = convert_byte (buf + 28);
+    blob_buf [13] = convert_byte (buf + 30);
+    blob_buf [14] = convert_byte (buf + 32);
+    blob_buf [15] = convert_byte (buf + 34);
+}

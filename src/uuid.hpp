@@ -52,20 +52,32 @@ namespace zmq
         //  free the allocated memory.
         const char *to_string ();
 
+        //  The length of binary representation of UUID.
+        enum { uuid_blob_len = 16 };
+
+        const unsigned char *to_blob ();
+
     private:
+
+        //  Converts one byte from hexa representation to binary.
+        unsigned char convert_byte (const char *hexa_);
+
+        //  Converts string representation of UUID into standardised BLOB.
+        //  The function is endianness agnostic.
+        void create_blob ();
 
 #if defined ZMQ_HAVE_WINDOWS
 #ifdef ZMQ_HAVE_MINGW32
         typedef unsigned char* RPC_CSTR;
 #endif
         ::UUID uuid;
-        RPC_CSTR uuid_str;
+        RPC_CSTR string_buf;
 #elif defined ZMQ_HAVE_FREEBSD || defined ZMQ_HAVE_NETBSD
         ::uuid_t uuid;
-        char *uuid_str;
+        char *string_buf;
 #elif defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_OSX
         ::uuid_t uuid;
-        char uuid_buf [uuid_string_len + 1];
+        char string_buf [uuid_string_len + 1];
 #else
         //  RFC 4122 UUID's fields
         uint32_t time_low;
@@ -75,8 +87,10 @@ namespace zmq
         uint8_t clock_seq_low;
         uint8_t node [6];
 
-        char uuid_buf [uuid_string_len + 1];
+        char string_buf [uuid_string_len + 1];
 #endif
+
+        unsigned char blob_buf [uuid_blob_len];
     };
 
 }
