@@ -232,15 +232,15 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
     addrinfo req;
     memset (&req, 0, sizeof (req));
 
-    //  We don't care about family. IPv4 is as good as IPv6.
-    req.ai_family = AF_UNSPEC;
+    //  We only support IPv4 addresses for now.
+    req.ai_family = AF_INET;
 
     //  Arbitrary, not used in the output, but avoids duplicate results.
     req.ai_socktype = SOCK_STREAM;
 
     //  Restrict hostname/service to literals to avoid any DNS lookups or
     //  service-name irregularity due to indeterminate socktype.
-   req.ai_flags = AI_PASSIVE | AI_NUMERICHOST | AI_NUMERICSERV;
+    req.ai_flags = AI_PASSIVE | AI_NUMERICHOST | AI_NUMERICSERV;
 
     //  Resolve the literal address. Some of the error info is lost in case
     //  of error, however, there's no way to report EAI errors via errno.
@@ -280,16 +280,18 @@ int zmq::resolve_ip_hostname (sockaddr_storage *addr_, socklen_t *addr_len_,
     addrinfo req;
     memset (&req, 0, sizeof (req));
 
-    //  Don't specify the family. We want both IPv4 and IPv6.
-    req.ai_family = AF_UNSPEC;
+    //  We only support IPv4 addresses for now.
+    req.ai_family = AF_INET;
 
     //  Need to choose one to avoid duplicate results from getaddrinfo() - this
     //  doesn't really matter, since it's not included in the addr-output.
     req.ai_socktype = SOCK_STREAM;
     
-    //  Avoid named services due to unclear socktype, and don't pick IPv6
-    //  addresses if we don't have a local IPv6 address configured.
-   req.ai_flags = AI_NUMERICSERV | AI_ADDRCONFIG;
+    //  Avoid named services due to unclear socktype, and don't pick IPv4
+    //  addresses if we don't have a local IPv4 address configured.
+    //  If this is failing for you on a host with only IPv6 connectivity,
+    //  please contribute proper IPv6 support for all functions in this file.
+    req.ai_flags = AI_NUMERICSERV | AI_ADDRCONFIG;
 
     //  Resolve host name. Some of the error info is lost in case of error,
     //  however, there's no way to report EAI errors via errno.
