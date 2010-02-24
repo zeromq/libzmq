@@ -153,9 +153,9 @@ zmq::fd_signaler_t::fd_signaler_t ()
     wsa_assert (r != INVALID_SOCKET);
 
     //  Set the read site of the pair to non-blocking mode.
-    //unsigned long argp = 1;
-    //rc = ioctlsocket (r, FIONBIO, &argp);
-    //wsa_assert (rc != SOCKET_ERROR);
+    unsigned long argp = 1;
+    rc = ioctlsocket (r, FIONBIO, &argp);
+    wsa_assert (rc != SOCKET_ERROR);
 
     //  We don't need the listening socket anymore. Close it.
     rc = closesocket (listener);
@@ -184,10 +184,22 @@ void zmq::fd_signaler_t::signal (int signal_)
 
 uint64_t zmq::fd_signaler_t::poll ()
 {
-    //  TODO: Can we do a blocking read on non-blocking socket?
-    //  It's not needed as for now, so let it stay unimplemented.
-    zmq_assert (false);
-    return 0;
+    //  Switch to blocking mode.
+    unsigned long argp = 0;
+    int rc = ioctlsocket (r, FIONBIO, &argp);
+    wsa_assert (rc != SOCKET_ERROR);
+
+    //  Get the signals. Given that we are in the blocking mode now,
+    //  there should be at least a single signal returned.
+    uint64_t signals = check ();
+    zmq_assert (signals);
+
+    //  Switch back to non-blocking mode.
+    argp = 1;
+    rc = ioctlsocket (r, FIONBIO, &argp);
+    wsa_assert (rc != SOCKET_ERROR);
+
+    return signals;
 }
 
 uint64_t zmq::fd_signaler_t::check ()
