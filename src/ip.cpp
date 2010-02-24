@@ -251,7 +251,7 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
     }
 
     //  Use the first result.
-    zmq_assert (res->ai_addrlen <= sizeof (*addr_));
+    zmq_assert ((size_t) (res->ai_addrlen) <= sizeof (*addr_));
     memcpy (addr_, res->ai_addr, res->ai_addrlen);
     *addr_len_ = res->ai_addrlen;
 
@@ -303,7 +303,7 @@ int zmq::resolve_ip_hostname (sockaddr_storage *addr_, socklen_t *addr_len_,
     }
 
     //  Copy first result to output addr with hostname and service.
-    zmq_assert (res->ai_addrlen <= sizeof (*addr_));
+    zmq_assert ((size_t) (res->ai_addrlen) <= sizeof (*addr_));
     memcpy (addr_, res->ai_addr, res->ai_addrlen);
     *addr_len_ = res->ai_addrlen;
  
