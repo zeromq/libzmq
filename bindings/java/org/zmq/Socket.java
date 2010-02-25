@@ -50,7 +50,6 @@ public class Socket {
     public static final int SNDBUF = 11;
     public static final int RCVBUF = 12;
 
-
     /**
      * Class constructor.
      *
@@ -127,11 +126,9 @@ public class Socket {
      * @return the internal 0MQ socket handle.
      */
     private long getSocketHandle () {
-	return socketHandle;
+        return socketHandle;
     }
-
 
     /** Opaque data used by JNI driver. */
     private long socketHandle;
-
 }

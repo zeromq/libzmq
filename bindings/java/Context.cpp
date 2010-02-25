@@ -24,29 +24,29 @@
 
 #include "org_zmq_Context.h"
 
+static void *fetch_socket (JNIEnv *env, jobject socket);
+
 /** Handle to Java's Context::contextHandle. */
 static jfieldID ctx_handle_fid = NULL;
 
 /**
  * Make sure we have a valid pointer to Java's Context::contextHandle.
  */
-static void ensure_context (JNIEnv *env,
-			    jobject obj)
+static void ensure_context (JNIEnv *env, jobject obj)
 {
     if (ctx_handle_fid == NULL) {
         jclass cls = env->GetObjectClass (obj);
-	assert (cls);
-	ctx_handle_fid = env->GetFieldID (cls, "contextHandle", "J");
-	assert (ctx_handle_fid);
-	env->DeleteLocalRef (cls);
+        assert (cls);
+        ctx_handle_fid = env->GetFieldID (cls, "contextHandle", "J");
+        assert (ctx_handle_fid);
+        env->DeleteLocalRef (cls);
     }
 }
 
 /**
  * Get the value of Java's Context::contextHandle.
  */
-static void *get_context (JNIEnv *env,
-			  jobject obj)
+static void *get_context (JNIEnv *env, jobject obj)
 {
     ensure_context (env, obj);
     void *s = (void*) env->GetLongField (obj, ctx_handle_fid);
@@ -56,9 +56,7 @@ static void *get_context (JNIEnv *env,
 /**
  * Set the value of Java's Context::contextHandle.
  */
-static void put_context (JNIEnv *env,
-			 jobject obj,
-			 void *s)
+static void put_context (JNIEnv *env, jobject obj, void *s)
 {
     ensure_context (env, obj);
     env->SetLongField (obj, ctx_handle_fid, (jlong) s);
@@ -67,8 +65,7 @@ static void put_context (JNIEnv *env,
 /**
  * Raise an exception that includes 0MQ's error message.
  */
-static void raise_exception (JNIEnv *env,
-			     int err)
+static void raise_exception (JNIEnv *env, int err)
 {
     //  Get exception class.
     jclass exception_class = env->FindClass ("java/lang/Exception");
@@ -88,18 +85,15 @@ static void raise_exception (JNIEnv *env,
  * Called to construct a Java Context object.
  */
 JNIEXPORT void JNICALL Java_org_zmq_Context_construct (JNIEnv *env,
-						       jobject obj,
-						       jint app_threads,
-						       jint io_threads,
-						       jint flags)
+    jobject obj, jint app_threads, jint io_threads, jint flags)
 {
     void *c = get_context (env, obj);
-    assert (! c);
+    assert (!c);
 
     c = zmq_init (app_threads, io_threads, flags);
-    put_context(env, obj, c);
+    put_context (env, obj, c);
 
-    if (c == NULL) {
+    if (!c) {
         raise_exception (env, errno);
         return;
     }
@@ -109,7 +103,7 @@ JNIEXPORT void JNICALL Java_org_zmq_Context_construct (JNIEnv *env,
  * Called to destroy a Java Context object.
  */
 JNIEXPORT void JNICALL Java_org_zmq_Context_finalize (JNIEnv *env,
-						      jobject obj)
+    jobject obj)
 {
     void *c = get_context (env, obj);
     assert (c);
@@ -118,3 +112,107 @@ JNIEXPORT void JNICALL Java_org_zmq_Context_finalize (JNIEnv *env,
     put_context (env, obj, NULL);
     assert (rc == 0);
 }
+
+JNIEXPORT jlong JNICALL Java_org_zmq_Context_poll (JNIEnv *env,
+    jobject obj,
+    jobjectArray socket_0mq,
+    jshortArray event_0mq,
+    jshortArray revent_0mq,
+    jlong timeout)
+{
+    jsize ls_0mq = 0;
+    jsize le_0mq = 0;
+    jsize lr_0mq = 0;
+
+    if (socket_0mq)
+        ls_0mq = env->GetArrayLength (socket_0mq);
+    if (event_0mq)
+        le_0mq = env->GetArrayLength (event_0mq);
+    if (revent_0mq)
+        lr_0mq = env->GetArrayLength (revent_0mq);
+
+    if (ls_0mq != le_0mq || ls_0mq != lr_0mq)
+        return 0;
+
+    jsize ls = ls_0mq;
+    if (ls <= 0)
+        return 0;
+
+    zmq_pollitem_t *pitem = new zmq_pollitem_t [ls];
+    short pc = 0;
+    int rc = 0;
+
+    //  Add 0MQ sockets.
+    if (ls_0mq > 0) {
+        jshort *e_0mq = env->GetShortArrayElements (event_0mq, 0);
+        if (e_0mq != NULL) {
+            for (int i = 0; i < ls_0mq; ++i) {
+                jobject s_0mq = env->GetObjectArrayElement (socket_0mq, i);
+                if (!s_0mq)
+                    continue;
+                void *s = fetch_socket (env, s_0mq);
+                if (!s)
+                    continue;
+                pitem [pc].socket = s;
+                pitem [pc].fd = 0;
+                pitem [pc].events = e_0mq [i];
+                pitem [pc].revents = 0;
+                ++pc;
+            }
+            env->ReleaseShortArrayElements(event_0mq, e_0mq, 0);
+        }
+    }
+
+    if (pc == ls) {
+        pc = 0;
+        long tout = (long) timeout;
+        rc = zmq_poll (pitem, ls, tout);
+        int err = 0;
+        const char *msg = "";
+        if (rc < 0) {
+            err = errno;
+            msg = zmq_strerror (err);
+        }
+    }
+
+    //  Set 0MQ results.
+    if (ls_0mq > 0) {
+        jshort *r_0mq = env->GetShortArrayElements (revent_0mq, 0);
+        if (r_0mq) {
+            for (int i = 0; i < ls_0mq; ++i) {
+                r_0mq [i] = pitem [pc].revents;
+                ++pc;
+            }
+            env->ReleaseShortArrayElements(revent_0mq, r_0mq, 0);
+        }
+    }
+
+    delete [] pitem;
+    return rc;
+}
+  
+/**
+ * Get the value of socketHandle for the specified Java Socket.
+ */
+static void *fetch_socket (JNIEnv *env, jobject socket)
+{
+    static jmethodID get_socket_handle_mid = NULL;
+
+    if (get_socket_handle_mid == NULL) {
+        jclass cls = env->GetObjectClass (socket);
+        assert (cls);
+        get_socket_handle_mid = env->GetMethodID (cls,
+            "getSocketHandle", "()J");
+        env->DeleteLocalRef (cls);
+        assert (get_socket_handle_mid);
+    }
+  
+    void *s = (void*) env->CallLongMethod (socket, get_socket_handle_mid);
+    if (env->ExceptionCheck ()) {
+        s = NULL;
+    }
+  
+    assert (s);
+    return s;
+}
+

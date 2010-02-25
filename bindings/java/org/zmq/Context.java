@@ -26,6 +26,10 @@ public class Context {
 
     public static final int POLL = 1;
 
+    public static final int POLLIN = 1;
+    public static final int POLLOUT = 2;
+    public static final int POLLERR = 4;
+
     /**
      * Class constructor.
      *
@@ -35,6 +39,20 @@ public class Context {
     public Context (int appThreads, int ioThreads, int flags) {
         construct (appThreads, ioThreads, flags);
     }
+
+    /**
+     * Issue a poll call on the specified 0MQ sockets.
+     * This function is experimental and may change in the future.
+     *
+     * @param socket an array of 0MQ Socket objects to poll.
+     * @param event an array of short values specifying what to poll for.
+     * @param revent an array of short values with the results.
+     * @param timeout the maximum timeout in microseconds.
+     */
+    public native long poll (Socket[] socket,
+			     short[] event,
+			     short[] revent,
+			     long timeout);
 
     /** Initialize the JNI interface */
     protected native void construct (int appThreads, int ioThreads, int flags);
@@ -50,9 +68,8 @@ public class Context {
      * @return the internal 0MQ context handle.
      */
     private long getContextHandle () {
-	return contextHandle;
+        return contextHandle;
     }
-
 
     /** Opaque data used by JNI driver. */
     private long contextHandle;
