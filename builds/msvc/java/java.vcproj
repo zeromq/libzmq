@@ -25,7 +25,7 @@
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="Compiling Java classes"
-				CommandLine="javac ..\..\..\bindings\java\org\zmq\Context.java ..\..\..\bindings\java\org\zmq\Socket.java"
+				CommandLine="javac ..\..\..\bindings\java\org\zmq\Context.java ..\..\..\bindings\java\org\zmq\Socket.java ..\..\..\bindings\java\org\zmq\Poller.java"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -87,7 +87,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Creating JAR archive"
-				CommandLine="cd ..\..\..\bindings\java&#x0D;&#x0A;jar -cfv ..\..\lib\zmq.jar org\zmq\Context.class org\zmq\Socket.class&#x0D;&#x0A;cd ..\..\builds\msvc\java"
+				CommandLine="cd ..\..\..\bindings\java&#x0D;&#x0A;jar -cfv ..\..\lib\zmq.jar org\zmq\Context.class org\zmq\Socket.class org\zmq\Poller.class&#x0D;&#x0A;cd ..\..\builds\msvc\java&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -101,7 +101,7 @@
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="Compiling Java classes"
-				CommandLine="javac ..\..\..\bindings\java\org\zmq\Context.java ..\..\..\bindings\java\org\zmq\Socket.java"
+				CommandLine="javac ..\..\..\bindings\java\org\zmq\Context.java ..\..\..\bindings\java\org\zmq\Socket.java ..\..\..\bindings\java\org\zmq\Poller.java"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -165,7 +165,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Creating JAR archive"
-				CommandLine="cd ..\..\..\bindings\java&#x0D;&#x0A;jar -cfv ..\..\lib\zmq.jar org\zmq\Context.class org\zmq\Socket.class&#x0D;&#x0A;cd ..\..\builds\msvc\java"
+				CommandLine="cd ..\..\..\bindings\java&#x0D;&#x0A;jar -cfv ..\..\lib\zmq.jar org\zmq\Context.class org\zmq\Socket.class org\zmq\Poller.class&#x0D;&#x0A;cd ..\..\builds\msvc\java&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>
@@ -179,6 +179,10 @@
 			>
 			<File
 				RelativePath="..\..\..\bindings\java\Context.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\bindings\java\Poller.cpp"
 				>
 			</File>
 			<File
@@ -210,6 +214,30 @@
 						Description="Generating JNI header"
 						CommandLine="javah -jni -classpath ..\..\..\bindings\java -d ..\..\..\bindings\java org.zmq.Context&#x0D;&#x0A;"
 						Outputs="org_zmq_Context.h"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\bindings\java\org\zmq\Poller.java"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generating JNI header"
+						CommandLine="javah -jni -classpath ..\..\..\bindings\java -d ..\..\..\bindings\java org.zmq.Poller"
+						Outputs="org_zmq_Poller.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Generating JNI header"
+						CommandLine="javah -jni -classpath ..\..\..\bindings\java -d ..\..\..\bindings\java org.zmq.Poller"
+						Outputs="org_zmq_Poller.h"
 					/>
 				</FileConfiguration>
 			</File>
