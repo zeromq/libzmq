@@ -44,9 +44,12 @@ bindings/python/setup.py
 bindings/java/org_zmq_*.h
 src/libzmq.pc
 lib/
+builds/msvc/*.suo
 builds/msvc/*/*.user
 builds/msvc/*/Debug
 builds/msvc/*/Release
 foreign/openpgm/*
 !foreign/openpgm/*.tar.bz2
 !foreign/openpgm/*.tar.gz
+classdist_noinst.stamp
+bindings/java/Zmq.jar
