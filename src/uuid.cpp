@@ -75,7 +75,8 @@ const char *zmq::uuid_t::to_string ()
     return string_buf;
 }
 
-#elif defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_OSX
+#elif defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_SOLARIS ||\
+      defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_CYGWIN
 
 #include <uuid/uuid.h>
 

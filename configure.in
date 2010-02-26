@@ -211,7 +211,14 @@ case "${host_os}" in
         install_man="no"
         ;;
     *cygwin*)
+        # Define on Cygwin to enable all library features
+        CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_CYGWIN, 1, [Have Cygwin])
+        # Cygwin provides libuuid as part of the e2fsprogs package, and somewhat
+        # uselessly installs the library in /usr/lib/e2fsprogs
+        LDFLAGS="${LDFLAGS} -L/usr/lib/e2fsprogs"
+        AC_CHECK_LIB(uuid, uuid_generate, ,
+            [AC_MSG_ERROR([cannot link with -luuid, install the e2fsprogs package.])])
         ;;
     *)
         AC_MSG_ERROR([unsupported system: ${host_os}.])

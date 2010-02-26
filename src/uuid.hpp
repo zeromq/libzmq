@@ -25,7 +25,8 @@
 
 #if defined ZMQ_HAVE_FREEBSD || defined ZMQ_HAVE_NETBSD
 #include <uuid.h>
-#elif defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_OSX
+#elif defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_SOLARIS ||\
+      defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_CYGWIN
 #include <uuid/uuid.h>
 #elif defined ZMQ_HAVE_WINDOWS
 #include <Rpc.h>
@@ -75,7 +76,8 @@ namespace zmq
 #elif defined ZMQ_HAVE_FREEBSD || defined ZMQ_HAVE_NETBSD
         ::uuid_t uuid;
         char *string_buf;
-#elif defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_OSX
+#elif defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_SOLARIS ||\
+      defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_CYGWIN
         ::uuid_t uuid;
         char string_buf [uuid_string_len + 1];
 #else
