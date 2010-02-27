@@ -68,11 +68,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "j_remote_thr", "j_remote_th
 		{66C40C34-7E05-4B03-8027-F40850C01364} = {66C40C34-7E05-4B03-8027-F40850C01364}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "python", "python\python.vcproj", "{CB9B47E2-3F9C-45B2-9C30-C27038CDB856}"
-	ProjectSection(ProjectDependencies) = postProject
-		{641C5F36-32EE-4323-B740-992B651CF9D6} = {641C5F36-32EE-4323-B740-992B651CF9D6}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zmq_forwarder", "zmq_forwarder\zmq_forwarder.vcproj", "{EFE471DE-6747-4B2E-B084-F7E45A16CD03}"
 	ProjectSection(ProjectDependencies) = postProject
 		{641C5F36-32EE-4323-B740-992B651CF9D6} = {641C5F36-32EE-4323-B740-992B651CF9D6}
@@ -84,11 +79,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zmq_streamer", "zmq_streame
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zmq_queue", "zmq_queue\zmq_queue.vcproj", "{076F7B8B-5175-4CA9-BC2B-438E37F7F43E}"
-	ProjectSection(ProjectDependencies) = postProject
-		{641C5F36-32EE-4323-B740-992B651CF9D6} = {641C5F36-32EE-4323-B740-992B651CF9D6}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ruby", "ruby\ruby.vcproj", "{A758A62C-48E3-4C30-ACD2-63AA93391D07}"
 	ProjectSection(ProjectDependencies) = postProject
 		{641C5F36-32EE-4323-B740-992B651CF9D6} = {641C5F36-32EE-4323-B740-992B651CF9D6}
 	EndProjectSection
@@ -155,9 +145,6 @@ Global
 		{00A421BA-3B6B-45BD-B91F-DED953472622}.Debug|Win32.Build.0 = Debug|Win32
 		{00A421BA-3B6B-45BD-B91F-DED953472622}.Release|Win32.ActiveCfg = Release|Win32
 		{00A421BA-3B6B-45BD-B91F-DED953472622}.Release|Win32.Build.0 = Release|Win32
-		{CB9B47E2-3F9C-45B2-9C30-C27038CDB856}.Debug|Win32.ActiveCfg = Debug|Win32
-		{CB9B47E2-3F9C-45B2-9C30-C27038CDB856}.Release|Win32.ActiveCfg = Release|Win32
-		{CB9B47E2-3F9C-45B2-9C30-C27038CDB856}.Release|Win32.Build.0 = Release|Win32
 		{EFE471DE-6747-4B2E-B084-F7E45A16CD03}.Debug|Win32.ActiveCfg = Debug|Win32
 		{EFE471DE-6747-4B2E-B084-F7E45A16CD03}.Debug|Win32.Build.0 = Debug|Win32
 		{EFE471DE-6747-4B2E-B084-F7E45A16CD03}.Release|Win32.ActiveCfg = Release|Win32
@@ -170,10 +157,6 @@ Global
 		{076F7B8B-5175-4CA9-BC2B-438E37F7F43E}.Debug|Win32.Build.0 = Debug|Win32
 		{076F7B8B-5175-4CA9-BC2B-438E37F7F43E}.Release|Win32.ActiveCfg = Release|Win32
 		{076F7B8B-5175-4CA9-BC2B-438E37F7F43E}.Release|Win32.Build.0 = Release|Win32
-		{A758A62C-48E3-4C30-ACD2-63AA93391D07}.Debug|Win32.ActiveCfg = Debug|Win32
-		{A758A62C-48E3-4C30-ACD2-63AA93391D07}.Debug|Win32.Build.0 = Debug|Win32
-		{A758A62C-48E3-4C30-ACD2-63AA93391D07}.Release|Win32.ActiveCfg = Release|Win32
-		{A758A62C-48E3-4C30-ACD2-63AA93391D07}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
