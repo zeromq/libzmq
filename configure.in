@@ -37,10 +37,6 @@ AC_SUBST(PACKAGE_VERSION)
 LTVER="0:0:0"
 AC_SUBST(LTVER)
 
-# librbzmq -version-info
-RBLTVER="0:0:0"
-AC_SUBST(RBLTVER)
-
 # libjzmq -version-info
 JLTVER="0:0:0"
 AC_SUBST(JLTVER)
@@ -312,48 +308,6 @@ AC_ARG_WITH([cpp], [AS_HELP_STRING([--with-cpp],
 if test "x$cpp" != "xno"; then
     cppzmq="yes" 
 fi
-
-# RUBY
-rbzmq="no"
-AC_ARG_WITH(ruby_headersdir,
-    AS_HELP_STRING([--with-ruby-headersdir], [ruby.h header file location]),
-        [ruby_headersdir="$withval"], [ruby_headersdir="no"])
-
-if test "x$ruby_headersdir" != "xno"; then
-    CPPFLAGS="${CPPFLAGS} -I${ruby_headersdir}"
-fi
-
-AC_ARG_WITH(ruby_libdir,
-    AS_HELP_STRING([--with-ruby-libdir],[libruby library file location]),
-        [ruby_libdir="$withval"], [ruby_libdir="no"])
-
-if test "x$ruby_libdir" != "xno"; then
-    LDFLAGS="${LDFLAGS} -L${ruby_libdir}"
-fi
-
-AC_ARG_WITH([ruby], [AS_HELP_STRING([--with-ruby], [build ruby language binding [default=no]])], [with_ruby=yes], [with_ruby=no])
-if test "x$with_ruby" != "xno"; then
-    AC_CHECK_HEADERS([ruby.h], [], 
-        [AC_MSG_ERROR([cannot find Ruby header files. Please specify their location with --with-ruby-headersdir.])])
-
-    AC_SEARCH_LIBS(ruby_init,[ruby ruby1.8 ruby18],, 
-        [AC_MSG_ERROR([cannot link with Ruby library. Please specify it's location with --with-ruby-libdir.])])
-   
-    rbzmq="yes"
-fi
-
-AC_ARG_WITH([rubydir], [AS_HELP_STRING([--with-rubydir],
-    [librbzmq install dir [default=EPREFIX/lib]])],
-    [rubydir="$withval"], [rubydir="_default_"])
-
-if test "$rubydir" = "_default_"; then
-    rubydir=${libdir}
-else
-    rubydir=${rubydir}
-fi
-
-RUBYDIR="$rubydir"
-AC_SUBST([RUBYDIR])
     
 # Java language binding
 jzmq="no"
@@ -538,7 +492,7 @@ if test "x$with_perf" != "xno"; then
     perf="yes"
 
     if test "x$czmq" = "xno" -a "x$cppzmq" = "xno" -a \
-          "x$jzmq" = "xno" -a "x$rbzmq" = "xno"; then
+          "x$jzmq" = "xno"; then
         AC_MSG_ERROR([the --with-perf option requires at least one language binding.]);
     fi
 fi
@@ -548,7 +502,6 @@ if test "x$with_perf" = "xno" -a "x$with_pgm_examples" = "xyes"; then
 fi
 
 AM_CONDITIONAL(BUILD_JAVA, test "x$jzmq" = "xyes")
-AM_CONDITIONAL(BUILD_RUBY, test "x$rbzmq" = "xyes")
 AM_CONDITIONAL(BUILD_C, test "x$czmq" = "xyes")
 AM_CONDITIONAL(BUILD_CPP, test "x$cppzmq" = "xyes")
 AM_CONDITIONAL(BUILD_PGM, test "x$pgm_ext" = "xyes")
@@ -574,9 +527,9 @@ AC_SUBST(LIBZMQ_EXTRA_LDFLAGS)
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(perror gettimeofday memset socket getifaddrs freeifaddrs)
 
-AC_OUTPUT(Makefile src/Makefile doc/Makefile bindings/ruby/Makefile \
+AC_OUTPUT(Makefile src/Makefile doc/Makefile
     bindings/java/Makefile perf/Makefile perf/c/Makefile perf/cpp/Makefile \
-    perf/ruby/Makefile perf/java/Makefile src/libzmq.pc \
+    perf/java/Makefile src/libzmq.pc \
     devices/Makefile devices/zmq_forwarder/Makefile \
     devices/zmq_streamer/Makefile devices/zmq_queue/Makefile bindings/Makefile)
 
@@ -605,10 +558,6 @@ AC_MSG_RESULT([   Language bindings:])
 AC_MSG_RESULT([     C: $czmq])
 AC_MSG_RESULT([     C++: $cppzmq])
 AC_MSG_RESULT([     Java: $jzmq])
-AC_MSG_RESULT([     Ruby: $rbzmq])
-if test "x$rbzmq" = "xyes"; then
-AC_MSG_RESULT([       Ruby library install dir: $rubydir])
-fi
 AC_MSG_RESULT([   Transports:])
 AC_MSG_RESULT([     tcp: yes])
 AC_MSG_RESULT([     udp: $pgm_ext])

@@ -10,9 +10,5 @@ if BUILD_JAVA
 PERF_DIR_J = java
 endif
 
-if BUILD_RUBY
-PERF_DIR_R = ruby
-endif
-
-SUBDIRS = $(PERF_DIR_C) $(PERF_DIR_CPP) $(PERF_DIR_J) $(PERF_DIR_R)
-DIST_SUBDIRS = c cpp java ruby
+SUBDIRS = $(PERF_DIR_C) $(PERF_DIR_CPP) $(PERF_DIR_J)
+DIST_SUBDIRS = c cpp java
