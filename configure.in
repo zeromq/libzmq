@@ -313,46 +313,6 @@ if test "x$cpp" != "xno"; then
     cppzmq="yes" 
 fi
 
-# Python
-pyzmq="no"
-AC_ARG_WITH(python_headersdir,
-    AS_HELP_STRING([--with-python-headersdir], [Python.h header file location]),
-        [python_headersdir="$withval"], [python_headersdir="no"])
-
-AC_ARG_WITH([python], [AS_HELP_STRING([--with-python], [build Python language binding [default=no]])], [with_python=yes], [with_python=no])
-if test "x$with_python" != "xno"; then
-    AM_PATH_PYTHON([2.4], , [:])
-    if test "x$PYTHON" = "x:"; then
-        AC_MSG_ERROR([the --with-python option requires that python be installled.]);
-    fi
-
-    if test "x$python_headersdir" != "xno"; then
-        PYTHON_INCLUDES="-I${python_headersdir}"
-        PYTHON_SETUP_INCLUDES="${python_headersdir}"
-
-        AC_CHECK_HEADERS($python_headersdir/Python.h, [] , 
-            [AC_MSG_ERROR([cannot find a usable Python.h in ${python_headersdir}.])])
-
-    else 
-        py_prefix=`$PYTHON -c "import sys; print sys.prefix"`
-        py_exec_prefix=`$PYTHON -c "import sys; print sys.exec_prefix"`
-        PYTHON_INCLUDES="-I${py_prefix}/include/python${PYTHON_VERSION}"
-        PYTHON_SETUP_INCLUDES="${py_prefix}/include/python${PYTHON_VERSION}"
-
-        if test "$py_prefix" != "$py_exec_prefix"; then
-            PYTHON_INCLUDES="${PYTHON_INCLUDES} -I${py_exec_prefix}/include/python${PYTHON_VERSION}"
-        fi
-
-        AC_CHECK_HEADERS($py_prefix/include/python${PYTHON_VERSION}/Python.h, [] , 
-            [AC_MSG_ERROR([cannot find a usable Python.h in $py_prefix/include/python${PYTHON_VERSION}.])])
-    fi
-
-    AC_SUBST(PYTHON_INCLUDES)
-    AC_SUBST(PYTHON_SETUP_INCLUDES)
-
-    pyzmq="yes"
-fi
-
 # RUBY
 rbzmq="no"
 AC_ARG_WITH(ruby_headersdir,
@@ -394,13 +354,6 @@ fi
 
 RUBYDIR="$rubydir"
 AC_SUBST([RUBYDIR])
-
-if test "x$pyzmq" = "xyes"; then
-    AC_CHECK_PROG(have_python, python, yes, no)
-    if test "x$have_python" != "xyes"; then
-        AC_MSG_ERROR([the --with-python option requires that python be installed.])
-    fi
-fi
     
 # Java language binding
 jzmq="no"
@@ -523,11 +476,9 @@ if test "x$with_pgm_ext" != "xno"; then
     if test "x$have_perl" != "xyes"; then
         AC_MSG_ERROR([perl is required for building the PGM extension.])
     fi
-    if test "x$pyzmq" != "xyes"; then
-        AC_CHECK_PROG(have_python, python, yes, no)
-        if test "x$have_python" != "xyes"; then
-            AC_MSG_ERROR([python is required for building the PGM extension.])
-        fi
+    AC_CHECK_PROG(have_python, python, yes, no)
+    if test "x$have_python" != "xyes"; then
+        AC_MSG_ERROR([python is required for building the PGM extension.])
     fi
 
     #  Unpack libpgm
@@ -586,7 +537,7 @@ AC_ARG_WITH([perf], [AS_HELP_STRING([--with-perf],
 if test "x$with_perf" != "xno"; then
     perf="yes"
 
-    if test "x$czmq" = "xno" -a "x$cppzmq" = "xno" -a "x$pyzmq" = "xno" -a \
+    if test "x$czmq" = "xno" -a "x$cppzmq" = "xno" -a \
           "x$jzmq" = "xno" -a "x$rbzmq" = "xno"; then
         AC_MSG_ERROR([the --with-perf option requires at least one language binding.]);
     fi
@@ -596,9 +547,7 @@ if test "x$with_perf" = "xno" -a "x$with_pgm_examples" = "xyes"; then
     AC_MSG_ERROR([cannot configure --with-pgm-examples without --with-perf.]);
 fi
 
-AM_CONDITIONAL(BUILD_PYTHON, test "x$pyzmq" = "xyes")
 AM_CONDITIONAL(BUILD_JAVA, test "x$jzmq" = "xyes")
-AM_CONDITIONAL(BUILD_PYTHON, test "x$pyzmq" = "xyes")
 AM_CONDITIONAL(BUILD_RUBY, test "x$rbzmq" = "xyes")
 AM_CONDITIONAL(BUILD_C, test "x$czmq" = "xyes")
 AM_CONDITIONAL(BUILD_CPP, test "x$cppzmq" = "xyes")
@@ -625,10 +574,9 @@ AC_SUBST(LIBZMQ_EXTRA_LDFLAGS)
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(perror gettimeofday memset socket getifaddrs freeifaddrs)
 
-AC_OUTPUT(Makefile src/Makefile doc/Makefile bindings/python/Makefile \
-    bindings/python/setup.py bindings/ruby/Makefile \
+AC_OUTPUT(Makefile src/Makefile doc/Makefile bindings/ruby/Makefile \
     bindings/java/Makefile perf/Makefile perf/c/Makefile perf/cpp/Makefile \
-    perf/python/Makefile perf/ruby/Makefile perf/java/Makefile src/libzmq.pc \
+    perf/ruby/Makefile perf/java/Makefile src/libzmq.pc \
     devices/Makefile devices/zmq_forwarder/Makefile \
     devices/zmq_streamer/Makefile devices/zmq_queue/Makefile bindings/Makefile)
 
@@ -657,7 +605,6 @@ AC_MSG_RESULT([   Language bindings:])
 AC_MSG_RESULT([     C: $czmq])
 AC_MSG_RESULT([     C++: $cppzmq])
 AC_MSG_RESULT([     Java: $jzmq])
-AC_MSG_RESULT([     Python: $pyzmq])
 AC_MSG_RESULT([     Ruby: $rbzmq])
 if test "x$rbzmq" = "xyes"; then
 AC_MSG_RESULT([       Ruby library install dir: $rubydir])

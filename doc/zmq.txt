@@ -166,9 +166,6 @@ $$C++$$::
 Java::
     linkzmq:zmq_java[7]
 
-Python::
-    linkzmq:zmq_python[7]
-
 
 AUTHOR
 ------

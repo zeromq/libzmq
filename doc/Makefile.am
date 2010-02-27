@@ -5,7 +5,7 @@ MAN3 = zmq_bind.3 zmq_close.3 zmq_connect.3 zmq_flush.3 zmq_init.3 \
     zmq_poll.3 zmq_recv.3 zmq_send.3 zmq_setsockopt.3 zmq_socket.3 \
     zmq_strerror.3 zmq_term.3 zmq_version.3
 MAN7 = zmq.7 zmq_tcp.7 zmq_udp.7 zmq_pgm.7 zmq_inproc.7 zmq_ipc.7 \
-    zmq_cpp.7 zmq_java.7 zmq_python.7
+    zmq_cpp.7 zmq_java.7
 MAN_DOC = $(MAN1) $(MAN3) $(MAN7)
 
 MAN_TXT = $(MAN1:%.1=%.txt)
