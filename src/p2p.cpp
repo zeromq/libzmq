@@ -47,6 +47,7 @@ void zmq::p2p_t::xattach_pipes (class reader_t *inpipe_,
     zmq_assert (!inpipe && !outpipe);
     inpipe = inpipe_;
     outpipe = outpipe_;
+    outpipe_alive = true;
 }
 
 void zmq::p2p_t::xdetach_inpipe (class reader_t *pipe_)
@@ -75,7 +76,8 @@ void zmq::p2p_t::xrevive (class reader_t *pipe_)
 
 void zmq::p2p_t::xrevive (class writer_t *pipe_)
 {
-    zmq_not_implemented ();
+    zmq_assert (!outpipe_alive);
+    outpipe_alive = true;
 }
 
 int zmq::p2p_t::xsetsockopt (int option_, const void *optval_,
@@ -87,13 +89,17 @@ int zmq::p2p_t::xsetsockopt (int option_, const void *optval_,
 
 int zmq::p2p_t::xsend (zmq_msg_t *msg_, int flags_)
 {
-    if (!outpipe) {
+    if (outpipe == NULL || !outpipe_alive) {
         errno = EAGAIN;
         return -1;
     }
 
-    bool written = outpipe->write (msg_);
-    zmq_assert (written);
+    if (!outpipe->write (msg_)) {
+        outpipe_alive = false;
+        errno = EAGAIN;
+        return -1;
+    }
+
     if (!(flags_ & ZMQ_NOFLUSH))
         outpipe->flush ();
 
@@ -132,7 +138,10 @@ bool zmq::p2p_t::xhas_in ()
 
 bool zmq::p2p_t::xhas_out ()
 {
-    //  TODO: Implement this once queue limits are in-place.
-    return true;
+    if (outpipe == NULL || !outpipe_alive)
+        return false;
+
+    outpipe_alive = outpipe->check_write ();
+    return outpipe_alive;
 }
 

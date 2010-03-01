@@ -53,6 +53,7 @@ namespace zmq
         class writer_t *outpipe;
 
         bool alive;
+        bool outpipe_alive;
 
         p2p_t (const p2p_t&);
         void operator = (const p2p_t&);
