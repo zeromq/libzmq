@@ -405,9 +405,14 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             //  If the poll item is a raw file descriptor, simply convert
             //  the events to zmq_pollitem_t-style format.
             if (!items_ [i].socket) {
-                items_ [i].revents =
-                    (pollfds [pollfd_pos].revents & POLLIN ? ZMQ_POLLIN : 0) |
-                    (pollfds [pollfd_pos].revents & POLLOUT ? ZMQ_POLLOUT : 0);
+                items_ [i].revents = 0;
+                if (pollfds [pollfd_pos].revents & POLLIN)
+                    items_ [i].revents |= ZMQ_POLLIN;
+                if (pollfds [pollfd_pos].revents & POLLOUT)
+                    items_ [i].revents |= ZMQ_POLLOUT;
+                if (pollfds [pollfd_pos].revents & ~(POLLIN | POLLOUT))
+                    items_ [i].revents |= ZMQ_POLLERR;
+
                 if (items_ [i].revents)
                     nevents++;
                 pollfd_pos++;
