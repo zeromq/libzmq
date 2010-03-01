@@ -504,6 +504,8 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             FD_SET (items_ [i].fd, &pollset_in);
         if (items_ [i].events & ZMQ_POLLOUT)
             FD_SET (items_ [i].fd, &pollset_out);
+        if (items_ [i].events & ZMQ_POLLERR)
+            FD_SET (items_ [i].fd, &pollset_err);
         if (maxfd == zmq::retired_fd || maxfd < items_ [i].fd)
             maxfd = items_ [i].fd;
     }
@@ -554,9 +556,13 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             //  If the poll item is a raw file descriptor, simply convert
             //  the events to zmq_pollitem_t-style format.
             if (!items_ [i].socket) {
-                items_ [i].revents =
-                    (FD_ISSET (items_ [i].fd, &inset) ? ZMQ_POLLIN : 0) |
-                    (FD_ISSET (items_ [i].fd, &outset) ? ZMQ_POLLOUT : 0);
+                items_ [i].revents = 0;
+                if (FD_ISSET (items_ [i].fd, &inset))
+                    items_ [i].revents |= ZMQ_POLLIN;
+                if (FD_ISSET (items_ [i].fd, &outset))
+                    items_ [i].revents |= ZMQ_POLLOUT;
+                if (FD_ISSET (items_ [i].fd, &errset))
+                    items_ [i].revents |= ZMQ_POLLERR;
                 if (items_ [i].revents)
                     nevents++;
                 continue;
