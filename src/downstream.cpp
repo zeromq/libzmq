@@ -67,7 +67,7 @@ void zmq::downstream_t::xrevive (class reader_t *pipe_)
 
 void zmq::downstream_t::xrevive (class writer_t *pipe_)
 {
-    zmq_not_implemented ();
+    lb.revive (pipe_);
 }
 
 int zmq::downstream_t::xsetsockopt (int option_, const void *optval_,
