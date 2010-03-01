@@ -63,6 +63,11 @@ void zmq::xreq_t::xrevive (class reader_t *pipe_)
     fq.revive (pipe_);
 }
 
+void zmq::xreq_t::xrevive (class writer_t *pipe_)
+{
+    zmq_not_implemented ();
+}
+
 int zmq::xreq_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
@@ -96,5 +101,4 @@ bool zmq::xreq_t::xhas_out ()
 {
     return lb.has_out ();
 }
-
 

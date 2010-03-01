@@ -108,6 +108,11 @@ void zmq::req_t::xrevive (class reader_t *pipe_)
     reply_pipe_active = true;
 }
 
+void zmq::req_t::xrevive (class writer_t *pipe_)
+{
+    zmq_not_implemented ();
+}
+
 int zmq::req_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
@@ -142,11 +147,9 @@ int zmq::req_t::xsend (zmq_msg_t *msg_, int flags_)
             current = 0;
     }
 
-    //  TODO: Implement this once queue limits are in-place.
-    zmq_assert (out_pipes [current]->check_write (zmq_msg_size (msg_)));
-
     //  Push message to the selected pipe.
-    out_pipes [current]->write (msg_);
+    bool written = out_pipes [current]->write (msg_);
+    zmq_assert (written);
     out_pipes [current]->flush ();
 
     waiting_for_reply = true;

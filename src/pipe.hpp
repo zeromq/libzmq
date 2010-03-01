@@ -68,10 +68,8 @@ namespace zmq
         uint64_t hwm;
         uint64_t lwm;
 
-        //  Positions of head and tail of the pipe (in bytes).
-        uint64_t head;
-        uint64_t tail;
-        uint64_t last_sent_head;
+        //  Number of messages read so far.
+        uint64_t msgs_read;
 
         //  Endpoint (either session or socket) the pipe is attached to.
         i_endpoint *endpoint;
@@ -91,10 +89,10 @@ namespace zmq
         void set_pipe (class pipe_t *pipe_);
         void set_endpoint (i_endpoint *endpoint_);
 
-        //  Checks whether message with specified size can be written to the
-        //  pipe. If writing the message would cause high watermark to be
+        //  Checks whether a message can be written to the pipe.
+        //  If writing the message would cause high watermark to be
         //  exceeded, the function returns false.
-        bool check_write (uint64_t size_);
+        bool check_write ();
 
         //  Writes a message to the underlying pipe. Returns false if the
         //  message cannot be written because high watermark was reached.
@@ -111,8 +109,13 @@ namespace zmq
 
     private:
 
+        void process_reader_info (uint64_t msgs_read_);
+
         //  Command handlers.
         void process_pipe_term ();
+
+        //  Tests whether the pipe is already full.
+        bool pipe_full ();
 
         //  The underlying pipe.
         class pipe_t *pipe;
@@ -124,9 +127,15 @@ namespace zmq
         uint64_t hwm;
         uint64_t lwm;
 
-        //  Positions of head and tail of the pipe (in bytes).
-        uint64_t head;
-        uint64_t tail;
+        //  Last confirmed number of messages read from the pipe.
+        //  The actual number can be higher.
+        uint64_t msgs_read;
+
+        //  Number of messages we have written so far.
+        uint64_t msgs_written;
+
+        //  True iff the last attempt to write a message has failed.
+        bool stalled;
 
         //  Endpoint (either session or socket) the pipe is attached to.
         i_endpoint *endpoint;

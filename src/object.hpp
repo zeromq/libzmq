@@ -71,6 +71,8 @@ namespace zmq
              class reader_t *in_pipe_, class writer_t *out_pipe_,
              const blob_t &peer_identity_, bool inc_seqnum_ = true);
         void send_revive (class object_t *destination_);
+        void send_reader_info (class writer_t *destination_,
+             uint64_t msgs_read_);
         void send_pipe_term (class writer_t *destination_);
         void send_pipe_term_ack (class reader_t *destination_);
         void send_term_req (class socket_base_t *destination_,
@@ -88,6 +90,7 @@ namespace zmq
         virtual void process_bind (class reader_t *in_pipe_,
             class writer_t *out_pipe_, const blob_t &peer_identity_);
         virtual void process_revive ();
+        virtual void process_reader_info (uint64_t msgs_read_);
         virtual void process_pipe_term ();
         virtual void process_pipe_term_ack ();
         virtual void process_term_req (class owned_t *object_);

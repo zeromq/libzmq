@@ -73,6 +73,11 @@ void zmq::p2p_t::xrevive (class reader_t *pipe_)
     alive = true;
 }
 
+void zmq::p2p_t::xrevive (class writer_t *pipe_)
+{
+    zmq_not_implemented ();
+}
+
 int zmq::p2p_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
@@ -87,10 +92,8 @@ int zmq::p2p_t::xsend (zmq_msg_t *msg_, int flags_)
         return -1;
     }
 
-    //  TODO: Implement this once queue limits are in-place.
-    zmq_assert (outpipe->check_write (zmq_msg_size (msg_)));
-
-    outpipe->write (msg_);
+    bool written = outpipe->write (msg_);
+    zmq_assert (written);
     if (!(flags_ & ZMQ_NOFLUSH))
         outpipe->flush ();
 

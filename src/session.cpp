@@ -164,6 +164,13 @@ void zmq::session_t::revive (reader_t *pipe_)
         engine->revive ();
 }
 
+void zmq::session_t::revive (writer_t *pipe_)
+{
+    zmq_assert (out_pipe == pipe_);
+    if (engine)
+        engine->resume_input ();
+}
+
 void zmq::session_t::process_plug ()
 {
 }

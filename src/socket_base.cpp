@@ -552,6 +552,11 @@ void zmq::socket_base_t::revive (reader_t *pipe_)
     xrevive (pipe_);
 }
 
+void zmq::socket_base_t::revive (writer_t *pipe_)
+{
+    xrevive (pipe_);
+}
+
 void zmq::socket_base_t::attach_pipes (class reader_t *inpipe_,
     class writer_t *outpipe_, const blob_t &peer_identity_)
 {

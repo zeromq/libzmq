@@ -93,6 +93,7 @@ namespace zmq
         void detach_outpipe (class writer_t *pipe_);
         void kill (class reader_t *pipe_);
         void revive (class reader_t *pipe_);
+        void revive (class writer_t *pipe_);
 
     protected:
 
@@ -106,6 +107,7 @@ namespace zmq
         virtual void xdetach_outpipe (class writer_t *pipe_) = 0;
         virtual void xkill (class reader_t *pipe_) = 0;
         virtual void xrevive (class reader_t *pipe_) = 0;
+        virtual void xrevive (class writer_t *pipe_) = 0;
 
         //  Actual algorithms are to be defined by individual socket types.
         virtual int xsetsockopt (int option_, const void *optval_,

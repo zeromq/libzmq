@@ -57,6 +57,7 @@ namespace zmq
         void detach_outpipe (class writer_t *pipe_);
         void kill (class reader_t *pipe_);
         void revive (class reader_t *pipe_);
+        void revive (class writer_t *pipe_);
 
     private:
 

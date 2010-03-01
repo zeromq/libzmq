@@ -115,3 +115,9 @@ namespace zmq
     } while (false)
 
 #endif
+
+#define zmq_not_implemented() \
+    do {\
+        fprintf (stderr, "Hic sunt leones (%s:%d)\n", __FILE__, __LINE__);\
+        abort ();\
+    } while (false)

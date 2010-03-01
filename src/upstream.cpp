@@ -62,6 +62,11 @@ void zmq::upstream_t::xrevive (class reader_t *pipe_)
     fq.revive (pipe_);
 }
 
+void zmq::upstream_t::xrevive (class writer_t *pipe_)
+{
+    zmq_assert (false);
+}
+
 int zmq::upstream_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {

@@ -35,6 +35,7 @@ namespace zmq
         virtual void detach_outpipe (class writer_t *pipe_) = 0;
         virtual void kill (class reader_t *pipe_) = 0;
         virtual void revive (class reader_t *pipe_) = 0;
+        virtual void revive (class writer_t *pipe_) = 0;
     };
 
 }

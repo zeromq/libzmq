@@ -40,6 +40,7 @@ namespace zmq
             attach,
             bind,
             revive,
+            reader_info,
             pipe_term,
             pipe_term_ack,
             term_req,
@@ -83,6 +84,13 @@ namespace zmq
             //  are messages in the pipe.
             struct {
             } revive;
+
+            //  Sent by pipe reader to inform pipe writer
+            //  about how many messages it has read so far.
+            //  Used to implement the flow control.
+            struct {
+                uint64_t msgs_read;
+            } reader_info;
 
             //  Sent by pipe reader to pipe writer to ask it to terminate
             //  its end of the pipe.

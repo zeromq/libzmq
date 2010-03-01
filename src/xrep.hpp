@@ -43,6 +43,7 @@ namespace zmq
         void xdetach_outpipe (class writer_t *pipe_);
         void xkill (class reader_t *pipe_);
         void xrevive (class reader_t *pipe_);
+        void xrevive (class writer_t *pipe_);
         int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
         int xsend (zmq_msg_t *msg_, int flags_);
         int xflush ();

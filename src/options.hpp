@@ -33,8 +33,8 @@ namespace zmq
 
         int setsockopt (int option_, const void *optval_, size_t optvallen_);
 
-        int64_t hwm;
-        int64_t lwm;
+        uint64_t hwm;
+        uint64_t lwm;
         int64_t swap;
         uint64_t affinity;
         blob_t identity;

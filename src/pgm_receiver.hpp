@@ -54,6 +54,7 @@ namespace zmq
         void plug (struct i_inout *inout_);
         void unplug ();
         void revive ();
+        void resume_input ();
         void add_prefix (const blob_t &identity_);
         void trim_prefix ();
 

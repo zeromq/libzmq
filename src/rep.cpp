@@ -144,6 +144,11 @@ void zmq::rep_t::xrevive (class reader_t *pipe_)
     active++;
 }
 
+void zmq::rep_t::xrevive (class writer_t *pipe_)
+{
+    zmq_not_implemented ();
+}
+
 int zmq::rep_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
@@ -160,12 +165,13 @@ int zmq::rep_t::xsend (zmq_msg_t *msg_, int flags_)
 
     //  TODO: Implement this once queue limits are in-place. If the reply
     //  overloads the buffer, connection should be torn down.
-    zmq_assert (reply_pipe->check_write (zmq_msg_size (msg_)));
+    zmq_assert (reply_pipe->check_write ());
 
     //  Push message to the selected pipe. If requester have disconnected
     //  in the meantime, drop the reply.
     if (reply_pipe) {
-        reply_pipe->write (msg_);
+        bool written = reply_pipe->write (msg_);
+        zmq_assert (written);
         reply_pipe->flush ();
     }
     else {

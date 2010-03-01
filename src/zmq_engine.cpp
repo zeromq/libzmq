@@ -102,18 +102,18 @@ void zmq::zmq_engine_t::in_event ()
     //  Push the data to the decoder.
     size_t processed = decoder.process_buffer (inpos, insize);
 
-    //  Adjust the buffer.
-    inpos += processed;
-    insize -= processed;
-
     //  Stop polling for input if we got stuck.
     if (processed < insize) {
 
-        //  This may happen if queue limits are implemented or when
+        //  This may happen if queue limits are in effect or when
         //  init object reads all required information from the socket
         //  and rejects to read more data.
         reset_pollin (handle);
     }
+
+    //  Adjust the buffer.
+    inpos += processed;
+    insize -= processed;
 
     //  Flush all messages the decoder may have produced.
     inout->flush ();
@@ -160,6 +160,13 @@ void zmq::zmq_engine_t::revive ()
     //  Thus we try to write the data to socket avoiding polling for POLLOUT.
     //  Consequently, the latency should be better in request/reply scenarios.
     out_event ();
+}
+
+void zmq::zmq_engine_t::resume_input ()
+{
+    set_pollin (handle);
+
+    in_event ();
 }
 
 void zmq::zmq_engine_t::add_prefix (const blob_t &identity_)

@@ -95,6 +95,10 @@ void zmq::object_t::process_command (command_t &cmd_)
         process_seqnum ();
         break;
 
+    case command_t::reader_info:
+        process_reader_info (cmd_.args.reader_info.msgs_read);
+        break;
+
     case command_t::pipe_term:
         process_pipe_term ();
         return;
@@ -249,6 +253,16 @@ void zmq::object_t::send_revive (object_t *destination_)
     send_command (cmd);
 }
 
+void zmq::object_t::send_reader_info (writer_t *destination_,
+    uint64_t msgs_read_)
+{
+    command_t cmd;
+    cmd.destination = destination_;
+    cmd.type = command_t::reader_info;
+    cmd.args.reader_info.msgs_read = msgs_read_;
+    send_command (cmd);
+}
+
 void zmq::object_t::send_pipe_term (writer_t *destination_)
 {
     command_t cmd;
@@ -319,6 +333,11 @@ void zmq::object_t::process_bind (reader_t *in_pipe_, writer_t *out_pipe_,
 }
 
 void zmq::object_t::process_revive ()
+{
+    zmq_assert (false);
+}
+
+void zmq::object_t::process_reader_info (uint64_t msgs_read_)
 {
     zmq_assert (false);
 }
