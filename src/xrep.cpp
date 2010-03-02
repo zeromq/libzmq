@@ -83,7 +83,6 @@ void zmq::xrep_t::xrevive (class reader_t *pipe_)
 
 void zmq::xrep_t::xrevive (class writer_t *pipe_)
 {
-    zmq_not_implemented ();
 }
 
 int zmq::xrep_t::xsetsockopt (int option_, const void *optval_,
@@ -116,8 +115,11 @@ int zmq::xrep_t::xsend (zmq_msg_t *msg_, int flags_)
     }
 
     //  Push message to the selected pipe.
-    bool written = it->second->write (msg_);
-    zmq_assert (written);
+    if (!it->second->write (msg_)) {
+        errno = EAGAIN;
+        return -1;
+    }
+
     it->second->flush ();
 
     //  Detach the message from the data buffer.
