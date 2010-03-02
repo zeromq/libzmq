@@ -64,6 +64,9 @@ namespace zmq
         typedef yarray_t <class reader_t> in_pipes_t;
         in_pipes_t in_pipes;
 
+        //  Number of active pipes.
+        size_t active;
+
         //  Req_t load-balances the requests - 'current' points to the session
         //  that's processing the request at the moment.
         out_pipes_t::size_type current;
