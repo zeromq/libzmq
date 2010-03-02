@@ -54,6 +54,13 @@ namespace zmq
         typedef yarray_t <class writer_t> out_pipes_t;
         out_pipes_t out_pipes;
 
+        //  Pointer to the pipe we are waiting for to became writable
+        //  again; NULL if tha last send operation was successful.
+        class writer_t *stalled_pipe;
+
+        //  Check whether we can write a message to all pipes.
+        bool check_write ();
+
         pub_t (const pub_t&);
         void operator = (const pub_t&);
     };
