@@ -71,13 +71,19 @@ void zmq::rep_t::xdetach_inpipe (class reader_t *pipe_)
             active--;
             in_pipes.swap (index, active);
             out_pipes.swap (index, active);
+            if (current == active)
+                current = 0;
         }
         return;
     }
 
     //  Now both inpipe and outpipe are detached. Remove them from the lists.
-    if (index < active)
+    if (index < active) {
         active--;
+        if (current == active)
+            current = 0;
+    }
+
     in_pipes.erase (index);
     out_pipes.erase (index);
 }
@@ -103,13 +109,19 @@ void zmq::rep_t::xdetach_outpipe (class writer_t *pipe_)
             active--;
             in_pipes.swap (index, active);
             out_pipes.swap (index, active);
+            if (current == active)
+                current = 0;
         }
         return;
     }
 
     //  Now both inpipe and outpipe are detached. Remove them from the lists.
-    if (out_pipes.index (pipe_) < active)
+    if (out_pipes.index (pipe_) < active) {
         active--;
+        if (current == active)
+            current = 0;
+    }
+
     in_pipes.erase (index);
     out_pipes.erase (index);
 }
