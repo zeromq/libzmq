@@ -98,6 +98,15 @@ namespace zmq
         //  Parent session.
         i_inout *inout;
 
+        //  Most recently used decoder.
+        zmq_decoder_t *mru_decoder;
+
+        //  Number of bytes not consumed by the decoder due to pipe overflow.
+        size_t pending_bytes;
+
+        //  Pointer to data still waiting to be processed by the decoder.
+        unsigned char *pending_ptr;
+
         //  Poll handle associated with PGM socket.
         handle_t socket_handle;
 
