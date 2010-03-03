@@ -69,8 +69,8 @@ int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
     wsa_assert (rc != SOCKET_ERROR);
 
     //  Set the non-blocking flag.
-    flag = 1;
-    rc = ioctlsocket (s, FIONBIO, (u_long*) &flag);
+    u_long uflag = 1;
+    rc = ioctlsocket (s, FIONBIO, &uflag);
     wsa_assert (rc != SOCKET_ERROR);
 
     //  Bind the socket to the network interface and port.
