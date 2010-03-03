@@ -29,7 +29,7 @@
       defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_CYGWIN
 #include <uuid/uuid.h>
 #elif defined ZMQ_HAVE_WINDOWS
-#include <Rpc.h>
+#include <rpc.h>
 #endif
 
 namespace zmq

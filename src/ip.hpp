@@ -30,6 +30,11 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#endif
+
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+#include <sys/un.h>
+#endif
 
 //  Some platforms (notably Darwin/OSX and NetBSD) do not define all AI_
 //  flags for getaddrinfo(). This can be worked around safely by defining
@@ -39,11 +44,6 @@
 #endif
 #ifndef AI_NUMERICSERV
 #define AI_NUMERICSERV 0
-#endif
-#endif
-
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
-#include <sys/un.h>
 #endif
 
 namespace zmq

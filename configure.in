@@ -198,10 +198,10 @@ case "${host_os}" in
         AC_CHECK_HEADERS(windows.h)
         AC_CHECK_LIB(ws2_32, main, ,
             [AC_MSG_ERROR([cannot link with ws2_32.dll.])])
-        AC_CHECK_LIB(Rpcrt4, main, ,
-            [AC_MSG_ERROR([cannot link with Rpcrt4.dll.])])
-        AC_CHECK_LIB(Iphlpapi, main, ,
-            [AC_MSG_ERROR([cannot link with Iphlpapi.dll.])])
+        AC_CHECK_LIB(rpcrt4, main, ,
+            [AC_MSG_ERROR([cannot link with rpcrt4.dll.])])
+        AC_CHECK_LIB(iphlpapi, main, ,
+            [AC_MSG_ERROR([cannot link with iphlpapi.dll.])])
         CFLAGS="${CFLAGS} -std=c99"
         on_mingw32="yes"
         install_man="no"
