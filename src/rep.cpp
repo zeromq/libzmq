@@ -169,7 +169,7 @@ int zmq::rep_t::xsend (zmq_msg_t *msg_, int flags_)
         reply_pipe->flush ();
     }
     else {
-        zmq_close (msg_);
+        zmq_msg_close (msg_);
     }
 
     waiting_for_reply = false;
