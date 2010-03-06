@@ -148,6 +148,7 @@ static int resolve_nic_name (in_addr* addr_, char const *interface_)
         {
             *addr_ = ((sockaddr_in*) ifp->ifa_addr)->sin_addr;
             found = true;
+            break;
         }
 
     //  Clean-up;
@@ -192,6 +193,7 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
 
     //  Initialise IPv4-format family/port.
     sockaddr_in ip4_addr;
+    memset (&ip4_addr, 0, sizeof (ip4_addr));
     ip4_addr.sin_family = AF_INET;
     ip4_addr.sin_port = htons ((uint16_t) atoi (service.c_str()));
 
