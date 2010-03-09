@@ -48,6 +48,7 @@ namespace zmq
 
         bool one_byte_size_ready ();
         bool eight_byte_size_ready ();
+        bool flags_ready ();
         bool message_ready ();
 
         struct i_inout *destination;

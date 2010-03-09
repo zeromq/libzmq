@@ -89,17 +89,22 @@ bool zmq::zmq_encoder_t::message_ready ()
         size -= prefix_size;
     }
 
+    //  Account for the 'flags' byte.
+    size++;
+
     //  For messages less than 255 bytes long, write one byte of message size.
     //  For longer messages write 0xff escape character followed by 8-byte
-    //  message size.
+    //  message size. In both cases empty 'flags' field follows.
     if (size < 255) {
         tmpbuf [0] = (unsigned char) size;
-        next_step (tmpbuf, 1, &zmq_encoder_t::size_ready, true);
+        tmpbuf [1] = 0;
+        next_step (tmpbuf, 2, &zmq_encoder_t::size_ready, true);
     }
     else {
         tmpbuf [0] = 0xff;
         put_uint64 (tmpbuf + 1, size);
-        next_step (tmpbuf, 9, &zmq_encoder_t::size_ready, true);
+        tmpbuf [9] = 0;
+        next_step (tmpbuf, 10, &zmq_encoder_t::size_ready, true);
     }
     return true;
 }

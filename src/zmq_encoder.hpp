@@ -48,7 +48,7 @@ namespace zmq
 
         struct i_inout *source;
         ::zmq_msg_t in_progress;
-        unsigned char tmpbuf [9];
+        unsigned char tmpbuf [10];
 
         bool trim;
 
