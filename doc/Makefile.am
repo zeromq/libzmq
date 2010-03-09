@@ -41,6 +41,6 @@ SUFFIXES=.html .txt .xml .1 .3 .7
 	xmlto man $<
 .xml.7:
 	xmlto man $<
-zmq_epgm.7:
+zmq_epgm.7: zmq_pgm.7
 	cp zmq_pgm.7 $@
 endif
