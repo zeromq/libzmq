@@ -178,6 +178,14 @@ into error message strings. For further details refer to
 linkzmq:zmq_strerror[3].
 
 
+MISCELLANEOUS
+-------------
+The following miscellaneous functions are provided:
+
+Report 0MQ library version::
+    linkzmq:zmq_version[3]
+
+
 LANGUAGE BINDINGS
 -----------------
 The 0MQ library provides interfaces suitable for calling from programs in any
