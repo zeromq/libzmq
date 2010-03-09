@@ -4,49 +4,66 @@ zmq_connect(3)
 
 NAME
 ----
-zmq_connect - connect the socket to the specified peer
+zmq_connect - connect a socket to a peer address
 
 
 SYNOPSIS
 --------
-'int zmq_connect (void *s, const char *addr);'
+*int zmq_connect (void '*socket', const char '*address');*
 
 
 DESCRIPTION
 -----------
-The function connect socket 's' to the peer identified by 'addr'.  Actual
-semantics of the  command depend on the underlying transport mechanism,
-however, in cases where peers connect in an asymmetric manner, 'zmq_bind'
-should be called first, 'zmq_connect' afterwards. Formats of the 'addr'
-parameter are defined by individual transports. For a list of supported
-transports have a look at linkzmq:zmq[7] manual page.
+The _zmq_connect()_ function shall connect the socket referenced by the
+'socket' argument to a peer address specified by the 'address' argument.
 
-Note that single socket can be connected (and bound) to
-arbitrary number of peers using different transport mechanisms.
+The 'address' argument is a string consisting of two parts as follows:
+'transport'`://`'endpoint'. The 'transport' part specifies the underlying
+transport protocol to use. The meaning of the 'endpoint' part is specific to
+the underlying transport protocol selected.
+
+The following transports are defined:
+
+'tcp':: unicast transport using TCP, see linkzmq:zmq_tcp[7]
+'pgm', 'udp':: reliable multicast transport using PGM, see linkzmq:zmq_pgm[7]
+'ipc':: local inter-process communication transport, see linkzmq:zmq_ipc[7]
+'inproc':: local in-process (inter-thread) communication transport, see linkzmq:zmq_inproc[7]
+
+A single socket may be connected to an arbitrary number of peer addresses using
+_zmq_connect()_, while also having an arbitrary number of local addresses
+assigned to it using _zmq_bind()_.
+
+NOTE: The connection will not be performed immediately but as needed by 0MQ.
+Thus a successful invocation of _zmq_connect()_ does not indicate that a
+physical connection was or can actually be established.
 
 
 RETURN VALUE
 ------------
-In case of success the function returns zero. Otherwise it returns -1 and
-sets 'errno' to the appropriate value.
+The _zmq_connect()_ function shall return zero if successful. Otherwise it
+shall return -1 and set 'errno' to one of the values defined below.
 
 
 ERRORS
 ------
 *EPROTONOSUPPORT*::
-unsupported protocol.
+The requested 'transport' protocol is not supported.
 *ENOCOMPATPROTO*::
-protocol is not compatible with the socket type.
+The requested 'transport' protocol is not compatible with the socket type.
 
 
 EXAMPLE
 -------
+.Connecting a subscriber socket to an in-process and a TCP transport
 ----
-void *s = zmq_socket (context, ZMQ_SUB);
-assert (s);
-int rc = zmq_connect (s, "inproc://my_publisher");
+/* Create a ZMQ_SUB socket */
+void *socket = zmq_socket (context, ZMQ_SUB);
+assert (socket);
+/* Connect it to an in-process transport with the endpoint 'my_publisher' */
+int rc = zmq_connect (socket, "inproc://my_publisher");
 assert (rc == 0);
-rc = zmq_connect (s, "tcp://server001:5555");
+/* Connect it to the host server001, port 5555 using a TCP transport */
+rc = zmq_connect (socket, "tcp://server001:5555");
 assert (rc == 0);
 ----
 
@@ -58,6 +75,7 @@ linkzmq:zmq_socket[3]
 linkzmq:zmq[7]
 
 
-AUTHOR
-------
-Martin Sustrik <sustrik at 250bpm dot com>
+AUTHORS
+-------
+The 0MQ documentation was written by Martin Sustrik <sustrik@250bpm.com> and
+Martin Lucina <mato@kotelna.sk>.

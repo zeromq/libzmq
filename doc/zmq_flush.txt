@@ -4,56 +4,52 @@ zmq_flush(3)
 
 NAME
 ----
-zmq_flush - flushes pre-sent messages to the socket
+zmq_flush - flush messages queued on a socket
 
 
 SYNOPSIS
 --------
-'int zmq_flush (void *s);'
+*int zmq_flush (void '*socket');*
 
 
 DESCRIPTION
 -----------
-Flushes all the pre-sent messages - i.e. those that have been sent with
-ZMQ_NOFLUSH flag - to the socket. This functionality improves performance in
-cases where several messages are sent during a single business operation.
-It should not be used as a transaction - ACID properties are not guaranteed.
-Note that calling 'zmq_send' without ZMQ_NOFLUSH flag automatically flushes all
-previously pre-sent messages.
+The _zmq_flush()_ function shall flush messages previously queued on the socket
+referenced by the 'socket' argument. The _zmq_flush()_ function only affects
+messages that have been queued on the _message queue_ associated with 'socket'
+using the 'ZMQ_NOFLUSH' flag to the _zmq_send()_ function. If no such messages
+exist, the function has no effect.
+
+CAUTION: A successful invocation of _zmq_flush()_ does not indicate that the
+flushed messages have been transmitted to the network, or even that such a
+transmission has been initiated by 0MQ. This function exists merely as a way
+for the application programmer to supply a hint to the 0MQ infrastructure that
+the queued messages *may* be flushed as a single batch.
 
 
 RETURN VALUE
 ------------
-In case of success the function returns zero. Otherwise it returns -1 and
-sets 'errno' to the appropriate value.
+The _zmq_flush()_ function shall return zero if successful. Otherwise it shall
+return -1 and set 'errno' to one of the values defined below.
 
 
 ERRORS
 ------
 *ENOTSUP*::
-function isn't supported by particular socket type.
+The _zmq_flush()_ operation is not supported by this socket type.
 *EFSM*::
-function cannot be called at the moment, because socket is not in the
-approprite state.
-
-
-EXAMPLE
--------
-----
-rc = zmq_send (s, &msg1, ZMQ_NOFLUSH);
-assert (rc == 0);
-rc = zmq_send (s, &msg2, ZMQ_NOFLUSH);
-assert (rc == 0);
-rc = zmq_flush (s);
-assert (rc == 0);
-----
+The _zmq_flush()_ operation cannot be performed on this socket at the moment
+due to the socket not being in the appropriate state.
 
 
 SEE ALSO
 --------
 linkzmq:zmq_send[3]
+linkzmq:zmq_socket[3]
+linkzmq:zmq[7]
 
 
 AUTHOR
 ------
-Martin Sustrik <sustrik at 250bpm dot com>
+The 0MQ documentation was written by Martin Sustrik <sustrik@250bpm.com> and
+Martin Lucina <mato@kotelna.sk>.

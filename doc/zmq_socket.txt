@@ -4,110 +4,117 @@ zmq_socket(3)
 
 NAME
 ----
-zmq_socket - creates 0MQ socket
+zmq_socket - create 0MQ socket
 
 
 SYNOPSIS
 --------
-'void *zmq_socket (void *context, int type);'
+*void *zmq_socket (void '*context', int 'type');*
 
 
 DESCRIPTION
 -----------
-Open a socket within the specified 'context'. To create a context, use
-'zmq_init' function. 'type' argument can be one of the values defined below.
-Note that each socket is owned by exactly one thread (the one that it was
-created from) and should not be used from any other thread.
+The 'zmq_socket()' function shall create a 0MQ socket within the specified
+'context' and return an opaque handle to the newly created socket. The 'type'
+argument specifies the _messaging pattern_, which determines the semantics of
+communication over the socket.
 
-*ZMQ_P2P*::
-Socket to communicate with a single peer. Allows for only a single connect
-or a single bind. There's no message routing or message filtering involved.
-+
-Compatible peer sockets: ZMQ_P2P.
+The following _messaging patterns_ are defined:
 
-*ZMQ_PUB*::
-Socket to distribute data. Recv function is not implemented for this socket
-type. Messages are distributed in fanout fashion to all the peers.
-+
-Compatible peer sockets: ZMQ_SUB.
 
-*ZMQ_SUB*::
-Socket to subscribe for data. Send function is not implemented for this socket
-type. Initially, socket is subscribed for no messages. Use ZMQ_SUBSCRIBE option
-to specify which messages to subscribe for.
-+
-Compatible peer sockets: ZMQ_PUB.
+Peer to peer pattern
+~~~~~~~~~~~~~~~~~~~~
+The simplest messaging pattern, used for communicating between two peers.
 
-*ZMQ_REQ*::
-Socket to send requests and receive replies. Requests are load-balanced among
-all the peers. This socket type allows only an alternated sequence of send's
-and recv's.
-+
-Compatible peer sockets: ZMQ_REP, ZMQ_XREP.
+Socket type:: 'ZMQ_P2P'
+Compatible peer sockets:: 'ZMQ_P2P'
 
-*ZMQ_REP*::
-Socket to receive requests and send replies. This socket type allows only an
-alternated sequence of recv's and send's. Each send is routed to the peer that
-issued the last received request.
-+
-Compatible peer sockets: ZMQ_REQ, ZMQ_XREQ.
+A socket of type 'ZMQ_P2P' can only be connected to a single peer at any one
+time.  No message routing or filtering is performed on messages sent over a
+'ZMQ_P2P' socket.
 
-*ZMQ_XREQ*::
-Special socket type to be used in request/reply middleboxes such as
-linkzmq:zmq_queue[7]. Requests forwarded using this socket type should be
-tagged by a proper prefix identifying the original requester. Replies received
-by this socket are tagged with a proper prefix that can be use to route the
-reply back to the original requester.
-+
-Compatible peer sockets: ZMQ_REP, ZMQ_XREP.
 
-*ZMQ_XREP*::
-Special socket type to be used in request/reply middleboxes such as
-linkzmq:zmq_queue[7]. Requests received using this socket are already properly
-tagged with prefix identifying the original requester. When sending a reply via
-XREP socket the message should be tagged with a prefix from a corresponding
-request.
-+
-Compatible peer sockets: ZMQ_REQ, ZMQ_XREQ.
+Publish-subscribe pattern
+~~~~~~~~~~~~~~~~~~~~~~~~~
+The publish-subscribe pattern is used for one-to-many distribution of data from
+a single _publisher_ to multiple _subscribers_ in a fanout fashion.
 
-*ZMQ_UPSTREAM*::
-Socket to receive messages from up the stream. Messages are fair-queued from
-among all the connected peers. Send function is not implemented for this socket
-type.
-+
-Compatible peer sockets: ZMQ_DOWNSTREAM.
+Socket type:: 'ZMQ_PUB'
+Compatible peer sockets:: 'ZMQ_SUB'
 
-*ZMQ_DOWNSTREAM*::
-Socket to send messages down stream. Messages are load-balanced among all the
-connected peers. Recv function is not implemented for this socket type.
-+
-Compatible peer sockets: ZMQ_UPSTREAM.
+A socket of type 'ZMQ_PUB' is used by a _publisher_ to distribute data.
+Messages sent are distributed in a fanout fashion to all connected peers.
+The _zmq_recv()_ function is not implemented for this socket type.
+
+Socket type:: 'ZMQ_SUB'
+Compatible peer sockets:: 'ZMQ_PUB'
+
+A socket of type 'ZMQ_SUB' is used by a _subscriber_ to subscribe to data
+distributed by a _publisher_. Initially a 'ZMQ_SUB' socket is not subscribed to
+any messages, use the 'ZMQ_SUBSCRIBE' option of _zmq_setsockopt()_ to specify
+which messages to subscribe to. The _zmq_send()_ function is not implemented
+for this socket type.
+
+
+Request-reply pattern
+~~~~~~~~~~~~~~~~~~~~~
+The request-reply pattern is used for sending requests from a _client_ to a
+_service_, and receiving subsequent replies to each request sent.
+
+Socket type:: 'ZMQ_REQ'
+Compatible peer sockets:: 'ZMQ_REP'
+
+A socket of type 'ZMQ_REQ' is used by a _client_ to send requests to and
+receive replies from a _service_. This socket type allows only an alternating
+sequence of _zmq_send(request)_ and subsequent _zmq_recv(reply)_ calls. Each
+request sent is load-balanced among all connected _services_.
+
+Socket type:: 'ZMQ_REP'
+Compatible peer sockets:: 'ZMQ_REQ'
+
+A socket of type 'ZMQ_REP' is used by a _service_ to receive requests from and
+send replies to a _client_.  This socket type allows only an alternating
+sequence of _zmq_recv(request)_ and subsequent _zmq_send(reply)_ calls. Each
+reply is routed to the _client_ that issued the last received request.
+
+
+Parallelized pipeline pattern
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The parallelized pipeline pattern is used for distributing work between
+_components_ of a pipeline. Work travels down the pipeline and at each stage
+can be processed by any number of _components_ in parallel.
+
+Socket type:: 'ZMQ_UPSTREAM'
+Compatible peer sockets:: 'ZMQ_DOWNSTREAM'
+
+A socket of type 'ZMQ_UPSTREAM' is used by a _component_ of a pipeline to
+receive messages from upstream stages of the pipeline. Messages are fair-queued
+from among all connected upstream _components_. The _zmq_send()_ function is
+not implemented for this socket type.
+
+Socket type:: 'ZMQ_DOWNSTREAM'
+Compatible peer sockets:: 'ZMQ_UPSTREAM'
+
+A socket of type 'ZMQ_DOWNSTREAM' is used by a _component_ of a pipeline to
+send messages to downstream stages of the pipeline. The _zmq_recv()_ function
+is not implemented for this socket type.
 
 
 RETURN VALUE
 ------------
-Function returns socket handle is successful. Otherwise it returns NULL and
-sets errno to one of the values below.
+The _zmq_socket()_ function shall return an opaque handle to the newly created
+socket if successful. Otherwise, it shall return NULL and set 'errno' to one of
+the values defined below.
 
 
 ERRORS
 ------
 *EINVAL*::
-    invalid socket type.
+The requested socket 'type' is invalid.
 
 *EMTHREAD*::
-    the number of application threads allowed to own 0MQ sockets was exceeded.
-    See 'app_threads' parameter to 'zmq_init' function.
-
-
-EXAMPLE
--------
-----
-void *s = zmq_socket (context, ZMQ_PUB);
-assert (s);
-int rc = zmq_bind (s, "tcp://192.168.0.1:5555");
-assert (rc == 0);
-----
+The number of application threads using sockets within this 'context' has been
+exceeded. See the 'app_threads' parameter of the _zmq_init()_ function.
 
 
 SEE ALSO
@@ -121,6 +128,7 @@ linkzmq:zmq_flush[3]
 linkzmq:zmq_recv[3]
 
 
-AUTHOR
-------
-Martin Sustrik <sustrik at 250bpm dot com>
+AUTHORS
+-------
+The 0MQ documentation was written by Martin Sustrik <sustrik@250bpm.com> and
+Martin Lucina <mato@kotelna.sk>.

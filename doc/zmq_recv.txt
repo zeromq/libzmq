@@ -4,51 +4,60 @@ zmq_recv(3)
 
 NAME
 ----
-zmq_recv - retrieves a message from the socket
+zmq_recv - receive a message from a socket
 
 
 SYNOPSIS
 --------
-'int zmq_recv (void *s, zmq_msg_t *msg, int flags);'
+*int zmq_recv (void '*socket', zmq_msg_t '*msg', int 'flags');*
 
 
 DESCRIPTION
 -----------
-Receive a message from the socket 's', store it in
-'msg' .  Any content previously in 'msg' will be properly deallocated.  'flags'
-argument can be combination of the flags described below.
+The _zmq_recv()_ function shall dequeue a message from the underlying _message
+queue_ associated with the socket referenced by the 'socket' argument and store
+it in the message referenced by the 'msg' argument. Any content previously
+stored in 'msg' shall be properly deallocated. If there are no messages
+available to be dequeued from the underlying _message queue_ associated with
+'socket' the _zmq_recv()_ function shall block until the request can be
+satisfied. The 'flags' argument is a combination of the flags defined below:
 
 *ZMQ_NOBLOCK*::
-The flag specifies that the operation should be performed in
-non-blocking mode. I.e. if it cannot be processed immediately,
-error should be returned with 'errno' set to EAGAIN.
+Specifies that the operation should be performed in non-blocking mode. If there
+are no messages available to be dequeued from the underlying _message queue_
+associated with 'socket', the _zmq_recv()_ function shall fail with 'errno' set
+to EAGAIN.
 
 
 RETURN VALUE
 ------------
-In case of success the function returns zero. Otherwise it returns -1 and
-sets 'errno' to the appropriate value.
+The _zmq_recv()_ function shall return zero if successful. Otherwise it shall
+return -1 and set 'errno' to one of the values defined below.
 
 
 ERRORS
 ------
 *EAGAIN*::
-it's a non-blocking receive and there's no message available at the moment.
+Non-blocking mode was requested and no messages are available at the moment.
 *ENOTSUP*::
-function isn't supported by particular socket type.
+The _zmq_recv()_ operation is not supported by this socket type.
 *EFSM*::
-function cannot be called at the moment, because socket is not in the
-appropriate state. This error may occur with sockets that switch between
-several states (e.g. ZMQ_REQ).
+The _zmq_recv()_ operation cannot be performed on this socket at the moment due
+to the socket not being in the appropriate state.  This error may occur with
+socket types that switch between several states, such as ZMQ_REP.  See the
+_messaging patterns_ section of linkzmq:zmq_socket[3] for more information.
 
 
 EXAMPLE
 -------
+.Receiving a message from a socket
 ----
+/* Create an empty 0MQ message */
 zmq_msg_t msg;
 int rc = zmq_msg_init (&msg);
 assert (rc == 0);
-rc = zmq_recv (s, &msg, 0);
+/* Block until a message is available to be dequeued from socket */
+rc = zmq_recv (socket, &msg, 0);
 assert (rc == 0);
 ----
 
@@ -56,11 +65,11 @@ assert (rc == 0);
 SEE ALSO
 --------
 linkzmq:zmq_send[3]
-linkzmq:zmq_msg_init[3]
-linkzmq:zmq_msg_data[3]
-linkzmq:zmq_msg_size[3]
+linkzmq:zmq_socket[7]
+linkzmq:zmq[7]
 
 
-AUTHOR
-------
-Martin Sustrik <sustrik at 250bpm dot com>
+AUTHORS
+-------
+The 0MQ documentation was written by Martin Sustrik <sustrik@250bpm.com> and
+Martin Lucina <mato@kotelna.sk>.

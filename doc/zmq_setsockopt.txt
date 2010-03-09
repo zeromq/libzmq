@@ -5,144 +5,255 @@ zmq_setsockopt(3)
 NAME
 ----
 
-zmq_setsockopt - sets a specified option on a 0MQ socket
+zmq_setsockopt - set 0MQ socket options
 
 
 SYNOPSIS
 --------
-'int zmq_setsockopt (void *s, int option, const void *optval, size_t optvallen);'
+*int zmq_setsockopt (void '*socket', int 'option_name', const void '*option_value', size_t 'option_len');*
 
 
 DESCRIPTION
 -----------
-Sets an option on the socket. 'option' argument specifies the option from the
-list below. 'optval' is a pointer to the value to set, 'optvallen' is the size
-of the value in bytes.
+The _zmq_setsockopt()_ function shall set the option specified by the
+'option_name' argument to the value pointed to by the 'option_value' argument
+for the 0MQ socket pointed to by the 'socket' argument. The 'option_len'
+argument is the size of the option value in bytes.
 
-*ZMQ_HWM*::
-High watermark for the message pipes associated with the socket. The water
-mark cannot be exceeded. If the messages don't fit into the pipe emergency
-mechanisms of the particular socket type are used (block, drop etc.) If HWM
-is set to zero, there are no limits for the content of the pipe.
-+
-Type: int64_t  Unit: messages  Default: 0
+The following options are defined:
 
-*ZMQ_LWM*::
-Low watermark makes sense only if high watermark is defined (i.e. is non-zero).
-When the emergency state is reached when messages overflow the pipe, the
-emergency lasts at most till the size of the pipe decreases to low watermark.
-Normal state is resumed at that point.
-+
-Type: int64_t  Unit: messages  Default: 0
 
-*ZMQ_SWAP*::
-Swap allows the pipe to exceed high watermark. However, the data are written
-to the disk rather than held in the memory. Until high watermark is
-exceeded there is no disk activity involved though. The value of the option
-defines maximal size of the swap file.
-+
-Type: int64_t  Unit: bytes  Default: 0
+ZMQ_HWM: Set high water mark
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_HWM' option shall set the high water mark for the _message queue_
+associated with the socket.  The high water mark is a hard limit on the number
+of outstanding messages in the queue; if this limit has been reached the socket
+shall enter an "emergency" state and depending on the socket type, 0MQ shall
+take appropriate action such as blocking or dropping new messages entering the
+queue.
 
-*ZMQ_AFFINITY*::
-Affinity defines which threads in the thread pool will be used to handle
-newly created sockets. This way you can dedicate some of the threads (CPUs)
-to a specific work. Value of 0 means no affinity. Work is distributed
-fairly among the threads in the thread pool. For non-zero values, the lowest
-bit corresponds to the thread 1, second lowest bit to the thread 2 etc.
-Thus, value of 3 means that from now on newly created sockets will handle
-I/O activity exclusively using threads no. 1 and 2.
-+
-Type: int64_t  Unit: N/A (bitmap)  Default: 0
+The default 'ZMQ_HWM' value of zero means "no limit".
 
-*ZMQ_IDENTITY*::
-Identity of the socket. Identity is important when restarting applications.
-If the socket has no identity, each run of the application is completely
-separated from other runs. However, with identity application reconnects to
-existing infrastructure left by the previous run. Thus it may receive
-messages that were sent in the meantime, it shares pipe limits with the
-previous run etc. Identity should be at least one byte and at most 255 bytes
-long. Identities starting with binary zero are reserver for use by 0MQ
-infrastructure.
-+
-Type: BLOB  Unit: N/A  Default: NULL
+Option value type:: int64_t
+Option value unit:: messages
+Default value:: 0
+Applicable socket types:: all
 
-*ZMQ_SUBSCRIBE*::
-Applicable only to ZMQ_SUB socket type. It establishes new message filter.
-When ZMQ_SUB socket is created all the incoming messages are filtered out.
-This option allows you to subscribe for all messages (""), or messages 
-beginning with specific prefix (e.g. "animals.mammals.dogs."). Multiple
-filters can be attached to a single 'sub' socket. In that case message passes
-if it matches at least one of the filters.
-+
-Type: BLOB  Unit: N/A  Default: N/A
 
-*ZMQ_UNSUBSCRIBE*::
-Applicable only to ZMQ_SUB socket type. Removes existing message filter.
-The filter specified must match the string passed to ZMQ_SUBSCRIBE options
-exactly. If there were several instances of the same filter created,
-this options removes only one of them, leaving the rest in place
-and functional.
-+
-Type: BLOB  Unit: N/A  Default: N/A
+ZMQ_LWM: Set low water mark
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_LWM' option shall set the low water mark for the _message queue_
+associated with the socket.  This option only makes sense when used in
+conjunction with the 'ZMQ_HWM' option. A socket which has reached it's high
+water mark remains in the "emergency" state until the number of outstanding
+messages in it's associated message queue falls below the low water mark, at
+which point normal message processing is resumed.
 
-*ZMQ_RATE*::
-This option applies only to sending side of multicast transports (pgm & udp).
-It specifies maximal outgoing data rate that an individual sender socket
-can send.
-+
-Type: uint64_t  Unit: kilobits/second  Default: 100
+Option value type:: int64_t
+Option value unit:: messages
+Default value:: 0
+Applicable socket types:: all
 
-*ZMQ_RECOVERY_IVL*::
-This option applies only to multicast transports (pgm & udp). It specifies
-how long can the receiver socket survive when the sender is inaccessible.
-Keep in mind that large recovery intervals at high data rates result in
-very large recovery buffers, meaning that you can easily overload your box
-by setting say 1 minute recovery interval at 1Gb/s rate (requires
-7GB in-memory buffer).
-+
-Type: uint64_t Unit: seconds Default: 10 
 
-*ZMQ_MCAST_LOOP*::
-This option applies only to multicast transports (pgm & udp). Value of 1
-means that the mutlicast packets can be received on the box they were sent
-from. Setting the value to 0 disables the loopback functionality which
-can have negative impact on the performance. If possible, disable
-the loopback in production environments.
-+
-Type: uint64_t Unit: N/A (boolean value) Default: 1
+ZMQ_SWAP: Set disk offload size
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_SWAP' option shall set the disk offload (swap) size for the _message
+queue_ associated with the socket. A socket which has 'ZMQ_SWAP' set to a
+non-zero value may exceed it's high water mark; in this case outstanding
+messages shall be offloaded to storage on disk rather than held in memory.
 
-*ZMQ_SNDBUF*::
-Sets the underlying kernel transmit buffer size to the specified size. See
-'SO_SNDBUF' POSIX socket option. Value of zero means leaving the OS default
-unchanged.
-+
-Type: uint64_t Unit: bytes Default: 0
+The value of 'ZMQ_SWAP' defines the maximum size of the swap space in bytes.
 
-*ZMQ_RCVBUF*::
-Sets the underlying kernel receive buffer size to the specified size. See
-'SO_RCVBUF' POSIX socket option. Value of zero means leaving the OS default
-unchanged.
-+
-Type: uint64_t Unit: bytes Default: 0
+Option value type:: int64_t
+Option value unit:: bytes
+Default value:: 0
+Applicable socket types:: all
+
+
+ZMQ_AFFINITY: Set I/O thread affinity
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_AFFINITY' option shall set the I/O thread affinity for connections
+created by subsequent _zmq_connect()_ or _zmq_bind()_ calls on the specified
+'socket'.
+
+sockets. Affinity determines which threads from the 0MQ I/O thread pool
+associated with the socket's _context_ shall handle newly created connections.
+A value of zero specifies no affinity, meaning that work shall be distributed
+fairly among all 0MQ I/O threads in the thread pool. For non-zero values, the
+lowest bit corresponds to thread 1, second lowest bit to thread 2 and so on.
+For example, a value of 3 specifies that subsequent connections on 'socket'
+shall be handled exclusively by I/O threads 1 and 2.
+
+See also linkzmq:zmq_init[3] for details on allocating the number of I/O
+threads for a specific _context_.
+
+Option value type:: int64_t
+Option value unit:: N/A (bitmap)
+Default value:: 0
+Applicable socket types:: N/A
+
+
+ZMQ_IDENTITY: Set socket identity
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_IDENTITY' option shall set the identity of the socket. Socket identity
+determines if existing 0MQ infastructure (_message queues_, _forwarding
+devices_) shall be identified with a specific application and persist across
+multiple runs of the application.
+
+If the socket has no identity, each run of an application is completely
+separate from other runs. However, with identity set the socket shall re-use
+any existing 0MQ infrastructure configured by the previous run(s). Thus the
+application may receive messages that were sent in the meantime, _message
+queue_ limits shall be shared with previous run(s) and so on.
+
+Identity should be at least one byte and at most 255 bytes long. Identities
+starting with binary zero are reserved for use by 0MQ infrastructure.
+
+Option value type:: BLOB
+Option value unit:: N/A
+Default value:: NULL
+Applicable socket types:: all
+
+
+ZMQ_SUBSCRIBE: Establish message filter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_SUBSCRIBE' option shall establish a new message filter on a 'ZMQ_SUB'
+socket. Newly created 'ZMQ_SUB' sockets shall filter out all incoming messages,
+therefore you should call this option to establish an initial message filter.
+
+An empty 'option_value' of length zero shall subscribe to all incoming
+messages. A non-empty 'option_value' shall subscribe to all messages beginning
+with the specified prefix. Mutiple filters may be attached to a single
+'ZMQ_SUB' socket, in which case a message shall be accepted if it matches at
+least one filter.
+
+Option value type:: BLOB
+Option value unit:: N/A
+Default value:: N/A
+Applicable socket types:: ZMQ_SUB
+
+
+ZMQ_UNSUBSCRIBE: Remove message filter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_UNSUBSCRIBE' option shall remove an existing message filter on a
+'ZMQ_SUB' socket. The filter specified must match an existing filter previously
+established with the 'ZMQ_SUBSCRIBE' option. If the socket has several
+instances of the same filter attached the 'ZMQ_UNSUBSCRIBE' option shall remove
+only one instance, leaving the rest in place and functional.
+
+Option value type:: BLOB
+Option value unit:: N/A
+Default value:: N/A
+Applicable socket types:: ZMQ_SUB
+
+
+ZMQ_RATE: Set multicast data rate
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_RATE' option shall set the maximum send or receive data rate for
+multicast transports such as linkzmq:zmq_pgm[7] and linkzmq:zmq_udp[7] using
+the specified 'socket'.
+
+Option value type:: uint64_t
+Option value unit:: kilobits per second
+Default value:: 100
+Applicable socket types:: all, when using multicast transports
+
+
+ZMQ_RECOVERY_IVL: Set multicast recovery interval
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_RECOVERY_IVL' option shall set the recovery interval for multicast
+transports such as linkzmq:zmq_pgm[7] and linkzmq:zmq_udp[7] using the
+specified 'socket'. The recovery interval determines the maximum time in
+seconds that a receiver can be absent from a multicast group before
+unrecoverable data loss will occur.
+
+CAUTION: Excersize care when setting large recovery intervals as the data
+needed for recovery will be held in memory. For example, a 1 minute recovery
+interval at a data rate of 1Gbps requires a 7GB in-memory buffer.
+
+Option value type:: uint64_t
+Option value unit:: seconds
+Default value:: 10
+Applicable socket types:: all, when using multicast transports
+
+
+ZMQ_MCAST_LOOP: Control multicast loopback
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_MCAST_LOOP' option shall control whether data sent via multicast
+transports can also be received by the sending host via loopback.  A value of
+zero disables the loopback functionality, while the default value of 1 enables
+the loopback functionality. Leaving multicast loopback enabled when it is not
+required can have a negative impact on performance. Where possible, disable
+'ZMQ_MCAST_LOOP' in production environments.
+
+Option value type:: uint64_t
+Option value unit:: boolean
+Default value:: 1
+Applicable socket types:: all, when using multicast transports
+
+
+ZMQ_SNDBUF: Set kernel transmit buffer size
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_SNDBUF' option shall set the underlying kernel transmit buffer size
+for the socket to the specified size in bytes.  A value of zero means leave the
+OS default unchanged. For details please refer to your operating system
+documentation for the 'SO_SNDBUF' socket option.
+
+Option value type:: uint64_t
+Option value unit:: bytes
+Default value:: 0
+Applicable socket types:: all
+
+
+ZMQ_RCVBUF: Set kernel receive buffer size
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_RCVBUF' option shall set the underlying kernel receive buffer size for
+the socket to the specified size in bytes.  A value of zero means leave the OS
+default unchanged. For details refer to your operating system documentation for
+the 'SO_RCVBUF' socket option.
+
+Option value type:: uint64_t
+Option value unit:: bytes
+Default value:: 0
+Applicable socket types:: all
 
 
 RETURN VALUE
 ------------
-In case of success the function returns zero. Otherwise it returns -1 and
-sets 'errno' to the appropriate value.
+The _zmq_setsockopt()_ function shall return zero if successful. Otherwise it
+shall return -1 and set 'errno' to one of the values defined below.
 
 
 ERRORS
 ------
 *EINVAL*::
-unknown option, a value with incorrect length or invalid value.
+The requested option _option_name_ is unknown, or the requested _option_len_ or
+_option_value_ is invalid.
 
 
 EXAMPLE
 -------
+.Subscribing to messages on a 'ZMQ_SUB' socket
 ----
-int rc = zmq_setsockopt (s, ZMQ_SUBSCRIBE, "", 0);
+/* Subscribe to all messages */
+rc = zmq_setsockopt (socket, ZMQ_SUBSCRIBE, "", 0);
 assert (rc == 0);
+/* Subscribe to messages prefixed with "ANIMALS.CATS" */
+rc = zmq_setsockopt (socket, ZMQ_SUBSCRIBE, "ANIMALS.CATS", 12);
+----
+
+.Setting I/O thread affinity
+----
+/* Incoming connections on TCP port 5555 shall be handled by I/O thread 1 */
+rc = zmq_setsockopt (socket, ZMQ_AFFINITY, 1, sizeof (int64_t));
+assert (rc);
+rc = zmq_bind (socket, "tcp://lo:5555");
+assert (rc);
+/* Incoming connections on TCP port 5556 shall be handled by I/O thread 2 */
+rc = zmq_setsockopt (socket, ZMQ_AFFINITY, 2, sizeof (int64_t));
+assert (rc);
+rc = zmq_bind (socket, "tcp://lo:5555");
+assert (rc);
 ----
 
 
@@ -152,6 +263,7 @@ linkzmq:zmq_socket[3]
 linkzmq:zmq[7]
 
 
-AUTHOR
-------
-Martin Sustrik <sustrik at 250bpm dot com>
+AUTHORS
+-------
+The 0MQ documentation was written by Martin Sustrik <sustrik@250bpm.com> and
+Martin Lucina <mato@kotelna.sk>.

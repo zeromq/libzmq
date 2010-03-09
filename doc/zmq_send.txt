@@ -4,59 +4,69 @@ zmq_send(3)
 
 NAME
 ----
-zmq_send - sends a message
+zmq_send - send a message on a socket
 
 
 SYNOPSIS
 --------
-'int zmq_send (void *s, zmq_msg_t *msg, int flags);'
+*int zmq_send (void '*socket', zmq_msg_t '*msg', int 'flags');*
 
 
 DESCRIPTION
 -----------
-Send the message 'msg' to the socket 's'.  'flags' argument can be combination
-the flags described below.
+The _zmq_send()_ function shall queue the message referenced by the 'msg'
+argument to be sent to the socket referenced by the 'socket' argument.  The
+'flags' argument is a combination of the flags defined below:
 
 *ZMQ_NOBLOCK*::
-The flag specifies that the operation should be performed in non-blocking mode.
-I.e. if it cannot be processed immediately, error should be returned with
-'errno' set to EAGAIN.
+Specifies that the operation should be performed in non-blocking mode. If the
+message cannot be queued on the underlying _message queue_ associated with
+'socket', the _zmq_send()_ function shall fail with 'errno' set to EAGAIN.
 
 *ZMQ_NOFLUSH*::
-The flag specifies that 'zmq_send' should not flush the message downstream
-immediately. Instead, it should batch ZMQ_NOFLUSH messages and send them
-downstream only once 'zmq_flush' is invoked. This is an optimisation for cases
-where several messages are sent in a single business transaction. However, the
-effect is measurable only in extremely high-perf scenarios (million messages a
-second or so).  If that's not your case, use standard flushing send instead.
+Specifies that the _zmq_send()_ function should not flush the underlying
+_message queue_ associated with 'socket' to the network automatically.
+Instead, it should batch all messages queued with the 'ZMQ_NOFLUSH' flag and
+only flush the _message queue_ once either a message without the 'ZMQ_NOFLUSH'
+flag is queued, or manually on invocation of the _zmq_flush()_ function.
+
+NOTE: A successful invocation of _zmq_send()_ does not indicate that the
+message has been transmitted to the network, only that it has been queued on
+the _message queue_ associated with the socket and 0MQ has assumed
+responsibility for the message.
 
 
 RETURN VALUE
 ------------
-In case of success the function returns zero. Otherwise it returns -1 and
-sets 'errno' to the appropriate value.
+The _zmq_send()_ function shall return zero if successful. Otherwise it shall
+return -1 and set 'errno' to one of the values defined below.
 
 
 ERRORS
 ------
 *EAGAIN*::
-it's a non-blocking send and message cannot be sent at the moment.
+Non-blocking mode was requested and the message cannot be queued at the moment.
 *ENOTSUP*::
-function isn't supported by particular socket type.
+The _zmq_send()_ operation is not supported by this socket type.
 *EFSM*::
-function cannot be called at the moment, because socket is not in the
-appropriate state. This error may occur with sockets that switch between
-several states (e.g. ZMQ_REQ).
+The _zmq_send()_ operation cannot be performed on this socket at the moment due
+to the socket not being in the appropriate state.  This error may occur with
+socket types that switch between several states, such as ZMQ_REP.  See the
+_messaging patterns_ section of linkzmq:zmq_socket[3] for more information.
 
 
 EXAMPLE
 -------
+.Filling in a message and sending it to a socket
 ----
+/* Create a new message, allocating 6 bytes for message content */
 zmq_msg_t msg;
 int rc = zmq_msg_init_size (&msg, 6);
 assert (rc == 0);
+/* Fill in message content with 'AAAAAA' */
 memset (zmq_msg_data (&msg), 'A', 6);
-rc = zmq_send (s, &msg, 0);
+/* Send the message to the socket */
+rc = zmq_send (socket, &msg, 0);
 assert (rc == 0);
 ----
 
@@ -65,13 +75,11 @@ SEE ALSO
 --------
 linkzmq:zmq_flush[3]
 linkzmq:zmq_recv[3]
-linkzmq:zmq_msg_init[3]
-linkzmq:zmq_msg_init_size[3]
-linkzmq:zmq_msg_init_data[3]
-linkzmq:zmq_msg_data[3]
-linkzmq:zmq_msg_size[3]
+linkzmq:zmq_socket[7]
+linkzmq:zmq[7]
 
 
-AUTHOR
-------
-Martin Sustrik <sustrik at 250bpm dot com>
+AUTHORS
+-------
+The 0MQ documentation was written by Martin Sustrik <sustrik@250bpm.com> and
+Martin Lucina <mato@kotelna.sk>.

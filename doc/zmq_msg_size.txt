@@ -4,23 +4,27 @@ zmq_msg_size(3)
 
 NAME
 ----
-zmq_msg_size - retrieves size of the message content
+zmq_msg_size - retrieve message content size in bytes
 
 
 SYNOPSIS
 --------
-'size_t zmq_msg_size (zmq_msg_t *msg);'
+*size_t zmq_msg_size (zmq_msg_t '*msg');*
 
 
 DESCRIPTION
 -----------
-Returns size of the message data. Always use this function to get the size,
-never use 'zmq_msg_t' members directly.
+The _zmq_msg_size()_ function shall return the size in bytes of the content of
+the message object referenced by 'msg'.
+
+CAUTION: Never access 'zmq_msg_t' members directly, instead always use the
+_zmq_msg_ family of functions.
 
 
 RETURN VALUE
 ------------
-Size of the message data (bytes).
+Upon successful completion, _zmq_msg_data()_ shall return the size of the
+message content in bytes.
 
 
 ERRORS
@@ -28,26 +32,17 @@ ERRORS
 No errors are defined.
 
 
-EXAMPLE
--------
-----
-zmq_msg_t msg;
-rc = zmq_msg_init (&msg);
-assert (rc == 0);
-rc = zmq_recv (s, &msg, 0);
-assert (rc == 0);
-size_t msg_size = zmq_msg_size (&msg);
-----
-
-
 SEE ALSO
 --------
+linkzmq:zmq_msg_data[3]
 linkzmq:zmq_msg_init[3]
 linkzmq:zmq_msg_init_size[3]
 linkzmq:zmq_msg_init_data[3]
 linkzmq:zmq_msg_close[3]
+linkzmq:zmq[7]
 
 
-AUTHOR
-------
-Martin Sustrik <sustrik at 250bpm dot com>
+AUTHORS
+-------
+The 0MQ documentation was written by Martin Sustrik <sustrik@250bpm.com> and
+Martin Lucina <mato@kotelna.sk>.

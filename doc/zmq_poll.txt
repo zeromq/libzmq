@@ -4,83 +4,127 @@ zmq_poll(3)
 
 NAME
 ----
-zmq_poll - polls for events on a set of 0MQ and POSIX sockets
+zmq_poll - input/output multiplexing
 
 
 SYNOPSIS
 --------
-'int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);'
+
+*int zmq_poll (zmq_pollitem_t '*items', int 'nitems', long 'timeout');*
 
 
 DESCRIPTION
 -----------
-Waits for the events specified by 'items' parameter. Number of items in the
-array is determined by 'nitems' argument. Each item in the array looks like
-this:
+The _zmq_poll()_ function provides a mechanism for applications to multiplex
+input/output events in a level-triggered fashion over a set of sockets. Each
+member of the array pointed to by the 'items' argument is a *zmq_pollitem_t*
+structure. The 'nitems' argument specifies the number of items in the 'items'
+array. The *zmq_pollitem_t* structure is defined as follows:
 
-----
+["literal", subs="quotes"]
 typedef struct
 {
-    void *socket;
-    int fd;
-    short events;
-    short revents;
+    void '*socket';
+    int 'fd';
+    short 'events';
+    short 'revents';
 } zmq_pollitem_t;
-----
 
-0MQ socket to poll on is specified by 'socket'.  In case you want to poll on
-standard POSIX socket, set 'socket' to NULL and fill the POSIX file descriptor
-to 'fd'.  'events' specifies which events to wait for. It's a combination of
-the values below.  Once the call exits, 'revents' will be filled with events
-that have actually occured on the socket. The field will contain a combination
-of the values below.
+For each *zmq_pollitem_t* item, _zmq_poll()_ shall examine either the 0MQ
+socket referenced by 'socket' *or* the standard socket specified by the file
+descriptor 'fd', for the event(s) specified in 'events'. If both 'socket' and
+'fd' are set in a single *zmq_pollitem_t*, the 0MQ socket referenced by
+'socket' shall take precedence and the value of 'fd' shall be ignored.
+
+For each *zmq_pollitem_t* item, _zmq_poll()_ shall first clear the 'revents'
+member, and then indicate any requested events that have occured by setting the
+bit corresponding to the event condition in the 'revents' member.
+
+If none of the requested events have occured on any *zmq_pollitem_t* item,
+_zmq_poll()_ shall wait up to 'timeout' microseconds for an event to occur on
+any of the requested items. If the value of 'timeout' is 0, _zmq_poll()_ shall
+return immediately. If the value of 'timeout' is -1, _zmq_poll()_ shall wait
+indefinitely for requested events to occur.
+
+The 'events' and 'revents' members of *zmq_pollitem_t* are bitmasks constructed
+by OR'ing a combination of the following event flags:
 
 *ZMQ_POLLIN*::
-poll for incoming messages.
-*ZMQ_POLLOUT*::
-wait while message can be set socket. Poll will return if a message of at least
-one byte can be written to the socket. However, there is no guarantee that
-arbitrarily large message can be sent.
+For 0MQ sockets, at least one message may be dequeued from the underlying
+_message queue_ associated with 'socket' without blocking. For standard sockets
+this is equivalent to the 'POLLIN' flag of the _poll()_ system call and
+generally means that at least one byte of data may be read from 'fd' without
+blocking.
 
-'timeout' argument specifies an upper limit on the time for which 'zmq_poll'
-will block, in microseconds. Specifying a negative value in timeout means an
-infinite timeout.
+*ZMQ_POLLOUT*::
+For 0MQ sockets, at least one message may be queued on the underlying
+_message queue_ associated with 'socket' without blocking. For standard sockets
+this is equivalent to the 'POLLOUT' flag of the _poll()_ system call and
+generally means that at least one byte of data may be written to 'fd'
+without blocking.
+
+*ZMQ_POLLERR*::
+For standard sockets, this flag is passed through _zmq_poll()_ to the
+underlying _poll()_ system call and generally means that some sort of error
+condition is present on the socket specified by 'fd'. For 0MQ sockets this flag
+has no effect if set in 'events', and shall never be returned in 'revents' by
+_zmq_poll()_.
+
+NOTE: The _zmq_poll()_ function may be implemented or emulated using operating
+system interfaces other than _poll()_, and as such may be subject to the limits
+of those interfaces in ways not defined in this documentation.
 
 
 RETURN VALUE
 ------------
-Function returns number of items signaled, 0 in the case of timeout or -1
-in the case of error.
+Upon successful completion, the _zmq_poll()_ function shall return the number
+of *zmq_pollitem_t* structures with events signaled in 'revents' or 0 if the
+'timeout' period has expired and no events have been signaled. Upon failure,
+_zmq_poll()_ shall return -1 and set 'errno' to one of the values defined
+below.
 
 
 ERRORS
 ------
 *EFAULT*::
-there's a 0MQ socket in the pollset belonging to a different application thread.
+At least one of the members of the 'items' array refers to a 'socket' belonging
+to a different application thread.
+
 *ENOTSUP*::
-0MQ context was initialised without ZMQ_POLL flag. I/O multiplexing is disabled.
+At least one of the members of the 'items' array refers to a 'socket' whose
+associated 0MQ 'context' was initialised without the 'ZMQ_POLL' flag.
 
 
 EXAMPLE
 -------
+.Polling idenfinitely for input events on both a 0MQ socket and a standard socket.
 ----
 zmq_pollitem_t items [2];
-items [0].socket = s;
-items [0].events = ZMQ_POLLIN;
-items [1].socket = NULL;
-items [1].fd = my_fd;
-items [1].events = ZMQ_POLLIN;
-
-int rc = zmq_poll (items, 2);
-assert (rc != -1);
+/* First item refers to 0MQ socket 'socket' */
+items[0].socket = socket;
+items[0].events = ZMQ_POLLIN;
+/* Second item refers to standard socket 'fd' */
+items[1].socket = NULL;
+items[1].fd = fd;
+items[1].events = ZMQ_POLLIN;
+/* Poll for events indefinitely */
+int rc = zmq_poll (items, 2, -1);
+assert (rc >= 0);
+/* Returned events will be stored in items[].revents */
 ----
 
 
 SEE ALSO
 --------
 linkzmq:zmq_socket[3]
+linkzmq:zmq_send[3]
+linkzmq:zmq_recv[3]
+linkzmq:zmq[7]
+
+Your operating system documentation for the _poll()_ system call.
 
 
-AUTHOR
-------
-Martin Sustrik <sustrik at 250bpm dot com>
+AUTHORS
+-------
+The 0MQ documentation was written by Martin Sustrik <sustrik@250bpm.com> and
+Martin Lucina <mato@kotelna.sk>.

@@ -4,29 +4,30 @@ zmq_queue(1)
 
 NAME
 ----
-zmq_queue - forwards REQ/REP messages
+zmq_queue - forwarding device for request-reply messaging
 
 
 SYNOPSIS
 --------
-*
+To be written.
 
 
 DESCRIPTION
 -----------
-*
+To be written.
 
 
 OPTIONS
 -------
-*
+To be written.
 
 
 SEE ALSO
 --------
-*
+linkzmq:zmq[7]
 
 
-AUTHOR
-------
-Martin Sustrik <sustrik at 250bpm dot com>
+AUTHORS
+-------
+The 0MQ documentation was written by Martin Sustrik <sustrik@250bpm.com> and
+Martin Lucina <mato@kotelna.sk>.

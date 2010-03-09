@@ -4,53 +4,66 @@ zmq_bind(3)
 
 NAME
 ----
-zmq_bind - binds the socket to the specified address
+zmq_bind - assign a local address to a socket
 
 
 SYNOPSIS
 --------
-'int zmq_bind (void *s, const char *addr);'
+*int zmq_bind (void '*socket', const char '*address');*
 
 
 DESCRIPTION
 -----------
-The function binds socket 's' to a particular transport. Actual semantics of the
-command depend on the underlying transport mechanism, however, in cases where
-peers connect in an asymmetric manner, 'zmq_bind' should be called first,
-'zmq_connect' afterwards. Actual formats of 'addr' parameter are defined by
-individual transports. For a list of supported transports have a look at
-linkzmq:zmq[7] manual page.
+The _zmq_bind()_ function shall assign a local address specified by the
+'address' argument to the socket referenced by the 'socket' argument.
 
-Note that single socket can be bound (and connected) to
-arbitrary number of peers using different transport mechanisms.
+The 'address' argument is a string consisting of two parts as follows:
+'transport'://'endpoint'. The 'transport' part specifies the underlying
+transport protocol to use. The meaning of the 'endpoint' part is specific to
+the underlying transport protocol selected.
+
+The following transports are defined:
+
+'tcp':: unicast transport using TCP, see linkzmq:zmq_tcp[7]
+'pgm', 'udp':: reliable multicast transport using PGM, see linkzmq:zmq_pgm[7]
+'ipc':: local inter-process communication transport, see linkzmq:zmq_ipc[7]
+'inproc':: local in-process (inter-thread) communication transport, see linkzmq:zmq_inproc[7]
+
+A single socket may have an arbitrary number of local addresses assigned to it
+using _zmq_bind()_, while also being connected to an arbitrary number of peer
+addresses using _zmq_connect()_.
 
 
 RETURN VALUE
 ------------
-In case of success the function returns zero. Otherwise it returns -1 and
-sets 'errno' to the appropriate value.
+The _zmq_bind()_ function shall return zero if successful. Otherwise it shall
+return -1 and set 'errno' to one of the values defined below.
 
 
 ERRORS
 ------
 *EPROTONOSUPPORT*::
-unsupported protocol.
+The requested 'transport' protocol is not supported.
 *ENOCOMPATPROTO*::
-protocol is not compatible with the socket type.
+The requested 'transport' protocol is not compatible with the socket type.
 *EADDRINUSE*::
-the given address is already in use.
+The given 'address' is already in use.
 *EADDRNOTAVAIL*::
-a nonexistent interface was requested or the requested address was not local.
+A nonexistent interface was requested or the requested 'address' was not local.
 
 
 EXAMPLE
 -------
+.Binding a publisher socket to an in-process and a TCP transport
 ----
-void *s = zmq_socket (context, ZMQ_PUB);
-assert (s);
-int rc = zmq_bind (s, "inproc://my_publisher");
+/* Create a ZMQ_PUB socket */
+void *socket = zmq_socket (context, ZMQ_PUB);
+assert (socket);
+/* Bind it to a in-process transport with the endpoint 'my_publisher' */
+int rc = zmq_bind (socket, "inproc://my_publisher");
 assert (rc == 0);
-rc = zmq_bind (s, "tcp://eth0:5555");
+/* Bind it to a TCP transport on port 5555 of the 'eth0' interface */
+rc = zmq_bind (socket, "tcp://eth0:5555");
 assert (rc == 0);
 ----
 
@@ -62,6 +75,7 @@ linkzmq:zmq_socket[3]
 linkzmq:zmq[7]
 
 
-AUTHOR
-------
-Martin Sustrik <sustrik at 250bpm dot com>
+AUTHORS
+-------
+The 0MQ documentation was written by Martin Sustrik <sustrik@250bpm.com> and
+Martin Lucina <mato@kotelna.sk>.

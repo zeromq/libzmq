@@ -4,23 +4,27 @@ zmq_msg_data(3)
 
 NAME
 ----
-zmq_msg_data - retrieves pointer to the message content
+zmq_msg_data - retrieve pointer to message content
 
 
 SYNOPSIS
 --------
-'void *zmq_msg_data (zmq_msg_t *msg);'
+*void *zmq_msg_data (zmq_msg_t '*msg');*
 
 
 DESCRIPTION
 -----------
-Returns pointer to message data. Always use this function to access the data,
-never use 'zmq_msg_t' members directly.
+The _zmq_msg_data()_ function shall return a pointer to the message content of
+the message object referenced by 'msg'.
+
+CAUTION: Never access 'zmq_msg_t' members directly, instead always use the
+_zmq_msg_ family of functions.
 
 
 RETURN VALUE
 ------------
-Pointer to the message data.
+Upon successful completion, _zmq_msg_data()_ shall return a pointer to the
+message content.
 
 
 ERRORS
@@ -28,23 +32,17 @@ ERRORS
 No errors are defined.
 
 
-EXAMPLE
--------
-----
-zmq_msg_t msg;
-rc = zmq_msg_init_size (&msg, 100);
-memset (zmq_msg_data (&msg), 0, 100);
-----
-
-
 SEE ALSO
 --------
+linkzmq:zmq_msg_size[3]
 linkzmq:zmq_msg_init[3]
 linkzmq:zmq_msg_init_size[3]
 linkzmq:zmq_msg_init_data[3]
 linkzmq:zmq_msg_close[3]
+linkzmq:zmq[7]
 
 
-AUTHOR
-------
-Martin Sustrik <sustrik at 250bpm dot com>
+AUTHORS
+-------
+The 0MQ documentation was written by Martin Sustrik <sustrik@250bpm.com> and
+Martin Lucina <mato@kotelna.sk>.

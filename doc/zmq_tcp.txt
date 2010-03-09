@@ -4,55 +4,72 @@ zmq_tcp(7)
 
 NAME
 ----
-zmq_tcp - 0MQ unicast TCP transport over the network
+zmq_tcp - 0MQ unicast transport using TCP
 
 
 SYNOPSIS
 --------
-TCP is an ubiquitous unicast transport. When connecting distributed
-applications, you will mostly use TCP transport.
+TCP is an ubiquitous, reliable, unicast transport. When connecting distributed
+applications over a network with 0MQ, using the TCP transport will likely be
+your first choice.
 
 
-CONNECTION STRING
------------------
-Connection string for TCP transport is "tcp://" followed by an IP address,
-colon and port number. IP address can be either its numeric representation,
-a NIC name or a hostname (resolved by DNS):
+ADDRESSING
+----------
+A 0MQ address string consists of two parts as follows:
+'transport'`://`'endpoint'. The 'transport' part specifies the underlying
+transport protocol to use, and for the TCP transport shall be set to `tcp`.
+The meaning of the 'endpoint' part for the TCP transport is defined below.
 
-----
-    tcp://192.168.0.111:5555
-    tcp://myserver001:80
-    tcp://lo:32768
-----
 
-Note that NIC names are not standardised by POSIX. They tend to be rather
-arbitrary and platform dependent. Say, "eth0" on Linux would correspond to "en0"
-on OSX and "e1000g" on Solaris. On Windows platform, as there are no short NIC
-names available, you have to use numeric IP addresses instead.
+Assigning a local address to a socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When assigning a local address to a socket using _zmq_bind()_ with the 'tcp'
+transport, the 'endpoint' shall be interpreted as an 'interface' followed by a
+colon and the TCP port number to use.
+
+An 'interface' may be specified by either of the following:
+
+* The interface name as defined by the operating system.
+* The primary IPv4 address assigned to the interface, in it's numeric representation.
+* The wildcard `*`, meaning that the interface address is unspecified.
+
+NOTE: Interface names are not standardised in any way and should be assumed to
+be arbitrary and platform dependent. On Win32 platforms no short interface
+names exist, thus only the primary IPv4 address may be used to specify an
+'interface'.
+
+Connecting a socket
+~~~~~~~~~~~~~~~~~~~
+When connecting a socket to a peer address using _zmq_connect()_ with the 'tcp'
+transport, the 'endpoint' shall be interpreted as a 'peer address' followed by
+a colon and the TCP port number to use.
+
+A 'peer address' may be specified by either of the following:
+
+* The DNS name of the peer.
+* The IPv4 address of the peer, in it's numeric representation.
 
 
 WIRE FORMAT
 -----------
-A message consists of a message length followed by message data.
-Size of message data MUST correspond to the message length.
+0MQ messages are transmitted over TCP in frames consisting of the message
+length followed by the message data.  The size of the message data MUST
+correspond to the message length. A single 'frame' can be defined by the
+following ABNF grammar:
 
-For messages of 0 to 254 octets, the length is represented by single octet. 
+....
+    frame           = (message-length message-data)
+    message-length  = OCTET / (escape 8OCTET)
+    escape          = %xFF
+    message-data    = *OCTET
+....
 
-For messages of 255 or more octets the length is represented by a single octet
-%xFF followed by a 64-bit unsigned integer length in network byte order.
 
-The protocol can be defined by this BNF grammar:
+For messages of 0 to 254 octets in length, the message length is represented by
+a single octet:
 
-----
-    frame   = length data
-    length  = OCTET | escape 8*OCTET
-    escape  = %xFF
-    data    = *OCTET
-----
-
-Binary layout of a message (up to 254 bytes long):
-
-----
+....
 0                   1                   2                   3
 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -60,11 +77,13 @@ Binary layout of a message (up to 254 bytes long):
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 | Message body ...
 +-+-+-+-+-+-+- ...
-----
+....
 
-Binary layout of a larger message:
+For messages of 255 or more octets in length, the message length is represented
+by a single octet with the value `255` followed by the message length
+represented as a 64-bit unsigned integer in network byte order:
 
-----
+....
 0                   1                   2                   3
 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -76,18 +95,46 @@ Binary layout of a larger message:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |  Message body ...
 +-+-+-+-+-+-+-+ ...
+....
+
+
+EXAMPLES
+--------
+.Assigning a local address to a socket
+----
+/* TCP port 5555 on the local loopback interface on all platforms */
+rc = zmq_bind(socket, "tcp://127.0.0.1:5555");
+assert (rc == 0);
+/* TCP port 5555 on the first ethernet network interface on Linux */
+rc = zmq_bind(socket, "tcp://eth0:5555");
+assert (rc == 0);
+/* TCP port 5555 with an unspecified interface */
+rc = zmq_bind(socket, "tcp://*:5555");
+assert (rc == 0);
+----
+
+.Connecting a socket
+----
+/* Connecting using an IP address */
+rc = zmq_connect(socket, "tcp://192.168.1.1:5555");
+assert (rc == 0);
+/* Connecting using a DNS name */
+rc = zmq_connect(socket, "tcp://server1:5555");
+assert (rc == 0);
 ----
 
 
 SEE ALSO
 --------
-linkzmq:zmq_udp[7]
+linkzmq:zmq_bind[3]
+linkzmq:zmq_connect[3]
 linkzmq:zmq_pgm[7]
 linkzmq:zmq_ipc[7]
 linkzmq:zmq_inproc[7]
+linkzmq:zmq[7]
 
 
-AUTHOR
-------
-Martin Sustrik <sustrik at 250bpm dot com>
-
+AUTHORS
+-------
+The 0MQ documentation was written by Martin Sustrik <sustrik@250bpm.com> and
+Martin Lucina <mato@kotelna.sk>.
