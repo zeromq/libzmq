@@ -111,7 +111,7 @@ int zmq::socket_base_t::bind (const char *addr_)
     }
 
 #if defined ZMQ_HAVE_OPENPGM
-    if (addr_type == "pgm" || addr_type == "udp") {
+    if (addr_type == "pgm" || addr_type == "epgm") {
         //  In the case of PGM bind behaves the same like connect.
         return connect (addr_); 
     }
@@ -252,7 +252,7 @@ int zmq::socket_base_t::connect (const char *addr_)
     }
 
 #if defined ZMQ_HAVE_OPENPGM
-    if (addr_type == "pgm" || addr_type == "udp") {
+    if (addr_type == "pgm" || addr_type == "epgm") {
 
         //  If the socket type requires bi-directional communication
         //  multicast is not an option (it is uni-directional).
@@ -261,10 +261,8 @@ int zmq::socket_base_t::connect (const char *addr_)
             return -1;
         }
 
-        //  For udp, pgm transport with udp encapsulation is used.
-        bool udp_encapsulation = false;
-        if (addr_type == "udp")
-            udp_encapsulation = true;
+        //  For epgm, pgm transport with UDP encapsulation is used.
+        bool udp_encapsulation = (addr_type == "epgm");
 
         //  At this point we'll create message pipes to the session straight
         //  away. There's no point in delaying it as no concept of 'connect'
