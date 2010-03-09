@@ -174,7 +174,7 @@ void zmq::writer_t::term ()
     zmq_msg_t msg;
     const unsigned char *offset = 0;
     msg.content = (void*) (offset + ZMQ_DELIMITER);
-    msg.shared = false;
+    msg.flags = 0;
     pipe->write (msg);
     pipe->flush ();
 }

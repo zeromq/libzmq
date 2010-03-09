@@ -121,11 +121,11 @@ int zmq::pub_t::xsend (zmq_msg_t *msg_, int flags_)
     //  There are at least 2 destinations for the message. That means we have
     //  to deal with reference counting. First add N-1 references to
     //  the content (we are holding one reference anyway, that's why -1).
-    if (msg_->shared)
+    if (msg_->flags & ZMQ_MSG_SHARED)
         content->refcnt.add (pipes_count - 1);
     else {
         content->refcnt.set (pipes_count);
-        msg_->shared = true;
+        msg_->flags |= ZMQ_MSG_SHARED;
     }
 
     //  Push the message to all destinations.

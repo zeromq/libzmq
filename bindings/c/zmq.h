@@ -102,15 +102,19 @@ ZMQ_EXPORT const char *zmq_strerror (int errnum);
 #define ZMQ_DELIMITER 31
 #define ZMQ_VSM 32
 
-//  A message. If 'shared' is true, message content pointed to by 'content'
-//  is shared, i.e. reference counting is used to manage its lifetime
-//  rather than straighforward malloc/free. Not that 'content' is not a pointer
-//  to the raw data. Rather it is pointer to zmq::msg_content_t structure
+//  Message flags. ZMQ_MSG_SHARED is strictly speaking not a message flag
+//  (it has no equivalent in the wire format), however, making  it a flag
+//  allows us to pack the stucture tigher and thus improve performance.
+#define ZMQ_MSG_TBC 1
+#define ZMQ_MSG_SHARED 128
+
+//  A message. Note that 'content' is not a pointer to the raw data.
+//  Rather it is pointer to zmq::msg_content_t structure
 //  (see src/msg_content.hpp for its definition).
 typedef struct
 {
     void *content;
-    unsigned char shared;
+    unsigned char flags;
     unsigned char vsm_size;
     unsigned char vsm_data [ZMQ_MAX_VSM_SIZE];
 } zmq_msg_t;

@@ -96,6 +96,7 @@ const char *zmq_strerror (int errnum_)
 int zmq_msg_init (zmq_msg_t *msg_)
 {
     msg_->content = (zmq::msg_content_t*) ZMQ_VSM;
+    msg_->flags = 0;
     msg_->vsm_size = 0;
     return 0;
 }
@@ -104,6 +105,7 @@ int zmq_msg_init_size (zmq_msg_t *msg_, size_t size_)
 {
     if (size_ <= ZMQ_MAX_VSM_SIZE) {
         msg_->content = (zmq::msg_content_t*) ZMQ_VSM;
+        msg_->flags = 0;
         msg_->vsm_size = (uint8_t) size_;
     }
     else {
@@ -113,8 +115,8 @@ int zmq_msg_init_size (zmq_msg_t *msg_, size_t size_)
             errno = ENOMEM;
             return -1;
         }
-        msg_->shared = 0;
-
+        msg_->flags = 0;
+        
         zmq::msg_content_t *content = (zmq::msg_content_t*) msg_->content;
         content->data = (void*) (content + 1);
         content->size = size_;
@@ -128,9 +130,9 @@ int zmq_msg_init_size (zmq_msg_t *msg_, size_t size_)
 int zmq_msg_init_data (zmq_msg_t *msg_, void *data_, size_t size_,
     zmq_free_fn *ffn_, void *hint_)
 {
-    msg_->shared = 0;
     msg_->content = (zmq::msg_content_t*) malloc (sizeof (zmq::msg_content_t));
     zmq_assert (msg_->content);
+    msg_->flags = 0;
     zmq::msg_content_t *content = (zmq::msg_content_t*) msg_->content;
     content->data = data_;
     content->size = size_;
@@ -150,7 +152,7 @@ int zmq_msg_close (zmq_msg_t *msg_)
     //  If the content is not shared, or if it is shared and the reference.
     //  count has dropped to zero, deallocate it.
     zmq::msg_content_t *content = (zmq::msg_content_t*) msg_->content;
-    if (!msg_->shared || !content->refcnt.sub (1)) {
+    if (!(msg_->flags & ZMQ_MSG_SHARED) || !content->refcnt.sub (1)) {
 
         //  We used "placement new" operator to initialize the reference.
         //  counter so we call its destructor now.
@@ -183,10 +185,10 @@ int zmq_msg_copy (zmq_msg_t *dest_, zmq_msg_t *src_)
         //  One reference is added to shared messages. Non-shared messages
         //  are turned into shared messages and reference count is set to 2.
         zmq::msg_content_t *content = (zmq::msg_content_t*) src_->content;
-        if (src_->shared)
+        if (src_->flags & ZMQ_MSG_SHARED)
             content->refcnt.add (1);
         else {
-            src_->shared = true;
+            src_->flags |= ZMQ_MSG_SHARED;
             content->refcnt.set (2);
         }
     }
