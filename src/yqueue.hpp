@@ -102,12 +102,45 @@ namespace zmq
             chunk_t *sc = spare_chunk.xchg (NULL);
             if (sc) {
                 end_chunk->next = sc;
+                sc->prev = end_chunk;
             } else {
                 end_chunk->next = (chunk_t*) malloc (sizeof (chunk_t));
                 zmq_assert (end_chunk->next);
+                end_chunk->next->prev = end_chunk;
             }
             end_chunk = end_chunk->next;
             end_pos = 0;
+        }
+
+        //  Removes element from the back end of the queue. In other words
+        //  it rollbacks last push to the queue. Take care: Caller is
+        //  responsible for destroying the object being unpushed.
+        //  The caller must also guarantee that the queue isn't empty when
+        //  unpush is called. It cannot be done automatically as the read
+        //  side of the queue can be managed by different, completely
+        //  unsynchronised thread.
+        inline void unpush ()
+        {
+            //  First, move 'back' one position backwards.
+            if (back_pos)
+                --back_pos;
+            else {
+                back_pos = N - 1;
+                back_chunk = back_chunk->prev;
+            }
+
+            //  Now, move 'end' position backwards. Note that obsolete end chunk
+            //  is not used as a spare chunk. The analysis shows that doing so
+            //  would require free and atomic operation per chunk deallocated
+            //  instead of a simple free.
+            if (end_pos)
+                --end_pos;
+            else {
+                end_pos = N - 1;
+                end_chunk = end_chunk->prev;
+                free (end_chunk->next);
+                end_chunk->next = NULL;
+            }
         }
 
         //  Removes an element from the front end of the queue.
@@ -116,6 +149,7 @@ namespace zmq
             if (++ begin_pos == N) {
                 chunk_t *o = begin_chunk;
                 begin_chunk = begin_chunk->next;
+                begin_chunk->prev = NULL;
                 begin_pos = 0;
 
                 //  'o' has been more recently used than spare_chunk,
@@ -133,6 +167,7 @@ namespace zmq
         struct chunk_t
         {
              T values [N];
+             chunk_t *prev;
              chunk_t *next;
         };
 
@@ -149,7 +184,7 @@ namespace zmq
 
         //  People are likely to produce and consume at similar rates.  In
         //  this scenario holding onto the most recently freed chunk saves
-        //  us from having to call new/delete.
+        //  us from having to call malloc/free.
         atomic_ptr_t<chunk_t> spare_chunk;
 
         //  Disable copying of yqueue.

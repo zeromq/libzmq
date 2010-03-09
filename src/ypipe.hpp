@@ -78,6 +78,17 @@ namespace zmq
 #pragma message restore
 #endif
 
+        //  Pop an unflushed message from the pipe. Returns true is such
+        //  message exists, false otherwise.
+        inline bool unwrite (T *value_)
+        {
+            if (w == &queue.back ())
+                return false;
+            *value_ = queue.back ();
+            queue.unpush ();
+            return true;
+        }
+
         //  Flush the messages into the pipe. Returns false if the reader
         //  thread is sleeping. In that case, caller is obliged to wake the
         //  reader up before using the pipe again.

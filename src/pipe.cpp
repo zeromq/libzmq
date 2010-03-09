@@ -146,6 +146,19 @@ bool zmq::writer_t::write (zmq_msg_t *msg_)
     //  TODO: Adjust size of the pipe.
 }
 
+void zmq::writer_t::rollback ()
+{
+    while (true) {
+        zmq_msg_t msg;
+        if (!pipe->unwrite (&msg))
+            break;
+        zmq_msg_close (&msg);
+    }
+
+    //  TODO: We don't have to inform the reader side of the pipe about
+    //  the event. We'll simply adjust the pipe size and keep calm.
+}
+
 void zmq::writer_t::flush ()
 {
     if (!pipe->flush ())
