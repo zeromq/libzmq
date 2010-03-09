@@ -97,13 +97,13 @@ bool zmq::zmq_encoder_t::message_ready ()
     //  message size. In both cases empty 'flags' field follows.
     if (size < 255) {
         tmpbuf [0] = (unsigned char) size;
-        tmpbuf [1] = 0;
+        tmpbuf [1] = (in_progress.flags & ~ZMQ_MSG_SHARED);
         next_step (tmpbuf, 2, &zmq_encoder_t::size_ready, true);
     }
     else {
         tmpbuf [0] = 0xff;
         put_uint64 (tmpbuf + 1, size);
-        tmpbuf [9] = 0;
+        tmpbuf [9] = (in_progress.flags & ~ZMQ_MSG_SHARED);
         next_step (tmpbuf, 10, &zmq_encoder_t::size_ready, true);
     }
     return true;

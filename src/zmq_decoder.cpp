@@ -112,8 +112,8 @@ bool zmq::zmq_decoder_t::eight_byte_size_ready ()
 
 bool zmq::zmq_decoder_t::flags_ready ()
 {
-    //  No flags are accepted at the moment.
-    zmq_assert (tmpbuf [0] == 0);
+    //  Store the flags from the wire into the message structure.
+    in_progress.flags = tmpbuf [0];
 
     if (prefix.empty ()) {
         next_step (zmq_msg_data (&in_progress), zmq_msg_size (&in_progress),
