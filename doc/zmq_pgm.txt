@@ -75,14 +75,11 @@ boundaries and a single 0MQ message may span several PGM datagrams. This stream
 of data consists of 0MQ messages encapsulated in 'frames' as described in
 linkzmq:zmq_tcp[7].
 
-In order for late joining consumers to be able to identify message boundaries,
-each PGM datagram payload starts with a 16-bit unsigned integer in network byte
-order specifying either the offset of the first message 'frame' in the datagram
-or containing the value 0xFFFF if the datagram contains solely an intermediate
-part of a larger message.
 
-The payload of a single PGM datagram as used by 0MQ can thus be defined by the
-following ABNF grammar:
+PGM datagram payload
+~~~~~~~~~~~~~~~~~~~~
+The following ABNF grammar represents the payload of a single PGM datagram as
+used by 0MQ:
 
 ....
 datagram               = (offset data)
@@ -90,33 +87,43 @@ offset                 = 2OCTET
 data                   = *OCTET
 ....
 
-As already explained above, the data from consecutive datagrams are interpreted
-as a bytestream that's parsed according to the grammar described in
-linkzmq:zmq_tcp[7].
+In order for late joining consumers to be able to identify message boundaries,
+each PGM datagram payload starts with a 16-bit unsigned integer in network byte
+order specifying either the offset of the first message 'frame' in the datagram
+or containing the value 0xFFFF if the datagram contains solely an intermediate
+part of a larger message.
 
-Each packet thus looks like this:
- 
-----
-+-----------+------------+------------------+----------------------+
-| IP header | PGM header | offset (16 bits) |        data          |
-+-----------+------------+------------------+----------------------+
-----
- 
-Following example shows how messages are arranged in subsequent packets:
- 
-----
-+---------------+--------+-----------+-----------------------------+
-| PGM/IPheaders | 0x0000 | message 1 |      message 2 (part 1)     |
-+---------------+--------+-----------+-----------------------------+
- 
-+---------------+--------+-----------------------------------------+
-| PGM/IPheaders | 0xFFFF |            message 2 (part 2)           |
-+---------------+--------+-----------------------------------------+
- 
-+---------------+--------+--------------------------+-----------+
-| PGM/IPheaders | 0x0008 | message 2 (last 8 bytes) | message 3 |
-+---------------+--------+--------------------------+-----------+
-----
+The following diagram illustrates the layout of a single PGM datagram payload:
+
+....
++------------------+----------------------+
+| offset (16 bits) |         data         |
++------------------+----------------------+
+....
+
+The following diagram further illustrates how three example 0MQ frames are laid
+out in consecutive PGM datagram payloads:
+
+....
+First datagram payload
++--------------+-------------+---------------------+
+| Frame offset |   Frame 1   |   Frame 2, part 1   |
+|    0x0000    | (Message 1) | (Message 2, part 1) |
++--------------+-------------+---------------------+
+
+Second datagram payload
++--------------+---------------------+
+| Frame offset |   Frame 2, part 2   |
+| 0xFFFF       | (Message 2, part 2) |
++--------------+---------------------+
+
+Third datagram payload
++--------------+----------------------------+-------------+
+| Frame offset |   Frame 2, final 8 bytes   |   Frame 3   |
+| 0x0008       | (Message 2, final 8 bytes) | (Message 3) |
++--------------+----------------------------+-------------+
+....
+
 
 EXAMPLE
 -------
