@@ -90,8 +90,8 @@ data                   = *OCTET
 In order for late joining consumers to be able to identify message boundaries,
 each PGM datagram payload starts with a 16-bit unsigned integer in network byte
 order specifying either the offset of the first message 'frame' in the datagram
-or containing the value 0xFFFF if the datagram contains solely an intermediate
-part of a larger message.
+or containing the value `0xFFFF` if the datagram contains solely an
+intermediate part of a larger message.
 
 The following diagram illustrates the layout of a single PGM datagram payload:
 
