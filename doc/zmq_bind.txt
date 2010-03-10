@@ -25,7 +25,7 @@ the underlying transport protocol selected.
 The following transports are defined:
 
 'tcp':: unicast transport using TCP, see linkzmq:zmq_tcp[7]
-'pgm', 'udp':: reliable multicast transport using PGM, see linkzmq:zmq_pgm[7]
+'pgm', 'epgm':: reliable multicast transport using PGM, see linkzmq:zmq_pgm[7]
 'ipc':: local inter-process communication transport, see linkzmq:zmq_ipc[7]
 'inproc':: local in-process (inter-thread) communication transport, see linkzmq:zmq_inproc[7]
 
@@ -37,7 +37,7 @@ addresses using _zmq_connect()_.
 RETURN VALUE
 ------------
 The _zmq_bind()_ function shall return zero if successful. Otherwise it shall
-return -1 and set 'errno' to one of the values defined below.
+return `-1` and set 'errno' to one of the values defined below.
 
 
 ERRORS

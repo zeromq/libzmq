@@ -62,7 +62,8 @@ Messages
 ~~~~~~~~
 A 0MQ message is a discrete unit of data passed between applications or
 components of the same application. 0MQ messages have no internal structure and
-from the point of view of 0MQ itself they are considered to be opaque BLOBs.
+from the point of view of 0MQ itself they are considered to be opaque binary
+data.
 
 The following functions are provided to work with messages:
 

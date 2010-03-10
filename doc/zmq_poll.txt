@@ -42,9 +42,10 @@ bit corresponding to the event condition in the 'revents' member.
 
 If none of the requested events have occured on any *zmq_pollitem_t* item,
 _zmq_poll()_ shall wait up to 'timeout' microseconds for an event to occur on
-any of the requested items. If the value of 'timeout' is 0, _zmq_poll()_ shall
-return immediately. If the value of 'timeout' is -1, _zmq_poll()_ shall wait
-indefinitely for requested events to occur.
+any of the requested items. If the value of 'timeout' is `0`, _zmq_poll()_
+shall return immediately. If the value of 'timeout' is `-1`, _zmq_poll()_ shall
+block indefinitely until a requested event has occured on at least one
+*zmq_pollitem_t*.
 
 The 'events' and 'revents' members of *zmq_pollitem_t* are bitmasks constructed
 by OR'ing a combination of the following event flags:
@@ -78,9 +79,9 @@ of those interfaces in ways not defined in this documentation.
 RETURN VALUE
 ------------
 Upon successful completion, the _zmq_poll()_ function shall return the number
-of *zmq_pollitem_t* structures with events signaled in 'revents' or 0 if the
+of *zmq_pollitem_t* structures with events signaled in 'revents' or `0` if the
 'timeout' period has expired and no events have been signaled. Upon failure,
-_zmq_poll()_ shall return -1 and set 'errno' to one of the values defined
+_zmq_poll()_ shall return `-1` and set 'errno' to one of the values defined
 below.
 
 
@@ -97,7 +98,7 @@ associated 0MQ 'context' was initialised without the 'ZMQ_POLL' flag.
 
 EXAMPLE
 -------
-.Polling idenfinitely for input events on both a 0MQ socket and a standard socket.
+.Polling indefinitely for input events on both a 0MQ socket and a standard socket.
 ----
 zmq_pollitem_t items [2];
 /* First item refers to 0MQ socket 'socket' */

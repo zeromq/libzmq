@@ -26,7 +26,7 @@ also be dropped.
 RETURN VALUE
 ------------
 The _zmq_close()_ function shall return zero if successful. Otherwise it shall
-return -1 and set 'errno' to one of the values defined below.
+return `-1` and set 'errno' to one of the values defined below.
 
 
 ERRORS

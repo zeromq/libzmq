@@ -109,7 +109,7 @@ queue_ limits shall be shared with previous run(s) and so on.
 Identity should be at least one byte and at most 255 bytes long. Identities
 starting with binary zero are reserved for use by 0MQ infrastructure.
 
-Option value type:: BLOB
+Option value type:: binary data
 Option value unit:: N/A
 Default value:: NULL
 Applicable socket types:: all
@@ -127,7 +127,7 @@ with the specified prefix. Mutiple filters may be attached to a single
 'ZMQ_SUB' socket, in which case a message shall be accepted if it matches at
 least one filter.
 
-Option value type:: BLOB
+Option value type:: binary data
 Option value unit:: N/A
 Default value:: N/A
 Applicable socket types:: ZMQ_SUB
@@ -141,7 +141,7 @@ established with the 'ZMQ_SUBSCRIBE' option. If the socket has several
 instances of the same filter attached the 'ZMQ_UNSUBSCRIBE' option shall remove
 only one instance, leaving the rest in place and functional.
 
-Option value type:: BLOB
+Option value type:: binary data
 Option value unit:: N/A
 Default value:: N/A
 Applicable socket types:: ZMQ_SUB
@@ -150,8 +150,7 @@ Applicable socket types:: ZMQ_SUB
 ZMQ_RATE: Set multicast data rate
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_RATE' option shall set the maximum send or receive data rate for
-multicast transports such as linkzmq:zmq_pgm[7] and linkzmq:zmq_udp[7] using
-the specified 'socket'.
+multicast transports such as linkzmq:zmq_pgm[7] using the specified 'socket'.
 
 Option value type:: uint64_t
 Option value unit:: kilobits per second
@@ -162,10 +161,9 @@ Applicable socket types:: all, when using multicast transports
 ZMQ_RECOVERY_IVL: Set multicast recovery interval
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_RECOVERY_IVL' option shall set the recovery interval for multicast
-transports such as linkzmq:zmq_pgm[7] and linkzmq:zmq_udp[7] using the
-specified 'socket'. The recovery interval determines the maximum time in
-seconds that a receiver can be absent from a multicast group before
-unrecoverable data loss will occur.
+transports such as linkzmq:zmq_pgm[7] using the specified 'socket'. The
+recovery interval determines the maximum time in seconds that a receiver can be
+absent from a multicast group before unrecoverable data loss will occur.
 
 CAUTION: Excersize care when setting large recovery intervals as the data
 needed for recovery will be held in memory. For example, a 1 minute recovery
@@ -221,7 +219,7 @@ Applicable socket types:: all
 RETURN VALUE
 ------------
 The _zmq_setsockopt()_ function shall return zero if successful. Otherwise it
-shall return -1 and set 'errno' to one of the values defined below.
+shall return `-1` and set 'errno' to one of the values defined below.
 
 
 ERRORS

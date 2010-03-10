@@ -16,7 +16,7 @@ DESCRIPTION
 -----------
 The 'zmq_socket()' function shall create a 0MQ socket within the specified
 'context' and return an opaque handle to the newly created socket. The 'type'
-argument specifies the _messaging pattern_, which determines the semantics of
+argument specifies the socket type, which determines the semantics of
 communication over the socket.
 
 The following _messaging patterns_ are defined:
@@ -96,8 +96,9 @@ Socket type:: 'ZMQ_DOWNSTREAM'
 Compatible peer sockets:: 'ZMQ_UPSTREAM'
 
 A socket of type 'ZMQ_DOWNSTREAM' is used by a _component_ of a pipeline to
-send messages to downstream stages of the pipeline. The _zmq_recv()_ function
-is not implemented for this socket type.
+send messages to downstream stages of the pipeline. Messages are load-balanced
+to all connected downstream _components_. The _zmq_recv()_ function is not
+implemented for this socket type.
 
 
 RETURN VALUE
