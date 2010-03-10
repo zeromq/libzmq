@@ -81,20 +81,42 @@ order specifying either the offset of the first message 'frame' in the datagram
 or containing the value 0xFFFF if the datagram contains solely an intermediate
 part of a larger message.
 
-A single PGM datagram as used by 0MQ can thus be defined by the following ABNF
-grammar:
+The payload of a single PGM datagram as used by 0MQ can thus be defined by the
+following ABNF grammar:
 
 ....
-datagram               = message / intermediate
-message                = (frame-offset *data 1*frame)    <1>
-intermediate           = (escape 1*data)
-frame-offset           = 2OCTET
-escape                 = %xFF %xFF
-data                   = 1*OCTET
+datagram               = (offset data)
+offset                 = 2OCTET
+data                   = *OCTET
 ....
 
-<1> 'frame' as defined in linkzmq:zmq_tcp[7].
+As already explained above, the data from consecutive datagrams are interpreted
+as a bytestream that's parsed according to the grammar described in
+linkzmq:zmq_tcp[7].
 
+Each packet thus looks like this:
+ 
+----
++-----------+------------+------------------+----------------------+
+| IP header | PGM header | offset (16 bits) |        data          |
++-----------+------------+------------------+----------------------+
+----
+ 
+Following example shows how messages are arranged in subsequent packets:
+ 
+----
++---------------+--------+-----------+-----------------------------+
+| PGM/IPheaders | 0x0000 | message 1 |      message 2 (part 1)     |
++---------------+--------+-----------+-----------------------------+
+ 
++---------------+--------+-----------------------------------------+
+| PGM/IPheaders | 0xFFFF |            message 2 (part 2)           |
++---------------+--------+-----------------------------------------+
+ 
++---------------+--------+--------------------------+-----------+
+| PGM/IPheaders | 0x0008 | message 2 (last 8 bytes) | message 3 |
++---------------+--------+--------------------------+-----------+
+----
 
 EXAMPLE
 -------
