@@ -53,12 +53,25 @@ A 'peer address' may be specified by either of the following:
 
 WIRE FORMAT
 -----------
-0MQ messages are transmitted over TCP in frames consisting of the message
-length followed by flags byte and the message data. The length MUST correspond
-to the length of the remaining part of the frame. 
+0MQ messages are transmitted over TCP in frames consisting of an encoded
+'payload length', followed by a 'flags' field and the message body. The 'payload
+length' is defined as the combined length in octets of the message body and the
+'flags' field.
 
-. A single 'frame' can be defined by the
-following ABNF grammar:
+For frames with a 'payload length' not exceeding 254 octets, the 'payload
+length' shall be encoded as a single octet.  The minimum valid 'payload length'
+of a frame is 1 octet, thus a 'payload length' of 0 octets is invalid and such
+frames SHOULD be ignored.
+
+For frames with a 'payload length' exceeding 254 octets, the 'payload length'
+shall be encoded as a single octet with the value `255` followed by the
+'payload length' represented as a 64-bit unsigned integer in network byte
+order.
+
+The 'flags' field consists of a single octet reserved for future expansion and
+MUST be set to `0`.
+
+The following ABNF grammar represents a single 'frame':
 
 ....
     frame           = (length flags data)
@@ -68,39 +81,36 @@ following ABNF grammar:
     data            = *OCTET
 ....
 
-
-For messages of 0 to 253 octets in length, the message length is represented by
-a single octet:
+The following diagram illustrates the layout of a frame with a 'payload length'
+not exceeding 254 octets:
 
 ....
 0                   1                   2                   3
 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| Message size  |     Flags     |       Message body        ... |
+| Payload length|     Flags     |       Message body        ... |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 | Message body ...
 +-+-+-+-+-+-+- ...
 ....
 
-For messages of 254 or more octets in length, the message length is represented
-by a single octet with the value `255` followed by the message length
-represented as a 64-bit unsigned integer in network byte order:
+The following diagram illustrates the layout of a frame with a 'payload length'
+exceeding 254 octets:
 
 ....
 0                   1                   2                   3
 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|     0xff      |                Message size               ... |
+|     0xff      |               Payload length              ... |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Message size                       ... |
+|                       Payload length                      ... |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  Message size |     Flags     |        Message body       ... |
+| Payload length|     Flags     |        Message body       ... |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |  Message body ...
 +-+-+-+-+-+-+-+ ...
 ....
 
-The flags field is reserved and MUST be set to 0.
 
 EXAMPLES
 --------
