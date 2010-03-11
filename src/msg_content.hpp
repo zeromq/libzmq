@@ -22,7 +22,7 @@
 
 #include <stddef.h>
 
-#include "../bindings/c/zmq.h"
+#include "../include/zmq.h"
 
 #include "atomic_counter.hpp"
 

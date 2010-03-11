@@ -3,17 +3,7 @@ lib_LTLIBRARIES = libzmq.la
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libzmq.pc
 
-if BUILD_CPP
-include_HEADERS = ../bindings/cpp/zmq.hpp ../bindings/c/zmq.h
-endif
-
-if BUILD_C
-if BUILD_CPP
-
-else
-include_HEADERS = ../bindings/c/zmq.h
-endif
-endif
+include_HEADERS = ../include/zmq.h ../include/zmq.hpp
 
 if BUILD_PGM
 pgm_sources = ../foreign/openpgm/@pgm_basename@/openpgm/pgm/packet.c \

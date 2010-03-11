@@ -1,10 +1,2 @@
-if BUILD_C
-PERF_DIR_C = c
-endif
-
-if BUILD_CPP
-PERF_DIR_CPP = cpp
-endif
-
-SUBDIRS = $(PERF_DIR_C) $(PERF_DIR_CPP)
+SUBDIRS = c cpp
 DIST_SUBDIRS = c cpp

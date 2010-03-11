@@ -19,7 +19,7 @@
 
 #include <new>
 
-#include "../bindings/c/zmq.h"
+#include "../include/zmq.h"
 
 #include "dispatcher.hpp"
 #include "socket_base.hpp"

@@ -20,7 +20,7 @@
 #ifndef __ZMQ_SUB_HPP_INCLUDED__
 #define __ZMQ_SUB_HPP_INCLUDED__
 
-#include "../bindings/c/zmq.h"
+#include "../include/zmq.h"
 
 #include "prefix_tree.hpp"
 #include "socket_base.hpp"

@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)/bindings/cpp -I$(top_srcdir)/bindings/c
+INCLUDES = -I$(top_srcdir)/include
 
 noinst_PROGRAMS = local_lat remote_lat local_thr remote_thr
 

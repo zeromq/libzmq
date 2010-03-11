@@ -19,7 +19,7 @@
 
 #include <string.h>
 
-#include "../bindings/c/zmq.h"
+#include "../include/zmq.h"
 
 #include "sub.hpp"
 #include "err.hpp"

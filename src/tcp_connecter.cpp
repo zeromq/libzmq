@@ -21,7 +21,7 @@
 
 #include <string>
 
-#include "../bindings/c/zmq.h"
+#include "../include/zmq.h"
 
 #include "tcp_connecter.hpp"
 #include "platform.hpp"

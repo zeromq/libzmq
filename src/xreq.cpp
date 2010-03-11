@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../bindings/c/zmq.h"
+#include "../include/zmq.h"
 
 #include "xreq.hpp"
 #include "err.hpp"

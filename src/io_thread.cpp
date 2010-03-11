@@ -19,7 +19,7 @@
 
 #include <new>
 
-#include "../bindings/c/zmq.h"
+#include "../include/zmq.h"
 
 #include "io_thread.hpp"
 #include "command.hpp"

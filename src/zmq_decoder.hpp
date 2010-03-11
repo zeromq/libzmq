@@ -20,7 +20,7 @@
 #ifndef __ZMQ_ZMQ_DECODER_HPP_INCLUDED__
 #define __ZMQ_ZMQ_DECODER_HPP_INCLUDED__
 
-#include "../bindings/c/zmq.h"
+#include "../include/zmq.h"
 
 #include "decoder.hpp"
 #include "blob.hpp"

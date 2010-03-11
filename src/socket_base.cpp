@@ -21,7 +21,7 @@
 #include <string>
 #include <algorithm>
 
-#include "../bindings/c/zmq.h"
+#include "../include/zmq.h"
 
 #include "socket_base.hpp"
 #include "app_thread.hpp"

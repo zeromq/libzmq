@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_builddir)/bindings/c
+INCLUDES = -I$(top_builddir)/include
 
 if BUILD_PGM_EXAMPLES
 PGM_EXAMPLES_BINS = pgmsend pgmrecv

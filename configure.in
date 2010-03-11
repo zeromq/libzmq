@@ -286,24 +286,6 @@ if test "x$HAVE_INTTYPES_H" = "xyes"; then
     inttypes="1"
 fi
 
-# c 
-czmq="no"
-AC_ARG_WITH([c], [AS_HELP_STRING([--with-c], 
-    [build c language binding [default=no]])], [c=yes], [c=no])
-
-if test "x$c" != "xno"; then
-    czmq="yes" 
-fi
-
-# c++
-cppzmq="no"
-AC_ARG_WITH([cpp], [AS_HELP_STRING([--with-cpp], 
-    [build c++ language binding [default=no]])], [cpp=yes], [cpp=no])
-
-if test "x$cpp" != "xno"; then
-    cppzmq="yes" 
-fi
-    
 #  PGM extension
 pgm_ext="no"
 
@@ -321,10 +303,6 @@ AC_ARG_WITH([pgm-examples], [AS_HELP_STRING([--with-pgm-examples],
 
 if test "x$with_pgm_ext" = "xno" -a "x$with_pgm_examples" = "xyes"; then
     AC_MSG_ERROR([cannot configure --with-pgm-examples without --with-pgm.]);
-fi
-
-if test "x$c" = "xno" -a "x$with_pgm_examples" = "xyes"; then
-    AC_MSG_ERROR([cannot configure --with-pgm-examples without --with-c.]);
 fi
 
 if test "x$with_pgm_ext" != "xno"; then
@@ -430,18 +408,12 @@ AC_ARG_WITH([perf], [AS_HELP_STRING([--with-perf],
 
 if test "x$with_perf" != "xno"; then
     perf="yes"
-
-    if test "x$czmq" = "xno" -a "x$cppzmq" = "xno"; then
-        AC_MSG_ERROR([the --with-perf option requires at least one language binding.]);
-    fi
 fi
 
 if test "x$with_perf" = "xno" -a "x$with_pgm_examples" = "xyes"; then
     AC_MSG_ERROR([cannot configure --with-pgm-examples without --with-perf.]);
 fi
 
-AM_CONDITIONAL(BUILD_C, test "x$czmq" = "xyes")
-AM_CONDITIONAL(BUILD_CPP, test "x$cppzmq" = "xyes")
 AM_CONDITIONAL(BUILD_PGM, test "x$pgm_ext" = "xyes")
 AM_CONDITIONAL(BUILD_NO_PGM, test "x$pgm_ext" = "xno")
 AM_CONDITIONAL(BUILD_FORWARDER, test "x$forwarder" = "xyes")
@@ -493,8 +465,8 @@ AC_MSG_RESULT([ ******************************************************** ])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([ 0MQ install dir: $prefix])
 AC_MSG_RESULT([   Language bindings:])
-AC_MSG_RESULT([     C: $czmq])
-AC_MSG_RESULT([     C++: $cppzmq])
+AC_MSG_RESULT([     C: yes])
+AC_MSG_RESULT([     C++: yes])
 AC_MSG_RESULT([   Transports:])
 AC_MSG_RESULT([     tcp: yes])
 AC_MSG_RESULT([     pgm (epgm): $pgm_ext])

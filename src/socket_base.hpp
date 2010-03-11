@@ -24,7 +24,7 @@
 #include <map>
 #include <vector>
 
-#include "../bindings/c/zmq.h"
+#include "../include/zmq.h"
 
 #include "i_endpoint.hpp"
 #include "object.hpp"
