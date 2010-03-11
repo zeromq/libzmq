@@ -37,13 +37,8 @@ AC_SUBST(PACKAGE_VERSION)
 LTVER="0:0:0"
 AC_SUBST(LTVER)
 
-# libjzmq -version-info
-JLTVER="0:0:0"
-AC_SUBST(JLTVER)
-
-AM_PROG_CC_C_O
-
 # Checks for programs.
+AM_PROG_CC_C_O
 AC_PROG_CXX
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
@@ -309,61 +304,6 @@ if test "x$cpp" != "xno"; then
     cppzmq="yes" 
 fi
     
-# Java language binding
-jzmq="no"
-AC_ARG_WITH([java], [AS_HELP_STRING([--with-java], [build Java language binding [default=no]])], [with_java=yes], [with_java=no])
-if test "x$with_java" != "xno"; then
-    AC_PATH_PROG(JAVAC, javac, "no",[$PATH:$JAVA_HOME/bin])
-    if test "x$JAVAC" = "xno"; then
-        AC_MSG_ERROR([the --with-java option requires that javac be on the path.]);
-    fi
-
-    AC_PATH_PROG(JAVAH, javah, "no",[$PATH:$JAVA_HOME/bin])
-    if test "x$JAVAH" = "xno"; then
-        AC_MSG_ERROR([the --with-java option requires that javah be on the path.]);
-    fi
-
-    AC_PATH_PROG(JAR, jar, "no", [$PATH:$JAVA_HOME/bin])
-    if test "x$JAR" = "xno"; then
-        AC_MSG_ERROR([the --with-java option requires that jar be on the path.]);
-    fi
-
-    if test "x$JAVA_HOME" = "x"; then
-        AC_MSG_ERROR([the --with-java option requires the JAVA_HOME environment variable be set to your JDK location.]);
-    fi
-
-    AC_MSG_CHECKING([for jni.h in a $JAVA_HOME/include dir])
-    if test -f $JAVA_HOME/include/jni.h; then
-        AC_MSG_RESULT([yes])
-    else
-        AC_MSG_ERROR([cannot find jni.h in the $JAVA_HOME/include directory.]);
-    fi
-
-    JAVAROOT=./
-    AC_SUBST(JAVAROOT)
-
-    case "${host_os}" in
-        *solaris*)
-            JAVA_INCLUDE="-I.. -I${JAVA_HOME}/include -I ${JAVA_HOME}/include/solaris"
-        ;;
-        *openbsd*)
-            JAVA_INCLUDE="-I.. -I${JAVA_HOME}/include -I ${JAVA_HOME}/include/openbsd"
-        ;;
-        *)
-            JAVA_INCLUDE="-I.. -I${JAVA_HOME}/include -I ${JAVA_HOME}/include/linux"
-        ;;
-    esac
-
-    AC_SUBST(JAVA_INCLUDE)
-
-    jzmq="yes"
-else
-# Workaround to be able to run make dist without real JAVAH
-    JAVAH=true
-    JAVAC=true
-    JAR=true
-fi
-
 #  PGM extension
 pgm_ext="no"
 
@@ -491,8 +431,7 @@ AC_ARG_WITH([perf], [AS_HELP_STRING([--with-perf],
 if test "x$with_perf" != "xno"; then
     perf="yes"
 
-    if test "x$czmq" = "xno" -a "x$cppzmq" = "xno" -a \
-          "x$jzmq" = "xno"; then
+    if test "x$czmq" = "xno" -a "x$cppzmq" = "xno"; then
         AC_MSG_ERROR([the --with-perf option requires at least one language binding.]);
     fi
 fi
@@ -501,7 +440,6 @@ if test "x$with_perf" = "xno" -a "x$with_pgm_examples" = "xyes"; then
     AC_MSG_ERROR([cannot configure --with-pgm-examples without --with-perf.]);
 fi
 
-AM_CONDITIONAL(BUILD_JAVA, test "x$jzmq" = "xyes")
 AM_CONDITIONAL(BUILD_C, test "x$czmq" = "xyes")
 AM_CONDITIONAL(BUILD_CPP, test "x$cppzmq" = "xyes")
 AM_CONDITIONAL(BUILD_PGM, test "x$pgm_ext" = "xyes")
@@ -528,10 +466,10 @@ AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(perror gettimeofday memset socket getifaddrs freeifaddrs)
 
 AC_OUTPUT(Makefile src/Makefile doc/Makefile
-    bindings/java/Makefile perf/Makefile perf/c/Makefile perf/cpp/Makefile \
-    perf/java/Makefile src/libzmq.pc \
+    perf/Makefile perf/c/Makefile perf/cpp/Makefile \
+    src/libzmq.pc \
     devices/Makefile devices/zmq_forwarder/Makefile \
-    devices/zmq_streamer/Makefile devices/zmq_queue/Makefile bindings/Makefile)
+    devices/zmq_streamer/Makefile devices/zmq_queue/Makefile)
 
 #  On Linux patch libtool to delete hardcoded paths (rpath).
 case "${host_os}" in
@@ -557,7 +495,6 @@ AC_MSG_RESULT([ 0MQ install dir: $prefix])
 AC_MSG_RESULT([   Language bindings:])
 AC_MSG_RESULT([     C: $czmq])
 AC_MSG_RESULT([     C++: $cppzmq])
-AC_MSG_RESULT([     Java: $jzmq])
 AC_MSG_RESULT([   Transports:])
 AC_MSG_RESULT([     tcp: yes])
 AC_MSG_RESULT([     pgm (epgm): $pgm_ext])
