@@ -374,22 +374,8 @@ if test "x$werror" = "xyes" -a "x$pgm_ext" = "xno"; then
     LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Werror"
 fi
 
-# Perf
-perf="no"
-AC_ARG_WITH([perf], [AS_HELP_STRING([--with-perf], 
-    [build performance tests [default=no]])], [with_perf=yes], [with_perf=no])
-
-if test "x$with_perf" != "xno"; then
-    perf="yes"
-fi
-
-if test "x$with_perf" = "xno" -a "x$with_pgm_examples" = "xyes"; then
-    AC_MSG_ERROR([cannot configure --with-pgm-examples without --with-perf.]);
-fi
-
 AM_CONDITIONAL(BUILD_PGM, test "x$pgm_ext" = "xyes")
 AM_CONDITIONAL(BUILD_NO_PGM, test "x$pgm_ext" = "xno")
-AM_CONDITIONAL(BUILD_PERF, test "x$perf" = "xyes")
 AM_CONDITIONAL(ON_MINGW, test "x$on_mingw32" = "xyes")
 AM_CONDITIONAL(BUILD_PGM_EXAMPLES, test "x$with_pgm_examples" = "xyes")
 AM_CONDITIONAL(INSTALL_MAN, test "x$install_man" = "xyes")
@@ -408,8 +394,7 @@ AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(perror gettimeofday memset socket getifaddrs freeifaddrs)
 
 AC_OUTPUT(Makefile src/Makefile doc/Makefile
-    perf/Makefile perf/c/Makefile perf/cpp/Makefile \
-    src/libzmq.pc \
+    perf/Makefile src/libzmq.pc \
     devices/Makefile devices/zmq_forwarder/Makefile \
     devices/zmq_streamer/Makefile devices/zmq_queue/Makefile)
 
@@ -423,13 +408,4 @@ case "${host_os}" in
         ;;
 esac
 
-AC_MSG_RESULT([])
-AC_MSG_RESULT([ ******************************************************** ])
-AC_MSG_RESULT([                 0MQ configuration summary])
-AC_MSG_RESULT([ ******************************************************** ])
-AC_MSG_RESULT([])
-AC_MSG_RESULT([ Install dir: $prefix])
-AC_MSG_RESULT([ PGM (EPGM) support: $pgm_ext])
-AC_MSG_RESULT([ Performance tests: $perf])
-AC_MSG_RESULT([])
 

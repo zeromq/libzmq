@@ -1,10 +1,6 @@
 ACLOCAL_AMFLAGS = -I config
 
-if BUILD_PERF
-DIR_PERF = perf
-endif
-
-SUBDIRS = src doc $(DIR_PERF) devices
+SUBDIRS = src doc perf devices
 DIST_SUBDIRS = src doc perf devices
 
 EXTRA_DIST = \
