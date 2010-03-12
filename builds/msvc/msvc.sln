@@ -43,31 +43,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cpp_remote_thr", "cpp_remot
 		{641C5F36-32EE-4323-B740-992B651CF9D6} = {641C5F36-32EE-4323-B740-992B651CF9D6}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "java", "java\java.vcproj", "{66C40C34-7E05-4B03-8027-F40850C01364}"
-	ProjectSection(ProjectDependencies) = postProject
-		{641C5F36-32EE-4323-B740-992B651CF9D6} = {641C5F36-32EE-4323-B740-992B651CF9D6}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "j_local_lat", "j_local_lat\j_local_lat.vcproj", "{F4D93BC6-9D70-4113-94A8-817A52B49290}"
-	ProjectSection(ProjectDependencies) = postProject
-		{66C40C34-7E05-4B03-8027-F40850C01364} = {66C40C34-7E05-4B03-8027-F40850C01364}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "j_remote_lat", "j_remote_lat\j_remote_lat.vcproj", "{15C832D0-2E68-484A-9DCE-BC872FE1C7EF}"
-	ProjectSection(ProjectDependencies) = postProject
-		{66C40C34-7E05-4B03-8027-F40850C01364} = {66C40C34-7E05-4B03-8027-F40850C01364}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "j_local_thr", "j_local_thr\j_local_thr.vcproj", "{95E6161D-418B-4ABF-85E2-F07797742156}"
-	ProjectSection(ProjectDependencies) = postProject
-		{66C40C34-7E05-4B03-8027-F40850C01364} = {66C40C34-7E05-4B03-8027-F40850C01364}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "j_remote_thr", "j_remote_thr\j_remote_thr.vcproj", "{00A421BA-3B6B-45BD-B91F-DED953472622}"
-	ProjectSection(ProjectDependencies) = postProject
-		{66C40C34-7E05-4B03-8027-F40850C01364} = {66C40C34-7E05-4B03-8027-F40850C01364}
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zmq_forwarder", "zmq_forwarder\zmq_forwarder.vcproj", "{EFE471DE-6747-4B2E-B084-F7E45A16CD03}"
 	ProjectSection(ProjectDependencies) = postProject
 		{641C5F36-32EE-4323-B740-992B651CF9D6} = {641C5F36-32EE-4323-B740-992B651CF9D6}
@@ -125,26 +100,6 @@ Global
 		{EB051624-35C2-4B51-B5DD-8734372617A7}.Debug|Win32.Build.0 = Debug|Win32
 		{EB051624-35C2-4B51-B5DD-8734372617A7}.Release|Win32.ActiveCfg = Release|Win32
 		{EB051624-35C2-4B51-B5DD-8734372617A7}.Release|Win32.Build.0 = Release|Win32
-		{66C40C34-7E05-4B03-8027-F40850C01364}.Debug|Win32.ActiveCfg = Debug|Win32
-		{66C40C34-7E05-4B03-8027-F40850C01364}.Debug|Win32.Build.0 = Debug|Win32
-		{66C40C34-7E05-4B03-8027-F40850C01364}.Release|Win32.ActiveCfg = Release|Win32
-		{66C40C34-7E05-4B03-8027-F40850C01364}.Release|Win32.Build.0 = Release|Win32
-		{F4D93BC6-9D70-4113-94A8-817A52B49290}.Debug|Win32.ActiveCfg = Debug|Win32
-		{F4D93BC6-9D70-4113-94A8-817A52B49290}.Debug|Win32.Build.0 = Debug|Win32
-		{F4D93BC6-9D70-4113-94A8-817A52B49290}.Release|Win32.ActiveCfg = Release|Win32
-		{F4D93BC6-9D70-4113-94A8-817A52B49290}.Release|Win32.Build.0 = Release|Win32
-		{15C832D0-2E68-484A-9DCE-BC872FE1C7EF}.Debug|Win32.ActiveCfg = Debug|Win32
-		{15C832D0-2E68-484A-9DCE-BC872FE1C7EF}.Debug|Win32.Build.0 = Debug|Win32
-		{15C832D0-2E68-484A-9DCE-BC872FE1C7EF}.Release|Win32.ActiveCfg = Release|Win32
-		{15C832D0-2E68-484A-9DCE-BC872FE1C7EF}.Release|Win32.Build.0 = Release|Win32
-		{95E6161D-418B-4ABF-85E2-F07797742156}.Debug|Win32.ActiveCfg = Debug|Win32
-		{95E6161D-418B-4ABF-85E2-F07797742156}.Debug|Win32.Build.0 = Debug|Win32
-		{95E6161D-418B-4ABF-85E2-F07797742156}.Release|Win32.ActiveCfg = Release|Win32
-		{95E6161D-418B-4ABF-85E2-F07797742156}.Release|Win32.Build.0 = Release|Win32
-		{00A421BA-3B6B-45BD-B91F-DED953472622}.Debug|Win32.ActiveCfg = Debug|Win32
-		{00A421BA-3B6B-45BD-B91F-DED953472622}.Debug|Win32.Build.0 = Debug|Win32
-		{00A421BA-3B6B-45BD-B91F-DED953472622}.Release|Win32.ActiveCfg = Release|Win32
-		{00A421BA-3B6B-45BD-B91F-DED953472622}.Release|Win32.Build.0 = Release|Win32
 		{EFE471DE-6747-4B2E-B084-F7E45A16CD03}.Debug|Win32.ActiveCfg = Debug|Win32
 		{EFE471DE-6747-4B2E-B084-F7E45A16CD03}.Debug|Win32.Build.0 = Debug|Win32
 		{EFE471DE-6747-4B2E-B084-F7E45A16CD03}.Release|Win32.ActiveCfg = Release|Win32
