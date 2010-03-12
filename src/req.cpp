@@ -75,7 +75,7 @@ void zmq::req_t::xdetach_inpipe (class reader_t *pipe_)
             active--;
             in_pipes.swap (index, active);
             out_pipes.swap (index, active);
-            if (current = active)
+            if (current == active)
                 current = 0;
         }
         return;
