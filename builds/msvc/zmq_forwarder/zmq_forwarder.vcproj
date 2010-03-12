@@ -58,6 +58,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				OutputFile="../../../bin/zmq_forwarder.exe"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
 			/>
@@ -127,6 +128,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				OutputFile="../../../bin/zmq_forwarder.exe"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"

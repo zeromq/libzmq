@@ -3,42 +3,22 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual C++ Express 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzmq", "libzmq\libzmq.vcproj", "{641C5F36-32EE-4323-B740-992B651CF9D6}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "c_local_lat", "c_local_lat\c_local_lat.vcproj", "{4FDB8C73-9D4A-4D87-A4A9-A7FC06DFEA57}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "local_lat", "c_local_lat\c_local_lat.vcproj", "{4FDB8C73-9D4A-4D87-A4A9-A7FC06DFEA57}"
 	ProjectSection(ProjectDependencies) = postProject
 		{641C5F36-32EE-4323-B740-992B651CF9D6} = {641C5F36-32EE-4323-B740-992B651CF9D6}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "c_remote_lat", "c_remote_lat\c_remote_lat.vcproj", "{9C20A37C-5D9F-4C4C-A2D9-E6EE91A077D1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "remote_lat", "c_remote_lat\c_remote_lat.vcproj", "{9C20A37C-5D9F-4C4C-A2D9-E6EE91A077D1}"
 	ProjectSection(ProjectDependencies) = postProject
 		{641C5F36-32EE-4323-B740-992B651CF9D6} = {641C5F36-32EE-4323-B740-992B651CF9D6}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "c_local_thr", "c_local_thr\c_local_thr.vcproj", "{8EF2DF6B-6646-460F-8032-913B70FE0E94}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "local_thr", "c_local_thr\c_local_thr.vcproj", "{8EF2DF6B-6646-460F-8032-913B70FE0E94}"
 	ProjectSection(ProjectDependencies) = postProject
 		{641C5F36-32EE-4323-B740-992B651CF9D6} = {641C5F36-32EE-4323-B740-992B651CF9D6}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "c_remote_thr", "c_remote_thr\c_remote_thr.vcproj", "{B15E059C-0CBB-4A82-8C42-6567FB650802}"
-	ProjectSection(ProjectDependencies) = postProject
-		{641C5F36-32EE-4323-B740-992B651CF9D6} = {641C5F36-32EE-4323-B740-992B651CF9D6}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cpp_local_lat", "cpp_local_lat\cpp_local_lat.vcproj", "{4F6EA424-54BA-4CD6-BD91-8465DB230D3A}"
-	ProjectSection(ProjectDependencies) = postProject
-		{641C5F36-32EE-4323-B740-992B651CF9D6} = {641C5F36-32EE-4323-B740-992B651CF9D6}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cpp_remote_lat", "cpp_remote_lat\cpp_remote_lat.vcproj", "{123F35E4-CB95-472F-93DE-0F7624E63705}"
-	ProjectSection(ProjectDependencies) = postProject
-		{641C5F36-32EE-4323-B740-992B651CF9D6} = {641C5F36-32EE-4323-B740-992B651CF9D6}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cpp_local_thr", "cpp_local_thr\cpp_local_thr.vcproj", "{3BC53F9B-655A-41A4-BD57-F7AB94ED3E09}"
-	ProjectSection(ProjectDependencies) = postProject
-		{641C5F36-32EE-4323-B740-992B651CF9D6} = {641C5F36-32EE-4323-B740-992B651CF9D6}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cpp_remote_thr", "cpp_remote_thr\cpp_remote_thr.vcproj", "{EB051624-35C2-4B51-B5DD-8734372617A7}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "remote_thr", "c_remote_thr\c_remote_thr.vcproj", "{B15E059C-0CBB-4A82-8C42-6567FB650802}"
 	ProjectSection(ProjectDependencies) = postProject
 		{641C5F36-32EE-4323-B740-992B651CF9D6} = {641C5F36-32EE-4323-B740-992B651CF9D6}
 	EndProjectSection
@@ -84,22 +64,6 @@ Global
 		{B15E059C-0CBB-4A82-8C42-6567FB650802}.Debug|Win32.Build.0 = Debug|Win32
 		{B15E059C-0CBB-4A82-8C42-6567FB650802}.Release|Win32.ActiveCfg = Release|Win32
 		{B15E059C-0CBB-4A82-8C42-6567FB650802}.Release|Win32.Build.0 = Release|Win32
-		{4F6EA424-54BA-4CD6-BD91-8465DB230D3A}.Debug|Win32.ActiveCfg = Debug|Win32
-		{4F6EA424-54BA-4CD6-BD91-8465DB230D3A}.Debug|Win32.Build.0 = Debug|Win32
-		{4F6EA424-54BA-4CD6-BD91-8465DB230D3A}.Release|Win32.ActiveCfg = Release|Win32
-		{4F6EA424-54BA-4CD6-BD91-8465DB230D3A}.Release|Win32.Build.0 = Release|Win32
-		{123F35E4-CB95-472F-93DE-0F7624E63705}.Debug|Win32.ActiveCfg = Debug|Win32
-		{123F35E4-CB95-472F-93DE-0F7624E63705}.Debug|Win32.Build.0 = Debug|Win32
-		{123F35E4-CB95-472F-93DE-0F7624E63705}.Release|Win32.ActiveCfg = Release|Win32
-		{123F35E4-CB95-472F-93DE-0F7624E63705}.Release|Win32.Build.0 = Release|Win32
-		{3BC53F9B-655A-41A4-BD57-F7AB94ED3E09}.Debug|Win32.ActiveCfg = Debug|Win32
-		{3BC53F9B-655A-41A4-BD57-F7AB94ED3E09}.Debug|Win32.Build.0 = Debug|Win32
-		{3BC53F9B-655A-41A4-BD57-F7AB94ED3E09}.Release|Win32.ActiveCfg = Release|Win32
-		{3BC53F9B-655A-41A4-BD57-F7AB94ED3E09}.Release|Win32.Build.0 = Release|Win32
-		{EB051624-35C2-4B51-B5DD-8734372617A7}.Debug|Win32.ActiveCfg = Debug|Win32
-		{EB051624-35C2-4B51-B5DD-8734372617A7}.Debug|Win32.Build.0 = Debug|Win32
-		{EB051624-35C2-4B51-B5DD-8734372617A7}.Release|Win32.ActiveCfg = Release|Win32
-		{EB051624-35C2-4B51-B5DD-8734372617A7}.Release|Win32.Build.0 = Release|Win32
 		{EFE471DE-6747-4B2E-B084-F7E45A16CD03}.Debug|Win32.ActiveCfg = Debug|Win32
 		{EFE471DE-6747-4B2E-B084-F7E45A16CD03}.Debug|Win32.Build.0 = Debug|Win32
 		{EFE471DE-6747-4B2E-B084-F7E45A16CD03}.Release|Win32.ActiveCfg = Release|Win32
