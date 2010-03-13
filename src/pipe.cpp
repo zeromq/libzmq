@@ -170,6 +170,10 @@ void zmq::writer_t::rollback ()
     zmq_msg_t msg;
 
     while (pipe->unwrite (&msg)) {
+        if (!(msg.flags & ZMQ_MSG_TBC)) {
+            pipe->write (msg);
+            break;
+        }
         zmq_msg_close (&msg);
         msgs_written--;
     }

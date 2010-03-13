@@ -98,7 +98,7 @@ namespace zmq
         //  message cannot be written because high watermark was reached.
         bool write (zmq_msg_t *msg_);
 
-        //  Remove any unflushed messages from the pipe.
+        //  Remove unfinished part of a message from the pipe.
         void rollback ();
 
         //  Flush the messages downsteam.
