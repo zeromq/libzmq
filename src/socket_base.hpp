@@ -52,7 +52,6 @@ namespace zmq
         int bind (const char *addr_);
         int connect (const char *addr_);
         int send (zmq_msg_t *msg_, int flags_);
-        int flush ();
         int recv (zmq_msg_t *msg_, int flags_);
         int close ();
 
@@ -113,7 +112,6 @@ namespace zmq
         virtual int xsetsockopt (int option_, const void *optval_,
             size_t optvallen_) = 0;
         virtual int xsend (zmq_msg_t *msg_, int options_) = 0;
-        virtual int xflush () = 0;
         virtual int xrecv (zmq_msg_t *msg_, int options_) = 0;
         virtual bool xhas_in () = 0;
         virtual bool xhas_out () = 0;

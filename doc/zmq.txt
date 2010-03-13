@@ -115,7 +115,6 @@ Establishing a message flow::
 
 Sending and receiving messages::
     linkzmq:zmq_send[3]
-    linkzmq:zmq_flush[3]
     linkzmq:zmq_recv[3]
 
 

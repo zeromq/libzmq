@@ -129,12 +129,6 @@ int zmq::xrep_t::xsend (zmq_msg_t *msg_, int flags_)
     return 0;
 }
 
-int zmq::xrep_t::xflush ()
-{
-    zmq_assert (false);
-    return -1;
-}
-
 int zmq::xrep_t::xrecv (zmq_msg_t *msg_, int flags_)
 {
     return fq.recv (msg_, flags_);

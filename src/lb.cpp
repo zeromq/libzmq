@@ -80,8 +80,7 @@ int zmq::lb_t::send (zmq_msg_t *msg_, int flags_)
         return -1;
     }
 
-    if (!(flags_ & ZMQ_NOFLUSH))
-        pipes [current]->flush ();
+    pipes [current]->flush ();
 
     //  Detach the message from the data buffer.
     int rc = zmq_msg_init (msg_);

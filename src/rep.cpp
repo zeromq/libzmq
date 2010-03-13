@@ -188,12 +188,6 @@ int zmq::rep_t::xsend (zmq_msg_t *msg_, int flags_)
     return 0;
 }
 
-int zmq::rep_t::xflush ()
-{
-    errno = ENOTSUP;
-    return -1;
-}
-
 int zmq::rep_t::xrecv (zmq_msg_t *msg_, int flags_)
 {
     //  Deallocate old content of the message.

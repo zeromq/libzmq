@@ -335,11 +335,6 @@ int zmq::socket_base_t::send (::zmq_msg_t *msg_, int flags_)
     return 0;
 }
 
-int zmq::socket_base_t::flush ()
-{
-    return xflush ();
-}
-
 int zmq::socket_base_t::recv (::zmq_msg_t *msg_, int flags_)
 {
     //  Get the message.

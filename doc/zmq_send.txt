@@ -23,13 +23,6 @@ Specifies that the operation should be performed in non-blocking mode. If the
 message cannot be queued on the underlying _message queue_ associated with
 'socket', the _zmq_send()_ function shall fail with 'errno' set to EAGAIN.
 
-*ZMQ_NOFLUSH*::
-Specifies that the _zmq_send()_ function should not flush the underlying
-_message queue_ associated with 'socket' to the network automatically.
-Instead, it should batch all messages queued with the 'ZMQ_NOFLUSH' flag and
-only flush the _message queue_ once either a message without the 'ZMQ_NOFLUSH'
-flag is queued, or manually on invocation of the _zmq_flush()_ function.
-
 NOTE: A successful invocation of _zmq_send()_ does not indicate that the
 message has been transmitted to the network, only that it has been queued on
 the _message queue_ associated with the socket and 0MQ has assumed
@@ -73,7 +66,6 @@ assert (rc == 0);
 
 SEE ALSO
 --------
-linkzmq:zmq_flush[3]
 linkzmq:zmq_recv[3]
 linkzmq:zmq_socket[7]
 linkzmq:zmq[7]

@@ -236,13 +236,6 @@ namespace zmq
             throw error_t ();
         }
 
-        inline void flush ()
-        {
-            int rc = zmq_flush (ptr);
-            if (rc != 0)
-                throw error_t ();
-        }
-
         inline bool recv (message_t *msg_, int flags_ = 0)
         {
             int rc = zmq_recv (ptr, msg_, flags_);

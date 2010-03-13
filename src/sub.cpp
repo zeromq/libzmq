@@ -98,12 +98,6 @@ int zmq::sub_t::xsend (zmq_msg_t *msg_, int flags_)
     return -1;
 }
 
-int zmq::sub_t::xflush ()
-{
-    errno = ENOTSUP;
-    return -1;
-}
-
 int zmq::sub_t::xrecv (zmq_msg_t *msg_, int flags_)
 {
     //  If there's already a message prepared by a previous call to zmq_poll,

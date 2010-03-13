@@ -100,20 +100,12 @@ int zmq::p2p_t::xsend (zmq_msg_t *msg_, int flags_)
         return -1;
     }
 
-    if (!(flags_ & ZMQ_NOFLUSH))
-        outpipe->flush ();
+    outpipe->flush ();
 
     //  Detach the original message from the data buffer.
     int rc = zmq_msg_init (msg_);
     zmq_assert (rc == 0);
 
-    return 0;
-}
-
-int zmq::p2p_t::xflush ()
-{
-    if (outpipe)
-        outpipe->flush ();
     return 0;
 }
 

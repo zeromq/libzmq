@@ -315,7 +315,8 @@ int zmq_send (void *s_, zmq_msg_t *msg_, int flags_)
 
 int zmq_flush (void *s_)
 {
-    return (((zmq::socket_base_t*) s_)->flush ());
+    errno = ENOTSUP;
+    return -1;
 }
 
 int zmq_recv (void *s_, zmq_msg_t *msg_, int flags_)

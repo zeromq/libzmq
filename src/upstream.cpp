@@ -81,12 +81,6 @@ int zmq::upstream_t::xsend (zmq_msg_t *msg_, int flags_)
     return -1;
 }
 
-int zmq::upstream_t::xflush ()
-{
-    errno = ENOTSUP;
-    return -1;
-}
-
 int zmq::upstream_t::xrecv (zmq_msg_t *msg_, int flags_)
 {
     return fq.recv (msg_, flags_);

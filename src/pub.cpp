@@ -107,8 +107,7 @@ int zmq::pub_t::xsend (zmq_msg_t *msg_, int flags_)
         for (out_pipes_t::size_type i = 0; i != pipes_count; i++) {
             bool written = out_pipes [i]->write (msg_);
             zmq_assert (written);
-            if (!(flags_ & ZMQ_NOFLUSH))
-                out_pipes [i]->flush ();
+            out_pipes [i]->flush ();
         }
         int rc = zmq_msg_init (msg_);
         zmq_assert (rc == 0);
@@ -121,8 +120,7 @@ int zmq::pub_t::xsend (zmq_msg_t *msg_, int flags_)
     if (pipes_count == 1) {
         bool written = out_pipes [0]->write (msg_);
         zmq_assert (written);
-        if (!(flags_ & ZMQ_NOFLUSH))
-            out_pipes [0]->flush ();
+        out_pipes [0]->flush ();
         int rc = zmq_msg_init (msg_);
         zmq_assert (rc == 0);
         return 0;
@@ -142,22 +140,13 @@ int zmq::pub_t::xsend (zmq_msg_t *msg_, int flags_)
     for (out_pipes_t::size_type i = 0; i != pipes_count; i++) {
         bool written = out_pipes [i]->write (msg_);
         zmq_assert (written);
-        if (!(flags_ & ZMQ_NOFLUSH))
-            out_pipes [i]->flush ();
+        out_pipes [i]->flush ();
     }
 
     //  Detach the original message from the data buffer.
     int rc = zmq_msg_init (msg_);
     zmq_assert (rc == 0);
 
-    return 0;
-}
-
-int zmq::pub_t::xflush ()
-{
-    out_pipes_t::size_type pipe_count = out_pipes.size ();
-    for (out_pipes_t::size_type i = 0; i != pipe_count; i++)
-        out_pipes [i]->flush ();
     return 0;
 }
 
