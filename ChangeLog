@@ -1,3 +1,1502 @@
+0MQ version 2.0.6 (Beta), released on 2010/03/16
+================================================
+
+
+Distribution
+------------
+
+* The 0MQ core distribution has been slimmed down to include only the core
+  C library and C++ language binding. Pointers to other language bindings can
+  be found on the website. Examples have also been removed from the
+  core and can be found elsewhere. Performance tests specific to a language
+  binding can be found bundled with that language binding.
+
+* The 0MQ reference manual supplied with the distribution has been
+  extensively rewritten, and is now provided in HTML as well as UNIX
+  manpage format.
+
+* Commencing with this release, a 0MQ version numbering scheme has been
+  introduced. The numbering scheme used is MAJOR.MINOR.PATCH. The "Beta" or
+  "Stable" label is informative only and does not constitute
+  part of the library version number, therefore this release is numbered
+  2.0.6 as the sixth release of 2.0.
+
+* The version of OpenPGM bundled with 0MQ has been updated to the stable
+  2.0.24 release.
+
+
+Building
+--------
+
+* Many portability fixes, including support for new platforms: NetBSD,
+  HP-UX, Cygwin.
+
+* Invocation of configure has been simplified, all functionality is now
+  built by default with the exception of OpenPGM.
+
+
+Interface
+---------
+
+* The udp transport has been renamed to epgm to avoid confusion with
+  unreliable unicast.
+
+* A ZMQ_POLLERR constant has been added to allow for polling on errors on
+  Berkeley sockets with zmq_poll().
+
+* The zmq_version() function has been introduced and returns the version
+  number of the 0MQ library.
+
+* The zmq_flush() function and ZMQ_NOFLUSH flag of zmq_send() have been
+  deprecated and will be removed in a future release.
+
+
+Wire format
+-----------
+
+* The 0MQ wire format has been changed. A flags field has been added to
+  allow for future extensions.
+
+
+New functionality
+-----------------
+
+* The experimental ZMQ_P2P socket type has been implemented.
+
+* Flow control has been implemented for all socket types. For details see
+  the ZMQ_HWM and ZMQ_LWM socket options.
+
+* Subscription filters are internally matched with O(1) complexity.
+
+
+Licensing
+---------
+
+* iMatix corporation has granted the following exception regarding static
+  linking with the 0MQ library:
+
+    As a special exception, iMatix gives you permission to link this
+    library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and
+    to copy and distribute the resulting executable under terms of
+    your choice, provided that you also meet, for each linked
+    independent module, the terms and conditions of the license of
+    that module. An independent module is a module which is not
+    derived from or based on this library.  If you modify this
+    library, you must extend this exception to your version of the
+    library.
+
+
+Thanks to
+---------
+
+This release of 0MQ was made possible by many contributors from the community,
+including:
+
+* Adrian von Bidder <avbidder@fortytwo.ch>, for contributing Debian packages.
+
+* Brian E. Granger <ellisonbg@gmail.com>, for maintaining the Python binding.
+
+* Martin Hurton <hurtonm@gmail.com>, for implementing flow control.
+
+* Martin Lucina <mato@kotelna.sk> for rewriting the 0MQ reference manual and
+  many portability fixes.
+
+* Steven McCoy <steven@miru.hk>, for help with OpenPGM.
+
+* Michael Santy <Michael.Santy@dynetics.com>, for testing this release with
+  Infiniband.
+
+* Toralf Wittner <toralf.wittner@gmail.com>, for contributing a Haskell
+  binding.
+
+* Aleksey Yeschenko <aleksey@yeschenko.com>, for contributing a Lua binding.
+
+-------------------------------------------------------------------------------
+A full list of all changes since the release of 0MQ 2.0 beta2 follows:
+
+commit 38c942ae648115ac10320968eb4b5e235ef15674
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Mar 16 17:07:17 2010 +0100
+
+    Add Git location to README
+
+commit 6d5a9e96400025044af8172887ef99589c0d1eb1
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Mar 16 16:20:23 2010 +0100
+
+    Update README
+
+commit ad75d0213483f3c585ce144386623e64e65eca0d
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Mar 16 15:48:16 2010 +0100
+
+    Add MSVC build files to distribution
+
+commit a9e0c3cd7e0c54f872749f387cf3d69b216bc613
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Mar 16 15:37:47 2010 +0100
+
+    Removing leftover MSVC builds
+
+commit 5472861179ff232c55e7a7021a93da5c680f2017
+Merge: 8a3f974 8fcf6ff
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Mar 16 15:24:57 2010 +0100
+
+    Merge branch 'master' of git@github.com:sustrik/zeromq2
+
+commit 8a3f97400a2b3ef2ec088a00868087b85cfd81b6
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Mar 16 15:23:55 2010 +0100
+
+    Clarify zmq_poll restrictions
+
+commit 1705ec224745b935e13d8f18ef81bcbef45ff143
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Tue Mar 16 15:19:38 2010 +0100
+
+    C++ interface documentation updates
+
+commit 8fcf6ffb67aba2ff9f78f4ba327d29755f03535a
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Mon Mar 15 15:47:17 2010 +0100
+
+    Cleanups to autogen.sh
+
+commit fceba036279a0e9bb39aebd862b70ad1bb5b3f40
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Mon Mar 15 15:45:38 2010 +0100
+
+    Cleanups to autogen.sh
+    
+    Use POSIX "command -v" construct to test for prerequisite commands
+    Clarify error messages on failure
+
+commit 61ad236e9543a569fe066872a5fda4fa40ea7591
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sat Mar 13 14:40:10 2010 +0100
+
+    ZMQ_NOFLUSH and zmq_flush obsoleted
+
+commit c42343d3f027248514344aec9e3814dfe1047d59
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sat Mar 13 12:34:55 2010 +0100
+
+    pipe_t::rollback removes only unfinished message from the pipe rather than all unflushed messages
+
+commit dcb983699e52bf2e075baaeef250bcd3c82e4846
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sat Mar 13 08:59:46 2010 +0100
+
+    zmq_queue implementation added
+
+commit 22db38bf3d9c96a840af50300632d44fd01ed3a8
+Author: unknown <bundra@.(none)>
+Date:   Fri Mar 12 20:20:25 2010 +0100
+
+    MSVC build: C++ perf tests removed; all executables go into bin directory
+
+commit c08a7f8896e8fdae8379d2fce552b360daaeadc8
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Mar 12 20:02:19 2010 +0100
+
+    C perf tests are built non-optionally; C++ perf tests removed
+
+commit 1fbeba2fe3c3bd6046eea4d6432791194d4238f2
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Mar 12 19:05:56 2010 +0100
+
+    simplify configuration summary
+
+commit 66b67fbdf2b047ef7adb8ec018a6fe89dd9cbfca
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Mar 12 18:58:29 2010 +0100
+
+    devices are built unconditionally
+
+commit 430aa533347dcbca57857d318a6898f480967cba
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Mar 12 18:42:38 2010 +0100
+
+    text concerning language bindings removed from configure
+
+commit 54df388aced3ae059009eec3df66c7dea717747b
+Author: unknown <bundra@.(none)>
+Date:   Fri Mar 12 18:05:38 2010 +0100
+
+    Java binding removed from MSVC build
+
+commit 6badd204d5686de8b2a6e8ee88da78260c0ff949
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Wed Mar 3 17:25:46 2010 +0100
+
+    Implement flow control for ZMQ_REP sockets
+
+commit 923609b0922c3bf07f16c8c99aba4fe98f08ef60
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Tue Mar 2 22:23:34 2010 +0100
+
+    Implement flow control for ZMQ_REQ sockets
+
+commit 42e575cb6b62fe1e5d12d2e4fb5c6874d47eb57e
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Tue Mar 2 12:41:33 2010 +0100
+
+    Implement flow control fox ZMQ_XREP sockets
+
+commit e34184acc327ae4b085a1a50ff6502e2dc148522
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Tue Mar 2 11:15:50 2010 +0100
+
+    Implement flow control for ZMQ_XREQ sockets
+
+commit 06d7a447378c8e9f0805c219deaf8e7e7ef1eeb0
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Tue Mar 2 10:48:30 2010 +0100
+
+    Implement flow control for ZMQ_PUB sockets
+
+commit f9c84a1a689f4f64cfa45cb22d4f02ec246c7f93
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Mon Mar 1 17:21:23 2010 +0100
+
+    Implement flow control for ZMQ_DOWNSTREAM sockets
+
+commit 5d4f6b18cd57897cc0e77e474118e104a0d5cfc3
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Mon Mar 1 16:55:13 2010 +0100
+
+    Implement flow control for ZMQ_P2P sockets
+
+commit f9521c6b6a35103c03b742a311a34d7b04da0b84
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Tue Mar 2 09:02:40 2010 +0100
+
+    PGM: implement flow control
+
+commit 61ee6fae536a8000be87b5aaf271f6519a3b7d3f
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Mon Mar 1 10:13:26 2010 +0100
+
+    Implement flow control
+    
+    This commit introduces the necessary changes necessary
+    for implementing flow control. None of the socket types
+    implements the flow control yet. The code will crash when
+    the flow control is enabled and the thw lwm is reached.
+    
+    The following commits will add flow-control support for
+    individual socket types.
+
+commit 31d36104aa7caead6f299f0c5cb58a9fde7cf9b0
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Fri Mar 12 10:34:11 2010 +0100
+
+    devices/ build fixed
+
+commit 10bbe6af9900b4609cfcadc031dcf4dcb8ebfb3b
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Thu Mar 11 20:43:51 2010 +0100
+
+    Cleanup .gitignore
+
+commit 27e2d08449ea52649e2e42b263f76fbd5d8382c5
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Thu Mar 11 20:33:27 2010 +0100
+
+    Restructure language bindings
+    
+    C and C++ headers moved from bindings/ to include/, bindings/ removed
+    --with-c and --with-cpp options to configure removed, C and C++ now built
+    and installed by default
+
+commit 90944759b66771bbe399922eecedc5095fa2a509
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Thu Mar 11 20:12:55 2010 +0100
+
+    Removed Java binding from core distribution
+
+commit 9fda070e4d66d538e3c709c6cb8934cbf4442c29
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Wed Mar 10 23:20:43 2010 +0100
+
+    Typeset literal correctly
+
+commit 0a1e0beaa2849a51ea659eba0f142ce340d2cc6d
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Wed Mar 10 23:18:08 2010 +0100
+
+    Fixes to PGM wire format description
+
+commit 5fef480aeb28424769d97c92f331d87f87b87c85
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Wed Mar 10 13:52:41 2010 +0100
+
+    Fixes to TCP wire format specification
+
+commit 8f90ae8dfdf5efbb6c8429897dc95cad621af00b
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed Mar 10 12:40:13 2010 +0100
+
+    wire formats in docs clarified
+
+commit 98801ebcaea1117ae596a3bae0653c3720a94359
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Wed Mar 10 12:19:39 2010 +0100
+
+    Documentation fixes
+
+commit bc468b34513a0fd76e69e03f3f978abd7d8c3871
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Tue Mar 9 19:29:41 2010 +0100
+
+    Add missing section with zmq_version()
+
+commit edebff902a9785ecdb3a27f6a78ac7cc68b38a56
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Tue Mar 9 18:58:59 2010 +0100
+
+    Add dependency for zmq_epgm.7
+
+commit ca70b40383fd12ce866054dd87cecb3d732c8d9f
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Tue Mar 9 18:53:42 2010 +0100
+
+    Hack, zmq_epgm.7 needs to be copied from zmq_pgm.7
+
+commit 1aee86408d575d6572b071d7564da7f006d1757e
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Tue Mar 9 18:47:31 2010 +0100
+
+    Documentation rewrite
+
+commit d790940fd06060c8a2c624b0e41e470ad31ae0d8
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Mar 9 18:14:49 2010 +0100
+
+    udp transport renamed to epgm
+
+commit 5a776f5597cac632ca507e2d80ca0de064bba1d6
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Mar 9 17:34:28 2010 +0100
+
+    PGM late joiners would start receiving a complete message rather than a message part
+
+commit 0f891e091cc46775226ee1fe28784876395a7b92
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Mar 9 17:24:42 2010 +0100
+
+    message flags from the wire are written to zmq_msg_t and vice versa
+
+commit 531c6af0d4df606ddef15da821dad20399b9480a
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Mar 9 16:56:53 2010 +0100
+
+    message flags added to zmq_msg_t strcuture
+
+commit 96ccc1c5fceb56bd7ffc2e6bef9ddab5347d722b
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Mar 9 15:10:44 2010 +0100
+
+    'flags' fields added to the wire format
+
+commit e04e2cdbbaf351eb04164bdcd293fcb8fa22a9a4
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Mar 9 08:43:20 2010 +0100
+
+    rollback functionality added to pipe
+
+commit 9481c69b0f60068f12aa26699588fed6a8faceec
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sat Mar 6 16:32:19 2010 +0100
+
+    problem with NIC name resolution on OSX fixed
+
+commit 26b0aea24f9add0a1811e23f709d96b44b459571
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Wed Mar 3 17:01:08 2010 +0100
+
+    Win32 build fixes
+
+commit 352da8ae8775f057a7ec67a7bd3f2270ac1c4d0f
+Author: unknown <bundra@.(none)>
+Date:   Wed Mar 3 15:47:21 2010 +0100
+
+    type mismatch in tcp_listener (win version) fixed
+
+commit 14054ecce7d367d8e3d47f84f72d2fc748aec8e4
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Wed Mar 3 09:41:57 2010 +0100
+
+    Fix typo: zmq_close -> zmq_msg_close
+
+commit 708298d798693a19ace9a4811a3760d8de0a5c1d
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Wed Mar 3 00:08:11 2010 +0100
+
+    Fix possible lockups when reading from ZMQ_REP sockets
+
+commit 157a66fc42d46c79edc01f6feed8f482fb5d53f1
+Author: unknown <bundra@.(none)>
+Date:   Mon Mar 1 18:33:16 2010 +0100
+
+    polling on POSIX sockets returns POLLERR (win32)
+
+commit 4e7158b67dcbbc307e76616a85aa34cc83ad6606
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Mon Mar 1 17:40:39 2010 +0100
+
+    return POLLERR from polling on POSIX sockets (linux version)
+
+commit 7442f53956e5d32d9c6a3543f8bef1664a773926
+Merge: ea0a44c 83f85ea
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sat Feb 27 14:18:21 2010 +0100
+
+    Merge branch 'master' of git@github.com:sustrik/zeromq2
+
+commit ea0a44c8a964cad4276ec216319d32e95e4a4bc0
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sat Feb 27 14:18:02 2010 +0100
+
+    Ruby binding removed
+
+commit 83f85ea51dee1fb2fcee22543a90361b860d6cb8
+Author: unknown <bundra@.(none)>
+Date:   Sat Feb 27 13:49:53 2010 +0100
+
+    ruby binding removed from msvc build
+
+commit 696ada883331359bee76b1ea996d8ac846624bea
+Author: unknown <bundra@.(none)>
+Date:   Sat Feb 27 13:36:52 2010 +0100
+
+    python binding removed from nsvc build
+
+commit 45414b5444db0a1f7e325c7dce92fbe84667d093
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sat Feb 27 12:23:22 2010 +0100
+
+    python binding removed
+
+commit efefa069b2ce407a7da4328ab024c47920a76960
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Fri Feb 26 20:03:58 2010 +0100
+
+    Cygwin support
+
+commit deda7ca54a3c8f1ba735e8654ca87f8808606122
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Feb 26 17:28:09 2010 +0100
+
+    Java Poller patch
+
+commit 4a1a83887d6faf36cb01f1c69142e6aafafe5eba
+Author: unknown <bundra@.(none)>
+Date:   Fri Feb 26 16:42:52 2010 +0100
+
+    Win32 build of Java binding fixed
+
+commit 4440b13c359dab2c1ba55e31c604ac093172d68e
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Feb 26 15:55:36 2010 +0100
+
+    Poller object implemented in Java binding
+
+commit 1c4daf79ce12da75acb8010c99b3c1d509a7a950
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Feb 26 14:28:20 2010 +0100
+
+    MIT license text added
+
+commit 57e057c825156b6effd15c07ee302f4ccdd2561c
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu Feb 25 16:29:17 2010 +0100
+
+    1st version of Java poll added
+
+commit ed8fe68383ca94ca33a9919bc2ed5b5a5d62cab0
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed Feb 24 17:27:31 2010 +0100
+
+    handle invalid PGM connection string decently
+
+commit be51cfa419bb6c75eb24d241769a7c5543c432a7
+Merge: 0b4172b b7f01f9
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed Feb 24 16:19:53 2010 +0100
+
+    Merge branch 'master' of git@github.com:sustrik/zeromq2
+
+commit 0b4172b8689b60ce254c6823d69962bbdbd031d4
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed Feb 24 16:19:14 2010 +0100
+
+    minor cast issues on cygwin fixed
+
+commit b7f01f9071c26292c30517bac18dae92efaf3ffb
+Author: unknown <bundra@.(none)>
+Date:   Wed Feb 24 15:33:03 2010 +0100
+
+    chat example removed from win build; missing fd_signaler_t::poll on win added
+
+commit 476ebde6280a428e2dd8fee7c70670aa449831c9
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed Feb 24 13:02:29 2010 +0100
+
+    use binary UUIDs instead of string representation to save some bytes
+
+commit cc5c30f5dc2d6490c0199709ceb2d86e3cc3895d
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Wed Feb 24 12:09:24 2010 +0100
+
+    Fix: OpenPGM is now distributed as .tar.gz
+
+commit bba36e6ee6ecdee5f3ded30b9f11e7684393bfd2
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Wed Feb 24 12:07:24 2010 +0100
+
+    Disable IPv6 support
+    
+    The current IPv6 support is half-assed and breaks for too many people.
+    Revert back to IPv4 only for now.
+
+commit 39b89619742cf4aed25a5b3ccc5ff6d23d9d15cf
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Wed Feb 24 09:41:10 2010 +0100
+
+    Update OpenPGM to 2.0.24 (stable)
+
+commit ccd47f1ee8c9268b99478c6cce3d8b1aada62566
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed Feb 24 09:17:05 2010 +0100
+
+    chat example moved to separate repo
+
+commit 8980a985828579d03f031b18a1bebcd65eded417
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed Feb 24 08:29:29 2010 +0100
+
+    zmq_error used from ruby binding
+
+commit 551fa104ffdb8c417b7d75ce70c463992e7d4652
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Feb 23 23:43:31 2010 +0100
+
+    zmq_errno used in C++ binding
+
+commit 95329719cda2b941e422d06daad3a7ba4c4a8829
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Feb 23 23:37:05 2010 +0100
+
+    zmq_errno is exported from the DLL
+
+commit 2441ef11a22170499d7ae12865dc98a61230f7ed
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Feb 23 23:28:25 2010 +0100
+
+    zmq_errno helper function added
+
+commit 2dd55605ea3956413cb25cab705ffdbdb2e00da5
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Feb 23 22:13:56 2010 +0100
+
+    recv fails after polling for IN on REQ socket
+
+commit 025c9e173c58971993858ea66fb2eeaf08de195d
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Feb 23 17:22:52 2010 +0100
+
+    execution disabled on certain source files; some comments on java binding; MSVC temp files added to .gitignore
+
+commit 71b4947f951f0120e4aadccb42f2452bb95dba06
+Author: unknown <bundra@.(none)>
+Date:   Tue Feb 23 12:02:55 2010 +0100
+
+    Win32 build fixed
+
+commit 7c0df6ee02eb792c6afea7f047539840addb2f02
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Feb 23 11:52:33 2010 +0100
+
+    Java binding beautified, inline documentation added
+
+commit ef1b5974891a30b15299464859023a531c2328f8
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Feb 23 10:01:54 2010 +0100
+
+    minor fix in zmq_socket(3) man page
+
+commit b9a612ff3f74a3add607b054213d0f52e85cc426
+Merge: f249555 61f0ef5
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Mon Feb 22 18:19:51 2010 +0100
+
+    Merge branch 'master' of git@github.com:sustrik/zeromq2
+
+commit f24955519ac0d3b0da5dd87fbb7bfc8cc1e24295
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Mon Feb 22 18:19:26 2010 +0100
+
+    zmq_poll doesn't exit when infinite timeout is set and interrupt occurs
+
+commit 61f0ef569b2f879b6b4e1f247253ceec08e774c7
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Mon Feb 22 18:16:40 2010 +0100
+
+    NetBSD: Check for and use atomic_ops(3) if available
+
+commit 3a69cca386a895313729f418ee44443794feed0f
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Mon Feb 22 16:42:13 2010 +0100
+
+    Fix $build_doc/$install_man check yet again
+
+commit 1294c1d33a1c73218eb94bf18ceb9ae873d08891
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sun Feb 21 16:58:53 2010 +0100
+
+    typo in zmq_ipc(7) fixed
+
+commit ff99d753ae30a7b5fef730fdcf1643e2928d9993
+Author: malosek <malosek@fastmq.com>
+Date:   Sat Feb 20 21:03:12 2010 +0100
+
+    Minor buid system tunning
+
+commit 740e531fbb47ad324737c075251c674e9dced6f1
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sat Feb 20 09:11:30 2010 +0100
+
+    Aleksey Yeschenko added to the credit section of AUTHORS file
+
+commit 57148b1fdeec0080b77ecfa837add9557226261c
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Fri Feb 19 18:23:54 2010 +0100
+
+    Add missing check for install_man=yes
+    
+    Fixes git builds w/o asciidoc, bug introduced in 46824abe
+
+commit 8b86dcf81cc7b80267f334f4f26dfd319532ad25
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Feb 19 17:50:47 2010 +0100
+
+    build on cygwin enabled
+
+commit 727054547f32680f7db098497c2d7b1a0b20e2d8
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Feb 19 17:02:07 2010 +0100
+
+    don't check for identity, if the connection is anonymous
+
+commit aff1f6621ae13083c7f15f7f1f808560254a2dcb
+Merge: 75f571c 2a79a94
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Feb 19 15:25:05 2010 +0100
+
+    Merge branch 'master' of git@github.com:sustrik/zeromq2
+
+commit 75f571c8844231f4172f131e1dd6ba2348eb54e5
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Feb 19 15:24:43 2010 +0100
+
+    Multi-hop REQ/REP, part XII., generate unique identities for anonymous connections
+
+commit 2a79a943de417679c562cd4a917e1d1bc19b0d25
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Thu Feb 18 19:38:15 2010 +0100
+
+    Add NetBSD support
+
+commit 776b12633981fd95050e138daeeba00a65d9532b
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Thu Feb 18 19:27:35 2010 +0100
+
+    Fix typo
+
+commit ab27f84b14a317d78a9dd145ef5c82e0ef88f583
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Thu Feb 18 19:27:15 2010 +0100
+
+    libstdc++ depends on libm on some platforms
+
+commit 495f0d105f809a265c34aa9a0eb20af0dcdcf283
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Thu Feb 18 17:29:14 2010 +0100
+
+    Fix detection of libstdc++
+    
+    We only care about libstdc++ when using GNU C++.
+    Further, libstdc++ depends on libm on some platforms, fix this.
+
+commit 46824abeb2b016c51f406401d965816f71189aed
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Thu Feb 18 17:25:49 2010 +0100
+
+    Never build docs from tarball releases
+    
+    This fixes the build_doc logic to work as advertised and never
+    try to (re)build documentation when working with a tarball release.
+
+commit 8be491b7bdb8525eb37cebf355697c566a482e2d
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Thu Feb 18 13:46:00 2010 +0100
+
+    Use feature test macros more conservatively
+    
+    It turns out that feature test macros are a complete mess, and defining
+    _GNU_SOURCE and _POSIX_C_SOURCE together breaks some systems. So we try
+    and define the appropriate "make everything visible" combination specific
+    to each system instead. This may still break something, so people should
+    test their platforms and speak up if so.
+
+commit d008637bc42da3fca50e423c2df0736be2745ac7
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed Feb 17 21:16:59 2010 +0100
+
+    one more attempt to fix the previous win32 problem
+
+commit f97da5e6449b183ad3ebb9b0ba8c37ff3dc17387
+Merge: e385319 41354bf
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed Feb 17 20:33:46 2010 +0100
+
+    Merge branch 'master' of git@github.com:sustrik/zeromq2
+
+commit e385319e5aaff6deafddfb216b24f026b461caa6
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed Feb 17 20:33:00 2010 +0100
+
+    recv returning -1 while errno=0 fixed
+
+commit 41354bfa9820eb4495cf98342177d036df2a7dc7
+Author: unknown <bundra@.(none)>
+Date:   Wed Feb 17 20:16:19 2010 +0100
+
+    zmq_version fixed on Win32 platform
+
+commit f745c96a9bcf930d10fe31de5f7b3e772cccfa83
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Wed Feb 17 15:40:26 2010 +0100
+
+    Add POSIX and GNU Feature Test Macros
+    
+    This should fix more exotic POSIX platforms such as HPUX which insist on
+    having _POSIX_C_SOURCE defined to get proper threading behaviour. We also
+    define _GNU_SOURCE so that we get any extensions on systems with glibc, e.g.
+    eventfd.
+
+commit 9d8623b28f09f5a6db94c7d69ae264984ef1fbe3
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed Feb 17 08:30:27 2010 +0100
+
+    ZMQII-76: Bug in how replies are handled when the REQ endpoint goes away
+
+commit 33cb20a747a2ca2c7b0487b023cfd6548ffe11e8
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Feb 16 23:31:17 2010 +0100
+
+    ZMQII-77: Put librbzmq symbols into ZMQ module
+
+commit 1e7878489dc5d3013b5e5858fe404ab6b4a6947a
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Feb 16 23:02:59 2010 +0100
+
+    exconf.rb checks for libzmq.so installation
+
+commit 8214d386c3f10dcc7f034a1159e82aa2d470829f
+Merge: 4190f64 96b2690
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Feb 16 22:20:09 2010 +0100
+
+    Merge branch 'master' of git@github.com:sustrik/zeromq2
+
+commit 4190f64d8cfc3950bc456ea7793db72130d05feb
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Feb 16 22:19:33 2010 +0100
+
+    Special exception clause added to LGPL license
+
+commit 96b2690716a811a4c782de0eccfb9affa398cfe4
+Merge: 60ce5cc a2f9899
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Tue Feb 16 19:59:32 2010 +0100
+
+    Merge branch 'master' of github.com:sustrik/zeromq2
+
+commit 60ce5cc82a48d5881cb493a5b6b3afba19bd0863
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Tue Feb 16 19:58:55 2010 +0100
+
+    PGM tarball should be removed on 'distclean', not 'clean'
+
+commit b9caa319e279cd8cd367e0a64308b9e80c4ead3d
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Feb 16 18:30:38 2010 +0100
+
+    Multi-hop REQ/REP, part XI., finalise the XREQ/XREP functionality
+
+commit 2ddce205350f11dacd8d8550f7d4e6e088c7fbcd
+Merge: 43620b3 a2f9899
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Feb 16 18:03:41 2010 +0100
+
+    Merge branch 'master' of git@github.com:sustrik/zeromq2
+
+commit a2f9899f6a1fad3f9c73fc7599445bdde0b95ec4
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Feb 16 17:50:36 2010 +0100
+
+    missing COPYING file added
+
+commit afb526f31a82b8697b5f7e73e50b14705a3a74b2
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Tue Feb 16 00:11:38 2010 +0100
+
+    Fix 'make dist' to work with no special magic
+
+commit 8e9b78af271ae54882abf3010260d1e80ddd70f2
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Mon Feb 15 23:59:35 2010 +0100
+
+    Correct path for pgm distclean
+
+commit df0c18ca17aa0dcd0e9f3737666a794b943f0982
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Mon Feb 15 23:54:49 2010 +0100
+
+    Missed one instance of pgm2
+
+commit b09eeeb2fac380da1e3455cdf97278850842e1c8
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Mon Feb 15 23:52:08 2010 +0100
+
+    Update gitignore
+
+commit 80c820d758aa65d71fbf4a24fd59d11de1f72fa5
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Mon Feb 15 23:51:05 2010 +0100
+
+    Cleaning up more PGM cruft
+
+commit 635e314643885ce8508ee64632bed7d6228fe8b6
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Mon Feb 15 23:09:57 2010 +0100
+
+    Clarify python.h messages
+
+commit 55800cea8c63ea84bd99e4c660ef1fd17a353e32
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Mon Feb 15 23:02:24 2010 +0100
+
+    Fix typo
+
+commit 5687661ba4a1ecf70e130047dc288cb6cff6f21a
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Mon Feb 15 22:58:45 2010 +0100
+
+    Cleanup messages from configure.in
+
+commit 48a90cfb347bc983362ce2bc021591d513d6a5ec
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Mon Feb 15 22:25:01 2010 +0100
+
+    Replace check for sparc with host_cpu
+
+commit 0ded6c1973596436d7e5c54cfb89ada4d6c7473d
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Mon Feb 15 22:17:18 2010 +0100
+
+    Multiple fixes to --with-pgm
+    
+    Disallow build --with-pgm on non-x86/AMB64 CPUs
+    Check correctly for all dependencies required by --with-pgm
+    Don't assume tar has -j
+    Reorder --with-pgm checks
+
+commit 94c74d5c18183b49507d633c7b06713841cfcb03
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Mon Feb 15 21:04:34 2010 +0100
+
+    Brian Granger added to credits list
+
+commit f96f53c9687b5a032ef45ce42154a7f944492eec
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Mon Feb 15 21:03:11 2010 +0100
+
+    ZMQ_POLLERR placeholder added to zmq.h
+
+commit 5041b0bc0bce43e5b6d8b6c6264141d33f3c2a7c
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Mon Feb 15 20:35:00 2010 +0100
+
+    fixing the previous commit :(
+
+commit 7778010d76e6da534307ca3f0a3506d3d7f0ec5d
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Mon Feb 15 19:58:47 2010 +0100
+
+    care taken of the fact that AI_NUMERICSERV is not defined on OSX 10.5
+
+commit 817c89a78ea7b773046b010ca129fd1206e1c8f0
+Author: malosek <malosek@fastmq.com>
+Date:   Mon Feb 15 19:42:05 2010 +0100
+
+    removed first dummy run of PKG_CHECK_EXISTS
+
+commit 43620b3d35e3f3a6e49046fdc0426651bf58dedb
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sun Feb 14 13:34:48 2010 +0100
+
+    Multi-hop REQ/REP, part X., optional delayed creation of pipes during connect
+
+commit 4405250d93a2ad6eb3940c4bc4fe8ea32bd52f9e
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sat Feb 13 15:30:03 2010 +0100
+
+    Multi-hop REQ/REP, part IX., pass the peer identity as far as socket_base_t
+
+commit f5ce81f2893ec0707c2f4346740878e68b51e13a
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sat Feb 13 14:07:30 2010 +0100
+
+    Multi-hop REQ/REP, part VIII., new blob_t type used for holding identity
+
+commit cdc2efe9b5f0d1f45065b1c32e5eabd7e9f78a12
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sat Feb 13 13:07:33 2010 +0100
+
+    Multi-hop REQ/REP, part VII., identity-related algorithms rewritten
+
+commit 923eacd28a725a6b32de588fe7a54dbe252d84aa
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sat Feb 13 09:09:40 2010 +0100
+
+    Multi-hop REQ/REP, part VI., session 'name' renamed to 'peer_identity'
+
+commit 2e78e48503375a415d95ee8df80df9c065172abc
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Feb 12 20:49:00 2010 +0100
+
+    Multi-hop REQ/REP, part V., peer identity is passed from init object to session
+
+commit d8430f4b9a43bf8c99854298edc9f1bc35c0e8ec
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Feb 12 20:03:02 2010 +0100
+
+    Multi-hop REQ/REP, part IV., add command deallocation mechanism
+
+commit 313b5dfadd8753b341197cc109bce40e08856cf6
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Feb 12 19:42:35 2010 +0100
+
+    Multi-hop REQ/REP, part III., change 'type' in options to simple 'traceroute' flag
+
+commit 96e0442332fcc680ddafdcaa8fcbdc6acd992c76
+Merge: 36a5763 dc8f4b1
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Feb 12 15:58:22 2010 +0100
+
+    Merge branch 'master' of git@github.com:sustrik/zeromq2
+
+commit 36a576370ccfed3c104850b5b95a6ed3870edbea
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Feb 12 15:57:54 2010 +0100
+
+    Multi-hop REQ/REP, part I., tracerouting switched on on XREP socket
+
+commit dc8f4b1b761103784b422b7604bc8f36d429d3f4
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Fri Feb 12 15:08:57 2010 +0100
+
+    Fix memory leak in bind()
+
+commit 7b4cf2a4d040057f6f378cac2cd125513a859c1b
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Feb 12 13:33:50 2010 +0100
+
+    Multi-hop REQ/REP, part I., socket type is known to all associated objects
+
+commit cd7300fd4f25754f844b17a77685ec837ebecbbb
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Fri Feb 12 12:12:49 2010 +0100
+
+    Resolve command starvation in recv()
+
+commit 7f7ac843d58b3d8a77f681fa4c35bd21726b6f31
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Thu Feb 11 17:51:47 2010 +0100
+
+    Next 0MQ release will be 2.0.6
+    
+    As decided on the mailing list, there have been five 2.x releases to
+    date, so the upcoming release will be numbered 2.0.6.
+
+commit de41c9da31246314bb2b0c55dfe3b2884d48df3b
+Merge: 30b967e 92d0147
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Thu Feb 11 17:51:08 2010 +0100
+
+    Merge branch 'master' of github.com:sustrik/zeromq2
+
+commit 30b967e2a439ce76b1141d34fa3c8ee9f87a88a8
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Thu Feb 11 17:49:40 2010 +0100
+
+    Integrate version numbering into autoconf
+    
+    configure.in is now the master source for the package version number,
+    this propagates to src/platform.hpp (for zmq_version) and doc/Makefile.am
+    (for documentation generation) automagically.
+
+commit 92d0147b20f77cad5d20e257aec502f628e7889e
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu Feb 11 16:50:40 2010 +0100
+
+    python binding build with 2.4 version of python fixed
+
+commit 432fbd796bb4905fb19ceee802009b17e88e9256
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu Feb 11 10:43:59 2010 +0100
+
+    ZMQII-72: Add zmq_version function (documentation)
+
+commit bd9213e71222df66634d59581264ffe67210222c
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu Feb 11 10:29:33 2010 +0100
+
+    ZMQII-72: Add zmq_version function
+
+commit 7cab423fc20e46f54fa561e51b566cc8a63ca5c1
+Merge: bc9b7f1 354efc5
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Wed Feb 10 17:14:21 2010 +0100
+
+    Merge branch 'master' of github.com:sustrik/zeromq2
+
+commit bc9b7f1f54b9dcf754021f1f7eb766d71cc97f29
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Wed Feb 10 12:48:04 2010 +0100
+
+    lb: bugfix - never skip active pipe when sending msg
+
+commit 6b3c1798e7554dd1ce63b2ad137e327f3f32fcf1
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Wed Feb 10 12:47:34 2010 +0100
+
+    fq: bugfix - don't read msg from inactive pipe
+
+commit 354efc513fdb4096f8830e6c2e3e8f1311303e61
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Wed Feb 10 16:18:46 2010 +0100
+
+    Convert documentation to AsciiDoc
+
+commit 2d44bf3644c8e12aa86c48e9da4df19bfa9ea703
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed Feb 10 11:04:28 2010 +0100
+
+    ZMQII-69: Make 0MQ build on HP-UX
+
+commit 8c25bab31d63bf5e2c4eec6d9084cf7d1c1e5dd3
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed Feb 10 10:42:54 2010 +0100
+
+    ZMQII-70: zmq_poll on win32 fails with EINVAL
+
+commit 8f86cac2f6721eec4b600383eb113f7fedf41ce1
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Feb 9 19:23:15 2010 +0100
+
+    ZMQII-69: Make 0MQ build on HP-UX
+
+commit fd673ae231119682a242967551cfa034fa32791a
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Feb 9 15:21:26 2010 +0100
+
+    couple of typos in the documentation fixed
+
+commit 6b2ca4e158c3394f5aba8f0f01ff1734423683f9
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Feb 9 15:15:44 2010 +0100
+
+    ZMQII-67: Build checks for python even if it's not needed
+
+commit 4c870ede7fdecaf1f952b01096e09cc03a7c7aef
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Feb 9 09:08:37 2010 +0100
+
+    ZMQII-57: Shutdown OpenPGM library
+
+commit 396e41a2a4b31f91ef4c4458d53be9e3a9b4bb92
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Mon Feb 8 18:55:51 2010 +0100
+
+    minor change to README
+
+commit 01533a5aefb49e23be95cab9cfa5ca32cd438d25
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Mon Feb 8 18:37:48 2010 +0100
+
+    ZMQII-65: Two OS threads are mapped to the same app_thread_t
+
+commit 7593d815ac57f2877480c5056b2f1aa65460f5c3
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Mon Feb 8 10:34:12 2010 +0100
+
+     ZMQII-64: First message stuck in 0MQ in case of immediate disconnection
+
+commit 427bc3276aa236c8691fee7e634717d0579a3055
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sun Feb 7 16:24:14 2010 +0100
+
+    minor code cleanup
+
+commit b0ee6b0c8ab8a5052a5e111dda24308dd00c0d62
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sun Feb 7 11:31:05 2010 +0100
+
+    ZMQII-62: zmq_close after sending message via P2P socket fails
+
+commit bbaa494fb569d94c356ddecca7dbf249ffc217cf
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sun Feb 7 09:14:43 2010 +0100
+
+    ZMQII-59: TCP server crashes sometimes when message is send and socket is closed immediately
+
+commit d21bf21a362cf6d20d8d060bb91ee2fdca1dd88b
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Feb 5 13:00:49 2010 +0100
+
+    allow async connect on Win32 return WSAECONNABORTED
+
+commit 0888fcd06f1c66ec3dfab744bfc24d1486737c7e
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu Feb 4 23:58:41 2010 +0100
+
+    yqueue_t uses malloc/free instead of new/delete
+
+commit 30076c4f7a5b0c70ef0c5a6574cac531bc996f5e
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu Feb 4 17:46:47 2010 +0100
+
+    ZMQII-58: TCP connecting asserts on Win32 (same fix for POSIX)
+
+commit c46b7ed1978ead346022577ff015b092f3257c84
+Author: unknown <bundra@.(none)>
+Date:   Thu Feb 4 17:40:04 2010 +0100
+
+    ZMQII-58: TCP connecting asserts on Win32
+
+commit b86483acbe109566f4e0fb43266fdd98e7648d55
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu Feb 4 14:50:59 2010 +0100
+
+    ZMQII-50: Document Ruby Bindings
+
+commit bc90231227a84f4b7dffe432a8efa70b75c19031
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu Feb 4 09:39:57 2010 +0100
+
+    contrain interface name resolving in OpenPGM to IPv4 interfaces
+
+commit 0f697fe2b460dfbec7481f6d535b95f6b4cc2eac
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed Feb 3 20:04:44 2010 +0100
+
+    ZMQII-56: Avoid allocation of chunk in yqueue.hpp by keeping a spare one
+
+commit 72bbc92b70a67fab1dbba6fbd53f574944bdd8e4
+Merge: 6502c16 4172fdd
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Wed Feb 3 15:54:39 2010 +0100
+
+    Merge branch 'master' of github.com:sustrik/zeromq2
+
+commit 6502c16a7fd878e61f0672a47e2cdb4d56ab0eb2
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Wed Feb 3 15:52:11 2010 +0100
+
+    Update OpenPGM to 2.0.23rc8
+
+commit 4172fdd6970d4b42443442bf6633f9a9bd4c6f2b
+Author: unknown <bundra@.(none)>
+Date:   Wed Feb 3 14:55:46 2010 +0100
+
+    Win32 build fixed
+
+commit 7c25feb51bdbc9563cc65ff4829f761ef7231483
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed Feb 3 13:06:34 2010 +0100
+
+    ZMQII-55: At most one PGM/UDP transport can be opened
+
+commit 9cee8f9c3e22f1e880988271ab1c31c92827efde
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Feb 2 15:11:25 2010 +0100
+
+    problem with PGM messages larger than 1 MTU fixed
+
+commit 27e47bdcc0358b84a57378e19359556e2dbcb50e
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Feb 2 13:29:31 2010 +0100
+
+    ZMQII-54: Affinity isn't honoured
+
+commit 5d16070ffcd426e81ea27520f6847d68e5e5af80
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Feb 2 08:46:35 2010 +0100
+
+    ZMQII-53: Memory leak when using invalid socket type
+
+commit a1e70f29575994798df1d57314193782f6d9cdcb
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Feb 2 08:27:38 2010 +0100
+
+    ZMQII-52: Asserion during reconnection
+
+commit 528610ff55ef283b99cbcda007200a6b4092be59
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Feb 2 08:14:23 2010 +0100
+
+    typo in zmq_socket(3) man page fixed
+
+commit 00b9a5dedeb47efd78aea59b579a4b5befba743a
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sun Jan 31 20:14:30 2010 +0100
+
+    ZMQII-51: Implement O(1) topic matching
+
+commit 70ea8e9d4b88a1ecb1c076eccc2e9bd872c2230c
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sat Jan 30 13:40:50 2010 +0100
+
+    ZMQII-48: Implement P2P socket type
+
+commit eb47c1b064ec2f433d3889b7fd4a297a965166bb
+Merge: 2784f90 4d5e643
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Fri Jan 29 08:39:36 2010 +0100
+
+    Merge branch 'master' of git@github.com:sustrik/zeromq2
+
+commit 2784f90d595a253e071244d440f78e667f6a957c
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Fri Jan 29 08:39:19 2010 +0100
+
+    moving debian directory to the root of the project
+
+commit 4d5e643299e22b53120173319490957b98c0199e
+Author: malosek <malosek@fastmq.com>
+Date:   Thu Jan 28 19:19:25 2010 +0100
+
+    patching libtool script moved at the end of configure
+
+commit 849095a042b8326f5789baa04d1dbb7ca36d4632
+Merge: f17f0fa e5ff617
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Thu Jan 28 12:45:37 2010 +0100
+
+    Merge branch 'master' of git@github.com:sustrik/zeromq2
+
+commit f17f0fa67bc5a373f3fc7964aaad4f08aa1dc761
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Thu Jan 28 12:45:12 2010 +0100
+
+    CL binding ripped out of the tree
+
+commit e5ff617c4e061d29c9a019efa2292fd09c87a71e
+Author: malosek <malosek@fastmq.com>
+Date:   Wed Jan 27 20:58:40 2010 +0100
+
+    fixed OpenPGM compilation on mingw32
+
+commit 8f57ff4634ae44cd998bc0b864a8987f241e2fce
+Author: malosek <malosek@fastmq.com>
+Date:   Wed Jan 27 20:45:43 2010 +0100
+
+    fixed OpenPGM compilation on mingw32
+
+commit 2056c888d2567ab96c3539fd60bfb652e19df335
+Author: malosek <malosek@fastmq.com>
+Date:   Wed Jan 27 18:29:45 2010 +0100
+
+    changed version of the master branch back to dev
+
+commit 0b97e7a4f23f7add763ac6e0fc945c9a342a7d32
+Author: malosek <malosek@fastmq.com>
+Date:   Wed Jan 27 11:30:22 2010 +0100
+
+    libpgm updated to 2.6.21rc6
+
+commit 943125bd12dbf181f4dfce7babddf1af7bcb7e18
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Wed Jan 27 08:47:01 2010 +0100
+
+    Hard-wired constant on OpenVMS replaced by symbolic constant
+
+commit aa27034db5d47f4630f464da53f63a0e62c34daa
+Author: unknown <bundra@.(none)>
+Date:   Sun Jan 24 08:38:18 2010 +0100
+
+    IPv6 patch - part V. (win32)
+
+commit adc5d7693d9279134c0494210b9d2b885e95d950
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Sun Jan 24 08:19:02 2010 +0100
+
+    IPv6 patch - part IV.
+
+commit fca9a2159a1fb963901d11dc6f734a622baa92d6
+Merge: 079d327 454f43a
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Sat Jan 23 11:14:53 2010 +0100
+
+    Merge branch 'master' of git@github.com:sustrik/zeromq2
+
+commit 079d327670d9137d93f4dbe9eb6cfa6d4165b903
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Sat Jan 23 11:14:30 2010 +0100
+
+    IPv6 patch - part III.
+
+commit 454f43a45b2d453b53984387e8a8a50cad568f41
+Author: unknown <bundra@.(none)>
+Date:   Sat Jan 23 09:08:31 2010 +0100
+
+    IP address resolving on Win32 fixed
+
+commit df4548aa76617314cb1a47e6d408cc663640cd70
+Merge: 2634934 d762e1a
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Sat Jan 23 08:20:01 2010 +0100
+
+    Merge branch 'master' of git@github.com:sustrik/zeromq2
+
+commit 2634934999408124837afceaf577b75ed58116d7
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Sat Jan 23 08:19:30 2010 +0100
+
+    IPv6 patch part 2/2
+
+commit 6aaf095dd259dc42d78cc7bd8c5a7f867eb23166
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Fri Jan 22 16:32:48 2010 +0100
+
+    IPv6 support -part II.
+
+commit d762e1a9c976680dde2d2f38dac9f5861bd82dad
+Author: unknown <bundra@.(none)>
+Date:   Fri Jan 22 13:29:46 2010 +0100
+
+    Win32 build fixed
+
+commit 34d65e22c557671c74d6c51026b2434912966319
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Fri Jan 22 13:13:52 2010 +0100
+
+    Tero Marttila's Ipv6 patch - part I.
+
+commit 6edec4fe93c60693a5faee7e4e8821eac4f43d4d
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Fri Jan 22 11:38:17 2010 +0100
+
+    zmq_udp(7) man page fixed
+
+commit 70601c243fa7e91f5cceaa80190d7b413940020b
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Fri Jan 22 11:21:28 2010 +0100
+
+    zmq_pgm(7) man page fixed
+
+commit d1e09578b275aca93c50cde078322a0348342c60
+Author: unknown <bundra@.(none)>
+Date:   Fri Jan 22 07:54:16 2010 +0100
+
+    Hardcoded loopback address removed from fd_signaler
+
+commit f4832faf29df6470bf59f1f1866c07fa4278a75b
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Thu Jan 21 16:30:42 2010 +0100
+
+    small fix to man pages to comply with lintian
+
+commit b1b66df37c0b05ba05d9636234bad0cc02a1bd03
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Thu Jan 21 12:07:42 2010 +0100
+
+    PGM man page improved
+
+commit 66ef22993f22a0d47703c1203f57d95c4316bc70
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Thu Jan 21 10:38:40 2010 +0100
+
+    zmq_close man page improved
+
+commit a008af6088ef1ad3baf1b9e6ae699cc07367efa3
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Thu Jan 21 10:01:05 2010 +0100
+
+    Asko Kauppi added to the list of authors
+
+commit f0757c003eb232247a460631276b40e4fc02f3c9
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Thu Jan 21 09:58:49 2010 +0100
+
+    ZMQII-43: Race condition when writing to pipe
+
+commit 6a46ca75e5970733cfe135ecf77074b69fdda34f
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Wed Jan 20 09:22:41 2010 +0100
+
+    ZMQ-42: Building with ICC fails
+
+commit 111f0ff078372e8a0f5c0b98170d451d6561e85e
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Wed Jan 20 09:19:03 2010 +0100
+
+    ZMQII-41: Poll function in C++ binding doesn't convert errors to exceptions
+
+commit 6b0457fcaad3fa9a2e632b3799119c40da8dd6ca
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Tue Jan 19 12:48:38 2010 +0100
+
+    minor documentation patch
+
+commit 7094edd6baf0d69c3879da7f16c7222388952931
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Mon Jan 18 15:57:33 2010 +0100
+
+    error handling in C perf tests improved
+
+commit 4ceb83935062bb84fd5da702679a126d12aed8be
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Mon Jan 18 13:16:14 2010 +0100
+
+    typos in man pages fixed
+
+commit bddff50271b7c4c15c34d7a0aa1c04f3e3e3c107
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Mon Jan 18 11:01:41 2010 +0100
+
+    ZMQII-40: wrong return code from recolve_ip_interface
+
+commit 55944729ed5527692b1ead17af553aa32c316781
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Mon Jan 18 10:53:46 2010 +0100
+
+    ChangeLog modified for 2.0-beta2 version
+
+commit f40e3a6931fb6463c349ef765d99515edc569fd7
+Author: Martin Sustrik <sustrik@fastmq.commkdir>
+Date:   Sun Jan 17 17:49:34 2010 +0100
+
+    version number bumped
+
+-------------------------------------------------------------------------------
+
 Version 2.0-beta2
 
 ZMQII-29  Add timeout to zmq_poll function
