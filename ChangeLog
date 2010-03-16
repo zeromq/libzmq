@@ -28,8 +28,8 @@ Distribution
 Building
 --------
 
-* Many portability fixes, including support for new platforms: NetBSD,
-  HP-UX, Cygwin.
+* Many portability fixes, including support for new platforms: FreeBSD, 
+  NetBSD, HP-UX and Cygwin.
 
 * Invocation of configure has been simplified, all functionality is now
   built by default with the exception of OpenPGM.
@@ -95,22 +95,27 @@ including:
 
 * Adrian von Bidder <avbidder@fortytwo.ch>, for contributing Debian packages.
 
+* Aleksey Yeschenko <aleksey@yeschenko.com>, for contributing a Lua binding.
+
+* Alessio Spadaro <alessio.spadaro@finservice.com>, for help with porting to
+  HP-UX.
+
+* Bernd Prager <bernd@prager.ws>, for help with porting to Cygwin.
+
 * Brian E. Granger <ellisonbg@gmail.com>, for maintaining the Python binding.
 
 * Martin Hurton <hurtonm@gmail.com>, for implementing flow control.
 
-* Martin Lucina <mato@kotelna.sk> for rewriting the 0MQ reference manual and
+* Martin Lucina <mato@kotelna.sk>, for rewriting the 0MQ reference manual and
   many portability fixes.
-
-* Steven McCoy <steven@miru.hk>, for help with OpenPGM.
 
 * Michael Santy <Michael.Santy@dynetics.com>, for testing this release with
   Infiniband.
 
+* Steven McCoy <steven@miru.hk>, for help with OpenPGM.
+
 * Toralf Wittner <toralf.wittner@gmail.com>, for contributing a Haskell
   binding.
-
-* Aleksey Yeschenko <aleksey@yeschenko.com>, for contributing a Lua binding.
 
 -------------------------------------------------------------------------------
 A full list of all changes since the release of 0MQ 2.0 beta2 follows:
