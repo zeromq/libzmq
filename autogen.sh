@@ -16,36 +16,34 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Script to generate all required files from fresh svn checkout.
+# Script to generate all required files from fresh git checkout.
 
-pkg-config --version > /dev/null 2>&1
+command -v pkg-config >/dev/null 2>&1
 if  [ $? -ne 0 ]; then
-    echo
-    echo "Could not find pkg-config, pkg.m4 macro is probably not installed."
-    echo
+    echo "autogen.sh: error: could not find pkg-config.  pkg-config is required to run autogen.sh." 1>&2
     exit 1
 fi
 
-libtool --version > /dev/null 2>&1
+command -v libtool >/dev/null 2>&1
 if  [ $? -ne 0 ]; then
-    echo
-    echo "Could not find libtool, libtool.m4 macro is probably not installed."
-    echo
+    echo "autogen.sh: error: could not find libtool.  libtool is required to run autogen.sh." 1>&2
     exit 1
 fi
 
-mkdir -p config
+command -v autoreconf >/dev/null 2>&1
 if [ $? -ne 0 ]; then
-    echo
-    echo "Cannot create config directory."
-    echo
+    echo "autogen.sh: error: could not find autoreconf.  autoconf and automake are required to run autogen.sh." 1>&2
+    exit 1
+fi
+
+mkdir -p ./config
+if [ $? -ne 0 ]; then
+    echo "autogen.sh: error: could not create directory: ./config." 1>&2
     exit 1
 fi
 
 autoreconf --install --force --verbose -I config
 if [ $? -ne 0 ]; then
-    echo
-    echo "Could not run autoreconf, check autotools installation."
-    echo
+    echo "autogen.sh: error: autoreconf exited with status $?" 1>&2
     exit 1
 fi
