@@ -396,7 +396,8 @@ AC_CHECK_FUNCS(perror gettimeofday memset socket getifaddrs freeifaddrs)
 AC_OUTPUT(Makefile src/Makefile doc/Makefile
     perf/Makefile src/libzmq.pc \
     devices/Makefile devices/zmq_forwarder/Makefile \
-    devices/zmq_streamer/Makefile devices/zmq_queue/Makefile)
+    devices/zmq_streamer/Makefile devices/zmq_queue/Makefile \
+    builds/msvc/Makefile)
 
 #  On Linux patch libtool to delete hardcoded paths (rpath).
 case "${host_os}" in
