@@ -264,7 +264,8 @@ int zmq::dispatcher_t::register_endpoint (const char *addr_,
 {
     endpoints_sync.lock ();
 
-    bool inserted = endpoints.insert (std::make_pair (addr_, socket_)).second;
+    bool inserted = endpoints.insert (std::make_pair (std::string (addr_),
+        socket_)).second;
     if (!inserted) {
         errno = EADDRINUSE;
         endpoints_sync.unlock ();

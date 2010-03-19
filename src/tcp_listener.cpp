@@ -251,9 +251,9 @@ int zmq::tcp_listener_t::close ()
 
     //  If there's an underlying UNIX domain socket, get rid of the file it
     //  is associated with.
-    struct sockaddr_un *sun = (struct sockaddr_un*) &addr;
-    if (AF_UNIX == sun->sun_family) {
-        rc = ::unlink(sun->sun_path);
+    struct sockaddr_un *su = (struct sockaddr_un*) &addr;
+    if (AF_UNIX == su->sun_family) {
+        rc = ::unlink(su->sun_path);
         if (rc != 0)
             return -1;
     }
