@@ -49,16 +49,17 @@ namespace zmq
 
     private:
 
+        //  Write the message to the pipe. Make the pipe inactive if writing
+        //  fails. In such a case false is returned.
+        bool write (class writer_t *pipe_, zmq_msg_t *msg_);
+
         //  Outbound pipes, i.e. those the socket is sending messages to.
-        typedef yarray_t <class writer_t> out_pipes_t;
-        out_pipes_t out_pipes;
+        typedef yarray_t <class writer_t> pipes_t;
+        pipes_t pipes;
 
-        //  Pointer to the pipe we are waiting for to became writable
-        //  again; NULL if tha last send operation was successful.
-        class writer_t *stalled_pipe;
-
-        //  Check whether we can write a message to all pipes.
-        bool check_write ();
+        //  Number of active pipes. All the active pipes are located at the
+        //  beginning of the pipes array.
+        pipes_t::size_type active;
 
         pub_t (const pub_t&);
         void operator = (const pub_t&);

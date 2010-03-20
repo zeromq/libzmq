@@ -26,7 +26,7 @@
 
 zmq::pub_t::pub_t (class app_thread_t *parent_) :
     socket_base_t (parent_),
-    stalled_pipe (NULL)
+    active (0)
 {
     options.requires_in = false;
     options.requires_out = true;
@@ -34,16 +34,18 @@ zmq::pub_t::pub_t (class app_thread_t *parent_) :
 
 zmq::pub_t::~pub_t ()
 {
-    for (out_pipes_t::size_type i = 0; i != out_pipes.size (); i++)
-        out_pipes [i]->term ();
-    out_pipes.clear ();
+    for (pipes_t::size_type i = 0; i != pipes.size (); i++)
+        pipes [i]->term ();
+    pipes.clear ();
 }
 
 void zmq::pub_t::xattach_pipes (class reader_t *inpipe_,
     class writer_t *outpipe_, const blob_t &peer_identity_)
 {
     zmq_assert (!inpipe_);
-    out_pipes.push_back (outpipe_);
+    pipes.push_back (outpipe_);
+    pipes.swap (active, pipes.size () - 1);
+    active++;
 }
 
 void zmq::pub_t::xdetach_inpipe (class reader_t *pipe_)
@@ -53,9 +55,11 @@ void zmq::pub_t::xdetach_inpipe (class reader_t *pipe_)
 
 void zmq::pub_t::xdetach_outpipe (class writer_t *pipe_)
 {
-    out_pipes.erase (pipe_);
-    if (pipe_ == stalled_pipe)
-        stalled_pipe = NULL;
+    //  Remove the pipe from the list; adjust number of active pipes
+    //  accordingly.
+    if (pipes.index (pipe_) < active)
+        active--;
+    pipes.erase (pipe_);
 }
 
 void zmq::pub_t::xkill (class reader_t *pipe_)
@@ -70,8 +74,9 @@ void zmq::pub_t::xrevive (class reader_t *pipe_)
 
 void zmq::pub_t::xrevive (class writer_t *pipe_)
 {
-    zmq_assert (stalled_pipe = pipe_);
-    stalled_pipe = NULL;
+    //  Move the pipe to the list of active pipes.
+    pipes.swap (pipes.index (pipe_), active);
+    active++;
 }
 
 int zmq::pub_t::xsetsockopt (int option_, const void *optval_,
@@ -83,10 +88,8 @@ int zmq::pub_t::xsetsockopt (int option_, const void *optval_,
 
 int zmq::pub_t::xsend (zmq_msg_t *msg_, int flags_)
 {
-    out_pipes_t::size_type pipes_count = out_pipes.size ();
-
-    //  If there are no pipes available, simply drop the message.
-    if (pipes_count == 0) {
+    //  If there are no active pipes available, simply drop the message.
+    if (active == 0) {
         int rc = zmq_msg_close (msg_);
         zmq_assert (rc == 0);
         rc = zmq_msg_init (msg_);
@@ -94,21 +97,13 @@ int zmq::pub_t::xsend (zmq_msg_t *msg_, int flags_)
         return 0;
     }
 
-    //  First check whether all pipes are available for writing.
-    if (!check_write ()) {
-        errno = EAGAIN;
-        return -1;
-    }
-
     msg_content_t *content = (msg_content_t*) msg_->content;
 
     //  For VSMs the copying is straighforward.
     if (content == (msg_content_t*) ZMQ_VSM) {
-        for (out_pipes_t::size_type i = 0; i != pipes_count; i++) {
-            bool written = out_pipes [i]->write (msg_);
-            zmq_assert (written);
-            out_pipes [i]->flush ();
-        }
+        for (pipes_t::size_type i = 0; i != active;)
+            if (write (pipes [i], msg_))
+                i++;
         int rc = zmq_msg_init (msg_);
         zmq_assert (rc == 0);
         return 0;
@@ -117,10 +112,11 @@ int zmq::pub_t::xsend (zmq_msg_t *msg_, int flags_)
     //  Optimisation for the case when there's only a single pipe
     //  to send the message to - no refcount adjustment i.e. no atomic
     //  operations are needed.
-    if (pipes_count == 1) {
-        bool written = out_pipes [0]->write (msg_);
-        zmq_assert (written);
-        out_pipes [0]->flush ();
+    if (active == 1) {
+        if (!write (pipes [0], msg_)) {
+            int rc = zmq_msg_close (msg_);
+            zmq_assert (rc == 0);
+        }
         int rc = zmq_msg_init (msg_);
         zmq_assert (rc == 0);
         return 0;
@@ -130,17 +126,18 @@ int zmq::pub_t::xsend (zmq_msg_t *msg_, int flags_)
     //  to deal with reference counting. First add N-1 references to
     //  the content (we are holding one reference anyway, that's why -1).
     if (msg_->flags & ZMQ_MSG_SHARED)
-        content->refcnt.add (pipes_count - 1);
+        content->refcnt.add (active - 1);
     else {
-        content->refcnt.set (pipes_count);
+        content->refcnt.set (active);
         msg_->flags |= ZMQ_MSG_SHARED;
     }
 
     //  Push the message to all destinations.
-    for (out_pipes_t::size_type i = 0; i != pipes_count; i++) {
-        bool written = out_pipes [i]->write (msg_);
-        zmq_assert (written);
-        out_pipes [i]->flush ();
+    for (pipes_t::size_type i = 0; i != active;) {
+        if (!write (pipes [i], msg_))
+            content->refcnt.sub (1);
+        else
+            i++;
     }
 
     //  Detach the original message from the data buffer.
@@ -163,22 +160,17 @@ bool zmq::pub_t::xhas_in ()
 
 bool zmq::pub_t::xhas_out ()
 {
-    return check_write ();
+    return true;
 }
 
-bool zmq::pub_t::check_write ()
+bool zmq::pub_t::write (class writer_t *pipe_, zmq_msg_t *msg_)
 {
-    if (stalled_pipe != NULL)
+    if (!pipe_->write (msg_)) {
+        active--;
+        pipes.swap (pipes.index (pipe_), active);
         return false;
-
-    out_pipes_t::size_type pipes_num = out_pipes.size ();
-    for (out_pipes_t::size_type i = 0; i < pipes_num; i++) {
-        if (!out_pipes [i]->check_write ()) {
-            stalled_pipe = out_pipes [i];
-            return false;
-        }
     }
-
+    pipe_->flush ();
     return true;
 }
 
