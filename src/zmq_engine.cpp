@@ -169,16 +169,6 @@ void zmq::zmq_engine_t::resume_input ()
     in_event ();
 }
 
-void zmq::zmq_engine_t::add_prefix (const blob_t &identity_)
-{
-    decoder.add_prefix (identity_);
-}
-
-void zmq::zmq_engine_t::trim_prefix ()
-{
-    encoder.trim_prefix ();
-}
-
 void zmq::zmq_engine_t::error ()
 {
     zmq_assert (inout);

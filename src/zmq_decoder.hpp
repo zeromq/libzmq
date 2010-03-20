@@ -33,16 +33,10 @@ namespace zmq
     {
     public:
 
-        //  If prefix is not NULL, it will be glued to the beginning of every
-        //  decoded message.
         zmq_decoder_t (size_t bufsize_);
         ~zmq_decoder_t ();
 
         void set_inout (struct i_inout *destination_);
-
-        //  Once called, all decoded messages will be prefixed by the specified
-        //  prefix.
-        void add_prefix (const blob_t &prefix_);
 
     private:
 
@@ -54,8 +48,6 @@ namespace zmq
         struct i_inout *destination;
         unsigned char tmpbuf [8];
         ::zmq_msg_t in_progress;
-
-        blob_t prefix;
 
         zmq_decoder_t (const zmq_decoder_t&);
         void operator = (const zmq_decoder_t&);

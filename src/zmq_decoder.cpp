@@ -45,11 +45,6 @@ void zmq::zmq_decoder_t::set_inout (i_inout *destination_)
     destination = destination_;
 }
 
-void zmq::zmq_decoder_t::add_prefix (const blob_t &prefix_)
-{
-    prefix = prefix_;
-}
-
 bool zmq::zmq_decoder_t::one_byte_size_ready ()
 {
     //  First byte of size is read. If it is 0xff read 8-byte size.
@@ -64,19 +59,8 @@ bool zmq::zmq_decoder_t::one_byte_size_ready ()
         //  in_progress is initialised at this point so in theory we should
         //  close it before calling zmq_msg_init_size, however, it's a 0-byte
         //  message and thus we can treat it as uninitialised...
-        if (prefix.empty ()) {
-            int rc = zmq_msg_init_size (&in_progress, *tmpbuf - 1);
-            errno_assert (rc == 0);
-            
-        }
-        else {
-            int rc = zmq_msg_init_size (&in_progress,
-                1 + prefix.size () + *tmpbuf - 1);
-            errno_assert (rc == 0);
-            unsigned char *data = (unsigned char*) zmq_msg_data (&in_progress);
-            *data = (unsigned char) prefix.size ();
-            memcpy (data + 1, prefix.data (), *data);
-        }
+        int rc = zmq_msg_init_size (&in_progress, *tmpbuf - 1);
+        errno_assert (rc == 0);
         next_step (tmpbuf, 1, &zmq_decoder_t::flags_ready);
     }
     return true;
@@ -93,18 +77,8 @@ bool zmq::zmq_decoder_t::eight_byte_size_ready ()
     //  in_progress is initialised at this point so in theory we should
     //  close it before calling zmq_msg_init_size, however, it's a 0-byte
     //  message and thus we can treat it as uninitialised...
-    if (prefix.empty ()) {
-        int rc = zmq_msg_init_size (&in_progress, size - 1);
-        errno_assert (rc == 0);
-    }
-    else {
-        int rc = zmq_msg_init_size (&in_progress,
-            1 + prefix.size () + size - 1);
-        errno_assert (rc == 0);
-        unsigned char *data = (unsigned char*) zmq_msg_data (&in_progress);
-        *data = (unsigned char) prefix.size ();
-        memcpy (data + 1, prefix.data (), *data);
-    }
+    int rc = zmq_msg_init_size (&in_progress, size - 1);
+    errno_assert (rc == 0);
     next_step (tmpbuf, 1, &zmq_decoder_t::flags_ready);
 
     return true;
@@ -115,17 +89,9 @@ bool zmq::zmq_decoder_t::flags_ready ()
     //  Store the flags from the wire into the message structure.
     in_progress.flags = tmpbuf [0];
 
-    if (prefix.empty ()) {
-        next_step (zmq_msg_data (&in_progress), zmq_msg_size (&in_progress),
-            &zmq_decoder_t::message_ready);
-    }
-    else {
-        next_step ((unsigned char*) zmq_msg_data (&in_progress) +
-            prefix.size () + 1,
-            zmq_msg_size (&in_progress) - prefix.size () - 1,
-            &zmq_decoder_t::message_ready);
-    }
-
+    next_step (zmq_msg_data (&in_progress), zmq_msg_size (&in_progress),
+        &zmq_decoder_t::message_ready);
+    
     return true;
 }
 

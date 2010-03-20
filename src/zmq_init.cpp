@@ -85,8 +85,7 @@ bool zmq::zmq_init_t::write (::zmq_msg_t *msg_)
         peer_identity.assign ((const unsigned char*) zmq_msg_data (msg_),
             zmq_msg_size (msg_));
     }
-    if (options.traceroute)
-        engine->add_prefix (peer_identity);
+
     received = true;
 
     return true;

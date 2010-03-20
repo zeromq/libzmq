@@ -55,8 +55,6 @@ namespace zmq
         void unplug ();
         void revive ();
         void resume_input ();
-        void add_prefix (const blob_t &identity_);
-        void trim_prefix ();
 
         //  i_poll_events interface implementation.
         void in_event ();

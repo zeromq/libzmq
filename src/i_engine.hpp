@@ -22,8 +22,6 @@
 
 #include <stddef.h>
 
-#include "blob.hpp"
-
 namespace zmq
 {
 
@@ -41,13 +39,9 @@ namespace zmq
         //  are messages to send available.
         virtual void revive () = 0;
 
+        //  This method is called by the session to signalise that more
+        //  messages can be written to the pipe.
         virtual void resume_input () = 0;
-
-        //  Engine should add the prefix supplied to all inbound messages.
-        virtual void add_prefix (const blob_t &identity_) = 0;
-
-        //  Engine should trim prefix from all the outbound messages.
-        virtual void trim_prefix () = 0;
     };
 
 }

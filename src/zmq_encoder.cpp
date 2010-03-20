@@ -23,8 +23,7 @@
 
 zmq::zmq_encoder_t::zmq_encoder_t (size_t bufsize_) :
     encoder_t <zmq_encoder_t> (bufsize_),
-    source (NULL),
-    trim (false)
+    source (NULL)
 {
     zmq_msg_init (&in_progress);
 
@@ -42,25 +41,11 @@ void zmq::zmq_encoder_t::set_inout (i_inout *source_)
     source = source_;
 }
 
-void zmq::zmq_encoder_t::trim_prefix ()
-{
-    trim = true;
-}
-
 bool zmq::zmq_encoder_t::size_ready ()
 {
     //  Write message body into the buffer.
-    if (!trim) {
-        next_step (zmq_msg_data (&in_progress), zmq_msg_size (&in_progress),
-            &zmq_encoder_t::message_ready, false);
-    }
-    else {
-        size_t prefix_size = *(unsigned char*) zmq_msg_data (&in_progress);
-        next_step (
-            (unsigned char*) zmq_msg_data (&in_progress) + prefix_size + 1,
-            zmq_msg_size (&in_progress) - prefix_size - 1,
-            &zmq_encoder_t::message_ready, false);
-    }
+    next_step (zmq_msg_data (&in_progress), zmq_msg_size (&in_progress),
+        &zmq_encoder_t::message_ready, false);
     return true;
 }
 
@@ -78,16 +63,8 @@ bool zmq::zmq_encoder_t::message_ready ()
         return false;
     }
 
-    //  Get the message size. If the prefix is not to be sent, adjust the
-    //  size accordingly.
+    //  Get the message size.
     size_t size = zmq_msg_size (&in_progress);
-    if (trim) {
-        zmq_assert (size);
-        size_t prefix_size =
-            (*(unsigned char*) zmq_msg_data (&in_progress)) + 1;
-        zmq_assert (prefix_size <= size);
-        size -= prefix_size;
-    }
 
     //  Account for the 'flags' byte.
     size++;

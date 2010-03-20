@@ -264,9 +264,4 @@ void zmq::session_t::process_attach (i_engine *engine_,
     zmq_assert (engine_);
     engine = engine_;
     engine->plug (this);
-
-    //  Once the initial handshaking is over tracerouting should trim prefixes
-    //  from outbound messages.
-    if (options.traceroute)
-        engine->trim_prefix ();
 }

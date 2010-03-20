@@ -34,8 +34,7 @@ zmq::options_t::options_t () :
     rcvbuf (0),
     requires_in (false),
     requires_out (false),
-    immediate_connect (true),
-    traceroute (false)
+    immediate_connect (true)
 {
 }
 

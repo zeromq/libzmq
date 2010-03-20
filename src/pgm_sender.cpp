@@ -107,18 +107,6 @@ void zmq::pgm_sender_t::resume_input ()
     zmq_assert (false);
 }
 
-void zmq::pgm_sender_t::add_prefix (const blob_t &identity_)
-{
-    //  No need for tracerouting functionality in PGM socket at the moment.
-    zmq_assert (false);
-}
-
-void zmq::pgm_sender_t::trim_prefix ()
-{
-    //  No need for tracerouting functionality in PGM socket at the moment.
-    zmq_assert (false);
-}
-
 zmq::pgm_sender_t::~pgm_sender_t ()
 {
     if (out_buffer) {

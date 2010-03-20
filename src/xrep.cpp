@@ -33,9 +33,8 @@ zmq::xrep_t::xrep_t (class app_thread_t *parent_) :
     //  That way we are aware of the peer's identity when binding to the pipes.
     options.immediate_connect = false;
 
-    //  XREP socket adds identity to inbound messages and strips identity
-    //  from the outbound messages.
-    options.traceroute = true;
+    //  XREP is unfunctional at the moment. Crash here!
+    zmq_assert (false);
 }
 
 zmq::xrep_t::~xrep_t ()
