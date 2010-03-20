@@ -72,6 +72,10 @@ namespace zmq
         //  Inbound pipe, i.e. one the session is getting messages from.
         class reader_t *in_pipe;
 
+        //  This flag is true if the remainder of the message being processed
+        //  is still in the in pipe.
+        bool incomplete_in;
+
         //  If true, in_pipe is active. Otherwise there are no messages to get.
         bool active;
 
