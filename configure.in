@@ -84,7 +84,7 @@ if test -d ".git"; then
     if test "x$have_asciidoc" = "xno" -o "x$have_xmlto" = "xno"; then
         build_doc="no"
         install_man="no"
-        AC_MSG_WARN([You are building from git and asciidoc is not installed. Documentation will not be built or installed.])
+        AC_MSG_WARN([You are building from git and asciidoc or xmlto is not installed. Documentation will not be built or installed.])
     else
         build_doc="yes"
     fi
