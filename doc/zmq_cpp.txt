@@ -117,7 +117,7 @@ Constructor
 
 These map to the _zmq_msg_init()_, _zmq_msg_init_size()_ and
 _zmq_msg_init_data()_ functions, described in linkzmq:zmq_msg_init[3],
-linkzmq:zmq_msg_init_size[3] and linkzmq_msg_init_data[3] respectively.
+linkzmq:zmq_msg_init_size[3] and linkzmq:zmq_msg_init_data[3] respectively.
 
 
 Destructor
@@ -163,6 +163,9 @@ Input/output multiplexing
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 The _poll()_ function is a namespaced equivalent of the _zmq_poll()_ function,
 as described in linkzmq:zmq_poll[3].
+
+NOTE: To obtain a 0MQ _socket_ for use in a _zmq_pollitem_t_ structure, you
+should cast an instance of the _socket_t_ class to `(void *)`.
 
 
 ERROR HANDLING
