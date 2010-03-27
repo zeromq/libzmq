@@ -77,7 +77,9 @@ bool zmq::reader_t::read (zmq_msg_t *msg_)
         return false;
     }
 
-    msgs_read++;
+    if (!(msg_->flags & ZMQ_MSG_TBC))
+        msgs_read++;
+
     if (lwm > 0 && msgs_read % lwm == 0)
         send_reader_info (peer, msgs_read);
 
@@ -161,7 +163,8 @@ bool zmq::writer_t::write (zmq_msg_t *msg_)
     }
 
     pipe->write (*msg_);
-    msgs_written++;
+    if (!(msg_->flags & ZMQ_MSG_TBC))
+        msgs_written++;
     return true;
 }
 
@@ -193,6 +196,9 @@ void zmq::writer_t::flush ()
 void zmq::writer_t::term ()
 {
     endpoint = NULL;
+
+    //  Rollback any unfinished messages.
+    rollback ();
 
     //  Push delimiter into the pipe.
     //  Trick the compiler to belive that the tag is a valid pointer.

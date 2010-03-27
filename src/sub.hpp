@@ -68,6 +68,10 @@ namespace zmq
         bool has_message;
         zmq_msg_t message;
 
+        //  If true, part of a multipart message was already received, but
+        //  there are following parts still waiting.
+        bool tbc;
+
         sub_t (const sub_t&);
         void operator = (const sub_t&);
     };

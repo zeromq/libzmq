@@ -55,6 +55,10 @@ namespace zmq
         //  Index of the next bound pipe to read a message from.
         pipes_t::size_type current;
 
+        //  If true, part of a multipart message was already received, but
+        //  there are following parts still waiting in the current pipe.
+        bool tbc;
+
         fq_t (const fq_t&);
         void operator = (const fq_t&);
     };

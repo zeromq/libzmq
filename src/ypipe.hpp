@@ -84,8 +84,8 @@ namespace zmq
         {
             if (w == &queue.back ())
                 return false;
-            *value_ = queue.back ();
             queue.unpush ();
+            *value_ = queue.back ();
             return true;
         }
 
