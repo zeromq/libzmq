@@ -181,7 +181,6 @@ ZMQ_EXPORT int zmq_term (void *context);
 #define ZMQ_RCVBUF 12
 
 #define ZMQ_NOBLOCK 1
-#define ZMQ_NOFLUSH 2
 
 ZMQ_EXPORT void *zmq_socket (void *context, int type);
 ZMQ_EXPORT int zmq_close (void *s);
@@ -190,7 +189,6 @@ ZMQ_EXPORT int zmq_setsockopt (void *s, int option, const void *optval,
 ZMQ_EXPORT int zmq_bind (void *s, const char *addr);
 ZMQ_EXPORT int zmq_connect (void *s, const char *addr);
 ZMQ_EXPORT int zmq_send (void *s, zmq_msg_t *msg, int flags);
-ZMQ_EXPORT int zmq_flush (void *s);
 ZMQ_EXPORT int zmq_recv (void *s, zmq_msg_t *msg, int flags);
 
 ////////////////////////////////////////////////////////////////////////////////
