@@ -70,7 +70,7 @@ namespace zmq
 
         //  True, if message processed at the moment (either sent or received)
         //  is processed only partially.
-        bool tbc;
+        bool more;
 
         //  Pipe we are going to send reply to.
         class writer_t *reply_pipe;

@@ -29,7 +29,7 @@ zmq::req_t::req_t (class app_thread_t *parent_) :
     current (0),
     receiving_reply (false),
     reply_pipe_active (false),
-    tbc (false),
+    more (false),
     reply_pipe (NULL)
 {
     options.requires_in = true;
@@ -57,7 +57,7 @@ void zmq::req_t::xattach_pipes (class reader_t *inpipe_,
 
 void zmq::req_t::xdetach_inpipe (class reader_t *pipe_)
 {
-    zmq_assert (!receiving_reply || !tbc || reply_pipe != pipe_);
+    zmq_assert (!receiving_reply || !more || reply_pipe != pipe_);
 
     zmq_assert (pipe_);
     zmq_assert (in_pipes.size () == out_pipes.size ());
@@ -96,7 +96,7 @@ void zmq::req_t::xdetach_inpipe (class reader_t *pipe_)
 
 void zmq::req_t::xdetach_outpipe (class writer_t *pipe_)
 {
-    zmq_assert (receiving_reply || !tbc || out_pipes [current] != pipe_);
+    zmq_assert (receiving_reply || !more || out_pipes [current] != pipe_);
 
     zmq_assert (pipe_);
     zmq_assert (in_pipes.size () == out_pipes.size ());
@@ -175,7 +175,7 @@ int zmq::req_t::xsend (zmq_msg_t *msg_, int flags_)
         if (out_pipes [current]->check_write ())
             break;
 
-        zmq_assert (!tbc);
+        zmq_assert (!more);
         active--;
         if (current < active) {
             in_pipes.swap (current, active);
@@ -193,8 +193,8 @@ int zmq::req_t::xsend (zmq_msg_t *msg_, int flags_)
     //  Push message to the selected pipe.
     bool written = out_pipes [current]->write (msg_);
     zmq_assert (written);
-    tbc = msg_->flags & ZMQ_MSG_TBC;
-    if (!tbc) {
+    more = msg_->flags & ZMQ_MSG_MORE;
+    if (!more) {
         out_pipes [current]->flush ();
         receiving_reply = true;
         reply_pipe = in_pipes [current];
@@ -235,8 +235,8 @@ int zmq::req_t::xrecv (zmq_msg_t *msg_, int flags_)
     }
 
     //  If this was last part of the reply, switch to request phase.
-    tbc = msg_->flags & ZMQ_MSG_TBC;
-    if (!tbc) {
+    more = msg_->flags & ZMQ_MSG_MORE;
+    if (!more) {
         receiving_reply = false;
         reply_pipe = NULL;
     }
@@ -246,7 +246,7 @@ int zmq::req_t::xrecv (zmq_msg_t *msg_, int flags_)
 
 bool zmq::req_t::xhas_in ()
 {
-    if (receiving_reply && tbc)
+    if (receiving_reply && more)
         return true;
 
     if (!receiving_reply || !reply_pipe_active)
@@ -263,7 +263,7 @@ bool zmq::req_t::xhas_in ()
 
 bool zmq::req_t::xhas_out ()
 {
-    if (!receiving_reply && tbc)
+    if (!receiving_reply && more)
         return true;
 
     if (receiving_reply)

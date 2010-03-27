@@ -77,7 +77,7 @@ bool zmq::reader_t::read (zmq_msg_t *msg_)
         return false;
     }
 
-    if (!(msg_->flags & ZMQ_MSG_TBC))
+    if (!(msg_->flags & ZMQ_MSG_MORE))
         msgs_read++;
 
     if (lwm > 0 && msgs_read % lwm == 0)
@@ -163,7 +163,7 @@ bool zmq::writer_t::write (zmq_msg_t *msg_)
     }
 
     pipe->write (*msg_);
-    if (!(msg_->flags & ZMQ_MSG_TBC))
+    if (!(msg_->flags & ZMQ_MSG_MORE))
         msgs_written++;
     return true;
 }
@@ -173,7 +173,7 @@ void zmq::writer_t::rollback ()
     zmq_msg_t msg;
 
     while (pipe->unwrite (&msg)) {
-        if (!(msg.flags & ZMQ_MSG_TBC)) {
+        if (!(msg.flags & ZMQ_MSG_MORE)) {
             pipe->write (msg);
             break;
         }

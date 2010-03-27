@@ -71,19 +71,19 @@ bool zmq::zmq_encoder_t::message_ready ()
 
     //  For messages less than 255 bytes long, write one byte of message size.
     //  For longer messages write 0xff escape character followed by 8-byte
-    //  message size. In both cases empty 'flags' field follows.
+    //  message size. In both cases 'flags' field follows.
     if (size < 255) {
         tmpbuf [0] = (unsigned char) size;
         tmpbuf [1] = (in_progress.flags & ~ZMQ_MSG_SHARED);
         next_step (tmpbuf, 2, &zmq_encoder_t::size_ready,
-            !(in_progress.flags & ZMQ_MSG_TBC));
+            !(in_progress.flags & ZMQ_MSG_MORE));
     }
     else {
         tmpbuf [0] = 0xff;
         put_uint64 (tmpbuf + 1, size);
         tmpbuf [9] = (in_progress.flags & ~ZMQ_MSG_SHARED);
         next_step (tmpbuf, 10, &zmq_encoder_t::size_ready,
-            !(in_progress.flags & ZMQ_MSG_TBC));
+            !(in_progress.flags & ZMQ_MSG_MORE));
     }
     return true;
 }

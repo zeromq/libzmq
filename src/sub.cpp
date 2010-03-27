@@ -27,7 +27,7 @@
 zmq::sub_t::sub_t (class app_thread_t *parent_) :
     socket_base_t (parent_),
     has_message (false),
-    tbc (false)
+    more (false)
 {
     options.requires_in = true;
     options.requires_out = false;
@@ -106,7 +106,7 @@ int zmq::sub_t::xrecv (zmq_msg_t *msg_, int flags_)
     if (has_message) {
         zmq_msg_move (msg_, &message);
         has_message = false;
-        tbc = msg_->flags & ZMQ_MSG_TBC;
+        more = msg_->flags & ZMQ_MSG_MORE;
         return 0;
     }
 
@@ -125,14 +125,14 @@ int zmq::sub_t::xrecv (zmq_msg_t *msg_, int flags_)
 
         //  Check whether the message matches at least one subscription.
         //  Non-initial parts of the message are passed 
-        if (tbc || match (msg_)) {
-            tbc = msg_->flags & ZMQ_MSG_TBC;
+        if (more || match (msg_)) {
+            more = msg_->flags & ZMQ_MSG_MORE;
             return 0;
         }
 
         //  Message doesn't match. Pop any remaining parts of the message
         //  from the pipe.
-        while (msg_->flags & ZMQ_MSG_TBC) {
+        while (msg_->flags & ZMQ_MSG_MORE) {
             rc = fq.recv (msg_, ZMQ_NOBLOCK);
             zmq_assert (rc == 0);
         }
@@ -142,7 +142,7 @@ int zmq::sub_t::xrecv (zmq_msg_t *msg_, int flags_)
 bool zmq::sub_t::xhas_in ()
 {
     //  There are subsequent parts of the partly-read message available.
-    if (tbc)
+    if (more)
         return true;
 
     //  If there's already a message prepared by a previous call to zmq_poll,
@@ -172,7 +172,7 @@ bool zmq::sub_t::xhas_in ()
 
         //  Message doesn't match. Pop any remaining parts of the message
         //  from the pipe.
-        while (message.flags & ZMQ_MSG_TBC) {
+        while (message.flags & ZMQ_MSG_MORE) {
             rc = fq.recv (&message, ZMQ_NOBLOCK);
             zmq_assert (rc == 0);
         }

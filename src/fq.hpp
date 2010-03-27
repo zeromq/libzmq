@@ -57,7 +57,7 @@ namespace zmq
 
         //  If true, part of a multipart message was already received, but
         //  there are following parts still waiting in the current pipe.
-        bool tbc;
+        bool more;
 
         fq_t (const fq_t&);
         void operator = (const fq_t&);

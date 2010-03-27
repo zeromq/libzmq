@@ -54,7 +54,7 @@ namespace zmq
         pipes_t::size_type current;
 
         //  True if last we are in the middle of a multipart message.
-        bool tbc;
+        bool more;
 
         lb_t (const lb_t&);
         void operator = (const lb_t&);

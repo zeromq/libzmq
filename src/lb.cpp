@@ -26,7 +26,7 @@
 zmq::lb_t::lb_t () :
     active (0),
     current (0),
-    tbc (false)
+    more (false)
 {
 }
 
@@ -45,7 +45,7 @@ void zmq::lb_t::attach (writer_t *pipe_)
 
 void zmq::lb_t::detach (writer_t *pipe_)
 {
-    zmq_assert (!tbc || pipes [current] != pipe_);
+    zmq_assert (!more || pipes [current] != pipe_);
 
     //  Remove the pipe from the list; adjust number of active pipes
     //  accordingly.
@@ -68,11 +68,11 @@ int zmq::lb_t::send (zmq_msg_t *msg_, int flags_)
 {
     while (active > 0) {
         if (pipes [current]->write (msg_)) {
-            tbc = msg_->flags & ZMQ_MSG_TBC;
+            more = msg_->flags & ZMQ_MSG_MORE;
             break;
         }
 
-        zmq_assert (!tbc);
+        zmq_assert (!more);
         active--;
         if (current < active)
             pipes.swap (current, active);
@@ -88,7 +88,7 @@ int zmq::lb_t::send (zmq_msg_t *msg_, int flags_)
 
     //  If it's final part of the message we can fluch it downstream and
     //  continue round-robinning (load balance).
-    if (!tbc) {
+    if (!more) {
         pipes [current]->flush ();
         current = (current + 1) % active;
     }
@@ -104,7 +104,7 @@ bool zmq::lb_t::has_out ()
 {
     //  If one part of the message was already written we can definitely
     //  write the rest of the message.
-    if (tbc)
+    if (more)
         return true;
 
     while (active > 0) {

@@ -170,7 +170,7 @@ bool zmq::pub_t::write (class writer_t *pipe_, zmq_msg_t *msg_)
         pipes.swap (pipes.index (pipe_), active);
         return false;
     }
-    if (!(msg_->flags & ZMQ_MSG_TBC))
+    if (!(msg_->flags & ZMQ_MSG_MORE))
         pipe_->flush ();
     return true;
 }

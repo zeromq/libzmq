@@ -26,7 +26,7 @@
 zmq::fq_t::fq_t () :
     active (0),
     current (0),
-    tbc (false)
+    more (false)
 {
 }
 
@@ -45,7 +45,7 @@ void zmq::fq_t::attach (reader_t *pipe_)
 
 void zmq::fq_t::detach (reader_t *pipe_)
 {
-    zmq_assert (!tbc || pipes [current] != pipe_);
+    zmq_assert (!more || pipes [current] != pipe_);
 
     //  Remove the pipe from the list; adjust number of active pipes
     //  accordingly.
@@ -84,14 +84,14 @@ int zmq::fq_t::recv (zmq_msg_t *msg_, int flags_)
         //  Try to fetch new message. If we've already read part of the message
         //  subsequent part should be immediately available.
         bool fetched = pipes [current]->read (msg_);
-        zmq_assert (!(tbc && !fetched));
+        zmq_assert (!(more && !fetched));
 
         //  Note that when message is not fetched, current pipe is killed and
         //  replaced by another active pipe. Thus we don't have to increase
         //  the 'current' pointer.
         if (fetched) {
-            tbc = msg_->flags & ZMQ_MSG_TBC;
-            if (!tbc) {
+            more = msg_->flags & ZMQ_MSG_MORE;
+            if (!more) {
                 current++;
                 if (current >= active)
                     current = 0;
@@ -110,7 +110,7 @@ int zmq::fq_t::recv (zmq_msg_t *msg_, int flags_)
 bool zmq::fq_t::has_in ()
 {
     //  There are subsequent parts of the partly-read message available.
-    if (tbc)
+    if (more)
         return true;
 
     //  Note that messing with current doesn't break the fairness of fair

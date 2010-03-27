@@ -70,7 +70,7 @@ namespace zmq
 
         //  If true, part of a multipart message was already received, but
         //  there are following parts still waiting.
-        bool tbc;
+        bool more;
 
         sub_t (const sub_t&);
         void operator = (const sub_t&);

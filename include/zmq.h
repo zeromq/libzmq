@@ -105,7 +105,7 @@ ZMQ_EXPORT const char *zmq_strerror (int errnum);
 //  Message flags. ZMQ_MSG_SHARED is strictly speaking not a message flag
 //  (it has no equivalent in the wire format), however, making  it a flag
 //  allows us to pack the stucture tigher and thus improve performance.
-#define ZMQ_MSG_TBC 1
+#define ZMQ_MSG_MORE 1
 #define ZMQ_MSG_SHARED 128
 
 //  A message. Note that 'content' is not a pointer to the raw data.
@@ -181,7 +181,7 @@ ZMQ_EXPORT int zmq_term (void *context);
 #define ZMQ_RCVBUF 12
 
 #define ZMQ_NOBLOCK 1
-#define ZMQ_TBC 2
+#define ZMQ_MORE 2
 
 ZMQ_EXPORT void *zmq_socket (void *context, int type);
 ZMQ_EXPORT int zmq_close (void *s);

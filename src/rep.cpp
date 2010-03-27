@@ -28,7 +28,7 @@ zmq::rep_t::rep_t (class app_thread_t *parent_) :
     active (0),
     current (0),
     sending_reply (false),
-    tbc (false),
+    more (false),
     reply_pipe (NULL)
 {
     options.requires_in = true;
@@ -59,7 +59,7 @@ void zmq::rep_t::xattach_pipes (class reader_t *inpipe_,
 
 void zmq::rep_t::xdetach_inpipe (class reader_t *pipe_)
 {
-    zmq_assert (sending_reply || !tbc || in_pipes [current] != pipe_);
+    zmq_assert (sending_reply || !more || in_pipes [current] != pipe_);
 
     zmq_assert (pipe_);
     zmq_assert (in_pipes.size () == out_pipes.size ());
@@ -93,7 +93,7 @@ void zmq::rep_t::xdetach_inpipe (class reader_t *pipe_)
 
 void zmq::rep_t::xdetach_outpipe (class writer_t *pipe_)
 {
-    zmq_assert (!sending_reply || !tbc || reply_pipe != pipe_);
+    zmq_assert (!sending_reply || !more || reply_pipe != pipe_);
 
     zmq_assert (pipe_);
     zmq_assert (in_pipes.size () == out_pipes.size ());
@@ -168,13 +168,13 @@ int zmq::rep_t::xsend (zmq_msg_t *msg_, int flags_)
     }
 
     //  Check whether it's last part of the reply.
-    tbc = msg_->flags & ZMQ_MSG_TBC;
+    more = msg_->flags & ZMQ_MSG_MORE;
 
     if (reply_pipe) {
 
         //  Push message to the reply pipe.
         bool written = reply_pipe->write (msg_);
-        zmq_assert (!tbc || written);
+        zmq_assert (!more || written);
 
         //  The pipe is full...
         //  TODO: Tear down the underlying connection (?)
@@ -187,7 +187,7 @@ int zmq::rep_t::xsend (zmq_msg_t *msg_, int flags_)
     }
 
     //  Flush the reply to the requester.
-    if (!tbc) {
+    if (!more) {
         reply_pipe->flush ();
         sending_reply = false;
         reply_pipe = NULL;
@@ -213,11 +213,11 @@ int zmq::rep_t::xrecv (zmq_msg_t *msg_, int flags_)
     //  Round-robin over the pipes to get next message.
     for (int count = active; count != 0; count--) {
         bool fetched = in_pipes [current]->read (msg_);
-        zmq_assert (!(tbc && !fetched));
+        zmq_assert (!(more && !fetched));
         
         if (fetched) {
-            tbc = msg_->flags & ZMQ_MSG_TBC;
-            if (!tbc) {
+            more = msg_->flags & ZMQ_MSG_MORE;
+            if (!more) {
                 reply_pipe = out_pipes [current];
                 sending_reply = true;
                 current++;
@@ -237,7 +237,7 @@ int zmq::rep_t::xrecv (zmq_msg_t *msg_, int flags_)
 
 bool zmq::rep_t::xhas_in ()
 {
-    if (!sending_reply && tbc)
+    if (!sending_reply && more)
         return true;
 
     for (int count = active; count != 0; count--) {
@@ -253,7 +253,7 @@ bool zmq::rep_t::xhas_in ()
 
 bool zmq::rep_t::xhas_out ()
 {
-    if (sending_reply && tbc)
+    if (sending_reply && more)
         return true;
 
     //  TODO: No check for write here...
