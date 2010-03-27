@@ -53,6 +53,9 @@ namespace zmq
         //  Points to the last pipe that the most recent message was sent to.
         pipes_t::size_type current;
 
+        //  True if last we are in the middle of a multipart message.
+        bool tbc;
+
         lb_t (const lb_t&);
         void operator = (const lb_t&);
     };
