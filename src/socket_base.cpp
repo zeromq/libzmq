@@ -311,6 +311,11 @@ int zmq::socket_base_t::connect (const char *addr_)
 
 int zmq::socket_base_t::send (::zmq_msg_t *msg_, int flags_)
 {
+    //  ZMQ_TBC is actually a message flag, not a real send-flag
+    //  such as ZMQ_NOBLOCK. At this point we impose it on the message.
+    if (flags_ & ZMQ_TBC)
+        msg_->flags |= ZMQ_MSG_TBC;
+
     //  Process pending commands, if any.
     app_thread->process_commands (false, true);
 

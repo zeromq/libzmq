@@ -181,6 +181,7 @@ ZMQ_EXPORT int zmq_term (void *context);
 #define ZMQ_RCVBUF 12
 
 #define ZMQ_NOBLOCK 1
+#define ZMQ_TBC 2
 
 ZMQ_EXPORT void *zmq_socket (void *context, int type);
 ZMQ_EXPORT int zmq_close (void *s);
