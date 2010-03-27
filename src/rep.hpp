@@ -64,8 +64,13 @@ namespace zmq
         //  Index of the next inbound pipe to read a request from.
         in_pipes_t::size_type current;
 
-        //  If true, request was already received and reply wasn't sent yet.
-        bool waiting_for_reply;
+        //  If true, request was already received and reply wasn't completely
+        //  sent yet.
+        bool sending_reply;
+
+        //  True, if message processed at the moment (either sent or received)
+        //  is processed only partially.
+        bool tbc;
 
         //  Pipe we are going to send reply to.
         class writer_t *reply_pipe;

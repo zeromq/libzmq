@@ -70,11 +70,16 @@ namespace zmq
         //  that's processing the request at the moment.
         out_pipes_t::size_type current;
 
-        //  If true, request was already sent and reply wasn't received yet.
-        bool waiting_for_reply;
+        //  If true, request was already sent and reply wasn't received yet or
+        //  was raceived partially.
+        bool receiving_reply;
 
         //  True, if read can be attempted from the reply pipe.
         bool reply_pipe_active;
+
+        //  True, if message processed at the moment (either sent or received)
+        //  is processed only partially.
+        bool tbc;
 
         //  Pipe we are awaiting the reply from.
         class reader_t *reply_pipe;

@@ -27,8 +27,9 @@ zmq::req_t::req_t (class app_thread_t *parent_) :
     socket_base_t (parent_),
     active (0),
     current (0),
-    waiting_for_reply (false),
+    receiving_reply (false),
     reply_pipe_active (false),
+    tbc (false),
     reply_pipe (NULL)
 {
     options.requires_in = true;
@@ -56,12 +57,14 @@ void zmq::req_t::xattach_pipes (class reader_t *inpipe_,
 
 void zmq::req_t::xdetach_inpipe (class reader_t *pipe_)
 {
+    zmq_assert (!receiving_reply || !tbc || reply_pipe != pipe_);
+
     zmq_assert (pipe_);
     zmq_assert (in_pipes.size () == out_pipes.size ());
 
     //  TODO: The pipe we are awaiting the reply from is detached. What now?
     //  Return ECONNRESET from subsequent recv?
-    if (waiting_for_reply && pipe_ == reply_pipe) {
+    if (receiving_reply && pipe_ == reply_pipe) {
         zmq_assert (false);
     }
 
@@ -93,6 +96,8 @@ void zmq::req_t::xdetach_inpipe (class reader_t *pipe_)
 
 void zmq::req_t::xdetach_outpipe (class writer_t *pipe_)
 {
+    zmq_assert (receiving_reply || !tbc || out_pipes [current] != pipe_);
+
     zmq_assert (pipe_);
     zmq_assert (in_pipes.size () == out_pipes.size ());
 
@@ -124,7 +129,7 @@ void zmq::req_t::xdetach_outpipe (class writer_t *pipe_)
 
 void zmq::req_t::xkill (class reader_t *pipe_)
 {
-    zmq_assert (waiting_for_reply);
+    zmq_assert (receiving_reply);
     zmq_assert (pipe_ == reply_pipe);
 
     reply_pipe_active = false;
@@ -161,7 +166,7 @@ int zmq::req_t::xsend (zmq_msg_t *msg_, int flags_)
 {
     //  If we've sent a request and we still haven't got the reply,
     //  we can't send another request.
-    if (waiting_for_reply) {
+    if (receiving_reply) {
         errno = EFSM;
         return -1;
     }
@@ -170,6 +175,7 @@ int zmq::req_t::xsend (zmq_msg_t *msg_, int flags_)
         if (out_pipes [current]->check_write ())
             break;
 
+        zmq_assert (!tbc);
         active--;
         if (current < active) {
             in_pipes.swap (current, active);
@@ -187,22 +193,24 @@ int zmq::req_t::xsend (zmq_msg_t *msg_, int flags_)
     //  Push message to the selected pipe.
     bool written = out_pipes [current]->write (msg_);
     zmq_assert (written);
-    out_pipes [current]->flush ();
+    tbc = msg_->flags & ZMQ_MSG_TBC;
+    if (!tbc) {
+        out_pipes [current]->flush ();
+        receiving_reply = true;
+        reply_pipe = in_pipes [current];
 
-    waiting_for_reply = true;
-    reply_pipe = in_pipes [current];
+        //  We can safely assume that the reply pipe is active as the last time
+        //  we've used it we've read the reply and haven't tried to read from it
+        //  anymore.
+        reply_pipe_active = true;
 
-    //  We can safely assume that the reply pipe is active as the last time
-    //  we've used it we've read the reply and haven't tried to read from it
-    //  anymore.
-    reply_pipe_active = true;
+        //  Move to the next pipe (load-balancing).
+        current = (current + 1) % active;
+    }
 
     //  Detach the message from the data buffer.
     int rc = zmq_msg_init (msg_);
     zmq_assert (rc == 0);
-
-    //  Move to the next pipe (load-balancing).
-    current = (current + 1) % active;
 
     return 0;
 }
@@ -213,7 +221,7 @@ int zmq::req_t::xrecv (zmq_msg_t *msg_, int flags_)
     zmq_msg_close (msg_);
 
     //  If request wasn't send, we can't wait for reply.
-    if (!waiting_for_reply) {
+    if (!receiving_reply) {
         zmq_msg_init (msg_);
         errno = EFSM;
         return -1;
@@ -226,14 +234,22 @@ int zmq::req_t::xrecv (zmq_msg_t *msg_, int flags_)
         return -1;
     }
 
-    waiting_for_reply = false;
-    reply_pipe = NULL;
+    //  If this was last part of the reply, switch to request phase.
+    tbc = msg_->flags & ZMQ_MSG_TBC;
+    if (!tbc) {
+        receiving_reply = false;
+        reply_pipe = NULL;
+    }
+
     return 0;
 }
 
 bool zmq::req_t::xhas_in ()
 {
-    if (!waiting_for_reply || !reply_pipe_active)
+    if (receiving_reply && tbc)
+        return true;
+
+    if (!receiving_reply || !reply_pipe_active)
         return false;
 
     zmq_assert (reply_pipe);    
@@ -247,7 +263,10 @@ bool zmq::req_t::xhas_in ()
 
 bool zmq::req_t::xhas_out ()
 {
-    if (waiting_for_reply)
+    if (!receiving_reply && tbc)
+        return true;
+
+    if (receiving_reply)
         return false;
 
     while (active > 0) {
