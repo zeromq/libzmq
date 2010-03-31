@@ -167,9 +167,6 @@ int zmq::rep_t::xsend (zmq_msg_t *msg_, int flags_)
         return -1;
     }
 
-    //  Check whether it's last part of the reply.
-    more = msg_->flags & ZMQ_MSG_MORE;
-
     if (reply_pipe) {
 
         //  Push message to the reply pipe.
@@ -177,14 +174,23 @@ int zmq::rep_t::xsend (zmq_msg_t *msg_, int flags_)
         zmq_assert (!more || written);
 
         //  The pipe is full...
+        //  When this happens, we simply return an error.
+        //  This makes REP sockets vulnerable to DoS attack when
+        //  misbehaving requesters stop collecting replies.
         //  TODO: Tear down the underlying connection (?)
-        zmq_assert (written);     
+        if (!written) {
+            errno = EAGAIN;
+            return -1;
+        }
     }
     else {
 
         //  If the requester have disconnected in the meantime, drop the reply.
         zmq_msg_close (msg_);
     }
+
+    //  Check whether it's last part of the reply.
+    more = msg_->flags & ZMQ_MSG_MORE;
 
     //  Flush the reply to the requester.
     if (!more) {
