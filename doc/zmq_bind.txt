@@ -47,11 +47,11 @@ The requested 'transport' protocol is not supported.
 *ENOCOMPATPROTO*::
 The requested 'transport' protocol is not compatible with the socket type.
 *EADDRINUSE*::
-The given 'address' is already in use.
+The requested 'address' is already in use.
 *EADDRNOTAVAIL*::
-Requested 'address' was not local.
+The requested 'address' was not local.
 *ENODEV*::
-A nonexistent interface was requested.
+The requested 'address' specifies a nonexistent interface.
 
 
 EXAMPLE

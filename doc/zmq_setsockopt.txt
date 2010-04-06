@@ -242,13 +242,16 @@ rc = zmq_setsockopt (socket, ZMQ_SUBSCRIBE, "ANIMALS.CATS", 12);
 
 .Setting I/O thread affinity
 ----
+int64_t affinity;
 /* Incoming connections on TCP port 5555 shall be handled by I/O thread 1 */
-rc = zmq_setsockopt (socket, ZMQ_AFFINITY, 1, sizeof (int64_t));
+affinity = 1;
+rc = zmq_setsockopt (socket, ZMQ_AFFINITY, &affinity, sizeof affinity);
 assert (rc);
 rc = zmq_bind (socket, "tcp://lo:5555");
 assert (rc);
 /* Incoming connections on TCP port 5556 shall be handled by I/O thread 2 */
-rc = zmq_setsockopt (socket, ZMQ_AFFINITY, 2, sizeof (int64_t));
+affinity = 2;
+rc = zmq_setsockopt (socket, ZMQ_AFFINITY, &affinity, sizeof affinity);
 assert (rc);
 rc = zmq_bind (socket, "tcp://lo:5555");
 assert (rc);
