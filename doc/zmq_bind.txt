@@ -49,7 +49,9 @@ The requested 'transport' protocol is not compatible with the socket type.
 *EADDRINUSE*::
 The given 'address' is already in use.
 *EADDRNOTAVAIL*::
-A nonexistent interface was requested or the requested 'address' was not local.
+Requested 'address' was not local.
+*ENODEV*::
+A nonexistent interface was requested.
 
 
 EXAMPLE
