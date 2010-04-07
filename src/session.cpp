@@ -44,6 +44,7 @@ zmq::session_t::session_t (object_t *parent_, socket_base_t *owner_,
       const options_t &options_, const blob_t &peer_identity_) :
     owned_t (parent_, owner_),
     in_pipe (NULL),
+    incomplete_in (false),
     active (true),
     out_pipe (NULL),
     engine (NULL),
