@@ -24,6 +24,9 @@
 #include <stdlib.h>
 #include <new>
 
+#include "forwarder.hpp"
+#include "queue.hpp"
+#include "streamer.hpp"
 #include "socket_base.hpp"
 #include "app_thread.hpp"
 #include "dispatcher.hpp"
@@ -626,6 +629,23 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 int zmq_errno ()
 {
     return errno;
+}
+
+int zmq_device (int device_, void *insocket_, void *outsocket_)
+{
+    switch (device_) {
+    case ZMQ_FORWARDER:
+        return zmq::forwarder ((zmq::socket_base_t*) insocket_,
+            (zmq::socket_base_t*) outsocket_);
+    case ZMQ_QUEUE:
+        return zmq::queue ((zmq::socket_base_t*) insocket_,
+            (zmq::socket_base_t*) outsocket_);
+    case ZMQ_STREAMER:
+        return zmq::streamer ((zmq::socket_base_t*) insocket_,
+            (zmq::socket_base_t*) outsocket_);
+    default:
+        return EINVAL;
+    }
 }
 
 #if defined ZMQ_HAVE_WINDOWS

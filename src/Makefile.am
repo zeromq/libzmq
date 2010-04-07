@@ -65,6 +65,7 @@ libzmq_la_SOURCES = app_thread.hpp \
     err.hpp \
     fd.hpp \
     fd_signaler.hpp \
+    forwarder.hpp \
     fq.hpp \
     i_inout.hpp \
     io_object.hpp \
@@ -92,6 +93,7 @@ libzmq_la_SOURCES = app_thread.hpp \
     p2p.hpp \
     prefix_tree.hpp \
     pub.hpp \
+    queue.hpp \
     rep.hpp \
     req.hpp \
     select.hpp \
@@ -99,6 +101,7 @@ libzmq_la_SOURCES = app_thread.hpp \
     simple_semaphore.hpp \
     socket_base.hpp \
     stdint.hpp \
+    streamer.hpp \
     sub.hpp \
     tcp_connecter.hpp \
     tcp_listener.hpp \
@@ -129,6 +132,7 @@ libzmq_la_SOURCES = app_thread.hpp \
     epoll.cpp \
     err.cpp \
     fd_signaler.cpp \
+    forwarder.cpp \
     fq.cpp \
     io_object.cpp \
     io_thread.cpp \
@@ -146,11 +150,13 @@ libzmq_la_SOURCES = app_thread.hpp \
     pipe.cpp \
     poll.cpp \
     pub.cpp \
+    queue.cpp \
     rep.cpp \
     req.cpp \
     select.cpp \
     session.cpp \
     socket_base.cpp \
+    streamer.cpp \
     sub.cpp \
     tcp_connecter.cpp \
     tcp_listener.cpp \

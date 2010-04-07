@@ -112,11 +112,7 @@ int main (int argc, char *argv [])
         n++;
     }
 
-    zmq::message_t msg;
-    while (true) {
-        in_socket.recv (&msg);
-        out_socket.send (msg);
-    }
+    zmq::device (ZMQ_FORWARDER, in_socket, out_socket);
 
     return 0;
 }
