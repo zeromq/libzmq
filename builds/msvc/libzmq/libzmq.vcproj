@@ -202,6 +202,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\forwarder.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\fq.cpp"
 				>
 			</File>
@@ -270,6 +274,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\queue.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\rep.cpp"
 				>
 			</File>
@@ -287,6 +295,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\socket_base.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\streamer.cpp"
 				>
 			</File>
 			<File
@@ -424,6 +436,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\forwarder.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\fq.hpp"
 				>
 			</File>
@@ -528,6 +544,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\queue.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\rep.hpp"
 				>
 			</File>
@@ -553,6 +573,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\stdint.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\streamer.hpp"
 				>
 			</File>
 			<File
