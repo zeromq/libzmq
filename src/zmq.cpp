@@ -77,6 +77,10 @@ const char *zmq_strerror (int errnum_)
         return "Address in use";
     case EADDRNOTAVAIL:
         return "Address not available";
+    case ECONNREFUSED:
+        return "Connection refused";
+    case EINPROGRESS:
+        return "Operation in progress";
 #endif
     case EMTHREAD:
         return "Number of preallocated application threads exceeded";
