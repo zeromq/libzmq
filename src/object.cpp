@@ -79,6 +79,7 @@ void zmq::object_t::process_command (command_t &cmd_)
 
     case command_t::own:
         process_own (cmd_.args.own.object);
+        process_seqnum ();
         break;
 
     case command_t::attach:
@@ -182,6 +183,7 @@ void zmq::object_t::send_plug (owned_t *destination_, bool inc_seqnum_)
 
 void zmq::object_t::send_own (socket_base_t *destination_, owned_t *object_)
 {
+    destination_->inc_seqnum ();
     command_t cmd;
     cmd.destination = destination_;
     cmd.type = command_t::own;
