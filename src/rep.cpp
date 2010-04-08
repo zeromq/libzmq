@@ -93,8 +93,6 @@ void zmq::rep_t::xdetach_inpipe (class reader_t *pipe_)
 
 void zmq::rep_t::xdetach_outpipe (class writer_t *pipe_)
 {
-    zmq_assert (!sending_reply || !more || reply_pipe != pipe_);
-
     zmq_assert (pipe_);
     zmq_assert (in_pipes.size () == out_pipes.size ());
 
@@ -182,19 +180,20 @@ int zmq::rep_t::xsend (zmq_msg_t *msg_, int flags_)
             errno = EAGAIN;
             return -1;
         }
+
+        more = msg_->flags & ZMQ_MSG_MORE;
     }
     else {
 
         //  If the requester have disconnected in the meantime, drop the reply.
+        more = msg_->flags & ZMQ_MSG_MORE;
         zmq_msg_close (msg_);
     }
 
-    //  Check whether it's last part of the reply.
-    more = msg_->flags & ZMQ_MSG_MORE;
-
     //  Flush the reply to the requester.
     if (!more) {
-        reply_pipe->flush ();
+        if (reply_pipe)
+            reply_pipe->flush ();
         sending_reply = false;
         reply_pipe = NULL;
     }
@@ -243,7 +242,10 @@ int zmq::rep_t::xrecv (zmq_msg_t *msg_, int flags_)
 
 bool zmq::rep_t::xhas_in ()
 {
-    if (!sending_reply && more)
+    if (sending_reply)
+        return false;
+
+    if (more)
         return true;
 
     for (int count = active; count != 0; count--) {
@@ -259,7 +261,10 @@ bool zmq::rep_t::xhas_in ()
 
 bool zmq::rep_t::xhas_out ()
 {
-    if (sending_reply && more)
+    if (!sending_reply)
+        return false;
+
+    if (more)
         return true;
 
     //  TODO: No check for write here...
