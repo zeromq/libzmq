@@ -146,13 +146,14 @@ void zmq::pgm_receiver_t::in_event ()
 
         //  Data loss. Delete decoder and mark the peer as disjoint.
         if (received == -1) {
-            zmq_assert (it != peers.end ());
-            it->second.joined = false;
-            if (it->second.decoder == mru_decoder)
-                mru_decoder = NULL;
-            if (it->second.decoder != NULL) {
-                delete it->second.decoder;
-                it->second.decoder = NULL;
+            if (it != peers.end ()) {
+                it->second.joined = false;
+                if (it->second.decoder == mru_decoder)
+                    mru_decoder = NULL;
+                if (it->second.decoder != NULL) {
+                    delete it->second.decoder;
+                    it->second.decoder = NULL;
+                }
             }
             break;
         }
