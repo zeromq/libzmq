@@ -73,28 +73,23 @@ on_mingw32="no"
 # Host speciffic checks
 AC_CANONICAL_HOST
 
-# Determine whether or not documentation should be built.
-build_doc="no"
+# Determine whether or not documentation should be built and installed.
+build_doc="yes"
 install_man="yes"
-if test -d ".git"; then
-# We are building from git.
 # Check for asciidoc and xmlto and don't build the docs if these are not installed.
-    AC_CHECK_PROG(have_asciidoc, asciidoc, yes, no)
-    AC_CHECK_PROG(have_xmlto, xmlto, yes, no)
-    if test "x$have_asciidoc" = "xno" -o "x$have_xmlto" = "xno"; then
-        build_doc="no"
+AC_CHECK_PROG(have_asciidoc, asciidoc, yes, no)
+AC_CHECK_PROG(have_xmlto, xmlto, yes, no)
+if test "x$have_asciidoc" = "xno" -o "x$have_xmlto" = "xno"; then
+    build_doc="no"
+    # Tarballs built with 'make dist' ship with prebuilt documentation.
+    if ! test -f doc/zmq.7; then
         install_man="no"
-        AC_MSG_WARN([You are building from git and asciidoc or xmlto is not installed. Documentation will not be built or installed.])
-    else
-        build_doc="yes"
+        AC_MSG_WARN([You are building an unreleased version of 0MQ and asciidoc or xmlto are not installed. Documentation will not be built and manual pages will not be installed.])
     fi
 fi
 AC_MSG_CHECKING([whether to build documentation])
 AC_MSG_RESULT([$build_doc])
 AC_MSG_CHECKING([whether to install manpages])
-if test "x$build_doc" = "xno" -a "x$install_man" = "xyes" -a ! -f "./doc/zmq.7"; then
-    AC_MSG_ERROR([configure thinks we want to install manpages but they're not present. Help!])
-fi
 AC_MSG_RESULT([$install_man])
 
 # Set some default features required by 0MQ code.
