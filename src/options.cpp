@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <string.h>
+
 #include "../include/zmq.h"
 
 #include "options.hpp"
@@ -68,11 +70,11 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         return 0;
 
     case ZMQ_AFFINITY:
-        if (optvallen_ != sizeof (int64_t)) {
+        if (optvallen_ != sizeof (uint64_t)) {
             errno = EINVAL;
             return -1;
         }
-        affinity = (uint64_t) *((int64_t*) optval_);
+        affinity = *((uint64_t*) optval_);
         return 0;
 
     case ZMQ_IDENTITY:
@@ -133,6 +135,106 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             return -1;
         }
         rcvbuf = *((uint64_t*) optval_);
+        return 0;
+    }
+
+    errno = EINVAL;
+    return -1;
+}
+
+int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
+{
+    switch (option_) {
+
+    case ZMQ_HWM:
+        if (*optvallen_ < sizeof (uint64_t)) {
+            errno = EINVAL;
+            return -1;
+        }
+        *((uint64_t*) optval_) = hwm;
+        *optvallen_ = sizeof (uint64_t);
+        return 0;
+
+    case ZMQ_LWM:
+        if (*optvallen_ < sizeof (uint64_t)) {
+            errno = EINVAL;
+            return -1;
+        }
+        *((uint64_t*) optval_) = lwm;
+        *optvallen_ = sizeof (uint64_t);
+        return 0;
+
+    case ZMQ_SWAP:
+        if (*optvallen_ < sizeof (int64_t)) {
+            errno = EINVAL;
+            return -1;
+        }
+        *((int64_t*) optval_) = swap;
+        *optvallen_ = sizeof (int64_t);
+        return 0;
+
+    case ZMQ_AFFINITY:
+        if (*optvallen_ < sizeof (uint64_t)) {
+            errno = EINVAL;
+            return -1;
+        }
+        *((uint64_t*) optval_) = affinity;
+        *optvallen_ = sizeof (uint64_t);
+        return 0;
+
+    case ZMQ_IDENTITY:
+        if (*optvallen_ < identity.size ()) {
+            errno = EINVAL;
+            return -1;
+        }
+        memcpy (optval_, identity.data (), identity.size ());
+        *optvallen_ = identity.size ();
+        return 0;
+
+
+    case ZMQ_RATE:
+        if (*optvallen_ < sizeof (int64_t)) {
+            errno = EINVAL;
+            return -1;
+        }
+        *((int64_t*) optval_) = rate;
+        *optvallen_ = sizeof (int64_t);
+        return 0;
+        
+    case ZMQ_RECOVERY_IVL:
+        if (*optvallen_ < sizeof (int64_t)) {
+            errno = EINVAL;
+            return -1;
+        }
+        *((int64_t*) optval_) = recovery_ivl;
+        *optvallen_ = sizeof (int64_t);
+        return 0;
+
+    case ZMQ_MCAST_LOOP:
+        if (*optvallen_ < sizeof (int64_t)) {
+            errno = EINVAL;
+            return -1;
+        }
+        *((int64_t*) optval_) = use_multicast_loop ? 1 : 0;
+        *optvallen_ = sizeof (int64_t);
+        return 0;
+
+    case ZMQ_SNDBUF:
+        if (*optvallen_ < sizeof (uint64_t)) {
+            errno = EINVAL;
+            return -1;
+        }
+        *((uint64_t*) optval_) = sndbuf;
+        *optvallen_ = sizeof (uint64_t);
+        return 0;
+
+    case ZMQ_RCVBUF:
+        if (*optvallen_ < sizeof (uint64_t)) {
+            errno = EINVAL;
+            return -1;
+        }
+        *((uint64_t*) optval_) = rcvbuf;
+        *optvallen_ = sizeof (uint64_t);
         return 0;
     }
 

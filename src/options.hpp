@@ -32,6 +32,7 @@ namespace zmq
         options_t ();
 
         int setsockopt (int option_, const void *optval_, size_t optvallen_);
+        int getsockopt (int option_, void *optval_, size_t *optvallen_);
 
         uint64_t hwm;
         uint64_t lwm;

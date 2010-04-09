@@ -47,8 +47,8 @@ namespace zmq
         socket_base_t (class app_thread_t *parent_);
 
         //  Interface for communication with the API layer.
-        int setsockopt (int option_, const void *optval_,
-            size_t optvallen_);
+        int setsockopt (int option_, const void *optval_, size_t optvallen_);
+        int getsockopt (int option_, void *optval_, size_t *optvallen_);
         int bind (const char *addr_);
         int connect (const char *addr_);
         int send (zmq_msg_t *msg_, int flags_);

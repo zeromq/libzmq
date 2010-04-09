@@ -305,6 +305,12 @@ int zmq_setsockopt (void *s_, int option_, const void *optval_,
         optvallen_));
 }
 
+int zmq_getsockopt (void *s_, int option_, void *optval_, size_t *optvallen_)
+{
+    return (((zmq::socket_base_t*) s_)->getsockopt (option_, optval_,
+        optvallen_));
+}
+
 int zmq_bind (void *s_, const char *addr_)
 {
     return (((zmq::socket_base_t*) s_)->bind (addr_));

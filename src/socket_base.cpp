@@ -67,6 +67,13 @@ int zmq::socket_base_t::setsockopt (int option_, const void *optval_,
     return options.setsockopt (option_, optval_, optvallen_);
 }
 
+int zmq::socket_base_t::getsockopt (int option_, void *optval_,
+    size_t *optvallen_)
+{
+    //  At the moment there are no socket-type-specific overloads of getsockopt.    
+    return options.getsockopt (option_, optval_, optvallen_);
+}
+
 int zmq::socket_base_t::bind (const char *addr_)
 {
     //  Parse addr_ string.
