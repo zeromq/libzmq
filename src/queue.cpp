@@ -94,5 +94,7 @@ int zmq::queue (class socket_base_t *insocket_,
             has_response = false;
         }
     }
+
+    return 0;
 }
 

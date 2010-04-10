@@ -33,4 +33,6 @@ int zmq::streamer (socket_base_t *insocket_, socket_base_t *outsocket_)
         insocket_->recv (&msg, 0);
         outsocket_->send (&msg, 0);
     }
+
+    return 0;
 }
