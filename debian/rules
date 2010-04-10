@@ -20,12 +20,6 @@ configure: configure-stamp
 configure-stamp:
 	dh_testdir
 
-	# hack: check that we're building from dsfg-free orig tarball
-	if tar tzf foreign/openpgm/libpgm-*.tar.gz | grep -q rfc3208.txt;then \
-	    echo "Remove RFC documents from orig tar."; \
-	    exit 1; \
-	fi
-
 	./configure $(CROSS) \
 	    --prefix=/usr \
 	    $(pgm_opt) \
