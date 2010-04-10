@@ -365,14 +365,14 @@ fi
 # -Wall, -Werror and -pedantic are GNU compiler specific.
 # Also, these break OpenPGM so don't specify them if we are building with it.
 if test "x$gnu_compilers" = "xyes" -a "x$pgm_ext" = "xno"; then
-    LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Wall"
+    CPPFLAGS="-Wall $CPPFLAGS"
 
     if test "x$pedantic" = "xyes"; then
-	LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -pedantic"
+	CPPFLAGS="-pedantic $CPPFLAGS"
     fi
 
     if test "x$werror" = "xyes"; then
-	LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Werror"
+	CPPFLAGS="-Werror $CPPFLAGS"
     fi
 fi
 
