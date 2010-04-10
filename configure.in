@@ -38,17 +38,25 @@ LTVER="0:0:0"
 AC_SUBST(LTVER)
 
 # Checks for programs.
-AM_PROG_CC_C_O
+AC_PROG_CC
 AC_PROG_CXX
+AM_PROG_CC_C_O
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
 AC_PROG_SED
 AC_PROG_AWK
 
+# Set a helper variable to indicate GNU C and C++ are in use
+if test "x$GCC" = "xyes" -a "x$GXX" = "xyes"; then
+    gnu_compilers="yes"
+else
+    gnu_compilers="no"
+fi
+
 # Checks for libraries.
 AC_CHECK_LIB([pthread], [pthread_create])
-# If using GNU C++, libstdc++ must be available.
-if test "x$GXX" = "xyes"; then
+# If using GNU C/C++ and static linking, libstdc++ must be available.
+if test "x$gnu_compilers" = "xyes" -a "x$enable_shared" = "xno"; then
     # libstdc++ depends on libm on some platforms
     AC_CHECK_LIB([m], [main])
     AC_CHECK_LIB([stdc++], [main], ,
@@ -106,7 +114,7 @@ case "${host_os}" in
         ;;
     *solaris*)
         # Define on Solaris to enable all library features
-        CPPFLAGS="-D_POSIX_C_SOURCE=200112L -D_PTHREADS $CPPFLAGS"
+        CPPFLAGS="-D_PTHREADS $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_SOLARIS, 1, [Have Solaris OS])
         AC_CHECK_LIB(socket, main)
         AC_CHECK_LIB(nsl, main)
@@ -214,7 +222,9 @@ esac
 # CPU-specific optimizations
 case "${host_cpu}" in
     *sparc*)
-        CPPFLAGS="$CPPFLAGS -mcpu=v9"
+        if test "x$gnu_compilers" = "xyes"; then
+            CPPFLAGS="$CPPFLAGS -mcpu=v9"
+        fi
     ;;
     *)
     ;;
@@ -359,14 +369,18 @@ if test "x$with_pgm_ext" != "xno"; then
     pgm_ext="yes"
 fi
 
-# If not on QNX nor OSX nor PGM add -pedantic into LIBZMQ_EXTRA_CXXFLAGS.
-if test "x$pedantic" = "xyes" -a "x$pgm_ext" = "xno"; then
-    LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -pedantic"
-fi
+# -Wall, -Werror and -pedantic are GNU compiler specific.
+# Also, these break OpenPGM so don't specify them if we are building with it.
+if test "x$gnu_compilers" = "xyes" -a "x$pgm_ext" = "xno"; then
+    LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Wall"
 
-# If not on QNX nor PGM add -Werror into LIBZMQ_EXTRA_CXXFLAGS.
-if test "x$werror" = "xyes" -a "x$pgm_ext" = "xno"; then
-    LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Werror"
+    if test "x$pedantic" = "xyes"; then
+	LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -pedantic"
+    fi
+
+    if test "x$werror" = "xyes"; then
+	LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Werror"
+    fi
 fi
 
 AM_CONDITIONAL(BUILD_PGM, test "x$pgm_ext" = "xyes")
