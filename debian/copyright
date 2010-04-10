@@ -1,18 +1,105 @@
-This package was debianized by Peter Busser <peter@mirabilix.nl> on
-Tue, 15 Dec 2009 16:11:38 +0100.
+This package was debianized by
+    Adrian von Bidder <cmot@debian.org>
+    based on earlier work by Peter Busser <peter@mirabilix.nl>
 
-It was downloaded from http://www.zeromq.org/
+    The packaging scripts are ©2009-2010 by these authors and are distributed
+    under the same terms as the zeromq library (LGPL 2 or later.)
 
-Upstream Author(s): iMatix Corporation
 
-Copyright:
-  Copyright (C) 2007-2010 by iMatix Corporation
+Licensing information for 0MQ
+-----------------------------
+
+Project homepage, with original source code:
+    http://www.zeromq.org/
+
+Copyright and Upstream Authors:
+
+    Copyright © 2007-2010 iMatix Corporation
 
 License:
 
-The Debian packaging is (C) 2009, Peter Busser <peter@bigboy.mirabilix.nl>
+    This package is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2 of the License, or (at your option) any later version.
 
-It is licensed under the LGPL3, see `/usr/share/common-licenses/GPL-3' and
-`/usr/share/common-licenses/LGPL-3'.
+    This package is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
 
+    You should have received a copy of the GNU Lesser General Public
+    License along with this package; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+
+On Debian systems, the complete text of the GNU Lesser General
+Public License can be found in `/usr/share/common-licenses/LGPL'.
+
+iMatrix also offers commercial licenses for 0MQ.
+
+
+Licensing information for the included OpenPGM library
+------------------------------------------------------
+
+Project homepage, with original source code:
+    http://code.google.com/p/openpgm/
+
+Copyright and Upstream Authors:
+    Copyright © 2006-2010 Miru Limited.
+    Copyright © 1995, 1996, 2001, 2003 Free Software Foundation, Inc.
+    Copyright © 2002, 2003 Andi Kleen, SuSE Labs.
+
+License:
+    Most of OpenPGM is licensed under the terms of the GNU Lesser Public
+    License, the LGPL, see the file COPYING for details.
+
+    The ultra-high performance partial checksum & folding routines that are
+    taken from the Linux kernel and licensed under the terms of the GNU General
+    Public License, the GPL, see the file COPYING.GPL for details.
+
+    Hence you should treat the libraries libpgm, libpgmsnmp, and libpgmhttp of
+    OpenPGM as being LGPL licensed and the library libpgmplus as being GPL
+    licensed.
+
+(Packager's note: "GPL" in the context of the Linux kernel means GPL 2.  0MQ
+doesn't use those files during build or runtime, so it is not relevant for the
+license of zeromq itself.))
+
+Commercial licenses are also offered.
+
+On Debian systems, the complete text of the GNU Lesser General
+Public License can be found in `/usr/share/common-licenses/LGPL'.
+
+On Debian systems, the complete text of the GNU General Public
+License can be found in `/usr/share/common-licenses/GPL-2'.
+
+
+
+Licensing information for the included XMLParser library
+--------------------------------------------------------
+
+From xmlParser.hpp:
+
+ Copyright (c) 2002, Frank Vanden Berghen
+ All rights reserved.
+
+ The following license terms apply to projects that are in some way related to
+ the "ZeroMQ project", including applications
+ using "ZeroMQ project" and tools developed
+ for enhancing "ZeroMQ project". All other projects
+ (not related to "ZeroMQ project") have to use this
+ code under the Aladdin Free Public License (AFPL)
+ See the file "AFPL-license.txt" for more informations about the AFPL license.
+ (see http://www.artifex.com/downloads/doc/Public.htm for detailed AFPL terms)
+
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+     * Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
+     * Redistributions in binary form must reproduce the above copyright
+       notice, this list of conditions and the following disclaimer in the
+       documentation and/or other materials provided with the distribution.
+     * Neither the name of Frank Vanden Berghen nor the
+       names of its contributors may be used to endorse or promote products
+       derived from this software without specific prior written permission.
 

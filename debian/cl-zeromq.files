@@ -1,7 +1,0 @@
-usr/share/common-lisp/source/meta.lisp
-usr/share/common-lisp/source/package.lisp
-usr/share/common-lisp/source/zeromq-api.lisp
-usr/share/common-lisp/source/zeromq.asd
-usr/share/common-lisp/source/zeromq.lisp
-usr/share/common-lisp/systems/zeromq.asd
-usr/share/man/man7/zmq_cl.7

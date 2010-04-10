@@ -1,0 +1,3 @@
+usr/bin/zmq_forwarder
+usr/bin/zmq_queue
+usr/bin/zmq_streamer

@@ -1,0 +1,5 @@
+* use external openpgm instead of included one
+  -> openpgm doesn't include obvious build instruction and I don't really know
+     scons or cmake.  Postponed for now.
+* use external XmlParser instead of included one
+  -> Not sure, only makes sense if it is used somewhere else.

@@ -1,6 +1,0 @@
-usr/bin/zmq_forwarder
-usr/bin/zmq_queue
-usr/bin/zmq_streamer
-usr/share/man/man1/zmq_forwarder.1
-usr/share/man/man1/zmq_queue.1
-usr/share/man/man1/zmq_streamer.1

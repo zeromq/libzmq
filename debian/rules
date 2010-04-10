@@ -1,130 +1,81 @@
 #!/usr/bin/make -f
-# -*- makefile -*-
-# Sample debian/rules that uses debhelper.
-# This file was originally written by Joey Hess and Craig Small.
-# As a special exception, when this file is copied by dh-make into a
-# dh-make output file, you may use that output file without restriction.
-# This special exception was added by Craig Small in version 0.37 of dh-make.
 
-# Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
+DEB_HOST_ARCH := $(shell dpkg-architecture -qDEB_HOST_ARCH)
 
+ifneq (,$(filter $(DEB_HOST_ARCH),i386 amd64))
+    pgm_opt := --with-pgm
+else
+    pgm_opt :=
+endif
 
+ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+    NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+    MAKEFLAGS += -j$(NUMJOBS)
+endif
 
-
-
-# shared library versions, option 1
-version=0.0.0
-major=0
-
-# option 2, assuming the library is created as src/.libs/libfoo.so.2.0.5 or so
-#version=`ls src/.libs/lib*.so.* | \
-# awk '{if (match($$0,/[0-9]+\.[0-9]+\.[0-9]+$$/)) print substr($$0,RSTART)}'`
-#major=`ls src/.libs/lib*.so.* | \
-# awk '{if (match($$0,/\.so\.[0-9]+$$/)) print substr($$0,RSTART+4)}'`
-
-
-pkg           := cl-zeromq
-debpkg        := cl-zeromq
-clc-source    := usr/share/common-lisp/source
-clc-systems   := usr/share/common-lisp/systems
-clc-cl-zeromq := $(clc-source)/$(pkg)
-
-rubydir := /usr/lib/ruby/1.8/$(shell dpkg-architecture -qDEB_BUILD_GNU_CPU)-$(shell dpkg-architecture -qDEB_BUILD_ARCH_OS)
 
 configure: configure-stamp
 configure-stamp:
 	dh_testdir
-	# Add here commands to configure the package.
 
-	./autogen.sh
-
-ifneq "$(wildcard /usr/share/misc/config.sub)" ""
-	cp -f /usr/share/misc/config.sub config.sub
-endif
-ifneq "$(wildcard /usr/share/misc/config.guess)" ""
-	cp -f /usr/share/misc/config.guess config.guess
-endif
+	# hack: check that we're building from dsfg-free orig tarball
+	if tar tzf foreign/openpgm/libpgm-*.tar.gz | grep -q rfc3208.txt;then \
+	    echo "Remove RFC documents from orig tar."; \
+	    exit 1; \
+	fi
 
 	./configure $(CROSS) \
-		--prefix=/usr \
-		--with-c \
-		--with-cpp \
-		--with-pgm \
-		--with-pgm-examples \
-		--with-forwarder \
-		--with-streamer \
-		--with-queue \
-		--with-perf \
-		--with-chat \
-		--mandir=\$${prefix}/share/man \
-		--infodir=\$${prefix}/share/info \
-		CFLAGS="$(CFLAGS)" \
-		LDFLAGS="-Wl,-z,defs"
+	    --prefix=/usr \
+	    $(pgm_opt) \
+	    CFLAGS="$(CFLAGS)" \
+	    LDFLAGS="-Wl,--as-needed -Wl,-z,defs" \
 
 	touch configure-stamp
 
-
 build: build-stamp
-build-stamp: configure-stamp  
+
+build-stamp: configure-stamp
 	dh_testdir
 
-	# Add here commands to compile the package.
-	$(MAKE)
+	$(MAKE) $(MAKEFLAGS)
 
 	touch $@
 
-clean: 
+clean:
 	dh_testdir
 	dh_testroot
 	rm -f build-stamp configure-stamp
 
-	# Add here commands to clean up after the build process.
-#	$(MAKE) clean
+	if [ -e Makefile ]; then make distclean; fi
+	rm -rf foreign/openpgm/libpgm-2.0.20rc5 config.log
 
-	dh_clean 
+	dh_clean
 
 install: build
 	dh_testdir
 	dh_testroot
-	dh_clean -k 
+	dh_prep
 	dh_installdirs
 
-	# Add here commands to install the package into debian/tmp
 	$(MAKE) DESTDIR=$(CURDIR)/debian/tmp install
 
 
-# Build architecture-independent files here.
-
 binary-indep: build install
-# We have nothing to do by default.
 
-# Build architecture-dependent files here.
 binary-arch: build install
 	dh_testdir
 	dh_testroot
-	dh_installchangelogs ChangeLog
-	dh_installdocs
-	dh_installexamples
-#	dh_install --fail-missing
-	dh_install --list-missing
-#	dh_installmenu
-#	dh_installdebconf	
-#	dh_installlogrotate
-#	dh_installemacsen
-#	dh_installpam
-#	dh_installmime
-#	dh_installinit
-#	dh_installcron
-#	dh_installinfo
+	dh_install -X/usr/share/man --fail-missing
 	dh_installman
+	dh_installchangelogs
+	dh_installdocs
+	dh_lintian
 	dh_link
-	dh_strip
+	dh_strip --dbg-package=libzmq-dbg
 	dh_compress
 	dh_fixperms
-#	dh_perl
-#	dh_python
 	dh_makeshlibs
 	dh_installdeb
 	dh_shlibdeps
@@ -134,3 +85,14 @@ binary-arch: build install
 
 binary: binary-indep binary-arch
 .PHONY: build clean binary-indep binary-arch binary install configure
+
+# vim: set filetype=make
+
+
+# build depends:
+#  - python[-all]-dev
+#  - ruby-dev
+#    -> figure out ruby-headersdir option automatically
+#  - openjdk-6-jdk (or whatever)
+#    -> set JAVA_HOME automatically
+#  - libglib2.0-dev

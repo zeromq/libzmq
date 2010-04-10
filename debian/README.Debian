@@ -1,6 +1,4 @@
-zeromq for Debian
------------------
-
-<possible notes regarding this package - if none, delete this file>
-
- -- Peter Busser <peter@bigboy.mirabilix.nl>  Tue, 15 Dec 2009 16:11:38 +0100
+As of version 2.0.6, the zeromq source tarball only includes the C/C++ library;
+the other language bindings (available are at least: Java, Ruby, Python,
+Haskell, Common Lisp) are shipped separately.  To my knowledge, Debian packages
+are not available.

@@ -1,0 +1,3 @@
+debian/tmp/usr/share/man/man1/zmq_forwarder.1
+debian/tmp/usr/share/man/man1/zmq_queue.1
+debian/tmp/usr/share/man/man1/zmq_streamer.1

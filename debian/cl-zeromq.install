@@ -1,6 +1,0 @@
-bindings/cl/meta.lisp usr/share/common-lisp/source/
-bindings/cl/package.lisp usr/share/common-lisp/source/
-bindings/cl/zeromq-api.lisp usr/share/common-lisp/source/
-bindings/cl/zeromq.asd usr/share/common-lisp/source/
-bindings/cl/zeromq.lisp usr/share/common-lisp/source/
-usr/share/man/man7/zmq_cl.7 usr/share/man/man7/
