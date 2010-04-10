@@ -20,12 +20,13 @@
 #include "../include/zmq.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 int main (int argc, char *argv [])
 {
-    const char *bind_to;
-    int message_count;
-    int message_size;
+    const char *connect_to;
+    int roundtrip_count;
+    size_t message_size;
     void *ctx;
     void *s;
     int rc;
@@ -33,63 +34,50 @@ int main (int argc, char *argv [])
     zmq_msg_t msg;
     void *watch;
     unsigned long elapsed;
-    unsigned long throughput;
-    double megabits;
+    double latency;
 
     if (argc != 4) {
-        printf ("usage: local_thr <bind-to> <message-size> <message-count>\n");
+        printf ("usage: remote_lat <connect-to> <message-size> "
+            "<roundtrip-count>\n");
         return 1;
     }
-    bind_to = argv [1];
+    connect_to = argv [1];
     message_size = atoi (argv [2]);
-    message_count = atoi (argv [3]);
+    roundtrip_count = atoi (argv [3]);
 
     ctx = zmq_init (1, 1, 0);
     if (!ctx) {
-        printf ("error in zmq_send: %s\n", zmq_strerror (errno));
+        printf ("error in zmq_init: %s\n", zmq_strerror (errno));
         return -1;
     }
 
-    s = zmq_socket (ctx, ZMQ_SUB);
+    s = zmq_socket (ctx, ZMQ_REQ);
     if (!s) {
         printf ("error in zmq_socket: %s\n", zmq_strerror (errno));
         return -1;
     }
 
-    rc = zmq_setsockopt (s, ZMQ_SUBSCRIBE , "", 0);
+    rc = zmq_connect (s, connect_to);
     if (rc != 0) {
-        printf ("error in zmq_setsockopt: %s\n", zmq_strerror (errno));
+        printf ("error in zmq_connect: %s\n", zmq_strerror (errno));
         return -1;
     }
 
-    //  Add your socket options here.
-    //  For example ZMQ_RATE, ZMQ_RECOVERY_IVL and ZMQ_MCAST_LOOP for PGM.
-
-    rc = zmq_bind (s, bind_to);
+    rc = zmq_msg_init_size (&msg, message_size);
     if (rc != 0) {
-        printf ("error in zmq_bind: %s\n", zmq_strerror (errno));
+        printf ("error in zmq_msg_init_size: %s\n", zmq_strerror (errno));
         return -1;
     }
-
-    rc = zmq_msg_init (&msg);
-    if (rc != 0) {
-        printf ("error in zmq_msg_init: %s\n", zmq_strerror (errno));
-        return -1;
-    }
-
-    rc = zmq_recv (s, &msg, 0);
-    if (rc != 0) {
-        printf ("error in zmq_recv: %s\n", zmq_strerror (errno));
-        return -1;
-    }
-    if (zmq_msg_size (&msg) != message_size) {
-        printf ("message of incorrect size received\n");
-        return -1;
-    }
+    memset (zmq_msg_data (&msg), 0, message_size);
 
     watch = zmq_stopwatch_start ();
 
-    for (i = 0; i != message_count - 1; i++) {
+    for (i = 0; i != roundtrip_count; i++) {
+        rc = zmq_send (s, &msg, 0);
+        if (rc != 0) {
+            printf ("error in zmq_send: %s\n", zmq_strerror (errno));
+            return -1;
+        }
         rc = zmq_recv (s, &msg, 0);
         if (rc != 0) {
             printf ("error in zmq_recv: %s\n", zmq_strerror (errno));
@@ -102,8 +90,6 @@ int main (int argc, char *argv [])
     }
 
     elapsed = zmq_stopwatch_stop (watch);
-    if (elapsed == 0)
-        elapsed = 1;
 
     rc = zmq_msg_close (&msg);
     if (rc != 0) {
@@ -111,14 +97,11 @@ int main (int argc, char *argv [])
         return -1;
     }
 
-    throughput = (unsigned long)
-        ((double) message_count / (double) elapsed * 1000000);
-    megabits = (double) (throughput * message_size * 8) / 1000000;
+    latency = (double) elapsed / (roundtrip_count * 2);
 
     printf ("message size: %d [B]\n", (int) message_size);
-    printf ("message count: %d\n", (int) message_count);
-    printf ("mean throughput: %d [msg/s]\n", (int) throughput);
-    printf ("mean throughput: %.3f [Mb/s]\n", (double) megabits);
+    printf ("roundtrip count: %d\n", (int) roundtrip_count);
+    printf ("average latency: %.3f [us]\n", (double) latency);
 
     rc = zmq_close (s);
     if (rc != 0) {

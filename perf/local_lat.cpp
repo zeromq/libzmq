@@ -25,7 +25,7 @@ int main (int argc, char *argv [])
 {
     const char *bind_to;
     int roundtrip_count;
-    int message_size;
+    size_t message_size;
     void *ctx;
     void *s;
     int rc;
