@@ -30,7 +30,7 @@ extern "C" {
 #include "winsock2.h"
 #endif
 
-//  Microsoft Visual Studio uses non-standard way to export/import symbols.
+/*  Microsoft Visual Studio uses non-standard way to export/import symbols.   */
 #if defined ZMQ_BUILDING_LIBZMQ_WITH_MSVC
 #define ZMQ_EXPORT __declspec(dllexport)
 #elif defined _MSC_VER
@@ -39,21 +39,21 @@ extern "C" {
 #define ZMQ_EXPORT
 #endif
 
-////////////////////////////////////////////////////////////////////////////////
-//  0MQ versioning supprt.
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
+/*  0MQ versioning supprt.                                                    */
+/******************************************************************************/
 
 ZMQ_EXPORT void zmq_version (int *major, int *minor, int *patch);
 
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 //  0MQ errors.
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
 
-//  A number random anough not to collide with different errno ranges on
-//  different OSes. The assumption is that error_t is at least 32-bit type.
+/*  A number random anough not to collide with different errno ranges on      */
+/*  different OSes. The assumption is that error_t is at least 32-bit type.   */
 #define ZMQ_HAUSNUMERO 156384712
 
-//  On Windows platform some of the standard POSIX errnos are not defined.
+/*  On Windows platform some of the standard POSIX errnos are not defined.    */
 #ifndef ENOTSUP
 #define ENOTSUP (ZMQ_HAUSNUMERO + 1)
 #endif
@@ -79,38 +79,44 @@ ZMQ_EXPORT void zmq_version (int *major, int *minor, int *patch);
 #define EINPROGRESS (ZMQ_HAUSNUMERO + 8)
 #endif
 
-//  Native 0MQ error codes.
+/*  Native 0MQ error codes.                                                   */
 #define EMTHREAD (ZMQ_HAUSNUMERO + 50)
 #define EFSM (ZMQ_HAUSNUMERO + 51)
 #define ENOCOMPATPROTO (ZMQ_HAUSNUMERO + 52)
 
-//  Resolves system errors and 0MQ errors to human-readable string.
+/*  This function retrieves the errno as it is known to 0MQ library. The goal */
+/*  of this function is to make the code 100% portable, including where 0MQ   */
+/*  compiled with certain CRT library (on Windows) is linked to an            */
+/*  application that uses different CRT library.                              */
+ZMQ_EXPORT int zmq_errno ();
+
+/*  Resolves system errors and 0MQ errors to human-readable string.           */
 ZMQ_EXPORT const char *zmq_strerror (int errnum);
 
-////////////////////////////////////////////////////////////////////////////////
-//  0MQ message definition.
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
+/*  0MQ message definition.                                                   */
+/******************************************************************************/
 
-//  Maximal size of "Very Small Message". VSMs are passed by value
-//  to avoid excessive memory allocation/deallocation.
-//  If VMSs larger than 255 bytes are required, type of 'vsm_size'
-//  field in zmq_msg_t structure should be modified accordingly.
+/*  Maximal size of "Very Small Message". VSMs are passed by value            */
+/*  to avoid excessive memory allocation/deallocation.                        */
+/*  If VMSs larger than 255 bytes are required, type of 'vsm_size'            */
+/*  field in zmq_msg_t structure should be modified accordingly.              */
 #define ZMQ_MAX_VSM_SIZE 30
 
-//  Message types. These integers may be stored in 'content' member of the
-//  message instead of regular pointer to the data.
+/*  Message types. These integers may be stored in 'content' member of the    */
+/*  message instead of regular pointer to the data.                           */
 #define ZMQ_DELIMITER 31
 #define ZMQ_VSM 32
 
-//  Message flags. ZMQ_MSG_SHARED is strictly speaking not a message flag
-//  (it has no equivalent in the wire format), however, making  it a flag
-//  allows us to pack the stucture tigher and thus improve performance.
+/*  Message flags. ZMQ_MSG_SHARED is strictly speaking not a message flag     */
+/*  (it has no equivalent in the wire format), however, making  it a flag     */
+/*  allows us to pack the stucture tigher and thus improve performance.       */
 #define ZMQ_MSG_MORE 1
 #define ZMQ_MSG_SHARED 128
 
-//  A message. Note that 'content' is not a pointer to the raw data.
-//  Rather it is pointer to zmq::msg_content_t structure
-//  (see src/msg_content.hpp for its definition).
+/*  A message. Note that 'content' is not a pointer to the raw data.          */
+/*  Rather it is pointer to zmq::msg_content_t structure                      */
+/*  (see src/msg_content.hpp for its definition).                             */
 typedef struct
 {
     void *content;
@@ -131,32 +137,20 @@ ZMQ_EXPORT int zmq_msg_copy (zmq_msg_t *dest, zmq_msg_t *src);
 ZMQ_EXPORT void *zmq_msg_data (zmq_msg_t *msg);
 ZMQ_EXPORT size_t zmq_msg_size (zmq_msg_t *msg);
 
-////////////////////////////////////////////////////////////////////////////////
-//  0MQ infrastructure (a.k.a. context) initialisation & termination.
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
+/*  0MQ infrastructure (a.k.a. context) initialisation & termination.         */
+/******************************************************************************/
 
 #define ZMQ_POLL 1
 
 ZMQ_EXPORT void *zmq_init (int app_threads, int io_threads, int flags);
 ZMQ_EXPORT int zmq_term (void *context);
 
-////////////////////////////////////////////////////////////////////////////////
-//  0MQ socket definition.
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
+/*  0MQ socket definition.                                                    */
+/******************************************************************************/
 
-//  Addresses are composed of the name of the protocol to use followed by ://
-//  and a protocol-specific address. Available protocols:
-//
-//  tcp - the address is composed of IP address and port delimited by colon
-//        sign (:). The IP address can be a hostname (with 'connect') or
-//        a network interface name (with 'bind'). Examples "tcp://eth0:5555",
-//        "tcp://192.168.0.1:20000", "tcp://hq.mycompany.com:80".
-//
-//  pgm & udp - both protocols have same address format. It's network interface
-//              to use, semicolon (;), multicast group IP address, colon (:) and
-//              port. Examples: "pgm://eth2;224.0.0.1:8000",
-//              "udp://192.168.0.111;224.1.1.1:5555".
-
+/*  Socket types.                                                             */
 #define ZMQ_P2P 0
 #define ZMQ_PUB 1
 #define ZMQ_SUB 2
@@ -167,6 +161,7 @@ ZMQ_EXPORT int zmq_term (void *context);
 #define ZMQ_UPSTREAM 7
 #define ZMQ_DOWNSTREAM 8
 
+/*  Socket options.                                                           */
 #define ZMQ_HWM 1
 #define ZMQ_LWM 2
 #define ZMQ_SWAP 3
@@ -181,9 +176,10 @@ ZMQ_EXPORT int zmq_term (void *context);
 #define ZMQ_RCVBUF 12
 #define ZMQ_RCVMORE 13
 
+/*  Send/recv options.                                                        */
 #define ZMQ_NOBLOCK 1
 #define ZMQ_SNDMORE 2
-//  Obsolete:
+/*  Obsolete. To be removed in 2.0.7 release.                                 */
 #define ZMQ_MORE 2
 
 ZMQ_EXPORT void *zmq_socket (void *context, int type);
@@ -197,9 +193,9 @@ ZMQ_EXPORT int zmq_connect (void *s, const char *addr);
 ZMQ_EXPORT int zmq_send (void *s, zmq_msg_t *msg, int flags);
 ZMQ_EXPORT int zmq_recv (void *s, zmq_msg_t *msg, int flags);
 
-////////////////////////////////////////////////////////////////////////////////
-//  I/O multiplexing.
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
+/*  I/O multiplexing.                                                         */
+/******************************************************************************/
 
 #define ZMQ_POLLIN 1
 #define ZMQ_POLLOUT 2
@@ -219,19 +215,9 @@ typedef struct
 
 ZMQ_EXPORT int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
 
-////////////////////////////////////////////////////////////////////////////////
-//  Experimental.
-////////////////////////////////////////////////////////////////////////////////
-
-//  This function retrieves the errno as it is known to 0MQ library. The goal
-//  of this function is to make the code 100% portable, including where 0MQ
-//  compiled with certain CRT library (on Windows) is linked to an application
-//  compiled with different CRT library.
-ZMQ_EXPORT int zmq_errno ();
-
-////////////////////////////////////////////////////////////////////////////////
-//  Devices - Experimental
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
+/*  Devices - Experimental.                                                   */
+/******************************************************************************/
 
 #define ZMQ_STREAMER 1
 #define ZMQ_FORWARDER 2
@@ -239,21 +225,21 @@ ZMQ_EXPORT int zmq_errno ();
 
 ZMQ_EXPORT int zmq_device (int device, void * insocket, void* outsocket);
 
-////////////////////////////////////////////////////////////////////////////////
-//  Helper functions.
-////////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
+/*  Helper functions.                                                         */
+/******************************************************************************/
 
-//  Helper functions are used by perf tests so that they don't have to care
-//  about minutiae of time-related functions on different OS platforms.
+/*  Helper functions are used by perf tests so that they don't have to care   */
+/*  about minutiae of time-related functions on different OS platforms.       */
 
-//  Starts the stopwatch. Returns the handle to the watch.
+/*  Starts the stopwatch. Returns the handle to the watch.                    */
 ZMQ_EXPORT void *zmq_stopwatch_start ();
 
-//  Stops the stopwatch. Returns the number of microseconds elapsed since
-//  the stopwatch was started.
+/*  Stops the stopwatch. Returns the number of microseconds elapsed since     */
+/*  the stopwatch was started.                                                */
 ZMQ_EXPORT unsigned long zmq_stopwatch_stop (void *watch_);
 
-//  Sleeps for specified number of seconds.
+/*  Sleeps for specified number of seconds.                                   */
 ZMQ_EXPORT void zmq_sleep (int seconds_);
 
 #ifdef __cplusplus
