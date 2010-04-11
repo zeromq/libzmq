@@ -219,6 +219,14 @@ namespace zmq
                 throw error_t ();
         }
 
+        inline void getsockopt (int option_, void *optval_,
+            size_t *optvallen_)
+        {
+            int rc = zmq_getsockopt (ptr, option_, optval_, optvallen_);
+            if (rc != 0)
+                throw error_t ();
+        }
+
         inline void bind (const char *addr_)
         {
             int rc = zmq_bind (ptr, addr_);
