@@ -62,7 +62,8 @@
 zmq::app_thread_t::app_thread_t (dispatcher_t *dispatcher_, int thread_slot_,
       int flags_) :
     object_t (dispatcher_, thread_slot_),
-    last_processing_time (0)
+    last_processing_time (0),
+    terminated (false)
 {
     if (flags_ & ZMQ_POLL) {
         signaler = new (std::nothrow) fd_signaler_t;
@@ -81,12 +82,17 @@ zmq::app_thread_t::~app_thread_t ()
     delete signaler;
 }
 
+void zmq::app_thread_t::stop ()
+{
+    send_stop ();
+}
+
 zmq::i_signaler *zmq::app_thread_t::get_signaler ()
 {
     return signaler;
 }
 
-void zmq::app_thread_t::process_commands (bool block_, bool throttle_)
+bool zmq::app_thread_t::process_commands (bool block_, bool throttle_)
 {
     uint64_t signals;
     if (block_)
@@ -117,7 +123,7 @@ void zmq::app_thread_t::process_commands (bool block_, bool throttle_)
             //  Check whether certain time have elapsed since last command
             //  processing.
             if (current_time - last_processing_time <= max_command_delay)
-                return;
+                return !terminated;
             last_processing_time = current_time;
         }
 #endif
@@ -138,6 +144,8 @@ void zmq::app_thread_t::process_commands (bool block_, bool throttle_)
             }
         }
     }
+
+    return !terminated;
 }
 
 zmq::socket_base_t *zmq::app_thread_t::create_socket (int type_)
@@ -190,3 +198,14 @@ void zmq::app_thread_t::remove_socket (socket_base_t *socket_)
     if (sockets.empty ())
         dispatcher->no_sockets (this);
 }
+
+void zmq::app_thread_t::process_stop ()
+{
+    terminated = true;
+}
+
+bool zmq::app_thread_t::is_terminated ()
+{
+    return terminated;
+}
+

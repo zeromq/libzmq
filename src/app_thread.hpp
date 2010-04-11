@@ -38,14 +38,19 @@ namespace zmq
 
         ~app_thread_t ();
 
+        //  Interrupt blocking call if the app thread is stuck in one.
+        //  This function is is called from a different thread!
+        void stop ();
+
         //  Returns signaler associated with this application thread.
         struct i_signaler *get_signaler ();
 
         //  Processes commands sent to this thread (if any). If 'block' is
         //  set to true, returns only after at least one command was processed.
         //  If throttle argument is true, commands are processed at most once
-        //  in a predefined time period.
-        void process_commands (bool block_, bool throttle_);
+        //  in a predefined time period. The function returns false is the
+        //  associated context was terminated, true otherwise.
+        bool process_commands (bool block_, bool throttle_);
 
         //  Create a socket of a specified type.
         class socket_base_t *create_socket (int type_);
@@ -53,7 +58,13 @@ namespace zmq
         //  Unregister the socket from the app_thread (called by socket itself).
         void remove_socket (class socket_base_t *socket_);
 
+        //  Returns true is the associated context was already terminated.
+        bool is_terminated ();
+
     private:
+
+        //  Command handlers.
+        void process_stop ();
 
         //  All the sockets created from this application thread.
         typedef yarray_t <socket_base_t> sockets_t;
@@ -64,6 +75,9 @@ namespace zmq
 
         //  Timestamp of when commands were processed the last time.
         uint64_t last_processing_time;
+
+        //  If true, 'stop' command was already received.
+        bool terminated;
 
         app_thread_t (const app_thread_t&);
         void operator = (const app_thread_t&);

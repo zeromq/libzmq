@@ -88,6 +88,8 @@ const char *zmq_strerror (int errnum_)
         return "Operation cannot be accomplished in current state";
     case ENOCOMPATPROTO:
         return "The protocol is not compatible with the socket type";
+    case ETERM:
+        return "Context was terminated";
     default:
 #if defined _MSC_VER
 #pragma warning (push)

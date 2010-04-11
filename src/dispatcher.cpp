@@ -86,12 +86,19 @@ zmq::dispatcher_t::dispatcher_t (int app_threads_, int io_threads_,
 
 int zmq::dispatcher_t::term ()
 {
+    //  First send stop command to application threads so that any
+    //  blocking calls are interrupted.
+    for (app_threads_t::size_type i = 0; i != app_threads.size (); i++)
+        app_threads [i].app_thread->stop ();
+
+    //  Then mark context as terminated.
     term_sync.lock ();
     zmq_assert (!terminated);
     terminated = true;
     bool destroy = (sockets == 0);
     term_sync.unlock ();
     
+    //  If there are no sockets open, destroy the context immediately.
     if (destroy)
         delete this;
 
