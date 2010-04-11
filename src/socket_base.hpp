@@ -141,6 +141,9 @@ namespace zmq
         //  Number of messages received since last command processing.
         int ticks;
 
+        //  If true there's a half-read message in the socket.
+        bool rcvmore;
+
         //  Application thread the socket lives in.
         class app_thread_t *app_thread;
 

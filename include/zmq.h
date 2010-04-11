@@ -179,8 +179,11 @@ ZMQ_EXPORT int zmq_term (void *context);
 #define ZMQ_MCAST_LOOP 10
 #define ZMQ_SNDBUF 11
 #define ZMQ_RCVBUF 12
+#define ZMQ_RCVMORE 13
 
 #define ZMQ_NOBLOCK 1
+#define ZMQ_SNDMORE 2
+//  Obsolete:
 #define ZMQ_MORE 2
 
 ZMQ_EXPORT void *zmq_socket (void *context, int type);
