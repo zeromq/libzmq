@@ -176,7 +176,7 @@ libzmq_la_SOURCES = app_thread.hpp \
     zmq_listener.cpp
 
 if ON_MINGW
-libzmq_la_LDFLAGS = -no-undefined -version-info @LTVER@ @LIBZMQ_EXTRA_LDFLAGS@
+libzmq_la_LDFLAGS = -no-undefined -avoid-version -version-info @LTVER@ @LIBZMQ_EXTRA_LDFLAGS@
 else
 libzmq_la_LDFLAGS = -version-info @LTVER@ @LIBZMQ_EXTRA_LDFLAGS@
 endif
