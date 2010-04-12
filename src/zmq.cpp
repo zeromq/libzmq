@@ -408,7 +408,11 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 
         //  Process 0MQ commands if needed.
         if (nsockets && pollfds [npollfds -1].revents & POLLIN)
-            app_thread->process_commands (false, false);
+            if (!app_thread->process_commands (false, false)) {
+                free (pollfds);
+                errno = ETERM;
+                return -1;
+            }
 
         //  Check for the events.
         int pollfd_pos = 0;
@@ -560,7 +564,10 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 
         //  Process 0MQ commands if needed.
         if (nsockets && FD_ISSET (notify_fd, &inset))
-            app_thread->process_commands (false, false);
+            if (!app_thread->process_commands (false, false)) {
+                errno = ETERM;
+                return -1;
+            }
 
         //  Check for the events.
         for (int i = 0; i != nitems_; i++) {

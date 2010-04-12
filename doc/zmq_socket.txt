@@ -117,9 +117,6 @@ The requested socket 'type' is invalid.
 The number of application threads using sockets within this 'context' has been
 exceeded. See the 'app_threads' parameter of the _zmq_init()_ function.
 
-*ETERM*::
-The associated context was terminted.
-
 
 SEE ALSO
 --------
