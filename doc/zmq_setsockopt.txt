@@ -228,6 +228,9 @@ ERRORS
 The requested option _option_name_ is unknown, or the requested _option_len_ or
 _option_value_ is invalid.
 
+*ETERM*::
+The associated context was terminted.
+
 
 EXAMPLE
 -------

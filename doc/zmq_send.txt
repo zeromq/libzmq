@@ -46,6 +46,8 @@ The _zmq_send()_ operation cannot be performed on this socket at the moment due
 to the socket not being in the appropriate state.  This error may occur with
 socket types that switch between several states, such as ZMQ_REP.  See the
 _messaging patterns_ section of linkzmq:zmq_socket[3] for more information.
+*ETERM*::
+The associated context was terminted.
 
 
 EXAMPLE

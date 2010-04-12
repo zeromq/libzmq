@@ -50,6 +50,8 @@ ERRORS
 The requested 'transport' protocol is not supported.
 *ENOCOMPATPROTO*::
 The requested 'transport' protocol is not compatible with the socket type.
+*ETERM*::
+The associated context was terminted.
 
 
 EXAMPLE

@@ -52,6 +52,8 @@ The requested 'address' is already in use.
 The requested 'address' was not local.
 *ENODEV*::
 The requested 'address' specifies a nonexistent interface.
+*ETERM*::
+The associated context was terminted.
 
 
 EXAMPLE

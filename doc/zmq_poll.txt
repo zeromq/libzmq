@@ -93,10 +93,11 @@ ERRORS
 *EFAULT*::
 At least one of the members of the 'items' array refers to a 'socket' belonging
 to a different application thread.
-
 *ENOTSUP*::
 At least one of the members of the 'items' array refers to a 'socket' whose
 associated 0MQ 'context' was initialised without the 'ZMQ_POLL' flag.
+*ETERM*::
+The associated context was terminted.
 
 
 EXAMPLE
