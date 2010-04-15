@@ -78,7 +78,7 @@ namespace zmq
         inline T *xchg (T *val_)
         {
 #if defined ZMQ_ATOMIC_PTR_WINDOWS
-            return (T*) InterlockedExchangePointer (&ptr, val_);
+            return (T*) InterlockedExchangePointer ((PVOID*) &ptr, val_);
 #elif defined ZMQ_ATOMIC_PTR_SYSTEM
             return (T*) atomic_swap_ptr (&ptr, val_);
 #elif defined ZMQ_ATOMIC_PTR_X86

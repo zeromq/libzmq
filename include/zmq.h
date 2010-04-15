@@ -40,7 +40,7 @@ extern "C" {
 #endif
 
 /******************************************************************************/
-/*  0MQ versioning supprt.                                                    */
+/*  0MQ versioning support.                                                    */
 /******************************************************************************/
 
 ZMQ_EXPORT void zmq_version (int *major, int *minor, int *patch);
