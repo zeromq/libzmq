@@ -260,8 +260,15 @@ AC_CHECK_HEADERS(ifaddrs.h, [AC_DEFINE(ZMQ_HAVE_IFADDRS, 1, [Have ifaddrs.h head
 # Use c++ in subsequent tests
 AC_LANG(C++)
 
-# Optional stuff
-AC_CHECK_PROG(have_pkg_config, pkg-config, yes, no)
+# pkg-config is used if found, and is required for builds with OpenPGM.
+# However, we need to provide a way to disable it entirely when the user
+# knows what she's doing and it's use is undesirable, such as when 
+# cross-compiling.
+AC_ARG_WITH([pkg-config], [AS_HELP_STRING([--without-pkg-config], 
+    [do not use pkg-config [default=no]])])
+if test "x$with_pkg_config" != "xno"; then
+    AC_CHECK_PROG(have_pkg_config, pkg-config, yes, no)
+fi
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
@@ -328,14 +335,16 @@ if test "x$with_pgm_ext" != "xno"; then
     AC_MSG_RESULT([yes])
 
     #  Test if we have pkg-config
-    if test "x$have_pkg_config" != "xyes"; then
-        AC_MSG_ERROR([the --with-pgm option requires that pkg-config be installed.]);
+    if test "x$with_pkg_config" != "xno"; then
+        if test "x$have_pkg_config" != "xyes"; then
+            AC_MSG_ERROR([the --with-pgm option requires that pkg-config be installed.]);
+        fi
+
+        #  Check for OpenPGM dependencies
+        PKG_CHECK_MODULES([GLIB], [glib-2.0 gthread-2.0])
+        LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} ${GLIB_CFLAGS} "
+        LIBZMQ_EXTRA_LDFLAGS="${LIBZMQ_EXTRA_LDFLAGS} ${GLIB_LIBS} "
     fi
-    
-    #  Check for OpenPGM dependencies
-    PKG_CHECK_MODULES([GLIB], [glib-2.0 gthread-2.0])
-    LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} ${GLIB_CFLAGS} "
-    LIBZMQ_EXTRA_LDFLAGS="${LIBZMQ_EXTRA_LDFLAGS} ${GLIB_LIBS} "
     
     #  Gzip, Perl and Python are required duing PGM build
     AC_CHECK_PROG(have_gzip, gzip, yes, no)

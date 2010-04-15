@@ -30,13 +30,15 @@ extern "C" {
 #include "winsock2.h"
 #endif
 
-/*  Microsoft Visual Studio uses non-standard way to export/import symbols.   */
-#if defined ZMQ_BUILDING_LIBZMQ_WITH_MSVC
-#define ZMQ_EXPORT __declspec(dllexport)
-#elif defined _MSC_VER
-#define ZMQ_EXPORT __declspec(dllimport)
+/*  Win32 needs special handling for DLL exports                              */
+#if defined _WIN32
+#   if defined DLL_EXPORT
+#       define ZMQ_EXPORT __declspec(dllexport)
+#   else
+#       define ZMQ_EXPORT __declspec(dllimport)
+#   endif
 #else
-#define ZMQ_EXPORT
+#   define ZMQ_EXPORT
 #endif
 
 /******************************************************************************/

@@ -40,7 +40,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="-DZMQ_BUILDING_LIBZMQ_WITH_MSVC"
+				AdditionalOptions="-DDLL_EXPORT"
 				Optimization="0"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -112,7 +112,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="-DZMQ_BUILDING_LIBZMQ_WITH_MSVC"
+				AdditionalOptions="-DDLL_EXPORT"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				RuntimeLibrary="2"
