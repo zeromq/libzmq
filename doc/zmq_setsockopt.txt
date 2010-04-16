@@ -256,7 +256,7 @@ assert (rc);
 affinity = 2;
 rc = zmq_setsockopt (socket, ZMQ_AFFINITY, &affinity, sizeof affinity);
 assert (rc);
-rc = zmq_bind (socket, "tcp://lo:5555");
+rc = zmq_bind (socket, "tcp://lo:5556");
 assert (rc);
 ----
 
