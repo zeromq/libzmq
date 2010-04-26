@@ -41,7 +41,7 @@
 #include "pipe.hpp"
 #include "config.hpp"
 #include "socket_base.hpp"
-#include "p2p.hpp"
+#include "pair.hpp"
 #include "pub.hpp"
 #include "sub.hpp"
 #include "req.hpp"
@@ -152,8 +152,8 @@ zmq::socket_base_t *zmq::app_thread_t::create_socket (int type_)
 {
     socket_base_t *s = NULL;
     switch (type_) {
-    case ZMQ_P2P:
-        s = new (std::nothrow) p2p_t (this);
+    case ZMQ_PAIR:
+        s = new (std::nothrow) pair_t (this);
         break;
     case ZMQ_PUB:
         s = new (std::nothrow) pub_t (this);

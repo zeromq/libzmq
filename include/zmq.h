@@ -153,7 +153,9 @@ ZMQ_EXPORT int zmq_term (void *context);
 /*  0MQ socket definition.                                                    */
 /******************************************************************************/
 
-/*  Socket types.                                                             */
+/*  Socket types.                                                             */ 
+/*  ZMQ_P2P is obsolete and scheduled to be removed in version 2.0.8          */
+#define ZMQ_PAIR 0
 #define ZMQ_P2P 0
 #define ZMQ_PUB 1
 #define ZMQ_SUB 2

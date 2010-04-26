@@ -19,11 +19,11 @@
 
 #include "../include/zmq.h"
 
-#include "p2p.hpp"
+#include "pair.hpp"
 #include "err.hpp"
 #include "pipe.hpp"
 
-zmq::p2p_t::p2p_t (class app_thread_t *parent_) :
+zmq::pair_t::pair_t (class app_thread_t *parent_) :
     socket_base_t (parent_),
     inpipe (NULL),
     outpipe (NULL),
@@ -33,7 +33,7 @@ zmq::p2p_t::p2p_t (class app_thread_t *parent_) :
     options.requires_out = true;
 }
 
-zmq::p2p_t::~p2p_t ()
+zmq::pair_t::~pair_t ()
 {
     if (inpipe)
         inpipe->term ();
@@ -41,7 +41,7 @@ zmq::p2p_t::~p2p_t ()
         outpipe->term ();
 }
 
-void zmq::p2p_t::xattach_pipes (class reader_t *inpipe_,
+void zmq::pair_t::xattach_pipes (class reader_t *inpipe_,
     class writer_t *outpipe_, const blob_t &peer_identity_)
 {
     zmq_assert (!inpipe && !outpipe);
@@ -50,44 +50,44 @@ void zmq::p2p_t::xattach_pipes (class reader_t *inpipe_,
     outpipe_alive = true;
 }
 
-void zmq::p2p_t::xdetach_inpipe (class reader_t *pipe_)
+void zmq::pair_t::xdetach_inpipe (class reader_t *pipe_)
 {
     zmq_assert (pipe_ == inpipe);
     inpipe = NULL;
 }
 
-void zmq::p2p_t::xdetach_outpipe (class writer_t *pipe_)
+void zmq::pair_t::xdetach_outpipe (class writer_t *pipe_)
 {
     zmq_assert (pipe_ == outpipe);
     outpipe = NULL;
 }
 
-void zmq::p2p_t::xkill (class reader_t *pipe_)
+void zmq::pair_t::xkill (class reader_t *pipe_)
 {
     zmq_assert (alive);
     alive = false;
 }
 
-void zmq::p2p_t::xrevive (class reader_t *pipe_)
+void zmq::pair_t::xrevive (class reader_t *pipe_)
 {
     zmq_assert (!alive);
     alive = true;
 }
 
-void zmq::p2p_t::xrevive (class writer_t *pipe_)
+void zmq::pair_t::xrevive (class writer_t *pipe_)
 {
     zmq_assert (!outpipe_alive);
     outpipe_alive = true;
 }
 
-int zmq::p2p_t::xsetsockopt (int option_, const void *optval_,
+int zmq::pair_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
     errno = EINVAL;
     return -1;
 }
 
-int zmq::p2p_t::xsend (zmq_msg_t *msg_, int flags_)
+int zmq::pair_t::xsend (zmq_msg_t *msg_, int flags_)
 {
     if (outpipe == NULL || !outpipe_alive) {
         errno = EAGAIN;
@@ -109,7 +109,7 @@ int zmq::p2p_t::xsend (zmq_msg_t *msg_, int flags_)
     return 0;
 }
 
-int zmq::p2p_t::xrecv (zmq_msg_t *msg_, int flags_)
+int zmq::pair_t::xrecv (zmq_msg_t *msg_, int flags_)
 {
     //  Deallocate old content of the message.
     zmq_msg_close (msg_);
@@ -121,14 +121,14 @@ int zmq::p2p_t::xrecv (zmq_msg_t *msg_, int flags_)
     return 0;
 }
 
-bool zmq::p2p_t::xhas_in ()
+bool zmq::pair_t::xhas_in ()
 {
     if (alive && inpipe && inpipe->check_read ())
         return true;
     return false;
 }
 
-bool zmq::p2p_t::xhas_out ()
+bool zmq::pair_t::xhas_out ()
 {
     if (outpipe == NULL || !outpipe_alive)
         return false;

@@ -26,12 +26,12 @@ Peer to peer pattern
 ~~~~~~~~~~~~~~~~~~~~
 The simplest messaging pattern, used for communicating between two peers.
 
-Socket type:: 'ZMQ_P2P'
-Compatible peer sockets:: 'ZMQ_P2P'
+Socket type:: 'ZMQ_PAIR'
+Compatible peer sockets:: 'ZMQ_PAIR'
 
-A socket of type 'ZMQ_P2P' can only be connected to a single peer at any one
+A socket of type 'ZMQ_PAIR' can only be connected to a single peer at any one
 time.  No message routing or filtering is performed on messages sent over a
-'ZMQ_P2P' socket.
+'ZMQ_PAIR' socket.
 
 
 Publish-subscribe pattern

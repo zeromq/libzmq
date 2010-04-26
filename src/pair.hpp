@@ -17,20 +17,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_P2P_HPP_INCLUDED__
-#define __ZMQ_P2P_HPP_INCLUDED__
+#ifndef __ZMQ_PAIR_HPP_INCLUDED__
+#define __ZMQ_PAIR_HPP_INCLUDED__
 
 #include "socket_base.hpp"
 
 namespace zmq
 {
 
-    class p2p_t : public socket_base_t
+    class pair_t : public socket_base_t
     {
     public:
 
-        p2p_t (class app_thread_t *parent_);
-        ~p2p_t ();
+        pair_t (class app_thread_t *parent_);
+        ~pair_t ();
 
         //  Overloads of functions from socket_base_t.
         void xattach_pipes (class reader_t *inpipe_, class writer_t *outpipe_,
@@ -54,8 +54,8 @@ namespace zmq
         bool alive;
         bool outpipe_alive;
 
-        p2p_t (const p2p_t&);
-        void operator = (const p2p_t&);
+        pair_t (const pair_t&);
+        void operator = (const pair_t&);
     };
 
 }
