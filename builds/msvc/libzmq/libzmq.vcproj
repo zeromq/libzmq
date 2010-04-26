@@ -242,7 +242,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\p2p.cpp"
+				RelativePath="..\..\..\src\pair.cpp"
 				>
 			</File>
 			<File
@@ -508,7 +508,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\p2p.hpp"
+				RelativePath="..\..\..\src\pair.hpp"
 				>
 			</File>
 			<File
