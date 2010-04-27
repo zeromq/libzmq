@@ -21,14 +21,15 @@
 #define __ZMQ_XREP_HPP_INCLUDED__
 
 #include <map>
+#include <vector>
 
 #include "socket_base.hpp"
 #include "blob.hpp"
-#include "fq.hpp"
 
 namespace zmq
 {
 
+    //  TODO: This class uses O(n) scheduling. Rewrite it to use O(1) algorithm.
     class xrep_t : public socket_base_t
     {
     public:
@@ -52,12 +53,38 @@ namespace zmq
 
     private:
 
-        //  Inbound messages are fair-queued.
-        fq_t fq;
+        struct inpipe_t
+        {
+            class reader_t *reader;
+            blob_t identity;
+            bool active;
+        };
+
+        //  Inbound pipes with the names of corresponging peers.
+        typedef std::vector <inpipe_t> inpipes_t;
+        inpipes_t inpipes;
+
+        //  The pipe we are currently reading from.
+        inpipes_t::size_type current_in;
+
+        //  If true, more incoming message parts are expected.
+        bool more_in;
+
+        struct outpipe_t
+        {
+            class writer_t *writer;
+            bool active;
+        };
 
         //  Outbound pipes indexed by the peer names.
-        typedef std::map <blob_t, class writer_t*> outpipes_t;
+        typedef std::map <blob_t, outpipe_t> outpipes_t;
         outpipes_t outpipes;
+
+        //  The pipe we are currently writing to.
+        class writer_t *current_out;
+
+        //  If true, more outgoing message parts are expected.
+        bool more_out;
 
         xrep_t (const xrep_t&);
         void operator = (const xrep_t&);
