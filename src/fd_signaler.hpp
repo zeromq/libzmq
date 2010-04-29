@@ -21,7 +21,6 @@
 #define __ZMQ_FD_SIGNALER_HPP_INCLUDED__
 
 #include "platform.hpp"
-#include "i_signaler.hpp"
 #include "fd.hpp"
 #include "stdint.hpp"
 
@@ -33,7 +32,7 @@ namespace zmq
     //  descriptor and so it can be polled on. Same signal cannot be sent twice
     //  unless signals are retrieved by the reader side in the meantime.
 
-    class fd_signaler_t : public i_signaler
+    class fd_signaler_t
     {
     public:
 

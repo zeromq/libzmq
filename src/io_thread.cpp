@@ -27,10 +27,8 @@
 #include "err.hpp"
 #include "command.hpp"
 #include "dispatcher.hpp"
-#include "simple_semaphore.hpp"
 
-zmq::io_thread_t::io_thread_t (dispatcher_t *dispatcher_, int thread_slot_,
-      int flags_) :
+zmq::io_thread_t::io_thread_t (dispatcher_t *dispatcher_, int thread_slot_) :
     object_t (dispatcher_, thread_slot_)
 {
     poller = new (std::nothrow) poller_t;
@@ -56,7 +54,7 @@ void zmq::io_thread_t::stop ()
     send_stop ();
 }
 
-zmq::i_signaler *zmq::io_thread_t::get_signaler ()
+zmq::fd_signaler_t *zmq::io_thread_t::get_signaler ()
 {
     return &signaler;
 }

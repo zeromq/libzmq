@@ -50,7 +50,6 @@ endif
 nodist_libzmq_la_SOURCES = $(pgm_sources)
 
 libzmq_la_SOURCES = app_thread.hpp \
-    atomic_bitmap.hpp \
     atomic_counter.hpp \
     atomic_ptr.hpp \
     blob.hpp \
@@ -74,7 +73,6 @@ libzmq_la_SOURCES = app_thread.hpp \
     i_endpoint.hpp \
     i_engine.hpp \
     i_poll_events.hpp \
-    i_signaler.hpp \
     kqueue.hpp \
     lb.hpp \
     likely.hpp \
@@ -98,7 +96,6 @@ libzmq_la_SOURCES = app_thread.hpp \
     req.hpp \
     select.hpp \
     session.hpp \
-    simple_semaphore.hpp \
     socket_base.hpp \
     stdint.hpp \
     streamer.hpp \
@@ -116,7 +113,6 @@ libzmq_la_SOURCES = app_thread.hpp \
     yarray.hpp \
     yarray_item.hpp \
     ypipe.hpp \
-    ypollset.hpp \
     yqueue.hpp \
     zmq_connecter.hpp \
     zmq_decoder.hpp \
@@ -166,7 +162,6 @@ libzmq_la_SOURCES = app_thread.hpp \
     uuid.cpp \
     xrep.cpp \
     xreq.cpp \
-    ypollset.cpp \
     zmq.cpp \
     zmq_connecter.cpp \
     zmq_decoder.cpp \

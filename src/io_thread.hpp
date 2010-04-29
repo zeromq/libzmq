@@ -38,8 +38,7 @@ namespace zmq
     {
     public:
 
-        io_thread_t (class dispatcher_t *dispatcher_, int thread_slot_,
-            int flags_);
+        io_thread_t (class dispatcher_t *dispatcher_, int thread_slot_);
 
         //  Clean-up. If the thread was started, it's neccessary to call 'stop'
         //  before invoking destructor. Otherwise the destructor would hang up.
@@ -52,7 +51,7 @@ namespace zmq
         void stop ();
 
         //  Returns signaler associated with this I/O thread.
-        i_signaler *get_signaler ();
+        fd_signaler_t *get_signaler ();
 
         //  i_poll_events implementation.
         void in_event ();

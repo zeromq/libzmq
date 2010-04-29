@@ -51,8 +51,9 @@ int zmq::queue (class socket_base_t *insocket_,
         errno_assert (rc > 0);
 
         //  The algorithm below asumes ratio of request and replies processed
-        //  under full load to be 1:1. The alternative would be to process
-        //  replies first, handle request only when there are no more replies.
+        //  under full load to be 1:1. While processing requests replies first
+        //  is tempting it is suspectible to DoS attacks (overloading the system
+        //  with unsolicited replies).
 
         //  Receive a new request.
         if (items [0].revents & ZMQ_POLLIN) {

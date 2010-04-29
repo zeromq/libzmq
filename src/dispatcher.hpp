@@ -25,7 +25,7 @@
 #include <map>
 #include <string>
 
-#include "i_signaler.hpp"
+#include "fd_signaler.hpp"
 #include "ypipe.hpp"
 #include "command.hpp"
 #include "config.hpp"
@@ -51,7 +51,7 @@ namespace zmq
         //  Create the dispatcher object. Matrix of pipes to communicate between
         //  each socket and each I/O thread is created along with appropriate
         //  signalers.
-        dispatcher_t (int app_threads_, int io_threads_, int flags_);
+        dispatcher_t (int app_threads_, int io_threads_);
 
         //  This function is called when user invokes zmq_term. If there are
         //  no more sockets open it'll cause all the infrastructure to be shut
@@ -125,7 +125,7 @@ namespace zmq
         io_threads_t io_threads;
 
         //  Signalers for both application and I/O threads.
-        std::vector <i_signaler*> signalers;
+        std::vector <fd_signaler_t*> signalers;
 
         //  Pipe to hold the commands.
         typedef ypipe_t <command_t, true,

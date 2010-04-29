@@ -228,14 +228,7 @@ size_t zmq_msg_size (zmq_msg_t *msg_)
 
 void *zmq_init (int app_threads_, int io_threads_, int flags_)
 {
-    //  There should be at least a single application thread managed
-    //  by the dispatcher. There's no need for I/O threads if 0MQ is used
-    //  only for inproc messaging
-    if (app_threads_ < 1 || io_threads_ < 0 ||
-          app_threads_ > 63 || io_threads_ > 63) {
-        errno = EINVAL;
-        return NULL;
-    }
+    //  There are no context flags defined at the moment, so flags_ is ignored.
 
 #if defined ZMQ_HAVE_OPENPGM
     //  Unfortunately, OpenPGM doesn't support refcounted init/shutdown, thus,
@@ -269,7 +262,7 @@ void *zmq_init (int app_threads_, int io_threads_, int flags_)
 
     //  Create 0MQ context.
     zmq::dispatcher_t *dispatcher = new (std::nothrow) zmq::dispatcher_t (
-        app_threads_, io_threads_, flags_);
+        app_threads_, io_threads_);
     zmq_assert (dispatcher);
     return (void*) dispatcher;
 }

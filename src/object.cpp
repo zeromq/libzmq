@@ -24,7 +24,6 @@
 #include "err.hpp"
 #include "pipe.hpp"
 #include "io_thread.hpp"
-#include "simple_semaphore.hpp"
 #include "owned.hpp"
 #include "session.hpp"
 #include "socket_base.hpp"

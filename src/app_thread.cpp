@@ -36,7 +36,6 @@
 #include "app_thread.hpp"
 #include "dispatcher.hpp"
 #include "fd_signaler.hpp"
-#include "ypollset.hpp"
 #include "err.hpp"
 #include "pipe.hpp"
 #include "config.hpp"
@@ -59,27 +58,16 @@
 #define ZMQ_DELAY_COMMANDS
 #endif
 
-zmq::app_thread_t::app_thread_t (dispatcher_t *dispatcher_, int thread_slot_,
-      int flags_) :
+zmq::app_thread_t::app_thread_t (dispatcher_t *dispatcher_, int thread_slot_) :
     object_t (dispatcher_, thread_slot_),
     last_processing_time (0),
     terminated (false)
 {
-    if (flags_ & ZMQ_POLL) {
-        signaler = new (std::nothrow) fd_signaler_t;
-        zmq_assert (signaler);
-    }
-    else {
-        signaler = new (std::nothrow) ypollset_t;
-        zmq_assert (signaler);
-    }
 }
 
 zmq::app_thread_t::~app_thread_t ()
 {
     zmq_assert (sockets.empty ());
-    zmq_assert (signaler);
-    delete signaler;
 }
 
 void zmq::app_thread_t::stop ()
@@ -87,16 +75,16 @@ void zmq::app_thread_t::stop ()
     send_stop ();
 }
 
-zmq::i_signaler *zmq::app_thread_t::get_signaler ()
+zmq::fd_signaler_t *zmq::app_thread_t::get_signaler ()
 {
-    return signaler;
+    return &signaler;
 }
 
 bool zmq::app_thread_t::process_commands (bool block_, bool throttle_)
 {
     uint64_t signals;
     if (block_)
-        signals = signaler->poll ();
+        signals = signaler.poll ();
     else {
 
 #if defined ZMQ_DELAY_COMMANDS
@@ -129,7 +117,7 @@ bool zmq::app_thread_t::process_commands (bool block_, bool throttle_)
 #endif
 
         //  Check whether there are any commands pending for this thread.
-        signals = signaler->check ();
+        signals = signaler.check ();
     }
 
     if (signals) {

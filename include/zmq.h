@@ -144,6 +144,7 @@ ZMQ_EXPORT size_t zmq_msg_size (zmq_msg_t *msg);
 /*  0MQ infrastructure (a.k.a. context) initialisation & termination.         */
 /******************************************************************************/
 
+/*  This flag is obsolete and has no effect. To be removed in next version.   */
 #define ZMQ_POLL 1
 
 ZMQ_EXPORT void *zmq_init (int app_threads, int io_threads, int flags);

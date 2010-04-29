@@ -25,12 +25,8 @@ The 'io_threads' argument specifies the size of the 0MQ thread pool to handle
 I/O operations. If your application is using 'inproc' messaging exclusively you
 may set this to zero, otherwise set it to at least one.
 
-The 'flags' argument is a combination of the flags defined below:
-
-*ZMQ_POLL*::
-Specifies that sockets within this 'context' should support multiplexing using
-_zmq_poll()_. Enabling this functionality may add a small amount of latency to
-message transfers compared to leaving it disabled.
+There are no flags defined at the moment and the 'flags' argument should be set
+to zero.
 
 
 RETURN VALUE
