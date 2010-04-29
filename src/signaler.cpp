@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "fd_signaler.hpp"
+#include "signaler.hpp"
 #include "platform.hpp"
 #include "err.hpp"
 #include "fd.hpp"
@@ -36,7 +36,7 @@
 
 #include <sys/eventfd.h>
 
-zmq::fd_signaler_t::fd_signaler_t ()
+zmq::signaler_t::signaler_t ()
 {
     //  Create eventfd object.
     fd = eventfd (0, 0);
@@ -50,13 +50,13 @@ zmq::fd_signaler_t::fd_signaler_t ()
     errno_assert (rc != -1);
 }
 
-zmq::fd_signaler_t::~fd_signaler_t ()
+zmq::signaler_t::~signaler_t ()
 {
     int rc = close (fd);
     errno_assert (rc != -1);
 }
 
-void zmq::fd_signaler_t::signal (int signal_)
+void zmq::signaler_t::signal (int signal_)
 {
     zmq_assert (signal_ >= 0 && signal_ < 64);
     uint64_t inc = 1;
@@ -65,7 +65,7 @@ void zmq::fd_signaler_t::signal (int signal_)
     errno_assert (sz == sizeof (uint64_t));
 }
 
-uint64_t zmq::fd_signaler_t::poll ()
+uint64_t zmq::signaler_t::poll ()
 {
     //  Set to blocking mode.
     int flags = fcntl (fd, F_GETFL, 0);
@@ -93,7 +93,7 @@ uint64_t zmq::fd_signaler_t::poll ()
     return signals;
 }
 
-uint64_t zmq::fd_signaler_t::check ()
+uint64_t zmq::signaler_t::check ()
 {
     uint64_t signals;
     ssize_t sz = read (fd, &signals, sizeof (uint64_t));
@@ -103,14 +103,14 @@ uint64_t zmq::fd_signaler_t::check ()
     return signals;
 }
 
-zmq::fd_t zmq::fd_signaler_t::get_fd ()
+zmq::fd_t zmq::signaler_t::get_fd ()
 {
     return fd;
 }
 
 #elif defined ZMQ_HAVE_WINDOWS
 
-zmq::fd_signaler_t::fd_signaler_t ()
+zmq::signaler_t::signaler_t ()
 {
     //  Windows have no 'socketpair' function. CreatePipe is no good as pipe
     //  handles cannot be polled on. Here we create the socketpair by hand.
@@ -162,7 +162,7 @@ zmq::fd_signaler_t::fd_signaler_t ()
     wsa_assert (rc != SOCKET_ERROR);
 }
 
-zmq::fd_signaler_t::~fd_signaler_t ()
+zmq::signaler_t::~signaler_t ()
 {
     int rc = closesocket (w);
     wsa_assert (rc != SOCKET_ERROR);
@@ -171,7 +171,7 @@ zmq::fd_signaler_t::~fd_signaler_t ()
     wsa_assert (rc != SOCKET_ERROR);
 }
 
-void zmq::fd_signaler_t::signal (int signal_)
+void zmq::signaler_t::signal (int signal_)
 {
     //  TODO: Note that send is a blocking operation.
     //  How should we behave if the signal cannot be written to the signaler?
@@ -182,7 +182,7 @@ void zmq::fd_signaler_t::signal (int signal_)
     win_assert (rc != SOCKET_ERROR);
 }
 
-uint64_t zmq::fd_signaler_t::poll ()
+uint64_t zmq::signaler_t::poll ()
 {
     //  Switch to blocking mode.
     unsigned long argp = 0;
@@ -202,7 +202,7 @@ uint64_t zmq::fd_signaler_t::poll ()
     return signals;
 }
 
-uint64_t zmq::fd_signaler_t::check ()
+uint64_t zmq::signaler_t::check ()
 {
     unsigned char buffer [32];
     int nbytes = recv (r, (char*) buffer, 32, 0);
@@ -218,7 +218,7 @@ uint64_t zmq::fd_signaler_t::check ()
     return signals;
 }
 
-zmq::fd_t zmq::fd_signaler_t::get_fd ()
+zmq::fd_t zmq::signaler_t::get_fd ()
 {
     return r;
 }
@@ -228,7 +228,7 @@ zmq::fd_t zmq::fd_signaler_t::get_fd ()
 #include <sys/types.h>
 #include <sys/socket.h>
 
-zmq::fd_signaler_t::fd_signaler_t ()
+zmq::signaler_t::signaler_t ()
 {
     int sv [2];
     int rc = socketpair (AF_UNIX, SOCK_STREAM, 0, sv);
@@ -244,13 +244,13 @@ zmq::fd_signaler_t::fd_signaler_t ()
     errno_assert (rc != -1);
 }
 
-zmq::fd_signaler_t::~fd_signaler_t ()
+zmq::signaler_t::~signaler_t ()
 {
     close (w);
     close (r);
 }
 
-void zmq::fd_signaler_t::signal (int signal_)
+void zmq::signaler_t::signal (int signal_)
 {
     zmq_assert (signal_ >= 0 && signal_ < 64);
     unsigned char c = (unsigned char) signal_;
@@ -258,7 +258,7 @@ void zmq::fd_signaler_t::signal (int signal_)
     errno_assert (nbytes == 1);
 }
 
-uint64_t zmq::fd_signaler_t::poll ()
+uint64_t zmq::signaler_t::poll ()
 {
     //  Set the reader to blocking mode.
     int flags = fcntl (r, F_GETFL, 0);
@@ -280,7 +280,7 @@ uint64_t zmq::fd_signaler_t::poll ()
     return signals;
 }
 
-uint64_t zmq::fd_signaler_t::check ()
+uint64_t zmq::signaler_t::check ()
 {
     unsigned char buffer [64];
     ssize_t nbytes = recv (r, buffer, 64, 0);
@@ -296,7 +296,7 @@ uint64_t zmq::fd_signaler_t::check ()
     return signals;
 }
 
-zmq::fd_t zmq::fd_signaler_t::get_fd ()
+zmq::fd_t zmq::signaler_t::get_fd ()
 {
     return r;
 }
@@ -306,7 +306,7 @@ zmq::fd_t zmq::fd_signaler_t::get_fd ()
 #include <sys/types.h>
 #include <sys/socket.h>
 
-zmq::fd_signaler_t::fd_signaler_t ()
+zmq::signaler_t::signaler_t ()
 {
     int sv [2];
     int rc = socketpair (AF_UNIX, SOCK_STREAM, 0, sv);
@@ -315,13 +315,13 @@ zmq::fd_signaler_t::fd_signaler_t ()
     r = sv [1];
 }
 
-zmq::fd_signaler_t::~fd_signaler_t ()
+zmq::signaler_t::~signaler_t ()
 {
     close (w);
     close (r);
 }
 
-void zmq::fd_signaler_t::signal (int signal_)
+void zmq::signaler_t::signal (int signal_)
 {
     //  TODO: Note that send is a blocking operation.
     //  How should we behave if the signal cannot be written to the signaler?
@@ -332,7 +332,7 @@ void zmq::fd_signaler_t::signal (int signal_)
     errno_assert (nbytes == 1);
 }
 
-uint64_t zmq::fd_signaler_t::poll ()
+uint64_t zmq::signaler_t::poll ()
 {
     unsigned char buffer [64];
     ssize_t nbytes = recv (r, buffer, 64, 0);
@@ -346,7 +346,7 @@ uint64_t zmq::fd_signaler_t::poll ()
     return signals;
 }
 
-uint64_t zmq::fd_signaler_t::check ()
+uint64_t zmq::signaler_t::check ()
 {
     unsigned char buffer [64];
     ssize_t nbytes = recv (r, buffer, 64, MSG_DONTWAIT);
@@ -362,7 +362,7 @@ uint64_t zmq::fd_signaler_t::check ()
     return signals;
 }
 
-zmq::fd_t zmq::fd_signaler_t::get_fd ()
+zmq::fd_t zmq::signaler_t::get_fd ()
 {
     return r;
 }
@@ -371,7 +371,7 @@ zmq::fd_t zmq::fd_signaler_t::get_fd ()
 
 #if defined ZMQ_HAVE_OPENVMS
 
-int zmq::fd_signaler_t::socketpair (int domain_, int type_, int protocol_,
+int zmq::signaler_t::socketpair (int domain_, int type_, int protocol_,
     int sv_ [2])
 {
     int listener;

@@ -25,7 +25,7 @@
 #include "stdint.hpp"
 #include "object.hpp"
 #include "yarray.hpp"
-#include "fd_signaler.hpp"
+#include "signaler.hpp"
 
 namespace zmq
 {
@@ -43,7 +43,7 @@ namespace zmq
         void stop ();
 
         //  Returns signaler associated with this application thread.
-        fd_signaler_t *get_signaler ();
+        signaler_t *get_signaler ();
 
         //  Processes commands sent to this thread (if any). If 'block' is
         //  set to true, returns only after at least one command was processed.
@@ -71,7 +71,7 @@ namespace zmq
         sockets_t sockets;
 
         //  App thread's signaler object.
-        fd_signaler_t signaler;
+        signaler_t signaler;
 
         //  Timestamp of when commands were processed the last time.
         uint64_t last_processing_time;

@@ -26,7 +26,7 @@
 #include "object.hpp"
 #include "poller.hpp"
 #include "i_poll_events.hpp"
-#include "fd_signaler.hpp"
+#include "signaler.hpp"
 
 namespace zmq
 {
@@ -51,7 +51,7 @@ namespace zmq
         void stop ();
 
         //  Returns signaler associated with this I/O thread.
-        fd_signaler_t *get_signaler ();
+        signaler_t *get_signaler ();
 
         //  i_poll_events implementation.
         void in_event ();
@@ -71,7 +71,7 @@ namespace zmq
 
         //  Poll thread gets notifications about incoming commands using
         //  this signaler.
-        fd_signaler_t signaler;
+        signaler_t signaler;
 
         //  Handle associated with signaler's file descriptor.
         poller_t::handle_t signaler_handle;

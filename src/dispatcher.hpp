@@ -25,7 +25,7 @@
 #include <map>
 #include <string>
 
-#include "fd_signaler.hpp"
+#include "signaler.hpp"
 #include "ypipe.hpp"
 #include "command.hpp"
 #include "config.hpp"
@@ -125,7 +125,7 @@ namespace zmq
         io_threads_t io_threads;
 
         //  Signalers for both application and I/O threads.
-        std::vector <fd_signaler_t*> signalers;
+        std::vector <signaler_t*> signalers;
 
         //  Pipe to hold the commands.
         typedef ypipe_t <command_t, true,

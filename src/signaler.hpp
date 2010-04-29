@@ -17,8 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_FD_SIGNALER_HPP_INCLUDED__
-#define __ZMQ_FD_SIGNALER_HPP_INCLUDED__
+#ifndef __ZMQ_SIGNALER_HPP_INCLUDED__
+#define __ZMQ_SIGNALER_HPP_INCLUDED__
 
 #include "platform.hpp"
 #include "fd.hpp"
@@ -32,12 +32,12 @@ namespace zmq
     //  descriptor and so it can be polled on. Same signal cannot be sent twice
     //  unless signals are retrieved by the reader side in the meantime.
 
-    class fd_signaler_t
+    class signaler_t
     {
     public:
 
-        fd_signaler_t ();
-        ~fd_signaler_t ();
+        signaler_t ();
+        ~signaler_t ();
 
         //  i_signaler interface implementation.
         void signal (int signal_);
@@ -71,8 +71,8 @@ namespace zmq
 #endif
 
         //  Disable copying of fd_signeler object.
-        fd_signaler_t (const fd_signaler_t&);
-        void operator = (const fd_signaler_t&);
+        signaler_t (const signaler_t&);
+        void operator = (const signaler_t&);
     };
 
 }

@@ -54,7 +54,7 @@ void zmq::io_thread_t::stop ()
     send_stop ();
 }
 
-zmq::fd_signaler_t *zmq::io_thread_t::get_signaler ()
+zmq::signaler_t *zmq::io_thread_t::get_signaler ()
 {
     return &signaler;
 }

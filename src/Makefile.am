@@ -63,7 +63,6 @@ libzmq_la_SOURCES = app_thread.hpp \
     epoll.hpp \
     err.hpp \
     fd.hpp \
-    fd_signaler.hpp \
     forwarder.hpp \
     fq.hpp \
     i_inout.hpp \
@@ -96,6 +95,7 @@ libzmq_la_SOURCES = app_thread.hpp \
     req.hpp \
     select.hpp \
     session.hpp \
+    signaler.hpp \
     socket_base.hpp \
     stdint.hpp \
     streamer.hpp \
@@ -127,7 +127,6 @@ libzmq_la_SOURCES = app_thread.hpp \
     downstream.cpp \
     epoll.cpp \
     err.cpp \
-    fd_signaler.cpp \
     forwarder.cpp \
     fq.cpp \
     io_object.cpp \
@@ -151,6 +150,7 @@ libzmq_la_SOURCES = app_thread.hpp \
     req.cpp \
     select.cpp \
     session.cpp \
+    signaler.cpp \
     socket_base.cpp \
     streamer.cpp \
     sub.cpp \

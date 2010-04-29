@@ -35,7 +35,6 @@
 
 #include "app_thread.hpp"
 #include "dispatcher.hpp"
-#include "fd_signaler.hpp"
 #include "err.hpp"
 #include "pipe.hpp"
 #include "config.hpp"
@@ -75,7 +74,7 @@ void zmq::app_thread_t::stop ()
     send_stop ();
 }
 
-zmq::fd_signaler_t *zmq::app_thread_t::get_signaler ()
+zmq::signaler_t *zmq::app_thread_t::get_signaler ()
 {
     return &signaler;
 }
