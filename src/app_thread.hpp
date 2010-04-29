@@ -34,7 +34,7 @@ namespace zmq
     {
     public:
 
-        app_thread_t (class dispatcher_t *dispatcher_, int thread_slot_);
+        app_thread_t (class dispatcher_t *dispatcher_, uint32_t thread_slot_);
 
         ~app_thread_t ();
 

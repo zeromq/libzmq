@@ -28,7 +28,7 @@
 #include "session.hpp"
 #include "socket_base.hpp"
 
-zmq::object_t::object_t (dispatcher_t *dispatcher_, int thread_slot_) :
+zmq::object_t::object_t (dispatcher_t *dispatcher_, uint32_t thread_slot_) :
     dispatcher (dispatcher_),
     thread_slot (thread_slot_)
 {
@@ -44,12 +44,7 @@ zmq::object_t::~object_t ()
 {
 }
 
-int zmq::object_t::thread_slot_count ()
-{
-    return dispatcher->thread_slot_count ();
-}
-
-int zmq::object_t::get_thread_slot ()
+uint32_t zmq::object_t::get_thread_slot ()
 {
     return thread_slot;
 }
@@ -162,7 +157,7 @@ void zmq::object_t::send_stop ()
 {
     //  'stop' command goes always from administrative thread to
     //  the current object. 
-    int admin_thread_id = dispatcher->thread_slot_count () - 1;
+    uint32_t admin_thread_id = dispatcher->thread_slot_count () - 1;
     command_t cmd;
     cmd.destination = this;
     cmd.type = command_t::stop;
@@ -375,7 +370,7 @@ void zmq::object_t::process_seqnum ()
 
 void zmq::object_t::send_command (command_t &cmd_)
 {
-    int destination_thread_slot = cmd_.destination->get_thread_slot ();
+    uint32_t destination_thread_slot = cmd_.destination->get_thread_slot ();
     dispatcher->write (thread_slot, destination_thread_slot, cmd_);
 }
 

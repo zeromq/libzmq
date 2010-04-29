@@ -37,6 +37,10 @@ namespace zmq
         //  footprint of dispatcher.
         command_pipe_granularity = 4,
 
+        //  Number of signals that can be read by the signaler
+        //  using a single system call.
+        signal_buffer_size = 8,
+
         //  Determines how often does socket poll for new commands when it
         //  still has unprocessed messages to handle. Thus, if it is set to 100,
         //  socket will process 100 inbound messages before doing the poll.

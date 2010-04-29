@@ -33,7 +33,7 @@
 #include "windows.h"
 #endif
 
-zmq::dispatcher_t::dispatcher_t (int app_threads_, int io_threads_) :
+zmq::dispatcher_t::dispatcher_t (uint32_t app_threads_, uint32_t io_threads_) :
     sockets (0),
     terminated (false)
 {
@@ -49,7 +49,7 @@ zmq::dispatcher_t::dispatcher_t (int app_threads_, int io_threads_) :
 #endif
 
     //  Create application thread proxies.
-    for (int i = 0; i != app_threads_; i++) {
+    for (uint32_t i = 0; i != app_threads_; i++) {
         app_thread_info_t info;
         info.associated = false;
         info.app_thread = new (std::nothrow) app_thread_t (this, i);
@@ -59,7 +59,7 @@ zmq::dispatcher_t::dispatcher_t (int app_threads_, int io_threads_) :
     }
 
     //  Create I/O thread objects.
-    for (int i = 0; i != io_threads_; i++) {
+    for (uint32_t i = 0; i != io_threads_; i++) {
         io_thread_t *io_thread = new (std::nothrow) io_thread_t (this,
             i + app_threads_);
         zmq_assert (io_thread);
@@ -79,7 +79,7 @@ zmq::dispatcher_t::dispatcher_t (int app_threads_, int io_threads_) :
     zmq_assert (command_pipes);
 
     //  Launch I/O threads.
-    for (int i = 0; i != io_threads_; i++)
+    for (uint32_t i = 0; i != io_threads_; i++)
         io_threads [i]->start ();
 }
 
@@ -136,9 +136,9 @@ zmq::dispatcher_t::~dispatcher_t ()
 #endif
 }
 
-int zmq::dispatcher_t::thread_slot_count ()
+uint32_t zmq::dispatcher_t::thread_slot_count ()
 {
-    return signalers.size ();
+    return (uint32_t) signalers.size ();
 }
 
 zmq::socket_base_t *zmq::dispatcher_t::create_socket (int type_)
@@ -213,7 +213,7 @@ void zmq::dispatcher_t::no_sockets (app_thread_t *thread_)
     app_threads_sync.unlock ();
 }
 
-void zmq::dispatcher_t::write (int source_, int destination_,
+void zmq::dispatcher_t::write (uint32_t source_, uint32_t destination_,
     const command_t &command_)
 {
     command_pipe_t &pipe =
@@ -223,7 +223,7 @@ void zmq::dispatcher_t::write (int source_, int destination_,
         signalers [destination_]->signal (source_);
 }
 
-bool zmq::dispatcher_t::read (int source_,  int destination_,
+bool zmq::dispatcher_t::read (uint32_t source_, uint32_t destination_,
     command_t *command_)
 {
     return command_pipes [source_ * signalers.size () +

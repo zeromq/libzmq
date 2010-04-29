@@ -32,11 +32,11 @@ namespace zmq
     {
     public:
 
-        object_t (class dispatcher_t *dispatcher_, int thread_slot_);
+        object_t (class dispatcher_t *dispatcher_, uint32_t thread_slot_);
         object_t (object_t *parent_);
         virtual ~object_t ();
 
-        int get_thread_slot ();
+        uint32_t get_thread_slot ();
         dispatcher_t *get_dispatcher ();
         void process_command (struct command_t &cmd_);
 
@@ -51,9 +51,6 @@ namespace zmq
         int register_endpoint (const char *addr_, class socket_base_t *socket_);
         void unregister_endpoints (class socket_base_t *socket_);
         class socket_base_t *find_endpoint (const char *addr_);
-
-        //  Returns number of thead slots in the dispatcher.
-        int thread_slot_count ();
 
         //  Chooses least loaded I/O thread.
         class io_thread_t *choose_io_thread (uint64_t taskset_);
@@ -106,7 +103,7 @@ namespace zmq
         class dispatcher_t *dispatcher;
 
         //  Slot ID of the thread the object belongs to.
-        int thread_slot;
+        uint32_t thread_slot;
 
     private:
 

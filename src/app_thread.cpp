@@ -57,7 +57,8 @@
 #define ZMQ_DELAY_COMMANDS
 #endif
 
-zmq::app_thread_t::app_thread_t (dispatcher_t *dispatcher_, int thread_slot_) :
+zmq::app_thread_t::app_thread_t (dispatcher_t *dispatcher_,
+        uint32_t thread_slot_) :
     object_t (dispatcher_, thread_slot_),
     last_processing_time (0),
     terminated (false)
@@ -81,9 +82,9 @@ zmq::signaler_t *zmq::app_thread_t::get_signaler ()
 
 bool zmq::app_thread_t::process_commands (bool block_, bool throttle_)
 {
-    uint64_t signals;
+    uint32_t signal;
     if (block_)
-        signals = signaler.poll ();
+        signal = signaler.poll ();
     else {
 
 #if defined ZMQ_DELAY_COMMANDS
@@ -116,20 +117,14 @@ bool zmq::app_thread_t::process_commands (bool block_, bool throttle_)
 #endif
 
         //  Check whether there are any commands pending for this thread.
-        signals = signaler.check ();
+        signal = signaler.check ();
     }
 
-    if (signals) {
-
-        //  Traverse all the possible sources of commands and process
-        //  all the commands from all of them.
-        for (int i = 0; i != thread_slot_count (); i++) {
-            if (signals & (uint64_t (1) << i)) {
-                command_t cmd;
-                while (dispatcher->read (i, get_thread_slot (), &cmd))
-                    cmd.destination->process_command (cmd);
-            }
-        }
+    //  Process all the commands from the signaling source if there is one.
+    if (signal != signaler_t::no_signal) {
+        command_t cmd;
+        while (dispatcher->read (signal, get_thread_slot (), &cmd))
+            cmd.destination->process_command (cmd);
     }
 
     return !terminated;

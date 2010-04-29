@@ -20,9 +20,12 @@
 #ifndef __ZMQ_SIGNALER_HPP_INCLUDED__
 #define __ZMQ_SIGNALER_HPP_INCLUDED__
 
+#include <stddef.h>
+
 #include "platform.hpp"
 #include "fd.hpp"
 #include "stdint.hpp"
+#include "config.hpp"
 
 namespace zmq
 {
@@ -39,13 +42,17 @@ namespace zmq
         signaler_t ();
         ~signaler_t ();
 
-        //  i_signaler interface implementation.
-        void signal (int signal_);
-        uint64_t poll ();
-        uint64_t check ();
+        static const uint32_t no_signal;
+
+        void signal (uint32_t signal_);
+        uint32_t poll ();
+        uint32_t check ();
         fd_t get_fd ();
 
     private:
+
+         void xpoll ();
+         void xcheck ();
 
 #if defined ZMQ_HAVE_OPENVMS
 
@@ -63,6 +70,15 @@ namespace zmq
         //  Write & read end of the socketpair.
         fd_t w;
         fd_t r;
+
+        //  Signal buffer.
+        uint32_t buffer [signal_buffer_size];
+
+        //  Position of the next signal in the buffer to return to the user.
+        size_t current;
+
+        //  Number of signals in the signal buffer.
+        size_t count;
 
         //  Disable copying of fd_signeler object.
         signaler_t (const signaler_t&);

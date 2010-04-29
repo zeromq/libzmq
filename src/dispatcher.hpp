@@ -51,7 +51,7 @@ namespace zmq
         //  Create the dispatcher object. Matrix of pipes to communicate between
         //  each socket and each I/O thread is created along with appropriate
         //  signalers.
-        dispatcher_t (int app_threads_, int io_threads_);
+        dispatcher_t (uint32_t app_threads_, uint32_t io_threads_);
 
         //  This function is called when user invokes zmq_term. If there are
         //  no more sockets open it'll cause all the infrastructure to be shut
@@ -72,14 +72,16 @@ namespace zmq
         //  Returns number of thread slots in the dispatcher. To be used by
         //  individual threads to find out how many distinct signals can be
         //  received.
-        int thread_slot_count ();
+        uint32_t thread_slot_count ();
 
         //  Send command from the source to the destination.
-        void write (int source_, int destination_, const command_t &command_);
+        void write (uint32_t source_, uint32_t destination_,
+            const command_t &command_);
 
         //  Receive command from the source. Returns false if there is no
         //  command available.
-        bool read (int source_,  int destination_, command_t *command_);
+        bool read (uint32_t source_,  uint32_t destination_,
+            command_t *command_);
 
         //  Returns the I/O thread that is the least busy at the moment.
         //  Taskset specifies which I/O threads are eligible (0 = all).
