@@ -34,8 +34,10 @@
 #define ZMQ_ATOMIC_BITMAP_SPARC
 #elif defined ZMQ_HAVE_WINDOWS
 #define ZMQ_ATOMIC_BITMAP_WINDOWS
-#elif (defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_NETBSD)
-#define ZMQ_ATOMIC_BITMAP_SYSTEM
+#elif defined sun
+#define ZMQ_ATOMIC_COUNTER_SUN
+#elif defined( __GNUC__ ) && ( __GNUC__ * 100 + __GNUC_MINOR__ >= 401 )
+#define ZMQ_ATOMIC_COUNTER_GNU
 #else
 #define ZMQ_ATOMIC_BITMAP_MUTEX
 #endif
@@ -44,7 +46,7 @@
 #include "mutex.hpp"
 #elif defined ZMQ_ATOMIC_BITMAP_WINDOWS
 #include "windows.hpp"
-#elif defined ZMQ_ATOMIC_BITMAP_SYSTEM
+#elif defined ZMQ_ATOMIC_BITMAP_SUN
 #include <atomic.h>
 #endif
 
@@ -89,7 +91,16 @@ namespace zmq
                     return (oldval & (bitmap_t (1) << reset_index_)) ?
                         true : false;
             }
-#elif defined ZMQ_ATOMIC_BITMAP_SYSTEM
+#elif defined ZMQ_ATOMIC_BITMAP_GNU
+            while (true) {
+                bitmap_t oldval = value;
+                bitmap_t newval = (oldval | (bitmap_t (1) << set_index_)) &
+                    ~(bitmap_t (1) << reset_index_);
+                if (__sync_val_compare_and_swap (&value, oldval, newval) == oldval)
+                    return (oldval & (bitmap_t (1) << reset_index_)) ?
+                        true : false;
+            }
+#elif defined ZMQ_ATOMIC_BITMAP_SUN
             while (true) {
                 bitmap_t oldval = value;
                 bitmap_t newval = (oldval | (bitmap_t (1) << set_index_)) &
@@ -119,14 +130,14 @@ namespace zmq
             bitmap_t tmp;
             bitmap_t oldval;
             __asm__ volatile(
-                "ld       [%5], %2       \n\t"
-                "1:                      \n\t"
-                "or       %2, %0, %3     \n\t"
-                "and      %3, %1, %3     \n\t"
-                "cas      [%5], %2, %3   \n\t"
-                "cmp      %2, %3         \n\t"
-                "bne,a,pn %%icc, 1b      \n\t"
-                "mov      %3, %2         \n\t"
+                "ld [%5], %2 \n\t"
+                "1: \n\t"
+                "or %2, %0, %3 \n\t"
+                "and %3, %1, %3 \n\t"
+                "cas [%5], %2, %3 \n\t"
+                "cmp %2, %3 \n\t"
+                "bne,a,pn %%icc, 1b \n\t"
+                "mov %3, %2 \n\t"
                 : "+r" (set_val), "+r" (reset_val), "=&r" (tmp),
                   "=&r" (oldval), "+m" (*valptr)
                 : "r" (valptr)
@@ -150,7 +161,9 @@ namespace zmq
             bitmap_t oldval;
 #if defined ZMQ_ATOMIC_BITMAP_WINDOWS
             oldval = InterlockedExchange ((volatile LONG*) &value, newval_);
-#elif defined ZMQ_ATOMIC_BITMAP_SYSTEM
+#elif defined ZMQ_ATOMIC_BITMAP_GNU
+            oldval = __sync_lock_test_and_set (&value, newval_);
+#elif defined ZMQ_ATOMIC_BITMAP_SUN
             oldval = atomic_swap_32 (&value, newval_);
 #elif defined ZMQ_ATOMIC_BITMAP_X86
             oldval = newval_;
@@ -201,7 +214,14 @@ namespace zmq
                       newval, oldval) == (LONG) oldval)
                     return oldval;
             }
-#elif defined ZMQ_ATOMIC_BITMAP_SYSTEM
+#elif defined ZMQ_ATOMIC_BITMAP_GNU
+            while (true) {
+                bitmap_t oldval = value;
+                bitmap_t newval = oldval == 0 ? thenval_ : elseval_;
+                if (__sync_val_compare_and_swap (&value, oldval, newval) == oldval)
+                    return oldval;
+            }
+#elif defined ZMQ_ATOMIC_BITMAP_SUN
             while (true) {
                 bitmap_t oldval = value;
                 bitmap_t newval = oldval == 0 ? thenval_ : elseval_;
@@ -230,14 +250,14 @@ namespace zmq
             bitmap_t tmp;
             bitmap_t prev;
             __asm__ __volatile__(
-                "ld      [%3], %0       \n\t"
-                "mov     0,    %1       \n\t"
-                "cas     [%3], %1, %4   \n\t"
-                "cmp     %0,   %1       \n\t"
-                "be,a,pn %%icc,1f       \n\t"
-                "ld      [%3], %0       \n\t"
-                "cas     [%3], %0, %5   \n\t"
-                "1:                     \n\t"
+                "ld [%3], %0 \n\t"
+                "mov 0, %1 \n\t"
+                "cas [%3], %1, %4 \n\t"
+                "cmp %0, %1 \n\t"
+                "be,a,pn %%icc,1f \n\t"
+                "ld [%3], %0 \n\t"
+                "cas [%3], %0, %5 \n\t"
+                "1: \n\t"
                 : "=&r" (tmp), "=&r" (prev), "+m" (*ptrin)
                 : "r" (ptrin), "r" (thenval_), "r" (elseval_)
                 : "cc");
@@ -270,8 +290,11 @@ namespace zmq
 #if defined ZMQ_ATOMIC_BITMAP_WINDOWS
 #undef ZMQ_ATOMIC_BITMAP_WINDOWS
 #endif
-#if defined ZMQ_ATOMIC_BITMAP_SYSTEM
-#undef ZMQ_ATOMIC_BITMAP_SYSTEM
+#if defined ZMQ_ATOMIC_BITMAP_GNU
+#undef ZMQ_ATOMIC_BITMAP_GNU
+#endif
+#if defined ZMQ_ATOMIC_BITMAP_SUN
+#undef ZMQ_ATOMIC_BITMAP_SUN
 #endif
 #if defined ZMQ_ATOMIC_BITMAP_X86
 #undef ZMQ_ATOMIC_BITMAP_X86
@@ -284,3 +307,4 @@ namespace zmq
 #endif
 
 #endif
+

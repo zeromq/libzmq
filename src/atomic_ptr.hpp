@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 #ifndef __ZMQ_ATOMIC_PTR_HPP_INCLUDED__
 #define __ZMQ_ATOMIC_PTR_HPP_INCLUDED__
 
@@ -31,8 +30,10 @@
 #define ZMQ_ATOMIC_PTR_SPARC
 #elif defined ZMQ_HAVE_WINDOWS
 #define ZMQ_ATOMIC_PTR_WINDOWS
-#elif (defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_NETBSD)
-#define ZMQ_ATOMIC_PTR_SYSTEM
+#elif defined sun
+#define ZMQ_ATOMIC_COUNTER_SUN
+#elif defined( __GNUC__ ) && ( __GNUC__ * 100 + __GNUC_MINOR__ >= 401 )
+#define ZMQ_ATOMIC_COUNTER_GNU
 #else
 #define ZMQ_ATOMIC_PTR_MUTEX
 #endif
@@ -41,7 +42,7 @@
 #include "mutex.hpp"
 #elif defined ZMQ_ATOMIC_PTR_WINDOWS
 #include "windows.hpp"
-#elif defined ZMQ_ATOMIC_PTR_SYSTEM
+#elif defined ZMQ_ATOMIC_PTR_SUN
 #include <atomic.h>
 #endif
 
@@ -79,7 +80,9 @@ namespace zmq
         {
 #if defined ZMQ_ATOMIC_PTR_WINDOWS
             return (T*) InterlockedExchangePointer ((PVOID*) &ptr, val_);
-#elif defined ZMQ_ATOMIC_PTR_SYSTEM
+#elif defined ZMQ_ATOMIC_PTR_GNU
+            return (T*) __sync_lock_test_and_set (&ptr, val_);
+#elif defined ZMQ_ATOMIC_PTR_SUN
             return (T*) atomic_swap_ptr (&ptr, val_);
 #elif defined ZMQ_ATOMIC_PTR_X86
             T *old;
@@ -125,7 +128,9 @@ namespace zmq
 #if defined ZMQ_ATOMIC_PTR_WINDOWS
             return (T*) InterlockedCompareExchangePointer (
                 (volatile PVOID*) &ptr, val_, cmp_);
-#elif defined ZMQ_ATOMIC_PTR_SYSTEM
+#elif defined ZMQ_ATOMIC_PTR_GNU
+            return (T*) __sync_val_compare_and_swap (&ptr, cmp_, val_);
+#elif defined ZMQ_ATOMIC_PTR_SUN
             return (T*) atomic_cas_ptr (&ptr, cmp_, val_);
 #elif defined ZMQ_ATOMIC_PTR_X86
             T *old;
@@ -173,8 +178,11 @@ namespace zmq
 #if defined ZMQ_ATOMIC_PTR_WINDOWS
 #undef ZMQ_ATOMIC_PTR_WINDOWS
 #endif
-#if defined ZMQ_ATOMIC_PTR_SYSTEM
-#undef ZMQ_ATOMIC_PTR_SYSTEM
+#if defined ZMQ_ATOMIC_PTR_GNU
+#undef ZMQ_ATOMIC_PTR_GNU
+#endif
+#if defined ZMQ_ATOMIC_PTR_SUN
+#undef ZMQ_ATOMIC_PTR_SUN
 #endif
 #if defined ZMQ_ATOMIC_PTR_X86
 #undef ZMQ_ATOMIC_PTR_X86
@@ -187,3 +195,4 @@ namespace zmq
 #endif
 
 #endif
+
