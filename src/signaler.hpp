@@ -58,17 +58,11 @@ namespace zmq
          //  meantime, we'll create the socket pair manually.
          static int socketpair (int domain_, int type_, int protocol_,
              int sv_ [2]);
-
 #endif
 
-#if defined ZMQ_HAVE_EVENTFD
-        //  Eventfd descriptor.
-        fd_t fd;
-#else
         //  Write & read end of the socketpair.
         fd_t w;
         fd_t r;
-#endif
 
         //  Disable copying of fd_signeler object.
         signaler_t (const signaler_t&);
