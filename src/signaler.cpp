@@ -150,7 +150,7 @@ void zmq::signaler_t::signal (uint32_t signal_)
 {
     //  TODO: Note that send is a blocking operation.
     //  How should we behave if the signal cannot be written to the signaler?
-    int rc = send (w, &signal_, sizeof (signal_), 0);
+    int rc = send (w, (char*) &signal_, sizeof (signal_), 0);
     win_assert (rc != SOCKET_ERROR);
     zmq_assert (rc == sizeof (signal_));
 }
@@ -171,8 +171,6 @@ void zmq::signaler_t::xpoll ()
     argp = 1;
     rc = ioctlsocket (r, FIONBIO, &argp);
     wsa_assert (rc != SOCKET_ERROR);
-
-    return signals;
 }
 
 void zmq::signaler_t::xcheck ()

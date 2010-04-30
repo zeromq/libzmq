@@ -198,10 +198,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\fd_signaler.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\src\forwarder.cpp"
 				>
 			</File>
@@ -294,6 +290,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\signaler.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\socket_base.cpp"
 				>
 			</File>
@@ -338,10 +338,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\ypollset.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\src\zmq.cpp"
 				>
 			</File>
@@ -377,10 +373,6 @@
 			>
 			<File
 				RelativePath="..\..\..\src\app_thread.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\atomic_bitmap.hpp"
 				>
 			</File>
 			<File
@@ -432,10 +424,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\fd_signaler.hpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\src\forwarder.hpp"
 				>
 			</File>
@@ -457,14 +445,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\i_poll_events.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\i_poller.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\i_signaler.hpp"
 				>
 			</File>
 			<File
@@ -564,7 +544,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\simple_semaphore.hpp"
+				RelativePath="..\..\..\src\signaler.hpp"
 				>
 			</File>
 			<File
@@ -625,10 +605,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\ypipe.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\ypollset.hpp"
 				>
 			</File>
 			<File
