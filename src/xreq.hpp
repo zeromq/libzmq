@@ -55,6 +55,9 @@ namespace zmq
         fq_t fq;
         lb_t lb;
 
+        //  If true, curently sent message is being dropped.
+        bool dropping;
+
         xreq_t (const xreq_t&);
         void operator = (const xreq_t&);
     };
