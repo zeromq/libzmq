@@ -99,13 +99,13 @@ namespace zmq
         //  of processed commands here.
         virtual void process_seqnum ();
 
+    private:
+
         //  Pointer to the root of the infrastructure.
         class dispatcher_t *dispatcher;
 
         //  Slot ID of the thread the object belongs to.
         uint32_t thread_slot;
-
-    private:
 
         void send_command (command_t &cmd_);
 

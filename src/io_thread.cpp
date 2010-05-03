@@ -76,7 +76,7 @@ void zmq::io_thread_t::in_event ()
 
         //  Process all the commands from the thread that sent the signal.
         command_t cmd;
-        while (dispatcher->read (signal, thread_slot, &cmd))
+        while (get_dispatcher ()->read (signal, get_thread_slot (), &cmd))
             cmd.destination->process_command (cmd);
     }
 }

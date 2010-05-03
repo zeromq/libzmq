@@ -123,7 +123,7 @@ bool zmq::app_thread_t::process_commands (bool block_, bool throttle_)
     //  Process all the commands from the signaling source if there is one.
     if (signal != signaler_t::no_signal) {
         command_t cmd;
-        while (dispatcher->read (signal, get_thread_slot (), &cmd))
+        while (get_dispatcher ()->read (signal, get_thread_slot (), &cmd))
             cmd.destination->process_command (cmd);
     }
 
@@ -163,7 +163,7 @@ zmq::socket_base_t *zmq::app_thread_t::create_socket (int type_)
         break;
     default:
         if (sockets.empty ())
-            dispatcher->no_sockets (this);
+            get_dispatcher ()->no_sockets (this);
         errno = EINVAL;
         return NULL;
     }
@@ -178,7 +178,7 @@ void zmq::app_thread_t::remove_socket (socket_base_t *socket_)
 {
     sockets.erase (socket_);
     if (sockets.empty ())
-        dispatcher->no_sockets (this);
+        get_dispatcher ()->no_sockets (this);
 }
 
 void zmq::app_thread_t::process_stop ()
