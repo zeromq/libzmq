@@ -40,7 +40,7 @@ zmq::fd_t zmq::signaler_t::get_fd ()
 
 #if defined ZMQ_HAVE_WINDOWS
 
-zmq::signaler_t::signaler_t () :
+zmq::signaler_t::signaler_t ()
 {
     //  Windows have no 'socketpair' function. CreatePipe is no good as pipe
     //  handles cannot be polled on. Here we create the socketpair by hand.
@@ -106,7 +106,7 @@ void zmq::signaler_t::send (const command_t &cmd_)
     //  TODO: Note that send is a blocking operation.
     //  How should we behave if the signal cannot be written to the signaler?
     //  Even worse: What if half of a command is written?
-    int rc = send (w, (char*) &cmd_, sizeof (command_t), 0);
+    int rc = ::send (w, (char*) &cmd_, sizeof (command_t), 0);
     win_assert (rc != SOCKET_ERROR);
     zmq_assert (rc == sizeof (command_t));
 }
@@ -122,7 +122,7 @@ bool zmq::signaler_t::recv (command_t *cmd_, bool block_)
     }
 
     bool result;
-    int nbytes = recv (r, (char*) cmd_, sizeof (command_t), 0);
+    int nbytes = ::recv (r, (char*) cmd_, sizeof (command_t), 0);
     if (nbytes == -1 && WSAGetLastError () == WSAEWOULDBLOCK) {
         result = false;
     }
