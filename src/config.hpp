@@ -32,11 +32,6 @@ namespace zmq
         //  memory allocation by approximately 99.6%
         message_pipe_granularity = 256,
 
-        //  Number of new commands in command pipe needed to trigger new memory
-        //  allocation. The number should  be kept low to decrease the memory
-        //  footprint of dispatcher.
-        command_pipe_granularity = 4,
-
         //  Number of signals that can be read by the signaler
         //  using a single system call.
         signal_buffer_size = 8,

@@ -82,9 +82,12 @@ zmq::signaler_t *zmq::app_thread_t::get_signaler ()
 
 bool zmq::app_thread_t::process_commands (bool block_, bool throttle_)
 {
-    uint32_t signal;
-    if (block_)
-        signal = signaler.poll ();
+    bool received;
+    command_t cmd;
+    if (block_) {
+        received = signaler.recv (&cmd, true);
+        zmq_assert (received);
+    }   
     else {
 
 #if defined ZMQ_DELAY_COMMANDS
@@ -117,15 +120,12 @@ bool zmq::app_thread_t::process_commands (bool block_, bool throttle_)
 #endif
 
         //  Check whether there are any commands pending for this thread.
-        signal = signaler.check ();
+        received = signaler.recv (&cmd, false);
     }
 
-    //  Process all the commands from the signaling source if there is one.
-    if (signal != signaler_t::no_signal) {
-        command_t cmd;
-        while (get_dispatcher ()->read (signal, get_thread_slot (), &cmd))
-            cmd.destination->process_command (cmd);
-    }
+    //  Process the command, if any.
+    if (received)
+        cmd.destination->process_command (cmd);
 
     return !terminated;
 }

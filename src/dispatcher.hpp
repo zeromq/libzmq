@@ -27,7 +27,6 @@
 
 #include "signaler.hpp"
 #include "ypipe.hpp"
-#include "command.hpp"
 #include "config.hpp"
 #include "mutex.hpp"
 #include "stdint.hpp"
@@ -69,19 +68,12 @@ namespace zmq
         //  should disassociate the object from the current OS thread.
         void no_sockets (class app_thread_t *thread_);
 
-        //  Returns number of thread slots in the dispatcher. To be used by
-        //  individual threads to find out how many distinct signals can be
-        //  received.
-        uint32_t thread_slot_count ();
+        //  Send command to the destination thread.
+        void send_command (uint32_t destination_, const command_t &command_);
 
-        //  Send command from the source to the destination.
-        void write (uint32_t source_, uint32_t destination_,
-            const command_t &command_);
-
-        //  Receive command from the source. Returns false if there is no
-        //  command available.
-        bool read (uint32_t source_,  uint32_t destination_,
-            command_t *command_);
+        //  Receive command from another thread.
+        bool recv_command (uint32_t thread_slot_, command_t *command_,
+            bool block_);
 
         //  Returns the I/O thread that is the least busy at the moment.
         //  Taskset specifies which I/O threads are eligible (0 = all).
@@ -126,15 +118,9 @@ namespace zmq
         typedef std::vector <class io_thread_t*> io_threads_t;
         io_threads_t io_threads;
 
-        //  Signalers for both application and I/O threads.
-        std::vector <signaler_t*> signalers;
-
-        //  Pipe to hold the commands.
-        typedef ypipe_t <command_t, true,
-            command_pipe_granularity> command_pipe_t;
-
-        //  NxN matrix of command pipes.
-        command_pipe_t *command_pipes;
+        //  Array of pointers to signalers for both application and I/O threads.
+        int signalers_count;
+        signaler_t **signalers;
 
         //  As pipes may reside in orphaned state in particular moments
         //  of the pipe shutdown process, i.e. neither pipe reader nor

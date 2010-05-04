@@ -22,10 +22,8 @@
 #include "../include/zmq.h"
 
 #include "io_thread.hpp"
-#include "command.hpp"
 #include "platform.hpp"
 #include "err.hpp"
-#include "command.hpp"
 #include "dispatcher.hpp"
 
 zmq::io_thread_t::io_thread_t (dispatcher_t *dispatcher_,
@@ -67,17 +65,18 @@ int zmq::io_thread_t::get_load ()
 
 void zmq::io_thread_t::in_event ()
 {
+    //  TODO: Do we want to limit number of commands I/O thread can
+    //  process in a single go?
+
     while (true) {
 
-        //  Get the next signal.
-        uint32_t signal = signaler.check ();
-        if (signal == signaler_t::no_signal)
+        //  Get the next command. If there is none, exit.
+        command_t cmd;
+        if (!signaler.recv (&cmd, false))
             break;
 
-        //  Process all the commands from the thread that sent the signal.
-        command_t cmd;
-        while (get_dispatcher ()->read (signal, get_thread_slot (), &cmd))
-            cmd.destination->process_command (cmd);
+        //  Process the command.
+        cmd.destination->process_command (cmd);
     }
 }
 

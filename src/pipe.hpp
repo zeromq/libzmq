@@ -145,7 +145,7 @@ namespace zmq
     };
 
     //  Message pipe.
-    class pipe_t : public ypipe_t <zmq_msg_t, false, message_pipe_granularity>
+    class pipe_t : public ypipe_t <zmq_msg_t, message_pipe_granularity>
     {
     public:
 

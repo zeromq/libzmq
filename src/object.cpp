@@ -157,11 +157,10 @@ void zmq::object_t::send_stop ()
 {
     //  'stop' command goes always from administrative thread to
     //  the current object. 
-    uint32_t admin_thread_id = dispatcher->thread_slot_count () - 1;
     command_t cmd;
     cmd.destination = this;
     cmd.type = command_t::stop;
-    dispatcher->write (admin_thread_id, thread_slot, cmd);
+    dispatcher->send_command (thread_slot, cmd);
 }
 
 void zmq::object_t::send_plug (owned_t *destination_, bool inc_seqnum_)
@@ -370,7 +369,6 @@ void zmq::object_t::process_seqnum ()
 
 void zmq::object_t::send_command (command_t &cmd_)
 {
-    uint32_t destination_thread_slot = cmd_.destination->get_thread_slot ();
-    dispatcher->write (thread_slot, destination_thread_slot, cmd_);
+    dispatcher->send_command (cmd_.destination->get_thread_slot (), cmd_);
 }
 
