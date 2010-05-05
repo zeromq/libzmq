@@ -25,7 +25,7 @@
 
 #include "socket_base.hpp"
 #include "app_thread.hpp"
-#include "dispatcher.hpp"
+
 #include "zmq_listener.hpp"
 #include "zmq_connecter.hpp"
 #include "io_thread.hpp"
@@ -34,6 +34,7 @@
 #include "owned.hpp"
 #include "pipe.hpp"
 #include "err.hpp"
+#include "ctx.hpp"
 #include "platform.hpp"
 #include "pgm_sender.hpp"
 #include "pgm_receiver.hpp"
@@ -456,14 +457,14 @@ int zmq::socket_base_t::close ()
     //  Let the thread know that the socket is no longer available.
     app_thread->remove_socket (this);
 
-    //  Pointer to the dispatcher must be retrieved before the socket is
+    //  Pointer to the context must be retrieved before the socket is
     //  deallocated. Afterwards it is not available.
-    dispatcher_t *dispatcher = get_dispatcher ();
+    ctx_t *ctx = get_ctx ();
 
     //  Unregister all inproc endpoints associated with this socket.
     //  From this point we are sure that inc_seqnum won't be called again
     //  on this object.
-    dispatcher->unregister_endpoints (this);
+    ctx->unregister_endpoints (this);
 
     //  Wait till all undelivered commands are delivered. This should happen
     //  very quickly. There's no way to wait here for extensive period of time.
@@ -503,7 +504,7 @@ int zmq::socket_base_t::close ()
 
     //  This function must be called after the socket is completely deallocated
     //  as it may cause termination of the whole 0MQ infrastructure.
-    dispatcher->destroy_socket ();
+    ctx->destroy_socket ();
 
     return 0;
 }

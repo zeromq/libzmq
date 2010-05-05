@@ -34,7 +34,7 @@
 #endif
 
 #include "app_thread.hpp"
-#include "dispatcher.hpp"
+#include "ctx.hpp"
 #include "err.hpp"
 #include "pipe.hpp"
 #include "config.hpp"
@@ -57,9 +57,9 @@
 #define ZMQ_DELAY_COMMANDS
 #endif
 
-zmq::app_thread_t::app_thread_t (dispatcher_t *dispatcher_,
+zmq::app_thread_t::app_thread_t (ctx_t *ctx_,
         uint32_t thread_slot_) :
-    object_t (dispatcher_, thread_slot_),
+    object_t (ctx_, thread_slot_),
     last_processing_time (0),
     terminated (false)
 {
@@ -163,7 +163,7 @@ zmq::socket_base_t *zmq::app_thread_t::create_socket (int type_)
         break;
     default:
         if (sockets.empty ())
-            get_dispatcher ()->no_sockets (this);
+            get_ctx ()->no_sockets (this);
         errno = EINVAL;
         return NULL;
     }
@@ -178,7 +178,7 @@ void zmq::app_thread_t::remove_socket (socket_base_t *socket_)
 {
     sockets.erase (socket_);
     if (sockets.empty ())
-        get_dispatcher ()->no_sockets (this);
+        get_ctx ()->no_sockets (this);
 }
 
 void zmq::app_thread_t::process_stop ()

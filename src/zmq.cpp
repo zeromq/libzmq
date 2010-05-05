@@ -29,11 +29,11 @@
 #include "streamer.hpp"
 #include "socket_base.hpp"
 #include "app_thread.hpp"
-#include "dispatcher.hpp"
 #include "msg_content.hpp"
 #include "platform.hpp"
 #include "stdint.hpp"
 #include "config.hpp"
+#include "ctx.hpp"
 #include "err.hpp"
 #include "fd.hpp"
 
@@ -263,15 +263,14 @@ void *zmq_init (int /*app_threads_*/, int io_threads_, int /*flags_*/)
 #endif
 
     //  Create 0MQ context.
-    zmq::dispatcher_t *dispatcher = new (std::nothrow) zmq::dispatcher_t (
-        (uint32_t) io_threads_);
-    zmq_assert (dispatcher);
-    return (void*) dispatcher;
+    zmq::ctx_t *ctx = new (std::nothrow) zmq::ctx_t ((uint32_t) io_threads_);
+    zmq_assert (ctx);
+    return (void*) ctx;
 }
 
-int zmq_term (void *dispatcher_)
+int zmq_term (void *ctx_)
 {
-    int rc = ((zmq::dispatcher_t*) dispatcher_)->term ();
+    int rc = ((zmq::ctx_t*) ctx_)->term ();
     int en = errno;
 
 #if defined ZMQ_HAVE_OPENPGM
@@ -284,9 +283,9 @@ int zmq_term (void *dispatcher_)
     return rc;
 }
 
-void *zmq_socket (void *dispatcher_, int type_)
+void *zmq_socket (void *ctx_, int type_)
 {
-    return (void*) (((zmq::dispatcher_t*) dispatcher_)->create_socket (type_));
+    return (void*) (((zmq::ctx_t*) ctx_)->create_socket (type_));
 }
 
 int zmq_close (void *s_)

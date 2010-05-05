@@ -17,8 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_DISPATCHER_HPP_INCLUDED__
-#define __ZMQ_DISPATCHER_HPP_INCLUDED__
+#ifndef __ZMQ_CTX_HPP_INCLUDED__
+#define __ZMQ_CTX_HPP_INCLUDED__
 
 #include <vector>
 #include <set>
@@ -34,14 +34,17 @@
 
 namespace zmq
 {
+
+    //  Context object encapsulates all the global state associated with
+    //  the library.
     
-    class dispatcher_t
+    class ctx_t
     {
     public:
 
-        //  Create the dispatcher object. The argument specifies the size
+        //  Create the context object. The argument specifies the size
         //  of I/O thread pool to create.
-        dispatcher_t (uint32_t io_threads_);
+        ctx_t (uint32_t io_threads_);
 
         //  This function is called when user invokes zmq_term. If there are
         //  no more sockets open it'll cause all the infrastructure to be shut
@@ -70,7 +73,7 @@ namespace zmq
         //  Taskset specifies which I/O threads are eligible (0 = all).
         class io_thread_t *choose_io_thread (uint64_t taskset_);
 
-        //  All pipes are registered with the dispatcher so that even the
+        //  All pipes are registered with the context so that even the
         //  orphaned pipes can be deallocated on the terminal shutdown.
         void register_pipe (class pipe_t *pipe_);
         void unregister_pipe (class pipe_t *pipe_);
@@ -82,7 +85,7 @@ namespace zmq
 
     private:
 
-        ~dispatcher_t ();
+        ~ctx_t ();
 
         struct app_thread_info_t
         {
@@ -116,7 +119,7 @@ namespace zmq
         //  As pipes may reside in orphaned state in particular moments
         //  of the pipe shutdown process, i.e. neither pipe reader nor
         //  pipe writer hold reference to the pipe, we have to hold references
-        //  to all pipes in dispatcher so that we can deallocate them
+        //  to all pipes in context so that we can deallocate them
         //  during terminal shutdown even though it conincides with the
         //  pipe being in the orphaned state.
         typedef std::set <class pipe_t*> pipes_t;
@@ -143,8 +146,8 @@ namespace zmq
         //  Synchronisation of access to the list of inproc endpoints.
         mutex_t endpoints_sync;
 
-        dispatcher_t (const dispatcher_t&);
-        void operator = (const dispatcher_t&);
+        ctx_t (const ctx_t&);
+        void operator = (const ctx_t&);
     };
     
 }

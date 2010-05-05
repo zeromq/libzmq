@@ -24,11 +24,11 @@
 #include "io_thread.hpp"
 #include "platform.hpp"
 #include "err.hpp"
-#include "dispatcher.hpp"
+#include "ctx.hpp"
 
-zmq::io_thread_t::io_thread_t (dispatcher_t *dispatcher_,
+zmq::io_thread_t::io_thread_t (ctx_t *ctx_,
       uint32_t thread_slot_) :
-    object_t (dispatcher_, thread_slot_)
+    object_t (ctx_, thread_slot_)
 {
     poller = new (std::nothrow) poller_t;
     zmq_assert (poller);

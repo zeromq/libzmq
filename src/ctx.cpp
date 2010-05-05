@@ -22,7 +22,7 @@
 
 #include "../include/zmq.h"
 
-#include "dispatcher.hpp"
+#include "ctx.hpp"
 #include "socket_base.hpp"
 #include "app_thread.hpp"
 #include "io_thread.hpp"
@@ -34,7 +34,7 @@
 #include "windows.h"
 #endif
 
-zmq::dispatcher_t::dispatcher_t (uint32_t io_threads_) :
+zmq::ctx_t::ctx_t (uint32_t io_threads_) :
     sockets (0),
     terminated (false)
 {
@@ -65,7 +65,7 @@ zmq::dispatcher_t::dispatcher_t (uint32_t io_threads_) :
     }
 }
 
-int zmq::dispatcher_t::term ()
+int zmq::ctx_t::term ()
 {
     //  First send stop command to application threads so that any
     //  blocking calls are interrupted.
@@ -86,7 +86,7 @@ int zmq::dispatcher_t::term ()
     return 0;
 }
 
-zmq::dispatcher_t::~dispatcher_t ()
+zmq::ctx_t::~ctx_t ()
 {
     //  Ask I/O threads to terminate. If stop signal wasn't sent to I/O
     //  thread subsequent invocation of destructor would hang-up.
@@ -117,7 +117,7 @@ zmq::dispatcher_t::~dispatcher_t ()
 #endif
 }
 
-zmq::socket_base_t *zmq::dispatcher_t::create_socket (int type_)
+zmq::socket_base_t *zmq::ctx_t::create_socket (int type_)
 {
     app_threads_sync.lock ();
 
@@ -183,7 +183,7 @@ zmq::socket_base_t *zmq::dispatcher_t::create_socket (int type_)
     return s;
 }
 
-void zmq::dispatcher_t::destroy_socket ()
+void zmq::ctx_t::destroy_socket ()
 {
     //  If zmq_term was already called and there are no more sockets,
     //  terminate the whole 0MQ infrastructure.
@@ -197,7 +197,7 @@ void zmq::dispatcher_t::destroy_socket ()
        delete this;
 }
 
-void zmq::dispatcher_t::no_sockets (app_thread_t *thread_)
+void zmq::ctx_t::no_sockets (app_thread_t *thread_)
 {
     app_threads_sync.lock ();
     app_threads_t::size_type i;
@@ -210,19 +210,19 @@ void zmq::dispatcher_t::no_sockets (app_thread_t *thread_)
     app_threads_sync.unlock ();
 }
 
-void zmq::dispatcher_t::send_command (uint32_t destination_,
+void zmq::ctx_t::send_command (uint32_t destination_,
     const command_t &command_)
 {
     signalers [destination_]->send (command_);
 }
 
-bool zmq::dispatcher_t::recv_command (uint32_t thread_slot_,
+bool zmq::ctx_t::recv_command (uint32_t thread_slot_,
     command_t *command_, bool block_)
 {
     return signalers [thread_slot_]->recv (command_, block_);
 }
 
-zmq::io_thread_t *zmq::dispatcher_t::choose_io_thread (uint64_t affinity_)
+zmq::io_thread_t *zmq::ctx_t::choose_io_thread (uint64_t affinity_)
 {
     //  Find the I/O thread with minimum load.
     zmq_assert (io_threads.size () > 0);
@@ -241,7 +241,7 @@ zmq::io_thread_t *zmq::dispatcher_t::choose_io_thread (uint64_t affinity_)
     return io_threads [result];
 }
 
-void zmq::dispatcher_t::register_pipe (class pipe_t *pipe_)
+void zmq::ctx_t::register_pipe (class pipe_t *pipe_)
 {
     pipes_sync.lock ();
     bool inserted = pipes.insert (pipe_).second;
@@ -249,7 +249,7 @@ void zmq::dispatcher_t::register_pipe (class pipe_t *pipe_)
     pipes_sync.unlock ();
 }
 
-void zmq::dispatcher_t::unregister_pipe (class pipe_t *pipe_)
+void zmq::ctx_t::unregister_pipe (class pipe_t *pipe_)
 {
     pipes_sync.lock ();
     pipes_t::size_type erased = pipes.erase (pipe_);
@@ -257,7 +257,7 @@ void zmq::dispatcher_t::unregister_pipe (class pipe_t *pipe_)
     pipes_sync.unlock ();
 }
 
-int zmq::dispatcher_t::register_endpoint (const char *addr_,
+int zmq::ctx_t::register_endpoint (const char *addr_,
     socket_base_t *socket_)
 {
     endpoints_sync.lock ();
@@ -274,7 +274,7 @@ int zmq::dispatcher_t::register_endpoint (const char *addr_,
     return 0;
 }
 
-void zmq::dispatcher_t::unregister_endpoints (socket_base_t *socket_)
+void zmq::ctx_t::unregister_endpoints (socket_base_t *socket_)
 {
     endpoints_sync.lock ();
 
@@ -292,7 +292,7 @@ void zmq::dispatcher_t::unregister_endpoints (socket_base_t *socket_)
     endpoints_sync.unlock ();
 }
 
-zmq::socket_base_t *zmq::dispatcher_t::find_endpoint (const char *addr_)
+zmq::socket_base_t *zmq::ctx_t::find_endpoint (const char *addr_)
 {
      endpoints_sync.lock ();
 

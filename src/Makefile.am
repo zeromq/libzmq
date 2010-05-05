@@ -55,9 +55,9 @@ libzmq_la_SOURCES = app_thread.hpp \
     blob.hpp \
     command.hpp \
     config.hpp \
+    ctx.hpp \
     decoder.hpp \
     devpoll.hpp \
-    dispatcher.hpp \
     downstream.hpp \
     encoder.hpp \
     epoll.hpp \
@@ -122,8 +122,8 @@ libzmq_la_SOURCES = app_thread.hpp \
     zmq_listener.hpp \
     app_thread.cpp \
     command.cpp \
+    ctx.cpp \
     devpoll.cpp \
-    dispatcher.cpp \
     downstream.cpp \
     epoll.cpp \
     err.cpp \

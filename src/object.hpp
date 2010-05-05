@@ -32,15 +32,15 @@ namespace zmq
     {
     public:
 
-        object_t (class dispatcher_t *dispatcher_, uint32_t thread_slot_);
+        object_t (class ctx_t *ctx_, uint32_t thread_slot_);
         object_t (object_t *parent_);
         virtual ~object_t ();
 
         uint32_t get_thread_slot ();
-        dispatcher_t *get_dispatcher ();
+        ctx_t *get_ctx ();
         void process_command (struct command_t &cmd_);
 
-        //  Allow pipe to access corresponding dispatcher functions.
+        //  Allow pipe to access corresponding context functions.
         void register_pipe (class pipe_t *pipe_);
         void unregister_pipe (class pipe_t *pipe_);
 
@@ -101,8 +101,8 @@ namespace zmq
 
     private:
 
-        //  Pointer to the root of the infrastructure.
-        class dispatcher_t *dispatcher;
+        //  Context provides access to the global state.
+        class ctx_t *ctx;
 
         //  Slot ID of the thread the object belongs to.
         uint32_t thread_slot;

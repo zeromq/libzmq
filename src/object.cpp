@@ -20,7 +20,7 @@
 #include <string.h>
 
 #include "object.hpp"
-#include "dispatcher.hpp"
+#include "ctx.hpp"
 #include "err.hpp"
 #include "pipe.hpp"
 #include "io_thread.hpp"
@@ -28,14 +28,14 @@
 #include "session.hpp"
 #include "socket_base.hpp"
 
-zmq::object_t::object_t (dispatcher_t *dispatcher_, uint32_t thread_slot_) :
-    dispatcher (dispatcher_),
+zmq::object_t::object_t (ctx_t *ctx_, uint32_t thread_slot_) :
+    ctx (ctx_),
     thread_slot (thread_slot_)
 {
 }
 
 zmq::object_t::object_t (object_t *parent_) :
-    dispatcher (parent_->dispatcher),
+    ctx (parent_->ctx),
     thread_slot (parent_->thread_slot)
 {
 }
@@ -49,9 +49,9 @@ uint32_t zmq::object_t::get_thread_slot ()
     return thread_slot;
 }
 
-zmq::dispatcher_t *zmq::object_t::get_dispatcher ()
+zmq::ctx_t *zmq::object_t::get_ctx ()
 {
-    return dispatcher;
+    return ctx;
 }
 
 void zmq::object_t::process_command (command_t &cmd_)
@@ -125,32 +125,32 @@ void zmq::object_t::process_command (command_t &cmd_)
 
 void zmq::object_t::register_pipe (class pipe_t *pipe_)
 {
-    dispatcher->register_pipe (pipe_);
+    ctx->register_pipe (pipe_);
 }
 
 void zmq::object_t::unregister_pipe (class pipe_t *pipe_)
 {
-    dispatcher->unregister_pipe (pipe_);
+    ctx->unregister_pipe (pipe_);
 }
 
 int zmq::object_t::register_endpoint (const char *addr_, socket_base_t *socket_)
 {
-    return dispatcher->register_endpoint (addr_, socket_);
+    return ctx->register_endpoint (addr_, socket_);
 }
 
 void zmq::object_t::unregister_endpoints (socket_base_t *socket_)
 {
-    return dispatcher->unregister_endpoints (socket_);
+    return ctx->unregister_endpoints (socket_);
 }
 
 zmq::socket_base_t *zmq::object_t::find_endpoint (const char *addr_)
 {
-    return dispatcher->find_endpoint (addr_);
+    return ctx->find_endpoint (addr_);
 }
 
 zmq::io_thread_t *zmq::object_t::choose_io_thread (uint64_t taskset_)
 {
-    return dispatcher->choose_io_thread (taskset_);
+    return ctx->choose_io_thread (taskset_);
 }
 
 void zmq::object_t::send_stop ()
@@ -160,7 +160,7 @@ void zmq::object_t::send_stop ()
     command_t cmd;
     cmd.destination = this;
     cmd.type = command_t::stop;
-    dispatcher->send_command (thread_slot, cmd);
+    ctx->send_command (thread_slot, cmd);
 }
 
 void zmq::object_t::send_plug (owned_t *destination_, bool inc_seqnum_)
@@ -369,6 +369,6 @@ void zmq::object_t::process_seqnum ()
 
 void zmq::object_t::send_command (command_t &cmd_)
 {
-    dispatcher->send_command (cmd_.destination->get_thread_slot (), cmd_);
+    ctx->send_command (cmd_.destination->get_thread_slot (), cmd_);
 }
 
