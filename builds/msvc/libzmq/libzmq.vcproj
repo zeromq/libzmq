@@ -178,11 +178,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\devpoll.cpp"
+				RelativePath="..\..\..\src\ctx.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\dispatcher.cpp"
+				RelativePath="..\..\..\src\devpoll.cpp"
 				>
 			</File>
 			<File
@@ -392,15 +392,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\ctx.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\decoder.hpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\..\src\devpoll.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\dispatcher.hpp"
 				>
 			</File>
 			<File
