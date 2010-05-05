@@ -34,23 +34,14 @@
 
 namespace zmq
 {
-
-    //  Dispatcher implements bidirectional thread-safe passing of commands
-    //  between N threads. It consists of a ypipes to pass commands and
-    //  signalers to wake up the receiver thread when new commands are
-    //  available. Note that dispatcher is inefficient for passing messages
-    //  within a thread (sender thread = receiver thread). The optimisation is
-    //  not part of the class and should be implemented by individual threads
-    //  (presumably by calling the command handling function directly).
     
     class dispatcher_t
     {
     public:
 
-        //  Create the dispatcher object. Matrix of pipes to communicate between
-        //  each socket and each I/O thread is created along with appropriate
-        //  signalers.
-        dispatcher_t (uint32_t app_threads_, uint32_t io_threads_);
+        //  Create the dispatcher object. The argument specifies the size
+        //  of I/O thread pool to create.
+        dispatcher_t (uint32_t io_threads_);
 
         //  This function is called when user invokes zmq_term. If there are
         //  no more sockets open it'll cause all the infrastructure to be shut

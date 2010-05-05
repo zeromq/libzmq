@@ -226,7 +226,9 @@ size_t zmq_msg_size (zmq_msg_t *msg_)
     return ((zmq::msg_content_t*) msg_->content)->size;
 }
 
-void *zmq_init (int app_threads_, int io_threads_, int flags_)
+//  TODO: app_threads and flags parameters are not used anymore...
+//  Reflect this in the API/ABI.
+void *zmq_init (int /*app_threads_*/, int io_threads_, int /*flags_*/)
 {
     //  There are no context flags defined at the moment, so flags_ is ignored.
 
@@ -262,7 +264,7 @@ void *zmq_init (int app_threads_, int io_threads_, int flags_)
 
     //  Create 0MQ context.
     zmq::dispatcher_t *dispatcher = new (std::nothrow) zmq::dispatcher_t (
-        (uint32_t) app_threads_, (uint32_t) io_threads_);
+        (uint32_t) io_threads_);
     zmq_assert (dispatcher);
     return (void*) dispatcher;
 }
