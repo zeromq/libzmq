@@ -230,7 +230,10 @@ size_t zmq_msg_size (zmq_msg_t *msg_)
 //  Reflect this in the API/ABI.
 void *zmq_init (int /*app_threads_*/, int io_threads_, int /*flags_*/)
 {
-    //  There are no context flags defined at the moment, so flags_ is ignored.
+    if (io_threads_ < 0) {
+        errno = EINVAL;
+        return NULL;
+    }
 
 #if defined ZMQ_HAVE_OPENPGM
     //  Unfortunately, OpenPGM doesn't support refcounted init/shutdown, thus,
