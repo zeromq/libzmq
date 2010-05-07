@@ -123,9 +123,11 @@ bool zmq::app_thread_t::process_commands (bool block_, bool throttle_)
         received = signaler.recv (&cmd, false);
     }
 
-    //  Process the command, if any.
-    if (received)
+    //  Process all the commands available at the moment.
+    while (received) {
         cmd.destination->process_command (cmd);
+        received = signaler.recv (&cmd, false);
+    }
 
     return !terminated;
 }
