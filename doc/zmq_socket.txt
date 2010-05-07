@@ -21,19 +21,6 @@ communication over the socket.
 
 The following _messaging patterns_ are defined:
 
-
-Peer to peer pattern
-~~~~~~~~~~~~~~~~~~~~
-The simplest messaging pattern, used for communicating between two peers.
-
-Socket type:: 'ZMQ_PAIR'
-Compatible peer sockets:: 'ZMQ_PAIR'
-
-A socket of type 'ZMQ_PAIR' can only be connected to a single peer at any one
-time.  No message routing or filtering is performed on messages sent over a
-'ZMQ_PAIR' socket.
-
-
 Publish-subscribe pattern
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 The publish-subscribe pattern is used for one-to-many distribution of data from
