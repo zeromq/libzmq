@@ -605,7 +605,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             memcpy (&inset, &pollset_in, sizeof (fd_set));
             memcpy (&outset, &pollset_out, sizeof (fd_set));
             memcpy (&errset, &pollset_err, sizeof (fd_set));
-            int rc = select (maxfd, &inset, &outset, &errset,
+            rc = select (maxfd, &inset, &outset, &errset,
                 block ? NULL : &timeout);
 #if defined ZMQ_HAVE_WINDOWS
             wsa_assert (rc != SOCKET_ERROR);
