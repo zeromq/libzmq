@@ -181,6 +181,7 @@ if BUILD_PGM
 if ON_MINGW
 libpgm_diff_flags = \
     -D_WIN32_WINNT=0x0501 \
+    -DCONFIG_16BIT_CHECKSUM \
     -DCONFIG_HAVE_IFR_NETMASK \
     -DCONFIG_BIND_INADDR_ANY \
     -DCONFIG_GALOIS_MUL_LUT \
@@ -193,6 +194,7 @@ libpgm_diff_flags = \
 else
 libpgm_diff_flags = \
     -D__need_IOV_MAX \
+    -DCONFIG_16BIT_CHECKSUM \
     -DCONFIG_HAVE_PSELECT \
     -DCONFIG_HAVE_POLL \
     -DCONFIG_HAVE_PPOLL \
