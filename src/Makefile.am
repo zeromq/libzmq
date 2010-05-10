@@ -221,36 +221,17 @@ libpgm_diff_flags = \
 endif
 
 libzmq_la_CFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/include/ @LIBZMQ_EXTRA_CXXFLAGS@ \
-    -pipe \
     -Wall \
-    -Wextra \
-    -Wfloat-equal \
-    -Wshadow \
-    -Wunsafe-loop-optimizations \
-    -Wpointer-arith \
-    -Wbad-function-cast \
-    -Wcast-qual \
-    -Wcast-align \
-    -Wwrite-strings \
-    -Waggregate-return \
-    -Wstrict-prototypes \
-    -Wold-style-definition \
-    -Wmissing-prototypes \
-    -Wmissing-declarations \
-    -Wmissing-noreturn \
-    -Wmissing-format-attribute \
-    -Wredundant-decls \
-    -Wnested-externs \
-    -Winline \
     -pedantic \
     -std=gnu99 \
+    -fno-strict-aliasing \
     --param max-inline-insns-single=600 \
     -D_REENTRANT \
     -D_GNU_SOURCE \
     ${libpgm_diff_flags}
 
 libzmq_la_CXXFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/include/ \
-    -Wall @LIBZMQ_EXTRA_CXXFLAGS@ ${libpgm_diff_flags}
+    @LIBZMQ_EXTRA_CXXFLAGS@
 endif
 
 if BUILD_NO_PGM
