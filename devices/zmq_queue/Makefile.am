@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)/bindings/cpp -I$(top_srcdir)/bindings/c
+INCLUDES = -I$(top_srcdir)/include
 
 bin_PROGRAMS = zmq_queue
 
