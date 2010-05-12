@@ -30,6 +30,14 @@
 #include <uuid/uuid.h>
 #elif defined ZMQ_HAVE_WINDOWS
 #include <rpc.h>
+#elif defined ZMQ_HAVE_OPENVMS
+typedef struct
+{
+    unsigned long data0;
+    unsigned short data1;
+    unsigned short data2;
+    unsigned char data3 [8];
+} uuid_t;
 #endif
 
 namespace zmq
@@ -77,7 +85,8 @@ namespace zmq
         ::uuid_t uuid;
         char *string_buf;
 #elif defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_SOLARIS ||\
-      defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_CYGWIN
+      defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_CYGWIN ||\
+      defined ZMQ_HAVE_OPENVMS
         ::uuid_t uuid;
         char string_buf [uuid_string_len + 1];
 #else

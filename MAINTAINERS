@@ -1,0 +1,60 @@
+Component: Atomic Operations
+Maintainer: Martin Lucina
+Contact: mato@kotelna.sk
+
+Component: Lock-free Algorithms
+Maintainer: Martin Sustrik
+Contact: sustrik@250bpm.com
+
+Component: TCP transport
+Maintainer: Martin Sustrik
+Contact: sustrik@250bpm.com
+
+Component: IPC transport
+Maintainer: Martin Sustrik
+Contact: sustrik@250bpm.com
+
+Component: PGM transport
+Maintainer: Martin Sustrik
+Contact: sustrik@250bpm.com
+
+Component: In-process transport
+Maintainer: Martin Sustrik
+Contact: sustrik@250bpm.com
+
+Component: I/O Threads
+Maintainer: Martin Sustrik
+Contact: sustrik@250bpm.com
+
+Component: Application Threads and Differnet Socket Types
+Maintainer: Martin Sustrik
+Contact: sustrik@250bpm.com
+
+Component: Multiplexing (zmq_poll)
+Maintainer: Martin Sustrik
+Contact: sustrik@250bpm.com
+
+Component: Devices
+Maintainer: Martin Sustrik
+Contact: sustrik@250bpm.com
+
+Component: Generic Infrastructure (context, signaler, command, pipe)
+Maintainer: Martin Sustrik
+Contact: sustrik@250bpm.com
+
+Component: Documentation
+Maintainer: Martin Lucina
+Contact: mato@kotelna.sk
+
+Component: Autotools build system
+Maintainer: Martin Lucina
+Contact: mato@kotelna.sk
+
+Component: MSVC build system
+Maintainer: Martin Sustrik
+Contact: sustrik@250bpm.com
+
+Component: Performance tests
+Maintainer: Martin Sustrik
+Contact: sustrik@250bpm.com
+
