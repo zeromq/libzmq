@@ -97,6 +97,35 @@ const char *zmq::uuid_t::to_string ()
     return string_buf;
 }
 
+#elif defined ZMQ_HAVE_OPENVMS
+
+#include <starlet.h>
+
+#define uuid_generate(x) sys$create_uid(&(x))
+
+#define uuid_unparse(x, y) \
+        sprintf (y, "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x", \
+                        x.data0, x.data1, x.data2, \
+                        x.data3 [0], x.data3 [1], \
+                        x.data3 [2], x.data3 [3], \
+                        x.data3 [4], x.data3 [5], \
+                        x.data3 [6], x.data3 [7]);
+
+zmq::uuid_t::uuid_t ()
+{
+    uuid_generate (uuid);
+    uuid_unparse (uuid, string_buf);
+}
+
+zmq::uuid_t::~uuid_t ()
+{
+}
+
+const char *zmq::uuid_t::to_string ()
+{
+    return string_buf;
+}
+
 #else
 
 #include <stdio.h>

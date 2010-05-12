@@ -140,6 +140,10 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
 #include <netdb.h>
 #include <fcntl.h>
 
+#ifdef ZMQ_HAVE_OPENVMS
+#include <ioctl.h>
+#endif
+
 zmq::tcp_connecter_t::tcp_connecter_t () :
     s (retired_fd)
 {
@@ -176,11 +180,17 @@ int zmq::tcp_connecter_t::open ()
             return -1;
 
         // Set to non-blocking mode.
-        int flags = fcntl (s, F_GETFL, 0);
-        if (flags == -1) 
-            flags = 0;
-        int rc = fcntl (s, F_SETFL, flags | O_NONBLOCK);
+#ifdef ZMQ_HAVE_OPENVMS
+    	int flags = 1;
+    	int rc = ioctl (s, FIONBIO, &flags);
         errno_assert (rc != -1);
+#else
+    	int flags = fcntl (s, F_GETFL, 0);
+    	if (flags == -1)
+            flags = 0;
+    	int rc = fcntl (s, F_SETFL, flags | O_NONBLOCK);
+        errno_assert (rc != -1);
+#endif
 
         //  Disable Nagle's algorithm.
         int flag = 1;
@@ -215,6 +225,8 @@ int zmq::tcp_connecter_t::open ()
         errno = err;
         return -1;
     }
+
+#ifndef ZMQ_HAVE_OPENVMS
     else {
 
         //  Create the socket.
@@ -243,6 +255,7 @@ int zmq::tcp_connecter_t::open ()
         errno = err;
         return -1;
     }
+#endif
 
     zmq_assert (false);
     return -1;

@@ -140,7 +140,14 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
 #include <netinet/in.h>
 #include <netdb.h>
 #include <fcntl.h>
+
+#ifndef ZMQ_HAVE_OPENVMS
 #include <sys/un.h>
+#endif
+
+#ifdef ZMQ_HAVE_OPENVMS
+#include <ioctl.h>
+#endif
 
 zmq::tcp_listener_t::tcp_listener_t () :
     s (retired_fd)
@@ -174,11 +181,17 @@ int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
         errno_assert (rc == 0);
 
         //  Set the non-blocking flag.
-        flag = fcntl (s, F_GETFL, 0);
-        if (flag == -1) 
-            flag = 0;
-        rc = fcntl (s, F_SETFL, flag | O_NONBLOCK);
+#ifdef ZMQ_HAVE_OPENVMS
+    	flag = 1;
+    	rc = ioctl (s, FIONBIO, &flag);
         errno_assert (rc != -1);
+#else
+    	flag = fcntl (s, F_GETFL, 0);
+    	if (flag == -1)
+            flag = 0;
+    	rc = fcntl (s, F_SETFL, flag | O_NONBLOCK);
+        errno_assert (rc != -1);
+#endif
 
         //  Bind the socket to the network interface and port.
         rc = bind (s, (struct sockaddr*) &addr, addr_len);
@@ -196,6 +209,7 @@ int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
 
         return 0;
     }
+#ifndef ZMQ_HAVE_OPENVMS
     else if (strcmp (protocol_, "ipc") == 0) {
 
         //  Get rid of the file associated with the UNIX domain socket that
@@ -235,6 +249,7 @@ int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
 
         return 0;
     }
+#endif
     else {
         errno = EPROTONOSUPPORT;
         return -1;
@@ -249,6 +264,7 @@ int zmq::tcp_listener_t::close ()
         return -1;
     s = retired_fd;
 
+#ifndef ZMQ_HAVE_OPENVMS
     //  If there's an underlying UNIX domain socket, get rid of the file it
     //  is associated with.
     struct sockaddr_un *su = (struct sockaddr_un*) &addr;
@@ -257,6 +273,7 @@ int zmq::tcp_listener_t::close ()
         if (rc != 0)
             return -1;
     }
+#endif
 
     return 0;
 }
@@ -299,11 +316,17 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
     errno_assert (sock != -1); 
 
     // Set to non-blocking mode.
+#ifdef ZMQ_HAVE_OPENVMS
+    int flags = 1;
+    int rc = ioctl (sock, FIONBIO, &flags);
+    errno_assert (rc != -1);
+#else
     int flags = fcntl (s, F_GETFL, 0);
-    if (flags == -1) 
+    if (flags == -1)
         flags = 0;
     int rc = fcntl (sock, F_SETFL, flags | O_NONBLOCK);
     errno_assert (rc != -1);
+#endif
 
     struct sockaddr *sa = (struct sockaddr*) &addr;
     if (AF_UNIX != sa->sa_family) {

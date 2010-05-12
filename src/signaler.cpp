@@ -25,6 +25,7 @@
 
 #if defined ZMQ_HAVE_OPENVMS
 #include <netinet/tcp.h>
+#include <unistd.h>
 #elif defined ZMQ_HAVE_WINDOWS 
 #include "windows.hpp"
 #else
