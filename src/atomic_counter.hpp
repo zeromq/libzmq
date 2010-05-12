@@ -27,14 +27,10 @@
 #define ZMQ_ATOMIC_COUNTER_MUTEX
 #elif (defined __i386__ || defined __x86_64__) && defined __GNUC__
 #define ZMQ_ATOMIC_COUNTER_X86
-#elif 0 && defined __sparc__ && defined __GNUC__
-#define ZMQ_ATOMIC_COUNTER_SPARC
 #elif defined ZMQ_HAVE_WINDOWS
 #define ZMQ_ATOMIC_COUNTER_WINDOWS
-#elif defined sun
-#define ZMQ_ATOMIC_COUNTER_SUN
-#elif defined( __GNUC__ ) && ( __GNUC__ * 100 + __GNUC_MINOR__ >= 401 )
-#define ZMQ_ATOMIC_COUNTER_GNU
+#elif (defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_NETBSD)
+#define ZMQ_ATOMIC_COUNTER_ATOMIC_H
 #else
 #define ZMQ_ATOMIC_COUNTER_MUTEX
 #endif
@@ -43,7 +39,7 @@
 #include "mutex.hpp"
 #elif defined ZMQ_ATOMIC_COUNTER_WINDOWS
 #include "windows.hpp"
-#elif defined ZMQ_ATOMIC_COUNTER_SUN
+#elif defined ZMQ_ATOMIC_COUNTER_ATOMIC_H
 #include <atomic.h>
 #endif
 
@@ -81,9 +77,7 @@ namespace zmq
 
 #if defined ZMQ_ATOMIC_COUNTER_WINDOWS
             old_value = InterlockedExchangeAdd ((LONG*) &value, increment_);
-#elif defined ZMQ_ATOMIC_COUNTER_GNU
-            old_value = __sync_fetch_and_add (&value, increment_);
-#elif defined ZMQ_ATOMIC_COUNTER_SUN
+#elif defined ZMQ_ATOMIC_COUNTER_ATOMIC_H
             integer_t new_value = atomic_add_32_nv (&value, increment_);
             old_value = new_value - increment_;
 #elif defined ZMQ_ATOMIC_COUNTER_X86
@@ -92,26 +86,13 @@ namespace zmq
                 : "=r" (old_value), "=m" (value)
                 : "0" (increment_), "m" (value)
                 : "cc", "memory");
-#elif defined ZMQ_ATOMIC_COUNTER_SPARC
-            integer_t tmp;
-            __asm__ volatile (
-                "ld [%4], %0 \n\t"
-                "1: \n\t"
-                "add %0, %3, %1 \n\t"
-                "cas [%4], %0, %1 \n\t"
-                "cmp %0, %1 \n\t"
-                "bne,a,pn %%icc, 1b \n\t"
-                "mov %1, %0 \n\t"
-                : "=&r" (old_value), "=&r" (tmp), "=m" (value)
-                : "r" (increment_), "r" (&value)
-                : "cc", "memory");
 #elif defined ZMQ_ATOMIC_COUNTER_MUTEX
             sync.lock ();
             old_value = value;
             value += increment_;
             sync.unlock ();
 #else
-#error
+#error atomic_counter is not implemented for this platform
 #endif
             return old_value;
         }
@@ -123,11 +104,7 @@ namespace zmq
             LONG delta = - ((LONG) decrement);
             integer_t old = InterlockedExchangeAdd ((LONG*) &value, delta);
             return old - decrement != 0;
-#elif defined ZMQ_ATOMIC_COUNTER_GNU
-            int32_t delta = - ((int32_t) decrement);
-            integer_t nv = __sync_fetch_and_add (&value, delta);
-            return nv != 0;
-#elif defined ZMQ_ATOMIC_COUNTER_SUN
+#elif defined ZMQ_ATOMIC_COUNTER_ATOMIC_H
             int32_t delta = - ((int32_t) decrement);
             integer_t nv = atomic_add_32_nv (&value, delta);
             return nv != 0;
@@ -137,24 +114,8 @@ namespace zmq
             __asm__ volatile ("lock; xaddl %0,%1"
                 : "=r" (oldval), "=m" (*val)
                 : "0" (oldval), "m" (*val)
-                : "cc");
+                : "cc", "memory");
             return oldval != decrement;
-#elif defined ZMQ_ATOMIC_COUNTER_SPARC
-            volatile integer_t *val = &value;
-            integer_t tmp;
-            integer_t result;
-            __asm__ volatile(
-                "ld [%4], %1\n\t"
-                "1:\n\t"
-                "add %1, %0, %2\n\t"
-                "cas [%4], %1, %2\n\t"
-                "cmp %1, %2\n\t"
-                "bne,a,pn %%icc, 1b\n\t"
-                "mov %2, %1\n\t"
-                : "+r" (-decrement), "=&r" (tmp), "=&r" (result), "+m" (*val)
-                : "r" (val)
-                : "cc");
-            return result <= decrement;
 #elif defined ZMQ_ATOMIC_COUNTER_MUTEX
             sync.lock ();
             value -= decrement;
@@ -162,7 +123,7 @@ namespace zmq
             sync.unlock ();
             return result;
 #else
-#error
+#error atomic_counter is not implemented for this platform
 #endif
         }
 
@@ -188,17 +149,11 @@ namespace zmq
 #if defined ZMQ_ATOMIC_COUNTER_WINDOWS
 #undef ZMQ_ATOMIC_COUNTER_WINDOWS
 #endif
-#if defined ZMQ_ATOMIC_COUNTER_GNU
-#undef ZMQ_ATOMIC_COUNTER_GNU
-#endif
-#if defined ZMQ_ATOMIC_COUNTER_SUN
-#undef ZMQ_ATOMIC_COUNTER_SUN
+#if defined ZMQ_ATOMIC_COUNTER_ATOMIC_H
+#undef ZMQ_ATOMIC_COUNTER_ATOMIC_H
 #endif
 #if defined ZMQ_ATOMIC_COUNTER_X86
 #undef ZMQ_ATOMIC_COUNTER_X86
-#endif
-#if defined ZMQ_ATOMIC_COUNTER_SPARC
-#undef ZMQ_ATOMIC_COUNTER_SPARC
 #endif
 #if defined ZMQ_ATOMIC_COUNTER_MUTEX
 #undef ZMQ_ATOMIC_COUNTER_MUTEX
