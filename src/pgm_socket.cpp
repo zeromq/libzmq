@@ -489,6 +489,10 @@ ssize_t zmq::pgm_socket_t::receive (void **raw_data_, const pgm_tsi_t **tsi_)
 
         zmq_assert (status == PGM_IO_STATUS_NORMAL);
     }
+    else
+    {
+        zmq_assert (pgm_msgv_processed <= pgm_msgv_len);
+    }
 
     zmq_assert (nbytes_rec > 0);
 
