@@ -511,6 +511,7 @@ ssize_t zmq::pgm_socket_t::receive (void **raw_data_, const pgm_tsi_t **tsi_)
 
     //  Move the the next pgm_msgv_t structure.
     pgm_msgv_processed++;
+    zmq_assert (pgm_msgv_processed <= pgm_msgv_len);
     nbytes_processed +=raw_data_len;
 
     return raw_data_len;
