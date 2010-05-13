@@ -26,14 +26,10 @@
 #define ZMQ_ATOMIC_PTR_MUTEX
 #elif (defined __i386__ || defined __x86_64__) && defined __GNUC__
 #define ZMQ_ATOMIC_PTR_X86
-#elif 0 && defined __sparc__ && defined __GNUC__
-#define ZMQ_ATOMIC_PTR_SPARC
 #elif defined ZMQ_HAVE_WINDOWS
 #define ZMQ_ATOMIC_PTR_WINDOWS
-#elif defined sun
-#define ZMQ_ATOMIC_COUNTER_SUN
-#elif defined( __GNUC__ ) && ( __GNUC__ * 100 + __GNUC_MINOR__ >= 401 )
-#define ZMQ_ATOMIC_COUNTER_GNU
+#elif (defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_NETBSD)
+#define ZMQ_ATOMIC_COUNTER_ATOMIC_H
 #else
 #define ZMQ_ATOMIC_PTR_MUTEX
 #endif
@@ -42,7 +38,7 @@
 #include "mutex.hpp"
 #elif defined ZMQ_ATOMIC_PTR_WINDOWS
 #include "windows.hpp"
-#elif defined ZMQ_ATOMIC_PTR_SUN
+#elif defined ZMQ_ATOMIC_PTR_ATOMIC_H
 #include <atomic.h>
 #endif
 
@@ -80,9 +76,7 @@ namespace zmq
         {
 #if defined ZMQ_ATOMIC_PTR_WINDOWS
             return (T*) InterlockedExchangePointer ((PVOID*) &ptr, val_);
-#elif defined ZMQ_ATOMIC_PTR_GNU
-            return (T*) __sync_lock_test_and_set (&ptr, val_);
-#elif defined ZMQ_ATOMIC_PTR_SUN
+#elif defined ZMQ_ATOMIC_PTR_ATOMIC_H
             return (T*) atomic_swap_ptr (&ptr, val_);
 #elif defined ZMQ_ATOMIC_PTR_X86
             T *old;
@@ -91,23 +85,6 @@ namespace zmq
                 : "=r" (old), "=m" (ptr)
                 : "m" (ptr), "0" (val_));
             return old;
-#elif defined ZMQ_ATOMIC_PTR_SPARC
-            T* newptr = val_;
-            volatile T** ptrin = &ptr;
-            T* tmp;
-            T* prev;
-            __asm__ __volatile__(
-                "ld [%4], %1\n\t"
-                "1:\n\t"
-                "mov %0, %2\n\t"
-                "cas [%4], %1, %2\n\t"
-                "cmp %1, %2\n\t"
-                "bne,a,pn %%icc, 1b\n\t"
-                "mov %2, %1\n\t"
-                : "+r" (newptr), "=&r" (tmp), "=&r" (prev), "+m" (*ptrin)
-                : "r" (ptrin)
-                : "cc");
-            return prev;
 #elif defined ZMQ_ATOMIC_PTR_MUTEX
             sync.lock ();
             T *old = (T*) ptr;
@@ -115,7 +92,7 @@ namespace zmq
             sync.unlock ();
             return old;
 #else
-#error
+#error atomic_ptr is not implemented for this platform
 #endif
         }
 
@@ -128,9 +105,7 @@ namespace zmq
 #if defined ZMQ_ATOMIC_PTR_WINDOWS
             return (T*) InterlockedCompareExchangePointer (
                 (volatile PVOID*) &ptr, val_, cmp_);
-#elif defined ZMQ_ATOMIC_PTR_GNU
-            return (T*) __sync_val_compare_and_swap (&ptr, cmp_, val_);
-#elif defined ZMQ_ATOMIC_PTR_SUN
+#elif defined ZMQ_ATOMIC_PTR_ATOMIC_H
             return (T*) atomic_cas_ptr (&ptr, cmp_, val_);
 #elif defined ZMQ_ATOMIC_PTR_X86
             T *old;
@@ -140,15 +115,6 @@ namespace zmq
                 : "r" (val_), "m" (ptr), "0" (cmp_)
                 : "cc");
             return old;
-#elif defined ZMQ_ATOMIC_PTR_SPARC
-            volatile T** ptrin = &ptr;
-            volatile T* prev = ptr;
-            __asm__ __volatile__(
-                "cas [%3], %1, %2\n\t"
-                : "+m" (*ptrin)
-                : "r" (cmp_), "r" (val_), "r" (ptrin)
-                : "cc");
-            return prev;
 #elif defined ZMQ_ATOMIC_PTR_MUTEX
             sync.lock ();
             T *old = (T*) ptr;
@@ -157,7 +123,7 @@ namespace zmq
             sync.unlock ();
             return old;
 #else
-#error
+#error atomic_ptr is not implemented for this platform
 #endif
         }
 
@@ -178,17 +144,11 @@ namespace zmq
 #if defined ZMQ_ATOMIC_PTR_WINDOWS
 #undef ZMQ_ATOMIC_PTR_WINDOWS
 #endif
-#if defined ZMQ_ATOMIC_PTR_GNU
-#undef ZMQ_ATOMIC_PTR_GNU
-#endif
-#if defined ZMQ_ATOMIC_PTR_SUN
-#undef ZMQ_ATOMIC_PTR_SUN
+#if defined ZMQ_ATOMIC_PTR_ATOMIC_H
+#undef ZMQ_ATOMIC_PTR_ATOMIC_H
 #endif
 #if defined ZMQ_ATOMIC_PTR_X86
 #undef ZMQ_ATOMIC_PTR_X86
-#endif
-#if defined ZMQ_ATOMIC_PTR_SPARC
-#undef ZMQ_ATOMIC_PTR_SPARC
 #endif
 #if defined ZMQ_ATOMIC_PTR_MUTEX
 #undef ZMQ_ATOMIC_PTR_MUTEX
