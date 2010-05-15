@@ -382,7 +382,7 @@ AC_OUTPUT(Makefile src/Makefile doc/Makefile
     perf/Makefile src/libzmq.pc \
     devices/Makefile devices/zmq_forwarder/Makefile \
     devices/zmq_streamer/Makefile devices/zmq_queue/Makefile \
-    builds/msvc/Makefile)
+    zmqd/Makefile builds/msvc/Makefile)
 
 #  On Linux patch libtool to delete hardcoded paths (rpath).
 case "${host_os}" in
