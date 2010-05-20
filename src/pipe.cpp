@@ -162,7 +162,7 @@ bool zmq::writer_t::write (zmq_msg_t *msg_)
         return false;
     }
 
-    pipe->write (*msg_);
+    pipe->write (*msg_, msg_->flags & ZMQ_MSG_MORE);
     if (!(msg_->flags & ZMQ_MSG_MORE))
         msgs_written++;
     return true;
@@ -172,11 +172,9 @@ void zmq::writer_t::rollback ()
 {
     zmq_msg_t msg;
 
+    //  Remove all incomplete messages from the pipe.
     while (pipe->unwrite (&msg)) {
-        if (!(msg.flags & ZMQ_MSG_MORE)) {
-            pipe->write (msg);
-            break;
-        }
+        zmq_assert (msg.flags & ZMQ_MSG_MORE);
         zmq_msg_close (&msg);
         msgs_written--;
     }
@@ -206,7 +204,7 @@ void zmq::writer_t::term ()
     const unsigned char *offset = 0;
     msg.content = (void*) (offset + ZMQ_DELIMITER);
     msg.flags = 0;
-    pipe->write (msg);
+    pipe->write (msg, false);
     pipe->flush ();
 }
 
