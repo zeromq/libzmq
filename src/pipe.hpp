@@ -150,13 +150,15 @@ namespace zmq
     public:
 
         pipe_t (object_t *reader_parent_, object_t *writer_parent_,
-            uint64_t hwm_, uint64_t lwm_);
+            uint64_t hwm_);
         ~pipe_t ();
 
         reader_t reader;
         writer_t writer;
 
     private:
+
+        uint64_t compute_lwm (uint64_t hwm_);
 
         pipe_t (const pipe_t&);
         void operator = (const pipe_t&);

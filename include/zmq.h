@@ -169,6 +169,7 @@ ZMQ_EXPORT int zmq_term (void *context);
 
 /*  Socket options.                                                           */
 #define ZMQ_HWM 1
+/*  TODO: LWM is obsolete and should be removed in next version.              */
 #define ZMQ_LWM 2
 #define ZMQ_SWAP 3
 #define ZMQ_AFFINITY 4

@@ -40,21 +40,6 @@ Default value:: 0
 Applicable socket types:: all
 
 
-ZMQ_LWM: Set low water mark
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_LWM' option shall set the low water mark for the _message queue_
-associated with the socket.  This option only makes sense when used in
-conjunction with the 'ZMQ_HWM' option. A socket which has reached it's high
-water mark remains in the "emergency" state until the number of outstanding
-messages in it's associated message queue falls below the low water mark, at
-which point normal message processing is resumed.
-
-Option value type:: int64_t
-Option value unit:: messages
-Default value:: 0
-Applicable socket types:: all
-
-
 ZMQ_SWAP: Set disk offload size
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_SWAP' option shall set the disk offload (swap) size for the _message

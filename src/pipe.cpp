@@ -233,9 +233,9 @@ bool zmq::writer_t::pipe_full ()
 }
 
 zmq::pipe_t::pipe_t (object_t *reader_parent_, object_t *writer_parent_,
-      uint64_t hwm_, uint64_t lwm_) :
-    reader (reader_parent_, hwm_, lwm_),
-    writer (writer_parent_, hwm_, lwm_)
+      uint64_t hwm_) :
+    reader (reader_parent_, hwm_, compute_lwm (hwm_)),
+    writer (writer_parent_, hwm_, compute_lwm (hwm_))
 {
     reader.set_pipe (this);
     writer.set_pipe (this);
@@ -250,3 +250,32 @@ zmq::pipe_t::~pipe_t ()
     while (read (&msg))
        zmq_msg_close (&msg);
 }
+
+uint64_t zmq::pipe_t::compute_lwm (uint64_t hwm_)
+{
+   //  Following point should be taken into consideration when computing
+   //  low watermark:
+   //
+   //  1. LWM has to be less than HWM.
+   //  2. LWM cannot be set to very low value (such as zero) as after filling
+   //     the queue it would start to refill only after all the messages are
+   //     read from it and thus unnecessarily hold the progress back.
+   //  3. LWM cannot be set to very high value (such as HWM-1) as it would
+   //     result in lock-step filling of the queue - if a single message is read
+   //     from a full queue, writer thread is resumed to write exactly one
+   //     message to the queue and go back to sleep immediately. This would
+   //     result in low performance.
+   //
+   //  Given the 3. it would be good to keep HWM and LWM as far apart as
+   //  possible to reduce the thread switching overhead to almost zero,
+   //  say HWM-LWM should be 500 (max_wm_delta).
+   //
+   //  That done, we still we have to account for the cases where HWM<500 thus
+   //  driving LWM to negative numbers. Let's make LWM 1/2 of HWM in such cases.
+
+    if (hwm_ > max_wm_delta * 2)
+        return hwm_ - max_wm_delta;
+    else
+        return hwm_ / 2;
+}
+

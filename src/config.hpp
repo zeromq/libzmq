@@ -58,7 +58,10 @@ namespace zmq
         //  So, if there are 10 messages that fit into the batch size, all of
         //  them may be written by a single 'send' system call, thus avoiding
         //  unnecessary network stack traversals.
-        out_batch_size = 8192,        
+        out_batch_size = 8192,
+
+        //  Maximal delta between high and low watermark.
+        max_wm_delta = 1024,
 
         //  Maximum number of events the I/O thread can process in one go.
         max_io_events = 256,
