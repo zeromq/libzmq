@@ -1,7 +1,7 @@
 Name:          zeromq
 Version:       @PACKAGE_VERSION@
 Release:       1%{?dist}
-Summary:       Fastest. Messaging. Ever.
+Summary:       The ZeroMQ messaging library
 Group:         Applications/Internet
 License:       LGPLv3+
 URL:           http://www.zeromq.org/
@@ -18,24 +18,29 @@ Requires: glib2
 %endif
 
 %description
-Fast and lightweight messaging system designed with 
-speed and reliability in mind.
+The 0MQ lightweight messaging kernel is a library which extends the
+standard socket interfaces with features traditionally provided by
+specialised messaging middleware products. 0MQ sockets provide an
+abstraction of asynchronous message queues, multiple messaging
+patterns, message filtering (subscriptions), seamless access to
+multiple transport protocols and more.
+
+This package contains the ZeroMQ shared library.
 
 %package devel
-Summary:  Development headers
+Summary:  Development files and static library for the ZeroMQ library
 Group:    Development/Libraries
 Requires: %{name} = %{version}-%{release}, pkgconfig
 
 %description devel
-Files needed for building applications with zeromq.
+The 0MQ lightweight messaging kernel is a library which extends the
+standard socket interfaces with features traditionally provided by
+specialised messaging middleware products. 0MQ sockets provide an
+abstraction of asynchronous message queues, multiple messaging
+patterns, message filtering (subscriptions), seamless access to
+multiple transport protocols and more.
 
-%package utils
-Summary:  zeromq utilities
-Group:    System Environment/Utilities
-Requires: %{name} = %{version}-%{release}
-
-%description utils
-Performance testing utilities for zeromq.
+This package contains ZeroMQ related development libraries and header files.
 
 %prep
 %setup -q
@@ -54,12 +59,6 @@ Performance testing utilities for zeromq.
 
 # Install the package to build area
 %makeinstall
-
-# copy the utility binaries
-%{__cp} %{_builddir}/%{name}-%{version}/perf/local_lat %{buildroot}/%{_bindir}
-%{__cp} %{_builddir}/%{name}-%{version}/perf/local_thr %{buildroot}/%{_bindir}
-%{__cp} %{_builddir}/%{name}-%{version}/perf/remote_lat %{buildroot}/%{_bindir}
-%{__cp} %{_builddir}/%{name}-%{version}/perf/remote_thr %{buildroot}/%{_bindir}
 
 %post
 /sbin/ldconfig
@@ -88,12 +87,6 @@ Performance testing utilities for zeromq.
 %{_mandir}/man1/zmq_forwarder.1.gz
 %{_mandir}/man1/zmq_queue.1.gz
 %{_mandir}/man1/zmq_streamer.1.gz
-
-%files utils
-%attr(0755, root, root) %{_bindir}/local_lat
-%attr(0755, root, root) %{_bindir}/local_thr
-%attr(0755, root, root) %{_bindir}/remote_lat
-%attr(0755, root, root) %{_bindir}/remote_thr
 
 %files devel
 %defattr(-,root,root,-)
