@@ -4,34 +4,36 @@ zmq_bind(3)
 
 NAME
 ----
-zmq_bind - assign a local address to a socket
+zmq_bind - accept connections on a socket
 
 
 SYNOPSIS
 --------
-*int zmq_bind (void '*socket', const char '*address');*
+*int zmq_bind (void '*socket', const char '*endpoint');*
 
 
 DESCRIPTION
 -----------
-The _zmq_bind()_ function shall assign a local address specified by the
-'address' argument to the socket referenced by the 'socket' argument.
+The _zmq_bind()_ function shall create an endpoint for accepting connections
+and bind it to the socket referenced by the 'socket' argument.
 
-The 'address' argument is a string consisting of two parts as follows:
-'transport'://'endpoint'. The 'transport' part specifies the underlying
-transport protocol to use. The meaning of the 'endpoint' part is specific to
+The 'endpoint' argument is a string consisting of two parts as follows:
+'transport'`://`'address'. The 'transport' part specifies the underlying
+transport protocol to use. The meaning of the 'address' part is specific to
 the underlying transport protocol selected.
 
 The following transports are defined:
 
+'inproc':: local in-process (inter-thread) communication transport, see linkzmq:zmq_inproc[7]
+'ipc':: local inter-process communication transport, see linkzmq:zmq_ipc[7]
 'tcp':: unicast transport using TCP, see linkzmq:zmq_tcp[7]
 'pgm', 'epgm':: reliable multicast transport using PGM, see linkzmq:zmq_pgm[7]
-'ipc':: local inter-process communication transport, see linkzmq:zmq_ipc[7]
-'inproc':: local in-process (inter-thread) communication transport, see linkzmq:zmq_inproc[7]
 
-A single socket may have an arbitrary number of local addresses assigned to it
-using _zmq_bind()_, while also being connected to an arbitrary number of peer
-addresses using _zmq_connect()_.
+With the exception of 'ZMQ_PAIR' sockets, a single socket may be connected to
+multiple endpoints using _zmq_connect()_, while simultaneously accepting
+incoming connections from multiple endpoints bound to the socket using
+_zmq_bind()_. Refer to linkzmq:zmq_socket[3] for a description of the exact
+semantics involved when connecting or binding a socket to multiple endpoints.
 
 
 RETURN VALUE
@@ -63,7 +65,7 @@ EXAMPLE
 /* Create a ZMQ_PUB socket */
 void *socket = zmq_socket (context, ZMQ_PUB);
 assert (socket);
-/* Bind it to a in-process transport with the endpoint 'my_publisher' */
+/* Bind it to a in-process transport with the address 'my_publisher' */
 int rc = zmq_bind (socket, "inproc://my_publisher");
 assert (rc == 0);
 /* Bind it to a TCP transport on port 5555 of the 'eth0' interface */
