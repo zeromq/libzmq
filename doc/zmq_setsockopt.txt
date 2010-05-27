@@ -61,13 +61,13 @@ The 'ZMQ_AFFINITY' option shall set the I/O thread affinity for connections
 created by subsequent _zmq_connect()_ or _zmq_bind()_ calls on the specified
 'socket'.
 
-sockets. Affinity determines which threads from the 0MQ I/O thread pool
-associated with the socket's _context_ shall handle newly created connections.
-A value of zero specifies no affinity, meaning that work shall be distributed
-fairly among all 0MQ I/O threads in the thread pool. For non-zero values, the
-lowest bit corresponds to thread 1, second lowest bit to thread 2 and so on.
-For example, a value of 3 specifies that subsequent connections on 'socket'
-shall be handled exclusively by I/O threads 1 and 2.
+Affinity determines which threads from the 0MQ I/O thread pool associated with
+the socket's _context_ shall handle newly created connections.  A value of zero
+specifies no affinity, meaning that work shall be distributed fairly among all
+0MQ I/O threads in the thread pool. For non-zero values, the lowest bit
+corresponds to thread 1, second lowest bit to thread 2 and so on.  For example,
+a value of 3 specifies that subsequent connections on 'socket' shall be handled
+exclusively by I/O threads 1 and 2.
 
 See also linkzmq:zmq_init[3] for details on allocating the number of I/O
 threads for a specific _context_.
