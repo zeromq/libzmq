@@ -226,11 +226,11 @@ int zmq::req_t::xrecv (zmq_msg_t *msg_, int flags_)
         zmq_assert (zmq_msg_size (msg_) == 0);
         rc = zmq_msg_close (msg_);
         zmq_assert (rc == 0);
-    }
 
-    //  Get the actual reply.
-    bool recvd = reply_pipe->read (msg_);
-    zmq_assert (recvd);
+        //  Get the actual reply.
+        bool recvd = reply_pipe->read (msg_);
+        zmq_assert (recvd);
+    }
 
     //  If this was last part of the reply, switch to request phase.
     more = msg_->flags & ZMQ_MSG_MORE;
