@@ -32,8 +32,9 @@ to EAGAIN.
 Multi-part messages
 ~~~~~~~~~~~~~~~~~~~
 A 0MQ message is composed of 1 to N message parts; each message part is an
-independent 'zmq_msg_t' in its own right. Consequently, wherever this
-documentation uses the term _message_ it may be substituted for _message part_.
+independent 'zmq_msg_t' in its own right. The total number of message parts is
+unlimited. Consequently, wherever this documentation uses the term _message_ it
+may be substituted for _message part_.
 
 An application wishing to determine if a message is composed of multiple parts
 does so by retrieving the value of the _ZMQ_RCVMORE_ socket option on the

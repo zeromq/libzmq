@@ -37,15 +37,16 @@ responsibility for the message.
 Multi-part messages
 ~~~~~~~~~~~~~~~~~~~
 A 0MQ message is composed of 1 to N message parts; each message part is an
-independent 'zmq_msg_t' in its own right. Consequently, wherever this
-documentation uses the term _message_ it may be substituted for _message part_.
+independent 'zmq_msg_t' in its own right. The total number of message parts is
+unlimited. Consequently, wherever this documentation uses the term _message_ it
+may be substituted for _message part_.
 
 An application wishing to send a multi-part message does so by specifying the
 'ZMQ_SNDMORE' flag to _zmq_send()_. The presence of this flag indicates to 0MQ
 that the message being sent is a multi-part message and that more message parts
 are to follow. When the application wishes to send the final message part it
 does so by calling _zmq_send()_ without the 'ZMQ_SNDMORE' flag; this indicates
-that no more message parts are to follow. The total number of mess
+that no more message parts are to follow.
 
 0MQ shall ensure the atomicity of a multi-part message; peers shall receive
 either all _message parts_ of a multi-part message or none at all.
