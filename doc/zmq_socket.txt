@@ -70,10 +70,9 @@ for this socket type.
 Pipeline pattern
 ~~~~~~~~~~~~~~~~
 The pipeline pattern is used for distributing data to _nodes_ arranged in
-a pipeline. Data always flows *down* the pipeline, and each stage of the
-pipeline is connected to at least one _node_. When a pipeline stage is
-connected to multiple _nodes_ data is processed by all connected _nodes_ in
-parallel.
+a pipeline. Data always flows down the pipeline, and each stage of the pipeline
+is connected to at least one _node_. When a pipeline stage is connected to
+multiple _nodes_ data is load-balanced among all connected _nodes_.
 
 Socket type:: 'ZMQ_DOWNSTREAM'
 Compatible peer sockets:: 'ZMQ_UPSTREAM'
@@ -94,8 +93,8 @@ for this socket type.
 
 Exclusive pair pattern
 ~~~~~~~~~~~~~~~~~~~~~~
-The exclusive pair pattern is used for communicating exclusively between two
-peers.
+The exclusive pair is an advanced pattern used for communicating exclusively
+between two peers.
 
 Socket type:: 'ZMQ_PAIR'
 Compatible peer sockets:: 'ZMQ_PAIR'
@@ -105,8 +104,7 @@ time.  No message routing or filtering is performed on messages sent over a
 'ZMQ_PAIR' socket.
 
 NOTE: 'ZMQ_PAIR' sockets are experimental, and are currently missing several
-features such as auto-reconnection. Developers should consider other patterns
-in preference to the exclusive pair pattern.
+features such as auto-reconnection.
 
 
 RETURN VALUE
