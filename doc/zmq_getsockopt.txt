@@ -24,6 +24,23 @@ to by 'option_value'.
 The following options can be retrieved with the _zmq_getsockopt()_ function:
 
 
+ZMQ_RCVMORE: More message parts to follow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_RCVMORE' option shall return a boolean value indicating if the
+multi-part message currently being read from the specified 'socket' has more
+message parts to follow. If there are no message parts to follow or if the
+message currently being read is not a multi-part message a value of zero shall
+be returned. Otherwise, a value of 1 shall be returned.
+
+Refer to linkzmq:zmq_send[3] and linkzmq:zmq_recv[3] for a detailed description
+of sending/receiving multi-part messages.
+
+Option value type:: int64_t
+Option value unit:: boolean
+Default value:: N/A
+Applicable socket types:: all
+
+
 ZMQ_HWM: Retrieve high water mark
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_HWM' option shall retrieve the high water mark for the _message queue_

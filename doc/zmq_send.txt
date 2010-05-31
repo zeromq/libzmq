@@ -23,10 +23,32 @@ Specifies that the operation should be performed in non-blocking mode. If the
 message cannot be queued on the underlying _message queue_ associated with
 'socket', the _zmq_send()_ function shall fail with 'errno' set to EAGAIN.
 
+*ZMQ_SNDMORE*::
+Specifies that the message being sent is a multi-part message, and that further
+message parts are to follow. Refer to the section regarding multi-part messages
+below for a detailed description.
+
 NOTE: A successful invocation of _zmq_send()_ does not indicate that the
 message has been transmitted to the network, only that it has been queued on
 the _message queue_ associated with the socket and 0MQ has assumed
 responsibility for the message.
+
+
+Multi-part messages
+~~~~~~~~~~~~~~~~~~~
+A 0MQ message is composed of 1 to N message parts; each message part is an
+independent 'zmq_msg_t' in its own right. Consequently, wherever this
+documentation uses the term _message_ it may be substituted for _message part_.
+
+An application wishing to send a multi-part message does so by specifying the
+'ZMQ_SNDMORE' flag to _zmq_send()_. The presence of this flag indicates to 0MQ
+that the message being sent is a multi-part message and that more message parts
+are to follow. When the application wishes to send the final message part it
+does so by calling _zmq_send()_ without the 'ZMQ_SNDMORE' flag; this indicates
+that no more message parts are to follow. The total number of mess
+
+0MQ shall ensure the atomicity of a multi-part message; peers shall receive
+either all _message parts_ of a multi-part message or none at all.
 
 
 RETURN VALUE
@@ -47,7 +69,7 @@ to the socket not being in the appropriate state.  This error may occur with
 socket types that switch between several states, such as ZMQ_REP.  See the
 _messaging patterns_ section of linkzmq:zmq_socket[3] for more information.
 *ETERM*::
-The associated context was terminted.
+The 0MQ 'context' associated with the specified 'socket' was terminated.
 
 
 EXAMPLE
@@ -63,6 +85,15 @@ memset (zmq_msg_data (&msg), 'A', 6);
 /* Send the message to the socket */
 rc = zmq_send (socket, &msg, 0);
 assert (rc == 0);
+----
+
+.Sending a multi-part message
+----
+/* Send a multi-part message consisting of three parts to socket */
+rc = zmq_send (socket, &part1, ZMQ_SNDMORE);
+rc = zmq_send (socket, &part2, ZMQ_SNDMORE);
+/* Final part; no more parts to follow */
+rc = zmq_send (socket, &part3, 0);
 ----
 
 

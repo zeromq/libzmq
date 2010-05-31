@@ -29,6 +29,23 @@ associated with 'socket', the _zmq_recv()_ function shall fail with 'errno' set
 to EAGAIN.
 
 
+Multi-part messages
+~~~~~~~~~~~~~~~~~~~
+A 0MQ message is composed of 1 to N message parts; each message part is an
+independent 'zmq_msg_t' in its own right. Consequently, wherever this
+documentation uses the term _message_ it may be substituted for _message part_.
+
+An application wishing to determine if a message is composed of multiple parts
+does so by retrieving the value of the _ZMQ_RCVMORE_ socket option on the
+'socket' it is receiving the message from. If there are no message parts to
+follow, or if the message is not composed of multiple parts, _ZMQ_RCVMORE_
+shall report a value of zero. Otherwise, _ZMQ_RCVMORE_ shall report a value of
+1, indicating that more message parts are to follow.
+
+0MQ shall ensure the atomicity of a multi-part message; peers shall receive
+either all _message parts_ of a multi-part message or none at all. 
+
+
 RETURN VALUE
 ------------
 The _zmq_recv()_ function shall return zero if successful. Otherwise it shall
@@ -47,7 +64,7 @@ to the socket not being in the appropriate state.  This error may occur with
 socket types that switch between several states, such as ZMQ_REP.  See the
 _messaging patterns_ section of linkzmq:zmq_socket[3] for more information.
 *ETERM*::
-The associated context was terminted.
+The 0MQ 'context' associated with the specified 'socket' was terminated.
 
 
 EXAMPLE
@@ -63,10 +80,28 @@ rc = zmq_recv (socket, &msg, 0);
 assert (rc == 0);
 ----
 
+.Receiving a multi-part message
+----
+int64_t more;
+do {
+    /* Create an empty 0MQ message to hold the message part */
+    zmq_msg_t part;
+    int rc = zmq_msg_init (&part);
+    assert (rc == 0);
+    /* Block until a message is available to be dequeued from socket */
+    rc = zmq_recv (socket, &part, 0);
+    assert (rc == 0);
+    /* Determine if more message parts are to follow */
+    rc = zmq_getsockopt (socket, ZMQ_RCVMORE, &more, sizeof more);
+    assert (rc == 0);
+} while (more);
+----
+
 
 SEE ALSO
 --------
 linkzmq:zmq_send[3]
+linkzmq:zmq_getsockopt[3]
 linkzmq:zmq_socket[7]
 linkzmq:zmq[7]
 
