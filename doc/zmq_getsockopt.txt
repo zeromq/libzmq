@@ -10,7 +10,7 @@ zmq_getsockopt - get 0MQ socket options
 
 SYNOPSIS
 --------
-*int zmq_getsockopt (void '*socket', int 'option_name', void '*option_value', size_t 'option_len');*
+*int zmq_getsockopt (void '*socket', int 'option_name', void '*option_value', size_t '*option_len');*
 
 
 DESCRIPTION
@@ -19,7 +19,9 @@ The _zmq_getsockopt()_ function shall retrieve the value for the option
 specified by the 'option_name' argument for the 0MQ socket pointed to by the
 'socket' argument, and store it in the buffer pointed to by the 'option_value'
 argument. The 'option_len' argument is the size in bytes of the buffer pointed
-to by 'option_value'.
+to by 'option_value'; upon successful completion _zmq_getsockopt()_ shall
+modify the 'option_value' argument to indicate the actual size of the option
+value stored in the buffer.
 
 The following options can be retrieved with the _zmq_getsockopt()_ function:
 
