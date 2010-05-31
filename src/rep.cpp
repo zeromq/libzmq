@@ -66,27 +66,14 @@ void zmq::rep_t::xdetach_inpipe (class reader_t *pipe_)
 
     in_pipes_t::size_type index = in_pipes.index (pipe_);
 
-    //  If corresponding outpipe is still in place simply nullify the pointer
-    //  to the inpipe and move it to the passive state.
-    if (out_pipes [index]) {
-        in_pipes [index] = NULL;
-        if (in_pipes.index (pipe_) < active) {
-            active--;
-            in_pipes.swap (index, active);
-            out_pipes.swap (index, active);
-            if (current == active)
-                current = 0;
-        }
-        return;
-    }
-
-    //  Now both inpipe and outpipe are detached. Remove them from the lists.
     if (index < active) {
         active--;
         if (current == active)
             current = 0;
     }
 
+    if (out_pipes [index])
+        out_pipes [index]->term ();
     in_pipes.erase (index);
     out_pipes.erase (index);
 }
@@ -104,27 +91,14 @@ void zmq::rep_t::xdetach_outpipe (class writer_t *pipe_)
     if (sending_reply && pipe_ == reply_pipe)
         reply_pipe = NULL;
 
-    //  If corresponding inpipe is still in place simply nullify the pointer
-    //  to the outpipe.
-    if (in_pipes [index]) {
-        out_pipes [index] = NULL;
-        if (out_pipes.index (pipe_) < active) {
-            active--;
-            in_pipes.swap (index, active);
-            out_pipes.swap (index, active);
-            if (current == active)
-                current = 0;
-        }
-        return;
-    }
-
-    //  Now both inpipe and outpipe are detached. Remove them from the lists.
     if (out_pipes.index (pipe_) < active) {
         active--;
         if (current == active)
             current = 0;
     }
 
+    if (in_pipes [index])
+        in_pipes [index]->term ();
     in_pipes.erase (index);
     out_pipes.erase (index);
 }
