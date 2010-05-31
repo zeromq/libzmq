@@ -90,8 +90,8 @@ Standard sockets present a _synchronous_ interface to either connection-mode
 reliable byte streams (SOCK_STREAM), or connection-less unreliable datagrams
 (SOCK_DGRAM). In comparison, 0MQ sockets present an abstraction of a
 asynchronous _message queue_, with the exact queueing semantics depending on
-the socket type (_messaging pattern_) in use. See linkzmq:zmq_socket[3] for the
-_messaging patterns_ provided.
+the socket type in use. See linkzmq:zmq_socket[3] for the socket types
+provided.
 
 0MQ sockets being _asynchronous_ means that the timings of the physical
 connection setup and teardown, reconnect and effective delivery are organized
