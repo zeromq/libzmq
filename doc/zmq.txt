@@ -106,7 +106,8 @@ Creating a socket::
 Closing a socket::
     linkzmq:zmq_close[3]
 
-Setting socket options::
+Manipulating socket options::
+    linkzmq:zmq_getsockopt[3]
     linkzmq:zmq_setsockopt[3]
 
 Establishing a message flow::
