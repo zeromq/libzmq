@@ -53,7 +53,7 @@ The requested 'transport' protocol is not supported.
 *ENOCOMPATPROTO*::
 The requested 'transport' protocol is not compatible with the socket type.
 *ETERM*::
-The associated context was terminted.
+The 0MQ 'context' associated with the specified 'socket' was terminated.
 
 
 EXAMPLE
