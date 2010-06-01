@@ -9,24 +9,16 @@ zmq_init - initialise 0MQ context
 
 SYNOPSIS
 --------
-*void *zmq_init (int 'app_threads', int 'io_threads', int 'flags');*
+*void *zmq_init (int 'io_threads');*
 
 
 DESCRIPTION
 -----------
-The _zmq_init()_ function initialises a 0MQ 'context' with 'app_threads'
-application threads and 'io_threads' I/O threads.
-
-The 'app_threads' argument specifies the maximum number of application threads
-that will be using 0MQ sockets in this 'context'. As a guide, set this to the
-number of threads in your application.
+The _zmq_init()_ function initialises a 0MQ 'context'.
 
 The 'io_threads' argument specifies the size of the 0MQ thread pool to handle
-I/O operations. If your application is using 'inproc' messaging exclusively you
-may set this to zero, otherwise set it to at least one.
-
-There are no flags defined at the moment and the 'flags' argument should be set
-to zero.
+I/O operations. If your application is using only the 'inproc' transport for
+messaging you may set this to zero, otherwise set it to at least one.
 
 
 RETURN VALUE
@@ -39,8 +31,7 @@ of the values defined below.
 ERRORS
 ------
 *EINVAL*::
-The number of 'app_threads' requested is less than one, or the number of
-'io_threads' requested is negative.
+An invalid number of 'io_threads' was requested.
 
 
 SEE ALSO
