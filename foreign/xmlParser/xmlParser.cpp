@@ -421,7 +421,7 @@ XMLNode XMLNode::openFileHelper(XMLCSTR filename, XMLCSTR tag)
         // create message
         char message[2000],*s1=(char*)"",*s3=(char*)""; XMLCSTR s2=_CXML("");
         if (pResults.error==eXMLErrorFirstTagNotFound) { s1=(char*)"First Tag should be '"; s2=tag; s3=(char*)"'.\n"; }
-        sprintf(message,
+        snprintf(message,2000,
 #ifdef _XMLWIDECHAR
             "XML Parsing error inside file '%S'.\n%S\nAt line %i, column %i.\n%s%S%s"
 #else
@@ -608,11 +608,18 @@ XMLError XMLNode::writeToFile(XMLCSTR filename, const char *encoding, char nForm
     if (!f) return eXMLErrorCannotOpenWriteFile;
 #ifdef _XMLWIDECHAR
     unsigned char h[2]={ 0xFF, 0xFE };
-    if (!fwrite(h,2,1,f)) return eXMLErrorCannotWriteFile;
+    if (!fwrite(h,2,1,f)) 
+    {
+        fclose(f);
+        return eXMLErrorCannotWriteFile;
+    }
     if ((!isDeclaration())&&((d->lpszName)||(!getChildNode().isDeclaration())))
     {
         if (!fwrite(L"<?xml version=\"1.0\" encoding=\"utf-16\"?>\n",sizeof(wchar_t)*40,1,f))
+        {
+            fclose(f);
             return eXMLErrorCannotWriteFile;
+        }
     }
 #else
     if ((!isDeclaration())&&((d->lpszName)||(!getChildNode().isDeclaration())))
@@ -620,23 +627,41 @@ XMLError XMLNode::writeToFile(XMLCSTR filename, const char *encoding, char nForm
         if (characterEncoding==char_encoding_UTF8)
         {
             // header so that windows recognize the file as UTF-8:
-            unsigned char h[3]={0xEF,0xBB,0xBF}; if (!fwrite(h,3,1,f)) return eXMLErrorCannotWriteFile;
+            unsigned char h[3]={0xEF,0xBB,0xBF}; 
+            if (!fwrite(h,3,1,f)) 
+            {
+                fclose(f);
+                return eXMLErrorCannotWriteFile;
+            }
             encoding="utf-8";
         } else if (characterEncoding==char_encoding_ShiftJIS) encoding="SHIFT-JIS";
 
         if (!encoding) encoding="ISO-8859-1";
-        if (fprintf(f,"<?xml version=\"1.0\" encoding=\"%s\"?>\n",encoding)<0) return eXMLErrorCannotWriteFile;
+        if (fprintf(f,"<?xml version=\"1.0\" encoding=\"%s\"?>\n",encoding)<0) 
+        {
+            fclose(f);
+            return eXMLErrorCannotWriteFile;
+        }
     } else
     {
         if (characterEncoding==char_encoding_UTF8)
         {
-            unsigned char h[3]={0xEF,0xBB,0xBF}; if (!fwrite(h,3,1,f)) return eXMLErrorCannotWriteFile;
+            unsigned char h[3]={0xEF,0xBB,0xBF}; 
+            if (!fwrite(h,3,1,f)) 
+            {
+                fclose(f);
+                return eXMLErrorCannotWriteFile;
+            }
         }
     }
 #endif
     int i;
     XMLSTR t=createXMLString(nFormat,&i);
-    if (!fwrite(t,sizeof(XMLCHAR)*i,1,f)) return eXMLErrorCannotWriteFile;
+    if (!fwrite(t,sizeof(XMLCHAR)*i,1,f)) 
+    {
+        fclose(f);
+        return eXMLErrorCannotWriteFile;
+    }
     if (fclose(f)!=0) return eXMLErrorCannotWriteFile;
     free(t);
     return eXMLErrorNone;
