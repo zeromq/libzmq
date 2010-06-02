@@ -54,18 +54,16 @@ The 'events' and 'revents' members of *zmq_pollitem_t* are bitmasks constructed
 by OR'ing a combination of the following event flags:
 
 *ZMQ_POLLIN*::
-For 0MQ sockets, at least one message may be dequeued from the underlying
-_message queue_ associated with 'socket' without blocking. For standard sockets
-this is equivalent to the 'POLLIN' flag of the _poll()_ system call and
-generally means that at least one byte of data may be read from 'fd' without
-blocking.
+For 0MQ sockets, at least one message may be received from the 'socket' without
+blocking. For standard sockets this is equivalent to the 'POLLIN' flag of the
+_poll()_ system call and generally means that at least one byte of data may be
+read from 'fd' without blocking.
 
 *ZMQ_POLLOUT*::
-For 0MQ sockets, at least one message may be queued on the underlying
-_message queue_ associated with 'socket' without blocking. For standard sockets
-this is equivalent to the 'POLLOUT' flag of the _poll()_ system call and
-generally means that at least one byte of data may be written to 'fd'
-without blocking.
+For 0MQ sockets, at least one message may be sent to the 'socket' without
+blocking. For standard sockets this is equivalent to the 'POLLOUT' flag of the
+_poll()_ system call and generally means that at least one byte of data may be
+written to 'fd' without blocking.
 
 *ZMQ_POLLERR*::
 For standard sockets, this flag is passed through _zmq_poll()_ to the
@@ -82,10 +80,12 @@ of those interfaces in ways not defined in this documentation.
 RETURN VALUE
 ------------
 Upon successful completion, the _zmq_poll()_ function shall return the number
-of *zmq_pollitem_t* structures with events signaled in 'revents' or `0` if the
-'timeout' period has expired and no events have been signaled. Upon failure,
-_zmq_poll()_ shall return `-1` and set 'errno' to one of the values defined
-below.
+of *zmq_pollitem_t* structures with events signaled in 'revents' or `0` if no
+events have been signaled. Upon failure, _zmq_poll()_ shall return `-1` and set
+'errno' to one of the values defined below.
+
+IMPORTANT: The _zmq_poll()_ function may return *before* the 'timeout' period
+has expired even if no events have been signaled.
 
 
 ERRORS

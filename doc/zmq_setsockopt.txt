@@ -25,12 +25,16 @@ The following socket options can be set with the _zmq_setsockopt()_ function:
 
 ZMQ_HWM: Set high water mark
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_HWM' option shall set the high water mark for the _message queue_
-associated with the specified 'socket'.  The high water mark is a hard limit on
-the number of outstanding messages in the queue; if this limit has been reached
-the socket shall enter an "emergency" state and depending on the socket type,
-0MQ shall take appropriate action such as blocking or dropping new messages
-entering the queue.
+The 'ZMQ_HWM' option shall set the high water mark for the specified 'socket'.
+The high water mark is a hard limit on the maximum number of outstanding
+messages 0MQ shall queue in memory for any single peer that the specified
+'socket' is communicating with.
+
+If this limit has been reached the socket shall enter an exceptional state and
+depending on the socket type, 0MQ shall take appropriate action such as
+blocking or dropping sent messages. Refer to the individual socket descriptions
+in linkzmq:zmq_socket[3] for details on the exact action taken for each socket
+type.
 
 The default 'ZMQ_HWM' value of zero means "no limit".
 
@@ -42,11 +46,10 @@ Applicable socket types:: all
 
 ZMQ_SWAP: Set disk offload size
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_SWAP' option shall set the disk offload (swap) size for the _message
-queue_ associated with the specified 'socket'. A socket which has 'ZMQ_SWAP'
-set to a non-zero value may exceed it's high water mark; in this case
-outstanding messages shall be offloaded to storage on disk rather than held in
-memory.
+The 'ZMQ_SWAP' option shall set the disk offload (swap) size for the specified
+'socket'. A socket which has 'ZMQ_SWAP' set to a non-zero value may exceed it's
+high water mark; in this case outstanding messages shall be offloaded to
+storage on disk rather than held in memory.
 
 The value of 'ZMQ_SWAP' defines the maximum size of the swap space in bytes.
 

@@ -20,8 +20,8 @@ argument to be sent to the socket referenced by the 'socket' argument.  The
 
 *ZMQ_NOBLOCK*::
 Specifies that the operation should be performed in non-blocking mode. If the
-message cannot be queued on the underlying _message queue_ associated with
-'socket', the _zmq_send()_ function shall fail with 'errno' set to EAGAIN.
+message cannot be queued on the 'socket', the _zmq_send()_ function shall fail
+with 'errno' set to EAGAIN.
 
 *ZMQ_SNDMORE*::
 Specifies that the message being sent is a multi-part message, and that further
@@ -30,8 +30,7 @@ below for a detailed description.
 
 NOTE: A successful invocation of _zmq_send()_ does not indicate that the
 message has been transmitted to the network, only that it has been queued on
-the _message queue_ associated with the socket and 0MQ has assumed
-responsibility for the message.
+the 'socket' and 0MQ has assumed responsibility for the message.
 
 
 Multi-part messages
@@ -60,7 +59,7 @@ return `-1` and set 'errno' to one of the values defined below.
 ERRORS
 ------
 *EAGAIN*::
-Non-blocking mode was requested and the message cannot be queued at the moment.
+Non-blocking mode was requested and the message cannot be sent at the moment.
 *ENOTSUP*::
 The _zmq_send()_ operation is not supported by this socket type.
 *EFSM*::

@@ -86,17 +86,9 @@ Message manipulation::
 
 Sockets
 ~~~~~~~
-Standard sockets present a _synchronous_ interface to either connection-mode
-reliable byte streams (SOCK_STREAM), or connection-less unreliable datagrams
-(SOCK_DGRAM). In comparison, 0MQ sockets present an abstraction of a
-asynchronous _message queue_, with the exact queueing semantics depending on
-the socket type in use. See linkzmq:zmq_socket[3] for the socket types
-provided.
-
-0MQ sockets being _asynchronous_ means that the timings of the physical
-connection setup and teardown, reconnect and effective delivery are organized
-by 0MQ itself, and that messages may be _queued_ in the event that a peer is
-unavailable to receive them.
+0MQ sockets present an abstraction of a asynchronous _message queue_, with the
+exact queueing semantics depending on the socket type in use. See
+linkzmq:zmq_socket[3] for the socket types provided.
 
 The following functions are provided to work with sockets:
 
@@ -118,9 +110,7 @@ Sending and receiving messages::
     linkzmq:zmq_send[3]
     linkzmq:zmq_recv[3]
 
-
-Input/output multiplexing
-^^^^^^^^^^^^^^^^^^^^^^^^^
+.Input/output multiplexing
 0MQ provides a mechanism for applications to multiplex input/output events over
 a set containing both 0MQ sockets and standard sockets. This mechanism mirrors
 the standard _poll()_ system call, and is described in detail in

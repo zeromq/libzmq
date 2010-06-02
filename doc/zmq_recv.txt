@@ -14,19 +14,17 @@ SYNOPSIS
 
 DESCRIPTION
 -----------
-The _zmq_recv()_ function shall dequeue a message from the underlying _message
-queue_ associated with the socket referenced by the 'socket' argument and store
-it in the message referenced by the 'msg' argument. Any content previously
-stored in 'msg' shall be properly deallocated. If there are no messages
-available to be dequeued from the underlying _message queue_ associated with
-'socket' the _zmq_recv()_ function shall block until the request can be
-satisfied. The 'flags' argument is a combination of the flags defined below:
+The _zmq_recv()_ function shall receive a message from the socket referenced by
+the 'socket' argument and store it in the message referenced by the 'msg'
+argument. Any content previously stored in 'msg' shall be properly deallocated.
+If there are no messages available on the specified 'socket' the _zmq_recv()_
+function shall block until the request can be satisfied. The 'flags' argument
+is a combination of the flags defined below:
 
 *ZMQ_NOBLOCK*::
 Specifies that the operation should be performed in non-blocking mode. If there
-are no messages available to be dequeued from the underlying _message queue_
-associated with 'socket', the _zmq_recv()_ function shall fail with 'errno' set
-to EAGAIN.
+are no messages available on the specified 'socket', the _zmq_recv()_ function
+shall fail with 'errno' set to EAGAIN.
 
 
 Multi-part messages
@@ -75,7 +73,7 @@ EXAMPLE
 zmq_msg_t msg;
 int rc = zmq_msg_init (&msg);
 assert (rc == 0);
-/* Block until a message is available to be dequeued from socket */
+/* Block until a message is available to be received from socket */
 rc = zmq_recv (socket, &msg, 0);
 assert (rc == 0);
 ----
@@ -89,7 +87,7 @@ do {
     zmq_msg_t part;
     int rc = zmq_msg_init (&part);
     assert (rc == 0);
-    /* Block until a message is available to be dequeued from socket */
+    /* Block until a message is available to be received from socket */
     rc = zmq_recv (socket, &part, 0);
     assert (rc == 0);
     /* Determine if more message parts are to follow */
