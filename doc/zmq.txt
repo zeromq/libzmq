@@ -164,9 +164,12 @@ shall return either a NULL value (if returning a pointer) or a negative value
 (if returning an integer), and the actual error code shall be stored in the
 'errno' variable.
 
-A _zmq_strerror()_ function is provided to translate 0MQ-specific error codes
-into error message strings. For further details refer to
-linkzmq:zmq_strerror[3].
+On non-POSIX systems some users may experience issues with retrieving the
+correct value of the 'errno' variable. The _zmq_errno()_ function is provided
+to assist in these cases; for details refer to linkzmq:zmq_errno[3].
+
+The _zmq_strerror()_ function is provided to translate 0MQ-specific error codes
+into error message strings; for details refer to linkzmq:zmq_strerror[3].
 
 
 MISCELLANEOUS
