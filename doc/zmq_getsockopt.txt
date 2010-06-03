@@ -37,6 +37,7 @@ be returned. Otherwise, a value of 1 shall be returned.
 Refer to linkzmq:zmq_send[3] and linkzmq:zmq_recv[3] for a detailed description
 of sending/receiving multi-part messages.
 
+[horizontal]
 Option value type:: int64_t
 Option value unit:: boolean
 Default value:: N/A
@@ -58,6 +59,7 @@ type.
 
 The default 'ZMQ_HWM' value of zero means "no limit".
 
+[horizontal]
 Option value type:: int64_t
 Option value unit:: messages
 Default value:: 0
@@ -73,6 +75,7 @@ offloaded to storage on disk rather than held in memory.
 
 The value of 'ZMQ_SWAP' defines the maximum size of the swap space in bytes.
 
+[horizontal]
 Option value type:: int64_t
 Option value unit:: bytes
 Default value:: 0
@@ -95,6 +98,7 @@ exclusively by I/O threads 1 and 2.
 See also linkzmq:zmq_init[3] for details on allocating the number of I/O
 threads for a specific _context_.
 
+[horizontal]
 Option value type:: int64_t
 Option value unit:: N/A (bitmap)
 Default value:: 0
@@ -117,6 +121,7 @@ queue_ limits shall be shared with previous run(s) and so on.
 Identity can be at least one byte and at most 255 bytes long. Identities
 starting with binary zero are reserved for use by 0MQ infrastructure.
 
+[horizontal]
 Option value type:: binary data
 Option value unit:: N/A
 Default value:: NULL
@@ -128,6 +133,7 @@ ZMQ_RATE: Retrieve multicast data rate
 The 'ZMQ_RATE' option shall retrieve the maximum send or receive data rate for
 multicast transports using the specified 'socket'.
 
+[horizontal]
 Option value type:: uint64_t
 Option value unit:: kilobits per second
 Default value:: 100
@@ -141,6 +147,7 @@ multicast transports using the specified 'socket'.  The recovery interval
 determines the maximum time in seconds that a receiver can be absent from a
 multicast group before unrecoverable data loss will occur.
 
+[horizontal]
 Option value type:: uint64_t
 Option value unit:: seconds
 Default value:: 10
@@ -157,6 +164,7 @@ multicast loopback enabled when it is not required can have a negative impact
 on performance. Where possible, disable 'ZMQ_MCAST_LOOP' in production
 environments.
 
+[horizontal]
 Option value type:: uint64_t
 Option value unit:: boolean
 Default value:: 1
@@ -170,6 +178,7 @@ size for the specified 'socket'. A value of zero means that the OS default is
 in effect. For details refer to your operating system documentation for the
 'SO_SNDBUF' socket option.
 
+[horizontal]
 Option value type:: uint64_t
 Option value unit:: bytes
 Default value:: 0
@@ -183,6 +192,7 @@ size for the specified 'socket'. A value of zero means that the OS default is
 in effect. For details refer to your operating system documentation for the
 'SO_RCVBUF' socket option.
 
+[horizontal]
 Option value type:: uint64_t
 Option value unit:: bytes
 Default value:: 0
