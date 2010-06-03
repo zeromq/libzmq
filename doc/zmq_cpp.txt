@@ -34,7 +34,7 @@ initialisation and termination of a 0MQ _context_.
 Constructor
 ^^^^^^^^^^^
 [verse]
-*context_t::context_t(int 'app_threads', int 'io_threads', int 'flags' = 0)*
+*context_t::context_t(int 'io_threads')*
 
 Maps to the _zmq_init()_ function, as described in linkzmq:zmq_init[3].
 
@@ -75,6 +75,13 @@ Calls the _zmq_close()_ function, as described in linkzmq:zmq_close[3].
 Methods
 ^^^^^^^
 [verse]
+*void socket_t::getsockopt(int 'option_name', void '*option_value', size_t
+'*option_len')*
+
+Maps to the _zmq_getsockopt()_ function, as described in
+linkzmq:zmq_getsockopt[3].
+
+[verse]
 *void socket_t::setsockopt(int 'option_name', const void '*option_value', size_t
 'option_len')*
 
@@ -82,12 +89,12 @@ Maps to the _zmq_setsockopt()_ function, as described in
 linkzmq:zmq_setsockopt[3].
 
 [verse]
-*void socket_t::bind(const char '*address')*
+*void socket_t::bind(const char '*endpoint')*
 
 Maps to the _zmq_bind()_ function, as described in linkzmq:zmq_bind[3].
 
 [verse]
-*void socket_t::connect(const char '*address')*
+*void socket_t::connect(const char '*endpoint')*
 
 Maps to the _zmq_connect()_ function, as described in linkzmq:zmq_connect[3].
 
@@ -179,7 +186,7 @@ function to convert the error code to human-readable string.
 EXAMPLE
 -------
 ----
-zmq::context_t ctx (1, 1);
+zmq::context_t ctx (1);
 zmq::socket_t s (ctx, ZMQ_PUB);
 s.connect ("tcp://192.168.0.115:5555");
 zmq::message_t msg (100);
