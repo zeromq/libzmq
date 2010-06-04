@@ -1,7 +1,7 @@
 ACLOCAL_AMFLAGS = -I config
 
-SUBDIRS = src doc perf devices zmqd
-DIST_SUBDIRS = src doc perf devices zmqd builds/msvc
+SUBDIRS = src doc perf devices
+DIST_SUBDIRS = src doc perf devices builds/msvc
 
 EXTRA_DIST = \
 $(top_srcdir)/foreign/openpgm/@pgm_basename@.tar.gz \
