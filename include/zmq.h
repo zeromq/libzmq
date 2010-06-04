@@ -232,23 +232,6 @@ ZMQ_EXPORT int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
 
 ZMQ_EXPORT int zmq_device (int device, void * insocket, void* outsocket);
 
-/******************************************************************************/
-/*  Helper functions.                                                         */
-/******************************************************************************/
-
-/*  Helper functions are used by perf tests so that they don't have to care   */
-/*  about minutiae of time-related functions on different OS platforms.       */
-
-/*  Starts the stopwatch. Returns the handle to the watch.                    */
-ZMQ_EXPORT void *zmq_stopwatch_start ();
-
-/*  Stops the stopwatch. Returns the number of microseconds elapsed since     */
-/*  the stopwatch was started.                                                */
-ZMQ_EXPORT unsigned long zmq_stopwatch_stop (void *watch_);
-
-/*  Sleeps for specified number of seconds.                                   */
-ZMQ_EXPORT void zmq_sleep (int seconds_);
-
 #ifdef __cplusplus
 }
 #endif

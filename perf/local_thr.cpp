@@ -20,6 +20,7 @@
 #include "../include/zmq.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "helpers.h"
 
 int main (int argc, char *argv [])
 {
@@ -87,7 +88,7 @@ int main (int argc, char *argv [])
         return -1;
     }
 
-    watch = zmq_stopwatch_start ();
+    watch = stopwatch_start ();
 
     for (i = 0; i != message_count - 1; i++) {
         rc = zmq_recv (s, &msg, 0);
@@ -101,7 +102,7 @@ int main (int argc, char *argv [])
         }
     }
 
-    elapsed = zmq_stopwatch_stop (watch);
+    elapsed = stopwatch_stop (watch);
     if (elapsed == 0)
         elapsed = 1;
 
