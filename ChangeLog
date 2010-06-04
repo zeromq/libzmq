@@ -1,3 +1,851 @@
+0MQ version 2.0.7 (Beta) was released on 2010/06/04.
+
+Changes since 2.0.6:
+
+commit 5c97ff9a2eb3e55007fd90b5c3a1c433de7bc60c
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Fri Jun 4 19:27:55 2010 +0200
+
+    More NEWS for 2.0.7
+
+commit e8a9614aaeb45fc619eed2983f93edb744b4cef4
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Fri Jun 4 19:20:37 2010 +0200
+
+    Update NEWS for 2.0.7 release
+
+commit 9b8f902d72438752b00d4c1bb3887c40423777e0
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Jun 4 18:49:55 2010 +0200
+
+    initial version of 2.0.7 NEWS
+
+commit baf659fde5136c20f879ef713ec3effc34854ba6
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Fri Jun 4 17:12:51 2010 +0200
+
+    Move news from ChangeLog into NEWS
+
+commit 94dfe1368ac1cd4a456c86b8fc800d7c3911cfd3
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Fri Jun 4 17:02:16 2010 +0200
+
+    Fix MINGW build
+    
+    Mingw seems to define NOMINMAX, so don't redefine it if already defined
+
+commit cf048bb1f8a665370d9e39aee2a7363327911b08
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Jun 4 16:29:36 2010 +0200
+
+    platform.hpp for MSVC contains only very basic stuff
+
+commit 927993863eda325c66fc678810eeadd0c744cdf2
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Jun 4 15:47:22 2010 +0200
+
+    MSVC build fixed
+
+commit 621d7415b3cdee1f79787e2961f113b00d237615
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Fri Jun 4 15:35:14 2010 +0200
+
+    Fix Solaris/NetBSD breakage in atomic_ptr.hpp
+
+commit 67ca7dcbe6b072b74a112ce4df4529cda82c0f13
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Jun 4 15:24:06 2010 +0200
+
+    obsolete API elements removed - this commit breaks backward compatibility
+
+commit d844a90690af357988b1c5ba027c740d4182d753
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Fri Jun 4 15:00:31 2010 +0200
+
+    zmqd: Removing for now, not ready for 2.0.7
+
+commit 606c77368cccd2a277437b5de8764772295fdf89
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Fri Jun 4 14:48:49 2010 +0200
+
+    Move perf helper functions to perf/helpers.cpp
+
+commit 05b4a7ae787760d5c24e048612b786fa0283854a
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Fri Jun 4 13:58:49 2010 +0200
+
+    Remove PGM examples from build
+
+commit 4d65d7a5a98cbb95430a5b02706ab87d3fa0f56c
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Fri Jun 4 13:53:40 2010 +0200
+
+    Documentation: zmq_tcp(7) update for 2.0.7
+    
+    Document MORE bit in flags field
+
+commit 7fc15c21a17cfa58e60e4a513360cb12b542a570
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Thu Jun 3 14:36:44 2010 +0200
+
+    Documentation: zmq_cpp(7) update for 2.0.7
+
+commit 10f4bf3f35ab3da05fe5ca8a28cd131e3781249f
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Thu Jun 3 14:15:05 2010 +0200
+
+    Documentation: Cosmetic changes
+
+commit 8076fd1a3abece7dc91c2b2309dd0ecba57e882f
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Thu Jun 3 14:08:36 2010 +0200
+
+    Documentation: zmq_errno(3)
+
+commit 7c9b09bc511236c8cc5f6cea7623a8b98fedf302
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Wed Jun 2 18:36:34 2010 +0200
+
+    Documentation: Flow control, zmq_socket(3)
+    
+    Mostly Flow control and additions to zmq_socket(3)
+    Removed/changed lots of text regarding message queues
+    More fixes for 2.0.7 changes
+
+commit 9d00d300b0d6b45d2954792540cc95a0c3fb6a01
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Tue Jun 1 22:22:50 2010 +0200
+
+    Documentation: zmq_init() API changes for 2.0.7
+
+commit 8ba1d3c8ed32b39bb1133330d496587d96020e7e
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Tue Jun 1 22:22:29 2010 +0200
+
+    Documentation: zmq_term() and ETERM for 2.0.7
+
+commit 74a03dfd7dbb762be5d50eca4df214f8825ad44a
+Merge: 99e6179 8a77135
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Tue Jun 1 21:49:50 2010 +0200
+
+    Merge branch 'master' of github.com:sustrik/zeromq2
+
+commit 8a771350795dc4f9aae6a89534f1391d7b63b10c
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Jun 1 10:42:55 2010 +0200
+
+    Pieter Hintjens added to 'authors' section
+
+commit 0b0716661e99a2b55151650ec94cd5fd268d0334
+Author: Pieter Hintjens <ph@itmatix.com>
+Date:   Tue Jun 1 10:40:12 2010 +0200
+
+    multiple vulnerabilities in xml paerser fixed
+
+commit 99e6179edd9e3552fcdb7f4fce3306cd174f3359
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Mon May 31 17:24:50 2010 +0200
+
+    Documentation updates
+    
+    The option_value parameter for zmq_getsockopt is in and out.
+
+commit b4f3e0acd72de97bc5ef46ea74d9cd7ed7f9efc2
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Mon May 31 17:21:51 2010 +0200
+
+    Documentation updates
+    
+    Clarify multi-part messages
+
+commit 7bbe754cb4987669d4273ec37f5f50d29b9931df
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Mon May 31 17:21:12 2010 +0200
+
+    Documentation updates
+    
+    Clarify pipeline and exclusive pair patterns
+
+commit 8a4df431de872623c761fdeb291748d3d153b8d1
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Mon May 31 14:18:51 2010 +0200
+
+    Documentation updates
+    
+    Add getsockopt to Makefile.am
+
+commit dfbaf4f9668f0493649d6ba1328cced64e5340b0
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Mon May 31 14:18:37 2010 +0200
+
+    Documentation updates
+    
+    Multi-part messages
+
+commit 0fa73b039462c1754d407de85306904e9b0c73be
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Mon May 31 14:13:41 2010 +0200
+
+    Documentation updates
+    
+    Add getsockopt to index
+
+commit eb9ff1e77977c6199c0a0439f4dd35fa39f3bd3c
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Mon May 31 14:12:27 2010 +0200
+
+    Documentation updates
+    
+    Multi-part messages
+
+commit 8becacf82c950af951f477e3dc3f7ac79e110fc1
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Mon May 31 12:53:40 2010 +0200
+
+    Documentation updates
+    
+    Add zmq_getsockopt(3), clean up zmq_setsockopt(3).
+
+commit be6019abd1ac6fe11c9c51dbadf9c72b37349c2a
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Mon May 31 09:28:36 2010 +0200
+
+    issue 28. - SNDMORE/ RCVMORE is dropping every other message
+
+commit 2e9be56a4059cf230f6aa92eb1c71db5f1200b8e
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Mon May 31 06:17:58 2010 +0200
+
+    memory leak in REQ socket fixed
+
+commit 3bb60da0d085b1089ddec4617fcd40f2cda88567
+Merge: 04fcd4d da37c45
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Mon May 31 06:11:42 2010 +0200
+
+    Merge branch 'master' of git@github.com:sustrik/zeromq2
+
+commit 04fcd4d55b3b01e75d1d0d547987841811a2d610
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Mon May 31 06:11:20 2010 +0200
+
+    memory leak in REP socket fixed
+
+commit da37c45b0c7200eea96118952e671972b71df4ce
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Fri May 28 01:38:43 2010 +0200
+
+    Clarify zmq_bind/zmq_connect
+    
+    Use the term 'endpoint' correctly, and drop the nonsense about local/remote addresses which doesn't clearly explain what is going on
+
+commit 74f1a4a579d3b09b3420092d9f076827be31c4e7
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Fri May 28 00:55:04 2010 +0200
+
+    RPM packaging cleanups
+    
+    - ditch -utils package
+    - add descriptions from Debian packaging
+
+commit b4cc7b97ecaf743f3259f9df7d687558892b8a72
+Author: Mikko Koppanen <mkoppanen@gameboy.config>
+Date:   Fri Apr 16 10:26:22 2010 +0100
+
+    dist-hook for copying zeromq.spec to top-level
+
+commit 8bd3f743f50a61355b6cf18046d59c7d0289836b
+Author: Mikko Koppanen <mkoppanen@gameboy.config>
+Date:   Fri Apr 16 00:01:13 2010 +0100
+
+    Import redhat packaging
+
+commit 5219e4ce8f9aa082c5f91e248a9f66639c69727d
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Fri May 28 00:49:13 2010 +0200
+
+    Clarify socket types in documentation, reinstate ZMQ_PAIR
+
+commit 8408ae066dce123fc93e4f53dbadb1f60b7f2e8a
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue May 25 15:03:57 2010 +0200
+
+    LWM is computed rather than explicitly specified by user
+
+commit f34a468a263c7b4013a267297ee7f121e12dfb9d
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue May 25 10:57:54 2010 +0200
+
+    coding style fixed in zmqd
+
+commit 7773fdddfb357145cb15faaa5228fb3b2d0f6f78
+Merge: 091e92a 89783c3
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu May 20 18:02:34 2010 +0200
+
+    Merge branch 'master' of git@github.com:sustrik/zeromq2
+
+commit 091e92a11dec353e674cbacbf2455a48bdb4e01d
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu May 20 18:01:58 2010 +0200
+
+    Pieter Hintjens added to AUTHORS file
+
+commit 89783c37d2b8a7b5519eab7922b460449aa0bf3f
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed May 19 06:31:57 2010 +0200
+
+    incomplete messages can be stored in ypipe
+
+commit f40ce4e500d32b4240395e09e0ce3359734f0189
+Author: Jon Dyte <jon@totient.co.uk>
+Date:   Sat May 15 12:37:45 2010 +0200
+
+    single 0MQ daemon (zmqd) - initial version
+
+commit 6705a3d5807542ee2ed8a1ef6e3d9f769e5d5a93
+Author: Steven McCoy <steven.mccoy@miru.hk>
+Date:   Thu May 13 12:43:58 2010 +0200
+
+    some more sanity checks in pgm_socket
+
+commit ff9d3985556aa58a5d120a3eb72867c7ebea924d
+Merge: 56262d7 f6c1c97
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu May 13 12:41:39 2010 +0200
+
+    Merge branch 'master' of git@github.com:sustrik/zeromq2
+
+commit 56262d7ba79a9ba19fc1b89fdc07bca3894062f2
+Author: Steven McCoy <steven.mccoy@miru.hk>
+Date:   Thu May 13 12:41:20 2010 +0200
+
+    some more sanity checks in pgm_socket
+
+commit f6c1c972428f15356af09d6922910ef44d1f6cb3
+Merge: 52ef3f3 127cb89
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Wed May 12 16:49:49 2010 +0200
+
+    Merge branch 'master' of github.com:sustrik/zeromq2
+
+commit 52ef3f3f2c6f3ba1717b2e729556df713c022636
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Wed May 12 16:46:59 2010 +0200
+
+    Revert commit 7cb076e, atomic ops cleanup
+    
+    Reverted to using atomic.h on NetBSD
+    Removed GNU builtins (see http://lists.zeromq.org/pipermail/zeromq-dev/2010-May/003485.html)
+    Removed SPARC native atomic ops as they are untested and have been commented out for years
+    Add "memory" to asm clobber for X86 atomic_counter::sub()
+
+commit 127cb89ac1271bf85798294d450509b7c23019bd
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed May 12 16:46:07 2010 +0200
+
+    MAINTAINERS file added
+
+commit 8e5ac100c95e02ef60aa827b4199002f324617ed
+Merge: 714a8d5 9fbb914
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed May 12 12:45:38 2010 +0200
+
+    Merge branch 'master' of git@github.com:sustrik/zeromq2
+
+commit 714a8d50a03e773320a02247847c58020c96e867
+Author: Brett Cameron <Brett.Cameron@hp.com>
+Date:   Wed May 12 12:45:12 2010 +0200
+
+    fixes for OpenVMS
+
+commit 9fbb9141a8895ac83e8051ac568223a9e57a278d
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Mon May 10 16:39:09 2010 +0200
+
+    Update historic include paths
+
+commit 9d16a415cbfd33f89d2f5afd96ed7cd34a21a634
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Mon May 10 16:32:10 2010 +0200
+
+    OpenPGM build flags cleanup
+    
+    Removed various exotic -Wxxx flags in the OpenPGM build to get us to what is actually
+    required and reasonable; added in -fno-strict-aliasing since OpenPGM generates lots
+    of warnings about dereferencing typed-punned pointers; removed the OpenPGM extra flags
+    from libzmq_la_CXXFLAGS and left them only in libzmq_la_CFLAGS so that our code
+    is not built with the OpenPGM extra flags.
+
+commit 2cf9f04a460473ea10e901e68e66596583d0d286
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Mon May 10 16:24:53 2010 +0200
+
+    Update OpenPGM to version 2.1.26
+
+commit a25414e55caa975185ac6534c40bb601e5c38a9a
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sun May 9 16:59:15 2010 +0200
+
+    Fix in zmq_poll (Windows version)
+
+commit 4d33c43913dd640853cec75ce21080c2b33d8526
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri May 7 21:53:55 2010 +0200
+
+    caution about zmq_msg_init_* functions added to the docs
+
+commit 4a3b857c4cf35261751d562ad7e4acc5ecf58be0
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri May 7 11:08:50 2010 +0200
+
+    commands not processed immediatelly in some scenarios; fixed
+
+commit 36b044a0d5a9918841839edf12767b31bfec36a0
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri May 7 09:21:15 2010 +0200
+
+    ZMQ_PAIR socket removed from the documentation as it is unfinished yet
+
+commit f60d891b2309cdc6f2cc1507a238cec85e4aa9e7
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu May 6 10:33:01 2010 +0200
+
+    Issue 23. zmq_init() crashes on illegal numbers
+
+commit 64c58662b7f491f2a3c8cb684f27ea1d5c549552
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed May 5 14:33:02 2010 +0200
+
+    MSVC build fixed
+
+commit 835e893e54598ff474067cc68b787440baf6b05c
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed May 5 14:24:54 2010 +0200
+
+    dispatcher_t class renamed to ctx_t
+
+commit 10f5334f2891b187ce57f38186cf977406097ab0
+Merge: 44dd005 3f5465a
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed May 5 13:03:56 2010 +0200
+
+    Merge branch 'master' of git@github.com:sustrik/zeromq2
+
+commit 44dd005ff05431b05a8e04858a23784b252da870
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed May 5 13:03:26 2010 +0200
+
+    number of application threads to use 0MQ sockets is unlimited; app_threads parameter in zmq_init is unused and obsolete
+
+commit 3f5465ada1b465ac0e360d0416b8f42b0fddfab0
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue May 4 10:37:10 2010 +0200
+
+    Windows port fixed
+
+commit 235ed3a3dcffb7c658cbc9253eae9de54db24533
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue May 4 10:22:16 2010 +0200
+
+    signaler transports commands per se rather than one-bit signals
+
+commit 8b9bd05726c3df56d7f437889abccba3cbbffdee
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Mon May 3 16:21:36 2010 +0200
+
+    thread ID and dispatcher made private in object_t
+
+commit 84e0c7991a9b316ed571533abc628cc1175750a3
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sun May 2 20:59:07 2010 +0200
+
+    queue device fixed
+
+commit 4a6bac1deaedb3c111c7e28b2933ed98367cb193
+Merge: acfd0f8 beb4da3
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Apr 30 04:54:10 2010 +0200
+
+    Merge branch 'master' of git@github.com:sustrik/zeromq2
+
+commit acfd0f8ca2d15111f35ae0034ed3ce130c96b910
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Apr 30 04:53:41 2010 +0200
+
+    prefix in XREP recv'd message misses MORE flag
+
+commit beb4da3c28cff501a33de34cec95ca110cd3084e
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu Apr 29 20:53:46 2010 +0200
+
+    windows port fixed
+
+commit ae93ed318a450d6d763a5f629d478467f7362b07
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu Apr 29 20:34:48 2010 +0200
+
+    signaler rewritten in such a way that any number (>64) of threads can be used
+
+commit 1ffc6dd41f2e2ce45c67f3fe08780c5a09cf667d
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu Apr 29 18:03:54 2010 +0200
+
+    eventfd-style signaling removed
+
+commit 37128b7b1aeed9ad2bf6816560b85b5f94dd5bec
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu Apr 29 17:31:57 2010 +0200
+
+    fd_signaler_t renamed to signaler_t
+
+commit c193fd146661b39027c5e3fa0776dcdf8c6af5e2
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu Apr 29 17:20:23 2010 +0200
+
+    lock-free polling removed; ZMQ_POLL flag removed
+
+commit 7cb076e56a18cb76c49f17bd34bc73c11e01b705
+Author: Steven McCoy <steven.mccoy@miru.hk>
+Date:   Thu Apr 29 11:36:13 2010 +0200
+
+    Defer NetBSD atomic ops to GCC builtins. Revert Sun atomic ops #define.
+
+commit ad6fa9d0d4f1cf29ce63998d7efe337b1a784ef6
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Apr 27 17:36:00 2010 +0200
+
+    initial version of multi-hop REQ/REP
+
+commit 1ad6ade0ed465030716ce720077f3aa31e6cd136
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Mon Apr 26 16:58:49 2010 +0200
+
+    MSVC build fixed
+
+commit beffee92a8ec9e14cca21e5901970c4d03967c3d
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Mon Apr 26 16:51:05 2010 +0200
+
+    P2P renamed to PAIR
+
+commit 7d9603d722c9c2752dccd0c51f470e68d0e0c48c
+Author: Jon Dyte <jon@totient.co.uk>
+Date:   Sun Apr 25 15:04:23 2010 +0200
+
+    Bug in zmq_queue fixed
+
+commit d524c4e15d3cfa21f265d2c21e8a76ac97bfee2d
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Apr 16 09:53:09 2010 +0200
+
+    fix of documentation typo
+
+commit 1c33941be9d564733c15fe0466906fdf0bbd46b8
+Merge: ea18d30 370cde0
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu Apr 15 07:32:49 2010 +0200
+
+    Merge branch 'master' of git@github.com:sustrik/zeromq2
+
+commit ea18d30c209cb4e3f0dd0bc5e4380345e81b6fb6
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu Apr 15 07:32:25 2010 +0200
+
+    atomic_ptr fix of Win64
+
+commit 370cde09226d8a1b87eeac306fe97d64b4ea63a3
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Mon Apr 12 17:00:11 2010 +0200
+
+    win build fixed
+
+commit 0024d290765f53428ff78eddc5a4bc675a13c6a7
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Mon Apr 12 16:49:13 2010 +0200
+
+    Build fixes for cross compiling and Win32
+
+commit 34964769399825e45b3efd02e642af97355707ef
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Mon Apr 12 10:05:24 2010 +0200
+
+    MSVC perf build fixed
+
+commit 7668e7976dc6c3e18a314d991381f29f5cbcc6ef
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Mon Apr 12 09:57:34 2010 +0200
+
+    zmq_poll returns ETERM in case of context termination
+
+commit 3236cb1a54316206d14a0f925dfa79d5b35f70fc
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Mon Apr 12 09:25:04 2010 +0200
+
+    ETERM is accounted for in the documentation
+
+commit fba28c7c0cddd7c54fe45b38fc38ac6fe5a48438
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sun Apr 11 16:36:27 2010 +0200
+
+    issue 1 - Change zmq_term semantics
+
+commit dff79d778db46bebe1e3b0cbd28b328972b9adb8
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sun Apr 11 14:20:00 2010 +0200
+
+    version number bumped to 2.0.7 for MSVC build
+
+commit 6cf076510a39c8eb60b1ec2f28aa895b9fb6eaae
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sun Apr 11 14:00:40 2010 +0200
+
+    C-style comments in zmq.h
+
+commit 00cf3ceb8da8cb58b343cb75798a042588f09752
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sun Apr 11 10:26:47 2010 +0200
+
+    multi-part message functionality available via ZMQ_SNDMORE and ZMQ_RCVMORE
+
+commit 6fea42258348c8489d2cd64ca0e92981148134f8
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sun Apr 11 07:59:03 2010 +0200
+
+    getsockopt added to c++ binding
+
+commit b668387d917cd80c5d4b9631bc0008b6a014c083
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Sat Apr 10 17:04:33 2010 +0200
+
+    Remove -Wxxx gcc-isms from subdir Makefiles
+
+commit f6fa41dd7b3677d0f7441db83cbd6c8a0283a499
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Sat Apr 10 16:51:22 2010 +0200
+
+    Compile perf tests with the C++ compiler
+    
+    This lets us build the binaries in a portable fashion w/o having to worry
+    about how to link with the C++ runtime.
+
+commit c214a24f06bb41885dfbd73e42acb6e043df05ef
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sat Apr 10 16:27:07 2010 +0200
+
+    fix for Sun C++ 5.8
+
+commit 770aedbd09fb1e11a4e4880da2603a517856c16c
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Sat Apr 10 16:18:34 2010 +0200
+
+    Build fixes for Solaris and non-GNU compilers
+    
+    Compiling C++ code with -D_POSIX_SOURCE on Solaris is unsupported, so remove it.
+    Isolate GCC-isms inside checks that we are actually using GCC/G++.
+    Only check for -lstdc++ when on GCC and doing static linking.
+
+commit 1dc0380e29fecd70f6299243d81f67db850db616
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Sat Apr 10 13:28:45 2010 +0200
+
+    Debian packaging fixes suitable for 0MQ git
+    
+    Removed README.source, TODO.source since these are irrelevant to a generic
+    git package.
+    Fixed spelling in debian/copyright.
+    Removed RFC check in debian/rules, again irrelevant to a generic git package.
+
+commit 8aa2acd0f8906b95232e765da805e3fab947b76b
+Author: Adrian von Bidder <avbidder@fortytwo.ch>
+Date:   Sat Apr 10 13:23:09 2010 +0200
+
+    Debian packaging update from Adrian von Bidder
+
+commit 1d28dc9059d0014314ad22d98ddb7c6f21c151e7
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Fri Apr 9 19:15:40 2010 +0200
+
+    Fix for Issue #14
+    
+    Don't fail hard if an unreleased tarball is being built and asciidoc is
+    not installed; instead just print a big fat warning
+
+commit 6ea76e95736152e83f977ad860f40a231cedb1ef
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Apr 9 16:24:21 2010 +0200
+
+    version bumped to 2.0.7
+
+commit 716f4ac8714d33d21f9853f58482e35c1e3ad934
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Apr 9 13:04:15 2010 +0200
+
+    zmq_getsockopt function added
+
+commit 027bb1d2a7c83c7c719f6bdc3100eb639019d2f0
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu Apr 8 19:20:42 2010 +0200
+
+    issue 10 - zmq_strerror problem on Windows
+
+commit 5cd9f74a70e2c8503c29aaca881c193a936b7b44
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu Apr 8 19:04:32 2010 +0200
+
+    few fixed related to multi-part messages in REP socket
+
+commit 77cbd18e9c0480a6c26fd29de5d70569762108be
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu Apr 8 11:07:22 2010 +0200
+
+    issue 11 - Assertion failed: it != peers.end () (pgm_receiver.cpp:161)
+
+commit 38e9103e0c82bcbb61a9c23ed3a4ace1c7420f95
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu Apr 8 08:33:38 2010 +0200
+
+    issue 13 (Assertion failed: load.get () == 0 (epoll.cpp:49)) fixed
+
+commit 0f7aab5212ef66f7e292fe4ca891660859972ec4
+Merge: 745db9c b0250cc
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed Apr 7 11:54:34 2010 +0200
+
+    Merge branch 'master' of git@github.com:sustrik/zeromq2
+
+commit 745db9c574153160214470563bea3b53ab4c292a
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed Apr 7 11:54:09 2010 +0200
+
+    unitialised member in seesion_t class - fixed
+
+commit b0250cc89df8d6c3d3fff7c8edc17a09ceaaa107
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed Apr 7 10:41:11 2010 +0200
+
+    Win32 build fixed
+
+commit 065e4d00ff628097ce693ac7d9056fbcaf23d0bc
+Merge: edfd05d a7973a2
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed Apr 7 08:20:24 2010 +0200
+
+    Merge branch 'master' of git@github.com:sustrik/zeromq2
+
+commit edfd05df8ef58afc498795cb74906c07ee396f76
+Author: Jon Dyte <jon@totient.co.uk>
+Date:   Wed Apr 7 08:20:01 2010 +0200
+
+    devices can be created via API
+
+commit a7973a2c4997e2ff79126eb073dc675c574de917
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Tue Apr 6 15:23:13 2010 +0200
+
+    Documentation fixes
+
+commit 0777567e8911382ac42859f907730df023ebec26
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Apr 6 07:33:52 2010 +0200
+
+    ENODEV from zmq_bind error described
+
+commit 37fd1a77a6927ae351e10fe8d5b68d0b0d525d22
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Wed Mar 31 15:15:16 2010 +0200
+
+    Handle full-pipe for REP sockets more gracefully
+
+commit 2f219d7c287cd518bc77b576e507d7a17c9535e9
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sat Mar 27 21:25:40 2010 +0100
+
+    ZMQ_TBC renamed to ZMQ_MORE
+
+commit 842b4dd2e492459cbc0cc79ffdb34ddab8f0b528
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sat Mar 27 14:57:56 2010 +0100
+
+    muti-part message functionality available via API
+
+commit 8d8e0857be3d2ab941de443e436061ef82752c17
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sat Mar 27 14:50:35 2010 +0100
+
+    as advertised, zmq_flush and ZMQ_NOFLUSH were removed
+
+commit 06538fc11790a0cf895c43d137a33febf97f3a28
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sat Mar 27 14:24:57 2010 +0100
+
+    multi-part messages work with REQ/REP sockets
+
+commit bbfac783f91f6692b7f9c0aa5392ac955f7b49bf
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sat Mar 27 09:43:49 2010 +0100
+
+    multi-part message work with UPSTREAM/DOWNSTREAM
+
+commit ed291b02516ac5c9fe01f328d505305d36fe6319
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sat Mar 27 09:24:38 2010 +0100
+
+    multi-part messages work with PUB/SUB
+
+commit 0b9897b141ae03ccd00132a638d030a2521cf5b3
+Merge: 0a53ff7 783463a
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Mar 26 12:15:47 2010 +0100
+
+    Merge branch 'master' of git@github.com:sustrik/zeromq2
+
+commit 783463ac49aeb2d1be57dc9b3669d508187415a8
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Thu Mar 25 17:31:18 2010 +0100
+
+    Clarify use of poll() with C++ API, fix typo
+
+commit c802a72a0b4aae06cd65158af3c65e65e0dfc2e0
+Author: Vitaly Mayatskikh <v.mayatskih@gmail.com>
+Date:   Mon Mar 22 22:31:37 2010 +0100
+
+    configure does not mention xmlto when missing
+
+commit 0a53ff7b9f8a212793c540535c322bfaa93d3430
+Merge: f031677 93bdb79
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sat Mar 20 19:51:29 2010 +0100
+
+    Merge branch 'master' of git@github.com:sustrik/zeromq2
+
+commit 93bdb792a92b9bd235c7be47a13febf429568301
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sat Mar 20 19:50:36 2010 +0100
+
+    PUB socket was blocking occassionally - fixed
+
+commit f031677100b41347e09932fc973040097a2187e4
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sat Mar 20 15:04:30 2010 +0100
+
+    rollback of half-processed messages in case of disconnection
+
+commit dfdaff5eba1e6980adb3326c119d2070d0ad42bb
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sat Mar 20 10:58:59 2010 +0100
+
+    XREP-style prefixing/trimming messages removed
+
+commit cbaf10978a8ffa98d98161aeec8d020c517b127b
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Mar 19 09:14:26 2010 +0100
+
+    fixes for building with Sun CC
+
+-------------------------------------------------------------------------------
+
 0MQ version 2.0.6 (Beta) was released on 2010/03/16.
 
 Changes since 2.0-beta2:
