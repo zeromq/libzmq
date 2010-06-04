@@ -24,7 +24,9 @@
 // on the windows platform.
 
 #define _WINSOCKAPI_
-#define NOMINMAX
+#ifndef NOMINMAX
+#define NOMINMAX // No min and max functions, these clash with C++.
+#endif
 #define _CRT_SECURE_NO_WARNINGS
 
 #ifndef WIN32_LEAN_AND_MEAN
