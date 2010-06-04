@@ -46,7 +46,7 @@ int main (int argc, char *argv [])
     message_size = atoi (argv [2]);
     roundtrip_count = atoi (argv [3]);
 
-    ctx = zmq_init (1, 1, 0);
+    ctx = zmq_init (1);
     if (!ctx) {
         printf ("error in zmq_init: %s\n", zmq_strerror (errno));
         return -1;

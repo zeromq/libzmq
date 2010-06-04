@@ -226,9 +226,7 @@ size_t zmq_msg_size (zmq_msg_t *msg_)
     return ((zmq::msg_content_t*) msg_->content)->size;
 }
 
-//  TODO: app_threads and flags parameters are not used anymore...
-//  Reflect this in the API/ABI.
-void *zmq_init (int /*app_threads_*/, int io_threads_, int /*flags_*/)
+void *zmq_init (int io_threads_)
 {
     if (io_threads_ < 0) {
         errno = EINVAL;

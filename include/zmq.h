@@ -144,10 +144,7 @@ ZMQ_EXPORT size_t zmq_msg_size (zmq_msg_t *msg);
 /*  0MQ infrastructure (a.k.a. context) initialisation & termination.         */
 /******************************************************************************/
 
-/*  This flag is obsolete and has no effect. To be removed in next version.   */
-#define ZMQ_POLL 1
-
-ZMQ_EXPORT void *zmq_init (int app_threads, int io_threads, int flags);
+ZMQ_EXPORT void *zmq_init (int io_threads);
 ZMQ_EXPORT int zmq_term (void *context);
 
 /******************************************************************************/
@@ -155,9 +152,7 @@ ZMQ_EXPORT int zmq_term (void *context);
 /******************************************************************************/
 
 /*  Socket types.                                                             */ 
-/*  ZMQ_P2P is obsolete and scheduled to be removed in version 2.0.8          */
 #define ZMQ_PAIR 0
-#define ZMQ_P2P 0
 #define ZMQ_PUB 1
 #define ZMQ_SUB 2
 #define ZMQ_REQ 3
@@ -169,8 +164,6 @@ ZMQ_EXPORT int zmq_term (void *context);
 
 /*  Socket options.                                                           */
 #define ZMQ_HWM 1
-/*  TODO: LWM is obsolete and should be removed in next version.              */
-#define ZMQ_LWM 2
 #define ZMQ_SWAP 3
 #define ZMQ_AFFINITY 4
 #define ZMQ_IDENTITY 5
@@ -186,8 +179,6 @@ ZMQ_EXPORT int zmq_term (void *context);
 /*  Send/recv options.                                                        */
 #define ZMQ_NOBLOCK 1
 #define ZMQ_SNDMORE 2
-/*  Obsolete. To be removed in 2.0.7 release.                                 */
-#define ZMQ_MORE 2
 
 ZMQ_EXPORT void *zmq_socket (void *context, int type);
 ZMQ_EXPORT int zmq_close (void *s);
