@@ -276,14 +276,6 @@ AC_ARG_WITH([pgm], [AS_HELP_STRING([--with-pgm],
     [build libzmq with PGM extension [default=no]])], 
     [with_pgm_ext=yes], [with_pgm_ext=no])
 
-AC_ARG_WITH([pgm-examples], [AS_HELP_STRING([--with-pgm-examples], 
-    [build PGM examples [default=no]])], 
-    [with_pgm_examples=yes], [with_pgm_examples=no])
-
-if test "x$with_pgm_ext" = "xno" -a "x$with_pgm_examples" = "xyes"; then
-    AC_MSG_ERROR([cannot configure --with-pgm-examples without --with-pgm.]);
-fi
-
 if test "x$with_pgm_ext" != "xno"; then
 
     AC_MSG_CHECKING([if the PGM extension is supported on this platform])
@@ -362,7 +354,6 @@ fi
 AM_CONDITIONAL(BUILD_PGM, test "x$pgm_ext" = "xyes")
 AM_CONDITIONAL(BUILD_NO_PGM, test "x$pgm_ext" = "xno")
 AM_CONDITIONAL(ON_MINGW, test "x$on_mingw32" = "xyes")
-AM_CONDITIONAL(BUILD_PGM_EXAMPLES, test "x$with_pgm_examples" = "xyes")
 AM_CONDITIONAL(INSTALL_MAN, test "x$install_man" = "xyes")
 AM_CONDITIONAL(BUILD_DOC, test "x$build_doc" = "xyes")
 
