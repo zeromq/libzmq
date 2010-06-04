@@ -29,6 +29,7 @@
       defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_CYGWIN
 #include <uuid/uuid.h>
 #elif defined ZMQ_HAVE_WINDOWS
+#include "windows.hpp"
 #include <rpc.h>
 #elif defined ZMQ_HAVE_OPENVMS
 typedef struct

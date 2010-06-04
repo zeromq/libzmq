@@ -17,8 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <string.h>
+#include "platform.hpp"
+#if defined ZMQ_HAVE_WINDOWS
+#include "windows.hpp"
+#endif
 
+#include <string.h>
 #include <new>
 
 #include "zmq_engine.hpp"

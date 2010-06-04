@@ -31,34 +31,5 @@
 #define PACKAGE_VERSION_PATCH 7
 
 #define ZMQ_HAVE_WINDOWS
-#define _WINSOCKAPI_
-#define NOMINMAX
-#define _CRT_SECURE_NO_WARNINGS
-
-// Turn on only the items zmq needs on the Windows platform.
-
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#ifndef NOMCX   // No Modem Configuration Extensions.
-#define NOMCX
-#endif
-#ifndef NOIME   // No Input Method Editor.
-#define NOIME
-#endif
-#ifndef NOSOUND // No Sound driver routines.
-#define NOSOUND
-#endif
-
-#include <windows.h>
-#include <objbase.h>
-
-//  Enable winsock (not included when WIN32_LEAN_AND_MEAN is defined).
-#if(_WIN32_WINNT >= 0x0400)
-#include <winsock2.h>
-#include <mswsock.h>
-#else
-#include <winsock.h>
-#endif
 
 #endif

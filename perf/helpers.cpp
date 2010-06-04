@@ -19,7 +19,9 @@
 
 #include <assert.h>
 #include <stdlib.h>
-#ifndef _WIN32
+#ifdef _WIN32
+#   include "../src/windows.hpp"
+#else
 #   include <sys/time.h>
 #   include <unistd.h>
 #endif

@@ -22,6 +22,11 @@
 #include <new>
 #include <algorithm>
 
+#include "platform.hpp"
+#if defined ZMQ_HAVE_WINDOWS
+#include "windows.hpp"
+#endif
+
 #include "err.hpp"
 #include "prefix_tree.hpp"
 

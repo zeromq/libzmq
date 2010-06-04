@@ -20,6 +20,11 @@
 #ifndef __ZMQ_ENCODER_HPP_INCLUDED__
 #define __ZMQ_ENCODER_HPP_INCLUDED__
 
+#include "platform.hpp"
+#if defined ZMQ_HAVE_WINDOWS
+#include "windows.hpp"
+#endif
+
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
