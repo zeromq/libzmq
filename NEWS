@@ -12,6 +12,13 @@ Distribution
 * The version of OpenPGM bundled with 0MQ has been updated to the 2.1.26 release.
 
 
+Building
+--------
+
+* GCC-isms have been removed from the code and build system across the board;
+  0MQ should now build with no issues when using compilers other than GCC.
+
+
 Interface
 ---------
 
@@ -23,6 +30,8 @@ Interface
 
 * The ZMQ_LWM socket option has been removed; the low water mark for a socket
   is now computed automatically by 0MQ.
+
+* A zmq_getsockopt() function has been added.
 
 
 New functionality
