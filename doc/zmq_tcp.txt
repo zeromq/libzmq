@@ -68,8 +68,15 @@ shall be encoded as a single octet with the value `255` followed by the
 'payload length' represented as a 64-bit unsigned integer in network byte
 order.
 
-The 'flags' field consists of a single octet reserved for future expansion and
-MUST be set to `0`.
+The 'flags' field consists of a single octet containing various control flags:
+
+Bit 0 (MORE): _More message parts to follow_. A value of 0 indicates that there
+are no more message parts to follow; or that the message being sent is not a
+multi-part message. A value of 1 indicates that the message being sent is a
+multi-part message and more message parts are to follow.
+
+Bits 1-7: _Reserved_. Bits 1-7 are reserved for future expansion and MUST be
+set to zero.
 
 The following ABNF grammar represents a single 'frame':
 
