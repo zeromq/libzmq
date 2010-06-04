@@ -19,9 +19,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
-#ifdef _WIN32
-#   include <windows.h>
-#else
+#ifndef _WIN32
 #   include <sys/time.h>
 #   include <unistd.h>
 #endif
