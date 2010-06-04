@@ -29,7 +29,7 @@
 #elif defined ZMQ_HAVE_WINDOWS
 #define ZMQ_ATOMIC_PTR_WINDOWS
 #elif (defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_NETBSD)
-#define ZMQ_ATOMIC_COUNTER_ATOMIC_H
+#define ZMQ_ATOMIC_PTR_ATOMIC_H
 #else
 #define ZMQ_ATOMIC_PTR_MUTEX
 #endif
