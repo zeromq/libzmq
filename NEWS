@@ -1,7 +1,30 @@
 0MQ version 2.0.7 (Beta), released on 2010/06/XX
 ================================================
 
-...
+Interface
+---------
+
+* zmq_init has a single parameter now: number of I/O threads in the thread pool.
+  All the remaining parameters where dropped.
+* ZMQ_P2P socket type was renamed to ZMQ_PAIR.
+* LWM socket option was dropped.
+
+
+New functionality
+-----------------
+
+* Multi-hop REQ/REP pattern is fully supported. This feature allows to put
+  a device(s) between REP and REP sockets thus allowing for scenarios like
+  multi-threaded server, shared service queue etc. The whole infrastructure
+  is transparent to the applications.
+
+* Multi-part messages. Message may now be composed from several parts. This
+  feature allows for seamless zero-copy message passing when data are scattered
+  in the memory. Moreover it gives 0MQ message some basic structure.
+
+* Sane termination of multiple threads. This means that main thread can
+  terminate the messaging library causing all blocking functions to unblock
+  and allow for orderly application termination.
 
 0MQ version 2.0.6 (Beta), released on 2010/03/16
 ================================================
