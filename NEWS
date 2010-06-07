@@ -1,30 +1,63 @@
-0MQ version 2.0.7 (Beta), released on 2010/06/XX
+0MQ version 2.0.7 (Beta), released on 2010/06/04
 ================================================
+
+
+Distribution
+------------
+
+* The core documentation has been updated with many clarifications, especially
+  in the description of the functionality provided by the different socket
+  types.
+
+* The version of OpenPGM bundled with 0MQ has been updated to the 2.1.26 release.
+
+
+Building
+--------
+
+* GCC-isms have been removed from the code and build system across the board;
+  0MQ should now build with no issues when using compilers other than GCC.
+
 
 Interface
 ---------
 
-* zmq_init has a single parameter now: number of I/O threads in the thread pool.
-  All the remaining parameters where dropped.
-* ZMQ_P2P socket type was renamed to ZMQ_PAIR.
-* LWM socket option was dropped.
+* The zmq_init() function now has only a single parameter; the number of 0MQ
+  I/O threads to create in the context being initialised. The app_threads and
+  flags parameters have been removed.
+
+* The ZMQ_P2P socket type has been renamed to ZMQ_PAIR.
+
+* The ZMQ_LWM socket option has been removed; the low water mark for a socket
+  is now computed automatically by 0MQ.
+
+* A zmq_getsockopt() function has been added.
 
 
 New functionality
 -----------------
 
-* Multi-hop REQ/REP pattern is fully supported. This feature allows to put
-  a device(s) between REP and REP sockets thus allowing for scenarios like
-  multi-threaded server, shared service queue etc. The whole infrastructure
-  is transparent to the applications.
+* Multi-hop request/reply is fully supported. This feature allows the insertion
+  of device(s) between ZMQ_REQ and ZMQ_REP sockets thus enabling scenarios
+  such as multi-threaded server, shared service queue, and other interesting
+  messaging topologies. The entire infrastructure is transparent to
+  applications.
 
-* Multi-part messages. Message may now be composed from several parts. This
-  feature allows for seamless zero-copy message passing when data are scattered
-  in the memory. Moreover it gives 0MQ message some basic structure.
+* Multi-part messages.  A 0MQ message may now be composed of 1 or more message
+  parts; each message part is an independent zmq_msg_t in its own right. 0MQ
+  ensures atomic delivery of messages; peers shall receive either all message
+  parts of a message or none at all.
 
-* Sane termination of multiple threads. This means that main thread can
-  terminate the messaging library causing all blocking functions to unblock
-  and allow for orderly application termination.
+  This feature allows for seamless zero-copy message passing when data are
+  scattered in memory, and is an important building block for multi-hop
+  messaging topologies.
+
+* Context termination and ETERM. The zmq_term() function has been
+  changed to interrupt any blocking operations on open sockets, causing them to
+  return the newly defined ETERM error code. This allows for orderly
+  application termination, especially when multiple application threads are
+  involved.
+
 
 0MQ version 2.0.6 (Beta), released on 2010/03/16
 ================================================
