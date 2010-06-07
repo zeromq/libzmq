@@ -168,6 +168,10 @@ corresponding _zmq_msg_init()_ function.
 
 Input/output multiplexing
 ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+[verse]
+*int poll (zmq_pollitem_t *items, int nitems, long timeout = -1)*
+
 The _poll()_ function is a namespaced equivalent of the _zmq_poll()_ function,
 as described in linkzmq:zmq_poll[3].
 
