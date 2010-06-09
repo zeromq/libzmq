@@ -28,7 +28,7 @@ namespace zmq
  
     struct i_poll_events
     {
-        virtual ~i_poll_events () {};
+        virtual ~i_poll_events () {}
  
         // Called by I/O thread when file descriptor is ready for reading.
         virtual void in_event () = 0;
