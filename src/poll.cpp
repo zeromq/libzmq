@@ -165,22 +165,21 @@ void zmq::poll_t::loop ()
             continue;
         }
 
-        for (pollset_t::iterator it = pollset.begin ();
-                it != pollset.end (); it ++) {
+        for (pollset_t::size_type i = 0; i != pollset.size (); i++) {
 
-            zmq_assert (!(it->revents & POLLNVAL));
-            if (it->fd == retired_fd)
+            zmq_assert (!(pollset [i].revents & POLLNVAL));
+            if (pollset [i].fd == retired_fd)
                continue;
-            if (it->revents & (POLLERR | POLLHUP))
-                fd_table [it->fd].events->in_event ();
-            if (it->fd == retired_fd)
+            if (pollset [i].revents & (POLLERR | POLLHUP))
+                fd_table [pollset [i].fd].events->in_event ();
+            if (pollset [i].fd == retired_fd)
                continue;
-            if (it->revents & POLLOUT)
-                fd_table [it->fd].events->out_event ();
-            if (it->fd == retired_fd)
+            if (pollset [i].revents & POLLOUT)
+                fd_table [pollset [i].fd].events->out_event ();
+            if (pollset [i].fd == retired_fd)
                continue;
-            if (it->revents & POLLIN)
-                fd_table [it->fd].events->in_event ();
+            if (pollset [i].revents & POLLIN)
+                fd_table [pollset [i].fd].events->in_event ();
         }
 
         //  Clean up the pollset and update the fd_table accordingly.
