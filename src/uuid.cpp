@@ -190,8 +190,10 @@ unsigned char zmq::uuid_t::convert_byte (const char *hexa_)
         byte = *hexa_ - 'A' + 10;
     else if (*hexa_ >= 'a' && *hexa_ <= 'f')
         byte = *hexa_ - 'a' + 10;
-    else
+    else {
         zmq_assert (false);
+        byte = 0;
+    }
 
     byte *= 16;
 
