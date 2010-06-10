@@ -35,7 +35,9 @@ namespace zmq
         {
         }
 
-        inline ~yarray_item_t ()
+        //  The destructor doesn't have to be virtual. It is mad virtual
+        //  just to keep ICC and code checking tools from complaining.
+        inline virtual ~yarray_item_t ()
         {
         }
 

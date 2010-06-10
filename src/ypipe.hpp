@@ -50,6 +50,12 @@ namespace zmq
             c.set (&queue.back ());
         }
 
+        //  The destructor doesn't have to be virtual. It is mad virtual
+        //  just to keep ICC and code checking tools from complaining.
+        inline virtual ~ypipe_t ()
+        {
+        }
+
         //  Following function (write) deliberately copies uninitialised data
         //  when used with zmq_msg. Initialising the VSM body for
         //  non-VSM messages won't be good for performance.

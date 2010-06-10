@@ -55,7 +55,9 @@ namespace zmq
             zmq_assert (buf);
         }
 
-        inline ~decoder_t ()
+        //  The destructor doesn't have to be virtual. It is mad virtual
+        //  just to keep ICC and code checking tools from complaining.
+        inline virtual ~decoder_t ()
         {
             free (buf);
         }
