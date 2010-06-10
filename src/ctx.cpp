@@ -151,6 +151,7 @@ zmq::socket_base_t *zmq::ctx_t::create_socket (int type_)
 
             //  Create the new application thread proxy object.
             app_thread_info_t info;
+            memset (&info, 0, sizeof (info));
             info.associated = false;
             info.app_thread = new (std::nothrow) app_thread_t (this,
                 io_threads.size () + app_threads.size ());
