@@ -424,7 +424,14 @@ int zmq::socket_base_t::recv (::zmq_msg_t *msg_, int flags_)
             return -1;
         }
         ticks = 0;
-        return xrecv (msg_, flags_);
+
+        rc = xrecv (msg_, flags_);
+        if (rc == 0) {
+            rcvmore = msg_->flags & ZMQ_MSG_MORE;
+            if (rcvmore)
+                msg_->flags &= ~ZMQ_MSG_MORE;
+        }
+        return rc;
     }
 
     //  In blocking scenario, commands are processed over and over again until
