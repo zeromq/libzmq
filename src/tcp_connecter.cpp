@@ -118,7 +118,7 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
         //  Assert that the error was caused by the networking problems
         //  rather than 0MQ bug.
         zmq_assert (err == WSAECONNREFUSED || err == WSAETIMEDOUT ||
-            err == WSAECONNABORTED);
+            err == WSAECONNABORTED || err == WSAEHOSTUNREACH);
 
         errno = err;
         return retired_fd;
@@ -291,10 +291,10 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
         err = errno;
     if (err != 0) {
 
-        //  Assert that the error was caused by 0MQ bug.
-        //  Networking problems are OK. No need to assert.
+        //  Assert that the error was caused by the networking problems
+        //  rather than 0MQ bug.
         zmq_assert (err == ECONNREFUSED || err == ECONNRESET ||
-            err == ETIMEDOUT);
+            err == ETIMEDOUT || err == EHOSTUNREACH);
 
         errno = err;
         return retired_fd;
