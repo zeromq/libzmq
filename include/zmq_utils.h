@@ -17,24 +17,33 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __HELPERS_H_INCLUDED__
-#define __HELPERS_H_INCLUDED__
+#ifndef __ZMQ_UTILS_H_INCLUDED__
+#define __ZMQ_UTILS_H_INCLUDED__
 
-/******************************************************************************/
-/*  Helper functions.                                                         */
-/******************************************************************************/
+/*  Win32 needs special handling for DLL exports                              */
+#if defined _WIN32
+#   if defined DLL_EXPORT
+#       define ZMQ_EXPORT __declspec(dllexport)
+#   else
+#       define ZMQ_EXPORT __declspec(dllimport)
+#   endif
+#else
+#   define ZMQ_EXPORT
+#endif
 
 /*  Helper functions are used by perf tests so that they don't have to care   */
 /*  about minutiae of time-related functions on different OS platforms.       */
 
 /*  Starts the stopwatch. Returns the handle to the watch.                    */
-void *stopwatch_start ();
+ZMQ_EXPORT void *zmq_stopwatch_start ();
 
 /*  Stops the stopwatch. Returns the number of microseconds elapsed since     */
 /*  the stopwatch was started.                                                */
-unsigned long stopwatch_stop (void *watch_);
+ZMQ_EXPORT unsigned long zmq_stopwatch_stop (void *watch_);
 
 /*  Sleeps for specified number of seconds.                                   */
-void perf_sleep (int seconds_);
+ZMQ_EXPORT void zmq_sleep (int seconds_);
+
+#undef ZMQ_EXPORT
 
 #endif

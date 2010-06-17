@@ -661,3 +661,66 @@ int zmq_device (int device_, void *insocket_, void *outsocket_)
         return EINVAL;
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+//  0MQ utils - to be used by perf tests
+////////////////////////////////////////////////////////////////////////////////
+
+#if defined ZMQ_HAVE_WINDOWS
+
+static uint64_t now ()
+{    
+    //  Get the high resolution counter's accuracy.
+    LARGE_INTEGER ticksPerSecond;
+    QueryPerformanceFrequency (&ticksPerSecond);
+
+    //  What time is it?
+    LARGE_INTEGER tick;
+    QueryPerformanceCounter (&tick);
+
+    //  Convert the tick number into the number of seconds
+    //  since the system was started.
+    double ticks_div = (double) (ticksPerSecond.QuadPart / 1000000);     
+    return (uint64_t) (tick.QuadPart / ticks_div);
+}
+
+void zmq_sleep (int seconds_)
+{
+    Sleep (seconds_ * 1000);
+}
+
+#else
+
+static uint64_t now ()
+{
+    struct timeval tv;
+    int rc;
+
+    rc = gettimeofday (&tv, NULL);
+    assert (rc == 0);
+    return (tv.tv_sec * (uint64_t) 1000000 + tv.tv_usec);
+}
+
+void zmq_sleep (int seconds_)
+{
+    sleep (seconds_);
+}
+
+#endif
+
+void *zmq_stopwatch_start ()
+{
+    uint64_t *watch = (uint64_t*) malloc (sizeof (uint64_t));
+    assert (watch);
+    *watch = now ();
+    return (void*) watch;
+}
+
+unsigned long zmq_stopwatch_stop (void *watch_)
+{
+    uint64_t end = now ();
+    uint64_t start = *(uint64_t*) watch_;
+    free (watch_);
+    return (unsigned long) (end - start);
+}
+

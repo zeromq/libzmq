@@ -18,10 +18,10 @@
 */
 
 #include "../include/zmq.h"
+#include "../include/zmq_utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "helpers.h"
 
 int main (int argc, char *argv [])
 {
@@ -71,7 +71,7 @@ int main (int argc, char *argv [])
     }
     memset (zmq_msg_data (&msg), 0, message_size);
 
-    watch = stopwatch_start ();
+    watch = zmq_stopwatch_start ();
 
     for (i = 0; i != roundtrip_count; i++) {
         rc = zmq_send (s, &msg, 0);
@@ -90,7 +90,7 @@ int main (int argc, char *argv [])
         }
     }
 
-    elapsed = stopwatch_stop (watch);
+    elapsed = zmq_stopwatch_stop (watch);
 
     rc = zmq_msg_close (&msg);
     if (rc != 0) {

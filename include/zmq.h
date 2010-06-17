@@ -223,6 +223,8 @@ ZMQ_EXPORT int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
 
 ZMQ_EXPORT int zmq_device (int device, void * insocket, void* outsocket);
 
+#undef ZMQ_EXPORT
+
 #ifdef __cplusplus
 }
 #endif

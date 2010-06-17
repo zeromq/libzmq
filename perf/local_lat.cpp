@@ -18,9 +18,9 @@
 */
 
 #include "../include/zmq.h"
+#include "../include/zmq_utils.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "helpers.h"
 
 int main (int argc, char *argv [])
 {
@@ -89,7 +89,7 @@ int main (int argc, char *argv [])
         return -1;
     }
 
-    perf_sleep (1);
+    zmq_sleep (1);
 
     rc = zmq_close (s);
     if (rc != 0) {
