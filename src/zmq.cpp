@@ -18,6 +18,7 @@
 */
 
 #include "../include/zmq.h"
+#include "../include/zmq_utils.h"
 
 #include <string.h>
 #include <errno.h>

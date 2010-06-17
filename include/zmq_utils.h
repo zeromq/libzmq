@@ -20,6 +20,10 @@
 #ifndef __ZMQ_UTILS_H_INCLUDED__
 #define __ZMQ_UTILS_H_INCLUDED__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*  Win32 needs special handling for DLL exports                              */
 #if defined _WIN32
 #   if defined DLL_EXPORT
@@ -45,5 +49,9 @@ ZMQ_EXPORT unsigned long zmq_stopwatch_stop (void *watch_);
 ZMQ_EXPORT void zmq_sleep (int seconds_);
 
 #undef ZMQ_EXPORT
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
