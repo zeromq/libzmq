@@ -176,7 +176,6 @@ void zmq::writer_t::rollback ()
     while (pipe->unwrite (&msg)) {
         zmq_assert (msg.flags & ZMQ_MSG_MORE);
         zmq_msg_close (&msg);
-        msgs_written--;
     }
 
     if (stalled && endpoint != NULL && !pipe_full()) {
