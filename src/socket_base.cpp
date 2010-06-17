@@ -39,6 +39,7 @@
 #include "pgm_sender.hpp"
 #include "pgm_receiver.hpp"
 #include "likely.hpp"
+#include "uuid.hpp"
 
 zmq::socket_base_t::socket_base_t (app_thread_t *parent_) :
     object_t (parent_),
@@ -628,7 +629,16 @@ void zmq::socket_base_t::attach_pipes (class reader_t *inpipe_,
         inpipe_->set_endpoint (this);
     if (outpipe_)
         outpipe_->set_endpoint (this);
-    xattach_pipes (inpipe_, outpipe_, peer_identity_);
+
+    //  If the peer haven't specified it's identity, let's generate one.
+    if (peer_identity_.size ()) {
+        xattach_pipes (inpipe_, outpipe_, peer_identity_);
+    }
+    else {
+        blob_t identity (0, 1);
+        identity += uuid_t ().to_blob ();
+        xattach_pipes (inpipe_, outpipe_, identity);
+    }
 }
 
 void zmq::socket_base_t::detach_inpipe (class reader_t *pipe_)
