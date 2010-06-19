@@ -115,6 +115,9 @@ int zmq::pair_t::xrecv (zmq_msg_t *msg_, int flags_)
     zmq_msg_close (msg_);
 
     if (!alive || !inpipe || !inpipe->read (msg_)) {
+        //  No message is available. Initialise the output parameter
+        //  to be a 0-byte message.
+        zmq_msg_init (msg_);
         errno = EAGAIN;
         return -1;
     }
