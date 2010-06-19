@@ -204,7 +204,7 @@ void zmq::writer_t::term ()
     msg.content = (void*) (offset + ZMQ_DELIMITER);
     msg.flags = 0;
     pipe->write (msg, false);
-    pipe->flush ();
+    flush ();
 }
 
 void zmq::writer_t::process_reader_info (uint64_t msgs_read_)
