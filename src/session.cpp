@@ -265,7 +265,7 @@ void zmq::session_t::process_attach (i_engine *engine_,
     writer_t *socket_writer = NULL;
 
     if (options.requires_in && !out_pipe) {
-        pipe_t *pipe = new (std::nothrow) pipe_t (owner, this, options.hwm);
+        pipe_t *pipe = new (std::nothrow) pipe_t (owner, this, options.hwm, options.swap);
         zmq_assert (pipe);
         out_pipe = &pipe->writer;
         out_pipe->set_endpoint (this);
@@ -273,7 +273,7 @@ void zmq::session_t::process_attach (i_engine *engine_,
     }
 
     if (options.requires_out && !in_pipe) {
-        pipe_t *pipe = new (std::nothrow) pipe_t (this, owner, options.hwm);
+        pipe_t *pipe = new (std::nothrow) pipe_t (this, owner, options.hwm, options.swap);
         zmq_assert (pipe);
         in_pipe = &pipe->reader;
         in_pipe->set_endpoint (this);

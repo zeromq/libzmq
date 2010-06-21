@@ -76,6 +76,7 @@ libzmq_la_SOURCES = app_thread.hpp \
     lb.hpp \
     likely.hpp \
     msg_content.hpp \
+    msg_store.hpp \
     mutex.hpp \
     object.hpp \
     options.hpp \
@@ -134,6 +135,7 @@ libzmq_la_SOURCES = app_thread.hpp \
     ip.cpp \
     kqueue.cpp \
     lb.cpp \
+    msg_store.cpp \
     object.cpp \
     options.cpp \
     owned.cpp \

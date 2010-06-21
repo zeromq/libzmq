@@ -195,13 +195,13 @@ int zmq::socket_base_t::connect (const char *addr_)
 
         //  Create inbound pipe, if required.
         if (options.requires_in) {
-            in_pipe = new (std::nothrow) pipe_t (this, peer, options.hwm);
+            in_pipe = new (std::nothrow) pipe_t (this, peer, options.hwm, options.swap);
             zmq_assert (in_pipe);
         }
 
         //  Create outbound pipe, if required.
         if (options.requires_out) {
-            out_pipe = new (std::nothrow) pipe_t (peer, this, options.hwm);
+            out_pipe = new (std::nothrow) pipe_t (peer, this, options.hwm, options.swap);
             zmq_assert (out_pipe);
         }
 
@@ -234,14 +234,14 @@ int zmq::socket_base_t::connect (const char *addr_)
 
         //  Create inbound pipe, if required.
         if (options.requires_in) {
-            in_pipe = new (std::nothrow) pipe_t (this, session, options.hwm);
+            in_pipe = new (std::nothrow) pipe_t (this, session, options.hwm, options.swap);
             zmq_assert (in_pipe);
 
         }
 
         //  Create outbound pipe, if required.
         if (options.requires_out) {
-            out_pipe = new (std::nothrow) pipe_t (session, this, options.hwm);
+            out_pipe = new (std::nothrow) pipe_t (session, this, options.hwm, options.swap);
             zmq_assert (out_pipe);
         }
 
