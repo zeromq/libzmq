@@ -164,7 +164,6 @@ void zmq::msg_store_t::rollback ()
     if (commit_pos == write_pos || read_pos == write_pos)
         return;
 
-
     if (write_pos > read_pos)
         zmq_assert (read_pos <= commit_pos && commit_pos <= write_pos);
     else
@@ -178,7 +177,6 @@ void zmq::msg_store_t::rollback ()
         write_buf_start_addr = commit_pos % block_size;
         fill_buf (write_buf, write_buf_start_addr);
     }
-
     write_pos = commit_pos;
 }
 
@@ -194,45 +192,43 @@ bool zmq::msg_store_t::full ()
 
 void zmq::msg_store_t::copy_from_file (void *buffer_, size_t count_)
 {
-    char *ptr = (char*) buffer_;
-    size_t n, n_left = count_;
+    char *dest_ptr = (char *) buffer_;
+    size_t chunk_size, remainder = count_;
 
-    while (n_left > 0) {
-
-        n = std::min (n_left, std::min ((size_t) (filesize - read_pos),
+    while (remainder > 0) {
+        chunk_size = std::min (remainder, 
+            std::min ((size_t) (filesize - read_pos),
             (size_t) (block_size - read_pos % block_size)));
 
-        memcpy (ptr, &read_buf [read_pos % block_size], n);
-        ptr += n;
+        memcpy (dest_ptr, &read_buf [read_pos % block_size], chunk_size);
+        dest_ptr += chunk_size;
 
-        read_pos = (read_pos + n) % filesize;
+        read_pos = (read_pos + chunk_size) % filesize;
         if (read_pos % block_size == 0) {
             if (read_pos / block_size == write_pos / block_size)
                 read_buf = write_buf;
             else
                 fill_buf (read_buf, read_pos);
         }
-
-        n_left -= n;
+        remainder -= chunk_size;
     }
 }
 
 void zmq::msg_store_t::copy_to_file (const void *buffer_, size_t count_)
 {
-    char *ptr = (char*) buffer_;
-    size_t n, n_left = count_;
+    char *source_ptr = (char *) buffer_;
+    size_t chunk_size, remainder = count_;
 
-    while (n_left > 0) {
-
-        n = std::min (n_left, std::min ((size_t) (filesize - write_pos),
+    while (remainder > 0) {
+        chunk_size = std::min (remainder, 
+            std::min ((size_t) (filesize - write_pos),
             (size_t) (block_size - write_pos % block_size)));
 
-        memcpy (&write_buf [write_pos % block_size], ptr, n);
-        ptr += n;
+        memcpy (&write_buf [write_pos % block_size], source_ptr, chunk_size);
+        source_ptr += chunk_size;
 
-        write_pos = (write_pos + n) % filesize;
+        write_pos = (write_pos + chunk_size) % filesize;
         if (write_pos % block_size == 0) {
-
             save_write_buf ();
             write_buf_start_addr = write_pos;
 
@@ -243,8 +239,7 @@ void zmq::msg_store_t::copy_to_file (const void *buffer_, size_t count_)
                     write_buf = buf2;
             }
         }
-
-        n_left -= n;
+        remainder -= chunk_size;
     }
 }
 
@@ -259,21 +254,19 @@ void zmq::msg_store_t::fill_buf (char *buf, int64_t pos)
         errno_assert (offset == pos);
         file_pos = pos;
     }
+    size_t octets_stored = 0;
+    size_t octets_total = std::min (block_size, (size_t) (filesize - file_pos));
 
-    size_t i = 0;
-    size_t n = std::min (block_size, (size_t) (filesize - file_pos));
-
-    while (i < n) {
+    while (octets_stored < octets_total) {
 #ifdef ZMQ_HAVE_WINDOWS
-        int rc = _read (fd, &buf [i], n - i);
+        int rc = _read (fd, &buf [octets_stored], octets_total - octets_stored);
 #else
-        ssize_t rc = read (fd, &buf [i], n - i);
+        ssize_t rc = read (fd, &buf [octets_stored], octets_total - octets_stored);
 #endif
         errno_assert (rc > 0);
-        i += rc;
+        octets_stored += rc;
     }
-
-    file_pos += n;
+    file_pos += octets_total;
 }
 
 void zmq::msg_store_t::save_write_buf ()
@@ -287,21 +280,19 @@ void zmq::msg_store_t::save_write_buf ()
         errno_assert (offset == write_buf_start_addr);
         file_pos = write_buf_start_addr;
     }
+    size_t octets_stored = 0;
+    size_t octets_total = std::min (block_size, (size_t) (filesize - file_pos));
 
-    size_t i = 0;
-    size_t n = std::min (block_size, (size_t) (filesize - file_pos));
-
-    while (i < n) {
+    while (octets_stored < octets_total) {
 #ifdef ZMQ_HAVE_WINDOWS
-        int rc = _write (fd, &write_buf [i], n - i);
+        int rc = _write (fd, &write_buf [octets_stored], octets_total - octets_stored);
 #else
-        ssize_t rc = write (fd, &write_buf [i], n - i);
+        ssize_t rc = write (fd, &write_buf [octets_stored], octets_total - octets_stored);
 #endif
         errno_assert (rc > 0);
-        i += rc;
+        octets_stored += rc;
     }
-
-    file_pos += n;
+    file_pos += octets_total;
 }
 
 int64_t zmq::msg_store_t::buffer_space ()
