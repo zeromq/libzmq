@@ -226,6 +226,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\msg_store.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\object.cpp"
 				>
 			</File>
@@ -469,6 +473,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\msg_content.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\msg_store.hpp"
 				>
 			</File>
 			<File

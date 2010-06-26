@@ -26,6 +26,8 @@
 #include <sstream>
 #include <algorithm>
 
+#include "platform.hpp"
+
 #ifdef ZMQ_HAVE_WINDOWS
 #include <io.h>
 #else
