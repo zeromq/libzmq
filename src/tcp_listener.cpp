@@ -64,7 +64,7 @@ int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
 
     //  Allow reusing of the address.
     int flag = 1;
-    rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR,
+    rc = setsockopt (s, SOL_SOCKET, SO_EXCLUSIVEADDRUSE,
         (const char*) &flag, sizeof (int));
     wsa_assert (rc != SOCKET_ERROR);
 
