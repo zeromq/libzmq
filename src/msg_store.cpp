@@ -17,6 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "platform.hpp"
+
+#ifdef ZMQ_HAVE_WINDOWS
+#include "windows.hpp"
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
+
 #include "../include/zmq.h"
 
 #include <sys/types.h>
@@ -25,14 +34,6 @@
 #include <string.h>
 #include <sstream>
 #include <algorithm>
-
-#include "platform.hpp"
-
-#ifdef ZMQ_HAVE_WINDOWS
-#include <io.h>
-#else
-#include <unistd.h>
-#endif
 
 #include "atomic_counter.hpp"
 #include "msg_store.hpp"
