@@ -17,7 +17,7 @@ if INSTALL_MAN
 dist_man_MANS = $(MAN_DOC)
 endif
 
-EXTRA_DIST = $(MAN_TXT)
+EXTRA_DIST = asciidoc.conf $(MAN_TXT)
 if BUILD_DOC
 EXTRA_DIST += $(MAN_HTML)
 endif
