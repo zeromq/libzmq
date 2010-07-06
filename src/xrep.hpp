@@ -67,6 +67,12 @@ namespace zmq
         //  The pipe we are currently reading from.
         inpipes_t::size_type current_in;
 
+        //  Have we prefetched a message.
+        bool prefetched;
+
+        //  Holds the prefetched message.
+        zmq_msg_t prefetched_msg;
+
         //  If true, more incoming message parts are expected.
         bool more_in;
 
