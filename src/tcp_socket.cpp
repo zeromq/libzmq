@@ -210,7 +210,8 @@ int zmq::tcp_socket_t::read (void *data, int size)
         return 0;
 
     //  Signalise peer failure.
-    if (nbytes == -1 && (errno == ECONNRESET || errno == ECONNREFUSED))
+    if (nbytes == -1 && (errno == ECONNRESET || errno == ECONNREFUSED ||
+          errno == ETIMEDOUT))
         return -1;
 
     errno_assert (nbytes != -1);
