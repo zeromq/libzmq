@@ -291,8 +291,8 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
         err = errno;
     if (err != 0) {
 
-        //  Assert that the error was caused by the networking problems
-        //  rather than 0MQ bug.
+        //  Assert if the error was caused by 0MQ bug.
+        //  Networking problems are OK. No need to assert.
         errno = err;
         errno_assert (errno == ECONNREFUSED || errno == ECONNRESET ||
             errno == ETIMEDOUT || errno == EHOSTUNREACH);
