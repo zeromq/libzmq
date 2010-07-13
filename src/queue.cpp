@@ -49,7 +49,11 @@ int zmq::queue (class socket_base_t *insocket_,
 
         //  Wait while there are either requests or replies to process.
         rc = zmq_poll (&items [0], 2, -1);
-        errno_assert (rc > 0);
+        if (rc < 0) {
+            if (errno == ETERM)
+                return -1;
+            errno_assert (false);
+        }
 
         //  The algorithm below asumes ratio of request and replies processed
         //  under full load to be 1:1. Although processing requests replies
@@ -61,14 +65,26 @@ int zmq::queue (class socket_base_t *insocket_,
             while (true) {
 
                 rc = insocket_->recv (&msg, 0);
-                errno_assert (rc == 0);
+                if (rc < 0) {
+                    if (errno == ETERM)
+                        return -1;
+                    errno_assert (false);
+                }
 
                 moresz = sizeof (more);
                 rc = insocket_->getsockopt (ZMQ_RCVMORE, &more, &moresz);
-                errno_assert (rc == 0);
+                if (rc < 0) {
+                    if (errno == ETERM)
+                        return -1;
+                    errno_assert (false);
+                }
 
                 rc = outsocket_->send (&msg, more ? ZMQ_SNDMORE : 0);
-                errno_assert (rc == 0);
+                if (rc < 0) {
+                    if (errno == ETERM)
+                        return -1;
+                    errno_assert (false);
+                }
 
                 if (!more)
                     break;
@@ -80,14 +96,26 @@ int zmq::queue (class socket_base_t *insocket_,
             while (true) {
 
                 rc = outsocket_->recv (&msg, 0);
-                errno_assert (rc == 0);
+                if (rc < 0) {
+                    if (errno == ETERM)
+                        return -1;
+                    errno_assert (false);
+                }
 
                 moresz = sizeof (more);
                 rc = outsocket_->getsockopt (ZMQ_RCVMORE, &more, &moresz);
-                errno_assert (rc == 0);
+                if (rc < 0) {
+                    if (errno == ETERM)
+                        return -1;
+                    errno_assert (false);
+                }
 
                 rc = insocket_->send (&msg, more ? ZMQ_SNDMORE : 0);
-                errno_assert (rc == 0);
+                if (rc < 0) {
+                    if (errno == ETERM)
+                        return -1;
+                    errno_assert (false);
+                }
 
                 if (!more)
                     break;

@@ -30,8 +30,19 @@ int zmq::streamer (socket_base_t *insocket_, socket_base_t *outsocket_)
     errno_assert (rc == 0);
 
     while (true) {
-        insocket_->recv (&msg, 0);
-        outsocket_->send (&msg, 0);
+        rc = insocket_->recv (&msg, 0);
+        if (rc < 0) {
+            if (errno == ETERM)
+                return -1;
+            errno_assert (false);
+        }
+
+        rc = outsocket_->send (&msg, 0);
+        if (rc < 0) {
+            if (errno == ETERM)
+                return -1;
+            errno_assert (false);
+        }
     }
 
     return 0;
