@@ -58,6 +58,9 @@ namespace zmq
         void process_revive ();
         void process_pipe_term_ack ();
 
+        //  Returns true if the message is delimiter; false otherwise.
+        static bool is_delimiter (zmq_msg_t &msg_);
+
         //  The underlying pipe.
         class pipe_t *pipe;
 

@@ -44,15 +44,32 @@ void zmq::reader_t::set_pipe (pipe_t *pipe_)
     register_pipe (pipe);
 }
 
+bool zmq::reader_t::is_delimiter (zmq_msg_t &msg_)
+{
+    unsigned char *offset = 0;
+
+    return msg_.content == (void*) (offset + ZMQ_DELIMITER);
+}
+
 bool zmq::reader_t::check_read ()
 {
     //  Check if there's an item in the pipe.
-    if (pipe->check_read ())
-        return true;
-
     //  If not, deactivate the pipe.
-    endpoint->kill (this);
-    return false;
+    if (!pipe->check_read ()) {
+        endpoint->kill (this);
+        return false;
+    }
+
+    //  If the next item in the pipe is message delimiter,
+    //  initiate its termination.
+    if (pipe->probe (is_delimiter)) {
+        if (endpoint)
+            endpoint->detach_inpipe (this);
+        term ();
+        return false;
+    }
+
+    return true;
 }
 
 bool zmq::reader_t::read (zmq_msg_t *msg_)
