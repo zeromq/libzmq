@@ -289,11 +289,8 @@ int zmq::resolve_ip_hostname (sockaddr_storage *addr_, socklen_t *addr_len_,
     //  doesn't really matter, since it's not included in the addr-output.
     req.ai_socktype = SOCK_STREAM;
     
-    //  Avoid named services due to unclear socktype, and don't pick IPv4
-    //  addresses if we don't have a local IPv4 address configured.
-    //  If this is failing for you on a host with only IPv6 connectivity,
-    //  please contribute proper IPv6 support for all functions in this file.
-    req.ai_flags = AI_NUMERICSERV | AI_ADDRCONFIG;
+    //  Avoid named services due to unclear socktype.
+    req.ai_flags = AI_NUMERICSERV;
 
     //  Resolve host name. Some of the error info is lost in case of error,
     //  however, there's no way to report EAI errors via errno.
