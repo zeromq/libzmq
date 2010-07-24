@@ -341,6 +341,6 @@ uint64_t zmq::pipe_t::compute_lwm (uint64_t hwm_)
     if (hwm_ > max_wm_delta * 2)
         return hwm_ - max_wm_delta;
     else
-        return hwm_ / 2;
+        return (hwm_ + 1) / 2;
 }
 
