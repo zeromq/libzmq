@@ -47,7 +47,7 @@ int main (int argc, char *argv [])
 
     ctx = zmq_init (1);
     if (!ctx) {
-        printf ("error in zmq_send: %s\n", zmq_strerror (errno));
+        printf ("error in zmq_init: %s\n", zmq_strerror (errno));
         return -1;
     }
 
