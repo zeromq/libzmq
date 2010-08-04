@@ -31,7 +31,8 @@ colon and the TCP port number to use.
 An 'interface' may be specified by either of the following:
 
 * The interface name as defined by the operating system.
-* The primary IPv4 address assigned to the interface, in it's numeric representation.
+* The primary IPv4 address assigned to the interface, in its numeric
+  representation.
 * The wildcard `*`, meaning that the interface address is unspecified.
 
 NOTE: Interface names are not standardised in any way and should be assumed to
@@ -48,15 +49,15 @@ a colon and the TCP port number to use.
 A 'peer address' may be specified by either of the following:
 
 * The DNS name of the peer.
-* The IPv4 address of the peer, in it's numeric representation.
+* The IPv4 address of the peer, in its numeric representation.
 
 
 WIRE FORMAT
 -----------
 0MQ messages are transmitted over TCP in frames consisting of an encoded
-'payload length', followed by a 'flags' field and the message body. The 'payload
-length' is defined as the combined length in octets of the message body and the
-'flags' field.
+'payload length', followed by a 'flags' field and the message body. The
+'payload length' is defined as the combined length in octets of the message
+body and the 'flags' field.
 
 For frames with a 'payload length' not exceeding 254 octets, the 'payload
 length' shall be encoded as a single octet.  The minimum valid 'payload length'

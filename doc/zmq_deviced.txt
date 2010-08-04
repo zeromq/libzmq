@@ -14,22 +14,32 @@ SYNOPSIS
 
 DESCRIPTION
 -----------
-Starts one or more 0MQ devices.  If you specify a DEVICE, FRONTEND, and BACKEND then _zmq_device_ starts a single device acting as a mini-broker.  If you specify a CONFIGFILE, you can configure _zmq_device_ to start multiple concurrent devices with arbitrary configurations.
+Starts one or more 0MQ devices.  If you specify a DEVICE, FRONTEND, and BACKEND
+then _zmq_device_ starts a single device acting as a mini-broker.  If you
+specify a CONFIGFILE, you can configure _zmq_device_ to start multiple
+concurrent devices with arbitrary configurations.
 
 *Note* - zmq_deviced is not yet implemented.  This is a design.
 
 MINI-BROKER USAGE
 -----------------
-Runs as a mini-broker that accepts connects to both frontend and backend. This creates a hub-and-spoke topology in which all peers connect to the device.  This is a robust and easy to manage topology.
+Runs as a mini-broker that accepts connects to both frontend and backend. This
+creates a hub-and-spoke topology in which all peers connect to the device. This
+is a robust and easy to manage topology.
 
-DEVICE is one of: *queue*, *forwarder*, or *streamer*. See linkzmq:zmq_device[3] for a specification of these device types.
+DEVICE is one of: *queue*, *forwarder*, or *streamer*. See
+linkzmq:zmq_device[3] for a specification of these device types.
 
-FRONTEND and BACKEND are endpoints in the format 'transport'`://`'address',  See linkzmq:zmq_bind[3] for a specification of valid transports and addresses.
+FRONTEND and BACKEND are endpoints in the format 'transport'`://`'address', See
+linkzmq:zmq_bind[3] for a specification of valid transports and addresses.
 
 
 CONFIGURED USAGE
 ----------------
-CONFIGFILE is the name of an XML file, readable by 'zmq_device'.  This file provides a specification of the devices to start and how to connect and/or bind their frontends and backends.  If CONFIGFILE is absent or *-* then the configuration is read from standard input.
+CONFIGFILE is the name of an XML file, readable by 'zmq_device'.  This file
+provides a specification of the devices to start and how to connect and/or bind
+their frontends and backends.  If CONFIGFILE is absent or *-* then the
+configuration is read from standard input.
 
 The configuration file has this general syntax:
 
@@ -52,19 +62,28 @@ The configuration file has this general syntax:
 ----
 
 *iothreads*::
-    specifies the number of I/O threads for the process.  Specify this only for high-volume scenarios. See linkzmq:zmq_init[3].
+    specifies the number of I/O threads for the process.  Specify this only for
+    high-volume scenarios. See linkzmq:zmq_init[3].
 *device*::
-    defines one device.  For each device element you define, 'zmq_device' will start a thread.
+    defines one device.  For each device element you define, 'zmq_device' will
+    start a thread.
 *frontend*::
-    defines the frontend for the device.  Occurs once per device element.  You may override the default socket type.
+    defines the frontend for the device.  Occurs once per device element.  You
+    may override the default socket type.
 *backend*::
-    defines the backend for the device.  Occurs once per device element. You may override the default socket type.
+    defines the backend for the device.  Occurs once per device element. You
+may    override the default socket type.
 *set*::
-    defines a socket option for the frontend or backend.  The valid names are *hwm*, *swap*, *identity*, *subscribe*, *unsubscribe*, *rate*, *recovery_ivl*, *mcast_loop*, *sndbuf*, and *rcvbuf*. See linkzmq:zmq_setsockopt[3].
+    defines a socket option for the frontend or backend.  The valid names are
+    *hwm*, *swap*, *identity*, *subscribe*, *unsubscribe*, *rate*,
+    *recovery_ivl*, *mcast_loop*, *sndbuf*, and *rcvbuf*. See
+    linkzmq:zmq_setsockopt[3].
 *bind*::
-    binds the frontend or backend to the specified endpoint.  See linkzmq:zmq_bind[3].
+    binds the frontend or backend to the specified endpoint.  See
+    linkzmq:zmq_bind[3].
 *connect*::
-    binds the frontend or backend to the specified endpoint.  See linkzmq:zmq_connect[3].
+    binds the frontend or backend to the specified endpoint.  See
+    linkzmq:zmq_connect[3].
 
 SOCKET TYPES
 ------------
@@ -78,9 +97,12 @@ By default 'zmq_device' uses these socket types:
 *streamer* device::
     frontend is *pull*, backend is *push*.
 
-You can override the socket type for frontend or backend.  The valid types are: *req*, *rep*, *xreq*, *xrep*, *sub*, *pub*, *pull*, *push*, and *pair*.  See linkzmq:zmq_socket[3].
+You can override the socket type for frontend or backend.  The valid types are:
+*req*, *rep*, *xreq*, *xrep*, *sub*, *pub*, *pull*, *push*, and *pair*.  See
+linkzmq:zmq_socket[3].
 
-*Note*: if you use a *sub* socket you must explicitly set a subscription filter or your socket will not receive any data.
+*Note*: if you use a *sub* socket you must explicitly set a subscription filter
+or your socket will not receive any data.
 
 
 EXAMPLE
