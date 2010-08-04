@@ -31,16 +31,13 @@ Before calling _zmq_device()_ you must set any socket options, and connect or
 bind both frontend and backend sockets.  The two conventional device models
 are:
 
-*proxy*::
-    bind frontend socket to an endpoint, and connect backend socket to
-    downstream components.  A proxy device model does not require changes to
-    the downstream topology but that topology is static (any changes require
-    reconfiguring the device).
-*broker*::
-    bind frontend socket to one endpoint and bind backend socket to a second
-    endpoint.  Downstream components must now connect into the device.  A
-    broker device model allows a dynamic downstream topology (components can
-    come and go at any time).
+* proxy model - accept inward connections to frontend socket (by binding it to
+  an endpoint), and make onward connections through backend socket (connecting
+  to endpoints on other nodes). A proxy device model can fit well into an
+  existing topology.
+* broker model - accept connections on both frontend and backend sockets (by
+  binding both to endpoints).  A broker device model creates a star topology
+  where nodes can come and go at any time.
 
 _zmq_device()_ runs in the current thread and returns only if/when the current
 context is closed.
@@ -110,6 +107,21 @@ assert (zmq_bind (frontend, "tcp://*:5555") == 0);
 assert (zmq_bind (backend, "tcp://*:5556") == 0);
 //  Start a queue device
 zmq_device (ZMQ_QUEUE, frontend, backend);
+----
+
+.Creating a pubsub proxy
+----
+//  Create frontend and backend sockets
+void *frontend = zmq_socket (context, ZMQ_SUB);
+assert (backend);
+void *backend = zmq_socket (context, ZMQ_PUB);
+assert (frontend);
+//  Connect frontend to publisher
+assert (zmq_bind (frontend, "tcp://192.68.55.112:4444") == 0);
+//  Bind backend to TCP port
+assert (zmq_bind (backend, "tcp://*:5556") == 0);
+//  Start a forwarder device
+zmq_device (ZMQ_FORWARDER, frontend, backend);
 ----
 
 
