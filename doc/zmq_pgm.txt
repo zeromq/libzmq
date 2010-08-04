@@ -151,7 +151,4 @@ linkzmq:zmq_ipc[7]
 linkzmq:zmq_inproc[7]
 linkzmq:zmq[7]
 
-AUTHORS
--------
-The 0MQ documentation was written by Martin Sustrik <sustrik@250bpm.com> and
-Martin Lucina <mato@kotelna.sk>.
+

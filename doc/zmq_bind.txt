@@ -68,8 +68,8 @@ assert (socket);
 /* Bind it to a in-process transport with the address 'my_publisher' */
 int rc = zmq_bind (socket, "inproc://my_publisher");
 assert (rc == 0);
-/* Bind it to a TCP transport on port 5555 of the 'eth0' interface */
-rc = zmq_bind (socket, "tcp://eth0:5555");
+/* Bind it to a TCP transport on port 5555 of all local interfaces */
+rc = zmq_bind (socket, "tcp://*:5555");
 assert (rc == 0);
 ----
 
@@ -80,8 +80,3 @@ linkzmq:zmq_connect[3]
 linkzmq:zmq_socket[3]
 linkzmq:zmq[7]
 
-
-AUTHORS
--------
-The 0MQ documentation was written by Martin Sustrik <sustrik@250bpm.com> and
-Martin Lucina <mato@kotelna.sk>.
