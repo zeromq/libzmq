@@ -19,58 +19,58 @@
 
 #include "../include/zmq.h"
 
-#include "downstream.hpp"
+#include "push.hpp"
 #include "err.hpp"
 #include "pipe.hpp"
 
-zmq::downstream_t::downstream_t (class app_thread_t *parent_) :
+zmq::push_t::push_t (class app_thread_t *parent_) :
     socket_base_t (parent_)
 {
     options.requires_in = false;
     options.requires_out = true;
 }
 
-zmq::downstream_t::~downstream_t ()
+zmq::push_t::~push_t ()
 {
 }
 
-void zmq::downstream_t::xattach_pipes (class reader_t *inpipe_,
+void zmq::push_t::xattach_pipes (class reader_t *inpipe_,
     class writer_t *outpipe_, const blob_t &peer_identity_)
 {
     zmq_assert (!inpipe_ && outpipe_);
     lb.attach (outpipe_);
 }
 
-void zmq::downstream_t::xdetach_inpipe (class reader_t *pipe_)
+void zmq::push_t::xdetach_inpipe (class reader_t *pipe_)
 {
     //  There are no inpipes, so this function shouldn't be called at all.
     zmq_assert (false);
 }
 
-void zmq::downstream_t::xdetach_outpipe (class writer_t *pipe_)
+void zmq::push_t::xdetach_outpipe (class writer_t *pipe_)
 {
     zmq_assert (pipe_);
     lb.detach (pipe_);
 }
 
-void zmq::downstream_t::xkill (class reader_t *pipe_)
+void zmq::push_t::xkill (class reader_t *pipe_)
 {
     //  There are no inpipes, so this function shouldn't be called at all.
     zmq_assert (false);
 }
 
-void zmq::downstream_t::xrevive (class reader_t *pipe_)
+void zmq::push_t::xrevive (class reader_t *pipe_)
 {
     //  There are no inpipes, so this function shouldn't be called at all.
     zmq_assert (false);
 }
 
-void zmq::downstream_t::xrevive (class writer_t *pipe_)
+void zmq::push_t::xrevive (class writer_t *pipe_)
 {
     lb.revive (pipe_);
 }
 
-int zmq::downstream_t::xsetsockopt (int option_, const void *optval_,
+int zmq::push_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
     //  No special option for this socket type.
@@ -78,23 +78,23 @@ int zmq::downstream_t::xsetsockopt (int option_, const void *optval_,
     return -1;
 }
 
-int zmq::downstream_t::xsend (zmq_msg_t *msg_, int flags_)
+int zmq::push_t::xsend (zmq_msg_t *msg_, int flags_)
 {
     return lb.send (msg_, flags_);
 }
 
-int zmq::downstream_t::xrecv (zmq_msg_t *msg_, int flags_)
+int zmq::push_t::xrecv (zmq_msg_t *msg_, int flags_)
 {
     errno = ENOTSUP;
     return -1;
 }
 
-bool zmq::downstream_t::xhas_in ()
+bool zmq::push_t::xhas_in ()
 {
     return false;
 }
 
-bool zmq::downstream_t::xhas_out ()
+bool zmq::push_t::xhas_out ()
 {
     return lb.has_out ();
 }

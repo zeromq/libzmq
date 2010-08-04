@@ -17,21 +17,21 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_UPSTREAM_HPP_INCLUDED__
-#define __ZMQ_UPSTREAM_HPP_INCLUDED__
+#ifndef __ZMQ_PUSH_HPP_INCLUDED__
+#define __ZMQ_PUSH_HPP_INCLUDED__
 
 #include "socket_base.hpp"
-#include "fq.hpp"
+#include "lb.hpp"
 
 namespace zmq
 {
 
-    class upstream_t : public socket_base_t
+    class push_t : public socket_base_t
     {
     public:
 
-        upstream_t (class app_thread_t *parent_);
-        ~upstream_t ();
+        push_t (class app_thread_t *parent_);
+        ~push_t ();
 
         //  Overloads of functions from socket_base_t.
         void xattach_pipes (class reader_t *inpipe_, class writer_t *outpipe_,
@@ -49,12 +49,11 @@ namespace zmq
 
     private:
 
-        //  Fair queueing object for inbound pipes.
-        fq_t fq;
+        //  Load balancer managing the outbound pipes.
+        lb_t lb;
 
-        upstream_t (const upstream_t&);
-        void operator = (const upstream_t&);
-
+        push_t (const push_t&);
+        void operator = (const push_t&);
     };
 
 }

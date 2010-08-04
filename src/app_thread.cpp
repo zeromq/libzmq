@@ -46,8 +46,8 @@
 #include "rep.hpp"
 #include "xreq.hpp"
 #include "xrep.hpp"
-#include "upstream.hpp"
-#include "downstream.hpp"
+#include "pull.hpp"
+#include "push.hpp"
 
 //  If the RDTSC is available we use it to prevent excessive
 //  polling for commands. The nice thing here is that it will work on any
@@ -157,11 +157,11 @@ zmq::socket_base_t *zmq::app_thread_t::create_socket (int type_)
     case ZMQ_XREP:
         s = new (std::nothrow) xrep_t (this);
         break;       
-    case ZMQ_UPSTREAM:
-        s = new (std::nothrow) upstream_t (this);
+    case ZMQ_PULL:
+        s = new (std::nothrow) pull_t (this);
         break;
-    case ZMQ_DOWNSTREAM:
-        s = new (std::nothrow) downstream_t (this);
+    case ZMQ_PUSH:
+        s = new (std::nothrow) push_t (this);
         break;
     default:
         if (sockets.empty ())

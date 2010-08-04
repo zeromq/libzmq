@@ -19,55 +19,55 @@
 
 #include "../include/zmq.h"
 
-#include "upstream.hpp"
+#include "pull.hpp"
 #include "err.hpp"
 
-zmq::upstream_t::upstream_t (class app_thread_t *parent_) :
+zmq::pull_t::pull_t (class app_thread_t *parent_) :
     socket_base_t (parent_)
 {
     options.requires_in = true;
     options.requires_out = false;
 }
 
-zmq::upstream_t::~upstream_t ()
+zmq::pull_t::~pull_t ()
 {
 }
 
-void zmq::upstream_t::xattach_pipes (class reader_t *inpipe_,
+void zmq::pull_t::xattach_pipes (class reader_t *inpipe_,
     class writer_t *outpipe_, const blob_t &peer_identity_)
 {
     zmq_assert (inpipe_ && !outpipe_);
     fq.attach (inpipe_);
 }
 
-void zmq::upstream_t::xdetach_inpipe (class reader_t *pipe_)
+void zmq::pull_t::xdetach_inpipe (class reader_t *pipe_)
 {
     zmq_assert (pipe_);
     fq.detach (pipe_);
 }
 
-void zmq::upstream_t::xdetach_outpipe (class writer_t *pipe_)
+void zmq::pull_t::xdetach_outpipe (class writer_t *pipe_)
 {
     //  There are no outpipes, so this function shouldn't be called at all.
     zmq_assert (false);
 }
 
-void zmq::upstream_t::xkill (class reader_t *pipe_)
+void zmq::pull_t::xkill (class reader_t *pipe_)
 {
     fq.kill (pipe_);
 }
 
-void zmq::upstream_t::xrevive (class reader_t *pipe_)
+void zmq::pull_t::xrevive (class reader_t *pipe_)
 {
     fq.revive (pipe_);
 }
 
-void zmq::upstream_t::xrevive (class writer_t *pipe_)
+void zmq::pull_t::xrevive (class writer_t *pipe_)
 {
     zmq_assert (false);
 }
 
-int zmq::upstream_t::xsetsockopt (int option_, const void *optval_,
+int zmq::pull_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
     //  No special options for this socket type.
@@ -75,23 +75,23 @@ int zmq::upstream_t::xsetsockopt (int option_, const void *optval_,
     return -1;
 }
 
-int zmq::upstream_t::xsend (zmq_msg_t *msg_, int flags_)
+int zmq::pull_t::xsend (zmq_msg_t *msg_, int flags_)
 {
     errno = ENOTSUP;
     return -1;
 }
 
-int zmq::upstream_t::xrecv (zmq_msg_t *msg_, int flags_)
+int zmq::pull_t::xrecv (zmq_msg_t *msg_, int flags_)
 {
     return fq.recv (msg_, flags_);
 }
 
-bool zmq::upstream_t::xhas_in ()
+bool zmq::pull_t::xhas_in ()
 {
     return fq.has_in ();
 }
 
-bool zmq::upstream_t::xhas_out ()
+bool zmq::pull_t::xhas_out ()
 {
     return false;
 }
