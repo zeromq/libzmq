@@ -27,8 +27,6 @@ MAINTAINERCLEANFILES = $(MAN_DOC) $(MAN_HTML)
 
 dist-hook : $(MAN_DOC) $(MAN_HTML)
 
-clean:
-	rm *.1 *.3 *.7
 if BUILD_DOC
 SUFFIXES=.html .txt .xml .1 .3 .7
 
