@@ -176,7 +176,10 @@ zmq::signaler_t::~signaler_t ()
 
 void zmq::signaler_t::send (const command_t &cmd_)
 {
-    ssize_t nbytes = send (w, &cmd_, sizeof (command_t), 0);
+    ssize_t nbytes;
+    do {
+        ::send (w, &cmd_, sizeof (command_t), 0);
+    } while (nbytes == -1 && errno == EINTR);
     errno_assert (nbytes != -1);
     zmq_assert (nbytes == sizeof (command_t));
 }
@@ -194,7 +197,10 @@ bool zmq::signaler_t::recv (command_t &cmd_, bool block_)
     }
 
     bool result;
-    ssize_t nbytes = recv (r, buffer, sizeof (command_t), 0);
+    ssize_t nbytes;
+    do {
+        nbytes = ::recv (r, buffer, sizeof (command_t), 0);
+    } while (nbytes == -1 && errno == EINTR);
     if (nbytes == -1 && errno == EAGAIN) {
         result = false;
     }
@@ -249,7 +255,10 @@ void zmq::signaler_t::send (const command_t &cmd_)
 {
     //  TODO: Note that send is a blocking operation.
     //  How should we behave if the command cannot be written to the signaler?
-    ssize_t nbytes = ::send (w, &cmd_, sizeof (command_t), 0);
+    ssize_t nbytes;
+    do {
+        nbytes = ::send (w, &cmd_, sizeof (command_t), 0);
+    } while (nbytes == -1 && errno == EINTR);
     errno_assert (nbytes != -1);
 
     //  This should never happen as we've already checked that command size is
@@ -259,8 +268,11 @@ void zmq::signaler_t::send (const command_t &cmd_)
 
 bool zmq::signaler_t::recv (command_t *cmd_, bool block_)
 {
-    ssize_t nbytes = ::recv (r, cmd_, sizeof (command_t),
-        block_ ? 0 : MSG_DONTWAIT);
+    ssize_t nbytes;
+    do {
+        nbytes = ::recv (r, cmd_, sizeof (command_t),
+            block_ ? 0 : MSG_DONTWAIT);
+    } while (nbytes == -1 && errno == EINTR);
 
     //  If there's no signal available return false.
     if (nbytes == -1 && errno == EAGAIN)
