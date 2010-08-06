@@ -23,8 +23,8 @@
 #include "err.hpp"
 #include "pipe.hpp"
 
-zmq::push_t::push_t (class app_thread_t *parent_) :
-    socket_base_t (parent_)
+zmq::push_t::push_t (class ctx_t *parent_, uint32_t slot_) :
+    socket_base_t (parent_, slot_)
 {
     options.requires_in = false;
     options.requires_out = true;
@@ -41,57 +41,19 @@ void zmq::push_t::xattach_pipes (class reader_t *inpipe_,
     lb.attach (outpipe_);
 }
 
-void zmq::push_t::xdetach_inpipe (class reader_t *pipe_)
+void zmq::push_t::xterm_pipes ()
 {
-    //  There are no inpipes, so this function shouldn't be called at all.
-    zmq_assert (false);
+    lb.term_pipes ();
 }
 
-void zmq::push_t::xdetach_outpipe (class writer_t *pipe_)
+bool zmq::push_t::xhas_pipes ()
 {
-    zmq_assert (pipe_);
-    lb.detach (pipe_);
-}
-
-void zmq::push_t::xkill (class reader_t *pipe_)
-{
-    //  There are no inpipes, so this function shouldn't be called at all.
-    zmq_assert (false);
-}
-
-void zmq::push_t::xrevive (class reader_t *pipe_)
-{
-    //  There are no inpipes, so this function shouldn't be called at all.
-    zmq_assert (false);
-}
-
-void zmq::push_t::xrevive (class writer_t *pipe_)
-{
-    lb.revive (pipe_);
-}
-
-int zmq::push_t::xsetsockopt (int option_, const void *optval_,
-    size_t optvallen_)
-{
-    //  No special option for this socket type.
-    errno = EINVAL;
-    return -1;
+    return lb.has_pipes ();
 }
 
 int zmq::push_t::xsend (zmq_msg_t *msg_, int flags_)
 {
     return lb.send (msg_, flags_);
-}
-
-int zmq::push_t::xrecv (zmq_msg_t *msg_, int flags_)
-{
-    errno = ENOTSUP;
-    return -1;
-}
-
-bool zmq::push_t::xhas_in ()
-{
-    return false;
 }
 
 bool zmq::push_t::xhas_out ()

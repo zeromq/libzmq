@@ -82,7 +82,6 @@ ZMQ_EXPORT void zmq_version (int *major, int *minor, int *patch);
 #endif
 
 /*  Native 0MQ error codes.                                                   */
-#define EMTHREAD (ZMQ_HAUSNUMERO + 50)
 #define EFSM (ZMQ_HAUSNUMERO + 51)
 #define ENOCOMPATPROTO (ZMQ_HAUSNUMERO + 52)
 #define ETERM (ZMQ_HAUSNUMERO + 53)
@@ -152,36 +151,39 @@ ZMQ_EXPORT int zmq_term (void *context);
 /******************************************************************************/
 
 /*  Socket types.                                                             */ 
-#define ZMQ_PAIR         0
-#define ZMQ_PUB          1
-#define ZMQ_SUB          2
-#define ZMQ_REQ          3
-#define ZMQ_REP          4
-#define ZMQ_XREQ         5
-#define ZMQ_XREP         6
-#define ZMQ_PULL         7
-#define ZMQ_PUSH         8
-#define ZMQ_UPSTREAM     ZMQ_PULL   /*  Old alias, remove in 3.x              */
-#define ZMQ_DOWNSTREAM   ZMQ_PUSH   /*  Old alias, remove in 3.x              */
+#define ZMQ_PAIR 0
+#define ZMQ_PUB 1
+#define ZMQ_SUB 2
+#define ZMQ_REQ 3
+#define ZMQ_REP 4
+#define ZMQ_XREQ 5
+#define ZMQ_XREP 6
+#define ZMQ_PULL 7
+#define ZMQ_PUSH 8
+
+/*  Deprecated aliases, to be removed in release 3.x                          */
+#define ZMQ_UPSTREAM ZMQ_PULL
+#define ZMQ_DOWNSTREAM ZMQ_PUSH
 
 /*  Socket options.                                                           */
-#define ZMQ_HWM          1
-/*      ZMQ_LWM          2  no longer supported                               */
-#define ZMQ_SWAP         3
-#define ZMQ_AFFINITY     4
-#define ZMQ_IDENTITY     5
-#define ZMQ_SUBSCRIBE    6
-#define ZMQ_UNSUBSCRIBE  7
-#define ZMQ_RATE         8
+#define ZMQ_HWM 1
+#define ZMQ_SWAP 3
+#define ZMQ_AFFINITY 4
+#define ZMQ_IDENTITY 5
+#define ZMQ_SUBSCRIBE 6
+#define ZMQ_UNSUBSCRIBE 7
+#define ZMQ_RATE 8
 #define ZMQ_RECOVERY_IVL 9
-#define ZMQ_MCAST_LOOP  10
-#define ZMQ_SNDBUF      11
-#define ZMQ_RCVBUF      12
-#define ZMQ_RCVMORE     13
+#define ZMQ_MCAST_LOOP 10
+#define ZMQ_SNDBUF 11
+#define ZMQ_RCVBUF 12
+#define ZMQ_RCVMORE 13
+#define ZMQ_FD 14
+#define ZMQ_EVENTS 15
 
 /*  Send/recv options.                                                        */
-#define ZMQ_NOBLOCK      1
-#define ZMQ_SNDMORE      2
+#define ZMQ_NOBLOCK 1
+#define ZMQ_SNDMORE 2
 
 ZMQ_EXPORT void *zmq_socket (void *context, int type);
 ZMQ_EXPORT int zmq_close (void *s);
@@ -198,9 +200,9 @@ ZMQ_EXPORT int zmq_recv (void *s, zmq_msg_t *msg, int flags);
 /*  I/O multiplexing.                                                         */
 /******************************************************************************/
 
-#define ZMQ_POLLIN       1
-#define ZMQ_POLLOUT      2
-#define ZMQ_POLLERR      4
+#define ZMQ_POLLIN 1
+#define ZMQ_POLLOUT 2
+#define ZMQ_POLLERR 4
 
 typedef struct
 {
@@ -217,16 +219,14 @@ typedef struct
 ZMQ_EXPORT int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
 
 /******************************************************************************/
-/*  Devices                                                                   */
+/*  Devices - Experimental.                                                   */
 /******************************************************************************/
 
-#define ZMQ_QUEUE        1
-#define ZMQ_FORWARDER    2
-#define ZMQ_STREAMER     3
+#define ZMQ_STREAMER 1
+#define ZMQ_FORWARDER 2
+#define ZMQ_QUEUE 3
 
 ZMQ_EXPORT int zmq_device (int device, void * insocket, void* outsocket);
-
-#undef ZMQ_EXPORT
 
 #ifdef __cplusplus
 }

@@ -32,17 +32,13 @@ namespace zmq
     {
     public:
 
-        object_t (class ctx_t *ctx_, uint32_t thread_slot_);
+        object_t (class ctx_t *ctx_, uint32_t slot_);
         object_t (object_t *parent_);
         virtual ~object_t ();
 
-        uint32_t get_thread_slot ();
+        uint32_t get_slot ();
         ctx_t *get_ctx ();
         void process_command (struct command_t &cmd_);
-
-        //  Allow pipe to access corresponding context functions.
-        void register_pipe (class pipe_t *pipe_);
-        void unregister_pipe (class pipe_t *pipe_);
 
     protected:
 
@@ -54,6 +50,10 @@ namespace zmq
 
         //  Chooses least loaded I/O thread.
         class io_thread_t *choose_io_thread (uint64_t taskset_);
+
+        //  Zombify particular socket. In other words, pass the ownership to
+        //  the context.
+        void zombify (class socket_base_t *socket_);
 
         //  Derived object can use these functions to send commands
         //  to other objects.
@@ -105,7 +105,7 @@ namespace zmq
         class ctx_t *ctx;
 
         //  Slot ID of the thread the object belongs to.
-        uint32_t thread_slot;
+        uint32_t slot;
 
         void send_command (command_t &cmd_);
 

@@ -22,39 +22,47 @@
 
 #include "socket_base.hpp"
 #include "yarray.hpp"
+#include "pipe.hpp"
 
 namespace zmq
 {
 
-    class rep_t : public socket_base_t
+    class rep_t :
+        public socket_base_t,
+        public i_reader_events,
+        public i_writer_events
     {
     public:
 
-        rep_t (class app_thread_t *parent_);
+        rep_t (class ctx_t *parent_, uint32_t slot_);
         ~rep_t ();
 
         //  Overloads of functions from socket_base_t.
         void xattach_pipes (class reader_t *inpipe_, class writer_t *outpipe_,
             const blob_t &peer_identity_);
-        void xdetach_inpipe (class reader_t *pipe_);
-        void xdetach_outpipe (class writer_t *pipe_);
-        void xkill (class reader_t *pipe_);
-        void xrevive (class reader_t *pipe_);
-        void xrevive (class writer_t *pipe_);
-        int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
+        void xterm_pipes ();
+        bool xhas_pipes ();
         int xsend (zmq_msg_t *msg_, int flags_);
         int xrecv (zmq_msg_t *msg_, int flags_);
         bool xhas_in ();
         bool xhas_out ();
+
+        //  i_reader_events interface implementation.
+        void activated (reader_t *pipe_);
+        void terminated (reader_t *pipe_);
+
+        //  i_writer_events interface implementation.
+        void activated (writer_t *pipe_);
+        void terminated (writer_t *pipe_);
 
     private:
 
         //  List in outbound and inbound pipes. Note that the two lists are
         //  always in sync. I.e. outpipe with index N communicates with the
         //  same session as inpipe with index N.
-        typedef yarray_t <class writer_t> out_pipes_t;
+        typedef yarray_t <writer_t> out_pipes_t;
         out_pipes_t out_pipes;
-        typedef yarray_t <class reader_t> in_pipes_t;
+        typedef yarray_t <reader_t> in_pipes_t;
         in_pipes_t in_pipes;
 
         //  Number of active inpipes. All the active inpipes are located at the
@@ -73,7 +81,7 @@ namespace zmq
         bool more;
 
         //  Pipe we are going to send reply to.
-        class writer_t *reply_pipe;
+        writer_t *reply_pipe;
 
         rep_t (const rep_t&);
         void operator = (const rep_t&);

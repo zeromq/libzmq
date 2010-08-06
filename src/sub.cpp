@@ -24,8 +24,8 @@
 #include "sub.hpp"
 #include "err.hpp"
 
-zmq::sub_t::sub_t (class app_thread_t *parent_) :
-    socket_base_t (parent_),
+zmq::sub_t::sub_t (class ctx_t *parent_, uint32_t slot_) :
+    socket_base_t (parent_, slot_),
     has_message (false),
     more (false)
 {
@@ -46,31 +46,14 @@ void zmq::sub_t::xattach_pipes (class reader_t *inpipe_,
     fq.attach (inpipe_);
 }
 
-void zmq::sub_t::xdetach_inpipe (class reader_t *pipe_)
+void zmq::sub_t::xterm_pipes ()
 {
-    zmq_assert (pipe_);
-    fq.detach (pipe_);
+    fq.term_pipes ();
 }
 
-void zmq::sub_t::xdetach_outpipe (class writer_t *pipe_)
+bool zmq::sub_t::xhas_pipes ()
 {
-    //  SUB socket is read-only thus there should be no outpipes.
-    zmq_assert (false);
-}
-
-void zmq::sub_t::xkill (class reader_t *pipe_)
-{
-    fq.kill (pipe_);
-}
-
-void zmq::sub_t::xrevive (class reader_t *pipe_)
-{
-    fq.revive (pipe_);
-}
-
-void zmq::sub_t::xrevive (class writer_t *pipe_)
-{
-    zmq_assert (false);
+    return fq.has_pipes ();
 }
 
 int zmq::sub_t::xsetsockopt (int option_, const void *optval_,
@@ -90,12 +73,6 @@ int zmq::sub_t::xsetsockopt (int option_, const void *optval_,
     }
 
     errno = EINVAL;
-    return -1;
-}
-
-int zmq::sub_t::xsend (zmq_msg_t *msg_, int flags_)
-{
-    errno = ENOTSUP;
     return -1;
 }
 
@@ -177,11 +154,6 @@ bool zmq::sub_t::xhas_in ()
             zmq_assert (rc == 0);
         }
     }
-}
-
-bool zmq::sub_t::xhas_out ()
-{
-    return false;
 }
 
 bool zmq::sub_t::match (zmq_msg_t *msg_)

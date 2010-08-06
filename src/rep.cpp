@@ -23,8 +23,8 @@
 #include "err.hpp"
 #include "pipe.hpp"
 
-zmq::rep_t::rep_t (class app_thread_t *parent_) :
-    socket_base_t (parent_),
+zmq::rep_t::rep_t (class ctx_t *parent_, uint32_t slot_) :
+    socket_base_t (parent_, slot_),
     active (0),
     current (0),
     sending_reply (false),
@@ -42,6 +42,8 @@ zmq::rep_t::rep_t (class app_thread_t *parent_) :
 
 zmq::rep_t::~rep_t ()
 {
+    zmq_assert (in_pipes.empty ());
+    zmq_assert (out_pipes.empty ());
 }
 
 void zmq::rep_t::xattach_pipes (class reader_t *inpipe_,
@@ -50,15 +52,28 @@ void zmq::rep_t::xattach_pipes (class reader_t *inpipe_,
     zmq_assert (inpipe_ && outpipe_);
     zmq_assert (in_pipes.size () == out_pipes.size ());
 
+    inpipe_->set_event_sink (this);
     in_pipes.push_back (inpipe_);
     in_pipes.swap (active, in_pipes.size () - 1);
+
+    outpipe_->set_event_sink (this);
     out_pipes.push_back (outpipe_);
     out_pipes.swap (active, out_pipes.size () - 1);
+
     active++;
 }
 
-void zmq::rep_t::xdetach_inpipe (class reader_t *pipe_)
+void zmq::rep_t::xterm_pipes ()
 {
+    for (in_pipes_t::size_type i = 0; i != in_pipes.size (); i++)
+        in_pipes [i]->terminate ();
+    for (out_pipes_t::size_type i = 0; i != out_pipes.size (); i++)
+        out_pipes [i]->terminate ();
+}
+
+void zmq::rep_t::terminated (reader_t *pipe_)
+{
+    //  ???
     zmq_assert (sending_reply || !more || in_pipes [current] != pipe_);
 
     zmq_assert (pipe_);
@@ -71,14 +86,17 @@ void zmq::rep_t::xdetach_inpipe (class reader_t *pipe_)
         if (current == active)
             current = 0;
     }
-
-    if (out_pipes [index])
-        out_pipes [index]->term ();
     in_pipes.erase (index);
-    out_pipes.erase (index);
+
+    //  ???
+    if (!zombie) {
+        if (out_pipes [index])
+            out_pipes [index]->terminate ();
+        out_pipes.erase (index);
+    }
 }
 
-void zmq::rep_t::xdetach_outpipe (class writer_t *pipe_)
+void zmq::rep_t::terminated (writer_t *pipe_)
 {
     zmq_assert (pipe_);
     zmq_assert (in_pipes.size () == out_pipes.size ());
@@ -97,22 +115,22 @@ void zmq::rep_t::xdetach_outpipe (class writer_t *pipe_)
             current = 0;
     }
 
-    if (in_pipes [index])
-        in_pipes [index]->term ();
-    in_pipes.erase (index);
     out_pipes.erase (index);
+
+    //  ???
+    if (!zombie) {
+        if (in_pipes [index])
+            in_pipes [index]->terminate ();
+        in_pipes.erase (index);
+    }
 }
 
-void zmq::rep_t::xkill (class reader_t *pipe_)
+bool zmq::rep_t::xhas_pipes ()
 {
-    //  Move the pipe to the list of inactive pipes.
-    in_pipes_t::size_type index = in_pipes.index (pipe_);
-    active--;
-    in_pipes.swap (index, active);
-    out_pipes.swap (index, active);
+    return !in_pipes.empty () || !out_pipes.empty ();
 }
 
-void zmq::rep_t::xrevive (class reader_t *pipe_)
+void zmq::rep_t::activated (reader_t *pipe_)
 {
     //  Move the pipe to the list of active pipes.
     in_pipes_t::size_type index = in_pipes.index (pipe_);
@@ -121,15 +139,10 @@ void zmq::rep_t::xrevive (class reader_t *pipe_)
     active++;
 }
 
-void zmq::rep_t::xrevive (class writer_t *pipe_)
+void zmq::rep_t::activated (writer_t *pipe_)
 {
-}
-
-int zmq::rep_t::xsetsockopt (int option_, const void *optval_,
-    size_t optvallen_)
-{
-    errno = EINVAL;
-    return -1;
+    //  TODO: What here?
+    zmq_assert (false);
 }
 
 int zmq::rep_t::xsend (zmq_msg_t *msg_, int flags_)
@@ -151,6 +164,8 @@ int zmq::rep_t::xsend (zmq_msg_t *msg_, int flags_)
         // misbehaving requesters stop collecting replies.
         // TODO: Tear down the underlying connection (?)
         if (!written) {
+
+            //  TODO: The reply socket becomes deactivated here...
             errno = EAGAIN;
             return -1;
         }
@@ -198,6 +213,13 @@ int zmq::rep_t::xrecv (zmq_msg_t *msg_, int flags_)
         for (count = active; count != 0; count--) {
             if (in_pipes [current]->read (msg_))
                 break;
+
+            //  Move the pipe to the list of inactive pipes.
+            active--;
+            in_pipes.swap (current, active);
+            out_pipes.swap (current, active);
+
+            //  Move to next pipe.
             current++;
             if (current >= active)
                 current = 0;
@@ -258,6 +280,13 @@ bool zmq::rep_t::xhas_in ()
     for (int count = active; count != 0; count--) {
         if (in_pipes [current]->check_read ())
             return !sending_reply;
+
+        //  Move the pipe to the list of inactive pipes.
+        active--;
+        in_pipes.swap (current, active);
+        out_pipes.swap (current, active);
+
+        //  Move to the next pipe.
         current++;
         if (current >= active)
             current = 0;

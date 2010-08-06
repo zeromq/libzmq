@@ -21,24 +21,29 @@
 #define __ZMQ_LB_HPP_INCLUDED__
 
 #include "yarray.hpp"
+#include "pipe.hpp"
 
 namespace zmq
 {
 
     //  Class manages a set of outbound pipes. On send it load balances
     //  messages fairly among the pipes.
-    class lb_t
+    class lb_t : public i_writer_events
     {
     public:
 
         lb_t ();
         ~lb_t ();
 
-        void attach (class writer_t *pipe_);
-        void detach (class writer_t *pipe_);
-        void revive (class writer_t *pipe_);
+        void attach (writer_t *pipe_);
+        void term_pipes ();
+        bool has_pipes ();
         int send (zmq_msg_t *msg_, int flags_);
         bool has_out ();
+
+        //  i_writer_events interface implementation.
+        void activated (writer_t *pipe_);
+        void terminated (writer_t *pipe_);
 
     private:
 

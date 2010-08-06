@@ -21,6 +21,7 @@
 #define __ZMQ_FQ_HPP_INCLUDED__
 
 #include "yarray.hpp"
+#include "pipe.hpp"
 
 namespace zmq
 {
@@ -28,24 +29,28 @@ namespace zmq
     //  Class manages a set of inbound pipes. On receive it performs fair
     //  queueing (RFC970) so that senders gone berserk won't cause denial of
     //  service for decent senders.
-    class fq_t
+    class fq_t : public i_reader_events
     {
     public:
 
         fq_t ();
         ~fq_t ();
 
-        void attach (class reader_t *pipe_);
-        void detach (class reader_t *pipe_);
-        void kill (class reader_t *pipe_);
-        void revive (class reader_t *pipe_);
+        void attach (reader_t *pipe_);
+        bool has_pipes ();
+        void term_pipes ();
+
         int recv (zmq_msg_t *msg_, int flags_);
         bool has_in ();
+
+        //  i_reader_events implementation.
+        void activated (reader_t *pipe_);
+        void terminated (reader_t *pipe_);
 
     private:
 
         //  Inbound pipes.
-        typedef yarray_t <class reader_t> pipes_t;
+        typedef yarray_t <reader_t> pipes_t;
         pipes_t pipes;
 
         //  Number of active pipes. All the active pipes are located at the

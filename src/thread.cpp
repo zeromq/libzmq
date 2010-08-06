@@ -38,16 +38,6 @@ void zmq::thread_t::stop ()
     win_assert (rc != WAIT_FAILED);
 }
 
-zmq::thread_t::id_t zmq::thread_t::id ()
-{
-    return GetCurrentThreadId ();
-}
-
-bool zmq::thread_t::equal (id_t id1_, id_t id2_)
-{
-    return id1_ == id2_;
-}
-
 unsigned int __stdcall zmq::thread_t::thread_routine (void *arg_)
 {
     thread_t *self = (thread_t*) arg_;
@@ -71,16 +61,6 @@ void zmq::thread_t::stop ()
 {
     int rc = pthread_join (descriptor, NULL);
     errno_assert (rc == 0);
-}
-
-zmq::thread_t::id_t zmq::thread_t::id ()
-{
-    return pthread_self ();
-}
-
-bool zmq::thread_t::equal (id_t id1_, id_t id2_)
-{
-    return pthread_equal (id1_, id2_) != 0;
 }
 
 void *zmq::thread_t::thread_routine (void *arg_)

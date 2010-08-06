@@ -45,6 +45,13 @@ namespace zmq
 
     protected:
 
+        //  A mechanism allowing derived owned objects to postpone the
+        //  termination process. Default implementation defines no such delay.
+        //  Note that the derived object has to call finalise method when the
+        //  delay is over.
+        virtual bool is_terminable ();
+        void finalise ();
+
         //  Ask owner socket to terminate this object.
         void term ();
 
@@ -68,8 +75,6 @@ namespace zmq
         //  Handlers for incoming commands.
         void process_term ();
         void process_seqnum ();
-
-        void finalise ();
 
         //  Sequence number of the last command sent to this object.
         atomic_counter_t sent_seqnum;

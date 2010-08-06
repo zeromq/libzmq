@@ -27,9 +27,8 @@ namespace zmq
 
     enum 
     {
-        //  Maximal number of OS threads that can own 0MQ sockets
-        //  at the same time.
-        max_app_threads = 512,
+        //  Maximum number of sockets that can be opened at the same time.
+        max_sockets = 512,
 
         //  Number of new messages in message pipe needed to trigger new memory
         //  allocation. Setting this parameter to 256 decreases the impact of

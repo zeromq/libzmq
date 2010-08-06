@@ -54,15 +54,6 @@ namespace zmq
 
         //  Waits for thread termination.
         void stop ();
-
-#ifdef ZMQ_HAVE_WINDOWS
-        typedef DWORD id_t;
-#else
-        typedef pthread_t id_t;
-#endif
-
-        static id_t id ();
-        static bool equal (id_t id1_, id_t id2_);
         
     private:
 

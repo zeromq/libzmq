@@ -35,7 +35,7 @@ zmq::owned_t::~owned_t ()
 
 void zmq::owned_t::inc_seqnum ()
 {
-    //  NB: This function may be called from a different thread!
+    //  This function may be called from a different thread!
     sent_seqnum.add (1);
 }
 
@@ -62,10 +62,16 @@ void zmq::owned_t::finalise ()
 {
     //  If termination request was already received and there are no more
     //  commands to wait for, terminate the object.
-    if (shutting_down && processed_seqnum == sent_seqnum.get ()) {
+    if (shutting_down && processed_seqnum == sent_seqnum.get ()
+          && is_terminable ()) {
         process_unplug ();
         send_term_ack (owner);
         delete this;
     }
+}
+
+bool zmq::owned_t::is_terminable ()
+{
+    return true;
 }
 

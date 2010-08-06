@@ -32,19 +32,27 @@ zmq::lb_t::lb_t () :
 
 zmq::lb_t::~lb_t ()
 {
-    for (pipes_t::size_type i = 0; i != pipes.size (); i++)
-        pipes [i]->term ();
+    zmq_assert (pipes.empty ());
 }
 
 void zmq::lb_t::attach (writer_t *pipe_)
 {
+    pipe_->set_event_sink (this);
+
     pipes.push_back (pipe_);
     pipes.swap (active, pipes.size () - 1);
     active++;
 }
 
-void zmq::lb_t::detach (writer_t *pipe_)
+void zmq::lb_t::term_pipes ()
 {
+    for (pipes_t::size_type i = 0; i != pipes.size (); i++)
+        pipes [i]->terminate ();
+}
+
+void zmq::lb_t::terminated (writer_t *pipe_)
+{
+    // ???
     zmq_assert (!more || pipes [current] != pipe_);
 
     //  Remove the pipe from the list; adjust number of active pipes
@@ -57,7 +65,12 @@ void zmq::lb_t::detach (writer_t *pipe_)
     pipes.erase (pipe_);
 }
 
-void zmq::lb_t::revive (writer_t *pipe_)
+bool zmq::lb_t::has_pipes ()
+{
+    return !pipes.empty ();
+}
+
+void zmq::lb_t::activated (writer_t *pipe_)
 {
     //  Move the pipe to the list of active pipes.
     pipes.swap (pipes.index (pipe_), active);

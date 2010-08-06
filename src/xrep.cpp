@@ -23,8 +23,8 @@
 #include "err.hpp"
 #include "pipe.hpp"
 
-zmq::xrep_t::xrep_t (class app_thread_t *parent_) :
-    socket_base_t (parent_),
+zmq::xrep_t::xrep_t (class ctx_t *parent_, uint32_t slot_) :
+    socket_base_t (parent_, slot_),
     current_in (0),
     prefetched (false),
     more_in (false),
@@ -41,17 +41,16 @@ zmq::xrep_t::xrep_t (class app_thread_t *parent_) :
 
 zmq::xrep_t::~xrep_t ()
 {
-    for (inpipes_t::iterator it = inpipes.begin (); it != inpipes.end (); it++)
-        it->reader->term ();
-    for (outpipes_t::iterator it = outpipes.begin (); it != outpipes.end ();
-          it++)
-        it->second.writer->term ();
+    zmq_assert (inpipes.empty ());
+    zmq_assert (outpipes.empty ());
 }
 
-void zmq::xrep_t::xattach_pipes (class reader_t *inpipe_,
-    class writer_t *outpipe_, const blob_t &peer_identity_)
+void zmq::xrep_t::xattach_pipes (reader_t *inpipe_, writer_t *outpipe_,
+    const blob_t &peer_identity_)
 {
     zmq_assert (inpipe_ && outpipe_);
+
+    outpipe_->set_event_sink (this);
 
     //  TODO: What if new connection has same peer identity as the old one?
     outpipe_t outpipe = {outpipe_, true};
@@ -59,13 +58,24 @@ void zmq::xrep_t::xattach_pipes (class reader_t *inpipe_,
         peer_identity_, outpipe)).second;
     zmq_assert (ok);
 
+    inpipe_->set_event_sink (this);
+
     inpipe_t inpipe = {inpipe_, peer_identity_, true};
     inpipes.push_back (inpipe);
 }
 
-void zmq::xrep_t::xdetach_inpipe (class reader_t *pipe_)
+void zmq::xrep_t::xterm_pipes ()
 {
-// TODO:!
+    for (inpipes_t::iterator it = inpipes.begin (); it != inpipes.end ();
+          it++)
+        it->reader->terminate ();
+    for (outpipes_t::iterator it = outpipes.begin (); it != outpipes.end ();
+          it++)
+        it->second.writer->terminate ();
+}
+
+void zmq::xrep_t::terminated (reader_t *pipe_)
+{
     for (inpipes_t::iterator it = inpipes.begin (); it != inpipes.end ();
           it++) {
         if (it->reader == pipe_) {
@@ -76,7 +86,7 @@ void zmq::xrep_t::xdetach_inpipe (class reader_t *pipe_)
     zmq_assert (false);
 }
 
-void zmq::xrep_t::xdetach_outpipe (class writer_t *pipe_)
+void zmq::xrep_t::terminated (writer_t *pipe_)
 {
     for (outpipes_t::iterator it = outpipes.begin ();
           it != outpipes.end (); ++it) {
@@ -90,20 +100,12 @@ void zmq::xrep_t::xdetach_outpipe (class writer_t *pipe_)
     zmq_assert (false);
 }
 
-void zmq::xrep_t::xkill (class reader_t *pipe_)
+bool zmq::xrep_t::xhas_pipes ()
 {
-    for (inpipes_t::iterator it = inpipes.begin (); it != inpipes.end ();
-          it++) {
-        if (it->reader == pipe_) {
-            zmq_assert (it->active);
-            it->active = false;
-            return;
-        }
-    }
-    zmq_assert (false);
+    return !inpipes.empty () || !outpipes.empty ();
 }
 
-void zmq::xrep_t::xrevive (class reader_t *pipe_)
+void zmq::xrep_t::activated (reader_t *pipe_)
 {
     for (inpipes_t::iterator it = inpipes.begin (); it != inpipes.end ();
           it++) {
@@ -116,7 +118,7 @@ void zmq::xrep_t::xrevive (class reader_t *pipe_)
     zmq_assert (false);
 }
 
-void zmq::xrep_t::xrevive (class writer_t *pipe_)
+void zmq::xrep_t::activated (writer_t *pipe_)
 {
     for (outpipes_t::iterator it = outpipes.begin ();
           it != outpipes.end (); ++it) {
@@ -127,13 +129,6 @@ void zmq::xrep_t::xrevive (class writer_t *pipe_)
         }
     }
     zmq_assert (false);
-}
-
-int zmq::xrep_t::xsetsockopt (int option_, const void *optval_,
-    size_t optvallen_)
-{
-    errno = EINVAL;
-    return -1;
 }
 
 int zmq::xrep_t::xsend (zmq_msg_t *msg_, int flags_)
@@ -232,7 +227,9 @@ int zmq::xrep_t::xrecv (zmq_msg_t *msg_, int flags_)
             return 0;
         }
 
-        //  If me don't have a message, move to next pipe.
+        //  If me don't have a message, mark the pipe as passive and
+        //  move to next pipe.
+        inpipes [current_in].active = false;
         current_in++;
         if (current_in >= inpipes.size ())
             current_in = 0;
@@ -259,6 +256,10 @@ bool zmq::xrep_t::xhas_in ()
         if (inpipes [current_in].active &&
               inpipes [current_in].reader->check_read ())
             return true;
+
+        //  If me don't have a message, mark the pipe as passive and
+        //  move to next pipe.
+        inpipes [current_in].active = false;
         current_in++;
         if (current_in >= inpipes.size ())
             current_in = 0;

@@ -29,7 +29,6 @@
 #include "queue.hpp"
 #include "streamer.hpp"
 #include "socket_base.hpp"
-#include "app_thread.hpp"
 #include "msg_content.hpp"
 #include "platform.hpp"
 #include "stdint.hpp"
@@ -83,8 +82,6 @@ const char *zmq_strerror (int errnum_)
     case EINPROGRESS:
         return "Operation in progress";
 #endif
-    case EMTHREAD:
-        return "Number of preallocated application threads exceeded";
     case EFSM:
         return "Operation cannot be accomplished in current state";
     case ENOCOMPATPROTO:
@@ -367,6 +364,7 @@ int zmq_recv (void *s_, zmq_msg_t *msg_, int flags_)
 
 int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 {
+/*
 #if defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD ||\
     defined ZMQ_HAVE_OPENBSD || defined ZMQ_HAVE_SOLARIS ||\
     defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_QNXNTO ||\
@@ -679,6 +677,9 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     errno = ENOTSUP;
     return -1;
 #endif
+*/
+zmq_assert (false);
+return -1;
 }
 
 int zmq_errno ()

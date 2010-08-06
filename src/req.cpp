@@ -23,8 +23,8 @@
 #include "err.hpp"
 #include "pipe.hpp"
 
-zmq::req_t::req_t (class app_thread_t *parent_) :
-    socket_base_t (parent_),
+zmq::req_t::req_t (class ctx_t *parent_, uint32_t slot_) :
+    socket_base_t (parent_, slot_),
     active (0),
     current (0),
     receiving_reply (false),
@@ -38,24 +38,36 @@ zmq::req_t::req_t (class app_thread_t *parent_) :
 
 zmq::req_t::~req_t ()
 {
+    zmq_assert (in_pipes.empty ());
+    zmq_assert (out_pipes.empty ());
 }
 
-void zmq::req_t::xattach_pipes (class reader_t *inpipe_,
-    class writer_t *outpipe_, const blob_t &peer_identity_)
+void zmq::req_t::xattach_pipes (reader_t *inpipe_, writer_t *outpipe_,
+    const blob_t &peer_identity_)
 {
     zmq_assert (inpipe_ && outpipe_);
     zmq_assert (in_pipes.size () == out_pipes.size ());
 
+    inpipe_->set_event_sink (this);
     in_pipes.push_back (inpipe_);
     in_pipes.swap (active, in_pipes.size () - 1);
 
+    outpipe_->set_event_sink (this);
     out_pipes.push_back (outpipe_);
     out_pipes.swap (active, out_pipes.size () - 1);
 
     active++;
 }
 
-void zmq::req_t::xdetach_inpipe (class reader_t *pipe_)
+void zmq::req_t::xterm_pipes ()
+{
+    for (in_pipes_t::size_type i = 0; i != in_pipes.size (); i++)
+        in_pipes [i]->terminate ();
+    for (out_pipes_t::size_type i = 0; i != out_pipes.size (); i++)
+        out_pipes [i]->terminate ();
+}
+
+void zmq::req_t::terminated (reader_t *pipe_)
 {
     zmq_assert (!receiving_reply || !more || reply_pipe != pipe_);
 
@@ -63,17 +75,21 @@ void zmq::req_t::xdetach_inpipe (class reader_t *pipe_)
     zmq_assert (in_pipes.size () == out_pipes.size ());
 
     //  TODO: The pipe we are awaiting the reply from is detached. What now?
-    //  Return ECONNRESET from subsequent recv?
     if (receiving_reply && pipe_ == reply_pipe) {
         zmq_assert (false);
     }
 
     in_pipes_t::size_type index = in_pipes.index (pipe_);
 
-    if (out_pipes [index])
-        out_pipes [index]->term ();
+    //  ???
+    if (!zombie) {
+        if (out_pipes [index])
+            out_pipes [index]->terminate ();
+        out_pipes.erase (index);
+    }
+
     in_pipes.erase (index);
-    out_pipes.erase (index);
+
     if (index < active) {
         active--;
         if (current == active)
@@ -81,7 +97,7 @@ void zmq::req_t::xdetach_inpipe (class reader_t *pipe_)
     }
 }
 
-void zmq::req_t::xdetach_outpipe (class writer_t *pipe_)
+void zmq::req_t::terminated (writer_t *pipe_)
 {
     zmq_assert (receiving_reply || !more || out_pipes [current] != pipe_);
 
@@ -90,9 +106,13 @@ void zmq::req_t::xdetach_outpipe (class writer_t *pipe_)
 
     out_pipes_t::size_type index = out_pipes.index (pipe_);
 
-    if (in_pipes [index])
-        in_pipes [index]->term ();
-    in_pipes.erase (index);
+    //  ???
+    if (!zombie) {
+        if (in_pipes [index])
+            in_pipes [index]->terminate ();
+        in_pipes.erase (index);
+    }
+
     out_pipes.erase (index);
     if (index < active) {
         active--;
@@ -101,15 +121,12 @@ void zmq::req_t::xdetach_outpipe (class writer_t *pipe_)
     }
 }
 
-void zmq::req_t::xkill (class reader_t *pipe_)
+bool zmq::req_t::xhas_pipes ()
 {
-    zmq_assert (receiving_reply);
-    zmq_assert (pipe_ == reply_pipe);
-
-    reply_pipe_active = false;
+    return !in_pipes.empty () || !out_pipes.empty ();
 }
 
-void zmq::req_t::xrevive (class reader_t *pipe_)
+void zmq::req_t::activated (reader_t *pipe_)
 {
     //  TODO: Actually, misbehaving peer can cause this kind of thing.
     //  Handle it decently, presumably kill the offending connection.
@@ -117,7 +134,7 @@ void zmq::req_t::xrevive (class reader_t *pipe_)
     reply_pipe_active = true;
 }
 
-void zmq::req_t::xrevive (class writer_t *pipe_)
+void zmq::req_t::activated (writer_t *pipe_)
 {
     out_pipes_t::size_type index = out_pipes.index (pipe_);
     zmq_assert (index >= active);
@@ -127,13 +144,6 @@ void zmq::req_t::xrevive (class writer_t *pipe_)
         out_pipes.swap (index, active);
         active++;
     }
-}
-
-int zmq::req_t::xsetsockopt (int option_, const void *optval_,
-    size_t optvallen_)
-{
-    errno = EINVAL;
-    return -1;
 }
 
 int zmq::req_t::xsend (zmq_msg_t *msg_, int flags_)
@@ -214,6 +224,7 @@ int zmq::req_t::xrecv (zmq_msg_t *msg_, int flags_)
 
     //  Get the reply from the reply pipe.
     if (!reply_pipe_active || !reply_pipe->read (msg_)) {
+        reply_pipe_active = false;
         zmq_msg_init (msg_);
         errno = EAGAIN;
         return -1;

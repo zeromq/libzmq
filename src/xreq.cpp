@@ -22,8 +22,8 @@
 #include "xreq.hpp"
 #include "err.hpp"
 
-zmq::xreq_t::xreq_t (class app_thread_t *parent_) :
-    socket_base_t (parent_)
+zmq::xreq_t::xreq_t (class ctx_t *parent_, uint32_t slot_) :
+    socket_base_t (parent_, slot_)
 {
     options.requires_in = true;
     options.requires_out = true;
@@ -41,38 +41,15 @@ void zmq::xreq_t::xattach_pipes (class reader_t *inpipe_,
     lb.attach (outpipe_);
 }
 
-void zmq::xreq_t::xdetach_inpipe (class reader_t *pipe_)
+void zmq::xreq_t::xterm_pipes ()
 {
-    zmq_assert (pipe_);
-    fq.detach (pipe_);
+    fq.term_pipes ();
+    lb.term_pipes ();
 }
 
-void zmq::xreq_t::xdetach_outpipe (class writer_t *pipe_)
+bool zmq::xreq_t::xhas_pipes ()
 {
-    zmq_assert (pipe_);
-    lb.detach (pipe_);
-}
-
-void zmq::xreq_t::xkill (class reader_t *pipe_)
-{
-    fq.kill (pipe_);
-}
-
-void zmq::xreq_t::xrevive (class reader_t *pipe_)
-{
-    fq.revive (pipe_);
-}
-
-void zmq::xreq_t::xrevive (class writer_t *pipe_)
-{
-    lb.revive (pipe_);
-}
-
-int zmq::xreq_t::xsetsockopt (int option_, const void *optval_,
-    size_t optvallen_)
-{
-    errno = EINVAL;
-    return -1;
+    return fq.has_pipes () || lb.has_pipes ();
 }
 
 int zmq::xreq_t::xsend (zmq_msg_t *msg_, int flags_)

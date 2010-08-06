@@ -32,18 +32,19 @@ zmq::fq_t::fq_t () :
 
 zmq::fq_t::~fq_t ()
 {
-    for (pipes_t::size_type i = 0; i != pipes.size (); i++)
-        pipes [i]->term ();
+    zmq_assert (pipes.empty ());
 }
 
 void zmq::fq_t::attach (reader_t *pipe_)
 {
+    pipe_->set_event_sink (this);
+
     pipes.push_back (pipe_);
     pipes.swap (active, pipes.size () - 1);
     active++;
 }
 
-void zmq::fq_t::detach (reader_t *pipe_)
+void zmq::fq_t::terminated (reader_t *pipe_)
 {
     zmq_assert (!more || pipes [current] != pipe_);
 
@@ -57,16 +58,18 @@ void zmq::fq_t::detach (reader_t *pipe_)
     pipes.erase (pipe_);
 }
 
-void zmq::fq_t::kill (reader_t *pipe_)
+bool zmq::fq_t::has_pipes ()
 {
-    //  Move the pipe to the list of inactive pipes.
-    active--;
-    if (current == active)
-        current = 0;
-    pipes.swap (pipes.index (pipe_), active);
+    return !pipes.empty ();
 }
 
-void zmq::fq_t::revive (reader_t *pipe_)
+void zmq::fq_t::term_pipes ()
+{
+    for (pipes_t::size_type i = 0; i != pipes.size (); i++)
+        pipes [i]->terminate ();
+}
+
+void zmq::fq_t::activated (reader_t *pipe_)
 {
     //  Move the pipe to the list of active pipes.
     pipes.swap (pipes.index (pipe_), active);
@@ -97,6 +100,12 @@ int zmq::fq_t::recv (zmq_msg_t *msg_, int flags_)
                     current = 0;
             }
             return 0;
+        }
+        else {
+            active--;
+            pipes.swap (current, active);
+            if (current == active)
+                current = 0;
         }
     }
 

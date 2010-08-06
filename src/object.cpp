@@ -28,15 +28,15 @@
 #include "session.hpp"
 #include "socket_base.hpp"
 
-zmq::object_t::object_t (ctx_t *ctx_, uint32_t thread_slot_) :
+zmq::object_t::object_t (ctx_t *ctx_, uint32_t slot_) :
     ctx (ctx_),
-    thread_slot (thread_slot_)
+    slot (slot_)
 {
 }
 
 zmq::object_t::object_t (object_t *parent_) :
     ctx (parent_->ctx),
-    thread_slot (parent_->thread_slot)
+    slot (parent_->slot)
 {
 }
 
@@ -44,9 +44,9 @@ zmq::object_t::~object_t ()
 {
 }
 
-uint32_t zmq::object_t::get_thread_slot ()
+uint32_t zmq::object_t::get_slot ()
 {
-    return thread_slot;
+    return slot;
 }
 
 zmq::ctx_t *zmq::object_t::get_ctx ()
@@ -123,16 +123,6 @@ void zmq::object_t::process_command (command_t &cmd_)
     deallocate_command (&cmd_);
 }
 
-void zmq::object_t::register_pipe (class pipe_t *pipe_)
-{
-    ctx->register_pipe (pipe_);
-}
-
-void zmq::object_t::unregister_pipe (class pipe_t *pipe_)
-{
-    ctx->unregister_pipe (pipe_);
-}
-
 int zmq::object_t::register_endpoint (const char *addr_, socket_base_t *socket_)
 {
     return ctx->register_endpoint (addr_, socket_);
@@ -153,6 +143,11 @@ zmq::io_thread_t *zmq::object_t::choose_io_thread (uint64_t taskset_)
     return ctx->choose_io_thread (taskset_);
 }
 
+void zmq::object_t::zombify (socket_base_t *socket_)
+{
+    ctx->zombify (socket_);
+}
+
 void zmq::object_t::send_stop ()
 {
     //  'stop' command goes always from administrative thread to
@@ -160,7 +155,7 @@ void zmq::object_t::send_stop ()
     command_t cmd;
     cmd.destination = this;
     cmd.type = command_t::stop;
-    ctx->send_command (thread_slot, cmd);
+    ctx->send_command (slot, cmd);
 }
 
 void zmq::object_t::send_plug (owned_t *destination_, bool inc_seqnum_)
@@ -369,6 +364,6 @@ void zmq::object_t::process_seqnum ()
 
 void zmq::object_t::send_command (command_t &cmd_)
 {
-    ctx->send_command (cmd_.destination->get_thread_slot (), cmd_);
+    ctx->send_command (cmd_.destination->get_slot (), cmd_);
 }
 

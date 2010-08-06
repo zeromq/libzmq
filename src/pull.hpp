@@ -17,8 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_PULL_HPP_INCLUDED__
-#define __ZMQ_PULL_HPP_INCLUDED__
+#ifndef __ZMQ_UPSTREAM_HPP_INCLUDED__
+#define __ZMQ_UPSTREAM_HPP_INCLUDED__
 
 #include "socket_base.hpp"
 #include "fq.hpp"
@@ -30,22 +30,16 @@ namespace zmq
     {
     public:
 
-        pull_t (class app_thread_t *parent_);
+        pull_t (class ctx_t *parent_, uint32_t slot_);
         ~pull_t ();
 
         //  Overloads of functions from socket_base_t.
         void xattach_pipes (class reader_t *inpipe_, class writer_t *outpipe_,
             const blob_t &peer_identity_);
-        void xdetach_inpipe (class reader_t *pipe_);
-        void xdetach_outpipe (class writer_t *pipe_);
-        void xkill (class reader_t *pipe_);
-        void xrevive (class reader_t *pipe_);
-        void xrevive (class writer_t *pipe_);
-        int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
-        int xsend (zmq_msg_t *msg_, int flags_);
+        void xterm_pipes ();
+        bool xhas_pipes ();
         int xrecv (zmq_msg_t *msg_, int flags_);
         bool xhas_in ();
-        bool xhas_out ();
 
     private:
 

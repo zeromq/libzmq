@@ -24,8 +24,8 @@
 #include "msg_content.hpp"
 #include "pipe.hpp"
 
-zmq::pub_t::pub_t (class app_thread_t *parent_) :
-    socket_base_t (parent_),
+zmq::pub_t::pub_t (class ctx_t *parent_, uint32_t slot_) :
+    socket_base_t (parent_, slot_),
     active (0)
 {
     options.requires_in = false;
@@ -34,56 +34,47 @@ zmq::pub_t::pub_t (class app_thread_t *parent_) :
 
 zmq::pub_t::~pub_t ()
 {
-    for (pipes_t::size_type i = 0; i != pipes.size (); i++)
-        pipes [i]->term ();
-    pipes.clear ();
+    zmq_assert (pipes.empty ());
 }
 
 void zmq::pub_t::xattach_pipes (class reader_t *inpipe_,
     class writer_t *outpipe_, const blob_t &peer_identity_)
 {
     zmq_assert (!inpipe_);
+
+    outpipe_->set_event_sink (this);
+
     pipes.push_back (outpipe_);
     pipes.swap (active, pipes.size () - 1);
     active++;
 }
 
-void zmq::pub_t::xdetach_inpipe (class reader_t *pipe_)
+void zmq::pub_t::xterm_pipes ()
 {
-    zmq_assert (false);
+    //  Start shutdown process for all the pipes.
+    for (pipes_t::size_type i = 0; i != pipes.size (); i++)
+        pipes [i]->terminate ();
 }
 
-void zmq::pub_t::xdetach_outpipe (class writer_t *pipe_)
+bool zmq::pub_t::xhas_pipes ()
 {
-    //  Remove the pipe from the list; adjust number of active pipes
-    //  accordingly.
-    if (pipes.index (pipe_) < active)
-        active--;
-    pipes.erase (pipe_);
+    return !pipes.empty ();
 }
 
-void zmq::pub_t::xkill (class reader_t *pipe_)
-{
-    zmq_assert (false);
-}
-
-void zmq::pub_t::xrevive (class reader_t *pipe_)
-{
-    zmq_assert (false);
-}
-
-void zmq::pub_t::xrevive (class writer_t *pipe_)
+void zmq::pub_t::activated (writer_t *pipe_)
 {
     //  Move the pipe to the list of active pipes.
     pipes.swap (pipes.index (pipe_), active);
     active++;
 }
 
-int zmq::pub_t::xsetsockopt (int option_, const void *optval_,
-    size_t optvallen_)
+void zmq::pub_t::terminated (writer_t *pipe_)
 {
-    errno = EINVAL;
-    return -1;
+    //  Remove the pipe from the list; adjust number of active pipes
+    //  accordingly.
+    if (pipes.index (pipe_) < active)
+        active--;
+    pipes.erase (pipe_);
 }
 
 int zmq::pub_t::xsend (zmq_msg_t *msg_, int flags_)
@@ -101,7 +92,7 @@ int zmq::pub_t::xsend (zmq_msg_t *msg_, int flags_)
 
     //  For VSMs the copying is straighforward.
     if (content == (msg_content_t*) ZMQ_VSM) {
-        for (pipes_t::size_type i = 0; i != active;)
+        for (pipes_t::size_type i = 0; i < active;)
             if (write (pipes [i], msg_))
                 i++;
         int rc = zmq_msg_init (msg_);
@@ -133,7 +124,7 @@ int zmq::pub_t::xsend (zmq_msg_t *msg_, int flags_)
     }
 
     //  Push the message to all destinations.
-    for (pipes_t::size_type i = 0; i != active;) {
+    for (pipes_t::size_type i = 0; i < active;) {
         if (!write (pipes [i], msg_))
             content->refcnt.sub (1);
         else
@@ -145,17 +136,6 @@ int zmq::pub_t::xsend (zmq_msg_t *msg_, int flags_)
     zmq_assert (rc == 0);
 
     return 0;
-}
-
-int zmq::pub_t::xrecv (zmq_msg_t *msg_, int flags_)
-{
-    errno = ENOTSUP;
-    return -1;
-}
-
-bool zmq::pub_t::xhas_in ()
-{
-    return false;
 }
 
 bool zmq::pub_t::xhas_out ()

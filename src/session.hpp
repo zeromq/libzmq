@@ -21,15 +21,19 @@
 #define __ZMQ_SESSION_HPP_INCLUDED__
 
 #include "i_inout.hpp"
-#include "i_endpoint.hpp"
 #include "owned.hpp"
 #include "options.hpp"
 #include "blob.hpp"
+#include "pipe.hpp"
 
 namespace zmq
 {
 
-    class session_t : public owned_t, public i_inout, public i_endpoint
+    class session_t :
+        public owned_t,
+        public i_inout,
+        public i_reader_events,
+        public i_writer_events
     {
     public:
 
@@ -50,18 +54,24 @@ namespace zmq
         class socket_base_t *get_owner ();
         uint64_t get_ordinal ();
 
-        //  i_endpoint interface implementation.
         void attach_pipes (class reader_t *inpipe_, class writer_t *outpipe_,
             const blob_t &peer_identity_);
-        void detach_inpipe (class reader_t *pipe_);
-        void detach_outpipe (class writer_t *pipe_);
-        void kill (class reader_t *pipe_);
-        void revive (class reader_t *pipe_);
-        void revive (class writer_t *pipe_);
+
+        //  i_reader_events interface implementation.
+        void activated (class reader_t *pipe_);
+        void terminated (class reader_t *pipe_);
+
+        //  i_writer_events interface implementation.
+        void activated (class writer_t *pipe_);
+        void terminated (class writer_t *pipe_);
 
     private:
 
         ~session_t ();
+
+        //  Define the delayed termination. (I.e. termination is postponed
+        //  till all the data is flushed to the kernel.)
+        bool is_terminable ();
 
         //  Handlers for incoming commands.
         void process_plug ();

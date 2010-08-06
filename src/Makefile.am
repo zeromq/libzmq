@@ -49,7 +49,7 @@ endif
 
 nodist_libzmq_la_SOURCES = $(pgm_sources)
 
-libzmq_la_SOURCES = app_thread.hpp \
+libzmq_la_SOURCES = \
     atomic_counter.hpp \
     atomic_ptr.hpp \
     blob.hpp \
@@ -58,7 +58,6 @@ libzmq_la_SOURCES = app_thread.hpp \
     ctx.hpp \
     decoder.hpp \
     devpoll.hpp \
-    push.hpp \
     encoder.hpp \
     epoll.hpp \
     err.hpp \
@@ -69,7 +68,6 @@ libzmq_la_SOURCES = app_thread.hpp \
     io_object.hpp \
     io_thread.hpp \
     ip.hpp \
-    i_endpoint.hpp \
     i_engine.hpp \
     i_poll_events.hpp \
     kqueue.hpp \
@@ -91,10 +89,13 @@ libzmq_la_SOURCES = app_thread.hpp \
     pair.hpp \
     prefix_tree.hpp \
     pub.hpp \
+    pull.hpp \
+    push.hpp \
     queue.hpp \
     rep.hpp \
     req.hpp \
     select.hpp \
+    semaphore.hpp \
     session.hpp \
     signaler.hpp \
     socket_base.hpp \
@@ -105,7 +106,6 @@ libzmq_la_SOURCES = app_thread.hpp \
     tcp_listener.hpp \
     tcp_socket.hpp \
     thread.hpp \
-    pull.hpp \
     uuid.hpp \
     windows.hpp \
     wire.hpp \
@@ -121,11 +121,9 @@ libzmq_la_SOURCES = app_thread.hpp \
     zmq_engine.hpp \
     zmq_init.hpp \
     zmq_listener.hpp \
-    app_thread.cpp \
     command.cpp \
     ctx.cpp \
     devpoll.cpp \
-    push.cpp \
     epoll.cpp \
     err.cpp \
     forwarder.cpp \
@@ -139,13 +137,15 @@ libzmq_la_SOURCES = app_thread.hpp \
     object.cpp \
     options.cpp \
     owned.cpp \
+    pair.cpp \
     pgm_receiver.cpp \
     pgm_sender.cpp \
     pgm_socket.cpp \
-    pair.cpp \
     prefix_tree.cpp \
     pipe.cpp \
     poll.cpp \
+    pull.cpp \
+    push.cpp \
     pub.cpp \
     queue.cpp \
     rep.cpp \
@@ -160,7 +160,6 @@ libzmq_la_SOURCES = app_thread.hpp \
     tcp_listener.cpp \
     tcp_socket.cpp \
     thread.cpp \
-    pull.cpp \
     uuid.cpp \
     xrep.cpp \
     xreq.cpp \
