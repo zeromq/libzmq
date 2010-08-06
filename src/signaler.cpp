@@ -178,7 +178,7 @@ void zmq::signaler_t::send (const command_t &cmd_)
 {
     ssize_t nbytes;
     do {
-        ::send (w, &cmd_, sizeof (command_t), 0);
+        nbytes = ::send (w, &cmd_, sizeof (command_t), 0);
     } while (nbytes == -1 && errno == EINTR);
     errno_assert (nbytes != -1);
     zmq_assert (nbytes == sizeof (command_t));
