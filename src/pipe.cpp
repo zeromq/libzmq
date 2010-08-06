@@ -130,11 +130,6 @@ void zmq::reader_t::terminate ()
     send_pipe_term (writer);
 }
 
-bool zmq::reader_t::is_terminating ()
-{
-    return terminating;
-}
-
 void zmq::reader_t::process_revive ()
 {
     //  Forward the event to the sink (either socket or session).

@@ -71,7 +71,8 @@ zmq::session_t::~session_t ()
 
 bool zmq::session_t::is_terminable ()
 {
-    return in_pipe->is_terminating ();
+    //  The session won't send term_ack until both in & out pipe are closed.
+    return !in_pipe && !out_pipe;
 }
 
 bool zmq::session_t::read (::zmq_msg_t *msg_)
@@ -81,8 +82,6 @@ bool zmq::session_t::read (::zmq_msg_t *msg_)
 
     if (!in_pipe->read (msg_)) {
         active = false;
-        if (in_pipe->is_terminating ())
-            finalise ();
         return false;
     }
 
@@ -179,11 +178,13 @@ void zmq::session_t::terminated (reader_t *pipe_)
 {
     active = false;
     in_pipe = NULL;
+    finalise ();
 }
 
 void zmq::session_t::terminated (writer_t *pipe_)
 {
     out_pipe = NULL;
+    finalise ();
 }
 
 void zmq::session_t::activated (reader_t *pipe_)

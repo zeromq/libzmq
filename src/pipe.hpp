@@ -67,10 +67,6 @@ namespace zmq
         //  Ask pipe to terminate.
         void terminate ();
 
-        //  Returns true if the pipe is already terminating
-        //  (say if delimiter was already read).
-        bool is_terminating ();
-
     private:
 
         reader_t (class object_t *parent_, pipe_t *pipe_, uint64_t lwm_);
