@@ -186,7 +186,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\downstream.cpp"
+				RelativePath="..\..\..\src\push.cpp"
 				>
 			</File>
 			<File
@@ -326,7 +326,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\upstream.cpp"
+				RelativePath="..\..\..\src\pull.cpp"
 				>
 			</File>
 			<File
@@ -408,7 +408,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\downstream.hpp"
+				RelativePath="..\..\..\src\push.hpp"
 				>
 			</File>
 			<File
@@ -588,7 +588,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\upstream.hpp"
+				RelativePath="..\..\..\src\pull.hpp"
 				>
 			</File>
 			<File
