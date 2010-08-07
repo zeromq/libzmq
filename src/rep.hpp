@@ -20,17 +20,12 @@
 #ifndef __ZMQ_REP_HPP_INCLUDED__
 #define __ZMQ_REP_HPP_INCLUDED__
 
-#include "socket_base.hpp"
-#include "yarray.hpp"
-#include "pipe.hpp"
+#include "xrep.hpp"
 
 namespace zmq
 {
 
-    class rep_t :
-        public socket_base_t,
-        public i_reader_events,
-        public i_writer_events
+    class rep_t : public xrep_t
     {
     public:
 
@@ -38,50 +33,20 @@ namespace zmq
         ~rep_t ();
 
         //  Overloads of functions from socket_base_t.
-        void xattach_pipes (class reader_t *inpipe_, class writer_t *outpipe_,
-            const blob_t &peer_identity_);
-        void xterm_pipes ();
-        bool xhas_pipes ();
         int xsend (zmq_msg_t *msg_, int flags_);
         int xrecv (zmq_msg_t *msg_, int flags_);
         bool xhas_in ();
         bool xhas_out ();
 
-        //  i_reader_events interface implementation.
-        void activated (reader_t *pipe_);
-        void terminated (reader_t *pipe_);
-
-        //  i_writer_events interface implementation.
-        void activated (writer_t *pipe_);
-        void terminated (writer_t *pipe_);
-
     private:
 
-        //  List in outbound and inbound pipes. Note that the two lists are
-        //  always in sync. I.e. outpipe with index N communicates with the
-        //  same session as inpipe with index N.
-        typedef yarray_t <writer_t> out_pipes_t;
-        out_pipes_t out_pipes;
-        typedef yarray_t <reader_t> in_pipes_t;
-        in_pipes_t in_pipes;
-
-        //  Number of active inpipes. All the active inpipes are located at the
-        //  beginning of the in_pipes array.
-        in_pipes_t::size_type active;
-
-        //  Index of the next inbound pipe to read a request from.
-        in_pipes_t::size_type current;
-
-        //  If true, request was already received and reply wasn't completely
-        //  sent yet.
+        //  If true, we are in process of sending the reply. If false we are
+        //  in process of receiving a request.
         bool sending_reply;
 
-        //  True, if message processed at the moment (either sent or received)
-        //  is processed only partially.
-        bool more;
-
-        //  Pipe we are going to send reply to.
-        writer_t *reply_pipe;
+        //  If true, we are starting to receive a request. The beginning
+        //  of the request is the backtrace stack.
+        bool request_begins;
 
         rep_t (const rep_t&);
         void operator = (const rep_t&);
