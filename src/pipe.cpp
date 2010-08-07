@@ -269,9 +269,6 @@ void zmq::writer_t::terminate ()
     if (terminating)
         return;
 
-    //  Rollback any unfinished messages.
-    rollback ();
-
     if (msg_store == NULL || (msg_store->empty () && !extra_msg_flag))
         write_delimiter ();
     else
@@ -280,6 +277,9 @@ void zmq::writer_t::terminate ()
 
 void zmq::writer_t::write_delimiter ()
 {
+    //  Rollback any unfinished messages.
+    rollback ();
+
     //  Push delimiter into the pipe.
     //  Trick the compiler to belive that the tag is a valid pointer.
     zmq_msg_t msg;

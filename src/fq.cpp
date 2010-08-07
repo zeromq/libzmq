@@ -46,6 +46,9 @@ void zmq::fq_t::attach (reader_t *pipe_)
 
 void zmq::fq_t::terminated (reader_t *pipe_)
 {
+    //  TODO: This is a problem with session-initiated termination. It breaks
+    //  message atomicity. However, for socket initiated termination it's
+    //  just fine.
     zmq_assert (!more || pipes [current] != pipe_);
 
     //  Remove the pipe from the list; adjust number of active pipes
@@ -87,6 +90,10 @@ int zmq::fq_t::recv (zmq_msg_t *msg_, int flags_)
         //  Try to fetch new message. If we've already read part of the message
         //  subsequent part should be immediately available.
         bool fetched = pipes [current]->read (msg_);
+
+        //  Check the atomicity of the message. If we've already received the
+        //  first part of the message we should get the remaining parts
+        //  without blocking.
         zmq_assert (!(more && !fetched));
 
         //  Note that when message is not fetched, current pipe is killed and
