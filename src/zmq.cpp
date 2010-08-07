@@ -275,6 +275,7 @@ int zmq_term (void *ctx_)
     int rc = ((zmq::ctx_t*) ctx_)->term ();
     int en = errno;
 
+    zmq_assert (ctx_);
 #if defined ZMQ_HAVE_OPENPGM
     //  Shut down the OpenPGM library.
     if (pgm_shutdown () != TRUE)
@@ -287,11 +288,13 @@ int zmq_term (void *ctx_)
 
 void *zmq_socket (void *ctx_, int type_)
 {
+    zmq_assert (ctx_);
     return (void*) (((zmq::ctx_t*) ctx_)->create_socket (type_));
 }
 
 int zmq_close (void *s_)
 {
+    zmq_assert (s_);
     ((zmq::socket_base_t*) s_)->close ();
     return 0;
 }
@@ -299,33 +302,39 @@ int zmq_close (void *s_)
 int zmq_setsockopt (void *s_, int option_, const void *optval_,
     size_t optvallen_)
 {
+    zmq_assert (s_);
     return (((zmq::socket_base_t*) s_)->setsockopt (option_, optval_,
         optvallen_));
 }
 
 int zmq_getsockopt (void *s_, int option_, void *optval_, size_t *optvallen_)
 {
+    zmq_assert (s_);
     return (((zmq::socket_base_t*) s_)->getsockopt (option_, optval_,
         optvallen_));
 }
 
 int zmq_bind (void *s_, const char *addr_)
 {
+    zmq_assert (s_);
     return (((zmq::socket_base_t*) s_)->bind (addr_));
 }
 
 int zmq_connect (void *s_, const char *addr_)
 {
+    zmq_assert (s_);
     return (((zmq::socket_base_t*) s_)->connect (addr_));
 }
 
 int zmq_send (void *s_, zmq_msg_t *msg_, int flags_)
 {
+    zmq_assert (s_);
     return (((zmq::socket_base_t*) s_)->send (msg_, flags_));
 }
 
 int zmq_recv (void *s_, zmq_msg_t *msg_, int flags_)
 {
+    zmq_assert (s_);
     return (((zmq::socket_base_t*) s_)->recv (msg_, flags_));
 }
 
@@ -336,6 +345,8 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_QNXNTO ||\
     defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_AIX ||\
     defined ZMQ_HAVE_NETBSD
+
+    zmq_assert (items_);
 
     pollfd *pollfds = (pollfd*) malloc (nitems_ * sizeof (pollfd));
     zmq_assert (pollfds);
@@ -648,6 +659,9 @@ int zmq_errno ()
 
 int zmq_device (int device_, void *insocket_, void *outsocket_)
 {
+    zmq_assert (insocket_);
+    zmq_assert (outsocket_);
+    
     switch (device_) {
     case ZMQ_FORWARDER:
         return zmq::forwarder ((zmq::socket_base_t*) insocket_,
@@ -721,6 +735,7 @@ unsigned long zmq_stopwatch_stop (void *watch_)
 {
     uint64_t end = now ();
     uint64_t start = *(uint64_t*) watch_;
+    zmq_assert (watch_);
     free (watch_);
     return (unsigned long) (end - start);
 }
