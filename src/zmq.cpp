@@ -382,14 +382,14 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 
         //  If the poll item is a 0MQ socket, we poll on the file descriptor
         //  retrieved by the ZMQ_FD socket option.
-        if (items_ [i].socket && items_ [i].events) {
+        if (items_ [i].socket) {
             size_t zmq_fd_size = sizeof (zmq::fd_t);
             if (zmq_getsockopt (items_ [i].socket, ZMQ_FD, &pollfds [i].fd,
                 &zmq_fd_size) == -1) {
                 free (pollfds);
                 return -1;
             }
-            pollfds [i].events = POLLIN;
+            pollfds [i].events = items_ [i].events ? POLLIN : 0;
         }
         //  Else, the poll item is a raw file descriptor. Just convert the
         //  events to normal POLLIN/POLLOUT for poll ().
@@ -474,15 +474,17 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 
         //  If the poll item is a 0MQ socket we are interested in input on the
         //  notification file descriptor retrieved by the ZMQ_FD socket option.
-        if (items_ [i].socket && items_ [i].events) {
+        if (items_ [i].socket) {
             size_t zmq_fd_size = sizeof (zmq::fd_t);
             zmq::fd_t notify_fd;
             if (zmq_getsockopt (items_ [i].socket, ZMQ_FD, &notify_fd,
                 &zmq_fd_size) == -1)
                 return -1;
-            FD_SET (notify_fd, &pollset_in);
-            if (maxfd < notify_fd)
-                maxfd = notify_fd;
+            if (items_ [i].events) {
+                FD_SET (notify_fd, &pollset_in);
+                if (maxfd < notify_fd)
+                    maxfd = notify_fd;
+            }
         }
         //  Else, the poll item is a raw file descriptor. Convert the poll item
         //  events to the appropriate fd_sets.
