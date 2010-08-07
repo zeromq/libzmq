@@ -389,16 +389,16 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
                 free (pollfds);
                 return -1;
             }
-	    pollfds [i].events = POLLIN;
+            pollfds [i].events = POLLIN;
         }
         //  Else, the poll item is a raw file descriptor. Just convert the
         //  events to normal POLLIN/POLLOUT for poll ().
-	else {
+        else {
             pollfds [i].fd = items_ [i].fd;
             pollfds [i].events =
                 (items_ [i].events & ZMQ_POLLIN ? POLLIN : 0) |
                 (items_ [i].events & ZMQ_POLLOUT ? POLLOUT : 0);
-	}
+        }
     }
 
     int timeout = timeout_ > 0 ? timeout_ / 1000 : -1;
