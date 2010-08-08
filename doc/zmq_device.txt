@@ -89,8 +89,17 @@ Refer to linkzmq:zmq_socket[3] for a description of these socket types.
 
 RETURN VALUE
 ------------
-The _zmq_device()_ function always returns `-1` and 'errno' set to *ETERM* (the
-0MQ 'context' associated with either of the specified sockets was terminated).
+The _zmq_device()_ function shall not return if successful. Otherwise it shall
+return `-1` and set 'errno' to one of the values defined below.
+
+
+ERRORS
+------
+*ETERM*::
+The 0MQ 'context' associated with the specified 'frontend' or 'backend' was 
+terminated.
+*EFAULT*::
+The provided 'frontend' or 'backend' was not valid (NULL).
 
 
 EXAMPLE

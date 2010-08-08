@@ -96,6 +96,8 @@ to a different application thread.
 *ETERM*::
 At least one of the members of the 'items' array refers to a 'socket' whose
 associated 0MQ 'context' was terminated.
+*EFAULT*::
+The provided 'items' was not valid (NULL).
 
 
 EXAMPLE

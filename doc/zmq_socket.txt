@@ -242,9 +242,10 @@ ERRORS
 ------
 *EINVAL*::
 The requested socket 'type' is invalid.
-
 *EMTHREAD*::
 The maximum number of sockets within this 'context' has been exceeded.
+*EFAULT*::
+The provided 'context' was not valid (NULL).
 
 
 SEE ALSO

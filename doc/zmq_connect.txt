@@ -59,6 +59,8 @@ The requested 'transport' protocol is not supported.
 The requested 'transport' protocol is not compatible with the socket type.
 *ETERM*::
 The 0MQ 'context' associated with the specified 'socket' was terminated.
+*EFAULT*::
+The provided 'socket' was not valid (NULL).
 
 
 EXAMPLE

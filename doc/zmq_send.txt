@@ -69,6 +69,8 @@ socket types that switch between several states, such as ZMQ_REP.  See the
 _messaging patterns_ section of linkzmq:zmq_socket[3] for more information.
 *ETERM*::
 The 0MQ 'context' associated with the specified 'socket' was terminated.
+*EFAULT*::
+The provided 'context' was not valid (NULL).
 
 
 EXAMPLE

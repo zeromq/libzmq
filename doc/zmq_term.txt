@@ -43,7 +43,8 @@ return `-1` and set 'errno' to one of the values defined below.
 
 ERRORS
 ------
-No errors are defined.
+*EFAULT*::
+The provided 'context' was not valid (NULL).
 
 
 SEE ALSO

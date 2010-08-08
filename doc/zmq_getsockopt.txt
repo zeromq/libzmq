@@ -214,6 +214,8 @@ _option_value_, as specified by _option_len_, is insufficient for storing the
 option value.
 *ETERM*::
 The 0MQ 'context' associated with the specified 'socket' was terminated.
+*EFAULT*::
+The provided 'socket' was not valid (NULL).
 
 
 EXAMPLE

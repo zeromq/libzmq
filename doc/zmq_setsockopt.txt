@@ -229,6 +229,8 @@ The requested option _option_name_ is unknown, or the requested _option_len_ or
 _option_value_ is invalid.
 *ETERM*::
 The 0MQ 'context' associated with the specified 'socket' was terminated.
+*EFAULT*::
+The provided 'socket' was not valid (NULL).
 
 
 EXAMPLE
