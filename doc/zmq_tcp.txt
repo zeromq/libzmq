@@ -30,10 +30,10 @@ colon and the TCP port number to use.
 
 An 'interface' may be specified by either of the following:
 
-* The interface name as defined by the operating system.
+* The wildcard `*`, meaning all available interfaces.
 * The primary IPv4 address assigned to the interface, in its numeric
   representation.
-* The wildcard `*`, meaning that the interface address is unspecified.
+* The interface name as defined by the operating system.
 
 NOTE: Interface names are not standardised in any way and should be assumed to
 be arbitrary and platform dependent. On Win32 platforms no short interface
@@ -124,14 +124,14 @@ EXAMPLES
 --------
 .Assigning a local address to a socket
 ----
+/* TCP port 5555 on all available interfaces */
+rc = zmq_bind(socket, "tcp://*:5555");
+assert (rc == 0);
 /* TCP port 5555 on the local loopback interface on all platforms */
 rc = zmq_bind(socket, "tcp://127.0.0.1:5555");
 assert (rc == 0);
 /* TCP port 5555 on the first ethernet network interface on Linux */
 rc = zmq_bind(socket, "tcp://eth0:5555");
-assert (rc == 0);
-/* TCP port 5555 with an unspecified interface */
-rc = zmq_bind(socket, "tcp://*:5555");
 assert (rc == 0);
 ----
 
