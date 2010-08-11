@@ -46,6 +46,7 @@ namespace zmq
         bool read (::zmq_msg_t *msg_);
         bool write (::zmq_msg_t *msg_);
         void flush ();
+        void detach ();
 
         void attach_pipes (class reader_t *inpipe_, class writer_t *outpipe_,
             const blob_t &peer_identity_);

@@ -36,9 +36,10 @@ namespace zmq
             class socket_base_t *socket_, const options_t &options_);
         ~transient_session_t ();
 
-        //  i_inout interface implementation.
-        void detach ();
+    private:
 
+        //  Hook into session's disconnection mechanism.
+        void detached ();
     };
 
 }

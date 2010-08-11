@@ -39,10 +39,10 @@ namespace zmq
             const char *protocol_, const char *address_);
         ~connect_session_t ();
 
-        //  i_inout interface implementation.
-        void detach ();
-
     private:
+
+        //  Hook into session's disconnection mechanism.
+        void detached ();
 
         //  Start the connection process.
         void start_connecting ();

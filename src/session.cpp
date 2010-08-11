@@ -49,8 +49,10 @@ zmq::session_t::~session_t ()
 
 void zmq::session_t::terminate ()
 {
-    //  TODO:
-    zmq_assert (false);
+    if (in_pipe)
+        in_pipe->terminate ();
+    if (out_pipe)
+        out_pipe->terminate ();
 }
 
 bool zmq::session_t::read (::zmq_msg_t *msg_)
@@ -226,6 +228,14 @@ void zmq::session_t::process_attach (i_engine *engine_,
 
     //  Trigger the notfication about the attachment.
     attached (peer_identity_);
+}
+
+void zmq::session_t::detach ()
+{
+    //  Engine is dead. Let's forget about it.
+    engine = NULL;
+
+    detached ();
 }
 
 void zmq::session_t::process_term ()

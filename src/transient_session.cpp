@@ -29,7 +29,7 @@ zmq::transient_session_t::~transient_session_t ()
 {
 }
 
-void zmq::transient_session_t::detach ()
+void zmq::transient_session_t::detached ()
 {
     //  There's no way to reestablish a transient session. Tear it down.
     terminate ();
