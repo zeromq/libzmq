@@ -21,19 +21,33 @@
 #include "io_thread.hpp"
 #include "err.hpp"
 
-zmq::io_object_t::io_object_t (io_thread_t *io_thread_)
+zmq::io_object_t::io_object_t (io_thread_t *io_thread_) :
+    poller (NULL)
 {
-    //  Retrieve the poller from the thread we are running in.
-    poller = io_thread_->get_poller ();
+    if (io_thread_)
+        plug (io_thread_);
 }
 
 zmq::io_object_t::~io_object_t ()
 {
 }
 
-void zmq::io_object_t::set_io_thread (io_thread_t *io_thread_)
+void zmq::io_object_t::plug (io_thread_t *io_thread_)
 {
+    zmq_assert (io_thread_);
+    zmq_assert (!poller);
+
+    //  Retrieve the poller from the thread we are running in.
     poller = io_thread_->get_poller ();
+}
+
+void zmq::io_object_t::unplug ()
+{
+    zmq_assert (poller);
+
+    //  Forget about old poller in preparation to be migrated
+    //  to a different I/O thread.
+    poller = NULL;
 }
 
 zmq::io_object_t::handle_t zmq::io_object_t::add_fd (fd_t fd_)

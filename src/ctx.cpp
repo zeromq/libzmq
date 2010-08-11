@@ -119,6 +119,7 @@ int zmq::ctx_t::term ()
     //  We don't even have to synchronise access to data.
     zmq_assert (sockets.empty ());
 
+//  TODO: We are accessing the list of zombies in unsynchronised manner here!
     //  Get rid of remaining zombie sockets.
     while (!zombies.empty ()) {
         dezombify ();
@@ -173,7 +174,7 @@ zmq::socket_base_t *zmq::ctx_t::create_socket (int type_)
     return s;
 }
 
-void zmq::ctx_t::zombify (socket_base_t *socket_)
+void zmq::ctx_t::zombify_socket (socket_base_t *socket_)
 {
     //  Zombification of socket basically means that its ownership is tranferred
     //  from the application that created it to the context.
@@ -284,7 +285,8 @@ zmq::socket_base_t *zmq::ctx_t::find_endpoint (const char *addr_)
 
 void zmq::ctx_t::dezombify ()
 {
-    //  Try to dezombify each zombie in the list.
+    //  Try to dezombify each zombie in the list. Note that caller is
+    //  responsible for calling this method in the slot_sync critical section.
     for (zombies_t::size_type i = 0; i != zombies.size ();)
         if (zombies [i]->dezombify ()) {
             empty_slots.push_back (zombies [i]->get_slot ());

@@ -25,31 +25,22 @@
 #include "io_thread.hpp"
 #include "err.hpp"
 
-zmq::zmq_connecter_t::zmq_connecter_t (io_thread_t *parent_,
-      socket_base_t *owner_, const options_t &options_,
-      uint64_t session_ordinal_, bool wait_) :
-    owned_t (parent_, owner_),
-    io_object_t (parent_),
+zmq::zmq_connecter_t::zmq_connecter_t (class io_thread_t *io_thread_,
+      class session_t *session_, const options_t &options_,
+      const char *protocol_, const char *address_) :
+    own_t (io_thread_),
+    io_object_t (io_thread_),
     handle_valid (false),
-    wait (wait_),
-    session_ordinal (session_ordinal_),
+    wait (false),
+    session (session_),
     options (options_)
 {
+     int rc = tcp_connecter.set_address (protocol_, address_);
+     zmq_assert (rc == 0);
 }
 
 zmq::zmq_connecter_t::~zmq_connecter_t ()
 {
-}
-
-int zmq::zmq_connecter_t::set_address (const char *protocol_,
-    const char *address_)
-{
-     int rc = tcp_connecter.set_address (protocol_, address_);
-     if (rc != 0)
-         return rc;
-     protocol = protocol_;
-     address = address_;
-     return 0;
 }
 
 void zmq::zmq_connecter_t::process_plug ()
@@ -92,15 +83,12 @@ void zmq::zmq_connecter_t::out_event ()
 
     //  Create an init object. 
     zmq_init_t *init = new (std::nothrow) zmq_init_t (
-        choose_io_thread (options.affinity), owner,
-        fd, options, true, protocol.c_str (), address.c_str (),
-        session_ordinal);
+        choose_io_thread (options.affinity), NULL, session, fd, options);
     zmq_assert (init);
-    send_plug (init);
-    send_own (owner, init);
+    launch_sibling (init);
 
-    //  Ask owner socket to shut the connecter down.
-    term ();
+    //  Shut the connecter down.
+    terminate ();
 }
 
 void zmq::zmq_connecter_t::timer_event ()

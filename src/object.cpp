@@ -24,7 +24,6 @@
 #include "err.hpp"
 #include "pipe.hpp"
 #include "io_thread.hpp"
-#include "owned.hpp"
 #include "session.hpp"
 #include "socket_base.hpp"
 
@@ -143,9 +142,9 @@ zmq::io_thread_t *zmq::object_t::choose_io_thread (uint64_t taskset_)
     return ctx->choose_io_thread (taskset_);
 }
 
-void zmq::object_t::zombify (socket_base_t *socket_)
+void zmq::object_t::zombify_socket (socket_base_t *socket_)
 {
-    ctx->zombify (socket_);
+    ctx->zombify_socket (socket_);
 }
 
 void zmq::object_t::send_stop ()
@@ -158,7 +157,7 @@ void zmq::object_t::send_stop ()
     ctx->send_command (slot, cmd);
 }
 
-void zmq::object_t::send_plug (owned_t *destination_, bool inc_seqnum_)
+void zmq::object_t::send_plug (own_t *destination_, bool inc_seqnum_)
 {
     if (inc_seqnum_)
         destination_->inc_seqnum ();
@@ -169,7 +168,7 @@ void zmq::object_t::send_plug (owned_t *destination_, bool inc_seqnum_)
     send_command (cmd);
 }
 
-void zmq::object_t::send_own (socket_base_t *destination_, owned_t *object_)
+void zmq::object_t::send_own (own_t *destination_, own_t *object_)
 {
     destination_->inc_seqnum ();
     command_t cmd;
@@ -206,9 +205,8 @@ void zmq::object_t::send_attach (session_t *destination_, i_engine *engine_,
     send_command (cmd);
 }
 
-void zmq::object_t::send_bind (socket_base_t *destination_,
-    reader_t *in_pipe_, writer_t *out_pipe_, const blob_t &peer_identity_,
-    bool inc_seqnum_)
+void zmq::object_t::send_bind (own_t *destination_, reader_t *in_pipe_,
+    writer_t *out_pipe_, const blob_t &peer_identity_, bool inc_seqnum_)
 {
     if (inc_seqnum_)
         destination_->inc_seqnum ();
@@ -269,8 +267,8 @@ void zmq::object_t::send_pipe_term_ack (reader_t *destination_)
     send_command (cmd);
 }
 
-void zmq::object_t::send_term_req (socket_base_t *destination_,
-    owned_t *object_)
+void zmq::object_t::send_term_req (own_t *destination_,
+    own_t *object_)
 {
     command_t cmd;
     cmd.destination = destination_;
@@ -279,7 +277,7 @@ void zmq::object_t::send_term_req (socket_base_t *destination_,
     send_command (cmd);
 }
 
-void zmq::object_t::send_term (owned_t *destination_)
+void zmq::object_t::send_term (own_t *destination_)
 {
     command_t cmd;
     cmd.destination = destination_;
@@ -287,7 +285,7 @@ void zmq::object_t::send_term (owned_t *destination_)
     send_command (cmd);
 }
 
-void zmq::object_t::send_term_ack (socket_base_t *destination_)
+void zmq::object_t::send_term_ack (own_t *destination_)
 {
     command_t cmd;
     cmd.destination = destination_;
@@ -305,7 +303,7 @@ void zmq::object_t::process_plug ()
     zmq_assert (false);
 }
 
-void zmq::object_t::process_own (owned_t *object_)
+void zmq::object_t::process_own (own_t *object_)
 {
     zmq_assert (false);
 }
@@ -342,7 +340,7 @@ void zmq::object_t::process_pipe_term_ack ()
     zmq_assert (false);
 }
 
-void zmq::object_t::process_term_req (owned_t *object_)
+void zmq::object_t::process_term_req (own_t *object_)
 {
     zmq_assert (false);
 }

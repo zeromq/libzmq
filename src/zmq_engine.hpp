@@ -38,16 +38,14 @@ namespace zmq
     {
     public:
 
-        zmq_engine_t (class io_thread_t *parent_, fd_t fd_,
-            const options_t &options_, bool reconnect_, 
-            const char *protocol_, const char *address_);
+        zmq_engine_t (fd_t fd_, const options_t &options_);
         ~zmq_engine_t ();
 
         //  i_engine interface implementation.
-        void plug (struct i_inout *inout_);
+        void plug (class io_thread_t *io_thread_, struct i_inout *inout_);
         void unplug ();
-        void revive ();
-        void resume_input ();
+        void activate_in ();
+        void activate_out ();
 
         //  i_poll_events interface implementation.
         void in_event ();
@@ -72,10 +70,6 @@ namespace zmq
         i_inout *inout;
 
         options_t options;
-
-        bool reconnect;
-        std::string protocol;
-        std::string address;
 
         zmq_engine_t (const zmq_engine_t&);
         void operator = (const zmq_engine_t&);

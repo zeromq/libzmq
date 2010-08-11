@@ -22,11 +22,14 @@
 #include "fq.hpp"
 #include "pipe.hpp"
 #include "err.hpp"
+#include "i_terminate_events.hpp"
 
-zmq::fq_t::fq_t () :
+zmq::fq_t::fq_t (i_terminate_events *sink_) :
     active (0),
     current (0),
-    more (false)
+    more (false),
+    sink (sink_),
+    terminating (false)
 {
 }
 
@@ -42,6 +45,10 @@ void zmq::fq_t::attach (reader_t *pipe_)
     pipes.push_back (pipe_);
     pipes.swap (active, pipes.size () - 1);
     active++;
+
+    //  If we are already terminating, ask the pipe to terminate straight away.
+    if (terminating)
+        pipe_->terminate ();
 }
 
 void zmq::fq_t::terminated (reader_t *pipe_)
@@ -59,15 +66,15 @@ void zmq::fq_t::terminated (reader_t *pipe_)
             current = 0;
     }
     pipes.erase (pipe_);
+
+    if (terminating && pipes.empty ())
+        sink->terminated ();
 }
 
-bool zmq::fq_t::has_pipes ()
+void zmq::fq_t::terminate ()
 {
-    return !pipes.empty ();
-}
+    terminating = true;
 
-void zmq::fq_t::term_pipes ()
-{
     for (pipes_t::size_type i = 0; i != pipes.size (); i++)
         pipes [i]->terminate ();
 }

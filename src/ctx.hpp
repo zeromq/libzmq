@@ -58,7 +58,7 @@ namespace zmq
         class socket_base_t *create_socket (int type_);
 
         //  Make socket a zombie.
-        void zombify (socket_base_t *socket_);
+        void zombify_socket (socket_base_t *socket_);
 
         //  Send command to the destination slot.
         void send_command (uint32_t slot_, const command_t &command_);

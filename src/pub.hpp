@@ -37,8 +37,6 @@ namespace zmq
         //  Implementations of virtual functions from socket_base_t.
         void xattach_pipes (class reader_t *inpipe_, class writer_t *outpipe_,
             const blob_t &peer_identity_);
-        void xterm_pipes ();
-        bool xhas_pipes ();
         int xsend (zmq_msg_t *msg_, int flags_);
         bool xhas_out ();
 
@@ -47,6 +45,9 @@ namespace zmq
         void terminated (writer_t *pipe_);
 
     private:
+
+        //  Hook into the termination process.
+        void process_term ();
 
         //  Write the message to the pipe. Make the pipe inactive if writing
         //  fails. In such a case false is returned.
@@ -59,6 +60,9 @@ namespace zmq
         //  Number of active pipes. All the active pipes are located at the
         //  beginning of the pipes array.
         pipes_t::size_type active;
+
+        //  True if termination process is already underway.
+        bool terminating;
 
         pub_t (const pub_t&);
         void operator = (const pub_t&);

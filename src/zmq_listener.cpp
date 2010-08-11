@@ -24,11 +24,12 @@
 #include "io_thread.hpp"
 #include "err.hpp"
 
-zmq::zmq_listener_t::zmq_listener_t (io_thread_t *parent_,
-      socket_base_t *owner_, const options_t &options_) :
-    owned_t (parent_, owner_),
-    io_object_t (parent_),
-    options (options_)
+zmq::zmq_listener_t::zmq_listener_t (io_thread_t *io_thread_,
+      socket_base_t *socket_, const options_t &options_) :
+    own_t (io_thread_),
+    io_object_t (io_thread_),
+    options (options_),
+    socket (socket_)
 {
 }
 
@@ -62,13 +63,11 @@ void zmq::zmq_listener_t::in_event ()
     if (fd == retired_fd)
         return;
 
-    //  Create an init object. 
-    io_thread_t *io_thread = choose_io_thread (options.affinity);
+    //  Create and launch an init object. 
     zmq_init_t *init = new (std::nothrow) zmq_init_t (
-        io_thread, owner, fd, options, false, NULL, NULL, 0);
+        choose_io_thread (options.affinity), socket, NULL, fd, options);
     zmq_assert (init);
-    send_plug (init);
-    send_own (owner, init);
+    launch_sibling (init);
 }
 
 

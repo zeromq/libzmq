@@ -40,14 +40,14 @@ namespace zmq
         io_object_t (class io_thread_t *io_thread_ = NULL);
         ~io_object_t ();
 
+        //  When migrating an object from one I/O thread to another, first
+        //  unplug it, then migrate it, then plug it to the new thread.
+        void plug (class io_thread_t *io_thread_);
+        void unplug ();
+
     protected:
 
         typedef poller_t::handle_t handle_t;
-
-        //  Derived class can init/swap the underlying I/O thread.
-        //  Caution: Remove all the file descriptors from the old I/O thread
-        //  before swapping to the new one!
-        void set_io_thread (class io_thread_t *io_thread_);
 
         //  Methods to access underlying poller object.
         handle_t add_fd (fd_t fd_);

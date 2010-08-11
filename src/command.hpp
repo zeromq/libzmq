@@ -61,7 +61,7 @@ namespace zmq
 
             //  Sent to socket to let it know about the newly created object.
             struct {
-                class owned_t *object;
+                class own_t *object;
             } own;
 
             //  Attach the engine to the session.
@@ -104,7 +104,7 @@ namespace zmq
             //  Sent by I/O object ot the socket to request the shutdown of
             //  the I/O object.
             struct {
-                class owned_t *object;
+                class own_t *object;
             } term_req;
 
             //  Sent by socket to I/O object to start its shutdown.

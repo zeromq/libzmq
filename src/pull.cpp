@@ -23,7 +23,8 @@
 #include "err.hpp"
 
 zmq::pull_t::pull_t (class ctx_t *parent_, uint32_t slot_) :
-    socket_base_t (parent_, slot_)
+    socket_base_t (parent_, slot_),
+    fq (this)
 {
     options.requires_in = true;
     options.requires_out = false;
@@ -40,14 +41,17 @@ void zmq::pull_t::xattach_pipes (class reader_t *inpipe_,
     fq.attach (inpipe_);
 }
 
-void zmq::pull_t::xterm_pipes ()
+void zmq::pull_t::process_term ()
 {
-    fq.term_pipes ();
+    register_term_acks (1);
+    fq.terminate ();
+
+    socket_base_t::process_term ();
 }
 
-bool zmq::pull_t::xhas_pipes ()
+void zmq::pull_t::terminated ()
 {
-    return fq.has_pipes ();
+    unregister_term_ack ();
 }
 
 int zmq::pull_t::xrecv (zmq_msg_t *msg_, int flags_)

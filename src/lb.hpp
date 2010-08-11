@@ -32,12 +32,11 @@ namespace zmq
     {
     public:
 
-        lb_t ();
+        lb_t (struct i_terminate_events *sink_);
         ~lb_t ();
 
         void attach (writer_t *pipe_);
-        void term_pipes ();
-        bool has_pipes ();
+        void terminate ();
         int send (zmq_msg_t *msg_, int flags_);
         bool has_out ();
 
@@ -60,6 +59,12 @@ namespace zmq
 
         //  True if last we are in the middle of a multipart message.
         bool more;
+
+        //  Object to send events to.
+        struct i_terminate_events *sink;
+
+        //  If true, termination process is already underway.
+        bool terminating;
 
         lb_t (const lb_t&);
         void operator = (const lb_t&);

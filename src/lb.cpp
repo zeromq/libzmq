@@ -22,11 +22,14 @@
 #include "lb.hpp"
 #include "pipe.hpp"
 #include "err.hpp"
+#include "i_terminate_events.hpp"
 
-zmq::lb_t::lb_t () :
+zmq::lb_t::lb_t (i_terminate_events *sink_) :
     active (0),
     current (0),
-    more (false)
+    more (false),
+    sink (sink_),
+    terminating (false)
 {
 }
 
@@ -42,17 +45,22 @@ void zmq::lb_t::attach (writer_t *pipe_)
     pipes.push_back (pipe_);
     pipes.swap (active, pipes.size () - 1);
     active++;
+
+    if (terminating)
+        pipe_->terminate ();
 }
 
-void zmq::lb_t::term_pipes ()
+void zmq::lb_t::terminate ()
 {
+    terminating = true;
+
     for (pipes_t::size_type i = 0; i != pipes.size (); i++)
         pipes [i]->terminate ();
 }
 
 void zmq::lb_t::terminated (writer_t *pipe_)
 {
-    // ???
+    // TODO: ???
     zmq_assert (!more || pipes [current] != pipe_);
 
     //  Remove the pipe from the list; adjust number of active pipes
@@ -63,11 +71,9 @@ void zmq::lb_t::terminated (writer_t *pipe_)
             current = 0;
     }
     pipes.erase (pipe_);
-}
 
-bool zmq::lb_t::has_pipes ()
-{
-    return !pipes.empty ();
+    if (terminating && pipes.empty ())
+        sink->terminated ();
 }
 
 void zmq::lb_t::activated (writer_t *pipe_)

@@ -39,8 +39,6 @@ namespace zmq
         //  Overloads of functions from socket_base_t.
         void xattach_pipes (class reader_t *inpipe_, class writer_t *outpipe_,
             const blob_t &peer_identity_);
-        void xterm_pipes ();
-        bool xhas_pipes ();
         int xsend (zmq_msg_t *msg_, int flags_);
         int xrecv (zmq_msg_t *msg_, int flags_);
         bool xhas_in ();
@@ -56,11 +54,16 @@ namespace zmq
 
     private:
 
+        //  Hook into termination process.
+        void process_term ();
+
         class reader_t *inpipe;
         class writer_t *outpipe;
 
         bool inpipe_alive;
         bool outpipe_alive;
+
+        bool terminating;
 
         pair_t (const pair_t&);
         void operator = (const pair_t&);

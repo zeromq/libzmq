@@ -55,6 +55,7 @@ libzmq_la_SOURCES = \
     blob.hpp \
     command.hpp \
     config.hpp \
+    connect_session.hpp \
     ctx.hpp \
     decoder.hpp \
     devpoll.hpp \
@@ -70,15 +71,17 @@ libzmq_la_SOURCES = \
     ip.hpp \
     i_engine.hpp \
     i_poll_events.hpp \
+    i_terminate_events.hpp \
     kqueue.hpp \
     lb.hpp \
     likely.hpp \
     msg_content.hpp \
     msg_store.hpp \
     mutex.hpp \
+    named_session.hpp \
     object.hpp \
     options.hpp \
-    owned.hpp \
+    own.hpp \
     pgm_receiver.hpp \
     pgm_sender.hpp \
     pgm_socket.hpp \
@@ -106,6 +109,7 @@ libzmq_la_SOURCES = \
     tcp_listener.hpp \
     tcp_socket.hpp \
     thread.hpp \
+    transient_session.hpp \
     uuid.hpp \
     windows.hpp \
     wire.hpp \
@@ -123,6 +127,7 @@ libzmq_la_SOURCES = \
     zmq_listener.hpp \
     command.cpp \
     ctx.cpp \
+    connect_session.cpp \
     devpoll.cpp \
     epoll.cpp \
     err.cpp \
@@ -134,9 +139,10 @@ libzmq_la_SOURCES = \
     kqueue.cpp \
     lb.cpp \
     msg_store.cpp \
+    named_session.cpp \
     object.cpp \
     options.cpp \
-    owned.cpp \
+    own.cpp \
     pair.cpp \
     pgm_receiver.cpp \
     pgm_sender.cpp \
@@ -160,6 +166,7 @@ libzmq_la_SOURCES = \
     tcp_listener.cpp \
     tcp_socket.cpp \
     thread.cpp \
+    transient_session.cpp \
     uuid.cpp \
     xrep.cpp \
     xreq.cpp \

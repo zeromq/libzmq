@@ -28,7 +28,8 @@ zmq::pair_t::pair_t (class ctx_t *parent_, uint32_t slot_) :
     inpipe (NULL),
     outpipe (NULL),
     inpipe_alive (false),
-    outpipe_alive (false)
+    outpipe_alive (false),
+    terminating (false)
 {
     options.requires_in = true;
     options.requires_out = true;
@@ -43,6 +44,7 @@ zmq::pair_t::~pair_t ()
 void zmq::pair_t::xattach_pipes (class reader_t *inpipe_,
     class writer_t *outpipe_, const blob_t &peer_identity_)
 {
+    zmq_assert (!terminating);
     zmq_assert (!inpipe && !outpipe);
 
     inpipe = inpipe_;
@@ -59,6 +61,9 @@ void zmq::pair_t::terminated (class reader_t *pipe_)
     zmq_assert (pipe_ == inpipe);
     inpipe = NULL;
     inpipe_alive = false;
+
+    if (terminating)
+        unregister_term_ack ();
 }
 
 void zmq::pair_t::terminated (class writer_t *pipe_)
@@ -66,19 +71,22 @@ void zmq::pair_t::terminated (class writer_t *pipe_)
     zmq_assert (pipe_ == outpipe);
     outpipe = NULL;
     outpipe_alive = false;
+
+    if (terminating)
+        unregister_term_ack ();
 }
 
-void zmq::pair_t::xterm_pipes ()
+void zmq::pair_t::process_term ()
 {
-    if (inpipe)
-        inpipe->terminate ();
-    if (outpipe)
-        outpipe->terminate ();
-}
+    zmq_assert (inpipe && outpipe);
 
-bool zmq::pair_t::xhas_pipes ()
-{
-    return inpipe != NULL || outpipe != NULL;
+    terminating = true;
+
+    register_term_acks (2);
+    inpipe->terminate ();
+    outpipe->terminate ();
+
+    socket_base_t::process_term ();
 }
 
 void zmq::pair_t::activated (class reader_t *pipe_)

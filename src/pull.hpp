@@ -17,31 +17,38 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_UPSTREAM_HPP_INCLUDED__
-#define __ZMQ_UPSTREAM_HPP_INCLUDED__
+#ifndef __ZMQ_PULL_HPP_INCLUDED__
+#define __ZMQ_PULL_HPP_INCLUDED__
 
+#include "i_terminate_events.hpp"
 #include "socket_base.hpp"
 #include "fq.hpp"
 
 namespace zmq
 {
 
-    class pull_t : public socket_base_t
+    class pull_t : public socket_base_t, public i_terminate_events
     {
     public:
 
         pull_t (class ctx_t *parent_, uint32_t slot_);
         ~pull_t ();
 
+    protected:
+
         //  Overloads of functions from socket_base_t.
         void xattach_pipes (class reader_t *inpipe_, class writer_t *outpipe_,
             const blob_t &peer_identity_);
-        void xterm_pipes ();
-        bool xhas_pipes ();
         int xrecv (zmq_msg_t *msg_, int flags_);
         bool xhas_in ();
 
     private:
+
+        //  i_terminate_events interface implementation.
+        void terminated ();
+
+        //  Hook into the termination process.
+        void process_term ();
 
         //  Fair queueing object for inbound pipes.
         fq_t fq;

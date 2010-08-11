@@ -44,12 +44,15 @@ namespace zmq
         //  Overloads of functions from socket_base_t.
         void xattach_pipes (reader_t *inpipe_, writer_t *outpipe_,
             const blob_t &peer_identity_);
-        void xterm_pipes ();
-        bool xhas_pipes ();
         int xsend (zmq_msg_t *msg_, int flags_);
         int xrecv (zmq_msg_t *msg_, int flags_);
         bool xhas_in ();
         bool xhas_out ();
+
+    private:
+
+        //  Hook into the termination process.
+        void process_term ();
 
         //  i_reader_events interface implementation.
         void activated (reader_t *pipe_);
@@ -58,8 +61,6 @@ namespace zmq
         //  i_writer_events interface implementation.
         void activated (writer_t *pipe_);
         void terminated (writer_t *pipe_);
-
-    private:
 
         struct inpipe_t
         {
@@ -99,6 +100,9 @@ namespace zmq
 
         //  If true, more outgoing message parts are expected.
         bool more_out;
+
+        //  If true, termination process is already underway.
+        bool terminating;
 
         xrep_t (const xrep_t&);
         void operator = (const xrep_t&);

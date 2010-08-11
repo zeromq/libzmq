@@ -23,7 +23,9 @@
 #include "err.hpp"
 
 zmq::xreq_t::xreq_t (class ctx_t *parent_, uint32_t slot_) :
-    socket_base_t (parent_, slot_)
+    socket_base_t (parent_, slot_),
+    fq (this),
+    lb (this)
 {
     options.requires_in = true;
     options.requires_out = true;
@@ -41,15 +43,18 @@ void zmq::xreq_t::xattach_pipes (class reader_t *inpipe_,
     lb.attach (outpipe_);
 }
 
-void zmq::xreq_t::xterm_pipes ()
+void zmq::xreq_t::process_term ()
 {
-    fq.term_pipes ();
-    lb.term_pipes ();
+    register_term_acks (2);
+    fq.terminate ();
+    lb.terminate ();
+
+    socket_base_t::process_term ();
 }
 
-bool zmq::xreq_t::xhas_pipes ()
+void zmq::xreq_t::terminated ()
 {
-    return fq.has_pipes () || lb.has_pipes ();
+    unregister_term_ack ();
 }
 
 int zmq::xreq_t::xsend (zmq_msg_t *msg_, int flags_)

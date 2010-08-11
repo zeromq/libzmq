@@ -20,7 +20,7 @@
 #ifndef __ZMQ_ZMQ_LISTENER_HPP_INCLUDED__
 #define __ZMQ_ZMQ_LISTENER_HPP_INCLUDED__
 
-#include "owned.hpp"
+#include "own.hpp"
 #include "io_object.hpp"
 #include "tcp_listener.hpp"
 #include "options.hpp"
@@ -29,12 +29,12 @@
 namespace zmq
 {
 
-    class zmq_listener_t : public owned_t, public io_object_t
+    class zmq_listener_t : public own_t, public io_object_t
     {
     public:
 
-        zmq_listener_t (class io_thread_t *parent_, socket_base_t *owner_,
-            const options_t &options_);
+        zmq_listener_t (class io_thread_t *io_thread_,
+            class socket_base_t *socket_, const options_t &options_);
         ~zmq_listener_t ();
 
         //  Set address to listen on.
@@ -57,6 +57,9 @@ namespace zmq
 
         //  Associated socket options.
         options_t options;
+
+        //  Socket the listerner belongs to.
+        class socket_base_t *socket;
 
         zmq_listener_t (const zmq_listener_t&);
         void operator = (const zmq_listener_t&);

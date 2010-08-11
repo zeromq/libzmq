@@ -24,7 +24,8 @@
 #include "pipe.hpp"
 
 zmq::push_t::push_t (class ctx_t *parent_, uint32_t slot_) :
-    socket_base_t (parent_, slot_)
+    socket_base_t (parent_, slot_),
+    lb (this)
 {
     options.requires_in = false;
     options.requires_out = true;
@@ -41,14 +42,17 @@ void zmq::push_t::xattach_pipes (class reader_t *inpipe_,
     lb.attach (outpipe_);
 }
 
-void zmq::push_t::xterm_pipes ()
+void zmq::push_t::process_term ()
 {
-    lb.term_pipes ();
+    register_term_acks (1);
+    lb.terminate ();
+
+    socket_base_t::process_term ();
 }
 
-bool zmq::push_t::xhas_pipes ()
+void zmq::push_t::terminated ()
 {
-    return lb.has_pipes ();
+    unregister_term_ack ();
 }
 
 int zmq::push_t::xsend (zmq_msg_t *msg_, int flags_)

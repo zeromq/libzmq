@@ -24,12 +24,13 @@
 
 #include "prefix_tree.hpp"
 #include "socket_base.hpp"
+#include "i_terminate_events.hpp"
 #include "fq.hpp"
 
 namespace zmq
 {
 
-    class sub_t : public socket_base_t
+    class sub_t : public socket_base_t, public i_terminate_events
     {
     public:
 
@@ -41,13 +42,17 @@ namespace zmq
         //  Overloads of functions from socket_base_t.
         void xattach_pipes (class reader_t *inpipe_, class writer_t *outpipe_,
             const blob_t &peer_identity_);
-        void xterm_pipes ();
-        bool xhas_pipes ();
         int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
         int xrecv (zmq_msg_t *msg_, int flags_);
         bool xhas_in ();
 
     private:
+
+        //  i_terminate_events interface implementation.
+        void terminated ();
+
+        //  Hook into the termination process.
+        void process_term ();
 
         //  Check whether the message matches at least one subscription.
         bool match (zmq_msg_t *msg_);

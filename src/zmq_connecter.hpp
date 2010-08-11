@@ -20,9 +20,7 @@
 #ifndef __ZMQ_ZMQ_CONNECTER_HPP_INCLUDED__
 #define __ZMQ_ZMQ_CONNECTER_HPP_INCLUDED__
 
-#include <string>
-
-#include "owned.hpp"
+#include "own.hpp"
 #include "io_object.hpp"
 #include "tcp_connecter.hpp"
 #include "options.hpp"
@@ -31,16 +29,16 @@
 namespace zmq
 {
 
-    class zmq_connecter_t : public owned_t, public io_object_t
+    class zmq_connecter_t : public own_t, public io_object_t
     {
     public:
 
-        zmq_connecter_t (class io_thread_t *parent_, socket_base_t *owner_,
-            const options_t &options_, uint64_t session_ordinal_, bool wait_);
+        //  If 'wait' is true connecter first waits for a while, then starts
+        //  connection process.
+        zmq_connecter_t (class io_thread_t *io_thread_,
+            class session_t *session_, const options_t &options_,
+            const char *protocol_, const char *address_);
         ~zmq_connecter_t ();
-
-        //  Set address to connect to.
-        int set_address (const char *protocol_, const char *address_);
 
     private:
 
@@ -69,15 +67,11 @@ namespace zmq
         //  If true, connecter is waiting a while before trying to connect.
         bool wait;
 
-        //  Ordinal of the session to attach to.
-        uint64_t session_ordinal;
+        //  Reference to the session we belong to.
+        class session_t *session;
 
         //  Associated socket options.
         options_t options;
-
-        //  Protocol and address to connect to.
-        std::string protocol;
-        std::string address;
 
         zmq_connecter_t (const zmq_connecter_t&);
         void operator = (const zmq_connecter_t&);

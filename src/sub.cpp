@@ -26,6 +26,7 @@
 
 zmq::sub_t::sub_t (class ctx_t *parent_, uint32_t slot_) :
     socket_base_t (parent_, slot_),
+    fq (this),
     has_message (false),
     more (false)
 {
@@ -46,14 +47,17 @@ void zmq::sub_t::xattach_pipes (class reader_t *inpipe_,
     fq.attach (inpipe_);
 }
 
-void zmq::sub_t::xterm_pipes ()
+void zmq::sub_t::process_term ()
 {
-    fq.term_pipes ();
+    register_term_acks (1);
+    fq.terminate ();
+
+    socket_base_t::process_term ();
 }
 
-bool zmq::sub_t::xhas_pipes ()
+void zmq::sub_t::terminated ()
 {
-    return fq.has_pipes ();
+    unregister_term_ack ();
 }
 
 int zmq::sub_t::xsetsockopt (int option_, const void *optval_,

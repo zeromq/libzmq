@@ -22,7 +22,7 @@
 
 #include "i_inout.hpp"
 #include "i_engine.hpp"
-#include "owned.hpp"
+#include "own.hpp"
 #include "fd.hpp"
 #include "stdint.hpp"
 #include "options.hpp"
@@ -34,28 +34,23 @@ namespace zmq
 
     //  The class handles initialisation phase of 0MQ wire-level protocol.
 
-    class zmq_init_t : public owned_t, public i_inout
+    class zmq_init_t : public own_t, public i_inout
     {
     public:
 
-        zmq_init_t (class io_thread_t *parent_, socket_base_t *owner_,
-            fd_t fd_, const options_t &options_, bool reconnect_,
-            const char *protocol_, const char *address_,
-            uint64_t session_ordinal_);
+        zmq_init_t (class io_thread_t *io_thread_, class socket_base_t *socket_,
+            class session_t *session_, fd_t fd_, const options_t &options_);
         ~zmq_init_t ();
 
     private:
 
-        void finalise ();
+        void finalise_initialisation ();
 
         //  i_inout interface implementation.
         bool read (::zmq_msg_t *msg_);
         bool write (::zmq_msg_t *msg_);
         void flush ();
-        void detach (owned_t *reconnecter_);
-        class io_thread_t *get_io_thread ();
-        class socket_base_t *get_owner ();
-        uint64_t get_ordinal ();
+        void detach ();
 
         //  Handlers for incoming commands.
         void process_plug ();
@@ -70,15 +65,23 @@ namespace zmq
         //  True if peer's identity was already received.
         bool received;
 
+        //  Socket the object belongs to.
+        class socket_base_t *socket;
+
+        //  Reference to the session the init object belongs to.
+        //  If the associated session is unknown and should be found
+        //  depending on peer identity this value is NULL.
+        class session_t *session;
+
         //  Identity of the peer socket.
         blob_t peer_identity;
 
-        //  TCP connecter creates session before the name of the peer is known.
-        //  Thus we know only its ordinal number.
-        uint64_t session_ordinal;
-
         //  Associated socket options.
         options_t options;
+
+        //  I/O thread the object is living in. It will be used to plug
+        //  the engine into the same I/O thread.
+        class io_thread_t *io_thread;
 
         zmq_init_t (const zmq_init_t&);
         void operator = (const zmq_init_t&);

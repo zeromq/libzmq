@@ -17,32 +17,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_I_ENGINE_HPP_INCLUDED__
-#define __ZMQ_I_ENGINE_HPP_INCLUDED__
+#include "transient_session.hpp"
 
-namespace zmq
+zmq::transient_session_t::transient_session_t (class io_thread_t *io_thread_,
+      class socket_base_t *socket_, const options_t &options_) :
+    session_t (io_thread_, socket_, options_)
 {
-
-    struct i_engine
-    {
-        virtual ~i_engine () {}
-
-        //  Plug the engine to the session.
-        virtual void plug (class io_thread_t *io_thread_,
-            struct i_inout *inout_) = 0;
-
-        //  Unplug the engine from the session.
-        virtual void unplug () = 0;
-
-        //  This method is called by the session to signalise that more
-        //  messages can be written to the pipe.
-        virtual void activate_in () = 0;
-
-        //  This method is called by the session to signalise that there
-        //  are messages to send available.
-        virtual void activate_out () = 0;
-    };
-
 }
 
-#endif
+zmq::transient_session_t::~transient_session_t ()
+{
+}
+
+void zmq::transient_session_t::detach ()
+{
+    //  There's no way to reestablish a transient session. Tear it down.
+    terminate ();
+}

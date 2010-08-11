@@ -17,30 +17,28 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_I_ENGINE_HPP_INCLUDED__
-#define __ZMQ_I_ENGINE_HPP_INCLUDED__
+#ifndef __ZMQ_TRANSIENT_SESSION_HPP_INCLUDED__
+#define __ZMQ_TRANSIENT_SESSION_HPP_INCLUDED__
+
+#include "session.hpp"
 
 namespace zmq
 {
 
-    struct i_engine
+    //  Transient session is created by the listener when the connected peer
+    //  stays anonymous. Transient session is destroyed on disconnect.
+
+    class transient_session_t : public session_t
     {
-        virtual ~i_engine () {}
+    public:
 
-        //  Plug the engine to the session.
-        virtual void plug (class io_thread_t *io_thread_,
-            struct i_inout *inout_) = 0;
+        transient_session_t (class io_thread_t *io_thread_,
+            class socket_base_t *socket_, const options_t &options_);
+        ~transient_session_t ();
 
-        //  Unplug the engine from the session.
-        virtual void unplug () = 0;
+        //  i_inout interface implementation.
+        void detach ();
 
-        //  This method is called by the session to signalise that more
-        //  messages can be written to the pipe.
-        virtual void activate_in () = 0;
-
-        //  This method is called by the session to signalise that there
-        //  are messages to send available.
-        virtual void activate_out () = 0;
     };
 
 }
