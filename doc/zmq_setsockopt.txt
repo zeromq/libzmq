@@ -39,7 +39,7 @@ type.
 The default 'ZMQ_HWM' value of zero means "no limit".
 
 [horizontal]
-Option value type:: int64_t
+Option value type:: uint64_t
 Option value unit:: messages
 Default value:: 0
 Applicable socket types:: all
@@ -78,7 +78,7 @@ See also linkzmq:zmq_init[3] for details on allocating the number of I/O
 threads for a specific _context_.
 
 [horizontal]
-Option value type:: int64_t
+Option value type:: uint64_t
 Option value unit:: N/A (bitmap)
 Default value:: 0
 Applicable socket types:: N/A
@@ -147,7 +147,7 @@ The 'ZMQ_RATE' option shall set the maximum send or receive data rate for
 multicast transports such as linkzmq:zmq_pgm[7] using the specified 'socket'.
 
 [horizontal]
-Option value type:: uint64_t
+Option value type:: int64_t
 Option value unit:: kilobits per second
 Default value:: 100
 Applicable socket types:: all, when using multicast transports
@@ -165,7 +165,7 @@ needed for recovery will be held in memory. For example, a 1 minute recovery
 interval at a data rate of 1Gbps requires a 7GB in-memory buffer.
 
 [horizontal]
-Option value type:: uint64_t
+Option value type:: int64_t
 Option value unit:: seconds
 Default value:: 10
 Applicable socket types:: all, when using multicast transports
@@ -182,7 +182,7 @@ performance. Where possible, disable 'ZMQ_MCAST_LOOP' in production
 environments.
 
 [horizontal]
-Option value type:: uint64_t
+Option value type:: int64_t
 Option value unit:: boolean
 Default value:: 1
 Applicable socket types:: all, when using multicast transports
