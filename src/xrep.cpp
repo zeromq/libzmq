@@ -143,8 +143,11 @@ int zmq::xrep_t::xsend (zmq_msg_t *msg_, int flags_)
     if (!more_out) {
         zmq_assert (!current_out);
 
-        //  There's no such thing as prefix with no subsequent message.
-        zmq_assert (msg_->flags & ZMQ_MSG_MORE);
+        //  If we have malformed message (prefix with no subsequent message)
+        //  then just silently drop the message.
+        if ((msg_->flags & ZMQ_MSG_MORE) == 0)
+            return 0;
+
         more_out = true;
 
         //  Find the pipe associated with the identity stored in the prefix.
@@ -154,7 +157,7 @@ int zmq::xrep_t::xsend (zmq_msg_t *msg_, int flags_)
         outpipes_t::iterator it = outpipes.find (identity);
         if (it == outpipes.end ())
             return 0;
-        
+
         //  Remember the outgoing pipe.
         current_out = it->second.writer;
 
