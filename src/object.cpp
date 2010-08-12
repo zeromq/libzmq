@@ -147,11 +147,6 @@ void zmq::object_t::zombify_socket (socket_base_t *socket_)
     ctx->zombify_socket (socket_);
 }
 
-void zmq::object_t::dezombify_socket (socket_base_t *socket_)
-{
-    ctx->dezombify_socket (socket_);
-}
-
 void zmq::object_t::send_stop ()
 {
     //  'stop' command goes always from administrative thread to

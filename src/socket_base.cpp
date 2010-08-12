@@ -110,6 +110,7 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
 zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t slot_) :
     own_t (parent_, slot_),
     zombie (false),
+    destroyed (false),
     last_processing_time (0),
     ticks (0),
     rcvmore (false)
@@ -118,15 +119,12 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t slot_) :
 
 zmq::socket_base_t::~socket_base_t ()
 {
-    zmq_assert (zombie);
+    zmq_assert (zombie && destroyed);
 
     //  Check whether there are no session leaks.
     sessions_sync.lock ();
     zmq_assert (sessions.empty ());
     sessions_sync.unlock ();
-
-    //  Mark the socket slot as empty.
-    dezombify_socket (this);
 }
 
 zmq::signaler_t *zmq::socket_base_t::get_signaler ()
@@ -604,13 +602,21 @@ zmq::session_t *zmq::socket_base_t::find_session (const blob_t &peer_identity_)
     return session;    
 }
 
-void zmq::socket_base_t::dezombify ()
+bool zmq::socket_base_t::dezombify ()
 {
     zmq_assert (zombie);
 
     //  Process any commands from other threads/sockets that may be available
     //  at the moment. Ultimately, socket will be destroyed.
     process_commands (false, false);
+
+    //  If the object was already marked as destroyed, finish the deallocation.
+    if (destroyed) {
+        own_t::process_destroy ();
+        return true;
+    }
+
+    return false;
 }
 
 void zmq::socket_base_t::process_commands (bool block_, bool throttle_)
@@ -703,6 +709,11 @@ void zmq::socket_base_t::process_term ()
 
     //  Continue the termination process immediately.
     own_t::process_term ();
+}
+
+void zmq::socket_base_t::process_destroy ()
+{
+    destroyed = true;
 }
 
 int zmq::socket_base_t::xsetsockopt (int option_, const void *optval_,

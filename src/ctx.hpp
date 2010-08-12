@@ -20,9 +20,7 @@
 #ifndef __ZMQ_CTX_HPP_INCLUDED__
 #define __ZMQ_CTX_HPP_INCLUDED__
 
-#include <set>
 #include <map>
-#include <list>
 #include <vector>
 #include <string>
 
@@ -61,9 +59,6 @@ namespace zmq
         //  Make socket a zombie.
         void zombify_socket (socket_base_t *socket_);
 
-        //  Kill the zombie socket.
-        void dezombify_socket (socket_base_t *socket_);
-
         //  Send command to the destination slot.
         void send_command (uint32_t slot_, const command_t &command_);
 
@@ -89,7 +84,7 @@ namespace zmq
 
         //  List of sockets that were already closed but not yet deallocated.
         //  These sockets still have some pipes and I/O objects attached.
-        typedef std::list <socket_base_t*> zombies_t;
+        typedef std::vector <socket_base_t*> zombies_t;
         zombies_t zombies;
 
         //  List of unused slots.

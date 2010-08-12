@@ -201,22 +201,6 @@ void zmq::ctx_t::zombify_socket (socket_base_t *socket_)
     slot_sync.unlock ();
 }
 
-void zmq::ctx_t::dezombify_socket (socket_base_t *socket_)
-{
-    //  We assume that this function is called only within dezombification
-    //  process, which in turn is running within a slot_sync critical section.
-    //  Therefore, we need no locking here.
-
-    //  TODO: Can we do this better than O(n)?
-    zombies_t::iterator it = std::find (zombies.begin (), zombies.end (),
-        socket_);
-    zmq_assert (it != zombies.end ());
-
-    //  Move from the slot from 'zombie' to 'empty' state.
-    empty_slots.push_back ((*it)->get_slot ());
-    zombies.erase (it);
-}
-
 void zmq::ctx_t::send_command (uint32_t slot_, const command_t &command_)
 {
     slots [slot_]->send (command_);
@@ -307,14 +291,15 @@ void zmq::ctx_t::dezombify ()
 {
     //  Try to dezombify each zombie in the list. Note that caller is
     //  responsible for calling this method in the slot_sync critical section.
-    zombies_t::iterator it = zombies.begin ();
-    while (it != zombies.end ()) {
-        zombies_t::iterator old = it;
-        ++it;
-
-        //  dezombify_socket can be called here that will invalidate
-        //  the iterator. That's why we've got the next zombie beforehand.
-        (*old)->dezombify ();
+    for (zombies_t::iterator it = zombies.begin (); it != zombies.end ();) {
+        uint32_t slot = (*it)->get_slot ();
+        if ((*it)->dezombify ()) {
+            zombies.erase (it);
+            empty_slots.push_back (slot);
+            slots [slot] = NULL;    
+        }
+        else
+            it++;
     }
 }
 

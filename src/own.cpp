@@ -192,7 +192,12 @@ void zmq::own_t::check_term_acks ()
             send_term_ack (owner);
 
         //  Deallocate the resources.
-        delete this;
+        process_destroy ();
     }
+}
+
+void zmq::own_t::process_destroy ()
+{
+    delete this;
 }
 

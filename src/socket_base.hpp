@@ -85,8 +85,8 @@ namespace zmq
         void terminated (class writer_t *pipe_);
 
         //  This function should be called only on zombie sockets. It tries
-        //  to deallocate the zombie.
-        void dezombify ();
+        //  to deallocate the zombie. Returns true is object is destroyed.
+        bool dezombify ();
 
     protected:
 
@@ -120,6 +120,9 @@ namespace zmq
         //  by overloading it.
         void process_term ();
 
+        //  Delay actual destruction of the socket.
+        void process_destroy ();
+
     private:
 
 //  TODO: Check whether we still need this flag...
@@ -127,6 +130,11 @@ namespace zmq
         //  because either shutdown is in process or there are still pipes
         //  attached to the socket.
         bool zombie;
+
+        //  If true, object should have been already destroyed. However,
+        //  destruction is delayed while we unwind the stack to the point
+        //  where it doesn't intersect the object being destroyed.
+        bool destroyed;
 
         //  Check whether transport protocol, as specified in connect or
         //  bind, is available and compatible with the socket type.
