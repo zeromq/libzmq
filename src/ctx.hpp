@@ -20,9 +20,10 @@
 #ifndef __ZMQ_CTX_HPP_INCLUDED__
 #define __ZMQ_CTX_HPP_INCLUDED__
 
-#include <vector>
 #include <set>
 #include <map>
+#include <list>
+#include <vector>
 #include <string>
 
 #include "signaler.hpp"
@@ -52,13 +53,16 @@ namespace zmq
         //  no more sockets open it'll cause all the infrastructure to be shut
         //  down. If there are open sockets still, the deallocation happens
         //  after the last one is closed.
-        int term ();
+        int terminate ();
 
         //  Create a socket.
         class socket_base_t *create_socket (int type_);
 
         //  Make socket a zombie.
         void zombify_socket (socket_base_t *socket_);
+
+        //  Kill the zombie socket.
+        void dezombify_socket (socket_base_t *socket_);
 
         //  Send command to the destination slot.
         void send_command (uint32_t slot_, const command_t &command_);
@@ -83,9 +87,9 @@ namespace zmq
         typedef yarray_t <socket_base_t> sockets_t;
         sockets_t sockets;
 
-        //  Array of sockets that were already closed but not yet deallocated.
+        //  List of sockets that were already closed but not yet deallocated.
         //  These sockets still have some pipes and I/O objects attached.
-        typedef yarray_t <socket_base_t> zombies_t;
+        typedef std::list <socket_base_t*> zombies_t;
         zombies_t zombies;
 
         //  List of unused slots.

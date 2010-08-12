@@ -269,7 +269,7 @@ void *zmq_init (int io_threads_)
 
 int zmq_term (void *ctx_)
 {
-    int rc = ((zmq::ctx_t*) ctx_)->term ();
+    int rc = ((zmq::ctx_t*) ctx_)->terminate ();
     int en = errno;
 
     if (!ctx_) {

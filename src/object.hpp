@@ -55,6 +55,9 @@ namespace zmq
         //  the context.
         void zombify_socket (class socket_base_t *socket_);
 
+        //  Dezombify particular socket, i.e. destroy it.
+        void dezombify_socket (class socket_base_t *socket_);
+
         //  Derived object can use these functions to send commands
         //  to other objects.
         void send_stop ();

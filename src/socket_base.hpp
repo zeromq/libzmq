@@ -85,8 +85,8 @@ namespace zmq
         void terminated (class writer_t *pipe_);
 
         //  This function should be called only on zombie sockets. It tries
-        //  to deallocate the zombie. Returns true if zombie is finally dead.
-        bool dezombify ();
+        //  to deallocate the zombie.
+        void dezombify ();
 
     protected:
 
