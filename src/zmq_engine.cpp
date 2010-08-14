@@ -87,6 +87,12 @@ void zmq::zmq_engine_t::unplug ()
     inout = NULL;
 }
 
+void zmq::zmq_engine_t::terminate ()
+{
+    unplug ();
+    delete this;
+}
+
 void zmq::zmq_engine_t::in_event ()
 {
     bool disconnection = false;

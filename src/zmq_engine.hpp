@@ -44,6 +44,7 @@ namespace zmq
         //  i_engine interface implementation.
         void plug (class io_thread_t *io_thread_, struct i_inout *inout_);
         void unplug ();
+        void terminate ();
         void activate_in ();
         void activate_out ();
 

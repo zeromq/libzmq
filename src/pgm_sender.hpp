@@ -49,10 +49,11 @@ namespace zmq
         int init (bool udp_encapsulation_, const char *network_);
 
         //  i_engine interface implementation.
-        void plug (struct i_inout *inout_);
+        void plug (class io_thread_t *io_thread_, struct i_inout *inout_);
         void unplug ();
-        void revive ();
-        void resume_input ();
+        void terminate ();
+        void activate_in ();
+        void activate_out ();
 
         //  i_poll_events interface implementation.
         void in_event ();

@@ -45,6 +45,9 @@ zmq::session_t::~session_t ()
 {
     zmq_assert (!in_pipe);
     zmq_assert (!out_pipe);
+
+    if (engine)
+        engine->terminate ();
 }
 
 void zmq::session_t::terminate ()

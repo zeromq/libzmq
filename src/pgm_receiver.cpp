@@ -55,7 +55,7 @@ int zmq::pgm_receiver_t::init (bool udp_encapsulation_, const char *network_)
     return pgm_socket.init (udp_encapsulation_, network_);
 }
 
-void zmq::pgm_receiver_t::plug (i_inout *inout_)
+void zmq::pgm_receiver_t::plug (io_thread_t *io_thread_, i_inout *inout_)
 {
     //  Retrieve PGM fds and start polling.
     int socket_fd;
@@ -88,12 +88,18 @@ void zmq::pgm_receiver_t::unplug ()
     inout = NULL;
 }
 
-void zmq::pgm_receiver_t::revive ()
+void zmq::pgm_receiver_t::terminate ()
+{
+    unplug ();
+    delete this;
+}
+
+void zmq::pgm_receiver_t::activate_out ()
 {
     zmq_assert (false);
 }
 
-void zmq::pgm_receiver_t::resume_input ()
+void zmq::pgm_receiver_t::activate_in ()
 {
     //  It is possible that the most recently used decoder
     //  processed the whole buffer but failed to write

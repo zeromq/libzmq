@@ -58,7 +58,7 @@ int zmq::pgm_sender_t::init (bool udp_encapsulation_, const char *network_)
     return rc;
 }
 
-void zmq::pgm_sender_t::plug (i_inout *inout_)
+void zmq::pgm_sender_t::plug (io_thread_t *io_thread_, i_inout *inout_)
 {
     //  Alocate 2 fds for PGM socket.
     int downlink_socket_fd = 0;
@@ -96,13 +96,19 @@ void zmq::pgm_sender_t::unplug ()
     encoder.set_inout (NULL);
 }
 
-void zmq::pgm_sender_t::revive ()
+void zmq::pgm_sender_t::terminate ()
+{
+    unplug ();
+    delete this;
+}
+
+void zmq::pgm_sender_t::activate_out ()
 {
     set_pollout (handle);
     out_event ();
 }
 
-void zmq::pgm_sender_t::resume_input ()
+void zmq::pgm_sender_t::activate_in ()
 {
     zmq_assert (false);
 }

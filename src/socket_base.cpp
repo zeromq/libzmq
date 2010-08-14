@@ -44,8 +44,6 @@
 #include "err.hpp"
 #include "ctx.hpp"
 #include "platform.hpp"
-#include "pgm_sender.hpp"
-#include "pgm_receiver.hpp"
 #include "likely.hpp"
 #include "pair.hpp"
 #include "pub.hpp"

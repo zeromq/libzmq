@@ -19,6 +19,8 @@
 
 #include "connect_session.hpp"
 #include "zmq_connecter.hpp"
+#include "pgm_sender.hpp"
+#include "pgm_receiver.hpp"
 
 zmq::connect_session_t::connect_session_t (class io_thread_t *io_thread_,
       class socket_base_t *socket_, const options_t &options_,
@@ -56,10 +58,10 @@ void zmq::connect_session_t::start_connecting ()
 #if defined ZMQ_HAVE_OPENPGM
 
     //  Both PGM and EPGM transports are using the same infrastructure.
-    if (addr_type == "pgm" || addr_type == "epgm") {
+    if (protocol == "pgm" || protocol == "epgm") {
 
         //  For EPGM transport with UDP encapsulation of PGM is used.
-        bool udp_encapsulation = (addr_type == "epgm");
+        bool udp_encapsulation = (protocol == "epgm");
 
         //  At this point we'll create message pipes to the session straight
         //  away. There's no point in delaying it as no concept of 'connect'
@@ -71,11 +73,8 @@ void zmq::connect_session_t::start_connecting ()
                 choose_io_thread (options.affinity), options);
             zmq_assert (pgm_sender);
 
-            int rc = pgm_sender->init (udp_encapsulation, addr_args.c_str ());
-            if (rc != 0) {
-                delete pgm_sender;
-                return -1;
-            }
+            int rc = pgm_sender->init (udp_encapsulation, address.c_str ());
+            zmq_assert (rc == 0);
 
             send_attach (this, pgm_sender, blob_t ());
         }
@@ -86,11 +85,8 @@ void zmq::connect_session_t::start_connecting ()
                 choose_io_thread (options.affinity), options);
             zmq_assert (pgm_receiver);
 
-            int rc = pgm_receiver->init (udp_encapsulation, addr_args.c_str ());
-            if (rc != 0) {
-                delete pgm_receiver;
-                return -1;
-            }
+            int rc = pgm_receiver->init (udp_encapsulation, address.c_str ());
+            zmq_assert (rc == 0);
 
             send_attach (this, pgm_receiver, blob_t ());
         }
