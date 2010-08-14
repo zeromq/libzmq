@@ -152,6 +152,9 @@ void zmq::object_t::send_stop ()
     //  'stop' command goes always from administrative thread to
     //  the current object. 
     command_t cmd;
+#if defined ZMQ_MAKE_VALGRIND_HAPPY
+    memset (&cmd, 0, sizeof (cmd));
+#endif
     cmd.destination = this;
     cmd.type = command_t::stop;
     ctx->send_command (slot, cmd);
@@ -163,6 +166,9 @@ void zmq::object_t::send_plug (own_t *destination_, bool inc_seqnum_)
         destination_->inc_seqnum ();
 
     command_t cmd;
+#if defined ZMQ_MAKE_VALGRIND_HAPPY
+    memset (&cmd, 0, sizeof (cmd));
+#endif
     cmd.destination = destination_;
     cmd.type = command_t::plug;
     send_command (cmd);
@@ -172,6 +178,9 @@ void zmq::object_t::send_own (own_t *destination_, own_t *object_)
 {
     destination_->inc_seqnum ();
     command_t cmd;
+#if defined ZMQ_MAKE_VALGRIND_HAPPY
+    memset (&cmd, 0, sizeof (cmd));
+#endif
     cmd.destination = destination_;
     cmd.type = command_t::own;
     cmd.args.own.object = object_;
@@ -185,6 +194,9 @@ void zmq::object_t::send_attach (session_t *destination_, i_engine *engine_,
         destination_->inc_seqnum ();
 
     command_t cmd;
+#if defined ZMQ_MAKE_VALGRIND_HAPPY
+    memset (&cmd, 0, sizeof (cmd));
+#endif
     cmd.destination = destination_;
     cmd.type = command_t::attach;
     cmd.args.attach.engine = engine_;
@@ -212,6 +224,9 @@ void zmq::object_t::send_bind (own_t *destination_, reader_t *in_pipe_,
         destination_->inc_seqnum ();
 
     command_t cmd;
+#if defined ZMQ_MAKE_VALGRIND_HAPPY
+    memset (&cmd, 0, sizeof (cmd));
+#endif
     cmd.destination = destination_;
     cmd.type = command_t::bind;
     cmd.args.bind.in_pipe = in_pipe_;
@@ -236,6 +251,9 @@ void zmq::object_t::send_bind (own_t *destination_, reader_t *in_pipe_,
 void zmq::object_t::send_revive (object_t *destination_)
 {
     command_t cmd;
+#if defined ZMQ_MAKE_VALGRIND_HAPPY
+    memset (&cmd, 0, sizeof (cmd));
+#endif
     cmd.destination = destination_;
     cmd.type = command_t::revive;
     send_command (cmd);
@@ -245,6 +263,9 @@ void zmq::object_t::send_reader_info (writer_t *destination_,
     uint64_t msgs_read_)
 {
     command_t cmd;
+#if defined ZMQ_MAKE_VALGRIND_HAPPY
+    memset (&cmd, 0, sizeof (cmd));
+#endif
     cmd.destination = destination_;
     cmd.type = command_t::reader_info;
     cmd.args.reader_info.msgs_read = msgs_read_;
@@ -254,6 +275,9 @@ void zmq::object_t::send_reader_info (writer_t *destination_,
 void zmq::object_t::send_pipe_term (writer_t *destination_)
 {
     command_t cmd;
+#if defined ZMQ_MAKE_VALGRIND_HAPPY
+    memset (&cmd, 0, sizeof (cmd));
+#endif
     cmd.destination = destination_;
     cmd.type = command_t::pipe_term;
     send_command (cmd);
@@ -262,6 +286,9 @@ void zmq::object_t::send_pipe_term (writer_t *destination_)
 void zmq::object_t::send_pipe_term_ack (reader_t *destination_)
 {
     command_t cmd;
+#if defined ZMQ_MAKE_VALGRIND_HAPPY
+    memset (&cmd, 0, sizeof (cmd));
+#endif
     cmd.destination = destination_;
     cmd.type = command_t::pipe_term_ack;
     send_command (cmd);
@@ -271,6 +298,9 @@ void zmq::object_t::send_term_req (own_t *destination_,
     own_t *object_)
 {
     command_t cmd;
+#if defined ZMQ_MAKE_VALGRIND_HAPPY
+    memset (&cmd, 0, sizeof (cmd));
+#endif
     cmd.destination = destination_;
     cmd.type = command_t::term_req;
     cmd.args.term_req.object = object_;
@@ -280,6 +310,9 @@ void zmq::object_t::send_term_req (own_t *destination_,
 void zmq::object_t::send_term (own_t *destination_)
 {
     command_t cmd;
+#if defined ZMQ_MAKE_VALGRIND_HAPPY
+    memset (&cmd, 0, sizeof (cmd));
+#endif
     cmd.destination = destination_;
     cmd.type = command_t::term;
     send_command (cmd);
@@ -288,6 +321,9 @@ void zmq::object_t::send_term (own_t *destination_)
 void zmq::object_t::send_term_ack (own_t *destination_)
 {
     command_t cmd;
+#if defined ZMQ_MAKE_VALGRIND_HAPPY
+    memset (&cmd, 0, sizeof (cmd));
+#endif
     cmd.destination = destination_;
     cmd.type = command_t::term_ack;
     send_command (cmd);

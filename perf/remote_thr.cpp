@@ -21,6 +21,7 @@
 #include "../include/zmq_utils.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 int main (int argc, char *argv [])
 {
@@ -64,11 +65,16 @@ int main (int argc, char *argv [])
     }
 
     for (i = 0; i != message_count; i++) {
+
         rc = zmq_msg_init_size (&msg, message_size);
         if (rc != 0) {
             printf ("error in zmq_msg_init_size: %s\n", zmq_strerror (errno));
             return -1;
         }
+#if defined ZMQ_MAKE_VALGRIND_HAPPY
+        memset (zmq_msg_data (&msg), 0, message_size);
+#endif
+
         rc = zmq_send (s, &msg, 0);
         if (rc != 0) {
             printf ("error in zmq_send: %s\n", zmq_strerror (errno));
@@ -80,8 +86,6 @@ int main (int argc, char *argv [])
             return -1;
         }
     }
-
-    zmq_sleep (10);
 
     rc = zmq_close (s);
     if (rc != 0) {
