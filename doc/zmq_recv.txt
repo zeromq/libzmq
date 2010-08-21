@@ -78,6 +78,8 @@ assert (rc == 0);
 /* Block until a message is available to be received from socket */
 rc = zmq_recv (socket, &msg, 0);
 assert (rc == 0);
+/* Release message */
+zmq_msg_close (&msg);
 ----
 
 .Receiving a multi-part message
@@ -95,6 +97,7 @@ do {
     /* Determine if more message parts are to follow */
     rc = zmq_getsockopt (socket, ZMQ_RCVMORE, &more, &more_size);
     assert (rc == 0);
+    zmq_msg_close (&part);
 } while (more);
 ----
 
