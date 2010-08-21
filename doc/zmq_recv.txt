@@ -83,7 +83,7 @@ assert (rc == 0);
 .Receiving a multi-part message
 ----
 int64_t more;
-int64_t more_size = sizeof more;
+size_t more_size = sizeof more;
 do {
     /* Create an empty 0MQ message to hold the message part */
     zmq_msg_t part;
