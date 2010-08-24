@@ -41,6 +41,10 @@ zmq::zmq_connecter_t::zmq_connecter_t (class io_thread_t *io_thread_,
 
 zmq::zmq_connecter_t::~zmq_connecter_t ()
 {
+    if (wait)
+        cancel_timer ();
+    if (handle_valid)
+        rm_fd (handle);
 }
 
 void zmq::zmq_connecter_t::process_plug ()
@@ -49,14 +53,6 @@ void zmq::zmq_connecter_t::process_plug ()
         add_timer ();
     else
         start_connecting ();
-}
-
-void zmq::zmq_connecter_t::process_unplug ()
-{
-    if (wait)
-        cancel_timer ();
-    if (handle_valid)
-        rm_fd (handle);
 }
 
 void zmq::zmq_connecter_t::in_event ()
