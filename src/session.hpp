@@ -72,6 +72,10 @@ namespace zmq
         virtual void attached (const blob_t &peer_identity_);
         virtual void detached ();
 
+        //  Allows derives session types to (un)register session names.
+        bool register_session (const blob_t &name_, class session_t *session_);
+        void unregister_session (const blob_t &name_);
+
         ~session_t ();
 
         //  Remove any half processed messages. Flush unflushed messages.
@@ -85,7 +89,6 @@ namespace zmq
 
         //  Handlers for incoming commands.
         void process_plug ();
-        void process_unplug ();
         void process_attach (struct i_engine *engine_,
             const blob_t &peer_identity_);
         void process_term ();
@@ -109,10 +112,6 @@ namespace zmq
 
         //  The protocol I/O engine connected to the session.
         struct i_engine *engine;
-
-        //  Identity of the peer (say the component on the other side
-        //  of TCP connection).
-        blob_t peer_identity;
 
         //  The socket the session belongs to.
         class socket_base_t *socket;

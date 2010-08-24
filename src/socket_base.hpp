@@ -71,10 +71,9 @@ namespace zmq
         bool has_out ();
 
         //  Registry of named sessions.
-        bool register_session (const blob_t &peer_identity_,
-            class session_t *session_);
-        void unregister_session (const blob_t &peer_identity_);
-        class session_t *find_session (const blob_t &peer_identity_);
+        bool register_session (const blob_t &name_, class session_t *session_);
+        void unregister_session (const blob_t &name_);
+        class session_t *find_session (const blob_t &name_);
 
         //  i_reader_events interface implementation.
         void activated (class reader_t *pipe_);

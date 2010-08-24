@@ -163,31 +163,6 @@ void zmq::session_t::process_plug ()
 {
 }
 
-void zmq::session_t::process_unplug ()
-{
-    //  TODO: There may be a problem here. The called ensures that all the
-    //  commands on the fly have been delivered. However, given that the
-    //  session is unregistered from the global repository only at this point
-    //  there may be some commands being sent to the session right now.
-
-    //  Unregister the session from the socket.
-//    if (!peer_identity.empty () && peer_identity [0] != 0)
-//        unregister_session (peer_identity);
-//  TODO: Should be done in named session.
-
-    //  Ask associated pipes to terminate.
-    if (in_pipe)
-        in_pipe->terminate ();
-    if (out_pipe)
-        out_pipe->terminate ();
-
-    if (engine) {
-        engine->unplug ();
-        delete engine;
-        engine = NULL;
-    }
-}
-
 void zmq::session_t::finalise ()
 {
     //  If all conditions are met, proceed with termination:
@@ -221,7 +196,7 @@ void zmq::session_t::process_attach (i_engine *engine_,
     }
 
     if (socket_reader || socket_writer)
-        send_bind (socket, socket_reader, socket_writer, peer_identity);
+        send_bind (socket, socket_reader, socket_writer, peer_identity_);
 
     //  Plug in the engine.
     zmq_assert (!engine);
@@ -250,6 +225,16 @@ void zmq::session_t::process_term ()
     //  are sent to the peer.
     term_processed = true;
     finalise ();
+}
+
+bool zmq::session_t::register_session (const blob_t &name_, session_t *session_)
+{
+    return socket->register_session (name_, session_);
+}
+
+void zmq::session_t::unregister_session (const blob_t &name_)
+{
+    socket->unregister_session (name_);
 }
 
 void zmq::session_t::attached (const blob_t &peer_identity_)

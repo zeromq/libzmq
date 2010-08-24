@@ -180,10 +180,8 @@ void zmq::zmq_init_t::finalise_initialisation ()
         }
 
         //  There's no such named session. We have to create one.
-//  TODO:
-zmq_assert (false);
-//        session = new (std::nothrow) named_session_t (io_thread, socket,
-//            options, peer_identity);
+        session = new (std::nothrow) named_session_t (io_thread, socket,
+            options, peer_identity);
         zmq_assert (session);
         launch_sibling (session);
         engine->unplug ();

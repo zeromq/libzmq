@@ -564,29 +564,29 @@ bool zmq::socket_base_t::has_out ()
     return xhas_out ();
 }
 
-bool zmq::socket_base_t::register_session (const blob_t &peer_identity_,
+bool zmq::socket_base_t::register_session (const blob_t &name_,
     session_t *session_)
 {
     sessions_sync.lock ();
     bool registered = sessions.insert (
-        std::make_pair (peer_identity_, session_)).second;
+        std::make_pair (name_, session_)).second;
     sessions_sync.unlock ();
     return registered;
 }
 
-void zmq::socket_base_t::unregister_session (const blob_t &peer_identity_)
+void zmq::socket_base_t::unregister_session (const blob_t &name_)
 {
     sessions_sync.lock ();
-    sessions_t::iterator it = sessions.find (peer_identity_);
+    sessions_t::iterator it = sessions.find (name_);
     zmq_assert (it != sessions.end ());
     sessions.erase (it);
     sessions_sync.unlock ();
 }
 
-zmq::session_t *zmq::socket_base_t::find_session (const blob_t &peer_identity_)
+zmq::session_t *zmq::socket_base_t::find_session (const blob_t &name_)
 {
     sessions_sync.lock ();
-    sessions_t::iterator it = sessions.find (peer_identity_);
+    sessions_t::iterator it = sessions.find (name_);
     if (it == sessions.end ()) {
         sessions_sync.unlock ();
         return NULL;
