@@ -32,6 +32,11 @@
 namespace zmq
 {
 
+    //  Creates a pipe. Returns pointer to reader and writer objects.
+    void create_pipe (object_t *reader_parent_, object_t *writer_parent_,
+        uint64_t hwm_, int64_t swap_size_, class reader_t **reader_,
+        class writer_t **writer_);
+
     //  The shutdown mechanism for pipe works as follows: Either endpoint
     //  (or even both of them) can ask pipe to terminate by calling 'terminate'
     //  method. Pipe then terminates in asynchronous manner. When the part of
@@ -197,10 +202,6 @@ namespace zmq
         void operator = (const writer_t&);
     };
 
-    //  Creates a pipe. Returns pointer to reader and writer objects.
-    void create_pipe (object_t *reader_parent_, object_t *writer_parent_,
-        uint64_t hwm_, int64_t swap_size_, reader_t **reader_,
-        writer_t **writer_);
 }
 
 #endif

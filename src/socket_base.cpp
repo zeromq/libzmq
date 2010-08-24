@@ -307,6 +307,7 @@ int zmq::socket_base_t::bind (const char *addr_)
     }
 
     zmq_assert (false);
+    return -1;
 }
 
 int zmq::socket_base_t::connect (const char *addr_)
