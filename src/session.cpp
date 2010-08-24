@@ -229,6 +229,8 @@ void zmq::session_t::process_attach (i_engine *engine_,
     engine = engine_;
     engine->plug (io_thread, this);
 
+    attach_processed = true;
+
     //  Trigger the notfication about the attachment.
     attached (peer_identity_);
 }
