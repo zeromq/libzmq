@@ -62,15 +62,12 @@ void zmq::zmq_engine_t::plug (io_thread_t *io_thread_, i_inout *inout_)
 
     //  Connect to I/O threads poller object.
     io_object_t::plug (io_thread_);
-
     handle = add_fd (tcp_socket.get_fd ());
     set_pollin (handle);
     set_pollout (handle);
 
     //  Flush all the data that may have been already received downstream.
     in_event ();
-
-   //  TODO: Re-plug to the new I/O thread & poller!
 }
 
 void zmq::zmq_engine_t::unplug ()

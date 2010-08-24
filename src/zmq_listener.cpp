@@ -49,9 +49,10 @@ void zmq::zmq_listener_t::process_plug ()
     set_pollin (handle);
 }
 
-void zmq::zmq_listener_t::process_unplug ()
+void zmq::zmq_listener_t::process_term ()
 {
     rm_fd (handle);
+    own_t::process_term ();
 }
 
 void zmq::zmq_listener_t::in_event ()
@@ -69,6 +70,4 @@ void zmq::zmq_listener_t::in_event ()
     zmq_assert (init);
     launch_sibling (init);
 }
-
-
 
