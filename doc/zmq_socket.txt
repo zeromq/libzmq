@@ -104,6 +104,65 @@ Outgoing routing stratagy:: Last peer
 ZMQ_HWM option action:: Drop
 
 
+ZMQ_XREQ
+^^^^^^^^
+A socket of type 'ZMQ_XREQ' is an advanced pattern used for extending
+request/reply sockets. Each message sent is load-balanced among all connected
+peers, and each message received is fair-queued from all connected peers.
+
+When a 'ZMQ_XREQ' socket enters an exceptional state due to having reached the
+high water mark for all peers, or if there are no peers at all, then any
+linkzmq:zmq_send[3] operations on the socket shall block until the exceptional
+state ends or at least one peer becomes available for sending; messages are not
+discarded.
+
+When a 'ZMQ_XREQ' socket is connected to a 'ZMQ_REP' socket each message sent
+must consist of an empty message part, the _delimiter_, followed by one or more
+_body parts_.
+
+[horizontal]
+.Summary of ZMQ_XREQ characteristics
+Compatible peer sockets:: 'ZMQ_XREP', 'ZMQ_REP'
+Direction:: Bidirectional
+Send/receive pattern:: Unrestricted
+Outgoing routing strategy:: Load-balanced
+Incoming routing strategy:: Fair-queued
+ZMQ_HWM option action:: Block
+
+
+ZMQ_XREP
+^^^^^^^^
+A socket of type 'ZMQ_XREP' is an advanced pattern used for extending
+request/reply sockets. When receiving messages a 'ZMQ_XREP' socket shall
+prepend a message part containing the _identity_ of the originating peer to the
+message before passing it to the application. Messages received are fair-queued
+from among all connected peers. When sending messages a 'ZMQ_XREP' socket shall
+remove the first part of the message and use it to determine the _identity_ of
+the peer the message shall be routed to.
+
+When a 'ZMQ_XREP' socket enters an exceptional state due to having reached the
+high water mark for all peers, or if there are no peers at all, then any
+messages sent to the socket shall be dropped until the exceptional state ends.
+Likewise, any messages routed to a non-existent peer or a peer for which the
+individual high water mark has been reached shall also be dropped.
+
+When a 'ZMQ_REQ' socket is connected to a 'ZMQ_XREP' socket, in addition to the
+_identity_ of the originating peer each message received shall contain an empty
+_delimiter_ message part. Hence, the entire structure of each received message
+as seen by the application becomes: one or more _identity_ parts, _delimiter_
+part, one or more _body parts_. When sending replies to a 'ZMQ_REQ' socket the
+application must include the _delimiter_ part.
+
+[horizontal]
+.Summary of ZMQ_XREP characteristics
+Compatible peer sockets:: 'ZMQ_XREQ', 'ZMQ_REQ'
+Direction:: Bidirectional
+Send/receive pattern:: Unrestricted
+Outgoing routing strategy:: See text
+Incoming routing strategy:: Fair-queued
+ZMQ_HWM option action:: Drop
+
+
 Publish-subscribe pattern
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 The publish-subscribe pattern is used for one-to-many distribution of data from
