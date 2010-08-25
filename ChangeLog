@@ -1,3 +1,496 @@
+0MQ version 2.0.8 (Stable) was released on 2010/08/25.
+
+Changes since v2.0.7:
+
+commit c9076c5d8b9b69f4e1bf797127735a563b712eb9
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Wed Aug 25 12:50:16 2010 +0200
+
+    Basic documentation for XREQ/XREP socket types
+    
+    Add some basic documentation for XREQ/XREP socket types, including
+    a brief description of the most common use case (REQ -> XREP) and (XREQ ->
+    REP).
+
+commit 6d275a8788ad06dda451845402877010f114d6d4
+Merge: 98bea86 d788c1f
+Author: Pieter Hintjens <ph@imatix.com>
+Date:   Wed Aug 25 12:09:55 2010 +0200
+
+    Updated NEWS for stable 2.0.8 release
+
+commit 98bea86240c3e2cb0c1c9832f5660994a0a11f34
+Author: Pieter Hintjens <ph@imatix.com>
+Date:   Wed Aug 25 11:43:52 2010 +0200
+
+    Updated NEWS for stable 2.0.8 release
+
+commit d788c1f7e49305976f3e1d0540c5671c47348880
+Author: Pieter Hintjens <ph@imatix.com>
+Date:   Wed Aug 25 11:43:52 2010 +0200
+
+    Updated NEWS for stable 2.0.8 release
+
+commit c06a3cc5101a36bf70c593937374371cafbacfc3
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Wed Aug 25 11:24:24 2010 +0200
+
+    Update version number to 2.0.8
+
+commit b66dd7afd20b82668a3d7756900c91680bd1d91e
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Wed Aug 25 09:50:45 2010 +0200
+
+    zmq_stopwatch_stop: Don't return EFAULT
+    
+    Function returning unsigned long int cannot return (-1)
+
+commit 2b2accb8bf574bfb7d85893696f477d5bc6ca272
+Author: Pieter Hintjens <ph@imatix.com>
+Date:   Sat Aug 21 15:47:10 2010 +0200
+
+    Added calls to zmq_msg_close in examples
+
+commit c52d1f2d47ac93e391ff707b50245aa33d7e8323
+Author: Pieter Hintjens <ph@imatix.com>
+Date:   Sat Aug 21 13:46:03 2010 +0200
+
+    Fixed example for multipart zmq_recv()
+
+commit 87612be91d4ff5252613196f061bd89d3bce25ec
+Merge: de0035b 5be54b9
+Author: Pieter Hintjens <ph@imatix.com>
+Date:   Fri Aug 20 01:06:34 2010 +0200
+
+    Merge branch '46_device_robustness'
+
+commit de0035b6d9fc1c5423d10fbac468b0e17188510f
+Author: Pieter Hintjens <ph@imatix.com>
+Date:   Thu Aug 19 14:31:04 2010 +0200
+
+    Fixed git URL in README
+
+commit 7aba2d10338727b030c3a9ff4ec34f7086ea5023
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed Aug 18 12:00:26 2010 +0200
+
+    documentation leftover from v2.0.6 cleaned in zmq(7)
+
+commit de0173754cc82f6c08875a892892f043a804554c
+Author: Pieter Hintjens <ph@imatix.com>
+Date:   Wed Aug 11 21:12:10 2010 +0200
+
+    Removed wip zmq_deviced from master
+
+commit 5be54b912029381736ee8b8798f95cc9a2544a70
+Author: Pieter Hintjens <ph@imatix.com>
+Date:   Wed Aug 11 17:05:19 2010 +0200
+
+    46 - Devices vulnerable to invalid messages
+    
+    http://github.com/zeromq/zeromq2/issues#issue/46
+    Invalid messages are now discarded silently, instead of causing an assertion
+    failure.
+
+commit e74d350068e8a7d2becbd791f19e2c1ef20afae5
+Author: Pieter Hintjens <ph@imatix.com>
+Date:   Wed Aug 11 17:00:12 2010 +0200
+
+    Fixed (un)signed type errors in get/setsockopt manual
+
+commit a12f446c4c160e6fb969c35ff01578e5f0965ecc
+Author: Pieter Hintjens <ph@imatix.com>
+Date:   Tue Aug 10 12:36:56 2010 +0200
+
+    Modified zmq_tcp(7) to emphasize wildcard interfaces
+
+commit b6cdd369e328ceca2c46758d92ad8ea6a1f59cd7
+Author: Pieter Hintjens <ph@imatix.com>
+Date:   Sun Aug 8 11:43:32 2010 +0200
+
+    Added error checking (EFAULT) for null arguments
+    
+    * Fixed zmq_term, zmq_socket, zmq_close, zmq_setsockopt,
+    * zmq_getsockopt, zmq_bind, zmq_connect, zmq_send,
+    * zmq_recv, zmq_poll, zmq_device, zmq_stopwatch_stop
+    * Updated Reference Manual for these methods
+
+commit 677b3d906acc97c26855bdc31126492878ad6292
+Author: Pieter Hintjens <ph@imatix.com>
+Date:   Sat Aug 7 20:55:07 2010 +0200
+
+    Added not-null assertions on pointer arguments in C API functions
+    * zmq_term
+    * zmq_socket
+    * zmq_close
+    * zmq_setsockopt
+    * zmq_getsockopt
+    * zmq_bind
+    * zmq_connect
+    * zmq_send
+    * zmq_recv
+    * zmq_poll
+    * zmq_device
+    * zmq_stopwatch_stop
+
+commit b579aa9510fe6897735ba2aae5db399ef89ad573
+Merge: 6d35e82 2100a91
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Fri Aug 6 12:01:40 2010 +0200
+
+    Merge branch 'master' of github.com:zeromq/zeromq2
+
+commit 6d35e82db4178b936b33c2eaa6a9f4a2b597e2f3
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Fri Aug 6 12:00:57 2010 +0200
+
+    Fix uninitialized use of nbytes in signaler fix
+
+commit 2100a9133312f7feecd22c4f809c8f3912c93274
+Merge: 78e9ee8 16b43e6
+Author: Pieter Hintjens <ph@imatix.com>
+Date:   Fri Aug 6 11:09:29 2010 +0200
+
+    Merge branch 'master' of github.com:zeromq/zeromq2
+
+commit 16b43e657b44902b3b45fbb01228c813cf27ad39
+Merge: 9ac2ff4 96bcc9e
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Thu Aug 5 23:41:49 2010 +0200
+
+    Merge branch 'master' of github.com:zeromq/zeromq2
+
+commit 9ac2ff449ccfb71cb1f3c9d7b2cf67c440539228
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Thu Aug 5 23:40:30 2010 +0200
+
+    zmq::signaler_t: Restart syscalls on EINTR
+    
+    This patch restarts the send() or recv() inside zmq::signaler_t if the call fails
+    due to EINTR.
+
+commit 78e9ee84bf0e89eeb7134771b1f501ea0f9ccd9d
+Author: Pieter Hintjens <ph@imatix.com>
+Date:   Thu Aug 5 18:49:49 2010 +0200
+
+    Fixed MSVC project for PULL/PUSH
+
+commit 96bcc9e6cf73781c31042278eb960c0363a78805
+Author: Pieter Hintjens <ph@imatix.com>
+Date:   Wed Aug 4 17:06:38 2010 +0200
+
+    Small improvements to zmq_device(3) page
+    
+    * Clarified broker model and proxy model
+    * Added example of proxy model
+
+commit 13f3481e127a6b2390e847af6b01ee88f1b4ae61
+Author: Pieter Hintjens <ph@imatix.com>
+Date:   Wed Aug 4 16:05:25 2010 +0200
+
+    Further cleanups on reference manual
+    
+    - fixed unwrapped text in new man pages
+    - fixed over-long lines in older pages, where possible
+    - removed reference to old standalong devices from index page
+    - added refernce to new zmq_device[3] documented from index page
+    - some minor spelling corrections
+
+commit 6ff193999d96487f7aa7e578980ab5554e61d8dc
+Author: Pieter Hintjens <ph@imatix.com>
+Date:   Wed Aug 4 15:07:15 2010 +0200
+
+    Removed empty man pages for old standalone devices
+
+commit c51de31f2fd31f782e419bfac2fb8d40d689f3e3
+Author: Pieter Hintjens <ph@imatix.com>
+Date:   Wed Aug 4 14:56:58 2010 +0200
+
+    Reverting 'clean' change to Makefile
+
+commit 77a3c36ff1f11215229a4efdb821a3cb83a9d6fc
+Author: Pieter Hintjens <ph@imatix.com>
+Date:   Wed Aug 4 14:43:33 2010 +0200
+
+    Various changes to documentation project:
+    
+    * Added documentation for zmq_deviced, which we're developing
+    * Created consistent page footer in documentation template
+    * Page footer notes doc authors and copyright statement
+
+commit 6cd90304476c1c6873d67068009def63e520b848
+Author: Pieter Hintjens <ph@imatix.com>
+Date:   Wed Aug 4 14:42:21 2010 +0200
+
+    Added clean target that deletes generated man pages
+
+commit f575f252c99c99d3622f313d6bbad6635197a1e4
+Author: Pieter Hintjens <ph@imatix.com>
+Date:   Wed Aug 4 14:41:43 2010 +0200
+
+    Added man page for the zmq_device method
+
+commit 11a410b65827a3958fb5f417c29e95c1953a0b42
+Author: Pieter Hintjens <ph@imatix.com>
+Date:   Wed Aug 4 14:38:56 2010 +0200
+
+    Renamed ZMQ_UPSTREAM to ZMQ_PULL, and ZMQ_DOWNSTREAM to ZMQ_PUSH.  Left the old
+    definitions as aliases, to be removed in release 3.0.  Also renamed the source
+    files implementing these two socket types.  This change does not break existing
+    applications nor bindings, but allows us to fix the documentation and user guide
+    now, rather than keeping the old (confusing) names.
+
+commit 544b36da68729daffefa8f40d2efed5945851a01
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Fri Jul 30 16:49:06 2010 +0200
+
+    XREQ: Correct behaviour on hitting ZMQ_HWM
+    
+    This reverts part of commit 84e0c7991a9b316ed571533abc628cc1175750a3 to get
+    correct ZMQ_HWM semantics with XREQ sockets:
+    
+    When sending a message to an XREQ socket, the underlying pipe is selected in
+    a round-robin fashion. If an underlying pipe is full it is skipped. If there
+    are no underlying pipes, or all underlying pipes are full then zmq_send()
+    shall block or return EAGAIN, depending on whether or not the call is blocking.
+    Messages are never dropped.
+
+commit 66470b2c55d74fb137211f4264bbfc5e3f454534
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Mon Jul 26 12:24:00 2010 +0200
+
+    perf: fix typo
+
+commit 10533a560b4af1d3dae63c87c737e25bbdb78998
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Wed Jul 14 18:31:17 2010 +0200
+
+    pipe: check_read() should check for message delimiter
+
+commit e1c596b37eef2c2c72c605d7bf4a5c97050add6b
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Sat Jul 24 16:57:13 2010 +0200
+
+    Make sure lwm > 0 when hwm > 0
+
+commit 5b1a6a4bea1cebe860769f82702410f6c1d0ab1b
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Wed Jul 21 17:33:40 2010 +0200
+
+    Issue 42 - getaddrinfo() fails
+
+commit aedf3f808befd8cf32a16e34b907c60c79eabfd7
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Mon Jul 19 08:38:24 2010 +0200
+
+    EHOSTUNREACH is a valid return value from recv()
+
+commit 269904361b565efa54a106e3eda96091320439bd
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Jul 13 11:46:56 2010 +0200
+
+    minor comment clarification
+
+commit da49e5a4dd4602bf893193a5e6e64af54695b51c
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Jul 13 07:57:29 2010 +0200
+
+    devices exit in case of context termination
+
+commit ca057c7db8dcb2384e2498c938f3d83f64b78a7d
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Sat Jul 10 22:57:47 2010 +0200
+
+    Fix identity generation for transient inproc connections
+
+commit 1f61c87ac527e2a75cabbce4ea4c5f916f4532e7
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Wed Jul 7 17:15:32 2010 +0200
+
+    issue 40 - nbytes != -1 (tcp_socket.cpp:216)
+
+commit fd707fedc59124ed627780efed081acf33f455d2
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Tue Jul 6 22:47:07 2010 +0200
+
+    issue 38 - Assertion failed: fetched (xrep.cpp:196)
+
+commit 805af8241d7450fe1e60174739a78325677897f6
+Author: Martin Lucina <mato@kotelna.sk>
+Date:   Wed Jun 30 16:23:07 2010 +0200
+
+    asciidoc.conf was missing from distribution tarball
+
+commit 0ab65324195ad70205514d465b03d851a6de051c
+Author: Pieter Hintjens <ph@imatix.com>
+Date:   Tue Jun 29 21:08:41 2010 +0200
+
+    Prevent socket reuse by second bind, on win32
+
+commit 79a3d07c8587e840548791efc314b0184c584881
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Jun 29 07:45:11 2010 +0200
+
+    MSVC build fixed
+
+commit ba91644fdb48cec97edc6965c4ca7ab564a3513f
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Sat Jun 26 20:11:40 2010 +0200
+
+    msg_store added to MSVC build
+
+commit 1dda8a2aaabd3b7705b0ecd67d6d9737d1978946
+Author: Pieter Hintjens <ph@imatix.com>
+Date:   Fri Jun 25 18:35:42 2010 +0200
+
+    Used more expressive variable names
+
+commit fca2e8e8cc30bcd134839f6d0f5f9963323dad2b
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Mon Jun 21 15:06:51 2010 +0200
+
+    Add SWAP support
+
+commit 10c28c1fc2f06c93e12a7c60f79a315cec7c5a52
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Sat Jun 19 20:46:16 2010 +0200
+
+    Revive reader on pipe termination
+
+commit 2c3913bb19fa95e7decaa7967e2469dc428e46b0
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Sat Jun 19 19:46:35 2010 +0200
+
+    fix double free error in PAIR socket
+
+commit cff7ba2315c0f62fa3679afa24ecea88da38a365
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu Jun 17 17:09:51 2010 +0200
+
+    Windows build fixed
+
+commit 7f01e9970d211235fc8057de6dc41ba8ceafe795
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu Jun 17 16:51:53 2010 +0200
+
+    stopwatch returned to libzmq
+
+commit 4777fe4010572d381a2ad8eb63df2fc5fb7e6642
+Author: Martin Hurton <hurtonm@gmail.com>
+Date:   Thu Jun 17 12:45:14 2010 +0200
+
+    pipe: fix bug in rollback() method
+    
+    The msgs_written variable keeps track how many complete
+    messages have been written so far. The rollback operation drops all
+    fragments of the last incomplete message so it shouldn't
+    change this variable at all.
+
+commit 9151de38959a21829d4ab60324d6750d2e1a4357
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu Jun 17 11:01:18 2010 +0200
+
+    generate identity for transient inproc connections
+
+commit 341e8a267309179bbb8249845e7efb14faf93d4d
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Jun 15 14:01:44 2010 +0200
+
+    test commit
+
+commit 9858447fad3260cb16b1f2e56a14cfe3db737a36
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Tue Jun 15 08:01:43 2010 +0200
+
+    getsockopt documentation fixed
+
+commit ac90b7e0ba497bfec09d7a69a2e01dc6d94a9c9a
+Author: Brian Buchanan <bwb@holo.org>
+Date:   Fri Jun 11 08:03:34 2010 +0200
+
+    issue 35 - ZMQ_RCVMORE sometimes erroneously returns false
+
+commit 5ee355d1880bc7391c199ea29adc620ceb0d96f1
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Jun 11 07:02:36 2010 +0200
+
+    if connect asserts, exact error is reported
+
+commit 27877d73ea7dd972a773c7e960706130daaf5925
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Fri Jun 11 06:55:30 2010 +0200
+
+    EHOSTUNREACH is acceptable outcome from connect
+
+commit c818b14bbd261aa836400e9dfb4848117dd2edb6
+Author: Piotr Trojanek <piotr.trojanek@gmail.com>
+Date:   Thu Jun 10 12:57:42 2010 +0200
+
+    clearing thread info structure
+
+commit 74a3907be285891d90b82e2d315d03141a398752
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu Jun 10 12:36:27 2010 +0200
+
+    couple of ICC warnings fixed
+
+commit 8782b4d696da7b1527f69e819d75d691bc3df105
+Author: Piotr Trojanek <piotr.trojanek@gmail.com>
+Date:   Thu Jun 10 07:34:11 2010 +0200
+
+    -lcrypto added to linking flags for QNX
+
+commit 76e0153d4f3ef1d5fef1a9b926e0e8e3ab2d9685
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu Jun 10 07:21:05 2010 +0200
+
+    issue 33 - missing virtual destructors
+
+commit d329c55da9c503e82831e940b0fc8dc9e5479975
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Thu Jun 10 07:12:00 2010 +0200
+
+    issue 31 - Assertion failed: err == ECONNREFUSED || err == ETIMEDOUT (tcp_connecter.cpp:296)
+
+commit 604f7475ec1d19df416156879db3ddd3c90d5a13
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed Jun 9 17:49:08 2010 +0200
+
+    issue 32 - poll_t poller broken
+
+commit 7a29e8594fb539e37b9d08982b1f491b0794b7d2
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Wed Jun 9 17:07:45 2010 +0200
+
+    Piotr Trojanek added to AUTHORS file
+
+commit 751b60a18d028d9859394c7abe960cb1c42e605e
+Author: Piotr Trojanek <piotr.trojanek@gmail.com>
+Date:   Wed Jun 9 17:06:32 2010 +0200
+
+    extra ';' inside a struct or union -- clang warnings fixed
+
+commit 240fc33f65c6cd9f1ed0a511daf4ad00ff37f163
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Mon Jun 7 20:23:48 2010 +0200
+
+    minor comment clarification
+
+commit 784e73a7c84f2c0a454f4a9ef69586755482a9d5
+Merge: ce53d02 8f51a10
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Mon Jun 7 09:03:56 2010 +0200
+
+    Merge branch 'master' of git@github.com:sustrik/zeromq2
+
+commit ce53d02e0580755055245cc1050f1dd3a26a3f22
+Author: Martin Sustrik <sustrik@250bpm.com>
+Date:   Mon Jun 7 09:03:40 2010 +0200
+
+    C++ docs for zmq::poll function improved
+
+-------------------------------------------------------------------------------
+
 0MQ version 2.0.7 (Beta) was released on 2010/06/04.
 
 Changes since 2.0.6:
