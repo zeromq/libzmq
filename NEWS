@@ -1,3 +1,45 @@
+0MQ version 2.0.8 (Stable), released on 2010/08/25
+==================================================
+
+New functionality
+-----------------
+
+* The ZMQ_SWAP functionality has now been implemented for all socket types.
+
+Bug fixes
+---------
+
+* Many bug fixes (about 30), see the ChangeLog for details.
+
+
+Documentation
+-------------
+
+* zmq_device(3) is now documented and describes the built-in devices.
+
+* The ZMQ_XREQ and ZMQ_XREP socket types are now documented in zmq_socket(3).
+
+Interface
+---------
+
+* By popular demand, the zmq_stopwatch_start, zmq_stopwatch_stop and zmq_sleep
+  functions have been added back into distribution.  This API is now in a
+  separate include file, zmq_utils.h.
+
+* The ZMQ_UPSTREAM and ZMQ_DOWNSTREAM socket types have been renamed to
+  ZMQ_PULL and ZMQ_PUSH for clarity.  The old names are still defined for
+  compatibility reasons and will be removed in a future version.
+
+* API calls that expect non-null parameters now return -1 and set errno to
+  EFAULT if null parameters are passed.
+
+
+Thanks to
+---------
+
+Everyone.
+
+
 0MQ version 2.0.7 (Beta), released on 2010/06/04
 ================================================
 
@@ -89,7 +131,7 @@ Distribution
 Building
 --------
 
-* Many portability fixes, including support for new platforms: FreeBSD, 
+* Many portability fixes, including support for new platforms: FreeBSD,
   NetBSD, HP-UX and Cygwin.
 
 * Invocation of configure has been simplified, all functionality is now
@@ -190,7 +232,7 @@ ZMQII-34  ensure that poll won't return POLLIN event when the message will be fi
 ZMQII-36  Chat example & forwarder broken because of changes subscribe semantics
 ZMQII-37  SIGSEGV when polling on REQ socket
 ZMQII-38  Compiler complains about missing virtual constructors
-ZMQII-39  Implement IPC transport  
+ZMQII-39  Implement IPC transport
 
 Version 2.0-beta1
 
@@ -199,7 +241,7 @@ ZMQII-22  Deadlock on zmq_close
 ZMQII-25  Implement streamed request/reply
 ZMQII-24  SEGFAULT when anonymous session disconnects
 ZMQII-26  Use zero-copy for large messages
-ZMQII-19  add --disable-eventfd configure option 
+ZMQII-19  add --disable-eventfd configure option
 
 Version 2.0-alpha3
 
@@ -424,8 +466,8 @@ ZMQ-53 Segmentation fault when binding to non-existent queue
 ZMQ-55 raw_message_init (data,size,ffn) allocates more memory than needed
 ZMQ-56 zmq_server fails if too many apps disconnect abruptly
 ZMQ-58 Implement C binding for 0MQ
-ZMQ-59 Implement Java binding for 0MQ  
-ZMQ-60 Implement Python binding for 0MQ 
+ZMQ-59 Implement Java binding for 0MQ
+ZMQ-60 Implement Python binding for 0MQ
 ZMQ-62 Write man pages
 
 Version 0.3
@@ -450,5 +492,5 @@ ZMQ-37 Identify SPARC V9 microarc and/or availability of CAS instruction
 
 Version 0.2
 
-ZMQ-2 Failure when mutexes are used atomic_uint32 
+ZMQ-2 Failure when mutexes are used atomic_uint32
 ZMQ-3 socket hangup at OS X
