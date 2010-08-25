@@ -6,7 +6,7 @@ AC_PREREQ(2.61)
 # The version in git should reflect the *next* version planned.
 # Version must be MAJOR.MINOR.PATCH otherwise things will break.
 #
-AC_INIT([zeromq],[2.0.7],[zeromq-dev@lists.zeromq.org])
+AC_INIT([zeromq],[2.0.8],[zeromq-dev@lists.zeromq.org])
 
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
