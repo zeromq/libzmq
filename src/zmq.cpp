@@ -765,10 +765,6 @@ unsigned long zmq_stopwatch_stop (void *watch_)
 {
     uint64_t end = now ();
     uint64_t start = *(uint64_t*) watch_;
-    if (!watch_) {
-        errno = EFAULT;
-        return -1;
-    }
     free (watch_);
     return (unsigned long) (end - start);
 }
