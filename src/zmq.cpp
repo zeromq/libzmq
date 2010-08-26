@@ -269,13 +269,14 @@ void *zmq_init (int io_threads_)
 
 int zmq_term (void *ctx_)
 {
-    int rc = ((zmq::ctx_t*) ctx_)->terminate ();
-    int en = errno;
-
     if (!ctx_) {
         errno = EFAULT;
         return -1;
     }
+
+    int rc = ((zmq::ctx_t*) ctx_)->terminate ();
+    int en = errno;
+
 #if defined ZMQ_HAVE_OPENPGM
     //  Shut down the OpenPGM library.
     if (pgm_shutdown () != TRUE)
