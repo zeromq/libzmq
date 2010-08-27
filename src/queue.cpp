@@ -23,6 +23,7 @@
 
 #include "queue.hpp"
 #include "socket_base.hpp"
+#include "likely.hpp"
 #include "err.hpp"
 
 int zmq::queue (class socket_base_t *insocket_,
@@ -49,7 +50,7 @@ int zmq::queue (class socket_base_t *insocket_,
 
         //  Wait while there are either requests or replies to process.
         rc = zmq_poll (&items [0], 2, -1);
-        if (rc < 0) {
+        if (unlikely (rc < 0)) {
             if (errno == ETERM)
                 return -1;
             errno_assert (false);
@@ -65,7 +66,7 @@ int zmq::queue (class socket_base_t *insocket_,
             while (true) {
 
                 rc = insocket_->recv (&msg, 0);
-                if (rc < 0) {
+                if (unlikely (rc < 0)) {
                     if (errno == ETERM)
                         return -1;
                     errno_assert (false);
@@ -73,14 +74,14 @@ int zmq::queue (class socket_base_t *insocket_,
 
                 moresz = sizeof (more);
                 rc = insocket_->getsockopt (ZMQ_RCVMORE, &more, &moresz);
-                if (rc < 0) {
+                if (unlikely (rc < 0)) {
                     if (errno == ETERM)
                         return -1;
                     errno_assert (false);
                 }
 
                 rc = outsocket_->send (&msg, more ? ZMQ_SNDMORE : 0);
-                if (rc < 0) {
+                if (unlikely (rc < 0)) {
                     if (errno == ETERM)
                         return -1;
                     errno_assert (false);
@@ -96,7 +97,7 @@ int zmq::queue (class socket_base_t *insocket_,
             while (true) {
 
                 rc = outsocket_->recv (&msg, 0);
-                if (rc < 0) {
+                if (unlikely (rc < 0)) {
                     if (errno == ETERM)
                         return -1;
                     errno_assert (false);
@@ -104,14 +105,14 @@ int zmq::queue (class socket_base_t *insocket_,
 
                 moresz = sizeof (more);
                 rc = outsocket_->getsockopt (ZMQ_RCVMORE, &more, &moresz);
-                if (rc < 0) {
+                if (unlikely (rc < 0)) {
                     if (errno == ETERM)
                         return -1;
                     errno_assert (false);
                 }
 
                 rc = insocket_->send (&msg, more ? ZMQ_SNDMORE : 0);
-                if (rc < 0) {
+                if (unlikely (rc < 0)) {
                     if (errno == ETERM)
                         return -1;
                     errno_assert (false);

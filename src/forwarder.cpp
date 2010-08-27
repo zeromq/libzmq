@@ -21,6 +21,7 @@
 
 #include "forwarder.hpp"
 #include "socket_base.hpp"
+#include "likely.hpp"
 #include "err.hpp"
 
 int zmq::forwarder (socket_base_t *insocket_, socket_base_t *outsocket_)
@@ -29,16 +30,26 @@ int zmq::forwarder (socket_base_t *insocket_, socket_base_t *outsocket_)
     int rc = zmq_msg_init (&msg);
     errno_assert (rc == 0);
 
+    int64_t more;
+    size_t more_sz = sizeof (more);
+
     while (true) {
         rc = insocket_->recv (&msg, 0);
-        if (rc < 0) {
+        if (unlikely (rc < 0)) {
             if (errno == ETERM)
                 return -1;
             errno_assert (false);
         }
 
-        rc = outsocket_->send (&msg, 0);
-        if (rc < 0) {
+        rc = insocket_->getsockopt (ZMQ_RCVMORE, &more, &more_sz);
+        if (unlikely (rc < 0)) {
+            if (errno == ETERM)
+                return -1;
+            errno_assert (false);
+        }
+
+        rc = outsocket_->send (&msg, more ? ZMQ_SNDMORE : 0);
+        if (unlikely (rc < 0)) {
             if (errno == ETERM)
                 return -1;
             errno_assert (false);
