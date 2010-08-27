@@ -56,6 +56,9 @@ bool zmq::zmq_decoder_t::one_byte_size_ready ()
 
         //  TODO:  Handle over-sized message decently.
 
+        //  There has to be at least one byte (the flags) in the message).
+        zmq_assert (*tmpbuf > 0);
+
         //  in_progress is initialised at this point so in theory we should
         //  close it before calling zmq_msg_init_size, however, it's a 0-byte
         //  message and thus we can treat it as uninitialised...
@@ -73,6 +76,10 @@ bool zmq::zmq_decoder_t::eight_byte_size_ready ()
     size_t size = (size_t) get_uint64 (tmpbuf);
 
     //  TODO:  Handle over-sized message decently.
+
+    //  There has to be at least one byte (the flags) in the message).
+    zmq_assert (size > 0);
+
 
     //  in_progress is initialised at this point so in theory we should
     //  close it before calling zmq_msg_init_size, however, it's a 0-byte
