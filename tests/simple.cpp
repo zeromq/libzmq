@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <zmq.h>
+#include "../include/zmq.h"
 
 /*  This is the simplest possible test case; test if we can initialize and
     immediately terminate a context. */
