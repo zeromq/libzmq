@@ -39,6 +39,7 @@ int main()
     {
         const string returned = zmqtestutil::ping_pong (p, expect);
         assert (expect == returned);
+
         //  Adjust socket state, so that first is clean for another send.
         zmq::message_t mx ;
         p.first->recv(&mx, 0);
@@ -58,8 +59,7 @@ int main()
 
         p.first->send (m1, 0);
 
-        //  Now use polling. Timout makes test abort on error.
-        int rc = zmq::poll(&items [0], 2, 1000);
+        int rc = zmq::poll(&items [0], 2, -1);
         assert (rc == 1);
         assert ((items [1].revents & ZMQ_POLLIN) != 0);
 

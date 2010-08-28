@@ -80,11 +80,8 @@ bool zmq::reader_t::check_read ()
         return false;
 
     //  Check if there's an item in the pipe.
-    //  If not, deactivate the pipe.
-    if (!pipe->check_read ()) {
-        terminate ();
+    if (!pipe->check_read ())
         return false;
-    }
 
     //  If the next item in the pipe is message delimiter,
     //  initiate its termination.
@@ -198,7 +195,8 @@ bool zmq::writer_t::check_write ()
     if (terminating)
         return false;
 
-    if (pipe_full () && (msg_store == NULL || msg_store->full () || extra_msg_flag)) {
+    if (pipe_full () && (msg_store == NULL || msg_store->full () ||
+            extra_msg_flag)) {
         stalled = true;
         return false;
     }

@@ -244,7 +244,7 @@ int zmq::socket_base_t::getsockopt (int option_, void *optval_,
             errno = EINVAL;
             return -1;
         }
-        process_commands(false, false);
+        process_commands (false, false);
         *((uint32_t*) optval_) = 0;
         if (has_out ())
             *((uint32_t*) optval_) |= ZMQ_POLLOUT;
