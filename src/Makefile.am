@@ -89,7 +89,6 @@ libzmq_la_SOURCES = \
     poll.hpp \
     poller.hpp \
     pair.hpp \
-    prefix_tree.hpp \
     pub.hpp \
     pull.hpp \
     push.hpp \
@@ -110,6 +109,7 @@ libzmq_la_SOURCES = \
     tcp_socket.hpp \
     thread.hpp \
     transient_session.hpp \
+    trie.hpp \
     uuid.hpp \
     windows.hpp \
     wire.hpp \
@@ -146,7 +146,6 @@ libzmq_la_SOURCES = \
     pgm_receiver.cpp \
     pgm_sender.cpp \
     pgm_socket.cpp \
-    prefix_tree.cpp \
     pipe.cpp \
     poll.cpp \
     pull.cpp \
@@ -167,6 +166,7 @@ libzmq_la_SOURCES = \
     tcp_socket.cpp \
     thread.cpp \
     transient_session.cpp \
+    trie.cpp \
     uuid.cpp \
     xrep.cpp \
     xreq.cpp \

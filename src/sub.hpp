@@ -22,7 +22,7 @@
 
 #include "../include/zmq.h"
 
-#include "prefix_tree.hpp"
+#include "trie.hpp"
 #include "socket_base.hpp"
 #include "i_terminate_events.hpp"
 #include "fq.hpp"
@@ -61,7 +61,7 @@ namespace zmq
         fq_t fq;
 
         //  The repository of subscriptions.
-        prefix_tree_t subscriptions;
+        trie_t subscriptions;
 
         //  If true, 'message' contains a matching message to return on the
         //  next recv call.

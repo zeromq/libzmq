@@ -28,16 +28,16 @@
 #endif
 
 #include "err.hpp"
-#include "prefix_tree.hpp"
+#include "trie.hpp"
 
-zmq::prefix_tree_t::prefix_tree_t () :
+zmq::trie_t::trie_t () :
     refcnt (0),
     min (0),
     count (0)
 {
 }
 
-zmq::prefix_tree_t::~prefix_tree_t ()
+zmq::trie_t::~trie_t ()
 {
     if (count == 1)
         delete next.node;
@@ -49,7 +49,7 @@ zmq::prefix_tree_t::~prefix_tree_t ()
     }
 }
 
-void zmq::prefix_tree_t::add (unsigned char *prefix_, size_t size_)
+void zmq::trie_t::add (unsigned char *prefix_, size_t size_)
 {
     //  We are at the node corresponding to the prefix. We are done.
     if (!size_) {
@@ -69,10 +69,10 @@ void zmq::prefix_tree_t::add (unsigned char *prefix_, size_t size_)
         }
         else if (count == 1) {
             unsigned char oldc = min;
-            prefix_tree_t *oldp = next.node;
+            trie_t *oldp = next.node;
             count = (min < c ? c - min : min - c) + 1;
-            next.table = (prefix_tree_t**)
-                malloc (sizeof (prefix_tree_t*) * count);
+            next.table = (trie_t**)
+                malloc (sizeof (trie_t*) * count);
             zmq_assert (next.table);
             for (unsigned char i = 0; i != count; ++i)
                 next.table [i] = 0;
@@ -84,8 +84,8 @@ void zmq::prefix_tree_t::add (unsigned char *prefix_, size_t size_)
             //  The new character is above the current character range.
             unsigned char old_count = count;
             count = c - min + 1;
-            next.table = (prefix_tree_t**) realloc ((void*) next.table,
-                sizeof (prefix_tree_t*) * count);
+            next.table = (trie_t**) realloc ((void*) next.table,
+                sizeof (trie_t*) * count);
             zmq_assert (next.table);
             for (unsigned char i = old_count; i != count; i++)
                 next.table [i] = NULL;
@@ -95,11 +95,11 @@ void zmq::prefix_tree_t::add (unsigned char *prefix_, size_t size_)
             //  The new character is below the current character range.
             unsigned char old_count = count;
             count = (min + old_count) - c;
-            next.table = (prefix_tree_t**) realloc ((void*) next.table,
-                sizeof (prefix_tree_t*) * count);
+            next.table = (trie_t**) realloc ((void*) next.table,
+                sizeof (trie_t*) * count);
             zmq_assert (next.table);
             memmove (next.table + min - c, next.table,
-                old_count * sizeof (prefix_tree_t*));
+                old_count * sizeof (trie_t*));
             for (unsigned char i = 0; i != min - c; i++)
                 next.table [i] = NULL;
             min = c;
@@ -109,21 +109,21 @@ void zmq::prefix_tree_t::add (unsigned char *prefix_, size_t size_)
     //  If next node does not exist, create one.
     if (count == 1) {
         if (!next.node) {
-            next.node = new (std::nothrow) prefix_tree_t;
+            next.node = new (std::nothrow) trie_t;
             zmq_assert (next.node);
         }
         next.node->add (prefix_ + 1, size_ - 1);
     }
     else {
         if (!next.table [c - min]) {
-            next.table [c - min] = new (std::nothrow) prefix_tree_t;
+            next.table [c - min] = new (std::nothrow) trie_t;
             zmq_assert (next.table [c - min]);
         }
         next.table [c - min]->add (prefix_ + 1, size_ - 1);
     }
 }
 
-bool zmq::prefix_tree_t::rm (unsigned char *prefix_, size_t size_)
+bool zmq::trie_t::rm (unsigned char *prefix_, size_t size_)
 {
      if (!size_) {
          if (!refcnt)
@@ -136,7 +136,7 @@ bool zmq::prefix_tree_t::rm (unsigned char *prefix_, size_t size_)
      if (!count || c < min || c >= min + count)
          return false;
 
-     prefix_tree_t *next_node =
+     trie_t *next_node =
          count == 1 ? next.node : next.table [c - min];
 
      if (!next_node)
@@ -145,11 +145,11 @@ bool zmq::prefix_tree_t::rm (unsigned char *prefix_, size_t size_)
      return next_node->rm (prefix_ + 1, size_ - 1);
 }
 
-bool zmq::prefix_tree_t::check (unsigned char *data_, size_t size_)
+bool zmq::trie_t::check (unsigned char *data_, size_t size_)
 {
     //  This function is on critical path. It deliberately doesn't use
     //  recursion to get a bit better performance.
-    prefix_tree_t *current = this;
+    trie_t *current = this;
     while (true) {
 
         //  We've found a corresponding subscription!
