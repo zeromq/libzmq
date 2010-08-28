@@ -36,16 +36,17 @@
 #include <algorithm>
 
 #include "swap.hpp"
+#include "config.hpp"
 #include "atomic_counter.hpp"
 #include "err.hpp"
 
-zmq::swap_t::swap_t (int64_t filesize_, size_t block_size_) :
+zmq::swap_t::swap_t (int64_t filesize_) :
     fd (-1),
     filesize (filesize_),
     file_pos (0),
     write_pos (0),
     read_pos (0),
-    block_size (block_size_),
+    block_size (swap_block_size),
     write_buf_start_addr (0)
 {
     zmq_assert (filesize > 0);

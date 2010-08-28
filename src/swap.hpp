@@ -38,7 +38,7 @@ namespace zmq
         enum { default_block_size = 8192 };
 
         //  Creates the swap.
-        swap_t (int64_t filesize_, size_t block_size_ = default_block_size);
+        swap_t (int64_t filesize_);
 
         ~swap_t ();
 
