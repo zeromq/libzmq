@@ -17,16 +17,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zmq.h"
+#include "testutil.hpp"
 
-/*  This is the simplest possible test case; test if we can initialize and
-    immediately terminate a context. */
+using namespace std;
+using namespace zmqtestutil;
+
 int main (int argc, char *argv [])
 {
-    void *ctx;
-
-    ctx = zmq_init (1);
-    zmq_term (ctx);
-
-    return 0;
+    const char *transport = "ipc:///tmp/tester" ;
+    basic_tests (transport, ZMQ_PAIR, ZMQ_PAIR);
+    return 0 ;
 }
