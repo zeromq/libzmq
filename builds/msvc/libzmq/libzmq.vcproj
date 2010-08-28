@@ -222,10 +222,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\msg_store.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\src\named_session.cpp"
 				>
 			</File>
@@ -263,10 +259,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\poll.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\prefix_tree.cpp"
 				>
 			</File>
 			<File
@@ -318,6 +310,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\swap.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\tcp_connecter.cpp"
 				>
 			</File>
@@ -335,6 +331,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\transient_session.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\trie.cpp"
 				>
 			</File>
 			<File
@@ -480,10 +480,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\msg_store.hpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\src\mutex.hpp"
 				>
 			</File>
@@ -529,10 +525,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\poll.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\prefix_tree.hpp"
 				>
 			</File>
 			<File
@@ -588,6 +580,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\swap.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\tcp_connecter.hpp"
 				>
 			</File>
@@ -605,6 +601,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\transient_session.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\trie.hpp"
 				>
 			</File>
 			<File
