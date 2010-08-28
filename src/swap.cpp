@@ -35,11 +35,11 @@
 #include <sstream>
 #include <algorithm>
 
+#include "swap.hpp"
 #include "atomic_counter.hpp"
-#include "msg_store.hpp"
 #include "err.hpp"
 
-zmq::msg_store_t::msg_store_t (int64_t filesize_, size_t block_size_) :
+zmq::swap_t::swap_t (int64_t filesize_, size_t block_size_) :
     fd (-1),
     filesize (filesize_),
     file_pos (0),
@@ -60,7 +60,7 @@ zmq::msg_store_t::msg_store_t (int64_t filesize_, size_t block_size_) :
     read_buf = write_buf = buf1;
 }
 
-zmq::msg_store_t::~msg_store_t ()
+zmq::swap_t::~swap_t ()
 {
     delete [] buf1;
     delete [] buf2;
@@ -83,7 +83,7 @@ zmq::msg_store_t::~msg_store_t ()
     errno_assert (rc == 0);
 }
 
-int zmq::msg_store_t::init ()
+int zmq::swap_t::init ()
 {
     static zmq::atomic_counter_t seqnum (0);
 
@@ -116,7 +116,7 @@ int zmq::msg_store_t::init ()
     return 0;
 }
 
-bool zmq::msg_store_t::store (zmq_msg_t *msg_)
+bool zmq::swap_t::store (zmq_msg_t *msg_)
 {
     size_t msg_size = zmq_msg_size (msg_);
 
@@ -138,7 +138,7 @@ bool zmq::msg_store_t::store (zmq_msg_t *msg_)
     return true;
 }
 
-void zmq::msg_store_t::fetch (zmq_msg_t *msg_)
+void zmq::swap_t::fetch (zmq_msg_t *msg_)
 {
     //  There must be at least one message available.
     zmq_assert (read_pos != write_pos);
@@ -157,12 +157,12 @@ void zmq::msg_store_t::fetch (zmq_msg_t *msg_)
     copy_from_file (zmq_msg_data (msg_), msg_size);
 }
 
-void zmq::msg_store_t::commit ()
+void zmq::swap_t::commit ()
 {
     commit_pos = write_pos;
 }
 
-void zmq::msg_store_t::rollback ()
+void zmq::swap_t::rollback ()
 {
     if (commit_pos == write_pos || read_pos == write_pos)
         return;
@@ -183,17 +183,17 @@ void zmq::msg_store_t::rollback ()
     write_pos = commit_pos;
 }
 
-bool zmq::msg_store_t::empty ()
+bool zmq::swap_t::empty ()
 {
     return read_pos == write_pos;
 }
 
-bool zmq::msg_store_t::full ()
+bool zmq::swap_t::full ()
 {
     return buffer_space () == 1;
 }
 
-void zmq::msg_store_t::copy_from_file (void *buffer_, size_t count_)
+void zmq::swap_t::copy_from_file (void *buffer_, size_t count_)
 {
     char *dest_ptr = (char *) buffer_;
     size_t chunk_size, remainder = count_;
@@ -217,7 +217,7 @@ void zmq::msg_store_t::copy_from_file (void *buffer_, size_t count_)
     }
 }
 
-void zmq::msg_store_t::copy_to_file (const void *buffer_, size_t count_)
+void zmq::swap_t::copy_to_file (const void *buffer_, size_t count_)
 {
     char *source_ptr = (char *) buffer_;
     size_t chunk_size, remainder = count_;
@@ -246,7 +246,7 @@ void zmq::msg_store_t::copy_to_file (const void *buffer_, size_t count_)
     }
 }
 
-void zmq::msg_store_t::fill_buf (char *buf, int64_t pos)
+void zmq::swap_t::fill_buf (char *buf, int64_t pos)
 {
     if (file_pos != pos) {
 #ifdef ZMQ_HAVE_WINDOWS
@@ -272,7 +272,7 @@ void zmq::msg_store_t::fill_buf (char *buf, int64_t pos)
     file_pos += octets_total;
 }
 
-void zmq::msg_store_t::save_write_buf ()
+void zmq::swap_t::save_write_buf ()
 {
     if (file_pos != write_buf_start_addr) {
 #ifdef ZMQ_HAVE_WINDOWS
@@ -298,7 +298,7 @@ void zmq::msg_store_t::save_write_buf ()
     file_pos += octets_total;
 }
 
-int64_t zmq::msg_store_t::buffer_space ()
+int64_t zmq::swap_t::buffer_space ()
 {
     if (write_pos < read_pos)
         return read_pos - write_pos;

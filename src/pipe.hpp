@@ -25,7 +25,7 @@
 #include "stdint.hpp"
 #include "yarray_item.hpp"
 #include "ypipe.hpp"
-#include "msg_store.hpp"
+#include "swap.hpp"
 #include "config.hpp"
 #include "object.hpp"
 
@@ -183,7 +183,7 @@ namespace zmq
 
         //  Pointer to the message swap. If NULL, messages are always
         //  kept in main memory.
-        msg_store_t *swap;
+        swap_t *swap;
 
         //  Sink for the events (either the socket or the session).
         i_writer_events *sink;

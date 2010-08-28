@@ -76,7 +76,6 @@ libzmq_la_SOURCES = \
     lb.hpp \
     likely.hpp \
     msg_content.hpp \
-    msg_store.hpp \
     mutex.hpp \
     named_session.hpp \
     object.hpp \
@@ -105,6 +104,7 @@ libzmq_la_SOURCES = \
     stdint.hpp \
     streamer.hpp \
     sub.hpp \
+    swap.hpp \
     tcp_connecter.hpp \
     tcp_listener.hpp \
     tcp_socket.hpp \
@@ -138,7 +138,6 @@ libzmq_la_SOURCES = \
     ip.cpp \
     kqueue.cpp \
     lb.cpp \
-    msg_store.cpp \
     named_session.cpp \
     object.cpp \
     options.cpp \
@@ -162,6 +161,7 @@ libzmq_la_SOURCES = \
     socket_base.cpp \
     streamer.cpp \
     sub.cpp \
+    swap.cpp \
     tcp_connecter.cpp \
     tcp_listener.cpp \
     tcp_socket.cpp \

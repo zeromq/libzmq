@@ -17,8 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_MSG_STORE_HPP_INCLUDED__
-#define __ZMQ_MSG_STORE_HPP_INCLUDED__
+#ifndef __ZMQ_SWAP_HPP_INCLUDED__
+#define __ZMQ_SWAP_HPP_INCLUDED__
 
 #include "../include/zmq.h"
 
@@ -28,38 +28,38 @@
 namespace zmq
 {
 
-    //  This class implements a message store. Messages are retrieved from
-    //  the store in the same order as they entered it.
+    //  This class implements a message swap. Messages are retrieved from
+    //  the swap in the same order as they entered it.
 
-    class msg_store_t
+    class swap_t
     {
     public:
 
         enum { default_block_size = 8192 };
 
-        //  Creates message store.
-        msg_store_t (int64_t filesize_, size_t block_size_ = default_block_size);
+        //  Creates the swap.
+        swap_t (int64_t filesize_, size_t block_size_ = default_block_size);
 
-        ~msg_store_t ();
+        ~swap_t ();
 
         int init ();
 
-        //  Stores the message into the message store. The function
-        //  returns false if the message store is full; true otherwise.
+        //  Stores the message into the swap. The function
+        //  returns false if the swap is full; true otherwise.
         bool store (zmq_msg_t *msg_);
 
-        //  Fetches the oldest message from the message store. It is an error
-        //  to call this function when the message store is empty.
+        //  Fetches the oldest message from the swap. It is an error
+        //  to call this function when the swap is empty.
         void fetch (zmq_msg_t *msg_);
 
         void commit ();
 
         void rollback ();
 
-        //  Returns true if the message store is empty; false otherwise.
+        //  Returns true if the swap is empty; false otherwise.
         bool empty ();
 
-        //  Returns true if and only if the store is full.
+        //  Returns true if and only if the swap is full.
         bool full ();
 
     private:

@@ -174,7 +174,7 @@ zmq::writer_t::writer_t (object_t *parent_, pipe_t *pipe_, reader_t *reader_,
 
     //  Open the swap file, if required.
     if (swap_size_ > 0) {
-        swap = new (std::nothrow) msg_store_t (swap_size_);
+        swap = new (std::nothrow) swap_t (swap_size_);
         zmq_assert (swap);
         int rc = swap->init ();
         zmq_assert (rc == 0);
