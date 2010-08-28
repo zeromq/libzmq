@@ -112,7 +112,7 @@ bool zmq::reader_t::read (zmq_msg_t *msg_)
         msgs_read++;
 
     if (lwm > 0 && msgs_read % lwm == 0)
-        send_reader_info (writer, msgs_read);
+        send_activate_writer (writer, msgs_read);
 
     return true;
 }
@@ -127,7 +127,7 @@ void zmq::reader_t::terminate ()
     send_pipe_term (writer);
 }
 
-void zmq::reader_t::process_revive ()
+void zmq::reader_t::process_activate_reader ()
 {
     //  Forward the event to the sink (either socket or session).
     sink->activated (this);
@@ -258,7 +258,7 @@ void zmq::writer_t::rollback ()
 void zmq::writer_t::flush ()
 {
     if (!pipe->flush ())
-        send_revive (reader);
+        send_activate_reader (reader);
 }
 
 void zmq::writer_t::terminate ()
@@ -288,7 +288,7 @@ void zmq::writer_t::write_delimiter ()
     flush ();
 }
 
-void zmq::writer_t::process_reader_info (uint64_t msgs_read_)
+void zmq::writer_t::process_activate_writer (uint64_t msgs_read_)
 {
     zmq_msg_t msg;
 

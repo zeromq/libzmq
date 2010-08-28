@@ -57,8 +57,12 @@ void zmq::object_t::process_command (command_t &cmd_)
 {
     switch (cmd_.type) {
 
-    case command_t::revive:
-        process_revive ();
+    case command_t::activate_reader:
+        process_activate_reader ();
+        break;
+
+    case command_t::activate_writer:
+        process_activate_writer (cmd_.args.activate_writer.msgs_read);
         break;
 
     case command_t::stop:
@@ -87,10 +91,6 @@ void zmq::object_t::process_command (command_t &cmd_)
             blob_t (cmd_.args.bind.peer_identity,
             cmd_.args.bind.peer_identity_size));
         process_seqnum ();
-        break;
-
-    case command_t::reader_info:
-        process_reader_info (cmd_.args.reader_info.msgs_read);
         break;
 
     case command_t::pipe_term:
@@ -248,18 +248,18 @@ void zmq::object_t::send_bind (own_t *destination_, reader_t *in_pipe_,
     send_command (cmd);
 }
 
-void zmq::object_t::send_revive (object_t *destination_)
+void zmq::object_t::send_activate_reader (reader_t *destination_)
 {
     command_t cmd;
 #if defined ZMQ_MAKE_VALGRIND_HAPPY
     memset (&cmd, 0, sizeof (cmd));
 #endif
     cmd.destination = destination_;
-    cmd.type = command_t::revive;
+    cmd.type = command_t::activate_reader;
     send_command (cmd);
 }
 
-void zmq::object_t::send_reader_info (writer_t *destination_,
+void zmq::object_t::send_activate_writer (writer_t *destination_,
     uint64_t msgs_read_)
 {
     command_t cmd;
@@ -267,8 +267,8 @@ void zmq::object_t::send_reader_info (writer_t *destination_,
     memset (&cmd, 0, sizeof (cmd));
 #endif
     cmd.destination = destination_;
-    cmd.type = command_t::reader_info;
-    cmd.args.reader_info.msgs_read = msgs_read_;
+    cmd.type = command_t::activate_writer;
+    cmd.args.activate_writer.msgs_read = msgs_read_;
     send_command (cmd);
 }
 
@@ -356,12 +356,12 @@ void zmq::object_t::process_bind (reader_t *in_pipe_, writer_t *out_pipe_,
     zmq_assert (false);
 }
 
-void zmq::object_t::process_revive ()
+void zmq::object_t::process_activate_reader ()
 {
     zmq_assert (false);
 }
 
-void zmq::object_t::process_reader_info (uint64_t msgs_read_)
+void zmq::object_t::process_activate_writer (uint64_t msgs_read_)
 {
     zmq_assert (false);
 }

@@ -103,8 +103,8 @@ int zmq::fq_t::recv (zmq_msg_t *msg_, int flags_)
         //  without blocking.
         zmq_assert (!(more && !fetched));
 
-        //  Note that when message is not fetched, current pipe is killed and
-        //  replaced by another active pipe. Thus we don't have to increase
+        //  Note that when message is not fetched, current pipe is deactivated
+        //  and replaced by another active pipe. Thus we don't have to increase
         //  the 'current' pointer.
         if (fetched) {
             more = msg_->flags & ZMQ_MSG_MORE;

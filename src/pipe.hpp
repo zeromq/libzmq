@@ -81,7 +81,7 @@ namespace zmq
         void set_writer (class writer_t *writer_);
 
         //  Command handlers.
-        void process_revive ();
+        void process_activate_reader ();
         void process_pipe_term_ack ();
 
         //  Returns true if the message is delimiter; false otherwise.
@@ -150,7 +150,7 @@ namespace zmq
             uint64_t hwm_, int64_t swap_size_);
         ~writer_t ();
 
-        void process_reader_info (uint64_t msgs_read_);
+        void process_activate_writer (uint64_t msgs_read_);
 
         //  Command handlers.
         void process_pipe_term ();
