@@ -87,6 +87,9 @@ namespace zmq
         //  Returns true if the message is delimiter; false otherwise.
         static bool is_delimiter (zmq_msg_t &msg_);
 
+        //  True, if pipe can be read from.
+        bool active;
+
         //  The underlying pipe.
         pipe_t *pipe;
 
@@ -127,8 +130,8 @@ namespace zmq
         void set_event_sink (i_writer_events *endpoint_);
 
         //  Checks whether a message can be written to the pipe.
-        //  If writing the message would cause high watermark to be
-        //  exceeded, the function returns false.
+        //  If writing the message would cause high watermark and (optionally)
+        //  swap to be exceeded, the function returns false.
         bool check_write ();
 
         //  Writes a message to the underlying pipe. Returns false if the
@@ -150,17 +153,17 @@ namespace zmq
             uint64_t hwm_, int64_t swap_size_);
         ~writer_t ();
 
-        void process_activate_writer (uint64_t msgs_read_);
-
         //  Command handlers.
+        void process_activate_writer (uint64_t msgs_read_);
         void process_pipe_term ();
 
-        //  Tests whether the pipe is already full.
+        //  Tests whether underlying pipe is already full. The swap is not
+        //  taken into account.
         bool pipe_full ();
 
-        //  Write special message to the pipe so that the reader
-        //  can find out we are finished.
-        void write_delimiter ();
+        //  True, if this object can be written to. Undelying ypipe may be full
+        //  but as long as there's swap space available, this flag is true.
+        bool active;
 
         //  The underlying pipe.
         pipe_t *pipe;
@@ -178,25 +181,23 @@ namespace zmq
         //  Number of messages we have written so far.
         uint64_t msgs_written;
 
-        //  Pointer to backing store. If NULL, messages are always
+        //  Pointer to the message swap. If NULL, messages are always
         //  kept in main memory.
-        msg_store_t *msg_store;
-
-        bool extra_msg_flag;
-
-        zmq_msg_t extra_msg;
-
-        //  True iff the last attempt to write a message has failed.
-        bool stalled;
+        msg_store_t *swap;
 
         //  Sink for the events (either the socket or the session).
         i_writer_events *sink;
 
+        //  If true, swap is active. New messages are to be written to the swap.
+        bool swapping;
+
+        //  If true, there's a delimiter to be written to the pipe after the
+        //  swap is empied.
+        bool pending_delimiter;
+
         //  True is 'terminate' method was called of 'pipe_term' command
         //  arrived from the reader.
         bool terminating;
-
-        bool pending_close;
 
         writer_t (const writer_t&);
         void operator = (const writer_t&);
