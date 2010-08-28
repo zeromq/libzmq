@@ -39,6 +39,9 @@ int main ()
     {
         const string returned = zmqtestutil::ping_pong (p, expect);
         assert (expect == returned);
+        //  Adjust socket state so that poll shows only 1 pending message.
+        zmq::message_t mx ;
+        p.first->recv(&mx, 0);
     }
 
     {

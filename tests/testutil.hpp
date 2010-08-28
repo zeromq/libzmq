@@ -55,8 +55,12 @@ namespace zmqtestutil
         zmq::message_t pong;
         s2.recv (&pong, 0);
 
+        //  Send message via s2, so state is clean in case of req/rep.
+        std::string ret((char *)pong.data(), pong.size());
+        s2.send(pong, 0);
+
         //  Return received data as std::string.
-        return std::string ((char*) pong.data(), pong.size());
+        return ret ;
     }
 
 }
