@@ -159,7 +159,7 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
 
     //  IPC transport is not available on Windows and OpenVMS.
 #if defined ZMQ_HAVE_WINDOWS || defined ZMQ_HAVE_OPENVMS
-    if (protocol_ != "ipc") {
+    if (protocol_ == "ipc") {
         //  Unknown protocol.
         errno = EPROTONOSUPPORT;
         return -1;
