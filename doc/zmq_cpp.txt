@@ -102,11 +102,13 @@ Maps to the _zmq_connect()_ function, as described in linkzmq:zmq_connect[3].
 *bool socket_t::send(message_t '&msg', int 'flags' = 0)*
 
 Maps to the _zmq_send()_ function, as described in linkzmq:zmq_send[3].
+Returns true if message is successfully sent, false if it is not.
 
 [verse]
 *bool socket_t::recv(message_t '*msg', int 'flags' = 0)*
 
 Maps to the _zmq_recv()_ function, as described in linkzmq:zmq_recv[3].
+Returns true if message is successfully received, false if it is not.
 
 
 Message
