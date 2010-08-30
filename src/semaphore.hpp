@@ -76,7 +76,59 @@ namespace zmq
 
         HANDLE ev;
 
-        //  Disable copying of the object.
+        semaphore_t (const semaphore_t&);
+        void operator = (const semaphore_t&);
+    };
+
+#elif defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_OPENVMS
+
+    //  On platforms that allow for double locking of a mutex from the same
+    //  thread, simple semaphore is implemented using mutex, as it is more
+    //  efficient than full-blown semaphore.
+
+    //  Note that OS-level semaphore is not implemented on OSX, so the below
+    //  code is not only optimisation, it's necessary to make 0MQ work on OSX.
+
+    class semaphore_t
+    { 
+    public:
+
+        //  Initialise the semaphore.
+        inline semaphore_t ()
+        {
+            int rc = pthread_mutex_init (&mutex, NULL);
+            posix_assert (rc);
+            rc = pthread_mutex_lock (&mutex);
+            posix_assert (rc);
+        }
+
+        //  Destroy the semaphore.
+        inline ~semaphore_t ()
+        {
+            int rc = pthread_mutex_unlock (&mutex);
+            posix_assert (rc);
+            rc = pthread_mutex_destroy (&mutex);
+            posix_assert (rc);
+        }
+
+        //  Wait for the semaphore.
+        inline void wait ()
+        {
+             int rc = pthread_mutex_lock (&mutex);
+             posix_assert (rc);
+        }
+
+        //  Post the semaphore.
+        inline void post ()
+        {
+            int rc = pthread_mutex_unlock (&mutex);
+            posix_assert (rc);
+        }
+
+    private:
+
+        pthread_mutex_t mutex;
+
         semaphore_t (const semaphore_t&);
         void operator = (const semaphore_t&);
     };
@@ -122,7 +174,6 @@ namespace zmq
         //  Underlying system semaphore object.
         sem_t sem;
 
-        //  Disable copying of the object.
         semaphore_t (const semaphore_t&);
         void operator = (const semaphore_t&);
     };
