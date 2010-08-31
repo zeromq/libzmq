@@ -27,8 +27,8 @@
 #include "i_engine.hpp"
 #include "io_object.hpp"
 #include "tcp_socket.hpp"
-#include "zmq_encoder.hpp"
-#include "zmq_decoder.hpp"
+#include "encoder.hpp"
+#include "decoder.hpp"
 #include "options.hpp"
 
 namespace zmq
@@ -62,11 +62,11 @@ namespace zmq
 
         unsigned char *inpos;
         size_t insize;
-        zmq_decoder_t decoder;
+        decoder_t decoder;
 
         unsigned char *outpos;
         size_t outsize;
-        zmq_encoder_t encoder;
+        encoder_t encoder;
 
         i_inout *inout;
 

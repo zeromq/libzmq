@@ -34,7 +34,7 @@
 #include "io_object.hpp"
 #include "i_engine.hpp"
 #include "options.hpp"
-#include "zmq_decoder.hpp"
+#include "decoder.hpp"
 #include "pgm_socket.hpp"
 
 namespace zmq
@@ -68,7 +68,7 @@ namespace zmq
         struct peer_info_t
         {
             bool joined;
-            zmq_decoder_t *decoder;
+            decoder_t *decoder;
         };
 
         struct tsi_comp
@@ -98,7 +98,7 @@ namespace zmq
         i_inout *inout;
 
         //  Most recently used decoder.
-        zmq_decoder_t *mru_decoder;
+        decoder_t *mru_decoder;
 
         //  Number of bytes not consumed by the decoder due to pipe overflow.
         size_t pending_bytes;

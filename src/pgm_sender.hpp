@@ -33,7 +33,7 @@
 #include "i_engine.hpp"
 #include "options.hpp"
 #include "pgm_socket.hpp"
-#include "zmq_encoder.hpp"
+#include "encoder.hpp"
 
 namespace zmq
 {
@@ -62,7 +62,7 @@ namespace zmq
     private:
 
         //  Message encoder.
-        zmq_encoder_t encoder;
+        encoder_t encoder;
 
         //  PGM socket.
         pgm_socket_t pgm_socket;

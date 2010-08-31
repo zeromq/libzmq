@@ -27,25 +27,27 @@
 
 #include "err.hpp"
 
+#include "../include/zmq.h"
+
 namespace zmq
 {
 
     //  Helper base class for decoders that know the amount of data to read
     //  in advance at any moment. Knowing the amount in advance is a property
-    //  of the protocol used. Both AMQP and backend protocol are based on
-    //  size-prefixed paradigm, therefore they are using decoder_t to parse
-    //  the messages. On the other hand, XML-based transports (like XMPP or
-    //  SOAP) don't allow for knowing the size of data to read in advance and
-    //  should use different decoding algorithms.
+    //  of the protocol used. 0MQ framing protocol is based size-prefixed
+    //  paradigm, whixh qualifies it to be parsed by this class.
+    //  On the other hand, XML-based transports (like XMPP or SOAP) don't allow
+    //  for knowing the size of data to read in advance and should use different
+    //  decoding algorithms.
     //
-    //  Decoder implements the state machine that parses the incoming buffer.
+    //  This class implements the state machine that parses the incoming buffer.
     //  Derived class should implement individual state machine actions.
 
-    template <typename T> class decoder_t
+    template <typename T> class decoder_base_t
     {
     public:
 
-        inline decoder_t (size_t bufsize_) :
+        inline decoder_base_t (size_t bufsize_) :
             read_pos (NULL),
             to_read (0),
             next (NULL),
@@ -57,7 +59,7 @@ namespace zmq
 
         //  The destructor doesn't have to be virtual. It is mad virtual
         //  just to keep ICC and code checking tools from complaining.
-        inline virtual ~decoder_t ()
+        inline virtual ~decoder_base_t ()
         {
             free (buf);
         }
@@ -149,6 +151,32 @@ namespace zmq
         size_t bufsize;
         unsigned char *buf;
 
+        decoder_base_t (const decoder_base_t&);
+        void operator = (const decoder_base_t&);
+    };
+
+    //  Decoder for 0MQ framing protocol. Converts data batches into messages.
+
+    class decoder_t : public decoder_base_t <decoder_t>
+    {
+    public:
+
+        decoder_t (size_t bufsize_);
+        ~decoder_t ();
+
+        void set_inout (struct i_inout *destination_);
+
+    private:
+
+        bool one_byte_size_ready ();
+        bool eight_byte_size_ready ();
+        bool flags_ready ();
+        bool message_ready ();
+
+        struct i_inout *destination;
+        unsigned char tmpbuf [8];
+        ::zmq_msg_t in_progress;
+
         decoder_t (const decoder_t&);
         void operator = (const decoder_t&);
     };
@@ -156,3 +184,4 @@ namespace zmq
 }
 
 #endif
+

@@ -120,15 +120,15 @@ libzmq_la_SOURCES = \
     ypipe.hpp \
     yqueue.hpp \
     zmq_connecter.hpp \
-    zmq_decoder.hpp \
-    zmq_encoder.hpp \
     zmq_engine.hpp \
     zmq_init.hpp \
     zmq_listener.hpp \
     command.cpp \
     ctx.cpp \
     connect_session.cpp \
+    decoder.cpp \
     devpoll.cpp \
+    encoder.cpp \
     epoll.cpp \
     err.cpp \
     forwarder.cpp \
@@ -172,8 +172,6 @@ libzmq_la_SOURCES = \
     xreq.cpp \
     zmq.cpp \
     zmq_connecter.cpp \
-    zmq_decoder.cpp \
-    zmq_encoder.cpp \
     zmq_engine.cpp \
     zmq_init.cpp \
     zmq_listener.cpp
