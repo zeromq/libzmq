@@ -23,7 +23,7 @@
 #include "../include/zmq.h"
 
 #include "stdint.hpp"
-#include "yarray_item.hpp"
+#include "array.hpp"
 #include "ypipe.hpp"
 #include "swap.hpp"
 #include "config.hpp"
@@ -52,7 +52,7 @@ namespace zmq
         virtual void activated (class reader_t *pipe_) = 0;
     };
 
-    class reader_t : public object_t, public yarray_item_t
+    class reader_t : public object_t, public array_item_t
     {
         friend void zmq::create_pipe (object_t*, object_t*, uint64_t,
             int64_t, reader_t**, writer_t**);
@@ -119,7 +119,7 @@ namespace zmq
         virtual void activated (class writer_t *pipe_) = 0;
     };
 
-    class writer_t : public object_t, public yarray_item_t
+    class writer_t : public object_t, public array_item_t
     {
         friend void zmq::create_pipe (object_t*, object_t*, uint64_t,
             int64_t, reader_t**, writer_t**);

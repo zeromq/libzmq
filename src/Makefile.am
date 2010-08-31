@@ -50,6 +50,7 @@ endif
 nodist_libzmq_la_SOURCES = $(pgm_sources)
 
 libzmq_la_SOURCES = \
+    array.hpp \
     atomic_counter.hpp \
     atomic_ptr.hpp \
     blob.hpp \
@@ -115,8 +116,6 @@ libzmq_la_SOURCES = \
     wire.hpp \
     xrep.hpp \
     xreq.hpp \
-    yarray.hpp \
-    yarray_item.hpp \
     ypipe.hpp \
     yqueue.hpp \
     zmq_connecter.hpp \

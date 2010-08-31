@@ -17,8 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_YARRAY_INCLUDED__
-#define __ZMQ_YARRAY_INCLUDED__
+#ifndef __ZMQ_ARRAY_INCLUDED__
+#define __ZMQ_ARRAY_INCLUDED__
 
 #include <vector>
 #include <algorithm>
@@ -26,21 +26,57 @@
 namespace zmq
 {
 
-    //  Fast array implementation with O(1) access to item, insertion and
-    //  removal. Yarray stores pointers rather than objects. The objects have
-    //  to be derived from yarray_item_t class.
+    //  Base class for objects stored in the array. Note that each object can
+    //  be stored in at most one array.
 
-    template <typename T> class yarray_t
+    class array_item_t
+    {
+    public:
+
+        inline array_item_t () :
+            array_index (-1)
+        {
+        }
+
+        //  The destructor doesn't have to be virtual. It is mad virtual
+        //  just to keep ICC and code checking tools from complaining.
+        inline virtual ~array_item_t ()
+        {
+        }
+
+        inline void set_array_index (int index_)
+        {
+            array_index = index_;
+        }
+
+        inline int get_array_index ()
+        {
+            return array_index;
+        }
+
+    private:
+
+        int array_index;
+
+        array_item_t (const array_item_t&);
+        void operator = (const array_item_t&);
+    };
+
+    //  Fast array implementation with O(1) access to item, insertion and
+    //  removal. Array stores pointers rather than objects. The objects have
+    //  to be derived from array_item_t class.
+
+    template <typename T> class array_t
     {
     public:
 
         typedef typename std::vector <T*>::size_type size_type;
 
-        inline yarray_t ()
+        inline array_t ()
         {
         }
 
-        inline ~yarray_t ()
+        inline ~array_t ()
         {
         }
 
@@ -62,17 +98,17 @@ namespace zmq
         inline void push_back (T *item_)
         {
             if (item_)
-                item_->set_yarray_index (items.size ());
+                item_->set_array_index (items.size ());
             items.push_back (item_);
         }
 
         inline void erase (T *item_) {
-            erase (item_->get_yarray_index ());
+            erase (item_->get_array_index ());
         }
 
         inline void erase (size_type index_) {
             if (items.back ())
-                items.back ()->set_yarray_index (index_);
+                items.back ()->set_array_index (index_);
             items [index_] = items.back ();
             items.pop_back ();
         }
@@ -80,9 +116,9 @@ namespace zmq
         inline void swap (size_type index1_, size_type index2_)
         {
             if (items [index1_])
-                items [index1_]->set_yarray_index (index2_);
+                items [index1_]->set_array_index (index2_);
             if (items [index2_])
-                items [index2_]->set_yarray_index (index1_);
+                items [index2_]->set_array_index (index1_);
             std::swap (items [index1_], items [index2_]);
         }
 
@@ -93,7 +129,7 @@ namespace zmq
 
         inline size_type index (T *item_)
         {
-            return (size_type) item_->get_yarray_index ();
+            return (size_type) item_->get_array_index ();
         }
 
     private:
@@ -101,8 +137,8 @@ namespace zmq
         typedef std::vector <T*> items_t;
         items_t items;
 
-        yarray_t (const yarray_t&);
-        void operator = (const yarray_t&);
+        array_t (const array_t&);
+        void operator = (const array_t&);
     };
 
 }

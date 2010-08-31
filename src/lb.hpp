@@ -20,7 +20,7 @@
 #ifndef __ZMQ_LB_HPP_INCLUDED__
 #define __ZMQ_LB_HPP_INCLUDED__
 
-#include "yarray.hpp"
+#include "array.hpp"
 #include "pipe.hpp"
 
 namespace zmq
@@ -47,7 +47,7 @@ namespace zmq
     private:
 
         //  List of outbound pipes.
-        typedef yarray_t <class writer_t> pipes_t;
+        typedef array_t <class writer_t> pipes_t;
         pipes_t pipes;
 
         //  Number of active pipes. All the active pipes are located at the

@@ -27,7 +27,7 @@
 #include "signaler.hpp"
 #include "semaphore.hpp"
 #include "ypipe.hpp"
-#include "yarray.hpp"
+#include "array.hpp"
 #include "config.hpp"
 #include "mutex.hpp"
 #include "stdint.hpp"
@@ -79,7 +79,7 @@ namespace zmq
         ~ctx_t ();
 
         //  Sockets belonging to this context.
-        typedef yarray_t <socket_base_t> sockets_t;
+        typedef array_t <socket_base_t> sockets_t;
         sockets_t sockets;
 
         //  List of sockets that were already closed but not yet deallocated.

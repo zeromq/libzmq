@@ -26,7 +26,7 @@
 #include "../include/zmq.h"
 
 #include "own.hpp"
-#include "yarray_item.hpp"
+#include "array.hpp"
 #include "mutex.hpp"
 #include "options.hpp"
 #include "stdint.hpp"
@@ -41,7 +41,7 @@ namespace zmq
 
     class socket_base_t :
         public own_t,
-        public yarray_item_t
+        public array_item_t
     {
     public:
 
