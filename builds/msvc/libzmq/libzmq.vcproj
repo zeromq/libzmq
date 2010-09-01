@@ -182,7 +182,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\decoder.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\devpoll.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\encoder.cpp"
 				>
 			</File>
 			<File
@@ -355,14 +363,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\zmq_connecter.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\zmq_decoder.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\zmq_encoder.cpp"
 				>
 			</File>
 			<File
@@ -637,14 +637,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\zmq_connecter.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\zmq_decoder.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\zmq_encoder.hpp"
 				>
 			</File>
 			<File
