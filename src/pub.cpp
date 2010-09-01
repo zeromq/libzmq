@@ -41,7 +41,6 @@ zmq::pub_t::~pub_t ()
 void zmq::pub_t::xattach_pipes (class reader_t *inpipe_,
     class writer_t *outpipe_, const blob_t &peer_identity_)
 {
-    zmq_assert (!terminating);
     zmq_assert (!inpipe_);
 
     outpipe_->set_event_sink (this);
