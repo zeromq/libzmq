@@ -143,7 +143,7 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
 {
     //  First check out whether the protcol is something we are aware of.
     if (protocol_ != "inproc" && protocol_ != "ipc" && protocol_ != "tcp" &&
-          protocol_ != "pgm" && protocol_ != "epgm") {
+          protocol_ != "pgm" && protocol_ != "epgm" && protocol_ != "sys") {
         errno = EPROTONOSUPPORT;
         return -1;
     }
@@ -282,8 +282,8 @@ int zmq::socket_base_t::bind (const char *addr_)
     if (rc != 0)
         return -1;
 
-    if (protocol == "inproc")
-        return register_endpoint (address.c_str (), this);
+    if (protocol == "inproc" || protocol == "sys")
+        return register_endpoint (addr_, this);
 
     if (protocol == "tcp" || protocol == "ipc") {
         zmq_listener_t *listener = new (std::nothrow) zmq_listener_t (
@@ -335,14 +335,14 @@ int zmq::socket_base_t::connect (const char *addr_)
     if (rc != 0)
         return -1;
 
-    if (protocol == "inproc") {
+    if (protocol == "inproc" || protocol == "sys") {
 
         //  TODO: inproc connect is specific with respect to creating pipes
         //  as there's no 'reconnect' functionality implemented. Once that
         //  is in place we should follow generic pipe creation algorithm.
 
         //  Find the peer socket.
-        socket_base_t *peer = find_endpoint (address.c_str ());
+        socket_base_t *peer = find_endpoint (addr_);
         if (!peer)
             return -1;
 

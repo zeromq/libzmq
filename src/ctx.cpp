@@ -70,7 +70,7 @@ zmq::ctx_t::ctx_t (uint32_t io_threads_) :
     //  Create the logging infrastructure.
     log_socket = create_socket (ZMQ_PUB);
     zmq_assert (log_socket);
-    int rc = log_socket->bind ("inproc://log");
+    int rc = log_socket->bind ("sys://log");
     zmq_assert (rc == 0);
 }
 
