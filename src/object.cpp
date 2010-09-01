@@ -137,6 +137,11 @@ zmq::socket_base_t *zmq::object_t::find_endpoint (const char *addr_)
     return ctx->find_endpoint (addr_);
 }
 
+void zmq::object_t::log (zmq_msg_t *msg_)
+{
+    ctx->log (msg_);
+}
+
 zmq::io_thread_t *zmq::object_t::choose_io_thread (uint64_t taskset_)
 {
     return ctx->choose_io_thread (taskset_);

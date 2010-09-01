@@ -24,6 +24,8 @@
 #include <vector>
 #include <string>
 
+#include "../include/zmq.h"
+
 #include "signaler.hpp"
 #include "semaphore.hpp"
 #include "ypipe.hpp"
@@ -73,6 +75,9 @@ namespace zmq
         int register_endpoint (const char *addr_, class socket_base_t *socket_);
         void unregister_endpoints (class socket_base_t *socket_);
         class socket_base_t *find_endpoint (const char *addr_);
+
+        //  Logging.
+        void log (zmq_msg_t *msg_);
 
     private:
 
@@ -124,6 +129,11 @@ namespace zmq
 
         //  Synchronisation of access to the list of inproc endpoints.
         mutex_t endpoints_sync;
+
+        //  PUB socket for logging. The socket is shared among all the threads,
+        //  thus it is synchronised by a mutex.
+        class socket_base_t *log_socket;
+        mutex_t log_sync;
 
         ctx_t (const ctx_t&);
         void operator = (const ctx_t&);

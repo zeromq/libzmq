@@ -20,6 +20,8 @@
 #ifndef __ZMQ_OBJECT_HPP_INCLUDED__
 #define __ZMQ_OBJECT_HPP_INCLUDED__
 
+#include "../include/zmq.h"
+
 #include "stdint.hpp"
 #include "blob.hpp"
 
@@ -47,6 +49,9 @@ namespace zmq
         int register_endpoint (const char *addr_, class socket_base_t *socket_);
         void unregister_endpoints (class socket_base_t *socket_);
         class socket_base_t *find_endpoint (const char *addr_);
+
+        //  Logs an message.
+        void log (zmq_msg_t *msg_);
 
         //  Chooses least loaded I/O thread.
         class io_thread_t *choose_io_thread (uint64_t taskset_);

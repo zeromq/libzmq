@@ -20,8 +20,6 @@
 #include <new>
 #include <string.h>
 
-#include "../include/zmq.h"
-
 #include "ctx.hpp"
 #include "socket_base.hpp"
 #include "io_thread.hpp"
@@ -68,6 +66,12 @@ zmq::ctx_t::ctx_t (uint32_t io_threads_) :
         empty_slots.push_back (i);
         slots [i] = NULL;
     }
+
+    //  Create the logging infrastructure.
+    log_socket = create_socket (ZMQ_PUB);
+    zmq_assert (log_socket);
+    int rc = log_socket->bind ("inproc://log");
+    zmq_assert (rc == 0);
 }
 
 zmq::ctx_t::~ctx_t ()
@@ -103,6 +107,13 @@ int zmq::ctx_t::terminate ()
     //  blocking calls are interrupted.
     for (sockets_t::size_type i = 0; i != sockets.size (); i++)
         sockets [i]->stop ();
+
+    //  Close the logging infrastructure.
+    log_sync.lock ();
+    int rc = log_socket->close ();
+    zmq_assert (rc == 0);
+    log_socket = NULL;
+    log_sync.unlock ();
 
     //  Find out whether there are any open sockets to care about.
     //  If so, sleep till they are closed. Note that we can use
@@ -285,6 +296,16 @@ zmq::socket_base_t *zmq::ctx_t::find_endpoint (const char *addr_)
 
      endpoints_sync.unlock ();
      return endpoint;
+}
+
+void zmq::ctx_t::log (zmq_msg_t *msg_)
+{
+    //  At this  point we migrate the log socket to the current thread.
+    //  We rely on mutex for executing the memory barrier.
+    log_sync.lock ();
+    if (log_socket)
+        log_socket->send (msg_, 0);
+    log_sync.unlock ();
 }
 
 void zmq::ctx_t::dezombify ()
