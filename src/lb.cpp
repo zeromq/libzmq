@@ -54,6 +54,11 @@ void zmq::lb_t::terminate ()
 {
     terminating = true;
 
+    if (pipes.empty ()) {
+        sink->terminated ();
+        return;
+    }
+
     for (pipes_t::size_type i = 0; i != pipes.size (); i++)
         pipes [i]->terminate ();
 }
