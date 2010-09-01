@@ -44,7 +44,6 @@ zmq::pair_t::~pair_t ()
 void zmq::pair_t::xattach_pipes (class reader_t *inpipe_,
     class writer_t *outpipe_, const blob_t &peer_identity_)
 {
-    zmq_assert (!terminating);
     zmq_assert (!inpipe && !outpipe);
 
     inpipe = inpipe_;
@@ -54,6 +53,12 @@ void zmq::pair_t::xattach_pipes (class reader_t *inpipe_,
     outpipe = outpipe_;
     outpipe_alive = true;
     outpipe->set_event_sink (this);
+
+    if (terminating) {
+        register_term_acks (2);
+        inpipe_->terminate ();
+        outpipe_->terminate ();
+    }
 }
 
 void zmq::pair_t::terminated (class reader_t *pipe_)
