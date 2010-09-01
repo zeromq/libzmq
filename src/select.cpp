@@ -217,10 +217,13 @@ void zmq::select_t::loop ()
 
         //  Destroy retired event sources.
         if (retired) {
-            for (fd_set_t::size_type i = 0; i < fds.size (); i ++) {
-                if (fds [i].fd == retired_fd) {
-                    fds.erase (fds.begin () + i);
-                    i --;
+            fd_set_t::iterator it = fds.begin();
+            while (it != fds.end()) {
+                if (it->fd == retired_fd) {
+                    it = fds.erase(it);
+                }
+                else {
+                    it++;
                 }
             }
             retired = false;
