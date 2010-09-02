@@ -42,7 +42,7 @@ namespace zmq
 
         uint32_t refcnt;
         unsigned char min;
-        unsigned char count;
+        unsigned short count;
         union {
             class trie_t *node;
             class trie_t **table;

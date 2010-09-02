@@ -184,7 +184,7 @@ void zmq::signaler_t::send (const command_t &cmd_)
     zmq_assert (nbytes == sizeof (command_t));
 }
 
-bool zmq::signaler_t::recv (command_t &cmd_, bool block_)
+bool zmq::signaler_t::recv (command_t *cmd_, bool block_)
 {
     if (block_) {
 
@@ -199,7 +199,7 @@ bool zmq::signaler_t::recv (command_t &cmd_, bool block_)
     bool result;
     ssize_t nbytes;
     do {
-        nbytes = ::recv (r, buffer, sizeof (command_t), 0);
+        nbytes = ::recv (r, (char*) cmd_, sizeof (command_t), 0);
     } while (nbytes == -1 && errno == EINTR);
     if (nbytes == -1 && errno == EAGAIN) {
         result = false;
@@ -213,7 +213,7 @@ bool zmq::signaler_t::recv (command_t &cmd_, bool block_)
         result = true;
     }
 
-   if (block_)
+   if (block_) {
 
         //  Set the reader to non-blocking mode.
         int flags = fcntl (r, F_GETFL, 0);

@@ -42,7 +42,7 @@ zmq::trie_t::~trie_t ()
     if (count == 1)
         delete next.node;
     else if (count > 1) {
-        for (unsigned char i = 0; i != count; ++i)
+        for (unsigned short i = 0; i != count; ++i)
             if (next.table [i])
                 delete next.table [i];
         free (next.table);
@@ -74,7 +74,7 @@ void zmq::trie_t::add (unsigned char *prefix_, size_t size_)
             next.table = (trie_t**)
                 malloc (sizeof (trie_t*) * count);
             zmq_assert (next.table);
-            for (unsigned char i = 0; i != count; ++i)
+            for (unsigned short i = 0; i != count; ++i)
                 next.table [i] = 0;
             min = std::min (min, c);
             next.table [oldc - min] = oldp;
@@ -82,25 +82,25 @@ void zmq::trie_t::add (unsigned char *prefix_, size_t size_)
         else if (min < c) {
 
             //  The new character is above the current character range.
-            unsigned char old_count = count;
+            unsigned short old_count = count;
             count = c - min + 1;
             next.table = (trie_t**) realloc ((void*) next.table,
                 sizeof (trie_t*) * count);
             zmq_assert (next.table);
-            for (unsigned char i = old_count; i != count; i++)
+            for (unsigned short i = old_count; i != count; i++)
                 next.table [i] = NULL;
         }
         else {
 
             //  The new character is below the current character range.
-            unsigned char old_count = count;
+            unsigned short old_count = count;
             count = (min + old_count) - c;
             next.table = (trie_t**) realloc ((void*) next.table,
                 sizeof (trie_t*) * count);
             zmq_assert (next.table);
             memmove (next.table + min - c, next.table,
                 old_count * sizeof (trie_t*));
-            for (unsigned char i = 0; i != min - c; i++)
+            for (unsigned short i = 0; i != min - c; i++)
                 next.table [i] = NULL;
             min = c;
         }
