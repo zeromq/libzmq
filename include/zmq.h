@@ -42,13 +42,13 @@ extern "C" {
 #endif
 
 /******************************************************************************/
-/*  0MQ versioning support.                                                    */
+/*  0MQ versioning support.                                                   */
 /******************************************************************************/
 
 ZMQ_EXPORT void zmq_version (int *major, int *minor, int *patch);
 
 /******************************************************************************/
-//  0MQ errors.
+/*  0MQ errors.                                                               */
 /******************************************************************************/
 
 /*  A number random anough not to collide with different errno ranges on      */
