@@ -1,3 +1,15 @@
+0MQ version 2.0.9 (Stable), released on 2010/09/04
+==================================================
+
+Bug fixes
+---------
+
+* Broken device numbering fixed.
+* HP-UX/AIX build fixed.
+* Handling multi-part messages in forwarder and streamer devices fixed.
+* Couple of minor bug fixes, see the ChangeLog for details.
+
+
 0MQ version 2.0.8 (Stable), released on 2010/08/25
 ==================================================
 
