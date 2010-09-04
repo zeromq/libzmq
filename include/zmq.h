@@ -160,10 +160,8 @@ ZMQ_EXPORT int zmq_term (void *context);
 #define ZMQ_XREP 6
 #define ZMQ_PULL 7
 #define ZMQ_PUSH 8
-
-/*  Deprecated aliases, to be removed in release 3.x                          */
-#define ZMQ_UPSTREAM ZMQ_PULL
-#define ZMQ_DOWNSTREAM ZMQ_PUSH
+#define ZMQ_UPSTREAM ZMQ_PULL      /*  Old alias, remove in 3.x               */
+#define ZMQ_DOWNSTREAM ZMQ_PUSH    /*  Old alias, remove in 3.x               */
 
 /*  Socket options.                                                           */
 #define ZMQ_HWM 1
@@ -233,3 +231,4 @@ ZMQ_EXPORT int zmq_device (int device, void * insocket, void* outsocket);
 #endif
 
 #endif
+
