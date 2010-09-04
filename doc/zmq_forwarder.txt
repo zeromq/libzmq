@@ -1,0 +1,29 @@
+zmq_forwarder(1)
+================
+
+
+NAME
+----
+zmq_forwarder - forwarding device for publish-subscribe messaging
+
+
+SYNOPSIS
+--------
+To be written.
+
+
+DESCRIPTION
+-----------
+To be written.
+
+
+OPTIONS
+-------
+To be written.
+
+
+SEE ALSO
+--------
+linkzmq:zmq[7]
+
+
