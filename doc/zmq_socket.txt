@@ -216,24 +216,22 @@ is connected to at least one _node_. When a pipeline stage is connected to
 multiple _nodes_ data is load-balanced among all connected _nodes_.
 
 
-ZMQ_PUSH
-^^^^^^^^
-A socket of type 'ZMQ_PUSH' is used by a pipeline _node_ to send messages
+ZMQ_DOWNSTREAM
+^^^^^^^^^^^^^^
+A socket of type 'ZMQ_DOWNSTREAM' is used by a pipeline _node_ to send messages
 to downstream pipeline _nodes_. Messages are load-balanced to all connected
 downstream _nodes_. The _zmq_recv()_ function is not implemented for this
 socket type.
 
-When a 'ZMQ_PUSH' socket enters an exceptional state due to having
+When a 'ZMQ_DOWNSTREAM' socket enters an exceptional state due to having
 reached the high water mark for all downstream _nodes_, or if there are no
 downstream _nodes_ at all, then any linkzmq:zmq_send[3] operations on the
 socket shall block until the exceptional state ends or at least one downstream
 _node_ becomes available for sending; messages are not discarded.
 
-Deprecated alias: ZMQ_DOWNSTREAM.
-
 [horizontal]
-.Summary of ZMQ_PUSH characteristics
-Compatible peer sockets:: 'ZMQ_PULL'
+.Summary of ZMQ_DOWNSTREAM characteristics
+Compatible peer sockets:: 'ZMQ_UPSTREAM'
 Direction:: Unidirectional
 Send/receive pattern:: Send only
 Incoming routing strategy:: N/A
@@ -241,18 +239,16 @@ Outgoing routing strategy:: Load-balanced
 ZMQ_HWM option action:: Block
 
 
-ZMQ_PULL
-^^^^^^^^
-A socket of type 'ZMQ_PULL' is used by a pipeline _node_ to receive
+ZMQ_UPSTREAM
+^^^^^^^^^^^^
+A socket of type 'ZMQ_UPSTREAM' is used by a pipeline _node_ to receive
 messages from upstream pipeline _nodes_. Messages are fair-queued from among
 all connected upstream _nodes_. The _zmq_send()_ function is not implemented
 for this socket type.
 
-Deprecated alias: ZMQ_UPSTREAM.
-
 [horizontal]
-.Summary of ZMQ_PULL characteristics
-Compatible peer sockets:: 'ZMQ_PUSH'
+.Summary of ZMQ_UPSTREAM characteristics
+Compatible peer sockets:: 'ZMQ_DOWNSTREAM'
 Direction:: Unidirectional
 Send/receive pattern:: Receive only
 Incoming routing strategy:: Fair-queued
@@ -317,3 +313,8 @@ linkzmq:zmq_send[3]
 linkzmq:zmq_recv[3]
 linkzmq:zmq[7]
 
+
+AUTHORS
+-------
+The 0MQ documentation was written by Martin Sustrik <sustrik@250bpm.com> and
+Martin Lucina <mato@kotelna.sk>.

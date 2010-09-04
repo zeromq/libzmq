@@ -50,3 +50,7 @@ linkzmq:zmq_msg_close[3]
 linkzmq:zmq[7]
 
 
+AUTHORS
+-------
+The 0MQ documentation was written by Martin Sustrik <sustrik@250bpm.com> and
+Martin Lucina <mato@kotelna.sk>.
