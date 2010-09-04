@@ -1,4 +1,4 @@
-MAN1 = 
+MAN1 = zmq_deviced.1
 MAN3 = zmq_bind.3 zmq_close.3 zmq_connect.3 zmq_init.3 \
     zmq_msg_close.3 zmq_msg_copy.3 zmq_msg_data.3 zmq_msg_init.3 \
     zmq_msg_init_data.3 zmq_msg_init_size.3 zmq_msg_move.3 zmq_msg_size.3 \
