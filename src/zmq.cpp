@@ -491,6 +491,10 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 
     zmq::fd_t maxfd = 0;
 
+    //  Ensure we do not attempt to select () on more than FD_SETSIZE
+    //  file descriptors.
+    zmq_assert (nitems_ <= FD_SETSIZE);
+
     //  Build the fd_sets for passing to select ().
     for (int i = 0; i != nitems_; i++) {
 

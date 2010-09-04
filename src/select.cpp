@@ -65,6 +65,10 @@ zmq::select_t::handle_t zmq::select_t::add_fd (fd_t fd_, i_poll_events *events_)
     fd_entry_t entry = {fd_, events_};
     fds.push_back (entry);
 
+    //  Ensure we do not attempt to select () on more than FD_SETSIZE
+    //  file descriptors.
+    zmq_assert (fds.size () <= FD_SETSIZE);
+
     //  Start polling on errors.
     FD_SET (fd_, &source_set_err);
 
