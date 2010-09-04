@@ -48,7 +48,7 @@ Applicable socket types:: all
 ZMQ_SWAP: Set disk offload size
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_SWAP' option shall set the disk offload (swap) size for the specified
-'socket'. A socket which has 'ZMQ_SWAP' set to a non-zero value may exceed its
+'socket'. A socket which has 'ZMQ_SWAP' set to a non-zero value may exceed it's
 high water mark; in this case outstanding messages shall be offloaded to
 storage on disk rather than held in memory.
 
@@ -269,3 +269,7 @@ linkzmq:zmq_socket[3]
 linkzmq:zmq[7]
 
 
+AUTHORS
+-------
+The 0MQ documentation was written by Martin Sustrik <sustrik@250bpm.com> and
+Martin Lucina <mato@kotelna.sk>.

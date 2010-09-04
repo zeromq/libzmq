@@ -70,7 +70,7 @@ ZMQ_SWAP: Retrieve disk offload size
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_SWAP' option shall retrieve the disk offload (swap) size for the
 specified 'socket'. A socket which has 'ZMQ_SWAP' set to a non-zero value may
-exceed its high water mark; in this case outstanding messages shall be
+exceed it's high water mark; in this case outstanding messages shall be
 offloaded to storage on disk rather than held in memory.
 
 The value of 'ZMQ_SWAP' defines the maximum size of the swap space in bytes.
@@ -237,3 +237,7 @@ linkzmq:zmq_socket[3]
 linkzmq:zmq[7]
 
 
+AUTHORS
+-------
+The 0MQ documentation was written by Martin Sustrik <sustrik@250bpm.com> and
+Martin Lucina <mato@kotelna.sk>.

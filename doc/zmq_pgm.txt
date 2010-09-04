@@ -55,7 +55,7 @@ and a port number.
 An 'interface' may be specified by either of the following:
 
 * The interface name as defined by the operating system.
-* The primary IPv4 address assigned to the interface, in its numeric
+* The primary IPv4 address assigned to the interface, in it's numeric
   representation.
 
 NOTE: Interface names are not standardised in any way and should be assumed to
@@ -63,7 +63,7 @@ be arbitrary and platform dependent. On Win32 platforms no short interface
 names exist, thus only the primary IPv4 address may be used to specify an
 'interface'.
 
-A 'multicast address' is specified by an IPv4 multicast address in its numeric
+A 'multicast address' is specified by an IPv4 multicast address in it's numeric
 representation.
 
 
@@ -151,4 +151,7 @@ linkzmq:zmq_ipc[7]
 linkzmq:zmq_inproc[7]
 linkzmq:zmq[7]
 
-
+AUTHORS
+-------
+The 0MQ documentation was written by Martin Sustrik <sustrik@250bpm.com> and
+Martin Lucina <mato@kotelna.sk>.

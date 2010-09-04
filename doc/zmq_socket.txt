@@ -223,13 +223,13 @@ to downstream pipeline _nodes_. Messages are load-balanced to all connected
 downstream _nodes_. The _zmq_recv()_ function is not implemented for this
 socket type.
 
-When a 'ZMQ_PUSH' socket enters an exceptional state due to having
-reached the high water mark for all downstream _nodes_, or if there are no
-downstream _nodes_ at all, then any linkzmq:zmq_send[3] operations on the
-socket shall block until the exceptional state ends or at least one downstream
-_node_ becomes available for sending; messages are not discarded.
+When a 'ZMQ_PUSH' socket enters an exceptional state due to having reached the
+high water mark for all downstream _nodes_, or if there are no downstream
+_nodes_ at all, then any linkzmq:zmq_send[3] operations on the socket shall
+block until the exceptional state ends or at least one downstream _node_
+becomes available for sending; messages are not discarded.
 
-Deprecated alias: ZMQ_DOWNSTREAM.
+Deprecated alias: 'ZMQ_DOWNSTREAM'.
 
 [horizontal]
 .Summary of ZMQ_PUSH characteristics
@@ -243,12 +243,12 @@ ZMQ_HWM option action:: Block
 
 ZMQ_PULL
 ^^^^^^^^
-A socket of type 'ZMQ_PULL' is used by a pipeline _node_ to receive
-messages from upstream pipeline _nodes_. Messages are fair-queued from among
-all connected upstream _nodes_. The _zmq_send()_ function is not implemented
-for this socket type.
+A socket of type 'ZMQ_PULL' is used by a pipeline _node_ to receive messages
+from upstream pipeline _nodes_. Messages are fair-queued from among all
+connected upstream _nodes_. The _zmq_send()_ function is not implemented for
+this socket type.
 
-Deprecated alias: ZMQ_UPSTREAM.
+Deprecated alias: 'ZMQ_UPSTREAM'.
 
 [horizontal]
 .Summary of ZMQ_PULL characteristics
@@ -317,3 +317,8 @@ linkzmq:zmq_send[3]
 linkzmq:zmq_recv[3]
 linkzmq:zmq[7]
 
+
+AUTHORS
+-------
+The 0MQ documentation was written by Martin Sustrik <sustrik@250bpm.com> and
+Martin Lucina <mato@kotelna.sk>.
