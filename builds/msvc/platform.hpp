@@ -28,7 +28,7 @@
 //  0MQ version information
 #define PACKAGE_VERSION_MAJOR 2
 #define PACKAGE_VERSION_MINOR 0
-#define PACKAGE_VERSION_PATCH 9
+#define PACKAGE_VERSION_PATCH 10
 
 #define ZMQ_HAVE_WINDOWS
 
