@@ -49,15 +49,15 @@ a colon and the TCP port number to use.
 A 'peer address' may be specified by either of the following:
 
 * The DNS name of the peer.
-* The IPv4 address of the peer, in its numeric representation.
+* The IPv4 address of the peer, in it's numeric representation.
 
 
 WIRE FORMAT
 -----------
 0MQ messages are transmitted over TCP in frames consisting of an encoded
-'payload length', followed by a 'flags' field and the message body. The
-'payload length' is defined as the combined length in octets of the message
-body and the 'flags' field.
+'payload length', followed by a 'flags' field and the message body. The 'payload
+length' is defined as the combined length in octets of the message body and the
+'flags' field.
 
 For frames with a 'payload length' not exceeding 254 octets, the 'payload
 length' shall be encoded as a single octet.  The minimum valid 'payload length'

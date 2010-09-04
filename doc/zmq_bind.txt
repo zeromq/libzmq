@@ -24,15 +24,10 @@ the underlying transport protocol selected.
 
 The following transports are defined:
 
-'inproc'::
-    local in-process (inter-thread) communication transport, see
-    linkzmq:zmq_inproc[7]
-'ipc'::
-    local inter-process communication transport, see linkzmq:zmq_ipc[7]
-'tcp'::
-    unicast transport using TCP, see linkzmq:zmq_tcp[7]
-'pgm', 'epgm'::
-    reliable multicast transport using PGM, see linkzmq:zmq_pgm[7]
+'inproc':: local in-process (inter-thread) communication transport, see linkzmq:zmq_inproc[7]
+'ipc':: local inter-process communication transport, see linkzmq:zmq_ipc[7]
+'tcp':: unicast transport using TCP, see linkzmq:zmq_tcp[7]
+'pgm', 'epgm':: reliable multicast transport using PGM, see linkzmq:zmq_pgm[7]
 
 With the exception of 'ZMQ_PAIR' sockets, a single socket may be connected to
 multiple endpoints using _zmq_connect()_, while simultaneously accepting

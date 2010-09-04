@@ -102,13 +102,13 @@ The provided 'items' was not valid (NULL).
 
 EXAMPLE
 -------
-.Polling indefinitely for input events on both a 0MQ socket and a TCP socket.
+.Polling indefinitely for input events on both a 0MQ socket and a standard socket.
 ----
 zmq_pollitem_t items [2];
 /* First item refers to 0MQ socket 'socket' */
 items[0].socket = socket;
 items[0].events = ZMQ_POLLIN;
-/* Second item refers to TCP socket 'fd' */
+/* Second item refers to standard socket 'fd' */
 items[1].socket = NULL;
 items[1].fd = fd;
 items[1].events = ZMQ_POLLIN;

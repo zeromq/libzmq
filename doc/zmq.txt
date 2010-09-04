@@ -139,14 +139,20 @@ Local in-process (inter-thread) communication transport::
 
 Devices
 ~~~~~~~
-0MQ provides 'devices', which are building blocks that act as intermediate
-nodes in complex messaging topologies.  Devices can act as brokers that other
-nodes connect to, proxies that connect through to other nodes, or any mix of
-these two models.
+Apart from the 0MQ library the 0MQ distribution includes 'devices' which are
+building blocks intended to serve as intermediate nodes in complex messaging
+topologies.
 
-You can start a device in an application thread, see linkzmq:zmq_device[3],
-and you can also start devices externally, as standalone processes, see
-linkzmq:zmq_deviced[1].
+The following devices are provided:
+
+Forwarder device for request-response messaging::
+    linkzmq:zmq_queue[1]
+
+Forwarder device for publish-subscribe messaging::
+    linkzmq:zmq_forwarder[1]
+
+Streamer device for parallelized pipeline messaging::
+    linkzmq:zmq_streamer[1]
 
 
 ERROR HANDLING

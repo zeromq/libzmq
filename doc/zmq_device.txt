@@ -13,8 +13,7 @@ SYNOPSIS
 
 DESCRIPTION
 -----------
-The _zmq_device()_ function starts a built-in 0MQ device.  The 'device'
-argument is one of:
+The _zmq_device()_ function starts a built-in 0MQ device.  The 'device' argument is one of:
 
 'ZMQ_QUEUE'::
     starts a queue device
@@ -23,86 +22,55 @@ argument is one of:
 'ZMQ_STREAMER'::
     starts a streamer device
 
-The device connects a frontend socket to a backend socket.  Conceptually, data
-flows from frontend to backend.  Depending on the socket types, replies may
-flow in the opposite direction.
+The device connects a frontend socket to a backend socket.  Conceptually, data flows from frontend to backend.  Depending on the socket types, replies may flow in the opposite direction.
 
-Before calling _zmq_device()_ you must set any socket options, and connect or
-bind both frontend and backend sockets.  The two conventional device models
-are:
+Before calling _zmq_device()_ you must set any socket options, and connect or bind both frontend and backend sockets.  The two conventional device models are:
 
 *proxy*::
-    bind frontend socket to an endpoint, and connect backend socket to
-    downstream components.  A proxy device model does not require changes to
-    the downstream topology but that topology is static (any changes require
-    reconfiguring the device).
+    bind frontend socket to an endpoint, and connect backend socket to downstream components.  A proxy device model does not require changes to the downstream topology but that topology is static (any changes require reconfiguring the device).
 *broker*::
-    bind frontend socket to one endpoint and bind backend socket to a second
-    endpoint.  Downstream components must now connect into the device.  A
-    broker device model allows a dynamic downstream topology (components can
-    come and go at any time).
+    bind frontend socket to one endpoint and bind backend socket to a second endpoint.  Downstream components must now connect into the device.  A broker device model allows a dynamic downstream topology (components can come and go at any time).
 
-_zmq_device()_ runs in the current thread and returns only if/when the current
-context is closed.
+_zmq_device()_ runs in the current thread and returns only if/when the current context is closed.
 
 
 QUEUE DEVICE
 ------------
-'ZMQ_QUEUE' creates a shared queue that collects requests from a set of
-clients, and distributes these fairly among a set of services.  Requests are
-fair-queued from frontend connections and load-balanced between backend
-connections. Replies automatically return to the client that made the original
-request.
+'ZMQ_QUEUE' creates a shared queue that collects requests from a set of clients, and distributes these fairly among a set of services.  Requests are fair-queued from frontend connections and load-balanced between backend connections.  Replies automatically return to the client that made the original request.
 
-This device is part of the 'request-reply' pattern.  The frontend speaks to
-clients and the backend speaks to services.  You should use 'ZMQ_QUEUE' with a
-'ZMQ_XREP' socket for the frontend and a 'ZMQ_XREQ' socket for the backend.
-Other combinations are not documented.
+This device is part of the 'request-reply' pattern.  The frontend speaks to clients and the backend speaks to services.  You should use 'ZMQ_QUEUE' with a 'ZMQ_XREP' socket for the frontend and a 'ZMQ_XREQ' socket for the backend.  Other combinations are not documented.
 
 Refer to linkzmq:zmq_socket[3] for a description of these socket types.
 
 
 FORWARDER DEVICE
 ----------------
-'ZMQ_FORWARDER' collects messages from a set of publishers and forwards these
-to a set of subscribers.  You will generally use this to bridge networks, e.g.
-read on TCP unicast and forward on multicast.
+'ZMQ_FORWARDER' collects messages from a set of publishers and forwards these to a set of subscribers.  You will generally use this to bridge networks, e.g. read on TCP unicast and forward on multicast.
 
-This device is part of the 'publish-subscribe' pattern.  The frontend speaks to
-publishers and the backend speaks to subscribers.  You should use
-'ZMQ_FORWARDER' with a 'ZMQ_SUB' socket for the frontend and a 'ZMQ_PUB' socket
-for the backend.  Other combinations are not documented.
+This device is part of the 'publish-subscribe' pattern.  The frontend speaks to publishers and the backend speaks to subscribers.  You should use 'ZMQ_FORWARDER' with a 'ZMQ_SUB' socket for the frontend and a 'ZMQ_PUB' socket for the backend.  Other combinations are not documented.
 
 Refer to linkzmq:zmq_socket[3] for a description of these socket types.
 
 
 STREAMER DEVICE
 ---------------
-'ZMQ_STREAMER' collects tasks from a set of pushers and forwards these to a set
-of pullers.  You will generally use this to bridge networks.  Messages are
-fair-queued from pushers and load-balanced to pullers.
+'ZMQ_STREAMER' collects tasks from a set of pushers and forwards these to a set of pullers.  You will generally use this to bridge networks.  Messages are fair-queued from pushers and load-balanced to pullers.
 
-This device is part of the 'pipeline' pattern.  The frontend speaks to pushers
-and the backend speaks to pullers.  You should use 'ZMQ_STREAMER' with a
-'ZMQ_PULL' socket for the frontend and a 'ZMQ_PUSH' socket for the backend.
-Other combinations are not documented.
+This device is part of the 'pipeline' pattern.  The frontend speaks to pushers and the backend speaks to pullers.  You should use 'ZMQ_STREAMER' with a 'ZMQ_PULL' socket for the frontend and a 'ZMQ_PUSH' socket for the backend.  Other combinations are not documented.
 
 Refer to linkzmq:zmq_socket[3] for a description of these socket types.
 
 
 RETURN VALUE
 ------------
+<<<<<<< HEAD
 The _zmq_device()_ function shall not return if successful. Otherwise it shall
 return `-1` and set 'errno' to one of the values defined below.
 
 
 ERRORS
 ------
-*ETERM*::
-The 0MQ 'context' associated with the specified 'frontend' or 'backend' was 
-terminated.
-*EFAULT*::
-The provided 'frontend' or 'backend' was not valid (NULL).
+The _zmq_device()_ function always returns `-1` and 'errno' set to *ETERM* (the 0MQ 'context' associated with either of the specified sockets was terminated).
 
 
 EXAMPLE
