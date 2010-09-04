@@ -530,6 +530,10 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     zmq::fd_t maxfd = zmq::retired_fd;
     zmq::fd_t notify_fd = zmq::retired_fd;
 
+    //  Ensure we do not attempt to select () on more than FD_SETSIZE
+    //  file descriptors.
+    zmq_assert (nitems_ <= FD_SETSIZE);
+
     for (int i = 0; i != nitems_; i++) {
 
         //  0MQ sockets.
