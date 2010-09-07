@@ -148,8 +148,11 @@ bool zmq::fq_t::has_in ()
     for (int count = active; count != 0; count--) {
         if (pipes [current]->check_read ())
             return true;
-        current++;
-        if (current >= active)
+
+        //  Deactivate the pipe.
+        active--;
+        pipes.swap (current, active);
+        if (current == active)
             current = 0;
     }
 

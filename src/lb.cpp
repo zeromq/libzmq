@@ -135,10 +135,10 @@ bool zmq::lb_t::has_out ()
         if (pipes [current]->check_write ())
             return true;
 
+        //  Deactivate the pipe.
         active--;
-        if (current < active)
-            pipes.swap (current, active);
-        else
+        pipes.swap (current, active);
+        if (current == active)
             current = 0;
     }
 
