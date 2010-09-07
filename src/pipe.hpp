@@ -48,6 +48,8 @@ namespace zmq
 
     struct i_reader_events
     {
+        virtual ~i_reader_events () {};
+
         virtual void terminated (class reader_t *pipe_) = 0;
         virtual void activated (class reader_t *pipe_) = 0;
     };
@@ -115,6 +117,8 @@ namespace zmq
 
     struct i_writer_events
     {
+        virtual ~i_writer_events () {};
+
         virtual void terminated (class writer_t *pipe_) = 0;
         virtual void activated (class writer_t *pipe_) = 0;
     };
