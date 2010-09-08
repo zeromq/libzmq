@@ -85,6 +85,7 @@ ZMQ_EXPORT void zmq_version (int *major, int *minor, int *patch);
 #define EFSM (ZMQ_HAUSNUMERO + 51)
 #define ENOCOMPATPROTO (ZMQ_HAUSNUMERO + 52)
 #define ETERM (ZMQ_HAUSNUMERO + 53)
+#define EMTHREAD (ZMQ_HAUSNUMERO + 54)  /*  Old error code, remove in 3.x     */
 
 /*  This function retrieves the errno as it is known to 0MQ library. The goal */
 /*  of this function is to make the code 100% portable, including where 0MQ   */
