@@ -40,7 +40,7 @@ namespace zmq
 
         fd_t get_fd ();
         void send (const command_t &cmd_);
-        bool recv (command_t *cmd_, bool block_);
+        int recv (command_t *cmd_, bool block_);
         
     private:
 

@@ -112,7 +112,7 @@ void zmq::signaler_t::send (const command_t &cmd_)
     zmq_assert (rc == sizeof (command_t));
 }
 
-bool zmq::signaler_t::recv (command_t *cmd_, bool block_)
+int zmq::signaler_t::recv (command_t *cmd_, bool block_)
 {
     if (block_) {
 
@@ -122,10 +122,12 @@ bool zmq::signaler_t::recv (command_t *cmd_, bool block_)
         wsa_assert (rc != SOCKET_ERROR);
     }
 
-    bool result;
+    int err;
+    int result;
     int nbytes = ::recv (r, (char*) cmd_, sizeof (command_t), 0);
     if (nbytes == -1 && WSAGetLastError () == WSAEWOULDBLOCK) {
-        result = false;
+        err = EAGAIN;
+        result = -1;
     }
     else {
         wsa_assert (nbytes != -1);
@@ -133,7 +135,7 @@ bool zmq::signaler_t::recv (command_t *cmd_, bool block_)
         //  Check whether we haven't got half of a signal.
         zmq_assert (nbytes % sizeof (uint32_t) == 0);
 
-        result = true;
+        result = 0;
     }
 
     if (block_) {
@@ -144,6 +146,8 @@ bool zmq::signaler_t::recv (command_t *cmd_, bool block_)
         wsa_assert (rc != SOCKET_ERROR);
     }
 
+    if (result == -1)
+        errno = err;
     return result;
 }
 
@@ -184,7 +188,7 @@ void zmq::signaler_t::send (const command_t &cmd_)
     zmq_assert (nbytes == sizeof (command_t));
 }
 
-bool zmq::signaler_t::recv (command_t *cmd_, bool block_)
+int zmq::signaler_t::recv (command_t *cmd_, bool block_)
 {
     if (block_) {
 
@@ -196,13 +200,12 @@ bool zmq::signaler_t::recv (command_t *cmd_, bool block_)
         errno_assert (rc != -1);
     }
 
-    bool result;
-    ssize_t nbytes;
-    do {
-        nbytes = ::recv (r, (char*) cmd_, sizeof (command_t), 0);
-    } while (nbytes == -1 && errno == EINTR);
-    if (nbytes == -1 && errno == EAGAIN) {
-        result = false;
+    int err;
+    int result;
+    ssize_t nbytes = ::recv (r, (char*) cmd_, sizeof (command_t), 0);
+    if (nbytes == -1 && (errno == EAGAIN || errno == EINTR)) {
+        err = errno;
+        result = -1;
     }
     else {
         zmq_assert (nbytes != -1);
@@ -210,7 +213,7 @@ bool zmq::signaler_t::recv (command_t *cmd_, bool block_)
         //  Check whether we haven't got half of command.
         zmq_assert (nbytes == sizeof (command_t));
 
-        result = true;
+        result = 0;
     }
 
    if (block_) {
@@ -223,6 +226,8 @@ bool zmq::signaler_t::recv (command_t *cmd_, bool block_)
         errno_assert (rc != -1);
     }
 
+    if (result == -1)
+        errno = err;
     return result;
 }
 
@@ -266,24 +271,18 @@ void zmq::signaler_t::send (const command_t &cmd_)
     zmq_assert (nbytes == sizeof (command_t));
 }
 
-bool zmq::signaler_t::recv (command_t *cmd_, bool block_)
+int zmq::signaler_t::recv (command_t *cmd_, bool block_)
 {
     ssize_t nbytes;
-    do {
-        nbytes = ::recv (r, cmd_, sizeof (command_t),
-            block_ ? 0 : MSG_DONTWAIT);
-    } while (nbytes == -1 && errno == EINTR);
-
-    //  If there's no signal available return false.
-    if (nbytes == -1 && errno == EAGAIN)
-        return false;
-
+    nbytes = ::recv (r, cmd_, sizeof (command_t), block_ ? 0 : MSG_DONTWAIT);
+    if (nbytes == -1 && (errno == EAGAIN || errno == EINTR))
+        return -1;
     errno_assert (nbytes != -1);
 
     //  Check whether we haven't got half of command.
     zmq_assert (nbytes == sizeof (command_t));
 
-    return true;
+    return 0;
 }
 
 #endif

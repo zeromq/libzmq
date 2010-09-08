@@ -219,11 +219,6 @@ void zmq::ctx_t::send_command (uint32_t slot_, const command_t &command_)
     slots [slot_]->send (command_);
 }
 
-bool zmq::ctx_t::recv_command (uint32_t slot_, command_t *command_, bool block_)
-{
-    return slots [slot_]->recv (command_, block_);
-}
-
 zmq::io_thread_t *zmq::ctx_t::choose_io_thread (uint64_t affinity_)
 {
     //  Find the I/O thread with minimum load.

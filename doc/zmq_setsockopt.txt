@@ -231,6 +231,8 @@ _option_value_ is invalid.
 The 0MQ 'context' associated with the specified 'socket' was terminated.
 *EFAULT*::
 The provided 'socket' was not valid (NULL).
+*EINTR*::
+The operation was interrupted by delivery of a signal.
 
 
 EXAMPLE

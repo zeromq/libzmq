@@ -409,17 +409,12 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 
     while (true) {
 
-        //  Wait for events. Ignore interrupts if there's infinite timeout.
+        //  Wait for events.
         while (true) {
             int rc = poll (pollfds, nitems_, first_pass ? 0 : timeout);
             if (rc == -1 && errno == EINTR) {
-                if (timeout_ < 0)
-                    continue;
-                else {
-                    //  TODO: Calculate remaining timeout and restart poll ().
-                    free (pollfds);
-                    return 0;
-                }
+                free (pollfds);
+                return -1;
             }
             errno_assert (rc >= 0);
             break;
@@ -473,6 +468,9 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         //  we can restart the polling.
         if (timeout == -1 && nevents == 0)
             continue;
+
+        //  TODO: if nevents is zero recompute timeout and loop
+        //  if it is not yet reached.
 
         break;
     }
@@ -544,13 +542,8 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 #if defined ZMQ_HAVE_WINDOWS
             wsa_assert (rc != SOCKET_ERROR);
 #else
-            if (rc == -1 && errno == EINTR) {
-                if (timeout_ < 0)
-                    continue;
-                else
-                    //  TODO: Calculate remaining timeout and restart select ().
-                    return 0;
-            }
+            if (rc == -1 && errno == EINTR)
+                return -1;
             errno_assert (rc >= 0);
 #endif
             break;
@@ -609,6 +602,9 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         //  we can restart the polling.
         if (timeout_ < 0 && nevents == 0)
             continue;
+
+        //  TODO: if nevents is zero recompute timeout and loop
+        //  if it is not yet reached.
 
         break;
     }

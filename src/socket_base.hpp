@@ -124,7 +124,6 @@ namespace zmq
 
     private:
 
-//  TODO: Check whether we still need this flag...
         //  If true, socket was already closed but not yet deallocated
         //  because either shutdown is in process or there are still pipes
         //  attached to the socket.
@@ -147,7 +146,7 @@ namespace zmq
         //  set to true, returns only after at least one command was processed.
         //  If throttle argument is true, commands are processed at most once
         //  in a predefined time period.
-        void process_commands (bool block_, bool throttle_);
+        int process_commands (bool block_, bool throttle_);
 
         //  Handlers for incoming commands.
         void process_stop ();

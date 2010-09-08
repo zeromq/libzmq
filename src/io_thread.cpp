@@ -71,8 +71,12 @@ void zmq::io_thread_t::in_event ()
 
         //  Get the next command. If there is none, exit.
         command_t cmd;
-        if (!signaler.recv (&cmd, false))
-            break;
+        int rc = signaler.recv (&cmd, false);
+        if (rc != 0 && errno == EINTR)
+            continue;
+        if (rc != 0 && errno == EAGAIN)
+             break;
+        errno_assert (rc == 0);
 
         //  Process the command.
         cmd.destination->process_command (cmd);

@@ -64,9 +64,6 @@ namespace zmq
         //  Send command to the destination slot.
         void send_command (uint32_t slot_, const command_t &command_);
 
-        //  Receive command from the source slot.
-        bool recv_command (uint32_t slot_, command_t *command_, bool block_);
-
         //  Returns the I/O thread that is the least busy at the moment.
         //  Taskset specifies which I/O threads are eligible (0 = all).
         class io_thread_t *choose_io_thread (uint64_t taskset_);
