@@ -64,7 +64,8 @@ zmq::ctx_t::ctx_t (uint32_t io_threads_) :
     }
 
     //  In the unused part of the slot array, create a list of empty slots.
-    for (uint32_t i = slot_count - 1; i >= io_threads_; i--) {
+    for (int32_t i = (int32_t) slot_count - 1;
+          i >= (int32_t) io_threads_; i--) {
         empty_slots.push_back (i);
         slots [i] = NULL;
     }
@@ -221,8 +222,10 @@ void zmq::ctx_t::send_command (uint32_t slot_, const command_t &command_)
 
 zmq::io_thread_t *zmq::ctx_t::choose_io_thread (uint64_t affinity_)
 {
+    if (io_threads.empty ())
+        return NULL;
+
     //  Find the I/O thread with minimum load.
-    zmq_assert (io_threads.size () > 0);
     int min_load = -1;
     io_threads_t::size_type result = 0;
     for (io_threads_t::size_type i = 0; i != io_threads.size (); i++) {

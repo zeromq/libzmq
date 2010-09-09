@@ -65,8 +65,9 @@ namespace zmq
         void send_command (uint32_t slot_, const command_t &command_);
 
         //  Returns the I/O thread that is the least busy at the moment.
-        //  Taskset specifies which I/O threads are eligible (0 = all).
-        class io_thread_t *choose_io_thread (uint64_t taskset_);
+        //  Affinity specifies which I/O threads are eligible (0 = all).
+        //  Returns NULL is no I/O thread is available.
+        class io_thread_t *choose_io_thread (uint64_t affinity_);
 
         //  Management of inproc endpoints.
         int register_endpoint (const char *addr_, class socket_base_t *socket_);

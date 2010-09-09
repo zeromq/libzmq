@@ -142,9 +142,9 @@ void zmq::object_t::log (zmq_msg_t *msg_)
     ctx->log (msg_);
 }
 
-zmq::io_thread_t *zmq::object_t::choose_io_thread (uint64_t taskset_)
+zmq::io_thread_t *zmq::object_t::choose_io_thread (uint64_t affinity_)
 {
-    return ctx->choose_io_thread (taskset_);
+    return ctx->choose_io_thread (affinity_);
 }
 
 void zmq::object_t::zombify_socket (socket_base_t *socket_)

@@ -289,8 +289,17 @@ int zmq::socket_base_t::bind (const char *addr_)
         return register_endpoint (addr_, this);
 
     if (protocol == "tcp" || protocol == "ipc") {
+
+        //  Choose I/O thread to run the listerner in.
+        io_thread_t *io_thread = choose_io_thread (options.affinity);
+        if (!io_thread) {
+            errno = EMTHREAD;
+            return -1;
+        }
+
+        //  Create and run the listener.
         zmq_listener_t *listener = new (std::nothrow) zmq_listener_t (
-            choose_io_thread (options.affinity), this, options);
+            io_thread, this, options);
         zmq_assert (listener);
         int rc = listener->set_address (protocol.c_str(), address.c_str ());
         if (rc != 0) {
@@ -376,10 +385,16 @@ int zmq::socket_base_t::connect (const char *addr_)
         return 0;
     }
 
+    //  Choose the I/O thread to run the session in.
+    io_thread_t *io_thread = choose_io_thread (options.affinity);
+    if (!io_thread) {
+        errno = EMTHREAD;
+        return -1;
+    }
+
     //  Create session.
     connect_session_t *session = new (std::nothrow) connect_session_t (
-        choose_io_thread (options.affinity), this, options,
-        protocol.c_str (), address.c_str ());
+        io_thread, this, options, protocol.c_str (), address.c_str ());
     zmq_assert (session);
 
     //  If 'immediate connect' feature is required, we'll create the pipes

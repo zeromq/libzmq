@@ -54,7 +54,7 @@ namespace zmq
         void log (zmq_msg_t *msg_);
 
         //  Chooses least loaded I/O thread.
-        class io_thread_t *choose_io_thread (uint64_t taskset_);
+        class io_thread_t *choose_io_thread (uint64_t affinity_);
 
         //  Zombify particular socket. In other words, pass the ownership to
         //  the context.

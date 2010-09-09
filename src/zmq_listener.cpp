@@ -64,9 +64,14 @@ void zmq::zmq_listener_t::in_event ()
     if (fd == retired_fd)
         return;
 
+    //  Choose I/O thread to run connecter in. Given that we are already
+    //  running in an I/O thread, there must be at least one available.
+    io_thread_t *io_thread = choose_io_thread (options.affinity);
+    zmq_assert (io_thread);
+
     //  Create and launch an init object. 
-    zmq_init_t *init = new (std::nothrow) zmq_init_t (
-        choose_io_thread (options.affinity), socket, NULL, fd, options);
+    zmq_init_t *init = new (std::nothrow) zmq_init_t (io_thread, socket,
+        NULL, fd, options);
     zmq_assert (init);
     launch_sibling (init);
 }

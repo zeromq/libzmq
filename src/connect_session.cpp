@@ -43,13 +43,18 @@ void zmq::connect_session_t::process_plug ()
 
 void zmq::connect_session_t::start_connecting ()
 {
+    //  Choose I/O thread to run connecter in. Given that we are already
+    //  running in an I/O thread, there must be at least one available.
+    io_thread_t *io_thread = choose_io_thread (options.affinity);
+    zmq_assert (io_thread);
+
     //  Create the connecter object.
 
     //  Both TCP and IPC transports are using the same infrastructure.
-    if (protocol == "tcp" || protocol == "ipc") {        
+    if (protocol == "tcp" || protocol == "ipc") {
+
         zmq_connecter_t *connecter = new (std::nothrow) zmq_connecter_t (
-            choose_io_thread (options.affinity), this, options,
-            protocol.c_str (), address.c_str ());
+            io_thread, this, options, protocol.c_str (), address.c_str ());
         zmq_assert (connecter);
         launch_child (connecter);
         return;
@@ -70,7 +75,7 @@ void zmq::connect_session_t::start_connecting ()
 
             //  PGM sender.
             pgm_sender_t *pgm_sender =  new (std::nothrow) pgm_sender_t (
-                choose_io_thread (options.affinity), options);
+                io_thread, options);
             zmq_assert (pgm_sender);
 
             int rc = pgm_sender->init (udp_encapsulation, address.c_str ());
@@ -82,7 +87,7 @@ void zmq::connect_session_t::start_connecting ()
 
             //  PGM receiver.
             pgm_receiver_t *pgm_receiver =  new (std::nothrow) pgm_receiver_t (
-                choose_io_thread (options.affinity), options);
+                io_thread, options);
             zmq_assert (pgm_receiver);
 
             int rc = pgm_receiver->init (udp_encapsulation, address.c_str ());
