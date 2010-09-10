@@ -65,9 +65,6 @@ void zmq::lb_t::terminate ()
 
 void zmq::lb_t::terminated (writer_t *pipe_)
 {
-    // TODO: ???
-    zmq_assert (!more || pipes [current] != pipe_);
-
     //  Remove the pipe from the list; adjust number of active pipes
     //  accordingly.
     if (pipes.index (pipe_) < active) {
