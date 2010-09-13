@@ -309,24 +309,24 @@ void zmq::writer_t::process_activate_writer (uint64_t msgs_read_)
         }
         if (!pipe->flush ())
             send_activate_reader (reader);
-    }
 
-    //  There are no more messages in the swap. We can switch into
-    //  standard in-memory mode.
-    if (swap->empty ()) {        
-        swapping = false;
+        //  There are no more messages in the swap. We can switch into
+        //  standard in-memory mode.
+        if (swap->empty ()) {        
+            swapping = false;
 
-        //  Push delimiter into the pipe. Trick the compiler to belive that
-        //  the tag is a valid pointer. Note that watermarks are not checked
-        //  thus the delimiter can be written even though the pipe is full.
-        if (pending_delimiter) {
-            zmq_msg_t msg;
-            const unsigned char *offset = 0;
-            msg.content = (void*) (offset + ZMQ_DELIMITER);
-            msg.flags = 0;
-            pipe->write (msg, false);
-            flush ();
-            return;
+            //  Push delimiter into the pipe. Trick the compiler to belive that
+            //  the tag is a valid pointer. Note that watermarks are not checked
+            //  thus the delimiter can be written even though the pipe is full.
+            if (pending_delimiter) {
+                zmq_msg_t msg;
+                const unsigned char *offset = 0;
+                msg.content = (void*) (offset + ZMQ_DELIMITER);
+                msg.flags = 0;
+                pipe->write (msg, false);
+                flush ();
+                return;
+            }
         }
     }
 
