@@ -53,7 +53,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         return 0;
 
     case ZMQ_SWAP:
-        if (optvallen_ != sizeof (int64_t)) {
+        if (optvallen_ != sizeof (int64_t) || *((int64_t*) optval_) < 0) {
             errno = EINVAL;
             return -1;
         }
@@ -82,7 +82,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         return 0;
 
     case ZMQ_RATE:
-        if (optvallen_ != sizeof (int64_t)) {
+        if (optvallen_ != sizeof (int64_t) || *((int64_t*) optval_) < 0) {
             errno = EINVAL;
             return -1;
         }
@@ -90,7 +90,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         return 0;
         
     case ZMQ_RECOVERY_IVL:
-        if (optvallen_ != sizeof (int64_t)) {
+        if (optvallen_ != sizeof (int64_t)  || *((int64_t*) optval_) < 0) {
             errno = EINVAL;
             return -1;
         }
