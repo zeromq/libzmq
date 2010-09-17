@@ -84,6 +84,7 @@ int zmq::req_t::xrecv (zmq_msg_t *msg_, int flags_)
             return rc;
         zmq_assert (msg_->flags & ZMQ_MSG_MORE);
         zmq_assert (zmq_msg_size (msg_) == 0);
+        message_begins = false;
     }
 
     int rc = xreq_t::xrecv (msg_, flags_);
