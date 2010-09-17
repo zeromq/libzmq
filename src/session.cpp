@@ -178,6 +178,14 @@ void zmq::session_t::finalise ()
 void zmq::session_t::process_attach (i_engine *engine_,
     const blob_t &peer_identity_)
 {
+    //  If some other object (e.g. init) notifies us that the connection failed
+    //  we need to start the reconnection process.
+    if (!engine_) {
+        zmq_assert (!engine);
+        detached ();
+        return;
+    }
+
     //  Check whether the required pipes already exist. If not so, we'll
     //  create them and bind them to the socket object.
     reader_t *socket_reader = NULL;

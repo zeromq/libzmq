@@ -64,7 +64,8 @@ namespace zmq
                 class own_t *object;
             } own;
 
-            //  Attach the engine to the session.
+            //  Attach the engine to the session. If engine is NULL, it informs
+            //  session that the connection have failed.
             struct {
                 struct i_engine *engine;
                 unsigned char peer_identity_size;
