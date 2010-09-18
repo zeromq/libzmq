@@ -703,16 +703,6 @@ void zmq::socket_base_t::process_stop ()
 void zmq::socket_base_t::process_bind (reader_t *in_pipe_, writer_t *out_pipe_,
     const blob_t &peer_identity_)
 {
-    //  If the socket is already being shut down, the termination process on
-    //  the new pipes is started immediately. However, they are still attached
-    //  as to let the process finish in a decent manner.
-    if (unlikely (zombie)) {
-        if (in_pipe_)
-            in_pipe_->terminate ();
-        if (out_pipe_)
-            out_pipe_->terminate ();
-    }
-
     attach_pipes (in_pipe_, out_pipe_, peer_identity_);
 }
 

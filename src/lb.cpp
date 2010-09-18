@@ -52,6 +52,7 @@ void zmq::lb_t::attach (writer_t *pipe_)
 
 void zmq::lb_t::terminate ()
 {
+    zmq_assert (!terminating);
     terminating = true;
 
     if (pipes.empty ()) {

@@ -73,6 +73,7 @@ void zmq::fq_t::terminated (reader_t *pipe_)
 
 void zmq::fq_t::terminate ()
 {
+    zmq_assert (!terminating);
     terminating = true;
 
     if (pipes.empty ()) {
