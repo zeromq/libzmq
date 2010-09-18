@@ -22,9 +22,9 @@
 #include "lb.hpp"
 #include "pipe.hpp"
 #include "err.hpp"
-#include "i_terminate_events.hpp"
+#include "own.hpp"
 
-zmq::lb_t::lb_t (i_terminate_events *sink_) :
+zmq::lb_t::lb_t (own_t *sink_) :
     active (0),
     current (0),
     more (false),
@@ -46,8 +46,10 @@ void zmq::lb_t::attach (writer_t *pipe_)
     pipes.swap (active, pipes.size () - 1);
     active++;
 
-    if (terminating)
+    if (terminating) {
+        sink->register_term_acks (1);
         pipe_->terminate ();
+    }
 }
 
 void zmq::lb_t::terminate ()
@@ -55,11 +57,7 @@ void zmq::lb_t::terminate ()
     zmq_assert (!terminating);
     terminating = true;
 
-    if (pipes.empty ()) {
-        sink->terminated ();
-        return;
-    }
-
+    sink->register_term_acks (pipes.size ());
     for (pipes_t::size_type i = 0; i != pipes.size (); i++)
         pipes [i]->terminate ();
 }
@@ -75,8 +73,8 @@ void zmq::lb_t::terminated (writer_t *pipe_)
     }
     pipes.erase (pipe_);
 
-    if (terminating && pipes.empty ())
-        sink->terminated ();
+    if (terminating)
+        sink->unregister_term_ack ();
 }
 
 void zmq::lb_t::activated (writer_t *pipe_)

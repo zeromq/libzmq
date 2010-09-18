@@ -52,6 +52,14 @@ namespace zmq
         //  before the command is delivered.
         void inc_seqnum ();
 
+        //  Use following two functions to wait for arbitrary events before
+        //  terminating. Just add number of events to wait for using
+        //  register_tem_acks functions. When event occurs, call
+        //  remove_term_ack. When number of pending acks reaches zero
+        //  object will be deallocated.
+        void register_term_acks (int count_);
+        void unregister_term_ack ();
+
     protected:
 
         //  Launch the supplied object and become its owner.
@@ -76,14 +84,6 @@ namespace zmq
         //  be intercepted by the derived class. This is useful to add custom
         //  steps to the beginning of the termination process.
         void process_term ();
-
-        //  Use following two functions to wait for arbitrary events before
-        //  terminating. Just add number of events to wait for using
-        //  register_tem_acks functions. When event occurs, call
-        //  remove_term_ack. When number of pending acks reaches zero
-        //  object will be deallocated.
-        void register_term_acks (int count_);
-        void unregister_term_ack ();
 
         //  A place to hook in when phyicallal destruction of the object
         //  is to be delayed.

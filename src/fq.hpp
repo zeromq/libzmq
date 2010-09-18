@@ -33,7 +33,7 @@ namespace zmq
     {
     public:
 
-        fq_t (struct i_terminate_events *sink_);
+        fq_t (class own_t *sink_);
         ~fq_t ();
 
         void attach (reader_t *pipe_);
@@ -64,7 +64,7 @@ namespace zmq
         bool more;
 
         //  Object to send events to.
-        i_terminate_events *sink;
+        class own_t *sink;
 
         //  If true, termination process is already underway.
         bool terminating;

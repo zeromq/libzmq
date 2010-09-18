@@ -72,7 +72,6 @@ libzmq_la_SOURCES = \
     ip.hpp \
     i_engine.hpp \
     i_poll_events.hpp \
-    i_terminate_events.hpp \
     kqueue.hpp \
     lb.hpp \
     likely.hpp \

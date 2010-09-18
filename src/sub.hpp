@@ -24,13 +24,12 @@
 
 #include "trie.hpp"
 #include "socket_base.hpp"
-#include "i_terminate_events.hpp"
 #include "fq.hpp"
 
 namespace zmq
 {
 
-    class sub_t : public socket_base_t, public i_terminate_events
+    class sub_t : public socket_base_t
     {
     public:
 
@@ -47,9 +46,6 @@ namespace zmq
         bool xhas_in ();
 
     private:
-
-        //  i_terminate_events interface implementation.
-        void terminated ();
 
         //  Hook into the termination process.
         void process_term ();

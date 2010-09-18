@@ -43,15 +43,8 @@ void zmq::pull_t::xattach_pipes (class reader_t *inpipe_,
 
 void zmq::pull_t::process_term ()
 {
-    register_term_acks (1);
     fq.terminate ();
-
     socket_base_t::process_term ();
-}
-
-void zmq::pull_t::terminated ()
-{
-    unregister_term_ack ();
 }
 
 int zmq::pull_t::xrecv (zmq_msg_t *msg_, int flags_)

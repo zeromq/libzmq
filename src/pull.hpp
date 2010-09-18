@@ -20,14 +20,13 @@
 #ifndef __ZMQ_PULL_HPP_INCLUDED__
 #define __ZMQ_PULL_HPP_INCLUDED__
 
-#include "i_terminate_events.hpp"
 #include "socket_base.hpp"
 #include "fq.hpp"
 
 namespace zmq
 {
 
-    class pull_t : public socket_base_t, public i_terminate_events
+    class pull_t : public socket_base_t
     {
     public:
 
@@ -43,9 +42,6 @@ namespace zmq
         bool xhas_in ();
 
     private:
-
-        //  i_terminate_events interface implementation.
-        void terminated ();
 
         //  Hook into the termination process.
         void process_term ();

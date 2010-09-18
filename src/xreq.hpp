@@ -21,14 +21,13 @@
 #define __ZMQ_XREQ_HPP_INCLUDED__
 
 #include "socket_base.hpp"
-#include "i_terminate_events.hpp"
 #include "fq.hpp"
 #include "lb.hpp"
 
 namespace zmq
 {
 
-    class xreq_t : public socket_base_t, public i_terminate_events
+    class xreq_t : public socket_base_t
     {
     public:
 
@@ -46,9 +45,6 @@ namespace zmq
         bool xhas_out ();
 
     private:
-
-        //  i_terminate_events interface implementation.
-        void terminated ();
 
         //  Hook into the termination process.
         void process_term ();

@@ -49,15 +49,8 @@ void zmq::sub_t::xattach_pipes (class reader_t *inpipe_,
 
 void zmq::sub_t::process_term ()
 {
-    register_term_acks (1);
     fq.terminate ();
-
     socket_base_t::process_term ();
-}
-
-void zmq::sub_t::terminated ()
-{
-    unregister_term_ack ();
 }
 
 int zmq::sub_t::xsetsockopt (int option_, const void *optval_,

@@ -44,15 +44,8 @@ void zmq::push_t::xattach_pipes (class reader_t *inpipe_,
 
 void zmq::push_t::process_term ()
 {
-    register_term_acks (1);
     lb.terminate ();
-
     socket_base_t::process_term ();
-}
-
-void zmq::push_t::terminated ()
-{
-    unregister_term_ack ();
 }
 
 int zmq::push_t::xsend (zmq_msg_t *msg_, int flags_)
