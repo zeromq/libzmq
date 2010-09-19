@@ -123,6 +123,8 @@ namespace zmq
         //  True if term command was already processed.
         bool term_processed;
 
+        bool finalised;
+
         session_t (const session_t&);
         void operator = (const session_t&);
     };
