@@ -160,6 +160,13 @@ void zmq::session_t::process_plug ()
 
 void zmq::session_t::finalise ()
 {
+    //  There may be delimiter waiting in the inbound pipe, never to be read
+    //  because the connection cannot be established. In order to terminate
+    //  decently in such case, do check_read which will in turn start the pipe
+    //  termination process if there's delimiter in it.
+    if (in_pipe)
+        in_pipe->check_read ();
+
     //  If all conditions are met, proceed with termination:
     //  1. Owner object already asked us to terminate.
     //  2. The pipes were already attached to the session.
