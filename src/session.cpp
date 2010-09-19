@@ -31,7 +31,6 @@ zmq::session_t::session_t (class io_thread_t *io_thread_,
     options (options_),
     in_pipe (NULL),
     incomplete_in (false),
-    active (true),
     out_pipe (NULL),
     engine (NULL),
     socket (socket_),
@@ -60,13 +59,11 @@ void zmq::session_t::terminate ()
 
 bool zmq::session_t::read (::zmq_msg_t *msg_)
 {
-    if (!in_pipe || !active)
+    if (!in_pipe)
         return false;
 
-    if (!in_pipe->read (msg_)) {
-        active = false;
+    if (!in_pipe->read (msg_))
         return false;
-    }
 
     incomplete_in = msg_->flags & ZMQ_MSG_MORE;
     return true;
@@ -117,7 +114,6 @@ void zmq::session_t::attach_pipes (class reader_t *inpipe_,
     if (inpipe_) {
         zmq_assert (!in_pipe);
         in_pipe = inpipe_;
-        active = true;
         in_pipe->set_event_sink (this);
     }
 
@@ -133,7 +129,6 @@ void zmq::session_t::attach_pipes (class reader_t *inpipe_,
 
 void zmq::session_t::terminated (reader_t *pipe_)
 {
-    active = false;
     in_pipe = NULL;
     finalise ();
 }
@@ -147,7 +142,7 @@ void zmq::session_t::terminated (writer_t *pipe_)
 void zmq::session_t::activated (reader_t *pipe_)
 {
     zmq_assert (in_pipe == pipe_);
-    active = true;
+
     if (engine)
         engine->activate_out ();
 }

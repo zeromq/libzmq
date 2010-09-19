@@ -104,9 +104,6 @@ namespace zmq
         //  is still in the in pipe.
         bool incomplete_in;
 
-        //  If true, in_pipe is active. Otherwise there are no messages to get.
-        bool active;
-
         //  Outbound pipe, i.e. one the socket is sending messages to.
         class writer_t *out_pipe;
 
