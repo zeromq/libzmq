@@ -106,13 +106,6 @@ zmq::ctx_t::~ctx_t ()
 
 int zmq::ctx_t::terminate ()
 {
-    //  First send stop command to sockets so that any
-    //  blocking calls are interrupted.
-    slot_sync.lock ();
-    for (sockets_t::size_type i = 0; i != sockets.size (); i++)
-        sockets [i]->stop ();
-    slot_sync.unlock ();
-
     //  Close the logging infrastructure.
     log_sync.lock ();
     int rc = log_socket->close ();
@@ -120,26 +113,32 @@ int zmq::ctx_t::terminate ()
     log_socket = NULL;
     log_sync.unlock ();
 
-    //  Find out whether there are any open sockets to care about.
-    //  If so, sleep till they are closed. Note that we can use
-    //  no_sockets_notify safely out of the critical section as once set
-    //  its value is never changed again.
+    //  First send stop command to sockets so that any
+    //  blocking calls are interrupted.
     slot_sync.lock ();
+    for (sockets_t::size_type i = 0; i != sockets.size (); i++)
+        sockets [i]->stop ();
     if (!sockets.empty ())
         no_sockets_notify = true;
     slot_sync.unlock ();
+
+    //  Find out whether there are any open sockets to care about.
+    //  If there are open sockets, sleep till they are closed. Note that we can
+    //  use no_sockets_notify safely out of the critical section as once set
+    //  its value is never changed again.
     if (no_sockets_notify)
         no_sockets_sync.wait ();
+
+    //  Note that the lock won't block anyone here. There's noone else having
+    //  open sockets anyway. The only purpose of the lock is to double-check all
+    //  the CPU caches have been synchronised.
+    slot_sync.lock ();
 
     //  At this point there should be no active sockets. What we have is a set
     //  of zombies waiting to be dezombified.
     zmq_assert (sockets.empty ());
 
-    //  Get rid of remaining zombie sockets. Note that the lock won't block
-    //  anyone here. There's noone else having open sockets anyway. The only
-    //  purpose of the lock is to double-check all the CPU caches have been
-    //  synchronised.
-    slot_sync.lock ();
+    //  Get rid of remaining zombie sockets. 
     while (!zombies.empty ()) {
         dezombify ();
 
