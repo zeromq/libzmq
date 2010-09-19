@@ -153,14 +153,18 @@ void zmq::zmq_init_t::finalise_initialisation ()
         zmq_assert (socket);
 
         //  We have no associated session. If the peer has no identity we'll
-        //  create a transient session for the connection.
+        //  create a transient session for the connection. Note that
+        //  seqnum is incremented to account for attach command before the
+        //  session is launched. That way we are sure it won't terminate before
+        //  being attached.
         if (peer_identity [0] == 0) {
             session = new (std::nothrow) transient_session_t (io_thread,
                 socket, options);
             zmq_assert (session);
+            session->inc_seqnum ();
             launch_sibling (session);
             engine->unplug ();
-            send_attach (session, engine, peer_identity, true);
+            send_attach (session, engine, peer_identity, false);
             engine = NULL;
             terminate ();
             return;
@@ -179,13 +183,17 @@ void zmq::zmq_init_t::finalise_initialisation ()
             return;
         }
 
-        //  There's no such named session. We have to create one.
+        //  There's no such named session. We have to create one. Note that
+        //  seqnum is incremented to account for attach command before the
+        //  session is launched. That way we are sure it won't terminate before
+        //  being attached.
         session = new (std::nothrow) named_session_t (io_thread, socket,
             options, peer_identity);
         zmq_assert (session);
+        session->inc_seqnum ();
         launch_sibling (session);
         engine->unplug ();
-        send_attach (session, engine, peer_identity, true);
+        send_attach (session, engine, peer_identity, false);
         engine = NULL;
         terminate ();
         return;
