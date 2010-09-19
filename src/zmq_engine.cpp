@@ -40,7 +40,8 @@ zmq::zmq_engine_t::zmq_engine_t (fd_t fd_, const options_t &options_) :
     outsize (0),
     encoder (out_batch_size),
     inout (NULL),
-    options (options_)
+    options (options_),
+    plugged (false)
 {
     //  Initialise the underlying socket.
     int rc = tcp_socket.open (fd_, options.sndbuf, options.rcvbuf);
@@ -49,10 +50,14 @@ zmq::zmq_engine_t::zmq_engine_t (fd_t fd_, const options_t &options_) :
 
 zmq::zmq_engine_t::~zmq_engine_t ()
 {
+    zmq_assert (!plugged);
 }
 
 void zmq::zmq_engine_t::plug (io_thread_t *io_thread_, i_inout *inout_)
 {
+    zmq_assert (!plugged);
+    plugged = true;
+
     //  Conncet to session/init object.
     zmq_assert (!inout);
     zmq_assert (inout_);
@@ -72,6 +77,9 @@ void zmq::zmq_engine_t::plug (io_thread_t *io_thread_, i_inout *inout_)
 
 void zmq::zmq_engine_t::unplug ()
 {
+    zmq_assert (plugged);
+    plugged = false;
+
     //  Cancel all fd subscriptions.
     rm_fd (handle);
 

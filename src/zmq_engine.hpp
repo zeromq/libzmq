@@ -39,7 +39,6 @@ namespace zmq
     public:
 
         zmq_engine_t (fd_t fd_, const options_t &options_);
-        ~zmq_engine_t ();
 
         //  i_engine interface implementation.
         void plug (class io_thread_t *io_thread_, struct i_inout *inout_);
@@ -53,6 +52,10 @@ namespace zmq
         void out_event ();
 
     private:
+
+        //  Destructor is not to be used directly.
+        //  Use 'terminate' function instead.
+        ~zmq_engine_t ();
 
         //  Function to handle network disconnections.
         void error ();
@@ -71,6 +74,8 @@ namespace zmq
         i_inout *inout;
 
         options_t options;
+
+        bool plugged;
 
         zmq_engine_t (const zmq_engine_t&);
         void operator = (const zmq_engine_t&);

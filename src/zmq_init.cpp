@@ -49,7 +49,7 @@ zmq::zmq_init_t::zmq_init_t (io_thread_t *io_thread_,
 zmq::zmq_init_t::~zmq_init_t ()
 {
     if (engine)
-        delete engine;
+        engine->terminate ();
 }
 
 bool zmq::zmq_init_t::read (::zmq_msg_t *msg_)
