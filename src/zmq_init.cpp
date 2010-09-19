@@ -139,7 +139,10 @@ void zmq::zmq_init_t::finalise_initialisation ()
     if (sent && received) {
 
         //  If we know what session we belong to, it's easy, just send the
-        //  engine to that session and destroy the init object.
+        //  engine to that session and destroy the init object. Note that we
+        //  know about the session only if this object is owned by it. Thus,
+        //  lifetime of this object in contained in the lifetime of the session
+        //  so the pointer cannot become invalid without notice.
         if (session) {
             engine->unplug ();
             send_attach (session, engine, peer_identity, true);

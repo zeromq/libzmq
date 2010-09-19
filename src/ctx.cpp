@@ -108,8 +108,10 @@ int zmq::ctx_t::terminate ()
 {
     //  First send stop command to sockets so that any
     //  blocking calls are interrupted.
+    slot_sync.lock ();
     for (sockets_t::size_type i = 0; i != sockets.size (); i++)
         sockets [i]->stop ();
+    slot_sync.unlock ();
 
     //  Close the logging infrastructure.
     log_sync.lock ();
