@@ -365,13 +365,23 @@ int zmq_recv (void *s_, zmq_msg_t *msg_, int flags_)
     return (((zmq::socket_base_t*) s_)->recv (msg_, flags_));
 }
 
-int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
-{
-#if defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD ||\
+#if defined ZMQ_FORCE_SELECT
+#define ZMQ_POLL_BASED_ON_SELECT
+#elif defined ZMQ_FORCE_POLL
+#define ZMQ_POLL_BASED_ON_POLL
+#elif defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD ||\
     defined ZMQ_HAVE_OPENBSD || defined ZMQ_HAVE_SOLARIS ||\
     defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_QNXNTO ||\
     defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_AIX ||\
     defined ZMQ_HAVE_NETBSD
+#define ZMQ_POLL_BASED_ON_POLL
+#elif defined ZMQ_HAVE_WINDOWS || defined ZMQ_HAVE_OPENVMS
+#define ZMQ_POLL_BASED_ON_SELECT
+#endif
+
+int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
+{
+#if defined ZMQ_POLL_BASED_ON_POLL
 
     if (!items_) {
         errno = EFAULT;
@@ -480,7 +490,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     free (pollfds);
     return nevents;
 
-#elif defined ZMQ_HAVE_WINDOWS || defined ZMQ_HAVE_OPENVMS
+#elif defined ZMQ_POLL_BASED_ON_SELECT
 
     fd_set pollset_in;
     FD_ZERO (&pollset_in);
@@ -619,6 +629,13 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     return -1;
 #endif
 }
+
+#if defined ZMQ_POLL_BASED_ON_SELECT
+#undef ZMQ_POLL_BASED_ON_SELECT
+#endif
+#if defined ZMQ_POLL_BASED_ON_POLL
+#undef ZMQ_POLL_BASED_ON_POLL
+#endif
 
 int zmq_errno ()
 {
