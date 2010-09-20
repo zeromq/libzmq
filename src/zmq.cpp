@@ -569,24 +569,17 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             //  The poll item is a 0MQ socket. Retrieve pending events
             //  using the ZMQ_EVENTS socket option.
             if (items_ [i].socket) {
-                size_t zmq_fd_size = sizeof (zmq::fd_t);
-                zmq::fd_t notify_fd;
-                if (zmq_getsockopt (items_ [i].socket, ZMQ_FD, &notify_fd,
-                      &zmq_fd_size) == -1)
+                size_t zmq_events_size = sizeof (uint32_t);
+                uint32_t zmq_events;
+                if (zmq_getsockopt (items_ [i].socket, ZMQ_EVENTS, &zmq_events,
+                      &zmq_events_size) == -1)
                     return -1;
-                if (FD_ISSET (notify_fd, &inset)) {
-                    size_t zmq_events_size = sizeof (uint32_t);
-                    uint32_t zmq_events;
-                    if (zmq_getsockopt (items_ [i].socket, ZMQ_EVENTS, &zmq_events,
-                          &zmq_events_size) == -1)
-                        return -1;
-                    if ((items_ [i].events & ZMQ_POLLOUT) &&
-                          (zmq_events & ZMQ_POLLOUT))
-                        items_ [i].revents |= ZMQ_POLLOUT;
-                    if ((items_ [i].events & ZMQ_POLLIN) &&
-                          (zmq_events & ZMQ_POLLIN))
-                        items_ [i].revents |= ZMQ_POLLIN;
-                }
+                if ((items_ [i].events & ZMQ_POLLOUT) &&
+                      (zmq_events & ZMQ_POLLOUT))
+                    items_ [i].revents |= ZMQ_POLLOUT;
+                if ((items_ [i].events & ZMQ_POLLIN) &&
+                      (zmq_events & ZMQ_POLLIN))
+                    items_ [i].revents |= ZMQ_POLLIN;
             }
             //  Else, the poll item is a raw file descriptor, simply convert
             //  the events to zmq_pollitem_t-style format.
