@@ -79,7 +79,7 @@ bool zmq::zmq_init_t::write (::zmq_msg_t *msg_)
     if (received)
         return false;
 
-    //  Retreieve the remote identity. If it's empty, generate a unique name.
+    //  Retrieve the remote identity. If it's empty, generate a unique name.
     if (!zmq_msg_size (msg_)) {
         unsigned char identity [uuid_t::uuid_blob_len + 1];
         identity [0] = 0;

@@ -237,7 +237,7 @@ AC_LANG(C++)
 
 # pkg-config is used if found, and is required for builds with OpenPGM.
 # However, we need to provide a way to disable it entirely when the user
-# knows what she's doing and it's use is undesirable, such as when 
+# knows what she's doing and its use is undesirable, such as when 
 # cross-compiling.
 AC_ARG_WITH([pkg-config], [AS_HELP_STRING([--without-pkg-config], 
     [do not use pkg-config [default=no]])])

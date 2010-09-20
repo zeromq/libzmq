@@ -40,7 +40,7 @@ namespace zmq
         //  Note that the owner is unspecified in the constructor.
         //  It'll be supplied later on when the object is plugged in.
 
-        //  The object is not living within an I/O thread. It has it's own
+        //  The object is not living within an I/O thread. It has its own
         //  thread outside of 0MQ infrastructure.
         own_t (class ctx_t *parent_, uint32_t slot_);
 

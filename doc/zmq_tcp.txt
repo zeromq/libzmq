@@ -49,7 +49,7 @@ a colon and the TCP port number to use.
 A 'peer address' may be specified by either of the following:
 
 * The DNS name of the peer.
-* The IPv4 address of the peer, in it's numeric representation.
+* The IPv4 address of the peer, in its numeric representation.
 
 
 WIRE FORMAT
