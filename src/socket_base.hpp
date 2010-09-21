@@ -164,8 +164,8 @@ namespace zmq
         //  If true there's a half-read message in the socket.
         bool rcvmore;
 
-        //  Lists of existing sessions. This lists are never referenced from
-        //  within the socket, instead they are used by objects owned by
+        //  Lists of existing sessions. This list is never referenced from
+        //  within the socket, instead it is used by objects owned by
         //  the socket. As those objects can live in different threads,
         //  the access is synchronised by mutex.
         typedef std::map <blob_t, session_t*> sessions_t;
