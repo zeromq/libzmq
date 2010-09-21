@@ -124,10 +124,8 @@ namespace zmq
 
     private:
 
-        //  If true, socket was already closed but not yet deallocated
-        //  because either shutdown is in process or there are still pipes
-        //  attached to the socket.
-        bool zombie;
+        //  If true, associated context was already terminated.
+        bool ctx_terminated;
 
         //  If true, object should have been already destroyed. However,
         //  destruction is delayed while we unwind the stack to the point
