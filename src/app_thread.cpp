@@ -111,9 +111,11 @@ bool zmq::app_thread_t::process_commands (bool block_, bool throttle_)
 #error
 #endif
 
-            //  Check whether certain time have elapsed since last command
-            //  processing.
-            if (current_time - last_processing_time <= max_command_delay)
+            //  Check whether TSC haven't jumped backwards (in case of migration
+            //  between CPU cores) and whether certain time have elapsed since
+            //  last command processing. If it didn't do nothing.
+            if (current_time >= last_processing_time &&
+                  current_time - last_processing_time <= max_command_delay)
                 return !terminated;
             last_processing_time = current_time;
         }
