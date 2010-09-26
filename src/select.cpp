@@ -133,18 +133,6 @@ void zmq::select_t::reset_pollout (handle_t handle_)
     FD_CLR (handle_, &source_set_out);
 }
 
-void zmq::select_t::add_timer (int timeout_, i_poll_events *events_, int id_)
-{
-    timers.push_back (events_);
-}
-
-void zmq::select_t::cancel_timer (i_poll_events *events_, int id_)
-{
-    timers_t::iterator it = std::find (timers.begin (), timers.end (), events_);
-    if (it != timers.end ())
-        timers.erase (it);
-}
-
 void zmq::select_t::start ()
 {
     worker.start (worker_routine, this);
@@ -164,14 +152,13 @@ void zmq::select_t::loop ()
         memcpy (&writefds, &source_set_out, sizeof source_set_out);
         memcpy (&exceptfds, &source_set_err, sizeof source_set_err);
 
-        //  Compute the timout interval. Select is free to overwrite the
-        //  value so we have to compute it each time anew.
-        timeval timeout = {max_timer_period / 1000,
-            (max_timer_period % 1000) * 1000};
+        //  Execute any due timers.
+        uint64_t timeout = execute_timers ();
 
         //  Wait for events.
+        struct timeval tv = {timeout / 1000, timeout % 1000 * 1000};
         int rc = select (maxfd + 1, &readfds, &writefds, &exceptfds,
-            timers.empty () ? NULL : &timeout);
+            timeout ? &tv : NULL);
 
 #ifdef ZMQ_HAVE_WINDOWS
         wsa_assert (rc != SOCKET_ERROR);
@@ -181,20 +168,10 @@ void zmq::select_t::loop ()
         errno_assert (rc != -1);
 #endif
 
-        //  Handle timer.
-        if (!rc) {
-
-            //  Use local list of timers as timer handlers may fill new timers
-            //  into the original array.
-            timers_t t;
-            std::swap (timers, t);
-
-            //  Trigger all the timers.
-            for (timers_t::iterator it = t.begin (); it != t.end (); it ++)
-                (*it)->timer_event (-1);
-
+        //  If there are no events (i.e. it's a timeout) there's no point
+        //  in checking the pollset.
+        if (rc == 0)
             continue;
-        }
 
         for (fd_set_t::size_type i = 0; i < fds.size (); i ++) {
             if (fds [i].fd == retired_fd)

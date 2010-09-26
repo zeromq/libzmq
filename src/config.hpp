@@ -69,10 +69,6 @@ namespace zmq
         //  Maximum number of events the I/O thread can process in one go.
         max_io_events = 256,
 
-//  TODO: To be removed
-        //  Maximal wait time for a timer (milliseconds).
-        max_timer_period = 100,
-
         //  How long to wait (milliseconds) till reattempting to connect.
         reconnect_period = 100,
 

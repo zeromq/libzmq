@@ -51,7 +51,7 @@ namespace zmq
         //  Handlers for I/O events.
         void in_event ();
         void out_event ();
-        void timer_event ();
+        void timer_event (int id_);
 
         //  Internal function to start the actual connection establishment.
         void start_connecting ();

@@ -132,18 +132,6 @@ void zmq::kqueue_t::reset_pollout (handle_t handle_)
     kevent_delete (pe->fd, EVFILT_WRITE);
 }
 
-void zmq::kqueue_t::add_timer (int timeout_, i_poll_events *events_, int id_)
-{
-     timers.push_back (events_);
-}
-
-void zmq::kqueue_t::cancel_timer (i_poll_events *events_, int id_)
-{
-    timers_t::iterator it = std::find (timers.begin (), timers.end (), events_);
-    if (it != timers.end ())
-        timers.erase (it);
-}
-
 void zmq::kqueue_t::start ()
 {
     worker.start (worker_routine, this);
@@ -158,33 +146,17 @@ void zmq::kqueue_t::loop ()
 {
     while (!stopping) {
 
-        struct kevent ev_buf [max_io_events];
-
-        //  Compute time interval to wait.
-        timespec timeout = {max_timer_period / 1000,
-            (max_timer_period % 1000) * 1000000};
+        //  Execute any due timers.
+        uint64_t timeout = execute_timers ();
 
         //  Wait for events.
-        int n = kevent (kqueue_fd, NULL, 0,
-             &ev_buf [0], max_io_events, timers.empty () ? NULL : &timeout);
+        struct kevent ev_buf [max_io_events];
+        timespec ts = {timeout / 1000, (timeout % 1000) * 1000000};
+        int n = kevent (kqueue_fd, NULL, 0, &ev_buf [0], max_io_events,
+            timeout ? &ts: NULL);
         if (n == -1 && errno == EINTR)
             continue;
         errno_assert (n != -1);
-
-        //  Handle timer.
-        if (!n) {
-
-            //  Use local list of timers as timer handlers may fill new timers
-            //  into the original array.
-            timers_t t;
-            std::swap (timers, t);
-
-            //  Trigger all the timers.
-            for (timers_t::iterator it = t.begin (); it != t.end (); it ++)
-                (*it)->timer_event (-1);
-
-            continue;
-        }
 
         for (int i = 0; i < n; i ++) {
             poll_entry_t *pe = (poll_entry_t*) ev_buf [i].udata;

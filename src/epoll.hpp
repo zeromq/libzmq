@@ -53,8 +53,6 @@ namespace zmq
         void reset_pollin (handle_t handle_);
         void set_pollout (handle_t handle_);
         void reset_pollout (handle_t handle_);
-        void add_timer (int timeout_, struct i_poll_events *events_, int id_);
-        void cancel_timer (struct i_poll_events *events_, int id_);
         void start ();
         void stop ();
 
@@ -79,10 +77,6 @@ namespace zmq
         //  List of retired event sources.
         typedef std::vector <poll_entry_t*> retired_t;
         retired_t retired;
-
-        //  List of all the engines waiting for the timer event.
-        typedef std::vector <struct i_poll_events*> timers_t;
-        timers_t timers;
 
         //  If true, thread is in the process of shutting down.
         bool stopping;

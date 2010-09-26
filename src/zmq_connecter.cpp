@@ -92,8 +92,9 @@ void zmq::zmq_connecter_t::out_event ()
     terminate ();
 }
 
-void zmq::zmq_connecter_t::timer_event ()
+void zmq::zmq_connecter_t::timer_event (int id_)
 {
+    zmq_assert (id_ == reconnect_timer_id);
     wait = false;
     start_connecting ();
 }
