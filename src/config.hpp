@@ -74,11 +74,13 @@ namespace zmq
 
         //  Maximal delay to process command in API thread (in CPU ticks).
         //  3,000,000 ticks equals to 1 - 2 milliseconds on current CPUs.
+        //  Note that delay is only applied when there is continuous stream of
+        //  messages to process. If not so, commands are processed immediately.
         max_command_delay = 3000000,
 
         //  Low-precision clock precision in CPU ticks. 1ms. Value of 1000000
         //  should be OK for CPU frequencies above 1GHz. If should work
-        //  reasonably well fro CPU frequencies above 500MHz. For lower CPU
+        //  reasonably well for CPU frequencies above 500MHz. For lower CPU
         //  frequencies you may consider lowering this value to get best
         //  possible latencies.
         clock_precision = 1000000,

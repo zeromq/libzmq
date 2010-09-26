@@ -40,6 +40,9 @@ namespace zmq
 
         //  Hook into session's disconnection mechanism.
         void detached ();
+
+        transient_session_t (const transient_session_t&);
+        void operator = (const transient_session_t&);
     };
 
 }

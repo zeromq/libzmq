@@ -49,6 +49,9 @@ namespace zmq
 
         //  Name of the session. Corresponds to the peer's strong identity.
         blob_t name;
+
+        named_session_t (const named_session_t&);
+        void operator = (const named_session_t&);
     };
 
 }

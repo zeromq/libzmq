@@ -53,6 +53,9 @@ namespace zmq
         //  Address to connect to.
         std::string protocol;
         std::string address;
+
+        connect_session_t (const connect_session_t&);
+        void operator = (const connect_session_t&);
     };
 
 }
