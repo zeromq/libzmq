@@ -128,12 +128,12 @@ void zmq::devpoll_t::reset_pollout (handle_t handle_)
     devpoll_ctl (handle_, fd_table [handle_].events);
 }
 
-void zmq::devpoll_t::add_timer (i_poll_events *events_)
+void zmq::devpoll_t::add_timer (int timeout_, i_poll_events *events_, int id_)
 {
      timers.push_back (events_);
 }
 
-void zmq::devpoll_t::cancel_timer (i_poll_events *events_)
+void zmq::devpoll_t::cancel_timer (i_poll_events *events_, int id_)
 {
     timers_t::iterator it = std::find (timers.begin (), timers.end (), events_);
     if (it != timers.end ())
@@ -190,7 +190,7 @@ void zmq::devpoll_t::loop ()
 
             //  Trigger all the timers.
             for (timers_t::iterator it = t.begin (); it != t.end (); it ++)
-                (*it)->timer_event ();
+                (*it)->timer_event (-1);
 
             continue;
         }

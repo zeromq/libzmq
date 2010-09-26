@@ -58,8 +58,8 @@ namespace zmq
         void reset_pollin (handle_t handle_);
         void set_pollout (handle_t handle_);
         void reset_pollout (handle_t handle_);
-        void add_timer (struct i_poll_events *events_);
-        void cancel_timer (struct i_poll_events *events_);
+        void add_timer (int timeout_, struct i_poll_events *events_, int id_);
+        void cancel_timer (struct i_poll_events *events_, int id_);
         int get_load ();
         void start ();
         void stop ();

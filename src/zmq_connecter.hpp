@@ -42,6 +42,9 @@ namespace zmq
 
     private:
 
+        //  ID of the timer used to delay the reconnection.
+        enum {reconnect_timer_id = 1};
+
         //  Handlers for incoming commands.
         void process_plug ();
 

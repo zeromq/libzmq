@@ -56,7 +56,7 @@ namespace zmq
         //  i_poll_events implementation.
         void in_event ();
         void out_event ();
-        void timer_event ();
+        void timer_event (int id_);
 
         //  Used by io_objects to retrieve the assciated poller object.
         poller_t *get_poller ();

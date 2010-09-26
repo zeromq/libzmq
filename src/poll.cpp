@@ -112,12 +112,12 @@ void zmq::poll_t::reset_pollout (handle_t handle_)
     pollset [index].events &= ~((short) POLLOUT);
 }
 
-void zmq::poll_t::add_timer (i_poll_events *events_)
+void zmq::poll_t::add_timer (int timeout_, i_poll_events *events_, int id_)
 {
      timers.push_back (events_);
 }
 
-void zmq::poll_t::cancel_timer (i_poll_events *events_)
+void zmq::poll_t::cancel_timer (i_poll_events *events_, int id_)
 {
     timers_t::iterator it = std::find (timers.begin (), timers.end (), events_);
     if (it != timers.end ())
@@ -160,7 +160,7 @@ void zmq::poll_t::loop ()
 
             //  Trigger all the timers.
             for (timers_t::iterator it = t.begin (); it != t.end (); it ++)
-                (*it)->timer_event ();
+                (*it)->timer_event (-1);
 
             continue;
         }

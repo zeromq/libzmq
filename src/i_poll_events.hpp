@@ -37,7 +37,7 @@ namespace zmq
         virtual void out_event () = 0;
  
         // Called when timer expires.
-        virtual void timer_event () = 0;
+        virtual void timer_event (int id_) = 0;
     };
  
 }

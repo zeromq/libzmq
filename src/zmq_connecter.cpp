@@ -42,7 +42,7 @@ zmq::zmq_connecter_t::zmq_connecter_t (class io_thread_t *io_thread_,
 zmq::zmq_connecter_t::~zmq_connecter_t ()
 {
     if (wait)
-        cancel_timer ();
+        cancel_timer (reconnect_timer_id);
     if (handle_valid)
         rm_fd (handle);
 }
@@ -50,7 +50,7 @@ zmq::zmq_connecter_t::~zmq_connecter_t ()
 void zmq::zmq_connecter_t::process_plug ()
 {
     if (wait)
-        add_timer ();
+        add_timer (reconnect_period, reconnect_timer_id);
     else
         start_connecting ();
 }
@@ -73,7 +73,7 @@ void zmq::zmq_connecter_t::out_event ()
     if (fd == retired_fd) {
         tcp_connecter.close ();
         wait = true;
-        add_timer ();
+        add_timer (reconnect_period, reconnect_timer_id);
         return;
     }
 
@@ -121,5 +121,5 @@ void zmq::zmq_connecter_t::start_connecting ()
 
     //  Handle any other error condition by eventual reconnect.
     wait = true;
-    add_timer ();
+    add_timer (reconnect_period, reconnect_timer_id);
 }

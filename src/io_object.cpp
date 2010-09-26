@@ -80,14 +80,14 @@ void zmq::io_object_t::reset_pollout (handle_t handle_)
     poller->reset_pollout (handle_);
 }
 
-void zmq::io_object_t::add_timer ()
+void zmq::io_object_t::add_timer (int timeout_, int id_)
 {
-    poller->add_timer (this);
+    poller->add_timer (timeout_, this, id_);
 }
 
-void zmq::io_object_t::cancel_timer ()
+void zmq::io_object_t::cancel_timer (int id_)
 {
-    poller->cancel_timer (this);
+    poller->cancel_timer (this, id_);
 }
 
 void zmq::io_object_t::in_event ()
@@ -100,7 +100,7 @@ void zmq::io_object_t::out_event ()
     zmq_assert (false);
 }
 
-void zmq::io_object_t::timer_event ()
+void zmq::io_object_t::timer_event (int id_)
 {
     zmq_assert (false);
 }

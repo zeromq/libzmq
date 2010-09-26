@@ -89,7 +89,7 @@ void zmq::io_thread_t::out_event ()
     zmq_assert (false);
 }
 
-void zmq::io_thread_t::timer_event ()
+void zmq::io_thread_t::timer_event (int id_)
 {
     //  No timers here. This function is never called.
     zmq_assert (false);
