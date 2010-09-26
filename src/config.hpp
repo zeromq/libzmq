@@ -76,6 +76,13 @@ namespace zmq
         //  3,000,000 ticks equals to 1 - 2 milliseconds on current CPUs.
         max_command_delay = 3000000,
 
+        //  Low-precision clock precision in CPU ticks. 1ms. Value of 1000000
+        //  should be OK for CPU frequencies above 1GHz. If should work
+        //  reasonably well fro CPU frequencies above 500MHz. For lower CPU
+        //  frequencies you may consider lowering this value to get best
+        //  possible latencies.
+        clock_precision = 1000000,
+
         //  Maximal number of non-accepted connections that can be held by
         //  TCP listener object.
         tcp_connection_backlog = 10,

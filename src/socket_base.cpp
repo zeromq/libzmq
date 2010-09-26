@@ -40,6 +40,7 @@
 #include "io_thread.hpp"
 #include "connect_session.hpp"
 #include "config.hpp"
+#include "clock.hpp"
 #include "pipe.hpp"
 #include "err.hpp"
 #include "ctx.hpp"
@@ -55,14 +56,6 @@
 #include "xreq.hpp"
 #include "xrep.hpp"
 #include "uuid.hpp"
-
-//  If the RDTSC is available we use it to prevent excessive
-//  polling for commands. The nice thing here is that it will work on any
-//  system with x86 architecture and gcc or MSVC compiler.
-#if (defined __GNUC__ && (defined __i386__ || defined __x86_64__)) ||\
-    (defined _MSC_VER && (defined _M_IX86 || defined _M_X64))
-#define ZMQ_DELAY_COMMANDS
-#endif
 
 zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
     uint32_t slot_)
@@ -109,7 +102,7 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t slot_) :
     own_t (parent_, slot_),
     ctx_terminated (false),
     destroyed (false),
-    last_processing_time (0),
+    last_tsc (0),
     ticks (0),
     rcvmore (false)
 {
@@ -486,7 +479,7 @@ int zmq::socket_base_t::recv (::zmq_msg_t *msg_, int flags_)
     //
     //  Note that 'recv' uses different command throttling algorithm (the one
     //  described above) from the one used by 'send'. This is because counting
-    //  ticks is more efficient than doing rdtsc all the time.
+    //  ticks is more efficient than doing RDTSC all the time.
     if (++ticks == inbound_poll_rate) {
         if (unlikely (process_commands (false, false) != 0))
             return -1;
@@ -627,35 +620,24 @@ int zmq::socket_base_t::process_commands (bool block_, bool throttle_)
     }
     else {
 
-#if defined ZMQ_DELAY_COMMANDS
+        //  Get the CPU's tick counter. If 0, the counter is not available.
+        uint64_t tsc = zmq::clock_t::rdtsc ();
+
         //  Optimised version of command processing - it doesn't have to check
         //  for incoming commands each time. It does so only if certain time
         //  elapsed since last command processing. Command delay varies
         //  depending on CPU speed: It's ~1ms on 3GHz CPU, ~2ms on 1.5GHz CPU
         //  etc. The optimisation makes sense only on platforms where getting
         //  a timestamp is a very cheap operation (tens of nanoseconds).
-        if (throttle_) {
+        if (tsc && throttle_) {
 
-            //  Get timestamp counter.
-#if defined __GNUC__
-            uint32_t low;
-            uint32_t high;
-            __asm__ volatile ("rdtsc" : "=a" (low), "=d" (high));
-            uint64_t current_time = (uint64_t) high << 32 | low;
-#elif defined _MSC_VER
-            uint64_t current_time = __rdtsc ();
-#else
-#error
-#endif
             //  Check whether TSC haven't jumped backwards (in case of migration
             //  between CPU cores) and whether certain time have elapsed since
             //  last command processing. If it didn't do nothing.
-            if (current_time >= last_processing_time &&
-                  current_time - last_processing_time <= max_command_delay)
+            if (tsc >= last_tsc && tsc - last_tsc <= max_command_delay)
                 return 0;
-            last_processing_time = current_time;
+            last_tsc = tsc;
         }
-#endif
 
         //  Check whether there are any commands pending for this thread.
         rc = signaler.recv (&cmd, false);

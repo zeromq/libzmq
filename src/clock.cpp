@@ -1,0 +1,100 @@
+/*
+    Copyright (c) 2007-2010 iMatix Corporation
+
+    This file is part of 0MQ.
+
+    0MQ is free software; you can redistribute it and/or modify it under
+    the terms of the Lesser GNU General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or
+    (at your option) any later version.
+
+    0MQ is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    Lesser GNU General Public License for more details.
+
+    You should have received a copy of the Lesser GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#include "clock.hpp"
+#include "platform.hpp"
+#include "likely.hpp"
+#include "config.hpp"
+#include "err.hpp"
+
+#include <stddef.h>
+
+#if !defined ZMQ_HAVE_WINDOWS
+#include <sys/time.h>
+#endif
+
+zmq::clock_t::clock_t () :
+    last_tsc (rdtsc ()),
+    last_time (now_us ())
+{
+}
+
+zmq::clock_t::~clock_t ()
+{
+}
+
+uint64_t zmq::clock_t::now_us ()
+{
+#if defined ZMQ_HAVE_WINDOWS
+
+    //  Get the high resolution counter's accuracy.
+    LARGE_INTEGER ticksPerSecond;
+    QueryPerformanceFrequency (&ticksPerSecond);
+
+    //  What time is it?
+    LARGE_INTEGER tick;
+    QueryPerformanceCounter (&tick);
+
+    //  Convert the tick number into the number of seconds
+    //  since the system was started.
+    double ticks_div = (double) (ticksPerSecond.QuadPart / 1000000);     
+    return (uint64_t) (tick.QuadPart / ticks_div);
+
+#else
+
+    //  Use POSIX gettimeofday function to get precise time.
+    struct timeval tv;
+    int rc = gettimeofday (&tv, NULL);
+    errno_assert (rc == 0);
+    return (tv.tv_sec * (uint64_t) 1000000 + tv.tv_usec);
+
+#endif
+}
+
+uint64_t zmq::clock_t::now_ms ()
+{
+    uint64_t tsc = rdtsc ();
+
+    //  If TSC is not supported, get precise time and chop off the microseconds.
+    if (!tsc)
+        return now_us () / 1000;
+
+    //  If TSC haven't jumped back (in case of migration to a different
+    //  CPU core) and if not too much time elapsed since last measurement,
+    //  we can return cached time value.
+    if (likely (tsc - last_tsc <= (clock_precision / 2) && tsc >= last_tsc))
+        return last_time;
+
+    last_tsc = tsc;
+    last_time = now_us ();
+    return last_time;
+}
+
+uint64_t zmq::clock_t::rdtsc ()
+{
+#if (defined _MSC_VER && (defined _M_IX86 || defined _M_X64))
+    uint64_t current_time = __rdtsc ();
+#elif (defined __GNUC__ && (defined __i386__ || defined __x86_64__))
+    uint32_t low, high;
+    __asm__ volatile ("rdtsc" : "=a" (low), "=d" (high));
+    return (uint64_t) high << 32 | low;
+#else
+    return 0;
+#endif
+}

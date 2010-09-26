@@ -156,7 +156,7 @@ namespace zmq
         signaler_t signaler;
 
         //  Timestamp of when commands were processed the last time.
-        uint64_t last_processing_time;
+        uint64_t last_tsc;
 
         //  Number of messages received since last command processing.
         int ticks;

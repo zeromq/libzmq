@@ -54,6 +54,7 @@ libzmq_la_SOURCES = \
     atomic_counter.hpp \
     atomic_ptr.hpp \
     blob.hpp \
+    clock.hpp \
     command.hpp \
     config.hpp \
     connect_session.hpp \
@@ -121,6 +122,7 @@ libzmq_la_SOURCES = \
     zmq_engine.hpp \
     zmq_init.hpp \
     zmq_listener.hpp \
+    clock.cpp \
     command.cpp \
     ctx.cpp \
     connect_session.cpp \
