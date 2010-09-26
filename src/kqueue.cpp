@@ -54,10 +54,6 @@ zmq::kqueue_t::kqueue_t () :
 zmq::kqueue_t::~kqueue_t ()
 {
     worker.stop ();
-
-    //  Make sure there are no fds registered on shutdown.
-    zmq_assert (load.get () == 0);
-
     close (kqueue_fd);
 }
 
@@ -74,7 +70,7 @@ void zmq::kqueue_t::kevent_delete (fd_t fd_, short filter_)
 {
     struct kevent ev;
 
-    EV_SET (&ev, fd_, filter_, EV_DELETE, 0, 0, (kevent_udata_t)NULL);
+    EV_SET (&ev, fd_, filter_, EV_DELETE, 0, 0, (kevent_udata_t) NULL);
     int rc = kevent (kqueue_fd, &ev, 1, NULL, 0, NULL);
     errno_assert (rc != -1);
 }
@@ -90,6 +86,8 @@ zmq::kqueue_t::handle_t zmq::kqueue_t::add_fd (fd_t fd_,
     pe->flag_pollout = 0;
     pe->reactor = reactor_;
 
+    adjust_load (1);
+
     return pe;
 }
 
@@ -102,6 +100,8 @@ void zmq::kqueue_t::rm_fd (handle_t handle_)
         kevent_delete (pe->fd, EVFILT_WRITE);
     pe->fd = retired_fd;
     retired.push_back (pe);
+
+    adjust_load (-1);
 }
 
 void zmq::kqueue_t::set_pollin (handle_t handle_)
@@ -142,11 +142,6 @@ void zmq::kqueue_t::cancel_timer (i_poll_events *events_, int id_)
     timers_t::iterator it = std::find (timers.begin (), timers.end (), events_);
     if (it != timers.end ())
         timers.erase (it);
-}
-
-int zmq::kqueue_t::get_load ()
-{
-    return load.get ();
 }
 
 void zmq::kqueue_t::start ()

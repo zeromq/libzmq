@@ -89,6 +89,7 @@ libzmq_la_SOURCES = \
     platform.hpp \
     poll.hpp \
     poller.hpp \
+    poller_base.hpp \
     pair.hpp \
     pub.hpp \
     pull.hpp \
@@ -148,6 +149,7 @@ libzmq_la_SOURCES = \
     pgm_socket.cpp \
     pipe.cpp \
     poll.cpp \
+    poller_base.cpp \
     pull.cpp \
     push.cpp \
     pub.cpp \

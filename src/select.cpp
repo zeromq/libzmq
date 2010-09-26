@@ -54,9 +54,6 @@ zmq::select_t::select_t () :
 zmq::select_t::~select_t ()
 {
     worker.stop ();
-
-    //  Make sure there are no fds registered on shutdown.
-    zmq_assert (load.get () == 0);
 }
 
 zmq::select_t::handle_t zmq::select_t::add_fd (fd_t fd_, i_poll_events *events_)
@@ -77,7 +74,7 @@ zmq::select_t::handle_t zmq::select_t::add_fd (fd_t fd_, i_poll_events *events_)
         maxfd = fd_;
 
     //  Increase the load metric of the thread.
-    load.add (1);
+    adjust_load (1);
 
     return fd_;
 }
@@ -113,7 +110,7 @@ void zmq::select_t::rm_fd (handle_t handle_)
     }
 
     //  Decrease the load metric of the thread.
-    load.sub (1);
+    adjust_load (-1);
 }
 
 void zmq::select_t::set_pollin (handle_t handle_)
@@ -146,11 +143,6 @@ void zmq::select_t::cancel_timer (i_poll_events *events_, int id_)
     timers_t::iterator it = std::find (timers.begin (), timers.end (), events_);
     if (it != timers.end ())
         timers.erase (it);
-}
-
-int zmq::select_t::get_load ()
-{
-    return load.get ();
 }
 
 void zmq::select_t::start ()

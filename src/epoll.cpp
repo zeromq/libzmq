@@ -45,9 +45,6 @@ zmq::epoll_t::~epoll_t ()
     //  Wait till the worker thread exits.
     worker.stop ();
 
-    //  Make sure there are no fds registered on shutdown.
-    zmq_assert (load.get () == 0);
-
     close (epoll_fd);
     for (retired_t::iterator it = retired.begin (); it != retired.end (); it ++)
         delete *it;
@@ -71,7 +68,7 @@ zmq::epoll_t::handle_t zmq::epoll_t::add_fd (fd_t fd_, i_poll_events *events_)
     errno_assert (rc != -1);
 
     //  Increase the load metric of the thread.
-    load.add (1);
+    adjust_load (1);
 
     return pe;
 }
@@ -85,7 +82,7 @@ void zmq::epoll_t::rm_fd (handle_t handle_)
     retired.push_back (pe);
 
     //  Decrease the load metric of the thread.
-    load.sub (1);
+    adjust_load (-1);
 }
 
 void zmq::epoll_t::set_pollin (handle_t handle_)
@@ -131,11 +128,6 @@ void zmq::epoll_t::cancel_timer (i_poll_events *events_, int id_)
     if (it == timers.end ())
         return;
     timers.erase (it);
-}
-
-int zmq::epoll_t::get_load ()
-{
-    return load.get ();
 }
 
 void zmq::epoll_t::start ()

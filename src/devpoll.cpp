@@ -56,10 +56,6 @@ zmq::devpoll_t::devpoll_t () :
 zmq::devpoll_t::~devpoll_t ()
 {
     worker.stop ();
-
-    //  Make sure there are no fds registered on shutdown.
-    zmq_assert (load.get () == 0);
-
     close (devpoll_fd);
 }
 
@@ -84,7 +80,7 @@ zmq::devpoll_t::handle_t zmq::devpoll_t::add_fd (fd_t fd_,
     pending_list.push_back (fd_);
 
     //  Increase the load metric of the thread.
-    load.add (1);
+    adjust_load (1);
 
     return fd_;
 }
@@ -97,7 +93,7 @@ void zmq::devpoll_t::rm_fd (handle_t handle_)
     fd_table [handle_].valid = false;
 
     //  Decrease the load metric of the thread.
-    load.sub (1);
+    adjust_load (-1);
 }
 
 void zmq::devpoll_t::set_pollin (handle_t handle_)
@@ -138,11 +134,6 @@ void zmq::devpoll_t::cancel_timer (i_poll_events *events_, int id_)
     timers_t::iterator it = std::find (timers.begin (), timers.end (), events_);
     if (it != timers.end ())
         timers.erase (it);
-}
-
-int zmq::devpoll_t::get_load ()
-{
-    return load.get ();
 }
 
 void zmq::devpoll_t::start ()

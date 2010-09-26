@@ -36,7 +36,7 @@
 
 #include "fd.hpp"
 #include "thread.hpp"
-#include "atomic_counter.hpp"
+#include "poller_base.hpp"
 
 namespace zmq
 {
@@ -44,7 +44,7 @@ namespace zmq
     //  Implements socket polling mechanism using POSIX.1-2001 select()
     //  function.
 
-    class select_t
+    class select_t : public poller_base_t
     {
     public:
 
@@ -62,7 +62,6 @@ namespace zmq
         void reset_pollout (handle_t handle_);
         void add_timer (int timeout_, struct i_poll_events *events_, int id_);
         void cancel_timer (struct i_poll_events *events_, int id_);
-        int get_load ();
         void start ();
         void stop ();
 
@@ -108,10 +107,6 @@ namespace zmq
 
         //  Handle of the physical thread doing the I/O work.
         thread_t worker;
-
-        //  Load of the poller. Currently number of file descriptors
-        //  registered with the poller.
-        atomic_counter_t load;
 
         select_t (const select_t&);
         void operator = (const select_t&);
