@@ -170,6 +170,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\..\src\clock.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\command.cpp"
 				>
 			</File>
@@ -267,6 +271,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\poll.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\poller_base.cpp"
 				>
 			</File>
 			<File
@@ -384,11 +392,23 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath="..\..\..\src\array.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\atomic_counter.hpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\..\src\atomic_ptr.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\blob.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\clock.hpp"
 				>
 			</File>
 			<File
@@ -440,10 +460,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\i_endpoint.hpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\src\i_engine.hpp"
 				>
 			</File>
@@ -473,6 +489,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\lb.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\likely.hpp"
 				>
 			</File>
 			<File
@@ -520,11 +540,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\platform.hpp"
+				RelativePath="..\..\..\src\platform.hpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\..\src\poll.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\poller.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\poller_base.hpp"
 				>
 			</File>
 			<File
@@ -553,6 +581,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\select.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\semaphore.hpp"
 				>
 			</File>
 			<File

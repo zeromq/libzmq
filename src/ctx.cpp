@@ -316,7 +316,13 @@ void zmq::ctx_t::dezombify ()
     for (zombies_t::iterator it = zombies.begin (); it != zombies.end ();) {
         uint32_t slot = (*it)->get_slot ();
         if ((*it)->dezombify ()) {
+#if defined _MSC_VER
+
+            //  HP implementation of STL requires doing it this way...
+            it = zombies.erase (it);
+#else
             zombies.erase (it);
+#endif
             empty_slots.push_back (slot);
             slots [slot] = NULL;    
         }

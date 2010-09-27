@@ -156,7 +156,8 @@ void zmq::select_t::loop ()
         uint64_t timeout = execute_timers ();
 
         //  Wait for events.
-        struct timeval tv = {timeout / 1000, timeout % 1000 * 1000};
+        struct timeval tv = {(long) (timeout / 1000),
+            (long) (timeout % 1000 * 1000)};
         int rc = select (maxfd + 1, &readfds, &writefds, &exceptfds,
             timeout ? &tv : NULL);
 

@@ -89,7 +89,7 @@ uint64_t zmq::clock_t::now_ms ()
 uint64_t zmq::clock_t::rdtsc ()
 {
 #if (defined _MSC_VER && (defined _M_IX86 || defined _M_X64))
-    uint64_t current_time = __rdtsc ();
+    return __rdtsc ();
 #elif (defined __GNUC__ && (defined __i386__ || defined __x86_64__))
     uint32_t low, high;
     __asm__ volatile ("rdtsc" : "=a" (low), "=d" (high));
