@@ -199,6 +199,36 @@ Default value:: 0
 Applicable socket types:: all
 
 
+ZMQ_FD: Retrieve file descriptor associated with the socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_FD' option shall retrieve file descriptor associated with the 0MQ
+socket. The descriptor can be used to integrate 0MQ socket into an existing
+event loop. It should never be used for anything else than polling -- such as
+reading or writing. The descriptor signals edge-triggered IN event when
+something has happened within the 0MQ socket. It does not necessarily mean that
+the messages can be read or written. Check ZMQ_EVENTS option to find out whether
+the 0MQ socket is readable or writeable.
+
+[horizontal]
+Option value type:: int on POSIX systems, SOCKET on Windows
+Option value unit:: N/A
+Default value:: N/A
+Applicable socket types:: all
+
+
+ZMQ_EVENTS: Check whether socket is readable and/or writeable
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_EVENTS' option shall retrieve event flags for the specified socket.
+If a message can be read from the socket ZMQ_POLLIN flag is set. If message can
+be written to the socket ZMQ_POLLOUT flag is set.
+
+[horizontal]
+Option value type:: uint32_t
+Option value unit:: N/A (flags)
+Default value:: N/A
+Applicable socket types:: all
+
+
 RETURN VALUE
 ------------
 The _zmq_getsockopt()_ function shall return zero if successful. Otherwise it
