@@ -66,6 +66,10 @@ void zmq::poller_base_t::cancel_timer (i_poll_events *sink_, int id_)
 
 uint64_t zmq::poller_base_t::execute_timers ()
 {
+    //  Fast track.
+    if (timers.empty ())
+        return 0;
+
     //  Get the current time.
     uint64_t current = clock.now_ms ();
 
