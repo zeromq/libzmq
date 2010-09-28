@@ -67,6 +67,9 @@ namespace zmq
         //  Receive data from pgm socket.
         ssize_t receive (void **data_, const pgm_tsi_t **tsi_);
 
+        long get_rx_timeout ();
+        long get_tx_timeout ();
+
         //  POLLIN on sender side should mean NAK or SPMR receiving. 
         //  process_upstream function is used to handle such a situation.
         void process_upstream ();
@@ -75,6 +78,8 @@ namespace zmq
     
         //  OpenPGM transport
         pgm_sock_t* sock;
+
+        int last_rx_status, last_tx_status;
 
         //  Associated socket options.
         options_t options;

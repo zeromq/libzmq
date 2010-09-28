@@ -59,8 +59,15 @@ namespace zmq
 
         //  i_poll_events interface implementation.
         void in_event ();
+        void timer_event (int token);
 
     private:
+
+        //  RX timeout timer ID.
+        enum {rx_timer_id = 0xa1};
+
+        //  RX timer is running.
+        bool has_rx_timer;
 
         //  If joined is true we are already getting messages from the peer.
         //  It it's false, we are getting data but still we haven't seen

@@ -58,8 +58,15 @@ namespace zmq
         //  i_poll_events interface implementation.
         void in_event ();
         void out_event ();
+        void timer_event (int token);
 
     private:
+
+        //  TX and RX timeout timer ID's.
+        enum {tx_timer_id = 0xa0, rx_timer_id = 0xa1};
+
+        //  Timers are running.
+        bool has_tx_timer, has_rx_timer;
 
         //  Message encoder.
         encoder_t encoder;
