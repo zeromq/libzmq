@@ -102,6 +102,7 @@ case "${host_os}" in
         # Define on Linux to enable all library features
         CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_LINUX, 1, [Have Linux OS])
+        AC_CHECK_LIB(rt, main)
         AC_CHECK_LIB(uuid, main, , 
             [AC_MSG_ERROR([cannot link with -luuid, install uuid-dev.])])
         ;;
@@ -269,7 +270,7 @@ fi
 #  PGM extension
 pgm_ext="no"
 
-pgm_basename="libpgm-2.1.26"
+pgm_basename="libpgm-5.0.78"
 
 AC_SUBST(pgm_basename)
 
@@ -280,9 +281,9 @@ AC_ARG_WITH([pgm], [AS_HELP_STRING([--with-pgm],
 if test "x$with_pgm_ext" != "xno"; then
 
     AC_MSG_CHECKING([if the PGM extension is supported on this platform])
-    # OpenPGM is only supported by the vendor on x86 and AMD64 platforms...
+    # OpenPGM is only supported by the vendor on x86, AMD64, and SPARC platforms...
     case "${host_cpu}" in
-        i*86|x86_64)
+        i*86|x86_64|*sparc*)
             # Supported
         ;;
         *)
@@ -290,9 +291,9 @@ if test "x$with_pgm_ext" != "xno"; then
         ;;
     esac
 
-    # ... and on Linux/Windows/Solaris systems.
+    # ... and on Linux/Windows/Solaris/FreeBSD/OSX systems.
     case "${host_os}" in
-        *linux*|*mingw32*|*solaris*)
+        *linux*|*mingw32*|*solaris*|*freebsd*|*darwin*)
             LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Wno-variadic-macros -Wno-long-long "
         ;;
         *)
@@ -306,11 +307,6 @@ if test "x$with_pgm_ext" != "xno"; then
         if test "x$have_pkg_config" != "xyes"; then
             AC_MSG_ERROR([the --with-pgm option requires that pkg-config be installed.]);
         fi
-
-        #  Check for OpenPGM dependencies
-        PKG_CHECK_MODULES([GLIB], [glib-2.0 gthread-2.0])
-        LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} ${GLIB_CFLAGS} "
-        LIBZMQ_EXTRA_LDFLAGS="${LIBZMQ_EXTRA_LDFLAGS} ${GLIB_LIBS} "
     fi
     
     #  Gzip, Perl and Python are required duing PGM build

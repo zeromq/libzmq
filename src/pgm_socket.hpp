@@ -74,7 +74,7 @@ namespace zmq
     private:
     
         //  OpenPGM transport
-        pgm_transport_t* transport;
+        pgm_sock_t* sock;
 
         //  Associated socket options.
         options_t options;

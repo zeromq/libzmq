@@ -242,20 +242,20 @@ void *zmq_init (int io_threads_)
     //  protocol ID. Note that if you want to use gettimeofday and sleep for
     //  openPGM timing, set environment variables PGM_TIMER to "GTOD" and
     //  PGM_SLEEP to "USLEEP".
-    GError *pgm_error = NULL;
-    int rc = pgm_init (&pgm_error);
+    pgm_error_t *pgm_error = NULL;
+    bool rc = pgm_init (&pgm_error);
     if (rc != TRUE) {
-        if (pgm_error->domain == PGM_IF_ERROR && (
-              pgm_error->code == PGM_IF_ERROR_INVAL ||
-              pgm_error->code == PGM_IF_ERROR_XDEV ||
-              pgm_error->code == PGM_IF_ERROR_NODEV ||
-              pgm_error->code == PGM_IF_ERROR_NOTUNIQ ||
-              pgm_error->code == PGM_IF_ERROR_ADDRFAMILY ||
-              pgm_error->code == PGM_IF_ERROR_FAMILY ||
-              pgm_error->code == PGM_IF_ERROR_NODATA ||
-              pgm_error->code == PGM_IF_ERROR_NONAME ||
-              pgm_error->code == PGM_IF_ERROR_SERVICE)) {
-            g_error_free (pgm_error);
+        if (pgm_error->domain == PGM_ERROR_DOMAIN_IF && (
+              pgm_error->code == PGM_ERROR_INVAL ||
+              pgm_error->code == PGM_ERROR_XDEV ||
+              pgm_error->code == PGM_ERROR_NODEV ||
+              pgm_error->code == PGM_ERROR_NOTUNIQ ||
+              pgm_error->code == PGM_ERROR_ADDRFAMILY ||
+              pgm_error->code == PGM_ERROR_AFNOSUPPORT ||
+              pgm_error->code == PGM_ERROR_NODATA ||
+              pgm_error->code == PGM_ERROR_NONAME ||
+              pgm_error->code == PGM_ERROR_SERVICE)) {
+            pgm_error_free (pgm_error);
             errno = EINVAL;
             return NULL;
         }
