@@ -127,7 +127,7 @@ namespace zmq
         inline bool check_read ()
         {
             //  Was the value prefetched already? If so, return.
-            if (&queue.front () != r)
+            if (&queue.front () != r && r)
                  return true;
 
             //  There's no prefetched value, so let us prefetch more values.
