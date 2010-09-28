@@ -33,6 +33,7 @@ zmq::options_t::options_t () :
     use_multicast_loop (true),
     sndbuf (0),
     rcvbuf (0),
+    type (-1),
     requires_in (false),
     requires_out (false),
     immediate_connect (true)
@@ -136,6 +137,15 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
 int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
 {
     switch (option_) {
+
+    case ZMQ_TYPE:
+        if (*optvallen_ < sizeof (int)) {
+            errno = EINVAL;
+            return -1;
+        }
+        *((int*) optval_) = type;
+        *optvallen_ = sizeof (int);
+        return 0;
 
     case ZMQ_HWM:
         if (*optvallen_ < sizeof (uint64_t)) {

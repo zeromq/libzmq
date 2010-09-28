@@ -179,6 +179,7 @@ ZMQ_EXPORT int zmq_term (void *context);
 #define ZMQ_RCVMORE 13
 #define ZMQ_FD 14
 #define ZMQ_EVENTS 15
+#define ZMQ_TYPE 16
 
 /*  Send/recv options.                                                        */
 #define ZMQ_NOBLOCK 1

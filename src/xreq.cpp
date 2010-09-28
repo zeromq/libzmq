@@ -27,6 +27,7 @@ zmq::xreq_t::xreq_t (class ctx_t *parent_, uint32_t slot_) :
     fq (this),
     lb (this)
 {
+    options.type = ZMQ_XREQ;
     options.requires_in = true;
     options.requires_out = true;
 }

@@ -26,6 +26,19 @@ value stored in the buffer.
 The following options can be retrieved with the _zmq_getsockopt()_ function:
 
 
+ZMQ_TYPE: Retrieve socket type.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_TYPE option shall retrieve the socket type for the specified
+'socket'.  The socket type is specified at socket creation time and
+cannot be modified afterwards.
+
+[horizontal]
+Option value type:: int
+Option value unit:: N/A
+Default value:: N/A
+Applicable socket types:: all
+
+
 ZMQ_RCVMORE: More message parts to follow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_RCVMORE' option shall return a boolean value indicating if the

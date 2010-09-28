@@ -35,6 +35,7 @@ doc/*.7
 doc/*.html
 doc/*.xml
 src/libzmq.pc
+bin/
 lib/
 builds/msvc/*.suo
 builds/msvc/*/*.user

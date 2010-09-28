@@ -27,6 +27,7 @@ zmq::req_t::req_t (class ctx_t *parent_, uint32_t slot_) :
     receiving_reply (false),
     message_begins (true)
 {
+    options.type = ZMQ_REQ;
 }
 
 zmq::req_t::~req_t ()

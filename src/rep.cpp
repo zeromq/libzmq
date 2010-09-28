@@ -27,6 +27,7 @@ zmq::rep_t::rep_t (class ctx_t *parent_, uint32_t slot_) :
     sending_reply (false),
     request_begins (true)
 {
+    options.type = ZMQ_REP;
 }
 
 zmq::rep_t::~rep_t ()

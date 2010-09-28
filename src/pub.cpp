@@ -29,6 +29,7 @@ zmq::pub_t::pub_t (class ctx_t *parent_, uint32_t slot_) :
     active (0),
     terminating (false)
 {
+    options.type = ZMQ_PUB;
     options.requires_in = false;
     options.requires_out = true;
 }

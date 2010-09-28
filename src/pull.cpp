@@ -26,6 +26,7 @@ zmq::pull_t::pull_t (class ctx_t *parent_, uint32_t slot_) :
     socket_base_t (parent_, slot_),
     fq (this)
 {
+    options.type = ZMQ_PULL;
     options.requires_in = true;
     options.requires_out = false;
 }

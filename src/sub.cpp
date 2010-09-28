@@ -30,6 +30,7 @@ zmq::sub_t::sub_t (class ctx_t *parent_, uint32_t slot_) :
     has_message (false),
     more (false)
 {
+    options.type = ZMQ_SUB;
     options.requires_in = true;
     options.requires_out = false;
     zmq_msg_init (&message);

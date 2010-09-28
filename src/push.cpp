@@ -27,6 +27,7 @@ zmq::push_t::push_t (class ctx_t *parent_, uint32_t slot_) :
     socket_base_t (parent_, slot_),
     lb (this)
 {
+    options.type = ZMQ_PUSH;
     options.requires_in = false;
     options.requires_out = true;
 }

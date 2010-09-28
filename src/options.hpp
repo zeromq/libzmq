@@ -51,6 +51,9 @@ namespace zmq
         uint64_t sndbuf;
         uint64_t rcvbuf;
 
+        //  Socket type.
+        int type;
+
         //  These options are never set by the user directly. Instead they are
         //  provided by the specific socket type.
         bool requires_in;

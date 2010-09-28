@@ -32,6 +32,7 @@ zmq::xrep_t::xrep_t (class ctx_t *parent_, uint32_t slot_) :
     more_out (false),
     terminating (false)
 {
+    options.type = ZMQ_XREP;
     options.requires_in = true;
     options.requires_out = true;
 

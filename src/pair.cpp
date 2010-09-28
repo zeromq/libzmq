@@ -31,6 +31,7 @@ zmq::pair_t::pair_t (class ctx_t *parent_, uint32_t slot_) :
     outpipe_alive (false),
     terminating (false)
 {
+    options.type = ZMQ_PAIR;
     options.requires_in = true;
     options.requires_out = true;
 }
