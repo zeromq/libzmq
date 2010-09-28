@@ -111,10 +111,8 @@ void zmq::req_t::xkill (class reader_t *pipe_)
 
 void zmq::req_t::xrevive (class reader_t *pipe_)
 {
-    //  TODO: Actually, misbehaving peer can cause this kind of thing.
-    //  Handle it decently, presumably kill the offending connection.
-    zmq_assert (pipe_ == reply_pipe);
-    reply_pipe_active = true;
+    if (pipe_ == reply_pipe)
+        reply_pipe_active = true;
 }
 
 void zmq::req_t::xrevive (class writer_t *pipe_)
