@@ -73,15 +73,13 @@ namespace zmq
 
         struct tsi_comp
         {
-            inline bool operator () (const pgm_tsi_t &ltsi,
+            bool operator () (const pgm_tsi_t &ltsi,
                 const pgm_tsi_t &rtsi) const
             {
-                if (ltsi.sport < rtsi.sport)
-                    return true;
-
-                return (std::lexicographical_compare (ltsi.gsi.identifier, 
-                    ltsi.gsi.identifier + 6, 
-                    rtsi.gsi.identifier, rtsi.gsi.identifier + 6));
+                uint32_t ll[2], rl[2];
+                memcpy (ll, &ltsi, sizeof (ll));
+                memcpy (rl, &rtsi, sizeof (rl));
+                return (ll[0] < rl[0]) || (ll[0] == rl[0] && ll[1] < rl[1]);
             }
         };
 

@@ -144,7 +144,7 @@ void zmq::pgm_receiver_t::in_event ()
 
         //  No data to process. This may happen if the packet received is
         //  neither ODATA nor ODATA.
-        if (received == 0)
+        if (received < 0)
             break;
 
         //  Find the peer based on its TSI.

@@ -234,31 +234,27 @@ void *zmq_init (int io_threads_)
     }
 
 #if defined ZMQ_HAVE_OPENPGM
-    //  Unfortunately, OpenPGM doesn't support refcounted init/shutdown, thus,
-    //  let's fail if it was initialised beforehand.
-    zmq_assert (!pgm_supported ());
 
     //  Init PGM transport. Ensure threading and timer are enabled. Find PGM
     //  protocol ID. Note that if you want to use gettimeofday and sleep for
     //  openPGM timing, set environment variables PGM_TIMER to "GTOD" and
     //  PGM_SLEEP to "USLEEP".
     pgm_error_t *pgm_error = NULL;
-    bool rc = pgm_init (&pgm_error);
+    const bool rc = pgm_init (&pgm_error);
     if (rc != TRUE) {
-        if (pgm_error->domain == PGM_ERROR_DOMAIN_IF && (
-              pgm_error->code == PGM_ERROR_INVAL ||
-              pgm_error->code == PGM_ERROR_XDEV ||
-              pgm_error->code == PGM_ERROR_NODEV ||
-              pgm_error->code == PGM_ERROR_NOTUNIQ ||
-              pgm_error->code == PGM_ERROR_ADDRFAMILY ||
-              pgm_error->code == PGM_ERROR_AFNOSUPPORT ||
-              pgm_error->code == PGM_ERROR_NODATA ||
-              pgm_error->code == PGM_ERROR_NONAME ||
-              pgm_error->code == PGM_ERROR_SERVICE)) {
+
+        //  Invalid parameters don't set pgm_error_t
+        zmq_assert (pgm_error != NULL);
+        if (pgm_error->domain == PGM_ERROR_DOMAIN_TIME && (
+              pgm_error->code == PGM_ERROR_FAILED)) {
+
+            //  Failed to access RTC or HPET device.
             pgm_error_free (pgm_error);
             errno = EINVAL;
             return NULL;
         }
+
+        //  PGM_ERROR_DOMAIN_ENGINE: WSAStartup errors or missing WSARecvMsg.
         zmq_assert (false);
     }
 #endif
