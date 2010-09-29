@@ -94,8 +94,7 @@ namespace zmq
         inline ~message_t ()
         {
             int rc = zmq_msg_close (this);
-            if (rc != 0)
-                throw error_t ();
+            assert (rc == 0);
         }
 
         inline void rebuild ()
@@ -202,8 +201,7 @@ namespace zmq
         inline ~socket_t ()
         {
             int rc = zmq_close (ptr);
-            if (rc != 0)
-                throw error_t ();
+            assert (rc == 0);
         }
 
         inline operator void* ()
