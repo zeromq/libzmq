@@ -41,7 +41,7 @@
 #include "stdint.hpp"
 
 #ifndef MSG_ERRQUEUE
-#	define MSG_ERRQUEUE		0x2000
+#define MSG_ERRQUEUE 0x2000
 #endif
 
 zmq::pgm_socket_t::pgm_socket_t (bool receiver_, const options_t &options_) :
