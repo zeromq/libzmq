@@ -190,15 +190,16 @@ int zmq::xrep_t::xsend (zmq_msg_t *msg_, int flags_)
 
 int zmq::xrep_t::xrecv (zmq_msg_t *msg_, int flags_)
 {
-    //  Deallocate old content of the message.
-    zmq_msg_close (msg_);
-
+    //  If there is a prefetched message, return it.
     if (prefetched) {
         zmq_msg_move (msg_, &prefetched_msg);
         more_in = msg_->flags & ZMQ_MSG_MORE;
         prefetched = false;
         return 0;
     }
+
+    //  Deallocate old content of the message.
+    zmq_msg_close (msg_);
 
     //  If we are in the middle of reading a message, just grab next part of it.
     if (more_in) {
