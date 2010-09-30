@@ -95,6 +95,8 @@ void zmq::xrep_t::terminated (reader_t *pipe_)
             inpipes.erase (it);
             if (terminating)
                 unregister_term_ack ();
+            if (current_in >= inpipes.size ())
+                current_in = 0;
             return;
         }
     }
