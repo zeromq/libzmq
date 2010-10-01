@@ -50,24 +50,33 @@ zmq::xrep_t::~xrep_t ()
 void zmq::xrep_t::xattach_pipes (reader_t *inpipe_, writer_t *outpipe_,
     const blob_t &peer_identity_)
 {
-    zmq_assert (inpipe_ && outpipe_);
+    if (outpipe_) {
 
-    outpipe_->set_event_sink (this);
+        outpipe_->set_event_sink (this);
 
-    //  TODO: What if new connection has same peer identity as the old one?
-    outpipe_t outpipe = {outpipe_, true};
-    bool ok = outpipes.insert (std::make_pair (
-        peer_identity_, outpipe)).second;
-    zmq_assert (ok);
+        //  TODO: What if new connection has same peer identity as the old one?
+        outpipe_t outpipe = {outpipe_, true};
+        bool ok = outpipes.insert (std::make_pair (
+            peer_identity_, outpipe)).second;
+        zmq_assert (ok);
 
-    inpipe_->set_event_sink (this);
+        if (terminating) {
+            register_term_acks (1);
+            outpipe_->terminate ();        
+        }
+    }
 
-    inpipe_t inpipe = {inpipe_, peer_identity_, true};
-    inpipes.push_back (inpipe);
+    if (inpipe_) {
 
-    if (terminating) {
-        register_term_acks (1);
-        inpipe_->terminate ();
+        inpipe_->set_event_sink (this);
+
+        inpipe_t inpipe = {inpipe_, peer_identity_, true};
+        inpipes.push_back (inpipe);
+
+        if (terminating) {
+            register_term_acks (1);
+            inpipe_->terminate ();
+        }
     }
 }
 
