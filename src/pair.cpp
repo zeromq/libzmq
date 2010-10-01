@@ -84,13 +84,17 @@ void zmq::pair_t::terminated (class writer_t *pipe_)
 
 void zmq::pair_t::process_term ()
 {
-    zmq_assert (inpipe && outpipe);
-
     terminating = true;
 
-    register_term_acks (2);
-    inpipe->terminate ();
-    outpipe->terminate ();
+    if (inpipe) {
+        register_term_acks (1);
+        inpipe->terminate ();
+    }
+
+    if (outpipe) {
+        register_term_acks (1);
+        outpipe->terminate ();
+    }
 
     socket_base_t::process_term ();
 }
