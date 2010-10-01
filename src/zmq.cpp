@@ -412,14 +412,17 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     }
 
     bool first_pass = true;
-    int timeout = timeout_ > 0 ? timeout_ / 1000 : -1;
     int nevents = 0;
+    if (timeout_ >= 0)
+        timeout_ /= 1000;
+    else
+        timeout_ = -1;
 
     while (true) {
 
         //  Wait for events.
         while (true) {
-            int rc = poll (pollfds, nitems_, first_pass ? 0 : timeout);
+            int rc = poll (pollfds, nitems_, first_pass ? 0 : timeout_);
             if (rc == -1 && errno == EINTR) {
                 free (pollfds);
                 return -1;
@@ -466,7 +469,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         }
 
         //  If there are no events from the first pass (the one with no
-        //  timout), do at least the second pass so that we wait.
+        //  timeout), do at least the second pass so that we wait.
         if (first_pass && nevents == 0 && timeout_ != 0) {
             first_pass = false;
             continue;
@@ -474,7 +477,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 
         //  If timeout is set to infinite and we have to events to return
         //  we can restart the polling.
-        if (timeout == -1 && nevents == 0)
+        if (timeout_ == -1 && nevents == 0)
             continue;
 
         //  TODO: if nevents is zero recompute timeout and loop
