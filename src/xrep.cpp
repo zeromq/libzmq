@@ -101,6 +101,13 @@ void zmq::xrep_t::terminated (reader_t *pipe_)
     for (inpipes_t::iterator it = inpipes.begin (); it != inpipes.end ();
           it++) {
         if (it->reader == pipe_) {
+            if (inpipes [current_in].reader == pipe_) {
+
+                //  A reader is not allowed to terminate in the middle of a
+                //  multipart message.
+                zmq_assert (!prefetched);
+                zmq_assert (!more_in);
+            }
             inpipes.erase (it);
             if (terminating)
                 unregister_term_ack ();
