@@ -236,10 +236,9 @@ AC_CHECK_HEADERS(ifaddrs.h, [AC_DEFINE(ZMQ_HAVE_IFADDRS, 1, [Have ifaddrs.h head
 # Use c++ in subsequent tests
 AC_LANG(C++)
 
-# pkg-config is used if found, and is required for builds with OpenPGM.
-# However, we need to provide a way to disable it entirely when the user
-# knows what she's doing and it's use is undesirable, such as when 
-# cross-compiling.
+# pkg-config is used if found, however, we need to provide a way to disable it
+# entirely when the user knows what she's doing and it's use is undesirable,
+# such as when cross-compiling.
 AC_ARG_WITH([pkg-config], [AS_HELP_STRING([--without-pkg-config], 
     [do not use pkg-config [default=no]])])
 if test "x$with_pkg_config" != "xno"; then
@@ -302,13 +301,6 @@ if test "x$with_pgm_ext" != "xno"; then
     esac
     AC_MSG_RESULT([yes])
 
-    #  Test if we have pkg-config
-    if test "x$with_pkg_config" != "xno"; then
-        if test "x$have_pkg_config" != "xyes"; then
-            AC_MSG_ERROR([the --with-pgm option requires that pkg-config be installed.]);
-        fi
-    fi
-    
     #  Gzip, Perl and Python are required duing PGM build
     AC_CHECK_PROG(have_gzip, gzip, yes, no)
     if test "x$have_gzip" != "xyes"; then
