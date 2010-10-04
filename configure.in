@@ -283,7 +283,7 @@ if test "x$with_pgm_ext" != "xno"; then
     AC_MSG_CHECKING([if the PGM extension is supported on this platform])
     # OpenPGM is only supported by the vendor on x86, AMD64, and SPARC platforms...
     case "${host_cpu}" in
-        i*86|x86_64|*sparc*)
+        i*86|x86_64|amd64|*sparc*)
             # Supported
         ;;
         *)
