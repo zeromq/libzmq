@@ -47,6 +47,7 @@ namespace zmq
         //  i_reader_events interface implementation.
         void activated (class reader_t *pipe_);
         void terminated (class reader_t *pipe_);
+        void delimited (class reader_t *pipe_);
 
         //  i_writer_events interface implementation.
         void activated (class writer_t *pipe_);

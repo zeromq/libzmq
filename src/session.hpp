@@ -54,6 +54,7 @@ namespace zmq
         //  i_reader_events interface implementation.
         void activated (class reader_t *pipe_);
         void terminated (class reader_t *pipe_);
+        void delimited (class reader_t *pipe_);
 
         //  i_writer_events interface implementation.
         void activated (class writer_t *pipe_);
@@ -61,8 +62,8 @@ namespace zmq
 
     protected:
 
-        //  Forcefully close this session (without sending
-        //  outbound messages to the wire).
+        //  This function allows to shut down the session even though
+        //  there are pending messages in the inbound pipe.
         void terminate ();
 
         //  Two events for the derived session type. Attached is triggered
@@ -93,9 +94,8 @@ namespace zmq
             const blob_t &peer_identity_);
         void process_term ();
 
-        //  Check whether object is ready for termination. If so proceed
-        //  with closing child objects.
-        void finalise ();
+        //  Call this function to move on with the delayed process_term.
+        void proceed_with_term ();
 
         //  Inbound pipe, i.e. one the session is getting messages from.
         class reader_t *in_pipe;
@@ -117,13 +117,18 @@ namespace zmq
         //  the engines into the same thread.
         class io_thread_t *io_thread;
 
-        //  True if pipes were already attached.
-        bool attach_processed;
+        //  If true, delimiter was already read from the inbound pipe.
+        bool delimiter_processed;
 
-        //  True if term command was already processed.
-        bool term_processed;
+        //  If true, we should terminate the session even though there are
+        //  pending messages in the inbound pipe.
+        bool force_terminate;
 
-        bool finalised;
+        enum {
+            active,
+            pending,
+            terminating
+        } state;
 
         session_t (const session_t&);
         void operator = (const session_t&);

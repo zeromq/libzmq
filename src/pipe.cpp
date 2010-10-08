@@ -89,6 +89,11 @@ bool zmq::reader_t::check_read ()
     //  If the next item in the pipe is message delimiter,
     //  initiate its termination.
     if (pipe->probe (is_delimiter)) {
+        zmq_msg_t msg;
+        bool ok = pipe->read (&msg);
+        zmq_assert (ok);
+        if (sink)
+            sink->delimited (this);
         terminate ();
         return false;
     }
@@ -109,6 +114,8 @@ bool zmq::reader_t::read (zmq_msg_t *msg_)
     //  If delimiter was read, start termination process of the pipe.
     unsigned char *offset = 0;
     if (msg_->content == (void*) (offset + ZMQ_DELIMITER)) {
+        if (sink)
+            sink->delimited (this);
         terminate ();
         return false;
     }

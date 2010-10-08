@@ -45,6 +45,7 @@ namespace zmq
         //  i_reader_events implementation.
         void activated (reader_t *pipe_);
         void terminated (reader_t *pipe_);
+        void delimited (reader_t *pipe_);
 
     private:
 

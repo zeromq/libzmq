@@ -52,6 +52,7 @@ namespace zmq
 
         virtual void terminated (class reader_t *pipe_) = 0;
         virtual void activated (class reader_t *pipe_) = 0;
+        virtual void delimited (class reader_t *pipe_) = 0;
     };
 
     class reader_t : public object_t, public array_item_t

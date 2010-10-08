@@ -42,8 +42,8 @@ zmq::pair_t::~pair_t ()
     zmq_assert (!outpipe);
 }
 
-void zmq::pair_t::xattach_pipes (class reader_t *inpipe_,
-    class writer_t *outpipe_, const blob_t &peer_identity_)
+void zmq::pair_t::xattach_pipes (reader_t *inpipe_, writer_t *outpipe_,
+    const blob_t &peer_identity_)
 {
     zmq_assert (!inpipe && !outpipe);
 
@@ -62,7 +62,7 @@ void zmq::pair_t::xattach_pipes (class reader_t *inpipe_,
     }
 }
 
-void zmq::pair_t::terminated (class reader_t *pipe_)
+void zmq::pair_t::terminated (reader_t *pipe_)
 {
     zmq_assert (pipe_ == inpipe);
     inpipe = NULL;
@@ -72,7 +72,7 @@ void zmq::pair_t::terminated (class reader_t *pipe_)
         unregister_term_ack ();
 }
 
-void zmq::pair_t::terminated (class writer_t *pipe_)
+void zmq::pair_t::terminated (writer_t *pipe_)
 {
     zmq_assert (pipe_ == outpipe);
     outpipe = NULL;
@@ -80,6 +80,10 @@ void zmq::pair_t::terminated (class writer_t *pipe_)
 
     if (terminating)
         unregister_term_ack ();
+}
+
+void  zmq::pair_t::delimited (reader_t *pipe_)
+{
 }
 
 void zmq::pair_t::process_term ()

@@ -73,6 +73,10 @@ void zmq::fq_t::terminated (reader_t *pipe_)
         sink->unregister_term_ack ();
 }
 
+void zmq::fq_t::delimited (reader_t *pipe_)
+{
+}
+
 void zmq::fq_t::terminate ()
 {
     zmq_assert (!terminating);

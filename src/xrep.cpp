@@ -135,6 +135,10 @@ void zmq::xrep_t::terminated (writer_t *pipe_)
     zmq_assert (false);
 }
 
+void zmq::xrep_t::delimited (reader_t *pipe_)
+{
+}
+
 void zmq::xrep_t::activated (reader_t *pipe_)
 {
     for (inpipes_t::iterator it = inpipes.begin (); it != inpipes.end ();
