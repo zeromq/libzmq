@@ -19,6 +19,13 @@
 
 #include <new>
 
+#if defined ZMQ_HAVE_WINDOWS
+#include "windows.hpp"
+#else
+#include <sys/types.h>
+#include <unistd.h>
+#endif
+
 #include "zmq_connecter.hpp"
 #include "zmq_engine.hpp"
 #include "zmq_init.hpp"
@@ -31,7 +38,7 @@ zmq::zmq_connecter_t::zmq_connecter_t (class io_thread_t *io_thread_,
     own_t (io_thread_),
     io_object_t (io_thread_),
     handle_valid (false),
-    wait (false),
+    wait (wait_before_connect),
     session (session_),
     options (options_)
 {
@@ -47,10 +54,20 @@ zmq::zmq_connecter_t::~zmq_connecter_t ()
         rm_fd (handle);
 }
 
+int zmq::zmq_connecter_t::get_reconnect_period ()
+{
+#if defined ZMQ_HAVE_WINDOWS
+    return (reconnect_period + (((int)GetCurrentProcessId () * 13)
+        % reconnect_period));
+#else
+    return (reconnect_period + (((int)getpid () * 13) % reconnect_period));
+#endif
+}
+
 void zmq::zmq_connecter_t::process_plug ()
 {
     if (wait)
-        add_timer (reconnect_period, reconnect_timer_id);
+        add_timer (get_reconnect_period (), reconnect_timer_id);
     else
         start_connecting ();
 }
@@ -73,7 +90,7 @@ void zmq::zmq_connecter_t::out_event ()
     if (fd == retired_fd) {
         tcp_connecter.close ();
         wait = true;
-        add_timer (reconnect_period, reconnect_timer_id);
+        add_timer (get_reconnect_period (), reconnect_timer_id);
         return;
     }
 
@@ -122,5 +139,5 @@ void zmq::zmq_connecter_t::start_connecting ()
 
     //  Handle any other error condition by eventual reconnect.
     wait = true;
-    add_timer (reconnect_period, reconnect_timer_id);
+    add_timer (get_reconnect_period (), reconnect_timer_id);
 }

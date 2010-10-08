@@ -39,6 +39,10 @@ namespace zmq
         //  using a single system call.
         signal_buffer_size = 8,
 
+        //  Socketpair send buffer size used by signaler. The default value of
+        //  zero means leave it at the system default.
+        signaler_sndbuf_size = 0,
+
         //  Determines how often does socket poll for new commands when it
         //  still has unprocessed messages to handle. Thus, if it is set to 100,
         //  socket will process 100 inbound messages before doing the poll.
@@ -72,6 +76,9 @@ namespace zmq
         //  How long to wait (milliseconds) till reattempting to connect.
         reconnect_period = 100,
 
+        //  Should initial connection attempts be delayed?
+        wait_before_connect = false,
+
         //  Maximal delay to process command in API thread (in CPU ticks).
         //  3,000,000 ticks equals to 1 - 2 milliseconds on current CPUs.
         //  Note that delay is only applied when there is continuous stream of
@@ -87,7 +94,7 @@ namespace zmq
 
         //  Maximal number of non-accepted connections that can be held by
         //  TCP listener object.
-        tcp_connection_backlog = 10,
+        tcp_connection_backlog = 100,
 
         //  Maximum transport data unit size for PGM (TPDU).
         pgm_max_tpdu = 1500

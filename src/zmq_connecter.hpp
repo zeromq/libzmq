@@ -56,6 +56,9 @@ namespace zmq
         //  Internal function to start the actual connection establishment.
         void start_connecting ();
 
+        //  Internal function to return the reconnect backoff delay.
+        int get_reconnect_period ();
+
         //  Actual connecting socket.
         tcp_connecter_t tcp_connecter;
 
