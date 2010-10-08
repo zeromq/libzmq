@@ -24,6 +24,7 @@
 #include "i_engine.hpp"
 #include "err.hpp"
 #include "pipe.hpp"
+#include "likely.hpp"
 
 zmq::session_t::session_t (class io_thread_t *io_thread_,
       class socket_base_t *socket_, const options_t &options_) :
@@ -181,8 +182,10 @@ void zmq::session_t::activated (reader_t *pipe_)
 {
     zmq_assert (in_pipe == pipe_);
 
-    if (engine)
+    if (likely (engine != NULL))
         engine->activate_out ();
+    else
+        in_pipe->check_read ();
 }
 
 void zmq::session_t::activated (writer_t *pipe_)
@@ -267,7 +270,8 @@ void zmq::session_t::process_term ()
     //  inbound pipe, but the delimiter was already processed, we can
     //  terminate immediately. Alternatively, if the derived session type have
     //  called 'terminate' we'll finish straight away.
-    if (!options.requires_out || delimiter_processed || force_terminate)
+    if (!options.requires_out || delimiter_processed || force_terminate ||
+        (!options.immediate_connect && !in_pipe))
         proceed_with_term ();
 }
 
@@ -287,6 +291,8 @@ void zmq::session_t::attached (const blob_t &peer_identity_)
 
 void zmq::session_t::detached ()
 {
+    if (in_pipe)
+        in_pipe->check_read ();
 }
 
 void zmq::session_t::terminate ()

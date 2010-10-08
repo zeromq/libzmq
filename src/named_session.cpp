@@ -84,5 +84,6 @@ void zmq::named_session_t::attached (const blob_t &peer_identity_)
 void zmq::named_session_t::detached ()
 {
     unregister_session (name);
+    session_t::detached ();
 }
 

@@ -112,5 +112,7 @@ void zmq::connect_session_t::detached ()
 
     //  Reconnect.
     start_connecting ();
+
+    session_t::detached ();
 }
 
