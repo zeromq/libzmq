@@ -30,6 +30,16 @@ extern "C" {
 #include "winsock2.h"
 #endif
 
+/*  Version macros                                                            */
+#define ZMQ_VERSION_MAJOR 2
+#define ZMQ_VERSION_MINOR 0
+#define ZMQ_VERSION_PATCH 10
+
+#define ZMQ_MAKE_VERSION(major, minor, patch) \
+    (major * 10000 + minor * 100 + patch)
+#define ZMQ_VERSION \
+    ZMQ_MAKE_VERSION(ZMQ_VERSION_MAJOR, ZMQ_VERSION_MINOR, ZMQ_VERSION_PATCH)
+
 /*  Win32 needs special handling for DLL exports                              */
 #if defined _WIN32
 #   if defined DLL_EXPORT

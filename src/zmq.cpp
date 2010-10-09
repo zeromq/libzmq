@@ -57,9 +57,9 @@
 
 void zmq_version (int *major_, int *minor_, int *patch_)
 {
-    *major_ = PACKAGE_VERSION_MAJOR;
-    *minor_ = PACKAGE_VERSION_MINOR;
-    *patch_ = PACKAGE_VERSION_PATCH;
+    *major_ = ZMQ_VERSION_MAJOR;
+    *minor_ = ZMQ_VERSION_MINOR;
+    *patch_ = ZMQ_VERSION_PATCH;
 }
 
 const char *zmq_strerror (int errnum_)
