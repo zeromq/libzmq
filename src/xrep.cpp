@@ -173,23 +173,24 @@ int zmq::xrep_t::xsend (zmq_msg_t *msg_, int flags_)
         zmq_assert (!current_out);
 
         //  If we have malformed message (prefix with no subsequent message)
-        //  then just silently drop the message.
-        if ((msg_->flags & ZMQ_MSG_MORE) == 0)
-            return 0;
+        //  then just silently ignore it.
+        if (msg_->flags & ZMQ_MSG_MORE) {
 
-        more_out = true;
+            more_out = true;
 
-        //  Find the pipe associated with the identity stored in the prefix.
-        //  If there's no such pipe just silently drop the message.
-        blob_t identity ((unsigned char*) zmq_msg_data (msg_),
-            zmq_msg_size (msg_));
-        outpipes_t::iterator it = outpipes.find (identity);
-        if (it == outpipes.end ())
-            return 0;
+            //  Find the pipe associated with the identity stored in the prefix.
+            //  If there's no such pipe just silently ignore the message.
+            blob_t identity ((unsigned char*) zmq_msg_data (msg_),
+                zmq_msg_size (msg_));
+            outpipes_t::iterator it = outpipes.find (identity);
+            if (it != outpipes.end ())
+                current_out = it->second.writer;
+        }
 
-        //  Remember the outgoing pipe.
-        current_out = it->second.writer;
-
+        int rc = zmq_msg_close (msg_);
+        zmq_assert (rc == 0);
+        rc = zmq_msg_init (msg_);
+        zmq_assert (rc == 0);
         return 0;
     }
 
