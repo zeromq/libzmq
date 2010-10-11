@@ -13,7 +13,9 @@ AC_CONFIG_MACRO_DIR(config)
 AM_CONFIG_HEADER(src/platform.hpp)
 AM_INIT_AUTOMAKE(tar-ustar dist-zip foreign)
 
-#
+# This lets us use PACKAGE_VERSION in Makefiles
+AC_SUBST(PACKAGE_VERSION)
+
 # Libtool -version-info (ABI version)
 #
 # Currently 0.0.0 ("unstable"). Don't change this unless you 
@@ -350,15 +352,4 @@ AC_OUTPUT(Makefile src/Makefile doc/Makefile
     devices/Makefile devices/zmq_forwarder/Makefile \
     devices/zmq_streamer/Makefile devices/zmq_queue/Makefile \
     builds/msvc/Makefile tests/Makefile)
-
-#  On Linux patch libtool to delete hardcoded paths (rpath).
-case "${host_os}" in
-    *linux*)
-        sed < libtool > libtool-2 \
-        's/^hardcode_libdir_flag_spec.*$'/'hardcode_libdir_flag_spec=" "/'
-        mv libtool-2 libtool
-        chmod 755 libtool
-        ;;
-esac
-
 
