@@ -188,11 +188,15 @@ void zmq::pgm_sender_t::out_event ()
 
 void zmq::pgm_sender_t::timer_event (int token)
 {
-    if (token == rx_timer_id)
+    //  Timer cancels on return by poller_base.
+    if (token == rx_timer_id) {
+        has_rx_timer = false;
         in_event ();
-
-    zmq_assert (token == tx_timer_id);
-    out_event ();
+    } else if (token == tx_timer_id) {
+        has_tx_timer = false;
+        out_event ();
+    } else
+        zmq_assert (false);
 }
 
 #endif

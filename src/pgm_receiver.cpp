@@ -235,6 +235,8 @@ void zmq::pgm_receiver_t::timer_event (int token)
 {
     zmq_assert (token == rx_timer_id);
 
+    //  Timer cancels on return by poller_base.
+    has_rx_timer = false;
     in_event ();
 }
 
