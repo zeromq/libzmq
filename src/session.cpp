@@ -36,6 +36,7 @@ zmq::session_t::session_t (class io_thread_t *io_thread_,
     engine (NULL),
     socket (socket_),
     io_thread (io_thread_),
+    pipes_attached (false),
     delimiter_processed (false),
     force_terminate (false),
     state (active)
@@ -125,6 +126,9 @@ void zmq::session_t::clean_pipes ()
 void zmq::session_t::attach_pipes (class reader_t *inpipe_,
     class writer_t *outpipe_, const blob_t &peer_identity_)
 {
+    zmq_assert (!pipes_attached);
+    pipes_attached = true;
+    
     if (inpipe_) {
         zmq_assert (!in_pipe);
         in_pipe = inpipe_;
@@ -218,24 +222,28 @@ void zmq::session_t::process_attach (i_engine *engine_,
 
     //  Check whether the required pipes already exist. If not so, we'll
     //  create them and bind them to the socket object.
-    reader_t *socket_reader = NULL;
-    writer_t *socket_writer = NULL;
+    if (!pipes_attached) {
+        zmq_assert (!in_pipe && !out_pipe);
+        pipes_attached = true;
+        reader_t *socket_reader = NULL;
+        writer_t *socket_writer = NULL;
 
-    //  Create the pipes, if required.
-    if (options.requires_in && !out_pipe) {
-        create_pipe (socket, this, options.hwm, options.swap, &socket_reader,
-            &out_pipe);
-        out_pipe->set_event_sink (this);
-    }
-    if (options.requires_out && !in_pipe) {
-        create_pipe (this, socket, options.hwm, options.swap, &in_pipe,
-            &socket_writer);
-        in_pipe->set_event_sink (this);
-    }
+        //  Create the pipes, as required.
+        if (options.requires_in) {
+            create_pipe (socket, this, options.hwm, options.swap, &socket_reader,
+                &out_pipe);
+            out_pipe->set_event_sink (this);
+        }
+        if (options.requires_out) {
+            create_pipe (this, socket, options.hwm, options.swap, &in_pipe,
+                &socket_writer);
+            in_pipe->set_event_sink (this);
+        }
 
-    //  Bind the pipes to the socket object.
-    if (socket_reader || socket_writer)
-        send_bind (socket, socket_reader, socket_writer, peer_identity_);
+        //  Bind the pipes to the socket object.
+        if (socket_reader || socket_writer)
+            send_bind (socket, socket_reader, socket_writer, peer_identity_);
+    }
 
     //  Plug in the engine.
     zmq_assert (!engine);

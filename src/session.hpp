@@ -117,6 +117,9 @@ namespace zmq
         //  the engines into the same thread.
         class io_thread_t *io_thread;
 
+        //  If true, pipes were already attached to this session.
+        bool pipes_attached;
+
         //  If true, delimiter was already read from the inbound pipe.
         bool delimiter_processed;
 
