@@ -187,13 +187,13 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
         const int recv_only        = 1,
                   rxw_max_rte      = options.rate * 1000 / 8,
                   rxw_secs         = options.recovery_ivl,
-                  peer_expiry      = 5 * pgm_msecs (8192),
+                  peer_expiry      = pgm_secs (300),
                   spmr_expiry      = pgm_msecs (25),
                   nak_bo_ivl       = pgm_msecs (50),
                   nak_rpt_ivl      = pgm_msecs (200),
                   nak_rdata_ivl    = pgm_msecs (200),
-                  nak_data_retries = 5,
-                  nak_ncf_retries  = 2;
+                  nak_data_retries = 50,
+                  nak_ncf_retries  = 50;
 
         if (!pgm_setsockopt (sock, IPPROTO_PGM, PGM_RECV_ONLY, &recv_only, sizeof (recv_only)) ||
             !pgm_setsockopt (sock, IPPROTO_PGM, PGM_RXW_MAX_RTE, &rxw_max_rte, sizeof (rxw_max_rte)) ||
@@ -210,20 +210,16 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
         const int send_only        = 1,
                   txw_max_rte      = options.rate * 1000 / 8,
                   txw_secs         = options.recovery_ivl,
-                  ambient_spm      = pgm_msecs (8192),
-                  heartbeat_spm[]  = { pgm_msecs (4),
-                                       pgm_msecs (4),
-                                       pgm_msecs (8),
-                                       pgm_msecs (16),
-                                       pgm_msecs (32),
-                                       pgm_msecs (64),
-                                       pgm_msecs (128),
-                                       pgm_msecs (256),
-                                       pgm_msecs (512),
-                                       pgm_msecs (1024),
-                                       pgm_msecs (2048),
-                                       pgm_msecs (4096),
-                                       pgm_msecs (8192) };
+                  ambient_spm      = pgm_secs (30),
+                  heartbeat_spm[]  = { pgm_msecs (100),
+                                       pgm_msecs (100),
+                                       pgm_msecs (100),
+                                       pgm_msecs (100),
+                                       pgm_msecs (1300),
+                                       pgm_secs  (7),
+                                       pgm_secs  (16),
+                                       pgm_secs  (25),
+                                       pgm_secs  (30) };
 
         if (!pgm_setsockopt (sock, IPPROTO_PGM, PGM_SEND_ONLY, &send_only, sizeof (send_only)) ||
             !pgm_setsockopt (sock, IPPROTO_PGM, PGM_TXW_MAX_RTE, &txw_max_rte, sizeof (txw_max_rte)) ||
