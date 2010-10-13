@@ -8,7 +8,11 @@ URL:           http://www.zeromq.org/
 Source:        http://www.zeromq.org/local--files/area:download/%{name}-%{version}.tar.gz
 Prefix:        %{_prefix}
 Buildroot:     %{_tmppath}/%{name}-%{version}-%{release}-root
+%if %{?rhel}%{!?rhel:0} >= 6
+BuildRequires: libuuid-devel, gcc, make, gcc-c++, libstdc++-devel
+%else
 BuildRequires: uuid-devel, gcc, make, gcc-c++, libstdc++-devel
+%endif
 Requires:      uuid, libstdc++
 
 # Build pgm only on supported archs
@@ -92,6 +96,7 @@ This package contains ZeroMQ related development libraries and header files.
 %defattr(-,root,root,-)
 %{_includedir}/zmq.h
 %{_includedir}/zmq.hpp
+%{_includedir}/zmq_utils.h
 
 %{_libdir}/libzmq.la
 %{_libdir}/libzmq.a
@@ -101,6 +106,8 @@ This package contains ZeroMQ related development libraries and header files.
 %{_mandir}/man3/zmq_bind.3.gz
 %{_mandir}/man3/zmq_close.3.gz
 %{_mandir}/man3/zmq_connect.3.gz
+%{_mandir}/man3/zmq_errno.3.gz
+%{_mandir}/man3/zmq_getsockopt.3.gz
 %{_mandir}/man3/zmq_init.3.gz
 %{_mandir}/man3/zmq_msg_close.3.gz
 %{_mandir}/man3/zmq_msg_copy.3.gz
