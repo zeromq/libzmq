@@ -70,18 +70,14 @@ namespace zmq
         //  when session is attached to a peer, detached is triggered at the
         //  beginning of the termination process when session is about to
         //  be detached from the peer.
-        virtual void attached (const blob_t &peer_identity_);
-        virtual void detached ();
+        virtual void attached (const blob_t &peer_identity_) = 0;
+        virtual void detached () = 0;
 
         //  Allows derives session types to (un)register session names.
         bool register_session (const blob_t &name_, class session_t *session_);
         void unregister_session (const blob_t &name_);
 
         ~session_t ();
-
-        //  Remove any half processed messages. Flush unflushed messages.
-        //  Call this function when engine disconnect to get rid of leftovers.
-        void clean_pipes ();
 
         //  Inherited socket options. These are visible to all session classes.
         options_t options;
@@ -93,6 +89,10 @@ namespace zmq
         void process_attach (struct i_engine *engine_,
             const blob_t &peer_identity_);
         void process_term ();
+
+        //  Remove any half processed messages. Flush unflushed messages.
+        //  Call this function when engine disconnect to get rid of leftovers.
+        void clean_pipes ();
 
         //  Call this function to move on with the delayed process_term.
         void proceed_with_term ();

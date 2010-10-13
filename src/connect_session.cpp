@@ -105,14 +105,13 @@ void zmq::connect_session_t::start_connecting ()
     zmq_assert (false);
 }
 
+void zmq::connect_session_t::attached (const blob_t &peer_identity_)
+{
+}
+
 void zmq::connect_session_t::detached ()
 {
-    //  Clean up the mess left over by the failed connection.
-    clean_pipes ();
-
     //  Reconnect.
     start_connecting ();
-
-    session_t::detached ();
 }
 

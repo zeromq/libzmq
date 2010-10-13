@@ -41,14 +41,9 @@ zmq::named_session_t::named_session_t (class io_thread_t *io_thread_,
 
 zmq::named_session_t::~named_session_t ()
 {
-}
-
-void zmq::named_session_t::detach ()
-{
-    //  Clean up the mess left over by the failed connection.
-    clean_pipes ();
-
-    //  Do nothing. Wait till the connection comes up again.
+    //  Unregister the session from the global list of named sessions.
+    if (!name.empty ())
+        unregister_session (name);
 }
 
 void zmq::named_session_t::attached (const blob_t &peer_identity_)
@@ -83,7 +78,7 @@ void zmq::named_session_t::attached (const blob_t &peer_identity_)
 
 void zmq::named_session_t::detached ()
 {
-    unregister_session (name);
-    session_t::detached ();
+    //  Do nothing. Named sessions are never destroyed because of disconnection,
+    //  neither they have to actively reconnect.
 }
 

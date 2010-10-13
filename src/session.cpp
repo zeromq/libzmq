@@ -260,7 +260,15 @@ void zmq::session_t::detach ()
     //  Engine is dead. Let's forget about it.
     engine = NULL;
 
+    //  Remove any half-done messages from the pipes.
+    clean_pipes ();
+
+    //  Send the event to the derived class.
     detached ();
+
+    //  Just in case, there's only a delimiter in the inbound pipe.
+    if (in_pipe)
+        in_pipe->check_read ();
 }
 
 void zmq::session_t::process_term ()
@@ -291,16 +299,6 @@ bool zmq::session_t::register_session (const blob_t &name_, session_t *session_)
 void zmq::session_t::unregister_session (const blob_t &name_)
 {
     socket->unregister_session (name_);
-}
-
-void zmq::session_t::attached (const blob_t &peer_identity_)
-{
-}
-
-void zmq::session_t::detached ()
-{
-    if (in_pipe)
-        in_pipe->check_read ();
 }
 
 void zmq::session_t::terminate ()

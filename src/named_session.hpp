@@ -38,10 +38,7 @@ namespace zmq
             const blob_t &name_);
         ~named_session_t ();
 
-        //  i_inout interface implementation.
-        void detach ();
-
-        //  Handle events from session_t base class.
+        //  Handlers for events from session base class.
         void attached (const blob_t &peer_identity_);
         void detached ();
 

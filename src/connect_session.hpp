@@ -41,7 +41,8 @@ namespace zmq
 
     private:
 
-        //  Hook into session's disconnection mechanism.
+        //  Handlers for events from session base class.
+        void attached (const blob_t &peer_identity_);
         void detached ();
 
         //  Start the connection process.
