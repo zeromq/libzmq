@@ -154,23 +154,29 @@ int zmq_msg_init_data (zmq_msg_t *msg_, void *data_, size_t size_,
 int zmq_msg_close (zmq_msg_t *msg_)
 {
     //  For VSMs and delimiters there are no resources to free.
-    if (msg_->content == (zmq::msg_content_t*) ZMQ_DELIMITER ||
-          msg_->content == (zmq::msg_content_t*) ZMQ_VSM)
-        return 0;
+    if (msg_->content != (zmq::msg_content_t*) ZMQ_DELIMITER &&
+          msg_->content != (zmq::msg_content_t*) ZMQ_VSM) {
 
-    //  If the content is not shared, or if it is shared and the reference.
-    //  count has dropped to zero, deallocate it.
-    zmq::msg_content_t *content = (zmq::msg_content_t*) msg_->content;
-    if (!(msg_->flags & ZMQ_MSG_SHARED) || !content->refcnt.sub (1)) {
+        //  If the content is not shared, or if it is shared and the reference.
+        //  count has dropped to zero, deallocate it.
+        zmq::msg_content_t *content = (zmq::msg_content_t*) msg_->content;
+        if (!(msg_->flags & ZMQ_MSG_SHARED) || !content->refcnt.sub (1)) {
 
-        //  We used "placement new" operator to initialize the reference.
-        //  counter so we call its destructor now.
-        content->refcnt.~atomic_counter_t ();
+            //  We used "placement new" operator to initialize the reference.
+            //  counter so we call its destructor now.
+            content->refcnt.~atomic_counter_t ();
 
-        if (content->ffn)
-            content->ffn (content->data, content->hint);
-        free (content);
+            if (content->ffn)
+                content->ffn (content->data, content->hint);
+            free (content);
+        }
     }
+
+    //  As a safety measure, let's make the deallocated message look like
+    //  an empty message.
+    msg_->content = (zmq::msg_content_t*) ZMQ_VSM;
+    msg_->flags = 0;
+    msg_->vsm_size = 0;
 
     return 0;
 }
