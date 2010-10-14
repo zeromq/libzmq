@@ -155,7 +155,7 @@ void zmq::devpoll_t::loop ()
         //  Wait for events.
         poll_req.dp_fds = &ev_buf [0];
         poll_req.dp_nfds = nfds;
-        poll_req.dp_timeout = timout ? timeout : -1;
+        poll_req.dp_timeout = timeout ? timeout : -1;
         int n = ioctl (devpoll_fd, DP_POLL, &poll_req);
         if (n == -1 && errno == EINTR)
             continue;
