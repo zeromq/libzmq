@@ -56,7 +56,7 @@ void zmq::xrep_t::xattach_pipes (reader_t *inpipe_, writer_t *outpipe_,
 
         //  TODO: What if new connection has same peer identity as the old one?
         outpipe_t outpipe = {outpipe_, true};
-        bool ok = outpipes.insert (std::make_pair (
+        bool ok = outpipes.insert (outpipes_t::value_type (
             peer_identity_, outpipe)).second;
         zmq_assert (ok);
 

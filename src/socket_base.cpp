@@ -562,7 +562,7 @@ bool zmq::socket_base_t::register_session (const blob_t &name_,
 {
     sessions_sync.lock ();
     bool registered = sessions.insert (
-        std::make_pair (name_, session_)).second;
+        sessions_t::value_type (name_, session_)).second;
     sessions_sync.unlock ();
     return registered;
 }

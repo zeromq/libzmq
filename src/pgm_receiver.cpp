@@ -179,7 +179,7 @@ void zmq::pgm_receiver_t::in_event ()
         //  New peer. Add it to the list of know but unjoint peers.
         if (it == peers.end ()) {
             peer_info_t peer_info = {false, NULL};
-            it = peers.insert (std::make_pair (*tsi, peer_info)).first;
+            it = peers.insert (peers_t::value_type (*tsi, peer_info)).first;
         }
 
         //  Read the offset of the fist message in the current packet.
