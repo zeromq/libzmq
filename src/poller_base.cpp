@@ -48,7 +48,7 @@ void zmq::poller_base_t::add_timer (int timeout_, i_poll_events *sink_, int id_)
 {
     uint64_t expiration = clock.now_ms () + timeout_;
     timer_info_t info = {sink_, id_};
-    timers.insert (std::make_pair (expiration, info));
+    timers.insert (timers_t::value_type (expiration, info));
 }
 
 void zmq::poller_base_t::cancel_timer (i_poll_events *sink_, int id_)
