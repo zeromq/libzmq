@@ -94,6 +94,14 @@ uint64_t zmq::clock_t::rdtsc ()
     uint32_t low, high;
     __asm__ volatile ("rdtsc" : "=a" (low), "=d" (high));
     return (uint64_t) high << 32 | low;
+#elif (defined __SUNPRO_CC && (__SUNPRO_CC >= 0x5100) && (defined __i386 || \
+    defined __amd64 || defined __x86_64))
+    union {
+        uint64_t u64val;
+        uint32_t u32val [2];
+    } tsc;
+    asm("rdtsc" : "=a" (tsc.u32val [0]), "=d" (tsc.u32val [1]));
+    return tsc.u64val;
 #else
     return 0;
 #endif
