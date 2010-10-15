@@ -33,7 +33,7 @@ namespace zmq
     public:
 
         poller_base_t ();
-        ~poller_base_t ();
+        virtual ~poller_base_t ();
 
         //  Returns load of the poller. Note that this function can be
         //  invoked from a different thread!
