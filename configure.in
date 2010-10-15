@@ -260,7 +260,7 @@ fi
 #  PGM extension
 pgm_ext="no"
 
-pgm_basename="libpgm-2.1.26"
+pgm_basename="libpgm-2-1-28~dfsg"
 
 AC_SUBST(pgm_basename)
 
