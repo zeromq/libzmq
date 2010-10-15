@@ -48,7 +48,7 @@ extern "C" {
 /*  Version macros for compile-time API version detection                     */
 #define ZMQ_VERSION_MAJOR 2
 #define ZMQ_VERSION_MINOR 0
-#define ZMQ_VERSION_PATCH 10
+#define ZMQ_VERSION_PATCH 11
 
 #define ZMQ_MAKE_VERSION(major, minor, patch) \
     ((major) * 10000 + (minor) * 100 + (patch))
