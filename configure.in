@@ -88,8 +88,10 @@ CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE $CPPFLAGS"
 # OS-specific tests
 case "${host_os}" in
     *linux*)
-        # Define on Linux to enable all library features
-        CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
+        # Define on Linux to enable all library features. Define if using a gnu compiler
+        if test "x$gnu_compilers" = "xyes"; then
+            CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
+        fi
         AC_DEFINE(ZMQ_HAVE_LINUX, 1, [Have Linux OS])
         AC_CHECK_LIB(rt, main)
         AC_CHECK_LIB(uuid, main, , 
