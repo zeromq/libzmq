@@ -35,10 +35,6 @@ namespace zmq
         //  memory allocation by approximately 99.6%
         message_pipe_granularity = 256,
 
-        //  Number of signals that can be read by the signaler
-        //  using a single system call.
-        signal_buffer_size = 8,
-
         //  Socketpair send buffer size used by signaler. The default value of
         //  zero means leave it at the system default.
         signaler_sndbuf_size = 0,
