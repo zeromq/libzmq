@@ -57,7 +57,7 @@ namespace zmq
 
     class reader_t : public object_t, public array_item_t
     {
-        friend void zmq::create_pipe (object_t*, object_t*, uint64_t,
+        friend void create_pipe (object_t*, object_t*, uint64_t,
             int64_t, reader_t**, writer_t**);
         friend class writer_t;
 
@@ -126,7 +126,7 @@ namespace zmq
 
     class writer_t : public object_t, public array_item_t
     {
-        friend void zmq::create_pipe (object_t*, object_t*, uint64_t,
+        friend void create_pipe (object_t*, object_t*, uint64_t,
             int64_t, reader_t**, writer_t**);
 
     public:
