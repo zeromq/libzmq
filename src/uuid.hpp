@@ -58,7 +58,7 @@ namespace zmq
         enum { uuid_string_len = 36 };
 
         //  Returns a pointer to buffer containing the textual
-        //  representation of the UUID. The caller is reponsible to
+        //  representation of the UUID. The callee is reponsible to
         //  free the allocated memory.
         const char *to_string ();
 
