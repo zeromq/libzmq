@@ -41,6 +41,8 @@ zmq::uuid_t::uuid_t ()
 
 zmq::uuid_t::~uuid_t ()
 {
+    if (string_buf)
+        RpcStringFree (&string_buf);
 }
 
 const char *zmq::uuid_t::to_string ()
