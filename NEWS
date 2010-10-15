@@ -1,3 +1,31 @@
+0MQ version 2.0.10 (Stable), released on 2010/10/15
+===================================================
+
+New functionality
+-----------------
+* Upgrade OpenPGM to 2.1.28~dfsg (Martin Lucina)
+* Added a ZMQ_VERSION macro to zmq.h for compile-time API version
+  detection (Martin Sustrik, Gonzalo Diethelm, Martin Lucina)
+
+Bug fixes:
+----------
+* Fix memory leak under Windows (Taras Shpot)
+* Makefile.am: Add missing files to distribution, improve
+  maintainer-clean (Martin Lucina)
+* Add support for RHEL6 in the spec file (Sebastian Otaegui)
+* configure.in: Do not patch libtool rpath handling (Martin Lucina)
+* Fixing the Red Hat packaging (Martin Sustrik)
+* zmq_msg_move called on uninitialised message in xrep_t::xrecv -- fixed
+  (Max Wolf)
+* crash when closing an ypipe -- fixed (Dhammika Pathirana)
+* REQ socket can die when reply is delivered on wrong unerlying
+  connection -- fixed (Martin Sustrik)
+* if TSC jumps backwards (in case of migration to a different CPU core)
+  latency peak may occur -- fixed (Martin Sustrik)
+* values of RATE, RECOVERY_IVL and SWAP options are checked for negative
+  values (Martin Sustrik)
+
+
 0MQ version 2.0.9 (Stable), released on 2010/09/04
 ==================================================
 
