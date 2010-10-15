@@ -4,6 +4,7 @@ SUBDIRS = src doc perf devices
 DIST_SUBDIRS = src doc perf devices builds/msvc
 
 EXTRA_DIST = \
+$(top_srcdir)/version.sh \
 $(top_srcdir)/foreign/openpgm/@pgm_basename@.tar.gz \
 $(top_srcdir)/foreign/xmlParser/xmlParser.cpp \
 $(top_srcdir)/foreign/xmlParser/xmlParser.hpp
