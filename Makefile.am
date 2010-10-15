@@ -4,10 +4,17 @@ SUBDIRS = src doc perf devices
 DIST_SUBDIRS = src doc perf devices builds/msvc
 
 EXTRA_DIST = \
-$(top_srcdir)/version.sh \
-$(top_srcdir)/foreign/openpgm/@pgm_basename@.tar.gz \
-$(top_srcdir)/foreign/xmlParser/xmlParser.cpp \
-$(top_srcdir)/foreign/xmlParser/xmlParser.hpp
+	autogen.sh	\
+	version.sh	\
+	MAINTAINERS	\
+	foreign/openpgm/@pgm_basename@.tar.gz	\
+	foreign/xmlParser/xmlParser.cpp		\
+	foreign/xmlParser/xmlParser.hpp
+MAINTAINERCLEANFILES = \
+	$(srcdir)/aclocal.m4		\
+	$(srcdir)/autom4te.cache	\
+	$(srcdir)/configure		\
+	`find "$(srcdir)" -type f -name Makefile.in -print`
 
 dist-hook:
 	@if test -d "$(srcdir)/.git"; \
@@ -27,4 +34,5 @@ dist-hook:
 	-rm -rf $(distdir)/foreign/openpgm/@pgm_basename@
 distclean-local:
 	-rm -rf $(top_srcdir)/foreign/openpgm/@pgm_basename@
-
+maintainer-clean-local:
+	-rm -rf $(top_srcdir)/config
