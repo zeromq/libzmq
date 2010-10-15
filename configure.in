@@ -53,8 +53,13 @@ LIBZMQ_EXTRA_CXXFLAGS=""
 # Extra LDFLAGS are appended at the end of LDFLAGS for libzmq.
 LIBZMQ_EXTRA_LDFLAGS=""
 
-# By default compiling with -pedantic except QNX and OSX.
-pedantic="yes"
+# Enable -pedantic if not using icc, this may be overridden later
+AC_CHECK_LANG_ICC
+if test "xyes" = "x$ac_cv_c_intel_compiler" -o "xyes" = "x$ac_cv_cpp_intel_compiler"; then
+    pedantic="no"
+else
+    pedantic="yes"
+fi
 
 #By default compiling with -Werror except OSX.
 werror="yes"
@@ -325,11 +330,11 @@ if test "x$gnu_compilers" = "xyes" -a "x$pgm_ext" = "xno"; then
     CPPFLAGS="-Wall $CPPFLAGS"
 
     if test "x$pedantic" = "xyes"; then
-	CPPFLAGS="-pedantic $CPPFLAGS"
+        CPPFLAGS="-pedantic $CPPFLAGS"
     fi
 
     if test "x$werror" = "xyes"; then
-	CPPFLAGS="-Werror $CPPFLAGS"
+        CPPFLAGS="-Werror $CPPFLAGS"
     fi
 fi
 
