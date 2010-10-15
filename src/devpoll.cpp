@@ -150,7 +150,7 @@ void zmq::devpoll_t::loop ()
         pending_list.clear ();
 
         //  Execute any due timers.
-        uint64_t timeout = execute_timers ();
+        int timeout = (int) execute_timers ();
 
         //  Wait for events.
         poll_req.dp_fds = &ev_buf [0];

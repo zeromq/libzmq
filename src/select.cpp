@@ -148,7 +148,7 @@ void zmq::select_t::loop ()
     while (!stopping) {
 
         //  Execute any due timers.
-        uint64_t timeout = execute_timers ();
+        int timeout = (int) execute_timers ();
 
         //  Intialise the pollsets.
         memcpy (&readfds, &source_set_in, sizeof source_set_in);

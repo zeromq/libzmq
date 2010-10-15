@@ -134,7 +134,7 @@ void zmq::epoll_t::loop ()
     while (!stopping) {
 
         //  Execute any due timers.
-        uint64_t timeout = execute_timers ();
+        int timeout = (int) execute_timers ();
 
         //  Wait for events.
         int n = epoll_wait (epoll_fd, &ev_buf [0], max_io_events,

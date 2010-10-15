@@ -147,7 +147,7 @@ void zmq::kqueue_t::loop ()
     while (!stopping) {
 
         //  Execute any due timers.
-        uint64_t timeout = execute_timers ();
+        int timeout = (int) execute_timers ();
 
         //  Wait for events.
         struct kevent ev_buf [max_io_events];
