@@ -36,6 +36,8 @@
 zmq::pgm_sender_t::pgm_sender_t (io_thread_t *parent_, 
       const options_t &options_) :
     io_object_t (parent_),
+    has_tx_timer (false),
+    has_rx_timer (false),
     encoder (0),
     pgm_socket (false, options_),
     options (options_),
@@ -89,6 +91,16 @@ void zmq::pgm_sender_t::plug (io_thread_t *io_thread_, i_inout *inout_)
 
 void zmq::pgm_sender_t::unplug ()
 {
+    if (has_rx_timer) {
+        cancel_timer (rx_timer_id);
+        has_rx_timer = false;
+    }
+
+    if (has_tx_timer) {
+        cancel_timer (tx_timer_id);
+        has_tx_timer = false;
+    }
+
     rm_fd (handle);
     rm_fd (uplink_handle);
     rm_fd (rdata_notify_handle);
@@ -128,10 +140,9 @@ void zmq::pgm_sender_t::in_event ()
         has_rx_timer = false;
     }
 
-    //  In event on sender side means NAK or SPMR receiving from some peer.
+    //  In-event on sender side means NAK or SPMR receiving from some peer.
     pgm_socket.process_upstream ();
-    const int last_errno = errno;
-    if (last_errno == ENOMEM || last_errno == EBUSY) {
+    if (errno == ENOMEM || errno == EBUSY) {
         const long timeout = pgm_socket.get_rx_timeout ();
         add_timer (timeout, rx_timer_id);
         has_rx_timer = true;

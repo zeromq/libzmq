@@ -36,6 +36,7 @@
 zmq::pgm_receiver_t::pgm_receiver_t (class io_thread_t *parent_, 
       const options_t &options_) :
     io_object_t (parent_),
+    has_rx_timer (false),
     pgm_socket (true, options_),
     options (options_),
     inout (NULL),
@@ -81,7 +82,11 @@ void zmq::pgm_receiver_t::unplug ()
     mru_decoder = NULL;
     pending_bytes = 0;
 
-    //  Stop polling.
+    if (has_rx_timer) {
+        cancel_timer (rx_timer_id);
+        has_rx_timer = false;
+    }
+
     rm_fd (socket_handle);
     rm_fd (pipe_handle);
 
@@ -150,8 +155,7 @@ void zmq::pgm_receiver_t::in_event ()
         //  No data to process. This may happen if the packet received is
         //  neither ODATA nor ODATA.
         if (received == 0) {
-            const int last_errno = errno;
-            if (last_errno == ENOMEM || last_errno == EBUSY) {
+            if (errno == ENOMEM || errno == EBUSY) {
                 const long timeout = pgm_socket.get_rx_timeout ();
                 add_timer (timeout, rx_timer_id);
                 has_rx_timer = true;

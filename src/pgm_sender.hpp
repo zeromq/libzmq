@@ -66,7 +66,8 @@ namespace zmq
         enum {tx_timer_id = 0xa0, rx_timer_id = 0xa1};
 
         //  Timers are running.
-        bool has_tx_timer, has_rx_timer;
+        bool has_tx_timer;
+        bool has_rx_timer;
 
         //  Message encoder.
         encoder_t encoder;
