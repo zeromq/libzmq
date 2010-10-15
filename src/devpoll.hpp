@@ -22,7 +22,7 @@
 
 #include "platform.hpp"
 
-#if defined ZMQ_HAVE_SOLARIS || ZMQ_HAVE_HPUX
+#if defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_HPUX
 
 #include <vector>
 
