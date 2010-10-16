@@ -33,12 +33,11 @@
 zmq::zmq_init_t::zmq_init_t (io_thread_t *io_thread_,
       socket_base_t *socket_, session_t *session_, fd_t fd_,
       const options_t &options_) :
-    own_t (io_thread_),
+    own_t (io_thread_, options_),
     sent (false),
     received (false),
     socket (socket_),
     session (session_),
-    options (options_),
     io_thread (io_thread_)
 {
     //  Create the engine object for this connection.

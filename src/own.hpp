@@ -24,6 +24,7 @@
 #include <algorithm>
 
 #include "object.hpp"
+#include "options.hpp"
 #include "atomic_counter.hpp"
 #include "stdint.hpp"
 
@@ -45,7 +46,7 @@ namespace zmq
         own_t (class ctx_t *parent_, uint32_t slot_);
 
         //  The object is living within I/O thread.
-        own_t (class io_thread_t *io_thread_);
+        own_t (class io_thread_t *io_thread_, const options_t &options_);
 
         //  When another owned object wants to send command to this object
         //  it calls this function to let it know it should not shut down
@@ -83,11 +84,14 @@ namespace zmq
         //  Term handler is protocted rather than private so that it can
         //  be intercepted by the derived class. This is useful to add custom
         //  steps to the beginning of the termination process.
-        void process_term ();
+        void process_term (int linger_);
 
         //  A place to hook in when phyicallal destruction of the object
         //  is to be delayed.
         virtual void process_destroy ();
+
+        //  Socket options associated with this object.
+        options_t options;
 
     private:
 

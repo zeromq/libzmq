@@ -54,6 +54,9 @@ namespace zmq
         //  Socket type.
         int type;
 
+        //  Linger time, in milliseconds.
+        int linger;
+
         //  These options are never set by the user directly. Instead they are
         //  provided by the specific socket type.
         bool requires_in;

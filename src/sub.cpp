@@ -48,10 +48,10 @@ void zmq::sub_t::xattach_pipes (class reader_t *inpipe_,
     fq.attach (inpipe_);
 }
 
-void zmq::sub_t::process_term ()
+void zmq::sub_t::process_term (int linger_)
 {
     fq.terminate ();
-    socket_base_t::process_term ();
+    socket_base_t::process_term (linger_);
 }
 
 int zmq::sub_t::xsetsockopt (int option_, const void *optval_,

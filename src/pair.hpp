@@ -56,7 +56,7 @@ namespace zmq
     private:
 
         //  Hook into termination process.
-        void process_term ();
+        void process_term (int linger_);
 
         class reader_t *inpipe;
         class writer_t *outpipe;

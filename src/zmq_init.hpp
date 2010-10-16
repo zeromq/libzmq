@@ -25,7 +25,6 @@
 #include "own.hpp"
 #include "fd.hpp"
 #include "stdint.hpp"
-#include "options.hpp"
 #include "stdint.hpp"
 #include "blob.hpp"
 
@@ -75,9 +74,6 @@ namespace zmq
 
         //  Identity of the peer socket.
         blob_t peer_identity;
-
-        //  Associated socket options.
-        options_t options;
 
         //  I/O thread the object is living in. It will be used to plug
         //  the engine into the same I/O thread.

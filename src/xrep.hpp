@@ -52,7 +52,7 @@ namespace zmq
     private:
 
         //  Hook into the termination process.
-        void process_term ();
+        void process_term (int linger_);
 
         //  i_reader_events interface implementation.
         void activated (reader_t *pipe_);

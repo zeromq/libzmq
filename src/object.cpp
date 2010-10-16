@@ -106,7 +106,7 @@ void zmq::object_t::process_command (command_t &cmd_)
         break;
     
     case command_t::term:
-        process_term ();
+        process_term (cmd_.args.term.linger);
         break;
 
     case command_t::term_ack:
@@ -312,7 +312,7 @@ void zmq::object_t::send_term_req (own_t *destination_,
     send_command (cmd);
 }
 
-void zmq::object_t::send_term (own_t *destination_)
+void zmq::object_t::send_term (own_t *destination_, int linger_)
 {
     command_t cmd;
 #if defined ZMQ_MAKE_VALGRIND_HAPPY
@@ -320,6 +320,7 @@ void zmq::object_t::send_term (own_t *destination_)
 #endif
     cmd.destination = destination_;
     cmd.type = command_t::term;
+    cmd.args.term.linger = linger_;
     send_command (cmd);
 }
 
@@ -386,7 +387,7 @@ void zmq::object_t::process_term_req (own_t *object_)
     zmq_assert (false);
 }
 
-void zmq::object_t::process_term ()
+void zmq::object_t::process_term (int linger_)
 {
     zmq_assert (false);
 }

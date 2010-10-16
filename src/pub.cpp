@@ -56,7 +56,7 @@ void zmq::pub_t::xattach_pipes (class reader_t *inpipe_,
     }
 }
 
-void zmq::pub_t::process_term ()
+void zmq::pub_t::process_term (int linger_)
 {
     terminating = true;
 
@@ -68,7 +68,7 @@ void zmq::pub_t::process_term ()
     register_term_acks (pipes.size ());
 
     //  Continue with the termination immediately.
-    socket_base_t::process_term ();
+    socket_base_t::process_term (linger_);
 }
 
 void zmq::pub_t::activated (writer_t *pipe_)

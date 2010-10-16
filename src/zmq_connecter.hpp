@@ -23,7 +23,6 @@
 #include "own.hpp"
 #include "io_object.hpp"
 #include "tcp_connecter.hpp"
-#include "options.hpp"
 #include "stdint.hpp"
 
 namespace zmq
@@ -74,9 +73,6 @@ namespace zmq
 
         //  Reference to the session we belong to.
         class session_t *session;
-
-        //  Associated socket options.
-        options_t options;
 
         zmq_connecter_t (const zmq_connecter_t&);
         void operator = (const zmq_connecter_t&);

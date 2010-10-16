@@ -109,6 +109,7 @@ namespace zmq
 
             //  Sent by socket to I/O object to start its shutdown.
             struct {
+                int linger;
             } term;
 
             //  Sent by I/O object to the socket to acknowledge it has

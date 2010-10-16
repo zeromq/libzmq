@@ -26,9 +26,8 @@
 
 zmq::zmq_listener_t::zmq_listener_t (io_thread_t *io_thread_,
       socket_base_t *socket_, const options_t &options_) :
-    own_t (io_thread_),
+    own_t (io_thread_, options_),
     io_object_t (io_thread_),
-    options (options_),
     socket (socket_)
 {
 }
@@ -49,10 +48,10 @@ void zmq::zmq_listener_t::process_plug ()
     set_pollin (handle);
 }
 
-void zmq::zmq_listener_t::process_term ()
+void zmq::zmq_listener_t::process_term (int linger_)
 {
     rm_fd (handle);
-    own_t::process_term ();
+    own_t::process_term (linger_);
 }
 
 void zmq::zmq_listener_t::in_event ()

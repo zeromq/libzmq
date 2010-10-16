@@ -47,7 +47,7 @@ namespace zmq
     private:
 
         //  Hook into the termination process.
-        void process_term ();
+        void process_term (int linger_);
 
         //  Write the message to the pipe. Make the pipe inactive if writing
         //  fails. In such a case false is returned.

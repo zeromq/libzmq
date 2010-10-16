@@ -48,7 +48,7 @@ namespace zmq
     private:
 
         //  Hook into the termination process.
-        void process_term ();
+        void process_term (int linger_);
 
         //  Check whether the message matches at least one subscription.
         bool match (zmq_msg_t *msg_);

@@ -42,10 +42,10 @@ void zmq::pull_t::xattach_pipes (class reader_t *inpipe_,
     fq.attach (inpipe_);
 }
 
-void zmq::pull_t::process_term ()
+void zmq::pull_t::process_term (int linger_)
 {
     fq.terminate ();
-    socket_base_t::process_term ();
+    socket_base_t::process_term (linger_);
 }
 
 int zmq::pull_t::xrecv (zmq_msg_t *msg_, int flags_)

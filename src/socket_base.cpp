@@ -681,7 +681,7 @@ void zmq::socket_base_t::process_unplug ()
 {
 }
 
-void zmq::socket_base_t::process_term ()
+void zmq::socket_base_t::process_term (int linger_)
 {
     //  Unregister all inproc endpoints associated with this socket.
     //  Doing this we make sure that no new pipes from other sockets (inproc)
@@ -689,7 +689,7 @@ void zmq::socket_base_t::process_term ()
     unregister_endpoints (this);
 
     //  Continue the termination process immediately.
-    own_t::process_term ();
+    own_t::process_term (linger_);
 }
 
 void zmq::socket_base_t::process_destroy ()

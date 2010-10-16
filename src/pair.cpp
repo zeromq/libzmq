@@ -86,7 +86,7 @@ void  zmq::pair_t::delimited (reader_t *pipe_)
 {
 }
 
-void zmq::pair_t::process_term ()
+void zmq::pair_t::process_term (int linger_)
 {
     terminating = true;
 
@@ -100,7 +100,7 @@ void zmq::pair_t::process_term ()
         outpipe->terminate ();
     }
 
-    socket_base_t::process_term ();
+    socket_base_t::process_term (linger_);
 }
 
 void zmq::pair_t::activated (class reader_t *pipe_)

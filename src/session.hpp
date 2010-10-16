@@ -22,7 +22,7 @@
 
 #include "own.hpp"
 #include "i_inout.hpp"
-#include "options.hpp"
+#include "io_object.hpp"
 #include "blob.hpp"
 #include "pipe.hpp"
 
@@ -31,6 +31,7 @@ namespace zmq
 
     class session_t :
         public own_t,
+        public io_object_t,
         public i_inout,
         public i_reader_events,
         public i_writer_events
@@ -79,16 +80,16 @@ namespace zmq
 
         ~session_t ();
 
-        //  Inherited socket options. These are visible to all session classes.
-        options_t options;
-
     private:
 
         //  Handlers for incoming commands.
         void process_plug ();
         void process_attach (struct i_engine *engine_,
             const blob_t &peer_identity_);
-        void process_term ();
+        void process_term (int linger_);
+
+        //  i_poll_events handlers.
+        void timer_event (int id_);
 
         //  Remove any half processed messages. Flush unflushed messages.
         //  Call this function when engine disconnect to get rid of leftovers.
@@ -126,6 +127,12 @@ namespace zmq
         //  If true, we should terminate the session even though there are
         //  pending messages in the inbound pipe.
         bool force_terminate;
+
+        //  ID of the linger timer
+        enum {linger_timer_id = 0x20};
+
+        //  True is linger timer is running.
+        bool has_linger_timer;
 
         enum {
             active,

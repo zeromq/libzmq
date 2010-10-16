@@ -31,8 +31,9 @@ zmq::own_t::own_t (class ctx_t *parent_, uint32_t slot_) :
 {
 }
 
-zmq::own_t::own_t (io_thread_t *io_thread_) :
+zmq::own_t::own_t (io_thread_t *io_thread_, const options_t &options_) :
     object_t (io_thread_),
+    options (options_),
     terminating (false),
     sent_seqnum (0),
     processed_seqnum (0),
@@ -113,16 +114,19 @@ void zmq::own_t::process_term_req (own_t *object_)
 
     owned.erase (it);
     register_term_acks (1);
-    send_term (object_);
+
+    //  Note that this object is the root of the (partial shutdown) thus, its
+    //  value of linger is used, rather than the value stored by the children.
+    send_term (object_, options.linger);
 }
 
 void zmq::own_t::process_own (own_t *object_)
 {
     //  If the object is already being shut down, new owned objects are
-    //  immediately asked to terminate.
+    //  immediately asked to terminate. Note that linger is set to zero.
     if (terminating) {
         register_term_acks (1);
-        send_term (object_);
+        send_term (object_, 0);
         return;
     }
 
@@ -140,7 +144,7 @@ void zmq::own_t::terminate ()
     //  As for the root of the ownership tree, there's noone to terminate it,
     //  so it has to terminate itself.
     if (!owner) {
-        process_term ();
+        process_term (options.linger);
         return;
     }
 
@@ -148,14 +152,14 @@ void zmq::own_t::terminate ()
     send_term_req (owner, this);
 }
 
-void zmq::own_t::process_term ()
+void zmq::own_t::process_term (int linger_)
 {
     //  Double termination should never happen.
     zmq_assert (!terminating);
 
-    //  Send termination request to all owned objects. 
+    //  Send termination request to all owned objects.
     for (owned_t::iterator it = owned.begin (); it != owned.end (); it++)
-        send_term (*it);
+        send_term (*it, linger_);
     register_term_acks (owned.size ());
     owned.clear ();
 

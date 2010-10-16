@@ -23,7 +23,6 @@
 #include "own.hpp"
 #include "io_object.hpp"
 #include "tcp_listener.hpp"
-#include "options.hpp"
 #include "stdint.hpp"
 
 namespace zmq
@@ -44,7 +43,7 @@ namespace zmq
 
         //  Handlers for incoming commands.
         void process_plug ();
-        void process_term ();
+        void process_term (int linger_);
 
         //  Handlers for I/O events.
         void in_event ();
@@ -54,9 +53,6 @@ namespace zmq
 
         //  Handle corresponding to the listening socket.
         handle_t handle;
-
-        //  Associated socket options.
-        options_t options;
 
         //  Socket the listerner belongs to.
         class socket_base_t *socket;

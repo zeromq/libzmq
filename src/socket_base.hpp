@@ -28,7 +28,6 @@
 #include "own.hpp"
 #include "array.hpp"
 #include "mutex.hpp"
-#include "options.hpp"
 #include "stdint.hpp"
 #include "atomic_counter.hpp"
 #include "signaler.hpp"
@@ -111,13 +110,10 @@ namespace zmq
         virtual bool xhas_in ();
         virtual int xrecv (zmq_msg_t *msg_, int options_);
 
-        //  Socket options.
-        options_t options;
-
         //  We are declaring termination handler as protected so that
         //  individual socket types can hook into the termination process
         //  by overloading it.
-        void process_term ();
+        void process_term (int linger_);
 
         //  Delay actual destruction of the socket.
         void process_destroy ();

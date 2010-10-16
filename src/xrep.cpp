@@ -80,7 +80,7 @@ void zmq::xrep_t::xattach_pipes (reader_t *inpipe_, writer_t *outpipe_,
     }
 }
 
-void zmq::xrep_t::process_term ()
+void zmq::xrep_t::process_term (int linger_)
 {
     terminating = true;
 
@@ -93,7 +93,7 @@ void zmq::xrep_t::process_term ()
           it++)
         it->second.writer->terminate ();
 
-    socket_base_t::process_term ();
+    socket_base_t::process_term (linger_);
 }
 
 void zmq::xrep_t::terminated (reader_t *pipe_)

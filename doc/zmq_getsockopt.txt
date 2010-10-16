@@ -212,6 +212,22 @@ Default value:: 0
 Applicable socket types:: all
 
 
+ZMQ_LINGER: Set linger period for socket shutdown
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_LINGER' option shall retrieve the period for pending outbound
+messages to linger in memory after closing the socket. Value of -1 means
+infinite. Pending messages will be kept until they are fully transferred to
+the peer. Value of 0 means that all the pending messages are dropped immediately
+when socket is closed. Positive value means number of milliseconds to keep
+trying to send the pending messages before discarding them.
+
+[horizontal]
+Option value type:: int
+Option value unit:: milliseconds
+Default value:: -1
+Applicable socket types:: all
+
+
 ZMQ_FD: Retrieve file descriptor associated with the socket
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_FD' option shall retrieve file descriptor associated with the 0MQ

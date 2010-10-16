@@ -44,7 +44,7 @@ namespace zmq
     private:
 
         //  Hook into the termination process.
-        void process_term ();
+        void process_term (int linger_);
 
         //  Fair queueing object for inbound pipes.
         fq_t fq;

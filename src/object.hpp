@@ -80,7 +80,7 @@ namespace zmq
         void send_pipe_term_ack (class reader_t *destination_);
         void send_term_req (class own_t *destination_,
             class own_t *object_);
-        void send_term (class own_t *destination_);
+        void send_term (class own_t *destination_, int linger_);
         void send_term_ack (class own_t *destination_);
 
         //  These handlers can be overloaded by the derived objects. They are
@@ -97,7 +97,7 @@ namespace zmq
         virtual void process_pipe_term ();
         virtual void process_pipe_term_ack ();
         virtual void process_term_req (class own_t *object_);
-        virtual void process_term ();
+        virtual void process_term (int linger_);
         virtual void process_term_ack ();
 
         //  Special handler called after a command that requires a seqnum
