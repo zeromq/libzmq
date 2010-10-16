@@ -457,8 +457,11 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 
         //  At this point we are meant to wait for events but there are none.
         //  If timeout is infinite we can just loop until we get some events.
-        if (timeout_ < 0)
+        if (timeout_ < 0) {
+            if (first_pass)
+                first_pass = false;
             continue;
+        }
 
         //  The timeout is finite and there are no events. In the first pass
         //  we get a timestamp of when the polling have begun. (We assume that
@@ -467,6 +470,9 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         if (first_pass) {
             now = clock.now_ms ();
             end = now + (timeout_ / 1000);
+            if (now == end)
+                break;
+            first_pass = false;
             continue;
         }
 
@@ -617,8 +623,11 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 
         //  At this point we are meant to wait for events but there are none.
         //  If timeout is infinite we can just loop until we get some events.
-        if (timeout_ < 0)
+        if (timeout_ < 0) {
+            if (first_pass)
+                first_pass = false;
             continue;
+        }
 
         //  The timeout is finite and there are no events. In the first pass
         //  we get a timestamp of when the polling have begun. (We assume that
@@ -627,6 +636,9 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         if (first_pass) {
             now = clock.now_ms ();
             end = now + (timeout_ / 1000);
+            if (now == end)
+                break;
+            first_pass = false;
             continue;
         }
 
