@@ -44,7 +44,10 @@ namespace zmq
 
     private:
 
+        //  TSC timestamp of when last time measurement was made.
         uint64_t last_tsc;
+
+        //  Physical time corresponding to the TSC above (in milliseconds).
         uint64_t last_time;
 
         clock_t (const clock_t&);

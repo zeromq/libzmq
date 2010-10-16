@@ -31,7 +31,7 @@
 
 zmq::clock_t::clock_t () :
     last_tsc (rdtsc ()),
-    last_time (now_us ())
+    last_time (now_us () / 1000)
 {
 }
 
@@ -82,7 +82,7 @@ uint64_t zmq::clock_t::now_ms ()
         return last_time;
 
     last_tsc = tsc;
-    last_time = now_us ();
+    last_time = now_us () / 1000;
     return last_time;
 }
 
