@@ -35,15 +35,18 @@
 #include <netdb.h>
 #endif
 
+namespace zmq
+{
+    const char *errno_to_string (int errno_);
+}
+
 #ifdef ZMQ_HAVE_WINDOWS
 
 namespace zmq
 {
-
     const char *wsa_error ();
     void win_error (char *buffer_, size_t buffer_size_);
-    void wsa_error_to_errno ();
-  
+    void wsa_error_to_errno (); 
 }
 
 //  Provides convenient way to check WSA-style errors on Windows.

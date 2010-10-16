@@ -22,6 +22,47 @@
 #include "err.hpp"
 #include "platform.hpp"
 
+const char *zmq::errno_to_string (int errno_)
+{
+    switch (errno_) {
+#if defined ZMQ_HAVE_WINDOWS
+    case ENOTSUP:
+        return "Not supported";
+    case EPROTONOSUPPORT:
+        return "Protocol not supported";
+    case ENOBUFS:
+        return "No buffer space available";
+    case ENETDOWN:
+        return "Network is down";
+    case EADDRINUSE:
+        return "Address in use";
+    case EADDRNOTAVAIL:
+        return "Address not available";
+    case ECONNREFUSED:
+        return "Connection refused";
+    case EINPROGRESS:
+        return "Operation in progress";
+#endif
+    case EFSM:
+        return "Operation cannot be accomplished in current state";
+    case ENOCOMPATPROTO:
+        return "The protocol is not compatible with the socket type";
+    case ETERM:
+        return "Context was terminated";
+    case EMTHREAD:
+        return "No thread available";
+    default:
+#if defined _MSC_VER
+#pragma warning (push)
+#pragma warning (disable:4996)
+#endif
+        return strerror (errno_);
+#if defined _MSC_VER
+#pragma warning (pop)
+#endif
+    }
+}
+
 #ifdef ZMQ_HAVE_WINDOWS
 
 const char *zmq::wsa_error()
