@@ -174,9 +174,9 @@ void zmq::pgm_sender_t::out_event ()
         put_uint16 (out_buffer, offset == -1 ? 0xffff : (uint16_t) offset);
     }
 
-    if (has_rx_timer) {
-        cancel_timer (rx_timer_id);
-        has_rx_timer = false;
+    if (has_tx_timer) {
+        cancel_timer (tx_timer_id);
+        has_tx_timer = false;
     }
 
     //  Send the data.
