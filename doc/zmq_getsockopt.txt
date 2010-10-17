@@ -212,8 +212,8 @@ Default value:: 0
 Applicable socket types:: all
 
 
-ZMQ_LINGER: Set linger period for socket shutdown
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_LINGER: Retrieve linger period for socket shutdown
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_LINGER' option shall retrieve the period for pending outbound
 messages to linger in memory after closing the socket. Value of -1 means
 infinite. Pending messages will be kept until they are fully transferred to
@@ -225,6 +225,17 @@ trying to send the pending messages before discarding them.
 Option value type:: int
 Option value unit:: milliseconds
 Default value:: -1
+Applicable socket types:: all
+
+ZMQ_RECONNECT_IVL: Retrieve reconnect period for connection-based transports
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_RECONNECT' option shall retrieve the period indicating how long it
+takes for a disconnected underlying connection to attempt to reconnect.
+
+[horizontal]
+Option value type:: int
+Option value unit:: milliseconds
+Default value:: 100
 Applicable socket types:: all
 
 

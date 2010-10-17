@@ -192,6 +192,7 @@ ZMQ_EXPORT int zmq_term (void *context);
 #define ZMQ_EVENTS 15
 #define ZMQ_TYPE 16
 #define ZMQ_LINGER 17
+#define ZMQ_RECONNECT_IVL 18
 
 /*  Send/recv options.                                                        */
 #define ZMQ_NOBLOCK 1

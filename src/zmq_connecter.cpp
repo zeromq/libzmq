@@ -54,20 +54,21 @@ zmq::zmq_connecter_t::~zmq_connecter_t ()
         rm_fd (handle);
 }
 
-int zmq::zmq_connecter_t::get_reconnect_period ()
+int zmq::zmq_connecter_t::get_reconnect_ivl ()
 {
 #if defined ZMQ_HAVE_WINDOWS
-    return (reconnect_period + (((int)GetCurrentProcessId () * 13)
-        % reconnect_period));
+    return (options.reconnect_ivl + (((int) GetCurrentProcessId () * 13)
+        % options.reconnect_ivl));
 #else
-    return (reconnect_period + (((int)getpid () * 13) % reconnect_period));
+    return (options.reconnect_ivl + (((int) getpid () * 13)
+        % options.reconnect_ivl));
 #endif
 }
 
 void zmq::zmq_connecter_t::process_plug ()
 {
     if (wait)
-        add_timer (get_reconnect_period (), reconnect_timer_id);
+        add_timer (get_reconnect_ivl (), reconnect_timer_id);
     else
         start_connecting ();
 }
@@ -90,7 +91,7 @@ void zmq::zmq_connecter_t::out_event ()
     if (fd == retired_fd) {
         tcp_connecter.close ();
         wait = true;
-        add_timer (get_reconnect_period (), reconnect_timer_id);
+        add_timer (get_reconnect_ivl (), reconnect_timer_id);
         return;
     }
 
@@ -139,5 +140,5 @@ void zmq::zmq_connecter_t::start_connecting ()
 
     //  Handle any other error condition by eventual reconnect.
     wait = true;
-    add_timer (get_reconnect_period (), reconnect_timer_id);
+    add_timer (get_reconnect_ivl (), reconnect_timer_id);
 }

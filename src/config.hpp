@@ -69,9 +69,6 @@ namespace zmq
         //  Maximum number of events the I/O thread can process in one go.
         max_io_events = 256,
 
-        //  How long to wait (milliseconds) till reattempting to connect.
-        reconnect_period = 100,
-
         //  Should initial connection attempts be delayed?
         wait_before_connect = false,
 

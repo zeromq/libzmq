@@ -57,6 +57,9 @@ namespace zmq
         //  Linger time, in milliseconds.
         int linger;
 
+        //  Interval between attempts to reconnect, in milliseconds.
+        int reconnect_ivl;
+
         //  These options are never set by the user directly. Instead they are
         //  provided by the specific socket type.
         bool requires_in;

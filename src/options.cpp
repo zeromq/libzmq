@@ -35,6 +35,7 @@ zmq::options_t::options_t () :
     rcvbuf (0),
     type (-1),
     linger (-1),
+    reconnect_ivl (100),
     requires_in (false),
     requires_out (false),
     immediate_connect (true)
@@ -137,6 +138,18 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         }
         linger = *((int*) optval_);
         return 0;
+
+    case ZMQ_RECONNECT_IVL:
+        if (optvallen_ != sizeof (int)) {
+            errno = EINVAL;
+            return -1;
+        }
+        if (*((int*) optval_) < 0) {
+            errno = EINVAL;
+            return -1;
+        }
+        reconnect_ivl = *((int*) optval_);
+        return 0;
     }
 
     errno = EINVAL;
@@ -146,24 +159,6 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
 int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
 {
     switch (option_) {
-
-    case ZMQ_LINGER:
-        if (*optvallen_ < sizeof (int)) {
-            errno = EINVAL;
-            return -1;
-        }
-        *((int*) optval_) = linger;
-        *optvallen_ = sizeof (int);
-        return 0;
-
-    case ZMQ_TYPE:
-        if (*optvallen_ < sizeof (int)) {
-            errno = EINVAL;
-            return -1;
-        }
-        *((int*) optval_) = type;
-        *optvallen_ = sizeof (int);
-        return 0;
 
     case ZMQ_HWM:
         if (*optvallen_ < sizeof (uint64_t)) {
@@ -246,6 +241,34 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
         *((uint64_t*) optval_) = rcvbuf;
         *optvallen_ = sizeof (uint64_t);
         return 0;
+
+    case ZMQ_TYPE:
+        if (*optvallen_ < sizeof (int)) {
+            errno = EINVAL;
+            return -1;
+        }
+        *((int*) optval_) = type;
+        *optvallen_ = sizeof (int);
+        return 0;
+
+    case ZMQ_LINGER:
+        if (*optvallen_ < sizeof (int)) {
+            errno = EINVAL;
+            return -1;
+        }
+        *((int*) optval_) = linger;
+        *optvallen_ = sizeof (int);
+        return 0;
+
+    case ZMQ_RECONNECT_IVL:
+        if (*optvallen_ < sizeof (int)) {
+            errno = EINVAL;
+            return -1;
+        }
+        *((int*) optval_) = reconnect_ivl;
+        *optvallen_ = sizeof (int);
+        return 0;
+
     }
 
     errno = EINVAL;
