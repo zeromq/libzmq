@@ -38,7 +38,7 @@ zmq::zmq_listener_t::~zmq_listener_t ()
 
 int zmq::zmq_listener_t::set_address (const char *protocol_, const char *addr_)
 {
-     return tcp_listener.set_address (protocol_, addr_);
+     return tcp_listener.set_address (protocol_, addr_, options.backlog);
 }
 
 void zmq::zmq_listener_t::process_plug ()

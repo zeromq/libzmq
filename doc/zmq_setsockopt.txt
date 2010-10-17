@@ -245,6 +245,19 @@ Default value:: 100
 Applicable socket types:: all
 
 
+ZMQ_BACKLOG: Set maximum length of the queue of pending connections
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_RECONNECT' option shall be set to specify maximum size of the
+pending connection backlog for connection-based transports. For details
+refer to your operating system documentation for the 'listen' function.
+
+[horizontal]
+Option value type:: int
+Option value unit:: connections
+Default value:: 100
+Applicable socket types:: all
+
+
 RETURN VALUE
 ------------
 The _zmq_setsockopt()_ function shall return zero if successful. Otherwise it

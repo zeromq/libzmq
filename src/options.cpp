@@ -36,6 +36,7 @@ zmq::options_t::options_t () :
     type (-1),
     linger (-1),
     reconnect_ivl (100),
+    backlog (100),
     requires_in (false),
     requires_out (false),
     immediate_connect (true)
@@ -150,6 +151,15 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         }
         reconnect_ivl = *((int*) optval_);
         return 0;
+
+    case ZMQ_BACKLOG:
+        if (optvallen_ != sizeof (int)) {
+            errno = EINVAL;
+            return -1;
+        }
+        backlog = *((int*) optval_);
+        return 0;
+
     }
 
     errno = EINVAL;
@@ -266,6 +276,15 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
             return -1;
         }
         *((int*) optval_) = reconnect_ivl;
+        *optvallen_ = sizeof (int);
+        return 0;
+
+    case ZMQ_BACKLOG:
+        if (*optvallen_ < sizeof (int)) {
+            errno = EINVAL;
+            return -1;
+        }
+        *((int*) optval_) = backlog;
         *optvallen_ = sizeof (int);
         return 0;
 

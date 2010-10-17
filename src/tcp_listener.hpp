@@ -36,7 +36,8 @@ namespace zmq
         ~tcp_listener_t ();
 
         //  Start listening on the interface.
-        int set_address (const char *protocol_, const char *addr_);
+        int set_address (const char *protocol_, const char *addr_,
+            int backlog_);
 
         //  Close the listening socket.
         int close ();

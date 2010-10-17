@@ -85,10 +85,6 @@ namespace zmq
         //  possible latencies.
         clock_precision = 1000000,
 
-        //  Maximal number of non-accepted connections that can be held by
-        //  TCP listener object.
-        tcp_connection_backlog = 100,
-
         //  Maximum transport data unit size for PGM (TPDU).
         pgm_max_tpdu = 1500
     };

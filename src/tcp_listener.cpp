@@ -42,7 +42,8 @@ zmq::tcp_listener_t::~tcp_listener_t ()
         close ();
 }
 
-int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
+int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_,
+    int backlog_)
 {
     //  IPC protocol is not supported on Windows platform.
     if (strcmp (protocol_, "tcp") != 0 ) {
@@ -81,7 +82,7 @@ int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
     }
 
     //  Listen for incomming connections.
-    rc = listen (s, 1);
+    rc = listen (s, backlog_);
     if (rc == SOCKET_ERROR) {
         wsa_error_to_errno ();
         return -1;
@@ -161,7 +162,8 @@ zmq::tcp_listener_t::~tcp_listener_t ()
         close ();
 }
 
-int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
+int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_,
+    int backlog_)
 {
     if (strcmp (protocol_, "tcp") == 0 ) {
 
@@ -201,7 +203,7 @@ int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
         }
 
         //  Listen for incomming connections.
-        rc = listen (s, tcp_connection_backlog);
+        rc = listen (s, backlog_);
         if (rc != 0) {
             close ();
             return -1;
@@ -241,7 +243,7 @@ int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
         }
 
         //  Listen for incomming connections.
-        rc = listen (s, tcp_connection_backlog);
+        rc = listen (s, backlog_);
         if (rc != 0) {
             close ();
             return -1;

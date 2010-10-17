@@ -239,6 +239,19 @@ Default value:: 100
 Applicable socket types:: all
 
 
+ZMQ_BACKLOG: Retrieve maximum length of the queue of pending connections
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_RECONNECT' option shall retrieve maximum size of the
+pending connection backlog for connection-based transports. For details
+refer to your operating system documentation for the 'listen' function.
+
+[horizontal]
+Option value type:: int
+Option value unit:: connections
+Default value:: 100
+Applicable socket types:: all
+
+
 ZMQ_FD: Retrieve file descriptor associated with the socket
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_FD' option shall retrieve file descriptor associated with the 0MQ

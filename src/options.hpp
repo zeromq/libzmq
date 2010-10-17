@@ -60,6 +60,9 @@ namespace zmq
         //  Interval between attempts to reconnect, in milliseconds.
         int reconnect_ivl;
 
+        //  Maximum backlog for pending connections.
+        int backlog;
+
         //  These options are never set by the user directly. Instead they are
         //  provided by the specific socket type.
         bool requires_in;
