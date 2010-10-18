@@ -224,6 +224,8 @@ void zmq::session_t::process_attach (i_engine *engine_,
     }
 
     //  If we are already terminating, we destroy the engine straight away.
+    //  Note that we don't have to unplug it before deleting as it's not
+    //  yet plugged to the session.
     if (state == terminating) {
         delete engine;
         return;
