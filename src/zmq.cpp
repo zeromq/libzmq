@@ -178,6 +178,11 @@ int zmq_msg_copy (zmq_msg_t *dest_, zmq_msg_t *src_)
 
 void *zmq_msg_data (zmq_msg_t *msg_)
 {
+    return (void*)zmq_msg_const_data(msg_);
+}
+
+const void *zmq_msg_const_data (const zmq_msg_t *msg_)
+{
     if (msg_->content == (zmq::msg_content_t*) ZMQ_VSM)
         return msg_->vsm_data;
     if (msg_->content == (zmq::msg_content_t*) ZMQ_DELIMITER)

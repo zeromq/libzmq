@@ -147,6 +147,11 @@ namespace zmq
             return zmq_msg_data (this);
         }
 
+        inline const void *const_data () const
+        {
+            return zmq_msg_const_data (this);
+        }
+
         inline size_t size () const
         {
             return zmq_msg_const_size (this);
