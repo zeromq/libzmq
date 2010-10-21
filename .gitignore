@@ -46,3 +46,5 @@ foreign/openpgm/*
 !foreign/openpgm/*.tar.gz
 zeromq-*.tar.gz
 zeromq-*.zip
+nbproject
+Makefile-*.mk
