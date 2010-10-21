@@ -147,9 +147,9 @@ namespace zmq
             return zmq_msg_data (this);
         }
 
-        inline size_t size ()
+        inline size_t size () const
         {
-            return zmq_msg_size (this);
+            return zmq_msg_const_size (this);
         }
 
     private:

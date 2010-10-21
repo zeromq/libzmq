@@ -188,6 +188,11 @@ void *zmq_msg_data (zmq_msg_t *msg_)
 
 size_t zmq_msg_size (zmq_msg_t *msg_)
 {
+    return zmq_msg_const_size(msg_);
+}
+
+size_t zmq_msg_const_size (const zmq_msg_t *msg_)
+{
     if (msg_->content == (zmq::msg_content_t*) ZMQ_VSM)
         return msg_->vsm_size;
     if (msg_->content == (zmq::msg_content_t*) ZMQ_DELIMITER)
