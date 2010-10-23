@@ -28,6 +28,7 @@
 #include "windows.hpp"
 #endif
 
+#define __PGM_WININT_H__
 #include <pgm/pgm.h>
 
 #include "options.hpp"

@@ -51,6 +51,7 @@
 #endif
 
 #if defined ZMQ_HAVE_OPENPGM
+#define __PGM_WININT_H__
 #include <pgm/pgm.h>
 #endif
 

@@ -100,7 +100,6 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
     nbytes_processed = 0;
     pgm_msgv_processed = 0;
 
-    bool rc;
     pgm_error_t *pgm_error = NULL;
     struct pgm_addrinfo_t hints, *res = NULL;
     sa_family_t sa_family;
