@@ -119,18 +119,24 @@ void zmq::zmq_engine_t::in_event ()
     //  Push the data to the decoder.
     size_t processed = decoder.process_buffer (inpos, insize);
 
-    //  Stop polling for input if we got stuck.
-    if (processed < insize) {
-
-        //  This may happen if queue limits are in effect or when
-        //  init object reads all required information from the socket
-        //  and rejects to read more data.
-        reset_pollin (handle);
+    if (unlikely (processed == (size_t) -1)) {
+        disconnection = true;
     }
+    else {
 
-    //  Adjust the buffer.
-    inpos += processed;
-    insize -= processed;
+        //  Stop polling for input if we got stuck.
+        if (processed < insize) {
+
+            //  This may happen if queue limits are in effect or when
+            //  init object reads all required information from the socket
+            //  and rejects to read more data.
+            reset_pollin (handle);
+        }
+
+        //  Adjust the buffer.
+        inpos += processed;
+        insize -= processed;
+    }
 
     //  Flush all messages the decoder may have produced.
     inout->flush ();

@@ -98,9 +98,13 @@ namespace zmq
                 read_pos += size_;
                 to_read -= size_;
 
-                while (!to_read)
-                    if (!(static_cast <T*> (this)->*next) ())
+                while (!to_read) {
+                    if (!(static_cast <T*> (this)->*next) ()) {
+                        if (unlikely (!(static_cast <T*> (this)->next)))
+                            return (size_t) -1;
                         return size_;
+                    }
+                }
                 return size_;
             }
 
@@ -109,9 +113,13 @@ namespace zmq
 
                 //  Try to get more space in the message to fill in.
                 //  If none is available, return.
-                while (!to_read)
-                    if (!(static_cast <T*> (this)->*next) ())
+                while (!to_read) {
+                    if (!(static_cast <T*> (this)->*next) ()) {
+                        if (unlikely (!(static_cast <T*> (this)->next)))
+                            return (size_t) -1;
                         return pos;
+                    }
+                }
 
                 //  If there are no more data in the buffer, return.
                 if (pos == size_)
@@ -140,6 +148,13 @@ namespace zmq
             read_pos = (unsigned char*) read_pos_;
             to_read = to_read_;
             next = next_;
+        }
+
+        //  This function should be called from the derived class to
+        //  abort decoder state machine.
+        inline void decoding_error ()
+        {
+            next = NULL;
         }
 
     private:

@@ -54,16 +54,22 @@ bool zmq::decoder_t::one_byte_size_ready ()
         next_step (tmpbuf, 8, &decoder_t::eight_byte_size_ready);
     else {
 
-        //  TODO:  Handle over-sized message decently.
-
         //  There has to be at least one byte (the flags) in the message).
-        zmq_assert (*tmpbuf > 0);
+        if (!*tmpbuf) {
+            decoding_error ();
+            return false;
+        }
 
         //  in_progress is initialised at this point so in theory we should
         //  close it before calling zmq_msg_init_size, however, it's a 0-byte
         //  message and thus we can treat it as uninitialised...
         int rc = zmq_msg_init_size (&in_progress, *tmpbuf - 1);
+        if (rc != 0 && errno == ENOMEM) {
+            decoding_error ();
+            return false;
+        }
         errno_assert (rc == 0);
+
         next_step (tmpbuf, 1, &decoder_t::flags_ready);
     }
     return true;
@@ -75,19 +81,23 @@ bool zmq::decoder_t::eight_byte_size_ready ()
     //  read the message data into it.
     size_t size = (size_t) get_uint64 (tmpbuf);
 
-    //  TODO:  Handle over-sized message decently.
-
     //  There has to be at least one byte (the flags) in the message).
-    zmq_assert (size > 0);
-
+    if (!size) {
+        decoding_error ();
+        return false;
+    }
 
     //  in_progress is initialised at this point so in theory we should
     //  close it before calling zmq_msg_init_size, however, it's a 0-byte
     //  message and thus we can treat it as uninitialised...
     int rc = zmq_msg_init_size (&in_progress, size - 1);
+    if (rc != 0 && errno == ENOMEM) {
+        decoding_error ();
+        return false;
+    }
     errno_assert (rc == 0);
-    next_step (tmpbuf, 1, &decoder_t::flags_ready);
 
+    next_step (tmpbuf, 1, &decoder_t::flags_ready);
     return true;
 }
 
