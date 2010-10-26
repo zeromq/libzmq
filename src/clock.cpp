@@ -25,6 +25,10 @@
 
 #include <stddef.h>
 
+#if defined _MSC_VER
+#include <intrin.h>
+#endif
+
 #if !defined ZMQ_HAVE_WINDOWS
 #include <sys/time.h>
 #endif
