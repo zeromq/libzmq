@@ -231,6 +231,13 @@ void zmq::session_t::process_attach (i_engine *engine_,
         return;
     }
 
+    //  If the session already has an engine attached, destroy new one.
+    //  Note new engine is not plugged in yet, we don't have to unplug it.
+    if (engine) {
+        delete engine_;
+        return;
+    }
+
     //  Check whether the required pipes already exist. If not so, we'll
     //  create them and bind them to the socket object.
     if (!pipes_attached) {
@@ -257,8 +264,6 @@ void zmq::session_t::process_attach (i_engine *engine_,
     }
 
     //  Plug in the engine.
-    zmq_assert (!engine);
-    zmq_assert (engine_);
     engine = engine_;
     engine->plug (io_thread, this);
 

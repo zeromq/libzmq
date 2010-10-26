@@ -55,7 +55,7 @@ namespace zmq
         void process_plug ();
         void process_unplug ();
 
-        //  Associated wite-protocol engine.
+        //  Associated wire-protocol engine.
         i_engine *engine;
 
         //  True if our own identity was already sent to the peer.
