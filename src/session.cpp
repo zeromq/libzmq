@@ -227,7 +227,7 @@ void zmq::session_t::process_attach (i_engine *engine_,
     //  Note that we don't have to unplug it before deleting as it's not
     //  yet plugged to the session.
     if (state == terminating) {
-        delete engine;
+        delete engine_;
         return;
     }
 
