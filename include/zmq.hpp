@@ -22,8 +22,8 @@
 
 #include "zmq.h"
 
-#include <assert.h>
-#include <string.h>
+#include <cassert>
+#include <cstring>
 #include <exception>
 
 namespace zmq
