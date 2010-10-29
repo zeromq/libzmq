@@ -43,6 +43,11 @@ namespace zmq
             return zmq_strerror (errnum);
         }
 
+        int num () const
+        {
+            return errnum;
+        }
+
     private:
 
         int errnum;
