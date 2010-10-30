@@ -16,23 +16,18 @@ DESCRIPTION
 -----------
 The _zmq_term()_ function terminates the 0MQ context 'context'.
 
-If there are no longer any sockets open within 'context' at the time
-_zmq_term()_ is called then 'context' shall be shut down and all associated
-resources shall be released immediately.
+It does so in following steps:
 
-Otherwise, the following applies:
-
-* The _zmq_term()_ function shall return immediately.
-
-* Any blocking operations currently in progress on sockets open within
-  'context' shall return immediately with an error code of ETERM.
+* It causes any blocking operations currently in progress on sockets open within
+  'context' to exit immediately with an error code of ETERM.
 
 * With the exception of _zmq_close()_, any further operations on sockets open
   within 'context' shall fail with an error code of ETERM.
 
-* The actual shutdown of 'context', and release of any associated resources,
-  *shall be delayed* until the last socket within it is closed with
-  _zmq_close()_.
+* After iterrupting all blocking calls, _zmq_term()_ blocks until all sockets
+  open within the context are closed using _zmq_close()_ and either all the
+  pending outbound messages are pushed to the network or ZMQ_LINGER period
+  expires for individual sockets.
 
 
 RETURN VALUE
@@ -51,6 +46,8 @@ SEE ALSO
 --------
 linkzmq:zmq[7]
 linkzmq:zmq_init[3]
+linkzmq:zmq_close[3]
+linkzmq:zmq_setsockopt[3]
 
 
 AUTHORS

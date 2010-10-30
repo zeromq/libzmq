@@ -15,12 +15,11 @@ SYNOPSIS
 DESCRIPTION
 -----------
 The _zmq_close()_ function shall destroy the socket referenced by the 'socket'
-argument. All active connections on the socket shall be terminated and
-resources associated with the socket shall be released. Any outstanding
-messages sent with _zmq_send()_ but not yet physically sent to the network
-shall be dropped. Likewise, any outstanding messages physically received from
-the network but not yet received by the application with _zmq_recv()_ shall
-also be dropped.
+argument. Any outstanding messages physically received from the network but not
+yet received by the application with _zmq_recv()_ shall also be dropped. As for
+the messages sent with _zmq_send()_ but not yet passed to the network, 0MQ
+will try to send them in the background after _zmq_close()_ returns. Time spent
+attempting can be set using _ZMQ_LINGER_ socket option.
 
 
 RETURN VALUE
@@ -39,6 +38,7 @@ SEE ALSO
 --------
 linkzmq:zmq_socket[3]
 linkzmq:zmq_term[3]
+linkzmq:zmq_setsockopt[3]
 linkzmq:zmq[7]
 
 
