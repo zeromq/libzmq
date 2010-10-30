@@ -40,9 +40,8 @@ namespace zmq
     {
 
     public:
+
         //  If receiver_ is true PGM transport is not generating SPM packets.
-        //  interface format: iface;mcast_group:port for raw PGM socket
-        //                    udp:iface;mcast_goup:port for UDP encapsulacion
         pgm_socket_t (bool receiver_, const options_t &options_);
 
         //  Closes the transport.
@@ -77,7 +76,7 @@ namespace zmq
 
     private:
     
-        //  OpenPGM transport
+        //  OpenPGM transport.
         pgm_sock_t* sock;
 
         int last_rx_status, last_tx_status;
