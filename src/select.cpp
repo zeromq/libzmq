@@ -191,15 +191,8 @@ void zmq::select_t::loop ()
 
         //  Destroy retired event sources.
         if (retired) {
-            fd_set_t::iterator it = fds.begin();
-            while (it != fds.end()) {
-                if (it->fd == retired_fd) {
-                    it = fds.erase(it);
-                }
-                else {
-                    it++;
-                }
-            }
+            fds.erase (std::remove_if (fds.begin (), fds.end (),
+                zmq::select_t::is_retired_fd), fds.end ());
             retired = false;
         }
     }
@@ -209,3 +202,9 @@ void zmq::select_t::worker_routine (void *arg_)
 {
     ((select_t*) arg_)->loop ();
 }
+
+bool zmq::select_t::is_retired_fd (const fd_entry_t &entry)
+{
+    return (entry.fd == retired_fd);
+}
+
