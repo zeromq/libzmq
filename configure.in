@@ -182,6 +182,7 @@ case "${host_os}" in
         CPPFLAGS="-D_POSIX_C_SOURCE=200112L"
         AC_DEFINE(ZMQ_HAVE_HPUX, 1, [Have HPUX OS])
         AC_CHECK_LIB(rt, main)
+        AC_CHECK_LIB(crypto, RAND_bytes)
         ;;
     *mingw32*)
         AC_DEFINE(ZMQ_HAVE_WINDOWS, 1, [Have Windows OS])
