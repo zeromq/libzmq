@@ -136,10 +136,6 @@ void zmq::devpoll_t::stop ()
 
 void zmq::devpoll_t::loop ()
 {
-    //  According to the poll(7d) man page, we can retrieve
-    //  no more then (OPEN_MAX - 1) events.
-    int nfds = std::min ((int) max_io_events, OPEN_MAX - 1);
-
     while (!stopping) {
 
         struct pollfd ev_buf [max_io_events];
@@ -153,8 +149,13 @@ void zmq::devpoll_t::loop ()
         int timeout = (int) execute_timers ();
 
         //  Wait for events.
+        //  On Solaris, we can retrieve no more then (OPEN_MAX - 1) events.
         poll_req.dp_fds = &ev_buf [0];
-        poll_req.dp_nfds = nfds;
+#if defined ZMQ_HAVE_SOLRIS
+        poll_req.dp_nfds = std::min ((int) max_io_events, OPEN_MAX - 1);
+#else
+        poll_req.dp_nfds = max_io_events;
+#endif
         poll_req.dp_timeout = timeout ? timeout : -1;
         int n = ioctl (devpoll_fd, DP_POLL, &poll_req);
         if (n == -1 && errno == EINTR)
