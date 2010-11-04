@@ -151,7 +151,7 @@ void zmq::devpoll_t::loop ()
         //  Wait for events.
         //  On Solaris, we can retrieve no more then (OPEN_MAX - 1) events.
         poll_req.dp_fds = &ev_buf [0];
-#if defined ZMQ_HAVE_SOLRIS
+#if defined ZMQ_HAVE_SOLARIS
         poll_req.dp_nfds = std::min ((int) max_io_events, OPEN_MAX - 1);
 #else
         poll_req.dp_nfds = max_io_events;
