@@ -121,7 +121,7 @@ Applicable socket types:: N/A
 ZMQ_IDENTITY: Retrieve socket identity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_IDENTITY' option shall retrieve the identity of the specified
-'socket'. Socket identity determines if existing 0MQ infastructure (_message
+'socket'. Socket identity determines if existing 0MQ infrastructure (_message
 queues_, _forwarding devices_) shall be identified with a specific application
 and persist across multiple runs of the application.
 
@@ -229,7 +229,7 @@ Applicable socket types:: all
 
 ZMQ_RECONNECT_IVL: Retrieve reconnect period for connection-based transports
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_RECONNECT' option shall retrieve the period indicating how long it
+The 'ZMQ_RECONNECT_IVL' option shall retrieve the period indicating how long it
 takes for a disconnected underlying connection to attempt to reconnect.
 
 [horizontal]
@@ -241,7 +241,7 @@ Applicable socket types:: all
 
 ZMQ_BACKLOG: Retrieve maximum length of the queue of pending connections
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_RECONNECT' option shall retrieve maximum size of the
+The 'ZMQ_BACKLOG' option shall retrieve maximum size of the
 pending connection backlog for connection-based transports. For details
 refer to your operating system documentation for the 'listen' function.
 

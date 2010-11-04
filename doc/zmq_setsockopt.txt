@@ -87,7 +87,7 @@ Applicable socket types:: N/A
 ZMQ_IDENTITY: Set socket identity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_IDENTITY' option shall set the identity of the specified 'socket'.
-Socket identity determines if existing 0MQ infastructure (_message queues_,
+Socket identity determines if existing 0MQ infrastructure (_message queues_,
 _forwarding devices_) shall be identified with a specific application and
 persist across multiple runs of the application.
 
@@ -115,7 +115,7 @@ therefore you should call this option to establish an initial message filter.
 
 An empty 'option_value' of length zero shall subscribe to all incoming
 messages. A non-empty 'option_value' shall subscribe to all messages beginning
-with the specified prefix. Mutiple filters may be attached to a single
+with the specified prefix. Multiple filters may be attached to a single
 'ZMQ_SUB' socket, in which case a message shall be accepted if it matches at
 least one filter.
 
@@ -160,7 +160,7 @@ transports using the specified 'socket'. The recovery interval determines the
 maximum time in seconds that a receiver can be absent from a multicast group
 before unrecoverable data loss will occur.
 
-CAUTION: Excersize care when setting large recovery intervals as the data
+CAUTION: Exercise care when setting large recovery intervals as the data
 needed for recovery will be held in memory. For example, a 1 minute recovery
 interval at a data rate of 1Gbps requires a 7GB in-memory buffer.
 
@@ -234,9 +234,9 @@ Applicable socket types:: all
 
 ZMQ_RECONNECT_IVL: Set reconnect period for connection-based transports
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_RECONNECT' option shall be set to specify how long it takes for a
+The 'ZMQ_RECONNECT_IVL' option shall be set to specify how long it takes for a
 disconnected underlying connection to attempt to reconnect. The interval
-can be randomised to some extent by 0MQ to prevent reconnection storms.
+can be randomized to some extent by 0MQ to prevent reconnection storms.
 
 [horizontal]
 Option value type:: int
@@ -247,7 +247,7 @@ Applicable socket types:: all
 
 ZMQ_BACKLOG: Set maximum length of the queue of pending connections
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_RECONNECT' option shall be set to specify maximum size of the
+The 'ZMQ_BACKLOG' option shall be set to specify maximum size of the
 pending connection backlog for connection-based transports. For details
 refer to your operating system documentation for the 'listen' function.
 
