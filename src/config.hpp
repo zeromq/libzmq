@@ -35,10 +35,6 @@ namespace zmq
         //  memory allocation by approximately 99.6%
         message_pipe_granularity = 256,
 
-        //  Socketpair send buffer size used by signaler. The default value of
-        //  zero means leave it at the system default.
-        signaler_sndbuf_size = 0,
-
         //  Determines how often does socket poll for new commands when it
         //  still has unprocessed messages to handle. Thus, if it is set to 100,
         //  socket will process 100 inbound messages before doing the poll.
