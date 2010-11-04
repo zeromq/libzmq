@@ -23,6 +23,9 @@
 #include <algorithm>
 
 #ifdef ZMQ_HAVE_WINDOWS
+#if !defined FD_SETSIZE
+#define FD_SETSIZE 1024
+#endif
 #include "winsock2.h"
 #elif defined ZMQ_HAVE_HPUX
 #include <sys/param.h>
