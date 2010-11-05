@@ -31,7 +31,7 @@ namespace zmq
     {
     public:
 
-        pub_t (class ctx_t *parent_, uint32_t slot_);
+        pub_t (class ctx_t *parent_, uint32_t tid_);
         ~pub_t ();
 
         //  Implementations of virtual functions from socket_base_t.

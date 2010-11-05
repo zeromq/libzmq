@@ -61,8 +61,8 @@ namespace zmq
         //  Make socket a zombie.
         void zombify_socket (socket_base_t *socket_);
 
-        //  Send command to the destination slot.
-        void send_command (uint32_t slot_, const command_t &command_);
+        //  Send command to the destination thread.
+        void send_command (uint32_t tid_, const command_t &command_);
 
         //  Returns the I/O thread that is the least busy at the moment.
         //  Affinity specifies which I/O threads are eligible (0 = all).
@@ -90,7 +90,7 @@ namespace zmq
         typedef std::vector <socket_base_t*> zombies_t;
         zombies_t zombies;
 
-        //  List of unused slots.
+        //  List of unused thread slots.
         typedef std::vector <uint32_t> emtpy_slots_t;
         emtpy_slots_t empty_slots;
 

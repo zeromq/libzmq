@@ -21,8 +21,8 @@
 #include "err.hpp"
 #include "io_thread.hpp"
 
-zmq::own_t::own_t (class ctx_t *parent_, uint32_t slot_) :
-    object_t (parent_, slot_),
+zmq::own_t::own_t (class ctx_t *parent_, uint32_t tid_) :
+    object_t (parent_, tid_),
     terminating (false),
     sent_seqnum (0),
     processed_seqnum (0),

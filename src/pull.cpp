@@ -22,8 +22,8 @@
 #include "pull.hpp"
 #include "err.hpp"
 
-zmq::pull_t::pull_t (class ctx_t *parent_, uint32_t slot_) :
-    socket_base_t (parent_, slot_),
+zmq::pull_t::pull_t (class ctx_t *parent_, uint32_t tid_) :
+    socket_base_t (parent_, tid_),
     fq (this)
 {
     options.type = ZMQ_PULL;

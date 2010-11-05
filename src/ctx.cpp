@@ -92,7 +92,7 @@ zmq::ctx_t::~ctx_t ()
     for (io_threads_t::size_type i = 0; i != io_threads.size (); i++)
         delete io_threads [i];
 
-    //  Deallocate the array of slot. No special work is
+    //  Deallocate the array of slots. No special work is
     //  needed as signalers themselves were deallocated with their
     //  corresponding io_thread/socket objects.
     free (slots);
@@ -216,9 +216,9 @@ void zmq::ctx_t::zombify_socket (socket_base_t *socket_)
     slot_sync.unlock ();
 }
 
-void zmq::ctx_t::send_command (uint32_t slot_, const command_t &command_)
+void zmq::ctx_t::send_command (uint32_t tid_, const command_t &command_)
 {
-    slots [slot_]->send (command_);
+    slots [tid_]->send (command_);
 }
 
 zmq::io_thread_t *zmq::ctx_t::choose_io_thread (uint64_t affinity_)
@@ -314,7 +314,7 @@ void zmq::ctx_t::dezombify ()
     //  Try to dezombify each zombie in the list. Note that caller is
     //  responsible for calling this method in the slot_sync critical section.
     for (zombies_t::iterator it = zombies.begin (); it != zombies.end ();) {
-        uint32_t slot = (*it)->get_slot ();
+        uint32_t tid = (*it)->get_tid ();
         if ((*it)->dezombify ()) {
 #if defined _MSC_VER
 
@@ -323,8 +323,8 @@ void zmq::ctx_t::dezombify ()
 #else
             zombies.erase (it);
 #endif
-            empty_slots.push_back (slot);
-            slots [slot] = NULL;    
+            empty_slots.push_back (tid);
+            slots [tid] = NULL;    
         }
         else
             it++;

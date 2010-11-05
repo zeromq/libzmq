@@ -33,7 +33,7 @@ namespace zmq
     {
     public:
 
-        sub_t (class ctx_t *parent_, uint32_t slot_);
+        sub_t (class ctx_t *parent_, uint32_t tid_);
         ~sub_t ();
 
     protected:

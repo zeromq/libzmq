@@ -27,15 +27,15 @@
 #include "session.hpp"
 #include "socket_base.hpp"
 
-zmq::object_t::object_t (ctx_t *ctx_, uint32_t slot_) :
+zmq::object_t::object_t (ctx_t *ctx_, uint32_t tid_) :
     ctx (ctx_),
-    slot (slot_)
+    tid (tid_)
 {
 }
 
 zmq::object_t::object_t (object_t *parent_) :
     ctx (parent_->ctx),
-    slot (parent_->slot)
+    tid (parent_->tid)
 {
 }
 
@@ -43,9 +43,9 @@ zmq::object_t::~object_t ()
 {
 }
 
-uint32_t zmq::object_t::get_slot ()
+uint32_t zmq::object_t::get_tid ()
 {
-    return slot;
+    return tid;
 }
 
 zmq::ctx_t *zmq::object_t::get_ctx ()
@@ -162,7 +162,7 @@ void zmq::object_t::send_stop ()
 #endif
     cmd.destination = this;
     cmd.type = command_t::stop;
-    ctx->send_command (slot, cmd);
+    ctx->send_command (tid, cmd);
 }
 
 void zmq::object_t::send_plug (own_t *destination_, bool inc_seqnum_)
@@ -404,6 +404,6 @@ void zmq::object_t::process_seqnum ()
 
 void zmq::object_t::send_command (command_t &cmd_)
 {
-    ctx->send_command (cmd_.destination->get_slot (), cmd_);
+    ctx->send_command (cmd_.destination->get_tid (), cmd_);
 }
 

@@ -26,8 +26,8 @@
 #include "err.hpp"
 #include "ctx.hpp"
 
-zmq::io_thread_t::io_thread_t (ctx_t *ctx_, uint32_t slot_) :
-    object_t (ctx_, slot_)
+zmq::io_thread_t::io_thread_t (ctx_t *ctx_, uint32_t tid_) :
+    object_t (ctx_, tid_)
 {
     poller = new (std::nothrow) poller_t;
     zmq_assert (poller);

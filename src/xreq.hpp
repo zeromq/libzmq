@@ -31,7 +31,7 @@ namespace zmq
     {
     public:
 
-        xreq_t (class ctx_t *parent_, uint32_t slot_);
+        xreq_t (class ctx_t *parent_, uint32_t tid_);
         ~xreq_t ();
 
     protected:

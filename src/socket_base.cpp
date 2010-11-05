@@ -58,37 +58,37 @@
 #include "uuid.hpp"
 
 zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
-    uint32_t slot_)
+    uint32_t tid_)
 {
     socket_base_t *s = NULL;
     switch (type_) {
 
     case ZMQ_PAIR:
-        s = new (std::nothrow) pair_t (parent_, slot_);
+        s = new (std::nothrow) pair_t (parent_, tid_);
         break;
     case ZMQ_PUB:
-        s = new (std::nothrow) pub_t (parent_, slot_);
+        s = new (std::nothrow) pub_t (parent_, tid_);
         break;
     case ZMQ_SUB:
-        s = new (std::nothrow) sub_t (parent_, slot_);
+        s = new (std::nothrow) sub_t (parent_, tid_);
         break;
     case ZMQ_REQ:
-        s = new (std::nothrow) req_t (parent_, slot_);
+        s = new (std::nothrow) req_t (parent_, tid_);
         break;
     case ZMQ_REP:
-        s = new (std::nothrow) rep_t (parent_, slot_);
+        s = new (std::nothrow) rep_t (parent_, tid_);
         break;
     case ZMQ_XREQ:
-        s = new (std::nothrow) xreq_t (parent_, slot_);
+        s = new (std::nothrow) xreq_t (parent_, tid_);
         break;
     case ZMQ_XREP:
-        s = new (std::nothrow) xrep_t (parent_, slot_);
+        s = new (std::nothrow) xrep_t (parent_, tid_);
         break;     
     case ZMQ_PULL:
-        s = new (std::nothrow) pull_t (parent_, slot_);
+        s = new (std::nothrow) pull_t (parent_, tid_);
         break;
     case ZMQ_PUSH:
-        s = new (std::nothrow) push_t (parent_, slot_);
+        s = new (std::nothrow) push_t (parent_, tid_);
         break;
     default:
         errno = EINVAL;
@@ -98,8 +98,8 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
     return s;
 }
 
-zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t slot_) :
-    own_t (parent_, slot_),
+zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t tid_) :
+    own_t (parent_, tid_),
     ctx_terminated (false),
     destroyed (false),
     last_tsc (0),

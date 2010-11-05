@@ -30,7 +30,7 @@ namespace zmq
     {
     public:
 
-        push_t (class ctx_t *parent_, uint32_t slot_);
+        push_t (class ctx_t *parent_, uint32_t tid_);
         ~push_t ();
 
     protected:

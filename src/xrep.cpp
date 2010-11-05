@@ -23,8 +23,8 @@
 #include "err.hpp"
 #include "pipe.hpp"
 
-zmq::xrep_t::xrep_t (class ctx_t *parent_, uint32_t slot_) :
-    socket_base_t (parent_, slot_),
+zmq::xrep_t::xrep_t (class ctx_t *parent_, uint32_t tid_) :
+    socket_base_t (parent_, tid_),
     current_in (0),
     prefetched (false),
     more_in (false),

@@ -30,7 +30,7 @@ namespace zmq
     {
     public:
 
-        pull_t (class ctx_t *parent_, uint32_t slot_);
+        pull_t (class ctx_t *parent_, uint32_t tid_);
         ~pull_t ();
 
     protected:

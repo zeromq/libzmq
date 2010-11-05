@@ -22,8 +22,8 @@
 #include "xreq.hpp"
 #include "err.hpp"
 
-zmq::xreq_t::xreq_t (class ctx_t *parent_, uint32_t slot_) :
-    socket_base_t (parent_, slot_),
+zmq::xreq_t::xreq_t (class ctx_t *parent_, uint32_t tid_) :
+    socket_base_t (parent_, tid_),
     fq (this),
     lb (this)
 {

@@ -24,8 +24,8 @@
 #include "msg_content.hpp"
 #include "pipe.hpp"
 
-zmq::pub_t::pub_t (class ctx_t *parent_, uint32_t slot_) :
-    socket_base_t (parent_, slot_),
+zmq::pub_t::pub_t (class ctx_t *parent_, uint32_t tid_) :
+    socket_base_t (parent_, tid_),
     active (0),
     terminating (false)
 {

@@ -46,7 +46,7 @@ namespace zmq
 
         //  Create a socket of a specified type.
         static socket_base_t *create (int type_, class ctx_t *parent_,
-            uint32_t slot_);
+            uint32_t tid_);
 
         //  Returns the signaler associated with this socket.
         signaler_t *get_signaler ();
@@ -88,7 +88,7 @@ namespace zmq
 
     protected:
 
-        socket_base_t (class ctx_t *parent_, uint32_t slot_);
+        socket_base_t (class ctx_t *parent_, uint32_t tid_);
         virtual ~socket_base_t ();
 
         //  Concrete algorithms for the x- methods are to be defined by

@@ -24,8 +24,8 @@
 #include "sub.hpp"
 #include "err.hpp"
 
-zmq::sub_t::sub_t (class ctx_t *parent_, uint32_t slot_) :
-    socket_base_t (parent_, slot_),
+zmq::sub_t::sub_t (class ctx_t *parent_, uint32_t tid_) :
+    socket_base_t (parent_, tid_),
     fq (this),
     has_message (false),
     more (false)

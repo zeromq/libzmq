@@ -34,11 +34,11 @@ namespace zmq
     {
     public:
 
-        object_t (class ctx_t *ctx_, uint32_t slot_);
+        object_t (class ctx_t *ctx_, uint32_t tid_);
         object_t (object_t *parent_);
         virtual ~object_t ();
 
-        uint32_t get_slot ();
+        uint32_t get_tid ();
         ctx_t *get_ctx ();
         void process_command (struct command_t &cmd_);
 
@@ -110,8 +110,8 @@ namespace zmq
         //  Context provides access to the global state.
         class ctx_t *ctx;
 
-        //  Slot ID of the thread the object belongs to.
-        uint32_t slot;
+        //  Thread ID of the thread the object belongs to.
+        uint32_t tid;
 
         void send_command (command_t &cmd_);
 

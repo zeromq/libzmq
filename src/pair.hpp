@@ -33,7 +33,7 @@ namespace zmq
     {
     public:
 
-        pair_t (class ctx_t *parent_, uint32_t slot_);
+        pair_t (class ctx_t *parent_, uint32_t tid_);
         ~pair_t ();
 
         //  Overloads of functions from socket_base_t.

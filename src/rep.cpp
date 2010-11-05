@@ -22,8 +22,8 @@
 #include "rep.hpp"
 #include "err.hpp"
 
-zmq::rep_t::rep_t (class ctx_t *parent_, uint32_t slot_) :
-    xrep_t (parent_, slot_),
+zmq::rep_t::rep_t (class ctx_t *parent_, uint32_t tid_) :
+    xrep_t (parent_, tid_),
     sending_reply (false),
     request_begins (true)
 {

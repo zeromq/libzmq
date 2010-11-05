@@ -38,7 +38,7 @@ namespace zmq
     {
     public:
 
-        io_thread_t (class ctx_t *ctx_, uint32_t slot_);
+        io_thread_t (class ctx_t *ctx_, uint32_t tid_);
 
         //  Clean-up. If the thread was started, it's neccessary to call 'stop'
         //  before invoking destructor. Otherwise the destructor would hang up.

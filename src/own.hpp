@@ -43,7 +43,7 @@ namespace zmq
 
         //  The object is not living within an I/O thread. It has it's own
         //  thread outside of 0MQ infrastructure.
-        own_t (class ctx_t *parent_, uint32_t slot_);
+        own_t (class ctx_t *parent_, uint32_t tid_);
 
         //  The object is living within I/O thread.
         own_t (class io_thread_t *io_thread_, const options_t &options_);

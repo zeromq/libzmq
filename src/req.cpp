@@ -22,8 +22,8 @@
 #include "req.hpp"
 #include "err.hpp"
 
-zmq::req_t::req_t (class ctx_t *parent_, uint32_t slot_) :
-    xreq_t (parent_, slot_),
+zmq::req_t::req_t (class ctx_t *parent_, uint32_t tid_) :
+    xreq_t (parent_, tid_),
     receiving_reply (false),
     message_begins (true)
 {

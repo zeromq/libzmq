@@ -23,8 +23,8 @@
 #include "err.hpp"
 #include "pipe.hpp"
 
-zmq::push_t::push_t (class ctx_t *parent_, uint32_t slot_) :
-    socket_base_t (parent_, slot_),
+zmq::push_t::push_t (class ctx_t *parent_, uint32_t tid_) :
+    socket_base_t (parent_, tid_),
     lb (this)
 {
     options.type = ZMQ_PUSH;

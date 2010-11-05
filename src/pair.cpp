@@ -23,8 +23,8 @@
 #include "err.hpp"
 #include "pipe.hpp"
 
-zmq::pair_t::pair_t (class ctx_t *parent_, uint32_t slot_) :
-    socket_base_t (parent_, slot_),
+zmq::pair_t::pair_t (class ctx_t *parent_, uint32_t tid_) :
+    socket_base_t (parent_, tid_),
     inpipe (NULL),
     outpipe (NULL),
     inpipe_alive (false),

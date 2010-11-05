@@ -29,7 +29,7 @@ namespace zmq
     {
     public:
 
-        req_t (class ctx_t *parent_, uint32_t slot_);
+        req_t (class ctx_t *parent_, uint32_t tid_);
         ~req_t ();
 
         //  Overloads of functions from socket_base_t.
