@@ -310,7 +310,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\signaler.cpp"
+				RelativePath="..\..\..\src\mailbox.cpp"
 				>
 			</File>
 			<File
@@ -592,7 +592,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\signaler.hpp"
+				RelativePath="..\..\..\src\mailbox.hpp"
 				>
 			</File>
 			<File

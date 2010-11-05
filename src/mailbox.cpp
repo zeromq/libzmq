@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "signaler.hpp"
+#include "mailbox.hpp"
 #include "platform.hpp"
 #include "err.hpp"
 #include "fd.hpp"
@@ -35,14 +35,14 @@
 #include <sys/socket.h>
 #endif
 
-zmq::fd_t zmq::signaler_t::get_fd ()
+zmq::fd_t zmq::mailbox_t::get_fd ()
 {
     return r;
 }
 
 #if defined ZMQ_HAVE_WINDOWS
 
-zmq::signaler_t::signaler_t ()
+zmq::mailbox_t::mailbox_t ()
 {
     //  Create the socketpair for signalling.
     int rc = make_socketpair (&r, &w);
@@ -59,7 +59,7 @@ zmq::signaler_t::signaler_t ()
     wsa_assert (rc != SOCKET_ERROR);
 }
 
-zmq::signaler_t::~signaler_t ()
+zmq::mailbox_t::~mailbox_t ()
 {
     int rc = closesocket (w);
     wsa_assert (rc != SOCKET_ERROR);
@@ -68,7 +68,7 @@ zmq::signaler_t::~signaler_t ()
     wsa_assert (rc != SOCKET_ERROR);
 }
 
-void zmq::signaler_t::send (const command_t &cmd_)
+void zmq::mailbox_t::send (const command_t &cmd_)
 {
     //  TODO: Implement SNDBUF auto-resizing as for POSIX platforms.
     //  In the mean time, the following code with assert if the send()
@@ -78,7 +78,7 @@ void zmq::signaler_t::send (const command_t &cmd_)
     zmq_assert (nbytes == sizeof (command_t));
 }
 
-int zmq::signaler_t::recv (command_t *cmd_, bool block_)
+int zmq::mailbox_t::recv (command_t *cmd_, bool block_)
 {
     if (block_) {
         //  Set the reader to blocking mode.
@@ -115,7 +115,7 @@ int zmq::signaler_t::recv (command_t *cmd_, bool block_)
 
 #else //  !ZMQ_HAVE_WINDOWS
 
-zmq::signaler_t::signaler_t ()
+zmq::mailbox_t::mailbox_t ()
 {
 #ifdef PIPE_BUF
     //  Make sure that command can be written to the socket in atomic fashion.
@@ -143,35 +143,40 @@ zmq::signaler_t::signaler_t ()
 #endif
 }
 
-zmq::signaler_t::~signaler_t ()
+zmq::mailbox_t::~mailbox_t ()
 {
     close (w);
     close (r);
 }
 
-void zmq::signaler_t::send (const command_t &cmd_)
+void zmq::mailbox_t::send (const command_t &cmd_)
 {
     //  Attempt to write an entire command without blocking.
     ssize_t nbytes;
     do {
         nbytes = ::send (w, &cmd_, sizeof (command_t), 0);
     } while (nbytes == -1 && errno == EINTR);
-    //  Attempt to increase signaler SNDBUF if the send failed.
+
+    //  Attempt to increase mailbox SNDBUF if the send failed.
     if (nbytes == -1 && errno == EAGAIN) {
         int old_sndbuf, new_sndbuf;
         socklen_t sndbuf_size = sizeof old_sndbuf;
+
         //  Retrieve current send buffer size.
         int rc = getsockopt (w, SOL_SOCKET, SO_SNDBUF, &old_sndbuf,
             &sndbuf_size);
         errno_assert (rc == 0);
         new_sndbuf = old_sndbuf * 2;
+
         //  Double the new send buffer size.
         rc = setsockopt (w, SOL_SOCKET, SO_SNDBUF, &new_sndbuf, sndbuf_size);
         errno_assert (rc == 0);
+
         //  Verify that the OS actually honored the request.
         rc = getsockopt (w, SOL_SOCKET, SO_SNDBUF, &new_sndbuf, &sndbuf_size);
         errno_assert (rc == 0);
         zmq_assert (new_sndbuf > old_sndbuf);
+
         //  Retry the sending operation; at this point it must succeed.
         do {
             nbytes = ::send (w, &cmd_, sizeof (command_t), 0);
@@ -184,7 +189,7 @@ void zmq::signaler_t::send (const command_t &cmd_)
     zmq_assert (nbytes == sizeof (command_t));
 }
 
-int zmq::signaler_t::recv (command_t *cmd_, bool block_)
+int zmq::mailbox_t::recv (command_t *cmd_, bool block_)
 {
 #ifdef MSG_DONTWAIT
     //  Attempt to read an entire command. Returns EAGAIN if non-blocking
@@ -195,33 +200,40 @@ int zmq::signaler_t::recv (command_t *cmd_, bool block_)
         return -1;
 #else
     if (block_) {
+
         //  Set the reader to blocking mode.
         int flags = fcntl (r, F_GETFL, 0);
         errno_assert (flags >= 0);
         int rc = fcntl (r, F_SETFL, flags & ~O_NONBLOCK);
         errno_assert (rc == 0);
     }
+
     //  Attempt to read an entire command. Returns EAGAIN if non-blocking
     //  and a command is not available.
     int err = 0;
     ssize_t nbytes = ::recv (r, cmd_, sizeof (command_t), 0);
     if (nbytes == -1 && (errno == EAGAIN || errno == EINTR)) {
+
         //  Save value of errno if we wish to pass it to caller.
         err = errno;
     }
+
     if (block_) {
+
         //  Re-set the reader to non-blocking mode.
         int flags = fcntl (r, F_GETFL, 0);
         errno_assert (flags >= 0);
         int rc = fcntl (r, F_SETFL, flags | O_NONBLOCK);
         errno_assert (rc == 0);
     }
+
     //  If the recv failed, return with the saved errno if set.
     if (err != 0) {
         errno = err;
         return -1;
     }
 #endif
+
     //  Sanity check for success.
     errno_assert (nbytes != -1);
 
@@ -233,7 +245,7 @@ int zmq::signaler_t::recv (command_t *cmd_, bool block_)
 
 #endif
 
-int zmq::signaler_t::make_socketpair (fd_t *r_, fd_t *w_)
+int zmq::mailbox_t::make_socketpair (fd_t *r_, fd_t *w_)
 {
 #if defined ZMQ_HAVE_WINDOWS
 

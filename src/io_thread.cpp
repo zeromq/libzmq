@@ -32,8 +32,8 @@ zmq::io_thread_t::io_thread_t (ctx_t *ctx_, uint32_t tid_) :
     poller = new (std::nothrow) poller_t;
     zmq_assert (poller);
 
-    signaler_handle = poller->add_fd (signaler.get_fd (), this);
-    poller->set_pollin (signaler_handle);
+    mailbox_handle = poller->add_fd (mailbox.get_fd (), this);
+    poller->set_pollin (mailbox_handle);
 }
 
 zmq::io_thread_t::~io_thread_t ()
@@ -52,9 +52,9 @@ void zmq::io_thread_t::stop ()
     send_stop ();
 }
 
-zmq::signaler_t *zmq::io_thread_t::get_signaler ()
+zmq::mailbox_t *zmq::io_thread_t::get_mailbox ()
 {
-    return &signaler;
+    return &mailbox;
 }
 
 int zmq::io_thread_t::get_load ()
@@ -71,7 +71,7 @@ void zmq::io_thread_t::in_event ()
 
         //  Get the next command. If there is none, exit.
         command_t cmd;
-        int rc = signaler.recv (&cmd, false);
+        int rc = mailbox.recv (&cmd, false);
         if (rc != 0 && errno == EINTR)
             continue;
         if (rc != 0 && errno == EAGAIN)
@@ -103,6 +103,6 @@ zmq::poller_t *zmq::io_thread_t::get_poller ()
 
 void zmq::io_thread_t::process_stop ()
 {
-    poller->rm_fd (signaler_handle);
+    poller->rm_fd (mailbox_handle);
     poller->stop ();
 }

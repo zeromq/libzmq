@@ -26,7 +26,7 @@
 #include "object.hpp"
 #include "poller.hpp"
 #include "i_poll_events.hpp"
-#include "signaler.hpp"
+#include "mailbox.hpp"
 
 namespace zmq
 {
@@ -50,8 +50,8 @@ namespace zmq
         //  Ask underlying thread to stop.
         void stop ();
 
-        //  Returns signaler associated with this I/O thread.
-        signaler_t *get_signaler ();
+        //  Returns mailbox associated with this I/O thread.
+        mailbox_t *get_mailbox ();
 
         //  i_poll_events implementation.
         void in_event ();
@@ -69,12 +69,11 @@ namespace zmq
 
     private:
 
-        //  Poll thread gets notifications about incoming commands using
-        //  this signaler.
-        signaler_t signaler;
+        //  I/O thread accesses incoming commands via this mailbox.
+        mailbox_t mailbox;
 
-        //  Handle associated with signaler's file descriptor.
-        poller_t::handle_t signaler_handle;
+        //  Handle associated with mailbox' file descriptor.
+        poller_t::handle_t mailbox_handle;
 
         //  I/O multiplexing is performed using a poller object.
         poller_t *poller;

@@ -38,7 +38,7 @@ Component: Devices
 Maintainer: Martin Sustrik
 Contact: sustrik@250bpm.com
 
-Component: Generic Infrastructure (context, signaler, command, pipe)
+Component: Generic Infrastructure (context, mailbox, command, pipe)
 Maintainer: Martin Sustrik
 Contact: sustrik@250bpm.com
 

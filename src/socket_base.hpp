@@ -30,7 +30,7 @@
 #include "mutex.hpp"
 #include "stdint.hpp"
 #include "atomic_counter.hpp"
-#include "signaler.hpp"
+#include "mailbox.hpp"
 #include "stdint.hpp"
 #include "blob.hpp"
 #include "own.hpp"
@@ -48,8 +48,8 @@ namespace zmq
         static socket_base_t *create (int type_, class ctx_t *parent_,
             uint32_t tid_);
 
-        //  Returns the signaler associated with this socket.
-        signaler_t *get_signaler ();
+        //  Returns the mailbox associated with this socket.
+        mailbox_t *get_mailbox ();
 
         //  Interrupt blocking call if the socket is stuck in one.
         //  This function can be called from a different thread!
@@ -148,8 +148,8 @@ namespace zmq
             const blob_t &peer_identity_);
         void process_unplug ();
 
-        //  App thread's signaler object.
-        signaler_t signaler;
+        //  Socket's mailbox object.
+        mailbox_t mailbox;
 
         //  Timestamp of when commands were processed the last time.
         uint64_t last_tsc;

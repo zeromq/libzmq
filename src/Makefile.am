@@ -87,6 +87,7 @@ libzmq_la_SOURCES = \
     kqueue.hpp \
     lb.hpp \
     likely.hpp \
+    mailbox.hpp \
     msg_content.hpp \
     mutex.hpp \
     named_session.hpp \
@@ -111,7 +112,6 @@ libzmq_la_SOURCES = \
     select.hpp \
     semaphore.hpp \
     session.hpp \
-    signaler.hpp \
     socket_base.hpp \
     stdint.hpp \
     streamer.hpp \
@@ -150,6 +150,7 @@ libzmq_la_SOURCES = \
     ip.cpp \
     kqueue.cpp \
     lb.cpp \
+    mailbox.cpp \
     named_session.cpp \
     object.cpp \
     options.cpp \
@@ -169,7 +170,6 @@ libzmq_la_SOURCES = \
     req.cpp \
     select.cpp \
     session.cpp \
-    signaler.cpp \
     socket_base.cpp \
     streamer.cpp \
     sub.cpp \

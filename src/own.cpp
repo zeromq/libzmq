@@ -83,7 +83,7 @@ void zmq::own_t::launch_sibling (own_t *object_)
 {
     //  At this point it is important that object is plugged in before its
     //  owner has a chance to terminate it. Thus, 'plug' command is sent before
-    //  the 'own' command. Given that the signaler preserves ordering of
+    //  the 'own' command. Given that the mailbox preserves ordering of
     //  commands, 'term' command from the owner cannot make it to the object
     //  before the already written 'plug' command.
 

@@ -17,8 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_SIGNALER_HPP_INCLUDED__
-#define __ZMQ_SIGNALER_HPP_INCLUDED__
+#ifndef __ZMQ_MAILBOX_HPP_INCLUDED__
+#define __ZMQ_MAILBOX_HPP_INCLUDED__
 
 #include <stddef.h>
 
@@ -31,12 +31,12 @@
 namespace zmq
 {
 
-    class signaler_t
+    class mailbox_t
     {
     public:
 
-        signaler_t ();
-        ~signaler_t ();
+        mailbox_t ();
+        ~mailbox_t ();
 
         fd_t get_fd ();
         void send (const command_t &cmd_);
@@ -51,9 +51,9 @@ namespace zmq
         //  Platform-dependent function to create a socketpair.
         static int make_socketpair (fd_t *r_, fd_t *w_);
 
-        //  Disable copying of signaler_t object.
-        signaler_t (const signaler_t&);
-        void operator = (const signaler_t&);
+        //  Disable copying of mailbox_t object.
+        mailbox_t (const mailbox_t&);
+        void operator = (const mailbox_t&);
     };
 
 }

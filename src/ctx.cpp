@@ -49,9 +49,9 @@ zmq::ctx_t::ctx_t (uint32_t io_threads_) :
         HIBYTE (wsa_data.wVersion) == 2);
 #endif
 
-    //  Initialise the array of signalers.
+    //  Initialise the array of mailboxes.
     slot_count = max_sockets + io_threads_;
-    slots = (signaler_t**) malloc (sizeof (signaler_t*) * slot_count);
+    slots = (mailbox_t**) malloc (sizeof (mailbox_t*) * slot_count);
     zmq_assert (slots);
 
     //  Create I/O thread objects and launch them.
@@ -59,7 +59,7 @@ zmq::ctx_t::ctx_t (uint32_t io_threads_) :
         io_thread_t *io_thread = new (std::nothrow) io_thread_t (this, i);
         zmq_assert (io_thread);
         io_threads.push_back (io_thread);
-        slots [i] = io_thread->get_signaler ();
+        slots [i] = io_thread->get_mailbox ();
         io_thread->start ();
     }
 
@@ -92,8 +92,8 @@ zmq::ctx_t::~ctx_t ()
     for (io_threads_t::size_type i = 0; i != io_threads.size (); i++)
         delete io_threads [i];
 
-    //  Deallocate the array of slots. No special work is
-    //  needed as signalers themselves were deallocated with their
+    //  Deallocate the array of mailboxes. No special work is
+    //  needed as mailboxes themselves were deallocated with their
     //  corresponding io_thread/socket objects.
     free (slots);
     
@@ -178,7 +178,7 @@ zmq::socket_base_t *zmq::ctx_t::create_socket (int type_)
     uint32_t slot = empty_slots.back ();
     empty_slots.pop_back ();
 
-    //  Create the socket and register its signaler.
+    //  Create the socket and register its mailbox.
     socket_base_t *s = socket_base_t::create (type_, this, slot);
     if (!s) {
         empty_slots.push_back (slot);
@@ -186,7 +186,7 @@ zmq::socket_base_t *zmq::ctx_t::create_socket (int type_)
         return NULL;
     }
     sockets.push_back (s);
-    slots [slot] = s->get_signaler ();
+    slots [slot] = s->get_mailbox ();
 
     slot_sync.unlock ();
 

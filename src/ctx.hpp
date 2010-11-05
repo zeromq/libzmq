@@ -26,7 +26,7 @@
 
 #include "../include/zmq.h"
 
-#include "signaler.hpp"
+#include "mailbox.hpp"
 #include "semaphore.hpp"
 #include "ypipe.hpp"
 #include "array.hpp"
@@ -117,9 +117,9 @@ namespace zmq
         typedef std::vector <class io_thread_t*> io_threads_t;
         io_threads_t io_threads;
 
-        //  Array of pointers to signalers for both application and I/O threads.
+        //  Array of pointers to mailboxes for both application and I/O threads.
         uint32_t slot_count;
-        signaler_t **slots;
+        mailbox_t **slots;
 
         //  List of inproc endpoints within this context.
         typedef std::map <std::string, class socket_base_t*> endpoints_t;

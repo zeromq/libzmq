@@ -118,9 +118,9 @@ zmq::socket_base_t::~socket_base_t ()
     sessions_sync.unlock ();
 }
 
-zmq::signaler_t *zmq::socket_base_t::get_signaler ()
+zmq::mailbox_t *zmq::socket_base_t::get_mailbox ()
 {
-    return &signaler;
+    return &mailbox;
 }
 
 void zmq::socket_base_t::stop ()
@@ -227,7 +227,7 @@ int zmq::socket_base_t::getsockopt (int option_, void *optval_,
             errno = EINVAL;
             return -1;
         }
-        *((fd_t*) optval_) = signaler.get_fd ();
+        *((fd_t*) optval_) = mailbox.get_fd ();
         *optvallen_ = sizeof (fd_t);
         return 0;
     }
@@ -613,7 +613,7 @@ int zmq::socket_base_t::process_commands (bool block_, bool throttle_)
     int rc;
     command_t cmd;
     if (block_) {
-        rc = signaler.recv (&cmd, true);
+        rc = mailbox.recv (&cmd, true);
         if (rc == -1 && errno == EINTR)
             return -1;
         errno_assert (rc == 0);
@@ -640,7 +640,7 @@ int zmq::socket_base_t::process_commands (bool block_, bool throttle_)
         }
 
         //  Check whether there are any commands pending for this thread.
-        rc = signaler.recv (&cmd, false);
+        rc = mailbox.recv (&cmd, false);
     }
 
     //  Process all the commands available at the moment.
@@ -651,7 +651,7 @@ int zmq::socket_base_t::process_commands (bool block_, bool throttle_)
             return -1;
         errno_assert (rc == 0);
         cmd.destination->process_command (cmd);
-        rc = signaler.recv (&cmd, false);
+        rc = mailbox.recv (&cmd, false);
      }
 
     if (ctx_terminated) {
