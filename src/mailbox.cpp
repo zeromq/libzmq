@@ -80,40 +80,44 @@ void zmq::mailbox_t::send (const command_t &cmd_)
 
 int zmq::mailbox_t::recv (command_t *cmd_, bool block_)
 {
+    //  If required, set the reader to blocking mode.
     if (block_) {
-        //  Set the reader to blocking mode.
         unsigned long argp = 0;
         int rc = ioctlsocket (r, FIONBIO, &argp);
         wsa_assert (rc != SOCKET_ERROR);
     }
+
     //  Attempt to read an entire command. Returns EAGAIN if non-blocking
-    //  and a command is not available.
+    //  and a command is not available. Save value of errno if we wish to pass
+    //  it to caller.
     int err = 0;
     int nbytes = ::recv (r, (char *)cmd_, sizeof (command_t), 0);
-    if (nbytes == -1 && WSAGetLastError () == WSAEWOULDBLOCK) {
-        //  Save value of errno if we wish to pass it to caller.
+    if (nbytes == -1 && WSAGetLastError () == WSAEWOULDBLOCK)
         err = EAGAIN;
-    }
+
+    //  Re-set the reader to non-blocking mode.
     if (block_) {
-        //  Re-set the reader to non-blocking mode.
         unsigned long argp = 1;
         int rc = ioctlsocket (r, FIONBIO, &argp);
         wsa_assert (rc != SOCKET_ERROR);
     }
-    //  If the recv failed, return with the saved errno if set.
+
+    //  If the recv failed, return with the saved errno.
     if (err != 0) {
         errno = err;
         return -1;
     }
+
     //  Sanity check for success.
     wsa_assert (nbytes != SOCKET_ERROR);
 
     //  Check whether we haven't got half of command.
     zmq_assert (nbytes == sizeof (command_t));
+
     return 0;
 }
 
-#else //  !ZMQ_HAVE_WINDOWS
+#else
 
 zmq::mailbox_t::mailbox_t ()
 {
@@ -124,7 +128,7 @@ zmq::mailbox_t::mailbox_t ()
     zmq_assert (sizeof (command_t) <= PIPE_BUF);
 #endif
 
-    //  Create the socketpair for signalling.
+    //  Create the socketpair for signaling.
     int rc = make_socketpair (&r, &w);
     errno_assert (rc == 0);
 
@@ -192,6 +196,7 @@ void zmq::mailbox_t::send (const command_t &cmd_)
 int zmq::mailbox_t::recv (command_t *cmd_, bool block_)
 {
 #ifdef MSG_DONTWAIT
+
     //  Attempt to read an entire command. Returns EAGAIN if non-blocking
     //  mode is requested and a command is not available.
     ssize_t nbytes = ::recv (r, cmd_, sizeof (command_t),
@@ -199,9 +204,9 @@ int zmq::mailbox_t::recv (command_t *cmd_, bool block_)
     if (nbytes == -1 && (errno == EAGAIN || errno == EINTR))
         return -1;
 #else
-    if (block_) {
 
-        //  Set the reader to blocking mode.
+    //  If required, set the reader to blocking mode.
+    if (block_) {
         int flags = fcntl (r, F_GETFL, 0);
         errno_assert (flags >= 0);
         int rc = fcntl (r, F_SETFL, flags & ~O_NONBLOCK);
@@ -209,18 +214,15 @@ int zmq::mailbox_t::recv (command_t *cmd_, bool block_)
     }
 
     //  Attempt to read an entire command. Returns EAGAIN if non-blocking
-    //  and a command is not available.
+    //  and a command is not available. Save value of errno if we wish to pass
+    //  it to caller.
     int err = 0;
     ssize_t nbytes = ::recv (r, cmd_, sizeof (command_t), 0);
-    if (nbytes == -1 && (errno == EAGAIN || errno == EINTR)) {
-
-        //  Save value of errno if we wish to pass it to caller.
+    if (nbytes == -1 && (errno == EAGAIN || errno == EINTR))  
         err = errno;
-    }
 
+    //  Re-set the reader to non-blocking mode.
     if (block_) {
-
-        //  Re-set the reader to non-blocking mode.
         int flags = fcntl (r, F_GETFL, 0);
         errno_assert (flags >= 0);
         int rc = fcntl (r, F_SETFL, flags | O_NONBLOCK);
@@ -232,6 +234,7 @@ int zmq::mailbox_t::recv (command_t *cmd_, bool block_)
         errno = err;
         return -1;
     }
+
 #endif
 
     //  Sanity check for success.
