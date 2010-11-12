@@ -437,15 +437,17 @@ int zmq::socket_base_t::recv (::zmq_msg_t *msg_, int flags_)
 
     //  In blocking scenario, commands are processed over and over again until
     //  we are able to fetch a message.
+    bool block = (ticks != 0);
     while (rc != 0) {
         if (errno != EAGAIN)
             return -1;
-        if (unlikely (!app_thread->process_commands (true, false))) {
+        if (unlikely (!app_thread->process_commands (block, false))) {
             errno = ETERM;
             return -1;
         }
         rc = xrecv (msg_, flags_);
         ticks = 0;
+        block = true;
     }
 
     rcvmore = msg_->flags & ZMQ_MSG_MORE;
