@@ -17,6 +17,20 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "platform.hpp"
+
+//  On AIX, poll.h has to be included before zmq.h to get consistent
+//  definition of pollfd structure (AIX uses 'reqevents' and 'retnevents'
+//  instead of 'events' and 'revents' and defines macros to map from POSIX-y
+//  names to AIX-specific names).
+#if defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD ||\
+    defined ZMQ_HAVE_OPENBSD || defined ZMQ_HAVE_SOLARIS ||\
+    defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_QNXNTO ||\
+    defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_AIX ||\
+    defined ZMQ_HAVE_NETBSD
+#include <poll.h>
+#endif
+
 #include "../include/zmq.h"
 #include "../include/zmq_utils.h"
 
@@ -31,20 +45,11 @@
 #include "socket_base.hpp"
 #include "app_thread.hpp"
 #include "msg_content.hpp"
-#include "platform.hpp"
 #include "stdint.hpp"
 #include "config.hpp"
 #include "ctx.hpp"
 #include "err.hpp"
 #include "fd.hpp"
-
-#if defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD ||\
-    defined ZMQ_HAVE_OPENBSD || defined ZMQ_HAVE_SOLARIS ||\
-    defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_QNXNTO ||\
-    defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_AIX ||\
-    defined ZMQ_HAVE_NETBSD
-#include <poll.h>
-#endif
 
 #if !defined ZMQ_HAVE_WINDOWS
 #include <unistd.h>
