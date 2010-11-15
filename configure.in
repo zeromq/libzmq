@@ -30,6 +30,7 @@ AC_SUBST(LTVER)
 
 # Checks for programs.
 AC_PROG_CC
+AC_PROG_CC_C99
 AC_PROG_CXX
 AM_PROG_CC_C_O
 AC_LIBTOOL_WIN32_DLL
@@ -37,15 +38,20 @@ AC_PROG_LIBTOOL
 AC_PROG_SED
 AC_PROG_AWK
 
-# Set a helper variable to indicate GNU C and C++ are in use
-if test "x$GCC" = "xyes" -a "x$GXX" = "xyes"; then
-    gnu_compilers="yes"
-else
-    gnu_compilers="no"
-fi
+# Check for ICC and Sun Studio compilers
+AC_LANG(C)
+AC_CHECK_LANG_ICC
+AC_CHECK_LANG_SUN_STUDIO
+
+AC_LANG(C++)
+AC_CHECK_LANG_ICC
+AC_CHECK_LANG_SUN_STUDIO
 
 # Checks for libraries.
 AC_CHECK_LIB([pthread], [pthread_create])
+
+# Extra CFLAGS are appended at the end of CFLAGS for pgm.
+LIBZMQ_EXTRA_CFLAGS=""
 
 # Extra CXXFLAGS are appended at the end of CXXFLAGS for libzmq.
 LIBZMQ_EXTRA_CXXFLAGS=""
@@ -53,41 +59,31 @@ LIBZMQ_EXTRA_CXXFLAGS=""
 # Extra LDFLAGS are appended at the end of LDFLAGS for libzmq.
 LIBZMQ_EXTRA_LDFLAGS=""
 
-# Enable -pedantic if not using icc, this may be overridden later
-AC_CHECK_LANG_ICC
-if test "xyes" = "x$ac_cv_c_intel_compiler" -o "xyes" = "x$ac_cv_cpp_intel_compiler"; then
-    pedantic="no"
+# Set a helper variable to indicate GNU C and C++ are in use
+if test "x$GCC" = "xyes" -a "x$GXX" = "xyes"; then
+    gnu_compilers="yes"
+    
+    # ICC is detected as GNU compiler, make sure that it's not being used as one
+    if test "xyes" = "x$ac_cv_c_intel_compiler" -o "xyes" = "x$ac_cv_cpp_intel_compiler"; then
+        gnu_compilers="no"
+    fi
 else
+    gnu_compilers="no"
+fi
+
+# Set pedantic when using GNU compilers
+if test "x$gnu_compilers" = "xyes"; then
     pedantic="yes"
 fi
 
-#By default compiling with -Werror except OSX.
+# By default compiling with -Werror except OSX.
 werror="yes"
 
-#Whether we are on mingw or not.
+# Whether we are on mingw or not.
 on_mingw32="no"
 
 # Host speciffic checks
 AC_CANONICAL_HOST
-
-# Determine whether or not documentation should be built and installed.
-build_doc="yes"
-install_man="yes"
-# Check for asciidoc and xmlto and don't build the docs if these are not installed.
-AC_CHECK_PROG(have_asciidoc, asciidoc, yes, no)
-AC_CHECK_PROG(have_xmlto, xmlto, yes, no)
-if test "x$have_asciidoc" = "xno" -o "x$have_xmlto" = "xno"; then
-    build_doc="no"
-    # Tarballs built with 'make dist' ship with prebuilt documentation.
-    if ! test -f doc/zmq.7; then
-        install_man="no"
-        AC_MSG_WARN([You are building an unreleased version of 0MQ and asciidoc or xmlto are not installed. Documentation will not be built and manual pages will not be installed.])
-    fi
-fi
-AC_MSG_CHECKING([whether to build documentation])
-AC_MSG_RESULT([$build_doc])
-AC_MSG_CHECKING([whether to install manpages])
-AC_MSG_RESULT([$install_man])
 
 # Set some default features required by 0MQ code.
 CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE $CPPFLAGS"
@@ -100,18 +96,18 @@ case "${host_os}" in
             CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
         fi
         AC_DEFINE(ZMQ_HAVE_LINUX, 1, [Have Linux OS])
-        AC_CHECK_LIB(rt, main)
-        AC_CHECK_LIB(uuid, main, , 
+        AC_CHECK_LIB(rt, sem_init)
+        AC_CHECK_LIB(uuid, uuid_generate, , 
             [AC_MSG_ERROR([cannot link with -luuid, install uuid-dev.])])
         ;;
     *solaris*)
         # Define on Solaris to enable all library features
         CPPFLAGS="-D_PTHREADS $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_SOLARIS, 1, [Have Solaris OS])
-        AC_CHECK_LIB(socket, main)
-        AC_CHECK_LIB(nsl, main)
-        AC_CHECK_LIB(rt, main)
-        AC_CHECK_LIB(uuid, main, ,
+        AC_CHECK_LIB(socket, socket)
+        AC_CHECK_LIB(nsl, gethostbyname)
+        AC_CHECK_LIB(rt, sem_init)
+        AC_CHECK_LIB(uuid, uuid_generate, ,
             [AC_MSG_ERROR([cannot link with -luuid, install uuid-dev.])])
         AC_MSG_CHECKING([whether atomic operations can be used])
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
@@ -171,8 +167,8 @@ case "${host_os}" in
     *nto-qnx*)
         pedantic="no"
         AC_DEFINE(ZMQ_HAVE_QNXNTO, 1, [Have QNX Neutrino OS])
-        AC_CHECK_LIB(socket,main)
-        AC_CHECK_LIB(crypto,RAND_bytes)
+        AC_CHECK_LIB(socket, socket)
+        AC_CHECK_LIB(crypto, RAND_bytes)
         ;;
     *aix*)
         AC_DEFINE(ZMQ_HAVE_AIX, 1, [Have AIX OS])
@@ -182,7 +178,7 @@ case "${host_os}" in
         # Define on HP-UX to enable all library features
         CPPFLAGS="-D_POSIX_C_SOURCE=200112L"
         AC_DEFINE(ZMQ_HAVE_HPUX, 1, [Have HPUX OS])
-        AC_CHECK_LIB(rt, main)
+        AC_CHECK_LIB(rt, sem_init)
         AC_CHECK_LIB(crypto, RAND_bytes)
         ;;
     *mingw32*)
@@ -197,7 +193,6 @@ case "${host_os}" in
             [AC_MSG_ERROR([cannot link with iphlpapi.dll.])])
         CFLAGS="${CFLAGS} -std=c99"
         on_mingw32="yes"
-        install_man="no"
         ;;
     *cygwin*)
         # Define on Cygwin to enable all library features
@@ -224,6 +219,9 @@ case "${host_cpu}" in
     *)
     ;;
 esac
+
+# Check whether to build docs / install man pages
+AC_CHECK_DOC_BUILD
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -279,6 +277,10 @@ AC_ARG_WITH([pgm], [AS_HELP_STRING([--with-pgm],
 
 if test "x$with_pgm_ext" != "xno"; then
 
+    if test "x$ac_cv_prog_cc_c99" = "xno"; then
+        AC_WARN([The C compiler is not set to C99 mode. The build will most likely fail])
+    fi
+    
     AC_MSG_CHECKING([if the PGM extension is supported on this platform])
     # OpenPGM is only supported by the vendor on x86, AMD64, and SPARC platforms...
     case "${host_cpu}" in
@@ -293,7 +295,13 @@ if test "x$with_pgm_ext" != "xno"; then
     # ... and on Linux/Windows/Solaris/FreeBSD/OSX systems.
     case "${host_os}" in
         *linux*|*mingw32*|*solaris*|*freebsd*|*darwin*)
-            LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Wno-variadic-macros -Wno-long-long "
+            if test "x$gnu_compilers" = "xyes"; then
+                LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_EXTRA_CXXFLAGS} -Wno-variadic-macros -Wno-long-long "
+            elif test "x$ac_cv_c_intel_compiler" = "xyes"; then
+                LIBZMQ_EXTRA_CFLAGS="-strict-ansi -Dasm=__asm__ "
+            elif test "x$ac_cv_c_sun_studio_compiler" = "xyes"; then
+                LIBZMQ_EXTRA_CFLAGS="-Xc -Dasm=__asm__ "  
+            fi
         ;;
         *)
             AC_MSG_ERROR([the PGM extension is not supported on system ${host_os}.])
@@ -343,13 +351,12 @@ fi
 AM_CONDITIONAL(BUILD_PGM, test "x$pgm_ext" = "xyes")
 AM_CONDITIONAL(BUILD_NO_PGM, test "x$pgm_ext" = "xno")
 AM_CONDITIONAL(ON_MINGW, test "x$on_mingw32" = "xyes")
-AM_CONDITIONAL(INSTALL_MAN, test "x$install_man" = "xyes")
-AM_CONDITIONAL(BUILD_DOC, test "x$build_doc" = "xyes")
 
 AC_SUBST(stdint)
 AC_SUBST(inttypes)
 
-# Subst LIBZMQ_EXTRA_CXXFLAGS & LDFLAGS
+# Subst LIBZMQ_EXTRA_CFLAGS & CXXFLAGS & LDFLAGS
+AC_SUBST(LIBZMQ_EXTRA_CFLAGS)
 AC_SUBST(LIBZMQ_EXTRA_CXXFLAGS)
 AC_SUBST(LIBZMQ_EXTRA_LDFLAGS)
 

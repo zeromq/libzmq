@@ -230,8 +230,7 @@ libpgm_diff_flags = \
     -DCONFIG_HAVE_GETOPT
 endif
 
-libpgm_la_CFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/include/ @LIBZMQ_EXTRA_CXXFLAGS@ \
-    -std=gnu99 \
+libpgm_la_CFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/include/ @LIBZMQ_EXTRA_CFLAGS@ \
     -D_XOPEN_SOURCE=600 \
     -D_BSD_SOURCE \
     -D_REENTRANT \
