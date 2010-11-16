@@ -40,7 +40,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="-DDLL_EXPORT"
+				AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=1024"
 				Optimization="0"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -112,7 +112,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="-DDLL_EXPORT"
+				AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=1024"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				RuntimeLibrary="2"
@@ -234,6 +234,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\mailbox.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\named_session.cpp"
 				>
 			</File>
@@ -307,10 +311,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\session.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\mailbox.cpp"
 				>
 			</File>
 			<File
@@ -496,6 +496,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\mailbox.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\msg_content.hpp"
 				>
 			</File>
@@ -589,10 +593,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\session.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\mailbox.hpp"
 				>
 			</File>
 			<File
