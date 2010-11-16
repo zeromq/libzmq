@@ -40,7 +40,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="-DDLL_EXPORT"
+				AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=1024"
 				Optimization="0"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -112,7 +112,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="-DDLL_EXPORT"
+				AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=1024"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				RuntimeLibrary="2"
@@ -183,10 +183,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\devpoll.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\push.cpp"
 				>
 			</File>
 			<File
@@ -274,6 +270,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\pull.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\push.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\queue.cpp"
 				>
 			</File>
@@ -323,10 +327,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\thread.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\pull.cpp"
 				>
 			</File>
 			<File
@@ -405,10 +405,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\devpoll.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\push.hpp"
 				>
 			</File>
 			<File
@@ -532,6 +528,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\pull.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\push.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\queue.hpp"
 				>
 			</File>
@@ -585,10 +589,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\thread.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\pull.hpp"
 				>
 			</File>
 			<File
