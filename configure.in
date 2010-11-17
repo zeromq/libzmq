@@ -263,17 +263,6 @@ AC_HEADER_TIME
 AC_TYPE_UINT32_T
 AC_C_VOLATILE
 
-# Substs
-stdint="0"
-if test "x$HAVE_STDINT_H" = "xyes"; then
-    stdint="1"
-fi
-
-inttypes="0"
-if test "x$HAVE_INTTYPES_H" = "xyes"; then
-    inttypes="1"
-fi
-
 #  PGM extension
 pgm_ext="no"
 
@@ -361,14 +350,10 @@ fi
 AM_CONDITIONAL(BUILD_PGM, test "x$pgm_ext" = "xyes")
 AM_CONDITIONAL(ON_MINGW, test "x$on_mingw32" = "xyes")
 
-AC_SUBST(stdint)
-AC_SUBST(inttypes)
-
 # Subst LIBZMQ_EXTRA_CFLAGS & CXXFLAGS & LDFLAGS
 AC_SUBST(LIBZMQ_EXTRA_CFLAGS)
 AC_SUBST(LIBZMQ_EXTRA_CXXFLAGS)
 AC_SUBST(LIBZMQ_EXTRA_LDFLAGS)
-
 
 # Checks for library functions.
 AC_TYPE_SIGNAL
