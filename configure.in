@@ -191,7 +191,8 @@ case "${host_os}" in
             [AC_MSG_ERROR([cannot link with rpcrt4.dll.])])
         AC_CHECK_LIB(iphlpapi, main, ,
             [AC_MSG_ERROR([cannot link with iphlpapi.dll.])])
-        CFLAGS="${CFLAGS} -std=c99"
+        # mingw32 defines __int64_t as long long
+        CPPFLAGS="-Wno-long-long ${CPPFLAGS} "
         on_mingw32="yes"
         ;;
     *cygwin*)
