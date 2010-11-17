@@ -243,7 +243,7 @@ libzmq_la_CXXFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/
     @LIBZMQ_EXTRA_CXXFLAGS@
 endif
 
-if BUILD_NO_PGM
+if !BUILD_PGM
 libzmq_la_CXXFLAGS = @LIBZMQ_EXTRA_CXXFLAGS@
 endif
 

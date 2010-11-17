@@ -359,7 +359,6 @@ if test "x$gnu_compilers" = "xyes" -a "x$pgm_ext" = "xno"; then
 fi
 
 AM_CONDITIONAL(BUILD_PGM, test "x$pgm_ext" = "xyes")
-AM_CONDITIONAL(BUILD_NO_PGM, test "x$pgm_ext" = "xno")
 AM_CONDITIONAL(ON_MINGW, test "x$on_mingw32" = "xyes")
 
 AC_SUBST(stdint)
