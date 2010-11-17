@@ -1,4 +1,31 @@
 dnl ##############################################################################
+dnl # AC_CONFIG_LIBTOOL                                                          #
+dnl # Configure libtool. $host_os needs to be set before calling this macro      #
+dnl ##############################################################################
+AC_DEFUN([AC_CONFIG_LIBTOOL],  [{
+
+    if test "x${host_os}" = "x"; then
+        AC_MSG_ERROR([AC@&t@_CANONICAL_HOST not called before calling AC@&t@_CONFIG_LIBTOOL])
+    fi
+
+    # Libtool configuration for different targets
+    case "${host_os}" in
+        *mingw32*|*cygwin*)
+            # Disable static build by default
+            AC_DISABLE_STATIC
+        ;;
+        *)
+            # Everything else with static enabled
+            AC_ENABLE_STATIC
+        ;;
+    esac
+
+    AC_LIBTOOL_WIN32_DLL
+    AC_PROG_LIBTOOL
+}])
+
+
+dnl ##############################################################################
 dnl # AC_CHECK_LANG_ICC                                                          #
 dnl # Check if the current language is compiled using ICC                        #
 dnl # Adapted from http://software.intel.com/en-us/forums/showthread.php?t=67984 #

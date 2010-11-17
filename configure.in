@@ -33,10 +33,14 @@ AC_PROG_CC
 AC_PROG_CC_C99
 AC_PROG_CXX
 AM_PROG_CC_C_O
-AC_LIBTOOL_WIN32_DLL
-AC_PROG_LIBTOOL
 AC_PROG_SED
 AC_PROG_AWK
+
+# Host specific checks
+AC_CANONICAL_HOST
+
+# Libtool configuration for different targets. See acinclude.m4
+AC_CONFIG_LIBTOOL
 
 # Check for ICC and Sun Studio compilers
 AC_LANG(C)
@@ -81,9 +85,6 @@ werror="yes"
 
 # Whether we are on mingw or not.
 on_mingw32="no"
-
-# Host speciffic checks
-AC_CANONICAL_HOST
 
 # Set some default features required by 0MQ code.
 CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE $CPPFLAGS"
@@ -194,6 +195,10 @@ case "${host_os}" in
         # mingw32 defines __int64_t as long long
         CPPFLAGS="-Wno-long-long ${CPPFLAGS} "
         on_mingw32="yes"
+
+        if test "x$enable_static" = "xyes"; then
+            AC_MSG_ERROR([Building static libraries is not supported under MinGW32])
+        fi
         ;;
     *cygwin*)
         # Define on Cygwin to enable all library features
@@ -204,6 +209,10 @@ case "${host_os}" in
         LDFLAGS="${LDFLAGS} -L/usr/lib/e2fsprogs"
         AC_CHECK_LIB(uuid, uuid_generate, ,
             [AC_MSG_ERROR([cannot link with -luuid, install the e2fsprogs package.])])
+
+        if test "x$enable_static" = "xyes"; then
+            AC_MSG_ERROR([Building static libraries is not supported under Cygwin])
+        fi
         ;;
     *)
         AC_MSG_ERROR([unsupported system: ${host_os}.])
