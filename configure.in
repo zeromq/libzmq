@@ -6,9 +6,7 @@ AC_PREREQ(2.61)
 # the version.sh script. Hence, it should be updated there.
 # The version in git should reflect the *next* version planned.
 #
-AC_INIT([zeromq],
-        m4_esyscmd([./version.sh | tr -d '\n']),
-        [zeromq-dev@lists.zeromq.org])
+AC_INIT([zeromq],[m4_esyscmd(./version.sh | tr -d '\n')],[zeromq-dev@lists.zeromq.org])
 
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
@@ -41,6 +39,8 @@ AC_CANONICAL_HOST
 
 # Libtool configuration for different targets. See acinclude.m4
 AC_CONFIG_LIBTOOL
+AC_LIBTOOL_WIN32_DLL
+AC_PROG_LIBTOOL
 
 # Check for ICC and Sun Studio compilers
 AC_LANG(C)
@@ -277,7 +277,7 @@ AC_ARG_WITH([pgm], [AS_HELP_STRING([--with-pgm],
 if test "x$with_pgm_ext" != "xno"; then
 
     if test "x$ac_cv_prog_cc_c99" = "xno"; then
-        AC_WARN([The C compiler is not set to C99 mode. The build will most likely fail])
+        AC_MSG_WARN([The C compiler is not set to C99 mode. The build will most likely fail])
     fi
     
     AC_MSG_CHECKING([if the PGM extension is supported on this platform])
@@ -359,9 +359,10 @@ AC_SUBST(LIBZMQ_EXTRA_LDFLAGS)
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(perror gettimeofday memset socket getifaddrs freeifaddrs)
 
-AC_OUTPUT(Makefile src/Makefile doc/Makefile
+AC_CONFIG_FILES([Makefile src/Makefile doc/Makefile
     perf/Makefile src/libzmq.pc \
     devices/Makefile devices/zmq_forwarder/Makefile \
     devices/zmq_streamer/Makefile devices/zmq_queue/Makefile \
-    builds/msvc/Makefile tests/Makefile)
+    builds/msvc/Makefile tests/Makefile])
+AC_OUTPUT
 

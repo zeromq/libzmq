@@ -19,9 +19,6 @@ AC_DEFUN([AC_CONFIG_LIBTOOL],  [{
             AC_ENABLE_STATIC
         ;;
     esac
-
-    AC_LIBTOOL_WIN32_DLL
-    AC_PROG_LIBTOOL
 }])
 
 
