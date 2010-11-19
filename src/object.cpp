@@ -81,8 +81,9 @@ void zmq::object_t::process_command (command_t &cmd_)
 
     case command_t::attach:
         process_attach (cmd_.args.attach.engine,
+            cmd_.args.attach.peer_identity ?
             blob_t (cmd_.args.attach.peer_identity,
-            cmd_.args.attach.peer_identity_size));
+            cmd_.args.attach.peer_identity_size) : blob_t ());
         process_seqnum ();
         break;
 
