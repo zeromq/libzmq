@@ -101,3 +101,21 @@ AC_DEFUN([AC_CHECK_DOC_BUILD], [{
     AM_CONDITIONAL(BUILD_DOC, test "x$build_doc" = "xyes")
     AM_CONDITIONAL(INSTALL_MAN, test "x$install_man" = "xyes")
 }])
+
+dnl ##############################################################################
+dnl # AC_CHECK_LANG_COMPILER                                                     #
+dnl # Check that compiler for the current language actually works                #
+dnl ##############################################################################
+AC_DEFUN([AC_CHECK_LANG_COMPILER], [{
+    # Test that compiler for the current language actually works
+    AC_CACHE_CHECK([whether the _AC_LANG compiler works],
+                   [ac_cv_[]_AC_LANG_ABBREV[]_compiler_works],
+                   [AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
+                   [ac_cv_[]_AC_LANG_ABBREV[]_compiler_works=yes],
+                   [ac_cv_[]_AC_LANG_ABBREV[]_compiler_works=no])
+                   ])
+
+    if test "x$ac_cv_[]_AC_LANG_ABBREV[]_compiler_works" != "xyes"; then
+        AC_MSG_ERROR([Unable to find a working _AC_LANG compiler])
+    fi
+}])
