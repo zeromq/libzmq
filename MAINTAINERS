@@ -47,7 +47,7 @@ Maintainer: Martin Lucina
 Contact: mato@kotelna.sk
 
 Component: Autotools build system
-Maintainer: Martin Lucina
+Maintainer: Mikko Koppanen, Martin Lucina
 Contact: mato@kotelna.sk
 
 Component: MSVC build system
