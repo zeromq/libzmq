@@ -223,6 +223,18 @@ case "${host_os}" in
         ;;
 esac
 
+# Check if the compiler supports -fvisibility=hidden. If so, use it, but not
+# on MinGW32 where we use a separate mechanism (__declspec).
+_LT_COMPILER_OPTION([if $compiler supports -fvisibility=hidden],
+                    ac_cv_prog_compiler_visibility,
+                    [-fvisibility=hidden],
+                    [],
+                    [have_dso_visibility=yes])
+if test "x$have_dso_visibility" = "xyes" -a "x$on_mingw32" = "xno"; then
+    LIBZMQ_EXTRA_CFLAGS="-fvisibility=hidden $LIBZMQ_EXTRA_CFLAGS"
+    LIBZMQ_EXTRA_CXXFLAGS="-fvisibility=hidden $LIBZMQ_EXTRA_CXXFLAGS"
+fi
+
 # CPU-specific optimizations
 case "${host_cpu}" in
     *sparc*)

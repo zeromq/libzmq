@@ -203,7 +203,6 @@ libpgm_diff_flags = \
     -DCONFIG_HAVE_ISO_VARARGS \
     -DCONFIG_HAVE_TSC \
     -DCONFIG_HAVE_WSACMSGHDR \
-    -DCONFIG_HAVE_DSO_VISIBILITY \
     -DCONFIG_BIND_INADDR_ANY
 
 else
@@ -225,7 +224,6 @@ libpgm_diff_flags = \
     -DCONFIG_HAVE_IP_MREQN \
     -DCONFIG_HAVE_SPRINTF_GROUPING \
     -DCONFIG_HAVE_VASPRINTF \
-    -DCONFIG_HAVE_DSO_VISIBILITY \
     -DCONFIG_BIND_INADDR_ANY \
     -DCONFIG_HAVE_GETOPT
 endif
@@ -237,6 +235,7 @@ libpgm_la_CFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/in
     -DCONFIG_16BIT_CHECKSUM \
     -DCONFIG_GALOIS_MUL_LUT \
     -DGETTEXT_PACKAGE='"pgm"' \
+    -DPGM_GNUC_INTERNAL= \
     ${libpgm_diff_flags}
 
 libzmq_la_CXXFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/include/ \

@@ -39,6 +39,9 @@ extern "C" {
 #   endif
 #else
 #   define ZMQ_EXPORT
+#   if defined __GNUC__ && __GNUC__ >= 4
+#       pragma GCC visibility push(default)
+#   endif
 #endif
 
 /******************************************************************************/
@@ -241,6 +244,11 @@ ZMQ_EXPORT int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
 #define ZMQ_QUEUE 3
 
 ZMQ_EXPORT int zmq_device (int device, void * insocket, void* outsocket);
+
+#undef ZMQ_EXPORT
+#if defined __GNUC__ && __GNUC__ >= 4 && !defined _WIN32
+#    pragma GCC visibility pop
+#endif
 
 #ifdef __cplusplus
 }

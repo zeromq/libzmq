@@ -33,6 +33,9 @@ extern "C" {
 #   endif
 #else
 #   define ZMQ_EXPORT
+#   if defined __GNUC__ && __GNUC__ >= 4
+#       pragma GCC visibility push(default)
+#   endif
 #endif
 
 /*  Helper functions are used by perf tests so that they don't have to care   */
@@ -49,6 +52,9 @@ ZMQ_EXPORT unsigned long zmq_stopwatch_stop (void *watch_);
 ZMQ_EXPORT void zmq_sleep (int seconds_);
 
 #undef ZMQ_EXPORT
+#if defined __GNUC__ && __GNUC__ >= 4 && !defined _WIN32
+#    pragma GCC visibility pop
+#endif
 
 #ifdef __cplusplus
 }

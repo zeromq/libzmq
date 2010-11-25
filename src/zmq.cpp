@@ -60,6 +60,10 @@
 #include <pgm/pgm.h>
 #endif
 
+#if defined __GNUC__ && __GNUC__ >= 4 && !defined ZMQ_HAVE_WINDOWS
+#pragma GCC visibility push(default)
+#endif
+
 void zmq_version (int *major_, int *minor_, int *patch_)
 {
     *major_ = ZMQ_VERSION_MAJOR;
@@ -724,4 +728,8 @@ unsigned long zmq_stopwatch_stop (void *watch_)
     free (watch_);
     return (unsigned long) (end - start);
 }
+
+#if defined __GNUC__ && __GNUC__ >= 4 && !defined ZMQ_HAVE_WINDOWS
+#pragma GCC visibility pop
+#endif
 
