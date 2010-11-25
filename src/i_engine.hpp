@@ -35,7 +35,7 @@ namespace zmq
         virtual void unplug () = 0;
 
         //  Terminate and deallocate the engine. Note that 'detached'
-        //  events in not fired on termination.
+        //  events are not fired on termination.
         virtual void terminate () = 0;
 
         //  This method is called by the session to signalise that more
