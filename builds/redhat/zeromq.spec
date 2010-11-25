@@ -10,10 +10,11 @@ Prefix:        %{_prefix}
 Buildroot:     %{_tmppath}/%{name}-%{version}-%{release}-root
 %if %{?rhel}%{!?rhel:0} >= 6
 BuildRequires: libuuid-devel, gcc, make, gcc-c++, libstdc++-devel
+Requires:      libuuid, libstdc++
 %else
 BuildRequires: uuid-devel, gcc, make, gcc-c++, libstdc++-devel
-%endif
 Requires:      uuid, libstdc++
+%endif
 
 # Build pgm only on supported archs
 %ifarch pentium3 pentium4 athlon i386 i486 i586 i686 x86_64
