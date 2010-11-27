@@ -24,7 +24,7 @@ It does so in following steps:
 * With the exception of _zmq_close()_, any further operations on sockets open
   within 'context' shall fail with an error code of ETERM.
 
-* After iterrupting all blocking calls, _zmq_term()_ blocks until all sockets
+* After interrupting all blocking calls, _zmq_term()_ blocks until all sockets
   open within the context are closed using _zmq_close()_ and either all the
   pending outbound messages are pushed to the network or ZMQ_LINGER period
   expires for individual sockets.
