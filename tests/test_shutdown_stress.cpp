@@ -24,18 +24,21 @@
 
 #define THREAD_COUNT 100
 
-void *worker (void *s)
+extern "C"
 {
-    int rc;
+    static void *worker (void *s)
+    {
+        int rc;
 
-    rc = zmq_connect (s, "tcp://127.0.0.1:5555");
-    assert (rc == 0);
+        rc = zmq_connect (s, "tcp://127.0.0.1:5555");
+        assert (rc == 0);
 
-    //  Start closing the socket while the connecting process is underway.
-    rc = zmq_close (s);
-    assert (rc == 0);
+        //  Start closing the socket while the connecting process is underway.
+        rc = zmq_close (s);
+        assert (rc == 0);
 
-    return NULL;
+        return NULL;
+    }
 }
 
 int main (int argc, char *argv [])

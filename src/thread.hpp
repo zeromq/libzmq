@@ -54,19 +54,19 @@ namespace zmq
 
         //  Waits for thread termination.
         void stop ();
+
+        //  These are internal members. They should be private, however then
+        //  they would not be accessible from the main C routine of the thread.
+        thread_fn *tfn;
+        void *arg;
         
     private:
 
 #ifdef ZMQ_HAVE_WINDOWS
-        static unsigned int __stdcall thread_routine (void *arg_);
         HANDLE descriptor;
 #else
-        static void *thread_routine (void *arg_);
         pthread_t descriptor;
 #endif
-
-        thread_fn *tfn;
-        void *arg;
 
         thread_t (const thread_t&);
         void operator = (const thread_t&);

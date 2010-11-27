@@ -23,6 +23,16 @@
 
 #ifdef ZMQ_HAVE_WINDOWS
 
+extern "C"
+{
+    static unsigned int __stdcall thread_routine (void *arg_)
+    {
+        thread_t *self = (zmq::thread_t*) arg_;
+        self->tfn (self->arg);
+        return 0;
+    }
+}
+
 void zmq::thread_t::start (thread_fn *tfn_, void *arg_)
 {
     tfn = tfn_;
@@ -38,16 +48,29 @@ void zmq::thread_t::stop ()
     win_assert (rc != WAIT_FAILED);
 }
 
-unsigned int __stdcall zmq::thread_t::thread_routine (void *arg_)
-{
-    thread_t *self = (thread_t*) arg_;
-    self->tfn (self->arg);
-    return 0;
-}
-
 #else
 
 #include <signal.h>
+
+extern "C"
+{
+    static void *thread_routine (void *arg_)
+    {
+    #if !defined ZMQ_HAVE_OPENVMS
+        //  Following code will guarantee more predictable latecnies as it'll
+        //  disallow any signal handling in the I/O thread.
+        sigset_t signal_set;
+        int rc = sigfillset (&signal_set);
+        errno_assert (rc == 0);
+        rc = pthread_sigmask (SIG_BLOCK, &signal_set, NULL);
+        errno_assert (rc == 0);
+    #endif
+
+        zmq::thread_t *self = (zmq::thread_t*) arg_;   
+        self->tfn (self->arg);
+        return NULL;
+    }
+}
 
 void zmq::thread_t::start (thread_fn *tfn_, void *arg_)
 {
@@ -61,23 +84,6 @@ void zmq::thread_t::stop ()
 {
     int rc = pthread_join (descriptor, NULL);
     errno_assert (rc == 0);
-}
-
-void *zmq::thread_t::thread_routine (void *arg_)
-{
-#if !defined ZMQ_HAVE_OPENVMS
-    //  Following code will guarantee more predictable latecnies as it'll
-    //  disallow any signal handling in the I/O thread.
-    sigset_t signal_set;
-    int rc = sigfillset (&signal_set);
-    errno_assert (rc == 0);
-    rc = pthread_sigmask (SIG_BLOCK, &signal_set, NULL);
-    errno_assert (rc == 0);
-#endif
-
-    thread_t *self = (thread_t*) arg_;   
-    self->tfn (self->arg);
-    return NULL;
 }
 
 #endif
