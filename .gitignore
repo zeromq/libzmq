@@ -19,6 +19,13 @@ autom4te.cache
 .*
 *~
 .*~
+tests/test_pair_inproc
+tests/test_pair_ipc
+tests/test_pair_tcp
+tests/test_reqrep_inproc
+tests/test_reqrep_ipc
+tests/test_reqrep_tcp
+tests/test_shutdown_stress
 src/platform.hpp*
 src/stamp-h1
 devices/zmq_forwarder/zmq_forwarder
