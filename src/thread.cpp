@@ -27,7 +27,7 @@ extern "C"
 {
     static unsigned int __stdcall thread_routine (void *arg_)
     {
-        thread_t *self = (zmq::thread_t*) arg_;
+        zmq::thread_t *self = (zmq::thread_t*) arg_;
         self->tfn (self->arg);
         return 0;
     }
@@ -38,7 +38,7 @@ void zmq::thread_t::start (thread_fn *tfn_, void *arg_)
     tfn = tfn_;
     arg =arg_;
     descriptor = (HANDLE) _beginthreadex (NULL, 0,
-        &zmq::thread_t::thread_routine, this, 0 , NULL);
+        &::thread_routine, this, 0 , NULL);
     win_assert (descriptor != NULL);    
 }
 
