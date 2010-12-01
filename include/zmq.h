@@ -30,7 +30,7 @@ extern "C" {
 #include "winsock2.h"
 #endif
 
-/*  Win32 needs special handling for DLL exports                              */
+/*  Handle DSO symbol visibility                                             */
 #if defined _WIN32
 #   if defined DLL_EXPORT
 #       define ZMQ_EXPORT __declspec(dllexport)
@@ -38,9 +38,12 @@ extern "C" {
 #       define ZMQ_EXPORT __declspec(dllimport)
 #   endif
 #else
-#   define ZMQ_EXPORT
-#   if defined __GNUC__ && __GNUC__ >= 4
-#       pragma GCC visibility push(default)
+#   if defined __SUNPRO_C  || defined __SUNPRO_CC
+#       define ZMQ_EXPORT __global
+#   elif (defined __GNUC__ && __GNUC__ >= 4) || defined __INTEL_COMPILER
+#       define ZMQ_EXPORT __attribute__ ((visibility("default")))
+#   else
+#       define ZMQ_EXPORT
 #   endif
 #endif
 
@@ -246,9 +249,6 @@ ZMQ_EXPORT int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
 ZMQ_EXPORT int zmq_device (int device, void * insocket, void* outsocket);
 
 #undef ZMQ_EXPORT
-#if defined __GNUC__ && __GNUC__ >= 4 && !defined _WIN32
-#    pragma GCC visibility pop
-#endif
 
 #ifdef __cplusplus
 }
