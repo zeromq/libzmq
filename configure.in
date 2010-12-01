@@ -18,12 +18,17 @@ AC_SUBST(PACKAGE_VERSION)
 
 # Libtool -version-info (ABI version)
 #
-# Currently 0.0.0 ("unstable"). Don't change this unless you 
-# know exactly what you're doing and have read and understand
+# Don't change this unless you know exactly what you're doing and have read and
+# understand:
 # http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
 #
-# libzmq -version-info
-LTVER="0:0:0"
+# Changes:
+#
+# ZeroMQ versions prior to 2.1.0 use 0.0.0 ("unstable")
+# ZeroMQ version 2.1.0: 1:0:0
+#
+# libzmq -version-info current:revision:age
+LTVER="1:0:0"
 AC_SUBST(LTVER)
 
 # Checks for programs.
