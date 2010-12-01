@@ -74,7 +74,7 @@ void zmq::kqueue_t::kevent_delete (fd_t fd_, short filter_)
 {
     struct kevent ev;
 
-    EV_SET (&ev, fd_, filter_, EV_DELETE, 0, 0, (kevent_udata_t)NULL);
+    EV_SET (&ev, fd_, filter_, EV_DELETE, 0, 0, 0);
     int rc = kevent (kqueue_fd, &ev, 1, NULL, 0, NULL);
     errno_assert (rc != -1);
 }
