@@ -30,7 +30,7 @@ colon and the TCP port number to use.
 
 An 'interface' may be specified by either of the following:
 
-* The wildcard `*`, meaning all available interfaces.
+* The wild-card `*`, meaning all available interfaces.
 * The primary IPv4 address assigned to the interface, in its numeric
   representation.
 * The interface name as defined by the operating system.
@@ -127,10 +127,10 @@ EXAMPLES
 /* TCP port 5555 on all available interfaces */
 rc = zmq_bind(socket, "tcp://*:5555");
 assert (rc == 0);
-/* TCP port 5555 on the local loopback interface on all platforms */
+/* TCP port 5555 on the local loop-back interface on all platforms */
 rc = zmq_bind(socket, "tcp://127.0.0.1:5555");
 assert (rc == 0);
-/* TCP port 5555 on the first ethernet network interface on Linux */
+/* TCP port 5555 on the first Ethernet network interface on Linux */
 rc = zmq_bind(socket, "tcp://eth0:5555");
 assert (rc == 0);
 ----

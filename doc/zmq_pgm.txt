@@ -24,7 +24,7 @@ The 'pgm' and 'epgm' transports can only be used with the 'ZMQ_PUB' and
 'ZMQ_SUB' socket types.
 
 Further, PGM sockets are rate limited by default and incur a performance
-penalty when used over a loopback interface. For details, refer to the
+penalty when used over a loop-back interface. For details, refer to the
 'ZMQ_RATE', 'ZMQ_RECOVERY_IVL' and 'ZMQ_MCAST_LOOP' options documented in
 linkzmq:zmq_setsockopt[3].
 
@@ -69,7 +69,7 @@ representation.
 
 WIRE FORMAT
 -----------
-Consecutive PGM datagrams are interpreted by 0MQ as a single continous stream
+Consecutive PGM datagrams are interpreted by 0MQ as a single continuous stream
 of data where 0MQ messages are not necessarily aligned with PGM datagram
 boundaries and a single 0MQ message may span several PGM datagrams. This stream
 of data consists of 0MQ messages encapsulated in 'frames' as described in
@@ -130,7 +130,7 @@ EXAMPLE
 .Connecting a socket
 ----
 /* Connecting to the multicast address 239.192.1.1, port 5555, */
-/* using the first ethernet network interface on Linux */
+/* using the first Ethernet network interface on Linux */
 /* and the Encapsulated PGM protocol */
 rc = zmq_connect(socket, "epgm://eth0;239.192.1.1:5555");
 assert (rc == 0);

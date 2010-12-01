@@ -35,7 +35,7 @@ sockets transfer streams of bytes or discrete datagrams, 0MQ sockets transfer
 discrete _messages_.
 
 0MQ sockets being _asynchronous_ means that the timings of the physical
-connection setup and teardown, reconnect and effective delivery are transparent
+connection setup and tear down, reconnect and effective delivery are transparent
 to the user and organized by 0MQ itself. Further, messages may be _queued_ in
 the event that a peer is unavailable to receive them.
 
@@ -45,6 +45,18 @@ relationships. With the exception of 'ZMQ_PAIR', 0MQ sockets may be connected
 *to multiple endpoints* using _zmq_connect()_, while simultaneously accepting
 incoming connections *from multiple endpoints* bound to the socket using
 _zmq_bind()_, thus allowing many-to-many relationships.
+
+.Thread safety
+A 0MQ 'context' is thread safe and may be shared among as many application
+threads as necessary, without any additional locking required on the part of
+the caller.
+
+Individual 0MQ 'sockets' are _not_ thread safe except in the case where full
+memory barriers are issued when migrating a socket from one thread to another.
+In practice this means applications can create a socket in one thread with
+_zmq_socket()_ and then pass it to a _newly created_ thread as part of thread
+initialization, for example via a structure passed as an argument to
+_pthread_create()_.
 
 .Socket types
 The following sections present the socket types defined by 0MQ, grouped by the
@@ -100,7 +112,7 @@ Compatible peer sockets:: 'ZMQ_REQ'
 Direction:: Bidirectional
 Send/receive pattern:: Receive, Send, Receive, Send, ...
 Incoming routing strategy:: Fair-queued
-Outgoing routing stratagy:: Last peer
+Outgoing routing strategy:: Last peer
 ZMQ_HWM option action:: Drop
 
 
@@ -166,13 +178,13 @@ ZMQ_HWM option action:: Drop
 Publish-subscribe pattern
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 The publish-subscribe pattern is used for one-to-many distribution of data from
-a single _publisher_ to multiple _subscribers_ in a fanout fashion.
+a single _publisher_ to multiple _subscribers_ in a fan out fashion.
 
 
 ZMQ_PUB
 ^^^^^^^
 A socket of type 'ZMQ_PUB' is used by a _publisher_ to distribute data.
-Messages sent are distributed in a fanout fashion to all connected peers.
+Messages sent are distributed in a fan out fashion to all connected peers.
 The linkzmq:zmq_recv[3] function is not implemented for this socket type.
 
 When a 'ZMQ_PUB' socket enters an exceptional state due to having reached the
@@ -186,7 +198,7 @@ Compatible peer sockets:: 'ZMQ_SUB'
 Direction:: Unidirectional
 Send/receive pattern:: Send only
 Incoming routing strategy:: N/A
-Outgoing routing strategy:: Fanout
+Outgoing routing strategy:: Fan out
 ZMQ_HWM option action:: Drop
 
 
@@ -301,8 +313,6 @@ ERRORS
 ------
 *EINVAL*::
 The requested socket 'type' is invalid.
-*EMTHREAD*::
-The maximum number of sockets within this 'context' has been exceeded.
 *EFAULT*::
 The provided 'context' was not valid (NULL).
 

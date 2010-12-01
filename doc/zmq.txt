@@ -44,9 +44,15 @@ Terminate 0MQ context::
 Thread safety
 ^^^^^^^^^^^^^
 A 0MQ 'context' is thread safe and may be shared among as many application
-threads as necessary, without any additional locking required on the part of the
-caller.  Each 0MQ socket belonging to a particular 'context' may only be used
-by *the thread that created it* using _zmq_socket()_.
+threads as necessary, without any additional locking required on the part of
+the caller.
+
+Individual 0MQ 'sockets' are _not_ thread safe except in the case where full
+memory barriers are issued when migrating a socket from one thread to another.
+In practice this means applications can create a socket in one thread with
+_zmq_socket()_ and then pass it to a _newly created_ thread as part of thread
+initialization, for example via a structure passed as an argument to
+_pthread_create()_.
 
 
 Multiple contexts

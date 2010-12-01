@@ -20,7 +20,7 @@ the calling thread.
 The _zmq_errno()_ function is provided to assist users on non-POSIX systems who
 are experiencing issues with retrieving the correct value of 'errno' directly.
 Specifically, users on Win32 systems whose application is using a different C
-runtime library from the C runtime library in use by 0MQ will need to use
+run-time library from the C run-time library in use by 0MQ will need to use
 _zmq_errno()_ for correct operation.
 
 IMPORTANT: Users not experiencing issues with retrieving the correct value of

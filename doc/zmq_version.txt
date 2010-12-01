@@ -15,7 +15,7 @@ SYNOPSIS
 DESCRIPTION
 -----------
 The _zmq_version()_ function shall fill in the integer variables pointed to by
-the 'major', 'minor' and 'patch' arguments with the major, minor and patchlevel
+the 'major', 'minor' and 'patch' arguments with the major, minor and patch level
 components of the 0MQ library version.
 
 This functionality is intended for applications or language bindings
