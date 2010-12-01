@@ -1,3 +1,76 @@
+0MQ version 2.1.0 (Beta), released on 2010/12/01
+================================================
+
+New functionality
+-----------------
+
+* New semantics for zmq_close () and zmq_term () ensure that all messages
+  are sent before the application terminates. This behaviour may be
+  modified using the new ZMQ_LINGER socket option; for further details
+  refer to the reference manual.
+
+* The new socket options ZMQ_FD and ZMQ_EVENTS provide a way to integrate
+  0MQ sockets into existing poll/event loops.
+
+* Sockets may now be migrated between OS threads, as long as the
+  application ensures that a full memory barrier is issued.
+
+* The 0MQ ABI exported by libzmq.so has been formalised; DSO symbol
+  visibility is used on supported platforms to ensure that only public ABI
+  symbols are exported. The library ABI version has been set to 1.0.0 for
+  this release.
+
+* OpenPGM has been updated to version 5.0.92. This version no longer
+  depends on GLIB, and integration with 0MQ should be much improved.
+
+* zmq_poll() now honors timeouts precisely, and no longer returns if no
+  events are signaled.
+
+* Blocking calls now return EINTR if interrupted by the delivery of a
+  signal; this also means that language bindings which previously had
+  problems with handling SIGINT/^C should now work correctly.
+
+* The ZMQ_TYPE socket option was added; this allows retrieval of the socket
+  type after creation.
+
+* Added a ZMQ_VERSION macro to zmq.h for compile-time API version
+  detection.
+
+* The ZMQ_RECONNECT_IVL and ZMQ_BACKLOG socket options have been added.
+
+Bug fixes
+---------
+
+* Forwarder and streamer devices now handle multi-part messages correctly.
+
+* 0MQ no longer asserts when malformed data is received on the wire.
+
+* 0MQ internal timers now work correctly if the TSC jumps backwards.
+
+* The internal signalling functionality (mailbox) has been improved
+  to automatically resize socket buffers on POSIX systems.
+
+* Many more.
+
+Building
+--------
+
+* 0MQ now builds correctly with many more non-GCC compilers (Sun Studio,
+  Intel ICC, CLang).
+
+* AIX and HP-UX builds should work now.
+
+* FD_SETSIZE has been set to 1024 by default for MSVC builds.
+
+* Windows builds using GCC (MinGW) now work out of the box.
+
+Distribution
+------------
+
+* A simple framework for regression tests has been added, along with a few
+  basic self-tests. The tests can be run using "make check".
+
+
 0MQ version 2.0.10 (Stable), released on 2010/10/15
 ===================================================
 
