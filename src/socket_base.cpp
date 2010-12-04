@@ -46,6 +46,8 @@
 #include "ctx.hpp"
 #include "platform.hpp"
 #include "likely.hpp"
+#include "uuid.hpp"
+
 #include "pair.hpp"
 #include "pub.hpp"
 #include "sub.hpp"
@@ -55,7 +57,8 @@
 #include "push.hpp"
 #include "xreq.hpp"
 #include "xrep.hpp"
-#include "uuid.hpp"
+#include "xpub.hpp"
+#include "xsub.hpp"
 
 zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
     uint32_t tid_)
@@ -90,6 +93,12 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
     case ZMQ_PUSH:
         s = new (std::nothrow) push_t (parent_, tid_);
         break;
+    case ZMQ_XPUB:
+        s = new (std::nothrow) xpub_t (parent_, tid_);
+        break;
+    case ZMQ_XSUB:
+        s = new (std::nothrow) xsub_t (parent_, tid_);
+        break;    
     default:
         errno = EINVAL;
         return NULL;

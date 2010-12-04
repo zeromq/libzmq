@@ -20,53 +20,19 @@
 #ifndef __ZMQ_SUB_HPP_INCLUDED__
 #define __ZMQ_SUB_HPP_INCLUDED__
 
-#include "../include/zmq.h"
-
-#include "trie.hpp"
-#include "socket_base.hpp"
-#include "fq.hpp"
+#include "xsub.hpp"
 
 namespace zmq
 {
 
-    class sub_t : public socket_base_t
+    class sub_t : public xsub_t
     {
     public:
 
         sub_t (class ctx_t *parent_, uint32_t tid_);
         ~sub_t ();
 
-    protected:
-
-        //  Overloads of functions from socket_base_t.
-        void xattach_pipes (class reader_t *inpipe_, class writer_t *outpipe_,
-            const blob_t &peer_identity_);
-        int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
-        int xrecv (zmq_msg_t *msg_, int flags_);
-        bool xhas_in ();
-
     private:
-
-        //  Hook into the termination process.
-        void process_term (int linger_);
-
-        //  Check whether the message matches at least one subscription.
-        bool match (zmq_msg_t *msg_);
-
-        //  Fair queueing object for inbound pipes.
-        fq_t fq;
-
-        //  The repository of subscriptions.
-        trie_t subscriptions;
-
-        //  If true, 'message' contains a matching message to return on the
-        //  next recv call.
-        bool has_message;
-        zmq_msg_t message;
-
-        //  If true, part of a multipart message was already received, but
-        //  there are following parts still waiting.
-        bool more;
 
         sub_t (const sub_t&);
         void operator = (const sub_t&);

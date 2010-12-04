@@ -68,7 +68,7 @@ ZMQ_EXPORT void zmq_version (int *major, int *minor, int *patch);
 /*  0MQ errors.                                                               */
 /******************************************************************************/
 
-/*  A number random anough not to collide with different errno ranges on      */
+/*  A number random enough not to collide with different errno ranges on      */
 /*  different OSes. The assumption is that error_t is at least 32-bit type.   */
 #define ZMQ_HAUSNUMERO 156384712
 
@@ -178,6 +178,8 @@ ZMQ_EXPORT int zmq_term (void *context);
 #define ZMQ_XREP 6
 #define ZMQ_PULL 7
 #define ZMQ_PUSH 8
+#define ZMQ_XPUB 9
+#define ZMQ_XSUB 10
 #define ZMQ_UPSTREAM ZMQ_PULL      /*  Old alias, remove in 3.x               */
 #define ZMQ_DOWNSTREAM ZMQ_PUSH    /*  Old alias, remove in 3.x               */
 

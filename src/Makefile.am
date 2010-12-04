@@ -126,8 +126,10 @@ libzmq_la_SOURCES = \
     uuid.hpp \
     windows.hpp \
     wire.hpp \
+    xpub.hpp \
     xrep.hpp \
     xreq.hpp \
+    xsub.hpp \
     ypipe.hpp \
     yqueue.hpp \
     zmq_connecter.hpp \
@@ -181,8 +183,10 @@ libzmq_la_SOURCES = \
     transient_session.cpp \
     trie.cpp \
     uuid.cpp \
+    xpub.cpp \
     xrep.cpp \
     xreq.cpp \
+    xsub.cpp \
     zmq.cpp \
     zmq_connecter.cpp \
     zmq_engine.cpp \
