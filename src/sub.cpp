@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "../include/zmq.h"
+
 #include "sub.hpp"
 
 zmq::sub_t::sub_t (class ctx_t *parent_, uint32_t tid_) :
@@ -26,4 +28,33 @@ zmq::sub_t::sub_t (class ctx_t *parent_, uint32_t tid_) :
 
 zmq::sub_t::~sub_t ()
 {
+}
+
+int zmq::sub_t::xsetsockopt (int option_, const void *optval_,
+    size_t optvallen_)
+{
+    if (option_ != ZMQ_SUBSCRIBE && option_ != ZMQ_UNSUBSCRIBE) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    //  Create the subscription message.
+    zmq_msg_t msg;
+    zmq_msg_init_size (&msg, optvallen_ + 1);
+    unsigned char *data = (unsigned char*) zmq_msg_data (&msg);
+    if (option_ == ZMQ_SUBSCRIBE)
+        *data = 1;
+    else if (option_ == ZMQ_UNSUBSCRIBE)
+        *data = 0;
+    memcpy (data + 1, optval_, optvallen_);
+
+    //  Pass it further on in the stack.
+    int err;
+    int rc = xsend (&msg, 0);
+    if (rc != 0)
+        err = errno;
+    zmq_msg_close (&msg);
+    if (rc != 0)
+        errno = err;
+    return rc;
 }

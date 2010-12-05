@@ -32,6 +32,10 @@ namespace zmq
         sub_t (class ctx_t *parent_, uint32_t tid_);
         ~sub_t ();
 
+    protected:
+
+        int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
+
     private:
 
         sub_t (const sub_t&);
