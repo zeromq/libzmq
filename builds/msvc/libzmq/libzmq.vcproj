@@ -358,11 +358,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\xpub.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\xrep.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\..\src\xreq.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\xsub.cpp"
 				>
 			</File>
 			<File
@@ -652,11 +660,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\xpub.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\xrep.hpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\..\src\xreq.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\xsub.hpp"
 				>
 			</File>
 			<File
