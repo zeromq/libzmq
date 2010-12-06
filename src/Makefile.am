@@ -71,12 +71,12 @@ libzmq_la_SOURCES = \
     connect_session.hpp \
     ctx.hpp \
     decoder.hpp \
+    device.hpp \
     devpoll.hpp \
     encoder.hpp \
     epoll.hpp \
     err.hpp \
     fd.hpp \
-    forwarder.hpp \
     fq.hpp \
     i_inout.hpp \
     io_object.hpp \
@@ -106,7 +106,6 @@ libzmq_la_SOURCES = \
     pub.hpp \
     pull.hpp \
     push.hpp \
-    queue.hpp \
     rep.hpp \
     req.hpp \
     select.hpp \
@@ -114,7 +113,6 @@ libzmq_la_SOURCES = \
     session.hpp \
     socket_base.hpp \
     stdint.hpp \
-    streamer.hpp \
     sub.hpp \
     swap.hpp \
     tcp_connecter.hpp \
@@ -141,11 +139,11 @@ libzmq_la_SOURCES = \
     ctx.cpp \
     connect_session.cpp \
     decoder.cpp \
+    device.cpp \
     devpoll.cpp \
     encoder.cpp \
     epoll.cpp \
     err.cpp \
-    forwarder.cpp \
     fq.cpp \
     io_object.cpp \
     io_thread.cpp \
@@ -167,13 +165,11 @@ libzmq_la_SOURCES = \
     pull.cpp \
     push.cpp \
     pub.cpp \
-    queue.cpp \
     rep.cpp \
     req.cpp \
     select.cpp \
     session.cpp \
     socket_base.cpp \
-    streamer.cpp \
     sub.cpp \
     swap.cpp \
     tcp_connecter.cpp \

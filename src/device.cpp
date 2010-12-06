@@ -21,12 +21,12 @@
 
 #include "../include/zmq.h"
 
-#include "queue.hpp"
+#include "device.hpp"
 #include "socket_base.hpp"
 #include "likely.hpp"
 #include "err.hpp"
 
-int zmq::queue (class socket_base_t *insocket_,
+int zmq::device (class socket_base_t *insocket_,
         class socket_base_t *outsocket_)
 {
     zmq_msg_t msg;

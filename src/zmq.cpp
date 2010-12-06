@@ -39,9 +39,7 @@
 #include <stdlib.h>
 #include <new>
 
-#include "forwarder.hpp"
-#include "queue.hpp"
-#include "streamer.hpp"
+#include "device.hpp"
 #include "socket_base.hpp"
 #include "msg_content.hpp"
 #include "stdint.hpp"
@@ -685,19 +683,15 @@ int zmq_device (int device_, void *insocket_, void *outsocket_)
         errno = EFAULT;
         return -1;
     }
-    switch (device_) {
-    case ZMQ_FORWARDER:
-        return zmq::forwarder ((zmq::socket_base_t*) insocket_,
-            (zmq::socket_base_t*) outsocket_);
-    case ZMQ_QUEUE:
-        return zmq::queue ((zmq::socket_base_t*) insocket_,
-            (zmq::socket_base_t*) outsocket_);
-    case ZMQ_STREAMER:
-        return zmq::streamer ((zmq::socket_base_t*) insocket_,
-            (zmq::socket_base_t*) outsocket_);
-    default:
-        return EINVAL;
+
+    if (device_ != ZMQ_FORWARDER && device_ != ZMQ_QUEUE &&
+          device_ != ZMQ_STREAMER) {
+       errno = EINVAL;
+       return -1;
     }
+
+    return zmq::device ((zmq::socket_base_t*) insocket_,
+        (zmq::socket_base_t*) outsocket_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -17,13 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_FORWARDER_HPP_INCLUDED__
-#define __ZMQ_FORWARDER_HPP_INCLUDED__
+#ifndef __ZMQ_DEVICE_HPP_INCLUDED__
+#define __ZMQ_DEVICE_HPP_INCLUDED__
 
 namespace zmq
 {
 
-    int forwarder (class socket_base_t *insocket_,
+    int device (class socket_base_t *insocket_,
         class socket_base_t *outsocket_);
 
 }
