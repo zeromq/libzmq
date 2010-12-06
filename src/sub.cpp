@@ -24,6 +24,7 @@
 zmq::sub_t::sub_t (class ctx_t *parent_, uint32_t tid_) :
     xsub_t (parent_, tid_)
 {
+    options.type = ZMQ_SUB;
 }
 
 zmq::sub_t::~sub_t ()

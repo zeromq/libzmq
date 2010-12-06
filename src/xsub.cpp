@@ -30,7 +30,7 @@ zmq::xsub_t::xsub_t (class ctx_t *parent_, uint32_t tid_) :
     has_message (false),
     more (false)
 {
-    options.type = ZMQ_SUB;
+    options.type = ZMQ_XSUB;
     options.requires_in = true;
     options.requires_out = false;
     zmq_msg_init (&message);

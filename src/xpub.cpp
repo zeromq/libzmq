@@ -29,7 +29,7 @@ zmq::xpub_t::xpub_t (class ctx_t *parent_, uint32_t tid_) :
     active (0),
     terminating (false)
 {
-    options.type = ZMQ_PUB;
+    options.type = ZMQ_XPUB;
     options.requires_in = false;
     options.requires_out = true;
 }
