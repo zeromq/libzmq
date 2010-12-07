@@ -195,7 +195,7 @@ AC_DEFUN([AC_ZMQ_CHECK_LANG_FLAG], [{
 
     AC_MSG_CHECKING([whether _AC_LANG compiler supports $1])
 
-    ac_zmq_cv_[]_AC_LANG_ABBREV[]_werror_flag_save=$ac_c_werror_flag
+    ac_zmq_cv_[]_AC_LANG_ABBREV[]_werror_flag_save=$ac_[]_AC_LANG_ABBREV[]_werror_flag
     ac_[]_AC_LANG_ABBREV[]_werror_flag="yes"
 
     case "x[]_AC_LANG_ABBREV" in
