@@ -326,9 +326,13 @@ if test "x$with_pgm_ext" != "xno"; then
 
     #  Unpack libpgm
     AC_MSG_NOTICE([Unpacking ${pgm_basename}.tar.gz])
-    if ! gzip -dc foreign/openpgm/${pgm_basename}.tar.gz | tar -xf - -C foreign/openpgm/; then
-        AC_MSG_ERROR([cannot unpack the foreign/openpgm/${pgm_basename}.tar.gz file.])
+    ac_zmq_pwd=`pwd`
+    cd foreign/openpgm
+
+    if ! (gzip -dc "${pgm_basename}.tar.gz" || echo "failed") | ${am__untar}; then
+        AC_MSG_ERROR([cannot unpack the foreign/openpgm/${pgm_basename}.tar.gz file])
     fi
+    cd "${ac_zmq_pwd}"
 
     #  Success!
     AC_DEFINE(ZMQ_HAVE_OPENPGM, 1, [Have OpenPGM extension])
