@@ -56,6 +56,9 @@ ac_zmq_pedantic="yes"
 # By default compiling with -Werror except OSX.
 ac_zmq_werror="yes"
 
+# By default use DSO visibility
+ac_zmq_dso_visibility="yes"
+
 # Whether we are on mingw or not.
 ac_zmq_on_mingw32="no"
 
@@ -175,6 +178,7 @@ case "${host_os}" in
         AC_ZMQ_CHECK_LANG_FLAG_PREPEND([-Wno-long-long])
         AC_LANG_POP([C++])
         ac_zmq_on_mingw32="yes"
+        ac_zmq_dso_visibility="no"
 
         if test "x$enable_static" = "xyes"; then
             AC_MSG_ERROR([Building static libraries is not supported under MinGW32])
@@ -202,19 +206,13 @@ esac
 #
 # Check if the compiler supports -fvisibility=hidden flag. MinGW32 uses __declspec
 #
-if test "x$ac_zmq_on_mingw32" != "xyes"; then
+if test "x$ac_zmq_dso_visibility" = "xyes"; then
     AC_LANG_PUSH([C])
-    AC_ZMQ_CHECK_LANG_FLAG([-fvisibility=hidden],
-                           [LIBZMQ_EXTRA_CFLAGS="-fvisibility=hidden ${LIBZMQ_EXTRA_CFLAGS}"],
-                           [AC_ZMQ_CHECK_LANG_FLAG([-xldscope=hidden],
-                                                   [LIBZMQ_EXTRA_CFLAGS="-xldscope=hidden ${LIBZMQ_EXTRA_CFLAGS}"])])
+    AC_ZMQ_CHECK_LANG_VISIBILITY([LIBZMQ_EXTRA_CFLAGS="$ac_zmq_cv_[]_AC_LANG_ABBREV[]_visibility_flag ${LIBZMQ_EXTRA_CFLAGS}"])
     AC_LANG_POP([C])
 
     AC_LANG_PUSH([C++])
-    AC_ZMQ_CHECK_LANG_FLAG([-fvisibility=hidden],
-                           [LIBZMQ_EXTRA_CXXFLAGS="-fvisibility=hidden ${LIBZMQ_EXTRA_CXXFLAGS}"],
-                           [AC_ZMQ_CHECK_LANG_FLAG([-xldscope=hidden],
-                                                   [LIBZMQ_EXTRA_CXXFLAGS="-xldscope=hidden ${LIBZMQ_EXTRA_CXXFLAGS}"])])
+    AC_ZMQ_CHECK_LANG_VISIBILITY([LIBZMQ_EXTRA_CXXFLAGS="$ac_zmq_cv_[]_AC_LANG_ABBREV[]_visibility_flag ${LIBZMQ_EXTRA_CXXFLAGS}"])
     AC_LANG_POP([C++])
 fi
 

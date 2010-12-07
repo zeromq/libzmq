@@ -68,6 +68,22 @@ AC_DEFUN([AC_ZMQ_CHECK_LANG_CLANG],
 ])])
 
 dnl ##############################################################################
+dnl # AC_ZMQ_CHECK_LANG_GCC4([action-if-found], [action-if-not-found])          #
+dnl # Check if the current language is compiled using clang                      #
+dnl ##############################################################################
+AC_DEFUN([AC_ZMQ_CHECK_LANG_GCC4],
+          [AC_CACHE_CHECK([whether we are using gcc >= 4 _AC_LANG compiler],
+          [ac_zmq_cv_[]_AC_LANG_ABBREV[]_gcc4_compiler],
+          [_AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],
+[[#if (!defined __GNUC__ || __GNUC__ < 4)
+       error if not gcc4 or higher
+#endif
+]])],
+          [ac_zmq_cv_[]_AC_LANG_ABBREV[]_gcc4_compiler="yes" ; $1],
+          [ac_zmq_cv_[]_AC_LANG_ABBREV[]_gcc4_compiler="no" ; $2])
+])])
+
+dnl ##############################################################################
 dnl # AC_ZMQ_CHECK_DOC_BUILD                                                     #
 dnl # Check whether to build documentation and install man-pages                 #
 dnl ##############################################################################
@@ -142,6 +158,7 @@ AC_DEFUN([AC_ZMQ_CHECK_COMPILERS], [{
     AC_ZMQ_CHECK_LANG_ICC
     AC_ZMQ_CHECK_LANG_SUN_STUDIO
     AC_ZMQ_CHECK_LANG_CLANG
+    AC_ZMQ_CHECK_LANG_GCC4
     AC_LANG_POP([C])
 
     AC_LANG_PUSH(C++)
@@ -150,6 +167,7 @@ AC_DEFUN([AC_ZMQ_CHECK_COMPILERS], [{
     AC_ZMQ_CHECK_LANG_ICC
     AC_ZMQ_CHECK_LANG_SUN_STUDIO
     AC_ZMQ_CHECK_LANG_CLANG
+    AC_ZMQ_CHECK_LANG_GCC4
     AC_LANG_POP([C++])
 
     # Set GCC and GXX variables correctly
@@ -173,6 +191,8 @@ dnl # Sets ac_zmq_cv_[]_AC_LANG_ABBREV[]_supports_flag_[FLAG]=yes/no           #
 dnl ############################################################################
 AC_DEFUN([AC_ZMQ_CHECK_LANG_FLAG], [{
 
+    AC_REQUIRE([AC_PROG_GREP])
+
     AC_MSG_CHECKING([whether _AC_LANG compiler supports $1])
 
     ac_zmq_cv_[]_AC_LANG_ABBREV[]_werror_flag_save=$ac_c_werror_flag
@@ -195,8 +215,8 @@ AC_DEFUN([AC_ZMQ_CHECK_LANG_FLAG], [{
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM()],
                       # This hack exist for ICC, which outputs unknown options as remarks
                       # Remarks are not turned into errors even with -Werror on
-                      [if (grep 'ignoring unknown' conftest.err ||
-                           grep 'not supported' conftest.err) >/dev/null 2>&1; then
+                      [if ($GREP 'ignoring unknown' conftest.err ||
+                           $GREP 'not supported' conftest.err) >/dev/null 2>&1; then
                            eval AS_TR_SH(ac_zmq_cv_[]_AC_LANG_ABBREV[]_supports_flag_$1)="no"
                        else
                            eval AS_TR_SH(ac_zmq_cv_[]_AC_LANG_ABBREV[]_supports_flag_$1)="yes"
@@ -493,4 +513,28 @@ AC_DEFUN([AC_ZMQ_CHECK_LANG_PRAGMA], [{
     # Call the action as the flags are restored
     AS_IF([eval test x$]AS_TR_SH(ac_zmq_cv_[]_AC_LANG_ABBREV[]_supports_pragma_$1)[ = "xyes"],
           [$2], [$3])
+}])
+
+dnl ################################################################################
+dnl # AC_ZMQ_CHECK_LANG_VISIBILITY([action-if-found], [action-if-not-found])       #
+dnl # Check if the compiler supports dso visibility                                #
+dnl ################################################################################
+AC_DEFUN([AC_ZMQ_CHECK_LANG_VISIBILITY], [{
+
+    ac_zmq_cv_[]_AC_LANG_ABBREV[]_visibility_flag=""
+
+    if test "x$ac_zmq_cv_[]_AC_LANG_ABBREV[]_intel_compiler" = "xyes" -o \
+            "x$ac_zmq_cv_[]_AC_LANG_ABBREV[]_clang_compiler" = "xyes" -o \
+            "x$ac_zmq_cv_[]_AC_LANG_ABBREV[]_gcc4_compiler" = "xyes"; then
+        AC_ZMQ_CHECK_LANG_FLAG([-fvisibility=hidden], 
+                               [ac_zmq_cv_[]_AC_LANG_ABBREV[]_visibility_flag="-fvisibility=hidden"])
+    elif test "x$ac_zmq_cv_[]_AC_LANG_ABBREV[]_sun_studio_compiler" = "xyes"; then
+        AC_ZMQ_CHECK_LANG_FLAG([-xldscope=hidden], 
+                               [ac_zmq_cv_[]_AC_LANG_ABBREV[]_visibility_flag="-xldscope=hidden"])
+    fi
+
+    AC_MSG_CHECKING(whether _AC_LANG compiler supports dso visibility)
+
+    AS_IF([test "x$ac_zmq_cv_[]_AC_LANG_ABBREV[]_visibility_flag" != "x"],
+          [AC_MSG_RESULT(yes) ; $1], [AC_MSG_RESULT(no) ; $2])
 }])
