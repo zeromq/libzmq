@@ -190,7 +190,7 @@ The linkzmq:zmq_recv[3] function is not implemented for this socket type.
 When a 'ZMQ_PUB' socket enters an exceptional state due to having reached the
 high water mark for a _subscriber_, then any messages that would be sent to the
 _subscriber_ in question shall instead be dropped until the exceptional state
-ends.
+ends. The _zmq_send()_ function shall never block for this socket type.
 
 [horizontal]
 .Summary of ZMQ_PUB characteristics
