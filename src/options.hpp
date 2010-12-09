@@ -44,6 +44,8 @@ namespace zmq
 
         //  Reliability time interval [s]. Default 10s.
         uint32_t recovery_ivl;
+        //  Reliability time interval [ms]. Default -1 = not used.
+        int32_t recovery_ivl_msec;
 
         //  Enable multicast loopback. Default disabled (false).
         bool use_multicast_loop;

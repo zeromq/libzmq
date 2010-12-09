@@ -167,6 +167,26 @@ Default value:: 10
 Applicable socket types:: all, when using multicast transports
 
 
+ZMQ_RECOVERY_IVL_MSEC: Get multicast recovery interval in milliseconds
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_RECOVERY_IVL'_MSEC option shall retrieve the recovery interval, in
+milliseconds, for multicast transports using the specified 'socket'.  The
+recovery interval determines the maximum time in seconds that a receiver
+can be absent from a multicast group before unrecoverable data loss will
+occur.
+
+For backward compatibility, the default value of 'ZMQ_RECOVERY_IVL_MSEC' is
+-1 indicating that the recovery interval should be obtained from the
+'ZMQ_RECOVERY_IVL' option. However, if the 'ZMQ_RECOVERY_IVL_MSEC' value is
+not zero, then it will take precedence, and be used.
+
+[horizontal]
+Option value type:: int64_t
+Option value unit:: milliseconds
+Default value:: -1
+Applicable socket types:: all, when using multicast transports
+
+
 ZMQ_MCAST_LOOP: Control multicast loop-back
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_MCAST_LOOP' option controls whether data sent via multicast

@@ -30,6 +30,7 @@ zmq::options_t::options_t () :
     affinity (0),
     rate (100),
     recovery_ivl (10),
+    recovery_ivl_msec (-1),
     use_multicast_loop (true),
     sndbuf (0),
     rcvbuf (0),
@@ -99,6 +100,14 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             return -1;
         }
         recovery_ivl = (uint32_t) *((int64_t*) optval_);
+        return 0;
+
+    case ZMQ_RECOVERY_IVL_MSEC:
+        if (optvallen_ != sizeof (int64_t)  || *((int64_t*) optval_) < 0) {
+            errno = EINVAL;
+            return -1;
+        }
+        recovery_ivl_msec = (int32_t) *((int64_t*) optval_);
         return 0;
 
     case ZMQ_MCAST_LOOP:
@@ -222,6 +231,15 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
             return -1;
         }
         *((int64_t*) optval_) = recovery_ivl;
+        *optvallen_ = sizeof (int64_t);
+        return 0;
+
+    case ZMQ_RECOVERY_IVL_MSEC:
+        if (*optvallen_ < sizeof (int64_t)) {
+            errno = EINVAL;
+            return -1;
+        }
+        *((int64_t*) optval_) = recovery_ivl_msec;
         *optvallen_ = sizeof (int64_t);
         return 0;
 
