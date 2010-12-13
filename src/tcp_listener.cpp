@@ -30,6 +30,7 @@
 #ifdef ZMQ_HAVE_WINDOWS
 
 zmq::tcp_listener_t::tcp_listener_t () :
+    has_file (false),
     s (retired_fd)
 {
     memset (&addr, 0, sizeof (addr));
@@ -151,6 +152,7 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
 #endif
 
 zmq::tcp_listener_t::tcp_listener_t () :
+    has_file (false),
     s (retired_fd)
 {
     memset (&addr, 0, sizeof (addr));
@@ -236,11 +238,12 @@ int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_,
         errno_assert (rc != -1);
 
         //  Bind the socket to the file path.
-        rc = bind (s, (struct sockaddr*) &addr, sizeof (sockaddr_un));
+        rc = bind (s, (struct sockaddr*) &addr, addr_len);
         if (rc != 0) {
             close ();
             return -1;
         }
+        has_file = true;
 
         //  Listen for incomming connections.
         rc = listen (s, backlog_);
@@ -270,7 +273,7 @@ int zmq::tcp_listener_t::close ()
     //  If there's an underlying UNIX domain socket, get rid of the file it
     //  is associated with.
     struct sockaddr_un *su = (struct sockaddr_un*) &addr;
-    if (AF_UNIX == su->sun_family) {
+    if (AF_UNIX == su->sun_family && has_file) {
         rc = ::unlink(su->sun_path);
         if (rc != 0)
             return -1;

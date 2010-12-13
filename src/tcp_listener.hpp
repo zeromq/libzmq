@@ -57,6 +57,9 @@ namespace zmq
         sockaddr_storage addr;
         socklen_t addr_len;
 
+        //  True, if the undelying file for UNIX domain socket exists.
+        bool has_file;
+
         //  Underlying socket.
         fd_t s;
 
