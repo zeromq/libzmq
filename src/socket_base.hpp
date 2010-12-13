@@ -128,6 +128,10 @@ namespace zmq
         //  where it doesn't intersect the object being destroyed.
         bool destroyed;
 
+        //  Parse URI string.
+        int parse_uri (const char *uri_, std::string &protocol_,
+            std::string &address_);
+
         //  Check whether transport protocol, as specified in connect or
         //  bind, is available and compatible with the socket type.
         int check_protocol (const std::string &protocol_);
