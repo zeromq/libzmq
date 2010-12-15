@@ -189,10 +189,23 @@ bool zmq::swap_t::empty ()
     return read_pos == write_pos;
 }
 
+/*
 bool zmq::swap_t::full ()
 {
-    return buffer_space () == 1;
+    //  Check that at least the message size can be written to the swap.
+    return buffer_space () < (int64_t) (sizeof (size_t) + 1);
 }
+*/
+
+bool zmq::swap_t::fits (zmq_msg_t *msg_)
+{
+    //  Check whether whole binary representation of the message
+    //  fits into the swap.
+    size_t msg_size = zmq_msg_size (msg_);
+    if (buffer_space () <= (int64_t) (sizeof msg_size + 1 + msg_size))
+        return false;
+    return true;
+ }
 
 void zmq::swap_t::copy_from_file (void *buffer_, size_t count_)
 {

@@ -200,15 +200,15 @@ void zmq::writer_t::set_event_sink (i_writer_events *sink_)
     sink = sink_;
 }
 
-bool zmq::writer_t::check_write ()
+bool zmq::writer_t::check_write (zmq_msg_t *msg_)
 {
     //  We've already checked and there's no space free for the new message.
     //  There's no point in checking once again.
     if (unlikely (!active))
         return false;
-    
+
     if (unlikely (swapping)) {
-        if (unlikely (swap->full ())) {
+        if (unlikely (!swap->fits (msg_))) {
             active = false;
             return false;
         }
@@ -229,7 +229,7 @@ bool zmq::writer_t::check_write ()
 
 bool zmq::writer_t::write (zmq_msg_t *msg_)
 {
-    if (unlikely (!check_write ()))
+    if (unlikely (!check_write (msg_)))
         return false;
 
     if (unlikely (swapping)) {

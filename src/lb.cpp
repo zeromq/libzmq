@@ -128,8 +128,15 @@ bool zmq::lb_t::has_out ()
         return true;
 
     while (active > 0) {
-        if (pipes [current]->check_write ())
+
+        //  Check whether zero-sized message can be written to the pipe.
+        zmq_msg_t msg;
+        zmq_msg_init (&msg);
+        if (pipes [current]->check_write (&msg)) {
+            zmq_msg_close (&msg);
             return true;
+        }
+        zmq_msg_close (&msg);
 
         //  Deactivate the pipe.
         active--;

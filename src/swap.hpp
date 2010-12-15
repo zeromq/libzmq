@@ -59,8 +59,12 @@ namespace zmq
         //  Returns true if the swap is empty; false otherwise.
         bool empty ();
 
-        //  Returns true if and only if the swap is full.
-        bool full ();
+
+//        //  Returns true if and only if the swap is full.
+//        bool full ();
+
+        //  Returns true if the message fits into swap.
+        bool fits (zmq_msg_t *msg_);
 
     private:
 

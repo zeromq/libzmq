@@ -134,10 +134,10 @@ namespace zmq
         //  Specifies the object to get events from the writer.
         void set_event_sink (i_writer_events *endpoint_);
 
-        //  Checks whether a message can be written to the pipe.
+        //  Checks whether messages can be written to the pipe.
         //  If writing the message would cause high watermark and (optionally)
-        //  swap to be exceeded, the function returns false.
-        bool check_write ();
+        //  if the swap is full, the function returns false.
+        bool check_write (zmq_msg_t *msg_);
 
         //  Writes a message to the underlying pipe. Returns false if the
         //  message cannot be written because high watermark was reached.

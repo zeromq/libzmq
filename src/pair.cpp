@@ -170,7 +170,10 @@ bool zmq::pair_t::xhas_out ()
     if (!outpipe || !outpipe_alive)
         return false;
 
-    outpipe_alive = outpipe->check_write ();
+    zmq_msg_t msg;
+    zmq_msg_init (&msg);
+    outpipe_alive = outpipe->check_write (&msg);
+    zmq_msg_close (&msg);
     return outpipe_alive;
 }
 
