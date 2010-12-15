@@ -31,7 +31,10 @@ int zmq::device (class socket_base_t *insocket_,
 {
     zmq_msg_t msg;
     int rc = zmq_msg_init (&msg);
-    zmq_assert (rc == 0);
+
+    if (rc != 0) {
+        return -1;
+    }
 
     int64_t more;
     size_t moresz;
@@ -51,9 +54,7 @@ int zmq::device (class socket_base_t *insocket_,
         //  Wait while there are either requests or replies to process.
         rc = zmq_poll (&items [0], 2, -1);
         if (unlikely (rc < 0)) {
-            if (errno == ETERM)
-                return -1;
-            errno_assert (false);
+            return -1;
         }
 
         //  The algorithm below asumes ratio of request and replies processed
@@ -67,24 +68,18 @@ int zmq::device (class socket_base_t *insocket_,
 
                 rc = insocket_->recv (&msg, 0);
                 if (unlikely (rc < 0)) {
-                    if (errno == ETERM)
-                        return -1;
-                    errno_assert (false);
+                    return -1;
                 }
 
                 moresz = sizeof (more);
                 rc = insocket_->getsockopt (ZMQ_RCVMORE, &more, &moresz);
                 if (unlikely (rc < 0)) {
-                    if (errno == ETERM)
-                        return -1;
-                    errno_assert (false);
+                    return -1;
                 }
 
                 rc = outsocket_->send (&msg, more ? ZMQ_SNDMORE : 0);
                 if (unlikely (rc < 0)) {
-                    if (errno == ETERM)
-                        return -1;
-                    errno_assert (false);
+                    return -1;
                 }
 
                 if (!more)
@@ -98,24 +93,18 @@ int zmq::device (class socket_base_t *insocket_,
 
                 rc = outsocket_->recv (&msg, 0);
                 if (unlikely (rc < 0)) {
-                    if (errno == ETERM)
-                        return -1;
-                    errno_assert (false);
+                    return -1;
                 }
 
                 moresz = sizeof (more);
                 rc = outsocket_->getsockopt (ZMQ_RCVMORE, &more, &moresz);
                 if (unlikely (rc < 0)) {
-                    if (errno == ETERM)
-                        return -1;
-                    errno_assert (false);
+                    return -1;
                 }
 
                 rc = insocket_->send (&msg, more ? ZMQ_SNDMORE : 0);
                 if (unlikely (rc < 0)) {
-                    if (errno == ETERM)
-                        return -1;
-                    errno_assert (false);
+                    return -1;
                 }
 
                 if (!more)

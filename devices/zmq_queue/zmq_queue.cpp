@@ -112,7 +112,11 @@ int main (int argc, char *argv [])
         n++;
     }
 
-    zmq::device (ZMQ_QUEUE, in_socket, out_socket);
+    try {
+        zmq::device (ZMQ_QUEUE, in_socket, out_socket);
+    } catch (zmq::error_t& e) {
+        fprintf(stderr, "device exit: %s\n", e.what());
+    }
 
     return 0;
 }
