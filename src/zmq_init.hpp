@@ -44,6 +44,7 @@ namespace zmq
     private:
 
         void finalise_initialisation ();
+        void dispatch_engine ();
 
         //  i_inout interface implementation.
         bool read (::zmq_msg_t *msg_);
@@ -57,6 +58,9 @@ namespace zmq
 
         //  Associated wire-protocol engine.
         i_engine *engine;
+
+        //  Detached transient engine.
+        i_engine *ephemeral_engine;
 
         //  True if our own identity was already sent to the peer.
         bool sent;

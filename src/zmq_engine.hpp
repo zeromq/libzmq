@@ -70,6 +70,9 @@ namespace zmq
 
         i_inout *inout;
 
+        //  Detached transient inout handler.
+        i_inout *ephemeral_inout;
+
         options_t options;
 
         bool plugged;
