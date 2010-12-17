@@ -133,7 +133,8 @@ void zmq::zmq_engine_t::in_event ()
             //  This may happen if queue limits are in effect or when
             //  init object reads all required information from the socket
             //  and rejects to read more data.
-            reset_pollin (handle);
+            if (plugged)
+                reset_pollin (handle);
         }
 
         //  Adjust the buffer.
