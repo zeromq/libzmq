@@ -31,6 +31,11 @@ AC_SUBST(PACKAGE_VERSION)
 LTVER="1:0:0"
 AC_SUBST(LTVER)
 
+# Take a copy of original flags
+ZMQ_ORIG_CFLAGS="${CFLAGS:-none}"
+ZMQ_ORIG_CPPFLAGS="${CPPFLAGS:-none}"
+ZMQ_ORIG_CXXFLAGS="${CXXFLAGS:-none}"
+
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_CC_C99

@@ -302,14 +302,14 @@ AC_DEFUN([AC_ZMQ_CHECK_ENABLE_DEBUG], [{
             CXXFLAGS="-g0 "
         fi
 
-        if test "x$LOCAL_CFLAGS" != "xnone"; then
-            CFLAGS="${CFLAGS} ${LOCAL_CFLAGS}"
+        if test "x$ZMQ_ORIG_CFLAGS" != "xnone"; then
+            CFLAGS="${CFLAGS} ${ZMQ_ORIG_CFLAGS}"
         fi
-        if test "x$LOCAL_CPPFLAGS" != "xnone"; then
-            CPPFLAGS="${CPPFLAGS} ${LOCAL_CPPFLAGS}"
+        if test "x$ZMQ_ORIG_CPPFLAGS" != "xnone"; then
+            CPPFLAGS="${CPPFLAGS} ${ZMQ_ORIG_CPPFLAGS}"
         fi
-        if test "x$LOCAL_CXXFLAGS" != "xnone"; then
-            CXXFLAGS="${CXXFLAGS} ${LOCAL_CXXFLAGS}"
+        if test "x$ZMQ_ORIG_CXXFLAGS" != "xnone"; then
+            CXXFLAGS="${CXXFLAGS} ${ZMQ_ORIG_CXXFLAGS}"
         fi
         AC_MSG_RESULT(yes)
     else
