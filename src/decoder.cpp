@@ -65,6 +65,8 @@ bool zmq::decoder_t::one_byte_size_ready ()
         //  message and thus we can treat it as uninitialised...
         int rc = zmq_msg_init_size (&in_progress, *tmpbuf - 1);
         if (rc != 0 && errno == ENOMEM) {
+            rc = zmq_msg_init (&in_progress);
+            errno_assert (rc == 0);
             decoding_error ();
             return false;
         }
