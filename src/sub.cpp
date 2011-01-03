@@ -50,7 +50,7 @@ int zmq::sub_t::xsetsockopt (int option_, const void *optval_,
     memcpy (data + 1, optval_, optvallen_);
 
     //  Pass it further on in the stack.
-    int err;
+    int err = 0;
     int rc = xsend (&msg, 0);
     if (rc != 0)
         err = errno;
