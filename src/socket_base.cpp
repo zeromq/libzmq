@@ -267,7 +267,7 @@ int zmq::socket_base_t::getsockopt (int option_, void *optval_,
             return -1;
         }
         int rc = process_commands (false, false);
-        if (rc != 0 && errno == EINTR)
+        if (rc != 0 && (errno == EINTR || errno == ETERM))
             return -1;
         errno_assert (rc == 0);
         *((uint32_t*) optval_) = 0;
