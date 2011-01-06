@@ -108,7 +108,7 @@ ZMQ_EXPORT void zmq_version (int *major, int *minor, int *patch);
 /*  of this function is to make the code 100% portable, including where 0MQ   */
 /*  compiled with certain CRT library (on Windows) is linked to an            */
 /*  application that uses different CRT library.                              */
-ZMQ_EXPORT int zmq_errno ();
+ZMQ_EXPORT int zmq_errno (void);
 
 /*  Resolves system errors and 0MQ errors to human-readable string.           */
 ZMQ_EXPORT const char *zmq_strerror (int errnum);
