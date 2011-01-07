@@ -35,6 +35,8 @@ namespace zmq
     protected:
 
         int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
+        int xsend (zmq_msg_t *msg_, int options_);
+	bool xhas_out ();
 
     private:
 

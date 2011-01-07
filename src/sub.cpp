@@ -51,11 +51,24 @@ int zmq::sub_t::xsetsockopt (int option_, const void *optval_,
 
     //  Pass it further on in the stack.
     int err = 0;
-    int rc = xsend (&msg, 0);
+    int rc = xsub_t::xsend (&msg, 0);
     if (rc != 0)
         err = errno;
     zmq_msg_close (&msg);
     if (rc != 0)
         errno = err;
     return rc;
+}
+
+int zmq::sub_t::xsend (zmq_msg_t *msg_, int options_)
+{
+    //  Overload the XSUB's send.
+    errno = ENOTSUP;
+    return -1;
+}
+
+bool zmq::sub_t::xhas_out ()
+{
+    //  Overload the XSUB's send.
+    return false;
 }
