@@ -275,6 +275,7 @@ void zmq::writer_t::terminate ()
     //  Prevent double termination.
     if (terminating)
         return;
+    terminating = true;
 
     //  Mark the pipe as not available for writing.
     active = false;
@@ -339,7 +340,7 @@ void zmq::writer_t::process_activate_writer (uint64_t msgs_read_)
 
     //  If the writer was non-active before, let's make it active
     //  (available for writing messages to).
-    if (!active) {
+    if (!active && !terminating) {
         active = true;
         zmq_assert (sink);
         sink->activated (this);
