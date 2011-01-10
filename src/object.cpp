@@ -123,9 +123,9 @@ void zmq::object_t::process_command (command_t &cmd_)
     deallocate_command (&cmd_);
 }
 
-int zmq::object_t::register_endpoint (const char *addr_, socket_base_t *socket_)
+int zmq::object_t::register_endpoint (const char *addr_, endpoint_t &endpoint_)
 {
-    return ctx->register_endpoint (addr_, socket_);
+    return ctx->register_endpoint (addr_, endpoint_);
 }
 
 void zmq::object_t::unregister_endpoints (socket_base_t *socket_)
@@ -133,7 +133,7 @@ void zmq::object_t::unregister_endpoints (socket_base_t *socket_)
     return ctx->unregister_endpoints (socket_);
 }
 
-zmq::socket_base_t *zmq::object_t::find_endpoint (const char *addr_)
+zmq::endpoint_t zmq::object_t::find_endpoint (const char *addr_)
 {
     return ctx->find_endpoint (addr_);
 }

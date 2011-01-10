@@ -300,8 +300,10 @@ int zmq::socket_base_t::bind (const char *addr_)
     if (rc != 0)
         return -1;
 
-    if (protocol == "inproc" || protocol == "sys")
-        return register_endpoint (addr_, this);
+    if (protocol == "inproc" || protocol == "sys") {
+        endpoint_t endpoint = {this, options};
+        return register_endpoint (addr_, endpoint);
+    }
 
     if (protocol == "tcp" || protocol == "ipc") {
 
@@ -361,24 +363,38 @@ int zmq::socket_base_t::connect (const char *addr_)
         //  as there's no 'reconnect' functionality implemented. Once that
         //  is in place we should follow generic pipe creation algorithm.
 
-        //  Find the peer socket.
-        socket_base_t *peer = find_endpoint (addr_);
-        if (!peer)
+        //  Find the peer endpoint.
+        endpoint_t peer = find_endpoint (addr_);
+        if (!peer.socket)
             return -1;
 
         reader_t *inpipe_reader = NULL;
         writer_t *inpipe_writer = NULL;
         reader_t *outpipe_reader = NULL;
         writer_t *outpipe_writer = NULL;
- 
+
+        // The total HWM for an inproc connection should be the sum of
+        // the binder's HWM and the connector's HWM.  (Similarly for the
+        // SWAP.)
+        int64_t  hwm;
+        if (options.hwm == 0 || peer.options.hwm == 0)
+            hwm = 0;
+        else
+            hwm = options.hwm + peer.options.hwm;
+        int64_t swap;
+        if (options.swap == 0 && peer.options.swap == 0)
+            swap = 0;
+        else
+            swap = options.swap + peer.options.swap;
+
         //  Create inbound pipe, if required.
         if (options.requires_in)
-            create_pipe (this, peer, options.hwm, options.swap,
+            create_pipe (this, peer.socket, hwm, swap,
                 &inpipe_reader, &inpipe_writer);
 
         //  Create outbound pipe, if required.
         if (options.requires_out)
-            create_pipe (peer, this, options.hwm, options.swap,
+            create_pipe (peer.socket, this, hwm, swap,
                 &outpipe_reader, &outpipe_writer);
 
         //  Attach the pipes to this socket object.
@@ -387,7 +403,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         //  Attach the pipes to the peer socket. Note that peer's seqnum
         //  was incremented in find_endpoint function. We don't need it
         //  increased here.
-        send_bind (peer, outpipe_reader, inpipe_writer,
+        send_bind (peer.socket, outpipe_reader, inpipe_writer,
             options.identity, false);
 
         return 0;

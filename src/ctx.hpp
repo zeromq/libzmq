@@ -34,9 +34,18 @@
 #include "mutex.hpp"
 #include "stdint.hpp"
 #include "thread.hpp"
+#include "options.hpp"
 
 namespace zmq
 {
+    //  Information associated with inproc endpoint. Note that endpoint options
+    //  are registered as well so that the peer can access them without a need
+    //  for synchronisation, handshaking or similar.
+    struct endpoint_t
+    {
+        class socket_base_t *socket;
+        options_t options;
+    };
 
     //  Context object encapsulates all the global state associated with
     //  the library.
@@ -70,9 +79,9 @@ namespace zmq
         class io_thread_t *choose_io_thread (uint64_t affinity_);
 
         //  Management of inproc endpoints.
-        int register_endpoint (const char *addr_, class socket_base_t *socket_);
+        int register_endpoint (const char *addr_, endpoint_t &endpoint_);
         void unregister_endpoints (class socket_base_t *socket_);
-        class socket_base_t *find_endpoint (const char *addr_);
+        endpoint_t find_endpoint (const char *addr_);
 
         //  Logging.
         void log (zmq_msg_t *msg_);
@@ -122,7 +131,7 @@ namespace zmq
         mailbox_t **slots;
 
         //  List of inproc endpoints within this context.
-        typedef std::map <std::string, class socket_base_t*> endpoints_t;
+        typedef std::map <std::string, endpoint_t> endpoints_t;
         endpoints_t endpoints;
 
         //  Synchronisation of access to the list of inproc endpoints.

@@ -242,13 +242,12 @@ zmq::io_thread_t *zmq::ctx_t::choose_io_thread (uint64_t affinity_)
     return io_threads [result];
 }
 
-int zmq::ctx_t::register_endpoint (const char *addr_,
-    socket_base_t *socket_)
+int zmq::ctx_t::register_endpoint (const char *addr_, endpoint_t &endpoint_)
 {
     endpoints_sync.lock ();
 
     bool inserted = endpoints.insert (endpoints_t::value_type (
-        std::string (addr_), socket_)).second;
+        std::string (addr_), endpoint_)).second;
     if (!inserted) {
         errno = EADDRINUSE;
         endpoints_sync.unlock ();
@@ -265,7 +264,7 @@ void zmq::ctx_t::unregister_endpoints (socket_base_t *socket_)
 
     endpoints_t::iterator it = endpoints.begin ();
     while (it != endpoints.end ()) {
-        if (it->second == socket_) {
+        if (it->second.socket == socket_) {
             endpoints_t::iterator to_erase = it;
             it++;
             endpoints.erase (to_erase);
@@ -277,7 +276,7 @@ void zmq::ctx_t::unregister_endpoints (socket_base_t *socket_)
     endpoints_sync.unlock ();
 }
 
-zmq::socket_base_t *zmq::ctx_t::find_endpoint (const char *addr_)
+zmq::endpoint_t zmq::ctx_t::find_endpoint (const char *addr_)
 {
      endpoints_sync.lock ();
 
@@ -285,18 +284,19 @@ zmq::socket_base_t *zmq::ctx_t::find_endpoint (const char *addr_)
      if (it == endpoints.end ()) {
          endpoints_sync.unlock ();
          errno = ECONNREFUSED;
-         return NULL;
+         endpoint_t empty = {NULL, options_t()};
+         return empty;
      }
-     socket_base_t *endpoint = it->second;
+     endpoint_t *endpoint = &it->second;
 
      //  Increment the command sequence number of the peer so that it won't
      //  get deallocated until "bind" command is issued by the caller.
      //  The subsequent 'bind' has to be called with inc_seqnum parameter
      //  set to false, so that the seqnum isn't incremented twice.
-     endpoint->inc_seqnum ();
+     endpoint->socket->inc_seqnum ();
 
      endpoints_sync.unlock ();
-     return endpoint;
+     return *endpoint;
 }
 
 void zmq::ctx_t::log (zmq_msg_t *msg_)

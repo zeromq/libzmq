@@ -46,9 +46,9 @@ namespace zmq
 
         //  Using following function, socket is able to access global
         //  repository of inproc endpoints.
-        int register_endpoint (const char *addr_, class socket_base_t *socket_);
+        int register_endpoint (const char *addr_, struct endpoint_t &endpoint_);
         void unregister_endpoints (class socket_base_t *socket_);
-        class socket_base_t *find_endpoint (const char *addr_);
+        struct endpoint_t find_endpoint (const char *addr_);
 
         //  Logs an message.
         void log (zmq_msg_t *msg_);
