@@ -283,7 +283,7 @@ if test "x$with_pgm_ext" != "xno"; then
     AC_MSG_CHECKING([if the PGM extension is supported on this platform])
     # OpenPGM is only supported by the vendor on x86, AMD64, and SPARC platforms...
     case "${host_cpu}" in
-        i*86|x86_64|amd64|*sparc*)
+        i*86|x86_64|amd64|*sparc*|s390*)
             # Supported
         ;;
         *)
@@ -315,7 +315,7 @@ if test "x$with_pgm_ext" != "xno"; then
         ;;
     esac
 
-    #  Gzip, Perl and Python are required duing PGM build
+    #  Gzip, Perl and Python are required during PGM build
     AC_CHECK_PROG(ac_zmq_have_gzip, gzip, yes, no)
     if test "x$ac_zmq_have_gzip" != "xyes"; then
         AC_MSG_ERROR([gzip is required for building the PGM extension.])
@@ -366,14 +366,61 @@ AC_LANG_POP([C++])
 AM_CONDITIONAL(BUILD_PGM, test "x$ac_zmq_pgm_ext" = "xyes")
 AM_CONDITIONAL(ON_MINGW, test "x$ac_zmq_on_mingw32" = "xyes")
 
+# Checks for library functions.
+AC_TYPE_SIGNAL
+AC_CHECK_FUNCS(perror gettimeofday memset socket getifaddrs freeifaddrs)
+AC_CHECK_HEADERS([alloca.h])
+
+if test "x$with_pgm_ext" != "xno"; then
+
+    # Check additional functions for PGM build
+    AC_CHECK_FUNCS(poll epoll_create pselect getopt vasprintf getprotobyname_r2 getprotobyname_r)
+
+    if test "x$ac_cv_func_gettimeofday" = "xyes"; then
+        LIBZMQ_EXTRA_CFLAGS="-DCONFIG_HAVE_GETTIMEOFDAY $LIBZMQ_EXTRA_CFLAGS"
+    fi
+    if test "x$ac_cv_func_getprotobyname_r2" = "xyes"; then
+        LIBZMQ_EXTRA_CFLAGS="-DCONFIG_HAVE_GETPROTOBYNAME_R2 $LIBZMQ_EXTRA_CFLAGS"
+    fi    
+    if test "x$ac_cv_func_poll" = "xyes"; then
+        LIBZMQ_EXTRA_CFLAGS="-DCONFIG_HAVE_POLL $LIBZMQ_EXTRA_CFLAGS"
+    fi
+    if test "x$ac_cv_func_epoll_create" = "xyes"; then
+        LIBZMQ_EXTRA_CFLAGS="-DCONFIG_HAVE_EPOLL $LIBZMQ_EXTRA_CFLAGS"
+    fi
+    if test "x$ac_cv_func_getifaddrs" = "xyes"; then
+        LIBZMQ_EXTRA_CFLAGS="-DCONFIG_HAVE_GETIFADDRS $LIBZMQ_EXTRA_CFLAGS"
+    fi
+    if test "x$ac_cv_func_getopt" = "xyes"; then
+        LIBZMQ_EXTRA_CFLAGS="-DCONFIG_HAVE_GETOPT $LIBZMQ_EXTRA_CFLAGS"
+    fi
+    if test "x$ac_cv_func_pselect" = "xyes"; then
+        LIBZMQ_EXTRA_CFLAGS="-DCONFIG_HAVE_PSELECT $LIBZMQ_EXTRA_CFLAGS"
+    fi
+    if test "x$ac_cv_header_alloca_h" = "xyes"; then
+        LIBZMQ_EXTRA_CFLAGS="-DCONFIG_HAVE_ALLOCA_H $LIBZMQ_EXTRA_CFLAGS"
+    fi
+    if test "x$ac_cv_c_compiler_gnu" = "xno"; then
+        LIBZMQ_EXTRA_CFLAGS="-DCONFIG_HAVE_ISO_VARARGS $LIBZMQ_EXTRA_CFLAGS"
+    else
+        LIBZMQ_EXTRA_CFLAGS="-DCONFIG_HAVE_GNU_VARARGS $LIBZMQ_EXTRA_CFLAGS"
+    fi
+    if test "x$ac_cv_func_vasprintf" = "xyes"; then
+        LIBZMQ_EXTRA_CFLAGS="-DCONFIG_HAVE_VASPRINTF $LIBZMQ_EXTRA_CFLAGS"
+    fi
+    case "${host_cpu}" in
+        i*86|x86_64|amd64|*sparc*)
+            LIBZMQ_EXTRA_CFLAGS="-DCONFIG_HAVE_TSC -DCONFIG_HAVE_RTC -DCONFIG_HAVE_HPET $LIBZMQ_EXTRA_CFLAGS"
+        ;;
+        *sparc*|s390*)
+        ;;
+    esac
+fi
+
 # Subst LIBZMQ_EXTRA_CFLAGS & CXXFLAGS & LDFLAGS
 AC_SUBST(LIBZMQ_EXTRA_CFLAGS)
 AC_SUBST(LIBZMQ_EXTRA_CXXFLAGS)
 AC_SUBST(LIBZMQ_EXTRA_LDFLAGS)
-
-# Checks for library functions.
-AC_TYPE_SIGNAL
-AC_CHECK_FUNCS(perror gettimeofday memset socket getifaddrs freeifaddrs)
 
 AC_CONFIG_FILES([Makefile src/Makefile doc/Makefile
     perf/Makefile src/libzmq.pc \
