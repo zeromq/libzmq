@@ -106,7 +106,7 @@ namespace zmq
         bool terminating;
 
         xrep_t (const xrep_t&);
-        void operator = (const xrep_t&);
+        const xrep_t &operator = (const xrep_t&);
     };
 
 }

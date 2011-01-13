@@ -77,7 +77,7 @@ namespace zmq
         HANDLE ev;
 
         semaphore_t (const semaphore_t&);
-        void operator = (const semaphore_t&);
+        const semaphore_t &operator = (const semaphore_t&);
     };
 
 #elif defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_OPENVMS
@@ -130,7 +130,7 @@ namespace zmq
         pthread_mutex_t mutex;
 
         semaphore_t (const semaphore_t&);
-        void operator = (const semaphore_t&);
+        const semaphore_t &operator = (const semaphore_t&);
     };
 
 #else
@@ -175,7 +175,7 @@ namespace zmq
         sem_t sem;
 
         semaphore_t (const semaphore_t&);
-        void operator = (const semaphore_t&);
+        const semaphore_t &operator = (const semaphore_t&);
     };
 
 #endif

@@ -143,7 +143,7 @@ namespace zmq
         mutex_t log_sync;
 
         ctx_t (const ctx_t&);
-        void operator = (const ctx_t&);
+        const ctx_t &operator = (const ctx_t&);
     };
     
 }

@@ -55,7 +55,7 @@ namespace zmq
         lb_t lb;
 
         xreq_t (const xreq_t&);
-        void operator = (const xreq_t&);
+        const xreq_t &operator = (const xreq_t&);
     };
 
 }

@@ -35,7 +35,7 @@ namespace zmq
     private:
 
         pub_t (const pub_t&);
-        void operator = (const pub_t&);
+        const pub_t &operator = (const pub_t&);
     };
 
 }

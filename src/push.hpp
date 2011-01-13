@@ -50,7 +50,7 @@ namespace zmq
         lb_t lb;
 
         push_t (const push_t&);
-        void operator = (const push_t&);
+        const push_t &operator = (const push_t&);
     };
 
 }

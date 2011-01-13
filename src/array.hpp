@@ -59,7 +59,7 @@ namespace zmq
         int array_index;
 
         array_item_t (const array_item_t&);
-        void operator = (const array_item_t&);
+        const array_item_t &operator = (const array_item_t&);
     };
 
     //  Fast array implementation with O(1) access to item, insertion and
@@ -138,7 +138,7 @@ namespace zmq
         items_t items;
 
         array_t (const array_t&);
-        void operator = (const array_t&);
+        const array_t &operator = (const array_t&);
     };
 
 }

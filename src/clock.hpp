@@ -51,7 +51,7 @@ namespace zmq
         uint64_t last_time;
 
         clock_t (const clock_t&);
-        void operator = (const clock_t&);
+        const clock_t &operator = (const clock_t&);
     };
 
 }

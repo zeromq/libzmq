@@ -43,7 +43,7 @@ namespace zmq
         void detached ();
 
         transient_session_t (const transient_session_t&);
-        void operator = (const transient_session_t&);
+        const transient_session_t &operator = (const transient_session_t&);
     };
 
 }

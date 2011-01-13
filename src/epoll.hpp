@@ -85,7 +85,7 @@ namespace zmq
         thread_t worker;
 
         epoll_t (const epoll_t&);
-        void operator = (const epoll_t&);
+        const epoll_t &operator = (const epoll_t&);
     };
 
 }

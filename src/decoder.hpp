@@ -167,7 +167,7 @@ namespace zmq
         unsigned char *buf;
 
         decoder_base_t (const decoder_base_t&);
-        void operator = (const decoder_base_t&);
+        const decoder_base_t &operator = (const decoder_base_t&);
     };
 
     //  Decoder for 0MQ framing protocol. Converts data batches into messages.

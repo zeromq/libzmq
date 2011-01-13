@@ -116,7 +116,7 @@ namespace zmq
         void send_command (command_t &cmd_);
 
         object_t (const object_t&);
-        void operator = (const object_t&);
+        const object_t &operator = (const object_t&);
     };
 
 }

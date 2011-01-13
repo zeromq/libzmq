@@ -135,7 +135,7 @@ namespace zmq
 #endif
 
         atomic_ptr_t (const atomic_ptr_t&);
-        void operator = (const atomic_ptr_t&);
+        const atomic_ptr_t &operator = (const atomic_ptr_t&);
     };
 
 }

@@ -75,7 +75,7 @@ namespace zmq
         atomic_counter_t load;
 
         poller_base_t (const poller_base_t&);
-        void operator = (const poller_base_t&);
+        const poller_base_t &operator = (const poller_base_t&);
     };
 
 }

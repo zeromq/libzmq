@@ -111,6 +111,10 @@ namespace zmq
         char *write_buf;
 
         int64_t write_buf_start_addr;
+
+        //  Disable copying of the swap object.
+        swap_t (const swap_t&);
+        const swap_t &operator = (const swap_t&);
     };
 
 }

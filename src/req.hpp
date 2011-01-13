@@ -49,7 +49,7 @@ namespace zmq
         bool message_begins;
 
         req_t (const req_t&);
-        void operator = (const req_t&);
+        const req_t &operator = (const req_t&);
     };
 
 }

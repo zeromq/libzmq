@@ -67,7 +67,7 @@ namespace zmq
         bool terminating;
 
         pair_t (const pair_t&);
-        void operator = (const pair_t&);
+        const pair_t &operator = (const pair_t&);
     };
 
 }

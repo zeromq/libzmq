@@ -95,7 +95,7 @@ namespace zmq
         size_t write_size;
 
         pgm_sender_t (const pgm_sender_t&);
-        void operator = (const pgm_sender_t&);
+        const pgm_sender_t &operator = (const pgm_sender_t&);
     };
 
 }

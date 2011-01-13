@@ -58,7 +58,7 @@ namespace zmq
         class socket_base_t *socket;
 
         zmq_listener_t (const zmq_listener_t&);
-        void operator = (const zmq_listener_t&);
+        const zmq_listener_t &operator = (const zmq_listener_t&);
     };
 
 }

@@ -75,7 +75,7 @@ namespace zmq
         class session_t *session;
 
         zmq_connecter_t (const zmq_connecter_t&);
-        void operator = (const zmq_connecter_t&);
+        const zmq_connecter_t &operator = (const zmq_connecter_t&);
     };
 
 }

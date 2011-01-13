@@ -72,7 +72,7 @@ namespace zmq
         fd_t s;
 
         tcp_connecter_t (const tcp_connecter_t&);
-        void operator = (const tcp_connecter_t&);
+        const tcp_connecter_t &operator = (const tcp_connecter_t&);
     };
 
 }

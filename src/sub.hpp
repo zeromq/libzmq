@@ -41,7 +41,7 @@ namespace zmq
     private:
 
         sub_t (const sub_t&);
-        void operator = (const sub_t&);
+        const sub_t &operator = (const sub_t&);
     };
 
 }

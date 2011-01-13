@@ -189,7 +189,7 @@ namespace zmq
 
         //  Disable copying of yqueue.
         yqueue_t (const yqueue_t&);
-        void operator = (const yqueue_t&);
+        const yqueue_t &operator = (const yqueue_t&);
     };
 
 }

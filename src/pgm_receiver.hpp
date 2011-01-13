@@ -118,7 +118,7 @@ namespace zmq
         handle_t pipe_handle;
 
         pgm_receiver_t (const pgm_receiver_t&);
-        void operator = (const pgm_receiver_t&);
+        const pgm_receiver_t &operator = (const pgm_receiver_t&);
     };
 
 }

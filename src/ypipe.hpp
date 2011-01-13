@@ -200,7 +200,7 @@ namespace zmq
 
         //  Disable copying of ypipe object.
         ypipe_t (const ypipe_t&);
-        void operator = (const ypipe_t&);
+        const ypipe_t &operator = (const ypipe_t&);
     };
 
 }

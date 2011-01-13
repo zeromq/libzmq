@@ -50,7 +50,7 @@ namespace zmq
         fq_t fq;
 
         pull_t (const pull_t&);
-        void operator = (const pull_t&);
+        const pull_t &operator = (const pull_t&);
 
     };
 

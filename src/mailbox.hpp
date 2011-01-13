@@ -53,7 +53,7 @@ namespace zmq
 
         //  Disable copying of mailbox_t object.
         mailbox_t (const mailbox_t&);
-        void operator = (const mailbox_t&);
+        const mailbox_t &operator = (const mailbox_t&);
     };
 
 }

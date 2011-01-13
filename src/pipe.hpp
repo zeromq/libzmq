@@ -113,7 +113,7 @@ namespace zmq
         bool terminating;
 
         reader_t (const reader_t&);
-        void operator = (const reader_t&);
+        const reader_t &operator = (const reader_t&);
     };
 
     struct i_writer_events
@@ -205,7 +205,7 @@ namespace zmq
         bool terminating;
 
         writer_t (const writer_t&);
-        void operator = (const writer_t&);
+        const writer_t &operator = (const writer_t&);
     };
 
 }

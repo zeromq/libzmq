@@ -69,7 +69,7 @@ namespace zmq
 #endif
 
         thread_t (const thread_t&);
-        void operator = (const thread_t&);
+        const thread_t &operator = (const thread_t&);
     };
 
 }

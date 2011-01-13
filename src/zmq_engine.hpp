@@ -78,7 +78,7 @@ namespace zmq
         bool plugged;
 
         zmq_engine_t (const zmq_engine_t&);
-        void operator = (const zmq_engine_t&);
+        const zmq_engine_t &operator = (const zmq_engine_t&);
     };
 
 }

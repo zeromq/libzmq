@@ -173,7 +173,7 @@ namespace zmq
         mutex_t sessions_sync;
 
         socket_base_t (const socket_base_t&);
-        void operator = (const socket_base_t&);
+        const socket_base_t &operator = (const socket_base_t&);
     };
 
 }

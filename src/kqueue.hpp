@@ -92,7 +92,7 @@ namespace zmq
         thread_t worker;
 
         kqueue_t (const kqueue_t&);
-        void operator = (const kqueue_t&);
+        const kqueue_t &operator = (const kqueue_t&);
     };
 
 }

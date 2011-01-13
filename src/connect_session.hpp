@@ -56,7 +56,7 @@ namespace zmq
         std::string address;
 
         connect_session_t (const connect_session_t&);
-        void operator = (const connect_session_t&);
+        const connect_session_t &operator = (const connect_session_t&);
     };
 
 }

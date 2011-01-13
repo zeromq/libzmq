@@ -141,7 +141,7 @@ namespace zmq
         } state;
 
         session_t (const session_t&);
-        void operator = (const session_t&);
+        const session_t &operator = (const session_t&);
     };
 
 }

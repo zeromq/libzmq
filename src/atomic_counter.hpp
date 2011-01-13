@@ -140,7 +140,7 @@ namespace zmq
 #endif
 
         atomic_counter_t (const atomic_counter_t&);
-        void operator = (const atomic_counter_t&);
+        const atomic_counter_t& operator = (const atomic_counter_t&);
     };
 
 }

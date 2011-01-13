@@ -92,7 +92,7 @@ namespace zmq
         thread_t worker;
 
         poll_t (const poll_t&);
-        void operator = (const poll_t&);
+        const poll_t &operator = (const poll_t&);
     };
 
 }

@@ -106,7 +106,7 @@ namespace zmq
         thread_t worker;
 
         select_t (const select_t&);
-        void operator = (const select_t&);
+        const select_t &operator = (const select_t&);
     };
 
 }

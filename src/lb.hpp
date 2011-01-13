@@ -67,7 +67,7 @@ namespace zmq
         bool terminating;
 
         lb_t (const lb_t&);
-        void operator = (const lb_t&);
+        const lb_t &operator = (const lb_t&);
     };
 
 }

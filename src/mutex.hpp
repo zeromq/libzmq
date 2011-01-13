@@ -110,7 +110,7 @@ namespace zmq
  
         // Disable copy construction and assignment.
         mutex_t (const mutex_t&);
-        void operator = (const mutex_t&);
+        const mutex_t &operator = (const mutex_t&);
     };
  
 }

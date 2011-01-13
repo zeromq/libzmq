@@ -84,7 +84,7 @@ namespace zmq
         class io_thread_t *io_thread;
 
         zmq_init_t (const zmq_init_t&);
-        void operator = (const zmq_init_t&);
+        const zmq_init_t &operator = (const zmq_init_t&);
     };
 
 }

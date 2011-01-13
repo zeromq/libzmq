@@ -70,7 +70,7 @@ namespace zmq
         bool more;
 
         xsub_t (const xsub_t&);
-        void operator = (const xsub_t&);
+        const xsub_t &operator = (const xsub_t&);
     };
 
 }

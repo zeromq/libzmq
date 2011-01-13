@@ -64,7 +64,7 @@ namespace zmq
         fd_t s;
 
         tcp_listener_t (const tcp_listener_t&);
-        void operator = (const tcp_listener_t&);
+        const tcp_listener_t &operator = (const tcp_listener_t&);
     };
 
 }

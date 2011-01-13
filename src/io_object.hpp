@@ -69,7 +69,7 @@ namespace zmq
         poller_t *poller;
 
         io_object_t (const io_object_t&);
-        void operator = (const io_object_t&);
+        const io_object_t &operator = (const io_object_t&);
     };
 
 }

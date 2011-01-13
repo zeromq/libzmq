@@ -175,7 +175,7 @@ namespace zmq
         unsigned char tmpbuf [10];
 
         encoder_t (const encoder_t&);
-        void operator = (const encoder_t&);
+        const encoder_t &operator = (const encoder_t&);
     };
 }
 

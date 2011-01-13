@@ -65,7 +65,7 @@ namespace zmq
         bool terminating;
 
         xpub_t (const xpub_t&);
-        void operator = (const xpub_t&);
+        const xpub_t &operator = (const xpub_t&);
     };
 
 }

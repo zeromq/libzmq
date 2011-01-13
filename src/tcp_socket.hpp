@@ -63,7 +63,7 @@ namespace zmq
 
         //  Disable copy construction of tcp_socket.
         tcp_socket_t (const tcp_socket_t&);
-        void operator = (const tcp_socket_t&);
+        const tcp_socket_t &operator = (const tcp_socket_t&);
     };
 
 }

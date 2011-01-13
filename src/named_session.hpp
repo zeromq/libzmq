@@ -48,7 +48,7 @@ namespace zmq
         blob_t name;
 
         named_session_t (const named_session_t&);
-        void operator = (const named_session_t&);
+        const named_session_t &operator = (const named_session_t&);
     };
 
 }

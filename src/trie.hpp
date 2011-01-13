@@ -49,7 +49,7 @@ namespace zmq
         } next;
 
         trie_t (const trie_t&);
-        void operator = (const trie_t&);
+        const trie_t &operator = (const trie_t&);
     };
 
 }

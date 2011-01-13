@@ -131,7 +131,7 @@ namespace zmq
         int term_acks;
 
         own_t (const own_t&);
-        void operator = (const own_t&);
+        const own_t &operator = (const own_t&);
     };
 
 }
