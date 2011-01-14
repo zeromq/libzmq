@@ -24,6 +24,7 @@
 
 #include "trie.hpp"
 #include "socket_base.hpp"
+#include "dist.hpp"
 #include "fq.hpp"
 
 namespace zmq
@@ -56,6 +57,9 @@ namespace zmq
 
         //  Fair queueing object for inbound pipes.
         fq_t fq;
+
+        //  Distributor mechanism for outbound messages (subscriptions).
+        dist_t dist;
 
         //  The repository of subscriptions.
         trie_t subscriptions;
