@@ -23,11 +23,12 @@
 #include "socket_base.hpp"
 #include "array.hpp"
 #include "pipe.hpp"
+#include "dist.hpp"
 
 namespace zmq
 {
 
-    class xpub_t : public socket_base_t, public i_writer_events
+    class xpub_t : public socket_base_t
     {
     public:
 
@@ -40,29 +41,13 @@ namespace zmq
         int xsend (zmq_msg_t *msg_, int flags_);
         bool xhas_out ();
 
-        //  i_writer_events interface implementation.
-        void activated (writer_t *pipe_);
-        void terminated (writer_t *pipe_);
-
     private:
 
         //  Hook into the termination process.
         void process_term (int linger_);
 
-        //  Write the message to the pipe. Make the pipe inactive if writing
-        //  fails. In such a case false is returned.
-        bool write (class writer_t *pipe_, zmq_msg_t *msg_);
-
-        //  Outbound pipes, i.e. those the socket is sending messages to.
-        typedef array_t <class writer_t> pipes_t;
-        pipes_t pipes;
-
-        //  Number of active pipes. All the active pipes are located at the
-        //  beginning of the pipes array.
-        pipes_t::size_type active;
-
-        //  True if termination process is already underway.
-        bool terminating;
+        //  Distributor of messages holding the list of outbound pipes.
+        dist_t dist;
 
         xpub_t (const xpub_t&);
         const xpub_t &operator = (const xpub_t&);

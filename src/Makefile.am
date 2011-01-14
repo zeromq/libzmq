@@ -73,6 +73,7 @@ libzmq_la_SOURCES = \
     decoder.hpp \
     device.hpp \
     devpoll.hpp \
+    dist.hpp \
     encoder.hpp \
     epoll.hpp \
     err.hpp \
@@ -141,6 +142,7 @@ libzmq_la_SOURCES = \
     decoder.cpp \
     device.cpp \
     devpoll.cpp \
+    dist.cpp \
     encoder.cpp \
     epoll.cpp \
     err.cpp \
