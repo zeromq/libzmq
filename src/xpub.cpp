@@ -25,10 +25,11 @@
 
 zmq::xpub_t::xpub_t (class ctx_t *parent_, uint32_t tid_) :
     socket_base_t (parent_, tid_),
-    dist (this)
+    dist (this),
+    fq (this)
 {
     options.type = ZMQ_XPUB;
-    options.requires_in = false;
+    options.requires_in = true;
     options.requires_out = true;
 }
 
@@ -39,14 +40,16 @@ zmq::xpub_t::~xpub_t ()
 void zmq::xpub_t::xattach_pipes (class reader_t *inpipe_,
     class writer_t *outpipe_, const blob_t &peer_identity_)
 {
-    zmq_assert (!inpipe_);
+    zmq_assert (inpipe_ && outpipe_);
     dist.attach (outpipe_);
+    fq.attach (inpipe_);
 }
 
 void zmq::xpub_t::process_term (int linger_)
 {
     //  Terminate the outbound pipes.
     dist.terminate ();
+    fq.terminate ();
 
     //  Continue with the termination immediately.
     socket_base_t::process_term (linger_);
@@ -60,5 +63,15 @@ int zmq::xpub_t::xsend (zmq_msg_t *msg_, int flags_)
 bool zmq::xpub_t::xhas_out ()
 {
     return dist.has_out ();
+}
+
+int zmq::xpub_t::xrecv (zmq_msg_t *msg_, int flags_)
+{
+    return fq.recv (msg_, flags_);
+}
+
+bool zmq::xpub_t::xhas_in ()
+{
+    return fq.has_in ();
 }
 

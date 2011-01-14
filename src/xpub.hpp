@@ -24,6 +24,7 @@
 #include "array.hpp"
 #include "pipe.hpp"
 #include "dist.hpp"
+#include "fq.hpp"
 
 namespace zmq
 {
@@ -40,6 +41,8 @@ namespace zmq
             const blob_t &peer_identity_);
         int xsend (zmq_msg_t *msg_, int flags_);
         bool xhas_out ();
+        int xrecv (zmq_msg_t *msg_, int flags_);
+        bool xhas_in ();
 
     private:
 
@@ -48,6 +51,9 @@ namespace zmq
 
         //  Distributor of messages holding the list of outbound pipes.
         dist_t dist;
+
+        //  Fair queuer for inbound subscriptions.
+        fq_t fq;
 
         xpub_t (const xpub_t&);
         const xpub_t &operator = (const xpub_t&);
