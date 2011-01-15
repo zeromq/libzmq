@@ -198,6 +198,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\dist.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\encoder.cpp"
 				>
 			</File>
@@ -437,6 +441,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\devpoll.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\dist.hpp"
 				>
 			</File>
 			<File
