@@ -227,6 +227,12 @@ void zmq::pgm_receiver_t::in_event ()
             reset_pollin (pipe_handle);
             reset_pollin (socket_handle);
 
+            //  Reset outstanding timer.
+            if (has_rx_timer) {
+                cancel_timer (rx_timer_id);
+                has_rx_timer = false;
+            }
+
             break;
         }
     }
