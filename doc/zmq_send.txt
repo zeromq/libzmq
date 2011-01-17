@@ -70,7 +70,7 @@ _messaging patterns_ section of linkzmq:zmq_socket[3] for more information.
 *ETERM*::
 The 0MQ 'context' associated with the specified 'socket' was terminated.
 *EFAULT*::
-The provided 'context' was not valid (NULL).
+The provided 'socket' was not valid (NULL).
 *EINTR*::
 The operation was interrupted by delivery of a signal before the message was
 sent.
