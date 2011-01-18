@@ -73,7 +73,7 @@ void zmq::pgm_receiver_t::plug (io_thread_t *io_thread_, i_inout *inout_)
 void zmq::pgm_receiver_t::unplug ()
 {
     //  Delete decoders.
-    for (peers_t::iterator it = peers.begin (); it != peers.end (); it++) {
+    for (peers_t::iterator it = peers.begin (); it != peers.end (); ++it) {
         if (it->second.decoder != NULL)
             delete it->second.decoder;
     }

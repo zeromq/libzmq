@@ -54,7 +54,7 @@ void zmq::poller_base_t::add_timer (int timeout_, i_poll_events *sink_, int id_)
 void zmq::poller_base_t::cancel_timer (i_poll_events *sink_, int id_)
 {
     //  Complexity of this operation is O(n). We assume it is rarely used.
-    for (timers_t::iterator it = timers.begin (); it != timers.end (); it++)
+    for (timers_t::iterator it = timers.begin (); it != timers.end (); ++it)
         if (it->second.sink == sink_ && it->second.id == id_) {
             timers.erase (it);
             return;

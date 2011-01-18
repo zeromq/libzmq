@@ -87,10 +87,10 @@ void zmq::xrep_t::process_term (int linger_)
     register_term_acks (inpipes.size () + outpipes.size ());
 
     for (inpipes_t::iterator it = inpipes.begin (); it != inpipes.end ();
-          it++)
+          ++it)
         it->reader->terminate ();
     for (outpipes_t::iterator it = outpipes.begin (); it != outpipes.end ();
-          it++)
+          ++it)
         it->second.writer->terminate ();
 
     socket_base_t::process_term (linger_);
@@ -99,7 +99,7 @@ void zmq::xrep_t::process_term (int linger_)
 void zmq::xrep_t::terminated (reader_t *pipe_)
 {
     for (inpipes_t::iterator it = inpipes.begin (); it != inpipes.end ();
-          it++) {
+          ++it) {
         if (it->reader == pipe_) {
             inpipes.erase (it);
             if (terminating)
@@ -135,7 +135,7 @@ void zmq::xrep_t::delimited (reader_t *pipe_)
 void zmq::xrep_t::activated (reader_t *pipe_)
 {
     for (inpipes_t::iterator it = inpipes.begin (); it != inpipes.end ();
-          it++) {
+          ++it) {
         if (it->reader == pipe_) {
             zmq_assert (!it->active);
             it->active = true;

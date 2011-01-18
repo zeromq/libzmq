@@ -177,7 +177,7 @@ void zmq::kqueue_t::loop ()
 
         //  Destroy retired event sources.
         for (retired_t::iterator it = retired.begin (); it != retired.end ();
-              it ++)
+              ++it)
             delete *it;
         retired.clear ();
     }

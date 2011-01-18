@@ -266,11 +266,11 @@ void zmq::ctx_t::unregister_endpoints (socket_base_t *socket_)
     while (it != endpoints.end ()) {
         if (it->second.socket == socket_) {
             endpoints_t::iterator to_erase = it;
-            it++;
+            ++it;
             endpoints.erase (to_erase);
             continue;
         }
-        it++;
+        ++it;
     }
         
     endpoints_sync.unlock ();
@@ -327,7 +327,7 @@ void zmq::ctx_t::dezombify ()
             slots [tid] = NULL;    
         }
         else
-            it++;
+            ++it;
     }
 }
 
