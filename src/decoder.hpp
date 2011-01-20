@@ -91,6 +91,10 @@ namespace zmq
         //  bytes actually processed.
         inline size_t process_buffer (unsigned char *data_, size_t size_)
         {
+            //  Check if we had an error in previous attempt.
+            if (unlikely (!(static_cast <T*> (this)->next)))
+                return (size_t) -1;
+
             //  In case of zero-copy simply adjust the pointers, no copying
             //  is required. Also, run the state machine in case all the data
             //  were processed.

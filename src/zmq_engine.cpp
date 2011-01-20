@@ -151,7 +151,7 @@ void zmq::zmq_engine_t::in_event ()
         inout->flush ();
     }
 
-    if (disconnection)
+    if (inout && disconnection)
         error ();
 }
 
