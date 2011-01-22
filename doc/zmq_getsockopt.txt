@@ -261,6 +261,7 @@ Option value unit:: milliseconds
 Default value:: -1 (infinite)
 Applicable socket types:: all
 
+
 ZMQ_RECONNECT_IVL: Retrieve reconnection interval
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_RECONNECT_IVL' option shall retrieve the reconnection interval for the
@@ -276,6 +277,24 @@ Option value type:: int
 Option value unit:: milliseconds
 Default value:: 100
 Applicable socket types:: all, only for connection-oriented transports
+
+
+ZMQ_RECONNECT_IVL_MAX: Retrieve maximum reconnection interval
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_RECONNECT_IVL_MAX' option shall retrieve the maximum reconnection 
+interval for the specified 'socket'.  This is the maximum period 0MQ shall wait 
+between attempts to reconnect. On each reconnect attempt, the previous interval 
+shall be doubled untill ZMQ_RECONNECT_IVL_MAX is reached. This allows for 
+exponential backoff strategy. Default value means no exponential backoff is 
+performed and reconnect interval calculations are only based on ZMQ_RECONNECT_IVL.
+
+NOTE:  Values less than ZMQ_RECONNECT_IVL will be ignored.
+
+[horizontal]
+Option value type:: int
+Option value unit:: milliseconds
+Default value:: 0 (only use ZMQ_RECONNECT_IVL)
+Applicable socket types:: all, only for connection-oriented transport
 
 
 ZMQ_BACKLOG: Retrieve maximum length of the queue of outstanding connections

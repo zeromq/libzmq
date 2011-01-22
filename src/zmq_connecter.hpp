@@ -55,8 +55,13 @@ namespace zmq
         //  Internal function to start the actual connection establishment.
         void start_connecting ();
 
-        //  Internal function to return the reconnect backoff delay.
-        int get_reconnect_ivl ();
+        //  Internal function to add a reconnect timer
+        void add_reconnect_timer();
+
+        //  Internal function to return a reconnect backoff delay.
+        //  Will modify the current_reconnect_ivl used for next call
+        //  Returns the currently used interval
+        int get_new_reconnect_ivl ();
 
         //  Actual connecting socket.
         tcp_connecter_t tcp_connecter;
@@ -73,6 +78,9 @@ namespace zmq
 
         //  Reference to the session we belong to.
         class session_t *session;
+
+        //  Current reconnect ivl, updated for backoff strategy
+        int current_reconnect_ivl;
 
         zmq_connecter_t (const zmq_connecter_t&);
         const zmq_connecter_t &operator = (const zmq_connecter_t&);
