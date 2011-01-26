@@ -59,8 +59,12 @@ namespace zmq
         //  Linger time, in milliseconds.
         int linger;
 
-        //  Interval between attempts to reconnect, in milliseconds.
+        //  Minimum interval between attempts to reconnect, in milliseconds.
+        //  Default 100ms
         int reconnect_ivl;
+        //  Maximum interval between attempts to reconnect, in milliseconds.
+        //  Default 0 (unused)
+        int reconnect_ivl_max;
 
         //  Maximum backlog for pending connections.
         int backlog;
