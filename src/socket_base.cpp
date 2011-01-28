@@ -192,7 +192,8 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
     //  Specifically, multicast protocols can't be combined with
     //  bi-directional messaging patterns (socket types).
     if ((protocol_ == "pgm" || protocol_ == "epgm") &&
-          options.requires_in && options.requires_out) {
+          options.type != ZMQ_PUB && options.type != ZMQ_SUB &&
+          options.type != ZMQ_XPUB && options.type != ZMQ_XSUB) {
         errno = ENOCOMPATPROTO;
         return -1;
     }
