@@ -76,7 +76,8 @@ namespace zmq
         };
 
         //  This table stores data for registered descriptors.
-        std::vector <fd_entry_t> fd_table;
+        typedef std::vector <fd_entry_t> fd_table_t;
+        fd_table_t fd_table;
 
         //  Pollset to pass to the poll function.
         typedef std::vector <pollfd> pollset_t;

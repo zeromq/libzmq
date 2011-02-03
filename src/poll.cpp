@@ -27,7 +27,6 @@
 
 #include <sys/types.h>
 #include <sys/time.h>
-#include <sys/resource.h>
 #include <poll.h>
 #include <algorithm>
 
@@ -40,15 +39,6 @@ zmq::poll_t::poll_t () :
     retired (false),
     stopping (false)
 {
-    //  Get the limit on open file descriptors. Resize fds so that it
-    //  can hold all descriptors.
-    rlimit rl;
-    int rc = getrlimit (RLIMIT_NOFILE, &rl);
-    errno_assert (rc != -1);
-    fd_table.resize (rl.rlim_cur);
-
-    for (rlim_t i = 0; i < rl.rlim_cur; i ++)
-        fd_table [i].index = retired_fd;
 }
 
 zmq::poll_t::~poll_t ()
@@ -58,6 +48,16 @@ zmq::poll_t::~poll_t ()
 
 zmq::poll_t::handle_t zmq::poll_t::add_fd (fd_t fd_, i_poll_events *events_)
 {
+    //  If the file descriptor table is too small expand it.
+    fd_table_t::size_type sz = fd_table.size ();
+    if (sz <= (fd_table_t::size_type) fd_) {
+        fd_table.resize (fd_ + 1);
+        while (sz != (fd_table_t::size_type) (fd_ + 1)) {
+            fd_table [sz].index = retired_fd;
+            ++sz;
+        }
+    }
+
     pollfd pfd = {fd_, 0, 0};
     pollset.push_back (pfd);
     assert (fd_table [fd_].index == retired_fd);
