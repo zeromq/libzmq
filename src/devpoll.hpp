@@ -73,7 +73,8 @@ namespace zmq
             bool accepted;
         };
 
-        std::vector <fd_entry_t> fd_table;
+        typedef std::vector <fd_entry_t> fd_table_t;
+        fd_table_t fd_table;
 
         typedef std::vector <fd_t> pending_list_t;
         pending_list_t pending_list;
