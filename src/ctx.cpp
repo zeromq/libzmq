@@ -49,8 +49,8 @@ zmq::ctx_t::ctx_t (uint32_t io_threads_) :
         HIBYTE (wsa_data.wVersion) == 2);
 #endif
 
-    //  Initialise the array of mailboxes.
-    slot_count = max_sockets + io_threads_;
+    //  Initialise the array of mailboxes. +1 accounts for internal log socket.
+    slot_count = max_sockets + io_threads_ + 1;
     slots = (mailbox_t**) malloc (sizeof (mailbox_t*) * slot_count);
     zmq_assert (slots);
 
