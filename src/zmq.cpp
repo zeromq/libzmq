@@ -44,6 +44,7 @@
 #include "msg_content.hpp"
 #include "stdint.hpp"
 #include "config.hpp"
+#include "likely.hpp"
 #include "clock.hpp"
 #include "ctx.hpp"
 #include "err.hpp"
@@ -352,6 +353,20 @@ int zmq_recv (void *s_, zmq_msg_t *msg_, int flags_)
 int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 {
 #if defined ZMQ_POLL_BASED_ON_POLL
+    if (unlikely (nitems_ < 0)) {
+        errno = EINVAL;
+        return -1;
+    }
+    if (unlikely (nitems_ == 0)) {
+        if (timeout_ == 0)
+            return 0;
+#if defined ZMQ_HAVE_WINDOWS
+        Sleep (timeout_ > 0 ? timeout_ / 1000 : INFINITE);
+        return 0;
+#else
+        return usleep (timeout_);
+#endif
+    }
 
     if (!items_) {
         errno = EFAULT;
@@ -490,6 +505,21 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     return nevents;
 
 #elif defined ZMQ_POLL_BASED_ON_SELECT
+
+    if (unlikely (nitems_ < 0)) {
+        errno = EINVAL;
+        return -1;
+    }
+    if (unlikely (nitems_ == 0)) {
+        if (timeout_ == 0)
+            return 0;
+#if defined ZMQ_HAVE_WINDOWS
+        Sleep (timeout_ > 0 ? timeout_ / 1000 : INFINITE);
+        return 0;
+#else
+        return usleep (timeout_);
+#endif
+    }
 
     if (!items_) {
         errno = EFAULT;
