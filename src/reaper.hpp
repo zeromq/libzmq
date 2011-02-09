@@ -47,15 +47,10 @@ namespace zmq
 
     private:
 
-        void reap ();
-
         //  Command handlers.
         void process_stop ();
         void process_reap (class socket_base_t *socket_);
-
-        //  List of all sockets being terminated.
-        typedef std::vector <class socket_base_t*> sockets_t;
-        sockets_t sockets;
+        void process_reaped ();
 
         //  Reaper thread accesses incoming commands via this mailbox.
         mailbox_t mailbox;
@@ -66,11 +61,11 @@ namespace zmq
         //  I/O multiplexing is performed using a poller object.
         poller_t *poller;
 
+        //  Number of sockets being reaped at the moment.
+        int sockets;
+
         //  If true, we were already asked to terminate.
         bool terminating;
-
-        //  If true, timer till next reaping is running.
-        bool has_timer;
 
         reaper_t (const reaper_t&);
         const reaper_t &operator = (const reaper_t&);

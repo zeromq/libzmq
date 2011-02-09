@@ -624,24 +624,11 @@ zmq::session_t *zmq::socket_base_t::find_session (const blob_t &name_)
     return session;    
 }
 
-bool zmq::socket_base_t::reap ()
+void zmq::socket_base_t::start_reaping (poller_t *poller_)
 {
-    //  Process any commands from other threads/sockets that may be available
-    //  at the moment. Ultimately, socket will be destroyed.
-    process_commands (false, false);
-
-    //  If the object was already marked as destroyed, finish the deallocation.
-    if (destroyed) {
-
-        //  Remove the socket from the context.
-        destroy_socket (this);
-
-        //  Deallocate.
-        own_t::process_destroy ();
-        return true;
-    }
-
-    return false;
+    poller = poller_;
+    handle = poller->add_fd (mailbox.get_fd (), this);
+    poller->set_pollin (handle);
 }
 
 int zmq::socket_base_t::process_commands (bool block_, bool throttle_)
@@ -762,3 +749,35 @@ int zmq::socket_base_t::xrecv (zmq_msg_t *msg_, int options_)
     return -1;
 }
 
+void zmq::socket_base_t::in_event ()
+{
+    //  Process any commands from other threads/sockets that may be available
+    //  at the moment. Ultimately, socket will be destroyed.
+    process_commands (false, false);
+
+    //  If the object was already marked as destroyed, finish the deallocation.
+    if (destroyed) {
+
+        //  Remove the socket from the reaper's poller.
+        poller->rm_fd (handle);
+
+        //  Remove the socket from the context.
+        destroy_socket (this);
+
+        //  Notify the reaper about the fact.
+        send_reaped ();
+
+        //  Deallocate.
+        own_t::process_destroy ();
+    }
+}
+
+void zmq::socket_base_t::out_event ()
+{
+    zmq_assert (false);
+}
+
+void zmq::socket_base_t::timer_event (int id_)
+{
+    zmq_assert (false);
+}

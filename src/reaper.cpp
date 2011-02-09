@@ -23,8 +23,8 @@
 
 zmq::reaper_t::reaper_t (class ctx_t *ctx_, uint32_t tid_) :
     object_t (ctx_, tid_),
-    terminating (false),
-    has_timer (false)
+    sockets (0),
+    terminating (false)
 {
     poller = new (std::nothrow) poller_t;
     zmq_assert (poller);
@@ -74,55 +74,20 @@ void zmq::reaper_t::in_event ()
 
 void zmq::reaper_t::out_event ()
 {
-    //  We are never polling for POLLOUT here. This function is never called.
     zmq_assert (false);
 }
 
 void zmq::reaper_t::timer_event (int id_)
 {
-    zmq_assert (has_timer);
-    has_timer = false;
-    reap ();
-}
-
-void zmq::reaper_t::reap ()
-{
-    //  Try to reap each socket in the list.
-    for (sockets_t::iterator it = sockets.begin (); it != sockets.end ();) {
-        if ((*it)->reap ()) {
-
-            //  MSVC version of STL requires this to be done a spacial way...
-#if defined _MSC_VER
-            it = sockets.erase (it);
-#else
-            sockets.erase (it);
-#endif
-        }
-        else
-            ++it;
-    }
-
-    //  If there are still sockets to reap, wait a while, then try again.
-    if (!sockets.empty () && !has_timer) {
-        poller->add_timer (1 , this, 0);
-        has_timer = true;
-        return;
-    }
-
-    //  No more sockets and the context is already shutting down.
-    if (terminating) {
-        send_done ();
-        poller->rm_fd (mailbox_handle);
-        poller->stop ();
-        return;
-    }
+    zmq_assert (false);
 }
 
 void zmq::reaper_t::process_stop ()
 {
     terminating = true;
 
-    if (sockets.empty ()) {
+    //  If there are no sockets beig reaped finish immediately.
+    if (!sockets) {
         send_done ();
         poller->rm_fd (mailbox_handle);
         poller->stop ();
@@ -133,7 +98,22 @@ void zmq::reaper_t::process_reap (socket_base_t *socket_)
 {
     //  Start termination of associated I/O object hierarchy.
     socket_->terminate ();
-    sockets.push_back (socket_);
-    reap ();
+
+    //  Add the socket to the poller.
+    socket_->start_reaping (poller);
+
+    ++sockets;
 }
 
+void zmq::reaper_t::process_reaped ()
+{
+    --sockets;
+
+    //  If reaped was already asked to terminate and there are no more sockets,
+    //  finish immediately.
+    if (!sockets && terminating) {
+        send_done ();
+        poller->rm_fd (mailbox_handle);
+        poller->stop ();
+    }
+}

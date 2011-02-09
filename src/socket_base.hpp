@@ -29,7 +29,9 @@
 #include "array.hpp"
 #include "mutex.hpp"
 #include "stdint.hpp"
+#include "poller.hpp"
 #include "atomic_counter.hpp"
+#include "i_poll_events.hpp"
 #include "mailbox.hpp"
 #include "stdint.hpp"
 #include "blob.hpp"
@@ -40,7 +42,8 @@ namespace zmq
 
     class socket_base_t :
         public own_t,
-        public array_item_t
+        public array_item_t,
+        public i_poll_events
     {
         friend class reaper_t;
 
@@ -84,9 +87,15 @@ namespace zmq
         void activated (class writer_t *pipe_);
         void terminated (class writer_t *pipe_);
 
-        //  This function should be called only on sockets that are already
-        //  closed -- from the reaper thread. It tries to finalise the socket.
-        bool reap ();
+        //  Using this function reaper thread ask the socket to regiter with
+        //  its poller.
+        void start_reaping (poller_t *poller_);
+
+        //  i_poll_events implementation. This interface is used when socket
+        //  is handled by the poller in the reaper thread.
+        void in_event ();
+        void out_event ();
+        void timer_event (int id_);
 
     protected:
 
@@ -156,6 +165,10 @@ namespace zmq
 
         //  Socket's mailbox object.
         mailbox_t mailbox;
+
+        //  Reaper's poller and handle of this socket within it.
+        poller_t *poller;
+        poller_t::handle_t handle;
 
         //  Timestamp of when commands were processed the last time.
         uint64_t last_tsc;

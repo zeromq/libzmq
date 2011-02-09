@@ -47,6 +47,7 @@ namespace zmq
             term,
             term_ack,
             reap,
+            reaped,
             done
         } type;
 
@@ -124,6 +125,10 @@ namespace zmq
             struct {
                 class socket_base_t *socket;
             } reap;
+
+            //  Closed socket notifies the reaper that it's already deallocated.
+            struct {
+            } reaped;
 
             //  Sent by reaper thread to the term thread when all the sockets
             //  are successfully deallocated.

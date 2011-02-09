@@ -118,6 +118,10 @@ void zmq::object_t::process_command (command_t &cmd_)
         process_reap (cmd_.args.reap.socket);
         break;
 
+    case command_t::reaped:
+        process_reaped ();
+        break;
+
     default:
         zmq_assert (false);
     }
@@ -352,6 +356,17 @@ void zmq::object_t::send_reap (class socket_base_t *socket_)
     send_command (cmd);
 }
 
+void zmq::object_t::send_reaped ()
+{
+    command_t cmd;
+#if defined ZMQ_MAKE_VALGRIND_HAPPY
+    memset (&cmd, 0, sizeof (cmd));
+#endif
+    cmd.destination = ctx->get_reaper ();
+    cmd.type = command_t::reaped;
+    send_command (cmd);
+}
+
 void zmq::object_t::send_done ()
 {
     command_t cmd;
@@ -426,6 +441,11 @@ void zmq::object_t::process_term_ack ()
 }
 
 void zmq::object_t::process_reap (class socket_base_t *socket_)
+{
+    zmq_assert (false);
+}
+
+void zmq::object_t::process_reaped ()
 {
     zmq_assert (false);
 }

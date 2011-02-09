@@ -80,6 +80,7 @@ namespace zmq
         void send_term (class own_t *destination_, int linger_);
         void send_term_ack (class own_t *destination_);
         void send_reap (class socket_base_t *socket_);
+        void send_reaped ();
         void send_done ();
 
         //  These handlers can be overloaded by the derived objects. They are
@@ -99,6 +100,7 @@ namespace zmq
         virtual void process_term (int linger_);
         virtual void process_term_ack ();
         virtual void process_reap (class socket_base_t *socket_);
+        virtual void process_reaped ();
 
         //  Special handler called after a command that requires a seqnum
         //  was processed. The implementation should catch up with its counter
