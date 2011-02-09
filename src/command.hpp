@@ -45,7 +45,9 @@ namespace zmq
             pipe_term_ack,
             term_req,
             term,
-            term_ack
+            term_ack,
+            reap,
+            done
         } type;
 
         union {
@@ -116,6 +118,17 @@ namespace zmq
             //  shut down.
             struct {
             } term_ack;
+
+            //  Transfers the ownership of the closed socket
+            //  to the reaper thread.
+            struct {
+                class socket_base_t *socket;
+            } reap;
+
+            //  Sent by reaper thread to the term thread when all the sockets
+            //  are successfully deallocated.
+            struct {
+            } done;
 
         } args;
     };

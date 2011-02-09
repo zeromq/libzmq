@@ -47,6 +47,8 @@ ERRORS
 ------
 *EFAULT*::
 The provided 'context' was not valid (NULL).
+*EINTR*::
+Termination was interrupted by a signal. It can be restarted if needed.
 
 
 SEE ALSO

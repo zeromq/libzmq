@@ -42,6 +42,8 @@ namespace zmq
         public own_t,
         public array_item_t
     {
+        friend class reaper_t;
+
     public:
 
         //  Create a socket of a specified type.
@@ -82,9 +84,9 @@ namespace zmq
         void activated (class writer_t *pipe_);
         void terminated (class writer_t *pipe_);
 
-        //  This function should be called only on zombie sockets. It tries
-        //  to deallocate the zombie. Returns true is object is destroyed.
-        bool dezombify ();
+        //  This function should be called only on sockets that are already
+        //  closed -- from the reaper thread. It tries to finalise the socket.
+        bool reap ();
 
     protected:
 

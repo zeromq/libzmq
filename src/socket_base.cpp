@@ -570,13 +570,10 @@ int zmq::socket_base_t::recv (::zmq_msg_t *msg_, int flags_)
 
 int zmq::socket_base_t::close ()
 {
-    //  Start termination of associated I/O object hierarchy.
-    terminate ();
-
-    //  Ask context to zombify this socket. In other words, transfer
-    //  the ownership of the socket from this application thread
-    //  to the context which will take care of the rest of shutdown process.
-    zombify_socket (this);
+    //  Transfer the ownership of the socket from this application thread
+    //  to the reaper thread which will take care of the rest of shutdown
+    //  process.
+    send_reap (this);
 
     return 0;
 }
@@ -627,7 +624,7 @@ zmq::session_t *zmq::socket_base_t::find_session (const blob_t &name_)
     return session;    
 }
 
-bool zmq::socket_base_t::dezombify ()
+bool zmq::socket_base_t::reap ()
 {
     //  Process any commands from other threads/sockets that may be available
     //  at the moment. Ultimately, socket will be destroyed.
@@ -635,6 +632,11 @@ bool zmq::socket_base_t::dezombify ()
 
     //  If the object was already marked as destroyed, finish the deallocation.
     if (destroyed) {
+
+        //  Remove the socket from the context.
+        destroy_socket (this);
+
+        //  Deallocate.
         own_t::process_destroy ();
         return true;
     }

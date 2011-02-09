@@ -107,6 +107,7 @@ libzmq_la_SOURCES = \
     pub.hpp \
     pull.hpp \
     push.hpp \
+    reaper.hpp \
     rep.hpp \
     req.hpp \
     select.hpp \
@@ -166,6 +167,7 @@ libzmq_la_SOURCES = \
     poller_base.cpp \
     pull.cpp \
     push.cpp \
+    reaper.cpp \
     pub.cpp \
     rep.cpp \
     req.cpp \

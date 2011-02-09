@@ -114,6 +114,10 @@ void zmq::object_t::process_command (command_t &cmd_)
         process_term_ack ();
         break;
 
+    case command_t::reap:
+        process_reap (cmd_.args.reap.socket);
+        break;
+
     default:
         zmq_assert (false);
     }
@@ -138,6 +142,11 @@ zmq::endpoint_t zmq::object_t::find_endpoint (const char *addr_)
     return ctx->find_endpoint (addr_);
 }
 
+void zmq::object_t::destroy_socket (socket_base_t *socket_)
+{
+    ctx->destroy_socket (socket_);
+}
+
 void zmq::object_t::log (zmq_msg_t *msg_)
 {
     ctx->log (msg_);
@@ -146,11 +155,6 @@ void zmq::object_t::log (zmq_msg_t *msg_)
 zmq::io_thread_t *zmq::object_t::choose_io_thread (uint64_t affinity_)
 {
     return ctx->choose_io_thread (affinity_);
-}
-
-void zmq::object_t::zombify_socket (socket_base_t *socket_)
-{
-    ctx->zombify_socket (socket_);
 }
 
 void zmq::object_t::send_stop ()
@@ -336,6 +340,29 @@ void zmq::object_t::send_term_ack (own_t *destination_)
     send_command (cmd);
 }
 
+void zmq::object_t::send_reap (class socket_base_t *socket_)
+{
+    command_t cmd;
+#if defined ZMQ_MAKE_VALGRIND_HAPPY
+    memset (&cmd, 0, sizeof (cmd));
+#endif
+    cmd.destination = ctx->get_reaper ();
+    cmd.type = command_t::reap;
+    cmd.args.reap.socket = socket_;
+    send_command (cmd);
+}
+
+void zmq::object_t::send_done ()
+{
+    command_t cmd;
+#if defined ZMQ_MAKE_VALGRIND_HAPPY
+    memset (&cmd, 0, sizeof (cmd));
+#endif
+    cmd.destination = NULL;
+    cmd.type = command_t::done;
+    ctx->send_command (ctx_t::term_tid, cmd);
+}
+
 void zmq::object_t::process_stop ()
 {
     zmq_assert (false);
@@ -394,6 +421,11 @@ void zmq::object_t::process_term (int linger_)
 }
 
 void zmq::object_t::process_term_ack ()
+{
+    zmq_assert (false);
+}
+
+void zmq::object_t::process_reap (class socket_base_t *socket_)
 {
     zmq_assert (false);
 }

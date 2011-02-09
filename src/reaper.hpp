@@ -17,59 +17,47 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_IO_THREAD_HPP_INCLUDED__
-#define __ZMQ_IO_THREAD_HPP_INCLUDED__
+#ifndef __ZMQ_REAPER_HPP_INCLUDED__
+#define __ZMQ_REAPER_HPP_INCLUDED__
 
-#include <vector>
-
-#include "stdint.hpp"
 #include "object.hpp"
+#include "mailbox.hpp"
 #include "poller.hpp"
 #include "i_poll_events.hpp"
-#include "mailbox.hpp"
 
 namespace zmq
 {
 
-    //  Generic part of the I/O thread. Polling-mechanism-specific features
-    //  are implemented in separate "polling objects".
-
-    class io_thread_t : public object_t, public i_poll_events
+    class reaper_t : public object_t, public i_poll_events
     {
     public:
 
-        io_thread_t (class ctx_t *ctx_, uint32_t tid_);
+        reaper_t (class ctx_t *ctx_, uint32_t tid_);
+        ~reaper_t ();
 
-        //  Clean-up. If the thread was started, it's neccessary to call 'stop'
-        //  before invoking destructor. Otherwise the destructor would hang up.
-        ~io_thread_t ();
-
-        //  Launch the physical thread.
-        void start ();
-
-        //  Ask underlying thread to stop.
-        void stop ();
-
-        //  Returns mailbox associated with this I/O thread.
         mailbox_t *get_mailbox ();
+
+        void start ();
+        void stop ();
 
         //  i_poll_events implementation.
         void in_event ();
         void out_event ();
         void timer_event (int id_);
 
-        //  Used by io_objects to retrieve the assciated poller object.
-        poller_t *get_poller ();
+    private:
+
+        void reap ();
 
         //  Command handlers.
         void process_stop ();
+        void process_reap (class socket_base_t *socket_);
 
-        //  Returns load experienced by the I/O thread.
-        int get_load ();
+        //  List of all sockets being terminated.
+        typedef std::vector <class socket_base_t*> sockets_t;
+        sockets_t sockets;
 
-    private:
-
-        //  I/O thread accesses incoming commands via this mailbox.
+        //  Reaper thread accesses incoming commands via this mailbox.
         mailbox_t mailbox;
 
         //  Handle associated with mailbox' file descriptor.
@@ -78,8 +66,14 @@ namespace zmq
         //  I/O multiplexing is performed using a poller object.
         poller_t *poller;
 
-        io_thread_t (const io_thread_t&);
-        const io_thread_t &operator = (const io_thread_t&);
+        //  If true, we were already asked to terminate.
+        bool terminating;
+
+        //  If true, timer till next reaping is running.
+        bool has_timer;
+
+        reaper_t (const reaper_t&);
+        const reaper_t &operator = (const reaper_t&);
     };
 
 }

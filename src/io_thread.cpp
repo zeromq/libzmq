@@ -75,7 +75,7 @@ void zmq::io_thread_t::in_event ()
         if (rc != 0 && errno == EINTR)
             continue;
         if (rc != 0 && errno == EAGAIN)
-             break;
+            break;
         errno_assert (rc == 0);
 
         //  Process the command.
