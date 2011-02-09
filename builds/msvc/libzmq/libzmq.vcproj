@@ -375,6 +375,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\reaper.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\rep.cpp"
 				>
 			</File>
@@ -654,6 +658,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\push.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\reaper.hpp"
 				>
 			</File>
 			<File
