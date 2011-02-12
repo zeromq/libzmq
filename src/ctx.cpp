@@ -39,17 +39,6 @@ zmq::ctx_t::ctx_t (uint32_t io_threads_) :
 {
     int rc;
 
-#ifdef ZMQ_HAVE_WINDOWS
-    //  Intialise Windows sockets. Note that WSAStartup can be called multiple
-    //  times given that WSACleanup will be called for each WSAStartup.
-    WORD version_requested = MAKEWORD (2, 2);
-    WSADATA wsa_data;
-    rc = WSAStartup (version_requested, &wsa_data);
-    zmq_assert (rc == 0);
-    zmq_assert (LOBYTE (wsa_data.wVersion) == 2 &&
-        HIBYTE (wsa_data.wVersion) == 2);
-#endif
-
     //  Initialise the array of mailboxes. Additional three slots are for
     //  internal log socket and the zmq_term thread the reaper thread.
     slot_count = max_sockets + io_threads_ + 3;
@@ -109,12 +98,6 @@ zmq::ctx_t::~ctx_t ()
     //  needed as mailboxes themselves were deallocated with their
     //  corresponding io_thread/socket objects.
     free (slots);
-    
-#ifdef ZMQ_HAVE_WINDOWS
-    //  On Windows, uninitialise socket layer.
-    int rc = WSACleanup ();
-    wsa_assert (rc != SOCKET_ERROR);
-#endif
 }
 
 int zmq::ctx_t::terminate ()

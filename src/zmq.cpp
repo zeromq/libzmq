@@ -234,6 +234,19 @@ void *zmq_init (int io_threads_)
     }
 #endif
 
+#ifdef ZMQ_HAVE_WINDOWS
+    //  Intialise Windows sockets. Note that WSAStartup can be called multiple
+    //  times given that WSACleanup will be called for each WSAStartup.
+   //  We do this before the ctx constructor since its embedded mailbox_t
+   //  object needs Winsock to be up and running.
+    WORD version_requested = MAKEWORD (2, 2);
+    WSADATA wsa_data;
+    int rc = WSAStartup (version_requested, &wsa_data);
+    zmq_assert (rc == 0);
+    zmq_assert (LOBYTE (wsa_data.wVersion) == 2 &&
+        HIBYTE (wsa_data.wVersion) == 2);
+#endif
+
     //  Create 0MQ context.
     zmq::ctx_t *ctx = new (std::nothrow) zmq::ctx_t ((uint32_t) io_threads_);
     zmq_assert (ctx);
@@ -249,6 +262,12 @@ int zmq_term (void *ctx_)
 
     int rc = ((zmq::ctx_t*) ctx_)->terminate ();
     int en = errno;
+
+#ifdef ZMQ_HAVE_WINDOWS
+    //  On Windows, uninitialise socket layer.
+    rc = WSACleanup ();
+    wsa_assert (rc != SOCKET_ERROR);
+#endif
 
 #if defined ZMQ_HAVE_OPENPGM
     //  Shut down the OpenPGM library.
