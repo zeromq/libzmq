@@ -215,8 +215,8 @@ void *zmq_init (int io_threads_)
     //  openPGM timing, set environment variables PGM_TIMER to "GTOD" and
     //  PGM_SLEEP to "USLEEP".
     pgm_error_t *pgm_error = NULL;
-    const bool rc = pgm_init (&pgm_error);
-    if (rc != TRUE) {
+    const bool ok = pgm_init (&pgm_error);
+    if (ok != TRUE) {
 
         //  Invalid parameters don't set pgm_error_t
         zmq_assert (pgm_error != NULL);
