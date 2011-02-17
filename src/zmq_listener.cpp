@@ -72,6 +72,6 @@ void zmq::zmq_listener_t::in_event ()
     zmq_init_t *init = new (std::nothrow) zmq_init_t (io_thread, socket,
         NULL, fd, options);
     zmq_assert (init);
-    launch_sibling (init);
+    launch_child (init);
 }
 
