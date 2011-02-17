@@ -46,7 +46,7 @@ namespace zmq
         void detached ();
 
         //  Start the connection process.
-        void start_connecting ();
+        void start_connecting (bool wait_);
 
         //  Command handlers.
         void process_plug ();

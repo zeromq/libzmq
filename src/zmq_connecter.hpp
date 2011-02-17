@@ -36,7 +36,7 @@ namespace zmq
         //  connection process.
         zmq_connecter_t (class io_thread_t *io_thread_,
             class session_t *session_, const options_t &options_,
-            const char *protocol_, const char *address_);
+            const char *protocol_, const char *address_, bool delay_);
         ~zmq_connecter_t ();
 
     private:

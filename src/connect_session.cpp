@@ -38,10 +38,10 @@ zmq::connect_session_t::~connect_session_t ()
 void zmq::connect_session_t::process_plug ()
 {
     //  Start connection process immediately.
-    start_connecting ();
+    start_connecting (false);
 }
 
-void zmq::connect_session_t::start_connecting ()
+void zmq::connect_session_t::start_connecting (bool wait_)
 {
     //  Choose I/O thread to run connecter in. Given that we are already
     //  running in an I/O thread, there must be at least one available.
@@ -54,7 +54,8 @@ void zmq::connect_session_t::start_connecting ()
     if (protocol == "tcp" || protocol == "ipc") {
 
         zmq_connecter_t *connecter = new (std::nothrow) zmq_connecter_t (
-            io_thread, this, options, protocol.c_str (), address.c_str ());
+            io_thread, this, options, protocol.c_str (), address.c_str (),
+            wait_);
         zmq_assert (connecter);
         launch_child (connecter);
         return;
@@ -112,6 +113,6 @@ void zmq::connect_session_t::attached (const blob_t &peer_identity_)
 void zmq::connect_session_t::detached ()
 {
     //  Reconnect.
-    start_connecting ();
+    start_connecting (true);
 }
 

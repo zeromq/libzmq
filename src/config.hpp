@@ -65,9 +65,6 @@ namespace zmq
         //  Maximum number of events the I/O thread can process in one go.
         max_io_events = 256,
 
-        //  Should initial connection attempts be delayed?
-        wait_before_connect = false,
-
         //  Maximal delay to process command in API thread (in CPU ticks).
         //  3,000,000 ticks equals to 1 - 2 milliseconds on current CPUs.
         //  Note that delay is only applied when there is continuous stream of

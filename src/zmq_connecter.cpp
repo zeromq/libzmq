@@ -35,11 +35,11 @@
 
 zmq::zmq_connecter_t::zmq_connecter_t (class io_thread_t *io_thread_,
       class session_t *session_, const options_t &options_,
-      const char *protocol_, const char *address_) :
+      const char *protocol_, const char *address_, bool wait_) :
     own_t (io_thread_, options_),
     io_object_t (io_thread_),
     handle_valid (false),
-    wait (wait_before_connect),
+    wait (wait_),
     session (session_),
     current_reconnect_ivl(options.reconnect_ivl)
 {
