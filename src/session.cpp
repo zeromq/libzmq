@@ -234,6 +234,7 @@ void zmq::session_t::process_attach (i_engine *engine_,
     //  If the session already has an engine attached, destroy new one.
     //  Note new engine is not plugged in yet, we don't have to unplug it.
     if (engine) {
+        log ("DPID: duplicate peer identity - disconnecting peer");
         delete engine_;
         return;
     }

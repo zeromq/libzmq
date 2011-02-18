@@ -18,6 +18,7 @@
 */
 
 #include <string.h>
+#include <stdarg.h>
 
 #include "object.hpp"
 #include "ctx.hpp"
@@ -151,9 +152,12 @@ void zmq::object_t::destroy_socket (socket_base_t *socket_)
     ctx->destroy_socket (socket_);
 }
 
-void zmq::object_t::log (zmq_msg_t *msg_)
+void zmq::object_t::log (const char *format_, ...)
 {
-    ctx->log (msg_);
+    va_list args;
+    va_start (args, format_);
+    ctx->log (format_, args);
+    va_end (args);
 }
 
 zmq::io_thread_t *zmq::object_t::choose_io_thread (uint64_t affinity_)

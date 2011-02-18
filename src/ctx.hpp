@@ -23,6 +23,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <stdarg.h>
 
 #include "../include/zmq.h"
 
@@ -85,7 +86,7 @@ namespace zmq
         endpoint_t find_endpoint (const char *addr_);
 
         //  Logging.
-        void log (zmq_msg_t *msg_);
+        void log (const char *format_, va_list args_);
 
         enum {
             term_tid = 0,

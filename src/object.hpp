@@ -52,7 +52,7 @@ namespace zmq
         void destroy_socket (class socket_base_t *socket_);
 
         //  Logs an message.
-        void log (zmq_msg_t *msg_);
+        void log (const char *format_, ...);
 
         //  Chooses least loaded I/O thread.
         class io_thread_t *choose_io_thread (uint64_t affinity_);

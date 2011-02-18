@@ -291,14 +291,22 @@ zmq::endpoint_t zmq::ctx_t::find_endpoint (const char *addr_)
      return *endpoint;
 }
 
-void zmq::ctx_t::log (zmq_msg_t *msg_)
+void zmq::ctx_t::log (const char *format_, va_list args_)
 {
+    //  Create the log message.
+    zmq_msg_t msg;
+    int rc = zmq_msg_init_size (&msg, strlen (format_) + 1);
+    zmq_assert (rc == 0);
+    memcpy (zmq_msg_data (&msg), format_, zmq_msg_size (&msg));
+
     //  At this  point we migrate the log socket to the current thread.
     //  We rely on mutex for executing the memory barrier.
     log_sync.lock ();
     if (log_socket)
-        log_socket->send (msg_, 0);
+        log_socket->send (&msg, 0);
     log_sync.unlock ();
+
+    zmq_msg_close (&msg);
 }
 
 
