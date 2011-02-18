@@ -57,6 +57,12 @@
 #if defined ZMQ_HAVE_OPENPGM
 #define __PGM_WININT_H__
 #include <pgm/pgm.h>
+
+//  TODO: OpenPGM redefines bool -- remove this once OpenPGM is fixed.
+#if defined bool
+#undef bool
+#endif
+
 #endif
 
 void zmq_version (int *major_, int *minor_, int *patch_)
