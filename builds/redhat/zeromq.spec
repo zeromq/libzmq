@@ -8,12 +8,18 @@ URL:           http://www.zeromq.org/
 Source:        http://www.zeromq.org/local--files/area:download/%{name}-%{version}.tar.gz
 Prefix:        %{_prefix}
 Buildroot:     %{_tmppath}/%{name}-%{version}-%{release}-root
+BuildRequires: gcc, make, gcc-c++, libstdc++-devel
+Requires:      libstdc++
+
 %if %{?rhel}%{!?rhel:0} >= 6
-BuildRequires: libuuid-devel, gcc, make, gcc-c++, libstdc++-devel
-Requires:      libuuid, libstdc++
+BuildRequires: libuuid-devel
+Requires:      libuuid
+%elseif %{?rhel}%{!?rhel:0} >= 5
+BuildRequires: e2fsprogs-devel
+Requires:      e2fsprogs
 %else
-BuildRequires: uuid-devel, gcc, make, gcc-c++, libstdc++-devel
-Requires:      uuid, libstdc++
+BuildRequires: uuid-devel
+Requires:      uuid
 %endif
 
 # Build pgm only on supported archs
@@ -63,6 +69,7 @@ This package contains ZeroMQ related development libraries and header files.
 [ "%{buildroot}" != "/" ] && %{__rm} -rf %{buildroot}
 
 # Install the package to build area
+%{__make} check
 %makeinstall
 
 %post
@@ -81,8 +88,8 @@ This package contains ZeroMQ related development libraries and header files.
 %doc AUTHORS ChangeLog COPYING COPYING.LESSER NEWS README
 
 # libraries
-%{_libdir}/libzmq.so.0
-%{_libdir}/libzmq.so.0.0.0
+%{_libdir}/libzmq.so.1
+%{_libdir}/libzmq.so.1.0.0
 
 %attr(0755,root,root) %{_bindir}/zmq_forwarder
 %attr(0755,root,root) %{_bindir}/zmq_queue
