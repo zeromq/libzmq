@@ -80,6 +80,9 @@ namespace zmq
         void process_upstream ();
 
     private:
+
+        //  Compute size of the buffer based on rate and recovery interval.
+        int compute_sqns (int tpdu_);
     
         //  OpenPGM transport.
         pgm_sock_t* sock;
