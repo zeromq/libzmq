@@ -89,6 +89,8 @@ bool zmq::zmq_init_t::write (::zmq_msg_t *msg_)
         peer_identity.assign ((const unsigned char*) zmq_msg_data (msg_),
             zmq_msg_size (msg_));
     }
+    int rc = zmq_msg_close (msg_);
+    zmq_assert (rc == 0);
 
     received = true;
 
