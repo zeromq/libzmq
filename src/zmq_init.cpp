@@ -43,7 +43,7 @@ zmq::zmq_init_t::zmq_init_t (io_thread_t *io_thread_,
 {
     //  Create the engine object for this connection.
     engine = new (std::nothrow) zmq_engine_t (fd_, options);
-    zmq_assert (engine);
+    alloc_assert (engine);
 }
 
 zmq::zmq_init_t::~zmq_init_t ()
@@ -180,7 +180,7 @@ void zmq::zmq_init_t::dispatch_engine ()
         if (peer_identity [0] == 0) {
             session = new (std::nothrow) transient_session_t (io_thread,
                 socket, options);
-            zmq_assert (session);
+            alloc_assert (session);
             session->inc_seqnum ();
             launch_sibling (session);
             send_attach (session, ephemeral_engine, peer_identity, false);
@@ -205,7 +205,7 @@ void zmq::zmq_init_t::dispatch_engine ()
         //  being attached.
         session = new (std::nothrow) named_session_t (io_thread, socket,
             options, peer_identity);
-        zmq_assert (session);
+        alloc_assert (session);
         session->inc_seqnum ();
         launch_sibling (session);
         send_attach (session, ephemeral_engine, peer_identity, false);

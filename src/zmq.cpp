@@ -115,7 +115,7 @@ int zmq_msg_init_data (zmq_msg_t *msg_, void *data_, size_t size_,
     zmq_free_fn *ffn_, void *hint_)
 {
     msg_->content = (zmq::msg_content_t*) malloc (sizeof (zmq::msg_content_t));
-    zmq_assert (msg_->content);
+    alloc_assert (msg_->content);
     msg_->flags = 0;
     zmq::msg_content_t *content = (zmq::msg_content_t*) msg_->content;
     content->data = data_;
@@ -255,7 +255,7 @@ void *zmq_init (int io_threads_)
 
     //  Create 0MQ context.
     zmq::ctx_t *ctx = new (std::nothrow) zmq::ctx_t ((uint32_t) io_threads_);
-    zmq_assert (ctx);
+    alloc_assert (ctx);
     return (void*) ctx;
 }
 
@@ -403,7 +403,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     uint64_t end = 0;
 
     pollfd *pollfds = (pollfd*) malloc (nitems_ * sizeof (pollfd));
-    zmq_assert (pollfds);
+    alloc_assert (pollfds);
 
     //  Build pollset for poll () system call.
     for (int i = 0; i != nitems_; i++) {
@@ -761,7 +761,7 @@ void zmq_sleep (int seconds_)
 void *zmq_stopwatch_start ()
 {
     uint64_t *watch = (uint64_t*) malloc (sizeof (uint64_t));
-    assert (watch);
+    alloc_assert (watch);
     *watch = zmq::clock_t::now_us ();
     return (void*) watch;
 }

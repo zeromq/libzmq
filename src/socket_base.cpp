@@ -103,7 +103,7 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
         errno = EINVAL;
         return NULL;
     }
-    zmq_assert (s);
+    alloc_assert (s);
     return s;
 }
 
@@ -318,7 +318,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         //  Create and run the listener.
         zmq_listener_t *listener = new (std::nothrow) zmq_listener_t (
             io_thread, this, options);
-        zmq_assert (listener);
+        alloc_assert (listener);
         int rc = listener->set_address (protocol.c_str(), address.c_str ());
         if (rc != 0) {
             delete listener;
@@ -420,7 +420,7 @@ int zmq::socket_base_t::connect (const char *addr_)
     //  Create session.
     connect_session_t *session = new (std::nothrow) connect_session_t (
         io_thread, this, options, protocol.c_str (), address.c_str ());
-    zmq_assert (session);
+    alloc_assert (session);
 
     //  If 'immediate connect' feature is required, we'll create the pipes
     //  to the session straight away. Otherwise, they'll be created by the

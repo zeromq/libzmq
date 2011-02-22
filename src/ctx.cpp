@@ -43,21 +43,21 @@ zmq::ctx_t::ctx_t (uint32_t io_threads_) :
     //  internal log socket and the zmq_term thread the reaper thread.
     slot_count = max_sockets + io_threads_ + 3;
     slots = (mailbox_t**) malloc (sizeof (mailbox_t*) * slot_count);
-    zmq_assert (slots);
+    alloc_assert (slots);
 
     //  Initialise the infrastructure for zmq_term thread.
     slots [term_tid] = &term_mailbox;
 
     //  Create the reaper thread.
     reaper = new (std::nothrow) reaper_t (this, reaper_tid);
-    zmq_assert (reaper);
+    alloc_assert (reaper);
     slots [reaper_tid] = reaper->get_mailbox ();
     reaper->start ();
 
     //  Create I/O thread objects and launch them.
     for (uint32_t i = 2; i != io_threads_ + 2; i++) {
         io_thread_t *io_thread = new (std::nothrow) io_thread_t (this, i);
-        zmq_assert (io_thread);
+        alloc_assert (io_thread);
         io_threads.push_back (io_thread);
         slots [i] = io_thread->get_mailbox ();
         io_thread->start ();

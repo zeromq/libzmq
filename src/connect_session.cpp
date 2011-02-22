@@ -56,7 +56,7 @@ void zmq::connect_session_t::start_connecting (bool wait_)
         zmq_connecter_t *connecter = new (std::nothrow) zmq_connecter_t (
             io_thread, this, options, protocol.c_str (), address.c_str (),
             wait_);
-        zmq_assert (connecter);
+        alloc_assert (connecter);
         launch_child (connecter);
         return;
     }
@@ -77,7 +77,7 @@ void zmq::connect_session_t::start_connecting (bool wait_)
             //  PGM sender.
             pgm_sender_t *pgm_sender =  new (std::nothrow) pgm_sender_t (
                 io_thread, options);
-            zmq_assert (pgm_sender);
+            alloc_assert (pgm_sender);
 
             int rc = pgm_sender->init (udp_encapsulation, address.c_str ());
             zmq_assert (rc == 0);
@@ -89,7 +89,7 @@ void zmq::connect_session_t::start_connecting (bool wait_)
             //  PGM receiver.
             pgm_receiver_t *pgm_receiver =  new (std::nothrow) pgm_receiver_t (
                 io_thread, options);
-            zmq_assert (pgm_receiver);
+            alloc_assert (pgm_receiver);
 
             int rc = pgm_receiver->init (udp_encapsulation, address.c_str ());
             zmq_assert (rc == 0);

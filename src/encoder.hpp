@@ -44,7 +44,7 @@ namespace zmq
             bufsize (bufsize_)
         {
             buf = (unsigned char*) malloc (bufsize_);
-            zmq_assert (buf);
+            alloc_assert (buf);
         }
 
         //  The destructor doesn't have to be virtual. It is made virtual

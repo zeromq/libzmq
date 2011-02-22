@@ -53,7 +53,7 @@ zmq::epoll_t::~epoll_t ()
 zmq::epoll_t::handle_t zmq::epoll_t::add_fd (fd_t fd_, i_poll_events *events_)
 {
     poll_entry_t *pe = new (std::nothrow) poll_entry_t;
-    zmq_assert (pe != NULL);
+    alloc_assert (pe);
 
     //  The memset is not actually needed. It's here to prevent debugging
     //  tools to complain about using uninitialised memory.

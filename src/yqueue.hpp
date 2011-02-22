@@ -50,7 +50,7 @@ namespace zmq
         inline yqueue_t ()
         {
              begin_chunk = (chunk_t*) malloc (sizeof (chunk_t));
-             zmq_assert (begin_chunk);
+             alloc_assert (begin_chunk);
              begin_pos = 0;
              back_chunk = NULL;
              back_pos = 0;
@@ -105,7 +105,7 @@ namespace zmq
                 sc->prev = end_chunk;
             } else {
                 end_chunk->next = (chunk_t*) malloc (sizeof (chunk_t));
-                zmq_assert (end_chunk->next);
+                alloc_assert (end_chunk->next);
                 end_chunk->next->prev = end_chunk;
             }
             end_chunk = end_chunk->next;

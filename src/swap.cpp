@@ -53,10 +53,10 @@ zmq::swap_t::swap_t (int64_t filesize_) :
     zmq_assert (block_size > 0);
 
     buf1 = new (std::nothrow) char [block_size];
-    zmq_assert (buf1);
+    alloc_assert (buf1);
 
     buf2 = new (std::nothrow) char [block_size];
-    zmq_assert (buf2);
+    alloc_assert (buf2);
 
     read_buf = write_buf = buf1;
 }
@@ -278,7 +278,8 @@ void zmq::swap_t::fill_buf (char *buf, int64_t pos)
 #ifdef ZMQ_HAVE_WINDOWS
         int rc = _read (fd, &buf [octets_stored], octets_total - octets_stored);
 #else
-        ssize_t rc = read (fd, &buf [octets_stored], octets_total - octets_stored);
+        ssize_t rc = read (fd, &buf [octets_stored],
+            octets_total - octets_stored);
 #endif
         errno_assert (rc > 0);
         octets_stored += rc;
@@ -302,9 +303,11 @@ void zmq::swap_t::save_write_buf ()
 
     while (octets_stored < octets_total) {
 #ifdef ZMQ_HAVE_WINDOWS
-        int rc = _write (fd, &write_buf [octets_stored], octets_total - octets_stored);
+        int rc = _write (fd, &write_buf [octets_stored],
+            octets_total - octets_stored);
 #else
-        ssize_t rc = write (fd, &write_buf [octets_stored], octets_total - octets_stored);
+        ssize_t rc = write (fd, &write_buf [octets_stored],
+            octets_total - octets_stored);
 #endif
         errno_assert (rc > 0);
         octets_stored += rc;

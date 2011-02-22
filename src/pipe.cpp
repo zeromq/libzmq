@@ -182,7 +182,7 @@ zmq::writer_t::writer_t (object_t *parent_, pipe_t *pipe_, reader_t *reader_,
     //  Open the swap file, if required.
     if (swap_size_ > 0) {
         swap = new (std::nothrow) swap_t (swap_size_);
-        zmq_assert (swap);
+        alloc_assert (swap);
         int rc = swap->init ();
         zmq_assert (rc == 0);
     }
@@ -399,10 +399,10 @@ void zmq::create_pipe (object_t *reader_parent_, object_t *writer_parent_,
     //  writer. The pipe will be handled by reader and writer, its never passed
     //  to the user. Reader and writer are returned to the user.
     pipe_t *pipe = new (std::nothrow) pipe_t ();
-    zmq_assert (pipe);
+    alloc_assert (pipe);
     *reader_ = new (std::nothrow) reader_t (reader_parent_, pipe, lwm);
-    zmq_assert (*reader_);
+    alloc_assert (*reader_);
     *writer_ = new (std::nothrow) writer_t (writer_parent_, pipe, *reader_,
         hwm_, swap_size_);
-    zmq_assert (*writer_);
+    alloc_assert (*writer_);
 }

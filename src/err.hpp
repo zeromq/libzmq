@@ -98,7 +98,7 @@ namespace zmq
         }\
     } while (false)
 
-// Provides convenient way to check for POSIX errors.
+//  Provides convenient way to check for POSIX errors.
 #define posix_assert(x) \
     do {\
         if (unlikely (x)) {\
@@ -107,7 +107,7 @@ namespace zmq
         }\
     } while (false)
 
-// Provides convenient way to check for errors from getaddrinfo.
+//  Provides convenient way to check for errors from getaddrinfo.
 #define gai_assert(x) \
     do {\
         if (unlikely (x)) {\
@@ -117,10 +117,16 @@ namespace zmq
         }\
     } while (false)
 
+//  Provides convenient way to check whether memory allocation have succeeded.
+#define alloc_assert(x) \
+    do {\
+        if (unlikely (!x)) {\
+            fprintf (stderr, "FATAL ERROR: OUT OF MEMORY (%s:%d)\n",\
+                __FILE__, __LINE__);\
+            abort ();\
+        }\
+    } while (false)
+
 #endif
 
-#define zmq_not_implemented() \
-    do {\
-        fprintf (stderr, "Hic sunt leones (%s:%d)\n", __FILE__, __LINE__);\
-        abort ();\
-    } while (false)
+

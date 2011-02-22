@@ -93,7 +93,7 @@ void zmq::zmq_connecter_t::out_event ()
     //  Create an init object. 
     zmq_init_t *init = new (std::nothrow) zmq_init_t (io_thread, NULL,
         session, fd, options);
-    zmq_assert (init);
+    alloc_assert (init);
     launch_sibling (init);
 
     //  Shut the connecter down.

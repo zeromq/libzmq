@@ -212,6 +212,7 @@ void zmq::pgm_receiver_t::in_event ()
 
             //  Create and connect decoder for the peer.
             it->second.decoder = new (std::nothrow) decoder_t (0);
+            alloc_assert (it->second.decoder);
             it->second.decoder->set_inout (inout);
         }
 

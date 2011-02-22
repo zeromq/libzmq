@@ -228,7 +228,7 @@ void zmq::object_t::send_attach (session_t *destination_, i_engine *engine_,
             (unsigned char) peer_identity_.size ();
         cmd.args.attach.peer_identity =
             (unsigned char*) malloc (peer_identity_.size ());
-        zmq_assert (cmd.args.attach.peer_identity_size);
+        alloc_assert (cmd.args.attach.peer_identity_size);
         memcpy (cmd.args.attach.peer_identity, peer_identity_.data (),
             peer_identity_.size ());
     }
@@ -259,7 +259,7 @@ void zmq::object_t::send_bind (own_t *destination_, reader_t *in_pipe_,
             (unsigned char) peer_identity_.size ();
         cmd.args.bind.peer_identity =
             (unsigned char*) malloc (peer_identity_.size ());
-        zmq_assert (cmd.args.bind.peer_identity_size);
+        alloc_assert (cmd.args.bind.peer_identity_size);
         memcpy (cmd.args.bind.peer_identity, peer_identity_.data (),
             peer_identity_.size ());
     }

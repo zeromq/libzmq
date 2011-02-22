@@ -17,8 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <new>
-
 #include "session.hpp"
 #include "socket_base.hpp"
 #include "i_engine.hpp"

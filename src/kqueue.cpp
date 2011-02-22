@@ -79,7 +79,7 @@ zmq::kqueue_t::handle_t zmq::kqueue_t::add_fd (fd_t fd_,
     i_poll_events *reactor_)
 {
     poll_entry_t *pe = new (std::nothrow) poll_entry_t;
-    zmq_assert (pe != NULL);
+    alloc_assert (pe);
 
     pe->fd = fd_;
     pe->flag_pollin = 0;

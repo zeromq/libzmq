@@ -358,6 +358,7 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
         zmq_assert (pgm_msgv_len);
 
         pgm_msgv = (pgm_msgv_t*) malloc (sizeof (pgm_msgv_t) * pgm_msgv_len);
+        alloc_assert (pgm_msgv);
     }
 
     return 0;
@@ -602,7 +603,7 @@ ssize_t zmq::pgm_socket_t::receive (void **raw_data_, const pgm_tsi_t **tsi_)
         //  Data loss.
         if (status == PGM_IO_STATUS_RESET) {
 
-            struct pgm_sk_buff_t* skb = pgm_msgv[0].msgv_skb[0];
+            struct pgm_sk_buff_t* skb = pgm_msgv [0].msgv_skb [0];
 
             //  Save lost data TSI.
             *tsi_ = &skb->tsi;
