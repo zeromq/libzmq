@@ -72,7 +72,7 @@ void zmq::connect_session_t::start_connecting (bool wait_)
         //  At this point we'll create message pipes to the session straight
         //  away. There's no point in delaying it as no concept of 'connect'
         //  exists with PGM anyway.
-        if (options.requires_out) {
+        if (options.type == ZMQ_PUB || options.type == ZMQ_XPUB) {
 
             //  PGM sender.
             pgm_sender_t *pgm_sender =  new (std::nothrow) pgm_sender_t (
@@ -84,7 +84,7 @@ void zmq::connect_session_t::start_connecting (bool wait_)
 
             send_attach (this, pgm_sender, blob_t ());
         }
-        else if (options.requires_in) {
+        else if (options.type == ZMQ_SUB || options.type == ZMQ_XSUB) {
 
             //  PGM receiver.
             pgm_receiver_t *pgm_receiver =  new (std::nothrow) pgm_receiver_t (
