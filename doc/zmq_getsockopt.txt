@@ -326,7 +326,7 @@ state with a subsequent retrieval of the 'ZMQ_EVENTS' option.
 
 CAUTION: The returned file descriptor is intended for use with a 'poll' or
 similar system call only. Applications must never attempt to read or write data
-to it directly.
+to it directly, neither should they try to close it.
 
 [horizontal]
 Option value type:: int on POSIX systems, SOCKET on Windows
