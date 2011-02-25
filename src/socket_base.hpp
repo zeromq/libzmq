@@ -97,6 +97,10 @@ namespace zmq
         void out_event ();
         void timer_event (int id_);
 
+        //  To be called after processing commands or invoking any command
+        //  handlers explicitly. If required, it will deallocate the socket.
+        void check_destroy ();
+
     protected:
 
         socket_base_t (class ctx_t *parent_, uint32_t tid_);

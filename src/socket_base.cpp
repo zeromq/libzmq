@@ -754,7 +754,21 @@ void zmq::socket_base_t::in_event ()
     //  Process any commands from other threads/sockets that may be available
     //  at the moment. Ultimately, socket will be destroyed.
     process_commands (false, false);
+    check_destroy ();
+}
 
+void zmq::socket_base_t::out_event ()
+{
+    zmq_assert (false);
+}
+
+void zmq::socket_base_t::timer_event (int id_)
+{
+    zmq_assert (false);
+}
+
+void zmq::socket_base_t::check_destroy ()
+{
     //  If the object was already marked as destroyed, finish the deallocation.
     if (destroyed) {
 
@@ -770,14 +784,4 @@ void zmq::socket_base_t::in_event ()
         //  Deallocate.
         own_t::process_destroy ();
     }
-}
-
-void zmq::socket_base_t::out_event ()
-{
-    zmq_assert (false);
-}
-
-void zmq::socket_base_t::timer_event (int id_)
-{
-    zmq_assert (false);
 }

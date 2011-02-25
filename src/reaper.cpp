@@ -96,11 +96,12 @@ void zmq::reaper_t::process_stop ()
 
 void zmq::reaper_t::process_reap (socket_base_t *socket_)
 {
-    //  Start termination of associated I/O object hierarchy.
-    socket_->terminate ();
-
     //  Add the socket to the poller.
     socket_->start_reaping (poller);
+
+    //  Start termination of associated I/O object hierarchy.
+    socket_->terminate ();
+    socket_->check_destroy ();
 
     ++sockets;
 }
