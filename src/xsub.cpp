@@ -27,13 +27,12 @@
 zmq::xsub_t::xsub_t (class ctx_t *parent_, uint32_t tid_) :
     socket_base_t (parent_, tid_),
     fq (this),
-    dist (this),
     has_message (false),
     more (false)
 {
     options.type = ZMQ_XSUB;
     options.requires_in = true;
-    options.requires_out = true;
+    options.requires_out = false;
     zmq_msg_init (&message);
 }
 
@@ -45,15 +44,13 @@ zmq::xsub_t::~xsub_t ()
 void zmq::xsub_t::xattach_pipes (class reader_t *inpipe_,
     class writer_t *outpipe_, const blob_t &peer_identity_)
 {
-    zmq_assert (inpipe_ && outpipe_);
+    zmq_assert (inpipe_ && !outpipe_);
     fq.attach (inpipe_);
-    dist.attach (outpipe_);
 }
 
 void zmq::xsub_t::process_term (int linger_)
 {
     fq.terminate ();
-    dist.terminate ();
     socket_base_t::process_term (linger_);
 }
 
