@@ -399,7 +399,7 @@ int zmq::socket_base_t::connect (const char *addr_)
                 &outpipe_reader, &outpipe_writer);
 
         //  Attach the pipes to this socket object.
-        attach_pipes (inpipe_reader, outpipe_writer, blob_t ());
+        attach_pipes (inpipe_reader, outpipe_writer, peer.options.identity);
 
         //  Attach the pipes to the peer socket. Note that peer's seqnum
         //  was incremented in find_endpoint function. We don't need it
