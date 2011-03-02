@@ -319,6 +319,18 @@ Option value unit:: connections
 Default value:: 100
 Applicable socket types:: all, only for connection-oriented transports.
 
+ZMQ_MAXMSGSIZE: Maximum acceptable inbound message size
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Limits the size of the inbound message. If a peer sends a message larger than
+ZMQ_MAXMSGSIZE it is disconnected. Value of -1 means 'no limit'.
+
+[horizontal]
+Option value type:: int64_t
+Option value unit:: bytes
+Default value:: -1
+Applicable socket types:: all
+
 
 RETURN VALUE
 ------------

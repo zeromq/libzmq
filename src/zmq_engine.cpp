@@ -35,7 +35,7 @@
 zmq::zmq_engine_t::zmq_engine_t (fd_t fd_, const options_t &options_) :
     inpos (NULL),
     insize (0),
-    decoder (in_batch_size),
+    decoder (in_batch_size, options_.maxmsgsize),
     outpos (NULL),
     outsize (0),
     encoder (out_batch_size),

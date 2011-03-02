@@ -311,6 +311,20 @@ Default value:: 100
 Applicable socket types:: all, only for connection-oriented transports
 
 
+ZMQ_MAXMSGSIZE: Maximum acceptable inbound message size
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The options shall retrieve limit for the inbound messages. If a peer sends
+a message larger than ZMQ_MAXMSGSIZE it is disconnected. Value of -1 means
+'no limit'.
+
+[horizontal]
+Option value type:: int64_t
+Option value unit:: bytes
+Default value:: -1
+Applicable socket types:: all
+
+
 ZMQ_FD: Retrieve file descriptor associated with the socket
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_FD' option shall retrieve the file descriptor associated with the

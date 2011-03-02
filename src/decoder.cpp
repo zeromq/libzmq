@@ -25,9 +25,10 @@
 #include "wire.hpp"
 #include "err.hpp"
 
-zmq::decoder_t::decoder_t (size_t bufsize_) :
+zmq::decoder_t::decoder_t (size_t bufsize_, int64_t maxmsgsize_) :
     decoder_base_t <decoder_t> (bufsize_),
-    destination (NULL)
+    destination (NULL),
+    maxmsgsize (maxmsgsize_)
 {
     zmq_msg_init (&in_progress);
 
@@ -63,7 +64,13 @@ bool zmq::decoder_t::one_byte_size_ready ()
         //  in_progress is initialised at this point so in theory we should
         //  close it before calling zmq_msg_init_size, however, it's a 0-byte
         //  message and thus we can treat it as uninitialised...
-        int rc = zmq_msg_init_size (&in_progress, *tmpbuf - 1);
+        int rc;
+        if (maxmsgsize >= 0 && (int64_t) (*tmpbuf - 1) > maxmsgsize) {
+            rc = -1;
+            errno = ENOMEM;
+        }
+        else
+            rc = zmq_msg_init_size (&in_progress, *tmpbuf - 1);
         if (rc != 0 && errno == ENOMEM) {
             rc = zmq_msg_init (&in_progress);
             errno_assert (rc == 0);
@@ -92,7 +99,13 @@ bool zmq::decoder_t::eight_byte_size_ready ()
     //  in_progress is initialised at this point so in theory we should
     //  close it before calling zmq_msg_init_size, however, it's a 0-byte
     //  message and thus we can treat it as uninitialised...
-    int rc = zmq_msg_init_size (&in_progress, size - 1);
+    int rc;
+    if (maxmsgsize >= 0 && (int64_t) (size - 1) > maxmsgsize) {
+        rc = -1;
+        errno = ENOMEM;
+    }
+    else
+        rc = zmq_msg_init_size (&in_progress, size - 1);
     if (rc != 0 && errno == ENOMEM) {
         rc = zmq_msg_init (&in_progress);
         errno_assert (rc == 0);

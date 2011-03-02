@@ -69,6 +69,9 @@ namespace zmq
         //  Maximum backlog for pending connections.
         int backlog;
 
+        //  Maximal size of message to handle.
+        int64_t maxmsgsize;
+
         //  These options are never set by the user directly. Instead they are
         //  provided by the specific socket type.
         bool requires_in;

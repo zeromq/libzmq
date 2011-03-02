@@ -26,6 +26,7 @@
 #include <algorithm>
 
 #include "err.hpp"
+#include "stdint.hpp"
 
 #include "../include/zmq.h"
 
@@ -180,7 +181,7 @@ namespace zmq
     {
     public:
 
-        decoder_t (size_t bufsize_);
+        decoder_t (size_t bufsize_, int64_t maxmsgsize_);
         ~decoder_t ();
 
         void set_inout (struct i_inout *destination_);
@@ -195,6 +196,8 @@ namespace zmq
         struct i_inout *destination;
         unsigned char tmpbuf [8];
         ::zmq_msg_t in_progress;
+
+        int64_t maxmsgsize;
 
         decoder_t (const decoder_t&);
         void operator = (const decoder_t&);
