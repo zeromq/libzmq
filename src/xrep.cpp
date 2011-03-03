@@ -177,8 +177,22 @@ int zmq::xrep_t::xsend (zmq_msg_t *msg_, int flags_)
             blob_t identity ((unsigned char*) zmq_msg_data (msg_),
                 zmq_msg_size (msg_));
             outpipes_t::iterator it = outpipes.find (identity);
-            if (it != outpipes.end ())
+
+            if (it != outpipes.end ()) {
                 current_out = it->second.writer;
+                zmq_msg_t empty;
+                int rc = zmq_msg_init (&empty);
+                zmq_assert (rc == 0);
+                if (!current_out->check_write (&empty)) {
+                    rc = zmq_msg_close (&empty);
+                    zmq_assert (rc == 0);
+                    it->second.active = false;
+                    errno = EAGAIN;
+                    return -1;
+                }
+                rc = zmq_msg_close (&empty);
+                zmq_assert (rc == 0);
+            }
         }
 
         int rc = zmq_msg_close (msg_);
