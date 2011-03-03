@@ -47,16 +47,9 @@ incoming connections *from multiple endpoints* bound to the socket using
 _zmq_bind()_, thus allowing many-to-many relationships.
 
 .Thread safety
-A 0MQ 'context' is thread safe and may be shared among as many application
-threads as necessary, without any additional locking required on the part of
-the caller.
-
-Individual 0MQ 'sockets' are _not_ thread safe except in the case where full
-memory barriers are issued when migrating a socket from one thread to another.
-In practice this means applications can create a socket in one thread with
-_zmq_socket()_ and then pass it to a _newly created_ thread as part of thread
-initialization, for example via a structure passed as an argument to
-_pthread_create()_.
+0MQ 'sockets' are _not_ thread safe. Applications MUST NOT use a socket
+from multiple threads except after migrating a socket from one thread to 
+another with a "full fence" memory barrier.
 
 .Socket types
 The following sections present the socket types defined by 0MQ, grouped by the
