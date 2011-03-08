@@ -26,6 +26,8 @@
 
 #if defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
+#elif defined ZMQ_HAVE_OPENVMS
+#include <pthread.h>
 #else
 #include <semaphore.h>
 #endif

@@ -229,10 +229,13 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
     }
 
     //  There's no such interface name. Assume literal address.
+#if defined ZMQ_HAVE_OPENVMS && defined __ia64
+    __addrinfo64 *res = NULL;
+    __addrinfo64 req;
+#else
     addrinfo *res = NULL;
-
-    //  Set up the query.
     addrinfo req;
+#endif
     memset (&req, 0, sizeof (req));
 
     //  We only support IPv4 addresses for now.
@@ -312,11 +315,13 @@ int zmq::resolve_ip_hostname (sockaddr_storage *addr_, socklen_t *addr_len_,
     return 0;
 }
 
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
-
 int zmq::resolve_local_path (sockaddr_storage *addr_, socklen_t *addr_len_,
     const char *path_)
 {
+#if defined ZMQ_HAVE_WINDOWS || defined ZMQ_HAVE_OPENVMS
+    errno = EPROTONOSUPPORT;
+    return -1;
+#else
     sockaddr_un *un = (sockaddr_un*) addr_;
     if (strlen (path_) >= sizeof (un->sun_path))
     {
@@ -327,7 +332,6 @@ int zmq::resolve_local_path (sockaddr_storage *addr_, socklen_t *addr_len_,
     un->sun_family = AF_UNIX;
     *addr_len_ = sizeof (sockaddr_un);
     return 0;
-}
-
 #endif
+}
 
