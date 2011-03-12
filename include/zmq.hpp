@@ -214,13 +214,23 @@ namespace zmq
 
         inline ~socket_t ()
         {
-            int rc = zmq_close (ptr);
-            assert (rc == 0);
+            close();
         }
 
         inline operator void* ()
         {
             return ptr;
+        }
+
+        inline void close()
+        {
+            if(ptr == NULL)
+                // already closed
+                return ;
+            int rc = zmq_close (ptr);
+            if (rc != 0)
+                throw error_t ();
+            ptr = 0 ;
         }
 
         inline void setsockopt (int option_, const void *optval_,
