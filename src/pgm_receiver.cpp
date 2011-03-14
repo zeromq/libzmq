@@ -151,7 +151,10 @@ void zmq::pgm_receiver_t::in_event ()
     while (true) {
 
         //  Get new batch of data.
-        ssize_t received = pgm_socket.receive ((void**) &data, &tsi);
+        //  Note the workaround made not to break strict-aliasing rules.
+        void *tmp = NULL;
+        ssize_t received = pgm_socket.receive (&tmp, &tsi);
+        data = (unsigned char*) tmp;
 
         //  No data to process. This may happen if the packet received is
         //  neither ODATA nor ODATA.
