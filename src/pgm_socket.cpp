@@ -690,7 +690,6 @@ int zmq::pgm_socket_t::compute_sqns (int tpdu_)
 
     //  Translate the size into number of packets.
     uint64_t sqns = size / tpdu_;
-    zmq_assert (sqns >= 0);
 
     //  Buffer should be able to contain at least one packet.
     if (sqns == 0)
