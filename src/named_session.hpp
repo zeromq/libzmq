@@ -36,7 +36,7 @@ namespace zmq
 
         named_session_t (class io_thread_t *io_thread_,
             class socket_base_t *socket_, const options_t &options_, 
-            const blob_t &name_);
+            const blob_t &peer_identity_);
         ~named_session_t ();
 
         //  Handlers for events from session base class.
@@ -45,8 +45,7 @@ namespace zmq
 
     private:
 
-        //  Name of the session. Corresponds to the peer's strong identity.
-        blob_t name;
+        blob_t peer_identity;
 
         named_session_t (const named_session_t&);
         const named_session_t &operator = (const named_session_t&);
