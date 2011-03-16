@@ -184,9 +184,11 @@ int zmq::xrep_t::xsend (zmq_msg_t *msg_, int flags_)
                 int rc = zmq_msg_init (&empty);
                 zmq_assert (rc == 0);
                 if (!current_out->check_write (&empty)) {
+                    it->second.active = false;
+                    more_out = false;
+                    current_out = NULL;
                     rc = zmq_msg_close (&empty);
                     zmq_assert (rc == 0);
-                    it->second.active = false;
                     errno = EAGAIN;
                     return -1;
                 }
