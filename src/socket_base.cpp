@@ -619,7 +619,9 @@ zmq::session_t *zmq::socket_base_t::find_session (const blob_t &name_)
     session_t *session = it->second;
 
     //  Prepare the session for subsequent attach command.
-    session->inc_seqnum ();
+    //  Note the connect sessions have NULL pointers registered here.
+    if (session)
+        session->inc_seqnum ();
 
     sessions_sync.unlock ();
     return session;    

@@ -214,26 +214,25 @@ void zmq::session_t::process_plug ()
 void zmq::session_t::process_attach (i_engine *engine_,
     const blob_t &peer_identity_)
 {
+    //  If we are already terminating, we destroy the engine straight away.
+    //  Note that we don't have to unplug it before deleting as it's not
+    //  yet plugged to the session.
+    if (state == terminating) {
+        if (engine_)
+            delete engine_;
+        return;
+    }
+
     //  If some other object (e.g. init) notifies us that the connection failed
-    //  we need to start the reconnection process.
+    //  without creating an engine we need to start the reconnection process.
     if (!engine_) {
         zmq_assert (!engine);
         detached ();
         return;
     }
 
-    //  If we are already terminating, we destroy the engine straight away.
-    //  Note that we don't have to unplug it before deleting as it's not
-    //  yet plugged to the session.
-    if (state == terminating) {
-        delete engine_;
-        return;
-    }
-
-    //  If the session already has an engine attached, destroy new one.
-    //  Note new engine is not plugged in yet, we don't have to unplug it.
-    if (engine) {
-        log ("DPID: duplicate peer identity - disconnecting peer");
+    //  Trigger the notfication event about the attachment.
+    if (!attached (peer_identity_)) {
         delete engine_;
         return;
     }
@@ -248,8 +247,8 @@ void zmq::session_t::process_attach (i_engine *engine_,
 
         //  Create the pipes, as required.
         if (options.requires_in) {
-            create_pipe (socket, this, options.hwm, options.swap, &socket_reader,
-                &out_pipe);
+            create_pipe (socket, this, options.hwm, options.swap,
+                &socket_reader, &out_pipe);
             out_pipe->set_event_sink (this);
         }
         if (options.requires_out) {
@@ -264,11 +263,9 @@ void zmq::session_t::process_attach (i_engine *engine_,
     }
 
     //  Plug in the engine.
+    zmq_assert (!engine);
     engine = engine_;
     engine->plug (io_thread, this);
-
-    //  Trigger the notfication about the attachment.
-    attached (peer_identity_);
 }
 
 void zmq::session_t::detach ()
@@ -328,6 +325,11 @@ void zmq::session_t::timer_event (int id_)
     zmq_assert (id_ == linger_timer_id);
     has_linger_timer = false;
     proceed_with_term ();
+}
+
+bool zmq::session_t::has_engine ()
+{
+    return engine != NULL;
 }
 
 bool zmq::session_t::register_session (const blob_t &name_, session_t *session_)

@@ -23,6 +23,7 @@
 
 #include <string>
 
+#include "blob.hpp"
 #include "session.hpp"
 
 namespace zmq
@@ -43,7 +44,7 @@ namespace zmq
     private:
 
         //  Handlers for events from session base class.
-        void attached (const blob_t &peer_identity_);
+        bool attached (const blob_t &peer_identity_);
         void detached ();
 
         //  Start the connection process.
@@ -55,6 +56,13 @@ namespace zmq
         //  Address to connect to.
         std::string protocol;
         std::string address;
+
+        //  If true, the session was already connected to the peer.
+        bool connected;
+
+        //  Identity of the peer. If 'connected' is false, it has no meaning.
+        //  Otherwise, if it's empty, the peer has transient identity.
+        blob_t peer_identity;
 
         connect_session_t (const connect_session_t&);
         const connect_session_t &operator = (const connect_session_t&);

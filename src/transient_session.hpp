@@ -40,7 +40,7 @@ namespace zmq
     private:
 
         //  Handlers for events from session base class.
-        void attached (const blob_t &peer_identity_);
+        bool attached (const blob_t &peer_identity_);
         void detached ();
 
         transient_session_t (const transient_session_t&);

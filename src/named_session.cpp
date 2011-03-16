@@ -45,11 +45,17 @@ zmq::named_session_t::~named_session_t ()
     unregister_session (peer_identity);
 }
 
-void zmq::named_session_t::attached (const blob_t &peer_identity_)
+bool zmq::named_session_t::attached (const blob_t &peer_identity_)
 {
-    //  The owner should take care to not attach the session
-    //  to an unrelated peer.
+    //  Double check that identities match.
     zmq_assert (peer_identity == peer_identity_);
+
+    //  If the session already has an engine attached, destroy new one.
+    if (has_engine ()) {
+        log ("DPID: duplicate peer identity - disconnecting peer");
+        return false;
+    }
+    return true;
 }
 
 void zmq::named_session_t::detached ()

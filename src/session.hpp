@@ -69,11 +69,15 @@ namespace zmq
         void terminate ();
 
         //  Two events for the derived session type. Attached is triggered
-        //  when session is attached to a peer, detached is triggered at the
-        //  beginning of the termination process when session is about to
-        //  be detached from the peer.
-        virtual void attached (const blob_t &peer_identity_) = 0;
+        //  when session is attached to a peer. The function can reject the new
+        //  peer by returning false. Detached is triggered at the beginning of
+        //  the termination process when session is about to be detached from
+        //  the peer.
+        virtual bool attached (const blob_t &peer_identity_) = 0;
         virtual void detached () = 0;
+
+        //  Returns true if there is an engine attached to the session.
+        bool has_engine ();
 
         //  Allows derives session types to (un)register session names.
         bool register_session (const blob_t &name_, class session_t *session_);
