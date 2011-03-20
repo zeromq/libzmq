@@ -41,6 +41,13 @@ zmq::dist_t::~dist_t ()
 
 void zmq::dist_t::attach (writer_t *pipe_)
 {
+    //  If we are in the middle of sending a message, let's postpone plugging
+    //  in the pipe.
+    if (!terminating && more) {
+        new_pipes.push_back (pipe_);
+        return;
+    }
+
     pipe_->set_event_sink (this);
 
     pipes.push_back (pipe_);
@@ -84,13 +91,30 @@ void zmq::dist_t::activated (writer_t *pipe_)
 
 int zmq::dist_t::send (zmq_msg_t *msg_, int flags_)
 {
+    //  Is this end of a multipart message?
+    bool msg_more = msg_->flags & ZMQ_MSG_MORE;
+
+    //  Push the message to active pipes.
+    distribute (msg_, flags_);
+
+    //  If mutlipart message is fully sent, activate new pipes.
+    if (more && !msg_more)
+        clear_new_pipes ();
+
+    more = msg_more;
+
+    return 0;
+}
+
+void zmq::dist_t::distribute (zmq_msg_t *msg_, int flags_)
+{
     //  If there are no active pipes available, simply drop the message.
     if (active == 0) {
         int rc = zmq_msg_close (msg_);
         zmq_assert (rc == 0);
         rc = zmq_msg_init (msg_);
         zmq_assert (rc == 0);
-        return 0;
+        return;
     }
 
     msg_content_t *content = (msg_content_t*) msg_->content;
@@ -102,7 +126,7 @@ int zmq::dist_t::send (zmq_msg_t *msg_, int flags_)
                 i++;
         int rc = zmq_msg_init (msg_);
         zmq_assert (rc == 0);
-        return 0;
+        return;
     }
 
     //  Optimisation for the case when there's only a single pipe
@@ -115,7 +139,7 @@ int zmq::dist_t::send (zmq_msg_t *msg_, int flags_)
         }
         int rc = zmq_msg_init (msg_);
         zmq_assert (rc == 0);
-        return 0;
+        return;
     }
 
     //  There are at least 2 destinations for the message. That means we have
@@ -139,8 +163,6 @@ int zmq::dist_t::send (zmq_msg_t *msg_, int flags_)
     //  Detach the original message from the data buffer.
     int rc = zmq_msg_init (msg_);
     zmq_assert (rc == 0);
-
-    return 0;
 }
 
 bool zmq::dist_t::has_out ()
@@ -158,5 +180,17 @@ bool zmq::dist_t::write (class writer_t *pipe_, zmq_msg_t *msg_)
     if (!(msg_->flags & ZMQ_MSG_MORE))
         pipe_->flush ();
     return true;
+}
+
+void zmq::dist_t::clear_new_pipes ()
+{
+    for (new_pipes_t::iterator it = new_pipes.begin (); it != new_pipes.end ();
+          ++it) {
+        (*it)->set_event_sink (this);
+        pipes.push_back (*it);
+        pipes.swap (active, pipes.size () - 1);
+        active++;
+    }
+    new_pipes.clear ();
 }
 

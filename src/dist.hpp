@@ -21,6 +21,8 @@
 #ifndef __ZMQ_DIST_HPP_INCLUDED__
 #define __ZMQ_DIST_HPP_INCLUDED__
 
+#include <vector>
+
 #include "array.hpp"
 #include "pipe.hpp"
 
@@ -51,9 +53,22 @@ namespace zmq
         //  fails. In such a case false is returned.
         bool write (class writer_t *pipe_, zmq_msg_t *msg_);
 
+        //  Put the message to all active pipes.
+        void distribute (zmq_msg_t *msg_, int flags_);
+
+        //  Plug in all the delayed pipes.
+        void clear_new_pipes ();
+
         //  List of outbound pipes.
         typedef array_t <class writer_t> pipes_t;
         pipes_t pipes;
+
+        //  List of new pipes that were not yet inserted into 'pipes' list.
+        //  These pipes are moves to 'pipes' list once the current multipart
+        //  message is fully sent. This way we avoid sending incomplete messages
+        //  to peers.
+        typedef std::vector <class writer_t*> new_pipes_t;
+        new_pipes_t new_pipes;
 
         //  Number of active pipes. All the active pipes are located at the
         //  beginning of the pipes array.
