@@ -61,6 +61,9 @@ namespace zmq
         //  True if last we are in the middle of a multipart message.
         bool more;
 
+        //  True if we are dropping current message.
+        bool dropping;
+
         //  Object to send events to.
         class own_t *sink;
 
