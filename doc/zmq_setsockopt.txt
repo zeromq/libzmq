@@ -197,23 +197,6 @@ Default value:: -1
 Applicable socket types:: all, when using multicast transports
 
 
-ZMQ_MCAST_LOOP: Control multicast loop-back
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_MCAST_LOOP' option shall control whether data sent via multicast
-transports using the specified 'socket' can also be received by the sending
-host via loop-back. A value of zero disables the loop-back functionality, while
-the default value of 1 enables the loop-back functionality. Leaving multicast
-loop-back enabled when it is not required can have a negative impact on
-performance. Where possible, disable 'ZMQ_MCAST_LOOP' in production
-environments.
-
-[horizontal]
-Option value type:: int64_t
-Option value unit:: boolean
-Default value:: 1
-Applicable socket types:: all, when using multicast transports
-
-
 ZMQ_SNDBUF: Set kernel transmit buffer size
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_SNDBUF' option shall set the underlying kernel transmit buffer size

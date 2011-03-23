@@ -23,9 +23,8 @@ UDP datagrams (the 'epgm' transport).
 The 'pgm' and 'epgm' transports can only be used with the 'ZMQ_PUB' and
 'ZMQ_SUB' socket types.
 
-Further, PGM sockets are rate limited by default and incur a performance
-penalty when used over a loop-back interface. For details, refer to the
-'ZMQ_RATE', 'ZMQ_RECOVERY_IVL' and 'ZMQ_MCAST_LOOP' options documented in
+Further, PGM sockets are rate limited by default. For details, refer to the
+'ZMQ_RATE', and 'ZMQ_RECOVERY_IVL' options documented in
 linkzmq:zmq_setsockopt[3].
 
 CAUTION: The 'pgm' transport implementation requires access to raw IP sockets.

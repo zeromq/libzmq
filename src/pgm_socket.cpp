@@ -322,7 +322,7 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
     //  Set IP level parameters.
     {
         const int nonblocking      = 1,
-                  multicast_loop   = options.use_multicast_loop ? 1 : 0,
+                  multicast_loop   = 0,
                   multicast_hops   = 16,
 
                   //  Expedited Forwarding PHB for network elements, no ECN.
