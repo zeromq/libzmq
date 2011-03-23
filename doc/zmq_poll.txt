@@ -41,7 +41,7 @@ member, and then indicate any requested events that have occurred by setting the
 bit corresponding to the event condition in the 'revents' member.
 
 If none of the requested events have occurred on any *zmq_pollitem_t* item,
-_zmq_poll()_ shall wait 'timeout' microseconds for an event to occur on
+_zmq_poll()_ shall wait 'timeout' milliseconds for an event to occur on
 any of the requested items. If the value of 'timeout' is `0`, _zmq_poll()_
 shall return immediately. If the value of 'timeout' is `-1`, _zmq_poll()_ shall
 block indefinitely until a requested event has occurred on at least one

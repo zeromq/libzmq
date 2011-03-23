@@ -387,10 +387,10 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         if (timeout_ == 0)
             return 0;
 #if defined ZMQ_HAVE_WINDOWS
-        Sleep (timeout_ > 0 ? timeout_ / 1000 : INFINITE);
+        Sleep (timeout_ > 0 ? timeout_ : INFINITE);
         return 0;
 #else
-        return usleep (timeout_);
+        return usleep (timeout_ * 1000);
 #endif
     }
 
@@ -514,7 +514,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         //  when the polling should time out.
         if (first_pass) {
             now = clock.now_ms ();
-            end = now + (timeout_ / 1000);
+            end = now + timeout_;
             if (now == end)
                 break;
             first_pass = false;
@@ -540,10 +540,10 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         if (timeout_ == 0)
             return 0;
 #if defined ZMQ_HAVE_WINDOWS
-        Sleep (timeout_ > 0 ? timeout_ / 1000 : INFINITE);
+        Sleep (timeout_ > 0 ? timeout_ : INFINITE);
         return 0;
 #else
-        return usleep (timeout_);
+        return usleep (timeout_ * 1000);
 #endif
     }
 
@@ -695,7 +695,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         //  when the polling should time out.
         if (first_pass) {
             now = clock.now_ms ();
-            end = now + (timeout_ / 1000);
+            end = now + timeout_;
             if (now == end)
                 break;
             first_pass = false;
