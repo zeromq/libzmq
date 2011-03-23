@@ -241,16 +241,6 @@ typedef struct
 
 ZMQ_EXPORT int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
 
-/******************************************************************************/
-/*  Devices - Experimental.                                                   */
-/******************************************************************************/
-
-#define ZMQ_STREAMER 1
-#define ZMQ_FORWARDER 2
-#define ZMQ_QUEUE 3
-
-ZMQ_EXPORT int zmq_device (int device, void * insocket, void* outsocket);
-
 #undef ZMQ_EXPORT
 
 #ifdef __cplusplus

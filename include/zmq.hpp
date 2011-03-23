@@ -62,13 +62,6 @@ namespace zmq
         return rc;
     }
 
-    inline void device (int device_, void * insocket_, void* outsocket_)
-    {
-        int rc = zmq_device (device_, insocket_, outsocket_);
-        if (rc != 0)
-            throw error_t ();
-    }
-
     class message_t : private zmq_msg_t
     {
         friend class socket_t;
