@@ -1,15 +1,13 @@
 ACLOCAL_AMFLAGS = -I config
 
-SUBDIRS = src doc perf devices tests
-DIST_SUBDIRS = src doc perf devices tests builds/msvc
+SUBDIRS = src doc perf tests
+DIST_SUBDIRS = src doc perf tests builds/msvc
 
 EXTRA_DIST = \
 	autogen.sh	\
 	version.sh	\
 	MAINTAINERS	\
-	foreign/openpgm/@pgm_basename@.tar.gz	\
-	foreign/xmlParser/xmlParser.cpp		\
-	foreign/xmlParser/xmlParser.hpp
+	foreign/openpgm/@pgm_basename@.tar.gz
 MAINTAINERCLEANFILES = \
 	$(srcdir)/aclocal.m4		\
 	$(srcdir)/autom4te.cache	\
