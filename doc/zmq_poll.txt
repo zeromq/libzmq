@@ -36,9 +36,6 @@ descriptor 'fd', for the event(s) specified in 'events'. If both 'socket' and
 'fd' are set in a single *zmq_pollitem_t*, the 0MQ socket referenced by
 'socket' shall take precedence and the value of 'fd' shall be ignored.
 
-NOTE: All 0MQ sockets passed to the _zmq_poll()_ function must share the
-same 0MQ 'context' and must belong to the thread calling _zmq_poll()_.
-
 For each *zmq_pollitem_t* item, _zmq_poll()_ shall first clear the 'revents'
 member, and then indicate any requested events that have occurred by setting the
 bit corresponding to the event condition in the 'revents' member.
