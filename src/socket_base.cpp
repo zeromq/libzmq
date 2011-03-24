@@ -264,7 +264,7 @@ int zmq::socket_base_t::getsockopt (int option_, void *optval_,
     }
 
     if (option_ == ZMQ_EVENTS) {
-        if (*optvallen_ < sizeof (uint32_t)) {
+        if (*optvallen_ < sizeof (int)) {
             errno = EINVAL;
             return -1;
         }
@@ -272,12 +272,12 @@ int zmq::socket_base_t::getsockopt (int option_, void *optval_,
         if (rc != 0 && (errno == EINTR || errno == ETERM))
             return -1;
         errno_assert (rc == 0);
-        *((uint32_t*) optval_) = 0;
+        *((int*) optval_) = 0;
         if (has_out ())
-            *((uint32_t*) optval_) |= ZMQ_POLLOUT;
+            *((int*) optval_) |= ZMQ_POLLOUT;
         if (has_in ())
-            *((uint32_t*) optval_) |= ZMQ_POLLIN;
-        *optvallen_ = sizeof (uint32_t);
+            *((int*) optval_) |= ZMQ_POLLIN;
+        *optvallen_ = sizeof (int);
         return 0;
     }
 

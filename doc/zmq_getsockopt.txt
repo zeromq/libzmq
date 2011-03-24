@@ -316,7 +316,7 @@ the 'ZMQ_EVENTS' option is valid; applications should simply ignore this case
 and restart their polling operation/event loop.
 
 [horizontal]
-Option value type:: uint32_t
+Option value type:: int
 Option value unit:: N/A (flags)
 Default value:: N/A
 Applicable socket types:: all
