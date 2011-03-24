@@ -183,7 +183,6 @@ ZMQ_EXPORT int zmq_term (void *context);
 #define ZMQ_XSUB 10
 
 /*  Socket options.                                                           */
-#define ZMQ_HWM 1
 #define ZMQ_AFFINITY 4
 #define ZMQ_IDENTITY 5
 #define ZMQ_SUBSCRIBE 6
@@ -201,6 +200,8 @@ ZMQ_EXPORT int zmq_term (void *context);
 #define ZMQ_BACKLOG 19
 #define ZMQ_RECONNECT_IVL_MAX 21
 #define ZMQ_MAXMSGSIZE 22
+#define ZMQ_SNDHWM 23
+#define ZMQ_RCVHWM 24
     
 /*  Send/recv options.                                                        */
 #define ZMQ_NOBLOCK 1

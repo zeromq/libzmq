@@ -57,12 +57,12 @@ Default value:: N/A
 Applicable socket types:: all
 
 
-ZMQ_HWM: Retrieve high water mark
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_HWM' option shall retrieve the high water mark for the specified
-'socket'.  The high water mark is a hard limit on the maximum number of
-outstanding messages 0MQ shall queue in memory for any single peer that the
-specified 'socket' is communicating with.
+ZMQ_SNDHWM: Set high water mark for outbound messages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_SNDHWM' option shall set the high water mark for outbound messages on
+the specified 'socket'. The high water mark is a hard limit on the maximum
+number of outstanding messages 0MQ shall queue in memory for any single peer
+that the specified 'socket' is communicating with.
 
 If this limit has been reached the socket shall enter an exceptional state and
 depending on the socket type, 0MQ shall take appropriate action such as
@@ -70,7 +70,29 @@ blocking or dropping sent messages. Refer to the individual socket descriptions
 in linkzmq:zmq_socket[3] for details on the exact action taken for each socket
 type.
 
-The default 'ZMQ_HWM' value of zero means "no limit".
+The default 'ZMQ_SNDHWM' value of zero means "no limit".
+
+[horizontal]
+Option value type:: int
+Option value unit:: messages
+Default value:: 0
+Applicable socket types:: all
+
+
+ZMQ_RCVHWM: Set high water mark for inbound messages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_RCVHWM' option shall set the high water mark for inbound messages on
+the specified 'socket'. The high water mark is a hard limit on the maximum
+number of outstanding messages 0MQ shall queue in memory for any single peer
+that the specified 'socket' is communicating with.
+
+If this limit has been reached the socket shall enter an exceptional state and
+depending on the socket type, 0MQ shall take appropriate action such as
+blocking or dropping sent messages. Refer to the individual socket descriptions
+in linkzmq:zmq_socket[3] for details on the exact action taken for each socket
+type.
+
+The default 'ZMQ_RCVHWM' value of zero means "no limit".
 
 [horizontal]
 Option value type:: int
@@ -348,9 +370,9 @@ EXAMPLE
 .Retrieving the high water mark
 ----
 /* Retrieve high water mark into hwm */
-int hwm;
-size_t hwm_size = sizeof (hwm);
-rc = zmq_getsockopt (socket, ZMQ_HWM, &hwm, &hwm_size);
+int sndhwm;
+size_t sndhwm_size = sizeof (sndhwm);
+rc = zmq_getsockopt (socket, ZMQ_SNDHWM, &sndhwm, &sndhwm_size);
 assert (rc == 0);
 ----
 

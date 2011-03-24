@@ -377,20 +377,25 @@ int zmq::socket_base_t::connect (const char *addr_)
 
         // The total HWM for an inproc connection should be the sum of
         // the binder's HWM and the connector's HWM.
-        int  hwm;
-        if (options.hwm == 0 || peer.options.hwm == 0)
-            hwm = 0;
+        int  sndhwm;
+        int  rcvhwm;
+        if (options.sndhwm == 0 || peer.options.rcvhwm == 0)
+            sndhwm = 0;
         else
-            hwm = options.hwm + peer.options.hwm;
+            sndhwm = options.sndhwm + peer.options.rcvhwm;
+        if (options.rcvhwm == 0 || peer.options.sndhwm == 0)
+            rcvhwm = 0;
+        else
+            rcvhwm = options.rcvhwm + peer.options.sndhwm;
 
         //  Create inbound pipe, if required.
         if (options.requires_in)
-            create_pipe (this, peer.socket, hwm, &inpipe_reader,
+            create_pipe (this, peer.socket, rcvhwm, &inpipe_reader,
                 &inpipe_writer);
 
         //  Create outbound pipe, if required.
         if (options.requires_out)
-            create_pipe (peer.socket, this, hwm, &outpipe_reader,
+            create_pipe (peer.socket, this, sndhwm, &outpipe_reader,
                 &outpipe_writer);
 
         //  Attach the pipes to this socket object.
@@ -429,12 +434,12 @@ int zmq::socket_base_t::connect (const char *addr_)
 
         //  Create inbound pipe, if required.
         if (options.requires_in)
-            create_pipe (this, session, options.hwm,
+            create_pipe (this, session, options.rcvhwm,
                 &inpipe_reader, &inpipe_writer);
 
         //  Create outbound pipe, if required.
         if (options.requires_out)
-            create_pipe (session, this, options.hwm,
+            create_pipe (session, this, options.sndhwm,
                 &outpipe_reader, &outpipe_writer);
 
         //  Attach the pipes to the socket object.

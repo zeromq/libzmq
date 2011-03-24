@@ -33,14 +33,14 @@ int main (int argc, char *argv [])
     void *sb = zmq_socket (ctx, ZMQ_PULL);
     assert (sb);
     int hwm = 2;
-    int rc = zmq_setsockopt (sb, ZMQ_HWM, &hwm, sizeof (hwm));
+    int rc = zmq_setsockopt (sb, ZMQ_RCVHWM, &hwm, sizeof (hwm));
     assert (rc == 0);
     rc = zmq_bind (sb, "inproc://a");
     assert (rc == 0);
 
     void *sc = zmq_socket (ctx, ZMQ_PUSH);
     assert (sc);
-    rc = zmq_setsockopt (sc, ZMQ_HWM, &hwm, sizeof (hwm));
+    rc = zmq_setsockopt (sc, ZMQ_SNDHWM, &hwm, sizeof (hwm));
     assert (rc == 0);
     rc = zmq_connect (sc, "inproc://a");
     assert (rc == 0);

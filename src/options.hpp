@@ -35,8 +35,9 @@ namespace zmq
         int setsockopt (int option_, const void *optval_, size_t optvallen_);
         int getsockopt (int option_, void *optval_, size_t *optvallen_);
 
-        //  High-water mark for messages in pipe.
-        int hwm;
+        //  High-water marks for message pipes.
+        int sndhwm;
+        int rcvhwm;
 
         uint64_t affinity;
         blob_t identity;

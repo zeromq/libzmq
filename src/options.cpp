@@ -26,7 +26,8 @@
 #include "err.hpp"
 
 zmq::options_t::options_t () :
-    hwm (0),
+    sndhwm (0),
+    rcvhwm (0),
     affinity (0),
     rate (100),
     recovery_ivl (10000),
@@ -49,12 +50,20 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
 {
     switch (option_) {
 
-    case ZMQ_HWM:
+    case ZMQ_SNDHWM:
         if (optvallen_ != sizeof (int) || *((int*) optval_) < 0) {
             errno = EINVAL;
             return -1;
         }
-        hwm = *((int*) optval_);
+        sndhwm = *((int*) optval_);
+        return 0;
+
+    case ZMQ_RCVHWM:
+        if (optvallen_ != sizeof (int) || *((int*) optval_) < 0) {
+            errno = EINVAL;
+            return -1;
+        }
+        rcvhwm = *((int*) optval_);
         return 0;
 
     case ZMQ_AFFINITY:
@@ -168,13 +177,22 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
 {
     switch (option_) {
 
-    case ZMQ_HWM:
+    case ZMQ_SNDHWM:
         if (*optvallen_ < sizeof (int)) {
             errno = EINVAL;
             return -1;
         }
-        *((int*) optval_) = hwm;
-        *optvallen_ = sizeof (uint64_t);
+        *((int*) optval_) = sndhwm;
+        *optvallen_ = sizeof (int);
+        return 0;
+
+    case ZMQ_RCVHWM:
+        if (*optvallen_ < sizeof (int)) {
+            errno = EINVAL;
+            return -1;
+        }
+        *((int*) optval_) = rcvhwm;
+        *optvallen_ = sizeof (int);
         return 0;
 
     case ZMQ_AFFINITY:
