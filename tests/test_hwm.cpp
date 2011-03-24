@@ -18,51 +18,90 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "testutil.hpp"
-#include "../src/stdint.hpp"
 
-using namespace std;
-using namespace zmqtestutil;
+#include <assert.h>
+
+#include "../src/stdint.hpp"
+#include "testutil.hpp"
 
 int main (int argc, char *argv [])
 {
-    uint64_t hwm = 5;
-    int linger = 0;
+    void *ctx = zmq_init (1);
+    assert (ctx);
 
-    zmq::context_t context (1);
-    zmq::socket_t s1 (context, ZMQ_PULL);
-    zmq::socket_t s2 (context, ZMQ_PUSH);
+    //  Create pair of socket, each with high watermark of 2. Thus the total
+    //  buffer space should be 4 messages.
+    void *sb = zmq_socket (ctx, ZMQ_PULL);
+    assert (sb);
+    uint64_t hwm = 2;
+    int rc = zmq_setsockopt (sb, ZMQ_HWM, &hwm, sizeof (hwm));
+    assert (rc == 0);
+    rc = zmq_bind (sb, "inproc://a");
+    assert (rc == 0);
 
-    s2.setsockopt (ZMQ_LINGER, &linger, sizeof (int));
-    s2.setsockopt (ZMQ_HWM, &hwm, sizeof (uint64_t));
+    void *sc = zmq_socket (ctx, ZMQ_PUSH);
+    assert (sc);
+    rc = zmq_setsockopt (sc, ZMQ_HWM, &hwm, sizeof (hwm));
+    assert (rc == 0);
+    rc = zmq_connect (sc, "inproc://a");
+    assert (rc == 0);
 
-    s1.bind ("tcp://127.0.0.1:5858");
-    s2.connect ("tcp://127.0.0.1:5858");
-
+    //  Try to send 10 messages. Only 4 should succeed.
     for (int i = 0; i < 10; i++)
     {
-        zmq::message_t msg (sizeof ("test") - 1);
-        memcpy (msg.data (), "test", sizeof ("test") - 1);
+        zmq_msg_t msg;
+        rc = zmq_msg_init (&msg);
+        assert (rc == 0);
 
-        bool sent = s2.send (msg, ZMQ_NOBLOCK);
+        int rc = zmq_send (sc, &msg, ZMQ_NOBLOCK);
+        if (i < 4)
+            assert (rc == 0);
+        else
+            assert (rc != 0 && errno == EAGAIN);
 
-        // Anything below HWM should be sent
-        if (i < 5) {
-            assert (sent);
-        } else {
-            assert (!sent && errno == EAGAIN);
-        }
+        rc = zmq_msg_close (&msg);
+        assert (rc == 0);
     }
 
-    // There should be now 5 messages pending, consume one
-    zmq::message_t msg;
+    // There should be now 4 messages pending, consume them.
+    for (int i = 0; i != 4; i++) {
 
-    bool received = s1.recv (&msg, 0);
-    assert (received);
+        zmq_msg_t msg;
+        rc = zmq_msg_init (&msg);
+        assert (rc == 0);
 
-    // Now it should be possible to send one more
-    bool sent = s2.send (msg, 0);
-    assert (sent);
+        rc = zmq_recv (sb, &msg, 0);
+        assert (rc == 0);
+
+        rc = zmq_msg_close (&msg);
+        assert (rc == 0);
+    }
+
+    // Now it should be possible to send one more.
+    zmq_msg_t msg;
+    rc = zmq_msg_init (&msg);
+    assert (rc == 0);
+    rc = zmq_send (sc, &msg, 0);
+    assert (rc == 0);
+    rc = zmq_msg_close (&msg);
+    assert (rc == 0);
+
+    //  Consume the remaining message.
+    rc = zmq_msg_init (&msg);
+    assert (rc == 0);
+    rc = zmq_recv (sb, &msg, 0);
+    assert (rc == 0);
+    rc = zmq_msg_close (&msg);
+    assert (rc == 0);
+
+    rc = zmq_close (sc);
+    assert (rc == 0);
+
+    rc = zmq_close (sb);
+    assert (rc == 0);
+
+    rc = zmq_term (ctx);
+    assert (rc == 0);
 
 	return 0;
 }

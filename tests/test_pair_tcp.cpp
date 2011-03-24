@@ -18,14 +18,34 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <assert.h>
 #include "testutil.hpp"
-
-using namespace std;
-using namespace zmqtestutil;
 
 int main (int argc, char *argv [])
 {
-    const char *transport = "tcp://127.0.0.1:5555" ;
-    basic_tests (transport, ZMQ_PAIR, ZMQ_PAIR);
+    void *ctx = zmq_init (1);
+    assert (ctx);
+
+    void *sb = zmq_socket (ctx, ZMQ_PAIR);
+    assert (sb);
+    int rc = zmq_bind (sb, "tcp://127.0.0.1:5555");
+    assert (rc == 0);
+
+    void *sc = zmq_socket (ctx, ZMQ_PAIR);
+    assert (sc);
+    rc = zmq_connect (sc, "tcp://127.0.0.1:5555");
+    assert (rc == 0);
+    
+    bounce (sb, sc);
+
+    rc = zmq_close (sc);
+    assert (rc == 0);
+
+    rc = zmq_close (sb);
+    assert (rc == 0);
+
+    rc = zmq_term (ctx);
+    assert (rc == 0);
+
     return 0 ;
 }
