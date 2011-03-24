@@ -143,32 +143,8 @@ ZMQ_RECOVERY_IVL: Set multicast recovery interval
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_RECOVERY_IVL' option shall set the recovery interval for multicast
 transports using the specified 'socket'. The recovery interval determines the
-maximum time in seconds that a receiver can be absent from a multicast group
-before unrecoverable data loss will occur.
-
-CAUTION: Exercise care when setting large recovery intervals as the data
-needed for recovery will be held in memory. For example, a 1 minute recovery
-interval at a data rate of 1Gbps requires a 7GB in-memory buffer.
-
-[horizontal]
-Option value type:: int64_t
-Option value unit:: seconds
-Default value:: 10
-Applicable socket types:: all, when using multicast transports
-
-
-ZMQ_RECOVERY_IVL_MSEC: Set multicast recovery interval in milliseconds
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_RECOVERY_IVL_MSEC' option shall set the recovery interval, specified
-in milliseconds (ms) for multicast transports using the specified 'socket'.
-The recovery interval determines the maximum time in milliseconds that a
-receiver can be absent from a multicast group before unrecoverable data loss
-will occur.
-
-A non-zero value of the 'ZMQ_RECOVERY_IVL_MSEC' option will take precedence
-over the 'ZMQ_RECOVERY_IVL' option, but since the default for the
-'ZMQ_RECOVERY_IVL_MSEC' is -1, the default is to use the 'ZMQ_RECOVERY_IVL'
-option value.
+maximum time in milliseconds that a receiver can be absent from a multicast
+group before unrecoverable data loss will occur.
 
 CAUTION: Exercise care when setting large recovery intervals as the data
 needed for recovery will be held in memory. For example, a 1 minute recovery
@@ -177,9 +153,8 @@ interval at a data rate of 1Gbps requires a 7GB in-memory buffer.
 [horizontal]
 Option value type:: int64_t
 Option value unit:: milliseconds
-Default value:: -1
+Default value:: 10000
 Applicable socket types:: all, when using multicast transports
-
 
 ZMQ_SNDBUF: Set kernel transmit buffer size
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

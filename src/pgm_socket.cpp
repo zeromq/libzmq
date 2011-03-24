@@ -83,19 +83,9 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
     }
     memset (network, '\0', sizeof (network));
     memcpy (network, network_, port_delim - network_);
-   
-    //  Validate socket options 
-    //  Data rate is in [B/s]. options.rate is in [kb/s].
-    if (options.rate <= 0) {
-        errno = EINVAL;
-        return -1;
-    }
-    //  Recovery interval [s] or [ms] - based on the user's call 
-    if ((options.recovery_ivl <= 0) && (options.recovery_ivl_msec <= 0)) {
-        errno = EINVAL;
-        return -1;
-    }
 
+    zmq_assert (options.rate > 0);
+   
     //  Zero counter used in msgrecv.
     nbytes_rec = 0;
     nbytes_processed = 0;
@@ -679,19 +669,14 @@ int zmq::pgm_socket_t::compute_sqns (int tpdu_)
 {
     //  Convert rate into B/ms.
     uint64_t rate = ((uint64_t) options.rate) / 8;
-
-    //  Get recovery interval in milliseconds.
-    uint64_t interval = options.recovery_ivl_msec >= 0 ?
-        options.recovery_ivl_msec :
-        options.recovery_ivl * 1000;
         
     //  Compute the size of the buffer in bytes.
-    uint64_t size = interval * rate;
+    uint64_t size = options.recovery_ivl * rate;
 
     //  Translate the size into number of packets.
     uint64_t sqns = size / tpdu_;
 
-    //  Buffer should be able to contain at least one packet.
+    //  Buffer should be able to hold at least one packet.
     if (sqns == 0)
         sqns = 1;
 

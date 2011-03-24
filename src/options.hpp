@@ -42,10 +42,8 @@ namespace zmq
         //  Maximum tranfer rate [kb/s]. Default 100kb/s.
         uint32_t rate;
 
-        //  Reliability time interval [s]. Default 10s.
+        //  Reliability time interval [ms]. Default 10 seconds.
         uint32_t recovery_ivl;
-        //  Reliability time interval [ms]. Default -1 = not used.
-        int32_t recovery_ivl_msec;
 
         uint64_t sndbuf;
         uint64_t rcvbuf;

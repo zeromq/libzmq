@@ -199,7 +199,6 @@ ZMQ_EXPORT int zmq_term (void *context);
 #define ZMQ_LINGER 17
 #define ZMQ_RECONNECT_IVL 18
 #define ZMQ_BACKLOG 19
-#define ZMQ_RECOVERY_IVL_MSEC 20   /*  opt. recovery time, reconcile in 3.x   */
 #define ZMQ_RECONNECT_IVL_MAX 21
 #define ZMQ_MAXMSGSIZE 22
     
