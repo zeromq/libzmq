@@ -35,22 +35,21 @@ zmq::tcp_socket_t::~tcp_socket_t ()
         close ();
 }
 
-int zmq::tcp_socket_t::open (fd_t fd_, uint64_t sndbuf_, uint64_t rcvbuf_)
+int zmq::tcp_socket_t::open (fd_t fd_, int sndbuf_, int rcvbuf_)
 {
     zmq_assert (s == retired_fd);
     s = fd_;
 
     if (sndbuf_) {
-        int sz = (int) sndbuf_;
         int rc = setsockopt (s, SOL_SOCKET, SO_SNDBUF,
-            (char*) &sz, sizeof (int));
+            (char*) &sndbuf_, sizeof (int));
         errno_assert (rc == 0);
     }
 
     if (rcvbuf_) {
         int sz = (int) rcvbuf_;
         int rc = setsockopt (s, SOL_SOCKET, SO_RCVBUF,
-            (char*) &sz, sizeof (int));
+            (char*) &rcvbuf_, sizeof (int));
         errno_assert (rc == 0);
     }
 
@@ -145,20 +144,18 @@ zmq::tcp_socket_t::~tcp_socket_t ()
         close ();
 }
 
-int zmq::tcp_socket_t::open (fd_t fd_, uint64_t sndbuf_, uint64_t rcvbuf_)
+int zmq::tcp_socket_t::open (fd_t fd_, int sndbuf_, int rcvbuf_)
 {
     assert (s == retired_fd);
     s = fd_;
 
     if (sndbuf_) {
-        int sz = (int) sndbuf_;
-        int rc = setsockopt (s, SOL_SOCKET, SO_SNDBUF, &sz, sizeof (int));
+        int rc = setsockopt (s, SOL_SOCKET, SO_SNDBUF, &sndbuf_, sizeof (int));
         errno_assert (rc == 0);
     }
 
     if (rcvbuf_) {
-        int sz = (int) rcvbuf_;
-        int rc = setsockopt (s, SOL_SOCKET, SO_RCVBUF, &sz, sizeof (int));
+        int rc = setsockopt (s, SOL_SOCKET, SO_RCVBUF, &rcvbuf_, sizeof (int));
         errno_assert (rc == 0);
     }
 

@@ -37,7 +37,7 @@ namespace zmq
         ~tcp_socket_t ();
 
         //  Associates a socket with a native socket descriptor.
-        int open (fd_t fd_, uint64_t sndbuf_, uint64_t rcvbuf_);
+        int open (fd_t fd_, int sndbuf_, int rcvbuf_);
          
         //  Closes the underlying socket.
         int close ();

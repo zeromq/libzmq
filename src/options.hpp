@@ -45,8 +45,9 @@ namespace zmq
         //  Reliability time interval [ms]. Default 10 seconds.
         uint32_t recovery_ivl;
 
-        uint64_t sndbuf;
-        uint64_t rcvbuf;
+        // SO_SNDBUF and SO_RCVBUF to be passed to underlying transport sockets.
+        int sndbuf;
+        int rcvbuf;
 
         //  Socket type.
         int type;

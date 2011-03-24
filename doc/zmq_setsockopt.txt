@@ -164,7 +164,7 @@ the OS default unchanged. For details please refer to your operating system
 documentation for the 'SO_SNDBUF' socket option.
 
 [horizontal]
-Option value type:: uint64_t
+Option value type:: int
 Option value unit:: bytes
 Default value:: 0
 Applicable socket types:: all
@@ -178,7 +178,7 @@ OS default unchanged. For details refer to your operating system documentation
 for the 'SO_RCVBUF' socket option.
 
 [horizontal]
-Option value type:: uint64_t
+Option value type:: int
 Option value unit:: bytes
 Default value:: 0
 Applicable socket types:: all

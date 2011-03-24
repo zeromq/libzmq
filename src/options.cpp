@@ -87,7 +87,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         return 0;
         
     case ZMQ_RECOVERY_IVL:
-        if (optvallen_ != sizeof (int64_t)  || *((int64_t*) optval_) < 0) {
+        if (optvallen_ != sizeof (int64_t) || *((int64_t*) optval_) < 0) {
             errno = EINVAL;
             return -1;
         }
@@ -95,19 +95,19 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         return 0;
 
     case ZMQ_SNDBUF:
-        if (optvallen_ != sizeof (uint64_t)) {
+        if (optvallen_ != sizeof (int) || *((int*) optval_) < 0) {
             errno = EINVAL;
             return -1;
         }
-        sndbuf = *((uint64_t*) optval_);
+        sndbuf = *((int*) optval_);
         return 0;
 
     case ZMQ_RCVBUF:
-        if (optvallen_ != sizeof (uint64_t)) {
+        if (optvallen_ != sizeof (int) || *((int*) optval_) < 0) {
             errno = EINVAL;
             return -1;
         }
-        rcvbuf = *((uint64_t*) optval_);
+        rcvbuf = *((int*) optval_);
         return 0;
 
     case ZMQ_LINGER:
@@ -215,21 +215,21 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
         return 0;
 
     case ZMQ_SNDBUF:
-        if (*optvallen_ < sizeof (uint64_t)) {
+        if (*optvallen_ < sizeof (int)) {
             errno = EINVAL;
             return -1;
         }
-        *((uint64_t*) optval_) = sndbuf;
-        *optvallen_ = sizeof (uint64_t);
+        *((int*) optval_) = sndbuf;
+        *optvallen_ = sizeof (int);
         return 0;
 
     case ZMQ_RCVBUF:
-        if (*optvallen_ < sizeof (uint64_t)) {
+        if (*optvallen_ < sizeof (int)) {
             errno = EINVAL;
             return -1;
         }
-        *((uint64_t*) optval_) = rcvbuf;
-        *optvallen_ = sizeof (uint64_t);
+        *((int*) optval_) = rcvbuf;
+        *optvallen_ = sizeof (int);
         return 0;
 
     case ZMQ_TYPE:
