@@ -79,22 +79,6 @@ Default value:: 0
 Applicable socket types:: all
 
 
-ZMQ_SWAP: Retrieve disk offload size
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_SWAP' option shall retrieve the disk offload (swap) size for the
-specified 'socket'. A socket which has 'ZMQ_SWAP' set to a non-zero value may
-exceed it's high water mark; in this case outstanding messages shall be
-offloaded to storage on disk rather than held in memory.
-
-The value of 'ZMQ_SWAP' defines the maximum size of the swap space in bytes.
-
-[horizontal]
-Option value type:: int64_t
-Option value unit:: bytes
-Default value:: 0
-Applicable socket types:: all
-
-
 ZMQ_AFFINITY: Retrieve I/O thread affinity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_AFFINITY' option shall retrieve the I/O thread affinity for newly

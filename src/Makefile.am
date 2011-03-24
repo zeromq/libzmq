@@ -115,7 +115,6 @@ libzmq_la_SOURCES = \
     socket_base.hpp \
     stdint.hpp \
     sub.hpp \
-    swap.hpp \
     tcp_connecter.hpp \
     tcp_listener.hpp \
     tcp_socket.hpp \
@@ -173,7 +172,6 @@ libzmq_la_SOURCES = \
     session.cpp \
     socket_base.cpp \
     sub.cpp \
-    swap.cpp \
     tcp_connecter.cpp \
     tcp_listener.cpp \
     tcp_socket.cpp \

@@ -27,7 +27,6 @@
 
 zmq::options_t::options_t () :
     hwm (0),
-    swap (0),
     affinity (0),
     rate (100),
     recovery_ivl (10),
@@ -57,14 +56,6 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             return -1;
         }
         hwm = *((uint64_t*) optval_);
-        return 0;
-
-    case ZMQ_SWAP:
-        if (optvallen_ != sizeof (int64_t) || *((int64_t*) optval_) < 0) {
-            errno = EINVAL;
-            return -1;
-        }
-        swap = *((int64_t*) optval_);
         return 0;
 
     case ZMQ_AFFINITY:
@@ -193,15 +184,6 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
         }
         *((uint64_t*) optval_) = hwm;
         *optvallen_ = sizeof (uint64_t);
-        return 0;
-
-    case ZMQ_SWAP:
-        if (*optvallen_ < sizeof (int64_t)) {
-            errno = EINVAL;
-            return -1;
-        }
-        *((int64_t*) optval_) = swap;
-        *optvallen_ = sizeof (int64_t);
         return 0;
 
     case ZMQ_AFFINITY:

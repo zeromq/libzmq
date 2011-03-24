@@ -26,7 +26,6 @@
 #include "stdint.hpp"
 #include "array.hpp"
 #include "ypipe.hpp"
-#include "swap.hpp"
 #include "config.hpp"
 #include "object.hpp"
 
@@ -35,7 +34,7 @@ namespace zmq
 
     //  Creates a pipe. Returns pointer to reader and writer objects.
     void create_pipe (object_t *reader_parent_, object_t *writer_parent_,
-        uint64_t hwm_, int64_t swap_size_, class reader_t **reader_,
+        uint64_t hwm_, class reader_t **reader_,
         class writer_t **writer_);
 
     //  The shutdown mechanism for pipe works as follows: Either endpoint
@@ -59,7 +58,7 @@ namespace zmq
     class reader_t : public object_t, public array_item_t
     {
         friend void create_pipe (object_t*, object_t*, uint64_t,
-            int64_t, reader_t**, writer_t**);
+            reader_t**, writer_t**);
         friend class writer_t;
 
     public:
@@ -128,7 +127,7 @@ namespace zmq
     class writer_t : public object_t, public array_item_t
     {
         friend void create_pipe (object_t*, object_t*, uint64_t,
-            int64_t, reader_t**, writer_t**);
+            reader_t**, writer_t**);
 
     public:
 
@@ -136,8 +135,8 @@ namespace zmq
         void set_event_sink (i_writer_events *endpoint_);
 
         //  Checks whether messages can be written to the pipe.
-        //  If writing the message would cause high watermark and (optionally)
-        //  if the swap is full, the function returns false.
+        //  If writing the message would cause high watermark
+        //  the function returns false.
         bool check_write (zmq_msg_t *msg_);
 
         //  Writes a message to the underlying pipe. Returns false if the
@@ -156,19 +155,17 @@ namespace zmq
     private:
 
         writer_t (class object_t *parent_, pipe_t *pipe_, reader_t *reader_,
-            uint64_t hwm_, int64_t swap_size_);
+            uint64_t hwm_);
         ~writer_t ();
 
         //  Command handlers.
         void process_activate_writer (uint64_t msgs_read_);
         void process_pipe_term ();
 
-        //  Tests whether underlying pipe is already full. The swap is not
-        //  taken into account.
+        //  Tests whether underlying pipe is already full.
         bool pipe_full ();
 
-        //  True, if this object can be written to. Undelying ypipe may be full
-        //  but as long as there's swap space available, this flag is true.
+        //  True, if this object can be written to.
         bool active;
 
         //  The underlying pipe.
@@ -187,19 +184,8 @@ namespace zmq
         //  Number of messages we have written so far.
         uint64_t msgs_written;
 
-        //  Pointer to the message swap. If NULL, messages are always
-        //  kept in main memory.
-        swap_t *swap;
-
         //  Sink for the events (either the socket or the session).
         i_writer_events *sink;
-
-        //  If true, swap is active. New messages are to be written to the swap.
-        bool swapping;
-
-        //  If true, there's a delimiter to be written to the pipe after the
-        //  swap is empied.
-        bool pending_delimiter;
 
         //  True is 'terminate' method was called of 'pipe_term' command
         //  arrived from the reader.

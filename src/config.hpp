@@ -59,10 +59,6 @@ namespace zmq
         //  Maximal delta between high and low watermark.
         max_wm_delta = 1024,
 
-        //  Swap inteligently batches data for writing to disk. The size of
-        //  the batch in bytes is specified by this option.
-        swap_block_size = 8192,
-
         //  Maximum number of events the I/O thread can process in one go.
         max_io_events = 256,
 

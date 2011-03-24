@@ -184,7 +184,6 @@ ZMQ_EXPORT int zmq_term (void *context);
 
 /*  Socket options.                                                           */
 #define ZMQ_HWM 1
-#define ZMQ_SWAP 3
 #define ZMQ_AFFINITY 4
 #define ZMQ_IDENTITY 5
 #define ZMQ_SUBSCRIBE 6

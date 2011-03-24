@@ -163,7 +163,7 @@ void zmq::reader_t::process_pipe_term_ack ()
 }
 
 zmq::writer_t::writer_t (object_t *parent_, pipe_t *pipe_, reader_t *reader_,
-      uint64_t hwm_, int64_t swap_size_) :
+      uint64_t hwm_) :
     object_t (parent_),
     active (true),
     pipe (pipe_),
@@ -171,28 +171,15 @@ zmq::writer_t::writer_t (object_t *parent_, pipe_t *pipe_, reader_t *reader_,
     hwm (hwm_),
     msgs_read (0),
     msgs_written (0),
-    swap (NULL),
     sink (NULL),
-    swapping (false),
-    pending_delimiter (false),
     terminating (false)
 {
     //  Inform reader about the writer.
     reader->set_writer (this);
-
-    //  Open the swap file, if required.
-    if (swap_size_ > 0) {
-        swap = new (std::nothrow) swap_t (swap_size_);
-        alloc_assert (swap);
-        int rc = swap->init ();
-        zmq_assert (rc == 0);
-    }
 }
 
 zmq::writer_t::~writer_t ()
 {
-    if (swap)
-       delete swap;
 }
 
 void zmq::writer_t::set_event_sink (i_writer_events *sink_)
@@ -208,21 +195,9 @@ bool zmq::writer_t::check_write (zmq_msg_t *msg_)
     if (unlikely (!active))
         return false;
 
-    if (unlikely (swapping)) {
-        if (unlikely (!swap->fits (msg_))) {
-            active = false;
-            return false;
-        }
-    }
-    else {
-        if (unlikely (pipe_full ())) {
-            if (swap)
-                swapping = true;
-            else {
-                active = false;
-                return false;
-            }
-        }
+    if (unlikely (pipe_full ())) {
+        active = false;
+        return false;
     }
 
     return true;
@@ -233,14 +208,6 @@ bool zmq::writer_t::write (zmq_msg_t *msg_)
     if (unlikely (!check_write (msg_)))
         return false;
 
-    if (unlikely (swapping)) {
-        bool stored = swap->store (msg_);
-        zmq_assert (stored);
-        if (!(msg_->flags & ZMQ_MSG_MORE))
-            swap->commit ();
-        return true;
-    }
-
     pipe->write (*msg_, msg_->flags & ZMQ_MSG_MORE);
     if (!(msg_->flags & ZMQ_MSG_MORE))
         msgs_written++;
@@ -250,12 +217,6 @@ bool zmq::writer_t::write (zmq_msg_t *msg_)
 
 void zmq::writer_t::rollback ()
 {
-    //  Remove incomplete message from the swap.
-    if (unlikely (swapping)) {
-        swap->rollback ();
-        return;
-    }
-
     //  Remove incomplete message from the pipe.
     zmq_msg_t msg;
     while (pipe->unwrite (&msg)) {
@@ -266,8 +227,7 @@ void zmq::writer_t::rollback ()
 
 void zmq::writer_t::flush ()
 {
-    //  In the swapping mode, flushing is automatically handled by swap object.
-    if (!swapping && !pipe->flush ())
+    if (!pipe->flush ())
         send_activate_reader (reader);
 }
 
@@ -284,11 +244,6 @@ void zmq::writer_t::terminate ()
     //  Rollback any unfinished messages.
     rollback ();
 
-    if (swapping) {
-        pending_delimiter = true;
-        return;
-    }
-
     //  Push delimiter into the pipe. Trick the compiler to belive that
     //  the tag is a valid pointer. Note that watermarks are not checked
     //  thus the delimiter can be written even though the pipe is full.
@@ -304,40 +259,6 @@ void zmq::writer_t::process_activate_writer (uint64_t msgs_read_)
 {
     //  Store the reader's message sequence number.
     msgs_read = msgs_read_;
-
-    //  If we are in the swapping mode, we have some messages in the swap.
-    //  Given that pipe is now ready for writing we can move part of the
-    //  swap into the pipe.
-    if (swapping) {
-        zmq_msg_t msg;
-        while (!pipe_full () && !swap->empty ()) {
-            swap->fetch(&msg);
-            pipe->write (msg, msg.flags & ZMQ_MSG_MORE);
-            if (!(msg.flags & ZMQ_MSG_MORE))
-                msgs_written++;
-        }
-        if (!pipe->flush ())
-            send_activate_reader (reader);
-
-        //  There are no more messages in the swap. We can switch into
-        //  standard in-memory mode.
-        if (swap->empty ()) {        
-            swapping = false;
-
-            //  Push delimiter into the pipe. Trick the compiler to belive that
-            //  the tag is a valid pointer. Note that watermarks are not checked
-            //  thus the delimiter can be written even though the pipe is full.
-            if (pending_delimiter) {
-                zmq_msg_t msg;
-                const unsigned char *offset = 0;
-                msg.content = (void*) (offset + ZMQ_DELIMITER);
-                msg.flags = 0;
-                pipe->write (msg, false);
-                flush ();
-                return;
-            }
-        }
-    }
 
     //  If the writer was non-active before, let's make it active
     //  (available for writing messages to).
@@ -371,7 +292,7 @@ bool zmq::writer_t::pipe_full ()
 }
 
 void zmq::create_pipe (object_t *reader_parent_, object_t *writer_parent_,
-    uint64_t hwm_, int64_t swap_size_, reader_t **reader_, writer_t **writer_)
+    uint64_t hwm_, reader_t **reader_, writer_t **writer_)
 {
     //  First compute the low water mark. Following point should be taken
     //  into consideration:
@@ -404,6 +325,6 @@ void zmq::create_pipe (object_t *reader_parent_, object_t *writer_parent_,
     *reader_ = new (std::nothrow) reader_t (reader_parent_, pipe, lwm);
     alloc_assert (*reader_);
     *writer_ = new (std::nothrow) writer_t (writer_parent_, pipe, *reader_,
-        hwm_, swap_size_);
+        hwm_);
     alloc_assert (*writer_);
 }

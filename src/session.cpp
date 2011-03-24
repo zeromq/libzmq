@@ -247,13 +247,11 @@ void zmq::session_t::process_attach (i_engine *engine_,
 
         //  Create the pipes, as required.
         if (options.requires_in) {
-            create_pipe (socket, this, options.hwm, options.swap,
-                &socket_reader, &out_pipe);
+            create_pipe (socket, this, options.hwm, &socket_reader, &out_pipe);
             out_pipe->set_event_sink (this);
         }
         if (options.requires_out) {
-            create_pipe (this, socket, options.hwm, options.swap, &in_pipe,
-                &socket_writer);
+            create_pipe (this, socket, options.hwm, &in_pipe, &socket_writer);
             in_pipe->set_event_sink (this);
         }
 

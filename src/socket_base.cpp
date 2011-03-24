@@ -376,28 +376,22 @@ int zmq::socket_base_t::connect (const char *addr_)
         writer_t *outpipe_writer = NULL;
 
         // The total HWM for an inproc connection should be the sum of
-        // the binder's HWM and the connector's HWM.  (Similarly for the
-        // SWAP.)
+        // the binder's HWM and the connector's HWM.
         int64_t  hwm;
         if (options.hwm == 0 || peer.options.hwm == 0)
             hwm = 0;
         else
             hwm = options.hwm + peer.options.hwm;
-        int64_t swap;
-        if (options.swap == 0 && peer.options.swap == 0)
-            swap = 0;
-        else
-            swap = options.swap + peer.options.swap;
 
         //  Create inbound pipe, if required.
         if (options.requires_in)
-            create_pipe (this, peer.socket, hwm, swap,
-                &inpipe_reader, &inpipe_writer);
+            create_pipe (this, peer.socket, hwm, &inpipe_reader,
+                &inpipe_writer);
 
         //  Create outbound pipe, if required.
         if (options.requires_out)
-            create_pipe (peer.socket, this, hwm, swap,
-                &outpipe_reader, &outpipe_writer);
+            create_pipe (peer.socket, this, hwm, &outpipe_reader,
+                &outpipe_writer);
 
         //  Attach the pipes to this socket object.
         attach_pipes (inpipe_reader, outpipe_writer, peer.options.identity);
@@ -435,12 +429,12 @@ int zmq::socket_base_t::connect (const char *addr_)
 
         //  Create inbound pipe, if required.
         if (options.requires_in)
-            create_pipe (this, session, options.hwm, options.swap,
+            create_pipe (this, session, options.hwm,
                 &inpipe_reader, &inpipe_writer);
 
         //  Create outbound pipe, if required.
         if (options.requires_out)
-            create_pipe (session, this, options.hwm, options.swap,
+            create_pipe (session, this, options.hwm,
                 &outpipe_reader, &outpipe_writer);
 
         //  Attach the pipes to the socket object.

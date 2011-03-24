@@ -36,7 +36,6 @@ namespace zmq
         int getsockopt (int option_, void *optval_, size_t *optvallen_);
 
         uint64_t hwm;
-        int64_t swap;
         uint64_t affinity;
         blob_t identity;
 
