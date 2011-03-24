@@ -51,7 +51,7 @@ Refer to linkzmq:zmq_send[3] and linkzmq:zmq_recv[3] for a detailed description
 of sending/receiving multi-part messages.
 
 [horizontal]
-Option value type:: int64_t
+Option value type:: int
 Option value unit:: boolean
 Default value:: N/A
 Applicable socket types:: all

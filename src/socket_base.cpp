@@ -244,12 +244,12 @@ int zmq::socket_base_t::getsockopt (int option_, void *optval_,
     }
 
     if (option_ == ZMQ_RCVMORE) {
-        if (*optvallen_ < sizeof (int64_t)) {
+        if (*optvallen_ < sizeof (int)) {
             errno = EINVAL;
             return -1;
         }
-        *((int64_t*) optval_) = rcvmore ? 1 : 0;
-        *optvallen_ = sizeof (int64_t);
+        *((int*) optval_) = rcvmore ? 1 : 0;
+        *optvallen_ = sizeof (int);
         return 0;
     }
 
