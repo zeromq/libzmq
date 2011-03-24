@@ -96,7 +96,6 @@ This package contains ZeroMQ related development libraries and header files.
 %files devel
 %defattr(-,root,root,-)
 %{_includedir}/zmq.h
-%{_includedir}/zmq.hpp
 %{_includedir}/zmq_utils.h
 
 %{_libdir}/libzmq.la
