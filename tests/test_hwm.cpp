@@ -49,49 +49,25 @@ int main (int argc, char *argv [])
     //  Try to send 10 messages. Only 4 should succeed.
     for (int i = 0; i < 10; i++)
     {
-        zmq_msg_t msg;
-        rc = zmq_msg_init (&msg);
-        assert (rc == 0);
-
-        int rc = zmq_send (sc, &msg, ZMQ_NOBLOCK);
+        int rc = zmq_send (sc, NULL, 0, ZMQ_NOBLOCK);
         if (i < 4)
             assert (rc == 0);
         else
-            assert (rc != 0 && errno == EAGAIN);
-
-        rc = zmq_msg_close (&msg);
-        assert (rc == 0);
+            assert (rc < 0 && errno == EAGAIN);
     }
 
     // There should be now 4 messages pending, consume them.
     for (int i = 0; i != 4; i++) {
-
-        zmq_msg_t msg;
-        rc = zmq_msg_init (&msg);
-        assert (rc == 0);
-
-        rc = zmq_recv (sb, &msg, 0);
-        assert (rc == 0);
-
-        rc = zmq_msg_close (&msg);
+        rc = zmq_recv (sb, NULL, 0, 0);
         assert (rc == 0);
     }
 
     // Now it should be possible to send one more.
-    zmq_msg_t msg;
-    rc = zmq_msg_init (&msg);
-    assert (rc == 0);
-    rc = zmq_send (sc, &msg, 0);
-    assert (rc == 0);
-    rc = zmq_msg_close (&msg);
+    rc = zmq_send (sc, NULL, 0, 0);
     assert (rc == 0);
 
     //  Consume the remaining message.
-    rc = zmq_msg_init (&msg);
-    assert (rc == 0);
-    rc = zmq_recv (sb, &msg, 0);
-    assert (rc == 0);
-    rc = zmq_msg_close (&msg);
+    rc = zmq_recv (sb, NULL, 0, 0);
     assert (rc == 0);
 
     rc = zmq_close (sc);

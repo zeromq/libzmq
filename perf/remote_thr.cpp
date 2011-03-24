@@ -76,9 +76,9 @@ int main (int argc, char *argv [])
         memset (zmq_msg_data (&msg), 0, message_size);
 #endif
 
-        rc = zmq_send (s, &msg, 0);
-        if (rc != 0) {
-            printf ("error in zmq_send: %s\n", zmq_strerror (errno));
+        rc = zmq_sendmsg (s, &msg, 0);
+        if (rc < 0) {
+            printf ("error in zmq_sendmsg: %s\n", zmq_strerror (errno));
             return -1;
         }
         rc = zmq_msg_close (&msg);

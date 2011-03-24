@@ -343,22 +343,73 @@ int zmq_connect (void *s_, const char *addr_)
     return (((zmq::socket_base_t*) s_)->connect (addr_));
 }
 
-int zmq_send (void *s_, zmq_msg_t *msg_, int flags_)
+int zmq_send (void *s_, const void *buf_, size_t len_, int flags_)
 {
-    if (!s_) {
-        errno = EFAULT;
+    zmq_msg_t msg;
+    int rc = zmq_msg_init_size (&msg, len_);
+    if (rc != 0)
+        return -1;
+    memcpy (zmq_msg_data (&msg), buf_, len_);
+
+    rc = zmq_sendmsg (s_, &msg, flags_);
+    if (unlikely (rc < 0)) {
+        int err = errno;
+        int rc2 = zmq_msg_close (&msg);
+        errno_assert (rc2 == 0);
+        errno = err;
         return -1;
     }
-    return (((zmq::socket_base_t*) s_)->send (msg_, flags_));
+    
+    //  Note the optimisation here. We don't close the msg object as it is
+    //  empty anyway. This may change when implementation of zmq_msg_t changes.
+    return rc;
 }
 
-int zmq_recv (void *s_, zmq_msg_t *msg_, int flags_)
+int zmq_recv (void *s_, void *buf_, size_t len_, int flags_)
+{
+    zmq_msg_t msg;
+    int rc = zmq_msg_init (&msg);
+    errno_assert (rc == 0);
+
+    rc = zmq_recvmsg (s_, &msg, flags_);
+    if (unlikely (rc < 0)) {
+        int err = errno;
+        int rc2 = zmq_msg_close (&msg);
+        errno_assert (rc2 == 0);
+        errno = err;
+        return -1;
+    }
+
+    //  At the moment an oversized message is silently truncated.
+    //  TODO: Build in a notification mechanism to report the overflows.
+    size_t to_copy = size_t (rc) < len_ ? size_t (rc) : len_;
+    memcpy (buf_, zmq_msg_data (&msg), to_copy);
+    return (int) to_copy;    
+}
+
+int zmq_sendmsg (void *s_, zmq_msg_t *msg_, int flags_)
 {
     if (!s_) {
         errno = EFAULT;
         return -1;
     }
-    return (((zmq::socket_base_t*) s_)->recv (msg_, flags_));
+    int sz = (int) zmq_msg_size (msg_);
+    int rc = (((zmq::socket_base_t*) s_)->send (msg_, flags_));
+    if (unlikely (rc < 0))
+        return -1;
+    return sz;
+}
+
+int zmq_recvmsg (void *s_, zmq_msg_t *msg_, int flags_)
+{
+    if (!s_) {
+        errno = EFAULT;
+        return -1;
+    }
+    int rc = (((zmq::socket_base_t*) s_)->recv (msg_, flags_));
+    if (unlikely (rc < 0))
+        return -1;
+    return (int) zmq_msg_size (msg_);
 }
 
 #if defined ZMQ_FORCE_SELECT

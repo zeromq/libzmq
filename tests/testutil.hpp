@@ -31,39 +31,23 @@ inline void bounce (void *sb, void *sc)
     const char *content = "12345678ABCDEFGH12345678abcdefgh";
 
     //  Send the message.
-    zmq_msg_t msg1;
-    int rc = zmq_msg_init_size (&msg1, 32);
-    memcpy (zmq_msg_data (&msg1), content, 32);
-    rc = zmq_send (sc, &msg1, 0);
-    assert (rc == 0);
-    rc = zmq_msg_close (&msg1);
-    assert (rc == 0);
+    int rc = zmq_send (sc, content, 32, 0);
+    assert (rc == 32);
 
     //  Bounce the message back.
-    zmq_msg_t msg2;
-    rc = zmq_msg_init (&msg2);
-    assert (rc == 0);
-    rc = zmq_recv (sb, &msg2, 0);
-    assert (rc == 0);
-    rc = zmq_send (sb, &msg2, 0);
-    assert (rc == 0);
-    rc = zmq_msg_close (&msg2);
-    assert (rc == 0);
+    char buf1 [32];
+    rc = zmq_recv (sb, buf1, 32, 0);
+    assert (rc == 32);
+    rc = zmq_send (sb, buf1, 32, 0);
+    assert (rc == 32);
 
     //  Receive the bounced message.
-    zmq_msg_t msg3;
-    rc = zmq_msg_init (&msg3);
-    assert (rc == 0);
-    rc = zmq_recv (sc, &msg3, 0);
-    assert (rc == 0);
+    char buf2 [32];
+    rc = zmq_recv (sc, buf2, 32, 0);
+    assert (rc == 32);
 
     //  Check whether the message is still the same.
-    assert (zmq_msg_size (&msg3) == 32);
-    assert (memcmp (zmq_msg_data (&msg3), content, 32) == 0);
-
-    rc = zmq_msg_close (&msg3);
-    assert (rc == 0);
+    assert (memcmp (buf2, content, 32) == 0);
 }
-
 
 #endif

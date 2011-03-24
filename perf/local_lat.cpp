@@ -68,18 +68,18 @@ int main (int argc, char *argv [])
     }
 
     for (i = 0; i != roundtrip_count; i++) {
-        rc = zmq_recv (s, &msg, 0);
-        if (rc != 0) {
-            printf ("error in zmq_recv: %s\n", zmq_strerror (errno));
+        rc = zmq_recvmsg (s, &msg, 0);
+        if (rc < 0) {
+            printf ("error in zmq_recvmsg: %s\n", zmq_strerror (errno));
             return -1;
         }
         if (zmq_msg_size (&msg) != message_size) {
             printf ("message of incorrect size received\n");
             return -1;
         }
-        rc = zmq_send (s, &msg, 0);
-        if (rc != 0) {
-            printf ("error in zmq_send: %s\n", zmq_strerror (errno));
+        rc = zmq_sendmsg (s, &msg, 0);
+        if (rc < 0) {
+            printf ("error in zmq_sendmsg: %s\n", zmq_strerror (errno));
             return -1;
         }
     }
