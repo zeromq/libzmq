@@ -668,10 +668,10 @@ void zmq::pgm_socket_t::process_upstream ()
 int zmq::pgm_socket_t::compute_sqns (int tpdu_)
 {
     //  Convert rate into B/ms.
-    uint64_t rate = ((uint64_t) options.rate) / 8;
+    uint64_t rate = uint64_t (options.rate) / 8;
         
     //  Compute the size of the buffer in bytes.
-    uint64_t size = options.recovery_ivl * rate;
+    uint64_t size = uint64_t (options.recovery_ivl) * rate;
 
     //  Translate the size into number of packets.
     uint64_t sqns = size / tpdu_;

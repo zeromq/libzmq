@@ -133,7 +133,7 @@ The 'ZMQ_RATE' option shall set the maximum send or receive data rate for
 multicast transports such as linkzmq:zmq_pgm[7] using the specified 'socket'.
 
 [horizontal]
-Option value type:: int64_t
+Option value type:: int
 Option value unit:: kilobits per second
 Default value:: 100
 Applicable socket types:: all, when using multicast transports
@@ -151,7 +151,7 @@ needed for recovery will be held in memory. For example, a 1 minute recovery
 interval at a data rate of 1Gbps requires a 7GB in-memory buffer.
 
 [horizontal]
-Option value type:: int64_t
+Option value type:: int
 Option value unit:: milliseconds
 Default value:: 10000
 Applicable socket types:: all, when using multicast transports

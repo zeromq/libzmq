@@ -79,19 +79,19 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         return 0;
 
     case ZMQ_RATE:
-        if (optvallen_ != sizeof (int64_t) || *((int64_t*) optval_) <= 0) {
+        if (optvallen_ != sizeof (int) || *((int*) optval_) <= 0) {
             errno = EINVAL;
             return -1;
         }
-        rate = (uint32_t) *((int64_t*) optval_);
+        rate = *((int*) optval_);
         return 0;
         
     case ZMQ_RECOVERY_IVL:
-        if (optvallen_ != sizeof (int64_t) || *((int64_t*) optval_) < 0) {
+        if (optvallen_ != sizeof (int) || *((int*) optval_) < 0) {
             errno = EINVAL;
             return -1;
         }
-        recovery_ivl = (uint32_t) *((int64_t*) optval_);
+        recovery_ivl = *((int*) optval_);
         return 0;
 
     case ZMQ_SNDBUF:
@@ -195,23 +195,22 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
         *optvallen_ = identity.size ();
         return 0;
 
-
     case ZMQ_RATE:
-        if (*optvallen_ < sizeof (int64_t)) {
+        if (*optvallen_ < sizeof (int)) {
             errno = EINVAL;
             return -1;
         }
-        *((int64_t*) optval_) = rate;
-        *optvallen_ = sizeof (int64_t);
+        *((int*) optval_) = rate;
+        *optvallen_ = sizeof (int);
         return 0;
         
     case ZMQ_RECOVERY_IVL:
-        if (*optvallen_ < sizeof (int64_t)) {
+        if (*optvallen_ < sizeof (int)) {
             errno = EINVAL;
             return -1;
         }
-        *((int64_t*) optval_) = recovery_ivl;
-        *optvallen_ = sizeof (int64_t);
+        *((int*) optval_) = recovery_ivl;
+        *optvallen_ = sizeof (int);
         return 0;
 
     case ZMQ_SNDBUF:

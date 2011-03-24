@@ -40,10 +40,10 @@ namespace zmq
         blob_t identity;
 
         //  Maximum tranfer rate [kb/s]. Default 100kb/s.
-        uint32_t rate;
+        int rate;
 
         //  Reliability time interval [ms]. Default 10 seconds.
-        uint32_t recovery_ivl;
+        int recovery_ivl;
 
         // SO_SNDBUF and SO_RCVBUF to be passed to underlying transport sockets.
         int sndbuf;
@@ -58,6 +58,7 @@ namespace zmq
         //  Minimum interval between attempts to reconnect, in milliseconds.
         //  Default 100ms
         int reconnect_ivl;
+
         //  Maximum interval between attempts to reconnect, in milliseconds.
         //  Default 0 (unused)
         int reconnect_ivl_max;

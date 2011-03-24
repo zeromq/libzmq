@@ -131,7 +131,7 @@ The 'ZMQ_RATE' option shall retrieve the maximum send or receive data rate for
 multicast transports using the specified 'socket'.
 
 [horizontal]
-Option value type:: int64_t
+Option value type:: int
 Option value unit:: kilobits per second
 Default value:: 100
 Applicable socket types:: all, when using multicast transports
@@ -145,7 +145,7 @@ determines the maximum time in milliseconds that a receiver can be absent from a
 multicast group before unrecoverable data loss will occur.
 
 [horizontal]
-Option value type:: int64_t
+Option value type:: int
 Option value unit:: milliseconds
 Default value:: 10000
 Applicable socket types:: all, when using multicast transports
