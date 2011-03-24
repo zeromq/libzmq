@@ -73,7 +73,7 @@ type.
 The default 'ZMQ_HWM' value of zero means "no limit".
 
 [horizontal]
-Option value type:: uint64_t
+Option value type:: int
 Option value unit:: messages
 Default value:: 0
 Applicable socket types:: all
@@ -348,7 +348,7 @@ EXAMPLE
 .Retrieving the high water mark
 ----
 /* Retrieve high water mark into hwm */
-int64_t hwm;
+int hwm;
 size_t hwm_size = sizeof (hwm);
 rc = zmq_getsockopt (socket, ZMQ_HWM, &hwm, &hwm_size);
 assert (rc == 0);

@@ -377,7 +377,7 @@ int zmq::socket_base_t::connect (const char *addr_)
 
         // The total HWM for an inproc connection should be the sum of
         // the binder's HWM and the connector's HWM.
-        int64_t  hwm;
+        int  hwm;
         if (options.hwm == 0 || peer.options.hwm == 0)
             hwm = 0;
         else

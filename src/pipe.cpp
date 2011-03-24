@@ -25,8 +25,7 @@
 #include "pipe.hpp"
 #include "likely.hpp"
 
-zmq::reader_t::reader_t (object_t *parent_, pipe_t *pipe_,
-      uint64_t lwm_) :
+zmq::reader_t::reader_t (object_t *parent_, pipe_t *pipe_, int lwm_) :
     object_t (parent_),
     active (true),
     pipe (pipe_),
@@ -163,7 +162,7 @@ void zmq::reader_t::process_pipe_term_ack ()
 }
 
 zmq::writer_t::writer_t (object_t *parent_, pipe_t *pipe_, reader_t *reader_,
-      uint64_t hwm_) :
+      int hwm_) :
     object_t (parent_),
     active (true),
     pipe (pipe_),
@@ -288,11 +287,11 @@ void zmq::writer_t::process_pipe_term ()
 
 bool zmq::writer_t::pipe_full ()
 {
-    return hwm > 0 && msgs_written - msgs_read == hwm;
+    return hwm > 0 && msgs_written - msgs_read == uint64_t (hwm);
 }
 
 void zmq::create_pipe (object_t *reader_parent_, object_t *writer_parent_,
-    uint64_t hwm_, reader_t **reader_, writer_t **writer_)
+    int hwm_, reader_t **reader_, writer_t **writer_)
 {
     //  First compute the low water mark. Following point should be taken
     //  into consideration:
@@ -314,7 +313,7 @@ void zmq::create_pipe (object_t *reader_parent_, object_t *writer_parent_,
     //  That done, we still we have to account for the cases where
     //  HWM < max_wm_delta thus driving LWM to negative numbers.
     //  Let's make LWM 1/2 of HWM in such cases.
-    uint64_t lwm = (hwm_ > max_wm_delta * 2) ?
+    int lwm = (hwm_ > max_wm_delta * 2) ?
         hwm_ - max_wm_delta : (hwm_ + 1) / 2;
 
     //  Create all three objects pipe consists of: the pipe per se, reader and

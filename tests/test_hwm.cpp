@@ -21,7 +21,6 @@
 
 #include <assert.h>
 
-#include "../src/stdint.hpp"
 #include "testutil.hpp"
 
 int main (int argc, char *argv [])
@@ -33,7 +32,7 @@ int main (int argc, char *argv [])
     //  buffer space should be 4 messages.
     void *sb = zmq_socket (ctx, ZMQ_PULL);
     assert (sb);
-    uint64_t hwm = 2;
+    int hwm = 2;
     int rc = zmq_setsockopt (sb, ZMQ_HWM, &hwm, sizeof (hwm));
     assert (rc == 0);
     rc = zmq_bind (sb, "inproc://a");

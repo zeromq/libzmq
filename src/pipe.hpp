@@ -23,19 +23,18 @@
 
 #include "../include/zmq.h"
 
-#include "stdint.hpp"
 #include "array.hpp"
 #include "ypipe.hpp"
 #include "config.hpp"
 #include "object.hpp"
+#include "stdint.hpp"
 
 namespace zmq
 {
 
     //  Creates a pipe. Returns pointer to reader and writer objects.
     void create_pipe (object_t *reader_parent_, object_t *writer_parent_,
-        uint64_t hwm_, class reader_t **reader_,
-        class writer_t **writer_);
+        int hwm_, class reader_t **reader_, class writer_t **writer_);
 
     //  The shutdown mechanism for pipe works as follows: Either endpoint
     //  (or even both of them) can ask pipe to terminate by calling 'terminate'
@@ -57,7 +56,7 @@ namespace zmq
 
     class reader_t : public object_t, public array_item_t
     {
-        friend void create_pipe (object_t*, object_t*, uint64_t,
+        friend void create_pipe (object_t*, object_t*, int,
             reader_t**, writer_t**);
         friend class writer_t;
 
@@ -77,7 +76,7 @@ namespace zmq
 
     private:
 
-        reader_t (class object_t *parent_, pipe_t *pipe_, uint64_t lwm_);
+        reader_t (class object_t *parent_, pipe_t *pipe_, int lwm_);
         ~reader_t ();
 
         //  To be called only by writer itself!
@@ -100,7 +99,7 @@ namespace zmq
         class writer_t *writer;
 
         //  Low watermark for in-memory storage (in bytes).
-        uint64_t lwm;
+        int lwm;
 
         //  Number of messages read so far.
         uint64_t msgs_read;
@@ -126,7 +125,7 @@ namespace zmq
 
     class writer_t : public object_t, public array_item_t
     {
-        friend void create_pipe (object_t*, object_t*, uint64_t,
+        friend void create_pipe (object_t*, object_t*, int,
             reader_t**, writer_t**);
 
     public:
@@ -155,7 +154,7 @@ namespace zmq
     private:
 
         writer_t (class object_t *parent_, pipe_t *pipe_, reader_t *reader_,
-            uint64_t hwm_);
+            int hwm_);
         ~writer_t ();
 
         //  Command handlers.
@@ -175,7 +174,7 @@ namespace zmq
         reader_t *reader;
 
         //  High watermark for in-memory storage (in bytes).
-        uint64_t hwm;
+        int hwm;
 
         //  Last confirmed number of messages read from the pipe.
         //  The actual number can be higher.

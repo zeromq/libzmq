@@ -50,11 +50,11 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
     switch (option_) {
 
     case ZMQ_HWM:
-        if (optvallen_ != sizeof (uint64_t)) {
+        if (optvallen_ != sizeof (int) || *((int*) optval_) < 0) {
             errno = EINVAL;
             return -1;
         }
-        hwm = *((uint64_t*) optval_);
+        hwm = *((int*) optval_);
         return 0;
 
     case ZMQ_AFFINITY:
@@ -169,11 +169,11 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
     switch (option_) {
 
     case ZMQ_HWM:
-        if (*optvallen_ < sizeof (uint64_t)) {
+        if (*optvallen_ < sizeof (int)) {
             errno = EINVAL;
             return -1;
         }
-        *((uint64_t*) optval_) = hwm;
+        *((int*) optval_) = hwm;
         *optvallen_ = sizeof (uint64_t);
         return 0;
 

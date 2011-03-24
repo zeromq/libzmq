@@ -41,7 +41,7 @@ type.
 The default 'ZMQ_HWM' value of zero means "no limit".
 
 [horizontal]
-Option value type:: uint64_t
+Option value type:: int
 Option value unit:: messages
 Default value:: 0
 Applicable socket types:: all
