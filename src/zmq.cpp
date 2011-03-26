@@ -384,6 +384,10 @@ int zmq_recv (void *s_, void *buf_, size_t len_, int flags_)
     //  TODO: Build in a notification mechanism to report the overflows.
     size_t to_copy = size_t (rc) < len_ ? size_t (rc) : len_;
     memcpy (buf_, zmq_msg_data (&msg), to_copy);
+
+    rc = zmq_msg_close (&msg);
+    errno_assert (rc == 0);
+
     return (int) to_copy;    
 }
 
