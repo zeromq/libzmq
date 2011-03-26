@@ -119,7 +119,7 @@ int zmq::xsub_t::xrecv (zmq_msg_t *msg_, int flags_)
         //  Message doesn't match. Pop any remaining parts of the message
         //  from the pipe.
         while (msg_->flags & ZMQ_MSG_MORE) {
-            rc = fq.recv (msg_, ZMQ_NOBLOCK);
+            rc = fq.recv (msg_, ZMQ_DONTWAIT);
             zmq_assert (rc == 0);
         }
     }
@@ -141,7 +141,7 @@ bool zmq::xsub_t::xhas_in ()
     while (true) {
 
         //  Get a message using fair queueing algorithm.
-        int rc = fq.recv (&message, ZMQ_NOBLOCK);
+        int rc = fq.recv (&message, ZMQ_DONTWAIT);
 
         //  If there's no message available, return immediately.
         //  The same when error occurs.
@@ -159,7 +159,7 @@ bool zmq::xsub_t::xhas_in ()
         //  Message doesn't match. Pop any remaining parts of the message
         //  from the pipe.
         while (message.flags & ZMQ_MSG_MORE) {
-            rc = fq.recv (&message, ZMQ_NOBLOCK);
+            rc = fq.recv (&message, ZMQ_DONTWAIT);
             zmq_assert (rc == 0);
         }
     }

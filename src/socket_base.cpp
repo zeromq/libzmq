@@ -478,7 +478,7 @@ int zmq::socket_base_t::send (::zmq_msg_t *msg_, int flags_)
 
     //  In case of non-blocking send we'll simply propagate
     //  the error - including EAGAIN - upwards.
-    if (flags_ & ZMQ_NOBLOCK)
+    if (flags_ & ZMQ_DONTWAIT)
         return -1;
 
     //  Oops, we couldn't send the message. Wait for the next
@@ -533,7 +533,7 @@ int zmq::socket_base_t::recv (::zmq_msg_t *msg_, int flags_)
     //  For non-blocking recv, commands are processed in case there's an
     //  activate_reader command already waiting int a command pipe.
     //  If it's not, return EAGAIN.
-    if (flags_ & ZMQ_NOBLOCK) {
+    if (flags_ & ZMQ_DONTWAIT) {
         if (errno != EAGAIN)
             return -1;
         if (unlikely (process_commands (false, false) != 0))

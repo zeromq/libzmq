@@ -48,7 +48,7 @@ int main (int argc, char *argv [])
     //  Try to send 10 messages. Only 4 should succeed.
     for (int i = 0; i < 10; i++)
     {
-        int rc = zmq_send (sc, NULL, 0, ZMQ_NOBLOCK);
+        int rc = zmq_send (sc, NULL, 0, ZMQ_DONTWAIT);
         if (i < 4)
             assert (rc == 0);
         else

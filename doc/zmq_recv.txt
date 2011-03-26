@@ -21,7 +21,7 @@ If there are no messages available on the specified 'socket' the _zmq_recv()_
 function shall block until the request can be satisfied. The 'flags' argument
 is a combination of the flags defined below:
 
-*ZMQ_NOBLOCK*::
+*ZMQ_DONTWAIT*::
 Specifies that the operation should be performed in non-blocking mode. If there
 are no messages available on the specified 'socket', the _zmq_recv()_ function
 shall fail with 'errno' set to EAGAIN.

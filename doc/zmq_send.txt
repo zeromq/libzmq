@@ -18,7 +18,7 @@ The _zmq_send()_ function shall queue the message referenced by the 'msg'
 argument to be sent to the socket referenced by the 'socket' argument.  The
 'flags' argument is a combination of the flags defined below:
 
-*ZMQ_NOBLOCK*::
+*ZMQ_DONTWAIT*::
 Specifies that the operation should be performed in non-blocking mode. If the
 message cannot be queued on the 'socket', the _zmq_send()_ function shall fail
 with 'errno' set to EAGAIN.
