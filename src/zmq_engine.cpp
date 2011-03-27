@@ -110,6 +110,9 @@ void zmq::zmq_engine_t::in_event ()
     if (!insize) {
 
         //  Retrieve the buffer and read as much data as possible.
+        //  Note that buffer can be arbitrarily large. However, we assume
+        //  the underlying TCP layer has fixed buffer size and thus the
+        //  number of bytes read will be always limited.
         decoder.get_buffer (&inpos, &insize);
         insize = tcp_socket.read (inpos, insize);
 
@@ -179,7 +182,10 @@ void zmq::zmq_engine_t::out_event ()
     }
 
     //  If there are any data to write in write buffer, write as much as
-    //  possible to the socket.
+    //  possible to the socket. Note that amount of data to write can be
+    //  arbitratily large. However, we assume that underlying TCP layer has
+    //  limited transmission buffer and thus the actual number of bytes
+    //  written should be reasonably modest.
     int nbytes = tcp_socket.write (outpos, outsize);
 
     //  Handle problems with the connection.
