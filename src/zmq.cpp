@@ -371,24 +371,24 @@ int zmq_recv (void *s_, void *buf_, size_t len_, int flags_)
     int rc = zmq_msg_init (&msg);
     errno_assert (rc == 0);
 
-    rc = zmq_recvmsg (s_, &msg, flags_);
-    if (unlikely (rc < 0)) {
+    int nbytes = zmq_recvmsg (s_, &msg, flags_);
+    if (unlikely (nbytes < 0)) {
         int err = errno;
-        int rc2 = zmq_msg_close (&msg);
-        errno_assert (rc2 == 0);
+        rc = zmq_msg_close (&msg);
+        errno_assert (rc == 0);
         errno = err;
         return -1;
     }
 
     //  At the moment an oversized message is silently truncated.
     //  TODO: Build in a notification mechanism to report the overflows.
-    size_t to_copy = size_t (rc) < len_ ? size_t (rc) : len_;
+    size_t to_copy = size_t (nbytes) < len_ ? size_t (nbytes) : len_;
     memcpy (buf_, zmq_msg_data (&msg), to_copy);
 
     rc = zmq_msg_close (&msg);
     errno_assert (rc == 0);
 
-    return (int) to_copy;    
+    return nbytes;    
 }
 
 int zmq_sendmsg (void *s_, zmq_msg_t *msg_, int flags_)
