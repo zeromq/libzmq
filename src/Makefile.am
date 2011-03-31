@@ -5,61 +5,6 @@ pkgconfig_DATA = libzmq.pc
 
 include_HEADERS = ../include/zmq.h ../include/zmq_utils.h
 
-if BUILD_PGM
-noinst_LTLIBRARIES = libpgm.la
-
-nodist_libpgm_la_SOURCES = ../foreign/openpgm/@pgm_basename@/openpgm/pgm/thread.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/mem.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/string.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/list.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/slist.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/queue.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/hashtable.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/messages.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/error.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/math.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/packet_parse.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/packet_test.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/sockaddr.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/time.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/if.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/getifaddrs.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/getnodeaddr.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/indextoaddr.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/indextoname.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/nametoindex.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/inet_network.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/md5.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/rand.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/gsi.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/tsi.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/txw.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/rxw.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/skbuff.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/socket.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/source.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/receiver.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/recv.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/engine.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/timer.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/net.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/rate_control.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/checksum.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/reed_solomon.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/galois_tables.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/wsastrerror.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/histogram.c \
-    ../foreign/openpgm/@pgm_basename@/openpgm/pgm/version.c
-
-../foreign/openpgm/@pgm_basename@/openpgm/pgm/version.c: ../foreign/openpgm/@pgm_basename@/openpgm/pgm/version_generator.py
-	python ../foreign/openpgm/@pgm_basename@/openpgm/pgm/version_generator.py > $@
-
-../foreign/openpgm/@pgm_basename@/openpgm/pgm/galois_tables.c: ../foreign/openpgm/@pgm_basename@/openpgm/pgm/galois_generator.pl
-	perl ../foreign/openpgm/@pgm_basename@/openpgm/pgm/galois_generator.pl > $@
-
-libpgm_la_LIBADD = @LTLIBOBJS@
-endif
-
 libzmq_la_SOURCES = \
     array.hpp \
     atomic_counter.hpp \
@@ -195,47 +140,11 @@ else
 libzmq_la_LDFLAGS = -version-info @LTVER@ @LIBZMQ_EXTRA_LDFLAGS@
 endif
 
-if BUILD_PGM
-
-if ON_MINGW
-libpgm_diff_flags = \
-    -D_WIN32_WINNT=0x0501 \
-    -DCONFIG_HAVE_ISO_VARARGS \
-    -DCONFIG_HAVE_TSC \
-    -DCONFIG_HAVE_WSACMSGHDR \
-    -DCONFIG_BIND_INADDR_ANY
-
-else
-libpgm_diff_flags = \
-    -DCONFIG_HAVE_PROC \
-    -DCONFIG_HAVE_BACKTRACE \
-    -DCONFIG_HAVE_IFR_NETMASK \
-    -DCONFIG_HAVE_MCAST_JOIN \
-    -DCONFIG_HAVE_IP_MREQN \
-    -DCONFIG_HAVE_SPRINTF_GROUPING \
-    -DCONFIG_BIND_INADDR_ANY 
-endif
-
-libpgm_la_CFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/include/ @LIBZMQ_EXTRA_CFLAGS@ \
-    -D_XOPEN_SOURCE=600 \
-    -D_BSD_SOURCE \
-    -D_REENTRANT \
-    -DCONFIG_16BIT_CHECKSUM \
-    -DCONFIG_GALOIS_MUL_LUT \
-    -DGETTEXT_PACKAGE='"pgm"' \
-    -DPGM_GNUC_INTERNAL= \
-    ${libpgm_diff_flags}
-
-libzmq_la_CXXFLAGS = -I$(top_srcdir)/foreign/openpgm/@pgm_basename@/openpgm/pgm/include/ \
-    @LIBZMQ_EXTRA_CXXFLAGS@
-endif
-
-if !BUILD_PGM
 libzmq_la_CXXFLAGS = @LIBZMQ_EXTRA_CXXFLAGS@
-endif
 
 if BUILD_PGM
-libzmq_la_LIBADD = libpgm.la
+libzmq_la_CPPFLAGS = -I$(top_srcdir)/@pgm_srcdir@/include/
+libzmq_la_LIBADD = $(top_srcdir)/@pgm_srcdir@/libpgm_noinst.la
 endif
 
 dist-hook:

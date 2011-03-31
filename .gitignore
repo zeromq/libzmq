@@ -51,5 +51,6 @@ builds/msvc/*/Release
 foreign/openpgm/*
 !foreign/openpgm/*.tar.bz2
 !foreign/openpgm/*.tar.gz
+!foreign/openpgm/Makefile.am
 zeromq-*.tar.gz
 zeromq-*.zip
