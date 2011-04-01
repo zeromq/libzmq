@@ -36,6 +36,8 @@ perf/local_lat
 perf/local_thr
 perf/remote_lat
 perf/remote_thr
+perf/inproc_lat
+perf/inproc_thr
 doc/*.1
 doc/*.3
 doc/*.7
