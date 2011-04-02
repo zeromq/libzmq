@@ -318,6 +318,38 @@ AC_DEFUN([AC_ZMQ_CHECK_ENABLE_DEBUG], [{
 }])
 
 dnl ##############################################################################
+dnl # AC_ZMQ_WITH_GCOV([action-if-found], [action-if-not-found])                 #
+dnl # Check whether to build with code coverage                                  #
+dnl ##############################################################################
+AC_DEFUN([AC_ZMQ_WITH_GCOV], [{
+    # Require compiler specifics
+    AC_REQUIRE([AC_ZMQ_CHECK_COMPILERS])
+
+    AC_ARG_WITH(gcov, [AS_HELP_STRING([--with-gcov=yes/no],
+                      [With GCC Code Coverage reporting.])],
+                      [ZMQ_GCOV="$withval"])
+
+    AC_MSG_CHECKING(whether to enable code coverage)
+
+    if test "x$GXX" != "xyes"; then
+        AC_MSG_ERROR([--with-gcov=yes works only with GCC])
+    fi
+
+    CFLAGS="-g -O0 -fprofile-arcs -ftest-coverage"
+    if test "x${ZMQ_ORIG_CPPFLAGS}" != "xnone"; then
+        CFLAGS="${CFLAGS} ${ZMQ_ORIG_CFLAGS}"
+    fi
+
+    CPPFLAGS="-g -O0 -fprofile-arcs -ftest-coverage"
+    if test "x${ZMQ_ORIG_CPPFLAGS}" != "xnone"; then
+        CPPFLAGS="${CPPFLAGS} ${ZMQ_ORIG_CPPFLAGS}"
+    fi
+
+    AS_IF([test "x$ZMQ_GCOV" = "xyes"],
+          [AC_MSG_RESULT(yes) ; $1], [AC_MSG_RESULT(no) ; $2])
+}])
+
+dnl ##############################################################################
 dnl # AC_ZMQ_CHECK_WITH_FLAG([flags], [macro])                                   #
 dnl # Runs a normal autoconf check with compiler flags                           #
 dnl ##############################################################################

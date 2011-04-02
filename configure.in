@@ -57,6 +57,9 @@ AC_PROG_LIBTOOL
 # Check whether to build a with debug symbols
 AC_ZMQ_CHECK_ENABLE_DEBUG
 
+# Check wheter to enable code coverage
+AC_ZMQ_WITH_GCOV
+
 # Checks for libraries.
 AC_CHECK_LIB([pthread], [pthread_create])
 
