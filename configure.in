@@ -50,30 +50,30 @@ AC_ARG_VAR([XMLTO], [Path to xmlto command])
 AC_PATH_PROG([XMLTO], [xmlto])
 AC_ARG_VAR([ASCIIDOC], [Path to asciidoc command])
 AC_PATH_PROG([ASCIIDOC], [asciidoc])
-AC_ZMQ_CONFIG_LIBTOOL
+LIBZMQ_CONFIG_LIBTOOL
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
 
 # Check whether to build a with debug symbols
-AC_ZMQ_CHECK_ENABLE_DEBUG
+LIBZMQ_CHECK_ENABLE_DEBUG
 
 # Check wheter to enable code coverage
-AC_ZMQ_WITH_GCOV
+LIBZMQ_WITH_GCOV
 
 # Checks for libraries.
 AC_CHECK_LIB([pthread], [pthread_create])
 
 # Set pedantic
-ac_zmq_pedantic="yes"
+libzmq_pedantic="yes"
 
 # By default compiling with -Werror except OSX.
-ac_zmq_werror="yes"
+libzmq_werror="yes"
 
 # By default use DSO visibility
-ac_zmq_dso_visibility="yes"
+libzmq_dso_visibility="yes"
 
 # Whether we are on mingw or not.
-ac_zmq_on_mingw32="no"
+libzmq_on_mingw32="no"
 
 # Set some default features required by 0MQ code.
 CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE $CPPFLAGS"
@@ -124,11 +124,11 @@ case "${host_os}" in
     *darwin*)
         # Define on Darwin to enable all library features
         CPPFLAGS="-D_DARWIN_C_SOURCE $CPPFLAGS"
-        ac_zmq_pedantic="no"
-        ac_zmq_werror="no"
+        libzmq_pedantic="no"
+        libzmq_werror="no"
         AC_DEFINE(ZMQ_HAVE_OSX, 1, [Have DarwinOSX OS])
         AC_LANG_PUSH([C++])
-        AC_ZMQ_CHECK_LANG_FLAG_PREPEND([-Wno-uninitialized])
+        LIBZMQ_CHECK_LANG_FLAG_PREPEND([-Wno-uninitialized])
         AC_LANG_POP([C++])
         ;;
     *netbsd*)
@@ -138,7 +138,7 @@ case "${host_os}" in
         # NetBSD 5.0 and newer provides atomic operations but we can
         # only use these on systems where PR #42842 has been fixed so
         # we must try and link a test program using C++.
-        ac_zmq_netbsd_has_atomic=no
+        libzmq_netbsd_has_atomic=no
         AC_MSG_CHECKING([whether atomic operations can be used])
         AC_LANG_PUSH([C++])
         AC_LINK_IFELSE([AC_LANG_PROGRAM(
@@ -146,11 +146,11 @@ case "${host_os}" in
             [[uint32_t value;
               atomic_cas_32 (&value, 0, 0);
               return 0;]])],
-            [ac_zmq_netbsd_has_atomic=yes],
-            [ac_zmq_netbsd_has_atomic=no])
+            [libzmq_netbsd_has_atomic=yes],
+            [libzmq_netbsd_has_atomic=no])
         AC_LANG_POP([C++])
-        AC_MSG_RESULT([$ac_zmq_netbsd_has_atomic])
-        if test "x$ac_zmq_netbsd_has_atomic" = "xno"; then
+        AC_MSG_RESULT([$libzmq_netbsd_has_atomic])
+        if test "x$libzmq_netbsd_has_atomic" = "xno"; then
             AC_DEFINE(ZMQ_FORCE_MUTEXES, 1, [Force to use mutexes])
         fi
         ;;
@@ -160,7 +160,7 @@ case "${host_os}" in
         AC_DEFINE(ZMQ_HAVE_OPENBSD, 1, [Have OpenBSD OS])
         ;;
     *nto-qnx*)
-        ac_zmq_pedantic="no"
+        libzmq_pedantic="no"
         AC_DEFINE(ZMQ_HAVE_QNXNTO, 1, [Have QNX Neutrino OS])
         AC_CHECK_LIB(socket, socket)
         AC_CHECK_LIB(crypto, RAND_bytes)
@@ -188,10 +188,10 @@ case "${host_os}" in
             [AC_MSG_ERROR([cannot link with iphlpapi.dll.])])
         # mingw32 defines __int64_t as long long
         AC_LANG_PUSH([C++])
-        AC_ZMQ_CHECK_LANG_FLAG_PREPEND([-Wno-long-long])
+        LIBZMQ_CHECK_LANG_FLAG_PREPEND([-Wno-long-long])
         AC_LANG_POP([C++])
-        ac_zmq_on_mingw32="yes"
-        ac_zmq_dso_visibility="no"
+        libzmq_on_mingw32="yes"
+        libzmq_dso_visibility="no"
 
         if test "x$enable_static" = "xyes"; then
             AC_MSG_ERROR([Building static libraries is not supported under MinGW32])
@@ -219,9 +219,9 @@ esac
 #
 # Check if the compiler supports -fvisibility=hidden flag. MinGW32 uses __declspec
 #
-if test "x$ac_zmq_dso_visibility" = "xyes"; then
+if test "x$libzmq_dso_visibility" = "xyes"; then
     AC_LANG_PUSH([C++])
-    AC_ZMQ_CHECK_LANG_VISIBILITY([LIBZMQ_EXTRA_CXXFLAGS="$ac_zmq_cv_[]_AC_LANG_ABBREV[]_visibility_flag ${LIBZMQ_EXTRA_CXXFLAGS}"])
+    LIBZMQ_CHECK_LANG_VISIBILITY([LIBZMQ_EXTRA_CXXFLAGS="$libzmq_cv_[]_AC_LANG_ABBREV[]_visibility_flag ${LIBZMQ_EXTRA_CXXFLAGS}"])
     AC_LANG_POP([C++])
 fi
 
@@ -229,7 +229,7 @@ fi
 case "${host_cpu}" in
     *sparc*)
         AC_LANG_PUSH([C++])
-        AC_ZMQ_CHECK_LANG_FLAG_PREPEND([-mcpu=v9])
+        LIBZMQ_CHECK_LANG_FLAG_PREPEND([-mcpu=v9])
         AC_LANG_POP([C++])
     ;;
     *)
@@ -237,7 +237,7 @@ case "${host_cpu}" in
 esac
 
 # Check whether to build docs / install man pages
-AC_ZMQ_CHECK_DOC_BUILD
+LIBZMQ_CHECK_DOC_BUILD
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -254,11 +254,11 @@ AC_HEADER_STDBOOL
 AC_C_CONST
 AC_C_INLINE
 # Checks for typedefs, structures, and compiler characteristics.
-if test "x$ac_zmq_cv_[]_AC_LANG_ABBREV[]_intel_compiler" = "xyes"; then
+if test "x$libzmq_cv_[]_AC_LANG_ABBREV[]_intel_compiler" = "xyes"; then
     dnl 279: controlling expression is constant
     dnl Fixes build with ICC 12.x
-    AC_ZMQ_CHECK_WITH_FLAG([-wd279], [AC_TYPE_SIZE_T])
-    AC_ZMQ_CHECK_WITH_FLAG([-wd279], [AC_TYPE_SSIZE_T])
+    LIBZMQ_CHECK_WITH_FLAG([-wd279], [AC_TYPE_SIZE_T])
+    LIBZMQ_CHECK_WITH_FLAG([-wd279], [AC_TYPE_SSIZE_T])
 else
     AC_TYPE_SIZE_T
     AC_TYPE_SSIZE_T
@@ -268,7 +268,7 @@ AC_TYPE_UINT32_T
 AC_C_VOLATILE
 
 #  PGM extension
-ac_zmq_pgm_ext="no"
+libzmq_pgm_ext="no"
 
 pgm_basename="libpgm-5.1.115~dfsg"
 
@@ -295,14 +295,14 @@ if test "x$with_pgm_ext" != "xno"; then
 
     # Unpack libpgm
     AC_MSG_NOTICE([Unpacking ${pgm_basename}.tar.gz])
-    ac_zmq_pwd=`pwd`
+    libzmq_pwd=`pwd`
     cd foreign/openpgm
 
     if ! (gzip -dc "${pgm_basename}.tar.gz" || echo "failed") | ${am__untar}; then
         AC_MSG_ERROR([cannot unpack the foreign/openpgm/${pgm_basename}.tar.gz file])
     fi
 
-    cd "${ac_zmq_pwd}"
+    cd "${libzmq_pwd}"
 
     if test -d foreign/openpgm/build-staging; then
         rm -rf foreign/openpgm/build-staging
@@ -317,7 +317,7 @@ if test "x$with_pgm_ext" != "xno"; then
 
     # DSO symbol visibility for openpgm
     AC_LANG_PUSH([C])
-    AC_ZMQ_CHECK_LANG_VISIBILITY([ac_configure_args="CFLAGS='$ac_zmq_cv_[]_AC_LANG_ABBREV[]_visibility_flag' ${ac_configure_args}"])
+    LIBZMQ_CHECK_LANG_VISIBILITY([ac_configure_args="CFLAGS='$libzmq_cv_[]_AC_LANG_ABBREV[]_visibility_flag' ${ac_configure_args}"])
     AC_LANG_POP([C])
 
     pgm_subdir=build-staging/openpgm/pgm
@@ -328,7 +328,7 @@ if test "x$with_pgm_ext" != "xno"; then
 
     # Success!
     AC_DEFINE(ZMQ_HAVE_OPENPGM, 1, [Have OpenPGM extension])
-    ac_zmq_pgm_ext="yes"
+    libzmq_pgm_ext="yes"
 fi
 
 # Build with system openpgm
@@ -345,19 +345,19 @@ AC_SUBST(pgm_basename)
 AC_LANG_PUSH([C++])
 
 # Check how to enable -Wall
-AC_ZMQ_LANG_WALL([CPPFLAGS="$ac_zmq_cv_[]_AC_LANG_ABBREV[]_wall_flag $CPPFLAGS"])
+LIBZMQ_LANG_WALL([CPPFLAGS="$libzmq_cv_[]_AC_LANG_ABBREV[]_wall_flag $CPPFLAGS"])
 
-if test "x$ac_zmq_werror" = "xyes" -a "x$ac_zmq_cv_[]_AC_LANG_ABBREV[]_sun_studio_compiler" != "xyes"; then
-    AC_ZMQ_LANG_WERROR([CPPFLAGS="$ac_zmq_cv_[]_AC_LANG_ABBREV[]_werror_flag $CPPFLAGS"])
+if test "x$libzmq_werror" = "xyes" -a "x$libzmq_cv_[]_AC_LANG_ABBREV[]_sun_studio_compiler" != "xyes"; then
+    LIBZMQ_LANG_WERROR([CPPFLAGS="$libzmq_cv_[]_AC_LANG_ABBREV[]_werror_flag $CPPFLAGS"])
 fi
 
-if test "x$ac_zmq_pedantic" = "xyes"; then
-    AC_ZMQ_LANG_STRICT([CPPFLAGS="$ac_zmq_cv_[]_AC_LANG_ABBREV[]_strict_flag $CPPFLAGS"])
+if test "x$libzmq_pedantic" = "xyes"; then
+    LIBZMQ_LANG_STRICT([CPPFLAGS="$libzmq_cv_[]_AC_LANG_ABBREV[]_strict_flag $CPPFLAGS"])
 fi
 AC_LANG_POP([C++])
 
-AM_CONDITIONAL(BUILD_PGM, test "x$ac_zmq_pgm_ext" = "xyes")
-AM_CONDITIONAL(ON_MINGW, test "x$ac_zmq_on_mingw32" = "xyes")
+AM_CONDITIONAL(BUILD_PGM, test "x$libzmq_pgm_ext" = "xyes")
+AM_CONDITIONAL(ON_MINGW, test "x$libzmq_on_mingw32" = "xyes")
 
 # Checks for library functions.
 AC_TYPE_SIGNAL
