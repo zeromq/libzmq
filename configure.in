@@ -273,6 +273,15 @@ AC_ARG_WITH([pgm], [AS_HELP_STRING([--with-pgm],
     [build libzmq with PGM extension [default=no]])], 
     [with_pgm_ext=$withval], [with_pgm_ext=no])
 
+# build using system pgm
+AC_ARG_WITH([system-pgm], [AS_HELP_STRING([--with-system-pgm],
+    [build libzmq with PGM extension [default=no]])],
+    [with_system_pgm_ext=yes], [with_system_pgm_ext=no])
+
+if test "x$with_pgm_ext" != "xno" -a "x$with_system_pgm_ext" != "xno"; then
+    AC_MSG_ERROR([--with-pgm and --with-system-pgm cannot be specified together])
+fi
+
 if test "x$with_pgm_ext" != "xno"; then
 
     # This allows placing the tar.gz to foreign/openpgm
@@ -317,6 +326,14 @@ if test "x$with_pgm_ext" != "xno"; then
     # Success!
     AC_DEFINE(ZMQ_HAVE_OPENPGM, 1, [Have OpenPGM extension])
     ac_zmq_pgm_ext="yes"
+fi
+
+# Build with system openpgm
+if test "x$with_system_pgm_ext" != "xno"; then
+    PKG_CHECK_MODULES([OpenPGM], [openpgm-5.1 >= 5.1])
+    AC_DEFINE(ZMQ_HAVE_OPENPGM, 1, [Have OpenPGM extension])
+    LIBZMQ_EXTRA_CXXFLAGS="$OpenPGM_CFLAGS $LIBZMQ_EXTRA_CXXFLAGS"
+    LIBS="$OpenPGM_LIBS $LIBS"
 fi
 
 AC_SUBST(pgm_basename)
