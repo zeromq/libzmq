@@ -267,10 +267,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\device.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\src\devpoll.cpp"
 				>
 			</File>
@@ -403,10 +399,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\swap.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\src\tcp_connecter.cpp"
 				>
 			</File>
@@ -514,10 +506,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\decoder.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\device.hpp"
 				>
 			</File>
 			<File
@@ -694,10 +682,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\sub.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\swap.hpp"
 				>
 			</File>
 			<File
