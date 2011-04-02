@@ -26,7 +26,7 @@ Website: http://www.zeromq.org/
 Development mailing list: zeromq-dev@lists.zeromq.org
 Announcements mailing list: zeromq-announce@lists.zeromq.org
 
-Git repository: http://github.com/zeromq/zeromq2
+Git repository: http://github.com/zeromq/libzmq
 
 0MQ developers can also be found on the IRC channel #zeromq, on the
 Freenode network (irc.freenode.net).
