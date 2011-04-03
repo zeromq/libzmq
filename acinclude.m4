@@ -68,7 +68,7 @@ AC_DEFUN([LIBZMQ_CHECK_LANG_CLANG],
 ])])
 
 dnl ##############################################################################
-dnl # LIBZMQ_CHECK_LANG_GCC4([action-if-found], [action-if-not-found])          #
+dnl # LIBZMQ_CHECK_LANG_GCC4([action-if-found], [action-if-not-found])           #
 dnl # Check if the current language is compiled using clang                      #
 dnl ##############################################################################
 AC_DEFUN([LIBZMQ_CHECK_LANG_GCC4],
@@ -331,18 +331,28 @@ AC_DEFUN([LIBZMQ_WITH_GCOV], [{
 
     AC_MSG_CHECKING(whether to enable code coverage)
 
-    if test "x$GXX" != "xyes"; then
-        AC_MSG_ERROR([--with-gcov=yes works only with GCC])
-    fi
+    if test "x$ZMQ_GCOV" = "xyes"; then
 
-    CFLAGS="-g -O0 -fprofile-arcs -ftest-coverage"
-    if test "x${ZMQ_ORIG_CPPFLAGS}" != "xnone"; then
-        CFLAGS="${CFLAGS} ${ZMQ_ORIG_CFLAGS}"
-    fi
+        if test "x$GXX" != "xyes"; then
+            AC_MSG_ERROR([--with-gcov=yes works only with GCC])
+        fi
 
-    CPPFLAGS="-g -O0 -fprofile-arcs -ftest-coverage"
-    if test "x${ZMQ_ORIG_CPPFLAGS}" != "xnone"; then
-        CPPFLAGS="${CPPFLAGS} ${ZMQ_ORIG_CPPFLAGS}"
+        CFLAGS="-g -O0 -fprofile-arcs -ftest-coverage"
+        if test "x${ZMQ_ORIG_CPPFLAGS}" != "xnone"; then
+            CFLAGS="${CFLAGS} ${ZMQ_ORIG_CFLAGS}"
+        fi
+
+        CPPFLAGS="-g -O0 -fprofile-arcs -ftest-coverage"
+        if test "x${ZMQ_ORIG_CPPFLAGS}" != "xnone"; then
+            CPPFLAGS="${CPPFLAGS} ${ZMQ_ORIG_CPPFLAGS}"
+        fi
+
+        CXXFLAGS="-fprofile-arcs"
+        if test "x${ZMQ_ORIG_CXXFLAGS}" != "xnone"; then
+            CXXFLAGS="${CXXFLAGS} ${ZMQ_ORIG_CXXFLAGS}"
+        fi
+
+        LIBS="-lgcov ${LIBS}"
     fi
 
     AS_IF([test "x$ZMQ_GCOV" = "xyes"],
