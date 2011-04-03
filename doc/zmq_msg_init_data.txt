@@ -28,6 +28,9 @@ supplied to _zmq_msg_init_data()_.
 CAUTION: Never access 'zmq_msg_t' members directly, instead always use the
 _zmq_msg_ family of functions.
 
+CAUTION: The deallocation function 'ffn' needs to be thread-safe, since it
+will be called from an arbitrary thread.
+
 CAUTION: The functions _zmq_msg_init()_, _zmq_msg_init_data()_ and
 _zmq_msg_init_size()_ are mutually exclusive. Never initialize the same
 'zmq_msg_t' twice.
