@@ -8,6 +8,7 @@ config.log
 aclocal.m4
 autom4te.cache
 *.o
+*.gcno
 *.class
 *.ncb
 *.lo
