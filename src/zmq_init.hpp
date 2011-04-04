@@ -21,11 +21,14 @@
 #ifndef __ZMQ_ZMQ_INIT_HPP_INCLUDED__
 #define __ZMQ_ZMQ_INIT_HPP_INCLUDED__
 
+#include <vector>
+
+#include "../include/zmq.h"
+
 #include "i_inout.hpp"
 #include "i_engine.hpp"
 #include "own.hpp"
 #include "fd.hpp"
-#include "stdint.hpp"
 #include "stdint.hpp"
 #include "blob.hpp"
 
@@ -43,6 +46,13 @@ namespace zmq
         ~zmq_init_t ();
 
     private:
+
+        //  Peer property IDs.
+        enum prop_t
+        {
+            prop_type = 1,
+            prop_identity = 2
+        };
 
         void finalise_initialisation ();
         void dispatch_engine ();
@@ -63,8 +73,10 @@ namespace zmq
         //  Detached transient engine.
         i_engine *ephemeral_engine;
 
-        //  True if our own identity was already sent to the peer.
-        bool sent;
+        //  List of messages to send to the peer during the connection
+        //  initiation phase.
+        typedef std::vector < ::zmq_msg_t> to_send_t;
+        to_send_t to_send;
 
         //  True if peer's identity was already received.
         bool received;
