@@ -278,7 +278,7 @@ AC_ARG_WITH([pgm], [AS_HELP_STRING([--with-pgm],
 
 # build using system pgm
 AC_ARG_WITH([system-pgm], [AS_HELP_STRING([--with-system-pgm],
-    [build libzmq with PGM extension [default=no]])],
+    [build libzmq with PGM extension. Requires pkg-config [default=no]])],
     [with_system_pgm_ext=yes], [with_system_pgm_ext=no])
 
 if test "x$with_pgm_ext" != "xno" -a "x$with_system_pgm_ext" != "xno"; then
@@ -333,10 +333,13 @@ fi
 
 # Build with system openpgm
 if test "x$with_system_pgm_ext" != "xno"; then
-    PKG_CHECK_MODULES([OpenPGM], [openpgm-5.1 >= 5.1])
-    AC_DEFINE(ZMQ_HAVE_OPENPGM, 1, [Have OpenPGM extension])
-    LIBZMQ_EXTRA_CXXFLAGS="$OpenPGM_CFLAGS $LIBZMQ_EXTRA_CXXFLAGS"
-    LIBS="$OpenPGM_LIBS $LIBS"
+    m4_ifdef([PKG_CHECK_MODULES], [
+        PKG_CHECK_MODULES([OpenPGM], [openpgm-5.1 >= 5.1])
+        AC_DEFINE(ZMQ_HAVE_OPENPGM, 1, [Have OpenPGM extension])
+        LIBZMQ_EXTRA_CXXFLAGS="$OpenPGM_CFLAGS $LIBZMQ_EXTRA_CXXFLAGS"
+        LIBS="$OpenPGM_LIBS $LIBS"
+    ],
+    [AC_MSG_ERROR([--with-system-pgm requires a working pkg-config installation])])
 fi
 
 AC_SUBST(pgm_basename)
