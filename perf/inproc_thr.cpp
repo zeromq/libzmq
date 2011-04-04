@@ -205,7 +205,7 @@ int main (int argc, char *argv [])
 
 #if defined ZMQ_HAVE_WINDOWS
     DWORD rc2 = WaitForSingleObject (local_thread, INFINITE);
-    if (rc == WAIT_FAILED) {
+    if (rc2 == WAIT_FAILED) {
         printf ("error in WaitForSingleObject\n");
         return -1;
     }
