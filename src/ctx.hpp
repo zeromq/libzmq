@@ -60,6 +60,9 @@ namespace zmq
         //  of I/O thread pool to create.
         ctx_t (uint32_t io_threads_);
 
+        //  Returns false if object is not a context.
+        bool check_tag ();
+
         //  This function is called when user invokes zmq_term. If there are
         //  no more sockets open it'll cause all the infrastructure to be shut
         //  down. If there are open sockets still, the deallocation happens
@@ -97,6 +100,9 @@ namespace zmq
     private:
 
         ~ctx_t ();
+
+        //  Used to check whether the object is a context.
+        uint32_t tag;
 
         //  Sockets belonging to this context. We need the list so that
         //  we can notify the sockets when zmq_term() is called. The sockets

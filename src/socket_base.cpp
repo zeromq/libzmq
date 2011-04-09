@@ -61,6 +61,11 @@
 #include "xpub.hpp"
 #include "xsub.hpp"
 
+bool zmq::socket_base_t::check_tag ()
+{
+    return tag == 0xbaddecaf;
+}
+
 zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
     uint32_t tid_)
 {
@@ -110,6 +115,7 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
 
 zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t tid_) :
     own_t (parent_, tid_),
+    tag (0xbaddecaf),
     ctx_terminated (false),
     destroyed (false),
     last_tsc (0),
@@ -126,6 +132,9 @@ zmq::socket_base_t::~socket_base_t ()
     sessions_sync.lock ();
     zmq_assert (sessions.empty ());
     sessions_sync.unlock ();
+
+    //  Mark the socket as dead.
+    tag = 0xdeadbeef;
 }
 
 zmq::mailbox_t *zmq::socket_base_t::get_mailbox ()

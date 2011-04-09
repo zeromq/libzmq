@@ -309,7 +309,7 @@ ERRORS
 *EINVAL*::
 The requested socket 'type' is invalid.
 *EFAULT*::
-The provided 'context' was not valid (NULL).
+The provided 'context' is invalid.
 *ETERM*::
 The context specified was terminated.
 

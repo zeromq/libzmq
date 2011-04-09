@@ -261,7 +261,7 @@ void *zmq_init (int io_threads_)
 
 int zmq_term (void *ctx_)
 {
-    if (!ctx_) {
+    if (!ctx_ || !((zmq::ctx_t*) ctx_)->check_tag ()) {
         errno = EFAULT;
         return -1;
     }
@@ -287,7 +287,7 @@ int zmq_term (void *ctx_)
 
 void *zmq_socket (void *ctx_, int type_)
 {
-    if (!ctx_) {
+    if (!ctx_ || !((zmq::ctx_t*) ctx_)->check_tag ()) {
         errno = EFAULT;
         return NULL;
     }
@@ -296,8 +296,8 @@ void *zmq_socket (void *ctx_, int type_)
 
 int zmq_close (void *s_)
 {
-    if (!s_) {
-        errno = EFAULT;
+    if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
+        errno = ENOTSOCK;
         return -1;
     }
     ((zmq::socket_base_t*) s_)->close ();
@@ -307,8 +307,8 @@ int zmq_close (void *s_)
 int zmq_setsockopt (void *s_, int option_, const void *optval_,
     size_t optvallen_)
 {
-    if (!s_) {
-        errno = EFAULT;
+    if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
+        errno = ENOTSOCK;
         return -1;
     }
     return (((zmq::socket_base_t*) s_)->setsockopt (option_, optval_,
@@ -317,8 +317,8 @@ int zmq_setsockopt (void *s_, int option_, const void *optval_,
 
 int zmq_getsockopt (void *s_, int option_, void *optval_, size_t *optvallen_)
 {
-    if (!s_) {
-        errno = EFAULT;
+    if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
+        errno = ENOTSOCK;
         return -1;
     }
     return (((zmq::socket_base_t*) s_)->getsockopt (option_, optval_,
@@ -327,8 +327,8 @@ int zmq_getsockopt (void *s_, int option_, void *optval_, size_t *optvallen_)
 
 int zmq_bind (void *s_, const char *addr_)
 {
-    if (!s_) {
-        errno = EFAULT;
+    if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
+        errno = ENOTSOCK;
         return -1;
     }
     return (((zmq::socket_base_t*) s_)->bind (addr_));
@@ -336,8 +336,8 @@ int zmq_bind (void *s_, const char *addr_)
 
 int zmq_connect (void *s_, const char *addr_)
 {
-    if (!s_) {
-        errno = EFAULT;
+    if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
+        errno = ENOTSOCK;
         return -1;
     }
     return (((zmq::socket_base_t*) s_)->connect (addr_));
@@ -393,8 +393,8 @@ int zmq_recv (void *s_, void *buf_, size_t len_, int flags_)
 
 int zmq_sendmsg (void *s_, zmq_msg_t *msg_, int flags_)
 {
-    if (!s_) {
-        errno = EFAULT;
+    if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
+        errno = ENOTSOCK;
         return -1;
     }
     int sz = (int) zmq_msg_size (msg_);
@@ -406,8 +406,8 @@ int zmq_sendmsg (void *s_, zmq_msg_t *msg_, int flags_)
 
 int zmq_recvmsg (void *s_, zmq_msg_t *msg_, int flags_)
 {
-    if (!s_) {
-        errno = EFAULT;
+    if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
+        errno = ENOTSOCK;
         return -1;
     }
     int rc = (((zmq::socket_base_t*) s_)->recv (msg_, flags_));

@@ -56,8 +56,8 @@ The requested 'address' was not local.
 The requested 'address' specifies a nonexistent interface.
 *ETERM*::
 The 0MQ 'context' associated with the specified 'socket' was terminated.
-*EFAULT*::
-The provided 'socket' was not valid (NULL).
+*ENOTSOCK*::
+The provided 'socket' was invalid.
 *EMTHREAD*::
 No I/O thread is available to accomplish the task.
 

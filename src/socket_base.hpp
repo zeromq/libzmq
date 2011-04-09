@@ -50,6 +50,9 @@ namespace zmq
 
     public:
 
+        //  Returns false if object is not a socket.
+        bool check_tag ();
+
         //  Create a socket of a specified type.
         static socket_base_t *create (int type_, class ctx_t *parent_,
             uint32_t tid_);
@@ -135,6 +138,9 @@ namespace zmq
         void process_destroy ();
 
     private:
+
+        //  Used to check whether the object is a socket.
+        uint32_t tag;
 
         //  If true, associated context was already terminated.
         bool ctx_terminated;

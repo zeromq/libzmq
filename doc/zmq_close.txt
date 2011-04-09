@@ -34,8 +34,8 @@ return `-1` and set 'errno' to one of the values defined below.
 
 ERRORS
 ------
-*EFAULT*::
-The provided 'socket' was not valid (NULL).
+*ENOTSOCK*::
+The provided 'socket' was invalid.
 
 
 SEE ALSO

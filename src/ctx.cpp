@@ -36,6 +36,7 @@
 #endif
 
 zmq::ctx_t::ctx_t (uint32_t io_threads_) :
+    tag (0xbadcafe0),
     terminating (false)
 {
     int rc;
@@ -78,6 +79,11 @@ zmq::ctx_t::ctx_t (uint32_t io_threads_) :
     zmq_assert (rc == 0);
 }
 
+bool zmq::ctx_t::check_tag ()
+{
+    return tag == 0xbadcafe0;
+}
+
 zmq::ctx_t::~ctx_t ()
 {
     //  Check that there are no remaining sockets.
@@ -99,6 +105,9 @@ zmq::ctx_t::~ctx_t ()
     //  needed as mailboxes themselves were deallocated with their
     //  corresponding io_thread/socket objects.
     free (slots);
+
+    //  Remove the tag, so that the object is considered dead.
+    tag = 0xdeadbeef;
 }
 
 int zmq::ctx_t::terminate ()
