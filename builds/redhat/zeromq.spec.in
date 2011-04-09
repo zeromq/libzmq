@@ -5,7 +5,7 @@ Summary:       The ZeroMQ messaging library
 Group:         Applications/Internet
 License:       LGPLv3+
 URL:           http://www.zeromq.org/
-Source:        http://www.zeromq.org/local--files/area:download/%{name}-%{version}.tar.gz
+Source:        http://download.zeromq.org/%{name}-%{version}.tar.gz
 Prefix:        %{_prefix}
 Buildroot:     %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildRequires: gcc, make, gcc-c++, libstdc++-devel
@@ -24,8 +24,7 @@ Requires:      uuid
 
 # Build pgm only on supported archs
 %ifarch pentium3 pentium4 athlon i386 i486 i586 i686 x86_64
-BuildRequires: glib2-devel
-Requires: glib2
+BuildRequires: python, perl
 %endif
 
 %description
@@ -125,7 +124,6 @@ This package contains ZeroMQ related development libraries and header files.
 %{_mandir}/man3/zmq_strerror.3.gz
 %{_mandir}/man3/zmq_term.3.gz
 %{_mandir}/man3/zmq_version.3.gz
-%{_mandir}/man7/zmq_cpp.7.gz
 %{_mandir}/man7/zmq_epgm.7.gz
 %{_mandir}/man7/zmq_inproc.7.gz
 %{_mandir}/man7/zmq_ipc.7.gz
@@ -133,5 +131,8 @@ This package contains ZeroMQ related development libraries and header files.
 %{_mandir}/man7/zmq_tcp.7.gz
 
 %changelog
+* Fri Apr 8 2011 Mikko Koppanen <mikko@kuut.io> 3.0.0-1
+- Update dependencies and packaged files
+
 * Sat Apr 10 2010 Mikko Koppanen <mkoppanen@php.net> 2.0.7-1
 - Initial packaging
