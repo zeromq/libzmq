@@ -367,9 +367,9 @@ The operation was interrupted by delivery of a signal.
 
 EXAMPLE
 -------
-.Retrieving the high water mark
+.Retrieving the high water mark for outgoing messages
 ----
-/* Retrieve high water mark into hwm */
+/* Retrieve high water mark into sndhwm */
 int sndhwm;
 size_t sndhwm_size = sizeof (sndhwm);
 rc = zmq_getsockopt (socket, ZMQ_SNDHWM, &sndhwm, &sndhwm_size);
