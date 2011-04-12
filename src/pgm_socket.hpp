@@ -32,11 +32,6 @@
 #define __PGM_WININT_H__
 #include <pgm/pgm.h>
 
-//  TODO: OpenPGM redefines bool -- remove this once OpenPGM is fixed.
-#if defined bool
-#undef bool
-#endif
-
 #include "options.hpp"
 
 namespace zmq
