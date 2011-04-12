@@ -24,7 +24,7 @@
 #include "pipe.hpp"
 #include "err.hpp"
 #include "own.hpp"
-#include "msg_content.hpp"
+#include "msg.hpp"
 
 zmq::dist_t::dist_t (own_t *sink_) :
     active (0),
