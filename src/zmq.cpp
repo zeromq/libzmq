@@ -33,7 +33,6 @@
 #endif
 
 #include "../include/zmq.h"
-#include "../include/zmq_utils.h"
 
 #include <string.h>
 #include <errno.h>
@@ -57,7 +56,6 @@
 #if defined ZMQ_HAVE_OPENPGM
 #define __PGM_WININT_H__
 #include <pgm/pgm.h>
-
 #endif
 
 void zmq_version (int *major_, int *minor_, int *patch_)
@@ -778,31 +776,3 @@ int zmq_errno ()
     return errno;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//  0MQ utils - to be used by perf tests
-////////////////////////////////////////////////////////////////////////////////
-
-void zmq_sleep (int seconds_)
-{
-#if defined ZMQ_HAVE_WINDOWS
-    Sleep (seconds_ * 1000);
-#else
-    sleep (seconds_);
-#endif
-}
-
-void *zmq_stopwatch_start ()
-{
-    uint64_t *watch = (uint64_t*) malloc (sizeof (uint64_t));
-    alloc_assert (watch);
-    *watch = zmq::clock_t::now_us ();
-    return (void*) watch;
-}
-
-unsigned long zmq_stopwatch_stop (void *watch_)
-{
-    uint64_t end = zmq::clock_t::now_us ();
-    uint64_t start = *(uint64_t*) watch_;
-    free (watch_);
-    return (unsigned long) (end - start);
-}

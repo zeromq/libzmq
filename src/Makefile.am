@@ -132,7 +132,8 @@ libzmq_la_SOURCES = \
     zmq_connecter.cpp \
     zmq_engine.cpp \
     zmq_init.cpp \
-    zmq_listener.cpp
+    zmq_listener.cpp \
+    zmq_utils.cpp
 
 if ON_MINGW
 libzmq_la_LDFLAGS = -no-undefined -avoid-version -version-info @LTVER@ @LIBZMQ_EXTRA_LDFLAGS@
