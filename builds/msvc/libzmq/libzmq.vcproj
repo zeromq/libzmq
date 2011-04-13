@@ -315,6 +315,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\msg.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\named_session.cpp"
 				>
 			</File>
@@ -462,6 +466,10 @@
 				RelativePath="..\..\..\src\zmq_listener.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\..\src\zmq_utils.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -577,7 +585,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\msg_content.hpp"
+				RelativePath="..\..\..\src\msg.hpp"
 				>
 			</File>
 			<File
