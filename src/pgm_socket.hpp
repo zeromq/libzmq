@@ -27,9 +27,9 @@
 
 #ifdef ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
+#define __PGM_WININT_H__
 #endif
 
-#define __PGM_WININT_H__
 #include <pgm/pgm.h>
 
 #include "options.hpp"
