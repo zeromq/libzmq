@@ -310,7 +310,8 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
 
 #if (defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD || \
      defined ZMQ_HAVE_OPENBSD || defined ZMQ_HAVE_OSX || \
-     defined ZMQ_HAVE_OPENVMS || defined ZMQ_HAVE_NETBSD)
+     defined ZMQ_HAVE_OPENVMS || defined ZMQ_HAVE_NETBSD || \
+     defined ZMQ_HAVE_CYGWIN)
     if (sock == -1 && 
         (errno == EAGAIN || errno == EWOULDBLOCK || 
          errno == EINTR || errno == ECONNABORTED))
