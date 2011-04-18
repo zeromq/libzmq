@@ -32,6 +32,10 @@
 
 #include <pgm/pgm.h>
 
+#ifdef ZMQ_HAVE_OSX
+#include <pgm/in.h>
+#endif
+
 #include "options.hpp"
 
 namespace zmq
