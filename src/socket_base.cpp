@@ -466,8 +466,15 @@ int zmq::socket_base_t::connect (const char *addr_)
 
 int zmq::socket_base_t::send (::zmq_msg_t *msg_, int flags_)
 {
+    //  Check whether the library haven't been shut down yet.
     if (unlikely (ctx_terminated)) {
         errno = ETERM;
+        return -1;
+    }
+
+    //  Check whether message passed to the function is valid.
+    if (unlikely ((msg_->flags | ZMQ_MSG_MASK) != 0xff)) {
+        errno = EFAULT;
         return -1;
     }
 
@@ -504,8 +511,15 @@ int zmq::socket_base_t::send (::zmq_msg_t *msg_, int flags_)
 
 int zmq::socket_base_t::recv (::zmq_msg_t *msg_, int flags_)
 {
+    //  Check whether the library haven't been shut down yet.
     if (unlikely (ctx_terminated)) {
         errno = ETERM;
+        return -1;
+    }
+
+    //  Check whether message passed to the function is valid.
+    if (unlikely ((msg_->flags | ZMQ_MSG_MASK) != 0xff)) {
+        errno = EFAULT;
         return -1;
     }
 

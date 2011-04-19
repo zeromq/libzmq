@@ -49,7 +49,7 @@ int zmq::req_t::xsend (zmq_msg_t *msg_, int flags_)
         zmq_msg_t prefix;
         int rc = zmq_msg_init (&prefix);
         zmq_assert (rc == 0);
-        prefix.flags = ZMQ_MSG_MORE;
+        prefix.flags |= ZMQ_MSG_MORE;
         rc = xreq_t::xsend (&prefix, flags_);
         if (rc != 0)
             return rc;

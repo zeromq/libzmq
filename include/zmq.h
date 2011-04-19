@@ -137,6 +137,7 @@ ZMQ_EXPORT const char *zmq_strerror (int errnum);
 /*  allows us to pack the stucture tigher and thus improve performance.       */
 #define ZMQ_MSG_MORE 1
 #define ZMQ_MSG_SHARED 128
+#define ZMQ_MSG_MASK 129 /* Merges all the flags */
 
 /*  A message. Note that 'content' is not a pointer to the raw data.          */
 /*  Rather it is pointer to zmq::msg_content_t structure                      */

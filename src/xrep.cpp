@@ -269,7 +269,7 @@ int zmq::xrep_t::xrecv (zmq_msg_t *msg_, int flags_)
             zmq_assert (rc == 0);
             memcpy (zmq_msg_data (msg_), inpipes [current_in].identity.data (),
                 zmq_msg_size (msg_));
-            msg_->flags = ZMQ_MSG_MORE;
+            msg_->flags |= ZMQ_MSG_MORE;
             return 0;
         }
 

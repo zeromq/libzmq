@@ -35,7 +35,8 @@ it shall return `-1` and set 'errno' to one of the values defined below.
 
 ERRORS
 ------
-No errors are defined.
+*EFAULT*::
+Invalid message.
 
 
 SEE ALSO

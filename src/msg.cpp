@@ -26,12 +26,13 @@
 #include <new>
 
 #include "stdint.hpp"
+#include "likely.hpp"
 #include "err.hpp"
 
 int zmq_msg_init (zmq_msg_t *msg_)
 {
     msg_->content = (zmq::msg_content_t*) ZMQ_VSM;
-    msg_->flags = 0;
+    msg_->flags = (unsigned char) ~ZMQ_MSG_MASK;
     msg_->vsm_size = 0;
     return 0;
 }
@@ -40,7 +41,7 @@ int zmq_msg_init_size (zmq_msg_t *msg_, size_t size_)
 {
     if (size_ <= ZMQ_MAX_VSM_SIZE) {
         msg_->content = (zmq::msg_content_t*) ZMQ_VSM;
-        msg_->flags = 0;
+        msg_->flags = (unsigned char) ~ZMQ_MSG_MASK;
         msg_->vsm_size = (uint8_t) size_;
     }
     else {
@@ -50,7 +51,7 @@ int zmq_msg_init_size (zmq_msg_t *msg_, size_t size_)
             errno = ENOMEM;
             return -1;
         }
-        msg_->flags = 0;
+        msg_->flags = (unsigned char) ~ZMQ_MSG_MASK;
         
         zmq::msg_content_t *content = (zmq::msg_content_t*) msg_->content;
         content->data = (void*) (content + 1);
@@ -67,7 +68,7 @@ int zmq_msg_init_data (zmq_msg_t *msg_, void *data_, size_t size_,
 {
     msg_->content = (zmq::msg_content_t*) malloc (sizeof (zmq::msg_content_t));
     alloc_assert (msg_->content);
-    msg_->flags = 0;
+    msg_->flags = (unsigned char) ~ZMQ_MSG_MASK;
     zmq::msg_content_t *content = (zmq::msg_content_t*) msg_->content;
     content->data = data_;
     content->size = size_;
@@ -79,6 +80,12 @@ int zmq_msg_init_data (zmq_msg_t *msg_, void *data_, size_t size_,
 
 int zmq_msg_close (zmq_msg_t *msg_)
 {
+    //  Check the validity tag.
+    if (unlikely (msg_->flags | ZMQ_MSG_MASK) != 0xff) {
+        errno = EFAULT;
+        return -1;
+    }
+
     //  For VSMs and delimiters there are no resources to free.
     if (msg_->content != (zmq::msg_content_t*) ZMQ_DELIMITER &&
           msg_->content != (zmq::msg_content_t*) ZMQ_VSM) {
@@ -98,17 +105,21 @@ int zmq_msg_close (zmq_msg_t *msg_)
         }
     }
 
-    //  As a safety measure, let's make the deallocated message look like
-    //  an empty message.
-    msg_->content = (zmq::msg_content_t*) ZMQ_VSM;
+    //  Remove the validity tag from the message.
     msg_->flags = 0;
-    msg_->vsm_size = 0;
 
     return 0;
 }
 
 int zmq_msg_move (zmq_msg_t *dest_, zmq_msg_t *src_)
 {
+    //  Check the validity tags.
+    if (unlikely ((dest_->flags | ZMQ_MSG_MASK) != 0xff ||
+          (src_->flags | ZMQ_MSG_MASK) != 0xff)) {
+        errno = EFAULT;
+        return -1;
+    }
+
     zmq_msg_close (dest_);
     *dest_ = *src_;
     zmq_msg_init (src_);
@@ -117,6 +128,13 @@ int zmq_msg_move (zmq_msg_t *dest_, zmq_msg_t *src_)
 
 int zmq_msg_copy (zmq_msg_t *dest_, zmq_msg_t *src_)
 {
+    //  Check the validity tags.
+    if (unlikely ((dest_->flags | ZMQ_MSG_MASK) != 0xff ||
+          (src_->flags | ZMQ_MSG_MASK) != 0xff)) {
+        errno = EFAULT;
+        return -1;
+    }
+
     zmq_msg_close (dest_);
 
     //  VSMs and delimiters require no special handling.
@@ -140,6 +158,9 @@ int zmq_msg_copy (zmq_msg_t *dest_, zmq_msg_t *src_)
 
 void *zmq_msg_data (zmq_msg_t *msg_)
 {
+    //  Check the validity tag.
+    zmq_assert ((msg_->flags | ZMQ_MSG_MASK) == 0xff);
+
     if (msg_->content == (zmq::msg_content_t*) ZMQ_VSM)
         return msg_->vsm_data;
     if (msg_->content == (zmq::msg_content_t*) ZMQ_DELIMITER)
@@ -150,6 +171,9 @@ void *zmq_msg_data (zmq_msg_t *msg_)
 
 size_t zmq_msg_size (zmq_msg_t *msg_)
 {
+    //  Check the validity tag.
+    zmq_assert ((msg_->flags | ZMQ_MSG_MASK) == 0xff);
+
     if (msg_->content == (zmq::msg_content_t*) ZMQ_VSM)
         return msg_->vsm_size;
     if (msg_->content == (zmq::msg_content_t*) ZMQ_DELIMITER)
