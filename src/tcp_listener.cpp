@@ -20,8 +20,6 @@
 
 #include <string.h>
 
-#include "../include/zmq.h"
-
 #include "tcp_listener.hpp"
 #include "platform.hpp"
 #include "ip.hpp"

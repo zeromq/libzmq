@@ -18,12 +18,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zmq.h"
-
 #include "fq.hpp"
 #include "pipe.hpp"
 #include "err.hpp"
 #include "own.hpp"
+#include "msg.hpp"
 
 zmq::fq_t::fq_t (own_t *sink_) :
     active (0),
@@ -95,10 +94,11 @@ void zmq::fq_t::activated (reader_t *pipe_)
     active++;
 }
 
-int zmq::fq_t::recv (zmq_msg_t *msg_, int flags_)
+int zmq::fq_t::recv (msg_t *msg_, int flags_)
 {
     //  Deallocate old content of the message.
-    zmq_msg_close (msg_);
+    int rc = msg_->close ();
+    errno_assert (rc == 0);
 
     //  Round-robin over the pipes to get the next message.
     for (int count = active; count != 0; count--) {
@@ -116,7 +116,7 @@ int zmq::fq_t::recv (zmq_msg_t *msg_, int flags_)
         //  and replaced by another active pipe. Thus we don't have to increase
         //  the 'current' pointer.
         if (fetched) {
-            more = msg_->flags & ZMQ_MSG_MORE;
+            more = msg_->flags () & msg_t::more;
             if (!more) {
                 current++;
                 if (current >= active)
@@ -134,7 +134,8 @@ int zmq::fq_t::recv (zmq_msg_t *msg_, int flags_)
 
     //  No message is available. Initialise the output parameter
     //  to be a 0-byte message.
-    zmq_msg_init (msg_);
+    rc = msg_->init ();
+    errno_assert (rc == 0);
     errno = EAGAIN;
     return -1;
 }

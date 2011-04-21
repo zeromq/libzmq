@@ -24,8 +24,6 @@
 #include <map>
 #include <vector>
 
-#include "../include/zmq.h"
-
 #include "own.hpp"
 #include "array.hpp"
 #include "mutex.hpp"
@@ -69,8 +67,8 @@ namespace zmq
         int getsockopt (int option_, void *optval_, size_t *optvallen_);
         int bind (const char *addr_);
         int connect (const char *addr_);
-        int send (zmq_msg_t *msg_, int flags_);
-        int recv (zmq_msg_t *msg_, int flags_);
+        int send (class msg_t *msg_, int flags_);
+        int recv (class msg_t *msg_, int flags_);
         int close ();
 
         //  These functions are used by the polling mechanism to determine
@@ -123,11 +121,11 @@ namespace zmq
 
         //  The default implementation assumes that send is not supported.
         virtual bool xhas_out ();
-        virtual int xsend (zmq_msg_t *msg_, int options_);
+        virtual int xsend (class msg_t *msg_, int options_);
 
         //  The default implementation assumes that recv in not supported.
         virtual bool xhas_in ();
-        virtual int xrecv (zmq_msg_t *msg_, int options_);
+        virtual int xrecv (class msg_t *msg_, int options_);
 
         //  We are declaring termination handler as protected so that
         //  individual socket types can hook into the termination process

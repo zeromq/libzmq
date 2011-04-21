@@ -18,11 +18,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zmq.h"
-
 #include "xpub.hpp"
-#include "err.hpp"
 #include "pipe.hpp"
+#include "err.hpp"
+#include "msg.hpp"
 
 zmq::xpub_t::xpub_t (class ctx_t *parent_, uint32_t tid_) :
     socket_base_t (parent_, tid_),
@@ -53,7 +52,7 @@ void zmq::xpub_t::process_term (int linger_)
     socket_base_t::process_term (linger_);
 }
 
-int zmq::xpub_t::xsend (zmq_msg_t *msg_, int flags_)
+int zmq::xpub_t::xsend (msg_t *msg_, int flags_)
 {
     return dist.send (msg_, flags_);
 }
@@ -63,7 +62,7 @@ bool zmq::xpub_t::xhas_out ()
     return dist.has_out ();
 }
 
-int zmq::xpub_t::xrecv (zmq_msg_t *msg_, int flags_)
+int zmq::xpub_t::xrecv (msg_t *msg_, int flags_)
 {
     errno = EAGAIN;
     return -1;

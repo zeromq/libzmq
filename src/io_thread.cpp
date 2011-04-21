@@ -20,8 +20,6 @@
 
 #include <new>
 
-#include "../include/zmq.h"
-
 #include "io_thread.hpp"
 #include "platform.hpp"
 #include "err.hpp"

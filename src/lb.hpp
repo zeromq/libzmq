@@ -38,7 +38,7 @@ namespace zmq
 
         void attach (writer_t *pipe_);
         void terminate ();
-        int send (zmq_msg_t *msg_, int flags_);
+        int send (msg_t *msg_, int flags_);
         bool has_out ();
 
         //  i_writer_events interface implementation.

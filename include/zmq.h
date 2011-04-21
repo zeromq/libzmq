@@ -121,34 +121,7 @@ ZMQ_EXPORT const char *zmq_strerror (int errnum);
 /*  0MQ message definition.                                                   */
 /******************************************************************************/
 
-/*  Maximal size of "Very Small Message". VSMs are passed by value            */
-/*  to avoid excessive memory allocation/deallocation.                        */
-/*  If VMSs larger than 255 bytes are required, type of 'vsm_size'            */
-/*  field in zmq_msg_t structure should be modified accordingly.              */
-#define ZMQ_MAX_VSM_SIZE 30
-
-/*  Message types. These integers may be stored in 'content' member of the    */
-/*  message instead of regular pointer to the data.                           */
-#define ZMQ_DELIMITER 31
-#define ZMQ_VSM 32
-
-/*  Message flags. ZMQ_MSG_SHARED is strictly speaking not a message flag     */
-/*  (it has no equivalent in the wire format), however, making  it a flag     */
-/*  allows us to pack the stucture tigher and thus improve performance.       */
-#define ZMQ_MSG_MORE 1
-#define ZMQ_MSG_SHARED 128
-#define ZMQ_MSG_MASK 129 /* Merges all the flags */
-
-/*  A message. Note that 'content' is not a pointer to the raw data.          */
-/*  Rather it is pointer to zmq::msg_content_t structure                      */
-/*  (see src/msg_content.hpp for its definition).                             */
-typedef struct
-{
-    void *content;
-    unsigned char flags;
-    unsigned char vsm_size;
-    unsigned char vsm_data [ZMQ_MAX_VSM_SIZE];
-} zmq_msg_t;
+typedef unsigned char zmq_msg_t [32];
 
 typedef void (zmq_free_fn) (void *data, void *hint);
 

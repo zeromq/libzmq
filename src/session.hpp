@@ -45,8 +45,8 @@ namespace zmq
         //  i_inout interface implementation. Note that detach method is not
         //  implemented by generic session. Different session types may handle
         //  engine disconnection in different ways.
-        bool read (::zmq_msg_t *msg_);
-        bool write (::zmq_msg_t *msg_);
+        bool read (msg_t *msg_);
+        bool write (msg_t *msg_);
         void flush ();
         void detach ();
 

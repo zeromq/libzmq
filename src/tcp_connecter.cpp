@@ -22,8 +22,6 @@
 
 #include <string>
 
-#include "../include/zmq.h"
-
 #include "tcp_connecter.hpp"
 #include "platform.hpp"
 #include "ip.hpp"

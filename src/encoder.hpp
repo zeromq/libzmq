@@ -27,8 +27,7 @@
 #include <algorithm>
 
 #include "err.hpp"
-
-#include "../include/zmq.h"
+#include "msg.hpp"
 
 namespace zmq
 {
@@ -172,7 +171,7 @@ namespace zmq
         bool message_ready ();
 
         struct i_inout *source;
-        ::zmq_msg_t in_progress;
+        msg_t in_progress;
         unsigned char tmpbuf [10];
 
         encoder_t (const encoder_t&);

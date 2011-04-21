@@ -21,10 +21,9 @@
 #ifndef __ZMQ_XSUB_HPP_INCLUDED__
 #define __ZMQ_XSUB_HPP_INCLUDED__
 
-#include "../include/zmq.h"
-
 #include "trie.hpp"
 #include "socket_base.hpp"
+#include "msg.hpp"
 #include "fq.hpp"
 
 namespace zmq
@@ -42,9 +41,9 @@ namespace zmq
         //  Overloads of functions from socket_base_t.
         void xattach_pipes (class reader_t *inpipe_, class writer_t *outpipe_,
             const blob_t &peer_identity_);
-        int xsend (zmq_msg_t *msg_, int options_);
+        int xsend (class msg_t *msg_, int options_);
         bool xhas_out ();
-        int xrecv (zmq_msg_t *msg_, int flags_);
+        int xrecv (class msg_t *msg_, int flags_);
         bool xhas_in ();
 
     private:
@@ -53,7 +52,7 @@ namespace zmq
         void process_term (int linger_);
 
         //  Check whether the message matches at least one subscription.
-        bool match (zmq_msg_t *msg_);
+        bool match (class msg_t *msg_);
 
         //  Fair queueing object for inbound pipes.
         fq_t fq;
@@ -64,7 +63,7 @@ namespace zmq
         //  If true, 'message' contains a matching message to return on the
         //  next recv call.
         bool has_message;
-        zmq_msg_t message;
+        msg_t message;
 
         //  If true, part of a multipart message was already received, but
         //  there are following parts still waiting.

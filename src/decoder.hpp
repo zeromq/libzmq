@@ -27,9 +27,8 @@
 #include <algorithm>
 
 #include "err.hpp"
+#include "msg.hpp"
 #include "stdint.hpp"
-
-#include "../include/zmq.h"
 
 namespace zmq
 {
@@ -196,7 +195,7 @@ namespace zmq
 
         struct i_inout *destination;
         unsigned char tmpbuf [8];
-        ::zmq_msg_t in_progress;
+        msg_t in_progress;
 
         int64_t maxmsgsize;
 

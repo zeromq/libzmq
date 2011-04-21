@@ -80,7 +80,7 @@ void zmq::session_t::proceed_with_term ()
     own_t::process_term (0);
 }
 
-bool zmq::session_t::read (::zmq_msg_t *msg_)
+bool zmq::session_t::read (msg_t *msg_)
 {
     if (!in_pipe)
         return false;
@@ -88,14 +88,15 @@ bool zmq::session_t::read (::zmq_msg_t *msg_)
     if (!in_pipe->read (msg_))
         return false;
 
-    incomplete_in = msg_->flags & ZMQ_MSG_MORE;
+    incomplete_in = msg_->flags () & msg_t::more;
     return true;
 }
 
-bool zmq::session_t::write (::zmq_msg_t *msg_)
+bool zmq::session_t::write (msg_t *msg_)
 {
     if (out_pipe && out_pipe->write (msg_)) {
-        zmq_msg_init (msg_);
+        int rc = msg_->init ();
+        errno_assert (rc == 0);
         return true;
     }
 
@@ -120,13 +121,15 @@ void zmq::session_t::clean_pipes ()
     //  Remove any half-read message from the in pipe.
     if (in_pipe) {
         while (incomplete_in) {
-            zmq_msg_t msg;
-            zmq_msg_init (&msg);
+            msg_t msg;
+            int rc = msg.init ();
+            errno_assert (rc == 0);
             if (!read (&msg)) {
                 zmq_assert (!incomplete_in);
                 break;
             }
-            zmq_msg_close (&msg);
+            rc = msg.close ();
+            errno_assert (rc == 0);
         }
     }
 }

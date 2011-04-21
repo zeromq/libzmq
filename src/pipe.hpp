@@ -21,8 +21,7 @@
 #ifndef __ZMQ_PIPE_HPP_INCLUDED__
 #define __ZMQ_PIPE_HPP_INCLUDED__
 
-#include "../include/zmq.h"
-
+#include "msg.hpp"
 #include "array.hpp"
 #include "ypipe.hpp"
 #include "config.hpp"
@@ -43,7 +42,7 @@ namespace zmq
     //  event. When endpoint processes the event and returns, associated
     //  reader/writer object is deallocated.
 
-    typedef ypipe_t <zmq_msg_t, message_pipe_granularity> pipe_t;
+    typedef ypipe_t <msg_t, message_pipe_granularity> pipe_t;
 
     struct i_reader_events
     {
@@ -69,7 +68,7 @@ namespace zmq
         bool check_read ();
 
         //  Reads a message to the underlying pipe.
-        bool read (zmq_msg_t *msg_);
+        bool read (msg_t *msg_);
 
         //  Ask pipe to terminate.
         void terminate ();
@@ -87,7 +86,7 @@ namespace zmq
         void process_pipe_term_ack ();
 
         //  Returns true if the message is delimiter; false otherwise.
-        static bool is_delimiter (zmq_msg_t &msg_);
+        static bool is_delimiter (msg_t &msg_);
 
         //  True, if pipe can be read from.
         bool active;
@@ -136,11 +135,11 @@ namespace zmq
         //  Checks whether messages can be written to the pipe.
         //  If writing the message would cause high watermark
         //  the function returns false.
-        bool check_write (zmq_msg_t *msg_);
+        bool check_write (msg_t *msg_);
 
         //  Writes a message to the underlying pipe. Returns false if the
         //  message cannot be written because high watermark was reached.
-        bool write (zmq_msg_t *msg_);
+        bool write (msg_t *msg_);
 
         //  Remove unfinished part of a message from the pipe.
         void rollback ();

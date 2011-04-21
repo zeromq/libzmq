@@ -18,10 +18,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zmq.h"
-
 #include "rep.hpp"
 #include "err.hpp"
+#include "msg.hpp"
 
 zmq::rep_t::rep_t (class ctx_t *parent_, uint32_t tid_) :
     xrep_t (parent_, tid_),
@@ -35,7 +34,7 @@ zmq::rep_t::~rep_t ()
 {
 }
 
-int zmq::rep_t::xsend (zmq_msg_t *msg_, int flags_)
+int zmq::rep_t::xsend (msg_t *msg_, int flags_)
 {
     //  If we are in the middle of receiving a request, we cannot send reply.
     if (!sending_reply) {
@@ -43,7 +42,7 @@ int zmq::rep_t::xsend (zmq_msg_t *msg_, int flags_)
         return -1;
     }
 
-    bool more = (msg_->flags & ZMQ_MSG_MORE);
+    bool more = (msg_->flags () & msg_t::more);
 
     //  Push message to the reply pipe.
     int rc = xrep_t::xsend (msg_, flags_);
@@ -57,7 +56,7 @@ int zmq::rep_t::xsend (zmq_msg_t *msg_, int flags_)
     return 0;
 }
 
-int zmq::rep_t::xrecv (zmq_msg_t *msg_, int flags_)
+int zmq::rep_t::xrecv (msg_t *msg_, int flags_)
 {
     //  If we are in middle of sending a reply, we cannot receive next request.
     if (sending_reply) {
@@ -78,10 +77,10 @@ int zmq::rep_t::xrecv (zmq_msg_t *msg_, int flags_)
             int rc = xrep_t::xrecv (msg_, flags_);
             if (rc != 0)
                 return rc;
-            zmq_assert (msg_->flags & ZMQ_MSG_MORE);
+            zmq_assert (msg_->flags () & msg_t::more);
 
             //  Empty message part delimits the traceback stack.
-            bottom = (zmq_msg_size (msg_) == 0);
+            bottom = (msg_->size () == 0);
 
             //  Push it to the reply pipe.
             rc = xrep_t::xsend (msg_, flags_);
@@ -98,7 +97,7 @@ int zmq::rep_t::xrecv (zmq_msg_t *msg_, int flags_)
         return rc;
 
     //  If whole request is read, flip the FSM to reply-sending state.
-    if (!(msg_->flags & ZMQ_MSG_MORE)) {
+    if (!(msg_->flags () & msg_t::more)) {
         sending_reply = true;
         request_begins = true;
     }

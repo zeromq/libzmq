@@ -21,8 +21,7 @@
 #ifndef __ZMQ_I_INOUT_HPP_INCLUDED__
 #define __ZMQ_I_INOUT_HPP_INCLUDED__
 
-#include "../include/zmq.h"
-
+#include "msg.hpp"
 #include "stdint.hpp"
 
 namespace zmq
@@ -33,10 +32,10 @@ namespace zmq
         virtual ~i_inout () {}
 
         //  Engine asks for a message to send to the network.
-        virtual bool read (::zmq_msg_t *msg_) = 0;
+        virtual bool read (msg_t *msg_) = 0;
 
         //  Engine received message from the network and sends it further on.
-        virtual bool write (::zmq_msg_t *msg_) = 0;
+        virtual bool write (msg_t *msg_) = 0;
 
         //  Flush all the previously written messages.
         virtual void flush () = 0;

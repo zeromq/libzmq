@@ -26,7 +26,8 @@ zmq::encoder_t::encoder_t (size_t bufsize_) :
     encoder_base_t <encoder_t> (bufsize_),
     source (NULL)
 {
-    zmq_msg_init (&in_progress);
+    int rc = in_progress.init ();
+    errno_assert (rc == 0);
 
     //  Write 0 bytes to the batch and go to message_ready state.
     next_step (NULL, 0, &encoder_t::message_ready, true);
@@ -34,7 +35,8 @@ zmq::encoder_t::encoder_t (size_t bufsize_) :
 
 zmq::encoder_t::~encoder_t ()
 {
-    zmq_msg_close (&in_progress);
+    int rc = in_progress.close ();
+    errno_assert (rc == 0);
 }
 
 void zmq::encoder_t::set_inout (i_inout *source_)
@@ -45,7 +47,7 @@ void zmq::encoder_t::set_inout (i_inout *source_)
 bool zmq::encoder_t::size_ready ()
 {
     //  Write message body into the buffer.
-    next_step (zmq_msg_data (&in_progress), zmq_msg_size (&in_progress),
+    next_step (in_progress.data (), in_progress.size (),
         &encoder_t::message_ready, false);
     return true;
 }
@@ -53,19 +55,21 @@ bool zmq::encoder_t::size_ready ()
 bool zmq::encoder_t::message_ready ()
 {
     //  Destroy content of the old message.
-    zmq_msg_close (&in_progress);
+    int rc = in_progress.close ();
+    errno_assert (rc == 0);
 
     //  Read new message. If there is none, return false.
     //  Note that new state is set only if write is successful. That way
     //  unsuccessful write will cause retry on the next state machine
     //  invocation.
     if (!source || !source->read (&in_progress)) {
-        zmq_msg_init (&in_progress);
+        rc = in_progress.init ();
+        errno_assert (rc == 0);
         return false;
     }
 
     //  Get the message size.
-    size_t size = zmq_msg_size (&in_progress);
+    size_t size = in_progress.size ();
 
     //  Account for the 'flags' byte.
     size++;
@@ -75,16 +79,16 @@ bool zmq::encoder_t::message_ready ()
     //  message size. In both cases 'flags' field follows.
     if (size < 255) {
         tmpbuf [0] = (unsigned char) size;
-        tmpbuf [1] = (in_progress.flags & ~ZMQ_MSG_SHARED);
+        tmpbuf [1] = (in_progress.flags () & ~msg_t::shared);
         next_step (tmpbuf, 2, &encoder_t::size_ready,
-            !(in_progress.flags & ZMQ_MSG_MORE));
+            !(in_progress.flags () & msg_t::more));
     }
     else {
         tmpbuf [0] = 0xff;
         put_uint64 (tmpbuf + 1, size);
-        tmpbuf [9] = (in_progress.flags & ~ZMQ_MSG_SHARED);
+        tmpbuf [9] = (in_progress.flags () & ~msg_t::shared);
         next_step (tmpbuf, 10, &encoder_t::size_ready,
-            !(in_progress.flags & ZMQ_MSG_MORE));
+            !(in_progress.flags () & msg_t::more));
     }
     return true;
 }

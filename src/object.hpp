@@ -21,8 +21,6 @@
 #ifndef __ZMQ_OBJECT_HPP_INCLUDED__
 #define __ZMQ_OBJECT_HPP_INCLUDED__
 
-#include "../include/zmq.h"
-
 #include "stdint.hpp"
 #include "blob.hpp"
 

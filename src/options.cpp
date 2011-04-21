@@ -20,8 +20,6 @@
 
 #include <string.h>
 
-#include "../include/zmq.h"
-
 #include "options.hpp"
 #include "err.hpp"
 

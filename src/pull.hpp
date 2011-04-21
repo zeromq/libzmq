@@ -39,7 +39,7 @@ namespace zmq
         //  Overloads of functions from socket_base_t.
         void xattach_pipes (class reader_t *inpipe_, class writer_t *outpipe_,
             const blob_t &peer_identity_);
-        int xrecv (zmq_msg_t *msg_, int flags_);
+        int xrecv (class msg_t *msg_, int flags_);
         bool xhas_in ();
 
     private:

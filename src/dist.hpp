@@ -40,7 +40,7 @@ namespace zmq
 
         void attach (writer_t *pipe_);
         void terminate ();
-        int send (zmq_msg_t *msg_, int flags_);
+        int send (class msg_t *msg_, int flags_);
         bool has_out ();
 
         //  i_writer_events interface implementation.
@@ -51,10 +51,10 @@ namespace zmq
 
         //  Write the message to the pipe. Make the pipe inactive if writing
         //  fails. In such a case false is returned.
-        bool write (class writer_t *pipe_, zmq_msg_t *msg_);
+        bool write (class writer_t *pipe_, class msg_t *msg_);
 
         //  Put the message to all active pipes.
-        void distribute (zmq_msg_t *msg_, int flags_);
+        void distribute (class msg_t *msg_, int flags_);
 
         //  Plug in all the delayed pipes.
         void clear_new_pipes ();

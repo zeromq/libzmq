@@ -23,6 +23,7 @@
 
 #include "array.hpp"
 #include "pipe.hpp"
+#include "msg.hpp"
 
 namespace zmq
 {
@@ -40,7 +41,7 @@ namespace zmq
         void attach (reader_t *pipe_);
         void terminate ();
 
-        int recv (zmq_msg_t *msg_, int flags_);
+        int recv (msg_t *msg_, int flags_);
         bool has_in ();
 
         //  i_reader_events implementation.

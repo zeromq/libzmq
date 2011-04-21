@@ -53,28 +53,27 @@ zmq::zmq_init_t::zmq_init_t (io_thread_t *io_thread_,
     peer_identity.assign (identity, uuid_t::uuid_blob_len + 1);
 
     //  Create a list of props to send.
-
-    zmq_msg_t msg;
-    int rc = zmq_msg_init_size (&msg, 4);
+    msg_t msg;
+    int rc = msg.init_size (4);
     errno_assert (rc == 0);
-    unsigned char *data = (unsigned char*) zmq_msg_data (&msg);
+    unsigned char *data = (unsigned char*) msg.data ();
     put_uint16 (data, prop_type);
     put_uint16 (data + 2, options.type);
-    msg.flags |= ZMQ_MSG_MORE;
+    msg.set_flags (msg_t::more);
     to_send.push_back (msg);
 
     if (!options.identity.empty ()) {
-        rc = zmq_msg_init_size (&msg, 2 + options.identity.size ());
+        rc = msg.init_size (2 + options.identity.size ());
         errno_assert (rc == 0);
-        data = (unsigned char*) zmq_msg_data (&msg);
+        data = (unsigned char*) msg.data ();
         put_uint16 (data, prop_identity);
         memcpy (data + 2, options.identity.data (), options.identity.size ());
-        msg.flags |= ZMQ_MSG_MORE;
+        msg.set_flags (msg_t::more);
         to_send.push_back (msg);
     }
 
     //  Remove the MORE flag from the last prop.
-    to_send.back ().flags &= ~ZMQ_MSG_MORE;
+    to_send.back ().reset_flags (msg_t::more);
 }
 
 zmq::zmq_init_t::~zmq_init_t ()
@@ -85,13 +84,13 @@ zmq::zmq_init_t::~zmq_init_t ()
     //  If there are unsent props still queued deallocate them.
     for (to_send_t::iterator it = to_send.begin (); it != to_send.end ();
           ++it) {
-        int rc = zmq_msg_close (&(*it));
+        int rc = it->close ();
         errno_assert (rc == 0);
     }
     to_send.clear ();
 }
 
-bool zmq::zmq_init_t::read (::zmq_msg_t *msg_)
+bool zmq::zmq_init_t::read (msg_t *msg_)
 {
     //  If the identity was already sent, do nothing.
     if (to_send.empty ())
@@ -107,15 +106,15 @@ bool zmq::zmq_init_t::read (::zmq_msg_t *msg_)
     return true;
 }
 
-bool zmq::zmq_init_t::write (::zmq_msg_t *msg_)
+bool zmq::zmq_init_t::write (msg_t *msg_)
 {
     //  If identity was already received, we are not interested
     //  in subsequent messages.
     if (received)
         return false;
 
-    size_t size = zmq_msg_size (msg_);
-    unsigned char *data = (unsigned char*) zmq_msg_data (msg_);
+    size_t size = msg_->size ();
+    unsigned char *data = (unsigned char*) msg_->data ();
 
     //  There should be at least property type in the message.
     zmq_assert (size >= 2);
@@ -139,7 +138,7 @@ bool zmq::zmq_init_t::write (::zmq_msg_t *msg_)
         zmq_assert (false);
     }
 
-    if (!(msg_->flags & ZMQ_MSG_MORE)) {
+    if (!(msg_->flags () & msg_t::more)) {
         received = true;
         finalise_initialisation ();
     }

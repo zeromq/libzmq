@@ -27,6 +27,7 @@
 #include "socket_base.hpp"
 #include "blob.hpp"
 #include "pipe.hpp"
+#include "msg.hpp"
 
 namespace zmq
 {
@@ -45,8 +46,8 @@ namespace zmq
         //  Overloads of functions from socket_base_t.
         void xattach_pipes (reader_t *inpipe_, writer_t *outpipe_,
             const blob_t &peer_identity_);
-        int xsend (zmq_msg_t *msg_, int flags_);
-        int xrecv (zmq_msg_t *msg_, int flags_);
+        int xsend (class msg_t *msg_, int flags_);
+        int xrecv (class msg_t *msg_, int flags_);
         bool xhas_in ();
         bool xhas_out ();
 
@@ -82,7 +83,7 @@ namespace zmq
         bool prefetched;
 
         //  Holds the prefetched message.
-        zmq_msg_t prefetched_msg;
+        msg_t prefetched_msg;
 
         //  If true, more incoming message parts are expected.
         bool more_in;

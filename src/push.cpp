@@ -18,11 +18,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zmq.h"
-
 #include "push.hpp"
-#include "err.hpp"
 #include "pipe.hpp"
+#include "err.hpp"
+#include "msg.hpp"
 
 zmq::push_t::push_t (class ctx_t *parent_, uint32_t tid_) :
     socket_base_t (parent_, tid_),
@@ -50,7 +49,7 @@ void zmq::push_t::process_term (int linger_)
     socket_base_t::process_term (linger_);
 }
 
-int zmq::push_t::xsend (zmq_msg_t *msg_, int flags_)
+int zmq::push_t::xsend (msg_t *msg_, int flags_)
 {
     return lb.send (msg_, flags_);
 }

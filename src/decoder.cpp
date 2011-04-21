@@ -31,7 +31,8 @@ zmq::decoder_t::decoder_t (size_t bufsize_, int64_t maxmsgsize_) :
     destination (NULL),
     maxmsgsize (maxmsgsize_)
 {
-    zmq_msg_init (&in_progress);
+    int rc = in_progress.init ();
+    errno_assert (rc == 0);
 
     //  At the beginning, read one byte and go to one_byte_size_ready state.
     next_step (tmpbuf, 1, &decoder_t::one_byte_size_ready);
@@ -39,7 +40,8 @@ zmq::decoder_t::decoder_t (size_t bufsize_, int64_t maxmsgsize_) :
 
 zmq::decoder_t::~decoder_t ()
 {
-    zmq_msg_close (&in_progress);
+    int rc = in_progress.close ();
+    errno_assert (rc == 0);
 }
 
 void zmq::decoder_t::set_inout (i_inout *destination_)
@@ -71,9 +73,9 @@ bool zmq::decoder_t::one_byte_size_ready ()
             errno = ENOMEM;
         }
         else
-            rc = zmq_msg_init_size (&in_progress, *tmpbuf - 1);
+            rc = in_progress.init_size (*tmpbuf - 1);
         if (rc != 0 && errno == ENOMEM) {
-            rc = zmq_msg_init (&in_progress);
+            rc = in_progress.init ();
             errno_assert (rc == 0);
             decoding_error ();
             return false;
@@ -106,9 +108,9 @@ bool zmq::decoder_t::eight_byte_size_ready ()
         errno = ENOMEM;
     }
     else
-        rc = zmq_msg_init_size (&in_progress, size - 1);
+        rc = in_progress.init_size (size - 1);
     if (rc != 0 && errno == ENOMEM) {
-        rc = zmq_msg_init (&in_progress);
+        rc = in_progress.init ();
         errno_assert (rc == 0);
         decoding_error ();
         return false;
@@ -122,9 +124,9 @@ bool zmq::decoder_t::eight_byte_size_ready ()
 bool zmq::decoder_t::flags_ready ()
 {
     //  Store the flags from the wire into the message structure.
-    in_progress.flags = tmpbuf [0];
+    in_progress.set_flags (tmpbuf [0]);
 
-    next_step (zmq_msg_data (&in_progress), zmq_msg_size (&in_progress),
+    next_step (in_progress.data (), in_progress.size (),
         &decoder_t::message_ready);
     
     return true;

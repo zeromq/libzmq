@@ -18,9 +18,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zmq.h"
-
 #include "sub.hpp"
+#include "msg.hpp"
 
 zmq::sub_t::sub_t (class ctx_t *parent_, uint32_t tid_) :
     xsub_t (parent_, tid_)
@@ -41,9 +40,10 @@ int zmq::sub_t::xsetsockopt (int option_, const void *optval_,
     }
 
     //  Create the subscription message.
-    zmq_msg_t msg;
-    zmq_msg_init_size (&msg, optvallen_ + 1);
-    unsigned char *data = (unsigned char*) zmq_msg_data (&msg);
+    msg_t msg;
+    int rc = msg.init_size (optvallen_ + 1);
+    errno_assert (rc == 0);
+    unsigned char *data = (unsigned char*) msg.data ();
     if (option_ == ZMQ_SUBSCRIBE)
         *data = 1;
     else if (option_ == ZMQ_UNSUBSCRIBE)
@@ -52,16 +52,17 @@ int zmq::sub_t::xsetsockopt (int option_, const void *optval_,
 
     //  Pass it further on in the stack.
     int err = 0;
-    int rc = xsub_t::xsend (&msg, 0);
+    rc = xsub_t::xsend (&msg, 0);
     if (rc != 0)
         err = errno;
-    zmq_msg_close (&msg);
+    int rc2 = msg.close ();
+    errno_assert (rc2 == 0);
     if (rc != 0)
         errno = err;
     return rc;
 }
 
-int zmq::sub_t::xsend (zmq_msg_t *msg_, int options_)
+int zmq::sub_t::xsend (msg_t *msg_, int options_)
 {
     //  Overload the XSUB's send.
     errno = ENOTSUP;

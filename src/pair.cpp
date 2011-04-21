@@ -18,11 +18,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zmq.h"
-
 #include "pair.hpp"
 #include "err.hpp"
 #include "pipe.hpp"
+#include "msg.hpp"
 
 zmq::pair_t::pair_t (class ctx_t *parent_, uint32_t tid_) :
     socket_base_t (parent_, tid_),
@@ -116,7 +115,7 @@ void zmq::pair_t::activated (class writer_t *pipe_)
     outpipe_alive = true;
 }
 
-int zmq::pair_t::xsend (zmq_msg_t *msg_, int flags_)
+int zmq::pair_t::xsend (msg_t *msg_, int flags_)
 {
     if (outpipe == NULL || !outpipe_alive) {
         errno = EAGAIN;
@@ -133,16 +132,17 @@ int zmq::pair_t::xsend (zmq_msg_t *msg_, int flags_)
         outpipe->flush ();
 
     //  Detach the original message from the data buffer.
-    int rc = zmq_msg_init (msg_);
-    zmq_assert (rc == 0);
+    int rc = msg_->init ();
+    errno_assert (rc == 0);
 
     return 0;
 }
 
-int zmq::pair_t::xrecv (zmq_msg_t *msg_, int flags_)
+int zmq::pair_t::xrecv (msg_t *msg_, int flags_)
 {
     //  Deallocate old content of the message.
-    zmq_msg_close (msg_);
+    int rc = msg_->close ();
+    errno_assert (rc == 0);
 
     if (!inpipe_alive || !inpipe || !inpipe->read (msg_)) {
 
@@ -150,7 +150,8 @@ int zmq::pair_t::xrecv (zmq_msg_t *msg_, int flags_)
         inpipe_alive = false;
 
         //  Initialise the output parameter to be a 0-byte message.
-        zmq_msg_init (msg_);
+        rc = msg_->init ();
+        errno_assert (rc == 0);
         errno = EAGAIN;
         return -1;
     }
@@ -171,10 +172,12 @@ bool zmq::pair_t::xhas_out ()
     if (!outpipe || !outpipe_alive)
         return false;
 
-    zmq_msg_t msg;
-    zmq_msg_init (&msg);
+    msg_t msg;
+    int rc = msg.init ();
+    errno_assert (rc == 0);
     outpipe_alive = outpipe->check_write (&msg);
-    zmq_msg_close (&msg);
+    rc = msg.close ();
+    errno_assert (rc == 0);
     return outpipe_alive;
 }
 

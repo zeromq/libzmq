@@ -26,8 +26,9 @@
 #include "io_thread.hpp"
 #include "platform.hpp"
 #include "reaper.hpp"
-#include "err.hpp"
 #include "pipe.hpp"
+#include "err.hpp"
+#include "msg.hpp"
 
 #if defined ZMQ_HAVE_WINDOWS
 #include "windows.h"
@@ -304,10 +305,10 @@ zmq::endpoint_t zmq::ctx_t::find_endpoint (const char *addr_)
 void zmq::ctx_t::log (const char *format_, va_list args_)
 {
     //  Create the log message.
-    zmq_msg_t msg;
-    int rc = zmq_msg_init_size (&msg, strlen (format_) + 1);
-    zmq_assert (rc == 0);
-    memcpy (zmq_msg_data (&msg), format_, zmq_msg_size (&msg));
+    msg_t msg;
+    int rc = msg.init_size (strlen (format_) + 1);
+    errno_assert (rc == 0);
+    memcpy (msg.data (), format_, msg.size ());
 
     //  At this  point we migrate the log socket to the current thread.
     //  We rely on mutex for executing the memory barrier.
@@ -316,7 +317,8 @@ void zmq::ctx_t::log (const char *format_, va_list args_)
         log_socket->send (&msg, 0);
     log_sync.unlock ();
 
-    zmq_msg_close (&msg);
+    rc = msg.close ();
+    errno_assert (rc == 0);
 }
 
 

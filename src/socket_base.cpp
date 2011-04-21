@@ -22,8 +22,6 @@
 #include <string>
 #include <algorithm>
 
-#include "../include/zmq.h"
-
 #include "platform.hpp"
 
 #if defined ZMQ_HAVE_WINDOWS
@@ -48,6 +46,7 @@
 #include "platform.hpp"
 #include "likely.hpp"
 #include "uuid.hpp"
+#include "msg.hpp"
 
 #include "pair.hpp"
 #include "pub.hpp"
@@ -464,7 +463,7 @@ int zmq::socket_base_t::connect (const char *addr_)
     return 0;
 }
 
-int zmq::socket_base_t::send (::zmq_msg_t *msg_, int flags_)
+int zmq::socket_base_t::send (msg_t *msg_, int flags_)
 {
     //  Check whether the library haven't been shut down yet.
     if (unlikely (ctx_terminated)) {
@@ -473,7 +472,7 @@ int zmq::socket_base_t::send (::zmq_msg_t *msg_, int flags_)
     }
 
     //  Check whether message passed to the function is valid.
-    if (unlikely ((msg_->flags | ZMQ_MSG_MASK) != 0xff)) {
+    if (unlikely (!msg_->check ())) {
         errno = EFAULT;
         return -1;
     }
@@ -485,7 +484,7 @@ int zmq::socket_base_t::send (::zmq_msg_t *msg_, int flags_)
 
     //  At this point we impose the MORE flag on the message.
     if (flags_ & ZMQ_SNDMORE)
-        msg_->flags |= ZMQ_MSG_MORE;
+        msg_->set_flags (msg_t::more);
 
     //  Try to send the message.
     rc = xsend (msg_, flags_);
@@ -509,7 +508,7 @@ int zmq::socket_base_t::send (::zmq_msg_t *msg_, int flags_)
     return 0;
 }
 
-int zmq::socket_base_t::recv (::zmq_msg_t *msg_, int flags_)
+int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
 {
     //  Check whether the library haven't been shut down yet.
     if (unlikely (ctx_terminated)) {
@@ -518,7 +517,7 @@ int zmq::socket_base_t::recv (::zmq_msg_t *msg_, int flags_)
     }
 
     //  Check whether message passed to the function is valid.
-    if (unlikely ((msg_->flags | ZMQ_MSG_MASK) != 0xff)) {
+    if (unlikely (!msg_->check ())) {
         errno = EFAULT;
         return -1;
     }
@@ -543,9 +542,9 @@ int zmq::socket_base_t::recv (::zmq_msg_t *msg_, int flags_)
 
     //  If we have the message, return immediately.
     if (rc == 0) {
-        rcvmore = msg_->flags & ZMQ_MSG_MORE;
+        rcvmore = msg_->flags () & msg_t::more;
         if (rcvmore)
-            msg_->flags &= ~ZMQ_MSG_MORE;
+            msg_->reset_flags (msg_t::more);
         return 0;
     }
 
@@ -565,9 +564,9 @@ int zmq::socket_base_t::recv (::zmq_msg_t *msg_, int flags_)
 
         rc = xrecv (msg_, flags_);
         if (rc == 0) {
-            rcvmore = msg_->flags & ZMQ_MSG_MORE;
+            rcvmore = msg_->flags () & msg_t::more;
             if (rcvmore)
-                msg_->flags &= ~ZMQ_MSG_MORE;
+                msg_->reset_flags (msg_t::more);
         }
         return rc;
     }
@@ -585,9 +584,9 @@ int zmq::socket_base_t::recv (::zmq_msg_t *msg_, int flags_)
         block = true;
     }
 
-    rcvmore = msg_->flags & ZMQ_MSG_MORE;
+    rcvmore = msg_->flags () & msg_t::more;
     if (rcvmore)
-        msg_->flags &= ~ZMQ_MSG_MORE;
+        msg_->reset_flags (msg_t::more);
     return 0;
 }
 
@@ -757,7 +756,7 @@ bool zmq::socket_base_t::xhas_out ()
     return false;
 }
 
-int zmq::socket_base_t::xsend (zmq_msg_t *msg_, int options_)
+int zmq::socket_base_t::xsend (msg_t *msg_, int options_)
 {
     errno = ENOTSUP;
     return -1;
@@ -768,7 +767,7 @@ bool zmq::socket_base_t::xhas_in ()
     return false;
 }
 
-int zmq::socket_base_t::xrecv (zmq_msg_t *msg_, int options_)
+int zmq::socket_base_t::xrecv (msg_t *msg_, int options_)
 {
     errno = ENOTSUP;
     return -1;

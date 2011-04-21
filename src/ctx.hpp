@@ -26,8 +26,6 @@
 #include <string>
 #include <stdarg.h>
 
-#include "../include/zmq.h"
-
 #include "mailbox.hpp"
 #include "semaphore.hpp"
 #include "ypipe.hpp"

@@ -18,10 +18,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zmq.h"
-
 #include "req.hpp"
 #include "err.hpp"
+#include "msg.hpp"
 
 zmq::req_t::req_t (class ctx_t *parent_, uint32_t tid_) :
     xreq_t (parent_, tid_),
@@ -35,7 +34,7 @@ zmq::req_t::~req_t ()
 {
 }
 
-int zmq::req_t::xsend (zmq_msg_t *msg_, int flags_)
+int zmq::req_t::xsend (msg_t *msg_, int flags_)
 {
     //  If we've sent a request and we still haven't got the reply,
     //  we can't send another request.
@@ -46,17 +45,17 @@ int zmq::req_t::xsend (zmq_msg_t *msg_, int flags_)
 
     //  First part of the request is empty message part (stack bottom).
     if (message_begins) {
-        zmq_msg_t prefix;
-        int rc = zmq_msg_init (&prefix);
-        zmq_assert (rc == 0);
-        prefix.flags |= ZMQ_MSG_MORE;
+        msg_t prefix;
+        int rc = prefix.init ();
+        errno_assert (rc == 0);
+        prefix.set_flags (msg_t::more);
         rc = xreq_t::xsend (&prefix, flags_);
         if (rc != 0)
             return rc;
         message_begins = false;
     }
 
-    bool more = msg_->flags & ZMQ_MSG_MORE;
+    bool more = msg_->flags () & msg_t::more;
 
     int rc = xreq_t::xsend (msg_, flags_);
     if (rc != 0)
@@ -71,7 +70,7 @@ int zmq::req_t::xsend (zmq_msg_t *msg_, int flags_)
     return 0;
 }
 
-int zmq::req_t::xrecv (zmq_msg_t *msg_, int flags_)
+int zmq::req_t::xrecv (msg_t *msg_, int flags_)
 {
     //  If request wasn't send, we can't wait for reply.
     if (!receiving_reply) {
@@ -84,8 +83,8 @@ int zmq::req_t::xrecv (zmq_msg_t *msg_, int flags_)
         int rc = xreq_t::xrecv (msg_, flags_);
         if (rc != 0)
             return rc;
-        zmq_assert (msg_->flags & ZMQ_MSG_MORE);
-        zmq_assert (zmq_msg_size (msg_) == 0);
+        zmq_assert (msg_->flags () & msg_t::more);
+        zmq_assert (msg_->size () == 0);
         message_begins = false;
     }
 
@@ -94,7 +93,7 @@ int zmq::req_t::xrecv (zmq_msg_t *msg_, int flags_)
         return rc;
 
     //  If the reply is fully received, flip the FSM into request-sending state.
-    if (!(msg_->flags & ZMQ_MSG_MORE)) {
+    if (!(msg_->flags () & msg_t::more)) {
         receiving_reply = false;
         message_begins = true;
     }

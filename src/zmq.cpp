@@ -32,8 +32,6 @@
 #include <poll.h>
 #endif
 
-#include "../include/zmq.h"
-
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -46,6 +44,7 @@
 #include "clock.hpp"
 #include "ctx.hpp"
 #include "err.hpp"
+#include "msg.hpp"
 #include "fd.hpp"
 
 #if !defined ZMQ_HAVE_WINDOWS
@@ -56,6 +55,10 @@
 #define __PGM_WININT_H__
 #include <pgm/pgm.h>
 #endif
+
+//  Compile time check whether msg_t fits into zmq_msg_t.
+typedef char check_msg_t_size
+    [sizeof (zmq::msg_t) ==  sizeof (zmq_msg_t) ? 1 : -1];
 
 void zmq_version (int *major_, int *minor_, int *patch_)
 {
@@ -260,7 +263,7 @@ int zmq_sendmsg (void *s_, zmq_msg_t *msg_, int flags_)
         return -1;
     }
     int sz = (int) zmq_msg_size (msg_);
-    int rc = (((zmq::socket_base_t*) s_)->send (msg_, flags_));
+    int rc = (((zmq::socket_base_t*) s_)->send ((zmq::msg_t*) msg_, flags_));
     if (unlikely (rc < 0))
         return -1;
     return sz;
@@ -272,10 +275,51 @@ int zmq_recvmsg (void *s_, zmq_msg_t *msg_, int flags_)
         errno = ENOTSOCK;
         return -1;
     }
-    int rc = (((zmq::socket_base_t*) s_)->recv (msg_, flags_));
+    int rc = (((zmq::socket_base_t*) s_)->recv ((zmq::msg_t*) msg_, flags_));
     if (unlikely (rc < 0))
         return -1;
     return (int) zmq_msg_size (msg_);
+}
+
+int zmq_msg_init (zmq_msg_t *msg_)
+{
+    return ((zmq::msg_t*) msg_)->init ();
+}
+
+int zmq_msg_init_size (zmq_msg_t *msg_, size_t size_)
+{
+    return ((zmq::msg_t*) msg_)->init_size (size_);
+}
+
+int zmq_msg_init_data (zmq_msg_t *msg_, void *data_, size_t size_,
+    zmq_free_fn *ffn_, void *hint_)
+{
+    return ((zmq::msg_t*) msg_)->init_data (data_, size_, ffn_, hint_);
+}
+
+int zmq_msg_close (zmq_msg_t *msg_)
+{
+    return ((zmq::msg_t*) msg_)->close ();
+}
+
+int zmq_msg_move (zmq_msg_t *dest_, zmq_msg_t *src_)
+{
+    return ((zmq::msg_t*) dest_)->move (*(zmq::msg_t*) src_);
+}
+
+int zmq_msg_copy (zmq_msg_t *dest_, zmq_msg_t *src_)
+{
+    return ((zmq::msg_t*) dest_)->copy (*(zmq::msg_t*) src_);
+}
+
+void *zmq_msg_data (zmq_msg_t *msg_)
+{
+    return ((zmq::msg_t*) msg_)->data ();
+}
+
+size_t zmq_msg_size (zmq_msg_t *msg_)
+{
+    return ((zmq::msg_t*) msg_)->size ();
 }
 
 #if defined ZMQ_FORCE_SELECT

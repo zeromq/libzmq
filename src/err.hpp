@@ -21,6 +21,9 @@
 #ifndef __ZMQ_ERR_HPP_INCLUDED__
 #define __ZMQ_ERR_HPP_INCLUDED__
 
+//  0MQ-specific error codes are defined in zmq.h
+#include "../include/zmq.h"
+
 #include <assert.h>
 #include <errno.h>
 #include <string.h>

@@ -18,12 +18,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zmq.h"
-
 #include "lb.hpp"
 #include "pipe.hpp"
 #include "err.hpp"
 #include "own.hpp"
+#include "msg.hpp"
 
 zmq::lb_t::lb_t (own_t *sink_) :
     active (0),
@@ -93,26 +92,26 @@ void zmq::lb_t::activated (writer_t *pipe_)
     active++;
 }
 
-int zmq::lb_t::send (zmq_msg_t *msg_, int flags_)
+int zmq::lb_t::send (msg_t *msg_, int flags_)
 {
     //  Drop the message if required. If we are at the end of the message
     //  switch back to non-dropping mode.
     if (dropping) {
 
-        more = msg_->flags & ZMQ_MSG_MORE;
+        more = msg_->flags () & msg_t::more;
         if (!more)
             dropping = false;
 
-        int rc = zmq_msg_close (msg_);
+        int rc = msg_->close ();
         errno_assert (rc == 0);
-        rc = zmq_msg_init (msg_);
+        rc = msg_->init ();
         zmq_assert (rc == 0);
         return 0;
     }
 
     while (active > 0) {
         if (pipes [current]->write (msg_)) {
-            more = msg_->flags & ZMQ_MSG_MORE;
+            more = msg_->flags () & msg_t::more;
             break;
         }
 
@@ -138,8 +137,8 @@ int zmq::lb_t::send (zmq_msg_t *msg_, int flags_)
     }
 
     //  Detach the message from the data buffer.
-    int rc = zmq_msg_init (msg_);
-    zmq_assert (rc == 0);
+    int rc = msg_->init ();
+    errno_assert (rc == 0);
 
     return 0;
 }
@@ -154,13 +153,16 @@ bool zmq::lb_t::has_out ()
     while (active > 0) {
 
         //  Check whether zero-sized message can be written to the pipe.
-        zmq_msg_t msg;
-        zmq_msg_init (&msg);
+        msg_t msg;
+        int rc = msg.init ();
+        errno_assert (rc == 0);
         if (pipes [current]->check_write (&msg)) {
-            zmq_msg_close (&msg);
+            rc = msg.close ();
+            errno_assert (rc == 0);
             return true;
         }
-        zmq_msg_close (&msg);
+        rc = msg.close ();
+        errno_assert (rc == 0);
 
         //  Deactivate the pipe.
         active--;

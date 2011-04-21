@@ -36,6 +36,10 @@ namespace zmq
         //  memory allocation by approximately 99.6%
         message_pipe_granularity = 256,
 
+        //  Size in bytes of the largest message that is still copied around
+        //  rather than being reference-counted.
+        max_vsm_size = 29,
+
         //  Determines how often does socket poll for new commands when it
         //  still has unprocessed messages to handle. Thus, if it is set to 100,
         //  socket will process 100 inbound messages before doing the poll.

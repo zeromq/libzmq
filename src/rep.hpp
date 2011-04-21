@@ -34,8 +34,8 @@ namespace zmq
         ~rep_t ();
 
         //  Overloads of functions from socket_base_t.
-        int xsend (zmq_msg_t *msg_, int flags_);
-        int xrecv (zmq_msg_t *msg_, int flags_);
+        int xsend (class msg_t *msg_, int flags_);
+        int xrecv (class msg_t *msg_, int flags_);
         bool xhas_in ();
         bool xhas_out ();
 

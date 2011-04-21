@@ -23,14 +23,13 @@
 
 #include <vector>
 
-#include "../include/zmq.h"
-
 #include "i_inout.hpp"
 #include "i_engine.hpp"
-#include "own.hpp"
-#include "fd.hpp"
 #include "stdint.hpp"
 #include "blob.hpp"
+#include "msg.hpp"
+#include "own.hpp"
+#include "fd.hpp"
 
 namespace zmq
 {
@@ -58,8 +57,8 @@ namespace zmq
         void dispatch_engine ();
 
         //  i_inout interface implementation.
-        bool read (::zmq_msg_t *msg_);
-        bool write (::zmq_msg_t *msg_);
+        bool read (class msg_t *msg_);
+        bool write (class msg_t *msg_);
         void flush ();
         void detach ();
 
@@ -75,7 +74,7 @@ namespace zmq
 
         //  List of messages to send to the peer during the connection
         //  initiation phase.
-        typedef std::vector < ::zmq_msg_t> to_send_t;
+        typedef std::vector <msg_t> to_send_t;
         to_send_t to_send;
 
         //  True if peer's identity was already received.
