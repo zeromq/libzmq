@@ -55,10 +55,9 @@ void zmq::fq_t::attach (reader_t *pipe_)
 
 void zmq::fq_t::terminated (reader_t *pipe_)
 {
-    //  TODO: This is a problem with session-initiated termination. It breaks
-    //  message atomicity. However, for socket initiated termination it's
-    //  just fine.
-    zmq_assert (!more || pipes [current] != pipe_);
+    //  Make sure that we are not closing current pipe while
+    //  message is half-read.
+    zmq_assert (terminating || (!more || pipes [current] != pipe_));
 
     //  Remove the pipe from the list; adjust number of active pipes
     //  accordingly.
