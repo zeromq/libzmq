@@ -219,8 +219,8 @@ void zmq::socket_base_t::attach_pipes (class reader_t *inpipe_,
         xattach_pipes (inpipe_, outpipe_, peer_identity_);
     }
     else {
-        blob_t identity (1, 0);
-        identity.append (uuid_t ().to_blob (), uuid_t::uuid_blob_len);
+        blob_t identity (17, 0);
+        generate_uuid ((unsigned char*) identity.data () + 1);
         xattach_pipes (inpipe_, outpipe_, identity);
     }
 }

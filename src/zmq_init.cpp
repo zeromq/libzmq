@@ -47,10 +47,9 @@ zmq::zmq_init_t::zmq_init_t (io_thread_t *io_thread_,
     alloc_assert (engine);
 
     //  Generate an unique identity.
-    unsigned char identity [uuid_t::uuid_blob_len + 1];
-    identity [0] = 0;
-    memcpy (identity + 1, uuid_t ().to_blob (), uuid_t::uuid_blob_len);
-    peer_identity.assign (identity, uuid_t::uuid_blob_len + 1);
+    peer_identity.resize (17);
+    peer_identity [0] = 0;
+    generate_uuid (&peer_identity [1]);
 
     //  Create a list of props to send.
     msg_t msg;
