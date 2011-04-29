@@ -118,7 +118,8 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
         //  rather than 0MQ bug.
         errno = err;
         errno_assert (errno == WSAECONNREFUSED || errno == WSAETIMEDOUT ||
-            errno == WSAECONNABORTED || errno == WSAEHOSTUNREACH);
+            errno == WSAECONNABORTED || errno == WSAEHOSTUNREACH ||
+            errno == WSAENETUNREACH);
 
         return retired_fd;
     }
