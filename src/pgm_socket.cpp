@@ -261,10 +261,10 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
             goto err_abort;
     } else {
 
-        //  Generate random gsi.
-        std::string gsi_base = uuid_t ().to_string ();
-        if (!pgm_gsi_create_from_string (&addr.sa_addr.gsi,
-              gsi_base.c_str (), -1))
+        //  Generate GSI from UUID.
+        unsigned char buf [16];
+        generate_uuid (buf);
+        if (!pgm_gsi_create_from_data (&addr.sa_addr.gsi, buf, 16))
             goto err_abort;
     }
 
