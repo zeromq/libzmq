@@ -56,23 +56,21 @@ namespace zmq
         //  Put the message to all active pipes.
         void distribute (class msg_t *msg_, int flags_);
 
-        //  Plug in all the delayed pipes.
-        void clear_new_pipes ();
-
         //  List of outbound pipes.
         typedef array_t <class writer_t> pipes_t;
         pipes_t pipes;
 
-        //  List of new pipes that were not yet inserted into 'pipes' list.
-        //  These pipes are moves to 'pipes' list once the current multipart
-        //  message is fully sent. This way we avoid sending incomplete messages
-        //  to peers.
-        typedef std::vector <class writer_t*> new_pipes_t;
-        new_pipes_t new_pipes;
-
         //  Number of active pipes. All the active pipes are located at the
-        //  beginning of the pipes array.
+        //  beginning of the pipes array. These are the pipes the messages
+        //  can be sent to at the moment.
         pipes_t::size_type active;
+
+        //  Number of pipes eligible for sending messages to. This includes all
+        //  the active pipes plus all the pipes that we can in theory send
+        //  messages to (the HWM is not yet reached), but sending a message
+        //  to them would result in partial message being delivered, ie. message
+        //  with initial parts missing.
+        pipes_t::size_type eligible;
 
         //  True if last we are in the middle of a multipart message.
         bool more;
