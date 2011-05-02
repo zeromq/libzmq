@@ -101,10 +101,10 @@ void zmq::xrep_t::terminated (reader_t *pipe_)
           ++it) {
         if (it->reader == pipe_) {
             inpipes.erase (it);
+            if ((inpipes_t::size_type) (it - inpipes.begin ()) < current_in)
+                current_in--;
             if (terminating)
                 unregister_term_ack ();
-            if (current_in >= inpipes.size ())
-                current_in = 0;
             return;
         }
     }
