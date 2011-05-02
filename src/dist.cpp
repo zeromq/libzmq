@@ -90,17 +90,15 @@ void zmq::dist_t::terminated (writer_t *pipe_)
 
 void zmq::dist_t::activated (writer_t *pipe_)
 {
-    //  If we are in the middle of sending a message, we'll add the pipe
-    //  into the list of eligible pipes. Otherwise we add it to the list
-    //  of active pipes.
-    if (more) {
-        pipes.swap (pipes.index (pipe_), eligible);
-        eligible++;
-    }
-    else {
-        pipes.swap (pipes.index (pipe_), active);
+    //  Move the pipe from passive to eligible state.
+    pipes.swap (pipes.index (pipe_), eligible);
+    eligible++;
+
+    //  If there's no message being sent at the moment, move it to
+    //  the active state.
+    if (!more) {
+        pipes.swap (eligible - 1, active);
         active++;
-        eligible++;
     }
 }
 
