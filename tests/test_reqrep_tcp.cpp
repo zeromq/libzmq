@@ -28,12 +28,12 @@ int main (int argc, char *argv [])
 
     void *sb = zmq_socket (ctx, ZMQ_REP);
     assert (sb);
-    int rc = zmq_bind (sb, "tcp://127.0.0.1:5555");
+    int rc = zmq_bind (sb, "tcp://127.0.0.1:5560");
     assert (rc == 0);
 
     void *sc = zmq_socket (ctx, ZMQ_REQ);
     assert (sc);
-    rc = zmq_connect (sc, "tcp://127.0.0.1:5555");
+    rc = zmq_connect (sc, "tcp://127.0.0.1:5560");
     assert (rc == 0);
     
     bounce (sb, sc);
