@@ -188,6 +188,7 @@ void *zmq::msg_t::data ()
         return u.lmsg.content->data;
     default:
         zmq_assert (false);
+        return NULL;
     }
 }
 
@@ -203,6 +204,7 @@ size_t zmq::msg_t::size ()
         return u.lmsg.content->size;
     default:
         zmq_assert (false);
+        return 0;
     }
 }
 
