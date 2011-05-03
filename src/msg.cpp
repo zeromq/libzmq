@@ -68,7 +68,7 @@ int zmq::msg_t::init_size (size_t size_)
     return 0;
 }
 
-int zmq::msg_t::init_data (void *data_, size_t size_, zmq_free_fn *ffn_,
+int zmq::msg_t::init_data (void *data_, size_t size_, msg_free_fn *ffn_,
     void *hint_)
 {
     u.lmsg.type = type_lmsg;

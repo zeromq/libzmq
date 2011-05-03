@@ -26,6 +26,14 @@
 #include "config.hpp"
 #include "atomic_counter.hpp"
 
+//  Signature for free function to deallocate the message content.
+//  Note that it has to be declared as "C" so that it is the same as
+//  zmq_free_fn defined in zmq.h.
+extern "C"
+{
+    typedef void (msg_free_fn) (void *data, void *hint);
+}
+
 namespace zmq
 {
 
@@ -43,13 +51,10 @@ namespace zmq
             shared = 128
         };
 
-        //  Signature for free function to deallocate the message content.
-        typedef void (free_fn_t) (void *data, void *hint);
-
         bool check ();
         int init ();
         int init_size (size_t size_);
-        int init_data (void *data_, size_t size_, free_fn_t *ffn_,
+        int init_data (void *data_, size_t size_, msg_free_fn *ffn_,
             void *hint_);
         int init_delimiter ();
         int close ();
@@ -82,7 +87,7 @@ namespace zmq
         {
             void *data;
             size_t size;
-            free_fn_t *ffn;
+            msg_free_fn *ffn;
             void *hint;
             zmq::atomic_counter_t refcnt;
         };
