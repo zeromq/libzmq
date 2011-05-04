@@ -100,9 +100,9 @@ void zmq::xrep_t::terminated (reader_t *pipe_)
     for (inpipes_t::iterator it = inpipes.begin (); it != inpipes.end ();
           ++it) {
         if (it->reader == pipe_) {
-            inpipes.erase (it);
             if ((inpipes_t::size_type) (it - inpipes.begin ()) < current_in)
                 current_in--;
+            inpipes.erase (it);
             if (terminating)
                 unregister_term_ack ();
             return;
