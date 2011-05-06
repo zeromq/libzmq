@@ -103,6 +103,8 @@ void zmq::xrep_t::terminated (reader_t *pipe_)
             if ((inpipes_t::size_type) (it - inpipes.begin ()) < current_in)
                 current_in--;
             inpipes.erase (it);
+            if (current_in >= inpipes.size ())
+                current_in = 0;
             if (terminating)
                 unregister_term_ack ();
             return;
