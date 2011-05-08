@@ -116,12 +116,12 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
 
         //  Assert that the error was caused by the networking problems
         //  rather than 0MQ bug.
-        errno = err;
-        errno_assert (errno == WSAECONNREFUSED || errno == WSAETIMEDOUT ||
-            errno == WSAECONNABORTED || errno == WSAEHOSTUNREACH ||
-            errno == WSAENETUNREACH);
+        if (err == WSAECONNREFUSED || err == WSAETIMEDOUT ||
+              err == WSAECONNABORTED || err == WSAEHOSTUNREACH ||
+              err == WSAENETUNREACH || err == WSAENETDOWN)
+            return retired_fd;
 
-        return retired_fd;
+        wsa_assert_no (err);
     }
 
     //  Return the newly connected socket.

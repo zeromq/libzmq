@@ -66,119 +66,125 @@ const char *zmq::errno_to_string (int errno_)
 
 const char *zmq::wsa_error()
 {
-    int errcode = WSAGetLastError ();
+    int no = WSAGetLastError ();
     //  TODO: This is not a generic way to handle this...
-    if (errcode == WSAEWOULDBLOCK)
+    if (no == WSAEWOULDBLOCK)
         return NULL;
 
+    return wsa_error_no (no);
+}
+
+const char *zmq::wsa_error_no (int no_)
+{
     //  TODO:  It seems that list of Windows socket errors is longer than this.
     //         Investigate whether there's a way to convert it into the string
     //         automatically (wsaError->HRESULT->string?).
     return
-        (errcode == WSABASEERR) ?
+        (no_ == WSABASEERR) ?
             "No Error" : 
-        (errcode == WSAEINTR) ?
+        (no_ == WSAEINTR) ?
             "Interrupted system call" : 
-        (errcode == WSAEBADF) ?
+        (no_ == WSAEBADF) ?
             "Bad file number" : 
-        (errcode == WSAEACCES) ?
+        (no_ == WSAEACCES) ?
             "Permission denied" : 
-        (errcode == WSAEFAULT) ?
+        (no_ == WSAEFAULT) ?
             "Bad address" : 
-        (errcode == WSAEINVAL) ?
+        (no_ == WSAEINVAL) ?
             "Invalid argument" : 
-        (errcode == WSAEMFILE) ?
+        (no_ == WSAEMFILE) ?
             "Too many open files" : 
-        (errcode == WSAEWOULDBLOCK) ?
+        (no_ == WSAEWOULDBLOCK) ?
             "Operation would block" : 
-        (errcode == WSAEINPROGRESS) ?
+        (no_ == WSAEINPROGRESS) ?
             "Operation now in progress" : 
-        (errcode == WSAEALREADY) ?
+        (no_ == WSAEALREADY) ?
             "Operation already in progress" : 
-        (errcode == WSAENOTSOCK) ?
+        (no_ == WSAENOTSOCK) ?
             "Socket operation on non-socket" : 
-        (errcode == WSAEDESTADDRREQ) ?
+        (no_ == WSAEDESTADDRREQ) ?
             "Destination address required" : 
-        (errcode == WSAEMSGSIZE) ?
+        (no_ == WSAEMSGSIZE) ?
             "Message too long" : 
-        (errcode == WSAEPROTOTYPE) ?
+        (no_ == WSAEPROTOTYPE) ?
             "Protocol wrong type for socket" : 
-        (errcode == WSAENOPROTOOPT) ?
+        (no_ == WSAENOPROTOOPT) ?
             "Bad protocol option" : 
-        (errcode == WSAEPROTONOSUPPORT) ?
+        (no_ == WSAEPROTONOSUPPORT) ?
             "Protocol not supported" : 
-        (errcode == WSAESOCKTNOSUPPORT) ?
+        (no_ == WSAESOCKTNOSUPPORT) ?
             "Socket type not supported" : 
-        (errcode == WSAEOPNOTSUPP) ?
+        (no_ == WSAEOPNOTSUPP) ?
             "Operation not supported on socket" : 
-        (errcode == WSAEPFNOSUPPORT) ?
+        (no_ == WSAEPFNOSUPPORT) ?
             "Protocol family not supported" : 
-        (errcode == WSAEAFNOSUPPORT) ?
+        (no_ == WSAEAFNOSUPPORT) ?
             "Address family not supported by protocol family" : 
-        (errcode == WSAEADDRINUSE) ?
+        (no_ == WSAEADDRINUSE) ?
             "Address already in use" : 
-        (errcode == WSAEADDRNOTAVAIL) ?
+        (no_ == WSAEADDRNOTAVAIL) ?
             "Can't assign requested address" : 
-        (errcode == WSAENETDOWN) ?
+        (no_ == WSAENETDOWN) ?
             "Network is down" : 
-        (errcode == WSAENETUNREACH) ?
+        (no_ == WSAENETUNREACH) ?
             "Network is unreachable" : 
-        (errcode == WSAENETRESET) ?
+        (no_ == WSAENETRESET) ?
             "Net dropped connection or reset" : 
-        (errcode == WSAECONNABORTED) ?
+        (no_ == WSAECONNABORTED) ?
             "Software caused connection abort" : 
-        (errcode == WSAECONNRESET) ?
+        (no_ == WSAECONNRESET) ?
             "Connection reset by peer" : 
-        (errcode == WSAENOBUFS) ?
+        (no_ == WSAENOBUFS) ?
             "No buffer space available" : 
-        (errcode == WSAEISCONN) ?
+        (no_ == WSAEISCONN) ?
             "Socket is already connected" : 
-        (errcode == WSAENOTCONN) ?
+        (no_ == WSAENOTCONN) ?
             "Socket is not connected" : 
-        (errcode == WSAESHUTDOWN) ?
+        (no_ == WSAESHUTDOWN) ?
             "Can't send after socket shutdown" : 
-        (errcode == WSAETOOMANYREFS) ?
+        (no_ == WSAETOOMANYREFS) ?
             "Too many references can't splice" : 
-        (errcode == WSAETIMEDOUT) ?
+        (no_ == WSAETIMEDOUT) ?
             "Connection timed out" : 
-        (errcode == WSAECONNREFUSED) ?
+        (no_ == WSAECONNREFUSED) ?
             "Connection refused" : 
-        (errcode == WSAELOOP) ?
+        (no_ == WSAELOOP) ?
             "Too many levels of symbolic links" : 
-        (errcode == WSAENAMETOOLONG) ?
+        (no_ == WSAENAMETOOLONG) ?
             "File name too long" : 
-        (errcode == WSAEHOSTDOWN) ?
+        (no_ == WSAEHOSTDOWN) ?
             "Host is down" : 
-        (errcode == WSAEHOSTUNREACH) ?
+        (no_ == WSAEHOSTUNREACH) ?
             "No Route to Host" : 
-        (errcode == WSAENOTEMPTY) ?
+        (no_ == WSAENOTEMPTY) ?
             "Directory not empty" : 
-        (errcode == WSAEPROCLIM) ?
+        (no_ == WSAEPROCLIM) ?
             "Too many processes" : 
-        (errcode == WSAEUSERS) ?
+        (no_ == WSAEUSERS) ?
             "Too many users" : 
-        (errcode == WSAEDQUOT) ?
+        (no_ == WSAEDQUOT) ?
             "Disc Quota Exceeded" : 
-        (errcode == WSAESTALE) ?
+        (no_ == WSAESTALE) ?
             "Stale NFS file handle" : 
-        (errcode == WSAEREMOTE) ?
+        (no_ == WSAEREMOTE) ?
             "Too many levels of remote in path" : 
-        (errcode == WSASYSNOTREADY) ?
+        (no_ == WSASYSNOTREADY) ?
             "Network SubSystem is unavailable" : 
-        (errcode == WSAVERNOTSUPPORTED) ?
+        (no_ == WSAVERNOTSUPPORTED) ?
             "WINSOCK DLL Version out of range" : 
-        (errcode == WSANOTINITIALISED) ?
+        (no_ == WSANOTINITIALISED) ?
             "Successful WSASTARTUP not yet performed" : 
-        (errcode == WSAHOST_NOT_FOUND) ?
+        (no_ == WSAHOST_NOT_FOUND) ?
             "Host not found" : 
-        (errcode == WSATRY_AGAIN) ?
+        (no_ == WSATRY_AGAIN) ?
             "Non-Authoritative Host not found" : 
-        (errcode == WSANO_RECOVERY) ?
+        (no_ == WSANO_RECOVERY) ?
             "Non-Recoverable errors: FORMERR REFUSED NOTIMP" : 
-        (errcode == WSANO_DATA) ?
+        (no_ == WSANO_DATA) ?
             "Valid name no data record of requested" :
         "error not defined"; 
 }
+
 void zmq::win_error (char *buffer_, size_t buffer_size_)
 {
     DWORD errcode = GetLastError ();

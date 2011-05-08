@@ -49,6 +49,7 @@ namespace zmq
 namespace zmq
 {
     const char *wsa_error ();
+    const char *wsa_error_no (int no_);
     void win_error (char *buffer_, size_t buffer_size_);
     void wsa_error_to_errno (); 
 }
@@ -63,6 +64,17 @@ namespace zmq
                     __FILE__, __LINE__);\
                 abort ();\
             }\
+        }\
+    } while (false)
+
+//  Provides convenient way to assert on WSA-style errors on Windows.
+#define wsa_assert_no(no) \
+    do {\
+        const char *errstr = zmq::wsa_error_no (no);\
+        if (errstr != NULL) {\
+            fprintf (stderr, "Assertion failed: %s (%s:%d)\n", errstr, \
+                __FILE__, __LINE__);\
+            abort ();\
         }\
     } while (false)
 
