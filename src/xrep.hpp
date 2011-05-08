@@ -51,6 +51,11 @@ namespace zmq
         bool xhas_in ();
         bool xhas_out ();
 
+    protected:
+
+        //  Rollback any message parts that were sent but not yet flushed.
+        int rollback ();
+
     private:
 
         //  Hook into the termination process.

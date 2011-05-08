@@ -67,24 +67,38 @@ int zmq::rep_t::xrecv (msg_t *msg_, int flags_)
     if (request_begins) {
 
         //  Copy the backtrace stack to the reply pipe.
-        bool bottom = false;
-        while (!bottom) {
+        while (true) {
 
-            //  TODO: What if request can be read but reply pipe is not
-            //  ready for writing?
+            //  TODO: If request can be read but reply pipe is not
+            //  ready for writing, we should drop the reply.
 
             //  Get next part of the backtrace stack.
             int rc = xrep_t::xrecv (msg_, flags_);
             if (rc != 0)
                 return rc;
-            zmq_assert (msg_->flags () & msg_t::more);
 
-            //  Empty message part delimits the traceback stack.
-            bottom = (msg_->size () == 0);
+            if (msg_->flags () & msg_t::more) {
 
-            //  Push it to the reply pipe.
-            rc = xrep_t::xsend (msg_, flags_);
-            zmq_assert (rc == 0);
+                //  Empty message part delimits the traceback stack.
+                bool bottom = (msg_->size () == 0);
+
+                //  Push it to the reply pipe.
+                rc = xrep_t::xsend (msg_, flags_);
+                zmq_assert (rc == 0);
+
+                //  The end of the traceback, move to processing message body.
+                if (bottom)
+                    break;
+            }
+            else {
+
+                //  If the traceback stack is malformed, discard anything
+                //  already sent to pipe (we're at end of invalid message)
+                //  and continue reading -- that'll switch us to the next pipe
+                //  and next request.
+                rc = xrep_t::rollback ();
+                zmq_assert (rc == 0);
+            }
         }
 
         request_begins = false;
