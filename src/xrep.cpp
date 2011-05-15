@@ -83,7 +83,7 @@ void zmq::xrep_t::process_term (int linger_)
 {
     terminating = true;
 
-    register_term_acks (inpipes.size () + outpipes.size ());
+    register_term_acks ((int) (inpipes.size () + outpipes.size ()));
 
     for (inpipes_t::iterator it = inpipes.begin (); it != inpipes.end ();
           ++it)
@@ -257,7 +257,7 @@ int zmq::xrep_t::xrecv (msg_t *msg_, int flags_)
     }
 
     //  Round-robin over the pipes to get the next message.
-    for (int count = inpipes.size (); count != 0; count--) {
+    for (inpipes_t::size_type count = inpipes.size (); count != 0; count--) {
 
         //  Try to fetch new message.
         if (inpipes [current_in].active)
@@ -299,7 +299,6 @@ int zmq::xrep_t::rollback (void)
     return 0;
 }
 
-
 bool zmq::xrep_t::xhas_in ()
 {
     //  There are subsequent parts of the partly-read message available.
@@ -310,7 +309,7 @@ bool zmq::xrep_t::xhas_in ()
     //  queueing algorithm. If there are no messages available current will
     //  get back to its original value. Otherwise it'll point to the first
     //  pipe holding messages, skipping only pipes with no messages available.
-    for (int count = inpipes.size (); count != 0; count--) {
+    for (inpipes_t::size_type count = inpipes.size (); count != 0; count--) {
         if (inpipes [current_in].active &&
               inpipes [current_in].reader->check_read ())
             return true;

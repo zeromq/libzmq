@@ -86,7 +86,7 @@ namespace zmq
                     //  first-message-offset.
                     if (beginning) { 
                         if (offset_ && *offset_ == -1)
-                            *offset_ = pos;
+                            *offset_ = (int) pos;
                         beginning = false;
                     }
                 }

@@ -159,12 +159,13 @@ void zmq::select_t::loop ()
         //  Wait for events.
         struct timeval tv = {(long) (timeout / 1000),
             (long) (timeout % 1000 * 1000)};
-        int rc = select (maxfd + 1, &readfds, &writefds, &exceptfds,
-            timeout ? &tv : NULL);
-
 #ifdef ZMQ_HAVE_WINDOWS
+        int rc = select (0, &readfds, &writefds, &exceptfds,
+            timeout ? &tv : NULL);
         wsa_assert (rc != SOCKET_ERROR);
 #else
+        int rc = select (maxfd + 1, &readfds, &writefds, &exceptfds,
+            timeout ? &tv : NULL);
         if (rc == -1 && errno == EINTR)
             continue;
         errno_assert (rc != -1);

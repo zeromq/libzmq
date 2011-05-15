@@ -81,7 +81,7 @@ void zmq::fq_t::terminate ()
     zmq_assert (!terminating);
     terminating = true;
 
-    sink->register_term_acks (pipes.size ());
+    sink->register_term_acks ((int) pipes.size ());
     for (pipes_t::size_type i = 0; i != pipes.size (); i++)
         pipes [i]->terminate ();
 }
@@ -100,7 +100,7 @@ int zmq::fq_t::recv (msg_t *msg_, int flags_)
     errno_assert (rc == 0);
 
     //  Round-robin over the pipes to get the next message.
-    for (int count = active; count != 0; count--) {
+    for (pipes_t::size_type count = active; count != 0; count--) {
 
         //  Try to fetch new message. If we've already read part of the message
         //  subsequent part should be immediately available.
@@ -149,7 +149,7 @@ bool zmq::fq_t::has_in ()
     //  queueing algorithm. If there are no messages available current will
     //  get back to its original value. Otherwise it'll point to the first
     //  pipe holding messages, skipping only pipes with no messages available.
-    for (int count = active; count != 0; count--) {
+    for (pipes_t::size_type count = active; count != 0; count--) {
         if (pipes [current]->check_read ())
             return true;
 

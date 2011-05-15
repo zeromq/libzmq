@@ -587,10 +587,11 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             memcpy (&inset, &pollset_in, sizeof (fd_set));
             memcpy (&outset, &pollset_out, sizeof (fd_set));
             memcpy (&errset, &pollset_err, sizeof (fd_set));
-            int rc = select (maxfd + 1, &inset, &outset, &errset, ptimeout);
 #if defined ZMQ_HAVE_WINDOWS
+            int rc = select (0, &inset, &outset, &errset, ptimeout);
             wsa_assert (rc != SOCKET_ERROR);
 #else
+            int rc = select (maxfd + 1, &inset, &outset, &errset, ptimeout);
             if (rc == -1 && errno == EINTR)
                 return -1;
             errno_assert (rc >= 0);

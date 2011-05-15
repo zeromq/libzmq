@@ -21,6 +21,8 @@
 #ifndef __ZMQ_TCP_SOCKET_HPP_INCLUDED__
 #define __ZMQ_TCP_SOCKET_HPP_INCLUDED__
 
+#include <stddef.h>
+
 #include "fd.hpp"
 #include "stdint.hpp"
 
@@ -49,13 +51,13 @@ namespace zmq
         //  Writes data to the socket. Returns the number of bytes actually
         //  written (even zero is to be considered to be a success). In case
         //  of error or orderly shutdown by the other peer -1 is returned.
-        int write (const void *data, int size);
+        int write (const void *data_, size_t size_);
 
         //  Reads data from the socket (up to 'size' bytes). Returns the number
         //  of bytes actually read (even zero is to be considered to be
         //  a success). In case of error or orderly shutdown by the other
         //  peer -1 is returned.
-        int read (void *data, int size);
+        int read (void *data_, size_t size_);
 
     private:
 

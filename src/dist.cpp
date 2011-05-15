@@ -69,7 +69,7 @@ void zmq::dist_t::terminate ()
     zmq_assert (!terminating);
     terminating = true;
 
-    sink->register_term_acks (pipes.size ());
+    sink->register_term_acks ((int) pipes.size ());
     for (pipes_t::size_type i = 0; i != pipes.size (); i++)
         pipes [i]->terminate ();
 }

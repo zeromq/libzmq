@@ -99,7 +99,7 @@ namespace zmq
         inline void push_back (T *item_)
         {
             if (item_)
-                item_->set_array_index (items.size ());
+                item_->set_array_index ((int) items.size ());
             items.push_back (item_);
         }
 
@@ -109,7 +109,7 @@ namespace zmq
 
         inline void erase (size_type index_) {
             if (items.back ())
-                items.back ()->set_array_index (index_);
+                items.back ()->set_array_index ((int) index_);
             items [index_] = items.back ();
             items.pop_back ();
         }
@@ -117,9 +117,9 @@ namespace zmq
         inline void swap (size_type index1_, size_type index2_)
         {
             if (items [index1_])
-                items [index1_]->set_array_index (index2_);
+                items [index1_]->set_array_index ((int) index2_);
             if (items [index2_])
-                items [index2_]->set_array_index (index1_);
+                items [index2_]->set_array_index ((int) index1_);
             std::swap (items [index1_], items [index2_]);
         }
 

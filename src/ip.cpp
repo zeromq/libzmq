@@ -200,7 +200,7 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
 
     //  Initialize temporary output pointers with ip4_addr
     sockaddr *out_addr = (sockaddr *) &ip4_addr;
-    size_t out_addrlen = sizeof (ip4_addr);
+    socklen_t out_addrlen = (socklen_t) sizeof (ip4_addr);
 
     //  0 is not a valid port.
     if (!ip4_addr.sin_port) {
@@ -211,7 +211,7 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
     //  * resolves to INADDR_ANY.
     if (iface.compare("*") == 0) {
         ip4_addr.sin_addr.s_addr = htonl (INADDR_ANY);
-        zmq_assert (out_addrlen <= sizeof (*addr_));
+        zmq_assert (out_addrlen <= (socklen_t) sizeof (*addr_));
         memcpy (addr_, out_addr, out_addrlen);
         *addr_len_ = out_addrlen;
         return 0;
@@ -222,7 +222,7 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
     if (rc != 0 && errno != ENODEV)
         return rc;
     if (rc == 0) {
-        zmq_assert (out_addrlen <= sizeof (*addr_));
+        zmq_assert (out_addrlen <= (socklen_t) sizeof (*addr_));
         memcpy (addr_, out_addr, out_addrlen);
         *addr_len_ = out_addrlen;
         return 0;
@@ -259,7 +259,7 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
     //  Use the first result.
     zmq_assert ((size_t) (res->ai_addrlen) <= sizeof (*addr_));
     memcpy (addr_, res->ai_addr, res->ai_addrlen);
-    *addr_len_ = res->ai_addrlen;
+    *addr_len_ = (socklen_t) res->ai_addrlen;
 
     //  Cleanup getaddrinfo after copying the possibly referenced result.
     if (res)
@@ -308,7 +308,7 @@ int zmq::resolve_ip_hostname (sockaddr_storage *addr_, socklen_t *addr_len_,
     //  Copy first result to output addr with hostname and service.
     zmq_assert ((size_t) (res->ai_addrlen) <= sizeof (*addr_));
     memcpy (addr_, res->ai_addr, res->ai_addrlen);
-    *addr_len_ = res->ai_addrlen;
+    *addr_len_ = (socklen_t) res->ai_addrlen;
  
     freeaddrinfo (res);
     

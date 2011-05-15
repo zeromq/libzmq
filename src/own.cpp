@@ -161,7 +161,7 @@ void zmq::own_t::process_term (int linger_)
     //  Send termination request to all owned objects.
     for (owned_t::iterator it = owned.begin (); it != owned.end (); ++it)
         send_term (*it, linger_);
-    register_term_acks (owned.size ());
+    register_term_acks ((int) owned.size ());
     owned.clear ();
 
     //  Start termination process and check whether by chance we cannot
