@@ -169,23 +169,29 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
     }
 
     {
-        const int rcvbuf = (int) options.rcvbuf,
-                  sndbuf = (int) options.sndbuf,
-                  max_tpdu = (int) pgm_max_tpdu;
+        //  Propagate various socket options to the OpenPGM layer.
+        const int rcvbuf = (int) options.rcvbuf;
         if (rcvbuf) {
             if (!pgm_setsockopt (sock, SOL_SOCKET, SO_RCVBUF, &rcvbuf,
                   sizeof (rcvbuf)))
                 goto err_abort;
         }
+
+        const int sndbuf = (int) options.sndbuf;
         if (sndbuf) {
             if (!pgm_setsockopt (sock, SOL_SOCKET, SO_SNDBUF, &sndbuf,
                   sizeof (sndbuf)))
                 goto err_abort;
         }
 
-        //  Set maximum transport protocol data unit size (TPDU).
+        const int max_tpdu = (int) pgm_max_tpdu;
         if (!pgm_setsockopt (sock, IPPROTO_PGM, PGM_MTU, &max_tpdu,
               sizeof (max_tpdu)))
+            goto err_abort;
+
+        const int multicast_hops = (int) options.multicast_hops;
+        if (!pgm_setsockopt (sock, IPPROTO_PGM, PGM_MULTICAST_HOPS,
+              &multicast_hops, sizeof (int)))
             goto err_abort;
     }
 

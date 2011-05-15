@@ -29,6 +29,7 @@ zmq::options_t::options_t () :
     affinity (0),
     rate (100),
     recovery_ivl (10000),
+    multicast_hops (1),
     sndbuf (0),
     rcvbuf (0),
     type (-1),
@@ -165,6 +166,14 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         maxmsgsize = *((int64_t*) optval_);
         return 0;
 
+    case ZMQ_MULTICAST_HOPS:
+        if (optvallen_ != sizeof (int) || *((int*) optval_) <= 0) {
+            errno = EINVAL;
+            return -1;
+        }
+        multicast_hops = *((int*) optval_);
+        return 0;
+
     }
 
     errno = EINVAL;
@@ -299,6 +308,15 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
         }
         *((int64_t*) optval_) = maxmsgsize;
         *optvallen_ = sizeof (int64_t);
+        return 0;
+
+    case ZMQ_MULTICAST_HOPS:
+        if (*optvallen_ < sizeof (int)) {
+            errno = EINVAL;
+            return -1;
+        }
+        *((int*) optval_) = multicast_hops;
+        *optvallen_ = sizeof (int);
         return 0;
 
     }

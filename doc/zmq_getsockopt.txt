@@ -283,7 +283,7 @@ Applicable socket types:: all, only for connection-oriented transports
 ZMQ_MAXMSGSIZE: Maximum acceptable inbound message size
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The options shall retrieve limit for the inbound messages. If a peer sends
+The option shall retrieve limit for the inbound messages. If a peer sends
 a message larger than ZMQ_MAXMSGSIZE it is disconnected. Value of -1 means
 'no limit'.
 
@@ -292,6 +292,19 @@ Option value type:: int64_t
 Option value unit:: bytes
 Default value:: -1
 Applicable socket types:: all
+
+
+ZMQ_MULTICAST_HOPS: Maximum network hops for multicast packets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The option shell retrieve time-to-live used for outbound multicast packets.
+The default of 1 means that the multicast packets don't leave the local network.
+
+[horizontal]
+Option value type:: int
+Option value unit:: network hops
+Default value:: 1
+Applicable socket types:: all, when using multicast transports
 
 
 ZMQ_FD: Retrieve file descriptor associated with the socket

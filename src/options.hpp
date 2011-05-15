@@ -48,6 +48,9 @@ namespace zmq
         //  Reliability time interval [ms]. Default 10 seconds.
         int recovery_ivl;
 
+        // Sets the time-to-live field in every multicast packet sent.
+        int multicast_hops;
+
         // SO_SNDBUF and SO_RCVBUF to be passed to underlying transport sockets.
         int sndbuf;
         int rcvbuf;

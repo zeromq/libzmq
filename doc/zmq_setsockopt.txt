@@ -296,6 +296,18 @@ Option value unit:: bytes
 Default value:: -1
 Applicable socket types:: all
 
+ZMQ_MULTICAST_HOPS: Maximum network hops for multicast packets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sets the time-to-live field in every multicast packet sent from this socket.
+The default is 1 which means that the multicast packets don't leave the local
+network.
+
+[horizontal]
+Option value type:: int
+Option value unit:: network hops
+Default value:: 1
+Applicable socket types:: all, when using multicast transports
 
 RETURN VALUE
 ------------
