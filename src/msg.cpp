@@ -74,7 +74,10 @@ int zmq::msg_t::init_data (void *data_, size_t size_, msg_free_fn *ffn_,
     u.lmsg.type = type_lmsg;
     u.lmsg.flags = 0;
     u.lmsg.content = (content_t*) malloc (sizeof (content_t));
-    alloc_assert (u.lmsg.content);
+    if (!u.lmsg.content) {
+        errno = ENOMEM;
+        return -1;
+    }
 
     u.lmsg.content->data = data_;
     u.lmsg.content->size = size_;
