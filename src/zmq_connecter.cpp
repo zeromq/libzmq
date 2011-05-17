@@ -45,7 +45,7 @@ zmq::zmq_connecter_t::zmq_connecter_t (class io_thread_t *io_thread_,
     current_reconnect_ivl(options.reconnect_ivl)
 {
     int rc = tcp_connecter.set_address (protocol_, address_);
-    zmq_assert (rc == 0);
+    zmq_assert (rc == 0); //TODO: take care ENOMEM, EINVAL
 }
 
 zmq::zmq_connecter_t::~zmq_connecter_t ()

@@ -301,7 +301,16 @@ int zmq::resolve_ip_hostname (sockaddr_storage *addr_, socklen_t *addr_len_,
     addrinfo *res;
     int rc = getaddrinfo (hostname.c_str (), service.c_str (), &req, &res);
     if (rc) {
+
+        switch (rc) {
+        case EAI_MEMORY:
+            errno = ENOMEM;
+            break;
+        default:
         errno = EINVAL;
+            break;
+        }
+
         return -1;
     }
 
