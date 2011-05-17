@@ -93,7 +93,7 @@ int zmq::tcp_socket_t::write (const void *data_, size_t size_)
     return (size_t) nbytes;
 }
 
-int zmq::tcp_socket_t::read (void *data_, size_t size)
+int zmq::tcp_socket_t::read (void *data_, size_t size_)
 {
     int nbytes = recv (s, (char*) data_, (int) size_, 0);
 

@@ -682,7 +682,7 @@ int zmq::pgm_socket_t::compute_sqns (int tpdu_)
     if (sqns == 0)
         sqns = 1;
 
-    return sqns;
+    return (int) sqns;
 }
 
 #endif
