@@ -44,10 +44,11 @@ namespace zmq
     {
     public:
 
-        //  Mesage flags.
+        //  Message flags.
         enum
         {
             more = 1,
+            label = 2,
             shared = 128
         };
 

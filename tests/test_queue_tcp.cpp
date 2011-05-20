@@ -19,6 +19,7 @@
 */
 
 #include "testutil.hpp"
+#include "../include/zmq_utils.h"
 
 #include <pthread.h>
 
@@ -126,6 +127,51 @@ int main (int argc, char *argv [])
     assert (rc == 0);
     
     bounce (sb, sc);
+    
+    void *sb2 = zmq_socket (ctx, ZMQ_REP);
+    assert (sb2);
+    rc = zmq_connect (sb2, transport_be);
+    assert (rc == 0);
+    
+    void *sc2 = zmq_socket (ctx, ZMQ_REQ);
+    assert (sc2);
+    rc = zmq_connect (sc2, transport_fe);
+    assert (rc == 0);
+
+    zmq_sleep(1);
+
+    const char *content = "12345678ABCDEFGH12345678abcdefgh";
+    const char *content2 = "12345678NOPQRSTU12345678nopqrstu";
+
+    rc = zmq_send (sc, content, 32, 0);
+    assert (rc == 32);
+    
+    rc = zmq_send (sc2, content2, 32, 0);
+    assert (rc == 32);
+    
+    char buf [32];
+    rc = zmq_recv (sb, buf, 32, 0);
+    assert (rc == 32);
+
+    char buf2 [32];
+    rc = zmq_recv (sb2, buf2, 32, 0);
+    assert (rc == 32);
+
+    rc = zmq_send (sb2, buf2, 32, 0);
+    assert (rc == 32);
+
+    rc = zmq_send (sb, buf, 32, 0);
+    assert (rc == 32);
+
+    char reply [32];
+    rc = zmq_recv (sc, reply, 32, 0);
+    assert (rc == 32);
+    assert (memcmp (reply, content, 32) == 0);
+
+    char reply2 [32];
+    rc = zmq_recv (sc2, reply2, 32, 0);
+    assert (rc == 32);
+    assert (memcmp (reply2, content2, 32) == 0);    
 
     rc = zmq_close (sc);
     assert (rc == 0);
@@ -133,11 +179,14 @@ int main (int argc, char *argv [])
     rc = zmq_close (sb);
     assert (rc == 0);
 
+    rc = zmq_close (sc2);
+    assert (rc == 0);
+
+    rc = zmq_close (sb2);
+    assert (rc == 0);
+
     rc = zmq_term (ctx);
     assert (rc == 0);
 
     return 0 ;
 }
-
-
-

@@ -48,7 +48,7 @@ int zmq::req_t::xsend (msg_t *msg_, int flags_)
         msg_t prefix;
         int rc = prefix.init ();
         errno_assert (rc == 0);
-        prefix.set_flags (msg_t::more);
+        prefix.set_flags (msg_t::more | msg_t::label);
         rc = xreq_t::xsend (&prefix, flags_);
         if (rc != 0)
             return rc;
@@ -84,6 +84,7 @@ int zmq::req_t::xrecv (msg_t *msg_, int flags_)
         if (rc != 0)
             return rc;
         zmq_assert (msg_->flags () & msg_t::more);
+        zmq_assert (msg_->flags () & msg_t::label);
         zmq_assert (msg_->size () == 0);
         message_begins = false;
     }

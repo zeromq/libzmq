@@ -77,7 +77,8 @@ int zmq::rep_t::xrecv (msg_t *msg_, int flags_)
             if (rc != 0)
                 return rc;
 
-            if (msg_->flags () & msg_t::more) {
+            if ((msg_->flags () & (msg_t::label|msg_t::more)) == 
+                (msg_t::label|msg_t::more)) {
 
                 //  Empty message part delimits the traceback stack.
                 bool bottom = (msg_->size () == 0);

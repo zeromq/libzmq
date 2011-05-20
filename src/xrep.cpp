@@ -168,7 +168,8 @@ int zmq::xrep_t::xsend (msg_t *msg_, int flags_)
 
         //  If we have malformed message (prefix with no subsequent message)
         //  then just silently ignore it.
-        if (msg_->flags () & msg_t::more) {
+        if ((msg_->flags () & (msg_t::more|msg_t::label)) == 
+            (msg_t::more|msg_t::label)) {
 
             more_out = true;
 
@@ -269,7 +270,7 @@ int zmq::xrep_t::xrecv (msg_t *msg_, int flags_)
             errno_assert (rc == 0);
             memcpy (msg_->data (), inpipes [current_in].identity.data (),
                 msg_->size ());
-            msg_->set_flags (msg_t::more);
+            msg_->set_flags (msg_t::more|msg_t::label);
             return 0;
         }
 
@@ -332,5 +333,3 @@ bool zmq::xrep_t::xhas_out ()
     //  to be routed to.
     return true;
 }
-
-
