@@ -116,7 +116,7 @@ bool zmq::reader_t::read (msg_t *msg_)
         return false;
     }
 
-    if (!(msg_->flags () & msg_t::more))
+    if (!msg_->check_flags (msg_t::more))
         msgs_read++;
 
     if (lwm > 0 && msgs_read % lwm == 0)
@@ -203,8 +203,8 @@ bool zmq::writer_t::write (msg_t *msg_)
     if (unlikely (!check_write (msg_)))
         return false;
 
-    pipe->write (*msg_, msg_->flags () & msg_t::more);
-    if (!(msg_->flags () & msg_t::more))
+    pipe->write (*msg_, msg_->check_flags (msg_t::more));
+    if (!msg_->check_flags (msg_t::more))
         msgs_written++;
 
     return true;
@@ -215,7 +215,7 @@ void zmq::writer_t::rollback ()
     //  Remove incomplete message from the pipe.
     msg_t msg;
     while (pipe->unwrite (&msg)) {
-        zmq_assert (msg.flags () & msg_t::more);
+        zmq_assert (msg.check_flags (msg_t::more));
         int rc = msg.close ();
         errno_assert (rc == 0);
     }

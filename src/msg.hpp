@@ -64,6 +64,7 @@ namespace zmq
         void *data ();
         size_t size ();
         unsigned char flags ();
+        bool check_flags (unsigned char flags_);
         void set_flags (unsigned char flags_);
         void reset_flags (unsigned char flags_);
         bool is_delimiter ();

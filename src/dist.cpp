@@ -105,7 +105,7 @@ void zmq::dist_t::activated (writer_t *pipe_)
 int zmq::dist_t::send (msg_t *msg_, int flags_)
 {
     //  Is this end of a multipart message?
-    bool msg_more = msg_->flags () & msg_t::more;
+    bool msg_more = msg_->check_flags (msg_t::more);
 
     //  Push the message to active pipes.
     distribute (msg_, flags_);
@@ -162,7 +162,7 @@ bool zmq::dist_t::write (class writer_t *pipe_, msg_t *msg_)
         eligible--;
         return false;
     }
-    if (!(msg_->flags () & msg_t::more))
+    if (!msg_->check_flags (msg_t::more))
         pipe_->flush ();
     return true;
 }
