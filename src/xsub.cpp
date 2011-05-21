@@ -93,7 +93,7 @@ int zmq::xsub_t::xrecv (msg_t *msg_, int flags_)
         int rc = msg_->move (message);
         errno_assert (rc == 0);
         has_message = false;
-        more = msg_->flags () & msg_t::more;
+        more = msg_->check_flags (msg_t::more);
         return 0;
     }
 
@@ -113,13 +113,13 @@ int zmq::xsub_t::xrecv (msg_t *msg_, int flags_)
         //  Check whether the message matches at least one subscription.
         //  Non-initial parts of the message are passed 
         if (more || match (msg_)) {
-            more = msg_->flags () & msg_t::more;
+            more = msg_->check_flags (msg_t::more);
             return 0;
         }
 
         //  Message doesn't match. Pop any remaining parts of the message
         //  from the pipe.
-        while (msg_->flags () & msg_t::more) {
+        while (msg_->check_flags (msg_t::more)) {
             rc = fq.recv (msg_, ZMQ_DONTWAIT);
             zmq_assert (rc == 0);
         }
@@ -159,7 +159,7 @@ bool zmq::xsub_t::xhas_in ()
 
         //  Message doesn't match. Pop any remaining parts of the message
         //  from the pipe.
-        while (message.flags () & msg_t::more) {
+        while (message.check_flags (msg_t::more)) {
             rc = fq.recv (&message, ZMQ_DONTWAIT);
             zmq_assert (rc == 0);
         }

@@ -137,7 +137,7 @@ bool zmq::zmq_init_t::write (msg_t *msg_)
         zmq_assert (false);
     }
 
-    if (!(msg_->flags () & msg_t::more)) {
+    if (!msg_->check_flags (msg_t::more)) {
         received = true;
         finalise_initialisation ();
     }

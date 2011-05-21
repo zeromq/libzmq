@@ -76,7 +76,12 @@ are no more message parts to follow; or that the message being sent is not a
 multi-part message. A value of 1 indicates that the message being sent is a
 multi-part message and more message parts are to follow.
 
-Bits 1-7: _Reserved_. Bits 1-7 are reserved for future expansion and MUST be
+Bit 1 (LABEL): _This message part is not part of the original
+message._ A value of 1 indicate a message part that weren't part of
+the original stream.  They are used internally by the transport to
+indicate, for example, the origin of a message.
+
+Bits 2-7: _Reserved_. Bits 1-7 are reserved for future expansion and MUST be
 set to zero.
 
 The following ABNF grammar represents a single 'frame':

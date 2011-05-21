@@ -5,7 +5,8 @@ noinst_PROGRAMS = test_pair_inproc \
                   test_pair_tcp \
                   test_reqrep_inproc \
                   test_reqrep_tcp \
-                  test_hwm
+                  test_hwm \
+                  test_queue_tcp
 
 if !ON_MINGW
 noinst_PROGRAMS += test_shutdown_stress \

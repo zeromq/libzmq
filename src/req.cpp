@@ -48,14 +48,14 @@ int zmq::req_t::xsend (msg_t *msg_, int flags_)
         msg_t prefix;
         int rc = prefix.init ();
         errno_assert (rc == 0);
-        prefix.set_flags (msg_t::more);
+        prefix.set_flags (msg_t::more|msg_t::label);
         rc = xreq_t::xsend (&prefix, flags_);
         if (rc != 0)
             return rc;
         message_begins = false;
     }
 
-    bool more = msg_->flags () & msg_t::more;
+    bool more = msg_->check_flags (msg_t::more);
 
     int rc = xreq_t::xsend (msg_, flags_);
     if (rc != 0)
@@ -83,7 +83,7 @@ int zmq::req_t::xrecv (msg_t *msg_, int flags_)
         int rc = xreq_t::xrecv (msg_, flags_);
         if (rc != 0)
             return rc;
-        zmq_assert (msg_->flags () & msg_t::more);
+        zmq_assert (msg_->check_flags (msg_t::more|msg_t::label));
         zmq_assert (msg_->size () == 0);
         message_begins = false;
     }
@@ -93,7 +93,7 @@ int zmq::req_t::xrecv (msg_t *msg_, int flags_)
         return rc;
 
     //  If the reply is fully received, flip the FSM into request-sending state.
-    if (!(msg_->flags () & msg_t::more)) {
+    if (!msg_->check_flags (msg_t::more)) {
         receiving_reply = false;
         message_begins = true;
     }

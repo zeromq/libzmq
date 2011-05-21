@@ -115,7 +115,7 @@ int zmq::fq_t::recv (msg_t *msg_, int flags_)
         //  and replaced by another active pipe. Thus we don't have to increase
         //  the 'current' pointer.
         if (fetched) {
-            more = msg_->flags () & msg_t::more;
+            more = msg_->check_flags (msg_t::more);
             if (!more) {
                 current++;
                 if (current >= active)

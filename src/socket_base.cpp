@@ -542,7 +542,7 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
 
     //  If we have the message, return immediately.
     if (rc == 0) {
-        rcvmore = msg_->flags () & msg_t::more;
+        rcvmore = msg_->check_flags (msg_t::more);
         if (rcvmore)
             msg_->reset_flags (msg_t::more);
         return 0;
@@ -564,7 +564,7 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
 
         rc = xrecv (msg_, flags_);
         if (rc == 0) {
-            rcvmore = msg_->flags () & msg_t::more;
+            rcvmore = msg_->check_flags (msg_t::more);
             if (rcvmore)
                 msg_->reset_flags (msg_t::more);
         }
@@ -584,7 +584,7 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
         block = true;
     }
 
-    rcvmore = msg_->flags () & msg_t::more;
+    rcvmore = msg_->check_flags (msg_t::more);
     if (rcvmore)
         msg_->reset_flags (msg_t::more);
     return 0;

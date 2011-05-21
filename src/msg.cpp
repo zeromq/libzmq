@@ -216,6 +216,12 @@ unsigned char zmq::msg_t::flags ()
     return u.base.flags;
 }
 
+bool zmq::msg_t::check_flags (unsigned char flags_)
+{
+    return (u.base.flags & flags_) == flags_;
+}
+
+
 void zmq::msg_t::set_flags (unsigned char flags_)
 {
     u.base.flags |= flags_;

@@ -168,7 +168,7 @@ int zmq::xrep_t::xsend (msg_t *msg_, int flags_)
 
         //  If we have malformed message (prefix with no subsequent message)
         //  then just silently ignore it.
-        if (msg_->flags () & msg_t::more) {
+        if (msg_->check_flags (msg_t::more|msg_t::label)) {
 
             more_out = true;
 
@@ -204,7 +204,7 @@ int zmq::xrep_t::xsend (msg_t *msg_, int flags_)
     }
 
     //  Check whether this is the last part of the message.
-    more_out = msg_->flags () & msg_t::more;
+    more_out = msg_->check_flags (msg_t::more);
 
     //  Push the message into the pipe. If there's no out pipe, just drop it.
     if (current_out) {
@@ -233,7 +233,7 @@ int zmq::xrep_t::xrecv (msg_t *msg_, int flags_)
     if (prefetched) {
         int rc = msg_->move (prefetched_msg);
         errno_assert (rc == 0);
-        more_in = msg_->flags () & msg_t::more;
+        more_in = msg_->check_flags (msg_t::more);
         prefetched = false;
         return 0;
     }
@@ -247,7 +247,7 @@ int zmq::xrep_t::xrecv (msg_t *msg_, int flags_)
         zmq_assert (inpipes [current_in].active);
         bool fetched = inpipes [current_in].reader->read (msg_);
         zmq_assert (fetched);
-        more_in = msg_->flags () & msg_t::more;
+        more_in = msg_->check_flags (msg_t::more);
         if (!more_in) {
             current_in++;
             if (current_in >= inpipes.size ())
@@ -269,7 +269,7 @@ int zmq::xrep_t::xrecv (msg_t *msg_, int flags_)
             errno_assert (rc == 0);
             memcpy (msg_->data (), inpipes [current_in].identity.data (),
                 msg_->size ());
-            msg_->set_flags (msg_t::more);
+            msg_->set_flags (msg_t::more|msg_t::label);
             return 0;
         }
 
@@ -332,5 +332,3 @@ bool zmq::xrep_t::xhas_out ()
     //  to be routed to.
     return true;
 }
-
-
