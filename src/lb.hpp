@@ -27,28 +27,28 @@
 namespace zmq
 {
 
-    //  Class manages a set of outbound pipes. On send it load balances
+    //  This class manages a set of outbound pipes. On send it load balances
     //  messages fairly among the pipes.
-    class lb_t : public i_writer_events
+
+    class lb_t
     {
     public:
 
         lb_t (class own_t *sink_);
         ~lb_t ();
 
-        void attach (writer_t *pipe_);
+        void attach (pipe_t *pipe_);
         void terminate ();
         int send (msg_t *msg_, int flags_);
         bool has_out ();
 
-        //  i_writer_events interface implementation.
-        void activated (writer_t *pipe_);
-        void terminated (writer_t *pipe_);
+        void activated (pipe_t *pipe_);
+        void terminated (pipe_t *pipe_);
 
     private:
 
         //  List of outbound pipes.
-        typedef array_t <class writer_t> pipes_t;
+        typedef array_t <class pipe_t, 2> pipes_t;
         pipes_t pipes;
 
         //  Number of active pipes. All the active pipes are located at the

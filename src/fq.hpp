@@ -31,28 +31,26 @@ namespace zmq
     //  Class manages a set of inbound pipes. On receive it performs fair
     //  queueing (RFC970) so that senders gone berserk won't cause denial of
     //  service for decent senders.
-    class fq_t : public i_reader_events
+    class fq_t
     {
     public:
 
         fq_t (class own_t *sink_);
         ~fq_t ();
 
-        void attach (reader_t *pipe_);
+        void attach (pipe_t *pipe_);
         void terminate ();
 
         int recv (msg_t *msg_, int flags_);
         bool has_in ();
 
-        //  i_reader_events implementation.
-        void activated (reader_t *pipe_);
-        void terminated (reader_t *pipe_);
-        void delimited (reader_t *pipe_);
+        void activated (pipe_t *pipe_);
+        void terminated (pipe_t *pipe_);
 
     private:
 
         //  Inbound pipes.
-        typedef array_t <reader_t> pipes_t;
+        typedef array_t <pipe_t, 1> pipes_t;
         pipes_t pipes;
 
         //  Number of active pipes. All the active pipes are located at the

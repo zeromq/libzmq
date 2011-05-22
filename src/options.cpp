@@ -38,8 +38,6 @@ zmq::options_t::options_t () :
     reconnect_ivl_max (0),
     backlog (100),
     maxmsgsize (-1),
-    requires_in (false),
-    requires_out (false),
     immediate_connect (true)
 {
 }

@@ -40,8 +40,8 @@ namespace zmq
             own,
             attach,
             bind,
-            activate_reader,
-            activate_writer,
+            activate_read,
+            activate_write,
             pipe_term,
             pipe_term_ack,
             term_req,
@@ -79,8 +79,7 @@ namespace zmq
             //  Sent from session to socket to establish pipe(s) between them.
             //  Caller have used inc_seqnum beforehand sending the command.
             struct {
-                class reader_t *in_pipe;
-                class writer_t *out_pipe;
+                class pipe_t *pipe;
                 unsigned char peer_identity_size;
                 unsigned char *peer_identity;
             } bind;
@@ -88,13 +87,13 @@ namespace zmq
             //  Sent by pipe writer to inform dormant pipe reader that there
             //  are messages in the pipe.
             struct {
-            } activate_reader;
+            } activate_read;
 
             //  Sent by pipe reader to inform pipe writer about how many
             //  messages it has read so far.
             struct {
                 uint64_t msgs_read;
-            } activate_writer;
+            } activate_write;
 
             //  Sent by pipe reader to pipe writer to ask it to terminate
             //  its end of the pipe.

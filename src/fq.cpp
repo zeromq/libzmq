@@ -38,10 +38,8 @@ zmq::fq_t::~fq_t ()
     zmq_assert (pipes.empty ());
 }
 
-void zmq::fq_t::attach (reader_t *pipe_)
+void zmq::fq_t::attach (pipe_t *pipe_)
 {
-    pipe_->set_event_sink (this);
-
     pipes.push_back (pipe_);
     pipes.swap (active, pipes.size () - 1);
     active++;
@@ -53,7 +51,7 @@ void zmq::fq_t::attach (reader_t *pipe_)
     }
 }
 
-void zmq::fq_t::terminated (reader_t *pipe_)
+void zmq::fq_t::terminated (pipe_t *pipe_)
 {
     //  Make sure that we are not closing current pipe while
     //  message is half-read.
@@ -72,10 +70,6 @@ void zmq::fq_t::terminated (reader_t *pipe_)
         sink->unregister_term_ack ();
 }
 
-void zmq::fq_t::delimited (reader_t *pipe_)
-{
-}
-
 void zmq::fq_t::terminate ()
 {
     zmq_assert (!terminating);
@@ -86,7 +80,7 @@ void zmq::fq_t::terminate ()
         pipes [i]->terminate ();
 }
 
-void zmq::fq_t::activated (reader_t *pipe_)
+void zmq::fq_t::activated (pipe_t *pipe_)
 {
     //  Move the pipe to the list of active pipes.
     pipes.swap (pipes.index (pipe_), active);

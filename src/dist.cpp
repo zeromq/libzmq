@@ -39,10 +39,8 @@ zmq::dist_t::~dist_t ()
     zmq_assert (pipes.empty ());
 }
 
-void zmq::dist_t::attach (writer_t *pipe_)
+void zmq::dist_t::attach (pipe_t *pipe_)
 {
-    pipe_->set_event_sink (this);
-
     //  If we are in the middle of sending a message, we'll add new pipe
     //  into the list of eligible pipes. Otherwise we add it to the list
     //  of active pipes.
@@ -74,7 +72,7 @@ void zmq::dist_t::terminate ()
         pipes [i]->terminate ();
 }
 
-void zmq::dist_t::terminated (writer_t *pipe_)
+void zmq::dist_t::terminated (pipe_t *pipe_)
 {
     //  Remove the pipe from the list; adjust number of active and/or
     //  eligible pipes accordingly.
@@ -88,7 +86,7 @@ void zmq::dist_t::terminated (writer_t *pipe_)
         sink->unregister_term_ack ();
 }
 
-void zmq::dist_t::activated (writer_t *pipe_)
+void zmq::dist_t::activated (pipe_t *pipe_)
 {
     //  Move the pipe from passive to eligible state.
     pipes.swap (pipes.index (pipe_), eligible);
@@ -153,7 +151,7 @@ bool zmq::dist_t::has_out ()
     return true;
 }
 
-bool zmq::dist_t::write (class writer_t *pipe_, msg_t *msg_)
+bool zmq::dist_t::write (pipe_t *pipe_, msg_t *msg_)
 {
     if (!pipe_->write (msg_)) {
         pipes.swap (pipes.index (pipe_), active - 1);

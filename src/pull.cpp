@@ -27,19 +27,33 @@ zmq::pull_t::pull_t (class ctx_t *parent_, uint32_t tid_) :
     fq (this)
 {
     options.type = ZMQ_PULL;
-    options.requires_in = true;
-    options.requires_out = false;
 }
 
 zmq::pull_t::~pull_t ()
 {
 }
 
-void zmq::pull_t::xattach_pipes (class reader_t *inpipe_,
-    class writer_t *outpipe_, const blob_t &peer_identity_)
+void zmq::pull_t::xattach_pipe (pipe_t *pipe_, const blob_t &peer_identity_)
 {
-    zmq_assert (inpipe_ && !outpipe_);
-    fq.attach (inpipe_);
+    zmq_assert (pipe_);
+    pipe_->set_event_sink (this);
+    fq.attach (pipe_);
+}
+
+void zmq::pull_t::read_activated (pipe_t *pipe_)
+{
+    fq.activated (pipe_);
+}
+
+void zmq::pull_t::write_activated (pipe_t *pipe_)
+{
+    //  There are no outbound messages in pull socket. This should never happen.
+    zmq_assert (false);
+}
+
+void zmq::pull_t::terminated (pipe_t *pipe_)
+{
+    fq.terminated (pipe_);
 }
 
 void zmq::pull_t::process_term (int linger_)

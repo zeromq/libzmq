@@ -59,12 +59,12 @@ void zmq::object_t::process_command (command_t &cmd_)
 {
     switch (cmd_.type) {
 
-    case command_t::activate_reader:
-        process_activate_reader ();
+    case command_t::activate_read:
+        process_activate_read ();
         break;
 
-    case command_t::activate_writer:
-        process_activate_writer (cmd_.args.activate_writer.msgs_read);
+    case command_t::activate_write:
+        process_activate_write (cmd_.args.activate_write.msgs_read);
         break;
 
     case command_t::stop:
@@ -90,8 +90,8 @@ void zmq::object_t::process_command (command_t &cmd_)
         break;
 
     case command_t::bind:
-        process_bind (cmd_.args.bind.in_pipe, cmd_.args.bind.out_pipe,
-            cmd_.args.bind.peer_identity ? blob_t (cmd_.args.bind.peer_identity,
+        process_bind (cmd_.args.bind.pipe, cmd_.args.bind.peer_identity ?
+            blob_t (cmd_.args.bind.peer_identity,
             cmd_.args.bind.peer_identity_size) : blob_t ());
         process_seqnum ();
         break;
@@ -236,8 +236,8 @@ void zmq::object_t::send_attach (session_t *destination_, i_engine *engine_,
     send_command (cmd);
 }
 
-void zmq::object_t::send_bind (own_t *destination_, reader_t *in_pipe_,
-    writer_t *out_pipe_, const blob_t &peer_identity_, bool inc_seqnum_)
+void zmq::object_t::send_bind (own_t *destination_, pipe_t *pipe_,
+    const blob_t &peer_identity_, bool inc_seqnum_)
 {
     if (inc_seqnum_)
         destination_->inc_seqnum ();
@@ -248,8 +248,7 @@ void zmq::object_t::send_bind (own_t *destination_, reader_t *in_pipe_,
 #endif
     cmd.destination = destination_;
     cmd.type = command_t::bind;
-    cmd.args.bind.in_pipe = in_pipe_;
-    cmd.args.bind.out_pipe = out_pipe_;
+    cmd.args.bind.pipe = pipe_;
     if (peer_identity_.empty ()) {
         cmd.args.bind.peer_identity_size = 0;
         cmd.args.bind.peer_identity = NULL;
@@ -267,18 +266,18 @@ void zmq::object_t::send_bind (own_t *destination_, reader_t *in_pipe_,
     send_command (cmd);
 }
 
-void zmq::object_t::send_activate_reader (reader_t *destination_)
+void zmq::object_t::send_activate_read (pipe_t *destination_)
 {
     command_t cmd;
 #if defined ZMQ_MAKE_VALGRIND_HAPPY
     memset (&cmd, 0, sizeof (cmd));
 #endif
     cmd.destination = destination_;
-    cmd.type = command_t::activate_reader;
+    cmd.type = command_t::activate_read;
     send_command (cmd);
 }
 
-void zmq::object_t::send_activate_writer (writer_t *destination_,
+void zmq::object_t::send_activate_write (pipe_t *destination_,
     uint64_t msgs_read_)
 {
     command_t cmd;
@@ -286,12 +285,12 @@ void zmq::object_t::send_activate_writer (writer_t *destination_,
     memset (&cmd, 0, sizeof (cmd));
 #endif
     cmd.destination = destination_;
-    cmd.type = command_t::activate_writer;
-    cmd.args.activate_writer.msgs_read = msgs_read_;
+    cmd.type = command_t::activate_write;
+    cmd.args.activate_write.msgs_read = msgs_read_;
     send_command (cmd);
 }
 
-void zmq::object_t::send_pipe_term (writer_t *destination_)
+void zmq::object_t::send_pipe_term (pipe_t *destination_)
 {
     command_t cmd;
 #if defined ZMQ_MAKE_VALGRIND_HAPPY
@@ -302,7 +301,7 @@ void zmq::object_t::send_pipe_term (writer_t *destination_)
     send_command (cmd);
 }
 
-void zmq::object_t::send_pipe_term_ack (reader_t *destination_)
+void zmq::object_t::send_pipe_term_ack (pipe_t *destination_)
 {
     command_t cmd;
 #if defined ZMQ_MAKE_VALGRIND_HAPPY
@@ -404,18 +403,17 @@ void zmq::object_t::process_attach (i_engine *engine_,
     zmq_assert (false);
 }
 
-void zmq::object_t::process_bind (reader_t *in_pipe_, writer_t *out_pipe_,
-    const blob_t &peer_identity_)
+void zmq::object_t::process_bind (pipe_t *pipe_, const blob_t &peer_identity_)
 {
     zmq_assert (false);
 }
 
-void zmq::object_t::process_activate_reader ()
+void zmq::object_t::process_activate_read ()
 {
     zmq_assert (false);
 }
 
-void zmq::object_t::process_activate_writer (uint64_t msgs_read_)
+void zmq::object_t::process_activate_write (uint64_t msgs_read_)
 {
     zmq_assert (false);
 }

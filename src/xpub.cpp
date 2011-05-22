@@ -28,19 +28,33 @@ zmq::xpub_t::xpub_t (class ctx_t *parent_, uint32_t tid_) :
     dist (this)
 {
     options.type = ZMQ_XPUB;
-    options.requires_in = false;
-    options.requires_out = true;
 }
 
 zmq::xpub_t::~xpub_t ()
 {
 }
 
-void zmq::xpub_t::xattach_pipes (class reader_t *inpipe_,
-    class writer_t *outpipe_, const blob_t &peer_identity_)
+void zmq::xpub_t::xattach_pipe (pipe_t *pipe_, const blob_t &peer_identity_)
 {
-    zmq_assert (!inpipe_ && outpipe_);
-    dist.attach (outpipe_);
+    zmq_assert (pipe_);
+    pipe_->set_event_sink (this);
+    dist.attach (pipe_);
+}
+
+void zmq::xpub_t::read_activated (pipe_t *pipe_)
+{
+    //  PUB socket never receives messages. This should never happen.
+    zmq_assert (false);
+}
+
+void zmq::xpub_t::write_activated (pipe_t *pipe_)
+{
+    dist.activated (pipe_);
+}
+
+void zmq::xpub_t::terminated (pipe_t *pipe_)
+{
+    dist.terminated (pipe_);
 }
 
 void zmq::xpub_t::process_term (int linger_)

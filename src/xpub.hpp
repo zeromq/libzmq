@@ -29,7 +29,9 @@
 namespace zmq
 {
 
-    class xpub_t : public socket_base_t
+    class xpub_t :
+        public socket_base_t,
+        public i_pipe_events
     {
     public:
 
@@ -37,14 +39,18 @@ namespace zmq
         ~xpub_t ();
 
         //  Implementations of virtual functions from socket_base_t.
-        void xattach_pipes (class reader_t *inpipe_, class writer_t *outpipe_,
-            const blob_t &peer_identity_);
+        void xattach_pipe (class pipe_t *pipe_, const blob_t &peer_identity_);
         int xsend (class msg_t *msg_, int flags_);
         bool xhas_out ();
         int xrecv (class msg_t *msg_, int flags_);
         bool xhas_in ();
 
     private:
+
+        //  i_pipe_events interface implementation.
+        void read_activated (pipe_t *pipe_);
+        void write_activated (pipe_t *pipe_);
+        void terminated (pipe_t *pipe_);
 
         //  Hook into the termination process.
         void process_term (int linger_);

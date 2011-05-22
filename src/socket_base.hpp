@@ -110,8 +110,8 @@ namespace zmq
 
         //  Concrete algorithms for the x- methods are to be defined by
         //  individual socket types.
-        virtual void xattach_pipes (class reader_t *inpipe_,
-            class writer_t *outpipe_, const blob_t &peer_identity_) = 0;
+        virtual void xattach_pipe (class pipe_t *pipe_,
+            const blob_t &peer_identity_) = 0;
 
         //  The default implementation assumes there are no specific socket
         //  options for the particular socket type. If not so, overload this
@@ -156,9 +156,8 @@ namespace zmq
         //  bind, is available and compatible with the socket type.
         int check_protocol (const std::string &protocol_);
 
-        //  If no identity set generate one and call xattach_pipes ().
-        void attach_pipes (class reader_t *inpipe_, class writer_t *outpipe_,
-            const blob_t &peer_identity_);
+        //  If no identity is set, generate one and call xattach_pipe ().
+        void attach_pipe (class pipe_t *pipe_, const blob_t &peer_identity_);
 
         //  Processes commands sent to this socket (if any). If 'block' is
         //  set to true, returns only after at least one command was processed.
@@ -168,8 +167,7 @@ namespace zmq
 
         //  Handlers for incoming commands.
         void process_stop ();
-        void process_bind (class reader_t *in_pipe_, class writer_t *out_pipe_,
-            const blob_t &peer_identity_);
+        void process_bind (class pipe_t *pipe_, const blob_t &peer_identity_);
         void process_unplug ();
 
         //  Socket's mailbox object.

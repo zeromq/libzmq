@@ -30,8 +30,6 @@ zmq::xsub_t::xsub_t (class ctx_t *parent_, uint32_t tid_) :
     more (false)
 {
     options.type = ZMQ_XSUB;
-    options.requires_in = true;
-    options.requires_out = false;
     int rc = message.init ();
     errno_assert (rc == 0);
 }
@@ -42,11 +40,27 @@ zmq::xsub_t::~xsub_t ()
     errno_assert (rc == 0);
 }
 
-void zmq::xsub_t::xattach_pipes (class reader_t *inpipe_,
-    class writer_t *outpipe_, const blob_t &peer_identity_)
+void zmq::xsub_t::xattach_pipe (pipe_t *pipe_, const blob_t &peer_identity_)
 {
-    zmq_assert (inpipe_ && !outpipe_);
-    fq.attach (inpipe_);
+    zmq_assert (pipe_);
+    pipe_->set_event_sink (this);
+    fq.attach (pipe_);
+}
+
+void zmq::xsub_t::read_activated (pipe_t *pipe_)
+{
+    fq.activated (pipe_);
+}
+
+void zmq::xsub_t::write_activated (pipe_t *pipe_)
+{
+    //  SUB socket never sends messages. This should never happen.
+    zmq_assert (false);
+}
+
+void zmq::xsub_t::terminated (pipe_t *pipe_)
+{
+    fq.terminated (pipe_);
 }
 
 void zmq::xsub_t::process_term (int linger_)

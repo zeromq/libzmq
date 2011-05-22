@@ -29,8 +29,7 @@ namespace zmq
 
     class pair_t :
         public socket_base_t,
-        public i_reader_events,
-        public i_writer_events
+        public i_pipe_events
     {
     public:
 
@@ -38,32 +37,23 @@ namespace zmq
         ~pair_t ();
 
         //  Overloads of functions from socket_base_t.
-        void xattach_pipes (class reader_t *inpipe_, class writer_t *outpipe_,
-            const blob_t &peer_identity_);
+        void xattach_pipe (class pipe_t *pipe_, const blob_t &peer_identity_);
         int xsend (class msg_t *msg_, int flags_);
         int xrecv (class msg_t *msg_, int flags_);
         bool xhas_in ();
         bool xhas_out ();
 
-        //  i_reader_events interface implementation.
-        void activated (class reader_t *pipe_);
-        void terminated (class reader_t *pipe_);
-        void delimited (class reader_t *pipe_);
-
-        //  i_writer_events interface implementation.
-        void activated (class writer_t *pipe_);
-        void terminated (class writer_t *pipe_);
+        //  i_pipe_events interface implementation.
+        void read_activated (class pipe_t *pipe_);
+        void write_activated (class pipe_t *pipe_);
+        void terminated (class pipe_t *pipe_);
 
     private:
 
         //  Hook into termination process.
         void process_term (int linger_);
 
-        class reader_t *inpipe;
-        class writer_t *outpipe;
-
-        bool inpipe_alive;
-        bool outpipe_alive;
+        class pipe_t *pipe;
 
         bool terminating;
 

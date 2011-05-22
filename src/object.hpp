@@ -66,14 +66,13 @@ namespace zmq
         void send_attach (class session_t *destination_,
              struct i_engine *engine_, const blob_t &peer_identity_,
              bool inc_seqnum_ = true);
-        void send_bind (class own_t *destination_,
-             class reader_t *in_pipe_, class writer_t *out_pipe_,
+        void send_bind (class own_t *destination_, class pipe_t *pipe_,
              const blob_t &peer_identity_, bool inc_seqnum_ = true);
-        void send_activate_reader (class reader_t *destination_);
-        void send_activate_writer (class writer_t *destination_,
+        void send_activate_read (class pipe_t *destination_);
+        void send_activate_write (class pipe_t *destination_,
              uint64_t msgs_read_);
-        void send_pipe_term (class writer_t *destination_);
-        void send_pipe_term_ack (class reader_t *destination_);
+        void send_pipe_term (class pipe_t *destination_);
+        void send_pipe_term_ack (class pipe_t *destination_);
         void send_term_req (class own_t *destination_,
             class own_t *object_);
         void send_term (class own_t *destination_, int linger_);
@@ -89,10 +88,10 @@ namespace zmq
         virtual void process_own (class own_t *object_);
         virtual void process_attach (struct i_engine *engine_,
             const blob_t &peer_identity_);
-        virtual void process_bind (class reader_t *in_pipe_,
-            class writer_t *out_pipe_, const blob_t &peer_identity_);
-        virtual void process_activate_reader ();
-        virtual void process_activate_writer (uint64_t msgs_read_);
+        virtual void process_bind (class pipe_t *pipe_,
+            const blob_t &peer_identity_);
+        virtual void process_activate_read ();
+        virtual void process_activate_write (uint64_t msgs_read_);
         virtual void process_pipe_term ();
         virtual void process_pipe_term_ack ();
         virtual void process_term_req (class own_t *object_);

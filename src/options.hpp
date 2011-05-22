@@ -75,11 +75,6 @@ namespace zmq
         //  Maximal size of message to handle.
         int64_t maxmsgsize;
 
-        //  These options are never set by the user directly. Instead they are
-        //  provided by the specific socket type.
-        bool requires_in;
-        bool requires_out;
-
         //  If true, when connecting, pipes are created immediately without
         //  waiting for the connection to be established. That way the socket
         //  is not aware of the peer's identity, however, it is able to send

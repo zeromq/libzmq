@@ -173,12 +173,15 @@ void zmq::own_t::process_term (int linger_)
 void zmq::own_t::register_term_acks (int count_)
 {
     term_acks += count_;
+    printf ("reg %d acks (%p, %d)\n", count_, (void*) this, term_acks);
 }
 
 void zmq::own_t::unregister_term_ack ()
 {
     zmq_assert (term_acks > 0);
     term_acks--;
+
+    printf ("unreg 1 acks (%p, %d)\n", (void*) this, term_acks);
 
     //  This may be a last ack we are waiting for before termination...
     check_term_acks (); 

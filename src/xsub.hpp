@@ -23,13 +23,16 @@
 
 #include "trie.hpp"
 #include "socket_base.hpp"
+#include "pipe.hpp"
 #include "msg.hpp"
 #include "fq.hpp"
 
 namespace zmq
 {
 
-    class xsub_t : public socket_base_t
+    class xsub_t :
+        public socket_base_t,
+        public i_pipe_events
     {
     public:
 
@@ -39,14 +42,18 @@ namespace zmq
     protected:
 
         //  Overloads of functions from socket_base_t.
-        void xattach_pipes (class reader_t *inpipe_, class writer_t *outpipe_,
-            const blob_t &peer_identity_);
+        void xattach_pipe (class pipe_t *pipe_, const blob_t &peer_identity_);
         int xsend (class msg_t *msg_, int options_);
         bool xhas_out ();
         int xrecv (class msg_t *msg_, int flags_);
         bool xhas_in ();
 
     private:
+
+        //  i_pipe_events interface implementation.
+        void read_activated (pipe_t *pipe_);
+        void write_activated (pipe_t *pipe_);
+        void terminated (pipe_t *pipe_);
 
         //  Hook into the termination process.
         void process_term (int linger_);

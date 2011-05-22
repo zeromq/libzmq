@@ -22,6 +22,7 @@
 #include "zmq_connecter.hpp"
 #include "pgm_sender.hpp"
 #include "pgm_receiver.hpp"
+#include "err.hpp"
 
 zmq::connect_session_t::connect_session_t (class io_thread_t *io_thread_,
       class socket_base_t *socket_, const options_t &options_,

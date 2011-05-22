@@ -28,14 +28,17 @@ namespace zmq
 {
 
     //  Base class for objects stored in the array. Note that each object can
-    //  be stored in at most one array.
+    //  be stored in at most two arrays. This is needed specifically in the
+    //  case where single pipe object is stored both in array of inbound pipes
+    //  and in the array of outbound pipes.
 
     class array_item_t
     {
     public:
 
         inline array_item_t () :
-            array_index (-1)
+            array_index1 (-1),
+            array_index2 (-1)
         {
         }
 
@@ -45,19 +48,30 @@ namespace zmq
         {
         }
 
-        inline void set_array_index (int index_)
+        inline void set_array_index1 (int index_)
         {
-            array_index = index_;
+            array_index1 = index_;
         }
 
-        inline int get_array_index ()
+        inline int get_array_index1 ()
         {
-            return array_index;
+            return array_index1;
+        }
+
+        inline void set_array_index2 (int index_)
+        {
+            array_index2 = index_;
+        }
+
+        inline int get_array_index2 ()
+        {
+            return array_index2;
         }
 
     private:
 
-        int array_index;
+        int array_index1;
+        int array_index2;
 
         array_item_t (const array_item_t&);
         const array_item_t &operator = (const array_item_t&);
@@ -65,9 +79,11 @@ namespace zmq
 
     //  Fast array implementation with O(1) access to item, insertion and
     //  removal. Array stores pointers rather than objects. The objects have
-    //  to be derived from array_item_t class.
+    //  to be derived from array_item_t class, thus they can be stored in
+    //  two arrays. Template parameter N specifies which index in array_item_t
+    //  to use.
 
-    template <typename T> class array_t
+    template <typename T, int N = 1> class array_t
     {
     public:
 
@@ -98,28 +114,48 @@ namespace zmq
 
         inline void push_back (T *item_)
         {
-            if (item_)
-                item_->set_array_index ((int) items.size ());
+            if (item_) {
+                if (N == 1)
+                    item_->set_array_index1 ((int) items.size ());
+                else
+                    item_->set_array_index2 ((int) items.size ());
+            }
             items.push_back (item_);
         }
 
-        inline void erase (T *item_) {
-            erase (item_->get_array_index ());
+        inline void erase (T *item_)
+        {
+            if (N == 1)
+                erase (item_->get_array_index1 ());
+            else
+                erase (item_->get_array_index2 ());
         }
 
         inline void erase (size_type index_) {
-            if (items.back ())
-                items.back ()->set_array_index ((int) index_);
+            if (items.back ()) {
+                if (N == 1)
+                    items.back ()->set_array_index1 ((int) index_);
+                else
+                    items.back ()->set_array_index2 ((int) index_);
+            }
             items [index_] = items.back ();
             items.pop_back ();
         }
 
         inline void swap (size_type index1_, size_type index2_)
         {
-            if (items [index1_])
-                items [index1_]->set_array_index ((int) index2_);
-            if (items [index2_])
-                items [index2_]->set_array_index ((int) index1_);
+            if (N == 1) {
+		        if (items [index1_])
+		            items [index1_]->set_array_index1 ((int) index2_);
+		        if (items [index2_])
+		            items [index2_]->set_array_index1 ((int) index1_);
+            }
+            else {
+		        if (items [index1_])
+		            items [index1_]->set_array_index2 ((int) index2_);
+		        if (items [index2_])
+		            items [index2_]->set_array_index2 ((int) index1_);
+            }
             std::swap (items [index1_], items [index2_]);
         }
 
@@ -130,7 +166,10 @@ namespace zmq
 
         inline size_type index (T *item_)
         {
-            return (size_type) item_->get_array_index ();
+            if (N == 1)
+                return (size_type) item_->get_array_index1 ();
+            else
+                return (size_type) item_->get_array_index2 ();
         }
 
     private:

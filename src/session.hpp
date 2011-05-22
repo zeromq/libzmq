@@ -34,8 +34,7 @@ namespace zmq
         public own_t,
         public io_object_t,
         public i_inout,
-        public i_reader_events,
-        public i_writer_events
+        public i_pipe_events
     {
     public:
 
@@ -50,17 +49,12 @@ namespace zmq
         void flush ();
         void detach ();
 
-        void attach_pipes (class reader_t *inpipe_, class writer_t *outpipe_,
-            const blob_t &peer_identity_);
+        void attach_pipe (class pipe_t *pipe_, const blob_t &peer_identity_);
 
-        //  i_reader_events interface implementation.
-        void activated (class reader_t *pipe_);
-        void terminated (class reader_t *pipe_);
-        void delimited (class reader_t *pipe_);
-
-        //  i_writer_events interface implementation.
-        void activated (class writer_t *pipe_);
-        void terminated (class writer_t *pipe_);
+        //  i_pipe_events interface implementation.
+        void read_activated (class pipe_t *pipe_);
+        void write_activated (class pipe_t *pipe_);
+        void terminated (class pipe_t *pipe_);
 
     protected:
 
@@ -103,15 +97,12 @@ namespace zmq
         //  Call this function to move on with the delayed process_term.
         void proceed_with_term ();
 
-        //  Inbound pipe, i.e. one the session is getting messages from.
-        class reader_t *in_pipe;
+        //  Pipe connecting the session to its socket.
+        class pipe_t *pipe;
 
         //  This flag is true if the remainder of the message being processed
         //  is still in the in pipe.
         bool incomplete_in;
-
-        //  Outbound pipe, i.e. one the socket is sending messages to.
-        class writer_t *out_pipe;
 
         //  The protocol I/O engine connected to the session.
         struct i_engine *engine;
@@ -123,8 +114,8 @@ namespace zmq
         //  the engines into the same thread.
         class io_thread_t *io_thread;
 
-        //  If true, pipes were already attached to this session.
-        bool pipes_attached;
+        //  If true, pipe was already attached to this session.
+        bool pipe_attached;
 
         //  If true, delimiter was already read from the inbound pipe.
         bool delimiter_processed;

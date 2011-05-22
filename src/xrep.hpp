@@ -35,8 +35,7 @@ namespace zmq
     //  TODO: This class uses O(n) scheduling. Rewrite it to use O(1) algorithm.
     class xrep_t :
         public socket_base_t,
-        public i_reader_events,
-        public i_writer_events
+        public i_pipe_events
     {
     public:
 
@@ -44,8 +43,7 @@ namespace zmq
         ~xrep_t ();
 
         //  Overloads of functions from socket_base_t.
-        void xattach_pipes (reader_t *inpipe_, writer_t *outpipe_,
-            const blob_t &peer_identity_);
+        void xattach_pipe (class pipe_t *pipe_, const blob_t &peer_identity_);
         int xsend (class msg_t *msg_, int flags_);
         int xrecv (class msg_t *msg_, int flags_);
         bool xhas_in ();
@@ -61,18 +59,14 @@ namespace zmq
         //  Hook into the termination process.
         void process_term (int linger_);
 
-        //  i_reader_events interface implementation.
-        void activated (reader_t *pipe_);
-        void terminated (reader_t *pipe_);
-        void delimited (reader_t *pipe_);
-
-        //  i_writer_events interface implementation.
-        void activated (writer_t *pipe_);
-        void terminated (writer_t *pipe_);
+        //  i_pipe_events interface implementation.
+        void read_activated (pipe_t *pipe_);
+        void write_activated (pipe_t *pipe_);
+        void terminated (pipe_t *pipe_);
 
         struct inpipe_t
         {
-            class reader_t *reader;
+            class pipe_t *pipe;
             blob_t identity;
             bool active;
         };
@@ -95,7 +89,7 @@ namespace zmq
 
         struct outpipe_t
         {
-            class writer_t *writer;
+            class pipe_t *pipe;
             bool active;
         };
 
@@ -104,7 +98,7 @@ namespace zmq
         outpipes_t outpipes;
 
         //  The pipe we are currently writing to.
-        class writer_t *current_out;
+        class pipe_t *current_out;
 
         //  If true, more outgoing message parts are expected.
         bool more_out;
