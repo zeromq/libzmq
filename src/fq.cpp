@@ -21,15 +21,12 @@
 #include "fq.hpp"
 #include "pipe.hpp"
 #include "err.hpp"
-#include "own.hpp"
 #include "msg.hpp"
 
-zmq::fq_t::fq_t (own_t *sink_) :
+zmq::fq_t::fq_t () :
     active (0),
     current (0),
-    more (false),
-    sink (sink_),
-    terminating (false)
+    more (false)
 {
 }
 
@@ -43,20 +40,10 @@ void zmq::fq_t::attach (pipe_t *pipe_)
     pipes.push_back (pipe_);
     pipes.swap (active, pipes.size () - 1);
     active++;
-
-    //  If we are already terminating, ask the pipe to terminate straight away.
-    if (terminating) {
-        sink->register_term_acks (1);
-        pipe_->terminate ();
-    }
 }
 
 void zmq::fq_t::terminated (pipe_t *pipe_)
 {
-    //  Make sure that we are not closing current pipe while
-    //  message is half-read.
-    zmq_assert (terminating || (!more || pipes [current] != pipe_));
-
     //  Remove the pipe from the list; adjust number of active pipes
     //  accordingly.
     if (pipes.index (pipe_) < active) {
@@ -65,19 +52,6 @@ void zmq::fq_t::terminated (pipe_t *pipe_)
             current = 0;
     }
     pipes.erase (pipe_);
-
-    if (terminating)
-        sink->unregister_term_ack ();
-}
-
-void zmq::fq_t::terminate ()
-{
-    zmq_assert (!terminating);
-    terminating = true;
-
-    sink->register_term_acks ((int) pipes.size ());
-    for (pipes_t::size_type i = 0; i != pipes.size (); i++)
-        pipes [i]->terminate ();
 }
 
 void zmq::fq_t::activated (pipe_t *pipe_)

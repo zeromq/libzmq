@@ -23,9 +23,7 @@
 #include "msg.hpp"
 
 zmq::xreq_t::xreq_t (class ctx_t *parent_, uint32_t tid_) :
-    socket_base_t (parent_, tid_),
-    fq (this),
-    lb (this)
+    socket_base_t (parent_, tid_)
 {
     options.type = ZMQ_XREQ;
 }
@@ -34,19 +32,11 @@ zmq::xreq_t::~xreq_t ()
 {
 }
 
-void zmq::xreq_t::xattach_pipe (class pipe_t *pipe_, const blob_t &peer_identity_)
+void zmq::xreq_t::xattach_pipe (pipe_t *pipe_, const blob_t &peer_identity_)
 {
     zmq_assert (pipe_);
-    pipe_->set_event_sink (this);
     fq.attach (pipe_);
     lb.attach (pipe_);
-}
-
-void zmq::xreq_t::process_term (int linger_)
-{
-    fq.terminate ();
-    lb.terminate ();
-    socket_base_t::process_term (linger_);
 }
 
 int zmq::xreq_t::xsend (msg_t *msg_, int flags_)
@@ -69,17 +59,17 @@ bool zmq::xreq_t::xhas_out ()
     return lb.has_out ();
 }
 
-void zmq::xreq_t::read_activated (pipe_t *pipe_)
+void zmq::xreq_t::xread_activated (pipe_t *pipe_)
 {
     fq.activated (pipe_);
 }
 
-void zmq::xreq_t::write_activated (pipe_t *pipe_)
+void zmq::xreq_t::xwrite_activated (pipe_t *pipe_)
 {
     lb.activated (pipe_);
 }
 
-void zmq::xreq_t::terminated (pipe_t *pipe_)
+void zmq::xreq_t::xterminated (pipe_t *pipe_)
 {
     fq.terminated (pipe_);
     lb.terminated (pipe_);

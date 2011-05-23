@@ -22,14 +22,12 @@
 #define __ZMQ_PAIR_HPP_INCLUDED__
 
 #include "socket_base.hpp"
-#include "pipe.hpp"
 
 namespace zmq
 {
 
     class pair_t :
-        public socket_base_t,
-        public i_pipe_events
+        public socket_base_t
     {
     public:
 
@@ -42,20 +40,13 @@ namespace zmq
         int xrecv (class msg_t *msg_, int flags_);
         bool xhas_in ();
         bool xhas_out ();
-
-        //  i_pipe_events interface implementation.
-        void read_activated (class pipe_t *pipe_);
-        void write_activated (class pipe_t *pipe_);
-        void terminated (class pipe_t *pipe_);
+        void xread_activated (class pipe_t *pipe_);
+        void xwrite_activated (class pipe_t *pipe_);
+        void xterminated (class pipe_t *pipe_);
 
     private:
 
-        //  Hook into termination process.
-        void process_term (int linger_);
-
         class pipe_t *pipe;
-
-        bool terminating;
 
         pair_t (const pair_t&);
         const pair_t &operator = (const pair_t&);

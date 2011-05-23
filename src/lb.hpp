@@ -34,16 +34,15 @@ namespace zmq
     {
     public:
 
-        lb_t (class own_t *sink_);
+        lb_t ();
         ~lb_t ();
 
         void attach (pipe_t *pipe_);
-        void terminate ();
-        int send (msg_t *msg_, int flags_);
-        bool has_out ();
-
         void activated (pipe_t *pipe_);
         void terminated (pipe_t *pipe_);
+
+        int send (msg_t *msg_, int flags_);
+        bool has_out ();
 
     private:
 
@@ -63,12 +62,6 @@ namespace zmq
 
         //  True if we are dropping current message.
         bool dropping;
-
-        //  Object to send events to.
-        class own_t *sink;
-
-        //  If true, termination process is already underway.
-        bool terminating;
 
         lb_t (const lb_t&);
         const lb_t &operator = (const lb_t&);

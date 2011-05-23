@@ -26,7 +26,6 @@
 
 #include "socket_base.hpp"
 #include "blob.hpp"
-#include "pipe.hpp"
 #include "msg.hpp"
 
 namespace zmq
@@ -34,8 +33,7 @@ namespace zmq
 
     //  TODO: This class uses O(n) scheduling. Rewrite it to use O(1) algorithm.
     class xrep_t :
-        public socket_base_t,
-        public i_pipe_events
+        public socket_base_t
     {
     public:
 
@@ -48,6 +46,9 @@ namespace zmq
         int xrecv (class msg_t *msg_, int flags_);
         bool xhas_in ();
         bool xhas_out ();
+        void xread_activated (class pipe_t *pipe_);
+        void xwrite_activated (class pipe_t *pipe_);
+        void xterminated (class pipe_t *pipe_);
 
     protected:
 
@@ -55,14 +56,6 @@ namespace zmq
         int rollback ();
 
     private:
-
-        //  Hook into the termination process.
-        void process_term (int linger_);
-
-        //  i_pipe_events interface implementation.
-        void read_activated (pipe_t *pipe_);
-        void write_activated (pipe_t *pipe_);
-        void terminated (pipe_t *pipe_);
 
         struct inpipe_t
         {
@@ -102,9 +95,6 @@ namespace zmq
 
         //  If true, more outgoing message parts are expected.
         bool more_out;
-
-        //  If true, termination process is already underway.
-        bool terminating;
 
         xrep_t (const xrep_t&);
         const xrep_t &operator = (const xrep_t&);

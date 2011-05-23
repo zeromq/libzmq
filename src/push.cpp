@@ -24,8 +24,7 @@
 #include "msg.hpp"
 
 zmq::push_t::push_t (class ctx_t *parent_, uint32_t tid_) :
-    socket_base_t (parent_, tid_),
-    lb (this)
+    socket_base_t (parent_, tid_)
 {
     options.type = ZMQ_PUSH;
 }
@@ -37,30 +36,17 @@ zmq::push_t::~push_t ()
 void zmq::push_t::xattach_pipe (pipe_t *pipe_, const blob_t &peer_identity_)
 {
     zmq_assert (pipe_);
-    pipe_->set_event_sink (this);
     lb.attach (pipe_);
 }
 
-void zmq::push_t::read_activated (pipe_t *pipe_)
-{
-    //  There are no inbound messages in push socket. This should never happen.
-    zmq_assert (false);
-}
-
-void zmq::push_t::write_activated (pipe_t *pipe_)
+void zmq::push_t::xwrite_activated (pipe_t *pipe_)
 {
     lb.activated (pipe_);
 }
 
-void zmq::push_t::terminated (pipe_t *pipe_)
+void zmq::push_t::xterminated (pipe_t *pipe_)
 {
     lb.terminated (pipe_);
-}
-
-void zmq::push_t::process_term (int linger_)
-{
-    lb.terminate ();
-    socket_base_t::process_term (linger_);
 }
 
 int zmq::push_t::xsend (msg_t *msg_, int flags_)

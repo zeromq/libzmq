@@ -24,8 +24,7 @@
 #include "msg.hpp"
 
 zmq::xpub_t::xpub_t (class ctx_t *parent_, uint32_t tid_) :
-    socket_base_t (parent_, tid_),
-    dist (this)
+    socket_base_t (parent_, tid_)
 {
     options.type = ZMQ_XPUB;
 }
@@ -37,33 +36,17 @@ zmq::xpub_t::~xpub_t ()
 void zmq::xpub_t::xattach_pipe (pipe_t *pipe_, const blob_t &peer_identity_)
 {
     zmq_assert (pipe_);
-    pipe_->set_event_sink (this);
     dist.attach (pipe_);
 }
 
-void zmq::xpub_t::read_activated (pipe_t *pipe_)
-{
-    //  PUB socket never receives messages. This should never happen.
-    zmq_assert (false);
-}
-
-void zmq::xpub_t::write_activated (pipe_t *pipe_)
+void zmq::xpub_t::xwrite_activated (pipe_t *pipe_)
 {
     dist.activated (pipe_);
 }
 
-void zmq::xpub_t::terminated (pipe_t *pipe_)
+void zmq::xpub_t::xterminated (pipe_t *pipe_)
 {
     dist.terminated (pipe_);
-}
-
-void zmq::xpub_t::process_term (int linger_)
-{
-    //  Terminate the outbound pipes.
-    dist.terminate ();
-
-    //  Continue with the termination immediately.
-    socket_base_t::process_term (linger_);
 }
 
 int zmq::xpub_t::xsend (msg_t *msg_, int flags_)

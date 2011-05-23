@@ -22,15 +22,13 @@
 #define __ZMQ_PULL_HPP_INCLUDED__
 
 #include "socket_base.hpp"
-#include "pipe.hpp"
 #include "fq.hpp"
 
 namespace zmq
 {
 
     class pull_t :
-        public socket_base_t,
-        public i_pipe_events
+        public socket_base_t
     {
     public:
 
@@ -43,16 +41,10 @@ namespace zmq
         void xattach_pipe (class pipe_t *pipe_, const blob_t &peer_identity_);
         int xrecv (class msg_t *msg_, int flags_);
         bool xhas_in ();
+        void xread_activated (class pipe_t *pipe_);
+        void xterminated (class pipe_t *pipe_);
 
     private:
-
-        //  i_pipe_events interface implementation.
-        void read_activated (pipe_t *pipe_);
-        void write_activated (pipe_t *pipe_);
-        void terminated (pipe_t *pipe_);
-
-        //  Hook into the termination process.
-        void process_term (int linger_);
 
         //  Fair queueing object for inbound pipes.
         fq_t fq;

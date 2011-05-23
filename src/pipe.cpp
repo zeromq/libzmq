@@ -108,7 +108,7 @@ bool zmq::pipe_t::check_read ()
 
         //  If pipe_term was already received but wasn't processed because
         //  of pending messages, we can ack it now.
-        if (terminating)
+        if (term_recvd)
             send_pipe_term_ack (peer);
 
         return false;
@@ -133,7 +133,7 @@ bool zmq::pipe_t::read (msg_t *msg_)
 
         //  If pipe_term was already received but wasn't processed because
         //  of pending messages, we can ack it now.
-        if (terminating)
+        if (term_recvd)
             send_pipe_term_ack (peer);
 
         return false;

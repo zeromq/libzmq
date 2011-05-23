@@ -23,15 +23,13 @@
 
 #include "socket_base.hpp"
 #include "array.hpp"
-#include "pipe.hpp"
 #include "dist.hpp"
 
 namespace zmq
 {
 
     class xpub_t :
-        public socket_base_t,
-        public i_pipe_events
+        public socket_base_t
     {
     public:
 
@@ -44,16 +42,10 @@ namespace zmq
         bool xhas_out ();
         int xrecv (class msg_t *msg_, int flags_);
         bool xhas_in ();
+        void xwrite_activated (class pipe_t *pipe_);
+        void xterminated (class pipe_t *pipe_);
 
     private:
-
-        //  i_pipe_events interface implementation.
-        void read_activated (pipe_t *pipe_);
-        void write_activated (pipe_t *pipe_);
-        void terminated (pipe_t *pipe_);
-
-        //  Hook into the termination process.
-        void process_term (int linger_);
 
         //  Distributor of messages holding the list of outbound pipes.
         dist_t dist;

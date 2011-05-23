@@ -38,7 +38,8 @@ namespace zmq
 
         inline array_item_t () :
             array_index1 (-1),
-            array_index2 (-1)
+            array_index2 (-1),
+            array_index3 (-1)
         {
         }
 
@@ -68,10 +69,21 @@ namespace zmq
             return array_index2;
         }
 
+        inline void set_array_index3 (int index_)
+        {
+            array_index3 = index_;
+        }
+
+        inline int get_array_index3 ()
+        {
+            return array_index3;
+        }
+
     private:
 
         int array_index1;
         int array_index2;
+        int array_index3;
 
         array_item_t (const array_item_t&);
         const array_item_t &operator = (const array_item_t&);
@@ -117,8 +129,10 @@ namespace zmq
             if (item_) {
                 if (N == 1)
                     item_->set_array_index1 ((int) items.size ());
-                else
+                else if (N == 2)
                     item_->set_array_index2 ((int) items.size ());
+                else
+                    item_->set_array_index3 ((int) items.size ());
             }
             items.push_back (item_);
         }
@@ -127,16 +141,20 @@ namespace zmq
         {
             if (N == 1)
                 erase (item_->get_array_index1 ());
-            else
+            else if (N == 2)
                 erase (item_->get_array_index2 ());
+            else
+                erase (item_->get_array_index3 ());
         }
 
         inline void erase (size_type index_) {
             if (items.back ()) {
                 if (N == 1)
                     items.back ()->set_array_index1 ((int) index_);
-                else
+                else if (N == 2)
                     items.back ()->set_array_index2 ((int) index_);
+                else
+                    items.back ()->set_array_index3 ((int) index_);
             }
             items [index_] = items.back ();
             items.pop_back ();
@@ -150,11 +168,17 @@ namespace zmq
 		        if (items [index2_])
 		            items [index2_]->set_array_index1 ((int) index1_);
             }
-            else {
+            else if (N == 2) {
 		        if (items [index1_])
 		            items [index1_]->set_array_index2 ((int) index2_);
 		        if (items [index2_])
 		            items [index2_]->set_array_index2 ((int) index1_);
+            }
+            else {
+		        if (items [index1_])
+		            items [index1_]->set_array_index3 ((int) index2_);
+		        if (items [index2_])
+		            items [index2_]->set_array_index3 ((int) index1_);
             }
             std::swap (items [index1_], items [index2_]);
         }
@@ -168,8 +192,10 @@ namespace zmq
         {
             if (N == 1)
                 return (size_type) item_->get_array_index1 ();
-            else
+            else if (N == 2)
                 return (size_type) item_->get_array_index2 ();
+            else
+                return (size_type) item_->get_array_index3 ();
         }
 
     private:

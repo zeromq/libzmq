@@ -35,17 +35,15 @@ namespace zmq
     {
     public:
 
-        fq_t (class own_t *sink_);
+        fq_t ();
         ~fq_t ();
 
         void attach (pipe_t *pipe_);
-        void terminate ();
+        void activated (pipe_t *pipe_);
+        void terminated (pipe_t *pipe_);
 
         int recv (msg_t *msg_, int flags_);
         bool has_in ();
-
-        void activated (pipe_t *pipe_);
-        void terminated (pipe_t *pipe_);
 
     private:
 
@@ -63,12 +61,6 @@ namespace zmq
         //  If true, part of a multipart message was already received, but
         //  there are following parts still waiting in the current pipe.
         bool more;
-
-        //  Object to send events to.
-        class own_t *sink;
-
-        //  If true, termination process is already underway.
-        bool terminating;
 
         fq_t (const fq_t&);
         const fq_t &operator = (const fq_t&);

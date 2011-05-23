@@ -23,7 +23,6 @@
 
 #include "trie.hpp"
 #include "socket_base.hpp"
-#include "pipe.hpp"
 #include "msg.hpp"
 #include "fq.hpp"
 
@@ -31,8 +30,7 @@ namespace zmq
 {
 
     class xsub_t :
-        public socket_base_t,
-        public i_pipe_events
+        public socket_base_t
     {
     public:
 
@@ -47,16 +45,10 @@ namespace zmq
         bool xhas_out ();
         int xrecv (class msg_t *msg_, int flags_);
         bool xhas_in ();
+        void xread_activated (class pipe_t *pipe_);
+        void xterminated (class pipe_t *pipe_);
 
     private:
-
-        //  i_pipe_events interface implementation.
-        void read_activated (pipe_t *pipe_);
-        void write_activated (pipe_t *pipe_);
-        void terminated (pipe_t *pipe_);
-
-        //  Hook into the termination process.
-        void process_term (int linger_);
 
         //  Check whether the message matches at least one subscription.
         bool match (class msg_t *msg_);

@@ -21,16 +21,13 @@
 #include "dist.hpp"
 #include "pipe.hpp"
 #include "err.hpp"
-#include "own.hpp"
 #include "msg.hpp"
 #include "likely.hpp"
 
-zmq::dist_t::dist_t (own_t *sink_) :
+zmq::dist_t::dist_t () :
     active (0),
     eligible (0),
-    more (false),
-    sink (sink_),
-    terminating (false)
+    more (false)
 {
 }
 
@@ -55,21 +52,6 @@ void zmq::dist_t::attach (pipe_t *pipe_)
         active++;
         eligible++;
     }
-
-    if (unlikely (terminating)) {
-        sink->register_term_acks (1);
-        pipe_->terminate ();
-    }
-}
-
-void zmq::dist_t::terminate ()
-{
-    zmq_assert (!terminating);
-    terminating = true;
-
-    sink->register_term_acks ((int) pipes.size ());
-    for (pipes_t::size_type i = 0; i != pipes.size (); i++)
-        pipes [i]->terminate ();
 }
 
 void zmq::dist_t::terminated (pipe_t *pipe_)
@@ -81,9 +63,6 @@ void zmq::dist_t::terminated (pipe_t *pipe_)
     if (pipes.index (pipe_) < eligible)
         eligible--;
     pipes.erase (pipe_);
-
-    if (unlikely (terminating))
-        sink->unregister_term_ack ();
 }
 
 void zmq::dist_t::activated (pipe_t *pipe_)

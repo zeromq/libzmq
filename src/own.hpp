@@ -76,6 +76,9 @@ namespace zmq
         //  called more than once.
         void terminate ();
 
+        //  Returns true if the object is in process of termination.
+        bool is_terminating ();
+
         //  Derived object destroys own_t. There's no point in allowing
         //  others to invoke the destructor. At the same time, it has to be
         //  virtual so that generic own_t deallocation mechanism destroys

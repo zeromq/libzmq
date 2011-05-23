@@ -25,8 +25,7 @@
 
 zmq::pair_t::pair_t (class ctx_t *parent_, uint32_t tid_) :
     socket_base_t (parent_, tid_),
-    pipe (NULL),
-    terminating (false)
+    pipe (NULL)
 {
     options.type = ZMQ_PAIR;
 }
@@ -39,44 +38,22 @@ zmq::pair_t::~pair_t ()
 void zmq::pair_t::xattach_pipe (pipe_t *pipe_, const blob_t &peer_identity_)
 {
     zmq_assert (!pipe);
-
     pipe = pipe_;
-    pipe->set_event_sink (this);
-
-    if (terminating) {
-        register_term_acks (1);
-        pipe_->terminate ();
-    }
 }
 
-void zmq::pair_t::terminated (pipe_t *pipe_)
+void zmq::pair_t::xterminated (pipe_t *pipe_)
 {
     zmq_assert (pipe_ == pipe);
     pipe = NULL;
-
-    if (terminating)
-        unregister_term_ack ();
 }
 
-void zmq::pair_t::process_term (int linger_)
-{
-    terminating = true;
-
-    if (pipe) {
-        register_term_acks (1);
-        pipe->terminate ();
-    }
-
-    socket_base_t::process_term (linger_);
-}
-
-void zmq::pair_t::read_activated (pipe_t *pipe_)
+void zmq::pair_t::xread_activated (pipe_t *pipe_)
 {
     //  There's just one pipe. No lists of active and inactive pipes.
     //  There's nothing to do here.
 }
 
-void zmq::pair_t::write_activated (pipe_t *pipe_)
+void zmq::pair_t::xwrite_activated (pipe_t *pipe_)
 {
     //  There's just one pipe. No lists of active and inactive pipes.
     //  There's nothing to do here.

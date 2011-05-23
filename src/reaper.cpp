@@ -87,7 +87,7 @@ void zmq::reaper_t::process_stop ()
 {
     terminating = true;
 
-    //  If there are no sockets beig reaped finish immediately.
+    //  If there are no sockets being reaped finish immediately.
     if (!sockets) {
         send_done ();
         poller->rm_fd (mailbox_handle);
@@ -99,10 +99,6 @@ void zmq::reaper_t::process_reap (socket_base_t *socket_)
 {
     //  Add the socket to the poller.
     socket_->start_reaping (poller);
-
-    //  Start termination of associated I/O object hierarchy.
-    socket_->terminate ();
-    socket_->check_destroy ();
 
     ++sockets;
 }

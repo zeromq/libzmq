@@ -37,7 +37,7 @@ namespace zmq
 
         int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
         int xsend (class msg_t *msg_, int options_);
-	bool xhas_out ();
+        bool xhas_out ();
 
     private:
 

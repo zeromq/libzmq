@@ -35,16 +35,15 @@ namespace zmq
     {
     public:
 
-        dist_t (class own_t *sink_);
+        dist_t ();
         ~dist_t ();
 
         void attach (class pipe_t *pipe_);
-        void terminate ();
-        int send (class msg_t *msg_, int flags_);
-        bool has_out ();
-
         void activated (class pipe_t *pipe_);
         void terminated (class pipe_t *pipe_);
+
+        int send (class msg_t *msg_, int flags_);
+        bool has_out ();
 
     private:
 
@@ -73,12 +72,6 @@ namespace zmq
 
         //  True if last we are in the middle of a multipart message.
         bool more;
-
-        //  Object to send events to.
-        class own_t *sink;
-
-        //  If true, termination process is already underway.
-        bool terminating;
 
         dist_t (const dist_t&);
         const dist_t &operator = (const dist_t&);

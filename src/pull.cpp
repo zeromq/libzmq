@@ -21,10 +21,10 @@
 #include "pull.hpp"
 #include "err.hpp"
 #include "msg.hpp"
+#include "pipe.hpp"
 
 zmq::pull_t::pull_t (class ctx_t *parent_, uint32_t tid_) :
-    socket_base_t (parent_, tid_),
-    fq (this)
+    socket_base_t (parent_, tid_)
 {
     options.type = ZMQ_PULL;
 }
@@ -36,30 +36,17 @@ zmq::pull_t::~pull_t ()
 void zmq::pull_t::xattach_pipe (pipe_t *pipe_, const blob_t &peer_identity_)
 {
     zmq_assert (pipe_);
-    pipe_->set_event_sink (this);
     fq.attach (pipe_);
 }
 
-void zmq::pull_t::read_activated (pipe_t *pipe_)
+void zmq::pull_t::xread_activated (pipe_t *pipe_)
 {
     fq.activated (pipe_);
 }
 
-void zmq::pull_t::write_activated (pipe_t *pipe_)
-{
-    //  There are no outbound messages in pull socket. This should never happen.
-    zmq_assert (false);
-}
-
-void zmq::pull_t::terminated (pipe_t *pipe_)
+void zmq::pull_t::xterminated (pipe_t *pipe_)
 {
     fq.terminated (pipe_);
-}
-
-void zmq::pull_t::process_term (int linger_)
-{
-    fq.terminate ();
-    socket_base_t::process_term (linger_);
 }
 
 int zmq::pull_t::xrecv (msg_t *msg_, int flags_)

@@ -22,15 +22,13 @@
 #define __ZMQ_PUSH_HPP_INCLUDED__
 
 #include "socket_base.hpp"
-#include "pipe.hpp"
 #include "lb.hpp"
 
 namespace zmq
 {
 
     class push_t :
-        public socket_base_t,
-        public i_pipe_events
+        public socket_base_t
     {
     public:
 
@@ -43,16 +41,10 @@ namespace zmq
         void xattach_pipe (class pipe_t *pipe_, const blob_t &peer_identity_);
         int xsend (class msg_t *msg_, int flags_);
         bool xhas_out ();
+        void xwrite_activated (class pipe_t *pipe_);
+        void xterminated (class pipe_t *pipe_);
 
     private:
-
-        //  i_pipe_events interface implementation.
-        void read_activated (pipe_t *pipe_);
-        void write_activated (pipe_t *pipe_);
-        void terminated (pipe_t *pipe_);
-
-        //  Hook into the termination process.
-        void process_term (int linger_);
 
         //  Load balancer managing the outbound pipes.
         lb_t lb;

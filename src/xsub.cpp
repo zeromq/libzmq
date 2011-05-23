@@ -25,7 +25,6 @@
 
 zmq::xsub_t::xsub_t (class ctx_t *parent_, uint32_t tid_) :
     socket_base_t (parent_, tid_),
-    fq (this),
     has_message (false),
     more (false)
 {
@@ -43,30 +42,17 @@ zmq::xsub_t::~xsub_t ()
 void zmq::xsub_t::xattach_pipe (pipe_t *pipe_, const blob_t &peer_identity_)
 {
     zmq_assert (pipe_);
-    pipe_->set_event_sink (this);
     fq.attach (pipe_);
 }
 
-void zmq::xsub_t::read_activated (pipe_t *pipe_)
+void zmq::xsub_t::xread_activated (pipe_t *pipe_)
 {
     fq.activated (pipe_);
 }
 
-void zmq::xsub_t::write_activated (pipe_t *pipe_)
-{
-    //  SUB socket never sends messages. This should never happen.
-    zmq_assert (false);
-}
-
-void zmq::xsub_t::terminated (pipe_t *pipe_)
+void zmq::xsub_t::xterminated (pipe_t *pipe_)
 {
     fq.terminated (pipe_);
-}
-
-void zmq::xsub_t::process_term (int linger_)
-{
-    fq.terminate ();
-    socket_base_t::process_term (linger_);
 }
 
 int zmq::xsub_t::xsend (msg_t *msg_, int options_)
