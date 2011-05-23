@@ -27,19 +27,17 @@
 namespace zmq
 {
 
-    //  Base class for objects stored in the array. Note that each object can
-    //  be stored in at most two arrays. This is needed specifically in the
-    //  case where single pipe object is stored both in array of inbound pipes
-    //  and in the array of outbound pipes.
+    //  Base class for objects stored in the array. If you want to store
+    //  same object in mutliple arrays, each of those arrays has to have
+    //  different ID. The item itself has to be derived from instantiations of
+    //  array_item_t template for all relevant IDs.
 
-    class array_item_t
+    template <int ID = 0> class array_item_t
     {
     public:
 
         inline array_item_t () :
-            array_index1 (-1),
-            array_index2 (-1),
-            array_index3 (-1)
+            array_index (-1)
         {
         }
 
@@ -49,41 +47,19 @@ namespace zmq
         {
         }
 
-        inline void set_array_index1 (int index_)
+        inline void set_array_index (int index_)
         {
-            array_index1 = index_;
+            array_index = index_;
         }
 
-        inline int get_array_index1 ()
+        inline int get_array_index ()
         {
-            return array_index1;
-        }
-
-        inline void set_array_index2 (int index_)
-        {
-            array_index2 = index_;
-        }
-
-        inline int get_array_index2 ()
-        {
-            return array_index2;
-        }
-
-        inline void set_array_index3 (int index_)
-        {
-            array_index3 = index_;
-        }
-
-        inline int get_array_index3 ()
-        {
-            return array_index3;
+            return array_index;
         }
 
     private:
 
-        int array_index1;
-        int array_index2;
-        int array_index3;
+        int array_index;
 
         array_item_t (const array_item_t&);
         const array_item_t &operator = (const array_item_t&);
@@ -91,12 +67,14 @@ namespace zmq
 
     //  Fast array implementation with O(1) access to item, insertion and
     //  removal. Array stores pointers rather than objects. The objects have
-    //  to be derived from array_item_t class, thus they can be stored in
-    //  two arrays. Template parameter N specifies which index in array_item_t
-    //  to use.
+    //  to be derived from array_item_t<ID> class.
 
-    template <typename T, int N = 1> class array_t
+    template <typename T, int ID = 0> class array_t
     {
+    private:
+
+        typedef array_item_t <ID> item_t;
+
     public:
 
         typedef typename std::vector <T*>::size_type size_type;
@@ -126,60 +104,28 @@ namespace zmq
 
         inline void push_back (T *item_)
         {
-            if (item_) {
-                if (N == 1)
-                    item_->set_array_index1 ((int) items.size ());
-                else if (N == 2)
-                    item_->set_array_index2 ((int) items.size ());
-                else
-                    item_->set_array_index3 ((int) items.size ());
-            }
+            if (item_)
+                ((item_t*) item_)->set_array_index ((int) items.size ());
             items.push_back (item_);
         }
 
-        inline void erase (T *item_)
-        {
-            if (N == 1)
-                erase (item_->get_array_index1 ());
-            else if (N == 2)
-                erase (item_->get_array_index2 ());
-            else
-                erase (item_->get_array_index3 ());
+        inline void erase (T *item_) {
+            erase (((item_t*) item_)->get_array_index ());
         }
 
         inline void erase (size_type index_) {
-            if (items.back ()) {
-                if (N == 1)
-                    items.back ()->set_array_index1 ((int) index_);
-                else if (N == 2)
-                    items.back ()->set_array_index2 ((int) index_);
-                else
-                    items.back ()->set_array_index3 ((int) index_);
-            }
+            if (items.back ())
+                ((item_t*) items.back ())->set_array_index ((int) index_);
             items [index_] = items.back ();
             items.pop_back ();
         }
 
         inline void swap (size_type index1_, size_type index2_)
         {
-            if (N == 1) {
-		        if (items [index1_])
-		            items [index1_]->set_array_index1 ((int) index2_);
-		        if (items [index2_])
-		            items [index2_]->set_array_index1 ((int) index1_);
-            }
-            else if (N == 2) {
-		        if (items [index1_])
-		            items [index1_]->set_array_index2 ((int) index2_);
-		        if (items [index2_])
-		            items [index2_]->set_array_index2 ((int) index1_);
-            }
-            else {
-		        if (items [index1_])
-		            items [index1_]->set_array_index3 ((int) index2_);
-		        if (items [index2_])
-		            items [index2_]->set_array_index3 ((int) index1_);
-            }
+            if (items [index1_])
+                ((item_t*) items [index1_])->set_array_index ((int) index2_);
+            if (items [index2_])
+                ((item_t*) items [index2_])->set_array_index ((int) index1_);
             std::swap (items [index1_], items [index2_]);
         }
 
@@ -190,12 +136,7 @@ namespace zmq
 
         inline size_type index (T *item_)
         {
-            if (N == 1)
-                return (size_type) item_->get_array_index1 ();
-            else if (N == 2)
-                return (size_type) item_->get_array_index2 ();
-            else
-                return (size_type) item_->get_array_index3 ();
+            return (size_type) ((item_t*) item_)->get_array_index ();
         }
 
     private:
@@ -210,3 +151,4 @@ namespace zmq
 }
 
 #endif
+

@@ -47,9 +47,15 @@ namespace zmq
         virtual void terminated (class pipe_t *pipe_) = 0;
     };
 
+    //  Note that pipe can be stored in three different arrays.
+    //  The array of inbound pipes (1), the array of outbound pipes (2) and
+    //  the generic array of pipes to deallocate (3).
+
     class pipe_t :
         public object_t,
-        public array_item_t
+        public array_item_t <1>,
+        public array_item_t <2>,
+        public array_item_t <3>
     {
         //  This allows pipepair to create pipe objects.
         friend int pipepair (class object_t *parents_ [2],

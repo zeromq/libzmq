@@ -42,7 +42,7 @@ namespace zmq
 
     class socket_base_t :
         public own_t,
-        public array_item_t,
+        public array_item_t <>,
         public i_poll_events,
         public i_pipe_events
     {
