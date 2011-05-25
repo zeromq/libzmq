@@ -99,6 +99,9 @@ namespace zmq
         void process_pipe_term ();
         void process_pipe_term_ack ();
 
+        //  Handler for delimiter read from the pipe.
+        void delimit ();
+
         //  Type of the underlying lock-free pipe.
         typedef ypipe_t <msg_t, message_pipe_granularity> upipe_t;
 
@@ -142,15 +145,23 @@ namespace zmq
         //  Sink to send events to.
         i_pipe_events *sink;
 
-        //  True is 'terminate' method was called or termination request
-        //  was received from the peer.
-        bool terminating;
-
-        //  True is we've already got pipe_term command from the peer.
-        bool term_recvd;
-
-        //  True if delimiter was already received from the peer.
-        bool delimited;
+        //  State of the pipe endpoint. Active is common state before any
+        //  termination begins. Delimited means that delimiter was read from
+        //  pipe before term command was received. Pending means that term
+        //  command was already received from the peer but there are still
+        //  pending messages to read. Terminating means that all pending
+        //  messages were already read and all we are waiting for is ack from
+        //  the peer. Terminated means that 'terminate' was explicitly called
+        //  by the user. Double_terminated means that user called 'terminate'
+        //  and then we've got term command from the peer as well.
+        enum {
+            active,
+            delimited,
+            pending,
+            terminating,
+            terminated,
+            double_terminated
+        } state;
 
         //  If true, we receive all the pending inbound messages before
         //  terminating. If false, we terminate immediately when the peer

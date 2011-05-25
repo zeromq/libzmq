@@ -450,8 +450,8 @@ int zmq::socket_base_t::connect (const char *addr_)
         //  Attach local end of the pipe to the socket object.
         attach_pipe (pipes [0], blob_t ());
 
-        //  Attach remote end of the pipe to the session object.
-        session->attach_pipe (pipes [1], blob_t ());
+        //  Attach remote end of the pipe to the session object later on.
+        session->attach_pipe (pipes [1]);
     }
 
     //  Activate the session. Make it a child of this socket.

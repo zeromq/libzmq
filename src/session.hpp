@@ -41,6 +41,9 @@ namespace zmq
         session_t (class io_thread_t *io_thread_,
             class socket_base_t *socket_, const options_t &options_);
 
+        //  To be used once only, when creating the session.
+        void attach_pipe (class pipe_t *pipe_);
+
         //  i_inout interface implementation. Note that detach method is not
         //  implemented by generic session. Different session types may handle
         //  engine disconnection in different ways.
@@ -48,8 +51,6 @@ namespace zmq
         bool write (msg_t *msg_);
         void flush ();
         void detach ();
-
-        void attach_pipe (class pipe_t *pipe_, const blob_t &peer_identity_);
 
         //  i_pipe_events interface implementation.
         void read_activated (class pipe_t *pipe_);
@@ -59,7 +60,7 @@ namespace zmq
     protected:
 
         //  This function allows to shut down the session even though
-        //  there are pending messages in the inbound pipe.
+        //  there are messages pending.
         void terminate ();
 
         //  Two events for the derived session type. Attached is triggered
@@ -104,6 +105,10 @@ namespace zmq
         //  is still in the in pipe.
         bool incomplete_in;
 
+        //  If true the termination process is already underway, ie. term ack
+        //  for the pipe was already registered etc.
+        bool terminating;
+
         //  The protocol I/O engine connected to the session.
         struct i_engine *engine;
 
@@ -114,27 +119,11 @@ namespace zmq
         //  the engines into the same thread.
         class io_thread_t *io_thread;
 
-        //  If true, pipe was already attached to this session.
-        bool pipe_attached;
-
-        //  If true, delimiter was already read from the inbound pipe.
-        bool delimiter_processed;
-
-        //  If true, we should terminate the session even though there are
-        //  pending messages in the inbound pipe.
-        bool force_terminate;
-
         //  ID of the linger timer
         enum {linger_timer_id = 0x20};
 
         //  True is linger timer is running.
         bool has_linger_timer;
-
-        enum {
-            active,
-            pending,
-            terminating
-        } state;
 
         session_t (const session_t&);
         const session_t &operator = (const session_t&);
