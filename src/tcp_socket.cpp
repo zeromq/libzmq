@@ -213,7 +213,7 @@ int zmq::tcp_socket_t::read (void *data_, size_t size_)
 
     errno_assert (nbytes != -1);
 
-    //  Orderly shutdown by the other peer.
+    //  Orderly shutdown by the peer.
     if (nbytes == 0)
         return -1;
 

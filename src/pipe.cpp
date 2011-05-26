@@ -216,11 +216,12 @@ void zmq::pipe_t::process_pipe_term ()
         if (!delay) {
             state = terminating;
             send_pipe_term_ack (peer);
+            return;
         }
         else {
             state = pending;
+            return;
         }
-        return;
     }
 
     //  Delimiter happened to arrive before the term command. Now we have the

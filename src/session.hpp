@@ -59,10 +59,6 @@ namespace zmq
 
     protected:
 
-        //  This function allows to shut down the session even though
-        //  there are messages pending.
-        void terminate ();
-
         //  Two events for the derived session type. Attached is triggered
         //  when session is attached to a peer. The function can reject the new
         //  peer by returning false. Detached is triggered at the beginning of
@@ -105,9 +101,9 @@ namespace zmq
         //  is still in the in pipe.
         bool incomplete_in;
 
-        //  If true the termination process is already underway, ie. term ack
-        //  for the pipe was already registered etc.
-        bool terminating;
+        //  True if termination have been suspended to push the pending
+        //  messages to the network.
+        bool pending;
 
         //  The protocol I/O engine connected to the session.
         struct i_engine *engine;
