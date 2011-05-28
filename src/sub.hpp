@@ -22,6 +22,8 @@
 #define __ZMQ_SUB_HPP_INCLUDED__
 
 #include "xsub.hpp"
+#include "trie.hpp"
+#include "msg.hpp"
 
 namespace zmq
 {
@@ -38,8 +40,25 @@ namespace zmq
         int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
         int xsend (class msg_t *msg_, int options_);
         bool xhas_out ();
+        int xrecv (class msg_t *msg_, int flags_);
+        bool xhas_in ();
 
     private:
+
+        //  Check whether the message matches at least one subscription.
+        bool match (class msg_t *msg_);
+
+        //  The repository of subscriptions.
+        trie_t subscriptions;
+
+        //  If true, 'message' contains a matching message to return on the
+        //  next recv call.
+        bool has_message;
+        msg_t message;
+
+        //  If true, part of a multipart message was already received, but
+        //  there are following parts still waiting.
+        bool more;
 
         sub_t (const sub_t&);
         const sub_t &operator = (const sub_t&);

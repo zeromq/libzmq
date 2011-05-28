@@ -21,9 +21,7 @@
 #ifndef __ZMQ_XSUB_HPP_INCLUDED__
 #define __ZMQ_XSUB_HPP_INCLUDED__
 
-#include "trie.hpp"
 #include "socket_base.hpp"
-#include "msg.hpp"
 #include "fq.hpp"
 
 namespace zmq
@@ -50,23 +48,8 @@ namespace zmq
 
     private:
 
-        //  Check whether the message matches at least one subscription.
-        bool match (class msg_t *msg_);
-
         //  Fair queueing object for inbound pipes.
         fq_t fq;
-
-        //  The repository of subscriptions.
-        trie_t subscriptions;
-
-        //  If true, 'message' contains a matching message to return on the
-        //  next recv call.
-        bool has_message;
-        msg_t message;
-
-        //  If true, part of a multipart message was already received, but
-        //  there are following parts still waiting.
-        bool more;
 
         xsub_t (const xsub_t&);
         const xsub_t &operator = (const xsub_t&);
