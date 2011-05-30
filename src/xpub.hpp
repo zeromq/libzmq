@@ -21,9 +21,14 @@
 #ifndef __ZMQ_XPUB_HPP_INCLUDED__
 #define __ZMQ_XPUB_HPP_INCLUDED__
 
+#include <deque>
+
 #include "socket_base.hpp"
+#include "mtrie.hpp"
 #include "array.hpp"
+#include "blob.hpp"
 #include "dist.hpp"
+#include "fq.hpp"
 
 namespace zmq
 {
@@ -42,13 +47,34 @@ namespace zmq
         bool xhas_out ();
         int xrecv (class msg_t *msg_, int flags_);
         bool xhas_in ();
+        void xread_activated (class pipe_t *pipe_);
         void xwrite_activated (class pipe_t *pipe_);
         void xterminated (class pipe_t *pipe_);
 
     private:
 
+        //  Applies the subscription to the trie. Return false if it is a
+        //  duplicate.
+        bool apply_subscription (class msg_t *sub_, class pipe_t *pipe_);
+
+        //  Function to be applied to the trie to send all the subsciptions
+        //  upstream.
+        static void send_unsubscription (unsigned char *data_, size_t size_,
+            void *arg_);
+
+        //  List of all subscriptions mapped to corresponding pipes.
+        mtrie_t subscriptions;
+
         //  Distributor of messages holding the list of outbound pipes.
         dist_t dist;
+
+        //  Object to fair-queue the subscription requests.
+        fq_t fq;
+
+        //  List of pending (un)subscriptions, ie. those that were already
+        //  applied to the trie, but not yet received by the user.
+        typedef std::deque <blob_t> pending_t;
+        pending_t pending;
 
         xpub_t (const xpub_t&);
         const xpub_t &operator = (const xpub_t&);

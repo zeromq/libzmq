@@ -30,3 +30,16 @@ zmq::pub_t::pub_t (class ctx_t *parent_, uint32_t tid_) :
 zmq::pub_t::~pub_t ()
 {
 }
+
+int zmq::pub_t::xrecv (class msg_t *msg_, int flags_)
+{
+    //  Messages cannot be received from PUB socket.
+    errno = ENOTSUP;
+    return -1;
+}
+
+bool zmq::pub_t::xhas_in ()
+{
+    return false;
+}
+

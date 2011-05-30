@@ -96,6 +96,7 @@ namespace zmq
         //  i_pipe_events interface implementation.
         void read_activated (pipe_t *pipe_);
         void write_activated (pipe_t *pipe_);
+        void hiccuped (pipe_t *pipe_);
         void terminated (pipe_t *pipe_);
 
     protected:
@@ -116,15 +117,16 @@ namespace zmq
 
         //  The default implementation assumes that send is not supported.
         virtual bool xhas_out ();
-        virtual int xsend (class msg_t *msg_, int options_);
+        virtual int xsend (class msg_t *msg_, int flags_);
 
         //  The default implementation assumes that recv in not supported.
         virtual bool xhas_in ();
-        virtual int xrecv (class msg_t *msg_, int options_);
+        virtual int xrecv (class msg_t *msg_, int flags_);
 
         //  i_pipe_events will be forwarded to these functions.
         virtual void xread_activated (pipe_t *pipe_);
         virtual void xwrite_activated (pipe_t *pipe_);
+        virtual void xhiccuped (pipe_t *pipe_);
         virtual void xterminated (pipe_t *pipe_) = 0;
 
         //  Delay actual destruction of the socket.

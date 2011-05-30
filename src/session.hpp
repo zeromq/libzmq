@@ -44,9 +44,7 @@ namespace zmq
         //  To be used once only, when creating the session.
         void attach_pipe (class pipe_t *pipe_);
 
-        //  i_inout interface implementation. Note that detach method is not
-        //  implemented by generic session. Different session types may handle
-        //  engine disconnection in different ways.
+        //  i_inout interface implementation.
         bool read (msg_t *msg_);
         bool write (msg_t *msg_);
         void flush ();
@@ -55,17 +53,19 @@ namespace zmq
         //  i_pipe_events interface implementation.
         void read_activated (class pipe_t *pipe_);
         void write_activated (class pipe_t *pipe_);
+        void hiccuped (class pipe_t *pipe_);
         void terminated (class pipe_t *pipe_);
 
     protected:
 
-        //  Two events for the derived session type. Attached is triggered
-        //  when session is attached to a peer. The function can reject the new
-        //  peer by returning false. Detached is triggered at the beginning of
+        //  Events from the engine. Attached is triggered when session is
+        //  attached to a peer. The function can reject the new peer by
+        //  returning false. Detached is triggered at the beginning of
         //  the termination process when session is about to be detached from
-        //  the peer.
-        virtual bool attached (const blob_t &peer_identity_) = 0;
-        virtual void detached () = 0;
+        //  the peer. If it returns false, session will be terminated.
+        //  To be overloaded by the derived session type.
+        virtual bool xattached (const blob_t &peer_identity_) = 0;
+        virtual bool xdetached () = 0;
 
         //  Returns true if there is an engine attached to the session.
         bool has_engine ();
@@ -77,6 +77,9 @@ namespace zmq
         ~session_t ();
 
     private:
+
+        bool attached (const blob_t &peer_identity_);
+        void detached ();
 
         //  Handlers for incoming commands.
         void process_plug ();

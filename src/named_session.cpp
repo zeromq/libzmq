@@ -45,7 +45,7 @@ zmq::named_session_t::~named_session_t ()
     unregister_session (peer_identity);
 }
 
-bool zmq::named_session_t::attached (const blob_t &peer_identity_)
+bool zmq::named_session_t::xattached (const blob_t &peer_identity_)
 {
     //  Double check that identities match.
     zmq_assert (peer_identity == peer_identity_);
@@ -58,9 +58,10 @@ bool zmq::named_session_t::attached (const blob_t &peer_identity_)
     return true;
 }
 
-void zmq::named_session_t::detached ()
+bool zmq::named_session_t::xdetached ()
 {
     //  Do nothing. Named sessions are never destroyed because of disconnection.
     //  Neither they have to actively reconnect.
+    return true;
 }
 

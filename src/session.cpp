@@ -146,6 +146,13 @@ void zmq::session_t::write_activated (pipe_t *pipe_)
         engine->activate_in ();
 }
 
+void zmq::session_t::hiccuped (pipe_t *pipe_)
+{
+    //  Hiccups are always sent from session to socket, not the other
+    //  way round.
+    zmq_assert (false);
+}
+
 void zmq::session_t::process_plug ()
 {
 }
@@ -286,5 +293,26 @@ void zmq::session_t::unregister_session (const blob_t &name_)
 {
     socket->unregister_session (name_);
 }
+
+bool zmq::session_t::attached (const blob_t &peer_identity_)
+{
+    return xattached (peer_identity_);
+}
+
+void zmq::session_t::detached ()
+{
+    if (!xdetached ()) {
+
+        //  Derived session type have asked for session termination.
+        terminate ();
+        return;
+    }
+
+    //  For subscriber sockets we hiccup the inbound pipe, which will cause
+    //  the socket object to resend all the subscriptions.
+    if (pipe && (options.type == ZMQ_SUB || options.type == ZMQ_XSUB))
+        pipe->hiccup ();  
+}
+
 
 

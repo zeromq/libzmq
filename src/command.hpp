@@ -42,6 +42,7 @@ namespace zmq
             bind,
             activate_read,
             activate_write,
+            hiccup,
             pipe_term,
             pipe_term_ack,
             term_req,
@@ -94,6 +95,13 @@ namespace zmq
             struct {
                 uint64_t msgs_read;
             } activate_write;
+
+            //  Sent by pipe reader to writer after creating a new inpipe.
+            //  The parameter is actually of type pipe_t::upipe_t, however,
+            //  its definition is private so we'll have to do with void*.
+            struct {
+                void *pipe;
+            } hiccup;
 
             //  Sent by pipe reader to pipe writer to ask it to terminate
             //  its end of the pipe.

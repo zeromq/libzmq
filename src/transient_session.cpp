@@ -30,14 +30,14 @@ zmq::transient_session_t::~transient_session_t ()
 {
 }
 
-bool zmq::transient_session_t::attached (const blob_t &peer_identity_)
+bool zmq::transient_session_t::xattached (const blob_t &peer_identity_)
 {
     //  Transient session is always valid.
     return true;
 }
 
-void zmq::transient_session_t::detached ()
+bool zmq::transient_session_t::xdetached ()
 {
     //  There's no way to reestablish a transient session. Tear it down.
-    terminate ();
+    return false;
 }

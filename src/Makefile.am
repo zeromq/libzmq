@@ -34,6 +34,7 @@ libzmq_la_SOURCES = \
     likely.hpp \
     mailbox.hpp \
     msg.hpp \
+    mtrie.hpp \
     mutex.hpp \
     named_session.hpp \
     object.hpp \
@@ -97,6 +98,7 @@ libzmq_la_SOURCES = \
     lb.cpp \
     mailbox.cpp \
     msg.cpp \
+    mtrie.cpp \
     named_session.cpp \
     object.cpp \
     options.cpp \

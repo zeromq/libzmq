@@ -764,7 +764,7 @@ bool zmq::socket_base_t::xhas_out ()
     return false;
 }
 
-int zmq::socket_base_t::xsend (msg_t *msg_, int options_)
+int zmq::socket_base_t::xsend (msg_t *msg_, int flags_)
 {
     errno = ENOTSUP;
     return -1;
@@ -775,7 +775,7 @@ bool zmq::socket_base_t::xhas_in ()
     return false;
 }
 
-int zmq::socket_base_t::xrecv (msg_t *msg_, int options_)
+int zmq::socket_base_t::xrecv (msg_t *msg_, int flags_)
 {
     errno = ENOTSUP;
     return -1;
@@ -786,6 +786,11 @@ void zmq::socket_base_t::xread_activated (pipe_t *pipe_)
     zmq_assert (false);
 }
 void zmq::socket_base_t::xwrite_activated (pipe_t *pipe_)
+{
+    zmq_assert (false);
+}
+
+void zmq::socket_base_t::xhiccuped (pipe_t *pipe_)
 {
     zmq_assert (false);
 }
@@ -835,6 +840,11 @@ void zmq::socket_base_t::read_activated (pipe_t *pipe_)
 void zmq::socket_base_t::write_activated (pipe_t *pipe_)
 {
     xwrite_activated (pipe_);
+}
+
+void zmq::socket_base_t::hiccuped (pipe_t *pipe_)
+{
+    xhiccuped (pipe_);
 }
 
 void zmq::socket_base_t::terminated (pipe_t *pipe_)

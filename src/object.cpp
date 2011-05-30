@@ -74,7 +74,7 @@ void zmq::object_t::process_command (command_t &cmd_)
     case command_t::plug:
         process_plug ();
         process_seqnum ();
-        return;
+        break;
 
     case command_t::own:
         process_own (cmd_.args.own.object);
@@ -96,9 +96,13 @@ void zmq::object_t::process_command (command_t &cmd_)
         process_seqnum ();
         break;
 
+    case command_t::hiccup:
+        process_hiccup (cmd_.args.hiccup.pipe);
+        break;
+
     case command_t::pipe_term:
         process_pipe_term ();
-        return;
+        break;
 
     case command_t::pipe_term_ack:
         process_pipe_term_ack ();
@@ -290,6 +294,18 @@ void zmq::object_t::send_activate_write (pipe_t *destination_,
     send_command (cmd);
 }
 
+void zmq::object_t::send_hiccup (pipe_t *destination_, void *pipe_)
+{
+    command_t cmd;
+#if defined ZMQ_MAKE_VALGRIND_HAPPY
+    memset (&cmd, 0, sizeof (cmd));
+#endif
+    cmd.destination = destination_;
+    cmd.type = command_t::hiccup;
+    cmd.args.hiccup.pipe = pipe_;
+    send_command (cmd);
+}
+
 void zmq::object_t::send_pipe_term (pipe_t *destination_)
 {
     command_t cmd;
@@ -414,6 +430,11 @@ void zmq::object_t::process_activate_read ()
 }
 
 void zmq::object_t::process_activate_write (uint64_t msgs_read_)
+{
+    zmq_assert (false);
+}
+
+void zmq::object_t::process_hiccup (void *pipe_)
 {
     zmq_assert (false);
 }

@@ -29,8 +29,9 @@ namespace zmq
 {
 
     //  Class manages a set of inbound pipes. On receive it performs fair
-    //  queueing (RFC970) so that senders gone berserk won't cause denial of
+    //  queueing so that senders gone berserk won't cause denial of
     //  service for decent senders.
+
     class fq_t
     {
     public:
@@ -43,6 +44,7 @@ namespace zmq
         void terminated (pipe_t *pipe_);
 
         int recv (msg_t *msg_, int flags_);
+        int recvpipe (msg_t *msg_, int flags_, pipe_t **pipe_);
         bool has_in ();
 
     private:

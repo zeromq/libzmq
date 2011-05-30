@@ -44,8 +44,8 @@ namespace zmq
     private:
 
         //  Handlers for events from session base class.
-        bool attached (const blob_t &peer_identity_);
-        void detached ();
+        bool xattached (const blob_t &peer_identity_);
+        bool xdetached ();
 
         //  Start the connection process.
         void start_connecting (bool wait_);

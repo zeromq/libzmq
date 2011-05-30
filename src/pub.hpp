@@ -33,6 +33,10 @@ namespace zmq
         pub_t (class ctx_t *parent_, uint32_t tid_);
         ~pub_t ();
 
+        //  Implementations of virtual functions from socket_base_t.
+        int xrecv (class msg_t *msg_, int flags_);
+        bool xhas_in ();
+
     private:
 
         pub_t (const pub_t&);

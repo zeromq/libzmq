@@ -111,7 +111,7 @@ void zmq::connect_session_t::start_connecting (bool wait_)
     zmq_assert (false);
 }
 
-bool zmq::connect_session_t::attached (const blob_t &peer_identity_)
+bool zmq::connect_session_t::xattached (const blob_t &peer_identity_)
 {
     //  If there was no previous connection...
     if (!connected) {
@@ -153,9 +153,12 @@ bool zmq::connect_session_t::attached (const blob_t &peer_identity_)
     return true;
 }
 
-void zmq::connect_session_t::detached ()
+bool zmq::connect_session_t::xdetached ()
 {
     //  Reconnect.
     start_connecting (true);
+
+    //  Don't tear the session down.
+    return true;
 }
 

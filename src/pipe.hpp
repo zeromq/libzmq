@@ -44,6 +44,7 @@ namespace zmq
 
         virtual void read_activated (class pipe_t *pipe_) = 0;
         virtual void write_activated (class pipe_t *pipe_) = 0;
+        virtual void hiccuped (class pipe_t *pipe_) = 0;
         virtual void terminated (class pipe_t *pipe_) = 0;
     };
 
@@ -86,6 +87,11 @@ namespace zmq
         //  Flush the messages downsteam.
         void flush ();
 
+        //  Temporaraily disconnects the inbound message stream and drops
+        //  all the messages on the fly. Causes 'hiccuped' event to be generated
+        //  in the peer.
+        void hiccup ();
+
         //  Ask pipe to terminate. The termination will happen asynchronously
         //  and user will be notified about actual deallocation by 'terminated'
         //  event.
@@ -93,17 +99,18 @@ namespace zmq
 
     private:
 
+        //  Type of the underlying lock-free pipe.
+        typedef ypipe_t <msg_t, message_pipe_granularity> upipe_t;
+
         //  Command handlers.
         void process_activate_read ();
         void process_activate_write (uint64_t msgs_read_);
+        void process_hiccup (void *pipe_);
         void process_pipe_term ();
         void process_pipe_term_ack ();
 
         //  Handler for delimiter read from the pipe.
         void delimit ();
-
-        //  Type of the underlying lock-free pipe.
-        typedef ypipe_t <msg_t, message_pipe_granularity> upipe_t;
 
         //  Constructor is private. Pipe can only be created using
         //  pipepair function.

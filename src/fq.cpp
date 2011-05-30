@@ -63,6 +63,11 @@ void zmq::fq_t::activated (pipe_t *pipe_)
 
 int zmq::fq_t::recv (msg_t *msg_, int flags_)
 {
+    return recvpipe (msg_, flags_, NULL);
+}
+
+int zmq::fq_t::recvpipe (msg_t *msg_, int flags_, pipe_t **pipe_)
+{
     //  Deallocate old content of the message.
     int rc = msg_->close ();
     errno_assert (rc == 0);
@@ -83,6 +88,8 @@ int zmq::fq_t::recv (msg_t *msg_, int flags_)
         //  and replaced by another active pipe. Thus we don't have to increase
         //  the 'current' pointer.
         if (fetched) {
+            if (pipe_)
+                *pipe_ = pipes [current];
             more = msg_->flags () & msg_t::more;
             if (!more) {
                 current++;
