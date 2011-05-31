@@ -228,13 +228,6 @@ void zmq::session_t::process_term (int linger_)
         return;
     }
 
-    //  If linger is set to zero, we can ask pipe to terminate without
-    //  waiting for pending messages to be read.
-    if (linger_ == 0) {
-        proceed_with_term ();
-        return;
-    }
-
     pending = true;
 
     //  If there's finite linger value, delay the termination.
@@ -246,6 +239,11 @@ void zmq::session_t::process_term (int linger_)
         has_linger_timer = true;
     }
 
+    //  Start pipe termination process. Delay the termination till all messages
+    //  are processed in case the linger time is non-zero.
+    pipe->terminate (linger_ != 0);
+
+    //  TODO: Should this go into pipe_t::terminate ?
     //  In case there's no engine and there's only delimiter in the
     //  pipe it wouldn't be ever read. Thus we check for it explicitly.
     pipe->check_read ();
@@ -255,13 +253,6 @@ void zmq::session_t::proceed_with_term ()
 {
     //  The pending phase have just ended.
     pending = false;
-
-    //  If there's pipe attached to the session, we have to wait till it
-    //  terminates.
-    if (pipe) {
-        register_term_acks (1);
-        pipe->terminate ();
-    }
 
     //  Continue with standard termination.
     own_t::process_term (0);
@@ -276,7 +267,7 @@ void zmq::session_t::timer_event (int id_)
 
     //  Ask pipe to terminate even though there may be pending messages in it.
     zmq_assert (pipe);
-    proceed_with_term ();
+    pipe->terminate (false);
 }
 
 bool zmq::session_t::has_engine ()

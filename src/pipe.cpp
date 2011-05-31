@@ -301,8 +301,11 @@ void zmq::pipe_t::process_pipe_term_ack ()
     delete this;
 }
 
-void zmq::pipe_t::terminate ()
+void zmq::pipe_t::terminate (bool delay_)
 {
+    //  Overload the value specified at pipe creation.
+    delay = delay_;
+
     //  If terminate was already called, we can ignore the duplicit invocation.
     if (state == terminated || state == double_terminated)
         return;
@@ -321,9 +324,13 @@ void zmq::pipe_t::terminate ()
 
     //  There are still pending messages available, but the user calls
     //  'terminate'. We can act as if all the pending messages were read.
-    else if (state == pending) {
-        send_pipe_term_ack (peer);
-        state = terminating;
+    else if (state == pending && !delay) {
+            send_pipe_term_ack (peer);
+            state = terminating;
+    }
+
+    //  If there are pending messages still availabe, do nothing.
+    else if (state == pending && delay) {
     }
 
     //  We've already got delimiter, but not term command yet. We can ignore
@@ -338,8 +345,7 @@ void zmq::pipe_t::terminate ()
     else
         zmq_assert (false);
 
-    //  Stop inbound and outbound flow of messages.
-    in_active = false;
+    //  Stop outbound flow of messages.
     out_active = false;
 
     //  Rollback any unfinished outbound messages.

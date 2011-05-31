@@ -94,8 +94,9 @@ namespace zmq
 
         //  Ask pipe to terminate. The termination will happen asynchronously
         //  and user will be notified about actual deallocation by 'terminated'
-        //  event.
-        void terminate ();
+        //  event. If delay is true, the pending messages will be processed
+        //  before actual shutdown.
+        void terminate (bool delay_);
 
     private:
 
