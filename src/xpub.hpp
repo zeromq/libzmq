@@ -28,7 +28,6 @@
 #include "array.hpp"
 #include "blob.hpp"
 #include "dist.hpp"
-#include "fq.hpp"
 
 namespace zmq
 {
@@ -53,10 +52,6 @@ namespace zmq
 
     private:
 
-        //  Applies the subscription to the trie. Return false if it is a
-        //  duplicate.
-        bool apply_subscription (class msg_t *sub_, class pipe_t *pipe_);
-
         //  Function to be applied to the trie to send all the subsciptions
         //  upstream.
         static void send_unsubscription (unsigned char *data_, size_t size_,
@@ -67,9 +62,6 @@ namespace zmq
 
         //  Distributor of messages holding the list of outbound pipes.
         dist_t dist;
-
-        //  Object to fair-queue the subscription requests.
-        fq_t fq;
 
         //  List of pending (un)subscriptions, ie. those that were already
         //  applied to the trie, but not yet received by the user.
