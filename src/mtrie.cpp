@@ -52,6 +52,12 @@ zmq::mtrie_t::~mtrie_t ()
 
 bool zmq::mtrie_t::add (unsigned char *prefix_, size_t size_, pipe_t *pipe_)
 {
+    return add_helper (prefix_, size_, pipe_);
+}
+
+bool zmq::mtrie_t::add_helper (unsigned char *prefix_, size_t size_,
+    pipe_t *pipe_)
+{
     //  We are at the node corresponding to the prefix. We are done.
     if (!size_) {
         bool result = pipes.empty ();
@@ -114,14 +120,14 @@ bool zmq::mtrie_t::add (unsigned char *prefix_, size_t size_, pipe_t *pipe_)
             next.node = new (std::nothrow) mtrie_t;
             zmq_assert (next.node);
         }
-        return next.node->add (prefix_ + 1, size_ - 1, pipe_);
+        return next.node->add_helper (prefix_ + 1, size_ - 1, pipe_);
     }
     else {
         if (!next.table [c - min]) {
             next.table [c - min] = new (std::nothrow) mtrie_t;
             zmq_assert (next.table [c - min]);
         }
-        return next.table [c - min]->add (prefix_ + 1, size_ - 1, pipe_);
+        return next.table [c - min]->add_helper (prefix_ + 1, size_ - 1, pipe_);
     }
 }
 
@@ -175,23 +181,29 @@ void zmq::mtrie_t::rm_helper (pipe_t *pipe_, unsigned char **buff_,
 
 bool zmq::mtrie_t::rm (unsigned char *prefix_, size_t size_, pipe_t *pipe_)
 {
-     if (!size_) {
-         pipes_t::size_type erased = pipes.erase (pipe_);
-         zmq_assert (erased == 1);
-         return pipes.empty ();
-     }
+    return rm_helper (prefix_, size_, pipe_);
+}
 
-     unsigned char c = *prefix_;
-     if (!count || c < min || c >= min + count)
-         return false;
+bool zmq::mtrie_t::rm_helper (unsigned char *prefix_, size_t size_,
+    pipe_t *pipe_)
+{
+    if (!size_) {
+        pipes_t::size_type erased = pipes.erase (pipe_);
+        zmq_assert (erased == 1);
+        return pipes.empty ();
+    }
 
-     mtrie_t *next_node =
-         count == 1 ? next.node : next.table [c - min];
+    unsigned char c = *prefix_;
+    if (!count || c < min || c >= min + count)
+        return false;
 
-     if (!next_node)
-         return false;
+    mtrie_t *next_node =
+        count == 1 ? next.node : next.table [c - min];
 
-     return next_node->rm (prefix_ + 1, size_ - 1, pipe_);
+    if (!next_node)
+        return false;
+
+    return next_node->rm_helper (prefix_ + 1, size_ - 1, pipe_);
 }
 
 void zmq::mtrie_t::match (unsigned char *data_, size_t size_, pipes_t &pipes_)

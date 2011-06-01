@@ -60,10 +60,14 @@ namespace zmq
 
     private:
 
+        bool add_helper (unsigned char *prefix_, size_t size_,
+            class pipe_t *pipe_);
         void rm_helper (class pipe_t *pipe_, unsigned char **buff_,
             size_t buffsize_, size_t maxbuffsize_,
             void (*func_) (unsigned char *data_, size_t size_, void *arg_),
             void *arg_);
+        bool rm_helper (unsigned char *prefix_, size_t size_,
+            class pipe_t *pipe_);
 
         pipes_t pipes;
         unsigned char min;
