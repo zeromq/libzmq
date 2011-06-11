@@ -91,9 +91,21 @@ void zmq::xpub_t::xterminated (pipe_t *pipe_)
     dist.terminated (pipe_);
 }
 
+void zmq::xpub_t::mark_as_matching (pipe_t *pipe_, void *arg_)
+{
+    xpub_t *self = (xpub_t*) arg_;
+    self->dist.match (pipe_);
+}
+
 int zmq::xpub_t::xsend (msg_t *msg_, int flags_)
-{    
-    return dist.send (msg_, flags_);
+{
+    //  Find the matching pipes.
+    subscriptions.match ((unsigned char*) msg_->data (), msg_->size (),
+        mark_as_matching, this);
+
+    //  Send the message to all the pipes that were marked as matching
+    //  in the previous step.
+    return dist.send_to_matching (msg_, flags_);
 }
 
 bool zmq::xpub_t::xhas_out ()

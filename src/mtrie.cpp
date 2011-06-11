@@ -206,10 +206,21 @@ bool zmq::mtrie_t::rm_helper (unsigned char *prefix_, size_t size_,
     return next_node->rm_helper (prefix_ + 1, size_ - 1, pipe_);
 }
 
-void zmq::mtrie_t::match (unsigned char *data_, size_t size_, pipes_t &pipes_)
+void zmq::mtrie_t::match (unsigned char *data_, size_t size_,
+    void (*func_) (pipe_t *pipe_, void *arg_), void *arg_)
 {
-    //  Merge the subscriptions from this node to the resultset.
-    pipes_.insert (pipes.begin (), pipes.end ());
+    match_helper (data_, size_, func_, arg_);
+}
+
+void zmq::mtrie_t::match_helper (unsigned char *data_, size_t size_,
+    void (*func_) (pipe_t *pipe_, void *arg_), void *arg_)
+{
+    //  TODO: This function is on critical path. Rewrite it as iteration
+    //  rather than recursion.
+
+    //  Signal the pipes attached to this node.
+    for (pipes_t::iterator it = pipes.begin (); it != pipes.end (); ++it)
+        func_ (*it, arg_);
 
     //  If there are no subnodes in the trie, return.
     if (count == 0)
@@ -217,14 +228,14 @@ void zmq::mtrie_t::match (unsigned char *data_, size_t size_, pipes_t &pipes_)
 
     //  If there's one subnode (optimisation).
     if (count == 1) {
-        next.node->match (data_ + 1, size_ - 1, pipes_);
+        next.node->match (data_ + 1, size_ - 1, func_, arg_);
         return;
     }
 
     //  If there are multiple subnodes.
     for (unsigned char c = 0; c != count; c++) {
         if (next.table [c])
-            next.table [c]->match (data_ + 1, size_ - 1, pipes_);
+            next.table [c]->match (data_ + 1, size_ - 1, func_, arg_);
     }   
 }
 

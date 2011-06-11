@@ -35,8 +35,6 @@ namespace zmq
     {
     public:
 
-        typedef std::set <class pipe_t*> pipes_t;
-
         mtrie_t ();
         ~mtrie_t ();
 
@@ -55,8 +53,9 @@ namespace zmq
         //  actually removed rather than de-duplicated.
         bool rm (unsigned char *prefix_, size_t size_, class pipe_t *pipe_);
 
-        //  Get all matching pipes.
-        void match (unsigned char *data_, size_t size_, pipes_t &pipes_);
+        //  Signal all the matching pipes.
+        void match (unsigned char *data_, size_t size_,
+            void (*func_) (class pipe_t *pipe_, void *arg_), void *arg_);
 
     private:
 
@@ -68,8 +67,12 @@ namespace zmq
             void *arg_);
         bool rm_helper (unsigned char *prefix_, size_t size_,
             class pipe_t *pipe_);
+        void match_helper (unsigned char *data_, size_t size_,
+            void (*func_) (class pipe_t *pipe_, void *arg_), void *arg_);
 
+        typedef std::set <class pipe_t*> pipes_t;
         pipes_t pipes;
+
         unsigned char min;
         unsigned short count;
         union {

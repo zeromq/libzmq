@@ -38,11 +38,26 @@ namespace zmq
         dist_t ();
         ~dist_t ();
 
+        //  Adds the pipe to the distributor object.
         void attach (class pipe_t *pipe_);
+
+        //  Activates pipe that have previously reached high watermark.
         void activated (class pipe_t *pipe_);
+
+        //  Mark the pipe as matching. Subsequent call to send_to_matching
+        //  will send message also to this pipe.
+        void match (class pipe_t *pipe_);
+
+        //  Removes the pipe from the distributor object.
         void terminated (class pipe_t *pipe_);
 
-        int send (class msg_t *msg_, int flags_);
+        //  Send the message to all the outbound pipes. After the call all the
+        //  pipes are marked as non-matching.
+        int send_to_matching (class msg_t *msg_, int flags_);
+
+        //  Send the message to the matching outbound pipes.
+        int send_to_all (class msg_t *msg_, int flags_);
+
         bool has_out ();
 
     private:
@@ -57,6 +72,9 @@ namespace zmq
         //  List of outbound pipes.
         typedef array_t <class pipe_t, 2> pipes_t;
         pipes_t pipes;
+
+        //  Number of all the pipes to send the next message to.
+        pipes_t::size_type matching;
 
         //  Number of active pipes. All the active pipes are located at the
         //  beginning of the pipes array. These are the pipes the messages

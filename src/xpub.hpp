@@ -57,6 +57,9 @@ namespace zmq
         static void send_unsubscription (unsigned char *data_, size_t size_,
             void *arg_);
 
+        //  Function to be applied to each matching pipes.
+        static void mark_as_matching (class pipe_t *pipe_, void *arg_);
+
         //  List of all subscriptions mapped to corresponding pipes.
         mtrie_t subscriptions;
 
