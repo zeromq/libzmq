@@ -26,7 +26,8 @@
 #include "msg.hpp"
 
 zmq::xpub_t::xpub_t (class ctx_t *parent_, uint32_t tid_) :
-    socket_base_t (parent_, tid_)
+    socket_base_t (parent_, tid_),
+    more (false)
 {
     options.type = ZMQ_XPUB;
 }
@@ -99,13 +100,27 @@ void zmq::xpub_t::mark_as_matching (pipe_t *pipe_, void *arg_)
 
 int zmq::xpub_t::xsend (msg_t *msg_, int flags_)
 {
-    //  Find the matching pipes.
-    subscriptions.match ((unsigned char*) msg_->data (), msg_->size (),
-        mark_as_matching, this);
+    bool msg_more = msg_->flags () & msg_t::more;
+
+    //  For the first part of multi-part message, find the matching pipes.
+    if (!more)
+        subscriptions.match ((unsigned char*) msg_->data (), msg_->size (),
+            mark_as_matching, this);
 
     //  Send the message to all the pipes that were marked as matching
     //  in the previous step.
-    return dist.send_to_matching (msg_, flags_);
+    int rc = dist.send_to_matching (msg_, flags_);
+    if (rc != 0)
+        return rc;
+
+    //  If we are at the end of multi-part message we can mark all the pipes
+    //  as non-matching.
+    if (!msg_more)
+        dist.unmatch ();
+
+    more = msg_more;
+
+    return 0;
 }
 
 bool zmq::xpub_t::xhas_out ()

@@ -70,6 +70,11 @@ void zmq::dist_t::match (pipe_t *pipe_)
     matching++;    
 }
 
+void zmq::dist_t::unmatch ()
+{
+    matching = 0;
+}
+
 void zmq::dist_t::terminated (pipe_t *pipe_)
 {
     //  Remove the pipe from the list; adjust number of matching, active and/or
@@ -114,9 +119,6 @@ int zmq::dist_t::send_to_matching (msg_t *msg_, int flags_)
     //  If mutlipart message is fully sent, activate all the eligible pipes.
     if (!msg_more)
         active = eligible;
-
-    //  Mark all the pipes as non-matching.
-    matching = 0;
 
     more = msg_more;
 

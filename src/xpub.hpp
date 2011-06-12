@@ -66,6 +66,9 @@ namespace zmq
         //  Distributor of messages holding the list of outbound pipes.
         dist_t dist;
 
+        //  True if we are in the middle of sending a multi-part message.
+        bool more;
+
         //  List of pending (un)subscriptions, ie. those that were already
         //  applied to the trie, but not yet received by the user.
         typedef std::deque <blob_t> pending_t;

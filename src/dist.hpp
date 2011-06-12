@@ -48,14 +48,16 @@ namespace zmq
         //  will send message also to this pipe.
         void match (class pipe_t *pipe_);
 
+        //  Mark all pipes as non-matching.
+        void unmatch ();
+
         //  Removes the pipe from the distributor object.
         void terminated (class pipe_t *pipe_);
 
-        //  Send the message to all the outbound pipes. After the call all the
-        //  pipes are marked as non-matching.
+        //  Send the message to the matching outbound pipes.
         int send_to_matching (class msg_t *msg_, int flags_);
 
-        //  Send the message to the matching outbound pipes.
+        //  Send the message to all the outbound pipes.
         int send_to_all (class msg_t *msg_, int flags_);
 
         bool has_out ();
