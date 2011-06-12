@@ -180,6 +180,7 @@ ZMQ_EXPORT int zmq_term (void *context);
 #define ZMQ_SNDHWM 23
 #define ZMQ_RCVHWM 24
 #define ZMQ_MULTICAST_HOPS 25
+#define ZMQ_FILTER 26
     
 /*  Send/recv options.                                                        */
 #define ZMQ_DONTWAIT 1

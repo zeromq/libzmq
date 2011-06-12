@@ -284,6 +284,7 @@ Option value unit:: connections
 Default value:: 100
 Applicable socket types:: all, only for connection-oriented transports.
 
+
 ZMQ_MAXMSGSIZE: Maximum acceptable inbound message size
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -295,6 +296,7 @@ Option value type:: int64_t
 Option value unit:: bytes
 Default value:: -1
 Applicable socket types:: all
+
 
 ZMQ_MULTICAST_HOPS: Maximum network hops for multicast packets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -308,6 +310,23 @@ Option value type:: int
 Option value unit:: network hops
 Default value:: 1
 Applicable socket types:: all, when using multicast transports
+
+
+ZMQ_FILTER: Switches message filtering on or off
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If set to 1, messages are filtered according to subcriptions as expected.
+If set to 0, messages are not filtered. This is a performance tweak. If a device
+receives a message from XSUB socket and it is about to send it to XPUB socket
+immediately, filtering would be done twice. We can thus turn off filtering in
+XSUB socket and rely on filtering in XPUB socket.
+
+[horizontal]
+Option value type:: int
+Option value unit:: boolean
+Default value:: 1
+Applicable socket types:: ZMQ_SUB, ZMQ_XSUB
+
 
 RETURN VALUE
 ------------

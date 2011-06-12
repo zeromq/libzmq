@@ -133,7 +133,7 @@ int zmq::xsub_t::xrecv (msg_t *msg_, int flags_)
 
         //  Check whether the message matches at least one subscription.
         //  Non-initial parts of the message are passed 
-        if (more || match (msg_)) {
+        if (more || !options.filter || match (msg_)) {
             more = msg_->flags () & msg_t::more;
             return 0;
         }
@@ -173,7 +173,7 @@ bool zmq::xsub_t::xhas_in ()
         }
 
         //  Check whether the message matches at least one subscription.
-        if (match (&message)) {
+        if (!options.filter || match (&message)) {
             has_message = true;
             return true;
         }
