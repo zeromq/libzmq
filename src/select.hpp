@@ -27,7 +27,7 @@
 #include <vector>
 
 #ifdef ZMQ_HAVE_WINDOWS
-#include "winsock2.h"
+#include <winsock2.h>
 #elif defined ZMQ_HAVE_OPENVMS
 #include <sys/types.h>
 #include <sys/time.h>

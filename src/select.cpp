@@ -24,7 +24,7 @@
 #include <algorithm>
 
 #ifdef ZMQ_HAVE_WINDOWS
-#include "winsock2.h"
+#include <winsock2.h>
 #elif defined ZMQ_HAVE_HPUX
 #include <sys/param.h>
 #include <sys/types.h>

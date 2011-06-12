@@ -24,7 +24,6 @@
 // The purpose of this header file is to turn on only the items actually needed
 // on the windows platform.
 
-#define _WINSOCKAPI_
 #ifndef NOMINMAX
 #define NOMINMAX // No min and max functions, these clash with C++.
 #endif
@@ -50,10 +49,9 @@
 #ifdef WINVER
 #undef WINVER
 #endif
+//  Default to Windows Server 2003, Windows XP
 #define WINVER 0x0501
 #endif
-
-#include <windows.h>
 
 //  MSVC++ 2005 on Win2000 does not define _WIN32_WINNT.
 #ifndef _WIN32_WINNT
@@ -68,6 +66,7 @@
 #include <winsock.h>
 #endif
 
+#include <windows.h>
 #include <ws2tcpip.h>
 #include <ipexport.h>
 #include <process.h>
