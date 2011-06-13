@@ -31,13 +31,9 @@
 #include "msg.hpp"
 
 #if defined ZMQ_HAVE_WINDOWS
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <winsock2.h>
-#include <windows.h>
+#include "windows.h"
 #else
-#include <unistd.h>
+#include "unistd.h"
 #endif
 
 zmq::ctx_t::ctx_t (uint32_t io_threads_) :
