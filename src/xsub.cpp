@@ -97,7 +97,9 @@ int zmq::xsub_t::xsend (msg_t *msg_, int flags_)
         else
             return 0;
     }
+
     zmq_assert (false);
+    return -1;
 }
 
 bool zmq::xsub_t::xhas_out ()
