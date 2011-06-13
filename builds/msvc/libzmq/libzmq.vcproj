@@ -319,6 +319,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\mtrie.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\named_session.cpp"
 				>
 			</File>
@@ -586,6 +590,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\msg.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\mtrie.hpp"
 				>
 			</File>
 			<File
