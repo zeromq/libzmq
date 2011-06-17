@@ -39,6 +39,8 @@ zmq::options_t::options_t () :
     backlog (100),
     maxmsgsize (-1),
     filter (1),
+    rcvtimeo (-1),
+    sndtimeo (-1),
     immediate_connect (true)
 {
 }
@@ -180,6 +182,22 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             return -1;
         }
         filter = *((int*) optval_);
+        return 0;
+
+    case ZMQ_RCVTIMEO:
+        if (optvallen_ != sizeof (int)) {
+            errno = EINVAL;
+            return -1;
+        }
+        rcvtimeo = *((int*) optval_);
+        return 0;
+
+    case ZMQ_SNDTIMEO:
+        if (optvallen_ != sizeof (int)) {
+            errno = EINVAL;
+            return -1;
+        }
+        sndtimeo = *((int*) optval_);
         return 0;
 
     }
@@ -333,6 +351,24 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
             return -1;
         }
         *((int*) optval_) = filter;
+        *optvallen_ = sizeof (int);
+        return 0;
+
+    case ZMQ_RCVTIMEO:
+        if (*optvallen_ < sizeof (int)) {
+            errno = EINVAL;
+            return -1;
+        }
+        *((int*) optval_) = rcvtimeo;
+        *optvallen_ = sizeof (int);
+        return 0;
+
+    case ZMQ_SNDTIMEO:
+        if (*optvallen_ < sizeof (int)) {
+            errno = EINVAL;
+            return -1;
+        }
+        *((int*) optval_) = sndtimeo;
         *optvallen_ = sizeof (int);
         return 0;
 

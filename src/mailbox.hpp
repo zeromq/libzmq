@@ -41,7 +41,7 @@ namespace zmq
 
         fd_t get_fd ();
         void send (const command_t &cmd_);
-        int recv (command_t *cmd_, bool block_);
+        int recv (command_t *cmd_, int timeout_);
         
     private:
 
@@ -51,6 +51,11 @@ namespace zmq
 
         //  Platform-dependent function to create a socketpair.
         static int make_socketpair (fd_t *r_, fd_t *w_);
+
+        //  Receives a command with the specific timeout.
+        //  This function is not to be used for non-blocking or inifinitely
+        //  blocking recvs.
+        int recv_timeout (command_t *cmd_, int timeout_);
 
         //  Disable copying of mailbox_t object.
         mailbox_t (const mailbox_t&);

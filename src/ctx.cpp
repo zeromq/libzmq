@@ -142,7 +142,7 @@ int zmq::ctx_t::terminate ()
 
     //  Wait till reaper thread closes all the sockets.
     command_t cmd;
-    int rc = term_mailbox.recv (&cmd, true);
+    int rc = term_mailbox.recv (&cmd, -1);
     if (rc == -1 && errno == EINTR)
         return -1;
     zmq_assert (rc == 0);

@@ -88,6 +88,8 @@ int main (int argc, char *argv [])
         }
     }
 
+zmq_sleep (2);
+
     rc = zmq_close (s);
     if (rc != 0) {
         printf ("error in zmq_close: %s\n", zmq_strerror (errno));

@@ -78,6 +78,10 @@ namespace zmq
         //  If 1, (X)SUB socket should filter the messages. If 0, it should not.
         int filter;
 
+        // The timeout for send/recv operations for this socket.
+        int rcvtimeo;
+        int sndtimeo;
+
         //  If true, when connecting, pipes are created immediately without
         //  waiting for the connection to be established. That way the socket
         //  is not aware of the peer's identity, however, it is able to send
