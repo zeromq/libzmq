@@ -18,23 +18,23 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "platform.hpp"
+#if defined ZMQ_HAVE_WINDOWS
+#include "windows.hpp"
+#else
+#include <unistd.h>
+#endif
+
 #include <new>
 #include <string.h>
 
 #include "ctx.hpp"
 #include "socket_base.hpp"
 #include "io_thread.hpp"
-#include "platform.hpp"
 #include "reaper.hpp"
 #include "pipe.hpp"
 #include "err.hpp"
 #include "msg.hpp"
-
-#if defined ZMQ_HAVE_WINDOWS
-#include "windows.h"
-#else
-#include "unistd.h"
-#endif
 
 zmq::ctx_t::ctx_t (uint32_t io_threads_) :
     tag (0xbadcafe0),
