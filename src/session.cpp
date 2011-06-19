@@ -56,6 +56,7 @@ zmq::session_t::~session_t ()
 
 void zmq::session_t::attach_pipe (pipe_t *pipe_)
 {
+    zmq_assert (!is_terminating ());
     zmq_assert (!pipe);
     zmq_assert (pipe_);
     pipe = pipe_;
@@ -175,7 +176,7 @@ void zmq::session_t::process_attach (i_engine *engine_,
     }
 
     //  Create the pipe if it does not exist yet.
-    if (!pipe) {
+    if (!pipe && !is_terminating ()) {
         object_t *parents [2] = {this, socket};
         pipe_t *pipes [2] = {NULL, NULL};
         int hwms [2] = {options.rcvhwm, options.sndhwm};
