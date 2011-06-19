@@ -41,7 +41,18 @@
 #if defined ZMQ_RCVTIMEO_BASED_ON_POLL
 #include <poll.h>
 #elif defined ZMQ_RCVTIMEO_BASED_ON_SELECT
+#if defined ZMQ_HAVE_WINDOWS
+#include "windows.hpp"
+#elif defined ZMQ_HAVE_HPUX
+#include <sys/param.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#elif defined ZMQ_HAVE_OPENVMS
+#include <sys/types.h>
+#include <sys/time.h>
+#else
 #include <sys/select.h>
+#endif
 #endif
 
 #include "mailbox.hpp"
@@ -121,7 +132,7 @@ int zmq::mailbox_t::recv (command_t *cmd_, int timeout_)
     //  and a command is not available. Save value of errno if we wish to pass
     //  it to caller.
     int err = 0;
-    int nbytes = ::recv (r, (char *)cmd_, sizeof (command_t), 0);
+    int nbytes = ::recv (r, (char*) cmd_, sizeof (command_t), 0);
     if (nbytes == -1 && WSAGetLastError () == WSAEWOULDBLOCK)
         err = EAGAIN;
 
@@ -440,25 +451,37 @@ int zmq::mailbox_t::recv_timeout (command_t *cmd_, int timeout_)
     struct timeval timeout;
     timeout.tv_sec = timeout_ / 1000;
     timeout.tv_usec = timeout_ % 1000 * 1000;
+#ifdef ZMQ_HAVE_WINDOWS
+    int rc = select (0, &fds, NULL, NULL, &timeout);
+    wsa_assert (rc != SOCKET_ERROR);
+#else
     int rc = select (r + 1, &fds, NULL, NULL, &timeout);
     if (unlikely (rc < 0)) {
         zmq_assert (errno == EINTR);
         return -1;
     }
-    else if (unlikely (rc == 0)) {
+#endif
+    if (unlikely (rc == 0)) {
         errno = EAGAIN;
         return -1;
     }
     zmq_assert (rc == 1);
+
 
 #else
 #error
 #endif
 
     //  The file descriptor is ready for reading. Extract one command out of it.
+#ifdef ZMQ_HAVE_WINDOWS
+    int nbytes = ::recv (r, (char*) cmd_, sizeof (command_t), 0);
+    wsa_assert (nbytes != SOCKET_ERROR);
+#else
     ssize_t nbytes = ::recv (r, cmd_, sizeof (command_t), 0);
     if (unlikely (rc < 0 && errno == EINTR))
         return -1;
+    errno_assert (nbytes > 0);
+#endif
     zmq_assert (nbytes == sizeof (command_t));
     return 0;
 }
