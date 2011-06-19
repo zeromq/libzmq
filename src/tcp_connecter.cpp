@@ -295,7 +295,8 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
         //  Networking problems are OK. No need to assert.
         errno = err;
         errno_assert (errno == ECONNREFUSED || errno == ECONNRESET ||
-            errno == ETIMEDOUT || errno == EHOSTUNREACH);
+            errno == ETIMEDOUT || errno == EHOSTUNREACH ||
+            errno == ENETUNREACH);
 
         return retired_fd;
     }

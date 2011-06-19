@@ -28,7 +28,7 @@ extern "C" {
 #include <errno.h>
 #include <stddef.h>
 #if defined _WIN32
-#include "winsock2.h"
+#include <winsock2.h>
 #endif
 
 /*  Handle DSO symbol visibility                                             */

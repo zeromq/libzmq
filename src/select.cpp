@@ -19,12 +19,8 @@
 */
 
 #include "platform.hpp"
-
-#include <string.h>
-#include <algorithm>
-
-#ifdef ZMQ_HAVE_WINDOWS
-#include "winsock2.h"
+#if defined ZMQ_HAVE_WINDOWS
+#include "windows.hpp"
 #elif defined ZMQ_HAVE_HPUX
 #include <sys/param.h>
 #include <sys/types.h>
@@ -35,6 +31,9 @@
 #else
 #include <sys/select.h>
 #endif
+
+#include <string.h>
+#include <algorithm>
 
 #include "select.hpp"
 #include "err.hpp"
