@@ -80,7 +80,6 @@ messages are not discarded.
 [horizontal]
 .Summary of ZMQ_REQ characteristics
 Compatible peer sockets:: 'ZMQ_REP'
-Direction:: Bidirectional
 Send/receive pattern:: Send, Receive, Send, Receive, ...
 Outgoing routing strategy:: Load-balanced
 Incoming routing strategy:: Last peer
@@ -103,7 +102,6 @@ question shall be dropped until the exceptional state ends.
 [horizontal]
 .Summary of ZMQ_REP characteristics
 Compatible peer sockets:: 'ZMQ_REQ'
-Direction:: Bidirectional
 Send/receive pattern:: Receive, Send, Receive, Send, ...
 Incoming routing strategy:: Fair-queued
 Outgoing routing strategy:: Last peer
@@ -129,7 +127,6 @@ _body parts_.
 [horizontal]
 .Summary of ZMQ_XREQ characteristics
 Compatible peer sockets:: 'ZMQ_XREP', 'ZMQ_REP'
-Direction:: Bidirectional
 Send/receive pattern:: Unrestricted
 Outgoing routing strategy:: Load-balanced
 Incoming routing strategy:: Fair-queued
@@ -163,7 +160,6 @@ application must include the _delimiter_ part.
 [horizontal]
 .Summary of ZMQ_XREP characteristics
 Compatible peer sockets:: 'ZMQ_XREQ', 'ZMQ_REQ'
-Direction:: Bidirectional
 Send/receive pattern:: Unrestricted
 Outgoing routing strategy:: See text
 Incoming routing strategy:: Fair-queued
@@ -189,8 +185,7 @@ ends. The _zmq_send()_ function shall never block for this socket type.
 
 [horizontal]
 .Summary of ZMQ_PUB characteristics
-Compatible peer sockets:: 'ZMQ_SUB'
-Direction:: Unidirectional
+Compatible peer sockets:: 'ZMQ_SUB', 'ZMQ_XSUB'
 Send/receive pattern:: Send only
 Incoming routing strategy:: N/A
 Outgoing routing strategy:: Fan out
@@ -207,9 +202,39 @@ implemented for this socket type.
 
 [horizontal]
 .Summary of ZMQ_SUB characteristics
-Compatible peer sockets:: 'ZMQ_PUB'
-Direction:: Unidirectional
+Compatible peer sockets:: 'ZMQ_PUB', 'ZMQ_XPUB'
 Send/receive pattern:: Receive only
+Incoming routing strategy:: Fair-queued
+Outgoing routing strategy:: N/A
+ZMQ_HWM option action:: Drop
+
+
+ZMQ_XPUB
+^^^^^^^^
+Same as ZMQ_PUB except that you can receive subscriptions from the peers
+in form of incoming messages. Subscription message is a byte 1 (for
+subscriptions) or byte 0 (for unsubscriptions) followed by the subscription
+body.
+
+[horizontal]
+.Summary of ZMQ_XPUB characteristics
+Compatible peer sockets:: 'ZMQ_SUB', 'ZMQ_XSUB'
+Send/receive pattern:: Send messages, receive subscriptions
+Incoming routing strategy:: N/A
+Outgoing routing strategy:: Fan out
+ZMQ_HWM option action:: Drop
+
+
+ZMQ_SUB
+^^^^^^^
+Same as ZMQ_SUB except that you subscribe by sending subscription messages to
+the socket. Subscription message is a byte 1 (for subscriptions) or byte 0
+(for unsubscriptions) followed by the subscription body.
+
+[horizontal]
+.Summary of ZMQ_XSUB characteristics
+Compatible peer sockets:: 'ZMQ_PUB', 'ZMQ_XPUB'
+Send/receive pattern:: Receive messages, send subscriptions
 Incoming routing strategy:: Fair-queued
 Outgoing routing strategy:: N/A
 ZMQ_HWM option action:: Drop
