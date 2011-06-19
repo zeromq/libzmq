@@ -52,15 +52,9 @@ int main (int argc, char *argv [])
         return -1;
     }
 
-    s = zmq_socket (ctx, ZMQ_SUB);
+    s = zmq_socket (ctx, ZMQ_PULL);
     if (!s) {
         printf ("error in zmq_socket: %s\n", zmq_strerror (errno));
-        return -1;
-    }
-
-    rc = zmq_setsockopt (s, ZMQ_SUBSCRIBE , "", 0);
-    if (rc != 0) {
-        printf ("error in zmq_setsockopt: %s\n", zmq_strerror (errno));
         return -1;
     }
 

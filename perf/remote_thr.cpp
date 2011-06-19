@@ -50,7 +50,7 @@ int main (int argc, char *argv [])
         return -1;
     }
 
-    s = zmq_socket (ctx, ZMQ_PUB);
+    s = zmq_socket (ctx, ZMQ_PUSH);
     if (!s) {
         printf ("error in zmq_socket: %s\n", zmq_strerror (errno));
         return -1;
@@ -87,8 +87,6 @@ int main (int argc, char *argv [])
             return -1;
         }
     }
-
-zmq_sleep (2);
 
     rc = zmq_close (s);
     if (rc != 0) {
