@@ -296,7 +296,7 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
         errno = err;
         errno_assert (errno == ECONNREFUSED || errno == ECONNRESET ||
             errno == ETIMEDOUT || errno == EHOSTUNREACH ||
-            errno == ENETUNREACH);
+            errno == ENETUNREACH || errno == ENETDOWN);
 
         return retired_fd;
     }
