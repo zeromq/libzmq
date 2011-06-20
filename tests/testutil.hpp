@@ -31,12 +31,26 @@ inline void bounce (void *sb, void *sc)
     const char *content = "12345678ABCDEFGH12345678abcdefgh";
 
     //  Send the message.
-    int rc = zmq_send (sc, content, 32, 0);
+    int rc = zmq_send (sc, content, 32, ZMQ_SNDMORE);
+    assert (rc == 32);
+    rc = zmq_send (sc, content, 32, 0);
     assert (rc == 32);
 
     //  Bounce the message back.
     char buf1 [32];
     rc = zmq_recv (sb, buf1, 32, 0);
+    assert (rc == 32);
+    int rcvmore;
+    size_t sz = sizeof (rcvmore);
+    rc = zmq_getsockopt (sb, ZMQ_RCVMORE, &rcvmore, &sz);
+    assert (rc == 0);
+    assert (rcvmore);
+    rc = zmq_recv (sb, buf1, 32, 0);
+    assert (rc == 32);
+    rc = zmq_getsockopt (sb, ZMQ_RCVMORE, &rcvmore, &sz);
+    assert (rc == 0);
+    assert (!rcvmore);
+    rc = zmq_send (sb, buf1, 32, ZMQ_SNDMORE);
     assert (rc == 32);
     rc = zmq_send (sb, buf1, 32, 0);
     assert (rc == 32);
@@ -45,6 +59,14 @@ inline void bounce (void *sb, void *sc)
     char buf2 [32];
     rc = zmq_recv (sc, buf2, 32, 0);
     assert (rc == 32);
+    rc = zmq_getsockopt (sc, ZMQ_RCVMORE, &rcvmore, &sz);
+    assert (rc == 0);
+    assert (rcvmore);
+    rc = zmq_recv (sc, buf2, 32, 0);
+    assert (rc == 32);
+    rc = zmq_getsockopt (sc, ZMQ_RCVMORE, &rcvmore, &sz);
+    assert (rc == 0);
+    assert (!rcvmore);
 
     //  Check whether the message is still the same.
     assert (memcmp (buf2, content, 32) == 0);
