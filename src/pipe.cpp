@@ -184,7 +184,7 @@ void zmq::pipe_t::flush ()
     if (state == terminating)
         return;
 
-    if (!outpipe->flush ())
+    if (outpipe && !outpipe->flush ())
         send_activate_read (peer);
 }
 
