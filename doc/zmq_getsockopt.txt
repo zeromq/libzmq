@@ -57,6 +57,18 @@ Default value:: N/A
 Applicable socket types:: all
 
 
+ZMQ_RCVLABEL: Inquires whether last message received was a label
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_RCVLABEL' option shall return a boolean value indicating whether the
+last message part received was a label. Labels are used internally by 0MQ.
+
+[horizontal]
+Option value type:: int
+Option value unit:: boolean
+Default value:: N/A
+Applicable socket types:: all
+
+
 ZMQ_SNDHWM: Set high water mark for outbound messages
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_SNDHWM' option shall set the high water mark for outbound messages on

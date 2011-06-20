@@ -28,6 +28,10 @@ Specifies that the message being sent is a multi-part message, and that further
 message parts are to follow. Refer to the section regarding multi-part messages
 below for a detailed description.
 
+*ZMQ_SNDLABEL*::
+Specifies that the message being sent is a label. Labels are used internally
+by 0MQ.
+
 The _zmq_msg_t_ structure passed to _zmq_send()_ is nullified during the call.
 If you want to send the same message to multiple sockets you have to copy it
 using (e.g. using _zmq_msg_copy()_).

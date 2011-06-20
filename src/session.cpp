@@ -71,7 +71,7 @@ bool zmq::session_t::read (msg_t *msg_)
     if (!pipe->read (msg_))
         return false;
 
-    incomplete_in = msg_->flags () & msg_t::more;
+    incomplete_in = msg_->flags () & (msg_t::more | msg_t::label);
     return true;
 }
 

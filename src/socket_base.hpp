@@ -189,7 +189,10 @@ namespace zmq
         //  Number of messages received since last command processing.
         int ticks;
 
-        //  If true there's a half-read message in the socket.
+        //  True if the last message received had LABEL flag set.
+        bool rcvlabel;
+
+        //  True if the last message received had MORE flag set.
         bool rcvmore;
 
         //  Lists of existing sessions. This list is never referenced from

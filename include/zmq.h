@@ -183,10 +183,12 @@ ZMQ_EXPORT int zmq_term (void *context);
 #define ZMQ_FILTER 26
 #define ZMQ_RCVTIMEO 27
 #define ZMQ_SNDTIMEO 28
+#define ZMQ_RCVLABEL 29
     
 /*  Send/recv options.                                                        */
 #define ZMQ_DONTWAIT 1
 #define ZMQ_SNDMORE 2
+#define ZMQ_SNDLABEL 4
 
 ZMQ_EXPORT void *zmq_socket (void *context, int type);
 ZMQ_EXPORT int zmq_close (void *s);

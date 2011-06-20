@@ -125,7 +125,7 @@ bool zmq::pipe_t::read (msg_t *msg_)
         return false;
     }
 
-    if (!(msg_->flags () & msg_t::more))
+    if (!(msg_->flags () & (msg_t::more | msg_t::label)))
         msgs_read++;
 
     if (lwm > 0 && msgs_read % lwm == 0)
@@ -154,8 +154,9 @@ bool zmq::pipe_t::write (msg_t *msg_)
     if (unlikely (!check_write (msg_)))
         return false;
 
-    outpipe->write (*msg_, msg_->flags () & msg_t::more);
-    if (!(msg_->flags () & msg_t::more))
+    bool more = msg_->flags () & (msg_t::more | msg_t::label);
+    outpipe->write (*msg_, more);
+    if (!more)
         msgs_written++;
 
     return true;
@@ -167,7 +168,7 @@ void zmq::pipe_t::rollback ()
     msg_t msg;
     if (outpipe) {
 		while (outpipe->unwrite (&msg)) {
-		    zmq_assert (msg.flags () & msg_t::more);
+		    zmq_assert (msg.flags () & (msg_t::more | msg_t::label));
 		    int rc = msg.close ();
 		    errno_assert (rc == 0);
 		}

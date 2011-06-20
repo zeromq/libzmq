@@ -119,6 +119,7 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t tid_) :
     destroyed (false),
     last_tsc (0),
     ticks (0),
+    rcvlabel (false),
     rcvmore (false)
 {
 }
@@ -261,6 +262,16 @@ int zmq::socket_base_t::getsockopt (int option_, void *optval_,
     if (unlikely (ctx_terminated)) {
         errno = ETERM;
         return -1;
+    }
+
+    if (option_ == ZMQ_RCVLABEL) {
+        if (*optvallen_ < sizeof (int)) {
+            errno = EINVAL;
+            return -1;
+        }
+        *((int*) optval_) = rcvlabel ? 1 : 0;
+        *optvallen_ = sizeof (int);
+        return 0;
     }
 
     if (option_ == ZMQ_RCVMORE) {
@@ -479,7 +490,9 @@ int zmq::socket_base_t::send (msg_t *msg_, int flags_)
     if (unlikely (rc != 0))
         return -1;
 
-    //  At this point we impose the MORE flag on the message.
+    //  At this point we impose the LABEL & MORE flags on the message.
+    if (flags_ & ZMQ_SNDLABEL)
+        msg_->set_flags (msg_t::label);
     if (flags_ & ZMQ_SNDMORE)
         msg_->set_flags (msg_t::more);
 
@@ -558,6 +571,9 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
 
     //  If we have the message, return immediately.
     if (rc == 0) {
+        rcvlabel = msg_->flags () & msg_t::label;
+        if (rcvlabel)
+            msg_->reset_flags (msg_t::label);
         rcvmore = msg_->flags () & msg_t::more;
         if (rcvmore)
             msg_->reset_flags (msg_t::more);
@@ -575,6 +591,9 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
 
         rc = xrecv (msg_, flags_);
         if (rc == 0) {
+            rcvlabel = msg_->flags () & msg_t::label;
+            if (rcvlabel)
+                msg_->reset_flags (msg_t::label);
             rcvmore = msg_->flags () & msg_t::more;
             if (rcvmore)
                 msg_->reset_flags (msg_t::more);
@@ -611,6 +630,10 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
         }
     }
 
+    //  Extract LABEL & MORE flags from the message.
+    rcvlabel = msg_->flags () & msg_t::label;
+    if (rcvlabel)
+        msg_->reset_flags (msg_t::label);
     rcvmore = msg_->flags () & msg_t::more;
     if (rcvmore)
         msg_->reset_flags (msg_t::more);

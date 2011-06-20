@@ -100,7 +100,7 @@ void zmq::xpub_t::mark_as_matching (pipe_t *pipe_, void *arg_)
 
 int zmq::xpub_t::xsend (msg_t *msg_, int flags_)
 {
-    bool msg_more = msg_->flags () & msg_t::more;
+    bool msg_more = msg_->flags () & (msg_t::more | msg_t::label);
 
     //  For the first part of multi-part message, find the matching pipes.
     if (!more)

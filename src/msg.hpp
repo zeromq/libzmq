@@ -47,8 +47,9 @@ namespace zmq
         //  Mesage flags.
         enum
         {
-            more = 1,
-            shared = 128
+            label = 1,
+            shared = 64,
+            more = 128
         };
 
         bool check ();
