@@ -79,7 +79,8 @@ zmq::fd_t zmq::mailbox_t::get_fd ()
 
 #if defined ZMQ_HAVE_WINDOWS
 
-zmq::mailbox_t::mailbox_t ()
+zmq::mailbox_t::mailbox_t () :
+    blocking (true)
 {
     //  Create the socketpair for signalling.
     int rc = make_socketpair (&r, &w);
@@ -88,11 +89,6 @@ zmq::mailbox_t::mailbox_t ()
     //  Set the writer to non-blocking mode.
     unsigned long argp = 1;
     rc = ioctlsocket (w, FIONBIO, &argp);
-    wsa_assert (rc != SOCKET_ERROR);
-
-    //  Set the reader to non-blocking mode.
-    argp = 1;
-    rc = ioctlsocket (r, FIONBIO, &argp);
     wsa_assert (rc != SOCKET_ERROR);
 }
 
@@ -121,33 +117,18 @@ int zmq::mailbox_t::recv (command_t *cmd_, int timeout_)
     if (timeout_ > 0)
         return recv_timeout (cmd_, timeout_);
 
-    //  If required, set the reader to blocking mode.
-    if (timeout_ < 0) {
-        unsigned long argp = 0;
+    //  If required, switch the reader to blocking or non-blocking mode.
+    if ((timeout_ < 0 && !blocking) || (timeout_ == 0 && blocking)) {
+        blocking = (timeout_ < 0);
+        unsigned long argp = blocking ? 0 : 1;
         int rc = ioctlsocket (r, FIONBIO, &argp);
         wsa_assert (rc != SOCKET_ERROR);
     }
 
-    //  Attempt to read an entire command. Returns EAGAIN if non-blocking
-    //  and a command is not available. Save value of errno if we wish to pass
-    //  it to caller.
-    int err = 0;
+    //  Attempt to read an entire command.
     int nbytes = ::recv (r, (char*) cmd_, sizeof (command_t), 0);
     if (nbytes == -1 && WSAGetLastError () == WSAEWOULDBLOCK)
-        err = EAGAIN;
-
-    //  Re-set the reader to non-blocking mode.
-    if (timeout_ < 0) {
-        unsigned long argp = 1;
-        int rc = ioctlsocket (r, FIONBIO, &argp);
-        wsa_assert (rc != SOCKET_ERROR);
-    }
-
-    //  If the recv failed, return with the saved errno.
-    if (err != 0) {
-        errno = err;
         return -1;
-    }
 
     //  Sanity check for success.
     wsa_assert (nbytes != SOCKET_ERROR);
@@ -160,7 +141,8 @@ int zmq::mailbox_t::recv (command_t *cmd_, int timeout_)
 
 #else
 
-zmq::mailbox_t::mailbox_t ()
+zmq::mailbox_t::mailbox_t () :
+    blocking (true)
 {
 #ifdef PIPE_BUF
     //  Make sure that command can be written to the socket in atomic fashion.
@@ -178,14 +160,6 @@ zmq::mailbox_t::mailbox_t ()
     errno_assert (flags >= 0);
     rc = fcntl (w, F_SETFL, flags | O_NONBLOCK);
     errno_assert (rc == 0);
-
-#ifndef MSG_DONTWAIT
-    //  Set the reader to non-blocking mode.
-    flags = fcntl (r, F_GETFL, 0);
-    errno_assert (flags >= 0);
-    rc = fcntl (r, F_SETFL, flags | O_NONBLOCK);
-    errno_assert (rc == 0);
-#endif
 }
 
 zmq::mailbox_t::~mailbox_t ()
@@ -250,35 +224,20 @@ int zmq::mailbox_t::recv (command_t *cmd_, int timeout_)
         return -1;
 #else
 
-    //  If required, set the reader to blocking mode.
-    if (timeout_ < 0) {
+    //  If required, switch the reader to blocking or non-blocking mode.
+    if ((timeout_ < 0 && !blocking) || (timeout_ == 0 && blocking)) {
+        blocking = (timeout_ < 0);
         int flags = fcntl (r, F_GETFL, 0);
         errno_assert (flags >= 0);
-        int rc = fcntl (r, F_SETFL, flags & ~O_NONBLOCK);
+        int rc = fcntl (r, F_SETFL,
+            blocking ? flags | O_NONBLOCK : flags & ~O_NONBLOCK);
         errno_assert (rc == 0);
     }
 
-    //  Attempt to read an entire command. Returns EAGAIN if non-blocking
-    //  and a command is not available. Save value of errno if we wish to pass
-    //  it to caller.
-    int err = 0;
+    //  Attempt to read an entire command.
     ssize_t nbytes = ::recv (r, cmd_, sizeof (command_t), 0);
     if (nbytes == -1 && (errno == EAGAIN || errno == EINTR))  
-        err = errno;
-
-    //  Re-set the reader to non-blocking mode.
-    if (timeout_ < 0) {
-        int flags = fcntl (r, F_GETFL, 0);
-        errno_assert (flags >= 0);
-        int rc = fcntl (r, F_SETFL, flags | O_NONBLOCK);
-        errno_assert (rc == 0);
-    }
-
-    //  If the recv failed, return with the saved errno if set.
-    if (err != 0) {
-        errno = err;
         return -1;
-    }
 
 #endif
 

@@ -45,10 +45,6 @@ namespace zmq
         
     private:
 
-        //  Write & read end of the socketpair.
-        fd_t w;
-        fd_t r;
-
         //  Platform-dependent function to create a socketpair.
         static int make_socketpair (fd_t *r_, fd_t *w_);
 
@@ -56,6 +52,14 @@ namespace zmq
         //  This function is not to be used for non-blocking or inifinitely
         //  blocking recvs.
         int recv_timeout (command_t *cmd_, int timeout_);
+
+        //  Write & read end of the socketpair.
+        fd_t w;
+        fd_t r;
+
+        //  Used on platforms where there's no MSG_DONTWAIT functionality.
+        //  True if the read socket is set to the blocking state.
+        bool blocking;
 
         //  Disable copying of mailbox_t object.
         mailbox_t (const mailbox_t&);
