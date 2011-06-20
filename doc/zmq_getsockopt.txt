@@ -69,10 +69,10 @@ Default value:: N/A
 Applicable socket types:: all
 
 
-ZMQ_SNDHWM: Set high water mark for outbound messages
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_SNDHWM' option shall set the high water mark for outbound messages on
-the specified 'socket'. The high water mark is a hard limit on the maximum
+ZMQ_SNDHWM: Retrieves high water mark for outbound messages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_SNDHWM' option shall return the high water mark for outbound messages
+on the specified 'socket'. The high water mark is a hard limit on the maximum
 number of outstanding messages 0MQ shall queue in memory for any single peer
 that the specified 'socket' is communicating with.
 
@@ -91,9 +91,9 @@ Default value:: 0
 Applicable socket types:: all
 
 
-ZMQ_RCVHWM: Set high water mark for inbound messages
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_RCVHWM' option shall set the high water mark for inbound messages on
+ZMQ_RCVHWM: Retrieve high water mark for inbound messages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_RCVHWM' option shall return the high water mark for inbound messages on
 the specified 'socket'. The high water mark is a hard limit on the maximum
 number of outstanding messages 0MQ shall queue in memory for any single peer
 that the specified 'socket' is communicating with.
