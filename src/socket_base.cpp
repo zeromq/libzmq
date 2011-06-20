@@ -513,7 +513,7 @@ int zmq::socket_base_t::send (msg_t *msg_, int flags_)
         if (unlikely (errno != EAGAIN))
             return -1;
         if (timeout > 0) {
-            timeout = end - clock.now_ms ();
+            timeout = (int) (end - clock.now_ms ());
             if (timeout <= 0) {
                 errno = EAGAIN;
                 return -1;
@@ -603,7 +603,7 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
             return -1;
         block = true;
         if (timeout > 0) {
-            timeout = end - clock.now_ms ();
+            timeout = (int) (end - clock.now_ms ());
             if (timeout <= 0) {
                 errno = EAGAIN;
                 return -1;
