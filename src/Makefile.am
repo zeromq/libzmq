@@ -15,6 +15,7 @@ libzmq_la_SOURCES = \
     config.hpp \
     connect_session.hpp \
     ctx.hpp \
+    dealer.hpp \
     decoder.hpp \
     devpoll.hpp \
     dist.hpp \
@@ -55,6 +56,7 @@ libzmq_la_SOURCES = \
     reaper.hpp \
     rep.hpp \
     req.hpp \
+    router.hpp \
     select.hpp \
     semaphore.hpp \
     session.hpp \
@@ -84,6 +86,7 @@ libzmq_la_SOURCES = \
     command.cpp \
     ctx.cpp \
     connect_session.cpp \
+    dealer.cpp \
     decoder.cpp \
     devpoll.cpp \
     dist.cpp \
@@ -116,6 +119,7 @@ libzmq_la_SOURCES = \
     pub.cpp \
     rep.cpp \
     req.cpp \
+    router.cpp \
     select.cpp \
     session.cpp \
     socket_base.cpp \
