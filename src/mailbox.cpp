@@ -127,8 +127,10 @@ int zmq::mailbox_t::recv (command_t *cmd_, int timeout_)
 
     //  Attempt to read an entire command.
     int nbytes = ::recv (r, (char*) cmd_, sizeof (command_t), 0);
-    if (nbytes == -1 && WSAGetLastError () == WSAEWOULDBLOCK)
+    if (nbytes == -1 && WSAGetLastError () == WSAEWOULDBLOCK) {
+        errno = EAGAIN;
         return -1;
+    }
 
     //  Sanity check for success.
     wsa_assert (nbytes != SOCKET_ERROR);
