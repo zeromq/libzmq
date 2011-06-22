@@ -25,6 +25,7 @@
 #include "ypipe.hpp"
 #include "config.hpp"
 #include "object.hpp"
+#include "stdint.hpp"
 #include "array.hpp"
 
 namespace zmq
@@ -66,6 +67,10 @@ namespace zmq
 
         //  Specifies the object to send events to.
         void set_event_sink (i_pipe_events *sink_);
+
+        //  Pipe endpoint can store an opaque ID to be used by its clients.
+        void set_pipe_id (uint32_t id_);
+        uint32_t get_pipe_id ();
 
         //  Returns true if there is at least one message to read in the pipe.
         bool check_read ();
@@ -175,6 +180,9 @@ namespace zmq
         //  terminating. If false, we terminate immediately when the peer
         //  asks us to.
         bool delay;
+
+        //  Opaque ID. To be used by the clients, not the pipe itself.
+        uint32_t pipe_id;
 
         //  Returns true if the message is delimiter; false otherwise.
         static bool is_delimiter (msg_t &msg_);

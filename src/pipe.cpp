@@ -63,7 +63,8 @@ zmq::pipe_t::pipe_t (object_t *parent_, upipe_t *inpipe_, upipe_t *outpipe_,
     peer (NULL),
     sink (NULL),
     state (active),
-    delay (delay_)
+    delay (delay_),
+    pipe_id (0)
 {
 }
 
@@ -83,6 +84,16 @@ void zmq::pipe_t::set_event_sink (i_pipe_events *sink_)
     // Sink can be set once only.
     zmq_assert (!sink);
     sink = sink_;
+}
+
+void zmq::pipe_t::set_pipe_id (uint32_t id_)
+{
+    pipe_id = id_;
+}
+
+uint32_t zmq::pipe_t::get_pipe_id ()
+{
+    return pipe_id;
 }
 
 bool zmq::pipe_t::check_read ()

@@ -22,11 +22,11 @@
 #define __ZMQ_XREP_HPP_INCLUDED__
 
 #include <map>
-#include <vector>
 
 #include "socket_base.hpp"
 #include "stdint.hpp"
 #include "msg.hpp"
+#include "fq.hpp"
 
 namespace zmq
 {
@@ -58,19 +58,8 @@ namespace zmq
 
     private:
 
-        struct inpipe_t
-        {
-            class pipe_t *pipe;
-            uint32_t peer_id;
-            bool active;
-        };
-
-        //  Inbound pipes with the names of corresponging peers.
-        typedef std::vector <inpipe_t> inpipes_t;
-        inpipes_t inpipes;
-
-        //  The pipe we are currently reading from.
-        inpipes_t::size_type current_in;
+        //  Fair queueing object for inbound pipes.
+        fq_t fq;
 
         //  Have we prefetched a message.
         bool prefetched;
