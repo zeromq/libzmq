@@ -53,6 +53,7 @@ libzmq_la_SOURCES = \
     pub.hpp \
     pull.hpp \
     push.hpp \
+    random.hpp \
     reaper.hpp \
     rep.hpp \
     req.hpp \
@@ -117,6 +118,7 @@ libzmq_la_SOURCES = \
     push.cpp \
     reaper.cpp \
     pub.cpp \
+    random.cpp \
     rep.cpp \
     req.cpp \
     router.cpp \

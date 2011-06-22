@@ -25,7 +25,7 @@
 #include <vector>
 
 #include "socket_base.hpp"
-#include "blob.hpp"
+#include "stdint.hpp"
 #include "msg.hpp"
 
 namespace zmq
@@ -41,7 +41,8 @@ namespace zmq
         ~xrep_t ();
 
         //  Overloads of functions from socket_base_t.
-        void xattach_pipe (class pipe_t *pipe_, const blob_t &peer_identity_);
+        void xattach_pipe (class pipe_t *pipe_,
+            const blob_t &peer_identity_);
         int xsend (class msg_t *msg_, int flags_);
         int xrecv (class msg_t *msg_, int flags_);
         bool xhas_in ();
@@ -60,7 +61,7 @@ namespace zmq
         struct inpipe_t
         {
             class pipe_t *pipe;
-            blob_t identity;
+            uint32_t peer_id;
             bool active;
         };
 
@@ -86,8 +87,8 @@ namespace zmq
             bool active;
         };
 
-        //  Outbound pipes indexed by the peer names.
-        typedef std::map <blob_t, outpipe_t> outpipes_t;
+        //  Outbound pipes indexed by the peer IDs.
+        typedef std::map <uint32_t, outpipe_t> outpipes_t;
         outpipes_t outpipes;
 
         //  The pipe we are currently writing to.
@@ -95,6 +96,10 @@ namespace zmq
 
         //  If true, more outgoing message parts are expected.
         bool more_out;
+
+        //  Peer ID are generated. It's a simple increment and wrap-over
+        //  algorithm. This value is the next ID to use (if not used already).
+        uint32_t next_peer_id;
 
         xrep_t (const xrep_t&);
         const xrep_t &operator = (const xrep_t&);

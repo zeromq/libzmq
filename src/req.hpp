@@ -22,6 +22,7 @@
 #define __ZMQ_REQ_HPP_INCLUDED__
 
 #include "xreq.hpp"
+#include "stdint.hpp"
 
 namespace zmq
 {
@@ -48,6 +49,10 @@ namespace zmq
         //  If true, we are starting to send/recv a message. The first part
         //  of the message must be empty message part (backtrace stack bottom).
         bool message_begins;
+
+        //  Request ID. Request numbers gradually increase (and wrap over)
+        //  so that we don't have to generate random ID for each request.
+        uint32_t request_id;
 
         req_t (const req_t&);
         const req_t &operator = (const req_t&);

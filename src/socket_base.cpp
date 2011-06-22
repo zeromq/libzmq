@@ -598,15 +598,15 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
         ticks = 0;
 
         rc = xrecv (msg_, flags_);
-        if (rc == 0) {
-            rcvlabel = msg_->flags () & msg_t::label;
-            if (rcvlabel)
-                msg_->reset_flags (msg_t::label);
-            rcvmore = msg_->flags () & msg_t::more;
-            if (rcvmore)
-                msg_->reset_flags (msg_t::more);
-        }
-        return rc;
+        if (rc < 0)
+            return rc;
+        rcvlabel = msg_->flags () & msg_t::label;
+        if (rcvlabel)
+            msg_->reset_flags (msg_t::label);
+        rcvmore = msg_->flags () & msg_t::more;
+        if (rcvmore)
+            msg_->reset_flags (msg_t::more);
+        return 0;
     }
 
     //  Compute the time when the timeout should occur.

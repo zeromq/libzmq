@@ -29,6 +29,7 @@ tests/test_reqrep_tcp
 tests/test_shutdown_stress
 tests/test_hwm
 tests/test_timeo
+tests/test_reqrep_device
 src/platform.hpp*
 src/stamp-h1
 devices/zmq_forwarder/zmq_forwarder
