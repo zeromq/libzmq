@@ -163,7 +163,7 @@ int zmq::xrep_t::xsend (msg_t *msg_, int flags_)
     }
 
     //  Check whether this is the last part of the message.
-    more_out = msg_->flags () & (msg_t::more | msg_t::label);
+    more_out = msg_->flags () & (msg_t::more | msg_t::label) ? true : false;
 
     //  Push the message into the pipe. If there's no out pipe, just drop it.
     if (current_out) {
@@ -192,7 +192,7 @@ int zmq::xrep_t::xrecv (msg_t *msg_, int flags_)
     if (prefetched) {
         int rc = msg_->move (prefetched_msg);
         errno_assert (rc == 0);
-        more_in = msg_->flags () & (msg_t::more | msg_t::label);
+        more_in = msg_->flags () & (msg_t::more | msg_t::label) ? true : false;
         prefetched = false;
         return 0;
     }
@@ -205,7 +205,7 @@ int zmq::xrep_t::xrecv (msg_t *msg_, int flags_)
 
     //  If we are in the middle of reading a message, just return the next part.
     if (more_in) {
-        more_in = msg_->flags () & (msg_t::more | msg_t::label);
+        more_in = msg_->flags () & (msg_t::more | msg_t::label) ? true : false;
         return 0;
     }
  

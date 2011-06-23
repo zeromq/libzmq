@@ -116,7 +116,7 @@ int zmq::xsub_t::xrecv (msg_t *msg_, int flags_)
         int rc = msg_->move (message);
         errno_assert (rc == 0);
         has_message = false;
-        more = msg_->flags () & (msg_t::more | msg_t::label);
+        more = msg_->flags () & (msg_t::more | msg_t::label) ? true : false;
         return 0;
     }
 
@@ -136,7 +136,8 @@ int zmq::xsub_t::xrecv (msg_t *msg_, int flags_)
         //  Check whether the message matches at least one subscription.
         //  Non-initial parts of the message are passed 
         if (more || !options.filter || match (msg_)) {
-            more = msg_->flags () & (msg_t::more | msg_t::label);
+            more =
+                msg_->flags () & (msg_t::more | msg_t::label) ? true : false;
             return 0;
         }
 

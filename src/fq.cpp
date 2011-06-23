@@ -90,7 +90,8 @@ int zmq::fq_t::recvpipe (msg_t *msg_, int flags_, pipe_t **pipe_)
         if (fetched) {
             if (pipe_)
                 *pipe_ = pipes [current];
-            more = msg_->flags () & (msg_t::more | msg_t::label);
+            more =
+                msg_->flags () & (msg_t::more | msg_t::label) ? true : false;
             if (!more) {
                 current++;
                 if (current >= active)

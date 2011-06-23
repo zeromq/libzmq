@@ -75,7 +75,7 @@ int zmq::lb_t::send (msg_t *msg_, int flags_)
     //  switch back to non-dropping mode.
     if (dropping) {
 
-        more = msg_->flags () & (msg_t::more | msg_t::label);
+        more = msg_->flags () & (msg_t::more | msg_t::label) ? true : false;
         if (!more)
             dropping = false;
 
@@ -88,7 +88,8 @@ int zmq::lb_t::send (msg_t *msg_, int flags_)
 
     while (active > 0) {
         if (pipes [current]->write (msg_)) {
-            more = msg_->flags () & (msg_t::more | msg_t::label);
+            more =
+                msg_->flags () & (msg_t::more | msg_t::label) ? true : false;
             break;
         }
 

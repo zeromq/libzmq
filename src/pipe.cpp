@@ -165,7 +165,7 @@ bool zmq::pipe_t::write (msg_t *msg_)
     if (unlikely (!check_write (msg_)))
         return false;
 
-    bool more = msg_->flags () & (msg_t::more | msg_t::label);
+    bool more = msg_->flags () & (msg_t::more | msg_t::label) ? true : false;
     outpipe->write (*msg_, more);
     if (!more)
         msgs_written++;

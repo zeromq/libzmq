@@ -263,6 +263,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\dealer.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\decoder.cpp"
 				>
 			</File>
@@ -379,6 +383,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\random.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\reaper.cpp"
 				>
 			</File>
@@ -388,6 +396,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\req.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\router.cpp"
 				>
 			</File>
 			<File
@@ -514,6 +526,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\ctx.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\dealer.hpp"
 				>
 			</File>
 			<File
@@ -665,6 +681,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\random.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\reaper.hpp"
 				>
 			</File>
@@ -674,6 +694,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\req.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\router.hpp"
 				>
 			</File>
 			<File

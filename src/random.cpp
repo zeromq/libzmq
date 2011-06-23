@@ -19,6 +19,7 @@
 */
 
 #include "random.hpp"
+#include "stdint.hpp"
 #include "uuid.hpp"
 #include "err.hpp"
 

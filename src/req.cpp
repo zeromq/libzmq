@@ -65,7 +65,7 @@ int zmq::req_t::xsend (msg_t *msg_, int flags_)
         message_begins = false;
     }
 
-    bool more = msg_->flags () & (msg_t::more | msg_t::label);
+    bool more = msg_->flags () & (msg_t::more | msg_t::label) ? true : false;
 
     int rc = xreq_t::xsend (msg_, flags_);
     if (rc != 0)
