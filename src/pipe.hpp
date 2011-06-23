@@ -34,8 +34,9 @@ namespace zmq
     //  Create a pipepair for bi-directional transfer of messages.
     //  First HWM is for messages passed from first pipe to the second pipe.
     //  Second HWM is for messages passed from second pipe to the first pipe.
-    //  Delay specifies whether the pipe receives all the pending messages
-    //  before terminating or whether it terminates straight away.
+    //  Delay specifies how the pipe behaves when the peer terminates. If true
+    //  pipe receives all the pending messages before terminating, otherwise it
+    //  terminates straight away.
     int pipepair (class object_t *parents_ [2], class pipe_t* pipes_ [2],
         int hwms_ [2], bool delays_ [2]);
 

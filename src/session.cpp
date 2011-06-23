@@ -180,7 +180,7 @@ void zmq::session_t::process_attach (i_engine *engine_,
         object_t *parents [2] = {this, socket};
         pipe_t *pipes [2] = {NULL, NULL};
         int hwms [2] = {options.rcvhwm, options.sndhwm};
-        bool delays [2] = {true, true};
+        bool delays [2] = {options.delay_on_close, options.delay_on_disconnect};
         int rc = pipepair (parents, pipes, hwms, delays);
         errno_assert (rc == 0);
 

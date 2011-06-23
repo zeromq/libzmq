@@ -26,6 +26,10 @@ zmq::xreq_t::xreq_t (class ctx_t *parent_, uint32_t tid_) :
     socket_base_t (parent_, tid_)
 {
     options.type = ZMQ_XREQ;
+
+    //  If the socket is closing we can drop all the outbound requests. There'll
+    //  be noone to receive the replies anyway.
+    options.delay_on_close = false;
 }
 
 zmq::xreq_t::~xreq_t ()

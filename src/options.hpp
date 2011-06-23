@@ -87,6 +87,14 @@ namespace zmq
         //  is not aware of the peer's identity, however, it is able to send
         //  messages straight away.
         bool immediate_connect;
+
+        //  If true, session reads all the pending messages from the pipe and
+        //  sends them to the network when socket is closed.
+        bool delay_on_close;
+
+        //  If true, socket reads all the messages from the pipe and delivers
+        //  them to the user when the peer terminates.
+        bool delay_on_disconnect;
     };
 
 }

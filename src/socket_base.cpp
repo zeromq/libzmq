@@ -426,7 +426,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         object_t *parents [2] = {this, peer.socket};
         pipe_t *pipes [2] = {NULL, NULL};
         int hwms [2] = {sndhwm, rcvhwm};
-        bool delays [2] = {true, true};
+        bool delays [2] = {options.delay_on_disconnect, options.delay_on_close};
         int rc = pipepair (parents, pipes, hwms, delays);
         errno_assert (rc == 0);
 
@@ -462,7 +462,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         object_t *parents [2] = {this, session};
         pipe_t *pipes [2] = {NULL, NULL};
         int hwms [2] = {options.sndhwm, options.rcvhwm};
-        bool delays [2] = {true, true};
+        bool delays [2] = {options.delay_on_disconnect, options.delay_on_close};
         int rc = pipepair (parents, pipes, hwms, delays);
         errno_assert (rc == 0);
 

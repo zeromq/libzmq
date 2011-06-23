@@ -33,6 +33,10 @@ zmq::xrep_t::xrep_t (class ctx_t *parent_, uint32_t tid_) :
 {
     options.type = ZMQ_XREP;
 
+    //  If peer disconnect there's noone to send reply to anyway. We can drop
+    //  all the outstanding requests from that peer.
+    options.delay_on_disconnect = false;
+
     prefetched_msg.init ();
 
     //  Start the peer ID sequence from a random point.
