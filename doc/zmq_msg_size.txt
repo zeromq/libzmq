@@ -23,7 +23,7 @@ _zmq_msg_ family of functions.
 
 RETURN VALUE
 ------------
-Upon successful completion, _zmq_msg_data()_ shall return the size of the
+Upon successful completion, _zmq_msg_size()_ shall return the size of the
 message content in bytes.
 
 
