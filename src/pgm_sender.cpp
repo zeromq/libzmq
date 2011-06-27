@@ -61,7 +61,7 @@ int zmq::pgm_sender_t::init (bool udp_encapsulation_, const char *network_)
     return rc;
 }
 
-void zmq::pgm_sender_t::plug (io_thread_t *io_thread_, i_inout *inout_)
+void zmq::pgm_sender_t::plug (io_thread_t *io_thread_, i_engine_sink *sink_)
 {
     //  Alocate 2 fds for PGM socket.
     int downlink_socket_fd = 0;
@@ -69,7 +69,7 @@ void zmq::pgm_sender_t::plug (io_thread_t *io_thread_, i_inout *inout_)
     int rdata_notify_fd = 0;
     int pending_notify_fd = 0;
 
-    encoder.set_inout (inout_);
+    encoder.set_sink (sink_);
 
     //  Fill fds from PGM transport and add them to the poller.
     pgm_socket.get_sender_fds (&downlink_socket_fd, &uplink_socket_fd,
@@ -106,7 +106,7 @@ void zmq::pgm_sender_t::unplug ()
     rm_fd (uplink_handle);
     rm_fd (rdata_notify_handle);
     rm_fd (pending_notify_handle);
-    encoder.set_inout (NULL);
+    encoder.set_sink (NULL);
 }
 
 void zmq::pgm_sender_t::terminate ()

@@ -32,7 +32,6 @@
 #include "err.hpp"
 #include "stdint.hpp"
 #include "wire.hpp"
-#include "i_inout.hpp"
 
 zmq::pgm_receiver_t::pgm_receiver_t (class io_thread_t *parent_, 
       const options_t &options_) :
@@ -40,7 +39,7 @@ zmq::pgm_receiver_t::pgm_receiver_t (class io_thread_t *parent_,
     has_rx_timer (false),
     pgm_socket (true, options_),
     options (options_),
-    inout (NULL),
+    sink (NULL),
     mru_decoder (NULL),
     pending_bytes (0)
 {
@@ -57,7 +56,7 @@ int zmq::pgm_receiver_t::init (bool udp_encapsulation_, const char *network_)
     return pgm_socket.init (udp_encapsulation_, network_);
 }
 
-void zmq::pgm_receiver_t::plug (io_thread_t *io_thread_, i_inout *inout_)
+void zmq::pgm_receiver_t::plug (io_thread_t *io_thread_, i_engine_sink *sink_)
 {
     //  Retrieve PGM fds and start polling.
     int socket_fd;
@@ -68,7 +67,7 @@ void zmq::pgm_receiver_t::plug (io_thread_t *io_thread_, i_inout *inout_)
     set_pollin (pipe_handle);
     set_pollin (socket_handle);
 
-    inout = inout_;
+    sink = sink_;
 }
 
 void zmq::pgm_receiver_t::unplug ()
@@ -91,7 +90,7 @@ void zmq::pgm_receiver_t::unplug ()
     rm_fd (socket_handle);
     rm_fd (pipe_handle);
 
-    inout = NULL;
+    sink = NULL;
 }
 
 void zmq::pgm_receiver_t::terminate ()
@@ -218,7 +217,7 @@ void zmq::pgm_receiver_t::in_event ()
             it->second.decoder = new (std::nothrow) decoder_t (0,
                 options.maxmsgsize);
             alloc_assert (it->second.decoder);
-            it->second.decoder->set_inout (inout);
+            it->second.decoder->set_sink (sink);
         }
 
         mru_decoder = it->second.decoder;
@@ -244,7 +243,7 @@ void zmq::pgm_receiver_t::in_event ()
     }
 
     //  Flush any messages decoder may have produced.
-    inout->flush ();
+    sink->flush ();
 }
 
 void zmq::pgm_receiver_t::timer_event (int token)

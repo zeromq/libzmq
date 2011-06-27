@@ -19,12 +19,12 @@
 */
 
 #include "encoder.hpp"
-#include "i_inout.hpp"
+#include "i_engine.hpp"
 #include "wire.hpp"
 
 zmq::encoder_t::encoder_t (size_t bufsize_) :
     encoder_base_t <encoder_t> (bufsize_),
-    source (NULL)
+    sink (NULL)
 {
     int rc = in_progress.init ();
     errno_assert (rc == 0);
@@ -39,9 +39,9 @@ zmq::encoder_t::~encoder_t ()
     errno_assert (rc == 0);
 }
 
-void zmq::encoder_t::set_inout (i_inout *source_)
+void zmq::encoder_t::set_sink (i_engine_sink *sink_)
 {
-    source = source_;
+    sink = sink_;
 }
 
 bool zmq::encoder_t::size_ready ()
@@ -62,7 +62,7 @@ bool zmq::encoder_t::message_ready ()
     //  Note that new state is set only if write is successful. That way
     //  unsuccessful write will cause retry on the next state machine
     //  invocation.
-    if (!source || !source->read (&in_progress)) {
+    if (!sink || !sink->read (&in_progress)) {
         rc = in_progress.init ();
         errno_assert (rc == 0);
         return false;

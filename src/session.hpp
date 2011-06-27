@@ -22,7 +22,7 @@
 #define __ZMQ_SESSION_HPP_INCLUDED__
 
 #include "own.hpp"
-#include "i_inout.hpp"
+#include "i_engine.hpp"
 #include "io_object.hpp"
 #include "blob.hpp"
 #include "pipe.hpp"
@@ -33,7 +33,7 @@ namespace zmq
     class session_t :
         public own_t,
         public io_object_t,
-        public i_inout,
+        public i_engine_sink,
         public i_pipe_events
     {
     public:
@@ -44,7 +44,7 @@ namespace zmq
         //  To be used once only, when creating the session.
         void attach_pipe (class pipe_t *pipe_);
 
-        //  i_inout interface implementation.
+        //  i_engine_sink interface implementation.
         bool read (msg_t *msg_);
         bool write (msg_t *msg_);
         void flush ();

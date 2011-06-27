@@ -24,7 +24,6 @@ libzmq_la_SOURCES = \
     err.hpp \
     fd.hpp \
     fq.hpp \
-    i_inout.hpp \
     io_object.hpp \
     io_thread.hpp \
     ip.hpp \

@@ -43,7 +43,7 @@ namespace zmq
         ~zmq_engine_t ();
 
         //  i_engine interface implementation.
-        void plug (class io_thread_t *io_thread_, struct i_inout *inout_);
+        void plug (class io_thread_t *io_thread_, struct i_engine_sink *sink_);
         void unplug ();
         void terminate ();
         void activate_in ();
@@ -69,10 +69,10 @@ namespace zmq
         size_t outsize;
         encoder_t encoder;
 
-        i_inout *inout;
+        i_engine_sink *sink;
 
-        //  Detached transient inout handler.
-        i_inout *ephemeral_inout;
+        //  Detached transient sink.
+        i_engine_sink *ephemeral_sink;
 
         options_t options;
 

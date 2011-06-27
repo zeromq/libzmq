@@ -163,14 +163,14 @@ namespace zmq
         encoder_t (size_t bufsize_);
         ~encoder_t ();
 
-        void set_inout (struct i_inout *source_);
+        void set_sink (struct i_engine_sink *sink_);
 
     private:
 
         bool size_ready ();
         bool message_ready ();
 
-        struct i_inout *source;
+        struct i_engine_sink *sink;
         msg_t in_progress;
         unsigned char tmpbuf [10];
 

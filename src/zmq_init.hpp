@@ -23,7 +23,6 @@
 
 #include <vector>
 
-#include "i_inout.hpp"
 #include "i_engine.hpp"
 #include "stdint.hpp"
 #include "blob.hpp"
@@ -36,7 +35,9 @@ namespace zmq
 
     //  The class handles initialisation phase of 0MQ wire-level protocol.
 
-    class zmq_init_t : public own_t, public i_inout
+    class zmq_init_t :
+        public own_t,
+        public i_engine_sink
     {
     public:
 
@@ -56,7 +57,7 @@ namespace zmq
         void finalise_initialisation ();
         void dispatch_engine ();
 
-        //  i_inout interface implementation.
+        //  i_engine_sink interface implementation.
         bool read (class msg_t *msg_);
         bool write (class msg_t *msg_);
         void flush ();
