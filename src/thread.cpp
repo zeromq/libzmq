@@ -66,7 +66,7 @@ extern "C"
         int rc = sigfillset (&signal_set);
         errno_assert (rc == 0);
         rc = pthread_sigmask (SIG_BLOCK, &signal_set, NULL);
-        errno_assert (rc == 0);
+        posix_assert (rc);
     #endif
 
         zmq::thread_t *self = (zmq::thread_t*) arg_;   
@@ -80,13 +80,13 @@ void zmq::thread_t::start (thread_fn *tfn_, void *arg_)
     tfn = tfn_;
     arg =arg_;
     int rc = pthread_create (&descriptor, NULL, thread_routine, this);
-    errno_assert (rc == 0);
+    posix_assert (rc);
 }
 
 void zmq::thread_t::stop ()
 {
     int rc = pthread_join (descriptor, NULL);
-    errno_assert (rc == 0);
+    posix_assert (rc);
 }
 
 #endif
