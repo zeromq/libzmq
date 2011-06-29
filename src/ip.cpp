@@ -272,7 +272,7 @@ int zmq::resolve_ip_hostname (sockaddr_storage *addr_, socklen_t *addr_len_,
     const char *hostname_)
 {
     //  Find the ':' that separates hostname name from service.
-    const char *delimiter = strchr (hostname_, ':');
+    const char *delimiter = strrchr (hostname_, ':');
     if (!delimiter) {
         errno = EINVAL;
         return -1;
