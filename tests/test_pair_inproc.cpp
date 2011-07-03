@@ -23,7 +23,7 @@
 
 int main (int argc, char *argv [])
 {
-    void *ctx = zmq_init (1);
+    void *ctx = zmq_init (0);
     assert (ctx);
 
     void *sb = zmq_socket (ctx, ZMQ_PAIR);
