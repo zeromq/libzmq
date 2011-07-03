@@ -49,7 +49,7 @@ namespace zmq
         //  to pass the signals.
         static int make_fdpair (fd_t *r_, fd_t *w_);
 
-        //  Write & read end of the socketpair.
+        //  Underlying write & read file descriptor.
         fd_t w;
         fd_t r;
 

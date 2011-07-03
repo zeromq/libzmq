@@ -57,9 +57,14 @@
 
 #include "signaler.hpp"
 #include "likely.hpp"
+#include "stdint.hpp"
 #include "err.hpp"
 #include "fd.hpp"
 #include "ip.hpp"
+
+#if defined ZMQ_HAVE_EVENTFD
+#include <sys/eventfd.h>
+#endif
 
 #if defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
@@ -100,14 +105,19 @@ zmq::signaler_t::signaler_t ()
 
 zmq::signaler_t::~signaler_t ()
 {
-#if defined ZMQ_HAVE_WINDOWS
+#if defined ZMQ_HAVE_EVENTFD
+    int rc = close (r);
+    errno_assert (rc == 0);
+#elif defined ZMQ_HAVE_WINDOWS
     int rc = closesocket (w);
     wsa_assert (rc != SOCKET_ERROR);
     rc = closesocket (r);
     wsa_assert (rc != SOCKET_ERROR);
 #else
-    close (w);
-    close (r);
+    int rc = close (w);
+    errno_assert (rc == 0);
+    rc = close (r);
+    errno_assert (rc == 0);
 #endif
 }
 
@@ -118,7 +128,11 @@ zmq::fd_t zmq::signaler_t::get_fd ()
 
 void zmq::signaler_t::send ()
 {
-#if defined ZMQ_HAVE_WINDOWS
+#if defined ZMQ_HAVE_EVENTFD
+    const uint64_t inc = 1;
+    ssize_t sz = write (w, &inc, sizeof (inc));
+    errno_assert (sz == sizeof (inc));
+#elif defined ZMQ_HAVE_WINDOWS
     unsigned char dummy = 0;
     int nbytes = ::send (w, &dummy, sizeof (dummy), 0);
     wsa_assert (nbytes != SOCKET_ERROR);
@@ -188,6 +202,14 @@ int zmq::signaler_t::wait (int timeout_)
 void zmq::signaler_t::recv ()
 {
     //  Attempt to read a signal.
+#if defined ZMQ_HAVE_EVENTFD
+    uint64_t dummy;
+    ssize_t sz = read (r, &dummy, sizeof (dummy));
+    errno_assert (sz == sizeof (dummy));
+if (dummy != 1)
+printf ("dummy:%d\n", (int) dummy);
+    zmq_assert (dummy == 1);
+#else
     unsigned char dummy;
 #if ZMQ_HAVE_WINDOWS
     int nbytes = ::recv (r, &dummy, sizeof (dummy), 0);
@@ -198,11 +220,21 @@ void zmq::signaler_t::recv ()
 #endif
     zmq_assert (nbytes == sizeof (dummy));
     zmq_assert (dummy == 0);
+#endif
 }
 
 int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
 {
-#if defined ZMQ_HAVE_WINDOWS
+#if defined ZMQ_HAVE_EVENTFD
+
+    // Create eventfd object.
+    fd_t fd = eventfd (0, 0);
+    errno_assert (fd != -1);
+    *w_ = fd;
+    *r_ = fd;
+    return 0;
+
+#elif defined ZMQ_HAVE_WINDOWS
 
     //  Windows has no 'socketpair' function. CreatePipe is no good as pipe
     //  handles cannot be polled on. Here we create the socketpair by hand.
