@@ -411,6 +411,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\signaler.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\socket_base.cpp"
 				>
 			</File>
@@ -569,10 +573,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\i_inout.hpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\src\i_poll_events.hpp"
 				>
 			</File>
@@ -710,6 +710,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\session.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\signaler.hpp"
 				>
 			</File>
 			<File
