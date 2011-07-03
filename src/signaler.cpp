@@ -206,8 +206,16 @@ void zmq::signaler_t::recv ()
     uint64_t dummy;
     ssize_t sz = read (r, &dummy, sizeof (dummy));
     errno_assert (sz == sizeof (dummy));
-if (dummy != 1)
-printf ("dummy:%d\n", (int) dummy);
+
+    //  If we accidentally grabbed the next signal along with the current
+    //  one, return it back to the eventfd object.
+    if (unlikely (dummy == 2)) {
+        const uint64_t inc = 1;
+        ssize_t sz = write (w, &inc, sizeof (inc));
+        errno_assert (sz == sizeof (inc));
+        return;
+    }
+
     zmq_assert (dummy == 1);
 #else
     unsigned char dummy;
