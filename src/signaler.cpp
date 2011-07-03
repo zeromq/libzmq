@@ -120,7 +120,7 @@ void zmq::signaler_t::send ()
 {
 #if defined ZMQ_HAVE_WINDOWS
     unsigned char dummy = 0;
-    int nbytes = ::send (w, &dummy, sizeof (dummy), 0);
+    int nbytes = ::send (w, (char*) &dummy, sizeof (dummy), 0);
     wsa_assert (nbytes != SOCKET_ERROR);
     zmq_assert (nbytes == sizeof (dummy));
 #else
@@ -189,8 +189,8 @@ void zmq::signaler_t::recv ()
 {
     //  Attempt to read a signal.
     unsigned char dummy;
-#if ZMQ_HAVE_WINDOWS
-    int nbytes = ::recv (r, &dummy, sizeof (dummy), 0);
+#if defined ZMQ_HAVE_WINDOWS
+    int nbytes = ::recv (r, (char*) &dummy, sizeof (dummy), 0);
     wsa_assert (nbytes != SOCKET_ERROR);
 #else
     ssize_t nbytes = ::recv (r, &dummy, sizeof (dummy), 0);
