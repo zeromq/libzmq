@@ -23,7 +23,7 @@
 #include <pthread.h>
 #include <stddef.h>
 
-#define THREAD_COUNT 10
+#define THREAD_COUNT 100
 
 extern "C"
 {

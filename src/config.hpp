@@ -36,6 +36,9 @@ namespace zmq
         //  memory allocation by approximately 99.6%
         message_pipe_granularity = 256,
 
+        //  Commands in pipe per allocation event.
+        command_pipe_granularity = 16,
+
         //  Size in bytes of the largest message that is still copied around
         //  rather than being reference-counted.
         max_vsm_size = 29,

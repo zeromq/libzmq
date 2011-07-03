@@ -60,6 +60,7 @@ libzmq_la_SOURCES = \
     select.hpp \
     semaphore.hpp \
     session.hpp \
+    signaler.hpp \
     socket_base.hpp \
     stdint.hpp \
     sub.hpp \
@@ -123,6 +124,7 @@ libzmq_la_SOURCES = \
     router.cpp \
     select.cpp \
     session.cpp \
+    signaler.cpp \
     socket_base.cpp \
     sub.cpp \
     tcp_connecter.cpp \
