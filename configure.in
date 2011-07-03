@@ -247,6 +247,16 @@ stdlib.h string.h sys/socket.h sys/time.h unistd.h limits.h)
 # Check if we have ifaddrs.h header file.
 AC_CHECK_HEADERS(ifaddrs.h, [AC_DEFINE(ZMQ_HAVE_IFADDRS, 1, [Have ifaddrs.h header.])])
 
+# Force not to use eventfd
+AC_ARG_ENABLE([eventfd], [AS_HELP_STRING([--disable-eventfd], [disable eventfd [default=no]])],
+    [zmq_disable_eventfd=yes], [zmq_disable_eventfd=no])
+
+if test "x$zmq_disable_eventfd" != "xyes"; then
+    # Check if we have eventfd.h header file.
+    AC_CHECK_HEADERS(sys/eventfd.h,
+                     [AC_DEFINE(ZMQ_HAVE_EVENTFD, 1, [Have eventfd extension.])])
+fi
+
 # Use c++ in subsequent tests
 AC_LANG_PUSH(C++)
 
