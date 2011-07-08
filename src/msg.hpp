@@ -77,6 +77,10 @@ namespace zmq
 
     private:
 
+        //  Size in bytes of the largest message that is still copied around
+        //  rather than being reference-counted.
+        enum {max_vsm_size = 29};
+
         //  Shared message buffer. Message data are either allocated in one
         //  continuous block along with this structure - thus avoiding one
         //  malloc/free pair or they are stored in used-supplied memory.
@@ -109,21 +113,24 @@ namespace zmq
         //  the union.
         union {
             struct {
+                unsigned char unused [max_vsm_size + 1];
                 unsigned char type;
                 unsigned char flags;
             } base;
             struct {
+                unsigned char data [max_vsm_size];
+                unsigned char size;
                 unsigned char type;
                 unsigned char flags;
-                unsigned char size;
-                unsigned char data [max_vsm_size];
             } vsm;
             struct {
+                content_t *content;
+                unsigned char unused [max_vsm_size + 1 - sizeof (content_t*)];
                 unsigned char type;
                 unsigned char flags;
-                content_t *content;
             } lmsg;
             struct {
+                unsigned char unused [max_vsm_size + 1];
                 unsigned char type;
                 unsigned char flags;
             } delimiter;

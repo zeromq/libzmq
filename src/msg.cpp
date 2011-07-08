@@ -19,6 +19,7 @@
 */
 
 #include "msg.hpp"
+#include "../include/zmq.h"
 
 #include <string.h>
 #include <errno.h>
@@ -28,6 +29,11 @@
 #include "stdint.hpp"
 #include "likely.hpp"
 #include "err.hpp"
+
+//  Check whether the sizes of public representation of the message (zmq_msg_t)
+//  and private represenation of the message (zmq::msg_t) match.
+typedef char zmq_msg_size_check
+    [2 * ((sizeof (zmq::msg_t) == sizeof (zmq_msg_t)) != 0) - 1];
 
 bool zmq::msg_t::check ()
 {
