@@ -73,11 +73,8 @@ int zmq::rep_t::xrecv (msg_t *msg_, int flags_)
                 return rc;
             if (!(msg_->flags () & msg_t::label))
                 break;
-
-            //  TODO: If the reply cannot be sent to the peer because
-            //  od congestion, we should drop it.
             rc = xrep_t::xsend (msg_, flags_);
-            zmq_assert (rc == 0);
+            errno_assert (rc == 0);
         }
         request_begins = false;
     }
