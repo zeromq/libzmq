@@ -68,6 +68,9 @@ void zmq::pgm_receiver_t::plug (io_thread_t *io_thread_, i_engine_sink *sink_)
     set_pollin (socket_handle);
 
     sink = sink_;
+
+    //  If there are any subscriptions already queued in the session, drop them.
+    drop_subscriptions ();
 }
 
 void zmq::pgm_receiver_t::unplug ()
@@ -101,7 +104,7 @@ void zmq::pgm_receiver_t::terminate ()
 
 void zmq::pgm_receiver_t::activate_out ()
 {
-    zmq_assert (false);
+    drop_subscriptions ();
 }
 
 void zmq::pgm_receiver_t::activate_in ()
@@ -253,6 +256,13 @@ void zmq::pgm_receiver_t::timer_event (int token)
     //  Timer cancels on return by poller_base.
     has_rx_timer = false;
     in_event ();
+}
+
+void zmq::pgm_receiver_t::drop_subscriptions ()
+{
+    msg_t msg;
+    while (sink->read (&msg))
+        msg.close ();
 }
 
 #endif

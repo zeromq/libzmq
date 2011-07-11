@@ -64,6 +64,10 @@ namespace zmq
 
     private:
 
+        //  PGM is not able to move subscriptions upstream. Thus, drop all
+        //  the pending subscriptions.
+        void drop_subscriptions ();
+
         //  RX timeout timer ID.
         enum {rx_timer_id = 0xa1};
 

@@ -88,6 +88,15 @@ void zmq::pgm_sender_t::plug (io_thread_t *io_thread_, i_engine_sink *sink_)
 
     //  Set POLLOUT for downlink_socket_handle.
     set_pollout (handle);
+
+    //  PGM is not able to pass subscriptions upstream, thus we have no idea
+    //  what messages are peers interested in. Because of that we have to
+    //  subscribe for all the messages.
+    msg_t msg;
+    msg.init ();
+    bool ok = sink_->write (&msg);
+    zmq_assert (ok);
+    sink_->flush ();
 }
 
 void zmq::pgm_sender_t::unplug ()
