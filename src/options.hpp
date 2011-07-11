@@ -75,9 +75,6 @@ namespace zmq
         //  Maximal size of message to handle.
         int64_t maxmsgsize;
 
-        //  If 1, (X)SUB socket should filter the messages. If 0, it should not.
-        int filter;
-
         // The timeout for send/recv operations for this socket.
         int rcvtimeo;
         int sndtimeo;
@@ -95,6 +92,9 @@ namespace zmq
         //  If true, socket reads all the messages from the pipe and delivers
         //  them to the user when the peer terminates.
         bool delay_on_disconnect;
+
+        //  If 1, (X)SUB socket should filter the messages. If 0, it should not.
+        bool filter;
     };
 
 }

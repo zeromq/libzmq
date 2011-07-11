@@ -320,23 +320,6 @@ Default value:: 1
 Applicable socket types:: all, when using multicast transports
 
 
-ZMQ_FILTER: Switches message filtering on or off
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The option shall retrieve the filtering behaiour of the socket.
-If 1, messages are filtered according to subcriptions as expected.
-If 0, messages are not filtered. This is a performance tweak. If a device
-receives a message from XSUB socket and it is about to send it to XPUB socket
-immediately, filtering would be done twice. We can thus turn off filtering in
-XSUB socket and rely on filtering in XPUB socket.
-
-[horizontal]
-Option value type:: int
-Option value unit:: boolean
-Default value:: 1
-Applicable socket types:: ZMQ_SUB, ZMQ_XSUB
-
-
 ZMQ_RCVTIMEO: Maximum time before a socket operation returns with EAGAIN
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -38,12 +38,12 @@ zmq::options_t::options_t () :
     reconnect_ivl_max (0),
     backlog (100),
     maxmsgsize (-1),
-    filter (1),
     rcvtimeo (-1),
     sndtimeo (-1),
     immediate_connect (true),
     delay_on_close (true),
-    delay_on_disconnect (true)
+    delay_on_disconnect (true),
+    filter (false)
 {
 }
 
@@ -175,15 +175,6 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             return -1;
         }
         multicast_hops = *((int*) optval_);
-        return 0;
-
-    case ZMQ_FILTER:
-        if (optvallen_ != sizeof (int) || (*((int*) optval_) != 0 &&
-                *((int*) optval_) != 1)) {
-            errno = EINVAL;
-            return -1;
-        }
-        filter = *((int*) optval_);
         return 0;
 
     case ZMQ_RCVTIMEO:
@@ -344,15 +335,6 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
             return -1;
         }
         *((int*) optval_) = multicast_hops;
-        *optvallen_ = sizeof (int);
-        return 0;
-
-    case ZMQ_FILTER:
-        if (*optvallen_ < sizeof (int)) {
-            errno = EINVAL;
-            return -1;
-        }
-        *((int*) optval_) = filter;
         *optvallen_ = sizeof (int);
         return 0;
 

@@ -182,7 +182,6 @@ ZMQ_EXPORT int zmq_term (void *context);
 #define ZMQ_SNDHWM 23
 #define ZMQ_RCVHWM 24
 #define ZMQ_MULTICAST_HOPS 25
-#define ZMQ_FILTER 26
 #define ZMQ_RCVTIMEO 27
 #define ZMQ_SNDTIMEO 28
 #define ZMQ_RCVLABEL 29
