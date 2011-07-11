@@ -28,6 +28,8 @@ int main (int argc, char *argv [])
     void *ctx = zmq_init (1);
     assert (ctx);
 
+    //  Check whether requests are discarded because of disconnected requester.
+
     //  Create a server.
     void *xrep = zmq_socket (ctx, ZMQ_XREP);
     assert (xrep);
@@ -62,6 +64,78 @@ int main (int argc, char *argv [])
     //  Clean up.
     rc = zmq_close (xrep);
     assert (rc == 0);
+
+    //  New test. Check whether reply is dropped because of HWM overflow.
+
+    int one = 1;
+    xreq = zmq_socket (ctx, ZMQ_XREQ);
+    assert (xreq);
+    rc = zmq_setsockopt (xreq, ZMQ_RCVHWM, &one, sizeof(one));
+    assert (rc == 0);
+    rc = zmq_bind (xreq, "inproc://a");
+    assert (rc == 0);
+
+    void *rep = zmq_socket (ctx, ZMQ_REP);
+    assert (rep);
+    rc = zmq_setsockopt (rep, ZMQ_SNDHWM, &one, sizeof(one));
+    assert (rc == 0);
+    rc = zmq_connect (rep, "inproc://a");
+    assert (rc == 0);
+
+    //  Send request 1
+    rc = zmq_send (xreq, buff, 1, 0);
+    assert (rc == 1);
+
+    //  Send request 2
+    rc = zmq_send (xreq, buff, 1, 0);
+    assert (rc == 1);
+
+    //  Receive request 1
+    rc = zmq_recv (rep, buff, 1, 0);
+    assert (rc == 1);
+
+    //  Send request 3
+    rc = zmq_send (xreq, buff, 1, 0);
+    assert (rc == 1);
+
+    //  Send reply 1
+    rc = zmq_send (rep, buff, 1, 0);
+    assert (rc == 1);
+
+    //  Receive request 2
+    rc = zmq_recv (rep, buff, 1, 0);
+    assert (rc == 1);
+
+    //  Send reply 2
+    rc = zmq_send (rep, buff, 1, 0);
+    assert (rc == 1);
+
+    //  Receive request 3
+    rc = zmq_recv (rep, buff, 1, 0);
+    assert (rc == 1);
+
+    //  Send reply 3
+    rc = zmq_send (rep, buff, 1, 0);
+    assert (rc == 1);
+
+    //  Receive reply 1
+    rc = zmq_recv (xreq, buff, 1, 0);
+    assert (rc == 1);
+
+    //  Receive reply 2
+    rc = zmq_recv (xreq, buff, 1, 0);
+    assert (rc == 1);
+
+    //  Try to receive reply 3, it should have been dropped.
+    rc = zmq_recv (xreq, buff, 1, ZMQ_DONTWAIT);
+    assert (rc == -1 && errno == EAGAIN);
+
+    //  Clean up.
+    rc = zmq_close (xreq);
+    assert (rc == 0);
+    rc = zmq_close (rep);
+    assert (rc == 0);
+
     rc = zmq_term (ctx);
     assert (rc == 0);
 
