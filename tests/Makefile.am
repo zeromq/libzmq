@@ -7,7 +7,8 @@ noinst_PROGRAMS = test_pair_inproc \
                   test_reqrep_tcp \
                   test_hwm \
                   test_reqrep_device \
-                  test_reqrep_drop
+                  test_reqrep_drop \
+                  test_sub_forward
 
 if !ON_MINGW
 noinst_PROGRAMS += test_shutdown_stress \
@@ -23,6 +24,7 @@ test_reqrep_tcp_SOURCES = test_reqrep_tcp.cpp testutil.hpp
 test_hwm_SOURCES = test_hwm.cpp
 test_reqrep_device_SOURCES = test_reqrep_device.cpp
 test_reqrep_drop_SOURCES = test_reqrep_drop.cpp
+test_sub_forward_SOURCES = test_sub_forward.cpp
 
 if !ON_MINGW
 test_shutdown_stress_SOURCES = test_shutdown_stress.cpp
