@@ -44,6 +44,8 @@ return `-1` and set 'errno' to one of the values defined below.
 
 ERRORS
 ------
+*EINVAL*::
+The endpoint supplied is invalid.
 *EPROTONOSUPPORT*::
 The requested 'transport' protocol is not supported.
 *ENOCOMPATPROTO*::
