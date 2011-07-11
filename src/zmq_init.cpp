@@ -51,28 +51,20 @@ zmq::zmq_init_t::zmq_init_t (io_thread_t *io_thread_,
     peer_identity [0] = 0;
     generate_uuid (&peer_identity [1]);
 
-    //  Create a list of props to send.
-    msg_t msg;
-    int rc = msg.init_size (4);
-    errno_assert (rc == 0);
-    unsigned char *data = (unsigned char*) msg.data ();
-    put_uint16 (data, prop_type);
-    put_uint16 (data + 2, options.type);
-    msg.set_flags (msg_t::more);
-    to_send.push_back (msg);
-
+    //  Create a list of messages to send on connection initialisation.
     if (!options.identity.empty ()) {
-        rc = msg.init_size (2 + options.identity.size ());
+        msg_t msg;
+        int rc = msg.init_size (options.identity.size ());
         errno_assert (rc == 0);
-        data = (unsigned char*) msg.data ();
-        put_uint16 (data, prop_identity);
-        memcpy (data + 2, options.identity.data (), options.identity.size ());
-        msg.set_flags (msg_t::more);
+        memcpy (msg.data () , options.identity.data (), msg.size ());
         to_send.push_back (msg);
     }
-
-    //  Remove the MORE flag from the last prop.
-    to_send.back ().reset_flags (msg_t::more);
+    else {
+        msg_t msg;
+        int rc = msg.init ();
+        errno_assert (rc == 0);
+        to_send.push_back (msg);
+    }
 }
 
 zmq::zmq_init_t::~zmq_init_t ()
@@ -112,35 +104,16 @@ bool zmq::zmq_init_t::write (msg_t *msg_)
     if (received)
         return false;
 
+    //  Retrieve the peer's identity, if any.
+    zmq_assert (!(msg_->flags () & msg_t::more));
     size_t size = msg_->size ();
-    unsigned char *data = (unsigned char*) msg_->data ();
-
-    //  There should be at least property type in the message.
-    zmq_assert (size >= 2);
-    uint16_t prop = get_uint16 (data);
-
-    switch (prop) {
-    case prop_type:
-        {
-            zmq_assert (size == 4);
-            //  TODO: Check whether the type is OK.
-            //  uint16_t type = get_uint16 (data + 2);
-            //  ...
-            break;
-        };
-    case prop_identity:
-        {
-             peer_identity.assign (data + 2, size - 2);
-             break;
-        }
-    default:
-        zmq_assert (false);
+    if (size) {
+        unsigned char *data = (unsigned char*) msg_->data ();
+        peer_identity.assign (data, size);
     }
 
-    if (!(msg_->flags () & msg_t::more)) {
-        received = true;
-        finalise_initialisation ();
-    }
+    received = true;
+    finalise_initialisation ();
 
     return true;
 }

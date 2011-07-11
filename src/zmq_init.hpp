@@ -47,13 +47,6 @@ namespace zmq
 
     private:
 
-        //  Peer property IDs.
-        enum prop_t
-        {
-            prop_type = 1,
-            prop_identity = 2
-        };
-
         void finalise_initialisation ();
         void dispatch_engine ();
 
