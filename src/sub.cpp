@@ -38,6 +38,11 @@ zmq::sub_t::~sub_t ()
 int zmq::sub_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
+    if (option_ != ZMQ_SUBSCRIBE && option_ != ZMQ_UNSUBSCRIBE) {
+        errno = EINVAL;
+        return -1;
+    }
+
     //  Create the subscription message.
     msg_t msg;
     int rc = msg.init_size (optvallen_ + 1);
