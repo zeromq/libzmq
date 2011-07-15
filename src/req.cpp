@@ -21,7 +21,6 @@
 #include "req.hpp"
 #include "err.hpp"
 #include "msg.hpp"
-#include "uuid.hpp"
 #include "wire.hpp"
 #include "random.hpp"
 #include "likely.hpp"
@@ -30,12 +29,9 @@ zmq::req_t::req_t (class ctx_t *parent_, uint32_t tid_) :
     xreq_t (parent_, tid_),
     receiving_reply (false),
     message_begins (true),
-    request_id (0)
+    request_id (generate_random ())
 {
     options.type = ZMQ_REQ;
-
-    //  Start the request ID sequence at an random point.
-    generate_random (&request_id, sizeof (request_id));
 }
 
 zmq::req_t::~req_t ()

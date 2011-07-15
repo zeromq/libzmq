@@ -24,7 +24,6 @@
 #include "own.hpp"
 #include "i_engine.hpp"
 #include "io_object.hpp"
-#include "blob.hpp"
 #include "pipe.hpp"
 
 namespace zmq
@@ -64,27 +63,19 @@ namespace zmq
         //  the termination process when session is about to be detached from
         //  the peer. If it returns false, session will be terminated.
         //  To be overloaded by the derived session type.
-        virtual bool xattached (const blob_t &peer_identity_) = 0;
+        virtual bool xattached () = 0;
         virtual bool xdetached () = 0;
-
-        //  Returns true if there is an engine attached to the session.
-        bool has_engine ();
-
-        //  Allows derives session types to (un)register session names.
-        bool register_session (const blob_t &name_, class session_t *session_);
-        void unregister_session (const blob_t &name_);
 
         ~session_t ();
 
     private:
 
-        bool attached (const blob_t &peer_identity_);
+        bool attached ();
         void detached ();
 
         //  Handlers for incoming commands.
         void process_plug ();
-        void process_attach (struct i_engine *engine_,
-            const blob_t &peer_identity_);
+        void process_attach (struct i_engine *engine_);
         void process_term (int linger_);
 
         //  i_poll_events handlers.

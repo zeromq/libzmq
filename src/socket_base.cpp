@@ -45,7 +45,6 @@
 #include "ctx.hpp"
 #include "platform.hpp"
 #include "likely.hpp"
-#include "uuid.hpp"
 #include "msg.hpp"
 
 #include "pair.hpp"
@@ -128,11 +127,6 @@ zmq::socket_base_t::~socket_base_t ()
 {
     zmq_assert (destroyed);
 
-    //  Check whether there are no session leaks.
-    sessions_sync.lock ();
-    zmq_assert (sessions.empty ());
-    sessions_sync.unlock ();
-
     //  Mark the socket as dead.
     tag = 0xdeadbeef;
 }
@@ -212,23 +206,14 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
     return 0;
 }
 
-void zmq::socket_base_t::attach_pipe (pipe_t *pipe_,
-    const blob_t &peer_identity_)
+void zmq::socket_base_t::attach_pipe (pipe_t *pipe_)
 {
     //  First, register the pipe so that we can terminate it later on.
     pipe_->set_event_sink (this);
     pipes.push_back (pipe_);
     
-    //  Then, pass the pipe to the specific socket type.
-    //  If the peer haven't specified it's identity, let's generate one.
-    if (peer_identity_.size ()) {
-        xattach_pipe (pipe_, peer_identity_);
-    }
-    else {
-        blob_t identity (17, 0);
-        generate_uuid ((unsigned char*) identity.data () + 1);
-        xattach_pipe (pipe_, identity);
-    }
+    //  Let the derived socket type know about new pipe.
+    xattach_pipe (pipe_);
 
     //  If the socket is already being closed, ask any new pipes to terminate
     //  straight away.
@@ -423,12 +408,12 @@ int zmq::socket_base_t::connect (const char *addr_)
         errno_assert (rc == 0);
 
         //  Attach local end of the pipe to this socket object.
-        attach_pipe (pipes [0], peer.options.identity);
+        attach_pipe (pipes [0]);
 
         //  Attach remote end of the pipe to the peer socket. Note that peer's
         //  seqnum was incremented in find_endpoint function. We don't need it
         //  increased here.
-        send_bind (peer.socket, pipes [1], options.identity, false);
+        send_bind (peer.socket, pipes [1], false);
 
         return 0;
     }
@@ -454,7 +439,7 @@ int zmq::socket_base_t::connect (const char *addr_)
     errno_assert (rc == 0);
 
     //  Attach local end of the pipe to the socket object.
-    attach_pipe (pipes [0], blob_t ());
+    attach_pipe (pipes [0]);
 
     //  Attach remote end of the pipe to the session object later on.
     session->attach_pipe (pipes [1]);
@@ -654,44 +639,6 @@ bool zmq::socket_base_t::has_out ()
     return xhas_out ();
 }
 
-bool zmq::socket_base_t::register_session (const blob_t &name_,
-    session_t *session_)
-{
-    sessions_sync.lock ();
-    bool registered = sessions.insert (
-        sessions_t::value_type (name_, session_)).second;
-    sessions_sync.unlock ();
-    return registered;
-}
-
-void zmq::socket_base_t::unregister_session (const blob_t &name_)
-{
-    sessions_sync.lock ();
-    sessions_t::iterator it = sessions.find (name_);
-    zmq_assert (it != sessions.end ());
-    sessions.erase (it);
-    sessions_sync.unlock ();
-}
-
-zmq::session_t *zmq::socket_base_t::find_session (const blob_t &name_)
-{
-    sessions_sync.lock ();
-    sessions_t::iterator it = sessions.find (name_);
-    if (it == sessions.end ()) {
-        sessions_sync.unlock ();
-        return NULL;
-    }
-    session_t *session = it->second;
-
-    //  Prepare the session for subsequent attach command.
-    //  Note the connect sessions have NULL pointers registered here.
-    if (session)
-        session->inc_seqnum ();
-
-    sessions_sync.unlock ();
-    return session;    
-}
-
 void zmq::socket_base_t::start_reaping (poller_t *poller_)
 {
     //  Plug the socket to the reaper thread.
@@ -770,10 +717,9 @@ void zmq::socket_base_t::process_stop ()
     ctx_terminated = true;
 }
 
-void zmq::socket_base_t::process_bind (pipe_t *pipe_,
-    const blob_t &peer_identity_)
+void zmq::socket_base_t::process_bind (pipe_t *pipe_)
 {
-    attach_pipe (pipe_, peer_identity_);
+    attach_pipe (pipe_);
 }
 
 void zmq::socket_base_t::process_unplug ()

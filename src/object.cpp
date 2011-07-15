@@ -82,17 +82,12 @@ void zmq::object_t::process_command (command_t &cmd_)
         break;
 
     case command_t::attach:
-        process_attach (cmd_.args.attach.engine,
-            cmd_.args.attach.peer_identity ?
-            blob_t (cmd_.args.attach.peer_identity,
-            cmd_.args.attach.peer_identity_size) : blob_t ());
+        process_attach (cmd_.args.attach.engine);
         process_seqnum ();
         break;
 
     case command_t::bind:
-        process_bind (cmd_.args.bind.pipe, cmd_.args.bind.peer_identity ?
-            blob_t (cmd_.args.bind.peer_identity,
-            cmd_.args.bind.peer_identity_size) : blob_t ());
+        process_bind (cmd_.args.bind.pipe);
         process_seqnum ();
         break;
 
@@ -131,10 +126,6 @@ void zmq::object_t::process_command (command_t &cmd_)
     default:
         zmq_assert (false);
     }
-
-    //  The assumption here is that each command is processed once only,
-    //  so deallocating it after processing is all right.
-    deallocate_command (&cmd_);
 }
 
 int zmq::object_t::register_endpoint (const char *addr_, endpoint_t &endpoint_)
@@ -211,7 +202,7 @@ void zmq::object_t::send_own (own_t *destination_, own_t *object_)
 }
 
 void zmq::object_t::send_attach (session_t *destination_, i_engine *engine_,
-    const blob_t &peer_identity_, bool inc_seqnum_)
+    bool inc_seqnum_)
 {
     if (inc_seqnum_)
         destination_->inc_seqnum ();
@@ -223,25 +214,11 @@ void zmq::object_t::send_attach (session_t *destination_, i_engine *engine_,
     cmd.destination = destination_;
     cmd.type = command_t::attach;
     cmd.args.attach.engine = engine_;
-    if (peer_identity_.empty ()) {
-        cmd.args.attach.peer_identity_size = 0;
-        cmd.args.attach.peer_identity = NULL;
-    }
-    else {
-        zmq_assert (peer_identity_.size () <= 0xff);
-        cmd.args.attach.peer_identity_size =
-            (unsigned char) peer_identity_.size ();
-        cmd.args.attach.peer_identity =
-            (unsigned char*) malloc (peer_identity_.size ());
-        alloc_assert (cmd.args.attach.peer_identity_size);
-        memcpy (cmd.args.attach.peer_identity, peer_identity_.data (),
-            peer_identity_.size ());
-    }
     send_command (cmd);
 }
 
 void zmq::object_t::send_bind (own_t *destination_, pipe_t *pipe_,
-    const blob_t &peer_identity_, bool inc_seqnum_)
+    bool inc_seqnum_)
 {
     if (inc_seqnum_)
         destination_->inc_seqnum ();
@@ -253,20 +230,6 @@ void zmq::object_t::send_bind (own_t *destination_, pipe_t *pipe_,
     cmd.destination = destination_;
     cmd.type = command_t::bind;
     cmd.args.bind.pipe = pipe_;
-    if (peer_identity_.empty ()) {
-        cmd.args.bind.peer_identity_size = 0;
-        cmd.args.bind.peer_identity = NULL;
-    }
-    else {
-        zmq_assert (peer_identity_.size () <= 0xff);
-        cmd.args.bind.peer_identity_size =
-            (unsigned char) peer_identity_.size ();
-        cmd.args.bind.peer_identity =
-            (unsigned char*) malloc (peer_identity_.size ());
-        alloc_assert (cmd.args.bind.peer_identity_size);
-        memcpy (cmd.args.bind.peer_identity, peer_identity_.data (),
-            peer_identity_.size ());
-    }
     send_command (cmd);
 }
 
@@ -413,13 +376,12 @@ void zmq::object_t::process_own (own_t *object_)
     zmq_assert (false);
 }
 
-void zmq::object_t::process_attach (i_engine *engine_,
-    const blob_t &peer_identity_)
+void zmq::object_t::process_attach (i_engine *engine_)
 {
     zmq_assert (false);
 }
 
-void zmq::object_t::process_bind (pipe_t *pipe_, const blob_t &peer_identity_)
+void zmq::object_t::process_bind (pipe_t *pipe_)
 {
     zmq_assert (false);
 }

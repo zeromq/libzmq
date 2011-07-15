@@ -38,7 +38,7 @@
 #include "pgm_socket.hpp"
 #include "config.hpp"
 #include "err.hpp"
-#include "uuid.hpp"
+#include "random.hpp"
 #include "stdint.hpp"
 
 #ifndef MSG_ERRQUEUE
@@ -253,20 +253,13 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
     addr.sa_port = port_number;
     addr.sa_addr.sport = DEFAULT_DATA_SOURCE_PORT;
 
-    if (options.identity.size () > 0) {
+    //  Create random GSI.
+    uint32_t buf [2];
+    buf [0] = generate_random ();
+    buf [1] = generate_random ();
+    if (!pgm_gsi_create_from_data (&addr.sa_addr.gsi, (uint8_t*) buf, 8))
+        goto err_abort;
 
-        //  Create gsi from identity.
-        if (!pgm_gsi_create_from_data (&addr.sa_addr.gsi,
-              options.identity.data (), options.identity.size ()))
-            goto err_abort;
-    } else {
-
-        //  Generate GSI from UUID.
-        unsigned char buf [16];
-        generate_uuid (buf);
-        if (!pgm_gsi_create_from_data (&addr.sa_addr.gsi, buf, 16))
-            goto err_abort;
-    }
 
     //  Bind a transport to the specified network devices.
     struct pgm_interface_req_t if_req;

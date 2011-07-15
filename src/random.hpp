@@ -21,13 +21,16 @@
 #ifndef __ZMQ_RANDOM_HPP_INCLUDED__
 #define __ZMQ_RANDOM_HPP_INCLUDED__
 
-#include <stddef.h>
+#include "stdint.hpp"
 
 namespace zmq
 {
 
-    //  Generates truly random bytes (not pseudo-random).
-    void generate_random (void *buf_, size_t size_);
+    //  Seeds the random number generator.
+    void seed_random ();
+
+    //  Generates random value.
+    uint32_t generate_random ();
 
 }
 

@@ -159,8 +159,7 @@ void zmq::session_t::process_plug ()
 {
 }
 
-void zmq::session_t::process_attach (i_engine *engine_,
-    const blob_t &peer_identity_)
+void zmq::session_t::process_attach (i_engine *engine_)
 {
     //  If some other object (e.g. init) notifies us that the connection failed
     //  without creating an engine we need to start the reconnection process.
@@ -171,7 +170,7 @@ void zmq::session_t::process_attach (i_engine *engine_,
     }
 
     //  Trigger the notfication event about the attachment.
-    if (!attached (peer_identity_)) {
+    if (!attached ()) {
         delete engine_;
         return;
     }
@@ -193,7 +192,7 @@ void zmq::session_t::process_attach (i_engine *engine_,
         pipe = pipes [0];
 
         //  Ask socket to plug into the remote end of the pipe.
-        send_bind (socket, pipes [1], peer_identity_);
+        send_bind (socket, pipes [1]);
     }
 
     //  Plug in the engine.
@@ -272,24 +271,9 @@ void zmq::session_t::timer_event (int id_)
     pipe->terminate (false);
 }
 
-bool zmq::session_t::has_engine ()
+bool zmq::session_t::attached ()
 {
-    return engine != NULL;
-}
-
-bool zmq::session_t::register_session (const blob_t &name_, session_t *session_)
-{
-    return socket->register_session (name_, session_);
-}
-
-void zmq::session_t::unregister_session (const blob_t &name_)
-{
-    socket->unregister_session (name_);
-}
-
-bool zmq::session_t::attached (const blob_t &peer_identity_)
-{
-    return xattached (peer_identity_);
+    return xattached ();
 }
 
 void zmq::session_t::detached ()

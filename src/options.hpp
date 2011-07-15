@@ -23,7 +23,6 @@
 
 #include "stddef.h"
 #include "stdint.hpp"
-#include "blob.hpp"
 
 namespace zmq
 {
@@ -39,8 +38,8 @@ namespace zmq
         int sndhwm;
         int rcvhwm;
 
+        //  I/O thread affinity.
         uint64_t affinity;
-        blob_t identity;
 
         //  Maximum tranfer rate [kb/s]. Default 100kb/s.
         int rate;

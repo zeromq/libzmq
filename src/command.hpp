@@ -73,16 +73,12 @@ namespace zmq
             //  session that the connection have failed.
             struct {
                 struct i_engine *engine;
-                unsigned char peer_identity_size;
-                unsigned char *peer_identity;
             } attach;
 
             //  Sent from session to socket to establish pipe(s) between them.
             //  Caller have used inc_seqnum beforehand sending the command.
             struct {
                 class pipe_t *pipe;
-                unsigned char peer_identity_size;
-                unsigned char *peer_identity;
             } bind;
 
             //  Sent by pipe writer to inform dormant pipe reader that there
@@ -145,9 +141,6 @@ namespace zmq
 
         } args;
     };
-
-    //  Function to deallocate dynamically allocated components of the command.
-    void deallocate_command (command_t *cmd_);
 
 }    
 

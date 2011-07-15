@@ -29,7 +29,8 @@ zmq::xrep_t::xrep_t (class ctx_t *parent_, uint32_t tid_) :
     prefetched (false),
     more_in (false),
     current_out (NULL),
-    more_out (false)
+    more_out (false),
+    next_peer_id (generate_random ())
 {
     options.type = ZMQ_XREP;
 
@@ -38,9 +39,6 @@ zmq::xrep_t::xrep_t (class ctx_t *parent_, uint32_t tid_) :
     options.delay_on_disconnect = false;
 
     prefetched_msg.init ();
-
-    //  Start the peer ID sequence from a random point.
-    generate_random (&next_peer_id, sizeof (next_peer_id));
 }
 
 zmq::xrep_t::~xrep_t ()
@@ -49,7 +47,7 @@ zmq::xrep_t::~xrep_t ()
     prefetched_msg.close ();
 }
 
-void zmq::xrep_t::xattach_pipe (pipe_t *pipe_, const blob_t &peer_identity_)
+void zmq::xrep_t::xattach_pipe (pipe_t *pipe_)
 {
     zmq_assert (pipe_);
 

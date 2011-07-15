@@ -35,7 +35,6 @@ libzmq_la_SOURCES = \
     msg.hpp \
     mtrie.hpp \
     mutex.hpp \
-    named_session.hpp \
     object.hpp \
     options.hpp \
     own.hpp \
@@ -68,7 +67,6 @@ libzmq_la_SOURCES = \
     thread.hpp \
     transient_session.hpp \
     trie.hpp \
-    uuid.hpp \
     windows.hpp \
     wire.hpp \
     xpub.hpp \
@@ -79,10 +77,8 @@ libzmq_la_SOURCES = \
     yqueue.hpp \
     zmq_connecter.hpp \
     zmq_engine.hpp \
-    zmq_init.hpp \
     zmq_listener.hpp \
     clock.cpp \
-    command.cpp \
     ctx.cpp \
     connect_session.cpp \
     decoder.cpp \
@@ -100,7 +96,6 @@ libzmq_la_SOURCES = \
     mailbox.cpp \
     msg.cpp \
     mtrie.cpp \
-    named_session.cpp \
     object.cpp \
     options.cpp \
     own.cpp \
@@ -129,7 +124,6 @@ libzmq_la_SOURCES = \
     thread.cpp \
     transient_session.cpp \
     trie.cpp \
-    uuid.cpp \
     xpub.cpp \
     xrep.cpp \
     xreq.cpp \
@@ -137,7 +131,6 @@ libzmq_la_SOURCES = \
     zmq.cpp \
     zmq_connecter.cpp \
     zmq_engine.cpp \
-    zmq_init.cpp \
     zmq_listener.cpp \
     zmq_utils.cpp
 

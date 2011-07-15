@@ -21,21 +21,17 @@
 #ifndef __ZMQ_SOCKET_BASE_HPP_INCLUDED__
 #define __ZMQ_SOCKET_BASE_HPP_INCLUDED__
 
-#include <map>
-#include <vector>
+#include <string>
 
 #include "own.hpp"
 #include "array.hpp"
-#include "mutex.hpp"
 #include "stdint.hpp"
 #include "poller.hpp"
 #include "atomic_counter.hpp"
 #include "i_poll_events.hpp"
 #include "mailbox.hpp"
 #include "stdint.hpp"
-#include "blob.hpp"
 #include "pipe.hpp"
-#include "own.hpp"
 
 namespace zmq
 {
@@ -78,11 +74,6 @@ namespace zmq
         bool has_in ();
         bool has_out ();
 
-        //  Registry of named sessions.
-        bool register_session (const blob_t &name_, class session_t *session_);
-        void unregister_session (const blob_t &name_);
-        class session_t *find_session (const blob_t &name_);
-
         //  Using this function reaper thread ask the socket to regiter with
         //  its poller.
         void start_reaping (poller_t *poller_);
@@ -106,8 +97,7 @@ namespace zmq
 
         //  Concrete algorithms for the x- methods are to be defined by
         //  individual socket types.
-        virtual void xattach_pipe (class pipe_t *pipe_,
-            const blob_t &peer_identity_) = 0;
+        virtual void xattach_pipe (class pipe_t *pipe_) = 0;
 
         //  The default implementation assumes there are no specific socket
         //  options for the particular socket type. If not so, overload this
@@ -158,7 +148,7 @@ namespace zmq
         int check_protocol (const std::string &protocol_);
 
         //  Register the pipe with this socket.
-        void attach_pipe (class pipe_t *pipe_, const blob_t &peer_identity_);
+        void attach_pipe (class pipe_t *pipe_);
 
         //  Processes commands sent to this socket (if any). If timeout is -1,
         //  returns only after at least one command was processed.
@@ -168,7 +158,7 @@ namespace zmq
 
         //  Handlers for incoming commands.
         void process_stop ();
-        void process_bind (class pipe_t *pipe_, const blob_t &peer_identity_);
+        void process_bind (class pipe_t *pipe_);
         void process_unplug ();
         void process_term (int linger_);
 
@@ -194,14 +184,6 @@ namespace zmq
 
         //  True if the last message received had MORE flag set.
         bool rcvmore;
-
-        //  Lists of existing sessions. This list is never referenced from
-        //  within the socket, instead it is used by objects owned by
-        //  the socket. As those objects can live in different threads,
-        //  the access is synchronised by mutex.
-        typedef std::map <blob_t, session_t*> sessions_t;
-        sessions_t sessions;
-        mutex_t sessions_sync;
 
         socket_base_t (const socket_base_t&);
         const socket_base_t &operator = (const socket_base_t&);

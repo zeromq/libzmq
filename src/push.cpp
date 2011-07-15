@@ -33,7 +33,7 @@ zmq::push_t::~push_t ()
 {
 }
 
-void zmq::push_t::xattach_pipe (pipe_t *pipe_, const blob_t &peer_identity_)
+void zmq::push_t::xattach_pipe (pipe_t *pipe_)
 {
     zmq_assert (pipe_);
     lb.attach (pipe_);

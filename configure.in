@@ -90,8 +90,6 @@ case "${host_os}" in
         fi
         AC_DEFINE(ZMQ_HAVE_LINUX, 1, [Have Linux OS])
         AC_CHECK_LIB(rt, sem_init)
-        AC_CHECK_LIB(uuid, uuid_generate, , 
-            [AC_MSG_ERROR([cannot link with -luuid, install uuid-dev.])])
         ;;
     *solaris*)
         # Define on Solaris to enable all library features
@@ -100,8 +98,6 @@ case "${host_os}" in
         AC_CHECK_LIB(socket, socket)
         AC_CHECK_LIB(nsl, gethostbyname)
         AC_CHECK_LIB(rt, sem_init)
-        AC_CHECK_LIB(uuid, uuid_generate, ,
-            [AC_MSG_ERROR([cannot link with -luuid, install uuid-dev.])])
         AC_MSG_CHECKING([whether atomic operations can be used])
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
             [[#include <atomic.h>]],
@@ -163,18 +159,15 @@ case "${host_os}" in
         libzmq_pedantic="no"
         AC_DEFINE(ZMQ_HAVE_QNXNTO, 1, [Have QNX Neutrino OS])
         AC_CHECK_LIB(socket, socket)
-        AC_CHECK_LIB(crypto, RAND_bytes)
         ;;
     *aix*)
         AC_DEFINE(ZMQ_HAVE_AIX, 1, [Have AIX OS])
-        AC_CHECK_LIB(crypto,RAND_bytes)
         ;;
     *hpux*)
         # Define on HP-UX to enable all library features
         CPPFLAGS="-D_POSIX_C_SOURCE=200112L $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_HPUX, 1, [Have HPUX OS])
         AC_CHECK_LIB(rt, sem_init)
-        AC_CHECK_LIB(crypto, RAND_bytes)
         ;;
     *mingw32*)
         AC_DEFINE(ZMQ_HAVE_WINDOWS, 1, [Have Windows OS])
@@ -201,12 +194,6 @@ case "${host_os}" in
         # Define on Cygwin to enable all library features
         CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_CYGWIN, 1, [Have Cygwin])
-        # Cygwin provides libuuid as part of the e2fsprogs package, and somewhat
-        # uselessly installs the library in /usr/lib/e2fsprogs
-        LDFLAGS="-L/usr/lib/e2fsprogs ${LDFLAGS}"
-        AC_CHECK_LIB(uuid, uuid_generate, ,
-            [AC_MSG_ERROR([cannot link with -luuid, install the e2fsprogs package.])])
-
         if test "x$enable_static" = "xyes"; then
             AC_MSG_ERROR([Building static libraries is not supported under Cygwin])
         fi

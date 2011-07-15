@@ -18,23 +18,35 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <stdlib.h>
+
+#include "platform.hpp"
+#if defined ZMQ_HAVE_WINDOWS
+#include "windows.hpp"
+#else
+#include <unistd.h>
+#endif
+
 #include "random.hpp"
 #include "stdint.hpp"
-#include "uuid.hpp"
-#include "err.hpp"
+#include "clock.hpp"
 
-//  Here we can use different ways of generating random data, as avialable
-//  on different platforms. At the moment, we'll assume the UUID is random
-//  enough to use for that purpose.
-void zmq::generate_random (void *buf_, size_t size_)
+void zmq::seed_random ()
 {
-    //  Collapsing an UUID into 4 bytes.
-    zmq_assert (size_ == 4);
-    uint32_t buff [4];
-    generate_uuid ((void*) buff);
-    uint32_t result = buff [0];
-    result ^= buff [1];
-    result ^= buff [2];
-    result ^= buff [3];
-    *((uint32_t*) buf_) = result;
+#if defined ZMQ_HAVE_WINDOWS
+    int pid = (int) GetCurrentProcessId ();
+#else
+    int pid = (int) getpid ();
+#endif
+    srand ((unsigned int) (clock_t::now_us () + pid));
 }
+
+uint32_t zmq::generate_random ()
+{
+    //  Compensate for the fact that rand() returns signed integer.
+    uint32_t low = (uint32_t) rand ();
+    uint32_t high = (uint32_t) rand ();
+    high <<= (sizeof (int) * 8 - 1);
+    return high | low;
+}
+

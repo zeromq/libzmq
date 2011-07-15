@@ -30,7 +30,7 @@ zmq::transient_session_t::~transient_session_t ()
 {
 }
 
-bool zmq::transient_session_t::xattached (const blob_t &peer_identity_)
+bool zmq::transient_session_t::xattached ()
 {
     //  Transient session is always valid.
     return true;

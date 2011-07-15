@@ -21,7 +21,8 @@
 #include <new>
 
 #include "zmq_listener.hpp"
-#include "zmq_init.hpp"
+#include "transient_session.hpp"
+#include "zmq_engine.hpp"
 #include "io_thread.hpp"
 #include "err.hpp"
 
@@ -63,16 +64,21 @@ void zmq::zmq_listener_t::in_event ()
     //  TODO: Handle specific errors like ENFILE/EMFILE etc.
     if (fd == retired_fd)
         return;
+    //  Create the engine object for this connection.
+    zmq_engine_t *engine = new (std::nothrow) zmq_engine_t (fd, options);
+    alloc_assert (engine);
 
     //  Choose I/O thread to run connecter in. Given that we are already
     //  running in an I/O thread, there must be at least one available.
     io_thread_t *io_thread = choose_io_thread (options.affinity);
     zmq_assert (io_thread);
 
-    //  Create and launch an init object. 
-    zmq_init_t *init = new (std::nothrow) zmq_init_t (io_thread, socket,
-        NULL, fd, options);
-    alloc_assert (init);
-    launch_child (init);
+    //  Create and launch a session object. 
+    transient_session_t *session = new (std::nothrow)
+        transient_session_t (io_thread, socket, options);
+    alloc_assert (session);
+    session->inc_seqnum ();
+    launch_child (session);
+    send_attach (session, engine, false);
 }
 

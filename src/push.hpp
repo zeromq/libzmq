@@ -38,7 +38,7 @@ namespace zmq
     protected:
 
         //  Overloads of functions from socket_base_t.
-        void xattach_pipe (class pipe_t *pipe_, const blob_t &peer_identity_);
+        void xattach_pipe (class pipe_t *pipe_);
         int xsend (class msg_t *msg_, int flags_);
         bool xhas_out ();
         void xwrite_activated (class pipe_t *pipe_);

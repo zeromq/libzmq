@@ -36,7 +36,7 @@ zmq::xreq_t::~xreq_t ()
 {
 }
 
-void zmq::xreq_t::xattach_pipe (pipe_t *pipe_, const blob_t &peer_identity_)
+void zmq::xreq_t::xattach_pipe (pipe_t *pipe_)
 {
     zmq_assert (pipe_);
     fq.attach (pipe_);

@@ -35,7 +35,7 @@ zmq::pair_t::~pair_t ()
     zmq_assert (!pipe);
 }
 
-void zmq::pair_t::xattach_pipe (pipe_t *pipe_, const blob_t &peer_identity_)
+void zmq::pair_t::xattach_pipe (pipe_t *pipe_)
 {
     zmq_assert (!pipe);
     pipe = pipe_;

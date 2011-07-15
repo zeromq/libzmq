@@ -75,19 +75,6 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         affinity = *((uint64_t*) optval_);
         return 0;
 
-    case ZMQ_IDENTITY:
-
-        //  Empty identity is invalid as well as identity longer than
-        //  255 bytes. Identity starting with binary zero is invalid
-        //  as these are used for auto-generated identities.
-        if (optvallen_ < 1 || optvallen_ > 255 ||
-              *((const unsigned char*) optval_) == 0) {
-            errno = EINVAL;
-            return -1;
-        }
-        identity.assign ((const unsigned char*) optval_, optvallen_);
-        return 0;
-
     case ZMQ_RATE:
         if (optvallen_ != sizeof (int) || *((int*) optval_) <= 0) {
             errno = EINVAL;
@@ -227,15 +214,6 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
         }
         *((uint64_t*) optval_) = affinity;
         *optvallen_ = sizeof (uint64_t);
-        return 0;
-
-    case ZMQ_IDENTITY:
-        if (*optvallen_ < identity.size ()) {
-            errno = EINVAL;
-            return -1;
-        }
-        memcpy (optval_, identity.data (), identity.size ());
-        *optvallen_ = identity.size ();
         return 0;
 
     case ZMQ_RATE:

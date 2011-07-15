@@ -29,15 +29,12 @@ zmq::connect_session_t::connect_session_t (class io_thread_t *io_thread_,
       const char *protocol_, const char *address_) :
     session_t (io_thread_, socket_, options_),
     protocol (protocol_),
-    address (address_),
-    connected (false)
+    address (address_)
 {
 }
 
 zmq::connect_session_t::~connect_session_t ()
 {
-    if (connected && !peer_identity.empty ())
-        unregister_session (peer_identity);
 }
 
 void zmq::connect_session_t::process_plug ()
@@ -87,7 +84,7 @@ void zmq::connect_session_t::start_connecting (bool wait_)
             int rc = pgm_sender->init (udp_encapsulation, address.c_str ());
             zmq_assert (rc == 0);
 
-            send_attach (this, pgm_sender, blob_t ());
+            send_attach (this, pgm_sender);
         }
         else if (options.type == ZMQ_SUB || options.type == ZMQ_XSUB) {
 
@@ -99,7 +96,7 @@ void zmq::connect_session_t::start_connecting (bool wait_)
             int rc = pgm_receiver->init (udp_encapsulation, address.c_str ());
             zmq_assert (rc == 0);
 
-            send_attach (this, pgm_receiver, blob_t ());
+            send_attach (this, pgm_receiver);
         }
         else
             zmq_assert (false);
@@ -111,45 +108,8 @@ void zmq::connect_session_t::start_connecting (bool wait_)
     zmq_assert (false);
 }
 
-bool zmq::connect_session_t::xattached (const blob_t &peer_identity_)
+bool zmq::connect_session_t::xattached ()
 {
-    //  If there was no previous connection...
-    if (!connected) {
-
-        //  Peer has transient identity.
-        if (peer_identity_.empty () || peer_identity_ [0] == 0) {
-            connected = true;
-            return true;
-        }
-
-        //  Peer has strong identity. Let's register it and check whether noone
-        //  else is using the same identity.
-        if (!register_session (peer_identity_, this)) {
-            log ("DPID: duplicate peer identity - disconnecting peer");
-            return false;
-        }
-        connected = true;
-        peer_identity = peer_identity_;
-        return true;
-    }
-
-    //  New engine from listener can conflict with existing engine.
-    //  Alternatively, new engine created by reconnection process can
-    //  conflict with engine supplied by listener in the meantime.
-    if (has_engine ()) {
-        log ("DPID: duplicate peer identity - disconnecting peer");
-        return false;
-    }
-
-    //  If there have been a connection before, we have to check whether
-    //  peer's identity haven't changed in the meantime.
-    if ((peer_identity_.empty () || peer_identity_ [0] == 0) &&
-          peer_identity.empty ())
-        return true;
-    if (peer_identity != peer_identity_) {
-        log ("CHID: peer have changed identity - disconnecting peer");
-        return false;
-    }
     return true;
 }
 

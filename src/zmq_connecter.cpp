@@ -30,7 +30,6 @@
 
 #include "zmq_connecter.hpp"
 #include "zmq_engine.hpp"
-#include "zmq_init.hpp"
 #include "io_thread.hpp"
 #include "err.hpp"
 
@@ -86,16 +85,12 @@ void zmq::zmq_connecter_t::out_event ()
         return;
     }
 
-    //  Choose I/O thread to run connecter in. Given that we are already
-    //  running in an I/O thread, there must be at least one available.
-    io_thread_t *io_thread = choose_io_thread (options.affinity);
-    zmq_assert (io_thread);
+    //  Create the engine object for this connection.
+    zmq_engine_t *engine = new (std::nothrow) zmq_engine_t (fd, options);
+    alloc_assert (engine);
 
-    //  Create an init object. 
-    zmq_init_t *init = new (std::nothrow) zmq_init_t (io_thread, NULL,
-        session, fd, options);
-    alloc_assert (init);
-    launch_sibling (init);
+    //  Attach the engine to the corresponding session object.
+    send_attach (session, engine);
 
     //  Shut the connecter down.
     terminate ();
