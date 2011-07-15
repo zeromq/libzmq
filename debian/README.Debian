@@ -1,4 +1,0 @@
-As of version 2.0.6, the zeromq source tarball only includes the C/C++ library;
-the other language bindings (available are at least: Java, Ruby, Python,
-Haskell, Common Lisp) are shipped separately.  To my knowledge, Debian packages
-are not available.
