@@ -40,7 +40,6 @@ zmq::options_t::options_t () :
     maxmsgsize (-1),
     rcvtimeo (-1),
     sndtimeo (-1),
-    immediate_connect (true),
     delay_on_close (true),
     delay_on_disconnect (true),
     filter (false)

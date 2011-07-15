@@ -79,12 +79,6 @@ namespace zmq
         int rcvtimeo;
         int sndtimeo;
 
-        //  If true, when connecting, pipes are created immediately without
-        //  waiting for the connection to be established. That way the socket
-        //  is not aware of the peer's identity, however, it is able to send
-        //  messages straight away.
-        bool immediate_connect;
-
         //  If true, session reads all the pending messages from the pipe and
         //  sends them to the network when socket is closed.
         bool delay_on_close;
