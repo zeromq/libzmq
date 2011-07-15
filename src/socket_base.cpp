@@ -59,8 +59,6 @@
 #include "xrep.hpp"
 #include "xpub.hpp"
 #include "xsub.hpp"
-#include "router.hpp"
-#include "dealer.hpp"
 
 bool zmq::socket_base_t::check_tag ()
 {
@@ -105,12 +103,6 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
         break;
     case ZMQ_XSUB:
         s = new (std::nothrow) xsub_t (parent_, tid_);
-        break;
-    case ZMQ_ROUTER:
-        s = new (std::nothrow) router_t (parent_, tid_);
-        break;
-    case ZMQ_DEALER:
-        s = new (std::nothrow) dealer_t (parent_, tid_);
         break;
     default:
         errno = EINVAL;
