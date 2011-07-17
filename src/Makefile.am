@@ -23,6 +23,7 @@ libzmq_la_SOURCES = \
     err.hpp \
     fd.hpp \
     fq.hpp \
+    generic.hpp \
     io_object.hpp \
     io_thread.hpp \
     ip.hpp \
@@ -88,6 +89,7 @@ libzmq_la_SOURCES = \
     epoll.cpp \
     err.cpp \
     fq.cpp \
+    generic.cpp \
     io_object.cpp \
     io_thread.cpp \
     ip.cpp \

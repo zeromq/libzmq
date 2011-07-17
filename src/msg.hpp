@@ -48,6 +48,7 @@ namespace zmq
         enum
         {
             label = 1,
+            command = 2,
             shared = 64,
             more = 128
         };

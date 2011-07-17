@@ -128,6 +128,10 @@ namespace zmq
         //  handlers explicitly. If required, it will deallocate the socket.
         void check_destroy ();
 
+        //  Moves the flags from the message to local variables,
+        //  to be later retrieved by getsockopt.
+        void extract_flags (msg_t *msg_);
+
         //  Used to check whether the object is a socket.
         uint32_t tag;
 
@@ -181,6 +185,9 @@ namespace zmq
 
         //  True if the last message received had LABEL flag set.
         bool rcvlabel;
+
+        //  True if the last message received had COMMAND flag set.
+        bool rcvcmd;
 
         //  True if the last message received had MORE flag set.
         bool rcvmore;
