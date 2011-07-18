@@ -175,13 +175,17 @@ int zmq::signaler_t::wait (int timeout_)
     FD_ZERO (&fds);
     FD_SET (r, &fds);
     struct timeval timeout;
-    timeout.tv_sec = timeout_ / 1000;
-    timeout.tv_usec = timeout_ % 1000 * 1000;
+    if (timeout_ >= 0) {
+        timeout.tv_sec = timeout_ / 1000;
+        timeout.tv_usec = timeout_ % 1000 * 1000;
+    }
 #ifdef ZMQ_HAVE_WINDOWS
-    int rc = select (0, &fds, NULL, NULL, &timeout);
+    int rc = select (0, &fds, NULL, NULL,
+        timeout_ >= 0 ? &timeout : NULL);
     wsa_assert (rc != SOCKET_ERROR);
 #else
-    int rc = select (r + 1, &fds, NULL, NULL, &timeout);
+    int rc = select (r + 1, &fds, NULL, NULL,
+        timeout_ >= 0 ? &timeout : NULL);
     if (unlikely (rc < 0)) {
         zmq_assert (errno == EINTR);
         return -1;
