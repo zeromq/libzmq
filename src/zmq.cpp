@@ -20,16 +20,33 @@
 
 #include "platform.hpp"
 
-//  On AIX, poll.h has to be included before zmq.h to get consistent
-//  definition of pollfd structure (AIX uses 'reqevents' and 'retnevents'
-//  instead of 'events' and 'revents' and defines macros to map from POSIX-y
-//  names to AIX-specific names).
-#if defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD ||\
+#if defined ZMQ_FORCE_SELECT
+#define ZMQ_POLL_BASED_ON_SELECT
+#elif defined ZMQ_FORCE_POLL
+#define ZMQ_POLL_BASED_ON_POLL
+#elif defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD ||\
     defined ZMQ_HAVE_OPENBSD || defined ZMQ_HAVE_SOLARIS ||\
     defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_QNXNTO ||\
     defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_AIX ||\
     defined ZMQ_HAVE_NETBSD
+#define ZMQ_POLL_BASED_ON_POLL
+#elif defined ZMQ_HAVE_WINDOWS || defined ZMQ_HAVE_OPENVMS ||\
+	defined ZMQ_HAVE_CYGWIN
+#define ZMQ_POLL_BASED_ON_SELECT
+#endif
+
+//  On AIX platform, poll.h has to be included first to get consistent
+//  definition of pollfd structure (AIX uses 'reqevents' and 'retnevents'
+//  instead of 'events' and 'revents' and defines macros to map from POSIX-y
+//  names to AIX-specific names).
+#if defined ZMQ_POLL_BASED_ON_POLL
 #include <poll.h>
+#endif
+
+#if defined WINDOWS
+#include "windows.hpp"
+#else
+#include <unistd.h>
 #endif
 
 #include <string.h>
@@ -321,21 +338,6 @@ size_t zmq_msg_size (zmq_msg_t *msg_)
 {
     return ((zmq::msg_t*) msg_)->size ();
 }
-
-#if defined ZMQ_FORCE_SELECT
-#define ZMQ_POLL_BASED_ON_SELECT
-#elif defined ZMQ_FORCE_POLL
-#define ZMQ_POLL_BASED_ON_POLL
-#elif defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD ||\
-    defined ZMQ_HAVE_OPENBSD || defined ZMQ_HAVE_SOLARIS ||\
-    defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_QNXNTO ||\
-    defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_AIX ||\
-    defined ZMQ_HAVE_NETBSD
-#define ZMQ_POLL_BASED_ON_POLL
-#elif defined ZMQ_HAVE_WINDOWS || defined ZMQ_HAVE_OPENVMS ||\
-	defined ZMQ_HAVE_CYGWIN
-#define ZMQ_POLL_BASED_ON_SELECT
-#endif
 
 int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 {
@@ -679,15 +681,15 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 #endif
 }
 
+int zmq_errno ()
+{
+    return errno;
+}
+
 #if defined ZMQ_POLL_BASED_ON_SELECT
 #undef ZMQ_POLL_BASED_ON_SELECT
 #endif
 #if defined ZMQ_POLL_BASED_ON_POLL
 #undef ZMQ_POLL_BASED_ON_POLL
 #endif
-
-int zmq_errno ()
-{
-    return errno;
-}
 
