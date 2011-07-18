@@ -193,16 +193,7 @@ by C programmers. The intent is that programmers using 0MQ from other languages
 shall refer to this documentation alongside any documentation provided by the
 vendor of their language binding.
 
-
-C++ language binding
-~~~~~~~~~~~~~~~~~~~~
-The 0MQ distribution includes a $$C++$$ language binding, which is documented
-separately in linkzmq:zmq_cpp[7].
-
-
-Other language bindings
-~~~~~~~~~~~~~~~~~~~~~~~
-Other language bindings (Python, Ruby, Java and more) are provided by members
+Language bindings (Python, Ruby, Java and more) are provided by members
 of the 0MQ community and pointers can be found on the 0MQ website.
 
 
