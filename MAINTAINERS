@@ -1,5 +1,5 @@
 Component: Atomic Operations
-Maintainer: Martin Lucina
+Maintainer: Martin Sustrik
 Contact: mato@kotelna.sk
 
 Component: Lock-free Algorithms
@@ -39,11 +39,11 @@ Maintainer: Martin Sustrik
 Contact: sustrik@250bpm.com
 
 Component: Documentation
-Maintainer: Martin Lucina
+Maintainer: Martin Sustrik
 Contact: mato@kotelna.sk
 
 Component: Autotools build system
-Maintainer: Mikko Koppanen, Martin Lucina
+Maintainer: Mikko Koppanen
 Contact: mato@kotelna.sk
 
 Component: MSVC build system
