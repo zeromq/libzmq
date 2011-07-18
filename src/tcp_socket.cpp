@@ -158,6 +158,12 @@ int zmq::tcp_socket_t::open (fd_t fd_, int sndbuf_, int rcvbuf_)
         errno_assert (rc == 0);
     }
 
+#if defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_FREEBSD
+    int set = 1;
+    int rc = setsockopt (s, SOL_SOCKET, SO_NOSIGPIPE, &set, sizeof (int));
+    errno_assert (rc == 0);
+#endif
+
     return 0;
 }
 
