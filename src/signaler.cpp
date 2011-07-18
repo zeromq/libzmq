@@ -30,7 +30,8 @@
     defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_AIX ||\
     defined ZMQ_HAVE_NETBSD
 #define ZMQ_SIGNALER_WAIT_BASED_ON_POLL
-#elif defined ZMQ_HAVE_WINDOWS || defined ZMQ_HAVE_OPENVMS
+#elif defined ZMQ_HAVE_WINDOWS || defined ZMQ_HAVE_OPENVMS ||\
+	defined ZMQ_HAVE_CYGWIN
 #define ZMQ_SIGNALER_WAIT_BASED_ON_SELECT
 #endif
 
