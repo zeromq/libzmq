@@ -18,8 +18,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_GENERIC_HPP_INCLUDED__
-#define __ZMQ_GENERIC_HPP_INCLUDED__
+#ifndef __ZMQ_ROUTER_HPP_INCLUDED__
+#define __ZMQ_ROUTER_HPP_INCLUDED__
 
 #include <map>
 #include <deque>
@@ -32,14 +32,13 @@
 namespace zmq
 {
 
-    //  TODO: This class uses O(n) scheduling. Rewrite it to use O(1) algorithm.
-    class generic_t :
+    class router_t :
         public socket_base_t
     {
     public:
 
-        generic_t (class ctx_t *parent_, uint32_t tid_);
-        ~generic_t ();
+        router_t (class ctx_t *parent_, uint32_t tid_);
+        ~router_t ();
 
         //  Overloads of functions from socket_base_t.
         void xattach_pipe (class pipe_t *pipe_);
@@ -99,8 +98,8 @@ namespace zmq
         typedef std::deque <pending_command_t> pending_commands_t;
         pending_commands_t pending_commands;
 
-        generic_t (const generic_t&);
-        const generic_t &operator = (const generic_t&);
+        router_t (const router_t&);
+        const router_t &operator = (const router_t&);
     };
 
 }

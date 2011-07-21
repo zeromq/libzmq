@@ -18,7 +18,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "generic.hpp"
+#include "router.hpp"
 #include "pipe.hpp"
 #include "wire.hpp"
 #include "random.hpp"
@@ -26,7 +26,7 @@
 #include "wire.hpp"
 #include "err.hpp"
 
-zmq::generic_t::generic_t (class ctx_t *parent_, uint32_t tid_) :
+zmq::router_t::router_t (class ctx_t *parent_, uint32_t tid_) :
     socket_base_t (parent_, tid_),
     prefetched (false),
     more_in (false),
@@ -34,18 +34,18 @@ zmq::generic_t::generic_t (class ctx_t *parent_, uint32_t tid_) :
     more_out (false),
     next_peer_id (generate_random ())
 {
-    options.type = ZMQ_GENERIC;
+    options.type = ZMQ_ROUTER;
 
     prefetched_msg.init ();
 }
 
-zmq::generic_t::~generic_t ()
+zmq::router_t::~router_t ()
 {
     zmq_assert (outpipes.empty ());
     prefetched_msg.close ();
 }
 
-void zmq::generic_t::xattach_pipe (pipe_t *pipe_)
+void zmq::router_t::xattach_pipe (pipe_t *pipe_)
 {
     zmq_assert (pipe_);
 
@@ -82,7 +82,7 @@ void zmq::generic_t::xattach_pipe (pipe_t *pipe_)
     ++next_peer_id;
 }
 
-void zmq::generic_t::xterminated (pipe_t *pipe_)
+void zmq::router_t::xterminated (pipe_t *pipe_)
 {
     fq.terminated (pipe_);
 
@@ -104,12 +104,12 @@ void zmq::generic_t::xterminated (pipe_t *pipe_)
     zmq_assert (false);
 }
 
-void zmq::generic_t::xread_activated (pipe_t *pipe_)
+void zmq::router_t::xread_activated (pipe_t *pipe_)
 {
     fq.activated (pipe_);
 }
 
-void zmq::generic_t::xwrite_activated (pipe_t *pipe_)
+void zmq::router_t::xwrite_activated (pipe_t *pipe_)
 {
     for (outpipes_t::iterator it = outpipes.begin ();
           it != outpipes.end (); ++it) {
@@ -122,7 +122,7 @@ void zmq::generic_t::xwrite_activated (pipe_t *pipe_)
     zmq_assert (false);
 }
 
-int zmq::generic_t::xsend (msg_t *msg_, int flags_)
+int zmq::router_t::xsend (msg_t *msg_, int flags_)
 {
     //  If this is the first part of the message it's the ID of the
     //  peer to send the message to.
@@ -188,7 +188,7 @@ int zmq::generic_t::xsend (msg_t *msg_, int flags_)
     return 0;
 }
 
-int zmq::generic_t::xrecv (msg_t *msg_, int flags_)
+int zmq::router_t::xrecv (msg_t *msg_, int flags_)
 {
     //  If there's a queued command, pass it to the caller.
     if (unlikely (!more_in && !pending_commands.empty ())) {
@@ -236,7 +236,7 @@ int zmq::generic_t::xrecv (msg_t *msg_, int flags_)
     return 0;
 }
 
-int zmq::generic_t::rollback (void)
+int zmq::router_t::rollback (void)
 {
     if (current_out) {
         current_out->rollback ();
@@ -246,14 +246,14 @@ int zmq::generic_t::rollback (void)
     return 0;
 }
 
-bool zmq::generic_t::xhas_in ()
+bool zmq::router_t::xhas_in ()
 {
     if (prefetched)
         return true;
     return fq.has_in ();
 }
 
-bool zmq::generic_t::xhas_out ()
+bool zmq::router_t::xhas_out ()
 {
     //  In theory, GENERIC socket is always ready for writing. Whether actual
     //  attempt to write succeeds depends on whitch pipe the message is going
