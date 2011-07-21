@@ -118,7 +118,9 @@ This package contains ZeroMQ related development libraries and header files.
 %{_mandir}/man3/zmq_msg_size.3.gz
 %{_mandir}/man3/zmq_poll.3.gz
 %{_mandir}/man3/zmq_recv.3.gz
+%{_mandir}/man3/zmq_recvmsg.3.gz
 %{_mandir}/man3/zmq_send.3.gz
+%{_mandir}/man3/zmq_sendmsg.3.gz
 %{_mandir}/man3/zmq_setsockopt.3.gz
 %{_mandir}/man3/zmq_socket.3.gz
 %{_mandir}/man3/zmq_strerror.3.gz
