@@ -43,7 +43,7 @@
 #include <poll.h>
 #endif
 
-#if defined WINDOWS
+#if defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
 #else
 #include <unistd.h>

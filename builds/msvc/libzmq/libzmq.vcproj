@@ -251,19 +251,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\command.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\src\connect_session.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\..\src\ctx.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\dealer.cpp"
 				>
 			</File>
 			<File
@@ -324,10 +316,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\mtrie.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\named_session.cpp"
 				>
 			</File>
 			<File
@@ -447,10 +435,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\uuid.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\src\xpub.cpp"
 				>
 			</File>
@@ -476,10 +460,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\zmq_engine.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\zmq_init.cpp"
 				>
 			</File>
 			<File
@@ -530,10 +510,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\ctx.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\dealer.hpp"
 				>
 			</File>
 			<File
@@ -614,10 +590,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\mutex.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\named_session.hpp"
 				>
 			</File>
 			<File
@@ -753,10 +725,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\uuid.hpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\src\windows.hpp"
 				>
 			</File>
@@ -794,10 +762,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\zmq_engine.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\zmq_init.hpp"
 				>
 			</File>
 			<File
