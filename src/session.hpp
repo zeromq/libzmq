@@ -21,6 +21,8 @@
 #ifndef __ZMQ_SESSION_HPP_INCLUDED__
 #define __ZMQ_SESSION_HPP_INCLUDED__
 
+#include <string>
+
 #include "own.hpp"
 #include "i_engine.hpp"
 #include "io_object.hpp"
@@ -32,18 +34,18 @@ namespace zmq
     class session_t :
         public own_t,
         public io_object_t,
-        public i_engine_sink,
         public i_pipe_events
     {
     public:
 
-        session_t (class io_thread_t *io_thread_,
-            class socket_base_t *socket_, const options_t &options_);
+        session_t (class io_thread_t *io_thread_, bool connect_,
+            class socket_base_t *socket_, const options_t &options_,
+            const char *protocol_, const char *address_);
 
         //  To be used once only, when creating the session.
         void attach_pipe (class pipe_t *pipe_);
 
-        //  i_engine_sink interface implementation.
+        //  Following functions are the interface exposed towards the engine.
         bool read (msg_t *msg_);
         bool write (msg_t *msg_);
         void flush ();
@@ -55,22 +57,12 @@ namespace zmq
         void hiccuped (class pipe_t *pipe_);
         void terminated (class pipe_t *pipe_);
 
-    protected:
-
-        //  Events from the engine. Attached is triggered when session is
-        //  attached to a peer. The function can reject the new peer by
-        //  returning false. Detached is triggered at the beginning of
-        //  the termination process when session is about to be detached from
-        //  the peer. If it returns false, session will be terminated.
-        //  To be overloaded by the derived session type.
-        virtual bool xattached () = 0;
-        virtual bool xdetached () = 0;
+    private:
 
         ~session_t ();
 
-    private:
+        void start_connecting (bool wait_);
 
-        bool attached ();
         void detached ();
 
         //  Handlers for incoming commands.
@@ -87,6 +79,10 @@ namespace zmq
 
         //  Call this function to move on with the delayed process_term.
         void proceed_with_term ();
+
+        //  If true, this session (re)connects to the peer. Otherwise, it's
+        //  a transient session created by the listener.
+        bool connect;
 
         //  Pipe connecting the session to its socket.
         class pipe_t *pipe;
@@ -114,6 +110,10 @@ namespace zmq
 
         //  True is linger timer is running.
         bool has_linger_timer;
+
+        //  Protocol and address to use when connecting.
+        std::string protocol;
+        std::string address;
 
         session_t (const session_t&);
         const session_t &operator = (const session_t&);

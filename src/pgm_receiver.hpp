@@ -52,7 +52,7 @@ namespace zmq
         int init (bool udp_encapsulation_, const char *network_);
 
         //  i_engine interface implementation.
-        void plug (class io_thread_t *io_thread_, struct i_engine_sink *sink_);
+        void plug (class io_thread_t *io_thread_, class session_t *session_);
         void unplug ();
         void terminate ();
         void activate_in ();
@@ -105,7 +105,7 @@ namespace zmq
         options_t options;
 
         //  Associated session.
-        i_engine_sink *sink;
+        class session_t *session;
 
         //  Most recently used decoder.
         decoder_t *mru_decoder;

@@ -12,7 +12,6 @@ libzmq_la_SOURCES = \
     clock.hpp \
     command.hpp \
     config.hpp \
-    connect_session.hpp \
     ctx.hpp \
     decoder.hpp \
     devpoll.hpp \
@@ -64,7 +63,6 @@ libzmq_la_SOURCES = \
     tcp_listener.hpp \
     tcp_socket.hpp \
     thread.hpp \
-    transient_session.hpp \
     trie.hpp \
     windows.hpp \
     wire.hpp \
@@ -79,7 +77,6 @@ libzmq_la_SOURCES = \
     zmq_listener.hpp \
     clock.cpp \
     ctx.cpp \
-    connect_session.cpp \
     decoder.cpp \
     devpoll.cpp \
     dist.cpp \
@@ -122,7 +119,6 @@ libzmq_la_SOURCES = \
     tcp_listener.cpp \
     tcp_socket.cpp \
     thread.cpp \
-    transient_session.cpp \
     trie.cpp \
     xpub.cpp \
     xrep.cpp \

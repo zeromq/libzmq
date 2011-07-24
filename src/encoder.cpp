@@ -19,12 +19,12 @@
 */
 
 #include "encoder.hpp"
-#include "i_engine.hpp"
+#include "session.hpp"
 #include "wire.hpp"
 
 zmq::encoder_t::encoder_t (size_t bufsize_) :
     encoder_base_t <encoder_t> (bufsize_),
-    sink (NULL)
+    session (NULL)
 {
     int rc = in_progress.init ();
     errno_assert (rc == 0);
@@ -39,9 +39,9 @@ zmq::encoder_t::~encoder_t ()
     errno_assert (rc == 0);
 }
 
-void zmq::encoder_t::set_sink (i_engine_sink *sink_)
+void zmq::encoder_t::set_session (session_t *session_)
 {
-    sink = sink_;
+    session = session_;
 }
 
 bool zmq::encoder_t::size_ready ()
@@ -62,7 +62,7 @@ bool zmq::encoder_t::message_ready ()
     //  Note that new state is set only if write is successful. That way
     //  unsuccessful write will cause retry on the next state machine
     //  invocation.
-    if (!sink || !sink->read (&in_progress)) {
+    if (!session || !session->read (&in_progress)) {
         rc = in_progress.init ();
         errno_assert (rc == 0);
         return false;

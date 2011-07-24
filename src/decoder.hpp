@@ -184,7 +184,7 @@ namespace zmq
         decoder_t (size_t bufsize_, int64_t maxmsgsize_);
         ~decoder_t ();
 
-        void set_sink (struct i_engine_sink *sink_);
+        void set_session (class session_t *session_);
 
     private:
 
@@ -193,7 +193,7 @@ namespace zmq
         bool flags_ready ();
         bool message_ready ();
 
-        struct i_engine_sink *sink;
+        class session_t *session;
         unsigned char tmpbuf [8];
         msg_t in_progress;
 

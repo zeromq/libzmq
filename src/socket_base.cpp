@@ -37,7 +37,7 @@
 #include "zmq_listener.hpp"
 #include "zmq_connecter.hpp"
 #include "io_thread.hpp"
-#include "connect_session.hpp"
+#include "session.hpp"
 #include "config.hpp"
 #include "clock.hpp"
 #include "pipe.hpp"
@@ -441,8 +441,8 @@ int zmq::socket_base_t::connect (const char *addr_)
     }
 
     //  Create session.
-    connect_session_t *session = new (std::nothrow) connect_session_t (
-        io_thread, this, options, protocol.c_str (), address.c_str ());
+    session_t *session = new (std::nothrow) session_t (
+        io_thread, true, this, options, protocol.c_str (), address.c_str ());
     alloc_assert (session);
 
     //  Create a bi-directional pipe.

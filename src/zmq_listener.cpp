@@ -21,9 +21,9 @@
 #include <new>
 
 #include "zmq_listener.hpp"
-#include "transient_session.hpp"
 #include "zmq_engine.hpp"
 #include "io_thread.hpp"
+#include "session.hpp"
 #include "err.hpp"
 
 zmq::zmq_listener_t::zmq_listener_t (io_thread_t *io_thread_,
@@ -74,8 +74,8 @@ void zmq::zmq_listener_t::in_event ()
     zmq_assert (io_thread);
 
     //  Create and launch a session object. 
-    transient_session_t *session = new (std::nothrow)
-        transient_session_t (io_thread, socket, options);
+    session_t *session = new (std::nothrow)
+        session_t (io_thread, false, socket, options, NULL, NULL);
     alloc_assert (session);
     session->inc_seqnum ();
     launch_child (session);

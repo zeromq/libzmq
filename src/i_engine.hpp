@@ -32,7 +32,7 @@ namespace zmq
 
         //  Plug the engine to the session.
         virtual void plug (class io_thread_t *io_thread_,
-            struct i_engine_sink *sink_) = 0;
+            class session_t *session_) = 0;
 
         //  Unplug the engine from the session.
         virtual void unplug () = 0;
@@ -48,25 +48,6 @@ namespace zmq
         //  This method is called by the session to signalise that there
         //  are messages to send available.
         virtual void activate_out () = 0;
-    };
-
-    //  Abstract interface to be implemented by engine sinks such as sessions.
-
-    struct i_engine_sink
-    {
-        virtual ~i_engine_sink () {}
-
-        //  Engine asks for a message to send to the network.
-        virtual bool read (class msg_t *msg_) = 0;
-
-        //  Engine received message from the network and sends it further on.
-        virtual bool write (class msg_t *msg_) = 0;
-
-        //  Flush all the previously written messages.
-        virtual void flush () = 0;
-
-        //  Engine is dead. Drop all the references to it.
-        virtual void detach () = 0;
     };
 
 }

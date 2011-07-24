@@ -30,6 +30,7 @@
 
 #include "io_thread.hpp"
 #include "pgm_sender.hpp"
+#include "session.hpp"
 #include "err.hpp"
 #include "wire.hpp"
 #include "stdint.hpp"
@@ -61,7 +62,7 @@ int zmq::pgm_sender_t::init (bool udp_encapsulation_, const char *network_)
     return rc;
 }
 
-void zmq::pgm_sender_t::plug (io_thread_t *io_thread_, i_engine_sink *sink_)
+void zmq::pgm_sender_t::plug (io_thread_t *io_thread_, session_t *session_)
 {
     //  Alocate 2 fds for PGM socket.
     int downlink_socket_fd = 0;
@@ -69,7 +70,7 @@ void zmq::pgm_sender_t::plug (io_thread_t *io_thread_, i_engine_sink *sink_)
     int rdata_notify_fd = 0;
     int pending_notify_fd = 0;
 
-    encoder.set_sink (sink_);
+    encoder.set_session (session_);
 
     //  Fill fds from PGM transport and add them to the poller.
     pgm_socket.get_sender_fds (&downlink_socket_fd, &uplink_socket_fd,
@@ -94,9 +95,9 @@ void zmq::pgm_sender_t::plug (io_thread_t *io_thread_, i_engine_sink *sink_)
     //  subscribe for all the messages.
     msg_t msg;
     msg.init ();
-    bool ok = sink_->write (&msg);
+    bool ok = session_->write (&msg);
     zmq_assert (ok);
-    sink_->flush ();
+    session_->flush ();
 }
 
 void zmq::pgm_sender_t::unplug ()
@@ -115,7 +116,7 @@ void zmq::pgm_sender_t::unplug ()
     rm_fd (uplink_handle);
     rm_fd (rdata_notify_handle);
     rm_fd (pending_notify_handle);
-    encoder.set_sink (NULL);
+    encoder.set_session (NULL);
 }
 
 void zmq::pgm_sender_t::terminate ()

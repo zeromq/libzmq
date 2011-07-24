@@ -22,13 +22,13 @@
 #include <string.h>
 
 #include "decoder.hpp"
-#include "i_engine.hpp"
+#include "session.hpp"
 #include "wire.hpp"
 #include "err.hpp"
 
 zmq::decoder_t::decoder_t (size_t bufsize_, int64_t maxmsgsize_) :
     decoder_base_t <decoder_t> (bufsize_),
-    sink (NULL),
+    session (NULL),
     maxmsgsize (maxmsgsize_)
 {
     int rc = in_progress.init ();
@@ -44,9 +44,9 @@ zmq::decoder_t::~decoder_t ()
     errno_assert (rc == 0);
 }
 
-void zmq::decoder_t::set_sink (i_engine_sink *sink_)
+void zmq::decoder_t::set_session (session_t *session_)
 {
-    sink = sink_;
+    session = session_;
 }
 
 bool zmq::decoder_t::one_byte_size_ready ()
@@ -136,7 +136,7 @@ bool zmq::decoder_t::message_ready ()
 {
     //  Message is completely read. Push it further and start reading
     //  new message. (in_progress is a 0-byte message after this point.)
-    if (!sink || !sink->write (&in_progress))
+    if (!session || !session->write (&in_progress))
         return false;
 
     next_step (tmpbuf, 1, &decoder_t::one_byte_size_ready);
