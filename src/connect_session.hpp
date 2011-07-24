@@ -23,7 +23,6 @@
 
 #include <string>
 
-#include "blob.hpp"
 #include "session.hpp"
 
 namespace zmq

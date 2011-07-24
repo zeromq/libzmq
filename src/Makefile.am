@@ -9,7 +9,6 @@ libzmq_la_SOURCES = \
     array.hpp \
     atomic_counter.hpp \
     atomic_ptr.hpp \
-    blob.hpp \
     clock.hpp \
     command.hpp \
     config.hpp \
