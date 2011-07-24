@@ -21,53 +21,61 @@
 #ifndef __ZMQ_POLLER_HPP_INCLUDED__
 #define __ZMQ_POLLER_HPP_INCLUDED__
 
-#include "epoll.hpp"
-#include "poll.hpp"
-#include "select.hpp"
-#include "devpoll.hpp"
-#include "kqueue.hpp"
-
-namespace zmq
-{
+#include "platform.hpp"
 
 #if defined ZMQ_FORCE_SELECT
-    typedef select_t poller_t;
+#define ZMQ_USE_SELECT
+#include "select.hpp"
 #elif defined ZMQ_FORCE_POLL
-    typedef poll_t poller_t;
+#define ZMQ_USE_POLL
+#include "poll.hpp"
 #elif defined ZMQ_FORCE_EPOLL
-    typedef epoll_t poller_t;
+#define ZMQ_USE_EPOLL
+#include "epoll.hpp"
 #elif defined ZMQ_FORCE_DEVPOLL
-    typedef devpoll_t poller_t;
+#define ZMQ_USE_DEVPOLL
+#include "devpoll.hpp"
 #elif defined ZMQ_FORCE_KQUEUE
-    typedef kqueue_t poller_t;
+#define ZMQ_USE_KQUEUE
+#include "kqueue.hpp"
 #elif defined ZMQ_HAVE_LINUX
-    typedef epoll_t poller_t;
+#define ZMQ_USE_EPOLL
+#include "epoll.hpp"
 #elif defined ZMQ_HAVE_WINDOWS
-    typedef select_t poller_t;
+#define ZMQ_USE_SELECT
+#include "select.hpp"
 #elif defined ZMQ_HAVE_FREEBSD
-    typedef kqueue_t poller_t;
+#define ZMQ_USE_KQUEUE
+#include "kqueue.hpp"
 #elif defined ZMQ_HAVE_OPENBSD
-    typedef kqueue_t poller_t;
+#define ZMQ_USE_KQUEUE
+#include "kqueue.hpp"
 #elif defined ZMQ_HAVE_NETBSD
-    typedef kqueue_t poller_t;
+#define ZMQ_USE_KQUEUE
+#include "kqueue.hpp"
 #elif defined ZMQ_HAVE_SOLARIS
-    typedef devpoll_t poller_t;
+#define ZMQ_USE_DEVPOLL
+#include "devpoll.hpp"
 #elif defined ZMQ_HAVE_OSX
-    typedef kqueue_t poller_t;
+#define ZMQ_USE_KQUEUE
+#include "kqueue.hpp"
 #elif defined ZMQ_HAVE_QNXNTO
-    typedef poll_t poller_t;
+#define ZMQ_USE_POLL
+#include "poll.hpp"
 #elif defined ZMQ_HAVE_AIX
-    typedef poll_t poller_t;
+#define ZMQ_USE_POLL
+#include "poll.hpp"
 #elif defined ZMQ_HAVE_HPUX
-    typedef devpoll_t poller_t;
+#define ZMQ_USE_DEVPOLL
+#include "devpoll.hpp"
 #elif defined ZMQ_HAVE_OPENVMS
-    typedef select_t poller_t;
+#define ZMQ_USE_SELECT
+#include "select.hpp"
 #elif defined ZMQ_HAVE_CYGWIN
-    typedef select_t poller_t;
+#define ZMQ_USE_SELECT
+#include "select.hpp"
 #else
 #error Unsupported platform
 #endif
-
-}
 
 #endif

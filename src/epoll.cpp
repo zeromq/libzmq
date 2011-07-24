@@ -18,9 +18,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "platform.hpp"
-
-#ifdef ZMQ_HAVE_LINUX
+#include "epoll.hpp"
+#if defined ZMQ_USE_EPOLL
 
 #include <sys/epoll.h>
 #include <stdlib.h>

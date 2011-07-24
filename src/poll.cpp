@@ -18,13 +18,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "platform.hpp"
-
-#if defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD ||\
-    defined ZMQ_HAVE_OPENBSD || defined ZMQ_HAVE_SOLARIS ||\
-    defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_QNXNTO ||\
-    defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_AIX ||\
-    defined ZMQ_HAVE_NETBSD
+#include "poll.hpp"
+#if defined ZMQ_USE_POLL
 
 #include <sys/types.h>
 #include <sys/time.h>

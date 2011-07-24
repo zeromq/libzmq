@@ -21,10 +21,9 @@
 #ifndef __ZMQ_KQUEUE_HPP_INCLUDED__
 #define __ZMQ_KQUEUE_HPP_INCLUDED__
 
-#include "platform.hpp"
-
-#if defined ZMQ_HAVE_FREEBSD || defined ZMQ_HAVE_OPENBSD ||\
-    defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_NETBSD
+//  poller.hpp decides which polling mechanism to use.
+#include "poller.hpp"
+#if defined ZMQ_USE_KQUEUE
 
 #include <vector>
 
@@ -95,6 +94,8 @@ namespace zmq
         kqueue_t (const kqueue_t&);
         const kqueue_t &operator = (const kqueue_t&);
     };
+
+    typedef kqueue_t poller_t;
 
 }
 

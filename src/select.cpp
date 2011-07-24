@@ -18,6 +18,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "select.hpp"
+#if defined ZMQ_USE_SELECT
+
 #include "platform.hpp"
 #if defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
@@ -35,7 +38,6 @@
 #include <string.h>
 #include <algorithm>
 
-#include "select.hpp"
 #include "err.hpp"
 #include "config.hpp"
 #include "i_poll_events.hpp"
@@ -209,3 +211,4 @@ bool zmq::select_t::is_retired_fd (const fd_entry_t &entry)
     return (entry.fd == retired_fd);
 }
 
+#endif

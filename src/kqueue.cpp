@@ -18,10 +18,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "platform.hpp"
-
-#if defined ZMQ_HAVE_FREEBSD || defined ZMQ_HAVE_OPENBSD ||\
-    defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_NETBSD
+#include "kqueue.hpp"
+#if defined ZMQ_USE_KQUEUE
 
 #include <sys/time.h>
 #include <sys/types.h>
@@ -189,6 +187,4 @@ void zmq::kqueue_t::worker_routine (void *arg_)
     ((kqueue_t*) arg_)->loop ();
 }
 
-//  Don't pollute namespace with defines local to this file
-#undef kevent_udata_t
 #endif

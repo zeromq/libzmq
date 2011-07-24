@@ -21,13 +21,9 @@
 #ifndef __ZMQ_POLL_HPP_INCLUDED__
 #define __ZMQ_POLL_HPP_INCLUDED__
 
-#include "platform.hpp"
-
-#if defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD ||\
-    defined ZMQ_HAVE_OPENBSD || defined ZMQ_HAVE_SOLARIS ||\
-    defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_QNXNTO ||\
-    defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_AIX ||\
-    defined ZMQ_HAVE_NETBSD
+//  poller.hpp decides which polling mechanism to use.
+#include "poller.hpp"
+#if defined ZMQ_USE_POLL
 
 #include <poll.h>
 #include <stddef.h>
@@ -96,6 +92,8 @@ namespace zmq
         poll_t (const poll_t&);
         const poll_t &operator = (const poll_t&);
     };
+
+    typedef poll_t poller_t;
 
 }
 

@@ -21,6 +21,10 @@
 #ifndef __ZMQ_SELECT_HPP_INCLUDED__
 #define __ZMQ_SELECT_HPP_INCLUDED__
 
+//  poller.hpp decides which polling mechanism to use.
+#include "poller.hpp"
+#if defined ZMQ_USE_SELECT
+
 #include "platform.hpp"
 
 #include <stddef.h>
@@ -110,7 +114,10 @@ namespace zmq
         const select_t &operator = (const select_t&);
     };
 
+    typedef select_t poller_t;
+
 }
 
 #endif
 
+#endif

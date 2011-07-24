@@ -21,9 +21,9 @@
 #ifndef __ZMQ_DEVPOLL_HPP_INCLUDED__
 #define __ZMQ_DEVPOLL_HPP_INCLUDED__
 
-#include "platform.hpp"
-
-#if defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_HPUX
+//  poller.hpp decides which polling mechanism to use.
+#include "poller.hpp"
+#if defined ZMQ_USE_DEVPOLL
 
 #include <vector>
 
@@ -92,6 +92,8 @@ namespace zmq
         devpoll_t (const devpoll_t&);
         const devpoll_t &operator = (const devpoll_t&);
     };
+
+    typedef devpoll_t poller_t;
 
 }
 

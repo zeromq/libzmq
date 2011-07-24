@@ -18,9 +18,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "platform.hpp"
-
-#if defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_HPUX
+#include "devpoll.hpp"
+#if defined ZMQ_USE_DEVPOLL
 
 #include <sys/devpoll.h>
 #include <sys/time.h>

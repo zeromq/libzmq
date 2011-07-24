@@ -21,9 +21,9 @@
 #ifndef __ZMQ_EPOLL_HPP_INCLUDED__
 #define __ZMQ_EPOLL_HPP_INCLUDED__
 
-#include "platform.hpp"
-
-#ifdef ZMQ_HAVE_LINUX
+//  poller.hpp decides which polling mechanism to use.
+#include "poller.hpp"
+#if defined ZMQ_USE_EPOLL
 
 #include <vector>
 #include <sys/epoll.h>
@@ -88,6 +88,8 @@ namespace zmq
         epoll_t (const epoll_t&);
         const epoll_t &operator = (const epoll_t&);
     };
+
+    typedef epoll_t poller_t;
 
 }
 
