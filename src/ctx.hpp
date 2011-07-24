@@ -31,7 +31,6 @@
 #include "config.hpp"
 #include "mutex.hpp"
 #include "stdint.hpp"
-#include "thread.hpp"
 #include "options.hpp"
 
 namespace zmq
