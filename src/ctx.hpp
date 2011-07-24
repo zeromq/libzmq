@@ -27,8 +27,6 @@
 #include <stdarg.h>
 
 #include "mailbox.hpp"
-#include "semaphore.hpp"
-#include "ypipe.hpp"
 #include "array.hpp"
 #include "config.hpp"
 #include "mutex.hpp"

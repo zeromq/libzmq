@@ -55,7 +55,6 @@ libzmq_la_SOURCES = \
     req.hpp \
     router.hpp \
     select.hpp \
-    semaphore.hpp \
     session.hpp \
     signaler.hpp \
     socket_base.hpp \
