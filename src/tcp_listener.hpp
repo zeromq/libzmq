@@ -23,36 +23,40 @@
 
 #include "fd.hpp"
 #include "ip.hpp"
+#include "own.hpp"
+#include "io_object.hpp"
+#include "stdint.hpp"
 
 namespace zmq
 {
 
-    //  The class encapsulating simple TCP listening socket.
-
-    class tcp_listener_t
+    class tcp_listener_t : public own_t, public io_object_t
     {
     public:
 
-        tcp_listener_t ();
+        tcp_listener_t (class io_thread_t *io_thread_,
+            class socket_base_t *socket_, const options_t &options_);
         ~tcp_listener_t ();
 
-        //  Start listening on the interface.
-        int set_address (const char *protocol_, const char *addr_,
-            int backlog_);
+        //  Set address to listen on.
+        int set_address (const char* protocol_, const char *addr_);
+
+    private:
+
+        //  Handlers for incoming commands.
+        void process_plug ();
+        void process_term (int linger_);
+
+        //  Handlers for I/O events.
+        void in_event ();
 
         //  Close the listening socket.
         int close ();
-
-        //  Get the file descriptor to poll on to get notified about
-        //  newly created connections.
-        fd_t get_fd ();
 
         //  Accept the new connection. Returns the file descriptor of the
         //  newly created connection. The function may return retired_fd
         //  if the connection was dropped while waiting in the listen backlog.
         fd_t accept ();
-
-    private:
 
         //  Address to listen on.
         sockaddr_storage addr;
@@ -63,6 +67,12 @@ namespace zmq
 
         //  Underlying socket.
         fd_t s;
+
+        //  Handle corresponding to the listening socket.
+        handle_t handle;
+
+        //  Socket the listerner belongs to.
+        class socket_base_t *socket;
 
         tcp_listener_t (const tcp_listener_t&);
         const tcp_listener_t &operator = (const tcp_listener_t&);

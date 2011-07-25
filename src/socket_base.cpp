@@ -34,8 +34,8 @@
 #endif
 
 #include "socket_base.hpp"
-#include "zmq_listener.hpp"
-#include "zmq_connecter.hpp"
+#include "tcp_listener.hpp"
+#include "tcp_connecter.hpp"
 #include "io_thread.hpp"
 #include "session.hpp"
 #include "config.hpp"
@@ -348,7 +348,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         }
 
         //  Create and run the listener.
-        zmq_listener_t *listener = new (std::nothrow) zmq_listener_t (
+        tcp_listener_t *listener = new (std::nothrow) tcp_listener_t (
             io_thread, this, options);
         alloc_assert (listener);
         int rc = listener->set_address (protocol.c_str(), address.c_str ());

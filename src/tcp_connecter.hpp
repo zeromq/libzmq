@@ -21,27 +21,49 @@
 #ifndef __ZMQ_TCP_CONNECTER_HPP_INCLUDED__
 #define __ZMQ_TCP_CONNECTER_HPP_INCLUDED__
 
-#include "platform.hpp"
 #include "fd.hpp"
-
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
-#include <sys/types.h>
-#include <sys/socket.h>
-#endif
+#include "ip.hpp"
+#include "own.hpp"
+#include "io_object.hpp"
+#include "stdint.hpp"
 
 namespace zmq
 {
 
-    //  The class encapsulating simple TCP listening socket.
-
-    class tcp_connecter_t
+    class tcp_connecter_t : public own_t, public io_object_t
     {
     public:
 
-        tcp_connecter_t ();
+        //  If 'wait' is true connecter first waits for a while, then starts
+        //  connection process.
+        tcp_connecter_t (class io_thread_t *io_thread_,
+            class session_t *session_, const options_t &options_,
+            const char *protocol_, const char *address_, bool delay_);
         ~tcp_connecter_t ();
+
+    private:
+
+        //  ID of the timer used to delay the reconnection.
+        enum {reconnect_timer_id = 1};
+
+        //  Handlers for incoming commands.
+        void process_plug ();
+
+        //  Handlers for I/O events.
+        void in_event ();
+        void out_event ();
+        void timer_event (int id_);
+
+        //  Internal function to start the actual connection establishment.
+        void start_connecting ();
+
+        //  Internal function to add a reconnect timer
+        void add_reconnect_timer();
+
+        //  Internal function to return a reconnect backoff delay.
+        //  Will modify the current_reconnect_ivl used for next call
+        //  Returns the currently used interval
+        int get_new_reconnect_ivl ();
 
         //  Set address to connect to.
         int set_address (const char *protocol, const char *addr_);
@@ -55,15 +77,9 @@ namespace zmq
         //  Close the connecting socket.
         int close ();
 
-        //  Get the file descriptor to poll on to get notified about
-        //  connection success.
-        fd_t get_fd ();
-
         //  Get the file descriptor of newly created connection. Returns
         //  retired_fd if the connection was unsuccessfull.
         fd_t connect ();
-
-    private:
 
         //  Address to connect to.
         sockaddr_storage addr;
@@ -71,6 +87,22 @@ namespace zmq
 
         //  Underlying socket.
         fd_t s;
+
+        //  Handle corresponding to the listening socket.
+        handle_t handle;
+
+        //  If true file descriptor is registered with the poller and 'handle'
+        //  contains valid value.
+        bool handle_valid;
+
+        //  If true, connecter is waiting a while before trying to connect.
+        bool wait;
+
+        //  Reference to the session we belong to.
+        class session_t *session;
+
+        //  Current reconnect ivl, updated for backoff strategy
+        int current_reconnect_ivl;
 
         tcp_connecter_t (const tcp_connecter_t&);
         const tcp_connecter_t &operator = (const tcp_connecter_t&);

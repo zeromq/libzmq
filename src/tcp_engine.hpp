@@ -18,35 +18,49 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_TCP_SOCKET_HPP_INCLUDED__
-#define __ZMQ_TCP_SOCKET_HPP_INCLUDED__
+#ifndef __ZMQ_TCP_ENGINE_HPP_INCLUDED__
+#define __ZMQ_TCP_ENGINE_HPP_INCLUDED__
 
 #include <stddef.h>
 
 #include "fd.hpp"
-#include "stdint.hpp"
+#include "i_engine.hpp"
+#include "io_object.hpp"
+#include "encoder.hpp"
+#include "decoder.hpp"
+#include "options.hpp"
 
 namespace zmq
 {
 
-    //  The class encapsulating simple TCP read/write socket.
-
-    class tcp_socket_t
+    class tcp_engine_t : public io_object_t, public i_engine
     {
     public:
 
-        tcp_socket_t ();
-        ~tcp_socket_t ();
+        tcp_engine_t (fd_t fd_, const options_t &options_);
+        ~tcp_engine_t ();
+
+        //  i_engine interface implementation.
+        void plug (class io_thread_t *io_thread_, class session_t *session_);
+        void unplug ();
+        void terminate ();
+        void activate_in ();
+        void activate_out ();
+
+        //  i_poll_events interface implementation.
+        void in_event ();
+        void out_event ();
+
+    private:
+
+        //  Function to handle network disconnections.
+        void error ();
 
         //  Associates a socket with a native socket descriptor.
         int open (fd_t fd_, int sndbuf_, int rcvbuf_);
          
         //  Closes the underlying socket.
         int close ();
-
-        //  Returns the underlying socket. Returns retired_fd when the socket
-        //  is in the closed state.
-        fd_t get_fd ();
 
         //  Writes data to the socket. Returns the number of bytes actually
         //  written (even zero is to be considered to be a success). In case
@@ -59,14 +73,31 @@ namespace zmq
         //  peer -1 is returned.
         int read (void *data_, size_t size_);
 
-    private:
-
         //  Underlying socket.
         fd_t s;
 
-        //  Disable copy construction of tcp_socket.
-        tcp_socket_t (const tcp_socket_t&);
-        const tcp_socket_t &operator = (const tcp_socket_t&);
+        handle_t handle;
+
+        unsigned char *inpos;
+        size_t insize;
+        decoder_t decoder;
+
+        unsigned char *outpos;
+        size_t outsize;
+        encoder_t encoder;
+
+        //  The session this engine is attached to.
+        class session_t *session;
+
+        //  Detached transient session.
+        class session_t *leftover_session;
+
+        options_t options;
+
+        bool plugged;
+
+        tcp_engine_t (const tcp_engine_t&);
+        const tcp_engine_t &operator = (const tcp_engine_t&);
     };
 
 }

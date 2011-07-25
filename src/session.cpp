@@ -24,7 +24,7 @@
 #include "err.hpp"
 #include "pipe.hpp"
 #include "likely.hpp"
-#include "zmq_connecter.hpp"
+#include "tcp_connecter.hpp"
 #include "pgm_sender.hpp"
 #include "pgm_receiver.hpp"
 
@@ -307,7 +307,7 @@ void zmq::session_t::start_connecting (bool wait_)
     //  Both TCP and IPC transports are using the same infrastructure.
     if (protocol == "tcp" || protocol == "ipc") {
 
-        zmq_connecter_t *connecter = new (std::nothrow) zmq_connecter_t (
+        tcp_connecter_t *connecter = new (std::nothrow) tcp_connecter_t (
             io_thread, this, options, protocol.c_str (), address.c_str (),
             wait_);
         alloc_assert (connecter);

@@ -60,8 +60,8 @@ libzmq_la_SOURCES = \
     stdint.hpp \
     sub.hpp \
     tcp_connecter.hpp \
+    tcp_engine.hpp \
     tcp_listener.hpp \
-    tcp_socket.hpp \
     thread.hpp \
     trie.hpp \
     windows.hpp \
@@ -72,9 +72,6 @@ libzmq_la_SOURCES = \
     xsub.hpp \
     ypipe.hpp \
     yqueue.hpp \
-    zmq_connecter.hpp \
-    zmq_engine.hpp \
-    zmq_listener.hpp \
     clock.cpp \
     ctx.cpp \
     decoder.cpp \
@@ -116,8 +113,8 @@ libzmq_la_SOURCES = \
     socket_base.cpp \
     sub.cpp \
     tcp_connecter.cpp \
+    tcp_engine.cpp \
     tcp_listener.cpp \
-    tcp_socket.cpp \
     thread.cpp \
     trie.cpp \
     xpub.cpp \
@@ -125,9 +122,6 @@ libzmq_la_SOURCES = \
     xreq.cpp \
     xsub.cpp \
     zmq.cpp \
-    zmq_connecter.cpp \
-    zmq_engine.cpp \
-    zmq_listener.cpp \
     zmq_utils.cpp
 
 if ON_MINGW
