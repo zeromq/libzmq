@@ -29,6 +29,8 @@ tests/test_shutdown_stress
 tests/test_hwm
 tests/test_timeo
 tests/test_reqrep_device
+tests/test_reqrep_drop
+tests/test_sub_forward
 src/platform.hpp*
 src/stamp-h1
 perf/local_lat
