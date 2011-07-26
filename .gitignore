@@ -9,7 +9,6 @@ aclocal.m4
 autom4te.cache
 *.o
 *.gcno
-*.class
 *.ncb
 *.lo
 *.loT
@@ -32,9 +31,6 @@ tests/test_timeo
 tests/test_reqrep_device
 src/platform.hpp*
 src/stamp-h1
-devices/zmq_forwarder/zmq_forwarder
-devices/zmq_queue/zmq_queue
-devices/zmq_streamer/zmq_streamer
 perf/local_lat
 perf/local_thr
 perf/remote_lat
