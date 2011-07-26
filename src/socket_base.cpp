@@ -35,6 +35,7 @@
 
 #include "socket_base.hpp"
 #include "tcp_listener.hpp"
+#include "vtcp_listener.hpp"
 #include "tcp_connecter.hpp"
 #include "io_thread.hpp"
 #include "session.hpp"
@@ -174,7 +175,8 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
 {
     //  First check out whether the protcol is something we are aware of.
     if (protocol_ != "inproc" && protocol_ != "ipc" && protocol_ != "tcp" &&
-          protocol_ != "pgm" && protocol_ != "epgm" && protocol_ != "sys") {
+          protocol_ != "pgm" && protocol_ != "epgm" && protocol_ != "sys" &&
+          protocol_ != "vtcp") {
         errno = EPROTONOSUPPORT;
         return -1;
     }
@@ -183,6 +185,14 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
     //  are not avaialble.
 #if !defined ZMQ_HAVE_OPENPGM
     if (protocol_ == "pgm" || protocol_ == "epgm") {
+        errno = EPROTONOSUPPORT;
+        return -1;
+    }
+#endif
+
+    //  If 0MQ is not compiled with VTCP, vtcp transport is not avaialble.
+#if !defined ZMQ_HAVE_VTCP
+    if (protocol_ == "vtcp") {
         errno = EPROTONOSUPPORT;
         return -1;
     }
@@ -338,16 +348,22 @@ int zmq::socket_base_t::bind (const char *addr_)
         return register_endpoint (addr_, endpoint);
     }
 
+    if (protocol == "pgm" || protocol == "epgm") {
+
+        //  For convenience's sake, bind can be used interchageable with
+        //  connect for PGM and EPGM transports.
+        return connect (addr_); 
+    }
+
+    //  Remaining trasnports require to be run in an I/O thread, so at this
+    //  point we'll choose one.
+    io_thread_t *io_thread = choose_io_thread (options.affinity);
+    if (!io_thread) {
+        errno = EMTHREAD;
+        return -1;
+    }
+
     if (protocol == "tcp" || protocol == "ipc") {
-
-        //  Choose I/O thread to run the listerner in.
-        io_thread_t *io_thread = choose_io_thread (options.affinity);
-        if (!io_thread) {
-            errno = EMTHREAD;
-            return -1;
-        }
-
-        //  Create and run the listener.
         tcp_listener_t *listener = new (std::nothrow) tcp_listener_t (
             io_thread, this, options);
         alloc_assert (listener);
@@ -357,16 +373,23 @@ int zmq::socket_base_t::bind (const char *addr_)
             return -1;
         }
         launch_child (listener);
-
         return 0;
     }
 
-    if (protocol == "pgm" || protocol == "epgm") {
-
-        //  For convenience's sake, bind can be used interchageable with
-        //  connect for PGM and EPGM transports.
-        return connect (addr_); 
+#if defined ZMQ_HAVE_VTCP
+    if (protocol == "vtcp") {
+        vtcp_listener_t *listener = new (std::nothrow) vtcp_listener_t (
+            io_thread, this, options);
+        alloc_assert (listener);
+        int rc = listener->set_address (address.c_str ());
+        if (rc != 0) {
+            delete listener;
+            return -1;
+        }
+        launch_child (listener);
+        return 0;
     }
+#endif
 
     zmq_assert (false);
     return -1;

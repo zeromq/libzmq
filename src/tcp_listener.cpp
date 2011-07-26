@@ -86,6 +86,7 @@ void zmq::tcp_listener_t::in_event ()
     //  TODO: Handle specific errors like ENFILE/EMFILE etc.
     if (fd == retired_fd)
         return;
+
     //  Create the engine object for this connection.
     tcp_engine_t *engine = new (std::nothrow) tcp_engine_t (fd, options);
     alloc_assert (engine);

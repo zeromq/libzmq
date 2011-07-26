@@ -341,6 +341,19 @@ fi
 
 AC_SUBST(pgm_basename)
 
+#  VTCP extension
+libzmq_vtcp="no"
+
+AC_ARG_WITH([vtcp], [AS_HELP_STRING([--with-vtcp], 
+    [build libzmq with VTCP extension [default=no]])], 
+    [with_vtcp=$withval], [with_vtcp=no])
+
+if test "x$with_vtcp" != "xno"; then
+    AC_DEFINE(ZMQ_HAVE_VTCP, 1, [Have VTCP extension])
+    AC_CHECK_LIB(vtcp, vtcp_bind, ,
+        [AC_MSG_ERROR([cannot link with -lvtcp, install libvtcp.])])
+fi
+
 # Set -Wall, -Werror and -pedantic
 AC_LANG_PUSH([C++])
 

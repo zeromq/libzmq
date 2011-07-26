@@ -18,8 +18,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_TCP_CONNECTER_HPP_INCLUDED__
-#define __ZMQ_TCP_CONNECTER_HPP_INCLUDED__
+#ifndef __TCP_CONNECTER_HPP_INCLUDED__
+#define __TCP_CONNECTER_HPP_INCLUDED__
 
 #include "fd.hpp"
 #include "ip.hpp"
@@ -30,11 +30,14 @@
 namespace zmq
 {
 
+    //  A base class for different connecters. It handles auto-reconnection
+    //  on behalf of the derived class.
+
     class tcp_connecter_t : public own_t, public io_object_t
     {
     public:
 
-        //  If 'wait' is true connecter first waits for a while, then starts
+        //  If 'delay' is true connecter first waits for a while, then starts
         //  connection process.
         tcp_connecter_t (class io_thread_t *io_thread_,
             class session_t *session_, const options_t &options_,
@@ -68,8 +71,7 @@ namespace zmq
         //  Set address to connect to.
         int set_address (const char *protocol, const char *addr_);
 
-        //  Open TCP connecting socket. Address is in
-        //  <hostname>:<port-number> format. Returns -1 in case of error,
+        //  Open TCP connecting socket. Returns -1 in case of error,
         //  0 if connect was successfull immediately and 1 if async connect
         //  was launched.
         int open ();
