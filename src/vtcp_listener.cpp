@@ -50,15 +50,20 @@ zmq::vtcp_listener_t::~vtcp_listener_t ()
 
 int zmq::vtcp_listener_t::set_address (const char *addr_)
 {
-    //  Find the '.' at end that separates NIC name from service.
+    //  VTCP doesn't allow for binding to a specific interface. Connection
+    //  string has to begin with *: (INADDR_ANY).
+    if (strlen (addr_) < 2 || addr_ [0] != '*' || addr_ [1] != ':') {
+        errno = EADDRNOTAVAIL;
+        return -1;
+    }
+
+    //  Parse port and subport.
     const char *delimiter = strrchr (addr_, '.');
     if (!delimiter) {
         errno = EINVAL;
         return -1;
     }
-
-    //  Parse port and subport.
-    std::string port_str (addr_, delimiter - addr_);
+    std::string port_str (addr_ + 2, delimiter - addr_ - 2);
     std::string subport_str (delimiter + 1);
     uint16_t port = (uint16_t) atoi (port_str.c_str ());
     uint32_t subport = (uint32_t) atoi (subport_str.c_str ());

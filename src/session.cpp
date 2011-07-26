@@ -25,6 +25,7 @@
 #include "pipe.hpp"
 #include "likely.hpp"
 #include "tcp_connecter.hpp"
+#include "vtcp_connecter.hpp"
 #include "pgm_sender.hpp"
 #include "pgm_receiver.hpp"
 
@@ -314,6 +315,18 @@ void zmq::session_t::start_connecting (bool wait_)
         launch_child (connecter);
         return;
     }
+
+#if defined ZMQ_HAVE_VTCP
+    if (protocol == "vtcp") {
+
+        vtcp_connecter_t *connecter = new (std::nothrow) vtcp_connecter_t (
+            io_thread, this, options, address.c_str (),
+            wait_);
+        alloc_assert (connecter);
+        launch_child (connecter);
+        return;
+    }
+#endif
 
 #if defined ZMQ_HAVE_OPENPGM
 

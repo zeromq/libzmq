@@ -18,8 +18,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __TCP_CONNECTER_HPP_INCLUDED__
-#define __TCP_CONNECTER_HPP_INCLUDED__
+#ifndef __VTCP_CONNECTER_HPP_INCLUDED__
+#define __VTCP_CONNECTER_HPP_INCLUDED__
+
+#include "platform.hpp"
+
+#if defined ZMQ_HAVE_VTCP
+
+#include <vtcp.h>
 
 #include "fd.hpp"
 #include "ip.hpp"
@@ -30,16 +36,16 @@
 namespace zmq
 {
 
-    class tcp_connecter_t : public own_t, public io_object_t
+    class vtcp_connecter_t : public own_t, public io_object_t
     {
     public:
 
         //  If 'delay' is true connecter first waits for a while, then starts
         //  connection process.
-        tcp_connecter_t (class io_thread_t *io_thread_,
+        vtcp_connecter_t (class io_thread_t *io_thread_,
             class session_t *session_, const options_t &options_,
-            const char *protocol_, const char *address_, bool delay_);
-        ~tcp_connecter_t ();
+            const char *address_, bool delay_);
+        ~vtcp_connecter_t ();
 
     private:
 
@@ -66,7 +72,7 @@ namespace zmq
         int get_new_reconnect_ivl ();
 
         //  Set address to connect to.
-        int set_address (const char *protocol, const char *addr_);
+        int set_address (const char *addr_);
 
         //  Open TCP connecting socket. Returns -1 in case of error,
         //  0 if connect was successfull immediately and 1 if async connect
@@ -83,6 +89,7 @@ namespace zmq
         //  Address to connect to.
         sockaddr_storage addr;
         socklen_t addr_len;
+        vtcp_subport_t subport;
 
         //  Underlying socket.
         fd_t s;
@@ -103,10 +110,12 @@ namespace zmq
         //  Current reconnect ivl, updated for backoff strategy
         int current_reconnect_ivl;
 
-        tcp_connecter_t (const tcp_connecter_t&);
-        const tcp_connecter_t &operator = (const tcp_connecter_t&);
+        vtcp_connecter_t (const vtcp_connecter_t&);
+        const vtcp_connecter_t &operator = (const vtcp_connecter_t&);
     };
 
 }
+
+#endif
 
 #endif

@@ -64,6 +64,7 @@ libzmq_la_SOURCES = \
     tcp_listener.hpp \
     thread.hpp \
     trie.hpp \
+    vtcp_connecter.hpp \
     vtcp_listener.hpp \
     windows.hpp \
     wire.hpp \
@@ -118,6 +119,7 @@ libzmq_la_SOURCES = \
     tcp_listener.cpp \
     thread.cpp \
     trie.cpp \
+    vtcp_connecter.cpp \
     vtcp_listener.cpp \
     xpub.cpp \
     xrep.cpp \
