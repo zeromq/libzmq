@@ -28,6 +28,7 @@
 #include "tcp_engine.hpp"
 #include "io_thread.hpp"
 #include "platform.hpp"
+#include "likely.hpp"
 #include "ip.hpp"
 #include "err.hpp"
 
@@ -147,25 +148,18 @@ void zmq::vtcp_connecter_t::start_connecting ()
     //  Open the connecting socket.
     int rc = open ();
 
-    //  Connect may succeed in synchronous manner.
-    if (rc == 0) {
-        handle = add_fd (s);
-        handle_valid = true;
-        out_event ();
+    //  Handle error condition by eventual reconnect.
+    if (unlikely (rc != 0)) {
+        errno_assert (false);
+        wait = true;
+        add_reconnect_timer();
         return;
     }
 
     //  Connection establishment may be dealyed. Poll for its completion.
-    else if (rc == -1 && errno == EAGAIN) {
-        handle = add_fd (s);
-        handle_valid = true;
-        set_pollout (handle);
-        return;
-    }
-
-    //  Handle any other error condition by eventual reconnect.
-    wait = true;
-    add_reconnect_timer();
+    handle = add_fd (s);
+    handle_valid = true;
+    set_pollout (handle);
 }
 
 void zmq::vtcp_connecter_t::add_reconnect_timer()
@@ -203,8 +197,9 @@ int zmq::vtcp_connecter_t::open ()
 {
     zmq_assert (s == retired_fd);
 
-    uint16_t port = ntohs (((sockaddr_in*) &addr)->sin_port);
-    s = vtcp_connect (*(in_addr_t*) &addr, port);
+    //  Start the connection procedure.
+    sockaddr_in *paddr = (sockaddr_in*) &addr;
+    s = vtcp_connect (paddr->sin_addr.s_addr, ntohs (paddr->sin_port));
 
     //  Connect was successfull immediately.
     if (s != retired_fd)
@@ -229,6 +224,33 @@ zmq::fd_t zmq::vtcp_connecter_t::connect ()
         errno = err;
         return retired_fd;
     }
+
+    // Set to non-blocking mode.
+#ifdef ZMQ_HAVE_OPENVMS
+	int flags = 1;
+	rc = ioctl (s, FIONBIO, &flags);
+    errno_assert (rc != -1);
+#else
+	int flags = fcntl (s, F_GETFL, 0);
+	if (flags == -1)
+        flags = 0;
+	rc = fcntl (s, F_SETFL, flags | O_NONBLOCK);
+    errno_assert (rc != -1);
+#endif
+
+    //  Disable Nagle's algorithm.
+    int flag = 1;
+    rc = setsockopt (s, IPPROTO_TCP, TCP_NODELAY, (char*) &flag,
+        sizeof (int));
+    errno_assert (rc == 0);
+
+#ifdef ZMQ_HAVE_OPENVMS
+    //  Disable delayed acknowledgements.
+    flag = 1;
+    rc = setsockopt (s, IPPROTO_TCP, TCP_NODELACK, (char*) &flag,
+        sizeof (int));
+    errno_assert (rc != SOCKET_ERROR);
+#endif
 
     fd_t result = s;
     s = retired_fd;
