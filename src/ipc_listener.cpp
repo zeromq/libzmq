@@ -111,33 +111,17 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
     if (s == -1)
         return -1;
 
-    //  Set the non-blocking flag.
-    int flag = fcntl (s, F_GETFL, 0);
-    if (flag == -1) 
-        flag = 0;
-    rc = fcntl (s, F_SETFL, flag | O_NONBLOCK);
-    errno_assert (rc != -1);
-
     //  Bind the socket to the file path.
     rc = bind (s, (struct sockaddr*) &addr, addr_len);
-    if (rc != 0) {
-        int err = errno;
-        if (close () != 0)
-            return -1;
-        errno = err;
+    if (rc != 0)
         return -1;
-    }
+
     has_file = true;
 
     //  Listen for incomming connections.
     rc = listen (s, options.backlog);
-    if (rc != 0) {
-        int err = errno;
-        if (close () != 0)
-            return -1;
-        errno = err;
+    if (rc != 0)
         return -1;
-    }
 
     return 0;  
 }
@@ -164,44 +148,15 @@ int zmq::ipc_listener_t::close ()
 
 zmq::fd_t zmq::ipc_listener_t::accept ()
 {
+    //  Accept one connection and deal with different failure modes.
     zmq_assert (s != retired_fd);
-
-    //  Accept one incoming connection.
     fd_t sock = ::accept (s, NULL, NULL);
-
-#if (defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD || \
-     defined ZMQ_HAVE_OPENBSD || defined ZMQ_HAVE_OSX || \
-     defined ZMQ_HAVE_OPENVMS || defined ZMQ_HAVE_NETBSD || \
-     defined ZMQ_HAVE_CYGWIN)
-    if (sock == -1 && 
-        (errno == EAGAIN || errno == EWOULDBLOCK || 
-         errno == EINTR || errno == ECONNABORTED))
+    if (sock == -1) {
+        errno_assert (errno == EAGAIN || errno == EWOULDBLOCK ||
+            errno == EINTR || errno == ECONNABORTED || errno == EPROTO ||
+            errno == ENOBUFS);
         return retired_fd;
-#elif (defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_AIX)
-    if (sock == -1 && 
-        (errno == EWOULDBLOCK || errno == EINTR || 
-         errno == ECONNABORTED || errno == EPROTO))
-        return retired_fd;
-#elif defined ZMQ_HAVE_HPUX
-    if (sock == -1 && 
-        (errno == EAGAIN || errno == EWOULDBLOCK || 
-         errno == EINTR || errno == ECONNABORTED || errno == ENOBUFS))
-        return retired_fd;
-#elif defined ZMQ_HAVE_QNXNTO 
-    if (sock == -1 && 
-        (errno == EWOULDBLOCK || errno == EINTR || errno == ECONNABORTED))
-        return retired_fd;
-#endif
-
-    errno_assert (sock != -1); 
-
-    // Set to non-blocking mode.
-    int flags = fcntl (s, F_GETFL, 0);
-    if (flags == -1)
-        flags = 0;
-    int rc = fcntl (sock, F_SETFL, flags | O_NONBLOCK);
-    errno_assert (rc != -1);
-
+    }
     return sock;
 }
 

@@ -107,134 +107,71 @@ void zmq::tcp_listener_t::in_event ()
     send_attach (session, engine, false);
 }
 
+void zmq::tcp_listener_t::close ()
+{
+    zmq_assert (s != retired_fd);
 #ifdef ZMQ_HAVE_WINDOWS
+    int rc = closesocket (s);
+    wsa_assert (rc != SOCKET_ERROR);
+#else
+    int rc = ::close (s);
+    errno_assert (rc == 0);
+#endif
+    s = retired_fd;
+}
 
 int zmq::tcp_listener_t::set_address (const char *addr_)
 {
     //  Convert the interface into sockaddr_in structure.
     int rc = resolve_ip_interface (&addr, &addr_len, addr_);
     if (rc != 0)
-        return rc;
+        return -1;
 
     //  Create a listening socket.
     s = ::socket (addr.ss_family, SOCK_STREAM, IPPROTO_TCP);
+#ifdef ZMQ_HAVE_WINDOWS
     if (s == INVALID_SOCKET) {
         wsa_error_to_errno ();
         return -1;
     }
+#else
+    if (s == -1)
+        return -1;
+#endif
 
     //  Allow reusing of the address.
     int flag = 1;
+#ifdef ZMQ_HAVE_WINDOWS
     rc = setsockopt (s, SOL_SOCKET, SO_EXCLUSIVEADDRUSE,
         (const char*) &flag, sizeof (int));
     wsa_assert (rc != SOCKET_ERROR);
-
-    //  Bind the socket to the network interface and port.
-    rc = bind (s, (struct sockaddr*) &addr, addr_len);
-    if (rc == SOCKET_ERROR) {
-        wsa_error_to_errno ();
-        return -1;
-    }
-
-    //  Listen for incomming connections.
-    rc = listen (s, options.backlog);
-    if (rc == SOCKET_ERROR) {
-        wsa_error_to_errno ();
-        return -1;
-    }
-
-    return 0;
-}
-
-int zmq::tcp_listener_t::close ()
-{
-    zmq_assert (s != retired_fd);
-    int rc = closesocket (s);
-    wsa_assert (rc != SOCKET_ERROR);
-    s = retired_fd;
-    return 0;
-}
-
-zmq::fd_t zmq::tcp_listener_t::accept ()
-{
-    zmq_assert (s != retired_fd);
-
-    //  Accept one incoming connection.
-    fd_t sock = ::accept (s, NULL, NULL);
-    if (sock == INVALID_SOCKET && 
-          (WSAGetLastError () == WSAEWOULDBLOCK ||
-          WSAGetLastError () == WSAECONNRESET))
-        return retired_fd;
-
-    zmq_assert (sock != INVALID_SOCKET);
-
-    // Set to non-blocking mode.
-    unsigned long argp = 1;
-    int rc = ioctlsocket (sock, FIONBIO, &argp);
-    wsa_assert (rc != SOCKET_ERROR);
-
-    return sock;
-}
-
 #else
-
-int zmq::tcp_listener_t::set_address (const char *addr_)
-{
-    //  Resolve the sockaddr to bind to.
-    int rc = resolve_ip_interface (&addr, &addr_len, addr_);
-    if (rc != 0)
-        return -1;
-
-    //  Create a listening socket.
-    s = ::socket (addr.ss_family, SOCK_STREAM, IPPROTO_TCP);
-    if (s == -1)
-        return -1;
-
-    //  Allow reusing of the address.
-    int flag = 1;
     rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
     errno_assert (rc == 0);
+#endif
 
     //  Bind the socket to the network interface and port.
     rc = bind (s, (struct sockaddr*) &addr, addr_len);
-    if (rc != 0) {
-        int err = errno;
-        if (close () != 0)
-            return -1;
-        errno = err;
+#ifdef ZMQ_HAVE_WINDOWS
+    if (rc == SOCKET_ERROR) {
+        wsa_error_to_errno ();
         return -1;
     }
+#else
+    if (rc != 0)
+        return -1;
+#endif
 
     //  Listen for incomming connections.
     rc = listen (s, options.backlog);
-    if (rc != 0) {
-        int err = errno;
-        if (close () != 0)
-            return -1;
-        errno = err;
+#ifdef ZMQ_HAVE_WINDOWS
+    if (rc == SOCKET_ERROR) {
+        wsa_error_to_errno ();
         return -1;
     }
-
-    return 0;
-}
-
-int zmq::tcp_listener_t::close ()
-{
-    zmq_assert (s != retired_fd);
-    int rc = ::close (s);
+#else
     if (rc != 0)
         return -1;
-    s = retired_fd;
-
-#ifndef ZMQ_HAVE_OPENVMS
-    //  If there's an underlying UNIX domain socket, get rid of the file it
-    //  is associated with.
-    struct sockaddr_un *su = (struct sockaddr_un*) &addr;
-    if (AF_UNIX == su->sun_family && has_file) {
-        rc = ::unlink(su->sun_path);
-        if (rc != 0)
-            return -1;
-    }
 #endif
 
     return 0;
@@ -242,51 +179,23 @@ int zmq::tcp_listener_t::close ()
 
 zmq::fd_t zmq::tcp_listener_t::accept ()
 {
+    //  Accept one connection and deal with different failure modes.
     zmq_assert (s != retired_fd);
-
-    //  Accept one incoming connection.
     fd_t sock = ::accept (s, NULL, NULL);
-
-#if (defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD || \
-     defined ZMQ_HAVE_OPENBSD || defined ZMQ_HAVE_OSX || \
-     defined ZMQ_HAVE_OPENVMS || defined ZMQ_HAVE_NETBSD || \
-     defined ZMQ_HAVE_CYGWIN)
-    if (sock == -1 && 
-        (errno == EAGAIN || errno == EWOULDBLOCK || 
-         errno == EINTR || errno == ECONNABORTED))
+#ifdef ZMQ_HAVE_WINDOWS
+    if (sock == INVALID_SOCKET)
+        wsa_assert (WSAGetLastError () == WSAEWOULDBLOCK ||
+            WSAGetLastError () == WSAECONNRESET);
         return retired_fd;
-#elif (defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_AIX)
-    if (sock == -1 && 
-        (errno == EWOULDBLOCK || errno == EINTR || 
-         errno == ECONNABORTED || errno == EPROTO))
-        return retired_fd;
-#elif defined ZMQ_HAVE_HPUX
-    if (sock == -1 && 
-        (errno == EAGAIN || errno == EWOULDBLOCK || 
-         errno == EINTR || errno == ECONNABORTED || errno == ENOBUFS))
-        return retired_fd;
-#elif defined ZMQ_HAVE_QNXNTO 
-    if (sock == -1 && 
-        (errno == EWOULDBLOCK || errno == EINTR || errno == ECONNABORTED))
-        return retired_fd;
-#endif
-
-    errno_assert (sock != -1); 
-
-    // Set to non-blocking mode.
-#ifdef ZMQ_HAVE_OPENVMS
-    int flags = 1;
-    int rc = ioctl (sock, FIONBIO, &flags);
-    errno_assert (rc != -1);
+    }
 #else
-    int flags = fcntl (s, F_GETFL, 0);
-    if (flags == -1)
-        flags = 0;
-    int rc = fcntl (sock, F_SETFL, flags | O_NONBLOCK);
-    errno_assert (rc != -1);
+    if (sock == -1) {
+        errno_assert (errno == EAGAIN || errno == EWOULDBLOCK ||
+            errno == EINTR || errno == ECONNABORTED || errno == EPROTO ||
+            errno == ENOBUFS);
+        return retired_fd;
+    }
 #endif
-
     return sock;
 }
 
-#endif

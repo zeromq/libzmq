@@ -69,7 +69,7 @@ int zmq::vtcp_listener_t::set_address (const char *addr_)
     uint16_t port = (uint16_t) atoi (port_str.c_str ());
     uint32_t subport = (uint32_t) atoi (subport_str.c_str ());
 
-    //  Srart listening.
+    //  Start listening.
     s = vtcp_bind (port, subport);
     if (s == retired_fd)
         return -1;
