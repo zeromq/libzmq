@@ -205,12 +205,6 @@ int zmq::tcp_connecter_t::open ()
     int rc = ioctlsocket (s, FIONBIO, &argp);
     wsa_assert (rc != SOCKET_ERROR);
 
-    //  Disable Nagle's algorithm.
-    int flag = 1;
-    rc = setsockopt (s, IPPROTO_TCP, TCP_NODELAY, (char*) &flag,
-        sizeof (int));
-    wsa_assert (rc != SOCKET_ERROR);
-
     //  Connect to the remote peer.
     rc = ::connect (s, (sockaddr*) &addr, addr_len);
 
@@ -299,20 +293,6 @@ int zmq::tcp_connecter_t::open ()
             flags = 0;
     	int rc = fcntl (s, F_SETFL, flags | O_NONBLOCK);
         errno_assert (rc != -1);
-#endif
-
-        //  Disable Nagle's algorithm.
-        int flag = 1;
-        rc = setsockopt (s, IPPROTO_TCP, TCP_NODELAY, (char*) &flag,
-            sizeof (int));
-        errno_assert (rc == 0);
-
-#ifdef ZMQ_HAVE_OPENVMS
-        //  Disable delayed acknowledgements.
-        flag = 1;
-        rc = setsockopt (s, IPPROTO_TCP, TCP_NODELACK, (char*) &flag,
-            sizeof (int));
-        errno_assert (rc != SOCKET_ERROR);
 #endif
 
         //  Connect to the remote peer.

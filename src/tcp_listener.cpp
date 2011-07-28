@@ -133,11 +133,6 @@ int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
         (const char*) &flag, sizeof (int));
     wsa_assert (rc != SOCKET_ERROR);
 
-    //  Set the non-blocking flag.
-    u_long uflag = 1;
-    rc = ioctlsocket (s, FIONBIO, &uflag);
-    wsa_assert (rc != SOCKET_ERROR);
-
     //  Bind the socket to the network interface and port.
     rc = bind (s, (struct sockaddr*) &addr, addr_len);
     if (rc == SOCKET_ERROR) {
@@ -182,12 +177,6 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
     int rc = ioctlsocket (sock, FIONBIO, &argp);
     wsa_assert (rc != SOCKET_ERROR);
 
-    //  Disable Nagle's algorithm.
-    int flag = 1;
-    rc = setsockopt (sock, IPPROTO_TCP, TCP_NODELAY, (char*) &flag,
-        sizeof (int));
-    wsa_assert (rc != SOCKET_ERROR);
-
     return sock;
 }
 
@@ -211,19 +200,6 @@ int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
         int flag = 1;
         rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
         errno_assert (rc == 0);
-
-        //  Set the non-blocking flag.
-#ifdef ZMQ_HAVE_OPENVMS
-    	flag = 1;
-    	rc = ioctl (s, FIONBIO, &flag);
-        errno_assert (rc != -1);
-#else
-    	flag = fcntl (s, F_GETFL, 0);
-    	if (flag == -1)
-            flag = 0;
-    	rc = fcntl (s, F_SETFL, flag | O_NONBLOCK);
-        errno_assert (rc != -1);
-#endif
 
         //  Bind the socket to the network interface and port.
         rc = bind (s, (struct sockaddr*) &addr, addr_len);
@@ -368,24 +344,6 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
     int rc = fcntl (sock, F_SETFL, flags | O_NONBLOCK);
     errno_assert (rc != -1);
 #endif
-
-    struct sockaddr *sa = (struct sockaddr*) &addr;
-    if (AF_UNIX != sa->sa_family) {
-
-        //  Disable Nagle's algorithm.
-        int flag = 1;
-        rc = setsockopt (sock, IPPROTO_TCP, TCP_NODELAY, (char*) &flag,
-            sizeof (int));
-        errno_assert (rc == 0);
-
-#ifdef ZMQ_HAVE_OPENVMS
-        //  Disable delayed acknowledgements.
-        flag = 1;
-        rc = setsockopt (sock, IPPROTO_TCP, TCP_NODELACK, (char*) &flag,
-            sizeof (int));
-        errno_assert (rc != SOCKET_ERROR);
-#endif
-    }
 
     return sock;
 }

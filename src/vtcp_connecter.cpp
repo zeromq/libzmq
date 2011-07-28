@@ -225,33 +225,6 @@ zmq::fd_t zmq::vtcp_connecter_t::connect ()
         return retired_fd;
     }
 
-    // Set to non-blocking mode.
-#ifdef ZMQ_HAVE_OPENVMS
-	int flags = 1;
-	rc = ioctl (s, FIONBIO, &flags);
-    errno_assert (rc != -1);
-#else
-	int flags = fcntl (s, F_GETFL, 0);
-	if (flags == -1)
-        flags = 0;
-	rc = fcntl (s, F_SETFL, flags | O_NONBLOCK);
-    errno_assert (rc != -1);
-#endif
-
-    //  Disable Nagle's algorithm.
-    int flag = 1;
-    rc = setsockopt (s, IPPROTO_TCP, TCP_NODELAY, (char*) &flag,
-        sizeof (int));
-    errno_assert (rc == 0);
-
-#ifdef ZMQ_HAVE_OPENVMS
-    //  Disable delayed acknowledgements.
-    flag = 1;
-    rc = setsockopt (s, IPPROTO_TCP, TCP_NODELACK, (char*) &flag,
-        sizeof (int));
-    errno_assert (rc != SOCKET_ERROR);
-#endif
-
     fd_t result = s;
     s = retired_fd;
     return result;

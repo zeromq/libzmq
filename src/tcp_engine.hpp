@@ -56,12 +56,6 @@ namespace zmq
         //  Function to handle network disconnections.
         void error ();
 
-        //  Associates a socket with a native socket descriptor.
-        int open (fd_t fd_, int sndbuf_, int rcvbuf_);
-         
-        //  Closes the underlying socket.
-        int close ();
-
         //  Writes data to the socket. Returns the number of bytes actually
         //  written (even zero is to be considered to be a success). In case
         //  of error or orderly shutdown by the other peer -1 is returned.
