@@ -39,7 +39,7 @@ namespace zmq
         ~tcp_listener_t ();
 
         //  Set address to listen on.
-        int set_address (const char* protocol_, const char *addr_);
+        int set_address (const char *addr_);
 
     private:
 

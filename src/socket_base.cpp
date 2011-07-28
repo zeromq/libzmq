@@ -368,7 +368,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         tcp_listener_t *listener = new (std::nothrow) tcp_listener_t (
             io_thread, this, options);
         alloc_assert (listener);
-        int rc = listener->set_address (protocol.c_str(), address.c_str ());
+        int rc = listener->set_address (address.c_str ());
         if (rc != 0) {
             delete listener;
             return -1;
@@ -377,11 +377,12 @@ int zmq::socket_base_t::bind (const char *addr_)
         return 0;
     }
 
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
     if (protocol == "ipc") {
         ipc_listener_t *listener = new (std::nothrow) ipc_listener_t (
             io_thread, this, options);
         alloc_assert (listener);
-        int rc = listener->set_address (protocol.c_str(), address.c_str ());
+        int rc = listener->set_address (address.c_str ());
         if (rc != 0) {
             delete listener;
             return -1;
@@ -389,6 +390,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         launch_child (listener);
         return 0;
     }
+#endif
 
 #if defined ZMQ_HAVE_VTCP
     if (protocol == "vtcp") {

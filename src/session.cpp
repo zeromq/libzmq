@@ -314,6 +314,7 @@ void zmq::session_t::start_connecting (bool wait_)
         return;
     }
 
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
     if (protocol == "ipc") {
         ipc_connecter_t *connecter = new (std::nothrow) ipc_connecter_t (
             io_thread, this, options, address.c_str (), wait_);
@@ -321,6 +322,7 @@ void zmq::session_t::start_connecting (bool wait_)
         launch_child (connecter);
         return;
     }
+#endif
 
 #if defined ZMQ_HAVE_VTCP
     if (protocol == "vtcp") {

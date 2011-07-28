@@ -22,8 +22,8 @@
 
 #include <string.h>
 
-#include "tcp_listener.hpp"
 #include "platform.hpp"
+#include "tcp_listener.hpp"
 #include "tcp_engine.hpp"
 #include "io_thread.hpp"
 #include "session.hpp"
@@ -40,11 +40,10 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <fcntl.h>
-#ifndef ZMQ_HAVE_OPENVMS
-#include <sys/un.h>
-#else
-#include <ioctl.h>
 #endif
+
+#ifdef ZMQ_HAVE_OPENVMS
+#include <ioctl.h>
 #endif
 
 zmq::tcp_listener_t::tcp_listener_t (io_thread_t *io_thread_,
@@ -127,14 +126,8 @@ void zmq::tcp_listener_t::in_event ()
 
 #ifdef ZMQ_HAVE_WINDOWS
 
-int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
+int zmq::tcp_listener_t::set_address (const char *addr_)
 {
-    //  IPC protocol is not supported on Windows platform.
-    if (strcmp (protocol_, "tcp") != 0 ) {
-        errno = EPROTONOSUPPORT;
-        return -1;
-    }
-
     //  Convert the interface into sockaddr_in structure.
     int rc = resolve_ip_interface (&addr, &addr_len, addr_);
     if (rc != 0)
@@ -202,99 +195,44 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
 
 #else
 
-int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
+int zmq::tcp_listener_t::set_address (const char *addr_)
 {
-    if (strcmp (protocol_, "tcp") == 0 ) {
-
-        //  Resolve the sockaddr to bind to.
-        int rc = resolve_ip_interface (&addr, &addr_len, addr_);
-        if (rc != 0)
-            return -1;
-
-        //  Create a listening socket.
-        s = ::socket (addr.ss_family, SOCK_STREAM, IPPROTO_TCP);
-        if (s == -1)
-            return -1;
-
-        //  Allow reusing of the address.
-        int flag = 1;
-        rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
-        errno_assert (rc == 0);
-
-        //  Bind the socket to the network interface and port.
-        rc = bind (s, (struct sockaddr*) &addr, addr_len);
-        if (rc != 0) {
-            int err = errno;
-            if (close () != 0)
-                return -1;
-            errno = err;
-            return -1;
-        }
-
-        //  Listen for incomming connections.
-        rc = listen (s, options.backlog);
-        if (rc != 0) {
-            int err = errno;
-            if (close () != 0)
-                return -1;
-            errno = err;
-            return -1;
-        }
-
-        return 0;
-    }
-#ifndef ZMQ_HAVE_OPENVMS
-    else if (strcmp (protocol_, "ipc") == 0) {
-
-        //  Get rid of the file associated with the UNIX domain socket that
-        //  may have been left behind by the previous run of the application.
-        ::unlink (addr_);
-
-        //  Convert the address into sockaddr_un structure.
-        int rc = resolve_local_path (&addr, &addr_len, addr_);
-        if (rc != 0)
-            return -1;
-
-        //  Create a listening socket.
-        s = ::socket (AF_UNIX, SOCK_STREAM, 0);
-        if (s == -1)
-            return -1;
-
-        //  Set the non-blocking flag.
-        int flag = fcntl (s, F_GETFL, 0);
-        if (flag == -1) 
-            flag = 0;
-        rc = fcntl (s, F_SETFL, flag | O_NONBLOCK);
-        errno_assert (rc != -1);
-
-        //  Bind the socket to the file path.
-        rc = bind (s, (struct sockaddr*) &addr, addr_len);
-        if (rc != 0) {
-            int err = errno;
-            if (close () != 0)
-                return -1;
-            errno = err;
-            return -1;
-        }
-        has_file = true;
-
-        //  Listen for incomming connections.
-        rc = listen (s, options.backlog);
-        if (rc != 0) {
-            int err = errno;
-            if (close () != 0)
-                return -1;
-            errno = err;
-            return -1;
-        }
-
-        return 0;
-    }
-#endif
-    else {
-        errno = EPROTONOSUPPORT;
+    //  Resolve the sockaddr to bind to.
+    int rc = resolve_ip_interface (&addr, &addr_len, addr_);
+    if (rc != 0)
         return -1;
-    }    
+
+    //  Create a listening socket.
+    s = ::socket (addr.ss_family, SOCK_STREAM, IPPROTO_TCP);
+    if (s == -1)
+        return -1;
+
+    //  Allow reusing of the address.
+    int flag = 1;
+    rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
+    errno_assert (rc == 0);
+
+    //  Bind the socket to the network interface and port.
+    rc = bind (s, (struct sockaddr*) &addr, addr_len);
+    if (rc != 0) {
+        int err = errno;
+        if (close () != 0)
+            return -1;
+        errno = err;
+        return -1;
+    }
+
+    //  Listen for incomming connections.
+    rc = listen (s, options.backlog);
+    if (rc != 0) {
+        int err = errno;
+        if (close () != 0)
+            return -1;
+        errno = err;
+        return -1;
+    }
+
+    return 0;
 }
 
 int zmq::tcp_listener_t::close ()

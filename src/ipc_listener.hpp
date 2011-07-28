@@ -21,6 +21,10 @@
 #ifndef __ZMQ_IPC_LISTENER_HPP_INCLUDED__
 #define __ZMQ_IPC_LISTENER_HPP_INCLUDED__
 
+#include "platform.hpp"
+
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+
 #include "fd.hpp"
 #include "ip.hpp"
 #include "own.hpp"
@@ -39,7 +43,7 @@ namespace zmq
         ~ipc_listener_t ();
 
         //  Set address to listen on.
-        int set_address (const char* protocol_, const char *addr_);
+        int set_address (const char *addr_);
 
     private:
 
@@ -81,3 +85,6 @@ namespace zmq
 }
 
 #endif
+
+#endif
+
