@@ -29,6 +29,7 @@
 #include "session.hpp"
 #include "config.hpp"
 #include "err.hpp"
+#include "ip.hpp"
 
 #ifdef ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
@@ -86,25 +87,7 @@ void zmq::tcp_listener_t::in_event ()
     if (fd == retired_fd)
         return;
 
-    //  Disable Nagle's algorithm. We are doing data batching on 0MQ level,
-    //  so using Nagle wouldn't improve throughput in anyway, but it would
-    //  hurt latency.
-    int nodelay = 1;
-    int rc = setsockopt (fd, IPPROTO_TCP, TCP_NODELAY, (char*) &nodelay,
-        sizeof (int));
-#ifdef ZMQ_HAVE_WINDOWS
-    wsa_assert (rc != SOCKET_ERROR);
-#else
-    errno_assert (rc == 0);
-#endif
-
-#ifdef ZMQ_HAVE_OPENVMS
-    //  Disable delayed acknowledgements as they hurt latency is serious manner.
-    int nodelack = 1;
-    rc = setsockopt (fd, IPPROTO_TCP, TCP_NODELACK, (char*) &nodelack,
-        sizeof (int));
-    errno_assert (rc != SOCKET_ERROR);
-#endif
+    tune_tcp_socket (fd);
 
     //  Create the engine object for this connection.
     tcp_engine_t *engine = new (std::nothrow) tcp_engine_t (fd, options);

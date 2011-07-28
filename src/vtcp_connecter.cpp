@@ -30,8 +30,8 @@
 #include "platform.hpp"
 #include "random.hpp"
 #include "likely.hpp"
-#include "ip.hpp"
 #include "err.hpp"
+#include "ip.hpp"
 
 #if defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
@@ -219,6 +219,8 @@ zmq::fd_t zmq::vtcp_connecter_t::connect ()
         errno = err;
         return retired_fd;
     }
+
+    tune_tcp_socket (s);
 
     fd_t result = s;
     s = retired_fd;

@@ -344,3 +344,27 @@ int zmq::resolve_local_path (sockaddr_storage *addr_, socklen_t *addr_len_,
 #endif
 }
 
+void zmq::tune_tcp_socket (fd_t s_)
+{
+    //  Disable Nagle's algorithm. We are doing data batching on 0MQ level,
+    //  so using Nagle wouldn't improve throughput in anyway, but it would
+    //  hurt latency.
+    int nodelay = 1;
+    int rc = setsockopt (s_, IPPROTO_TCP, TCP_NODELAY, (char*) &nodelay,
+        sizeof (int));
+#ifdef ZMQ_HAVE_WINDOWS
+    wsa_assert (rc != SOCKET_ERROR);
+#else
+    errno_assert (rc == 0);
+#endif
+
+#ifdef ZMQ_HAVE_OPENVMS
+    //  Disable delayed acknowledgements as they hurt latency is serious manner.
+    int nodelack = 1;
+    rc = setsockopt (s_, IPPROTO_TCP, TCP_NODELACK, (char*) &nodelack,
+        sizeof (int));
+    errno_assert (rc != SOCKET_ERROR);
+#endif
+}
+
+

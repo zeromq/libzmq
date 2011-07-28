@@ -30,6 +30,7 @@
 #include "session.hpp"
 #include "stdint.hpp"
 #include "err.hpp"
+#include "ip.hpp"
 
 zmq::vtcp_listener_t::vtcp_listener_t (io_thread_t *io_thread_,
         socket_base_t *socket_, options_t &options_) :
@@ -94,6 +95,8 @@ void zmq::vtcp_listener_t::in_event ()
     fd_t fd = vtcp_acceptb (s);
     if (fd == retired_fd)
         return;
+
+    tune_tcp_socket (fd);
 
     //  Create the engine object for this connection.
     tcp_engine_t *engine = new (std::nothrow) tcp_engine_t (fd, options);

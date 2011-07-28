@@ -22,6 +22,7 @@
 #define __ZMQ_IP_HPP_INCLUDED__
 
 #include "platform.hpp"
+#include "fd.hpp"
 
 #ifdef ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
@@ -30,6 +31,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <netdb.h>
 #endif
 
@@ -60,9 +62,12 @@ namespace zmq
     int resolve_ip_hostname (sockaddr_storage *addr_, socklen_t *addr_len_,
         const char *hostname_);
 
-    // This function sets up address for UNIX domain transport.
+    //  This function sets up address for UNIX domain transport.
     int resolve_local_path (sockaddr_storage *addr_, socklen_t *addr_len_,
         const char* pathname_);
+
+    //  Tunes the supplied TCP socket for the best latency.
+    void tune_tcp_socket (fd_t s_);
 }
 
 #endif 
