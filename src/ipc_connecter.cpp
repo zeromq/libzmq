@@ -21,7 +21,7 @@
 #include <new>
 #include <string>
 
-#include "tcp_connecter.hpp"
+#include "ipc_connecter.hpp"
 #include "tcp_engine.hpp"
 #include "io_thread.hpp"
 #include "platform.hpp"
@@ -45,7 +45,7 @@
 #endif
 #endif
 
-zmq::tcp_connecter_t::tcp_connecter_t (class io_thread_t *io_thread_,
+zmq::ipc_connecter_t::ipc_connecter_t (class io_thread_t *io_thread_,
       class session_t *session_, const options_t &options_,
       const char *address_, bool wait_) :
     own_t (io_thread_, options_),
@@ -65,7 +65,7 @@ zmq::tcp_connecter_t::tcp_connecter_t (class io_thread_t *io_thread_,
     zmq_assert (rc == 0);
 }
 
-zmq::tcp_connecter_t::~tcp_connecter_t ()
+zmq::ipc_connecter_t::~ipc_connecter_t ()
 {
     if (wait)
         cancel_timer (reconnect_timer_id);
@@ -76,7 +76,7 @@ zmq::tcp_connecter_t::~tcp_connecter_t ()
         close ();
 }
 
-void zmq::tcp_connecter_t::process_plug ()
+void zmq::ipc_connecter_t::process_plug ()
 {
     if (wait)
         add_reconnect_timer();
@@ -84,7 +84,7 @@ void zmq::tcp_connecter_t::process_plug ()
         start_connecting ();
 }
 
-void zmq::tcp_connecter_t::in_event ()
+void zmq::ipc_connecter_t::in_event ()
 {
     //  We are not polling for incomming data, so we are actually called
     //  because of error here. However, we can get error on out event as well
@@ -92,7 +92,7 @@ void zmq::tcp_connecter_t::in_event ()
     out_event ();
 }
 
-void zmq::tcp_connecter_t::out_event ()
+void zmq::ipc_connecter_t::out_event ()
 {
     fd_t fd = connect ();
     rm_fd (handle);
@@ -106,26 +106,6 @@ void zmq::tcp_connecter_t::out_event ()
         return;
     }
 
-    //  Disable Nagle's algorithm. We are doing data batching on 0MQ level,
-    //  so using Nagle wouldn't improve throughput in anyway, but it would
-    //  hurt latency.
-    int nodelay = 1;
-    int rc = setsockopt (fd, IPPROTO_TCP, TCP_NODELAY, (char*) &nodelay,
-        sizeof (int));
-#ifdef ZMQ_HAVE_WINDOWS
-    wsa_assert (rc != SOCKET_ERROR);
-#else
-    errno_assert (rc == 0);
-#endif
-
-#ifdef ZMQ_HAVE_OPENVMS
-    //  Disable delayed acknowledgements as they hurt latency is serious manner.
-    int nodelack = 1;
-    rc = setsockopt (fd, IPPROTO_TCP, TCP_NODELACK, (char*) &nodelack,
-        sizeof (int));
-    errno_assert (rc != SOCKET_ERROR);
-#endif
-
     //  Create the engine object for this connection.
     tcp_engine_t *engine = new (std::nothrow) tcp_engine_t (fd, options);
     alloc_assert (engine);
@@ -137,14 +117,14 @@ void zmq::tcp_connecter_t::out_event ()
     terminate ();
 }
 
-void zmq::tcp_connecter_t::timer_event (int id_)
+void zmq::ipc_connecter_t::timer_event (int id_)
 {
     zmq_assert (id_ == reconnect_timer_id);
     wait = false;
     start_connecting ();
 }
 
-void zmq::tcp_connecter_t::start_connecting ()
+void zmq::ipc_connecter_t::start_connecting ()
 {
     //  Open the connecting socket.
     int rc = open ();
@@ -170,12 +150,12 @@ void zmq::tcp_connecter_t::start_connecting ()
     add_reconnect_timer();
 }
 
-void zmq::tcp_connecter_t::add_reconnect_timer()
+void zmq::ipc_connecter_t::add_reconnect_timer()
 {
     add_timer (get_new_reconnect_ivl(), reconnect_timer_id);
 }
 
-int zmq::tcp_connecter_t::get_new_reconnect_ivl ()
+int zmq::ipc_connecter_t::get_new_reconnect_ivl ()
 {
     //  The new interval is the current interval + random value.
     int this_interval = current_reconnect_ivl +
@@ -197,12 +177,13 @@ int zmq::tcp_connecter_t::get_new_reconnect_ivl ()
 
 #ifdef ZMQ_HAVE_WINDOWS
 
-int zmq::tcp_connecter_t::set_address (const char *addr_)
+int zmq::ipc_connecter_t::set_address (const char *protocol_, const char *addr_)
 {
-    return resolve_ip_hostname (&addr, &addr_len, addr_);
+    errno = EPROTONOSUPPORT;
+    return -1;    
 }
 
-int zmq::tcp_connecter_t::open ()
+int zmq::ipc_connecter_t::open ()
 {
     zmq_assert (s == retired_fd);
 
@@ -236,7 +217,7 @@ int zmq::tcp_connecter_t::open ()
     return -1;
 }
 
-int zmq::tcp_connecter_t::close ()
+int zmq::ipc_connecter_t::close ()
 {
     zmq_assert (s != retired_fd);
     int rc = closesocket (s);
@@ -245,7 +226,7 @@ int zmq::tcp_connecter_t::close ()
     return 0;
 }
 
-zmq::fd_t zmq::tcp_connecter_t::connect ()
+zmq::fd_t zmq::ipc_connecter_t::connect ()
 {
     //  Nonblocking connect have finished. Check whether an error occured.
     int err = 0;
@@ -272,12 +253,12 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
 
 #else
 
-int zmq::tcp_connecter_t::set_address (const char *addr_)
+int zmq::ipc_connecter_t::set_address (const char *addr_)
 {
-    return resolve_ip_hostname (&addr, &addr_len, addr_);
+    return resolve_local_path (&addr, &addr_len, addr_);
 }
 
-int zmq::tcp_connecter_t::open ()
+int zmq::ipc_connecter_t::open ()
 {
     zmq_assert (s == retired_fd);
     struct sockaddr *sa = (struct sockaddr*) &addr;
@@ -357,7 +338,7 @@ int zmq::tcp_connecter_t::open ()
     return -1;
 }
 
-int zmq::tcp_connecter_t::close ()
+int zmq::ipc_connecter_t::close ()
 {
     zmq_assert (s != retired_fd);
     int rc = ::close (s);
@@ -367,7 +348,7 @@ int zmq::tcp_connecter_t::close ()
     return 0;
 }
 
-zmq::fd_t zmq::tcp_connecter_t::connect ()
+zmq::fd_t zmq::ipc_connecter_t::connect ()
 {
     //  Following code should handle both Berkeley-derived socket
     //  implementations and Solaris.

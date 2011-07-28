@@ -35,6 +35,7 @@
 
 #include "socket_base.hpp"
 #include "tcp_listener.hpp"
+#include "ipc_listener.hpp"
 #include "vtcp_listener.hpp"
 #include "tcp_connecter.hpp"
 #include "io_thread.hpp"
@@ -363,8 +364,21 @@ int zmq::socket_base_t::bind (const char *addr_)
         return -1;
     }
 
-    if (protocol == "tcp" || protocol == "ipc") {
+    if (protocol == "tcp") {
         tcp_listener_t *listener = new (std::nothrow) tcp_listener_t (
+            io_thread, this, options);
+        alloc_assert (listener);
+        int rc = listener->set_address (protocol.c_str(), address.c_str ());
+        if (rc != 0) {
+            delete listener;
+            return -1;
+        }
+        launch_child (listener);
+        return 0;
+    }
+
+    if (protocol == "ipc") {
+        ipc_listener_t *listener = new (std::nothrow) ipc_listener_t (
             io_thread, this, options);
         alloc_assert (listener);
         int rc = listener->set_address (protocol.c_str(), address.c_str ());

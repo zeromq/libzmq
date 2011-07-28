@@ -24,6 +24,8 @@ libzmq_la_SOURCES = \
     io_object.hpp \
     io_thread.hpp \
     ip.hpp \
+    ipc_connecter.hpp \
+    ipc_listener.hpp \
     i_engine.hpp \
     i_poll_events.hpp \
     kqueue.hpp \
@@ -86,6 +88,8 @@ libzmq_la_SOURCES = \
     io_object.cpp \
     io_thread.cpp \
     ip.cpp \
+    ipc_connecter.cpp \
+    ipc_listener.cpp \
     kqueue.cpp \
     lb.cpp \
     mailbox.cpp \

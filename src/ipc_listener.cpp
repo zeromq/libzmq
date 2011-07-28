@@ -22,7 +22,7 @@
 
 #include <string.h>
 
-#include "tcp_listener.hpp"
+#include "ipc_listener.hpp"
 #include "platform.hpp"
 #include "tcp_engine.hpp"
 #include "io_thread.hpp"
@@ -47,7 +47,7 @@
 #endif
 #endif
 
-zmq::tcp_listener_t::tcp_listener_t (io_thread_t *io_thread_,
+zmq::ipc_listener_t::ipc_listener_t (io_thread_t *io_thread_,
       socket_base_t *socket_, const options_t &options_) :
     own_t (io_thread_, options_),
     io_object_t (io_thread_),
@@ -59,26 +59,26 @@ zmq::tcp_listener_t::tcp_listener_t (io_thread_t *io_thread_,
     addr_len = 0;
 }
 
-zmq::tcp_listener_t::~tcp_listener_t ()
+zmq::ipc_listener_t::~ipc_listener_t ()
 {
     if (s != retired_fd)
         close ();
 }
 
-void zmq::tcp_listener_t::process_plug ()
+void zmq::ipc_listener_t::process_plug ()
 {
     //  Start polling for incoming connections.
     handle = add_fd (s);
     set_pollin (handle);
 }
 
-void zmq::tcp_listener_t::process_term (int linger_)
+void zmq::ipc_listener_t::process_term (int linger_)
 {
     rm_fd (handle);
     own_t::process_term (linger_);
 }
 
-void zmq::tcp_listener_t::in_event ()
+void zmq::ipc_listener_t::in_event ()
 {
     fd_t fd = accept ();
 
@@ -86,26 +86,6 @@ void zmq::tcp_listener_t::in_event ()
     //  TODO: Handle specific errors like ENFILE/EMFILE etc.
     if (fd == retired_fd)
         return;
-
-    //  Disable Nagle's algorithm. We are doing data batching on 0MQ level,
-    //  so using Nagle wouldn't improve throughput in anyway, but it would
-    //  hurt latency.
-    int nodelay = 1;
-    int rc = setsockopt (fd, IPPROTO_TCP, TCP_NODELAY, (char*) &nodelay,
-        sizeof (int));
-#ifdef ZMQ_HAVE_WINDOWS
-    wsa_assert (rc != SOCKET_ERROR);
-#else
-    errno_assert (rc == 0);
-#endif
-
-#ifdef ZMQ_HAVE_OPENVMS
-    //  Disable delayed acknowledgements as they hurt latency is serious manner.
-    int nodelack = 1;
-    rc = setsockopt (fd, IPPROTO_TCP, TCP_NODELACK, (char*) &nodelack,
-        sizeof (int));
-    errno_assert (rc != SOCKET_ERROR);
-#endif
 
     //  Create the engine object for this connection.
     tcp_engine_t *engine = new (std::nothrow) tcp_engine_t (fd, options);
@@ -127,7 +107,7 @@ void zmq::tcp_listener_t::in_event ()
 
 #ifdef ZMQ_HAVE_WINDOWS
 
-int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
+int zmq::ipc_listener_t::set_address (const char *protocol_, const char *addr_)
 {
     //  IPC protocol is not supported on Windows platform.
     if (strcmp (protocol_, "tcp") != 0 ) {
@@ -170,7 +150,7 @@ int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
     return 0;
 }
 
-int zmq::tcp_listener_t::close ()
+int zmq::ipc_listener_t::close ()
 {
     zmq_assert (s != retired_fd);
     int rc = closesocket (s);
@@ -179,7 +159,7 @@ int zmq::tcp_listener_t::close ()
     return 0;
 }
 
-zmq::fd_t zmq::tcp_listener_t::accept ()
+zmq::fd_t zmq::ipc_listener_t::accept ()
 {
     zmq_assert (s != retired_fd);
 
@@ -202,7 +182,7 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
 
 #else
 
-int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
+int zmq::ipc_listener_t::set_address (const char *protocol_, const char *addr_)
 {
     if (strcmp (protocol_, "tcp") == 0 ) {
 
@@ -297,7 +277,7 @@ int zmq::tcp_listener_t::set_address (const char *protocol_, const char *addr_)
     }    
 }
 
-int zmq::tcp_listener_t::close ()
+int zmq::ipc_listener_t::close ()
 {
     zmq_assert (s != retired_fd);
     int rc = ::close (s);
@@ -319,7 +299,7 @@ int zmq::tcp_listener_t::close ()
     return 0;
 }
 
-zmq::fd_t zmq::tcp_listener_t::accept ()
+zmq::fd_t zmq::ipc_listener_t::accept ()
 {
     zmq_assert (s != retired_fd);
 

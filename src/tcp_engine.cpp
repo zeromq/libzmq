@@ -99,26 +99,6 @@ zmq::tcp_engine_t::tcp_engine_t (fd_t fd_, const options_t &options_) :
     rc = setsockopt (s, SOL_SOCKET, SO_NOSIGPIPE, &set, sizeof (int));
     errno_assert (rc == 0);
 #endif
-
-    //  Disable Nagle's algorithm. We are doing data batching on 0MQ level,
-    //  so using Nagle wouldn't improve throughput in anyway, but it would
-    //  hurt latency.
-    int nodelay = 1;
-    rc = setsockopt (s, IPPROTO_TCP, TCP_NODELAY, (char*) &nodelay,
-        sizeof (int));
-#ifdef ZMQ_HAVE_WINDOWS
-    wsa_assert (rc != SOCKET_ERROR);
-#else
-    errno_assert (rc == 0);
-#endif
-
-#ifdef ZMQ_HAVE_OPENVMS
-    //  Disable delayed acknowledgements as they hurt latency is serious manner.
-    int nodelack = 1;
-    rc = setsockopt (s, IPPROTO_TCP, TCP_NODELACK, (char*) &nodelack,
-        sizeof (int));
-    errno_assert (rc != SOCKET_ERROR);
-#endif
 }
 
 zmq::tcp_engine_t::~tcp_engine_t ()
