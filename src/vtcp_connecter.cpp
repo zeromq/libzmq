@@ -28,6 +28,7 @@
 #include "tcp_engine.hpp"
 #include "io_thread.hpp"
 #include "platform.hpp"
+#include "random.hpp"
 #include "likely.hpp"
 #include "ip.hpp"
 #include "err.hpp"
@@ -169,15 +170,9 @@ void zmq::vtcp_connecter_t::add_reconnect_timer()
 
 int zmq::vtcp_connecter_t::get_new_reconnect_ivl ()
 {
-#if defined ZMQ_HAVE_WINDOWS
-    int pid = (int) GetCurrentProcessId ();
-#else
-    int pid = (int) getpid ();
-#endif
-
     //  The new interval is the current interval + random value.
     int this_interval = current_reconnect_ivl +
-        ((pid * 13) % options.reconnect_ivl);
+        (generate_random () % options.reconnect_ivl);
 
     //  Only change the current reconnect interval  if the maximum reconnect
     //  interval was set and if it's larger than the reconnect interval.
