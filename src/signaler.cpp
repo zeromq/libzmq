@@ -71,8 +71,6 @@
 #include "windows.hpp"
 #else
 #include <unistd.h>
-#include <fcntl.h>
-#include <limits.h>
 #include <netinet/tcp.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -86,22 +84,8 @@ zmq::signaler_t::signaler_t ()
     errno_assert (rc == 0);
 
     //  Set both fds to non-blocking mode.
-#if defined ZMQ_HAVE_WINDOWS
-    unsigned long argp = 1;
-    rc = ioctlsocket (w, FIONBIO, &argp);
-    wsa_assert (rc != SOCKET_ERROR);
-    rc = ioctlsocket (r, FIONBIO, &argp);
-    wsa_assert (rc != SOCKET_ERROR);
-#else
-    int flags = fcntl (w, F_GETFL, 0);
-    errno_assert (flags >= 0);
-    rc = fcntl (w, F_SETFL, flags | O_NONBLOCK);
-    errno_assert (rc == 0);
-    flags = fcntl (r, F_GETFL, 0);
-    errno_assert (flags >= 0);
-    rc = fcntl (r, F_SETFL, flags | O_NONBLOCK);
-    errno_assert (rc == 0);
-#endif
+    unblock_socket (w);
+    unblock_socket (r);
 }
 
 zmq::signaler_t::~signaler_t ()

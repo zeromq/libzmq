@@ -28,6 +28,18 @@
 #include "platform.hpp"
 #include "stdint.hpp"
 
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+#include <sys/un.h>
+#endif
+
+#if !defined ZMQ_HAVE_WINDOWS
+#include <fcntl.h>
+#endif
+
+#if defined ZMQ_HAVE_OPENVMS
+#include <ioctl.h>
+#endif
+
 #if defined ZMQ_HAVE_SOLARIS
 
 #include <sys/sockio.h>
@@ -364,6 +376,25 @@ void zmq::tune_tcp_socket (fd_t s_)
     rc = setsockopt (s_, IPPROTO_TCP, TCP_NODELACK, (char*) &nodelack,
         sizeof (int));
     errno_assert (rc != SOCKET_ERROR);
+#endif
+}
+
+void zmq::unblock_socket (fd_t s_)
+{
+#ifdef ZMQ_HAVE_WINDOWS
+    u_long nonblock = 1;
+    int rc = ioctlsocket (s_, FIONBIO, &nonblock);
+    wsa_assert (rc != SOCKET_ERROR);
+#elif ZMQ_HAVE_OPENVMS
+	int nonblock = 1;
+	int rc = ioctl (s_, FIONBIO, &nonblock);
+    errno_assert (rc != -1);
+#else
+	int flags = fcntl (s_, F_GETFL, 0);
+	if (flags == -1)
+        flags = 0;
+	int rc = fcntl (s_, F_SETFL, flags | O_NONBLOCK);
+    errno_assert (rc != -1);
 #endif
 }
 

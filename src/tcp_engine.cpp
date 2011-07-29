@@ -39,6 +39,7 @@
 #include "session.hpp"
 #include "config.hpp"
 #include "err.hpp"
+#include "ip.hpp"
 
 zmq::tcp_engine_t::tcp_engine_t (fd_t fd_, const options_t &options_) :
     s (fd_),
@@ -53,28 +54,12 @@ zmq::tcp_engine_t::tcp_engine_t (fd_t fd_, const options_t &options_) :
     options (options_),
     plugged (false)
 {
-    int rc;
-
-    //  Set the socket to the non-blocking mode.
-#ifdef ZMQ_HAVE_WINDOWS
-    u_long nonblock = 1;
-    rc = ioctlsocket (s, FIONBIO, &nonblock);
-    wsa_assert (rc != SOCKET_ERROR);
-#elif ZMQ_HAVE_OPENVMS
-	int nonblock = 1;
-	rc = ioctl (s, FIONBIO, &nonblock);
-    errno_assert (rc != -1);
-#else
-	int flags = fcntl (s, F_GETFL, 0);
-	if (flags == -1)
-        flags = 0;
-	rc = fcntl (s, F_SETFL, flags | O_NONBLOCK);
-    errno_assert (rc != -1);
-#endif
+    //  Get the socket into non-blocking mode.
+    unblock_socket (s);
 
     //  Set the socket buffer limits for the underlying socket.
     if (options.sndbuf) {
-        rc = setsockopt (s, SOL_SOCKET, SO_SNDBUF,
+        int rc = setsockopt (s, SOL_SOCKET, SO_SNDBUF,
             (char*) &options.sndbuf, sizeof (int));
 #ifdef ZMQ_HAVE_WINDOWS
 		wsa_assert (rc != SOCKET_ERROR);
@@ -83,7 +68,7 @@ zmq::tcp_engine_t::tcp_engine_t (fd_t fd_, const options_t &options_) :
 #endif
     }
     if (options.rcvbuf) {
-        rc = setsockopt (s, SOL_SOCKET, SO_RCVBUF,
+        int rc = setsockopt (s, SOL_SOCKET, SO_RCVBUF,
             (char*) &options.rcvbuf, sizeof (int));
 #ifdef ZMQ_HAVE_WINDOWS
 		wsa_assert (rc != SOCKET_ERROR);
@@ -96,7 +81,7 @@ zmq::tcp_engine_t::tcp_engine_t (fd_t fd_, const options_t &options_) :
     //  Make sure that SIGPIPE signal is not generated when writing to a
     //  connection that was already closed by the peer.
     int set = 1;
-    rc = setsockopt (s, SOL_SOCKET, SO_NOSIGPIPE, &set, sizeof (int));
+    int rc = setsockopt (s, SOL_SOCKET, SO_NOSIGPIPE, &set, sizeof (int));
     errno_assert (rc == 0);
 #endif
 }

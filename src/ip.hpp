@@ -35,10 +35,6 @@
 #include <netdb.h>
 #endif
 
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
-#include <sys/un.h>
-#endif
-
 //  Some platforms (notably Darwin/OSX and NetBSD) do not define all AI_
 //  flags for getaddrinfo(). This can be worked around safely by defining
 //  these to 0.
@@ -68,6 +64,10 @@ namespace zmq
 
     //  Tunes the supplied TCP socket for the best latency.
     void tune_tcp_socket (fd_t s_);
+
+    //  Sets the socket into non-blocking mode.
+    void unblock_socket (fd_t s_);
+
 }
 
 #endif 
