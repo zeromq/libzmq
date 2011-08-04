@@ -251,10 +251,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\connect_session.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\src\ctx.cpp"
 				>
 			</File>
@@ -296,6 +292,14 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\ip.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\ipc_connecter.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\ipc_listener.cpp"
 				>
 			</File>
 			<File
@@ -415,11 +419,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\tcp_listener.cpp"
+				RelativePath="..\..\..\src\tcp_engine.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\tcp_socket.cpp"
+				RelativePath="..\..\..\src\tcp_listener.cpp"
 				>
 			</File>
 			<File
@@ -427,11 +431,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\transient_session.cpp"
+				RelativePath="..\..\..\src\trie.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\trie.cpp"
+				RelativePath="..\..\..\src\vtcp_connecter.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\vtcp_listener.cpp"
 				>
 			</File>
 			<File
@@ -452,18 +460,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\zmq.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\zmq_connecter.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\zmq_engine.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\zmq_listener.cpp"
 				>
 			</File>
 			<File
@@ -489,10 +485,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\blob.hpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\src\clock.hpp"
 				>
 			</File>
@@ -502,10 +494,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\config.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\connect_session.hpp"
 				>
 			</File>
 			<File
@@ -562,6 +550,14 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\ip.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\ipc_connecter.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\ipc_listener.hpp"
 				>
 			</File>
 			<File
@@ -677,10 +673,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\semaphore.hpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\src\session.hpp"
 				>
 			</File>
@@ -705,11 +697,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\tcp_listener.hpp"
+				RelativePath="..\..\..\src\tcp_engine.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\tcp_socket.hpp"
+				RelativePath="..\..\..\src\tcp_listener.hpp"
 				>
 			</File>
 			<File
@@ -717,11 +709,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\transient_session.hpp"
+				RelativePath="..\..\..\src\trie.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\trie.hpp"
+				RelativePath="..\..\..\src\vtcp_connecter.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\vtcp_listener.hpp"
 				>
 			</File>
 			<File
@@ -754,18 +750,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\yqueue.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\zmq_connecter.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\zmq_engine.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\zmq_listener.hpp"
 				>
 			</File>
 		</Filter>

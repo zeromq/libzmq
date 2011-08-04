@@ -183,7 +183,7 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
     zmq_assert (s != retired_fd);
     fd_t sock = ::accept (s, NULL, NULL);
 #ifdef ZMQ_HAVE_WINDOWS
-    if (sock == INVALID_SOCKET)
+    if (sock == INVALID_SOCKET) {
         wsa_assert (WSAGetLastError () == WSAEWOULDBLOCK ||
             WSAGetLastError () == WSAECONNRESET);
         return retired_fd;
