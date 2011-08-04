@@ -59,15 +59,19 @@ int zmq::vtcp_listener_t::set_address (const char *addr_)
     }
 
     //  Parse port and subport.
+    uint16_t port;
+    uint32_t subport;
     const char *delimiter = strrchr (addr_, '.');
     if (!delimiter) {
-        errno = EINVAL;
-        return -1;
+        port = 9220;
+        subport = (uint32_t) atoi (addr_ + 2);
     }
-    std::string port_str (addr_ + 2, delimiter - addr_ - 2);
-    std::string subport_str (delimiter + 1);
-    uint16_t port = (uint16_t) atoi (port_str.c_str ());
-    uint32_t subport = (uint32_t) atoi (subport_str.c_str ());
+    else {
+        std::string port_str (addr_ + 2, delimiter - addr_ - 2);
+        std::string subport_str (delimiter + 1);
+        port = (uint16_t) atoi (port_str.c_str ());
+        subport = (uint32_t) atoi (subport_str.c_str ());
+    }
 
     //  Start listening.
     s = vtcp_bind (port, subport);
