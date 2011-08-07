@@ -43,10 +43,11 @@ zmq::vtcp_listener_t::vtcp_listener_t (io_thread_t *io_thread_,
 
 zmq::vtcp_listener_t::~vtcp_listener_t ()
 {
-    zmq_assert (s != retired_fd);
-    int rc = ::close (s);
-    errno_assert (rc == 0);
-    s = retired_fd;
+    if (s != retired_fd) {
+        int rc = ::close (s);
+        errno_assert (rc == 0);
+        s = retired_fd;
+    }
 }
 
 int zmq::vtcp_listener_t::set_address (const char *addr_)
