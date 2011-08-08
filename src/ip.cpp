@@ -213,7 +213,7 @@ static int resolve_nic_name (struct sockaddr* addr_, char const *interface_,
 #endif
 
 int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
-    char const *interface_)
+    char const *interface_, bool ipv4only_)
 {
     //  Find the ':' at end that separates NIC name from service.
     const char *delimiter = strrchr (interface_, ':');
@@ -241,18 +241,27 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
     sockaddr *out_addr = (sockaddr *) &ss;
     socklen_t out_addrlen;
 
-    //  Initialise IPv4-format family/port.
-    sockaddr_in ip4_addr;
-    memset (&ip4_addr, 0, sizeof (ip4_addr));
-    ip4_addr.sin_family = AF_INET;
-    ip4_addr.sin_port = sin_port;
-    ip4_addr.sin_addr.s_addr = htonl (INADDR_ANY);
+    //  Initialise IP-format family/port and populate temporary output pointers
+    //  with the address.
+    if (ipv4only_) {
+        sockaddr_in ip4_addr;
+        memset (&ip4_addr, 0, sizeof (ip4_addr));
+        ip4_addr.sin_family = AF_INET;
+        ip4_addr.sin_port = sin_port;
+        ip4_addr.sin_addr.s_addr = htonl (INADDR_ANY);
+        out_addrlen = (socklen_t) sizeof (ip4_addr);
+        memcpy (out_addr, &ip4_addr, out_addrlen);
+    } else {
+        sockaddr_in6 ip6_addr;
+        memset (&ip6_addr, 0, sizeof (ip6_addr));
+        ip6_addr.sin6_family = AF_INET6;
+        ip6_addr.sin6_port = sin_port;
+        memcpy (&ip6_addr.sin6_addr, &in6addr_any, sizeof (in6addr_any));
+        out_addrlen = (socklen_t) sizeof (ip6_addr);
+        memcpy (out_addr, &ip6_addr, out_addrlen);
+    }
 
-    //  Populate temporary output pointers with ip4_addr.
-    out_addrlen = (socklen_t) sizeof (ip4_addr);
-    memcpy (out_addr, &ip4_addr, out_addrlen);
-
-    //  * resolves to INADDR_ANY.
+    //  * resolves to INADDR_ANY or in6addr_any.
     if (iface.compare("*") == 0) {
         zmq_assert (out_addrlen <= (socklen_t) sizeof (*addr_));
         memcpy (addr_, out_addr, out_addrlen);
@@ -261,7 +270,7 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
     }
 
     //  Try to resolve the string as a NIC name.
-    int rc = resolve_nic_name (out_addr, iface.c_str(), true);
+    int rc = resolve_nic_name (out_addr, iface.c_str(), ipv4only_);
     if (rc != 0 && errno != ENODEV)
         return rc;
     if (rc == 0) {
@@ -281,8 +290,9 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
 #endif
     memset (&req, 0, sizeof (req));
 
-    //  We only support IPv4 addresses for now.
-    req.ai_family = AF_INET;
+    //  Choose IPv4 or IPv6 protocol family. Note that IPv6 allows for
+    //  IPv4-in-IPv6 addresses.
+    req.ai_family = ipv4only_ ? AF_INET : AF_INET6;
 
     //  Arbitrary, not used in the output, but avoids duplicate results.
     req.ai_socktype = SOCK_STREAM;
@@ -290,6 +300,15 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
     //  Restrict hostname/service to literals to avoid any DNS lookups or
     //  service-name irregularity due to indeterminate socktype.
     req.ai_flags = AI_PASSIVE | AI_NUMERICHOST | AI_NUMERICSERV;
+
+#ifndef ZMQ_HAVE_WINDOWS
+    //  Windows by default maps IPv4 addresses into IPv6. In this API we only
+    //  require IPv4-mapped addresses when no native IPv6 interfaces are
+    //  available (~AI_ALL).  This saves an additional DNS roundtrip for IPv4
+    //  addresses.
+    if (req.ai_family == AF_INET6)
+        req.ai_flags |= AI_V4MAPPED;
+#endif
 
     //  Resolve the literal address. Some of the error info is lost in case
     //  of error, however, there's no way to report EAI errors via errno.
@@ -312,7 +331,7 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
 }
 
 int zmq::resolve_ip_hostname (sockaddr_storage *addr_, socklen_t *addr_len_,
-    const char *hostname_)
+    const char *hostname_, bool ipv4only_)
 {
     //  Find the ':' that separates hostname name from service.
     const char *delimiter = strrchr (hostname_, ':');
@@ -329,8 +348,9 @@ int zmq::resolve_ip_hostname (sockaddr_storage *addr_, socklen_t *addr_len_,
     addrinfo req;
     memset (&req, 0, sizeof (req));
 
-    //  We only support IPv4 addresses for now.
-    req.ai_family = AF_INET;
+    //  Choose IPv4 or IPv6 protocol family. Note that IPv6 allows for
+    //  IPv4-in-IPv6 addresses.
+    req.ai_family = ipv4only_ ? AF_INET : AF_INET6;
 
     //  Need to choose one to avoid duplicate results from getaddrinfo() - this
     //  doesn't really matter, since it's not included in the addr-output.
@@ -338,6 +358,14 @@ int zmq::resolve_ip_hostname (sockaddr_storage *addr_, socklen_t *addr_len_,
     
     //  Avoid named services due to unclear socktype.
     req.ai_flags = AI_NUMERICSERV;
+
+#ifndef ZMQ_HAVE_WINDOWS
+    //  Windows by default maps IPv4 addresses into IPv6. In this API we only
+    //  require IPv4-mapped addresses when no native IPv6 interfaces are
+    //  available.  This saves an additional DNS roundtrip for IPv4 addresses.
+    if (req.ai_family == AF_INET6)
+        req.ai_flags |= AI_V4MAPPED;
+#endif
 
     //  Resolve host name. Some of the error info is lost in case of error,
     //  however, there's no way to report EAI errors via errno.

@@ -123,7 +123,7 @@ void zmq::tcp_listener_t::close ()
 int zmq::tcp_listener_t::set_address (const char *addr_)
 {
     //  Convert the interface into sockaddr_in structure.
-    int rc = resolve_ip_interface (&addr, &addr_len, addr_);
+    int rc = resolve_ip_interface (&addr, &addr_len, addr_, options.ipv4only);
     if (rc != 0)
         return -1;
 

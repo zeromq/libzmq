@@ -92,7 +92,8 @@ int zmq::vtcp_connecter_t::set_address (const char *addr_)
         addr_str += ":9220";
         std::string subport_str (delimiter + 1);
         subport = (vtcp_subport_t) atoi (subport_str.c_str ());
-        int rc = resolve_ip_hostname (&addr, &addr_len, addr_str.c_str ());
+        int rc = resolve_ip_hostname (&addr, &addr_len, addr_str.c_str (),
+            true);
         if (rc != 0)
             return -1;
     }
@@ -100,7 +101,8 @@ int zmq::vtcp_connecter_t::set_address (const char *addr_)
         std::string addr_str (addr_, delimiter - addr_);
         std::string subport_str (delimiter + 1);
         subport = (vtcp_subport_t) atoi (subport_str.c_str ());
-        int rc = resolve_ip_hostname (&addr, &addr_len, addr_str.c_str ());
+        int rc = resolve_ip_hostname (&addr, &addr_len, addr_str.c_str (),
+            true);
         if (rc != 0)
             return -1;
     }

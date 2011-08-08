@@ -51,12 +51,12 @@ namespace zmq
     //  Resolves network interface name in <nic-name>:<port> format. Symbol "*"
     //  (asterisk) resolves to INADDR_ANY (all network interfaces).
     int resolve_ip_interface (sockaddr_storage *addr_, socklen_t *addr_len_,
-        char const *interface_);
+        char const *interface_, bool ipv4only_);
 
     //  This function resolves a string in <hostname>:<port-number> format.
     //  Hostname can be either the name of the host or its IP address.
     int resolve_ip_hostname (sockaddr_storage *addr_, socklen_t *addr_len_,
-        const char *hostname_);
+        const char *hostname_, bool ipv4only_);
 
     //  This function sets up address for UNIX domain transport.
     int resolve_local_path (sockaddr_storage *addr_, socklen_t *addr_len_,
