@@ -47,15 +47,19 @@
 #include <unistd.h>
 
 //  On Solaris platform, network interface name can be queried by ioctl.
-static int resolve_nic_name (in_addr* addr_, char const *interface_)
+static int resolve_nic_name (struct sockaddr* addr_, char const *interface_,
+    bool ipv4only_)
 {
+    //  TODO: Unused parameter, IPv6 support not implemented for Solaris.
+    (void) ipv4only;
+
     //  Create a socket.
     int fd = socket (AF_INET, SOCK_DGRAM, 0);
     zmq_assert (fd != -1);
 
     //  Retrieve number of interfaces.
     lifnum ifn;
-    ifn.lifn_family = AF_UNSPEC;
+    ifn.lifn_family = AF_INET;
     ifn.lifn_flags = 0;
     int rc = ioctl (fd, SIOCGLIFNUM, (char*) &ifn);
     zmq_assert (rc != -1);
@@ -67,7 +71,7 @@ static int resolve_nic_name (in_addr* addr_, char const *interface_)
     
     //  Retrieve interface names.
     lifconf ifc;
-    ifc.lifc_family = AF_UNSPEC;
+    ifc.lifc_family = AF_INET;
     ifc.lifc_flags = 0;
     ifc.lifc_len = ifr_size;
     ifc.lifc_buf = ifr;
@@ -109,8 +113,12 @@ static int resolve_nic_name (in_addr* addr_, char const *interface_)
 #include <sys/ioctl.h>
 #include <net/if.h>
 
-static int resolve_nic_name (in_addr* addr_, char const *interface_)
+static int resolve_nic_name (struct sockaddr* addr_, char const *interface_,
+    bool ipv4only_)
 {
+    //  TODO: Unused parameter, IPv6 support not implemented for AIX or HP/UX.
+    (void) ipv4only;
+
     //  Create a socket.
     int sd = socket (AF_INET, SOCK_DGRAM, 0);
     zmq_assert (sd != -1);
@@ -145,7 +153,8 @@ static int resolve_nic_name (in_addr* addr_, char const *interface_)
 
 //  On these platforms, network interface name can be queried
 //  using getifaddrs function.
-static int resolve_nic_name (in_addr* addr_, char const *interface_)
+static int resolve_nic_name (struct sockaddr* addr_, char const *interface_,
+    bool ipv4only_)
 {
     //  Get the addresses.
     ifaddrs* ifa = NULL;
@@ -156,13 +165,23 @@ static int resolve_nic_name (in_addr* addr_, char const *interface_)
     //  Find the corresponding network interface.
     bool found = false;
     for (ifaddrs *ifp = ifa; ifp != NULL ;ifp = ifp->ifa_next)
-        if (ifp->ifa_addr && ifp->ifa_addr->sa_family == AF_INET 
-            && !strcmp (interface_, ifp->ifa_name)) 
+    {
+        if (ifp->ifa_addr == NULL)
+            continue;
+
+        int family = ifp->ifa_addr->sa_family;
+
+        if ((family == AF_INET
+             || (!ipv4only_ && family == AF_INET6))
+            && !strcmp (interface_, ifp->ifa_name))
         {
-            *addr_ = ((sockaddr_in*) ifp->ifa_addr)->sin_addr;
+            memcpy (addr_, ifp->ifa_addr,
+                    (family == AF_INET) ? sizeof (struct sockaddr_in)
+                                        : sizeof (struct sockaddr_in6));
             found = true;
             break;
         }
+    }
 
     //  Clean-up;
     freeifaddrs (ifa);
@@ -179,8 +198,14 @@ static int resolve_nic_name (in_addr* addr_, char const *interface_)
 
 //  On other platforms we assume there are no sane interface names.
 //  This is true especially of Windows.
-static int resolve_nic_name (in_addr* addr_, char const *interface_)
+static int resolve_nic_name (struct sockaddr* addr_, char const *interface_,
+    bool ipv4only_)
 {
+    //  All unused parameters.
+    (void) addr_;
+    (void) interface_;
+    (void) ipv4only_;
+
     errno = ENODEV;
     return -1;
 }
@@ -201,28 +226,34 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
     std::string iface (interface_, delimiter - interface_);
     std::string service (delimiter + 1);
 
+    //  0 is not a valid port.
+    uint16_t sin_port = htons ((uint16_t) atoi (service.c_str()));
+    if (!sin_port) {
+        errno = EINVAL;
+        return -1;
+    }
+
     //  Initialize the output parameter.
     memset (addr_, 0, sizeof (*addr_));
+
+    //  Initialize temporary output pointers with storage address.
+    sockaddr_storage ss;
+    sockaddr *out_addr = (sockaddr *) &ss;
+    socklen_t out_addrlen;
 
     //  Initialise IPv4-format family/port.
     sockaddr_in ip4_addr;
     memset (&ip4_addr, 0, sizeof (ip4_addr));
     ip4_addr.sin_family = AF_INET;
-    ip4_addr.sin_port = htons ((uint16_t) atoi (service.c_str()));
+    ip4_addr.sin_port = sin_port;
+    ip4_addr.sin_addr.s_addr = htonl (INADDR_ANY);
 
-    //  Initialize temporary output pointers with ip4_addr
-    sockaddr *out_addr = (sockaddr *) &ip4_addr;
-    socklen_t out_addrlen = (socklen_t) sizeof (ip4_addr);
-
-    //  0 is not a valid port.
-    if (!ip4_addr.sin_port) {
-        errno = EINVAL;
-        return -1;
-    }
+    //  Populate temporary output pointers with ip4_addr.
+    out_addrlen = (socklen_t) sizeof (ip4_addr);
+    memcpy (out_addr, &ip4_addr, out_addrlen);
 
     //  * resolves to INADDR_ANY.
     if (iface.compare("*") == 0) {
-        ip4_addr.sin_addr.s_addr = htonl (INADDR_ANY);
         zmq_assert (out_addrlen <= (socklen_t) sizeof (*addr_));
         memcpy (addr_, out_addr, out_addrlen);
         *addr_len_ = out_addrlen;
@@ -230,7 +261,7 @@ int zmq::resolve_ip_interface (sockaddr_storage* addr_, socklen_t *addr_len_,
     }
 
     //  Try to resolve the string as a NIC name.
-    int rc = resolve_nic_name (&ip4_addr.sin_addr, iface.c_str());
+    int rc = resolve_nic_name (out_addr, iface.c_str(), true);
     if (rc != 0 && errno != ENODEV)
         return rc;
     if (rc == 0) {
