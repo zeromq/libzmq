@@ -201,7 +201,7 @@ int zmq::tcp_connecter_t::open ()
     //  Enable IPv4-mapping of addresses in case it is disabled by default.
 #ifdef IPV6_V6ONLY
     if (addr.ss_family == AF_INET6) {
-#if ZMQ_HAVE_WINDOWS
+#ifdef ZMQ_HAVE_WINDOWS
         DWORD flag = 0;
 #else
         int flag = 0;
