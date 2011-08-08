@@ -198,6 +198,24 @@ int zmq::tcp_connecter_t::open ()
         return -1;
 #endif
 
+    //  Enable IPv4-mapping of addresses in case it is disabled by default.
+#ifdef IPV6_V6ONLY
+    if (addr.ss_family == AF_INET6) {
+#if ZMQ_HAVE_WINDOWS
+        DWORD flag = 0;
+#else
+        int flag = 0;
+#endif
+        int rc = setsockopt (s, IPPROTO_IPV6, IPV6_V6ONLY,
+            (const char*) &flag, sizeof (flag));
+#ifdef ZMQ_HAVE_WINDOWS
+        wsa_assert (rc != SOCKET_ERROR);
+#else
+        errno_assert (rc == 0);
+#endif
+    }
+#endif
+
     // Set the socket to non-blocking mode so that we get async connect().
     unblock_socket (s);
 
