@@ -185,7 +185,8 @@ ZMQ_EXPORT int zmq_term (void *context);
 #define ZMQ_SNDTIMEO 28
 #define ZMQ_RCVLABEL 29
 #define ZMQ_RCVCMD 30
-    
+#define ZMQ_IPV4ONLY 31
+
 /*  Send/recv options.                                                        */
 #define ZMQ_DONTWAIT 1
 #define ZMQ_SNDMORE 2

@@ -40,6 +40,7 @@ zmq::options_t::options_t () :
     maxmsgsize (-1),
     rcvtimeo (-1),
     sndtimeo (-1),
+    ipv4only (1),
     delay_on_close (true),
     delay_on_disconnect (true),
     filter (false)
@@ -178,6 +179,21 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         }
         sndtimeo = *((int*) optval_);
         return 0;
+
+    case ZMQ_IPV4ONLY:
+        {
+            if (optvallen_ != sizeof (int)) {
+                errno = EINVAL;
+                return -1;
+            }
+            int val = *((int*) optval_);
+            if (val != 0 && val != 1) {
+                errno = EINVAL;
+                return -1;
+            }
+            ipv4only = val;
+            return 0;
+        }
 
     }
 
@@ -330,6 +346,15 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
             return -1;
         }
         *((int*) optval_) = sndtimeo;
+        *optvallen_ = sizeof (int);
+        return 0;
+
+    case ZMQ_IPV4ONLY:
+        if (*optvallen_ < sizeof (int)) {
+            errno = EINVAL;
+            return -1;
+        }
+        *((int*) optval_) = ipv4only;
         *optvallen_ = sizeof (int);
         return 0;
 

@@ -31,13 +31,13 @@ colon and the TCP port number to use.
 An 'interface' may be specified by either of the following:
 
 * The wild-card `*`, meaning all available interfaces.
-* The primary IPv4 address assigned to the interface, in its numeric
+* The primary IPv4 or IPv6 address assigned to the interface, in its numeric
   representation.
 * The interface name as defined by the operating system.
 
 NOTE: Interface names are not standardised in any way and should be assumed to
 be arbitrary and platform dependent. On Win32 platforms no short interface
-names exist, thus only the primary IPv4 address may be used to specify an
+names exist, thus only the primary IP address may be used to specify an
 'interface'.
 
 Connecting a socket
@@ -49,7 +49,7 @@ a colon and the TCP port number to use.
 A 'peer address' may be specified by either of the following:
 
 * The DNS name of the peer.
-* The IPv4 address of the peer, in it's numeric representation.
+* The IPv4 or IPv6 address of the peer, in it's numeric representation.
 
 
 WIRE FORMAT

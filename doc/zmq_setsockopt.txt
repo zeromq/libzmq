@@ -321,6 +321,20 @@ Default value:: -1 (infinite)
 Applicable socket types:: all
 
 
+ZMQ_IPV4ONLY: Use IPv4-only sockets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sets the underlying native socket type.  A value of `1` will use IPv4 sockets,
+while the default value of `0` will use IPv6 sockets. An IPv6 socket lets 
+applications connect to and accept connections from both IPv4 and IPv6 hosts.
+
+[horizontal]
+Option value type:: int
+Option value unit:: boolean
+Default value:: 1 (true)
+Applicable socket types:: all, when using TCP transports.
+
+
 RETURN VALUE
 ------------
 The _zmq_setsockopt()_ function shall return zero if successful. Otherwise it
