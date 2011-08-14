@@ -51,7 +51,7 @@ static int resolve_nic_name (struct sockaddr* addr_, char const *interface_,
     bool ipv4only_)
 {
     //  TODO: Unused parameter, IPv6 support not implemented for Solaris.
-    (void) ipv4only;
+    (void) ipv4only_;
 
     //  Create a socket.
     int fd = socket (AF_INET, SOCK_DGRAM, 0);
@@ -87,7 +87,7 @@ static int resolve_nic_name (struct sockaddr* addr_, char const *interface_,
             rc = ioctl (fd, SIOCGLIFADDR, (char*) ifrp);
             zmq_assert (rc != -1);
             if (ifrp->lifr_addr.ss_family == AF_INET) {
-                *addr_ = ((sockaddr_in*) &ifrp->lifr_addr)->sin_addr;
+                *(sockaddr_in*) addr_ = *(sockaddr_in*) &ifrp->lifr_addr;
                 found = true;
                 break;
             }
