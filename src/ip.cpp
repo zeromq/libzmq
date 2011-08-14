@@ -117,7 +117,7 @@ static int resolve_nic_name (struct sockaddr* addr_, char const *interface_,
     bool ipv4only_)
 {
     //  TODO: Unused parameter, IPv6 support not implemented for AIX or HP/UX.
-    (void) ipv4only;
+    (void) ipv4only_;
 
     //  Create a socket.
     int sd = socket (AF_INET, SOCK_DGRAM, 0);
