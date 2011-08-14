@@ -592,12 +592,19 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             memcpy (&errset, &pollset_err, sizeof (fd_set));
 #if defined ZMQ_HAVE_WINDOWS
             int rc = select (0, &inset, &outset, &errset, ptimeout);
-            wsa_assert (rc != SOCKET_ERROR);
+            if (unlikely (rc == SOCKET_ERROR)) {
+                wsa_error_to_errno ();
+                if (errno == ENOTSOCK)
+                    return -1;
+                wsa_assert (false);
+            }
 #else
             int rc = select (maxfd + 1, &inset, &outset, &errset, ptimeout);
-            if (rc == -1 && errno == EINTR)
-                return -1;
-            errno_assert (rc >= 0);
+            if (unlikely (rc == -1) {
+                if (errno == EINTR || errno == EBADF)
+                    return -1;
+                errno_assert (false);
+            }
 #endif
             break;
         }
