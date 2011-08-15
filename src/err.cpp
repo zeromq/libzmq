@@ -228,6 +228,9 @@ void zmq::wsa_error_to_errno ()
     case WSAEADDRNOTAVAIL:
         errno = EADDRNOTAVAIL;
         return;
+    case WSAEAFNOSUPPORT:
+        errno = EAFNOSUPPORT;
+        return;
     default:
         wsa_assert (false);
     }

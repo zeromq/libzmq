@@ -101,6 +101,9 @@ ZMQ_EXPORT void zmq_version (int *major, int *minor, int *patch);
 #ifndef ENOTSOCK
 #define ENOTSOCK (ZMQ_HAUSNUMERO + 9)
 #endif
+#ifndef EAFNOSUPPORT
+#define EAFNOSUPPORT (ZMQ_HAUSNUMERO + 10)
+#endif
 
 /*  Native 0MQ error codes.                                                   */
 #define EFSM (ZMQ_HAUSNUMERO + 51)
