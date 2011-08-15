@@ -68,6 +68,9 @@ namespace zmq
     //  Sets the socket into non-blocking mode.
     void unblock_socket (fd_t s_);
 
+    //  Enable IPv4-mapping of addresses in case it is disabled by default.
+    void enable_ipv4_mapping (fd_t s_);
+
 }
 
 #endif 

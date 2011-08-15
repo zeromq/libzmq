@@ -457,4 +457,21 @@ void zmq::unblock_socket (fd_t s_)
 #endif
 }
 
+void zmq::enable_ipv4_mapping (fd_t s_)
+{
+#ifdef IPV6_V6ONLY
+#ifdef ZMQ_HAVE_WINDOWS
+    DWORD flag = 0;
+#else
+    int flag = 0;
+#endif
+    int rc = setsockopt (s_, IPPROTO_IPV6, IPV6_V6ONLY, (const char*) &flag,
+        sizeof (flag));
+#ifdef ZMQ_HAVE_WINDOWS
+    wsa_assert (rc != SOCKET_ERROR);
+#else
+    errno_assert (rc == 0);
+#endif
+#endif
+}
 

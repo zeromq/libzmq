@@ -131,6 +131,20 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
     //  Create a listening socket.
     s = ::socket (addr.ss_family, SOCK_STREAM, IPPROTO_TCP);
 #ifdef ZMQ_HAVE_WINDOWS
+    if (s == INVALID_SOCKET)
+        wsa_error_to_errno ();
+#endif
+
+    //  IPv6 address family not supported, try automatic downgrade to IPv4.
+    if (addr.ss_family == AF_INET6 && errno == EAFNOSUPPORT &&
+          !options.ipv4only) {
+        rc = resolve_ip_interface (&addr, &addr_len, addr_, true);
+        if (rc != 0)
+            return rc;
+        s = ::socket (addr.ss_family, SOCK_STREAM, IPPROTO_TCP);
+    }
+
+#ifdef ZMQ_HAVE_WINDOWS
     if (s == INVALID_SOCKET) {
         wsa_error_to_errno ();
         return -1;
@@ -139,6 +153,11 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
     if (s == -1)
         return -1;
 #endif
+
+    //  On some systems, IPv4 mapping in IPv6 sockets is disabled by default.
+    //  Switch it on in such cases.
+    if (addr.ss_family == AF_INET6)
+        enable_ipv4_mapping (s);
 
     //  Allow reusing of the address.
     int flag = 1;
