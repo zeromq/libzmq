@@ -593,7 +593,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 #if defined ZMQ_HAVE_WINDOWS
             int rc = select (0, &inset, &outset, &errset, ptimeout);
             if (unlikely (rc == SOCKET_ERROR)) {
-                wsa_error_to_errno ();
+                zmq::wsa_error_to_errno ();
                 if (errno == ENOTSOCK)
                     return -1;
                 wsa_assert (false);

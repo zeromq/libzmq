@@ -179,7 +179,8 @@ int zmq::tcp_connecter_t::get_new_reconnect_ivl ()
 
 int zmq::tcp_connecter_t::set_address (const char *addr_)
 {
-    return resolve_ip_hostname (&addr, &addr_len, addr_, options.ipv4only);
+    return resolve_ip_hostname (&addr, &addr_len, addr_,
+        options.ipv4only ? true : false);
 }
 
 int zmq::tcp_connecter_t::open ()
