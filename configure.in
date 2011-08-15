@@ -89,7 +89,6 @@ case "${host_os}" in
             CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
         fi
         AC_DEFINE(ZMQ_HAVE_LINUX, 1, [Have Linux OS])
-        AC_CHECK_LIB(rt, sem_init)
 
         case "${host_os}" in
             *android*)
@@ -103,7 +102,6 @@ case "${host_os}" in
         AC_DEFINE(ZMQ_HAVE_SOLARIS, 1, [Have Solaris OS])
         AC_CHECK_LIB(socket, socket)
         AC_CHECK_LIB(nsl, gethostbyname)
-        AC_CHECK_LIB(rt, sem_init)
         AC_MSG_CHECKING([whether atomic operations can be used])
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
             [[#include <atomic.h>]],
@@ -173,7 +171,6 @@ case "${host_os}" in
         # Define on HP-UX to enable all library features
         CPPFLAGS="-D_POSIX_C_SOURCE=200112L $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_HPUX, 1, [Have HPUX OS])
-        AC_CHECK_LIB(rt, sem_init)
         ;;
     *mingw32*)
         AC_DEFINE(ZMQ_HAVE_WINDOWS, 1, [Have Windows OS])
