@@ -106,7 +106,7 @@ static int resolve_nic_name (struct sockaddr* addr_, char const *interface_,
     return 0;
 }
 
-#elif defined ZMQ_HAVE_AIX || ZMQ_HAVE_HPUX
+#elif defined ZMQ_HAVE_AIX || ZMQ_HAVE_HPUX || ZMQ_HAVE_ANDROID
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -139,8 +139,9 @@ static int resolve_nic_name (struct sockaddr* addr_, char const *interface_,
         return -1;
     }
 
-    struct sockaddr *sa = (struct sockaddr *) &ifr.ifr_addr;
-    *addr_ = ((sockaddr_in*)sa)->sin_addr;
+    memcpy (&((sockaddr_in*) addr_)->sin_addr,
+        &((sockaddr_in*) &ifr.ifr_addr)->sin_addr, sizeof (in_addr));
+
     return 0;    
 }
 

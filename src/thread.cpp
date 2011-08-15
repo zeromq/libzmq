@@ -59,15 +59,15 @@ extern "C"
 {
     static void *thread_routine (void *arg_)
     {
-    #if !defined ZMQ_HAVE_OPENVMS
-        //  Following code will guarantee more predictable latecnies as it'll
+#if !defined ZMQ_HAVE_OPENVMS && !defined ZMQ_HAVE_ANDROID
+        //  Following code will guarantee more predictable latencies as it'll
         //  disallow any signal handling in the I/O thread.
         sigset_t signal_set;
         int rc = sigfillset (&signal_set);
         errno_assert (rc == 0);
         rc = pthread_sigmask (SIG_BLOCK, &signal_set, NULL);
         posix_assert (rc);
-    #endif
+#endif
 
         zmq::thread_t *self = (zmq::thread_t*) arg_;   
         self->tfn (self->arg);
