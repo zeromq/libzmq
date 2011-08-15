@@ -352,6 +352,9 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 #if defined ZMQ_HAVE_WINDOWS
         Sleep (timeout_ > 0 ? timeout_ : INFINITE);
         return 0;
+#elif defined ZMQ_HAVE_ANDROID
+        usleep (timeout_ * 1000);
+        return 0;
 #else
         return usleep (timeout_ * 1000);
 #endif
