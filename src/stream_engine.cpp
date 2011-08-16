@@ -34,14 +34,14 @@
 #include <string.h>
 #include <new>
 
-#include "tcp_engine.hpp"
+#include "stream_engine.hpp"
 #include "io_thread.hpp"
 #include "session.hpp"
 #include "config.hpp"
 #include "err.hpp"
 #include "ip.hpp"
 
-zmq::tcp_engine_t::tcp_engine_t (fd_t fd_, const options_t &options_) :
+zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_) :
     s (fd_),
     inpos (NULL),
     insize (0),
@@ -86,7 +86,7 @@ zmq::tcp_engine_t::tcp_engine_t (fd_t fd_, const options_t &options_) :
 #endif
 }
 
-zmq::tcp_engine_t::~tcp_engine_t ()
+zmq::stream_engine_t::~stream_engine_t ()
 {
     zmq_assert (!plugged);
 
@@ -102,7 +102,7 @@ zmq::tcp_engine_t::~tcp_engine_t ()
     }
 }
 
-void zmq::tcp_engine_t::plug (io_thread_t *io_thread_, session_t *session_)
+void zmq::stream_engine_t::plug (io_thread_t *io_thread_, session_t *session_)
 {
     zmq_assert (!plugged);
     plugged = true;
@@ -125,7 +125,7 @@ void zmq::tcp_engine_t::plug (io_thread_t *io_thread_, session_t *session_)
     in_event ();
 }
 
-void zmq::tcp_engine_t::unplug ()
+void zmq::stream_engine_t::unplug ()
 {
     zmq_assert (plugged);
     plugged = false;
@@ -143,13 +143,13 @@ void zmq::tcp_engine_t::unplug ()
     session = NULL;
 }
 
-void zmq::tcp_engine_t::terminate ()
+void zmq::stream_engine_t::terminate ()
 {
     unplug ();
     delete this;
 }
 
-void zmq::tcp_engine_t::in_event ()
+void zmq::stream_engine_t::in_event ()
 {
     bool disconnection = false;
 
@@ -204,7 +204,7 @@ void zmq::tcp_engine_t::in_event ()
         error ();
 }
 
-void zmq::tcp_engine_t::out_event ()
+void zmq::stream_engine_t::out_event ()
 {
     //  If write buffer is empty, try to read new data from the encoder.
     if (!outsize) {
@@ -243,7 +243,7 @@ void zmq::tcp_engine_t::out_event ()
     outsize -= nbytes;
 }
 
-void zmq::tcp_engine_t::activate_out ()
+void zmq::stream_engine_t::activate_out ()
 {
     set_pollout (handle);
 
@@ -254,7 +254,7 @@ void zmq::tcp_engine_t::activate_out ()
     out_event ();
 }
 
-void zmq::tcp_engine_t::activate_in ()
+void zmq::stream_engine_t::activate_in ()
 {
     set_pollin (handle);
 
@@ -262,7 +262,7 @@ void zmq::tcp_engine_t::activate_in ()
     in_event ();
 }
 
-void zmq::tcp_engine_t::error ()
+void zmq::stream_engine_t::error ()
 {
     zmq_assert (session);
     session->detach ();
@@ -270,7 +270,7 @@ void zmq::tcp_engine_t::error ()
     delete this;
 }
 
-int zmq::tcp_engine_t::write (const void *data_, size_t size_)
+int zmq::stream_engine_t::write (const void *data_, size_t size_)
 {
 #ifdef ZMQ_HAVE_WINDOWS
 
@@ -315,7 +315,7 @@ int zmq::tcp_engine_t::write (const void *data_, size_t size_)
 #endif
 }
 
-int zmq::tcp_engine_t::read (void *data_, size_t size_)
+int zmq::stream_engine_t::read (void *data_, size_t size_)
 {
 #ifdef ZMQ_HAVE_WINDOWS
 

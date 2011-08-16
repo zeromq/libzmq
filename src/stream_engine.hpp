@@ -18,8 +18,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_TCP_ENGINE_HPP_INCLUDED__
-#define __ZMQ_TCP_ENGINE_HPP_INCLUDED__
+#ifndef __ZMQ_STREAM_ENGINE_HPP_INCLUDED__
+#define __ZMQ_STREAM_ENGINE_HPP_INCLUDED__
 
 #include <stddef.h>
 
@@ -33,12 +33,15 @@
 namespace zmq
 {
 
-    class tcp_engine_t : public io_object_t, public i_engine
+    //  This engine handles any socket with SOCK_STREAM semantics,
+    //  e.g. TCP socket or an UNIX domain socket.
+
+    class stream_engine_t : public io_object_t, public i_engine
     {
     public:
 
-        tcp_engine_t (fd_t fd_, const options_t &options_);
-        ~tcp_engine_t ();
+        stream_engine_t (fd_t fd_, const options_t &options_);
+        ~stream_engine_t ();
 
         //  i_engine interface implementation.
         void plug (class io_thread_t *io_thread_, class session_t *session_);
@@ -90,8 +93,8 @@ namespace zmq
 
         bool plugged;
 
-        tcp_engine_t (const tcp_engine_t&);
-        const tcp_engine_t &operator = (const tcp_engine_t&);
+        stream_engine_t (const stream_engine_t&);
+        const stream_engine_t &operator = (const stream_engine_t&);
     };
 
 }

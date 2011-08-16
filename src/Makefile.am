@@ -60,9 +60,9 @@ libzmq_la_SOURCES = \
     signaler.hpp \
     socket_base.hpp \
     stdint.hpp \
+    stream_engine.hpp \
     sub.hpp \
     tcp_connecter.hpp \
-    tcp_engine.hpp \
     tcp_listener.hpp \
     thread.hpp \
     trie.hpp \
@@ -117,9 +117,9 @@ libzmq_la_SOURCES = \
     session.cpp \
     signaler.cpp \
     socket_base.cpp \
+    stream_engine.cpp \
     sub.cpp \
     tcp_connecter.cpp \
-    tcp_engine.cpp \
     tcp_listener.cpp \
     thread.cpp \
     trie.cpp \

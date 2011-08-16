@@ -26,7 +26,7 @@
 #include <string.h>
 #include <vtcp.h>
 
-#include "tcp_engine.hpp"
+#include "stream_engine.hpp"
 #include "session.hpp"
 #include "stdint.hpp"
 #include "err.hpp"
@@ -104,7 +104,7 @@ void zmq::vtcp_listener_t::in_event ()
     tune_tcp_socket (fd);
 
     //  Create the engine object for this connection.
-    tcp_engine_t *engine = new (std::nothrow) tcp_engine_t (fd, options);
+    stream_engine_t *engine = new (std::nothrow) stream_engine_t (fd, options);
     alloc_assert (engine);
 
     //  Choose I/O thread to run connecter in. Given that we are already

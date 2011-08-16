@@ -22,7 +22,7 @@
 #include <string>
 
 #include "tcp_connecter.hpp"
-#include "tcp_engine.hpp"
+#include "stream_engine.hpp"
 #include "io_thread.hpp"
 #include "platform.hpp"
 #include "random.hpp"
@@ -109,7 +109,7 @@ void zmq::tcp_connecter_t::out_event ()
     tune_tcp_socket (fd);
 
     //  Create the engine object for this connection.
-    tcp_engine_t *engine = new (std::nothrow) tcp_engine_t (fd, options);
+    stream_engine_t *engine = new (std::nothrow) stream_engine_t (fd, options);
     alloc_assert (engine);
 
     //  Attach the engine to the corresponding session object.
