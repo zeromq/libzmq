@@ -411,15 +411,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\stream_engine.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\sub.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\..\src\tcp_connecter.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\tcp_engine.cpp"
 				>
 			</File>
 			<File
@@ -689,15 +689,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\stream_engine.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\sub.hpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\..\src\tcp_connecter.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\tcp_engine.hpp"
 				>
 			</File>
 			<File
