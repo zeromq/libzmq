@@ -376,8 +376,8 @@ zmq::pgm_socket_t::~pgm_socket_t ()
 
 //  Get receiver fds. receive_fd_ is signaled for incoming packets,
 //  waiting_pipe_fd_ is signaled for state driven events and data.
-void zmq::pgm_socket_t::get_receiver_fds (int *receive_fd_, 
-    int *waiting_pipe_fd_)
+void zmq::pgm_socket_t::get_receiver_fds (fd_t *receive_fd_, 
+    fd_t *waiting_pipe_fd_)
 {
     socklen_t socklen;
     bool rc;
@@ -403,8 +403,8 @@ void zmq::pgm_socket_t::get_receiver_fds (int *receive_fd_,
 //  receive_fd_ is for incoming back-channel protocol packets.
 //  rdata_notify_fd_ is raised for waiting repair transmissions.
 //  pending_notify_fd_ is for state driven events.
-void zmq::pgm_socket_t::get_sender_fds (int *send_fd_, int *receive_fd_, 
-    int *rdata_notify_fd_, int *pending_notify_fd_)
+void zmq::pgm_socket_t::get_sender_fds (fd_t *send_fd_, fd_t *receive_fd_, 
+    fd_t *rdata_notify_fd_, fd_t *pending_notify_fd_)
 {
     socklen_t socklen;
     bool rc;

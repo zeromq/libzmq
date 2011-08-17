@@ -36,6 +36,7 @@
 #include <pgm/in.h>
 #endif
 
+#include "fd.hpp"
 #include "options.hpp"
 
 namespace zmq
@@ -56,12 +57,12 @@ namespace zmq
         int init (bool udp_encapsulation_, const char *network_);
         
         //   Get receiver fds and store them into user allocated memory.
-        void get_receiver_fds (int *receive_fd_, int *waiting_pipe_fd_);
+        void get_receiver_fds (fd_t *receive_fd_, fd_t *waiting_pipe_fd_);
 
         //   Get sender and receiver fds and store it to user allocated 
         //   memory. Receive fd is used to process NAKs from peers.
-        void get_sender_fds (int *send_fd_, int *receive_fd_,
-            int *rdata_notify_fd_, int *pending_notify_fd_);
+        void get_sender_fds (fd_t *send_fd_, fd_t *receive_fd_,
+            fd_t *rdata_notify_fd_, fd_t *pending_notify_fd_);
 
         //  Send data as one APDU, transmit window owned memory.
         size_t send (unsigned char *data_, size_t data_len_);

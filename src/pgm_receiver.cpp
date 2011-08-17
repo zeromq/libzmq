@@ -60,8 +60,8 @@ int zmq::pgm_receiver_t::init (bool udp_encapsulation_, const char *network_)
 void zmq::pgm_receiver_t::plug (io_thread_t *io_thread_, session_t *session_)
 {
     //  Retrieve PGM fds and start polling.
-    int socket_fd;
-    int waiting_pipe_fd;
+    fd_t socket_fd = retired_fd;
+    fd_t waiting_pipe_fd = retired_fd;
     pgm_socket.get_receiver_fds (&socket_fd, &waiting_pipe_fd);
     socket_handle = add_fd (socket_fd);
     pipe_handle = add_fd (waiting_pipe_fd);
