@@ -27,6 +27,7 @@
 #include <string.h>
 
 #include "stream_engine.hpp"
+#include "ipc_address.hpp"
 #include "io_thread.hpp"
 #include "session.hpp"
 #include "config.hpp"
@@ -45,8 +46,6 @@ zmq::ipc_listener_t::ipc_listener_t (io_thread_t *io_thread_,
     s (retired_fd),
     socket (socket_)
 {
-    memset (&addr, 0, sizeof (addr));
-    addr_len = 0;
 }
 
 zmq::ipc_listener_t::~ipc_listener_t ()
@@ -100,9 +99,11 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
     //  Get rid of the file associated with the UNIX domain socket that
     //  may have been left behind by the previous run of the application.
     ::unlink (addr_);
+    filename.clear ();
 
-    //  Convert the address into sockaddr_un structure.
-    int rc = resolve_local_path (&addr, &addr_len, addr_);
+    //  Initialise the address structure.
+    ipc_address_t address;
+    int rc = address.resolve (addr_);
     if (rc != 0)
         return -1;
 
@@ -112,7 +113,7 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
         return -1;
 
     //  Bind the socket to the file path.
-    rc = bind (s, (struct sockaddr*) &addr, addr_len);
+    rc = bind (s, address.addr (), address.addrlen ());
     if (rc != 0)
         return -1;
 
@@ -136,9 +137,8 @@ int zmq::ipc_listener_t::close ()
 
     //  If there's an underlying UNIX domain socket, get rid of the file it
     //  is associated with.
-    struct sockaddr_un *su = (struct sockaddr_un*) &addr;
-    if (AF_UNIX == su->sun_family && has_file) {
-        rc = ::unlink(su->sun_path);
+    if (has_file && !filename.empty ()) {
+        rc = ::unlink(filename.c_str ());
         if (rc != 0)
             return -1;
     }

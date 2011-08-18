@@ -25,11 +25,12 @@
 
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
 
+#include <string>
+
 #include "fd.hpp"
-#include "ip.hpp"
 #include "own.hpp"
-#include "io_object.hpp"
 #include "stdint.hpp"
+#include "io_object.hpp"
 
 namespace zmq
 {
@@ -62,12 +63,11 @@ namespace zmq
         //  if the connection was dropped while waiting in the listen backlog.
         fd_t accept ();
 
-        //  Address to listen on.
-        sockaddr_storage addr;
-        socklen_t addr_len;
-
         //  True, if the undelying file for UNIX domain socket exists.
         bool has_file;
+
+        //  Name of the file associated with the UNIX domain address.
+        std::string filename;
 
         //  Underlying socket.
         fd_t s;

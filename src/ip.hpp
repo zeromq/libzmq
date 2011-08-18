@@ -58,10 +58,6 @@ namespace zmq
     int resolve_ip_hostname (sockaddr_storage *addr_, socklen_t *addr_len_,
         const char *hostname_, bool ipv4only_);
 
-    //  This function sets up address for UNIX domain transport.
-    int resolve_local_path (sockaddr_storage *addr_, socklen_t *addr_len_,
-        const char* pathname_);
-
     //  Tunes the supplied TCP socket for the best latency.
     void tune_tcp_socket (fd_t s_);
 

@@ -26,10 +26,10 @@
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
 
 #include "fd.hpp"
-#include "ip.hpp"
 #include "own.hpp"
-#include "io_object.hpp"
 #include "stdint.hpp"
+#include "io_object.hpp"
+#include "ipc_address.hpp"
 
 namespace zmq
 {
@@ -85,8 +85,7 @@ namespace zmq
         fd_t connect ();
 
         //  Address to connect to.
-        sockaddr_storage addr;
-        socklen_t addr_len;
+        ipc_address_t address;
 
         //  Underlying socket.
         fd_t s;

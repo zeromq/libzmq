@@ -48,9 +48,6 @@ zmq::ipc_connecter_t::ipc_connecter_t (class io_thread_t *io_thread_,
     session (session_),
     current_reconnect_ivl(options.reconnect_ivl)
 {
-    memset (&addr, 0, sizeof (addr));
-    addr_len = 0;
-
     //  TODO: set_addess should be called separately, so that the error
     //  can be propagated.
     int rc = set_address (address_);
@@ -169,16 +166,14 @@ int zmq::ipc_connecter_t::get_new_reconnect_ivl ()
 
 int zmq::ipc_connecter_t::set_address (const char *addr_)
 {
-    return resolve_local_path (&addr, &addr_len, addr_);
+    return address.resolve (addr_);
 }
 
 int zmq::ipc_connecter_t::open ()
 {
     zmq_assert (s == retired_fd);
-    struct sockaddr *sa = (struct sockaddr*) &addr;
 
     //  Create the socket.
-    zmq_assert (AF_UNIX == sa->sa_family);
     s = socket (AF_UNIX, SOCK_STREAM, 0);
     if (s == -1)
         return -1;
@@ -187,7 +182,7 @@ int zmq::ipc_connecter_t::open ()
     unblock_socket (s);
 
     //  Connect to the remote peer.
-    int rc = ::connect (s, (struct sockaddr*) &addr, sizeof (sockaddr_un));
+    int rc = ::connect (s, address.addr (), address.addrlen ());
 
     //  Connect was successfull immediately.
     if (rc == 0)

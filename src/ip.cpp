@@ -28,10 +28,6 @@
 #include "platform.hpp"
 #include "stdint.hpp"
 
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
-#include <sys/un.h>
-#endif
-
 #if !defined ZMQ_HAVE_WINDOWS
 #include <fcntl.h>
 #endif
@@ -394,26 +390,6 @@ int zmq::resolve_ip_hostname (sockaddr_storage *addr_, socklen_t *addr_len_,
     freeaddrinfo (res);
     
     return 0;
-}
-
-int zmq::resolve_local_path (sockaddr_storage *addr_, socklen_t *addr_len_,
-    const char *path_)
-{
-#if defined ZMQ_HAVE_WINDOWS || defined ZMQ_HAVE_OPENVMS
-    errno = EPROTONOSUPPORT;
-    return -1;
-#else
-    sockaddr_un *un = (sockaddr_un*) addr_;
-    if (strlen (path_) >= sizeof (un->sun_path))
-    {
-        errno = ENAMETOOLONG;
-        return -1;
-    }
-    strcpy (un->sun_path, path_);
-    un->sun_family = AF_UNIX;
-    *addr_len_ = sizeof (sockaddr_un);
-    return 0;
-#endif
 }
 
 void zmq::tune_tcp_socket (fd_t s_)
