@@ -28,10 +28,10 @@
 #include <vtcp.h>
 
 #include "fd.hpp"
-#include "ip.hpp"
 #include "own.hpp"
-#include "io_object.hpp"
 #include "stdint.hpp"
+#include "io_object.hpp"
+#include "tcp_address.hpp"
 
 namespace zmq
 {
@@ -87,8 +87,7 @@ namespace zmq
         fd_t connect ();
 
         //  Address to connect to.
-        sockaddr_storage addr;
-        socklen_t addr_len;
+        tcp_address_t address;
         vtcp_subport_t subport;
 
         //  Underlying socket.

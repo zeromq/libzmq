@@ -56,9 +56,6 @@ zmq::tcp_connecter_t::tcp_connecter_t (class io_thread_t *io_thread_,
     session (session_),
     current_reconnect_ivl(options.reconnect_ivl)
 {
-    memset (&addr, 0, sizeof (addr));
-    addr_len = 0;
-
     //  TODO: set_addess should be called separately, so that the error
     //  can be propagated.
     int rc = set_address (address_);
@@ -179,8 +176,7 @@ int zmq::tcp_connecter_t::get_new_reconnect_ivl ()
 
 int zmq::tcp_connecter_t::set_address (const char *addr_)
 {
-    return resolve_ip_hostname (&addr, &addr_len, addr_,
-        options.ipv4only ? true : false);
+    return address.resolve (addr_, false, options.ipv4only ? true : false);
 }
 
 int zmq::tcp_connecter_t::open ()
@@ -188,7 +184,7 @@ int zmq::tcp_connecter_t::open ()
     zmq_assert (s == retired_fd);
 
     //  Create the socket.
-    s = socket (addr.ss_family, SOCK_STREAM, IPPROTO_TCP);
+    s = socket (address.family (), SOCK_STREAM, IPPROTO_TCP);
 #ifdef ZMQ_HAVE_WINDOWS
     if (s == INVALID_SOCKET) {
         wsa_error_to_errno ();
@@ -201,14 +197,14 @@ int zmq::tcp_connecter_t::open ()
 
     //  On some systems, IPv4 mapping in IPv6 sockets is disabled by default.
     //  Switch it on in such cases.
-    if (addr.ss_family == AF_INET6)
+    if (address.family () == AF_INET6)
         enable_ipv4_mapping (s);
 
     // Set the socket to non-blocking mode so that we get async connect().
     unblock_socket (s);
 
     //  Connect to the remote peer.
-    int rc = ::connect (s, (struct sockaddr*) &addr, addr_len);
+    int rc = ::connect (s, address.addr (), address.addrlen ());
 
     //  Connect was successfull immediately.
     if (rc == 0)

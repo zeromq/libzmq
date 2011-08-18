@@ -55,8 +55,6 @@ zmq::tcp_listener_t::tcp_listener_t (io_thread_t *io_thread_,
     s (retired_fd),
     socket (socket_)
 {
-    memset (&addr, 0, sizeof (addr));
-    addr_len = 0;
 }
 
 zmq::tcp_listener_t::~tcp_listener_t ()
@@ -122,26 +120,25 @@ void zmq::tcp_listener_t::close ()
 
 int zmq::tcp_listener_t::set_address (const char *addr_)
 {
-    //  Convert the interface into sockaddr_in structure.
-    int rc = resolve_ip_interface (&addr, &addr_len, addr_,
-        options.ipv4only ? true : false);
+    //  Convert the textual address into address structure.
+    int rc = address.resolve (addr_, true, options.ipv4only ? true : false);
     if (rc != 0)
         return -1;
 
     //  Create a listening socket.
-    s = ::socket (addr.ss_family, SOCK_STREAM, IPPROTO_TCP);
+    s = ::socket (address.family (), SOCK_STREAM, IPPROTO_TCP);
 #ifdef ZMQ_HAVE_WINDOWS
     if (s == INVALID_SOCKET)
         wsa_error_to_errno ();
 #endif
 
     //  IPv6 address family not supported, try automatic downgrade to IPv4.
-    if (addr.ss_family == AF_INET6 && errno == EAFNOSUPPORT &&
+    if (address.family () == AF_INET6 && errno == EAFNOSUPPORT &&
           !options.ipv4only) {
-        rc = resolve_ip_interface (&addr, &addr_len, addr_, true);
+        rc = address.resolve (addr_, true, true);
         if (rc != 0)
             return rc;
-        s = ::socket (addr.ss_family, SOCK_STREAM, IPPROTO_TCP);
+        s = ::socket (address.family (), SOCK_STREAM, IPPROTO_TCP);
     }
 
 #ifdef ZMQ_HAVE_WINDOWS
@@ -156,7 +153,7 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
 
     //  On some systems, IPv4 mapping in IPv6 sockets is disabled by default.
     //  Switch it on in such cases.
-    if (addr.ss_family == AF_INET6)
+    if (address.family () == AF_INET6)
         enable_ipv4_mapping (s);
 
     //  Allow reusing of the address.
@@ -171,7 +168,7 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
 #endif
 
     //  Bind the socket to the network interface and port.
-    rc = bind (s, (struct sockaddr*) &addr, addr_len);
+    rc = bind (s, address.addr (), address.addrlen ());
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
         wsa_error_to_errno ();

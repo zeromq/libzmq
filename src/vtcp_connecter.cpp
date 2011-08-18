@@ -60,8 +60,6 @@ zmq::vtcp_connecter_t::vtcp_connecter_t (class io_thread_t *io_thread_,
     session (session_),
     current_reconnect_ivl(options.reconnect_ivl)
 {
-    memset (&addr, 0, sizeof (addr));
-    addr_len = 0;
     subport = 0;
 
     int rc = set_address (address_);
@@ -92,8 +90,7 @@ int zmq::vtcp_connecter_t::set_address (const char *addr_)
         addr_str += ":9220";
         std::string subport_str (delimiter + 1);
         subport = (vtcp_subport_t) atoi (subport_str.c_str ());
-        int rc = resolve_ip_hostname (&addr, &addr_len, addr_str.c_str (),
-            true);
+        int rc = address.resolve (addr_str.c_str (), false, true);
         if (rc != 0)
             return -1;
     }
@@ -101,8 +98,7 @@ int zmq::vtcp_connecter_t::set_address (const char *addr_)
         std::string addr_str (addr_, delimiter - addr_);
         std::string subport_str (delimiter + 1);
         subport = (vtcp_subport_t) atoi (subport_str.c_str ());
-        int rc = resolve_ip_hostname (&addr, &addr_len, addr_str.c_str (),
-            true);
+        int rc = address.resolve (addr_str.c_str (), false, true);
         if (rc != 0)
             return -1;
     }
@@ -207,7 +203,7 @@ int zmq::vtcp_connecter_t::open ()
     zmq_assert (s == retired_fd);
 
     //  Start the connection procedure.
-    sockaddr_in *paddr = (sockaddr_in*) &addr;
+    sockaddr_in *paddr = (sockaddr_in*) address.addr ();
     s = vtcp_connect (paddr->sin_addr.s_addr, ntohs (paddr->sin_port));
 
     //  Connect was successfull immediately.

@@ -21,42 +21,10 @@
 #ifndef __ZMQ_IP_HPP_INCLUDED__
 #define __ZMQ_IP_HPP_INCLUDED__
 
-#include "platform.hpp"
 #include "fd.hpp"
-
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
-#include <netdb.h>
-#endif
-
-//  Some platforms (notably Darwin/OSX and NetBSD) do not define all AI_
-//  flags for getaddrinfo(). This can be worked around safely by defining
-//  these to 0.
-#ifndef AI_ADDRCONFIG
-#define AI_ADDRCONFIG 0
-#endif
-#ifndef AI_NUMERICSERV
-#define AI_NUMERICSERV 0
-#endif
 
 namespace zmq
 {
-
-    //  Resolves network interface name in <nic-name>:<port> format. Symbol "*"
-    //  (asterisk) resolves to INADDR_ANY (all network interfaces).
-    int resolve_ip_interface (sockaddr_storage *addr_, socklen_t *addr_len_,
-        char const *interface_, bool ipv4only_);
-
-    //  This function resolves a string in <hostname>:<port-number> format.
-    //  Hostname can be either the name of the host or its IP address.
-    int resolve_ip_hostname (sockaddr_storage *addr_, socklen_t *addr_len_,
-        const char *hostname_, bool ipv4only_);
 
     //  Tunes the supplied TCP socket for the best latency.
     void tune_tcp_socket (fd_t s_);

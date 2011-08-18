@@ -22,10 +22,10 @@
 #define __ZMQ_TCP_LISTENER_HPP_INCLUDED__
 
 #include "fd.hpp"
-#include "ip.hpp"
 #include "own.hpp"
-#include "io_object.hpp"
 #include "stdint.hpp"
+#include "io_object.hpp"
+#include "tcp_address.hpp"
 
 namespace zmq
 {
@@ -59,8 +59,7 @@ namespace zmq
         fd_t accept ();
 
         //  Address to listen on.
-        sockaddr_storage addr;
-        socklen_t addr_len;
+        tcp_address_t address;
 
         //  True, if the undelying file for UNIX domain socket exists.
         bool has_file;
