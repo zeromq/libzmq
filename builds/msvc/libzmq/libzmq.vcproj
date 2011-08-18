@@ -423,6 +423,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\tcp_address.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\tcp_connecter.cpp"
 				>
 			</File>
@@ -702,6 +706,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\sub.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\tcp_address.hpp"
 				>
 			</File>
 			<File

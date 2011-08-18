@@ -23,8 +23,12 @@
 
 #include "platform.hpp"
 
+#if defined ZMQ_HAVE_WINDOWS
+#include "windows.hpp"
+#else
 #include <sys/socket.h>
 #include <netinet/in.h>
+#endif
 
 namespace zmq
 {
@@ -42,7 +46,11 @@ namespace zmq
         //  If 'ipv4only' is true, the name will never resolve to IPv6 address.
         int resolve (const char* name_, bool local_, bool ipv4only_);
 
+#if defined ZMQ_HAVE_WINDOWS
+        unsigned short family ();
+#else
         sa_family_t family ();
+#endif
         sockaddr *addr ();
         socklen_t addrlen ();
 

@@ -23,15 +23,14 @@
 
 #include "tcp_address.hpp"
 #include "platform.hpp"
+#include "stdint.hpp"
 #include "err.hpp"
 
 #ifdef ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
 #else
 #include <sys/types.h>
-#include <sys/socket.h>
 #include <arpa/inet.h>
-#include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <netdb.h>
 #endif
@@ -415,7 +414,11 @@ socklen_t zmq::tcp_address_t::addrlen ()
         return (socklen_t) sizeof (address.ipv4);
 }
 
+#if defined ZMQ_HAVE_WINDOWS
+unsigned short zmq::tcp_address_t::family ()
+#else
 sa_family_t zmq::tcp_address_t::family ()
+#endif
 {
     return address.generic.sa_family;
 }
