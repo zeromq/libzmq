@@ -295,6 +295,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\ipc_address.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\ipc_connecter.cpp"
 				>
 			</File>
@@ -550,6 +554,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\ip.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\ipc_address.hpp"
 				>
 			</File>
 			<File
