@@ -47,10 +47,10 @@
 #include <sys/sockio.h>
 #include <net/if.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 //  On Solaris platform, network interface name can be queried by ioctl.
-static int resolve_nic_name (struct sockaddr* addr_, char const *interface_,
-    bool ipv4only_)
+int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv4only_)
 {
     //  TODO: Unused parameter, IPv6 support not implemented for Solaris.
     (void) ipv4only_;
@@ -85,11 +85,11 @@ static int resolve_nic_name (struct sockaddr* addr_, char const *interface_,
     lifreq *ifrp = ifc.lifc_req;
     for (int n = 0; n < (int) (ifc.lifc_len / sizeof (lifreq));
           n ++, ifrp ++) {
-        if (!strcmp (interface_, ifrp->lifr_name)) {
+        if (!strcmp (nic_, ifrp->lifr_name)) {
             rc = ioctl (fd, SIOCGLIFADDR, (char*) ifrp);
             zmq_assert (rc != -1);
             if (ifrp->lifr_addr.ss_family == AF_INET) {
-                *(sockaddr_in*) addr_ = *(sockaddr_in*) &ifrp->lifr_addr;
+                address.ipv4 = *(sockaddr_in*) &ifrp->lifr_addr;
                 found = true;
                 break;
             }
@@ -115,8 +115,7 @@ static int resolve_nic_name (struct sockaddr* addr_, char const *interface_,
 #include <sys/ioctl.h>
 #include <net/if.h>
 
-static int resolve_nic_name (struct sockaddr* addr_, char const *interface_,
-    bool ipv4only_)
+int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv4only_)
 {
     //  TODO: Unused parameter, IPv6 support not implemented for AIX or HP/UX.
     (void) ipv4only_;
@@ -128,7 +127,7 @@ static int resolve_nic_name (struct sockaddr* addr_, char const *interface_,
     struct ifreq ifr; 
 
     //  Copy interface name for ioctl get.
-    strncpy (ifr.ifr_name, interface_, sizeof (ifr.ifr_name));
+    strncpy (ifr.ifr_name, nic_, sizeof (ifr.ifr_name));
 
     //  Fetch interface address.
     int rc = ioctl (sd, SIOCGIFADDR, (caddr_t) &ifr, sizeof (struct ifreq));
@@ -141,8 +140,8 @@ static int resolve_nic_name (struct sockaddr* addr_, char const *interface_,
         return -1;
     }
 
-    memcpy (&((sockaddr_in*) addr_)->sin_addr,
-        &((sockaddr_in*) &ifr.ifr_addr)->sin_addr, sizeof (in_addr));
+    memcpy (&address.ipv4.sin_addr, &((sockaddr_in*) &ifr.ifr_addr)->sin_addr,
+        sizeof (in_addr));
 
     return 0;    
 }
@@ -156,8 +155,7 @@ static int resolve_nic_name (struct sockaddr* addr_, char const *interface_,
 
 //  On these platforms, network interface name can be queried
 //  using getifaddrs function.
-static int resolve_nic_name (struct sockaddr* addr_, char const *interface_,
-    bool ipv4only_)
+int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv4only_)
 {
     //  Get the addresses.
     ifaddrs* ifa = NULL;
@@ -176,9 +174,9 @@ static int resolve_nic_name (struct sockaddr* addr_, char const *interface_,
 
         if ((family == AF_INET
              || (!ipv4only_ && family == AF_INET6))
-            && !strcmp (interface_, ifp->ifa_name))
+            && !strcmp (nic_, ifp->ifa_name))
         {
-            memcpy (addr_, ifp->ifa_addr,
+            memcpy (&address, ifp->ifa_addr,
                     (family == AF_INET) ? sizeof (struct sockaddr_in)
                                         : sizeof (struct sockaddr_in6));
             found = true;
@@ -201,12 +199,10 @@ static int resolve_nic_name (struct sockaddr* addr_, char const *interface_,
 
 //  On other platforms we assume there are no sane interface names.
 //  This is true especially of Windows.
-static int resolve_nic_name (struct sockaddr* addr_, char const *interface_,
-    bool ipv4only_)
+int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv4only_)
 {
     //  All unused parameters.
-    (void) addr_;
-    (void) interface_;
+    (void) nic_;
     (void) ipv4only_;
 
     errno = ENODEV;
@@ -249,7 +245,7 @@ int zmq::tcp_address_t::resolve_interface (char const *interface_,
     }
 
     //  Try to resolve the string as a NIC name.
-    int rc = resolve_nic_name (out_addr, interface_, ipv4only_);
+    int rc = resolve_nic_name (interface_, ipv4only_);
     if (rc != 0 && errno != ENODEV)
         return rc;
     if (rc == 0) {

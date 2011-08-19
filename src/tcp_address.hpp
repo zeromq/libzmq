@@ -56,14 +56,14 @@ namespace zmq
 
     private:
 
-        int resolve_interface (char const *interface_, bool ipv4only_);
+        int resolve_nic_name (const char *nic_, bool ipv4only_);
+        int resolve_interface (const char *interface_, bool ipv4only_);
         int resolve_hostname (const char *hostname_, bool ipv4only_);
 
         union {
             sockaddr generic;
             sockaddr_in ipv4;
             sockaddr_in6 ipv6;
-            char padding [1024];
         } address;
 
         tcp_address_t (const tcp_address_t&);
