@@ -125,7 +125,7 @@ ZMQ_EXPORT const char *zmq_strerror (int errnum);
 /*  0MQ message definition.                                                   */
 /******************************************************************************/
 
-typedef unsigned char zmq_msg_t [32];
+typedef struct {unsigned char _ [32];} zmq_msg_t;
 
 typedef void (zmq_free_fn) (void *data, void *hint);
 
