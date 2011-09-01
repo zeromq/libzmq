@@ -776,7 +776,7 @@ void zmq::socket_base_t::process_term (int linger_)
     //  Ask all attached pipes to terminate.
     for (pipes_t::size_type i = 0; i != pipes.size (); ++i)
         pipes [i]->terminate (false);
-    register_term_acks (pipes.size ());
+    register_term_acks ((int) pipes.size ());
 
     //  Continue the termination process immediately.
     own_t::process_term (linger_);
