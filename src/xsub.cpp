@@ -211,7 +211,6 @@ void zmq::xsub_t::send_subscription (unsigned char *data_, size_t size_,
     //  Send it to the pipe.
     bool sent = pipe->write (&msg);
     zmq_assert (sent);
-    msg.close ();
 }
 
 
