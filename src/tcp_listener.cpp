@@ -126,7 +126,7 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
         return -1;
 
     //  Create a listening socket.
-    s = ::socket (address.family (), SOCK_STREAM, IPPROTO_TCP);
+    s = open_socket (address.family (), SOCK_STREAM, IPPROTO_TCP);
 #ifdef ZMQ_HAVE_WINDOWS
     if (s == INVALID_SOCKET)
         wsa_error_to_errno ();

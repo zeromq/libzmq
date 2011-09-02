@@ -240,7 +240,7 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
 
     //  Create listening socket.
     SOCKET listener;
-    listener = socket (AF_INET, SOCK_STREAM, 0);
+    listener = open_socket (AF_INET, SOCK_STREAM, 0);
     wsa_assert (listener != INVALID_SOCKET);
 
     //  Set SO_REUSEADDR and TCP_NODELAY on listening socket.
@@ -308,7 +308,7 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     lcladdr.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
     lcladdr.sin_port = 0;
 
-    int listener = socket (AF_INET, SOCK_STREAM, 0);
+    int listener = open_socket (AF_INET, SOCK_STREAM, 0);
     errno_assert (listener != -1);
 
     int on = 1;
@@ -329,7 +329,7 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     rc = listen (listener, 1);
     errno_assert (rc != -1);
 
-    *w_ = socket (AF_INET, SOCK_STREAM, 0);
+    *w_ = open_socket (AF_INET, SOCK_STREAM, 0);
     errno_assert (*w_ != -1);
 
     rc = setsockopt (*w_, IPPROTO_TCP, TCP_NODELAY, &on, sizeof (on));

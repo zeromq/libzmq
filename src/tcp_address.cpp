@@ -25,6 +25,7 @@
 #include "platform.hpp"
 #include "stdint.hpp"
 #include "err.hpp"
+#include "ip.hpp"
 
 #ifdef ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
@@ -56,7 +57,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv4only_)
     (void) ipv4only_;
 
     //  Create a socket.
-    int fd = socket (AF_INET, SOCK_DGRAM, 0);
+    int fd = open_socket (AF_INET, SOCK_DGRAM, 0);
     zmq_assert (fd != -1);
 
     //  Retrieve number of interfaces.
@@ -121,7 +122,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv4only_)
     (void) ipv4only_;
 
     //  Create a socket.
-    int sd = socket (AF_INET, SOCK_DGRAM, 0);
+    int sd = open_socket (AF_INET, SOCK_DGRAM, 0);
     zmq_assert (sd != -1);
 
     struct ifreq ifr; 

@@ -26,6 +26,9 @@
 namespace zmq
 {
 
+    //  Same as socket(2), but allows for transparent tweaking the options.
+    fd_t open_socket (int domain_, int type_, int protocol_);
+
     //  Tunes the supplied TCP socket for the best latency.
     void tune_tcp_socket (fd_t s_);
 

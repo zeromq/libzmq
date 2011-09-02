@@ -174,7 +174,7 @@ int zmq::ipc_connecter_t::open ()
     zmq_assert (s == retired_fd);
 
     //  Create the socket.
-    s = socket (AF_UNIX, SOCK_STREAM, 0);
+    s = open_socket (AF_UNIX, SOCK_STREAM, 0);
     if (s == -1)
         return -1;
 

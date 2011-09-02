@@ -184,7 +184,7 @@ int zmq::tcp_connecter_t::open ()
     zmq_assert (s == retired_fd);
 
     //  Create the socket.
-    s = socket (address.family (), SOCK_STREAM, IPPROTO_TCP);
+    s = open_socket (address.family (), SOCK_STREAM, IPPROTO_TCP);
 #ifdef ZMQ_HAVE_WINDOWS
     if (s == INVALID_SOCKET) {
         wsa_error_to_errno ();

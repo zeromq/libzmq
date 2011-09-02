@@ -36,6 +36,29 @@
 #include <ioctl.h>
 #endif
 
+zmq::fd_t zmq::open_socket (int domain_, int type_, int protocol_)
+{
+    //  Setting this option result in sane behaviour when exec() functions
+    //  are used. Old sockets are closed and don't block TCP ports etc.
+#if defined SOCK_CLOEXEC
+    type_ |= SOCK_CLOEXEC;
+#endif
+
+    fd_t s = socket (domain_, type_, protocol_);
+    if (s == retired_fd)
+        return retired_fd;
+
+    //  If there's no SOCK_CLOEXEC, let's try the second best option. Note that
+    //  race condition can cause socket not to be closed (if fork happens
+    //  between socket creation and this point).
+#if !defined SOCK_CLOEXEC && defined FD_CLOEXEC
+    int rc = fcntl (s, F_SETFD, FD_CLOEXEC);
+    errno_assert (rc != -1);
+#endif
+
+    return s;
+}
+
 void zmq::tune_tcp_socket (fd_t s_)
 {
     //  Disable Nagle's algorithm. We are doing data batching on 0MQ level,
