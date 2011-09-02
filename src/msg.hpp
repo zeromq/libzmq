@@ -73,8 +73,9 @@ namespace zmq
         //  refs_ times. No need to call copy.
         void add_refs (int refs_);
 
-        //  Removes references previously added by add_refs.
-        void rm_refs (int refs_);
+        //  Removes references previously added by add_refs. If the number of
+        //  references drops to 0, the message is closed and false is returned.
+        bool rm_refs (int refs_);
 
     private:
 

@@ -257,17 +257,25 @@ void zmq::msg_t::add_refs (int refs_)
     }
 }
 
-void zmq::msg_t::rm_refs (int refs_)
+bool zmq::msg_t::rm_refs (int refs_)
 {
     zmq_assert (refs_ >= 0);
 
     //  No copies required.
     if (!refs_)
-        return;
+        return true;
+
+    //  If there's only one reference close the message.
+    if (u.base.type != type_lmsg || !(u.lmsg.flags & msg_t::shared)) {
+        close ();
+        return false;
+    }
 
     //  The only message type that needs special care are long messages.
-    if (u.base.type == type_lmsg) {
-        zmq_assert (u.lmsg.flags & msg_t::shared);
-        u.lmsg.content->refcnt.sub (refs_);
+    if (!u.lmsg.content->refcnt.sub (refs_)) {
+        close ();
+        return false;
     }
+
+    return true;
 }
