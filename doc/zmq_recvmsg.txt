@@ -4,7 +4,7 @@ zmq_recvmsg(3)
 
 NAME
 ----
-zmq_recvmsg - receive a message from a socket
+zmq_recvmsg - receive a message part from a socket
 
 
 SYNOPSIS
@@ -14,12 +14,12 @@ SYNOPSIS
 
 DESCRIPTION
 -----------
-The _zmq_recvmsg()_ function shall receive a message from the socket referenced
-by the 'socket' argument and store it in the message referenced by the 'msg'
-argument. Any content previously stored in 'msg' shall be properly deallocated.
-If there are no messages available on the specified 'socket' the _zmq_recvmsg()_
-function shall block until the request can be satisfied. The 'flags' argument
-is a combination of the flags defined below:
+The _zmq_recvmsg()_ function shall receive a message part from the socket
+referenced by the 'socket' argument and store it in the message referenced by
+the 'msg' argument. Any content previously stored in 'msg' shall be properly
+deallocated. If there are no message parts available on the specified 'socket'
+the _zmq_recvmsg()_ function shall block until the request can be satisfied.
+The 'flags' argument is a combination of the flags defined below:
 
 *ZMQ_DONTWAIT*::
 Specifies that the operation should be performed in non-blocking mode. If there
@@ -29,19 +29,18 @@ function shall fail with 'errno' set to EAGAIN.
 
 Multi-part messages
 ~~~~~~~~~~~~~~~~~~~
-A 0MQ message is composed of 1 or more message parts; each message part is an
-independent 'zmq_msg_t' in its own right. 0MQ ensures atomic delivery of
-messages; peers shall receive either all _message parts_ of a message or none
-at all.
+A 0MQ message is composed of 1 or more message parts, starting with zero or
+more address 'label' parts, followed by 1 or more 'data' parts. Each message
+part is an independent 'zmq_msg_t' in its own right. 0MQ ensures atomic
+delivery of messages; peers shall receive either all _message parts_ of a
+message or none at all. The total number of message parts is unlimited except
+by available memory.
 
-The total number of message parts is unlimited.
-
-An application wishing to determine if a message is composed of multiple parts
-does so by retrieving the value of the _ZMQ_RCVMORE_ socket option on the
-'socket' it is receiving the message from. If there are no message parts to
-follow, or if the message is not composed of multiple parts, _ZMQ_RCVMORE_
-shall report a value of zero. Otherwise, _ZMQ_RCVMORE_ shall report a value of
-1, indicating that more message parts are to follow.
+An application that processes multipart messages must use the _ZMQ_RCVMORE_
+linkzmq:zmq_getsockopt[3] option after calling _zmq_recvmsg()_ to determine if
+there are further parts to receive. An application that manipulates address
+labels must use _ZMQ_RCVLABEL_ to determine the zero or more label parts
+that precede the data part(s).
 
 
 RETURN VALUE
@@ -120,5 +119,6 @@ linkzmq:zmq[7]
 
 AUTHORS
 -------
-The 0MQ documentation was written by Martin Sustrik <sustrik@250bpm.com> and
-Martin Lucina <mato@kotelna.sk>.
+This man page was written by Martin Sustrik <sustrik@250bpm.com>, Martin
+Lucina <mato@kotelna.sk> and Pieter Hintjens <ph@imatix.com>.
+

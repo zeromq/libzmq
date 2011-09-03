@@ -52,15 +52,19 @@ from multiple threads except after migrating a socket from one thread to
 another with a "full fence" memory barrier.
 
 .Socket types
-The following sections present the socket types defined by 0MQ, grouped by the
-general _messaging pattern_ which is built from related socket types.
+0MQ defines several messaging patterns which encapsulate exact semantics of
+a particular topology. For example, publush-subscribe pattern defines data
+distribution trees while request-reply defines networks of shared stateless
+services. Each pattern defines several socket types (roles in the pattern).
+
+The following sections present the socket types defined by 0MQ:
 
 
 Request-reply pattern
 ~~~~~~~~~~~~~~~~~~~~~
 The request-reply pattern is used for sending requests from a _client_ to one
-or more instances of a _service_, and receiving subsequent replies to each
-request sent.
+or more instances of a stateless _service_, and receiving subsequent replies
+to each request sent.
 
 
 ZMQ_REQ
@@ -76,6 +80,11 @@ high water mark for all _services_, or if there are no _services_ at all, then
 any linkzmq:zmq_send[3] operations on the socket shall block until the
 exceptional state ends or at least one _service_ becomes available for sending;
 messages are not discarded.
+
+'ZMQ_REQ' socket adds a unique 'request ID' label to every outbound message.
+When receiving a reply, it checks whether the 'request ID' of the reply matches
+the last 'request ID' sent. If it does not, the message is silently dropped and
+waiting for the reply is resumed.
 
 [horizontal]
 .Summary of ZMQ_REQ characteristics
@@ -99,6 +108,10 @@ When a 'ZMQ_REP' socket enters an exceptional state due to having reached the
 high water mark for a _client_, then any replies sent to the _client_ in
 question shall be dropped until the exceptional state ends.
 
+'ZMQ_REP' socket strips all the labels from the incoming message, stores them
+and passes the remaining data parts to the user. When user sends the reply,
+the stored labels are re-attached to the reply.
+
 [horizontal]
 .Summary of ZMQ_REP characteristics
 Compatible peer sockets:: 'ZMQ_REQ'
@@ -110,8 +123,11 @@ ZMQ_HWM option action:: Drop
 
 ZMQ_XREQ
 ^^^^^^^^
-A socket of type 'ZMQ_XREQ' is an advanced pattern used for extending
-request/reply sockets. Each message sent is load-balanced among all connected
+A socket of type 'ZMQ_XREQ' is a socket type underlying 'ZMQ_REQ'. It doesn't
+impose the strict order of sends and recvs as 'ZMQ_REQ' does and it is
+intended for use in intermediate devices in request-reply topologies.
+
+Each message sent is load-balanced among all connected
 peers, and each message received is fair-queued from all connected peers.
 
 When a 'ZMQ_XREQ' socket enters an exceptional state due to having reached the
@@ -120,9 +136,7 @@ linkzmq:zmq_send[3] operations on the socket shall block until the exceptional
 state ends or at least one peer becomes available for sending; messages are not
 discarded.
 
-When a 'ZMQ_XREQ' socket is connected to a 'ZMQ_REP' socket each message sent
-must consist of an empty message part, the _delimiter_, followed by one or more
-_body parts_.
+'ZMQ_XREQ' socket doesn't inspect or modify the message labels.
 
 [horizontal]
 .Summary of ZMQ_XREQ characteristics
@@ -135,27 +149,26 @@ ZMQ_HWM option action:: Block
 
 ZMQ_XREP
 ^^^^^^^^
-A socket of type 'ZMQ_XREP' is an advanced pattern used for extending
-request/reply sockets. When receiving messages a 'ZMQ_XREP' socket shall
-prepend a message part containing the _identity_ of the originating peer to the
-message before passing it to the application. Messages received are fair-queued
-from among all connected peers. When sending messages a 'ZMQ_XREP' socket shall
-remove the first part of the message and use it to determine the _identity_ of
-the peer the message shall be routed to. If the peer does not exist anymore
-the message shall be silently discarded.
+A socket of type 'ZMQ_XREP' is a socket type underlying 'ZMQ_REP'. It doesn't
+impose the strict order of sends and recvs as 'ZMQ_REQ' does and it is
+intended for use in intermediate devices in request-reply topologies.
+
+Messages received are fair-queued from among all connected peers. The outbound
+messages are routed to a specific peer, as explained below.
 
 When a 'ZMQ_XREP' socket enters an exceptional state due to having reached the
 high water mark for all peers, or if there are no peers at all, then any
 messages sent to the socket shall be dropped until the exceptional state ends.
-Likewise, any messages routed to a non-existent peer or a peer for which the
-individual high water mark has been reached shall also be dropped.
+Likewise, any messages to be routed to a non-existent peer or a peer for which
+the individual high water mark has been reached shall also be dropped.
 
-When a 'ZMQ_REQ' socket is connected to a 'ZMQ_XREP' socket, in addition to the
-_identity_ of the originating peer each message received shall contain an empty
-_delimiter_ message part. Hence, the entire structure of each received message
-as seen by the application becomes: one or more _identity_ parts, _delimiter_
-part, one or more _body parts_. When sending replies to a 'ZMQ_REQ' socket the
-application must include the _delimiter_ part.
+When receiving messages a 'ZMQ_XREP' socket attaches a label uniquely
+identifying the originating peer to the message before passing it to the
+application. 
+
+When sending messages a 'ZMQ_XREP' socket removes the first label from the
+message and uses it to determine which the peer the message shall be routed to.
+If the peer does not exist anymore the message is silently discarded.
 
 [horizontal]
 .Summary of ZMQ_XREP characteristics
@@ -183,6 +196,8 @@ high water mark for a _subscriber_, then any messages that would be sent to the
 _subscriber_ in question shall instead be dropped until the exceptional state
 ends. The _zmq_send()_ function shall never block for this socket type.
 
+This socket type doesn't use message labels.
+
 [horizontal]
 .Summary of ZMQ_PUB characteristics
 Compatible peer sockets:: 'ZMQ_SUB', 'ZMQ_XSUB'
@@ -200,6 +215,8 @@ any messages, use the 'ZMQ_SUBSCRIBE' option of linkzmq:zmq_setsockopt[3] to
 specify which messages to subscribe to. The _zmq_send()_ function is not
 implemented for this socket type.
 
+This socket type doesn't use message labels.
+
 [horizontal]
 .Summary of ZMQ_SUB characteristics
 Compatible peer sockets:: 'ZMQ_PUB', 'ZMQ_XPUB'
@@ -216,6 +233,8 @@ in form of incoming messages. Subscription message is a byte 1 (for
 subscriptions) or byte 0 (for unsubscriptions) followed by the subscription
 body.
 
+This socket type doesn't use message labels.
+
 [horizontal]
 .Summary of ZMQ_XPUB characteristics
 Compatible peer sockets:: 'ZMQ_SUB', 'ZMQ_XSUB'
@@ -230,6 +249,8 @@ ZMQ_XSUB
 Same as ZMQ_SUB except that you subscribe by sending subscription messages to
 the socket. Subscription message is a byte 1 (for subscriptions) or byte 0
 (for unsubscriptions) followed by the subscription body.
+
+This socket type doesn't use message labels.
 
 [horizontal]
 .Summary of ZMQ_XSUB characteristics
@@ -261,7 +282,7 @@ _nodes_ at all, then any linkzmq:zmq_send[3] operations on the socket shall
 block until the exceptional state ends or at least one downstream _node_
 becomes available for sending; messages are not discarded.
 
-Deprecated alias: 'ZMQ_DOWNSTREAM'.
+This socket type doesn't use message labels.
 
 [horizontal]
 .Summary of ZMQ_PUSH characteristics
@@ -280,7 +301,7 @@ from upstream pipeline _nodes_. Messages are fair-queued from among all
 connected upstream _nodes_. The _zmq_send()_ function is not implemented for
 this socket type.
 
-Deprecated alias: 'ZMQ_UPSTREAM'.
+This socket type doesn't use message labels.
 
 [horizontal]
 .Summary of ZMQ_PULL characteristics
@@ -308,6 +329,8 @@ When a 'ZMQ_PAIR' socket enters an exceptional state due to having reached the
 high water mark for the connected peer, or if no peer is connected, then
 any linkzmq:zmq_send[3] operations on the socket shall block until the peer
 becomes available for sending; messages are not discarded.
+
+This socket type doesn't use message labels.
 
 NOTE: 'ZMQ_PAIR' sockets are experimental, and are currently missing several
 features such as auto-reconnection.

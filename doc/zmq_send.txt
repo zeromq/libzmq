@@ -4,7 +4,7 @@ zmq_send(3)
 
 NAME
 ----
-zmq_send - send a message on a socket
+zmq_send - send a message part  on a socket
 
 
 SYNOPSIS
@@ -23,14 +23,15 @@ Specifies that the operation should be performed in non-blocking mode. If the
 message cannot be queued on the 'socket', the _zmq_send()_ function shall
 fail with 'errno' set to EAGAIN.
 
+*ZMQ_SNDLABEL*::
+Specifies that the message part being sent is an address label, and that
+further message parts are to follow. Refer to linkzmq:zmq_socket[3] for the
+semantics of address labels in each socket pattern.
+
 *ZMQ_SNDMORE*::
 Specifies that the message being sent is a multi-part message, and that further
 message parts are to follow. Refer to the section regarding multi-part messages
 below for a detailed description.
-
-*ZMQ_SNDLABEL*::
-Specifies that the message being sent is a label. Labels are used internally
-by 0MQ.
 
 NOTE: A successful invocation of _zmq_send()_ does not indicate that the
 message has been transmitted to the network, only that it has been queued on
@@ -39,19 +40,16 @@ the 'socket' and 0MQ has assumed responsibility for the message.
 
 Multi-part messages
 ~~~~~~~~~~~~~~~~~~~
-A 0MQ message is composed of 1 or more message parts; each invocation of
-_zmq_send()_ creates an independent message part in its own right. 0MQ ensures
-atomic delivery of messages; peers shall receive either all _message parts_ of
-a message or none at all.
+A 0MQ message is composed of 1 or more message parts, starting with zero or
+more address 'label' parts, followed by 1 or more 'data' parts. Each message
+part is an independent 'zmq_msg_t' in its own right. 0MQ ensures atomic
+delivery of messages; peers shall receive either all _message parts_ of a
+message or none at all. The total number of message parts is unlimited except
+by available memory.
 
-The total number of message parts is unlimited.
-
-An application wishing to send a multi-part message does so by specifying the
-'ZMQ_SNDMORE' flag to _zmq_send()_. The presence of this flag indicates to
-0MQ that the message being sent is a multi-part message and that more message
-parts are to follow. When the application wishes to send the final message part
-it does so by calling _zmq_send()_ without the 'ZMQ_SNDMORE' flag; this
-indicates that no more message parts are to follow.
+An application that sends multipart messages must use the _ZMQ_SNDMORE_ flag
+when sending each data part except the final one. An application that sends
+address labels must use _ZMQ_SNDLABEL_ when sending each label.
 
 
 RETURN VALUE
@@ -109,5 +107,6 @@ linkzmq:zmq[7]
 
 AUTHORS
 -------
-The 0MQ documentation was written by Martin Sustrik <sustrik@250bpm.com> and
-Martin Lucina <mato@kotelna.sk>.
++This man page was written by Martin Sustrik <sustrik@250bpm.com>, Martin
++Lucina <mato@kotelna.sk> and Pieter Hintjens <ph@imatix.com>.
+

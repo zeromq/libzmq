@@ -39,16 +39,11 @@ Default value:: N/A
 Applicable socket types:: all
 
 
-ZMQ_RCVMORE: More message parts to follow
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_RCVMORE' option shall return a boolean value indicating if the
-multi-part message currently being read from the specified 'socket' has more
-message parts to follow. If there are no message parts to follow or if the
-message currently being read is not a multi-part message a value of zero shall
-be returned. Otherwise, a value of 1 shall be returned.
-
-Refer to linkzmq:zmq_send[3] and linkzmq:zmq_recv[3] for a detailed description
-of sending/receiving multi-part messages.
+ZMQ_RCVLABEL: Inquires whether last message received was a label
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_RCVLABEL' option shall return True (1) if the message part last
+received from the 'socket' was an address label. Otherwise, this option
+shall return False (0).
 
 [horizontal]
 Option value type:: int
@@ -57,10 +52,14 @@ Default value:: N/A
 Applicable socket types:: all
 
 
-ZMQ_RCVLABEL: Inquires whether last message received was a label
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_RCVLABEL' option shall return a boolean value indicating whether the
-last message part received was a label. Labels are used internally by 0MQ.
+ZMQ_RCVMORE: More message data parts to follow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_RCVMORE' option shall return True (1) if the message part last
+received from the 'socket' was a data part with more parts to follow. If there
+are no data parts to follow, this option shall return False (0).
+
+Refer to linkzmq:zmq_send[3] and linkzmq:zmq_recv[3] for a detailed description
+of multi-part messages.
 
 [horizontal]
 Option value type:: int
