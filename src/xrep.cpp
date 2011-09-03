@@ -130,22 +130,23 @@ int zmq::xrep_t::xsend (msg_t *msg_, int flags_)
 
             //  Find the pipe associated with the peer ID stored in the prefix.
             //  If there's no such pipe just silently ignore the message.
-            zmq_assert (msg_->size () == 4);
-            uint32_t peer_id = get_uint32 ((unsigned char*) msg_->data ());
-            outpipes_t::iterator it = outpipes.find (peer_id);
+            if (msg_->size () == 4) {
+                uint32_t peer_id = get_uint32 ((unsigned char*) msg_->data ());
+                outpipes_t::iterator it = outpipes.find (peer_id);
 
-            if (it != outpipes.end ()) {
-                current_out = it->second.pipe;
-                msg_t empty;
-                int rc = empty.init ();
-                errno_assert (rc == 0);
-                if (!current_out->check_write (&empty)) {
-                    it->second.active = false;
-                    more_out = false;
-                    current_out = NULL;
+                if (it != outpipes.end ()) {
+                    current_out = it->second.pipe;
+                    msg_t empty;
+                    int rc = empty.init ();
+                    errno_assert (rc == 0);
+                    if (!current_out->check_write (&empty)) {
+                        it->second.active = false;
+                        more_out = false;
+                        current_out = NULL;
+                    }
+                    rc = empty.close ();
+                    errno_assert (rc == 0);
                 }
-                rc = empty.close ();
-                errno_assert (rc == 0);
             }
         }
 

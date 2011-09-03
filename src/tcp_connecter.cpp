@@ -59,7 +59,7 @@ zmq::tcp_connecter_t::tcp_connecter_t (class io_thread_t *io_thread_,
     //  TODO: set_addess should be called separately, so that the error
     //  can be propagated.
     int rc = set_address (address_);
-    zmq_assert (rc == 0);
+    errno_assert (rc == 0);
 }
 
 zmq::tcp_connecter_t::~tcp_connecter_t ()
