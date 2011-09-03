@@ -373,6 +373,11 @@ int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv4only_)
     std::string addr_str (name_, delimiter - name_);
     std::string port_str (delimiter + 1);
 
+    //  Remove square brackets around the address, if any.
+    if (!addr_str.empty () && addr_str [0] == '[' &&
+          addr_str [addr_str.size () - 1] == ']')
+        addr_str = addr_str.substr (1, addr_str.size () - 2);
+
     //  Parse the port number (0 is not a valid port).
     uint16_t port = (uint16_t) atoi (port_str.c_str());
     if (port == 0) {
