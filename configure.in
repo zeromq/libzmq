@@ -229,6 +229,10 @@ esac
 # Check whether to build docs / install man pages
 LIBZMQ_CHECK_DOC_BUILD
 
+# Check polling system
+LIBZMQ_CHECK_POLLER([CPPFLAGS="${CPPFLAGS} -D${libzmq_cv_poller_flag}"],
+                    [AC_MSG_ERROR([Unable to continue without polling system])])
+
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(errno.h arpa/inet.h netinet/tcp.h netinet/in.h stddef.h \
