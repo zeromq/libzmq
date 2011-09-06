@@ -667,8 +667,14 @@ AC_DEFUN([LIBZMQ_CHECK_POLLER_SELECT], [{
     AC_LINK_IFELSE(
         [AC_LANG_PROGRAM(
         [
+#ifdef ZMQ_HAVE_WINDOWS
+#include "winsock2.h"
+#elif defined ZMQ_HAVE_OPENVMS
+#include <sys/types.h>
+#include <sys/time.h>
+#else
 #include <sys/select.h>
-#include <stdlib.h>
+#endif
         ],
 [[
 fd_set t_rfds;
@@ -678,7 +684,7 @@ FD_ZERO(&t_rfds);
 FD_SET(0, &t_rfds);
 
 tv.tv_sec = 5;
-v.tv_usec = 0;
+tv.tv_usec = 0;
 
 select(1, &t_rfds, NULL, NULL, &tv);
 ]]
