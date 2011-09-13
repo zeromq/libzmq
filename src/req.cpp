@@ -89,8 +89,13 @@ int zmq::req_t::xrecv (msg_t *msg_, int flags_)
         int rc = xreq_t::xrecv (msg_, flags_);
         if (rc != 0)
             return rc;
-        zmq_assert (msg_->flags () & msg_t::label);
-        zmq_assert (msg_->size () == 4);
+
+        // TODO: This should also close the connection with the peer!
+        if (unlikely (!(msg_->flags () & msg_t::label) || msg_->size () != 4)) {
+            errno = EAGAIN;
+            return -1;
+        }
+        
         unsigned char *data = (unsigned char*) msg_->data ();
         if (unlikely (get_uint32 (data) != request_id)) {
 
