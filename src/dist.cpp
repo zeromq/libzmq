@@ -142,10 +142,12 @@ void zmq::dist_t::distribute (msg_t *msg_, int flags_)
     msg_->add_refs ((int) matching - 1);
 
     //  Push copy of the message to each matching pipe.
-    for (pipes_t::size_type i = 0; i < matching; ++i) {
+    int failed = 0;
+    for (pipes_t::size_type i = 0; i < matching; ++i)
         if (!write (pipes [i], msg_))
-            msg_->rm_refs (1);
-    }
+            ++failed;
+    if (unlikely (failed))
+        msg_->rm_refs (failed);
 
     //  Detach the original message from the data buffer. Note that we don't
     //  close the message. That's because we've already used all the references.
