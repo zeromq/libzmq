@@ -23,6 +23,7 @@
 #define __ZMQ_XREQ_HPP_INCLUDED__
 
 #include "socket_base.hpp"
+#include "session_base.hpp"
 #include "fq.hpp"
 #include "lb.hpp"
 
@@ -58,6 +59,21 @@ namespace zmq
 
         xreq_t (const xreq_t&);
         const xreq_t &operator = (const xreq_t&);
+    };
+
+    class xreq_session_t : public session_base_t
+    {
+    public:
+
+        xreq_session_t (class io_thread_t *io_thread_, bool connect_,
+            class socket_base_t *socket_, const options_t &options_,
+            const char *protocol_, const char *address_);
+        ~xreq_session_t ();
+
+    private:
+
+        xreq_session_t (const xreq_session_t&);
+        const xreq_session_t &operator = (const xreq_session_t&);
     };
 
 }

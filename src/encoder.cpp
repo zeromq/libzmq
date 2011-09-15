@@ -19,7 +19,7 @@
 */
 
 #include "encoder.hpp"
-#include "session.hpp"
+#include "session_base.hpp"
 #include "wire.hpp"
 
 zmq::encoder_t::encoder_t (size_t bufsize_) :
@@ -39,7 +39,7 @@ zmq::encoder_t::~encoder_t ()
     errno_assert (rc == 0);
 }
 
-void zmq::encoder_t::set_session (session_t *session_)
+void zmq::encoder_t::set_session (session_base_t *session_)
 {
     session = session_;
 }

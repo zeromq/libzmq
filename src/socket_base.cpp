@@ -39,7 +39,7 @@
 #include "vtcp_listener.hpp"
 #include "tcp_connecter.hpp"
 #include "io_thread.hpp"
-#include "session.hpp"
+#include "session_base.hpp"
 #include "config.hpp"
 #include "clock.hpp"
 #include "pipe.hpp"
@@ -480,9 +480,9 @@ int zmq::socket_base_t::connect (const char *addr_)
     }
 
     //  Create session.
-    session_t *session = new (std::nothrow) session_t (
-        io_thread, true, this, options, protocol.c_str (), address.c_str ());
-    alloc_assert (session);
+    session_base_t *session = session_base_t::create (io_thread, true, this,
+        options, protocol.c_str (), address.c_str ());
+    errno_assert (session);
 
     //  Create a bi-directional pipe.
     object_t *parents [2] = {this, session};

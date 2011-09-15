@@ -22,6 +22,7 @@
 #define __ZMQ_PAIR_HPP_INCLUDED__
 
 #include "socket_base.hpp"
+#include "session_base.hpp"
 
 namespace zmq
 {
@@ -50,6 +51,21 @@ namespace zmq
 
         pair_t (const pair_t&);
         const pair_t &operator = (const pair_t&);
+    };
+
+    class pair_session_t : public session_base_t
+    {
+    public:
+
+        pair_session_t (class io_thread_t *io_thread_, bool connect_,
+            class socket_base_t *socket_, const options_t &options_,
+            const char *protocol_, const char *address_);
+        ~pair_session_t ();
+
+    private:
+
+        pair_session_t (const pair_session_t&);
+        const pair_session_t &operator = (const pair_session_t&);
     };
 
 }

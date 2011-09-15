@@ -25,6 +25,7 @@
 #include <string>
 
 #include "socket_base.hpp"
+#include "session_base.hpp"
 #include "mtrie.hpp"
 #include "array.hpp"
 #include "dist.hpp"
@@ -77,6 +78,21 @@ namespace zmq
 
         xpub_t (const xpub_t&);
         const xpub_t &operator = (const xpub_t&);
+    };
+
+    class xpub_session_t : public session_base_t
+    {
+    public:
+
+        xpub_session_t (class io_thread_t *io_thread_, bool connect_,
+            class socket_base_t *socket_, const options_t &options_,
+            const char *protocol_, const char *address_);
+        ~xpub_session_t ();
+
+    private:
+
+        xpub_session_t (const xpub_session_t&);
+        const xpub_session_t &operator = (const xpub_session_t&);
     };
 
 }

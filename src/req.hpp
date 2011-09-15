@@ -58,6 +58,21 @@ namespace zmq
         const req_t &operator = (const req_t&);
     };
 
+    class req_session_t : public xreq_session_t
+    {
+    public:
+
+        req_session_t (class io_thread_t *io_thread_, bool connect_,
+            class socket_base_t *socket_, const options_t &options_,
+            const char *protocol_, const char *address_);
+        ~req_session_t ();
+
+    private:
+
+        req_session_t (const req_session_t&);
+        const req_session_t &operator = (const req_session_t&);
+    };
+
 }
 
 #endif

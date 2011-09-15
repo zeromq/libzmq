@@ -38,7 +38,7 @@
 #include <sys/un.h>
 
 zmq::ipc_connecter_t::ipc_connecter_t (class io_thread_t *io_thread_,
-      class session_t *session_, const options_t &options_,
+      class session_base_t *session_, const options_t &options_,
       const char *address_, bool wait_) :
     own_t (io_thread_, options_),
     io_object_t (io_thread_),

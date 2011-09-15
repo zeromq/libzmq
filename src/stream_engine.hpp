@@ -44,7 +44,8 @@ namespace zmq
         ~stream_engine_t ();
 
         //  i_engine interface implementation.
-        void plug (class io_thread_t *io_thread_, class session_t *session_);
+        void plug (class io_thread_t *io_thread_,
+           class session_base_t *session_);
         void unplug ();
         void terminate ();
         void activate_in ();
@@ -84,10 +85,10 @@ namespace zmq
         encoder_t encoder;
 
         //  The session this engine is attached to.
-        class session_t *session;
+        class session_base_t *session;
 
         //  Detached transient session.
-        class session_t *leftover_session;
+        class session_base_t *leftover_session;
 
         options_t options;
 

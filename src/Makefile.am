@@ -57,7 +57,7 @@ libzmq_la_SOURCES = \
     req.hpp \
     router.hpp \
     select.hpp \
-    session.hpp \
+    session_base.hpp \
     signaler.hpp \
     socket_base.hpp \
     stdint.hpp \
@@ -117,7 +117,7 @@ libzmq_la_SOURCES = \
     rep.cpp \
     req.cpp \
     select.cpp \
-    session.cpp \
+    session_base.cpp \
     signaler.cpp \
     socket_base.cpp \
     stream_engine.cpp \

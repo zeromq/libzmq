@@ -25,6 +25,7 @@
 #include <deque>
 
 #include "socket_base.hpp"
+#include "session_base.hpp"
 #include "stdint.hpp"
 #include "msg.hpp"
 #include "fq.hpp"
@@ -100,6 +101,21 @@ namespace zmq
 
         router_t (const router_t&);
         const router_t &operator = (const router_t&);
+    };
+
+    class router_session_t : public session_base_t
+    {
+    public:
+
+        router_session_t (class io_thread_t *io_thread_, bool connect_,
+            class socket_base_t *socket_, const options_t &options_,
+            const char *protocol_, const char *address_);
+        ~router_session_t ();
+
+    private:
+
+        router_session_t (const router_session_t&);
+        const router_session_t &operator = (const router_session_t&);
     };
 
 }

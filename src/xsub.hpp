@@ -22,6 +22,7 @@
 #define __ZMQ_XSUB_HPP_INCLUDED__
 
 #include "socket_base.hpp"
+#include "session_base.hpp"
 #include "dist.hpp"
 #include "fq.hpp"
 #include "trie.hpp"
@@ -81,6 +82,21 @@ namespace zmq
 
         xsub_t (const xsub_t&);
         const xsub_t &operator = (const xsub_t&);
+    };
+
+    class xsub_session_t : public session_base_t
+    {
+    public:
+
+        xsub_session_t (class io_thread_t *io_thread_, bool connect_,
+            class socket_base_t *socket_, const options_t &options_,
+            const char *protocol_, const char *address_);
+        ~xsub_session_t ();
+
+    private:
+
+        xsub_session_t (const xsub_session_t&);
+        const xsub_session_t &operator = (const xsub_session_t&);
     };
 
 }

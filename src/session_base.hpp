@@ -18,8 +18,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_SESSION_HPP_INCLUDED__
-#define __ZMQ_SESSION_HPP_INCLUDED__
+#ifndef __ZMQ_SESSION_BASE_HPP_INCLUDED__
+#define __ZMQ_SESSION_BASE_HPP_INCLUDED__
 
 #include <string>
 
@@ -31,16 +31,18 @@
 namespace zmq
 {
 
-    class session_t :
+    class session_base_t :
         public own_t,
         public io_object_t,
         public i_pipe_events
     {
     public:
 
-        session_t (class io_thread_t *io_thread_, bool connect_,
-            class socket_base_t *socket_, const options_t &options_,
-            const char *protocol_, const char *address_);
+        //  Create a session of the particular type.
+        static session_base_t *create (class io_thread_t *io_thread_,
+            bool connect_, class socket_base_t *socket_,
+            const options_t &options_, const char *protocol_,
+            const char *address_);
 
         //  To be used once only, when creating the session.
         void attach_pipe (class pipe_t *pipe_);
@@ -57,9 +59,14 @@ namespace zmq
         void hiccuped (class pipe_t *pipe_);
         void terminated (class pipe_t *pipe_);
 
-    private:
+    protected:
 
-        ~session_t ();
+        session_base_t (class io_thread_t *io_thread_, bool connect_,
+            class socket_base_t *socket_, const options_t &options_,
+            const char *protocol_, const char *address_);
+        ~session_base_t ();
+
+    private:
 
         void start_connecting (bool wait_);
 
@@ -115,8 +122,8 @@ namespace zmq
         std::string protocol;
         std::string address;
 
-        session_t (const session_t&);
-        const session_t &operator = (const session_t&);
+        session_base_t (const session_base_t&);
+        const session_base_t &operator = (const session_base_t&);
     };
 
 }

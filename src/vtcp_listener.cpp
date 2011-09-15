@@ -27,7 +27,7 @@
 #include <vtcp.h>
 
 #include "stream_engine.hpp"
-#include "session.hpp"
+#include "session_base.hpp"
 #include "stdint.hpp"
 #include "err.hpp"
 #include "ip.hpp"
@@ -113,8 +113,8 @@ void zmq::vtcp_listener_t::in_event ()
     zmq_assert (io_thread);
 
     //  Create and launch a session object. 
-    session_t *session = new (std::nothrow)
-        session_t (io_thread, false, socket, options, NULL, NULL);
+    session_base_t *session = session_base_t::create (io_thread, false, socket,
+        options, NULL, NULL);
     alloc_assert (session);
     session->inc_seqnum ();
     launch_child (session);

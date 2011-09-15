@@ -30,7 +30,7 @@
 
 #include "io_thread.hpp"
 #include "pgm_sender.hpp"
-#include "session.hpp"
+#include "session_base.hpp"
 #include "err.hpp"
 #include "wire.hpp"
 #include "stdint.hpp"
@@ -62,7 +62,7 @@ int zmq::pgm_sender_t::init (bool udp_encapsulation_, const char *network_)
     return rc;
 }
 
-void zmq::pgm_sender_t::plug (io_thread_t *io_thread_, session_t *session_)
+void zmq::pgm_sender_t::plug (io_thread_t *io_thread_, session_base_t *session_)
 {
     //  Alocate 2 fds for PGM socket.
     fd_t downlink_socket_fd = retired_fd;

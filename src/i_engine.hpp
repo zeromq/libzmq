@@ -32,7 +32,7 @@ namespace zmq
 
         //  Plug the engine to the session.
         virtual void plug (class io_thread_t *io_thread_,
-            class session_t *session_) = 0;
+            class session_base_t *session_) = 0;
 
         //  Unplug the engine from the session.
         virtual void unplug () = 0;

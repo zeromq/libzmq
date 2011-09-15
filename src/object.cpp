@@ -26,7 +26,7 @@
 #include "err.hpp"
 #include "pipe.hpp"
 #include "io_thread.hpp"
-#include "session.hpp"
+#include "session_base.hpp"
 #include "socket_base.hpp"
 
 zmq::object_t::object_t (ctx_t *ctx_, uint32_t tid_) :
@@ -201,8 +201,8 @@ void zmq::object_t::send_own (own_t *destination_, own_t *object_)
     send_command (cmd);
 }
 
-void zmq::object_t::send_attach (session_t *destination_, i_engine *engine_,
-    bool inc_seqnum_)
+void zmq::object_t::send_attach (session_base_t *destination_,
+    i_engine *engine_, bool inc_seqnum_)
 {
     if (inc_seqnum_)
         destination_->inc_seqnum ();

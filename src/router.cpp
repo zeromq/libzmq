@@ -270,5 +270,15 @@ bool zmq::router_t::xhas_out ()
     return true;
 }
 
+zmq::router_session_t::router_session_t (io_thread_t *io_thread_, bool connect_,
+      socket_base_t *socket_, const options_t &options_,
+      const char *protocol_, const char *address_) :
+    session_base_t (io_thread_, connect_, socket_, options_, protocol_,
+        address_)
+{
+}
 
+zmq::router_session_t::~router_session_t ()
+{
+}
 

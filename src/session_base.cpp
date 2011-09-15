@@ -18,7 +18,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "session.hpp"
+#include "session_base.hpp"
 #include "socket_base.hpp"
 #include "i_engine.hpp"
 #include "err.hpp"
@@ -30,8 +30,82 @@
 #include "pgm_sender.hpp"
 #include "pgm_receiver.hpp"
 
-zmq::session_t::session_t (class io_thread_t *io_thread_, bool connect_,
-      class socket_base_t *socket_, const options_t &options_,
+#include "req.hpp"
+#include "xreq.hpp"
+#include "rep.hpp"
+#include "xrep.hpp"
+#include "pub.hpp"
+#include "xpub.hpp"
+#include "sub.hpp"
+#include "xsub.hpp"
+#include "push.hpp"
+#include "pull.hpp"
+#include "router.hpp"
+#include "pair.hpp"
+
+zmq::session_base_t *zmq::session_base_t::create (class io_thread_t *io_thread_,
+    bool connect_, class socket_base_t *socket_, const options_t &options_,
+    const char *protocol_, const char *address_)
+{
+    session_base_t *s = NULL;
+    switch (options_.type) {
+    case ZMQ_REQ:
+        s = new (std::nothrow) req_session_t (io_thread_, connect_,
+            socket_, options_, protocol_, address_);
+        break;
+    case ZMQ_XREQ:
+        s = new (std::nothrow) xreq_session_t (io_thread_, connect_,
+            socket_, options_, protocol_, address_);
+    case ZMQ_REP:
+        s = new (std::nothrow) rep_session_t (io_thread_, connect_,
+            socket_, options_, protocol_, address_);
+        break;
+    case ZMQ_XREP:
+        s = new (std::nothrow) xrep_session_t (io_thread_, connect_,
+            socket_, options_, protocol_, address_);
+        break;
+    case ZMQ_PUB:
+        s = new (std::nothrow) pub_session_t (io_thread_, connect_,
+            socket_, options_, protocol_, address_);
+        break;
+    case ZMQ_XPUB:
+        s = new (std::nothrow) xpub_session_t (io_thread_, connect_,
+            socket_, options_, protocol_, address_);
+        break;
+    case ZMQ_SUB:
+        s = new (std::nothrow) sub_session_t (io_thread_, connect_,
+            socket_, options_, protocol_, address_);
+        break;
+    case ZMQ_XSUB:
+        s = new (std::nothrow) xsub_session_t (io_thread_, connect_,
+            socket_, options_, protocol_, address_);
+        break;
+    case ZMQ_PUSH:
+        s = new (std::nothrow) push_session_t (io_thread_, connect_,
+            socket_, options_, protocol_, address_);
+        break;
+    case ZMQ_PULL:
+        s = new (std::nothrow) pull_session_t (io_thread_, connect_,
+            socket_, options_, protocol_, address_);
+        break;
+    case ZMQ_ROUTER:
+        s = new (std::nothrow) router_session_t (io_thread_, connect_,
+            socket_, options_, protocol_, address_);
+        break;
+    case ZMQ_PAIR:
+        s = new (std::nothrow) pair_session_t (io_thread_, connect_,
+            socket_, options_, protocol_, address_);
+        break;
+    default:
+        errno = EINVAL;
+        return NULL;
+    }
+    alloc_assert (s);
+    return s;
+}
+
+zmq::session_base_t::session_base_t (class io_thread_t *io_thread_,
+      bool connect_, class socket_base_t *socket_, const options_t &options_,
       const char *protocol_, const char *address_) :
     own_t (io_thread_, options_),
     io_object_t (io_thread_),
@@ -50,7 +124,7 @@ zmq::session_t::session_t (class io_thread_t *io_thread_, bool connect_,
         address = address_;
 }
 
-zmq::session_t::~session_t ()
+zmq::session_base_t::~session_base_t ()
 {
     zmq_assert (!pipe);
 
@@ -65,7 +139,7 @@ zmq::session_t::~session_t ()
         engine->terminate ();
 }
 
-void zmq::session_t::attach_pipe (pipe_t *pipe_)
+void zmq::session_base_t::attach_pipe (pipe_t *pipe_)
 {
     zmq_assert (!is_terminating ());
     zmq_assert (!pipe);
@@ -74,7 +148,7 @@ void zmq::session_t::attach_pipe (pipe_t *pipe_)
     pipe->set_event_sink (this);
 }
 
-bool zmq::session_t::read (msg_t *msg_)
+bool zmq::session_base_t::read (msg_t *msg_)
 {
     if (!pipe)
         return false;
@@ -87,7 +161,7 @@ bool zmq::session_t::read (msg_t *msg_)
     return true;
 }
 
-bool zmq::session_t::write (msg_t *msg_)
+bool zmq::session_base_t::write (msg_t *msg_)
 {
     if (pipe && pipe->write (msg_)) {
         int rc = msg_->init ();
@@ -98,13 +172,13 @@ bool zmq::session_t::write (msg_t *msg_)
     return false;
 }
 
-void zmq::session_t::flush ()
+void zmq::session_base_t::flush ()
 {
     if (pipe)
         pipe->flush ();
 }
 
-void zmq::session_t::clean_pipes ()
+void zmq::session_base_t::clean_pipes ()
 {
     if (pipe) {
 
@@ -128,7 +202,7 @@ void zmq::session_t::clean_pipes ()
     }
 }
 
-void zmq::session_t::terminated (pipe_t *pipe_)
+void zmq::session_base_t::terminated (pipe_t *pipe_)
 {
     //  Drop the reference to the deallocated pipe.
     zmq_assert (pipe == pipe_);
@@ -141,7 +215,7 @@ void zmq::session_t::terminated (pipe_t *pipe_)
         proceed_with_term ();
 }
 
-void zmq::session_t::read_activated (pipe_t *pipe_)
+void zmq::session_base_t::read_activated (pipe_t *pipe_)
 {
     zmq_assert (pipe == pipe_);
 
@@ -151,7 +225,7 @@ void zmq::session_t::read_activated (pipe_t *pipe_)
         pipe->check_read ();
 }
 
-void zmq::session_t::write_activated (pipe_t *pipe_)
+void zmq::session_base_t::write_activated (pipe_t *pipe_)
 {
     zmq_assert (pipe == pipe_);
 
@@ -159,20 +233,20 @@ void zmq::session_t::write_activated (pipe_t *pipe_)
         engine->activate_in ();
 }
 
-void zmq::session_t::hiccuped (pipe_t *pipe_)
+void zmq::session_base_t::hiccuped (pipe_t *pipe_)
 {
     //  Hiccups are always sent from session to socket, not the other
     //  way round.
     zmq_assert (false);
 }
 
-void zmq::session_t::process_plug ()
+void zmq::session_base_t::process_plug ()
 {
     if (connect)
         start_connecting (false);
 }
 
-void zmq::session_t::process_attach (i_engine *engine_)
+void zmq::session_base_t::process_attach (i_engine *engine_)
 {
     //  If some other object (e.g. init) notifies us that the connection failed
     //  without creating an engine we need to start the reconnection process.
@@ -208,7 +282,7 @@ void zmq::session_t::process_attach (i_engine *engine_)
     engine->plug (io_thread, this);
 }
 
-void zmq::session_t::detach ()
+void zmq::session_base_t::detach ()
 {
     //  Engine is dead. Let's forget about it.
     engine = NULL;
@@ -224,7 +298,7 @@ void zmq::session_t::detach ()
         pipe->check_read ();
 }
 
-void zmq::session_t::process_term (int linger_)
+void zmq::session_base_t::process_term (int linger_)
 {
     zmq_assert (!pending);
 
@@ -257,7 +331,7 @@ void zmq::session_t::process_term (int linger_)
     pipe->check_read ();
 }
 
-void zmq::session_t::proceed_with_term ()
+void zmq::session_base_t::proceed_with_term ()
 {
     //  The pending phase have just ended.
     pending = false;
@@ -266,7 +340,7 @@ void zmq::session_t::proceed_with_term ()
     own_t::process_term (0);
 }
 
-void zmq::session_t::timer_event (int id_)
+void zmq::session_base_t::timer_event (int id_)
 {
     //  Linger period expired. We can proceed with termination even though
     //  there are still pending messages to be sent.
@@ -278,7 +352,7 @@ void zmq::session_t::timer_event (int id_)
     pipe->terminate (false);
 }
 
-void zmq::session_t::detached ()
+void zmq::session_base_t::detached ()
 {
     //  Transient session self-destructs after peer disconnects.
     if (!connect) {
@@ -295,7 +369,7 @@ void zmq::session_t::detached ()
         pipe->hiccup ();  
 }
 
-void zmq::session_t::start_connecting (bool wait_)
+void zmq::session_base_t::start_connecting (bool wait_)
 {
     zmq_assert (connect);
 

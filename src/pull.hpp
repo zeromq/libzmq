@@ -22,6 +22,7 @@
 #define __ZMQ_PULL_HPP_INCLUDED__
 
 #include "socket_base.hpp"
+#include "session_base.hpp"
 #include "fq.hpp"
 
 namespace zmq
@@ -52,6 +53,21 @@ namespace zmq
         pull_t (const pull_t&);
         const pull_t &operator = (const pull_t&);
 
+    };
+
+    class pull_session_t : public session_base_t
+    {
+    public:
+
+        pull_session_t (class io_thread_t *io_thread_, bool connect_,
+            class socket_base_t *socket_, const options_t &options_,
+            const char *protocol_, const char *address_);
+        ~pull_session_t ();
+
+    private:
+
+        pull_session_t (const pull_session_t&);
+        const pull_session_t &operator = (const pull_session_t&);
     };
 
 }

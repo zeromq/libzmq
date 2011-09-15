@@ -29,7 +29,7 @@
 #endif
 
 #include "pgm_receiver.hpp"
-#include "session.hpp"
+#include "session_base.hpp"
 #include "stdint.hpp"
 #include "wire.hpp"
 #include "err.hpp"
@@ -57,7 +57,8 @@ int zmq::pgm_receiver_t::init (bool udp_encapsulation_, const char *network_)
     return pgm_socket.init (udp_encapsulation_, network_);
 }
 
-void zmq::pgm_receiver_t::plug (io_thread_t *io_thread_, session_t *session_)
+void zmq::pgm_receiver_t::plug (io_thread_t *io_thread_,
+    session_base_t *session_)
 {
     //  Retrieve PGM fds and start polling.
     fd_t socket_fd = retired_fd;

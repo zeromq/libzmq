@@ -79,3 +79,15 @@ bool zmq::sub_t::xhas_out ()
     return false;
 }
 
+zmq::sub_session_t::sub_session_t (io_thread_t *io_thread_, bool connect_,
+      socket_base_t *socket_, const options_t &options_,
+      const char *protocol_, const char *address_) :
+    xsub_session_t (io_thread_, connect_, socket_, options_, protocol_,
+        address_)
+{
+}
+
+zmq::sub_session_t::~sub_session_t ()
+{
+}
+

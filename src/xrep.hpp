@@ -24,6 +24,7 @@
 #include <map>
 
 #include "socket_base.hpp"
+#include "session_base.hpp"
 #include "stdint.hpp"
 #include "msg.hpp"
 #include "fq.hpp"
@@ -91,6 +92,21 @@ namespace zmq
 
         xrep_t (const xrep_t&);
         const xrep_t &operator = (const xrep_t&);
+    };
+
+    class xrep_session_t : public session_base_t
+    {
+    public:
+
+        xrep_session_t (class io_thread_t *io_thread_, bool connect_,
+            class socket_base_t *socket_, const options_t &options_,
+            const char *protocol_, const char *address_);
+        ~xrep_session_t ();
+
+    private:
+
+        xrep_session_t (const xrep_session_t&);
+        const xrep_session_t &operator = (const xrep_session_t&);
     };
 
 }

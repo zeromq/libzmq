@@ -22,6 +22,7 @@
 #define __ZMQ_PUSH_HPP_INCLUDED__
 
 #include "socket_base.hpp"
+#include "session_base.hpp"
 #include "lb.hpp"
 
 namespace zmq
@@ -51,6 +52,21 @@ namespace zmq
 
         push_t (const push_t&);
         const push_t &operator = (const push_t&);
+    };
+
+    class push_session_t : public session_base_t
+    {
+    public:
+
+        push_session_t (class io_thread_t *io_thread_, bool connect_,
+            class socket_base_t *socket_, const options_t &options_,
+            const char *protocol_, const char *address_);
+        ~push_session_t ();
+
+    private:
+
+        push_session_t (const push_session_t&);
+        const push_session_t &operator = (const push_session_t&);
     };
 
 }

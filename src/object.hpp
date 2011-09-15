@@ -62,7 +62,7 @@ namespace zmq
             bool inc_seqnum_ = true);
         void send_own (class own_t *destination_,
             class own_t *object_);
-        void send_attach (class session_t *destination_,
+        void send_attach (class session_base_t *destination_,
              struct i_engine *engine_, bool inc_seqnum_ = true);
         void send_bind (class own_t *destination_, class pipe_t *pipe_,
              bool inc_seqnum_ = true);

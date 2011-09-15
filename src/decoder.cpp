@@ -22,7 +22,7 @@
 #include <string.h>
 
 #include "decoder.hpp"
-#include "session.hpp"
+#include "session_base.hpp"
 #include "wire.hpp"
 #include "err.hpp"
 
@@ -44,7 +44,7 @@ zmq::decoder_t::~decoder_t ()
     errno_assert (rc == 0);
 }
 
-void zmq::decoder_t::set_session (session_t *session_)
+void zmq::decoder_t::set_session (session_base_t *session_)
 {
     session = session_;
 }

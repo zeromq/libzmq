@@ -36,7 +36,7 @@
 
 #include "stream_engine.hpp"
 #include "io_thread.hpp"
-#include "session.hpp"
+#include "session_base.hpp"
 #include "config.hpp"
 #include "err.hpp"
 #include "ip.hpp"
@@ -102,7 +102,8 @@ zmq::stream_engine_t::~stream_engine_t ()
     }
 }
 
-void zmq::stream_engine_t::plug (io_thread_t *io_thread_, session_t *session_)
+void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
+    session_base_t *session_)
 {
     zmq_assert (!plugged);
     plugged = true;
