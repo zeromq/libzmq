@@ -228,14 +228,14 @@ void zmq::mtrie_t::match_helper (unsigned char *data_, size_t size_,
 
     //  If there's one subnode (optimisation).
     if (count == 1) {
-        next.node->match (data_ + 1, size_ - 1, func_, arg_);
+        if (min == data_ [0])
+            next.node->match_helper (data_ + 1, size_ - 1, func_, arg_);
         return;
     }
 
     //  If there are multiple subnodes.
-    for (unsigned char c = 0; c != count; c++) {
-        if (next.table [c])
-            next.table [c]->match (data_ + 1, size_ - 1, func_, arg_);
-    }   
+    if (next.table [data_ [0] - min])
+        next.table [data_ [0] - min]->match_helper (data_ + 1, size_ - 1,
+            func_, arg_);
 }
 
