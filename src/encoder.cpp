@@ -20,6 +20,7 @@
 
 #include "encoder.hpp"
 #include "session_base.hpp"
+#include "likely.hpp"
 #include "wire.hpp"
 
 zmq::encoder_t::encoder_t (size_t bufsize_) :
@@ -62,7 +63,14 @@ bool zmq::encoder_t::message_ready ()
     //  Note that new state is set only if write is successful. That way
     //  unsuccessful write will cause retry on the next state machine
     //  invocation.
-    if (!session || !session->read (&in_progress)) {
+    if (unlikely (!session)) {
+        rc = in_progress.init ();
+        errno_assert (rc == 0);
+        return false;
+    }
+    rc = session->read (&in_progress);
+    if (unlikely (rc != 0)) {
+        errno_assert (errno == EAGAIN);
         rc = in_progress.init ();
         errno_assert (rc == 0);
         return false;

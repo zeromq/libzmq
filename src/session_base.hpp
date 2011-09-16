@@ -48,8 +48,8 @@ namespace zmq
         void attach_pipe (class pipe_t *pipe_);
 
         //  Following functions are the interface exposed towards the engine.
-        bool read (msg_t *msg_);
-        bool write (msg_t *msg_);
+        virtual int read (msg_t *msg_);
+        virtual int write (msg_t *msg_);
         void flush ();
         void detach ();
 

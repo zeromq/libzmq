@@ -158,3 +158,23 @@ zmq::req_session_t::~req_session_t ()
 {
 }
 
+int zmq::req_session_t::write (msg_t *msg_)
+{
+    if (state == request_id) {
+        if (msg_->flags () == msg_t::label && msg_->size () == 4) {
+            state = body;
+            return xreq_session_t::write (msg_);
+        }
+    }
+    else {
+        if (msg_->flags () == msg_t::more)
+            return xreq_session_t::write (msg_);
+        if (msg_->flags () == 0) {
+            state = request_id;
+            return xreq_session_t::write (msg_);
+        }
+    }
+    errno = EFAULT;
+    return -1;
+}
+

@@ -148,28 +148,28 @@ void zmq::session_base_t::attach_pipe (pipe_t *pipe_)
     pipe->set_event_sink (this);
 }
 
-bool zmq::session_base_t::read (msg_t *msg_)
+int zmq::session_base_t::read (msg_t *msg_)
 {
-    if (!pipe)
-        return false;
-
-    if (!pipe->read (msg_))
-        return false;
+    if (!pipe || !pipe->read (msg_)) {
+        errno = EAGAIN;
+        return -1;
+    }
 
     incomplete_in =
         msg_->flags () & (msg_t::more | msg_t::label) ? true : false;
-    return true;
+    return 0;
 }
 
-bool zmq::session_base_t::write (msg_t *msg_)
+int zmq::session_base_t::write (msg_t *msg_)
 {
     if (pipe && pipe->write (msg_)) {
         int rc = msg_->init ();
         errno_assert (rc == 0);
-        return true;
+        return 0;
     }
 
-    return false;
+    errno = EAGAIN;
+    return -1;
 }
 
 void zmq::session_base_t::flush ()

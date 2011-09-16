@@ -23,6 +23,7 @@
 
 #include "decoder.hpp"
 #include "session_base.hpp"
+#include "likely.hpp"
 #include "wire.hpp"
 #include "err.hpp"
 
@@ -136,8 +137,14 @@ bool zmq::decoder_t::message_ready ()
 {
     //  Message is completely read. Push it further and start reading
     //  new message. (in_progress is a 0-byte message after this point.)
-    if (!session || !session->write (&in_progress))
+    if (unlikely (!session))
         return false;
+    int rc = session->write (&in_progress);
+    if (unlikely (rc != 0)) {
+        if (errno != EAGAIN)
+            decoding_error ();
+        return false;
+    }
 
     next_step (tmpbuf, 1, &decoder_t::one_byte_size_ready);
     return true;

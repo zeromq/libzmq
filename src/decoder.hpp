@@ -164,10 +164,18 @@ namespace zmq
 
     private:
 
+        //  Where to store the read data.
         unsigned char *read_pos;
+
+        //  How much data to read before taking next step.
         size_t to_read;
+
+        //  Next step. If set to NULL, it means that associated data stream
+        //  is dead. Note that there can be still data in the process in such
+        //  case.
         step_t next;
 
+        //  The duffer for data to decode.
         size_t bufsize;
         unsigned char *buf;
 

@@ -142,11 +142,20 @@ namespace zmq
 
     private:
 
+        //  Where to get the data to write from.
         unsigned char *write_pos;
+
+        //  How much data to write before next step should be executed.
         size_t to_write;
+
+        //  Next step. If set to NULL, it means that associated data stream
+        //  is dead.
         step_t next;
+
+        //  If true, first byte of the message is being written.
         bool beginning;
 
+        //  The buffer for encoded data.
         size_t bufsize;
         unsigned char *buf;
 

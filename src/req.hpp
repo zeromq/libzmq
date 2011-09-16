@@ -67,7 +67,15 @@ namespace zmq
             const char *protocol_, const char *address_);
         ~req_session_t ();
 
+        //  Overloads of the functions from session_base_t.
+        int write (msg_t *msg_);
+
     private:
+
+        enum {
+            request_id,
+            body
+        } state;
 
         req_session_t (const req_session_t&);
         const req_session_t &operator = (const req_session_t&);
