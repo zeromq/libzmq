@@ -67,8 +67,6 @@ namespace zmq
             void *arg_);
         bool rm_helper (unsigned char *prefix_, size_t size_,
             class pipe_t *pipe_);
-        void match_helper (unsigned char *data_, size_t size_,
-            void (*func_) (class pipe_t *pipe_, void *arg_), void *arg_);
 
         typedef std::set <class pipe_t*> pipes_t;
         pipes_t pipes;

@@ -209,33 +209,36 @@ bool zmq::mtrie_t::rm_helper (unsigned char *prefix_, size_t size_,
 void zmq::mtrie_t::match (unsigned char *data_, size_t size_,
     void (*func_) (pipe_t *pipe_, void *arg_), void *arg_)
 {
-    match_helper (data_, size_, func_, arg_);
-}
+    mtrie_t *current = this;
+    while (size_) {
 
-void zmq::mtrie_t::match_helper (unsigned char *data_, size_t size_,
-    void (*func_) (pipe_t *pipe_, void *arg_), void *arg_)
-{
-    //  TODO: This function is on critical path. Rewrite it as iteration
-    //  rather than recursion.
+        //  Signal the pipes attached to this node.
+        for (pipes_t::iterator it = current->pipes.begin ();
+              it != current->pipes.end (); ++it)
+            func_ (*it, arg_);
 
-    //  Signal the pipes attached to this node.
-    for (pipes_t::iterator it = pipes.begin (); it != pipes.end (); ++it)
-        func_ (*it, arg_);
+        //  If there are no subnodes in the trie, return.
+        if (current->count == 0)
+            break;
 
-    //  If there are no subnodes in the trie, return.
-    if (count == 0)
-        return;
+        //  If there's one subnode (optimisation).
+		if (current->count == 1) {
+            if (data_ [0] != current->min)
+                break;
+            current = current->next.node;
+            data_++;
+            size_--;
+		    continue;
+		}
 
-    //  If there's one subnode (optimisation).
-    if (count == 1) {
-        if (min == data_ [0])
-            next.node->match_helper (data_ + 1, size_ - 1, func_, arg_);
-        return;
+		//  If there are multiple subnodes.
+        if (data_ [0] < min || data_ [0] >= min + count)
+            break;
+        if (!current->next.table [data_ [0] - min])
+            break;
+        current = current->next.table [data_ [0] - min];
+        data_++;
+        size_--;
     }
-
-    //  If there are multiple subnodes.
-    if (next.table [data_ [0] - min])
-        next.table [data_ [0] - min]->match_helper (data_ + 1, size_ - 1,
-            func_, arg_);
 }
 
