@@ -403,7 +403,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\session.cpp"
+				RelativePath="..\..\..\src\session_base.cpp"
 				>
 			</File>
 			<File
@@ -685,7 +685,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\session.hpp"
+				RelativePath="..\..\..\src\session_base.hpp"
 				>
 			</File>
 			<File
