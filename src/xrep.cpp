@@ -22,6 +22,7 @@
 #include "pipe.hpp"
 #include "wire.hpp"
 #include "random.hpp"
+#include "likely.hpp"
 #include "err.hpp"
 
 zmq::xrep_t::xrep_t (class ctx_t *parent_, uint32_t tid_) :
@@ -163,8 +164,9 @@ int zmq::xrep_t::xsend (msg_t *msg_, int flags_)
     //  Push the message into the pipe. If there's no out pipe, just drop it.
     if (current_out) {
         bool ok = current_out->write (msg_);
-        zmq_assert (ok);
-        if (!more_out) {
+        if (unlikely (!ok))
+            current_out = NULL;
+        else if (!more_out) {
             current_out->flush ();
             current_out = NULL;
         }

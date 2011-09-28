@@ -179,8 +179,9 @@ int zmq::router_t::xsend (msg_t *msg_, int flags_)
     //  Push the message into the pipe. If there's no out pipe, just drop it.
     if (current_out) {
         bool ok = current_out->write (msg_);
-        zmq_assert (ok);
-        if (!more_out) {
+        if (unlikely (!ok))
+            current_out = NULL;
+        else if (!more_out) {
             current_out->flush ();
             current_out = NULL;
         }
