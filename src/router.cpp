@@ -260,7 +260,7 @@ bool zmq::router_t::xhas_in ()
 {
     if (prefetched)
         return true;
-    return fq.has_in ();
+    return fq.has_in () || !pending_commands.empty();
 }
 
 bool zmq::router_t::xhas_out ()
