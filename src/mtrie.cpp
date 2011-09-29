@@ -236,11 +236,12 @@ void zmq::mtrie_t::match (unsigned char *data_, size_t size_,
 		}
 
 		//  If there are multiple subnodes.
-        if (data_ [0] < min || data_ [0] >= min + count)
+        if (data_ [0] < current->min || data_ [0] >=
+              current->min + current->count)
             break;
-        if (!current->next.table [data_ [0] - min])
+        if (!current->next.table [data_ [0] - current->min])
             break;
-        current = current->next.table [data_ [0] - min];
+        current = current->next.table [data_ [0] - current->min];
         data_++;
         size_--;
     }
