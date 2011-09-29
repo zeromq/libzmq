@@ -59,6 +59,7 @@
 #include "signaler.hpp"
 #include "likely.hpp"
 #include "stdint.hpp"
+#include "config.hpp"
 #include "err.hpp"
 #include "fd.hpp"
 #include "ip.hpp"
@@ -233,6 +234,17 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
 
 #elif defined ZMQ_HAVE_WINDOWS
 
+    //  This function has to be in a system-wide critical section so that
+    //  two instances of the library don't accidentally create signaler
+    //  crossing the process boundary.
+    //  We'll use named event object to implement the critical section.
+    HANDLE sync = CreateEvent (NULL, FALSE, FALSE, "zmq-signaler-port-sync");
+    win_assert (sync != NULL);
+
+    //  Enter the critical section.
+    DWORD dwrc = WaitForSingleObject (sync, INFINITE);
+    zmq_assert (dwrc == WAIT_OBJECT_0);
+
     //  Windows has no 'socketpair' function. CreatePipe is no good as pipe
     //  handles cannot be polled on. Here we create the socketpair by hand.
     *w_ = INVALID_SOCKET;
@@ -258,13 +270,8 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     memset (&addr, 0, sizeof (addr));
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
-    addr.sin_port = 0;
+    addr.sin_port = htons (signaler_port);
     rc = bind (listener, (const struct sockaddr*) &addr, sizeof (addr));
-    wsa_assert (rc != SOCKET_ERROR);
-
-    //  Retrieve local port listener is bound to (into addr).
-    int addrlen = sizeof (addr);
-    rc = getsockname (listener, (struct sockaddr*) &addr, &addrlen);
     wsa_assert (rc != SOCKET_ERROR);
 
     //  Listen for incomming connections.
@@ -291,6 +298,10 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     //  We don't need the listening socket anymore. Close it.
     rc = closesocket (listener);
     wsa_assert (rc != SOCKET_ERROR);
+
+    //  Exit the critical section.
+    BOOL brc = SetEvent (sync);
+    win_assert (brc != 0);
 
     return 0;
 
