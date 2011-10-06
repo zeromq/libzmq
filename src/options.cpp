@@ -24,8 +24,8 @@
 #include "err.hpp"
 
 zmq::options_t::options_t () :
-    sndhwm (0),
-    rcvhwm (0),
+    sndhwm (1000),
+    rcvhwm (1000),
     affinity (0),
     rate (100),
     recovery_ivl (10000),

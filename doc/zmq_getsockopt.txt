@@ -81,12 +81,10 @@ blocking or dropping sent messages. Refer to the individual socket descriptions
 in linkzmq:zmq_socket[3] for details on the exact action taken for each socket
 type.
 
-The default 'ZMQ_SNDHWM' value of zero means "no limit".
-
 [horizontal]
 Option value type:: int
 Option value unit:: messages
-Default value:: 0
+Default value:: 1000
 Applicable socket types:: all
 
 
@@ -103,12 +101,10 @@ blocking or dropping sent messages. Refer to the individual socket descriptions
 in linkzmq:zmq_socket[3] for details on the exact action taken for each socket
 type.
 
-The default 'ZMQ_RCVHWM' value of zero means "no limit".
-
 [horizontal]
 Option value type:: int
 Option value unit:: messages
-Default value:: 0
+Default value:: 1000
 Applicable socket types:: all
 
 
