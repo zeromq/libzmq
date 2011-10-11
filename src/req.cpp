@@ -78,7 +78,7 @@ int zmq::req_t::xsend (msg_t *msg_, int flags_)
 
 int zmq::req_t::xrecv (msg_t *msg_, int flags_)
 {
-    //  If request wasn't send, we can't wait for reply.
+    //  If request wasn't sent, we can't wait for reply.
     if (!receiving_reply) {
         errno = EFSM;
         return -1;
@@ -91,20 +91,15 @@ int zmq::req_t::xrecv (msg_t *msg_, int flags_)
             return rc;
 
         // TODO: This should also close the connection with the peer!
-        if (unlikely (!(msg_->flags () & msg_t::label) || msg_->size () != 4)) {
-            errno = EAGAIN;
-            return -1;
-        }
-        
-        unsigned char *data = (unsigned char*) msg_->data ();
-        if (unlikely (get_uint32 (data) != request_id)) {
-
-            //  The request ID does not match. Drop the entire message.
-            while (true) {
+        // If invalid, ensure we drop remainder and return an empty message
+        if (unlikely (!(msg_->flags () & msg_t::label))
+            || unlikely (msg_->size () != 4)
+            || unlikely (get_uint32 ((unsigned char *)msg_->data()) 
+                         != request_id)) {
+            //  The request ID is bad or doesn't match. Drop the entire message.
+            while (msg_->flags () & (msg_t::label | msg_t::more)) {
                 int rc = xreq_t::xrecv (msg_, flags_);
                 errno_assert (rc == 0);
-                if (!(msg_->flags () & (msg_t::label | msg_t::more)))
-                    break;
             }
             msg_->close ();
             msg_->init ();
