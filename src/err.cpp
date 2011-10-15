@@ -236,4 +236,14 @@ void zmq::wsa_error_to_errno ()
     }
 }
 
+void _abort(const char* errmsg)
+{
+    void* extra_info[1];
+    extra_info[0] = (void *)errmsg;
+
+    RaiseException(0x40000015 /* STATUS_FATAL_APP_EXIT */,
+        EXCEPTION_NONCONTINUABLE,
+        1, (ULONG_PTR *)extra_info);
+}
+
 #endif

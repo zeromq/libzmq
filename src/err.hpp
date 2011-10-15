@@ -54,6 +54,8 @@ namespace zmq
     void wsa_error_to_errno (); 
 }
 
+void _abort(const char* errmsg);
+
 //  Provides convenient way to check WSA-style errors on Windows.
 #define wsa_assert(x) \
     do {\
@@ -62,7 +64,7 @@ namespace zmq
             if (errstr != NULL) {\
                 fprintf (stderr, "Assertion failed: %s (%s:%d)\n", errstr, \
                     __FILE__, __LINE__);\
-                abort ();\
+                _abort (errstr);\
             }\
         }\
     } while (false)
@@ -74,7 +76,7 @@ namespace zmq
         if (errstr != NULL) {\
             fprintf (stderr, "Assertion failed: %s (%s:%d)\n", errstr, \
                 __FILE__, __LINE__);\
-            abort ();\
+            _abort (errstr);\
         }\
     } while (false)
 
@@ -86,10 +88,12 @@ namespace zmq
             zmq::win_error (errstr, 256);\
             fprintf (stderr, "Assertion failed: %s (%s:%d)\n", errstr, \
                 __FILE__, __LINE__);\
-            abort ();\
+            _abort (errstr);\
         }\
     } while (false)
 
+#else
+#define _abort(x) abort()
 #endif
 
 //  This macro works in exactly the same way as the normal assert. It is used
@@ -100,7 +104,7 @@ namespace zmq
         if (unlikely (!(x))) {\
             fprintf (stderr, "Assertion failed: %s (%s:%d)\n", #x, \
                 __FILE__, __LINE__);\
-            abort ();\
+            _abort (#x);\
         }\
     } while (false) 
 
@@ -110,7 +114,7 @@ namespace zmq
         if (unlikely (!(x))) {\
             perror (NULL);\
             fprintf (stderr, "%s (%s:%d)\n", #x, __FILE__, __LINE__);\
-            abort ();\
+            _abort (#x);\
         }\
     } while (false)
 
@@ -119,7 +123,7 @@ namespace zmq
     do {\
         if (unlikely (x)) {\
             fprintf (stderr, "%s (%s:%d)\n", strerror (x), __FILE__, __LINE__);\
-            abort ();\
+            _abort (#x);\
         }\
     } while (false)
 
@@ -129,7 +133,7 @@ namespace zmq
         if (unlikely (x)) {\
             const char *errstr = gai_strerror (x);\
             fprintf (stderr, "%s (%s:%d)\n", errstr, __FILE__, __LINE__);\
-            abort ();\
+            _abort (errstr);\
         }\
     } while (false)
 
@@ -139,7 +143,7 @@ namespace zmq
         if (unlikely (!x)) {\
             fprintf (stderr, "FATAL ERROR: OUT OF MEMORY (%s:%d)\n",\
                 __FILE__, __LINE__);\
-            abort ();\
+            _abort ("OUT OF MEMORY");\
         }\
     } while (false)
 
