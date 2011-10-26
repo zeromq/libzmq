@@ -383,6 +383,11 @@ AM_CONDITIONAL(ON_MINGW, test "x$libzmq_on_mingw32" = "xyes")
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(perror gettimeofday memset socket getifaddrs freeifaddrs)
 AC_CHECK_HEADERS([alloca.h])
+LIBZMQ_CHECK_SOCK_CLOEXEC([AC_DEFINE(
+                              [ZMQ_HAVE_SOCK_CLOEXEC],
+                              [1],
+                              [Whether SOCK_CLOEXEC is defined and functioning.])
+                          ])
 
 # Subst LIBZMQ_EXTRA_CFLAGS & CXXFLAGS & LDFLAGS
 AC_SUBST(LIBZMQ_EXTRA_CFLAGS)
