@@ -603,7 +603,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             }
 #else
             int rc = select (maxfd + 1, &inset, &outset, &errset, ptimeout);
-            if (unlikely (rc == -1) {
+            if (unlikely (rc == -1)) {
                 if (errno == EINTR || errno == EBADF)
                     return -1;
                 errno_assert (false);
