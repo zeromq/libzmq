@@ -237,6 +237,11 @@ bool zmq::msg_t::is_delimiter ()
     return u.base.type == type_delimiter;
 }
 
+bool zmq::msg_t::is_vsm ()
+{
+    return u.base.type == type_vsm;
+}
+
 void zmq::msg_t::add_refs (int refs_)
 {
     zmq_assert (refs_ >= 0);
@@ -279,3 +284,4 @@ bool zmq::msg_t::rm_refs (int refs_)
 
     return true;
 }
+

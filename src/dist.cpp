@@ -137,6 +137,16 @@ void zmq::dist_t::distribute (msg_t *msg_, int flags_)
         return;
     }
 
+    if (msg_->is_vsm ()) {
+        for (pipes_t::size_type i = 0; i < matching; ++i)
+            write (pipes [i], msg_);
+        int rc = msg_->close();
+        errno_assert (rc == 0);
+        rc = msg_->init ();
+        errno_assert (rc == 0);
+        return;
+    }
+
     //  Add matching-1 references to the message. We already hold one reference,
     //  that's why -1.
     msg_->add_refs ((int) matching - 1);

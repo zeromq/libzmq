@@ -68,6 +68,7 @@ namespace zmq
         void set_flags (unsigned char flags_);
         void reset_flags (unsigned char flags_);
         bool is_delimiter ();
+        bool is_vsm ();
 
         //  After calling this function you can copy the message in POD-style
         //  refs_ times. No need to call copy.
