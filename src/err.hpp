@@ -42,6 +42,7 @@
 namespace zmq
 {
     const char *errno_to_string (int errno_);
+    void zmq_abort (const char *errmsg_);
 }
 
 #ifdef ZMQ_HAVE_WINDOWS
@@ -51,7 +52,7 @@ namespace zmq
     const char *wsa_error ();
     const char *wsa_error_no (int no_);
     void win_error (char *buffer_, size_t buffer_size_);
-    void wsa_error_to_errno (); 
+    void wsa_error_to_errno ();
 }
 
 //  Provides convenient way to check WSA-style errors on Windows.
@@ -62,7 +63,7 @@ namespace zmq
             if (errstr != NULL) {\
                 fprintf (stderr, "Assertion failed: %s (%s:%d)\n", errstr, \
                     __FILE__, __LINE__);\
-                abort ();\
+                zmq::zmq_abort (errstr);\
             }\
         }\
     } while (false)
@@ -74,7 +75,7 @@ namespace zmq
         if (errstr != NULL) {\
             fprintf (stderr, "Assertion failed: %s (%s:%d)\n", errstr, \
                 __FILE__, __LINE__);\
-            abort ();\
+            zmq::zmq_abort (errstr);\
         }\
     } while (false)
 
@@ -86,7 +87,7 @@ namespace zmq
             zmq::win_error (errstr, 256);\
             fprintf (stderr, "Assertion failed: %s (%s:%d)\n", errstr, \
                 __FILE__, __LINE__);\
-            abort ();\
+            zmq::zmq_abort (errstr);\
         }\
     } while (false)
 
@@ -100,7 +101,7 @@ namespace zmq
         if (unlikely (!(x))) {\
             fprintf (stderr, "Assertion failed: %s (%s:%d)\n", #x, \
                 __FILE__, __LINE__);\
-            abort ();\
+            zmq::zmq_abort (#x);\
         }\
     } while (false) 
 
@@ -108,9 +109,9 @@ namespace zmq
 #define errno_assert(x) \
     do {\
         if (unlikely (!(x))) {\
-            perror (NULL);\
-            fprintf (stderr, "%s (%s:%d)\n", #x, __FILE__, __LINE__);\
-            abort ();\
+            const char *errstr = strerror (errno);\
+            fprintf (stderr, "%s (%s:%d)\n", errstr, __FILE__, __LINE__);\
+            zmq::zmq_abort (errstr);\
         }\
     } while (false)
 
@@ -118,8 +119,9 @@ namespace zmq
 #define posix_assert(x) \
     do {\
         if (unlikely (x)) {\
-            fprintf (stderr, "%s (%s:%d)\n", strerror (x), __FILE__, __LINE__);\
-            abort ();\
+            const char *errstr = strerror (x);\
+            fprintf (stderr, "%s (%s:%d)\n", errstr, __FILE__, __LINE__);\
+            zmq::zmq_abort (errstr);\
         }\
     } while (false)
 
@@ -129,7 +131,7 @@ namespace zmq
         if (unlikely (x)) {\
             const char *errstr = gai_strerror (x);\
             fprintf (stderr, "%s (%s:%d)\n", errstr, __FILE__, __LINE__);\
-            abort ();\
+            zmq::zmq_abort (errstr);\
         }\
     } while (false)
 
@@ -139,7 +141,7 @@ namespace zmq
         if (unlikely (!x)) {\
             fprintf (stderr, "FATAL ERROR: OUT OF MEMORY (%s:%d)\n",\
                 __FILE__, __LINE__);\
-            abort ();\
+            zmq::zmq_abort ("FATAL ERROR: OUT OF MEMORY");\
         }\
     } while (false)
 
