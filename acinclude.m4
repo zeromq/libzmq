@@ -582,6 +582,28 @@ AC_DEFUN([LIBZMQ_CHECK_LANG_VISIBILITY], [{
 }])
 
 dnl ################################################################################
+dnl # LIBZMQ_CHECK_SOCK_CLOEXEC([action-if-found], [action-if-not-found])          #
+dnl # Check if SOCK_CLOEXEC is supported                                           #
+dnl ################################################################################
+AC_DEFUN([LIBZMQ_CHECK_SOCK_CLOEXEC], [{
+    AC_MSG_CHECKING(whether SOCK_CLOEXEC is supported)
+    AC_TRY_RUN([/* SOCK_CLOEXEC test */
+#include <sys/types.h>
+#include <sys/socket.h>
+
+int main (int argc, char *argv [])
+{
+    int s = socket (PF_INET, SOCK_STREAM | SOCK_CLOEXEC, 0);
+    return (s == -1);
+}
+    ],
+    [AC_MSG_RESULT(yes) ; libzmq_cv_sock_cloexec="yes" ; $1],
+    [AC_MSG_RESULT(no)  ; libzmq_cv_sock_cloexec="no"  ; $2],
+    [AC_MSG_RESULT(not during cross-compile) ; libzmq_cv_sock_cloexec="no"]
+    )
+}])
+
+dnl ################################################################################
 dnl # LIBZMQ_CHECK_POLLER_KQUEUE([action-if-found], [action-if-not-found])         #
 dnl # Checks kqueue polling system                                                 #
 dnl ################################################################################

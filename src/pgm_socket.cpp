@@ -222,6 +222,7 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
             goto err_abort;
     } else {
         const int send_only        = 1,
+                  max_rte      = (int) ((options.rate * 1000) / 8),
                   txw_max_tpdu     = (int) pgm_max_tpdu,
                   txw_sqns         = compute_sqns (txw_max_tpdu),
                   ambient_spm      = pgm_secs (30),
@@ -237,6 +238,8 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
 
         if (!pgm_setsockopt (sock, IPPROTO_PGM, PGM_SEND_ONLY,
                 &send_only, sizeof (send_only)) ||
+            !pgm_setsockopt (sock, IPPROTO_PGM, PGM_ODATA_MAX_RTE,
+                &max_rte, sizeof (max_rte)) ||
             !pgm_setsockopt (sock, IPPROTO_PGM, PGM_TXW_SQNS,
                 &txw_sqns, sizeof (txw_sqns)) ||
             !pgm_setsockopt (sock, IPPROTO_PGM, PGM_AMBIENT_SPM,
