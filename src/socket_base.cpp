@@ -37,7 +37,6 @@
 #include "socket_base.hpp"
 #include "tcp_listener.hpp"
 #include "ipc_listener.hpp"
-#include "vtcp_listener.hpp"
 #include "tcp_connecter.hpp"
 #include "io_thread.hpp"
 #include "session_base.hpp"
@@ -173,8 +172,7 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
 {
     //  First check out whether the protcol is something we are aware of.
     if (protocol_ != "inproc" && protocol_ != "ipc" && protocol_ != "tcp" &&
-          protocol_ != "pgm" && protocol_ != "epgm" && protocol_ != "sys" &&
-          protocol_ != "vtcp") {
+          protocol_ != "pgm" && protocol_ != "epgm" && protocol_ != "sys") {
         errno = EPROTONOSUPPORT;
         return -1;
     }
@@ -183,14 +181,6 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
     //  are not avaialble.
 #if !defined ZMQ_HAVE_OPENPGM
     if (protocol_ == "pgm" || protocol_ == "epgm") {
-        errno = EPROTONOSUPPORT;
-        return -1;
-    }
-#endif
-
-    //  If 0MQ is not compiled with VTCP, vtcp transport is not avaialble.
-#if !defined ZMQ_HAVE_VTCP
-    if (protocol_ == "vtcp") {
         errno = EPROTONOSUPPORT;
         return -1;
     }
@@ -377,21 +367,6 @@ int zmq::socket_base_t::bind (const char *addr_)
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
     if (protocol == "ipc") {
         ipc_listener_t *listener = new (std::nothrow) ipc_listener_t (
-            io_thread, this, options);
-        alloc_assert (listener);
-        int rc = listener->set_address (address.c_str ());
-        if (rc != 0) {
-            delete listener;
-            return -1;
-        }
-        launch_child (listener);
-        return 0;
-    }
-#endif
-
-#if defined ZMQ_HAVE_VTCP
-    if (protocol == "vtcp") {
-        vtcp_listener_t *listener = new (std::nothrow) vtcp_listener_t (
             io_thread, this, options);
         alloc_assert (listener);
         int rc = listener->set_address (address.c_str ());
