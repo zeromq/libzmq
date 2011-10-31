@@ -27,9 +27,11 @@ zmq::xreq_t::xreq_t (class ctx_t *parent_, uint32_t tid_) :
 {
     options.type = ZMQ_XREQ;
 
+    //  TODO: Uncomment the following line when XREQ will become true XREQ
+    //  rather than generic dealer socket.
     //  If the socket is closing we can drop all the outbound requests. There'll
     //  be noone to receive the replies anyway.
-    options.delay_on_close = false;
+    //  options.delay_on_close = false;
 }
 
 zmq::xreq_t::~xreq_t ()
