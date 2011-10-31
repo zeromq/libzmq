@@ -55,7 +55,6 @@ libzmq_la_SOURCES = \
     reaper.hpp \
     rep.hpp \
     req.hpp \
-    router.hpp \
     select.hpp \
     session_base.hpp \
     signaler.hpp \
@@ -113,7 +112,6 @@ libzmq_la_SOURCES = \
     reaper.cpp \
     pub.cpp \
     random.cpp \
-    router.cpp \
     rep.cpp \
     req.cpp \
     select.cpp \

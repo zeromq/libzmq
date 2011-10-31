@@ -40,7 +40,6 @@
 #include "xsub.hpp"
 #include "push.hpp"
 #include "pull.hpp"
-#include "router.hpp"
 #include "pair.hpp"
 
 zmq::session_base_t *zmq::session_base_t::create (class io_thread_t *io_thread_,
@@ -86,10 +85,6 @@ zmq::session_base_t *zmq::session_base_t::create (class io_thread_t *io_thread_,
         break;
     case ZMQ_PULL:
         s = new (std::nothrow) pull_session_t (io_thread_, connect_,
-            socket_, options_, protocol_, address_);
-        break;
-    case ZMQ_ROUTER:
-        s = new (std::nothrow) router_session_t (io_thread_, connect_,
             socket_, options_, protocol_, address_);
         break;
     case ZMQ_PAIR:
