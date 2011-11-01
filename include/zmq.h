@@ -1,6 +1,7 @@
 /*
     Copyright (c) 2009-2011 250bpm s.r.o.
     Copyright (c) 2007-2011 iMatix Corporation
+    Copyright (c) 2011 VMware, Inc.
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -189,15 +190,11 @@ ZMQ_EXPORT int zmq_term (void *context);
 #define ZMQ_MULTICAST_HOPS 25
 #define ZMQ_RCVTIMEO 27
 #define ZMQ_SNDTIMEO 28
-#define ZMQ_RCVLABEL 29
-#define ZMQ_RCVCMD 30
 #define ZMQ_IPV4ONLY 31
 
 /*  Send/recv options.                                                        */
 #define ZMQ_DONTWAIT 1
 #define ZMQ_SNDMORE 2
-#define ZMQ_SNDLABEL 4
-#define ZMQ_SNDCMD 8
 
 ZMQ_EXPORT void *zmq_socket (void *context, int type);
 ZMQ_EXPORT int zmq_close (void *s);

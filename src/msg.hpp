@@ -1,6 +1,7 @@
 /*
     Copyright (c) 2009-2011 250bpm s.r.o.
     Copyright (c) 2007-2011 iMatix Corporation
+    Copyright (c) 2011 VMware, Inc.
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -48,10 +49,8 @@ namespace zmq
         //  Mesage flags.
         enum
         {
-            label = 1,
-            command = 2,
-            shared = 64,
-            more = 128
+            more = 1,
+            shared = 128
         };
 
         bool check ();

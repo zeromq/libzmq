@@ -1,6 +1,7 @@
 /*
     Copyright (c) 2009-2011 250bpm s.r.o.
     Copyright (c) 2007-2011 iMatix Corporation
+    Copyright (c) 2011 VMware, Inc.
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -47,12 +48,12 @@ int main (int argc, char *argv [])
 
     //  Receive the request.
     char addr [4];
-    char seqn [4];
+    char bottom [1];
     char body [1];
     rc = zmq_recv (xrep_socket, addr, sizeof (addr), 0);
     assert (rc == 4);
-    rc = zmq_recv (xrep_socket, seqn, sizeof (seqn), 0);
-    assert (rc == 4);
+    rc = zmq_recv (xrep_socket, bottom, sizeof (bottom), 0);
+    assert (rc == 0);
     rc = zmq_recv (xrep_socket, body, sizeof (body), 0);
     assert (rc == 1);
 
@@ -61,10 +62,10 @@ int main (int argc, char *argv [])
     assert (rc == 4);
 
     //  Send valid reply.
-    rc = zmq_send (xrep_socket, addr, 4, ZMQ_SNDLABEL);
+    rc = zmq_send (xrep_socket, addr, 4, ZMQ_SNDMORE);
     assert (rc == 4);
-    rc = zmq_send (xrep_socket, seqn, 4, ZMQ_SNDLABEL);
-    assert (rc == 4);
+    rc = zmq_send (xrep_socket, bottom, 0, ZMQ_SNDMORE);
+    assert (rc == 0);
     rc = zmq_send (xrep_socket, "b", 1, 0);
     assert (rc == 1);
 

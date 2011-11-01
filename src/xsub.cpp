@@ -1,6 +1,7 @@
 /*
     Copyright (c) 2009-2011 250bpm s.r.o.
     Copyright (c) 2007-2011 iMatix Corporation
+    Copyright (c) 2011 VMware, Inc.
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -117,7 +118,7 @@ int zmq::xsub_t::xrecv (msg_t *msg_, int flags_)
         int rc = msg_->move (message);
         errno_assert (rc == 0);
         has_message = false;
-        more = msg_->flags () & (msg_t::more | msg_t::label) ? true : false;
+        more = msg_->flags () & msg_t::more ? true : false;
         return 0;
     }
 
@@ -137,14 +138,13 @@ int zmq::xsub_t::xrecv (msg_t *msg_, int flags_)
         //  Check whether the message matches at least one subscription.
         //  Non-initial parts of the message are passed 
         if (more || !options.filter || match (msg_)) {
-            more =
-                msg_->flags () & (msg_t::more | msg_t::label) ? true : false;
+            more = msg_->flags () & msg_t::more ? true : false;
             return 0;
         }
 
         //  Message doesn't match. Pop any remaining parts of the message
         //  from the pipe.
-        while (msg_->flags () & (msg_t::more | msg_t::label)) {
+        while (msg_->flags () & msg_t::more) {
             rc = fq.recv (msg_, ZMQ_DONTWAIT);
             zmq_assert (rc == 0);
         }
@@ -184,7 +184,7 @@ bool zmq::xsub_t::xhas_in ()
 
         //  Message doesn't match. Pop any remaining parts of the message
         //  from the pipe.
-        while (message.flags () & (msg_t::more | msg_t::label)) {
+        while (message.flags () & msg_t::more) {
             rc = fq.recv (&message, ZMQ_DONTWAIT);
             zmq_assert (rc == 0);
         }

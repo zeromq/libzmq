@@ -1,6 +1,7 @@
 /*
     Copyright (c) 2009-2011 250bpm s.r.o.
     Copyright (c) 2007-2011 iMatix Corporation
+    Copyright (c) 2011 VMware, Inc.
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -51,10 +52,6 @@ namespace zmq
         //  of the message must be empty message part (backtrace stack bottom).
         bool message_begins;
 
-        //  Request ID. Request numbers gradually increase (and wrap over)
-        //  so that we don't have to generate random ID for each request.
-        uint32_t request_id;
-
         req_t (const req_t&);
         const req_t &operator = (const req_t&);
     };
@@ -74,7 +71,7 @@ namespace zmq
     private:
 
         enum {
-            request_id,
+            bottom,
             body
         } state;
 

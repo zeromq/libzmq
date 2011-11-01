@@ -1,6 +1,7 @@
 /*
     Copyright (c) 2009-2011 250bpm s.r.o.
     Copyright (c) 2007-2011 iMatix Corporation
+    Copyright (c) 2011 VMware, Inc.
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -120,8 +121,6 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t tid_) :
     destroyed (false),
     last_tsc (0),
     ticks (0),
-    rcvlabel (false),
-    rcvcmd (false),
     rcvmore (false)
 {
 }
@@ -250,26 +249,6 @@ int zmq::socket_base_t::getsockopt (int option_, void *optval_,
     if (unlikely (ctx_terminated)) {
         errno = ETERM;
         return -1;
-    }
-
-    if (option_ == ZMQ_RCVLABEL) {
-        if (*optvallen_ < sizeof (int)) {
-            errno = EINVAL;
-            return -1;
-        }
-        *((int*) optval_) = rcvlabel ? 1 : 0;
-        *optvallen_ = sizeof (int);
-        return 0;
-    }
-
-    if (option_ == ZMQ_RCVCMD) {
-        if (*optvallen_ < sizeof (int)) {
-            errno = EINVAL;
-            return -1;
-        }
-        *((int*) optval_) = rcvcmd ? 1 : 0;
-        *optvallen_ = sizeof (int);
-        return 0;
     }
 
     if (option_ == ZMQ_RCVMORE) {
@@ -496,12 +475,8 @@ int zmq::socket_base_t::send (msg_t *msg_, int flags_)
         return -1;
 
     //  At this point we impose the flags on the message.
-    if (flags_ & ZMQ_SNDLABEL)
-        msg_->set_flags (msg_t::label);
     if (flags_ & ZMQ_SNDMORE)
         msg_->set_flags (msg_t::more);
-    if (flags_ & ZMQ_SNDCMD)
-        msg_->set_flags (msg_t::command);
 
     //  Try to send the message.
     rc = xsend (msg_, flags_);
@@ -870,13 +845,7 @@ void zmq::socket_base_t::terminated (pipe_t *pipe_)
 
 void zmq::socket_base_t::extract_flags (msg_t *msg_)
 {
-    rcvlabel = msg_->flags () & msg_t::label;
-    if (rcvlabel)
-        msg_->reset_flags (msg_t::label);
     rcvmore = msg_->flags () & msg_t::more ? true : false;
     if (rcvmore)
         msg_->reset_flags (msg_t::more);
-    rcvcmd = msg_->flags () & msg_t::command ? true : false;
-    if (rcvcmd)
-        msg_->reset_flags (msg_t::command);
 }

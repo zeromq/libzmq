@@ -1,6 +1,7 @@
 /*
     Copyright (c) 2009-2011 250bpm s.r.o.
     Copyright (c) 2007-2011 iMatix Corporation
+    Copyright (c) 2011 VMware, Inc.
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -128,7 +129,7 @@ int zmq::xrep_t::xsend (msg_t *msg_, int flags_)
         //  If we have malformed message (prefix with no subsequent message)
         //  then just silently ignore it.
         //  TODO: The connections should be killed instead.
-        if (msg_->flags () & msg_t::label) {
+        if (msg_->flags () & msg_t::more) {
 
             more_out = true;
 
@@ -162,7 +163,7 @@ int zmq::xrep_t::xsend (msg_t *msg_, int flags_)
     }
 
     //  Check whether this is the last part of the message.
-    more_out = msg_->flags () & (msg_t::more | msg_t::label) ? true : false;
+    more_out = msg_->flags () & msg_t::more ? true : false;
 
     //  Push the message into the pipe. If there's no out pipe, just drop it.
     if (current_out) {
@@ -192,7 +193,7 @@ int zmq::xrep_t::xrecv (msg_t *msg_, int flags_)
     if (prefetched) {
         int rc = msg_->move (prefetched_msg);
         errno_assert (rc == 0);
-        more_in = msg_->flags () & (msg_t::more | msg_t::label) ? true : false;
+        more_in = msg_->flags () & msg_t::more ? true : false;
         prefetched = false;
         return 0;
     }
@@ -205,7 +206,7 @@ int zmq::xrep_t::xrecv (msg_t *msg_, int flags_)
 
     //  If we are in the middle of reading a message, just return the next part.
     if (more_in) {
-        more_in = msg_->flags () & (msg_t::more | msg_t::label) ? true : false;
+        more_in = msg_->flags () & msg_t::more ? true : false;
         return 0;
     }
  
@@ -219,7 +220,7 @@ int zmq::xrep_t::xrecv (msg_t *msg_, int flags_)
     rc = msg_->init_size (4);
     errno_assert (rc == 0);
     put_uint32 ((unsigned char*) msg_->data (), pipe->get_pipe_id ());
-    msg_->set_flags (msg_t::label);
+    msg_->set_flags (msg_t::more);
     return 0;
 }
 

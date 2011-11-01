@@ -1,6 +1,7 @@
 /*
     Copyright (c) 2009-2011 250bpm s.r.o.
     Copyright (c) 2007-2011 iMatix Corporation
+    Copyright (c) 2011 VMware, Inc.
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -149,9 +150,8 @@ int zmq::session_base_t::read (msg_t *msg_)
         errno = EAGAIN;
         return -1;
     }
+    incomplete_in = msg_->flags () & msg_t::more ? true : false;
 
-    incomplete_in =
-        msg_->flags () & (msg_t::more | msg_t::label) ? true : false;
     return 0;
 }
 

@@ -1,6 +1,7 @@
 /*
     Copyright (c) 2009-2011 250bpm s.r.o.
     Copyright (c) 2007-2011 iMatix Corporation
+    Copyright (c) 2011 VMware, Inc.
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -137,7 +138,7 @@ bool zmq::pipe_t::read (msg_t *msg_)
         return false;
     }
 
-    if (!(msg_->flags () & (msg_t::more | msg_t::label)))
+    if (!(msg_->flags () & msg_t::more))
         msgs_read++;
 
     if (lwm > 0 && msgs_read % lwm == 0)
@@ -166,7 +167,7 @@ bool zmq::pipe_t::write (msg_t *msg_)
     if (unlikely (!check_write (msg_)))
         return false;
 
-    bool more = msg_->flags () & (msg_t::more | msg_t::label) ? true : false;
+    bool more = msg_->flags () & msg_t::more ? true : false;
     outpipe->write (*msg_, more);
     if (!more)
         msgs_written++;
@@ -180,7 +181,7 @@ void zmq::pipe_t::rollback ()
     msg_t msg;
     if (outpipe) {
 		while (outpipe->unwrite (&msg)) {
-		    zmq_assert (msg.flags () & (msg_t::more | msg_t::label));
+		    zmq_assert (msg.flags () & msg_t::more);
 		    int rc = msg.close ();
 		    errno_assert (rc == 0);
 		}
