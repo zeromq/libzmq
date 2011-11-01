@@ -39,19 +39,6 @@ Default value:: N/A
 Applicable socket types:: all
 
 
-ZMQ_RCVLABEL: Inquires whether last message received was a label
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_RCVLABEL' option shall return True (1) if the message part last
-received from the 'socket' was an address label. Otherwise, this option
-shall return False (0).
-
-[horizontal]
-Option value type:: int
-Option value unit:: boolean
-Default value:: N/A
-Applicable socket types:: all
-
-
 ZMQ_RCVMORE: More message data parts to follow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_RCVMORE' option shall return True (1) if the message part last
