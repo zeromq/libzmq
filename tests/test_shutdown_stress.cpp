@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <pthread.h>
 #include <stddef.h>
+#include <stdio.h>
 
 #define THREAD_COUNT 100
 
@@ -52,6 +53,8 @@ int main (int argc, char *argv [])
     int j;
     int rc;
     pthread_t threads [THREAD_COUNT];
+
+    fprintf (stderr, "test_shutdown_stress running...\n");
 
     for (j = 0; j != 10; j++) {
 

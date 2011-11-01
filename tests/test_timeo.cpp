@@ -22,6 +22,7 @@
 #include <assert.h>
 #include <string.h>
 #include <pthread.h>
+#include <stdio.h>
 
 #include "../include/zmq.h"
 #include "../include/zmq_utils.h"
@@ -46,6 +47,8 @@ extern "C"
 
 int main (int argc, char *argv [])
 {
+    fprintf (stderr, "test_timeo...\n");
+
     void *ctx = zmq_init (1);
     assert (ctx);
 

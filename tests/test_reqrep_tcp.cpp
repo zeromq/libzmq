@@ -20,10 +20,13 @@
 */
 
 #include <assert.h>
+#include <stdio.h>
 #include "testutil.hpp"
 
 int main (int argc, char *argv [])
 {
+    fprintf (stderr, "test_reqrep_tcp running...\n");
+
     void *ctx = zmq_init (1);
     assert (ctx);
 

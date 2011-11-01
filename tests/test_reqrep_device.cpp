@@ -22,11 +22,14 @@
 
 #include <assert.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "../include/zmq.h"
 
 int main (int argc, char *argv [])
 {
+    fprintf (stderr, "test_reqrep_device running...\n");
+
     void *ctx = zmq_init (1);
     assert (ctx);
 

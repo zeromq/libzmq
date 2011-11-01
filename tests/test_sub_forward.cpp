@@ -20,12 +20,15 @@
 */
 
 #include <assert.h>
+#include <stdio.h>
 
 #include "../include/zmq.h"
 #include "../include/zmq_utils.h"
 
 int main (int argc, char *argv [])
 {
+    fprintf (stderr, "test_sub_forward running...\n");
+
     void *ctx = zmq_init (1);
     assert (ctx);
 

@@ -22,9 +22,12 @@
 
 #include "../include/zmq.h"
 #include <assert.h>
+#include <stdio.h>
 
 int main (int argc, char *argv [])
 {
+    fprintf (stderr, "test_pair_inproc running...\n");
+
     //  Create REQ/XREP wiring.
     void *ctx = zmq_init (1);
     assert (ctx);

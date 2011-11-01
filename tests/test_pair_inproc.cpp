@@ -20,10 +20,13 @@
 */
 
 #include <assert.h>
+#include <stdio.h>
 #include "testutil.hpp"
 
 int main (int argc, char *argv [])
 {
+    fprintf (stderr, "test_pair_inproc running...\n");
+
     void *ctx = zmq_init (0);
     assert (ctx);
 
