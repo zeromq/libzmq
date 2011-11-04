@@ -1,6 +1,5 @@
 /*
-    Copyright (c) 2010-2011 250bpm s.r.o.
-    Copyright (c) 2011 iMatix Corporation
+    Copyright (c) 2010 250bpm s.r.o.
     Copyright (c) 2010-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -19,37 +18,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
-#include <stdio.h>
-#include "testutil.hpp"
+#ifndef __ZMQ_BLOB_HPP_INCLUDED__
+#define __ZMQ_BLOB_HPP_INCLUDED__
 
-int main (int argc, char *argv [])
+#include <string>
+
+namespace zmq
 {
-    fprintf (stderr, "test_reqrep_tcp running...\n");
 
-    void *ctx = zmq_init (1);
-    assert (ctx);
+    //  Object to hold dynamically allocated opaque binary data.
+    typedef std::basic_string <unsigned char> blob_t;
 
-    void *sb = zmq_socket (ctx, ZMQ_REP);
-    assert (sb);
-    int rc = zmq_bind (sb, "tcp://127.0.0.1:5560");
-    assert (rc == 0);
-
-    void *sc = zmq_socket (ctx, ZMQ_REQ);
-    assert (sc);
-    rc = zmq_connect (sc, "tcp://127.0.0.1:5560");
-    assert (rc == 0);
-    
-    bounce (sb, sc);
-
-    rc = zmq_close (sc);
-    assert (rc == 0);
-
-    rc = zmq_close (sb);
-    assert (rc == 0);
-
-    rc = zmq_term (ctx);
-    assert (rc == 0);
-
-    return 0 ;
 }
+
+#endif
+

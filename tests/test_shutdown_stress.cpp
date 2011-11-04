@@ -1,6 +1,7 @@
 /*
-    Copyright (c) 2007-2011 iMatix Corporation
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2010-2011 250bpm s.r.o.
+    Copyright (c) 2011 iMatix Corporation
+    Copyright (c) 2010-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -22,6 +23,7 @@
 #include <assert.h>
 #include <pthread.h>
 #include <stddef.h>
+#include <stdio.h>
 
 #define THREAD_COUNT 100
 
@@ -51,6 +53,8 @@ int main (int argc, char *argv [])
     int j;
     int rc;
     pthread_t threads [THREAD_COUNT];
+
+    fprintf (stderr, "test_shutdown_stress running...\n");
 
     for (j = 0; j != 10; j++) {
 

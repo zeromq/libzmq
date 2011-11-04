@@ -1,5 +1,7 @@
 /*
-    Copyright (c) 2007-2011 iMatix Corporation
+    Copyright (c) 2009-2011 250bpm s.r.o.
+    Copyright (c) 2007-2009 iMatix Corporation
+    Copyright (c) 2011 VMware, Inc.
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -36,7 +38,6 @@
 #include "socket_base.hpp"
 #include "tcp_listener.hpp"
 #include "ipc_listener.hpp"
-#include "vtcp_listener.hpp"
 #include "tcp_connecter.hpp"
 #include "io_thread.hpp"
 #include "session_base.hpp"
@@ -60,7 +61,6 @@
 #include "xrep.hpp"
 #include "xpub.hpp"
 #include "xsub.hpp"
-#include "router.hpp"
 
 bool zmq::socket_base_t::check_tag ()
 {
@@ -106,9 +106,6 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
     case ZMQ_XSUB:
         s = new (std::nothrow) xsub_t (parent_, tid_);
         break;
-    case ZMQ_ROUTER:
-        s = new (std::nothrow) router_t (parent_, tid_);
-        break;
     default:
         errno = EINVAL;
         return NULL;
@@ -124,8 +121,6 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t tid_) :
     destroyed (false),
     last_tsc (0),
     ticks (0),
-    rcvlabel (false),
-    rcvcmd (false),
     rcvmore (false)
 {
 }
@@ -176,8 +171,7 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
 {
     //  First check out whether the protcol is something we are aware of.
     if (protocol_ != "inproc" && protocol_ != "ipc" && protocol_ != "tcp" &&
-          protocol_ != "pgm" && protocol_ != "epgm" && protocol_ != "sys" &&
-          protocol_ != "vtcp") {
+          protocol_ != "pgm" && protocol_ != "epgm" && protocol_ != "sys") {
         errno = EPROTONOSUPPORT;
         return -1;
     }
@@ -186,14 +180,6 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
     //  are not avaialble.
 #if !defined ZMQ_HAVE_OPENPGM
     if (protocol_ == "pgm" || protocol_ == "epgm") {
-        errno = EPROTONOSUPPORT;
-        return -1;
-    }
-#endif
-
-    //  If 0MQ is not compiled with VTCP, vtcp transport is not avaialble.
-#if !defined ZMQ_HAVE_VTCP
-    if (protocol_ == "vtcp") {
         errno = EPROTONOSUPPORT;
         return -1;
     }
@@ -263,26 +249,6 @@ int zmq::socket_base_t::getsockopt (int option_, void *optval_,
     if (unlikely (ctx_terminated)) {
         errno = ETERM;
         return -1;
-    }
-
-    if (option_ == ZMQ_RCVLABEL) {
-        if (*optvallen_ < sizeof (int)) {
-            errno = EINVAL;
-            return -1;
-        }
-        *((int*) optval_) = rcvlabel ? 1 : 0;
-        *optvallen_ = sizeof (int);
-        return 0;
-    }
-
-    if (option_ == ZMQ_RCVCMD) {
-        if (*optvallen_ < sizeof (int)) {
-            errno = EINVAL;
-            return -1;
-        }
-        *((int*) optval_) = rcvcmd ? 1 : 0;
-        *optvallen_ = sizeof (int);
-        return 0;
     }
 
     if (option_ == ZMQ_RCVMORE) {
@@ -380,21 +346,6 @@ int zmq::socket_base_t::bind (const char *addr_)
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
     if (protocol == "ipc") {
         ipc_listener_t *listener = new (std::nothrow) ipc_listener_t (
-            io_thread, this, options);
-        alloc_assert (listener);
-        int rc = listener->set_address (address.c_str ());
-        if (rc != 0) {
-            delete listener;
-            return -1;
-        }
-        launch_child (listener);
-        return 0;
-    }
-#endif
-
-#if defined ZMQ_HAVE_VTCP
-    if (protocol == "vtcp") {
-        vtcp_listener_t *listener = new (std::nothrow) vtcp_listener_t (
             io_thread, this, options);
         alloc_assert (listener);
         int rc = listener->set_address (address.c_str ());
@@ -524,12 +475,8 @@ int zmq::socket_base_t::send (msg_t *msg_, int flags_)
         return -1;
 
     //  At this point we impose the flags on the message.
-    if (flags_ & ZMQ_SNDLABEL)
-        msg_->set_flags (msg_t::label);
     if (flags_ & ZMQ_SNDMORE)
         msg_->set_flags (msg_t::more);
-    if (flags_ & ZMQ_SNDCMD)
-        msg_->set_flags (msg_t::command);
 
     //  Try to send the message.
     rc = xsend (msg_, flags_);
@@ -898,13 +845,16 @@ void zmq::socket_base_t::terminated (pipe_t *pipe_)
 
 void zmq::socket_base_t::extract_flags (msg_t *msg_)
 {
-    rcvlabel = msg_->flags () & msg_t::label;
-    if (rcvlabel)
-        msg_->reset_flags (msg_t::label);
+    //  Test whether IDENTITY flag is valid for this socket type.
+    if (unlikely (msg_->flags () & msg_t::identity)) {
+        zmq_assert (options.recv_identity);
+printf ("identity recvd\n");
+    }
+  
+
+    //  Remove MORE flag.
     rcvmore = msg_->flags () & msg_t::more ? true : false;
     if (rcvmore)
         msg_->reset_flags (msg_t::more);
-    rcvcmd = msg_->flags () & msg_t::command ? true : false;
-    if (rcvcmd)
-        msg_->reset_flags (msg_t::command);
 }
+

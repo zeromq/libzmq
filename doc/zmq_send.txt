@@ -23,11 +23,6 @@ Specifies that the operation should be performed in non-blocking mode. If the
 message cannot be queued on the 'socket', the _zmq_send()_ function shall
 fail with 'errno' set to EAGAIN.
 
-*ZMQ_SNDLABEL*::
-Specifies that the message part being sent is an address label, and that
-further message parts are to follow. Refer to linkzmq:zmq_socket[3] for the
-semantics of address labels in each socket pattern.
-
 *ZMQ_SNDMORE*::
 Specifies that the message being sent is a multi-part message, and that further
 message parts are to follow. Refer to the section regarding multi-part messages
@@ -40,16 +35,14 @@ the 'socket' and 0MQ has assumed responsibility for the message.
 
 Multi-part messages
 ~~~~~~~~~~~~~~~~~~~
-A 0MQ message is composed of 1 or more message parts, starting with zero or
-more address 'label' parts, followed by 1 or more 'data' parts. Each message
+A 0MQ message is composed of 1 or more message parts. Each message
 part is an independent 'zmq_msg_t' in its own right. 0MQ ensures atomic
 delivery of messages; peers shall receive either all _message parts_ of a
 message or none at all. The total number of message parts is unlimited except
 by available memory.
 
 An application that sends multipart messages must use the _ZMQ_SNDMORE_ flag
-when sending each data part except the final one. An application that sends
-address labels must use _ZMQ_SNDLABEL_ when sending each label.
+when sending each data part except the final one.
 
 
 RETURN VALUE

@@ -1,6 +1,7 @@
 /*
-    Copyright (c) 2007-2011 iMatix Corporation
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2010-2011 250bpm s.r.o.
+    Copyright (c) 2011 iMatix Corporation
+    Copyright (c) 2010-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -19,10 +20,13 @@
 */
 
 #include <assert.h>
+#include <stdio.h>
 #include "testutil.hpp"
 
 int main (int argc, char *argv [])
 {
+    fprintf (stderr, "test_pair_tcp running...\n");
+
     void *ctx = zmq_init (1);
     assert (ctx);
 
