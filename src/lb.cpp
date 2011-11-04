@@ -1,5 +1,7 @@
 /*
-    Copyright (c) 2007-2011 iMatix Corporation
+    Copyright (c) 2010-2011 250bpm s.r.o.
+    Copyright (c) 2007-2009 iMatix Corporation
+    Copyright (c) 2011 VMware, Inc.
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -75,7 +77,7 @@ int zmq::lb_t::send (msg_t *msg_, int flags_)
     //  switch back to non-dropping mode.
     if (dropping) {
 
-        more = msg_->flags () & (msg_t::more | msg_t::label) ? true : false;
+        more = msg_->flags () & msg_t::more ? true : false;
         if (!more)
             dropping = false;
 
@@ -88,8 +90,7 @@ int zmq::lb_t::send (msg_t *msg_, int flags_)
 
     while (active > 0) {
         if (pipes [current]->write (msg_)) {
-            more =
-                msg_->flags () & (msg_t::more | msg_t::label) ? true : false;
+            more = msg_->flags () & msg_t::more ? true : false;
             break;
         }
 

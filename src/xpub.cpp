@@ -1,6 +1,7 @@
 /*
-    Copyright (c) 2007-2011 iMatix Corporation
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2010-2011 250bpm s.r.o.
+    Copyright (c) 2011 VMware, Inc.
+    Copyright (c) 2010-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -100,8 +101,7 @@ void zmq::xpub_t::mark_as_matching (pipe_t *pipe_, void *arg_)
 
 int zmq::xpub_t::xsend (msg_t *msg_, int flags_)
 {
-    bool msg_more =
-        msg_->flags () & (msg_t::more | msg_t::label) ? true : false;
+    bool msg_more = msg_->flags () & msg_t::more ? true : false;
 
     //  For the first part of multi-part message, find the matching pipes.
     if (!more)

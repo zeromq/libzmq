@@ -122,6 +122,23 @@ Default value:: N/A
 Applicable socket types:: ZMQ_SUB
 
 
+ZMQ_IDENTITY: Set socket identity
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_IDENTITY' option shall set the identity of the specified 'socket'.
+Socket identity is used only by request/reply pattern. Namely, it can be used
+in tandem with ROUTER socket to route messages to the peer with specific
+identity.
+
+Identity should be at least one byte and at most 255 bytes long. Identities
+starting with binary zero are reserved for use by 0MQ infrastructure.
+
+[horizontal]
+Option value type:: binary data
+Option value unit:: N/A
+Default value:: NULL
+Applicable socket types:: all
+
+
 ZMQ_RATE: Set multicast data rate
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_RATE' option shall set the maximum send or receive data rate for

@@ -1,5 +1,7 @@
 /*
-    Copyright (c) 2007-2011 iMatix Corporation
+    Copyright (c) 2009-2011 250bpm s.r.o.
+    Copyright (c) 2007-2009 iMatix Corporation
+    Copyright (c) 2011 VMware, Inc.
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -40,6 +42,10 @@ namespace zmq
 
         //  I/O thread affinity.
         uint64_t affinity;
+
+        //  Socket identity
+        unsigned char identity_size;
+        unsigned char identity [256];
 
         //  Maximum tranfer rate [kb/s]. Default 100kb/s.
         int rate;
@@ -93,6 +99,12 @@ namespace zmq
 
         //  If 1, (X)SUB socket should filter the messages. If 0, it should not.
         bool filter;
+
+        //  Sends identity to all new connections.
+        bool send_identity;
+
+        //  Receivers identity from all new connections.
+        bool recv_identity;
     };
 
 }

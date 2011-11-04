@@ -1,5 +1,7 @@
 /*
-    Copyright (c) 2007-2011 iMatix Corporation
+    Copyright (c) 2009-2011 250bpm s.r.o.
+    Copyright (c) 2007-2009 iMatix Corporation
+    Copyright (c) 2011 VMware, Inc.
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -27,6 +29,7 @@ zmq::options_t::options_t () :
     sndhwm (1000),
     rcvhwm (1000),
     affinity (0),
+    identity_size (0),
     rate (100),
     recovery_ivl (10000),
     multicast_hops (1),
@@ -43,7 +46,9 @@ zmq::options_t::options_t () :
     ipv4only (1),
     delay_on_close (true),
     delay_on_disconnect (true),
-    filter (false)
+    filter (false),
+    send_identity (false),
+    recv_identity (false)
 {
 }
 
@@ -74,6 +79,20 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             return -1;
         }
         affinity = *((uint64_t*) optval_);
+        return 0;
+
+    case ZMQ_IDENTITY:
+
+        //  Empty identity is invalid as well as identity longer than
+        //  255 bytes. Identity starting with binary zero is invalid
+        //  as these are used for auto-generated identities.
+        if (optvallen_ < 1 || optvallen_ > 255 ||
+              *((const unsigned char*) optval_) == 0) {
+            errno = EINVAL;
+            return -1;
+        }
+        identity_size = optvallen_;
+        memcpy (identity, optval_, identity_size);
         return 0;
 
     case ZMQ_RATE:
@@ -230,6 +249,15 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
         }
         *((uint64_t*) optval_) = affinity;
         *optvallen_ = sizeof (uint64_t);
+        return 0;
+
+    case ZMQ_IDENTITY:
+        if (*optvallen_ < identity_size) {
+            errno = EINVAL;
+            return -1;
+        }
+        memcpy (optval_, identity, identity_size);
+        *optvallen_ = identity_size;
         return 0;
 
     case ZMQ_RATE:
