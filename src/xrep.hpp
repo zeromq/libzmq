@@ -1,6 +1,7 @@
 /*
     Copyright (c) 2009-2011 250bpm s.r.o.
     Copyright (c) 2011 iMatix Corporation
+    Copyright (c) 2011 VMware, Inc.
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -27,6 +28,7 @@
 #include "socket_base.hpp"
 #include "session_base.hpp"
 #include "stdint.hpp"
+#include "blob.hpp"
 #include "msg.hpp"
 #include "fq.hpp"
 
@@ -78,7 +80,7 @@ namespace zmq
         };
 
         //  Outbound pipes indexed by the peer IDs.
-        typedef std::map <uint32_t, outpipe_t> outpipes_t;
+        typedef std::map <blob_t, outpipe_t> outpipes_t;
         outpipes_t outpipes;
 
         //  The pipe we are currently writing to.

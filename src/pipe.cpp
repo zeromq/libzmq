@@ -65,8 +65,7 @@ zmq::pipe_t::pipe_t (object_t *parent_, upipe_t *inpipe_, upipe_t *outpipe_,
     peer (NULL),
     sink (NULL),
     state (active),
-    delay (delay_),
-    pipe_id (0)
+    delay (delay_)
 {
 }
 
@@ -88,14 +87,14 @@ void zmq::pipe_t::set_event_sink (i_pipe_events *sink_)
     sink = sink_;
 }
 
-void zmq::pipe_t::set_pipe_id (uint32_t id_)
+void zmq::pipe_t::set_identity (const blob_t &identity_)
 {
-    pipe_id = id_;
+    identity = identity_;
 }
 
-uint32_t zmq::pipe_t::get_pipe_id ()
+zmq::blob_t zmq::pipe_t::get_identity ()
 {
-    return pipe_id;
+    return identity;
 }
 
 bool zmq::pipe_t::check_read ()

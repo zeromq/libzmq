@@ -112,7 +112,9 @@ zmq::session_base_t::session_base_t (class io_thread_t *io_thread_,
     engine (NULL),
     socket (socket_),
     io_thread (io_thread_),
-    has_linger_timer (false)
+    has_linger_timer (false),
+    send_identity (options_.send_identity),
+    recv_identity (options_.recv_identity)
 {
     if (protocol_)
         protocol = protocol_;
@@ -146,6 +148,16 @@ void zmq::session_base_t::attach_pipe (pipe_t *pipe_)
 
 int zmq::session_base_t::read (msg_t *msg_)
 {
+    //  First message to send is identity (if required).
+    if (send_identity) {
+        zmq_assert (!(msg_->flags () & msg_t::more));
+        msg_->init_size (options.identity_size);
+        memcpy (msg_->data (), options.identity, options.identity_size);
+        send_identity = false;
+        incomplete_in = false;
+        return 0;
+    }
+
     if (!pipe || !pipe->read (msg_)) {
         errno = EAGAIN;
         return -1;
@@ -157,6 +169,12 @@ int zmq::session_base_t::read (msg_t *msg_)
 
 int zmq::session_base_t::write (msg_t *msg_)
 {
+    //  First message to receive is identity (if required).
+    if (recv_identity) {
+        msg_->set_flags (msg_t::identity);
+        recv_identity = false;
+    }
+
     if (pipe && pipe->write (msg_)) {
         int rc = msg_->init ();
         errno_assert (rc == 0);

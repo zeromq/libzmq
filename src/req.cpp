@@ -147,23 +147,32 @@ zmq::req_session_t::req_session_t (io_thread_t *io_thread_, bool connect_,
 
 zmq::req_session_t::~req_session_t ()
 {
+    state = options.recv_identity ? identity : bottom;
 }
 
 int zmq::req_session_t::write (msg_t *msg_)
 {
-    if (state == bottom) {
+    switch (state) {
+    case bottom:
         if (msg_->flags () == msg_t::more && msg_->size () == 0) {
             state = body;
             return xreq_session_t::write (msg_);
         }
-    }
-    else {
+        break;
+    case body:
         if (msg_->flags () == msg_t::more)
             return xreq_session_t::write (msg_);
         if (msg_->flags () == 0) {
             state = bottom;
             return xreq_session_t::write (msg_);
         }
+        break;
+    case identity:
+        if (msg_->flags () == 0) {
+            state = bottom;
+            return xreq_session_t::write (msg_);
+        }
+        break;
     }
     errno = EFAULT;
     return -1;

@@ -50,6 +50,7 @@ namespace zmq
         enum
         {
             more = 1,
+            identity = 64,
             shared = 128
         };
 

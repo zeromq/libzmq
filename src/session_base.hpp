@@ -1,6 +1,7 @@
 /*
     Copyright (c) 2009-2011 250bpm s.r.o.
     Copyright (c) 2007-2009 iMatix Corporation
+    Copyright (c) 2011 VMware, Inc.
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -118,6 +119,10 @@ namespace zmq
 
         //  True is linger timer is running.
         bool has_linger_timer;
+
+        //  If true, identity is to be sent/recvd from the network.
+        bool send_identity;
+        bool recv_identity;
 
         //  Protocol and address to use when connecting.
         std::string protocol;

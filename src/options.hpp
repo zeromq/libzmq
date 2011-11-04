@@ -99,6 +99,12 @@ namespace zmq
 
         //  If 1, (X)SUB socket should filter the messages. If 0, it should not.
         bool filter;
+
+        //  Sends identity to all new connections.
+        bool send_identity;
+
+        //  Receivers identity from all new connections.
+        bool recv_identity;
     };
 
 }

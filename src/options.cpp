@@ -46,7 +46,9 @@ zmq::options_t::options_t () :
     ipv4only (1),
     delay_on_close (true),
     delay_on_disconnect (true),
-    filter (false)
+    filter (false),
+    send_identity (false),
+    recv_identity (false)
 {
 }
 

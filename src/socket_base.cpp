@@ -845,7 +845,16 @@ void zmq::socket_base_t::terminated (pipe_t *pipe_)
 
 void zmq::socket_base_t::extract_flags (msg_t *msg_)
 {
+    //  Test whether IDENTITY flag is valid for this socket type.
+    if (unlikely (msg_->flags () & msg_t::identity)) {
+        zmq_assert (options.recv_identity);
+printf ("identity recvd\n");
+    }
+  
+
+    //  Remove MORE flag.
     rcvmore = msg_->flags () & msg_t::more ? true : false;
     if (rcvmore)
         msg_->reset_flags (msg_t::more);
 }
+

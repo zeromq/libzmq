@@ -1,5 +1,6 @@
 /*
     Copyright (c) 2009-2011 250bpm s.r.o.
+    Copyright (c) 2011 VMware, Inc.
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -32,6 +33,9 @@ zmq::xreq_t::xreq_t (class ctx_t *parent_, uint32_t tid_) :
     //  If the socket is closing we can drop all the outbound requests. There'll
     //  be noone to receive the replies anyway.
     //  options.delay_on_close = false;
+
+    options.send_identity = true;
+    options.recv_identity = true;
 }
 
 zmq::xreq_t::~xreq_t ()
@@ -52,7 +56,15 @@ int zmq::xreq_t::xsend (msg_t *msg_, int flags_)
 
 int zmq::xreq_t::xrecv (msg_t *msg_, int flags_)
 {
-    return fq.recv (msg_, flags_);
+    //  XREQ socket doesn't use identities. We can safely drop it and 
+    while (true) {
+        int rc = fq.recv (msg_, flags_);
+        if (rc != 0)
+            return rc;
+        if (likely (!(msg_->flags () & msg_t::identity)))
+            break;
+    }
+    return 0;
 }
 
 bool zmq::xreq_t::xhas_in ()

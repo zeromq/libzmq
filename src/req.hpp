@@ -71,6 +71,7 @@ namespace zmq
     private:
 
         enum {
+            identity,
             bottom,
             body
         } state;
