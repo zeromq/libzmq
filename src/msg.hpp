@@ -1,5 +1,7 @@
 /*
-    Copyright (c) 2007-2011 iMatix Corporation
+    Copyright (c) 2009-2011 250bpm s.r.o.
+    Copyright (c) 2007-2009 iMatix Corporation
+    Copyright (c) 2011 VMware, Inc.
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -47,10 +49,9 @@ namespace zmq
         //  Mesage flags.
         enum
         {
-            label = 1,
-            command = 2,
-            shared = 64,
-            more = 128
+            more = 1,
+            identity = 64,
+            shared = 128
         };
 
         bool check ();
@@ -68,6 +69,7 @@ namespace zmq
         void set_flags (unsigned char flags_);
         void reset_flags (unsigned char flags_);
         bool is_delimiter ();
+        bool is_vsm ();
 
         //  After calling this function you can copy the message in POD-style
         //  refs_ times. No need to call copy.

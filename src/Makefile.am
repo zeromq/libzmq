@@ -9,6 +9,7 @@ libzmq_la_SOURCES = \
     array.hpp \
     atomic_counter.hpp \
     atomic_ptr.hpp \
+    blob.hpp \
     clock.hpp \
     command.hpp \
     config.hpp \
@@ -55,7 +56,6 @@ libzmq_la_SOURCES = \
     reaper.hpp \
     rep.hpp \
     req.hpp \
-    router.hpp \
     select.hpp \
     session_base.hpp \
     signaler.hpp \
@@ -68,8 +68,6 @@ libzmq_la_SOURCES = \
     tcp_listener.hpp \
     thread.hpp \
     trie.hpp \
-    vtcp_connecter.hpp \
-    vtcp_listener.hpp \
     windows.hpp \
     wire.hpp \
     xpub.hpp \
@@ -113,7 +111,6 @@ libzmq_la_SOURCES = \
     reaper.cpp \
     pub.cpp \
     random.cpp \
-    router.cpp \
     rep.cpp \
     req.cpp \
     select.cpp \
@@ -127,8 +124,6 @@ libzmq_la_SOURCES = \
     tcp_listener.cpp \
     thread.cpp \
     trie.cpp \
-    vtcp_connecter.cpp \
-    vtcp_listener.cpp \
     xpub.cpp \
     xrep.cpp \
     xreq.cpp \

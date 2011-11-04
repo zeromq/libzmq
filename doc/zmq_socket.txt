@@ -81,11 +81,6 @@ any linkzmq:zmq_send[3] operations on the socket shall block until the
 exceptional state ends or at least one _service_ becomes available for sending;
 messages are not discarded.
 
-'ZMQ_REQ' socket adds a unique 'request ID' label to every outbound message.
-When receiving a reply, it checks whether the 'request ID' of the reply matches
-the last 'request ID' sent. If it does not, the message is silently dropped and
-waiting for the reply is resumed.
-
 [horizontal]
 .Summary of ZMQ_REQ characteristics
 Compatible peer sockets:: 'ZMQ_REP'
@@ -107,10 +102,6 @@ requester doesn't exist any more the reply is silently discarded.
 When a 'ZMQ_REP' socket enters an exceptional state due to having reached the
 high water mark for a _client_, then any replies sent to the _client_ in
 question shall be dropped until the exceptional state ends.
-
-'ZMQ_REP' socket strips all the labels from the incoming message, stores them
-and passes the remaining data parts to the user. When user sends the reply,
-the stored labels are re-attached to the reply.
 
 [horizontal]
 .Summary of ZMQ_REP characteristics
@@ -136,8 +127,6 @@ linkzmq:zmq_send[3] operations on the socket shall block until the exceptional
 state ends or at least one peer becomes available for sending; messages are not
 discarded.
 
-'ZMQ_XREQ' socket doesn't inspect or modify the message labels.
-
 [horizontal]
 .Summary of ZMQ_XREQ characteristics
 Compatible peer sockets:: 'ZMQ_XREP', 'ZMQ_REP'
@@ -161,14 +150,6 @@ high water mark for all peers, or if there are no peers at all, then any
 messages sent to the socket shall be dropped until the exceptional state ends.
 Likewise, any messages to be routed to a non-existent peer or a peer for which
 the individual high water mark has been reached shall also be dropped.
-
-When receiving messages a 'ZMQ_XREP' socket attaches a label uniquely
-identifying the originating peer to the message before passing it to the
-application. 
-
-When sending messages a 'ZMQ_XREP' socket removes the first label from the
-message and uses it to determine which the peer the message shall be routed to.
-If the peer does not exist anymore the message is silently discarded.
 
 [horizontal]
 .Summary of ZMQ_XREP characteristics
@@ -196,8 +177,6 @@ high water mark for a _subscriber_, then any messages that would be sent to the
 _subscriber_ in question shall instead be dropped until the exceptional state
 ends. The _zmq_send()_ function shall never block for this socket type.
 
-This socket type doesn't use message labels.
-
 [horizontal]
 .Summary of ZMQ_PUB characteristics
 Compatible peer sockets:: 'ZMQ_SUB', 'ZMQ_XSUB'
@@ -215,8 +194,6 @@ any messages, use the 'ZMQ_SUBSCRIBE' option of linkzmq:zmq_setsockopt[3] to
 specify which messages to subscribe to. The _zmq_send()_ function is not
 implemented for this socket type.
 
-This socket type doesn't use message labels.
-
 [horizontal]
 .Summary of ZMQ_SUB characteristics
 Compatible peer sockets:: 'ZMQ_PUB', 'ZMQ_XPUB'
@@ -233,8 +210,6 @@ in form of incoming messages. Subscription message is a byte 1 (for
 subscriptions) or byte 0 (for unsubscriptions) followed by the subscription
 body.
 
-This socket type doesn't use message labels.
-
 [horizontal]
 .Summary of ZMQ_XPUB characteristics
 Compatible peer sockets:: 'ZMQ_SUB', 'ZMQ_XSUB'
@@ -249,8 +224,6 @@ ZMQ_XSUB
 Same as ZMQ_SUB except that you subscribe by sending subscription messages to
 the socket. Subscription message is a byte 1 (for subscriptions) or byte 0
 (for unsubscriptions) followed by the subscription body.
-
-This socket type doesn't use message labels.
 
 [horizontal]
 .Summary of ZMQ_XSUB characteristics
@@ -282,8 +255,6 @@ _nodes_ at all, then any linkzmq:zmq_send[3] operations on the socket shall
 block until the exceptional state ends or at least one downstream _node_
 becomes available for sending; messages are not discarded.
 
-This socket type doesn't use message labels.
-
 [horizontal]
 .Summary of ZMQ_PUSH characteristics
 Compatible peer sockets:: 'ZMQ_PULL'
@@ -300,8 +271,6 @@ A socket of type 'ZMQ_PULL' is used by a pipeline _node_ to receive messages
 from upstream pipeline _nodes_. Messages are fair-queued from among all
 connected upstream _nodes_. The _zmq_send()_ function is not implemented for
 this socket type.
-
-This socket type doesn't use message labels.
 
 [horizontal]
 .Summary of ZMQ_PULL characteristics
@@ -329,8 +298,6 @@ When a 'ZMQ_PAIR' socket enters an exceptional state due to having reached the
 high water mark for the connected peer, or if no peer is connected, then
 any linkzmq:zmq_send[3] operations on the socket shall block until the peer
 becomes available for sending; messages are not discarded.
-
-This socket type doesn't use message labels.
 
 NOTE: 'ZMQ_PAIR' sockets are experimental, and are currently missing several
 features such as auto-reconnection.

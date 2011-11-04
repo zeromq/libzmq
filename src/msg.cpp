@@ -1,5 +1,6 @@
 /*
-    Copyright (c) 2007-2011 iMatix Corporation
+    Copyright (c) 2009-2011 250bpm s.r.o.
+    Copyright (c) 2007-2009 iMatix Corporation
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -237,6 +238,11 @@ bool zmq::msg_t::is_delimiter ()
     return u.base.type == type_delimiter;
 }
 
+bool zmq::msg_t::is_vsm ()
+{
+    return u.base.type == type_vsm;
+}
+
 void zmq::msg_t::add_refs (int refs_)
 {
     zmq_assert (refs_ >= 0);
@@ -279,3 +285,4 @@ bool zmq::msg_t::rm_refs (int refs_)
 
     return true;
 }
+

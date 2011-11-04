@@ -1,4 +1,5 @@
 /*
+    Copyright (c) 2009-2011 250bpm s.r.o.
     Copyright (c) 2007-2011 iMatix Corporation
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
@@ -603,7 +604,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             }
 #else
             int rc = select (maxfd + 1, &inset, &outset, &errset, ptimeout);
-            if (unlikely (rc == -1) {
+            if (unlikely (rc == -1)) {
                 if (errno == EINTR || errno == EBADF)
                     return -1;
                 errno_assert (false);

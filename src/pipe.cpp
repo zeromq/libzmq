@@ -1,5 +1,7 @@
 /*
-    Copyright (c) 2007-2011 iMatix Corporation
+    Copyright (c) 2009-2011 250bpm s.r.o.
+    Copyright (c) 2007-2009 iMatix Corporation
+    Copyright (c) 2011 VMware, Inc.
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -63,8 +65,7 @@ zmq::pipe_t::pipe_t (object_t *parent_, upipe_t *inpipe_, upipe_t *outpipe_,
     peer (NULL),
     sink (NULL),
     state (active),
-    delay (delay_),
-    pipe_id (0)
+    delay (delay_)
 {
 }
 
@@ -86,14 +87,14 @@ void zmq::pipe_t::set_event_sink (i_pipe_events *sink_)
     sink = sink_;
 }
 
-void zmq::pipe_t::set_pipe_id (uint32_t id_)
+void zmq::pipe_t::set_identity (const blob_t &identity_)
 {
-    pipe_id = id_;
+    identity = identity_;
 }
 
-uint32_t zmq::pipe_t::get_pipe_id ()
+zmq::blob_t zmq::pipe_t::get_identity ()
 {
-    return pipe_id;
+    return identity;
 }
 
 bool zmq::pipe_t::check_read ()
@@ -136,7 +137,7 @@ bool zmq::pipe_t::read (msg_t *msg_)
         return false;
     }
 
-    if (!(msg_->flags () & (msg_t::more | msg_t::label)))
+    if (!(msg_->flags () & msg_t::more))
         msgs_read++;
 
     if (lwm > 0 && msgs_read % lwm == 0)
@@ -165,7 +166,7 @@ bool zmq::pipe_t::write (msg_t *msg_)
     if (unlikely (!check_write (msg_)))
         return false;
 
-    bool more = msg_->flags () & (msg_t::more | msg_t::label) ? true : false;
+    bool more = msg_->flags () & msg_t::more ? true : false;
     outpipe->write (*msg_, more);
     if (!more)
         msgs_written++;
@@ -179,7 +180,7 @@ void zmq::pipe_t::rollback ()
     msg_t msg;
     if (outpipe) {
 		while (outpipe->unwrite (&msg)) {
-		    zmq_assert (msg.flags () & (msg_t::more | msg_t::label));
+		    zmq_assert (msg.flags () & msg_t::more);
 		    int rc = msg.close ();
 		    errno_assert (rc == 0);
 		}

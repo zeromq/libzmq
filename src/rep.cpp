@@ -1,4 +1,5 @@
 /*
+    Copyright (c) 2009-2011 250bpm s.r.o.
     Copyright (c) 2007-2011 iMatix Corporation
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
@@ -42,7 +43,7 @@ int zmq::rep_t::xsend (msg_t *msg_, int flags_)
         return -1;
     }
 
-    bool more = msg_->flags () & (msg_t::more | msg_t::label) ? true : false;
+    bool more = msg_->flags () & msg_t::more ? true : false;
 
     //  Push message to the reply pipe.
     int rc = xrep_t::xsend (msg_, flags_);
@@ -71,19 +72,20 @@ int zmq::rep_t::xrecv (msg_t *msg_, int flags_)
             int rc = xrep_t::xrecv (msg_, flags_);
             if (rc != 0)
                 return rc;
-            if (!(msg_->flags () & msg_t::label))
-                break;
+            zmq_assert (msg_->flags () & msg_t::more);
+            bool bottom = (msg_->size () == 0);
             rc = xrep_t::xsend (msg_, flags_);
             errno_assert (rc == 0);
+            if (bottom)
+                break;
         }
         request_begins = false;
     }
-    else {
-        int rc = xrep_t::xrecv (msg_, flags_);
-        if (rc != 0)
-            return rc;
-    }
-    zmq_assert (!(msg_->flags () & msg_t::label));
+
+    //  Get next message part to return to the user.
+    int rc = xrep_t::xrecv (msg_, flags_);
+    if (rc != 0)
+       return rc;
 
     //  If whole request is read, flip the FSM to reply-sending state.
     if (!(msg_->flags () & msg_t::more)) {

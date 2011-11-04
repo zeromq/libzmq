@@ -1,6 +1,7 @@
 /*
-    Copyright (c) 2007-2011 iMatix Corporation
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2011 250bpm s.r.o.
+    Copyright (c) 2011 VMware, Inc.
+    Copyright (c) 2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -111,8 +112,7 @@ int zmq::dist_t::send_to_all (msg_t *msg_, int flags_)
 int zmq::dist_t::send_to_matching (msg_t *msg_, int flags_)
 {
     //  Is this end of a multipart message?
-    bool msg_more =
-        msg_->flags () & (msg_t::more | msg_t::label) ? true : false;
+    bool msg_more = msg_->flags () & msg_t::more ? true : false;
 
     //  Push the message to matching pipes.
     distribute (msg_, flags_);
@@ -134,6 +134,16 @@ void zmq::dist_t::distribute (msg_t *msg_, int flags_)
         errno_assert (rc == 0);
         rc = msg_->init ();
         zmq_assert (rc == 0);
+        return;
+    }
+
+    if (msg_->is_vsm ()) {
+        for (pipes_t::size_type i = 0; i < matching; ++i)
+            write (pipes [i], msg_);
+        int rc = msg_->close();
+        errno_assert (rc == 0);
+        rc = msg_->init ();
+        errno_assert (rc == 0);
         return;
     }
 
@@ -171,7 +181,7 @@ bool zmq::dist_t::write (pipe_t *pipe_, msg_t *msg_)
         eligible--;
         return false;
     }
-    if (!(msg_->flags () & (msg_t::more | msg_t::label)))
+    if (!(msg_->flags () & msg_t::more))
         pipe_->flush ();
     return true;
 }

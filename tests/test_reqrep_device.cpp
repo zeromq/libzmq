@@ -1,6 +1,7 @@
 /*
-    Copyright (c) 2007-2011 iMatix Corporation
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2010-2011 250bpm s.r.o.
+    Copyright (c) 2011 VMware, Inc.
+    Copyright (c) 2010-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -20,11 +21,14 @@
 
 #include <assert.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "../include/zmq.h"
 
 int main (int argc, char *argv [])
 {
+    fprintf (stderr, "test_reqrep_device running...\n");
+
     void *ctx = zmq_init (1);
     assert (ctx);
 
@@ -63,15 +67,11 @@ int main (int argc, char *argv [])
         assert (rc == 0);
         rc = zmq_recvmsg (xrep, &msg, 0);
         assert (rc >= 0);
-        int rcvlabel;
-        size_t sz = sizeof (rcvlabel);
-        rc = zmq_getsockopt (xrep, ZMQ_RCVLABEL, &rcvlabel, &sz);
-        assert (rc == 0);
         int rcvmore;
+        size_t sz = sizeof (rcvmore);
         rc = zmq_getsockopt (xrep, ZMQ_RCVMORE, &rcvmore, &sz);
         assert (rc == 0);
-        rc = zmq_sendmsg (xreq, &msg,
-            (rcvlabel ? ZMQ_SNDLABEL : 0) | (rcvmore ? ZMQ_SNDMORE : 0));
+        rc = zmq_sendmsg (xreq, &msg, rcvmore ? ZMQ_SNDMORE : 0);
         assert (rc >= 0);
     }
 
@@ -80,21 +80,14 @@ int main (int argc, char *argv [])
     rc = zmq_recv (rep, buff, 3, 0);
     assert (rc == 3);
     assert (memcmp (buff, "ABC", 3) == 0);
-    int rcvlabel;
-    size_t sz = sizeof (rcvlabel);
-    rc = zmq_getsockopt (rep, ZMQ_RCVLABEL, &rcvlabel, &sz);
-    assert (rc == 0);
-    assert (!rcvlabel);
     int rcvmore;
+    size_t sz = sizeof (rcvmore);
     rc = zmq_getsockopt (rep, ZMQ_RCVMORE, &rcvmore, &sz);
     assert (rc == 0);
     assert (rcvmore);
     rc = zmq_recv (rep, buff, 3, 0);
     assert (rc == 3);
     assert (memcmp (buff, "DEF", 3) == 0);
-    rc = zmq_getsockopt (rep, ZMQ_RCVLABEL, &rcvlabel, &sz);
-    assert (rc == 0);
-    assert (!rcvlabel);
     rc = zmq_getsockopt (rep, ZMQ_RCVMORE, &rcvmore, &sz);
     assert (rc == 0);
     assert (!rcvmore);
@@ -112,15 +105,10 @@ int main (int argc, char *argv [])
         assert (rc == 0);
         rc = zmq_recvmsg (xreq, &msg, 0);
         assert (rc >= 0);
-        int rcvlabel;
-        size_t sz = sizeof (rcvlabel);
-        rc = zmq_getsockopt (xreq, ZMQ_RCVLABEL, &rcvlabel, &sz);
-        assert (rc == 0);
         int rcvmore;
         rc = zmq_getsockopt (xreq, ZMQ_RCVMORE, &rcvmore, &sz);
         assert (rc == 0);
-        rc = zmq_sendmsg (xrep, &msg,
-            (rcvlabel ? ZMQ_SNDLABEL : 0) | (rcvmore ? ZMQ_SNDMORE : 0));
+        rc = zmq_sendmsg (xrep, &msg, rcvmore ? ZMQ_SNDMORE : 0);
         assert (rc >= 0);
     }
 
@@ -128,18 +116,12 @@ int main (int argc, char *argv [])
     rc = zmq_recv (req, buff, 3, 0);
     assert (rc == 3);
     assert (memcmp (buff, "GHI", 3) == 0);
-    rc = zmq_getsockopt (req, ZMQ_RCVLABEL, &rcvlabel, &sz);
-    assert (rc == 0);
-    assert (!rcvlabel);
     rc = zmq_getsockopt (req, ZMQ_RCVMORE, &rcvmore, &sz);
     assert (rc == 0);
     assert (rcvmore);
     rc = zmq_recv (req, buff, 3, 0);
     assert (rc == 3);
     assert (memcmp (buff, "JKL", 3) == 0);
-    rc = zmq_getsockopt (req, ZMQ_RCVLABEL, &rcvlabel, &sz);
-    assert (rc == 0);
-    assert (!rcvlabel);
     rc = zmq_getsockopt (req, ZMQ_RCVMORE, &rcvmore, &sz);
     assert (rc == 0);
     assert (!rcvmore);
