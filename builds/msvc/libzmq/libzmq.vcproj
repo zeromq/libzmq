@@ -40,7 +40,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=1024"
+				AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=1024 -D_CRT_SECURE_NO_WARNINGS"
 				Optimization="0"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -112,7 +112,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=1024"
+				AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=1024 -D_CRT_SECURE_NO_WARNINGS"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				RuntimeLibrary="2"
@@ -186,7 +186,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=1024"
+				AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=1024 -D_CRT_SECURE_NO_WARNINGS"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				AdditionalIncludeDirectories="../../../../OpenPGM/include"
@@ -395,10 +395,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\router.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\src\select.cpp"
 				>
 			</File>
@@ -440,14 +436,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\trie.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\vtcp_connecter.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\vtcp_listener.cpp"
 				>
 			</File>
 			<File
@@ -677,10 +665,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\router.hpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\src\select.hpp"
 				>
 			</File>
@@ -726,14 +710,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\trie.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\vtcp_connecter.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\vtcp_listener.hpp"
 				>
 			</File>
 			<File
