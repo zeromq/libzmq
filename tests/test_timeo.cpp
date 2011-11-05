@@ -46,7 +46,7 @@ extern "C"
 
 int main (int argc, char *argv [])
 {
-    fprintf (stderr, "test_timeo...\n");
+    fprintf (stderr, "test_timeo running...\n");
 
     void *ctx = zmq_init (1);
     assert (ctx);
