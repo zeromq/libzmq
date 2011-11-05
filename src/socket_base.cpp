@@ -415,6 +415,17 @@ int zmq::socket_base_t::connect (const char *addr_)
         //  Attach local end of the pipe to this socket object.
         attach_pipe (pipes [0]);
 
+        //  If required, send the identity of the local socket to the peer.
+        if (options.send_identity) {
+            msg_t id;
+            rc = id.init_size (options.identity_size);
+            zmq_assert (rc == 0);
+            memcpy (id.data (), options.identity, options.identity_size);
+            id.set_flags (msg_t::identity);
+            bool written = pipes [0]->write (&id);
+            zmq_assert (written);
+        }
+
         //  Attach remote end of the pipe to the peer socket. Note that peer's
         //  seqnum was incremented in find_endpoint function. We don't need it
         //  increased here.
