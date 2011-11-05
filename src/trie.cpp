@@ -219,7 +219,7 @@ void zmq::trie_t::apply_helper (
     }
 
     //  If there are multiple subnodes.
-    for (unsigned char c = 0; c != count; c++) {
+    for (unsigned short c = 0; c != count; c++) {
         (*buff_) [buffsize_] = min + c;
         if (next.table [c])
             next.table [c]->apply_helper (buff_, buffsize_ + 1, maxbuffsize_,
