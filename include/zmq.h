@@ -139,6 +139,8 @@ ZMQ_EXPORT int zmq_msg_move (zmq_msg_t *dest, zmq_msg_t *src);
 ZMQ_EXPORT int zmq_msg_copy (zmq_msg_t *dest, zmq_msg_t *src);
 ZMQ_EXPORT void *zmq_msg_data (zmq_msg_t *msg);
 ZMQ_EXPORT size_t zmq_msg_size (zmq_msg_t *msg);
+ZMQ_EXPORT int zmq_getmsgopt (zmq_msg_t *msg, int option, void *optval,
+    size_t *optvallen);
 
 /******************************************************************************/
 /*  0MQ infrastructure (a.k.a. context) initialisation & termination.         */
@@ -191,6 +193,9 @@ ZMQ_EXPORT int zmq_term (void *context);
 #define ZMQ_RCVTIMEO 27
 #define ZMQ_SNDTIMEO 28
 #define ZMQ_IPV4ONLY 31
+
+/*  Message options                                                           */
+#define ZMQ_MORE 1
 
 /*  Send/recv options.                                                        */
 #define ZMQ_DONTWAIT 1

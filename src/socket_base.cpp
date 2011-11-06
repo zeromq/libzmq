@@ -485,6 +485,9 @@ int zmq::socket_base_t::send (msg_t *msg_, int flags_)
     if (unlikely (rc != 0))
         return -1;
 
+    //  Clear any user-visible flags that are set on the message.
+    msg_->reset_flags (msg_t::more);
+
     //  At this point we impose the flags on the message.
     if (flags_ & ZMQ_SNDMORE)
         msg_->set_flags (msg_t::more);
@@ -857,15 +860,10 @@ void zmq::socket_base_t::terminated (pipe_t *pipe_)
 void zmq::socket_base_t::extract_flags (msg_t *msg_)
 {
     //  Test whether IDENTITY flag is valid for this socket type.
-    if (unlikely (msg_->flags () & msg_t::identity)) {
+    if (unlikely (msg_->flags () & msg_t::identity))
         zmq_assert (options.recv_identity);
-printf ("identity recvd\n");
-    }
   
-
     //  Remove MORE flag.
     rcvmore = msg_->flags () & msg_t::more ? true : false;
-    if (rcvmore)
-        msg_->reset_flags (msg_t::more);
 }
 
