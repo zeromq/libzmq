@@ -29,6 +29,9 @@
 namespace zmq
 {
 
+    class pipe_t;
+    class msg_t;
+
     //  Class manages a set of outbound pipes. It sends each messages to
     //  each of them.
     class dist_t
@@ -39,26 +42,26 @@ namespace zmq
         ~dist_t ();
 
         //  Adds the pipe to the distributor object.
-        void attach (class pipe_t *pipe_);
+        void attach (zmq::pipe_t *pipe_);
 
         //  Activates pipe that have previously reached high watermark.
-        void activated (class pipe_t *pipe_);
+        void activated (zmq::pipe_t *pipe_);
 
         //  Mark the pipe as matching. Subsequent call to send_to_matching
         //  will send message also to this pipe.
-        void match (class pipe_t *pipe_);
+        void match (zmq::pipe_t *pipe_);
 
         //  Mark all pipes as non-matching.
         void unmatch ();
 
         //  Removes the pipe from the distributor object.
-        void terminated (class pipe_t *pipe_);
+        void terminated (zmq::pipe_t *pipe_);
 
         //  Send the message to the matching outbound pipes.
-        int send_to_matching (class msg_t *msg_, int flags_);
+        int send_to_matching (zmq::msg_t *msg_, int flags_);
 
         //  Send the message to all the outbound pipes.
-        int send_to_all (class msg_t *msg_, int flags_);
+        int send_to_all (zmq::msg_t *msg_, int flags_);
 
         bool has_out ();
 
@@ -66,13 +69,13 @@ namespace zmq
 
         //  Write the message to the pipe. Make the pipe inactive if writing
         //  fails. In such a case false is returned.
-        bool write (class pipe_t *pipe_, class msg_t *msg_);
+        bool write (zmq::pipe_t *pipe_, zmq::msg_t *msg_);
 
         //  Put the message to all active pipes.
-        void distribute (class msg_t *msg_, int flags_);
+        void distribute (zmq::msg_t *msg_, int flags_);
 
         //  List of outbound pipes.
-        typedef array_t <class pipe_t, 2> pipes_t;
+        typedef array_t <zmq::pipe_t, 2> pipes_t;
         pipes_t pipes;
 
         //  Number of all the pipes to send the next message to.

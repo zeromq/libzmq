@@ -41,19 +41,22 @@
 namespace zmq
 {
 
+    class io_thread_t;
+    class session_base_t;
+
     class pgm_sender_t : public io_object_t, public i_engine
     {
 
     public:
 
-        pgm_sender_t (class io_thread_t *parent_, const options_t &options_);
+        pgm_sender_t (zmq::io_thread_t *parent_, const options_t &options_);
         ~pgm_sender_t ();
 
         int init (bool udp_encapsulation_, const char *network_);
 
         //  i_engine interface implementation.
-        void plug (class io_thread_t *io_thread_,
-            class session_base_t *session_);
+        void plug (zmq::io_thread_t *io_thread_,
+            zmq::session_base_t *session_);
         void unplug ();
         void terminate ();
         void activate_in ();

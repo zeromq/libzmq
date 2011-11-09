@@ -31,12 +31,15 @@
 namespace zmq
 {
 
+    class io_thread_t;
+    class socket_base_t;
+
     class tcp_listener_t : public own_t, public io_object_t
     {
     public:
 
-        tcp_listener_t (class io_thread_t *io_thread_,
-            class socket_base_t *socket_, const options_t &options_);
+        tcp_listener_t (zmq::io_thread_t *io_thread_,
+            zmq::socket_base_t *socket_, const options_t &options_);
         ~tcp_listener_t ();
 
         //  Set address to listen on.
@@ -72,7 +75,7 @@ namespace zmq
         handle_t handle;
 
         //  Socket the listerner belongs to.
-        class socket_base_t *socket;
+        zmq::socket_base_t *socket;
 
         tcp_listener_t (const tcp_listener_t&);
         const tcp_listener_t &operator = (const tcp_listener_t&);

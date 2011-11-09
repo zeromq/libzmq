@@ -26,12 +26,16 @@
 #include <string>
 
 #include "own.hpp"
-#include "i_engine.hpp"
 #include "io_object.hpp"
 #include "pipe.hpp"
 
 namespace zmq
 {
+
+    class pipe_t;
+    class io_thread_t;
+    class socket_base_t;
+    struct i_engine;
 
     class session_base_t :
         public own_t,
@@ -41,13 +45,13 @@ namespace zmq
     public:
 
         //  Create a session of the particular type.
-        static session_base_t *create (class io_thread_t *io_thread_,
-            bool connect_, class socket_base_t *socket_,
+        static session_base_t *create (zmq::io_thread_t *io_thread_,
+            bool connect_, zmq::socket_base_t *socket_,
             const options_t &options_, const char *protocol_,
             const char *address_);
 
         //  To be used once only, when creating the session.
-        void attach_pipe (class pipe_t *pipe_);
+        void attach_pipe (zmq::pipe_t *pipe_);
 
         //  Following functions are the interface exposed towards the engine.
         virtual int read (msg_t *msg_);
@@ -56,15 +60,15 @@ namespace zmq
         void detach ();
 
         //  i_pipe_events interface implementation.
-        void read_activated (class pipe_t *pipe_);
-        void write_activated (class pipe_t *pipe_);
-        void hiccuped (class pipe_t *pipe_);
-        void terminated (class pipe_t *pipe_);
+        void read_activated (zmq::pipe_t *pipe_);
+        void write_activated (zmq::pipe_t *pipe_);
+        void hiccuped (zmq::pipe_t *pipe_);
+        void terminated (zmq::pipe_t *pipe_);
 
     protected:
 
-        session_base_t (class io_thread_t *io_thread_, bool connect_,
-            class socket_base_t *socket_, const options_t &options_,
+        session_base_t (zmq::io_thread_t *io_thread_, bool connect_,
+            zmq::socket_base_t *socket_, const options_t &options_,
             const char *protocol_, const char *address_);
         ~session_base_t ();
 
@@ -76,7 +80,7 @@ namespace zmq
 
         //  Handlers for incoming commands.
         void process_plug ();
-        void process_attach (struct i_engine *engine_);
+        void process_attach (zmq::i_engine *engine_);
         void process_term (int linger_);
 
         //  i_poll_events handlers.
@@ -94,7 +98,7 @@ namespace zmq
         bool connect;
 
         //  Pipe connecting the session to its socket.
-        class pipe_t *pipe;
+        zmq::pipe_t *pipe;
 
         //  This flag is true if the remainder of the message being processed
         //  is still in the in pipe.
@@ -105,14 +109,14 @@ namespace zmq
         bool pending;
 
         //  The protocol I/O engine connected to the session.
-        struct i_engine *engine;
+        zmq::i_engine *engine;
 
         //  The socket the session belongs to.
-        class socket_base_t *socket;
+        zmq::socket_base_t *socket;
 
         //  I/O thread the session is living in. It will be used to plug in
         //  the engines into the same thread.
-        class io_thread_t *io_thread;
+        zmq::io_thread_t *io_thread;
 
         //  ID of the linger timer
         enum {linger_timer_id = 0x20};

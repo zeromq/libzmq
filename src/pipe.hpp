@@ -34,23 +34,26 @@
 namespace zmq
 {
 
+    class object_t;
+    class pipe_t;
+
     //  Create a pipepair for bi-directional transfer of messages.
     //  First HWM is for messages passed from first pipe to the second pipe.
     //  Second HWM is for messages passed from second pipe to the first pipe.
     //  Delay specifies how the pipe behaves when the peer terminates. If true
     //  pipe receives all the pending messages before terminating, otherwise it
     //  terminates straight away.
-    int pipepair (class object_t *parents_ [2], class pipe_t* pipes_ [2],
+    int pipepair (zmq::object_t *parents_ [2], zmq::pipe_t* pipes_ [2],
         int hwms_ [2], bool delays_ [2]);
 
     struct i_pipe_events
     {
         virtual ~i_pipe_events () {}
 
-        virtual void read_activated (class pipe_t *pipe_) = 0;
-        virtual void write_activated (class pipe_t *pipe_) = 0;
-        virtual void hiccuped (class pipe_t *pipe_) = 0;
-        virtual void terminated (class pipe_t *pipe_) = 0;
+        virtual void read_activated (zmq::pipe_t *pipe_) = 0;
+        virtual void write_activated (zmq::pipe_t *pipe_) = 0;
+        virtual void hiccuped (zmq::pipe_t *pipe_) = 0;
+        virtual void terminated (zmq::pipe_t *pipe_) = 0;
     };
 
     //  Note that pipe can be stored in three different arrays.
@@ -64,8 +67,8 @@ namespace zmq
         public array_item_t <3>
     {
         //  This allows pipepair to create pipe objects.
-        friend int pipepair (class object_t *parents_ [2],
-            class pipe_t* pipes_ [2], int hwms_ [2], bool delays_ [2]);
+        friend int pipepair (zmq::object_t *parents_ [2],
+            zmq::pipe_t* pipes_ [2], int hwms_ [2], bool delays_ [2]);
 
     public:
 

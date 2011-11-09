@@ -35,24 +35,27 @@
 namespace zmq
 {
 
+    class ctx_t;
+    class pipe_t;
+
     //  TODO: This class uses O(n) scheduling. Rewrite it to use O(1) algorithm.
     class xrep_t :
         public socket_base_t
     {
     public:
 
-        xrep_t (class ctx_t *parent_, uint32_t tid_);
+        xrep_t (zmq::ctx_t *parent_, uint32_t tid_);
         ~xrep_t ();
 
         //  Overloads of functions from socket_base_t.
-        void xattach_pipe (class pipe_t *pipe_);
-        int xsend (class msg_t *msg_, int flags_);
-        int xrecv (class msg_t *msg_, int flags_);
+        void xattach_pipe (zmq::pipe_t *pipe_);
+        int xsend (msg_t *msg_, int flags_);
+        int xrecv (msg_t *msg_, int flags_);
         bool xhas_in ();
         bool xhas_out ();
-        void xread_activated (class pipe_t *pipe_);
-        void xwrite_activated (class pipe_t *pipe_);
-        void xterminated (class pipe_t *pipe_);
+        void xread_activated (zmq::pipe_t *pipe_);
+        void xwrite_activated (zmq::pipe_t *pipe_);
+        void xterminated (zmq::pipe_t *pipe_);
 
     protected:
 
@@ -75,7 +78,7 @@ namespace zmq
 
         struct outpipe_t
         {
-            class pipe_t *pipe;
+            zmq::pipe_t *pipe;
             bool active;
         };
 
@@ -84,7 +87,7 @@ namespace zmq
         outpipes_t outpipes;
 
         //  The pipe we are currently writing to.
-        class pipe_t *current_out;
+        zmq::pipe_t *current_out;
 
         //  If true, more outgoing message parts are expected.
         bool more_out;
@@ -101,8 +104,8 @@ namespace zmq
     {
     public:
 
-        xrep_session_t (class io_thread_t *io_thread_, bool connect_,
-            class socket_base_t *socket_, const options_t &options_,
+        xrep_session_t (zmq::io_thread_t *io_thread_, bool connect_,
+            socket_base_t *socket_, const options_t &options_,
             const char *protocol_, const char *address_);
         ~xrep_session_t ();
 

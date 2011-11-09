@@ -32,6 +32,9 @@
 namespace zmq
 {
 
+    class ctx_t;
+    class io_thread_t;
+
     //  Base class for objects forming a part of ownership hierarchy.
     //  It handles initialisation and destruction of such objects.
 
@@ -44,10 +47,10 @@ namespace zmq
 
         //  The object is not living within an I/O thread. It has it's own
         //  thread outside of 0MQ infrastructure.
-        own_t (class ctx_t *parent_, uint32_t tid_);
+        own_t (zmq::ctx_t *parent_, uint32_t tid_);
 
         //  The object is living within I/O thread.
-        own_t (class io_thread_t *io_thread_, const options_t &options_);
+        own_t (zmq::io_thread_t *io_thread_, const options_t &options_);
 
         //  When another owned object wants to send command to this object
         //  it calls this function to let it know it should not shut down

@@ -47,6 +47,8 @@
 namespace zmq
 {
 
+    struct i_poll_events;
+
     //  Implements socket polling mechanism using POSIX.1-2001 select()
     //  function.
 
@@ -60,7 +62,7 @@ namespace zmq
         ~select_t ();
 
         //  "poller" concept.
-        handle_t add_fd (fd_t fd_, struct i_poll_events *events_);
+        handle_t add_fd (fd_t fd_, zmq::i_poll_events *events_);
         void rm_fd (handle_t handle_);
         void set_pollin (handle_t handle_);
         void reset_pollin (handle_t handle_);
@@ -80,7 +82,7 @@ namespace zmq
         struct fd_entry_t
         {
             fd_t fd;
-            struct i_poll_events *events;
+            zmq::i_poll_events *events;
         };
 
         //  Checks if an fd_entry_t is retired.

@@ -36,6 +36,12 @@
 
 namespace zmq
 {
+
+    class object_t;
+    class io_thread_t;
+    class socket_base_t;
+    class reaper_t;
+
     //  Information associated with inproc endpoint. Note that endpoint options
     //  are registered as well so that the peer can access them without a need
     //  for synchronisation, handshaking or similar.
@@ -66,8 +72,8 @@ namespace zmq
         int terminate ();
 
         //  Create and destroy a socket.
-        class socket_base_t *create_socket (int type_);
-        void destroy_socket (class socket_base_t *socket_);
+        zmq::socket_base_t *create_socket (int type_);
+        void destroy_socket (zmq::socket_base_t *socket_);
 
         //  Send command to the destination thread.
         void send_command (uint32_t tid_, const command_t &command_);
@@ -75,14 +81,14 @@ namespace zmq
         //  Returns the I/O thread that is the least busy at the moment.
         //  Affinity specifies which I/O threads are eligible (0 = all).
         //  Returns NULL is no I/O thread is available.
-        class io_thread_t *choose_io_thread (uint64_t affinity_);
+        zmq::io_thread_t *choose_io_thread (uint64_t affinity_);
 
         //  Returns reaper thread object.
-        class object_t *get_reaper ();
+        zmq::object_t *get_reaper ();
 
         //  Management of inproc endpoints.
         int register_endpoint (const char *addr_, endpoint_t &endpoint_);
-        void unregister_endpoints (class socket_base_t *socket_);
+        void unregister_endpoints (zmq::socket_base_t *socket_);
         endpoint_t find_endpoint (const char *addr_);
 
         //  Logging.
@@ -120,10 +126,10 @@ namespace zmq
         mutex_t slot_sync;
 
         //  The reaper thread.
-        class reaper_t *reaper;
+        zmq::reaper_t *reaper;
 
         //  I/O threads.
-        typedef std::vector <class io_thread_t*> io_threads_t;
+        typedef std::vector <zmq::io_thread_t*> io_threads_t;
         io_threads_t io_threads;
 
         //  Array of pointers to mailboxes for both application and I/O threads.
@@ -142,7 +148,7 @@ namespace zmq
 
         //  PUB socket for logging. The socket is shared among all the threads,
         //  thus it is synchronised by a mutex.
-        class socket_base_t *log_socket;
+        zmq::socket_base_t *log_socket;
         mutex_t log_sync;
 
         ctx_t (const ctx_t&);

@@ -29,22 +29,27 @@
 namespace zmq
 {
 
+    class ctx_t;
+    class pipe_t;
+    class msg_t;
+    class io_thread_t;
+
     class push_t :
         public socket_base_t
     {
     public:
 
-        push_t (class ctx_t *parent_, uint32_t tid_);
+        push_t (zmq::ctx_t *parent_, uint32_t tid_);
         ~push_t ();
 
     protected:
 
         //  Overloads of functions from socket_base_t.
-        void xattach_pipe (class pipe_t *pipe_);
-        int xsend (class msg_t *msg_, int flags_);
+        void xattach_pipe (zmq::pipe_t *pipe_);
+        int xsend (zmq::msg_t *msg_, int flags_);
         bool xhas_out ();
-        void xwrite_activated (class pipe_t *pipe_);
-        void xterminated (class pipe_t *pipe_);
+        void xwrite_activated (zmq::pipe_t *pipe_);
+        void xterminated (zmq::pipe_t *pipe_);
 
     private:
 
@@ -59,8 +64,8 @@ namespace zmq
     {
     public:
 
-        push_session_t (class io_thread_t *io_thread_, bool connect_,
-            class socket_base_t *socket_, const options_t &options_,
+        push_session_t (zmq::io_thread_t *io_thread_, bool connect_,
+            socket_base_t *socket_, const options_t &options_,
             const char *protocol_, const char *address_);
         ~push_session_t ();
 

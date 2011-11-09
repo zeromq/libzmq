@@ -29,22 +29,27 @@
 namespace zmq
 {
 
+    class ctx_t;
+    class pipe_t;
+    class msg_t;
+    class io_thread_t;
+
     class pull_t :
         public socket_base_t
     {
     public:
 
-        pull_t (class ctx_t *parent_, uint32_t tid_);
+        pull_t (zmq::ctx_t *parent_, uint32_t tid_);
         ~pull_t ();
 
     protected:
 
         //  Overloads of functions from socket_base_t.
-        void xattach_pipe (class pipe_t *pipe_);
-        int xrecv (class msg_t *msg_, int flags_);
+        void xattach_pipe (zmq::pipe_t *pipe_);
+        int xrecv (zmq::msg_t *msg_, int flags_);
         bool xhas_in ();
-        void xread_activated (class pipe_t *pipe_);
-        void xterminated (class pipe_t *pipe_);
+        void xread_activated (zmq::pipe_t *pipe_);
+        void xterminated (zmq::pipe_t *pipe_);
 
     private:
 
@@ -60,8 +65,8 @@ namespace zmq
     {
     public:
 
-        pull_session_t (class io_thread_t *io_thread_, bool connect_,
-            class socket_base_t *socket_, const options_t &options_,
+        pull_session_t (zmq::io_thread_t *io_thread_, bool connect_,
+            socket_base_t *socket_, const options_t &options_,
             const char *protocol_, const char *address_);
         ~pull_session_t ();
 

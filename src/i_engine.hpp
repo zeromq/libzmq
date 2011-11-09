@@ -25,6 +25,8 @@
 namespace zmq
 {
 
+    class io_thread_t;
+
     //  Abstract interface to be implemented by various engines.
 
     struct i_engine
@@ -32,7 +34,7 @@ namespace zmq
         virtual ~i_engine () {}
 
         //  Plug the engine to the session.
-        virtual void plug (class io_thread_t *io_thread_,
+        virtual void plug (zmq::io_thread_t *io_thread_,
             class session_base_t *session_) = 0;
 
         //  Unplug the engine from the session.
