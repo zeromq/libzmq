@@ -25,11 +25,13 @@ AC_SUBST(PACKAGE_VERSION)
 #
 # Changes:
 #
-# ZeroMQ versions prior to 2.1.0 use 0.0.0 ("unstable")
-# ZeroMQ version 2.1.0: 1:0:0
+# ZeroMQ versions prior to 2.1.0 use 0:0:0 (undefined)
+# ZeroMQ versions 2.1.x: 1:0:0 (ABI version 1)
+# ZeroMQ version 3.0: 2:0:0 (ABI version 2)
+# ZeroMQ version 3.1: 3:0:0 (ABI version 3)
 #
 # libzmq -version-info current:revision:age
-LTVER="1:0:0"
+LTVER="3:0:0"
 AC_SUBST(LTVER)
 
 # Take a copy of original flags
