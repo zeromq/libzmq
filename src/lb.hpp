@@ -48,7 +48,7 @@ namespace zmq
     private:
 
         //  List of outbound pipes.
-        typedef array_t <class pipe_t, 2> pipes_t;
+        typedef array_t <pipe_t, 2> pipes_t;
         pipes_t pipes;
 
         //  Number of active pipes. All the active pipes are located at the

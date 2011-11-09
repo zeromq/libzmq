@@ -33,6 +33,8 @@
 namespace zmq
 {
 
+    class ctx_t;
+
     //  Generic part of the I/O thread. Polling-mechanism-specific features
     //  are implemented in separate "polling objects".
 
@@ -40,7 +42,7 @@ namespace zmq
     {
     public:
 
-        io_thread_t (class ctx_t *ctx_, uint32_t tid_);
+        io_thread_t (zmq::ctx_t *ctx_, uint32_t tid_);
 
         //  Clean-up. If the thread was started, it's neccessary to call 'stop'
         //  before invoking destructor. Otherwise the destructor would hang up.

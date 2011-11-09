@@ -27,15 +27,20 @@
 namespace zmq
 {
 
+    class ctx_t;
+    class io_thread_t;
+    class socket_base_t;
+    class msg_t;
+
     class pub_t : public xpub_t
     {
     public:
 
-        pub_t (class ctx_t *parent_, uint32_t tid_);
+        pub_t (zmq::ctx_t *parent_, uint32_t tid_);
         ~pub_t ();
 
         //  Implementations of virtual functions from socket_base_t.
-        int xrecv (class msg_t *msg_, int flags_);
+        int xrecv (zmq::msg_t *msg_, int flags_);
         bool xhas_in ();
 
     private:
@@ -48,8 +53,8 @@ namespace zmq
     {
     public:
 
-        pub_session_t (class io_thread_t *io_thread_, bool connect_,
-            class socket_base_t *socket_, const options_t &options_,
+        pub_session_t (zmq::io_thread_t *io_thread_, bool connect_,
+            zmq::socket_base_t *socket_, const options_t &options_,
             const char *protocol_, const char *address_);
         ~pub_session_t ();
 

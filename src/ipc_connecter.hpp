@@ -34,14 +34,17 @@
 namespace zmq
 {
 
+    class io_thread_t;
+    class session_base_t;
+
     class ipc_connecter_t : public own_t, public io_object_t
     {
     public:
 
         //  If 'delay' is true connecter first waits for a while, then starts
         //  connection process.
-        ipc_connecter_t (class io_thread_t *io_thread_,
-            class session_base_t *session_, const options_t &options_,
+        ipc_connecter_t (zmq::io_thread_t *io_thread_,
+            zmq::session_base_t *session_, const options_t &options_,
             const char *address_, bool delay_);
         ~ipc_connecter_t ();
 
@@ -101,7 +104,7 @@ namespace zmq
         bool wait;
 
         //  Reference to the session we belong to.
-        class session_base_t *session;
+        zmq::session_base_t *session;
 
         //  Current reconnect ivl, updated for backoff strategy
         int current_reconnect_ivl;

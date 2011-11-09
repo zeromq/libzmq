@@ -38,6 +38,10 @@
 namespace zmq
 {
 
+    class ctx_t;
+    class msg_t;
+    class pipe_t;
+
     class socket_base_t :
         public own_t,
         public array_item_t <>,
@@ -52,7 +56,7 @@ namespace zmq
         bool check_tag ();
 
         //  Create a socket of a specified type.
-        static socket_base_t *create (int type_, class ctx_t *parent_,
+        static socket_base_t *create (int type_, zmq::ctx_t *parent_,
             uint32_t tid_);
 
         //  Returns the mailbox associated with this socket.
@@ -67,8 +71,8 @@ namespace zmq
         int getsockopt (int option_, void *optval_, size_t *optvallen_);
         int bind (const char *addr_);
         int connect (const char *addr_);
-        int send (class msg_t *msg_, int flags_);
-        int recv (class msg_t *msg_, int flags_);
+        int send (zmq::msg_t *msg_, int flags_);
+        int recv (zmq::msg_t *msg_, int flags_);
         int close ();
 
         //  These functions are used by the polling mechanism to determine
@@ -94,12 +98,12 @@ namespace zmq
 
     protected:
 
-        socket_base_t (class ctx_t *parent_, uint32_t tid_);
+        socket_base_t (zmq::ctx_t *parent_, uint32_t tid_);
         virtual ~socket_base_t ();
 
         //  Concrete algorithms for the x- methods are to be defined by
         //  individual socket types.
-        virtual void xattach_pipe (class pipe_t *pipe_) = 0;
+        virtual void xattach_pipe (zmq::pipe_t *pipe_) = 0;
 
         //  The default implementation assumes there are no specific socket
         //  options for the particular socket type. If not so, overload this
@@ -109,11 +113,11 @@ namespace zmq
 
         //  The default implementation assumes that send is not supported.
         virtual bool xhas_out ();
-        virtual int xsend (class msg_t *msg_, int flags_);
+        virtual int xsend (zmq::msg_t *msg_, int flags_);
 
         //  The default implementation assumes that recv in not supported.
         virtual bool xhas_in ();
-        virtual int xrecv (class msg_t *msg_, int flags_);
+        virtual int xrecv (zmq::msg_t *msg_, int flags_);
 
         //  i_pipe_events will be forwarded to these functions.
         virtual void xread_activated (pipe_t *pipe_);
@@ -154,7 +158,7 @@ namespace zmq
         int check_protocol (const std::string &protocol_);
 
         //  Register the pipe with this socket.
-        void attach_pipe (class pipe_t *pipe_);
+        void attach_pipe (zmq::pipe_t *pipe_);
 
         //  Processes commands sent to this socket (if any). If timeout is -1,
         //  returns only after at least one command was processed.
@@ -164,7 +168,7 @@ namespace zmq
 
         //  Handlers for incoming commands.
         void process_stop ();
-        void process_bind (class pipe_t *pipe_);
+        void process_bind (zmq::pipe_t *pipe_);
         void process_unplug ();
         void process_term (int linger_);
 

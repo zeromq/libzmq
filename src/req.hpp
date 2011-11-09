@@ -29,16 +29,21 @@
 namespace zmq
 {
 
+    class ctx_t;
+    class msg_t;
+    class io_thread_t;
+    class socket_base_t;
+
     class req_t : public xreq_t
     {
     public:
 
-        req_t (class ctx_t *parent_, uint32_t tid_);
+        req_t (zmq::ctx_t *parent_, uint32_t tid_);
         ~req_t ();
 
         //  Overloads of functions from socket_base_t.
-        int xsend (class msg_t *msg_, int flags_);
-        int xrecv (class msg_t *msg_, int flags_);
+        int xsend (zmq::msg_t *msg_, int flags_);
+        int xrecv (zmq::msg_t *msg_, int flags_);
         bool xhas_in ();
         bool xhas_out ();
 
@@ -60,8 +65,8 @@ namespace zmq
     {
     public:
 
-        req_session_t (class io_thread_t *io_thread_, bool connect_,
-            class socket_base_t *socket_, const options_t &options_,
+        req_session_t (zmq::io_thread_t *io_thread_, bool connect_,
+            zmq::socket_base_t *socket_, const options_t &options_,
             const char *protocol_, const char *address_);
         ~req_session_t ();
 

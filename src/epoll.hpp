@@ -36,6 +36,8 @@
 namespace zmq
 {
 
+    struct i_poll_events;
+
     //  This class implements socket polling mechanism using the Linux-specific
     //  epoll mechanism.
 
@@ -49,7 +51,7 @@ namespace zmq
         ~epoll_t ();
 
         //  "poller" concept.
-        handle_t add_fd (fd_t fd_, struct i_poll_events *events_);
+        handle_t add_fd (fd_t fd_, zmq::i_poll_events *events_);
         void rm_fd (handle_t handle_);
         void set_pollin (handle_t handle_);
         void reset_pollin (handle_t handle_);
@@ -73,7 +75,7 @@ namespace zmq
         {
             fd_t fd;
             epoll_event ev;
-            struct i_poll_events *events;
+            zmq::i_poll_events *events;
         };
 
         //  List of retired event sources.

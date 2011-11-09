@@ -29,6 +29,8 @@
 namespace zmq
 {
 
+    class pipe_t;
+
     //  Multi-trie. Each node in the trie is a set of pointers to pipes.
 
     class mtrie_t
@@ -40,35 +42,35 @@ namespace zmq
 
         //  Add key to the trie. Returns true if it's a new subscription
         //  rather than a duplicate.
-        bool add (unsigned char *prefix_, size_t size_, class pipe_t *pipe_);
+        bool add (unsigned char *prefix_, size_t size_, zmq::pipe_t *pipe_);
 
         //  Remove all subscriptions for a specific peer from the trie.
         //  If there are no subscriptions left on some topics, invoke the
         //  supplied callback function.
-        void rm (class pipe_t *pipe_,
+        void rm (zmq::pipe_t *pipe_,
             void (*func_) (unsigned char *data_, size_t size_, void *arg_),
             void *arg_);
 
         //  Remove specific subscription from the trie. Return true is it was
         //  actually removed rather than de-duplicated.
-        bool rm (unsigned char *prefix_, size_t size_, class pipe_t *pipe_);
+        bool rm (unsigned char *prefix_, size_t size_, zmq::pipe_t *pipe_);
 
         //  Signal all the matching pipes.
         void match (unsigned char *data_, size_t size_,
-            void (*func_) (class pipe_t *pipe_, void *arg_), void *arg_);
+            void (*func_) (zmq::pipe_t *pipe_, void *arg_), void *arg_);
 
     private:
 
         bool add_helper (unsigned char *prefix_, size_t size_,
-            class pipe_t *pipe_);
-        void rm_helper (class pipe_t *pipe_, unsigned char **buff_,
+            zmq::pipe_t *pipe_);
+        void rm_helper (zmq::pipe_t *pipe_, unsigned char **buff_,
             size_t buffsize_, size_t maxbuffsize_,
             void (*func_) (unsigned char *data_, size_t size_, void *arg_),
             void *arg_);
         bool rm_helper (unsigned char *prefix_, size_t size_,
-            class pipe_t *pipe_);
+            zmq::pipe_t *pipe_);
 
-        typedef std::set <class pipe_t*> pipes_t;
+        typedef std::set <zmq::pipe_t*> pipes_t;
         pipes_t pipes;
 
         unsigned char min;

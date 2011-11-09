@@ -33,23 +33,28 @@
 namespace zmq
 {
 
+    class ctx_t;
+    class msg_t;
+    class pipe_t;
+    class io_thread_t;
+
     class xpub_t :
         public socket_base_t
     {
     public:
 
-        xpub_t (class ctx_t *parent_, uint32_t tid_);
+        xpub_t (zmq::ctx_t *parent_, uint32_t tid_);
         ~xpub_t ();
 
         //  Implementations of virtual functions from socket_base_t.
-        void xattach_pipe (class pipe_t *pipe_);
-        int xsend (class msg_t *msg_, int flags_);
+        void xattach_pipe (zmq::pipe_t *pipe_);
+        int xsend (zmq::msg_t *msg_, int flags_);
         bool xhas_out ();
-        int xrecv (class msg_t *msg_, int flags_);
+        int xrecv (zmq::msg_t *msg_, int flags_);
         bool xhas_in ();
-        void xread_activated (class pipe_t *pipe_);
-        void xwrite_activated (class pipe_t *pipe_);
-        void xterminated (class pipe_t *pipe_);
+        void xread_activated (zmq::pipe_t *pipe_);
+        void xwrite_activated (zmq::pipe_t *pipe_);
+        void xterminated (zmq::pipe_t *pipe_);
 
     private:
 
@@ -59,7 +64,7 @@ namespace zmq
             void *arg_);
 
         //  Function to be applied to each matching pipes.
-        static void mark_as_matching (class pipe_t *pipe_, void *arg_);
+        static void mark_as_matching (zmq::pipe_t *pipe_, void *arg_);
 
         //  List of all subscriptions mapped to corresponding pipes.
         mtrie_t subscriptions;
@@ -84,8 +89,8 @@ namespace zmq
     {
     public:
 
-        xpub_session_t (class io_thread_t *io_thread_, bool connect_,
-            class socket_base_t *socket_, const options_t &options_,
+        xpub_session_t (zmq::io_thread_t *io_thread_, bool connect_,
+            socket_base_t *socket_, const options_t &options_,
             const char *protocol_, const char *address_);
         ~xpub_session_t ();
 

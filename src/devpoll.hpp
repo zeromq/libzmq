@@ -35,6 +35,8 @@
 namespace zmq
 {
 
+    struct i_poll_events;
+
     //  Implements socket polling mechanism using the "/dev/poll" interface.
 
     class devpoll_t : public poller_base_t
@@ -47,7 +49,7 @@ namespace zmq
         ~devpoll_t ();
 
         //  "poller" concept.
-        handle_t add_fd (fd_t fd_, struct i_poll_events *events_);
+        handle_t add_fd (fd_t fd_, zmq::i_poll_events *events_);
         void rm_fd (handle_t handle_);
         void set_pollin (handle_t handle_);
         void reset_pollin (handle_t handle_);
@@ -70,7 +72,7 @@ namespace zmq
         struct fd_entry_t
         {
             short events;
-            struct i_poll_events *reactor;
+            zmq::i_poll_events *reactor;
             bool valid;
             bool accepted;
         };
