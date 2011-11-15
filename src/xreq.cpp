@@ -86,7 +86,7 @@ bool zmq::xreq_t::xhas_in ()
         return true;
 
     //  Try to read the next message to the pre-fetch buffer.
-    int rc = xrecv (&prefetched_msg, ZMQ_DONTWAIT);
+    int rc = xreq_t::xrecv (&prefetched_msg, ZMQ_DONTWAIT);
     if (rc != 0 && errno == EAGAIN)
         return false;
     zmq_assert (rc == 0);
