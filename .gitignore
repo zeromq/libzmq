@@ -1,3 +1,4 @@
+syntax: glob # for hg-git users
 Makefile
 Makefile.in
 configure
