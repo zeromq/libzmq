@@ -29,11 +29,11 @@ if BUILD_DOC
 SUFFIXES=.html .txt .xml .3 .7
 
 .txt.html:
-	asciidoc -d manpage -b xhtml11 -f asciidoc.conf \
-		-azmq_version=@PACKAGE_VERSION@ $<
+	asciidoc -d manpage -b xhtml11 -f $(srcdir)/asciidoc.conf \
+		-azmq_version=@PACKAGE_VERSION@ -o$@ $<
 .txt.xml:
-	asciidoc -d manpage -b docbook -f asciidoc.conf \
-		-azmq_version=@PACKAGE_VERSION@ $<
+	asciidoc -d manpage -b docbook -f $(srcdir)/asciidoc.conf \
+		-azmq_version=@PACKAGE_VERSION@ -o$@ $<
 .xml.1:
 	xmlto man $<
 .xml.3:
