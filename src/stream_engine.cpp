@@ -360,7 +360,7 @@ int zmq::stream_engine_t::read (void *data_, size_t size_)
 
     //  Signalise peer failure.
     if (nbytes == -1 && (errno == ECONNRESET || errno == ECONNREFUSED ||
-          errno == ETIMEDOUT || errno == EHOSTUNREACH))
+          errno == ETIMEDOUT || errno == EHOSTUNREACH || errno == ENOTCONN))
         return -1;
 
     errno_assert (nbytes != -1);
