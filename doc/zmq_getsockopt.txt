@@ -331,7 +331,7 @@ ZMQ_IPV4ONLY: Retrieve IPv4-only socket override status
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Retrieve the underlying native socket type.  A value of `1` will use IPv4
-sockets, while the default value of `0` will use IPv6 sockets. An IPv6 socket
+sockets, while the value of `0` will use IPv6 sockets. An IPv6 socket
 lets applications connect to and accept connections from both IPv4 and IPv6
 hosts.
 

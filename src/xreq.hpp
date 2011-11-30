@@ -62,6 +62,12 @@ namespace zmq
         fq_t fq;
         lb_t lb;
 
+        //  Have we prefetched a message.
+        bool prefetched;
+
+        //  Holds the prefetched message.
+        msg_t prefetched_msg;
+
         xreq_t (const xreq_t&);
         const xreq_t &operator = (const xreq_t&);
     };
