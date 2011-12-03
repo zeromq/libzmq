@@ -64,6 +64,7 @@ LIBZMQ_WITH_GCOV
 
 # Checks for libraries.
 AC_CHECK_LIB([pthread], [pthread_create])
+AC_CHECK_LIB([rt], [clock_gettime])
 
 # Set pedantic
 libzmq_pedantic="yes"
@@ -91,7 +92,6 @@ case "${host_os}" in
             CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
         fi
         AC_DEFINE(ZMQ_HAVE_LINUX, 1, [Have Linux OS])
-        AC_CHECK_LIB(rt, clock_gettime)
 
         case "${host_os}" in
             *android*)
