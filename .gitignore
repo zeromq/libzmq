@@ -50,6 +50,7 @@ doc/*.xml
 src/libzmq.pc
 bin/
 lib/
+obj/
 builds/msvc/*.suo
 builds/msvc/*/*.user
 builds/msvc/*/Debug
