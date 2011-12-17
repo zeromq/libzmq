@@ -67,8 +67,12 @@ namespace zmq
         //  Fair queueing object for inbound pipes.
         fq_t fq;
 
-        //  Have we prefetched a message.
-        bool prefetched;
+        //  This value is either 0 (nothing is prefetched), 1 (only message body
+        //  is prefetched) or 2 (both identity and message body are prefetched).
+        int prefetched;
+
+        //  Holds the prefetched identity.
+        blob_t prefetched_id;
 
         //  Holds the prefetched message.
         msg_t prefetched_msg;
