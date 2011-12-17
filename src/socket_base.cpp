@@ -475,7 +475,7 @@ int zmq::socket_base_t::send (msg_t *msg_, int flags_)
     }
 
     //  Check whether message passed to the function is valid.
-    if (unlikely (!msg_->check ())) {
+    if (unlikely (!msg_ || !msg_->check ())) {
         errno = EFAULT;
         return -1;
     }
@@ -541,7 +541,7 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
     }
 
     //  Check whether message passed to the function is valid.
-    if (unlikely (!msg_->check ())) {
+    if (unlikely (!msg_ || !msg_->check ())) {
         errno = EFAULT;
         return -1;
     }
