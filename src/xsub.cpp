@@ -30,6 +30,11 @@ zmq::xsub_t::xsub_t (class ctx_t *parent_, uint32_t tid_) :
     more (false)
 {
     options.type = ZMQ_XSUB;
+
+    //  When socket is being closed down we don't want to wait till pending
+    //  subscription commands are sent to the wire.
+    options.linger = 0;
+
     int rc = message.init ();
     errno_assert (rc == 0);
 }
