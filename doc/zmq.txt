@@ -200,7 +200,7 @@ of the 0MQ community and pointers can be found on the 0MQ website.
 AUTHORS
 -------
 The 0MQ documentation was written by Martin Sustrik <sustrik@250bpm.com> and
-Martin Lucina <mato@kotelna.sk>.
+Martin Lucina <martin@lucina.net>.
 
 
 RESOURCES
