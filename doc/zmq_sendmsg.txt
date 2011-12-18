@@ -14,7 +14,7 @@ SYNOPSIS
 
 DESCRIPTION
 -----------
-The _zmq_send()_ function shall queue the message referenced by the 'msg'
+The _zmq_sendmsg()_ function shall queue the message referenced by the 'msg'
 argument to be sent to the socket referenced by the 'socket' argument.  The
 'flags' argument is a combination of the flags defined below:
 
@@ -117,5 +117,5 @@ linkzmq:zmq[7]
 AUTHORS
 -------
 +This man page was written by Martin Sustrik <sustrik@250bpm.com>, Martin
-+Lucina <mato@kotelna.sk> and Pieter Hintjens <ph@imatix.com>.
++Lucina <martin@lucina.net> and Pieter Hintjens <ph@imatix.com>.
 

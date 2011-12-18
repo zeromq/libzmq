@@ -1,610 +1,153 @@
-0MQ version 2.1.0 (Beta), released on 2010/12/01
+OMQ version 3.1.0 (beta), released on 2011/12/18
 ================================================
 
-New functionality
------------------
+General information
+-------------------
 
-* New semantics for zmq_close () and zmq_term () ensure that all messages
-  are sent before the application terminates. This behaviour may be
-  modified using the new ZMQ_LINGER socket option; for further details
-  refer to the reference manual.
+Based on community consensus, the 0MQ 3.1.x release reverts a number of
+features introduced in version 3.0. The major reason for these changes is
+improving backward compatibility with 0MQ 2.1.x.
 
-* The new socket options ZMQ_FD and ZMQ_EVENTS provide a way to integrate
-  0MQ sockets into existing poll/event loops.
+Development of the 0MQ 3.0.x series will be discontinued, and users are
+encouraged to upgrade to 3.1.
 
-* Sockets may now be migrated between OS threads, as long as the
-  application ensures that a full memory barrier is issued.
+The 0MQ 3.1.x releases use ABI version 3.
 
-* The 0MQ ABI exported by libzmq.so has been formalised; DSO symbol
-  visibility is used on supported platforms to ensure that only public ABI
-  symbols are exported. The library ABI version has been set to 1.0.0 for
-  this release.
+Reverted functionality
+----------------------
 
-* OpenPGM has been updated to version 5.0.92. This version no longer
-  depends on GLIB, and integration with 0MQ should be much improved.
+The following functionality present in 0MQ 3.0 has been reverted:
 
-* zmq_poll() now honors timeouts precisely, and no longer returns if no
-  events are signaled.
+* Wire format changes. The 0MQ 3.1 wire format is identical to that of 0MQ
+  2.1.
 
-* Blocking calls now return EINTR if interrupted by the delivery of a
-  signal; this also means that language bindings which previously had
-  problems with handling SIGINT/^C should now work correctly.
+* LABELs and COMMANDs have been removed.
 
-* The ZMQ_TYPE socket option was added; this allows retrieval of the socket
-  type after creation.
+* Explicit identies are re-introduced, however they can be used only for
+  explicit routing, not for durable sockets.
 
-* Added a ZMQ_VERSION macro to zmq.h for compile-time API version
-  detection.
-
-* The ZMQ_RECONNECT_IVL and ZMQ_BACKLOG socket options have been added.
-
-Bug fixes
----------
-
-* Forwarder and streamer devices now handle multi-part messages correctly.
-
-* 0MQ no longer asserts when malformed data is received on the wire.
-
-* 0MQ internal timers now work correctly if the TSC jumps backwards.
-
-* The internal signalling functionality (mailbox) has been improved
-  to automatically resize socket buffers on POSIX systems.
-
-* Many more.
-
-Building
---------
-
-* 0MQ now builds correctly with many more non-GCC compilers (Sun Studio,
-  Intel ICC, CLang).
-
-* AIX and HP-UX builds should work now.
-
-* FD_SETSIZE has been set to 1024 by default for MSVC builds.
-
-* Windows builds using GCC (MinGW) now work out of the box.
-
-Distribution
-------------
-
-* A simple framework for regression tests has been added, along with a few
-  basic self-tests. The tests can be run using "make check".
-
-
-0MQ version 2.0.10 (Stable), released on 2010/10/15
-===================================================
-
-New functionality
------------------
-* Upgrade OpenPGM to 2.1.28~dfsg (Martin Lucina)
-* Added a ZMQ_VERSION macro to zmq.h for compile-time API version
-  detection (Martin Sustrik, Gonzalo Diethelm, Martin Lucina)
-
-Bug fixes:
-----------
-* Fix memory leak under Windows (Taras Shpot)
-* Makefile.am: Add missing files to distribution, improve
-  maintainer-clean (Martin Lucina)
-* Add support for RHEL6 in the spec file (Sebastian Otaegui)
-* configure.in: Do not patch libtool rpath handling (Martin Lucina)
-* Fixing the Red Hat packaging (Martin Sustrik)
-* zmq_msg_move called on uninitialised message in xrep_t::xrecv -- fixed
-  (Max Wolf)
-* crash when closing an ypipe -- fixed (Dhammika Pathirana)
-* REQ socket can die when reply is delivered on wrong unerlying
-  connection -- fixed (Martin Sustrik)
-* if TSC jumps backwards (in case of migration to a different CPU core)
-  latency peak may occur -- fixed (Martin Sustrik)
-* values of RATE, RECOVERY_IVL and SWAP options are checked for negative
-  values (Martin Sustrik)
-
-
-0MQ version 2.0.9 (Stable), released on 2010/09/04
-==================================================
-
-Bug fixes
----------
-
-* Broken device numbering fixed.
-* HP-UX/AIX build fixed.
-* Handling multi-part messages in forwarder and streamer devices fixed.
-* Couple of minor bug fixes, see the ChangeLog for details.
-
-
-0MQ version 2.0.8 (Stable), released on 2010/08/25
-==================================================
+* The ZMQ_ROUTER and ZMQ_DEALER socket types are once again aliases for
+  ZMQ_XREQ and ZMQ_XREP.
 
 New functionality
 -----------------
 
-* The ZMQ_SWAP functionality has now been implemented for all socket types.
+* The zmq_getmsgopt() function has been introduced.
 
-Bug fixes
----------
+* Experimental IPv6 support has been introduced. This is disabled by
+  default, see the zmq_setsockopt() documentation for enabling it.
 
-* Many bug fixes (about 30), see the ChangeLog for details.
-
-
-Documentation
+Other changes
 -------------
 
-* zmq_device(3) is now documented and describes the built-in devices.
+* The default HWM for all socket types has been set to 1000.
 
-* The ZMQ_XREQ and ZMQ_XREP socket types are now documented in zmq_socket(3).
-
-
-Interface
----------
-
-* By popular demand, the zmq_stopwatch_start, zmq_stopwatch_stop and zmq_sleep
-  functions have been added back into distribution.  This API is now in a
-  separate include file, zmq_utils.h.
-
-* The ZMQ_UPSTREAM and ZMQ_DOWNSTREAM socket types have been renamed to
-  ZMQ_PULL and ZMQ_PUSH for clarity.  The old names are still defined for
-  compatibility reasons and will be removed in a future version.
-
-* API calls that expect non-null parameters now return -1 and set errno to
-  EFAULT if null parameters are passed.
-
-
-Thanks to
----------
-
-Everyone.
-
-
-0MQ version 2.0.7 (Beta), released on 2010/06/04
-================================================
-
-
-Distribution
-------------
-
-* The core documentation has been updated with many clarifications, especially
-  in the description of the functionality provided by the different socket
-  types.
-
-* The version of OpenPGM bundled with 0MQ has been updated to the 2.1.26 release.
-
+* Many bug fixes.
 
 Building
 --------
 
-* GCC-isms have been removed from the code and build system across the board;
-  0MQ should now build with no issues when using compilers other than GCC.
+* The dependency on libuuid has been removed.
 
+* Support for building on Android, and with MSVC 10 has been added.
 
-Interface
----------
-
-* The zmq_init() function now has only a single parameter; the number of 0MQ
-  I/O threads to create in the context being initialised. The app_threads and
-  flags parameters have been removed.
-
-* The ZMQ_P2P socket type has been renamed to ZMQ_PAIR.
-
-* The ZMQ_LWM socket option has been removed; the low water mark for a socket
-  is now computed automatically by 0MQ.
-
-* A zmq_getsockopt() function has been added.
-
+0MQ version 3.0.0 (alpha), released on 2011/07/12
+=================================================
 
 New functionality
 -----------------
 
-* Multi-hop request/reply is fully supported. This feature allows the insertion
-  of device(s) between ZMQ_REQ and ZMQ_REP sockets thus enabling scenarios
-  such as multi-threaded server, shared service queue, and other interesting
-  messaging topologies. The entire infrastructure is transparent to
-  applications.
+* POSIX-compliant zmq_send and zmq_recv introduced (uses raw buffer
+  instead of message object).
 
-* Multi-part messages.  A 0MQ message may now be composed of 1 or more message
-  parts; each message part is an independent zmq_msg_t in its own right. 0MQ
-  ensures atomic delivery of messages; peers shall receive either all message
-  parts of a message or none at all.
+* ZMQ_MULTICAST_HOPS socket option added. Sets the appropriate field in
+  IP headers of PGM packets.
 
-  This feature allows for seamless zero-copy message passing when data are
-  scattered in memory, and is an important building block for multi-hop
-  messaging topologies.
+* Subscription forwarding. Instead of filtering on consumer, the
+  subscription is moved as far as possible towards the publisher and
+  filtering is done there.
 
-* Context termination and ETERM. The zmq_term() function has been
-  changed to interrupt any blocking operations on open sockets, causing them to
-  return the newly defined ETERM error code. This allows for orderly
-  application termination, especially when multiple application threads are
-  involved.
+* ZMQ_XPUB, ZMQ_XSUB introduced. Allow to create subscription-
+  forwarding-friendly intermediate devices.
 
+* Add sockopt ZMQ_RCVTIMEO/ZMQ_SNDTIMEO. Allow to set timeout for
+  blocking send/recv calls.
 
-0MQ version 2.0.6 (Beta), released on 2010/03/16
-================================================
+* A new LABEL flag was added to the wire format. The flag distinguishes
+  message parts used by 0MQ (labels) from user payload message parts.
 
+* There is a new wire format for the REQ/REP pattern. First, the empty
+  bottom-of-the-stack message part is not needed any more, the LABEL
+  flag is used instead. Secondly, peer IDs are 32-bit integers rather
+  than 17-byte UUIDs.
 
-Distribution
+* The REQ socket now drops duplicate replies.
+
+* Outstanding requests & replies associated with a client are dropped
+  when the clients dies. This is a performance optimisation.
+
+* Introduced ZMQ_ROUTER and ZMQ_DEALER sockets. These mimic the
+  functionality of ZMQ_ROUTER and ZMQ_DEALER in 0MQ/2.1.x. Guarantees
+  backward compatibility for exsiting code.
+
+* Removed dependency on OS socketpair buffer size. No more asserts in
+  mailbox.cpp because of low system limit of sockepair buffer size.
+
+API improvements
+----------------
+
+* Obsolete constants ZMQ_UPSTREAM and ZMQ_DOWNSTREAM removed. Use
+  ZMQ_PUSH and ZMQ_PULL instead.
+
+* Timeout in zmq_poll is in milliseconds instead of microseconds. This
+  makes zmq_poll() compliant with POSIX poll()
+
+* ZMQ_MCAST_LOOP removed. There's no support for multicast over
+  loopback any more. Use IPC or TCP isntead.
+
+* zmq_send/zmq_recv was renamed zmq_sendmsg/zmq_recvmsg.
+
+* ZMQ_RECOVERY_IVL and ZMQ_RECOVERY_IVL_MSEC reconciled. The new option
+  is named ZMQ_RECOVERY_IVL and the unit is milliseconds.
+
+* Option types changed. Most of the numeric types are now represented
+  as 'int'.
+
+* ZMQ_HWM split into ZMQ_SNDHWM and ZMQ_RCVHWM. This makes it possible
+  to control message flow separately for each direction.
+
+* ZMQ_NOBLOCK renamed ZMQ_DONTWAIT. That makes it POSIX-compliant.
+
+Less is More
 ------------
 
-* The 0MQ core distribution has been slimmed down to include only the core
-  C library and C++ language binding. Pointers to other language bindings can
-  be found on the website. Examples have also been removed from the
-  core and can be found elsewhere. Performance tests specific to a language
-  binding can be found bundled with that language binding.
+* Pre-built devices and zmq_device() removed. Should be made available
+  as a separate project(s).
 
-* The 0MQ reference manual supplied with the distribution has been
-  extensively rewritten, and is now provided in HTML as well as UNIX
-  manpage format.
+* ZMQ_SWAP removed. Writing data to disk should be done on top of 0MQ,
+  on inside it.
 
-* Commencing with this release, a 0MQ version numbering scheme has been
-  introduced. The numbering scheme used is MAJOR.MINOR.PATCH. The "Beta" or
-  "Stable" label is informative only and does not constitute
-  part of the library version number, therefore this release is numbered
-  2.0.6 as the sixth release of 2.0.
+* C++ binding removed from the core. Now it's a separate project, same
+  as any other binding.
 
-* The version of OpenPGM bundled with 0MQ has been updated to the stable
-  2.0.24 release.
+Bug fixes
+---------
 
+* Many.
 
 Building
 --------
 
-* Many portability fixes, including support for new platforms: FreeBSD,
-  NetBSD, HP-UX and Cygwin.
+* Make pkg-config dependency conditional.
 
-* Invocation of configure has been simplified, all functionality is now
-  built by default with the exception of OpenPGM.
+Distribution
+------------
 
-
-Interface
----------
-
-* The udp transport has been renamed to epgm to avoid confusion with
-  unreliable unicast.
-
-* A ZMQ_POLLERR constant has been added to allow for polling on errors on
-  Berkeley sockets with zmq_poll().
-
-* The zmq_version() function has been introduced and returns the version
-  number of the 0MQ library.
-
-* The zmq_flush() function and ZMQ_NOFLUSH flag of zmq_send() have been
-  deprecated and will be removed in a future release.
+* Removed Debian packaging, which is now available at packages.debian.org
+  or via apt-get.
 
 
-Wire format
------------
+Older versions
+==============
 
-* The 0MQ wire format has been changed. A flags field has been added to
-  allow for future extensions.
-
-
-New functionality
------------------
-
-* The experimental ZMQ_P2P socket type has been implemented.
-
-* Flow control has been implemented for all socket types. For details see
-  the ZMQ_HWM and ZMQ_LWM socket options.
-
-* Subscription filters are internally matched with O(1) complexity.
-
-
-Licensing
----------
-
-* iMatix corporation has granted the following exception regarding static
-  linking with the 0MQ library:
-
-    As a special exception, iMatix gives you permission to link this
-    library with independent modules to produce an executable,
-    regardless of the license terms of these independent modules, and
-    to copy and distribute the resulting executable under terms of
-    your choice, provided that you also meet, for each linked
-    independent module, the terms and conditions of the license of
-    that module. An independent module is a module which is not
-    derived from or based on this library.  If you modify this
-    library, you must extend this exception to your version of the
-    library.
-
-
-Thanks to
----------
-
-This release of 0MQ was made possible by many contributors from the community,
-including:
-
-* Adrian von Bidder <avbidder@fortytwo.ch>, for contributing Debian packages.
-
-* Aleksey Yeschenko <aleksey@yeschenko.com>, for contributing a Lua binding.
-
-* Alessio Spadaro <alessio.spadaro@finservice.com>, for help with porting to
-  HP-UX.
-
-* Bernd Prager <bernd@prager.ws>, for help with porting to Cygwin.
-
-* Brian E. Granger <ellisonbg@gmail.com>, for maintaining the Python binding.
-
-* Martin Hurton <hurtonm@gmail.com>, for implementing flow control.
-
-* Martin Lucina <mato@kotelna.sk>, for rewriting the 0MQ reference manual and
-  many portability fixes.
-
-* Michael Santy <Michael.Santy@dynetics.com>, for testing this release with
-  Infiniband.
-
-* Steven McCoy <steven@miru.hk>, for help with OpenPGM.
-
-* Toralf Wittner <toralf.wittner@gmail.com>, for contributing a Haskell
-  binding.
-
--------------------------------------------------------------------------------
-
-Version 2.0-beta2
-
-ZMQII-29  Add timeout to zmq_poll function
-ZMQII-30  Build fails on MacOS X
-ZMQII-31  memory leak in zmq_poll (on timeout)
-ZMQII-33  zmq_poll may exceed timeout if signal interrupts the waiting
-ZMQII-34  ensure that poll won't return POLLIN event when the message will be filtered out anyway
-ZMQII-36  Chat example & forwarder broken because of changes subscribe semantics
-ZMQII-37  SIGSEGV when polling on REQ socket
-ZMQII-38  Compiler complains about missing virtual constructors
-ZMQII-39  Implement IPC transport
-
-Version 2.0-beta1
-
-ZMQII-27  Allow setting SNDBUF and RCVBUF size from 0MQ API
-ZMQII-22  Deadlock on zmq_close
-ZMQII-25  Implement streamed request/reply
-ZMQII-24  SEGFAULT when anonymous session disconnects
-ZMQII-26  Use zero-copy for large messages
-ZMQII-19  add --disable-eventfd configure option
-
-Version 2.0-alpha3
-
-ZMQII-17  Allow multiple senders for sigle mcast group aka multicast bus.
-ZMQII-16  Change "struct zmq_msg_t" to "zmq_msg_t" in C binding.
-ZMQII-15  Implement REQ/REP sockets.
-ZMQII-14  Change default for ZMQ_MCAST_LOOP to true.
-
-Version 2.0-alpha2
-
-ZMQII-11  Implement forwarder device
-ZMQII-10  Make connections interrupted during the init phase be closed silently
-ZMQII-8  Failure during orphan pipe deallocation
-ZMQII-7  Pipe detach fails on shutdown
-ZMQII-6  connection refused in tcp_connecter::connect leads to assert
-ZMQII-5  Only one consumer in a process gets the message
-ZMQII-4  Failure in dev/poll poller
-ZMQII-3  Implement message filtering
-ZMQII-2  SIGSEGV in zmq_connecter_init_t::read
-ZMQII-1  Win32 - failure on shutdown
-
-Version 2.0-alpha1
-
-Large scale refactoring of the code and new socket-like API.
-
-Version 1.0.1
-
-ZMQ-289  Return -1 from bind when remote object is not registered in zmq_server
-ZMQ-288  Return -1 from create_exchange /queue when object can not be created
-ZMQ-287  Disabling receiving messages from queue
-ZMQ-286  create handle_t class with == and != operators
-ZMQ-285  multiple listeners listening on the same machine with UDP encap.
-ZMQ-284  mask function inaccessible via Java on Windows
-ZMQ-283  Lua binding for 0MQ
-ZMQ-282  Cannot send message containing zero byte via Ruby
-ZMQ-281  Publisher restart fails on PGM and Win/Linux
-ZMQ-280  Broken build using MSVC 2005
-ZMQ-278  Load-balancing exchange doesn't load balance
-ZMQ-277  TCL binding
-ZMQ-276  Check for pkg-config in autogen.sh script
-ZMQ-275  Check for eventfd by running test program during ./configure
-ZMQ-274  can not compile estimate_cpu_freq with PERF_CPU_FREQUENCY set
-ZMQ-273  gcc (GCC) 4.4.0 invalid conversion from const char* to char*
-ZMQ-272  make sure message content is created properly
-
-Version 1.0.0
-
-ZMQ-271  Build OpenPGM with 0MQ build system
-ZMQ-270  0MQ windows pgm support
-ZMQ-269  Constness is better for the zmq_send data_ argument
-ZMQ-267  assert in api_thread.cpp384 void zmqapi_thread_tprocess_command
-ZMQ-266  Memory coruption in api_thread_tcreate
-ZMQ-265  Missing librbzmq.vcproj file
-ZMQ-264  Java examples can not be run on OpenVMS
-ZMQ-263  Warning preventing compilation of chat example
-ZMQ-262  CLONE -QNX port -- working in 6.4.0?
-ZMQ-261  add --with-rubydir configure option
-ZMQ-260  syntax error caught by gcc 4.4
-ZMQ-253  Allow to establish arbitrary AMQP wiring on connection startup
-ZMQ-249  Handle EAGAIN and EWOULDBLOCK as the same error
-ZMQ-248  Call in/out events directly from I/O thread
-ZMQ-247  Move physical thread from poller to individual I/O threads
-ZMQ-240  Pack Java classes into a .jar
-ZMQ-239  make --with-clr imply --with-c
-ZMQ-237  Java extension not working with Win32 package
-ZMQ-235  JAVA build fails if PATH is not set to JDK/bin
-ZMQ-228  Make java documentation via JavaDoc
-ZMQ-226  Move Jzmq to org.zmq package
-ZMQ-204  Use non-blocking accept
-ZMQ-130  Optimise mux_t for large number of idle connections
-
-Version 0.6.1
-
-ZMQ-254 Race condition in pipe_twriter_terminated
-ZMQ-255 Python perf tests broken
-ZMQ-257 pgm build fails various declared errors
-ZMQ-259 Ruby extension for libzmq
-
-Version 0.6
-
-ZMQ-73 Redesign MT throughput test
-ZMQ-102 Move load-balancing functionality from 0.3.3 branch to the trunk
-ZMQ-136 Check I/O threads for rm_fd(x) followed by add_fd(x) behavior
-ZMQ-138 Avoid exporting 0MQ symbols from libs using 0MQ on Windows
-ZMQ-147 Python app hang-up, unresponsive to Ctrl+C
-ZMQ-164 Add reconnection functionality to PGM
-ZMQ-166 Slow down the reconnection process
-ZMQ-176 Update examples to reflect the auto-reconnect feature
-ZMQ-179 Implement OS-agnostic time measurement
-ZMQ-180 What happens if queue is full & disconnection occurs?
-ZMQ-183 Change OpenPGM to PGM in build options
-ZMQ-185 Move msg_store to the trunk
-ZMQ-186 Write an example to demonstrate load-balancing
-ZMQ-187 Declaring same object (exchange, queue) twice doesn't fail
-ZMQ-188 Schemas used by global object URIs don't conform to RFC3986
-ZMQ-190 Compile libdnzmq with /clr support (no old syntax)
-ZMQ-193 Reconnect on Solaris platform not working
-ZMQ-194 Let sender use RDTSC mechanism for command throttling in MSVC build
-ZMQ-195 Failure during fg
-ZMQ-196 System out of sockets after number of reconnections
-ZMQ-197 Offload signal handling from I/O threads
-ZMQ-198 Timers can never expire
-ZMQ-199 Make receive in libczmq zero-copy
-ZMQ-200 Virtualise global locator
-ZMQ-202 Check out SCTP support on QNX
-ZMQ-203 Add auto-reconnect to AMQP engine
-ZMQ-205 Check handling of async errors on a socket
-ZMQ-206 Make zmq_server not to drop the endpoint info on service disconnect
-ZMQ-207 zmq_server should be able to read endpoint info from XML file
-ZMQ-210 Switch perf tests to load-balancing mode
-ZMQ-211 Port Data Dam functionality to Win32
-ZMQ-212 Integrate add and inc in atomic_counter into a single function
-ZMQ-213 When 0MQ infrastructure is terminated, sockets are not closed correctly
-ZMQ-215 Java on Win32 platform not stopping in case of assertion
-ZMQ-217 zmq_server can be crashed by incorect input data
-ZMQ-218 C# integration not working anymore
-ZMQ-219 Change .NET extesnsion to use CamelCase
-ZMQ-220 Check whether individual APIs conforms to API guidelines document
-ZMQ-221 Allow to create global object w/o specifying the location
-ZMQ-222 SPARC code for atomic_counter broken
-ZMQ-223 Rename czmq/jzmq/dnzmq etc. to simple "zmq"
-ZMQ-225 Application fails when it's connected from telnet
-
-Version 0.5
-
-ZMQ-17 look at pgm_transport_set_recv_only and ...send_only
-ZMQ-26 Allow for "any" network interface
-ZMQ-31 Implement SCTP support
-ZMQ-45 Normalise API vs. I/O thread
-ZMQ-78 Make connection establishment asynchronous
-ZMQ-79 Refactor handling of broken connections
-ZMQ-100 Move flow control and queue limits from 0.3.3 branch to the trunk
-ZMQ-101 Move reconnection functionality from 0.3.3 branch to the trunk
-ZMQ-112 build via cmake (makefile generator)
-ZMQ-115 Identify SPARC V9 microarc and/or availability of CAS instruction
-ZMQ-116 Implement .NET extension
-ZMQ-129 Make engine_source part of the polling object
-ZMQ-139 /dev/poll introduces latency on Solaris
-ZMQ-144 Investigate latency impact of using eventfd instead of socketpair on Linux
-ZMQ-146 Check whether i386 and x86_64 in atomic_ptr can be unified
-ZMQ-148 Change watermarks from int to uint64_t
-ZMQ-149 Virtualise creation of 0MQ connections
-ZMQ-150 Negative numbers in unsigned type in atomic_counter
-ZMQ-151 Modify build system to build SCTP extension
-ZMQ-152 Merge BP/PGM functionality into the trunk
-ZMQ-153 compiler warnings on solaris
-ZMQ-155 Build libzmq with sctp support witch cmake
-ZMQ-160 Get rid of create functions in engines
-ZMQ-162 CMakeLists.txt files not updated with latest changes
-ZMQ-165 Implement reconnection notifications
-ZMQ-169 Return queue id from receive function in libpyzmq
-ZMQ-171 Add AMQP support to 0MQ
-ZMQ-173 Throughput test should accept 2 interface specifications
-ZMQ-174 When application is killed on Win32, zmq_server fails
-ZMQ-175 Chatroom example doesn't pass messages after reconnection
-ZMQ-177 Update language extensions to take advantage of auto-reconnect
-ZMQ-181 Rafactor the code to support multiple notification types
-
-Version 0.4
-
-ZMQ-21 Clean up the command passing code
-ZMQ-36 autogen/configure fails on Solaris
-ZMQ-39 Check whether using CAS for btsr and izte on x86 platform improves latency
-ZMQ-40 Check autogen on FreeBSD
-ZMQ-41 Check autogen on OS X
-ZMQ-43 Use +m instead of memory in atomic operations
-ZMQ-46 Get rid of administrative pseudo-thread
-ZMQ-63 -mcpu=v9 CPPFLAG should be used only at sparc achitecture
-ZMQ-64 gcc 3.4.3 on opensolaris complains about -mcpu flag
-ZMQ-65 No error report when host name resolving fails
-ZMQ-66 Several files use atoi without including stdlib.h
-ZMQ-69 Make stdint.hpp hand-written rather than generated
-ZMQ-71 Virtualise thread management
-ZMQ-72 Remove platform.hpp
-ZMQ-74 Implement win32 version of tcp_socket and tcp_listener
-ZMQ-75 Virtualise mutexes
-ZMQ-76 Implement win32 version of ysemaphore_t
-ZMQ-80 Virtualise polling mechanisms
-ZMQ-81 Implement 'select' polling mechanism
-ZMQ-82 Rename i_context to i_thread
-ZMQ-83 "Resource temporarily unavailable" when running on 266MHz box
-ZMQ-84 zmq_server stops to respond
-ZMQ-89 Make i_pollable derived from i_engine
-ZMQ-94 Report error when malloc fails
-ZMQ-95 Add /dev/poll method of polling
-ZMQ-96 Add support for kqueue method of polling
-ZMQ-97 OpenBSD port
-ZMQ-98 QNX port
-ZMQ-99 use pyexec_LTLIBRARIES primary for libpyzmq
-ZMQ-103 Use non blocking sockets
-ZMQ-106 memory leak when sending message from Java
-ZMQ-111 Get rid of speculative operations
-ZMQ-113 Windows compiler (_MSC_VER 1310) doesn't support strncpy_s function
-ZMQ-117 select_thread doesn't implement rm_fd function
-ZMQ-119 select thread fails on shudown
-ZMQ-121 Fix all I/O threads to handle rm_fd correctly
-ZMQ-124 include gaurd is wrong
-ZMQ-126 Refactor I/O threads implementation to avoid duplication of common functionality.
-ZMQ-131 select_thread fails on Windows
-ZMQ-132 Pointer to poller_t is used before it is fully initialised
-ZMQ-134 Thread management in constructors/destructors
-ZMQ-135 Move retired list to the polling strategy-specific object
-ZMQ-137 Assertion fails at bp_engine, line 132, error_handler is not set
-
-Version 0.3.2
-
-ZMQ-54 Test programs are compiled with --rpath
-
-Version 0.3.1
-
-ZMQ-25 Allow to use network interface name instead of IP address
-ZMQ-29 Implement speculative write to socket
-ZMQ-33 Assign ports to global objects automatically
-ZMQ-34 Message size of zero causes application to hang up
-ZMQ-42 Change locators to deal with a single object type
-ZMQ-44 Some of the objects have non-functional auto-generated copy constructors
-ZMQ-47 Camera example is broken
-ZMQ-48 Sender fails when receiver disconnects
-ZMQ-50 Warning in chat example
-ZMQ-51 Make it possible to use single include (zmq.hpp) for client apps
-ZMQ-53 Segmentation fault when binding to non-existent queue
-ZMQ-55 raw_message_init (data,size,ffn) allocates more memory than needed
-ZMQ-56 zmq_server fails if too many apps disconnect abruptly
-ZMQ-58 Implement C binding for 0MQ
-ZMQ-59 Implement Java binding for 0MQ
-ZMQ-60 Implement Python binding for 0MQ
-ZMQ-62 Write man pages
-
-Version 0.3
-
-ZMQ-1 poll_thread hangs in destructor
-ZMQ-4 Missing -D_REENTRANT command line parameter while compiling 0MQ
-ZMQ-5 Check for buffer overflows in AMQP/0-9 marshaller/unmarshaller
-ZMQ-6 Allow dynamic adding of engines to poll_thread
-ZMQ-7 Implement dynamic assignment of engine IDs to engines
-ZMQ-9 Implement event batching in ysocketpair
-ZMQ-10 Remove remaining references to HAVE_CONFIG_H from the code
-ZMQ-11 Move 'alive' flag to the dispatcher
-ZMQ-12 Move dispatcher signalers into a separate array
-ZMQ-13 Allow up to 63 threads on x86_64 platform
-ZMQ-14 Implement new type of lock-free pipe
-ZMQ-15 Implement an infrastructure to pass arbitrary commands between threads
-ZMQ-16 missing stats_raw_den.R, stats_raw_lat.R in dist package
-ZMQ-20 Sync problem with ypollset/atomic_bitmap
-ZMQ-24 Redundant poll
-ZMQ-30 Implement epoll suport
-ZMQ-37 Identify SPARC V9 microarc and/or availability of CAS instruction
-
-Version 0.2
-
-ZMQ-2 Failure when mutexes are used atomic_uint32
-ZMQ-3 socket hangup at OS X
+* See NEWS in ZeroMQ 2.1.x repository at http://github.com/zeromq/zeromq2-1.
