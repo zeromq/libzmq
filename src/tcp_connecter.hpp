@@ -73,8 +73,8 @@ namespace zmq
         int set_address (const char *addr_);
 
         //  Open TCP connecting socket. Returns -1 in case of error,
-        //  0 if connect was successfull immediately and 1 if async connect
-        //  was launched.
+        //  0 if connect was successfull immediately. Returns -1 with
+        //  EAGAIN errno if async connect was launched.
         int open ();
 
         //  Close the connecting socket.
