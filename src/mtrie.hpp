@@ -73,7 +73,7 @@ namespace zmq
         bool is_redundant () const;
 
         typedef std::set <zmq::pipe_t*> pipes_t;
-        pipes_t pipes;
+        pipes_t *pipes;
 
         unsigned char min;
         unsigned short count;
