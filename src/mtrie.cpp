@@ -1,5 +1,6 @@
 /*
     Copyright (c) 2011 250bpm s.r.o.
+    Copyright (c) 2011-2012 Spotify AB
     Copyright (c) 2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -34,7 +35,8 @@
 
 zmq::mtrie_t::mtrie_t () :
     min (0),
-    count (0)
+    count (0),
+    live_nodes (0)
 {
 }
 
@@ -118,6 +120,7 @@ bool zmq::mtrie_t::add_helper (unsigned char *prefix_, size_t size_,
     if (count == 1) {
         if (!next.node) {
             next.node = new (std::nothrow) mtrie_t;
+            ++live_nodes;
             zmq_assert (next.node);
         }
         return next.node->add_helper (prefix_ + 1, size_ - 1, pipe_);
@@ -125,6 +128,7 @@ bool zmq::mtrie_t::add_helper (unsigned char *prefix_, size_t size_,
     else {
         if (!next.table [c - min]) {
             next.table [c - min] = new (std::nothrow) mtrie_t;
+            ++live_nodes;
             zmq_assert (next.table [c - min]);
         }
         return next.table [c - min]->add_helper (prefix_ + 1, size_ - 1, pipe_);
@@ -167,6 +171,11 @@ void zmq::mtrie_t::rm_helper (pipe_t *pipe_, unsigned char **buff_,
         buffsize_++;
         next.node->rm_helper (pipe_, buff_, buffsize_, maxbuffsize_,
             func_, arg_);
+        if (next.node->is_redundant ()) {
+            delete next.node;
+            next.node = 0;
+            --live_nodes;
+        }
         return;
     }
 
@@ -176,7 +185,12 @@ void zmq::mtrie_t::rm_helper (pipe_t *pipe_, unsigned char **buff_,
         if (next.table [c])
             next.table [c]->rm_helper (pipe_, buff_, buffsize_ + 1,
                 maxbuffsize_, func_, arg_);
-    }  
+        if (next.table [c]->is_redundant ()) {
+            delete next.table [c];
+            next.table [c] = 0;
+            --live_nodes;
+        }
+    }
 }
 
 bool zmq::mtrie_t::rm (unsigned char *prefix_, size_t size_, pipe_t *pipe_)
@@ -203,7 +217,18 @@ bool zmq::mtrie_t::rm_helper (unsigned char *prefix_, size_t size_,
     if (!next_node)
         return false;
 
-    return next_node->rm_helper (prefix_ + 1, size_ - 1, pipe_);
+    bool ret = next_node->rm_helper (prefix_ + 1, size_ - 1, pipe_);
+
+    if (next_node->is_redundant ()) {
+        delete next_node;
+        if (count == 1)
+            next.node = 0;
+        else
+            next.table [c - min] = 0;
+        --live_nodes;
+    }
+
+    return ret;
 }
 
 void zmq::mtrie_t::match (unsigned char *data_, size_t size_,
@@ -247,3 +272,7 @@ void zmq::mtrie_t::match (unsigned char *data_, size_t size_,
     }
 }
 
+bool zmq::mtrie_t::is_redundant() const
+{
+    return pipes.empty () && live_nodes == 0;
+}
