@@ -42,8 +42,11 @@ zmq::mtrie_t::mtrie_t () :
 
 zmq::mtrie_t::~mtrie_t ()
 {
-    if (count == 1)
+    if (count == 1) {
+        zmq_assert (next.node);
         delete next.node;
+        next.node = 0;
+    }
     else if (count > 1) {
         for (unsigned short i = 0; i != count; ++i)
             if (next.table [i])
@@ -174,6 +177,7 @@ void zmq::mtrie_t::rm_helper (pipe_t *pipe_, unsigned char **buff_,
         if (next.node->is_redundant ()) {
             delete next.node;
             next.node = 0;
+            count = 0;
             --live_nodes;
         }
         return;
@@ -182,13 +186,14 @@ void zmq::mtrie_t::rm_helper (pipe_t *pipe_, unsigned char **buff_,
     //  If there are multiple subnodes.
     for (unsigned short c = 0; c != count; c++) {
         (*buff_) [buffsize_] = min + c;
-        if (next.table [c])
+        if (next.table [c]) {
             next.table [c]->rm_helper (pipe_, buff_, buffsize_ + 1,
                 maxbuffsize_, func_, arg_);
-        if (next.table [c]->is_redundant ()) {
-            delete next.table [c];
-            next.table [c] = 0;
-            --live_nodes;
+            if (next.table [c]->is_redundant ()) {
+                delete next.table [c];
+                next.table [c] = 0;
+                --live_nodes;
+            }
         }
     }
 }
@@ -221,8 +226,10 @@ bool zmq::mtrie_t::rm_helper (unsigned char *prefix_, size_t size_,
 
     if (next_node->is_redundant ()) {
         delete next_node;
-        if (count == 1)
+        if (count == 1) {
             next.node = 0;
+            count = 0;
+        }
         else
             next.table [c - min] = 0;
         --live_nodes;
@@ -272,7 +279,7 @@ void zmq::mtrie_t::match (unsigned char *data_, size_t size_,
     }
 }
 
-bool zmq::mtrie_t::is_redundant() const
+bool zmq::mtrie_t::is_redundant () const
 {
     return pipes.empty () && live_nodes == 0;
 }
