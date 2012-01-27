@@ -137,7 +137,7 @@ void zmq::tcp_connecter_t::start_connecting ()
         return;
     }
 
-    //  Connection establishment may be dealyed. Poll for its completion.
+    //  Connection establishment may be delayed. Poll for its completion.
     else if (rc == -1 && errno == EAGAIN) {
         handle = add_fd (s);
         handle_valid = true;
