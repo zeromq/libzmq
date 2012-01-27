@@ -99,9 +99,9 @@ namespace zmq
             reaper_tid = 1
         };
 
+        ~ctx_t ();
     private:
 
-        ~ctx_t ();
 
         //  Used to check whether the object is a context.
         uint32_t tag;
