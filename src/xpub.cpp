@@ -63,18 +63,19 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
         //  Apply the subscription to the trie.
         unsigned char *data = (unsigned char*) sub.data ();
         size_t size = sub.size ();
-        zmq_assert (size > 0 && (*data == 0 || *data == 1));
-        bool unique;
-		if (*data == 0)
-		    unique = subscriptions.rm (data + 1, size - 1, pipe_);
-		else
-		    unique = subscriptions.add (data + 1, size - 1, pipe_);
+        if (size > 0 && (*data == 0 || *data == 1)) {
+            bool unique;
+            if (*data == 0)
+                unique = subscriptions.rm (data + 1, size - 1, pipe_);
+            else
+                unique = subscriptions.add (data + 1, size - 1, pipe_);
 
-        //  If the subscription is not a duplicate store it so that it can be
-        //  passed to used on next recv call.
-        if (unique && options.type != ZMQ_PUB)
-            pending.push_back (blob_t ((unsigned char*) sub.data (),
-                sub.size ()));
+            //  If the subscription is not a duplicate store it so that it can be
+            //  passed to used on next recv call.
+            if (unique && options.type != ZMQ_PUB)
+                pending.push_back (blob_t ((unsigned char*) sub.data (),
+                    sub.size ()));
+        }
     }
 }
 
