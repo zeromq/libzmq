@@ -1,6 +1,7 @@
 /*
     Copyright (c) 2009-2011 250bpm s.r.o.
     Copyright (c) 2007-2009 iMatix Corporation
+    Copyright (c) 2011-2012 Spotify AB
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -57,10 +58,12 @@ namespace zmq
             unsigned char **buff_, size_t buffsize_, size_t maxbuffsize_,
             void (*func_) (unsigned char *data_, size_t size_, void *arg_),
             void *arg_);
+        bool is_redundant () const;
 
         uint32_t refcnt;
         unsigned char min;
         unsigned short count;
+        unsigned short live_nodes;
         union {
             class trie_t *node;
             class trie_t **table;
