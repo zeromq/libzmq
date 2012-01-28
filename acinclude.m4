@@ -625,8 +625,9 @@ kqueue();
 }])
 
 dnl ################################################################################
-dnl # LIBZMQ_CHECK_POLLER_EPOLL([action-if-found], [action-if-not-found])          #
-dnl # Checks epoll polling system                                                  #
+dnl # LIBZMQ_CHECK_POLLER_EPOLL_RUN([action-if-found], [action-if-not-found])      #
+dnl # Checks epoll polling system can actually run #
+dnl # For cross-compile, only requires that epoll can link # 
 dnl ################################################################################
 AC_DEFUN([LIBZMQ_CHECK_POLLER_EPOLL], [{
     AC_RUN_IFELSE(
@@ -643,7 +644,21 @@ return(r < 0);
         )],
         [libzmq_cv_have_poller_epoll="yes" ; $1],
         [libzmq_cv_have_poller_epoll="no" ; $2],
-        [libzmq_cv_have_poller_epoll="no" ; $2])
+        [
+          AC_LINK_IFELSE(
+              [AC_LANG_PROGRAM(
+              [
+#include <sys/epoll.h>
+              ],
+      [[
+      struct epoll_event t_ev;
+      epoll_create(10);
+      ]]
+              )],
+              [libzmq_cv_have_poller_epoll="yes" ; $1],
+              [libzmq_cv_have_poller_epoll="no" ; $2])
+        
+        ])
 }])
 
 dnl ################################################################################
