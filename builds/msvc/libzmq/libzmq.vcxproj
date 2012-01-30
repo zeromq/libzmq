@@ -155,8 +155,8 @@
     <ClCompile Include="..\..\..\src\thread.cpp" />
     <ClCompile Include="..\..\..\src\trie.cpp" />
     <ClCompile Include="..\..\..\src\xpub.cpp" />
-    <ClCompile Include="..\..\..\src\xrep.cpp" />
-    <ClCompile Include="..\..\..\src\xreq.cpp" />
+    <ClCompile Include="..\..\..\src\router.cpp" />
+    <ClCompile Include="..\..\..\src\dealer.cpp" />
     <ClCompile Include="..\..\..\src\xsub.cpp" />
     <ClCompile Include="..\..\..\src\zmq.cpp" />
     <ClCompile Include="..\..\..\src\zmq_utils.cpp" />
@@ -229,8 +229,8 @@
     <ClInclude Include="..\..\..\src\windows.hpp" />
     <ClInclude Include="..\..\..\src\wire.hpp" />
     <ClInclude Include="..\..\..\src\xpub.hpp" />
-    <ClInclude Include="..\..\..\src\xrep.hpp" />
-    <ClInclude Include="..\..\..\src\xreq.hpp" />
+    <ClInclude Include="..\..\..\src\router.hpp" />
+    <ClInclude Include="..\..\..\src\dealer.hpp" />
     <ClInclude Include="..\..\..\src\xsub.hpp" />
     <ClInclude Include="..\..\..\src\ypipe.hpp" />
     <ClInclude Include="..\..\..\src\yqueue.hpp" />

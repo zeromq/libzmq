@@ -27,11 +27,11 @@ int main (int argc, char *argv [])
     //  Create the infrastructure
     void *ctx = zmq_init (0);
     assert (ctx);
-    void *sb = zmq_socket (ctx, ZMQ_XREP);
+    void *sb = zmq_socket (ctx, ZMQ_ROUTER);
     assert (sb);
     int rc = zmq_bind (sb, "inproc://a");
     assert (rc == 0);
-    void *sc = zmq_socket (ctx, ZMQ_XREQ);
+    void *sc = zmq_socket (ctx, ZMQ_DEALER);
     assert (sc);
     rc = zmq_connect (sc, "inproc://a");
     assert (rc == 0);
