@@ -23,7 +23,7 @@
 #ifndef __ZMQ_REQ_HPP_INCLUDED__
 #define __ZMQ_REQ_HPP_INCLUDED__
 
-#include "xreq.hpp"
+#include "dealer.hpp"
 #include "stdint.hpp"
 
 namespace zmq
@@ -34,7 +34,7 @@ namespace zmq
     class io_thread_t;
     class socket_base_t;
 
-    class req_t : public xreq_t
+    class req_t : public dealer_t
     {
     public:
 
@@ -61,7 +61,7 @@ namespace zmq
         const req_t &operator = (const req_t&);
     };
 
-    class req_session_t : public xreq_session_t
+    class req_session_t : public dealer_session_t
     {
     public:
 

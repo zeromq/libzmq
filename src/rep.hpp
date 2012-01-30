@@ -22,7 +22,7 @@
 #ifndef __ZMQ_REP_HPP_INCLUDED__
 #define __ZMQ_REP_HPP_INCLUDED__
 
-#include "xrep.hpp"
+#include "router.hpp"
 
 namespace zmq
 {
@@ -32,7 +32,7 @@ namespace zmq
     class io_thread_t;
     class socket_base_t;
 
-    class rep_t : public xrep_t
+    class rep_t : public router_t
     {
     public:
 
@@ -60,7 +60,7 @@ namespace zmq
 
     };
 
-    class rep_session_t : public xrep_session_t
+    class rep_session_t : public router_session_t
     {
     public:
 
