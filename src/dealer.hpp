@@ -18,8 +18,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_XREQ_HPP_INCLUDED__
-#define __ZMQ_XREQ_HPP_INCLUDED__
+#ifndef __ZMQ_DEALER_HPP_INCLUDED__
+#define __ZMQ_DEALER_HPP_INCLUDED__
 
 #include "socket_base.hpp"
 #include "session_base.hpp"
@@ -35,13 +35,13 @@ namespace zmq
     class io_thread_t;
     class socket_base_t;
 
-    class xreq_t :
+    class dealer_t :
         public socket_base_t
     {
     public:
 
-        xreq_t (zmq::ctx_t *parent_, uint32_t tid_);
-        ~xreq_t ();
+        dealer_t (zmq::ctx_t *parent_, uint32_t tid_);
+        ~dealer_t ();
 
     protected:
 
@@ -68,23 +68,23 @@ namespace zmq
         //  Holds the prefetched message.
         msg_t prefetched_msg;
 
-        xreq_t (const xreq_t&);
-        const xreq_t &operator = (const xreq_t&);
+        dealer_t (const dealer_t&);
+        const dealer_t &operator = (const dealer_t&);
     };
 
-    class xreq_session_t : public session_base_t
+    class dealer_session_t : public session_base_t
     {
     public:
 
-        xreq_session_t (zmq::io_thread_t *io_thread_, bool connect_,
+        dealer_session_t (zmq::io_thread_t *io_thread_, bool connect_,
             zmq::socket_base_t *socket_, const options_t &options_,
             const char *protocol_, const char *address_);
-        ~xreq_session_t ();
+        ~dealer_session_t ();
 
     private:
 
-        xreq_session_t (const xreq_session_t&);
-        const xreq_session_t &operator = (const xreq_session_t&);
+        dealer_session_t (const dealer_session_t&);
+        const dealer_session_t &operator = (const dealer_session_t&);
     };
 
 }

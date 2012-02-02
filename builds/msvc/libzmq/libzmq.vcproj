@@ -443,11 +443,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\xrep.cpp"
+				RelativePath="..\..\..\src\router.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\xreq.cpp"
+				RelativePath="..\..\..\src\dealer.cpp"
 				>
 			</File>
 			<File
@@ -725,11 +725,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\xrep.hpp"
+				RelativePath="..\..\..\src\router.hpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\xreq.hpp"
+				RelativePath="..\..\..\src\dealer.hpp"
 				>
 			</File>
 			<File

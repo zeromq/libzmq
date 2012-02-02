@@ -20,14 +20,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "xrep.hpp"
+#include "router.hpp"
 #include "pipe.hpp"
 #include "wire.hpp"
 #include "random.hpp"
 #include "likely.hpp"
 #include "err.hpp"
 
-zmq::xrep_t::xrep_t (class ctx_t *parent_, uint32_t tid_) :
+zmq::router_t::router_t (class ctx_t *parent_, uint32_t tid_) :
     socket_base_t (parent_, tid_),
     prefetched (0),
     more_in (false),
@@ -35,7 +35,7 @@ zmq::xrep_t::xrep_t (class ctx_t *parent_, uint32_t tid_) :
     more_out (false),
     next_peer_id (generate_random ())
 {
-    options.type = ZMQ_XREP;
+    options.type = ZMQ_ROUTER;
 
     //  TODO: Uncomment the following line when XREP will become true XREP
     //  rather than generic router socket.
@@ -49,13 +49,13 @@ zmq::xrep_t::xrep_t (class ctx_t *parent_, uint32_t tid_) :
     prefetched_msg.init ();
 }
 
-zmq::xrep_t::~xrep_t ()
+zmq::router_t::~router_t ()
 {
     zmq_assert (outpipes.empty ());
     prefetched_msg.close ();
 }
 
-void zmq::xrep_t::xattach_pipe (pipe_t *pipe_)
+void zmq::router_t::xattach_pipe (pipe_t *pipe_)
 {
     zmq_assert (pipe_);
 
@@ -77,7 +77,7 @@ void zmq::xrep_t::xattach_pipe (pipe_t *pipe_)
     fq.attach (pipe_);    
 }
 
-void zmq::xrep_t::xterminated (pipe_t *pipe_)
+void zmq::router_t::xterminated (pipe_t *pipe_)
 {
     fq.terminated (pipe_);
 
@@ -93,12 +93,12 @@ void zmq::xrep_t::xterminated (pipe_t *pipe_)
     zmq_assert (false);
 }
 
-void zmq::xrep_t::xread_activated (pipe_t *pipe_)
+void zmq::router_t::xread_activated (pipe_t *pipe_)
 {
     fq.activated (pipe_);
 }
 
-void zmq::xrep_t::xwrite_activated (pipe_t *pipe_)
+void zmq::router_t::xwrite_activated (pipe_t *pipe_)
 {
     for (outpipes_t::iterator it = outpipes.begin ();
           it != outpipes.end (); ++it) {
@@ -111,7 +111,7 @@ void zmq::xrep_t::xwrite_activated (pipe_t *pipe_)
     zmq_assert (false);
 }
 
-int zmq::xrep_t::xsend (msg_t *msg_, int flags_)
+int zmq::router_t::xsend (msg_t *msg_, int flags_)
 {
     //  If this is the first part of the message it's the ID of the
     //  peer to send the message to.
@@ -178,7 +178,7 @@ int zmq::xrep_t::xsend (msg_t *msg_, int flags_)
     return 0;
 }
 
-int zmq::xrep_t::xrecv (msg_t *msg_, int flags_)
+int zmq::router_t::xrecv (msg_t *msg_, int flags_)
 {
     //  if there is a prefetched identity, return it.
     if (prefetched == 2)
@@ -258,7 +258,7 @@ int zmq::xrep_t::xrecv (msg_t *msg_, int flags_)
     return 0;
 }
 
-int zmq::xrep_t::rollback (void)
+int zmq::router_t::rollback (void)
 {
     if (current_out) {
         current_out->rollback ();
@@ -268,7 +268,7 @@ int zmq::xrep_t::rollback (void)
     return 0;
 }
 
-bool zmq::xrep_t::xhas_in ()
+bool zmq::router_t::xhas_in ()
 {
     //  If we are in  the middle of reading the messages, there are
     //  definitely more parts available.
@@ -283,7 +283,7 @@ bool zmq::xrep_t::xhas_in ()
     //  it will be identity of the peer sending the message.
     msg_t id;
     id.init ();
-    int rc = xrep_t::xrecv (&id, ZMQ_DONTWAIT);
+    int rc = router_t::xrecv (&id, ZMQ_DONTWAIT);
     if (rc != 0 && errno == EAGAIN) {
         id.close ();
         return false;
@@ -299,7 +299,7 @@ bool zmq::xrep_t::xhas_in ()
     return true;
 }
 
-bool zmq::xrep_t::xhas_out ()
+bool zmq::router_t::xhas_out ()
 {
     //  In theory, XREP socket is always ready for writing. Whether actual
     //  attempt to write succeeds depends on whitch pipe the message is going
@@ -307,7 +307,7 @@ bool zmq::xrep_t::xhas_out ()
     return true;
 }
 
-zmq::xrep_session_t::xrep_session_t (io_thread_t *io_thread_, bool connect_,
+zmq::router_session_t::router_session_t (io_thread_t *io_thread_, bool connect_,
       socket_base_t *socket_, const options_t &options_,
       const char *protocol_, const char *address_) :
     session_base_t (io_thread_, connect_, socket_, options_, protocol_,
@@ -315,7 +315,7 @@ zmq::xrep_session_t::xrep_session_t (io_thread_t *io_thread_, bool connect_,
 {
 }
 
-zmq::xrep_session_t::~xrep_session_t ()
+zmq::router_session_t::~router_session_t ()
 {
 }
 

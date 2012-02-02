@@ -19,15 +19,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "xreq.hpp"
+#include "dealer.hpp"
 #include "err.hpp"
 #include "msg.hpp"
 
-zmq::xreq_t::xreq_t (class ctx_t *parent_, uint32_t tid_) :
+zmq::dealer_t::dealer_t (class ctx_t *parent_, uint32_t tid_) :
     socket_base_t (parent_, tid_),
     prefetched (false)
 {
-    options.type = ZMQ_XREQ;
+    options.type = ZMQ_DEALER;
 
     //  TODO: Uncomment the following line when XREQ will become true XREQ
     //  rather than generic dealer socket.
@@ -41,24 +41,24 @@ zmq::xreq_t::xreq_t (class ctx_t *parent_, uint32_t tid_) :
     prefetched_msg.init ();
 }
 
-zmq::xreq_t::~xreq_t ()
+zmq::dealer_t::~dealer_t ()
 {
     prefetched_msg.close ();
 }
 
-void zmq::xreq_t::xattach_pipe (pipe_t *pipe_)
+void zmq::dealer_t::xattach_pipe (pipe_t *pipe_)
 {
     zmq_assert (pipe_);
     fq.attach (pipe_);
     lb.attach (pipe_);
 }
 
-int zmq::xreq_t::xsend (msg_t *msg_, int flags_)
+int zmq::dealer_t::xsend (msg_t *msg_, int flags_)
 {
     return lb.send (msg_, flags_);
 }
 
-int zmq::xreq_t::xrecv (msg_t *msg_, int flags_)
+int zmq::dealer_t::xrecv (msg_t *msg_, int flags_)
 {
     //  If there is a prefetched message, return it.
     if (prefetched) {
@@ -79,14 +79,14 @@ int zmq::xreq_t::xrecv (msg_t *msg_, int flags_)
     return 0;
 }
 
-bool zmq::xreq_t::xhas_in ()
+bool zmq::dealer_t::xhas_in ()
 {
     //  We may already have a message pre-fetched.
     if (prefetched)
         return true;
 
     //  Try to read the next message to the pre-fetch buffer.
-    int rc = xreq_t::xrecv (&prefetched_msg, ZMQ_DONTWAIT);
+    int rc = dealer_t::xrecv (&prefetched_msg, ZMQ_DONTWAIT);
     if (rc != 0 && errno == EAGAIN)
         return false;
     zmq_assert (rc == 0);
@@ -94,28 +94,28 @@ bool zmq::xreq_t::xhas_in ()
     return true;
 }
 
-bool zmq::xreq_t::xhas_out ()
+bool zmq::dealer_t::xhas_out ()
 {
     return lb.has_out ();
 }
 
-void zmq::xreq_t::xread_activated (pipe_t *pipe_)
+void zmq::dealer_t::xread_activated (pipe_t *pipe_)
 {
     fq.activated (pipe_);
 }
 
-void zmq::xreq_t::xwrite_activated (pipe_t *pipe_)
+void zmq::dealer_t::xwrite_activated (pipe_t *pipe_)
 {
     lb.activated (pipe_);
 }
 
-void zmq::xreq_t::xterminated (pipe_t *pipe_)
+void zmq::dealer_t::xterminated (pipe_t *pipe_)
 {
     fq.terminated (pipe_);
     lb.terminated (pipe_);
 }
 
-zmq::xreq_session_t::xreq_session_t (io_thread_t *io_thread_, bool connect_,
+zmq::dealer_session_t::dealer_session_t (io_thread_t *io_thread_, bool connect_,
       socket_base_t *socket_, const options_t &options_,
       const char *protocol_, const char *address_) :
     session_base_t (io_thread_, connect_, socket_, options_, protocol_,
@@ -123,7 +123,7 @@ zmq::xreq_session_t::xreq_session_t (io_thread_t *io_thread_, bool connect_,
 {
 }
 
-zmq::xreq_session_t::~xreq_session_t ()
+zmq::dealer_session_t::~dealer_session_t ()
 {
 }
 
