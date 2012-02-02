@@ -34,7 +34,7 @@ zmq::pull_t::~pull_t ()
 {
 }
 
-void zmq::pull_t::xattach_pipe (pipe_t *pipe_)
+void zmq::pull_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
 {
     zmq_assert (pipe_);
     fq.attach (pipe_);
