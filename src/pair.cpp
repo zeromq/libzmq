@@ -119,9 +119,8 @@ bool zmq::pair_t::xhas_out ()
 
 zmq::pair_session_t::pair_session_t (io_thread_t *io_thread_, bool connect_,
       socket_base_t *socket_, const options_t &options_,
-      const char *protocol_, const char *address_) :
-    session_base_t (io_thread_, connect_, socket_, options_, protocol_,
-         address_)
+      const address_t *addr_) :
+    session_base_t (io_thread_, connect_, socket_, options_, addr_)
 {
 }
 

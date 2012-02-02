@@ -93,7 +93,7 @@ namespace zmq
 
         xsub_session_t (class io_thread_t *io_thread_, bool connect_,
             socket_base_t *socket_, const options_t &options_,
-            const char *protocol_, const char *address_);
+            const address_t *addr_);
         ~xsub_session_t ();
 
     private:

@@ -31,6 +31,8 @@
 #include "random.hpp"
 #include "err.hpp"
 #include "ip.hpp"
+#include "address.hpp"
+#include "ipc_address.hpp"
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -39,19 +41,18 @@
 
 zmq::ipc_connecter_t::ipc_connecter_t (class io_thread_t *io_thread_,
       class session_base_t *session_, const options_t &options_,
-      const char *address_, bool wait_) :
+      const address_t *addr_, bool wait_) :
     own_t (io_thread_, options_),
     io_object_t (io_thread_),
+    addr (addr_),
     s (retired_fd),
     handle_valid (false),
     wait (wait_),
     session (session_),
     current_reconnect_ivl(options.reconnect_ivl)
 {
-    //  TODO: set_addess should be called separately, so that the error
-    //  can be propagated.
-    int rc = set_address (address_);
-    zmq_assert (rc == 0);
+    zmq_assert (addr);
+    zmq_assert (addr->protocol == "ipc");
 }
 
 zmq::ipc_connecter_t::~ipc_connecter_t ()
@@ -165,11 +166,6 @@ int zmq::ipc_connecter_t::get_new_reconnect_ivl ()
     return this_interval;
 }
 
-int zmq::ipc_connecter_t::set_address (const char *addr_)
-{
-    return address.resolve (addr_);
-}
-
 int zmq::ipc_connecter_t::open ()
 {
     zmq_assert (s == retired_fd);
@@ -183,7 +179,9 @@ int zmq::ipc_connecter_t::open ()
     unblock_socket (s);
 
     //  Connect to the remote peer.
-    int rc = ::connect (s, address.addr (), address.addrlen ());
+    int rc = ::connect (
+        s, addr->resolved.ipc_addr->addr (),
+        addr->resolved.ipc_addr->addrlen ());
 
     //  Connect was successfull immediately.
     if (rc == 0)

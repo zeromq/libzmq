@@ -49,6 +49,9 @@
 #include "platform.hpp"
 #include "likely.hpp"
 #include "msg.hpp"
+#include "address.hpp"
+#include "ipc_address.hpp"
+#include "tcp_address.hpp"
 
 #include "pair.hpp"
 #include "pub.hpp"
@@ -447,9 +450,33 @@ int zmq::socket_base_t::connect (const char *addr_)
         return -1;
     }
 
+    address_t *paddr = new (std::nothrow) address_t (protocol, address);
+    zmq_assert (paddr);
+
+    //  Resolve address (if needed by the protocol)
+    if (protocol == "tcp") {
+        paddr->resolved.tcp_addr = new (std::nothrow) tcp_address_t ();
+        zmq_assert (paddr->resolved.tcp_addr);
+        int rc = paddr->resolved.tcp_addr->resolve (
+            address.c_str (), false, options.ipv4only ? true : false);
+        if (rc != 0) {
+            delete paddr;
+            return -1;
+        }
+    }
+    else if(protocol == "ipc") {
+        paddr->resolved.ipc_addr = new (std::nothrow) ipc_address_t ();
+        zmq_assert (paddr->resolved.ipc_addr);
+        int rc = paddr->resolved.ipc_addr->resolve (address.c_str ());
+        if (rc != 0) {
+            delete paddr;
+            return -1;
+        }
+    }
+
     //  Create session.
     session_base_t *session = session_base_t::create (io_thread, true, this,
-        options, protocol.c_str (), address.c_str ());
+        options, paddr);
     errno_assert (session);
 
     //  Create a bi-directional pipe.

@@ -91,7 +91,7 @@ namespace zmq
 
         xpub_session_t (zmq::io_thread_t *io_thread_, bool connect_,
             socket_base_t *socket_, const options_t &options_,
-            const char *protocol_, const char *address_);
+            const address_t *addr_);
         ~xpub_session_t ();
 
     private:

@@ -48,12 +48,12 @@ namespace zmq
         int resolve (const char* name_, bool local_, bool ipv4only_);
 
 #if defined ZMQ_HAVE_WINDOWS
-        unsigned short family ();
+        unsigned short family () const;
 #else
-        sa_family_t family ();
+        sa_family_t family () const;
 #endif
-        sockaddr *addr ();
-        socklen_t addrlen ();
+        const sockaddr *addr () const;
+        socklen_t addrlen () const;
 
     private:
 

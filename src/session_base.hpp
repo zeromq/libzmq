@@ -36,6 +36,7 @@ namespace zmq
     class io_thread_t;
     class socket_base_t;
     struct i_engine;
+    struct address_t;
 
     class session_base_t :
         public own_t,
@@ -47,8 +48,7 @@ namespace zmq
         //  Create a session of the particular type.
         static session_base_t *create (zmq::io_thread_t *io_thread_,
             bool connect_, zmq::socket_base_t *socket_,
-            const options_t &options_, const char *protocol_,
-            const char *address_);
+            const options_t &options_, const address_t *addr_);
 
         //  To be used once only, when creating the session.
         void attach_pipe (zmq::pipe_t *pipe_);
@@ -69,8 +69,8 @@ namespace zmq
 
         session_base_t (zmq::io_thread_t *io_thread_, bool connect_,
             zmq::socket_base_t *socket_, const options_t &options_,
-            const char *protocol_, const char *address_);
-        ~session_base_t ();
+            const address_t *addr_);
+        virtual ~session_base_t ();
 
     private:
 
@@ -129,8 +129,7 @@ namespace zmq
         bool recv_identity;
 
         //  Protocol and address to use when connecting.
-        std::string protocol;
-        std::string address;
+        const address_t *addr;
 
         session_base_t (const session_base_t&);
         const session_base_t &operator = (const session_base_t&);

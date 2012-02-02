@@ -47,12 +47,12 @@ int zmq::ipc_address_t::resolve (const char *path_)
     return 0;
 }
 
-sockaddr *zmq::ipc_address_t::addr ()
+const sockaddr *zmq::ipc_address_t::addr () const
 {
     return (sockaddr*) &address;
 }
 
-socklen_t zmq::ipc_address_t::addrlen ()
+socklen_t zmq::ipc_address_t::addrlen () const
 {
     return (socklen_t) sizeof (address);
 }

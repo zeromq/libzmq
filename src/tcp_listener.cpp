@@ -100,7 +100,7 @@ void zmq::tcp_listener_t::in_event ()
 
     //  Create and launch a session object. 
     session_base_t *session = session_base_t::create (io_thread, false, socket,
-        options, NULL, NULL);
+        options, NULL);
     errno_assert (session);
     session->inc_seqnum ();
     launch_child (session);
