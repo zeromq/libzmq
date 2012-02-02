@@ -55,7 +55,7 @@ zmq::xrep_t::~xrep_t ()
     prefetched_msg.close ();
 }
 
-void zmq::xrep_t::xattach_pipe (pipe_t *pipe_)
+void zmq::xrep_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
 {
     zmq_assert (pipe_);
 
