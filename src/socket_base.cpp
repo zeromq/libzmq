@@ -874,6 +874,11 @@ void zmq::socket_base_t::extract_flags (msg_t *msg_)
     rcvmore = msg_->flags () & msg_t::more ? true : false;
 }
 
+void zmq::socket_base_t::set_thread_safe()
+{
+   thread_safe_flag = true;
+}
+
 void zmq::socket_base_t::lock() 
 {
    sync.lock();

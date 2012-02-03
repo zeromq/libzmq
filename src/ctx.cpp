@@ -81,6 +81,16 @@ zmq::ctx_t::ctx_t (uint32_t io_threads_) :
     zmq_assert (rc == 0);
 }
 
+void zmq::ctx_t::set_thread_safe() 
+{
+  thread_safe_flag = true;
+}
+
+bool zmq::ctx_t::get_thread_safe() const
+{
+  return thread_safe_flag;
+}
+
 bool zmq::ctx_t::check_tag ()
 {
     return tag == 0xbadcafe0;

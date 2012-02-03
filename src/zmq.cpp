@@ -90,7 +90,7 @@ const char *zmq_strerror (int errnum_)
     return zmq::errno_to_string (errnum_);
 }
 
-void *zmq_init (int io_threads_)
+static zmq::ctx_t *inner_init (int io_threads_)
 {
     if (io_threads_ < 0) {
         errno = EINVAL;
@@ -139,7 +139,19 @@ void *zmq_init (int io_threads_)
     //  Create 0MQ context.
     zmq::ctx_t *ctx = new (std::nothrow) zmq::ctx_t ((uint32_t) io_threads_);
     alloc_assert (ctx);
-    return (void*) ctx;
+    return ctx;
+}
+
+void *zmq_init (int io_threads_)
+{
+    return (void*) inner_init (io_threads_);
+}
+
+void *zmq_init_thread_safe (int io_threads_)
+{
+  zmq::ctx_t *ctx = inner_init (io_threads_);
+  ctx->set_thread_safe();
+  return (void*) ctx;
 }
 
 int zmq_term (void *ctx_)
@@ -174,7 +186,10 @@ void *zmq_socket (void *ctx_, int type_)
         errno = EFAULT;
         return NULL;
     }
-    return (void*) (((zmq::ctx_t*) ctx_)->create_socket (type_));
+    zmq::ctx_t *ctx = (zmq::ctx_t*) ctx_;
+    zmq::socket_base_t *s = ctx->create_socket (type_);
+    if (ctx->get_thread_safe ()) s->set_thread_safe ();
+    return (void*) s;
 }
 
 int zmq_close (void *s_)
