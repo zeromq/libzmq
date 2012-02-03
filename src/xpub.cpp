@@ -56,14 +56,11 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
 {
     //  There are some subscriptions waiting. Let's process them.
     msg_t sub;
-    sub.init ();
     while (true) {
 
         //  Grab next subscription.
-        if (!pipe_->read (&sub)) {
-            sub.close ();
+        if (!pipe_->read (&sub))
             return;
-        }
 
         //  Apply the subscription to the trie.
         unsigned char *data = (unsigned char*) sub.data ();
@@ -81,6 +78,8 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
                 pending.push_back (blob_t ((unsigned char*) sub.data (),
                     sub.size ()));
         }
+
+        sub.close()
     }
 }
 
