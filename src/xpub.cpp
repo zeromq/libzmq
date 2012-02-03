@@ -79,7 +79,7 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
                     sub.size ()));
         }
 
-        sub.close()
+        sub.close();
     }
 }
 
