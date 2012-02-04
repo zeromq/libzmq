@@ -78,6 +78,8 @@
 typedef char check_msg_t_size
     [sizeof (zmq::msg_t) ==  sizeof (zmq_msg_t) ? 1 : -1];
 
+// Version.
+
 void zmq_version (int *major_, int *minor_, int *patch_)
 {
     *major_ = ZMQ_VERSION_MAJOR;
@@ -85,10 +87,19 @@ void zmq_version (int *major_, int *minor_, int *patch_)
     *patch_ = ZMQ_VERSION_PATCH;
 }
 
+// Errors.
+
 const char *zmq_strerror (int errnum_)
 {
     return zmq::errno_to_string (errnum_);
 }
+
+int zmq_errno ()
+{
+    return errno;
+}
+
+// Contexts.
 
 static zmq::ctx_t *inner_init (int io_threads_)
 {
@@ -180,6 +191,8 @@ int zmq_term (void *ctx_)
     return rc;
 }
 
+// Sockets.
+
 void *zmq_socket (void *ctx_, int type_)
 {
     if (!ctx_ || !((zmq::ctx_t*) ctx_)->check_tag ()) {
@@ -255,7 +268,8 @@ int zmq_connect (void *s_, const char *addr_)
     return result;
 }
 
-// sending functions
+// Sending functions.
+
 static int inner_sendmsg (zmq::socket_base_t *s_, zmq_msg_t *msg_, int flags_)
 {
     int sz = (int) zmq_msg_size (msg_);
@@ -303,7 +317,8 @@ int zmq_send (void *s_, const void *buf_, size_t len_, int flags_)
     return rc;
 }
 
-// receiving functions
+// Receiving functions.
+
 static int inner_recvmsg (zmq::socket_base_t *s_, zmq_msg_t *msg_, int flags_)
 {
     int rc = s_->recv ((zmq::msg_t*) msg_, flags_);
@@ -359,7 +374,8 @@ int zmq_recv (void *s_, void *buf_, size_t len_, int flags_)
     return nbytes;    
 }
 
-// message manipulators
+// Message manipulators.
+
 int zmq_msg_init (zmq_msg_t *msg_)
 {
     return ((zmq::msg_t*) msg_)->init ();
@@ -419,6 +435,8 @@ int zmq_getmsgopt (zmq_msg_t *msg_, int option_, void *optval_,
         return -1;
     }
 }
+
+// Polling.
 
 int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 {
@@ -770,11 +788,6 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     errno = ENOTSUP;
     return -1;
 #endif
-}
-
-int zmq_errno ()
-{
-    return errno;
 }
 
 #if defined ZMQ_POLL_BASED_ON_SELECT
