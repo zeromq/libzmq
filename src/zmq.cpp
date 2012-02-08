@@ -50,6 +50,19 @@
 #include <unistd.h>
 #endif
 
+
+// XSI vector I/O
+#if ZMQ_HAVE_UIO
+#include <sys/uio.h>
+#else
+struct iovec 
+{
+    void *iov_base;
+    size_t iov_len;
+};
+#endif
+
+
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -294,6 +307,10 @@ int zmq_sendmsg (void *s_, zmq_msg_t *msg_, int flags_)
 
 int zmq_send (void *s_, const void *buf_, size_t len_, int flags_)
 {
+    if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
+        errno = ENOTSOCK;
+        return -1;
+    }
     zmq_msg_t msg;
     int rc = zmq_msg_init_size (&msg, len_);
     if (rc != 0)
@@ -315,6 +332,47 @@ int zmq_send (void *s_, const void *buf_, size_t len_, int flags_)
     //  Note the optimisation here. We don't close the msg object as it is
     //  empty anyway. This may change when implementation of zmq_msg_t changes.
     return rc;
+}
+
+// Send multiple messages.
+//
+// If flag bit ZMQ_SNDMORE is set the vector is treated as
+// a single multi-part message, i.e. the last message has
+// ZMQ_SNDMORE bit switched off.
+//
+int zmq_sendv (void *s_, iovec *a_, size_t count_, int flags_)
+{
+    if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
+        errno = ENOTSOCK;
+        return -1;
+    }
+    int rc = 0;
+    zmq_msg_t msg;
+    zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
+    if(s->thread_safe()) s->lock();
+    for(size_t i = 0; i < count_; ++i)
+    {
+        rc = zmq_msg_init_size (&msg, a_[i].iov_len);
+        if (rc != 0)
+        {
+            rc = -1;
+            break;
+        }
+        memcpy (zmq_msg_data (&msg), a_[i].iov_base, a_[i].iov_len);
+
+        if (i == count_ - 1) flags_ = flags_ & ~ZMQ_SNDMORE;
+        rc = inner_sendmsg (s, &msg, flags_);
+        if (unlikely (rc < 0)) {
+           int err = errno;
+           int rc2 = zmq_msg_close (&msg);
+           errno_assert (rc2 == 0);
+           errno = err;
+           rc = -1;
+           break;
+        }
+    }
+    if(s->thread_safe()) s->unlock();
+    return rc; 
 }
 
 // Receiving functions.
@@ -372,6 +430,70 @@ int zmq_recv (void *s_, void *buf_, size_t len_, int flags_)
     errno_assert (rc == 0);
 
     return nbytes;    
+}
+
+// Receive a multi-part message
+// 
+// Receives up to *count_ parts of a multi-part message.
+// Sets *count_ to the actual number of parts read.
+// ZMQ_RCVMORE is set to indicate if a complete multi-part message was read.
+// Returns number of message parts read, or -1 on error.
+//
+// Note: even if -1 is returned, some parts of the message
+// may have been read. Therefore the client must consult
+// *count_ to retrieve message parts successfully read,
+// even if -1 is returned.
+//
+// The iov_base* buffers of each iovec *a_ filled in by this 
+// function may be freed using free().
+//
+// Implementation note: We assume zmq::msg_t buffer allocated
+// by zmq::recvmsg can be freed by free().
+// We assume it is safe to steal these buffers by simply
+// not closing the zmq::msg_t.
+//
+int zmq_recvmmsg (void *s_, iovec *a_, size_t *count_, int flags_)
+{
+    if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
+        errno = ENOTSOCK;
+        return -1;
+    }
+    zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
+    if(s->thread_safe()) s->lock();
+
+    size_t count = (int)*count_;
+    int nread = 0;
+    bool recvmore = true;
+
+    for(size_t i = 0; recvmore && i < count; ++i)
+    {
+        // Cheat! We never close any msg
+        // because we want to steal the buffer.
+        zmq_msg_t msg;
+        int rc = zmq_msg_init (&msg);
+        errno_assert (rc == 0);
+
+        int nbytes = inner_recvmsg (s, &msg, flags_);
+        if (unlikely (nbytes < 0)) {
+            int err = errno;
+            rc = zmq_msg_close (&msg);
+            errno_assert (rc == 0);
+            errno = err;
+            nread = -1;
+            break;
+        }
+        ++*count_;
+        ++nread;
+
+        // Cheat: acquire zmq_msg buffer.
+        a_[i].iov_base = zmq_msg_data (&msg);
+        a_[i].iov_len = zmq_msg_size (&msg);
+
+        // Assume zmq_socket ZMQ_RVCMORE is properly set.
+        recvmore =((zmq::msg_t*) (void*) &msg)->flags () & zmq::msg_t::more;
+    }
+    if(s->thread_safe()) s->unlock();
+    return nread;    
 }
 
 // Message manipulators.
