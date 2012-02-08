@@ -215,6 +215,20 @@ ZMQ_EXPORT int zmq_recv (void *s, void *buf, size_t len, int flags);
 ZMQ_EXPORT int zmq_sendmsg (void *s, zmq_msg_t *msg, int flags);
 ZMQ_EXPORT int zmq_recvmsg (void *s, zmq_msg_t *msg, int flags);
 
+// XSI vector I/O
+#if ZMQ_HAVE_UIO
+#include <sys/uio.h>
+#else
+struct iovec 
+{
+    void *iov_base;
+    size_t iov_len;
+};
+#endif
+
+ZMQ_EXPORT int zmq_sendv (void *s, struct iovec *iov, size_t count, int flags);
+ZMQ_EXPORT int zmq_recvmmsg (void *s, struct iovec *iov, size_t *count, int flags);
+
 /******************************************************************************/
 /*  I/O multiplexing.                                                         */
 /******************************************************************************/

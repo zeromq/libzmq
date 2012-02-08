@@ -50,16 +50,6 @@
 #include <unistd.h>
 #endif
 
-// XSI vector I/O
-#if ZMQ_HAVE_UIO
-#include <sys/uio.h>
-#else
-struct iovec 
-{
-    void *iov_base;
-    size_t iov_len;
-};
-#endif
 
 #include <string.h>
 #include <errno.h>
