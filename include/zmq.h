@@ -147,6 +147,7 @@ ZMQ_EXPORT int zmq_getmsgopt (zmq_msg_t *msg, int option, void *optval,
 /******************************************************************************/
 
 ZMQ_EXPORT void *zmq_init (int io_threads);
+ZMQ_EXPORT void *zmq_init_thread_safe (int io_threads);
 ZMQ_EXPORT int zmq_term (void *context);
 
 /******************************************************************************/

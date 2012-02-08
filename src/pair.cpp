@@ -36,7 +36,7 @@ zmq::pair_t::~pair_t ()
     zmq_assert (!pipe);
 }
 
-void zmq::pair_t::xattach_pipe (pipe_t *pipe_)
+void zmq::pair_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
 {
     zmq_assert (!pipe);
     pipe = pipe_;

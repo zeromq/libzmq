@@ -46,7 +46,7 @@ zmq::xreq_t::~xreq_t ()
     prefetched_msg.close ();
 }
 
-void zmq::xreq_t::xattach_pipe (pipe_t *pipe_)
+void zmq::xreq_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
 {
     zmq_assert (pipe_);
     fq.attach (pipe_);

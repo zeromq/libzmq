@@ -95,7 +95,10 @@ namespace zmq
         void write_activated (pipe_t *pipe_);
         void hiccuped (pipe_t *pipe_);
         void terminated (pipe_t *pipe_);
-
+        bool thread_safe() const { return thread_safe_flag; }
+        void set_thread_safe(); // should be in constructor, here for compat
+        void lock();
+        void unlock();
     protected:
 
         socket_base_t (zmq::ctx_t *parent_, uint32_t tid_);
@@ -103,7 +106,8 @@ namespace zmq
 
         //  Concrete algorithms for the x- methods are to be defined by
         //  individual socket types.
-        virtual void xattach_pipe (zmq::pipe_t *pipe_) = 0;
+        virtual void xattach_pipe (zmq::pipe_t *pipe_,
+            bool icanhasall_ = false) = 0;
 
         //  The default implementation assumes there are no specific socket
         //  options for the particular socket type. If not so, overload this
@@ -158,7 +162,7 @@ namespace zmq
         int check_protocol (const std::string &protocol_);
 
         //  Register the pipe with this socket.
-        void attach_pipe (zmq::pipe_t *pipe_);
+        void attach_pipe (zmq::pipe_t *pipe_, bool icanhasall_ = false);
 
         //  Processes commands sent to this socket (if any). If timeout is -1,
         //  returns only after at least one command was processed.
@@ -194,6 +198,8 @@ namespace zmq
 
         socket_base_t (const socket_base_t&);
         const socket_base_t &operator = (const socket_base_t&);
+        bool thread_safe_flag;
+        mutex_t sync;
     };
 
 }
