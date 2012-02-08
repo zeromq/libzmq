@@ -48,6 +48,9 @@ namespace zmq
 
         //  Set address to listen on.
         int set_address (const char *addr_);
+        
+        // Get the bound address for use with wildcards
+        int get_address(unsigned char *addr, size_t *len);
 
     private:
 
@@ -65,6 +68,10 @@ namespace zmq
         //  newly created connection. The function may return retired_fd
         //  if the connection was dropped while waiting in the listen backlog.
         fd_t accept ();
+        
+        // Store the connected endpoint for binds to port 0
+        char bound_addr[256];
+        size_t bound_addr_len;
 
         //  True, if the undelying file for UNIX domain socket exists.
         bool has_file;

@@ -46,6 +46,10 @@ namespace zmq
         //  Socket identity
         unsigned char identity_size;
         unsigned char identity [256];
+        
+        // Last socket endpoint URI
+        unsigned char last_endpoint [256];
+        size_t last_endpoint_size;
 
         //  Maximum tranfer rate [kb/s]. Default 100kb/s.
         int rate;

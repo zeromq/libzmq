@@ -160,6 +160,7 @@ int zmq::socket_base_t::parse_uri (const char *uri_,
     }
     protocol_ = uri.substr (0, pos);
     address_ = uri.substr (pos + 3);
+    
     if (protocol_.empty () || address_.empty ()) {
         errno = EINVAL;
         return -1;
@@ -339,6 +340,8 @@ int zmq::socket_base_t::bind (const char *addr_)
             delete listener;
             return -1;
         }
+        
+        rc = listener->get_address (options.last_endpoint, &(options.last_endpoint_size));
         launch_child (listener);
         return 0;
     }
@@ -353,6 +356,7 @@ int zmq::socket_base_t::bind (const char *addr_)
             delete listener;
             return -1;
         }
+        rc = listener->get_address (options.last_endpoint, &(options.last_endpoint_size));
         launch_child (listener);
         return 0;
     }

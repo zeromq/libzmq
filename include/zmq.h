@@ -193,6 +193,7 @@ ZMQ_EXPORT int zmq_term (void *context);
 #define ZMQ_RCVTIMEO 27
 #define ZMQ_SNDTIMEO 28
 #define ZMQ_IPV4ONLY 31
+#define ZMQ_LAST_ENDPOINT 32
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1
@@ -200,6 +201,9 @@ ZMQ_EXPORT int zmq_term (void *context);
 /*  Send/recv options.                                                        */
 #define ZMQ_DONTWAIT 1
 #define ZMQ_SNDMORE 2
+
+/*  Wildcard endpoint support.                                                */
+#define ZMQ_ENDPOINT_MAX 256
 
 ZMQ_EXPORT void *zmq_socket (void *context, int type);
 ZMQ_EXPORT int zmq_close (void *s);
