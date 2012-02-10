@@ -47,6 +47,7 @@ zmq::xsub_t::~xsub_t ()
 
 void zmq::xsub_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
 {
+    ((void)icanhasall_);
     zmq_assert (pipe_);
     fq.attach (pipe_);
     dist.attach (pipe_);

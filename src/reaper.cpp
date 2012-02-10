@@ -80,6 +80,7 @@ void zmq::reaper_t::out_event ()
 
 void zmq::reaper_t::timer_event (int id_)
 {
+    ((void)id_);
     zmq_assert (false);
 }
 
