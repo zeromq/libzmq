@@ -315,6 +315,7 @@ zmq::endpoint_t zmq::ctx_t::find_endpoint (const char *addr_)
 
 void zmq::ctx_t::log (const char *format_, va_list args_)
 {
+    ((void)args_);
     //  Create the log message.
     msg_t msg;
     int rc = msg.init_size (strlen (format_) + 1);

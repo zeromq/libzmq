@@ -70,6 +70,7 @@ int zmq::fq_t::recv (msg_t *msg_, int flags_)
 
 int zmq::fq_t::recvpipe (msg_t *msg_, int flags_, pipe_t **pipe_)
 {
+    ((void)flags_);
     //  Deallocate old content of the message.
     int rc = msg_->close ();
     errno_assert (rc == 0);
