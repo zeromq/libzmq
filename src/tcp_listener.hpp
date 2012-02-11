@@ -45,7 +45,7 @@ namespace zmq
         //  Set address to listen on.
         int set_address (const char *addr_);
     
-        // Get the bound address for use with wildcards
+        // Get the bound address for use with wildcard
         int get_address(unsigned char *addr, size_t *len);
 
     private:
@@ -67,10 +67,6 @@ namespace zmq
 
         //  Address to listen on.
         tcp_address_t address;
-        
-        // Store the connected endpoint for binds to port 0
-        char bound_addr[256];
-        size_t bound_addr_len;
 
         //  True, if the undelying file for UNIX domain socket exists.
         bool has_file;

@@ -97,12 +97,18 @@ void zmq::ipc_listener_t::in_event ()
 
 int zmq::ipc_listener_t::get_address (unsigned char *addr, size_t *len)
 {
-    if (bound_addr_len == 0) {
-       return -1;
+    struct sockaddr_un sun;
+    int rc;
+
+    // Get the details of the IPC socket
+    socklen_t sl = sizeof(sockaddr_un);                 
+    rc = getsockname (s, (sockaddr *)&sun, &sl);   
+    if (rc != 0) {
+        return rc;
     }
-    
-    memcpy (addr, bound_addr, bound_addr_len + 1);
-    *len = bound_addr_len + 1;
+    // Store the address for retrieval by users using wildcards
+    *len = sprintf((char *)addr, "ipc://%s", sun.sun_path);
+
     return 0;
 }
 
@@ -141,10 +147,7 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
     rc = listen (s, options.backlog);
     if (rc != 0)
         return -1;
-
-    // Return the bound address
-    bound_addr_len = sprintf(bound_addr, "ipc://%s", addr_);
-
+        
     return 0;  
 }
 

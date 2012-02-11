@@ -388,7 +388,8 @@ int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv4only_)
         addr_str = addr_str.substr (1, addr_str.size () - 2);
 
     uint16_t port;
-    if (port_str[0] == '*') {
+    // Allow 0 specifically, to detect invalid port error in atoi if not
+    if (port_str[0] == '*' || port_str[0] == '0') {
         // Resolve wildcard to 0 to allow autoselection of port
         port = 0;
     } else {

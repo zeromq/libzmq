@@ -52,7 +52,6 @@ zmq::tcp_listener_t::tcp_listener_t (io_thread_t *io_thread_,
       socket_base_t *socket_, const options_t &options_) :
     own_t (io_thread_, options_),
     io_object_t (io_thread_),
-    bound_addr_len (0),
     has_file (false),
     s (retired_fd),
     socket (socket_)
@@ -121,13 +120,33 @@ void zmq::tcp_listener_t::close ()
 }
 
 int zmq::tcp_listener_t::get_address (unsigned char *addr, size_t *len)
-{
-    if (bound_addr_len == 0) {
-       return -1;
+{ 
+    struct sockaddr sa;
+    char host[INET6_ADDRSTRLEN];
+    int port, rc;
+    
+    // Get the details of the TCP socket
+    socklen_t sl = sizeof(sockaddr);                 
+    rc = getsockname (s, &sa, &sl);   
+    if (rc != 0) {
+        return rc;
     }
     
-    memcpy (addr, bound_addr, bound_addr_len + 1);
-    *len = bound_addr_len + 1;
+    // Split the retrieval between IPv4 and v6 addresses
+    if ( sa.sa_family == AF_INET ) {
+        inet_ntop(AF_INET, &(((struct sockaddr_in *)&sa)->sin_addr), host, INET6_ADDRSTRLEN);
+        port = ntohs( ((struct sockaddr_in *)&sa)->sin_port);
+        
+        // Store the address for retrieval by users using wildcards
+        *len = sprintf((char *)addr, "tcp://%s:%d", host, port);
+    } else {
+        inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)&sa)->sin6_addr), host, INET6_ADDRSTRLEN);
+        port = ntohs( ((struct sockaddr_in6 *)&sa)->sin6_port);
+        
+        // Store the address for retrieval by users using wildcards
+        *len = sprintf((char *)*addr, "tcp://[%s]:%d", host, port);
+    }
+    
     return 0;
 }
 
@@ -193,25 +212,6 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
         return -1;
 #endif
 
-    struct sockaddr sa;
-    socklen_t sl = sizeof(sockaddr);                 
-    rc = getsockname (s, &sa, &sl);   
-    if (rc == 0) {
-        char host[INET6_ADDRSTRLEN];
-        int port;
-        
-        if ( sa.sa_family == AF_INET ) {
-            inet_ntop(AF_INET, &(((struct sockaddr_in *)&sa)->sin_addr), host, INET6_ADDRSTRLEN);
-            port = ntohs( ((struct sockaddr_in *)&sa)->sin_port);
-        } else {
-            inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)&sa)->sin6_addr), host, INET6_ADDRSTRLEN);
-            port = ntohs( ((struct sockaddr_in6 *)&sa)->sin6_port);
-        }
-        
-        // Store the address for retrieval by users using wildcards
-        bound_addr_len = sprintf(bound_addr, "tcp://%s:%d", host, port);
-    }            
-    
     //  Listen for incomming connections.
     rc = listen (s, options.backlog);
 #ifdef ZMQ_HAVE_WINDOWS
