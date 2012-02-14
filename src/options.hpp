@@ -23,6 +23,8 @@
 #ifndef __ZMQ_OPTIONS_HPP_INCLUDED__
 #define __ZMQ_OPTIONS_HPP_INCLUDED__
 
+#include <string>
+
 #include "stddef.h"
 #include "stdint.hpp"
 
@@ -46,6 +48,9 @@ namespace zmq
         //  Socket identity
         unsigned char identity_size;
         unsigned char identity [256];
+        
+        // Last socket endpoint URI
+        std::string last_endpoint;
 
         //  Maximum tranfer rate [kb/s]. Default 100kb/s.
         int rate;

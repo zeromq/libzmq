@@ -213,7 +213,6 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             ipv4only = val;
             return 0;
         }
-
     }
 
     errno = EINVAL;
@@ -385,7 +384,16 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
         *((int*) optval_) = ipv4only;
         *optvallen_ = sizeof (int);
         return 0;
-
+        
+    case ZMQ_LAST_ENDPOINT:
+        // don't allow string which cannot contain the entire message
+        if (*optvallen_ < last_endpoint.size() + 1) {
+            errno = EINVAL;
+            return -1;
+        }
+        memcpy (optval_, last_endpoint.c_str(), last_endpoint.size()+1);
+        *optvallen_ = last_endpoint.size()+1;
+        return 0;
     }
 
     errno = EINVAL;

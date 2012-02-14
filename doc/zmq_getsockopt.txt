@@ -391,6 +391,17 @@ Option value unit:: N/A (flags)
 Default value:: N/A
 Applicable socket types:: all
 
+ZMQ_LAST_ENDPOINT: Retrieve the last endpoint set
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_LAST_ENDPOINT' option shall retrieve the last endpoint bound for 
+TCP and IPC transports. The returned value will be a string in the form of
+a ZMQ DSN. 
+
+[horizontal]
+Option value type:: character string
+Option value unit:: N/A
+Default value:: NULL
+Applicable socket types:: all, when binding TCP or IPC transports
 
 RETURN VALUE
 ------------
