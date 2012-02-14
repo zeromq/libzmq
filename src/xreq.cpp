@@ -48,7 +48,6 @@ zmq::xreq_t::~xreq_t ()
 
 void zmq::xreq_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
 {
-    ((void)icanhasall_);
     zmq_assert (pipe_);
     fq.attach (pipe_);
     lb.attach (pipe_);

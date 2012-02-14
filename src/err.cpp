@@ -65,7 +65,6 @@ const char *zmq::errno_to_string (int errno_)
 
 void zmq::zmq_abort(const char *errmsg_)
 {
-    ((void)errmsg_);
 #if defined ZMQ_HAVE_WINDOWS
 
     //  Raise STATUS_FATAL_APP_EXIT.

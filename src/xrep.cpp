@@ -57,7 +57,6 @@ zmq::xrep_t::~xrep_t ()
 
 void zmq::xrep_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
 {
-    ((void)icanhasall_);
     zmq_assert (pipe_);
 
     //  Generate a new unique peer identity.
@@ -114,7 +113,6 @@ void zmq::xrep_t::xwrite_activated (pipe_t *pipe_)
 
 int zmq::xrep_t::xsend (msg_t *msg_, int flags_)
 {
-    ((void)flags_);
     //  If this is the first part of the message it's the ID of the
     //  peer to send the message to.
     if (!more_out) {

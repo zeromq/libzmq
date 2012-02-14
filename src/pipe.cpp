@@ -148,7 +148,6 @@ bool zmq::pipe_t::read (msg_t *msg_)
 
 bool zmq::pipe_t::check_write (msg_t *msg_)
 {
-    ((void)msg_);
     if (unlikely (!out_active || state != active))
         return false;
 

@@ -89,7 +89,6 @@ void zmq::io_object_t::add_timer (int timeout_, int id_)
 
 void zmq::io_object_t::cancel_timer (int id_)
 {
-    ((void)id_);
     poller->cancel_timer (this, id_);
 }
 
@@ -105,6 +104,5 @@ void zmq::io_object_t::out_event ()
 
 void zmq::io_object_t::timer_event (int id_)
 {
-    ((void)id_);
     zmq_assert (false);
 }
