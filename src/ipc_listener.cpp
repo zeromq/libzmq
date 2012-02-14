@@ -95,7 +95,7 @@ void zmq::ipc_listener_t::in_event ()
     send_attach (session, engine, false);
 }
 
-int zmq::ipc_listener_t::get_address (unsigned char *addr, size_t *len)
+int zmq::ipc_listener_t::get_address (std::string *addr_)
 {
     struct sockaddr_un sun;
     int rc;
@@ -106,8 +106,9 @@ int zmq::ipc_listener_t::get_address (unsigned char *addr, size_t *len)
     if (rc != 0) {
         return rc;
     }
+    
     // Store the address for retrieval by users using wildcards
-    *len = sprintf((char *)addr, "ipc://%s", sun.sun_path);
+    *addr_ = std::string("ipc://") + std::string(sun.sun_path);
 
     return 0;
 }

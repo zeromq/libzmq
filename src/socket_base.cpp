@@ -342,7 +342,7 @@ int zmq::socket_base_t::bind (const char *addr_)
             return -1;
         }
         
-        rc = listener->get_address (options.last_endpoint, &(options.last_endpoint_size));
+        rc = listener->get_address (&options.last_endpoint);
         launch_child (listener);
         return 0;
     }
@@ -357,7 +357,8 @@ int zmq::socket_base_t::bind (const char *addr_)
             delete listener;
             return -1;
         }
-        rc = listener->get_address (options.last_endpoint, &(options.last_endpoint_size));
+        
+        rc = listener->get_address (&options.last_endpoint);
         launch_child (listener);
         return 0;
     }

@@ -22,6 +22,7 @@
 #include <new>
 
 #include <string.h>
+#include <sstream>
 
 #include "platform.hpp"
 #include "tcp_listener.hpp"
@@ -119,11 +120,12 @@ void zmq::tcp_listener_t::close ()
     s = retired_fd;
 }
 
-int zmq::tcp_listener_t::get_address (unsigned char *addr, size_t *len)
+int zmq::tcp_listener_t::get_address (std::string *addr_)
 { 
     struct sockaddr sa;
     char host[INET6_ADDRSTRLEN];
     int port, rc;
+    std::stringstream portnum;
     
     // Get the details of the TCP socket
     socklen_t sl = sizeof(sockaddr);                 
@@ -136,15 +138,17 @@ int zmq::tcp_listener_t::get_address (unsigned char *addr, size_t *len)
     if ( sa.sa_family == AF_INET ) {
         inet_ntop(AF_INET, &(((struct sockaddr_in *)&sa)->sin_addr), host, INET6_ADDRSTRLEN);
         port = ntohs( ((struct sockaddr_in *)&sa)->sin_port);
+        portnum << port;
         
         // Store the address for retrieval by users using wildcards
-        *len = sprintf((char *)addr, "tcp://%s:%d", host, port);
+        *addr_ = std::string("tcp://") + std::string(host) + std::string(":") + portnum.str();
     } else {
         inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)&sa)->sin6_addr), host, INET6_ADDRSTRLEN);
         port = ntohs( ((struct sockaddr_in6 *)&sa)->sin6_port);
+        portnum << port;
         
         // Store the address for retrieval by users using wildcards
-        *len = sprintf((char *)*addr, "tcp://[%s]:%d", host, port);
+        *addr_ = std::string("tcp://[") + std::string(host) + std::string("]:") + portnum.str();
     }
     
     return 0;

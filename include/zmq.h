@@ -203,9 +203,6 @@ ZMQ_EXPORT int zmq_term (void *context);
 #define ZMQ_DONTWAIT 1
 #define ZMQ_SNDMORE 2
 
-/*  Wildcard endpoint support.                                                */
-#define ZMQ_ENDPOINT_MAX 256
-
 ZMQ_EXPORT void *zmq_socket (void *context, int type);
 ZMQ_EXPORT int zmq_close (void *s);
 ZMQ_EXPORT int zmq_setsockopt (void *s, int option, const void *optval,

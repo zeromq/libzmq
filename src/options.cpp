@@ -30,7 +30,6 @@ zmq::options_t::options_t () :
     rcvhwm (1000),
     affinity (0),
     identity_size (0),
-    last_endpoint_size(0),
     rate (100),
     recovery_ivl (10000),
     multicast_hops (1),
@@ -387,12 +386,13 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
         return 0;
         
     case ZMQ_LAST_ENDPOINT:
-        if (*optvallen_ < last_endpoint_size) {
+        // don't allow string which cannot contain the entire message
+        if (*optvallen_ < last_endpoint.size() + 1) {
             errno = EINVAL;
             return -1;
         }
-        memcpy (optval_, last_endpoint, last_endpoint_size);
-        *optvallen_ = last_endpoint_size;
+        memcpy (optval_, last_endpoint.c_str(), last_endpoint.size()+1);
+        *optvallen_ = last_endpoint.size()+1;
         return 0;
     }
 
