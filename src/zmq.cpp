@@ -541,23 +541,9 @@ size_t zmq_msg_size (zmq_msg_t *msg_)
     return ((zmq::msg_t*) msg_)->size ();
 }
 
-int zmq_getmsgopt (zmq_msg_t *msg_, int option_, void *optval_,
-    size_t *optvallen_)
+int zmq_msg_more (zmq_msg_t *msg_)
 {
-    switch (option_) {
-    case ZMQ_MORE:
-        if (*optvallen_ < sizeof (int)) {
-            errno = EINVAL;
-            return -1;
-        }
-        *((int*) optval_) =
-            (((zmq::msg_t*) msg_)->flags () & zmq::msg_t::more) ? 1 : 0;
-        *optvallen_ = sizeof (int);
-        return 0;
-    default:
-        errno = EINVAL;
-        return -1;
-    }
+    return (((zmq::msg_t*) msg_)->flags () & zmq::msg_t::more)? 1: 0;
 }
 
 // Polling.

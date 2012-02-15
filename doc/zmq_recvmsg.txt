@@ -35,9 +35,9 @@ delivery of messages: peers shall receive either all _message parts_ of a
 message or none at all. The total number of message parts is unlimited except
 by available memory.
 
-An application that processes multi-part messages must use the _ZMQ_RCVMORE_
-linkzmq:zmq_getsockopt[3] option after calling _zmq_recvmsg()_ to determine if
-there are further parts to receive.
+An application that processes multi-part messages must call _zmq_msg_more()_
+after calling _zmq_recvmsg()_ to determine if there are further parts to
+receive.
 
 
 RETURN VALUE
