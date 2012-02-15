@@ -29,13 +29,12 @@ function shall fail with 'errno' set to EAGAIN.
 
 Multi-part messages
 ~~~~~~~~~~~~~~~~~~~
-A 0MQ message is composed of 1 or more message parts. Each message
-part is an independent 'zmq_msg_t' in its own right. 0MQ ensures atomic
-delivery of messages; peers shall receive either all _message parts_ of a
+A 0MQ message is composed of 1 or more message parts. 0MQ ensures atomic
+delivery of messages: peers shall receive either all _message parts_ of a
 message or none at all. The total number of message parts is unlimited except
 by available memory.
 
-An application that processes multipart messages must use the _ZMQ_RCVMORE_
+An application that processes multi-part messages must use the _ZMQ_RCVMORE_
 linkzmq:zmq_getsockopt[3] option after calling _zmq_recv()_ to determine if
 there are further parts to receive.
 
@@ -89,6 +88,6 @@ linkzmq:zmq[7]
 
 AUTHORS
 -------
-+This man page was written by Martin Sustrik <sustrik@250bpm.com>, Martin
-+Lucina <martin@lucina.net> and Pieter Hintjens <ph@imatix.com>.
+This 0MQ manual page was written by Martin Sustrik <sustrik@250bpm.com> and
+Martin Lucina <mato@kotelna.sk>, and Pieter Hintjens <ph@imatix.com>.
 
