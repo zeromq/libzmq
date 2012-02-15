@@ -85,7 +85,7 @@ Access message content::
     linkzmq:zmq_msg_size[3]
 
 Get message properties::
-    linkzmq:zmq_getmsgopt[3]
+    linkzmq:zmq_msg_more[3]
 
 Message manipulation::
     linkzmq:zmq_msg_copy[3]
