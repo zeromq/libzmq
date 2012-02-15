@@ -1,6 +1,6 @@
 /*
-    Copyright (c) 2010-2011 250bpm s.r.o.
     Copyright (c) 2011 iMatix Corporation
+    Copyright (c) 2010-2011 250bpm s.r.o.
     Copyright (c) 2010-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -41,8 +41,8 @@ extern "C"
 {
   static void *source(void *client_data)
   {
-      // Wait a bit util all threads created and  subscriber ready.
-      zmq_sleep(2); // ms
+      // Wait a bit until all threads created and subscriber is ready
+      zmq_sleep (1);  // Seconds
 
       // Our thread number and socket.
       thread_data_t *td = (thread_data_t *) client_data;
@@ -55,11 +55,9 @@ extern "C"
       for (int i = 0; i < NMESSAGES; ++i)
       {
         sprintf(buffer,"Th %02d count %02d", td->thread_index, i);   
-        int rc = zmq_send(td->socket,buffer,20,0);
+        int rc = zmq_send (td->socket, buffer, 20, 0);
         assert (rc == 20);
-        zmq_sleep(1); // Don't overload the socket.
       }
- 
       return 0;
   }
 }
@@ -85,7 +83,7 @@ int main (int argc, char *argv [])
     rc = zmq_connect (sub, "tcp://127.0.0.1:5560");
     assert (rc == 0);
 
-    //  Subscribe for all messages.
+    //  Subscribe to all messages.
     rc = zmq_setsockopt (sub, ZMQ_SUBSCRIBE, "", 0);
     assert (rc == 0);
 
@@ -104,9 +102,9 @@ int main (int argc, char *argv [])
     char buff [20];
     for(int i= 1; i<=THREAD_COUNT * NMESSAGES; ++i)
     {
-      rc = zmq_recv (sub, buff, 20, 0);
-      //fprintf (stderr, "%d/%d: %s\n",i,THREAD_COUNT * NMESSAGES, buff); // debug it
-      assert (rc >= 0);
+        rc = zmq_recv (sub, buff, 20, 0);
+        //fprintf (stderr, "%d/%d: %s\n",i,THREAD_COUNT * NMESSAGES, buff); // debug it
+        assert (rc >= 0);
     }
 
     // Wait for worker death.
@@ -115,7 +113,6 @@ int main (int argc, char *argv [])
         rc = pthread_join(threads[i].pthr, NULL);
         assert (rc == 0);
     }
-
 
     //  Clean up.
     rc = zmq_close (pub);
