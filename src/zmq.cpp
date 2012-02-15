@@ -572,7 +572,7 @@ void *zmq_msg_data (zmq_msg_t *msg_)
     return ((zmq::msg_t*) msg_)->data ();
 }
 
-size_t zmq_msg_size (zmq_msg_t *msg_)
+ssize_t zmq_msg_size (zmq_msg_t *msg_)
 {
     if (!msg_) {
         errno = EFAULT;
