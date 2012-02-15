@@ -296,7 +296,7 @@ Applicable socket types:: all, when using multicast transports
 
 
 ZMQ_RCVTIMEO: Maximum time before a socket operation returns with EAGAIN
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Retrieve the timeout for recv operation on the socket.  If the value is `0`,
 _zmq_recv(3)_ will return immediately, with a EAGAIN error if there is no
@@ -312,7 +312,7 @@ Applicable socket types:: all
 
 
 ZMQ_SNDTIMEO: Maximum time before a socket operation returns with EAGAIN
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Retrieve the timeout for send operation on the socket. If the value is `0`,
 _zmq_send(3)_ will return immediately, with a EAGAIN error if the message
@@ -392,7 +392,7 @@ Default value:: N/A
 Applicable socket types:: all
 
 ZMQ_LAST_ENDPOINT: Retrieve the last endpoint set
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_LAST_ENDPOINT' option shall retrieve the last endpoint bound for 
 TCP and IPC transports. The returned value will be a string in the form of
 a ZMQ DSN. 
