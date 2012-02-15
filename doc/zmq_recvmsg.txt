@@ -31,11 +31,11 @@ Multi-part messages
 ~~~~~~~~~~~~~~~~~~~
 A 0MQ message is composed of 1 or more message parts. Each message
 part is an independent 'zmq_msg_t' in its own right. 0MQ ensures atomic
-delivery of messages; peers shall receive either all _message parts_ of a
+delivery of messages: peers shall receive either all _message parts_ of a
 message or none at all. The total number of message parts is unlimited except
 by available memory.
 
-An application that processes multipart messages must use the _ZMQ_RCVMORE_
+An application that processes multi-part messages must use the _ZMQ_RCVMORE_
 linkzmq:zmq_getsockopt[3] option after calling _zmq_recvmsg()_ to determine if
 there are further parts to receive.
 

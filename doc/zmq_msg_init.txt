@@ -61,5 +61,5 @@ linkzmq:zmq[7]
 
 AUTHORS
 -------
-The 0MQ documentation was written by Martin Sustrik <sustrik@250bpm.com> and
-Martin Lucina <martin@lucina.net>.
+This 0MQ manual page was written by Martin Sustrik <sustrik@250bpm.com> and
+Martin Lucina <mato@kotelna.sk>.
