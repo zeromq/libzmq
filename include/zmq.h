@@ -161,6 +161,8 @@ ZMQ_EXPORT int zmq_msg_init (zmq_msg_t *msg);
 ZMQ_EXPORT int zmq_msg_init_size (zmq_msg_t *msg, size_t size);
 ZMQ_EXPORT int zmq_msg_init_data (zmq_msg_t *msg, void *data,
     size_t size, zmq_free_fn *ffn, void *hint);
+ZMQ_EXPORT int zmq_msg_send (zmq_msg_t *msg, zmq_socket_t s, int flags);
+ZMQ_EXPORT int zmq_msg_recv (zmq_msg_t *msg, zmq_socket_t s, int flags);
 ZMQ_EXPORT int zmq_msg_close (zmq_msg_t *msg);
 ZMQ_EXPORT int zmq_msg_move (zmq_msg_t *dest, zmq_msg_t *src);
 ZMQ_EXPORT int zmq_msg_copy (zmq_msg_t *dest, zmq_msg_t *src);
@@ -241,9 +243,11 @@ ZMQ_EXPORT int zmq_bind (zmq_socket_t s, const char *addr);
 ZMQ_EXPORT int zmq_connect (zmq_socket_t s, const char *addr);
 ZMQ_EXPORT int zmq_send (zmq_socket_t s, const void *buf, size_t len, int flags);
 ZMQ_EXPORT int zmq_recv (zmq_socket_t s, void *buf, size_t len, int flags);
+
 ZMQ_EXPORT int zmq_sendmsg (zmq_socket_t s, zmq_msg_t *msg, int flags);
 ZMQ_EXPORT int zmq_recvmsg (zmq_socket_t s, zmq_msg_t *msg, int flags);
 
+/*  Experimental                                                              */
 ZMQ_EXPORT int zmq_sendv (zmq_socket_t s, struct iovec *iov, size_t count, int flags);
 ZMQ_EXPORT int zmq_recvmmsg (zmq_socket_t s, struct iovec *iov, size_t *count, int flags);
 
