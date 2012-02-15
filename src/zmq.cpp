@@ -300,6 +300,10 @@ int zmq_sendmsg (void *s_, zmq_msg_t *msg_, int flags_)
         errno = ENOTSOCK;
         return -1;
     }
+    if (!msg_) {
+        errno = EFAULT;
+        return -1;
+    }
     zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
     if(s->thread_safe()) s->lock();
     int result = inner_sendmsg (s, msg_, flags_);
@@ -391,6 +395,10 @@ int zmq_recvmsg (void *s_, zmq_msg_t *msg_, int flags_)
 {
     if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
         errno = ENOTSOCK;
+        return -1;
+    }
+    if (!msg_) {
+        errno = EFAULT;
         return -1;
     }
     zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
@@ -502,68 +510,95 @@ int zmq_recvmmsg (void *s_, iovec *a_, size_t *count_, int flags_)
 
 int zmq_msg_init (zmq_msg_t *msg_)
 {
+    if (!msg_) {
+        errno = EFAULT;
+        return -1;
+    }
     return ((zmq::msg_t*) msg_)->init ();
 }
 
 int zmq_msg_init_size (zmq_msg_t *msg_, size_t size_)
 {
+    if (!msg_) {
+        errno = EFAULT;
+        return -1;
+    }
     return ((zmq::msg_t*) msg_)->init_size (size_);
 }
 
 int zmq_msg_init_data (zmq_msg_t *msg_, void *data_, size_t size_,
     zmq_free_fn *ffn_, void *hint_)
 {
+    if (!msg_) {
+        errno = EFAULT;
+        return -1;
+    }
     return ((zmq::msg_t*) msg_)->init_data (data_, size_, ffn_, hint_);
 }
 
 int zmq_msg_close (zmq_msg_t *msg_)
 {
+    if (!msg_) {
+        errno = EFAULT;
+        return -1;
+    }
     return ((zmq::msg_t*) msg_)->close ();
 }
 
 int zmq_msg_move (zmq_msg_t *dest_, zmq_msg_t *src_)
 {
+    if (!dest_ || !src_) {
+        errno = EFAULT;
+        return -1;
+    }
     return ((zmq::msg_t*) dest_)->move (*(zmq::msg_t*) src_);
 }
 
 int zmq_msg_copy (zmq_msg_t *dest_, zmq_msg_t *src_)
 {
+    if (!dest_ || !src_) {
+        errno = EFAULT;
+        return -1;
+    }
     return ((zmq::msg_t*) dest_)->copy (*(zmq::msg_t*) src_);
 }
 
 void *zmq_msg_data (zmq_msg_t *msg_)
 {
+    if (!msg_) {
+        errno = EFAULT;
+        return NULL;
+    }
     return ((zmq::msg_t*) msg_)->data ();
 }
 
 size_t zmq_msg_size (zmq_msg_t *msg_)
 {
+    if (!msg_) {
+        errno = EFAULT;
+        return -1;
+    }
     return ((zmq::msg_t*) msg_)->size ();
 }
 
 int zmq_getmsgopt (zmq_msg_t *msg_, int option_, void *optval_,
     size_t *optvallen_)
 {
-    switch (option_) {
-    case ZMQ_MORE:
-        if (*optvallen_ < sizeof (int)) {
-            errno = EINVAL;
-            return -1;
-        }
-        *((int*) optval_) =
-            (((zmq::msg_t*) msg_)->flags () & zmq::msg_t::more) ? 1 : 0;
-        *optvallen_ = sizeof (int);
-        return 0;
-    default:
-        errno = EINVAL;
+    if (!msg_) {
+        errno = EFAULT;
         return -1;
     }
+    return (((zmq::msg_t*) msg_)->flags () & zmq::msg_t::more)? 1: 0;
 }
 
 // Polling.
 
 int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 {
+    if (!items_) {
+        errno = EFAULT;
+        return -1;
+    }
 #if defined ZMQ_POLL_BASED_ON_POLL
     if (unlikely (nitems_ < 0)) {
         errno = EINVAL;
@@ -582,12 +617,6 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         return usleep (timeout_ * 1000);
 #endif
     }
-
-    if (!items_) {
-        errno = EFAULT;
-        return -1;
-    }
-
     zmq::clock_t clock;
     uint64_t now = 0;
     uint64_t end = 0;
