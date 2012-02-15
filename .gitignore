@@ -34,6 +34,7 @@ tests/test_reqrep_drop
 tests/test_sub_forward
 tests/test_invalid_rep
 tests/test_msg_flags
+tests/test_ts_context
 src/platform.hpp*
 src/stamp-h1
 perf/local_lat
@@ -55,6 +56,7 @@ builds/msvc/*.suo
 builds/msvc/*/*.user
 builds/msvc/*/Debug
 builds/msvc/*/Release
+builds/redhat/zeromq.spec
 foreign/openpgm/*
 !foreign/openpgm/*.tar.bz2
 !foreign/openpgm/*.tar.gz
