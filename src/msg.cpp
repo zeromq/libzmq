@@ -1,6 +1,6 @@
 /*
+    Copyright (c) 2007-2012 iMatix Corporation
     Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2007-2009 iMatix Corporation
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -202,7 +202,7 @@ void *zmq::msg_t::data ()
     }
 }
 
-size_t zmq::msg_t::size ()
+ssize_t zmq::msg_t::size ()
 {
     //  Check the validity of the message.
     zmq_assert (check ());

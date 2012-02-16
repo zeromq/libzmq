@@ -24,6 +24,7 @@
 #define __ZMQ_MSG_HPP_INCLUDE__
 
 #include <stddef.h>
+#include <stdio.h>
 
 #include "config.hpp"
 #include "atomic_counter.hpp"
@@ -64,7 +65,7 @@ namespace zmq
         int move (msg_t &src_);
         int copy (msg_t &src_);
         void *data ();
-        size_t size ();
+        ssize_t size ();
         unsigned char flags ();
         void set_flags (unsigned char flags_);
         void reset_flags (unsigned char flags_);
@@ -95,7 +96,7 @@ namespace zmq
         struct content_t
         {
             void *data;
-            size_t size;
+            ssize_t size;
             msg_free_fn *ffn;
             void *hint;
             zmq::atomic_counter_t refcnt;

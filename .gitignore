@@ -35,6 +35,7 @@ tests/test_sub_forward
 tests/test_invalid_rep
 tests/test_msg_flags
 tests/test_ts_context
+tests/test_connect_resolve
 src/platform.hpp*
 src/stamp-h1
 perf/local_lat
