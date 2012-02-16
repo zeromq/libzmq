@@ -252,8 +252,8 @@ ZMQ_EXPORT int zmq_sendmsg (zmq_socket_t s, zmq_msg_t *msg, int flags);
 ZMQ_EXPORT int zmq_recvmsg (zmq_socket_t s, zmq_msg_t *msg, int flags);
 
 /*  Experimental                                                              */
-ZMQ_EXPORT int zmq_sendv (zmq_socket_t s, struct iovec *iov, size_t count, int flags);
-ZMQ_EXPORT int zmq_recvmmsg (zmq_socket_t s, struct iovec *iov, size_t *count, int flags);
+ZMQ_EXPORT int zmq_sendiov (zmq_socket_t s, struct iovec *iov, size_t count, int flags);
+ZMQ_EXPORT int zmq_recviov (zmq_socket_t s, struct iovec *iov, size_t *count, int flags);
 
 /******************************************************************************/
 /*  I/O multiplexing.                                                         */
