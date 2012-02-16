@@ -294,17 +294,10 @@ static int inner_sendmsg (zmq::socket_base_t *s_, zmq_msg_t *msg_, int flags_)
     return sz;
 }
 
+/*  To be deprecated once zmq_msg_send() is stable                           */
 int zmq_sendmsg (void *s_, zmq_msg_t *msg_, int flags_)
 {
-    if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
-        errno = ENOTSOCK;
-        return -1;
-    }
-    zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
-    if(s->thread_safe()) s->lock();
-    int result = inner_sendmsg (s, msg_, flags_);
-    if(s->thread_safe()) s->unlock();
-    return result;
+    return zmq_msg_send (msg_, s_, flags_);
 }
 
 int zmq_send (void *s_, const void *buf_, size_t len_, int flags_)
@@ -387,17 +380,10 @@ static int inner_recvmsg (zmq::socket_base_t *s_, zmq_msg_t *msg_, int flags_)
     return (int) zmq_msg_size (msg_);
 }
 
+/*  To be deprecated once zmq_msg_recv() is stable                           */
 int zmq_recvmsg (void *s_, zmq_msg_t *msg_, int flags_)
 {
-    if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
-        errno = ENOTSOCK;
-        return -1;
-    }
-    zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
-    if(s->thread_safe()) s->lock();
-    int result = inner_recvmsg(s, msg_, flags_);
-    if(s->thread_safe()) s->unlock();
-    return result;
+    return zmq_msg_recv (msg_, s_, flags_);
 }
 
 
@@ -514,6 +500,32 @@ int zmq_msg_init_data (zmq_msg_t *msg_, void *data_, size_t size_,
     zmq_free_fn *ffn_, void *hint_)
 {
     return ((zmq::msg_t*) msg_)->init_data (data_, size_, ffn_, hint_);
+}
+
+int zmq_msg_send (zmq_msg_t *msg_, void *s_, int flags_)
+{
+    if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
+        errno = ENOTSOCK;
+        return -1;
+    }
+    zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
+    if(s->thread_safe()) s->lock();
+    int result = inner_sendmsg (s, msg_, flags_);
+    if(s->thread_safe()) s->unlock();
+    return result;
+}
+
+int zmq_msg_recv (zmq_msg_t *msg_, void *s_, int flags_)
+{
+    if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
+        errno = ENOTSOCK;
+        return -1;
+    }
+    zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
+    if(s->thread_safe()) s->lock();
+    int result = inner_recvmsg(s, msg_, flags_);
+    if(s->thread_safe()) s->unlock();
+    return result;
 }
 
 int zmq_msg_close (zmq_msg_t *msg_)

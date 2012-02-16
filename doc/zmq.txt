@@ -77,6 +77,10 @@ Initialise a message::
     linkzmq:zmq_msg_init_size[3]
     linkzmq:zmq_msg_init_data[3]
 
+Sending and receiving a message::
+    linkzmq:zmq_msg_send[3]
+    linkzmq:zmq_msg_recv[3]
+
 Release a message::
     linkzmq:zmq_msg_close[3]
 
