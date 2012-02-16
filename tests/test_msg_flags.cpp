@@ -1,5 +1,7 @@
 /*
+    Copyright (c) 2007-2012 iMatix Corporation
     Copyright (c) 2011 250bpm s.r.o.
+    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -50,7 +52,7 @@ int main (int argc, char *argv [])
     assert (rc >= 0);
     int more;
     size_t more_size = sizeof (more);
-    rc = zmq_getmsgopt (&msg, ZMQ_MORE, &more, &more_size);
+    rc = zmq_msg_get (&msg, ZMQ_MORE, &more, &more_size);
     assert (rc == 0);
     assert (more == 1);
 
@@ -58,7 +60,7 @@ int main (int argc, char *argv [])
     rc = zmq_recvmsg (sb, &msg, 0);
     assert (rc == 1);
     more_size = sizeof (more);
-    rc = zmq_getmsgopt (&msg, ZMQ_MORE, &more, &more_size);
+    rc = zmq_msg_get (&msg, ZMQ_MORE, &more, &more_size);
     assert (rc == 0);
     assert (more == 1);
 
@@ -66,7 +68,7 @@ int main (int argc, char *argv [])
     rc = zmq_recvmsg (sb, &msg, 0);
     assert (rc == 1);
     more_size = sizeof (more);
-    rc = zmq_getmsgopt (&msg, ZMQ_MORE, &more, &more_size);
+    rc = zmq_msg_get (&msg, ZMQ_MORE, &more, &more_size);
     assert (rc == 0);
     assert (more == 0);
 
