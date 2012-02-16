@@ -83,9 +83,11 @@ Release a message::
 Access message content::
     linkzmq:zmq_msg_data[3]
     linkzmq:zmq_msg_size[3]
+    linkzmq:zmq_msg_more[3]
 
-Get message properties::
-    linkzmq:zmq_getmsgopt[3]
+Work with message properties::
+    linkzmq:zmq_msg_peek[3]
+    linkzmq:zmq_msg_poke[3]
 
 Message manipulation::
     linkzmq:zmq_msg_copy[3]
@@ -180,14 +182,14 @@ by C programmers. The intent is that programmers using 0MQ from other languages
 shall refer to this documentation alongside any documentation provided by the
 vendor of their language binding.
 
-Language bindings (Python, Ruby, Java and more) are provided by members
+Language bindings (Python, PHP, Ruby, Java and more) are provided by members
 of the 0MQ community and pointers can be found on the 0MQ website.
 
 
 AUTHORS
 -------
-The 0MQ documentation was written by Martin Sustrik <sustrik@250bpm.com> and
-Martin Lucina <martin@lucina.net>.
+This 0MQ manual page was written by Martin Sustrik <sustrik@250bpm.com>,
+Martin Lucina <martin@lucina.net>, and Pieter Hintjens <ph@imatix.com>.
 
 
 RESOURCES

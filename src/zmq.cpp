@@ -1,6 +1,6 @@
 /*
+    Copyright (c) 2007-2012 iMatix Corporation
     Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2007-2011 iMatix Corporation
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -541,23 +541,48 @@ size_t zmq_msg_size (zmq_msg_t *msg_)
     return ((zmq::msg_t*) msg_)->size ();
 }
 
-int zmq_getmsgopt (zmq_msg_t *msg_, int option_, void *optval_,
+int zmq_msg_more (zmq_msg_t *msg_)
+{
+    int more;
+    size_t more_size = sizeof (more);
+    int rc = zmq_msg_peek (msg_, ZMQ_MORE, &more, &more_size);
+    assert (rc == 0);
+    return more;
+}
+
+int zmq_msg_peek (zmq_msg_t *msg_, int option_, void *optval_,
     size_t *optvallen_)
 {
-    switch (option_) {
-    case ZMQ_MORE:
-        if (*optvallen_ < sizeof (int)) {
-            errno = EINVAL;
-            return -1;
-        }
-        *((int*) optval_) =
-            (((zmq::msg_t*) msg_)->flags () & zmq::msg_t::more) ? 1 : 0;
-        *optvallen_ = sizeof (int);
-        return 0;
-    default:
-        errno = EINVAL;
+    if (!msg_) {
+        errno = EFAULT;
         return -1;
     }
+    switch (option_) {
+        case ZMQ_MORE:
+            if (*optvallen_ < sizeof (int)) {
+                errno = EINVAL;
+                return -1;
+            }
+            *((int*) optval_) =
+                (((zmq::msg_t*) msg_)->flags () & zmq::msg_t::more)? 1 : 0;
+            *optvallen_ = sizeof (int);
+            return 0;
+        default:
+            errno = EINVAL;
+            return -1;
+    }
+}
+
+int zmq_msg_poke (zmq_msg_t *msg_, int option_, const void *optval_,
+    size_t *optvallen_)
+{
+    if (!msg_) {
+        errno = EFAULT;
+        return -1;
+    }
+    //  No options supported at present
+    errno = EINVAL;
+    return -1;
 }
 
 // Polling.
