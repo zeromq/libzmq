@@ -1,6 +1,6 @@
 /*
+    Copyright (c) 2007-2012 iMatix Corporation
     Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2007-2009 iMatix Corporation
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -36,7 +36,7 @@
 #endif
 
 static int message_count;
-static size_t message_size;
+static ssize_t message_size;
 
 #if defined ZMQ_HAVE_WINDOWS
 static unsigned int __stdcall worker (void *ctx_)
