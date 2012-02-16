@@ -1,11 +1,11 @@
-zmq_msg_poke(3)
-===============
+zmq_msg_set(3)
+==============
 
 
 NAME
 ----
 
-zmq_msg_poke - set message options
+zmq_msg_set - set message options
 
 
 SYNOPSIS
@@ -15,17 +15,17 @@ SYNOPSIS
 
 DESCRIPTION
 -----------
-The _zmq_msg_poke()_ function shall set the option specified by the
+The _zmq_msg_set()_ function shall set the option specified by the
 'option_name' argument to the value pointed to by the 'option_value' argument
 for the 0MQ socket pointed to by the 'socket' argument. The 'option_len'
 argument is the size of the option value in bytes.
 
-Currently the _zmq_msg_poke()_ function does not support any option names.
+Currently the _zmq_msg_set()_ function does not support any option names.
 
 
 RETURN VALUE
 ------------
-The _zmq_msg_poke()_ function shall return zero if successful. Otherwise it
+The _zmq_msg_set()_ function shall return zero if successful. Otherwise it
 shall return `-1` and set 'errno' to one of the values defined below.
 
 

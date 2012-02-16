@@ -545,12 +545,12 @@ int zmq_msg_more (zmq_msg_t *msg_)
 {
     int more;
     size_t more_size = sizeof (more);
-    int rc = zmq_msg_peek (msg_, ZMQ_MORE, &more, &more_size);
+    int rc = zmq_msg_get (msg_, ZMQ_MORE, &more, &more_size);
     assert (rc == 0);
     return more;
 }
 
-int zmq_msg_peek (zmq_msg_t *msg_, int option_, void *optval_,
+int zmq_msg_get (zmq_msg_t *msg_, int option_, void *optval_,
     size_t *optvallen_)
 {
     if (!msg_) {
@@ -573,7 +573,7 @@ int zmq_msg_peek (zmq_msg_t *msg_, int option_, void *optval_,
     }
 }
 
-int zmq_msg_poke (zmq_msg_t *msg_, int option_, const void *optval_,
+int zmq_msg_set (zmq_msg_t *msg_, int option_, const void *optval_,
     size_t *optvallen_)
 {
     if (!msg_) {

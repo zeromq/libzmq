@@ -86,8 +86,8 @@ Access message content::
     linkzmq:zmq_msg_more[3]
 
 Work with message properties::
-    linkzmq:zmq_msg_peek[3]
-    linkzmq:zmq_msg_poke[3]
+    linkzmq:zmq_msg_get[3]
+    linkzmq:zmq_msg_set[3]
 
 Message manipulation::
     linkzmq:zmq_msg_copy[3]

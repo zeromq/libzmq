@@ -1,20 +1,20 @@
-zmq_msg_peek(3)
-===============
+zmq_msg_get(3)
+==============
 
 
 NAME
 ----
-zmq_msg_peek - get message options
+zmq_msg_get - get message options
 
 
 SYNOPSIS
 --------
-*int zmq_msg_peek (zmq_msg_t '*message', int 'option_name', void '*option_value', size_t '*option_len');*
+*int zmq_msg_get (zmq_msg_t '*message', int 'option_name', void '*option_value', size_t '*option_len');*
 
 
 DESCRIPTION
 -----------
-The _zmq_msg_peek()_ function shall retrieve the value for the option
+The _zmq_msg_get()_ function shall retrieve the value for the option
 specified by the 'option_name' argument for the message pointed to by the
 'message' argument, and store it in the buffer pointed to by the 'option_value'
 argument. The 'option_len' argument is the size in bytes of the buffer pointed
@@ -22,14 +22,14 @@ to by 'option_value'; upon successful completion _zmq_getsockopt()_ shall
 modify the 'option_len' argument to indicate the actual size of the option
 value stored in the buffer.
 
-The following options can be retrieved with the _zmq_msg_peek()_ function:
+The following options can be retrieved with the _zmq_msg_get()_ function:
 
 *ZMQ_MORE*::
 Indicates that there are more message parts to follow after the 'message'.
 
 RETURN VALUE
 ------------
-The _zmq_msg_peek()_ function shall return zero if successful. Otherwise it
+The _zmq_msg_get()_ function shall return zero if successful. Otherwise it
 shall return `-1` and set 'errno' to one of the values defined below.
 
 
