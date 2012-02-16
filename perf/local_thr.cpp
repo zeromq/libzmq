@@ -1,6 +1,6 @@
 /*
+    Copyright (c) 2007-2012 iMatix Corporation
     Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2007-2009 iMatix Corporation
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -28,7 +28,7 @@ int main (int argc, char *argv [])
 {
     const char *bind_to;
     int message_count;
-    size_t message_size;
+    ssize_t message_size;
     void *ctx;
     void *s;
     int rc;
