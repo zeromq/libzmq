@@ -11,7 +11,8 @@ noinst_PROGRAMS = test_pair_inproc \
                   test_reqrep_device \
                   test_sub_forward \
                   test_invalid_rep \
-                  test_msg_flags
+                  test_msg_flags \
+                  test_connect_resolve
 
 if !ON_MINGW
 noinst_PROGRAMS += test_shutdown_stress \
@@ -30,6 +31,7 @@ test_reqrep_device_SOURCES = test_reqrep_device.cpp
 test_sub_forward_SOURCES = test_sub_forward.cpp
 test_invalid_rep_SOURCES = test_invalid_rep.cpp
 test_msg_flags_SOURCES = test_msg_flags.cpp
+test_connect_resolve_SOURCES = test_connect_resolve.cpp
 
 if !ON_MINGW
 test_shutdown_stress_SOURCES = test_shutdown_stress.cpp

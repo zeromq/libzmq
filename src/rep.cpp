@@ -114,9 +114,8 @@ bool zmq::rep_t::xhas_out ()
 
 zmq::rep_session_t::rep_session_t (io_thread_t *io_thread_, bool connect_,
       socket_base_t *socket_, const options_t &options_,
-      const char *protocol_, const char *address_) :
-    xrep_session_t (io_thread_, connect_, socket_, options_, protocol_,
-        address_)
+      const address_t *addr_) :
+    xrep_session_t (io_thread_, connect_, socket_, options_, addr_)
 {
 }
 
