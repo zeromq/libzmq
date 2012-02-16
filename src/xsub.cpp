@@ -215,7 +215,12 @@ void zmq::xsub_t::send_subscription (unsigned char *data_, size_t size_,
 
     //  Send it to the pipe.
     bool sent = pipe->write (&msg);
-    zmq_assert (sent);
+    //  If we reached the SNDHWM, and thus cannot send the subscription, drop
+    //  the subscription message instead. This matches the behaviour of
+    //  zmq_setsockopt(ZMQ_SUBSCRIBE, ...), which also drops subscriptions
+    //  when the SNDHWM is reached.
+    if (!sent)
+        msg.close ();
 }
 
 zmq::xsub_session_t::xsub_session_t (io_thread_t *io_thread_, bool connect_,
