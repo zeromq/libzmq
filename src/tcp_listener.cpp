@@ -124,6 +124,7 @@ int zmq::tcp_listener_t::get_address (std::string *addr_)
 { 
     struct sockaddr sa;
     char host[INET6_ADDRSTRLEN];
+    char serv_info[32];
     int port, rc;
     std::stringstream portnum;
     
@@ -136,14 +137,14 @@ int zmq::tcp_listener_t::get_address (std::string *addr_)
     
     // Split the retrieval between IPv4 and v6 addresses
     if ( sa.sa_family == AF_INET ) {
-        inet_ntop(AF_INET, &(((struct sockaddr_in *)&sa)->sin_addr), host, INET6_ADDRSTRLEN);
+        getnameinfo(&sa, sizeof(struct sockaddr), host, INET6_ADDRSTRLEN, serv_info, 32, NI_NUMERICHOST);
         port = ntohs( ((struct sockaddr_in *)&sa)->sin_port);
         portnum << port;
         
         // Store the address for retrieval by users using wildcards
         *addr_ = std::string("tcp://") + std::string(host) + std::string(":") + portnum.str();
     } else {
-        inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)&sa)->sin6_addr), host, INET6_ADDRSTRLEN);
+        getnameinfo(&sa, sizeof(struct sockaddr), host, INET6_ADDRSTRLEN, serv_info, 32, NI_NUMERICHOST);
         port = ntohs( ((struct sockaddr_in6 *)&sa)->sin6_port);
         portnum << port;
         
