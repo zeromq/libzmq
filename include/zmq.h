@@ -29,6 +29,7 @@ extern "C" {
 
 #include <errno.h>
 #include <stddef.h>
+#include <stdio.h>
 #if defined _WIN32
 #include <winsock2.h>
 #endif
