@@ -419,12 +419,12 @@ int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv4only_)
     return 0;
 }
 
-sockaddr *zmq::tcp_address_t::addr ()
+const sockaddr *zmq::tcp_address_t::addr () const
 {
     return &address.generic;
 }
 
-socklen_t zmq::tcp_address_t::addrlen ()
+socklen_t zmq::tcp_address_t::addrlen () const
 {
     if (address.generic.sa_family == AF_INET6)
         return (socklen_t) sizeof (address.ipv6);
@@ -433,9 +433,9 @@ socklen_t zmq::tcp_address_t::addrlen ()
 }
 
 #if defined ZMQ_HAVE_WINDOWS
-unsigned short zmq::tcp_address_t::family ()
+unsigned short zmq::tcp_address_t::family () const
 #else
-sa_family_t zmq::tcp_address_t::family ()
+sa_family_t zmq::tcp_address_t::family () const
 #endif
 {
     return address.generic.sa_family;

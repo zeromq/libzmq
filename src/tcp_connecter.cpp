@@ -29,6 +29,8 @@
 #include "random.hpp"
 #include "err.hpp"
 #include "ip.hpp"
+#include "address.hpp"
+#include "tcp_address.hpp"
 
 #if defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
@@ -48,19 +50,18 @@
 
 zmq::tcp_connecter_t::tcp_connecter_t (class io_thread_t *io_thread_,
       class session_base_t *session_, const options_t &options_,
-      const char *address_, bool wait_) :
+      const address_t *addr_, bool wait_) :
     own_t (io_thread_, options_),
     io_object_t (io_thread_),
+    addr (addr_),
     s (retired_fd),
     handle_valid (false),
     wait (wait_),
     session (session_),
     current_reconnect_ivl(options.reconnect_ivl)
 {
-    //  TODO: set_addess should be called separately, so that the error
-    //  can be propagated.
-    int rc = set_address (address_);
-    errno_assert (rc == 0);
+    zmq_assert (addr);
+    zmq_assert (addr->protocol == "tcp");
 }
 
 zmq::tcp_connecter_t::~tcp_connecter_t ()
@@ -176,17 +177,12 @@ int zmq::tcp_connecter_t::get_new_reconnect_ivl ()
     return this_interval;
 }
 
-int zmq::tcp_connecter_t::set_address (const char *addr_)
-{
-    return address.resolve (addr_, false, options.ipv4only ? true : false);
-}
-
 int zmq::tcp_connecter_t::open ()
 {
     zmq_assert (s == retired_fd);
 
     //  Create the socket.
-    s = open_socket (address.family (), SOCK_STREAM, IPPROTO_TCP);
+    s = open_socket (addr->resolved.tcp_addr->family (), SOCK_STREAM, IPPROTO_TCP);
 #ifdef ZMQ_HAVE_WINDOWS
     if (s == INVALID_SOCKET) {
         wsa_error_to_errno ();
@@ -199,14 +195,16 @@ int zmq::tcp_connecter_t::open ()
 
     //  On some systems, IPv4 mapping in IPv6 sockets is disabled by default.
     //  Switch it on in such cases.
-    if (address.family () == AF_INET6)
+    if (addr->resolved.tcp_addr->family () == AF_INET6)
         enable_ipv4_mapping (s);
 
     // Set the socket to non-blocking mode so that we get async connect().
     unblock_socket (s);
 
     //  Connect to the remote peer.
-    int rc = ::connect (s, address.addr (), address.addrlen ());
+    int rc = ::connect (
+        s, addr->resolved.tcp_addr->addr (),
+        addr->resolved.tcp_addr->addrlen ());
 
     //  Connect was successfull immediately.
     if (rc == 0)

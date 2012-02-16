@@ -6,6 +6,7 @@ pkgconfig_DATA = libzmq.pc
 include_HEADERS = ../include/zmq.h ../include/zmq_utils.h
 
 libzmq_la_SOURCES = \
+    address.hpp \
     array.hpp \
     atomic_counter.hpp \
     atomic_ptr.hpp \
@@ -76,6 +77,7 @@ libzmq_la_SOURCES = \
     xsub.hpp \
     ypipe.hpp \
     yqueue.hpp \
+    address.cpp \
     clock.cpp \
     ctx.cpp \
     decoder.cpp \

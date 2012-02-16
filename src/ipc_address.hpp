@@ -41,8 +41,8 @@ namespace zmq
         //  This function sets up the address for UNIX domain transport.
         int resolve (const char* path_);
 
-        sockaddr *addr ();
-        socklen_t addrlen ();
+        const sockaddr *addr () const;
+        socklen_t addrlen () const;
 
     private:
 
