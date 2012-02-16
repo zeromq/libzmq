@@ -535,9 +535,11 @@ int zmq_msg_send (zmq_msg_t *msg_, void *s_, int flags_)
         return -1;
     }
     zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
-    if(s->thread_safe()) s->lock();
-    int result = inner_sendmsg (s, msg_, flags_);
-    if(s->thread_safe()) s->unlock();
+    if (s->thread_safe())
+        s->lock();
+    int result = s_sendmsg (s, msg_, flags_);
+    if (s->thread_safe())
+        s->unlock();
     return result;
 }
 
@@ -548,9 +550,11 @@ int zmq_msg_recv (zmq_msg_t *msg_, void *s_, int flags_)
         return -1;
     }
     zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
-    if(s->thread_safe()) s->lock();
-    int result = inner_recvmsg(s, msg_, flags_);
-    if(s->thread_safe()) s->unlock();
+    if (s->thread_safe())
+        s->lock();
+    int result = s_recvmsg (s, msg_, flags_);
+    if (s->thread_safe())
+        s->unlock();
     return result;
 }
 
