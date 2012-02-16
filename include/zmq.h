@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2010 iMatix Corporation
+    Copyright (c) 2007-2012 iMatix Corporation
     Copyright (c) 2009-2011 250bpm s.r.o.
     Copyright (c) 2011 VMware, Inc.
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
@@ -166,8 +166,12 @@ ZMQ_EXPORT int zmq_msg_move (zmq_msg_t *dest, zmq_msg_t *src);
 ZMQ_EXPORT int zmq_msg_copy (zmq_msg_t *dest, zmq_msg_t *src);
 ZMQ_EXPORT void *zmq_msg_data (zmq_msg_t *msg);
 ZMQ_EXPORT size_t zmq_msg_size (zmq_msg_t *msg);
-ZMQ_EXPORT int zmq_getmsgopt (zmq_msg_t *msg, int option, void *optval,
-    size_t *optvallen);
+ZMQ_EXPORT int zmq_msg_more (zmq_msg_t *msg);
+ZMQ_EXPORT int zmq_msg_get (zmq_msg_t *msg, int option, void *optval,
+                            size_t *optvallen);
+ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, const void *optval,
+                            size_t *optvallen);
+
 
 /******************************************************************************/
 /*  0MQ infrastructure (a.k.a. context) initialisation & termination.         */
