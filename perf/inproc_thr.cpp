@@ -36,7 +36,7 @@
 #endif
 
 static int message_count;
-static ssize_t message_size;
+static size_t message_size;
 
 #if defined ZMQ_HAVE_WINDOWS
 static unsigned int __stdcall worker (void *ctx_)

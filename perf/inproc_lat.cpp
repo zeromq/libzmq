@@ -35,7 +35,7 @@
 #include <pthread.h>
 #endif
 
-static ssize_t message_size;
+static size_t message_size;
 static int roundtrip_count;
 
 #if defined ZMQ_HAVE_WINDOWS
