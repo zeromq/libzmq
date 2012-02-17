@@ -180,7 +180,6 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, const void *optval,
 /******************************************************************************/
 
 ZMQ_EXPORT zmq_ctx_t zmq_init (int io_threads);
-ZMQ_EXPORT zmq_ctx_t zmq_init_thread_safe (int io_threads);
 ZMQ_EXPORT int zmq_term (zmq_ctx_t context);
 
 /******************************************************************************/

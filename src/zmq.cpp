@@ -172,13 +172,6 @@ void *zmq_init (int io_threads_)
     return (void *) s_init (io_threads_);
 }
 
-void *zmq_init_thread_safe (int io_threads_)
-{
-    zmq::ctx_t *ctx = s_init (io_threads_);
-    ctx->set_thread_safe();
-    return (void *) ctx;
-}
-
 int zmq_term (void *ctx_)
 {
     if (!ctx_ || !((zmq::ctx_t*) ctx_)->check_tag ()) {
@@ -214,7 +207,6 @@ void *zmq_socket (void *ctx_, int type_)
     }
     zmq::ctx_t *ctx = (zmq::ctx_t*) ctx_;
     zmq::socket_base_t *s = ctx->create_socket (type_);
-    if (ctx->get_thread_safe ()) s->set_thread_safe ();
     return (void *) s;
 }
 
@@ -236,11 +228,7 @@ int zmq_setsockopt (void *s_, int option_, const void *optval_,
         return -1;
     }
     zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
-    if (s->thread_safe())
-        s->lock();
     int result = s->setsockopt (option_, optval_, optvallen_);
-    if (s->thread_safe())
-        s->unlock();
     return result;
 }
 
@@ -251,11 +239,7 @@ int zmq_getsockopt (void *s_, int option_, void *optval_, size_t *optvallen_)
         return -1;
     }
     zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
-    if (s->thread_safe())
-        s->lock();
     int result = s->getsockopt (option_, optval_, optvallen_);
-    if (s->thread_safe())
-        s->unlock();
     return result;
 }
 
@@ -266,11 +250,7 @@ int zmq_bind (void *s_, const char *addr_)
         return -1;
     }
     zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
-    if (s->thread_safe())
-        s->lock();
     int result = s->bind (addr_);
-    if (s->thread_safe())
-        s->unlock();
     return result;
 }
 
@@ -281,11 +261,7 @@ int zmq_connect (void *s_, const char *addr_)
         return -1;
     }
     zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
-    if (s->thread_safe())
-        s->lock();
     int result = s->connect (addr_);
-    if (s->thread_safe())
-        s->unlock();
     return result;
 }
 
@@ -320,11 +296,7 @@ int zmq_send (void *s_, const void *buf_, size_t len_, int flags_)
     memcpy (zmq_msg_data (&msg), buf_, len_);
 
     zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
-    if (s->thread_safe())
-        s->lock();
     rc = s_sendmsg (s, &msg, flags_);
-    if (s->thread_safe())
-        s->unlock();
     if (unlikely (rc < 0)) {
         int err = errno;
         int rc2 = zmq_msg_close (&msg);
@@ -353,8 +325,6 @@ int zmq_sendiov (void *s_, iovec *a_, size_t count_, int flags_)
     int rc = 0;
     zmq_msg_t msg;
     zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
-    if (s->thread_safe())
-        s->lock();
     
     for (size_t i = 0; i < count_; ++i) {
         rc = zmq_msg_init_size (&msg, a_[i].iov_len);
@@ -375,8 +345,6 @@ int zmq_sendiov (void *s_, iovec *a_, size_t count_, int flags_)
            break;
         }
     }
-    if (s->thread_safe())
-        s->unlock();
     return rc; 
 }
 
@@ -409,11 +377,7 @@ int zmq_recv (void *s_, void *buf_, size_t len_, int flags_)
     errno_assert (rc == 0);
 
     zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
-    if (s->thread_safe())
-        s->lock();
     int nbytes = s_recvmsg (s, &msg, flags_);
-    if (s->thread_safe())
-        s->unlock();
     if (unlikely (nbytes < 0)) {
         int err = errno;
         rc = zmq_msg_close (&msg);
@@ -460,8 +424,6 @@ int zmq_recviov (void *s_, iovec *a_, size_t *count_, int flags_)
         return -1;
     }
     zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
-    if (s->thread_safe())
-        s->lock();
 
     size_t count = (int) *count_;
     int nread = 0;
@@ -493,8 +455,6 @@ int zmq_recviov (void *s_, iovec *a_, size_t *count_, int flags_)
         // Assume zmq_socket ZMQ_RVCMORE is properly set.
         recvmore = ((zmq::msg_t*) (void *) &msg)->flags () & zmq::msg_t::more;
     }
-    if (s->thread_safe())
-        s->unlock();
     return nread;
 }
 
@@ -523,11 +483,7 @@ int zmq_msg_send (zmq_msg_t *msg_, void *s_, int flags_)
         return -1;
     }
     zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
-    if (s->thread_safe())
-        s->lock();
     int result = s_sendmsg (s, msg_, flags_);
-    if (s->thread_safe())
-        s->unlock();
     return result;
 }
 
@@ -538,11 +494,7 @@ int zmq_msg_recv (zmq_msg_t *msg_, void *s_, int flags_)
         return -1;
     }
     zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
-    if (s->thread_safe())
-        s->lock();
     int result = s_recvmsg (s, msg_, flags_);
-    if (s->thread_safe())
-        s->unlock();
     return result;
 }
 
