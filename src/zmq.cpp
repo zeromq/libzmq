@@ -449,7 +449,7 @@ int zmq_recviov (void *s_, iovec *a_, size_t *count_, int flags_)
         ++nread;
 
         // Cheat: acquire zmq_msg buffer.
-        a_[i].iov_base = zmq_msg_data (&msg);
+        a_[i].iov_base = static_cast<char *> (zmq_msg_data (&msg));
         a_[i].iov_len = zmq_msg_size (&msg);
 
         // Assume zmq_socket ZMQ_RVCMORE is properly set.
