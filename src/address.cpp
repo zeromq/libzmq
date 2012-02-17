@@ -41,10 +41,12 @@ zmq::address_t::~address_t ()
             resolved.tcp_addr = 0;
         }
     }
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
     else if (protocol == "ipc") {
         if (resolved.ipc_addr) {
             delete resolved.ipc_addr;
             resolved.ipc_addr = 0;
         }
     }
+#endif
 }
