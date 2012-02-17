@@ -464,6 +464,7 @@ int zmq::socket_base_t::connect (const char *addr_)
             return -1;
         }
     }
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
     else if(protocol == "ipc") {
         paddr->resolved.ipc_addr = new (std::nothrow) ipc_address_t ();
         zmq_assert (paddr->resolved.ipc_addr);
@@ -473,7 +474,7 @@ int zmq::socket_base_t::connect (const char *addr_)
             return -1;
         }
     }
-
+#endif
     //  Create session.
     session_base_t *session = session_base_t::create (io_thread, true, this,
         options, paddr);
