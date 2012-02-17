@@ -79,9 +79,6 @@ The operation was interrupted by delivery of a signal before the message was
 sent.
 *EFAULT*::
 Invalid message.
-*ECANTROUTE*::
-Message cannot be routed to the destination specified as the peer is either
-dead or disconnected. This error makes sense only with ZMQ_ROUTER socket.
 
 
 EXAMPLE
