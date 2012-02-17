@@ -26,8 +26,9 @@
 namespace zmq
 {
     class tcp_address_t;
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
     class ipc_address_t;
-
+#endif
     struct address_t {
         address_t (const std::string &protocol_, const std::string &address_);
 
@@ -39,10 +40,11 @@ namespace zmq
         //  Protocol specific resolved address
         union {
             tcp_address_t *tcp_addr;
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
             ipc_address_t *ipc_addr;
+#endif
         } resolved;
     };
-
 }
 
 #endif
