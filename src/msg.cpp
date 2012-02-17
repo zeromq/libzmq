@@ -202,7 +202,7 @@ void *zmq::msg_t::data ()
     }
 }
 
-ssize_t zmq::msg_t::size ()
+size_t zmq::msg_t::size ()
 {
     //  Check the validity of the message.
     zmq_assert (check ());

@@ -29,7 +29,7 @@ int main (int argc, char *argv [])
 {
     const char *connect_to;
     int roundtrip_count;
-    ssize_t message_size;
+    size_t message_size;
     void *ctx;
     void *s;
     int rc;
