@@ -9,7 +9,7 @@ zmq_msg_size - retrieve message content size in bytes
 
 SYNOPSIS
 --------
-*ssize_t zmq_msg_size (zmq_msg_t '*msg');*
+*size_t zmq_msg_size (zmq_msg_t '*msg');*
 
 
 DESCRIPTION
@@ -29,15 +29,7 @@ message content in bytes.
 
 ERRORS
 ------
-The _zmq_msg_size()_ function shall return a positive integer (0 or higher)
-if successful. Otherwise it shall return `-1` and set 'errno' to one of the
-values defined below.
-
-
-ERRORS
-------
-*EFAULT*::
-The provided 'msg' was NULL.
+No errors are defined.
 
 
 SEE ALSO

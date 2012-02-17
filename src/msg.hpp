@@ -65,7 +65,7 @@ namespace zmq
         int move (msg_t &src_);
         int copy (msg_t &src_);
         void *data ();
-        ssize_t size ();
+        size_t size ();
         unsigned char flags ();
         void set_flags (unsigned char flags_);
         void reset_flags (unsigned char flags_);
@@ -96,7 +96,7 @@ namespace zmq
         struct content_t
         {
             void *data;
-            ssize_t size;
+            size_t size;
             msg_free_fn *ffn;
             void *hint;
             zmq::atomic_counter_t refcnt;

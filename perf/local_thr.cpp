@@ -28,7 +28,7 @@ int main (int argc, char *argv [])
 {
     const char *bind_to;
     int message_count;
-    ssize_t message_size;
+    size_t message_size;
     void *ctx;
     void *s;
     int rc;
