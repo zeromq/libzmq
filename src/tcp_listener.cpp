@@ -120,7 +120,7 @@ void zmq::tcp_listener_t::close ()
     s = retired_fd;
 }
 
-int zmq::tcp_listener_t::get_address (std::string *addr_)
+int zmq::tcp_listener_t::get_address (std::string &addr_)
 { 
     struct sockaddr_storage ss;
     char host [NI_MAXHOST];
@@ -141,11 +141,17 @@ int zmq::tcp_listener_t::get_address (std::string *addr_)
     }
 
     if (ss.ss_family == AF_INET) {
-        address << "tcp://" << host << ":" << port;
+        struct sockaddr_in sa = {0};
+        memcpy (&sa, &ss, sizeof (sa));
+
+        address << "tcp://" << host << ":" << ntohs (sa.sin_port);
     } else {
-        address << "tcp://[" << host << "]:" << port;
+        struct sockaddr_in6 sa = {0};
+        memcpy (&sa, &ss, sizeof (sa));
+
+        address << "tcp://[" << host << "]:" << ntohs (sa.sin6_port);
     }
-    *addr_ = address.str ();
+    addr_ = address.str ();
     return 0;
 }
 
