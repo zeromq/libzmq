@@ -95,32 +95,34 @@ void zmq::ipc_listener_t::in_event ()
     send_attach (session, engine, false);
 }
 
-int zmq::ipc_listener_t::get_address (std::string *addr_)
+int zmq::ipc_listener_t::get_address (std::string &addr_)
 {
-    struct sockaddr_un saddr;
+    struct sockaddr_storage ss;
     int rc;
 
     // Get the details of the IPC socket
-    socklen_t sl = sizeof(sockaddr_un);
-    rc = getsockname (s, (sockaddr *)&saddr, &sl);
+    socklen_t sl = sizeof (ss);
+    rc = getsockname (s, (sockaddr *) &ss, &sl);
     if (rc != 0) {
         return rc;
     }
 
     // Store the address for retrieval by users using wildcards
-    *addr_ = std::string("ipc://") + std::string(saddr.sun_path);
+    addr_ = std::string ("ipc://");
+    struct sockaddr_un saddr;
+    memcpy (&saddr, &ss, sizeof (saddr));
 
+    addr_.append (saddr.sun_path);
     return 0;
 }
 
 int zmq::ipc_listener_t::set_address (const char *addr_)
 {
-    
     // Allow wildcard file
-    if(*addr_ == '*') {
+    if (*addr_ == '*') {
         addr_ = tempnam(NULL, NULL);
     }
-    
+
     //  Get rid of the file associated with the UNIX domain socket that
     //  may have been left behind by the previous run of the application.
     ::unlink (addr_);
@@ -148,8 +150,8 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
     rc = listen (s, options.backlog);
     if (rc != 0)
         return -1;
-        
-    return 0;  
+
+    return 0;
 }
 
 int zmq::ipc_listener_t::close ()

@@ -120,38 +120,38 @@ void zmq::tcp_listener_t::close ()
     s = retired_fd;
 }
 
-int zmq::tcp_listener_t::get_address (std::string *addr_)
+int zmq::tcp_listener_t::get_address (std::string &addr_)
 { 
-    struct sockaddr sa;
-    char host[INET6_ADDRSTRLEN];
-    char serv_info[32];
+    struct sockaddr_storage ss;
+    char host [NI_MAXHOST];
+    char serv_info [NI_MAXSERV];
     int port, rc;
-    std::stringstream portnum;
-    
+    std::stringstream address;
+
     // Get the details of the TCP socket
-    socklen_t sl = sizeof(sockaddr);                 
-    rc = getsockname (s, &sa, &sl);   
+    socklen_t sl = sizeof (ss);
+    rc = getsockname (s, (struct sockaddr *) &ss, &sl);
     if (rc != 0) {
         return rc;
     }
-    
-    // Split the retrieval between IPv4 and v6 addresses
-    if ( sa.sa_family == AF_INET ) {
-        getnameinfo(&sa, sizeof(struct sockaddr), host, INET6_ADDRSTRLEN, serv_info, 32, NI_NUMERICHOST);
-        port = ntohs( ((struct sockaddr_in *)&sa)->sin_port);
-        portnum << port;
-        
-        // Store the address for retrieval by users using wildcards
-        *addr_ = std::string("tcp://") + std::string(host) + std::string(":") + portnum.str();
-    } else {
-        getnameinfo(&sa, sizeof(struct sockaddr), host, INET6_ADDRSTRLEN, serv_info, 32, NI_NUMERICHOST);
-        port = ntohs( ((struct sockaddr_in6 *)&sa)->sin6_port);
-        portnum << port;
-        
-        // Store the address for retrieval by users using wildcards
-        *addr_ = std::string("tcp://[") + std::string(host) + std::string("]:") + portnum.str();
+
+    rc = getnameinfo ((struct sockaddr *) &ss, ss.ss_len, host, NI_MAXHOST, serv_info, NI_MAXSERV, NI_NUMERICHOST);
+    if (rc != 0) {
+        return rc;
     }
-    
+
+    if (ss.ss_family == AF_INET) {
+        struct sockaddr_in sa = {0};
+        memcpy (&sa, &ss, sizeof (sa));
+
+        address << "tcp://" << host << ":" << ntohs (sa.sin_port);
+    } else {
+        struct sockaddr_in6 sa = {0};
+        memcpy (&sa, &ss, sizeof (sa));
+
+        address << "tcp://[" << host << "]:" << ntohs (sa.sin6_port);
+    }
+    addr_ = address.str ();
     return 0;
 }
 
