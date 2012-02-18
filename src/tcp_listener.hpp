@@ -46,7 +46,7 @@ namespace zmq
         int set_address (const char *addr_);
     
         // Get the bound address for use with wildcard
-        int get_address(std::string *addr_);
+        int get_address (std::string &addr_);
 
     private:
 

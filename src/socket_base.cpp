@@ -324,7 +324,7 @@ int zmq::socket_base_t::bind (const char *addr_)
 
         //  For convenience's sake, bind can be used interchageable with
         //  connect for PGM and EPGM transports.
-        return connect (addr_); 
+        return connect (addr_);
     }
 
     //  Remaining trasnports require to be run in an I/O thread, so at this
@@ -344,8 +344,8 @@ int zmq::socket_base_t::bind (const char *addr_)
             delete listener;
             return -1;
         }
-        
-        rc = listener->get_address (&options.last_endpoint);
+
+        rc = listener->get_address (options.last_endpoint);
         launch_child (listener);
         return 0;
     }
@@ -360,8 +360,8 @@ int zmq::socket_base_t::bind (const char *addr_)
             delete listener;
             return -1;
         }
-        
-        rc = listener->get_address (&options.last_endpoint);
+
+        rc = listener->get_address (options.last_endpoint);
         launch_child (listener);
         return 0;
     }
