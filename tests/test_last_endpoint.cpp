@@ -47,6 +47,13 @@ int main (int argc, char *argv [])
     rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, test, &siz);
     assert (rc == 0 && strcmp (test, "tcp://127.0.0.1:54321") == 0);
 
+    rc = zmq_bind (sb, "ipc:///tmp/testep");
+    assert (rc == 0);
+
+    siz = 255;
+    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, test, &siz);
+    assert (rc == 0 && strcmp (test, "ipc:///tmp/testep") == 0);
+
     return 0 ;
 }
 

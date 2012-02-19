@@ -395,7 +395,8 @@ ZMQ_LAST_ENDPOINT: Retrieve the last endpoint set
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_LAST_ENDPOINT' option shall retrieve the last endpoint bound for 
 TCP and IPC transports. The returned value will be a string in the form of
-a ZMQ DSN. 
+a ZMQ DSN. Note that if the TCP host is INADDR_ANY, indicated by a *, then
+the returned address will be 0.0.0.0 (for IPv4).
 
 [horizontal]
 Option value type:: character string
