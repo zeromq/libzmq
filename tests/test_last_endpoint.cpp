@@ -24,6 +24,17 @@
 
 #include "../include/zmq.h"
 
+static void do_bind_and_verify (void *s, const char *endpoint)
+{
+    int rc = zmq_bind (s, endpoint);
+    assert (rc == 0);
+
+    char test [255];
+    size_t siz = 255;
+    rc = zmq_getsockopt (s, ZMQ_LAST_ENDPOINT, test, &siz);
+    assert (rc == 0 && strcmp (test, endpoint) == 0);
+}
+
 int main (int argc, char *argv [])
 {
     //  Create the infrastructure
@@ -32,27 +43,10 @@ int main (int argc, char *argv [])
 
     void *sb = zmq_socket (ctx, ZMQ_XREP);
     assert (sb);
-    int rc = zmq_bind (sb, "tcp://127.0.0.1:12345");
-    assert (rc == 0);
 
-    char test [255];
-    size_t siz = 255;
-    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, test, &siz);
-    assert (rc == 0 && strcmp (test, "tcp://127.0.0.1:12345") == 0);
-
-    rc = zmq_bind (sb, "tcp://127.0.0.1:54321");
-    assert (rc == 0);
-
-    siz = 255;
-    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, test, &siz);
-    assert (rc == 0 && strcmp (test, "tcp://127.0.0.1:54321") == 0);
-
-    rc = zmq_bind (sb, "ipc:///tmp/testep");
-    assert (rc == 0);
-
-    siz = 255;
-    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, test, &siz);
-    assert (rc == 0 && strcmp (test, "ipc:///tmp/testep") == 0);
+    do_bind_and_verify (sb, "tcp://127.0.0.1:5560");
+    do_bind_and_verify (sb, "tcp://127.0.0.1:5561");
+    do_bind_and_verify (sb, "ipc:///tmp/testep");
 
     return 0 ;
 }
