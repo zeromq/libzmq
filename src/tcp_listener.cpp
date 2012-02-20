@@ -124,7 +124,6 @@ int zmq::tcp_listener_t::get_address (std::string &addr_)
 { 
     struct sockaddr_storage ss;
     char host [NI_MAXHOST];
-    char serv_info [NI_MAXSERV];
     int rc;
     std::stringstream address;
 
@@ -135,7 +134,7 @@ int zmq::tcp_listener_t::get_address (std::string &addr_)
         return rc;
     }
 
-    rc = getnameinfo ((struct sockaddr *) &ss, sizeof (ss), host, NI_MAXHOST, serv_info, NI_MAXSERV, NI_NUMERICHOST);
+    rc = getnameinfo ((struct sockaddr *) &ss, sl, host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
     if (rc != 0) {
         return rc;
     }
