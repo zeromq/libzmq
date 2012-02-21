@@ -103,6 +103,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\src\address.cpp" />
     <ClCompile Include="..\..\..\src\clock.cpp" />
     <ClCompile Include="..\..\..\src\ctx.cpp" />
     <ClCompile Include="..\..\..\src\decoder.cpp" />
@@ -164,6 +165,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\include\zmq.h" />
     <ClInclude Include="..\..\..\include\zmq_utils.h" />
+    <ClInclude Include="..\..\..\src\address.hpp" />
     <ClInclude Include="..\..\..\src\array.hpp" />
     <ClInclude Include="..\..\..\src\atomic_counter.hpp" />
     <ClInclude Include="..\..\..\src\atomic_ptr.hpp" />
