@@ -200,16 +200,16 @@ void zmq::mtrie_t::rm_helper (pipe_t *pipe_, unsigned char **buff_,
     //  If there are multiple subnodes.
     //
     //  New min non-null character in the node table after the removal
-    unsigned char new_min = min;
+    unsigned char new_min = min + count - 1;
     //  New max non-null character in the node table after the removal
-    unsigned char new_max = min + count - 1;
+    unsigned char new_max = min;
     for (unsigned short c = 0; c != count; c++) {
         (*buff_) [buffsize_] = min + c;
         if (next.table [c]) {
             next.table [c]->rm_helper (pipe_, buff_, buffsize_ + 1,
                 maxbuffsize_, func_, arg_);
 
-            //  Prune redudant nodes from the mtrie
+            //  Prune redundant nodes from the mtrie
             if (next.table [c]->is_redundant ()) {
                 delete next.table [c];
                 next.table [c] = 0;
@@ -218,9 +218,16 @@ void zmq::mtrie_t::rm_helper (pipe_t *pipe_, unsigned char **buff_,
                 --live_nodes;
             }
             else {
-                if (c + min > new_min)
+                //  The node is not redundant, so it's a candidate for being
+                //  the new min/max node.
+                //
+                //  We loop through the node array from left to right, so the
+                //  first non-null, non-redundant node encountered is the new
+                //  minimum index. Conversely, the last non-redundant, non-null
+                //  node encountered is the new maximum index.
+                if (c + min < new_min)
                     new_min = c + min;
-                if (c + min < new_max)
+                if (c + min > new_max)
                     new_max = c + min;
             }
         }
