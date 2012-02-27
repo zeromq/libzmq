@@ -186,6 +186,7 @@ bool zmq::trie_t::rm (unsigned char *prefix_, size_t size_)
                      //  The pruned node is the left-most node ptr in the
                      //  node table => keep the right-most node
                      node = next.table [count - 1];
+                     min += count - 1;
                  }
                  else if (c == min + count - 1) {
                      //  The pruned node is the right-most node ptr in the
