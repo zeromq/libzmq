@@ -25,7 +25,7 @@ Context termination is performed in the following steps:
 
 2. After interrupting all blocking calls, _zmq_term()_ shall _block_ until the
    following conditions are satisfied:
-+
+
    * All sockets open within 'context' have been closed with _zmq_close()_.
 
    * For each socket within 'context', all messages sent by the application
