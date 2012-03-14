@@ -29,7 +29,11 @@
 #if defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
 #if defined _MSC_VER
+#if defined WINCE
+#include <cmnintrin.h>
+#else
 #include <intrin.h>
+#endif
 #endif
 #else
 #include <unistd.h>

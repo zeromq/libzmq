@@ -283,6 +283,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\errno.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\fq.cpp"
 				>
 			</File>
@@ -526,6 +530,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\err.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\errno.hpp"
 				>
 			</File>
 			<File

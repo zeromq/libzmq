@@ -238,7 +238,7 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     //  two instances of the library don't accidentally create signaler
     //  crossing the process boundary.
     //  We'll use named event object to implement the critical section.
-    HANDLE sync = CreateEvent (NULL, FALSE, TRUE, "zmq-signaler-port-sync");
+    HANDLE sync = CreateEvent (NULL, FALSE, TRUE, TEXT("zmq-signaler-port-sync"));
     win_assert (sync != NULL);
 
     //  Enter the critical section.
