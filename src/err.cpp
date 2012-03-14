@@ -202,9 +202,15 @@ const char *zmq::wsa_error_no (int no_)
 void zmq::win_error (char *buffer_, size_t buffer_size_)
 {
     DWORD errcode = GetLastError ();
+#if defined WINCE
+    DWORD rc = FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM |
+        FORMAT_MESSAGE_IGNORE_INSERTS, NULL, errcode, MAKELANGID(LANG_NEUTRAL,
+        SUBLANG_DEFAULT), (LPWSTR)buffer_, buffer_size_ / sizeof(wchar_t), NULL );
+#else
     DWORD rc = FormatMessageA (FORMAT_MESSAGE_FROM_SYSTEM |
         FORMAT_MESSAGE_IGNORE_INSERTS, NULL, errcode, MAKELANGID(LANG_NEUTRAL,
         SUBLANG_DEFAULT), buffer_, (DWORD) buffer_size_, NULL );
+#endif
     zmq_assert (rc);
 }
 

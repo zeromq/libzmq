@@ -27,7 +27,9 @@
 extern "C" {
 #endif
 
+#if !defined WINCE
 #include <errno.h>
+#endif
 #include <stddef.h>
 #include <stdio.h>
 #if defined _WIN32

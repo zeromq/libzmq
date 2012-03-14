@@ -27,7 +27,11 @@
 
 extern "C"
 {
+#if defined _WIN32_WCE
+	static DWORD thread_routine (LPVOID arg_)
+#else
     static unsigned int __stdcall thread_routine (void *arg_)
+#endif
     {
         zmq::thread_t *self = (zmq::thread_t*) arg_;
         self->tfn (self->arg);
@@ -39,8 +43,13 @@ void zmq::thread_t::start (thread_fn *tfn_, void *arg_)
 {
     tfn = tfn_;
     arg =arg_;
+#if defined WINCE
+    descriptor = (HANDLE) CreateThread (NULL, 0,
+        &::thread_routine, this, 0 , NULL);
+#else
     descriptor = (HANDLE) _beginthreadex (NULL, 0,
         &::thread_routine, this, 0 , NULL);
+#endif
     win_assert (descriptor != NULL);    
 }
 
