@@ -27,7 +27,11 @@
 #include <stddef.h>
 
 #if defined _MSC_VER
+#if defined WINCE
+#include <cmnintrin.h>
+#else
 #include <intrin.h>
+#endif
 #endif
 
 #if !defined ZMQ_HAVE_WINDOWS

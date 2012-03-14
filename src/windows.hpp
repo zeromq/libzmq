@@ -170,7 +170,9 @@
 
 #include <ws2tcpip.h>
 #include <ipexport.h>
+#if !defined WINCE
 #include <process.h>
+#endif
 
 //  In MinGW environment AI_NUMERICSERV is not defined.
 #ifndef AI_NUMERICSERV
