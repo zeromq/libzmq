@@ -230,7 +230,7 @@ ZMQ_EXPORT int zmq_term (zmq_ctx_t context);
 #define ZMQ_SNDTIMEO 28
 #define ZMQ_IPV4ONLY 31
 #define ZMQ_LAST_ENDPOINT 32
-#define ZMQ_FAIL_UNROUTEABLE 33
+#define ZMQ_FAIL_UNROUTABLE 33
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1

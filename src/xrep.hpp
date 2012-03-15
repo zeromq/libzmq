@@ -102,7 +102,7 @@ namespace zmq
         uint32_t next_peer_id;
 
         // If true, fail on unroutable messages instead of silently dropping them.
-        bool fail_unrouteable;
+        bool fail_unroutable;
 
         xrep_t (const xrep_t&);
         const xrep_t &operator = (const xrep_t&);

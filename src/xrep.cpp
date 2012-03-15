@@ -34,7 +34,7 @@ zmq::xrep_t::xrep_t (class ctx_t *parent_, uint32_t tid_) :
     current_out (NULL),
     more_out (false),
     next_peer_id (generate_random ()),
-    fail_unrouteable(false)
+    fail_unroutable(false)
 {
     options.type = ZMQ_XREP;
 
@@ -86,12 +86,12 @@ int zmq::xrep_t::xsetsockopt (int option_, const void *optval_,
         return -1;
     }
     
-    if(sizeof(optvallen_) != sizeof(uint64_t)) {
+    if(sizeof(optvallen_) != sizeof(int)) {
         errno = EINVAL;
         return -1;
     }
 
-    fail_unroutable = *((const uint64_t*) optval_);
+    fail_unroutable = *((const int*) optval_);
     
     return 0;
 }
@@ -164,7 +164,7 @@ int zmq::xrep_t::xsend (msg_t *msg_, int flags_)
                 }
                 rc = empty.close ();
                 errno_assert (rc == 0);
-            } else if(fail_unreachable) {
+            } else if(fail_unroutable) {
                 more_out = false;
                 retval = EHOSTUNREACH;
             }
