@@ -49,6 +49,7 @@ namespace zmq
 
         //  Overloads of functions from socket_base_t.
         void xattach_pipe (zmq::pipe_t *pipe_, bool icanhasall_);
+        int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
         int xsend (msg_t *msg_, int flags_);
         int xrecv (msg_t *msg_, int flags_);
         bool xhas_in ();
@@ -99,6 +100,9 @@ namespace zmq
         //  Peer ID are generated. It's a simple increment and wrap-over
         //  algorithm. This value is the next ID to use (if not used already).
         uint32_t next_peer_id;
+
+        // If true, fail on unroutable messages instead of silently dropping them.
+        bool fail_unroutable;
 
         xrep_t (const xrep_t&);
         const xrep_t &operator = (const xrep_t&);
