@@ -33,7 +33,8 @@ zmq::xrep_t::xrep_t (class ctx_t *parent_, uint32_t tid_) :
     more_in (false),
     current_out (NULL),
     more_out (false),
-    next_peer_id (generate_random ())
+    next_peer_id (generate_random ()),
+    fail_unrouteable(false)
 {
     options.type = ZMQ_XREP;
 
@@ -77,6 +78,24 @@ void zmq::xrep_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
     fq.attach (pipe_);    
 }
 
+int zmq::xrep_t::xsetsockopt (int option_, const void *optval_,
+    size_t optvallen_)
+{
+    if (option_ != ZMQ_FAIL_UNROUTABLE) {
+        errno = EINVAL;
+        return -1;
+    }
+    
+    if(sizeof(optvallen_) != sizeof(uint64_t)) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    fail_unroutable = *((const uint64_t*) optval_);
+    
+    return 0;
+}
+
 void zmq::xrep_t::xterminated (pipe_t *pipe_)
 {
     fq.terminated (pipe_);
@@ -118,6 +137,8 @@ int zmq::xrep_t::xsend (msg_t *msg_, int flags_)
     if (!more_out) {
         zmq_assert (!current_out);
 
+        int retval = 0;
+
         //  If we have malformed message (prefix with no subsequent message)
         //  then just silently ignore it.
         //  TODO: The connections should be killed instead.
@@ -126,7 +147,8 @@ int zmq::xrep_t::xsend (msg_t *msg_, int flags_)
             more_out = true;
 
             //  Find the pipe associated with the identity stored in the prefix.
-            //  If there's no such pipe just silently ignore the message.
+            //  If there's no such pipe just silently ignore the message, unless
+            //  fail_unreachable is set.
             blob_t identity ((unsigned char*) msg_->data (), msg_->size ());
             outpipes_t::iterator it = outpipes.find (identity);
 
@@ -142,6 +164,9 @@ int zmq::xrep_t::xsend (msg_t *msg_, int flags_)
                 }
                 rc = empty.close ();
                 errno_assert (rc == 0);
+            } else if(fail_unreachable) {
+                more_out = false;
+                retval = EHOSTUNREACH;
             }
 
         }
@@ -150,7 +175,7 @@ int zmq::xrep_t::xsend (msg_t *msg_, int flags_)
         errno_assert (rc == 0);
         rc = msg_->init ();
         errno_assert (rc == 0);
-        return 0;
+        return retval;
     }
 
     //  Check whether this is the last part of the message.
