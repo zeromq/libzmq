@@ -12,8 +12,9 @@ SYNOPSIS
 --------
 *int zmq_setsockopt (void '*socket', int 'option_name', const void '*option_value', size_t 'option_len');*
 
-Caution: All options, with the exception of ZMQ_SUBSCRIBE, ZMQ_UNSUBSCRIBE and
-ZMQ_LINGER, only take effect for subsequent socket bind/connects.
+Caution: All options, with the exception of ZMQ_SUBSCRIBE, ZMQ_UNSUBSCRIBE,
+ZMQ_LINGER and ZMQ_FAIL_UNROUTABLE only take effect for subsequent socket 
+bind/connects.
 
 DESCRIPTION
 -----------
@@ -346,6 +347,21 @@ Option value type:: int
 Option value unit:: boolean
 Default value:: 1 (true)
 Applicable socket types:: all, when using TCP transports.
+
+
+ZMQ_FAIL_UNROUTABLE: Set unroutable message behavior
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sets the behavior when an unroutable message is encountered in a 'ZMQ_ROUTER'
+socket. A value of `0` is the default behavior when the message is silently
+dropped, while a value of `1` forces the sending to fail with a 'EHOSTUNREACH'
+error code.
+
+[horizontal]
+Option value type:: int
+Option value unit:: boolean
+Default value:: 0 (false)
+Applicable socket types:: ZMQ_ROUTER
 
 
 RETURN VALUE
