@@ -90,7 +90,14 @@ This package contains ZeroMQ related development libraries and header files.
 %{_libdir}/libzmq.so.1
 %{_libdir}/libzmq.so.1.0.0
 
+%attr(0755,root,root) %{_bindir}/zmq_forwarder
+%attr(0755,root,root) %{_bindir}/zmq_queue
+%attr(0755,root,root) %{_bindir}/zmq_streamer
+
 %{_mandir}/man7/zmq.7.gz
+%{_mandir}/man1/zmq_forwarder.1.gz
+%{_mandir}/man1/zmq_queue.1.gz
+%{_mandir}/man1/zmq_streamer.1.gz
 
 %files devel
 %defattr(-,root,root,-)
