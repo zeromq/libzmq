@@ -68,6 +68,7 @@ struct iovec {
 #include <stdlib.h>
 #include <new>
 
+#include "device.hpp"
 #include "socket_base.hpp"
 #include "stdint.hpp"
 #include "config.hpp"
@@ -910,3 +911,49 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 #if defined ZMQ_POLL_BASED_ON_POLL
 #undef ZMQ_POLL_BASED_ON_POLL
 #endif
+
+int zmq_device (int device_, void *insocket_, void *outsocket_)
+{
+    if (!insocket_ || !outsocket_) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    if (device_ != ZMQ_FORWARDER && device_ != ZMQ_QUEUE &&
+          device_ != ZMQ_STREAMER) {
+       errno = EINVAL;
+       return -1;
+    }
+
+    return zmq::device ((zmq::socket_base_t*) insocket_,
+        (zmq::socket_base_t*) outsocket_);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//  0MQ utils - to be used by perf tests
+////////////////////////////////////////////////////////////////////////////////
+
+void zmq_sleep (int seconds_)
+{
+#if defined ZMQ_HAVE_WINDOWS
+    Sleep (seconds_ * 1000);
+#else
+    sleep (seconds_);
+#endif
+}
+
+void *zmq_stopwatch_start ()
+{
+    uint64_t *watch = (uint64_t*) malloc (sizeof (uint64_t));
+    alloc_assert (watch);
+    *watch = zmq::clock_t::now_us ();
+    return (void*) watch;
+}
+
+unsigned long zmq_stopwatch_stop (void *watch_)
+{
+    uint64_t end = zmq::clock_t::now_us ();
+    uint64_t start = *(uint64_t*) watch_;
+    free (watch_);
+    return (unsigned long) (end - start);
+}

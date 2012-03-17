@@ -16,6 +16,7 @@ libzmq_la_SOURCES = \
     config.hpp \
     ctx.hpp \
     decoder.hpp \
+    device.hpp \
     devpoll.hpp \
     dist.hpp \
     encoder.hpp \
@@ -81,6 +82,7 @@ libzmq_la_SOURCES = \
     clock.cpp \
     ctx.cpp \
     decoder.cpp \
+    device.cpp \
     devpoll.cpp \
     dist.cpp \
     encoder.cpp \

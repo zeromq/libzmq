@@ -149,9 +149,6 @@ remove the first part of the message and use it to determine the _identity_ of
 the peer the message shall be routed to. If the peer does not exist anymore
 the message shall be silently discarded.
 
-Previously this socket was called 'ZMQ_XREP' and that name remains available
-for backwards compatibility.
-
 When a 'ZMQ_ROUTER' socket enters an exceptional state due to having reached the
 high water mark for all peers, or if there are no peers at all, then any
 messages sent to the socket shall be dropped until the exceptional state ends.
