@@ -95,8 +95,6 @@ namespace zmq
         void write_activated (pipe_t *pipe_);
         void hiccuped (pipe_t *pipe_);
         void terminated (pipe_t *pipe_);
-        bool thread_safe() const { return thread_safe_flag; }
-        void set_thread_safe(); // should be in constructor, here for compat
         void lock();
         void unlock();
     protected:
@@ -198,7 +196,6 @@ namespace zmq
 
         socket_base_t (const socket_base_t&);
         const socket_base_t &operator = (const socket_base_t&);
-        bool thread_safe_flag;
         mutex_t sync;
     };
 
