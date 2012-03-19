@@ -99,10 +99,6 @@ namespace zmq
             reaper_tid = 1
         };
 
-        // create thread safe sockets
-        void set_thread_safe();
-        bool get_thread_safe() const;
-
         ~ctx_t ();
     private:
 
@@ -154,8 +150,6 @@ namespace zmq
         //  thus it is synchronised by a mutex.
         zmq::socket_base_t *log_socket;
         mutex_t log_sync;
-
-        bool thread_safe_flag;
 
         ctx_t (const ctx_t&);
         const ctx_t &operator = (const ctx_t&);
