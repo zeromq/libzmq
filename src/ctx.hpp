@@ -91,9 +91,6 @@ namespace zmq
         void unregister_endpoints (zmq::socket_base_t *socket_);
         endpoint_t find_endpoint (const char *addr_);
 
-        //  Logging.
-        void log (const char *format_, va_list args_);
-
         enum {
             term_tid = 0,
             reaper_tid = 1
@@ -145,11 +142,6 @@ namespace zmq
 
         //  Synchronisation of access to the list of inproc endpoints.
         mutex_t endpoints_sync;
-
-        //  PUB socket for logging. The socket is shared among all the threads,
-        //  thus it is synchronised by a mutex.
-        zmq::socket_base_t *log_socket;
-        mutex_t log_sync;
 
         ctx_t (const ctx_t&);
         const ctx_t &operator = (const ctx_t&);
