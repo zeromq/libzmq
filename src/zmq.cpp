@@ -92,7 +92,6 @@ struct iovec {
 typedef char check_msg_t_size
     [sizeof (zmq::msg_t) ==  sizeof (zmq_msg_t) ? 1 : -1];
 
-// Version.
 
 void zmq_version (int *major_, int *minor_, int *patch_)
 {
@@ -101,7 +100,6 @@ void zmq_version (int *major_, int *minor_, int *patch_)
     *patch_ = ZMQ_VERSION_PATCH;
 }
 
-// Errors.
 
 const char *zmq_strerror (int errnum_)
 {
@@ -113,15 +111,11 @@ int zmq_errno ()
     return errno;
 }
 
-// Contexts.
 
-static zmq::ctx_t *s_init (int io_threads_)
+//  New context API
+
+void *zmq_ctx_new (void)
 {
-    if (io_threads_ < 0) {
-        errno = EINVAL;
-        return NULL;
-    }
-
 #if defined ZMQ_HAVE_OPENPGM
 
     //  Init PGM transport. Ensure threading and timer are enabled. Find PGM
@@ -162,22 +156,18 @@ static zmq::ctx_t *s_init (int io_threads_)
 #endif
 
     //  Create 0MQ context.
-    zmq::ctx_t *ctx = new (std::nothrow) zmq::ctx_t ((uint32_t) io_threads_);
+    zmq::ctx_t *ctx = new (std::nothrow) zmq::ctx_t;
     alloc_assert (ctx);
     return ctx;
 }
 
-void *zmq_init (int io_threads_)
-{
-    return (void *) s_init (io_threads_);
-}
-
-int zmq_term (void *ctx_)
+int zmq_ctx_destroy (void *ctx_)
 {
     if (!ctx_ || !((zmq::ctx_t*) ctx_)->check_tag ()) {
         errno = EFAULT;
         return -1;
     }
+    
     int rc = ((zmq::ctx_t*) ctx_)->terminate ();
     int en = errno;
 
@@ -197,7 +187,41 @@ int zmq_term (void *ctx_)
     return rc;
 }
 
-// Sockets.
+int zmq_ctx_set (void *ctx_, int option_, int optval_)
+{
+    if (!ctx_ || !((zmq::ctx_t*) ctx_)->check_tag ()) {
+        errno = EFAULT;
+        return -1;
+    }
+    return ((zmq::ctx_t*) ctx_)->set (option_, optval_);
+}
+
+int zmq_ctx_get (void *ctx_, int option_)
+{
+    if (!ctx_ || !((zmq::ctx_t*) ctx_)->check_tag ()) {
+        errno = EFAULT;
+        return -1;
+    }
+    return ((zmq::ctx_t*) ctx_)->get (option_);
+}
+
+
+//  Stable/legacy context API
+
+void *zmq_init (int io_threads_)
+{
+    void *ctx = zmq_ctx_new ();
+    zmq_ctx_set (ctx, ZMQ_IO_THREADS, io_threads_);
+    return ctx;
+}
+
+int zmq_term (void *ctx_)
+{
+    return zmq_ctx_destroy (ctx_);
+}
+
+
+// Sockets
 
 void *zmq_socket (void *ctx_, int type_)
 {

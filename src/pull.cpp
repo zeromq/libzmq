@@ -24,8 +24,8 @@
 #include "msg.hpp"
 #include "pipe.hpp"
 
-zmq::pull_t::pull_t (class ctx_t *parent_, uint32_t tid_) :
-    socket_base_t (parent_, tid_)
+zmq::pull_t::pull_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
+    socket_base_t (parent_, tid_, sid_)
 {
     options.type = ZMQ_PULL;
 }

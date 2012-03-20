@@ -24,8 +24,8 @@
 #include "pipe.hpp"
 #include "msg.hpp"
 
-zmq::pair_t::pair_t (class ctx_t *parent_, uint32_t tid_) :
-    socket_base_t (parent_, tid_),
+zmq::pair_t::pair_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
+    socket_base_t (parent_, tid_, sid_),
     pipe (NULL)
 {
     options.type = ZMQ_PAIR;

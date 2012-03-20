@@ -1,6 +1,6 @@
 /*
+    Copyright (c) 2007-2012 iMatix Corporation
     Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2007-2011 iMatix Corporation
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -37,45 +37,21 @@
 #include "err.hpp"
 #include "msg.hpp"
 
-zmq::ctx_t::ctx_t (uint32_t io_threads_) :
-    tag (0xbadcafe0),
-    terminating (false)
+zmq::ctx_t::ctx_t () :
+    tag (0xabadcafe),
+    starting (true),
+    terminating (false),
+    reaper (NULL),
+    slot_count (0),
+    slots (NULL),
+    max_sockets (ZMQ_MAX_SOCKETS_DFLT),
+    io_thread_count (ZMQ_IO_THREADS_DFLT)
 {
-    //  Initialise the array of mailboxes. Additional three slots are for
-    //  internal log socket and the zmq_term thread the reaper thread.
-    slot_count = max_sockets + io_threads_ + 3;
-    slots = (mailbox_t**) malloc (sizeof (mailbox_t*) * slot_count);
-    alloc_assert (slots);
-
-    //  Initialise the infrastructure for zmq_term thread.
-    slots [term_tid] = &term_mailbox;
-
-    //  Create the reaper thread.
-    reaper = new (std::nothrow) reaper_t (this, reaper_tid);
-    alloc_assert (reaper);
-    slots [reaper_tid] = reaper->get_mailbox ();
-    reaper->start ();
-
-    //  Create I/O thread objects and launch them.
-    for (uint32_t i = 2; i != io_threads_ + 2; i++) {
-        io_thread_t *io_thread = new (std::nothrow) io_thread_t (this, i);
-        alloc_assert (io_thread);
-        io_threads.push_back (io_thread);
-        slots [i] = io_thread->get_mailbox ();
-        io_thread->start ();
-    }
-
-    //  In the unused part of the slot array, create a list of empty slots.
-    for (int32_t i = (int32_t) slot_count - 1;
-          i >= (int32_t) io_threads_ + 2; i--) {
-        empty_slots.push_back (i);
-        slots [i] = NULL;
-    }
 }
 
 bool zmq::ctx_t::check_tag ()
 {
-    return tag == 0xbadcafe0;
+    return tag == 0xabadcafe;
 }
 
 zmq::ctx_t::~ctx_t ()
@@ -93,12 +69,14 @@ zmq::ctx_t::~ctx_t ()
         delete io_threads [i];
 
     //  Deallocate the reaper thread object.
-    delete reaper;
+    if (reaper)
+        delete reaper;
 
     //  Deallocate the array of mailboxes. No special work is
     //  needed as mailboxes themselves were deallocated with their
     //  corresponding io_thread/socket objects.
-    free (slots);
+    if (slots)
+        free (slots);
 
     //  Remove the tag, so that the object is considered dead.
     tag = 0xdeadbeef;
@@ -106,35 +84,40 @@ zmq::ctx_t::~ctx_t ()
 
 int zmq::ctx_t::terminate ()
 {
-    //  Check whether termination was already underway, but interrupted and now
-    //  restarted.
-    slot_sync.lock ();
-    bool restarted = terminating;
-    slot_sync.unlock ();
+    if (!starting) {
 
-    //  First attempt to terminate the context.
-    if (!restarted) {
-        //  First send stop command to sockets so that any blocking calls can be
-        //  interrupted. If there are no sockets we can ask reaper thread to stop.
+        //  Check whether termination was already underway, but interrupted and now
+        //  restarted.
         slot_sync.lock ();
+        bool restarted = terminating;
         terminating = true;
-        for (sockets_t::size_type i = 0; i != sockets.size (); i++)
-            sockets [i]->stop ();
-        if (sockets.empty ())
-            reaper->stop ();
+        slot_sync.unlock ();
+
+        //  First attempt to terminate the context.
+        if (!restarted) {
+
+            //  First send stop command to sockets so that any blocking calls
+            //  can be interrupted. If there are no sockets we can ask reaper
+            //  thread to stop.
+            slot_sync.lock ();
+            for (sockets_t::size_type i = 0; i != sockets.size (); i++)
+                sockets [i]->stop ();
+            if (sockets.empty ())
+                reaper->stop ();
+            slot_sync.unlock ();
+        }
+
+        //  Wait till reaper thread closes all the sockets.
+        command_t cmd;
+        int rc = term_mailbox.recv (&cmd, -1);
+        if (rc == -1 && errno == EINTR)
+            return -1;
+        zmq_assert (rc == 0);
+        zmq_assert (cmd.type == command_t::done);
+        slot_sync.lock ();
+        zmq_assert (sockets.empty ());
         slot_sync.unlock ();
     }
-
-    //  Wait till reaper thread closes all the sockets.
-    command_t cmd;
-    int rc = term_mailbox.recv (&cmd, -1);
-    if (rc == -1 && errno == EINTR)
-        return -1;
-    zmq_assert (rc == 0);
-    zmq_assert (cmd.type == command_t::done);
-    slot_sync.lock ();
-    zmq_assert (sockets.empty ());
-    slot_sync.unlock ();
 
     //  Deallocate the resources.
     delete this;
@@ -142,8 +125,84 @@ int zmq::ctx_t::terminate ()
     return 0;
 }
 
+int zmq::ctx_t::set (int option_, int optval_)
+{
+    int rc = 0;
+    if (option_ == ZMQ_MAX_SOCKETS) {
+        opt_sync.lock ();
+        max_sockets = optval_;
+        opt_sync.unlock ();
+    }
+    else
+    if (option_ == ZMQ_IO_THREADS) {
+        opt_sync.lock ();
+        io_thread_count = optval_;
+        opt_sync.unlock ();
+    }
+    else {
+        errno = EINVAL;
+        rc = -1;
+    }
+    return rc;
+}
+
+int zmq::ctx_t::get (int option_)
+{
+    int rc = 0;
+    if (option_ == ZMQ_MAX_SOCKETS)
+        rc = max_sockets;
+    else
+    if (option_ == ZMQ_IO_THREADS)
+        rc = io_thread_count;
+    else {
+        errno = EINVAL;
+        rc = -1;
+    }
+    return rc;
+}
+
 zmq::socket_base_t *zmq::ctx_t::create_socket (int type_)
 {
+    if (unlikely (starting)) {
+
+        starting = false;
+
+        //  Initialise the array of mailboxes. Additional three slots are for
+        //  zmq_term thread and reaper thread.
+        opt_sync.lock ();
+        int mazmq = max_sockets;
+        int ios = io_thread_count;
+        opt_sync.unlock ();
+        slot_count = mazmq + ios + 2;
+        slots = (mailbox_t**) malloc (sizeof (mailbox_t*) * slot_count);
+        alloc_assert (slots);
+
+        //  Initialise the infrastructure for zmq_term thread.
+        slots [term_tid] = &term_mailbox;
+
+        //  Create the reaper thread.
+        reaper = new (std::nothrow) reaper_t (this, reaper_tid);
+        alloc_assert (reaper);
+        slots [reaper_tid] = reaper->get_mailbox ();
+        reaper->start ();
+
+        //  Create I/O thread objects and launch them.
+        for (int i = 2; i != ios + 2; i++) {
+            io_thread_t *io_thread = new (std::nothrow) io_thread_t (this, i);
+            alloc_assert (io_thread);
+            io_threads.push_back (io_thread);
+            slots [i] = io_thread->get_mailbox ();
+            io_thread->start ();
+        }
+
+        //  In the unused part of the slot array, create a list of empty slots.
+        for (int32_t i = (int32_t) slot_count - 1;
+              i >= (int32_t) ios + 2; i--) {
+            empty_slots.push_back (i);
+            slots [i] = NULL;
+        }
+    }
+
     slot_sync.lock ();
 
     //  Once zmq_term() was called, we can't create new sockets.
@@ -164,8 +223,11 @@ zmq::socket_base_t *zmq::ctx_t::create_socket (int type_)
     uint32_t slot = empty_slots.back ();
     empty_slots.pop_back ();
 
+    //  Generate new unique socket ID.
+    int sid = ((int) max_socket_id.add (1)) + 1;
+
     //  Create the socket and register its mailbox.
-    socket_base_t *s = socket_base_t::create (type_, this, slot);
+    socket_base_t *s = socket_base_t::create (type_, this, slot, sid);
     if (!s) {
         empty_slots.push_back (slot);
         slot_sync.unlock ();
@@ -286,3 +348,8 @@ zmq::endpoint_t zmq::ctx_t::find_endpoint (const char *addr_)
      endpoints_sync.unlock ();
      return *endpoint;
 }
+
+//  The last used socket ID, or 0 if no socket was used so far. Note that this
+//  is a global variable. Thus, even sockets created in different contexts have
+//  unique IDs.
+zmq::atomic_counter_t zmq::ctx_t::max_socket_id;

@@ -39,7 +39,7 @@ namespace zmq
     {
     public:
 
-        xsub_t (zmq::ctx_t *parent_, uint32_t tid_);
+        xsub_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
         ~xsub_t ();
 
     protected:

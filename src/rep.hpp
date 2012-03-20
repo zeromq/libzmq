@@ -36,7 +36,7 @@ namespace zmq
     {
     public:
 
-        rep_t (zmq::ctx_t *parent_, uint32_t tid_);
+        rep_t (zmq::ctx_t *parent_, uint32_t tid_, int sid);
         ~rep_t ();
 
         //  Overloads of functions from socket_base_t.

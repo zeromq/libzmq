@@ -26,8 +26,8 @@
 #include "err.hpp"
 #include "msg.hpp"
 
-zmq::xpub_t::xpub_t (class ctx_t *parent_, uint32_t tid_) :
-    socket_base_t (parent_, tid_),
+zmq::xpub_t::xpub_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
+    socket_base_t (parent_, tid_, sid_),
     more (false)
 {
     options.type = ZMQ_XPUB;

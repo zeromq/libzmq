@@ -67,33 +67,6 @@ extern "C" {
 #define ZMQ_VERSION \
     ZMQ_MAKE_VERSION(ZMQ_VERSION_MAJOR, ZMQ_VERSION_MINOR, ZMQ_VERSION_PATCH)
 
-/* ensure one of ZMQ_TYPE_SAFE/UNSAFE is defined */
-/* Choose default based on version */
-
-/* Uncomment to test */
-/* #define ZMQ_EMULATE_TYPE_SAFE */
-
-#if !defined(ZMQ_TYPE_SAFE) && !defined(ZMQ_TYPE_UNSAFE)
-#   if ZMQ_VERSION_MAJOR <= 3
-#       if defined ZMQ_EMULATE_TYPE_SAFE
-#       else
-#           define ZMQ_TYPE_UNSAFE 
-#       endif
-#    else
-#        define ZMQ_TYPE_SAFE
-#    endif
-#elif defined(ZMQ_TYPE_SAFE) && defined(ZMQ_TYPE_UNSAFE)
-#     error "BOTH ZMQ_TYPE_SAFE and ZMQ_TYPE_UNSAFE are defined!"
-#endif
-   
-#ifdef ZMQ_TYPE_UNSAFE
-typedef void *zmq_socket_t;
-typedef void *zmq_ctx_t;
-#else
-typedef struct zmq_socket_t { void *data; } zmq_socket_t;
-typedef struct zmq_ctx_t { void *data; } zmq_ctx_t;
-#endif
-
 /*  Run-time API version detection                                            */
 ZMQ_EXPORT void zmq_version (int *major, int *minor, int *patch);
 
@@ -153,6 +126,29 @@ ZMQ_EXPORT int zmq_errno (void);
 ZMQ_EXPORT const char *zmq_strerror (int errnum);
 
 /******************************************************************************/
+/*  0MQ infrastructure (a.k.a. context) initialisation & termination.         */
+/******************************************************************************/
+
+/*  New API                                                                   */
+//  Context options
+#define ZMQ_IO_THREADS  1
+#define ZMQ_MAX_SOCKETS 2
+
+//  Default for new contexts
+#define ZMQ_IO_THREADS_DFLT  1
+#define ZMQ_MAX_SOCKETS_DFLT 1024
+
+ZMQ_EXPORT void *zmq_ctx_new (void);
+ZMQ_EXPORT int zmq_ctx_destroy (void *context);
+ZMQ_EXPORT int zmq_ctx_set (void *context, int option, int optval);
+ZMQ_EXPORT int zmq_ctx_get (void *context, int option);
+
+/*  Old (legacy) API                                                          */
+ZMQ_EXPORT void *zmq_init (int io_threads);
+ZMQ_EXPORT int zmq_term (void *context);
+
+
+/******************************************************************************/
 /*  0MQ message definition.                                                   */
 /******************************************************************************/
 
@@ -164,8 +160,8 @@ ZMQ_EXPORT int zmq_msg_init (zmq_msg_t *msg);
 ZMQ_EXPORT int zmq_msg_init_size (zmq_msg_t *msg, size_t size);
 ZMQ_EXPORT int zmq_msg_init_data (zmq_msg_t *msg, void *data,
     size_t size, zmq_free_fn *ffn, void *hint);
-ZMQ_EXPORT int zmq_msg_send (zmq_msg_t *msg, zmq_socket_t s, int flags);
-ZMQ_EXPORT int zmq_msg_recv (zmq_msg_t *msg, zmq_socket_t s, int flags);
+ZMQ_EXPORT int zmq_msg_send (zmq_msg_t *msg, void *s, int flags);
+ZMQ_EXPORT int zmq_msg_recv (zmq_msg_t *msg, void *s, int flags);
 ZMQ_EXPORT int zmq_msg_close (zmq_msg_t *msg);
 ZMQ_EXPORT int zmq_msg_move (zmq_msg_t *dest, zmq_msg_t *src);
 ZMQ_EXPORT int zmq_msg_copy (zmq_msg_t *dest, zmq_msg_t *src);
@@ -176,13 +172,6 @@ ZMQ_EXPORT int zmq_msg_get (zmq_msg_t *msg, int option, void *optval,
                             size_t *optvallen);
 ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, const void *optval,
                             size_t *optvallen);
-
-/******************************************************************************/
-/*  0MQ infrastructure (a.k.a. context) initialisation & termination.         */
-/******************************************************************************/
-
-ZMQ_EXPORT zmq_ctx_t zmq_init (int io_threads);
-ZMQ_EXPORT int zmq_term (zmq_ctx_t context);
 
 /******************************************************************************/
 /*  0MQ socket definition.                                                    */
@@ -239,23 +228,23 @@ ZMQ_EXPORT int zmq_term (zmq_ctx_t context);
 #define ZMQ_DONTWAIT 1
 #define ZMQ_SNDMORE 2
 
-ZMQ_EXPORT zmq_socket_t zmq_socket (zmq_ctx_t context, int type);
-ZMQ_EXPORT int zmq_close (zmq_socket_t s);
-ZMQ_EXPORT int zmq_setsockopt (zmq_socket_t s, int option, const void *optval,
+ZMQ_EXPORT void *zmq_socket (void *, int type);
+ZMQ_EXPORT int zmq_close (void *s);
+ZMQ_EXPORT int zmq_setsockopt (void *s, int option, const void *optval,
     size_t optvallen); 
-ZMQ_EXPORT int zmq_getsockopt (zmq_socket_t s, int option, void *optval,
+ZMQ_EXPORT int zmq_getsockopt (void *s, int option, void *optval,
     size_t *optvallen);
-ZMQ_EXPORT int zmq_bind (zmq_socket_t s, const char *addr);
-ZMQ_EXPORT int zmq_connect (zmq_socket_t s, const char *addr);
-ZMQ_EXPORT int zmq_send (zmq_socket_t s, const void *buf, size_t len, int flags);
-ZMQ_EXPORT int zmq_recv (zmq_socket_t s, void *buf, size_t len, int flags);
+ZMQ_EXPORT int zmq_bind (void *s, const char *addr);
+ZMQ_EXPORT int zmq_connect (void *s, const char *addr);
+ZMQ_EXPORT int zmq_send (void *s, const void *buf, size_t len, int flags);
+ZMQ_EXPORT int zmq_recv (void *s, void *buf, size_t len, int flags);
 
-ZMQ_EXPORT int zmq_sendmsg (zmq_socket_t s, zmq_msg_t *msg, int flags);
-ZMQ_EXPORT int zmq_recvmsg (zmq_socket_t s, zmq_msg_t *msg, int flags);
+ZMQ_EXPORT int zmq_sendmsg (void *s, zmq_msg_t *msg, int flags);
+ZMQ_EXPORT int zmq_recvmsg (void *s, zmq_msg_t *msg, int flags);
 
 /*  Experimental                                                              */
-ZMQ_EXPORT int zmq_sendiov (zmq_socket_t s, struct iovec *iov, size_t count, int flags);
-ZMQ_EXPORT int zmq_recviov (zmq_socket_t s, struct iovec *iov, size_t *count, int flags);
+ZMQ_EXPORT int zmq_sendiov (void *s, struct iovec *iov, size_t count, int flags);
+ZMQ_EXPORT int zmq_recviov (void *s, struct iovec *iov, size_t *count, int flags);
 
 /******************************************************************************/
 /*  I/O multiplexing.                                                         */
@@ -267,7 +256,7 @@ ZMQ_EXPORT int zmq_recviov (zmq_socket_t s, struct iovec *iov, size_t *count, in
 
 typedef struct
 {
-    zmq_socket_t socket;
+    void *socket;
 #if defined _WIN32
     SOCKET fd;
 #else
@@ -287,7 +276,7 @@ ZMQ_EXPORT int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
 #define ZMQ_FORWARDER 2
 #define ZMQ_QUEUE 3
 
-ZMQ_EXPORT int zmq_device (int device, void * insocket, void* outsocket);
+ZMQ_EXPORT int zmq_device (int device, void *insocket, void* outsocket);
 
 #undef ZMQ_EXPORT
 
