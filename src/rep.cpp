@@ -1,6 +1,6 @@
 /*
+    Copyright (c) 2007-2012 iMatix Corporation
     Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2007-2011 iMatix Corporation
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -23,8 +23,8 @@
 #include "err.hpp"
 #include "msg.hpp"
 
-zmq::rep_t::rep_t (class ctx_t *parent_, uint32_t tid_) :
-    xrep_t (parent_, tid_),
+zmq::rep_t::rep_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
+    xrep_t (parent_, tid_, sid_),
     sending_reply (false),
     request_begins (true)
 {

@@ -27,8 +27,8 @@
 #include "likely.hpp"
 #include "err.hpp"
 
-zmq::xrep_t::xrep_t (class ctx_t *parent_, uint32_t tid_) :
-    socket_base_t (parent_, tid_),
+zmq::xrep_t::xrep_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
+    socket_base_t (parent_, tid_, sid_),
     prefetched (0),
     more_in (false),
     current_out (NULL),

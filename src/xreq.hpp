@@ -40,7 +40,7 @@ namespace zmq
     {
     public:
 
-        xreq_t (zmq::ctx_t *parent_, uint32_t tid_);
+        xreq_t (zmq::ctx_t *parent_, uint32_t tid_, int sid);
         ~xreq_t ();
 
     protected:

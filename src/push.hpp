@@ -39,7 +39,7 @@ namespace zmq
     {
     public:
 
-        push_t (zmq::ctx_t *parent_, uint32_t tid_);
+        push_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
         ~push_t ();
 
     protected:
