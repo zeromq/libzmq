@@ -68,9 +68,6 @@ namespace zmq
         //  Address to listen on.
         tcp_address_t address;
 
-        //  True, if the undelying file for UNIX domain socket exists.
-        bool has_file;
-
         //  Underlying socket.
         fd_t s;
 
