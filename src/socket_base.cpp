@@ -128,8 +128,7 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t tid_) :
     destroyed (false),
     last_tsc (0),
     ticks (0),
-    rcvmore (false),
-    thread_safe_flag (false)
+    rcvmore (false)
 {
 }
 
@@ -910,19 +909,3 @@ void zmq::socket_base_t::extract_flags (msg_t *msg_)
     //  Remove MORE flag.
     rcvmore = msg_->flags () & msg_t::more ? true : false;
 }
-
-void zmq::socket_base_t::set_thread_safe()
-{
-   thread_safe_flag = true;
-}
-
-void zmq::socket_base_t::lock() 
-{
-   sync.lock();
-}
-
-void zmq::socket_base_t::unlock() 
-{
-   sync.unlock();
-}
-
