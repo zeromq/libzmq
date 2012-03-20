@@ -53,7 +53,6 @@ zmq::tcp_listener_t::tcp_listener_t (io_thread_t *io_thread_,
       socket_base_t *socket_, const options_t &options_) :
     own_t (io_thread_, options_),
     io_object_t (io_thread_),
-    has_file (false),
     s (retired_fd),
     socket (socket_)
 {
