@@ -41,8 +41,6 @@ zmq::ctx_t::ctx_t (uint32_t io_threads_) :
     tag (0xbadcafe0),
     terminating (false)
 {
-    int rc;
-
     //  Initialise the array of mailboxes. Additional three slots are for
     //  internal log socket and the zmq_term thread the reaper thread.
     slot_count = max_sockets + io_threads_ + 3;
@@ -73,12 +71,6 @@ zmq::ctx_t::ctx_t (uint32_t io_threads_) :
         empty_slots.push_back (i);
         slots [i] = NULL;
     }
-
-    //  Create the logging infrastructure.
-    log_socket = create_socket (ZMQ_PUB);
-    zmq_assert (log_socket);
-    rc = log_socket->bind ("sys://log");
-    zmq_assert (rc == 0);
 }
 
 bool zmq::ctx_t::check_tag ()
@@ -122,14 +114,6 @@ int zmq::ctx_t::terminate ()
 
     //  First attempt to terminate the context.
     if (!restarted) {
-
-        //  Close the logging infrastructure.
-        log_sync.lock ();
-        int rc = log_socket->close ();
-        zmq_assert (rc == 0);
-        log_socket = NULL;
-        log_sync.unlock ();
-
         //  First send stop command to sockets so that any blocking calls can be
         //  interrupted. If there are no sockets we can ask reaper thread to stop.
         slot_sync.lock ();
@@ -302,24 +286,3 @@ zmq::endpoint_t zmq::ctx_t::find_endpoint (const char *addr_)
      endpoints_sync.unlock ();
      return *endpoint;
 }
-
-void zmq::ctx_t::log (const char *format_, va_list args_)
-{
-    //  Create the log message.
-    msg_t msg;
-    int rc = msg.init_size (strlen (format_) + 1);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), format_, msg.size ());
-
-    //  At this  point we migrate the log socket to the current thread.
-    //  We rely on mutex for executing the memory barrier.
-    log_sync.lock ();
-    if (log_socket)
-        log_socket->send (&msg, 0);
-    log_sync.unlock ();
-
-    rc = msg.close ();
-    errno_assert (rc == 0);
-}
-
-
