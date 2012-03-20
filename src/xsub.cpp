@@ -24,8 +24,8 @@
 #include "xsub.hpp"
 #include "err.hpp"
 
-zmq::xsub_t::xsub_t (class ctx_t *parent_, uint32_t tid_) :
-    socket_base_t (parent_, tid_),
+zmq::xsub_t::xsub_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
+    socket_base_t (parent_, tid_, sid_),
     has_message (false),
     more (false)
 {

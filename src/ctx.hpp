@@ -1,6 +1,6 @@
 /*
+    Copyright (c) 2007-2012 iMatix Corporation
     Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2007-2009 iMatix Corporation
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -33,6 +33,7 @@
 #include "mutex.hpp"
 #include "stdint.hpp"
 #include "options.hpp"
+#include "atomic_counter.hpp"
 
 namespace zmq
 {
@@ -58,9 +59,8 @@ namespace zmq
     {
     public:
 
-        //  Create the context object. The argument specifies the size
-        //  of I/O thread pool to create.
-        ctx_t (uint32_t io_threads_);
+        //  Create the context object
+        ctx_t ();
 
         //  Returns false if object is not a context.
         bool check_tag ();
@@ -71,6 +71,10 @@ namespace zmq
         //  after the last one is closed.
         int terminate ();
 
+        //  Set and set context properties
+        int set (int option_, int optval_);
+        int get (int option_);
+        
         //  Create and destroy a socket.
         zmq::socket_base_t *create_socket (int type_);
         void destroy_socket (zmq::socket_base_t *socket_);
@@ -113,6 +117,10 @@ namespace zmq
         typedef std::vector <uint32_t> emtpy_slots_t;
         emtpy_slots_t empty_slots;
 
+        //  If true, zmq_init has been called but no socket have been created
+        //  yes. Launching of I/O threads is delayed.
+        bool starting;
+
         //  If true, zmq_term was already called.
         bool terminating;
 
@@ -143,6 +151,18 @@ namespace zmq
         //  Synchronisation of access to the list of inproc endpoints.
         mutex_t endpoints_sync;
 
+        //  Maximum socket ID.
+        static atomic_counter_t max_socket_id;
+
+        //  Maximum number of sockets that can be opened at the same time.
+        int max_sockets;
+
+        //  Number of I/O threads to launch.
+        int io_thread_count;
+
+        //  Synchronisation of access to context options.
+        mutex_t opt_sync;
+        
         ctx_t (const ctx_t&);
         const ctx_t &operator = (const ctx_t&);
     };
@@ -150,4 +170,3 @@ namespace zmq
 }
 
 #endif
-

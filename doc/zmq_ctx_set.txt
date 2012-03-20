@@ -1,0 +1,75 @@
+zmq_ctx_set(3)
+==============
+
+
+NAME
+----
+
+zmq_ctx_set - set context options
+
+
+SYNOPSIS
+--------
+*int zmq_ctx_set (void '*context', int 'option_name', int 'option_value');*
+
+
+DESCRIPTION
+-----------
+The _zmq_ctx_set()_ function shall set the option specified by the
+'option_name' argument to the value of the 'option_value' argument.
+
+The _zmq_ctx_set()_ function accepts the following options:
+
+
+ZMQ_IO_THREADS: Set number of I/O threads
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_IO_THREADS' argument specifies the size of the 0MQ thread pool to
+handle I/O operations. If your application is using only the 'inproc'
+transport for messaging you may set this to zero, otherwise set it to at
+least one. This option only applies before creating any sockets on the
+context.
+
+[horizontal]
+Default value:: 1
+
+ZMQ_MAX_SOCKETS: Set maximum number of sockets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_MAX_SOCKETS' argument sets the maximum number of sockets allowed
+on the context.
+
+[horizontal]
+Default value:: 1024
+
+
+RETURN VALUE
+------------
+The _zmq_ctx_set()_ function returns zero if successful. Otherwise it
+returns `-1` and sets 'errno' to one of the values defined below.
+
+
+ERRORS
+------
+*EINVAL*::
+The requested option _option_name_ is unknown.
+
+
+EXAMPLE
+-------
+.Setting a limit on the number of sockets
+----
+void *context = zmq_ctx_new ();
+zmq_ctx_set (context, ZMQ_MAX_SOCKETS, 256);
+int max_sockets = zmq_ctx_get (context, ZMQ_MAX_SOCKETS);
+assert (max_sockets == 256);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_ctx_get[3]
+linkzmq:zmq[7]
+
+
+AUTHORS
+-------
+This 0MQ manual page was written by Pieter Hintjens <ph@imatix.com>

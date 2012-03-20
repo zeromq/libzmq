@@ -44,7 +44,7 @@ namespace zmq
     {
     public:
 
-        xrep_t (zmq::ctx_t *parent_, uint32_t tid_);
+        xrep_t (zmq::ctx_t *parent_, uint32_t tid_, int sid);
         ~xrep_t ();
 
         //  Overloads of functions from socket_base_t.

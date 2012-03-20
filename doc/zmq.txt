@@ -30,9 +30,21 @@ provided by the 0MQ library.
 
 Context
 ~~~~~~~
-Before using any 0MQ library functions the caller must initialise a 0MQ
-'context' using _zmq_init()_. The following functions are provided to handle
-initialisation and termination of a 'context':
+Before using any 0MQ library functions you must create a 0MQ 'context'. When
+you exit your application you must destroy the 'context'. These functions let
+you work with 'contexts':
+
+Create a new 0MQ context::
+    linkzmq:zmq_ctx_new[3]
+
+Work with context properties::
+    linkzmq:zmq_ctx_set[3]
+    linkzmq:zmq_ctx_get[3]
+
+Destroy a 0MQ context::
+    linkzmq:zmq_ctx_destroy[3]
+
+These deprecated functions let you create and destroy 'contexts':
 
 Initialise 0MQ context::
     linkzmq:zmq_init[3]

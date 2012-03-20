@@ -1,6 +1,6 @@
 /*
+    Copyright (c) 2007-2012 iMatix Corporation
     Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2007-2009 iMatix Corporation
     Copyright (c) 2011 VMware, Inc.
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
@@ -48,7 +48,8 @@ zmq::options_t::options_t () :
     delay_on_disconnect (true),
     filter (false),
     send_identity (false),
-    recv_identity (false)
+    recv_identity (false),
+    socket_id (0)
 {
 }
 

@@ -110,6 +110,9 @@ namespace zmq
 
         //  Receivers identity from all new connections.
         bool recv_identity;
+        
+        //  ID of the socket.
+        int socket_id;
     };
 
 }
