@@ -1,6 +1,6 @@
 /*
+    Copyright (c) 2007-2012 iMatix Corporation
     Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2007-2009 iMatix Corporation
     Copyright (c) 2011 VMware, Inc.
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
@@ -38,7 +38,7 @@ namespace zmq
     {
     public:
 
-        req_t (zmq::ctx_t *parent_, uint32_t tid_);
+        req_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
         ~req_t ();
 
         //  Overloads of functions from socket_base_t.

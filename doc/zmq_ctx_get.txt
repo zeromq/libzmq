@@ -1,0 +1,67 @@
+zmq_ctx_get(3)
+==============
+
+
+NAME
+----
+
+zmq_ctx_get - get context options
+
+
+SYNOPSIS
+--------
+*int zmq_ctx_get (void '*context', int 'option_name');*
+
+
+DESCRIPTION
+-----------
+The _zmq_ctx_get()_ function shall return the option specified by the
+'option_name' argument.
+
+The _zmq_ctx_get()_ function accepts the following option names:
+
+
+ZMQ_IO_THREADS: Get number of I/O threads
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_IO_THREADS' argument returns the size of the 0MQ thread pool
+for this context.
+
+ZMQ_MAX_SOCKETS: Set maximum number of sockets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_MAX_SOCKETS' argument returns the maximum number of sockets
+allowed for this context.
+
+
+RETURN VALUE
+------------
+The _zmq_ctx_get()_ function returns a value of 0 or greater if successful.
+Otherwise it returns `-1` and sets 'errno' to one of the values defined
+below.
+
+
+ERRORS
+------
+*EINVAL*::
+The requested option _option_name_ is unknown.
+
+
+EXAMPLE
+-------
+.Setting a limit on the number of sockets
+----
+void *context = zmq_ctx_new ();
+zmq_ctx_get (context, ZMQ_MAX_SOCKETS, 256);
+int max_sockets = zmq_ctx_get (context, ZMQ_MAX_SOCKETS);
+assert (max_sockets == 256);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_ctx_set[3]
+linkzmq:zmq[7]
+
+
+AUTHORS
+-------
+This 0MQ manual page was written by Pieter Hintjens <ph@imatix.com>

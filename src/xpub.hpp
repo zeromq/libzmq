@@ -43,7 +43,7 @@ namespace zmq
     {
     public:
 
-        xpub_t (zmq::ctx_t *parent_, uint32_t tid_);
+        xpub_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
         ~xpub_t ();
 
         //  Implementations of virtual functions from socket_base_t.

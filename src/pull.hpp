@@ -39,7 +39,7 @@ namespace zmq
     {
     public:
 
-        pull_t (zmq::ctx_t *parent_, uint32_t tid_);
+        pull_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
         ~pull_t ();
 
     protected:
