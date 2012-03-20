@@ -179,7 +179,7 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
 {
     //  First check out whether the protcol is something we are aware of.
     if (protocol_ != "inproc" && protocol_ != "ipc" && protocol_ != "tcp" &&
-          protocol_ != "pgm" && protocol_ != "epgm" && protocol_ != "sys") {
+          protocol_ != "pgm" && protocol_ != "epgm") {
         errno = EPROTONOSUPPORT;
         return -1;
     }
@@ -318,7 +318,7 @@ int zmq::socket_base_t::bind (const char *addr_)
     if (rc != 0)
         return -1;
 
-    if (protocol == "inproc" || protocol == "sys") {
+    if (protocol == "inproc") {
         endpoint_t endpoint = {this, options};
         return register_endpoint (addr_, endpoint);
     }
@@ -392,7 +392,7 @@ int zmq::socket_base_t::connect (const char *addr_)
     if (rc != 0)
         return -1;
 
-    if (protocol == "inproc" || protocol == "sys") {
+    if (protocol == "inproc") {
 
         //  TODO: inproc connect is specific with respect to creating pipes
         //  as there's no 'reconnect' functionality implemented. Once that
