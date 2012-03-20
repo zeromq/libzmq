@@ -140,7 +140,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             errno = EINVAL;
             return -1;
         }
-        if (*((int*) optval_) < 0) {
+        if (*((int*) optval_) < -1) {
             errno = EINVAL;
             return -1;
         }
