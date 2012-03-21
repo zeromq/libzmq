@@ -4,28 +4,24 @@ zmq_msg_get(3)
 
 NAME
 ----
-zmq_msg_get - get message options
+zmq_msg_get - get message property
 
 
 SYNOPSIS
 --------
-*int zmq_msg_get (zmq_msg_t '*message', int 'option_name', void '*option_value', size_t '*option_len');*
+*int zmq_msg_get (zmq_msg_t '*message', int 'property');*
 
 
 DESCRIPTION
 -----------
-The _zmq_msg_get()_ function shall retrieve the value for the option
-specified by the 'option_name' argument for the message pointed to by the
-'message' argument, and store it in the buffer pointed to by the 'option_value'
-argument. The 'option_len' argument is the size in bytes of the buffer pointed
-to by 'option_value'; upon successful completion _zmq_getsockopt()_ shall
-modify the 'option_len' argument to indicate the actual size of the option
-value stored in the buffer.
+The _zmq_msg_get()_ function shall return the value for the property
+specified by the 'property' argument for the message pointed to by the
+'message' argument.
 
-The following options can be retrieved with the _zmq_msg_get()_ function:
+The following properties can be retrieved with the _zmq_msg_get()_ function:
 
 *ZMQ_MORE*::
-Indicates that there are more message parts to follow after the 'message'.
+Indicates that there are more message frames to follow after the 'message'.
 
 RETURN VALUE
 ------------
@@ -36,42 +32,34 @@ shall return `-1` and set 'errno' to one of the values defined below.
 ERRORS
 ------
 *EINVAL*::
-The requested option _option_name_ is unknown, or the requested _option_size_ or
-_option_value_ is invalid, or the size of the buffer pointed to by
-_option_value_, as specified by _option_len_, is insufficient for storing the
-option value.
+The requested _property_ is unknown.
 
 
 EXAMPLE
 -------
-.Receiving a multi-part message
+.Receiving a multi-frame message
 ----
-zmq_msg_t part;
-int more;
-size_t more_size = sizeof (more);
 while (true) {
-    //  Create an empty 0MQ message to hold the message part
-    int rc = zmq_msg_init (&part);
+    //  Create an empty 0MQ message to hold the message frame
+    int rc = zmq_msg_init (&frame);
     assert (rc == 0);
     //  Block until a message is available to be received from socket
-    rc = zmq_recvmsg (socket, &part, 0);
+    rc = zmq_recvmsg (socket, &frame, 0);
     assert (rc != -1);
-    rc = getmsgopt (&part, ZMQ_MORE, &more, &more_size);
-    assert (rc == 0);
-    if (more)
+    if (zmq_msg_get (&frame, ZMQ_MORE))
         fprintf (stderr, "more\n");
     else {
         fprintf (stderr, "end\n");
         break;
     }
-    zmq_msg_close (part);
+    zmq_msg_close (frame);
 }
 ----
 
 
 SEE ALSO
 --------
-linkzmq:zmq_msg_poke[3]
+linkzmq:zmq_msg_set[3]
 linkzmq:zmq_msg_init[3]
 linkzmq:zmq_msg_close[3]
 linkzmq:zmq[7]

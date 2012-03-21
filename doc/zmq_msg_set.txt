@@ -5,22 +5,21 @@ zmq_msg_set(3)
 NAME
 ----
 
-zmq_msg_set - set message options
+zmq_msg_set - set message property
 
 
 SYNOPSIS
 --------
-*int zmq_msg_peek (zmq_msg_t '*message', int 'option_name', const void '*option_value', size_t '*option_len');*
+*int zmq_msg_set (zmq_msg_t '*message', int 'property', int 'value');*
 
 
 DESCRIPTION
 -----------
-The _zmq_msg_set()_ function shall set the option specified by the
-'option_name' argument to the value pointed to by the 'option_value' argument
-for the 0MQ socket pointed to by the 'socket' argument. The 'option_len'
-argument is the size of the option value in bytes.
+The _zmq_msg_set()_ function shall set the property specified by the
+'property' argument to the value of the 'value' argument for the 0MQ
+message fragment pointed to by the 'message' argument.
 
-Currently the _zmq_msg_set()_ function does not support any option names.
+Currently the _zmq_msg_set()_ function does not support any property names.
 
 
 RETURN VALUE
@@ -32,13 +31,12 @@ shall return `-1` and set 'errno' to one of the values defined below.
 ERRORS
 ------
 *EINVAL*::
-The requested option _option_name_ is unknown, or the requested _option_len_ or
-_option_value_ is invalid.
+The requested property _property_ is unknown.
 
 
 SEE ALSO
 --------
-linkzmq:zmq_msg_peek[3]
+linkzmq:zmq_msg_get[3]
 linkzmq:zmq[7]
 
 

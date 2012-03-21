@@ -168,10 +168,9 @@ ZMQ_EXPORT int zmq_msg_copy (zmq_msg_t *dest, zmq_msg_t *src);
 ZMQ_EXPORT void *zmq_msg_data (zmq_msg_t *msg);
 ZMQ_EXPORT size_t zmq_msg_size (zmq_msg_t *msg);
 ZMQ_EXPORT int zmq_msg_more (zmq_msg_t *msg);
-ZMQ_EXPORT int zmq_msg_get (zmq_msg_t *msg, int option, void *optval,
-                            size_t *optvallen);
-ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, const void *optval,
-                            size_t *optvallen);
+ZMQ_EXPORT int zmq_msg_get (zmq_msg_t *msg, int option);
+ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
+
 
 /******************************************************************************/
 /*  0MQ socket definition.                                                    */
