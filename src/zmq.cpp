@@ -549,34 +549,21 @@ size_t zmq_msg_size (zmq_msg_t *msg_)
 
 int zmq_msg_more (zmq_msg_t *msg_)
 {
-    int more;
-    size_t more_size = sizeof (more);
-    int rc = zmq_msg_get (msg_, ZMQ_MORE, &more, &more_size);
-    assert (rc == 0);
-    return more;
+    return zmq_msg_get (msg_, ZMQ_MORE);
 }
 
-int zmq_msg_get (zmq_msg_t *msg_, int option_, void *optval_,
-    size_t *optvallen_)
+int zmq_msg_get (zmq_msg_t *msg_, int option_)
 {
     switch (option_) {
         case ZMQ_MORE:
-            if (*optvallen_ < sizeof (int)) {
-                errno = EINVAL;
-                return -1;
-            }
-            *((int*) optval_) =
-                (((zmq::msg_t*) msg_)->flags () & zmq::msg_t::more)? 1 : 0;
-            *optvallen_ = sizeof (int);
-            return 0;
+            return (((zmq::msg_t*) msg_)->flags () & zmq::msg_t::more)? 1: 0;
         default:
             errno = EINVAL;
             return -1;
     }
 }
 
-int zmq_msg_set (zmq_msg_t *msg_, int option_, const void *optval_,
-    size_t *optvallen_)
+int zmq_msg_set (zmq_msg_t *msg_, int option_, int optval_)
 {
     //  No options supported at present
     errno = EINVAL;
