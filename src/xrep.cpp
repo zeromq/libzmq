@@ -85,14 +85,11 @@ int zmq::xrep_t::xsetsockopt (int option_, const void *optval_,
         errno = EINVAL;
         return -1;
     }
-    
-    if(sizeof(optvallen_) != sizeof(int)) {
+    if (optvallen_ != sizeof (int) || *((int*) optval_) < 0) {
         errno = EINVAL;
         return -1;
     }
-
     fail_unroutable = *((const int*) optval_);
-    
     return 0;
 }
 
