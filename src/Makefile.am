@@ -73,8 +73,8 @@ libzmq_la_SOURCES = \
     windows.hpp \
     wire.hpp \
     xpub.hpp \
-    xrep.hpp \
-    xreq.hpp \
+    router.hpp \
+    dealer.hpp \
     xsub.hpp \
     ypipe.hpp \
     yqueue.hpp \
@@ -129,8 +129,8 @@ libzmq_la_SOURCES = \
     thread.cpp \
     trie.cpp \
     xpub.cpp \
-    xrep.cpp \
-    xreq.cpp \
+    router.cpp \
+    dealer.cpp \
     xsub.cpp \
     zmq.cpp \
     zmq_utils.cpp
