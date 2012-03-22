@@ -278,18 +278,17 @@ zmq::io_thread_t *zmq::ctx_t::choose_io_thread (uint64_t affinity_)
 
     //  Find the I/O thread with minimum load.
     int min_load = -1;
-    io_threads_t::size_type result = 0;
+    io_thread_t *selected_io_thread = NULL;
     for (io_threads_t::size_type i = 0; i != io_threads.size (); i++) {
         if (!affinity_ || (affinity_ & (uint64_t (1) << i))) {
             int load = io_threads [i]->get_load ();
-            if (min_load == -1 || load < min_load) {
+            if (selected_io_thread == NULL || load < min_load) {
                 min_load = load;
-                result = i;
+                selected_io_thread = io_threads [i];
             }
         }
     }
-    zmq_assert (min_load != -1);
-    return io_threads [result];
+    return selected_io_thread;
 }
 
 int zmq::ctx_t::register_endpoint (const char *addr_, endpoint_t &endpoint_)
