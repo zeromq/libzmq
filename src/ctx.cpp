@@ -20,7 +20,7 @@
 */
 
 #include "platform.hpp"
-#if defined ZMQ_HAVE_WINDOWS
+#ifdef ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
 #else
 #include <unistd.h>
@@ -245,10 +245,10 @@ void zmq::ctx_t::destroy_socket (class socket_base_t *socket_)
 {
     slot_sync.lock ();
 
-    //  Free the associared thread slot.
+    //  Free the associated thread slot.
     uint32_t tid = socket_->get_tid ();
     empty_slots.push_back (tid);
-    slots [tid] = NULL;    
+    slots [tid] = NULL;
 
     //  Remove the socket from the list of sockets.
     sockets.erase (socket_);
@@ -322,7 +322,7 @@ void zmq::ctx_t::unregister_endpoints (socket_base_t *socket_)
         }
         ++it;
     }
-        
+
     endpoints_sync.unlock ();
 }
 

@@ -48,18 +48,18 @@ namespace zmq
     //  for synchronisation, handshaking or similar.
     struct endpoint_t
     {
-        class socket_base_t *socket;
+        socket_base_t *socket;
         options_t options;
     };
 
     //  Context object encapsulates all the global state associated with
     //  the library.
-    
+
     class ctx_t
     {
     public:
 
-        //  Create the context object
+        //  Create the context object.
         ctx_t ();
 
         //  Returns false if object is not a context.
@@ -71,10 +71,10 @@ namespace zmq
         //  after the last one is closed.
         int terminate ();
 
-        //  Set and set context properties
+        //  Set and get context properties.
         int set (int option_, int optval_);
         int get (int option_);
-        
+
         //  Create and destroy a socket.
         zmq::socket_base_t *create_socket (int type_);
         void destroy_socket (zmq::socket_base_t *socket_);
@@ -84,7 +84,7 @@ namespace zmq
 
         //  Returns the I/O thread that is the least busy at the moment.
         //  Affinity specifies which I/O threads are eligible (0 = all).
-        //  Returns NULL is no I/O thread is available.
+        //  Returns NULL if no I/O thread is available.
         zmq::io_thread_t *choose_io_thread (uint64_t affinity_);
 
         //  Returns reaper thread object.
@@ -117,8 +117,8 @@ namespace zmq
         typedef std::vector <uint32_t> emtpy_slots_t;
         emtpy_slots_t empty_slots;
 
-        //  If true, zmq_init has been called but no socket have been created
-        //  yes. Launching of I/O threads is delayed.
+        //  If true, zmq_init has been called but no socket has been created
+        //  yet. Launching of I/O threads is delayed.
         bool starting;
 
         //  If true, zmq_term was already called.
@@ -162,11 +162,11 @@ namespace zmq
 
         //  Synchronisation of access to context options.
         mutex_t opt_sync;
-        
+
         ctx_t (const ctx_t&);
         const ctx_t &operator = (const ctx_t&);
     };
-    
+
 }
 
 #endif
