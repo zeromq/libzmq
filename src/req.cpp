@@ -28,7 +28,7 @@
 #include "likely.hpp"
 
 zmq::req_t::req_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
-    xreq_t (parent_, tid_, sid_),
+    dealer_t (parent_, tid_, sid_),
     receiving_reply (false),
     message_begins (true)
 {
@@ -54,7 +54,7 @@ int zmq::req_t::xsend (msg_t *msg_, int flags_)
         int rc = bottom.init ();
         errno_assert (rc == 0);
         bottom.set_flags (msg_t::more);
-        rc = xreq_t::xsend (&bottom, 0);
+        rc = dealer_t::xsend (&bottom, 0);
         if (rc != 0)
             return -1;
         message_begins = false;
@@ -62,7 +62,7 @@ int zmq::req_t::xsend (msg_t *msg_, int flags_)
 
     bool more = msg_->flags () & msg_t::more ? true : false;
 
-    int rc = xreq_t::xsend (msg_, flags_);
+    int rc = dealer_t::xsend (msg_, flags_);
     if (rc != 0)
         return rc;
 
@@ -85,14 +85,14 @@ int zmq::req_t::xrecv (msg_t *msg_, int flags_)
 
     //  First part of the reply should be the original request ID.
     if (message_begins) {
-        int rc = xreq_t::xrecv (msg_, flags_);
+        int rc = dealer_t::xrecv (msg_, flags_);
         if (rc != 0)
             return rc;
 
         // TODO: This should also close the connection with the peer!
         if (unlikely (!(msg_->flags () & msg_t::more) || msg_->size () != 0)) {
             while (true) {
-                int rc = xreq_t::xrecv (msg_, flags_);
+                int rc = dealer_t::xrecv (msg_, flags_);
                 errno_assert (rc == 0);
                 if (!(msg_->flags () & msg_t::more))
                     break;
@@ -106,7 +106,7 @@ int zmq::req_t::xrecv (msg_t *msg_, int flags_)
         message_begins = false;
     }
 
-    int rc = xreq_t::xrecv (msg_, flags_);
+    int rc = dealer_t::xrecv (msg_, flags_);
     if (rc != 0)
         return rc;
 
@@ -126,7 +126,7 @@ bool zmq::req_t::xhas_in ()
     if (!receiving_reply)
         return false;
 
-    return xreq_t::xhas_in ();
+    return dealer_t::xhas_in ();
 }
 
 bool zmq::req_t::xhas_out ()
@@ -134,13 +134,13 @@ bool zmq::req_t::xhas_out ()
     if (receiving_reply)
         return false;
 
-    return xreq_t::xhas_out ();
+    return dealer_t::xhas_out ();
 }
 
 zmq::req_session_t::req_session_t (io_thread_t *io_thread_, bool connect_,
       socket_base_t *socket_, const options_t &options_,
       const address_t *addr_) :
-    xreq_session_t (io_thread_, connect_, socket_, options_, addr_),
+    dealer_session_t (io_thread_, connect_, socket_, options_, addr_),
     state (identity)
 {
 }
@@ -156,21 +156,21 @@ int zmq::req_session_t::write (msg_t *msg_)
     case bottom:
         if (msg_->flags () == msg_t::more && msg_->size () == 0) {
             state = body;
-            return xreq_session_t::write (msg_);
+            return dealer_session_t::write (msg_);
         }
         break;
     case body:
         if (msg_->flags () == msg_t::more)
-            return xreq_session_t::write (msg_);
+            return dealer_session_t::write (msg_);
         if (msg_->flags () == 0) {
             state = bottom;
-            return xreq_session_t::write (msg_);
+            return dealer_session_t::write (msg_);
         }
         break;
     case identity:
         if (msg_->flags () == 0) {
             state = bottom;
-            return xreq_session_t::write (msg_);
+            return dealer_session_t::write (msg_);
         }
         break;
     }

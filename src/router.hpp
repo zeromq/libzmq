@@ -20,8 +20,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_XREP_HPP_INCLUDED__
-#define __ZMQ_XREP_HPP_INCLUDED__
+#ifndef __ZMQ_ROUTER_HPP_INCLUDED__
+#define __ZMQ_ROUTER_HPP_INCLUDED__
 
 #include <map>
 
@@ -39,13 +39,13 @@ namespace zmq
     class pipe_t;
 
     //  TODO: This class uses O(n) scheduling. Rewrite it to use O(1) algorithm.
-    class xrep_t :
+    class router_t :
         public socket_base_t
     {
     public:
 
-        xrep_t (zmq::ctx_t *parent_, uint32_t tid_, int sid);
-        ~xrep_t ();
+        router_t (zmq::ctx_t *parent_, uint32_t tid_, int sid);
+        ~router_t ();
 
         //  Overloads of functions from socket_base_t.
         void xattach_pipe (zmq::pipe_t *pipe_, bool icanhasall_);
@@ -104,23 +104,23 @@ namespace zmq
         // If true, fail on unroutable messages instead of silently dropping them.
         bool fail_unroutable;
 
-        xrep_t (const xrep_t&);
-        const xrep_t &operator = (const xrep_t&);
+        router_t (const router_t&);
+        const router_t &operator = (const router_t&);
     };
 
-    class xrep_session_t : public session_base_t
+    class router_session_t : public session_base_t
     {
     public:
 
-        xrep_session_t (zmq::io_thread_t *io_thread_, bool connect_,
+        router_session_t (zmq::io_thread_t *io_thread_, bool connect_,
             socket_base_t *socket_, const options_t &options_,
             const address_t *addr_);
-        ~xrep_session_t ();
+        ~router_session_t ();
 
     private:
 
-        xrep_session_t (const xrep_session_t&);
-        const xrep_session_t &operator = (const xrep_session_t&);
+        router_session_t (const router_session_t&);
+        const router_session_t &operator = (const router_session_t&);
     };
 
 }
