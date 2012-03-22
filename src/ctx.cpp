@@ -297,13 +297,14 @@ int zmq::ctx_t::register_endpoint (const char *addr_, endpoint_t &endpoint_)
 
     bool inserted = endpoints.insert (endpoints_t::value_type (
         std::string (addr_), endpoint_)).second;
+
+    endpoints_sync.unlock ();
+
     if (!inserted) {
         errno = EADDRINUSE;
-        endpoints_sync.unlock ();
         return -1;
     }
 
-    endpoints_sync.unlock ();
     return 0;
 }
 
