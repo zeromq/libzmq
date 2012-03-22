@@ -33,9 +33,9 @@
 #include "address.hpp"
 
 #include "req.hpp"
-#include "xreq.hpp"
+#include "dealer.hpp"
 #include "rep.hpp"
-#include "xrep.hpp"
+#include "router.hpp"
 #include "pub.hpp"
 #include "xpub.hpp"
 #include "sub.hpp"
@@ -54,15 +54,15 @@ zmq::session_base_t *zmq::session_base_t::create (class io_thread_t *io_thread_,
         s = new (std::nothrow) req_session_t (io_thread_, connect_,
             socket_, options_, addr_);
         break;
-    case ZMQ_XREQ:
-        s = new (std::nothrow) xreq_session_t (io_thread_, connect_,
+    case ZMQ_DEALER:
+        s = new (std::nothrow) dealer_session_t (io_thread_, connect_,
             socket_, options_, addr_);
     case ZMQ_REP:
         s = new (std::nothrow) rep_session_t (io_thread_, connect_,
             socket_, options_, addr_);
         break;
-    case ZMQ_XREP:
-        s = new (std::nothrow) xrep_session_t (io_thread_, connect_,
+    case ZMQ_ROUTER:
+        s = new (std::nothrow) router_session_t (io_thread_, connect_,
             socket_, options_, addr_);
         break;
     case ZMQ_PUB:

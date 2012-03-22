@@ -64,8 +64,8 @@
 #include "rep.hpp"
 #include "pull.hpp"
 #include "push.hpp"
-#include "xreq.hpp"
-#include "xrep.hpp"
+#include "dealer.hpp"
+#include "router.hpp"
 #include "xpub.hpp"
 #include "xsub.hpp"
 
@@ -95,11 +95,11 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
     case ZMQ_REP:
         s = new (std::nothrow) rep_t (parent_, tid_, sid_);
         break;
-    case ZMQ_XREQ:
-        s = new (std::nothrow) xreq_t (parent_, tid_, sid_);
+    case ZMQ_DEALER:
+        s = new (std::nothrow) dealer_t (parent_, tid_, sid_);
         break;
-    case ZMQ_XREP:
-        s = new (std::nothrow) xrep_t (parent_, tid_, sid_);
+    case ZMQ_ROUTER:
+        s = new (std::nothrow) router_t (parent_, tid_, sid_);
         break;     
     case ZMQ_PULL:
         s = new (std::nothrow) pull_t (parent_, tid_, sid_);
