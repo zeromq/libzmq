@@ -20,7 +20,7 @@
 */
 
 #include "platform.hpp"
-#if defined ZMQ_HAVE_WINDOWS
+#ifdef ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
 #else
 #include <unistd.h>
@@ -245,10 +245,10 @@ void zmq::ctx_t::destroy_socket (class socket_base_t *socket_)
 {
     slot_sync.lock ();
 
-    //  Free the associared thread slot.
+    //  Free the associated thread slot.
     uint32_t tid = socket_->get_tid ();
     empty_slots.push_back (tid);
-    slots [tid] = NULL;    
+    slots [tid] = NULL;
 
     //  Remove the socket from the list of sockets.
     sockets.erase (socket_);
@@ -278,18 +278,17 @@ zmq::io_thread_t *zmq::ctx_t::choose_io_thread (uint64_t affinity_)
 
     //  Find the I/O thread with minimum load.
     int min_load = -1;
-    io_threads_t::size_type result = 0;
+    io_thread_t *selected_io_thread = NULL;
     for (io_threads_t::size_type i = 0; i != io_threads.size (); i++) {
         if (!affinity_ || (affinity_ & (uint64_t (1) << i))) {
             int load = io_threads [i]->get_load ();
-            if (min_load == -1 || load < min_load) {
+            if (selected_io_thread == NULL || load < min_load) {
                 min_load = load;
-                result = i;
+                selected_io_thread = io_threads [i];
             }
         }
     }
-    zmq_assert (min_load != -1);
-    return io_threads [result];
+    return selected_io_thread;
 }
 
 int zmq::ctx_t::register_endpoint (const char *addr_, endpoint_t &endpoint_)
@@ -298,13 +297,14 @@ int zmq::ctx_t::register_endpoint (const char *addr_, endpoint_t &endpoint_)
 
     bool inserted = endpoints.insert (endpoints_t::value_type (
         std::string (addr_), endpoint_)).second;
+
+    endpoints_sync.unlock ();
+
     if (!inserted) {
         errno = EADDRINUSE;
-        endpoints_sync.unlock ();
         return -1;
     }
 
-    endpoints_sync.unlock ();
     return 0;
 }
 
@@ -322,7 +322,7 @@ void zmq::ctx_t::unregister_endpoints (socket_base_t *socket_)
         }
         ++it;
     }
-        
+
     endpoints_sync.unlock ();
 }
 
@@ -337,16 +337,16 @@ zmq::endpoint_t zmq::ctx_t::find_endpoint (const char *addr_)
          endpoint_t empty = {NULL, options_t()};
          return empty;
      }
-     endpoint_t *endpoint = &it->second;
+     endpoint_t endpoint = it->second;
 
      //  Increment the command sequence number of the peer so that it won't
      //  get deallocated until "bind" command is issued by the caller.
      //  The subsequent 'bind' has to be called with inc_seqnum parameter
      //  set to false, so that the seqnum isn't incremented twice.
-     endpoint->socket->inc_seqnum ();
+     endpoint.socket->inc_seqnum ();
 
      endpoints_sync.unlock ();
-     return *endpoint;
+     return endpoint;
 }
 
 //  The last used socket ID, or 0 if no socket was used so far. Note that this
