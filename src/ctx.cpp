@@ -84,11 +84,11 @@ zmq::ctx_t::~ctx_t ()
 
 int zmq::ctx_t::terminate ()
 {
+    slot_sync.lock ();
     if (!starting) {
 
         //  Check whether termination was already underway, but interrupted and now
         //  restarted.
-        slot_sync.lock ();
         bool restarted = terminating;
         terminating = true;
         slot_sync.unlock ();
@@ -116,8 +116,8 @@ int zmq::ctx_t::terminate ()
         zmq_assert (cmd.type == command_t::done);
         slot_sync.lock ();
         zmq_assert (sockets.empty ());
-        slot_sync.unlock ();
     }
+    slot_sync.unlock ();
 
     //  Deallocate the resources.
     delete this;
@@ -163,10 +163,10 @@ int zmq::ctx_t::get (int option_)
 
 zmq::socket_base_t *zmq::ctx_t::create_socket (int type_)
 {
+    slot_sync.lock ();
     if (unlikely (starting)) {
 
         starting = false;
-
         //  Initialise the array of mailboxes. Additional three slots are for
         //  zmq_term thread and reaper thread.
         opt_sync.lock ();
@@ -203,8 +203,6 @@ zmq::socket_base_t *zmq::ctx_t::create_socket (int type_)
         }
     }
 
-    slot_sync.lock ();
-
     //  Once zmq_term() was called, we can't create new sockets.
     if (terminating) {
         slot_sync.unlock ();
@@ -237,7 +235,6 @@ zmq::socket_base_t *zmq::ctx_t::create_socket (int type_)
     slots [slot] = s->get_mailbox ();
 
     slot_sync.unlock ();
-
     return s;
 }
 

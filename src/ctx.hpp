@@ -126,7 +126,7 @@ namespace zmq
 
         //  Synchronisation of accesses to global slot-related data:
         //  sockets, empty_slots, terminating. It also synchronises
-        //  access to zombie sockets as such (as oposed to slots) and provides
+        //  access to zombie sockets as such (as opposed to slots) and provides
         //  a memory barrier to ensure that all CPU cores see the same data.
         mutex_t slot_sync;
 
