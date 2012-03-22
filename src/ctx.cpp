@@ -337,16 +337,16 @@ zmq::endpoint_t zmq::ctx_t::find_endpoint (const char *addr_)
          endpoint_t empty = {NULL, options_t()};
          return empty;
      }
-     endpoint_t *endpoint = &it->second;
+     endpoint_t endpoint = it->second;
 
      //  Increment the command sequence number of the peer so that it won't
      //  get deallocated until "bind" command is issued by the caller.
      //  The subsequent 'bind' has to be called with inc_seqnum parameter
      //  set to false, so that the seqnum isn't incremented twice.
-     endpoint->socket->inc_seqnum ();
+     endpoint.socket->inc_seqnum ();
 
      endpoints_sync.unlock ();
-     return *endpoint;
+     return endpoint;
 }
 
 //  The last used socket ID, or 0 if no socket was used so far. Note that this
