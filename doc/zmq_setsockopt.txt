@@ -133,6 +133,9 @@ identity.
 Identity should be at least one byte and at most 255 bytes long. Identities
 starting with binary zero are reserved for use by 0MQ infrastructure.
 
+If two peers use the same identity when connecting to a third peer, the
+results shall be undefined.
+
 [horizontal]
 Option value type:: binary data
 Option value unit:: N/A
