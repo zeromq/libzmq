@@ -1,6 +1,6 @@
 /*
+    Copyright (c) 2012 iMatix Corporation
     Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2011 iMatix Corporation
     Copyright (c) 2011 VMware, Inc.
     Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
 
@@ -106,6 +106,7 @@ void zmq::router_t::xterminated (pipe_t *pipe_)
             return;
         }
     }
+    //  We should never get here
     zmq_assert (false);
 }
 
@@ -236,25 +237,29 @@ int zmq::router_t::xrecv (msg_t *msg_, int flags_)
 
         zmq_assert (!more_in);
 
-        //  Empty identity means we can preserve the auto-generated identity.
-        if (msg_->size () != 0) {
-
-            //  Actual change of the identity.
-            outpipes_t::iterator it = outpipes.begin ();
-            while (it != outpipes.end ()) {
-                if (it->second.pipe == pipe) {
-                    blob_t identity ((unsigned char*) msg_->data (),
-                        msg_->size ());
-                    pipe->set_identity (identity);
-                    outpipes.erase (it);
-                    outpipe_t outpipe = {pipe, true};
-                    outpipes.insert (outpipes_t::value_type (identity,
-                        outpipe));
-                    break;
+        //  Empty identity means we can preserve the auto-generated identity
+        if (msg_->size ()) {
+            blob_t identity ((unsigned char*) msg_->data (), msg_->size ());
+            outpipes_t::iterator it = outpipes.find (identity);
+            if (it == outpipes.end ()) {
+                //  Find the pipe and change its identity
+                bool changed = false;
+                it = outpipes.begin ();
+                while (it != outpipes.end ()) {
+                    if (it->second.pipe == pipe) {
+                        pipe->set_identity (identity);
+                        outpipes.erase (it);
+                        outpipe_t outpipe = {pipe, true};
+                        if (!outpipes.insert (
+                            outpipes_t::value_type (identity, outpipe)).second)
+                            zmq_assert (false);
+                        changed = true;
+                        break;
+                    }
+                    ++it;
                 }
-                ++it;
+                zmq_assert (changed);
             }
-            zmq_assert (it != outpipes.end ());
         }
     }
 
