@@ -277,11 +277,12 @@ int zmq::tcp_address_t::resolve_interface (char const *interface_,
     //  service-name irregularity due to indeterminate socktype.
     req.ai_flags = AI_PASSIVE | AI_NUMERICHOST;
 
-#ifndef ZMQ_HAVE_WINDOWS
-    //  Windows by default maps IPv4 addresses into IPv6. In this API we only
-    //  require IPv4-mapped addresses when no native IPv6 interfaces are
-    //  available (~AI_ALL).  This saves an additional DNS roundtrip for IPv4
-    //  addresses.
+#if defined AI_V4MAPPED && !defined ZMQ_HAVE_FREEBSD
+    //  In this API we only require IPv4-mapped addresses when
+    //  no native IPv6 interfaces are available (~AI_ALL).
+    //  This saves an additional DNS roundtrip for IPv4 addresses.
+    //  Note: While the AI_V4MAPPED flag is defined on FreeBSD system,
+    //  it is not supported here. See libzmq issue #331.
     if (req.ai_family == AF_INET6)
         req.ai_flags |= AI_V4MAPPED;
 #endif
@@ -322,11 +323,13 @@ int zmq::tcp_address_t::resolve_hostname (const char *hostname_, bool ipv4only_)
     //  Need to choose one to avoid duplicate results from getaddrinfo() - this
     //  doesn't really matter, since it's not included in the addr-output.
     req.ai_socktype = SOCK_STREAM;
-    
-#ifndef ZMQ_HAVE_WINDOWS
-    //  Windows by default maps IPv4 addresses into IPv6. In this API we only
-    //  require IPv4-mapped addresses when no native IPv6 interfaces are
-    //  available.  This saves an additional DNS roundtrip for IPv4 addresses.
+
+#if defined AI_V4MAPPED && !defined ZMQ_HAVE_FREEBSD
+    //  In this API we only require IPv4-mapped addresses when
+    //  no native IPv6 interfaces are available.
+    //  This saves an additional DNS roundtrip for IPv4 addresses.
+    //  Note: While the AI_V4MAPPED flag is defined on FreeBSD system,
+    //  it is not supported here. See libzmq issue #331.
     if (req.ai_family == AF_INET6)
         req.ai_flags |= AI_V4MAPPED;
 #endif
