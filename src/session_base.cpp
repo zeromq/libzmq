@@ -57,6 +57,7 @@ zmq::session_base_t *zmq::session_base_t::create (class io_thread_t *io_thread_,
     case ZMQ_DEALER:
         s = new (std::nothrow) dealer_session_t (io_thread_, connect_,
             socket_, options_, addr_);
+        break;
     case ZMQ_REP:
         s = new (std::nothrow) rep_session_t (io_thread_, connect_,
             socket_, options_, addr_);
