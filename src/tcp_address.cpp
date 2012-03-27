@@ -213,13 +213,13 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv4only_)
 
 #endif
 
-int zmq::tcp_address_t::resolve_interface (char const *interface_,
+int zmq::tcp_address_t::resolve_interface (const char *interface_,
     bool ipv4only_)
 {
     //  Initialize temporary output pointers with storage address.
     sockaddr_storage ss;
-    sockaddr *out_addr = (sockaddr *) &ss;
-    socklen_t out_addrlen;
+    sockaddr *out_addr = (sockaddr*) &ss;
+    size_t out_addrlen;
 
     //  Initialise IP-format family/port and populate temporary output pointers
     //  with the address.
@@ -228,20 +228,21 @@ int zmq::tcp_address_t::resolve_interface (char const *interface_,
         memset (&ip4_addr, 0, sizeof (ip4_addr));
         ip4_addr.sin_family = AF_INET;
         ip4_addr.sin_addr.s_addr = htonl (INADDR_ANY);
-        out_addrlen = (socklen_t) sizeof (ip4_addr);
+        out_addrlen = sizeof ip4_addr;
         memcpy (out_addr, &ip4_addr, out_addrlen);
-    } else {
+    }
+    else {
         sockaddr_in6 ip6_addr;
         memset (&ip6_addr, 0, sizeof (ip6_addr));
         ip6_addr.sin6_family = AF_INET6;
         memcpy (&ip6_addr.sin6_addr, &in6addr_any, sizeof (in6addr_any));
-        out_addrlen = (socklen_t) sizeof (ip6_addr);
+        out_addrlen = sizeof ip6_addr;
         memcpy (out_addr, &ip6_addr, out_addrlen);
     }
 
     //  * resolves to INADDR_ANY or in6addr_any.
     if (strcmp (interface_, "*") == 0) {
-        zmq_assert (out_addrlen <= (socklen_t) sizeof (address));
+        zmq_assert (out_addrlen <= sizeof address);
         memcpy (&address, out_addr, out_addrlen);
         return 0;
     }
@@ -251,7 +252,7 @@ int zmq::tcp_address_t::resolve_interface (char const *interface_,
     if (rc != 0 && errno != ENODEV)
         return rc;
     if (rc == 0) {
-        zmq_assert (out_addrlen <= (socklen_t) sizeof (address));
+        zmq_assert (out_addrlen <= sizeof address);
         memcpy (&address, out_addr, out_addrlen);
         return 0;
     }
@@ -391,13 +392,13 @@ int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv4only_)
         addr_str = addr_str.substr (1, addr_str.size () - 2);
 
     uint16_t port;
-    // Allow 0 specifically, to detect invalid port error in atoi if not
+    //  Allow 0 specifically, to detect invalid port error in atoi if not
     if (port_str == "*" || port_str == "0")
-        // Resolve wildcard to 0 to allow autoselection of port
+        //  Resolve wildcard to 0 to allow autoselection of port
         port = 0;
     else {
         //  Parse the port number (0 is not a valid port).
-        port = (uint16_t) atoi (port_str.c_str());
+        port = (uint16_t) atoi (port_str.c_str ());
         if (port == 0) {
             errno = EINVAL;
             return -1;
