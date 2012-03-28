@@ -74,47 +74,43 @@ namespace zmq
 
 namespace zmq
 {
- 
+
     class mutex_t
     {
     public:
         inline mutex_t ()
         {
             int rc = pthread_mutex_init (&mutex, NULL);
-            if (rc)
-                posix_assert (rc);
+            posix_assert (rc);
         }
- 
+
         inline ~mutex_t ()
         {
             int rc = pthread_mutex_destroy (&mutex);
-            if (rc)
-                posix_assert (rc);
+            posix_assert (rc);
         }
- 
+
         inline void lock ()
         {
             int rc = pthread_mutex_lock (&mutex);
-            if (rc)
-                posix_assert (rc);
+            posix_assert (rc);
         }
- 
+
         inline void unlock ()
         {
             int rc = pthread_mutex_unlock (&mutex);
-            if (rc)
-                posix_assert (rc);
+            posix_assert (rc);
         }
- 
+
     private:
- 
+
         pthread_mutex_t mutex;
- 
+
         // Disable copy construction and assignment.
         mutex_t (const mutex_t&);
         const mutex_t &operator = (const mutex_t&);
     };
- 
+
 }
 
 #endif

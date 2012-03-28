@@ -152,22 +152,16 @@ int zmq::router_t::xsend (msg_t *msg_, int flags_)
 
             if (it != outpipes.end ()) {
                 current_out = it->second.pipe;
-                msg_t empty;
-                int rc = empty.init ();
-                errno_assert (rc == 0);
-                if (!current_out->check_write (&empty)) {
+                if (!current_out->check_write ()) {
                     it->second.active = false;
                     more_out = false;
                     current_out = NULL;
                 }
-                rc = empty.close ();
-                errno_assert (rc == 0);
             } else if(fail_unroutable) {
                 more_out = false;
                 errno = EHOSTUNREACH;
                 retval = -1;
             }
-
         }
 
         int rc = msg_->close ();

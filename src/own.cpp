@@ -80,24 +80,6 @@ void zmq::own_t::launch_child (own_t *object_)
     send_own (this, object_);
 }
 
-void zmq::own_t::launch_sibling (own_t *object_)
-{
-    //  At this point it is important that object is plugged in before its
-    //  owner has a chance to terminate it. Thus, 'plug' command is sent before
-    //  the 'own' command. Given that the mailbox preserves ordering of
-    //  commands, 'term' command from the owner cannot make it to the object
-    //  before the already written 'plug' command.
-
-    //  Specify the owner of the object.
-    object_->set_owner (owner);
-
-    //  Plug the object into its I/O thread.
-    send_plug (object_);
-
-    //  Make parent own the object.
-    send_own (owner, object_);
-}
-
 void zmq::own_t::process_term_req (own_t *object_)
 {
     //  When shutting down we can ignore termination requests from owned

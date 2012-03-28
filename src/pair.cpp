@@ -108,13 +108,7 @@ bool zmq::pair_t::xhas_out ()
     if (!pipe)
         return false;
 
-    msg_t msg;
-    int rc = msg.init ();
-    errno_assert (rc == 0);
-    bool result = pipe->check_write (&msg);
-    rc = msg.close ();
-    errno_assert (rc == 0);
-    return result;
+    return pipe->check_write ();
 }
 
 zmq::pair_session_t::pair_session_t (io_thread_t *io_thread_, bool connect_,
