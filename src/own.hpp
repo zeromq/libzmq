@@ -70,10 +70,6 @@ namespace zmq
         //  Launch the supplied object and become its owner.
         void launch_child (own_t *object_);
 
-        //  Launch the supplied object and make it your sibling (make your
-        //  owner become its owner as well).
-        void launch_sibling (own_t *object_);
-
         //  Ask owner object to terminate this object. It may take a while
         //  while actual termination is started. This function should not be
         //  called more than once.
