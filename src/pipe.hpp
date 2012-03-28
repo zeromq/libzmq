@@ -87,7 +87,7 @@ namespace zmq
 
         //  Checks whether messages can be written to the pipe. If writing
         //  the message would cause high watermark the function returns false.
-        bool check_write (msg_t *msg_);
+        bool check_write ();
 
         //  Writes a message to the underlying pipe. Returns false if the
         //  message cannot be written because high watermark was reached.
