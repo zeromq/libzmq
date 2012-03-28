@@ -146,7 +146,7 @@ bool zmq::pipe_t::read (msg_t *msg_)
     return true;
 }
 
-bool zmq::pipe_t::check_write (msg_t *msg_)
+bool zmq::pipe_t::check_write ()
 {
     if (unlikely (!out_active || state != active))
         return false;
@@ -163,7 +163,7 @@ bool zmq::pipe_t::check_write (msg_t *msg_)
 
 bool zmq::pipe_t::write (msg_t *msg_)
 {
-    if (unlikely (!check_write (msg_)))
+    if (unlikely (!check_write ()))
         return false;
 
     bool more = msg_->flags () & msg_t::more ? true : false;

@@ -131,17 +131,9 @@ bool zmq::lb_t::has_out ()
 
     while (active > 0) {
 
-        //  Check whether zero-sized message can be written to the pipe.
-        msg_t msg;
-        int rc = msg.init ();
-        errno_assert (rc == 0);
-        if (pipes [current]->check_write (&msg)) {
-            rc = msg.close ();
-            errno_assert (rc == 0);
+        //  Check whether a pipe has room for another message.
+        if (pipes [current]->check_write ())
             return true;
-        }
-        rc = msg.close ();
-        errno_assert (rc == 0);
 
         //  Deactivate the pipe.
         active--;
