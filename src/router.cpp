@@ -164,7 +164,8 @@ int zmq::router_t::xsend (msg_t *msg_, int flags_)
                 errno_assert (rc == 0);
             } else if(fail_unroutable) {
                 more_out = false;
-                retval = EHOSTUNREACH;
+                errno = EHOSTUNREACH;
+                retval = -1;
             }
 
         }
