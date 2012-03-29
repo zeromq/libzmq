@@ -210,9 +210,13 @@ int zmq_ctx_get (void *ctx_, int option_)
 
 void *zmq_init (int io_threads_)
 {
-    void *ctx = zmq_ctx_new ();
-    zmq_ctx_set (ctx, ZMQ_IO_THREADS, io_threads_);
-    return ctx;
+    if (io_threads_ >= 0) {
+        void *ctx = zmq_ctx_new ();
+        zmq_ctx_set (ctx, ZMQ_IO_THREADS, io_threads_);
+        return ctx;
+    }
+    errno = EINVAL;
+    return NULL;   
 }
 
 int zmq_term (void *ctx_)
