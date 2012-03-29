@@ -128,13 +128,13 @@ int zmq::ctx_t::terminate ()
 int zmq::ctx_t::set (int option_, int optval_)
 {
     int rc = 0;
-    if (option_ == ZMQ_MAX_SOCKETS) {
+    if (option_ == ZMQ_MAX_SOCKETS && optval_ >= 1) {
         opt_sync.lock ();
         max_sockets = optval_;
         opt_sync.unlock ();
     }
     else
-    if (option_ == ZMQ_IO_THREADS) {
+    if (option_ == ZMQ_IO_THREADS && optval_ >= 0) {
         opt_sync.lock ();
         io_thread_count = optval_;
         opt_sync.unlock ();
