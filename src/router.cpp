@@ -154,11 +154,9 @@ int zmq::router_t::xsend (msg_t *msg_, int flags_)
                 current_out = it->second.pipe;
                 if (!current_out->check_write ()) {
                     it->second.active = false;
-                    more_out = false;
                     current_out = NULL;
                 }
             } else if(fail_unroutable) {
-                more_out = false;
                 errno = EHOSTUNREACH;
                 retval = -1;
             }
