@@ -65,15 +65,21 @@ namespace zmq
 
     private:
 
+        //  Receive peer id and update lookup map
+        bool identify_peer (pipe_t *pipe_);
+
         //  Fair queueing object for inbound pipes.
         fq_t fq;
 
-        //  This value is either 0 (nothing is prefetched), 1 (only message body
-        //  is prefetched) or 2 (both identity and message body are prefetched).
-        int prefetched;
+        //  True iff there is a message held in the pre-fetch buffer.
+        bool prefetched;
+
+        //  If true, the receiver got the message part with
+        //  the peer's identity.
+        bool identity_sent;
 
         //  Holds the prefetched identity.
-        blob_t prefetched_id;
+        msg_t prefetched_id;
 
         //  Holds the prefetched message.
         msg_t prefetched_msg;
@@ -86,6 +92,9 @@ namespace zmq
             zmq::pipe_t *pipe;
             bool active;
         };
+
+        //  We keep a set of pipes that have not been identified yet.
+        std::set <pipe_t*> anonymous_pipes;
 
         //  Outbound pipes indexed by the peer IDs.
         typedef std::map <blob_t, outpipe_t> outpipes_t;
