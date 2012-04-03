@@ -108,8 +108,10 @@ void zmq::router_t::xread_activated (pipe_t *pipe_)
         fq.activated (pipe_);
     else {
         bool identity_ok = identify_peer (pipe_);
-        if (identity_ok)
+        if (identity_ok) {
             anonymous_pipes.erase (it);
+            fq.attach (pipe_);
+        }
     }
 }
 
