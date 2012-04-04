@@ -109,6 +109,9 @@ ZMQ_EXPORT void zmq_version (int *major, int *minor, int *patch);
 #ifndef EAFNOSUPPORT
 #define EAFNOSUPPORT (ZMQ_HAUSNUMERO + 10)
 #endif
+#ifndef EHOSTUNREACH
+#define EHOSTUNREACH (ZMQ_HAUSNUMERO + 11)
+#endif
 
 /*  Native 0MQ error codes.                                                   */
 #define EFSM (ZMQ_HAUSNUMERO + 51)
