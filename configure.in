@@ -383,6 +383,16 @@ LIBZMQ_CHECK_SOCK_CLOEXEC([AC_DEFINE(
                               [1],
                               [Whether SOCK_CLOEXEC is defined and functioning.])
                           ])
+LIBZMQ_CHECK_TCP_KEEPALIVE([AC_DEFINE(
+                              [ZMQ_HAVE_TCP_KEEPALIVE],
+                              [1],
+                              [Whether SO_KEEPALIVE is supported.])
+                          ])
+LIBZMQ_CHECK_TCP_KEEPALIVE_OPTS([AC_DEFINE(
+                              [ZMQ_HAVE_TCP_KEEPALIVE_OPTS],
+                              [1],
+                              [Whether TCP_KEEPCNT, TCP_KEEPIDLE, TCP_KEEPINTVL are supported.])
+                          ])
 
 # Subst LIBZMQ_EXTRA_CFLAGS & CXXFLAGS & LDFLAGS
 AC_SUBST(LIBZMQ_EXTRA_CFLAGS)

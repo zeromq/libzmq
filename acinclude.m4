@@ -604,6 +604,61 @@ int main (int argc, char *argv [])
 }])
 
 dnl ################################################################################
+dnl # LIBZMQ_CHECK_TCP_KEEPALIVE([action-if-found], [action-if-not-found])         #
+dnl # Check if SO_KEEPALIVE is supported                                           #
+dnl ################################################################################
+AC_DEFUN([LIBZMQ_CHECK_TCP_KEEPALIVE], [{
+    AC_MSG_CHECKING(whether SO_KEEPALIVE is supported)
+    AC_TRY_RUN([/* SO_KEEPALIVE test */
+#include <sys/types.h>
+#include <sys/socket.h>
+
+int main (int argc, char *argv [])
+{
+    int s, rc, opt = 1;
+    return (
+        ((s = socket (PF_INET, SOCK_STREAM, 0)) == -1) ||
+        ((rc = setsockopt (s, SOL_SOCKET, SO_KEEPALIVE, (char*) &opt, sizeof (int))) == -1)
+    );
+}
+    ],
+    [AC_MSG_RESULT(yes) ; libzmq_cv_tcp_keepalive="yes" ; $1],
+    [AC_MSG_RESULT(no)  ; libzmq_cv_tcp_keepalive="no"  ; $2],
+    [AC_MSG_RESULT(not during cross-compile) ; libzmq_cv_tcp_keepalive="no"]
+    )
+}])
+
+dnl ################################################################################
+dnl # LIBZMQ_CHECK_TCP_KEEPALIVE_OPTS([action-if-found], [action-if-not-found])    #
+dnl # Check if TCP_KEEPCNT, TCP_KEEPIDLE, TCP_KEEPINTVL are supported              #
+dnl ################################################################################
+AC_DEFUN([LIBZMQ_CHECK_TCP_KEEPALIVE_OPTS], [{
+    AC_MSG_CHECKING(whether TCP_KEEPCNT TCP_KEEPIDLE TCP_KEEPINTVL are supported)
+    AC_TRY_RUN([/* TCP_KEEPCNT TCP_KEEPIDLE TCP_KEEPINTVL test */
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+
+int main (int argc, char *argv [])
+{
+    int s, rc, opt = 1;
+    return (
+        ((s = socket (PF_INET, SOCK_STREAM, 0)) == -1) ||
+        ((rc = setsockopt (s, SOL_SOCKET, SO_KEEPALIVE, (char*) &opt, sizeof (int))) == -1) ||
+        ((rc = setsockopt (s, IPPROTO_TCP, TCP_KEEPCNT, (char*) &opt, sizeof (int))) == -1) ||
+        ((rc = setsockopt (s, IPPROTO_TCP, TCP_KEEPIDLE, (char*) &opt, sizeof (int))) == -1) ||
+        ((rc = setsockopt (s, IPPROTO_TCP, TCP_KEEPINTVL, (char*) &opt, sizeof (int))) == -1)
+    );
+}
+    ],
+    [AC_MSG_RESULT(yes) ; libzmq_cv_tcp_keepalive_opts="yes" ; $1],
+    [AC_MSG_RESULT(no)  ; libzmq_cv_tcp_keepalive_opts="no"  ; $2],
+    [AC_MSG_RESULT(not during cross-compile) ; libzmq_cv_tcp_keepalive_opts="no"]
+    )
+}])
+
+dnl ################################################################################
 dnl # LIBZMQ_CHECK_POLLER_KQUEUE([action-if-found], [action-if-not-found])         #
 dnl # Checks kqueue polling system                                                 #
 dnl ################################################################################

@@ -33,6 +33,9 @@ namespace zmq
     //  Tunes the supplied TCP socket for the best latency.
     void tune_tcp_socket (fd_t s_);
 
+    //  Tunes TCP keep-alives
+    void tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_, int keepalive_idle_, int keepalive_intvl_);
+
     //  Sets the socket into non-blocking mode.
     void unblock_socket (fd_t s_);
 
