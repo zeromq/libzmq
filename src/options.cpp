@@ -230,7 +230,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 errno = EINVAL;
                 return -1;
             }
-#ifdef ZMQ_HAVE_TCP_KEEPALIVE
+#if defined ZMQ_HAVE_SO_KEEPALIVE
             tcp_keepalive = val;
 #endif
             return 0;
@@ -247,7 +247,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 errno = EINVAL;
                 return -1;
             }
-#if defined ZMQ_HAVE_TCP_KEEPALIVE && defined ZMQ_HAVE_TCP_KEEPALIVE_OPTS
+#if defined ZMQ_HAVE_SO_KEEPALIVE && defined ZMQ_HAVE_TCP_KEEPCNT
             tcp_keepalive_cnt = val;
 #endif
             return 0;
@@ -264,7 +264,8 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 errno = EINVAL;
                 return -1;
             }
-#if defined ZMQ_HAVE_TCP_KEEPALIVE && defined ZMQ_HAVE_TCP_KEEPALIVE_OPTS
+
+#if defined ZMQ_HAVE_SO_KEEPALIVE && (defined ZMQ_HAVE_TCP_KEEPIDLE || defined ZMQ_HAVE_TCP_KEEPALIVE)
             tcp_keepalive_idle = val;
 #endif
             return 0;
@@ -281,7 +282,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 errno = EINVAL;
                 return -1;
             }
-#if defined ZMQ_HAVE_TCP_KEEPALIVE && defined ZMQ_HAVE_TCP_KEEPALIVE_OPTS
+#if defined ZMQ_HAVE_SO_KEEPALIVE && defined ZMQ_HAVE_TCP_KEEPINTVL
             tcp_keepalive_intvl = val;
 #endif
             return 0;

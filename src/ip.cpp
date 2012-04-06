@@ -87,7 +87,7 @@ void zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_, int 
 {
     //  Tuning TCP keep-alives if platform allows it
     //  All values = -1 means skip and leave it for OS
-#ifdef ZMQ_HAVE_TCP_KEEPALIVE
+#ifdef ZMQ_HAVE_SO_KEEPALIVE
     if (keepalive_ != -1) {
         int rc = setsockopt (s_, SOL_SOCKET, SO_KEEPALIVE, (char*) &keepalive_, sizeof (int));
 #ifdef ZMQ_HAVE_WINDOWS
@@ -96,22 +96,51 @@ void zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_, int 
         errno_assert (rc == 0);
 #endif
 
-#if defined ZMQ_HAVE_TCP_KEEPALIVE_OPTS && !defined ZMQ_HAVE_WINDOWS
+#ifdef ZMQ_HAVE_TCP_KEEPCNT
         if (keepalive_cnt_ != -1) {
             int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPCNT, &keepalive_cnt_, sizeof (int));
+#ifdef ZMQ_HAVE_WINDOWS
+            wsa_assert (rc != SOCKET_ERROR);
+#else
             errno_assert (rc == 0);
+#endif
         }
+#endif // ZMQ_HAVE_TCP_KEEPCNT
+
+#ifdef ZMQ_HAVE_TCP_KEEPIDLE
         if (keepalive_idle_ != -1) {
             int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPIDLE, &keepalive_idle_, sizeof (int));
+#ifdef ZMQ_HAVE_WINDOWS
+            wsa_assert (rc != SOCKET_ERROR);
+#else
             errno_assert (rc == 0);
+#endif
         }
+#else // ZMQ_HAVE_TCP_KEEPIDLE
+#ifdef ZMQ_HAVE_TCP_KEEPALIVE
+        if (keepalive_idle_ != -1) {
+            int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPALIVE, &keepalive_idle_, sizeof (int));
+#ifdef ZMQ_HAVE_WINDOWS
+            wsa_assert (rc != SOCKET_ERROR);
+#else
+            errno_assert (rc == 0);
+#endif
+        }
+#endif // ZMQ_HAVE_TCP_KEEPALIVE
+#endif // ZMQ_HAVE_TCP_KEEPIDLE
+
+#ifdef ZMQ_HAVE_TCP_KEEPINTVL
         if (keepalive_intvl_ != -1) {
             int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPINTVL, &keepalive_intvl_, sizeof (int));
+#ifdef ZMQ_HAVE_WINDOWS
+            wsa_assert (rc != SOCKET_ERROR);
+#else
             errno_assert (rc == 0);
+#endif
         }
-#endif
+#endif // ZMQ_HAVE_TCP_KEEPINTVL
     }
-#endif
+#endif // ZMQ_HAVE_SO_KEEPALIVE
 }
 
 void zmq::unblock_socket (fd_t s_)
