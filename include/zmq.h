@@ -222,6 +222,11 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 #define ZMQ_IPV4ONLY 31
 #define ZMQ_LAST_ENDPOINT 32
 #define ZMQ_FAIL_UNROUTABLE 33
+#define ZMQ_TCP_KEEPALIVE 34
+#define ZMQ_TCP_KEEPALIVE_CNT 35
+#define ZMQ_TCP_KEEPALIVE_IDLE 36
+#define ZMQ_TCP_KEEPALIVE_INTVL 37
+
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1
