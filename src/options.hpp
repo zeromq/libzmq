@@ -110,7 +110,14 @@ namespace zmq
 
         //  Receivers identity from all new connections.
         bool recv_identity;
-        
+
+        //  TCP keep-alive settings.
+        //  Defaults to -1 = do not change socket options
+        int tcp_keepalive;
+        int tcp_keepalive_cnt;
+        int tcp_keepalive_idle;
+        int tcp_keepalive_intvl;
+
         //  ID of the socket.
         int socket_id;
     };
