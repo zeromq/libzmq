@@ -133,11 +133,11 @@ ZMQ_EXPORT const char *zmq_strerror (int errnum);
 /******************************************************************************/
 
 /*  New API                                                                   */
-//  Context options
+/*  Context options                                                           */
 #define ZMQ_IO_THREADS  1
 #define ZMQ_MAX_SOCKETS 2
 
-//  Default for new contexts
+/*  Default for new contexts                                                  */
 #define ZMQ_IO_THREADS_DFLT  1
 #define ZMQ_MAX_SOCKETS_DFLT 1024
 
