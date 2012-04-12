@@ -235,7 +235,11 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
 {
     //  Accept one connection and deal with different failure modes.
     zmq_assert (s != retired_fd);
-    fd_t sock = ::accept (s, NULL, NULL);
+
+    struct sockaddr_storage ss = {0};
+    socklen_t ss_len = sizeof (ss);
+    fd_t sock = ::accept (s, (struct sockaddr *) &ss, &ss_len);
+
 #ifdef ZMQ_HAVE_WINDOWS
     if (sock == INVALID_SOCKET) {
         wsa_assert (WSAGetLastError () == WSAEWOULDBLOCK ||
@@ -250,6 +254,28 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
         return retired_fd;
     }
 #endif
+
+    if (!options.tcp_accept_filters.empty ()) {
+        bool matched = false;
+//ss_len = 1;
+        for (options_t::tcp_accept_filters_t::size_type i = 0; i != options.tcp_accept_filters.size (); ++i) {
+            if (options.tcp_accept_filters[i].match_address ((struct sockaddr *) &ss, ss_len)) {
+                matched = true;
+                break;
+            }
+        }
+        if (!matched) {
+#ifdef ZMQ_HAVE_WINDOWS
+            int rc = closesocket (sock);
+            wsa_assert (rc != SOCKET_ERROR);
+#else
+            int rc = ::close (sock);
+            errno_assert (rc == 0);
+#endif
+            return retired_fd;
+        }
+    }
+
     return sock;
 }
 

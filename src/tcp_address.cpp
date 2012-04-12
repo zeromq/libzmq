@@ -445,3 +445,105 @@ sa_family_t zmq::tcp_address_t::family () const
     return address.generic.sa_family;
 }
 
+zmq::tcp_address_mask_t::tcp_address_mask_t () :
+    tcp_address_t ()
+{
+    address_mask = -1;
+}
+
+const int zmq::tcp_address_mask_t::mask () const
+{
+    return address_mask;
+}
+
+int zmq::tcp_address_mask_t::resolve (const char *name_, bool ipv4only_)
+{
+    std::string addr_str;
+    std::string mask_str;
+
+    // Find '/' at the end that separates address from the cidr mask number.
+    // Allow empty mask clause and threat it like '/32' for ipv4 or '/128' for ipv6.
+    const char *delimiter = strrchr (name_, '/');
+    if (delimiter != NULL) {
+        addr_str.assign (name_, delimiter - name_);
+        mask_str.assign (delimiter + 1);
+        if (mask_str.empty ()) {
+            errno = EINVAL;
+            return -1;
+        }
+    }
+    else {
+        addr_str.assign (name_);
+    }
+
+    // Parse address part using standard routines.
+    int rc = tcp_address_t::resolve_hostname (addr_str.c_str (), ipv4only_);
+    if (rc != 0)
+        return rc;
+
+    // Parse the cidr mask number.
+    if (mask_str.empty ()) {
+        if (address.generic.sa_family == AF_INET6)
+            address_mask = 128;
+        else
+            address_mask = 32;
+    }
+    else
+    if (mask_str == "0") {
+        address_mask = 0;
+    }
+    else {
+        int mask = atoi (mask_str.c_str ());
+        if (
+            (mask < 1) ||
+            (address.generic.sa_family == AF_INET6 && mask > 128) ||
+            (address.generic.sa_family != AF_INET6 && mask > 32)
+        ) {
+            errno = EINVAL;
+            return -1;
+        }
+        address_mask = mask;
+    }
+
+    return 0;
+}
+
+const bool zmq::tcp_address_mask_t::match_address (const struct sockaddr *ss, socklen_t ss_len) const
+{
+    zmq_assert (ss != NULL && ss_len >= sizeof(struct sockaddr));
+
+    if (ss->sa_family != address.generic.sa_family)
+        return false;
+
+    if (address_mask > 0) {
+        int mask;
+        const int8_t *our_bytes, *their_bytes;
+        if (ss->sa_family == AF_INET6) {
+            zmq_assert (ss_len == sizeof (struct sockaddr_in6));
+            their_bytes = (const int8_t *) &(((const struct sockaddr_in6 *) ss)->sin6_addr);
+            our_bytes = (const int8_t *) &address.ipv6.sin6_addr;
+            mask = sizeof (struct in6_addr) * 8;
+        }
+        else {
+            zmq_assert (ss_len == sizeof (struct sockaddr_in));
+            their_bytes = (const int8_t *) &(((const struct sockaddr_in *) ss)->sin_addr);
+            our_bytes = (const int8_t *) &address.ipv4.sin_addr;
+            mask = sizeof (struct in_addr) * 8;
+        }
+        if (address_mask < mask) mask = address_mask;
+
+        int full_bytes = mask / 8;
+        if (full_bytes) {
+            if (memcmp(our_bytes, their_bytes, full_bytes))
+                return false;
+        }
+
+        int last_byte_bits = (0xffU << (8 - (mask % 8))) & 0xffU;
+        if (last_byte_bits) {
+            if ((their_bytes[full_bytes] & last_byte_bits) != (our_bytes[full_bytes] & last_byte_bits))
+                return false;
+        }
+    }
+
+    return true;
+}

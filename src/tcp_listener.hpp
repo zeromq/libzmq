@@ -62,7 +62,8 @@ namespace zmq
 
         //  Accept the new connection. Returns the file descriptor of the
         //  newly created connection. The function may return retired_fd
-        //  if the connection was dropped while waiting in the listen backlog.
+        //  if the connection was dropped while waiting in the listen backlog
+        //  or was denied because of accept filters.
         fd_t accept ();
 
         //  Address to listen on.
