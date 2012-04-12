@@ -55,7 +55,7 @@ namespace zmq
         const sockaddr *addr () const;
         socklen_t addrlen () const;
 
-    private:
+    protected:
 
         int resolve_nic_name (const char *nic_, bool ipv4only_);
         int resolve_interface (const char *interface_, bool ipv4only_);
@@ -66,12 +66,28 @@ namespace zmq
             sockaddr_in ipv4;
             sockaddr_in6 ipv6;
         } address;
-
-        tcp_address_t (const tcp_address_t&);
-        const tcp_address_t &operator = (const tcp_address_t&);
     };
-    
+
+    class tcp_address_mask_t : public tcp_address_t
+    {
+    public:
+
+        tcp_address_mask_t ();
+
+        // This function enhances tcp_address_t::resolve() with ability to parse
+        // additional cidr-like(/xx) mask value at the end of the name string.
+        // Works only with remote hostnames.
+        int resolve (const char* name_, bool ipv4only_);
+
+        const int mask () const;
+
+        const bool match_address (const struct sockaddr *sa, socklen_t ss_len) const;
+
+    private:
+
+        int address_mask;
+    };
+
 }
 
 #endif
-
