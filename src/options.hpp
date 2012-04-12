@@ -24,9 +24,11 @@
 #define __ZMQ_OPTIONS_HPP_INCLUDED__
 
 #include <string>
+#include <vector>
 
 #include "stddef.h"
 #include "stdint.hpp"
+#include "tcp_address.hpp"
 
 namespace zmq
 {
@@ -117,6 +119,10 @@ namespace zmq
         int tcp_keepalive_cnt;
         int tcp_keepalive_idle;
         int tcp_keepalive_intvl;
+
+        // TCP accept() filters
+        typedef std::vector <tcp_address_mask_t> tcp_accept_filters_t;
+        tcp_accept_filters_t tcp_accept_filters;
 
         //  ID of the socket.
         int socket_id;
