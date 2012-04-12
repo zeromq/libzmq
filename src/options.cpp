@@ -287,6 +287,32 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
 #endif
             return 0;
         }
+
+    case ZMQ_TCP_ACCEPT_FILTER:
+        {
+            if (optvallen_ == 0 && optval_ == NULL) {
+                tcp_accept_filters.clear ();
+                return 0;
+            }
+            else
+            if (optvallen_ < 1 || optvallen_ > 255 || optval_ == NULL || *((const char*) optval_) == 0) {
+                errno = EINVAL;
+                return -1;
+            }
+            else {
+                std::string filter_str ((const char*) optval_, optvallen_);
+
+                tcp_address_mask_t filter;
+                int rc = filter.resolve (filter_str.c_str (), ipv4only ? true : false);
+                if (rc != 0) {
+                    errno = EINVAL;
+                    return -1;
+                }
+                tcp_accept_filters.push_back(filter);
+
+                return 0;
+            }
+        }
     }
     errno = EINVAL;
     return -1;
