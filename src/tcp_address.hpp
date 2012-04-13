@@ -81,7 +81,7 @@ namespace zmq
 
         const int mask () const;
 
-        const bool match_address (const struct sockaddr *sa, socklen_t ss_len) const;
+        const bool match_address (const struct sockaddr *ss, const socklen_t ss_len) const;
 
     private:
 

@@ -50,7 +50,7 @@ namespace zmq
         //  Socket identity
         unsigned char identity_size;
         unsigned char identity [256];
-        
+
         // Last socket endpoint URI
         std::string last_endpoint;
 
