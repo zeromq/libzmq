@@ -27,11 +27,8 @@ namespace zmq
 
     //  Compile-time settings.
 
-    enum 
+    enum
     {
-        //  Maximum number of sockets that can be opened at the same time.
-        max_sockets = 512,
-
         //  Number of new messages in message pipe needed to trigger new memory
         //  allocation. Setting this parameter to 256 decreases the impact of
         //  memory allocation by approximately 99.6%
