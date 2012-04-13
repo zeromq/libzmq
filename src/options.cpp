@@ -107,7 +107,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         }
         rate = *((int*) optval_);
         return 0;
-        
+
     case ZMQ_RECOVERY_IVL:
         if (optvallen_ != sizeof (int) || *((int*) optval_) < 0) {
             errno = EINVAL;
@@ -366,7 +366,7 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
         *((int*) optval_) = rate;
         *optvallen_ = sizeof (int);
         return 0;
-        
+
     case ZMQ_RECOVERY_IVL:
         if (*optvallen_ < sizeof (int)) {
             errno = EINVAL;

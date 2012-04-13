@@ -150,14 +150,14 @@ void zmq::unblock_socket (fd_t s_)
     int rc = ioctlsocket (s_, FIONBIO, &nonblock);
     wsa_assert (rc != SOCKET_ERROR);
 #elif ZMQ_HAVE_OPENVMS
-	int nonblock = 1;
-	int rc = ioctl (s_, FIONBIO, &nonblock);
+    int nonblock = 1;
+    int rc = ioctl (s_, FIONBIO, &nonblock);
     errno_assert (rc != -1);
 #else
-	int flags = fcntl (s_, F_GETFL, 0);
-	if (flags == -1)
+    int flags = fcntl (s_, F_GETFL, 0);
+    if (flags == -1)
         flags = 0;
-	int rc = fcntl (s_, F_SETFL, flags | O_NONBLOCK);
+    int rc = fcntl (s_, F_SETFL, flags | O_NONBLOCK);
     errno_assert (rc != -1);
 #endif
 }
@@ -179,4 +179,3 @@ void zmq::enable_ipv4_mapping (fd_t s_)
 #endif
 #endif
 }
-

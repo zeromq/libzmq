@@ -257,7 +257,6 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
 
     if (!options.tcp_accept_filters.empty ()) {
         bool matched = false;
-//ss_len = 1;
         for (options_t::tcp_accept_filters_t::size_type i = 0; i != options.tcp_accept_filters.size (); ++i) {
             if (options.tcp_accept_filters[i].match_address ((struct sockaddr *) &ss, ss_len)) {
                 matched = true;
@@ -278,4 +277,3 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
 
     return sock;
 }
-
