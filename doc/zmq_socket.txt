@@ -79,7 +79,7 @@ messages are not discarded.
 
 [horizontal]
 .Summary of ZMQ_REQ characteristics
-Compatible peer sockets:: 'ZMQ_REP'
+Compatible peer sockets:: 'ZMQ_REP', 'ZMQ_ROUTER'
 Direction:: Bidirectional
 Send/receive pattern:: Send, Receive, Send, Receive, ...
 Outgoing routing strategy:: Round-robin
@@ -102,7 +102,7 @@ question shall be dropped until the exceptional state ends.
 
 [horizontal]
 .Summary of ZMQ_REP characteristics
-Compatible peer sockets:: 'ZMQ_REQ'
+Compatible peer sockets:: 'ZMQ_REQ', 'ZMQ_DEALER'
 Direction:: Bidirectional
 Send/receive pattern:: Receive, Send, Receive, Send, ...
 Incoming routing strategy:: Fair-queued
@@ -130,7 +130,7 @@ Deprecated alias: 'ZMQ_XREQ'.
 
 [horizontal]
 .Summary of ZMQ_DEALER characteristics
-Compatible peer sockets:: 'ZMQ_ROUTER', 'ZMQ_REQ', 'ZMQ_REP'
+Compatible peer sockets:: 'ZMQ_ROUTER', 'ZMQ_REP'
 Direction:: Bidirectional
 Send/receive pattern:: Unrestricted
 Outgoing routing strategy:: Round-robin
@@ -166,7 +166,7 @@ Deprecated alias: 'ZMQ_XREP'.
 
 [horizontal]
 .Summary of ZMQ_ROUTER characteristics
-Compatible peer sockets:: 'ZMQ_DEALER', 'ZMQ_REQ', 'ZMQ_REP'
+Compatible peer sockets:: 'ZMQ_DEALER', 'ZMQ_REQ
 Direction:: Bidirectional
 Send/receive pattern:: Unrestricted
 Outgoing routing strategy:: See text
