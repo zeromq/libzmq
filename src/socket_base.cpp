@@ -46,7 +46,6 @@
 #include "io_thread.hpp"
 #include "session_base.hpp"
 #include "config.hpp"
-#include "clock.hpp"
 #include "pipe.hpp"
 #include "err.hpp"
 #include "ctx.hpp"
@@ -560,7 +559,6 @@ int zmq::socket_base_t::send (msg_t *msg_, int flags_)
 
     //  Compute the time when the timeout should occur.
     //  If the timeout is infite, don't care. 
-    clock_t clock ;
     int timeout = options.sndtimeo;
     uint64_t end = timeout < 0 ? 0 : (clock.now_ms () + timeout);
 
@@ -643,7 +641,6 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
 
     //  Compute the time when the timeout should occur.
     //  If the timeout is infite, don't care. 
-    clock_t clock ;
     int timeout = options.rcvtimeo;
     uint64_t end = timeout < 0 ? 0 : (clock.now_ms () + timeout);
 
