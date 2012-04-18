@@ -44,6 +44,8 @@ namespace zmq
             ipc_address_t *ipc_addr;
 #endif
         } resolved;
+
+        int to_string (std::string &addr_);
     };
 }
 

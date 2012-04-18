@@ -98,22 +98,15 @@ void zmq::ipc_listener_t::in_event ()
 int zmq::ipc_listener_t::get_address (std::string &addr_)
 {
     struct sockaddr_storage ss;
-    int rc;
-
-    // Get the details of the IPC socket
     socklen_t sl = sizeof (ss);
-    rc = getsockname (s, (sockaddr *) &ss, &sl);
+    int rc = getsockname (s, (sockaddr *) &ss, &sl);
     if (rc != 0) {
+        addr_.clear ();
         return rc;
     }
 
-    // Store the address for retrieval by users using wildcards
-    addr_ = std::string ("ipc://");
-    struct sockaddr_un saddr;
-    memcpy (&saddr, &ss, sizeof (saddr));
-
-    addr_.append (saddr.sun_path);
-    return 0;
+    ipc_address_t addr ((struct sockaddr *) &ss, sl);
+    return addr.to_string (addr_);
 }
 
 int zmq::ipc_listener_t::set_address (const char *addr_)

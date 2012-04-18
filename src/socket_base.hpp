@@ -72,6 +72,7 @@ namespace zmq
         int getsockopt (int option_, void *optval_, size_t *optvallen_);
         int bind (const char *addr_);
         int connect (const char *addr_);
+        int term_endpoint (void *ep_);
         int send (zmq::msg_t *msg_, int flags_);
         int recv (zmq::msg_t *msg_, int flags_);
         int close ();

@@ -293,6 +293,26 @@ int zmq_connect (void *s_, const char *addr_)
     return result;
 }
 
+int zmq_unbind (void *s_, void *ep_)
+{
+    if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
+        errno = ENOTSOCK;
+        return -1;
+    }
+    zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
+    return s->term_endpoint (ep_);
+}
+
+int zmq_disconnect (void *s_, void *ep_)
+{
+    if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
+        errno = ENOTSOCK;
+        return -1;
+    }
+    zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
+    return s->term_endpoint (ep_);
+}
+
 // Sending functions.
 
 static int

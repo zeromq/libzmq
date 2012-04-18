@@ -21,8 +21,7 @@
 
 #include <new>
 
-#include <string.h>
-#include <sstream>
+#include <string>
 
 #include "platform.hpp"
 #include "tcp_listener.hpp"
@@ -121,37 +120,19 @@ void zmq::tcp_listener_t::close ()
 }
 
 int zmq::tcp_listener_t::get_address (std::string &addr_)
-{ 
-    struct sockaddr_storage ss;
-    char host [NI_MAXHOST];
-    int rc;
-    std::stringstream address;
-
+{
     // Get the details of the TCP socket
+    struct sockaddr_storage ss;
     socklen_t sl = sizeof (ss);
-    rc = getsockname (s, (struct sockaddr *) &ss, &sl);
+    int rc = getsockname (s, (struct sockaddr *) &ss, &sl);
+
     if (rc != 0) {
+        addr_.clear ();
         return rc;
     }
 
-    rc = getnameinfo ((struct sockaddr *) &ss, sl, host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
-    if (rc != 0) {
-        return rc;
-    }
-
-    if (ss.ss_family == AF_INET) {
-        struct sockaddr_in sa = {0};
-        memcpy (&sa, &ss, sizeof (sa));
-
-        address << "tcp://" << host << ":" << ntohs (sa.sin_port);
-    } else {
-        struct sockaddr_in6 sa = {0};
-        memcpy (&sa, &ss, sizeof (sa));
-
-        address << "tcp://[" << host << "]:" << ntohs (sa.sin6_port);
-    }
-    addr_ = address.str ();
-    return 0;
+    tcp_address_t addr ((struct sockaddr *) &ss, sl);
+    return addr.to_string (addr_);
 }
 
 int zmq::tcp_listener_t::set_address (const char *addr_)
@@ -203,7 +184,6 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
     errno_assert (rc == 0);
 #endif
 
-    
     //  Bind the socket to the network interface and port.
     rc = bind (s, address.addr (), address.addrlen ());
 #ifdef ZMQ_HAVE_WINDOWS

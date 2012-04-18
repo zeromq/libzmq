@@ -39,6 +39,7 @@ namespace zmq
     public:
 
         tcp_address_t ();
+        tcp_address_t (const sockaddr *sa, socklen_t sa_len);
         ~tcp_address_t ();
 
         //  This function translates textual TCP address into an address
@@ -46,6 +47,9 @@ namespace zmq
         //  names. If it is false, names are resolved as remote hostnames.
         //  If 'ipv4only' is true, the name will never resolve to IPv6 address.
         int resolve (const char* name_, bool local_, bool ipv4only_);
+
+        //  The opposite to resolve()
+        virtual int to_string (std::string &addr_);
 
 #if defined ZMQ_HAVE_WINDOWS
         unsigned short family () const;
@@ -78,6 +82,9 @@ namespace zmq
         // additional cidr-like(/xx) mask value at the end of the name string.
         // Works only with remote hostnames.
         int resolve (const char* name_, bool ipv4only_);
+
+        // The opposite to resolve()
+        int to_string (std::string &addr_);
 
         const int mask () const;
 
