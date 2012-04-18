@@ -53,6 +53,8 @@ namespace zmq
 
         // Last socket endpoint URI
         std::string last_endpoint;
+        // Last socket endpoint ID
+        void *last_endpoint_id;
 
         //  Maximum tranfer rate [kb/s]. Default 100kb/s.
         int rate;

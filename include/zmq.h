@@ -227,6 +227,7 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 #define ZMQ_TCP_KEEPALIVE_IDLE 36
 #define ZMQ_TCP_KEEPALIVE_INTVL 37
 #define ZMQ_TCP_ACCEPT_FILTER 38
+#define ZMQ_LAST_ENDPOINT_ID 39
 
 
 /*  Message options                                                           */
@@ -244,6 +245,8 @@ ZMQ_EXPORT int zmq_getsockopt (void *s, int option, void *optval,
     size_t *optvallen);
 ZMQ_EXPORT int zmq_bind (void *s, const char *addr);
 ZMQ_EXPORT int zmq_connect (void *s, const char *addr);
+ZMQ_EXPORT int zmq_unbind (void *s, void *ep);
+ZMQ_EXPORT int zmq_disconnect (void *s, void *ep);
 ZMQ_EXPORT int zmq_send (void *s, const void *buf, size_t len, int flags);
 ZMQ_EXPORT int zmq_recv (void *s, void *buf, size_t len, int flags);
 

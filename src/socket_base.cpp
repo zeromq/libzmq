@@ -317,11 +317,16 @@ int zmq::socket_base_t::bind (const char *addr_)
 
     if (protocol == "inproc") {
         endpoint_t endpoint = {this, options};
-        return register_endpoint (addr_, endpoint);
+        int rc = register_endpoint (addr_, endpoint);
+        if (rc == 0) {
+            // Save last endpoint info
+            options.last_endpoint.clear ();
+            options.last_endpoint_id = NULL;
+        }
+        return rc;
     }
 
     if (protocol == "pgm" || protocol == "epgm") {
-
         //  For convenience's sake, bind can be used interchageable with
         //  connect for PGM and EPGM transports.
         return connect (addr_);
@@ -345,7 +350,10 @@ int zmq::socket_base_t::bind (const char *addr_)
             return -1;
         }
 
-        rc = listener->get_address (options.last_endpoint);
+        // Save last endpoint info
+        options.last_endpoint_id = (void *) ((own_t *) listener);
+        listener->get_address (options.last_endpoint);
+
         launch_child (listener);
         return 0;
     }
@@ -361,7 +369,10 @@ int zmq::socket_base_t::bind (const char *addr_)
             return -1;
         }
 
-        rc = listener->get_address (options.last_endpoint);
+        // Save last endpoint info
+        options.last_endpoint_id = (void *) ((own_t *) listener);
+        listener->get_address (options.last_endpoint);
+
         launch_child (listener);
         return 0;
     }
@@ -453,6 +464,10 @@ int zmq::socket_base_t::connect (const char *addr_)
         //  increased here.
         send_bind (peer.socket, pipes [1], false);
 
+        // Save last endpoint info
+        options.last_endpoint.clear ();
+        options.last_endpoint_id = NULL;
+
         return 0;
     }
 
@@ -512,6 +527,10 @@ int zmq::socket_base_t::connect (const char *addr_)
 
     //  Attach remote end of the pipe to the session object later on.
     session->attach_pipe (pipes [1]);
+
+    // Save last endpoint info
+    paddr->to_string (options.last_endpoint);
+    options.last_endpoint_id = (void *) ((own_t *) session);
 
     //  Activate the session. Make it a child of this socket.
     launch_child (session);
@@ -581,6 +600,16 @@ int zmq::socket_base_t::send (msg_t *msg_, int flags_)
             }
         }
     }
+    return 0;
+}
+
+int zmq::socket_base_t::term_endpoint (void *ep_)
+{
+    if (unlikely (ctx_terminated)) {
+        errno = ETERM;
+        return -1;
+    }
+    term_child ((own_t *) ep_);
     return 0;
 }
 

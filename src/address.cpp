@@ -23,7 +23,8 @@
 #include "tcp_address.hpp"
 #include "ipc_address.hpp"
 
-#include <string.h>
+#include <string>
+#include <sstream>
 
 zmq::address_t::address_t (
     const std::string &protocol_, const std::string &address_)
@@ -49,4 +50,29 @@ zmq::address_t::~address_t ()
         }
     }
 #endif
+}
+
+int zmq::address_t::to_string (std::string &addr_)
+{
+    if (protocol == "tcp") {
+        if (resolved.tcp_addr) {
+            return resolved.tcp_addr->to_string(addr_);
+        }
+    }
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+    else if (protocol == "ipc") {
+        if (resolved.ipc_addr) {
+            return resolved.tcp_addr->to_string(addr_);
+        }
+    }
+#endif
+
+    if (!protocol.empty () && !address.empty ()) {
+        std::stringstream s;
+        s << protocol << "://" << address;
+        addr_ = s.str ();
+        return 0;
+    }
+    addr_.clear ();
+    return -1;
 }

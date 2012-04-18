@@ -70,6 +70,9 @@ namespace zmq
         //  Launch the supplied object and become its owner.
         void launch_child (own_t *object_);
 
+        //  Terminate owned object
+        void term_child (own_t *object_);
+
         //  Ask owner object to terminate this object. It may take a while
         //  while actual termination is started. This function should not be
         //  called more than once.

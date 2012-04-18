@@ -19,8 +19,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <string.h>
 #include <string>
+#include <sstream>
 
 #include "tcp_address.hpp"
 #include "platform.hpp"
@@ -251,9 +251,8 @@ int zmq::tcp_address_t::resolve_interface (const char *interface_,
     int rc = resolve_nic_name (interface_, ipv4only_);
     if (rc != 0 && errno != ENODEV)
         return rc;
-    if (rc == 0) {
+    if (rc == 0)
         return 0;
-    }
 
     //  There's no such interface name. Assume literal address.
 #if defined ZMQ_HAVE_OPENVMS && defined __ia64
@@ -367,6 +366,19 @@ zmq::tcp_address_t::tcp_address_t ()
     memset (&address, 0, sizeof (address));
 }
 
+zmq::tcp_address_t::tcp_address_t (const sockaddr *sa, socklen_t sa_len)
+{
+    zmq_assert(sa && sa_len > 0);
+
+    memset (&address, 0, sizeof (address));
+    if (sa->sa_family == AF_INET && sa_len >= sizeof (address.ipv4)) {
+        memcpy(&address.ipv4, sa, sizeof (address.ipv4));
+    }
+    else if (sa->sa_family == AF_INET6 && sa_len >= sizeof (address.ipv6)) {
+        memcpy(&address.ipv6, sa, sizeof (address.ipv6));
+    }
+}
+
 zmq::tcp_address_t::~tcp_address_t ()
 {
 }
@@ -418,6 +430,34 @@ int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv4only_)
     else
         address.ipv4.sin_port = htons (port);
 
+    return 0;
+}
+
+int zmq::tcp_address_t::to_string (std::string &addr_)
+{
+    if (address.generic.sa_family != AF_INET && address.generic.sa_family != AF_INET6) {
+        addr_.clear ();
+        return -1;
+    }
+
+    // not using service resolv because of https://github.com/zeromq/libzmq/commit/1824574f9b5a8ce786853320e3ea09fe1f822bc4
+    char hbuf[NI_MAXHOST];
+    int rc = getnameinfo (addr (), addrlen (), hbuf, sizeof (hbuf), NULL, 0, NI_NUMERICHOST);
+    if (rc != 0) {
+        addr_.clear ();
+        return rc;
+    }
+
+    if (address.generic.sa_family == AF_INET6) {
+        std::stringstream s;
+        s << "tcp://[" << hbuf << "]:" << ntohs (address.ipv6.sin6_port);
+        addr_ = s.str ();
+    }
+    else {
+        std::stringstream s;
+        s << "tcp://" << hbuf << ":" << ntohs (address.ipv4.sin_port);
+        addr_ = s.str ();
+    };
     return 0;
 }
 
@@ -501,6 +541,37 @@ int zmq::tcp_address_mask_t::resolve (const char *name_, bool ipv4only_)
         address_mask = mask;
     }
 
+    return 0;
+}
+
+int zmq::tcp_address_mask_t::to_string (std::string &addr_)
+{
+    if (address.generic.sa_family != AF_INET && address.generic.sa_family != AF_INET6) {
+        addr_.clear ();
+        return -1;
+    }
+    if (address_mask == -1) {
+        addr_.clear ();
+        return -1;
+    }
+
+    char hbuf[NI_MAXHOST];
+    int rc = getnameinfo (addr (), addrlen (), hbuf, sizeof (hbuf), NULL, 0, NI_NUMERICHOST);
+    if (rc != 0) {
+        addr_.clear ();
+        return rc;
+    }
+
+    if (address.generic.sa_family == AF_INET6) {
+        std::stringstream s;
+        s << "[" << hbuf << "]/" << address_mask;
+        addr_ = s.str ();
+    }
+    else {
+        std::stringstream s;
+        s << hbuf << "/" << address_mask;
+        addr_ = s.str ();
+    };
     return 0;
 }
 
