@@ -80,6 +80,11 @@ void zmq::own_t::launch_child (own_t *object_)
     send_own (this, object_);
 }
 
+void zmq::own_t::term_child (own_t *object_)
+{
+    process_term_req (object_);
+}
+
 void zmq::own_t::process_term_req (own_t *object_)
 {
     //  When shutting down we can ignore termination requests from owned

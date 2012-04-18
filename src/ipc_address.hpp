@@ -21,6 +21,8 @@
 #ifndef __ZMQ_IPC_ADDRESS_HPP_INCLUDED__
 #define __ZMQ_IPC_ADDRESS_HPP_INCLUDED__
 
+#include <string>
+
 #include "platform.hpp"
 
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
@@ -36,10 +38,14 @@ namespace zmq
     public:
 
         ipc_address_t ();
+        ipc_address_t (const sockaddr *sa, socklen_t sa_len);
         ~ipc_address_t ();
 
         //  This function sets up the address for UNIX domain transport.
         int resolve (const char* path_);
+
+        //  The opposite to resolve()
+        int to_string (std::string &addr_);
 
         const sockaddr *addr () const;
         socklen_t addrlen () const;
