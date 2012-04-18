@@ -162,7 +162,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv4only_)
     //  Get the addresses.
     ifaddrs* ifa = NULL;
     int rc = getifaddrs (&ifa);
-    zmq_assert (rc == 0);    
+    zmq_assert (rc == 0);
     zmq_assert (ifa != NULL);
 
     //  Find the corresponding network interface.
@@ -252,8 +252,6 @@ int zmq::tcp_address_t::resolve_interface (const char *interface_,
     if (rc != 0 && errno != ENODEV)
         return rc;
     if (rc == 0) {
-        zmq_assert (out_addrlen <= sizeof address);
-        memcpy (&address, out_addr, out_addrlen);
         return 0;
     }
 
