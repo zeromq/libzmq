@@ -30,7 +30,6 @@ zmq::options_t::options_t () :
     rcvhwm (1000),
     affinity (0),
     identity_size (0),
-    last_endpoint_id(NULL),
     rate (100),
     recovery_ivl (10000),
     multicast_hops (1),
@@ -531,14 +530,6 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
         *optvallen_ = last_endpoint.size()+1;
         return 0;
 
-    case ZMQ_LAST_ENDPOINT_ID:
-        if (*optvallen_ < sizeof (void *)) {
-            errno = EINVAL;
-            return -1;
-        }
-        *((void **) optval_) = last_endpoint_id;
-        *optvallen_ = sizeof (void *);
-        return 0;
     }
 
     errno = EINVAL;

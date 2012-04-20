@@ -320,9 +320,8 @@ int zmq::socket_base_t::bind (const char *addr_)
         endpoint_t endpoint = {this, options};
         int rc = register_endpoint (addr_, endpoint);
         if (rc == 0) {
-            // Save last endpoint info
-            options.last_endpoint.clear ();
-            options.last_endpoint_id = NULL;
+            // Save last endpoint URI
+            options.last_endpoint.assign (addr_);
         }
         return rc;
     }
@@ -351,11 +350,10 @@ int zmq::socket_base_t::bind (const char *addr_)
             return -1;
         }
 
-        // Save last endpoint info
-        options.last_endpoint_id = (void *) ((own_t *) listener);
+        // Save last endpoint URI
         listener->get_address (options.last_endpoint);
 
-        launch_child (listener);
+        add_endpoint (addr_, (own_t *) listener);
         return 0;
     }
 
@@ -370,11 +368,10 @@ int zmq::socket_base_t::bind (const char *addr_)
             return -1;
         }
 
-        // Save last endpoint info
-        options.last_endpoint_id = (void *) ((own_t *) listener);
+        // Save last endpoint URI
         listener->get_address (options.last_endpoint);
 
-        launch_child (listener);
+        add_endpoint (addr_, (own_t *) listener);
         return 0;
     }
 #endif
@@ -465,9 +462,8 @@ int zmq::socket_base_t::connect (const char *addr_)
         //  increased here.
         send_bind (peer.socket, pipes [1], false);
 
-        // Save last endpoint info
-        options.last_endpoint.clear ();
-        options.last_endpoint_id = NULL;
+        // Save last endpoint URI
+        options.last_endpoint.assign (addr_);
 
         return 0;
     }
@@ -529,13 +525,42 @@ int zmq::socket_base_t::connect (const char *addr_)
     //  Attach remote end of the pipe to the session object later on.
     session->attach_pipe (pipes [1]);
 
-    // Save last endpoint info
+    // Save last endpoint URI
     paddr->to_string (options.last_endpoint);
-    options.last_endpoint_id = (void *) ((own_t *) session);
 
+    add_endpoint (addr_, (own_t *) session);
+    return 0;
+}
+
+void zmq::socket_base_t::add_endpoint (const char *addr_, own_t *endpoint_)
+{
     //  Activate the session. Make it a child of this socket.
-    launch_child (session);
+    launch_child (endpoint_);
+    endpoints.insert (std::make_pair (std::string (addr_), endpoint_));
+}
 
+int zmq::socket_base_t::term_endpoint (const char *addr_)
+{
+    //  Check whether the library haven't been shut down yet.
+    if (unlikely (ctx_terminated)) {
+        errno = ETERM;
+        return -1;
+    }
+
+    //  Check whether message passed to the function is valid.
+    if (unlikely (!addr_)) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    //  Find the endpoints range (if any) corresponding to the addr_ string.
+    std::pair <endpoints_t::iterator, endpoints_t::iterator> range = endpoints.equal_range (std::string (addr_));
+    if (range.first == range.second)
+        return -1;
+
+    for (endpoints_t::iterator it = range.first; it != range.second; ++it)
+        term_child (it->second);
+    endpoints.erase (range.first, range.second);
     return 0;
 }
 
@@ -602,16 +627,6 @@ int zmq::socket_base_t::send (msg_t *msg_, int flags_)
             }
         }
     }
-    return 0;
-}
-
-int zmq::socket_base_t::term_endpoint (void *ep_)
-{
-    if (unlikely (ctx_terminated)) {
-        errno = ETERM;
-        return -1;
-    }
-    term_child ((own_t *) ep_);
     return 0;
 }
 
