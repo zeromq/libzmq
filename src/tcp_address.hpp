@@ -40,7 +40,7 @@ namespace zmq
 
         tcp_address_t ();
         tcp_address_t (const sockaddr *sa, socklen_t sa_len);
-        ~tcp_address_t ();
+        virtual ~tcp_address_t ();
 
         //  This function translates textual TCP address into an address
         //  strcuture. If 'local' is true, names are resolved as local interface
