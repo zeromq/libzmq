@@ -24,6 +24,7 @@
 #define __ZMQ_SOCKET_BASE_HPP_INCLUDED__
 
 #include <string>
+#include <map>
 
 #include "own.hpp"
 #include "array.hpp"
@@ -72,7 +73,7 @@ namespace zmq
         int getsockopt (int option_, void *optval_, size_t *optvallen_);
         int bind (const char *addr_);
         int connect (const char *addr_);
-        int term_endpoint (void *ep_);
+        int term_endpoint (const char *addr_);
         int send (zmq::msg_t *msg_, int flags_);
         int recv (zmq::msg_t *msg_, int flags_);
         int close ();
@@ -133,6 +134,12 @@ namespace zmq
         void process_destroy ();
 
     private:
+        //  Creates new endpoint ID and adds the endpoint to the map.
+        void add_endpoint (const char *addr_, own_t *endpoint_);
+
+        //  Map of open endpoints.
+        typedef std::multimap <std::string, own_t *> endpoints_t;
+        endpoints_t endpoints;
 
         //  To be called after processing commands or invoking any command
         //  handlers explicitly. If required, it will deallocate the socket.

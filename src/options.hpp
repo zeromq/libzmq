@@ -51,10 +51,8 @@ namespace zmq
         unsigned char identity_size;
         unsigned char identity [256];
 
-        // Last socket endpoint URI
+        // Last socket endpoint resolved URI
         std::string last_endpoint;
-        // Last socket endpoint ID
-        void *last_endpoint_id;
 
         //  Maximum tranfer rate [kb/s]. Default 100kb/s.
         int rate;
