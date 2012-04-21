@@ -359,7 +359,7 @@ void zmq::pipe_t::terminate (bool delay_)
     //  active state.    
     else if (state == delimited) {
         send_pipe_term (peer);
-        state = terminated;    
+        state = terminated;
     }
 
     //  There are no other states.
