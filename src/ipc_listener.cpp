@@ -65,6 +65,7 @@ void zmq::ipc_listener_t::process_plug ()
 void zmq::ipc_listener_t::process_term (int linger_)
 {
     rm_fd (handle);
+    close ();
     own_t::process_term (linger_);
 }
 
@@ -182,4 +183,3 @@ zmq::fd_t zmq::ipc_listener_t::accept ()
 }
 
 #endif
-
