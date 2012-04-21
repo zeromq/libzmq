@@ -546,7 +546,7 @@ int zmq::socket_base_t::term_endpoint (const char *addr_)
         return -1;
     }
 
-    //  Check whether message passed to the function is valid.
+    //  Check whether endpoint address passed to the function is valid.
     if (unlikely (!addr_)) {
         errno = EINVAL;
         return -1;
