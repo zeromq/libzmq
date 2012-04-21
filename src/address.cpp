@@ -62,7 +62,7 @@ int zmq::address_t::to_string (std::string &addr_)
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
     else if (protocol == "ipc") {
         if (resolved.ipc_addr) {
-            return resolved.tcp_addr->to_string(addr_);
+            return resolved.ipc_addr->to_string(addr_);
         }
     }
 #endif
