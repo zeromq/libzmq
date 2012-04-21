@@ -304,10 +304,15 @@ int zmq::socket_base_t::bind (const char *addr_)
         return -1;
     }
 
+    //  Process pending commands, if any.
+    int rc = process_commands (0, false);
+    if (unlikely (rc != 0))
+        return -1;
+
     //  Parse addr_ string.
     std::string protocol;
     std::string address;
-    int rc = parse_uri (addr_, protocol, address);
+    rc = parse_uri (addr_, protocol, address);
     if (rc != 0)
         return -1;
 
@@ -386,10 +391,15 @@ int zmq::socket_base_t::connect (const char *addr_)
         return -1;
     }
 
+    //  Process pending commands, if any.
+    int rc = process_commands (0, false);
+    if (unlikely (rc != 0))
+        return -1;
+
     //  Parse addr_ string.
     std::string protocol;
     std::string address;
-    int rc = parse_uri (addr_, protocol, address);
+    rc = parse_uri (addr_, protocol, address);
     if (rc != 0)
         return -1;
 
