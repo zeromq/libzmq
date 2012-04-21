@@ -73,6 +73,7 @@ void zmq::tcp_listener_t::process_plug ()
 void zmq::tcp_listener_t::process_term (int linger_)
 {
     rm_fd (handle);
+    close ();
     own_t::process_term (linger_);
 }
 

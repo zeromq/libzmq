@@ -553,6 +553,12 @@ int zmq::socket_base_t::term_endpoint (const char *addr_)
         return -1;
     }
 
+    //  Process pending commands, if any, since there could be pending unprocessed process_own()'s
+    //  (from launch_child() for example) we're asked to terminate now.
+    int rc = process_commands (0, false);
+    if (unlikely (rc != 0))
+        return -1;
+
     //  Find the endpoints range (if any) corresponding to the addr_ string.
     std::pair <endpoints_t::iterator, endpoints_t::iterator> range = endpoints.equal_range (std::string (addr_));
     if (range.first == range.second)
