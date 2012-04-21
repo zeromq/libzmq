@@ -357,6 +357,7 @@ void zmq::session_base_t::proceed_with_term ()
 
 void zmq::session_base_t::timer_event (int id_)
 {
+
     //  Linger period expired. We can proceed with termination even though
     //  there are still pending messages to be sent.
     zmq_assert (id_ == linger_timer_id);
@@ -376,13 +377,13 @@ void zmq::session_base_t::detached ()
     }
 
     //  Reconnect.
-	if (options.reconnect_ivl != -1)
-    	start_connecting (true);
+    if (options.reconnect_ivl != -1)
+        start_connecting (true);
 
     //  For subscriber sockets we hiccup the inbound pipe, which will cause
     //  the socket object to resend all the subscriptions.
     if (pipe && (options.type == ZMQ_SUB || options.type == ZMQ_XSUB))
-        pipe->hiccup ();  
+        pipe->hiccup ();
 }
 
 void zmq::session_base_t::start_connecting (bool wait_)
