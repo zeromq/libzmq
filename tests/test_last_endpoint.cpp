@@ -41,7 +41,7 @@ int main (int argc, char *argv [])
     void *ctx = zmq_init (1);
     assert (ctx);
 
-    void *sb = zmq_socket (ctx, ZMQ_XREP);
+    void *sb = zmq_socket (ctx, ZMQ_ROUTER);
     assert (sb);
 
     do_bind_and_verify (sb, "tcp://127.0.0.1:5560");
