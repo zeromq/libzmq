@@ -94,18 +94,18 @@ int zmq::xsub_t::xsend (msg_t *msg_, int flags_)
     if (*data == 1) {
         if (subscriptions.add (data + 1, size - 1))
             return dist.send_to_all (msg_, flags_);
-        else
-            return 0;
     }
-    else if (*data == 0) {
+    else {
         if (subscriptions.rm (data + 1, size - 1))
             return dist.send_to_all (msg_, flags_);
-        else
-            return 0;
     }
 
-    zmq_assert (false);
-    return -1;
+    int rc = msg_->close ();
+    errno_assert (rc == 0);
+    rc = msg_->init ();
+    errno_assert (rc == 0);
+
+    return 0;
 }
 
 bool zmq::xsub_t::xhas_out ()
