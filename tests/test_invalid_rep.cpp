@@ -27,19 +27,19 @@ int main (int argc, char *argv [])
 {
     fprintf (stderr, "test_invalid_rep running...\n");
 
-    //  Create REQ/XREP wiring.
+    //  Create REQ/ROUTER wiring.
     void *ctx = zmq_init (1);
     assert (ctx);
-    void *xrep_socket = zmq_socket (ctx, ZMQ_XREP);
-    assert (xrep_socket);
+    void *router_socket = zmq_socket (ctx, ZMQ_ROUTER);
+    assert (router_socket);
     void *req_socket = zmq_socket (ctx, ZMQ_REQ);
     assert (req_socket);
     int linger = 0;
-    int rc = zmq_setsockopt (xrep_socket, ZMQ_LINGER, &linger, sizeof (int));
+    int rc = zmq_setsockopt (router_socket, ZMQ_LINGER, &linger, sizeof (int));
     assert (rc == 0);
     rc = zmq_setsockopt (req_socket, ZMQ_LINGER, &linger, sizeof (int));
     assert (rc == 0);
-    rc = zmq_bind (xrep_socket, "inproc://hi");
+    rc = zmq_bind (router_socket, "inproc://hi");
     assert (rc == 0);
     rc = zmq_connect (req_socket, "inproc://hi");
     assert (rc == 0);
@@ -53,23 +53,23 @@ int main (int argc, char *argv [])
     int addr_size;
     char bottom [1];
     char body [1];
-    addr_size = zmq_recv (xrep_socket, addr, sizeof (addr), 0);
+    addr_size = zmq_recv (router_socket, addr, sizeof (addr), 0);
     assert (addr_size >= 0);
-    rc = zmq_recv (xrep_socket, bottom, sizeof (bottom), 0);
+    rc = zmq_recv (router_socket, bottom, sizeof (bottom), 0);
     assert (rc == 0);
-    rc = zmq_recv (xrep_socket, body, sizeof (body), 0);
+    rc = zmq_recv (router_socket, body, sizeof (body), 0);
     assert (rc == 1);
 
     //  Send invalid reply.
-    rc = zmq_send (xrep_socket, addr, addr_size, 0);
+    rc = zmq_send (router_socket, addr, addr_size, 0);
     assert (rc == addr_size);
 
     //  Send valid reply.
-    rc = zmq_send (xrep_socket, addr, addr_size, ZMQ_SNDMORE);
+    rc = zmq_send (router_socket, addr, addr_size, ZMQ_SNDMORE);
     assert (rc == addr_size);
-    rc = zmq_send (xrep_socket, bottom, 0, ZMQ_SNDMORE);
+    rc = zmq_send (router_socket, bottom, 0, ZMQ_SNDMORE);
     assert (rc == 0);
-    rc = zmq_send (xrep_socket, "b", 1, 0);
+    rc = zmq_send (router_socket, "b", 1, 0);
     assert (rc == 1);
 
     //  Check whether we've got the valid reply.
@@ -78,7 +78,7 @@ int main (int argc, char *argv [])
 	assert (body [0] == 'b');
 
     //  Tear down the wiring.
-    rc = zmq_close (xrep_socket);
+    rc = zmq_close (router_socket);
     assert (rc == 0);
     rc = zmq_close (req_socket);
     assert (rc == 0);

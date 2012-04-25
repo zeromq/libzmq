@@ -33,13 +33,13 @@ int main (int argc, char *argv [])
     assert (ctx);
 
     //  Create a req/rep device.
-    void *xreq = zmq_socket (ctx, ZMQ_XREQ);
-    assert (xreq);
-    int rc = zmq_bind (xreq, "tcp://127.0.0.1:5560");
+    void *dealer = zmq_socket (ctx, ZMQ_DEALER);
+    assert (dealer);
+    int rc = zmq_bind (dealer, "tcp://127.0.0.1:5560");
     assert (rc == 0);
-    void *xrep = zmq_socket (ctx, ZMQ_XREP);
-    assert (xrep);
-    rc = zmq_bind (xrep, "tcp://127.0.0.1:5561");
+    void *router = zmq_socket (ctx, ZMQ_ROUTER);
+    assert (router);
+    rc = zmq_bind (router, "tcp://127.0.0.1:5561");
     assert (rc == 0);
 
     //  Create a worker.
@@ -65,13 +65,13 @@ int main (int argc, char *argv [])
         zmq_msg_t msg;
         rc = zmq_msg_init (&msg);
         assert (rc == 0);
-        rc = zmq_recvmsg (xrep, &msg, 0);
+        rc = zmq_recvmsg (router, &msg, 0);
         assert (rc >= 0);
         int rcvmore;
         size_t sz = sizeof (rcvmore);
-        rc = zmq_getsockopt (xrep, ZMQ_RCVMORE, &rcvmore, &sz);
+        rc = zmq_getsockopt (router, ZMQ_RCVMORE, &rcvmore, &sz);
         assert (rc == 0);
-        rc = zmq_sendmsg (xreq, &msg, rcvmore ? ZMQ_SNDMORE : 0);
+        rc = zmq_sendmsg (dealer, &msg, rcvmore ? ZMQ_SNDMORE : 0);
         assert (rc >= 0);
     }
 
@@ -103,12 +103,12 @@ int main (int argc, char *argv [])
         zmq_msg_t msg;
         rc = zmq_msg_init (&msg);
         assert (rc == 0);
-        rc = zmq_recvmsg (xreq, &msg, 0);
+        rc = zmq_recvmsg (dealer, &msg, 0);
         assert (rc >= 0);
         int rcvmore;
-        rc = zmq_getsockopt (xreq, ZMQ_RCVMORE, &rcvmore, &sz);
+        rc = zmq_getsockopt (dealer, ZMQ_RCVMORE, &rcvmore, &sz);
         assert (rc == 0);
-        rc = zmq_sendmsg (xrep, &msg, rcvmore ? ZMQ_SNDMORE : 0);
+        rc = zmq_sendmsg (router, &msg, rcvmore ? ZMQ_SNDMORE : 0);
         assert (rc >= 0);
     }
 
@@ -131,9 +131,9 @@ int main (int argc, char *argv [])
     assert (rc == 0);
     rc = zmq_close (rep);
     assert (rc == 0);
-    rc = zmq_close (xrep);
+    rc = zmq_close (router);
     assert (rc == 0);
-    rc = zmq_close (xreq);
+    rc = zmq_close (dealer);
     assert (rc == 0);
     rc = zmq_term (ctx);
     assert (rc == 0);
