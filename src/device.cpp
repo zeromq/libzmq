@@ -35,9 +35,12 @@ int zmq::device (class socket_base_t *insocket_,
     if (rc != 0)
         return -1;
 
-    //  The algorithm below assumes ratio of request and replies processed
+    //  The algorithm below assumes ratio of requests and replies processed
     //  under full load to be 1:1.
-        
+
+    //  TODO: The current implementation drops messages when
+    //  any of the pipes becomes full.
+
     int more;
     size_t moresz;
     zmq_pollitem_t items [] = {
@@ -56,12 +59,12 @@ int zmq::device (class socket_base_t *insocket_,
                 rc = insocket_->recv (&msg, 0);
                 if (unlikely (rc < 0))
                     return -1;
-                
-                moresz = sizeof (more);
+
+                moresz = sizeof more;
                 rc = insocket_->getsockopt (ZMQ_RCVMORE, &more, &moresz);
                 if (unlikely (rc < 0))
                     return -1;
-                
+
                 rc = outsocket_->send (&msg, more? ZMQ_SNDMORE: 0);
                 if (unlikely (rc < 0))
                     return -1;
@@ -75,12 +78,12 @@ int zmq::device (class socket_base_t *insocket_,
                 rc = outsocket_->recv (&msg, 0);
                 if (unlikely (rc < 0))
                     return -1;
-    
-                moresz = sizeof (more);
+
+                moresz = sizeof more;
                 rc = outsocket_->getsockopt (ZMQ_RCVMORE, &more, &moresz);
                 if (unlikely (rc < 0))
                     return -1;
-                
+
                 rc = insocket_->send (&msg, more? ZMQ_SNDMORE: 0);
                 if (unlikely (rc < 0))
                     return -1;
