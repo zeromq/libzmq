@@ -52,7 +52,7 @@ void zmq::pull_t::xterminated (pipe_t *pipe_)
 
 int zmq::pull_t::xrecv (msg_t *msg_, int flags_)
 {
-    return fq.recv (msg_, flags_);
+    return fq.recv (msg_);
 }
 
 bool zmq::pull_t::xhas_in ()
