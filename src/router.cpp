@@ -212,7 +212,7 @@ int zmq::router_t::xrecv (msg_t *msg_, int flags_)
     }
 
     pipe_t *pipe = NULL;
-    int rc = fq.recvpipe (msg_, flags_, &pipe);
+    int rc = fq.recvpipe (msg_, &pipe);
     if (rc != 0) {
         errno = EAGAIN;
         return -1;
@@ -268,7 +268,7 @@ bool zmq::router_t::xhas_in ()
     //  Try to read the next message.
     //  The message, if read, is kept in the pre-fetch buffer.
     pipe_t *pipe = NULL;
-    int rc = fq.recvpipe (&prefetched_msg, ZMQ_DONTWAIT, &pipe);
+    int rc = fq.recvpipe (&prefetched_msg, &pipe);
     if (rc != 0)
         return false;
 

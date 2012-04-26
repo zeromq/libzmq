@@ -44,8 +44,8 @@ namespace zmq
         void activated (pipe_t *pipe_);
         void terminated (pipe_t *pipe_);
 
-        int recv (msg_t *msg_, int flags_);
-        int recvpipe (msg_t *msg_, int flags_, pipe_t **pipe_);
+        int recv (msg_t *msg_);
+        int recvpipe (msg_t *msg_, pipe_t **pipe_);
         bool has_in ();
 
     private:
