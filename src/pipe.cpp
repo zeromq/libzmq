@@ -255,12 +255,10 @@ void zmq::pipe_t::process_pipe_term ()
             state = terminating;
             outpipe = NULL;
             send_pipe_term_ack (peer);
-            return;
         }
-        else {
+        else
             state = pending;
-            return;
-        }
+        return;
     }
 
     //  Delimiter happened to arrive before the term command. Now we have the
@@ -296,14 +294,12 @@ void zmq::pipe_t::process_pipe_term_ack ()
     //  Simply deallocate the pipe. In terminated state we have to ack the
     //  peer before deallocating this side of the pipe. All the other states
     //  are invalid.
-    if (state == terminating) ;
-    else if (state == double_terminated);
-    else if (state == terminated) {
+    if (state == terminated) {
         outpipe = NULL;
         send_pipe_term_ack (peer);
     }
     else
-        zmq_assert (false);
+        zmq_assert (state == terminating || state == double_terminated);
 
     //  We'll deallocate the inbound pipe, the peer will deallocate the outbound
     //  pipe (which is an inbound pipe from its point of view).
@@ -345,18 +341,18 @@ void zmq::pipe_t::terminate (bool delay_)
     //  There are still pending messages available, but the user calls
     //  'terminate'. We can act as if all the pending messages were read.
     else if (state == pending && !delay) {
-            outpipe = NULL;
-            send_pipe_term_ack (peer);
-            state = terminating;
+        outpipe = NULL;
+        send_pipe_term_ack (peer);
+        state = terminating;
     }
 
     //  If there are pending messages still availabe, do nothing.
-    else if (state == pending && delay) {
+    else if (state == pending) {
     }
 
     //  We've already got delimiter, but not term command yet. We can ignore
     //  the delimiter and ack synchronously terminate as if we were in
-    //  active state.    
+    //  active state.
     else if (state == delimited) {
         send_pipe_term (peer);
         state = terminated;
@@ -371,11 +367,11 @@ void zmq::pipe_t::terminate (bool delay_)
 
     if (outpipe) {
 
-		//  Rollback any unfinished outbound messages.
+		//  Drop any unfinished outbound messages.
 		rollback ();
 
-		//  Push delimiter into the outbound pipe. Note that watermarks are not
-		//  checked thus the delimiter can be written even though the pipe is full.
+		//  Write the delimiter into the pipe. Note that watermarks are not
+		//  checked; thus the delimiter can be written even when the pipe is full.
 		msg_t msg;
 		msg.init_delimiter ();
 		outpipe->write (msg, false);
