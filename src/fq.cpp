@@ -63,12 +63,12 @@ void zmq::fq_t::activated (pipe_t *pipe_)
     active++;
 }
 
-int zmq::fq_t::recv (msg_t *msg_, int flags_)
+int zmq::fq_t::recv (msg_t *msg_)
 {
-    return recvpipe (msg_, flags_, NULL);
+    return recvpipe (msg_, NULL);
 }
 
-int zmq::fq_t::recvpipe (msg_t *msg_, int flags_, pipe_t **pipe_)
+int zmq::fq_t::recvpipe (msg_t *msg_, pipe_t **pipe_)
 {
     //  Deallocate old content of the message.
     int rc = msg_->close ();

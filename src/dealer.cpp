@@ -70,7 +70,7 @@ int zmq::dealer_t::xrecv (msg_t *msg_, int flags_)
 
     //  DEALER socket doesn't use identities. We can safely drop it and 
     while (true) {
-        int rc = fq.recv (msg_, flags_);
+        int rc = fq.recv (msg_);
         if (rc != 0)
             return rc;
         if (likely (!(msg_->flags () & msg_t::identity)))
