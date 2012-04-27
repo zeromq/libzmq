@@ -355,6 +355,12 @@ necessarily indicate that messages are available to be read from, or can be
 written to, the underlying socket; applications must retrieve the actual event
 state with a subsequent retrieval of the 'ZMQ_EVENTS' option.
 
+NOTE: The returned file descriptor is also used internally by 'zmq_send' and
+'zmq_recv' functions. Given it's edge triggered nature, application must update
+state of 'ZMQ_EVENTS' after each invocation of 'zmq_send' or 'zmq_recv'.
+To be more explicit: after calling 'zmq_send' socket may become readable (and
+vice versa) without triggering read event on file descriptor.
+
 CAUTION: The returned file descriptor is intended for use with a 'poll' or
 similar system call only. Applications must never attempt to read or write data
 to it directly, neither should they try to close it.
