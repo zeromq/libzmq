@@ -21,6 +21,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <limits>
 
 #include "decoder.hpp"
 #include "session_base.hpp"
@@ -91,33 +92,41 @@ bool zmq::decoder_t::one_byte_size_ready ()
 
 bool zmq::decoder_t::eight_byte_size_ready ()
 {
-    //  8-byte size is read. Allocate the buffer for message body and
-    //  read the message data into it.
-    size_t size = (size_t) get_uint64 (tmpbuf);
+    //  8-byte payload length is read. Allocate the buffer
+    //  for message body and read the message data into it.
+    const uint64_t payload_length = get_uint64 (tmpbuf);
 
     //  There has to be at least one byte (the flags) in the message).
-    if (!size) {
+    if (payload_length == 0) {
         decoding_error ();
         return false;
     }
 
-    //  in_progress is initialised at this point so in theory we should
-    //  close it before calling zmq_msg_init_size, however, it's a 0-byte
-    //  message and thus we can treat it as uninitialised...
-    int rc;
-    if (maxmsgsize >= 0 && (int64_t) (size - 1) > maxmsgsize) {
-        rc = -1;
-        errno = ENOMEM;
+    //  Message size must not exceed the maximum allowed size.
+    if (maxmsgsize >= 0 && payload_length - 1 > (uint64_t) maxmsgsize) {
+        decoding_error ();
+        return false;
     }
-    else
-        rc = in_progress.init_size (size - 1);
-    if (rc != 0 && errno == ENOMEM) {
+
+    //  Message size must fit within range of size_t data type.
+    if (payload_length - 1 > std::numeric_limits <size_t>::max ()) {
+        decoding_error ();
+        return false;
+    }
+
+    const size_t msg_size = static_cast <size_t> (payload_length - 1);
+
+    //  in_progress is initialised at this point so in theory we should
+    //  close it before calling init_size, however, it's a 0-byte
+    //  message and thus we can treat it as uninitialised...
+    int rc = in_progress.init_size (msg_size);
+    if (rc != 0) {
+        errno_assert (errno == ENOMEM);
         rc = in_progress.init ();
         errno_assert (rc == 0);
         decoding_error ();
         return false;
     }
-    errno_assert (rc == 0);
 
     next_step (tmpbuf, 1, &decoder_t::flags_ready);
     return true;
@@ -130,7 +139,7 @@ bool zmq::decoder_t::flags_ready ()
 
     next_step (in_progress.data (), in_progress.size (),
         &decoder_t::message_ready);
-    
+
     return true;
 }
 
