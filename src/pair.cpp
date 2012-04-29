@@ -38,14 +38,20 @@ zmq::pair_t::~pair_t ()
 
 void zmq::pair_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
 {
-    zmq_assert (!pipe);
-    pipe = pipe_;
+    zmq_assert (pipe_ != NULL);
+
+    //  ZMQ_PAIR socket can only be connected to a single peer.
+    //  The socket rejects any further connection requests.
+    if (pipe == NULL)
+        pipe = pipe_;
+    else
+        pipe_->terminate (false);
 }
 
 void zmq::pair_t::xterminated (pipe_t *pipe_)
 {
-    zmq_assert (pipe_ == pipe);
-    pipe = NULL;
+    if (pipe_ == pipe)
+        pipe = NULL;
 }
 
 void zmq::pair_t::xread_activated (pipe_t *pipe_)
