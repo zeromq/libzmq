@@ -837,10 +837,6 @@ void zmq::socket_base_t::process_bind (pipe_t *pipe_)
     attach_pipe (pipe_);
 }
 
-void zmq::socket_base_t::process_unplug ()
-{
-}
-
 void zmq::socket_base_t::process_term (int linger_)
 {
     //  Unregister all inproc endpoints associated with this socket.
