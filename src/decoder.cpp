@@ -51,6 +51,11 @@ void zmq::decoder_t::set_session (session_base_t *session_)
     session = session_;
 }
 
+bool zmq::decoder_t::stalled () const
+{
+    return next == &decoder_t::message_ready;
+}
+
 bool zmq::decoder_t::one_byte_size_ready ()
 {
     //  First byte of size is read. If it is 0xff read 8-byte size.

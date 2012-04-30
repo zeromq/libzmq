@@ -52,9 +52,9 @@ namespace zmq
     public:
 
         inline decoder_base_t (size_t bufsize_) :
+            next (NULL),
             read_pos (NULL),
             to_read (0),
-            next (NULL),
             bufsize (bufsize_)
         {
             buf = (unsigned char*) malloc (bufsize_);
@@ -165,6 +165,11 @@ namespace zmq
             next = NULL;
         }
 
+        //  Next step. If set to NULL, it means that associated data stream
+        //  is dead. Note that there can be still data in the process in such
+        //  case.
+        step_t next;
+
     private:
 
         //  Where to store the read data.
@@ -172,11 +177,6 @@ namespace zmq
 
         //  How much data to read before taking next step.
         size_t to_read;
-
-        //  Next step. If set to NULL, it means that associated data stream
-        //  is dead. Note that there can be still data in the process in such
-        //  case.
-        step_t next;
 
         //  The duffer for data to decode.
         size_t bufsize;
@@ -196,6 +196,10 @@ namespace zmq
         ~decoder_t ();
 
         void set_session (zmq::session_base_t *session_);
+
+        //  Returns true if there is a decoded message
+        //  waiting to be delivered to the session.
+        bool stalled () const;
 
     private:
 
