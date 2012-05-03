@@ -186,6 +186,13 @@ int zmq::ipc_connecter_t::open ()
     //  Connect was successfull immediately.
     if (rc == 0)
         return 0;
+        
+    //  Translate other error codes indicating asynchronous connect has been
+    //  launched to a uniform EINPROGRESS.
+    if (rc == -1 && errno == EINTR) {
+        errno = EINPROGRESS;
+        return -1;
+    }
 
     //  Forward the error.
     return -1;
