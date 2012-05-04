@@ -183,7 +183,6 @@ namespace zmq
         //  Handlers for incoming commands.
         void process_stop ();
         void process_bind (zmq::pipe_t *pipe_);
-        void process_unplug ();
         void process_term (int linger_);
 
         //  Socket's mailbox object.

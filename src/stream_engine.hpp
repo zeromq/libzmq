@@ -84,6 +84,7 @@ namespace zmq
         unsigned char *inpos;
         size_t insize;
         decoder_t decoder;
+        bool input_error;
 
         unsigned char *outpos;
         size_t outsize;
