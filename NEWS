@@ -57,6 +57,8 @@ Building
 New functionality
 -----------------
 
+* ZMQ_MONITOR socket option registers a callback / event sink for changes in socket state.
+
 * POSIX-compliant zmq_send and zmq_recv introduced (uses raw buffer
   instead of message object).
 

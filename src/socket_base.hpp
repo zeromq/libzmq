@@ -100,6 +100,9 @@ namespace zmq
         void terminated (pipe_t *pipe_);
         void lock();
         void unlock();
+
+        void monitor_event (int event_, ...);
+
     protected:
 
         socket_base_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);

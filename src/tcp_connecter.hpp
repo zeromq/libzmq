@@ -26,6 +26,7 @@
 #include "own.hpp"
 #include "stdint.hpp"
 #include "io_object.hpp"
+#include "../include/zmq.h"
 
 namespace zmq
 {
@@ -102,6 +103,9 @@ namespace zmq
 
         //  Current reconnect ivl, updated for backoff strategy
         int current_reconnect_ivl;
+
+        // String representation of endpoint to connect to
+        std::string endpoint;
 
         tcp_connecter_t (const tcp_connecter_t&);
         const tcp_connecter_t &operator = (const tcp_connecter_t&);

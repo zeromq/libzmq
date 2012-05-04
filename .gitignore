@@ -20,6 +20,8 @@ autom4te.cache
 .*
 *~
 .*~
+tests/test_term_endpoint
+tests/test_monitor
 tests/test_last_endpoint
 tests/test_pair_inproc
 tests/test_pair_ipc

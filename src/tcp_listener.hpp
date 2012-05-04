@@ -27,6 +27,7 @@
 #include "stdint.hpp"
 #include "io_object.hpp"
 #include "tcp_address.hpp"
+#include "../include/zmq.h"
 
 namespace zmq
 {
@@ -77,6 +78,9 @@ namespace zmq
 
         //  Socket the listerner belongs to.
         zmq::socket_base_t *socket;
+
+       // String representation of endpoint to bind to
+        std::string endpoint;
 
         tcp_listener_t (const tcp_listener_t&);
         const tcp_listener_t &operator = (const tcp_listener_t&);
