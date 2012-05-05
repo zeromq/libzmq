@@ -259,7 +259,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\dealer.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\decoder.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\device.cpp"
 				>
 			</File>
 			<File
@@ -403,6 +411,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\router.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\select.cpp"
 				>
 			</File>
@@ -448,14 +460,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\xpub.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\xrep.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\xreq.cpp"
 				>
 			</File>
 			<File
