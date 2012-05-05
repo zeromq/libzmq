@@ -42,6 +42,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=1024 -D_CRT_SECURE_NO_WARNINGS"
 				Optimization="0"
+				PreprocessorDefinitions="NOMINMAX"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
