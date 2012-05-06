@@ -42,6 +42,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=1024 -D_CRT_SECURE_NO_WARNINGS"
 				Optimization="0"
+				PreprocessorDefinitions="NOMINMAX"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -259,7 +260,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\dealer.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\decoder.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\device.cpp"
 				>
 			</File>
 			<File
@@ -403,6 +412,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\router.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\select.cpp"
 				>
 			</File>
@@ -448,14 +461,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\xpub.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\xrep.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\xreq.cpp"
 				>
 			</File>
 			<File
