@@ -57,6 +57,12 @@ zmq::fd_t zmq::open_socket (int domain_, int type_, int protocol_)
     errno_assert (rc != -1);
 #endif
 
+    //  On Windows, preventing sockets to be inherited by child processes.
+#if defined ZMQ_HAVE_WINDOWS && defined HANDLE_FLAG_INHERIT
+    BOOL brc = SetHandleInformation ((HANDLE) s, HANDLE_FLAG_INHERIT, 0);
+    win_assert (brc);
+#endif
+
     return s;
 }
 
