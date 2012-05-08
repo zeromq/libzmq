@@ -79,18 +79,16 @@ namespace zmq
                 //  If there are still no data, return what we already have
                 //  in the buffer.
                 if (!to_write) {
+                    //  If we are to encode the beginning of a new message,
+                    //  adjust the message offset.
+                    if (beginning)
+                        if (offset_ && *offset_ == -1)
+                            *offset_ = static_cast <int> (pos);
+
                     if (!(static_cast <T*> (this)->*next) ()) {
                         *data_ = buffer;
                         *size_ = pos;
                         return;
-                    }
-
-                    //  If beginning of the message was processed, adjust the
-                    //  first-message-offset.
-                    if (beginning) { 
-                        if (offset_ && *offset_ == -1)
-                            *offset_ = (int) pos;
-                        beginning = false;
                     }
                 }
 
