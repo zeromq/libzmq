@@ -51,7 +51,7 @@ bool zmq::encoder_t::size_ready ()
 {
     //  Write message body into the buffer.
     next_step (in_progress.data (), in_progress.size (),
-        &encoder_t::message_ready, false);
+        &encoder_t::message_ready, !(in_progress.flags () & msg_t::more));
     return true;
 }
 
@@ -90,15 +90,13 @@ bool zmq::encoder_t::message_ready ()
     if (size < 255) {
         tmpbuf [0] = (unsigned char) size;
         tmpbuf [1] = (in_progress.flags () & msg_t::more);
-        next_step (tmpbuf, 2, &encoder_t::size_ready,
-            !(in_progress.flags () & msg_t::more));
+        next_step (tmpbuf, 2, &encoder_t::size_ready, false);
     }
     else {
         tmpbuf [0] = 0xff;
         put_uint64 (tmpbuf + 1, size);
         tmpbuf [9] = (in_progress.flags () & msg_t::more);
-        next_step (tmpbuf, 10, &encoder_t::size_ready,
-            !(in_progress.flags () & msg_t::more));
+        next_step (tmpbuf, 10, &encoder_t::size_ready, false);
     }
     return true;
 }
