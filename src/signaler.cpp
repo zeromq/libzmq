@@ -288,6 +288,10 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     *w_ = WSASocket (AF_INET, SOCK_STREAM, 0, NULL, 0,  0);
     wsa_assert (*w_ != INVALID_SOCKET);
 
+    //  On Windows, preventing sockets to be inherited by child processes.
+    BOOL brc = SetHandleInformation ((HANDLE) *w_, HANDLE_FLAG_INHERIT, 0);
+    win_assert (brc);
+
     //  Set TCP_NODELAY on writer socket.
     rc = setsockopt (*w_, IPPROTO_TCP, TCP_NODELAY,
         (char *)&tcp_nodelay, sizeof (tcp_nodelay));
@@ -301,12 +305,16 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     *r_ = accept (listener, NULL, NULL);
     wsa_assert (*r_ != INVALID_SOCKET);
 
+    //  On Windows, preventing sockets to be inherited by child processes.
+    brc = SetHandleInformation ((HANDLE) *r_, HANDLE_FLAG_INHERIT, 0);
+    win_assert (brc);
+
     //  We don't need the listening socket anymore. Close it.
     rc = closesocket (listener);
     wsa_assert (rc != SOCKET_ERROR);
 
     //  Exit the critical section.
-    BOOL brc = SetEvent (sync);
+    brc = SetEvent (sync);
     win_assert (brc != 0);
 
     return 0;
