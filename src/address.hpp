@@ -45,7 +45,7 @@ namespace zmq
 #endif
         } resolved;
 
-        int to_string (std::string &addr_);
+        int to_string (std::string &addr_) const;
     };
 }
 

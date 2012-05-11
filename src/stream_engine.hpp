@@ -30,6 +30,7 @@
 #include "encoder.hpp"
 #include "decoder.hpp"
 #include "options.hpp"
+#include "../include/zmq.h"
 
 namespace zmq
 {
@@ -96,6 +97,9 @@ namespace zmq
         zmq::session_base_t *leftover_session;
 
         options_t options;
+
+        // String representation of endpoint
+        std::string endpoint;
 
         bool plugged;
 

@@ -84,6 +84,9 @@ namespace zmq
         //  Socket the listerner belongs to.
         zmq::socket_base_t *socket;
 
+       // String representation of endpoint to bind to
+        std::string endpoint;
+
         ipc_listener_t (const ipc_listener_t&);
         const ipc_listener_t &operator = (const ipc_listener_t&);
     };

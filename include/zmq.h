@@ -227,7 +227,7 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 #define ZMQ_TCP_KEEPALIVE_IDLE 36
 #define ZMQ_TCP_KEEPALIVE_INTVL 37
 #define ZMQ_TCP_ACCEPT_FILTER 38
-
+#define ZMQ_MONITOR 39
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1
@@ -235,6 +235,72 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 /*  Send/recv options.                                                        */
 #define ZMQ_DONTWAIT 1
 #define ZMQ_SNDMORE 2
+
+/******************************************************************************/
+/*  0MQ socket events and monitoring                                          */
+/******************************************************************************/
+
+/*  Socket transport events (tcp and ipc only)                                */
+#define ZMQ_EVENT_CONNECTED 1
+#define ZMQ_EVENT_CONNECT_DELAYED 2
+#define ZMQ_EVENT_CONNECT_RETRIED 3
+
+#define ZMQ_EVENT_LISTENING 4
+#define ZMQ_EVENT_BIND_FAILED 5
+
+#define ZMQ_EVENT_ACCEPTED 6
+#define ZMQ_EVENT_ACCEPT_FAILED 7
+
+#define ZMQ_EVENT_CLOSED 8
+#define ZMQ_EVENT_CLOSE_FAILED 9
+#define ZMQ_EVENT_DISCONNECTED 10
+
+/*  Socket event data (union member per event)                                */
+typedef union {
+    struct {
+        char *addr;
+        int fd;
+    } connected;
+    struct {
+        char *addr;
+        int err;
+    } connect_delayed;
+    struct {
+        char *addr;
+        int interval;
+    } connect_retried;
+    struct {
+        char *addr;
+        int fd;
+    } listening;
+    struct {
+        char *addr;
+        int err;
+    } bind_failed;
+    struct {
+        char *addr;
+        int fd;
+    } accepted;
+    struct {
+        char *addr;
+        int err;
+    } accept_failed;
+    struct {
+        char *addr;
+        int fd;
+    } closed;
+    struct {
+        char *addr;
+        int err;
+    } close_failed;
+    struct {
+        char *addr;
+        int fd;
+    } disconnected;
+} zmq_event_data_t;
+
+/*  Callback template for socket state changes                                */
+typedef void (zmq_monitor_fn) (void *s, int event, zmq_event_data_t *data);
 
 ZMQ_EXPORT void *zmq_socket (void *, int type);
 ZMQ_EXPORT int zmq_close (void *s);
