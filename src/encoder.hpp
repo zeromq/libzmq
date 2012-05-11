@@ -69,29 +69,24 @@ namespace zmq
             unsigned char *buffer = !*data_ ? buf : *data_;
             size_t buffersize = !*data_ ? bufsize : *size_;
 
-            size_t pos = 0;
             if (offset_)
                 *offset_ = -1;
 
-            while (true) {
+            size_t pos = 0;
+            while (pos < buffersize) {
 
                 //  If there are no more data to return, run the state machine.
                 //  If there are still no data, return what we already have
                 //  in the buffer.
                 if (!to_write) {
-                    if (!(static_cast <T*> (this)->*next) ()) {
-                        *data_ = buffer;
-                        *size_ = pos;
-                        return;
-                    }
-
-                    //  If beginning of the message was processed, adjust the
-                    //  first-message-offset.
-                    if (beginning) { 
+                    //  If we are to encode the beginning of a new message,
+                    //  adjust the message offset.
+                    if (beginning)
                         if (offset_ && *offset_ == -1)
-                            *offset_ = (int) pos;
-                        beginning = false;
-                    }
+                            *offset_ = static_cast <int> (pos);
+
+                    if (!(static_cast <T*> (this)->*next) ())
+                        break;
                 }
 
                 //  If there are no data in the buffer yet and we are able to
@@ -118,12 +113,10 @@ namespace zmq
                 pos += to_copy;
                 write_pos += to_copy;
                 to_write -= to_copy;
-                if (pos == buffersize) {
-                    *data_ = buffer;
-                    *size_ = pos;
-                    return;
-                }
             }
+
+            *data_ = buffer;
+            *size_ = pos;
         }
 
     protected:

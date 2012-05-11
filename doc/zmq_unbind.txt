@@ -1,0 +1,65 @@
+zmq_unbind(3)
+==============
+
+
+NAME
+----
+zmq_unbind - Stop accepting connections on a socket
+
+
+SYNOPSIS
+--------
+int zmq_unbind (void '*socket', const char '*endpoint');
+
+
+DESCRIPTION
+-----------
+The _zmq_unbind()_ function shall unbind a socket specified
+by the 'socket' argument from the endpoint specified by the 'endpoint'
+argument. 
+
+The 'endpoint' argument is as described in linkzmq:zmq_bind[3]
+
+
+RETURN VALUE
+------------
+The _zmq_unbind()_ function shall return zero if successful. Otherwise it
+shall return `-1` and set 'errno' to one of the values defined below.
+
+ERRORS
+------
+*EINVAL*::
+The endpoint supplied is invalid.
+*ETERM*::
+The 0MQ 'context' associated with the specified 'socket' was terminated.
+*ENOTSOCK*::
+The provided 'socket' was invalid.
+
+
+EXAMPLE
+-------
+.Unbind a subscriber socket from a TCP transport
+----
+/* Create a ZMQ_SUB socket */
+void *socket = zmq_socket (context, ZMQ_SUB);
+assert (socket);
+/* Connect it to the host server001, port 5555 using a TCP transport */
+rc = zmq_bind (socket, "tcp://127.0.0.1:5555");
+assert (rc == 0);
+/* Disconnect from the previously connected endpoint */
+rc = zmq_unbind (socket, "tcp://127.0.0.1:5555");
+assert (rc == 0);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_bind[3]
+linkzmq:zmq_socket[3]
+linkzmq:zmq[7]
+
+
+AUTHORS
+-------
+This 0MQ manual page was written by Martin Sustrik <sustrik@250bpm.com>,
+Martin Lucina <mato@kotelna.sk> and Ian Barber <ian.barber@gmail.com>

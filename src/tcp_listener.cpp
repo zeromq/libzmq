@@ -173,6 +173,9 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
         wsa_error_to_errno ();
         return -1;
     }
+    //  On Windows, preventing sockets to be inherited by child processes.
+    BOOL brc = SetHandleInformation ((HANDLE) s, HANDLE_FLAG_INHERIT, 0);
+    win_assert (brc);
 #else
     if (s == -1)
         return -1;
@@ -239,6 +242,9 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
             WSAGetLastError () == WSAECONNRESET);
         return retired_fd;
     }
+    //  On Windows, preventing sockets to be inherited by child processes.
+    BOOL brc = SetHandleInformation ((HANDLE) sock, HANDLE_FLAG_INHERIT, 0);
+    win_assert (brc);
 #else
     if (sock == -1) {
         errno_assert (errno == EAGAIN || errno == EWOULDBLOCK ||
