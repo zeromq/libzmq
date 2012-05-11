@@ -31,6 +31,7 @@
 #include "config.hpp"
 #include "err.hpp"
 #include "ip.hpp"
+#include "socket_base.hpp"
 
 #ifdef ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
@@ -83,8 +84,10 @@ void zmq::tcp_listener_t::in_event ()
 
     //  If connection was reset by the peer in the meantime, just ignore it.
     //  TODO: Handle specific errors like ENFILE/EMFILE etc.
-    if (fd == retired_fd)
+    if (fd == retired_fd) {
+        socket->monitor_event (ZMQ_EVENT_ACCEPT_FAILED, endpoint.c_str(), zmq_errno());
         return;
+    }
 
     tune_tcp_socket (fd);
     tune_tcp_keepalives (fd, options.tcp_keepalive, options.tcp_keepalive_cnt, options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
@@ -105,6 +108,7 @@ void zmq::tcp_listener_t::in_event ()
     session->inc_seqnum ();
     launch_child (session);
     send_attach (session, engine, false);
+    socket->monitor_event (ZMQ_EVENT_ACCEPTED, endpoint.c_str(), fd);
 }
 
 void zmq::tcp_listener_t::close ()
@@ -112,11 +116,16 @@ void zmq::tcp_listener_t::close ()
     zmq_assert (s != retired_fd);
 #ifdef ZMQ_HAVE_WINDOWS
     int rc = closesocket (s);
+    if (unlikely (rc != SOCKET_ERROR))
+        socket->monitor_event (ZMQ_EVENT_CLOSE_FAILED, endpoint.c_str(), zmq_errno());
     wsa_assert (rc != SOCKET_ERROR);
 #else
     int rc = ::close (s);
+    if (unlikely (rc == 0))
+        socket->monitor_event (ZMQ_EVENT_CLOSE_FAILED, endpoint.c_str(), zmq_errno());
     errno_assert (rc == 0);
 #endif
+    socket->monitor_event (ZMQ_EVENT_CLOSED, endpoint.c_str(), s);
     s = retired_fd;
 }
 
@@ -188,6 +197,8 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
     errno_assert (rc == 0);
 #endif
 
+    address.to_string (endpoint);
+
     //  Bind the socket to the network interface and port.
     rc = bind (s, address.addr (), address.addrlen ());
 #ifdef ZMQ_HAVE_WINDOWS
@@ -212,6 +223,7 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
         return -1;
 #endif
 
+    socket->monitor_event (ZMQ_EVENT_LISTENING, addr_, s);
     return 0;
 }
 

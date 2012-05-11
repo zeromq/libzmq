@@ -52,7 +52,7 @@ zmq::address_t::~address_t ()
 #endif
 }
 
-int zmq::address_t::to_string (std::string &addr_)
+int zmq::address_t::to_string (std::string &addr_) const
 {
     if (protocol == "tcp") {
         if (resolved.tcp_addr) {

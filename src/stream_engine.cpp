@@ -118,6 +118,8 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
     decoder.set_session (session_);
     session = session_;
 
+    session->get_address (endpoint);
+
     //  Connect to I/O threads poller object.
     io_object_t::plug (io_thread_);
     handle = add_fd (s);
@@ -144,6 +146,7 @@ void zmq::stream_engine_t::unplug ()
     decoder.set_session (NULL);
     leftover_session = session;
     session = NULL;
+    endpoint.clear();
 }
 
 void zmq::stream_engine_t::terminate ()
@@ -291,6 +294,7 @@ void zmq::stream_engine_t::activate_in ()
 void zmq::stream_engine_t::error ()
 {
     zmq_assert (session);
+    session->monitor_event (ZMQ_EVENT_DISCONNECTED, endpoint.c_str(), s);
     session->detach ();
     unplug ();
     delete this;

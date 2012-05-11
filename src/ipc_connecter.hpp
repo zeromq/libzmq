@@ -106,6 +106,9 @@ namespace zmq
         //  Current reconnect ivl, updated for backoff strategy
         int current_reconnect_ivl;
 
+        // String representation of endpoint to connect to
+        std::string endpoint;
+
         ipc_connecter_t (const ipc_connecter_t&);
         const ipc_connecter_t &operator = (const ipc_connecter_t&);
     };

@@ -31,6 +31,7 @@
 #include "ip.hpp"
 #include "address.hpp"
 #include "tcp_address.hpp"
+#include "session_base.hpp"
 
 #if defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
@@ -62,6 +63,7 @@ zmq::tcp_connecter_t::tcp_connecter_t (class io_thread_t *io_thread_,
 {
     zmq_assert (addr);
     zmq_assert (addr->protocol == "tcp");
+    addr->to_string (endpoint);
 }
 
 zmq::tcp_connecter_t::~tcp_connecter_t ()
@@ -117,6 +119,8 @@ void zmq::tcp_connecter_t::out_event ()
 
     //  Shut the connecter down.
     terminate ();
+
+    session->monitor_event (ZMQ_EVENT_CONNECTED, endpoint.c_str(), fd);
 }
 
 void zmq::tcp_connecter_t::timer_event (int id_)
@@ -144,6 +148,7 @@ void zmq::tcp_connecter_t::start_connecting ()
         handle = add_fd (s);
         handle_valid = true;
         set_pollout (handle);
+        session->monitor_event (ZMQ_EVENT_CONNECT_DELAYED, endpoint.c_str(), zmq_errno());
         return;
     }
 
@@ -155,7 +160,9 @@ void zmq::tcp_connecter_t::start_connecting ()
 
 void zmq::tcp_connecter_t::add_reconnect_timer()
 {
-    add_timer (get_new_reconnect_ivl(), reconnect_timer_id);
+    int rc_ivl = get_new_reconnect_ivl();
+    add_timer (rc_ivl, reconnect_timer_id);
+    session->monitor_event (ZMQ_EVENT_CONNECT_RETRIED, endpoint.c_str(), rc_ivl);
 }
 
 int zmq::tcp_connecter_t::get_new_reconnect_ivl ()
@@ -278,10 +285,15 @@ void zmq::tcp_connecter_t::close ()
     zmq_assert (s != retired_fd);
 #ifdef ZMQ_HAVE_WINDOWS
     int rc = closesocket (s);
+    if (unlikely (rc != SOCKET_ERROR))
+        session->monitor_event (ZMQ_EVENT_CLOSE_FAILED, endpoint.c_str(), zmq_errno());
     wsa_assert (rc != SOCKET_ERROR);
 #else
     int rc = ::close (s);
+    if (unlikely (rc == 0))
+        session->monitor_event (ZMQ_EVENT_CLOSE_FAILED, endpoint.c_str(), zmq_errno());
     errno_assert (rc == 0);
 #endif
+    session->monitor_event (ZMQ_EVENT_CLOSED, endpoint.c_str(), s);
     s = retired_fd;
 }

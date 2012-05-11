@@ -255,6 +255,21 @@ void zmq::session_base_t::hiccuped (pipe_t *pipe_)
     zmq_assert (false);
 }
 
+int zmq::session_base_t::get_address (std::string &addr_)
+{
+    if (addr)
+        return addr->to_string (addr_);
+    return -1;
+}
+
+void zmq::session_base_t::monitor_event (int event_, ...)
+{
+    va_list args;
+    va_start (args, event_);
+    socket->monitor_event (event_, args);
+    va_end (args);
+}
+
 void zmq::session_base_t::process_plug ()
 {
     if (connect)
