@@ -99,7 +99,7 @@ int main (int argc, char *argv [])
     assert (rep);
 
     // Expects failure - invalid size
-    zmq_monitor_fn monitor;
+    zmq_monitor monitor;
     monitor.function = listening_sock_monitor;
 
     rc = zmq_setsockopt (rep, ZMQ_MONITOR, &monitor, 20);

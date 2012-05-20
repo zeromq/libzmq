@@ -461,7 +461,7 @@ Registers a callback function / event sink for changes in underlying socket stat
 The default value of `NULL` means no monitor callback function.
 
 [horizontal]
-Option value type:: zmq_monitor_fn
+Option value type:: zmq_monitor
 Option value unit:: N/A
 Default value:: no callback function
 Applicable socket types:: all

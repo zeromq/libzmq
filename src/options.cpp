@@ -325,7 +325,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 errno = EINVAL;
                 return -1;
             }
-            monitor = *((zmq_monitor_fn**) &optval_);
+            monitor = *((zmq_monitor**) &optval_);
             return 0;
         }
     }
@@ -550,8 +550,8 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
             errno = EINVAL;
             return -1;
         }
-        *((zmq_monitor_fn**) &optval_) = monitor;
-        *optvallen_ = sizeof (zmq_monitor_fn*);
+        *((zmq_monitor**) &optval_) = monitor;
+        *optvallen_ = sizeof (zmq_monitor*);
         return 0;
     }
 

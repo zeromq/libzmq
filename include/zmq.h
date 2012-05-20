@@ -303,7 +303,7 @@ typedef union {
 typedef union {
     void *object;
     void (*function)(void *s, int event, zmq_event_data_t *data);
-} zmq_monitor_fn;
+} zmq_monitor;
 
 ZMQ_EXPORT void *zmq_socket (void *, int type);
 ZMQ_EXPORT int zmq_close (void *s);
