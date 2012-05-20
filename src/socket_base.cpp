@@ -1030,7 +1030,7 @@ void zmq::socket_base_t::monitor_event (int event_, ...)
         default:
             zmq_assert (false);
         }
-        options.monitor ((void *)this, event_, &data);
+        options.monitor->function ((void *)this, event_, &data);
         va_end (args);
     }
 }

@@ -99,20 +99,20 @@ int main (int argc, char *argv [])
     assert (rep);
 
     // Expects failure - invalid size
-    zmq_monitor_fn *monitor;
-    monitor = listening_sock_monitor;
+    zmq_monitor_fn monitor;
+    monitor.function = listening_sock_monitor;
 
-    rc = zmq_setsockopt (rep, ZMQ_MONITOR, *(void **)&monitor, 20);
+    rc = zmq_setsockopt (rep, ZMQ_MONITOR, &monitor, 20);
     assert (rc == -1);
     assert (errno == EINVAL);
 
-    rc = zmq_setsockopt (rep, ZMQ_MONITOR, *(void **)&monitor, sizeof (void *));
+    rc = zmq_setsockopt (rep, ZMQ_MONITOR, &monitor, sizeof (void *));
     assert (rc == 0);
 
     size_t sz = sizeof (void *);
     rc = zmq_getsockopt (rep, ZMQ_MONITOR, &monitor, &sz);
     assert (rc == 0);
-    assert (monitor == listening_sock_monitor);
+    assert (monitor.function == listening_sock_monitor);
 
     // Remove socket monitor callback
     rc = zmq_setsockopt (rep, ZMQ_MONITOR, NULL, 0);
@@ -120,7 +120,7 @@ int main (int argc, char *argv [])
 
     rc = zmq_getsockopt (rep, ZMQ_MONITOR, &monitor, &sz);
     assert (rc == 0);
-    assert (monitor == listening_sock_monitor);
+    assert (monitor.function == listening_sock_monitor);
 
     rc = zmq_bind (rep, "tcp://127.0.0.1:5560");
     assert (rc == 0);
@@ -128,8 +128,8 @@ int main (int argc, char *argv [])
     void *req = zmq_socket (ctx, ZMQ_REQ);
     assert (req);
 
-    monitor = connecting_sock_monitor;
-    rc = zmq_setsockopt (req, ZMQ_MONITOR, *(void **)&monitor, sizeof (void *));
+    monitor.function = connecting_sock_monitor;
+    rc = zmq_setsockopt (req, ZMQ_MONITOR, &monitor, sizeof (void *));
     assert (rc == 0);
 
     rc = zmq_connect (req, "tcp://127.0.0.1:5560");

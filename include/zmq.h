@@ -300,7 +300,10 @@ typedef union {
 } zmq_event_data_t;
 
 /*  Callback template for socket state changes                                */
-typedef void (zmq_monitor_fn) (void *s, int event, zmq_event_data_t *data);
+typedef union {
+    void *object;
+    void (*function)(void *s, int event, zmq_event_data_t *data);
+} zmq_monitor_fn;
 
 ZMQ_EXPORT void *zmq_socket (void *, int type);
 ZMQ_EXPORT int zmq_close (void *s);

@@ -434,7 +434,7 @@ Applicable socket types:: all listening sockets, when using TCP transports.
 ZMQ_MONITOR: Registers a callback for socket state changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Registers a callback function / event sink for changes in underlying socket state.
-Expected signature is `void (zmq_monitor_fn) (void *s, int event, zmq_event_data_t *data)`
+Expected signature of function member of zmq_monitor_fn union is `void (*function)(void *s, int event, zmq_event_data_t *data);`
 To remove the callback function call `zmq_setsockopt(socket, ZMQ_MONITOR, NULL, 0)`
 The default value of `NULL` means no monitor callback function.
 Supported events are :
