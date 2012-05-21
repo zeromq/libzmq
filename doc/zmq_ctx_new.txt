@@ -39,7 +39,7 @@ No error values are defined for this function.
 SEE ALSO
 --------
 linkzmq:zmq[7]
-linkzmq:zmq_ctx_put[3]
+linkzmq:zmq_ctx_set[3]
 linkzmq:zmq_ctx_get[3]
 linkzmq:zmq_ctx_destroy[3]
 
