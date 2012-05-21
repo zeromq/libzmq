@@ -97,7 +97,7 @@ namespace zmq
 
         // Monitoring specific
         int monitor (zmq_monitor_fn *monitor_);
-        void monitor_event (zmq::socket_base_t *socket_, int event_, ...);
+        void monitor_event (zmq::socket_base_t *socket_, int event_, va_list args_);
 
         enum {
             term_tid = 0,
