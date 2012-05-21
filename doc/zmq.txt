@@ -19,7 +19,7 @@ DESCRIPTION
 The 0MQ lightweight messaging kernel is a library which extends the standard
 socket interfaces with features traditionally provided by specialised
 _messaging middleware_ products. 0MQ sockets provide an abstraction of
-asynchronous  _message queues_, multiple _messaging patterns_, message
+asynchronous _message queues_, multiple _messaging patterns_, message
 filtering (_subscriptions_), seamless access to multiple _transport protocols_
 and more.
 
@@ -208,8 +208,8 @@ by C programmers. The intent is that programmers using 0MQ from other languages
 shall refer to this documentation alongside any documentation provided by the
 vendor of their language binding.
 
-Language bindings (Python, PHP, Ruby, Java and more) are provided by members
-of the 0MQ community and pointers can be found on the 0MQ website.
+Language bindings ($$C++$$, Python, PHP, Ruby, Java and more) are provided by
+members of the 0MQ community and pointers can be found on the 0MQ website.
 
 
 AUTHORS
