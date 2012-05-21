@@ -45,7 +45,8 @@ zmq::ctx_t::ctx_t () :
     slot_count (0),
     slots (NULL),
     max_sockets (ZMQ_MAX_SOCKETS_DFLT),
-    io_thread_count (ZMQ_IO_THREADS_DFLT)
+    io_thread_count (ZMQ_IO_THREADS_DFLT),
+    monitor_fn (NULL)
 {
 }
 
@@ -122,6 +123,12 @@ int zmq::ctx_t::terminate ()
     //  Deallocate the resources.
     delete this;
 
+    return 0;
+}
+
+int zmq::ctx_t::monitor (zmq_monitor_fn *monitor_)
+{
+    monitor_fn = monitor_;
     return 0;
 }
 
@@ -344,6 +351,62 @@ zmq::endpoint_t zmq::ctx_t::find_endpoint (const char *addr_)
 
      endpoints_sync.unlock ();
      return endpoint;
+}
+
+void zmq::ctx_t::monitor_event (zmq::socket_base_t *socket_, int event_, ...)
+{
+    if (monitor_fn != NULL) {
+        va_list args;
+        zmq_event_data_t data;
+        memset(&data, 0, sizeof (zmq_event_data_t));
+        va_start (args, event_);
+        switch (event_) {
+        case ZMQ_EVENT_CONNECTED:
+            data.connected.addr = va_arg (args, char*);
+            data.connected.fd = va_arg (args, int);
+            break;
+        case ZMQ_EVENT_CONNECT_DELAYED:
+            data.connect_delayed.addr = va_arg (args, char*);
+            data.connect_delayed.err = va_arg (args, int);
+            break;
+        case ZMQ_EVENT_CONNECT_RETRIED:
+            data.connect_retried.addr = va_arg (args, char*);
+            data.connect_retried.interval = va_arg (args, int);
+            break;
+        case ZMQ_EVENT_LISTENING:
+            data.listening.addr = va_arg (args, char*);
+            data.listening.fd = va_arg (args, int);
+            break;
+        case ZMQ_EVENT_BIND_FAILED:
+            data.bind_failed.addr = va_arg (args, char*);
+            data.bind_failed.err = va_arg (args, int);
+            break;
+        case ZMQ_EVENT_ACCEPTED:
+            data.accepted.addr = va_arg (args, char*);
+            data.accepted.fd = va_arg (args, int);
+            break;
+        case ZMQ_EVENT_ACCEPT_FAILED:
+            data.accept_failed.addr = va_arg (args, char*);
+            data.accept_failed.err = va_arg (args, int);
+            break;
+        case ZMQ_EVENT_CLOSED:
+            data.closed.addr = va_arg (args, char*);
+            data.closed.fd = va_arg (args, int);
+            break;
+        case ZMQ_EVENT_CLOSE_FAILED:
+            data.close_failed.addr = va_arg (args, char*);
+            data.close_failed.err = va_arg (args, int);
+            break;
+        case ZMQ_EVENT_DISCONNECTED:
+            data.disconnected.addr = va_arg (args, char*);
+            data.disconnected.fd = va_arg (args, int);
+            break;
+        default:
+            zmq_assert (false);
+        }
+        monitor_fn ((void *)socket_, event_, &data);
+        va_end (args);
+    }
 }
 
 //  The last used socket ID, or 0 if no socket was used so far. Note that this

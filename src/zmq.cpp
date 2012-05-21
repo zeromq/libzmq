@@ -205,6 +205,14 @@ int zmq_ctx_get (void *ctx_, int option_)
     return ((zmq::ctx_t*) ctx_)->get (option_);
 }
 
+int zmq_monitor (void *ctx_, zmq_monitor_fn *monitor_)
+{
+    if (!ctx_ || !((zmq::ctx_t*) ctx_)->check_tag ()) {
+        errno = EFAULT;
+        return -1;
+    }
+    return ((zmq::ctx_t*) ctx_)->monitor (monitor_);
+}
 
 //  Stable/legacy context API
 
