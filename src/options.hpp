@@ -125,9 +125,6 @@ namespace zmq
         typedef std::vector <tcp_address_mask_t> tcp_accept_filters_t;
         tcp_accept_filters_t tcp_accept_filters;
 
-        // Connection and exceptional state callback function
-        zmq_monitor_fn *monitor;
-
         //  ID of the socket.
         int socket_id;
     };

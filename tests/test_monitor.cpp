@@ -25,61 +25,50 @@
 #include "../include/zmq.h"
 #include "../include/zmq_utils.h"
 
-void listening_sock_monitor (void *s, int event_, zmq_event_data_t *data_)
+static int events;
+
+void socket_monitor (void *s, int event_, zmq_event_data_t *data_)
 {
     const char *addr = "tcp://127.0.0.1:5560";
     // Only some of the exceptional events could fire
     switch (event_) {
+    // listener specific
     case ZMQ_EVENT_LISTENING:
         assert (data_->listening.fd > 0);
         assert (memcmp (data_->listening.addr, addr, 22));
+        events |= ZMQ_EVENT_LISTENING;
         break;
     case ZMQ_EVENT_ACCEPTED:
         assert (data_->accepted.fd > 0);
         assert (memcmp (data_->accepted.addr, addr, 22));
+        events |= ZMQ_EVENT_ACCEPTED;
         break;
-    case ZMQ_EVENT_CLOSE_FAILED:
-        assert (data_->close_failed.err != 0);
-        assert (memcmp (data_->close_failed.addr, addr, 22));
-        break;
-    case ZMQ_EVENT_CLOSED:
-        assert (data_->closed.fd != 0);
-        assert (memcmp (data_->closed.addr, addr, 22));
-        break;
-    case ZMQ_EVENT_DISCONNECTED:
-        assert (data_->disconnected.fd != 0);
-        assert (memcmp (data_->disconnected.addr, addr, 22));
-        break;
-    default:
-        // out of band / unexpected event
-        assert (0);
-    }
-}
-
-void connecting_sock_monitor (void *s, int event_, zmq_event_data_t *data_)
-{
-    const char *addr = "tcp://127.0.0.1:5560";
-    // Only some of the exceptional events could fire
-    switch (event_) {
+    // connecter specific
     case ZMQ_EVENT_CONNECTED:
         assert (data_->connected.fd > 0);
         assert (memcmp (data_->connected.addr, addr, 22));
+        events |= ZMQ_EVENT_CONNECTED;
         break;
     case ZMQ_EVENT_CONNECT_DELAYED:
         assert (data_->connect_delayed.err != 0);
         assert (memcmp (data_->connect_delayed.addr, addr, 22));
+        events |= ZMQ_EVENT_CONNECT_DELAYED;
         break;
+    // generic - either end of the socket
     case ZMQ_EVENT_CLOSE_FAILED:
         assert (data_->close_failed.err != 0);
         assert (memcmp (data_->close_failed.addr, addr, 22));
+        events |= ZMQ_EVENT_CLOSE_FAILED;
         break;
     case ZMQ_EVENT_CLOSED:
         assert (data_->closed.fd != 0);
         assert (memcmp (data_->closed.addr, addr, 22));
+        events |= ZMQ_EVENT_CLOSED;
         break;
     case ZMQ_EVENT_DISCONNECTED:
         assert (data_->disconnected.fd != 0);
         assert (memcmp (data_->disconnected.addr, addr, 22));
+        events |= ZMQ_EVENT_DISCONNECTED;
         break;
     default:
         // out of band / unexpected event
@@ -94,43 +83,17 @@ int main (int argc, char *argv [])
     //  Create the infrastructure
     void *ctx = zmq_init (1);
     assert (ctx);
-
+    // set socket monitor
+    rc = zmq_ctx_set_monitor (ctx, socket_monitor);
+    assert (rc == 0);
     void *rep = zmq_socket (ctx, ZMQ_REP);
     assert (rep);
-
-    // Expects failure - invalid size
-    zmq_monitor_fn *monitor;
-    monitor = listening_sock_monitor;
-
-    rc = zmq_setsockopt (rep, ZMQ_MONITOR, *(void **)&monitor, 20);
-    assert (rc == -1);
-    assert (errno == EINVAL);
-
-    rc = zmq_setsockopt (rep, ZMQ_MONITOR, *(void **)&monitor, sizeof (void *));
-    assert (rc == 0);
-
-    size_t sz = sizeof (void *);
-    rc = zmq_getsockopt (rep, ZMQ_MONITOR, &monitor, &sz);
-    assert (rc == 0);
-    assert (monitor == listening_sock_monitor);
-
-    // Remove socket monitor callback
-    rc = zmq_setsockopt (rep, ZMQ_MONITOR, NULL, 0);
-    assert (rc == 0);
-
-    rc = zmq_getsockopt (rep, ZMQ_MONITOR, &monitor, &sz);
-    assert (rc == 0);
-    assert (monitor == listening_sock_monitor);
 
     rc = zmq_bind (rep, "tcp://127.0.0.1:5560");
     assert (rc == 0);
 
     void *req = zmq_socket (ctx, ZMQ_REQ);
     assert (req);
-
-    monitor = connecting_sock_monitor;
-    rc = zmq_setsockopt (req, ZMQ_MONITOR, *(void **)&monitor, sizeof (void *));
-    assert (rc == 0);
 
     rc = zmq_connect (req, "tcp://127.0.0.1:5560");
     assert (rc == 0);
@@ -151,5 +114,12 @@ int main (int argc, char *argv [])
     zmq_sleep (1);
 
     zmq_term (ctx);
+
+    // We expect to at least observe these events
+    assert (events & ZMQ_EVENT_LISTENING);
+    assert (events & ZMQ_EVENT_ACCEPTED);
+    assert (events & ZMQ_EVENT_CONNECTED);
+    assert (events & ZMQ_EVENT_CLOSED);
+
     return 0 ;
 }
