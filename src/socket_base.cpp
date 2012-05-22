@@ -547,7 +547,7 @@ void zmq::socket_base_t::add_endpoint (const char *addr_, own_t *endpoint_)
 {
     //  Activate the session. Make it a child of this socket.
     launch_child (endpoint_);
-    endpoints.insert (std::make_pair (std::string (addr_), endpoint_));
+    endpoints.insert (endpoints_t::value_type (std::string (addr_), endpoint_));
 }
 
 int zmq::socket_base_t::term_endpoint (const char *addr_)

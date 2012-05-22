@@ -60,7 +60,8 @@ An 'interface' may be specified by either of the following:
 NOTE: Interface names are not standardised in any way and should be assumed to
 be arbitrary and platform dependent. On Win32 platforms no short interface
 names exist, thus only the primary IPv4 address may be used to specify an
-'interface'.
+'interface'. The 'interface' part can be omitted, in that case the default one
+will be selected.
 
 A 'multicast address' is specified by an IPv4 multicast address in it's numeric
 representation.
