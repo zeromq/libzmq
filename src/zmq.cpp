@@ -205,7 +205,7 @@ int zmq_ctx_get (void *ctx_, int option_)
     return ((zmq::ctx_t*) ctx_)->get (option_);
 }
 
-int zmq_monitor (void *ctx_, zmq_monitor_fn *monitor_)
+int zmq_ctx_set_monitor (void *ctx_, zmq_monitor_fn *monitor_)
 {
     if (!ctx_ || !((zmq::ctx_t*) ctx_)->check_tag ()) {
         errno = EFAULT;

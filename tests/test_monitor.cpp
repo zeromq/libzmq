@@ -84,7 +84,7 @@ int main (int argc, char *argv [])
     void *ctx = zmq_init (1);
     assert (ctx);
     // set socket monitor
-    rc = zmq_monitor (ctx, socket_monitor);
+    rc = zmq_ctx_set_monitor (ctx, socket_monitor);
     assert (rc == 0);
     void *rep = zmq_socket (ctx, ZMQ_REP);
     assert (rep);
