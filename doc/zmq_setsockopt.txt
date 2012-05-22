@@ -431,46 +431,6 @@ Default value:: no filters (allow from all)
 Applicable socket types:: all listening sockets, when using TCP transports.
 
 
-ZMQ_MONITOR: Registers a callback for socket state changes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Registers a callback function / event sink for changes in underlying socket state.
-Expected signature of function member of zmq_monitor union is `void (*function)(void *s, int event, zmq_event_data_t *data);`
-To remove the callback function call `zmq_setsockopt(socket, ZMQ_MONITOR, NULL, 0)`
-The default value of `NULL` means no monitor callback function.
-Supported events are :
-
-* 'ZMQ_EVENT_CONNECTED' - connection established
-* 'ZMQ_EVENT_CONNECT_DELAYED' - connection could not be established synchronously, it's being polled
-* 'ZMQ_EVENT_CONNECT_RETRIED' - asynchronous connect / reconnection attempt
-
-* 'ZMQ_EVENT_LISTENING' - socket bound to an address, ready to accept connections
-* 'ZMQ_EVENT_BIND_FAILED' - socket couldn't bind to an address
-
-* 'ZMQ_EVENT_ACCEPTED' - connection accepted to bound interface
-* 'ZMQ_EVENT_ACCEPT_FAILED' - could not accept client connection
-
-* 'ZMQ_EVENT_CLOSED' - connection closed
-* 'ZMQ_EVENT_CLOSE_FAILED' - connection couldn't be closed
-* 'ZMQ_EVENT_DISCONNECTED' - broken session
-
-See `zmq_event_data_t` and `ZMQ_EVENT_*` constants in zmq.h for event specific data (third argument to callback).
-
-Please note that both events and their context data aren't stable contracts. The 'ZMQ_MONITOR' socket option is
-intended for monitoring infrastructure / operations concerns only - NOT BUSINESS LOGIC. An event is a representation
-of something that happened - you cannot change the past, but only react to them. The implementation also only concerned
-with a single session. No state of peers, other sessions etc. are tracked - this will only pollute internals and is the
-responsibility of application authors to either implement or correlate in another datastore. Monitor events are exceptional
-conditions and are thus not directly in the messaging critical path. However, still be careful with what you're doing in the
-callback function as severe latency there will block the socket's application thread.
-
-Only tcp and ipc specific transport events are supported in this initial implementation.
-
-[horizontal]
-Option value type:: zmq_monitor
-Option value unit:: N/A
-Default value:: no callback function
-Applicable socket types:: all
-
 RETURN VALUE
 ------------
 The _zmq_setsockopt()_ function shall return zero if successful. Otherwise it

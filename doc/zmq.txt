@@ -44,6 +44,9 @@ Work with context properties::
 Destroy a 0MQ context::
     linkzmq:zmq_ctx_destroy[3]
 
+Monitor a 0MQ context::
+    linkzmq:zmq_monitor[3]
+
 These deprecated functions let you create and destroy 'contexts':
 
 Initialise 0MQ context::

@@ -455,17 +455,6 @@ Option value unit:: -1,>0
 Default value:: -1 (leave to OS default)
 Applicable socket types:: all, when using TCP transports.
 
-ZMQ_MONITOR: Registers a callback for socket state changes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Registers a callback function / event sink for changes in underlying socket state.
-The default value of `NULL` means no monitor callback function.
-
-[horizontal]
-Option value type:: zmq_monitor
-Option value unit:: N/A
-Default value:: no callback function
-Applicable socket types:: all
-
 RETURN VALUE
 ------------
 The _zmq_getsockopt()_ function shall return zero if successful. Otherwise it
