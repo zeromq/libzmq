@@ -981,56 +981,8 @@ void zmq::socket_base_t::extract_flags (msg_t *msg_)
 
 void zmq::socket_base_t::monitor_event (int event_, ...)
 {
-    if (options.monitor != NULL) {
-        va_list args;
-        zmq_event_data_t data;
-        memset(&data, 0, sizeof (zmq_event_data_t));
-        va_start (args, event_);
-        switch (event_) {
-        case ZMQ_EVENT_CONNECTED:
-            data.connected.addr = va_arg (args, char*);
-            data.connected.fd = va_arg (args, int);
-            break;
-        case ZMQ_EVENT_CONNECT_DELAYED:
-            data.connect_delayed.addr = va_arg (args, char*);
-            data.connect_delayed.err = va_arg (args, int);
-            break;
-        case ZMQ_EVENT_CONNECT_RETRIED:
-            data.connect_retried.addr = va_arg (args, char*);
-            data.connect_retried.interval = va_arg (args, int);
-            break;
-        case ZMQ_EVENT_LISTENING:
-            data.listening.addr = va_arg (args, char*);
-            data.listening.fd = va_arg (args, int);
-            break;
-        case ZMQ_EVENT_BIND_FAILED:
-            data.bind_failed.addr = va_arg (args, char*);
-            data.bind_failed.err = va_arg (args, int);
-            break;
-        case ZMQ_EVENT_ACCEPTED:
-            data.accepted.addr = va_arg (args, char*);
-            data.accepted.fd = va_arg (args, int);
-            break;
-        case ZMQ_EVENT_ACCEPT_FAILED:
-            data.accept_failed.addr = va_arg (args, char*);
-            data.accept_failed.err = va_arg (args, int);
-            break;
-        case ZMQ_EVENT_CLOSED:
-            data.closed.addr = va_arg (args, char*);
-            data.closed.fd = va_arg (args, int);
-            break;
-        case ZMQ_EVENT_CLOSE_FAILED:
-            data.close_failed.addr = va_arg (args, char*);
-            data.close_failed.err = va_arg (args, int);
-            break;
-        case ZMQ_EVENT_DISCONNECTED:
-            data.disconnected.addr = va_arg (args, char*);
-            data.disconnected.fd = va_arg (args, int);
-            break;
-        default:
-            zmq_assert (false);
-        }
-        options.monitor ((void *)this, event_, &data);
-        va_end (args);
-    }
+    va_list args;
+    va_start (args, event_);
+    get_ctx ()->monitor_event (this, event_, args);
+    va_end (args);
 }

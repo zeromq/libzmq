@@ -95,12 +95,17 @@ namespace zmq
         void unregister_endpoints (zmq::socket_base_t *socket_);
         endpoint_t find_endpoint (const char *addr_);
 
+        // Monitoring specific
+        int monitor (zmq_monitor_fn *monitor_);
+        void monitor_event (zmq::socket_base_t *socket_, int event_, va_list args_);
+
         enum {
             term_tid = 0,
             reaper_tid = 1
         };
 
         ~ctx_t ();
+
     private:
 
 
@@ -162,6 +167,9 @@ namespace zmq
 
         //  Synchronisation of access to context options.
         mutex_t opt_sync;
+
+        // Monitoring callback
+        zmq_monitor_fn *monitor_fn;
 
         ctx_t (const ctx_t&);
         const ctx_t &operator = (const ctx_t&);
