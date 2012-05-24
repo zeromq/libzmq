@@ -146,7 +146,7 @@ data.close_failed.err // errno
 ----
 
 ZMQ_EVENT_DISCONNECTED: broken session
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_EVENT_DISCONNECTED' event triggers when the stream engine (tcp and ipc
 specific) detects a corrupted / broken session.
 
