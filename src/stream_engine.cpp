@@ -302,7 +302,7 @@ int zmq::stream_engine_t::write (const void *data_, size_t size_)
         return -1;
 
     wsa_assert (nbytes != SOCKET_ERROR);
-    return (size_t) nbytes;
+    return nbytes;
 
 #else
 
@@ -354,7 +354,7 @@ int zmq::stream_engine_t::read (void *data_, size_t size_)
     if (nbytes == 0)
         return -1; 
 
-    return (size_t) nbytes;
+    return nbytes;
 
 #else
 
