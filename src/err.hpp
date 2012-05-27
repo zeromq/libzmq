@@ -57,7 +57,7 @@ namespace zmq
     const char *wsa_error ();
     const char *wsa_error_no (int no_);
     void win_error (char *buffer_, size_t buffer_size_);
-    void wsa_error_to_errno ();
+    int wsa_error_to_errno (int errcode);
 }
 
 //  Provides convenient way to check WSA-style errors on Windows.

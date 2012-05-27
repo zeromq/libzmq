@@ -853,17 +853,15 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 #if defined ZMQ_HAVE_WINDOWS
             int rc = select (0, &inset, &outset, &errset, ptimeout);
             if (unlikely (rc == SOCKET_ERROR)) {
-                zmq::wsa_error_to_errno ();
-                if (errno == ENOTSOCK)
-                    return -1;
-                wsa_assert (false);
+                errno = zmq::wsa_error_to_errno (WSAGetLastError ());
+                wsa_assert (errno == ENOTSOCK);
+                return -1;
             }
 #else
             int rc = select (maxfd + 1, &inset, &outset, &errset, ptimeout);
             if (unlikely (rc == -1)) {
-                if (errno == EINTR || errno == EBADF)
-                    return -1;
-                errno_assert (false);
+                errno_assert (errno == EINTR || errno == EBADF);
+                return -1;
             }
 #endif
             break;

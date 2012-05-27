@@ -193,7 +193,7 @@ int zmq::tcp_connecter_t::open ()
     s = open_socket (addr->resolved.tcp_addr->family (), SOCK_STREAM, IPPROTO_TCP);
 #ifdef ZMQ_HAVE_WINDOWS
     if (s == INVALID_SOCKET) {
-        wsa_error_to_errno ();
+        errno = wsa_error_to_errno (WSAGetLastError ());
         return -1;
     }
 #else
@@ -226,7 +226,7 @@ int zmq::tcp_connecter_t::open ()
         errno = EINPROGRESS;
         return -1;
     }    
-    wsa_error_to_errno ();
+    errno = wsa_error_to_errno (WSAGetLastError ());
 #else
     if (rc == -1 && errno == EINTR) {
         errno = EINPROGRESS;
