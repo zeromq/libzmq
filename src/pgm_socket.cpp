@@ -454,7 +454,7 @@ size_t zmq::pgm_socket_t::send (unsigned char *data_, size_t data_len_)
     //  We have to write all data as one packet.
     if (nbytes > 0) {
         zmq_assert (status == PGM_IO_STATUS_NORMAL);
-        zmq_assert ((ssize_t) nbytes == (ssize_t) data_len_);
+        zmq_assert (nbytes == data_len_);
     } else {
         zmq_assert (status == PGM_IO_STATUS_RATE_LIMITED ||
             status == PGM_IO_STATUS_WOULD_BLOCK);

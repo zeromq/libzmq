@@ -59,7 +59,6 @@ namespace zmq
         //  i_engine interface implementation.
         void plug (zmq::io_thread_t *io_thread_,
             zmq::session_base_t *session_);
-        void unplug ();
         void terminate ();
         void activate_in ();
         void activate_out ();
@@ -69,6 +68,9 @@ namespace zmq
         void timer_event (int token);
 
     private:
+
+        //  Unplug the engine from the session.
+        void unplug ();
 
         //  PGM is not able to move subscriptions upstream. Thus, drop all
         //  the pending subscriptions.

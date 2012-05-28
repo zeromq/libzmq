@@ -57,7 +57,6 @@ namespace zmq
         //  i_engine interface implementation.
         void plug (zmq::io_thread_t *io_thread_,
             zmq::session_base_t *session_);
-        void unplug ();
         void terminate ();
         void activate_in ();
         void activate_out ();
@@ -68,6 +67,9 @@ namespace zmq
         void timer_event (int token);
 
     private:
+
+        //  Unplug the engine from the session.
+        void unplug ();
 
         //  TX and RX timeout timer ID's.
         enum {tx_timer_id = 0xa0, rx_timer_id = 0xa1};

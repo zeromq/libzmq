@@ -214,46 +214,36 @@ void zmq::win_error (char *buffer_, size_t buffer_size_)
     zmq_assert (rc);
 }
 
-void zmq::wsa_error_to_errno ()
+int zmq::wsa_error_to_errno (int errcode)
 {
-    int errcode = WSAGetLastError ();
     switch (errcode) {
     case WSAEINPROGRESS:
-        errno = EAGAIN;
-        return;
+        return EAGAIN;
     case WSAEBADF:
-        errno = EBADF;
-        return;
+        return EBADF;
     case WSAEINVAL:
-        errno = EINVAL;
-        return;
+        return EINVAL;
     case WSAEMFILE:
-        errno = EMFILE;
-        return;
+        return EMFILE;
     case WSAEFAULT:
-        errno = EFAULT;
-        return;
+        return EFAULT;
     case WSAEPROTONOSUPPORT:
-        errno = EPROTONOSUPPORT;
-        return;
+        return EPROTONOSUPPORT;
     case WSAENOBUFS:
-        errno = ENOBUFS;
-        return;
+        return ENOBUFS;
     case WSAENETDOWN:
-        errno = ENETDOWN;
-        return;
+        return ENETDOWN;
     case WSAEADDRINUSE:
-        errno = EADDRINUSE;
-        return;
+        return EADDRINUSE;
     case WSAEADDRNOTAVAIL:
-        errno = EADDRNOTAVAIL;
-        return;
+        return EADDRNOTAVAIL;
     case WSAEAFNOSUPPORT:
-        errno = EAFNOSUPPORT;
-        return;
+        return EAFNOSUPPORT;
     default:
         wsa_assert (false);
     }
+    //  Not reachable
+    return 0;
 }
 
 #endif

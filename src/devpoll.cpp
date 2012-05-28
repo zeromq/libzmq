@@ -70,7 +70,7 @@ zmq::devpoll_t::handle_t zmq::devpoll_t::add_fd (fd_t fd_,
         }
     }
 
-    assert (!fd_table [fd_].valid);
+    zmq_assert (!fd_table [fd_].valid);
 
     fd_table [fd_].events = 0;
     fd_table [fd_].reactor = reactor_;
@@ -88,7 +88,7 @@ zmq::devpoll_t::handle_t zmq::devpoll_t::add_fd (fd_t fd_,
 
 void zmq::devpoll_t::rm_fd (handle_t handle_)
 {
-    assert (fd_table [handle_].valid);
+    zmq_assert (fd_table [handle_].valid);
 
     devpoll_ctl (handle_, POLLREMOVE);
     fd_table [handle_].valid = false;

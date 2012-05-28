@@ -193,7 +193,7 @@ int zmq::tcp_connecter_t::open ()
     s = open_socket (addr->resolved.tcp_addr->family (), SOCK_STREAM, IPPROTO_TCP);
 #ifdef ZMQ_HAVE_WINDOWS
     if (s == INVALID_SOCKET) {
-        wsa_error_to_errno ();
+        errno = wsa_error_to_errno (WSAGetLastError ());
         return -1;
     }
 #else
@@ -218,20 +218,17 @@ int zmq::tcp_connecter_t::open ()
     if (rc == 0)
         return 0;
 
-    //  Translate other error codes indicating asynchronous connect has been
+    //  Translate error codes indicating asynchronous connect has been
     //  launched to a uniform EINPROGRESS.
 #ifdef ZMQ_HAVE_WINDOWS
-    if (rc == SOCKET_ERROR && (WSAGetLastError () == WSAEINPROGRESS ||
-          WSAGetLastError () == WSAEWOULDBLOCK)) {
+    const int error_code = WSAGetLastError ();
+    if (error_code == WSAEINPROGRESS || error_code == WSAEWOULDBLOCK)
         errno = EINPROGRESS;
-        return -1;
-    }    
-    wsa_error_to_errno ();
+    else
+        errno = wsa_error_to_errno (error_code);
 #else
-    if (rc == -1 && errno == EINTR) {
+    if (errno == EINTR)
         errno = EINPROGRESS;
-        return -1;
-    }
 #endif
     return -1;
 }
