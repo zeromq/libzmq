@@ -150,7 +150,7 @@ int zmq::xsub_t::xrecv (msg_t *msg_, int flags_)
         //  from the pipe.
         while (msg_->flags () & msg_t::more) {
             rc = fq.recv (msg_);
-            zmq_assert (rc == 0);
+            errno_assert (rc == 0);
         }
     }
 }
@@ -176,7 +176,7 @@ bool zmq::xsub_t::xhas_in ()
         //  If there's no message available, return immediately.
         //  The same when error occurs.
         if (rc != 0) {
-            zmq_assert (errno == EAGAIN);
+            errno_assert (errno == EAGAIN);
             return false;
         }
 
@@ -190,7 +190,7 @@ bool zmq::xsub_t::xhas_in ()
         //  from the pipe.
         while (message.flags () & msg_t::more) {
             rc = fq.recv (&message);
-            zmq_assert (rc == 0);
+            errno_assert (rc == 0);
         }
     }
 }
@@ -208,7 +208,7 @@ void zmq::xsub_t::send_subscription (unsigned char *data_, size_t size_,
     //  Create the subsctription message.
     msg_t msg;
     int rc = msg.init_size (size_ + 1);
-    zmq_assert (rc == 0);
+    errno_assert (rc == 0);
     unsigned char *data = (unsigned char*) msg.data ();
     data [0] = 1;
     memcpy (data + 1, data_, size_);

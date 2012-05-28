@@ -155,7 +155,8 @@ int zmq::session_base_t::read (msg_t *msg_)
     //  First message to send is identity (if required).
     if (send_identity) {
         zmq_assert (!(msg_->flags () & msg_t::more));
-        msg_->init_size (options.identity_size);
+        int rc = msg_->init_size (options.identity_size);
+        errno_assert (rc == 0);
         memcpy (msg_->data (), options.identity, options.identity_size);
         send_identity = false;
         incomplete_in = false;
@@ -449,7 +450,7 @@ void zmq::session_base_t::start_connecting (bool wait_)
             alloc_assert (pgm_sender);
 
             int rc = pgm_sender->init (udp_encapsulation, addr->address.c_str ());
-            zmq_assert (rc == 0);
+            errno_assert (rc == 0);
 
             send_attach (this, pgm_sender);
         }
@@ -461,7 +462,7 @@ void zmq::session_base_t::start_connecting (bool wait_)
             alloc_assert (pgm_receiver);
 
             int rc = pgm_receiver->init (udp_encapsulation, addr->address.c_str ());
-            zmq_assert (rc == 0);
+            errno_assert (rc == 0);
 
             send_attach (this, pgm_receiver);
         }

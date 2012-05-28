@@ -80,7 +80,7 @@ bool zmq::trie_t::add (unsigned char *prefix_, size_t size_)
             count = (min < c ? c - min : min - c) + 1;
             next.table = (trie_t**)
                 malloc (sizeof (trie_t*) * count);
-            zmq_assert (next.table);
+            alloc_assert (next.table);
             for (unsigned short i = 0; i != count; ++i)
                 next.table [i] = 0;
             min = std::min (min, c);
@@ -117,7 +117,7 @@ bool zmq::trie_t::add (unsigned char *prefix_, size_t size_)
     if (count == 1) {
         if (!next.node) {
             next.node = new (std::nothrow) trie_t;
-            zmq_assert (next.node);
+            alloc_assert (next.node);
             ++live_nodes;
             zmq_assert (live_nodes == 1);
         }
@@ -126,7 +126,7 @@ bool zmq::trie_t::add (unsigned char *prefix_, size_t size_)
     else {
         if (!next.table [c - min]) {
             next.table [c - min] = new (std::nothrow) trie_t;
-            zmq_assert (next.table [c - min]);
+            alloc_assert (next.table [c - min]);
             ++live_nodes;
             zmq_assert (live_nodes > 1);
         }
@@ -218,7 +218,7 @@ bool zmq::trie_t::rm (unsigned char *prefix_, size_t size_)
 
                  count = count - (new_min - min);
                  next.table = (trie_t**) malloc (sizeof (trie_t*) * count);
-                 zmq_assert (next.table);
+                 alloc_assert (next.table);
 
                  memmove (next.table, old_table + (new_min - min),
                           sizeof (trie_t*) * count);
@@ -242,7 +242,7 @@ bool zmq::trie_t::rm (unsigned char *prefix_, size_t size_)
 
                  trie_t **old_table = next.table;
                  next.table = (trie_t**) malloc (sizeof (trie_t*) * count);
-                 zmq_assert (next.table);
+                 alloc_assert (next.table);
 
                  memmove (next.table, old_table, sizeof (trie_t*) * count);
                  free (old_table);

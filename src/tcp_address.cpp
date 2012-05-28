@@ -59,14 +59,14 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv4only_)
 
     //  Create a socket.
     int fd = open_socket (AF_INET, SOCK_DGRAM, 0);
-    zmq_assert (fd != -1);
+    errno_assert (fd != -1);
 
     //  Retrieve number of interfaces.
     lifnum ifn;
     ifn.lifn_family = AF_INET;
     ifn.lifn_flags = 0;
     int rc = ioctl (fd, SIOCGLIFNUM, (char*) &ifn);
-    zmq_assert (rc != -1);
+    errno_assert (rc != -1);
 
     //  Allocate memory to get interface names.
     size_t ifr_size = sizeof (struct lifreq) * ifn.lifn_count;
@@ -80,7 +80,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv4only_)
     ifc.lifc_len = ifr_size;
     ifc.lifc_buf = ifr;
     rc = ioctl (fd, SIOCGLIFCONF, (char*) &ifc);
-    zmq_assert (rc != -1);
+    errno_assert (rc != -1);
 
     //  Find the interface with the specified name and AF_INET family.
     bool found = false;
@@ -89,7 +89,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv4only_)
           n ++, ifrp ++) {
         if (!strcmp (nic_, ifrp->lifr_name)) {
             rc = ioctl (fd, SIOCGLIFADDR, (char*) ifrp);
-            zmq_assert (rc != -1);
+            errno_assert (rc != -1);
             if (ifrp->lifr_addr.ss_family == AF_INET) {
                 address.ipv4 = *(sockaddr_in*) &ifrp->lifr_addr;
                 found = true;
@@ -124,7 +124,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv4only_)
 
     //  Create a socket.
     int sd = open_socket (AF_INET, SOCK_DGRAM, 0);
-    zmq_assert (sd != -1);
+    errno_assert (sd != -1);
 
     struct ifreq ifr; 
 
@@ -162,7 +162,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv4only_)
     //  Get the addresses.
     ifaddrs* ifa = NULL;
     int rc = getifaddrs (&ifa);
-    zmq_assert (rc == 0);
+    errno_assert (rc == 0);
     zmq_assert (ifa != NULL);
 
     //  Find the corresponding network interface.
