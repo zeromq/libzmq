@@ -156,7 +156,7 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
     s = open_socket (address.family (), SOCK_STREAM, IPPROTO_TCP);
 #ifdef ZMQ_HAVE_WINDOWS
     if (s == INVALID_SOCKET)
-        wsa_error_to_errno ();
+        errno = wsa_error_to_errno (WSAGetLastError ());
 #endif
 
     //  IPv6 address family not supported, try automatic downgrade to IPv4.
@@ -170,7 +170,7 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
 
 #ifdef ZMQ_HAVE_WINDOWS
     if (s == INVALID_SOCKET) {
-        wsa_error_to_errno ();
+        errno = wsa_error_to_errno (WSAGetLastError ());
         return -1;
     }
     //  On Windows, preventing sockets to be inherited by child processes.
@@ -203,7 +203,7 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
     rc = bind (s, address.addr (), address.addrlen ());
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
-        wsa_error_to_errno ();
+        errno = wsa_error_to_errno (WSAGetLastError ());
         return -1;
     }
 #else
@@ -215,7 +215,7 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
     rc = listen (s, options.backlog);
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
-        wsa_error_to_errno ();
+        errno = wsa_error_to_errno (WSAGetLastError ());
         return -1;
     }
 #else

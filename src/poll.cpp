@@ -57,7 +57,7 @@ zmq::poll_t::handle_t zmq::poll_t::add_fd (fd_t fd_, i_poll_events *events_)
 
     pollfd pfd = {fd_, 0, 0};
     pollset.push_back (pfd);
-    assert (fd_table [fd_].index == retired_fd);
+    zmq_assert (fd_table [fd_].index == retired_fd);
 
     fd_table [fd_].index = pollset.size() - 1;
     fd_table [fd_].events = events_;
@@ -71,7 +71,7 @@ zmq::poll_t::handle_t zmq::poll_t::add_fd (fd_t fd_, i_poll_events *events_)
 void zmq::poll_t::rm_fd (handle_t handle_)
 {
     fd_t index = fd_table [handle_].index;
-    assert (index != retired_fd);
+    zmq_assert (index != retired_fd);
 
     //  Mark the fd as unused.
     pollset [index].fd = retired_fd;

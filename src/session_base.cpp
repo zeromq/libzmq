@@ -280,13 +280,7 @@ void zmq::session_base_t::process_plug ()
 
 void zmq::session_base_t::process_attach (i_engine *engine_)
 {
-    //  If some other object (e.g. init) notifies us that the connection failed
-    //  without creating an engine we need to start the reconnection process.
-    if (!engine_) {
-        zmq_assert (!engine);
-        detached ();
-        return;
-    }
+    zmq_assert (engine_ != NULL);
 
     //  Create the pipe if it does not exist yet.
     if (!pipe && !is_terminating ()) {

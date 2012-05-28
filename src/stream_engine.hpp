@@ -51,7 +51,6 @@ namespace zmq
         //  i_engine interface implementation.
         void plug (zmq::io_thread_t *io_thread_,
            zmq::session_base_t *session_);
-        void unplug ();
         void terminate ();
         void activate_in ();
         void activate_out ();
@@ -61,6 +60,9 @@ namespace zmq
         void out_event ();
 
     private:
+
+        //  Unplug the engine from the session.
+        void unplug ();
 
         //  Function to handle network disconnections.
         void error ();

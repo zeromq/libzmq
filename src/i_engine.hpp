@@ -37,9 +37,6 @@ namespace zmq
         virtual void plug (zmq::io_thread_t *io_thread_,
             class session_base_t *session_) = 0;
 
-        //  Unplug the engine from the session.
-        virtual void unplug () = 0;
-
         //  Terminate and deallocate the engine. Note that 'detached'
         //  events are not fired on termination.
         virtual void terminate () = 0;

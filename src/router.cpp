@@ -219,8 +219,8 @@ int zmq::router_t::xrecv (msg_t *msg_, int flags_)
     }
 
     //  Identity is not expected
-    assert ((msg_->flags () & msg_t::identity) == 0);
-    assert (pipe != NULL);
+    zmq_assert ((msg_->flags () & msg_t::identity) == 0);
+    zmq_assert (pipe != NULL);
 
     //  If we are in the middle of reading a message, just return the next part.
     if (more_in)
@@ -273,7 +273,7 @@ bool zmq::router_t::xhas_in ()
         return false;
 
     //  Identity is not expected
-    assert ((prefetched_msg.flags () & msg_t::identity) == 0);
+    zmq_assert ((prefetched_msg.flags () & msg_t::identity) == 0);
 
     blob_t identity = pipe->get_identity ();
     rc = prefetched_id.init_size (identity.size ());
