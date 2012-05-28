@@ -73,6 +73,9 @@ NOTE: The _zmq_poll()_ function may be implemented or emulated using operating
 system interfaces other than _poll()_, and as such may be subject to the limits
 of those interfaces in ways not defined in this documentation.
 
+NOTE: The _zmq_send()_ function will clear all pending events on a socket. Thus,
+if you use _zmq_poll()_ to monitor input on a socket, use it before output as
+well, and process all events after each _zmq_poll()_ call.
 
 RETURN VALUE
 ------------
