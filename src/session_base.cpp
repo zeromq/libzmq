@@ -387,6 +387,10 @@ void zmq::session_base_t::detached ()
         return;
     }
 
+    //  Restore identity flags.
+    send_identity = options.send_identity;
+    recv_identity = options.recv_identity;
+
     //  Reconnect.
     if (options.reconnect_ivl != -1)
         start_connecting (true);
