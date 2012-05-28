@@ -94,7 +94,7 @@ bool zmq::mtrie_t::add_helper (unsigned char *prefix_, size_t size_,
             count = (min < c ? c - min : min - c) + 1;
             next.table = (mtrie_t**)
                 malloc (sizeof (mtrie_t*) * count);
-            zmq_assert (next.table);
+            alloc_assert (next.table);
             for (unsigned short i = 0; i != count; ++i)
                 next.table [i] = 0;
             min = std::min (min, c);
@@ -107,7 +107,7 @@ bool zmq::mtrie_t::add_helper (unsigned char *prefix_, size_t size_,
             count = c - min + 1;
             next.table = (mtrie_t**) realloc ((void*) next.table,
                 sizeof (mtrie_t*) * count);
-            zmq_assert (next.table);
+            alloc_assert (next.table);
             for (unsigned short i = old_count; i != count; i++)
                 next.table [i] = NULL;
         }
@@ -118,7 +118,7 @@ bool zmq::mtrie_t::add_helper (unsigned char *prefix_, size_t size_,
             count = (min + old_count) - c;
             next.table = (mtrie_t**) realloc ((void*) next.table,
                 sizeof (mtrie_t*) * count);
-            zmq_assert (next.table);
+            alloc_assert (next.table);
             memmove (next.table + min - c, next.table,
                 old_count * sizeof (mtrie_t*));
             for (unsigned short i = 0; i != min - c; i++)
@@ -132,7 +132,7 @@ bool zmq::mtrie_t::add_helper (unsigned char *prefix_, size_t size_,
         if (!next.node) {
             next.node = new (std::nothrow) mtrie_t;
             ++live_nodes;
-            zmq_assert (next.node);
+            alloc_assert (next.node);
         }
         return next.node->add_helper (prefix_ + 1, size_ - 1, pipe_);
     }
@@ -140,7 +140,7 @@ bool zmq::mtrie_t::add_helper (unsigned char *prefix_, size_t size_,
         if (!next.table [c - min]) {
             next.table [c - min] = new (std::nothrow) mtrie_t;
             ++live_nodes;
-            zmq_assert (next.table [c - min]);
+            alloc_assert (next.table [c - min]);
         }
         return next.table [c - min]->add_helper (prefix_ + 1, size_ - 1, pipe_);
     }
@@ -260,7 +260,7 @@ void zmq::mtrie_t::rm_helper (pipe_t *pipe_, unsigned char **buff_,
 
         count = new_max - new_min + 1;
         next.table = (mtrie_t**) malloc (sizeof (mtrie_t*) * count);
-        zmq_assert (next.table);
+        alloc_assert (next.table);
 
         memmove (next.table, old_table + (new_min - min),
                  sizeof (mtrie_t*) * count);
@@ -353,7 +353,7 @@ bool zmq::mtrie_t::rm_helper (unsigned char *prefix_, size_t size_,
 
                 count = count - (new_min - min);
                 next.table = (mtrie_t**) malloc (sizeof (mtrie_t*) * count);
-                zmq_assert (next.table);
+                alloc_assert (next.table);
 
                 memmove (next.table, old_table + (new_min - min),
                          sizeof (mtrie_t*) * count);
@@ -375,7 +375,7 @@ bool zmq::mtrie_t::rm_helper (unsigned char *prefix_, size_t size_,
 
                 mtrie_t **old_table = next.table;
                 next.table = (mtrie_t**) malloc (sizeof (mtrie_t*) * count);
-                zmq_assert (next.table);
+                alloc_assert (next.table);
 
                 memmove (next.table, old_table, sizeof (mtrie_t*) * count);
                 free (old_table);

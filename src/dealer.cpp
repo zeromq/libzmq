@@ -89,7 +89,7 @@ bool zmq::dealer_t::xhas_in ()
     int rc = dealer_t::xrecv (&prefetched_msg, ZMQ_DONTWAIT);
     if (rc != 0 && errno == EAGAIN)
         return false;
-    zmq_assert (rc == 0);
+    errno_assert (rc == 0);
     prefetched = true;
     return true;
 }

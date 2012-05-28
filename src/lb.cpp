@@ -84,7 +84,7 @@ int zmq::lb_t::send (msg_t *msg_, int flags_)
         int rc = msg_->close ();
         errno_assert (rc == 0);
         rc = msg_->init ();
-        zmq_assert (rc == 0);
+        errno_assert (rc == 0);
         return 0;
     }
 
