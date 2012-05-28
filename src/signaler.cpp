@@ -144,7 +144,7 @@ int zmq::signaler_t::wait (int timeout_)
     pfd.events = POLLIN;
     int rc = poll (&pfd, 1, timeout_);
     if (unlikely (rc < 0)) {
-        zmq_assert (errno == EINTR);
+        errno_assert (errno == EINTR);
         return -1;
     }
     else if (unlikely (rc == 0)) {
@@ -173,7 +173,7 @@ int zmq::signaler_t::wait (int timeout_)
     int rc = select (r + 1, &fds, NULL, NULL,
         timeout_ >= 0 ? &timeout : NULL);
     if (unlikely (rc < 0)) {
-        zmq_assert (errno == EINTR);
+        errno_assert (errno == EINTR);
         return -1;
     }
 #endif

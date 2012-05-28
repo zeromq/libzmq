@@ -448,7 +448,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         if (options.send_identity) {
             msg_t id;
             rc = id.init_size (options.identity_size);
-            zmq_assert (rc == 0);
+            errno_assert (rc == 0);
             memcpy (id.data (), options.identity, options.identity_size);
             id.set_flags (msg_t::identity);
             bool written = pipes [0]->write (&id);
@@ -460,7 +460,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         if (peer.options.send_identity) {
             msg_t id;
             rc = id.init_size (peer.options.identity_size);
-            zmq_assert (rc == 0);
+            errno_assert (rc == 0);
             memcpy (id.data (), peer.options.identity, peer.options.identity_size);
             id.set_flags (msg_t::identity);
             bool written = pipes [1]->write (&id);
@@ -487,12 +487,12 @@ int zmq::socket_base_t::connect (const char *addr_)
     }
 
     address_t *paddr = new (std::nothrow) address_t (protocol, address);
-    zmq_assert (paddr);
+    alloc_assert (paddr);
 
     //  Resolve address (if needed by the protocol)
     if (protocol == "tcp") {
         paddr->resolved.tcp_addr = new (std::nothrow) tcp_address_t ();
-        zmq_assert (paddr->resolved.tcp_addr);
+        alloc_assert (paddr->resolved.tcp_addr);
         int rc = paddr->resolved.tcp_addr->resolve (
             address.c_str (), false, options.ipv4only ? true : false);
         if (rc != 0) {
@@ -503,7 +503,7 @@ int zmq::socket_base_t::connect (const char *addr_)
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
     else if(protocol == "ipc") {
         paddr->resolved.ipc_addr = new (std::nothrow) ipc_address_t ();
-        zmq_assert (paddr->resolved.ipc_addr);
+        alloc_assert (paddr->resolved.ipc_addr);
         int rc = paddr->resolved.ipc_addr->resolve (address.c_str ());
         if (rc != 0) {
             delete paddr;

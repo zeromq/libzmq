@@ -197,7 +197,7 @@ void zmq::pgm_sender_t::out_event ()
             add_timer (timeout, tx_timer_id);
             has_tx_timer = true;
         } else
-            zmq_assert (errno == EBUSY);
+            errno_assert (errno == EBUSY);
     }
 }
 

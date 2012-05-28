@@ -113,7 +113,7 @@ int zmq::ctx_t::terminate ()
         int rc = term_mailbox.recv (&cmd, -1);
         if (rc == -1 && errno == EINTR)
             return -1;
-        zmq_assert (rc == 0);
+        errno_assert (rc == 0);
         zmq_assert (cmd.type == command_t::done);
         slot_sync.lock ();
         zmq_assert (sockets.empty ());
