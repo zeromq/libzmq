@@ -72,6 +72,7 @@ namespace zmq
 
         //  Overloads of the functions from session_base_t.
         int write (msg_t *msg_);
+        void reset ();
 
     private:
 

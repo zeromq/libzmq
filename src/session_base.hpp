@@ -56,6 +56,7 @@ namespace zmq
         //  Following functions are the interface exposed towards the engine.
         virtual int read (msg_t *msg_);
         virtual int write (msg_t *msg_);
+        virtual void reset ();
         void flush ();
         void detach ();
 
