@@ -178,3 +178,8 @@ int zmq::req_session_t::write (msg_t *msg_)
     return -1;
 }
 
+void zmq::req_session_t::reset ()
+{
+    session_base_t::reset ();
+    state = identity;
+}

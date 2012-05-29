@@ -190,6 +190,13 @@ int zmq::session_base_t::write (msg_t *msg_)
     return -1;
 }
 
+void zmq::session_base_t::reset ()
+{
+    //  Restore identity flags.
+    send_identity = options.send_identity;
+    recv_identity = options.recv_identity;
+}
+
 void zmq::session_base_t::flush ()
 {
     if (pipe)
@@ -388,9 +395,7 @@ void zmq::session_base_t::detached ()
         return;
     }
 
-    //  Restore identity flags.
-    send_identity = options.send_identity;
-    recv_identity = options.recv_identity;
+    reset ();
 
     //  Reconnect.
     if (options.reconnect_ivl != -1)
