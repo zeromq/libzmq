@@ -79,8 +79,7 @@ int zmq::lb_t::send (msg_t *msg_, int flags_)
     if (dropping) {
 
         more = msg_->flags () & msg_t::more ? true : false;
-        if (!more)
-            dropping = false;
+        dropping = more;
 
         int rc = msg_->close ();
         errno_assert (rc == 0);
@@ -90,10 +89,8 @@ int zmq::lb_t::send (msg_t *msg_, int flags_)
     }
 
     while (active > 0) {
-        if (pipes [current]->write (msg_)) {
-            more = msg_->flags () & msg_t::more ? true : false;
+        if (pipes [current]->write (msg_))
             break;
-        }
 
         zmq_assert (!more);
         active--;
@@ -111,6 +108,7 @@ int zmq::lb_t::send (msg_t *msg_, int flags_)
 
     //  If it's final part of the message we can fluch it downstream and
     //  continue round-robinning (load balance).
+    more = msg_->flags () & msg_t::more? true: false;
     if (!more) {
         pipes [current]->flush ();
         current = (current + 1) % active;
