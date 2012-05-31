@@ -46,10 +46,13 @@ void zmq::fq_t::attach (pipe_t *pipe_)
 
 void zmq::fq_t::terminated (pipe_t *pipe_)
 {
+    const pipes_t::size_type index = pipes.index (pipe_);
+
     //  Remove the pipe from the list; adjust number of active pipes
     //  accordingly.
-    if (pipes.index (pipe_) < active) {
+    if (index < active) {
         active--;
+        pipes.swap (index, active);
         if (current == active)
             current = 0;
     }
