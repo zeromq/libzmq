@@ -58,6 +58,7 @@ void zmq::lb_t::terminated (pipe_t *pipe_)
     //  accordingly.
     if (index < active) {
         active--;
+        pipes.swap (index, active);
         if (current == active)
             current = 0;
     }
