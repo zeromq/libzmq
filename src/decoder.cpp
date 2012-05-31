@@ -23,6 +23,11 @@
 #include <string.h>
 #include <limits>
 
+#include "platform.hpp"
+#if defined ZMQ_HAVE_WINDOWS
+#include "windows.hpp"
+#endif
+
 #include "decoder.hpp"
 #include "session_base.hpp"
 #include "likely.hpp"
