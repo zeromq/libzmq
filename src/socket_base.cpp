@@ -545,10 +545,13 @@ int zmq::socket_base_t::connect (const char *addr_)
         icanhasall = true;
 
     //  Attach local end of the pipe to the socket object.
-    attach_pipe (pipes [0], icanhasall);
+    if (options.delay_attach_on_connect == 0)
+        attach_pipe (pipes [0], icanhasall);
 
     //  Attach remote end of the pipe to the session object later on.
     session->attach_pipe (pipes [1]);
+    if (options.delay_attach_on_connect == 1)
+        session->onconnect_attach_pipe (pipes [0]);
 
     // Save last endpoint URI
     paddr->to_string (options.last_endpoint);
