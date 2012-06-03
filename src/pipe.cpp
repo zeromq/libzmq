@@ -83,7 +83,7 @@ void zmq::pipe_t::set_peer (pipe_t *peer_)
 void zmq::pipe_t::set_event_sink (i_pipe_events *sink_)
 {
     // Sink can be set once only.
-    zmq_assert (!sink);
+    zmq_assert (!sink || sink_ == sink);
     sink = sink_;
 }
 
