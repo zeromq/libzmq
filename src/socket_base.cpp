@@ -529,29 +529,28 @@ int zmq::socket_base_t::connect (const char *addr_)
     session_base_t *session = session_base_t::create (io_thread, true, this,
         options, paddr);
     errno_assert (session);
-
-    //  Create a bi-directional pipe.
-    object_t *parents [2] = {this, session};
-    pipe_t *pipes [2] = {NULL, NULL};
-    int hwms [2] = {options.sndhwm, options.rcvhwm};
-    bool delays [2] = {options.delay_on_disconnect, options.delay_on_close};
-    rc = pipepair (parents, pipes, hwms, delays);
-    errno_assert (rc == 0);
-
+    
     //  PGM does not support subscription forwarding; ask for all data to be
     //  sent to this pipe.
     bool icanhasall = false;
     if (protocol == "pgm" || protocol == "epgm")
         icanhasall = true;
+    
+    if (options.delay_attach_on_connect != 1 && icanhasall != true) {
+        //  Create a bi-directional pipe.
+        object_t *parents [2] = {this, session};
+        pipe_t *pipes [2] = {NULL, NULL};
+        int hwms [2] = {options.sndhwm, options.rcvhwm};
+        bool delays [2] = {options.delay_on_disconnect, options.delay_on_close};
+        rc = pipepair (parents, pipes, hwms, delays);
+        errno_assert (rc == 0);
 
-    //  Attach local end of the pipe to the socket object.
-    if (options.delay_attach_on_connect == 0)
+        //  Attach local end of the pipe to the socket object.
         attach_pipe (pipes [0], icanhasall);
-
-    //  Attach remote end of the pipe to the session object later on.
-    session->attach_pipe (pipes [1]);
-    if (options.delay_attach_on_connect == 1)
-        session->onconnect_attach_pipe (pipes [0]);
+        
+        //  Attach remote end of the pipe to the session object later on.
+        session->attach_pipe (pipes [1]);
+    }
 
     // Save last endpoint URI
     paddr->to_string (options.last_endpoint);
