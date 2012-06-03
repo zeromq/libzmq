@@ -36,25 +36,33 @@ int main (int argc, char *argv [])
     int seen = 0;
 
     void *context = zmq_ctx_new();
+    assert (context);
     void *to = zmq_socket(context, ZMQ_PULL);
+    assert (to);
+    
     val = 0;
-    zmq_setsockopt(to, ZMQ_LINGER, &val, sizeof(val));
-    zmq_bind(to, "tcp://*:5555");
+    rc = zmq_setsockopt(to, ZMQ_LINGER, &val, sizeof(val));
+    assert (rc == 0);
+    rc = zmq_bind(to, "tcp://*:5555");
+    assert (rc == 0);
 
     //  Create a socket pushing to two endpoints - only 1 message should arrive.
     void *from = zmq_socket (context, ZMQ_PUSH);
+    assert(from);
+    
     val = 0;
-    zmq_setsockopt(from, ZMQ_LINGER, &val, sizeof(val));
-    rc = zmq_connect(from, "tcp://localhost:5556");
+    zmq_setsockopt (from, ZMQ_LINGER, &val, sizeof(val));
+    rc = zmq_connect (from, "tcp://localhost:5556");
     assert (rc == 0);
-    rc = zmq_connect(from, "tcp://localhost:5555");
+    rc = zmq_connect (from, "tcp://localhost:5555");
     assert (rc == 0);
 
     for (int i = 0; i < 10; ++i)
     {
         std::string message("message ");
         message += ('0' + i);
-        zmq_send(from, message.data(), message.size(), 0);
+        rc = zmq_send (from, message.data(), message.size(), 0);
+        assert(rc >= 0);
     }
     
     sleep(1);
@@ -62,7 +70,7 @@ int main (int argc, char *argv [])
     for (int i = 0; i < 10; ++i)
     {
         memset(&buffer, 0, sizeof(buffer));
-        rc = zmq_recv(to, &buffer, sizeof(buffer), ZMQ_DONTWAIT);
+        rc = zmq_recv (to, &buffer, sizeof(buffer), ZMQ_DONTWAIT);
         if( rc == -1) 
             break;
         seen++;
@@ -81,27 +89,39 @@ int main (int argc, char *argv [])
     context = zmq_ctx_new();
     std::cout << "  Rerunning with DELAY_ATTACH_ON_CONNECT\n";
     
-    to = zmq_socket(context, ZMQ_PULL);
-    zmq_bind(to, "tcp://*:5560");
+    to = zmq_socket (context, ZMQ_PULL);
+    assert (to);
+    rc = zmq_bind (to, "tcp://*:5560");
+    assert(rc == 0);
+    
     val = 0;
-    zmq_setsockopt(to, ZMQ_LINGER, &val, sizeof(val));
+    rc = zmq_setsockopt (to, ZMQ_LINGER, &val, sizeof(val));
+    assert (rc == 0);
     
     //  Create a socket pushing to two endpoints - all messages should arrive.
     from = zmq_socket (context, ZMQ_PUSH);
+    assert (from);
+    
     val = 0;
-    zmq_setsockopt(from, ZMQ_LINGER, &val, sizeof(val));
-    val = 1;
-    zmq_setsockopt(from, ZMQ_DELAY_ATTACH_ON_CONNECT, &val, sizeof(val));
-    rc = zmq_connect(from, "tcp://localhost:5561");
+    rc = zmq_setsockopt (from, ZMQ_LINGER, &val, sizeof(val));
     assert (rc == 0);
-    rc = zmq_connect(from, "tcp://localhost:5560");
+    
+    val = 1;
+    rc = zmq_setsockopt (from, ZMQ_DELAY_ATTACH_ON_CONNECT, &val, sizeof(val));
+    assert (rc == 0);
+    
+    rc = zmq_connect (from, "tcp://localhost:5561");
+    assert (rc == 0);
+    
+    rc = zmq_connect (from, "tcp://localhost:5560");
     assert (rc == 0);
 
     for (int i = 0; i < 10; ++i)
     {
         std::string message("message ");
         message += ('0' + i);
-        zmq_send(from, message.data(), message.size(), 0);
+        rc = zmq_send (from, message.data(), message.size(), 0);
+        assert (rc >= 0);
     }
     
     sleep(1);
@@ -110,13 +130,9 @@ int main (int argc, char *argv [])
     for (int i = 0; i < 10; ++i)
     {
         memset(&buffer, 0, sizeof(buffer));
-        rc = zmq_recv(to, &buffer, sizeof(buffer), ZMQ_DONTWAIT);
-        if( rc == -1) {
-            break;
-        }
-        seen++;
+        rc = zmq_recv (to, &buffer, sizeof(buffer), ZMQ_DONTWAIT);
+        assert (rc != -1);
     }
-    assert (seen == 10);
 
     rc = zmq_close (from);
     assert (rc == 0);

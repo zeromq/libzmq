@@ -92,6 +92,11 @@ void zmq::object_t::process_command (command_t &cmd_)
         process_seqnum ();
         break;
 
+    case command_t::detach:
+        process_detach (cmd_.args.detach.pipe);
+        process_seqnum ();
+        break;
+
     case command_t::hiccup:
         process_hiccup (cmd_.args.hiccup.pipe);
         break;
@@ -211,6 +216,15 @@ void zmq::object_t::send_bind (own_t *destination_, pipe_t *pipe_,
     send_command (cmd);
 }
 
+void zmq::object_t::send_detach (own_t *destination_, pipe_t *pipe_)
+{
+    command_t cmd;
+    cmd.destination = destination_;
+    cmd.type = command_t::detach;
+    cmd.args.detach.pipe = pipe_;
+    send_command (cmd);
+}
+
 void zmq::object_t::send_activate_read (pipe_t *destination_)
 {
     command_t cmd;
@@ -327,6 +341,11 @@ void zmq::object_t::process_attach (i_engine *engine_)
 }
 
 void zmq::object_t::process_bind (pipe_t *pipe_)
+{
+    zmq_assert (false);
+}
+
+void zmq::object_t::process_detach (pipe_t *pipe_)
 {
     zmq_assert (false);
 }
