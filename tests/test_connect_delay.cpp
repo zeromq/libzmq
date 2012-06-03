@@ -39,7 +39,7 @@ int main (int argc, char *argv [])
     assert (context);
     void *to = zmq_socket(context, ZMQ_PULL);
     assert (to);
-    
+
     val = 0;
     rc = zmq_setsockopt(to, ZMQ_LINGER, &val, sizeof(val));
     assert (rc == 0);
@@ -49,7 +49,7 @@ int main (int argc, char *argv [])
     //  Create a socket pushing to two endpoints - only 1 message should arrive.
     void *from = zmq_socket (context, ZMQ_PUSH);
     assert(from);
-    
+
     val = 0;
     zmq_setsockopt (from, ZMQ_LINGER, &val, sizeof(val));
     rc = zmq_connect (from, "tcp://localhost:5556");
@@ -64,7 +64,7 @@ int main (int argc, char *argv [])
         rc = zmq_send (from, message.data(), message.size(), 0);
         assert(rc >= 0);
     }
-    
+
     sleep(1);
     seen = 0;
     for (int i = 0; i < 10; ++i)
@@ -76,43 +76,43 @@ int main (int argc, char *argv [])
         seen++;
     }
     assert (seen == 5);
-    
+
     rc = zmq_close (from);
     assert (rc == 0);
-    
+
     rc = zmq_close (to);
     assert (rc == 0);
-    
+
     rc = zmq_ctx_destroy(context);
     assert (rc == 0);
-    
+
     context = zmq_ctx_new();
-    std::cout << "  Rerunning with DELAY_ATTACH_ON_CONNECT\n";
-    
+    fprintf (stderr, " Rerunning with DELAY_ATTACH_ON_CONNECT\n");
+
     to = zmq_socket (context, ZMQ_PULL);
     assert (to);
     rc = zmq_bind (to, "tcp://*:5560");
-    assert(rc == 0);
-    
+    assert (rc == 0);
+
     val = 0;
     rc = zmq_setsockopt (to, ZMQ_LINGER, &val, sizeof(val));
     assert (rc == 0);
-    
+
     //  Create a socket pushing to two endpoints - all messages should arrive.
     from = zmq_socket (context, ZMQ_PUSH);
     assert (from);
-    
+
     val = 0;
     rc = zmq_setsockopt (from, ZMQ_LINGER, &val, sizeof(val));
     assert (rc == 0);
-    
+
     val = 1;
     rc = zmq_setsockopt (from, ZMQ_DELAY_ATTACH_ON_CONNECT, &val, sizeof(val));
     assert (rc == 0);
-    
+
     rc = zmq_connect (from, "tcp://localhost:5561");
     assert (rc == 0);
-    
+
     rc = zmq_connect (from, "tcp://localhost:5560");
     assert (rc == 0);
 
@@ -123,9 +123,9 @@ int main (int argc, char *argv [])
         rc = zmq_send (from, message.data(), message.size(), 0);
         assert (rc >= 0);
     }
-    
+
     sleep(1);
-    
+
     seen = 0;
     for (int i = 0; i < 10; ++i)
     {
@@ -136,7 +136,7 @@ int main (int argc, char *argv [])
 
     rc = zmq_close (from);
     assert (rc == 0);
-    
+
     rc = zmq_close (to);
     assert (rc == 0);
 
