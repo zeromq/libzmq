@@ -378,7 +378,7 @@ void zmq::session_base_t::process_term (int linger_)
     //  are processed in case the linger time is non-zero.
     pipe->terminate (linger_ != 0);
     
-    // If we're storing to a pipe to be connected, we can clear that as well
+    // If we're storing a pipe to be connected, we can clear that as well
     if (outpipe) {
         outpipe->set_event_sink (this);
         outpipe->terminate (linger_ != 0);
