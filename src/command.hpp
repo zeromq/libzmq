@@ -47,7 +47,6 @@ namespace zmq
             own,
             attach,
             bind,
-            detach,
             activate_read,
             activate_write,
             hiccup,
@@ -88,11 +87,6 @@ namespace zmq
             struct {
                 zmq::pipe_t *pipe;
             } bind;
-            
-            //  Sent from session to socket to disconnect a pipe 
-            struct {
-                zmq::pipe_t *pipe;
-            } detach;
 
             //  Sent by pipe writer to inform dormant pipe reader that there
             //  are messages in the pipe.

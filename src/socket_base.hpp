@@ -185,9 +185,6 @@ namespace zmq
         void process_bind (zmq::pipe_t *pipe_);
         void process_term (int linger_);
 
-        // Allow blocking reconnecting pipes
-        void process_detach (pipe_t *pipe_);
-
         //  Socket's mailbox object.
         mailbox_t mailbox;
 

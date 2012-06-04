@@ -411,11 +411,14 @@ void zmq::session_base_t::detached ()
     //  the socket object to resend all the subscriptions.
     if (pipe && (options.type == ZMQ_SUB || options.type == ZMQ_XSUB))
         pipe->hiccup ();
-        
-    //  For delayed connect situations, hiccup the socket to have it
-    //  pause usage of this pipe
-    if (outpipe && options.delay_attach_on_connect == 1) 
-        send_detach(socket, outpipe);
+
+    //  For delayed connect situations, terminate the pipe
+    //  and reestablish later on
+    if (pipe && options.delay_attach_on_connect == 1) {
+        pipe->terminate (false);
+        socket->terminated (pipe);
+        pipe = NULL;
+    }
 }
 
 void zmq::session_base_t::start_connecting (bool wait_)
