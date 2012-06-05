@@ -19,7 +19,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #define ZMQ_TYPE_UNSAFE
-#include "../include/zmq.h"
 
 #include "platform.hpp"
 
@@ -45,6 +44,9 @@
 #if defined ZMQ_POLL_BASED_ON_POLL
 #include <poll.h>
 #endif
+
+// zmq.h must be included *after* poll.h for AIX to build properly
+#include "../include/zmq.h"
 
 #if defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
