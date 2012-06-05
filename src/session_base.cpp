@@ -308,6 +308,9 @@ void zmq::session_base_t::process_attach (i_engine *engine_)
 
         //  Ask socket to plug into the remote end of the pipe.
         send_bind (socket, pipes [1]);
+
+        //  Store the outpipe for disconnect situations
+        outpipe = pipes [1];
     }
 
     //  Plug in the engine.
@@ -411,8 +414,7 @@ void zmq::session_base_t::detached ()
     if (pipe && options.delay_attach_on_connect == 1
         && addr->protocol != "pgm" && addr->protocol != "epgm") {
         pipe->terminate (false);
-        socket->terminated (pipe);
-        pipe = NULL;
+        outpipe->terminate (false);
     }
 }
 
