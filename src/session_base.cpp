@@ -408,7 +408,8 @@ void zmq::session_base_t::detached ()
 
     //  For delayed connect situations, terminate the pipe
     //  and reestablish later on
-    if (pipe && options.delay_attach_on_connect == 1) {
+    if (pipe && options.delay_attach_on_connect == 1
+        && addr->protocol != "pgm" && addr->protocol != "epgm") {
         pipe->terminate (false);
         socket->terminated (pipe);
         pipe = NULL;
