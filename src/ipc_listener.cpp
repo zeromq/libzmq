@@ -103,7 +103,11 @@ void zmq::ipc_listener_t::in_event ()
 int zmq::ipc_listener_t::get_address (std::string &addr_)
 {
     struct sockaddr_storage ss;
+#ifdef ZMQ_HAVE_HPUX
+    int sl = sizeof (ss);
+#else
     socklen_t sl = sizeof (ss);
+#endif
     int rc = getsockname (s, (sockaddr *) &ss, &sl);
     if (rc != 0) {
         addr_.clear ();

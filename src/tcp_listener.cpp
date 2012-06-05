@@ -133,7 +133,11 @@ int zmq::tcp_listener_t::get_address (std::string &addr_)
 {
     // Get the details of the TCP socket
     struct sockaddr_storage ss;
+#ifdef ZMQ_HAVE_HPUX
+    int sl = sizeof (ss);
+#else
     socklen_t sl = sizeof (ss);
+#endif
     int rc = getsockname (s, (struct sockaddr *) &ss, &sl);
 
     if (rc != 0) {
@@ -233,7 +237,11 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
     zmq_assert (s != retired_fd);
 
     struct sockaddr_storage ss = {0};
+#ifdef ZMQ_HAVE_HPUX
+    int ss_len = sizeof (ss);
+#else
     socklen_t ss_len = sizeof (ss);
+#endif
     fd_t sock = ::accept (s, (struct sockaddr *) &ss, &ss_len);
 
 #ifdef ZMQ_HAVE_WINDOWS
