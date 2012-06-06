@@ -78,7 +78,7 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_) :
 #endif
     }
 
-#if defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_FREEBSD
+#ifdef SO_NOSIGPIPE
     //  Make sure that SIGPIPE signal is not generated when writing to a
     //  connection that was already closed by the peer.
     int set = 1;
