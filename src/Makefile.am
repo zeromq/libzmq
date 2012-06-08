@@ -65,6 +65,7 @@ libzmq_la_SOURCES = \
     stdint.hpp \
     stream_engine.hpp \
     sub.hpp \
+    tcp.hpp \
     tcp_address.hpp \
     tcp_connecter.hpp \
     tcp_listener.hpp \
@@ -123,6 +124,7 @@ libzmq_la_SOURCES = \
     socket_base.cpp \
     stream_engine.cpp \
     sub.cpp \
+    tcp.cpp \
     tcp_address.cpp \
     tcp_connecter.cpp \
     tcp_listener.cpp \
