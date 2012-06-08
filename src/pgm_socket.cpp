@@ -86,7 +86,6 @@ int zmq::pgm_socket_t::init_address (const char *network_,
 
     pgm_error_t *pgm_error = NULL;
     struct pgm_addrinfo_t hints, *res = NULL;
-    sa_family_t sa_family;
 
     memset (&hints, 0, sizeof (hints));
     hints.ai_family = AF_UNSPEC;
