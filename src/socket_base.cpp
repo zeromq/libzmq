@@ -916,7 +916,7 @@ void zmq::socket_base_t::xwrite_activated (pipe_t *pipe_)
 
 void zmq::socket_base_t::xhiccuped (pipe_t *pipe_)
 {
-    zmq_assert ( options.delay_attach_on_connect == 1 );
+    zmq_assert (false);
 }
 
 void zmq::socket_base_t::in_event ()
