@@ -395,15 +395,15 @@ void zmq::session_base_t::detached ()
         return;
     }
 
-    reset ();
-    
     //  For delayed connect situations, terminate the pipe
     //  and reestablish later on
     if (pipe && options.delay_attach_on_connect == 1
         && addr->protocol != "pgm" && addr->protocol != "epgm") {
+        pipe->hiccup ();
         pipe->terminate (false);
-        pipe = NULL;
     }
+
+    reset ();
     
     //  Reconnect.
     if (options.reconnect_ivl != -1)

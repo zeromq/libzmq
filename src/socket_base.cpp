@@ -916,7 +916,7 @@ void zmq::socket_base_t::xwrite_activated (pipe_t *pipe_)
 
 void zmq::socket_base_t::xhiccuped (pipe_t *pipe_)
 {
-    zmq_assert (false);
+    zmq_assert ( options.delay_attach_on_connect == 1 );
 }
 
 void zmq::socket_base_t::in_event ()
@@ -970,6 +970,11 @@ void zmq::socket_base_t::write_activated (pipe_t *pipe_)
 
 void zmq::socket_base_t::hiccuped (pipe_t *pipe_)
 {
+    if( options.delay_attach_on_connect == 1 ) {
+        pipe_->terminate (false);
+    }
+    
+    //  Notify derived sockets of the hiccup
     xhiccuped (pipe_);
 }
 
