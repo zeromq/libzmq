@@ -298,7 +298,7 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     wsa_assert (rc != SOCKET_ERROR);
 
     //  Connect writer to the listener.
-    rc = connect (*w_, (sockaddr *) &addr, sizeof (addr));
+    rc = connect (*w_, (struct sockaddr*) &addr, sizeof (addr));
     wsa_assert (rc != SOCKET_ERROR);
 
     //  Accept connection from writer.
@@ -327,7 +327,7 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     //
     //  The bug will be fixed in V5.6 ECO4 and beyond.  In the meantime, we'll
     //  create the socket pair manually.
-    sockaddr_in lcladdr;
+    struct sockaddr_in lcladdr;
     memset (&lcladdr, 0, sizeof (lcladdr));
     lcladdr.sin_family = AF_INET;
     lcladdr.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
