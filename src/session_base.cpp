@@ -233,11 +233,17 @@ void zmq::session_base_t::terminated (pipe_t *pipe_)
     //  Drop the reference to the deallocated pipe if required.
     zmq_assert (pipe == pipe_ || incomplete_detach > 0);
     
+    //  If we still have pipes outstanding, decrement.
+    //  This will only have been set in a disconnect situation
+    //  where delay_attach_on_connect is 1. 
     if (incomplete_detach > 0)
         incomplete_detach --;
 
-    if ( incomplete_detach == 0 )
-        pipe = NULL;
+    //  If there are still extra detached pipes, don't continue
+    if (incomplete_detach > 0)
+        return;
+    
+    pipe = NULL;
 
     //  If we are waiting for pending messages to be sent, at this point
     //  we are sure that there will be no more messages and we can proceed
@@ -248,6 +254,10 @@ void zmq::session_base_t::terminated (pipe_t *pipe_)
 
 void zmq::session_base_t::read_activated (pipe_t *pipe_)
 {
+    //  Skip activating if we're detaching this pipe
+    if (incomplete_detach > 0 && pipe_ != pipe) 
+        return;
+        
     zmq_assert (pipe == pipe_);
 
     if (likely (engine != NULL))
@@ -258,6 +268,10 @@ void zmq::session_base_t::read_activated (pipe_t *pipe_)
 
 void zmq::session_base_t::write_activated (pipe_t *pipe_)
 {
+    //  Skip activating if we're detaching this pipe
+    if (incomplete_detach > 0 && pipe_ != pipe) 
+        return;
+        
     zmq_assert (pipe == pipe_);
 
     if (engine)
