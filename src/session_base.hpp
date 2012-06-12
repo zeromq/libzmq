@@ -105,7 +105,7 @@ namespace zmq
         zmq::pipe_t *pipe;
         
         //  This set is added to with pipes we are disconnecting, but haven't yet completed
-        std::set<pipe_t *> incomplete_pipes;
+        std::set<pipe_t *> terminating_pipes;
 
         //  This flag is true if the remainder of the message being processed
         //  is still in the in pipe.
