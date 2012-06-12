@@ -536,7 +536,7 @@ int zmq::socket_base_t::connect (const char *addr_)
     if (protocol == "pgm" || protocol == "epgm")
         icanhasall = true;
 
-    if (options.delay_attach_on_connect != 1 || icanhasall) {
+    if (options.delay_attach_on_connect != 1 && icanhasall != true) {
         //  Create a bi-directional pipe.
         object_t *parents [2] = {this, session};
         pipe_t *pipes [2] = {NULL, NULL};
