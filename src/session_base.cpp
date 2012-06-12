@@ -229,19 +229,29 @@ void zmq::session_base_t::clean_pipes ()
 
 void zmq::session_base_t::terminated (pipe_t *pipe_)
 {
-    //  Drop the reference to the deallocated pipe.
-    zmq_assert (pipe == pipe_);
-    pipe = NULL;
+    //  Drop the reference to the deallocated pipe if required.
+    zmq_assert (pipe == pipe_ || incomplete_pipes.size () > 0);
+
+    if (pipe == pipe_)
+        //  If this is our current pipe, remove it
+        pipe = NULL;
+    else
+        // Remove the pipe from the detached pipes set 
+        incomplete_pipes.erase (pipe_);
 
     //  If we are waiting for pending messages to be sent, at this point
     //  we are sure that there will be no more messages and we can proceed
     //  with termination safely.
-    if (pending)
+    if (pending && !pipe && incomplete_pipes.size () == 0)
         proceed_with_term ();
 }
 
 void zmq::session_base_t::read_activated (pipe_t *pipe_)
 {
+    //  Skip activating if we're detaching this pipe
+    if (incomplete_pipes.size () > 0 && pipe_ != pipe) 
+        return;
+        
     zmq_assert (pipe == pipe_);
 
     if (likely (engine != NULL))
@@ -252,6 +262,10 @@ void zmq::session_base_t::read_activated (pipe_t *pipe_)
 
 void zmq::session_base_t::write_activated (pipe_t *pipe_)
 {
+    //  Skip activating if we're detaching this pipe
+    if (incomplete_pipes.size () > 0 && pipe_ != pipe)  
+        return;
+        
     zmq_assert (pipe == pipe_);
 
     if (engine)
@@ -395,8 +409,18 @@ void zmq::session_base_t::detached ()
         return;
     }
 
-    reset ();
+    //  For delayed connect situations, terminate the pipe
+    //  and reestablish later on
+    if (pipe && options.delay_attach_on_connect == 1
+        && addr->protocol != "pgm" && addr->protocol != "epgm") {
+        pipe->hiccup ();
+        pipe->terminate (false);
+        incomplete_pipes.insert (pipe);
+        pipe = NULL;
+    }
 
+    reset ();
+    
     //  Reconnect.
     if (options.reconnect_ivl != -1)
         start_connecting (true);
