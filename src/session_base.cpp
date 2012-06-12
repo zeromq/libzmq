@@ -308,6 +308,9 @@ void zmq::session_base_t::process_attach (i_engine *engine_)
 
         //  Ask socket to plug into the remote end of the pipe.
         send_bind (socket, pipes [1]);
+
+        //  Store the outpipe for disconnect situations
+        outpipe = pipes [1];
     }
 
     //  Plug in the engine.
@@ -396,15 +399,7 @@ void zmq::session_base_t::detached ()
     }
 
     reset ();
-    
-    //  For delayed connect situations, terminate the pipe
-    //  and reestablish later on
-    if (pipe && options.delay_attach_on_connect == 1
-        && addr->protocol != "pgm" && addr->protocol != "epgm") {
-        pipe->terminate (false);
-        pipe = NULL;
-    }
-    
+
     //  Reconnect.
     if (options.reconnect_ivl != -1)
         start_connecting (true);
@@ -413,6 +408,14 @@ void zmq::session_base_t::detached ()
     //  the socket object to resend all the subscriptions.
     if (pipe && (options.type == ZMQ_SUB || options.type == ZMQ_XSUB))
         pipe->hiccup ();
+
+    //  For delayed connect situations, terminate the pipe
+    //  and reestablish later on
+    if (pipe && options.delay_attach_on_connect == 1
+        && addr->protocol != "pgm" && addr->protocol != "epgm") {
+        pipe->terminate (false);
+        outpipe->terminate (false);
+    }
 }
 
 void zmq::session_base_t::start_connecting (bool wait_)
