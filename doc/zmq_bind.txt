@@ -29,11 +29,13 @@ The following transports are defined:
 'tcp':: unicast transport using TCP, see linkzmq:zmq_tcp[7]
 'pgm', 'epgm':: reliable multicast transport using PGM, see linkzmq:zmq_pgm[7]
 
-With the exception of 'ZMQ_PAIR' sockets, a single socket may be connected to
-multiple endpoints using _zmq_connect()_, while simultaneously accepting
-incoming connections from multiple endpoints bound to the socket using
-_zmq_bind()_. Refer to linkzmq:zmq_socket[3] for a description of the exact
-semantics involved when connecting or binding a socket to multiple endpoints.
+ZeroMQ sockets support one-to-many and many-to-one semantics. With the exception 
+of 'ZMQ_PAIR' sockets every ZeroMQ socket type supports being bound with 
+_zmq_bind()_ as a singular endpoint or connecting with _zmq_connect()_ as one 
+of many endpoints. This allows combinations such as 1 ZMQ_REP to 100 ZMQ_REP and 
+100 ZMQ_REQ to 1 ZMQ_REP socket connections. Refer to linkzmq:zmq_socket[3] for 
+a description of the exact semantics involved when connecting or binding a socket 
+to multiple endpoints.
 
 
 RETURN VALUE
