@@ -111,7 +111,6 @@ zmq::session_base_t::session_base_t (class io_thread_t *io_thread_,
     io_object_t (io_thread_),
     connect (connect_),
     pipe (NULL),
-    incomplete_detach (0),
     incomplete_in (false),
     pending (false),
     engine (NULL),
@@ -230,14 +229,9 @@ void zmq::session_base_t::clean_pipes ()
 
 void zmq::session_base_t::terminated (pipe_t *pipe_)
 {
-    //  Drop the reference to the deallocated pipe if required.
-    zmq_assert (pipe == pipe_ || incomplete_detach > 0);
-    
-    if (incomplete_detach > 0)
-        incomplete_detach --;
-
-    if ( incomplete_detach == 0 )
-        pipe = NULL;
+    //  Drop the reference to the deallocated pipe.
+    zmq_assert (pipe == pipe_);
+    pipe = NULL;
 
     //  If we are waiting for pending messages to be sent, at this point
     //  we are sure that there will be no more messages and we can proceed
@@ -297,7 +291,7 @@ void zmq::session_base_t::process_attach (i_engine *engine_)
     zmq_assert (engine_ != NULL);
 
     //  Create the pipe if it does not exist yet.
-    if ((!pipe || incomplete_detach > 0) && !is_terminating ()) {
+    if (!pipe && !is_terminating ()) {
         object_t *parents [2] = {this, socket};
         pipe_t *pipes [2] = {NULL, NULL};
         int hwms [2] = {options.rcvhwm, options.sndhwm};
@@ -407,7 +401,6 @@ void zmq::session_base_t::detached ()
         && addr->protocol != "pgm" && addr->protocol != "epgm") {
         pipe->hiccup ();
         pipe->terminate (false);
-        incomplete_detach ++;
     }
 
     reset ();
