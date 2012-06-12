@@ -239,8 +239,9 @@ void zmq::session_base_t::terminated (pipe_t *pipe_)
 {
     //  If we get a term signal from our held outpipe
     //  we can safely ignore it. 
-    if (pipe_ == outpipe)
+    if (pipe_ == outpipe) {
         return;
+    }
     
     //  Drop the reference to the deallocated pipe.
     zmq_assert (pipe == pipe_);
@@ -378,7 +379,7 @@ void zmq::session_base_t::process_term (int linger_)
     //  are processed in case the linger time is non-zero.
     pipe->terminate (linger_ != 0);
     
-    // If we're storing to a pipe to be connected, we can clear that as well
+    // If we're storing to a to be connected, we can clear that as well
     if (outpipe) {
         outpipe->set_event_sink (this);
         outpipe->terminate (linger_ != 0);
