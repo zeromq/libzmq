@@ -111,6 +111,7 @@ zmq::session_base_t::session_base_t (class io_thread_t *io_thread_,
     io_object_t (io_thread_),
     connect (connect_),
     pipe (NULL),
+    outpipe (NULL),
     incomplete_in (false),
     pending (false),
     engine (NULL),
@@ -148,6 +149,13 @@ void zmq::session_base_t::attach_pipe (pipe_t *pipe_)
     zmq_assert (pipe_);
     pipe = pipe_;
     pipe->set_event_sink (this);
+}
+
+void zmq::session_base_t::onconnect_attach_pipe (pipe_t *pipe_)
+{
+    zmq_assert (!is_terminating ());
+    zmq_assert (pipe_);
+    outpipe = pipe_;
 }
 
 int zmq::session_base_t::read (msg_t *msg_)
@@ -228,7 +236,12 @@ void zmq::session_base_t::clean_pipes ()
 }
 
 void zmq::session_base_t::terminated (pipe_t *pipe_)
-{   
+{
+    //  If we get a term signal from our held outpipe
+    //  we can safely ignore it. 
+    if (pipe_ == outpipe)
+        return;
+    
     //  Drop the reference to the deallocated pipe.
     zmq_assert (pipe == pipe_);
     pipe = NULL;
@@ -306,8 +319,14 @@ void zmq::session_base_t::process_attach (i_engine *engine_)
         zmq_assert (!pipe);
         pipe = pipes [0];
 
-        //  Ask socket to plug into the pipe.
+        //  Ask socket to plug into the remote end of the pipe.
         send_bind (socket, pipes [1]);
+    }
+
+    if (outpipe && options.delay_attach_on_connect) {
+        send_bind (socket, outpipe);
+        // Forget the outpipe
+        outpipe = NULL;
     }
 
     //  Plug in the engine.
@@ -358,6 +377,12 @@ void zmq::session_base_t::process_term (int linger_)
     //  Start pipe termination process. Delay the termination till all messages
     //  are processed in case the linger time is non-zero.
     pipe->terminate (linger_ != 0);
+    
+    // If we're storing a pipe to be connected, we can clear that as well
+    if (outpipe) {
+        outpipe->set_event_sink (this);
+        outpipe->terminate (linger_ != 0);
+    }
 
     //  TODO: Should this go into pipe_t::terminate ?
     //  In case there's no engine and there's only delimiter in the
@@ -385,6 +410,9 @@ void zmq::session_base_t::timer_event (int id_)
     //  Ask pipe to terminate even though there may be pending messages in it.
     zmq_assert (pipe);
     pipe->terminate (false);
+    
+    if (outpipe) 
+        outpipe->terminate (false);
 }
 
 void zmq::session_base_t::detached ()
