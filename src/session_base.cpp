@@ -306,9 +306,15 @@ void zmq::session_base_t::process_attach (i_engine *engine_)
         zmq_assert (!pipe);
         pipe = pipes [0];
 
+        //  Remember the remote end of the pipe if required
+        if (options.delay_attach_on_connect == 1)
+            outpipe = pipes [1];
+
         //  Ask socket to plug into the pipe.
         send_bind (socket, pipes [1]);
     }
+    else if (outpipe && (options.delay_attach_on_connect == 1)) 
+        send_bind (socket, outpipe);
 
     //  Plug in the engine.
     zmq_assert (!engine);
