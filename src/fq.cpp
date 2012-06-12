@@ -84,11 +84,6 @@ int zmq::fq_t::recvpipe (msg_t *msg_, pipe_t **pipe_)
         //  subsequent part should be immediately available.
         bool fetched = pipes [current]->read (msg_);
 
-        //  Check the atomicity of the message. If we've already received the
-        //  first part of the message we should get the remaining parts
-        //  without blocking.
-        zmq_assert (!more || fetched);
-
         //  Note that when message is not fetched, current pipe is deactivated
         //  and replaced by another active pipe. Thus we don't have to increase
         //  the 'current' pointer.
@@ -100,6 +95,11 @@ int zmq::fq_t::recvpipe (msg_t *msg_, pipe_t **pipe_)
                 current = (current + 1) % active;
             return 0;
         }
+
+        //  Check the atomicity of the message.
+        //  If we've already received the first part of the message
+        //  we should get the remaining parts without blocking.
+        zmq_assert (!more);
 
         active--;
         pipes.swap (current, active);
