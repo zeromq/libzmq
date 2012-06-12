@@ -31,7 +31,6 @@
 #include "config.hpp"
 #include "err.hpp"
 #include "ip.hpp"
-#include "tcp.hpp"
 #include "socket_base.hpp"
 
 #ifdef ZMQ_HAVE_WINDOWS
