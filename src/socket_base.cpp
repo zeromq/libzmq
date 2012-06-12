@@ -876,6 +876,17 @@ void zmq::socket_base_t::process_destroy ()
     destroyed = true;
 }
 
+void zmq::socket_base_t::process_detach (pipe_t *pipe_)
+{
+    //  If we are blocking connecting threads, drop this one
+    if (options.delay_attach_on_connect == 1) {
+        zmq_assert (pipe_);
+        pipes.erase (pipe_);
+        //  Let derived sockets know we're ditching this pipe
+        xterminated (pipe_);
+    }
+}
+
 int zmq::socket_base_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
