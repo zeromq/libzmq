@@ -41,8 +41,7 @@ zmq::lb_t::~lb_t ()
 void zmq::lb_t::attach (pipe_t *pipe_)
 {
     pipes.push_back (pipe_);
-    pipes.swap (active, pipes.size () - 1);
-    active++;
+    activated (pipe_);
 }
 
 void zmq::lb_t::terminated (pipe_t *pipe_)

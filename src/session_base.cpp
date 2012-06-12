@@ -229,20 +229,30 @@ void zmq::session_base_t::clean_pipes ()
 
 void zmq::session_base_t::terminated (pipe_t *pipe_)
 {
-    //  Drop the reference to the deallocated pipe.
-    zmq_assert (pipe == pipe_);
-    pipe = NULL;
+    // Drop the reference to the deallocated pipe if required.
+    zmq_assert (pipe == pipe_ || terminating_pipes.count (pipe_) == 1);
 
-    //  If we are waiting for pending messages to be sent, at this point
-    //  we are sure that there will be no more messages and we can proceed
-    //  with termination safely.
-    if (pending)
+    if (pipe == pipe_)
+        // If this is our current pipe, remove it
+        pipe = NULL;
+    else
+        // Remove the pipe from the detached pipes set
+        terminating_pipes.erase (pipe_);
+
+    // If we are waiting for pending messages to be sent, at this point
+    // we are sure that there will be no more messages and we can proceed
+    // with termination safely.
+    if (pending && !pipe && terminating_pipes.size () == 0)
         proceed_with_term ();
 }
 
 void zmq::session_base_t::read_activated (pipe_t *pipe_)
 {
-    zmq_assert (pipe == pipe_);
+    // Skip activating if we're detaching this pipe
+    if (pipe != pipe_) {
+        zmq_assert (terminating_pipes.count (pipe_) == 1);
+        return;
+    }
 
     if (likely (engine != NULL))
         engine->activate_out ();
@@ -252,7 +262,11 @@ void zmq::session_base_t::read_activated (pipe_t *pipe_)
 
 void zmq::session_base_t::write_activated (pipe_t *pipe_)
 {
-    zmq_assert (pipe == pipe_);
+    // Skip activating if we're detaching this pipe
+    if (pipe != pipe_) {
+        zmq_assert (terminating_pipes.count (pipe_) == 1);
+        return;
+    }
 
     if (engine)
         engine->activate_in ();
@@ -393,6 +407,16 @@ void zmq::session_base_t::detached ()
     if (!connect) {
         terminate ();
         return;
+    }
+
+    //  For delayed connect situations, terminate the pipe
+    //  and reestablish later on
+    if (pipe && options.delay_attach_on_connect == 1
+        && addr->protocol != "pgm" && addr->protocol != "epgm") {
+        pipe->hiccup ();
+        pipe->terminate (false);
+        terminating_pipes.insert (pipe);
+        pipe = NULL;
     }
 
     reset ();

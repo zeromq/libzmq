@@ -530,27 +530,29 @@ int zmq::socket_base_t::connect (const char *addr_)
         options, paddr);
     errno_assert (session);
 
-    //  Create a bi-directional pipe.
-    object_t *parents [2] = {this, session};
-    pipe_t *pipes [2] = {NULL, NULL};
-    int hwms [2] = {options.sndhwm, options.rcvhwm};
-    bool delays [2] = {options.delay_on_disconnect, options.delay_on_close};
-    rc = pipepair (parents, pipes, hwms, delays);
-    errno_assert (rc == 0);
-
     //  PGM does not support subscription forwarding; ask for all data to be
     //  sent to this pipe.
     bool icanhasall = false;
     if (protocol == "pgm" || protocol == "epgm")
         icanhasall = true;
 
-    //  Attach local end of the pipe to the socket object.
-    attach_pipe (pipes [0], icanhasall);
+    if (options.delay_attach_on_connect != 1 || icanhasall) {
+        //  Create a bi-directional pipe.
+        object_t *parents [2] = {this, session};
+        pipe_t *pipes [2] = {NULL, NULL};
+        int hwms [2] = {options.sndhwm, options.rcvhwm};
+        bool delays [2] = {options.delay_on_disconnect, options.delay_on_close};
+        rc = pipepair (parents, pipes, hwms, delays);
+        errno_assert (rc == 0);
 
-    //  Attach remote end of the pipe to the session object later on.
-    session->attach_pipe (pipes [1]);
+        //  Attach local end of the pipe to the socket object.
+        attach_pipe (pipes [0], icanhasall);
 
-    // Save last endpoint URI
+        //  Attach remote end of the pipe to the session object later on.
+        session->attach_pipe (pipes [1]);
+    }
+
+    //  Save last endpoint URI
     paddr->to_string (options.last_endpoint);
 
     add_endpoint (addr_, (own_t *) session);
@@ -968,7 +970,11 @@ void zmq::socket_base_t::write_activated (pipe_t *pipe_)
 
 void zmq::socket_base_t::hiccuped (pipe_t *pipe_)
 {
-    xhiccuped (pipe_);
+    if (options.delay_attach_on_connect == 1)
+        pipe_->terminate (false);
+    else
+        // Notify derived sockets of the hiccup
+        xhiccuped (pipe_);
 }
 
 void zmq::socket_base_t::terminated (pipe_t *pipe_)
