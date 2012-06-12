@@ -27,111 +27,6 @@
 
 #include "../include/zmq.h"
 
-static void *server (void *c)
-{
-    void *socket, *context;
-    char buffer[16];
-    int rc, val;
-
-    shoulddie = *(long *)sd;
-
-    context = zmq_init (1);
-    assert (context);
-
-    socket = zmq_socket (context, ZMQ_PULL);
-    assert (socket);
-
-    val = 0;
-    rc = zmq_setsockopt(socket, ZMQ_LINGER, &val, sizeof(val));
-    assert (rc == 0);
-
-    rc = zmq_bind (socket, "ipc:///tmp/recon");
-    assert (rc == 0);
-
-    memset (&buffer, 0, sizeof(buffer));
-    rc = zmq_recv (socket, &buffer, sizeof(buffer), 0);
-
-    //  Intentionally bail out
-    rc = zmq_close (socket);
-    assert (rc == 0);
-
-    rc = zmq_term (context);
-    assert (rc == 0);
-
-    usleep (200000);
-
-    context = zmq_init (1);
-    assert (context);
-
-    socket = zmq_socket (context, ZMQ_PULL);
-    assert (socket);
-
-    val = 0;
-    rc = zmq_setsockopt(socket, ZMQ_LINGER, &val, sizeof(val));
-    assert (rc == 0);
-
-    rc = zmq_bind (socket, "ipc:///tmp/recon");
-    assert (rc == 0);
-
-    usleep (200000);
-
-    memset (&buffer, 0, sizeof(buffer));
-    rc = zmq_recv (socket, &buffer, sizeof(buffer), ZMQ_DONTWAIT);
-    assert (rc != -1);
-
-    //  Start closing the socket while the connecting process is underway.
-    rc = zmq_close (socket);
-    assert (rc == 0);
-
-    rc = zmq_term (context);
-    assert (rc == 0);
-
-    pthread_exit(NULL);
-}
-
-static void *worker (void *n)
-{
-    void *socket, *context;
-    int rc, hadone, val;
-
-    context = zmq_init (1);
-    assert (context);
-
-    socket = zmq_socket (context, ZMQ_PUSH);
-    assert (socket);
-
-    val = 0;
-    rc = zmq_setsockopt(socket, ZMQ_LINGER, &val, sizeof(val));
-    assert (rc == 0);
-
-    val = 1;
-    rc = zmq_setsockopt (socket, ZMQ_DELAY_ATTACH_ON_CONNECT, &val, sizeof(val));
-    assert (rc == 0);
-
-    rc = zmq_connect (socket, "ipc:///tmp/recon");
-    assert (rc == 0);
-
-    hadone = 0;
-    //  Not checking RC as some may be -1
-    for (int i = 0; i < 4; i++) {
-        usleep(200000);
-        rc = zmq_send (socket, "hi", 2, ZMQ_DONTWAIT);
-        if (rc != -1) 
-            hadone ++;
-    }
-
-    assert (hadone >= 2);
-    assert (hadone < 4);
-
-    rc = zmq_close (socket);
-    assert (rc == 0);
-
-    rc = zmq_term (context);
-    assert (rc == 0);
-
-    pthread_exit(NULL);
-}
-
 int main (int argc, char *argv [])
 {
     fprintf (stderr, "test_connect_delay running...\n");
@@ -174,7 +69,7 @@ int main (int argc, char *argv [])
     seen = 0;
     for (int i = 0; i < 10; ++i)
     {
-        memset (&buffer, 0, sizeof(buffer));
+        memset(&buffer, 0, sizeof(buffer));
         rc = zmq_recv (to, &buffer, sizeof(buffer), ZMQ_DONTWAIT);
         if( rc == -1) 
             break;
@@ -244,19 +139,9 @@ int main (int argc, char *argv [])
 
     rc = zmq_close (to);
     assert (rc == 0);
-    
+
     rc = zmq_ctx_destroy(context);
     assert (rc == 0);
 
-    fprintf (stderr, " Running DELAY_ATTACH_ON_CONNECT with disconnect\n");
-
-    pthread_t serv, work;
-
-    rc = pthread_create (&serv, NULL, server, NULL);
-    assert (rc == 0);
-
-    rc = pthread_create (&work, NULL, worker, NULL);
-    assert (rc == 0);
-    
-    pthread_exit(NULL);
+    return 0;
 }
