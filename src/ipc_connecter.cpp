@@ -59,9 +59,13 @@ zmq::ipc_connecter_t::ipc_connecter_t (class io_thread_t *io_thread_,
 
 zmq::ipc_connecter_t::~ipc_connecter_t ()
 {
-    zmq_assert (!wait);
-    zmq_assert (!handle_valid);
-    zmq_assert (s == retired_fd);
+    if (wait)
+        cancel_timer (reconnect_timer_id);
+    if (handle_valid)
+        rm_fd (handle);
+
+    if (s != retired_fd)
+        close ();
 }
 
 void zmq::ipc_connecter_t::process_plug ()
@@ -70,24 +74,6 @@ void zmq::ipc_connecter_t::process_plug ()
         add_reconnect_timer();
     else
         start_connecting ();
-}
-
-void zmq::ipc_connecter_t::process_term (int linger_)
-{
-    if (wait) {
-        cancel_timer (reconnect_timer_id);
-        wait = false;
-    }
-
-    if (handle_valid) {
-        rm_fd (handle);
-        handle_valid = false;
-    }
-
-    if (s != retired_fd)
-        close ();
-
-    own_t::process_term (linger_);
 }
 
 void zmq::ipc_connecter_t::in_event ()

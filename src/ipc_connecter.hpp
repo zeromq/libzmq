@@ -55,7 +55,6 @@ namespace zmq
 
         //  Handlers for incoming commands.
         void process_plug ();
-        void process_term (int linger_);
 
         //  Handlers for I/O events.
         void in_event ();
