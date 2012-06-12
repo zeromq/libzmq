@@ -342,6 +342,21 @@ Default value:: 1 (true)
 Applicable socket types:: all, when using TCP transports.
 
 
+ZMQ_DELAY_ATTACH_ON_CONNECT
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Retrieve the state of the attach on connect value. If set to `1`, will delay the
+attachment of a pipe on connect until the underlying connection has completed.
+This will cause the socket to block if there are no other connections, but will
+prevent queues from filling on pipes awaiting connection.
+
+[horizontal]
+Option value type:: int
+Option value unit:: boolean
+Default value:: 0 (false)
+Applicable socket types:: all, primarily when using TCP/IPC transports.
+
+
 ZMQ_FD: Retrieve file descriptor associated with the socket
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_FD' option shall retrieve the file descriptor associated with the
