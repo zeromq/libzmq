@@ -33,6 +33,8 @@ static void *server (void *c)
     char buffer[16];
     int rc, val;
 
+    shoulddie = *(long *)sd;
+
     context = zmq_init (1);
     assert (context);
 

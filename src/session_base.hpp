@@ -104,8 +104,8 @@ namespace zmq
         //  Pipe connecting the session to its socket.
         zmq::pipe_t *pipe;
         
-        //  This set is added to with pipes we are disconnecting, but haven't yet completed
-        std::set<pipe_t *> incomplete_pipes;
+        //  This flag is set if we are disconnecting, but haven't yet completed
+        int incomplete_detach;
 
         //  This flag is true if the remainder of the message being processed
         //  is still in the in pipe.
