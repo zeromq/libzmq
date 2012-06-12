@@ -103,9 +103,6 @@ namespace zmq
 
         //  Pipe connecting the session to its socket.
         zmq::pipe_t *pipe;
-        
-        //  Socket end of the pipe, for delay attach scenario
-        zmq::pipe_t *outpipe;
 
         //  This flag is true if the remainder of the message being processed
         //  is still in the in pipe.
