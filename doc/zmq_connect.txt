@@ -42,7 +42,8 @@ Thus a successful invocation of _zmq_connect()_ does not indicate that a
 physical connection was or can actually be established. Because of this, for most 
 socket types the order in which a listening socket is bound and a connecting socket 
 is connected does not matter. However, for inproc:// scheme sockets, the zmq_bind() 
-must be executed before any sockets zmq_connect() to that endpoint
+must be executed before any sockets zmq_connect() to that endpoint. Refer to 
+linkzmq:zmq_inproc[7] for more details.
 
 
 RETURN VALUE
