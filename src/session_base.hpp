@@ -52,9 +52,6 @@ namespace zmq
 
         //  To be used once only, when creating the session.
         void attach_pipe (zmq::pipe_t *pipe_);
-        
-        // To be used once only, for delayed connection
-        void onconnect_attach_pipe (pipe_t *pipe_);
 
         //  Following functions are the interface exposed towards the engine.
         virtual int read (msg_t *msg_);
@@ -106,9 +103,6 @@ namespace zmq
 
         //  Pipe connecting the session to its socket.
         zmq::pipe_t *pipe;
-
-        //  Pipe connecting the socket to the client
-        zmq::pipe_t *outpipe;
 
         //  This flag is true if the remainder of the message being processed
         //  is still in the in pipe.
