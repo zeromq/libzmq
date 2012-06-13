@@ -142,7 +142,6 @@ void zmq::ipc_connecter_t::start_connecting ()
         handle = add_fd (s);
         handle_valid = true;
         out_event ();
-        return;
     }
 
     //  Connection establishment may be delayed. Poll for its completion.
@@ -151,12 +150,13 @@ void zmq::ipc_connecter_t::start_connecting ()
         handle_valid = true;
         set_pollout (handle);
         session->monitor_event (ZMQ_EVENT_CONNECT_DELAYED, endpoint.c_str(), zmq_errno());
-        return;
     }
 
     //  Handle any other error condition by eventual reconnect.
-    close ();
-    add_reconnect_timer();
+    else {
+        close ();
+        add_reconnect_timer ();
+    }
 }
 
 void zmq::ipc_connecter_t::add_reconnect_timer()
