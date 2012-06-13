@@ -208,11 +208,11 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
         errno = wsa_error_to_errno (WSAGetLastError ());
-        return -1;
+        goto error;
     }
 #else
     if (rc != 0)
-        return -1;
+        goto error;
 #endif
 
     //  Listen for incomming connections.
@@ -220,15 +220,21 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
         errno = wsa_error_to_errno (WSAGetLastError ());
-        return -1;
+        goto error;
     }
 #else
     if (rc != 0)
-        return -1;
+        goto error;
 #endif
 
     socket->monitor_event (ZMQ_EVENT_LISTENING, addr_, s);
     return 0;
+
+error:
+    int err = errno;
+    close ();
+    errno = err;
+    return -1;
 }
 
 zmq::fd_t zmq::tcp_listener_t::accept ()
