@@ -145,7 +145,7 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
     //  Bind the socket to the file path.
     rc = bind (s, address.addr (), address.addrlen ());
     if (rc != 0)
-        return -1;
+        goto error;
 
     filename.assign(addr_);
     has_file = true;
@@ -153,10 +153,16 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
     //  Listen for incomming connections.
     rc = listen (s, options.backlog);
     if (rc != 0)
-        return -1;
+        goto error;
 
     socket->monitor_event (ZMQ_EVENT_LISTENING, addr_, s);
     return 0;
+
+error:
+    int err = errno;
+    close ();
+    errno = err;
+    return -1;
 }
 
 int zmq::ipc_listener_t::close ()
