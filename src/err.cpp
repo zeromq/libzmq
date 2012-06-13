@@ -217,28 +217,69 @@ void zmq::win_error (char *buffer_, size_t buffer_size_)
 int zmq::wsa_error_to_errno (int errcode)
 {
     switch (errcode) {
-    case WSAEINPROGRESS:
-        return EAGAIN;
+//  10009 - File handle is not valid.
     case WSAEBADF:
         return EBADF;
-    case WSAEINVAL:
-        return EINVAL;
-    case WSAEMFILE:
-        return EMFILE;
+//  10013 - Permission denied.
+    case WSAEACCES:
+        return EACCES;
+//  10014 - Bad address.
     case WSAEFAULT:
         return EFAULT;
+//  10022 - Invalid argument.
+    case WSAEINVAL:
+        return EINVAL;
+//  10024 - Too many open files.
+    case WSAEMFILE:
+        return EMFILE;
+//  10036 - Operation now in progress.
+    case WSAEINPROGRESS:
+        return EAGAIN;
+//  10040 - Message too long.
+    case WSAEMSGSIZE:
+        return EMSGSIZE;
+//  10043 - Protocol not supported.
     case WSAEPROTONOSUPPORT:
         return EPROTONOSUPPORT;
-    case WSAENOBUFS:
-        return ENOBUFS;
-    case WSAENETDOWN:
-        return ENETDOWN;
-    case WSAEADDRINUSE:
-        return EADDRINUSE;
-    case WSAEADDRNOTAVAIL:
-        return EADDRNOTAVAIL;
+//  10047 - Address family not supported by protocol family.
     case WSAEAFNOSUPPORT:
         return EAFNOSUPPORT;
+//  10048 - Address already in use.
+    case WSAEADDRINUSE:
+        return EADDRINUSE;
+//  10049 - Cannot assign requested address.
+    case WSAEADDRNOTAVAIL:
+        return EADDRNOTAVAIL;
+//  10050 - Network is down.
+    case WSAENETDOWN:
+        return ENETDOWN;
+//  10051 - Network is unreachable.
+    case WSAENETUNREACH:
+        return ENETUNREACH;
+//  10052 - Network dropped connection on reset.
+    case WSAENETRESET:
+        return ENETRESET;
+//  10053 - Software caused connection abort.
+    case WSAECONNABORTED:
+        return ECONNABORTED;
+//  10054 - Connection reset by peer.
+    case WSAECONNRESET:
+        return ECONNRESET;
+//  10055 - No buffer space available.
+    case WSAENOBUFS:
+        return ENOBUFS;
+//  10057 - Socket is not connected.
+    case WSAENOTCONN:
+        return ENOTCONN;
+//  10060 - Connection timed out.
+    case WSAETIMEDOUT:
+        return ETIMEDOUT;
+//  10061 - Connection refused.
+    case WSAECONNREFUSED:
+        return ECONNREFUSED;
+//  10065 - No route to host.
+    case WSAEHOSTUNREACH:
+        return EHOSTUNREACH;
     default:
         wsa_assert (false);
     }
