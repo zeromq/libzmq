@@ -24,6 +24,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include <cstring>
 #include <iostream>
 #include <errno.h>
+#include <unistd.h>
 
 #include "../include/zmq.h"
 
