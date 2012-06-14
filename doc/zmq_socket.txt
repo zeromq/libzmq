@@ -166,7 +166,7 @@ Deprecated alias: 'ZMQ_XREP'.
 
 [horizontal]
 .Summary of ZMQ_ROUTER characteristics
-Compatible peer sockets:: 'ZMQ_DEALER', 'ZMQ_REQ
+Compatible peer sockets:: 'ZMQ_DEALER', 'ZMQ_REQ'
 Direction:: Bidirectional
 Send/receive pattern:: Unrestricted
 Outgoing routing strategy:: See text
