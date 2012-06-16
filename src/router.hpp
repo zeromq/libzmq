@@ -110,8 +110,9 @@ namespace zmq
         //  algorithm. This value is the next ID to use (if not used already).
         uint32_t next_peer_id;
 
-        // If true, fail on unroutable messages instead of silently dropping them.
-        bool fail_unroutable;
+        // If true, report EAGAIN to the caller instead of silently dropping 
+        // the message targeting an unknown peer.
+        bool report_unroutable;
 
         router_t (const router_t&);
         const router_t &operator = (const router_t&);
