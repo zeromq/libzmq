@@ -46,8 +46,13 @@ zmq::fd_t zmq::open_socket (int domain_, int type_, int protocol_)
 #endif
 
     fd_t s = socket (domain_, type_, protocol_);
-    if (s == retired_fd)
-        return retired_fd;
+#ifdef ZMQ_HAVE_WINDOWS
+    if (s == INVALID_SOCKET)
+        return INVALID_SOCKET
+#else
+    if (s == -1)
+        return -1;
+#endif
 
     //  If there's no SOCK_CLOEXEC, let's try the second best option. Note that
     //  race condition can cause socket not to be closed (if fork happens
