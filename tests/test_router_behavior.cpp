@@ -21,7 +21,6 @@
 
 #include <assert.h>
 #include <stdio.h>
-#include <unistd.h>
 #include "testutil.hpp"
 
 int main (int argc, char *argv [])
