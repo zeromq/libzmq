@@ -51,7 +51,7 @@ int main (int argc, char *argv [])
     assert (rc == 0);
 
     // Sending a message to an unknown peer with verbose behavior.
-    rc = zmq_send (sa, "UNKNOWN", 7, ZMQ_SNDMORE);
+    rc = zmq_send (sa, "UNKNOWN", 7, ZMQ_SNDMORE | ZMQ_DONTWAIT);
     assert (rc == -1 && errno == EAGAIN);
 
     rc = zmq_close (sa);
