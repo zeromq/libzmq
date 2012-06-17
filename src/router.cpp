@@ -35,7 +35,7 @@ zmq::router_t::router_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     current_out (NULL),
     more_out (false),
     next_peer_id (generate_random ()),
-    fail_unroutable(false)
+    report_unroutable(false)
 {
     options.type = ZMQ_ROUTER;
 
@@ -74,7 +74,7 @@ void zmq::router_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
 int zmq::router_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
-    if (option_ != ZMQ_FAIL_UNROUTABLE) {
+    if (option_ != ZMQ_ROUTER_BEHAVIOR) {
         errno = EINVAL;
         return -1;
     }
@@ -82,7 +82,7 @@ int zmq::router_t::xsetsockopt (int option_, const void *optval_,
         errno = EINVAL;
         return -1;
     }
-    fail_unroutable = *static_cast <const int*> (optval_);
+    report_unroutable = *static_cast <const int*> (optval_);
     return 0;
 }
 
@@ -135,8 +135,6 @@ int zmq::router_t::xsend (msg_t *msg_, int flags_)
     if (!more_out) {
         zmq_assert (!current_out);
 
-        int retval = 0;
-
         //  If we have malformed message (prefix with no subsequent message)
         //  then just silently ignore it.
         //  TODO: The connections should be killed instead.
@@ -146,7 +144,7 @@ int zmq::router_t::xsend (msg_t *msg_, int flags_)
 
             //  Find the pipe associated with the identity stored in the prefix.
             //  If there's no such pipe just silently ignore the message, unless
-            //  fail_unreachable is set.
+            //  report_unreachable is set.
             blob_t identity ((unsigned char*) msg_->data (), msg_->size ());
             outpipes_t::iterator it = outpipes.find (identity);
 
@@ -156,9 +154,10 @@ int zmq::router_t::xsend (msg_t *msg_, int flags_)
                     it->second.active = false;
                     current_out = NULL;
                 }
-            } else if(fail_unroutable) {
-                errno = EHOSTUNREACH;
-                retval = -1;
+            } else if (report_unroutable) {
+                more_out = false;
+                errno = EAGAIN;
+                return -1;
             }
         }
 
@@ -166,7 +165,7 @@ int zmq::router_t::xsend (msg_t *msg_, int flags_)
         errno_assert (rc == 0);
         rc = msg_->init ();
         errno_assert (rc == 0);
-        return retval;
+        return 0;
     }
 
     //  Check whether this is the last part of the message.
