@@ -106,11 +106,29 @@ ZMQ_EXPORT void zmq_version (int *major, int *minor, int *patch);
 #ifndef ENOTSOCK
 #define ENOTSOCK (ZMQ_HAUSNUMERO + 9)
 #endif
+#ifndef EMSGSIZE
+#define EMSGSIZE (ZMQ_HAUSNUMERO + 10)
+#endif
 #ifndef EAFNOSUPPORT
-#define EAFNOSUPPORT (ZMQ_HAUSNUMERO + 10)
+#define EAFNOSUPPORT (ZMQ_HAUSNUMERO + 11)
+#endif
+#ifndef ENETUNREACH
+#define ENETUNREACH (ZMQ_HAUSNUMERO + 12)
+#endif
+#ifndef ECONNABORTED
+#define ECONNABORTED (ZMQ_HAUSNUMERO + 13)
+#endif
+#ifndef ECONNRESET
+#define ECONNRESET (ZMQ_HAUSNUMERO + 14)
+#endif
+#ifndef ENOTCONN
+#define ENOTCONN (ZMQ_HAUSNUMERO + 15)
+#endif
+#ifndef ETIMEDOUT
+#define ETIMEDOUT (ZMQ_HAUSNUMERO + 16)
 #endif
 #ifndef EHOSTUNREACH
-#define EHOSTUNREACH (ZMQ_HAUSNUMERO + 11)
+#define EHOSTUNREACH (ZMQ_HAUSNUMERO + 17)
 #endif
 
 /*  Native 0MQ error codes.                                                   */
