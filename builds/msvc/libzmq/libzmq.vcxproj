@@ -153,6 +153,7 @@
     <ClCompile Include="..\..\..\src\socket_base.cpp" />
     <ClCompile Include="..\..\..\src\stream_engine.cpp" />
     <ClCompile Include="..\..\..\src\sub.cpp" />
+    <ClCompile Include="..\..\..\src\tcp.cpp" />
     <ClCompile Include="..\..\..\src\tcp_address.cpp" />
     <ClCompile Include="..\..\..\src\tcp_connecter.cpp" />
     <ClCompile Include="..\..\..\src\tcp_listener.cpp" />
@@ -224,6 +225,7 @@
     <ClInclude Include="..\..\..\src\stdint.hpp" />
     <ClInclude Include="..\..\..\src\stream_engine.hpp" />
     <ClInclude Include="..\..\..\src\sub.hpp" />
+    <ClInclude Include="..\..\..\src\tcp.hpp" />
     <ClInclude Include="..\..\..\src\tcp_address.hpp" />
     <ClInclude Include="..\..\..\src\tcp_connecter.hpp" />
     <ClInclude Include="..\..\..\src\tcp_listener.hpp" />
