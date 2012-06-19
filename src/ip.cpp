@@ -48,7 +48,7 @@ zmq::fd_t zmq::open_socket (int domain_, int type_, int protocol_)
     fd_t s = socket (domain_, type_, protocol_);
 #ifdef ZMQ_HAVE_WINDOWS
     if (s == INVALID_SOCKET)
-        return INVALID_SOCKET
+        return INVALID_SOCKET;
 #else
     if (s == -1)
         return -1;
