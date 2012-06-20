@@ -248,6 +248,16 @@ void *zmq_socket (void *ctx_, int type_)
     return (void *) s;
 }
 
+zmq_fd_t zmq_socket_getfd (void *s_)
+{
+    if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
+        errno = ENOTSOCK;
+        return -1;
+    }
+    zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
+    return s->get_mailbox()->get_fd();
+}
+
 int zmq_close (void *s_)
 {
     if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
