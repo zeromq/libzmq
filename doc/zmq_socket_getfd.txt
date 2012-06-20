@@ -1,0 +1,40 @@
+zmq_socket_getfd(3)
+===================
+
+
+NAME
+----
+zmq_socket_getfd - retrieve the underlying OS handle/file descriptor
+
+
+SYNOPSIS
+--------
+*zmq_fd_t zmq_socket_getfd (void '*socket');*
+
+
+DESCRIPTION
+-----------
+The _zmq_socket_getfd()_ function shall return the socket's underlying
+OS resource handler.
+
+RETURN VALUE
+------------
+The _zmq_socket_getfd()_ function shall return the underlying file
+descriptor(an int) on a Unix-like OS or a SOCKET handle on Win32.
+
+
+ERRORS
+------
+No errors are defined.
+
+
+SEE ALSO
+--------
+linkzmq:zmq[7]
+linkzmq:zmq_socket[7]
+
+
+AUTHORS
+-------
+This 0MQ manual page was written by Stelian Ionescu <sionescu@cddr.org>.
+

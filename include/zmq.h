@@ -325,7 +325,18 @@ typedef void (zmq_monitor_fn) (void *s, int event, zmq_event_data_t *data);
 
 ZMQ_EXPORT int zmq_ctx_set_monitor (void *context, zmq_monitor_fn *monitor);
 
+#ifdef _WIN32
+#if defined _MSC_VER && _MSC_VER <= 1400
+typedef UINT_PTR zmq_fd_t;
+#else
+typedef SOCKET zmq_fd_t;
+#endif
+#else
+typedef int zmq_fd_t;
+#endif
+
 ZMQ_EXPORT void *zmq_socket (void *, int type);
+ZMQ_EXPORT zmq_fd_t zmq_socket_getfd (void *s);
 ZMQ_EXPORT int zmq_close (void *s);
 ZMQ_EXPORT int zmq_setsockopt (void *s, int option, const void *optval,
     size_t optvallen); 
