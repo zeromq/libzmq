@@ -130,6 +130,9 @@ ZMQ_EXPORT void zmq_version (int *major, int *minor, int *patch);
 #ifndef EHOSTUNREACH
 #define EHOSTUNREACH (ZMQ_HAUSNUMERO + 17)
 #endif
+#ifndef ENETRESET
+#define ENETRESET (ZMQ_HAUSNUMERO + 18)
+#endif
 
 /*  Native 0MQ error codes.                                                   */
 #define EFSM (ZMQ_HAUSNUMERO + 51)
