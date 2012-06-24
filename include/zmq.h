@@ -342,6 +342,8 @@ ZMQ_EXPORT int zmq_sendmsg (void *s, zmq_msg_t *msg, int flags);
 ZMQ_EXPORT int zmq_recvmsg (void *s, zmq_msg_t *msg, int flags);
 
 /*  Experimental                                                              */
+struct iovec;
+
 ZMQ_EXPORT int zmq_sendiov (void *s, struct iovec *iov, size_t count, int flags);
 ZMQ_EXPORT int zmq_recviov (void *s, struct iovec *iov, size_t *count, int flags);
 
