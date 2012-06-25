@@ -235,8 +235,14 @@ void zmq::mtrie_t::rm_helper (pipe_t *pipe_, unsigned char **buff_,
 
     zmq_assert (count > 1);
 
+    //  Free the node table if it's no longer used.
+    if (live_nodes == 0) {
+        free (next.table);
+        next.table = NULL;
+        count = 0;
+    }
     //  Compact the node table if possible
-    if (live_nodes == 1) {
+    else if (live_nodes == 1) {
         //  If there's only one live node in the table we can
         //  switch to using the more compact single-node
         //  representation
@@ -249,7 +255,7 @@ void zmq::mtrie_t::rm_helper (pipe_t *pipe_, unsigned char **buff_,
         count = 1;
         min = new_min;
     }
-    else if (live_nodes > 1 && (new_min > min || new_max < min + count - 1)) {
+    else if (new_min > min || new_max < min + count - 1) {
         zmq_assert (new_max - new_min + 1 > 1);
 
         mtrie_t **old_table = next.table;
