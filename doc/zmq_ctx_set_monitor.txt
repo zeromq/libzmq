@@ -15,11 +15,13 @@ SYNOPSIS
 
 DESCRIPTION
 -----------
-The _zmq_ctx_set_monitor()_ function shall register a callback function specified by
-the 'monitor' argument. This is an event sink for changes in per socket
-connection and mailbox (work in progress) states.
+The _zmq_ctx_set_monitor()_ function shall register a callback function
+specified by the 'monitor' argument. This is an event sink for changes in per
+socket connection and mailbox (work in progress) states.
 
-.The _zmq_ctx_set_monitor()_ callback function is expected to have this prototype:
+.The _zmq_ctx_set_monitor()_ callback function is expected to have this
+prototype:
+
 ----
 typedef void (zmq_monitor_fn) (void *s, int event, zmq_event_data_t *data);
 ----
@@ -28,16 +30,16 @@ The callback is global (per context), with the socket that triggered the event
 passed to the handler as well. Each event also populates a 'zmq_event_data_t'
 union with additional metadata which can be used for correlation.
 
-CAUTION: _zmq_ctx_set_monitor()_ is intended for monitoring infrastructure / operations
-concerns only - NOT BUSINESS LOGIC. An event is a representation of something
-that happened - you cannot change the past, but only react to them. The
-implementation is also only concerned with a single session. No state of peers,
-other sessions etc. are tracked - this will only pollute internals and is the
-responsibility of application authors to either implement or correlate in
-another datastore. Monitor events are exceptional conditions and are thus not
-directly in the messaging critical path. However, still be careful with what
-you're doing in the callback function as excess time spent in the handler will
-block the socket's application thread.
+CAUTION: _zmq_ctx_set_monitor()_ is intended for monitoring infrastructure /
+operations concerns only - NOT BUSINESS LOGIC. An event is a representation of
+something that happened - you cannot change the past, but only react to them.
+The implementation is also only concerned with a single session. No state of
+peers, other sessions etc. are tracked - this will only pollute internals and
+is the responsibility of application authors to either implement or correlate
+in another datastore. Monitor events are exceptional conditions and are thus
+not directly in the messaging critical path. However, still be careful with
+what you're doing in the callback function as excess time spent in the handler
+will block the socket's application thread.
 
 Only tcp and ipc specific transport events are supported in this initial
 implementation.
@@ -158,9 +160,9 @@ data.disconnected.fd // socket descriptor
 
 RETURN VALUE
 ------------
-The _zmq_ctx_set_monitor()_ function returns a value of 0 or greater if successful.
-Otherwise it returns `-1` and sets 'errno' to one of the values defined
-below.
+The _zmq_ctx_set_monitor()_ function returns a value of 0 or greater if
+successful. Otherwise it returns `-1` and sets 'errno' to one of the values
+defined below.
 
 
 ERRORS
