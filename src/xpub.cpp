@@ -56,15 +56,11 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
 {
     //  There are some subscriptions waiting. Let's process them.
     msg_t sub;
-    while (true) {
-
-        //  Grab next subscription.
-        if (!pipe_->read (&sub))
-            return;
+    while (pipe_->read (&sub)) {
 
         //  Apply the subscription to the trie.
-        unsigned char *data = (unsigned char*) sub.data ();
-        size_t size = sub.size ();
+        unsigned char *const data = (unsigned char*) sub.data ();
+        const size_t size = sub.size ();
         if (size > 0 && (*data == 0 || *data == 1)) {
             bool unique;
             if (*data == 0)
@@ -75,11 +71,10 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
             //  If the subscription is not a duplicate store it so that it can be
             //  passed to used on next recv call.
             if (unique && options.type != ZMQ_PUB)
-                pending.push_back (blob_t ((unsigned char*) sub.data (),
-                    sub.size ()));
+                pending.push_back (blob_t (data, size));
         }
 
-        sub.close();
+        sub.close ();
     }
 }
 
