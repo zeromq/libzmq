@@ -72,8 +72,10 @@ bool zmq::mtrie_t::add_helper (unsigned char *prefix_, size_t size_,
     //  We are at the node corresponding to the prefix. We are done.
     if (!size_) {
         bool result = !pipes;
-        if (!pipes)
-            pipes = new pipes_t;
+        if (!pipes) {
+            pipes = new (std::nothrow) pipes_t;
+            alloc_assert (pipes);
+        }
         pipes->insert (pipe_);
         return result;
     }
@@ -105,7 +107,7 @@ bool zmq::mtrie_t::add_helper (unsigned char *prefix_, size_t size_,
             //  The new character is above the current character range.
             unsigned short old_count = count;
             count = c - min + 1;
-            next.table = (mtrie_t**) realloc ((void*) next.table,
+            next.table = (mtrie_t**) realloc (next.table,
                 sizeof (mtrie_t*) * count);
             alloc_assert (next.table);
             for (unsigned short i = old_count; i != count; i++)
@@ -116,7 +118,7 @@ bool zmq::mtrie_t::add_helper (unsigned char *prefix_, size_t size_,
             //  The new character is below the current character range.
             unsigned short old_count = count;
             count = (min + old_count) - c;
-            next.table = (mtrie_t**) realloc ((void*) next.table,
+            next.table = (mtrie_t**) realloc (next.table,
                 sizeof (mtrie_t*) * count);
             alloc_assert (next.table);
             memmove (next.table + min - c, next.table,
@@ -131,16 +133,16 @@ bool zmq::mtrie_t::add_helper (unsigned char *prefix_, size_t size_,
     if (count == 1) {
         if (!next.node) {
             next.node = new (std::nothrow) mtrie_t;
-            ++live_nodes;
             alloc_assert (next.node);
+            ++live_nodes;
         }
         return next.node->add_helper (prefix_ + 1, size_ - 1, pipe_);
     }
     else {
         if (!next.table [c - min]) {
             next.table [c - min] = new (std::nothrow) mtrie_t;
-            ++live_nodes;
             alloc_assert (next.table [c - min]);
+            ++live_nodes;
         }
         return next.table [c - min]->add_helper (prefix_ + 1, size_ - 1, pipe_);
     }
@@ -328,61 +330,46 @@ bool zmq::mtrie_t::rm_helper (unsigned char *prefix_, size_t size_,
                 //  If there's only one live node in the table we can
                 //  switch to using the more compact single-node
                 //  representation
-                mtrie_t *node = 0;
-                for (unsigned short i = 0; i < count; ++i) {
-                    if (next.table [i]) {
-                        node = next.table [i];
-                        min = i + min;
+                unsigned short i;
+                for (i = 0; i < count; ++i)
+                    if (next.table [i])
                         break;
-                    }
-                }
 
-                zmq_assert (node);
-                free (next.table);
-                next.node = node;
+                zmq_assert (i < count);
+                min += i;
                 count = 1;
+                mtrie_t *oldp = next.table [i];
+                free (next.table);
+                next.node = oldp;
             }
             else if (c == min) {
                 //  We can compact the table "from the left"
-                unsigned char new_min = min;
-                for (unsigned short i = 1; i < count; ++i) {
-                    if (next.table [i]) {
-                        new_min = i + min;
+                unsigned short i;
+                for (i = 1; i < count; ++i)
+                    if (next.table [i])
                         break;
-                    }
-                }
-                zmq_assert (new_min != min);
 
+                zmq_assert (i < count);
+                min += i;
+                count -= i;
                 mtrie_t **old_table = next.table;
-                zmq_assert (new_min > min);
-                zmq_assert (count > new_min - min);
-
-                count = count - (new_min - min);
                 next.table = (mtrie_t**) malloc (sizeof (mtrie_t*) * count);
                 alloc_assert (next.table);
-
-                memmove (next.table, old_table + (new_min - min),
-                         sizeof (mtrie_t*) * count);
+                memmove (next.table, old_table + i, sizeof (mtrie_t*) * count);
                 free (old_table);
-
-                min = new_min;
             }
             else if (c == min + count - 1) {
                 //  We can compact the table "from the right"
-                unsigned short new_count = count;
-                for (unsigned short i = 1; i < count; ++i) {
-                    if (next.table [count - 1 - i]) {
-                        new_count = count - i;
+                unsigned short i;
+                for (i = 1; i < count; ++i)
+                    if (next.table [count - 1 - i])
                         break;
-                    }
-                }
-                zmq_assert (new_count != count);
-                count = new_count;
 
+                zmq_assert (i < count);
+                count -= i;
                 mtrie_t **old_table = next.table;
                 next.table = (mtrie_t**) malloc (sizeof (mtrie_t*) * count);
                 alloc_assert (next.table);
-
                 memmove (next.table, old_table, sizeof (mtrie_t*) * count);
                 free (old_table);
             }
