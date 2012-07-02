@@ -72,8 +72,10 @@ bool zmq::mtrie_t::add_helper (unsigned char *prefix_, size_t size_,
     //  We are at the node corresponding to the prefix. We are done.
     if (!size_) {
         bool result = !pipes;
-        if (!pipes)
-            pipes = new pipes_t;
+        if (!pipes) {
+            pipes = new (std::nothrow) pipes_t;
+            alloc_assert (pipes);
+        }
         pipes->insert (pipe_);
         return result;
     }
