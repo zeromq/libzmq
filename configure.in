@@ -75,8 +75,9 @@ libzmq_werror="yes"
 # By default use DSO visibility
 libzmq_dso_visibility="yes"
 
-# Whether we are on mingw or not.
+# Whether we are on mingw or android or not.
 libzmq_on_mingw32="no"
+libzmq_on_android="no"
 
 # Set some default features required by 0MQ code.
 CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE $CPPFLAGS"
@@ -96,6 +97,7 @@ case "${host_os}" in
         case "${host_os}" in
             *android*)
                 AC_DEFINE(ZMQ_HAVE_ANDROID, 1, [Have Android OS])
+                libzmq_on_android="yes"
             ;;
         esac
         ;;
@@ -373,6 +375,7 @@ AC_LANG_POP([C++])
 
 AM_CONDITIONAL(BUILD_PGM, test "x$libzmq_pgm_ext" = "xyes")
 AM_CONDITIONAL(ON_MINGW, test "x$libzmq_on_mingw32" = "xyes")
+AM_CONDITIONAL(ON_ANDROID, test "x$libzmq_on_android" = "xyes")
 
 # Checks for library functions.
 AC_TYPE_SIGNAL

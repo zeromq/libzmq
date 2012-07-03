@@ -140,7 +140,11 @@ libzmq_la_SOURCES = \
 if ON_MINGW
 libzmq_la_LDFLAGS = -no-undefined -avoid-version -version-info @LTVER@ @LIBZMQ_EXTRA_LDFLAGS@
 else
+if ON_ANDROID
+libzmq_la_LDFLAGS = -avoid-version -version-info @LTVER@ @LIBZMQ_EXTRA_LDFLAGS@
+else
 libzmq_la_LDFLAGS = -version-info @LTVER@ @LIBZMQ_EXTRA_LDFLAGS@
+endif
 endif
 
 libzmq_la_CXXFLAGS = @LIBZMQ_EXTRA_CXXFLAGS@
