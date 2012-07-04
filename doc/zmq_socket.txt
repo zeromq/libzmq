@@ -297,7 +297,7 @@ Direction:: Unidirectional
 Send/receive pattern:: Receive only
 Incoming routing strategy:: Fair-queued
 Outgoing routing strategy:: N/A
-ZMQ_HWM option action:: N/A
+ZMQ_HWM option action:: Block
 
 
 Exclusive pair pattern
