@@ -822,16 +822,16 @@ int zmq::socket_base_t::process_commands (int timeout_, bool throttle_)
         rc = mailbox.recv (&cmd, 0);
     }
 
-    //  Process all the commands available at the moment.
-    while (true) {
-        if (rc == -1 && errno == EAGAIN)
-            break;
-        if (rc == -1 && errno == EINTR)
-            return -1;
-        errno_assert (rc == 0);
+    //  Process all available commands.
+    while (rc == 0) {
         cmd.destination->process_command (cmd);
         rc = mailbox.recv (&cmd, 0);
-     }
+    }
+
+    if (errno == EINTR)
+        return -1;
+
+    zmq_assert (errno == EAGAIN);
 
     if (ctx_terminated) {
         errno = ETERM;
