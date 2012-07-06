@@ -67,20 +67,16 @@ void zmq::io_thread_t::in_event ()
     //  TODO: Do we want to limit number of commands I/O thread can
     //  process in a single go?
 
-    while (true) {
+    command_t cmd;
+    int rc = mailbox.recv (&cmd, 0);
 
-        //  Get the next command. If there is none, exit.
-        command_t cmd;
-        int rc = mailbox.recv (&cmd, 0);
-        if (rc != 0 && errno == EINTR)
-            continue;
-        if (rc != 0 && errno == EAGAIN)
-            break;
-        errno_assert (rc == 0);
-
-        //  Process the command.
-        cmd.destination->process_command (cmd);
+    while (rc == 0 || errno == EINTR) {
+        if (rc == 0)
+            cmd.destination->process_command (cmd);
+        rc = mailbox.recv (&cmd, 0);
     }
+
+    errno_assert (rc != 0 && errno == EAGAIN);
 }
 
 void zmq::io_thread_t::out_event ()
