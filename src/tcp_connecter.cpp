@@ -298,13 +298,9 @@ void zmq::tcp_connecter_t::close ()
     zmq_assert (s != retired_fd);
 #ifdef ZMQ_HAVE_WINDOWS
     int rc = closesocket (s);
-    if (unlikely (rc != SOCKET_ERROR))
-        session->monitor_event (ZMQ_EVENT_CLOSE_FAILED, endpoint.c_str(), zmq_errno());
     wsa_assert (rc != SOCKET_ERROR);
 #else
     int rc = ::close (s);
-    if (unlikely (rc == 0))
-        session->monitor_event (ZMQ_EVENT_CLOSE_FAILED, endpoint.c_str(), zmq_errno());
     errno_assert (rc == 0);
 #endif
     session->monitor_event (ZMQ_EVENT_CLOSED, endpoint.c_str(), s);
