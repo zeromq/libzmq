@@ -117,15 +117,14 @@ void zmq::router_t::xread_activated (pipe_t *pipe_)
 
 void zmq::router_t::xwrite_activated (pipe_t *pipe_)
 {
-    for (outpipes_t::iterator it = outpipes.begin ();
-          it != outpipes.end (); ++it) {
-        if (it->second.pipe == pipe_) {
-            zmq_assert (!it->second.active);
-            it->second.active = true;
-            return;
-        }
-    }
-    zmq_assert (false);
+    outpipes_t::iterator it;
+    for (it = outpipes.begin (); it != outpipes.end (); ++it)
+        if (it->second.pipe == pipe_)
+            break;
+
+    zmq_assert (it != outpipes.end ());
+    zmq_assert (!it->second.active);
+    it->second.active = true;
 }
 
 int zmq::router_t::xsend (msg_t *msg_, int flags_)
