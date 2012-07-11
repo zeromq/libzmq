@@ -224,10 +224,7 @@ int zmq::ipc_connecter_t::close ()
 {
     zmq_assert (s != retired_fd);
     int rc = ::close (s);
-    if (rc != 0) {
-        session->monitor_event (ZMQ_EVENT_CLOSE_FAILED, endpoint.c_str(), zmq_errno());
-        return -1;
-    }
+    errno_assert (rc == 0);
     session->monitor_event (ZMQ_EVENT_CLOSED, endpoint.c_str(), s);
     s = retired_fd;
     return 0;
