@@ -171,6 +171,8 @@ int zmq::ipc_listener_t::close ()
     int rc = ::close (s);
     errno_assert (rc == 0);
 
+    s = retired_fd;
+
     //  If there's an underlying UNIX domain socket, get rid of the file it
     //  is associated with.
     if (has_file && !filename.empty ()) {
@@ -182,7 +184,6 @@ int zmq::ipc_listener_t::close ()
     }
 
     socket->monitor_event (ZMQ_EVENT_CLOSED, endpoint.c_str(), s);
-    s = retired_fd;
     return 0;
 }
 
