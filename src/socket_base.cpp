@@ -532,9 +532,7 @@ int zmq::socket_base_t::connect (const char *addr_)
 
     //  PGM does not support subscription forwarding; ask for all data to be
     //  sent to this pipe.
-    bool icanhasall = false;
-    if (protocol == "pgm" || protocol == "epgm")
-        icanhasall = true;
+    bool icanhasall = protocol == "pgm" || protocol == "epgm";
 
     if (options.delay_attach_on_connect != 1 || icanhasall) {
         //  Create a bi-directional pipe.
