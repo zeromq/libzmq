@@ -169,21 +169,24 @@ int zmq_ctx_destroy (void *ctx_)
         errno = EFAULT;
         return -1;
     }
-    
+
     int rc = ((zmq::ctx_t*) ctx_)->terminate ();
     int en = errno;
 
+    //  Shut down only if termination was not interrupted by a signal.
+    if (!rc || en != EINTR) {
 #ifdef ZMQ_HAVE_WINDOWS
-    //  On Windows, uninitialise socket layer.
-    rc = WSACleanup ();
-    wsa_assert (rc != SOCKET_ERROR);
+        //  On Windows, uninitialise socket layer.
+        rc = WSACleanup ();
+        wsa_assert (rc != SOCKET_ERROR);
 #endif
 
 #if defined ZMQ_HAVE_OPENPGM
-    //  Shut down the OpenPGM library.
-    if (pgm_shutdown () != TRUE)
-        zmq_assert (false);
+        //  Shut down the OpenPGM library.
+        if (pgm_shutdown () != TRUE)
+            zmq_assert (false);
 #endif
+    }
 
     errno = en;
     return rc;
