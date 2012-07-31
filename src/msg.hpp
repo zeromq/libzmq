@@ -69,6 +69,7 @@ namespace zmq
         unsigned char flags ();
         void set_flags (unsigned char flags_);
         void reset_flags (unsigned char flags_);
+        bool is_identity () const;
         bool is_delimiter ();
         bool is_vsm ();
 

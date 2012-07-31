@@ -232,6 +232,11 @@ void zmq::msg_t::reset_flags (unsigned char flags_)
     u.base.flags &= ~flags_;
 }
 
+bool zmq::msg_t::is_identity () const
+{
+    return (u.base.flags & identity) == identity;
+}
+
 bool zmq::msg_t::is_delimiter ()
 {
     return u.base.type == type_delimiter;

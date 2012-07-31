@@ -211,13 +211,17 @@ int zmq::router_t::xrecv (msg_t *msg_, int flags_)
 
     pipe_t *pipe = NULL;
     int rc = fq.recvpipe (msg_, &pipe);
-    if (rc != 0) {
-        errno = EAGAIN;
-        return -1;
-    }
 
-    //  Identity is not expected
-    zmq_assert ((msg_->flags () & msg_t::identity) == 0);
+    //  It's possible that we receive peer's identity. That happens
+    //  after reconnection. The current implementation assumes that
+    //  the peer always uses the same identity.
+    //  TODO: handle the situation when the peer changes its identity.
+    while (rc == 0 && msg_->is_identity ())
+        rc = fq.recvpipe (msg_, &pipe);
+
+    if (rc != 0)
+        return -1;
+
     zmq_assert (pipe != NULL);
 
     //  If we are in the middle of reading a message, just return the next part.
@@ -267,11 +271,18 @@ bool zmq::router_t::xhas_in ()
     //  The message, if read, is kept in the pre-fetch buffer.
     pipe_t *pipe = NULL;
     int rc = fq.recvpipe (&prefetched_msg, &pipe);
+
+    //  It's possible that we receive peer's identity. That happens
+    //  after reconnection. The current implementation assumes that
+    //  the peer always uses the same identity.
+    //  TODO: handle the situation when the peer changes its identity.
+    while (rc == 0 && prefetched_msg.is_identity ())
+        rc = fq.recvpipe (&prefetched_msg, &pipe);
+
     if (rc != 0)
         return false;
 
-    //  Identity is not expected
-    zmq_assert ((prefetched_msg.flags () & msg_t::identity) == 0);
+    zmq_assert (pipe != NULL);
 
     blob_t identity = pipe->get_identity ();
     rc = prefetched_id.init_size (identity.size ());
