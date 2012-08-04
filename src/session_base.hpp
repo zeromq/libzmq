@@ -66,7 +66,6 @@ namespace zmq
         void hiccuped (zmq::pipe_t *pipe_);
         void terminated (zmq::pipe_t *pipe_);
 
-        int get_address (std::string &addr_);
         void monitor_event (int event_, ...);
 
     protected:

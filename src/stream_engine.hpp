@@ -45,7 +45,7 @@ namespace zmq
     {
     public:
 
-        stream_engine_t (fd_t fd_, const options_t &options_);
+        stream_engine_t (fd_t fd_, const options_t &options_, const std::string &endpoint);
         ~stream_engine_t ();
 
         //  i_engine interface implementation.

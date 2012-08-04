@@ -42,7 +42,7 @@
 #include "err.hpp"
 #include "ip.hpp"
 
-zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_) :
+zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_, const std::string &endpoint_) :
     s (fd_),
     inpos (NULL),
     insize (0),
@@ -53,11 +53,11 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_) :
     encoder (out_batch_size),
     session (NULL),
     options (options_),
-    plugged (false)
+    plugged (false),
+    endpoint (endpoint_)
 {
     //  Put the socket into non-blocking mode.
     unblock_socket (s);
-
     //  Set the socket buffer limits for the underlying socket.
     if (options.sndbuf) {
         int rc = setsockopt (s, SOL_SOCKET, SO_SNDBUF,
@@ -116,14 +116,11 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
     decoder.set_session (session_);
     session = session_;
 
-    session->get_address (endpoint);
-
     //  Connect to I/O threads poller object.
     io_object_t::plug (io_thread_);
     handle = add_fd (s);
     set_pollin (handle);
     set_pollout (handle);
-
     //  Flush all the data that may have been already received downstream.
     in_event ();
 }
@@ -143,7 +140,6 @@ void zmq::stream_engine_t::unplug ()
     encoder.set_session (NULL);
     decoder.set_session (NULL);
     session = NULL;
-    endpoint.clear();
 }
 
 void zmq::stream_engine_t::terminate ()
