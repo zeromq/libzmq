@@ -21,6 +21,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include "testutil.hpp"
 
 #include "../include/zmq.h"
 #include "../include/zmq_utils.h"
@@ -98,6 +99,8 @@ int main (int argc, char *argv [])
     rc = zmq_connect (req, "tcp://127.0.0.1:5560");
     assert (rc == 0);
 
+    bounce (rep, req);
+
     // Allow a window for socket events as connect can be async
     zmq_sleep (1);
 
@@ -120,6 +123,7 @@ int main (int argc, char *argv [])
     assert (events & ZMQ_EVENT_ACCEPTED);
     assert (events & ZMQ_EVENT_CONNECTED);
     assert (events & ZMQ_EVENT_CLOSED);
+    assert (events & ZMQ_EVENT_DISCONNECTED);
 
     return 0 ;
 }

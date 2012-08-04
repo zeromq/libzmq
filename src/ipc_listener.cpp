@@ -81,7 +81,7 @@ void zmq::ipc_listener_t::in_event ()
     }
 
     //  Create the engine object for this connection.
-    stream_engine_t *engine = new (std::nothrow) stream_engine_t (fd, options);
+    stream_engine_t *engine = new (std::nothrow) stream_engine_t (fd, options, endpoint);
     alloc_assert (engine);
 
     //  Choose I/O thread to run connecter in. Given that we are already
@@ -155,7 +155,7 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
     if (rc != 0)
         goto error;
 
-    socket->monitor_event (ZMQ_EVENT_LISTENING, addr_, s);
+    socket->monitor_event (ZMQ_EVENT_LISTENING, endpoint.c_str(), s);
     return 0;
 
 error:
