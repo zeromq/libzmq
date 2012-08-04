@@ -53,8 +53,8 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_, cons
     encoder (out_batch_size),
     session (NULL),
     options (options_),
-    plugged (false),
-    endpoint (endpoint_)
+    endpoint (endpoint_),
+    plugged (false)
 {
     //  Put the socket into non-blocking mode.
     unblock_socket (s);
