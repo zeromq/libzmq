@@ -279,13 +279,6 @@ void zmq::session_base_t::hiccuped (pipe_t *pipe_)
     zmq_assert (false);
 }
 
-int zmq::session_base_t::get_address (std::string &addr_)
-{
-    if (addr)
-        return addr->to_string (addr_);
-    return -1;
-}
-
 void zmq::session_base_t::monitor_event (int event_, ...)
 {
     va_list args;
