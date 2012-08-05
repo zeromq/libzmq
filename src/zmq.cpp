@@ -611,10 +611,6 @@ int zmq_msg_set (zmq_msg_t *msg_, int option_, int optval_)
 
 int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 {
-    if (!items_) {
-        errno = EFAULT;
-        return -1;
-    }
 #if defined ZMQ_POLL_BASED_ON_POLL
     if (unlikely (nitems_ < 0)) {
         errno = EINVAL;
@@ -633,6 +629,12 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         return usleep (timeout_ * 1000);
 #endif
     }
+
+    if (!items_) {
+        errno = EFAULT;
+        return -1;
+    }
+
     zmq::clock_t clock;
     uint64_t now = 0;
     uint64_t end = 0;
