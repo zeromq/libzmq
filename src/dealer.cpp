@@ -35,7 +35,6 @@ zmq::dealer_t::dealer_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     //  be noone to receive the replies anyway.
     //  options.delay_on_close = false;
 
-    options.send_identity = true;
     options.recv_identity = true;
 
     prefetched_msg.init ();

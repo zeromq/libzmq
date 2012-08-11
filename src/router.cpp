@@ -45,7 +45,6 @@ zmq::router_t::router_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     //  all the outstanding requests from that peer.
     //  options.delay_on_disconnect = false;
 
-    options.send_identity = true;
     options.recv_identity = true;
 
     prefetched_id.init ();

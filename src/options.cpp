@@ -48,7 +48,6 @@ zmq::options_t::options_t () :
     delay_on_close (true),
     delay_on_disconnect (true),
     filter (false),
-    send_identity (false),
     recv_identity (false),
     tcp_keepalive (-1),
     tcp_keepalive_cnt (-1),
