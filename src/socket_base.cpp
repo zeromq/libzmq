@@ -448,7 +448,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         attach_pipe (pipes [0]);
 
         //  If required, send the identity of the local socket to the peer.
-        if (options.send_identity) {
+        if (peer.options.recv_identity) {
             msg_t id;
             rc = id.init_size (options.identity_size);
             errno_assert (rc == 0);
@@ -460,7 +460,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         }
 
         //  If required, send the identity of the peer to the local socket.
-        if (peer.options.send_identity) {
+        if (options.recv_identity) {
             msg_t id;
             rc = id.init_size (peer.options.identity_size);
             errno_assert (rc == 0);

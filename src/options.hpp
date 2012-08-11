@@ -112,10 +112,7 @@ namespace zmq
         //  If 1, (X)SUB socket should filter the messages. If 0, it should not.
         bool filter;
 
-        //  Sends identity to all new connections.
-        bool send_identity;
-
-        //  Receivers identity from all new connections.
+        //  If true, the identity message is forwarded to the socket.
         bool recv_identity;
 
         //  TCP keep-alive settings.

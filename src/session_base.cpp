@@ -117,8 +117,8 @@ zmq::session_base_t::session_base_t (class io_thread_t *io_thread_,
     socket (socket_),
     io_thread (io_thread_),
     has_linger_timer (false),
-    send_identity (options_.send_identity),
-    recv_identity (options_.recv_identity),
+    identity_sent (false),
+    identity_received (false),
     addr (addr_)
 {
 }
@@ -152,13 +152,13 @@ void zmq::session_base_t::attach_pipe (pipe_t *pipe_)
 
 int zmq::session_base_t::read (msg_t *msg_)
 {
-    //  First message to send is identity (if required).
-    if (send_identity) {
+    //  First message to send is identity
+    if (!identity_sent) {
         zmq_assert (!(msg_->flags () & msg_t::more));
         int rc = msg_->init_size (options.identity_size);
         errno_assert (rc == 0);
         memcpy (msg_->data (), options.identity, options.identity_size);
-        send_identity = false;
+        identity_sent = true;
         incomplete_in = false;
         return 0;
     }
@@ -174,10 +174,17 @@ int zmq::session_base_t::read (msg_t *msg_)
 
 int zmq::session_base_t::write (msg_t *msg_)
 {
-    //  First message to receive is identity (if required).
-    if (recv_identity) {
+    //  First message to receive is identity
+    if (!identity_received) {
         msg_->set_flags (msg_t::identity);
-        recv_identity = false;
+        identity_received = true;
+        if (!options.recv_identity) {
+            int rc = msg_->close ();
+            errno_assert (rc == 0);
+            rc = msg_->init ();
+            errno_assert (rc == 0);
+            return 0;
+        }
     }
 
     if (pipe && pipe->write (msg_)) {
@@ -193,8 +200,8 @@ int zmq::session_base_t::write (msg_t *msg_)
 void zmq::session_base_t::reset ()
 {
     //  Restore identity flags.
-    send_identity = options.send_identity;
-    recv_identity = options.recv_identity;
+    identity_sent = false;
+    identity_received = false;
 }
 
 void zmq::session_base_t::flush ()
