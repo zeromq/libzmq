@@ -130,9 +130,9 @@ namespace zmq
         //  True is linger timer is running.
         bool has_linger_timer;
 
-        //  If true, identity is to be sent/recvd from the network.
-        bool send_identity;
-        bool recv_identity;
+        //  If true, identity has been sent/received from the network.
+        bool identity_sent;
+        bool identity_received;
 
         //  Protocol and address to use when connecting.
         const address_t *addr;
