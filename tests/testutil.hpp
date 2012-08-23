@@ -22,10 +22,11 @@
 #ifndef __ZMQ_TEST_TESTUTIL_HPP_INCLUDED__
 #define __ZMQ_TEST_TESTUTIL_HPP_INCLUDED__
 
-#include <assert.h>
+#include "../include/zmq.h"
 #include <string.h>
 
-#include "../include/zmq.h"
+#undef NDEBUG
+#include <assert.h>
 
 inline void bounce (void *sb, void *sc)
 {

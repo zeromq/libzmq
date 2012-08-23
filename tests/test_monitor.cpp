@@ -19,12 +19,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
-#include <string.h>
-#include "testutil.hpp"
-
 #include "../include/zmq.h"
 #include "../include/zmq_utils.h"
+#include <string.h>
+#include "testutil.hpp"
 
 static int events;
 
