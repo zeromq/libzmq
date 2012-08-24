@@ -294,12 +294,12 @@ int zmq::tcp_address_t::resolve_interface (const char *interface_,
     }
 
     //  Use the first result.
+    zmq_assert (res != NULL);
     zmq_assert ((size_t) (res->ai_addrlen) <= sizeof (address));
     memcpy (&address, res->ai_addr, res->ai_addrlen);
 
     //  Cleanup getaddrinfo after copying the possibly referenced result.
-    if (res)
-        freeaddrinfo (res);
+    freeaddrinfo (res);
 
     return 0;
 }
@@ -598,11 +598,9 @@ const bool zmq::tcp_address_mask_t::match_address (const struct sockaddr *ss, co
         }
         if (address_mask < mask) mask = address_mask;
 
-        int full_bytes = mask / 8;
-        if (full_bytes) {
-            if (memcmp(our_bytes, their_bytes, full_bytes))
-                return false;
-        }
+        size_t full_bytes = mask / 8;
+        if (memcmp(our_bytes, their_bytes, full_bytes))
+            return false;
 
         uint8_t last_byte_bits = (0xffU << (8 - (mask % 8))) & 0xffU;
         if (last_byte_bits) {
