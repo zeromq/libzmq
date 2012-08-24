@@ -35,7 +35,7 @@ namespace zmq
     enum {retired_fd = (fd_t)(~0)};
 #else
     typedef SOCKET fd_t;
-    enum {retired_fd = INVALID_SOCKET};
+    enum {retired_fd = (fd_t)INVALID_SOCKET};
 #endif
 #else
     typedef int fd_t;
