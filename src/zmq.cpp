@@ -486,9 +486,11 @@ int zmq_recviov (void *s_, iovec *a_, size_t *count_, int flags_)
     }
     zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
 
-    size_t count = (int) *count_;
+    size_t count = *count_;
     int nread = 0;
     bool recvmore = true;
+    
+    *count_ = 0;
 
     for (size_t i = 0; recvmore && i < count; ++i) {
         // Cheat! We never close any msg
