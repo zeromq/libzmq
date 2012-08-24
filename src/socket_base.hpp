@@ -25,6 +25,7 @@
 
 #include <string>
 #include <map>
+#include <stdarg.h>
 
 #include "own.hpp"
 #include "array.hpp"
@@ -102,6 +103,7 @@ namespace zmq
         void unlock();
 
         void monitor_event (int event_, ...);
+        void va_monitor_event (int event_, va_list args);
 
     protected:
 
