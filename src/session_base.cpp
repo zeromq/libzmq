@@ -290,8 +290,13 @@ void zmq::session_base_t::monitor_event (int event_, ...)
 {
     va_list args;
     va_start (args, event_);
-    socket->monitor_event (event_, args);
+    va_monitor_event (event_, args);
     va_end (args);
+}
+
+void zmq::session_base_t::va_monitor_event (int event_, va_list args)
+{
+    socket->va_monitor_event (event_, args);
 }
 
 void zmq::session_base_t::process_plug ()

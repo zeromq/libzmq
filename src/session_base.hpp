@@ -24,6 +24,7 @@
 #define __ZMQ_SESSION_BASE_HPP_INCLUDED__
 
 #include <string>
+#include <stdarg.h>
 
 #include "own.hpp"
 #include "io_object.hpp"
@@ -67,6 +68,7 @@ namespace zmq
         void terminated (zmq::pipe_t *pipe_);
 
         void monitor_event (int event_, ...);
+        void va_monitor_event (int event_, va_list args);
 
     protected:
 
