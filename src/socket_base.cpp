@@ -1005,7 +1005,7 @@ void zmq::socket_base_t::monitor_event (int event_, ...)
     va_end (args);
 }
 
-void zmq::socket_base_t::monitor_event (int event_, va_list args)
+void zmq::socket_base_t::va_monitor_event (int event_, va_list args)
 {
     get_ctx ()->va_monitor_event (this, event_, args);
 }
