@@ -1001,7 +1001,7 @@ void zmq::socket_base_t::monitor_event (int event_, ...)
 {
     va_list args;
     va_start (args, event_);
-    va_monitor_event(event, args);
+    va_monitor_event(event_, args);
     va_end (args);
 }
 
