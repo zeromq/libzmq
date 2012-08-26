@@ -13,7 +13,7 @@ SYNOPSIS
 *int zmq_setsockopt (void '*socket', int 'option_name', const void '*option_value', size_t 'option_len');*
 
 Caution: All options, with the exception of ZMQ_SUBSCRIBE, ZMQ_UNSUBSCRIBE,
-ZMQ_LINGER and ZMQ_FAIL_UNROUTABLE only take effect for subsequent socket 
+ZMQ_LINGER and ZMQ_ROUTER_BEHAVIOR only take effect for subsequent socket 
 bind/connects.
 
 DESCRIPTION
@@ -372,7 +372,11 @@ ZMQ_ROUTER_BEHAVIOR: Set the ROUTER socket behavior
 Sets the 'ROUTER' socket behavior when an unroutable message is encountered. A value
 of `0` is the default when the message is silently discarded, while a value of `1`
 forces the sending to fail with an 'EAGAIN' error code, effectively enabling sending
-messages in a blocking fashion.
+messages in a blocking fashion. 
+
+Note: Setting this socket option may have unpredictable effects on reactor-type 
+libraries that assume EAGAIN will only be sent in HWM-type situations. 
+
 
 [horizontal]
 Option value type:: int
