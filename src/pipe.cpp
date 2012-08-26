@@ -189,10 +189,6 @@ void zmq::pipe_t::rollback ()
 
 void zmq::pipe_t::flush ()
 {
-    //  If terminate() was already called do nothing.
-    if (state == terminated || state == double_terminated)
-        return;
-
     //  The peer does not exist anymore at this point.
     if (state == terminating)
         return;
