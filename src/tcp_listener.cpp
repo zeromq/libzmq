@@ -238,7 +238,7 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
     //  Accept one connection and deal with different failure modes.
     zmq_assert (s != retired_fd);
 
-    struct sockaddr_storage ss = {0};
+    struct sockaddr_storage ss = {};
 #ifdef ZMQ_HAVE_HPUX
     int ss_len = sizeof (ss);
 #else

@@ -602,7 +602,7 @@ int zmq_msg_get (zmq_msg_t *msg_, int option_)
     }
 }
 
-int zmq_msg_set (zmq_msg_t *msg_, int option_, int optval_)
+int zmq_msg_set (zmq_msg_t *, int, int)
 {
     //  No options supported at present
     errno = EINVAL;

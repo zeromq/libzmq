@@ -47,6 +47,9 @@ zmq::dealer_t::~dealer_t ()
 
 void zmq::dealer_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
 {
+    // icanhasall_ is unused
+    (void) icanhasall_;
+
     zmq_assert (pipe_);
     fq.attach (pipe_);
     lb.attach (pipe_);
@@ -59,6 +62,9 @@ int zmq::dealer_t::xsend (msg_t *msg_, int flags_)
 
 int zmq::dealer_t::xrecv (msg_t *msg_, int flags_)
 {
+    // flags_ is unused
+    (void)flags_;
+
     //  If there is a prefetched message, return it.
     if (prefetched) {
         int rc = msg_->move (prefetched_msg);

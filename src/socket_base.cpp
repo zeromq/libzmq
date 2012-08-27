@@ -874,8 +874,7 @@ void zmq::socket_base_t::process_destroy ()
     destroyed = true;
 }
 
-int zmq::socket_base_t::xsetsockopt (int option_, const void *optval_,
-    size_t optvallen_)
+int zmq::socket_base_t::xsetsockopt (int, const void *, size_t)
 {
     errno = EINVAL;
     return -1;
@@ -886,7 +885,7 @@ bool zmq::socket_base_t::xhas_out ()
     return false;
 }
 
-int zmq::socket_base_t::xsend (msg_t *msg_, int flags_)
+int zmq::socket_base_t::xsend (msg_t *, int)
 {
     errno = ENOTSUP;
     return -1;
@@ -897,22 +896,22 @@ bool zmq::socket_base_t::xhas_in ()
     return false;
 }
 
-int zmq::socket_base_t::xrecv (msg_t *msg_, int flags_)
+int zmq::socket_base_t::xrecv (msg_t *, int)
 {
     errno = ENOTSUP;
     return -1;
 }
 
-void zmq::socket_base_t::xread_activated (pipe_t *pipe_)
+void zmq::socket_base_t::xread_activated (pipe_t *)
 {
     zmq_assert (false);
 }
-void zmq::socket_base_t::xwrite_activated (pipe_t *pipe_)
+void zmq::socket_base_t::xwrite_activated (pipe_t *)
 {
     zmq_assert (false);
 }
 
-void zmq::socket_base_t::xhiccuped (pipe_t *pipe_)
+void zmq::socket_base_t::xhiccuped (pipe_t *)
 {
     zmq_assert (false);
 }
@@ -932,7 +931,7 @@ void zmq::socket_base_t::out_event ()
     zmq_assert (false);
 }
 
-void zmq::socket_base_t::timer_event (int id_)
+void zmq::socket_base_t::timer_event (int)
 {
     zmq_assert (false);
 }

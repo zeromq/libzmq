@@ -44,7 +44,7 @@ extern "C"
     }
 }
 
-int main (int argc, char *argv [])
+int main (void)
 {
     void *ctx;
     void *s1;

@@ -35,7 +35,7 @@ static void do_bind_and_verify (void *s, const char *endpoint)
     assert (rc == 0 && strcmp (test, endpoint) == 0);
 }
 
-int main (int argc, char *argv [])
+int main (void)
 {
     //  Create the infrastructure
     void *ctx = zmq_init (1);
