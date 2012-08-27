@@ -24,7 +24,7 @@
 
 #include "../include/zmq.h"
 
-int main (int argc, char *argv [])
+int main (void)
 {
     //  Create the infrastructure
     void *ctx = zmq_init (0);

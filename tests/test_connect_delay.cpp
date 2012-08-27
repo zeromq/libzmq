@@ -28,7 +28,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #include "../include/zmq.h"
 
-static void *server (void *c)
+static void *server (void *)
 {
     void *socket, *context;
     char buffer[16];
@@ -88,7 +88,7 @@ static void *server (void *c)
     pthread_exit(NULL);
 }
 
-static void *worker (void *n)
+static void *worker (void *)
 {
     void *socket, *context;
     int rc, hadone, val;
@@ -131,7 +131,7 @@ static void *worker (void *n)
     pthread_exit(NULL);
 }
 
-int main (int argc, char *argv [])
+int main (void)
 {
     fprintf (stderr, "test_connect_delay running...\n");
     int val;
