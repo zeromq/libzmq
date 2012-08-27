@@ -316,17 +316,17 @@ void zmq::object_t::process_plug ()
     zmq_assert (false);
 }
 
-void zmq::object_t::process_own (own_t *object_)
+void zmq::object_t::process_own (own_t *)
 {
     zmq_assert (false);
 }
 
-void zmq::object_t::process_attach (i_engine *engine_)
+void zmq::object_t::process_attach (i_engine *)
 {
     zmq_assert (false);
 }
 
-void zmq::object_t::process_bind (pipe_t *pipe_)
+void zmq::object_t::process_bind (pipe_t *)
 {
     zmq_assert (false);
 }
@@ -336,12 +336,12 @@ void zmq::object_t::process_activate_read ()
     zmq_assert (false);
 }
 
-void zmq::object_t::process_activate_write (uint64_t msgs_read_)
+void zmq::object_t::process_activate_write (uint64_t)
 {
     zmq_assert (false);
 }
 
-void zmq::object_t::process_hiccup (void *pipe_)
+void zmq::object_t::process_hiccup (void *)
 {
     zmq_assert (false);
 }
@@ -356,12 +356,12 @@ void zmq::object_t::process_pipe_term_ack ()
     zmq_assert (false);
 }
 
-void zmq::object_t::process_term_req (own_t *object_)
+void zmq::object_t::process_term_req (own_t *)
 {
     zmq_assert (false);
 }
 
-void zmq::object_t::process_term (int linger_)
+void zmq::object_t::process_term (int)
 {
     zmq_assert (false);
 }
@@ -371,7 +371,7 @@ void zmq::object_t::process_term_ack ()
     zmq_assert (false);
 }
 
-void zmq::object_t::process_reap (class socket_base_t *socket_)
+void zmq::object_t::process_reap (class socket_base_t *)
 {
     zmq_assert (false);
 }

@@ -488,7 +488,7 @@ zmq::tcp_address_mask_t::tcp_address_mask_t () :
     address_mask = -1;
 }
 
-const int zmq::tcp_address_mask_t::mask () const
+int zmq::tcp_address_mask_t::mask () const
 {
     return address_mask;
 }
@@ -574,7 +574,7 @@ int zmq::tcp_address_mask_t::to_string (std::string &addr_)
     return 0;
 }
 
-const bool zmq::tcp_address_mask_t::match_address (const struct sockaddr *ss, const socklen_t ss_len) const
+bool zmq::tcp_address_mask_t::match_address (const struct sockaddr *ss, const socklen_t ss_len) const
 {
     zmq_assert (address_mask != -1 && ss != NULL && ss_len >= (socklen_t) sizeof (struct sockaddr));
 

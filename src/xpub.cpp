@@ -131,6 +131,9 @@ bool zmq::xpub_t::xhas_out ()
 
 int zmq::xpub_t::xrecv (msg_t *msg_, int flags_)
 {
+    // flags_ is unused
+    (void)flags_;
+
     //  If there is at least one 
     if (pending.empty ()) {
         errno = EAGAIN;

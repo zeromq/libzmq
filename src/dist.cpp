@@ -128,6 +128,9 @@ int zmq::dist_t::send_to_matching (msg_t *msg_, int flags_)
 
 void zmq::dist_t::distribute (msg_t *msg_, int flags_)
 {
+    // flags_ is unused
+    (void)flags_;
+
     //  If there are no matching pipes available, simply drop the message.
     if (matching == 0) {
         int rc = msg_->close ();

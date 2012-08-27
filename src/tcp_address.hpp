@@ -86,9 +86,9 @@ namespace zmq
         // The opposite to resolve()
         int to_string (std::string &addr_);
 
-        const int mask () const;
+        int mask () const;
 
-        const bool match_address (const struct sockaddr *ss, const socklen_t ss_len) const;
+        bool match_address (const struct sockaddr *ss, const socklen_t ss_len) const;
 
     private:
 

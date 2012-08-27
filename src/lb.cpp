@@ -73,6 +73,9 @@ void zmq::lb_t::activated (pipe_t *pipe_)
 
 int zmq::lb_t::send (msg_t *msg_, int flags_)
 {
+    // flags_ is unused
+    (void)flags_;
+
     //  Drop the message if required. If we are at the end of the message
     //  switch back to non-dropping mode.
     if (dropping) {

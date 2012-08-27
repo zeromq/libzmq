@@ -47,6 +47,9 @@ zmq::xsub_t::~xsub_t ()
 
 void zmq::xsub_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
 {
+    // icanhasall_ is unused
+    (void)icanhasall_;
+
     zmq_assert (pipe_);
     fq.attach (pipe_);
     dist.attach (pipe_);
@@ -116,6 +119,9 @@ bool zmq::xsub_t::xhas_out ()
 
 int zmq::xsub_t::xrecv (msg_t *msg_, int flags_)
 {
+    // flags_ is unused
+    (void)flags_;
+
     //  If there's already a message prepared by a previous call to zmq_poll,
     //  return it straight ahead.
     if (has_message) {
