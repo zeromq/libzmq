@@ -6,7 +6,7 @@
 #include "../include/zmq_utils.h"
 
 
-int main (int argc, char *argv [])
+int main (void)
 {
     int rc;
     char buf[32];

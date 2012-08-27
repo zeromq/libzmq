@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include "testutil.hpp"
 
-int main (int argc, char *argv [])
+int main (void)
 {
     fprintf (stderr, "test_router_behavior running...\n");
 

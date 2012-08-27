@@ -279,7 +279,7 @@ void zmq::session_base_t::write_activated (pipe_t *pipe_)
         engine->activate_in ();
 }
 
-void zmq::session_base_t::hiccuped (pipe_t *pipe_)
+void zmq::session_base_t::hiccuped (pipe_t *)
 {
     //  Hiccups are always sent from session to socket, not the other
     //  way round.

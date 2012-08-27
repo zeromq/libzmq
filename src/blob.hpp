@@ -96,10 +96,10 @@ namespace std
 
       static char_type
       to_char_type(const int_type& __c)
-      { return char_type(); }
+      { return char_type(__c); }
 
       static int_type
-      to_int_type(const char_type& __c) { return int_type(); }
+      to_int_type(const char_type& __c) { return int_type(__c); }
 
       static bool
       eq_int_type(const int_type& __c1, const int_type& __c2)

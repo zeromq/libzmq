@@ -25,7 +25,7 @@
 #include "../include/zmq.h"
 #include "../include/zmq_utils.h"
 
-int main (int argc, char *argv [])
+int main (void)
 {
     fprintf (stderr, "test_sub_forward running...\n");
 

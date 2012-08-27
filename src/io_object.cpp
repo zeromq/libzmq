@@ -102,7 +102,7 @@ void zmq::io_object_t::out_event ()
     zmq_assert (false);
 }
 
-void zmq::io_object_t::timer_event (int id_)
+void zmq::io_object_t::timer_event (int)
 {
     zmq_assert (false);
 }

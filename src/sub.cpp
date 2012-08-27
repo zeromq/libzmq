@@ -67,7 +67,7 @@ int zmq::sub_t::xsetsockopt (int option_, const void *optval_,
     return rc;
 }
 
-int zmq::sub_t::xsend (msg_t *msg_, int flags_)
+int zmq::sub_t::xsend (msg_t *, int)
 {
     //  Overload the XSUB's send.
     errno = ENOTSUP;
