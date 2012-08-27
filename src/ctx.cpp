@@ -356,7 +356,7 @@ zmq::endpoint_t zmq::ctx_t::find_endpoint (const char *addr_)
 void zmq::ctx_t::monitor_event (zmq::socket_base_t *socket_, int event_, ...)
 {
     va_list args;
-    va_start (event_, args);
+    va_start (args, event_);
     va_monitor_event (socket_, event_, args);
     va_end (args);
 }
