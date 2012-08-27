@@ -28,29 +28,38 @@
 
 static int events;
 
-void socket_monitor (void *s, int event_, zmq_event_data_t *data_)
+typedef void *ZmqSocket;
+ZmqSocket rep, req;
+
+void socket_monitor (ZmqSocket s, int event_, zmq_event_data_t *data_)
 {
+    assert(s == rep || s == req);
+
     const char *addr = "tcp://127.0.0.1:5560";
     // Only some of the exceptional events could fire
     switch (event_) {
     // listener specific
     case ZMQ_EVENT_LISTENING:
+        assert (s == rep);
         assert (data_->listening.fd > 0);
         assert (!strcmp (data_->listening.addr, addr));
         events |= ZMQ_EVENT_LISTENING;
         break;
     case ZMQ_EVENT_ACCEPTED:
+        assert (s == rep);
         assert (data_->accepted.fd > 0);
         assert (!strcmp (data_->accepted.addr, addr));
         events |= ZMQ_EVENT_ACCEPTED;
         break;
     // connecter specific
     case ZMQ_EVENT_CONNECTED:
+        assert (s == req);
         assert (data_->connected.fd > 0);
         assert (!strcmp (data_->connected.addr, addr));
         events |= ZMQ_EVENT_CONNECTED;
         break;
     case ZMQ_EVENT_CONNECT_DELAYED:
+        assert (s == req);
         assert (data_->connect_delayed.err != 0);
         assert (!strcmp (data_->connect_delayed.addr, addr));
         events |= ZMQ_EVENT_CONNECT_DELAYED;
@@ -77,7 +86,7 @@ void socket_monitor (void *s, int event_, zmq_event_data_t *data_)
     }
 }
 
-int main (int argc, char *argv [])
+int main (void)
 {
     int rc;
 
@@ -87,13 +96,13 @@ int main (int argc, char *argv [])
     // set socket monitor
     rc = zmq_ctx_set_monitor (ctx, socket_monitor);
     assert (rc == 0);
-    void *rep = zmq_socket (ctx, ZMQ_REP);
+    rep = zmq_socket (ctx, ZMQ_REP);
     assert (rep);
 
     rc = zmq_bind (rep, "tcp://127.0.0.1:5560");
     assert (rc == 0);
 
-    void *req = zmq_socket (ctx, ZMQ_REQ);
+    req = zmq_socket (ctx, ZMQ_REQ);
     assert (req);
 
     rc = zmq_connect (req, "tcp://127.0.0.1:5560");
