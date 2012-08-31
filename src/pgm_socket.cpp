@@ -277,8 +277,8 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
 
     //  Create random GSI.
     uint32_t buf [2];
-    buf [0] = generate_random ();
-    buf [1] = generate_random ();
+    buf [0] = zmq::random.generate ();
+    buf [1] = zmq::random.generate ();
     if (!pgm_gsi_create_from_data (&addr.sa_addr.gsi, (uint8_t*) buf, 8))
         goto err_abort;
 

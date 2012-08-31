@@ -34,7 +34,7 @@ zmq::router_t::router_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     more_in (false),
     current_out (NULL),
     more_out (false),
-    next_peer_id (generate_random ()),
+    next_peer_id (zmq::random.generate ()),
     report_unroutable(false)
 {
     options.type = ZMQ_ROUTER;
