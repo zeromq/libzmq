@@ -67,6 +67,12 @@ namespace zmq
         //  Function to handle network disconnections.
         void error ();
 
+        //  Receives the greeting message from the peer.
+        int receive_greeting ();
+
+        //  Detects the protocol used by the peer.
+        bool handshake ();
+
         //  Writes data to the socket. Returns the number of bytes actually
         //  written (even zero is to be considered to be a success). In case
         //  of error or orderly shutdown by the other peer -1 is returned.
@@ -81,6 +87,16 @@ namespace zmq
         //  Underlying socket.
         fd_t s;
 
+        //  Maximum size of a greeting message:
+        //  preamble (10 bytes) + version (1 byte) + remaining_length (1 byte) +
+        //  up to 255 remaining bytes.
+        const static size_t maximum_greeting_size = 10 + 1 + 1 + 255;
+
+        //  Size of v1 greeting message:
+        //  preamble (10 bytes) + version (1 byte) + remaining_length (1 byte) +
+        //  socket_type (1)
+        const static size_t v1_greeting_size = 10 + 1 + 1 + 1;
+
         handle_t handle;
 
         unsigned char *inpos;
@@ -91,6 +107,26 @@ namespace zmq
         unsigned char *outpos;
         size_t outsize;
         encoder_t encoder;
+
+        //  When true, we are still trying to determine whether
+        //  the peer is using versioned protocol, and if so, which
+        //  version.  When false, normal message flow has started.
+        bool handshaking;
+
+        //  The receive buffer holding the greeting message
+        //  that we are receiving from the peer.
+        unsigned char greeting [maximum_greeting_size];
+
+        //  The number of bytes of the greeting message that
+        //  we have already received.
+        unsigned int greeting_bytes_read;
+
+        //  The size of the greeting message.
+        unsigned int greeting_size;
+
+        //  The send buffer holding the greeting message
+        //  that we are sending to the peer.
+        unsigned char greeting_output_buffer [v1_greeting_size];
 
         //  The session this engine is attached to.
         zmq::session_base_t *session;
