@@ -21,13 +21,13 @@
 */
 
 #include "encoder.hpp"
-#include "session_base.hpp"
+#include "i_msg_source.hpp"
 #include "likely.hpp"
 #include "wire.hpp"
 
 zmq::encoder_t::encoder_t (size_t bufsize_) :
     encoder_base_t <encoder_t> (bufsize_),
-    session (NULL)
+    msg_source (NULL)
 {
     int rc = in_progress.init ();
     errno_assert (rc == 0);
@@ -42,9 +42,9 @@ zmq::encoder_t::~encoder_t ()
     errno_assert (rc == 0);
 }
 
-void zmq::encoder_t::set_session (session_base_t *session_)
+void zmq::encoder_t::set_msg_source (i_msg_source *msg_source_)
 {
-    session = session_;
+    msg_source = msg_source_;
 }
 
 bool zmq::encoder_t::size_ready ()
@@ -65,12 +65,12 @@ bool zmq::encoder_t::message_ready ()
     //  Note that new state is set only if write is successful. That way
     //  unsuccessful write will cause retry on the next state machine
     //  invocation.
-    if (unlikely (!session)) {
+    if (unlikely (!msg_source)) {
         rc = in_progress.init ();
         errno_assert (rc == 0);
         return false;
     }
-    rc = session->read (&in_progress);
+    rc = msg_source->pull_msg (&in_progress);
     if (unlikely (rc != 0)) {
         errno_assert (errno == EAGAIN);
         rc = in_progress.init ();

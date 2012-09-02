@@ -34,7 +34,7 @@
 namespace zmq
 {
 
-    class session_base_t;
+    class i_msg_sink;
 
     //  Helper base class for decoders that know the amount of data to read
     //  in advance at any moment. Knowing the amount in advance is a property
@@ -195,7 +195,8 @@ namespace zmq
         decoder_t (size_t bufsize_, int64_t maxmsgsize_);
         ~decoder_t ();
 
-        void set_session (zmq::session_base_t *session_);
+        //  Set the receiver of decoded messages.
+        void set_msg_sink (i_msg_sink *msg_sink_);
 
         //  Returns true if there is a decoded message
         //  waiting to be delivered to the session.
@@ -208,7 +209,7 @@ namespace zmq
         bool flags_ready ();
         bool message_ready ();
 
-        zmq::session_base_t *session;
+        i_msg_sink *msg_sink;
         unsigned char tmpbuf [8];
         msg_t in_progress;
 

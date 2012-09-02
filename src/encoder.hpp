@@ -33,7 +33,7 @@
 namespace zmq
 {
 
-    class session_base_t;
+    class i_msg_source;
 
     //  Helper base class for encoders. It implements the state machine that
     //  fills the outgoing buffer. Derived classes should implement individual
@@ -168,14 +168,14 @@ namespace zmq
         encoder_t (size_t bufsize_);
         ~encoder_t ();
 
-        void set_session (zmq::session_base_t *session_);
+        void set_msg_source (i_msg_source *msg_source_);
 
     private:
 
         bool size_ready ();
         bool message_ready ();
 
-        zmq::session_base_t *session;
+        i_msg_source *msg_source;
         msg_t in_progress;
         unsigned char tmpbuf [10];
 

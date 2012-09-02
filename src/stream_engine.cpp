@@ -156,8 +156,8 @@ void zmq::stream_engine_t::unplug ()
     io_object_t::unplug ();
 
     //  Disconnect from session object.
-    encoder.set_session (NULL);
-    decoder.set_session (NULL);
+    encoder.set_msg_source (NULL);
+    decoder.set_msg_sink (NULL);
     session = NULL;
 }
 
@@ -379,8 +379,8 @@ bool zmq::stream_engine_t::handshake ()
     //  We have received either a header of identity message
     //  or the whole greeting.
 
-    encoder.set_session (session);
-    decoder.set_session (session);
+    encoder.set_msg_source (session);
+    decoder.set_msg_sink (session);
 
     zmq_assert (greeting [0] != 0xff || greeting_bytes_read >= 10);
 
