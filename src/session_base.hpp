@@ -29,6 +29,8 @@
 #include "own.hpp"
 #include "io_object.hpp"
 #include "pipe.hpp"
+#include "i_msg_source.hpp"
+#include "i_msg_sink.hpp"
 
 namespace zmq
 {
@@ -42,7 +44,9 @@ namespace zmq
     class session_base_t :
         public own_t,
         public io_object_t,
-        public i_pipe_events
+        public i_pipe_events,
+        public i_msg_source,
+        public i_msg_sink
     {
     public:
 
@@ -54,9 +58,13 @@ namespace zmq
         //  To be used once only, when creating the session.
         void attach_pipe (zmq::pipe_t *pipe_);
 
+        //  i_msg_source interface implementation.
+        virtual int pull_msg (msg_t *msg_);
+
+        //  i_msg_sink interface implementation.
+        virtual int push_msg (msg_t *msg_);
+
         //  Following functions are the interface exposed towards the engine.
-        virtual int read (msg_t *msg_);
-        virtual int write (msg_t *msg_);
         virtual void reset ();
         void flush ();
         void detach ();

@@ -150,7 +150,7 @@ void zmq::session_base_t::attach_pipe (pipe_t *pipe_)
     pipe->set_event_sink (this);
 }
 
-int zmq::session_base_t::read (msg_t *msg_)
+int zmq::session_base_t::pull_msg (msg_t *msg_)
 {
     //  First message to send is identity
     if (!identity_sent) {
@@ -172,7 +172,7 @@ int zmq::session_base_t::read (msg_t *msg_)
     return 0;
 }
 
-int zmq::session_base_t::write (msg_t *msg_)
+int zmq::session_base_t::push_msg (msg_t *msg_)
 {
     //  First message to receive is identity
     if (!identity_received) {
@@ -224,7 +224,7 @@ void zmq::session_base_t::clean_pipes ()
             msg_t msg;
             int rc = msg.init ();
             errno_assert (rc == 0);
-            if (!read (&msg)) {
+            if (!pull_msg (&msg)) {
                 zmq_assert (!incomplete_in);
                 break;
             }

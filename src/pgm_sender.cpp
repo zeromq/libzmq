@@ -72,7 +72,7 @@ void zmq::pgm_sender_t::plug (io_thread_t *io_thread_, session_base_t *session_)
     fd_t rdata_notify_fd = retired_fd;
     fd_t pending_notify_fd = retired_fd;
 
-    encoder.set_session (session_);
+    encoder.set_msg_source (session_);
 
     //  Fill fds from PGM transport and add them to the poller.
     pgm_socket.get_sender_fds (&downlink_socket_fd, &uplink_socket_fd,
