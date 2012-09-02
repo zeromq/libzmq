@@ -401,6 +401,14 @@ bool zmq::stream_engine_t::handshake ()
         //  Make sure the decoder sees the data we have already received.
         inpos = greeting;
         insize = greeting_bytes_read;
+
+        //  To allow for interoperability with peers that do not forward
+        //  their subscriptions, we inject a phony subsription
+        //  message into the incomming message stream. To put this
+        //  message right after the identity message, we temporarily
+        //  divert the message stream from session to ourselves.
+        if (options.type == ZMQ_PUB || options.type == ZMQ_XPUB)
+            decoder.set_msg_sink (this);
     }
 
     // Start polling for output if necessary.
@@ -412,6 +420,30 @@ bool zmq::stream_engine_t::handshake ()
     handshaking = false;
 
     return true;
+}
+
+int zmq::stream_engine_t::push_msg (msg_t *msg_)
+{
+    zmq_assert (options.type == ZMQ_PUB || options.type == ZMQ_XPUB);
+
+    //  The first message is identity.
+    //  Let the session process it.
+    int rc = session->push_msg (msg_);
+    errno_assert (rc == 0);
+
+    //  Inject the subscription message so that the ZMQ 2.x peer
+    //  receives our messages.
+    rc = msg_->init_size (1);
+    errno_assert (rc == 0);
+    *(unsigned char*) msg_->data () = 1;
+    rc = session->push_msg (msg_);
+    session->flush ();
+
+    //  Once we have injected the subscription message, we can
+    //  Divert the message flow back to the session.
+    decoder.set_msg_sink (session);
+
+    return rc;
 }
 
 void zmq::stream_engine_t::error ()

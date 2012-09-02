@@ -26,6 +26,7 @@
 
 #include "fd.hpp"
 #include "i_engine.hpp"
+#include "i_msg_sink.hpp"
 #include "io_object.hpp"
 #include "encoder.hpp"
 #include "decoder.hpp"
@@ -41,7 +42,7 @@ namespace zmq
     //  This engine handles any socket with SOCK_STREAM semantics,
     //  e.g. TCP socket or an UNIX domain socket.
 
-    class stream_engine_t : public io_object_t, public i_engine
+    class stream_engine_t : public io_object_t, public i_engine, public i_msg_sink
     {
     public:
 
@@ -54,6 +55,9 @@ namespace zmq
         void terminate ();
         void activate_in ();
         void activate_out ();
+
+        //  i_msg_sink interface implementation.
+        virtual int push_msg (msg_t *msg_);
 
         //  i_poll_events interface implementation.
         void in_event ();
