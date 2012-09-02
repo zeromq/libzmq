@@ -150,27 +150,27 @@ zmq::req_session_t::~req_session_t ()
     state = options.recv_identity ? identity : bottom;
 }
 
-int zmq::req_session_t::write (msg_t *msg_)
+int zmq::req_session_t::push_msg (msg_t *msg_)
 {
     switch (state) {
     case bottom:
         if (msg_->flags () == msg_t::more && msg_->size () == 0) {
             state = body;
-            return dealer_session_t::write (msg_);
+            return dealer_session_t::push_msg (msg_);
         }
         break;
     case body:
         if (msg_->flags () == msg_t::more)
-            return dealer_session_t::write (msg_);
+            return dealer_session_t::push_msg (msg_);
         if (msg_->flags () == 0) {
             state = bottom;
-            return dealer_session_t::write (msg_);
+            return dealer_session_t::push_msg (msg_);
         }
         break;
     case identity:
         if (msg_->flags () == 0) {
             state = bottom;
-            return dealer_session_t::write (msg_);
+            return dealer_session_t::push_msg (msg_);
         }
         break;
     }
