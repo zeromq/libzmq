@@ -164,7 +164,6 @@ void zmq::xpub_t::send_unsubscription (unsigned char *data_, size_t size_,
 
 		//  Place the unsubscription to the queue of pending (un)sunscriptions
 		//  to be retrived by the user later on.
-		xpub_t *self = (xpub_t*) arg_;
 		blob_t unsub (size_ + 1, 0);
 		unsub [0] = 0;
 		memcpy (&unsub [1], data_, size_);
