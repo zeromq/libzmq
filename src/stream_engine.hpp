@@ -135,9 +135,6 @@ namespace zmq
         //  The session this engine is attached to.
         zmq::session_base_t *session;
 
-        //  Detached transient session.
-        zmq::session_base_t *leftover_session;
-
         options_t options;
 
         // String representation of endpoint
