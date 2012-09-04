@@ -29,6 +29,7 @@
 
 #include "err.hpp"
 #include "msg.hpp"
+#include "i_decoder.hpp"
 #include "stdint.hpp"
 
 namespace zmq
@@ -47,7 +48,7 @@ namespace zmq
     //  This class implements the state machine that parses the incoming buffer.
     //  Derived class should implement individual state machine actions.
 
-    template <typename T> class decoder_base_t
+    template <typename T> class decoder_base_t : public i_decoder
     {
     public:
 

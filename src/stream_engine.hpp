@@ -28,8 +28,8 @@
 #include "i_engine.hpp"
 #include "i_msg_sink.hpp"
 #include "io_object.hpp"
-#include "encoder.hpp"
-#include "decoder.hpp"
+#include "i_encoder.hpp"
+#include "i_decoder.hpp"
 #include "options.hpp"
 #include "../include/zmq.h"
 
@@ -105,12 +105,12 @@ namespace zmq
 
         unsigned char *inpos;
         size_t insize;
-        decoder_t decoder;
+        i_decoder *decoder;
         bool input_error;
 
         unsigned char *outpos;
         size_t outsize;
-        encoder_t encoder;
+        i_encoder *encoder;
 
         //  When true, we are still trying to determine whether
         //  the peer is using versioned protocol, and if so, which
