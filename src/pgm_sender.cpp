@@ -109,7 +109,7 @@ void zmq::pgm_sender_t::unplug ()
     rm_fd (uplink_handle);
     rm_fd (rdata_notify_handle);
     rm_fd (pending_notify_handle);
-    encoder.set_session (NULL);
+    encoder.set_msg_source (NULL);
 }
 
 void zmq::pgm_sender_t::terminate ()
