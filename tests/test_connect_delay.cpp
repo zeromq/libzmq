@@ -112,7 +112,7 @@ static void *worker (void *)
 
     hadone = 0;
     // Not checking RC as some may be -1
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 6; i++) {
         usleep(200000);
         rc = zmq_send (socket, "hi", 2, ZMQ_DONTWAIT);
         if (rc != -1)
