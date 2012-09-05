@@ -133,6 +133,8 @@ libzmq_la_SOURCES = \
     xpub.cpp \
     router.cpp \
     dealer.cpp \
+    v1_decoder.cpp \
+    v1_encoder.cpp \
     xsub.cpp \
     zmq.cpp \
     zmq_utils.cpp
