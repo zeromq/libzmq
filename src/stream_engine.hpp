@@ -91,15 +91,9 @@ namespace zmq
         //  Underlying socket.
         fd_t s;
 
-        //  Maximum size of a greeting message:
-        //  preamble (10 bytes) + version (1 byte) + remaining_length (1 byte) +
-        //  up to 255 remaining bytes.
-        const static size_t maximum_greeting_size = 10 + 1 + 1 + 255;
-
-        //  Size of v1 greeting message:
-        //  preamble (10 bytes) + version (1 byte) + remaining_length (1 byte) +
-        //  socket_type (1)
-        const static size_t v1_greeting_size = 10 + 1 + 1 + 1;
+        //  Size of the greeting message:
+        //  Preamble (10 bytes) + version (1 byte) + socket type (1 byte).
+        const static size_t greeting_size = 12;
 
         handle_t handle;
 
@@ -119,18 +113,15 @@ namespace zmq
 
         //  The receive buffer holding the greeting message
         //  that we are receiving from the peer.
-        unsigned char greeting [maximum_greeting_size];
+        unsigned char greeting [greeting_size];
 
         //  The number of bytes of the greeting message that
         //  we have already received.
         unsigned int greeting_bytes_read;
 
-        //  The size of the greeting message.
-        unsigned int greeting_size;
-
         //  The send buffer holding the greeting message
         //  that we are sending to the peer.
-        unsigned char greeting_output_buffer [v1_greeting_size];
+        unsigned char greeting_output_buffer [greeting_size];
 
         //  The session this engine is attached to.
         zmq::session_base_t *session;
