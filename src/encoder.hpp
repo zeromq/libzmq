@@ -29,6 +29,7 @@
 
 #include "err.hpp"
 #include "msg.hpp"
+#include "i_encoder.hpp"
 
 namespace zmq
 {
@@ -39,7 +40,7 @@ namespace zmq
     //  fills the outgoing buffer. Derived classes should implement individual
     //  state machine actions.
 
-    template <typename T> class encoder_base_t
+    template <typename T> class encoder_base_t : public i_encoder
     {
     public:
 
