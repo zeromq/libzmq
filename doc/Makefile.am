@@ -1,4 +1,4 @@
-MAN3 = zmq_bind.3 zmq_close.3 zmq_connect.3 zmq_device.3 \
+MAN3 = zmq_bind.3 zmq_close.3 zmq_connect.3 zmq_proxy.3 \
     zmq_ctx_new.3 zmq_ctx_destroy.3 zmq_ctx_get.3 zmq_ctx_set.3 \
     zmq_init.3 zmq_term.3 zmq_ctx_set_monitor.3\
     zmq_msg_close.3 zmq_msg_copy.3 zmq_msg_data.3 zmq_msg_init.3 \
