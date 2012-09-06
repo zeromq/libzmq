@@ -171,7 +171,7 @@ int zmq::ipc_connecter_t::get_new_reconnect_ivl ()
 {
     //  The new interval is the current interval + random value.
     int this_interval = current_reconnect_ivl +
-        (generate_random () % options.reconnect_ivl);
+        (zmq::random.generate () % options.reconnect_ivl);
 
     //  Only change the current reconnect interval  if the maximum reconnect
     //  interval was set and if it's larger than the reconnect interval.

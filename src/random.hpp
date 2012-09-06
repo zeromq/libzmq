@@ -22,16 +22,29 @@
 #define __ZMQ_RANDOM_HPP_INCLUDED__
 
 #include "stdint.hpp"
+#include "mutex.hpp"
 
 namespace zmq
 {
+	class mersenne_twister_t
+	{
+		static const uint32_t _MT32_N = 624;
+		static const uint32_t _MT32_M = 397;
+		static const uint32_t _MT32_MATRIX_A = 0x9908b0dfUL;   /* constant vector a */
+		static const uint32_t _MT32_UPPER_MASK = 0x80000000UL; /* most significant w-r bits */
+		static const uint32_t _MT32_LOWER_MASK = 0x7fffffffUL; /* least significant r bits */
 
-    //  Seeds the random number generator.
-    void seed_random ();
+		uint32_t mt[_MT32_N];
+		uintptr_t mti;
+		mutex_t state_sync;
 
-    //  Generates random value.
-    uint32_t generate_random ();
+	public:
+		mersenne_twister_t () { seed (); }
+		void seed (uint32_t seed = 0x0);
+		uint32_t generate ();
+	};
 
+	extern mersenne_twister_t random;
 }
 
 #endif
