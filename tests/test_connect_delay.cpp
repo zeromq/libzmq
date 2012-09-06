@@ -18,15 +18,15 @@ You should have received a copy of the GNU Lesser General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-#include <assert.h>
-#include <cstdlib>
-#include <cstring>
-#include <iostream>
-#include <errno.h>
-#include <unistd.h>
-
 #include "../include/zmq.h"
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <string>
+
+#undef NDEBUG
+#include <assert.h>
 
 static void *server (void *)
 {

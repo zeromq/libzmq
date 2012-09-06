@@ -19,9 +19,7 @@
 */
 
 
-#include <assert.h>
 #include <stdio.h>
-
 #include "testutil.hpp"
 
 int main (void)

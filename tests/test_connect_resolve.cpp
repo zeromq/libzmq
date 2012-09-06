@@ -18,12 +18,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-#include <assert.h>
+#include "../include/zmq.h"
 #include <stdio.h>
 #include <errno.h>
 
-#include "../include/zmq.h"
+#undef NDEBUG
+#include <assert.h>
 
 int main (void)
 {

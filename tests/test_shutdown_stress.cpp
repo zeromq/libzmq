@@ -20,10 +20,12 @@
 */
 
 #include "../include/zmq.h"
-#include <assert.h>
 #include <pthread.h>
 #include <stddef.h>
 #include <stdio.h>
+
+#undef NDEBUG
+#include <assert.h>
 
 #define THREAD_COUNT 100
 
