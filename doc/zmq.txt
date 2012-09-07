@@ -136,10 +136,10 @@ Establishing a message flow::
     linkzmq:zmq_connect[3]
 
 Sending and receiving messages::
+    linkzmq:zmq_msg_send[3]
+    linkzmq:zmq_msg_recv[3]
     linkzmq:zmq_send[3]
-    linkzmq:zmq_sendmsg[3]
     linkzmq:zmq_recv[3]
-    linkzmq:zmq_recvmsg[3]
 
 .Input/output multiplexing
 0MQ provides a mechanism for applications to multiplex input/output events over
@@ -169,14 +169,12 @@ Local in-process (inter-thread) communication transport::
     linkzmq:zmq_inproc[7]
 
 
-Devices
+Proxies
 ~~~~~~~
-0MQ provides 'devices', which are building blocks that act as intermediate
-nodes in complex messaging topologies. Devices can act as brokers that other
-nodes connect to, proxies that connect through to other nodes, or any mix of
-these two models.
-
-You can start a device in an application thread, see linkzmq:zmq_device[3].
+0MQ provides 'proxies' to create fanout and fan-in topologies. A proxy connects
+a 'frontend' socket to a 'backend' socket and switches all messages between the
+two sockets, opaquely. A proxy may optionally capture all traffic to a third
+socket. To start a proxy in an application thread, use linkzmq:zmq_proxy[3].
 
 
 ERROR HANDLING

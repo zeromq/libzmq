@@ -1,0 +1,97 @@
+zmq_proxy(3)
+============
+
+NAME
+----
+zmq_proxy - start built-in 0MQ proxy
+
+
+SYNOPSIS
+--------
+*int zmq_proxy (const void '*frontend', const void '*backend', const void '*capture');*
+
+
+DESCRIPTION
+-----------
+The _zmq_proxy()_ function starts the built-in 0MQ proxy in the current
+application thread.
+
+The proxy connects a frontend socket to a backend socket. Conceptually, data
+flows from frontend to backend. Depending on the socket types, replies may flow
+in the opposite direction. The direction is conceptual only; the proxy is fully
+symmetric and there is no technical difference between frontend and backend.
+
+Before calling _zmq_proxy()_ you must set any socket options, and connect or
+bind both frontend and backend sockets. The two conventional proxy models are:
+
+_zmq_proxy()_ runs in the current thread and returns only if/when the current
+context is closed.
+
+If the capture socket is not NULL, the proxy shall send all messages, received
+on both frontend and backend, to the capture socket. The capture socket should
+be a 'ZMQ_PUB', 'ZMQ_DEALER', 'ZMQ_PUSH', or 'ZMQ_PAIR' socket.
+
+Refer to linkzmq:zmq_socket[3] for a description of the available socket types.
+
+EXAMPLE USAGE
+-------------
+
+Shared Queue
+~~~~~~~~~~~~
+
+When the frontend is a ZMQ_ROUTER socket, and the backend is a ZMQ_DEALER
+socket, the proxy shall act as a shared queue that collects requests from a
+set of clients, and distributes these fairly among a set of services.
+Requests shall be fair-queued from frontend connections and distributed evenly
+across backend connections. Replies shall automatically return to the client
+that made the original request.
+
+Forwarder
+~~~~~~~~~
+
+When the frontend is a ZMQ_XSUB socket, and the backend is a ZMQ_XPUB socket,
+the proxy shall act as a message forwarder that collects messages from a set
+of publishers and forwards these to a set of subscribers. This may be used to
+bridge networks transports, e.g. read on tcp:// and forward on pgm://.
+
+Streamer
+~~~~~~~~
+
+When the frontend is a ZMQ_PULL socket, and the backend is a ZMQ_PUSH socket,
+the proxy shall collect tasks from a set of clients and forwards these to a set
+of workers using the pipeline pattern.
+
+RETURN VALUE
+------------
+The _zmq_proxy()_ function always returns `-1` and 'errno' set to *ETERM* (the
+0MQ 'context' associated with either of the specified sockets was terminated).
+
+
+EXAMPLE
+-------
+.Creating a shared queue proxy
+----
+//  Create frontend and backend sockets
+void *frontend = zmq_socket (context, ZMQ_ROUTER);
+assert (backend);
+void *backend = zmq_socket (context, ZMQ_DEALER);
+assert (frontend);
+//  Bind both sockets to TCP ports
+assert (zmq_bind (frontend, "tcp://*:5555") == 0);
+assert (zmq_bind (backend, "tcp://*:5556") == 0);
+//  Start the queue proxy, which runs until ETERM
+zmq_proxy (frontend, backend, NULL);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_bind[3]
+linkzmq:zmq_connect[3]
+linkzmq:zmq_socket[3]
+linkzmq:zmq[7]
+
+
+AUTHORS
+-------
+This 0MQ manual page was written by Pieter Hintjens <ph@imatix.com>

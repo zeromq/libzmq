@@ -256,6 +256,8 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 /*  Send/recv options.                                                        */
 #define ZMQ_DONTWAIT 1
 #define ZMQ_SNDMORE 2
+/*  Deprecated aliases                                                        */
+#define ZMQ_NOBLOCK ZMQ_DONTWAIT
 
 /******************************************************************************/
 /*  0MQ socket events and monitoring                                          */
@@ -369,15 +371,16 @@ typedef struct
 
 ZMQ_EXPORT int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
 
-/******************************************************************************/
-/*  Devices - Experimental.                                                   */
-/******************************************************************************/
+//  Built-in message proxy (3-way)
 
+ZMQ_EXPORT int zmq_proxy (void *frontend, void *backend, void *capture);
+
+//  Deprecated aliases
 #define ZMQ_STREAMER 1
 #define ZMQ_FORWARDER 2
 #define ZMQ_QUEUE 3
-
-ZMQ_EXPORT int zmq_device (int device, void *insocket, void* outsocket);
+//  Deprecated method
+ZMQ_EXPORT int zmq_device (int type, void *frontend, void *backend);
 
 #undef ZMQ_EXPORT
 
