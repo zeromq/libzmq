@@ -70,7 +70,7 @@ struct iovec {
 #include <stdlib.h>
 #include <new>
 
-#include "device.hpp"
+#include "proxy.hpp"
 #include "socket_base.hpp"
 #include "stdint.hpp"
 #include "config.hpp"
@@ -962,21 +962,27 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 #undef ZMQ_POLL_BASED_ON_POLL
 #endif
 
-int zmq_device (int device_, void *insocket_, void *outsocket_)
+//  The proxy functionality
+
+int zmq_proxy (void *frontend_, void *backend_, void *control_)
 {
-    if (!insocket_ || !outsocket_) {
+    if (!frontend_ || !backend_) {
         errno = EFAULT;
         return -1;
     }
+    return zmq::proxy (
+        (zmq::socket_base_t*) frontend_,
+        (zmq::socket_base_t*) backend_,
+        (zmq::socket_base_t*) control_);
+}
 
-    if (device_ != ZMQ_FORWARDER && device_ != ZMQ_QUEUE &&
-          device_ != ZMQ_STREAMER) {
-       errno = EINVAL;
-       return -1;
-    }
+//  The deprecated device functionality
 
-    return zmq::device ((zmq::socket_base_t*) insocket_,
-        (zmq::socket_base_t*) outsocket_);
+int zmq_device (int type, void *frontend_, void *backend_)
+{
+    return zmq::proxy (
+        (zmq::socket_base_t*) frontend_,
+        (zmq::socket_base_t*) backend_, NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
