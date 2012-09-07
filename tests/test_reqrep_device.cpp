@@ -19,11 +19,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <assert.h>
-#include <string.h>
-#include <stdio.h>
-
 #include "../include/zmq.h"
+#include <stdio.h>
+#include <string.h>
+
+#undef NDEBUG
+#include <assert.h>
 
 int main (void)
 {
