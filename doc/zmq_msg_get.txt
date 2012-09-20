@@ -25,8 +25,9 @@ Indicates that there are more message frames to follow after the 'message'.
 
 RETURN VALUE
 ------------
-The _zmq_msg_get()_ function shall return zero if successful. Otherwise it
-shall return `-1` and set 'errno' to one of the values defined below.
+The _zmq_msg_get()_ function shall return the value for the property if
+successful. Otherwise it shall return `-1` and set 'errno' to one of the
+values defined below.
 
 
 ERRORS
