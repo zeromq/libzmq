@@ -56,6 +56,7 @@ zmq::ipc_connecter_t::ipc_connecter_t (class io_thread_t *io_thread_,
     zmq_assert (addr);
     zmq_assert (addr->protocol == "ipc");
     addr->to_string (endpoint);
+    socket = session-> get_socket();
 }
 
 zmq::ipc_connecter_t::~ipc_connecter_t ()
@@ -121,7 +122,7 @@ void zmq::ipc_connecter_t::out_event ()
     //  Shut the connecter down.
     terminate ();
 
-    session->monitor_event (ZMQ_EVENT_CONNECTED, endpoint.c_str(), fd);
+    socket->event_connected (endpoint.c_str(), fd);
 }
 
 void zmq::ipc_connecter_t::timer_event (int id_)
@@ -148,7 +149,7 @@ void zmq::ipc_connecter_t::start_connecting ()
         handle = add_fd (s);
         handle_valid = true;
         set_pollout (handle);
-        session->monitor_event (ZMQ_EVENT_CONNECT_DELAYED, endpoint.c_str(), zmq_errno());
+        socket->event_connect_delayed (endpoint.c_str(), zmq_errno());
     }
 
     //  Handle any other error condition by eventual reconnect.
@@ -163,7 +164,7 @@ void zmq::ipc_connecter_t::add_reconnect_timer()
 {
     int rc_ivl = get_new_reconnect_ivl();
     add_timer (rc_ivl, reconnect_timer_id);
-    session->monitor_event (ZMQ_EVENT_CONNECT_RETRIED, endpoint.c_str(), rc_ivl);
+    socket->event_connect_retried (endpoint.c_str(), rc_ivl);
     timer_started = true;
 }
 
@@ -224,7 +225,7 @@ int zmq::ipc_connecter_t::close ()
     zmq_assert (s != retired_fd);
     int rc = ::close (s);
     errno_assert (rc == 0);
-    session->monitor_event (ZMQ_EVENT_CLOSED, endpoint.c_str(), s);
+    socket->event_closed (endpoint.c_str(), s);
     s = retired_fd;
     return 0;
 }

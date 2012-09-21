@@ -102,8 +102,18 @@ namespace zmq
         void lock();
         void unlock();
 
-        void monitor_event (int event_, ...);
-        void va_monitor_event (int event_, va_list args);
+        int monitor(const char *endpoint_, int events_);
+
+        void event_connected(const char *addr_, int fd_);
+        void event_connect_delayed(const char *addr_, int err_);
+        void event_connect_retried(const char *addr_, int interval_);
+        void event_listening(const char *addr_, int fd_);
+        void event_bind_failed(const char *addr_, int err_);
+        void event_accepted(const char *addr_, int fd_);
+        void event_accept_failed(const char *addr_, int err_);
+        void event_closed(const char *addr_, int fd_);        
+        void event_close_failed(const char *addr_, int fd_);  
+        void event_disconnected(const char *addr_, int fd_); 
 
     protected:
 
@@ -137,6 +147,12 @@ namespace zmq
 
         //  Delay actual destruction of the socket.
         void process_destroy ();
+
+        // Socket event data dispath
+        void monitor_event (zmq_event_t data_);
+
+        // Monitor socket cleanup
+        void stop_monitor ();
 
     private:
         //  Creates new endpoint ID and adds the endpoint to the map.
@@ -209,6 +225,12 @@ namespace zmq
 
         //  Improves efficiency of time measurement.
         clock_t clock;
+
+        // Monitor socket;
+        void *monitor_socket;
+
+        // Bitmask of events being monitored
+        int monitor_events;
 
         socket_base_t (const socket_base_t&);
         const socket_base_t &operator = (const socket_base_t&);

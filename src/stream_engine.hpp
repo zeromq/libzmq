@@ -31,6 +31,7 @@
 #include "i_encoder.hpp"
 #include "i_decoder.hpp"
 #include "options.hpp"
+#include "socket_base.hpp"
 #include "../include/zmq.h"
 
 namespace zmq
@@ -132,6 +133,9 @@ namespace zmq
         std::string endpoint;
 
         bool plugged;
+
+        // Socket
+        zmq::socket_base_t *socket;
 
         stream_engine_t (const stream_engine_t&);
         const stream_engine_t &operator = (const stream_engine_t&);

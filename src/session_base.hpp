@@ -31,6 +31,7 @@
 #include "pipe.hpp"
 #include "i_msg_source.hpp"
 #include "i_msg_sink.hpp"
+#include "socket_base.hpp"
 
 namespace zmq
 {
@@ -75,8 +76,7 @@ namespace zmq
         void hiccuped (zmq::pipe_t *pipe_);
         void terminated (zmq::pipe_t *pipe_);
 
-        void monitor_event (int event_, ...);
-        void va_monitor_event (int event_, va_list args);
+        socket_base_t *get_socket ();
 
     protected:
 
