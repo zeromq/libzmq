@@ -111,6 +111,9 @@ namespace zmq
         // String representation of endpoint to connect to
         std::string endpoint;
 
+        // Socket
+        zmq::socket_base_t *socket;
+
         tcp_connecter_t (const tcp_connecter_t&);
         const tcp_connecter_t &operator = (const tcp_connecter_t&);
     };

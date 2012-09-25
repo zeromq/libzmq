@@ -85,7 +85,7 @@ void zmq::tcp_listener_t::in_event ()
     //  If connection was reset by the peer in the meantime, just ignore it.
     //  TODO: Handle specific errors like ENFILE/EMFILE etc.
     if (fd == retired_fd) {
-        socket->monitor_event (ZMQ_EVENT_ACCEPT_FAILED, endpoint.c_str(), zmq_errno());
+        socket->event_accept_failed (endpoint.c_str(), zmq_errno());
         return;
     }
 
@@ -108,7 +108,7 @@ void zmq::tcp_listener_t::in_event ()
     session->inc_seqnum ();
     launch_child (session);
     send_attach (session, engine, false);
-    socket->monitor_event (ZMQ_EVENT_ACCEPTED, endpoint.c_str(), fd);
+    socket->event_accepted (endpoint.c_str(), fd);
 }
 
 void zmq::tcp_listener_t::close ()
@@ -121,7 +121,7 @@ void zmq::tcp_listener_t::close ()
     int rc = ::close (s);
     errno_assert (rc == 0);
 #endif
-    socket->monitor_event (ZMQ_EVENT_CLOSED, endpoint.c_str(), s);
+    socket->event_closed (endpoint.c_str(), s);
     s = retired_fd;
 }
 
@@ -223,7 +223,7 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
         goto error;
 #endif
 
-    socket->monitor_event (ZMQ_EVENT_LISTENING, endpoint.c_str(), s);
+    socket->event_listening (endpoint.c_str(), s);
     return 0;
 
 error:

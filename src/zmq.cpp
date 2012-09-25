@@ -210,15 +210,6 @@ int zmq_ctx_get (void *ctx_, int option_)
     return ((zmq::ctx_t*) ctx_)->get (option_);
 }
 
-int zmq_ctx_set_monitor (void *ctx_, zmq_monitor_fn *monitor_)
-{
-    if (!ctx_ || !((zmq::ctx_t*) ctx_)->check_tag ()) {
-        errno = EFAULT;
-        return -1;
-    }
-    return ((zmq::ctx_t*) ctx_)->monitor (monitor_);
-}
-
 //  Stable/legacy context API
 
 void *zmq_init (int io_threads_)
@@ -281,6 +272,17 @@ int zmq_getsockopt (void *s_, int option_, void *optval_, size_t *optvallen_)
     }
     zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
     int result = s->getsockopt (option_, optval_, optvallen_);
+    return result;
+}
+
+int zmq_socket_monitor (void *s_, const char *addr_, int events_)
+{
+    if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
+        errno = ENOTSOCK;
+        return -1;
+    }
+    zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
+    int result = s->monitor (addr_, events_);
     return result;
 }
 
