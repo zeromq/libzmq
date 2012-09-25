@@ -62,7 +62,8 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_, cons
     session (NULL),
     options (options_),
     endpoint (endpoint_),
-    plugged (false)
+    plugged (false),
+    socket (NULL)
 {
     //  Put the socket into non-blocking mode.
     unblock_socket (s);
@@ -126,6 +127,7 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
     zmq_assert (!session);
     zmq_assert (session_);
     session = session_;
+    socket = session-> get_socket ();
 
     //  Connect to I/O threads poller object.
     io_object_t::plug (io_thread_);
@@ -445,7 +447,7 @@ int zmq::stream_engine_t::push_msg (msg_t *msg_)
 void zmq::stream_engine_t::error ()
 {
     zmq_assert (session);
-    session->monitor_event (ZMQ_EVENT_DISCONNECTED, endpoint.c_str(), s);
+    socket->event_disconnected (endpoint.c_str(), s);
     session->detach ();
     unplug ();
     delete this;

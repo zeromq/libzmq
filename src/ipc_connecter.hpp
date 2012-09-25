@@ -113,6 +113,9 @@ namespace zmq
         // String representation of endpoint to connect to
         std::string endpoint;
 
+        // Socket
+        zmq::socket_base_t *socket;
+
         ipc_connecter_t (const ipc_connecter_t&);
         const ipc_connecter_t &operator = (const ipc_connecter_t&);
     };

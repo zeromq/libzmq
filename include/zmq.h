@@ -278,8 +278,16 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 #define ZMQ_EVENT_CLOSE_FAILED 256
 #define ZMQ_EVENT_DISCONNECTED 512
 
+#define ZMQ_EVENT_ALL ( ZMQ_EVENT_CONNECTED | ZMQ_EVENT_CONNECT_DELAYED | \
+                        ZMQ_EVENT_CONNECT_RETRIED | ZMQ_EVENT_LISTENING | \
+                        ZMQ_EVENT_BIND_FAILED | ZMQ_EVENT_ACCEPTED | \
+                        ZMQ_EVENT_ACCEPT_FAILED | ZMQ_EVENT_CLOSED | \
+                        ZMQ_EVENT_CLOSE_FAILED | ZMQ_EVENT_DISCONNECTED )
+
 /*  Socket event data (union member per event)                                */
-typedef union {
+typedef struct {
+    int event;
+    union {
     struct {
         char *addr;
         int fd;
@@ -320,12 +328,8 @@ typedef union {
         char *addr;
         int fd;
     } disconnected;
-} zmq_event_data_t;
-
-/*  Callback template for socket state changes                                */
-typedef void (zmq_monitor_fn) (void *s, int event, zmq_event_data_t *data);
-
-ZMQ_EXPORT int zmq_ctx_set_monitor (void *context, zmq_monitor_fn *monitor);
+    } data;
+} zmq_event_t;
 
 ZMQ_EXPORT void *zmq_socket (void *, int type);
 ZMQ_EXPORT int zmq_close (void *s);
@@ -339,6 +343,7 @@ ZMQ_EXPORT int zmq_unbind (void *s, const char *addr);
 ZMQ_EXPORT int zmq_disconnect (void *s, const char *addr);
 ZMQ_EXPORT int zmq_send (void *s, const void *buf, size_t len, int flags);
 ZMQ_EXPORT int zmq_recv (void *s, void *buf, size_t len, int flags);
+ZMQ_EXPORT int zmq_socket_monitor (void *s, const char *addr, int events);
 
 ZMQ_EXPORT int zmq_sendmsg (void *s, zmq_msg_t *msg, int flags);
 ZMQ_EXPORT int zmq_recvmsg (void *s, zmq_msg_t *msg, int flags);
