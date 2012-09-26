@@ -268,10 +268,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\device.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\src\devpoll.cpp"
 				>
 			</File>
@@ -384,6 +380,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\proxy.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\pub.cpp"
 				>
 			</File>
@@ -440,6 +440,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\tcp.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\tcp_address.cpp"
 				>
 			</File>
@@ -457,6 +461,14 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\trie.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\v1_decoder.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\v1_encoder.cpp"
 				>
 			</File>
 			<File
@@ -658,6 +670,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\proxy.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\pub.hpp"
 				>
 			</File>
@@ -714,6 +730,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\tcp.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\tcp_address.hpp"
 				>
 			</File>
@@ -731,6 +751,18 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\trie.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\v1_decoder.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\v1_encoder.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\v1_protocol.hpp"
 				>
 			</File>
 			<File
