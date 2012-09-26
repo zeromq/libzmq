@@ -22,6 +22,12 @@
 #ifndef __ZMQ_ENCODER_HPP_INCLUDED__
 #define __ZMQ_ENCODER_HPP_INCLUDED__
 
+#if defined(_MSC_VER)
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#endif
+
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
