@@ -108,7 +108,6 @@
     <ClCompile Include="..\..\..\src\ctx.cpp" />
     <ClCompile Include="..\..\..\src\dealer.cpp" />
     <ClCompile Include="..\..\..\src\decoder.cpp" />
-    <ClCompile Include="..\..\..\src\device.cpp" />
     <ClCompile Include="..\..\..\src\devpoll.cpp" />
     <ClCompile Include="..\..\..\src\dist.cpp" />
     <ClCompile Include="..\..\..\src\encoder.cpp" />
@@ -139,6 +138,7 @@
     <ClCompile Include="..\..\..\src\precompiled.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\proxy.cpp" />
     <ClCompile Include="..\..\..\src\pub.cpp" />
     <ClCompile Include="..\..\..\src\pull.cpp" />
     <ClCompile Include="..\..\..\src\push.cpp" />
@@ -159,6 +159,8 @@
     <ClCompile Include="..\..\..\src\tcp_listener.cpp" />
     <ClCompile Include="..\..\..\src\thread.cpp" />
     <ClCompile Include="..\..\..\src\trie.cpp" />
+    <ClCompile Include="..\..\..\src\v1_decoder.cpp" />
+    <ClCompile Include="..\..\..\src\v1_encoder.cpp" />
     <ClCompile Include="..\..\..\src\xpub.cpp" />
     <ClCompile Include="..\..\..\src\xsub.cpp" />
     <ClCompile Include="..\..\..\src\zmq.cpp" />
@@ -211,6 +213,7 @@
     <ClInclude Include="..\..\..\src\poller.hpp" />
     <ClInclude Include="..\..\..\src\poller_base.hpp" />
     <ClInclude Include="..\..\..\src\precompiled.hpp" />
+    <ClInclude Include="..\..\..\src\proxy.hpp" />
     <ClInclude Include="..\..\..\src\pub.hpp" />
     <ClInclude Include="..\..\..\src\pull.hpp" />
     <ClInclude Include="..\..\..\src\push.hpp" />
@@ -231,6 +234,9 @@
     <ClInclude Include="..\..\..\src\tcp_listener.hpp" />
     <ClInclude Include="..\..\..\src\thread.hpp" />
     <ClInclude Include="..\..\..\src\trie.hpp" />
+    <ClInclude Include="..\..\..\src\v1_decoder.hpp" />
+    <ClInclude Include="..\..\..\src\v1_encoder.hpp" />
+    <ClInclude Include="..\..\..\src\v1_protocol.hpp" />
     <ClInclude Include="..\..\..\src\windows.hpp" />
     <ClInclude Include="..\..\..\src\wire.hpp" />
     <ClInclude Include="..\..\..\src\xpub.hpp" />
