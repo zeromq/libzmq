@@ -21,7 +21,7 @@
 #ifndef __ZMQ_I_ENCODER_HPP_INCLUDED__
 #define __ZMQ_I_ENCODER_HPP_INCLUDED__
 
-#include <stdint.h>
+#include "stdint.hpp"
 
 namespace zmq
 {
