@@ -72,12 +72,24 @@ int zmq::rep_t::xrecv (msg_t *msg_, int flags_)
             int rc = router_t::xrecv (msg_, flags_);
             if (rc != 0)
                 return rc;
-            zmq_assert (msg_->flags () & msg_t::more);
-            bool bottom = (msg_->size () == 0);
-            rc = router_t::xsend (msg_, flags_);
-            errno_assert (rc == 0);
-            if (bottom)
-                break;
+
+            if ((msg_->flags () & msg_t::more)) {
+                //  Empty message part delimits the traceback stack.
+                bool bottom = (msg_->size () == 0);
+
+                //  Push it to the reply pipe.
+                rc = router_t::xsend (msg_, flags_);
+                errno_assert (rc == 0);
+
+                if (bottom)
+                    break;
+            }
+            else {
+                //  If the traceback stack is malformed, discard anything
+                //  already sent to pipe (we're at end of invalid message).
+                rc = router_t::rollback ();
+                errno_assert (rc == 0);
+            }
         }
         request_begins = false;
     }
