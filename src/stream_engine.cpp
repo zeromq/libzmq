@@ -503,7 +503,7 @@ int zmq::stream_engine_t::write (const void *data_, size_t size_)
         return -1;
     }
 
-    return (size_t) nbytes;
+    return static_cast <int> (nbytes);
 
 #endif
 }
@@ -563,7 +563,7 @@ int zmq::stream_engine_t::read (void *data_, size_t size_)
     if (nbytes == 0)
         return -1;
 
-    return (size_t) nbytes;
+    return static_cast <int> (nbytes);
 
 #endif
 }
