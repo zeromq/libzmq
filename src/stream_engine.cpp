@@ -489,11 +489,20 @@ int zmq::stream_engine_t::write (const void *data_, size_t size_)
         return 0;
 
     //  Signalise peer failure.
-    if (nbytes == -1 && (errno == ECONNRESET || errno == EPIPE ||
-          errno == ETIMEDOUT))
+    if (nbytes == -1) {
+        errno_assert (errno != EACCES
+                   && errno != EBADF
+                   && errno != EDESTADDRREQ
+                   && errno != EFAULT
+                   && errno != EINVAL
+                   && errno != EISCONN
+                   && errno != EMSGSIZE
+                   && errno != ENOMEM
+                   && errno != ENOTSOCK
+                   && errno != EOPNOTSUPP);
         return -1;
+    }
 
-    errno_assert (nbytes != -1);
     return (size_t) nbytes;
 
 #endif
@@ -541,11 +550,14 @@ int zmq::stream_engine_t::read (void *data_, size_t size_)
         return 0;
 
     //  Signalise peer failure.
-    if (nbytes == -1 && (errno == ECONNRESET || errno == ECONNREFUSED ||
-          errno == ETIMEDOUT || errno == EHOSTUNREACH || errno == ENOTCONN))
+    if (nbytes == -1) {
+        errno_assert (errno != EBADF
+                   && errno != EFAULT
+                   && errno != EINVAL
+                   && errno != ENOMEM
+                   && errno != ENOTSOCK);
         return -1;
-
-    errno_assert (nbytes != -1);
+    }
 
     //  Orderly shutdown by the peer.
     if (nbytes == 0)
