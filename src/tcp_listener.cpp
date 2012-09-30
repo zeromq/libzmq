@@ -235,6 +235,8 @@ error:
 
 zmq::fd_t zmq::tcp_listener_t::accept ()
 {
+    //  The situation where connection cannot be accepted due to insufficient
+    //  resources is considered valid and treated by ignoring the connection.
     //  Accept one connection and deal with different failure modes.
     zmq_assert (s != retired_fd);
 
@@ -249,7 +251,9 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
 #ifdef ZMQ_HAVE_WINDOWS
     if (sock == INVALID_SOCKET) {
         wsa_assert (WSAGetLastError () == WSAEWOULDBLOCK ||
-            WSAGetLastError () == WSAECONNRESET);
+            WSAGetLastError () == WSAECONNRESET ||
+            WSAGetLastError () == WSAEMFILE ||
+            WSAGetLastError () == WSAENOBUFS);
         return retired_fd;
     }
     //  On Windows, preventing sockets to be inherited by child processes.
@@ -259,7 +263,8 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
     if (sock == -1) {
         errno_assert (errno == EAGAIN || errno == EWOULDBLOCK ||
             errno == EINTR || errno == ECONNABORTED || errno == EPROTO ||
-            errno == ENOBUFS);
+            errno == ENOBUFS || errno == ENOMEM || errno == EMFILE ||
+            errno == ENFILE);
         return retired_fd;
     }
 #endif
