@@ -14,8 +14,8 @@ SYNOPSIS
 
 DESCRIPTION
 -----------
-The _zmq_msg_send()_ function is identical to linkzmq:zmq_sendmsg[3], which
-shall be deprecated in future versions. _zmq_msg_send()_ is more consistent
+The _zmq_msg_recv()_ function is identical to linkzmq:zmq_recvmsg[3], which
+shall be deprecated in future versions. _zmq_msg_recv()_ is more consistent
 with other message manipulation functions.
 
 The _zmq_msg_recv()_ function shall receive a message part from the socket
