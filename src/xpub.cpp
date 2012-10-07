@@ -28,6 +28,7 @@
 
 zmq::xpub_t::xpub_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     socket_base_t (parent_, tid_, sid_),
+    verbose(false),
     more (false)
 {
     options.type = ZMQ_XPUB;
@@ -70,7 +71,7 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
 
             //  If the subscription is not a duplicate store it so that it can be
             //  passed to used on next recv call.
-            if (unique && options.type != ZMQ_PUB)
+            if (options.type == ZMQ_XPUB && (unique || verbose))
                 pending.push_back (blob_t (data, size));
         }
 
@@ -81,6 +82,21 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
 void zmq::xpub_t::xwrite_activated (pipe_t *pipe_)
 {
     dist.activated (pipe_);
+}
+
+int zmq::xpub_t::xsetsockopt (int option_, const void *optval_,
+    size_t optvallen_)
+{
+    if (option_ != ZMQ_XPUB_VERBOSE) {
+        errno = EINVAL;
+        return -1;
+    }
+    if (optvallen_ != sizeof (int) || *static_cast <const int*> (optval_) < 0) {
+        errno = EINVAL;
+        return -1;
+    }
+    verbose = *static_cast <const int*> (optval_);
+    return 0;
 }
 
 void zmq::xpub_t::xterminated (pipe_t *pipe_)
