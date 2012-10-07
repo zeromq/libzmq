@@ -59,8 +59,8 @@ extern "C" {
 
 /*  Version macros for compile-time API version detection                     */
 #define ZMQ_VERSION_MAJOR 3
-#define ZMQ_VERSION_MINOR 3
-#define ZMQ_VERSION_PATCH 0
+#define ZMQ_VERSION_MINOR 2
+#define ZMQ_VERSION_PATCH 1
 
 #define ZMQ_MAKE_VERSION(major, minor, patch) \
     ((major) * 10000 + (minor) * 100 + (patch))
@@ -249,6 +249,7 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 #define ZMQ_TCP_KEEPALIVE_INTVL 37
 #define ZMQ_TCP_ACCEPT_FILTER 38
 #define ZMQ_DELAY_ATTACH_ON_CONNECT 39
+#define ZMQ_XPUB_VERBOSE 40
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1
