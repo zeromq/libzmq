@@ -54,6 +54,7 @@ namespace zmq
         bool xhas_in ();
         void xread_activated (zmq::pipe_t *pipe_);
         void xwrite_activated (zmq::pipe_t *pipe_);
+        int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
         void xterminated (zmq::pipe_t *pipe_);
 
     private:
@@ -71,6 +72,10 @@ namespace zmq
 
         //  Distributor of messages holding the list of outbound pipes.
         dist_t dist;
+
+        // If true, send all subscription messages upstream, not just
+        // unique ones
+        bool verbose;
 
         //  True if we are in the middle of sending a multi-part message.
         bool more;

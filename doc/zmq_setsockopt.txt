@@ -385,6 +385,20 @@ Default value:: 0
 Applicable socket types:: ZMQ_ROUTER
 
 
+ZMQ_XPUB_VERBOSE: Set the XPUB socket behavior
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sets the 'XPUB' socket behavior on new subscriptions. A value of '0' is the default
+and passes only new subscription messages to upstream. A value of '1' passes all
+subscription messages upstream.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1
+Default value:: 0
+Applicable socket types:: ZMQ_XPUB
+
+
 ZMQ_TCP_KEEPALIVE: Override SO_KEEPALIVE socket option
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Override 'SO_KEEPALIVE' socket option(where supported by OS).
