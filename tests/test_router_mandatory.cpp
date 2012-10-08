@@ -24,7 +24,7 @@
 
 int main (void)
 {
-    fprintf (stderr, "test_router_behavior running...\n");
+    fprintf (stderr, "test_router_mandatory running...\n");
 
     void *ctx = zmq_init (1);
     assert (ctx);
@@ -36,19 +36,19 @@ int main (void)
     int rc = zmq_bind (sa, "tcp://127.0.0.1:15560");
     assert (rc == 0);
 
-    // Sending a message to an unknown peer with the default behavior.
+    // Sending a message to an unknown peer with the default setting
     rc = zmq_send (sa, "UNKNOWN", 7, ZMQ_SNDMORE);
     assert (rc == 7);
     rc = zmq_send (sa, "DATA", 4, 0);
     assert (rc == 4);
 
-    int behavior = 1;
+    int mandatory = 1;
 
-    // Setting the socket behavior to a new mode.
-    rc = zmq_setsockopt (sa, ZMQ_ROUTER_BEHAVIOR, &behavior, sizeof (behavior));
+    // Set mandatory routing on socket
+    rc = zmq_setsockopt (sa, ZMQ_ROUTER_MANDATORY, &mandatory, sizeof (mandatory));
     assert (rc == 0);
 
-    // Sending a message to an unknown peer with verbose behavior.
+    // Send a message and check that it fails
     rc = zmq_send (sa, "UNKNOWN", 7, ZMQ_SNDMORE | ZMQ_DONTWAIT);
     assert (rc == -1 && errno == EAGAIN);
 

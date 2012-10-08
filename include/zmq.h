@@ -242,7 +242,7 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 #define ZMQ_SNDTIMEO 28
 #define ZMQ_IPV4ONLY 31
 #define ZMQ_LAST_ENDPOINT 32
-#define ZMQ_ROUTER_BEHAVIOR 33
+#define ZMQ_ROUTER_MANDATORY 33
 #define ZMQ_TCP_KEEPALIVE 34
 #define ZMQ_TCP_KEEPALIVE_CNT 35
 #define ZMQ_TCP_KEEPALIVE_IDLE 36
@@ -251,14 +251,17 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 #define ZMQ_DELAY_ATTACH_ON_CONNECT 39
 #define ZMQ_XPUB_VERBOSE 40
 
+
 /*  Message options                                                           */
 #define ZMQ_MORE 1
 
 /*  Send/recv options.                                                        */
 #define ZMQ_DONTWAIT 1
 #define ZMQ_SNDMORE 2
+
 /*  Deprecated aliases                                                        */
 #define ZMQ_NOBLOCK ZMQ_DONTWAIT
+#define ZMQ_ROUTER_BEHAVIOR ZMQ_ROUTER_MANDATORY
 
 /******************************************************************************/
 /*  0MQ socket events and monitoring                                          */
