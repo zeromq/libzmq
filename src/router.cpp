@@ -35,7 +35,7 @@ zmq::router_t::router_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     current_out (NULL),
     more_out (false),
     next_peer_id (generate_random ()),
-    report_unroutable(false)
+    mandatory(false)
 {
     options.type = ZMQ_ROUTER;
 
@@ -76,7 +76,7 @@ void zmq::router_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
 int zmq::router_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
-    if (option_ != ZMQ_ROUTER_BEHAVIOR) {
+    if (option_ != ZMQ_ROUTER_MANDATORY) {
         errno = EINVAL;
         return -1;
     }
@@ -84,7 +84,7 @@ int zmq::router_t::xsetsockopt (int option_, const void *optval_,
         errno = EINVAL;
         return -1;
     }
-    report_unroutable = *static_cast <const int*> (optval_);
+    mandatory = *static_cast <const int*> (optval_);
     return 0;
 }
 
@@ -158,7 +158,9 @@ int zmq::router_t::xsend (msg_t *msg_, int flags_)
                     it->second.active = false;
                     current_out = NULL;
                 }
-            } else if (report_unroutable) {
+            } 
+            else 
+            if (mandatory) {
                 more_out = false;
                 errno = EAGAIN;
                 return -1;
