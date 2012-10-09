@@ -112,7 +112,7 @@ namespace zmq
 
         // If true, report EAGAIN to the caller instead of silently dropping 
         // the message targeting an unknown peer.
-        bool report_unroutable;
+        bool mandatory;
 
         router_t (const router_t&);
         const router_t &operator = (const router_t&);

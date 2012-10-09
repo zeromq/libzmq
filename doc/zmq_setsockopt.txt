@@ -13,8 +13,8 @@ SYNOPSIS
 *int zmq_setsockopt (void '*socket', int 'option_name', const void '*option_value', size_t 'option_len');*
 
 Caution: All options, with the exception of ZMQ_SUBSCRIBE, ZMQ_UNSUBSCRIBE,
-ZMQ_LINGER and ZMQ_ROUTER_BEHAVIOR only take effect for subsequent socket 
-bind/connects.
+ZMQ_LINGER, ZMQ_ROUTER_MANDATORY and ZMQ_XPUB_VERBOSE only take effect for 
+subsequent socket bind/connects.
 
 DESCRIPTION
 -----------
@@ -352,8 +352,8 @@ Default value:: 1 (true)
 Applicable socket types:: all, when using TCP transports.
 
 
-ZMQ_DELAY_ATTACH_ON_CONNECT
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_DELAY_ATTACH_ON_CONNECT: Accept messages only when connections are made
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If set to `1`, will delay the attachment of a pipe on connect until the underlying
 connection has completed. This will cause the socket to block if there are no other
@@ -363,20 +363,19 @@ connections, but will prevent queues from filling on pipes awaiting connection.
 Option value type:: int
 Option value unit:: boolean
 Default value:: 0 (false)
-Applicable socket types:: all, primarily when using TCP/IPC transports.
+Applicable socket types:: all, only for connection-oriented transports.
 
 
-ZMQ_ROUTER_BEHAVIOR: Set the ROUTER socket behavior
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_ROUTER_MANDATORY: accept only routable messages on ROUTER sockets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sets the 'ROUTER' socket behavior when an unroutable message is encountered. A value
-of `0` is the default when the message is silently discarded, while a value of `1`
-forces the sending to fail with an 'EAGAIN' error code, effectively enabling sending
-messages in a blocking fashion. 
+Sets the 'ROUTER' socket behavior when an unroutable message is encountered. A 
+value of `0` is the default and discards the message silently when it cannot be 
+routed.  A value of `1` returns an 'EAGAIN' error code if the message cannot be 
+routed.
 
 Note: Setting this socket option may have unpredictable effects on reactor-type 
 libraries that assume EAGAIN will only be sent in HWM-type situations. 
-
 
 [horizontal]
 Option value type:: int
@@ -385,12 +384,12 @@ Default value:: 0
 Applicable socket types:: ZMQ_ROUTER
 
 
-ZMQ_XPUB_VERBOSE: Set the XPUB socket behavior
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_XPUB_VERBOSE: provide all subscription messages on XPUB sockets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sets the 'XPUB' socket behavior on new subscriptions. A value of '0' is the default
-and passes only new subscription messages to upstream. A value of '1' passes all
-subscription messages upstream.
+Sets the 'XPUB' socket behavior on new subscriptions and unsubscriptions. 
+A value of '0' is the default and passes only new subscription messages to 
+upstream. A value of '1' passes all subscription messages upstream.
 
 [horizontal]
 Option value type:: int
