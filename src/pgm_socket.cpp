@@ -337,10 +337,11 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
 		    goto err_abort;
 
 		//  Expedited Forwarding PHB for network elements, no ECN.
+/*
 		const int dscp = 0x2e << 2; 
 		if (AF_INET6 != sa_family && !pgm_setsockopt (sock,
 		      IPPROTO_PGM, PGM_TOS, &dscp, sizeof (dscp)))
-		    goto err_abort;
+		    goto err_abort; */
 
 		const int nonblocking = 1;
 		if (!pgm_setsockopt (sock, IPPROTO_PGM, PGM_NOBLOCK,
