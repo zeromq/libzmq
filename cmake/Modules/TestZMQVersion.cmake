@@ -24,4 +24,12 @@
           MESSAGE(STATUS "Detecting ZMQ - failed")
         ENDIF()
 
-
+  if (MSVC11)
+    set(_zmq_COMPILER "-v110")
+  elseif (MSVC10)
+    set(_zmq_COMPILER "-v100")
+  elseif (MSVC90)
+    set(_zmq_COMPILER "-v90")
+  else()
+    set(_zmq_COMPILER "")
+  endif()
