@@ -234,7 +234,7 @@ foreach (txt ${docs})
 			-d manpage
 			-b xhtml11
 			-f ${CMAKE_SOURCE_DIR}/doc/asciidoc.conf
-			-azmq_version=3.2.0
+			-azmq_version=${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.${ZMQ_VERSION_PATCH}
 			-o ${dst}
 			${src}
 		DEPENDS ${CMAKE_BINARY_DIR}/${src}
