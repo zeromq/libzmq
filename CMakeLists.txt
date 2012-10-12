@@ -4,10 +4,7 @@ cmake_minimum_required (VERSION 2.8)
 
 project (ZeroMQ)
 
-# TODO: Extract from include/zmq.h
-set (ZMQ_VERSION_MAJOR "3")
-set (ZMQ_VERSION_MINOR "2")
-set (ZMQ_VERSION_PATCH "0")
+include (${CMAKE_SOURCE_DIR}/cmake/Modules/TestZMQVersion.cmake)
 
 # WARNING: Windows Python will override Cygwin yet not work with Asciidoc.
 #find_package (PythonInterp REQUIRED)
@@ -198,9 +195,9 @@ add_custom_command(
 list(APPEND sources ${CMAKE_BINARY_DIR}/platform.hpp)
 
 if (CMAKE_SIZEOF_VOID_P EQUAL 8)
-	set (nsis-template ${CMAKE_SOURCE_DIR}/NSIS.template64.in)
+	set (nsis-template ${CMAKE_SOURCE_DIR}/cmake/NSIS.template64.in)
 else (CMAKE_SIZEOF_VOID_P EQUAL 8)
-	set (nsis-template ${CMAKE_SOURCE_DIR}/NSIS.template32.in)
+	set (nsis-template ${CMAKE_SOURCE_DIR}/cmake/NSIS.template32.in)
 endif (CMAKE_SIZEOF_VOID_P EQUAL 8)
 add_custom_command(
 	OUTPUT ${CMAKE_BINARY_DIR}/NSIS.template.in
