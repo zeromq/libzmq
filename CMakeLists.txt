@@ -1,13 +1,22 @@
-# CMake build script for MQ on Windows
+# CMake build script for ZeroMQ on Windows
 
 cmake_minimum_required (VERSION 2.8)
 
 project (ZeroMQ)
 
+# TODO: Extract from include/zmq.h
+set (ZMQ_VERSION_MAJOR "3")
+set (ZMQ_VERSION_MINOR "2")
+set (ZMQ_VERSION_PATCH "0")
+
+# WARNING: Windows Python will override Cygwin yet not work with Asciidoc.
 #find_package (PythonInterp REQUIRED)
+# Workaround, manually set Python location
 set(PYTHON_EXECUTABLE c:/cygwin/bin/python2.6.exe)
 
 set(OPENPGM_ROOT /libpgm/libpgm-5.1.118-1~dfsg/openpgm/pgm)
+
+# TODO: Replace with FindAsciidoc.cmake
 set(ASCIIDOC_EXECUTABLE c:/cygwin/bin/asciidoc)
 
 option (WITH_DOC "Build Reference Guide documentation (requires DocBook)" OFF)
@@ -44,7 +53,9 @@ set(LIBRARY_OUTPUT_PATH  ${CMAKE_BINARY_DIR}/lib)
 add_definitions(
         -DWIN32
 	-DDLL_EXPORT
+# NB: May require tweaking for highly connected applications.
 	-DFD_SETSIZE=1024
+	-D_CRT_SECURE_NO_WARNINGS
 )
 
 #-----------------------------------------------------------------------------
@@ -163,8 +174,13 @@ link_directories(
 #-----------------------------------------------------------------------------
 # source generators
 
-foreach (source ${cxx-sources} ${rc-sources})
+foreach (source ${cxx-sources})
 	list(APPEND sources ${CMAKE_SOURCE_DIR}/src/${source})
+endforeach()
+
+foreach (source ${rc-sources})
+	list(APPEND sources ${CMAKE_BINARY_DIR}/${source})
+	configure_file(${CMAKE_SOURCE_DIR}/src/${source}.in ${CMAKE_BINARY_DIR}/${source})
 endforeach()
 
 add_custom_command(
@@ -283,16 +299,16 @@ set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
 set (CPACK_PACKAGE_DESCRIPTION_SUMMARY "ZeroMQ lightweight messaging kernel")
 set (CPACK_PACKAGE_VENDOR "Miru")
 set (CPACK_NSIS_CONTACT "Steven McCoy <Steven.McCoy@miru.hk>")
-# set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/COPYING.txt")
+set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_BINARY_DIR}/COPYING.txt")
 # There is a bug in NSI that does not handle full unix paths properly. Make
 # sure there is at least one set of four (4) backlasshes.
 set (CPACK_NSIS_MUI_ICON "${CMAKE_SOURCE_DIR}\\\\installer.ico")
 set (CPACK_NSIS_MUI_UNIICON "${CMAKE_SOURCE_DIR}\\\\installer.ico")
 set (CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}\\\\branding.bmp")
 set (CPACK_NSIS_COMPRESSOR "/SOLID lzma")
-set (CPACK_PACKAGE_VERSION_MAJOR "3")
-set (CPACK_PACKAGE_VERSION_MINOR "2")
-set (CPACK_PACKAGE_VERSION_PATCH "0")
+set (CPACK_PACKAGE_VERSION_MAJOR "${ZMQ_VERSION_MAJOR}")
+set (CPACK_PACKAGE_VERSION_MINOR "${ZMQ_VERSION_MINOR}")
+set (CPACK_PACKAGE_VERSION_PATCH "${ZMQ_VERSION_PATCH}")
 
 include (CPack)
 
