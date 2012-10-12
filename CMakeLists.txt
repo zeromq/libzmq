@@ -283,7 +283,7 @@ set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
 set (CPACK_PACKAGE_DESCRIPTION_SUMMARY "ZeroMQ lightweight messaging kernel")
 set (CPACK_PACKAGE_VENDOR "Miru")
 set (CPACK_NSIS_CONTACT "Steven McCoy <Steven.McCoy@miru.hk>")
-set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/COPYING.txt")
+# set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/COPYING.txt")
 # There is a bug in NSI that does not handle full unix paths properly. Make
 # sure there is at least one set of four (4) backlasshes.
 set (CPACK_NSIS_MUI_ICON "${CMAKE_SOURCE_DIR}\\\\installer.ico")
