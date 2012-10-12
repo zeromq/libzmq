@@ -763,6 +763,9 @@ Function un.onInit
     ;Get installation folder from registry if available
 
   done:
+
+  ;Disable WoW64 redirection
+  SetRegView 64
     
 FunctionEnd
 
@@ -910,7 +913,8 @@ Function .onInit
   ; install directory that is expected to be the
   ; default
   StrCpy $IS_DEFAULT_INSTALLDIR 0
-  StrCmp "$INSTDIR" "$PROGRAMFILES\@CPACK_PACKAGE_INSTALL_DIRECTORY@" 0 +2
+  ;StrCmp "$INSTDIR" "$PROGRAMFILES\@CPACK_PACKAGE_INSTALL_DIRECTORY@" 0 +2
+  StrCmp "$INSTDIR" "$PROGRAMFILES64\@CPACK_PACKAGE_INSTALL_DIRECTORY@" 0 +2
     StrCpy $IS_DEFAULT_INSTALLDIR 1
   
   StrCpy $SV_ALLUSERS "JustMe"
@@ -918,6 +922,9 @@ Function .onInit
   ; if it is installed for JustMe
   StrCmp "$IS_DEFAULT_INSTALLDIR" "1" 0 +2
     StrCpy $INSTDIR "$DOCUMENTS\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
+
+  ;Disable WoW64 redirection
+  SetRegView 64
 
   ClearErrors
   UserInfo::GetName
@@ -943,7 +950,8 @@ Function .onInit
   done:
   StrCmp $SV_ALLUSERS "AllUsers" 0 +3
     StrCmp "$IS_DEFAULT_INSTALLDIR" "1" 0 +2
-      StrCpy $INSTDIR "$PROGRAMFILES\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
+      ;StrCpy $INSTDIR "$PROGRAMFILES\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
+      StrCpy $INSTDIR "$PROGRAMFILES64\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
 
   StrCmp "@CPACK_NSIS_MODIFY_PATH@" "ON" 0 noOptionsPage
     !insertmacro MUI_INSTALLOPTIONS_EXTRACT "NSIS.InstallOptions.ini"

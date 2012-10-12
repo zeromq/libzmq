@@ -1,23 +1,23 @@
 # CMake build script for ZeroMQ on Windows
 
 cmake_minimum_required (VERSION 2.8)
-
 project (ZeroMQ)
 
 include (${CMAKE_SOURCE_DIR}/cmake/Modules/TestZMQVersion.cmake)
 
+option (WITH_DOC "Build Reference Guide documentation (requires DocBook)" OFF)
+option (WITH_OPENPGM "Build with support for OpenPGM" OFF)
+
 # WARNING: Windows Python will override Cygwin yet not work with Asciidoc.
 #find_package (PythonInterp REQUIRED)
 # Workaround, manually set Python location
-set(PYTHON_EXECUTABLE c:/cygwin/bin/python2.6.exe)
-
-set(OPENPGM_ROOT /libpgm/libpgm-5.1.118-1~dfsg/openpgm/pgm)
-
+set(PYTHON_EXECUTABLE c:/cygwin/bin/python2.6.exe CACHE FILEPATH "Python interpreter executable")
 # TODO: Replace with FindAsciidoc.cmake
-set(ASCIIDOC_EXECUTABLE c:/cygwin/bin/asciidoc)
+set(ASCIIDOC_EXECUTABLE c:/cygwin/bin/asciidoc CACHE FILEPATH "AsciiDoc executable")
 
-option (WITH_DOC "Build Reference Guide documentation (requires DocBook)" OFF)
-option (WITH_OPENPGM "Build with support for OpenPGM" OFF)
+set(OPENPGM_ROOT /libpgm/libpgm-5.1.118-1~dfsg/openpgm/pgm CACHE PATH "Location of OpenPGM")
+
+mark_as_advanced(PYTHON_EXECUTABLE ASCIIDOC_EXECUTABLE)
 
 #-----------------------------------------------------------------------------
 # force off-tree build
@@ -295,7 +295,7 @@ else (CMAKE_SIZEOF_VOID_P EQUAL 8)
 	)
 endif (CMAKE_SIZEOF_VOID_P EQUAL 8)
 
-set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}")
+set (CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}")
 set (CPACK_PACKAGE_DESCRIPTION_SUMMARY "ZeroMQ lightweight messaging kernel")
 set (CPACK_PACKAGE_VENDOR "Miru")
 set (CPACK_NSIS_CONTACT "Steven McCoy <Steven.McCoy@miru.hk>")
