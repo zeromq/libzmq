@@ -20,6 +20,7 @@ set(OPENPGM_ROOT /libpgm/libpgm-5.1.118-1~dfsg/openpgm/pgm)
 set(ASCIIDOC_EXECUTABLE c:/cygwin/bin/asciidoc)
 
 option (WITH_DOC "Build Reference Guide documentation (requires DocBook)" OFF)
+option (WITH_OPENPGM "Build with support for OpenPGM" OFF)
 
 #-----------------------------------------------------------------------------
 # force off-tree build
@@ -145,31 +146,33 @@ set(readme-docs
 #-----------------------------------------------------------------------------
 # optional modules
 
-#add_definitions(
-#	-DZMQ_HAVE_OPENPGM
-#)
+if(WITH_OPENPGM)
+	add_definitions(
+		-DZMQ_HAVE_OPENPGM
+	)
 
-include_directories(
-	${OPENPGM_ROOT}/include
-)
-if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+	include_directories(
+		${OPENPGM_ROOT}/include
+	)
+	if (CMAKE_SIZEOF_VOID_P EQUAL 8)
 # Win64
-	if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-		set(OPENPGM_LIBRARYDIR ${OPENPGM_ROOT}/debug64/lib)
-	else (CMAKE_BUILD_TYPE STREQUAL "Debug")
-		set(OPENPGM_LIBRARYDIR ${OPENPGM_ROOT}/build64/lib)
-	endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
-else (CMAKE_SIZEOF_VOID_P EQUAL 8)
+		if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+			set(OPENPGM_LIBRARYDIR ${OPENPGM_ROOT}/debug64/lib)
+		else (CMAKE_BUILD_TYPE STREQUAL "Debug")
+			set(OPENPGM_LIBRARYDIR ${OPENPGM_ROOT}/build64/lib)
+		endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
+	else (CMAKE_SIZEOF_VOID_P EQUAL 8)
 # Win32
-	if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-		set(OPENPGM_LIBRARYDIR ${OPENPGM_ROOT}/debug/lib)
-	else (CMAKE_BUILD_TYPE STREQUAL "Debug")
-		set(OPENPGM_LIBRARYDIR ${OPENPGM_ROOT}/build/lib)
-	endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
-endif (CMAKE_SIZEOF_VOID_P EQUAL 8)
-link_directories(
-	${OPENPGM_LIBRARYDIR}
-)
+		if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+			set(OPENPGM_LIBRARYDIR ${OPENPGM_ROOT}/debug/lib)
+		else (CMAKE_BUILD_TYPE STREQUAL "Debug")
+			set(OPENPGM_LIBRARYDIR ${OPENPGM_ROOT}/build/lib)
+		endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
+	endif (CMAKE_SIZEOF_VOID_P EQUAL 8)
+	link_directories(
+		${OPENPGM_LIBRARYDIR}
+	)
+endif(WITH_OPENPGM)
 
 #-----------------------------------------------------------------------------
 # source generators
