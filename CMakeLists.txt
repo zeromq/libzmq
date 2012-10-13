@@ -75,7 +75,6 @@ set(cxx-sources
 	ctx.cpp
 	dealer.cpp
 	decoder.cpp
-	device.cpp
 	devpoll.cpp
 	dist.cpp
 	encoder.cpp
@@ -104,6 +103,7 @@ set(cxx-sources
 	poll.cpp
 	poller_base.cpp
 	precompiled.cpp
+	proxy.cpp
 	pub.cpp
 	pull.cpp
 	push.cpp
@@ -118,11 +118,14 @@ set(cxx-sources
 	socket_base.cpp
 	stream_engine.cpp
 	sub.cpp
+	tcp.cpp
 	tcp_address.cpp
 	tcp_connecter.cpp
 	tcp_listener.cpp
 	thread.cpp
 	trie.cpp
+	v1_decoder.cpp
+	v1_encoder.cpp
 	xpub.cpp
 	xsub.cpp
 	zmq.cpp
