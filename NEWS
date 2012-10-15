@@ -1,3 +1,42 @@
+0MQ version 3.2.1 (RC2), released on 2012/10/15
+===============================================
+
+Issues addressed in this release
+--------------------------------
+
+* Fixed issue xxx - handle insufficient resources on accept() properly.
+* Fixed issue 443 - added ZMQ_XPUB_VERBOSE setsocket option.
+* Fixed issue 433 - ZeroMQ died on receiving EPIPE
+* Fixed issue 423 - test_pair_tcp hangs
+* Fixed issue 416 - socket_base: fix 'va_list' has not been declared error
+* Fixed issue 409 - Pub-sub interoperability between 2.x and 3.x.
+* Fixed issue 404 - zmq_term can not safely be re-entered with pgm transport
+* Fixed issue 399 - zmq_ctx_set_monitor callback is not works properly
+* Fixed issue 393 - libzmq does not build on Android (socklen_t signed comparison)
+* Fixed issue 392 - Interaction with pyzmq on Android
+* Fixed issue 389 - Assertion failure in mtrie.cpp:317
+* Fixed issue 388 - tests/test_monitor.cpp has no newline at EOF (causes compile error)
+* Fixed issue 387 - "sa_family_t sa_family;" in pgm_socket.cpp is unused variable
+* Fixed issue 385 - Rework ZMQ_FAIL_UNROUTABLE socket option to actually work
+* Fixed issue 382 - Current libzmq doesn't compile on Android NDK
+* Fixed issue 377 - ZeroMQ will not build on Windows with OpenPGM
+* Fixed issue 375 - error: unused variable 'sa_family'
+* Fixed issue 373 - Unable to build libzmq/zeromq3.x on AIX7
+* Fixed issue 372 - Unable to build libzmq/zeromq3.x on HPUX 11iv3
+* Fixed issue 371 - Unable to build libzmq/zeromq3.x on RHEL5/SLES10
+* Fixed issue 329 - wsa_error_to_errno() calls abort() on WSAEACCES
+* Fixed issue 309 - Assertion failed: options.recv_identity (socket_base.cpp:864)
+* Fixed issue 211 - Assertion failed: msg_->flags & ZMQ_MSG_MORE (rep.cpp:81)
+
+API changes
+-----------
+
+* zmq_device () deprecated and replaced by zmq_proxy ().
+* zmq_ctx_set_monitor () replaced by zmq_socket_monitor ().
+* ZMQ_ROUTER_BEHAVIOR/ZMQ_FAIL_UNROUTABLE renamed experimentally to
+  ZMQ_ROUTER_MANDATORY.
+
+
 0MQ version 3.2.0 (RC1), released on 2012/06/05
 ===============================================
 
