@@ -19,12 +19,38 @@
 */
 
 #include <stddef.h>
-#include "../include/zmq.h"
 #include "platform.hpp"
 #include "proxy.hpp"
 #include "socket_base.hpp"
 #include "likely.hpp"
 #include "err.hpp"
+
+#if defined ZMQ_FORCE_SELECT
+#define ZMQ_POLL_BASED_ON_SELECT
+#elif defined ZMQ_FORCE_POLL
+#define ZMQ_POLL_BASED_ON_POLL
+#elif defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD ||\
+    defined ZMQ_HAVE_OPENBSD || defined ZMQ_HAVE_SOLARIS ||\
+    defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_QNXNTO ||\
+    defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_AIX ||\
+    defined ZMQ_HAVE_NETBSD
+#define ZMQ_POLL_BASED_ON_POLL
+#elif defined ZMQ_HAVE_WINDOWS || defined ZMQ_HAVE_OPENVMS ||\
+     defined ZMQ_HAVE_CYGWIN
+#define ZMQ_POLL_BASED_ON_SELECT
+#endif
+
+//  On AIX platform, poll.h has to be included first to get consistent
+//  definition of pollfd structure (AIX uses 'reqevents' and 'retnevents'
+//  instead of 'events' and 'revents' and defines macros to map from POSIX-y
+//  names to AIX-specific names).
+#if defined ZMQ_POLL_BASED_ON_POLL
+#include <poll.h>
+#endif
+
+// zmq.h must be included *after* poll.h for AIX to build properly
+#include "../include/zmq.h"
+
 
 int zmq::proxy (
     class socket_base_t *frontend_,
