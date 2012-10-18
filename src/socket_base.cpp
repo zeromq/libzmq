@@ -1169,3 +1169,4 @@ void zmq::socket_base_t::stop_monitor()
         monitor_events = 0;
     }
 }
+
