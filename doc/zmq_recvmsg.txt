@@ -26,6 +26,8 @@ Specifies that the operation should be performed in non-blocking mode. If there
 are no messages available on the specified 'socket', the _zmq_recvmsg()_
 function shall fail with 'errno' set to EAGAIN.
 
+NOTE: this API method is deprecated in favor of zmq_msg_recv(3).
+
 
 Multi-part messages
 ~~~~~~~~~~~~~~~~~~~
