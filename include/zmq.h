@@ -261,6 +261,7 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 
 /*  Deprecated aliases                                                        */
 #define ZMQ_NOBLOCK ZMQ_DONTWAIT
+#define ZMQ_FAIL_UNROUTABLE ZMQ_ROUTER_MANDATORY
 #define ZMQ_ROUTER_BEHAVIOR ZMQ_ROUTER_MANDATORY
 
 /******************************************************************************/
