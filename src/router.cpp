@@ -162,7 +162,7 @@ int zmq::router_t::xsend (msg_t *msg_, int flags_)
             else 
             if (mandatory) {
                 more_out = false;
-                errno = EAGAIN;
+                errno = EHOSTUNREACH;
                 return -1;
             }
         }

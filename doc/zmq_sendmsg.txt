@@ -36,6 +36,7 @@ NOTE: A successful invocation of _zmq_sendmsg()_ does not indicate that the
 message has been transmitted to the network, only that it has been queued on
 the 'socket' and 0MQ has assumed responsibility for the message.
 
+NOTE: this API method is deprecated in favor of zmq_msg_send(3).
 
 Multi-part messages
 ~~~~~~~~~~~~~~~~~~~
