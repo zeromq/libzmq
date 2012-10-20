@@ -15,7 +15,32 @@ set(PYTHON_EXECUTABLE c:/cygwin/bin/python2.6.exe CACHE FILEPATH "Python interpr
 # TODO: Replace with FindAsciidoc.cmake
 set(ASCIIDOC_EXECUTABLE c:/cygwin/bin/asciidoc CACHE FILEPATH "AsciiDoc executable")
 
-set(OPENPGM_ROOT /libpgm/libpgm-5.1.118-1~dfsg/openpgm/pgm CACHE PATH "Location of OpenPGM")
+if (WITH_OPENPGM)
+#	set(OPENPGM_ROOT "" CACHE PATH "Location of OpenPGM")
+	set(OPENPGM_VERSION_MAJOR 5)
+	set(OPENPGM_VERSION_MINOR 2)
+	set(OPENPGM_VERSION_MICRO 121)
+	if (CMAKE_CL_64)
+		find_path(OPENPGM_ROOT include/pgm/pgm.h
+			PATHS
+			"[HKEY_LOCAL_MACHINE\\SOFTWARE\\Miru\\OpenPGM ${OPENPGM_VERSION_MAJOR}.${OPENPGM_VERSION_MINOR}.${OPENPGM_VERSION_MICRO}]"
+			NO_DEFAULT_PATH
+			)
+	else (CMAKE_CL_64)
+		find_path(OPENPGM_ROOT include/pgm/pgm.h
+			PATHS
+			"[HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Miru\\OpenPGM ${OPENPGM_VERSION_MAJOR}.${OPENPGM_VERSION_MINOR}.${OPENPGM_VERSION_MICRO}]"
+			"[HKEY_LOCAL_MACHINE\\SOFTWARE\\Miru\\OpenPGM ${OPENPGM_VERSION_MAJOR}.${OPENPGM_VERSION_MINOR}.${OPENPGM_VERSION_MICRO}]"
+			NO_DEFAULT_PATH
+			)
+	endif (CMAKE_CL_64)
+	message(STATUS "OpenPGM detected - ${OPENPGM_ROOT}")
+	set(OPENPGM_INCLUDE_DIRS ${OPENPGM_ROOT}/include)
+	set(OPENPGM_LIBRARY_DIRS ${OPENPGM_ROOT}/lib)
+	set(OPENPGM_LIBRARIES
+		optimized libpgm${_zmq_COMPILER}-mt-${OPENPGM_VERSION_MAJOR}_${OPENPGM_VERSION_MINOR}_${OPENPGM_VERSION_MICRO}.lib
+		debug libpgm${_zmq_COMPILER}-mt-gd-${OPENPGM_VERSION_MAJOR}_${OPENPGM_VERSION_MINOR}_${OPENPGM_VERSION_MICRO}.lib)
+endif (WITH_OPENPGM)
 
 mark_as_advanced(PYTHON_EXECUTABLE ASCIIDOC_EXECUTABLE)
 
@@ -160,28 +185,13 @@ if(WITH_OPENPGM)
 	add_definitions(
 		-DZMQ_HAVE_OPENPGM
 	)
-
 	include_directories(
-		${OPENPGM_ROOT}/include
+		${OPENPGM_INCLUDE_DIRS}
 	)
-	if (CMAKE_SIZEOF_VOID_P EQUAL 8)
-# Win64
-		if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-			set(OPENPGM_LIBRARYDIR ${OPENPGM_ROOT}/debug64/lib)
-		else (CMAKE_BUILD_TYPE STREQUAL "Debug")
-			set(OPENPGM_LIBRARYDIR ${OPENPGM_ROOT}/build64/lib)
-		endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
-	else (CMAKE_SIZEOF_VOID_P EQUAL 8)
-# Win32
-		if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-			set(OPENPGM_LIBRARYDIR ${OPENPGM_ROOT}/debug/lib)
-		else (CMAKE_BUILD_TYPE STREQUAL "Debug")
-			set(OPENPGM_LIBRARYDIR ${OPENPGM_ROOT}/build/lib)
-		endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
-	endif (CMAKE_SIZEOF_VOID_P EQUAL 8)
 	link_directories(
-		${OPENPGM_LIBRARYDIR}
+		${OPENPGM_LIBRARY_DIRS}
 	)
+	set(OPTIONAL_LIBRARIES ${OPENPGM_LIBRARIES})
 endif(WITH_OPENPGM)
 
 #-----------------------------------------------------------------------------
@@ -207,11 +217,11 @@ add_custom_command(
 )
 list(APPEND sources ${CMAKE_BINARY_DIR}/platform.hpp)
 
-if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+if (CMAKE_CL_64)
 	set (nsis-template ${CMAKE_SOURCE_DIR}/cmake/NSIS.template64.in)
-else (CMAKE_SIZEOF_VOID_P EQUAL 8)
+else (CMAKE_CL_64)
 	set (nsis-template ${CMAKE_SOURCE_DIR}/cmake/NSIS.template32.in)
-endif (CMAKE_SIZEOF_VOID_P EQUAL 8)
+endif (CMAKE_CL_64)
 add_custom_command(
 	OUTPUT ${CMAKE_BINARY_DIR}/NSIS.template.in
 	COMMAND ${CMAKE_COMMAND}
@@ -253,17 +263,20 @@ endforeach (txt ${docs})
 # output
 
 add_library(libzmq SHARED ${sources} ${html-docs} ${CMAKE_BINARY_DIR}/NSIS.template.in)
-target_link_libraries(libzmq ws2_32.lib rpcrt4.lib)
+target_link_libraries(libzmq ws2_32.lib rpcrt4.lib ${OPTIONAL_LIBRARIES})
+set_target_properties(libzmq PROPERTIES
+	RELEASE_POSTFIX "${_zmq_COMPILER}-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+	DEBUG_POSTFIX "${_zmq_COMPILER}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}")
 
-set_target_properties(libzmq PROPERTIES RELEASE_POSTFIX "${_zmq_COMPILER}-mt" DEBUG_POSTFIX "${_zmq_COMPILER}-mt-gd")
+#-----------------------------------------------------------------------------
+# installer
 
+install (TARGETS libzmq ARCHIVE DESTINATION lib COMPONENT SDK)
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-	install (FILES ${CMAKE_BINARY_DIR}/lib/libzmq${_zmq_COMPILER}-mt-gd.dll DESTINATION bin COMPONENT SDK)
-	install (FILES ${CMAKE_BINARY_DIR}/lib/libzmq${_zmq_COMPILER}-mt-gd.lib DESTINATION lib COMPONENT SDK)
-	install (FILES ${CMAKE_BINARY_DIR}/lib/libzmq${_zmq_COMPILER}-mt-gd.pdb DESTINATION lib COMPONENT SDK)
+	install (TARGETS libzmq RUNTIME DESTINATION bin COMPONENT SDK)
+	install (FILES ${CMAKE_BINARY_DIR}/lib/libzmq${_zmq_COMPILER}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}.pdb DESTINATION lib COMPONENT SDK)
 else (CMAKE_BUILD_TYPE STREQUAL "Debug")
 	install (TARGETS libzmq RUNTIME DESTINATION bin COMPONENT Runtime)
-	install (FILES ${CMAKE_BINARY_DIR}/lib/libzmq${_zmq_COMPILER}-mt.lib DESTINATION lib COMPONENT SDK)
 endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 install (FILES ${headers} DESTINATION include COMPONENT SDK)
 
@@ -296,18 +309,29 @@ endif (WITH_DOC)
 
 include (InstallRequiredSystemLibraries)
 
-if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+if (CMAKE_CL_64)
+	set (CPACK_NSIS_DISPLAY_NAME "ZeroMQ ${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.${ZMQ_VERSION_PATCH} (x64)")
+        set (CPACK_PACKAGE_FILE_NAME "ZeroMQ-${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.${ZMQ_VERSION_PATCH}-x64")
 	set (CPACK_INSTALL_CMAKE_PROJECTS
-		"${CMAKE_SOURCE_DIR}/build64;ZeroMQ;ALL;/"
-		"${CMAKE_SOURCE_DIR}/debug64;ZeroMQ;ALL;/"
+		"${CMAKE_SOURCE_DIR}/build/x64/v110;ZeroMQ;ALL;/"
+		"${CMAKE_SOURCE_DIR}/debug/x64/v110;ZeroMQ;ALL;/"
+		"${CMAKE_SOURCE_DIR}/build/x64/v100;ZeroMQ;ALL;/"
+		"${CMAKE_SOURCE_DIR}/debug/x64/v100;ZeroMQ;ALL;/"
+		"${CMAKE_SOURCE_DIR}/build/x64/v90;ZeroMQ;ALL;/"
+		"${CMAKE_SOURCE_DIR}/debug/x64/v90;ZeroMQ;ALL;/"
 	)
-else (CMAKE_SIZEOF_VOID_P EQUAL 8)
+else (CMAKE_CL_64)
+	set (CPACK_NSIS_DISPLAY_NAME "ZeroMQ ${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.${ZMQ_VERSION_PATCH}")
+        set (CPACK_PACKAGE_FILE_NAME "ZeroMQ-${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.${ZMQ_VERSION_PATCH}-x86")
 	set (CPACK_INSTALL_CMAKE_PROJECTS
-		"${CMAKE_SOURCE_DIR}/build;ZeroMQ;ALL;/"
-		"${CMAKE_SOURCE_DIR}/debug;ZeroMQ;ALL;/"
+		"${CMAKE_SOURCE_DIR}/build/x86/v110;ZeroMQ;ALL;/"
+		"${CMAKE_SOURCE_DIR}/debug/x86/v110;ZeroMQ;ALL;/"
+		"${CMAKE_SOURCE_DIR}/build/x86/v100;ZeroMQ;ALL;/"
+		"${CMAKE_SOURCE_DIR}/debug/x86/v100;ZeroMQ;ALL;/"
+		"${CMAKE_SOURCE_DIR}/build/x86/v90;ZeroMQ;ALL;/"
+		"${CMAKE_SOURCE_DIR}/debug/x86/v90;ZeroMQ;ALL;/"
 	)
-endif (CMAKE_SIZEOF_VOID_P EQUAL 8)
-
+endif (CMAKE_CL_64)
 set (CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}")
 set (CPACK_PACKAGE_DESCRIPTION_SUMMARY "ZeroMQ lightweight messaging kernel")
 set (CPACK_PACKAGE_VENDOR "Miru")
