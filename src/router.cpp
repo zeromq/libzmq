@@ -182,7 +182,8 @@ int zmq::router_t::xsend (msg_t *msg_, int flags_)
         bool ok = current_out->write (msg_);
         if (unlikely (!ok))
             current_out = NULL;
-        else if (!more_out) {
+        else
+        if (!more_out) {
             current_out->flush ();
             current_out = NULL;
         }

@@ -147,7 +147,8 @@ int zmq::signaler_t::wait (int timeout_)
         errno_assert (errno == EINTR);
         return -1;
     }
-    else if (unlikely (rc == 0)) {
+    else
+    if (unlikely (rc == 0)) {
         errno = EAGAIN;
         return -1;
     }

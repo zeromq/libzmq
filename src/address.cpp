@@ -43,7 +43,8 @@ zmq::address_t::~address_t ()
         }
     }
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
-    else if (protocol == "ipc") {
+    else
+    if (protocol == "ipc") {
         if (resolved.ipc_addr) {
             delete resolved.ipc_addr;
             resolved.ipc_addr = 0;
@@ -55,15 +56,14 @@ zmq::address_t::~address_t ()
 int zmq::address_t::to_string (std::string &addr_) const
 {
     if (protocol == "tcp") {
-        if (resolved.tcp_addr) {
+        if (resolved.tcp_addr)
             return resolved.tcp_addr->to_string(addr_);
-        }
     }
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
-    else if (protocol == "ipc") {
-        if (resolved.ipc_addr) {
+    else
+    if (protocol == "ipc") {
+        if (resolved.ipc_addr)
             return resolved.ipc_addr->to_string(addr_);
-        }
     }
 #endif
 

@@ -479,7 +479,8 @@ void zmq::session_base_t::start_connecting (bool wait_)
 
             send_attach (this, pgm_sender);
         }
-        else if (options.type == ZMQ_SUB || options.type == ZMQ_XSUB) {
+        else
+        if (options.type == ZMQ_SUB || options.type == ZMQ_XSUB) {
 
             //  PGM receiver.
             pgm_receiver_t *pgm_receiver =  new (std::nothrow) pgm_receiver_t (

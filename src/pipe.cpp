@@ -179,11 +179,11 @@ void zmq::pipe_t::rollback ()
     //  Remove incomplete message from the outbound pipe.
     msg_t msg;
     if (outpipe) {
-		while (outpipe->unwrite (&msg)) {
-		    zmq_assert (msg.flags () & msg_t::more);
-		    int rc = msg.close ();
-		    errno_assert (rc == 0);
-		}
+        while (outpipe->unwrite (&msg)) {
+            zmq_assert (msg.flags () & msg_t::more);
+            int rc = msg.close ();
+            errno_assert (rc == 0);
+        }
     }
 }
 
@@ -324,32 +324,37 @@ void zmq::pipe_t::terminate (bool delay_)
 
     //  If the pipe is in the final phase of async termination, it's going to
     //  closed anyway. No need to do anything special here.
-    else if (state == terminating)
+    else 
+    if (state == terminating)
         return;
 
     //  The simple sync termination case. Ask the peer to terminate and wait
     //  for the ack.
-    else if (state == active) {
+    else 
+    if (state == active) {
         send_pipe_term (peer);
         state = terminated;
     }
 
     //  There are still pending messages available, but the user calls
     //  'terminate'. We can act as if all the pending messages were read.
-    else if (state == pending && !delay) {
+    else 
+    if (state == pending && !delay) {
         outpipe = NULL;
         send_pipe_term_ack (peer);
         state = terminating;
     }
 
     //  If there are pending messages still availabe, do nothing.
-    else if (state == pending) {
+    else 
+    if (state == pending) {
     }
 
     //  We've already got delimiter, but not term command yet. We can ignore
     //  the delimiter and ack synchronously terminate as if we were in
     //  active state.
-    else if (state == delimited) {
+    else 
+    if (state == delimited) {
         send_pipe_term (peer);
         state = terminated;
     }
@@ -363,15 +368,15 @@ void zmq::pipe_t::terminate (bool delay_)
 
     if (outpipe) {
 
-		//  Drop any unfinished outbound messages.
-		rollback ();
+        //  Drop any unfinished outbound messages.
+        rollback ();
 
-		//  Write the delimiter into the pipe. Note that watermarks are not
-		//  checked; thus the delimiter can be written even when the pipe is full.
-		msg_t msg;
-		msg.init_delimiter ();
-		outpipe->write (msg, false);
-		flush ();
+        //  Write the delimiter into the pipe. Note that watermarks are not
+        //  checked; thus the delimiter can be written even when the pipe is full.
+        msg_t msg;
+        msg.init_delimiter ();
+        outpipe->write (msg, false);
+        flush ();
     }
 }
 

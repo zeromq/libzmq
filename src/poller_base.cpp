@@ -41,7 +41,8 @@ void zmq::poller_base_t::adjust_load (int amount_)
 {
     if (amount_ > 0)
         load.add (amount_);
-    else if (amount_ < 0)
+    else
+    if (amount_ < 0)
         load.sub (-amount_);
 }
 

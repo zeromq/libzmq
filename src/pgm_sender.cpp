@@ -187,16 +187,17 @@ void zmq::pgm_sender_t::out_event ()
     size_t nbytes = pgm_socket.send (out_buffer, write_size);
 
     //  We can write either all data or 0 which means rate limit reached.
-    if (nbytes == write_size) {
+    if (nbytes == write_size)
         write_size = 0;
-    } else {
+    else {
         zmq_assert (nbytes == 0);
 
         if (errno == ENOMEM) {
             const long timeout = pgm_socket.get_tx_timeout ();
             add_timer (timeout, tx_timer_id);
             has_tx_timer = true;
-        } else
+        }
+        else
             errno_assert (errno == EBUSY);
     }
 }
@@ -207,10 +208,13 @@ void zmq::pgm_sender_t::timer_event (int token)
     if (token == rx_timer_id) {
         has_rx_timer = false;
         in_event ();
-    } else if (token == tx_timer_id) {
+    }
+    else
+    if (token == tx_timer_id) {
         has_tx_timer = false;
         out_event ();
-    } else
+    }
+    else
         zmq_assert (false);
 }
 
