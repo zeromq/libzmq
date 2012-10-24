@@ -145,7 +145,8 @@ void zmq::ipc_connecter_t::start_connecting ()
     }
 
     //  Connection establishment may be delayed. Poll for its completion.
-    else if (rc == -1 && errno == EINPROGRESS) {
+    else
+    if (rc == -1 && errno == EINPROGRESS) {
         handle = add_fd (s);
         handle_valid = true;
         set_pollout (handle);

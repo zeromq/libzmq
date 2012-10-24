@@ -239,7 +239,8 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
             !pgm_setsockopt (sock, IPPROTO_PGM, PGM_NAK_NCF_RETRIES,
                 &nak_ncf_retries, sizeof (nak_ncf_retries)))
             goto err_abort;
-    } else {
+    }
+    else {
         const int send_only        = 1,
                   max_rte      = (int) ((options.rate * 1000) / 8),
                   txw_max_tpdu     = (int) pgm_max_tpdu,
@@ -473,7 +474,8 @@ size_t zmq::pgm_socket_t::send (unsigned char *data_, size_t data_len_)
     if (nbytes > 0) {
         zmq_assert (status == PGM_IO_STATUS_NORMAL);
         zmq_assert (nbytes == data_len_);
-    } else {
+    }
+    else {
         zmq_assert (status == PGM_IO_STATUS_RATE_LIMITED ||
             status == PGM_IO_STATUS_WOULD_BLOCK);
 
@@ -677,7 +679,8 @@ void zmq::pgm_socket_t::process_upstream ()
 
     if (status == PGM_IO_STATUS_TIMER_PENDING)
         errno = EBUSY;
-    else if (status == PGM_IO_STATUS_RATE_LIMITED)
+    else
+    if (status == PGM_IO_STATUS_RATE_LIMITED)
         errno = ENOMEM;
     else
         errno = EAGAIN;
