@@ -21,9 +21,7 @@
 #include <stddef.h>
 #include "platform.hpp"
 #include "proxy.hpp"
-#include "socket_base.hpp"
 #include "likely.hpp"
-#include "err.hpp"
 
 #if defined ZMQ_FORCE_SELECT
 #define ZMQ_POLL_BASED_ON_SELECT
@@ -47,6 +45,11 @@
 #if defined ZMQ_POLL_BASED_ON_POLL
 #include <poll.h>
 #endif
+
+// These headers end up pulling in zmq.h somewhere in their include
+// dependency chain
+#include "socket_base.hpp"
+#include "err.hpp"
 
 // zmq.h must be included *after* poll.h for AIX to build properly
 #include "../include/zmq.h"
