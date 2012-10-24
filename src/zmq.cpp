@@ -674,15 +674,15 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     int nevents = 0;
 
     while (true) {
-
-         //  Compute the timeout for the subsequent poll.
-         int timeout;
-         if (first_pass)
-             timeout = 0;
-         else if (timeout_ < 0)
-             timeout = -1;
-         else
-             timeout = end - now;
+        //  Compute the timeout for the subsequent poll.
+        int timeout;
+        if (first_pass)
+            timeout = 0;
+        else
+        if (timeout_ < 0)
+            timeout = -1;
+        else
+            timeout = end - now;
 
         //  Wait for events.
         while (true) {
@@ -694,7 +694,6 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             errno_assert (rc >= 0);
             break;
         }
-
         //  Check for the events.
         for (int i = 0; i != nitems_; i++) {
 
@@ -848,7 +847,8 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             timeout.tv_usec = 0;
             ptimeout = &timeout;
         }
-        else if (timeout_ < 0)
+        else
+        if (timeout_ < 0)
             ptimeout = NULL;
         else {
             timeout.tv_sec = (long) ((end - now) / 1000);

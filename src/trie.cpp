@@ -48,7 +48,8 @@ zmq::trie_t::~trie_t ()
         delete next.node;
         next.node = 0;
     }
-    else if (count > 1) {
+    else
+    if (count > 1) {
         for (unsigned short i = 0; i != count; ++i)
             if (next.table [i])
                 delete next.table [i];
@@ -74,7 +75,8 @@ bool zmq::trie_t::add (unsigned char *prefix_, size_t size_)
             count = 1;
             next.node = NULL;
         }
-        else if (count == 1) {
+        else
+        if (count == 1) {
             unsigned char oldc = min;
             trie_t *oldp = next.node;
             count = (min < c ? c - min : min - c) + 1;
@@ -86,8 +88,8 @@ bool zmq::trie_t::add (unsigned char *prefix_, size_t size_)
             min = std::min (min, c);
             next.table [oldc - min] = oldp;
         }
-        else if (min < c) {
-
+        else
+        if (min < c) {
             //  The new character is above the current character range.
             unsigned short old_count = count;
             count = c - min + 1;
@@ -136,121 +138,120 @@ bool zmq::trie_t::add (unsigned char *prefix_, size_t size_)
 
 bool zmq::trie_t::rm (unsigned char *prefix_, size_t size_)
 {
-     //  TODO: Shouldn't an error be reported if the key does not exist?
+    //  TODO: Shouldn't an error be reported if the key does not exist?
+    if (!size_) {
+        if (!refcnt)
+            return false;
+        refcnt--;
+        return refcnt == 0;
+    }
+    unsigned char c = *prefix_;
+    if (!count || c < min || c >= min + count)
+        return false;
 
-     if (!size_) {
-         if (!refcnt)
-             return false;
-         refcnt--;
-         return refcnt == 0;
-     }
+    trie_t *next_node =
+        count == 1 ? next.node : next.table [c - min];
 
-     unsigned char c = *prefix_;
-     if (!count || c < min || c >= min + count)
-         return false;
+    if (!next_node)
+        return false;
 
-     trie_t *next_node =
-         count == 1 ? next.node : next.table [c - min];
+    bool ret = next_node->rm (prefix_ + 1, size_ - 1);
 
-     if (!next_node)
-         return false;
+    //  Prune redundant nodes
+    if (next_node->is_redundant ()) {
+        delete next_node;
+        zmq_assert (count > 0);
 
-     bool ret = next_node->rm (prefix_ + 1, size_ - 1);
+        if (count == 1) {
+            //  The just pruned node is was the only live node
+            next.node = 0;
+            count = 0;
+            --live_nodes;
+            zmq_assert (live_nodes == 0);
+        }
+        else {
+            next.table [c - min] = 0;
+            zmq_assert (live_nodes > 1);
+            --live_nodes;
 
-     //  Prune redundant nodes
-     if (next_node->is_redundant ()) {
-         delete next_node;
-         zmq_assert (count > 0);
+            //  Compact the table if possible
+            if (live_nodes == 1) {
+                //  We can switch to using the more compact single-node
+                //  representation since the table only contains one live node
+                trie_t *node = 0;
+                //  Since we always compact the table the pruned node must
+                //  either be the left-most or right-most ptr in the node
+                //  table
+                if (c == min) {
+                    //  The pruned node is the left-most node ptr in the
+                    //  node table => keep the right-most node
+                    node = next.table [count - 1];
+                    min += count - 1;
+                }
+                else
+                if (c == min + count - 1) {
+                    //  The pruned node is the right-most node ptr in the
+                    //  node table => keep the left-most node
+                    node = next.table [0];
+                }
+                zmq_assert (node);
+                free (next.table);
+                next.node = node;
+                count = 1;
+            }
+            else
+            if (c == min) {
+                //  We can compact the table "from the left".
+                //  Find the left-most non-null node ptr, which we'll use as
+                //  our new min
+                unsigned char new_min = min;
+                for (unsigned short i = 1; i < count; ++i) {
+                    if (next.table [i]) {
+                        new_min = i + min;
+                        break;
+                    }
+                }
+                zmq_assert (new_min != min);
 
-         if (count == 1) {
-             //  The just pruned node is was the only live node
-             next.node = 0;
-             count = 0;
-             --live_nodes;
-             zmq_assert (live_nodes == 0);
-         }
-         else {
-             next.table [c - min] = 0;
-             zmq_assert (live_nodes > 1);
-             --live_nodes;
+                trie_t **old_table = next.table;
+                zmq_assert (new_min > min);
+                zmq_assert (count > new_min - min);
 
-             //  Compact the table if possible
-             if (live_nodes == 1) {
-                 //  We can switch to using the more compact single-node
-                 //  representation since the table only contains one live node
-                 trie_t *node = 0;
-                 //  Since we always compact the table the pruned node must
-                 //  either be the left-most or right-most ptr in the node
-                 //  table
-                 if (c == min) {
-                     //  The pruned node is the left-most node ptr in the
-                     //  node table => keep the right-most node
-                     node = next.table [count - 1];
-                     min += count - 1;
-                 }
-                 else if (c == min + count - 1) {
-                     //  The pruned node is the right-most node ptr in the
-                     //  node table => keep the left-most node
-                     node = next.table [0];
-                 }
+                count = count - (new_min - min);
+                next.table = (trie_t**) malloc (sizeof (trie_t*) * count);
+                alloc_assert (next.table);
 
-                 zmq_assert (node);
-                 free (next.table);
-                 next.node = node;
-                 count = 1;
-             }
-             else if (c == min) {
-                 //  We can compact the table "from the left".
-                 //  Find the left-most non-null node ptr, which we'll use as
-                 //  our new min
-                 unsigned char new_min = min;
-                 for (unsigned short i = 1; i < count; ++i) {
-                     if (next.table [i]) {
-                         new_min = i + min;
-                         break;
-                     }
-                 }
-                 zmq_assert (new_min != min);
+                memmove (next.table, old_table + (new_min - min),
+                        sizeof (trie_t*) * count);
+                free (old_table);
 
-                 trie_t **old_table = next.table;
-                 zmq_assert (new_min > min);
-                 zmq_assert (count > new_min - min);
+                min = new_min;
+            }
+            else
+            if (c == min + count - 1) {
+                //  We can compact the table "from the right".
+                //  Find the right-most non-null node ptr, which we'll use to
+                //  determine the new table size
+                unsigned short new_count = count;
+                for (unsigned short i = 1; i < count; ++i) {
+                    if (next.table [count - 1 - i]) {
+                        new_count = count - i;
+                        break;
+                    }
+                }
+                zmq_assert (new_count != count);
+                count = new_count;
 
-                 count = count - (new_min - min);
-                 next.table = (trie_t**) malloc (sizeof (trie_t*) * count);
-                 alloc_assert (next.table);
+                trie_t **old_table = next.table;
+                next.table = (trie_t**) malloc (sizeof (trie_t*) * count);
+                alloc_assert (next.table);
 
-                 memmove (next.table, old_table + (new_min - min),
-                          sizeof (trie_t*) * count);
-                 free (old_table);
-
-                 min = new_min;
-             }
-             else if (c == min + count - 1) {
-                 //  We can compact the table "from the right".
-                 //  Find the right-most non-null node ptr, which we'll use to
-                 //  determine the new table size
-                 unsigned short new_count = count;
-                 for (unsigned short i = 1; i < count; ++i) {
-                     if (next.table [count - 1 - i]) {
-                         new_count = count - i;
-                         break;
-                     }
-                 }
-                 zmq_assert (new_count != count);
-                 count = new_count;
-
-                 trie_t **old_table = next.table;
-                 next.table = (trie_t**) malloc (sizeof (trie_t*) * count);
-                 alloc_assert (next.table);
-
-                 memmove (next.table, old_table, sizeof (trie_t*) * count);
-                 free (old_table);
-             }
-         }
-     }
-
-     return ret;
+                memmove (next.table, old_table, sizeof (trie_t*) * count);
+                free (old_table);
+            }
+        }
+    }
+    return ret;
 }
 
 bool zmq::trie_t::check (unsigned char *data_, size_t size_)

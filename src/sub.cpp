@@ -51,7 +51,8 @@ int zmq::sub_t::xsetsockopt (int option_, const void *optval_,
     unsigned char *data = (unsigned char*) msg.data ();
     if (option_ == ZMQ_SUBSCRIBE)
         *data = 1;
-    else if (option_ == ZMQ_UNSUBSCRIBE)
+    else
+    if (option_ == ZMQ_UNSUBSCRIBE)
         *data = 0;
     memcpy (data + 1, optval_, optvallen_);
 
