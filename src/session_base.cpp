@@ -223,7 +223,7 @@ void zmq::session_base_t::clean_pipes ()
             msg_t msg;
             int rc = msg.init ();
             errno_assert (rc == 0);
-            if (!pull_msg (&msg)) {
+            if (pull_msg (&msg) != 0) {
                 zmq_assert (!incomplete_in);
                 break;
             }
