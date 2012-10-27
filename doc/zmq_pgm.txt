@@ -17,8 +17,8 @@ DESCRIPTION
 -----------
 0MQ implements two variants of PGM, the standard protocol where PGM datagrams
 are layered directly on top of IP datagrams as defined by RFC 3208 (the 'pgm'
-transport) and "Encapsulated PGM" where PGM datagrams are encapsulated inside
-UDP datagrams (the 'epgm' transport).
+transport) and "Encapsulated PGM" or EPGM where PGM datagrams are encapsulated
+inside UDP datagrams (the 'epgm' transport).
 
 The 'pgm' and 'epgm' transports can only be used with the 'ZMQ_PUB' and
 'ZMQ_SUB' socket types.
@@ -36,12 +36,12 @@ not require any special privileges.
 
 ADDRESSING
 ----------
-A 0MQ address string consists of two parts as follows:
-'transport'`://`'endpoint'. The 'transport' part specifies the underlying
-transport protocol to use. For the standard PGM protocol, 'transport' shall be
-set to `pgm`. For the "Encapsulated PGM" protocol 'transport' shall be set to
-`epgm`. The meaning of the 'endpoint' part for both the 'pgm' and 'epgm'
-transport is defined below.
+A 0MQ endpoint is a string consisting of a 'transport'`://` followed by an
+'address'. The 'transport' specifies the underlying protocol to use. The
+'address' specifies the transport-specific address to connect to.
+
+For the PGM transport, the transport is `pgm`, and for the EPGM protocol the
+transport is `epgm`. The meaning of the 'address' part is defined below.
 
 
 Connecting a socket
@@ -134,14 +134,14 @@ EXAMPLE
 -------
 .Connecting a socket
 ----
-/* Connecting to the multicast address 239.192.1.1, port 5555, */
-/* using the first Ethernet network interface on Linux */
-/* and the Encapsulated PGM protocol */
+//  Connecting to the multicast address 239.192.1.1, port 5555,
+//  using the first Ethernet network interface on Linux
+//  and the Encapsulated PGM protocol
 rc = zmq_connect(socket, "epgm://eth0;239.192.1.1:5555");
 assert (rc == 0);
-/* Connecting to the multicast address 239.192.1.1, port 5555, */
-/* using the network interface with the address 192.168.1.1 */
-/* and the standard PGM protocol */
+//  Connecting to the multicast address 239.192.1.1, port 5555,
+//  using the network interface with the address 192.168.1.1
+//  and the standard PGM protocol
 rc = zmq_connect(socket, "pgm://192.168.1.1;239.192.1.1:5555");
 assert (rc == 0);
 ----
@@ -158,5 +158,5 @@ linkzmq:zmq[7]
 
 AUTHORS
 -------
-This 0MQ manual page was written by Martin Sustrik <sustrik@250bpm.com> and
-Martin Lucina <mato@kotelna.sk>.
+This 0MQ manual page was written by Pieter Hintjens <ph@imatix.com>,
+Martin Sustrik <sustrik@250bpm.com> and Martin Lucina <mato@kotelna.sk>.

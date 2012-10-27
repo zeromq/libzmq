@@ -4,7 +4,7 @@ zmq_bind(3)
 
 NAME
 ----
-zmq_bind - accept connections on a socket
+zmq_bind - accept incoming connections on a socket
 
 
 SYNOPSIS
@@ -14,34 +14,41 @@ SYNOPSIS
 
 DESCRIPTION
 -----------
-The _zmq_bind()_ function shall create an endpoint for accepting connections
-and bind it to the socket referenced by the 'socket' argument.
+The _zmq_bind()_ function binds the 'socket' to a local 'endpoint' and then
+accepts incoming connections on that endpoint.
 
-The 'endpoint' argument is a string consisting of two parts as follows:
-'transport'`://`'address'. The 'transport' part specifies the underlying
-transport protocol to use. The meaning of the 'address' part is specific to
-the underlying transport protocol selected.
+The 'endpoint' is a string consisting of a 'transport'`://` followed by an
+'address'. The 'transport' specifies the underlying protocol to use. The
+'address' specifies the transport-specific address to bind to.
 
-The following transports are defined:
+0MQ provides the the following transports:
 
-'inproc':: local in-process (inter-thread) communication transport, see linkzmq:zmq_inproc[7]
-'ipc':: local inter-process communication transport, see linkzmq:zmq_ipc[7]
 'tcp':: unicast transport using TCP, see linkzmq:zmq_tcp[7]
+'ipc':: local inter-process communication transport, see linkzmq:zmq_ipc[7]
+'inproc':: local in-process (inter-thread) communication transport, see linkzmq:zmq_inproc[7]
 'pgm', 'epgm':: reliable multicast transport using PGM, see linkzmq:zmq_pgm[7]
 
-ZeroMQ sockets support one-to-many and many-to-one semantics. With the exception 
-of 'ZMQ_PAIR' sockets every ZeroMQ socket type supports being bound with 
-_zmq_bind()_ as a singular endpoint or connecting with _zmq_connect()_ as one 
-of many endpoints. This allows combinations such as 1 ZMQ_REP to 100 ZMQ_REP and 
-100 ZMQ_REQ to 1 ZMQ_REP socket connections. Refer to linkzmq:zmq_socket[3] for 
-a description of the exact semantics involved when connecting or binding a socket 
-to multiple endpoints.
+Every 0MQ socket type except 'ZMQ_PAIR' supports one-to-many and many-to-one
+semantics. The precise semantics depend on the socket type and are defined in
+linkzmq:zmq_socket[3].
+
+The 'ipc' and 'tcp' transports accept wildcard addresses: see linkzmq:zmq_ipc[7]
+and linkzmq:zmq_tcp[7] for details.
+
+NOTE: the address syntax may be different for _zmq_bind()_ and _zmq_connect()_
+especially for the 'tcp', 'pgm' and 'epgm' transports.
+
+NOTE: following a _zmq_bind()_, the socket enters a 'mute' state unless or
+until at least one incoming or outgoing connection is made, at which point
+the socket enters a 'ready' state. In the mute state, the socket blocks or
+drops messages according to the socket type, as defined in linkzmq:zmq_socket[3].
+By contrast, following a libzmq:zmq_connect[3], the socket enters the 'ready' state.
 
 
 RETURN VALUE
 ------------
-The _zmq_bind()_ function shall return zero if successful. Otherwise it shall
-return `-1` and set 'errno' to one of the values defined below.
+The _zmq_bind()_ function returns zero if successful. Otherwise it returns
+`-1` and sets 'errno' to one of the values defined below.
 
 
 ERRORS
@@ -91,5 +98,5 @@ linkzmq:zmq[7]
 
 AUTHORS
 -------
-This 0MQ manual page was written by Martin Sustrik <sustrik@250bpm.com> and
-Martin Lucina <mato@kotelna.sk>.
+This 0MQ manual page was written by Pieter Hintjens <ph@imatix.com>,
+Martin Sustrik <sustrik@250bpm.com> and Martin Lucina <mato@kotelna.sk>.

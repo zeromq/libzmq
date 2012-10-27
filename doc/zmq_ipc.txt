@@ -18,21 +18,30 @@ systems that provide UNIX domain sockets.
 
 ADDRESSING
 ----------
-A 0MQ address string consists of two parts as follows:
-'transport'`://`'endpoint'. The 'transport' part specifies the underlying
-transport protocol to use, and for the inter-process transport shall be set to
-`ipc`.  The meaning of the 'endpoint' part for the inter-process transport is
-defined below.
+A 0MQ endpoint is a string consisting of a 'transport'`://` followed by an
+'address'. The 'transport' specifies the underlying protocol to use. The
+'address' specifies the transport-specific address to connect to.
+
+For the inter-process transport, the transport is `ipc`, and the meaning of
+the 'address' part is defined below.
 
 
-Assigning a local address to a socket
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-When assigning a local address to a 'socket' using _zmq_bind()_ with the 'ipc'
+Binding a socket
+~~~~~~~~~~~~~~~~
+When binding a 'socket' to a local address using _zmq_bind()_ with the 'ipc'
 transport, the 'endpoint' shall be interpreted as an arbitrary string
 identifying the 'pathname' to create. The 'pathname' must be unique within the
 operating system namespace used by the 'ipc' implementation, and must fulfill
 any restrictions placed by the operating system on the format and length of a
 'pathname'.
+
+When the address is `*`, _zmq_bind()_ shall generate a unique temporary
+pathname. The caller should retrieve this pathname using the ZMQ_LAST_ENDPOINT
+socket option. See linkzmq:zmq_getsockopt[3] for details.
+
+NOTE: any existing binding to the same endpoint shall be overridden. In this
+behavior, the 'ipc' transport is not consistent with the 'tcp' or 'inproc'
+transports.
 
 Connecting a socket
 ~~~~~~~~~~~~~~~~~~~
@@ -43,23 +52,18 @@ previously created within the operating system namespace by assigning it to a
 'socket' with _zmq_bind()_.
 
 
-WIRE FORMAT
------------
-Not applicable.
-
-
 EXAMPLES
 --------
 .Assigning a local address to a socket
 ----
-/* Assign the pathname "/tmp/feeds/0" */
+//  Assign the pathname "/tmp/feeds/0"
 rc = zmq_bind(socket, "ipc:///tmp/feeds/0");
 assert (rc == 0);
 ----
 
 .Connecting a socket
 ----
-/* Connect to the pathname "/tmp/feeds/0" */
+//  Connect to the pathname "/tmp/feeds/0"
 rc = zmq_connect(socket, "ipc:///tmp/feeds/0");
 assert (rc == 0);
 ----
@@ -71,10 +75,11 @@ linkzmq:zmq_connect[3]
 linkzmq:zmq_inproc[7]
 linkzmq:zmq_tcp[7]
 linkzmq:zmq_pgm[7]
+linkzmq:zmq_getsockopt[3]
 linkzmq:zmq[7]
 
 
 AUTHORS
 -------
-This 0MQ manual page was written by Martin Sustrik <sustrik@250bpm.com> and
-Martin Lucina <mato@kotelna.sk>.
+This 0MQ manual page was written by Pieter Hintjens <ph@imatix.com>,
+Martin Sustrik <sustrik@250bpm.com> and Martin Lucina <mato@kotelna.sk>.

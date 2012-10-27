@@ -4,7 +4,7 @@ zmq_connect(3)
 
 NAME
 ----
-zmq_connect - connect a socket
+zmq_connect - create outgoing connection from socket
 
 
 SYNOPSIS
@@ -14,42 +14,43 @@ SYNOPSIS
 
 DESCRIPTION
 -----------
-The _zmq_connect()_ function shall connect the socket referenced by the
-'socket' argument to the endpoint specified by the 'endpoint' argument.
+The _zmq_connect()_ function connects the 'socket' to an 'endpoint' and then
+accepts incoming connections on that endpoint.
 
-The 'endpoint' argument is a string consisting of two parts as follows:
-'transport'`://`'address'. The 'transport' part specifies the underlying
-transport protocol to use. The meaning of the 'address' part is specific to
-the underlying transport protocol selected.
+The 'endpoint' is a string consisting of a 'transport'`://` followed by an
+'address'. The 'transport' specifies the underlying protocol to use. The
+'address' specifies the transport-specific address to connect to.
 
-The following transports are defined:
+0MQ provides the the following transports:
 
-'inproc':: local in-process (inter-thread) communication transport, see linkzmq:zmq_inproc[7]
-'ipc':: local inter-process communication transport, see linkzmq:zmq_ipc[7]
 'tcp':: unicast transport using TCP, see linkzmq:zmq_tcp[7]
+'ipc':: local inter-process communication transport, see linkzmq:zmq_ipc[7]
+'inproc':: local in-process (inter-thread) communication transport, see linkzmq:zmq_inproc[7]
 'pgm', 'epgm':: reliable multicast transport using PGM, see linkzmq:zmq_pgm[7]
 
-ZeroMQ sockets support one-to-many and many-to-one semantics. With the exception 
-of 'ZMQ_PAIR' sockets every ZeroMQ socket type supports being bound with 
-_zmq_bind()_ as a singular endpoint or connecting with _zmq_connect()_ as one 
-of many endpoints. This allows combinations such as 1 ZMQ_REP to 100 ZMQ_REP and 
-100 ZMQ_REQ to 1 ZMQ_REP socket connections. Refer to linkzmq:zmq_socket[3] for 
-a description of the exact semantics involved when connecting or binding a socket 
-to multiple endpoints.
+Every 0MQ socket type except 'ZMQ_PAIR' supports one-to-many and many-to-one
+semantics. The precise semantics depend on the socket type and are defined in
+linkzmq:zmq_socket[3].
 
-NOTE: The connection will not be performed immediately but as needed by 0MQ.
-Thus a successful invocation of _zmq_connect()_ does not indicate that a
-physical connection was or can actually be established. Because of this, for most 
-socket types the order in which a listening socket is bound and a connecting socket 
-is connected does not matter. However, for inproc:// scheme sockets, the zmq_bind() 
-must be executed before any sockets zmq_connect() to that endpoint. Refer to 
-linkzmq:zmq_inproc[7] for more details.
+NOTE: for most transports and socket types the connection is not performed
+immediately but as needed by 0MQ. Thus a successful call to _zmq_connect()_
+does not mean that the connection was or could actually be established.
+Because of this, for most transports and socket types the order in which
+a 'server' socket is bound and a 'client' socket is connected to it does not
+matter. The first exception is when using the inproc:// transport: you must
+call _zmq_bind()_ before calling _zmq_connect()_. The second exception are
+_ZMQ_PAIR_ sockets, which do not automatically reconnect to endpoints.
+
+NOTE: following a _zmq_connect()_, the socket enters its normal 'ready' state.
+By contrast, following a _zmq_bind()_ alone, the socket enters a 'mute' state
+in which the socket blocks or drops messages according to the socket type, as
+defined in linkzmq:zmq_socket[3].
 
 
 RETURN VALUE
 ------------
-The _zmq_connect()_ function shall return zero if successful. Otherwise it
-shall return `-1` and set 'errno' to one of the values defined below.
+The _zmq_connect()_ function returns zero if successful. Otherwise it returns
+`-1` and sets 'errno' to one of the values defined below.
 
 
 ERRORS
@@ -93,5 +94,5 @@ linkzmq:zmq[7]
 
 AUTHORS
 -------
-This 0MQ manual page was written by Martin Sustrik <sustrik@250bpm.com> and
-Martin Lucina <mato@kotelna.sk>.
+This 0MQ manual page was written by Pieter Hintjens <ph@imatix.com>,
+Martin Sustrik <sustrik@250bpm.com> and Martin Lucina <mato@kotelna.sk>.
