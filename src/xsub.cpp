@@ -99,10 +99,8 @@ int zmq::xsub_t::xsend (msg_t *msg_, int flags_)
 	// however this is alread done on the XPUB side and
 	// doing it here as well breaks ZMQ_XPUB_VERBOSE
 	// when there are forwarding devices involved
-	//
-        //if (subscriptions.add (data + 1, size - 1))
-	subscriptions.add (data + 1, size - 1);
-            return dist.send_to_all (msg_, flags_);
+        subscriptions.add (data + 1, size - 1);
+        return dist.send_to_all (msg_, flags_);
     }
     else {
         if (subscriptions.rm (data + 1, size - 1))
