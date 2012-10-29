@@ -677,11 +677,6 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
         return -1;
     }
 
-    //  Get the message.
-    int rc = xrecv (msg_, flags_);
-    if (unlikely (rc != 0 && errno != EAGAIN))
-        return -1;
-
     //  Once every inbound_poll_rate messages check for signals and process
     //  incoming commands. This happens only if we are not polling altogether
     //  because there are messages available all the time. If poll occurs,
@@ -695,6 +690,11 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
             return -1;
         ticks = 0;
     }
+
+    //  Get the message.
+    int rc = xrecv (msg_, flags_);
+    if (unlikely (rc != 0 && errno != EAGAIN))
+        return -1;
 
     //  If we have the message, return immediately.
     if (rc == 0) {
