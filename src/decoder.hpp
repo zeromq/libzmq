@@ -143,6 +143,11 @@ namespace zmq
             }
         }
 
+        inline bool message_ready_size (size_t msg_sz){
+            zmq_assert(false);
+            return false;
+        }
+
     protected:
 
         //  Prototype of state machine action. Action should return false if
