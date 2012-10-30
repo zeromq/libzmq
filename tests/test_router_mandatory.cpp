@@ -50,7 +50,7 @@ int main (void)
 
     // Send a message and check that it fails
     rc = zmq_send (sa, "UNKNOWN", 7, ZMQ_SNDMORE | ZMQ_DONTWAIT);
-    assert (rc == -1 && errno == EAGAIN);
+    assert (rc == -1 && errno == EHOSTUNREACH);
 
     rc = zmq_close (sa);
     assert (rc == 0);
