@@ -78,8 +78,8 @@ void zmq::router_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
 int zmq::router_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
-    if (option_ != ZMQ_ROUTER_MANDATORY &&
-        option_ != ZMQ_ROUTER_RAW_SOCK) {
+    if (option_ != ZMQ_ROUTER_MANDATORY
+    &&  option_ != ZMQ_ROUTER_RAW_SOCK) {
         errno = EINVAL;
         return -1;
     }
@@ -87,16 +87,15 @@ int zmq::router_t::xsetsockopt (int option_, const void *optval_,
         errno = EINVAL;
         return -1;
     }
-    if(option_ == ZMQ_ROUTER_RAW_SOCK){
-    	raw_sock = *static_cast <const int*> (optval_);
-    	if(raw_sock){
+    if (option_ == ZMQ_ROUTER_RAW_SOCK) {
+        raw_sock = *static_cast <const int*> (optval_);
+        if (raw_sock) {
             options.recv_identity = false;
             options.raw_sock = true;
         }
-
-    }else{
-        mandatory = *static_cast <const int*> (optval_);
     }
+    else
+        mandatory = *static_cast <const int*> (optval_);
     return 0;
 }
 
@@ -170,8 +169,8 @@ int zmq::router_t::xsend (msg_t *msg_, int flags_)
                     it->second.active = false;
                     current_out = NULL;
                 }
-            } 
-            else 
+            }
+            else
             if (mandatory) {
                 more_out = false;
                 errno = EHOSTUNREACH;
@@ -186,9 +185,9 @@ int zmq::router_t::xsend (msg_t *msg_, int flags_)
         return 0;
     }
 
-    // ignore the MORE flag for raw-sock or assert?
-    if(options.raw_sock)
-        msg_->reset_flags(msg_t::more);
+    //  Ignore the MORE flag for raw-sock or assert?
+    if (options.raw_sock)
+        msg_->reset_flags (msg_t::more);
 
     //  Check whether this is the last part of the message.
     more_out = msg_->flags () & msg_t::more ? true : false;
@@ -199,13 +198,13 @@ int zmq::router_t::xsend (msg_t *msg_, int flags_)
         // Close the remote connection if user has asked to do so
         // by sending zero length message.
         // Pending messages in the pipe will be dropped (on receiving term- ack)
-        if (raw_sock && msg_->size() == 0){    		
-    	    current_out->terminate(false);
+        if (raw_sock && msg_->size() == 0) {
+            current_out->terminate (false);
             int rc = msg_->close ();
             errno_assert (rc == 0);
             current_out = NULL;
             return 0;
-    	}
+        }
 
         bool ok = current_out->write (msg_);
         if (unlikely (!ok))
@@ -349,12 +348,13 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
     blob_t identity;
     bool ok;
 
-    if(options.raw_sock){ // always assign identity for raw-socket
+    if (options.raw_sock) { //  Always assign identity for raw-socket
         unsigned char buf [5];
         buf [0] = 0;
         put_uint32 (buf + 1, next_peer_id++);
         identity = blob_t (buf, sizeof buf);
-    }else{
+    }
+    else {
         msg.init ();
         ok = pipe_->read (&msg);
         if (!ok)

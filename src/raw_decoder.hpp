@@ -38,7 +38,7 @@ namespace zmq
     {
     public:
 
-    	raw_decoder_t (size_t bufsize_,
+        raw_decoder_t (size_t bufsize_,
             int64_t maxmsgsize_, i_msg_sink *msg_sink_);
         virtual ~raw_decoder_t ();
 

@@ -93,7 +93,7 @@ bool zmq::raw_decoder_t::raw_message_ready ()
     // raw_message_ready should never get called in state machine w/o
     // message_ready_size from stream_engine.
     next_step (in_progress.data (), 1,
-    		&raw_decoder_t::raw_message_ready);
+        &raw_decoder_t::raw_message_ready);
 
     return true;
 }
