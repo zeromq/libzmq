@@ -120,6 +120,11 @@ zmq::session_base_t::session_base_t (class io_thread_t *io_thread_,
     identity_received (false),
     addr (addr_)
 {
+    // identities are not exchanged for raw sockets
+    if(options.raw_sock){
+        identity_sent  = (true);
+        identity_received = (true);
+    }
 }
 
 zmq::session_base_t::~session_base_t ()
@@ -244,6 +249,15 @@ void zmq::session_base_t::terminated (pipe_t *pipe_)
     else
         // Remove the pipe from the detached pipes set
         terminating_pipes.erase (pipe_);
+
+    if (!is_terminating() && options.raw_sock){
+        if(engine){
+            engine->terminate ();
+            engine = NULL;
+        }
+        terminate();
+    }
+
 
     // If we are waiting for pending messages to be sent, at this point
     // we are sure that there will be no more messages and we can proceed

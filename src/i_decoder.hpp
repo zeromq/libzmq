@@ -41,7 +41,8 @@ namespace zmq
         virtual size_t process_buffer (unsigned char *data_, size_t size_) = 0;
 
         virtual bool stalled () const = 0;
-
+        
+        virtual bool message_ready_size (size_t msg_sz) = 0;
     };
 
 }

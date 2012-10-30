@@ -146,7 +146,11 @@ libzmq_la_SOURCES = \
     v1_protocol.hpp \
     xsub.cpp \
     zmq.cpp \
-    zmq_utils.cpp
+    zmq_utils.cpp \
+    raw_decoder.hpp \
+    raw_decoder.cpp \
+    raw_encoder.hpp \
+    raw_encoder.cpp
 
 if ON_MINGW
 libzmq_la_LDFLAGS = -no-undefined -avoid-version -version-info @LTVER@ @LIBZMQ_EXTRA_LDFLAGS@

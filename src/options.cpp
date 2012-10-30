@@ -55,6 +55,7 @@ zmq::options_t::options_t () :
     tcp_keepalive_intvl (-1),
     socket_id (0)
 {
+    raw_sock = false;
 }
 
 int zmq::options_t::setsockopt (int option_, const void *optval_,
