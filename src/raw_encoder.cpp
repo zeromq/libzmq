@@ -58,7 +58,6 @@ bool zmq::raw_encoder_t::raw_message_size_ready ()
 
 bool zmq::raw_encoder_t::raw_message_ready ()
 {
-
     //  Destroy content of the old message.
     int rc = in_progress.close ();
     errno_assert (rc == 0);

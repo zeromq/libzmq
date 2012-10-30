@@ -143,8 +143,9 @@ namespace zmq
             }
         }
 
-        inline bool message_ready_size (size_t msg_sz){
-            zmq_assert(false);
+        inline bool message_ready_size (size_t msg_sz)
+        {
+            zmq_assert (false);
             return false;
         }
 
