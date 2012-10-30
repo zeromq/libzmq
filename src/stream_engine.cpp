@@ -135,7 +135,7 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
     io_object_t::plug (io_thread_);
     handle = add_fd (s);
 
-    if(options.raw_sock){
+    if (options.raw_sock) {
         // no handshaking for raw sock, instantiate raw encoder and decoders
         encoder = new (std::nothrow) raw_encoder_t (out_batch_size, session);
         alloc_assert (encoder);
@@ -146,7 +146,8 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
 
         // disable handshaking for raw socket
         handshaking = false;
-    }else{
+    }
+    else {
         //  Send the 'length' and 'flags' fields of the identity message.
         //  The 'length' field is encoded in the long format.
         outpos = greeting_output_buffer;
@@ -215,13 +216,13 @@ void zmq::stream_engine_t::in_event ()
         }
     }
 
-    if(options.raw_sock){
-        if(insize == 0 || !decoder->message_ready_size(insize)){
-            processed =  0;
-        }else{
+    if (options.raw_sock) {
+        if (insize == 0 || !decoder->message_ready_size (insize))
+            processed = 0;
+        else
             processed = decoder->process_buffer (inpos, insize);
-        }
-    }else{
+    }
+    else {
         //  Push the data to the decoder.
         processed = decoder->process_buffer (inpos, insize);
     }
