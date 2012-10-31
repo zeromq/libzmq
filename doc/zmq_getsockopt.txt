@@ -117,6 +117,7 @@ Option value unit:: N/A (bitmap)
 Default value:: 0
 Applicable socket types:: N/A
 
+
 ZMQ_IDENTITY: Set socket identity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_IDENTITY' option shall retrieve the identity of the specified 'socket'.
@@ -270,7 +271,6 @@ Applicable socket types:: all, only for connection-oriented transports
 
 ZMQ_MAXMSGSIZE: Maximum acceptable inbound message size
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 The option shall retrieve limit for the inbound messages. If a peer sends
 a message larger than ZMQ_MAXMSGSIZE it is disconnected. Value of -1 means
 'no limit'.
@@ -284,7 +284,6 @@ Applicable socket types:: all
 
 ZMQ_MULTICAST_HOPS: Maximum network hops for multicast packets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 The option shall retrieve time-to-live used for outbound multicast packets.
 The default of 1 means that the multicast packets don't leave the local network.
 
@@ -297,7 +296,6 @@ Applicable socket types:: all, when using multicast transports
 
 ZMQ_RCVTIMEO: Maximum time before a socket operation returns with EAGAIN
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 Retrieve the timeout for recv operation on the socket.  If the value is `0`,
 _zmq_recv(3)_ will return immediately, with a EAGAIN error if there is no
 message to receive. If the value is `-1`, it will block until a message is
@@ -313,7 +311,6 @@ Applicable socket types:: all
 
 ZMQ_SNDTIMEO: Maximum time before a socket operation returns with EAGAIN
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 Retrieve the timeout for send operation on the socket. If the value is `0`,
 _zmq_send(3)_ will return immediately, with a EAGAIN error if the message
 cannot be sent. If the value is `-1`, it will block until the message is sent.
@@ -329,7 +326,6 @@ Applicable socket types:: all
 
 ZMQ_IPV4ONLY: Retrieve IPv4-only socket override status
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 Retrieve the underlying native socket type.  A value of `1` will use IPv4
 sockets, while the value of `0` will use IPv6 sockets. An IPv6 socket
 lets applications connect to and accept connections from both IPv4 and IPv6
@@ -342,9 +338,8 @@ Default value:: 1 (true)
 Applicable socket types:: all, when using TCP transports.
 
 
-ZMQ_DELAY_ATTACH_ON_CONNECT
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+ZMQ_DELAY_ATTACH_ON_CONNECT: Retrieve attach-on-connect value
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Retrieve the state of the attach on connect value. If set to `1`, will delay the
 attachment of a pipe on connect until the underlying connection has completed.
 This will cause the socket to block if there are no other connections, but will
@@ -413,6 +408,7 @@ Option value unit:: N/A (flags)
 Default value:: N/A
 Applicable socket types:: all
 
+
 ZMQ_LAST_ENDPOINT: Retrieve the last endpoint set
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_LAST_ENDPOINT' option shall retrieve the last endpoint bound for 
@@ -426,6 +422,7 @@ Option value unit:: N/A
 Default value:: NULL
 Applicable socket types:: all, when binding TCP or IPC transports
 
+
 ZMQ_TCP_KEEPALIVE: Override SO_KEEPALIVE socket option
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Override 'SO_KEEPALIVE' socket option(where supported by OS).
@@ -436,6 +433,7 @@ Option value type:: int
 Option value unit:: -1,0,1
 Default value:: -1 (leave to OS default)
 Applicable socket types:: all, when using TCP transports.
+
 
 ZMQ_TCP_KEEPALIVE_IDLE: Override TCP_KEEPCNT(or TCP_KEEPALIVE on some OS)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -448,6 +446,7 @@ Option value unit:: -1,>0
 Default value:: -1 (leave to OS default)
 Applicable socket types:: all, when using TCP transports.
 
+
 ZMQ_TCP_KEEPALIVE_CNT: Override TCP_KEEPCNT socket option
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Override 'TCP_KEEPCNT' socket option(where supported by OS).
@@ -458,6 +457,7 @@ Option value type:: int
 Option value unit:: -1,>0
 Default value:: -1 (leave to OS default)
 Applicable socket types:: all, when using TCP transports.
+
 
 ZMQ_TCP_KEEPALIVE_INTVL: Override TCP_KEEPINTVL socket option
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
