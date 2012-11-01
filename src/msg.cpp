@@ -283,7 +283,14 @@ bool zmq::msg_t::rm_refs (int refs_)
 
     //  The only message type that needs special care are long messages.
     if (!u.lmsg.content->refcnt.sub (refs_)) {
-        close ();
+        //  We used "placement new" operator to initialize the reference
+        //  counter so we call the destructor explicitly now.
+        u.lmsg.content->refcnt.~atomic_counter_t ();
+
+        if (u.lmsg.content->ffn)
+            u.lmsg.content->ffn (u.lmsg.content->data, u.lmsg.content->hint);
+        free (u.lmsg.content);
+
         return false;
     }
 
