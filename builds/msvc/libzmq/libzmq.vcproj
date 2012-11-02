@@ -64,6 +64,7 @@
 				OutputFile="../../../lib/libzmq.dll"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
+				LinkDLL="true"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -138,6 +139,7 @@
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				TargetMachine="1"
+				LinkDLL="true"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -215,6 +217,7 @@
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				TargetMachine="1"
+				LinkDLL="true"
 			/>
 			<Tool
 				Name="VCALinkTool"
