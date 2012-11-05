@@ -382,15 +382,15 @@ typedef struct
 
 ZMQ_EXPORT int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
 
-//  Built-in message proxy (3-way)
+/*  Built-in message proxy (3-way) */
 
 ZMQ_EXPORT int zmq_proxy (void *frontend, void *backend, void *capture);
 
-//  Deprecated aliases
+/*  Deprecated aliases */
 #define ZMQ_STREAMER 1
 #define ZMQ_FORWARDER 2
 #define ZMQ_QUEUE 3
-//  Deprecated method
+/*  Deprecated method */
 ZMQ_EXPORT int zmq_device (int type, void *frontend, void *backend);
 
 #undef ZMQ_EXPORT
