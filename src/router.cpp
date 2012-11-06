@@ -79,7 +79,7 @@ int zmq::router_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
     if (option_ != ZMQ_ROUTER_MANDATORY
-    &&  option_ != ZMQ_ROUTER_RAW_SOCK) {
+    &&  option_ != ZMQ_ROUTER_RAW) {
         errno = EINVAL;
         return -1;
     }
@@ -87,7 +87,7 @@ int zmq::router_t::xsetsockopt (int option_, const void *optval_,
         errno = EINVAL;
         return -1;
     }
-    if (option_ == ZMQ_ROUTER_RAW_SOCK) {
+    if (option_ == ZMQ_ROUTER_RAW) {
         raw_sock = *static_cast <const int*> (optval_);
         if (raw_sock) {
             options.recv_identity = false;

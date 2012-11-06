@@ -110,7 +110,7 @@ int main ()
     assert (sb);
 
     int raw_sock = 1;
-    int rc = zmq_setsockopt (sb, ZMQ_ROUTER_RAW_SOCK, &raw_sock, sizeof raw_sock);
+    int rc = zmq_setsockopt (sb, ZMQ_ROUTER_RAW, &raw_sock, sizeof raw_sock);
     assert (rc == 0);
     rc = zmq_bind (sb, "tcp://127.0.0.1:5555");
     assert (rc == 0);
