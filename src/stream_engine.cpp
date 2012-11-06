@@ -263,8 +263,15 @@ void zmq::stream_engine_t::out_event ()
     //  If write buffer is empty, try to read new data from the encoder.
     if (!outsize) {
 
+        //  Even when we stop polling as soon as there is no
+        //  data to send, the poller may invoke out_event one
+        //  more time due to 'speculative write' optimisation.
+        if (unlikely (encoder == NULL)) {
+            zmq_assert (handshaking);
+            return;
+        }
+
         outpos = NULL;
-        zmq_assert (encoder);
         encoder->get_data (&outpos, &outsize);
 
         //  If there is no data to send, stop polling for output.
