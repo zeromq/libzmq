@@ -39,7 +39,7 @@ zmq::req_t::~req_t ()
 {
 }
 
-int zmq::req_t::xsend (msg_t *msg_, int flags_)
+int zmq::req_t::xsend (msg_t *msg_)
 {
     //  If we've sent a request and we still haven't got the reply,
     //  we can't send another request.
@@ -54,7 +54,7 @@ int zmq::req_t::xsend (msg_t *msg_, int flags_)
         int rc = bottom.init ();
         errno_assert (rc == 0);
         bottom.set_flags (msg_t::more);
-        rc = dealer_t::xsend (&bottom, 0);
+        rc = dealer_t::xsend (&bottom);
         if (rc != 0)
             return -1;
         message_begins = false;
@@ -62,7 +62,7 @@ int zmq::req_t::xsend (msg_t *msg_, int flags_)
 
     bool more = msg_->flags () & msg_t::more ? true : false;
 
-    int rc = dealer_t::xsend (msg_, flags_);
+    int rc = dealer_t::xsend (msg_);
     if (rc != 0)
         return rc;
 
@@ -75,7 +75,7 @@ int zmq::req_t::xsend (msg_t *msg_, int flags_)
     return 0;
 }
 
-int zmq::req_t::xrecv (msg_t *msg_, int flags_)
+int zmq::req_t::xrecv (msg_t *msg_)
 {
     //  If request wasn't send, we can't wait for reply.
     if (!receiving_reply) {
@@ -85,14 +85,14 @@ int zmq::req_t::xrecv (msg_t *msg_, int flags_)
 
     //  First part of the reply should be the original request ID.
     if (message_begins) {
-        int rc = dealer_t::xrecv (msg_, flags_);
+        int rc = dealer_t::xrecv (msg_);
         if (rc != 0)
             return rc;
 
         // TODO: This should also close the connection with the peer!
         if (unlikely (!(msg_->flags () & msg_t::more) || msg_->size () != 0)) {
             while (true) {
-                int rc = dealer_t::xrecv (msg_, flags_);
+                int rc = dealer_t::xrecv (msg_);
                 errno_assert (rc == 0);
                 if (!(msg_->flags () & msg_t::more))
                     break;
@@ -106,7 +106,7 @@ int zmq::req_t::xrecv (msg_t *msg_, int flags_)
         message_begins = false;
     }
 
-    int rc = dealer_t::xrecv (msg_, flags_);
+    int rc = dealer_t::xrecv (msg_);
     if (rc != 0)
         return rc;
 

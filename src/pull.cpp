@@ -53,11 +53,8 @@ void zmq::pull_t::xterminated (pipe_t *pipe_)
     fq.terminated (pipe_);
 }
 
-int zmq::pull_t::xrecv (msg_t *msg_, int flags_)
+int zmq::pull_t::xrecv (msg_t *msg_)
 {
-    // flags_ is unused
-    (void)flags_;
-
     return fq.recv (msg_);
 }
 

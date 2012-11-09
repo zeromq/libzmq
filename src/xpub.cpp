@@ -115,7 +115,7 @@ void zmq::xpub_t::mark_as_matching (pipe_t *pipe_, void *arg_)
     self->dist.match (pipe_);
 }
 
-int zmq::xpub_t::xsend (msg_t *msg_, int flags_)
+int zmq::xpub_t::xsend (msg_t *msg_)
 {
     bool msg_more = msg_->flags () & msg_t::more ? true : false;
 
@@ -126,7 +126,7 @@ int zmq::xpub_t::xsend (msg_t *msg_, int flags_)
 
     //  Send the message to all the pipes that were marked as matching
     //  in the previous step.
-    int rc = dist.send_to_matching (msg_, flags_);
+    int rc = dist.send_to_matching (msg_);
     if (rc != 0)
         return rc;
 
@@ -145,11 +145,8 @@ bool zmq::xpub_t::xhas_out ()
     return dist.has_out ();
 }
 
-int zmq::xpub_t::xrecv (msg_t *msg_, int flags_)
+int zmq::xpub_t::xrecv (msg_t *msg_)
 {
-    // flags_ is unused
-    (void)flags_;
-
     //  If there is at least one 
     if (pending.empty ()) {
         errno = EAGAIN;

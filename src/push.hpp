@@ -46,7 +46,7 @@ namespace zmq
 
         //  Overloads of functions from socket_base_t.
         void xattach_pipe (zmq::pipe_t *pipe_, bool icanhasall_);
-        int xsend (zmq::msg_t *msg_, int flags_);
+        int xsend (zmq::msg_t *msg_);
         bool xhas_out ();
         void xwrite_activated (zmq::pipe_t *pipe_);
         void xterminated (zmq::pipe_t *pipe_);
