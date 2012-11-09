@@ -133,6 +133,8 @@ set(cxx-sources
 	pull.cpp
 	push.cpp
 	random.cpp
+	raw_encoder.cpp
+	raw_decoder.cpp
 	reaper.cpp
 	rep.cpp
 	req.cpp
