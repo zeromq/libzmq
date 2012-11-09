@@ -35,8 +35,6 @@ zmq::dealer_t::dealer_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     //  be noone to receive the replies anyway.
     //  options.delay_on_close = false;
 
-    options.recv_identity = true;
-
     prefetched_msg.init ();
 }
 
@@ -73,15 +71,7 @@ int zmq::dealer_t::xrecv (msg_t *msg_, int flags_)
         return 0;
     }
 
-    //  DEALER socket doesn't use identities. We can safely drop it and 
-    while (true) {
-        int rc = fq.recv (msg_);
-        if (rc != 0)
-            return rc;
-        if (likely (!(msg_->flags () & msg_t::identity)))
-            break;
-    }
-    return 0;
+    return fq.recv (msg_);
 }
 
 bool zmq::dealer_t::xhas_in ()

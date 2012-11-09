@@ -20,8 +20,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdarg.h>
-
 #include "session_base.hpp"
 #include "i_engine.hpp"
 #include "err.hpp"
