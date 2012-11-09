@@ -62,12 +62,6 @@ namespace zmq
         fq_t fq;
         lb_t lb;
 
-        //  Have we prefetched a message.
-        bool prefetched;
-
-        //  Holds the prefetched message.
-        msg_t prefetched_msg;
-
         dealer_t (const dealer_t&);
         const dealer_t &operator = (const dealer_t&);
     };
