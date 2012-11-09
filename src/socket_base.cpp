@@ -428,15 +428,11 @@ int zmq::socket_base_t::connect (const char *addr_)
 
         // The total HWM for an inproc connection should be the sum of
         // the binder's HWM and the connector's HWM.
-        int  sndhwm;
-        int  rcvhwm;
-        if (options.sndhwm == 0 || peer.options.rcvhwm == 0)
-            sndhwm = 0;
-        else
+        int sndhwm = 0;
+        if (options.sndhwm != 0 && peer.options.rcvhwm != 0)
             sndhwm = options.sndhwm + peer.options.rcvhwm;
-        if (options.rcvhwm == 0 || peer.options.sndhwm == 0)
-            rcvhwm = 0;
-        else
+        int rcvhwm = 0;
+        if (options.rcvhwm != 0 && peer.options.sndhwm != 0)
             rcvhwm = options.rcvhwm + peer.options.sndhwm;
 
         //  Create a bi-directional pipe to connect the peers.
@@ -1034,7 +1030,7 @@ int zmq::socket_base_t::monitor (const char *addr_, int events_)
 
     // Register events to monitor
     monitor_events = events_;
-    monitor_socket = zmq_socket( get_ctx (), ZMQ_PAIR);
+    monitor_socket = zmq_socket (get_ctx (), ZMQ_PAIR);
     if (monitor_socket == NULL)
         return -1;
 
@@ -1056,7 +1052,7 @@ void zmq::socket_base_t::event_connected (const char *addr_, int fd_)
     if (monitor_events & ZMQ_EVENT_CONNECTED) {
         zmq_event_t event;
         event.event = ZMQ_EVENT_CONNECTED;
-        event.data.connected.addr = (char *) addr_;
+        event.data.connected.addr = const_cast <char *> (addr_);
         event.data.connected.fd = fd_;
         monitor_event (event);
     }
@@ -1067,7 +1063,7 @@ void zmq::socket_base_t::event_connect_delayed (const char *addr_, int err_)
     if (monitor_events & ZMQ_EVENT_CONNECT_DELAYED) {
         zmq_event_t event;
         event.event = ZMQ_EVENT_CONNECT_DELAYED;
-        event.data.connected.addr = (char *) addr_;
+        event.data.connected.addr = const_cast <char *> (addr_);
         event.data.connect_delayed.err = err_;
         monitor_event (event);
     }
@@ -1078,7 +1074,7 @@ void zmq::socket_base_t::event_connect_retried (const char *addr_, int interval_
     if (monitor_events & ZMQ_EVENT_CONNECT_RETRIED) {
         zmq_event_t event;
         event.event = ZMQ_EVENT_CONNECT_RETRIED;
-        event.data.connected.addr = (char *) addr_;
+        event.data.connected.addr = const_cast <char *> (addr_);
         event.data.connect_retried.interval = interval_;
         monitor_event (event);
     }
@@ -1089,7 +1085,7 @@ void zmq::socket_base_t::event_listening (const char *addr_, int fd_)
     if (monitor_events & ZMQ_EVENT_LISTENING) {
         zmq_event_t event;
         event.event = ZMQ_EVENT_LISTENING;
-        event.data.connected.addr = (char *) addr_;
+        event.data.connected.addr = const_cast <char *> (addr_);
         event.data.listening.fd = fd_;
         monitor_event (event);
     }
@@ -1100,7 +1096,7 @@ void zmq::socket_base_t::event_bind_failed (const char *addr_, int err_)
     if (monitor_events & ZMQ_EVENT_BIND_FAILED) {
         zmq_event_t event;
         event.event = ZMQ_EVENT_BIND_FAILED;
-        event.data.connected.addr = (char *) addr_;
+        event.data.connected.addr = const_cast <char *> (addr_);
         event.data.bind_failed.err = err_;
         monitor_event (event);
     }
@@ -1111,7 +1107,7 @@ void zmq::socket_base_t::event_accepted (const char *addr_, int fd_)
     if (monitor_events & ZMQ_EVENT_ACCEPTED) {
         zmq_event_t event;
         event.event = ZMQ_EVENT_ACCEPTED;
-        event.data.connected.addr = (char *) addr_;
+        event.data.connected.addr = const_cast <char *> (addr_);
         event.data.accepted.fd = fd_;
         monitor_event (event);
     }
@@ -1122,7 +1118,7 @@ void zmq::socket_base_t::event_accept_failed (const char *addr_, int err_)
     if (monitor_events & ZMQ_EVENT_ACCEPT_FAILED) {
         zmq_event_t event;
         event.event = ZMQ_EVENT_ACCEPT_FAILED;
-        event.data.connected.addr = (char *) addr_;
+        event.data.connected.addr = const_cast <char *> (addr_);
         event.data.accept_failed.err= err_;
         monitor_event (event);
     }
@@ -1133,7 +1129,7 @@ void zmq::socket_base_t::event_closed (const char *addr_, int fd_)
     if (monitor_events & ZMQ_EVENT_CLOSED) {
         zmq_event_t event;
         event.event = ZMQ_EVENT_CLOSED;
-        event.data.connected.addr = (char *) addr_;
+        event.data.connected.addr = const_cast <char *> (addr_);
         event.data.closed.fd = fd_;
         monitor_event (event);
     }
@@ -1144,7 +1140,7 @@ void zmq::socket_base_t::event_close_failed (const char *addr_, int err_)
     if (monitor_events & ZMQ_EVENT_CLOSE_FAILED) {
         zmq_event_t event;
         event.event = ZMQ_EVENT_CLOSE_FAILED;
-        event.data.connected.addr = (char *) addr_;
+        event.data.connected.addr = const_cast <char *> (addr_);
         event.data.close_failed.err = err_;
         monitor_event (event);
     }
@@ -1155,7 +1151,7 @@ void zmq::socket_base_t::event_disconnected (const char *addr_, int fd_)
     if (monitor_events & ZMQ_EVENT_DISCONNECTED) {
         zmq_event_t event;
         event.event = ZMQ_EVENT_DISCONNECTED;
-        event.data.connected.addr = (char *) addr_;
+        event.data.connected.addr = const_cast <char *> (addr_);
         event.data.disconnected.fd = fd_;
         monitor_event (event);
     }

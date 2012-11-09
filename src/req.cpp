@@ -147,7 +147,6 @@ zmq::req_session_t::req_session_t (io_thread_t *io_thread_, bool connect_,
 
 zmq::req_session_t::~req_session_t ()
 {
-    state = options.recv_identity ? identity : bottom;
 }
 
 int zmq::req_session_t::push_msg (msg_t *msg_)
