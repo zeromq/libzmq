@@ -428,15 +428,11 @@ int zmq::socket_base_t::connect (const char *addr_)
 
         // The total HWM for an inproc connection should be the sum of
         // the binder's HWM and the connector's HWM.
-        int  sndhwm;
-        int  rcvhwm;
-        if (options.sndhwm == 0 || peer.options.rcvhwm == 0)
-            sndhwm = 0;
-        else
+        int sndhwm = 0;
+        if (options.sndhwm != 0 && peer.options.rcvhwm != 0)
             sndhwm = options.sndhwm + peer.options.rcvhwm;
-        if (options.rcvhwm == 0 || peer.options.sndhwm == 0)
-            rcvhwm = 0;
-        else
+        int rcvhwm = 0;
+        if (options.rcvhwm != 0 && peer.options.sndhwm != 0)
             rcvhwm = options.rcvhwm + peer.options.sndhwm;
 
         //  Create a bi-directional pipe to connect the peers.
@@ -1034,7 +1030,7 @@ int zmq::socket_base_t::monitor (const char *addr_, int events_)
 
     // Register events to monitor
     monitor_events = events_;
-    monitor_socket = zmq_socket( get_ctx (), ZMQ_PAIR);
+    monitor_socket = zmq_socket (get_ctx (), ZMQ_PAIR);
     if (monitor_socket == NULL)
         return -1;
 
