@@ -69,14 +69,14 @@ void zmq::pair_t::xwrite_activated (pipe_t *)
     //  There's nothing to do here.
 }
 
-int zmq::pair_t::xsend (msg_t *msg_, int flags_)
+int zmq::pair_t::xsend (msg_t *msg_)
 {
     if (!pipe || !pipe->write (msg_)) {
         errno = EAGAIN;
         return -1;
     }
 
-    if (!(flags_ & ZMQ_SNDMORE))
+    if (!(msg_->flags () & msg_t::more))
         pipe->flush ();
 
     //  Detach the original message from the data buffer.

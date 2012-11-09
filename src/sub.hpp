@@ -42,7 +42,7 @@ namespace zmq
     protected:
 
         int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
-        int xsend (zmq::msg_t *msg_, int flags_);
+        int xsend (zmq::msg_t *msg_);
         bool xhas_out ();
 
     private:

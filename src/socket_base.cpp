@@ -622,7 +622,7 @@ int zmq::socket_base_t::send (msg_t *msg_, int flags_)
         msg_->set_flags (msg_t::more);
 
     //  Try to send the message.
-    rc = xsend (msg_, flags_);
+    rc = xsend (msg_);
     if (rc == 0)
         return 0;
     if (unlikely (errno != EAGAIN))
@@ -644,7 +644,7 @@ int zmq::socket_base_t::send (msg_t *msg_, int flags_)
     while (true) {
         if (unlikely (process_commands (timeout, false) != 0))
             return -1;
-        rc = xsend (msg_, flags_);
+        rc = xsend (msg_);
         if (rc == 0)
             break;
         if (unlikely (errno != EAGAIN))
@@ -886,7 +886,7 @@ bool zmq::socket_base_t::xhas_out ()
     return false;
 }
 
-int zmq::socket_base_t::xsend (msg_t *, int)
+int zmq::socket_base_t::xsend (msg_t *)
 {
     errno = ENOTSUP;
     return -1;

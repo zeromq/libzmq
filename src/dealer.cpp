@@ -49,9 +49,9 @@ void zmq::dealer_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
     lb.attach (pipe_);
 }
 
-int zmq::dealer_t::xsend (msg_t *msg_, int flags_)
+int zmq::dealer_t::xsend (msg_t *msg_)
 {
-    return lb.send (msg_, flags_);
+    return lb.send (msg_);
 }
 
 int zmq::dealer_t::xrecv (msg_t *msg_, int flags_)

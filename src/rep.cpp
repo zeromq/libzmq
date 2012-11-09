@@ -35,7 +35,7 @@ zmq::rep_t::~rep_t ()
 {
 }
 
-int zmq::rep_t::xsend (msg_t *msg_, int flags_)
+int zmq::rep_t::xsend (msg_t *msg_)
 {
     //  If we are in the middle of receiving a request, we cannot send reply.
     if (!sending_reply) {
@@ -46,7 +46,7 @@ int zmq::rep_t::xsend (msg_t *msg_, int flags_)
     bool more = msg_->flags () & msg_t::more ? true : false;
 
     //  Push message to the reply pipe.
-    int rc = router_t::xsend (msg_, flags_);
+    int rc = router_t::xsend (msg_);
     if (rc != 0)
         return rc;
 
@@ -78,7 +78,7 @@ int zmq::rep_t::xrecv (msg_t *msg_, int flags_)
                 bool bottom = (msg_->size () == 0);
 
                 //  Push it to the reply pipe.
-                rc = router_t::xsend (msg_, flags_);
+                rc = router_t::xsend (msg_);
                 errno_assert (rc == 0);
 
                 if (bottom)

@@ -53,9 +53,9 @@ void zmq::push_t::xterminated (pipe_t *pipe_)
     lb.terminated (pipe_);
 }
 
-int zmq::push_t::xsend (msg_t *msg_, int flags_)
+int zmq::push_t::xsend (msg_t *msg_)
 {
-    return lb.send (msg_, flags_);
+    return lb.send (msg_);
 }
 
 bool zmq::push_t::xhas_out ()
