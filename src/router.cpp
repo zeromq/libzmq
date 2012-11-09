@@ -140,11 +140,8 @@ void zmq::router_t::xwrite_activated (pipe_t *pipe_)
     it->second.active = true;
 }
 
-int zmq::router_t::xsend (msg_t *msg_, int flags_)
+int zmq::router_t::xsend (msg_t *msg_)
 {
-    // flags_ is unused
-    (void)flags_;
-
     //  If this is the first part of the message it's the ID of the
     //  peer to send the message to.
     if (!more_out) {
@@ -227,11 +224,8 @@ int zmq::router_t::xsend (msg_t *msg_, int flags_)
     return 0;
 }
 
-int zmq::router_t::xrecv (msg_t *msg_, int flags_)
+int zmq::router_t::xrecv (msg_t *msg_)
 {
-    // flags_ is unused
-    (void)flags_;
-
     if (prefetched) {
         if (!identity_sent) {
             int rc = msg_->move (prefetched_id);

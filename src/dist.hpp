@@ -58,10 +58,10 @@ namespace zmq
         void terminated (zmq::pipe_t *pipe_);
 
         //  Send the message to the matching outbound pipes.
-        int send_to_matching (zmq::msg_t *msg_, int flags_);
+        int send_to_matching (zmq::msg_t *msg_);
 
         //  Send the message to all the outbound pipes.
-        int send_to_all (zmq::msg_t *msg_, int flags_);
+        int send_to_all (zmq::msg_t *msg_);
 
         bool has_out ();
 
@@ -72,7 +72,7 @@ namespace zmq
         bool write (zmq::pipe_t *pipe_, zmq::msg_t *msg_);
 
         //  Put the message to all active pipes.
-        void distribute (zmq::msg_t *msg_, int flags_);
+        void distribute (zmq::msg_t *msg_);
 
         //  List of outbound pipes.
         typedef array_t <zmq::pipe_t, 2> pipes_t;

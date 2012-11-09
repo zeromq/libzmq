@@ -133,11 +133,11 @@ namespace zmq
 
         //  The default implementation assumes that send is not supported.
         virtual bool xhas_out ();
-        virtual int xsend (zmq::msg_t *msg_, int flags_);
+        virtual int xsend (zmq::msg_t *msg_);
 
         //  The default implementation assumes that recv in not supported.
         virtual bool xhas_in ();
-        virtual int xrecv (zmq::msg_t *msg_, int flags_);
+        virtual int xrecv (zmq::msg_t *msg_);
 
         //  i_pipe_events will be forwarded to these functions.
         virtual void xread_activated (pipe_t *pipe_);

@@ -82,7 +82,7 @@ void zmq::xsub_t::xhiccuped (pipe_t *pipe_)
     pipe_->flush ();
 }
 
-int zmq::xsub_t::xsend (msg_t *msg_, int flags_)
+int zmq::xsub_t::xsend (msg_t *msg_)
 {
     size_t size = msg_->size ();
     unsigned char *data = (unsigned char*) msg_->data ();
@@ -100,11 +100,11 @@ int zmq::xsub_t::xsend (msg_t *msg_, int flags_)
 	// doing it here as well breaks ZMQ_XPUB_VERBOSE
 	// when there are forwarding devices involved
         subscriptions.add (data + 1, size - 1);
-        return dist.send_to_all (msg_, flags_);
+        return dist.send_to_all (msg_);
     }
     else {
         if (subscriptions.rm (data + 1, size - 1))
-            return dist.send_to_all (msg_, flags_);
+            return dist.send_to_all (msg_);
     }
 
     int rc = msg_->close ();
@@ -121,11 +121,8 @@ bool zmq::xsub_t::xhas_out ()
     return true;
 }
 
-int zmq::xsub_t::xrecv (msg_t *msg_, int flags_)
+int zmq::xsub_t::xrecv (msg_t *msg_)
 {
-    // flags_ is unused
-    (void)flags_;
-
     //  If there's already a message prepared by a previous call to zmq_poll,
     //  return it straight ahead.
     if (has_message) {

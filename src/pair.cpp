@@ -69,14 +69,14 @@ void zmq::pair_t::xwrite_activated (pipe_t *)
     //  There's nothing to do here.
 }
 
-int zmq::pair_t::xsend (msg_t *msg_, int flags_)
+int zmq::pair_t::xsend (msg_t *msg_)
 {
     if (!pipe || !pipe->write (msg_)) {
         errno = EAGAIN;
         return -1;
     }
 
-    if (!(flags_ & ZMQ_SNDMORE))
+    if (!(msg_->flags () & msg_t::more))
         pipe->flush ();
 
     //  Detach the original message from the data buffer.
@@ -86,11 +86,8 @@ int zmq::pair_t::xsend (msg_t *msg_, int flags_)
     return 0;
 }
 
-int zmq::pair_t::xrecv (msg_t *msg_, int flags_)
+int zmq::pair_t::xrecv (msg_t *msg_)
 {
-    // flags_ is unused
-    (void)flags_;
-
     //  Deallocate old content of the message.
     int rc = msg_->close ();
     errno_assert (rc == 0);
