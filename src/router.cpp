@@ -224,11 +224,8 @@ int zmq::router_t::xsend (msg_t *msg_)
     return 0;
 }
 
-int zmq::router_t::xrecv (msg_t *msg_, int flags_)
+int zmq::router_t::xrecv (msg_t *msg_)
 {
-    // flags_ is unused
-    (void)flags_;
-
     if (prefetched) {
         if (!identity_sent) {
             int rc = msg_->move (prefetched_id);

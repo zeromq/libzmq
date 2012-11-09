@@ -40,7 +40,7 @@ namespace zmq
         ~pub_t ();
 
         //  Implementations of virtual functions from socket_base_t.
-        int xrecv (zmq::msg_t *msg_, int flags_);
+        int xrecv (zmq::msg_t *msg_);
         bool xhas_in ();
 
     private:

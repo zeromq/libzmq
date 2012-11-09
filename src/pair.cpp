@@ -86,11 +86,8 @@ int zmq::pair_t::xsend (msg_t *msg_)
     return 0;
 }
 
-int zmq::pair_t::xrecv (msg_t *msg_, int flags_)
+int zmq::pair_t::xrecv (msg_t *msg_)
 {
-    // flags_ is unused
-    (void)flags_;
-
     //  Deallocate old content of the message.
     int rc = msg_->close ();
     errno_assert (rc == 0);

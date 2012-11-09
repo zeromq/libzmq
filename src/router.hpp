@@ -51,7 +51,7 @@ namespace zmq
         void xattach_pipe (zmq::pipe_t *pipe_, bool icanhasall_);
         int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
         int xsend (msg_t *msg_);
-        int xrecv (msg_t *msg_, int flags_);
+        int xrecv (msg_t *msg_);
         bool xhas_in ();
         bool xhas_out ();
         void xread_activated (zmq::pipe_t *pipe_);

@@ -32,7 +32,7 @@ zmq::pub_t::~pub_t ()
 {
 }
 
-int zmq::pub_t::xrecv (class msg_t *, int)
+int zmq::pub_t::xrecv (class msg_t *)
 {
     //  Messages cannot be received from PUB socket.
     errno = ENOTSUP;

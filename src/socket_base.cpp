@@ -689,7 +689,7 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
     }
 
     //  Get the message.
-    int rc = xrecv (msg_, flags_);
+    int rc = xrecv (msg_);
     if (unlikely (rc != 0 && errno != EAGAIN))
         return -1;
 
@@ -708,7 +708,7 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
             return -1;
         ticks = 0;
 
-        rc = xrecv (msg_, flags_);
+        rc = xrecv (msg_);
         if (rc < 0)
             return rc;
         extract_flags (msg_);
@@ -726,7 +726,7 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
     while (true) {
         if (unlikely (process_commands (block ? timeout : 0, false) != 0))
             return -1;
-        rc = xrecv (msg_, flags_);
+        rc = xrecv (msg_);
         if (rc == 0) {
             ticks = 0;
             break;
@@ -897,7 +897,7 @@ bool zmq::socket_base_t::xhas_in ()
     return false;
 }
 
-int zmq::socket_base_t::xrecv (msg_t *, int)
+int zmq::socket_base_t::xrecv (msg_t *)
 {
     errno = ENOTSUP;
     return -1;

@@ -50,7 +50,7 @@ namespace zmq
         void xattach_pipe (zmq::pipe_t *pipe_, bool icanhasall_ = false);
         int xsend (zmq::msg_t *msg_);
         bool xhas_out ();
-        int xrecv (zmq::msg_t *msg_, int flags_);
+        int xrecv (zmq::msg_t *msg_);
         bool xhas_in ();
         void xread_activated (zmq::pipe_t *pipe_);
         void xwrite_activated (zmq::pipe_t *pipe_);

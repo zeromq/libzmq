@@ -57,7 +57,7 @@ int zmq::rep_t::xsend (msg_t *msg_)
     return 0;
 }
 
-int zmq::rep_t::xrecv (msg_t *msg_, int flags_)
+int zmq::rep_t::xrecv (msg_t *msg_)
 {
     //  If we are in middle of sending a reply, we cannot receive next request.
     if (sending_reply) {
@@ -69,7 +69,7 @@ int zmq::rep_t::xrecv (msg_t *msg_, int flags_)
     //  to the reply pipe.
     if (request_begins) {
         while (true) {
-            int rc = router_t::xrecv (msg_, flags_);
+            int rc = router_t::xrecv (msg_);
             if (rc != 0)
                 return rc;
 
@@ -95,7 +95,7 @@ int zmq::rep_t::xrecv (msg_t *msg_, int flags_)
     }
 
     //  Get next message part to return to the user.
-    int rc = router_t::xrecv (msg_, flags_);
+    int rc = router_t::xrecv (msg_);
     if (rc != 0)
        return rc;
 

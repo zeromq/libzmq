@@ -54,11 +54,8 @@ int zmq::dealer_t::xsend (msg_t *msg_)
     return lb.send (msg_);
 }
 
-int zmq::dealer_t::xrecv (msg_t *msg_, int flags_)
+int zmq::dealer_t::xrecv (msg_t *msg_)
 {
-    // flags_ is unused
-    (void)flags_;
-
     return fq.recv (msg_);
 }
 
