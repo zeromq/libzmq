@@ -96,12 +96,14 @@ namespace zmq
         //  Preamble (10 bytes) + version (1 byte) + socket type (1 byte).
         const static size_t greeting_size = 12;
 
+        //  True iff we are registered with an I/O poller.
+        bool io_enabled;
+
         handle_t handle;
 
         unsigned char *inpos;
         size_t insize;
         i_decoder *decoder;
-        bool input_error;
 
         unsigned char *outpos;
         size_t outsize;

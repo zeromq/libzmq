@@ -57,11 +57,6 @@ void zmq::decoder_t::set_msg_sink (i_msg_sink *msg_sink_)
     msg_sink = msg_sink_;
 }
 
-bool zmq::decoder_t::stalled () const
-{
-    return next == &decoder_t::message_ready;
-}
-
 bool zmq::decoder_t::one_byte_size_ready ()
 {
     //  First byte of size is read. If it is 0xff read 8-byte size.

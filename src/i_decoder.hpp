@@ -40,7 +40,7 @@ namespace zmq
 
         virtual size_t process_buffer (unsigned char *data_, size_t size_) = 0;
 
-        virtual bool stalled () const = 0;
+        virtual bool stalled () = 0;
 
     };
 
