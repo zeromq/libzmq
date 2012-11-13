@@ -53,7 +53,7 @@ void zmq::raw_decoder_t::set_msg_sink (i_msg_sink *msg_sink_)
     msg_sink = msg_sink_;
 }
 
-bool zmq::raw_decoder_t::stalled () const
+bool zmq::raw_decoder_t::stalled ()
 {
     return false;
 }
