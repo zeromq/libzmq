@@ -49,9 +49,9 @@ int tcp_client ()
     server = gethostbyname ("localhost");
     assert (server);
 
-    bzero (&serv_addr, sizeof serv_addr);
+    memset (&serv_addr, 0, sizeof serv_addr);
     serv_addr.sin_family = AF_INET;
-    bcopy (server->h_addr, &serv_addr.sin_addr.s_addr, server->h_length);
+    memmove (&serv_addr.sin_addr.s_addr, server->h_addr, server->h_length);
     serv_addr.sin_port = htons (portno);
 
     int rc = connect (sockfd, (struct sockaddr *) &serv_addr, sizeof serv_addr);
@@ -74,7 +74,7 @@ int tcp_server ()
     assert (rc == 0);
 
     struct sockaddr_in serv_addr;
-    bzero (&serv_addr, sizeof serv_addr);
+    memset (&serv_addr, 0, sizeof serv_addr);
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = htonl (INADDR_ANY);
     serv_addr.sin_port = htons (5555);
