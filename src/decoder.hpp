@@ -165,7 +165,6 @@ namespace zmq
             return false;
         }
 
->>>>>>> c543b2c... Resolve LIBZMQ-465
     protected:
 
         //  Prototype of state machine action. Action should return false if
