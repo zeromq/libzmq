@@ -163,9 +163,10 @@ void zmq::kqueue_t::loop ()
         timespec ts = {timeout / 1000, (timeout % 1000) * 1000000};
         int n = kevent (kqueue_fd, NULL, 0, &ev_buf [0], max_io_events,
             timeout ? &ts: NULL);
-        if (n == -1 && errno == EINTR)
+        if (n == -1) {
+            errno_assert (errno == EINTR);
             continue;
-        errno_assert (n != -1);
+        }
 
         for (int i = 0; i < n; i ++) {
             poll_entry_t *pe = (poll_entry_t*) ev_buf [i].udata;
