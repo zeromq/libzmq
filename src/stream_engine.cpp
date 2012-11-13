@@ -50,10 +50,10 @@
 
 zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_, const std::string &endpoint_) :
     s (fd_),
+    io_enabled (false),
     inpos (NULL),
     insize (0),
     decoder (NULL),
-    input_error (false),
     outpos (NULL),
     outsize (0),
     encoder (NULL),
@@ -132,6 +132,7 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
     //  Connect to I/O threads poller object.
     io_object_t::plug (io_thread_);
     handle = add_fd (s);
+    io_enabled = true;
 
     //  Send the 'length' and 'flags' fields of the identity message.
     //  The 'length' field is encoded in the long format.
@@ -153,7 +154,10 @@ void zmq::stream_engine_t::unplug ()
     plugged = false;
 
     //  Cancel all fd subscriptions.
-    rm_fd (handle);
+    if (io_enabled) {
+        rm_fd (handle);
+        io_enabled = false;
+    }
 
     //  Disconnect from I/O threads poller object.
     io_object_t::unplug ();
@@ -225,9 +229,10 @@ void zmq::stream_engine_t::in_event ()
     //  waiting for input events and postpone the termination
     //  until after the session has accepted the message.
     if (disconnection) {
-        input_error = true;
-        if (decoder->stalled ())
-            reset_pollin (handle);
+        if (decoder->stalled ()) {
+            rm_fd (handle);
+            io_enabled = false;
+        }
         else
             error ();
     }
@@ -294,7 +299,7 @@ void zmq::stream_engine_t::activate_out ()
 
 void zmq::stream_engine_t::activate_in ()
 {
-    if (input_error) {
+    if (unlikely (!io_enabled)) {
         //  There was an input error but the engine could not
         //  be terminated (due to the stalled decoder).
         //  Flush the pending message and terminate the engine now.

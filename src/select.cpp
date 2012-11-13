@@ -168,9 +168,10 @@ void zmq::select_t::loop ()
 #else
         int rc = select (maxfd + 1, &readfds, &writefds, &exceptfds,
             timeout ? &tv : NULL);
-        if (rc == -1 && errno == EINTR)
+        if (rc == -1) {
+            errno_assert (errno == EINTR);
             continue;
-        errno_assert (rc != -1);
+        }
 #endif
 
         //  If there are no events (i.e. it's a timeout) there's no point

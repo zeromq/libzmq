@@ -44,8 +44,6 @@ namespace zmq
         //  i_decoder interface.
         virtual void set_msg_sink (i_msg_sink *msg_sink_);
 
-        virtual bool stalled () const;
-
     private:
 
         bool flags_ready ();

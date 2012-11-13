@@ -143,6 +143,28 @@ namespace zmq
             }
         }
 
+        //  Returns true if the decoder has been fed all required data
+        //  but cannot proceed with the next decoding step.
+        //  False is returned if the decoder has encountered an error.
+        bool stalled ()
+        {
+            while (!to_read) {
+                if (!(static_cast <T*> (this)->*next) ()) {
+                    if (unlikely (!(static_cast <T*> (this)->next)))
+                        return false;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        inline bool message_ready_size (size_t msg_sz)
+        {
+            zmq_assert (false);
+            return false;
+        }
+
     protected:
 
         //  Prototype of state machine action. Action should return false if
@@ -166,12 +188,12 @@ namespace zmq
             next = NULL;
         }
 
+    private:
+
         //  Next step. If set to NULL, it means that associated data stream
         //  is dead. Note that there can be still data in the process in such
         //  case.
         step_t next;
-
-    private:
 
         //  Where to store the read data.
         unsigned char *read_pos;
@@ -198,10 +220,6 @@ namespace zmq
 
         //  Set the receiver of decoded messages.
         void set_msg_sink (i_msg_sink *msg_sink_);
-
-        //  Returns true if there is a decoded message
-        //  waiting to be delivered to the session.
-        bool stalled () const;
 
     private:
 
