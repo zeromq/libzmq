@@ -58,11 +58,6 @@ void zmq::v1_decoder_t::set_msg_sink (i_msg_sink *msg_sink_)
     msg_sink = msg_sink_;
 }
 
-bool zmq::v1_decoder_t::stalled () const
-{
-    return next == &v1_decoder_t::message_ready;
-}
-
 bool zmq::v1_decoder_t::flags_ready ()
 {
     msg_flags = 0;
