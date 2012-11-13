@@ -140,9 +140,10 @@ void zmq::epoll_t::loop ()
         //  Wait for events.
         int n = epoll_wait (epoll_fd, &ev_buf [0], max_io_events,
             timeout ? timeout : -1);
-        if (n == -1 && errno == EINTR)
+        if (n == -1) {
+            errno_assert (errno == EINTR);
             continue;
-        errno_assert (n != -1);
+        }
 
         for (int i = 0; i < n; i ++) {
             poll_entry_t *pe = ((poll_entry_t*) ev_buf [i].data.ptr);

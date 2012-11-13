@@ -125,10 +125,10 @@ void zmq::poll_t::loop ()
 
         //  Wait for events.
         int rc = poll (&pollset [0], pollset.size (), timeout ? timeout : -1);
-        if (rc == -1 && errno == EINTR)
+        if (rc == -1) {
+            errno_assert (errno == EINTR);
             continue;
-        errno_assert (rc != -1);
-
+        }
 
         //  If there are no events (i.e. it's a timeout) there's no point
         //  in checking the pollset.
