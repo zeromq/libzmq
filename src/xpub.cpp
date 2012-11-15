@@ -70,8 +70,8 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
                 unique = subscriptions.add (data + 1, size - 1, pipe_);
 
             //  If the subscription is not a duplicate store it so that it can be
-            //  passed to used on next recv call.
-            if (options.type == ZMQ_XPUB && (unique || verbose))
+            //  passed to used on next recv call. (Unsubscribe is not verbose.)
+            if (options.type == ZMQ_XPUB && (unique || (*data && verbose)))
                 pending.push_back (blob_t (data, size));
         }
 
