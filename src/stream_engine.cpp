@@ -484,7 +484,7 @@ int zmq::stream_engine_t::push_msg (msg_t *msg_)
 void zmq::stream_engine_t::error ()
 {
     zmq_assert (session);
-    socket->event_disconnected (endpoint.c_str(), s);
+    socket->event_disconnected (endpoint, s);
     session->detach ();
     unplug ();
     delete this;

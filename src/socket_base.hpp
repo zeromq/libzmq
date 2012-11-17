@@ -102,18 +102,18 @@ namespace zmq
         void lock();
         void unlock();
 
-        int monitor(const char *endpoint_, int events_);
+        int monitor (const char *endpoint_, int events_);
 
-        void event_connected(const char *addr_, int fd_);
-        void event_connect_delayed(const char *addr_, int err_);
-        void event_connect_retried(const char *addr_, int interval_);
-        void event_listening(const char *addr_, int fd_);
-        void event_bind_failed(const char *addr_, int err_);
-        void event_accepted(const char *addr_, int fd_);
-        void event_accept_failed(const char *addr_, int err_);
-        void event_closed(const char *addr_, int fd_);        
-        void event_close_failed(const char *addr_, int fd_);  
-        void event_disconnected(const char *addr_, int fd_); 
+        void event_connected (std::string &addr_, int fd_);
+        void event_connect_delayed (std::string &addr_, int err_);
+        void event_connect_retried (std::string &addr_, int interval_);
+        void event_listening (std::string &addr_, int fd_);
+        void event_bind_failed (std::string &addr_, int err_);
+        void event_accepted (std::string &addr_, int fd_);
+        void event_accept_failed (std::string &addr_, int err_);
+        void event_closed (std::string &addr_, int fd_);        
+        void event_close_failed (std::string &addr_, int fd_);  
+        void event_disconnected (std::string &addr_, int fd_); 
 
     protected:
 
@@ -150,6 +150,9 @@ namespace zmq
 
         // Socket event data dispath
         void monitor_event (zmq_event_t data_);
+
+        // Copy monitor specific event endpoints to event messages
+        void copy_monitor_address (char *dest_, std::string &src_);
 
         // Monitor socket cleanup
         void stop_monitor ();
