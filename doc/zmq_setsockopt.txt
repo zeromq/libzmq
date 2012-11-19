@@ -30,8 +30,8 @@ ZMQ_SNDHWM: Set high water mark for outbound messages
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_SNDHWM' option shall set the high water mark for outbound messages on
 the specified 'socket'. The high water mark is a hard limit on the maximum
-number of outstanding message parts 0MQ shall queue in memory for any single
-peer that the specified 'socket' is communicating with.
+number of outstanding messages 0MQ shall queue in memory for any single peer
+that the specified 'socket' is communicating with.
 
 If this limit has been reached the socket shall enter an exceptional state and
 depending on the socket type, 0MQ shall take appropriate action such as
@@ -39,9 +39,9 @@ blocking or dropping sent messages. Refer to the individual socket descriptions
 in linkzmq:zmq_socket[3] for details on the exact action taken for each socket
 type.
 
-NOTE: The high-water mark is measured in individual message parts, including
-any delimiter and identity parts. When setting 'ZMQ_SNDHWM' on a 'ZMQ_ROUTER'
-socket, note that a message always has at least two parts.
+NOTE: 0MQ does not guarantee that the socket will accept as many as ZMQ_SNDHWM
+messages, and the actual limit may be as much as 60-70% lower depending on the
+flow of messages on the socket.
 
 [horizontal]
 Option value type:: int
