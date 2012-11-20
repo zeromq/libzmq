@@ -58,6 +58,8 @@ A 'peer address' may be specified by either of the following:
 * The DNS name of the peer.
 * The IPv4 or IPv6 address of the peer, in its numeric representation.
 
+Note: A description of the ZeroMQ Message Transport Protocol (ZMTP) which is 
+used by the TCP transport can be found at <http://rfc.zeromq.org/spec:15>
 
 EXAMPLES
 --------
