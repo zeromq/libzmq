@@ -38,6 +38,11 @@
 #include "clock.hpp"
 #include "pipe.hpp"
 
+extern "C"
+{
+    void zmq_free_event (void *data, void *hint);
+}
+
 namespace zmq
 {
 

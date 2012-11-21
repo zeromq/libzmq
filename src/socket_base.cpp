@@ -1178,8 +1178,10 @@ void zmq::socket_base_t::monitor_event (zmq_event_t event_)
 {
     if (monitor_socket) {
         zmq_msg_t msg;
-        zmq_msg_init_size (&msg, sizeof (event_));
-        memcpy (zmq_msg_data (&msg), &event_, sizeof (event_));
+        void *event_data = malloc (sizeof (event_));
+        assert (event_data);
+        memcpy (event_data, &event_, sizeof (event_));
+        zmq_msg_init_data (&msg, event_data, sizeof (event_), zmq_free_event, NULL);
         zmq_sendmsg (monitor_socket, &msg, 0);
         zmq_msg_close (&msg);
     }
