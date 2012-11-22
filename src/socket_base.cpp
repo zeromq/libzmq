@@ -1052,7 +1052,7 @@ void zmq::socket_base_t::event_connected (std::string &addr_, int fd_)
     if (monitor_events & ZMQ_EVENT_CONNECTED) {
         zmq_event_t event;
         event.event = ZMQ_EVENT_CONNECTED;
-        event.data.connected.addr = new char[addr_.size () + 1];
+        event.data.connected.addr = (char *) malloc (addr_.size () + 1);
         copy_monitor_address (event.data.connected.addr, addr_);
         event.data.connected.fd = fd_;
         monitor_event (event);
@@ -1064,7 +1064,7 @@ void zmq::socket_base_t::event_connect_delayed (std::string &addr_, int err_)
     if (monitor_events & ZMQ_EVENT_CONNECT_DELAYED) {
         zmq_event_t event;
         event.event = ZMQ_EVENT_CONNECT_DELAYED;
-        event.data.connect_delayed.addr = new char[addr_.size () + 1];
+        event.data.connect_delayed.addr = (char *) malloc (addr_.size () + 1);
         copy_monitor_address (event.data.connect_delayed.addr, addr_);
         event.data.connect_delayed.err = err_;
         monitor_event (event);
@@ -1076,7 +1076,7 @@ void zmq::socket_base_t::event_connect_retried (std::string &addr_, int interval
     if (monitor_events & ZMQ_EVENT_CONNECT_RETRIED) {
         zmq_event_t event;
         event.event = ZMQ_EVENT_CONNECT_RETRIED;
-        event.data.connect_retried.addr = new char[addr_.size () + 1];
+        event.data.connect_retried.addr = (char *) malloc (addr_.size () + 1);
         copy_monitor_address (event.data.connect_retried.addr, addr_);
         event.data.connect_retried.interval = interval_;
         monitor_event (event);
@@ -1088,7 +1088,7 @@ void zmq::socket_base_t::event_listening (std::string &addr_, int fd_)
     if (monitor_events & ZMQ_EVENT_LISTENING) {
         zmq_event_t event;
         event.event = ZMQ_EVENT_LISTENING;
-        event.data.listening.addr = new char[addr_.size () + 1];
+        event.data.listening.addr = (char *) malloc (addr_.size () + 1);
         copy_monitor_address (event.data.listening.addr, addr_);
         event.data.listening.fd = fd_;
         monitor_event (event);
@@ -1100,7 +1100,7 @@ void zmq::socket_base_t::event_bind_failed (std::string &addr_, int err_)
     if (monitor_events & ZMQ_EVENT_BIND_FAILED) {
         zmq_event_t event;
         event.event = ZMQ_EVENT_BIND_FAILED;
-        event.data.bind_failed.addr = new char[addr_.size () + 1];
+        event.data.bind_failed.addr = (char *) malloc (addr_.size () + 1);
         copy_monitor_address (event.data.bind_failed.addr, addr_);
         event.data.bind_failed.err = err_;
         monitor_event (event);
@@ -1112,7 +1112,7 @@ void zmq::socket_base_t::event_accepted (std::string &addr_, int fd_)
     if (monitor_events & ZMQ_EVENT_ACCEPTED) {
         zmq_event_t event;
         event.event = ZMQ_EVENT_ACCEPTED;
-        event.data.accepted.addr = new char[addr_.size () + 1];
+        event.data.accepted.addr = (char *) malloc (addr_.size () + 1);
         copy_monitor_address (event.data.accepted.addr, addr_);
         event.data.accepted.fd = fd_;
         monitor_event (event);
@@ -1124,7 +1124,7 @@ void zmq::socket_base_t::event_accept_failed (std::string &addr_, int err_)
     if (monitor_events & ZMQ_EVENT_ACCEPT_FAILED) {
         zmq_event_t event;
         event.event = ZMQ_EVENT_ACCEPT_FAILED;
-        event.data.accept_failed.addr = new char[addr_.size () + 1];
+        event.data.accept_failed.addr = (char *) malloc (addr_.size () + 1);
         copy_monitor_address (event.data.accept_failed.addr, addr_);
         event.data.accept_failed.err= err_;
         monitor_event (event);
@@ -1136,7 +1136,7 @@ void zmq::socket_base_t::event_closed (std::string &addr_, int fd_)
     if (monitor_events & ZMQ_EVENT_CLOSED) {
         zmq_event_t event;
         event.event = ZMQ_EVENT_CLOSED;
-        event.data.closed.addr = new char[addr_.size () + 1];
+        event.data.closed.addr = (char *) malloc (addr_.size () + 1);
         copy_monitor_address (event.data.closed.addr, addr_);
         event.data.closed.fd = fd_;
         monitor_event (event);
@@ -1148,7 +1148,7 @@ void zmq::socket_base_t::event_close_failed (std::string &addr_, int err_)
     if (monitor_events & ZMQ_EVENT_CLOSE_FAILED) {
         zmq_event_t event;
         event.event = ZMQ_EVENT_CLOSE_FAILED;
-        event.data.close_failed.addr = new char[addr_.size () + 1];
+        event.data.close_failed.addr = (char *) malloc (addr_.size () + 1);
         copy_monitor_address (event.data.close_failed.addr, addr_);
         event.data.close_failed.err = err_;
         monitor_event (event);
@@ -1160,7 +1160,7 @@ void zmq::socket_base_t::event_disconnected (std::string &addr_, int fd_)
     if (monitor_events & ZMQ_EVENT_DISCONNECTED) {
         zmq_event_t event;
         event.event = ZMQ_EVENT_DISCONNECTED;
-        event.data.disconnected.addr = new char[addr_.size () + 1];
+        event.data.disconnected.addr = (char *) malloc (addr_.size () + 1);
         copy_monitor_address (event.data.disconnected.addr, addr_);
         event.data.disconnected.fd = fd_;
         monitor_event (event);
@@ -1179,7 +1179,7 @@ void zmq::socket_base_t::monitor_event (zmq_event_t event_)
     if (monitor_socket) {
         zmq_msg_t msg;
         void *event_data = malloc (sizeof (event_));
-        assert (event_data);
+        alloc_assert (event_data);
         memcpy (event_data, &event_, sizeof (event_));
         zmq_msg_init_data (&msg, event_data, sizeof (event_), zmq_free_event, NULL);
         zmq_sendmsg (monitor_socket, &msg, 0);
