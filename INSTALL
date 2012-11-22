@@ -7,6 +7,13 @@ Copyright (C) 1994, 1995, 1996, 1999, 2000, 2001, 2002, 2004, 2005,
 This file is free documentation; the Free Software Foundation gives
 unlimited permission to copy, distribute and modify it.
 
+From GitHub
+===========
+
+If you clone the Git repository then you should start by running the
+command `./autogen.sh`. This is not necessary if you get the source
+packages.
+
 Basic Installation
 ==================
 
