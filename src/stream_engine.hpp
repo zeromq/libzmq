@@ -132,7 +132,7 @@ namespace zmq
         options_t options;
 
         // String representation of endpoint
-        char *endpoint;
+        std::string endpoint;
 
         bool plugged;
 
