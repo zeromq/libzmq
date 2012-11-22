@@ -148,6 +148,10 @@ namespace zmq
         //  False is returned if the decoder has encountered an error.
         bool stalled ()
         {
+            //  Check whether there was decoding error.
+            if (unlikely (static_cast <T*> (this)->next == NULL))
+                return false;
+
             while (!to_read) {
                 if (!(static_cast <T*> (this)->*next) ()) {
                     if (unlikely (!(static_cast <T*> (this)->next)))
