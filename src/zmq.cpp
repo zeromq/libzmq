@@ -987,6 +987,47 @@ int zmq_device (int type, void *frontend_, void *backend_)
         (zmq::socket_base_t*) backend_, NULL);
 }
 
+//  Callback to free socket event data
+
+void zmq_free_event (void *event_data, void *hint)
+{
+    zmq_event_t *event = (zmq_event_t *) event_data;
+
+    switch (event->event) {
+    case ZMQ_EVENT_CONNECTED:
+        free (event->data.connected.addr);
+        break;
+    case ZMQ_EVENT_CONNECT_DELAYED:
+        free (event->data.connect_delayed.addr);
+        break;
+    case ZMQ_EVENT_CONNECT_RETRIED:
+        free (event->data.connect_retried.addr);
+        break;
+    case ZMQ_EVENT_LISTENING:
+        free (event->data.listening.addr);
+        break;
+    case ZMQ_EVENT_BIND_FAILED:
+        free (event->data.bind_failed.addr);
+        break;
+    case ZMQ_EVENT_ACCEPTED:
+        free (event->data.accepted.addr);
+        break;
+    case ZMQ_EVENT_ACCEPT_FAILED:
+        free (event->data.accept_failed.addr);
+        break;
+    case ZMQ_EVENT_CLOSED:
+        free (event->data.closed.addr);
+        break;
+    case ZMQ_EVENT_CLOSE_FAILED:
+        free (event->data.close_failed.addr);
+        break;
+    case ZMQ_EVENT_DISCONNECTED:
+        free (event->data.disconnected.addr);
+        break;
+    }
+    free (event_data);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //  0MQ utils - to be used by perf tests
 ////////////////////////////////////////////////////////////////////////////////

@@ -63,6 +63,7 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_, cons
     greeting_bytes_read (0),
     session (NULL),
     options (options_),
+    endpoint (endpoint_),
     plugged (false),
     socket (NULL)
 {
@@ -95,8 +96,6 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_, cons
     int rc = setsockopt (s, SOL_SOCKET, SO_NOSIGPIPE, &set, sizeof (int));
     errno_assert (rc == 0);
 #endif
-    endpoint = new char[endpoint_.length() + 1];
-    strcpy (endpoint, endpoint_.c_str());
 }
 
 zmq::stream_engine_t::~stream_engine_t ()
@@ -118,7 +117,6 @@ zmq::stream_engine_t::~stream_engine_t ()
         delete encoder;
     if (decoder != NULL)
         delete decoder;
-    delete [] endpoint;
 }
 
 void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
