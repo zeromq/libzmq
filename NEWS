@@ -17,6 +17,7 @@ Issues addressed in this release
 * LIBZMQ-458 lt-test_router_mandatory fails with assertion at test_router_mandatory.cpp:53
 * LIBZMQ-459 Assertion failed: encoder (stream_engine.cpp:266
 * LIBZMQ-464 PUB socket with HWM set leaks memory
+* LIBZMQ-465 PUB/SUB results in 80-90% of CPU load
 * LIBZMQ-468 ZMQ_XPUB_VERBOSE & unsubscribe
 * LIBZMQ-472 Segfault in zmq_poll in REQ to ROUTER dialog
 
