@@ -136,7 +136,7 @@ void zmq::tcp_connecter_t::out_event ()
     //  Shut the connecter down.
     terminate ();
 
-    socket->event_connected (endpoint.c_str(), fd);
+    socket->event_connected (endpoint, fd);
 }
 
 void zmq::tcp_connecter_t::timer_event (int id_)
@@ -159,11 +159,12 @@ void zmq::tcp_connecter_t::start_connecting ()
     }
 
     //  Connection establishment may be delayed. Poll for its completion.
-    else if (rc == -1 && errno == EINPROGRESS) {
+    else
+    if (rc == -1 && errno == EINPROGRESS) {
         handle = add_fd (s);
         handle_valid = true;
         set_pollout (handle);
-        socket->event_connect_delayed (endpoint.c_str(), zmq_errno());
+        socket->event_connect_delayed (endpoint, zmq_errno());
     }
 
     //  Handle any other error condition by eventual reconnect.
@@ -178,7 +179,7 @@ void zmq::tcp_connecter_t::add_reconnect_timer()
 {
     int rc_ivl = get_new_reconnect_ivl();
     add_timer (rc_ivl, reconnect_timer_id);
-    socket->event_connect_retried (endpoint.c_str(), rc_ivl);
+    socket->event_connect_retried (endpoint, rc_ivl);
     timer_started = true;
 }
 
@@ -304,6 +305,6 @@ void zmq::tcp_connecter_t::close ()
     int rc = ::close (s);
     errno_assert (rc == 0);
 #endif
-    socket->event_closed (endpoint.c_str(), s);
+    socket->event_closed (endpoint, s);
     s = retired_fd;
 }

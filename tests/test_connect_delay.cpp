@@ -149,7 +149,7 @@ int main (void)
     val = 0;
     rc = zmq_setsockopt(to, ZMQ_LINGER, &val, sizeof(val));
     assert (rc == 0);
-    rc = zmq_bind(to, "tcp://*:5555");
+    rc = zmq_bind(to, "tcp://*:6555");
     assert (rc == 0);
 
     // Create a socket pushing to two endpoints - only 1 message should arrive.
@@ -158,9 +158,9 @@ int main (void)
 
     val = 0;
     zmq_setsockopt (from, ZMQ_LINGER, &val, sizeof(val));
-    rc = zmq_connect (from, "tcp://localhost:5556");
+    rc = zmq_connect (from, "tcp://localhost:6556");
     assert (rc == 0);
-    rc = zmq_connect (from, "tcp://localhost:5555");
+    rc = zmq_connect (from, "tcp://localhost:6555");
     assert (rc == 0);
 
     for (int i = 0; i < 10; ++i)
