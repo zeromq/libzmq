@@ -674,15 +674,15 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     int nevents = 0;
 
     while (true) {
-
-         //  Compute the timeout for the subsequent poll.
-         int timeout;
-         if (first_pass)
-             timeout = 0;
-         else if (timeout_ < 0)
-             timeout = -1;
-         else
-             timeout = end - now;
+        //  Compute the timeout for the subsequent poll.
+        int timeout;
+        if (first_pass)
+            timeout = 0;
+        else
+        if (timeout_ < 0)
+            timeout = -1;
+        else
+            timeout = end - now;
 
         //  Wait for events.
         while (true) {
@@ -694,7 +694,6 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             errno_assert (rc >= 0);
             break;
         }
-
         //  Check for the events.
         for (int i = 0; i != nitems_; i++) {
 
@@ -848,7 +847,8 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             timeout.tv_usec = 0;
             ptimeout = &timeout;
         }
-        else if (timeout_ < 0)
+        else
+        if (timeout_ < 0)
             ptimeout = NULL;
         else {
             timeout.tv_sec = (long) ((end - now) / 1000);
@@ -985,6 +985,47 @@ int zmq_device (int type, void *frontend_, void *backend_)
     return zmq::proxy (
         (zmq::socket_base_t*) frontend_,
         (zmq::socket_base_t*) backend_, NULL);
+}
+
+//  Callback to free socket event data
+
+void zmq_free_event (void *event_data, void *hint)
+{
+    zmq_event_t *event = (zmq_event_t *) event_data;
+
+    switch (event->event) {
+    case ZMQ_EVENT_CONNECTED:
+        free (event->data.connected.addr);
+        break;
+    case ZMQ_EVENT_CONNECT_DELAYED:
+        free (event->data.connect_delayed.addr);
+        break;
+    case ZMQ_EVENT_CONNECT_RETRIED:
+        free (event->data.connect_retried.addr);
+        break;
+    case ZMQ_EVENT_LISTENING:
+        free (event->data.listening.addr);
+        break;
+    case ZMQ_EVENT_BIND_FAILED:
+        free (event->data.bind_failed.addr);
+        break;
+    case ZMQ_EVENT_ACCEPTED:
+        free (event->data.accepted.addr);
+        break;
+    case ZMQ_EVENT_ACCEPT_FAILED:
+        free (event->data.accept_failed.addr);
+        break;
+    case ZMQ_EVENT_CLOSED:
+        free (event->data.closed.addr);
+        break;
+    case ZMQ_EVENT_CLOSE_FAILED:
+        free (event->data.close_failed.addr);
+        break;
+    case ZMQ_EVENT_DISCONNECTED:
+        free (event->data.disconnected.addr);
+        break;
+    }
+    free (event_data);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

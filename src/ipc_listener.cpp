@@ -76,7 +76,7 @@ void zmq::ipc_listener_t::in_event ()
     //  If connection was reset by the peer in the meantime, just ignore it.
     //  TODO: Handle specific errors like ENFILE/EMFILE etc.
     if (fd == retired_fd) {
-        socket->event_accept_failed (endpoint.c_str(), zmq_errno());
+        socket->event_accept_failed (endpoint, zmq_errno());
         return;
     }
 
@@ -96,7 +96,7 @@ void zmq::ipc_listener_t::in_event ()
     session->inc_seqnum ();
     launch_child (session);
     send_attach (session, engine, false);
-    socket->event_accepted (endpoint.c_str(), fd);
+    socket->event_accepted (endpoint, fd);
 }
 
 int zmq::ipc_listener_t::get_address (std::string &addr_)
@@ -155,7 +155,7 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
     if (rc != 0)
         goto error;
 
-    socket->event_listening (endpoint.c_str(), s);
+    socket->event_listening (endpoint, s);
     return 0;
 
 error:
@@ -178,12 +178,12 @@ int zmq::ipc_listener_t::close ()
     if (has_file && !filename.empty ()) {
         rc = ::unlink(filename.c_str ());
         if (rc != 0) {
-            socket->event_close_failed (endpoint.c_str(), zmq_errno());
+            socket->event_close_failed (endpoint, zmq_errno());
             return -1;
         }
     }
 
-    socket->event_closed (endpoint.c_str(), s);
+    socket->event_closed (endpoint, s);
     return 0;
 }
 
