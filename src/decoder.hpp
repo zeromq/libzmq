@@ -149,7 +149,7 @@ namespace zmq
         bool stalled ()
         {
             //  Check whether there was decoding error.
-            if (unlikely (static_cast <T*> (this)->next == NULL))
+            if (unlikely (!(static_cast <T*> (this)->next)))
                 return false;
 
             while (!to_read) {
