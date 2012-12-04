@@ -170,6 +170,10 @@ namespace zmq
         typedef std::multimap <std::string, own_t *> endpoints_t;
         endpoints_t endpoints;
 
+        //  Map of open inproc endpoints.
+        typedef std::multimap <std::string, pipe_t *> inprocs_t;
+        inprocs_t inprocs;
+
         //  To be called after processing commands or invoking any command
         //  handlers explicitly. If required, it will deallocate the socket.
         void check_destroy ();

@@ -34,6 +34,8 @@ The endpoint supplied is invalid.
 The 0MQ 'context' associated with the specified 'socket' was terminated.
 *ENOTSOCK*::
 The provided 'socket' was invalid.
+*ENOENT*::
+The provided endpoint is not connected.
 
 
 EXAMPLE
