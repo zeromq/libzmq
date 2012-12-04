@@ -1012,12 +1012,10 @@ void zmq::socket_base_t::terminated (pipe_t *pipe_)
     xterminated (pipe_);
 
     // Remove pipe from inproc pipes
-    inprocs_t::iterator it = inprocs.begin();
-    while (it != inprocs.end()) {
+    for (inprocs_t::iterator it = inprocs.begin(); it != inprocs.end(); ++it) {
         if (it->second == pipe_) {
-            inprocs.erase(it++);
-        } else {
-            it++;
+            inprocs.erase(it);
+            break;
         }
     }    
 
