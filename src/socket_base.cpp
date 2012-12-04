@@ -603,7 +603,7 @@ int zmq::socket_base_t::term_endpoint (const char *addr_)
     if (protocol == "inproc") {
         std::pair <inprocs_t::iterator, inprocs_t::iterator> range = inprocs.equal_range (std::string (addr_));
         if (range.first == range.second) {
-            errno = ENOTCONN;
+            errno = ENOENT;
             return -1;
         }
 	
@@ -617,7 +617,7 @@ int zmq::socket_base_t::term_endpoint (const char *addr_)
     //  Find the endpoints range (if any) corresponding to the addr_ string.
     std::pair <endpoints_t::iterator, endpoints_t::iterator> range = endpoints.equal_range (std::string (addr_));
     if (range.first == range.second) {
-        errno = ENOTCONN;
+        errno = ENOENT;
         return -1;
     }
 
