@@ -478,6 +478,10 @@ int zmq::socket_base_t::connect (const char *addr_)
         // Save last endpoint URI
         options.last_endpoint.assign (addr_);
 
+        // remember inproc connections for disconnect
+        inprocs.insert (inprocs_t::value_type (std::string (addr_), pipes[0]));
+        inprocs.insert (inprocs_t::value_type (std::string (addr_), pipes[1]));
+
         return 0;
     }
 
@@ -584,10 +588,37 @@ int zmq::socket_base_t::term_endpoint (const char *addr_)
     if (unlikely (rc != 0))
         return -1;
 
+    //  Parse addr_ string.
+    std::string protocol;
+    std::string address;
+    rc = parse_uri (addr_, protocol, address);
+    if (rc != 0)
+        return -1;
+
+    rc = check_protocol (protocol);
+    if (rc != 0)
+        return -1;
+
+    // Disconnect an inproc socket
+    if (protocol == "inproc") {
+        std::pair <inprocs_t::iterator, inprocs_t::iterator> range = inprocs.equal_range (std::string (addr_));
+        if (range.first == range.second) {
+            errno = ENOENT;
+            return -1;
+        }
+	
+        for (inprocs_t::iterator it = range.first; it != range.second; ++it)
+            it->second->terminate(true);
+        inprocs.erase (range.first, range.second);
+        return 0;
+    }
+
     //  Find the endpoints range (if any) corresponding to the addr_ string.
     std::pair <endpoints_t::iterator, endpoints_t::iterator> range = endpoints.equal_range (std::string (addr_));
-    if (range.first == range.second)
+    if (range.first == range.second) {
+        errno = ENOENT;
         return -1;
+    }
 
     for (endpoints_t::iterator it = range.first; it != range.second; ++it)
         term_child (it->second);
