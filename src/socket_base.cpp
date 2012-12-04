@@ -480,7 +480,6 @@ int zmq::socket_base_t::connect (const char *addr_)
 
         // remember inproc connections for disconnect
         inprocs.insert (inprocs_t::value_type (std::string (addr_), pipes[0]));
-        inprocs.insert (inprocs_t::value_type (std::string (addr_), pipes[1]));
 
         return 0;
     }
@@ -1011,6 +1010,15 @@ void zmq::socket_base_t::terminated (pipe_t *pipe_)
 {
     //  Notify the specific socket type about the pipe termination.
     xterminated (pipe_);
+
+    // Remove pipe from inproc pipes
+    for (inprocs_t::iterator it = inprocs.begin(); it != inprocs.end(); ++it) {
+        if (it->second == pipe_) {
+            inprocs.erase(it++);
+        } else {
+            it++;
+        }
+    }    
 
     //  Remove the pipe from the list of attached pipes and confirm its
     //  termination if we are already shutting down.
