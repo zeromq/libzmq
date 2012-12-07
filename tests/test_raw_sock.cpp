@@ -183,7 +183,7 @@ void test_zmq_connect ()
         size_t bytes_read = tcp_read (server_fd, buffer, sizeof buffer);
 
         assert (bytes_read == strlen (test_str)
-             || memcmp (buffer, test_str, bytes_read) == 0);
+             && memcmp (buffer, test_str, bytes_read) == 0);
 
         rc = close (server_fd);
         assert (rc == 0);
