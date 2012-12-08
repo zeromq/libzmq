@@ -156,19 +156,24 @@ int zmq::router_t::xsend (msg_t *msg_)
 
             //  Find the pipe associated with the identity stored in the prefix.
             //  If there's no such pipe just silently ignore the message, unless
-            //  report_unreachable is set.
+            //  router_mandatory is set.
             blob_t identity ((unsigned char*) msg_->data (), msg_->size ());
             outpipes_t::iterator it = outpipes.find (identity);
+            bool unreach = false;
 
             if (it != outpipes.end ()) {
                 current_out = it->second.pipe;
                 if (!current_out->check_write ()) {
                     it->second.active = false;
                     current_out = NULL;
+                    unreach = true;
                 }
             }
             else
-            if (mandatory) {
+            if (mandatory)
+                unreach = true;
+
+            if (unreach) {
                 more_out = false;
                 errno = EHOSTUNREACH;
                 return -1;
