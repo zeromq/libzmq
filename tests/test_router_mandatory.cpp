@@ -21,6 +21,7 @@
 
 #include <stdio.h>
 #include "testutil.hpp"
+#include "../include/zmq_utils.h"
 
 int main (void)
 {
@@ -33,7 +34,11 @@ int main (void)
     void *sa = zmq_socket (ctx, ZMQ_ROUTER);
     assert (sa);
     
-    int rc = zmq_bind (sa, "tcp://127.0.0.1:15560");
+    int hwm = 1;
+    int rc = zmq_setsockopt (sa, ZMQ_SNDHWM, &hwm, sizeof (hwm));
+    assert (rc == 0);
+
+    rc = zmq_bind (sa, "tcp://127.0.0.1:15560");
     assert (rc == 0);
 
     // Sending a message to an unknown peer with the default setting
@@ -52,7 +57,46 @@ int main (void)
     rc = zmq_send (sa, "UNKNOWN", 7, ZMQ_SNDMORE | ZMQ_DONTWAIT);
     assert (rc == -1 && errno == EHOSTUNREACH);
 
+    // Create a valid socket
+    void *sb = zmq_socket (ctx, ZMQ_DEALER);
+    assert (sb);
+
+    rc = zmq_setsockopt (sb, ZMQ_RCVHWM, &hwm, sizeof (hwm));
+    assert (rc == 0);
+
+    rc = zmq_setsockopt (sb, ZMQ_IDENTITY, "X", 1);
+    assert (rc == 0);
+    
+    rc = zmq_connect (sb, "tcp://127.0.0.1:15560");
+    assert (rc == 0);
+
+    // wait until connect
+    zmq_sleep (1); 
+
+    // make it full and check that it fails
+    rc = zmq_send (sa, "X", 1, ZMQ_SNDMORE);
+    assert (rc == 1);
+    rc = zmq_send (sa, "DATA1", 5, 0);
+    assert (rc == 5);
+
+
+    rc = zmq_send (sa, "X", 1, ZMQ_SNDMORE);
+    if (rc == 1) {
+        // the first frame has been sent
+        rc = zmq_send (sa, "DATA2", 5, 0);
+        assert (rc == 5);
+    
+        // send more
+        rc = zmq_send (sa, "X", 1, ZMQ_SNDMORE);
+    } 
+
+    assert (rc == -1 && errno == EHOSTUNREACH);
+
+
     rc = zmq_close (sa);
+    assert (rc == 0);
+
+    rc = zmq_close (sb);
     assert (rc == 0);
 
     rc = zmq_term (ctx);
