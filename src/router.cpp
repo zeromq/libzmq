@@ -166,7 +166,7 @@ int zmq::router_t::xsend (msg_t *msg_)
                 if (!current_out->check_write ()) {
                     it->second.active = false;
                     current_out = NULL;
-                    unreach = true;
+                    unreach = mandatory ? true: false;
                 }
             }
             else
