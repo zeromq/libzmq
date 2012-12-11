@@ -159,21 +159,21 @@ int zmq::router_t::xsend (msg_t *msg_)
             //  router_mandatory is set.
             blob_t identity ((unsigned char*) msg_->data (), msg_->size ());
             outpipes_t::iterator it = outpipes.find (identity);
-            bool unreach = false;
 
             if (it != outpipes.end ()) {
                 current_out = it->second.pipe;
                 if (!current_out->check_write ()) {
                     it->second.active = false;
                     current_out = NULL;
-                    unreach = mandatory ? true: false;
+                    if (mandatory) {
+                        more_out = false;
+                        errno = EAGAIN;
+                        return -1;
+                    }
                 }
             }
             else
-            if (mandatory)
-                unreach = true;
-
-            if (unreach) {
+            if (mandatory) {
                 more_out = false;
                 errno = EHOSTUNREACH;
                 return -1;

@@ -71,7 +71,7 @@ int main (void)
     assert (rc == 0);
 
     // wait until connect
-    zmq_sleep (1); 
+    zmq_sleep (1);
 
     // make it full and check that it fails
     rc = zmq_send (sa, "X", 1, ZMQ_SNDMORE);
@@ -79,18 +79,17 @@ int main (void)
     rc = zmq_send (sa, "DATA1", 5, 0);
     assert (rc == 5);
 
-
-    rc = zmq_send (sa, "X", 1, ZMQ_SNDMORE);
+    rc = zmq_send (sa, "X", 1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
     if (rc == 1) {
         // the first frame has been sent
         rc = zmq_send (sa, "DATA2", 5, 0);
         assert (rc == 5);
     
         // send more
-        rc = zmq_send (sa, "X", 1, ZMQ_SNDMORE);
+        rc = zmq_send (sa, "X", 1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
     } 
 
-    assert (rc == -1 && errno == EHOSTUNREACH);
+    assert (rc == -1 && errno == EAGAIN);
 
 
     rc = zmq_close (sa);
