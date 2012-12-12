@@ -284,7 +284,7 @@ AC_C_VOLATILE
 #  PGM extension
 libzmq_pgm_ext="no"
 
-pgm_basename="libpgm-5.1.118~dfsg"
+pgm_basename="libpgm-5.2.122~dfsg"
 
 AC_ARG_WITH([pgm], [AS_HELP_STRING([--with-pgm], 
     [build libzmq with PGM extension [default=no]])], 
