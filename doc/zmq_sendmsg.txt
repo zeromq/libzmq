@@ -106,8 +106,6 @@ rc = zmq_sendmsg (socket, &part3, 0);
 SEE ALSO
 --------
 linkzmq:zmq_recv[3]
-linkzmq:zmq_recv[3]
-linkzmq:zmq_recvmsg[3]
 linkzmq:zmq_socket[7]
 linkzmq:zmq[7]
 
