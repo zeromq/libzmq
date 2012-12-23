@@ -15,7 +15,8 @@ SYNOPSIS
 DESCRIPTION
 -----------
 The _zmq_msg_more()_ function indicates whether this is part of a multi-part
-message, and there are further parts to receive.
+message, and there are further parts to receive. This method can safely be
+called after _zmq_msg_close()_.
 
 
 RETURN VALUE
