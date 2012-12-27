@@ -325,6 +325,10 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     brc = SetEvent (sync);
     win_assert (brc != 0);
 
+    // Release the kernel object
+    brc = CloseHandle (sync);
+    win_assert (brc != 0);
+
     return 0;
 
 #elif defined ZMQ_HAVE_OPENVMS
