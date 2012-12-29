@@ -1027,32 +1027,3 @@ void zmq_free_event (void *event_data, void *hint)
     }
     free (event_data);
 }
-
-////////////////////////////////////////////////////////////////////////////////
-//  0MQ utils - to be used by perf tests
-////////////////////////////////////////////////////////////////////////////////
-
-void zmq_sleep (int seconds_)
-{
-#if defined ZMQ_HAVE_WINDOWS
-    Sleep (seconds_ * 1000);
-#else
-    sleep (seconds_);
-#endif
-}
-
-void *zmq_stopwatch_start ()
-{
-    uint64_t *watch = (uint64_t*) malloc (sizeof (uint64_t));
-    alloc_assert (watch);
-    *watch = zmq::clock_t::now_us ();
-    return (void*) watch;
-}
-
-unsigned long zmq_stopwatch_stop (void *watch_)
-{
-    uint64_t end = zmq::clock_t::now_us ();
-    uint64_t start = *(uint64_t*) watch_;
-    free (watch_);
-    return (unsigned long) (end - start);
-}
