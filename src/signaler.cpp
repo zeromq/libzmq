@@ -95,7 +95,11 @@ zmq::signaler_t::~signaler_t ()
     int rc = close (r);
     errno_assert (rc == 0);
 #elif defined ZMQ_HAVE_WINDOWS
-    int rc = closesocket (w);
+    struct linger so_linger = { 1, 0 };
+    int rc = setsockopt (w, SOL_SOCKET, SO_LINGER,
+        (char *)&so_linger, sizeof (so_linger));
+    wsa_assert (rc != SOCKET_ERROR);
+    rc = closesocket (w);
     wsa_assert (rc != SOCKET_ERROR);
     rc = closesocket (r);
     wsa_assert (rc != SOCKET_ERROR);
