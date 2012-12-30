@@ -73,11 +73,11 @@ zmq::fd_t zmq::open_socket (int domain_, int type_, int protocol_)
 
 void zmq::unblock_socket (fd_t s_)
 {
-#ifdef ZMQ_HAVE_WINDOWS
+#if defined ZMQ_HAVE_WINDOWS
     u_long nonblock = 1;
     int rc = ioctlsocket (s_, FIONBIO, &nonblock);
     wsa_assert (rc != SOCKET_ERROR);
-#elif ZMQ_HAVE_OPENVMS
+#elif defined ZMQ_HAVE_OPENVMS
     int nonblock = 1;
     int rc = ioctl (s_, FIONBIO, &nonblock);
     errno_assert (rc != -1);

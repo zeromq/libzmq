@@ -56,7 +56,7 @@
 
 
 // XSI vector I/O
-#if ZMQ_HAVE_UIO
+#if defined ZMQ_HAVE_UIO
 #include <sys/uio.h>
 #else
 struct iovec {
