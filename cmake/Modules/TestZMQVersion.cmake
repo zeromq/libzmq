@@ -5,7 +5,7 @@
         TRY_RUN(RUN_RESULT COMPILE_RESULT
           ${TRY_RUN_DIR}
           ${CMAKE_SOURCE_DIR}/cmake/Modules/zmq_version.cpp
-          CMAKE_FLAGS 
+          CMAKE_FLAGS
             "-DINCLUDE_DIRECTORIES:STRING=${CMAKE_SOURCE_DIR}/include"
           COMPILE_OUTPUT_VARIABLE COMPILE_OUTPUT
           RUN_OUTPUT_VARIABLE RUN_OUTPUT)
