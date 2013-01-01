@@ -27,7 +27,7 @@ if(NOT ${POLLER} STREQUAL "")
   set(ZMQ_FORCE_${UPPER_POLLER} 1)
 endif()
 
-set(ZMQ_CMAKE_MODULES_DIR ${CMAKE_SOURCE_DIR}/cmake/Modules)
+set(ZMQ_CMAKE_MODULES_DIR ${CMAKE_CURRENT_LIST_DIR}/cmake/Modules)
 list(APPEND CMAKE_MODULE_PATH ${ZMQ_CMAKE_MODULES_DIR})
 
 include(TestZMQVersion)
@@ -226,7 +226,7 @@ endif()
 #-----------------------------------------------------------------------------
 # force off-tree build
 
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
 message(FATAL_ERROR "CMake generation is not allowed within the source directory!
 Remove the CMakeCache.txt file and try again from another folder, e.g.:
 
@@ -246,8 +246,8 @@ if(NOT CMAKE_BUILD_TYPE)
       FORCE)
 endif()
 
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
-set(LIBRARY_OUTPUT_PATH  ${CMAKE_BINARY_DIR}/lib)
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin)
+set(LIBRARY_OUTPUT_PATH  ${CMAKE_CURRENT_BINARY_DIR}/lib)
 
 #-----------------------------------------------------------------------------
 # platform specifics
@@ -347,7 +347,7 @@ set(rc-sources
 
 include_directories(
         include
-        ${CMAKE_BINARY_DIR}
+        ${CMAKE_CURRENT_BINARY_DIR}
 )
 set(public_headers
         include/zmq.h
@@ -383,45 +383,44 @@ endif(WITH_OPENPGM)
 # source generators
 
 foreach(source ${cxx-sources})
-        list(APPEND sources ${CMAKE_SOURCE_DIR}/src/${source})
+  list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/src/${source})
 endforeach()
 
 foreach(source ${rc-sources})
-        list(APPEND sources ${CMAKE_BINARY_DIR}/${source})
-        configure_file(${CMAKE_SOURCE_DIR}/src/${source}.in ${CMAKE_BINARY_DIR}/${source})
+  list(APPEND sources ${CMAKE_CURRENT_BINARY_DIR}/${source})
 endforeach()
 
-configure_file(${CMAKE_SOURCE_DIR}/builds/cmake/platform.hpp.in ${CMAKE_BINARY_DIR}/platform.hpp)
-list(APPEND sources ${CMAKE_BINARY_DIR}/platform.hpp)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/platform.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/platform.hpp)
+list(APPEND sources ${CMAKE_CURRENT_BINARY_DIR}/platform.hpp)
 
-configure_file(${CMAKE_SOURCE_DIR}/src/libzmq.pc.cmake.in ${CMAKE_BINARY_DIR}/libzmq.pc)
-set(zmq-pkgconfig ${CMAKE_BINARY_DIR}/libzmq.pc)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/libzmq.pc.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/libzmq.pc)
+set(zmq-pkgconfig ${CMAKE_CURRENT_BINARY_DIR}/libzmq.pc)
 
 if(NOT ZMQ_BUILD_FRAMEWORK)
-  install(FILES ${CMAKE_BINARY_DIR}/libzmq.pc DESTINATION lib/pkgconfig)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libzmq.pc DESTINATION lib/pkgconfig)
 endif()
 
 
 
 if(MSVC)
   if(CMAKE_CL_64)
-    set(nsis-template ${CMAKE_SOURCE_DIR}/cmake/NSIS.template64.in)
+    set(nsis-template ${CMAKE_CURRENT_SOURCE_DIR}/cmake/NSIS.template64.in)
   else()
-    set(nsis-template ${CMAKE_SOURCE_DIR}/cmake/NSIS.template32.in)
+    set(nsis-template ${CMAKE_CURRENT_SOURCE_DIR}/cmake/NSIS.template32.in)
   endif()
 
   add_custom_command(
-        OUTPUT ${CMAKE_BINARY_DIR}/NSIS.template.in
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.in
         COMMAND ${CMAKE_COMMAND}
         ARGS -E
         copy
         ${nsis-template}
-        ${CMAKE_BINARY_DIR}/NSIS.template.in
+        ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.in
         DEPENDS ${nsis-template})
 endif()
 
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/doc)
-file(GLOB docs RELATIVE ${CMAKE_BINARY_DIR}/ "${CMAKE_SOURCE_DIR}/doc/*.txt")
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc)
+file(GLOB docs RELATIVE ${CMAKE_CURRENT_BINARY_DIR}/ "${CMAKE_CURRENT_SOURCE_DIR}/doc/*.txt")
 set(html-docs)
 foreach(txt ${docs})
   string(REGEX REPLACE ".*/(.*)\\.txt" "\\1.html" html ${txt})
@@ -436,13 +435,15 @@ foreach(txt ${docs})
     -b xhtml11
     -f ${CMAKE_SOURCE_DIR}/doc/asciidoc.conf
     -azmq_version=${ZMQ_VERSION}
+    -f ${CMAKE_CURRENT_SOURCE_DIR}/doc/asciidoc.conf
+    -azmq_version=${ZMQ_VERSION}
     -o ${dst}
     ${src}
-    DEPENDS ${CMAKE_BINARY_DIR}/${src}
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${src}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Generating ${html}")
   if(WITH_DOC)
-    list(APPEND html-docs ${CMAKE_BINARY_DIR}/${dst})
+    list(APPEND html-docs ${CMAKE_CURRENT_BINARY_DIR}/${dst})
   endif()
 endforeach()
 
@@ -460,8 +461,8 @@ endif()
 # output
 
 if(MSVC)
-  add_library(libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs} ${CMAKE_BINARY_DIR}/NSIS.template.in)
-  target_link_libraries(libzmq ws2_32.lib rpcrt4.lib ${OPTIONAL_LIBRARIES})
+  add_library(libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs} ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.in)
+  target_link_libraries(libzmq ${OPTIONAL_LIBRARIES})
   set_target_properties(libzmq PROPERTIES
     PUBLIC_HEADER "${public_headers}"
     RELEASE_POSTFIX "${_zmq_COMPILER}-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
@@ -550,7 +551,7 @@ if(MSVC)
             RUNTIME DESTINATION bin
             PUBLIC_HEADER DESTINATION include
             COMPONENT SDK)
-    install(FILES ${CMAKE_BINARY_DIR}/lib/libzmq${_zmq_COMPILER}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}.pdb DESTINATION lib
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/lib/libzmq${_zmq_COMPILER}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}.pdb DESTINATION lib
             COMPONENT SDK)
   else()
     install(TARGETS libzmq
@@ -572,16 +573,20 @@ endif()
 #          COMPONENT SDK)
 
 if(NOT ZMQ_BUILD_FRAMEWORK)
-  file(GLOB private_headers "${CMAKE_SOURCE_DIR}/src/*.hpp")
-  install(FILES ${sources} ${private_headers} DESTINATION src
+  file(GLOB private_headers "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp")
+  install(FILES ${sources} ${private_headers} DESTINATION src/zmq
           COMPONENT SourceCode)
 endif()
 
 foreach(readme ${readme-docs})
-  configure_file(${CMAKE_SOURCE_DIR}/${readme} ${CMAKE_BINARY_DIR}/${readme}.txt)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${readme} ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt)
 
   if(NOT ZMQ_BUILD_FRAMEWORK)
-    install(FILES ${CMAKE_BINARY_DIR}/${readme}.txt DESTINATION etc/zmq)
+    if(MSVC)
+      install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt DESTINATION .)
+    else()
+      install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt DESTINATION etc/zmq)
+    endif()
   endif()
 endforeach()
 
@@ -616,16 +621,44 @@ if(MSVC)
         "${CMAKE_SOURCE_DIR}/build/x86/v90;ZeroMQ;ALL;/"
         "${CMAKE_SOURCE_DIR}/debug/x86/v90;ZeroMQ;ALL;/")
   endif()
-  set(CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}")
+
+  set(CPACK_NSIS_DISPLAY_NAME "ZeroMQ ${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.${ZMQ_VERSION_PATCH}(${arch_name})")
+  set(CPACK_PACKAGE_FILE_NAME "ZeroMQ-${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.${ZMQ_VERSION_PATCH}-${arch_name}")
+
+  # TODO: I think this part was intended to be used when running cpack
+  # separately from cmake but I don't know how that works.
+  #
+  # macro(add_crt_version version)
+  #   set(rel_dir "${CMAKE_CURRENT_BINARY_DIR}/build/${arch_name}/${version};ZeroMQ;ALL;/")
+  #   set(debug_dir "${CMAKE_CURRENT_BINARY_DIR}/debug/${arch_name}/${version};ZeroMQ;ALL;/")
+  #   if(EXISTS ${rel_dir})
+  #     list(APPEND CPACK_INSTALL_CMAKE_PROJECTS ${rel_dir})
+  #   endif()
+
+  #   if(EXISTS ${debug_dir})
+  #     list(APPEND CPACK_INSTALL_CMAKE_PROJECTS ${rel_dir})
+  #   endmacro()
+  # endmacro()
+
+  # add_crt_version(v110)
+  # add_crt_version(v100)
+  # add_crt_version(v90)
+
+  set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_BINARY_DIR}")
+  set(CPACK_GENERATOR "NSIS")
+  set(CPACK_PACKAGE_NAME "ZeroMQ")
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "ZeroMQ lightweight messaging kernel")
   set(CPACK_PACKAGE_VENDOR "Miru")
   set(CPACK_NSIS_CONTACT "Steven McCoy <Steven.McCoy@miru.hk>")
-  set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_BINARY_DIR}/COPYING.txt")
+  set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_BINARY_DIR}\\\\COPYING.txt")
+  set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_BINARY_DIR}\\\\README.txt")
+  set(CPACK_RESOURCE_FILE_WELCOME "${CMAKE_CURRENT_BINARY_DIR}\\\\README.txt")
   # There is a bug in NSI that does not handle full unix paths properly. Make
   # sure there is at least one set of four(4) backslashes.
-  set(CPACK_NSIS_MUI_ICON "${CMAKE_SOURCE_DIR}\\\\installer.ico")
-  set(CPACK_NSIS_MUI_UNIICON "${CMAKE_SOURCE_DIR}\\\\installer.ico")
-  set(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}\\\\branding.bmp")
+  set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}\\\\installer.ico")
+  set(CPACK_NSIS_MUI_UNIICON "${CMAKE_CURRENT_SOURCE_DIR}\\\\installer.ico")
+
+  set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}\\\\branding.bmp")
   set(CPACK_NSIS_COMPRESSOR "/SOLID lzma")
   set(CPACK_PACKAGE_VERSION ${ZMQ_VERSION})
   set(CPACK_PACKAGE_VERSION_MAJOR ${ZMQ_VERSION_MAJOR})
