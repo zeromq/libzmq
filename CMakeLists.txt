@@ -110,9 +110,15 @@ option(LIBZMQ_PEDANTIC "" ON)
 option(LIBZMQ_WERROR "" OFF)
 
 if(LIBZMQ_PEDANTIC)
-  zmq_check_cxx_flag_prepend("-pedantic") # GCC
-  zmq_check_cxx_flag_prepend("-strict-ansi") # ICC
-  zmq_check_cxx_flag_prepend("-compat=5") # Sun Studio
+  zmq_check_cxx_flag_prepend("-pedantic")
+
+  if(${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
+    zmq_check_cxx_flag_prepend("-strict-ansi")
+  endif()
+
+  if(${CMAKE_CXX_COMPILER_ID} MATCHES "SunPro")
+    zmq_check_cxx_flag_prepend("-compat=5")
+  endif()
 endif()
 
 if(LIBZMQ_WERROR)

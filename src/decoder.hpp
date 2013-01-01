@@ -163,7 +163,7 @@ namespace zmq
             return false;
         }
 
-        inline bool message_ready_size (size_t msg_sz)
+        inline bool message_ready_size (size_t /* msg_sz */)
         {
             zmq_assert (false);
             return false;
