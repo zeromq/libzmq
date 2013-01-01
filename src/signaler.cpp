@@ -202,8 +202,8 @@ void zmq::signaler_t::recv ()
     //  one, return it back to the eventfd object.
     if (unlikely (dummy == 2)) {
         const uint64_t inc = 1;
-        ssize_t sz = write (w, &inc, sizeof (inc));
-        errno_assert (sz == sizeof (inc));
+        ssize_t sz2 = write (w, &inc, sizeof (inc));
+        errno_assert (sz2 == sizeof (inc));
         return;
     }
 

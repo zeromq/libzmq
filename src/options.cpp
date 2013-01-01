@@ -331,9 +331,12 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 return 0;
             }
         }
+    default:
+        {
+            errno = EINVAL;
+            return -1;
+        }
     }
-    errno = EINVAL;
-    return -1;
 }
 
 int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
