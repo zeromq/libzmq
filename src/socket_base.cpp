@@ -664,7 +664,7 @@ int zmq::socket_base_t::send (msg_t *msg_, int flags_)
         return -1;
 
     //  Compute the time when the timeout should occur.
-    //  If the timeout is infite, don't care. 
+    //  If the timeout is infinite, don't care.
     int timeout = options.sndtimeo;
     uint64_t end = timeout < 0 ? 0 : (clock.now_ms () + timeout);
 
@@ -746,7 +746,7 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
     }
 
     //  Compute the time when the timeout should occur.
-    //  If the timeout is infite, don't care. 
+    //  If the timeout is infinite, don't care.
     int timeout = options.rcvtimeo;
     uint64_t end = timeout < 0 ? 0 : (clock.now_ms () + timeout);
 
