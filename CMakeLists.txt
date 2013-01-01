@@ -394,6 +394,11 @@ foreach(source ${rc-sources})
   list(APPEND sources ${CMAKE_CURRENT_BINARY_DIR}/${source})
 endforeach()
 
+foreach(source ${rc-sources})
+  list(APPEND sources ${CMAKE_BINARY_DIR}/${source})
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/${source}.in ${CMAKE_CURRENT_BINARY_DIR}/${source})
+endforeach()
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/platform.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/platform.hpp)
 list(APPEND sources ${CMAKE_CURRENT_BINARY_DIR}/platform.hpp)
 
@@ -516,8 +521,6 @@ set(perf-tools local_lat
                inproc_lat
                inproc_thr)
 
-#get_target_property
-
 if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug") # Why?
   foreach(perf-tool ${perf-tools})
     add_executable(${perf-tool} perf/${perf-tool}.cpp)
@@ -535,7 +538,7 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug") # Why?
     else()
       install(TARGETS ${perf-tool}
               RUNTIME DESTINATION bin
-	      COMPONENT PerfTools)
+              COMPONENT PerfTools)
     endif()
   endforeach()
 endif()
@@ -560,7 +563,7 @@ if(MSVC)
   else()
     install(TARGETS libzmq
             RUNTIME DESTINATION bin
-            PUBLIC_HEADER DESTINATION include
+            #PUBLIC_HEADER DESTINATION include
             COMPONENT Runtime)
   endif()
 else()
@@ -605,25 +608,9 @@ if(MSVC)
   include(InstallRequiredSystemLibraries)
 
   if(CMAKE_CL_64)
-    set(CPACK_NSIS_DISPLAY_NAME "ZeroMQ ${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.${ZMQ_VERSION_PATCH}(x64)")
-    set(CPACK_PACKAGE_FILE_NAME "ZeroMQ-${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.${ZMQ_VERSION_PATCH}-x64")
-        set(CPACK_INSTALL_CMAKE_PROJECTS
-          "${CMAKE_SOURCE_DIR}/build/x64/v110;ZeroMQ;ALL;/"
-          "${CMAKE_SOURCE_DIR}/debug/x64/v110;ZeroMQ;ALL;/"
-          "${CMAKE_SOURCE_DIR}/build/x64/v100;ZeroMQ;ALL;/"
-          "${CMAKE_SOURCE_DIR}/debug/x64/v100;ZeroMQ;ALL;/"
-          "${CMAKE_SOURCE_DIR}/build/x64/v90;ZeroMQ;ALL;/"
-          "${CMAKE_SOURCE_DIR}/debug/x64/v90;ZeroMQ;ALL;/")
+    set(arch_name "x64")
   else()
-    set(CPACK_NSIS_DISPLAY_NAME "ZeroMQ ${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.${ZMQ_VERSION_PATCH}")
-    set(CPACK_PACKAGE_FILE_NAME "ZeroMQ-${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.${ZMQ_VERSION_PATCH}-x86")
-    set(CPACK_INSTALL_CMAKE_PROJECTS
-        "${CMAKE_SOURCE_DIR}/build/x86/v110;ZeroMQ;ALL;/"
-        "${CMAKE_SOURCE_DIR}/debug/x86/v110;ZeroMQ;ALL;/"
-        "${CMAKE_SOURCE_DIR}/build/x86/v100;ZeroMQ;ALL;/"
-        "${CMAKE_SOURCE_DIR}/debug/x86/v100;ZeroMQ;ALL;/"
-        "${CMAKE_SOURCE_DIR}/build/x86/v90;ZeroMQ;ALL;/"
-        "${CMAKE_SOURCE_DIR}/debug/x86/v90;ZeroMQ;ALL;/")
+    set(arch_name "x86")
   endif()
 
   set(CPACK_NSIS_DISPLAY_NAME "ZeroMQ ${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.${ZMQ_VERSION_PATCH}(${arch_name})")
@@ -674,35 +661,35 @@ if(MSVC)
   include(CPack)
 
   cpack_add_component_group(Development
-        DISPLAY_NAME "ZeroMQ software development kit"
-        EXPANDED)
-  cpack_add_component(PerfTools
-        DISPLAY_NAME "ZeroMQ performance tools"
-        INSTALL_TYPES FullInstall DevInstall)
-  cpack_add_component(SourceCode
-        DISPLAY_NAME "ZeroMQ source code"
-        DISABLED
-        INSTALL_TYPES FullInstall)
-  cpack_add_component(SDK
-        DISPLAY_NAME "ZeroMQ headers and libraries"
-        INSTALL_TYPES FullInstall DevInstall
-        GROUP Development)
-  if(WITH_DOC)
-        cpack_add_component(RefGuide
-          DISPLAY_NAME "ZeroMQ reference guide"
-          INSTALL_TYPES FullInstall DevInstall
-          GROUP Development)
-  endif(WITH_DOC)
-  cpack_add_component(Runtime
-        DISPLAY_NAME "ZeroMQ runtime files"
-        REQUIRED
-        INSTALL_TYPES FullInstall DevInstall MinInstall)
-  cpack_add_install_type(FullInstall
-        DISPLAY_NAME "Full install, including source code")
-  cpack_add_install_type(DevInstall
-        DISPLAY_NAME "Developer install, headers and libraries")
-  cpack_add_install_type(MinInstall
-        DISPLAY_NAME "Minimal install, runtime only")
+         DISPLAY_NAME "ZeroMQ software development kit"
+         EXPANDED)
+   cpack_add_component(PerfTools
+         DISPLAY_NAME "ZeroMQ performance tools"
+         INSTALL_TYPES FullInstall DevInstall)
+   cpack_add_component(SourceCode
+         DISPLAY_NAME "ZeroMQ source code"
+         DISABLED
+         INSTALL_TYPES FullInstall)
+   cpack_add_component(SDK
+         DISPLAY_NAME "ZeroMQ headers and libraries"
+         INSTALL_TYPES FullInstall DevInstall
+         GROUP Development)
+   if(WITH_DOC)
+     cpack_add_component(RefGuide
+       DISPLAY_NAME "ZeroMQ reference guide"
+       INSTALL_TYPES FullInstall DevInstall
+       GROUP Development)
+   endif()
+   cpack_add_component(Runtime
+         DISPLAY_NAME "ZeroMQ runtime files"
+         REQUIRED
+         INSTALL_TYPES FullInstall DevInstall MinInstall)
+   cpack_add_install_type(FullInstall
+         DISPLAY_NAME "Full install, including source code")
+   cpack_add_install_type(DevInstall
+         DISPLAY_NAME "Developer install, headers and libraries")
+   cpack_add_install_type(MinInstall
+         DISPLAY_NAME "Minimal install, runtime only")
 endif()
 
 # Export this for library to help build this as a sub-project

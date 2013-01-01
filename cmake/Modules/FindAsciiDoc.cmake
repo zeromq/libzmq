@@ -12,7 +12,12 @@ find_program(ASCIIDOC_EXECUTABLE asciidoc asciidoc.py
                    "$ENV{PROGRAMFILES}/asciidoc"
                    "$ENV{PROGRAMFILES(X86)}/asciidoc")
 
-find_program(A2X_EXECUTABLE a2x)
+find_program(A2X_EXECUTABLE a2x
+             PATHS "$ENV{ASCIIDOC_ROOT}"
+                   "$ENV{PROGRAMW6432}/asciidoc"
+                   "$ENV{PROGRAMFILES}/asciidoc"
+                   "$ENV{PROGRAMFILES(X86)}/asciidoc")
+
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_ARGS(AsciiDoc REQUIRED_VARS ASCIIDOC_EXECUTABLE)
