@@ -437,14 +437,14 @@ int zmq::socket_base_t::connect (const char *addr_)
 
         //  Create a bi-directional pipe to connect the peers.
         object_t *parents [2] = {this, peer.socket};
-        pipe_t *pipes [2] = {NULL, NULL};
+        pipe_t *new_pipes [2] = {NULL, NULL};
         int hwms [2] = {sndhwm, rcvhwm};
         bool delays [2] = {options.delay_on_disconnect, options.delay_on_close};
-        int rc = pipepair (parents, pipes, hwms, delays);
+        int rc = pipepair (parents, new_pipes, hwms, delays);
         errno_assert (rc == 0);
 
         //  Attach local end of the pipe to this socket object.
-        attach_pipe (pipes [0]);
+        attach_pipe (new_pipes [0]);
 
         //  If required, send the identity of the local socket to the peer.
         if (peer.options.recv_identity) {
@@ -453,9 +453,9 @@ int zmq::socket_base_t::connect (const char *addr_)
             errno_assert (rc == 0);
             memcpy (id.data (), options.identity, options.identity_size);
             id.set_flags (msg_t::identity);
-            bool written = pipes [0]->write (&id);
+            bool written = new_pipes [0]->write (&id);
             zmq_assert (written);
-            pipes [0]->flush ();
+            new_pipes [0]->flush ();
         }
 
         //  If required, send the identity of the peer to the local socket.
@@ -465,21 +465,21 @@ int zmq::socket_base_t::connect (const char *addr_)
             errno_assert (rc == 0);
             memcpy (id.data (), peer.options.identity, peer.options.identity_size);
             id.set_flags (msg_t::identity);
-            bool written = pipes [1]->write (&id);
+            bool written = new_pipes [1]->write (&id);
             zmq_assert (written);
-            pipes [1]->flush ();
+            new_pipes [1]->flush ();
         }
 
         //  Attach remote end of the pipe to the peer socket. Note that peer's
         //  seqnum was incremented in find_endpoint function. We don't need it
         //  increased here.
-        send_bind (peer.socket, pipes [1], false);
+        send_bind (peer.socket, new_pipes [1], false);
 
         // Save last endpoint URI
         options.last_endpoint.assign (addr_);
 
         // remember inproc connections for disconnect
-        inprocs.insert (inprocs_t::value_type (std::string (addr_), pipes[0]));
+        inprocs.insert (inprocs_t::value_type (std::string (addr_), new_pipes[0]));
 
         return 0;
     }
@@ -540,17 +540,17 @@ int zmq::socket_base_t::connect (const char *addr_)
     if (options.delay_attach_on_connect != 1 || icanhasall) {
         //  Create a bi-directional pipe.
         object_t *parents [2] = {this, session};
-        pipe_t *pipes [2] = {NULL, NULL};
+        pipe_t *new_pipes [2] = {NULL, NULL};
         int hwms [2] = {options.sndhwm, options.rcvhwm};
         bool delays [2] = {options.delay_on_disconnect, options.delay_on_close};
-        rc = pipepair (parents, pipes, hwms, delays);
+        rc = pipepair (parents, new_pipes, hwms, delays);
         errno_assert (rc == 0);
 
         //  Attach local end of the pipe to the socket object.
-        attach_pipe (pipes [0], icanhasall);
+        attach_pipe (new_pipes [0], icanhasall);
 
         //  Attach remote end of the pipe to the session object later on.
-        session->attach_pipe (pipes [1]);
+        session->attach_pipe (new_pipes [1]);
     }
 
     //  Save last endpoint URI

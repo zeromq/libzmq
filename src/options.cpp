@@ -320,13 +320,13 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             else {
                 std::string filter_str ((const char*) optval_, optvallen_);
 
-                tcp_address_mask_t filter;
-                int rc = filter.resolve (filter_str.c_str (), ipv4only ? true : false);
+                tcp_address_mask_t mask;
+                int rc = mask.resolve (filter_str.c_str (), ipv4only ? true : false);
                 if (rc != 0) {
                     errno = EINVAL;
                     return -1;
                 }
-                tcp_accept_filters.push_back(filter);
+                tcp_accept_filters.push_back(mask);
 
                 return 0;
             }
