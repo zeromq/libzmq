@@ -190,30 +190,30 @@ cmake_dependent_option(WITH_DOC "Build Reference Guide documentation(requires Do
 if(MSVC)
   if(WITH_OPENPGM)
     #   set(OPENPGM_ROOT "" CACHE PATH "Location of OpenPGM")
-        set(OPENPGM_VERSION_MAJOR 5)
-        set(OPENPGM_VERSION_MINOR 2)
-        set(OPENPGM_VERSION_MICRO 122)
-        if(CMAKE_CL_64)
-          find_path(OPENPGM_ROOT include/pgm/pgm.h
+    set(OPENPGM_VERSION_MAJOR 5)
+    set(OPENPGM_VERSION_MINOR 2)
+    set(OPENPGM_VERSION_MICRO 122)
+    if(CMAKE_CL_64)
+      find_path(OPENPGM_ROOT include/pgm/pgm.h
                 PATHS
                 "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Miru\\OpenPGM ${OPENPGM_VERSION_MAJOR}.${OPENPGM_VERSION_MINOR}.${OPENPGM_VERSION_MICRO}]"
                 NO_DEFAULT_PATH
                 )
-          message(STATUS "OpenPGM x64 detected - ${OPENPGM_ROOT}")
-        else()
-          find_path(OPENPGM_ROOT include/pgm/pgm.h
+      message(STATUS "OpenPGM x64 detected - ${OPENPGM_ROOT}")
+    else()
+      find_path(OPENPGM_ROOT include/pgm/pgm.h
                 PATHS
                 "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Miru\\OpenPGM ${OPENPGM_VERSION_MAJOR}.${OPENPGM_VERSION_MINOR}.${OPENPGM_VERSION_MICRO}]"
                 "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Miru\\OpenPGM ${OPENPGM_VERSION_MAJOR}.${OPENPGM_VERSION_MINOR}.${OPENPGM_VERSION_MICRO}]"
                 NO_DEFAULT_PATH
                 )
-          message(STATUS "OpenPGM x86 detected - ${OPENPGM_ROOT}")
-        endif(CMAKE_CL_64)
-        set(OPENPGM_INCLUDE_DIRS ${OPENPGM_ROOT}/include)
-        set(OPENPGM_LIBRARY_DIRS ${OPENPGM_ROOT}/lib)
-        set(OPENPGM_LIBRARIES
-          optimized libpgm${_zmq_COMPILER}-mt-${OPENPGM_VERSION_MAJOR}_${OPENPGM_VERSION_MINOR}_${OPENPGM_VERSION_MICRO}.lib
-          debug libpgm${_zmq_COMPILER}-mt-gd-${OPENPGM_VERSION_MAJOR}_${OPENPGM_VERSION_MINOR}_${OPENPGM_VERSION_MICRO}.lib)
+      message(STATUS "OpenPGM x86 detected - ${OPENPGM_ROOT}")
+    endif(CMAKE_CL_64)
+    set(OPENPGM_INCLUDE_DIRS ${OPENPGM_ROOT}/include)
+    set(OPENPGM_LIBRARY_DIRS ${OPENPGM_ROOT}/lib)
+    set(OPENPGM_LIBRARIES
+      optimized libpgm${_zmq_COMPILER}-mt-${OPENPGM_VERSION_MAJOR}_${OPENPGM_VERSION_MINOR}_${OPENPGM_VERSION_MICRO}.lib
+      debug libpgm${_zmq_COMPILER}-mt-gd-${OPENPGM_VERSION_MAJOR}_${OPENPGM_VERSION_MINOR}_${OPENPGM_VERSION_MICRO}.lib)
   endif()
 else()
   if(WITH_OPENPGM)
@@ -386,16 +386,10 @@ set(readme-docs AUTHORS
 # optional modules
 
 if(WITH_OPENPGM)
-        add_definitions(
-                -DZMQ_HAVE_OPENPGM
-        )
-        include_directories(
-                ${OPENPGM_INCLUDE_DIRS}
-        )
-        link_directories(
-                ${OPENPGM_LIBRARY_DIRS}
-        )
-        set(OPTIONAL_LIBRARIES ${OPENPGM_LIBRARIES})
+  add_definitions(-DZMQ_HAVE_OPENPGM)
+  include_directories(${OPENPGM_INCLUDE_DIRS})
+  link_directories(${OPENPGM_LIBRARY_DIRS})
+  set(OPTIONAL_LIBRARIES ${OPENPGM_LIBRARIES})
 endif(WITH_OPENPGM)
 
 #-----------------------------------------------------------------------------
@@ -434,13 +428,13 @@ if(MSVC)
   endif()
 
   add_custom_command(
-        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.in
-        COMMAND ${CMAKE_COMMAND}
-        ARGS -E
-        copy
-        ${nsis-template}
-        ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.in
-        DEPENDS ${nsis-template})
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.in
+    COMMAND ${CMAKE_COMMAND}
+    ARGS -E
+    copy
+    ${nsis-template}
+    ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.in
+    DEPENDS ${nsis-template})
 endif()
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc)
@@ -678,35 +672,35 @@ if(MSVC)
   include(CPack)
 
   cpack_add_component_group(Development
-         DISPLAY_NAME "ZeroMQ software development kit"
-         EXPANDED)
-   cpack_add_component(PerfTools
-         DISPLAY_NAME "ZeroMQ performance tools"
-         INSTALL_TYPES FullInstall DevInstall)
-   cpack_add_component(SourceCode
-         DISPLAY_NAME "ZeroMQ source code"
-         DISABLED
-         INSTALL_TYPES FullInstall)
-   cpack_add_component(SDK
-         DISPLAY_NAME "ZeroMQ headers and libraries"
-         INSTALL_TYPES FullInstall DevInstall
-         GROUP Development)
-   if(WITH_DOC)
-     cpack_add_component(RefGuide
-       DISPLAY_NAME "ZeroMQ reference guide"
-       INSTALL_TYPES FullInstall DevInstall
-       GROUP Development)
-   endif()
-   cpack_add_component(Runtime
-         DISPLAY_NAME "ZeroMQ runtime files"
-         REQUIRED
-         INSTALL_TYPES FullInstall DevInstall MinInstall)
-   cpack_add_install_type(FullInstall
-         DISPLAY_NAME "Full install, including source code")
-   cpack_add_install_type(DevInstall
-         DISPLAY_NAME "Developer install, headers and libraries")
-   cpack_add_install_type(MinInstall
-         DISPLAY_NAME "Minimal install, runtime only")
+    DISPLAY_NAME "ZeroMQ software development kit"
+    EXPANDED)
+  cpack_add_component(PerfTools
+    DISPLAY_NAME "ZeroMQ performance tools"
+    INSTALL_TYPES FullInstall DevInstall)
+  cpack_add_component(SourceCode
+    DISPLAY_NAME "ZeroMQ source code"
+    DISABLED
+    INSTALL_TYPES FullInstall)
+  cpack_add_component(SDK
+    DISPLAY_NAME "ZeroMQ headers and libraries"
+    INSTALL_TYPES FullInstall DevInstall
+    GROUP Development)
+  if(WITH_DOC)
+    cpack_add_component(RefGuide
+      DISPLAY_NAME "ZeroMQ reference guide"
+      INSTALL_TYPES FullInstall DevInstall
+      GROUP Development)
+  endif()
+  cpack_add_component(Runtime
+    DISPLAY_NAME "ZeroMQ runtime files"
+    REQUIRED
+    INSTALL_TYPES FullInstall DevInstall MinInstall)
+  cpack_add_install_type(FullInstall
+    DISPLAY_NAME "Full install, including source code")
+  cpack_add_install_type(DevInstall
+    DISPLAY_NAME "Developer install, headers and libraries")
+  cpack_add_install_type(MinInstall
+    DISPLAY_NAME "Minimal install, runtime only")
 endif()
 
 # Export this for library to help build this as a sub-project
