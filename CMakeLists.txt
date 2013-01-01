@@ -122,6 +122,10 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "^sparc")
   zmq_check_cxx_flag_prepend("-mcpu=v9")
 endif()
 
+if(${CMAKE_CXX_COMPILER_ID} MATCHES "SunPro")
+  zmq_check_cxx_flag_prepend("-features=zla")
+endif()
+
 
 if(CMAKE_SYSTEM_NAME MATCHES "SunOS" OR CMAKE_SYSTEM_NAME MATCHES "NetBSD")
   message(STATUS "Checking whether atomic operations can be used")
