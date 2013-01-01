@@ -92,6 +92,8 @@ void zmq::unblock_socket (fd_t s_)
 
 void zmq::enable_ipv4_mapping (fd_t s_)
 {
+  (void) s_;
+
 #ifdef IPV6_V6ONLY
 #ifdef ZMQ_HAVE_WINDOWS
     DWORD flag = 0;
@@ -107,3 +109,4 @@ void zmq::enable_ipv4_mapping (fd_t s_)
 #endif
 #endif
 }
+
