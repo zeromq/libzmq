@@ -29,9 +29,6 @@
 #cmakedefine ZMQ_HAVE_OPENPGM
 #cmakedefine ZMQ_MAKE_VALGRIND_HAPPY
 
-#cmakedefine size_t
-#cmakedefine ssize_t
-
 
 #ifdef _AIX
   #define ZMQ_HAVE_AIX

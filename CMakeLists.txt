@@ -39,7 +39,6 @@ include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 include(CheckCSourceCompiles)
 include(CheckCSourceRuns)
-include(AutoconfHelper)
 include(CMakeDependentOption)
 
 check_include_files(ifaddrs.h ZMQ_HAVE_IFADDRS)
@@ -118,14 +117,6 @@ if(LIBZMQ_WERROR)
   zmq_check_cxx_flag_prepend("-errwarn=%all")
 endif()
 
-
-if(${CMAKE_C_COMPILER_ID} STREQUAL "Intel")
-  # 279: controlling expression is constant
-  # Fixes build with ICC 12.x
-  zmq_check_cxx_flag_prepend("-wd279")
-  ac_type_size_t()
-  ac_type_ssize_t()
-endif()
 
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "^sparc")
   zmq_check_cxx_flag_prepend("-mcpu=v9")
