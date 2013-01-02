@@ -410,7 +410,7 @@ foreach(source ${rc-sources})
 endforeach()
 
 foreach(source ${rc-sources})
-  list(APPEND sources ${CMAKE_BINARY_DIR}/${source})
+  list(APPEND sources ${CMAKE_CURRENT_BINARY_DIR}/${source})
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/${source}.in ${CMAKE_CURRENT_BINARY_DIR}/${source})
 endforeach()
 
@@ -457,8 +457,6 @@ foreach(txt ${docs})
     ${ASCIIDOC_EXECUTABLE}
     -d manpage
     -b xhtml11
-    -f ${CMAKE_SOURCE_DIR}/doc/asciidoc.conf
-    -azmq_version=${ZMQ_VERSION}
     -f ${CMAKE_CURRENT_SOURCE_DIR}/doc/asciidoc.conf
     -azmq_version=${ZMQ_VERSION}
     -o ${dst}
