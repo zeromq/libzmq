@@ -206,8 +206,8 @@ void zmq::signaler_t::recv ()
     //  one, return it back to the eventfd object.
     if (unlikely (dummy == 2)) {
         const uint64_t inc = 1;
-        ssize_t sz = write (w, &inc, sizeof (inc));
-        errno_assert (sz == sizeof (inc));
+        ssize_t sz2 = write (w, &inc, sizeof (inc));
+        errno_assert (sz2 == sizeof (inc));
         return;
     }
 
@@ -238,8 +238,10 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     return 0;
 
 #elif defined ZMQ_HAVE_WINDOWS
-    SECURITY_DESCRIPTOR sd = {0};
-    SECURITY_ATTRIBUTES sa = {0};
+    SECURITY_DESCRIPTOR sd;
+    SECURITY_ATTRIBUTES sa;
+    memset (&sd, 0, sizeof (sd));
+    memset (&sa, 0, sizeof (sa));
 
     InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION);
     SetSecurityDescriptorDacl(&sd, TRUE, 0, FALSE);

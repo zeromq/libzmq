@@ -29,8 +29,9 @@ namespace zmq
 
     //  Interface to be implemented by message source.
 
-    struct i_msg_source
+    class i_msg_source
     {
+    public:
         virtual ~i_msg_source () {}
 
         //  Fetch a message. Returns 0 if successful; -1 otherwise.
