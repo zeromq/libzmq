@@ -56,7 +56,7 @@
 
 
 // XSI vector I/O
-#if ZMQ_HAVE_UIO
+#if defined ZMQ_HAVE_UIO
 #include <sys/uio.h>
 #else
 struct iovec {
@@ -980,7 +980,7 @@ int zmq_proxy (void *frontend_, void *backend_, void *control_)
 
 //  The deprecated device functionality
 
-int zmq_device (int type, void *frontend_, void *backend_)
+int zmq_device (int /* type */, void *frontend_, void *backend_)
 {
     return zmq::proxy (
         (zmq::socket_base_t*) frontend_,
@@ -989,7 +989,7 @@ int zmq_device (int type, void *frontend_, void *backend_)
 
 //  Callback to free socket event data
 
-void zmq_free_event (void *event_data, void *hint)
+void zmq_free_event (void *event_data, void * /* hint */)
 {
     zmq_event_t *event = (zmq_event_t *) event_data;
 

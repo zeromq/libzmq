@@ -124,6 +124,7 @@ void zmq::object_t::process_command (command_t &cmd_)
         process_reaped ();
         break;
 
+    case command_t::done:
     default:
         zmq_assert (false);
     }

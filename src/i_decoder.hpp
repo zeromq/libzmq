@@ -30,8 +30,9 @@ namespace zmq
 
     //  Interface to be implemented by message decoder.
 
-    struct i_decoder
+    class i_decoder
     {
+    public:
         virtual ~i_decoder () {}
 
         virtual void set_msg_sink (i_msg_sink *msg_sink_) = 0;
