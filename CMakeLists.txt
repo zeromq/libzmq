@@ -46,14 +46,17 @@ check_include_files(windows.h HAVE_WINDOWS_H)
 check_include_files(sys/uio.h ZMQ_HAVE_UIO)
 check_include_files(sys/eventfd.h ZMQ_HAVE_EVENTFD)
 
-check_library_exists(ws2_32 WSAStartup "" HAVE_WS2_32)
-check_library_exists(rpcrt4 UuidCreateSequential "" HAVE_RPCRT4)
-check_library_exists(iphlpapi GetAdaptersAddresses "" HAVE_IPHLAPI)
+check_library_exists(ws2_32 printf "" HAVE_WS2_32) # TODO: Why doesn't something logical like WSAStartup work?
+check_library_exists(ws2 printf "" HAVE_WS2)
+check_library_exists(rpcrt4 printf "" HAVE_RPCRT4) # UuidCreateSequential
+check_library_exists(iphlpapi printf "" HAVE_IPHLAPI) # GetAdaptersAddresses
+
 find_package(Threads)
 
-if(MINGW)
-  if(NOT HAVE_WS2_32)
-    message(FATAL_ERROR "Cannot link to ws2_32")
+
+if(WIN32 AND NOT CYGWIN)
+  if(NOT HAVE_WS2_32 AND NOT HAVE_WS2)
+    message(FATAL_ERROR "Cannot link to ws2_32 or ws2")
   endif()
 
   if(NOT HAVE_RPCRT4)
@@ -216,9 +219,6 @@ else()
   if(WITH_OPENPGM)
     message(FATAL_ERROR "WITH_OPENPGM not implemented")
     # DSO symbol visibility for openpgm
-    check_c_compiler_flag("-fvisibility=hidden" HAVE_FLAG_VISIBILITY_HIDDEN)
-    check_c_compiler_flag("-xldscope=hidden" HAVE_FLAG_LDSCOPE_HIDDEN)
-
     if(HAVE_FLAG_VISIBILITY_HIDDEN)
 
     elseif(HAVE_FLAG_LDSCOPE_HIDDEN)
@@ -259,11 +259,10 @@ set(LIBRARY_OUTPUT_PATH  ${CMAKE_CURRENT_BINARY_DIR}/lib)
 if(MSVC)
   add_definitions(
     -DWIN32
-        -DDLL_EXPORT
+    -DDLL_EXPORT
     # NB: May require tweaking for highly connected applications.
-        -DFD_SETSIZE=1024
-        -D_CRT_SECURE_NO_WARNINGS
-    )
+    -DFD_SETSIZE=1024
+    -D_CRT_SECURE_NO_WARNINGS)
 
   # Parallel make.
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
@@ -342,30 +341,46 @@ set(cxx-sources
         xpub.cpp
         xsub.cpp
         zmq.cpp
-        zmq_utils.cpp
-)
+        zmq_utils.cpp)
 
-set(rc-sources
-        version.rc
-)
+set(rc-sources version.rc)
 
-include_directories(
-        include
-        ${CMAKE_CURRENT_BINARY_DIR}
-)
-set(public_headers
-        include/zmq.h
-        include/zmq_utils.h
-)
+if(MINGW)
+  # Generate the right type when using -m32 or -m64
+  macro(set_rc_arch rc_target)
+    set(CMAKE_RC_COMPILER_INIT windres)
+    enable_language(RC)
+    set(CMAKE_RC_COMPILE_OBJECT
+        "<CMAKE_RC_COMPILER> <FLAGS> --target=${rc_target} <DEFINES> -i <SOURCE> -o <OBJECT>")
+  endmacro()
 
-set(readme-docs
-        AUTHORS
-        COPYING
-        COPYING.LESSER
-        MAINTAINERS
-        NEWS
-        README
-)
+  if(    ${CMAKE_SYSTEM_PROCESSOR} MATCHES "i386"
+      OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "i486"
+      OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "i586"
+      OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "i686"
+     # This also happens on x86_64 systems...what a worthless variable
+      OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86"
+      OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64"
+      OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES "amd64")
+
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+      set_rc_arch("pe-x86-64")
+    else()
+      set_rc_arch("pe-i386")
+    endif()
+  endif()
+endif()
+
+include_directories(include ${CMAKE_CURRENT_BINARY_DIR})
+set(public_headers include/zmq.h
+                   include/zmq_utils.h)
+
+set(readme-docs AUTHORS
+                COPYING
+                COPYING.LESSER
+                MAINTAINERS
+                NEWS
+                README)
 
 #-----------------------------------------------------------------------------
 # optional modules
@@ -504,6 +519,8 @@ endif()
 target_link_libraries(libzmq ${CMAKE_THREAD_LIBS_INIT})
 if(HAVE_WS2_32)
   target_link_libraries(libzmq ws2_32)
+elseif(HAVE_WS2)
+  target_link_libraries(libzmq ws2)
 endif()
 
 if(HAVE_RPCRT4)
@@ -563,7 +580,7 @@ if(MSVC)
   else()
     install(TARGETS libzmq
             RUNTIME DESTINATION bin
-            #PUBLIC_HEADER DESTINATION include
+            PUBLIC_HEADER DESTINATION include
             COMPONENT Runtime)
   endif()
 else()
