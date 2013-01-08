@@ -42,7 +42,7 @@ int tcp_client ()
     struct sockaddr_in serv_addr;
     struct hostent *server;
 
-    const int portno = 7555;
+    const int portno = 5555;
 
     int sockfd = socket (AF_INET, SOCK_STREAM, 0);
     assert (sockfd >= 0);
@@ -77,7 +77,7 @@ int tcp_server ()
     memset (&serv_addr, 0, sizeof serv_addr);
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = htonl (INADDR_ANY);
-    serv_addr.sin_port = htons (7555);
+    serv_addr.sin_port = htons (5555);
 
     rc = bind (listenfd, (struct sockaddr *) &serv_addr, sizeof serv_addr);
     assert (rc == 0);
@@ -165,7 +165,7 @@ void test_zmq_connect ()
     rc = zmq_setsockopt (zs, ZMQ_ROUTER_RAW, &raw_sock, sizeof raw_sock);
     assert (rc == 0);
 
-    rc = zmq_connect (zs, "tcp://127.0.0.1:7555");
+    rc = zmq_connect (zs, "tcp://127.0.0.1:5555");
     assert (rc == 0);
 
     int i;
@@ -213,7 +213,7 @@ int main ()
     int raw_sock = 1;
     int rc = zmq_setsockopt (sb, ZMQ_ROUTER_RAW, &raw_sock, sizeof raw_sock);
     assert (rc == 0);
-    rc = zmq_bind (sb, "tcp://127.0.0.1:7555");
+    rc = zmq_bind (sb, "tcp://127.0.0.1:5555");
     assert (rc == 0);
 
     int sock_fd = tcp_client ();
