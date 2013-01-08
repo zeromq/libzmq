@@ -87,12 +87,6 @@ int zmq::xsub_t::xsend (msg_t *msg_)
     size_t size = msg_->size ();
     unsigned char *data = (unsigned char*) msg_->data ();
 
-    // Malformed subscriptions.
-    if (size < 1 || (*data != 0 && *data != 1)) {
-        errno = EINVAL;
-        return -1;
-    }
-
     // Process the subscription.
     if (*data == 1) {
 	// this used to filter out duplicate subscriptions,
@@ -102,9 +96,12 @@ int zmq::xsub_t::xsend (msg_t *msg_)
         subscriptions.add (data + 1, size - 1);
         return dist.send_to_all (msg_);
     }
-    else {
+    else if (*data == 0) {
         if (subscriptions.rm (data + 1, size - 1))
             return dist.send_to_all (msg_);
+    }
+    else /*upstream message unrelated to sub/unsub*/ {
+        return dist.send_to_all (msg_);
     }
 
     int rc = msg_->close ();
