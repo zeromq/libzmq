@@ -37,7 +37,7 @@ static void *req_socket_monitor (void *ctx)
     while (true) {
         zmq_msg_t msg;
         zmq_msg_init (&msg);
-        rc = zmq_recvmsg (s, &msg, 0);
+        rc = zmq_msg_recv (s, &msg, 0);
         if (rc == -1 && zmq_errno() == ETERM) break;
         assert (rc != -1);
         memcpy (&event, zmq_msg_data (&msg), sizeof (event));
@@ -217,7 +217,7 @@ static void *rep_socket_monitor (void *ctx)
     while (true) {
         zmq_msg_t msg;
         zmq_msg_init (&msg);
-        rc = zmq_recvmsg (s, &msg, 0);
+        rc = zmq_msg_recv (s, &msg, 0);
         if (rc == -1 && zmq_errno() == ETERM) break;
         assert (rc != -1);
         memcpy (&event, zmq_msg_data (&msg), sizeof (event));
