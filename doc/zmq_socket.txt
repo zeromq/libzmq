@@ -224,7 +224,8 @@ ZMQ_XPUB
 Same as ZMQ_PUB except that you can receive subscriptions from the peers
 in form of incoming messages. Subscription message is a byte 1 (for
 subscriptions) or byte 0 (for unsubscriptions) followed by the subscription
-body.
+body. Messages without a sub/unsub prefix are also received, but have no
+effect on subscription status.
 
 [horizontal]
 .Summary of ZMQ_XPUB characteristics
@@ -240,7 +241,8 @@ ZMQ_XSUB
 ^^^^^^^^
 Same as ZMQ_SUB except that you subscribe by sending subscription messages to
 the socket. Subscription message is a byte 1 (for subscriptions) or byte 0
-(for unsubscriptions) followed by the subscription body.
+(for unsubscriptions) followed by the subscription body. Messages without a
+sub/unsub prefix may also be sent, but have no effect on subscription status.
 
 [horizontal]
 .Summary of ZMQ_XSUB characteristics
