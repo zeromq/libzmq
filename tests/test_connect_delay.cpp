@@ -53,7 +53,7 @@ int main (void)
     val = 0;
     rc = zmq_setsockopt(to, ZMQ_LINGER, &val, sizeof(val));
     assert (rc == 0);
-    rc = zmq_bind(to, "tcp://*:5555");
+    rc = zmq_bind(to, "tcp://*:6555");
     assert (rc == 0);
 
     // Create a socket pushing to two endpoints - only 1 message should arrive.

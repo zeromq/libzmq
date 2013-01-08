@@ -194,7 +194,7 @@ void zmq::stream_engine_t::terminate ()
 
 void zmq::stream_engine_t::in_event ()
 {
-    //  If still handshaking, receive and prcess the greeting message.
+    //  If still handshaking, receive and process the greeting message.
     if (unlikely (handshaking))
         if (!handshake ())
             return;
@@ -390,9 +390,8 @@ bool zmq::stream_engine_t::handshake ()
     //  Position of the version field in the greeting.
     const size_t version_pos = 10;
 
-    //  Is the peer using the unversioned protocol?
-    //  If so, we send and receive rests of identity
-    //  messages.
+    //  Is the peer using ZMTP/1.0 with no version number?
+    //  If so, we send and receive rests of identity messages
     if (greeting [0] != 0xff || !(greeting [9] & 0x01)) {
         encoder = new (std::nothrow) encoder_t (out_batch_size);
         alloc_assert (encoder);
@@ -417,8 +416,8 @@ bool zmq::stream_engine_t::handshake ()
         insize = greeting_bytes_read;
 
         //  To allow for interoperability with peers that do not forward
-        //  their subscriptions, we inject a phony subsription
-        //  message into the incomming message stream. To put this
+        //  their subscriptions, we inject a phony subscription
+        //  message into the incoming message stream. To put this
         //  message right after the identity message, we temporarily
         //  divert the message stream from session to ourselves.
         if (options.type == ZMQ_PUB || options.type == ZMQ_XPUB)
