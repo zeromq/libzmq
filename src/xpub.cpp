@@ -74,6 +74,9 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
             if (options.type == ZMQ_XPUB && (unique || (*data && verbose)))
                 pending.push_back (blob_t (data, size));
         }
+	else /*process message unrelated to sub/unsub*/ {
+	    pending.push_back (blob_t (data, size));
+	}
 
         sub.close ();
     }
