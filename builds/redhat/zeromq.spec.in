@@ -11,12 +11,15 @@ Buildroot:     %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildRequires: gcc, make, gcc-c++, libstdc++-devel
 Requires:      libstdc++
 
-%if %{?rhel}%{!?rhel:0} >= 6
+%if 0%{?rhel}
+%if 0%{?rhel} == 6
 BuildRequires: libuuid-devel
 Requires:      libuuid
-%elseif %{?rhel}%{!?rhel:0} >= 5
+%endif
+%if 0%{?rhel} == 5
 BuildRequires: e2fsprogs-devel
 Requires:      e2fsprogs
+%endif
 %else
 BuildRequires: uuid-devel
 Requires:      uuid
@@ -57,7 +60,7 @@ This package contains ZeroMQ related development libraries and header files.
 
 %build
 %ifarch pentium3 pentium4 athlon i386 i486 i586 i686 x86_64
-  %configure --with-pgm
+  %configure --with-pgm --with-pic --with-gnu-ld 
 %else
   %configure
 %endif
