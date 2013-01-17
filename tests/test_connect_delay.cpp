@@ -101,7 +101,7 @@ int main (void)
     rc = zmq_close (to);
     assert (rc == 0);
 
-    rc = zmq_ctx_destroy(context);
+    rc = zmq_ctx_term(context);
     assert (rc == 0);
 
     // TEST 2
@@ -172,7 +172,7 @@ int main (void)
     rc = zmq_close (to);
     assert (rc == 0);
     
-    rc = zmq_ctx_destroy(context);
+    rc = zmq_ctx_term(context);
     assert (rc == 0);
 
     // TEST 3
@@ -219,7 +219,7 @@ int main (void)
     rc = zmq_close (to);
     assert (rc == 0);
     
-    rc = zmq_ctx_destroy(context2);
+    rc = zmq_ctx_term(context2);
     assert (rc == 0);
     
     // Give time to process disconnect
@@ -252,9 +252,9 @@ int main (void)
     rc = zmq_close (from);
     assert (rc == 0);
 
-    rc = zmq_ctx_destroy(context);
+    rc = zmq_ctx_term(context);
     assert (rc == 0);
     
-    rc = zmq_ctx_destroy(context2);
+    rc = zmq_ctx_term(context2);
     assert (rc == 0);
 }

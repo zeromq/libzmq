@@ -163,7 +163,7 @@ void *zmq_ctx_new (void)
     return ctx;
 }
 
-int zmq_ctx_destroy (void *ctx_)
+int zmq_ctx_term (void *ctx_)
 {
     if (!ctx_ || !((zmq::ctx_t*) ctx_)->check_tag ()) {
         errno = EFAULT;
@@ -225,7 +225,12 @@ void *zmq_init (int io_threads_)
 
 int zmq_term (void *ctx_)
 {
-    return zmq_ctx_destroy (ctx_);
+    return zmq_ctx_term (ctx_);
+}
+
+int zmq_ctx_destroy (void *ctx_)
+{
+    return zmq_ctx_term (ctx_);
 }
 
 
