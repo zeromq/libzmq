@@ -113,6 +113,7 @@ This package contains ZeroMQ related development libraries and header files.
 %{_mandir}/man3/zmq_ctx_get.3.gz
 %{_mandir}/man3/zmq_ctx_new.3.gz
 %{_mandir}/man3/zmq_ctx_set.3.gz
+%{_mandir}/man3/zmq_ctx_term.3.gz
 %{_mandir}/man3/zmq_msg_recv.3.gz
 %{_mandir}/man3/zmq_errno.3.gz
 %{_mandir}/man3/zmq_getsockopt.3.gz

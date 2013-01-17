@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
     zmq_close(pubSocket) && printf("zmq_close: %s", zmq_strerror(errno));
     zmq_close(subSocket) && printf("zmq_close: %s", zmq_strerror(errno));
   
-    zmq_ctx_destroy(context);
+    zmq_ctx_term(context);
     return 0;
 }
 
