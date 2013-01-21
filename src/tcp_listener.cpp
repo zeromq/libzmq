@@ -262,8 +262,13 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
     win_assert (brc);
 #else
     if (sock == -1) {
+#ifdef EPROTO
+#define OR_ERRNO_EQ_EPROTO || errno == EPROTO
+#else
+#define OR_ERRNO_EQ_EPROTO
+#endif
         errno_assert (errno == EAGAIN || errno == EWOULDBLOCK ||
-            errno == EINTR || errno == ECONNABORTED || errno == EPROTO ||
+            errno == EINTR || errno == ECONNABORTED OR_ERRNO_EQ_EPROTO ||
             errno == ENOBUFS || errno == ENOMEM || errno == EMFILE ||
             errno == ENFILE);
         return retired_fd;
