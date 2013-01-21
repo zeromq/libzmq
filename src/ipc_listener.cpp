@@ -195,8 +195,13 @@ zmq::fd_t zmq::ipc_listener_t::accept ()
     zmq_assert (s != retired_fd);
     fd_t sock = ::accept (s, NULL, NULL);
     if (sock == -1) {
+#ifdef EPROTO
+#define OR_ERRNO_EQ_EPROTO || errno == EPROTO
+#else
+#define OR_ERRNO_EQ_EPROTO
+#endif
         errno_assert (errno == EAGAIN || errno == EWOULDBLOCK ||
-            errno == EINTR || errno == ECONNABORTED || errno == EPROTO ||
+            errno == EINTR || errno == ECONNABORTED OR_ERRNO_EQ_EPROTO ||
             errno == ENFILE);
         return retired_fd;
     }
