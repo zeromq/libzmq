@@ -87,7 +87,7 @@ int zmq::xsub_t::xsend (msg_t *msg_)
     size_t size = msg_->size ();
     unsigned char *data = (unsigned char*) msg_->data ();
 
-    if (*data == 1) {
+    if (size > 0 && *data == 1) {
         //  Process subscribe message
 	//  This used to filter out duplicate subscriptions,
 	//  however this is alread done on the XPUB side and
@@ -97,7 +97,7 @@ int zmq::xsub_t::xsend (msg_t *msg_)
         return dist.send_to_all (msg_);
     }
     else 
-    if (*data == 0) {
+    if (size > 0 && *data == 0) {
         //  Process unsubscribe message
         if (subscriptions.rm (data + 1, size - 1))
             return dist.send_to_all (msg_);
