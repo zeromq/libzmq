@@ -51,6 +51,8 @@ check_library_exists(ws2 printf "" HAVE_WS2)
 check_library_exists(rpcrt4 printf "" HAVE_RPCRT4) # UuidCreateSequential
 check_library_exists(iphlpapi printf "" HAVE_IPHLAPI) # GetAdaptersAddresses
 
+find_library(RT_LIBRARY rt)
+
 find_package(Threads)
 
 
@@ -540,6 +542,10 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug") # Why?
   foreach(perf-tool ${perf-tools})
     add_executable(${perf-tool} perf/${perf-tool}.cpp)
     target_link_libraries(${perf-tool} libzmq)
+
+    if(RT_LIBRARY)
+      target_link_libraries(${perf-tool} ${RT_LIBRARY})
+    endif()
 
     if(ZMQ_BUILD_FRAMEWORK)
       # Copy perf-tools binaries into Framework
