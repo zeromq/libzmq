@@ -42,7 +42,7 @@ include(CheckCSourceRuns)
 include(CMakeDependentOption)
 
 check_include_files(ifaddrs.h ZMQ_HAVE_IFADDRS)
-check_include_files(windows.h HAVE_WINDOWS_H)
+check_include_files(windows.h ZMQ_HAVE_WINDOWS)
 check_include_files(sys/uio.h ZMQ_HAVE_UIO)
 check_include_files(sys/eventfd.h ZMQ_HAVE_EVENTFD)
 

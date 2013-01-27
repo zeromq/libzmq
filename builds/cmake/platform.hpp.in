@@ -82,10 +82,7 @@
   #define ZMQ_HAVE_SOLARIS
 #endif
 
-#if defined(WIN32) || defined(_WIN32)
-  #define ZMQ_HAVE_WINDOWS
-#endif
-
+#cmakedefine ZMQ_HAVE_WINDOWS
 
 
 #endif
