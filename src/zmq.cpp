@@ -647,9 +647,13 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     zmq::clock_t clock;
     uint64_t now = 0;
     uint64_t end = 0;
+    pollfd spollfds[ZMQ_POLLITEMS_DFLT];
+    pollfd *pollfds = spollfds;
 
-    pollfd *pollfds = (pollfd*) malloc (nitems_ * sizeof (pollfd));
-    alloc_assert (pollfds);
+    if (nitems_ > ZMQ_POLLITEMS_DFLT) {
+        pollfds = (pollfd*) malloc (nitems_ * sizeof (pollfd));
+        alloc_assert (pollfds);
+    }
 
     //  Build pollset for poll () system call.
     for (int i = 0; i != nitems_; i++) {
@@ -660,7 +664,8 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             size_t zmq_fd_size = sizeof (zmq::fd_t);
             if (zmq_getsockopt (items_ [i].socket, ZMQ_FD, &pollfds [i].fd,
                 &zmq_fd_size) == -1) {
-                free (pollfds);
+                if (pollfds != spollfds)
+                    free (pollfds);
                 return -1;
             }
             pollfds [i].events = items_ [i].events ? POLLIN : 0;
@@ -693,7 +698,8 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         while (true) {
             int rc = poll (pollfds, nitems_, timeout);
             if (rc == -1 && errno == EINTR) {
-                free (pollfds);
+                if (pollfds != spollfds)
+                    free (pollfds);
                 return -1;
             }
             errno_assert (rc >= 0);
@@ -711,7 +717,8 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
                 uint32_t zmq_events;
                 if (zmq_getsockopt (items_ [i].socket, ZMQ_EVENTS, &zmq_events,
                     &zmq_events_size) == -1) {
-                    free (pollfds);
+                    if (pollfds != spollfds)
+                        free (pollfds);
                     return -1;
                 }
                 if ((items_ [i].events & ZMQ_POLLOUT) &&
@@ -771,7 +778,8 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             break;
     }
 
-    free (pollfds);
+    if (pollfds != spollfds)
+        free (pollfds);
     return nevents;
 
 #elif defined ZMQ_POLL_BASED_ON_SELECT
