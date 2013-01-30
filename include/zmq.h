@@ -381,6 +381,8 @@ typedef struct
     short revents;
 } zmq_pollitem_t;
 
+#define ZMQ_POLLITEMS_DFLT 16
+
 ZMQ_EXPORT int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
 
 /*  Built-in message proxy (3-way) */
