@@ -29,11 +29,10 @@ static void do_bind_and_verify (void *s, const char *endpoint)
 {
     int rc = zmq_bind (s, endpoint);
     assert (rc == 0);
-
-    char test [255];
-    size_t siz = 255;
-    rc = zmq_getsockopt (s, ZMQ_LAST_ENDPOINT, test, &siz);
-    assert (rc == 0 && strcmp (test, endpoint) == 0);
+    char reported [255];
+    size_t size = 255;
+    rc = zmq_getsockopt (s, ZMQ_LAST_ENDPOINT, reported, &size);
+    assert (rc == 0 && strcmp (reported, endpoint) == 0);
 }
 
 int main (void)

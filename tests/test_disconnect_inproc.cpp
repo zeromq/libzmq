@@ -40,16 +40,14 @@ int main(int argc, char** argv) {
                 zmq_msg_t msg;
                 zmq_msg_init (&msg);
                 zmq_msg_recv (&msg, pubSocket, 0);
-                int msgSize = zmq_msg_size(&msg);
                 char* buffer = (char*)zmq_msg_data(&msg);
 
                 if (buffer[0] == 0) {
                     assert(isSubscribed);
-                    printf("unsubscribing from '%s'\n", strndup(buffer + 1, msgSize - 1));
                     isSubscribed = false;
-                } else {
+                } 
+                else {
                     assert(!isSubscribed);
-                    printf("subscribing on '%s'\n", strndup(buffer + 1, msgSize - 1));
                     isSubscribed = true;
                 }
 
@@ -66,11 +64,6 @@ int main(int argc, char** argv) {
                 zmq_msg_t msg;
                 zmq_msg_init (&msg);
                 zmq_msg_recv (&msg, subSocket, 0);
-                int msgSize = zmq_msg_size(&msg);
-                char* buffer = (char*)zmq_msg_data(&msg);
-        
-                printf("received on subscriber '%s'\n", strndup(buffer, msgSize));
-        
                 zmq_getsockopt (subSocket, ZMQ_RCVMORE, &more, &more_size);
                 zmq_msg_close (&msg);
         

@@ -37,7 +37,7 @@
 //ToDo: Windows?
 const char *test_str = "TEST-STRING";
 
-int tcp_client ()
+int tcp_client (void)
 {
     struct sockaddr_in serv_addr;
     struct hostent *server;
@@ -64,7 +64,7 @@ int tcp_client ()
     return sockfd;
 }
 
-int tcp_server ()
+int tcp_server (void)
 {
     int listenfd = socket (AF_INET, SOCK_STREAM, 0);
     assert (listenfd != -1);
@@ -129,20 +129,18 @@ void tcp_client_read (int sockfd)
 
 size_t tcp_read (int s, char *buf, size_t bufsize)
 {
-    size_t bytes_read = 0;
+    size_t total_size = 0;
+    struct pollfd pfd = { s, POLLIN };
+    int rc = poll (&pfd, 1, 1000);
+    assert (rc > 0);
 
-    struct pollfd pfd = {s, POLLIN};
-    int rc = poll (&pfd, 1, 100);
-
-    while (rc > 0 && bytes_read < bufsize) {
-        int n = read (s, buf + bytes_read, bufsize - bytes_read);
-        if (n <= 0)
-            return bytes_read;
-        bytes_read += n;
-        rc = poll (&pfd, 1, 100);
+    while (rc > 0 && total_size < bufsize) {
+        int chunk_size = read (s, buf + total_size, bufsize - total_size);
+        assert (chunk_size >= 0);
+        total_size += chunk_size;
+        rc = poll (&pfd, 1, 1000);
     }
-
-    return bytes_read;
+    return total_size;
 }
 
 void tcp_client_close (int sockfd)
@@ -150,7 +148,7 @@ void tcp_client_close (int sockfd)
     close (sockfd);
 }
 
-void test_zmq_connect ()
+void test_zmq_connect (void)
 {
     void *ctx = zmq_init (1);
     assert (ctx);
@@ -182,8 +180,8 @@ void test_zmq_connect ()
         char buffer [128];
         size_t bytes_read = tcp_read (server_fd, buffer, sizeof buffer);
 
-        assert (bytes_read == strlen (test_str)
-             && memcmp (buffer, test_str, bytes_read) == 0);
+        assert (bytes_read == strlen (test_str));
+        assert (memcmp (buffer, test_str, bytes_read) == 0);
 
         rc = close (server_fd);
         assert (rc == 0);
@@ -196,7 +194,7 @@ void test_zmq_connect ()
     assert (rc == 0);
 }
 
-int main ()
+int main (void)
 {
     fprintf (stderr, "test_raw_sock running...\n");
 
