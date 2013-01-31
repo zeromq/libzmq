@@ -48,7 +48,6 @@ extern "C"
 
 int main (void)
 {
-    void *ctx;
     void *s1;
     void *s2;
     int i;
@@ -56,13 +55,12 @@ int main (void)
     int rc;
     pthread_t threads [THREAD_COUNT];
 
-    fprintf (stderr, "test_shutdown_stress running...\n");
-
     for (j = 0; j != 10; j++) {
 
         //  Check the shutdown with many parallel I/O threads.
-        ctx = zmq_init (7);
+        void *ctx = zmq_ctx_new ();
         assert (ctx);
+        zmq_ctx_set (ctx, ZMQ_IO_THREADS, 7);
 
         s1 = zmq_socket (ctx, ZMQ_PUB);
         assert (s1);
@@ -85,7 +83,7 @@ int main (void)
         rc = zmq_close (s1);
         assert (rc == 0);
 
-        rc = zmq_term (ctx);
+        rc = zmq_ctx_term (ctx);
         assert (rc == 0);
     }
 

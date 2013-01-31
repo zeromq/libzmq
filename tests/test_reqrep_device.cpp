@@ -28,9 +28,7 @@
 
 int main (void)
 {
-    fprintf (stderr, "test_reqrep_device running...\n");
-
-    void *ctx = zmq_init (1);
+    void *ctx = zmq_ctx_new ();
     assert (ctx);
 
     //  Create a req/rep device.
@@ -66,13 +64,13 @@ int main (void)
         zmq_msg_t msg;
         rc = zmq_msg_init (&msg);
         assert (rc == 0);
-        rc = zmq_recvmsg (router, &msg, 0);
+        rc = zmq_msg_recv (&msg, router, 0);
         assert (rc >= 0);
         int rcvmore;
         size_t sz = sizeof (rcvmore);
         rc = zmq_getsockopt (router, ZMQ_RCVMORE, &rcvmore, &sz);
         assert (rc == 0);
-        rc = zmq_sendmsg (dealer, &msg, rcvmore ? ZMQ_SNDMORE : 0);
+        rc = zmq_msg_send (&msg, dealer, rcvmore? ZMQ_SNDMORE: 0);
         assert (rc >= 0);
     }
 
@@ -104,12 +102,12 @@ int main (void)
         zmq_msg_t msg;
         rc = zmq_msg_init (&msg);
         assert (rc == 0);
-        rc = zmq_recvmsg (dealer, &msg, 0);
+        rc = zmq_msg_recv (&msg, dealer, 0);
         assert (rc >= 0);
         int rcvmore;
         rc = zmq_getsockopt (dealer, ZMQ_RCVMORE, &rcvmore, &sz);
         assert (rc == 0);
-        rc = zmq_sendmsg (router, &msg, rcvmore ? ZMQ_SNDMORE : 0);
+        rc = zmq_msg_send (&msg, router, rcvmore? ZMQ_SNDMORE: 0);
         assert (rc >= 0);
     }
 
@@ -136,7 +134,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_close (dealer);
     assert (rc == 0);
-    rc = zmq_term (ctx);
+    rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
     return 0 ;

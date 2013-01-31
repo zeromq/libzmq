@@ -27,9 +27,7 @@
 
 int main (void)
 {
-    fprintf (stderr, "test_connect_resolve running...\n");
-
-    void *ctx = zmq_init (1);
+    void *ctx = zmq_ctx_new ();
     assert (ctx);
 
     //  Create pair of socket, each with high watermark of 2. Thus the total
@@ -47,7 +45,7 @@ int main (void)
     rc = zmq_close (sock);
     assert (rc == 0);
 
-    rc = zmq_term (ctx);
+    rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
     return 0;

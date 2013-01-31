@@ -24,9 +24,7 @@
 
 int main (void)
 {
-    fprintf (stderr, "test_pair_tcp running...\n");
-
-    void *ctx = zmq_init (1);
+    void *ctx = zmq_ctx_new ();
     assert (ctx);
 
     void *sb = zmq_socket (ctx, ZMQ_PAIR);
@@ -47,7 +45,7 @@ int main (void)
     rc = zmq_close (sb);
     assert (rc == 0);
 
-    rc = zmq_term (ctx);
+    rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
     return 0 ;
