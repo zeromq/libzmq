@@ -24,11 +24,11 @@
 
 #include "../include/zmq.h"
 #include <string.h>
-
 #undef NDEBUG
 #include <assert.h>
 
-inline void bounce (void *sb, void *sc)
+static void
+bounce (void *sb, void *sc)
 {
     const char *content = "12345678ABCDEFGH12345678abcdefgh";
 

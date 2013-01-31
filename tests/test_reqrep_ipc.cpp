@@ -23,9 +23,7 @@
 
 int main (void)
 {
-    fprintf (stderr, "test_reqrep_ipc running...\n");
-
-    void *ctx = zmq_init (1);
+    void *ctx = zmq_ctx_new ();
     assert (ctx);
 
     void *sb = zmq_socket (ctx, ZMQ_REP);
@@ -46,7 +44,7 @@ int main (void)
     rc = zmq_close (sb);
     assert (rc == 0);
 
-    rc = zmq_term (ctx);
+    rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
     return 0 ;

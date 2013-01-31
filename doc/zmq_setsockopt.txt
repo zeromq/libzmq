@@ -342,12 +342,26 @@ Default value:: -1 (infinite)
 Applicable socket types:: all
 
 
-ZMQ_IPV4ONLY: Use IPv4-only sockets
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_IPV6: Enable IPv6 on socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sets the underlying native socket type.  A value of `1` will use IPv4 sockets,
-while the value of `0` will use IPv6 sockets. An IPv6 socket lets 
-applications connect to and accept connections from both IPv4 and IPv6 hosts.
+Set the IPv6 option for the socket. A value of `1` means IPv6 is
+enabled on the socket, while `0` means the socket will use only IPv4.
+When IPv6 is enabled the socket will connect to, or accept connections
+from, both IPv4 and IPv6 hosts.
+
+[horizontal]
+Option value type:: int
+Option value unit:: boolean
+Default value:: 0 (false)
+Applicable socket types:: all, when using TCP transports.
+
+
+ZMQ_IPV4ONLY: Use IPv4-only on socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Set the IPv4-only ootion for the socket. This option is deprecated.
+Please use the ZMQ_IPV6 option.
 
 [horizontal]
 Option value type:: int

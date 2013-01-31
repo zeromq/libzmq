@@ -499,7 +499,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         paddr->resolved.tcp_addr = new (std::nothrow) tcp_address_t ();
         alloc_assert (paddr->resolved.tcp_addr);
         int rc = paddr->resolved.tcp_addr->resolve (
-            address.c_str (), false, options.ipv4only ? true : false);
+            address.c_str (), false, options.ipv6);
         if (rc != 0) {
             delete paddr;
             return -1;

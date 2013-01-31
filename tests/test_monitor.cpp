@@ -20,7 +20,6 @@
 */
 
 #include "../include/zmq.h"
-#include "../include/zmq_utils.h"
 #include <pthread.h>
 #include <string.h>
 #include "testutil.hpp"
@@ -34,27 +33,27 @@ static int rep_socket_events;
 
 const char *addr;
 
-extern "C"
+// REQ socket monitor thread
+static void *req_socket_monitor (void *ctx)
 {
-    // REQ socket monitor thread
-    static void *req_socket_monitor (void *ctx)
-    {
-        zmq_event_t event;
-        int rc;
+    zmq_event_t event;
+    int rc;
 
-        void *s = zmq_socket (ctx, ZMQ_PAIR);
-        assert (s);
+    void *s = zmq_socket (ctx, ZMQ_PAIR);
+    assert (s);
 
-        rc = zmq_connect (s, "inproc://monitor.req");
-        assert (rc == 0);
-        while (true) {
-            zmq_msg_t msg;
-            zmq_msg_init (&msg);
-            rc = zmq_recvmsg (s, &msg, 0);
-            if (rc == -1 && zmq_errno() == ETERM) break;
-            assert (rc != -1);
-            memcpy (&event, zmq_msg_data (&msg), sizeof (event));
-            switch (event.event) {
+    rc = zmq_connect (s, "inproc://monitor.req");
+    assert (rc == 0);
+    while (true) {
+        zmq_msg_t msg;
+        zmq_msg_init (&msg);
+        rc = zmq_msg_recv (&msg, s, 0);
+        if (rc == -1 && zmq_errno() == ETERM)
+            break;
+        assert (rc != -1);
+
+        memcpy (&event, zmq_msg_data (&msg), sizeof (event));
+        switch (event.event) {
             case ZMQ_EVENT_CONNECTED:
                 assert (event.data.connected.fd > 0);
                 assert (!strcmp (event.data.connected.addr, addr));
@@ -81,34 +80,33 @@ extern "C"
                 assert (!strcmp (event.data.disconnected.addr, addr));
                 req_socket_events |= ZMQ_EVENT_DISCONNECTED;
                 break;
-            }
         }
-        zmq_close (s);
-        return NULL;
     }
+    zmq_close (s);
+    return NULL;
 }
 
-extern "C"
+// 2nd REQ socket monitor thread
+static void *req2_socket_monitor (void *ctx)
 {
-    // 2nd REQ socket monitor thread
-    static void *req2_socket_monitor (void *ctx)
-    {
-        zmq_event_t event;
-        int rc;
+    zmq_event_t event;
+    int rc;
 
-        void *s = zmq_socket (ctx, ZMQ_PAIR);
-        assert (s);
+    void *s = zmq_socket (ctx, ZMQ_PAIR);
+    assert (s);
 
-        rc = zmq_connect (s, "inproc://monitor.req2");
-        assert (rc == 0);
-        while (true) {
-            zmq_msg_t msg;
-            zmq_msg_init (&msg);
-            rc = zmq_recvmsg (s, &msg, 0);
-            if (rc == -1 && zmq_errno() == ETERM) break;
-            assert (rc != -1);
-            memcpy (&event, zmq_msg_data (&msg), sizeof (event));
-            switch (event.event) {
+    rc = zmq_connect (s, "inproc://monitor.req2");
+    assert (rc == 0);
+    while (true) {
+        zmq_msg_t msg;
+        zmq_msg_init (&msg);
+        rc = zmq_msg_recv (&msg, s, 0);
+        if (rc == -1 && zmq_errno() == ETERM)
+            break;
+        assert (rc != -1);
+
+        memcpy (&event, zmq_msg_data (&msg), sizeof (event));
+        switch (event.event) {
             case ZMQ_EVENT_CONNECTED:
                 assert (event.data.connected.fd > 0);
                 assert (!strcmp (event.data.connected.addr, addr));
@@ -119,35 +117,33 @@ extern "C"
                 assert (!strcmp (event.data.closed.addr, addr));
                 req2_socket_events |= ZMQ_EVENT_CLOSED;
                 break;
-            }
         }
-        zmq_close (s);
-        return NULL;
     }
+    zmq_close (s);
+    return NULL;
 }
 
-
-extern "C"
+// REP socket monitor thread
+static void *rep_socket_monitor (void *ctx)
 {
-    // REP socket monitor thread
-    static void *rep_socket_monitor (void *ctx)
-    {
-        zmq_event_t event;
-        int rc;
+    zmq_event_t event;
+    int rc;
 
-        void *s = zmq_socket (ctx, ZMQ_PAIR);
-        assert (s);
+    void *s = zmq_socket (ctx, ZMQ_PAIR);
+    assert (s);
 
-        rc = zmq_connect (s, "inproc://monitor.rep");
-        assert (rc == 0);
-        while (true) {
-            zmq_msg_t msg;
-            zmq_msg_init (&msg);
-            rc = zmq_recvmsg (s, &msg, 0);
-            if (rc == -1 && zmq_errno() == ETERM) break;
-            assert (rc != -1);
-            memcpy (&event, zmq_msg_data (&msg), sizeof (event));
-            switch (event.event) {
+    rc = zmq_connect (s, "inproc://monitor.rep");
+    assert (rc == 0);
+    while (true) {
+        zmq_msg_t msg;
+        zmq_msg_init (&msg);
+        rc = zmq_msg_recv (&msg, s, 0);
+        if (rc == -1 && zmq_errno() == ETERM)
+            break;
+        assert (rc != -1);
+
+        memcpy (&event, zmq_msg_data (&msg), sizeof (event));
+        switch (event.event) {
             case ZMQ_EVENT_LISTENING:
                 assert (event.data.listening.fd > 0);
                 assert (!strcmp (event.data.listening.addr, addr));
@@ -173,12 +169,11 @@ extern "C"
                 assert (!strcmp (event.data.disconnected.addr, addr));
                 rep_socket_events |= ZMQ_EVENT_DISCONNECTED;
                 break;
-            }
-            zmq_msg_close (&msg);
         }
-        zmq_close (s);
-        return NULL;
+        zmq_msg_close (&msg);
     }
+    zmq_close (s);
+    return NULL;
 }
 
 int main (void)
@@ -192,7 +187,7 @@ int main (void)
     addr = "tcp://127.0.0.1:5560";
 
     //  Create the infrastructure
-    void *ctx = zmq_init (1);
+    void *ctx = zmq_ctx_new ();
     assert (ctx);
 
     // REP socket
@@ -230,6 +225,8 @@ int main (void)
     rc = zmq_connect (req, addr);
     assert (rc == 0);
 
+    bounce (rep, req);
+    
     // 2nd REQ socket
     req2 = zmq_socket (ctx, ZMQ_REQ);
     assert (req2);
@@ -243,17 +240,13 @@ int main (void)
     rc = zmq_connect (req2, addr);
     assert (rc == 0);
 
-    bounce (rep, req);
-
-    // Allow a window for socket events as connect can be async
-    zmq_sleep (1);
-
     // Close the REP socket
     rc = zmq_close (rep);
     assert (rc == 0);
 
     // Allow some time for detecting error states
-    zmq_sleep (1);
+    struct timespec t = { 0, 250 * 1000000 };
+    nanosleep (&t, NULL);
 
     //  Close the REQ socket
     rc = zmq_close (req);
@@ -263,10 +256,7 @@ int main (void)
     rc = zmq_close (req2);
     assert (rc == 0);
 
-    // Allow for closed or disconnected events to bubble up
-    zmq_sleep (1);
-
-    zmq_term (ctx);
+    zmq_ctx_term (ctx);
 
     // Expected REP socket events
     assert (rep_socket_events & ZMQ_EVENT_LISTENING);

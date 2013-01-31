@@ -92,10 +92,8 @@ namespace zmq
         int rcvtimeo;
         int sndtimeo;
 
-        //  If 1, indicates the use of IPv4 sockets only, it will not be
-        //  possible to communicate with IPv6-only hosts. If 0, the socket can
-        //  connect to and accept connections from both IPv4 and IPv6 hosts.
-        int ipv4only;
+        //  If true, IPv6 is enabled (as well as IPv4)
+        bool ipv6;
         
         //  If 1, connecting pipes are not attached immediately, meaning a send()
         //  on a socket with only connecting pipes would block
