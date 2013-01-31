@@ -43,7 +43,7 @@ zmq::options_t::options_t () :
     maxmsgsize (-1),
     rcvtimeo (-1),
     sndtimeo (-1),
-    ipv4only (1),
+    ipv6 (0),
     delay_attach_on_connect (0),
     delay_on_close (true),
     delay_on_disconnect (true),
@@ -182,9 +182,10 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 valid = false;
             break;
 
+        /*  Deprecated in favor of ZMQ_IPV6  */
         case ZMQ_IPV4ONLY:
             if (is_int && (value == 0 || value == 1))
-                ipv4only = value;
+                ipv6 = 1 - value;
             else
                 valid = false;
             break;
@@ -192,7 +193,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         /*  To replace the somewhat surprising IPV4ONLY */
         case ZMQ_IPV6:
             if (is_int && (value == 0 || value == 1))
-                ipv4only = 1 - value;
+                ipv6 = value;
             else
                 valid = false;
             break;
@@ -241,7 +242,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             else {
                 std::string filter_str ((const char *) optval_, optvallen_);
                 tcp_address_mask_t mask;
-                int rc = mask.resolve (filter_str.c_str (), ipv4only);
+                int rc = mask.resolve (filter_str.c_str (), ipv6);
                 if (rc == 0)
                     tcp_accept_filters.push_back (mask);
                 else
@@ -423,7 +424,7 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
             errno = EINVAL;
             return -1;
         }
-        *((int*) optval_) = ipv4only;
+        *((int*) optval_) = 1 - ipv6;
         *optvallen_ = sizeof (int);
         return 0;
         
@@ -432,18 +433,18 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
             errno = EINVAL;
             return -1;
         }
-        *((int*) optval_) = 1 - ipv4only;
+        *((int*) optval_) = ipv6;
         *optvallen_ = sizeof (int);
         return 0;
 
     case ZMQ_DELAY_ATTACH_ON_CONNECT:
-            if (*optvallen_ < sizeof (int)) {
-                errno = EINVAL;
-                return -1;
-            }
-            *((int*) optval_) = delay_attach_on_connect;
-            *optvallen_ = sizeof (int);
-            return 0;
+        if (*optvallen_ < sizeof (int)) {
+            errno = EINVAL;
+            return -1;
+        }
+        *((int*) optval_) = delay_attach_on_connect;
+        *optvallen_ = sizeof (int);
+        return 0;
 
     case ZMQ_TCP_KEEPALIVE:
         if (*optvallen_ < sizeof (int)) {
@@ -482,7 +483,7 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
         return 0;
 
     case ZMQ_LAST_ENDPOINT:
-        // don't allow string which cannot contain the entire message
+        /*  don't allow string which cannot contain the entire message */
         if (*optvallen_ < last_endpoint.size() + 1) {
             errno = EINVAL;
             return -1;
