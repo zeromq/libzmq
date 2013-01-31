@@ -1,6 +1,5 @@
 /*
-    Copyright (c) 2010-2011 250bpm s.r.o.
-    Copyright (c) 2011 iMatix Corporation
+    Copyright (c) 2007-2013 iMatix Corporation
     Copyright (c) 2010-2011 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -19,83 +18,65 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdio.h>
-#include "testutil.hpp"
+#include "../include/zmq.h"
 #include "../include/zmq_utils.h"
+#include <stdio.h>
+#include <string.h>
+#undef NDEBUG
+#include <assert.h>
 
 int main (void)
 {
-    fprintf (stderr, "test_router_mandatory running...\n");
-
     void *ctx = zmq_ctx_new ();
     assert (ctx);
+    void *router = zmq_socket (ctx, ZMQ_ROUTER);
+    assert (router);
 
-    // Creating the first socket.
-    void *sa = zmq_socket (ctx, ZMQ_ROUTER);
-    assert (sa);
-    
-    int hwm = 1;
-    int rc = zmq_setsockopt (sa, ZMQ_SNDHWM, &hwm, sizeof (hwm));
+    int rc = zmq_bind (router, "tcp://127.0.0.1:5560");
     assert (rc == 0);
 
-    rc = zmq_bind (sa, "tcp://127.0.0.1:15560");
-    assert (rc == 0);
-
-    // Sending a message to an unknown peer with the default setting
-    rc = zmq_send (sa, "UNKNOWN", 7, ZMQ_SNDMORE);
+    //  Send a message to an unknown peer with the default setting
+    //  This will not report any error
+    rc = zmq_send (router, "UNKNOWN", 7, ZMQ_SNDMORE);
     assert (rc == 7);
-    rc = zmq_send (sa, "DATA", 4, 0);
+    rc = zmq_send (router, "DATA", 4, 0);
     assert (rc == 4);
 
+    //  Send a message to an unknown peer with mandatory routing
+    //  This will fail
     int mandatory = 1;
-
-    // Set mandatory routing on socket
-    rc = zmq_setsockopt (sa, ZMQ_ROUTER_MANDATORY, &mandatory, sizeof (mandatory));
+    rc = zmq_setsockopt (router, ZMQ_ROUTER_MANDATORY, &mandatory, sizeof (mandatory));
     assert (rc == 0);
-
-    // Send a message and check that it fails
-    rc = zmq_send (sa, "UNKNOWN", 7, ZMQ_SNDMORE | ZMQ_DONTWAIT);
+    rc = zmq_send (router, "UNKNOWN", 7, ZMQ_SNDMORE);
     assert (rc == -1 && errno == EHOSTUNREACH);
 
-    // Create a valid socket
-    void *sb = zmq_socket (ctx, ZMQ_DEALER);
-    assert (sb);
-
-    rc = zmq_setsockopt (sb, ZMQ_RCVHWM, &hwm, sizeof (hwm));
+    //  Create dealer called "X" and connect it to our router
+    void *dealer = zmq_socket (ctx, ZMQ_DEALER);
+    assert (dealer);
+    rc = zmq_setsockopt (dealer, ZMQ_IDENTITY, "X", 1);
+    assert (rc == 0);
+    rc = zmq_connect (dealer, "tcp://127.0.0.1:5560");
     assert (rc == 0);
 
-    rc = zmq_setsockopt (sb, ZMQ_IDENTITY, "X", 1);
-    assert (rc == 0);
-    
-    rc = zmq_connect (sb, "tcp://127.0.0.1:15560");
-    assert (rc == 0);
-
-    // wait until connect
-    zmq_sleep (1);
-
-    // make it full and check that it fails
-    rc = zmq_send (sa, "X", 1, ZMQ_SNDMORE);
-    assert (rc == 1);
-    rc = zmq_send (sa, "DATA1", 5, 0);
+    //  Get message from dealer to know when connection is ready
+    char buffer [255];
+    rc = zmq_send (dealer, "Hello", 5, 0);
     assert (rc == 5);
+    rc = zmq_recv (router, buffer, 255, 0);
+    assert (rc == 1);
+    assert (buffer [0] ==  'X');
 
-    rc = zmq_send (sa, "X", 1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
-    if (rc == 1) {
-        // the first frame has been sent
-        rc = zmq_send (sa, "DATA2", 5, 0);
-        assert (rc == 5);
+    //  Send a message to connected dealer now
+    //  It should work
+    rc = zmq_send (router, "X", 1, ZMQ_SNDMORE);
+    assert (rc == 1);
+    rc = zmq_send (router, "Hello", 5, 0);
+    assert (rc == 5);
     
-        // send more
-        rc = zmq_send (sa, "X", 1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
-    } 
-
-    assert (rc == -1 && errno == EAGAIN);
-
-
-    rc = zmq_close (sa);
+    rc = zmq_close (router);
     assert (rc == 0);
 
-    rc = zmq_close (sb);
+    rc = zmq_close (dealer);
     assert (rc == 0);
 
     rc = zmq_ctx_term (ctx);
