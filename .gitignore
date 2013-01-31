@@ -45,6 +45,7 @@ tests/test_router_mandatory
 tests/test_disconnect_inproc
 tests/test_raw_sock
 tests/test_disconnect_inproc
+tests/test_ctx_options
 src/platform.hpp*
 src/stamp-h1
 perf/local_lat
@@ -73,3 +74,5 @@ foreign/openpgm/*
 !foreign/openpgm/Makefile.am
 zeromq-*.tar.gz
 zeromq-*.zip
+core
+

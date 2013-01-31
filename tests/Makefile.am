@@ -19,8 +19,8 @@ noinst_PROGRAMS = test_pair_inproc \
                   test_monitor \
                   test_router_mandatory \
                   test_raw_sock \
-                  test_disconnect_inproc
-
+                  test_disconnect_inproc \
+                  test_ctx_options
 
 if !ON_MINGW
 noinst_PROGRAMS += test_shutdown_stress \
@@ -46,7 +46,7 @@ test_monitor_SOURCES = test_monitor.cpp
 test_router_mandatory_SOURCES = test_router_mandatory.cpp
 test_raw_sock_SOURCES = test_raw_sock.cpp
 test_disconnect_inproc_SOURCES = test_disconnect_inproc.cpp
-
+test_ctx_set_SOURCES = test_ctx_options.cpp
 if !ON_MINGW
 test_shutdown_stress_SOURCES = test_shutdown_stress.cpp
 test_pair_ipc_SOURCES = test_pair_ipc.cpp testutil.hpp
