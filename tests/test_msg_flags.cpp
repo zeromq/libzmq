@@ -28,14 +28,18 @@
 int main (void)
 {
     //  Create the infrastructure
-    void *ctx = zmq_init (0);
+    void *ctx = zmq_ctx_new ();
     assert (ctx);
+    
     void *sb = zmq_socket (ctx, ZMQ_ROUTER);
     assert (sb);
+    
     int rc = zmq_bind (sb, "inproc://a");
     assert (rc == 0);
+    
     void *sc = zmq_socket (ctx, ZMQ_DEALER);
     assert (sc);
+    
     rc = zmq_connect (sc, "inproc://a");
     assert (rc == 0);
    
@@ -69,9 +73,11 @@ int main (void)
     //  Deallocate the infrastructure.
     rc = zmq_close (sc);
     assert (rc == 0);
+    
     rc = zmq_close (sb);
     assert (rc == 0);
-    rc = zmq_term (ctx);
+    
+    rc = zmq_ctx_term (ctx);
     assert (rc == 0);
     return 0 ;
 }

@@ -49,7 +49,7 @@ int main (void)
 {
     fprintf (stderr, "test_timeo running...\n");
 
-    void *ctx = zmq_init (1);
+    void *ctx = zmq_ctx_new ();
     assert (ctx);
 
     //  Create a disconnected socket.
@@ -111,7 +111,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_close (sb);
     assert (rc == 0);
-    rc = zmq_term (ctx);
+    rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
     return 0 ;

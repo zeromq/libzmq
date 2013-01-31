@@ -192,7 +192,7 @@ int main (void)
     addr = "tcp://127.0.0.1:5560";
 
     //  Create the infrastructure
-    void *ctx = zmq_init (1);
+    void *ctx = zmq_ctx_new ();
     assert (ctx);
 
     // REP socket
@@ -266,7 +266,7 @@ int main (void)
     // Allow for closed or disconnected events to bubble up
     zmq_sleep (1);
 
-    zmq_term (ctx);
+    zmq_ctx_term (ctx);
 
     // Expected REP socket events
     assert (rep_socket_events & ZMQ_EVENT_LISTENING);

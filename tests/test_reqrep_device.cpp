@@ -30,7 +30,7 @@ int main (void)
 {
     fprintf (stderr, "test_reqrep_device running...\n");
 
-    void *ctx = zmq_init (1);
+    void *ctx = zmq_ctx_new ();
     assert (ctx);
 
     //  Create a req/rep device.
@@ -136,7 +136,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_close (dealer);
     assert (rc == 0);
-    rc = zmq_term (ctx);
+    rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
     return 0 ;

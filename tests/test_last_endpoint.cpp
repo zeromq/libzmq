@@ -38,15 +38,24 @@ static void do_bind_and_verify (void *s, const char *endpoint)
 int main (void)
 {
     //  Create the infrastructure
-    void *ctx = zmq_init (1);
+    void *ctx = zmq_ctx_new ();
     assert (ctx);
 
     void *sb = zmq_socket (ctx, ZMQ_ROUTER);
     assert (sb);
+    int val = 0;
+    int rc = zmq_setsockopt (sb, ZMQ_LINGER, &val, sizeof (val));
+    assert (rc == 0);
 
     do_bind_and_verify (sb, "tcp://127.0.0.1:5560");
     do_bind_and_verify (sb, "tcp://127.0.0.1:5561");
     do_bind_and_verify (sb, "ipc:///tmp/testep");
+
+    rc = zmq_close (sb);
+    assert (rc == 0);
+    
+    rc = zmq_ctx_term (ctx);
+    assert (rc == 0);
 
     return 0 ;
 }

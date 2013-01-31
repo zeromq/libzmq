@@ -27,7 +27,7 @@ int main (void)
 {
     fprintf (stderr, "test_router_mandatory running...\n");
 
-    void *ctx = zmq_init (1);
+    void *ctx = zmq_ctx_new ();
     assert (ctx);
 
     // Creating the first socket.
@@ -98,7 +98,7 @@ int main (void)
     rc = zmq_close (sb);
     assert (rc == 0);
 
-    rc = zmq_term (ctx);
+    rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
     return 0 ;

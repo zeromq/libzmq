@@ -36,7 +36,7 @@ int main (void)
     fprintf (stderr, "unbind endpoint test running...\n");
 
     //  Create infrastructure.
-    void *ctx = zmq_init (1);
+    void *ctx = zmq_ctx_new ();
     assert (ctx);
     void *push = zmq_socket (ctx, ZMQ_PUSH);
     assert (push);
@@ -69,16 +69,14 @@ int main (void)
     assert (rc == 0);
     rc = zmq_close (push);
     assert (rc == 0);
-    rc = zmq_term (ctx);
+    rc = zmq_ctx_term (ctx);
     assert (rc == 0);
-
 
     //  Now the other way round.
     fprintf (stderr, "disconnect endpoint test running...\n");
 
-
     //  Create infrastructure.
-    ctx = zmq_init (1);
+    ctx = zmq_ctx_new ();
     assert (ctx);
     push = zmq_socket (ctx, ZMQ_PUSH);
     assert (push);
@@ -111,7 +109,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_close (push);
     assert (rc == 0);
-    rc = zmq_term (ctx);
+    rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
     return 0;

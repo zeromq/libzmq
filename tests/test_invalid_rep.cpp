@@ -30,12 +30,15 @@ int main (void)
     fprintf (stderr, "test_invalid_rep running...\n");
 
     //  Create REQ/ROUTER wiring.
-    void *ctx = zmq_init (1);
+    void *ctx = zmq_ctx_new ();
     assert (ctx);
+    
     void *router_socket = zmq_socket (ctx, ZMQ_ROUTER);
     assert (router_socket);
+    
     void *req_socket = zmq_socket (ctx, ZMQ_REQ);
     assert (req_socket);
+    
     int linger = 0;
     int rc = zmq_setsockopt (router_socket, ZMQ_LINGER, &linger, sizeof (int));
     assert (rc == 0);
@@ -84,7 +87,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_close (req_socket);
     assert (rc == 0);
-    rc = zmq_term (ctx);
+    rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
     return 0;

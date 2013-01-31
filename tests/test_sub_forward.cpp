@@ -30,7 +30,7 @@ int main (void)
 {
     fprintf (stderr, "test_sub_forward running...\n");
 
-    void *ctx = zmq_init (1);
+    void *ctx = zmq_ctx_new ();
     assert (ctx);
 
     //  First, create an intermediate device.
@@ -92,7 +92,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_close (sub);
     assert (rc == 0);
-    rc = zmq_term (ctx);
+    rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
     return 0 ;
