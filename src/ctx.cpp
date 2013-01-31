@@ -45,7 +45,8 @@ zmq::ctx_t::ctx_t () :
     slot_count (0),
     slots (NULL),
     max_sockets (ZMQ_MAX_SOCKETS_DFLT),
-    io_thread_count (ZMQ_IO_THREADS_DFLT)
+    io_thread_count (ZMQ_IO_THREADS_DFLT),
+    ipv6 (false)
 {
 }
 
@@ -139,6 +140,12 @@ int zmq::ctx_t::set (int option_, int optval_)
         io_thread_count = optval_;
         opt_sync.unlock ();
     }
+    else
+    if (option_ == ZMQ_IPV6 && optval_ >= 0) {
+        opt_sync.lock ();
+        ipv6 = optval_;
+        opt_sync.unlock ();
+    }
     else {
         errno = EINVAL;
         rc = -1;
@@ -154,6 +161,9 @@ int zmq::ctx_t::get (int option_)
     else
     if (option_ == ZMQ_IO_THREADS)
         rc = io_thread_count;
+    else
+    if (option_ == ZMQ_IPV6)
+        rc = ipv6;
     else {
         errno = EINVAL;
         rc = -1;
@@ -168,7 +178,7 @@ zmq::socket_base_t *zmq::ctx_t::create_socket (int type_)
 
         starting = false;
         //  Initialise the array of mailboxes. Additional three slots are for
-        //  zmq_term thread and reaper thread.
+        //  zmq_ctx_term thread and reaper thread.
         opt_sync.lock ();
         int mazmq = max_sockets;
         int ios = io_thread_count;
@@ -177,7 +187,7 @@ zmq::socket_base_t *zmq::ctx_t::create_socket (int type_)
         slots = (mailbox_t**) malloc (sizeof (mailbox_t*) * slot_count);
         alloc_assert (slots);
 
-        //  Initialise the infrastructure for zmq_term thread.
+        //  Initialise the infrastructure for zmq_ctx_term thread.
         slots [term_tid] = &term_mailbox;
 
         //  Create the reaper thread.
@@ -203,7 +213,7 @@ zmq::socket_base_t *zmq::ctx_t::create_socket (int type_)
         }
     }
 
-    //  Once zmq_term() was called, we can't create new sockets.
+    //  Once zmq_ctx_term() was called, we can't create new sockets.
     if (terminating) {
         slot_sync.unlock ();
         errno = ETERM;
@@ -250,7 +260,7 @@ void zmq::ctx_t::destroy_socket (class socket_base_t *socket_)
     //  Remove the socket from the list of sockets.
     sockets.erase (socket_);
 
-    //  If zmq_term() was already called and there are no more socket
+    //  If zmq_ctx_term() was already called and there are no more socket
     //  we can ask reaper thread to terminate.
     if (terminating && sockets.empty ())
         reaper->stop ();
