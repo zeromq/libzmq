@@ -161,6 +161,9 @@ namespace zmq
         //  Number of I/O threads to launch.
         int io_thread_count;
 
+        //  Is IPv6 enabled on this context?
+        bool ipv6;
+
         //  Synchronisation of access to context options.
         mutex_t opt_sync;
 

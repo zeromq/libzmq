@@ -33,7 +33,6 @@
 
 namespace zmq
 {
-
     struct options_t
     {
         options_t ();
