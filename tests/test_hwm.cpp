@@ -19,13 +19,14 @@
 */
 
 
+#include "../include/zmq.h"
 #include <stdio.h>
-#include "testutil.hpp"
+#include <string.h>
+#undef NDEBUG
+#include <assert.h>
 
 int main (void)
 {
-    fprintf (stderr, "test_hwm running...\n");
-
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 

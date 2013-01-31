@@ -23,8 +23,6 @@
 
 int main (void)
 {
-    fprintf (stderr, "test_pair_ipc running...\n");
-
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 

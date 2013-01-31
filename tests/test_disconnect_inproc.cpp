@@ -28,14 +28,14 @@ int main(int argc, char** argv) {
     size_t more_size = sizeof(more);
     int iteration = 0;
   
-    while(1) {
+    while (1) {
         zmq_pollitem_t items [] = {
-            { subSocket,    0, ZMQ_POLLIN, 0 }, // read publications
-            { pubSocket,    0, ZMQ_POLLIN, 0 }, // read subscriptions
+            { subSocket, 0, ZMQ_POLLIN, 0 }, // read publications
+            { pubSocket, 0, ZMQ_POLLIN, 0 }, // read subscriptions
         };
-        zmq_poll(items, 2, 500);
+        int rc = zmq_poll (items, 2, 100);
     
-        if (items[1].revents & ZMQ_POLLIN) {
+        if (items [1].revents & ZMQ_POLLIN) {
             while (1) {
                 zmq_msg_t msg;
                 zmq_msg_init (&msg);
@@ -73,34 +73,29 @@ int main(int argc, char** argv) {
                 }
             }
         }
-
         if (iteration == 1) {
             zmq_connect(subSocket, "inproc://someInProcDescriptor") && printf("zmq_connect: %s\n", zmq_strerror(errno));
             //zmq_connect(subSocket, "tcp://127.0.0.1:30010") && printf("zmq_connect: %s\n", zmq_strerror(errno));
         }
-    
         if (iteration == 4) {
             zmq_disconnect(subSocket, "inproc://someInProcDescriptor") && printf("zmq_disconnect(%d): %s\n", errno, zmq_strerror(errno));
             //zmq_disconnect(subSocket, "tcp://127.0.0.1:30010") && printf("zmq_disconnect: %s\n", zmq_strerror(errno));
         }
-    
-        if (iteration == 10) {
+        if (iteration > 4 && rc == 0)
             break;
-        }
-    
+        
         zmq_msg_t channelEnvlp;
         ZMQ_PREPARE_STRING(channelEnvlp, "foo", 3);
-        zmq_sendmsg(pubSocket, &channelEnvlp, ZMQ_SNDMORE) >= 0 || printf("zmq_sendmsg: %s\n",zmq_strerror(errno));
+        zmq_msg_send (&channelEnvlp, pubSocket, ZMQ_SNDMORE) >= 0 || printf("zmq_msg_send: %s\n",zmq_strerror(errno));
         zmq_msg_close(&channelEnvlp) && printf("zmq_msg_close: %s\n",zmq_strerror(errno));
 
         zmq_msg_t message;
         ZMQ_PREPARE_STRING(message, "this is foo!", 12);
-        zmq_sendmsg(pubSocket, &message, 0) >= 0 || printf("zmq_sendmsg: %s\n",zmq_strerror(errno));
+        zmq_msg_send (&message, pubSocket, 0) >= 0 || printf("zmq_msg_send: %s\n",zmq_strerror(errno));
         zmq_msg_close(&message) && printf("zmq_msg_close: %s\n",zmq_strerror(errno));
 
         iteration++;
     }
-  
     assert(publicationsReceived == 3);
     assert(!isSubscribed);
 

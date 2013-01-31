@@ -53,21 +53,21 @@ int main (void)
     zmq_msg_t msg;
     rc = zmq_msg_init (&msg);
     assert (rc == 0);
-    rc = zmq_recvmsg (sb, &msg, 0);
+    rc = zmq_msg_recv (&msg, sb, 0);
     assert (rc >= 0);
-    int more = zmq_msg_get (&msg, ZMQ_MORE);
+    int more = zmq_msg_more (&msg);
     assert (more == 1);
 
     //  Then the first part of the message body.
-    rc = zmq_recvmsg (sb, &msg, 0);
+    rc = zmq_msg_recv (&msg, sb, 0);
     assert (rc == 1);
-    more = zmq_msg_get (&msg, ZMQ_MORE);
+    more = zmq_msg_more (&msg);
     assert (more == 1);
 
     //  And finally, the second part of the message body.
-    rc = zmq_recvmsg (sb, &msg, 0);
+    rc = zmq_msg_recv (&msg, sb, 0);
     assert (rc == 1);
-    more = zmq_msg_get (&msg, ZMQ_MORE);
+    more = zmq_msg_more (&msg);
     assert (more == 0);
 
     //  Deallocate the infrastructure.

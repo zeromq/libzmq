@@ -19,7 +19,6 @@
 */
 
 #include "../include/zmq.h"
-#include "../include/zmq_utils.h"
 #include <stdio.h>
 #include <string.h>
 #undef NDEBUG

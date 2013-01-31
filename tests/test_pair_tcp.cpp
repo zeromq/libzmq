@@ -24,8 +24,6 @@
 
 int main (void)
 {
-    fprintf (stderr, "test_pair_tcp running...\n");
-
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 

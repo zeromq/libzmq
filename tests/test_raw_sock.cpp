@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2012 iMatix Corporation
+    Copyright (c) 2007-2013 iMatix Corporation
     Copyright (c) 2007-2012 Other contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
@@ -18,10 +18,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <zmq.h>
-#include <assert.h>
+#include "../include/zmq.h"
 #include <string.h>
 #include <stdbool.h>
+#undef NDEBUG
+#include <assert.h>
 
 //  ZMTP protocol greeting structure
 
@@ -44,7 +45,6 @@ static zmtp_greeting_t greeting
 
 int main (void)
 {
-    fprintf (stderr, "test_raw_sock running...\n");
     int rc;
 
     //  Set up our context and sockets

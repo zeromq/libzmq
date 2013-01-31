@@ -27,8 +27,6 @@
 
 int main (void)
 {
-    fprintf (stderr, "test_invalid_rep running...\n");
-
     //  Create REQ/ROUTER wiring.
     void *ctx = zmq_ctx_new ();
     assert (ctx);

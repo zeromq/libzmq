@@ -27,8 +27,6 @@
 
 int main (void)
 {
-    fprintf (stderr, "test_connect_resolve running...\n");
-
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 

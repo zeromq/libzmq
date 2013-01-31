@@ -20,20 +20,17 @@
 */
 
 #include "../include/zmq.h"
-#include "../include/zmq_utils.h"
 #include <stdio.h>
-
+#include <time.h>
 #undef NDEBUG
 #include <assert.h>
 
 int main (void)
 {
-    fprintf (stderr, "test_sub_forward running...\n");
-
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
-    //  First, create an intermediate device.
+    //  First, create an intermediate device
     void *xpub = zmq_socket (ctx, ZMQ_XPUB);
     assert (xpub);
     int rc = zmq_bind (xpub, "tcp://127.0.0.1:5560");
@@ -43,13 +40,13 @@ int main (void)
     rc = zmq_bind (xsub, "tcp://127.0.0.1:5561");
     assert (rc == 0);
 
-    //  Create a publisher.
+    //  Create a publisher
     void *pub = zmq_socket (ctx, ZMQ_PUB);
     assert (pub);
     rc = zmq_connect (pub, "tcp://127.0.0.1:5561");
     assert (rc == 0);
 
-    //  Create a subscriber.
+    //  Create a subscriber
     void *sub = zmq_socket (ctx, ZMQ_SUB);
     assert (sub);
     rc = zmq_connect (sub, "tcp://127.0.0.1:5560");
@@ -59,27 +56,28 @@ int main (void)
     rc = zmq_setsockopt (sub, ZMQ_SUBSCRIBE, "", 0);
     assert (rc == 0);
 
-    //  Pass the subscription upstream through the device.
+    //  Pass the subscription upstream through the device
     char buff [32];
     rc = zmq_recv (xpub, buff, sizeof (buff), 0);
     assert (rc >= 0);
     rc = zmq_send (xsub, buff, rc, 0);
     assert (rc >= 0);
 
-    //  Wait a bit till the subscription gets to the publisher.
-    zmq_sleep (1);
+    //  Wait a bit till the subscription gets to the publisher
+    struct timespec t = { 0, 250 * 1000000 };
+    nanosleep (&t, NULL);
 
-    //  Send an empty message.
+    //  Send an empty message
     rc = zmq_send (pub, NULL, 0, 0);
     assert (rc == 0);
 
-    //  Pass the message downstream through the device.
+    //  Pass the message downstream through the device
     rc = zmq_recv (xsub, buff, sizeof (buff), 0);
     assert (rc >= 0);
     rc = zmq_send (xpub, buff, rc, 0);
     assert (rc >= 0);
 
-    //  Receive the message in the subscriber.
+    //  Receive the message in the subscriber
     rc = zmq_recv (sub, buff, sizeof (buff), 0);
     assert (rc == 0);
 

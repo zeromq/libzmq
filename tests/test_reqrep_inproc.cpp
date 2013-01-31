@@ -23,8 +23,6 @@
 
 int main (void)
 {
-    fprintf (stderr, "test_reqrep_inproc running...\n");
-
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
