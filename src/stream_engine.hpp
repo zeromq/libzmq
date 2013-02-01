@@ -135,6 +135,7 @@ namespace zmq
         std::string endpoint;
 
         bool plugged;
+        bool terminating;
 
         // Socket
         zmq::socket_base_t *socket;
