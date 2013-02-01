@@ -126,6 +126,11 @@ namespace zmq
             *size_ = pos;
         }
 
+        inline bool has_data ()
+        {
+            return to_write > 0;
+        }
+
     protected:
 
         //  Prototype of state machine action.
