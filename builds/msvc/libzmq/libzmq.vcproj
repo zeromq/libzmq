@@ -60,7 +60,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Ws2_32.lib Rpcrt4.lib"
+				AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib"
 				OutputFile="../../../lib/libzmq.dll"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
@@ -133,7 +133,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Ws2_32.lib Rpcrt4.lib"
+				AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib"
 				OutputFile="../../../lib/libzmq.dll"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
@@ -210,7 +210,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Ws2_32.lib Rpcrt4.lib libpgm.lib"
+				AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib libpgm.lib"
 				OutputFile="../../../lib/libzmq.dll"
 				AdditionalLibraryDirectories="../../../../OpenPGM/lib"
 				GenerateDebugInformation="true"
