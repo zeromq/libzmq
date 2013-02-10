@@ -30,17 +30,23 @@ int main (void)
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
-    //  Create pair of socket, each with high watermark of 2. Thus the total
-    //  buffer space should be 4 messages.
     void *sock = zmq_socket (ctx, ZMQ_PUB);
     assert (sock);
 
     int rc = zmq_connect (sock, "tcp://localhost:1234");
     assert (rc == 0);
 
-    rc = zmq_connect (sock, "tcp://0mq.is.teh.best:1234");
+    rc = zmq_connect (sock, "tcp://localhost:invalid");
     assert (rc == -1);
     assert (errno == EINVAL);
+
+    rc = zmq_connect (sock, "tcp://in val id:1234");
+    assert (rc == -1);
+    assert (errno == EINVAL);
+
+    rc = zmq_connect (sock, "invalid://localhost:1234");
+    assert (rc == -1);
+    assert (errno == EPROTONOSUPPORT);
 
     rc = zmq_close (sock);
     assert (rc == 0);
