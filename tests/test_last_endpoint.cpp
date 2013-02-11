@@ -49,6 +49,12 @@ int main (void)
     do_bind_and_verify (sb, "tcp://127.0.0.1:5561");
     do_bind_and_verify (sb, "ipc:///tmp/testep");
 
-    return 0 ;
+    int rc = zmq_close (sb);
+    assert (rc == 0);
+    
+    rc = zmq_term (ctx);
+    assert (rc == 0);
+
+    return 0;
 }
 
