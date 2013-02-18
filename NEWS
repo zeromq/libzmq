@@ -1,3 +1,26 @@
+0MQ version 3.2.2 stable, released on 2012/11/23
+================================================
+
+Issues addressed in this release
+--------------------------------
+
+* LIBZMQ-384 No meta data for ZMQ_EVENT_DISCONNECTED monitor event
+* LIBZMQ-414 Error in ARM/Thumb2 assembly (atomic_ptr.hpp)
+* LIBZMQ-417 zmq_assert (!incomplete_in) in session_base.cpp 228
+* LIBZMQ-447 socket_base_t::recv() packet loss and memory leak at high receiving rate
+* LIBZMQ-448 Builds fail on older versions of GCC
+* LIBZMQ-449 Builds fail on AIX
+* LIBZMQ-450 lt-test_monitor: fails with assertion at test_monitor.cpp:81
+* LIBZMQ-451 ZMQ_ROUTER_MANDATORY blocks forever
+* LIBZMQ-452 test_connect_delay.cpp:175:12: error: 'sleep' was not declared in this scope
+* LIBZMQ-456 ZMQ_XPUB_VERBOSE does not propagate in a tree of XPUB/XSUB devices
+* LIBZMQ-458 lt-test_router_mandatory fails with assertion at test_router_mandatory.cpp:53
+* LIBZMQ-459 Assertion failed: encoder (stream_engine.cpp:266
+* LIBZMQ-464 PUB socket with HWM set leaks memory
+* LIBZMQ-465 PUB/SUB results in 80-90% of CPU load
+* LIBZMQ-468 ZMQ_XPUB_VERBOSE & unsubscribe
+* LIBZMQ-472 Segfault in zmq_poll in REQ to ROUTER dialog
+
 0MQ version 3.2.1 (RC2), released on 2012/10/15
 ===============================================
 
