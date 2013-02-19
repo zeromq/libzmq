@@ -26,7 +26,7 @@
 #include "../include/zmq.h"
 
 #include <assert.h>
-#if defined WINCE
+#if defined _WIN32_WCE
 #include "..\builds\msvc\errno.hpp"
 #else
 #include <errno.h>
