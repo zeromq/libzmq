@@ -170,7 +170,7 @@
 
 #include <ws2tcpip.h>
 #include <ipexport.h>
-#if !defined WINCE
+#if !defined _WIN32_WCE
 #include <process.h>
 #endif
 
