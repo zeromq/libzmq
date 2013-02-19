@@ -27,7 +27,7 @@
 #include <stddef.h>
 
 #if defined _MSC_VER
-#if defined WINCE
+#if defined _WIN32_WCE
 #include <cmnintrin.h>
 #else
 #include <intrin.h>
