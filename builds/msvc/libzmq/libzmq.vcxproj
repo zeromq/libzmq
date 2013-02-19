@@ -143,6 +143,8 @@
     <ClCompile Include="..\..\..\src\pull.cpp" />
     <ClCompile Include="..\..\..\src\push.cpp" />
     <ClCompile Include="..\..\..\src\random.cpp" />
+    <ClCompile Include="..\..\..\src\raw_decoder.cpp" />
+    <ClCompile Include="..\..\..\src\raw_encoder.cpp" />
     <ClCompile Include="..\..\..\src\reaper.cpp" />
     <ClCompile Include="..\..\..\src\rep.cpp" />
     <ClCompile Include="..\..\..\src\req.cpp" />
@@ -218,6 +220,8 @@
     <ClInclude Include="..\..\..\src\pull.hpp" />
     <ClInclude Include="..\..\..\src\push.hpp" />
     <ClInclude Include="..\..\..\src\random.hpp" />
+    <ClInclude Include="..\..\..\src\raw_decoder.hpp" />
+    <ClInclude Include="..\..\..\src\raw_encoder.hpp" />
     <ClInclude Include="..\..\..\src\reaper.hpp" />
     <ClInclude Include="..\..\..\src\rep.hpp" />
     <ClInclude Include="..\..\..\src\req.hpp" />
