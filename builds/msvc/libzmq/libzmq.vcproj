@@ -403,6 +403,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\raw_decoder.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\raw_encoder.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\reaper.cpp"
 				>
 			</File>
@@ -690,6 +698,14 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\random.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\raw_decoder.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\raw_encoder.hpp"
 				>
 			</File>
 			<File

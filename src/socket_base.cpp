@@ -135,7 +135,7 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t tid_, int sid_) :
     monitor_events (0)
 {
     options.socket_id = sid_;
-    options.ipv6 = parent_->get (ZMQ_IPV6);
+    options.ipv6 = (parent_->get (ZMQ_IPV6) != 0);
 }
 
 zmq::socket_base_t::~socket_base_t ()
