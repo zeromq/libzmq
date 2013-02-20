@@ -144,7 +144,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         case ZMQ_RECONNECT_IVL_MAX:
             if (is_int && value >= 0)
                 reconnect_ivl_max = value;
-            else
+            else 
                 valid = false;
             break;
 
@@ -160,6 +160,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 maxmsgsize = *((int64_t *) optval_);
             else
                 valid = false;
+            break;
 
         case ZMQ_MULTICAST_HOPS:
             if (is_int && value > 0)
