@@ -102,6 +102,26 @@
     <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <PreBuildEvent>
+      <Command>copy ..\platform.hpp ..\..\..\src</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <PreBuildEvent>
+      <Command>copy ..\platform.hpp ..\..\..\src</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <PreBuildEvent>
+      <Command>copy ..\platform.hpp ..\..\..\src</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <PreBuildEvent>
+      <Command>copy ..\platform.hpp ..\..\..\src</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\address.cpp" />
     <ClCompile Include="..\..\..\src\clock.cpp" />
@@ -143,6 +163,8 @@
     <ClCompile Include="..\..\..\src\pull.cpp" />
     <ClCompile Include="..\..\..\src\push.cpp" />
     <ClCompile Include="..\..\..\src\random.cpp" />
+    <ClCompile Include="..\..\..\src\raw_decoder.cpp" />
+    <ClCompile Include="..\..\..\src\raw_encoder.cpp" />
     <ClCompile Include="..\..\..\src\reaper.cpp" />
     <ClCompile Include="..\..\..\src\rep.cpp" />
     <ClCompile Include="..\..\..\src\req.cpp" />
@@ -218,6 +240,8 @@
     <ClInclude Include="..\..\..\src\pull.hpp" />
     <ClInclude Include="..\..\..\src\push.hpp" />
     <ClInclude Include="..\..\..\src\random.hpp" />
+    <ClInclude Include="..\..\..\src\raw_decoder.hpp" />
+    <ClInclude Include="..\..\..\src\raw_encoder.hpp" />
     <ClInclude Include="..\..\..\src\reaper.hpp" />
     <ClInclude Include="..\..\..\src\rep.hpp" />
     <ClInclude Include="..\..\..\src\req.hpp" />

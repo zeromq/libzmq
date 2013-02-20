@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="inproc_thr"
 	ProjectGUID="{1077E977-95DD-4E73-A692-74647DD0CC1E}"
 	RootNamespace="inproc_thr"
@@ -24,6 +24,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine="copy ..\platform.hpp ..\..\..\perf"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -93,6 +94,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine="copy ..\platform.hpp ..\..\..\perf"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
