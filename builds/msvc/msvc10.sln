@@ -21,6 +21,8 @@ Global
 		Debug|x64 = Debug|x64
 		Release|Win32 = Release|Win32
 		Release|x64 = Release|x64
+		StaticDebug|Win32 = StaticDebug|Win32
+		StaticRelease|Win32 = StaticRelease|Win32
 		WithOpenPGM|Win32 = WithOpenPGM|Win32
 		WithOpenPGM|x64 = WithOpenPGM|x64
 	EndGlobalSection
@@ -33,6 +35,10 @@ Global
 		{641C5F36-32EE-4323-B740-992B651CF9D6}.Release|Win32.Build.0 = Release|Win32
 		{641C5F36-32EE-4323-B740-992B651CF9D6}.Release|x64.ActiveCfg = Release|x64
 		{641C5F36-32EE-4323-B740-992B651CF9D6}.Release|x64.Build.0 = Release|x64
+		{641C5F36-32EE-4323-B740-992B651CF9D6}.StaticDebug|Win32.ActiveCfg = StaticDebug|Win32
+		{641C5F36-32EE-4323-B740-992B651CF9D6}.StaticDebug|Win32.Build.0 = StaticDebug|Win32
+		{641C5F36-32EE-4323-B740-992B651CF9D6}.StaticRelease|Win32.ActiveCfg = StaticRelease|Win32
+		{641C5F36-32EE-4323-B740-992B651CF9D6}.StaticRelease|Win32.Build.0 = StaticRelease|Win32
 		{641C5F36-32EE-4323-B740-992B651CF9D6}.WithOpenPGM|Win32.ActiveCfg = WithOpenPGM|Win32
 		{641C5F36-32EE-4323-B740-992B651CF9D6}.WithOpenPGM|Win32.Build.0 = WithOpenPGM|Win32
 		{641C5F36-32EE-4323-B740-992B651CF9D6}.WithOpenPGM|x64.ActiveCfg = WithOpenPGM|x64

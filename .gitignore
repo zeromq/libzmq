@@ -65,8 +65,8 @@ lib/
 obj/
 builds/msvc/*.suo
 builds/msvc/*/*.user
-builds/msvc/*/Debug
-builds/msvc/*/Release
+builds/msvc/*/*Debug
+builds/msvc/*/*Release
 builds/redhat/zeromq.spec
 foreign/openpgm/*
 !foreign/openpgm/*.tar.bz2
