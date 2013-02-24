@@ -14,7 +14,6 @@
     </PreBuildEvent>
     <ClCompile>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;DLL_EXPORT;FD_SETSIZE=1024;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <DisableSpecificWarnings>4355</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Ws2_32.lib;Rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
