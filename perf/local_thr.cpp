@@ -19,8 +19,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "zmq.h"
-#include "zmq_utils.h"
+#include "../include/zmq.h"
+#include "../include/zmq_utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
