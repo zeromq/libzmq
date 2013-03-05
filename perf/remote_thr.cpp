@@ -316,7 +316,7 @@ int main (int argc, char *argv [])
         WaitForSingleObject (worker[i], INFINITE);
         CloseHandle (worker[i]);
 #else
-        pthread_join( worker[i], &p);
+        pthread_join( worker[i], NULL);
 #endif
         printf("Worker %d joined\n", i);
     }
