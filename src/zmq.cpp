@@ -999,13 +999,3 @@ int zmq_device (int /* type */, void *frontend_, void *backend_)
         (zmq::socket_base_t*) frontend_,
         (zmq::socket_base_t*) backend_, NULL);
 }
-
-//  Callback to free socket event data
-
-void zmq_free_event (void *event_data, void * /* hint */)
-{
-    const zmq_event_t *event = (zmq_event_t *) event_data;
-
-    free (event->addr);
-    free (event_data);
-}
