@@ -30,6 +30,7 @@ extern "C" {
 #if !defined _WIN32_WCE
 #include <errno.h>
 #endif
+#include <stdint.h>
 #include <stddef.h>
 #include <stdio.h>
 #if defined _WIN32
@@ -296,9 +297,8 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 
 /*  Socket event data  */
 typedef struct {
-    unsigned int event;  // id of the event as bitfield
-    char *addr;          // endpoint affected as c string
-    int value ;          // value is either error code, fd or reconnect interval
+    uint16_t event;  // id of the event as bitfield
+    int32_t  value ; // value is either error code, fd or reconnect interval
 } zmq_event_t;
 
 ZMQ_EXPORT void *zmq_socket (void *, int type);

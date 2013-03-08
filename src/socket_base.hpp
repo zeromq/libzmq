@@ -154,10 +154,7 @@ namespace zmq
         void process_destroy ();
 
         // Socket event data dispath
-        void monitor_event (zmq_event_t data_);
-
-        // Copy monitor specific event endpoints to event messages
-        void copy_monitor_address (char *dest_, std::string &src_);
+        void monitor_event (zmq_event_t data_, const std::string& addr_);
 
         // Monitor socket cleanup
         void stop_monitor ();

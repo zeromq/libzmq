@@ -19,6 +19,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <string>
 #include "../include/zmq.h"
 #include <pthread.h>
 #include <string.h>
@@ -31,12 +32,40 @@ static int req2_socket_events;
 // REP socket events handled
 static int rep_socket_events;
 
-const char *addr;
+std::string addr ;
+
+static bool read_msg(void* s, zmq_event_t& event, std::string& ep)
+{
+    int rc ;
+    zmq_msg_t msg1;  // binary part
+    zmq_msg_init (&msg1);
+    zmq_msg_t msg2;  //  address part
+    zmq_msg_init (&msg2);
+    rc = zmq_msg_recv (&msg1, s, 0);
+    if (rc == -1 && zmq_errno() == ETERM)
+	return true ;
+    assert (rc != -1);
+    assert (zmq_msg_more(&msg1) != 0);
+    rc = zmq_msg_recv (&msg2, s, 0);
+    if (rc == -1 && zmq_errno() == ETERM)
+	return true;
+    assert (rc != -1);
+    assert (zmq_msg_more(&msg2) == 0);
+    // copy binary data to event struct
+    const char* data = (char*)zmq_msg_data(&msg1);
+    memcpy(&event.event, data, sizeof(event.event));
+    memcpy(&event.value, data+sizeof(event.event), sizeof(event.value));
+    // copy address part
+    ep = std::string((char*)zmq_msg_data(&msg2), zmq_msg_size(&msg2));
+    return false ;
+}
+
 
 // REQ socket monitor thread
 static void *req_socket_monitor (void *ctx)
 {
     zmq_event_t event;
+    std::string ep ;
     int rc;
 
     void *s = zmq_socket (ctx, ZMQ_PAIR);
@@ -44,16 +73,8 @@ static void *req_socket_monitor (void *ctx)
 
     rc = zmq_connect (s, "inproc://monitor.req");
     assert (rc == 0);
-    while (true) {
-        zmq_msg_t msg;
-        zmq_msg_init (&msg);
-        rc = zmq_msg_recv (&msg, s, 0);
-        if (rc == -1 && zmq_errno() == ETERM)
-            break;
-        assert (rc != -1);
-
-        memcpy (&event, zmq_msg_data (&msg), sizeof (event));
-	assert (!strcmp (event.addr, addr));
+    while (!read_msg(s, event, ep)) {
+	assert (ep == addr);
         switch (event.event) {
             case ZMQ_EVENT_CONNECTED:
                 assert (event.value > 0);
@@ -86,6 +107,7 @@ static void *req_socket_monitor (void *ctx)
 static void *req2_socket_monitor (void *ctx)
 {
     zmq_event_t event;
+    std::string ep ;
     int rc;
 
     void *s = zmq_socket (ctx, ZMQ_PAIR);
@@ -93,16 +115,8 @@ static void *req2_socket_monitor (void *ctx)
 
     rc = zmq_connect (s, "inproc://monitor.req2");
     assert (rc == 0);
-    while (true) {
-        zmq_msg_t msg;
-        zmq_msg_init (&msg);
-        rc = zmq_msg_recv (&msg, s, 0);
-        if (rc == -1 && zmq_errno() == ETERM)
-            break;
-        assert (rc != -1);
-
-        memcpy (&event, zmq_msg_data (&msg), sizeof (event));
-	assert (!strcmp (event.addr, addr));
+    while (!read_msg(s, event, ep)) {
+	assert (ep == addr);
         switch (event.event) {
             case ZMQ_EVENT_CONNECTED:
                 assert (event.value > 0);
@@ -122,6 +136,7 @@ static void *req2_socket_monitor (void *ctx)
 static void *rep_socket_monitor (void *ctx)
 {
     zmq_event_t event;
+    std::string ep ;
     int rc;
 
     void *s = zmq_socket (ctx, ZMQ_PAIR);
@@ -129,16 +144,8 @@ static void *rep_socket_monitor (void *ctx)
 
     rc = zmq_connect (s, "inproc://monitor.rep");
     assert (rc == 0);
-    while (true) {
-        zmq_msg_t msg;
-        zmq_msg_init (&msg);
-        rc = zmq_msg_recv (&msg, s, 0);
-        if (rc == -1 && zmq_errno() == ETERM)
-            break;
-        assert (rc != -1);
-
-        memcpy (&event, zmq_msg_data (&msg), sizeof (event));
-	assert (!strcmp (event.addr, addr));
+    while (!read_msg(s, event, ep)) {
+	assert (ep == addr);
         switch (event.event) {
             case ZMQ_EVENT_LISTENING:
                 assert (event.value > 0);
@@ -161,7 +168,6 @@ static void *rep_socket_monitor (void *ctx)
                 rep_socket_events |= ZMQ_EVENT_DISCONNECTED;
                 break;
         }
-        zmq_msg_close (&msg);
     }
     zmq_close (s);
     return NULL;
@@ -186,7 +192,7 @@ int main (void)
     assert (rep);
 
     // Assert supported protocols
-    rc =  zmq_socket_monitor (rep, addr, 0);
+    rc =  zmq_socket_monitor (rep, addr.c_str(), 0);
     assert (rc == -1);
     assert (zmq_errno() == EPROTONOSUPPORT);
 
@@ -200,7 +206,7 @@ int main (void)
     rc = pthread_create (&threads [0], NULL, rep_socket_monitor, ctx);
     assert (rc == 0);
 
-    rc = zmq_bind (rep, addr);
+    rc = zmq_bind (rep, addr.c_str());
     assert (rc == 0);
 
     // REQ socket
@@ -213,7 +219,7 @@ int main (void)
     rc = pthread_create (&threads [1], NULL, req_socket_monitor, ctx);
     assert (rc == 0);
 
-    rc = zmq_connect (req, addr);
+    rc = zmq_connect (req, addr.c_str());
     assert (rc == 0);
 
     bounce (rep, req);
@@ -228,7 +234,7 @@ int main (void)
     rc = pthread_create (&threads [2], NULL, req2_socket_monitor, ctx);
     assert (rc == 0);
 
-    rc = zmq_connect (req2, addr);
+    rc = zmq_connect (req2, addr.c_str());
     assert (rc == 0);
 
     // Close the REP socket
