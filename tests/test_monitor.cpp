@@ -53,31 +53,27 @@ static void *req_socket_monitor (void *ctx)
         assert (rc != -1);
 
         memcpy (&event, zmq_msg_data (&msg), sizeof (event));
+	assert (!strcmp (event.addr, addr));
         switch (event.event) {
             case ZMQ_EVENT_CONNECTED:
-                assert (event.data.connected.fd > 0);
-                assert (!strcmp (event.data.connected.addr, addr));
+                assert (event.value > 0);
                 req_socket_events |= ZMQ_EVENT_CONNECTED;
                 req2_socket_events |= ZMQ_EVENT_CONNECTED;
                 break;
             case ZMQ_EVENT_CONNECT_DELAYED:
-                assert (event.data.connect_delayed.err != 0);
-                assert (!strcmp (event.data.connect_delayed.addr, addr));
+                assert (event.value != 0);
                 req_socket_events |= ZMQ_EVENT_CONNECT_DELAYED;
                 break;
             case ZMQ_EVENT_CLOSE_FAILED:
-                assert (event.data.close_failed.err != 0);
-                assert (!strcmp (event.data.close_failed.addr, addr));
+                assert (event.value != 0);
                 req_socket_events |= ZMQ_EVENT_CLOSE_FAILED;
                 break;
             case ZMQ_EVENT_CLOSED:
-                assert (event.data.closed.fd != 0);
-                assert (!strcmp (event.data.closed.addr, addr));
+                assert (event.value != 0);
                 req_socket_events |= ZMQ_EVENT_CLOSED;
                 break;
             case ZMQ_EVENT_DISCONNECTED:
-                assert (event.data.disconnected.fd != 0);
-                assert (!strcmp (event.data.disconnected.addr, addr));
+                assert (event.value != 0);
                 req_socket_events |= ZMQ_EVENT_DISCONNECTED;
                 break;
         }
@@ -106,15 +102,14 @@ static void *req2_socket_monitor (void *ctx)
         assert (rc != -1);
 
         memcpy (&event, zmq_msg_data (&msg), sizeof (event));
+	assert (!strcmp (event.addr, addr));
         switch (event.event) {
             case ZMQ_EVENT_CONNECTED:
-                assert (event.data.connected.fd > 0);
-                assert (!strcmp (event.data.connected.addr, addr));
+                assert (event.value > 0);
                 req2_socket_events |= ZMQ_EVENT_CONNECTED;
                 break;
             case ZMQ_EVENT_CLOSED:
-                assert (event.data.closed.fd != 0);
-                assert (!strcmp (event.data.closed.addr, addr));
+                assert (event.value != 0);
                 req2_socket_events |= ZMQ_EVENT_CLOSED;
                 break;
         }
@@ -143,30 +138,26 @@ static void *rep_socket_monitor (void *ctx)
         assert (rc != -1);
 
         memcpy (&event, zmq_msg_data (&msg), sizeof (event));
+	assert (!strcmp (event.addr, addr));
         switch (event.event) {
             case ZMQ_EVENT_LISTENING:
-                assert (event.data.listening.fd > 0);
-                assert (!strcmp (event.data.listening.addr, addr));
+                assert (event.value > 0);
                 rep_socket_events |= ZMQ_EVENT_LISTENING;
                 break;
             case ZMQ_EVENT_ACCEPTED:
-                assert (event.data.accepted.fd > 0);
-                assert (!strcmp (event.data.accepted.addr, addr));
+                assert (event.value > 0);
                 rep_socket_events |= ZMQ_EVENT_ACCEPTED;
                 break;
             case ZMQ_EVENT_CLOSE_FAILED:
-                assert (event.data.close_failed.err != 0);
-                assert (!strcmp (event.data.close_failed.addr, addr));
+                assert (event.value != 0);
                 rep_socket_events |= ZMQ_EVENT_CLOSE_FAILED;
                 break;
             case ZMQ_EVENT_CLOSED:
-                assert (event.data.closed.fd != 0);
-                assert (!strcmp (event.data.closed.addr, addr));
+                assert (event.value != 0);
                 rep_socket_events |= ZMQ_EVENT_CLOSED;
                 break;
             case ZMQ_EVENT_DISCONNECTED:
-                assert (event.data.disconnected.fd != 0);
-                assert (!strcmp (event.data.disconnected.addr, addr));
+                assert (event.value != 0);
                 rep_socket_events |= ZMQ_EVENT_DISCONNECTED;
                 break;
         }
