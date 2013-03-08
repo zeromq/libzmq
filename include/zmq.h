@@ -294,51 +294,11 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
                         ZMQ_EVENT_ACCEPT_FAILED | ZMQ_EVENT_CLOSED | \
                         ZMQ_EVENT_CLOSE_FAILED | ZMQ_EVENT_DISCONNECTED )
 
-/*  Socket event data (union member per event)                                */
+/*  Socket event data  */
 typedef struct {
-    int event;
-    union {
-    struct {
-        char *addr;
-        int fd;
-    } connected;
-    struct {
-        char *addr;
-        int err;
-    } connect_delayed;
-    struct {
-        char *addr;
-        int interval;
-    } connect_retried;
-    struct {
-        char *addr;
-        int fd;
-    } listening;
-    struct {
-        char *addr;
-        int err;
-    } bind_failed;
-    struct {
-        char *addr;
-        int fd;
-    } accepted;
-    struct {
-        char *addr;
-        int err;
-    } accept_failed;
-    struct {
-        char *addr;
-        int fd;
-    } closed;
-    struct {
-        char *addr;
-        int err;
-    } close_failed;
-    struct {
-        char *addr;
-        int fd;
-    } disconnected;
-    } data;
+    unsigned int event;  // id of the event as bitfield
+    char *addr;          // endpoint affected as c string
+    int value ;          // value is either error code, fd or reconnect interval
 } zmq_event_t;
 
 ZMQ_EXPORT void *zmq_socket (void *, int type);
