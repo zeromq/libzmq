@@ -1,8 +1,5 @@
 /*
-    Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2007-2009 iMatix Corporation
-    Copyright (c) 2011 VMware, Inc.
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2013 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -412,7 +409,7 @@ void zmq::session_base_t::detached ()
 
     //  For delayed connect situations, terminate the pipe
     //  and reestablish later on
-    if (pipe && options.delay_attach_on_connect == 1
+    if (pipe && options.immediate == 1
         && addr->protocol != "pgm" && addr->protocol != "epgm") {
         pipe->hiccup ();
         pipe->terminate (false);

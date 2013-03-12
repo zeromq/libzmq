@@ -1,7 +1,5 @@
 /*
-    Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2007-2009 iMatix Corporation
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2013 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -38,10 +36,10 @@
 #include "stream_engine.hpp"
 #include "io_thread.hpp"
 #include "session_base.hpp"
-#include "encoder.hpp"
-#include "decoder.hpp"
 #include "v1_encoder.hpp"
 #include "v1_decoder.hpp"
+#include "v2_encoder.hpp"
+#include "v2_decoder.hpp"
 #include "raw_decoder.hpp"
 #include "raw_encoder.hpp"
 #include "config.hpp"
@@ -105,13 +103,13 @@ zmq::stream_engine_t::~stream_engine_t ()
 
     if (s != retired_fd) {
 #ifdef ZMQ_HAVE_WINDOWS
-		int rc = closesocket (s);
-		wsa_assert (rc != SOCKET_ERROR);
+        int rc = closesocket (s);
+        wsa_assert (rc != SOCKET_ERROR);
 #else
-		int rc = close (s);
+        int rc = close (s);
         errno_assert (rc == 0);
 #endif
-		s = retired_fd;
+        s = retired_fd;
     }
 
     if (encoder != NULL)
@@ -152,7 +150,7 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
     else {
         //  Send the 'length' and 'flags' fields of the identity message.
         //  The 'length' field is encoded in the long format.
-        outpos = greeting_output_buffer;
+        outpos = greeting_send;
         outpos [outsize++] = 0xff;
         put_uint64 (&outpos [outsize], options.identity_size + 1);
         outsize += 8;
@@ -232,14 +230,12 @@ void zmq::stream_engine_t::in_event ()
         else
             processed = decoder->process_buffer (inpos, insize);
     }
-    else {
+    else
         //  Push the data to the decoder.
         processed = decoder->process_buffer (inpos, insize);
-    }
 
-    if (unlikely (processed == (size_t) -1)) {
+    if (unlikely (processed == (size_t) -1))
         disconnection = true;
-    }
     else {
 
         //  Stop polling for input if we got stuck.
@@ -294,14 +290,14 @@ void zmq::stream_engine_t::out_event ()
 
     //  If there are any data to write in write buffer, write as much as
     //  possible to the socket. Note that amount of data to write can be
-    //  arbitratily large. However, we assume that underlying TCP layer has
+    //  arbitrarily large. However, we assume that underlying TCP layer has
     //  limited transmission buffer and thus the actual number of bytes
     //  written should be reasonably modest.
     int nbytes = write (outpos, outsize);
 
     //  IO error has occurred. We stop waiting for output events.
     //  The engine is not terminated until we detect input error;
-    //  this is necessary to prevent losing incomming messages.
+    //  this is necessary to prevent losing incoming messages.
     if (nbytes == -1) {
         reset_pollout (handle);
         if (unlikely (terminating))
@@ -361,13 +357,12 @@ bool zmq::stream_engine_t::handshake ()
 
     //  Receive the greeting.
     while (greeting_bytes_read < greeting_size) {
-        const int n = read (greeting + greeting_bytes_read,
+        const int n = read (greeting_recv + greeting_bytes_read,
                             greeting_size - greeting_bytes_read);
         if (n == -1) {
             error ();
             return false;
         }
-
         if (n == 0)
             return false;
 
@@ -376,7 +371,7 @@ bool zmq::stream_engine_t::handshake ()
         //  We have received at least one byte from the peer.
         //  If the first byte is not 0xff, we know that the
         //  peer is using unversioned protocol.
-        if (greeting [0] != 0xff)
+        if (greeting_recv [0] != 0xff)
             break;
 
         if (greeting_bytes_read < 10)
@@ -386,30 +381,30 @@ bool zmq::stream_engine_t::handshake ()
         //  with the 'flags' field if a regular message was sent).
         //  Zero indicates this is a header of identity message
         //  (i.e. the peer is using the unversioned protocol).
-        if (!(greeting [9] & 0x01))
+        if (!(greeting_recv [9] & 0x01))
             break;
 
         //  The peer is using versioned protocol.
         //  Send the rest of the greeting, if necessary.
-        if (outpos + outsize != greeting_output_buffer + greeting_size) {
+        if (outpos + outsize != greeting_send + greeting_size) {
             if (outsize == 0)
                 set_pollout (handle);
-            outpos [outsize++] = 1;             // Protocol version
+            outpos [outsize++] = ZMTP_2_1;      // Protocol revision
             outpos [outsize++] = options.type;  // Socket type
         }
     }
 
-    //  Position of the version field in the greeting.
-    const size_t version_pos = 10;
+    //  Position of the revision field in the greeting.
+    const size_t revision_pos = 10;
 
-    //  Is the peer using ZMTP/1.0 with no version number?
-    //  If so, we send and receive rests of identity messages
-    if (greeting [0] != 0xff || !(greeting [9] & 0x01)) {
-        encoder = new (std::nothrow) encoder_t (out_batch_size);
+    //  Is the peer using ZMTP/1.0 with no revision number?
+    //  If so, we send and receive rest of identity message
+    if (greeting_recv [0] != 0xff || !(greeting_recv [9] & 0x01)) {
+        encoder = new (std::nothrow) v1_encoder_t (out_batch_size);
         alloc_assert (encoder);
         encoder->set_msg_source (session);
 
-        decoder = new (std::nothrow) decoder_t (in_batch_size, options.maxmsgsize);
+        decoder = new (std::nothrow) v1_decoder_t (in_batch_size, options.maxmsgsize);
         alloc_assert (decoder);
         decoder->set_msg_sink (session);
 
@@ -424,7 +419,7 @@ bool zmq::stream_engine_t::handshake ()
         zmq_assert (buffer_size == header_size);
 
         //  Make sure the decoder sees the data we have already received.
-        inpos = greeting;
+        inpos = greeting_recv;
         insize = greeting_bytes_read;
 
         //  To allow for interoperability with peers that do not forward
@@ -436,23 +431,26 @@ bool zmq::stream_engine_t::handshake ()
             decoder->set_msg_sink (this);
     }
     else
-    if (greeting [version_pos] == 0) {
-        //  ZMTP/1.0 framing.
-        encoder = new (std::nothrow) encoder_t (out_batch_size);
+    if (greeting_recv [revision_pos] == ZMTP_1_0) {
+        encoder = new (std::nothrow) v1_encoder_t (
+            out_batch_size);
         alloc_assert (encoder);
         encoder->set_msg_source (session);
 
-        decoder = new (std::nothrow) decoder_t (in_batch_size, options.maxmsgsize);
+        decoder = new (std::nothrow) v1_decoder_t (
+            in_batch_size, options.maxmsgsize);
         alloc_assert (decoder);
         decoder->set_msg_sink (session);
     }
-    else {
-        //  v1 framing protocol.
-        encoder = new (std::nothrow) v1_encoder_t (out_batch_size, session);
+    else
+    if (greeting_recv [revision_pos] == ZMTP_2_0
+    ||  greeting_recv [revision_pos] == ZMTP_2_1) {
+        encoder = new (std::nothrow) v2_encoder_t (
+            out_batch_size, session);
         alloc_assert (encoder);
 
-        decoder = new (std::nothrow)
-            v1_decoder_t (in_batch_size, options.maxmsgsize, session);
+        decoder = new (std::nothrow) v2_decoder_t (
+            in_batch_size, options.maxmsgsize, session);
         alloc_assert (decoder);
     }
 
@@ -615,4 +613,3 @@ int zmq::stream_engine_t::read (void *data_, size_t size_)
 
 #endif
 }
-

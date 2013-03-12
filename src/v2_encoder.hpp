@@ -17,28 +17,40 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_I_MSG_SOURCE_HPP_INCLUDED__
-#define __ZMQ_I_MSG_SOURCE_HPP_INCLUDED__
+#ifndef __ZMQ_V2_ENCODER_HPP_INCLUDED__
+#define __ZMQ_V2_ENCODER_HPP_INCLUDED__
+
+#include "encoder.hpp"
+#include "i_msg_source.hpp"
 
 namespace zmq
 {
+    class i_msg_source;
 
-    //  Forward declaration
-    class msg_t;
+    //  Encoder for 0MQ framing protocol. Converts messages into data stream.
 
-    //  Interface to be implemented by message source.
-
-    class i_msg_source
+    class v2_encoder_t : public encoder_base_t <v2_encoder_t>
     {
     public:
-        virtual ~i_msg_source () {}
 
-        //  Fetch a message. Returns 0 if successful; -1 otherwise.
-        //  The caller is responsible for freeing the message when no
-        //  longer used.
-        virtual int pull_msg (msg_t *msg_) = 0;
+        v2_encoder_t (size_t bufsize_, i_msg_source *msg_source_);
+        virtual ~v2_encoder_t ();
+
+        virtual void set_msg_source (i_msg_source *msg_source_);
+
+    private:
+
+        bool size_ready ();
+        bool message_ready ();
+
+        i_msg_source *msg_source;
+        msg_t in_progress;
+        unsigned char tmpbuf [9];
+
+        v2_encoder_t (const v2_encoder_t&);
+        const v2_encoder_t &operator = (const v2_encoder_t&);
     };
-
 }
 
 #endif
+

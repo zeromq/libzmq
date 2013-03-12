@@ -1,8 +1,5 @@
 /*
-    Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2007-2009 iMatix Corporation
-    Copyright (c) 2011 VMware, Inc.
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2013 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -96,7 +93,7 @@ namespace zmq
         
         //  If 1, connecting pipes are not attached immediately, meaning a send()
         //  on a socket with only connecting pipes would block
-        int delay_attach_on_connect;
+        int immediate;
 
         //  If true, session reads all the pending messages from the pipe and
         //  sends them to the network when socket is closed.

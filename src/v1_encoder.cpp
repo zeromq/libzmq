@@ -1,8 +1,5 @@
 /*
-    Copyright (c) 2007-2012 iMatix Corporation
-    Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2011 VMware, Inc.
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2013 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -20,14 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "v1_protocol.hpp"
+#include "encoder.hpp"
 #include "v1_encoder.hpp"
+#include "i_msg_source.hpp"
 #include "likely.hpp"
 #include "wire.hpp"
 
-zmq::v1_encoder_t::v1_encoder_t (size_t bufsize_, i_msg_source *msg_source_) :
+zmq::v1_encoder_t::v1_encoder_t (size_t bufsize_) :
     encoder_base_t <v1_encoder_t> (bufsize_),
-    msg_source (msg_source_)
+    msg_source (NULL)
 {
     int rc = in_progress.init ();
     errno_assert (rc == 0);
@@ -47,9 +45,17 @@ void zmq::v1_encoder_t::set_msg_source (i_msg_source *msg_source_)
     msg_source = msg_source_;
 }
 
+bool zmq::v1_encoder_t::size_ready ()
+{
+    //  Write message body into the buffer.
+    next_step (in_progress.data (), in_progress.size (),
+        &v1_encoder_t::message_ready, !(in_progress.flags () & msg_t::more));
+    return true;
+}
+
 bool zmq::v1_encoder_t::message_ready ()
 {
-    //  Release the content of the old message.
+    //  Destroy content of the old message.
     int rc = in_progress.close ();
     errno_assert (rc == 0);
 
@@ -62,42 +68,33 @@ bool zmq::v1_encoder_t::message_ready ()
         errno_assert (rc == 0);
         return false;
     }
-
     rc = msg_source->pull_msg (&in_progress);
-    if (unlikely (rc)) {
+    if (unlikely (rc != 0)) {
         errno_assert (errno == EAGAIN);
         rc = in_progress.init ();
         errno_assert (rc == 0);
         return false;
     }
 
-    //  Encode flags.
-    unsigned char &protocol_flags = tmpbuf [0];
-    protocol_flags = 0;
-    if (in_progress.flags () & msg_t::more)
-        protocol_flags |= v1_protocol_t::more_flag;
-    if (in_progress.size () > 255)
-        protocol_flags |= v1_protocol_t::large_flag;
+    //  Get the message size.
+    size_t size = in_progress.size ();
 
-    //  Encode the message length. For messages less then 256 bytes,
-    //  the length is encoded as 8-bit unsigned integer. For larger
-    //  messages, 64-bit unsigned integer in network byte order is used.
-    const size_t size = in_progress.size ();
-    if (unlikely (size > 255)) {
-        put_uint64 (tmpbuf + 1, size);
-        next_step (tmpbuf, 9, &v1_encoder_t::size_ready, false);
-    }
-    else {
-        tmpbuf [1] = static_cast <uint8_t> (size);
+    //  Account for the 'flags' byte.
+    size++;
+
+    //  For messages less than 255 bytes long, write one byte of message size.
+    //  For longer messages write 0xff escape character followed by 8-byte
+    //  message size. In both cases 'flags' field follows.
+    if (size < 255) {
+        tmpbuf [0] = (unsigned char) size;
+        tmpbuf [1] = (in_progress.flags () & msg_t::more);
         next_step (tmpbuf, 2, &v1_encoder_t::size_ready, false);
     }
-    return true;
-}
-
-bool zmq::v1_encoder_t::size_ready ()
-{
-    //  Write message body into the buffer.
-    next_step (in_progress.data (), in_progress.size (),
-        &v1_encoder_t::message_ready, !(in_progress.flags () & msg_t::more));
+    else {
+        tmpbuf [0] = 0xff;
+        put_uint64 (tmpbuf + 1, size);
+        tmpbuf [9] = (in_progress.flags () & msg_t::more);
+        next_step (tmpbuf, 10, &v1_encoder_t::size_ready, false);
+    }
     return true;
 }

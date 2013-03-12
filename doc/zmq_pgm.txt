@@ -54,7 +54,7 @@ and a port number.
 An 'interface' may be specified by either of the following:
 
 * The interface name as defined by the operating system.
-* The primary IPv4 address assigned to the interface, in it's numeric
+* The primary IPv4 address assigned to the interface, in its numeric
   representation.
 
 NOTE: Interface names are not standardised in any way and should be assumed to
@@ -63,7 +63,7 @@ names exist, thus only the primary IPv4 address may be used to specify an
 'interface'. The 'interface' part can be omitted, in that case the default one
 will be selected.
 
-A 'multicast address' is specified by an IPv4 multicast address in it's numeric
+A 'multicast address' is specified by an IPv4 multicast address in its numeric
 representation.
 
 

@@ -1,7 +1,5 @@
 /*
-    Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2011 VMware, Inc.
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2013 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -27,12 +25,6 @@ zmq::dealer_t::dealer_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     socket_base_t (parent_, tid_, sid_)
 {
     options.type = ZMQ_DEALER;
-
-    //  TODO: Uncomment the following line when DEALER will become true DEALER
-    //  rather than generic dealer socket.
-    //  If the socket is closing we can drop all the outbound requests. There'll
-    //  be noone to receive the replies anyway.
-    //  options.delay_on_close = false;
 }
 
 zmq::dealer_t::~dealer_t ()

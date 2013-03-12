@@ -1,7 +1,5 @@
 /*
-    Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2007-2009 iMatix Corporation
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2013 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -104,7 +102,7 @@ void zmq::tcp_connecter_t::process_term (int linger_)
 
 void zmq::tcp_connecter_t::in_event ()
 {
-    //  We are not polling for incomming data, so we are actually called
+    //  We are not polling for incoming data, so we are actually called
     //  because of error here. However, we can get error on out event as well
     //  on some platforms, so we'll simply handle both events in the same way.
     out_event ();
