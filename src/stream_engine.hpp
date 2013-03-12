@@ -34,6 +34,13 @@
 
 namespace zmq
 {
+    //  Protocol revisions
+    enum
+    {
+        ZMTP_1_0 = 0,
+        ZMTP_2_0 = 1,
+        ZMTP_2_1 = 2
+    };
 
     class io_thread_t;
     class session_base_t;

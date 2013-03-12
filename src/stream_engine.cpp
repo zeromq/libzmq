@@ -363,7 +363,6 @@ bool zmq::stream_engine_t::handshake ()
             error ();
             return false;
         }
-
         if (n == 0)
             return false;
 
@@ -390,7 +389,7 @@ bool zmq::stream_engine_t::handshake ()
         if (outpos + outsize != greeting_output_buffer + greeting_size) {
             if (outsize == 0)
                 set_pollout (handle);
-            outpos [outsize++] = 1;             // Protocol revision
+            outpos [outsize++] = ZMTP_2_1;      // Protocol revision
             outpos [outsize++] = options.type;  // Socket type
         }
     }
@@ -432,25 +431,26 @@ bool zmq::stream_engine_t::handshake ()
             decoder->set_msg_sink (this);
     }
     else
-    if (greeting [revision_pos] == 0) {
-        //  ZMTP/1.0 framing (revision 0)
-        encoder = new (std::nothrow) v1_encoder_t (out_batch_size);
+    if (greeting [revision_pos] == ZMTP_1_0) {
+        encoder = new (std::nothrow) v1_encoder_t (
+            out_batch_size);
         alloc_assert (encoder);
         encoder->set_msg_source (session);
 
-        decoder = new (std::nothrow) v1_decoder_t (in_batch_size, options.maxmsgsize);
+        decoder = new (std::nothrow) v1_decoder_t (
+            in_batch_size, options.maxmsgsize);
         alloc_assert (decoder);
         decoder->set_msg_sink (session);
     }
     else
-    if (greeting [revision_pos] == 1
-    ||  greeting [revision_pos] == 2) {
-        //  ZMTP/2.0 framing (revision 1)
-        encoder = new (std::nothrow) v2_encoder_t (out_batch_size, session);
+    if (greeting [revision_pos] == ZMTP_2_0
+    ||  greeting [revision_pos] == ZMTP_2_1) {
+        encoder = new (std::nothrow) v2_encoder_t (
+            out_batch_size, session);
         alloc_assert (encoder);
 
-        decoder = new (std::nothrow)
-            v2_decoder_t (in_batch_size, options.maxmsgsize, session);
+        decoder = new (std::nothrow) v2_decoder_t (
+            in_batch_size, options.maxmsgsize, session);
         alloc_assert (decoder);
     }
 

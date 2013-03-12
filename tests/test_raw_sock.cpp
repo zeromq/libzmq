@@ -29,7 +29,7 @@
 typedef unsigned char byte;
 typedef struct {
     byte signature [10];    //  0xFF 8*0x00 0x7F
-    byte revision;          //  0x01 = ZMTP/2.0
+    byte revision;          //  2 = ZMTP/2.1
     byte socktype;          //  Defined in ZMTP spec
     byte identity [2];      //  Empty message
 } zmtp_greeting_t;
@@ -41,7 +41,7 @@ typedef struct {
 //  8-byte size is set to 1 for backwards compatibility
 
 static zmtp_greeting_t greeting
-    = { { 0xFF, 0, 0, 0, 0, 0, 0, 0, 1, 0x7F }, 1, 0, { 0, 0 } };
+    = { { 0xFF, 0, 0, 0, 0, 0, 0, 0, 1, 0x7F }, 2, 0, { 0, 0 } };
 
 int main (void)
 {
@@ -107,7 +107,7 @@ int main (void)
     assert (rc == 11);
 
     //  First four bytes are [revision][socktype][identity]
-    assert (buffer [0] == 1);
+    assert (buffer [0] == 2);       //  ZMTP/2.1
     assert (buffer [1] == ZMTP_DEALER);
 
     //  Identity is 2 byte message
