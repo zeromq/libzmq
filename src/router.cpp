@@ -36,13 +36,6 @@ zmq::router_t::router_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     raw_sock(false)
 {
     options.type = ZMQ_ROUTER;
-
-    //  TODO: Uncomment the following line when ROUTER will become true ROUTER
-    //  rather than generic router socket.
-    //  If peer disconnect there's noone to send reply to anyway. We can drop
-    //  all the outstanding requests from that peer.
-    //  options.delay_on_disconnect = false;
-
     options.recv_identity = true;
     options.raw_sock = false;
 
