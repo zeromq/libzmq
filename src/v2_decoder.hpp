@@ -17,50 +17,44 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_RAW_ENCODER_HPP_INCLUDED__
-#define __ZMQ_RAW_ENCODER_HPP_INCLUDED__
+#ifndef __ZMQ_V2_DECODER_HPP_INCLUDED__
+#define __ZMQ_V2_DECODER_HPP_INCLUDED__
 
-#if defined(_MSC_VER)
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#endif
-
-#include <stddef.h>
-#include <string.h>
-#include <stdlib.h>
-#include <algorithm>
-
-#include "err.hpp"
-#include "msg.hpp"
-#include "i_encoder.hpp"
+#include "decoder.hpp"
+#include "i_msg_sink.hpp"
 
 namespace zmq
 {
-
-    //  Encoder for 0MQ framing protocol. Converts messages into data batches.
-
-    class raw_encoder_t : public encoder_base_t <raw_encoder_t>
+    //  Decoder for ZMTP/2.x framing protocol. Converts data stream into messages.
+    class v2_decoder_t : public decoder_base_t <v2_decoder_t>
     {
     public:
 
-        raw_encoder_t (size_t bufsize_, i_msg_source *msg_source_);
-        ~raw_encoder_t ();
+        v2_decoder_t (size_t bufsize_,
+            int64_t maxmsgsize_, i_msg_sink *msg_sink_);
+        virtual ~v2_decoder_t ();
 
-        void set_msg_source (i_msg_source *msg_source_);
+        //  i_decoder interface.
+        virtual void set_msg_sink (i_msg_sink *msg_sink_);
 
     private:
 
-        bool raw_message_ready ();
-        bool raw_message_size_ready ();
+        bool flags_ready ();
+        bool one_byte_size_ready ();
+        bool eight_byte_size_ready ();
+        bool message_ready ();
 
-        i_msg_source *msg_source;
+        i_msg_sink *msg_sink;
+        unsigned char tmpbuf [8];
+        unsigned char msg_flags;
         msg_t in_progress;
-        unsigned char tmpbuf [4];
-        raw_encoder_t (const raw_encoder_t&);
-        const raw_encoder_t &operator = (const raw_encoder_t&);
+
+        const int64_t maxmsgsize;
+
+        v2_decoder_t (const v2_decoder_t&);
+        void operator = (const v2_decoder_t&);
     };
+
 }
 
 #endif
-

@@ -1,6 +1,5 @@
 /*
-    Copyright (c) 2007-2012 iMatix Corporation
-    Copyright (c) 2007-2012 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2013 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -18,14 +17,13 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_V1_PROTOCOL_HPP_INCLUDED__
-#define __ZMQ_V1_PROTOCOL_HPP_INCLUDED__
+#ifndef __ZMQ_V2_PROTOCOL_HPP_INCLUDED__
+#define __ZMQ_V2_PROTOCOL_HPP_INCLUDED__
 
 namespace zmq
 {
-
-    //  Definition of constans for v1 transport protocol.
-    class v1_protocol_t
+    //  Definition of constants for ZMTP/2.0 transport protocol.
+    class v2_protocol_t
     {
     public:
         //  Message flags.
@@ -34,10 +32,7 @@ namespace zmq
             more_flag = 1,
             large_flag = 2
         };
-
     };
-
 }
 
 #endif
-

@@ -1,7 +1,5 @@
 /*
-    Copyright (c) 2007-2012 iMatix Corporation
-    Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2013 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -31,7 +29,7 @@
 #include "err.hpp"
 
 //  Check whether the sizes of public representation of the message (zmq_msg_t)
-//  and private represenation of the message (zmq::msg_t) match.
+//  and private representation of the message (zmq::msg_t) match.
 typedef char zmq_msg_size_check
     [2 * ((sizeof (zmq::msg_t) == sizeof (zmq_msg_t)) != 0) - 1];
 

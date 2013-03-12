@@ -1,8 +1,5 @@
 /*
-    Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2007-2009 iMatix Corporation
-    Copyright (c) 2011 VMware, Inc.
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2013 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -538,7 +535,7 @@ int zmq::socket_base_t::connect (const char *addr_)
     //  sent to this pipe.
     bool icanhasall = protocol == "pgm" || protocol == "epgm";
 
-    if (options.delay_attach_on_connect != 1 || icanhasall) {
+    if (options.immediate != 1 || icanhasall) {
         //  Create a bi-directional pipe.
         object_t *parents [2] = {this, session};
         pipe_t *new_pipes [2] = {NULL, NULL};
@@ -999,7 +996,7 @@ void zmq::socket_base_t::write_activated (pipe_t *pipe_)
 
 void zmq::socket_base_t::hiccuped (pipe_t *pipe_)
 {
-    if (options.delay_attach_on_connect == 1)
+    if (options.immediate == 1)
         pipe_->terminate (false);
     else
         // Notify derived sockets of the hiccup

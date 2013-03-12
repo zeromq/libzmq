@@ -1,6 +1,6 @@
 /*
-    Copyright (c) 2012 Ian Barber
-    Copyright (c) 2007-2013 iMatix Corporation
+    Copyright (c) 2007-2013 Contributors as noted in the AUTHORS file
+    
     This file is part of 0MQ.
 
     0MQ is free software; you can redistribute it and/or modify it under

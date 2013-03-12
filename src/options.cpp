@@ -1,8 +1,5 @@
 /*
-    Copyright (c) 2007-2012 iMatix Corporation
-    Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2011 VMware, Inc.
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2013 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -44,7 +41,7 @@ zmq::options_t::options_t () :
     rcvtimeo (-1),
     sndtimeo (-1),
     ipv6 (0),
-    delay_attach_on_connect (0),
+    immediate (0),
     delay_on_close (true),
     delay_on_disconnect (true),
     filter (false),
@@ -227,9 +224,9 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 valid = false;
             break;
             
-        case ZMQ_DELAY_ATTACH_ON_CONNECT:
+        case ZMQ_IMMEDIATE:
             if (is_int && (value == 0 || value == 1))
-                delay_attach_on_connect = value;
+                immediate = value;
             else
                 valid = false;
             break;
@@ -438,12 +435,12 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
         *optvallen_ = sizeof (int);
         return 0;
 
-    case ZMQ_DELAY_ATTACH_ON_CONNECT:
+    case ZMQ_IMMEDIATE:
         if (*optvallen_ < sizeof (int)) {
             errno = EINVAL;
             return -1;
         }
-        *((int*) optval_) = delay_attach_on_connect;
+        *((int*) optval_) = immediate;
         *optvallen_ = sizeof (int);
         return 0;
 

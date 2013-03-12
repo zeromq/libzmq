@@ -75,7 +75,7 @@ libzmq_werror="yes"
 # By default use DSO visibility
 libzmq_dso_visibility="yes"
 
-# Whether we are on mingw or android or not.
+# Platform specific checks
 libzmq_on_mingw32="no"
 libzmq_on_android="no"
 

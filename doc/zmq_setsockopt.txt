@@ -360,7 +360,7 @@ Applicable socket types:: all, when using TCP transports.
 ZMQ_IPV4ONLY: Use IPv4-only on socket
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Set the IPv4-only ootion for the socket. This option is deprecated.
+Set the IPv4-only option for the socket. This option is deprecated.
 Please use the ZMQ_IPV6 option.
 
 [horizontal]
@@ -370,12 +370,15 @@ Default value:: 1 (true)
 Applicable socket types:: all, when using TCP transports.
 
 
-ZMQ_DELAY_ATTACH_ON_CONNECT: Accept messages only when connections are made
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_IMMEDIATE: Queue messages only to completed connections
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If set to `1`, will delay the attachment of a pipe on connect until the underlying
-connection has completed. This will cause the socket to block if there are no other
-connections, but will prevent queues from filling on pipes awaiting connection.
+By default queues will fill on outgoing connections even if the connection has
+not completed. This can lead to "lost" messages on sockets with round-robin
+routing (REQ, PUSH, DEALER). If this option is set to `1`, messages shall be
+queued only to completed connections. This will cause the socket to block if
+there are no other connections, but will prevent queues from filling on pipes
+awaiting connection.
 
 [horizontal]
 Option value type:: int
