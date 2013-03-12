@@ -97,10 +97,6 @@ namespace zmq
         //  Underlying socket.
         fd_t s;
 
-        //  Size of the greeting message:
-        //  Preamble (10 bytes) + version (1 byte) + socket type (1 byte).
-        static const size_t greeting_size = 12;
-
         //  True iff we are registered with an I/O poller.
         bool io_enabled;
 
@@ -119,17 +115,16 @@ namespace zmq
         //  version.  When false, normal message flow has started.
         bool handshaking;
 
-        //  The receive buffer holding the greeting message
-        //  that we are receiving from the peer.
-        unsigned char greeting [greeting_size];
+        //  Size of the greeting message:
+        //  Preamble (10 bytes) + version (1 byte) + socket type (1 byte).
+        static const size_t greeting_size = 12;
 
-        //  The number of bytes of the greeting message that
-        //  we have already received.
+        //  Greeting received from, and sent to peer
+        unsigned char greeting_recv [greeting_size];
+        unsigned char greeting_send [greeting_size];
+
+        //  Size of greeting received so far
         unsigned int greeting_bytes_read;
-
-        //  The send buffer holding the greeting message
-        //  that we are sending to the peer.
-        unsigned char greeting_output_buffer [greeting_size];
 
         //  The session this engine is attached to.
         zmq::session_base_t *session;

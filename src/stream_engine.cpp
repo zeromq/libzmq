@@ -150,7 +150,7 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
     else {
         //  Send the 'length' and 'flags' fields of the identity message.
         //  The 'length' field is encoded in the long format.
-        outpos = greeting_output_buffer;
+        outpos = greeting_send;
         outpos [outsize++] = 0xff;
         put_uint64 (&outpos [outsize], options.identity_size + 1);
         outsize += 8;
@@ -357,7 +357,7 @@ bool zmq::stream_engine_t::handshake ()
 
     //  Receive the greeting.
     while (greeting_bytes_read < greeting_size) {
-        const int n = read (greeting + greeting_bytes_read,
+        const int n = read (greeting_recv + greeting_bytes_read,
                             greeting_size - greeting_bytes_read);
         if (n == -1) {
             error ();
@@ -371,7 +371,7 @@ bool zmq::stream_engine_t::handshake ()
         //  We have received at least one byte from the peer.
         //  If the first byte is not 0xff, we know that the
         //  peer is using unversioned protocol.
-        if (greeting [0] != 0xff)
+        if (greeting_recv [0] != 0xff)
             break;
 
         if (greeting_bytes_read < 10)
@@ -381,12 +381,12 @@ bool zmq::stream_engine_t::handshake ()
         //  with the 'flags' field if a regular message was sent).
         //  Zero indicates this is a header of identity message
         //  (i.e. the peer is using the unversioned protocol).
-        if (!(greeting [9] & 0x01))
+        if (!(greeting_recv [9] & 0x01))
             break;
 
         //  The peer is using versioned protocol.
         //  Send the rest of the greeting, if necessary.
-        if (outpos + outsize != greeting_output_buffer + greeting_size) {
+        if (outpos + outsize != greeting_send + greeting_size) {
             if (outsize == 0)
                 set_pollout (handle);
             outpos [outsize++] = ZMTP_2_1;      // Protocol revision
@@ -399,7 +399,7 @@ bool zmq::stream_engine_t::handshake ()
 
     //  Is the peer using ZMTP/1.0 with no revision number?
     //  If so, we send and receive rest of identity message
-    if (greeting [0] != 0xff || !(greeting [9] & 0x01)) {
+    if (greeting_recv [0] != 0xff || !(greeting_recv [9] & 0x01)) {
         encoder = new (std::nothrow) v1_encoder_t (out_batch_size);
         alloc_assert (encoder);
         encoder->set_msg_source (session);
@@ -419,7 +419,7 @@ bool zmq::stream_engine_t::handshake ()
         zmq_assert (buffer_size == header_size);
 
         //  Make sure the decoder sees the data we have already received.
-        inpos = greeting;
+        inpos = greeting_recv;
         insize = greeting_bytes_read;
 
         //  To allow for interoperability with peers that do not forward
@@ -431,7 +431,7 @@ bool zmq::stream_engine_t::handshake ()
             decoder->set_msg_sink (this);
     }
     else
-    if (greeting [revision_pos] == ZMTP_1_0) {
+    if (greeting_recv [revision_pos] == ZMTP_1_0) {
         encoder = new (std::nothrow) v1_encoder_t (
             out_batch_size);
         alloc_assert (encoder);
@@ -443,8 +443,8 @@ bool zmq::stream_engine_t::handshake ()
         decoder->set_msg_sink (session);
     }
     else
-    if (greeting [revision_pos] == ZMTP_2_0
-    ||  greeting [revision_pos] == ZMTP_2_1) {
+    if (greeting_recv [revision_pos] == ZMTP_2_0
+    ||  greeting_recv [revision_pos] == ZMTP_2_1) {
         encoder = new (std::nothrow) v2_encoder_t (
             out_batch_size, session);
         alloc_assert (encoder);
