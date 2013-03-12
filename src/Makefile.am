@@ -88,10 +88,8 @@ libzmq_la_SOURCES = \
     address.cpp \
     clock.cpp \
     ctx.cpp \
-    decoder.cpp \
     devpoll.cpp \
     dist.cpp \
-    encoder.cpp \
     epoll.cpp \
     err.cpp \
     fq.cpp \
@@ -140,10 +138,14 @@ libzmq_la_SOURCES = \
     router.cpp \
     dealer.cpp \
     v1_decoder.cpp \
-    v1_decoder.hpp \
     v1_encoder.cpp \
+    v1_decoder.hpp \
     v1_encoder.hpp \
-    v1_protocol.hpp \
+    v2_decoder.cpp \
+    v2_decoder.hpp \
+    v2_encoder.cpp \
+    v2_encoder.hpp \
+    v2_protocol.hpp \
     xsub.cpp \
     zmq.cpp \
     zmq_utils.cpp \

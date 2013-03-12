@@ -32,7 +32,6 @@
 
 namespace zmq
 {
-
     class i_msg_sink;
 
     //  Helper base class for decoders that know the amount of data to read
@@ -210,36 +209,6 @@ namespace zmq
         decoder_base_t (const decoder_base_t&);
         const decoder_base_t &operator = (const decoder_base_t&);
     };
-
-    //  Decoder for 0MQ framing protocol. Converts data batches into messages.
-
-    class decoder_t : public decoder_base_t <decoder_t>
-    {
-    public:
-
-        decoder_t (size_t bufsize_, int64_t maxmsgsize_);
-        ~decoder_t ();
-
-        //  Set the receiver of decoded messages.
-        void set_msg_sink (i_msg_sink *msg_sink_);
-
-    private:
-
-        bool one_byte_size_ready ();
-        bool eight_byte_size_ready ();
-        bool flags_ready ();
-        bool message_ready ();
-
-        i_msg_sink *msg_sink;
-        unsigned char tmpbuf [8];
-        msg_t in_progress;
-
-        int64_t maxmsgsize;
-
-        decoder_t (const decoder_t&);
-        void operator = (const decoder_t&);
-    };
-
 }
 
 #endif

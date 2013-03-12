@@ -36,10 +36,10 @@
 #include "stream_engine.hpp"
 #include "io_thread.hpp"
 #include "session_base.hpp"
-#include "encoder.hpp"
-#include "decoder.hpp"
 #include "v1_encoder.hpp"
 #include "v1_decoder.hpp"
+#include "v2_encoder.hpp"
+#include "v2_decoder.hpp"
 #include "raw_decoder.hpp"
 #include "raw_encoder.hpp"
 #include "config.hpp"
@@ -103,13 +103,13 @@ zmq::stream_engine_t::~stream_engine_t ()
 
     if (s != retired_fd) {
 #ifdef ZMQ_HAVE_WINDOWS
-		int rc = closesocket (s);
-		wsa_assert (rc != SOCKET_ERROR);
+        int rc = closesocket (s);
+        wsa_assert (rc != SOCKET_ERROR);
 #else
-		int rc = close (s);
+        int rc = close (s);
         errno_assert (rc == 0);
 #endif
-		s = retired_fd;
+        s = retired_fd;
     }
 
     if (encoder != NULL)
@@ -230,14 +230,12 @@ void zmq::stream_engine_t::in_event ()
         else
             processed = decoder->process_buffer (inpos, insize);
     }
-    else {
+    else
         //  Push the data to the decoder.
         processed = decoder->process_buffer (inpos, insize);
-    }
 
-    if (unlikely (processed == (size_t) -1)) {
+    if (unlikely (processed == (size_t) -1))
         disconnection = true;
-    }
     else {
 
         //  Stop polling for input if we got stuck.
@@ -292,14 +290,14 @@ void zmq::stream_engine_t::out_event ()
 
     //  If there are any data to write in write buffer, write as much as
     //  possible to the socket. Note that amount of data to write can be
-    //  arbitratily large. However, we assume that underlying TCP layer has
+    //  arbitrarily large. However, we assume that underlying TCP layer has
     //  limited transmission buffer and thus the actual number of bytes
     //  written should be reasonably modest.
     int nbytes = write (outpos, outsize);
 
     //  IO error has occurred. We stop waiting for output events.
     //  The engine is not terminated until we detect input error;
-    //  this is necessary to prevent losing incomming messages.
+    //  this is necessary to prevent losing incoming messages.
     if (nbytes == -1) {
         reset_pollout (handle);
         if (unlikely (terminating))
@@ -392,22 +390,22 @@ bool zmq::stream_engine_t::handshake ()
         if (outpos + outsize != greeting_output_buffer + greeting_size) {
             if (outsize == 0)
                 set_pollout (handle);
-            outpos [outsize++] = 1;             // Protocol version
+            outpos [outsize++] = 1;             // Protocol revision
             outpos [outsize++] = options.type;  // Socket type
         }
     }
 
-    //  Position of the version field in the greeting.
-    const size_t version_pos = 10;
+    //  Position of the revision field in the greeting.
+    const size_t revision_pos = 10;
 
-    //  Is the peer using ZMTP/1.0 with no version number?
-    //  If so, we send and receive rests of identity messages
+    //  Is the peer using ZMTP/1.0 with no revision number?
+    //  If so, we send and receive rest of identity message
     if (greeting [0] != 0xff || !(greeting [9] & 0x01)) {
-        encoder = new (std::nothrow) encoder_t (out_batch_size);
+        encoder = new (std::nothrow) v1_encoder_t (out_batch_size);
         alloc_assert (encoder);
         encoder->set_msg_source (session);
 
-        decoder = new (std::nothrow) decoder_t (in_batch_size, options.maxmsgsize);
+        decoder = new (std::nothrow) v1_decoder_t (in_batch_size, options.maxmsgsize);
         alloc_assert (decoder);
         decoder->set_msg_sink (session);
 
@@ -434,23 +432,25 @@ bool zmq::stream_engine_t::handshake ()
             decoder->set_msg_sink (this);
     }
     else
-    if (greeting [version_pos] == 0) {
-        //  ZMTP/1.0 framing.
-        encoder = new (std::nothrow) encoder_t (out_batch_size);
+    if (greeting [revision_pos] == 0) {
+        //  ZMTP/1.0 framing (revision 0)
+        encoder = new (std::nothrow) v1_encoder_t (out_batch_size);
         alloc_assert (encoder);
         encoder->set_msg_source (session);
 
-        decoder = new (std::nothrow) decoder_t (in_batch_size, options.maxmsgsize);
+        decoder = new (std::nothrow) v1_decoder_t (in_batch_size, options.maxmsgsize);
         alloc_assert (decoder);
         decoder->set_msg_sink (session);
     }
-    else {
-        //  v1 framing protocol.
-        encoder = new (std::nothrow) v1_encoder_t (out_batch_size, session);
+    else
+    if (greeting [revision_pos] == 1
+    ||  greeting [revision_pos] == 2) {
+        //  ZMTP/2.0 framing (revision 1)
+        encoder = new (std::nothrow) v2_encoder_t (out_batch_size, session);
         alloc_assert (encoder);
 
         decoder = new (std::nothrow)
-            v1_decoder_t (in_batch_size, options.maxmsgsize, session);
+            v2_decoder_t (in_batch_size, options.maxmsgsize, session);
         alloc_assert (decoder);
     }
 
@@ -613,4 +613,3 @@ int zmq::stream_engine_t::read (void *data_, size_t size_)
 
 #endif
 }
-

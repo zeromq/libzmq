@@ -87,10 +87,10 @@ int zmq::xsub_t::xsend (msg_t *msg_)
 
     if (size > 0 && *data == 1) {
         //  Process subscribe message
-	//  This used to filter out duplicate subscriptions,
-	//  however this is alread done on the XPUB side and
-	//  doing it here as well breaks ZMQ_XPUB_VERBOSE
-	//  when there are forwarding devices involved.
+        //  This used to filter out duplicate subscriptions,
+        //  however this is alread done on the XPUB side and
+        //  doing it here as well breaks ZMQ_XPUB_VERBOSE
+        //  when there are forwarding devices involved.
         subscriptions.add (data + 1, size - 1);
         return dist.send_to_all (msg_);
     }

@@ -168,30 +168,6 @@ namespace zmq
         encoder_base_t (const encoder_base_t&);
         void operator = (const encoder_base_t&);
     };
-
-    //  Encoder for 0MQ framing protocol. Converts messages into data batches.
-
-    class encoder_t : public encoder_base_t <encoder_t>
-    {
-    public:
-
-        encoder_t (size_t bufsize_);
-        ~encoder_t ();
-
-        void set_msg_source (i_msg_source *msg_source_);
-
-    private:
-
-        bool size_ready ();
-        bool message_ready ();
-
-        i_msg_source *msg_source;
-        msg_t in_progress;
-        unsigned char tmpbuf [10];
-
-        encoder_t (const encoder_t&);
-        const encoder_t &operator = (const encoder_t&);
-    };
 }
 
 #endif

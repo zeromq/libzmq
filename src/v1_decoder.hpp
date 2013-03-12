@@ -20,41 +20,34 @@
 #ifndef __ZMQ_V1_DECODER_HPP_INCLUDED__
 #define __ZMQ_V1_DECODER_HPP_INCLUDED__
 
-#include "err.hpp"
-#include "msg.hpp"
 #include "decoder.hpp"
-#include "i_msg_sink.hpp"
-#include "stdint.hpp"
 
 namespace zmq
 {
-
-    //  Decoder for 0MQ v1 framing protocol. Converts data stream into messages.
+    //  Decoder for ZMTP/1.0 protocol. Converts data batches into messages.
 
     class v1_decoder_t : public decoder_base_t <v1_decoder_t>
     {
     public:
 
-        v1_decoder_t (size_t bufsize_,
-            int64_t maxmsgsize_, i_msg_sink *msg_sink_);
-        virtual ~v1_decoder_t ();
+        v1_decoder_t (size_t bufsize_, int64_t maxmsgsize_);
+        ~v1_decoder_t ();
 
-        //  i_decoder interface.
-        virtual void set_msg_sink (i_msg_sink *msg_sink_);
+        //  Set the receiver of decoded messages.
+        void set_msg_sink (i_msg_sink *msg_sink_);
 
     private:
 
-        bool flags_ready ();
         bool one_byte_size_ready ();
         bool eight_byte_size_ready ();
+        bool flags_ready ();
         bool message_ready ();
 
         i_msg_sink *msg_sink;
         unsigned char tmpbuf [8];
-        unsigned char msg_flags;
         msg_t in_progress;
 
-        const int64_t maxmsgsize;
+        int64_t maxmsgsize;
 
         v1_decoder_t (const v1_decoder_t&);
         void operator = (const v1_decoder_t&);

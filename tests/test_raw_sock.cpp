@@ -107,7 +107,7 @@ int main (void)
     assert (rc == 11);
 
     //  First four bytes are [revision][socktype][identity]
-    assert (buffer [0] == 1);       //  Revision = 1
+    assert (buffer [0] == 1);
     assert (buffer [1] == ZMTP_DEALER);
 
     //  Identity is 2 byte message
