@@ -41,7 +41,7 @@ zmq::options_t::options_t () :
     rcvtimeo (-1),
     sndtimeo (-1),
     ipv6 (0),
-    delay_attach_on_connect (0),
+    immediate (0),
     delay_on_close (true),
     delay_on_disconnect (true),
     filter (false),
@@ -224,9 +224,9 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 valid = false;
             break;
             
-        case ZMQ_DELAY_ATTACH_ON_CONNECT:
+        case ZMQ_IMMEDIATE:
             if (is_int && (value == 0 || value == 1))
-                delay_attach_on_connect = value;
+                immediate = value;
             else
                 valid = false;
             break;
@@ -435,12 +435,12 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
         *optvallen_ = sizeof (int);
         return 0;
 
-    case ZMQ_DELAY_ATTACH_ON_CONNECT:
+    case ZMQ_IMMEDIATE:
         if (*optvallen_ < sizeof (int)) {
             errno = EINVAL;
             return -1;
         }
-        *((int*) optval_) = delay_attach_on_connect;
+        *((int*) optval_) = immediate;
         *optvallen_ = sizeof (int);
         return 0;
 

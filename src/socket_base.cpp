@@ -535,7 +535,7 @@ int zmq::socket_base_t::connect (const char *addr_)
     //  sent to this pipe.
     bool icanhasall = protocol == "pgm" || protocol == "epgm";
 
-    if (options.delay_attach_on_connect != 1 || icanhasall) {
+    if (options.immediate != 1 || icanhasall) {
         //  Create a bi-directional pipe.
         object_t *parents [2] = {this, session};
         pipe_t *new_pipes [2] = {NULL, NULL};
@@ -996,7 +996,7 @@ void zmq::socket_base_t::write_activated (pipe_t *pipe_)
 
 void zmq::socket_base_t::hiccuped (pipe_t *pipe_)
 {
-    if (options.delay_attach_on_connect == 1)
+    if (options.immediate == 1)
         pipe_->terminate (false);
     else
         // Notify derived sockets of the hiccup

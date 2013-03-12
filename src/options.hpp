@@ -93,7 +93,7 @@ namespace zmq
         
         //  If 1, connecting pipes are not attached immediately, meaning a send()
         //  on a socket with only connecting pipes would block
-        int delay_attach_on_connect;
+        int immediate;
 
         //  If true, session reads all the pending messages from the pipe and
         //  sends them to the network when socket is closed.
