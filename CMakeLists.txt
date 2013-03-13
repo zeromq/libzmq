@@ -27,7 +27,7 @@ if(NOT ${POLLER} STREQUAL "")
   set(ZMQ_FORCE_${UPPER_POLLER} 1)
 endif()
 
-set(ZMQ_CMAKE_MODULES_DIR ${CMAKE_SOURCE_DIR}/cmake/Modules)
+set(ZMQ_CMAKE_MODULES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 list(APPEND CMAKE_MODULE_PATH ${ZMQ_CMAKE_MODULES_DIR})
 
 include(TestZMQVersion)
@@ -292,10 +292,8 @@ set(cxx-sources
         clock.cpp
         ctx.cpp
         dealer.cpp
-        decoder.cpp
         devpoll.cpp
         dist.cpp
-        encoder.cpp
         epoll.cpp
         err.cpp
         fq.cpp
@@ -346,6 +344,8 @@ set(cxx-sources
         trie.cpp
         v1_decoder.cpp
         v1_encoder.cpp
+        v2_decoder.cpp
+        v2_encoder.cpp
         xpub.cpp
         xsub.cpp
         zmq.cpp
