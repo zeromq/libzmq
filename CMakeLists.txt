@@ -292,10 +292,8 @@ set(cxx-sources
         clock.cpp
         ctx.cpp
         dealer.cpp
-        decoder.cpp
         devpoll.cpp
         dist.cpp
-        encoder.cpp
         epoll.cpp
         err.cpp
         fq.cpp
@@ -346,6 +344,8 @@ set(cxx-sources
         trie.cpp
         v1_decoder.cpp
         v1_encoder.cpp
+        v2_decoder.cpp
+        v2_encoder.cpp
         xpub.cpp
         xsub.cpp
         zmq.cpp
