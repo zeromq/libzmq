@@ -35,6 +35,11 @@ zmq::mailbox_t::mailbox_t ()
 zmq::mailbox_t::~mailbox_t ()
 {
     //  TODO: Retrieve and deallocate commands inside the cpipe.
+
+    // Work around problem that other threads might still be in our
+    // send() method, by waiting on the mutex before disappearing.
+    sync.lock ();
+    sync.unlock ();
 }
 
 zmq::fd_t zmq::mailbox_t::get_fd ()
