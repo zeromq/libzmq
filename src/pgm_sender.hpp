@@ -33,7 +33,7 @@
 #include "i_engine.hpp"
 #include "options.hpp"
 #include "pgm_socket.hpp"
-#include "encoder.hpp"
+#include "v1_encoder.hpp"
 
 namespace zmq
 {
@@ -76,7 +76,7 @@ namespace zmq
         bool has_rx_timer;
 
         //  Message encoder.
-        encoder_t encoder;
+        v1_encoder_t encoder;
 
         //  PGM socket.
         pgm_socket_t pgm_socket;

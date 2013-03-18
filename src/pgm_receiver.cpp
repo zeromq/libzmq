@@ -29,6 +29,7 @@
 
 #include "pgm_receiver.hpp"
 #include "session_base.hpp"
+#include "v1_decoder.hpp"
 #include "stdint.hpp"
 #include "wire.hpp"
 #include "err.hpp"
@@ -227,8 +228,8 @@ void zmq::pgm_receiver_t::in_event ()
             it->second.joined = true;
 
             //  Create and connect decoder for the peer.
-            it->second.decoder = new (std::nothrow) decoder_t (0,
-                options.maxmsgsize);
+            it->second.decoder = new (std::nothrow)
+                v1_decoder_t (0, options.maxmsgsize);
             alloc_assert (it->second.decoder);
             it->second.decoder->set_msg_sink (session);
         }
