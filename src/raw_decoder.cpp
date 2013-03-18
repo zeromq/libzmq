@@ -26,72 +26,38 @@
 #endif
 
 #include "raw_decoder.hpp"
-#include "likely.hpp"
-#include "wire.hpp"
 #include "err.hpp"
 
-zmq::raw_decoder_t::raw_decoder_t (size_t bufsize_,
-      int64_t maxmsgsize_, i_msg_sink *msg_sink_) :
-    decoder_base_t <raw_decoder_t> (bufsize_),
-    msg_sink (msg_sink_),
-    maxmsgsize (maxmsgsize_)
+zmq::raw_decoder_t::raw_decoder_t (size_t bufsize_) :
+    bufsize (bufsize_)
 {
     int rc = in_progress.init ();
     errno_assert (rc == 0);
+
+    buffer = (unsigned char *) malloc (bufsize);
+    alloc_assert (buffer);
 }
 
 zmq::raw_decoder_t::~raw_decoder_t ()
 {
     int rc = in_progress.close ();
     errno_assert (rc == 0);
+
+    free (buffer);
 }
 
-void zmq::raw_decoder_t::set_msg_sink (i_msg_sink *msg_sink_)
+void zmq::raw_decoder_t::get_buffer (unsigned char **data_, size_t *size_)
 {
-    msg_sink = msg_sink_;
+    *data_ = buffer;
+    *size_ = bufsize;
 }
 
-bool zmq::raw_decoder_t::stalled ()
+int zmq::raw_decoder_t::decode (const uint8_t *data_, size_t size_,
+    size_t &bytes_used_)
 {
-    return false;
-}
-
-bool zmq::raw_decoder_t::message_ready_size (size_t msg_sz)
-{
-    int rc = in_progress.init_size (msg_sz);
-    if (rc != 0) {
-        errno_assert (errno == ENOMEM);
-        rc = in_progress.init ();
-        errno_assert (rc == 0);
-        decoding_error ();
-        return false;
-    }
-
-    next_step (in_progress.data (), in_progress.size (),
-        &raw_decoder_t::raw_message_ready);
-
-    return true;
-}
-
-bool zmq::raw_decoder_t::raw_message_ready ()
-{
-    zmq_assert (in_progress.size ());
-    //  Message is completely read. Push it further and start reading
-    //  new message. (in_progress is a 0-byte message after this point.)
-    if (unlikely (!msg_sink))
-        return false;
-    int rc = msg_sink->push_msg (&in_progress);
-    if (unlikely (rc != 0)) {
-        if (errno != EAGAIN)
-            decoding_error ();
-        return false;
-    }
-
-    // NOTE: This is just to break out of process_buffer
-    // raw_message_ready should never get called in state machine w/o
-    // message_ready_size from stream_engine.
-    next_step (in_progress.data (), 1,
-        &raw_decoder_t::raw_message_ready);
-
-    return true;
+    int rc = in_progress.init_size (size_);
+    errno_assert (rc != -1);
+    memcpy (in_progress.data (), data_, size_);
+    bytes_used_ = size_;
+    return 1;
 }

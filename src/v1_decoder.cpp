@@ -28,14 +28,12 @@
 
 #include "decoder.hpp"
 #include "v1_decoder.hpp"
-#include "i_msg_sink.hpp"
 #include "likely.hpp"
 #include "wire.hpp"
 #include "err.hpp"
 
 zmq::v1_decoder_t::v1_decoder_t (size_t bufsize_, int64_t maxmsgsize_) :
     decoder_base_t <v1_decoder_t> (bufsize_),
-    msg_sink (NULL),
     maxmsgsize (maxmsgsize_)
 {
     int rc = in_progress.init ();
@@ -51,12 +49,7 @@ zmq::v1_decoder_t::~v1_decoder_t ()
     errno_assert (rc == 0);
 }
 
-void zmq::v1_decoder_t::set_msg_sink (i_msg_sink *msg_sink_)
-{
-    msg_sink = msg_sink_;
-}
-
-bool zmq::v1_decoder_t::one_byte_size_ready ()
+int zmq::v1_decoder_t::one_byte_size_ready ()
 {
     //  First byte of size is read. If it is 0xff read 8-byte size.
     //  Otherwise allocate the buffer for message data and read the
@@ -67,34 +60,33 @@ bool zmq::v1_decoder_t::one_byte_size_ready ()
 
         //  There has to be at least one byte (the flags) in the message).
         if (!*tmpbuf) {
-            decoding_error ();
-            return false;
+            errno = EPROTO;
+            return -1;
+        }
+
+        if (maxmsgsize >= 0 && (int64_t) (*tmpbuf - 1) > maxmsgsize) {
+            errno = EMSGSIZE;
+            return -1;
         }
 
         //  in_progress is initialised at this point so in theory we should
         //  close it before calling zmq_msg_init_size, however, it's a 0-byte
         //  message and thus we can treat it as uninitialised...
-        int rc;
-        if (maxmsgsize >= 0 && (int64_t) (*tmpbuf - 1) > maxmsgsize) {
-            rc = -1;
-            errno = ENOMEM;
-        }
-        else
-            rc = in_progress.init_size (*tmpbuf - 1);
-        if (rc != 0 && errno == ENOMEM) {
+        int rc = in_progress.init_size (*tmpbuf - 1);
+        if (rc != 0) {
+            errno_assert (errno == ENOMEM);
             rc = in_progress.init ();
             errno_assert (rc == 0);
-            decoding_error ();
-            return false;
+            errno = ENOMEM;
+            return -1;
         }
-        errno_assert (rc == 0);
 
         next_step (tmpbuf, 1, &v1_decoder_t::flags_ready);
     }
-    return true;
+    return 0;
 }
 
-bool zmq::v1_decoder_t::eight_byte_size_ready ()
+int zmq::v1_decoder_t::eight_byte_size_ready ()
 {
     //  8-byte payload length is read. Allocate the buffer
     //  for message body and read the message data into it.
@@ -102,20 +94,20 @@ bool zmq::v1_decoder_t::eight_byte_size_ready ()
 
     //  There has to be at least one byte (the flags) in the message).
     if (payload_length == 0) {
-        decoding_error ();
-        return false;
+        errno = EPROTO;
+        return -1;
     }
 
     //  Message size must not exceed the maximum allowed size.
     if (maxmsgsize >= 0 && payload_length - 1 > (uint64_t) maxmsgsize) {
-        decoding_error ();
-        return false;
+        errno = EMSGSIZE;
+        return -1;
     }
 
     //  Message size must fit within range of size_t data type.
     if (payload_length - 1 > std::numeric_limits <size_t>::max ()) {
-        decoding_error ();
-        return false;
+        errno = EMSGSIZE;
+        return -1;
     }
 
     const size_t msg_size = static_cast <size_t> (payload_length - 1);
@@ -128,15 +120,15 @@ bool zmq::v1_decoder_t::eight_byte_size_ready ()
         errno_assert (errno == ENOMEM);
         rc = in_progress.init ();
         errno_assert (rc == 0);
-        decoding_error ();
-        return false;
+        errno = ENOMEM;
+        return -1;
     }
 
     next_step (tmpbuf, 1, &v1_decoder_t::flags_ready);
-    return true;
+    return 0;
 }
 
-bool zmq::v1_decoder_t::flags_ready ()
+int zmq::v1_decoder_t::flags_ready ()
 {
     //  Store the flags from the wire into the message structure.
     in_progress.set_flags (tmpbuf [0] & msg_t::more);
@@ -144,22 +136,13 @@ bool zmq::v1_decoder_t::flags_ready ()
     next_step (in_progress.data (), in_progress.size (),
         &v1_decoder_t::message_ready);
 
-    return true;
+    return 0;
 }
 
-bool zmq::v1_decoder_t::message_ready ()
+int zmq::v1_decoder_t::message_ready ()
 {
     //  Message is completely read. Push it further and start reading
     //  new message. (in_progress is a 0-byte message after this point.)
-    if (unlikely (!msg_sink))
-        return false;
-    int rc = msg_sink->push_msg (&in_progress);
-    if (unlikely (rc != 0)) {
-        if (errno != EAGAIN)
-            decoding_error ();
-        return false;
-    }
-
     next_step (tmpbuf, 1, &v1_decoder_t::one_byte_size_ready);
-    return true;
+    return 1;
 }

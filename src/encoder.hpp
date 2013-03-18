@@ -38,8 +38,6 @@
 namespace zmq
 {
 
-    class i_msg_source;
-
     //  Helper base class for encoders. It implements the state machine that
     //  fills the outgoing buffer. Derived classes should implement individual
     //  state machine actions.
@@ -49,7 +47,8 @@ namespace zmq
     public:
 
         inline encoder_base_t (size_t bufsize_) :
-            bufsize (bufsize_)
+            bufsize (bufsize_),
+            in_progress (NULL)
         {
             buf = (unsigned char*) malloc (bufsize_);
             alloc_assert (buf);
@@ -65,17 +64,13 @@ namespace zmq
         //  The function returns a batch of binary data. The data
         //  are filled to a supplied buffer. If no buffer is supplied (data_
         //  points to NULL) decoder object will provide buffer of its own.
-        //  If offset is not NULL, it is filled by offset of the first message
-        //  in the batch.If there's no beginning of a message in the batch,
-        //  offset is set to -1.
-        inline void get_data (unsigned char **data_, size_t *size_,
-            int *offset_ = NULL)
+        inline size_t encode (unsigned char **data_, size_t size_)
         {
             unsigned char *buffer = !*data_ ? buf : *data_;
-            size_t buffersize = !*data_ ? bufsize : *size_;
+            size_t buffersize = !*data_ ? bufsize : size_;
 
-            if (offset_)
-                *offset_ = -1;
+            if (in_progress == NULL)
+                return 0;
 
             size_t pos = 0;
             while (pos < buffersize) {
@@ -84,14 +79,15 @@ namespace zmq
                 //  If there are still no data, return what we already have
                 //  in the buffer.
                 if (!to_write) {
-                    //  If we are to encode the beginning of a new message,
-                    //  adjust the message offset.
-                    if (beginning)
-                        if (offset_ && *offset_ == -1)
-                            *offset_ = static_cast <int> (pos);
-
-                    if (!(static_cast <T*> (this)->*next) ())
+                    if (new_msg_flag) {
+                        int rc = in_progress->close ();
+                        errno_assert (rc == 0);
+                        rc = in_progress->init ();
+                        errno_assert (rc == 0);
+                        in_progress = NULL;
                         break;
+                    }
+                    (static_cast <T*> (this)->*next) ();
                 }
 
                 //  If there are no data in the buffer yet and we are able to
@@ -106,10 +102,10 @@ namespace zmq
                 //  amounts of time.
                 if (!pos && !*data_ && to_write >= buffersize) {
                     *data_ = write_pos;
-                    *size_ = to_write;
+                    pos = to_write;
                     write_pos = NULL;
                     to_write = 0;
-                    return;
+                    return pos;
                 }
 
                 //  Copy data to the buffer. If the buffer is full, return.
@@ -121,7 +117,14 @@ namespace zmq
             }
 
             *data_ = buffer;
-            *size_ = pos;
+            return pos;
+        }
+
+        void load_msg (msg_t *msg_)
+        {
+            zmq_assert (in_progress == NULL);
+            in_progress = msg_;
+            (static_cast <T*> (this)->*next) ();
         }
 
         inline bool has_data ()
@@ -132,18 +135,17 @@ namespace zmq
     protected:
 
         //  Prototype of state machine action.
-        typedef bool (T::*step_t) ();
+        typedef void (T::*step_t) ();
 
         //  This function should be called from derived class to write the data
-        //  to the buffer and schedule next state machine action. Set beginning
-        //  to true when you are writing first byte of a message.
+        //  to the buffer and schedule next state machine action.
         inline void next_step (void *write_pos_, size_t to_write_,
-            step_t next_, bool beginning_)
+            step_t next_, bool new_msg_flag_)
         {
             write_pos = (unsigned char*) write_pos_;
             to_write = to_write_;
             next = next_;
-            beginning = beginning_;
+            new_msg_flag = new_msg_flag_;
         }
 
     private:
@@ -158,8 +160,7 @@ namespace zmq
         //  is dead.
         step_t next;
 
-        //  If true, first byte of the message is being written.
-        bool beginning;
+        bool new_msg_flag;
 
         //  The buffer for encoded data.
         size_t bufsize;
@@ -167,6 +168,11 @@ namespace zmq
 
         encoder_base_t (const encoder_base_t&);
         void operator = (const encoder_base_t&);
+
+    protected:
+
+        msg_t *in_progress;
+
     };
 }
 
