@@ -28,6 +28,8 @@
 #define ZMQ_ATOMIC_PTR_X86
 #elif defined __ARM_ARCH_7A__ && defined __GNUC__
 #define ZMQ_ATOMIC_PTR_ARM
+#elif defined __tile__
+#define ZMQ_ATOMIC_PTR_TILE
 #elif defined ZMQ_HAVE_WINDOWS
 #define ZMQ_ATOMIC_PTR_WINDOWS
 #elif (defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_NETBSD)
@@ -42,6 +44,8 @@
 #include "windows.hpp"
 #elif defined ZMQ_ATOMIC_PTR_ATOMIC_H
 #include <atomic.h>
+#elif defined ZMQ_ATOMIC_PTR_TILE
+#include <arch/atomic.h>
 #endif
 
 namespace zmq
@@ -80,6 +84,8 @@ namespace zmq
             return (T*) InterlockedExchangePointer ((PVOID*) &ptr, val_);
 #elif defined ZMQ_ATOMIC_PTR_ATOMIC_H
             return (T*) atomic_swap_ptr (&ptr, val_);
+#elif defined ZMQ_ATOMIC_PTR_TILE
+            return (T*) arch_atomic_exchange (&ptr, val_);
 #elif defined ZMQ_ATOMIC_PTR_X86
             T *old;
             __asm__ volatile (
@@ -123,6 +129,8 @@ namespace zmq
                 (volatile PVOID*) &ptr, val_, cmp_);
 #elif defined ZMQ_ATOMIC_PTR_ATOMIC_H
             return (T*) atomic_cas_ptr (&ptr, cmp_, val_);
+#elif defined ZMQ_ATOMIC_PTR_TILE
+            return (T*) arch_atomic_val_compare_and_exchange (&ptr, cmp_, val_);
 #elif defined ZMQ_ATOMIC_PTR_X86
             T *old;
             __asm__ volatile (
