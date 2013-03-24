@@ -47,7 +47,6 @@ int main (void)
 
     do_bind_and_verify (sb, "tcp://127.0.0.1:5560");
     do_bind_and_verify (sb, "tcp://127.0.0.1:5561");
-    do_bind_and_verify (sb, "ipc:///tmp/testep");
 
     rc = zmq_close (sb);
     assert (rc == 0);
