@@ -23,11 +23,9 @@
 #include "../include/zmq_utils.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
 #include <time.h>
 #include <limits.h>
-#include <sys/time.h>
 
 #include "platform.hpp"
 
@@ -35,6 +33,8 @@
 #include <windows.h>
 #include <process.h>
 #else
+#include <unistd.h>
+#include <sys/time.h>
 #include <pthread.h>
 #endif
 
@@ -61,11 +61,25 @@ struct US_TIMER{
 /*  Records the current timer state
 */
 void tm_init( US_TIMER *t){
+#if defined ZMQ_HAVE_WINDOWS
 
-    if( gettimeofday( &t->time_now, NULL) < 0){ perror( "d_timer_init()");}
+    //  Get the high resolution counter's accuracy.
+    LARGE_INTEGER ticksPerSecond;
+    QueryPerformanceFrequency (&ticksPerSecond);
+
+    //  What time is it?
+    LARGE_INTEGER tick;
+	if ( !QueryPerformanceCounter (&tick) ) { perror( "tm_init()" ); }
+
+	//  Seconds
+	t->time_now.tv_sec = (long)( tick.QuadPart / ticksPerSecond.QuadPart );
+	//  Microseconds
+	t->time_now.tv_usec = (long)( ( tick.QuadPart - t->time_now.tv_sec * ticksPerSecond.QuadPart ) * 1000000 / ticksPerSecond.QuadPart );
+#else
+    if( gettimeofday( &t->time_now, NULL) < 0){ perror( "tm_init()");}
+#endif
 
     t->time_was = t->time_now;
-
 }
 
 /*  Returns the time passed in microsecond precision in seconds since last init
@@ -75,14 +89,28 @@ float tm_secs( US_TIMER *t){
 
     register float seconds;
 
-    if( gettimeofday( &t->time_now, NULL) < 0){ perror( "d_timer_init()");}
+#if defined ZMQ_HAVE_WINDOWS
+    //  Get the high resolution counter's accuracy.
+    LARGE_INTEGER ticksPerSecond;
+    QueryPerformanceFrequency (&ticksPerSecond);
 
+    //  What time is it?
+    LARGE_INTEGER tick;
+	if ( !QueryPerformanceCounter (&tick) ) { perror( "tm_secs()" ); }
+
+	//  Seconds
+	t->time_now.tv_sec = (long)( tick.QuadPart / ticksPerSecond.QuadPart );
+	//  Microseconds
+	t->time_now.tv_usec = (long)( ( tick.QuadPart - t->time_now.tv_sec * ticksPerSecond.QuadPart ) * 1000000 / ticksPerSecond.QuadPart );
+#else
+    if( gettimeofday( &t->time_now, NULL) < 0){ perror( "tm_secs()");}
+#endif
     seconds = ( ((float)( t->time_now.tv_sec - t->time_was.tv_sec)) +
              (((float)( t->time_now.tv_usec - t->time_was.tv_usec)) / 1000000.0));
 
     t->time_was = t->time_now;
 
-    return( seconds);
+    return seconds;
 }
 
 void my_free (void *data, void *hint)
