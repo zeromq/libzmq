@@ -43,38 +43,46 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='WithOpenPGM|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
@@ -154,21 +162,25 @@
     <PreBuildEvent>
       <Command>copy ..\platform.hpp ..\..\..\src</Command>
     </PreBuildEvent>
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'">
     <PreBuildEvent>
       <Command>copy ..\platform.hpp ..\..\..\src</Command>
     </PreBuildEvent>
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\address.cpp" />
     <ClCompile Include="..\..\..\src\clock.cpp" />
     <ClCompile Include="..\..\..\src\ctx.cpp" />
     <ClCompile Include="..\..\..\src\dealer.cpp" />
-    <ClCompile Include="..\..\..\src\decoder.cpp" />
     <ClCompile Include="..\..\..\src\devpoll.cpp" />
     <ClCompile Include="..\..\..\src\dist.cpp" />
-    <ClCompile Include="..\..\..\src\encoder.cpp" />
     <ClCompile Include="..\..\..\src\epoll.cpp" />
     <ClCompile Include="..\..\..\src\err.cpp" />
     <ClCompile Include="..\..\..\src\fq.cpp" />
@@ -221,6 +233,8 @@
     <ClCompile Include="..\..\..\src\trie.cpp" />
     <ClCompile Include="..\..\..\src\v1_decoder.cpp" />
     <ClCompile Include="..\..\..\src\v1_encoder.cpp" />
+    <ClCompile Include="..\..\..\src\v2_decoder.cpp" />
+    <ClCompile Include="..\..\..\src\v2_encoder.cpp" />
     <ClCompile Include="..\..\..\src\xpub.cpp" />
     <ClCompile Include="..\..\..\src\xsub.cpp" />
     <ClCompile Include="..\..\..\src\zmq.cpp" />
