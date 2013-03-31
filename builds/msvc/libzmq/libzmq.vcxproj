@@ -162,11 +162,17 @@
     <PreBuildEvent>
       <Command>copy ..\platform.hpp ..\..\..\src</Command>
     </PreBuildEvent>
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'">
     <PreBuildEvent>
       <Command>copy ..\platform.hpp ..\..\..\src</Command>
     </PreBuildEvent>
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\address.cpp" />
