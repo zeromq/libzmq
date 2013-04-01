@@ -26,7 +26,12 @@
 #include <string.h>
 #include <time.h>
 #include <limits.h>
+
+#include "platform.hpp"
+
+#ifndef ZMQ_HAVE_WINDOWS
 #include <sys/time.h>
+#endif
 
 #define		ZMSG 1
 #define		DATA 0
@@ -41,9 +46,23 @@ struct US_TIMER{
 /*  Records the current timer state
 */
 void tm_init( US_TIMER *t){
+#if defined ZMQ_HAVE_WINDOWS
 
-    if( gettimeofday( &t->time_now, NULL) < 0){ perror( "d_timer_init()");}
+    //  Get the high resolution counter's accuracy.
+    LARGE_INTEGER ticksPerSecond;
+    QueryPerformanceFrequency (&ticksPerSecond);
 
+    //  What time is it?
+    LARGE_INTEGER tick;
+	if ( !QueryPerformanceCounter (&tick) ) { perror( "tm_init()" ); }
+
+	//  Seconds
+	t->time_now.tv_sec = (long)( tick.QuadPart / ticksPerSecond.QuadPart );
+	//  Microseconds
+	t->time_now.tv_usec = (long)( ( tick.QuadPart - t->time_now.tv_sec * ticksPerSecond.QuadPart ) * 1000000 / ticksPerSecond.QuadPart );
+#else
+    if( gettimeofday( &t->time_now, NULL) < 0){ perror( "tm_init()");}
+#endif
     t->time_was = t->time_now;
 
 }
@@ -54,9 +73,22 @@ void tm_init( US_TIMER *t){
 float tm_secs( US_TIMER *t){
 
     register float seconds;
+#if defined ZMQ_HAVE_WINDOWS
+    //  Get the high resolution counter's accuracy.
+    LARGE_INTEGER ticksPerSecond;
+    QueryPerformanceFrequency (&ticksPerSecond);
 
-    if( gettimeofday( &t->time_now, NULL) < 0){ perror( "d_timer_init()");}
+    //  What time is it?
+    LARGE_INTEGER tick;
+	if ( !QueryPerformanceCounter (&tick) ) { perror( "tm_secs()" ); }
 
+	//  Seconds
+	t->time_now.tv_sec = (long)( tick.QuadPart / ticksPerSecond.QuadPart );
+	//  Microseconds
+	t->time_now.tv_usec = (long)( ( tick.QuadPart - t->time_now.tv_sec * ticksPerSecond.QuadPart ) * 1000000 / ticksPerSecond.QuadPart );
+#else
+    if( gettimeofday( &t->time_now, NULL) < 0){ perror( "tm_secs()");}
+#endif
     seconds = ( ((float)( t->time_now.tv_sec - t->time_was.tv_sec)) +
              (((float)( t->time_now.tv_usec - t->time_was.tv_usec)) / 1000000.0));
 
