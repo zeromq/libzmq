@@ -21,7 +21,6 @@
 #define __ZMQ_V2_DECODER_HPP_INCLUDED__
 
 #include "decoder.hpp"
-#include "i_msg_sink.hpp"
 
 namespace zmq
 {
@@ -30,21 +29,19 @@ namespace zmq
     {
     public:
 
-        v2_decoder_t (size_t bufsize_,
-            int64_t maxmsgsize_, i_msg_sink *msg_sink_);
+        v2_decoder_t (size_t bufsize_, int64_t maxmsgsize_);
         virtual ~v2_decoder_t ();
 
         //  i_decoder interface.
-        virtual void set_msg_sink (i_msg_sink *msg_sink_);
+        virtual msg_t *msg () { return &in_progress; }
 
     private:
 
-        bool flags_ready ();
-        bool one_byte_size_ready ();
-        bool eight_byte_size_ready ();
-        bool message_ready ();
+        int flags_ready ();
+        int one_byte_size_ready ();
+        int eight_byte_size_ready ();
+        int message_ready ();
 
-        i_msg_sink *msg_sink;
         unsigned char tmpbuf [8];
         unsigned char msg_flags;
         msg_t in_progress;

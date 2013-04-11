@@ -26,8 +26,6 @@ libzmq_la_SOURCES = \
     i_encoder.hpp \
     i_decoder.hpp \
     i_engine.hpp \
-    i_msg_sink.hpp \
-    i_msg_source.hpp \
     i_poll_events.hpp \
     io_object.hpp \
     io_thread.hpp \

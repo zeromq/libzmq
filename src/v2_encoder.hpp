@@ -21,30 +21,23 @@
 #define __ZMQ_V2_ENCODER_HPP_INCLUDED__
 
 #include "encoder.hpp"
-#include "i_msg_source.hpp"
 
 namespace zmq
 {
-    class i_msg_source;
-
     //  Encoder for 0MQ framing protocol. Converts messages into data stream.
 
     class v2_encoder_t : public encoder_base_t <v2_encoder_t>
     {
     public:
 
-        v2_encoder_t (size_t bufsize_, i_msg_source *msg_source_);
+        v2_encoder_t (size_t bufsize_);
         virtual ~v2_encoder_t ();
-
-        virtual void set_msg_source (i_msg_source *msg_source_);
 
     private:
 
-        bool size_ready ();
-        bool message_ready ();
+        void size_ready ();
+        void message_ready ();
 
-        i_msg_source *msg_source;
-        msg_t in_progress;
         unsigned char tmpbuf [9];
 
         v2_encoder_t (const v2_encoder_t&);

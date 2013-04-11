@@ -24,8 +24,6 @@
 
 namespace zmq
 {
-    class i_msg_source;
-    
     //  Encoder for ZMTP/1.0 protocol. Converts messages into data batches.
 
     class v1_encoder_t : public encoder_base_t <v1_encoder_t>
@@ -35,15 +33,11 @@ namespace zmq
         v1_encoder_t (size_t bufsize_);
         ~v1_encoder_t ();
 
-        void set_msg_source (i_msg_source *msg_source_);
-
     private:
 
-        bool size_ready ();
-        bool message_ready ();
+        void size_ready ();
+        void message_ready ();
 
-        i_msg_source *msg_source;
-        msg_t in_progress;
         unsigned char tmpbuf [10];
 
         v1_encoder_t (const v1_encoder_t&);

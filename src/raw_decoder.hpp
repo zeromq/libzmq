@@ -22,9 +22,7 @@
 
 #include "err.hpp"
 #include "msg.hpp"
-#include "decoder.hpp"
-#include "raw_decoder.hpp"
-#include "i_msg_sink.hpp"
+#include "i_decoder.hpp"
 #include "stdint.hpp"
 
 namespace zmq
@@ -32,30 +30,31 @@ namespace zmq
 
     //  Decoder for 0MQ v1 framing protocol. Converts data stream into messages.
 
-    class raw_decoder_t : public decoder_base_t <raw_decoder_t>
+    class raw_decoder_t : public i_decoder
     {
     public:
 
-        raw_decoder_t (size_t bufsize_,
-            int64_t maxmsgsize_, i_msg_sink *msg_sink_);
+        raw_decoder_t (size_t bufsize_);
         virtual ~raw_decoder_t ();
 
         //  i_decoder interface.
-        virtual void set_msg_sink (i_msg_sink *msg_sink_);
 
-        virtual bool stalled ();
+        virtual void get_buffer (unsigned char **data_, size_t *size_);
 
-        virtual bool message_ready_size (size_t msg_sz);
+        virtual int decode (const unsigned char *data_, size_t size_,
+                            size_t &processed);
+
+        virtual msg_t *msg () { return &in_progress; }
+
 
     private:
 
 
-        bool raw_message_ready ();
-
-        i_msg_sink *msg_sink;
         msg_t in_progress;
 
-        const int64_t maxmsgsize;
+        const int64_t bufsize;
+
+        unsigned char *buffer;
 
         raw_decoder_t (const raw_decoder_t&);
         void operator = (const raw_decoder_t&);
