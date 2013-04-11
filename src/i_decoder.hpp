@@ -25,7 +25,7 @@
 namespace zmq
 {
 
-    class i_msg_sink;
+    class msg_t;
 
     //  Interface to be implemented by message decoder.
 
@@ -34,15 +34,16 @@ namespace zmq
     public:
         virtual ~i_decoder () {}
 
-        virtual void set_msg_sink (i_msg_sink *msg_sink_) = 0;
-
         virtual void get_buffer (unsigned char **data_, size_t *size_) = 0;
 
-        virtual size_t process_buffer (unsigned char *data_, size_t size_) = 0;
+        //  Decodes data pointed to by data_.
+        //  When a message is decoded, 1 is returned.
+        //  When the decoder needs more data, 0 is returnd.
+        //  On error, -1 is returned and errno is set accordingly.
+        virtual int decode (const unsigned char *data_, size_t size_,
+                            size_t &processed) = 0;
 
-        virtual bool stalled () = 0;
-
-        virtual bool message_ready_size (size_t msg_sz) = 0;
+        virtual msg_t *msg () = 0;
     };
 
 }

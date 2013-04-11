@@ -50,7 +50,6 @@
 
 zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_, const std::string &endpoint_) :
     s (fd_),
-    io_enabled (false),
     inpos (NULL),
     insize (0),
     decoder (NULL),
@@ -64,13 +63,23 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_, cons
     endpoint (endpoint_),
     plugged (false),
     terminating (false),
+    io_error (false),
+    congested (false),
+    identity_received (false),
+    identity_sent (false),
+    rx_initialized (false),
+    tx_initialized (false),
+    subscription_required (false),
     socket (NULL)
 {
+    int rc = tx_msg.init ();
+    errno_assert (rc == 0);
+
     //  Put the socket into non-blocking mode.
     unblock_socket (s);
     //  Set the socket buffer limits for the underlying socket.
     if (options.sndbuf) {
-        int rc = setsockopt (s, SOL_SOCKET, SO_SNDBUF,
+        rc = setsockopt (s, SOL_SOCKET, SO_SNDBUF,
             (char*) &options.sndbuf, sizeof (int));
 #ifdef ZMQ_HAVE_WINDOWS
 		wsa_assert (rc != SOCKET_ERROR);
@@ -79,7 +88,7 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_, cons
 #endif
     }
     if (options.rcvbuf) {
-        int rc = setsockopt (s, SOL_SOCKET, SO_RCVBUF,
+        rc = setsockopt (s, SOL_SOCKET, SO_RCVBUF,
             (char*) &options.rcvbuf, sizeof (int));
 #ifdef ZMQ_HAVE_WINDOWS
 		wsa_assert (rc != SOCKET_ERROR);
@@ -112,6 +121,9 @@ zmq::stream_engine_t::~stream_engine_t ()
         s = retired_fd;
     }
 
+    int rc = tx_msg.close ();
+    errno_assert (rc == 0);
+
     if (encoder != NULL)
         delete encoder;
     if (decoder != NULL)
@@ -133,15 +145,14 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
     //  Connect to I/O threads poller object.
     io_object_t::plug (io_thread_);
     handle = add_fd (s);
-    io_enabled = true;
+    io_error = false;
 
     if (options.raw_sock) {
         // no handshaking for raw sock, instantiate raw encoder and decoders
-        encoder = new (std::nothrow) raw_encoder_t (out_batch_size, session);
+        encoder = new (std::nothrow) raw_encoder_t (out_batch_size);
         alloc_assert (encoder);
 
-        decoder = new (std::nothrow)
-            raw_decoder_t (in_batch_size, options.maxmsgsize, session);
+        decoder = new (std::nothrow) raw_decoder_t (in_batch_size);
         alloc_assert (decoder);
 
         // disable handshaking for raw socket
@@ -169,19 +180,12 @@ void zmq::stream_engine_t::unplug ()
     plugged = false;
 
     //  Cancel all fd subscriptions.
-    if (io_enabled) {
+    if (!io_error)
         rm_fd (handle);
-        io_enabled = false;
-    }
 
     //  Disconnect from I/O threads poller object.
     io_object_t::unplug ();
 
-    //  Disconnect from session object.
-    if (encoder)
-        encoder->set_msg_source (NULL);
-    if (decoder)
-        decoder->set_msg_sink (NULL);
     session = NULL;
 }
 
@@ -198,14 +202,21 @@ void zmq::stream_engine_t::terminate ()
 
 void zmq::stream_engine_t::in_event ()
 {
+    assert (!io_error);
+
     //  If still handshaking, receive and process the greeting message.
     if (unlikely (handshaking))
         if (!handshake ())
             return;
 
     zmq_assert (decoder);
-    bool disconnection = false;
-    size_t processed;
+
+    //  If there has been an I/O error, stop polling.
+    if (congested) {
+        rm_fd (handle);
+        io_error = true;
+        return;
+    }
 
     //  If there's no data to process in the buffer...
     if (!insize) {
@@ -215,58 +226,51 @@ void zmq::stream_engine_t::in_event ()
         //  the underlying TCP layer has fixed buffer size and thus the
         //  number of bytes read will be always limited.
         decoder->get_buffer (&inpos, &insize);
-        insize = read (inpos, insize);
+        const int bytes_read = read (inpos, insize);
 
         //  Check whether the peer has closed the connection.
-        if (insize == (size_t) -1) {
-            insize = 0;
-            disconnection = true;
+        if (bytes_read == -1) {
+            error ();
+            return;
         }
+
+        //  Adjust input size
+        insize = static_cast <size_t> (bytes_read);
     }
 
-    if (options.raw_sock) {
-        if (insize == 0 || !decoder->message_ready_size (insize))
-            processed = 0;
-        else
-            processed = decoder->process_buffer (inpos, insize);
-    }
-    else
-        //  Push the data to the decoder.
-        processed = decoder->process_buffer (inpos, insize);
+    int rc = 0;
+    size_t processed = 0;
 
-    if (unlikely (processed == (size_t) -1))
-        disconnection = true;
-    else {
-
-        //  Stop polling for input if we got stuck.
-        if (processed < insize)
-            reset_pollin (handle);
-
-        //  Adjust the buffer.
+    while (insize > 0) {
+        rc = decoder->decode (inpos, insize, processed);
+        zmq_assert (processed <= insize);
         inpos += processed;
         insize -= processed;
+        if (rc == 0 || rc == -1)
+            break;
+        rc = write_msg (decoder->msg ());
+        if (rc == -1)
+            break;
     }
 
-    //  Flush all messages the decoder may have produced.
-    session->flush ();
-
-    //  Input error has occurred. If the last decoded
-    //  message has already been accepted, we terminate
-    //  the engine immediately. Otherwise, we stop
-    //  waiting for input events and postpone the termination
-    //  until after the session has accepted the message.
-    if (disconnection) {
-        if (decoder->stalled ()) {
-            rm_fd (handle);
-            io_enabled = false;
-        }
-        else
+    //  Tear down the connection if we have failed to decode input data
+    //  or the session has rejected the message.
+    if (rc == -1) {
+        if (errno != EAGAIN) {
             error ();
+            return;
+        }
+        congested = true;
+        reset_pollin (handle);
     }
+
+    session->flush ();
 }
 
 void zmq::stream_engine_t::out_event ()
 {
+    zmq_assert (!io_error);
+
     //  If write buffer is empty, try to read new data from the encoder.
     if (!outsize) {
 
@@ -279,7 +283,19 @@ void zmq::stream_engine_t::out_event ()
         }
 
         outpos = NULL;
-        encoder->get_data (&outpos, &outsize);
+        outsize = encoder->encode (&outpos, 0);
+
+        while (outsize < out_batch_size) {
+            if (read_msg (&tx_msg) == -1)
+                break;
+            encoder->load_msg (&tx_msg);
+            unsigned char *bufptr = outpos + outsize;
+            size_t n = encoder->encode (&bufptr, out_batch_size - outsize);
+            zmq_assert (n > 0);
+            if (outpos == NULL)
+                outpos = bufptr;
+            outsize += n;
+        }
 
         //  If there is no data to send, stop polling for output.
         if (outsize == 0) {
@@ -321,6 +337,9 @@ void zmq::stream_engine_t::out_event ()
 
 void zmq::stream_engine_t::activate_out ()
 {
+    if (unlikely (io_error))
+        return;
+
     set_pollout (handle);
 
     //  Speculative write: The assumption is that at the moment new message
@@ -332,22 +351,45 @@ void zmq::stream_engine_t::activate_out ()
 
 void zmq::stream_engine_t::activate_in ()
 {
-    if (unlikely (!io_enabled)) {
-        //  There was an input error but the engine could not
-        //  be terminated (due to the stalled decoder).
-        //  Flush the pending message and terminate the engine now.
-        zmq_assert (decoder);
-        decoder->process_buffer (inpos, 0);
-        zmq_assert (!decoder->stalled ());
-        session->flush ();
-        error ();
+    zmq_assert (congested);
+    zmq_assert (session != NULL);
+    zmq_assert (decoder != NULL);
+
+    int rc = write_msg (decoder->msg ());
+    if (rc == -1) {
+        if (errno == EAGAIN)
+            session->flush ();
+        else
+            error ();
         return;
     }
 
-    set_pollin (handle);
+    while (insize > 0) {
+        size_t processed = 0;
+        rc = decoder->decode (inpos, insize, processed);
+        zmq_assert (processed <= insize);
+        inpos += processed;
+        insize -= processed;
+        if (rc == 0 || rc == -1)
+            break;
+        rc = write_msg (decoder->msg ());
+        if (rc == -1)
+            break;
+    }
 
-    //  Speculative read.
-    in_event ();
+    if (rc == -1 && errno == EAGAIN)
+        session->flush ();
+    else
+    if (rc == -1 || io_error)
+        error ();
+    else {
+        congested = false;
+        set_pollin (handle);
+        session->flush ();
+
+        //  Speculative read.
+        in_event ();
+    }
 }
 
 bool zmq::stream_engine_t::handshake ()
@@ -402,11 +444,9 @@ bool zmq::stream_engine_t::handshake ()
     if (greeting_recv [0] != 0xff || !(greeting_recv [9] & 0x01)) {
         encoder = new (std::nothrow) v1_encoder_t (out_batch_size);
         alloc_assert (encoder);
-        encoder->set_msg_source (session);
 
         decoder = new (std::nothrow) v1_decoder_t (in_batch_size, options.maxmsgsize);
         alloc_assert (decoder);
-        decoder->set_msg_sink (session);
 
         //  We have already sent the message header.
         //  Since there is no way to tell the encoder to
@@ -414,8 +454,7 @@ bool zmq::stream_engine_t::handshake ()
         //  header data away.
         const size_t header_size = options.identity_size + 1 >= 255 ? 10 : 2;
         unsigned char tmp [10], *bufferp = tmp;
-        size_t buffer_size = header_size;
-        encoder->get_data (&bufferp, &buffer_size);
+        size_t buffer_size = encoder->encode (&bufferp, header_size);
         zmq_assert (buffer_size == header_size);
 
         //  Make sure the decoder sees the data we have already received.
@@ -424,33 +463,28 @@ bool zmq::stream_engine_t::handshake ()
 
         //  To allow for interoperability with peers that do not forward
         //  their subscriptions, we inject a phony subscription
-        //  message into the incoming message stream. To put this
-        //  message right after the identity message, we temporarily
-        //  divert the message stream from session to ourselves.
+        //  message into the incomming message stream.
         if (options.type == ZMQ_PUB || options.type == ZMQ_XPUB)
-            decoder->set_msg_sink (this);
+            subscription_required = true;
     }
     else
     if (greeting_recv [revision_pos] == ZMTP_1_0) {
         encoder = new (std::nothrow) v1_encoder_t (
             out_batch_size);
         alloc_assert (encoder);
-        encoder->set_msg_source (session);
 
         decoder = new (std::nothrow) v1_decoder_t (
             in_batch_size, options.maxmsgsize);
         alloc_assert (decoder);
-        decoder->set_msg_sink (session);
     }
     else
     if (greeting_recv [revision_pos] == ZMTP_2_0
     ||  greeting_recv [revision_pos] == ZMTP_2_1) {
-        encoder = new (std::nothrow) v2_encoder_t (
-            out_batch_size, session);
+        encoder = new (std::nothrow) v2_encoder_t (out_batch_size);
         alloc_assert (encoder);
 
         decoder = new (std::nothrow) v2_decoder_t (
-            in_batch_size, options.maxmsgsize, session);
+            in_batch_size, options.maxmsgsize);
         alloc_assert (decoder);
     }
 
@@ -465,35 +499,67 @@ bool zmq::stream_engine_t::handshake ()
     return true;
 }
 
-int zmq::stream_engine_t::push_msg (msg_t *msg_)
+int zmq::stream_engine_t::read_msg (msg_t *msg_)
 {
-    zmq_assert (options.type == ZMQ_PUB || options.type == ZMQ_XPUB);
+    if (likely (tx_initialized || options.raw_sock))
+        return session->pull_msg (msg_);
 
-    //  The first message is identity.
-    //  Let the session process it.
-    int rc = session->push_msg (msg_);
-    errno_assert (rc == 0);
+    if (!identity_sent) {
+        int rc = msg_->init_size (options.identity_size);
+        errno_assert (rc == 0);
+        memcpy (msg_->data (), options.identity, options.identity_size);
+        identity_sent = true;
+        tx_initialized = true;
+        return 0;
+    }
 
-    //  Inject the subscription message so that the ZMQ 2.x peer
-    //  receives our messages.
-    rc = msg_->init_size (1);
-    errno_assert (rc == 0);
-    *(unsigned char*) msg_->data () = 1;
-    rc = session->push_msg (msg_);
-    session->flush ();
+    tx_initialized = true;
+    return 0;
+}
 
-    //  Once we have injected the subscription message, we can
-    //  Divert the message flow back to the session.
-    zmq_assert (decoder);
-    decoder->set_msg_sink (session);
+int zmq::stream_engine_t::write_msg (msg_t *msg_)
+{
+    if (likely (rx_initialized || options.raw_sock))
+        return session->push_msg (msg_);
 
-    return rc;
+    if (!identity_received) {
+        if (options.recv_identity) {
+            msg_->set_flags (msg_t::identity);
+            int rc = session->push_msg (msg_);
+            if (rc == -1)
+                return -1;
+        }
+        else {
+            int rc = msg_->close ();
+            errno_assert (rc == 0);
+            rc = msg_->init ();
+            errno_assert (rc == 0);
+        }
+
+        identity_received = true;
+    }
+
+    //  Inject the subscription message, so that also
+    //  ZMQ 2.x peers receive published messages.
+    if (subscription_required) {
+        int rc = msg_->init_size (1);
+        errno_assert (rc == 0);
+        *(unsigned char*) msg_->data () = 1;
+        rc = session->push_msg (msg_);
+        if (rc == -1)
+            return -1;
+        subscription_required = false;
+    }
+
+    rx_initialized = true;
+    return 0;
 }
 
 void zmq::stream_engine_t::error ()
 {
     zmq_assert (session);
     socket->event_disconnected (endpoint, s);
+    session->flush ();
     session->detach ();
     unplug ();
     delete this;

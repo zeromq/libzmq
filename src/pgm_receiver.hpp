@@ -69,6 +69,10 @@ namespace zmq
         //  Unplug the engine from the session.
         void unplug ();
 
+        //  Decode received data (inpos, insize) and forward decoded
+        //  messages to the session.
+        int process_input (v1_decoder_t *decoder);
+
         //  PGM is not able to move subscriptions upstream. Thus, drop all
         //  the pending subscriptions.
         void drop_subscriptions ();
@@ -112,14 +116,13 @@ namespace zmq
         //  Associated session.
         zmq::session_base_t *session;
 
-        //  Most recently used decoder.
-        v1_decoder_t *mru_decoder;
+        const pgm_tsi_t *active_tsi;
 
         //  Number of bytes not consumed by the decoder due to pipe overflow.
-        size_t pending_bytes;
+        size_t insize;
 
         //  Pointer to data still waiting to be processed by the decoder.
-        unsigned char *pending_ptr;
+        const unsigned char *inpos;
 
         //  Poll handle associated with PGM socket.
         handle_t socket_handle;

@@ -34,6 +34,7 @@
 #include "options.hpp"
 #include "pgm_socket.hpp"
 #include "v1_encoder.hpp"
+#include "msg.hpp"
 
 namespace zmq
 {
@@ -75,8 +76,15 @@ namespace zmq
         bool has_tx_timer;
         bool has_rx_timer;
 
+        session_base_t *session;
+
         //  Message encoder.
         v1_encoder_t encoder;
+
+        msg_t msg;
+
+        //  Keeps track of message boundaries.
+        bool more_flag;
 
         //  PGM socket.
         pgm_socket_t pgm_socket;
