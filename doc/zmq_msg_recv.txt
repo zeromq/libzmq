@@ -120,6 +120,5 @@ linkzmq:zmq[7]
 
 AUTHORS
 -------
-This man page was written by Martin Sustrik <sustrik@250bpm.com>, Martin
-Lucina <martin@lucina.net>, and Pieter Hintjens <ph@imatix.com>.
-
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.
