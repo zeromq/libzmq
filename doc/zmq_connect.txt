@@ -41,11 +41,13 @@ matter. The first exception is when using the inproc:// transport: you must
 call _zmq_bind()_ before calling _zmq_connect()_. The second exception are
 _ZMQ_PAIR_ sockets, which do not automatically reconnect to endpoints.
 
-NOTE: following a _zmq_connect()_, the socket enters its normal 'ready' state.
-By contrast, following a _zmq_bind()_ alone, the socket enters a 'mute' state
-in which the socket blocks or drops messages according to the socket type, as
-defined in linkzmq:zmq_socket[3].
-
+NOTE: following a _zmq_connect()_, for socket types except for ZMQ_ROUTER,
+the socket enters its normal 'ready' state. By contrast, following a
+_zmq_bind()_ alone, the socket enters a 'mute' state in which the socket
+blocks or drops messages according to the socket type, as defined in
+linkzmq:zmq_socket[3]. A ZMQ_ROUTER socket enters its normal 'ready' state
+for a specific peer only when handshaking is complete for that peer, which
+may take an arbitrary time.
 
 RETURN VALUE
 ------------
