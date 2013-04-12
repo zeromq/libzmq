@@ -91,9 +91,13 @@ namespace zmq
         //  peer -1 is returned.
         int read (void *data_, size_t size_);
 
-        int read_msg (msg_t *msg_);
+        int read_identity (msg_t *msg_);
+        int write_identity (msg_t *msg_);
 
-        int write_msg (msg_t *msg_);
+        int pull_msg_from_session (msg_t *msg_);
+        int push_msg_to_session (msg_t *msg);
+
+        int write_subscription_msg (msg_t *msg_);
 
         //  Underlying socket.
         fd_t s;
@@ -137,23 +141,15 @@ namespace zmq
         bool plugged;
         bool terminating;
 
+        int (stream_engine_t::*read_msg) (msg_t *msg_);
+
+        int (stream_engine_t::*write_msg) (msg_t *msg_);
+
         bool io_error;
 
         //  True iff the session could not accept more
         //  messages due to flow control.
         bool congested;
-
-        //  True iff the engine has received identity message.
-        bool identity_received;
-
-        //  True iff the engine has sent identity message.
-        bool identity_sent;
-
-        //  True iff the engine has received all ZMTP control messages.
-        bool rx_initialized;
-
-        //  True iff the engine has sent all ZMTP control messages.
-        bool tx_initialized;
 
         //  Indicates whether the engine is to inject a phony
         //  subscription message into the incomming stream.
