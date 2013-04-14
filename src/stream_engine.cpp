@@ -478,9 +478,7 @@ bool zmq::stream_engine_t::handshake ()
             in_batch_size, options.maxmsgsize);
         alloc_assert (decoder);
     }
-    else
-    if (greeting_recv [revision_pos] == ZMTP_2_0
-    ||  greeting_recv [revision_pos] == ZMTP_2_1) {
+    else {
         encoder = new (std::nothrow) v2_encoder_t (out_batch_size);
         alloc_assert (encoder);
 
