@@ -82,8 +82,8 @@ namespace zmq
         //  List of pending (un)subscriptions, ie. those that were already
         //  applied to the trie, but not yet received by the user.
         typedef std::basic_string <unsigned char> blob_t;
-        typedef std::deque <blob_t> pending_t;
-        pending_t pending;
+        std::deque <blob_t> pending_data;
+        std::deque <unsigned char> pending_flags;
 
         xpub_t (const xpub_t&);
         const xpub_t &operator = (const xpub_t&);
