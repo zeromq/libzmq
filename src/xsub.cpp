@@ -83,7 +83,7 @@ void zmq::xsub_t::xhiccuped (pipe_t *pipe_)
 int zmq::xsub_t::xsend (msg_t *msg_)
 {
     size_t size = msg_->size ();
-    unsigned char *data = (unsigned char*) msg_->data ();
+    unsigned char *data = (unsigned char *) msg_->data ();
 
     if (size > 0 && *data == 1) {
         //  Process subscribe message
