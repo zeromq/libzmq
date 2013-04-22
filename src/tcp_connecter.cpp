@@ -291,7 +291,7 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
             errno == EHOSTUNREACH ||
             errno == ENETUNREACH ||
             errno == ENETDOWN ||
-            errno == EINVAL)
+            errno == EINVAL);
         return retired_fd;
     }
 #endif
