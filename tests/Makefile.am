@@ -20,7 +20,8 @@ noinst_PROGRAMS = test_pair_inproc \
                   test_router_mandatory \
                   test_raw_sock \
                   test_disconnect_inproc \
-                  test_ctx_options
+                  test_ctx_options \
+				  test_iov
 
 if !ON_MINGW
 noinst_PROGRAMS += test_shutdown_stress \
