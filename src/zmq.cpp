@@ -478,10 +478,6 @@ int zmq_recv (void *s_, void *buf_, size_t len_, int flags_)
 // The iov_base* buffers of each iovec *a_ filled in by this 
 // function may be freed using free().
 //
-// Implementation note: We assume zmq::msg_t buffer allocated
-// by zmq::recvmsg can be freed by free().
-// We assume it is safe to steal these buffers by simply
-// not closing the zmq::msg_t.
 //
 int zmq_recviov (void *s_, iovec *a_, size_t *count_, int flags_)
 {
@@ -498,8 +494,7 @@ int zmq_recviov (void *s_, iovec *a_, size_t *count_, int flags_)
     *count_ = 0;
 
     for (size_t i = 0; recvmore && i < count; ++i) {
-        // Cheat! We never close any msg
-        // because we want to steal the buffer.
+       
         zmq_msg_t msg;
         int rc = zmq_msg_init (&msg);
         errno_assert (rc == 0);
@@ -513,15 +508,21 @@ int zmq_recviov (void *s_, iovec *a_, size_t *count_, int flags_)
             nread = -1;
             break;
         }
-        ++*count_;
-        ++nread;
 
-        // Cheat: acquire zmq_msg buffer.
-        a_[i].iov_base = static_cast<char *> (zmq_msg_data (&msg));
         a_[i].iov_len = zmq_msg_size (&msg);
-
+        a_[i].iov_base = malloc(a_[i].iov_len);
+        if (!a_[i].iov_base) {
+            errno = ENOMEM;
+            return -1;
+        }
+        memcpy(a_[i].iov_base,static_cast<char *> (zmq_msg_data (&msg)),
+               a_[i].iov_len);
         // Assume zmq_socket ZMQ_RVCMORE is properly set.
         recvmore = ((zmq::msg_t*) (void *) &msg)->flags () & zmq::msg_t::more;
+        rc = zmq_msg_close(&msg);
+        errno_assert (rc == 0);
+        ++*count_;
+        ++nread;
     }
     return nread;
 }
