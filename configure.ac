@@ -62,9 +62,10 @@ LIBZMQ_CHECK_ENABLE_DEBUG
 # Check wheter to enable code coverage
 LIBZMQ_WITH_GCOV
 
-# Checks for libraries.
+# Checks for libraries
 AC_CHECK_LIB([pthread], [pthread_create])
 AC_CHECK_LIB([rt], [clock_gettime])
+AC_CHECK_LIB([sodium], [sodium_version_major])
 
 # Set pedantic
 libzmq_pedantic="yes"
