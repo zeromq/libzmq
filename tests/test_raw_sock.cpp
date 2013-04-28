@@ -28,9 +28,10 @@
 typedef unsigned char byte;
 typedef struct {
     byte signature [10];    //  0xFF 8*0x00 0x7F
-    byte revision;          //  2 = ZMTP/2.1
-    byte socktype;          //  Defined in ZMTP spec
-    byte identity [2];      //  Empty message
+    byte version [2];       //  0x03 0x00 for ZMTP/3.0
+    byte mechanism [20];    //  "NULL"
+    byte as_server;
+    byte filler [31];
 } zmtp_greeting_t;
 
 #define ZMTP_DEALER  5      //  Socket type constants
@@ -40,7 +41,7 @@ typedef struct {
 //  8-byte size is set to 1 for backwards compatibility
 
 static zmtp_greeting_t greeting
-    = { { 0xFF, 0, 0, 0, 0, 0, 0, 0, 1, 0x7F }, 2, 0, { 0, 0 } };
+    = { { 0xFF, 0, 0, 0, 0, 0, 0, 0, 1, 0x7F }, {3, 0}, { 'N', 'U', 'L', 'L'} };
 
 int main (void)
 {
@@ -91,7 +92,6 @@ int main (void)
     //  Send our own protocol greeting
     rc = zmq_msg_send (&identity, router, ZMQ_SNDMORE);
     assert (rc > 0);
-    greeting.socktype = ZMTP_ROUTER;
     rc = zmq_send (router, &greeting, sizeof (greeting), 0);
     assert (rc == sizeof (greeting));
 
@@ -101,22 +101,47 @@ int main (void)
     assert (rc > 0);
     assert (zmq_msg_more (&identity));
 
-    //  Second frame contains all remaining data from DEALER
+    //  Second frame contains the rest of greeting along with
+    //  the Ready command
     rc = zmq_recv (router, buffer, 255, 0);
-    assert (rc == 11);
+    assert (rc == 99);
 
-    //  First four bytes are [revision][socktype][identity]
-    assert (buffer [0] == 2);       //  ZMTP/2.1
-    assert (buffer [1] == ZMTP_DEALER);
+    //  First two bytes are major and minor version numbers.
+    assert (buffer [0] == 3);       //  ZMTP/3.0
+    assert (buffer [1] == 0);
 
-    //  Identity is 2 byte message
-    assert (buffer [2] == 0);       //  Flags = 0
-    assert (buffer [3] == 0);       //  Size = 0
+    //  Mechanism is "NULL"
+    assert (memcmp (buffer + 2, "NULL\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 22) == 0);
+    assert (memcmp (buffer + 54, "\0\53READY   ", 10) == 0);
+    assert (memcmp (buffer + 64, "\13Socket-Type\0\0\0\6DEALER", 22) == 0);
+    assert (memcmp (buffer + 86, "\10Identity\0\0\0\0", 13) == 0);
+
+    //  Announce we are ready
+    memcpy (buffer, "\0\53", 2);
+    memcpy (buffer + 2, "READY   ", 8);
+    memcpy (buffer + 10, "\13Socket-Type\0\0\0\6ROUTER", 22);
+    memcpy (buffer + 32, "\10Identity\0\0\0\0", 13);
+
+    //  Send Ready command
+    rc = zmq_msg_send (&identity, router, ZMQ_SNDMORE);
+    assert (rc > 0);
+    rc = zmq_send (router, buffer, 45, 0);
+    assert (rc == 45);
+
+    //  Now we expect the data from the DEALER socket
+    //  First frame is, again, the identity of the connection
+    rc = zmq_msg_recv (&identity, router, 0);
+    assert (rc > 0);
+    assert (zmq_msg_more (&identity));
+
+    //  Third frame contains Hello message from DEALER
+    rc = zmq_recv (router, buffer, sizeof buffer, 0);
+    assert (rc == 7);
 
     //  Then we have a 5-byte message "Hello"
-    assert (buffer [4] == 0);       //  Flags = 0
-    assert (buffer [5] == 5);       //  Size = 5
-    assert (memcmp (buffer + 6, "Hello", 5) == 0);
+    assert (buffer [0] == 0);       //  Flags = 0
+    assert (buffer [1] == 5);       //  Size = 5
+    assert (memcmp (buffer + 2, "Hello", 5) == 0);
 
     //  Send "World" back to DEALER
     rc = zmq_msg_send (&identity, router, ZMQ_SNDMORE);

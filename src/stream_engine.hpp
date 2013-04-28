@@ -37,8 +37,7 @@ namespace zmq
     enum
     {
         ZMTP_1_0 = 0,
-        ZMTP_2_0 = 1,
-        ZMTP_2_1 = 2
+        ZMTP_2_0 = 1
     };
 
     class io_thread_t;
@@ -94,10 +93,20 @@ namespace zmq
         int read_identity (msg_t *msg_);
         int write_identity (msg_t *msg_);
 
+        int send_ready_command (msg_t *msg);
+        int receive_ready_command (msg_t *msg);
+
         int pull_msg_from_session (msg_t *msg_);
         int push_msg_to_session (msg_t *msg);
 
+        int wait (msg_t *msg_);
+
         int write_subscription_msg (msg_t *msg_);
+
+        size_t add_property (unsigned char *ptr,
+            const char *name, const void *value, size_t value_len);
+
+        const char *socket_type_string (int socket_type);
 
         //  Underlying socket.
         fd_t s;
@@ -119,13 +128,20 @@ namespace zmq
         //  version.  When false, normal message flow has started.
         bool handshaking;
 
-        //  Size of the greeting message:
-        //  Preamble (10 bytes) + version (1 byte) + socket type (1 byte).
-        static const size_t greeting_size = 12;
+        static const size_t signature_size = 10;
+
+        //  Size of ZMTP/1.0 and ZMTP/2.0 greeting message
+        static const size_t v2_greeting_size = 12;
+
+        //  Size of ZMTP/3.0 greeting message
+        static const size_t v3_greeting_size = 64;
+
+        //  Expected greeting size.
+        size_t greeting_size;
 
         //  Greeting received from, and sent to peer
-        unsigned char greeting_recv [greeting_size];
-        unsigned char greeting_send [greeting_size];
+        unsigned char greeting_recv [v3_greeting_size];
+        unsigned char greeting_send [v3_greeting_size];
 
         //  Size of greeting received so far
         unsigned int greeting_bytes_read;
@@ -155,6 +171,9 @@ namespace zmq
         //  subscription message into the incomming stream.
         //  Needed to support old peers.
         bool subscription_required;
+
+        bool output_paused;
+        bool ready_command_received;
 
         // Socket
         zmq::socket_base_t *socket;
