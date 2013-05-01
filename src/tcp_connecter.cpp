@@ -253,7 +253,7 @@ int zmq::tcp_connecter_t::open ()
 
 zmq::fd_t zmq::tcp_connecter_t::connect ()
 {
-    //  Async connect have finished. Check whether an error occured.
+    //  Async connect has finished. Check whether an error occurred
     int err = 0;
 #if defined ZMQ_HAVE_HPUX
     int len = sizeof (err);
@@ -268,9 +268,13 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
 #ifdef ZMQ_HAVE_WINDOWS
     zmq_assert (rc == 0);
     if (err != 0) {
-        if (err == WSAECONNREFUSED || err == WSAETIMEDOUT ||
-              err == WSAECONNABORTED || err == WSAEHOSTUNREACH ||
-              err == WSAENETUNREACH || err == WSAENETDOWN)
+        if (err == WSAECONNREFUSED ||
+            err == WSAETIMEDOUT ||
+            err == WSAECONNABORTED ||
+            err == WSAEHOSTUNREACH ||
+            err == WSAENETUNREACH ||
+            err == WSAENETDOWN ||
+            err == WSAEINVAL)
             return retired_fd;
         wsa_assert_no (err);
     }
@@ -282,9 +286,14 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
         err = errno;
     if (err != 0) {
         errno = err;
-        errno_assert (errno == ECONNREFUSED || errno == ECONNRESET ||
-            errno == ETIMEDOUT || errno == EHOSTUNREACH ||
-            errno == ENETUNREACH || errno == ENETDOWN);
+        errno_assert (
+            errno == ECONNREFUSED ||
+            errno == ECONNRESET ||
+            errno == ETIMEDOUT ||
+            errno == EHOSTUNREACH ||
+            errno == ENETUNREACH ||
+            errno == ENETDOWN ||
+            errno == EINVAL);
         return retired_fd;
     }
 #endif
