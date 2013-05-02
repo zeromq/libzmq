@@ -1,3 +1,19 @@
+0MQ version 3.2.3 stable, released on 2013/05/02
+================================================
+
+Issues addressed in this release
+--------------------------------
+
+* LIBZMQ-526 Assertion failure "Invalid argument (tcp_connecter.cpp:285)"
+* LIBZMQ-446 Setting the DSCP bits by default causes CAP_NET_ADMIN error
+* LIBZMQ-496 Crash on heavy socket opening/closing: Device or resource busy (mutex.hpp:90)
+* LIBZMQ-462 test_connect_delay fails at test_connect_delay.cpp:80
+* LIBZMQ-497 Messages getting dropped
+* LIBZMQ-488 signaler.cpp leaks the win32 Event Handle
+* LIBZMQ-476 zmq_disconnect has no effect for inproc sockets
+* LIBZMQ-475 zmq_disconnect does not sent unsubscribe messages
+
+
 0MQ version 3.2.2 stable, released on 2012/11/23
 ================================================
 
@@ -20,6 +36,7 @@ Issues addressed in this release
 * LIBZMQ-465 PUB/SUB results in 80-90% of CPU load
 * LIBZMQ-468 ZMQ_XPUB_VERBOSE & unsubscribe
 * LIBZMQ-472 Segfault in zmq_poll in REQ to ROUTER dialog
+
 
 0MQ version 3.2.1 (RC2), released on 2012/10/15
 ===============================================
