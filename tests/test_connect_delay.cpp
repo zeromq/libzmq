@@ -61,12 +61,12 @@ int main (void)
     assert(from);
 
     val = 0;
-    zmq_setsockopt (from, ZMQ_LINGER, &val, sizeof(val));
+    zmq_setsockopt (from, ZMQ_LINGER, &val, sizeof (val));
     // This pipe will not connect
     rc = zmq_connect (from, "tcp://localhost:5556");
     assert (rc == 0);
     // This pipe will 
-    rc = zmq_connect (from, "tcp://localhost:5555");
+    rc = zmq_connect (from, "tcp://localhost:6555");
     assert (rc == 0);
 
     // We send 10 messages, 5 should just get stuck in the queue
@@ -112,7 +112,6 @@ int main (void)
     // cause the pipe attachment to be delayed until the connection
     // succeeds. 
     context = zmq_ctx_new();
-    fprintf (stderr, " Rerunning with DELAY_ATTACH_ON_CONNECT\n");
 
     // Bind the valid socket
     to = zmq_socket (context, ZMQ_PULL);
@@ -182,7 +181,6 @@ int main (void)
     // block. Then we reconnect and verify messages flow again.
     context = zmq_ctx_new();
     void *context2 = zmq_ctx_new();
-    fprintf (stderr, " Running DELAY_ATTACH_ON_CONNECT with disconnect\n");
 
     to = zmq_socket (context2, ZMQ_PULL);
     assert (to);
@@ -258,3 +256,4 @@ int main (void)
     rc = zmq_ctx_destroy(context2);
     assert (rc == 0);
 }
+
