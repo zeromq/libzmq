@@ -1,3 +1,9 @@
+0MQ version 3.2.4 stable, released on 2013/xx/xx
+================================================
+
+* LIBZMQ-456 ZMQ_XPUB_VERBOSE does not propagate in a tree of XPUB/XSUB devices
+
+
 0MQ version 3.2.3 stable, released on 2013/05/02
 ================================================
 
@@ -29,7 +35,6 @@ Issues addressed in this release
 * LIBZMQ-450 lt-test_monitor: fails with assertion at test_monitor.cpp:81
 * LIBZMQ-451 ZMQ_ROUTER_MANDATORY blocks forever
 * LIBZMQ-452 test_connect_delay.cpp:175:12: error: 'sleep' was not declared in this scope
-* LIBZMQ-456 ZMQ_XPUB_VERBOSE does not propagate in a tree of XPUB/XSUB devices
 * LIBZMQ-458 lt-test_router_mandatory fails with assertion at test_router_mandatory.cpp:53
 * LIBZMQ-459 Assertion failed: encoder (stream_engine.cpp:266
 * LIBZMQ-464 PUB socket with HWM set leaks memory
