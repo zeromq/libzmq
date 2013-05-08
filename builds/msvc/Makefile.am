@@ -1,6 +1,7 @@
 LIBZMQ_DIST = libzmq/libzmq.vcproj libzmq/libzmq.vcxproj \
               libzmq/libzmq.vcxproj.filters \
-              platform.hpp msvc.sln msvc10.sln
+              platform.hpp msvc.sln msvc10.sln \
+              errno.cpp errno.hpp
 
 PERF_DIST = c_local_thr/c_local_thr.vcproj \
             c_local_thr/c_local_thr.vcxproj \
