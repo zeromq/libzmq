@@ -39,9 +39,11 @@ libzmq_la_SOURCES = \
     lb.hpp \
     likely.hpp \
     mailbox.hpp \
+    mechanism.hpp  \
     msg.hpp \
     mtrie.hpp \
     mutex.hpp \
+    null_mechanism.hpp \
     object.hpp \
     options.hpp \
     own.hpp \
@@ -100,8 +102,10 @@ libzmq_la_SOURCES = \
     kqueue.cpp \
     lb.cpp \
     mailbox.cpp \
+    mechanism.cpp \
     msg.cpp \
     mtrie.cpp \
+    null_mechanism.cpp \
     object.cpp \
     options.cpp \
     own.cpp \

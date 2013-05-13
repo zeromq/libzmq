@@ -40,6 +40,7 @@
 #include "v1_decoder.hpp"
 #include "v2_encoder.hpp"
 #include "v2_decoder.hpp"
+#include "null_mechanism.hpp"
 #include "raw_decoder.hpp"
 #include "raw_encoder.hpp"
 #include "config.hpp"
@@ -69,8 +70,9 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_, cons
     io_error (false),
     congested (false),
     subscription_required (false),
+    mechanism (NULL),
+    input_paused (false),
     output_paused (false),
-    ready_command_received (false),
     socket (NULL)
 {
     int rc = tx_msg.init ();
@@ -519,8 +521,10 @@ bool zmq::stream_engine_t::handshake ()
         alloc_assert (decoder);
 
         if (memcmp (greeting_recv + 12, "NULL\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
-            read_msg = &stream_engine_t::send_ready_command;
-            write_msg = &stream_engine_t::receive_ready_command;
+            mechanism = new (std::nothrow) null_mechanism_t (options);
+            alloc_assert (mechanism);
+            read_msg = &stream_engine_t::next_handshake_message;
+            write_msg = &stream_engine_t::process_handshake_message;
         }
         else {
             error ();
@@ -571,133 +575,59 @@ int zmq::stream_engine_t::write_identity (msg_t *msg_)
     return 0;
 }
 
-int zmq::stream_engine_t::send_ready_command (msg_t *msg_)
+int zmq::stream_engine_t::next_handshake_message (msg_t *msg_)
 {
-    unsigned char * const command_buffer = (unsigned char *) malloc (512);
-    alloc_assert (command_buffer);
+    zmq_assert (mechanism != NULL);
 
-    unsigned char *ptr = command_buffer;
-
-    //  Add mechanism string
-    memcpy (ptr, "READY   ", 8);
-    ptr += 8;
-
-    //  Add socket type property
-    const char *socket_type = socket_type_string (options.type);
-    ptr += add_property (ptr, "Socket-Type", socket_type, strlen (socket_type));
-
-    //  Add identity property
-    if (options.type == ZMQ_REQ
-    ||  options.type == ZMQ_DEALER
-    ||  options.type == ZMQ_ROUTER) {
-        ptr += add_property (ptr, "Identity",
-            options.identity, options.identity_size);
+    const int rc = mechanism->next_handshake_message (msg_);
+    if (rc == 0) {
+        if (mechanism->is_handshake_complete ())
+            mechanism_ready ();
+        if (input_paused) {
+            activate_in ();
+            input_paused = false;
+        }
     }
-
-    const size_t command_size = ptr - command_buffer;
-    const int rc = msg_->init_size (command_size);
-    errno_assert (rc == 0);
-    memcpy (msg_->data (), command_buffer, command_size);
-    free (command_buffer);
-
-    if (ready_command_received)
-        read_msg = &stream_engine_t::pull_msg_from_session;
     else
-        read_msg = &stream_engine_t::wait;
-
-    return 0;
-}
-
-int zmq::stream_engine_t::receive_ready_command (msg_t *msg_)
-{
-    const unsigned char * const command_buffer =
-        static_cast <unsigned char *> (msg_->data ());
-    const size_t command_size = msg_->size ();
-
-    const unsigned char *ptr = command_buffer;
-    size_t bytes_left = command_size;
-
-    if (bytes_left < 8 || memcmp(ptr, "READY   ", 8)) {
-        errno = EPROTO;
-        return -1;
-    }
-
-    ptr += 8;
-    bytes_left -= 8;
-
-    //  Parse the property list
-    while (bytes_left > 1) {
-        const size_t name_length = static_cast <size_t> (*ptr);
-        ptr += 1;
-        bytes_left -= 1;
-
-        if (bytes_left < name_length)
-            break;
-        const std::string name = std::string((const char *) ptr, name_length);
-        ptr += name_length;
-        bytes_left -= name_length;
-
-        if (bytes_left < 4)
-            break;
-        const size_t value_length = static_cast <size_t> (get_uint32 (ptr));
-        ptr += 4;
-        bytes_left -= 4;
-
-        if (bytes_left < value_length)
-            break;
-        const unsigned char * const value = ptr;
-        ptr += value_length;
-        bytes_left -= value_length;
-
-        if (name == "Socket-Type") {
-            //  Implement socket type checking
-        }
-        else
-        if (name == "Identity") {
-            if (options.recv_identity) {
-                msg_t identity;
-                int rc = identity.init_size (value_length);
-                errno_assert (rc == 0);
-                memcpy (identity.data (), value, value_length);
-                identity.set_flags (msg_t::identity);
-                rc = session->push_msg (&identity);
-                errno_assert (rc == 0);
-            }
-        }
-    }
-
-    if (bytes_left > 0) {
-        errno = EPROTO;
-        return -1;
-    }
-
-    int rc = msg_->close ();
-    errno_assert (rc == 0);
-    rc = msg_->init ();
-    errno_assert (rc == 0);
-
-    write_msg = &stream_engine_t::push_msg_to_session;
-
-    ready_command_received = true;
-    if (output_paused) {
-        activate_out ();
-        output_paused = false;
-    }
-
-    return 0;
-}
-
-int zmq::stream_engine_t::wait (msg_t *msg_)
-{
-    if (ready_command_received) {
-        read_msg = &stream_engine_t::pull_msg_from_session;
-        return pull_msg_from_session (msg_);
-    }
-    else {
+    if (rc == -1) {
+        zmq_assert (errno == EAGAIN);
         output_paused = true;
-        errno = EAGAIN;
-        return -1;
     }
+
+    return rc;
+}
+
+int zmq::stream_engine_t::process_handshake_message (msg_t *msg_)
+{
+    zmq_assert (mechanism != NULL);
+
+    const int rc = mechanism->process_handshake_message (msg_);
+    if (rc == 0) {
+        if (mechanism->is_handshake_complete ())
+            mechanism_ready ();
+        if (output_paused) {
+            activate_out ();
+            output_paused = false;
+        }
+    }
+    else
+    if (rc == -1 && errno == EAGAIN)
+        input_paused = true;
+
+    return rc;
+}
+
+void zmq::stream_engine_t::mechanism_ready ()
+{
+    if (options.recv_identity) {
+        msg_t identity;
+        mechanism->peer_identity (&identity);
+        const int rc = session->push_msg (&identity);
+        errno_assert (rc == 0);
+    }
+
+    read_msg = &stream_engine_t::pull_msg_from_session;
+    write_msg = &stream_engine_t::push_msg_to_session;
 }
 
 int zmq::stream_engine_t::pull_msg_from_session (msg_t *msg_)
@@ -725,29 +655,6 @@ int zmq::stream_engine_t::write_subscription_msg (msg_t *msg_)
 
     write_msg = &stream_engine_t::push_msg_to_session;
     return push_msg_to_session (msg_);
-}
-
-size_t zmq::stream_engine_t::add_property (unsigned char *ptr,
-    const char *name, const void *value, size_t value_len)
-{
-    const size_t name_len = strlen (name);
-    zmq_assert (name_len <= 255);
-    *ptr++ = static_cast <unsigned char> (name_len);
-    memcpy (ptr, name, name_len);
-    ptr += name_len;
-    zmq_assert (value_len <= (2^31) - 1);
-    put_uint32 (ptr, static_cast <uint32_t> (value_len));
-    ptr += 4;
-    memcpy (ptr, value, value_len);
-
-    return 1 + name_len + 4 + value_len;
-}
-
-const char *zmq::stream_engine_t::socket_type_string (int socket_type) {
-    const char *names [] = {"PAIR", "PUB", "SUB", "REQ", "REP", "DEALER",
-                            "ROUTER", "PULL", "PUSH", "XPUB", "XSUB"};
-    zmq_assert (socket_type >= 0 && socket_type <= 10);
-    return names [socket_type];
 }
 
 void zmq::stream_engine_t::error ()
