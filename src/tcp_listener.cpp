@@ -91,7 +91,8 @@ void zmq::tcp_listener_t::in_event ()
     tune_tcp_keepalives (fd, options.tcp_keepalive, options.tcp_keepalive_cnt, options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
 
     //  Create the engine object for this connection.
-    stream_engine_t *engine = new (std::nothrow) stream_engine_t (fd, options, endpoint);
+    stream_engine_t *engine = new (std::nothrow)
+        stream_engine_t (fd, options, true, endpoint);
     alloc_assert (engine);
 
     //  Choose I/O thread to run connecter in. Given that we are already

@@ -43,6 +43,7 @@ namespace zmq
     class io_thread_t;
     class msg_t;
     class session_base_t;
+    class mechanism_t;
 
     //  This engine handles any socket with SOCK_STREAM semantics,
     //  e.g. TCP socket or an UNIX domain socket.
@@ -51,7 +52,8 @@ namespace zmq
     {
     public:
 
-        stream_engine_t (fd_t fd_, const options_t &options_, const std::string &endpoint);
+        stream_engine_t (fd_t fd_, const options_t &options_,
+            bool as_server_, const std::string &endpoint);
         ~stream_engine_t ();
 
         //  i_engine interface implementation.
@@ -93,13 +95,13 @@ namespace zmq
         int read_identity (msg_t *msg_);
         int write_identity (msg_t *msg_);
 
-        int send_ready_command (msg_t *msg);
-        int receive_ready_command (msg_t *msg);
+        int next_handshake_message (msg_t *msg);
+        int process_handshake_message (msg_t *msg);
 
         int pull_msg_from_session (msg_t *msg_);
         int push_msg_to_session (msg_t *msg);
 
-        int wait (msg_t *msg_);
+        void mechanism_ready ();
 
         int write_subscription_msg (msg_t *msg_);
 
@@ -110,6 +112,9 @@ namespace zmq
 
         //  Underlying socket.
         fd_t s;
+
+        //  True iff this is server's engine.
+        bool as_server;
 
         msg_t tx_msg;
 
@@ -172,8 +177,10 @@ namespace zmq
         //  Needed to support old peers.
         bool subscription_required;
 
+        mechanism_t *mechanism;
+
+        bool input_paused;
         bool output_paused;
-        bool ready_command_received;
 
         // Socket
         zmq::socket_base_t *socket;
