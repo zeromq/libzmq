@@ -52,7 +52,8 @@ namespace zmq
     {
     public:
 
-        stream_engine_t (fd_t fd_, const options_t &options_, const std::string &endpoint);
+        stream_engine_t (fd_t fd_, const options_t &options_,
+            bool as_server_, const std::string &endpoint);
         ~stream_engine_t ();
 
         //  i_engine interface implementation.
@@ -111,6 +112,9 @@ namespace zmq
 
         //  Underlying socket.
         fd_t s;
+
+        //  True iff this is server's engine.
+        bool as_server;
 
         msg_t tx_msg;
 

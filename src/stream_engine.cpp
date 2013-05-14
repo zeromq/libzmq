@@ -41,6 +41,7 @@
 #include "v2_encoder.hpp"
 #include "v2_decoder.hpp"
 #include "null_mechanism.hpp"
+#include "plain_mechanism.hpp"
 #include "raw_decoder.hpp"
 #include "raw_encoder.hpp"
 #include "config.hpp"
@@ -49,8 +50,10 @@
 #include "likely.hpp"
 #include "wire.hpp"
 
-zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_, const std::string &endpoint_) :
+zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
+    bool as_server_, const std::string &endpoint_) :
     s (fd_),
+    as_server (as_server_),
     inpos (NULL),
     insize (0),
     decoder (NULL),
@@ -523,13 +526,19 @@ bool zmq::stream_engine_t::handshake ()
         if (memcmp (greeting_recv + 12, "NULL\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
             mechanism = new (std::nothrow) null_mechanism_t (options);
             alloc_assert (mechanism);
-            read_msg = &stream_engine_t::next_handshake_message;
-            write_msg = &stream_engine_t::process_handshake_message;
+        }
+        else
+        if (memcmp (greeting_recv + 12, "PLAIN\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
+            mechanism = new (std::nothrow) plain_mechanism_t (options, as_server);
+            alloc_assert (mechanism);
         }
         else {
             error ();
             return false;
         }
+
+        read_msg = &stream_engine_t::next_handshake_message;
+        write_msg = &stream_engine_t::process_handshake_message;
     }
 
     // Start polling for output if necessary.

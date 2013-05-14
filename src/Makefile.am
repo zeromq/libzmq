@@ -51,6 +51,7 @@ libzmq_la_SOURCES = \
     pgm_sender.hpp \
     pgm_socket.hpp \
     pipe.hpp \
+    plain_mechanism.hpp \
     platform.hpp \
     poll.hpp \
     poller.hpp \
@@ -114,6 +115,7 @@ libzmq_la_SOURCES = \
     pgm_sender.cpp \
     pgm_socket.cpp \
     pipe.cpp \
+    plain_mechanism.cpp \
     poll.cpp \
     poller_base.cpp \
     pull.cpp \
