@@ -177,6 +177,23 @@ two sockets, opaquely. A proxy may optionally capture all traffic to a third
 socket. To start a proxy in an application thread, use linkzmq:zmq_proxy[3].
 
 
+Security
+~~~~~~~~
+A 0MQ socket can select a security mechanism. Both peers must use the same
+security mechanism.
+
+The following security mechanisms are provided for IPC and TCP connections:
+
+Null security::
+    linkzmq:zmq_null[7]
+
+Clear-text authentication using username and password::
+    linkzmq:zmq_clear[7]
+
+Secure authentication and encryption::
+    linkzmq:zmq_curve[7]
+
+
 ERROR HANDLING
 --------------
 The 0MQ library functions handle errors using the standard conventions found on

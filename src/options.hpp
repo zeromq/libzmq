@@ -123,10 +123,17 @@ namespace zmq
         typedef std::vector <tcp_address_mask_t> tcp_accept_filters_t;
         tcp_accept_filters_t tcp_accept_filters;
 
+        //  Security mechanism for all connections on this socket
+        int mechanism;
+        
+        //  Security credentials for PLAIN mechanism
+        std::string plain_username;
+        std::string plain_password;
+        int plain_server;
+
         //  ID of the socket.
         int socket_id;
     };
-
 }
 
 #endif

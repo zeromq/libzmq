@@ -431,7 +431,7 @@ a ZMQ DSN. Note that if the TCP host is INADDR_ANY, indicated by a *, then
 the returned address will be 0.0.0.0 (for IPv4).
 
 [horizontal]
-Option value type:: character string
+Option value type:: NULL-terminated character string
 Option value unit:: N/A
 Default value:: NULL
 Applicable socket types:: all, when binding TCP or IPC transports
@@ -451,8 +451,9 @@ Applicable socket types:: all, when using TCP transports.
 
 ZMQ_TCP_KEEPALIVE_IDLE: Override TCP_KEEPCNT(or TCP_KEEPALIVE on some OS)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Override 'TCP_KEEPCNT'(or 'TCP_KEEPALIVE' on some OS) socket option(where supported by OS).
-The default value of `-1` means to skip any overrides and leave it to OS default.
+Override 'TCP_KEEPCNT'(or 'TCP_KEEPALIVE' on some OS) socket option (where 
+supported by OS). The default value of `-1` means to skip any overrides and 
+leave it to OS default.
 
 [horizontal]
 Option value type:: int
@@ -483,6 +484,57 @@ Option value type:: int
 Option value unit:: -1,>0
 Default value:: -1 (leave to OS default)
 Applicable socket types:: all, when using TCP transports.
+
+
+ZMQ_MECHANISM: Retrieve the current security mechanism
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_MECHANISM' option shall retrieve the current security mechanism
+for the socket.
+
+[horizontal]
+Option value type:: int
+Option value unit:: ZMQ_NULL, ZMQ_PLAIN, or ZMQ_CURVE
+Default value:: ZMQ_NULL
+Applicable socket types:: all, when using TCP or IPC transports
+
+
+ZMQ_PLAIN_SERVER: Retrieve the PLAIN server role
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Returns the 'ZMQ_PLAIN_SERVER' option, if any, previously set on the socket.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1
+Default value:: int
+Applicable socket types:: all, when using TCP or IPC transports
+
+
+ZMQ_PLAIN_USERNAME: Retrieve the last username set
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_PLAIN_USERNAME' option shall retrieve the last username set for
+the PLAIN security mechanism. The returned value shall be a NULL-terminated 
+string and MAY be empty. The returned size SHALL include the terminating
+null byte.
+
+[horizontal]
+Option value type:: NULL-terminated character string
+Option value unit:: N/A
+Default value:: null string
+Applicable socket types:: all, when using TCP or IPC transports
+
+
+ZMQ_PLAIN_PASSWORD: Retrieve the last password set
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_PLAIN_PASSWORD' option shall retrieve the last password set for
+the PLAIN security mechanism. The returned value shall be a NULL-terminated 
+string and MAY be empty. The returned size SHALL include the terminating
+null byte.
+
+[horizontal]
+Option value type:: NULL-terminated character string
+Option value unit:: N/A
+Default value:: null string
+Applicable socket types:: all, when using TCP or IPC transports
 
 
 RETURN VALUE

@@ -253,6 +253,13 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 #define ZMQ_XPUB_VERBOSE 40
 #define ZMQ_ROUTER_RAW 41
 #define ZMQ_IPV6 42
+#define ZMQ_MECHANISM 43
+#define ZMQ_PLAIN_SERVER 44
+#define ZMQ_PLAIN_USERNAME 45
+#define ZMQ_PLAIN_PASSWORD 46
+#define ZMQ_CURVE_SERVER 47
+#define ZMQ_CURVE_PUBLICKEY 48
+#define ZMQ_CURVE_SERVERKEY 49
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1
@@ -260,6 +267,11 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 /*  Send/recv options.                                                        */
 #define ZMQ_DONTWAIT 1
 #define ZMQ_SNDMORE 2
+
+/*  Security mechanisms                                                       */
+#define ZMQ_NULL 0
+#define ZMQ_PLAIN 1
+#define ZMQ_CURVE 2
 
 /*  Deprecated aliases                                                        */
 #define ZMQ_DELAY_ATTACH_ON_CONNECT ZMQ_IMMEDIATE
