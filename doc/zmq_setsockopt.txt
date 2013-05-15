@@ -437,6 +437,7 @@ Applicable socket types:: ZMQ_XPUB
 
 ZMQ_TCP_KEEPALIVE: Override SO_KEEPALIVE socket option
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Override 'SO_KEEPALIVE' socket option(where supported by OS).
 The default value of `-1` means to skip any overrides and leave it to OS default.
 
@@ -449,8 +450,10 @@ Applicable socket types:: all, when using TCP transports.
 
 ZMQ_TCP_KEEPALIVE_IDLE: Override TCP_KEEPCNT(or TCP_KEEPALIVE on some OS)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Override 'TCP_KEEPCNT'(or 'TCP_KEEPALIVE' on some OS) socket option(where supported by OS).
-The default value of `-1` means to skip any overrides and leave it to OS default.
+
+Override 'TCP_KEEPCNT'(or 'TCP_KEEPALIVE' on some OS) socket option (where 
+supported by OS). The default value of `-1` means to skip any overrides and 
+leave it to OS default.
 
 [horizontal]
 Option value type:: int
@@ -461,8 +464,9 @@ Applicable socket types:: all, when using TCP transports.
 
 ZMQ_TCP_KEEPALIVE_CNT: Override TCP_KEEPCNT socket option
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Override 'TCP_KEEPCNT' socket option(where supported by OS).
-The default value of `-1` means to skip any overrides and leave it to OS default.
+
+Override 'TCP_KEEPCNT' socket option(where supported by OS). The default 
+value of `-1` means to skip any overrides and leave it to OS default.
 
 [horizontal]
 Option value type:: int
@@ -473,8 +477,9 @@ Applicable socket types:: all, when using TCP transports.
 
 ZMQ_TCP_KEEPALIVE_INTVL: Override TCP_KEEPINTVL socket option
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Override 'TCP_KEEPINTVL' socket option(where supported by OS).
-The default value of `-1` means to skip any overrides and leave it to OS default.
+
+Override 'TCP_KEEPINTVL' socket option(where supported by OS). The default 
+value of `-1` means to skip any overrides and leave it to OS default.
 
 [horizontal]
 Option value type:: int
@@ -485,11 +490,12 @@ Applicable socket types:: all, when using TCP transports.
 
 ZMQ_TCP_ACCEPT_FILTER: Assign filters to allow new TCP connections
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Assign arbitrary number of filters that will be applied for each new TCP transport
-connection on a listening socket.
-If no filters applied, then TCP transport allows connections from any ip.
-If at least one filter is applied then new connection source ip should be matched.
-To clear all filters call zmq_setsockopt(socket, ZMQ_TCP_ACCEPT_FILTER, NULL, 0).
+
+Assign an arbitrary number of filters that will be applied for each new TCP 
+transport connection on a listening socket. If no filters are applied, then 
+the TCP transport allows connections from any IP address. If at least one 
+filter is applied then new connection source ip should be matched. To clear 
+all filters call zmq_setsockopt(socket, ZMQ_TCP_ACCEPT_FILTER, NULL, 0). 
 Filter is a null-terminated string with ipv6 or ipv4 CIDR.
 
 [horizontal]
@@ -497,6 +503,52 @@ Option value type:: binary data
 Option value unit:: N/A
 Default value:: no filters (allow from all)
 Applicable socket types:: all listening sockets, when using TCP transports.
+
+
+ZMQ_PLAIN_SERVER: Set PLAIN server role
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Defines whether the socket will act as server for PLAIN security, see
+linkzmq:zmq_plain[3]. A value of '1' means the socket will act as
+PLAIN server. A value of '0' means the socket will not act as PLAIN
+server, and its security role then depends on other option settings.
+Setting this to '0' shall reset the socket security to NULL.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1
+Default value:: 0
+Applicable socket types:: all, when using TCP or IPC transports
+
+
+ZMQ_PLAIN_USERNAME: Set PLAIN security username
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sets the username for outgoing connections over TCP or IPC. If you set this
+to a non-null value, the security mechanism used for connections shall be 
+PLAIN, see linkzmq:zmq_plain[3]. If you set this to a null value, the security 
+mechanism used for connections shall be NULL, see linkzmq:zmq_null[3].
+
+[horizontal]
+Option value type:: character string
+Option value unit:: N/A
+Default value:: not set
+Applicable socket types:: all, when using TCP or IPC transports
+
+
+ZMQ_PLAIN_PASSWORD: Set PLAIN security password
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sets the password for outgoing connections over TCP or IPC. If you set this
+to a non-null value, the security mechanism used for connections shall be 
+PLAIN, see linkzmq:zmq_plain[7]. If you set this to a null value, the security 
+mechanism used for connections shall be NULL, see linkzmq:zmq_null[3].
+
+[horizontal]
+Option value type:: character string
+Option value unit:: N/A
+Default value:: not set
+Applicable socket types:: all, when using TCP or IPC transports
 
 
 RETURN VALUE
@@ -550,6 +602,8 @@ SEE ALSO
 --------
 linkzmq:zmq_getsockopt[3]
 linkzmq:zmq_socket[3]
+linkzmq:zmq_plain[7]
+linkzmq:zmq_curve[7]
 linkzmq:zmq[7]
 
 

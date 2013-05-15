@@ -1,0 +1,40 @@
+zmq_curve(7)
+============
+
+
+NAME
+----
+zmq_curve - clear-text authentication
+
+
+SYNOPSIS
+--------
+The CURVE mechanism defines a mechanism for secure authentication and 
+confidentiality for communications between a client and a server. CURVE 
+is intended for use on public networks. The CURVE mechanism is defined 
+by this document: <http://rfc.zeromq.org/spec:25>.
+
+
+SERVER AND CLIENT ROLES
+-----------------------
+To use CURVE, the server shall set the ZMQ_CURVE_SERVER option, and the 
+client shall set the ZMQ_CURVE_PUBLICKEY and ZMQ_CURVE_SERVERKEY socket 
+options. Which peer binds, and which connects, is not relevant.
+
+NOTE: this isn't implemented and not fully defined. The server keypair
+needs to be persistent, and it would be sensible to define a format for
+this in CurveZMQ
+
+
+SEE ALSO
+--------
+linkzmq:zmq_setsockopt[3]
+linkzmq:zmq_null[7]
+linkzmq:zmq_plain[7]
+linkzmq:zmq[7]
+
+
+AUTHORS
+-------
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.
