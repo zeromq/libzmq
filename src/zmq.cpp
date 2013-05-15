@@ -376,7 +376,9 @@ int zmq_send (void *s_, const void *buf_, size_t len_, int flags_)
     return rc;
 }
 
+
 // Send multiple messages.
+// TODO: this function has no man page
 //
 // If flag bit ZMQ_SNDMORE is set the vector is treated as
 // a single multi-part message, i.e. the last message has
@@ -477,7 +479,7 @@ int zmq_recv (void *s_, void *buf_, size_t len_, int flags_)
 //
 // The iov_base* buffers of each iovec *a_ filled in by this 
 // function may be freed using free().
-//
+// TODO: this function has no man page
 //
 int zmq_recviov (void *s_, iovec *a_, size_t *count_, int flags_)
 {

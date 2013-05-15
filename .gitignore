@@ -47,6 +47,7 @@ tests/test_raw_sock
 tests/test_disconnect_inproc
 tests/test_ctx_options
 tests/test_iov
+tests/test_security
 src/platform.hpp*
 src/stamp-h1
 perf/local_lat
