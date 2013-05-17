@@ -455,7 +455,10 @@ bool zmq::stream_engine_t::handshake ()
                 else {
                     outpos [outsize++] = 0; //  Minor version number
                     memset (outpos + outsize, 0, 20);
-                    memcpy (outpos + outsize, "NULL", 4);
+                    if (options.mechanism == ZMQ_NULL)
+                        memcpy (outpos + outsize, "NULL", 4);
+                    else
+                        memcpy (outpos + outsize, "PLAIN", 5);
                     outsize += 20;
                     memset (outpos + outsize, 0, 32);
                     outsize += 32;
@@ -529,7 +532,8 @@ bool zmq::stream_engine_t::handshake ()
         }
         else
         if (memcmp (greeting_recv + 12, "PLAIN\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
-            mechanism = new (std::nothrow) plain_mechanism_t (options, as_server);
+            mechanism = new (std::nothrow)
+                plain_mechanism_t (options, options.plain_server);
             alloc_assert (mechanism);
         }
         else {
