@@ -17,11 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zmq.h"
-#include <string.h>
-#include <stdbool.h>
-#undef NDEBUG
-#include <assert.h>
+#include "testutil.hpp"
 
 int main (void)
 {
@@ -40,18 +36,43 @@ int main (void)
     int rc;
     size_t optsize;
     int mechanism;
+    int as_server;
     
     optsize = sizeof (int);
     rc = zmq_getsockopt (client, ZMQ_MECHANISM, &mechanism, &optsize);
     assert (rc == 0);
     assert (mechanism == ZMQ_NULL);
     
-    optsize = sizeof (int);
     rc = zmq_getsockopt (server, ZMQ_MECHANISM, &mechanism, &optsize);
     assert (rc == 0);
-    assert (mechanism == ZMQ_NULL);      
+    assert (mechanism == ZMQ_NULL);
     
+    rc = zmq_getsockopt (client, ZMQ_PLAIN_SERVER, &as_server, &optsize);
+    assert (rc == 0);
+    assert (as_server == 0);
+    
+    rc = zmq_getsockopt (server, ZMQ_PLAIN_SERVER, &as_server, &optsize);
+    assert (rc == 0);
+    assert (as_server == 0);
+
+    rc = zmq_bind (server, "tcp://*:9999");
+    assert (rc == 0);
+    rc = zmq_connect (client, "tcp://localhost:9999");
+    assert (rc == 0);
+    
+    bounce (server, client);
+    
+    rc = zmq_close (client);
+    assert (rc == 0);
+    rc = zmq_close (server);
+    assert (rc == 0);
+        
     //  Check PLAIN security
+    server = zmq_socket (ctx, ZMQ_DEALER);
+    assert (server);
+    client = zmq_socket (ctx, ZMQ_DEALER);
+    assert (client);
+    
     char username [256];
     optsize = 256;
     rc = zmq_getsockopt (client, ZMQ_PLAIN_USERNAME, username, &optsize);
@@ -80,36 +101,64 @@ int main (void)
     assert (rc == 0);
     assert (optsize == 8 + 1);      
     
+    as_server = 1;
+    rc = zmq_setsockopt (server, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
+    assert (rc == 0);
+    
     optsize = sizeof (int);
     rc = zmq_getsockopt (client, ZMQ_MECHANISM, &mechanism, &optsize);
     assert (rc == 0);
     assert (mechanism == ZMQ_PLAIN);      
 
-    int as_server = 1;
-    rc = zmq_setsockopt (server, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
-    assert (rc == 0);
-    
-    optsize = sizeof (int);
     rc = zmq_getsockopt (server, ZMQ_MECHANISM, &mechanism, &optsize);
     assert (rc == 0);
     assert (mechanism == ZMQ_PLAIN);      
     
-    //  Check we can switch back to NULL security
-    rc = zmq_setsockopt (client, ZMQ_PLAIN_USERNAME, NULL, 0);
+    rc = zmq_getsockopt (client, ZMQ_PLAIN_SERVER, &as_server, &optsize);
     assert (rc == 0);
-    rc = zmq_setsockopt (client, ZMQ_PLAIN_PASSWORD, NULL, 0);
+    assert (as_server == 0);
+    
+    rc = zmq_getsockopt (server, ZMQ_PLAIN_SERVER, &as_server, &optsize);
     assert (rc == 0);
-    optsize = sizeof (int);
-    rc = zmq_getsockopt (client, ZMQ_MECHANISM, &mechanism, &optsize);
+    assert (as_server == 1);
+
+    rc = zmq_bind (server, "tcp://*:9998");
     assert (rc == 0);
-    assert (mechanism == ZMQ_NULL);
+    rc = zmq_connect (client, "tcp://localhost:9998");
+    assert (rc == 0);
+    
+    bounce (server, client);
     
     rc = zmq_close (client);
     assert (rc == 0);
-    
     rc = zmq_close (server);
     assert (rc == 0);
     
+    //  Check PLAIN security -- two servers trying to talk to each other
+    server = zmq_socket (ctx, ZMQ_DEALER);
+    assert (server);
+    client = zmq_socket (ctx, ZMQ_DEALER);
+    assert (client);
+    
+    rc = zmq_setsockopt (server, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
+    assert (rc == 0);
+    rc = zmq_setsockopt (client, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
+    assert (rc == 0);
+    
+    rc = zmq_bind (server, "tcp://*:9997");
+    assert (rc == 0);
+    rc = zmq_connect (client, "tcp://localhost:9997");
+    assert (rc == 0);
+   
+    //TODO: this test fails without any error
+//     bounce (server, client);
+    
+    rc = zmq_close (client);
+    assert (rc == 0);
+    rc = zmq_close (server);
+    assert (rc == 0);
+    
+    //  Shutdown
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 

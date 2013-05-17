@@ -50,10 +50,9 @@
 #include "likely.hpp"
 #include "wire.hpp"
 
-zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
-    bool as_server_, const std::string &endpoint_) :
+zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_, 
+                                       const std::string &endpoint_) :
     s (fd_),
-    as_server (as_server_),
     inpos (NULL),
     insize (0),
     decoder (NULL),
@@ -80,7 +79,7 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
 {
     int rc = tx_msg.init ();
     errno_assert (rc == 0);
-
+    
     //  Put the socket into non-blocking mode.
     unblock_socket (s);
     //  Set the socket buffer limits for the underlying socket.
@@ -532,8 +531,7 @@ bool zmq::stream_engine_t::handshake ()
         }
         else
         if (memcmp (greeting_recv + 12, "PLAIN\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
-            mechanism = new (std::nothrow)
-                plain_mechanism_t (options, options.plain_server);
+            mechanism = new (std::nothrow) plain_mechanism_t (options);
             alloc_assert (mechanism);
         }
         else {
