@@ -32,7 +32,7 @@ namespace zmq
     {
     public:
 
-        plain_mechanism_t (const options_t &options_, bool as_server_);
+        plain_mechanism_t (const options_t &options_);
         virtual ~plain_mechanism_t ();
 
         // mechanism implementation

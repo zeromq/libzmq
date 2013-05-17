@@ -52,7 +52,7 @@ zmq::options_t::options_t () :
     tcp_keepalive_idle (-1),
     tcp_keepalive_intvl (-1),
     mechanism (ZMQ_NULL),
-    plain_server (0),
+    as_server (0),
     socket_id (0)
 {
 }
@@ -251,7 +251,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             
         case ZMQ_PLAIN_SERVER:
             if (is_int && (value == 0 || value == 1)) {
-                plain_server = value;
+                as_server = value;
                 mechanism = value? ZMQ_PLAIN: ZMQ_NULL;
                 return 0;
             }
@@ -265,7 +265,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             else
             if (optvallen_ >= 0 && optvallen_ < 256 && optval_ != NULL) {
                 plain_username.assign ((const char *) optval_, optvallen_);
-                plain_server = false;
+                as_server = 0;
                 mechanism = ZMQ_PLAIN;
                 return 0;
             }
@@ -279,7 +279,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             else
             if (optvallen_ >= 0 && optvallen_ < 256 && optval_ != NULL) {
                 plain_password.assign ((const char *) optval_, optvallen_);
-                plain_server = false;
+                as_server = 0;
                 mechanism = ZMQ_PLAIN;
                 return 0;
             }
@@ -485,7 +485,7 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
         
         case ZMQ_PLAIN_SERVER:
             if (is_int) {
-                *value = plain_server;
+                *value = as_server && mechanism == ZMQ_PLAIN;
                 return 0;
             }
             break;
