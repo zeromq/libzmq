@@ -30,10 +30,9 @@
 #include "plain_mechanism.hpp"
 #include "wire.hpp"
 
-zmq::plain_mechanism_t::plain_mechanism_t (const options_t &options_,
-                                           bool as_server_) :
+zmq::plain_mechanism_t::plain_mechanism_t (const options_t &options_) :
     mechanism_t (options_),
-    state (as_server_? waiting_for_hello: sending_hello)
+    state (options.as_server? waiting_for_hello: sending_hello)
 {
 }
 
@@ -46,31 +45,30 @@ int zmq::plain_mechanism_t::next_handshake_message (msg_t *msg_)
     int rc = 0;
 
     switch (state) {
-    case sending_hello:
-        rc = hello_command (msg_);
-        if (rc == 0)
-            state = waiting_for_welcome;
-        break;
-    case sending_welcome:
-        rc = welcome_command (msg_);
-        if (rc == 0)
-            state = waiting_for_initiate;
-        break;
-    case sending_initiate:
-        rc = initiate_command (msg_);
-        if (rc == 0)
-            state = waiting_for_ready;
-        break;
-    case sending_ready:
-        rc = ready_command (msg_);
-        if (rc == 0)
-            state = ready;
-        break;
-    default:
-        errno = EAGAIN;
-        rc = -1;
+        case sending_hello:
+            rc = hello_command (msg_);
+            if (rc == 0)
+                state = waiting_for_welcome;
+            break;
+        case sending_welcome:
+            rc = welcome_command (msg_);
+            if (rc == 0)
+                state = waiting_for_initiate;
+            break;
+        case sending_initiate:
+            rc = initiate_command (msg_);
+            if (rc == 0)
+                state = waiting_for_ready;
+            break;
+        case sending_ready:
+            rc = ready_command (msg_);
+            if (rc == 0)
+                state = ready;
+            break;
+        default:
+            errno = EAGAIN;
+            rc = -1;
     }
-
     return rc;
 }
 
@@ -79,45 +77,45 @@ int zmq::plain_mechanism_t::process_handshake_message (msg_t *msg_)
     int rc = 0;
 
     switch (state) {
-    case waiting_for_hello:
-        rc = process_hello_command (msg_);
-        if (rc == 0)
-            state = sending_welcome;
-        break;
-    case waiting_for_welcome:
-        rc = process_welcome_command (msg_);
-        if (rc == 0)
-            state = sending_initiate;
-        break;
-    case waiting_for_initiate:
-        rc = process_initiate_command (msg_);
-        if (rc == 0)
-            state = sending_ready;
-        break;
-    case waiting_for_ready:
-        rc = process_ready_command (msg_);
-        if (rc == 0)
-            state = ready;
-        break;
-    default:
-        errno = EAGAIN;
-        rc = -1;
+        case waiting_for_hello:
+            rc = process_hello_command (msg_);
+            if (rc == 0)
+                state = sending_welcome;
+            break;
+        case waiting_for_welcome:
+            rc = process_welcome_command (msg_);
+            if (rc == 0)
+                state = sending_initiate;
+            break;
+        case waiting_for_initiate:
+            rc = process_initiate_command (msg_);
+            if (rc == 0)
+                state = sending_ready;
+            break;
+        case waiting_for_ready:
+            rc = process_ready_command (msg_);
+            if (rc == 0)
+                state = ready;
+            break;
+        default:
+            errno = EAGAIN;
+            rc = -1;
     }
-
     if (rc == 0) {
         rc = msg_->close ();
         errno_assert (rc == 0);
         rc = msg_->init ();
         errno_assert (rc == 0);
     }
-
     return 0;
 }
+
 
 bool zmq::plain_mechanism_t::is_handshake_complete () const
 {
     return state == ready;
 }
+
 
 int zmq::plain_mechanism_t::hello_command (msg_t *msg_) const
 {
@@ -147,6 +145,7 @@ int zmq::plain_mechanism_t::hello_command (msg_t *msg_) const
     return 0;
 }
 
+
 int zmq::plain_mechanism_t::process_hello_command (msg_t *msg_)
 {
     const unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
@@ -164,7 +163,6 @@ int zmq::plain_mechanism_t::process_hello_command (msg_t *msg_)
         errno = EPROTO;
         return -1;
     }
-
     size_t username_length = static_cast <size_t> (*ptr++);
     bytes_left -= 1;
 
@@ -172,7 +170,6 @@ int zmq::plain_mechanism_t::process_hello_command (msg_t *msg_)
         errno = EPROTO;
         return -1;
     }
-
     const std::string username = std::string ((char *) ptr, username_length);
     ptr += username_length;
     bytes_left -= username_length;
@@ -181,7 +178,6 @@ int zmq::plain_mechanism_t::process_hello_command (msg_t *msg_)
         errno = EPROTO;
         return -1;
     }
-
     size_t password_length = static_cast <size_t> (*ptr++);
     bytes_left -= 1;
 
@@ -189,7 +185,6 @@ int zmq::plain_mechanism_t::process_hello_command (msg_t *msg_)
         errno = EPROTO;
         return -1;
     }
-
     const std::string password = std::string ((char *) ptr, password_length);
     ptr += password_length;
     bytes_left -= password_length;
@@ -198,9 +193,8 @@ int zmq::plain_mechanism_t::process_hello_command (msg_t *msg_)
         errno = EPROTO;
         return -1;
     }
-
+    
     // TODO: Add user authentication
-
     return 0;
 }
 
@@ -221,7 +215,6 @@ int zmq::plain_mechanism_t::process_welcome_command (msg_t *msg_)
         errno = EPROTO;
         return -1;
     }
-
     return 0;
 }
 
@@ -266,7 +259,6 @@ int zmq::plain_mechanism_t::process_initiate_command (msg_t *msg_)
         errno = EPROTO;
         return -1;
     }
-
     return parse_property_list (ptr + 8, bytes_left - 8);
 }
 
@@ -311,7 +303,6 @@ int zmq::plain_mechanism_t::process_ready_command (msg_t *msg_)
         errno = EPROTO;
         return -1;
     }
-
     return parse_property_list (ptr + 8, bytes_left - 8);
 }
 
@@ -322,21 +313,21 @@ int zmq::plain_mechanism_t::parse_property_list (const unsigned char *ptr,
         const size_t name_length = static_cast <size_t> (*ptr);
         ptr += 1;
         bytes_left -= 1;
-
         if (bytes_left < name_length)
             break;
-        const std::string name = std::string((const char *) ptr, name_length);
+        
+        const std::string name = std::string ((const char *) ptr, name_length);
         ptr += name_length;
         bytes_left -= name_length;
-
         if (bytes_left < 4)
             break;
+        
         const size_t value_length = static_cast <size_t> (get_uint32 (ptr));
         ptr += 4;
         bytes_left -= 4;
-
         if (bytes_left < value_length)
             break;
+        
         const unsigned char * const value = ptr;
         ptr += value_length;
         bytes_left -= value_length;
@@ -348,11 +339,9 @@ int zmq::plain_mechanism_t::parse_property_list (const unsigned char *ptr,
         if (name == "Identity" && options.recv_identity)
             set_peer_identity (value, value_length);
     }
-
     if (bytes_left > 0) {
         errno = EPROTO;
         return -1;
     }
-
     return 0;
 }

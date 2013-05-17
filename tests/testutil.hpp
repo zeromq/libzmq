@@ -17,59 +17,63 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_TEST_TESTUTIL_HPP_INCLUDED__
-#define __ZMQ_TEST_TESTUTIL_HPP_INCLUDED__
+#ifndef __TESTUTIL_HPP_INCLUDED__
+#define __TESTUTIL_HPP_INCLUDED__
 
 #include "../include/zmq.h"
 #include <string.h>
 #undef NDEBUG
 #include <assert.h>
 
+//  Bounce a message from client to server and back
+//  For REQ/REP or DEALER/DEALER pairs only
+
 static void
-bounce (void *sb, void *sc)
+bounce (void *server, void *client)
 {
     const char *content = "12345678ABCDEFGH12345678abcdefgh";
 
-    //  Send the message.
-    int rc = zmq_send (sc, content, 32, ZMQ_SNDMORE);
+    //  Send message from client to server
+    int rc = zmq_send (client, content, 32, ZMQ_SNDMORE);
     assert (rc == 32);
-    rc = zmq_send (sc, content, 32, 0);
+    rc = zmq_send (client, content, 32, 0);
     assert (rc == 32);
 
-    //  Bounce the message back.
-    char buf1 [32];
-    rc = zmq_recv (sb, buf1, 32, 0);
+    //  Receive message at server side
+    char buffer [32];
+    rc = zmq_recv (server, buffer, 32, 0);
     assert (rc == 32);
     int rcvmore;
     size_t sz = sizeof (rcvmore);
-    rc = zmq_getsockopt (sb, ZMQ_RCVMORE, &rcvmore, &sz);
+    rc = zmq_getsockopt (server, ZMQ_RCVMORE, &rcvmore, &sz);
     assert (rc == 0);
     assert (rcvmore);
-    rc = zmq_recv (sb, buf1, 32, 0);
+    rc = zmq_recv (server, buffer, 32, 0);
     assert (rc == 32);
-    rc = zmq_getsockopt (sb, ZMQ_RCVMORE, &rcvmore, &sz);
+    rc = zmq_getsockopt (server, ZMQ_RCVMORE, &rcvmore, &sz);
     assert (rc == 0);
     assert (!rcvmore);
-    rc = zmq_send (sb, buf1, 32, ZMQ_SNDMORE);
+    
+    //  Send two parts back to client
+    rc = zmq_send (server, buffer, 32, ZMQ_SNDMORE);
     assert (rc == 32);
-    rc = zmq_send (sb, buf1, 32, 0);
+    rc = zmq_send (server, buffer, 32, 0);
     assert (rc == 32);
 
-    //  Receive the bounced message.
-    char buf2 [32];
-    rc = zmq_recv (sc, buf2, 32, 0);
+    //  Receive the two parts at the client side
+    rc = zmq_recv (client, buffer, 32, 0);
     assert (rc == 32);
-    rc = zmq_getsockopt (sc, ZMQ_RCVMORE, &rcvmore, &sz);
+    rc = zmq_getsockopt (client, ZMQ_RCVMORE, &rcvmore, &sz);
     assert (rc == 0);
     assert (rcvmore);
-    rc = zmq_recv (sc, buf2, 32, 0);
+    rc = zmq_recv (client, buffer, 32, 0);
     assert (rc == 32);
-    rc = zmq_getsockopt (sc, ZMQ_RCVMORE, &rcvmore, &sz);
+    rc = zmq_getsockopt (client, ZMQ_RCVMORE, &rcvmore, &sz);
     assert (rc == 0);
     assert (!rcvmore);
 
-    //  Check whether the message is still the same.
-    assert (memcmp (buf2, content, 32) == 0);
+    //  Check that message is still the same
+    assert (memcmp (buffer, content, 32) == 0);
 }
 
 #endif
