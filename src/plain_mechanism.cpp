@@ -121,11 +121,10 @@ bool zmq::plain_mechanism_t::is_handshake_complete () const
 
 int zmq::plain_mechanism_t::hello_command (msg_t *msg_) const
 {
-    //  TODO: fetch these from options
-    const std::string username = "username";
-    const std::string password = "password";
-
+    const std::string username = options.plain_username;
     zmq_assert (username.length () < 256);
+
+    const std::string password = options.plain_password;
     zmq_assert (password.length () < 256);
 
     const size_t command_size = 8 + 1 + username.length () +
@@ -144,8 +143,6 @@ int zmq::plain_mechanism_t::hello_command (msg_t *msg_) const
     *ptr++ = static_cast <unsigned char> (password.length ());
     memcpy (ptr, password.c_str (), password.length ());
     ptr += password.length ();
-
-    // TODO: check username and password
 
     return 0;
 }
@@ -201,6 +198,8 @@ int zmq::plain_mechanism_t::process_hello_command (msg_t *msg_)
         errno = EPROTO;
         return -1;
     }
+
+    // TODO: Add user authentication
 
     return 0;
 }
