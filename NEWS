@@ -1,7 +1,9 @@
 0MQ version 3.2.4 stable, released on 2013/xx/xx
 ================================================
 
+* LIBZMQ-532 (Windows) critical section not released on error
 * LIBZMQ-456 ZMQ_XPUB_VERBOSE does not propagate in a tree of XPUB/XSUB devices
+* LIBZMQ-84 (Windows) Assertion failed: Address already in use at signaler.cpp:80
 
 
 0MQ version 3.2.3 stable, released on 2013/05/02
