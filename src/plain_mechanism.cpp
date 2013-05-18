@@ -125,19 +125,20 @@ int zmq::plain_mechanism_t::hello_command (msg_t *msg_) const
     const std::string password = options.plain_password;
     zmq_assert (password.length () < 256);
 
-    const size_t command_size = 8 + 1 + username.length () +
-        1 + password.length ();
+    const size_t command_size = 8 + 1 + username.length () 
+                                  + 1 + password.length ();
 
     const int rc = msg_->init_size (command_size);
     errno_assert (rc == 0);
 
-    unsigned char *ptr = static_cast<unsigned char*> (msg_->data ());
-
+    unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
     memcpy (ptr, "HELLO   ", 8);
     ptr += 8;
+    
     *ptr++ = static_cast <unsigned char> (username.length ());
     memcpy (ptr, username.c_str (), username.length ());
     ptr += username.length ();
+    
     *ptr++ = static_cast <unsigned char> (password.length ());
     memcpy (ptr, password.c_str (), password.length ());
     ptr += password.length ();
@@ -155,7 +156,6 @@ int zmq::plain_mechanism_t::process_hello_command (msg_t *msg_)
         errno = EPROTO;
         return -1;
     }
-
     ptr += 8;
     bytes_left -= 8;
 
@@ -194,7 +194,8 @@ int zmq::plain_mechanism_t::process_hello_command (msg_t *msg_)
         return -1;
     }
     
-    // TODO: Add user authentication
+    //  TODO: Add user authentication
+    //  Note: maybe use RFC 27 (ZAP) for this
     return 0;
 }
 
