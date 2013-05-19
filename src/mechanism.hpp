@@ -20,8 +20,7 @@
 #ifndef __ZMQ_MECHANISM_HPP_INCLUDED__
 #define __ZMQ_MECHANISM_HPP_INCLUDED__
 
-#include <stdint.h>
-
+#include "stdint.hpp"
 #include "options.hpp"
 #include "blob.hpp"
 
