@@ -23,7 +23,7 @@ options. Which peer binds, and which connects, is not relevant.
 
 NOTE: this isn't implemented and not fully defined. The server keypair
 needs to be persistent, and it would be sensible to define a format for
-this in CurveZMQ
+this as a CurveZMQ RFC.
 
 
 SEE ALSO
