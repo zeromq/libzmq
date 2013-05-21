@@ -112,6 +112,9 @@ namespace zmq
         bool mandatory;
         bool raw_sock;
 
+        // if true, send an empty message to every connected peer to solve 'who will write first' race condition
+        bool announce_self;
+
         router_t (const router_t&);
         const router_t &operator = (const router_t&);
     };

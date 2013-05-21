@@ -33,7 +33,8 @@ zmq::router_t::router_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     more_out (false),
     next_peer_id (generate_random ()),
     mandatory(false),
-    raw_sock(false)
+    raw_sock(false),
+    announce_self(false)
 {
     options.type = ZMQ_ROUTER;
     options.recv_identity = true;
@@ -92,6 +93,13 @@ int zmq::router_t::xsetsockopt (int option_, const void *optval_,
             }
             //  DEBUGGING PROBLEM WITH TRAVIS CI
             printf ("E: invalid option value (int=%d value=%d)\n", is_int, value);
+            break;
+            
+        case ZMQ_ROUTER_ANNOUNCE_SELF:
+            if (is_int && value >= 0) {
+                announce_self = value;
+                return 0;
+            }
             break;
             
         default:
@@ -388,6 +396,15 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
     outpipe_t outpipe = {pipe_, true};
     ok = outpipes.insert (outpipes_t::value_type (identity, outpipe)).second;
     zmq_assert (ok);
+
+    if (announce_self) {
+        msg_t tmp_;
+        tmp_.init ();
+        ok = pipe_->write (&tmp_);
+        zmq_assert (ok);
+        pipe_->flush ();
+        tmp_.close ();
+    };
 
     return true;
 }
