@@ -68,26 +68,41 @@ void zmq::router_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
 int zmq::router_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
-    if (option_ != ZMQ_ROUTER_MANDATORY
-    &&  option_ != ZMQ_ROUTER_RAW) {
-        errno = EINVAL;
-        return -1;
+    bool is_int = (optvallen_ == sizeof (int));
+    int value = is_int? *((int *) optval_): 0;
+
+    switch (option_) {
+        case ZMQ_ROUTER_RAW:
+            if (is_int && value >= 0) {
+                raw_sock = value;
+                if (raw_sock) {
+                    options.recv_identity = false;
+                    options.raw_sock = true;
+                }
+                return 0;
+            }
+            //  DEBUGGING PROBLEM WITH TRAVIS CI
+            printf ("E: invalid option value (int=%d value=%d)\n", is_int, value);
+            break;
+        
+        case ZMQ_ROUTER_MANDATORY:
+            if (is_int && value >= 0) {
+                mandatory = value;
+                return 0;
+            }
+            //  DEBUGGING PROBLEM WITH TRAVIS CI
+            printf ("E: invalid option value (int=%d value=%d)\n", is_int, value);
+            break;
+            
+        default:
+            break;
     }
-    if (optvallen_ != sizeof (int) || *static_cast <const int*> (optval_) < 0) {
-        errno = EINVAL;
-        return -1;
-    }
-    if (option_ == ZMQ_ROUTER_RAW) {
-        raw_sock = (*static_cast <const int*> (optval_) != 0);
-        if (raw_sock) {
-            options.recv_identity = false;
-            options.raw_sock = true;
-        }
-    }
-    else
-        mandatory = (*static_cast <const int*> (optval_) != 0);
-    return 0;
+    //  DEBUGGING PROBLEM WITH TRAVIS CI
+    printf ("E: invalid option (option=%d)\n", option_);
+    errno = EINVAL;
+    return -1;
 }
+
 
 void zmq::router_t::xterminated (pipe_t *pipe_)
 {
