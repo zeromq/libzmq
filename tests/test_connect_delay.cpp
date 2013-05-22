@@ -92,7 +92,7 @@ int main (void)
     rc = zmq_close (to);
     assert (rc == 0);
 
-    rc = zmq_ctx_term(context);
+    rc = zmq_ctx_term (context);
     assert (rc == 0);
 
     // TEST 2
@@ -157,7 +157,7 @@ int main (void)
     rc = zmq_close (to);
     assert (rc == 0);
     
-    rc = zmq_ctx_term(context);
+    rc = zmq_ctx_term (context);
     assert (rc == 0);
 
     // TEST 3
@@ -232,6 +232,6 @@ int main (void)
     rc = zmq_close (frontend);
     assert (rc == 0);
 
-    rc = zmq_ctx_term(context);
+    rc = zmq_ctx_term (context);
     assert (rc == 0);
 }

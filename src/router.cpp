@@ -82,8 +82,6 @@ int zmq::router_t::xsetsockopt (int option_, const void *optval_,
                 }
                 return 0;
             }
-            //  DEBUGGING PROBLEM WITH TRAVIS CI
-            printf ("E: invalid option value (int=%d value=%d)\n", is_int, value);
             break;
         
         case ZMQ_ROUTER_MANDATORY:
@@ -91,8 +89,6 @@ int zmq::router_t::xsetsockopt (int option_, const void *optval_,
                 mandatory = value;
                 return 0;
             }
-            //  DEBUGGING PROBLEM WITH TRAVIS CI
-            printf ("E: invalid option value (int=%d value=%d)\n", is_int, value);
             break;
             
         case ZMQ_ROUTER_ANNOUNCE_SELF:
@@ -105,8 +101,6 @@ int zmq::router_t::xsetsockopt (int option_, const void *optval_,
         default:
             break;
     }
-    //  DEBUGGING PROBLEM WITH TRAVIS CI
-    printf ("E: invalid option (option=%d)\n", option_);
     errno = EINVAL;
     return -1;
 }
