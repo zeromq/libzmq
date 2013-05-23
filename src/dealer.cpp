@@ -22,7 +22,8 @@
 #include "msg.hpp"
 
 zmq::dealer_t::dealer_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
-    socket_base_t (parent_, tid_, sid_)
+    socket_base_t (parent_, tid_, sid_),
+    probe_new_peers(false)
 {
     options.type = ZMQ_DEALER;
 }
@@ -37,8 +38,46 @@ void zmq::dealer_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
     (void) icanhasall_;
 
     zmq_assert (pipe_);
+
+    if (probe_new_peers) {
+        int rc, ok;
+        msg_t probe_msg_;
+
+        rc = probe_msg_.init ();
+        errno_assert (rc == 0);
+
+        ok = pipe_->write (&probe_msg_);
+        zmq_assert (ok);
+        pipe_->flush ();
+
+        rc = probe_msg_.close ();
+        errno_assert (rc == 0);
+    }
+
     fq.attach (pipe_);
     lb.attach (pipe_);
+}
+
+int zmq::dealer_t::xsetsockopt (int option_, const void *optval_,
+    size_t optvallen_)
+{
+    bool is_int = (optvallen_ == sizeof (int));
+    int value = is_int? *((int *) optval_): 0;
+
+    switch (option_) {
+        case ZMQ_PROBE_NEW_PEERS:
+            if (is_int && value >= 0) {
+                probe_new_peers = value;
+                return 0;
+            }
+            break;
+
+        default:
+            break;
+    }
+
+    errno = EINVAL;
+    return -1;
 }
 
 int zmq::dealer_t::xsend (msg_t *msg_)
