@@ -40,14 +40,14 @@ void zmq::dealer_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
     zmq_assert (pipe_);
 
     if (probe_new_peers) {
-        int rc;
+        int rc, ok;
         msg_t probe_msg_;
 
         rc = probe_msg_.init ();
         errno_assert (rc == 0);
 
-        rc = pipe_->write (&probe_msg_);
-        zmq_assert (rc);
+        ok = pipe_->write (&probe_msg_);
+        zmq_assert (ok);
         pipe_->flush ();
 
         rc = probe_msg_.close ();

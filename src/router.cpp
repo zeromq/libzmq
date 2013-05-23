@@ -398,12 +398,15 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
         rc = probe_msg_.init ();
         errno_assert (rc == 0);
 
-        rc = pipe_->write (&probe_msg_);
-        zmq_assert (rc);
+        ok = pipe_->write (&probe_msg_);
         pipe_->flush ();
 
         rc = probe_msg_.close ();
         errno_assert (rc == 0);
+
+        //  Ignore not probed peers
+        if (!ok)
+            return false;
     }
 
     return true;
