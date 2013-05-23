@@ -46,6 +46,7 @@ namespace zmq
 
         //  Overloads of functions from socket_base_t.
         void xattach_pipe (zmq::pipe_t *pipe_, bool icanhasall_);
+        int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
         int xsend (zmq::msg_t *msg_);
         int xrecv (zmq::msg_t *msg_);
         bool xhas_in ();
@@ -60,6 +61,9 @@ namespace zmq
         //  the outbound pipes.
         fq_t fq;
         lb_t lb;
+
+        // if true, send an empty message to every connected peer
+        bool probe_new_peers;
 
         dealer_t (const dealer_t&);
         const dealer_t &operator = (const dealer_t&);
