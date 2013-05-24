@@ -91,7 +91,7 @@ int zmq::router_t::xsetsockopt (int option_, const void *optval_,
             }
             break;
 
-        case ZMQ_PROBE_NEW_PEERS:
+        case ZMQ_PROBE:
             if (is_int && value >= 0) {
                 probe_new_peers = value;
                 return 0;
