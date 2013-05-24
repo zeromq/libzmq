@@ -65,7 +65,7 @@ int zmq::dealer_t::xsetsockopt (int option_, const void *optval_,
     int value = is_int? *((int *) optval_): 0;
 
     switch (option_) {
-        case ZMQ_PROBE_NEW_PEERS:
+        case ZMQ_PROBE:
             if (is_int && value >= 0) {
                 probe_new_peers = value;
                 return 0;
