@@ -96,7 +96,9 @@ zmq::blob_t zmq::pipe_t::get_identity ()
 
 bool zmq::pipe_t::check_read ()
 {
-    if (unlikely (!in_active || (state != active && state != pending)))
+    if (unlikely (!in_active))
+        return false;
+    if (unlikely (state != active && state != waiting_for_delimiter))
         return false;
 
     //  Check if there's an item in the pipe.
@@ -120,7 +122,9 @@ bool zmq::pipe_t::check_read ()
 
 bool zmq::pipe_t::read (msg_t *msg_)
 {
-    if (unlikely (!in_active || (state != active && state != pending)))
+    if (unlikely (!in_active))
+        return false;
+    if (unlikely (state != active && state != waiting_for_delimiter))
         return false;
 
     if (!inpipe->read (msg_)) {
@@ -187,7 +191,7 @@ void zmq::pipe_t::rollback ()
 void zmq::pipe_t::flush ()
 {
     //  The peer does not exist anymore at this point.
-    if (state == terminating)
+    if (state == term_ack_sent)
         return;
 
     if (outpipe && !outpipe->flush ())
@@ -196,7 +200,7 @@ void zmq::pipe_t::flush ()
 
 void zmq::pipe_t::process_activate_read ()
 {
-    if (!in_active && (state == active || state == pending)) {
+    if (!in_active && (state == active || state == waiting_for_delimiter)) {
         in_active = true;
         sink->read_activated (this);
     }
@@ -240,24 +244,24 @@ void zmq::pipe_t::process_pipe_term ()
 {
     //  This is the simple case of peer-induced termination. If there are no
     //  more pending messages to read, or if the pipe was configured to drop
-    //  pending messages, we can move directly to the terminating state.
-    //  Otherwise we'll hang up in pending state till all the pending messages
-    //  are sent.
+    //  pending messages, we can move directly to the term_ack_sent state.
+    //  Otherwise we'll hang up in waiting_for_delimiter state till all
+    //  pending messages are read.
     if (state == active) {
         if (!delay) {
-            state = terminating;
+            state = term_ack_sent;
             outpipe = NULL;
             send_pipe_term_ack (peer);
         }
         else
-            state = pending;
+            state = waiting_for_delimiter;
         return;
     }
 
     //  Delimiter happened to arrive before the term command. Now we have the
-    //  term command as well, so we can move straight to terminating state.
-    if (state == delimited) {
-        state = terminating;
+    //  term command as well, so we can move straight to term_ack_sent state.
+    if (state == delimiter_received) {
+        state = term_ack_sent;
         outpipe = NULL;
         send_pipe_term_ack (peer);
         return;
@@ -266,8 +270,8 @@ void zmq::pipe_t::process_pipe_term ()
     //  This is the case where both ends of the pipe are closed in parallel.
     //  We simply reply to the request by ack and continue waiting for our
     //  own ack.
-    if (state == terminated) {
-        state = double_terminated;
+    if (state == term_req_sent1) {
+        state = term_req_sent2;
         outpipe = NULL;
         send_pipe_term_ack (peer);
         return;
@@ -283,16 +287,16 @@ void zmq::pipe_t::process_pipe_term_ack ()
     zmq_assert (sink);
     sink->terminated (this);
 
-    //  In terminating and double_terminated states there's nothing to do.
-    //  Simply deallocate the pipe. In terminated state we have to ack the
-    //  peer before deallocating this side of the pipe. All the other states
-    //  are invalid.
-    if (state == terminated) {
+    //  In term_ack_sent and term_req_sent2 states there's nothing to do.
+    //  Simply deallocate the pipe. In term_req_sent1 state we have to ack
+    //  the peer before deallocating this side of the pipe.
+    //  All the other states are invalid.
+    if (state == term_req_sent1) {
         outpipe = NULL;
         send_pipe_term_ack (peer);
     }
     else
-        zmq_assert (state == terminating || state == double_terminated);
+        zmq_assert (state == term_ack_sent || state == term_req_sent2);
 
     //  We'll deallocate the inbound pipe, the peer will deallocate the outbound
     //  pipe (which is an inbound pipe from its point of view).
@@ -316,44 +320,44 @@ void zmq::pipe_t::terminate (bool delay_)
     delay = delay_;
 
     //  If terminate was already called, we can ignore the duplicit invocation.
-    if (state == terminated || state == double_terminated)
+    if (state == term_req_sent1 || state == term_req_sent2)
         return;
 
     //  If the pipe is in the final phase of async termination, it's going to
     //  closed anyway. No need to do anything special here.
-    else 
-    if (state == terminating)
+    else
+    if (state == term_ack_sent)
         return;
 
     //  The simple sync termination case. Ask the peer to terminate and wait
     //  for the ack.
-    else 
+    else
     if (state == active) {
         send_pipe_term (peer);
-        state = terminated;
+        state = term_req_sent1;
     }
 
     //  There are still pending messages available, but the user calls
     //  'terminate'. We can act as if all the pending messages were read.
-    else 
-    if (state == pending && !delay) {
+    else
+    if (state == waiting_for_delimiter && delay == 0) {
         outpipe = NULL;
         send_pipe_term_ack (peer);
-        state = terminating;
+        state = term_ack_sent;
     }
 
     //  If there are pending messages still availabe, do nothing.
-    else 
-    if (state == pending) {
+    else
+    if (state == waiting_for_delimiter) {
     }
 
     //  We've already got delimiter, but not term command yet. We can ignore
     //  the delimiter and ack synchronously terminate as if we were in
     //  active state.
-    else 
-    if (state == delimited) {
+    else
+    if (state == delimiter_received) {
         send_pipe_term (peer);
-        state = terminated;
+        state = term_req_sent1;
     }
 
     //  There are no other states.
@@ -413,14 +417,14 @@ int zmq::pipe_t::compute_lwm (int hwm_)
 void zmq::pipe_t::delimit ()
 {
     if (state == active) {
-        state = delimited;
+        state = delimiter_received;
         return;
     }
 
-    if (state == pending) {
+    if (state == waiting_for_delimiter) {
         outpipe = NULL;
         send_pipe_term_ack (peer);
-        state = terminating;
+        state = term_ack_sent;
         return;
     }
 

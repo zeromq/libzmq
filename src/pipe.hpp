@@ -162,22 +162,24 @@ namespace zmq
         //  Sink to send events to.
         i_pipe_events *sink;
 
-        //  State of the pipe endpoint. Active is common state before any
-        //  termination begins. Delimited means that delimiter was read from
-        //  pipe before term command was received. Pending means that term
-        //  command was already received from the peer but there are still
-        //  pending messages to read. Terminating means that all pending
-        //  messages were already read and all we are waiting for is ack from
-        //  the peer. Terminated means that 'terminate' was explicitly called
-        //  by the user. Double_terminated means that user called 'terminate'
-        //  and then we've got term command from the peer as well.
+        //  States of the pipe endpoint:
+        //  active: common state before any termination begins,
+        //  delimiter_received: delimiter was read from pipe before
+        //      term command was received,
+        //  waiting_fo_delimiter: term command was already received
+        //      from the peer but there are still pending messages to read,
+        //  term_ack_sent: all pending messages were already read and
+        //      all we are waiting for is ack from the peer,
+        //  term_req_sent1: 'terminate' was explicitly called by the user,
+        //  term_req_sent2: user called 'terminate' and then we've got
+        //      term command from the peer as well.
         enum {
             active,
-            delimited,
-            pending,
-            terminating,
-            terminated,
-            double_terminated
+            delimiter_received,
+            waiting_for_delimiter,
+            term_ack_sent,
+            term_req_sent1,
+            term_req_sent2
         } state;
 
         //  If true, we receive all the pending inbound messages before
