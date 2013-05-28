@@ -47,7 +47,7 @@ namespace zmq
         int xsend (zmq::msg_t *msg_);
         bool xhas_out ();
         void xwrite_activated (zmq::pipe_t *pipe_);
-        void xterminated (zmq::pipe_t *pipe_);
+        void xpipe_terminated (zmq::pipe_t *pipe_);
 
     private:
 

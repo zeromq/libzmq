@@ -108,10 +108,10 @@ void zmq::dealer_t::xwrite_activated (pipe_t *pipe_)
     lb.activated (pipe_);
 }
 
-void zmq::dealer_t::xterminated (pipe_t *pipe_)
+void zmq::dealer_t::xpipe_terminated (pipe_t *pipe_)
 {
-    fq.terminated (pipe_);
-    lb.terminated (pipe_);
+    fq.pipe_terminated (pipe_);
+    lb.pipe_terminated (pipe_);
 }
 
 zmq::dealer_session_t::dealer_session_t (io_thread_t *io_thread_, bool connect_,

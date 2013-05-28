@@ -61,7 +61,7 @@ namespace zmq
         void read_activated (zmq::pipe_t *pipe_);
         void write_activated (zmq::pipe_t *pipe_);
         void hiccuped (zmq::pipe_t *pipe_);
-        void terminated (zmq::pipe_t *pipe_);
+        void pipe_terminated (zmq::pipe_t *pipe_);
 
         //  Delivers a message. Returns 0 if successful; -1 otherwise.
         //  The function takes ownership of the message.

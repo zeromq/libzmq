@@ -285,7 +285,7 @@ void zmq::pipe_t::process_pipe_term_ack ()
 {
     //  Notify the user that all the references to the pipe should be dropped.
     zmq_assert (sink);
-    sink->terminated (this);
+    sink->pipe_terminated (this);
 
     //  In term_ack_sent and term_req_sent2 states there's nothing to do.
     //  Simply deallocate the pipe. In term_req_sent1 state we have to ack

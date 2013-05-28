@@ -197,7 +197,7 @@ void zmq::session_base_t::clean_pipes ()
     }
 }
 
-void zmq::session_base_t::terminated (pipe_t *pipe_)
+void zmq::session_base_t::pipe_terminated (pipe_t *pipe_)
 {
     // Drop the reference to the deallocated pipe if required.
     zmq_assert (pipe == pipe_ || terminating_pipes.count (pipe_) == 1);

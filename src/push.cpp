@@ -46,9 +46,9 @@ void zmq::push_t::xwrite_activated (pipe_t *pipe_)
     lb.activated (pipe_);
 }
 
-void zmq::push_t::xterminated (pipe_t *pipe_)
+void zmq::push_t::xpipe_terminated (pipe_t *pipe_)
 {
-    lb.terminated (pipe_);
+    lb.pipe_terminated (pipe_);
 }
 
 int zmq::push_t::xsend (msg_t *msg_)
