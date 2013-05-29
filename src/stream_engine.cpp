@@ -133,6 +133,8 @@ zmq::stream_engine_t::~stream_engine_t ()
         delete encoder;
     if (decoder != NULL)
         delete decoder;
+    if (mechanism != NULL)
+        delete mechanism;
 }
 
 void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
