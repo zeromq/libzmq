@@ -47,8 +47,8 @@ namespace zmq
         //  Overloads of functions from socket_base_t.
         void xattach_pipe (zmq::pipe_t *pipe_, bool icanhasall_);
         int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
-        int xsend (msg_t *msg_);
-        int xrecv (msg_t *msg_);
+        int xsend (zmq::msg_t *msg_);
+        int xrecv (zmq::msg_t *msg_);
         bool xhas_in ();
         bool xhas_out ();
         void xread_activated (zmq::pipe_t *pipe_);
@@ -112,8 +112,8 @@ namespace zmq
         bool mandatory;
         bool raw_sock;
 
-        // if true, send an empty message to every connected peer to solve 'who will write first' race condition
-        bool announce_self;
+        // if true, send an empty message to every connected peer to solve 'who will write first?' auto discovery problem
+        bool probe_new_peers;
 
         router_t (const router_t&);
         const router_t &operator = (const router_t&);
