@@ -64,7 +64,7 @@ size_t zmq::mechanism_t::add_property (unsigned char *ptr, const char *name,
     *ptr++ = static_cast <unsigned char> (name_len);
     memcpy (ptr, name, name_len);
     ptr += name_len;
-    zmq_assert (value_len <= (2^31) - 1);
+    zmq_assert (value_len <= 0x7FFFFFFF);
     put_uint32 (ptr, static_cast <uint32_t> (value_len));
     ptr += 4;
     memcpy (ptr, value, value_len);
