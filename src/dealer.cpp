@@ -23,7 +23,7 @@
 
 zmq::dealer_t::dealer_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     socket_base_t (parent_, tid_, sid_),
-    probe_new_peers(false)
+    probe_router (false)
 {
     options.type = ZMQ_DEALER;
 }
@@ -39,15 +39,13 @@ void zmq::dealer_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
 
     zmq_assert (pipe_);
 
-    if (probe_new_peers) {
-        int rc;
+    if (probe_router) {
         msg_t probe_msg_;
-
-        rc = probe_msg_.init ();
+        int rc = probe_msg_.init ();
         errno_assert (rc == 0);
 
-        rc = pipe_->write (&probe_msg_);
-        zmq_assert (rc);
+        int ok = pipe_->write (&probe_msg_);
+        zmq_assert (ok);
         pipe_->flush ();
 
         rc = probe_msg_.close ();
@@ -65,9 +63,9 @@ int zmq::dealer_t::xsetsockopt (int option_, const void *optval_,
     int value = is_int? *((int *) optval_): 0;
 
     switch (option_) {
-        case ZMQ_PROBE:
+        case ZMQ_PROBE_ROUTER:
             if (is_int && value >= 0) {
-                probe_new_peers = value;
+                probe_router = value;
                 return 0;
             }
             break;

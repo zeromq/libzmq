@@ -147,7 +147,7 @@ message before passing it to the application. Messages received are fair-queued
 from among all connected peers. When sending messages a 'ZMQ_ROUTER' socket shall
 remove the first part of the message and use it to determine the _identity_ of
 the peer the message shall be routed to. If the peer does not exist anymore
-the message shall be silently discarded by default, unless 'ZMQ_ROUTER_BEHAVIOR'
+the message shall be silently discarded by default, unless 'ZMQ_ROUTER_MANDATORY'
 socket option is set to '1'.
 
 When a 'ZMQ_ROUTER' socket enters the 'mute' state due to having reached the
