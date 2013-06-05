@@ -112,8 +112,8 @@ namespace zmq
         bool mandatory;
         bool raw_sock;
 
-        // if true, send an empty message to every connected peer to solve 'who will write first?' auto discovery problem
-        bool probe_new_peers;
+        // if true, send an empty message to every connected router peer
+        bool probe_router;
 
         router_t (const router_t&);
         const router_t &operator = (const router_t&);

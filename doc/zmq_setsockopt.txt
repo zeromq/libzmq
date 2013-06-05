@@ -13,8 +13,8 @@ SYNOPSIS
 *int zmq_setsockopt (void '*socket', int 'option_name', const void '*option_value', size_t 'option_len');*
 
 Caution: All options, with the exception of ZMQ_SUBSCRIBE, ZMQ_UNSUBSCRIBE,
-ZMQ_LINGER, ZMQ_ROUTER_MANDATORY, ZMQ_PROBE, and ZMQ_XPUB_VERBOSE only take 
-effect for subsequent socket bind/connects.
+ZMQ_LINGER, ZMQ_ROUTER_MANDATORY, ZMQ_PROBE_ROUTER, and ZMQ_XPUB_VERBOSE 
+only take effect for subsequent socket bind/connects.
 
 DESCRIPTION
 -----------
@@ -421,14 +421,14 @@ Default value:: 0
 Applicable socket types:: ZMQ_ROUTER
 
 
-ZMQ_PROBE: bootstrap connections to ROUTER sockets
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_PROBE_ROUTER: bootstrap connections to ROUTER sockets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When set to 1, the socket will automatically send an empty message when a 
 new connection is made or accepted. You may set this on REQ, DEALER, or 
 ROUTER sockets connected to a ROUTER socket. The application must filter
-such empty messages. The ZMQ_PROBE option in effect provides the ROUTER
-application with an event signaling the arrival of a new peer.
+such empty messages. The ZMQ_PROBE_ROUTER option in effect provides the 
+ROUTER application with an event signaling the arrival of a new peer.
 
 NOTE: do not set this option on a socket that talks to any other socket
 types: the results are undefined.
@@ -437,7 +437,7 @@ types: the results are undefined.
 Option value type:: int
 Option value unit:: 0, 1
 Default value:: 0
-Applicable socket types:: ZMQ_ROUTER, ZMQ_DEALER, ZMQ_REP, ZMQ_REQ
+Applicable socket types:: ZMQ_ROUTER, ZMQ_DEALER, ZMQ_REQ
 
 
 ZMQ_XPUB_VERBOSE: provide all subscription messages on XPUB sockets
