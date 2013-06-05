@@ -48,6 +48,7 @@ tests/test_disconnect_inproc
 tests/test_ctx_options
 tests/test_iov
 tests/test_security
+tests/test_router_probe
 src/platform.hpp*
 src/stamp-h1
 perf/local_lat
