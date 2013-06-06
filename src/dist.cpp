@@ -74,7 +74,7 @@ void zmq::dist_t::unmatch ()
     matching = 0;
 }
 
-void zmq::dist_t::terminated (pipe_t *pipe_)
+void zmq::dist_t::pipe_terminated (pipe_t *pipe_)
 {
     //  Remove the pipe from the list; adjust number of matching, active and/or
     //  eligible pipes accordingly.

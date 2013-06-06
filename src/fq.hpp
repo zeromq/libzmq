@@ -40,7 +40,7 @@ namespace zmq
 
         void attach (pipe_t *pipe_);
         void activated (pipe_t *pipe_);
-        void terminated (pipe_t *pipe_);
+        void pipe_terminated (pipe_t *pipe_);
 
         int recv (msg_t *msg_);
         int recvpipe (msg_t *msg_, pipe_t **pipe_);

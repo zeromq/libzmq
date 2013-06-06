@@ -54,7 +54,7 @@ namespace zmq
         void xread_activated (zmq::pipe_t *pipe_);
         void xwrite_activated (zmq::pipe_t *pipe_);
         int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
-        void xterminated (zmq::pipe_t *pipe_);
+        void xpipe_terminated (zmq::pipe_t *pipe_);
 
     private:
 

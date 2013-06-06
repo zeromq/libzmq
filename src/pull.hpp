@@ -47,7 +47,7 @@ namespace zmq
         int xrecv (zmq::msg_t *msg_);
         bool xhas_in ();
         void xread_activated (zmq::pipe_t *pipe_);
-        void xterminated (zmq::pipe_t *pipe_);
+        void xpipe_terminated (zmq::pipe_t *pipe_);
 
     private:
 

@@ -100,7 +100,7 @@ namespace zmq
         void read_activated (pipe_t *pipe_);
         void write_activated (pipe_t *pipe_);
         void hiccuped (pipe_t *pipe_);
-        void terminated (pipe_t *pipe_);
+        void pipe_terminated (pipe_t *pipe_);
         void lock();
         void unlock();
 
@@ -145,7 +145,7 @@ namespace zmq
         virtual void xread_activated (pipe_t *pipe_);
         virtual void xwrite_activated (pipe_t *pipe_);
         virtual void xhiccuped (pipe_t *pipe_);
-        virtual void xterminated (pipe_t *pipe_) = 0;
+        virtual void xpipe_terminated (pipe_t *pipe_) = 0;
 
         //  Delay actual destruction of the socket.
         void process_destroy ();

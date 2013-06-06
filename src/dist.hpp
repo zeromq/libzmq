@@ -54,7 +54,7 @@ namespace zmq
         void unmatch ();
 
         //  Removes the pipe from the distributor object.
-        void terminated (zmq::pipe_t *pipe_);
+        void pipe_terminated (zmq::pipe_t *pipe_);
 
         //  Send the message to the matching outbound pipes.
         int send_to_matching (zmq::msg_t *msg_);

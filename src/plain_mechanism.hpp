@@ -27,17 +27,20 @@ namespace zmq
 {
 
     class msg_t;
+    class session_base_t;
 
     class plain_mechanism_t : public mechanism_t
     {
     public:
 
-        plain_mechanism_t (const options_t &options_);
+        plain_mechanism_t (session_base_t *session_,
+                           const options_t &options_);
         virtual ~plain_mechanism_t ();
 
         // mechanism implementation
         virtual int next_handshake_message (msg_t *msg_);
         virtual int process_handshake_message (msg_t *msg_);
+        virtual int zap_msg_available ();
         virtual bool is_handshake_complete () const;
 
     private:
@@ -51,9 +54,11 @@ namespace zmq
             waiting_for_initiate,
             sending_ready,
             waiting_for_ready,
+            waiting_for_zap_reply,
             ready
         };
 
+        session_base_t * const session;
         state_t state;
 
         int hello_command (msg_t *msg_) const;
@@ -65,6 +70,8 @@ namespace zmq
         int process_welcome_command (msg_t *msg);
         int process_ready_command (msg_t *msg_);
         int process_initiate_command (msg_t *msg_);
+
+        int receive_and_process_zap_reply ();
 
         int parse_property_list (const unsigned char *ptr, size_t length);
     };

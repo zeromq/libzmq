@@ -17,7 +17,123 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <pthread.h>
+#include <string.h>
 #include "testutil.hpp"
+
+static bool
+authenticate (const unsigned char *data, size_t data_length)
+{
+    const char *username = "admin";
+    const size_t username_length = strlen (username);
+    const char *password = "password";
+    const size_t password_length = strlen (password);
+
+    if (data_length != 1 + username_length + 1 + password_length)
+        return false;
+    if (data [0] != username_length)
+        return false;
+    if (memcmp (data + 1, username, username_length))
+        return false;
+    if (data [1 + username_length] != password_length)
+        return false;
+    if (memcmp (data + 1 + username_length + 1, password, password_length))
+        return false;
+    return true;
+}
+
+static void *
+zap_handler (void *zap)
+{
+    int rc, more;
+    size_t optlen;
+    zmq_msg_t version, seqno, domain, mechanism, credentials;
+    zmq_msg_t status_code, status_text, user_id;
+
+    //  Version
+    rc = zmq_msg_init (&version);
+    assert (rc == 0);
+    rc = zmq_msg_recv (&version, zap, 0);
+    assert (rc == 3 && memcmp (zmq_msg_data (&version), "1.0", 3) == 0);
+    optlen = sizeof more;
+    rc = zmq_getsockopt (zap, ZMQ_RCVMORE, &more, &optlen);
+    assert (rc == 0 && more == 1);
+
+    //  Sequence number
+    rc = zmq_msg_init (&seqno);
+    assert (rc == 0);
+    rc = zmq_msg_recv (&seqno, zap, 0);
+    assert (rc != -1);
+    optlen = sizeof more;
+    rc = zmq_getsockopt (zap, ZMQ_RCVMORE, &more, &optlen);
+    assert (rc == 0 && more == 1);
+
+    //  Domain
+    rc = zmq_msg_init (&domain);
+    assert (rc == 0);
+    rc = zmq_msg_recv (&domain, zap, 0);
+    assert (rc != -1);
+    optlen = sizeof more;
+    rc = zmq_getsockopt (zap, ZMQ_RCVMORE, &more, &optlen);
+    assert (rc == 0 && more == 1);
+
+    //  Mechanism
+    rc = zmq_msg_init (&mechanism);
+    assert (rc == 0);
+    rc = zmq_msg_recv (&mechanism, zap, 0);
+    assert (rc == 5 && memcmp (zmq_msg_data (&mechanism), "PLAIN", 5) == 0);
+    optlen = sizeof more;
+    rc = zmq_getsockopt (zap, ZMQ_RCVMORE, &more, &optlen);
+    assert (rc == 0 && more == 1);
+
+    //  Credentials
+    rc = zmq_msg_init (&credentials);
+    assert (rc == 0);
+    rc = zmq_msg_recv (&credentials, zap, 0);
+    optlen = sizeof more;
+    rc = zmq_getsockopt (zap, ZMQ_RCVMORE, &more, &optlen);
+    assert (rc == 0 && more == 0);
+
+    const bool auth_ok =
+        authenticate ((unsigned char *) zmq_msg_data (&credentials),
+                      zmq_msg_size (&credentials));
+
+    rc = zmq_msg_send (&version, zap, ZMQ_SNDMORE);
+    assert (rc == 3);
+
+    rc = zmq_msg_send (&seqno, zap, ZMQ_SNDMORE);
+    assert (rc != -1);
+
+    rc = zmq_msg_init_size (&status_code, 3);
+    assert (rc == 0);
+    memcpy (zmq_msg_data (&status_code), auth_ok? "200": "400", 3);
+    rc = zmq_msg_send (&status_code, zap, ZMQ_SNDMORE);
+    assert (rc == 3);
+
+    rc = zmq_msg_init (&status_text);
+    assert (rc == 0);
+    rc = zmq_msg_send (&status_text, zap, ZMQ_SNDMORE);
+    assert (rc == 0);
+
+    rc = zmq_msg_init (&user_id);
+    assert (rc == 0);
+    rc = zmq_msg_send (&user_id, zap, 0);
+    assert (rc == 0);
+
+    rc = zmq_msg_close (&domain);
+    assert (rc == 0);
+
+    rc = zmq_msg_close (&mechanism);
+    assert (rc == 0);
+
+    rc = zmq_msg_close (&credentials);
+    assert (rc == 0);
+
+    rc = zmq_close (zap);
+    assert (rc == 0);
+
+    return NULL;
+}
 
 int main (void)
 {
@@ -122,6 +238,18 @@ int main (void)
     assert (rc == 0);
     assert (as_server == 1);
 
+    //  Create and bind ZAP socket
+    void *zap = zmq_socket (ctx, ZMQ_REP);
+    assert (zap);
+
+    rc = zmq_bind (zap, "inproc://zeromq.zap.01");
+    assert (rc == 0);
+
+    //  Spawn ZAP handler
+    pthread_t zap_thread;
+    rc = pthread_create (&zap_thread, NULL, &zap_handler, zap);
+    assert (rc == 0);
+
     rc = zmq_bind (server, "tcp://*:9998");
     assert (rc == 0);
     rc = zmq_connect (client, "tcp://localhost:9998");
@@ -133,6 +261,9 @@ int main (void)
     assert (rc == 0);
     rc = zmq_close (server);
     assert (rc == 0);
+
+    //  Wait until ZAP handler terminates.
+    pthread_join (zap_thread, NULL);
     
     //  Check PLAIN security -- two servers trying to talk to each other
     server = zmq_socket (ctx, ZMQ_DEALER);

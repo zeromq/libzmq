@@ -59,6 +59,7 @@ namespace zmq
         void terminate ();
         void activate_in ();
         void activate_out ();
+        void zap_msg_available () {}
 
         //  i_poll_events interface implementation.
         void in_event ();
