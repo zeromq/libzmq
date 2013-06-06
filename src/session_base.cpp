@@ -217,9 +217,9 @@ void zmq::session_base_t::pipe_terminated (pipe_t *pipe_)
         terminate ();
     }
 
-    // If we are waiting for pending messages to be sent, at this point
-    // we are sure that there will be no more messages and we can proceed
-    // with termination safely.
+    //  If we are waiting for pending messages to be sent, at this point
+    //  we are sure that there will be no more messages and we can proceed
+    //  with termination safely.
     if (pending && !pipe && terminating_pipes.empty ())
         proceed_with_term ();
 }
@@ -349,7 +349,7 @@ void zmq::session_base_t::process_term (int linger_)
 
 void zmq::session_base_t::proceed_with_term ()
 {
-    //  The pending phase have just ended.
+    //  The pending phase has just ended.
     pending = false;
 
     //  Continue with standard termination.

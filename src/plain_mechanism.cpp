@@ -110,7 +110,6 @@ int zmq::plain_mechanism_t::process_handshake_message (msg_t *msg_)
     return 0;
 }
 
-
 bool zmq::plain_mechanism_t::is_handshake_complete () const
 {
     return state == ready;
@@ -125,7 +124,7 @@ int zmq::plain_mechanism_t::hello_command (msg_t *msg_) const
     const std::string password = options.plain_password;
     zmq_assert (password.length () < 256);
 
-    const size_t command_size = 8 + 1 + username.length () 
+    const size_t command_size = 8 + 1 + username.length ()
                                   + 1 + password.length ();
 
     const int rc = msg_->init_size (command_size);
@@ -134,11 +133,11 @@ int zmq::plain_mechanism_t::hello_command (msg_t *msg_) const
     unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
     memcpy (ptr, "HELLO   ", 8);
     ptr += 8;
-    
+
     *ptr++ = static_cast <unsigned char> (username.length ());
     memcpy (ptr, username.c_str (), username.length ());
     ptr += username.length ();
-    
+
     *ptr++ = static_cast <unsigned char> (password.length ());
     memcpy (ptr, password.c_str (), password.length ());
     ptr += password.length ();
@@ -163,7 +162,7 @@ int zmq::plain_mechanism_t::process_hello_command (msg_t *msg_)
         errno = EPROTO;
         return -1;
     }
-    size_t username_length = static_cast <size_t> (*ptr++);
+    const size_t username_length = static_cast <size_t> (*ptr++);
     bytes_left -= 1;
 
     if (bytes_left < username_length) {
@@ -178,7 +177,7 @@ int zmq::plain_mechanism_t::process_hello_command (msg_t *msg_)
         errno = EPROTO;
         return -1;
     }
-    size_t password_length = static_cast <size_t> (*ptr++);
+    const size_t password_length = static_cast <size_t> (*ptr++);
     bytes_left -= 1;
 
     if (bytes_left < password_length) {
@@ -316,19 +315,19 @@ int zmq::plain_mechanism_t::parse_property_list (const unsigned char *ptr,
         bytes_left -= 1;
         if (bytes_left < name_length)
             break;
-        
+
         const std::string name = std::string ((const char *) ptr, name_length);
         ptr += name_length;
         bytes_left -= name_length;
         if (bytes_left < 4)
             break;
-        
+
         const size_t value_length = static_cast <size_t> (get_uint32 (ptr));
         ptr += 4;
         bytes_left -= 4;
         if (bytes_left < value_length)
             break;
-        
+
         const unsigned char * const value = ptr;
         ptr += value_length;
         bytes_left -= value_length;
