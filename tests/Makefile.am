@@ -18,6 +18,7 @@ noinst_PROGRAMS = test_pair_inproc \
                   test_term_endpoint \
                   test_monitor \
                   test_router_mandatory \
+                  test_probe_router \
                   test_raw_sock \
                   test_disconnect_inproc \
                   test_ctx_options \
@@ -46,6 +47,7 @@ test_last_endpoint_SOURCES = test_last_endpoint.cpp
 test_term_endpoint_SOURCES = test_term_endpoint.cpp
 test_monitor_SOURCES = test_monitor.cpp
 test_router_mandatory_SOURCES = test_router_mandatory.cpp
+test_probe_router_SOURCES = test_probe_router.cpp
 test_raw_sock_SOURCES = test_raw_sock.cpp
 test_disconnect_inproc_SOURCES = test_disconnect_inproc.cpp
 test_ctx_options_SOURCES = test_ctx_options.cpp

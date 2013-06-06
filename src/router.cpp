@@ -32,9 +32,9 @@ zmq::router_t::router_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     current_out (NULL),
     more_out (false),
     next_peer_id (generate_random ()),
-    mandatory(false),
-    raw_sock(false),
-    probe_new_peers(false)
+    mandatory (false),
+    raw_sock (false),
+    probe_router (false)
 {
     options.type = ZMQ_ROUTER;
     options.recv_identity = true;
@@ -91,9 +91,9 @@ int zmq::router_t::xsetsockopt (int option_, const void *optval_,
             }
             break;
 
-        case ZMQ_PROBE:
+        case ZMQ_PROBE_ROUTER:
             if (is_int && value >= 0) {
-                probe_new_peers = value;
+                probe_router = value;
                 return 0;
             }
             break;
@@ -391,19 +391,20 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
     ok = outpipes.insert (outpipes_t::value_type (identity, outpipe)).second;
     zmq_assert (ok);
 
-    if (probe_new_peers) {
-        int rc;
+    if (probe_router) {
         msg_t probe_msg_;
-
-        rc = probe_msg_.init ();
+        int rc = probe_msg_.init ();
         errno_assert (rc == 0);
 
-        rc = pipe_->write (&probe_msg_);
-        zmq_assert (rc);
+        ok = pipe_->write (&probe_msg_);
         pipe_->flush ();
 
         rc = probe_msg_.close ();
         errno_assert (rc == 0);
+
+        //  Ignore not probed peers
+        if (!ok)
+            return false;
     }
 
     return true;

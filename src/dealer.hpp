@@ -62,8 +62,8 @@ namespace zmq
         fq_t fq;
         lb_t lb;
 
-        // if true, send an empty message to every connected peer
-        bool probe_new_peers;
+        // if true, send an empty message to every connected router peer
+        bool probe_router;
 
         dealer_t (const dealer_t&);
         const dealer_t &operator = (const dealer_t&);
