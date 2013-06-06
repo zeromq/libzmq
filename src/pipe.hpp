@@ -50,7 +50,7 @@ namespace zmq
         virtual void read_activated (zmq::pipe_t *pipe_) = 0;
         virtual void write_activated (zmq::pipe_t *pipe_) = 0;
         virtual void hiccuped (zmq::pipe_t *pipe_) = 0;
-        virtual void terminated (zmq::pipe_t *pipe_) = 0;
+        virtual void pipe_terminated (zmq::pipe_t *pipe_) = 0;
     };
 
     //  Note that pipe can be stored in three different arrays.

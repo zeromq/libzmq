@@ -285,7 +285,7 @@ void zmq::pipe_t::process_pipe_term_ack ()
 {
     //  Notify the user that all the references to the pipe should be dropped.
     zmq_assert (sink);
-    sink->terminated (this);
+    sink->pipe_terminated (this);
 
     //  In term_ack_sent and term_req_sent2 states there's nothing to do.
     //  Simply deallocate the pipe. In term_req_sent1 state we have to ack
@@ -340,7 +340,7 @@ void zmq::pipe_t::terminate (bool delay_)
     //  There are still pending messages available, but the user calls
     //  'terminate'. We can act as if all the pending messages were read.
     else
-    if (state == waiting_for_delimiter && delay == 0) {
+    if (state == waiting_for_delimiter && !delay) {
         outpipe = NULL;
         send_pipe_term_ack (peer);
         state = term_ack_sent;

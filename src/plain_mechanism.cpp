@@ -26,12 +26,15 @@
 #include <string>
 
 #include "msg.hpp"
+#include "session_base.hpp"
 #include "err.hpp"
 #include "plain_mechanism.hpp"
 #include "wire.hpp"
 
-zmq::plain_mechanism_t::plain_mechanism_t (const options_t &options_) :
+zmq::plain_mechanism_t::plain_mechanism_t (session_base_t *session_,
+                                           const options_t &options_) :
     mechanism_t (options_),
+    session (session_),
     state (options.as_server? waiting_for_hello: sending_hello)
 {
 }
@@ -79,8 +82,16 @@ int zmq::plain_mechanism_t::process_handshake_message (msg_t *msg_)
     switch (state) {
         case waiting_for_hello:
             rc = process_hello_command (msg_);
-            if (rc == 0)
-                state = sending_welcome;
+            if (rc == 0) {
+                rc = receive_and_process_zap_reply ();
+                if (rc == 0)
+                    state = sending_welcome;
+                else
+                if (errno == EAGAIN) {
+                    rc = 0;
+                    state = waiting_for_zap_reply;
+                }
+            }
             break;
         case waiting_for_welcome:
             rc = process_welcome_command (msg_);
@@ -107,15 +118,25 @@ int zmq::plain_mechanism_t::process_handshake_message (msg_t *msg_)
         rc = msg_->init ();
         errno_assert (rc == 0);
     }
-    return 0;
+    return rc;
 }
-
 
 bool zmq::plain_mechanism_t::is_handshake_complete () const
 {
     return state == ready;
 }
 
+int zmq::plain_mechanism_t::zap_msg_available ()
+{
+    if (state != waiting_for_zap_reply) {
+        errno = EFSM;
+        return -1;
+    }
+    const int rc = receive_and_process_zap_reply ();
+    if (rc == 0)
+        state = sending_welcome;
+    return rc;
+}
 
 int zmq::plain_mechanism_t::hello_command (msg_t *msg_) const
 {
@@ -125,7 +146,7 @@ int zmq::plain_mechanism_t::hello_command (msg_t *msg_) const
     const std::string password = options.plain_password;
     zmq_assert (password.length () < 256);
 
-    const size_t command_size = 8 + 1 + username.length () 
+    const size_t command_size = 8 + 1 + username.length ()
                                   + 1 + password.length ();
 
     const int rc = msg_->init_size (command_size);
@@ -134,11 +155,11 @@ int zmq::plain_mechanism_t::hello_command (msg_t *msg_) const
     unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
     memcpy (ptr, "HELLO   ", 8);
     ptr += 8;
-    
+
     *ptr++ = static_cast <unsigned char> (username.length ());
     memcpy (ptr, username.c_str (), username.length ());
     ptr += username.length ();
-    
+
     *ptr++ = static_cast <unsigned char> (password.length ());
     memcpy (ptr, password.c_str (), password.length ());
     ptr += password.length ();
@@ -163,7 +184,7 @@ int zmq::plain_mechanism_t::process_hello_command (msg_t *msg_)
         errno = EPROTO;
         return -1;
     }
-    size_t username_length = static_cast <size_t> (*ptr++);
+    const size_t username_length = static_cast <size_t> (*ptr++);
     bytes_left -= 1;
 
     if (bytes_left < username_length) {
@@ -178,7 +199,7 @@ int zmq::plain_mechanism_t::process_hello_command (msg_t *msg_)
         errno = EPROTO;
         return -1;
     }
-    size_t password_length = static_cast <size_t> (*ptr++);
+    const size_t password_length = static_cast <size_t> (*ptr++);
     bytes_left -= 1;
 
     if (bytes_left < password_length) {
@@ -193,9 +214,66 @@ int zmq::plain_mechanism_t::process_hello_command (msg_t *msg_)
         errno = EPROTO;
         return -1;
     }
-    
-    //  TODO: Add user authentication
-    //  Note: maybe use RFC 27 (ZAP) for this
+
+    //  Use ZAP protocol (RFC 27) to authenticate user.
+    int rc = session->zap_connect ();
+    if (rc == -1) {
+        errno = EPROTO;
+        return -1;
+    }
+
+    msg_t msg;
+
+    //  Address delimiter frame
+    rc = msg.init ();
+    errno_assert (rc == 0);
+    msg.set_flags (msg_t::more);
+    rc = session->write_zap_msg (&msg);
+    errno_assert (rc == 0);
+
+    //  Version frame
+    rc = msg.init_size (3);
+    errno_assert (rc == 0);
+    memcpy (msg.data (), "1.0", 3);
+    msg.set_flags (msg_t::more);
+    rc = session->write_zap_msg (&msg);
+    errno_assert (rc == 0);
+
+    //  Sequence frame
+    rc = msg.init_size (1);
+    errno_assert (rc == 0);
+    memcpy (msg.data (), "1", 1);
+    msg.set_flags (msg_t::more);
+    rc = session->write_zap_msg (&msg);
+    errno_assert (rc == 0);
+
+    //  Domain frame
+    rc = msg.init ();
+    errno_assert (rc == 0);
+    msg.set_flags (msg_t::more);
+    rc = session->write_zap_msg (&msg);
+    errno_assert (rc == 0);
+
+    //  Mechanism frame
+    rc = msg.init_size (5);
+    errno_assert (rc == 0);
+    memcpy (msg.data (), "PLAIN", 5);
+    msg.set_flags (msg_t::more);
+    rc = session->write_zap_msg (&msg);
+    errno_assert (rc == 0);
+
+    //  Credentials frame
+    rc = msg.init_size (1 + username_length + 1 + password_length);
+    errno_assert (rc == 0);
+    char *data_ptr = static_cast <char *> (msg.data ());
+    *data_ptr++ = static_cast <unsigned char> (username_length);
+    memcpy (data_ptr, username.c_str (), username_length);
+    data_ptr += username_length;
+    *data_ptr++ = static_cast <unsigned char> (password_length);
+    memcpy (data_ptr, password.c_str (), password_length);
+    rc = session->write_zap_msg (&msg);
+    errno_assert (rc == 0);
+
     return 0;
 }
 
@@ -307,6 +385,65 @@ int zmq::plain_mechanism_t::process_ready_command (msg_t *msg_)
     return parse_property_list (ptr + 8, bytes_left - 8);
 }
 
+int zmq::plain_mechanism_t::receive_and_process_zap_reply ()
+{
+    int rc = 0;
+    msg_t msg [6];
+
+    for (int i = 0; i < 6; i++) {
+        rc = msg [i].init ();
+        errno_assert (rc == 0);
+    }
+
+    for (int i = 0; i < 6; i++) {
+        rc = session->read_zap_msg (&msg [i]);
+        if (rc == -1)
+            break;
+        if ((msg [i].flags () & msg_t::more) == (i < 5? 0: msg_t::more)) {
+            errno = EPROTO;
+            rc = -1;
+            break;
+        }
+    }
+
+    if (rc != 0)
+        goto error;
+
+    return 0;
+
+    //  Address delimiter frame
+    if (msg [0].size () > 0) {
+        errno = EPROTO;
+        goto error;
+    }
+
+    //  Version frame
+    if (msg [1].size () != 3 || memcmp (msg [1].data (), "1.0", 3)) {
+        errno = EPROTO;
+        goto error;
+    }
+
+    //  Sequence number frame
+    if (msg [2].size () != 1 || memcmp (msg [2].data (), "1", 1)) {
+        errno = EPROTO;
+        goto error;
+    }
+
+    //  Status code frame
+    if (msg [3].size () != 3 || memcmp (msg [3].data (), "200", 3)) {
+        errno = EACCES;
+        goto error;
+    }
+
+error:
+    for (int i = 0; i < 6; i++) {
+        const int rc2 = msg [i].close ();
+        errno_assert (rc2 == 0);
+    }
+
+    return rc;
+}
+
 int zmq::plain_mechanism_t::parse_property_list (const unsigned char *ptr,
     size_t bytes_left)
 {
@@ -316,19 +453,19 @@ int zmq::plain_mechanism_t::parse_property_list (const unsigned char *ptr,
         bytes_left -= 1;
         if (bytes_left < name_length)
             break;
-        
+
         const std::string name = std::string ((const char *) ptr, name_length);
         ptr += name_length;
         bytes_left -= name_length;
         if (bytes_left < 4)
             break;
-        
+
         const size_t value_length = static_cast <size_t> (get_uint32 (ptr));
         ptr += 4;
         bytes_left -= 4;
         if (bytes_left < value_length)
             break;
-        
+
         const unsigned char * const value = ptr;
         ptr += value_length;
         bytes_left -= value_length;

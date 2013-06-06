@@ -106,7 +106,7 @@ int zmq::router_t::xsetsockopt (int option_, const void *optval_,
 }
 
 
-void zmq::router_t::xterminated (pipe_t *pipe_)
+void zmq::router_t::xpipe_terminated (pipe_t *pipe_)
 {
     std::set <pipe_t*>::iterator it = anonymous_pipes.find (pipe_);
     if (it != anonymous_pipes.end ())
@@ -115,7 +115,7 @@ void zmq::router_t::xterminated (pipe_t *pipe_)
         outpipes_t::iterator it = outpipes.find (pipe_->get_identity ());
         zmq_assert (it != outpipes.end ());
         outpipes.erase (it);
-        fq.terminated (pipe_);
+        fq.pipe_terminated (pipe_);
         if (pipe_ == current_out)
             current_out = NULL;
     }

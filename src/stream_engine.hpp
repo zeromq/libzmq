@@ -62,6 +62,7 @@ namespace zmq
         void terminate ();
         void activate_in ();
         void activate_out ();
+        void zap_msg_available ();
 
         //  i_poll_events interface implementation.
         void in_event ();
@@ -168,10 +169,6 @@ namespace zmq
 
         bool io_error;
 
-        //  True iff the session could not accept more
-        //  messages due to flow control.
-        bool congested;
-
         //  Indicates whether the engine is to inject a phony
         //  subscription message into the incomming stream.
         //  Needed to support old peers.
@@ -179,7 +176,10 @@ namespace zmq
 
         mechanism_t *mechanism;
 
+        //  True iff the engine couldn't consume the last decoded message.
         bool input_paused;
+
+        //  True iff the engine doesn't have any message to encode.
         bool output_paused;
 
         // Socket

@@ -67,10 +67,10 @@ void zmq::xsub_t::xwrite_activated (pipe_t *pipe_)
     dist.activated (pipe_);
 }
 
-void zmq::xsub_t::xterminated (pipe_t *pipe_)
+void zmq::xsub_t::xpipe_terminated (pipe_t *pipe_)
 {
-    fq.terminated (pipe_);
-    dist.terminated (pipe_);
+    fq.pipe_terminated (pipe_);
+    dist.pipe_terminated (pipe_);
 }
 
 void zmq::xsub_t::xhiccuped (pipe_t *pipe_)

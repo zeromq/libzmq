@@ -1003,10 +1003,10 @@ void zmq::socket_base_t::hiccuped (pipe_t *pipe_)
         xhiccuped (pipe_);
 }
 
-void zmq::socket_base_t::terminated (pipe_t *pipe_)
+void zmq::socket_base_t::pipe_terminated (pipe_t *pipe_)
 {
     //  Notify the specific socket type about the pipe termination.
-    xterminated (pipe_);
+    xpipe_terminated (pipe_);
 
     // Remove pipe from inproc pipes
     for (inprocs_t::iterator it = inprocs.begin(); it != inprocs.end(); ++it) {

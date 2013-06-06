@@ -70,7 +70,6 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
     read_msg (&stream_engine_t::read_identity),
     write_msg (&stream_engine_t::write_identity),
     io_error (false),
-    congested (false),
     subscription_required (false),
     mechanism (NULL),
     input_paused (false),
@@ -222,7 +221,7 @@ void zmq::stream_engine_t::in_event ()
     zmq_assert (decoder);
 
     //  If there has been an I/O error, stop polling.
-    if (congested) {
+    if (input_paused) {
         rm_fd (handle);
         io_error = true;
         return;
@@ -270,7 +269,7 @@ void zmq::stream_engine_t::in_event ()
             error ();
             return;
         }
-        congested = true;
+        input_paused = true;
         reset_pollin (handle);
     }
 
@@ -309,6 +308,7 @@ void zmq::stream_engine_t::out_event ()
 
         //  If there is no data to send, stop polling for output.
         if (outsize == 0) {
+            output_paused = true;
             reset_pollout (handle);
             return;
         }
@@ -350,7 +350,10 @@ void zmq::stream_engine_t::activate_out ()
     if (unlikely (io_error))
         return;
 
-    set_pollout (handle);
+    if (likely (output_paused)) {
+        set_pollout (handle);
+        output_paused = false;
+    }
 
     //  Speculative write: The assumption is that at the moment new message
     //  was sent by the user the socket is probably available for writing.
@@ -361,7 +364,7 @@ void zmq::stream_engine_t::activate_out ()
 
 void zmq::stream_engine_t::activate_in ()
 {
-    zmq_assert (congested);
+    zmq_assert (input_paused);
     zmq_assert (session != NULL);
     zmq_assert (decoder != NULL);
 
@@ -393,7 +396,7 @@ void zmq::stream_engine_t::activate_in ()
     if (rc == -1 || io_error)
         error ();
     else {
-        congested = false;
+        input_paused = false;
         set_pollin (handle);
         session->flush ();
 
@@ -533,7 +536,7 @@ bool zmq::stream_engine_t::handshake ()
         }
         else
         if (memcmp (greeting_recv + 12, "PLAIN\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
-            mechanism = new (std::nothrow) plain_mechanism_t (options);
+            mechanism = new (std::nothrow) plain_mechanism_t (session, options);
             alloc_assert (mechanism);
         }
         else {
@@ -596,15 +599,8 @@ int zmq::stream_engine_t::next_handshake_message (msg_t *msg_)
     if (rc == 0) {
         if (mechanism->is_handshake_complete ())
             mechanism_ready ();
-        if (input_paused) {
+        if (input_paused)
             activate_in ();
-            input_paused = false;
-        }
-    }
-    else
-    if (rc == -1) {
-        zmq_assert (errno == EAGAIN);
-        output_paused = true;
     }
 
     return rc;
@@ -618,16 +614,26 @@ int zmq::stream_engine_t::process_handshake_message (msg_t *msg_)
     if (rc == 0) {
         if (mechanism->is_handshake_complete ())
             mechanism_ready ();
-        if (output_paused) {
+        if (output_paused)
             activate_out ();
-            output_paused = false;
-        }
     }
-    else
-    if (rc == -1 && errno == EAGAIN)
-        input_paused = true;
 
     return rc;
+}
+
+void zmq::stream_engine_t::zap_msg_available ()
+{
+    zmq_assert (mechanism != NULL);
+
+    const int rc = mechanism->zap_msg_available ();
+    if (rc == -1) {
+        error ();
+        return;
+    }
+    if (input_paused)
+        activate_in ();
+    if (output_paused)
+        activate_out ();
 }
 
 void zmq::stream_engine_t::mechanism_ready ()

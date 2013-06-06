@@ -49,7 +49,7 @@ void zmq::pair_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
         pipe_->terminate (false);
 }
 
-void zmq::pair_t::xterminated (pipe_t *pipe_)
+void zmq::pair_t::xpipe_terminated (pipe_t *pipe_)
 {
     if (pipe_ == pipe)
         pipe = NULL;

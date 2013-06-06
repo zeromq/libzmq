@@ -46,9 +46,9 @@ void zmq::pull_t::xread_activated (pipe_t *pipe_)
     fq.activated (pipe_);
 }
 
-void zmq::pull_t::xterminated (pipe_t *pipe_)
+void zmq::pull_t::xpipe_terminated (pipe_t *pipe_)
 {
-    fq.terminated (pipe_);
+    fq.pipe_terminated (pipe_);
 }
 
 int zmq::pull_t::xrecv (msg_t *msg_)

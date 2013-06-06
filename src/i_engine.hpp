@@ -46,6 +46,8 @@ namespace zmq
         //  This method is called by the session to signalise that there
         //  are messages to send available.
         virtual void activate_out () = 0;
+
+        virtual void zap_msg_available () = 0;
     };
 
 }

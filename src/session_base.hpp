@@ -61,16 +61,28 @@ namespace zmq
         void read_activated (zmq::pipe_t *pipe_);
         void write_activated (zmq::pipe_t *pipe_);
         void hiccuped (zmq::pipe_t *pipe_);
-        void terminated (zmq::pipe_t *pipe_);
+        void pipe_terminated (zmq::pipe_t *pipe_);
 
         //  Delivers a message. Returns 0 if successful; -1 otherwise.
         //  The function takes ownership of the message.
         int push_msg (msg_t *msg_);
 
+        int zap_connect ();
+
         //  Fetches a message. Returns 0 if successful; -1 otherwise.
         //  The caller is responsible for freeing the message when no
         //  longer used.
         int pull_msg (msg_t *msg_);
+
+        //  Receives message from ZAP socket.
+        //  Returns 0 on success; -1 otherwise.
+        //  The caller is responsible for freeing the message.
+        int read_zap_msg (msg_t *msg_);
+
+        //  Sends message to ZAP socket.
+        //  Returns 0 on success; -1 otherwise.
+        //  The function takes ownership of the message.
+        int write_zap_msg (msg_t *msg_);
 
         socket_base_t *get_socket ();
 
@@ -108,9 +120,12 @@ namespace zmq
 
         //  Pipe connecting the session to its socket.
         zmq::pipe_t *pipe;
-        
+
+        //  Pipe used to exchange messages with ZAP socket.
+        zmq::pipe_t *zap_pipe;
+
         //  This set is added to with pipes we are disconnecting, but haven't yet completed
-        std::set<pipe_t *> terminating_pipes;
+        std::set <pipe_t *> terminating_pipes;
 
         //  This flag is true if the remainder of the message being processed
         //  is still in the in pipe.

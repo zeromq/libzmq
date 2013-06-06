@@ -41,7 +41,7 @@ void zmq::lb_t::attach (pipe_t *pipe_)
     activated (pipe_);
 }
 
-void zmq::lb_t::terminated (pipe_t *pipe_)
+void zmq::lb_t::pipe_terminated (pipe_t *pipe_)
 {
     pipes_t::size_type index = pipes.index (pipe_);
 
