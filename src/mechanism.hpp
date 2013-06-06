@@ -46,6 +46,9 @@ namespace zmq
         //  Process the handshake message received from the peer.
         virtual int process_handshake_message (msg_t *msg_) = 0;
 
+        //  Notifies mechanism about availability of ZAP message.
+        virtual int zap_msg_available () { return 0; }
+
         //  True iff the handshake stage is complete?
         virtual bool is_handshake_complete () const = 0;
 

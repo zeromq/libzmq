@@ -28,6 +28,7 @@
 #include "pgm_receiver.hpp"
 #include "address.hpp"
 
+#include "ctx.hpp"
 #include "req.hpp"
 #include "dealer.hpp"
 #include "rep.hpp"
@@ -105,6 +106,7 @@ zmq::session_base_t::session_base_t (class io_thread_t *io_thread_,
     io_object_t (io_thread_),
     connect (connect_),
     pipe (NULL),
+    zap_pipe (NULL),
     incomplete_in (false),
     pending (false),
     engine (NULL),
@@ -118,6 +120,7 @@ zmq::session_base_t::session_base_t (class io_thread_t *io_thread_,
 zmq::session_base_t::~session_base_t ()
 {
     zmq_assert (!pipe);
+    zmq_assert (!zap_pipe);
 
     //  If there's still a pending linger timer, remove it.
     if (has_linger_timer) {
@@ -165,6 +168,39 @@ int zmq::session_base_t::push_msg (msg_t *msg_)
     return -1;
 }
 
+int zmq::session_base_t::read_zap_msg (msg_t *msg_)
+{
+    if (zap_pipe == NULL) {
+        errno = ENOTCONN;
+        return -1;
+    }
+
+    if (!zap_pipe->read (msg_)) {
+        errno = EAGAIN;
+        return -1;
+    }
+
+    return 0;
+}
+
+int zmq::session_base_t::write_zap_msg (msg_t *msg_)
+{
+    if (zap_pipe == NULL) {
+        errno = ENOTCONN;
+        return -1;
+    }
+
+    const bool ok = zap_pipe->write (msg_);
+    zmq_assert (ok);
+
+    if ((msg_->flags () & msg_t::more) == 0)
+        zap_pipe->flush ();
+
+    const int rc = msg_->init ();
+    errno_assert (rc == 0);
+    return 0;
+}
+
 void zmq::session_base_t::reset ()
 {
 }
@@ -200,11 +236,17 @@ void zmq::session_base_t::clean_pipes ()
 void zmq::session_base_t::pipe_terminated (pipe_t *pipe_)
 {
     // Drop the reference to the deallocated pipe if required.
-    zmq_assert (pipe == pipe_ || terminating_pipes.count (pipe_) == 1);
+    zmq_assert (pipe_ == pipe
+             || pipe_ == zap_pipe
+             || terminating_pipes.count (pipe_) == 1);
 
-    if (pipe == pipe_)
+    if (pipe_ == pipe)
         // If this is our current pipe, remove it
         pipe = NULL;
+    else
+    if (pipe_ == zap_pipe) {
+        zap_pipe = NULL;
+    }
     else
         // Remove the pipe from the detached pipes set
         terminating_pipes.erase (pipe_);
@@ -220,22 +262,27 @@ void zmq::session_base_t::pipe_terminated (pipe_t *pipe_)
     //  If we are waiting for pending messages to be sent, at this point
     //  we are sure that there will be no more messages and we can proceed
     //  with termination safely.
-    if (pending && !pipe && terminating_pipes.empty ())
+    if (pending && !pipe && !zap_pipe && terminating_pipes.empty ())
         proceed_with_term ();
 }
 
 void zmq::session_base_t::read_activated (pipe_t *pipe_)
 {
     // Skip activating if we're detaching this pipe
-    if (pipe != pipe_) {
+    if (unlikely(pipe_ != pipe && pipe_ != zap_pipe)) {
         zmq_assert (terminating_pipes.count (pipe_) == 1);
         return;
     }
 
-    if (likely (engine != NULL))
+    if (unlikely (engine == NULL)) {
+        pipe->check_read ();
+        return;
+    }
+
+    if (likely (pipe_ == pipe))
         engine->activate_out ();
     else
-        pipe->check_read ();
+        engine->zap_msg_available ();
 }
 
 void zmq::session_base_t::write_activated (pipe_t *pipe_)
@@ -266,6 +313,50 @@ void zmq::session_base_t::process_plug ()
 {
     if (connect)
         start_connecting (false);
+}
+
+int zmq::session_base_t::zap_connect ()
+{
+    zmq_assert (zap_pipe == NULL);
+
+    endpoint_t peer = find_endpoint ("inproc://zeromq.zap.01");
+    if (peer.socket == NULL) {
+        errno = ECONNREFUSED;
+        return -1;
+    }
+    if (peer.options.type != ZMQ_REP
+    &&  peer.options.type != ZMQ_ROUTER) {
+        errno = ECONNREFUSED;
+        return -1;
+    }
+
+    //  Create a bi-directional pipe that will connect
+    //  session with zap socket.
+    object_t *parents [2] = {this, peer.socket};
+    pipe_t *new_pipes [2] = {NULL, NULL};
+    int hwms [2] = {0, 0};
+    bool delays [2] = {false, false};
+    int rc = pipepair (parents, new_pipes, hwms, delays);
+    errno_assert (rc == 0);
+
+    //  Attach local end of the pipe to this socket object.
+    zap_pipe = new_pipes [0];
+    zap_pipe->set_event_sink (this);
+
+    send_bind (peer.socket, new_pipes [1], false);
+
+    //  Send empty identity if required by the peer.
+    if (peer.options.recv_identity) {
+        msg_t id;
+        rc = id.init ();
+        errno_assert (rc == 0);
+        id.set_flags (msg_t::identity);
+        bool ok = zap_pipe->write (&id);
+        zmq_assert (ok);
+        zap_pipe->flush ();
+    }
+
+    return 0;
 }
 
 void zmq::session_base_t::process_attach (i_engine *engine_)
@@ -312,6 +403,9 @@ void zmq::session_base_t::detach ()
     //  Just in case there's only a delimiter in the pipe.
     if (pipe)
         pipe->check_read ();
+
+    if (zap_pipe)
+        zap_pipe->check_read ();
 }
 
 void zmq::session_base_t::process_term (int linger_)
@@ -321,30 +415,35 @@ void zmq::session_base_t::process_term (int linger_)
     //  If the termination of the pipe happens before the term command is
     //  delivered there's nothing much to do. We can proceed with the
     //  stadard termination immediately.
-    if (!pipe) {
+    if (!pipe && !zap_pipe) {
         proceed_with_term ();
         return;
     }
 
     pending = true;
 
-    //  If there's finite linger value, delay the termination.
-    //  If linger is infinite (negative) we don't even have to set
-    //  the timer.
-    if (linger_ > 0) {
-        zmq_assert (!has_linger_timer);
-        add_timer (linger_, linger_timer_id);
-        has_linger_timer = true;
+    if (pipe != NULL) {
+        //  If there's finite linger value, delay the termination.
+        //  If linger is infinite (negative) we don't even have to set
+        //  the timer.
+        if (linger_ > 0) {
+            zmq_assert (!has_linger_timer);
+            add_timer (linger_, linger_timer_id);
+            has_linger_timer = true;
+        }
+
+        //  Start pipe termination process. Delay the termination till all messages
+        //  are processed in case the linger time is non-zero.
+        pipe->terminate (linger_ != 0);
+
+        //  TODO: Should this go into pipe_t::terminate ?
+        //  In case there's no engine and there's only delimiter in the
+        //  pipe it wouldn't be ever read. Thus we check for it explicitly.
+        pipe->check_read ();
     }
 
-    //  Start pipe termination process. Delay the termination till all messages
-    //  are processed in case the linger time is non-zero.
-    pipe->terminate (linger_ != 0);
-
-    //  TODO: Should this go into pipe_t::terminate ?
-    //  In case there's no engine and there's only delimiter in the
-    //  pipe it wouldn't be ever read. Thus we check for it explicitly.
-    pipe->check_read ();
+    if (zap_pipe != NULL)
+        zap_pipe->terminate (false);
 }
 
 void zmq::session_base_t::proceed_with_term ()
