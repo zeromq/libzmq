@@ -262,18 +262,21 @@ int zmq::plain_mechanism_t::process_hello_command (msg_t *msg_)
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);
 
-    //  Credentials frame
-    rc = msg.init_size (1 + username_length + 1 + password_length);
+    //  Username frame
+    rc = msg.init_size (username_length);
     errno_assert (rc == 0);
-    char *data_ptr = static_cast <char *> (msg.data ());
-    *data_ptr++ = static_cast <unsigned char> (username_length);
-    memcpy (data_ptr, username.c_str (), username_length);
-    data_ptr += username_length;
-    *data_ptr++ = static_cast <unsigned char> (password_length);
-    memcpy (data_ptr, password.c_str (), password_length);
+    memcpy (msg.data (), username.c_str (), username_length);
+    msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);
-
+    
+    //  Password frame
+    rc = msg.init_size (password_length);
+    errno_assert (rc == 0);
+    memcpy (msg.data (), password.c_str (), password_length);
+    rc = session->write_zap_msg (&msg);
+    errno_assert (rc == 0);
+    
     return 0;
 }
 
