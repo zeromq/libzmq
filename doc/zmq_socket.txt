@@ -71,11 +71,9 @@ sequence of _zmq_send(request)_ and subsequent _zmq_recv(reply)_ calls. Each
 request sent is round-robined among all _services_, and each reply received is
 matched with the last issued request.
 
-When a 'ZMQ_REQ' socket enters the 'mute' state due to having reached the
-high water mark for all _services_, or if there are no _services_ at all, then
-any linkzmq:zmq_send[3] operations on the socket shall block until the
-'mute' state ends or at least one _service_ becomes available for sending;
-messages are not discarded.
+If no services are available, then any send operation on the socket shall 
+block until at least one _service_ becomes available. The REQ socket shall
+not discard messages.
 
 [horizontal]
 .Summary of ZMQ_REQ characteristics
@@ -94,11 +92,7 @@ send replies to a _client_. This socket type allows only an alternating
 sequence of _zmq_recv(request)_ and subsequent _zmq_send(reply)_ calls. Each
 request received is fair-queued from among all _clients_, and each reply sent
 is routed to the _client_ that issued the last request. If the original
-requester doesn't exist any more the reply is silently discarded.
-
-When a 'ZMQ_REP' socket enters the 'mute' state due to having reached the
-high water mark for a _client_, then any replies sent to the _client_ in
-question shall be dropped until the mute state ends.
+requester does not exist any more the reply is silently discarded.
 
 [horizontal]
 .Summary of ZMQ_REP characteristics
@@ -107,7 +101,6 @@ Direction:: Bidirectional
 Send/receive pattern:: Receive, Send, Receive, Send, ...
 Incoming routing strategy:: Fair-queued
 Outgoing routing strategy:: Last peer
-Action in mute state:: Drop
 
 
 ZMQ_DEALER
@@ -125,8 +118,6 @@ discarded.
 When a 'ZMQ_DEALER' socket is connected to a 'ZMQ_REP' socket each message sent
 must consist of an empty message part, the _delimiter_, followed by one or more
 _body parts_.
-
-Deprecated alias: 'ZMQ_XREQ'.
 
 [horizontal]
 .Summary of ZMQ_DEALER characteristics
@@ -161,8 +152,6 @@ _delimiter_ message part. Hence, the entire structure of each received message
 as seen by the application becomes: one or more _identity_ parts, _delimiter_
 part, one or more _body parts_. When sending replies to a 'ZMQ_REQ' socket the
 application must include the _delimiter_ part.
-
-Deprecated alias: 'ZMQ_XREP'.
 
 [horizontal]
 .Summary of ZMQ_ROUTER characteristics
@@ -216,7 +205,6 @@ Direction:: Unidirectional
 Send/receive pattern:: Receive only
 Incoming routing strategy:: Fair-queued
 Outgoing routing strategy:: N/A
-Action in mute state:: Drop
 
 
 ZMQ_XPUB
