@@ -21,33 +21,12 @@
 #include <string.h>
 #include "testutil.hpp"
 
-static bool
-authenticate (const unsigned char *data, size_t data_length)
-{
-    const char *username = "admin";
-    const size_t username_length = strlen (username);
-    const char *password = "password";
-    const size_t password_length = strlen (password);
-
-    if (data_length != 1 + username_length + 1 + password_length)
-        return false;
-    if (data [0] != username_length)
-        return false;
-    if (memcmp (data + 1, username, username_length))
-        return false;
-    if (data [1 + username_length] != password_length)
-        return false;
-    if (memcmp (data + 1 + username_length + 1, password, password_length))
-        return false;
-    return true;
-}
-
 static void *
 zap_handler (void *zap)
 {
     int rc, more;
     size_t optlen;
-    zmq_msg_t version, seqno, domain, mechanism, credentials;
+    zmq_msg_t version, seqno, domain, mechanism, username, password;
     zmq_msg_t status_code, status_text, user_id;
 
     //  Version
@@ -86,17 +65,24 @@ zap_handler (void *zap)
     rc = zmq_getsockopt (zap, ZMQ_RCVMORE, &more, &optlen);
     assert (rc == 0 && more == 1);
 
-    //  Credentials
-    rc = zmq_msg_init (&credentials);
+    //  Username
+    rc = zmq_msg_init (&username);
     assert (rc == 0);
-    rc = zmq_msg_recv (&credentials, zap, 0);
+    rc = zmq_msg_recv (&username, zap, 0);
+    bool username_ok = (rc == 5 && memcmp (zmq_msg_data (&username), "admin", 5) == 0);
+    optlen = sizeof more;
+    rc = zmq_getsockopt (zap, ZMQ_RCVMORE, &more, &optlen);
+    assert (rc == 0 && more == 1);
+    
+    //  Password
+    rc = zmq_msg_init (&password);
+    assert (rc == 0);
+    rc = zmq_msg_recv (&password, zap, 0);
     optlen = sizeof more;
     rc = zmq_getsockopt (zap, ZMQ_RCVMORE, &more, &optlen);
     assert (rc == 0 && more == 0);
-
-    const bool auth_ok =
-        authenticate ((unsigned char *) zmq_msg_data (&credentials),
-                      zmq_msg_size (&credentials));
+    
+    bool password_ok = (rc == 8 && memcmp (zmq_msg_data (&password), "password", 8) == 0);
 
     rc = zmq_msg_send (&version, zap, ZMQ_SNDMORE);
     assert (rc == 3);
@@ -106,7 +92,7 @@ zap_handler (void *zap)
 
     rc = zmq_msg_init_size (&status_code, 3);
     assert (rc == 0);
-    memcpy (zmq_msg_data (&status_code), auth_ok? "200": "400", 3);
+    memcpy (zmq_msg_data (&status_code), username_ok && password_ok? "200": "400", 3);
     rc = zmq_msg_send (&status_code, zap, ZMQ_SNDMORE);
     assert (rc == 3);
 
@@ -126,9 +112,12 @@ zap_handler (void *zap)
     rc = zmq_msg_close (&mechanism);
     assert (rc == 0);
 
-    rc = zmq_msg_close (&credentials);
+    rc = zmq_msg_close (&username);
     assert (rc == 0);
 
+    rc = zmq_msg_close (&password);
+    assert (rc == 0);
+    
     rc = zmq_close (zap);
     assert (rc == 0);
 
