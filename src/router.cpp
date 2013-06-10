@@ -59,6 +59,19 @@ void zmq::router_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
 
     zmq_assert (pipe_);
 
+    if (probe_router) {
+        msg_t probe_msg_;
+        int rc = probe_msg_.init ();
+        errno_assert (rc == 0);
+
+        rc = pipe_->write (&probe_msg_);
+        // zmq_assert (rc) is not applicable here, since it is not a bug.
+        pipe_->flush ();
+
+        rc = probe_msg_.close ();
+        errno_assert (rc == 0);
+    }
+
     bool identity_ok = identify_peer (pipe_);
     if (identity_ok)
         fq.attach (pipe_);
@@ -390,22 +403,6 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
     outpipe_t outpipe = {pipe_, true};
     ok = outpipes.insert (outpipes_t::value_type (identity, outpipe)).second;
     zmq_assert (ok);
-
-    if (probe_router) {
-        msg_t probe_msg_;
-        int rc = probe_msg_.init ();
-        errno_assert (rc == 0);
-
-        ok = pipe_->write (&probe_msg_);
-        pipe_->flush ();
-
-        rc = probe_msg_.close ();
-        errno_assert (rc == 0);
-
-        //  Ignore not probed peers
-        if (!ok)
-            return false;
-    }
 
     return true;
 }

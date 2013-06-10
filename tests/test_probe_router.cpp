@@ -35,9 +35,7 @@ int main (void)
     assert (rc == 0);
 
     //  Create client and connect to server, doing a probe
-    void *client = zmq_socket (ctx, ZMQ_DEALER);
-    //  Trying this results in the first recv waiting forever
-    // void *client = zmq_socket (ctx, ZMQ_ROUTER);
+    void *client = zmq_socket (ctx, ZMQ_ROUTER);
     assert (client);
     rc = zmq_setsockopt (client, ZMQ_IDENTITY, "X", 1);
     assert (rc == 0);
