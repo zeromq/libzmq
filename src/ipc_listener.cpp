@@ -119,19 +119,24 @@ int zmq::ipc_listener_t::get_address (std::string &addr_)
 
 int zmq::ipc_listener_t::set_address (const char *addr_)
 {
-    // Allow wildcard file
-    if (*addr_ == '*') {
-        addr_ = tempnam(NULL, NULL);
+    //  Create addr on stack for auto-cleanup
+    std::string addr (addr_);
+
+    //  Allow wildcard file
+    if (addr[0] == '*') {
+        char *tmpstr = tempnam (NULL, NULL);
+        addr.assign (tmpstr);
+        free (tmpstr);
     }
 
     //  Get rid of the file associated with the UNIX domain socket that
     //  may have been left behind by the previous run of the application.
-    ::unlink (addr_);
+    ::unlink (addr.c_str());
     filename.clear ();
 
     //  Initialise the address structure.
     ipc_address_t address;
-    int rc = address.resolve (addr_);
+    int rc = address.resolve (addr.c_str());
     if (rc != 0)
         return -1;
 
@@ -147,10 +152,10 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
     if (rc != 0)
         goto error;
 
-    filename.assign(addr_);
+    filename.assign (addr.c_str());
     has_file = true;
 
-    //  Listen for incomming connections.
+    //  Listen for incoming connections.
     rc = listen (s, options.backlog);
     if (rc != 0)
         goto error;
