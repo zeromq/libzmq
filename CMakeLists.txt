@@ -306,16 +306,19 @@ set(cxx-sources
         kqueue.cpp
         lb.cpp
         mailbox.cpp
+	mechanism.cpp
         msg.cpp
         mtrie.cpp
         object.cpp
         options.cpp
         own.cpp
+	null_mechanism.cpp
         pair.cpp
         pgm_receiver.cpp
         pgm_sender.cpp
         pgm_socket.cpp
         pipe.cpp
+	plain_mechanism.cpp
         poll.cpp
         poller_base.cpp
         precompiled.cpp
