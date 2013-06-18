@@ -15,6 +15,8 @@ libzmq_la_SOURCES = \
     command.hpp \
     config.hpp \
     ctx.hpp \
+    curve_client.hpp \
+    curve_server.hpp \
     decoder.hpp \
     devpoll.hpp \
     dist.hpp \
@@ -89,6 +91,8 @@ libzmq_la_SOURCES = \
     address.cpp \
     clock.cpp \
     ctx.cpp \
+    curve_client.cpp \
+    curve_server.cpp \
     devpoll.cpp \
     dist.cpp \
     epoll.cpp \

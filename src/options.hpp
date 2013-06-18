@@ -132,6 +132,15 @@ namespace zmq
         std::string plain_username;
         std::string plain_password;
 
+        unsigned char public_key_size;
+        unsigned char public_key [32];
+
+        unsigned char secret_key_size;
+        unsigned char secret_key [32];
+
+        unsigned char server_key_size;
+        unsigned char server_key [32];
+
         //  ID of the socket.
         int socket_id;
     };
