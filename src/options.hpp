@@ -28,6 +28,8 @@
 #include "tcp_address.hpp"
 #include "../include/zmq.h"
 
+#define CURVE_KEYSIZE    32
+
 namespace zmq
 {
     struct options_t
@@ -125,6 +127,7 @@ namespace zmq
 
         //  Security mechanism for all connections on this socket
         int mechanism;
+        
         //  If peer is acting as server for PLAIN or CURVE mechanisms
         int as_server;          
         
@@ -132,14 +135,10 @@ namespace zmq
         std::string plain_username;
         std::string plain_password;
 
-        unsigned char public_key_size;
-        unsigned char public_key [32];
-
-        unsigned char secret_key_size;
-        unsigned char secret_key [32];
-
-        unsigned char server_key_size;
-        unsigned char server_key [32];
+        //  Security credentials for CURVE mechanism
+        uint8_t curve_public_key [CURVE_KEYSIZE];
+        uint8_t curve_secret_key [CURVE_KEYSIZE];
+        uint8_t curve_server_key [CURVE_KEYSIZE];
 
         //  ID of the socket.
         int socket_id;

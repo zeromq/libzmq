@@ -187,10 +187,10 @@ The following security mechanisms are provided for IPC and TCP connections:
 Null security::
     linkzmq:zmq_null[7]
 
-Clear-text authentication using username and password::
-    linkzmq:zmq_clear[7]
+Plain-text authentication using username and password::
+    linkzmq:zmq_plain[7]
 
-Secure authentication and encryption::
+Elliptic curve authentication and encryption::
     linkzmq:zmq_curve[7]
 
 
