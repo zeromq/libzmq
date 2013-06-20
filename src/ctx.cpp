@@ -35,8 +35,11 @@
 #include "err.hpp"
 #include "msg.hpp"
 
+#define ZMQ_CTX_TAG_VALUE_GOOD 0xabadcafe
+#define ZMQ_CTX_TAG_VALUE_BAD  0xdeadbeef
+
 zmq::ctx_t::ctx_t () :
-    tag (0xabadcafe),
+    tag (ZMQ_CTX_TAG_VALUE_GOOD),
     starting (true),
     terminating (false),
     reaper (NULL),
@@ -50,7 +53,7 @@ zmq::ctx_t::ctx_t () :
 
 bool zmq::ctx_t::check_tag ()
 {
-    return tag == 0xabadcafe;
+    return tag == ZMQ_CTX_TAG_VALUE_GOOD;
 }
 
 zmq::ctx_t::~ctx_t ()
@@ -78,7 +81,7 @@ zmq::ctx_t::~ctx_t ()
         free (slots);
 
     //  Remove the tag, so that the object is considered dead.
-    tag = 0xdeadbeef;
+    tag = ZMQ_CTX_TAG_VALUE_BAD;
 }
 
 int zmq::ctx_t::terminate ()
