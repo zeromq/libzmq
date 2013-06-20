@@ -67,6 +67,7 @@ bin/
 lib/
 obj/
 builds/msvc/*.suo
+builds/msvc/*.sdf
 builds/msvc/*/*.user
 builds/msvc/*/*Debug
 builds/msvc/*/*Release
@@ -78,4 +79,3 @@ foreign/openpgm/*
 zeromq-*.tar.gz
 zeromq-*.zip
 core
-
