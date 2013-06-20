@@ -291,6 +291,8 @@ set(cxx-sources
         address.cpp
         clock.cpp
         ctx.cpp
+        curve_client.cpp
+        curve_server.cpp
         dealer.cpp
         devpoll.cpp
         dist.cpp
