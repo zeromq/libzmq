@@ -528,7 +528,7 @@ ZMQ_PLAIN_SERVER: Set PLAIN server role
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Defines whether the socket will act as server for PLAIN security, see
-linkzmq:zmq_plain[3]. A value of '1' means the socket will act as
+linkzmq:zmq_plain[7]. A value of '1' means the socket will act as
 PLAIN server. A value of '0' means the socket will not act as PLAIN
 server, and its security role then depends on other option settings.
 Setting this to '0' shall reset the socket security to NULL.
@@ -537,7 +537,7 @@ Setting this to '0' shall reset the socket security to NULL.
 Option value type:: int
 Option value unit:: 0, 1
 Default value:: 0
-Applicable socket types:: all, when using TCP or IPC transports
+Applicable socket types:: all, when using TCP transport
 
 
 ZMQ_PLAIN_USERNAME: Set PLAIN security username
@@ -545,14 +545,14 @@ ZMQ_PLAIN_USERNAME: Set PLAIN security username
 
 Sets the username for outgoing connections over TCP or IPC. If you set this
 to a non-null value, the security mechanism used for connections shall be 
-PLAIN, see linkzmq:zmq_plain[3]. If you set this to a null value, the security 
+PLAIN, see linkzmq:zmq_plain[7]. If you set this to a null value, the security 
 mechanism used for connections shall be NULL, see linkzmq:zmq_null[3].
 
 [horizontal]
 Option value type:: character string
 Option value unit:: N/A
 Default value:: not set
-Applicable socket types:: all, when using TCP or IPC transports
+Applicable socket types:: all, when using TCP transport
 
 
 ZMQ_PLAIN_PASSWORD: Set PLAIN security password
@@ -567,7 +567,66 @@ mechanism used for connections shall be NULL, see linkzmq:zmq_null[3].
 Option value type:: character string
 Option value unit:: N/A
 Default value:: not set
-Applicable socket types:: all, when using TCP or IPC transports
+Applicable socket types:: all, when using TCP transport
+
+
+ZMQ_CURVE_SERVER: Set CURVE server role
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Defines whether the socket will act as server for CURVE security, see
+linkzmq:zmq_curve[7]. A value of '1' means the socket will act as
+CURVE server. A value of '0' means the socket will not act as CURVE
+server, and its security role then depends on other option settings.
+Setting this to '0' shall reset the socket security to NULL. When you
+set this you must also set the ZMQ_CURVE_PUBLICKEY option.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1
+Default value:: 0
+Applicable socket types:: all, when using TCP transport
+
+
+ZMQ_CURVE_PUBLICKEY: Set CURVE public key
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sets the socket's long term public key. You must set this on a CURVE
+client or server socket, see linkzmq:zmq_curve[7]. The key is 32 bytes.
+For servers, it must be persisted and shared through some unspecified
+secure mechanism to clients.
+
+[horizontal]
+Option value type:: binary data
+Option value size:: 32
+Default value:: NULL
+Applicable socket types:: all, when using TCP transport
+
+
+ZMQ_CURVE_SECRETKEY: Set CURVE secret key
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sets the socket's long term secret key. You must set this on a CURVE
+client socket, see linkzmq:zmq_curve[7]. The key is 32 bytes.
+
+[horizontal]
+Option value type:: binary data
+Option value size:: 32
+Default value:: NULL
+Applicable socket types:: all, when using TCP transport
+
+
+ZMQ_CURVE_SERVERKEY: Set CURVE server key
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sets the socket's long term server key. You must set this on a CURVE
+client socket, see linkzmq:zmq_curve[7]. The key is 32 bytes. This
+key must be the same as the public key set on the server socket.
+
+[horizontal]
+Option value type:: binary data
+Option value size:: 32
+Default value:: NULL
+Applicable socket types:: all, when using TCP transport
 
 
 RETURN VALUE
@@ -630,5 +689,3 @@ AUTHORS
 -------
 This page was written by the 0MQ community. To make a change please
 read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.
-
-

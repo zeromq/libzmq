@@ -255,7 +255,6 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 #define ZMQ_MULTICAST_HOPS 25
 #define ZMQ_RCVTIMEO 27
 #define ZMQ_SNDTIMEO 28
-#define ZMQ_IPV4ONLY 31              /*  Request replacement by IPV6          */
 #define ZMQ_LAST_ENDPOINT 32
 #define ZMQ_ROUTER_MANDATORY 33
 #define ZMQ_TCP_KEEPALIVE 34
@@ -273,8 +272,9 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 #define ZMQ_PLAIN_PASSWORD 46
 #define ZMQ_CURVE_SERVER 47
 #define ZMQ_CURVE_PUBLICKEY 48
-#define ZMQ_CURVE_SERVERKEY 49
-#define ZMQ_PROBE_ROUTER 50
+#define ZMQ_CURVE_SECRETKEY 49
+#define ZMQ_CURVE_SERVERKEY 50
+#define ZMQ_PROBE_ROUTER 51
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1
@@ -288,7 +288,8 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 #define ZMQ_PLAIN 1
 #define ZMQ_CURVE 2
 
-/*  Deprecated aliases                                                        */
+/*  Deprecated options and aliases                                            */
+#define ZMQ_IPV4ONLY                31
 #define ZMQ_DELAY_ATTACH_ON_CONNECT ZMQ_IMMEDIATE
 #define ZMQ_NOBLOCK                 ZMQ_DONTWAIT
 #define ZMQ_FAIL_UNROUTABLE         ZMQ_ROUTER_MANDATORY
