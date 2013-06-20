@@ -17,8 +17,11 @@ by this document: <http://rfc.zeromq.org/spec:25>.
 
 CLIENT AND SERVER ROLES
 -----------------------
-A socket using CURVE can be either client or server but not both. The role
-is independent of bind/connect direction.
+A socket using CURVE can be either client or server, at any moment, but 
+not both. The role is independent of bind/connect direction.
+
+A socket can change roles at any point by setting new options. The role
+affects all zmq_connect and zmq_bind calls that follow it.
 
 To become a CURVE server, the application sets the ZMQ_CURVE_SERVER option
 on the socket, and then sets the ZMQ_CURVE_SECRETKEY option to provide the
@@ -27,9 +30,9 @@ socket with its long-term public key, which is used only by clients.
 
 To become a CURVE client, the application sets the ZMQ_CURVE_SERVERKEY 
 option with the long-term public key of the server it intends to connect
-to. A CURVE client can connect to (or accept connections from) at most
-one CURVE server. The application then sets the ZMQ_CURVE_PUBLICKEY and
-ZMQ_CURVE_SECRETKEY options with its client long-term key pair.
+to, or accept connections from, next. The application then sets the 
+ZMQ_CURVE_PUBLICKEY and ZMQ_CURVE_SECRETKEY options with its client 
+long-term key pair.
 
 If the server does authentication it will be based on the client's long
 term public key.
