@@ -40,8 +40,7 @@ zmq::curve_server_t::curve_server_t (session_base_t *session_,
     cn_nonce (1)
 {
     //  Fetch our secret key from socket options
-    zmq_assert (options_.secret_key_size == crypto_box_SECRETKEYBYTES);
-    memcpy (secret_key, options_.secret_key, crypto_box_SECRETKEYBYTES);
+    memcpy (secret_key, options_.curve_secret_key, crypto_box_SECRETKEYBYTES);
 
     //  Generate short-term key pair
     const int rc = crypto_box_keypair (cn_public, cn_secret);

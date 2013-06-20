@@ -37,14 +37,9 @@ zmq::curve_client_t::curve_client_t (const options_t &options_) :
     mechanism_t (options_),
     state (send_hello)
 {
-    zmq_assert (options_.public_key_size == crypto_box_PUBLICKEYBYTES);
-    memcpy (public_key, options_.public_key, crypto_box_PUBLICKEYBYTES);
-
-    zmq_assert (options_.secret_key_size == crypto_box_SECRETKEYBYTES);
-    memcpy (secret_key, options_.secret_key, crypto_box_SECRETKEYBYTES);
-
-    zmq_assert (options_.server_key_size == crypto_box_PUBLICKEYBYTES);
-    memcpy (server_key, options_.server_key, crypto_box_PUBLICKEYBYTES);
+    memcpy (public_key, options_.curve_public_key, crypto_box_PUBLICKEYBYTES);
+    memcpy (secret_key, options_.curve_secret_key, crypto_box_SECRETKEYBYTES);
+    memcpy (server_key, options_.curve_server_key, crypto_box_PUBLICKEYBYTES);
 
     //  Generate short-term key pair
     const int rc = crypto_box_keypair (cn_public, cn_secret);
