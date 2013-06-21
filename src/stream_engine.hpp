@@ -109,8 +109,6 @@ namespace zmq
         size_t add_property (unsigned char *ptr,
             const char *name, const void *value, size_t value_len);
 
-        const char *socket_type_string (int socket_type);
-
         //  Underlying socket.
         fd_t s;
 
