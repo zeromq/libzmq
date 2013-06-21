@@ -58,6 +58,8 @@ namespace zmq
 
     protected:
 
+        //  Only used to identify the socket for the Socket-Type
+        //  property in the wire protocol.
         const char *socket_type_string (int socket_type) const;
 
         size_t add_property (unsigned char *ptr, const char *name,
