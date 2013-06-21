@@ -480,6 +480,13 @@ bool zmq::stream_engine_t::handshake ()
         //  header data away.
         const size_t header_size = options.identity_size + 1 >= 255 ? 10 : 2;
         unsigned char tmp [10], *bufferp = tmp;
+
+        //  Prepare the identity message and load it into encoder.
+        //  Then consume bytes we have already sent to the peer.
+        const int rc = tx_msg.init_size (options.identity_size);
+        zmq_assert (rc == 0);
+        memcpy (tx_msg.data (), options.identity, options.identity_size);
+        encoder->load_msg (&tx_msg);
         size_t buffer_size = encoder->encode (&bufferp, header_size);
         zmq_assert (buffer_size == header_size);
 
