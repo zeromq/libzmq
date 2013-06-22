@@ -660,6 +660,12 @@ void zmq::stream_engine_t::mechanism_ready ()
         msg_t identity;
         mechanism->peer_identity (&identity);
         const int rc = session->push_msg (&identity);
+        if (rc == -1 && errno == EAGAIN) {
+            // If the write is failing at this stage with
+            // an EAGAIN the pipe must be being shut down,
+            // so we can just bail out of the identity set.
+            return;
+        }
         errno_assert (rc == 0);
     }
 
