@@ -101,7 +101,8 @@ namespace zmq
         int initiate_msg (msg_t *msg_);
         int process_ready (msg_t *msg_);
 
-        int parse_property_list (const uint8_t *ptr, size_t length);
+        virtual int property (const std::string name,
+                              const void *value, size_t length);
     };
 
 }

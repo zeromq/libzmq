@@ -285,7 +285,7 @@ int zmq::plain_mechanism_t::process_initiate_command (msg_t *msg_)
         errno = EPROTO;
         return -1;
     }
-    return parse_property_list (ptr + 8, bytes_left - 8);
+    return parse_properties (ptr + 8, bytes_left - 8);
 }
 
 int zmq::plain_mechanism_t::ready_command (msg_t *msg_) const
@@ -329,7 +329,7 @@ int zmq::plain_mechanism_t::process_ready_command (msg_t *msg_)
         errno = EPROTO;
         return -1;
     }
-    return parse_property_list (ptr + 8, bytes_left - 8);
+    return parse_properties (ptr + 8, bytes_left - 8);
 }
 
 void zmq::plain_mechanism_t::send_zap_request (const std::string &username,
@@ -451,42 +451,11 @@ error:
     return rc;
 }
 
-int zmq::plain_mechanism_t::parse_property_list (const unsigned char *ptr,
-    size_t bytes_left)
+int zmq::plain_mechanism_t::property (const std::string name,
+                                      const void *value, size_t length)
 {
-    while (bytes_left > 1) {
-        const size_t name_length = static_cast <size_t> (*ptr);
-        ptr += 1;
-        bytes_left -= 1;
-        if (bytes_left < name_length)
-            break;
-
-        const std::string name = std::string ((const char *) ptr, name_length);
-        ptr += name_length;
-        bytes_left -= name_length;
-        if (bytes_left < 4)
-            break;
-
-        const size_t value_length = static_cast <size_t> (get_uint32 (ptr));
-        ptr += 4;
-        bytes_left -= 4;
-        if (bytes_left < value_length)
-            break;
-
-        const unsigned char * const value = ptr;
-        ptr += value_length;
-        bytes_left -= value_length;
-
-        if (name == "Socket-Type") {
-            //  TODO: Implement socket type checking
-        }
-        else
-        if (name == "Identity" && options.recv_identity)
-            set_peer_identity (value, value_length);
-    }
-    if (bytes_left > 0) {
-        errno = EPROTO;
-        return -1;
+    if (name == "Socket-Type") {
+        //  TODO: Implement socket type checking
     }
     return 0;
 }

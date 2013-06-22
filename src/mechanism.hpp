@@ -69,6 +69,20 @@ namespace zmq
         size_t add_property (unsigned char *ptr, const char *name,
             const void *value, size_t value_len) const;
 
+        //  Parse a list of properties. Returns 0 on success
+        //  and -1 on error, in which case errno is set.
+        int parse_properties (const unsigned char *ptr_, size_t length);
+
+        //  This is called by parse_property method whenever it
+        //  parses a new property. The function should return 0
+        //  on success and -1 on error, in which case it should
+        //  set errno. Signaling error prevetns parser from
+        //  parsing remaining data.
+        //  Derived classes are supposed to override this
+        //  method to handle custom processing.
+        virtual int property (const std::string name_,
+                              const void *value_, size_t length_);
+
         options_t options;
 
     private:

@@ -71,3 +71,53 @@ size_t zmq::mechanism_t::add_property (unsigned char *ptr, const char *name,
 
     return 1 + name_len + 4 + value_len;
 }
+
+int zmq::mechanism_t::parse_properties (const unsigned char *ptr_,
+                                        size_t length_)
+{
+    size_t bytes_left = length_;
+
+    while (bytes_left > 1) {
+        const size_t name_length = static_cast <size_t> (*ptr_);
+        ptr_ += 1;
+        bytes_left -= 1;
+        if (bytes_left < name_length)
+            break;
+
+        const std::string name = std::string ((char *) ptr_, name_length);
+        ptr_ += name_length;
+        bytes_left -= name_length;
+        if (bytes_left < 4)
+            break;
+
+        const size_t value_length = static_cast <size_t> (get_uint32 (ptr_));
+        ptr_ += 4;
+        bytes_left -= 4;
+        if (bytes_left < value_length)
+            break;
+
+        const uint8_t *value = ptr_;
+        ptr_ += value_length;
+        bytes_left -= value_length;
+
+        const int rc = property (name, value, value_length);
+        if (rc == -1)
+            return -1;
+
+        if (name == "Identity" && options.recv_identity)
+            set_peer_identity (value, value_length);
+    }
+    if (bytes_left > 0) {
+        errno = EPROTO;
+        return -1;
+    }
+    return 0;
+}
+
+int zmq::mechanism_t::property (const std::string name_,
+                                const void *value_, size_t length_)
+{
+    //  Default implementation does not check
+    //  property values and returns 0 to signal success.
+    return 0;
+}
