@@ -35,6 +35,7 @@ zmq::plain_mechanism_t::plain_mechanism_t (session_base_t *session_,
                                            const options_t &options_) :
     mechanism_t (options_),
     session (session_),
+    expecting_zap_reply (false),
     state (options.as_server? waiting_for_hello: sending_hello)
 {
 }
@@ -82,16 +83,8 @@ int zmq::plain_mechanism_t::process_handshake_message (msg_t *msg_)
     switch (state) {
         case waiting_for_hello:
             rc = process_hello_command (msg_);
-            if (rc == 0) {
-                rc = receive_and_process_zap_reply ();
-                if (rc == 0)
-                    state = sending_welcome;
-                else
-                if (errno == EAGAIN) {
-                    rc = 0;
-                    state = waiting_for_zap_reply;
-                }
-            }
+            if (rc == 0)
+                state = expecting_zap_reply? waiting_for_zap_reply: sending_welcome;
             break;
         case waiting_for_welcome:
             rc = process_welcome_command (msg_);
@@ -216,68 +209,18 @@ int zmq::plain_mechanism_t::process_hello_command (msg_t *msg_)
         return -1;
     }
 
-    //  Use ZAP protocol (RFC 27) to authenticate user.
+    //  Use ZAP protocol (RFC 27) to authenticate the user.
     int rc = session->zap_connect ();
-    if (rc == -1) {
-        errno = EPROTO;
-        return -1;
+    if (rc == 0) {
+        send_zap_request (username, password);
+        rc = receive_and_process_zap_reply ();
+        if (rc != 0) {
+            if (errno != EAGAIN)
+                return -1;
+            expecting_zap_reply = true;
+        }
     }
 
-    msg_t msg;
-
-    //  Address delimiter frame
-    rc = msg.init ();
-    errno_assert (rc == 0);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
-
-    //  Version frame
-    rc = msg.init_size (3);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), "1.0", 3);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
-
-    //  Sequence frame
-    rc = msg.init_size (1);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), "1", 1);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
-
-    //  Domain frame
-    rc = msg.init ();
-    errno_assert (rc == 0);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
-
-    //  Mechanism frame
-    rc = msg.init_size (5);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), "PLAIN", 5);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
-
-    //  Username frame
-    rc = msg.init_size (username_length);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), username.c_str (), username_length);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
-    
-    //  Password frame
-    rc = msg.init_size (password_length);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), password.c_str (), password_length);
-    rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
-    
     return 0;
 }
 
@@ -387,6 +330,66 @@ int zmq::plain_mechanism_t::process_ready_command (msg_t *msg_)
         return -1;
     }
     return parse_property_list (ptr + 8, bytes_left - 8);
+}
+
+void zmq::plain_mechanism_t::send_zap_request (const std::string &username,
+                                               const std::string &password)
+{
+    int rc;
+    msg_t msg;
+
+    //  Address delimiter frame
+    rc = msg.init ();
+    errno_assert (rc == 0);
+    msg.set_flags (msg_t::more);
+    rc = session->write_zap_msg (&msg);
+    errno_assert (rc == 0);
+
+    //  Version frame
+    rc = msg.init_size (3);
+    errno_assert (rc == 0);
+    memcpy (msg.data (), "1.0", 3);
+    msg.set_flags (msg_t::more);
+    rc = session->write_zap_msg (&msg);
+    errno_assert (rc == 0);
+
+    //  Sequence frame
+    rc = msg.init_size (1);
+    errno_assert (rc == 0);
+    memcpy (msg.data (), "1", 1);
+    msg.set_flags (msg_t::more);
+    rc = session->write_zap_msg (&msg);
+    errno_assert (rc == 0);
+
+    //  Domain frame
+    rc = msg.init ();
+    errno_assert (rc == 0);
+    msg.set_flags (msg_t::more);
+    rc = session->write_zap_msg (&msg);
+    errno_assert (rc == 0);
+
+    //  Mechanism frame
+    rc = msg.init_size (5);
+    errno_assert (rc == 0);
+    memcpy (msg.data (), "PLAIN", 5);
+    msg.set_flags (msg_t::more);
+    rc = session->write_zap_msg (&msg);
+    errno_assert (rc == 0);
+
+    //  Username frame
+    rc = msg.init_size (username.length ());
+    errno_assert (rc == 0);
+    memcpy (msg.data (), username.c_str (), username.length ());
+    msg.set_flags (msg_t::more);
+    rc = session->write_zap_msg (&msg);
+    errno_assert (rc == 0);
+
+    //  Password frame
+    rc = msg.init_size (password.length ());
+    errno_assert (rc == 0);
+    memcpy (msg.data (), password.c_str (), password.length ());
+    rc = session->write_zap_msg (&msg);
+    errno_assert (rc == 0);
 }
 
 int zmq::plain_mechanism_t::receive_and_process_zap_reply ()
