@@ -59,6 +59,10 @@ namespace zmq
         };
 
         session_base_t * const session;
+
+        //  True iff we are awaiting reply from ZAP reply.
+        bool expecting_zap_reply;
+
         state_t state;
 
         int hello_command (msg_t *msg_) const;
@@ -71,6 +75,8 @@ namespace zmq
         int process_ready_command (msg_t *msg_);
         int process_initiate_command (msg_t *msg_);
 
+        void send_zap_request (const std::string &username,
+                               const std::string &password);
         int receive_and_process_zap_reply ();
 
         int parse_property_list (const unsigned char *ptr, size_t length);
