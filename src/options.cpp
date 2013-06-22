@@ -296,6 +296,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         case ZMQ_CURVE_PUBLICKEY:
             if (optvallen_ == CURVE_KEYSIZE) {
                 memcpy (curve_public_key, optval_, CURVE_KEYSIZE);
+                mechanism = ZMQ_CURVE;
                 return 0;
             }
             break;
@@ -303,6 +304,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         case ZMQ_CURVE_SECRETKEY:
             if (optvallen_ == CURVE_KEYSIZE) {
                 memcpy (curve_secret_key, optval_, CURVE_KEYSIZE);
+                mechanism = ZMQ_CURVE;
                 return 0;
             }
             break;
@@ -310,6 +312,8 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         case ZMQ_CURVE_SERVERKEY:
             if (optvallen_ == CURVE_KEYSIZE) {
                 memcpy (curve_server_key, optval_, CURVE_KEYSIZE);
+                as_server = 0;
+                mechanism = ZMQ_CURVE;
                 return 0;
             }
             break;
