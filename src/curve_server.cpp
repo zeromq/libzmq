@@ -98,7 +98,7 @@ int zmq::curve_server_t::process_handshake_message (msg_t *msg_)
             }
             break;
         default:
-            errno = EAGAIN;
+            errno = EPROTO;
             rc = -1;
             break;
     }

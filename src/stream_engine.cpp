@@ -599,8 +599,6 @@ int zmq::stream_engine_t::next_handshake_message (msg_t *msg_)
     if (rc == 0) {
         if (mechanism->is_handshake_complete ())
             mechanism_ready ();
-        if (input_paused)
-            activate_in ();
     }
 
     return rc;
