@@ -65,7 +65,7 @@ LIBZMQ_WITH_GCOV
 # Checks for libraries
 AC_CHECK_LIB([pthread], [pthread_create])
 AC_CHECK_LIB([rt], [clock_gettime])
-AC_CHECK_LIB([sodium], [sodium_init])
+AC_CHECK_LIB([sodium], [sodium_init],,AC_MSG_WARN(libsodium is needed for CURVE security))
 
 # Set pedantic
 libzmq_pedantic="yes"

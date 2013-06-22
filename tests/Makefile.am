@@ -23,6 +23,7 @@ noinst_PROGRAMS = test_pair_inproc \
                   test_disconnect_inproc \
                   test_ctx_options \
                   test_security \
+                  test_security_curve \
                   test_iov
 
 if !ON_MINGW
@@ -53,6 +54,7 @@ test_disconnect_inproc_SOURCES = test_disconnect_inproc.cpp
 test_ctx_options_SOURCES = test_ctx_options.cpp
 test_iov_SOURCES = test_iov.cpp
 test_security_SOURCES = test_security.cpp
+test_security_curve_SOURCES = test_security_curve.cpp
 if !ON_MINGW
 test_shutdown_stress_SOURCES = test_shutdown_stress.cpp
 test_pair_ipc_SOURCES = test_pair_ipc.cpp testutil.hpp
