@@ -88,8 +88,9 @@ int zmq::curve_client_t::process_handshake_message (msg_t *msg_)
                 state = connected;
             break;
         default:
-            errno = EAGAIN;
+            errno = EPROTO;
             rc = -1;
+            break;
     }
     if (rc == 0) {
         rc = msg_->close ();
