@@ -113,7 +113,7 @@ bool zmq::pipe_t::check_read ()
         msg_t msg;
         bool ok = inpipe->read (&msg);
         zmq_assert (ok);
-        delimit ();
+        process_delimiter ();
         return false;
     }
 
@@ -134,7 +134,7 @@ bool zmq::pipe_t::read (msg_t *msg_)
 
     //  If delimiter was read, start termination process of the pipe.
     if (msg_->is_delimiter ()) {
-        delimit ();
+        process_delimiter ();
         return false;
     }
 
@@ -414,22 +414,18 @@ int zmq::pipe_t::compute_lwm (int hwm_)
     return result;
 }
 
-void zmq::pipe_t::delimit ()
+void zmq::pipe_t::process_delimiter ()
 {
-    if (state == active) {
-        state = delimiter_received;
-        return;
-    }
+    zmq_assert (state == active
+            ||  state == waiting_for_delimiter);
 
-    if (state == waiting_for_delimiter) {
+    if (state == active)
+        state = delimiter_received;
+    else {
         outpipe = NULL;
         send_pipe_term_ack (peer);
         state = term_ack_sent;
-        return;
     }
-
-    //  Delimiter in any other state is invalid.
-    zmq_assert (false);
 }
 
 void zmq::pipe_t::hiccup ()
