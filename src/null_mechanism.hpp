@@ -40,6 +40,10 @@ namespace zmq
         virtual int process_handshake_message (msg_t *msg_);
         virtual bool is_handshake_complete () const;
 
+    protected:
+
+        virtual int property (const std::string name,
+                              const void *value, size_t length);
     private:
 
         bool ready_command_sent;
