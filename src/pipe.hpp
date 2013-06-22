@@ -120,7 +120,7 @@ namespace zmq
         void process_pipe_term_ack ();
 
         //  Handler for delimiter read from the pipe.
-        void delimit ();
+        void process_delimiter ();
 
         //  Constructor is private. Pipe can only be created using
         //  pipepair function.
