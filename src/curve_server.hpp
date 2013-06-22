@@ -77,6 +77,9 @@ namespace zmq
         //  Current FSM state
         state_t state;
 
+        //  True iff we are awaiting reply from ZAP handler.
+        bool expecting_zap_reply;
+
         uint64_t cn_nonce;
 
         //  Our secret key (s)
@@ -102,7 +105,7 @@ namespace zmq
         int process_initiate (msg_t *msg_);
         int ready_msg (msg_t *msg_);
 
-        int send_zap_request (const uint8_t *key);
+        void send_zap_request (const uint8_t *key);
         int receive_and_process_zap_reply ();
         int parse_property_list (const uint8_t *ptr, size_t length);
     };
