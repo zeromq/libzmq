@@ -109,8 +109,9 @@ int zmq::plain_mechanism_t::process_handshake_message (msg_t *msg_)
                 state = ready;
             break;
         default:
-            errno = EAGAIN;
+            errno = EPROTO;
             rc = -1;
+            break;
     }
     if (rc == 0) {
         rc = msg_->close ();
