@@ -286,6 +286,10 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             break;
             
         case ZMQ_CURVE_SERVER:
+#           ifndef HAVE_LIBSODIUM
+            puts ("E: libzmq was not built using libsodium, CURVE not available");
+            assert (false);
+#           endif
             if (is_int && (value == 0 || value == 1)) {
                 as_server = value;
                 mechanism = value? ZMQ_CURVE: ZMQ_NULL;
@@ -294,6 +298,10 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             break;
             
         case ZMQ_CURVE_PUBLICKEY:
+#           ifndef HAVE_LIBSODIUM
+            puts ("E: libzmq was not built using libsodium, CURVE not available");
+            assert (false);
+#           endif
             if (optvallen_ == CURVE_KEYSIZE) {
                 memcpy (curve_public_key, optval_, CURVE_KEYSIZE);
                 mechanism = ZMQ_CURVE;
@@ -302,6 +310,10 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             break;
             
         case ZMQ_CURVE_SECRETKEY:
+#           ifndef HAVE_LIBSODIUM
+            puts ("E: libzmq was not built using libsodium, CURVE not available");
+            assert (false);
+#           endif
             if (optvallen_ == CURVE_KEYSIZE) {
                 memcpy (curve_secret_key, optval_, CURVE_KEYSIZE);
                 mechanism = ZMQ_CURVE;
@@ -310,6 +322,10 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             break;
             
         case ZMQ_CURVE_SERVERKEY:
+#           ifndef HAVE_LIBSODIUM
+            puts ("E: libzmq was not built using libsodium, CURVE not available");
+            assert (false);
+#           endif
             if (optvallen_ == CURVE_KEYSIZE) {
                 memcpy (curve_server_key, optval_, CURVE_KEYSIZE);
                 as_server = 0;

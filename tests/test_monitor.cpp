@@ -21,6 +21,7 @@
 #include "../include/zmq.h"
 #include <pthread.h>
 #include <string.h>
+#include <unistd.h>
 #include "testutil.hpp"
 
 // REQ socket events handled
@@ -215,7 +216,7 @@ int main (void)
     assert (rc == 0);
     rc = pthread_create (&threads [1], NULL, req_socket_monitor, ctx);
     assert (rc == 0);
-    sleep(1);
+    sleep (1);
 
     // Bind REQ and REP
     rc = zmq_bind (rep, addr.c_str());
