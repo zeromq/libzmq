@@ -180,6 +180,7 @@ Option value unit:: milliseconds
 Default value:: 10000
 Applicable socket types:: all, when using multicast transports
 
+
 ZMQ_SNDBUF: Set kernel transmit buffer size
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_SNDBUF' option shall set the underlying kernel transmit buffer size
