@@ -37,6 +37,7 @@ zmq::curve_server_t::curve_server_t (session_base_t *session_,
     mechanism_t (options_),
     session (session_),
     state (expect_hello),
+    expecting_zap_reply (false),
     cn_nonce (1)
 {
     //  Fetch our secret key from socket options
@@ -86,16 +87,8 @@ int zmq::curve_server_t::process_handshake_message (msg_t *msg_)
             break;
         case expect_initiate:
             rc = process_initiate (msg_);
-            if (rc == 0) {
-                rc = receive_and_process_zap_reply ();
-                if (rc == 0)
-                    state = send_ready;
-                else
-                if (errno == EAGAIN) {
-                    rc = 0;
-                    state = expect_zap_reply;
-                }
-            }
+            if (rc == 0)
+                state = expecting_zap_reply? expect_zap_reply: send_ready;
             break;
         default:
             errno = EPROTO;
@@ -403,20 +396,7 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
         return -1;
     }
 
-    //  Use ZAP protocol (RFC 27) to authenticate user.
-    rc = session->zap_connect ();
-    if (rc == -1) {
-        errno = EPROTO;
-        return -1;
-    }
-
-    //  Check the decrypted client public key
     const uint8_t *client_key = initiate_plaintext + crypto_box_ZEROBYTES;
-    rc = send_zap_request (client_key);
-    if (rc != 0) {
-        errno = EPROTO;
-        return -1;
-    }
 
     uint8_t vouch_nonce [crypto_box_NONCEBYTES];
     uint8_t vouch_plaintext [crypto_box_ZEROBYTES + 32];
@@ -448,6 +428,18 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     //  Precompute connection secret from client key
     rc = crypto_box_beforenm (cn_precom, cn_client, cn_secret);
     zmq_assert (rc == 0);
+
+    //  Use ZAP protocol (RFC 27) to authenticate the user.
+    rc = session->zap_connect ();
+    if (rc == 0) {
+        send_zap_request (client_key);
+        rc = receive_and_process_zap_reply ();
+        if (rc != 0) {
+            if (errno != EAGAIN)
+                return -1;
+            expecting_zap_reply = true;
+        }
+    }
 
     return parse_property_list (initiate_plaintext + crypto_box_ZEROBYTES + 96,
                                 clen - crypto_box_ZEROBYTES - 96);
@@ -500,7 +492,7 @@ int zmq::curve_server_t::ready_msg (msg_t *msg_)
     return 0;
 }
 
-int zmq::curve_server_t::send_zap_request (const uint8_t *key)
+void zmq::curve_server_t::send_zap_request (const uint8_t *key)
 {
     int rc;
     msg_t msg;
@@ -549,8 +541,6 @@ int zmq::curve_server_t::send_zap_request (const uint8_t *key)
     memcpy (msg.data (), key, crypto_box_PUBLICKEYBYTES);
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);
-
-    return 0;
 }
 
 int zmq::curve_server_t::parse_property_list (const uint8_t *ptr,
