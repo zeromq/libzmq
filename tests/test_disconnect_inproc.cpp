@@ -18,7 +18,6 @@
 */
 
 #include <zmq.h>
-#include <inttypes.h>
 #include <string.h>
 #include <assert.h>
 
@@ -43,7 +42,7 @@ int main(int argc, char** argv) {
     zmq_bind(pubSocket, "inproc://someInProcDescriptor") && printf("zmq_bind: %s\n", zmq_strerror(errno));
     //zmq_bind(pubSocket, "tcp://*:30010") && printf("zmq_bind: %s\n", zmq_strerror(errno));
   
-    int32_t more;
+    int more;
     size_t more_size = sizeof(more);
     int iteration = 0;
   
