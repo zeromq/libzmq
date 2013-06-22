@@ -99,54 +99,29 @@ int zmq::null_mechanism_t::process_handshake_message (msg_t *msg_)
     ptr += 8;
     bytes_left -= 8;
 
-    //  Parse the property list
-    while (bytes_left > 1) {
-        const size_t name_length = static_cast <size_t> (*ptr);
-        ptr += 1;
-        bytes_left -= 1;
-
-        if (bytes_left < name_length)
-            break;
-        const std::string name = std::string((const char *) ptr, name_length);
-        ptr += name_length;
-        bytes_left -= name_length;
-
-        if (bytes_left < 4)
-            break;
-        const size_t value_length = static_cast <size_t> (get_uint32 (ptr));
-        ptr += 4;
-        bytes_left -= 4;
-
-        if (bytes_left < value_length)
-            break;
-        const unsigned char * const value = ptr;
-        ptr += value_length;
-        bytes_left -= value_length;
-
-        if (name == "Socket-Type") {
-            //  TODO: Implement socket type checking
-        }
-        else
-        if (name == "Identity" && options.recv_identity)
-            set_peer_identity (value, value_length);
+    int rc = parse_properties (ptr, bytes_left);
+    if (rc == 0) {
+        int rc = msg_->close ();
+        errno_assert (rc == 0);
+        rc = msg_->init ();
+        errno_assert (rc == 0);
     }
-
-    if (bytes_left > 0) {
-        errno = EPROTO;
-        return -1;
-    }
-
-    int rc = msg_->close ();
-    errno_assert (rc == 0);
-    rc = msg_->init ();
-    errno_assert (rc == 0);
 
     ready_command_received = true;
 
-    return 0;
+    return rc;
 }
 
 bool zmq::null_mechanism_t::is_handshake_complete () const
 {
     return ready_command_received && ready_command_sent;
+}
+
+int zmq::null_mechanism_t::property (const std::string name,
+                                     const void *value, size_t length)
+{
+    if (name == "Socket-Type") {
+        //  TODO: Implement socket type checking
+    }
+    return 0;
 }

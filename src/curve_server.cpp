@@ -441,8 +441,8 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
         }
     }
 
-    return parse_property_list (initiate_plaintext + crypto_box_ZEROBYTES + 96,
-                                clen - crypto_box_ZEROBYTES - 96);
+    return parse_properties (initiate_plaintext + crypto_box_ZEROBYTES + 96,
+                             clen - crypto_box_ZEROBYTES - 96);
 }
 
 int zmq::curve_server_t::ready_msg (msg_t *msg_)
@@ -543,42 +543,11 @@ void zmq::curve_server_t::send_zap_request (const uint8_t *key)
     errno_assert (rc == 0);
 }
 
-int zmq::curve_server_t::parse_property_list (const uint8_t *ptr,
-    size_t bytes_left)
+int zmq::curve_server_t::property (const std::string name,
+                                   const void *value, size_t length)
 {
-    while (bytes_left > 1) {
-        const size_t name_length = static_cast <size_t> (*ptr);
-        ptr += 1;
-        bytes_left -= 1;
-        if (bytes_left < name_length)
-            break;
-
-        const std::string name = std::string ((const char *) ptr, name_length);
-        ptr += name_length;
-        bytes_left -= name_length;
-        if (bytes_left < 4)
-            break;
-
-        const size_t value_length = static_cast <size_t> (get_uint32 (ptr));
-        ptr += 4;
-        bytes_left -= 4;
-        if (bytes_left < value_length)
-            break;
-
-        const uint8_t * const value = ptr;
-        ptr += value_length;
-        bytes_left -= value_length;
-
-        if (name == "Socket-Type") {
-            //  TODO: Implement socket type checking
-        }
-        else
-        if (name == "Identity" && options.recv_identity)
-            set_peer_identity (value, value_length);
-    }
-    if (bytes_left > 0) {
-        errno = EPROTO;
-        return -1;
+    if (name == "Socket-Type") {
+        //  TODO: Implement socket type checking
     }
     return 0;
 }
