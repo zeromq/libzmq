@@ -99,7 +99,7 @@ int zmq::null_mechanism_t::process_handshake_message (msg_t *msg_)
     ptr += 8;
     bytes_left -= 8;
 
-    int rc = parse_properties (ptr, bytes_left);
+    int rc = parse_metadata (ptr, bytes_left);
     if (rc == 0) {
         int rc = msg_->close ();
         errno_assert (rc == 0);

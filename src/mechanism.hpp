@@ -69,14 +69,16 @@ namespace zmq
         size_t add_property (unsigned char *ptr, const char *name,
             const void *value, size_t value_len) const;
 
-        //  Parse a list of properties. Returns 0 on success
-        //  and -1 on error, in which case errno is set.
-        int parse_properties (const unsigned char *ptr_, size_t length);
+        //  Parses a metadata.
+        //  Metadata consists of a list of properties consisting of
+        //  name and value as size-specified strings.
+        //  Returns 0 on success and -1 on error, in which case errno is set.
+        int parse_metadata (const unsigned char *ptr_, size_t length);
 
         //  This is called by parse_property method whenever it
         //  parses a new property. The function should return 0
         //  on success and -1 on error, in which case it should
-        //  set errno. Signaling error prevetns parser from
+        //  set errno. Signaling error prevents parser from
         //  parsing remaining data.
         //  Derived classes are supposed to override this
         //  method to handle custom processing.
