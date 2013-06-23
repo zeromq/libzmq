@@ -285,7 +285,7 @@ int zmq::plain_mechanism_t::process_initiate_command (msg_t *msg_)
         errno = EPROTO;
         return -1;
     }
-    return parse_properties (ptr + 8, bytes_left - 8);
+    return parse_metadata (ptr + 8, bytes_left - 8);
 }
 
 int zmq::plain_mechanism_t::ready_command (msg_t *msg_) const
@@ -329,7 +329,7 @@ int zmq::plain_mechanism_t::process_ready_command (msg_t *msg_)
         errno = EPROTO;
         return -1;
     }
-    return parse_properties (ptr + 8, bytes_left - 8);
+    return parse_metadata (ptr + 8, bytes_left - 8);
 }
 
 void zmq::plain_mechanism_t::send_zap_request (const std::string &username,
