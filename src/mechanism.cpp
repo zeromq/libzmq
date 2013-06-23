@@ -72,8 +72,8 @@ size_t zmq::mechanism_t::add_property (unsigned char *ptr, const char *name,
     return 1 + name_len + 4 + value_len;
 }
 
-int zmq::mechanism_t::parse_properties (const unsigned char *ptr_,
-                                        size_t length_)
+int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
+                                      size_t length_)
 {
     size_t bytes_left = length_;
 

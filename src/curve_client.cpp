@@ -399,8 +399,8 @@ int zmq::curve_client_t::process_ready (msg_t *msg_)
         return -1;
     }
 
-    rc = parse_properties (ready_plaintext + crypto_box_ZEROBYTES,
-                           clen - crypto_box_ZEROBYTES);
+    rc = parse_metadata (ready_plaintext + crypto_box_ZEROBYTES,
+                         clen - crypto_box_ZEROBYTES);
     return rc;
 }
 
