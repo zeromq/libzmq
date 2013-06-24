@@ -372,6 +372,9 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
         buf [0] = 0;
         put_uint32 (buf + 1, next_peer_id++);
         identity = blob_t (buf, sizeof buf);
+        unsigned int i = 0;  // Store identity to allow use of raw socket as client
+        for (blob_t::iterator it = identity.begin(); it != identity.end(); it++) options.identity[i++] = *it;
+        options.identity_size = i;
     }
     else {
         msg.init ();
