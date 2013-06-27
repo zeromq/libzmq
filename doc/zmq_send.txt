@@ -70,6 +70,8 @@ The provided 'socket' was invalid.
 *EINTR*::
 The operation was interrupted by delivery of a signal before the message was
 sent.
+*EHOSTUNREACH*::
+The message cannot be routed.
 
 
 EXAMPLE

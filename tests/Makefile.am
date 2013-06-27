@@ -19,7 +19,7 @@ noinst_PROGRAMS = test_pair_inproc \
                   test_monitor \
                   test_router_mandatory \
                   test_probe_router \
-                  test_raw_sock \
+                  test_stream \
                   test_disconnect_inproc \
                   test_ctx_options \
                   test_security \
@@ -49,7 +49,7 @@ test_term_endpoint_SOURCES = test_term_endpoint.cpp
 test_monitor_SOURCES = test_monitor.cpp
 test_router_mandatory_SOURCES = test_router_mandatory.cpp
 test_probe_router_SOURCES = test_probe_router.cpp
-test_raw_sock_SOURCES = test_raw_sock.cpp
+test_stream_SOURCES = test_stream.cpp
 test_disconnect_inproc_SOURCES = test_disconnect_inproc.cpp
 test_ctx_options_SOURCES = test_ctx_options.cpp
 test_iov_SOURCES = test_iov.cpp
@@ -62,4 +62,9 @@ test_reqrep_ipc_SOURCES = test_reqrep_ipc.cpp testutil.hpp
 test_timeo_SOURCES = test_timeo.cpp
 endif
 
+#  Deprecated test cases
+noinst_PROGRAMS += test_raw_sock
+test_raw_sock_SOURCES = test_raw_sock.cpp
+
+#  Run the test cases
 TESTS = $(noinst_PROGRAMS)
