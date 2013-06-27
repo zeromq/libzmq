@@ -323,6 +323,46 @@ Outgoing routing strategy:: N/A
 Action in mute state:: Block
 
 
+Native Pattern
+~~~~~~~~~~~~~~
+The native pattern is used for communicating with TCP peers and allows 
+asynchronous requests and replies in either direction.
+
+
+ZMQ_STREAM
+^^^^^^^^^^
+A socket of type 'ZMQ_STREAM' is used to send and receive TCP data from a 
+non-0MQ peer, when using the tcp:// transport. A 'ZMQ_STREAM' socket can 
+act as client and/or server, sending and/or receiving TCP data asynchronously.
+
+When receiving TCP data, a 'ZMQ_STREAM' socket shall prepend a message part
+containing the _identity_ of the originating peer to the message before passing 
+it to the application. Messages received are fair-queued from among all 
+connected peers. 
+
+When sending TCP data, a 'ZMQ_STREAM' socket shall remove the first part of the 
+message and use it to determine the _identity_ of the peer the message shall be 
+routed to, and unroutable messages shall cause an EHOSTUNREACH or EAGAIN error.
+
+To open a connection to a server, use the zmq_connect call, and then fetch the 
+socket identity using the ZMQ_IDENTITY zmq_getsockopt call.
+
+To close a specific client connection, as a server, send a zero-length message 
+following the identity frame.
+
+The ZMQ_MSGMORE flag is ignored on data frames. You must send one identity frame
+followed by one data frame.
+
+[horizontal]
+.Summary of ZMQ_STREAM characteristics
+Compatible peer sockets:: none.
+Direction:: Bidirectional
+Send/receive pattern:: Unrestricted
+Outgoing routing strategy:: See text
+Incoming routing strategy:: Fair-queued
+Action in mute state:: EAGAIN
+
+
 RETURN VALUE
 ------------
 The _zmq_socket()_ function shall return an opaque handle to the newly created
@@ -357,5 +397,3 @@ AUTHORS
 -------
 This page was written by the 0MQ community. To make a change please
 read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.
-
-
