@@ -40,6 +40,7 @@
 #include "push.hpp"
 #include "pull.hpp"
 #include "pair.hpp"
+#include "stream.hpp"
 
 zmq::session_base_t *zmq::session_base_t::create (class io_thread_t *io_thread_,
     bool connect_, class socket_base_t *socket_, const options_t &options_,
@@ -89,6 +90,10 @@ zmq::session_base_t *zmq::session_base_t::create (class io_thread_t *io_thread_,
         break;
     case ZMQ_PAIR:
         s = new (std::nothrow) pair_session_t (io_thread_, connect_,
+            socket_, options_, addr_);
+        break;
+    case ZMQ_STREAM:
+        s = new (std::nothrow) stream_session_t (io_thread_, connect_,
             socket_, options_, addr_);
         break;
     default:

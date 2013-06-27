@@ -417,6 +417,8 @@ When using raw mode, you cannot set explicit identities, and the ZMQ_MSGMORE
 flag is ignored when sending data messages. In raw mode you can close a specific
 connection by sending it a zero-length message (following the identity frame).
 
+NOTE: This option is deprecated, please use ZMQ_STREAM sockets instead.
+
 [horizontal]
 Option value type:: int
 Option value unit:: 0, 1

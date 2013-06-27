@@ -51,8 +51,8 @@ const char *zmq::mechanism_t::socket_type_string (int socket_type) const
 {
     static const char *names [] = {"PAIR", "PUB", "SUB", "REQ", "REP",
                                    "DEALER", "ROUTER", "PULL", "PUSH",
-                                   "XPUB", "XSUB"};
-    zmq_assert (socket_type >= 0 && socket_type <= 10);
+                                   "XPUB", "XSUB", "STREAM"};
+    zmq_assert (socket_type >= ZMQ_PAIR && socket_type <= ZMQ_STREAM);
     return names [socket_type];
 }
 
