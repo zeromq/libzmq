@@ -428,10 +428,14 @@ AC_SUBST(LIBZMQ_EXTRA_CFLAGS)
 AC_SUBST(LIBZMQ_EXTRA_CXXFLAGS)
 AC_SUBST(LIBZMQ_EXTRA_LDFLAGS)
 
-AC_CONFIG_FILES([Makefile src/Makefile doc/Makefile
-    perf/Makefile src/libzmq.pc \
-    builds/msvc/Makefile tests/Makefile \
+AC_CONFIG_FILES([Makefile \
+    src/Makefile \
+    src/libzmq.pc \
+    doc/Makefile \
+    perf/Makefile \
+    tests/Makefile \
+    tools/Makefile \
+    builds/msvc/Makefile \
     foreign/openpgm/Makefile \
     builds/redhat/zeromq.spec])
 AC_OUTPUT
-
