@@ -30,7 +30,7 @@ namespace zmq
     class ctx_t;
     class pipe_t;
 
-    class stream_t : 
+    class stream_t :
         public socket_base_t
     {
     public:
@@ -48,14 +48,9 @@ namespace zmq
         void xwrite_activated (zmq::pipe_t *pipe_);
         void xpipe_terminated (zmq::pipe_t *pipe_);
 
-    protected:
-
-        //  Rollback any message parts that were sent but not yet flushed.
-        int rollback ();
-
     private:
-        //  Receive peer id and update lookup map
-        bool identify_peer (pipe_t *pipe_);
+        //  Generate peer's id and update lookup map
+        void identify_peer (pipe_t *pipe_);
 
         //  Fair queueing object for inbound pipes.
         fq_t fq;
@@ -82,9 +77,6 @@ namespace zmq
             bool active;
         };
 
-        //  We keep a set of pipes that have not been identified yet.
-        std::set <pipe_t*> anonymous_pipes;
-
         //  Outbound pipes indexed by the peer IDs.
         typedef std::map <blob_t, outpipe_t> outpipes_t;
         outpipes_t outpipes;
@@ -98,10 +90,6 @@ namespace zmq
         //  Peer ID are generated. It's a simple increment and wrap-over
         //  algorithm. This value is the next ID to use (if not used already).
         uint32_t next_peer_id;
-
-        // If true, report EAGAIN to the caller instead of silently dropping 
-        // the message targeting an unknown peer.
-        bool mandatory;
 
         stream_t (const stream_t&);
         const stream_t &operator = (const stream_t&);
