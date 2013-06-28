@@ -106,7 +106,7 @@ const char *zmq_strerror (int errnum_)
     return zmq::errno_to_string (errnum_);
 }
 
-int zmq_errno ()
+int zmq_errno (void)
 {
     return errno;
 }
