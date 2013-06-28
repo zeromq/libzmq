@@ -68,9 +68,6 @@ namespace zmq
         //  Holds the prefetched message.
         msg_t prefetched_msg;
 
-        //  If true, more incoming message parts are expected.
-        bool more_in;
-
         struct outpipe_t
         {
             zmq::pipe_t *pipe;
