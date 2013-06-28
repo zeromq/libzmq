@@ -462,7 +462,7 @@ Applicable socket types:: ZMQ_XPUB
 ZMQ_TCP_KEEPALIVE: Override SO_KEEPALIVE socket option
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Override 'SO_KEEPALIVE' socket option(where supported by OS).
+Override 'SO_KEEPALIVE' socket option (where supported by OS).
 The default value of `-1` means to skip any overrides and leave it to OS default.
 
 [horizontal]
@@ -472,8 +472,8 @@ Default value:: -1 (leave to OS default)
 Applicable socket types:: all, when using TCP transports.
 
 
-ZMQ_TCP_KEEPALIVE_IDLE: Override TCP_KEEPCNT(or TCP_KEEPALIVE on some OS)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_TCP_KEEPALIVE_IDLE: Override TCP_KEEPCNT (or TCP_KEEPALIVE on some OS)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Override 'TCP_KEEPCNT'(or 'TCP_KEEPALIVE' on some OS) socket option (where 
 supported by OS). The default value of `-1` means to skip any overrides and 
@@ -489,7 +489,7 @@ Applicable socket types:: all, when using TCP transports.
 ZMQ_TCP_KEEPALIVE_CNT: Override TCP_KEEPCNT socket option
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Override 'TCP_KEEPCNT' socket option(where supported by OS). The default 
+Override 'TCP_KEEPCNT' socket option (where supported by OS). The default 
 value of `-1` means to skip any overrides and leave it to OS default.
 
 [horizontal]

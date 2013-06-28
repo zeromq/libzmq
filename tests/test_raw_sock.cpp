@@ -104,7 +104,7 @@ int main (void)
     //  Second frame contains the rest of greeting along with
     //  the Ready command
     rc = zmq_recv (router, buffer, 255, 0);
-    assert (rc == 99);
+    assert (rc == 97);
 
     //  First two bytes are major and minor version numbers.
     assert (buffer [0] == 3);       //  ZMTP/3.0
@@ -112,21 +112,20 @@ int main (void)
 
     //  Mechanism is "NULL"
     assert (memcmp (buffer + 2, "NULL\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 22) == 0);
-    assert (memcmp (buffer + 54, "\0\53READY   ", 10) == 0);
-    assert (memcmp (buffer + 64, "\13Socket-Type\0\0\0\6DEALER", 22) == 0);
-    assert (memcmp (buffer + 86, "\10Identity\0\0\0\0", 13) == 0);
+    assert (memcmp (buffer + 54, "\0\51READY\0", 8) == 0);
+    assert (memcmp (buffer + 62, "\13Socket-Type\0\0\0\6DEALER", 22) == 0);
+    assert (memcmp (buffer + 84, "\10Identity\0\0\0\0", 13) == 0);
 
     //  Announce we are ready
-    memcpy (buffer, "\0\53", 2);
-    memcpy (buffer + 2, "READY   ", 8);
-    memcpy (buffer + 10, "\13Socket-Type\0\0\0\6ROUTER", 22);
-    memcpy (buffer + 32, "\10Identity\0\0\0\0", 13);
+    memcpy (buffer, "\0\51READY\0", 8);
+    memcpy (buffer + 8, "\13Socket-Type\0\0\0\6STREAM", 22);
+    memcpy (buffer + 30, "\10Identity\0\0\0\0", 13);
 
     //  Send Ready command
     rc = zmq_msg_send (&identity, router, ZMQ_SNDMORE);
     assert (rc > 0);
-    rc = zmq_send (router, buffer, 45, 0);
-    assert (rc == 45);
+    rc = zmq_send (router, buffer, 43, 0);
+    assert (rc == 43);
 
     //  Now we expect the data from the DEALER socket
     //  First frame is, again, the identity of the connection

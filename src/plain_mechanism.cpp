@@ -295,9 +295,9 @@ int zmq::plain_mechanism_t::ready_command (msg_t *msg_) const
 
     unsigned char *ptr = command_buffer;
 
-    //  Add mechanism string
-    memcpy (ptr, "READY   ", 8);
-    ptr += 8;
+    //  Add command name
+    memcpy (ptr, "READY\0", 6);
+    ptr += 6;
 
     //  Add socket type property
     const char *socket_type = socket_type_string (options.type);
@@ -325,11 +325,13 @@ int zmq::plain_mechanism_t::process_ready_command (msg_t *msg_)
     const unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
     size_t bytes_left = msg_->size ();
 
-    if (bytes_left < 8 || memcmp (ptr, "READY   ", 8)) {
+    if (bytes_left < 6 || memcmp (ptr, "READY\0", 6)) {
         errno = EPROTO;
         return -1;
     }
-    return parse_metadata (ptr + 8, bytes_left - 8);
+    ptr += 6;
+    bytes_left -= 6;
+    return parse_metadata (ptr, bytes_left);
 }
 
 void zmq::plain_mechanism_t::send_zap_request (const std::string &username,

@@ -54,8 +54,8 @@ int zmq::null_mechanism_t::next_handshake_message (msg_t *msg_)
     unsigned char *ptr = command_buffer;
 
     //  Add mechanism string
-    memcpy (ptr, "READY   ", 8);
-    ptr += 8;
+    memcpy (ptr, "READY\0", 6);
+    ptr += 6;
 
     //  Add socket type property
     const char *socket_type = socket_type_string (options.type);
@@ -91,13 +91,13 @@ int zmq::null_mechanism_t::process_handshake_message (msg_t *msg_)
         static_cast <unsigned char *> (msg_->data ());
     size_t bytes_left = msg_->size ();
 
-    if (bytes_left < 8 || memcmp (ptr, "READY   ", 8)) {
+    if (bytes_left < 6 || memcmp (ptr, "READY\0", 6)) {
         errno = EPROTO;
         return -1;
     }
 
-    ptr += 8;
-    bytes_left -= 8;
+    ptr += 6;
+    bytes_left -= 6;
 
     int rc = parse_metadata (ptr, bytes_left);
     if (rc == 0) {
