@@ -20,93 +20,34 @@
 #include "platform.hpp"
 #include <pthread.h>
 #include <string.h>
+#include <stdlib.h>
 #include "testutil.hpp"
 
 static void *
 zap_handler (void *zap)
 {
-    int rc, more;
-    size_t optlen;
-    zmq_msg_t version, seqno, domain, mechanism, key;
-    zmq_msg_t status_code, status_text, user_id;
-
-    //  Version
-    rc = zmq_msg_init (&version);
-    assert (rc == 0);
-    rc = zmq_msg_recv (&version, zap, 0);
-    assert (rc == 3 && memcmp (zmq_msg_data (&version), "1.0", 3) == 0);
-    optlen = sizeof more;
-    rc = zmq_getsockopt (zap, ZMQ_RCVMORE, &more, &optlen);
-    assert (rc == 0 && more == 1);
-
-    //  Sequence number
-    rc = zmq_msg_init (&seqno);
-    assert (rc == 0);
-    rc = zmq_msg_recv (&seqno, zap, 0);
-    assert (rc != -1);
-    optlen = sizeof more;
-    rc = zmq_getsockopt (zap, ZMQ_RCVMORE, &more, &optlen);
-    assert (rc == 0 && more == 1);
-
-    //  Domain
-    rc = zmq_msg_init (&domain);
-    assert (rc == 0);
-    rc = zmq_msg_recv (&domain, zap, 0);
-    assert (rc != -1);
-    optlen = sizeof more;
-    rc = zmq_getsockopt (zap, ZMQ_RCVMORE, &more, &optlen);
-    assert (rc == 0 && more == 1);
-
-    //  Mechanism
-    rc = zmq_msg_init (&mechanism);
-    assert (rc == 0);
-    rc = zmq_msg_recv (&mechanism, zap, 0);
-    assert (rc == 5 && memcmp (zmq_msg_data (&mechanism), "CURVE", 5) == 0);
-    optlen = sizeof more;
-    rc = zmq_getsockopt (zap, ZMQ_RCVMORE, &more, &optlen);
-    assert (rc == 0 && more == 1);
-
-    //  Key
-    rc = zmq_msg_init (&key);
-    assert (rc == 0);
-    rc = zmq_msg_recv (&key, zap, 0);
-    optlen = sizeof more;
-    rc = zmq_getsockopt (zap, ZMQ_RCVMORE, &more, &optlen);
-    assert (rc == 0 && more == 0);
-
-    // Send response
-    rc = zmq_msg_send (&version, zap, ZMQ_SNDMORE);
-    assert (rc == 3);
-
-    rc = zmq_msg_send (&seqno, zap, ZMQ_SNDMORE);
-    assert (rc != -1);
-
-    rc = zmq_msg_init_size (&status_code, 3);
-    assert (rc == 0);
-    memcpy (zmq_msg_data (&status_code), "200", 3);
-    rc = zmq_msg_send (&status_code, zap, ZMQ_SNDMORE);
-    assert (rc == 3);
-
-    rc = zmq_msg_init (&status_text);
-    assert (rc == 0);
-    rc = zmq_msg_send (&status_text, zap, ZMQ_SNDMORE);
-    assert (rc == 0);
-
-    rc = zmq_msg_init (&user_id);
-    assert (rc == 0);
-    rc = zmq_msg_send (&user_id, zap, 0);
-    assert (rc == 0);
-
-    rc = zmq_msg_close (&domain);
-    assert (rc == 0);
-
-    rc = zmq_msg_close (&mechanism);
-    assert (rc == 0);
-
-    rc = zmq_msg_close (&key);
-    assert (rc == 0);
+    char *version = s_recv (zap);
+    char *sequence = s_recv (zap);
+    char *domain = s_recv (zap);
+    char *mechanism = s_recv (zap);
+    char *client_key = s_recv (zap);
     
-    rc = zmq_close (zap);
+    assert (streq (version, "1.0"));
+    assert (streq (mechanism, "CURVE"));
+
+    s_sendmore (zap, version);
+    s_sendmore (zap, sequence);
+    s_sendmore (zap, "200");
+    s_sendmore (zap, "OK");
+    s_send     (zap, "anonymous");
+    
+    free (version);
+    free (sequence);
+    free (domain);
+    free (mechanism);
+    free (client_key);
+    
+    int rc = zmq_close (zap);
     assert (rc == 0);
 
     return NULL;
@@ -115,7 +56,7 @@ zap_handler (void *zap)
 int main (void)
 {
 #ifndef HAVE_LIBSODIUM
-    printf("Libsodium not availabile - skipping test.\n");
+    printf("libsodium not installed, skipping CURVE test\n");
     return 0;
 #endif
     int rc;
