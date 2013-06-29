@@ -302,6 +302,16 @@ int zmq::socket_base_t::getsockopt (int option_, void *optval_,
         return 0;
     }
 
+    if (option_ == ZMQ_LAST_ENDPOINT) {
+        if (*optvallen_ < last_endpoint.size () + 1) {
+            errno = EINVAL;
+            return -1;
+        }
+        strcpy (static_cast <char *> (optval_), last_endpoint.c_str ());
+        *optvallen_ = last_endpoint.size () + 1;
+        return 0;
+    }
+
     return options.getsockopt (option_, optval_, optvallen_);
 }
 
@@ -333,7 +343,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         int rc = register_endpoint (addr_, endpoint);
         if (rc == 0) {
             // Save last endpoint URI
-            options.last_endpoint.assign (addr_);
+            last_endpoint.assign (addr_);
         }
         return rc;
     }
@@ -364,7 +374,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         }
 
         // Save last endpoint URI
-        listener->get_address (options.last_endpoint);
+        listener->get_address (last_endpoint);
 
         add_endpoint (addr_, (own_t *) listener);
         return 0;
@@ -383,7 +393,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         }
 
         // Save last endpoint URI
-        listener->get_address (options.last_endpoint);
+        listener->get_address (last_endpoint);
 
         add_endpoint (addr_, (own_t *) listener);
         return 0;
@@ -478,7 +488,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         send_bind (peer.socket, new_pipes [1], false);
 
         // Save last endpoint URI
-        options.last_endpoint.assign (addr_);
+        last_endpoint.assign (addr_);
 
         // remember inproc connections for disconnect
         inprocs.insert (inprocs_t::value_type (std::string (addr_), new_pipes[0]));
@@ -556,7 +566,7 @@ int zmq::socket_base_t::connect (const char *addr_)
     }
 
     //  Save last endpoint URI
-    paddr->to_string (options.last_endpoint);
+    paddr->to_string (last_endpoint);
 
     add_endpoint (addr_, (own_t *) session);
     return 0;
