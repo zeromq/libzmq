@@ -238,6 +238,9 @@ namespace zmq
         // Bitmask of events being monitored
         int monitor_events;
 
+        // Last socket endpoint resolved URI
+        std::string last_endpoint;
+
         socket_base_t (const socket_base_t&);
         const socket_base_t &operator = (const socket_base_t&);
         mutex_t sync;

@@ -501,14 +501,6 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
             }
             break;
 
-        case ZMQ_LAST_ENDPOINT:
-            if (*optvallen_ >= last_endpoint.size () + 1) {
-                memcpy (optval_, last_endpoint.c_str (), last_endpoint.size () + 1);
-                *optvallen_ = last_endpoint.size () + 1;
-                return 0;
-            }
-            break;
-        
         case ZMQ_MECHANISM:
             if (is_int) {
                 *value = mechanism;
