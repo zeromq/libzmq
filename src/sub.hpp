@@ -49,21 +49,6 @@ namespace zmq
         const sub_t &operator = (const sub_t&);
     };
 
-    class sub_session_t : public xsub_session_t
-    {
-    public:
-
-        sub_session_t (zmq::io_thread_t *io_thread_, bool connect_,
-            zmq::socket_base_t *socket_, const options_t &options_,
-            const address_t *addr_);
-        ~sub_session_t ();
-
-    private:
-
-        sub_session_t (const sub_session_t&);
-        const sub_session_t &operator = (const sub_session_t&);
-    };
-
 }
 
 #endif

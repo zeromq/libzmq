@@ -78,15 +78,3 @@ bool zmq::sub_t::xhas_out ()
     //  Overload the XSUB's send.
     return false;
 }
-
-zmq::sub_session_t::sub_session_t (io_thread_t *io_thread_, bool connect_,
-      socket_base_t *socket_, const options_t &options_,
-      const address_t *addr_) :
-    xsub_session_t (io_thread_, connect_, socket_, options_, addr_)
-{
-}
-
-zmq::sub_session_t::~sub_session_t ()
-{
-}
-

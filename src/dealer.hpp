@@ -69,21 +69,6 @@ namespace zmq
         const dealer_t &operator = (const dealer_t&);
     };
 
-    class dealer_session_t : public session_base_t
-    {
-    public:
-
-        dealer_session_t (zmq::io_thread_t *io_thread_, bool connect_,
-            zmq::socket_base_t *socket_, const options_t &options_,
-            const address_t *addr_);
-        ~dealer_session_t ();
-
-    private:
-
-        dealer_session_t (const dealer_session_t&);
-        const dealer_session_t &operator = (const dealer_session_t&);
-    };
-
 }
 
 #endif

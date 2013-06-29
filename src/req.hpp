@@ -58,7 +58,7 @@ namespace zmq
         const req_t &operator = (const req_t&);
     };
 
-    class req_session_t : public dealer_session_t
+    class req_session_t : public session_base_t
     {
     public:
 

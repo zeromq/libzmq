@@ -41,15 +41,3 @@ bool zmq::pub_t::xhas_in ()
 {
     return false;
 }
-
-zmq::pub_session_t::pub_session_t (io_thread_t *io_thread_, bool connect_,
-      socket_base_t *socket_, const options_t &options_,
-      const address_t *addr_) :
-    xpub_session_t (io_thread_, connect_, socket_, options_, addr_)
-{
-}
-
-zmq::pub_session_t::~pub_session_t ()
-{
-}
-
