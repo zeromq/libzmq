@@ -119,21 +119,6 @@ namespace zmq
         const router_t &operator = (const router_t&);
     };
 
-    class router_session_t : public session_base_t
-    {
-    public:
-
-        router_session_t (zmq::io_thread_t *io_thread_, bool connect_,
-            socket_base_t *socket_, const options_t &options_,
-            const address_t *addr_);
-        ~router_session_t ();
-
-    private:
-
-        router_session_t (const router_session_t&);
-        const router_session_t &operator = (const router_session_t&);
-    };
-
 }
 
 #endif

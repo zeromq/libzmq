@@ -30,17 +30,6 @@
 
 #include "ctx.hpp"
 #include "req.hpp"
-#include "dealer.hpp"
-#include "rep.hpp"
-#include "router.hpp"
-#include "pub.hpp"
-#include "xpub.hpp"
-#include "sub.hpp"
-#include "xsub.hpp"
-#include "push.hpp"
-#include "pull.hpp"
-#include "pair.hpp"
-#include "stream.hpp"
 
 zmq::session_base_t *zmq::session_base_t::create (class io_thread_t *io_thread_,
     bool connect_, class socket_base_t *socket_, const options_t &options_,
@@ -53,47 +42,17 @@ zmq::session_base_t *zmq::session_base_t::create (class io_thread_t *io_thread_,
             socket_, options_, addr_);
         break;
     case ZMQ_DEALER:
-        s = new (std::nothrow) dealer_session_t (io_thread_, connect_,
-            socket_, options_, addr_);
-        break;
     case ZMQ_REP:
-        s = new (std::nothrow) rep_session_t (io_thread_, connect_,
-            socket_, options_, addr_);
-        break;
     case ZMQ_ROUTER:
-        s = new (std::nothrow) router_session_t (io_thread_, connect_,
-            socket_, options_, addr_);
-        break;
     case ZMQ_PUB:
-        s = new (std::nothrow) pub_session_t (io_thread_, connect_,
-            socket_, options_, addr_);
-        break;
     case ZMQ_XPUB:
-        s = new (std::nothrow) xpub_session_t (io_thread_, connect_,
-            socket_, options_, addr_);
-        break;
     case ZMQ_SUB:
-        s = new (std::nothrow) sub_session_t (io_thread_, connect_,
-            socket_, options_, addr_);
-        break;
     case ZMQ_XSUB:
-        s = new (std::nothrow) xsub_session_t (io_thread_, connect_,
-            socket_, options_, addr_);
-        break;
     case ZMQ_PUSH:
-        s = new (std::nothrow) push_session_t (io_thread_, connect_,
-            socket_, options_, addr_);
-        break;
     case ZMQ_PULL:
-        s = new (std::nothrow) pull_session_t (io_thread_, connect_,
-            socket_, options_, addr_);
-        break;
     case ZMQ_PAIR:
-        s = new (std::nothrow) pair_session_t (io_thread_, connect_,
-            socket_, options_, addr_);
-        break;
     case ZMQ_STREAM:
-        s = new (std::nothrow) stream_session_t (io_thread_, connect_,
+        s = new (std::nothrow) session_base_t (io_thread_, connect_,
             socket_, options_, addr_);
         break;
     default:

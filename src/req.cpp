@@ -137,7 +137,7 @@ bool zmq::req_t::xhas_out ()
 zmq::req_session_t::req_session_t (io_thread_t *io_thread_, bool connect_,
       socket_base_t *socket_, const options_t &options_,
       const address_t *addr_) :
-    dealer_session_t (io_thread_, connect_, socket_, options_, addr_),
+    session_base_t (io_thread_, connect_, socket_, options_, addr_),
     state (bottom)
 {
 }
@@ -152,15 +152,15 @@ int zmq::req_session_t::push_msg (msg_t *msg_)
     case bottom:
         if (msg_->flags () == msg_t::more && msg_->size () == 0) {
             state = body;
-            return dealer_session_t::push_msg (msg_);
+            return session_base_t::push_msg (msg_);
         }
         break;
     case body:
         if (msg_->flags () == msg_t::more)
-            return dealer_session_t::push_msg (msg_);
+            return session_base_t::push_msg (msg_);
         if (msg_->flags () == 0) {
             state = bottom;
-            return dealer_session_t::push_msg (msg_);
+            return session_base_t::push_msg (msg_);
         }
         break;
     }

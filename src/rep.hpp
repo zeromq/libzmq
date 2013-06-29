@@ -58,21 +58,6 @@ namespace zmq
 
     };
 
-    class rep_session_t : public router_session_t
-    {
-    public:
-
-        rep_session_t (zmq::io_thread_t *io_thread_, bool connect_,
-            zmq::socket_base_t *socket_, const options_t &options_,
-            const address_t *addr_);
-        ~rep_session_t ();
-
-    private:
-
-        rep_session_t (const rep_session_t&);
-        const rep_session_t &operator = (const rep_session_t&);
-    };
-
 }
 
 #endif

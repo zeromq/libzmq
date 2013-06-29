@@ -58,21 +58,6 @@ namespace zmq
         const push_t &operator = (const push_t&);
     };
 
-    class push_session_t : public session_base_t
-    {
-    public:
-
-        push_session_t (zmq::io_thread_t *io_thread_, bool connect_,
-            socket_base_t *socket_, const options_t &options_,
-            const address_t *addr_);
-        ~push_session_t ();
-
-    private:
-
-        push_session_t (const push_session_t&);
-        const push_session_t &operator = (const push_session_t&);
-    };
-
 }
 
 #endif

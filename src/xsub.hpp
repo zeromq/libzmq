@@ -86,21 +86,6 @@ namespace zmq
         const xsub_t &operator = (const xsub_t&);
     };
 
-    class xsub_session_t : public session_base_t
-    {
-    public:
-
-        xsub_session_t (class io_thread_t *io_thread_, bool connect_,
-            socket_base_t *socket_, const options_t &options_,
-            const address_t *addr_);
-        ~xsub_session_t ();
-
-    private:
-
-        xsub_session_t (const xsub_session_t&);
-        const xsub_session_t &operator = (const xsub_session_t&);
-    };
-
 }
 
 #endif

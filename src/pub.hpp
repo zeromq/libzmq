@@ -47,21 +47,6 @@ namespace zmq
         const pub_t &operator = (const pub_t&);
     };
 
-    class pub_session_t : public xpub_session_t
-    {
-    public:
-
-        pub_session_t (zmq::io_thread_t *io_thread_, bool connect_,
-            zmq::socket_base_t *socket_, const options_t &options_,
-            const address_t *addr_);
-        ~pub_session_t ();
-
-    private:
-
-        pub_session_t (const pub_session_t&);
-        const pub_session_t &operator = (const pub_session_t&);
-    };
-
 }
 
 #endif
