@@ -89,21 +89,6 @@ namespace zmq
         const xpub_t &operator = (const xpub_t&);
     };
 
-    class xpub_session_t : public session_base_t
-    {
-    public:
-
-        xpub_session_t (zmq::io_thread_t *io_thread_, bool connect_,
-            socket_base_t *socket_, const options_t &options_,
-            const address_t *addr_);
-        ~xpub_session_t ();
-
-    private:
-
-        xpub_session_t (const xpub_session_t&);
-        const xpub_session_t &operator = (const xpub_session_t&);
-    };
-
 }
 
 #endif

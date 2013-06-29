@@ -92,21 +92,6 @@ namespace zmq
         const stream_t &operator = (const stream_t&);
     };
 
-    class stream_session_t : public session_base_t
-    {
-    public:
-
-        stream_session_t (zmq::io_thread_t *io_thread_, bool connect_,
-            socket_base_t *socket_, const options_t &options_,
-            const address_t *addr_);
-        ~stream_session_t ();
-
-    private:
-
-        stream_session_t (const stream_session_t&);
-        const stream_session_t &operator = (const stream_session_t&);
-    };
-
 }
 
 #endif

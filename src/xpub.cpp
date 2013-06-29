@@ -189,15 +189,3 @@ void zmq::xpub_t::send_unsubscription (unsigned char *data_, size_t size_,
         self->pending_flags.push_back (0);
     }
 }
-
-zmq::xpub_session_t::xpub_session_t (io_thread_t *io_thread_, bool connect_,
-      socket_base_t *socket_, const options_t &options_,
-      const address_t *addr_) :
-    session_base_t (io_thread_, connect_, socket_, options_, addr_)
-{
-}
-
-zmq::xpub_session_t::~xpub_session_t ()
-{
-}
-
