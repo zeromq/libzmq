@@ -21,6 +21,7 @@
 
 #include "options.hpp"
 #include "err.hpp"
+#include "z85_codec.hpp"
 
 zmq::options_t::options_t () :
     sndhwm (1000),
@@ -285,7 +286,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             break;
         
-//  If libsodium isn't installed, these options provoke EINVAL
+        //  If libsodium isn't installed, these options provoke EINVAL
 #       ifdef HAVE_LIBSODIUM
         case ZMQ_CURVE_SERVER:
             if (is_int && (value == 0 || value == 1)) {
@@ -301,6 +302,12 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 mechanism = ZMQ_CURVE;
                 return 0;
             }
+            else
+            if (optvallen_ == CURVE_KEYSIZE_Z85) {
+                Z85_decode (curve_public_key, (char *) optval_);
+                mechanism = ZMQ_CURVE;
+                return 0;
+            }
             break;
             
         case ZMQ_CURVE_SECRETKEY:
@@ -309,11 +316,24 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 mechanism = ZMQ_CURVE;
                 return 0;
             }
+            else
+            if (optvallen_ == CURVE_KEYSIZE_Z85) {
+                Z85_decode (curve_secret_key, (char *) optval_);
+                mechanism = ZMQ_CURVE;
+                return 0;
+            }
             break;
             
         case ZMQ_CURVE_SERVERKEY:
             if (optvallen_ == CURVE_KEYSIZE) {
                 memcpy (curve_server_key, optval_, CURVE_KEYSIZE);
+                as_server = 0;
+                mechanism = ZMQ_CURVE;
+                return 0;
+            }
+            else
+            if (optvallen_ == CURVE_KEYSIZE_Z85) {
+                Z85_decode (curve_server_key, (char *) optval_);
                 as_server = 0;
                 mechanism = ZMQ_CURVE;
                 return 0;
@@ -531,7 +551,7 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
             }
             break;
             
-//  If libsodium isn't installed, these options provoke EINVAL
+        //  If libsodium isn't installed, these options provoke EINVAL
 #       ifdef HAVE_LIBSODIUM
         case ZMQ_CURVE_SERVER:
             if (is_int) {
@@ -545,6 +565,11 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
                 memcpy (optval_, curve_public_key, CURVE_KEYSIZE);
                 return 0;
             }
+            else
+            if (*optvallen_ == CURVE_KEYSIZE_Z85) {
+                Z85_encode ((char *) optval_, curve_public_key, CURVE_KEYSIZE);
+                return 0;
+            }
             break;
             
         case ZMQ_CURVE_SECRETKEY:
@@ -552,11 +577,21 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
                 memcpy (optval_, curve_secret_key, CURVE_KEYSIZE);
                 return 0;
             }
+            else
+            if (*optvallen_ == CURVE_KEYSIZE_Z85) {
+                Z85_encode ((char *) optval_, curve_secret_key, CURVE_KEYSIZE);
+                return 0;
+            }
             break;
             
         case ZMQ_CURVE_SERVERKEY:
             if (*optvallen_ == CURVE_KEYSIZE) {
                 memcpy (optval_, curve_server_key, CURVE_KEYSIZE);
+                return 0;
+            }
+            else
+            if (*optvallen_ == CURVE_KEYSIZE_Z85) {
+                Z85_encode ((char *) optval_, curve_server_key, CURVE_KEYSIZE);
                 return 0;
             }
             break;

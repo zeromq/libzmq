@@ -596,13 +596,17 @@ ZMQ_CURVE_PUBLICKEY: Set CURVE public key
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Sets the socket's long term public key. You must set this on a CURVE
-client or server socket, see linkzmq:zmq_curve[7]. The key is 32 bytes.
-For servers, it must be persisted and shared through some unspecified
-secure mechanism to clients.
+client or server socket, see linkzmq:zmq_curve[7]. You can provide the
+key as 32 binary bytes, or as a 40-character string encoded in the Z85
+encoding format. For servers, the public key must be persisted and 
+shared through some unspecified but secure mechanism to clients. The
+public key must always be used with the matching secret key generated
+at the same time. To generate a public/secret key pair, use the 
+tools/curve_keygen tool.
 
 [horizontal]
-Option value type:: binary data
-Option value size:: 32
+Option value type:: binary data or Z85 text string
+Option value size:: 32 or 40
 Default value:: NULL
 Applicable socket types:: all, when using TCP transport
 
@@ -611,11 +615,13 @@ ZMQ_CURVE_SECRETKEY: Set CURVE secret key
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Sets the socket's long term secret key. You must set this on a CURVE
-client socket, see linkzmq:zmq_curve[7]. The key is 32 bytes.
+client socket, see linkzmq:zmq_curve[7]. You can provide the key as 
+32 binary bytes, or as a 40-character string encoded in the Z85 encoding 
+format. 
 
 [horizontal]
-Option value type:: binary data
-Option value size:: 32
+Option value type:: binary data or Z85 text string
+Option value size:: 32 or 40
 Default value:: NULL
 Applicable socket types:: all, when using TCP transport
 
@@ -624,12 +630,14 @@ ZMQ_CURVE_SERVERKEY: Set CURVE server key
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Sets the socket's long term server key. You must set this on a CURVE
-client socket, see linkzmq:zmq_curve[7]. The key is 32 bytes. This
-key must be the same as the public key set on the server socket.
+client socket, see linkzmq:zmq_curve[7]. You can provide the key as 
+32 binary bytes, or as a 40-character string encoded in the Z85 encoding 
+format. This key must be the same as the public key set on the server 
+socket.
 
 [horizontal]
-Option value type:: binary data
-Option value size:: 32
+Option value type:: binary data or Z85 text string
+Option value size:: 32 or 40
 Default value:: NULL
 Applicable socket types:: all, when using TCP transport
 

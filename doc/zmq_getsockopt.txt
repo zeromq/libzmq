@@ -486,8 +486,8 @@ Default value:: -1 (leave to OS default)
 Applicable socket types:: all, when using TCP transports.
 
 
-ZMQ_MECHANISM: Retrieve the current security mechanism
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_MECHANISM: Retrieve current security mechanism
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_MECHANISM' option shall retrieve the current security mechanism
 for the socket.
 
@@ -498,8 +498,8 @@ Default value:: ZMQ_NULL
 Applicable socket types:: all, when using TCP or IPC transports
 
 
-ZMQ_PLAIN_SERVER: Retrieve the PLAIN server role
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_PLAIN_SERVER: Retrieve current PLAIN server role
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Returns the 'ZMQ_PLAIN_SERVER' option, if any, previously set on the socket.
 
 [horizontal]
@@ -509,8 +509,8 @@ Default value:: int
 Applicable socket types:: all, when using TCP or IPC transports
 
 
-ZMQ_PLAIN_USERNAME: Retrieve the last username set
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_PLAIN_USERNAME: Retrieve current PLAIN username
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_PLAIN_USERNAME' option shall retrieve the last username set for
 the PLAIN security mechanism. The returned value shall be a NULL-terminated 
 string and MAY be empty. The returned size SHALL include the terminating
@@ -523,8 +523,8 @@ Default value:: null string
 Applicable socket types:: all, when using TCP or IPC transports
 
 
-ZMQ_PLAIN_PASSWORD: Retrieve the last password set
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_PLAIN_PASSWORD: Retrieve current password
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_PLAIN_PASSWORD' option shall retrieve the last password set for
 the PLAIN security mechanism. The returned value shall be a NULL-terminated 
 string and MAY be empty. The returned size SHALL include the terminating
@@ -535,6 +535,48 @@ Option value type:: NULL-terminated character string
 Option value unit:: N/A
 Default value:: null string
 Applicable socket types:: all, when using TCP or IPC transports
+
+
+ZMQ_CURVE_PUBLICKEY: Retrieve current CURVE public key
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Retrieves the current long term public key for the socket. You can
+provide either a 32 byte buffer, to retrieve the binary key value, or 
+a 40 byte buffer, to retrieve the key in a printable Z85 format.
+
+[horizontal]
+Option value type:: binary data or Z85 text string
+Option value size:: 32 or 40
+Default value:: null
+Applicable socket types:: all, when using TCP transport
+
+
+ZMQ_CURVE_SECRETKEY: Retrieve current CURVE secret key
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Retrieves the current long term secret key for the socket. You can
+provide either a 32 byte buffer, to retrieve the binary key value, or 
+a 40 byte buffer, to retrieve the key in a printable Z85 format.
+
+[horizontal]
+Option value type:: binary data or Z85 text string
+Option value size:: 32 or 40
+Default value:: null
+Applicable socket types:: all, when using TCP transport
+
+
+ZMQ_CURVE_SERVERKEY: Retrieve current CURVE server key
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Retrieves the current server key for the client socket. You can
+provide either a 32 byte buffer, to retrieve the binary key value, or 
+a 40 byte buffer, to retrieve the key in a printable Z85 format.
+
+[horizontal]
+Option value type:: binary data or Z85 text string
+Option value size:: 32 or 40
+Default value:: null
+Applicable socket types:: all, when using TCP transport
 
 
 RETURN VALUE
