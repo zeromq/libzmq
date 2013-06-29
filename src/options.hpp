@@ -28,7 +28,10 @@
 #include "tcp_address.hpp"
 #include "../include/zmq.h"
 
-#define CURVE_KEYSIZE    32
+//  Normal base 256 key is 32 bytes
+#define CURVE_KEYSIZE       32
+//  Key encoded using Z85 is 40 bytes
+#define CURVE_KEYSIZE_Z85   40
 
 namespace zmq
 {
