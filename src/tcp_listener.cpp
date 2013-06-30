@@ -188,6 +188,12 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
     if (address.family () == AF_INET6)
         enable_ipv4_mapping (s);
 
+    //  Set the socket buffer limits for the underlying socket.
+    if (options.sndbuf != 0)
+        set_tcp_send_buffer (s, options.sndbuf);
+    if (options.rcvbuf != 0)
+        set_tcp_receive_buffer (s, options.rcvbuf);
+
     //  Allow reusing of the address.
     int flag = 1;
 #ifdef ZMQ_HAVE_WINDOWS

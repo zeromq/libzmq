@@ -28,6 +28,12 @@ namespace zmq
     //  Tunes the supplied TCP socket for the best latency.
     void tune_tcp_socket (fd_t s_);
 
+    //  Sets the socket send buffer size.
+    void set_tcp_send_buffer (fd_t sockfd_, int bufsize_);
+
+    //  Sets the socket receive buffer size.
+    void set_tcp_receive_buffer (fd_t sockfd_, int bufsize_);
+
     //  Tunes TCP keep-alives
     void tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_, int keepalive_idle_, int keepalive_intvl_);
 

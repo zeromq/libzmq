@@ -83,25 +83,6 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
     
     //  Put the socket into non-blocking mode.
     unblock_socket (s);
-    //  Set the socket buffer limits for the underlying socket.
-    if (options.sndbuf) {
-        rc = setsockopt (s, SOL_SOCKET, SO_SNDBUF,
-            (char*) &options.sndbuf, sizeof (int));
-#ifdef ZMQ_HAVE_WINDOWS
-		wsa_assert (rc != SOCKET_ERROR);
-#else
-        errno_assert (rc == 0);
-#endif
-    }
-    if (options.rcvbuf) {
-        rc = setsockopt (s, SOL_SOCKET, SO_RCVBUF,
-            (char*) &options.rcvbuf, sizeof (int));
-#ifdef ZMQ_HAVE_WINDOWS
-		wsa_assert (rc != SOCKET_ERROR);
-#else
-        errno_assert (rc == 0);
-#endif
-    }
 
 #ifdef SO_NOSIGPIPE
     //  Make sure that SIGPIPE signal is not generated when writing to a
