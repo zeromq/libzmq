@@ -59,6 +59,28 @@ void zmq::tune_tcp_socket (fd_t s_)
 #endif
 }
 
+void zmq::set_tcp_send_buffer (fd_t sockfd_, int bufsize_)
+{
+    const int rc = setsockopt (sockfd_, SOL_SOCKET, SO_SNDBUF,
+        (char*) &bufsize_, sizeof bufsize_);
+#ifdef ZMQ_HAVE_WINDOWS
+    wsa_assert (rc != SOCKET_ERROR);
+#else
+    errno_assert (rc == 0);
+#endif
+}
+
+void zmq::set_tcp_receive_buffer (fd_t sockfd_, int bufsize_)
+{
+    const int rc = setsockopt (sockfd_, SOL_SOCKET, SO_RCVBUF,
+        (char*) &bufsize_, sizeof bufsize_);
+#ifdef ZMQ_HAVE_WINDOWS
+    wsa_assert (rc != SOCKET_ERROR);
+#else
+    errno_assert (rc == 0);
+#endif
+}
+
 void zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_, int keepalive_idle_, int keepalive_intvl_)
 {
     // These options are used only under certain #ifdefs below.
