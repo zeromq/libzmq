@@ -100,12 +100,21 @@ int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
         ptr_ += value_length;
         bytes_left -= value_length;
 
-        const int rc = property (name, value, value_length);
-        if (rc == -1)
-            return -1;
-
         if (name == "Identity" && options.recv_identity)
             set_peer_identity (value, value_length);
+        else
+        if (name == "Socket-Type") {
+            const std::string socket_type ((char *) value, value_length);
+            if (!check_socket_type (socket_type)) {
+                errno = EINVAL;
+                return -1;
+            }
+        }
+        else {
+            const int rc = property (name, value, value_length);
+            if (rc == -1)
+                return -1;
+        }
     }
     if (bytes_left > 0) {
         errno = EPROTO;
@@ -120,4 +129,35 @@ int zmq::mechanism_t::property (const std::string name_,
     //  Default implementation does not check
     //  property values and returns 0 to signal success.
     return 0;
+}
+
+bool zmq::mechanism_t::check_socket_type (const std::string type_) const
+{
+    switch (options.type) {
+        case ZMQ_REQ:
+            return type_ == "REP" || type_ == "ROUTER";
+        case ZMQ_REP:
+            return type_ == "REQ" || type_ == "DEALER";
+        case ZMQ_DEALER:
+            return type_ == "REP" || type_ == "DEALER" || type_ == "ROUTER";
+        case ZMQ_ROUTER:
+            return type_ == "REQ" || type_ == "DEALER" || type_ == "ROUTER";
+        case ZMQ_PUSH:
+            return type_ == "PULL";
+        case ZMQ_PULL:
+            return type_ == "PUSH";
+        case ZMQ_PUB:
+            return type_ == "SUB" || type_ == "XSUB";
+        case ZMQ_SUB:
+            return type_ == "PUB" || type_ == "XPUB";
+        case ZMQ_XPUB:
+            return type_ == "SUB" || type_ == "XSUB";
+        case ZMQ_XSUB:
+            return type_ == "PUB" || type_ == "XPUB";
+        case ZMQ_PAIR:
+            return type_ == "PAIR";
+        default:
+            break;
+    }
+    return false;
 }

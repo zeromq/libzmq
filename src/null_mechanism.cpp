@@ -116,12 +116,3 @@ bool zmq::null_mechanism_t::is_handshake_complete () const
 {
     return ready_command_received && ready_command_sent;
 }
-
-int zmq::null_mechanism_t::property (const std::string name,
-                                     const void *value, size_t length)
-{
-    if (name == "Socket-Type") {
-        //  TODO: Implement socket type checking
-    }
-    return 0;
-}

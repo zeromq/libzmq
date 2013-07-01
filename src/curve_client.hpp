@@ -100,9 +100,6 @@ namespace zmq
         int process_welcome (msg_t *msg_);
         int initiate_msg (msg_t *msg_);
         int process_ready (msg_t *msg_);
-
-        virtual int property (const std::string name,
-                              const void *value, size_t length);
     };
 
 }
