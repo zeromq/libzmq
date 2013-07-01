@@ -43,11 +43,6 @@ namespace zmq
         virtual int zap_msg_available ();
         virtual bool is_handshake_complete () const;
 
-    protected:
-
-        virtual int property (const std::string name,
-                              const void *value, size_t length);
-
     private:
 
         enum state_t {

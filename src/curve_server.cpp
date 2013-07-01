@@ -543,15 +543,6 @@ void zmq::curve_server_t::send_zap_request (const uint8_t *key)
     errno_assert (rc == 0);
 }
 
-int zmq::curve_server_t::property (const std::string name,
-                                   const void *value, size_t length)
-{
-    if (name == "Socket-Type") {
-        //  TODO: Implement socket type checking
-    }
-    return 0;
-}
-
 int zmq::curve_server_t::receive_and_process_zap_reply ()
 {
     int rc = 0;

@@ -115,7 +115,7 @@ test_stream_to_dealer (void)
 
     //  Announce we are ready
     memcpy (buffer, "\0\51READY\0", 8);
-    memcpy (buffer + 8, "\13Socket-Type\0\0\0\6STREAM", 22);
+    memcpy (buffer + 8, "\13Socket-Type\0\0\0\6ROUTER", 22);
     memcpy (buffer + 30, "\10Identity\0\0\0\0", 13);
 
     //  Send Ready command

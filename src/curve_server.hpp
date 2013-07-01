@@ -107,9 +107,6 @@ namespace zmq
 
         void send_zap_request (const uint8_t *key);
         int receive_and_process_zap_reply ();
-
-        virtual int property (const std::string name,
-                              const void *value, size_t length);
     };
 
 }
