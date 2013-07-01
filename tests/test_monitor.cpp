@@ -59,8 +59,8 @@ static bool read_msg(void* s, zmq_event_t& event, std::string& ep)
     // copy address part
     ep = std::string((char*)zmq_msg_data(&msg2), zmq_msg_size(&msg2));
 
-	if (event.event == ZMQ_EVENT_MONITOR_STOPPED)
-		return true;
+    if (event.event == ZMQ_EVENT_MONITOR_STOPPED)
+        return true;
 
     return false;
 }
