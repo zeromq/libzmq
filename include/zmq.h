@@ -314,12 +314,14 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 #define ZMQ_EVENT_CLOSED 128
 #define ZMQ_EVENT_CLOSE_FAILED 256
 #define ZMQ_EVENT_DISCONNECTED 512
+#define ZMQ_EVENT_MONITOR_STOPPED 1024
 
 #define ZMQ_EVENT_ALL ( ZMQ_EVENT_CONNECTED | ZMQ_EVENT_CONNECT_DELAYED | \
                         ZMQ_EVENT_CONNECT_RETRIED | ZMQ_EVENT_LISTENING | \
                         ZMQ_EVENT_BIND_FAILED | ZMQ_EVENT_ACCEPTED | \
                         ZMQ_EVENT_ACCEPT_FAILED | ZMQ_EVENT_CLOSED | \
-                        ZMQ_EVENT_CLOSE_FAILED | ZMQ_EVENT_DISCONNECTED )
+                        ZMQ_EVENT_CLOSE_FAILED | ZMQ_EVENT_DISCONNECTED | \
+                        ZMQ_EVENT_MONITOR_STOPPED)
 
 /*  Socket event data  */
 typedef struct {
