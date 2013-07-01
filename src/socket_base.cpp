@@ -1221,6 +1221,12 @@ void zmq::socket_base_t::monitor_event (zmq_event_t event_, const std::string& a
 void zmq::socket_base_t::stop_monitor()
 {
     if (monitor_socket) {
+        if (monitor_events & ZMQ_EVENT_MONITOR_STOPPED) {
+            zmq_event_t event;
+            event.event = ZMQ_EVENT_MONITOR_STOPPED;
+            event.value = 0;
+            monitor_event (event, "");
+        }
         zmq_close (monitor_socket);
         monitor_socket = NULL;
         monitor_events = 0;
