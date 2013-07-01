@@ -54,15 +54,15 @@ char *
 Z85_encode (char *dest, uint8_t *data, size_t size)
 {
     assert (size % 4 == 0);
-    uint char_nbr = 0;
-    uint byte_nbr = 0;
+    unsigned int char_nbr = 0;
+    unsigned int byte_nbr = 0;
     uint32_t value = 0;
     while (byte_nbr < size) {
         //  Accumulate value in base 256 (binary)
         value = value * 256 + data [byte_nbr++];
         if (byte_nbr % 4 == 0) {
             //  Output value in base 85
-            uint divisor = 85 * 85 * 85 * 85;
+            unsigned int divisor = 85 * 85 * 85 * 85;
             while (divisor) {
                 dest [char_nbr++] = encoder [value / divisor % 85];
                 divisor /= 85;
@@ -85,15 +85,15 @@ uint8_t *
 Z85_decode (uint8_t *dest, char *string)
 {
     assert (strlen (string) % 5 == 0);
-    uint byte_nbr = 0;
-    uint char_nbr = 0;
+    unsigned int byte_nbr = 0;
+    unsigned int char_nbr = 0;
     uint32_t value = 0;
     while (char_nbr < strlen (string)) {
         //  Accumulate value in base 85
         value = value * 85 + decoder [(uint8_t) string [char_nbr++] - 32];
         if (char_nbr % 5 == 0) {
             //  Output value in base 256
-            uint divisor = 256 * 256 * 256;
+            unsigned int divisor = 256 * 256 * 256;
             while (divisor) {
                 dest [byte_nbr++] = value / divisor % 256;
                 divisor /= 256;
