@@ -452,12 +452,3 @@ error:
 
     return rc;
 }
-
-int zmq::plain_mechanism_t::property (const std::string name,
-                                      const void *value, size_t length)
-{
-    if (name == "Socket-Type") {
-        //  TODO: Implement socket type checking
-    }
-    return 0;
-}
