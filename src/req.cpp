@@ -27,7 +27,8 @@
 zmq::req_t::req_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     dealer_t (parent_, tid_, sid_),
     receiving_reply (false),
-    message_begins (true)
+    message_begins (true),
+    reply_pipe (NULL)
 {
     options.type = ZMQ_REQ;
 }
@@ -51,10 +52,28 @@ int zmq::req_t::xsend (msg_t *msg_)
         int rc = bottom.init ();
         errno_assert (rc == 0);
         bottom.set_flags (msg_t::more);
-        rc = dealer_t::xsend (&bottom);
+
+        reply_pipe = NULL;
+        rc = dealer_t::sendpipe (&bottom, &reply_pipe);
         if (rc != 0)
             return -1;
+        assert (reply_pipe);
         message_begins = false;
+
+        // Eat all currently avaliable messages before the request is fully
+        // sent. This is done to avoid:
+        //   REQ sends request to A, A replies, B replies too.
+        //   A's reply was first and matches, that is used.
+        //   An hour later REQ sends a request to B. B's old reply is used.
+        msg_t drop;
+        while (true) {
+            rc = drop.init ();
+            errno_assert (rc == 0);
+            rc = dealer_t::xrecv (&drop);
+            if (rc != 0)
+                break;
+            drop.close ();
+        }
     }
 
     bool more = msg_->flags () & msg_t::more ? true : false;
@@ -82,7 +101,7 @@ int zmq::req_t::xrecv (msg_t *msg_)
 
     //  First part of the reply should be the original request ID.
     if (message_begins) {
-        int rc = dealer_t::xrecv (msg_);
+        int rc = recv_reply_pipe (msg_);
         if (rc != 0)
             return rc;
 
@@ -103,7 +122,7 @@ int zmq::req_t::xrecv (msg_t *msg_)
         message_begins = false;
     }
 
-    int rc = dealer_t::xrecv (msg_);
+    int rc = recv_reply_pipe (msg_);
     if (rc != 0)
         return rc;
 
@@ -132,6 +151,18 @@ bool zmq::req_t::xhas_out ()
         return false;
 
     return dealer_t::xhas_out ();
+}
+
+int zmq::req_t::recv_reply_pipe (msg_t *msg_)
+{
+    while (true) {
+        pipe_t *pipe = NULL;
+        int rc = dealer_t::recvpipe(msg_, &pipe);
+        if (rc != 0)
+            return rc;
+        if (pipe == reply_pipe)
+            return 0;
+    }
 }
 
 zmq::req_session_t::req_session_t (io_thread_t *io_thread_, bool connect_,

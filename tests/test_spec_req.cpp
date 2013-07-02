@@ -234,8 +234,7 @@ int main (void)
         // SHALL accept an incoming message only from the last peer that it sent a
         // request to.
         // SHALL discard silently any messages received from other peers.
-        // *** Test disabled until libzmq does this properly ***
-        // test_req_only_listens_to_current_peer (ctx);
+        test_req_only_listens_to_current_peer (ctx);
     }
 
     int rc = zmq_ctx_term (ctx);
