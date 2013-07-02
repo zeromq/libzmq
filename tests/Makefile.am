@@ -24,7 +24,11 @@ noinst_PROGRAMS = test_pair_inproc \
                   test_ctx_options \
                   test_security \
                   test_security_curve \
-                  test_iov
+                  test_iov \
+                  test_spec_req \
+                  test_spec_rep \
+                  test_spec_dealer \
+                  test_spec_router
 
 if !ON_MINGW
 noinst_PROGRAMS += test_shutdown_stress \
@@ -55,6 +59,10 @@ test_ctx_options_SOURCES = test_ctx_options.cpp
 test_iov_SOURCES = test_iov.cpp
 test_security_SOURCES = test_security.cpp
 test_security_curve_SOURCES = test_security_curve.cpp
+test_spec_req_SOURCES = test_spec_req.cpp
+test_spec_rep_SOURCES = test_spec_rep.cpp
+test_spec_dealer_SOURCES = test_spec_dealer.cpp
+test_spec_router_SOURCES = test_spec_router.cpp
 if !ON_MINGW
 test_shutdown_stress_SOURCES = test_shutdown_stress.cpp
 test_pair_ipc_SOURCES = test_pair_ipc.cpp testutil.hpp
