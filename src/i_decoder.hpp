@@ -26,7 +26,8 @@
 namespace zmq
 {
 
-    class i_msg_sink;
+    // Forward declaration
+    struct i_msg_sink;
 
     //  Interface to be implemented by message decoder.
 
