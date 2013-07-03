@@ -264,7 +264,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 return 0;
             }
             else
-            if (optvallen_ >= 0 && optvallen_ < 256 && optval_ != NULL) {
+            if (optvallen_ > 0 && optvallen_ < 256 && optval_ != NULL) {
                 plain_username.assign ((const char *) optval_, optvallen_);
                 as_server = 0;
                 mechanism = ZMQ_PLAIN;
@@ -278,7 +278,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 return 0;
             }
             else
-            if (optvallen_ >= 0 && optvallen_ < 256 && optval_ != NULL) {
+            if (optvallen_ > 0 && optvallen_ < 256 && optval_ != NULL) {
                 plain_password.assign ((const char *) optval_, optvallen_);
                 as_server = 0;
                 mechanism = ZMQ_PLAIN;
