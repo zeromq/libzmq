@@ -21,12 +21,15 @@
 #include <stdlib.h>
 #include "testutil.hpp"
 
+const char *bind_address = 0;
+const char *connect_address = 0;
+
 void test_round_robin_out (void *ctx)
 {
     void *dealer = zmq_socket (ctx, ZMQ_DEALER);
     assert (dealer);
 
-    int rc = zmq_bind (dealer, "inproc://b");
+    int rc = zmq_bind (dealer, bind_address);
     assert (rc == 0);
 
     const size_t N = 5;
@@ -40,9 +43,13 @@ void test_round_robin_out (void *ctx)
         rc = zmq_setsockopt (rep[i], ZMQ_RCVTIMEO, &timeout, sizeof(int));
         assert (rc == 0);
 
-        rc = zmq_connect (rep[i], "inproc://b");
+        rc = zmq_connect (rep[i], connect_address);
         assert (rc == 0);
     }
+
+    // Wait for connections.
+    rc = zmq_poll (0, 0, 100);
+    assert (rc == 0);
 
     // Send N requests
     for (size_t i = 0; i < N; ++i)
@@ -62,14 +69,16 @@ void test_round_robin_out (void *ctx)
     rc = zmq_msg_close (&msg);
     assert (rc == 0);
 
-    rc = zmq_close (dealer);
-    assert (rc == 0);
+    close_zero_linger (dealer);
 
     for (size_t i = 0; i < N; ++i)
     {
-        rc = zmq_close (rep[i]);
-        assert (rc == 0);
+        close_zero_linger (rep[i]);
     }
+
+    // Wait for disconnects.
+    rc = zmq_poll (0, 0, 100);
+    assert (rc == 0);
 }
 
 void test_fair_queue_in (void *ctx)
@@ -81,7 +90,7 @@ void test_fair_queue_in (void *ctx)
     int rc = zmq_setsockopt (receiver, ZMQ_RCVTIMEO, &timeout, sizeof(int));
     assert (rc == 0);
 
-    rc = zmq_bind (receiver, "inproc://a");
+    rc = zmq_bind (receiver, bind_address);
     assert (rc == 0);
 
     const size_t N = 5;
@@ -94,7 +103,7 @@ void test_fair_queue_in (void *ctx)
         rc = zmq_setsockopt (senders[i], ZMQ_RCVTIMEO, &timeout, sizeof(int));
         assert (rc == 0);
 
-        rc = zmq_connect (senders[i], "inproc://a");
+        rc = zmq_connect (senders[i], connect_address);
         assert (rc == 0);
     }
 
@@ -111,32 +120,32 @@ void test_fair_queue_in (void *ctx)
     // send N requests
     for (size_t i = 0; i < N; ++i)
     {
-        char *str = strdup("A");
-        str[0] += i;
-        s_send_seq (senders[i], str, SEQ_END);
-        free (str);
+        s_send_seq (senders[i], "B", SEQ_END);
     }
+
+    // Wait for data.
+    rc = zmq_poll (0, 0, 50);
+    assert (rc == 0);
 
     // handle N requests
     for (size_t i = 0; i < N; ++i)
     {
-        char *str = strdup("A");
-        str[0] += i;
-        s_recv_seq (receiver, str, SEQ_END);
-        free (str);
+        s_recv_seq (receiver, "B", SEQ_END);
     }
 
     rc = zmq_msg_close (&msg);
     assert (rc == 0);
 
-    rc = zmq_close (receiver);
-    assert (rc == 0);
+    close_zero_linger (receiver);
 
     for (size_t i = 0; i < N; ++i)
     {
-        rc = zmq_close (senders[i]);
-        assert (rc == 0);
+        close_zero_linger (senders[i]);
     }
+
+    // Wait for disconnects.
+    rc = zmq_poll (0, 0, 100);
+    assert (rc == 0);
 }
 
 void test_destroy_queue_on_disconnect (void *ctx)
@@ -144,24 +153,26 @@ void test_destroy_queue_on_disconnect (void *ctx)
     void *A = zmq_socket (ctx, ZMQ_DEALER);
     assert (A);
 
-    int rc = zmq_bind (A, "inproc://d");
+    int rc = zmq_bind (A, bind_address);
     assert (rc == 0);
 
     void *B = zmq_socket (ctx, ZMQ_DEALER);
     assert (B);
 
-    rc = zmq_connect (B, "inproc://d");
+    rc = zmq_connect (B, connect_address);
     assert (rc == 0);
 
     // Send a message in both directions
     s_send_seq (A, "ABC", SEQ_END);
     s_send_seq (B, "DEF", SEQ_END);
 
-    rc = zmq_disconnect (B, "inproc://d");
+    rc = zmq_disconnect (B, connect_address);
     assert (rc == 0);
 
     // Disconnect may take time and need command processing.
     zmq_pollitem_t poller[2] = { { A, 0, 0, 0 }, { B, 0, 0, 0 } };
+    rc = zmq_poll (poller, 2, 100);
+    assert (rc == 0);
     rc = zmq_poll (poller, 2, 100);
     assert (rc == 0);
 
@@ -178,7 +189,7 @@ void test_destroy_queue_on_disconnect (void *ctx)
     assert (errno == EAGAIN);
 
     // After a reconnect of B, the messages should still be gone
-    rc = zmq_connect (B, "inproc://d");
+    rc = zmq_connect (B, connect_address);
     assert (rc == 0);
 
     rc = zmq_msg_recv (&msg, A, ZMQ_DONTWAIT);
@@ -192,10 +203,11 @@ void test_destroy_queue_on_disconnect (void *ctx)
     rc = zmq_msg_close (&msg);
     assert (rc == 0);
 
-    rc = zmq_close (A);
-    assert (rc == 0);
+    close_zero_linger (A);
+    close_zero_linger (B);
 
-    rc = zmq_close (B);
+    // Wait for disconnects.
+    rc = zmq_poll (0, 0, 100);
     assert (rc == 0);
 }
 
@@ -225,21 +237,29 @@ int main ()
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
-    // SHALL route outgoing messages to available peers using a round-robin
-    // strategy.
-    test_round_robin_out (ctx);
+    const char *binds[] =    { "inproc://a", "tcp://*:5555" };
+    const char *connects[] = { "inproc://a", "tcp://localhost:5555" };
 
-    // SHALL receive incoming messages from its peers using a fair-queuing
-    // strategy.
-    test_fair_queue_in (ctx);
+    for (int i = 0; i < 2; ++i) {
+        bind_address = binds[i];
+        connect_address = connects[i];
 
-    // SHALL block on sending, or return a suitable error, when it has no connected peers.
-    test_block_on_send_no_peers (ctx);
+        // SHALL route outgoing messages to available peers using a round-robin
+        // strategy.
+        test_round_robin_out (ctx);
 
-    // SHALL create a double queue when a peer connects to it. If this peer
-    // disconnects, the DEALER socket SHALL destroy its double queue and SHALL
-    // discard any messages it contains.
-    test_destroy_queue_on_disconnect (ctx);
+        // SHALL receive incoming messages from its peers using a fair-queuing
+        // strategy.
+        test_fair_queue_in (ctx);
+
+        // SHALL block on sending, or return a suitable error, when it has no connected peers.
+        test_block_on_send_no_peers (ctx);
+
+        // SHALL create a double queue when a peer connects to it. If this peer
+        // disconnects, the DEALER socket SHALL destroy its double queue and SHALL
+        // discard any messages it contains.
+        test_destroy_queue_on_disconnect (ctx);
+    }
 
     int rc = zmq_ctx_term (ctx);
     assert (rc == 0);

@@ -21,12 +21,15 @@
 #include <stdlib.h>
 #include "testutil.hpp"
 
+const char *bind_address = 0;
+const char *connect_address = 0;
+
 void test_push_round_robin_out (void *ctx)
 {
     void *push = zmq_socket (ctx, ZMQ_PUSH);
     assert (push);
 
-    int rc = zmq_bind (push, "inproc://b");
+    int rc = zmq_bind (push, bind_address);
     assert (rc == 0);
 
     const size_t N = 5;
@@ -40,9 +43,13 @@ void test_push_round_robin_out (void *ctx)
         rc = zmq_setsockopt (pulls[i], ZMQ_RCVTIMEO, &timeout, sizeof(int));
         assert (rc == 0);
 
-        rc = zmq_connect (pulls[i], "inproc://b");
+        rc = zmq_connect (pulls[i], connect_address);
         assert (rc == 0);
     }
+
+    // Wait for connections.
+    rc = zmq_poll (0, 0, 100);
+    assert (rc == 0);
 
     // Send 2N messages
     for (size_t i = 0; i < N; ++i)
@@ -61,14 +68,16 @@ void test_push_round_robin_out (void *ctx)
         s_recv_seq (pulls[i], "DEF", SEQ_END);
     }
 
-    rc = zmq_close (push);
-    assert (rc == 0);
+    close_zero_linger (push);
 
     for (size_t i = 0; i < N; ++i)
     {
-        rc = zmq_close (pulls[i]);
-        assert (rc == 0);
+        close_zero_linger (pulls[i]);
     }
+
+    // Wait for disconnects.
+    rc = zmq_poll (0, 0, 100);
+    assert (rc == 0);
 }
 
 void test_pull_fair_queue_in (void *ctx)
@@ -76,7 +85,7 @@ void test_pull_fair_queue_in (void *ctx)
     void *pull = zmq_socket (ctx, ZMQ_PULL);
     assert (pull);
 
-    int rc = zmq_bind (pull, "inproc://a");
+    int rc = zmq_bind (pull, bind_address);
     assert (rc == 0);
 
     const size_t N = 5;
@@ -86,38 +95,74 @@ void test_pull_fair_queue_in (void *ctx)
         pushs[i] = zmq_socket (ctx, ZMQ_PUSH);
         assert (pushs[i]);
 
-        rc = zmq_connect (pushs[i], "inproc://a");
+        rc = zmq_connect (pushs[i], connect_address);
         assert (rc == 0);
     }
+
+    // Wait for connections.
+    rc = zmq_poll (0, 0, 100);
+    assert (rc == 0);
+
+    int first_half = 0;
+    int second_half = 0;
 
     // Send 2N messages
     for (size_t i = 0; i < N; ++i)
     {
-        char * str = strdup("A");
+        char *str = strdup("A");
+
         str[0] += i;
         s_send_seq (pushs[i], str, SEQ_END);
+        first_half += str[0];
+
         str[0] += N;
         s_send_seq (pushs[i], str, SEQ_END);
+        second_half += str[0];
+
         free (str);
     }
 
-    // Expect to pull them in order
-    for (size_t i = 0; i < 2*N; ++i)
-    {
-        char * str = strdup("A");
-        str[0] += i;
-        s_recv_seq (pull, str, SEQ_END);
-        free (str);
-    }
-
-    rc = zmq_close (pull);
+    // Wait for data.
+    rc = zmq_poll (0, 0, 100);
     assert (rc == 0);
+
+    zmq_msg_t msg;
+    rc = zmq_msg_init (&msg);
+    assert (rc == 0);
+
+    // Expect to pull one from each first
+    for (size_t i = 0; i < N; ++i)
+    {
+        rc = zmq_msg_recv (&msg, pull, 0);
+        assert (rc == 2);
+        const char *str = (const char *)zmq_msg_data (&msg);
+        first_half -= str[0];
+    }
+    assert (first_half == 0);
+
+    // And then get the second batch
+    for (size_t i = 0; i < N; ++i)
+    {
+        rc = zmq_msg_recv (&msg, pull, 0);
+        assert (rc == 2);
+        const char *str = (const char *)zmq_msg_data (&msg);
+        second_half -= str[0];
+    }
+    assert (second_half == 0);
+
+    rc = zmq_msg_close (&msg);
+    assert (rc == 0);
+
+    close_zero_linger (pull);
 
     for (size_t i = 0; i < N; ++i)
     {
-        rc = zmq_close (pushs[i]);
-        assert (rc == 0);
+        close_zero_linger (pushs[i]);
     }
+
+    // Wait for disconnects.
+    rc = zmq_poll (0, 0, 100);
+    assert (rc == 0);
 }
 
 void test_push_block_on_send_no_peers (void *ctx)
@@ -150,7 +195,7 @@ void test_destroy_queue_on_disconnect (void *ctx)
     int rc = zmq_setsockopt (A, ZMQ_SNDHWM, &hwm, sizeof(hwm));
     assert (rc == 0);
 
-    rc = zmq_bind (A, "inproc://d");
+    rc = zmq_bind (A, bind_address);
     assert (rc == 0);
 
     void *B = zmq_socket (ctx, ZMQ_PULL);
@@ -159,7 +204,7 @@ void test_destroy_queue_on_disconnect (void *ctx)
     rc = zmq_setsockopt (B, ZMQ_RCVHWM, &hwm, sizeof(hwm));
     assert (rc == 0);
 
-    rc = zmq_connect (B, "inproc://d");
+    rc = zmq_connect (B, connect_address);
     assert (rc == 0);
 
     // Send two messages, one should be stuck in A's outgoing queue, the other
@@ -172,11 +217,13 @@ void test_destroy_queue_on_disconnect (void *ctx)
     assert (rc == -1);
     assert (errno == EAGAIN);
 
-    rc = zmq_disconnect (B, "inproc://d");
+    rc = zmq_disconnect (B, connect_address);
     assert (rc == 0);
 
     // Disconnect may take time and need command processing.
     zmq_pollitem_t poller[2] = { { A, 0, 0, 0 }, { B, 0, 0, 0 } };
+    rc = zmq_poll (poller, 2, 100);
+    assert (rc == 0);
     rc = zmq_poll (poller, 2, 100);
     assert (rc == 0);
 
@@ -195,7 +242,7 @@ void test_destroy_queue_on_disconnect (void *ctx)
     assert (errno == EAGAIN);
 
     // Reconnect B
-    rc = zmq_connect (B, "inproc://d");
+    rc = zmq_connect (B, connect_address);
     assert (rc == 0);
 
     // Still can't receive old data on B.
@@ -214,10 +261,11 @@ void test_destroy_queue_on_disconnect (void *ctx)
     rc = zmq_msg_close (&msg);
     assert (rc == 0);
 
-    rc = zmq_close (A);
-    assert (rc == 0);
+    close_zero_linger (A);
+    close_zero_linger (B);
 
-    rc = zmq_close (B);
+    // Wait for disconnects.
+    rc = zmq_poll (0, 0, 100);
     assert (rc == 0);
 }
 
@@ -226,22 +274,30 @@ int main ()
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
-    // PUSH: SHALL route outgoing messages to connected peers using a
-    // round-robin strategy.
-    test_push_round_robin_out (ctx);
+    const char *binds[] =    { "inproc://a", "tcp://*:5555" };
+    const char *connects[] = { "inproc://a", "tcp://localhost:5555" };
 
-    // PULL: SHALL receive incoming messages from its peers using a fair-queuing
-    // strategy.
-    test_pull_fair_queue_in (ctx);
+    for (int i = 0; i < 2; ++i) {
+        bind_address = binds[i];
+        connect_address = connects[i];
 
-    // PUSH: SHALL block on sending, or return a suitable error, when it has no
-    // available peers.
-    test_push_block_on_send_no_peers (ctx);
+        // PUSH: SHALL route outgoing messages to connected peers using a
+        // round-robin strategy.
+        test_push_round_robin_out (ctx);
 
-    // PUSH and PULL: SHALL create this queue when a peer connects to it. If
-    // this peer disconnects, the socket SHALL destroy its queue and SHALL
-    // discard any messages it contains.
-    test_destroy_queue_on_disconnect (ctx);
+        // PULL: SHALL receive incoming messages from its peers using a fair-queuing
+        // strategy.
+        test_pull_fair_queue_in (ctx);
+
+        // PUSH: SHALL block on sending, or return a suitable error, when it has no
+        // available peers.
+        test_push_block_on_send_no_peers (ctx);
+
+        // PUSH and PULL: SHALL create this queue when a peer connects to it. If
+        // this peer disconnects, the socket SHALL destroy its queue and SHALL
+        // discard any messages it contains.
+        test_destroy_queue_on_disconnect (ctx);
+    }
 
     int rc = zmq_ctx_term (ctx);
     assert (rc == 0);
