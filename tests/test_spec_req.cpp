@@ -20,12 +20,15 @@
 #include <stdio.h>
 #include "testutil.hpp"
 
+const char *bind_address = 0;
+const char *connect_address = 0;
+
 void test_round_robin_out (void *ctx)
 {
     void *req = zmq_socket (ctx, ZMQ_REQ);
     assert (req);
 
-    int rc = zmq_bind (req, "inproc://b");
+    int rc = zmq_bind (req, bind_address);
     assert (rc == 0);
 
     const size_t N = 5;
@@ -39,7 +42,7 @@ void test_round_robin_out (void *ctx)
         rc = zmq_setsockopt (rep[i], ZMQ_RCVTIMEO, &timeout, sizeof(int));
         assert (rc == 0);
 
-        rc = zmq_connect (rep[i], "inproc://b");
+        rc = zmq_connect (rep[i], connect_address);
         assert (rc == 0);
     }
 
@@ -52,14 +55,16 @@ void test_round_robin_out (void *ctx)
         s_recv_seq (req, "DEF", SEQ_END);
     }
 
-    rc = zmq_close (req);
-    assert (rc == 0);
+    close_zero_linger (req);
 
     for (size_t i = 0; i < N; ++i)
     {
-        rc = zmq_close (rep[i]);
-        assert (rc == 0);
+        close_zero_linger (rep[i]);
     }
+
+    // Wait for disconnects.
+    rc = zmq_poll (0, 0, 100);
+    assert (rc == 0);
 }
 
 void test_req_only_listens_to_current_peer (void *ctx)
@@ -70,7 +75,7 @@ void test_req_only_listens_to_current_peer (void *ctx)
     int rc = zmq_setsockopt(req, ZMQ_IDENTITY, "A", 2);
     assert (rc == 0);
 
-    rc = zmq_bind (req, "inproc://c");
+    rc = zmq_bind (req, bind_address);
     assert (rc == 0);
 
     const size_t N = 3;
@@ -88,7 +93,7 @@ void test_req_only_listens_to_current_peer (void *ctx)
         rc = zmq_setsockopt (router[i], ZMQ_ROUTER_MANDATORY, &enabled, sizeof(enabled));
         assert (rc == 0);
 
-        rc = zmq_connect (router[i], "inproc://c");
+        rc = zmq_connect (router[i], connect_address);
         assert (rc == 0);
     }
 
@@ -111,14 +116,16 @@ void test_req_only_listens_to_current_peer (void *ctx)
         s_recv_seq (req, "GOOD", SEQ_END);
     }
 
-    rc = zmq_close (req);
-    assert (rc == 0);
+    close_zero_linger (req);
 
     for (size_t i = 0; i < N; ++i)
     {
-        rc = zmq_close (router[i]);
-        assert (rc == 0);
+        close_zero_linger (router[i]);
     }
+
+    // Wait for disconnects.
+    rc = zmq_poll (0, 0, 100);
+    assert (rc == 0);
 }
 
 void test_req_message_format (void *ctx)
@@ -129,10 +136,10 @@ void test_req_message_format (void *ctx)
     void *router = zmq_socket (ctx, ZMQ_ROUTER);
     assert (router);
 
-    int rc = zmq_bind (req, "inproc://a");
+    int rc = zmq_bind (req, bind_address);
     assert (rc == 0);
 
-    rc = zmq_connect (router, "inproc://a");
+    rc = zmq_connect (router, connect_address);
     assert (rc == 0);
 
     // Send a multi-part request.
@@ -172,10 +179,11 @@ void test_req_message_format (void *ctx)
     rc = zmq_msg_close (&peer_id_msg);
     assert (rc == 0);
 
-    rc = zmq_close (req);
-    assert (rc == 0);
+    close_zero_linger (req);
+    close_zero_linger (router);
 
-    rc = zmq_close (router);
+    // Wait for disconnects.
+    rc = zmq_poll (0, 0, 100);
     assert (rc == 0);
 }
 
@@ -205,23 +213,31 @@ int main ()
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
-    // SHALL route outgoing messages to connected peers using a round-robin
-    // strategy.
-    test_round_robin_out (ctx);
+    const char *binds[] =    { "inproc://a", "tcp://*:5555" };
+    const char *connects[] = { "inproc://a", "tcp://localhost:5555" };
 
-    // The request and reply messages SHALL have this format on the wire:
-    // * A delimiter, consisting of an empty frame, added by the REQ socket.
-    // * One or more data frames, comprising the message visible to the
-    //   application.
-    test_req_message_format (ctx);
+    for (int i = 0; i < 2; ++i) {
+        bind_address = binds[i];
+        connect_address = connects[i];
 
-    // SHALL block on sending, or return a suitable error, when it has no connected peers.
-    test_block_on_send_no_peers (ctx);
+        // SHALL route outgoing messages to connected peers using a round-robin
+        // strategy.
+        test_round_robin_out (ctx);
 
-    // SHALL accept an incoming message only from the last peer that it sent a
-    // request to.
-    // SHALL discard silently any messages received from other peers.
-    test_req_only_listens_to_current_peer (ctx);
+        // The request and reply messages SHALL have this format on the wire:
+        // * A delimiter, consisting of an empty frame, added by the REQ socket.
+        // * One or more data frames, comprising the message visible to the
+        //   application.
+        test_req_message_format (ctx);
+
+        // SHALL block on sending, or return a suitable error, when it has no connected peers.
+        test_block_on_send_no_peers (ctx);
+
+        // SHALL accept an incoming message only from the last peer that it sent a
+        // request to.
+        // SHALL discard silently any messages received from other peers.
+        test_req_only_listens_to_current_peer (ctx);
+    }
 
     int rc = zmq_ctx_term (ctx);
     assert (rc == 0);

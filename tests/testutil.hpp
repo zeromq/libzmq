@@ -186,4 +186,15 @@ void s_recv_seq (void *socket, ...)
     zmq_msg_close (&msg);
 }
 
+
+// Sets a zero linger period on a socket and closes it.
+void close_zero_linger (void *socket)
+{
+    int linger = 0;
+    int rc = zmq_setsockopt (socket, ZMQ_LINGER, &linger, sizeof(linger));
+    assert (rc == 0);
+    rc = zmq_close (socket);
+    assert (rc == 0);
+}
+
 #endif

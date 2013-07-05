@@ -21,6 +21,9 @@
 #include <stdlib.h>
 #include "testutil.hpp"
 
+const char *bind_address = 0;
+const char *connect_address = 0;
+
 void test_fair_queue_in (void *ctx)
 {
     void *rep = zmq_socket (ctx, ZMQ_REP);
@@ -30,7 +33,7 @@ void test_fair_queue_in (void *ctx)
     int rc = zmq_setsockopt (rep, ZMQ_RCVTIMEO, &timeout, sizeof(int));
     assert (rc == 0);
 
-    rc = zmq_bind (rep, "inproc://a");
+    rc = zmq_bind (rep, bind_address);
     assert (rc == 0);
 
     const size_t N = 5;
@@ -43,7 +46,7 @@ void test_fair_queue_in (void *ctx)
         rc = zmq_setsockopt (reqs[i], ZMQ_RCVTIMEO, &timeout, sizeof(int));
         assert (rc == 0);
 
-        rc = zmq_connect (reqs[i], "inproc://a");
+        rc = zmq_connect (reqs[i], connect_address);
         assert (rc == 0);
     }
 
@@ -77,14 +80,16 @@ void test_fair_queue_in (void *ctx)
         free (str);
     }
 
-    rc = zmq_close (rep);
-    assert (rc == 0);
+    close_zero_linger (rep);
 
     for (size_t i = 0; i < N; ++i)
     {
-        rc = zmq_close (reqs[i]);
-        assert (rc == 0);
+        close_zero_linger (reqs[i]);
     }
+
+    // Wait for disconnects.
+    rc = zmq_poll (0, 0, 100);
+    assert (rc == 0);
 }
 
 void test_envelope (void *ctx)
@@ -92,13 +97,13 @@ void test_envelope (void *ctx)
     void *rep = zmq_socket (ctx, ZMQ_REP);
     assert (rep);
 
-    int rc = zmq_bind (rep, "inproc://b");
+    int rc = zmq_bind (rep, bind_address);
     assert (rc == 0);
 
     void *dealer = zmq_socket (ctx, ZMQ_DEALER);
     assert (dealer);
 
-    rc = zmq_connect (dealer, "inproc://b");
+    rc = zmq_connect (dealer, connect_address);
     assert (rc == 0);
 
     // minimal envelope
@@ -113,10 +118,11 @@ void test_envelope (void *ctx)
     s_send_seq (rep, "A", SEQ_END);
     s_recv_seq (dealer, "X", "Y", 0, "A", SEQ_END);
 
-    rc = zmq_close (rep);
-    assert (rc == 0);
+    close_zero_linger (rep);
+    close_zero_linger (dealer);
 
-    rc = zmq_close (dealer);
+    // Wait for disconnects.
+    rc = zmq_poll (0, 0, 100);
     assert (rc == 0);
 }
 
@@ -125,17 +131,25 @@ int main ()
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
-    // SHALL receive incoming messages from its peers using a fair-queuing
-    // strategy.
-    test_fair_queue_in (ctx);
+    const char *binds[] =    { "inproc://a", "tcp://*:5555" };
+    const char *connects[] = { "inproc://a", "tcp://localhost:5555" };
 
-    // For an incoming message:
-    // SHALL remove and store the address envelope, including the delimiter.
-    // SHALL pass the remaining data frames to its calling application.
-    // SHALL wait for a single reply message from its calling application.
-    // SHALL prepend the address envelope and delimiter.
-    // SHALL deliver this message back to the originating peer.
-    test_envelope (ctx);
+    for (int i = 0; i < 2; ++i) {
+        bind_address = binds[i];
+        connect_address = connects[i];
+
+        // SHALL receive incoming messages from its peers using a fair-queuing
+        // strategy.
+        test_fair_queue_in (ctx);
+
+        // For an incoming message:
+        // SHALL remove and store the address envelope, including the delimiter.
+        // SHALL pass the remaining data frames to its calling application.
+        // SHALL wait for a single reply message from its calling application.
+        // SHALL prepend the address envelope and delimiter.
+        // SHALL deliver this message back to the originating peer.
+        test_envelope (ctx);
+    }
 
     int rc = zmq_ctx_term (ctx);
     assert (rc == 0);
