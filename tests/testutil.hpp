@@ -24,11 +24,12 @@
 #include <string.h>
 #undef NDEBUG
 #include <assert.h>
+#include <stdarg.h>
 
 //  Bounce a message from client to server and back
 //  For REQ/REP or DEALER/DEALER pairs only
 
-static void
+void
 bounce (void *server, void *client)
 {
     const char *content = "12345678ABCDEFGH12345678abcdefgh";
@@ -107,5 +108,82 @@ s_sendmore (void *socket, const char *string) {
 
 #define streq(s1,s2)    (!strcmp ((s1), (s2)))
 #define strneq(s1,s2)   (strcmp ((s1), (s2)))
+
+
+const char * SEQ_END = (const char *)1;
+
+//  Sends a message composed of frames that are C strings or null frames.
+//  The list must be terminated by SEQ_END.
+//  Example: s_send_seq (req, "ABC", 0, "DEF", SEQ_END);
+void s_send_seq (void *socket, ...)
+{
+    va_list ap;
+    va_start (ap, socket);
+    const char * data = va_arg (ap, const char *);
+    while (true)
+    {
+        const char * prev = data;
+        data = va_arg (ap, const char *);
+        bool end = data == SEQ_END;
+
+        if (!prev)
+        {
+            int rc = zmq_send (socket, 0, 0, end ? 0 : ZMQ_SNDMORE);
+            assert (rc != -1);
+        }
+        else
+        {
+            int rc = zmq_send (socket, prev, strlen (prev)+1, end ? 0 : ZMQ_SNDMORE);
+            assert (rc != -1);
+        }
+        if (end)
+            break;
+    }
+    va_end (ap);
+}
+
+//  Receives message a number of frames long and checks that the frames have
+//  the given data which can be either C strings or 0 for a null frame.
+//  The list must be terminated by SEQ_END.
+//  Example: s_recv_seq (rep, "ABC", 0, "DEF", SEQ_END);
+void s_recv_seq (void *socket, ...)
+{
+    zmq_msg_t msg;
+    zmq_msg_init (&msg);
+
+    int more;
+    size_t more_size = sizeof(more);
+
+    va_list ap;
+    va_start (ap, socket);
+    const char * data = va_arg (ap, const char *);
+    while (true)
+    {
+        int rc = zmq_msg_recv (&msg, socket, 0);
+        assert (rc != -1);
+
+        if (!data)
+        {
+            assert (zmq_msg_size (&msg) == 0);
+        }
+        else
+        {
+            assert (strcmp (data, (const char *)zmq_msg_data (&msg)) == 0);
+        }
+
+        data = va_arg (ap, const char *);
+        bool end = data == SEQ_END;
+
+        rc = zmq_getsockopt (socket, ZMQ_RCVMORE, &more, &more_size);
+        assert (rc == 0);
+
+        assert (!more == end);
+        if (end)
+            break;
+    }
+    va_end (ap);
+
+    zmq_msg_close (&msg);
+}
 
 #endif
