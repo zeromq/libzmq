@@ -53,6 +53,11 @@ tests/test_security
 tests/test_security_curve
 tests/test_probe_router
 tests/test_stream
+tests/test_spec_dealer
+tests/test_spec_pushpull
+tests/test_spec_rep
+tests/test_spec_req
+tests/test_spec_router
 src/platform.hpp*
 src/stamp-h1
 perf/local_lat
