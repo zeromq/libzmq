@@ -110,7 +110,7 @@ s_sendmore (void *socket, const char *string) {
 #define strneq(s1,s2)   (strcmp ((s1), (s2)))
 
 
-const char * SEQ_END = (const char *)1;
+const char *SEQ_END = (const char *) 1;
 
 //  Sends a message composed of frames that are C strings or null frames.
 //  The list must be terminated by SEQ_END.
@@ -126,13 +126,11 @@ void s_send_seq (void *socket, ...)
         data = va_arg (ap, const char *);
         bool end = data == SEQ_END;
 
-        if (!prev)
-        {
+        if (!prev) {
             int rc = zmq_send (socket, 0, 0, end ? 0 : ZMQ_SNDMORE);
             assert (rc != -1);
         }
-        else
-        {
+        else {
             int rc = zmq_send (socket, prev, strlen (prev)+1, end ? 0 : ZMQ_SNDMORE);
             assert (rc != -1);
         }
@@ -157,19 +155,15 @@ void s_recv_seq (void *socket, ...)
     va_list ap;
     va_start (ap, socket);
     const char * data = va_arg (ap, const char *);
-    while (true)
-    {
+    
+    while (true) {
         int rc = zmq_msg_recv (&msg, socket, 0);
         assert (rc != -1);
 
         if (!data)
-        {
             assert (zmq_msg_size (&msg) == 0);
-        }
         else
-        {
             assert (strcmp (data, (const char *)zmq_msg_data (&msg)) == 0);
-        }
 
         data = va_arg (ap, const char *);
         bool end = data == SEQ_END;
