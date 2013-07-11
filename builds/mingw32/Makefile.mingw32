@@ -1,0 +1,31 @@
+CC=gcc
+CFLAGS=-Wall -Os -g -DDLL_EXPORT -DFD_SETSIZE=1024 -I.
+LIBS=-lws2_32
+
+OBJS = address.o clock.o ctx.o dealer.o decoder.o devpoll.o dist.o encoder.o epoll.o err.o fq.o \
+	io_object.o io_thread.o ip.o ipc_address.o ipc_connecter.o ipc_listener.o kqueue.o lb.o \
+	mailbox.o msg.o mtrie.o object.o options.o own.o pair.o pgm_receiver.o pgm_sender.o \
+	pgm_socket.o pipe.o poll.o poller_base.o precompiled.o proxy.o pub.o pull.o push.o \
+	random.o reaper.o rep.o req.o router.o select.o session_base.o \
+	signaler.o socket_base.o stream_engine.o sub.o tcp.o tcp_address.o tcp_connecter.o tcp_listener.o \
+	thread.o trie.o v1_decoder.o v1_encoder.o xpub.o xsub.o zmq.o zmq_utils.o
+
+%.o: ../../src/%.cpp
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+%.o: ../../perf/%.cpp
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+all: libzmq.dll
+
+perf: inproc_lat.exe inproc_thr.exe local_lat.exe local_thr.exe remote_lat.exe remote_thr.exe
+
+libzmq.dll: $(OBJS)
+	g++ -shared -o $@ $^ -Wl,--out-implib,$@.a $(LIBS)
+
+%.exe: %.o libzmq.dll
+	g++ -o $@ $^
+
+clean:
+	del *.o *.a *.dll *.exe
+	
