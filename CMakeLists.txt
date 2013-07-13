@@ -1,6 +1,9 @@
 # CMake build script for ZeroMQ on Windows
 
-cmake_minimum_required (VERSION 2.8)
+# 2.8.11 provides toolkit support
+# 2.8.11.2 provides MSVC2013 support
+
+cmake_minimum_required (VERSION 2.8.11.2)
 project (ZeroMQ)
 
 include (${CMAKE_SOURCE_DIR}/cmake/Modules/TestZMQVersion.cmake)
@@ -79,6 +82,7 @@ add_definitions(
 # NB: May require tweaking for highly connected applications.
 	-DFD_SETSIZE=1024
 	-D_CRT_SECURE_NO_WARNINGS
+	-D_WIN32_WINNT=${_zmq_WIN32_WINNT}
 )
 
 # Parallel make.
@@ -262,13 +266,15 @@ endforeach (txt ${docs})
 #-----------------------------------------------------------------------------
 # output
 
+message(targetting ${_zmq_TOOLSET})
+
 add_library(libzmq SHARED ${sources} ${html-docs} ${CMAKE_BINARY_DIR}/NSIS.template.in)
 target_link_libraries(libzmq ws2_32.lib rpcrt4.lib ${OPTIONAL_LIBRARIES})
 set_target_properties(libzmq PROPERTIES
 	RELEASE_POSTFIX "${_zmq_TOOLSET}-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
 	DEBUG_POSTFIX "${_zmq_TOOLSET}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-	PDB_NAME "placeholder"
-	PDB_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+	PDB_NAME "libzmq${_zmq_TOOLSET}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+	PDB_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
 )
 
 #-----------------------------------------------------------------------------
@@ -276,12 +282,13 @@ set_target_properties(libzmq PROPERTIES
 
 install (TARGETS libzmq ARCHIVE DESTINATION lib COMPONENT SDK)
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-	install (TARGETS libzmq RUNTIME DESTINATION bin COMPONENT SDK)
-	install (FILES ${CMAKE_BINARY_DIR}/lib/libzmq${_zmq_TOOLSET}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}.pdb DESTINATION lib COMPONENT SDK)
-else (CMAKE_BUILD_TYPE STREQUAL "Debug")
+# no -op
+else ()
 	install (TARGETS libzmq RUNTIME DESTINATION bin COMPONENT Runtime)
-	install (FILES ${CMAKE_BINARY_DIR}/libzmq.dir/Debug/${_zmq_COMPILER}.pdb DESTINATION lib COMPONENT SDK RENAME libzmq${_zmq_TOOLSET}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}.pdb)
-endif (CMAKE_BUILD_TYPE STREQUAL "Debug")
+	install (FILES ${CMAKE_BINARY_DIR}/lib/Debug/libzmq${_zmq_TOOLSET}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}.lib DESTINATION lib COMPONENT SDK)
+	install (FILES ${CMAKE_BINARY_DIR}/lib/Debug/libzmq${_zmq_TOOLSET}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}.pdb DESTINATION lib COMPONENT SDK)
+	install (FILES ${CMAKE_BINARY_DIR}/lib/Debug/libzmq${_zmq_TOOLSET}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}.dll DESTINATION bin COMPONENT SDK)
+endif ()
 install (FILES ${headers} DESTINATION include COMPONENT SDK)
 
 set (perf-tools
@@ -317,18 +324,22 @@ if (CMAKE_CL_64)
 	set (CPACK_NSIS_DISPLAY_NAME "ZeroMQ ${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.${ZMQ_VERSION_PATCH} (x64)")
         set (CPACK_PACKAGE_FILE_NAME "ZeroMQ-${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.${ZMQ_VERSION_PATCH}-x64")
 	set (CPACK_INSTALL_CMAKE_PROJECTS
-		"${CMAKE_SOURCE_DIR}/build/x64/v110;ZeroMQ;ALL;/"
-		"${CMAKE_SOURCE_DIR}/build/x64/v100;ZeroMQ;ALL;/"
 		"${CMAKE_SOURCE_DIR}/build/x64/v90;ZeroMQ;ALL;/"
+		"${CMAKE_SOURCE_DIR}/build/x64/v110;ZeroMQ;ALL;/"
+		"${CMAKE_SOURCE_DIR}/build/x64/v120;ZeroMQ;ALL;/"
+# default to 2008/Vista compatible CRT
+		"${CMAKE_SOURCE_DIR}/build/x64/v100;ZeroMQ;ALL;/"
 	)
 else (CMAKE_CL_64)
 	set (CPACK_NSIS_DISPLAY_NAME "ZeroMQ ${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.${ZMQ_VERSION_PATCH}")
         set (CPACK_PACKAGE_FILE_NAME "ZeroMQ-${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.${ZMQ_VERSION_PATCH}-x86")
 	set (CPACK_INSTALL_CMAKE_PROJECTS
-		"${CMAKE_SOURCE_DIR}/build/x86/v110_xp;ZeroMQ;ALL;/"
-		"${CMAKE_SOURCE_DIR}/build/x86/v110;ZeroMQ;ALL;/"
-		"${CMAKE_SOURCE_DIR}/build/x86/v100;ZeroMQ;ALL;/"
 		"${CMAKE_SOURCE_DIR}/build/x86/v90;ZeroMQ;ALL;/"
+		"${CMAKE_SOURCE_DIR}/build/x86/v100;ZeroMQ;ALL;/"
+		"${CMAKE_SOURCE_DIR}/build/x86/v110;ZeroMQ;ALL;/"
+		"${CMAKE_SOURCE_DIR}/build/x86/v120;ZeroMQ;ALL;/"
+# default to XP-compatible CRT
+		"${CMAKE_SOURCE_DIR}/build/x86/v110_xp;ZeroMQ;ALL;/"
 	)
 endif (CMAKE_CL_64)
 set (CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}")
