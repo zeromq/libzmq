@@ -29,8 +29,6 @@
 namespace zmq
 {
 
-    class i_msg_source;
-
     //  Encoder for 0MQ framing protocol. Converts messages into data stream.
 
     class v1_encoder_t : public encoder_base_t <v1_encoder_t>
