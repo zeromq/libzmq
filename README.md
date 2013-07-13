@@ -1,5 +1,8 @@
-Welcome
--------
+# ZeroMQ
+
+[![Build Status](https://travis-ci.org/zeromq/libzmq.png?branch=master)](https://travis-ci.org/zeromq/libzmq)
+
+## Welcome
 
 The 0MQ lightweight messaging kernel is a library which extends the
 standard socket interfaces with features traditionally provided by
@@ -9,14 +12,11 @@ message filtering (subscriptions), seamless access to multiple transport
 protocols and more.
 
 
-Building and installation
--------------------------
+## Building and installation
 
 See the INSTALL file included with the distribution.
 
-
-Resources
----------
+## Resources
 
 Extensive documentation is provided with the distribution. Refer to
 doc/zmq.html, or "man zmq" after you have installed 0MQ on your system.
@@ -31,8 +31,7 @@ Git repository: http://github.com/zeromq/libzmq
 0MQ developers can also be found on the IRC channel #zeromq, on the
 Freenode network (irc.freenode.net).
 
-Copying
--------
+## Copying
 
 Free use of this software is granted under the terms of the GNU Lesser General
 Public License (LGPL). For details see the files `COPYING` and `COPYING.LESSER`
