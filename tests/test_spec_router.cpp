@@ -30,29 +30,28 @@ void test_fair_queue_in (void *ctx)
     assert (receiver);
 
     int timeout = 100;
-    int rc = zmq_setsockopt (receiver, ZMQ_RCVTIMEO, &timeout, sizeof(int));
+    int rc = zmq_setsockopt (receiver, ZMQ_RCVTIMEO, &timeout, sizeof (int));
     assert (rc == 0);
 
     rc = zmq_bind (receiver, bind_address);
     assert (rc == 0);
 
-    const size_t N = 5;
-    void *senders[N];
-    for (size_t i = 0; i < N; ++i)
-    {
-        senders[i] = zmq_socket (ctx, ZMQ_DEALER);
-        assert (senders[i]);
+    const size_t services = 5;
+    void *senders [services];
+    for (size_t peer = 0; peer < services; ++peer) {
+        senders [peer] = zmq_socket (ctx, ZMQ_DEALER);
+        assert (senders [peer]);
 
-        rc = zmq_setsockopt (senders[i], ZMQ_RCVTIMEO, &timeout, sizeof(int));
+        rc = zmq_setsockopt (senders [peer], ZMQ_RCVTIMEO, &timeout, sizeof (int));
         assert (rc == 0);
 
         char *str = strdup("A");
-        str[0] += i;
-        rc = zmq_setsockopt (senders[i], ZMQ_IDENTITY, str, 2);
+        str [0] += peer;
+        rc = zmq_setsockopt (senders [peer], ZMQ_IDENTITY, str, 2);
         assert (rc == 0);
         free (str);
 
-        rc = zmq_connect (senders[i], connect_address);
+        rc = zmq_connect (senders [peer], connect_address);
         assert (rc == 0);
     }
 
@@ -60,30 +59,28 @@ void test_fair_queue_in (void *ctx)
     rc = zmq_msg_init (&msg);
     assert (rc == 0);
 
-    s_send_seq (senders[0], "M", SEQ_END);
+    s_send_seq (senders [0], "M", SEQ_END);
     s_recv_seq (receiver, "A", "M", SEQ_END);
 
-    s_send_seq (senders[0], "M", SEQ_END);
+    s_send_seq (senders [0], "M", SEQ_END);
     s_recv_seq (receiver, "A", "M", SEQ_END);
 
     int sum = 0;
 
     // send N requests
-    for (size_t i = 0; i < N; ++i)
-    {
-        s_send_seq (senders[i], "M", SEQ_END);
-        sum += 'A' + i;
+    for (size_t peer = 0; peer < services; ++peer) {
+        s_send_seq (senders [peer], "M", SEQ_END);
+        sum += 'A' + peer;
     }
 
-    assert (sum == N*'A' + N*(N-1)/2);
+    assert (sum == services * 'A' + services * (services - 1) / 2);
 
     // handle N requests
-    for (size_t i = 0; i < N; ++i)
-    {
+    for (size_t peer = 0; peer < services; ++peer) {
         rc = zmq_msg_recv (&msg, receiver, 0);
         assert (rc == 2);
         const char *id = (const char *)zmq_msg_data (&msg);
-        sum -= id[0];
+        sum -= id [0];
 
         s_recv_seq (receiver, "M", SEQ_END);
     }
@@ -95,10 +92,8 @@ void test_fair_queue_in (void *ctx)
 
     close_zero_linger (receiver);
 
-    for (size_t i = 0; i < N; ++i)
-    {
-        close_zero_linger (senders[i]);
-    }
+    for (size_t peer = 0; peer < services; ++peer)
+        close_zero_linger (senders [peer]);
 
     // Wait for disconnects.
     rc = zmq_poll (0, 0, 100);
@@ -111,7 +106,7 @@ void test_destroy_queue_on_disconnect (void *ctx)
     assert (A);
 
     int enabled = 1;
-    int rc = zmq_setsockopt (A, ZMQ_ROUTER_MANDATORY, &enabled, sizeof(enabled));
+    int rc = zmq_setsockopt (A, ZMQ_ROUTER_MANDATORY, &enabled, sizeof (enabled));
     assert (rc == 0);
 
     rc = zmq_bind (A, bind_address);
@@ -138,7 +133,7 @@ void test_destroy_queue_on_disconnect (void *ctx)
     assert (rc == 0);
 
     // Disconnect may take time and need command processing.
-    zmq_pollitem_t poller[2] = { { A, 0, 0, 0 }, { B, 0, 0, 0 } };
+    zmq_pollitem_t poller [2] = { { A, 0, 0, 0 }, { B, 0, 0, 0 } };
     rc = zmq_poll (poller, 2, 100);
     assert (rc == 0);
     rc = zmq_poll (poller, 2, 100);
@@ -180,17 +175,17 @@ void test_destroy_queue_on_disconnect (void *ctx)
 }
 
 
-int main ()
+int main (void)
 {
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
-    const char *binds[] =    { "inproc://a", "tcp://*:5555" };
-    const char *connects[] = { "inproc://a", "tcp://localhost:5555" };
+    const char *binds [] = { "inproc://a", "tcp://*:5555" };
+    const char *connects [] = { "inproc://a", "tcp://localhost:5555" };
 
-    for (int i = 0; i < 2; ++i) {
-        bind_address = binds[i];
-        connect_address = connects[i];
+    for (int transport = 0; transport < 2; ++transport) {
+        bind_address = binds [transport];
+        connect_address = connects [transport];
 
         // SHALL receive incoming messages from its peers using a fair-queuing
         // strategy.
