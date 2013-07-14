@@ -44,6 +44,12 @@ namespace zmq
         bool xhas_in ();
         bool xhas_out ();
 
+    protected:
+
+        //  Receive only from the pipe the request was sent to, discarding
+        //  frames from other pipes.
+        int recv_reply_pipe (zmq::msg_t *msg_);
+
     private:
 
         //  If true, request was already sent and reply wasn't received yet or
@@ -53,6 +59,9 @@ namespace zmq
         //  If true, we are starting to send/recv a message. The first part
         //  of the message must be empty message part (backtrace stack bottom).
         bool message_begins;
+
+        //  The pipe the request was sent to and where the reply is expected.
+        zmq::pipe_t *reply_pipe;
 
         req_t (const req_t&);
         const req_t &operator = (const req_t&);
