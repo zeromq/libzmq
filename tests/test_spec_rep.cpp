@@ -30,62 +30,57 @@ void test_fair_queue_in (void *ctx)
     assert (rep);
 
     int timeout = 100;
-    int rc = zmq_setsockopt (rep, ZMQ_RCVTIMEO, &timeout, sizeof(int));
+    int rc = zmq_setsockopt (rep, ZMQ_RCVTIMEO, &timeout, sizeof (int));
     assert (rc == 0);
 
     rc = zmq_bind (rep, bind_address);
     assert (rc == 0);
 
-    const size_t N = 5;
-    void *reqs[N];
-    for (size_t i = 0; i < N; ++i)
-    {
-        reqs[i] = zmq_socket (ctx, ZMQ_REQ);
-        assert (reqs[i]);
+    const size_t services = 5;
+    void *reqs [services];
+    for (size_t peer = 0; peer < services; ++peer) {
+        reqs [peer] = zmq_socket (ctx, ZMQ_REQ);
+        assert (reqs [peer]);
 
-        rc = zmq_setsockopt (reqs[i], ZMQ_RCVTIMEO, &timeout, sizeof(int));
+        rc = zmq_setsockopt (reqs [peer], ZMQ_RCVTIMEO, &timeout, sizeof (int));
         assert (rc == 0);
 
-        rc = zmq_connect (reqs[i], connect_address);
+        rc = zmq_connect (reqs [peer], connect_address);
         assert (rc == 0);
     }
 
-    s_send_seq (reqs[0], "A", SEQ_END);
+    s_send_seq (reqs [0], "A", SEQ_END);
     s_recv_seq (rep, "A", SEQ_END);
     s_send_seq (rep, "A", SEQ_END);
-    s_recv_seq (reqs[0], "A", SEQ_END);
+    s_recv_seq (reqs [0], "A", SEQ_END);
 
-    s_send_seq (reqs[0], "A", SEQ_END);
+    s_send_seq (reqs [0], "A", SEQ_END);
     s_recv_seq (rep, "A", SEQ_END);
     s_send_seq (rep, "A", SEQ_END);
-    s_recv_seq (reqs[0], "A", SEQ_END);
+    s_recv_seq (reqs [0], "A", SEQ_END);
 
     // send N requests
-    for (size_t i = 0; i < N; ++i)
-    {
+    for (size_t peer = 0; peer < services; ++peer) {
         char * str = strdup("A");
-        str[0] += i;
-        s_send_seq (reqs[i], str, SEQ_END);
+        str [0] += peer;
+        s_send_seq (reqs [peer], str, SEQ_END);
         free (str);
     }
 
     // handle N requests
-    for (size_t i = 0; i < N; ++i)
-    {
+    for (size_t peer = 0; peer < services; ++peer) {
         char * str = strdup("A");
-        str[0] += i;
+        str [0] += peer;
         s_recv_seq (rep, str, SEQ_END);
         s_send_seq (rep, str, SEQ_END);
-        s_recv_seq (reqs[i], str, SEQ_END);
+        s_recv_seq (reqs [peer], str, SEQ_END);
         free (str);
     }
 
     close_zero_linger (rep);
 
-    for (size_t i = 0; i < N; ++i)
-    {
-        close_zero_linger (reqs[i]);
-    }
+    for (size_t peer = 0; peer < services; ++peer)
+        close_zero_linger (reqs [peer]);
 
     // Wait for disconnects.
     rc = zmq_poll (0, 0, 100);
@@ -126,17 +121,17 @@ void test_envelope (void *ctx)
     assert (rc == 0);
 }
 
-int main ()
+int main (void)
 {
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
-    const char *binds[] =    { "inproc://a", "tcp://*:5555" };
-    const char *connects[] = { "inproc://a", "tcp://localhost:5555" };
+    const char *binds [] = { "inproc://a", "tcp://*:5555" };
+    const char *connects [] = { "inproc://a", "tcp://localhost:5555" };
 
-    for (int i = 0; i < 2; ++i) {
-        bind_address = binds[i];
-        connect_address = connects[i];
+    for (int transport = 0; transport < 2; ++transport) {
+        bind_address = binds [transport];
+        connect_address = connects [transport];
 
         // SHALL receive incoming messages from its peers using a fair-queuing
         // strategy.

@@ -88,11 +88,11 @@ void test_req_only_listens_to_current_peer (void *ctx)
         assert (router [i]);
 
         int timeout = 100;
-        rc = zmq_setsockopt (router [i], ZMQ_RCVTIMEO, &timeout, sizeof(timeout));
+        rc = zmq_setsockopt (router [i], ZMQ_RCVTIMEO, &timeout, sizeof (timeout));
         assert (rc == 0);
 
         int enabled = 1;
-        rc = zmq_setsockopt (router [i], ZMQ_ROUTER_MANDATORY, &enabled, sizeof(enabled));
+        rc = zmq_setsockopt (router [i], ZMQ_ROUTER_MANDATORY, &enabled, sizeof (enabled));
         assert (rc == 0);
 
         rc = zmq_connect (router [i], connect_address);
@@ -154,7 +154,7 @@ void test_req_message_format (void *ctx)
     zmq_msg_copy (&peer_id_msg, &msg);
 
     int more = 0;
-    size_t more_size = sizeof(more);
+    size_t more_size = sizeof (more);
     rc = zmq_getsockopt (router, ZMQ_RCVMORE, &more, &more_size);
     assert (rc == 0);
     assert (more);
@@ -190,7 +190,7 @@ void test_block_on_send_no_peers (void *ctx)
     assert (sc);
 
     int timeout = 100;
-    int rc = zmq_setsockopt (sc, ZMQ_SNDTIMEO, &timeout, sizeof(timeout));
+    int rc = zmq_setsockopt (sc, ZMQ_SNDTIMEO, &timeout, sizeof (timeout));
     assert (rc == 0);
 
     rc = zmq_send (sc, 0, 0, ZMQ_DONTWAIT);
