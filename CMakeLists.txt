@@ -27,7 +27,7 @@ if(NOT ${POLLER} STREQUAL "")
   set(ZMQ_FORCE_${UPPER_POLLER} 1)
 endif()
 
-set(ZMQ_CMAKE_MODULES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
+set(ZMQ_CMAKE_MODULES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/Modules)
 list(APPEND CMAKE_MODULE_PATH ${ZMQ_CMAKE_MODULES_DIR})
 
 include(TestZMQVersion)
@@ -393,8 +393,7 @@ set(readme-docs AUTHORS
                 COPYING
                 COPYING.LESSER
                 MAINTAINERS
-                NEWS
-                README)
+                NEWS)
 
 #-----------------------------------------------------------------------------
 # optional modules
@@ -436,9 +435,9 @@ endif()
 
 if(MSVC)
   if(CMAKE_CL_64)
-    set(nsis-template ${CMAKE_CURRENT_SOURCE_DIR}/cmake/NSIS.template64.in)
+    set(nsis-template ${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/NSIS.template64.in)
   else()
-    set(nsis-template ${CMAKE_CURRENT_SOURCE_DIR}/cmake/NSIS.template32.in)
+    set(nsis-template ${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/NSIS.template32.in)
   endif()
 
   add_custom_command(
@@ -497,6 +496,13 @@ if(MSVC)
     PUBLIC_HEADER "${public_headers}"
     RELEASE_POSTFIX "${_zmq_COMPILER}-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
     DEBUG_POSTFIX "${_zmq_COMPILER}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}")
+  add_library(libzmq-static STATIC ${sources})
+  set_target_properties(libzmq-static PROPERTIES
+    PUBLIC_HEADER "${public_headers}"
+    RELEASE_POSTFIX "${_zmq_COMPILER}-mt-s-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+    DEBUG_POSTFIX "${_zmq_COMPILER}-mt-sgd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+    COMPILE_FLAGS "/D ZMQ_STATIC"
+    OUTPUT_NAME "libzmq")
 else()
     add_library(libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig})
     if(ZMQ_BUILD_FRAMEWORK)
@@ -575,13 +581,13 @@ endif()
 # installer
 
 if(MSVC)
-  install(TARGETS libzmq
+  install(TARGETS libzmq libzmq-static
           ARCHIVE DESTINATION lib
           LIBRARY DESTINATION lib
           PUBLIC_HEADER DESTINATION include
           COMPONENT SDK)
   if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    install(TARGETS libzmq
+    install(TARGETS libzmq libzmq-static
             RUNTIME DESTINATION bin
             PUBLIC_HEADER DESTINATION include
             COMPONENT SDK)
@@ -669,8 +675,8 @@ if(MSVC)
   set(CPACK_PACKAGE_VENDOR "Miru")
   set(CPACK_NSIS_CONTACT "Steven McCoy <Steven.McCoy@miru.hk>")
   set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_BINARY_DIR}\\\\COPYING.txt")
-  set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_BINARY_DIR}\\\\README.txt")
-  set(CPACK_RESOURCE_FILE_WELCOME "${CMAKE_CURRENT_BINARY_DIR}\\\\README.txt")
+#  set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_BINARY_DIR}\\\\README.txt")
+#  set(CPACK_RESOURCE_FILE_WELCOME "${CMAKE_CURRENT_BINARY_DIR}\\\\WELCOME.txt")
   # There is a bug in NSI that does not handle full unix paths properly. Make
   # sure there is at least one set of four(4) backslashes.
   set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}\\\\installer.ico")
