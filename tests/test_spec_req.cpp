@@ -99,7 +99,17 @@ void test_req_only_listens_to_current_peer (void *ctx)
         assert (rc == 0);
     }
 
+    // Wait for connects to finish.
+    rc = zmq_poll (0, 0, 100);
+    assert (rc == 0);
+
     for (size_t i = 0; i < services; ++i) {
+        // There still is a race condition when a stale peer's message
+        // arrives at the REQ just after a request was sent to that peer.
+        // To avoid that happening in the test, sleep for a bit.
+        rc = zmq_poll (0, 0, 10);
+        assert (rc == 0);
+
         s_send_seq (req, "ABC", SEQ_END);
 
         // Receive on router i
@@ -112,7 +122,7 @@ void test_req_only_listens_to_current_peer (void *ctx)
             s_send_seq (router [j], "A", 0, reply, SEQ_END);
         }
 
-        // Recieve only the good relpy
+        // Receive only the good reply
         s_recv_seq (req, "GOOD", SEQ_END);
     }
 
