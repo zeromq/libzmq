@@ -496,6 +496,13 @@ if(MSVC)
     PUBLIC_HEADER "${public_headers}"
     RELEASE_POSTFIX "${_zmq_COMPILER}-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
     DEBUG_POSTFIX "${_zmq_COMPILER}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}")
+  add_library(libzmq-static STATIC ${sources})
+  set_target_properties(libzmq-static PROPERTIES
+    PUBLIC_HEADER "${public_headers}"
+    RELEASE_POSTFIX "${_zmq_COMPILER}-mt-s-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+    DEBUG_POSTFIX "${_zmq_COMPILER}-mt-sgd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+    COMPILE_FLAGS "/D ZMQ_STATIC"
+    OUTPUT_NAME "libzmq")
 else()
     add_library(libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig})
     if(ZMQ_BUILD_FRAMEWORK)
@@ -574,13 +581,13 @@ endif()
 # installer
 
 if(MSVC)
-  install(TARGETS libzmq
+  install(TARGETS libzmq libzmq-static
           ARCHIVE DESTINATION lib
           LIBRARY DESTINATION lib
           PUBLIC_HEADER DESTINATION include
           COMPONENT SDK)
   if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    install(TARGETS libzmq
+    install(TARGETS libzmq libzmq-static
             RUNTIME DESTINATION bin
             PUBLIC_HEADER DESTINATION include
             COMPONENT SDK)
