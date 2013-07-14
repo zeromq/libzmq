@@ -27,7 +27,7 @@ if(NOT ${POLLER} STREQUAL "")
   set(ZMQ_FORCE_${UPPER_POLLER} 1)
 endif()
 
-set(ZMQ_CMAKE_MODULES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
+set(ZMQ_CMAKE_MODULES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/Modules)
 list(APPEND CMAKE_MODULE_PATH ${ZMQ_CMAKE_MODULES_DIR})
 
 include(TestZMQVersion)
@@ -435,9 +435,9 @@ endif()
 
 if(MSVC)
   if(CMAKE_CL_64)
-    set(nsis-template ${CMAKE_CURRENT_SOURCE_DIR}/cmake/NSIS.template64.in)
+    set(nsis-template ${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/NSIS.template64.in)
   else()
-    set(nsis-template ${CMAKE_CURRENT_SOURCE_DIR}/cmake/NSIS.template32.in)
+    set(nsis-template ${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/NSIS.template32.in)
   endif()
 
   add_custom_command(
