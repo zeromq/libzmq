@@ -80,12 +80,12 @@ int zmq::dealer_t::xsetsockopt (int option_, const void *optval_,
 
 int zmq::dealer_t::xsend (msg_t *msg_)
 {
-    return lb.send (msg_);
+    return sendpipe (msg_, NULL);
 }
 
 int zmq::dealer_t::xrecv (msg_t *msg_)
 {
-    return fq.recv (msg_);
+    return recvpipe (msg_, NULL);
 }
 
 bool zmq::dealer_t::xhas_in ()
@@ -112,4 +112,14 @@ void zmq::dealer_t::xpipe_terminated (pipe_t *pipe_)
 {
     fq.pipe_terminated (pipe_);
     lb.pipe_terminated (pipe_);
+}
+
+int zmq::dealer_t::sendpipe (msg_t *msg_, pipe_t **pipe_)
+{
+    return lb.sendpipe (msg_, pipe_);
+}
+
+int zmq::dealer_t::recvpipe (msg_t *msg_, pipe_t **pipe_)
+{
+    return fq.recvpipe (msg_, pipe_);
 }

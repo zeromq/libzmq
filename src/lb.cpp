@@ -70,6 +70,11 @@ void zmq::lb_t::activated (pipe_t *pipe_)
 
 int zmq::lb_t::send (msg_t *msg_)
 {
+    return sendpipe (msg_, NULL);
+}
+
+int zmq::lb_t::sendpipe (msg_t *msg_, pipe_t **pipe_)
+{
     //  Drop the message if required. If we are at the end of the message
     //  switch back to non-dropping mode.
     if (dropping) {
@@ -86,7 +91,11 @@ int zmq::lb_t::send (msg_t *msg_)
 
     while (active > 0) {
         if (pipes [current]->write (msg_))
+        {
+            if (pipe_)
+                *pipe_ = pipes [current];
             break;
+        }
 
         zmq_assert (!more);
         active--;
@@ -139,4 +148,3 @@ bool zmq::lb_t::has_out ()
 
     return false;
 }
-

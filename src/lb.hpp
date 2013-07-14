@@ -41,6 +41,13 @@ namespace zmq
         void pipe_terminated (pipe_t *pipe_);
 
         int send (msg_t *msg_);
+
+        //  Sends a message and stores the pipe that was used in pipe_.
+        //  It is possible for this function to return success but keep pipe_
+        //  unset if the rest of a multipart message to a terminated pipe is
+        //  being dropped. For the first frame, this will never happen.
+        int sendpipe (msg_t *msg_, pipe_t **pipe_);
+
         bool has_out ();
 
     private:
