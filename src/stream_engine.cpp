@@ -530,7 +530,8 @@ bool zmq::stream_engine_t::handshake ()
         }
         else
         if (memcmp (greeting_recv + 12, "PLAIN\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
-            mechanism = new (std::nothrow) plain_mechanism_t (session, options);
+            mechanism = new (std::nothrow)
+                plain_mechanism_t (session, peer_address, options);
             alloc_assert (mechanism);
         }
 #ifdef HAVE_LIBSODIUM
