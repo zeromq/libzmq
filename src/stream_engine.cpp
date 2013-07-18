@@ -525,7 +525,8 @@ bool zmq::stream_engine_t::handshake ()
         alloc_assert (decoder);
 
         if (memcmp (greeting_recv + 12, "NULL\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
-            mechanism = new (std::nothrow) null_mechanism_t (options);
+            mechanism = new (std::nothrow)
+                null_mechanism_t (session, peer_address, options);
             alloc_assert (mechanism);
         }
         else
