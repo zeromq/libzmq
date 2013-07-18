@@ -27,23 +27,37 @@ namespace zmq
 {
 
     class msg_t;
+    class session_base_t;
 
     class null_mechanism_t : public mechanism_t
     {
     public:
 
-        null_mechanism_t (const options_t &options_);
+        null_mechanism_t (session_base_t *session_,
+                          const std::string &peer_address,
+                          const options_t &options_);
         virtual ~null_mechanism_t ();
 
         // mechanism implementation
         virtual int next_handshake_message (msg_t *msg_);
         virtual int process_handshake_message (msg_t *msg_);
+        virtual int zap_msg_available ();
         virtual bool is_handshake_complete () const;
 
     private:
 
+        session_base_t * const session;
+
+        const std::string peer_address;
+
         bool ready_command_sent;
         bool ready_command_received;
+        bool zap_connected;
+        bool zap_request_sent;
+        bool zap_reply_received;
+
+        void send_zap_request ();
+        int receive_and_process_zap_reply ();
     };
 
 }

@@ -28,6 +28,7 @@ zap_handler (void *zap)
     char *version = s_recv (zap);
     char *sequence = s_recv (zap);
     char *domain = s_recv (zap);
+    char *address = s_recv (zap);
     char *mechanism = s_recv (zap);
     char *username = s_recv (zap);
     char *password = s_recv (zap);
@@ -41,17 +42,20 @@ zap_handler (void *zap)
     &&  streq (password, "password")) {
         s_sendmore (zap, "200");
         s_sendmore (zap, "OK");
-        s_send (zap, "anonymous");
+        s_sendmore (zap, "anonymous");
+        s_send (zap, "");
     }
     else {
         s_sendmore (zap, "400");
         s_sendmore (zap, "Invalid username or password");
+        s_sendmore (zap, "");
         s_send (zap, "");
     }
     
     free (version);
     free (sequence);
     free (domain);
+    free (address);
     free (mechanism);
     free (username);
     free (password);

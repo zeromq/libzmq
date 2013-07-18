@@ -84,6 +84,9 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
     //  Put the socket into non-blocking mode.
     unblock_socket (s);
 
+    if (!get_peer_ip_address (s, peer_address))
+        peer_address = "";
+
 #ifdef SO_NOSIGPIPE
     //  Make sure that SIGPIPE signal is not generated when writing to a
     //  connection that was already closed by the peer.
@@ -522,19 +525,22 @@ bool zmq::stream_engine_t::handshake ()
         alloc_assert (decoder);
 
         if (memcmp (greeting_recv + 12, "NULL\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
-            mechanism = new (std::nothrow) null_mechanism_t (options);
+            mechanism = new (std::nothrow)
+                null_mechanism_t (session, peer_address, options);
             alloc_assert (mechanism);
         }
         else
         if (memcmp (greeting_recv + 12, "PLAIN\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
-            mechanism = new (std::nothrow) plain_mechanism_t (session, options);
+            mechanism = new (std::nothrow)
+                plain_mechanism_t (session, peer_address, options);
             alloc_assert (mechanism);
         }
 #ifdef HAVE_LIBSODIUM
         else
         if (memcmp (greeting_recv + 12, "CURVE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
             if (options.as_server)
-                mechanism = new (std::nothrow) curve_server_t (session, options);
+                mechanism = new (std::nothrow)
+                    curve_server_t (session, peer_address, options);
             else
                 mechanism = new (std::nothrow) curve_client_t (options);
             alloc_assert (mechanism);

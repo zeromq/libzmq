@@ -34,6 +34,7 @@ namespace zmq
     public:
 
         plain_mechanism_t (session_base_t *session_,
+                           const std::string &peer_address_,
                            const options_t &options_);
         virtual ~plain_mechanism_t ();
 
@@ -59,6 +60,8 @@ namespace zmq
         };
 
         session_base_t * const session;
+
+        const std::string peer_address;
 
         //  True iff we are awaiting reply from ZAP reply.
         bool expecting_zap_reply;
