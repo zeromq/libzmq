@@ -50,6 +50,7 @@ namespace zmq
     public:
 
         curve_server_t (session_base_t *session_,
+                        const std::string &peer_address_,
                         const options_t &options_);
         virtual ~curve_server_t ();
 
@@ -73,6 +74,8 @@ namespace zmq
         };
 
         session_base_t * const session;
+
+        const std::string peer_address;
 
         //  Current FSM state
         state_t state;

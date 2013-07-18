@@ -27,6 +27,7 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #endif
@@ -108,3 +109,42 @@ void zmq::enable_ipv4_mapping (fd_t s_)
 #endif
 }
 
+bool zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
+{
+    int rc;
+    struct sockaddr_storage ss;
+
+#if defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_WINDOWS
+    int addrlen = static_cast <int> (sizeof ss);
+#else
+    socklen_t addrlen = sizeof ss;
+#endif
+    rc = getpeername (sockfd_, (struct sockaddr*) &ss, &addrlen);
+#ifdef ZMQ_HAVE_WINDOWS
+    if (rc == SOCKET_ERROR) {
+        wsa_assert (WSAGetLastError () != WSANOTINITIALISED &&
+                    WSAGetLastError () != WSAEFAULT &&
+                    WSAGetLastError () != WSAEINPROGRESS &&
+                    WSAGetLastError () != WSAENOTSOCK)
+        return false;
+    }
+#else
+    if (rc == -1) {
+        errno_assert (errno != EBADF &&
+                      errno != EFAULT &&
+                      errno != EINVAL &&
+                      errno != ENOTCONN &&
+                      errno != ENOTSOCK);
+        return false;
+    }
+#endif
+
+    char host [NI_MAXHOST];
+    rc = getnameinfo ((struct sockaddr*) &ss, addrlen, host, sizeof host,
+        NULL, 0, NI_NUMERICHOST);
+    if (rc != 0)
+        return false;
+
+    ip_addr_ = host;
+    return true;
+}
