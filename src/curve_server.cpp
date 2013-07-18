@@ -33,9 +33,11 @@
 #include "wire.hpp"
 
 zmq::curve_server_t::curve_server_t (session_base_t *session_,
+                                     const std::string &peer_address_,
                                      const options_t &options_) :
     mechanism_t (options_),
     session (session_),
+    peer_address (peer_address_),
     state (expect_hello),
     expecting_zap_reply (false),
     cn_nonce (1)
@@ -512,7 +514,7 @@ void zmq::curve_server_t::send_zap_request (const uint8_t *key)
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);
 
-    //  Sequence frame
+    //  Request ID frame
     rc = msg.init_size (1);
     errno_assert (rc == 0);
     memcpy (msg.data (), "1", 1);
@@ -523,6 +525,14 @@ void zmq::curve_server_t::send_zap_request (const uint8_t *key)
     //  Domain frame
     rc = msg.init ();
     errno_assert (rc == 0);
+    msg.set_flags (msg_t::more);
+    rc = session->write_zap_msg (&msg);
+    errno_assert (rc == 0);
+
+    //  Address frame
+    rc = msg.init_size (peer_address.length ());
+    errno_assert (rc == 0);
+    memcpy (msg.data (), peer_address.c_str (), peer_address.length ());
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);
@@ -546,18 +556,19 @@ void zmq::curve_server_t::send_zap_request (const uint8_t *key)
 int zmq::curve_server_t::receive_and_process_zap_reply ()
 {
     int rc = 0;
-    msg_t msg [6];
+    msg_t msg [7];  //  ZAP reply consists of 7 frames
 
-    for (int i = 0; i < 6; i++) {
+    //  Initialize all reply frames
+    for (int i = 0; i < 7; i++) {
         rc = msg [i].init ();
         errno_assert (rc == 0);
     }
 
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 7; i++) {
         rc = session->read_zap_msg (&msg [i]);
         if (rc == -1)
             break;
-        if ((msg [i].flags () & msg_t::more) == (i < 5? 0: msg_t::more)) {
+        if ((msg [i].flags () & msg_t::more) == (i < 6? 0: msg_t::more)) {
             errno = EPROTO;
             rc = -1;
             break;
@@ -579,7 +590,7 @@ int zmq::curve_server_t::receive_and_process_zap_reply ()
         goto error;
     }
 
-    //  Sequence number frame
+    //  Request id frame
     if (msg [2].size () != 1 || memcmp (msg [2].data (), "1", 1)) {
         errno = EPROTO;
         goto error;
@@ -591,8 +602,12 @@ int zmq::curve_server_t::receive_and_process_zap_reply ()
         goto error;
     }
 
+    //  Process metadata frame
+    rc = parse_metadata (static_cast <const unsigned char*> (msg [6].data ()),
+                         msg [6].size ());
+
 error:
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 7; i++) {
         const int rc2 = msg [i].close ();
         errno_assert (rc2 == 0);
     }
