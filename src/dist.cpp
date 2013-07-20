@@ -96,16 +96,17 @@ void zmq::dist_t::pipe_terminated (pipe_t *pipe_)
 
 void zmq::dist_t::activated (pipe_t *pipe_)
 {
+    //  The following should be true: !more -> active == eligible
+    zmq_assert (more || active == eligible);
+
     //  Move the pipe from passive to eligible state.
     pipes.swap (pipes.index (pipe_), eligible);
     eligible++;
 
     //  If there's no message being sent at the moment, move it to
     //  the active state.
-    if (!more) {
-        pipes.swap (eligible - 1, active);
+    if (!more)
         active++;
-    }
 }
 
 int zmq::dist_t::send_to_all (msg_t *msg_)
