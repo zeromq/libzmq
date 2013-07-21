@@ -30,7 +30,8 @@ zmq::req_t::req_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     message_begins (true),
     reply_pipe (NULL),
     request_id_frames_enabled (false),
-    request_id (generate_random())
+    request_id (generate_random()),
+    send_resets (false)
 {
     options.type = ZMQ_REQ;
 }
@@ -42,10 +43,17 @@ zmq::req_t::~req_t ()
 int zmq::req_t::xsend (msg_t *msg_)
 {
     //  If we've sent a request and we still haven't got the reply,
-    //  we can't send another request.
+    //  we can't send another request unless the send_resets option is enabled.
     if (receiving_reply) {
-        errno = EFSM;
-        return -1;
+        if (!send_resets) {
+            errno = EFSM;
+            return -1;
+        }
+
+        if (reply_pipe)
+            reply_pipe->terminate (false);
+        receiving_reply = false;
+        message_begins = true;
     }
 
     //  First part of the request is the request identity.
@@ -193,6 +201,13 @@ int zmq::req_t::xsetsockopt(int option_, const void *optval_, size_t optvallen_)
         case ZMQ_REQ_REQUEST_IDS:
             if (is_int && value >= 0) {
                 request_id_frames_enabled = value;
+                return 0;
+            }
+            break;
+
+        case ZMQ_REQ_SEND_RESETS:
+            if (is_int && value >= 0) {
+                send_resets = value;
                 return 0;
             }
             break;
