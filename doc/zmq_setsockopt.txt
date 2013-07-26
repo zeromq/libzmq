@@ -459,6 +459,23 @@ Default value:: 0
 Applicable socket types:: ZMQ_XPUB
 
 
+ZMQ_REQ_REQUEST_IDS: enable extra request identity frames
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The default behavior of REQ sockets is to rely on the ordering of messages
+to match requests and responses and that is usually sufficient. When this option
+is set to 1, the REQ socket will prefix outgoing messages with an extra frame
+containing a request id. That means the full message is (request id, 0,
+user frames...). The REQ socket will discard all incoming messages that don't
+begin with these two frames.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1
+Default value:: 0
+Applicable socket types:: ZMQ_REQ
+
+
 ZMQ_TCP_KEEPALIVE: Override SO_KEEPALIVE socket option
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

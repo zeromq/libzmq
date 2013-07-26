@@ -43,6 +43,7 @@ namespace zmq
         int xrecv (zmq::msg_t *msg_);
         bool xhas_in ();
         bool xhas_out ();
+        int xsetsockopt(int option_, const void *optval_, size_t optvallen_);
 
     protected:
 
@@ -62,6 +63,17 @@ namespace zmq
 
         //  The pipe the request was sent to and where the reply is expected.
         zmq::pipe_t *reply_pipe;
+
+        //  Whether request id frames shall be sent and expected.
+        bool request_id_frames_enabled;
+
+        //  The current request id. It is incremented every time before a new
+        //  request is sent.
+        uint32_t request_id;
+
+        //  If true, send() will reset its internal state instead of failing if
+        //  a previous request is still pending.
+        bool send_resets;
 
         req_t (const req_t&);
         const req_t &operator = (const req_t&);
