@@ -193,7 +193,7 @@ bool zmq::req_t::xhas_out ()
     return dealer_t::xhas_out ();
 }
 
-int zmq::req_t::xsetsockopt(int option_, const void *optval_, size_t optvallen_)
+int zmq::req_t::xsetsockopt (int option_, const void *optval_, size_t optvallen_)
 {
     bool is_int = (optvallen_ == sizeof (int));
     int value = is_int? *((int *) optval_): 0;
@@ -216,17 +216,24 @@ int zmq::req_t::xsetsockopt(int option_, const void *optval_, size_t optvallen_)
             break;
     }
 
-    return dealer_t::xsetsockopt(option_, optval_, optvallen_);
+    return dealer_t::xsetsockopt (option_, optval_, optvallen_);
+}
+
+void zmq::req_t::xpipe_terminated (pipe_t *pipe_)
+{
+    if (reply_pipe == pipe_)
+        reply_pipe = NULL;
+    dealer_t::xpipe_terminated (pipe_);
 }
 
 int zmq::req_t::recv_reply_pipe (msg_t *msg_)
 {
     while (true) {
         pipe_t *pipe = NULL;
-        int rc = dealer_t::recvpipe(msg_, &pipe);
+        int rc = dealer_t::recvpipe (msg_, &pipe);
         if (rc != 0)
             return rc;
-        if (pipe == reply_pipe)
+        if (!reply_pipe || pipe == reply_pipe)
             return 0;
     }
 }
