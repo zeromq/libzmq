@@ -235,3 +235,4 @@ int main (void)
     rc = zmq_term (context);
     assert (rc == 0);
 }
+
