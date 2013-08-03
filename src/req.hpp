@@ -72,10 +72,10 @@ namespace zmq
         //  request is sent.
         uint32_t request_id;
 
-        //  If true, send() will reset its internal state and terminate the
+        //  If false, send() will reset its internal state and terminate the
         //  reply_pipe's connection instead of failing if a previous request is
         //  still pending.
-        bool send_resets;
+        bool strict;
 
         req_t (const req_t&);
         const req_t &operator = (const req_t&);

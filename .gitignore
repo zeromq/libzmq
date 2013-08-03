@@ -59,7 +59,7 @@ tests/test_spec_rep
 tests/test_spec_req
 tests/test_spec_router
 tests/test_req_request_ids
-tests/test_req_send_resets
+tests/test_req_strict
 src/platform.hpp*
 src/stamp-h1
 perf/local_lat
