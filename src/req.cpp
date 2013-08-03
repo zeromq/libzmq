@@ -30,7 +30,8 @@ zmq::req_t::req_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     message_begins (true),
     reply_pipe (NULL),
     request_id_frames_enabled (false),
-    request_id (generate_random())
+    request_id (generate_random()),
+    send_resets (false)
 {
     options.type = ZMQ_REQ;
 }
@@ -42,10 +43,17 @@ zmq::req_t::~req_t ()
 int zmq::req_t::xsend (msg_t *msg_)
 {
     //  If we've sent a request and we still haven't got the reply,
-    //  we can't send another request.
+    //  we can't send another request unless the send_resets option is enabled.
     if (receiving_reply) {
-        errno = EFSM;
-        return -1;
+        if (!send_resets) {
+            errno = EFSM;
+            return -1;
+        }
+
+        if (reply_pipe)
+            reply_pipe->terminate (false);
+        receiving_reply = false;
+        message_begins = true;
     }
 
     //  First part of the request is the request identity.
@@ -185,7 +193,7 @@ bool zmq::req_t::xhas_out ()
     return dealer_t::xhas_out ();
 }
 
-int zmq::req_t::xsetsockopt(int option_, const void *optval_, size_t optvallen_)
+int zmq::req_t::xsetsockopt (int option_, const void *optval_, size_t optvallen_)
 {
     bool is_int = (optvallen_ == sizeof (int));
     int value = is_int? *((int *) optval_): 0;
@@ -197,21 +205,35 @@ int zmq::req_t::xsetsockopt(int option_, const void *optval_, size_t optvallen_)
             }
             break;
 
+        case ZMQ_REQ_SEND_RESETS:
+            if (is_int && value >= 0) {
+                send_resets = value;
+                return 0;
+            }
+            break;
+
         default:
             break;
     }
 
-    return dealer_t::xsetsockopt(option_, optval_, optvallen_);
+    return dealer_t::xsetsockopt (option_, optval_, optvallen_);
+}
+
+void zmq::req_t::xpipe_terminated (pipe_t *pipe_)
+{
+    if (reply_pipe == pipe_)
+        reply_pipe = NULL;
+    dealer_t::xpipe_terminated (pipe_);
 }
 
 int zmq::req_t::recv_reply_pipe (msg_t *msg_)
 {
     while (true) {
         pipe_t *pipe = NULL;
-        int rc = dealer_t::recvpipe(msg_, &pipe);
+        int rc = dealer_t::recvpipe (msg_, &pipe);
         if (rc != 0)
             return rc;
-        if (pipe == reply_pipe)
+        if (!reply_pipe || pipe == reply_pipe)
             return 0;
     }
 }
