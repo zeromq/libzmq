@@ -277,7 +277,7 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 #define ZMQ_CURVE_SERVERKEY 50
 #define ZMQ_PROBE_ROUTER 51
 #define ZMQ_REQ_REQUEST_IDS 52
-#define ZMQ_REQ_SEND_RESETS 53
+#define ZMQ_REQ_STRICT 53
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1

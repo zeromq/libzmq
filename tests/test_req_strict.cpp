@@ -30,10 +30,11 @@ int main (void)
     void *req = zmq_socket (ctx, ZMQ_REQ);
     assert (req);
 
-    int enabled = 1;
-    int rc = zmq_setsockopt (req, ZMQ_REQ_SEND_RESETS, &enabled, sizeof (int));
+    int disabled = 0;
+    int rc = zmq_setsockopt (req, ZMQ_REQ_STRICT, &disabled, sizeof (int));
     assert (rc == 0);
 
+    int enabled = 1;
     rc = zmq_setsockopt (req, ZMQ_REQ_REQUEST_IDS, &enabled, sizeof (int));
     assert (rc == 0);
 
