@@ -31,7 +31,7 @@ zmq::req_t::req_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     reply_pipe (NULL),
     request_id_frames_enabled (false),
     request_id (generate_random()),
-    send_resets (false)
+    strict (true)
 {
     options.type = ZMQ_REQ;
 }
@@ -43,9 +43,9 @@ zmq::req_t::~req_t ()
 int zmq::req_t::xsend (msg_t *msg_)
 {
     //  If we've sent a request and we still haven't got the reply,
-    //  we can't send another request unless the send_resets option is enabled.
+    //  we can't send another request unless the strict option is disabled.
     if (receiving_reply) {
-        if (!send_resets) {
+        if (strict) {
             errno = EFSM;
             return -1;
         }
@@ -205,9 +205,9 @@ int zmq::req_t::xsetsockopt (int option_, const void *optval_, size_t optvallen_
             }
             break;
 
-        case ZMQ_REQ_SEND_RESETS:
+        case ZMQ_REQ_STRICT:
             if (is_int && value >= 0) {
-                send_resets = value;
+                strict = value;
                 return 0;
             }
             break;
