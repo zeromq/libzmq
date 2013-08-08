@@ -125,7 +125,7 @@ bool zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
         wsa_assert (WSAGetLastError () != WSANOTINITIALISED &&
                     WSAGetLastError () != WSAEFAULT &&
                     WSAGetLastError () != WSAEINPROGRESS &&
-                    WSAGetLastError () != WSAENOTSOCK)
+                    WSAGetLastError () != WSAENOTSOCK);
         return false;
     }
 #else
