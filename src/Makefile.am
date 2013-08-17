@@ -88,6 +88,7 @@ libzmq_la_SOURCES = \
     dealer.hpp \
     xsub.hpp \
     ypipe.hpp \
+    ypipe_flat.hpp \
     yqueue.hpp \
     z85_codec.hpp \
     address.cpp \
@@ -163,7 +164,9 @@ libzmq_la_SOURCES = \
     raw_decoder.hpp \
     raw_decoder.cpp \
     raw_encoder.hpp \
-    raw_encoder.cpp
+    raw_encoder.cpp \
+    ypipe_conflate.hpp \
+    dbuffer.hpp
 
 if ON_MINGW
 libzmq_la_LDFLAGS = -no-undefined -avoid-version -version-info @LTVER@ @LIBZMQ_EXTRA_LDFLAGS@

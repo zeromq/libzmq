@@ -450,9 +450,18 @@ int zmq::socket_base_t::connect (const char *addr_)
         //  Create a bi-directional pipe to connect the peers.
         object_t *parents [2] = {this, peer.socket};
         pipe_t *new_pipes [2] = {NULL, NULL};
-        int hwms [2] = {sndhwm, rcvhwm};
+
+        bool conflate = options.conflate &&
+            (options.type == ZMQ_DEALER ||
+             options.type == ZMQ_PULL ||
+             options.type == ZMQ_PUSH ||
+             options.type == ZMQ_PUB ||
+             options.type == ZMQ_SUB);
+
+        int hwms [2] = {conflate? -1 : sndhwm, conflate? -1 : rcvhwm};
         bool delays [2] = {options.delay_on_disconnect, options.delay_on_close};
-        int rc = pipepair (parents, new_pipes, hwms, delays);
+        bool conflates [2] = {conflate, conflate};
+        int rc = pipepair (parents, new_pipes, hwms, delays, conflates);
         errno_assert (rc == 0);
 
         //  Attach local end of the pipe to this socket object.
@@ -553,9 +562,19 @@ int zmq::socket_base_t::connect (const char *addr_)
         //  Create a bi-directional pipe.
         object_t *parents [2] = {this, session};
         pipe_t *new_pipes [2] = {NULL, NULL};
-        int hwms [2] = {options.sndhwm, options.rcvhwm};
+
+        bool conflate = options.conflate &&
+            (options.type == ZMQ_DEALER ||
+             options.type == ZMQ_PULL ||
+             options.type == ZMQ_PUSH ||
+             options.type == ZMQ_PUB ||
+             options.type == ZMQ_SUB);
+
+        int hwms [2] = {conflate? -1 : options.sndhwm,
+            conflate? -1 : options.rcvhwm};
         bool delays [2] = {options.delay_on_disconnect, options.delay_on_close};
-        rc = pipepair (parents, new_pipes, hwms, delays);
+        bool conflates [2] = {conflate, conflate};
+        rc = pipepair (parents, new_pipes, hwms, delays, conflates);
         errno_assert (rc == 0);
 
         //  Attach local end of the pipe to the socket object.
