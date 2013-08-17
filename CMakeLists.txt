@@ -620,7 +620,11 @@ foreach(test ${tests})
   if(RT_LIBRARY)
     target_link_libraries(${test} ${RT_LIBRARY})
   endif()
-  add_test(NAME ${test} WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH}/Debug COMMAND ${test})
+  if(WIN32)
+    add_test(NAME ${test} WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH}/Debug COMMAND ${test})
+  else()
+    add_test(NAME ${test} COMMAND ${test})
+  endif() 
 endforeach()
 
 #-----------------------------------------------------------------------------
