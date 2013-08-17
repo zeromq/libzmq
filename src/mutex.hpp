@@ -50,6 +50,11 @@ namespace zmq
             EnterCriticalSection (&cs);
         }
 
+        inline bool try_lock ()
+        {
+            return (bool) TryEnterCriticalSection (&cs);
+        }
+
         inline void unlock ()
         {
             LeaveCriticalSection (&cs);
@@ -92,6 +97,16 @@ namespace zmq
         {
             int rc = pthread_mutex_lock (&mutex);
             posix_assert (rc);
+        }
+
+        inline bool try_lock ()
+        {
+            int rc = pthread_mutex_trylock (&mutex);
+            if (rc == EBUSY)
+                return false;
+
+            posix_assert (rc);
+            return true;
         }
 
         inline void unlock ()
