@@ -128,4 +128,30 @@ namespace zmq
 
 #endif
 
+
+namespace zmq
+{
+    struct scoped_lock_t
+    {
+        scoped_lock_t (mutex_t& mutex_)
+            : mutex (mutex_)
+        {
+            mutex.lock ();
+        }
+
+        ~scoped_lock_t ()
+        {
+            mutex.unlock ();
+        }
+
+    private:
+
+        mutex_t& mutex;
+
+        // Disable copy construction and assignment.
+        scoped_lock_t (const scoped_lock_t&);
+        const scoped_lock_t &operator = (const scoped_lock_t&);
+    };
+}
+
 #endif
