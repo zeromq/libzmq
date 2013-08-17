@@ -27,7 +27,7 @@
 
 extern "C"
 {
-    static void *worker (void *s)
+    static void worker (void *s)
     {
         int rc;
 
@@ -37,8 +37,6 @@ extern "C"
         //  Start closing the socket while the connecting process is underway.
         rc = zmq_close (s);
         assert (rc == 0);
-
-        return NULL;
     }
 }
 
@@ -68,7 +66,7 @@ int main (void)
         for (i = 0; i != THREAD_COUNT; i++) {
             s2 = zmq_socket (ctx, ZMQ_SUB);
             assert (s2);
-            threads [i] = zmq_threadstart(worker, s2);
+            threads [i] = zmq_threadstart(&worker, s2);
         }
 
         for (i = 0; i != THREAD_COUNT; i++) {

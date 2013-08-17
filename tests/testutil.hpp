@@ -28,6 +28,7 @@
 #include <stdarg.h>
 
 #if defined _WIN32
+#include <crtdbg.h>
 #pragma warning(disable:4996)
 #endif
 
@@ -200,6 +201,8 @@ void setup_test_environment()
 {
 #if defined _WIN32
     _set_abort_behavior( 0, _WRITE_ABORT_MSG);
+    _CrtSetReportMode( _CRT_ASSERT, _CRTDBG_MODE_FILE );
+    _CrtSetReportFile( _CRT_ASSERT, _CRTDBG_FILE_STDERR );
 #endif
 }
 

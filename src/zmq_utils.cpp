@@ -59,10 +59,10 @@ unsigned long zmq_stopwatch_stop (void *watch_)
     return (unsigned long) (end - start);
 }
 
-void *zmq_threadstart(void* func, void* arg)
+void *zmq_threadstart(zmq_thread_fn* func, void* arg)
 {
     zmq::thread_t* thread = new zmq::thread_t;
-    thread->start(static_cast<zmq::thread_fn*>(func), arg);
+    thread->start(func, arg);
     return thread;
 }
 

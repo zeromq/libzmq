@@ -66,7 +66,7 @@ static bool read_msg(void* s, zmq_event_t& event, std::string& ep)
 
 
 // REQ socket monitor thread
-static void *req_socket_monitor (void *ctx)
+static void req_socket_monitor (void *ctx)
 {
     zmq_event_t event;
     std::string ep ;
@@ -104,11 +104,10 @@ static void *req_socket_monitor (void *ctx)
         }
     }
     zmq_close (s);
-    return NULL;
 }
 
 // 2nd REQ socket monitor thread
-static void *req2_socket_monitor (void *ctx)
+static void req2_socket_monitor (void *ctx)
 {
     zmq_event_t event;
     std::string ep ;
@@ -133,11 +132,10 @@ static void *req2_socket_monitor (void *ctx)
         }
     }
     zmq_close (s);
-    return NULL;
 }
 
 // REP socket monitor thread
-static void *rep_socket_monitor (void *ctx)
+static void rep_socket_monitor (void *ctx)
 {
     zmq_event_t event;
     std::string ep ;
@@ -174,7 +172,6 @@ static void *rep_socket_monitor (void *ctx)
         }
     }
     zmq_close (s);
-    return NULL;
 }
 
 int main (void)
@@ -208,7 +205,7 @@ int main (void)
     // REP socket monitor, all events
     rc = zmq_socket_monitor (rep, "inproc://monitor.rep", ZMQ_EVENT_ALL);
     assert (rc == 0);
-    threads [0] = zmq_threadstart(rep_socket_monitor, ctx);
+    threads [0] = zmq_threadstart(&rep_socket_monitor, ctx);
     
     // REQ socket
     req = zmq_socket (ctx, ZMQ_REQ);
@@ -217,7 +214,7 @@ int main (void)
     // REQ socket monitor, all events
     rc = zmq_socket_monitor (req, "inproc://monitor.req", ZMQ_EVENT_ALL);
     assert (rc == 0);
-    threads [1] = zmq_threadstart(req_socket_monitor, ctx);
+    threads [1] = zmq_threadstart(&req_socket_monitor, ctx);
     zmq_sleep(1);
 
     // Bind REQ and REP
@@ -236,7 +233,7 @@ int main (void)
     // 2nd REQ socket monitor, connected event only
     rc = zmq_socket_monitor (req2, "inproc://monitor.req2", ZMQ_EVENT_CONNECTED);
     assert (rc == 0);
-    threads [2] = zmq_threadstart(req2_socket_monitor, ctx);
+    threads [2] = zmq_threadstart(&req2_socket_monitor, ctx);
 
     rc = zmq_connect (req2, addr.c_str());
     assert (rc == 0);

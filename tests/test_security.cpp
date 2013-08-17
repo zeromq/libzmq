@@ -22,8 +22,7 @@
 #include <stdlib.h>
 #include "testutil.hpp"
 
-static void *
-zap_handler (void *zap)
+static void zap_handler (void *zap)
 {
     char *version = s_recv (zap);
     char *sequence = s_recv (zap);
@@ -62,8 +61,6 @@ zap_handler (void *zap)
     
     int rc = zmq_close (zap);
     assert (rc == 0);
-
-    return NULL;
 }
 
 int main (void)
