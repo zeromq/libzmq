@@ -20,11 +20,11 @@
 #include "../include/zmq.h"
 #include <stdio.h>
 #include <string.h>
-#undef NDEBUG
-#include <assert.h>
+#include "testutil.hpp"
 
 int main (void)
 {
+    setup_test_environment();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
     void *router = zmq_socket (ctx, ZMQ_ROUTER);

@@ -19,9 +19,7 @@
 
 #include "../include/zmq.h"
 #include <string.h>
-#include <stdbool.h>
-#undef NDEBUG
-#include <assert.h>
+#include "testutil.hpp"
 
 //  ZMTP protocol greeting structure
 
@@ -45,6 +43,7 @@ static zmtp_greeting_t greeting
 
 int main (void)
 {
+    setup_test_environment();
     int rc;
 
     //  Set up our context and sockets

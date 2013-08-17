@@ -18,7 +18,7 @@
 */
 
 #include "platform.hpp"
-#include <pthread.h>
+#include "../include/zmq_utils.h"
 #include <string.h>
 #include <stdlib.h>
 #include "testutil.hpp"
@@ -62,6 +62,7 @@ int main (void)
     printf ("libsodium not installed, skipping CURVE test\n");
     return 0;
 #endif
+    setup_test_environment();
     int rc;
     size_t optsize;
     int mechanism;
@@ -122,9 +123,7 @@ int main (void)
     assert (rc == 0);
 
     //  Spawn ZAP handler
-    pthread_t zap_thread;
-    rc = pthread_create (&zap_thread, NULL, &zap_handler, zap);
-    assert (rc == 0);
+    void* zap_thread = zmq_threadstart(&zap_handler, zap);
 
     rc = zmq_bind (server, "tcp://*:9998");
     assert (rc == 0);
@@ -139,7 +138,7 @@ int main (void)
     assert (rc == 0);
 
     //  Wait until ZAP handler terminates.
-    pthread_join (zap_thread, NULL);
+    zmq_threadclose(zap_thread);
     
     //  Shutdown
     rc = zmq_ctx_term (ctx);

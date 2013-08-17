@@ -17,7 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <pthread.h>
+#include "../include/zmq_utils.h"
 #include <string.h>
 #include <stdlib.h>
 #include "testutil.hpp"
@@ -68,6 +68,7 @@ zap_handler (void *zap)
 
 int main (void)
 {
+    setup_test_environment();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
@@ -177,9 +178,7 @@ int main (void)
     assert (rc == 0);
 
     //  Spawn ZAP handler
-    pthread_t zap_thread;
-    rc = pthread_create (&zap_thread, NULL, &zap_handler, zap);
-    assert (rc == 0);
+    void* zap_thread = zmq_threadstart(&zap_handler, zap);
 
     rc = zmq_bind (server, "tcp://*:9998");
     assert (rc == 0);
@@ -194,7 +193,7 @@ int main (void)
     assert (rc == 0);
 
     //  Wait until ZAP handler terminates.
-    pthread_join (zap_thread, NULL);
+    zmq_threadclose(zap_thread);
     
     //  Check PLAIN security -- two servers trying to talk to each other
     server = zmq_socket (ctx, ZMQ_DEALER);

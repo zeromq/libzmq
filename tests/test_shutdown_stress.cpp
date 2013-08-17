@@ -18,12 +18,10 @@
 */
 
 #include "../include/zmq.h"
-#include <pthread.h>
+#include "../include/zmq_utils.h"
 #include <stddef.h>
 #include <stdio.h>
-
-#undef NDEBUG
-#include <assert.h>
+#include "testutil.hpp"
 
 #define THREAD_COUNT 100
 
@@ -46,12 +44,13 @@ extern "C"
 
 int main (void)
 {
+    setup_test_environment();
     void *s1;
     void *s2;
     int i;
     int j;
     int rc;
-    pthread_t threads [THREAD_COUNT];
+    void* threads [THREAD_COUNT];
 
     for (j = 0; j != 10; j++) {
 
@@ -69,13 +68,11 @@ int main (void)
         for (i = 0; i != THREAD_COUNT; i++) {
             s2 = zmq_socket (ctx, ZMQ_SUB);
             assert (s2);
-            rc = pthread_create (&threads [i], NULL, worker, s2);
-            assert (rc == 0);
+            threads [i] = zmq_threadstart(worker, s2);
         }
 
         for (i = 0; i != THREAD_COUNT; i++) {
-            rc = pthread_join (threads [i], NULL);
-            assert (rc == 0);
+            zmq_threadclose(threads [i]);
         }
 
         rc = zmq_close (s1);

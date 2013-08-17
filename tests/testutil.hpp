@@ -22,9 +22,14 @@
 
 #include "../include/zmq.h"
 #include <string.h>
+
 #undef NDEBUG
 #include <assert.h>
 #include <stdarg.h>
+
+#if defined _WIN32
+#pragma warning(disable:4996)
+#endif
 
 //  Bounce a message from client to server and back
 //  For REQ/REP or DEALER/DEALER pairs only
@@ -189,6 +194,13 @@ void close_zero_linger (void *socket)
     assert (rc == 0);
     rc = zmq_close (socket);
     assert (rc == 0);
+}
+
+void setup_test_environment()
+{
+#if defined _WIN32
+    _set_abort_behavior( 0, _WRITE_ABORT_MSG);
+#endif
 }
 
 #endif

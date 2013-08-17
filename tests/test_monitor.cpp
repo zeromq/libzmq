@@ -19,9 +19,8 @@
 
 #include <string>
 #include "../include/zmq.h"
-#include <pthread.h>
+#include "../include/zmq_utils.h"
 #include <string.h>
-#include <unistd.h>
 #include "testutil.hpp"
 
 // REQ socket events handled
@@ -180,11 +179,12 @@ static void *rep_socket_monitor (void *ctx)
 
 int main (void)
 {
+    setup_test_environment();
     int rc;
     void *req;
     void *req2;
     void *rep;
-    pthread_t threads [3];
+    void* threads [3];
 
     addr = "tcp://127.0.0.1:5560";
 
@@ -208,8 +208,7 @@ int main (void)
     // REP socket monitor, all events
     rc = zmq_socket_monitor (rep, "inproc://monitor.rep", ZMQ_EVENT_ALL);
     assert (rc == 0);
-    rc = pthread_create (&threads [0], NULL, rep_socket_monitor, ctx);
-    assert (rc == 0);
+    threads [0] = zmq_threadstart(rep_socket_monitor, ctx);
     
     // REQ socket
     req = zmq_socket (ctx, ZMQ_REQ);
@@ -218,9 +217,8 @@ int main (void)
     // REQ socket monitor, all events
     rc = zmq_socket_monitor (req, "inproc://monitor.req", ZMQ_EVENT_ALL);
     assert (rc == 0);
-    rc = pthread_create (&threads [1], NULL, req_socket_monitor, ctx);
-    assert (rc == 0);
-    sleep (1);
+    threads [1] = zmq_threadstart(req_socket_monitor, ctx);
+    zmq_sleep(1);
 
     // Bind REQ and REP
     rc = zmq_bind (rep, addr.c_str());
@@ -238,8 +236,7 @@ int main (void)
     // 2nd REQ socket monitor, connected event only
     rc = zmq_socket_monitor (req2, "inproc://monitor.req2", ZMQ_EVENT_CONNECTED);
     assert (rc == 0);
-    rc = pthread_create (&threads [2], NULL, req2_socket_monitor, ctx);
-    assert (rc == 0);
+    threads [2] = zmq_threadstart(req2_socket_monitor, ctx);
 
     rc = zmq_connect (req2, addr.c_str());
     assert (rc == 0);
@@ -249,8 +246,7 @@ int main (void)
     assert (rc == 0);
 
     // Allow some time for detecting error states
-    struct timespec t = { 0, 250 * 1000000 };
-    nanosleep (&t, NULL);
+    zmq_sleep(1);
 
     //  Close the REQ socket
     rc = zmq_close (req);
@@ -276,7 +272,8 @@ int main (void)
     assert (req2_socket_events & ZMQ_EVENT_CONNECTED);
     assert (!(req2_socket_events & ZMQ_EVENT_CLOSED));
 
-    pthread_exit (NULL);
+    for (unsigned int i = 0; i < 3; ++i)
+        zmq_threadclose(threads [i]);
 
     return 0 ;
 }

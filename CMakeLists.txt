@@ -308,19 +308,19 @@ set(cxx-sources
         kqueue.cpp
         lb.cpp
         mailbox.cpp
-	mechanism.cpp
+        mechanism.cpp
         msg.cpp
         mtrie.cpp
         object.cpp
         options.cpp
         own.cpp
-	null_mechanism.cpp
+        null_mechanism.cpp
         pair.cpp
         pgm_receiver.cpp
         pgm_sender.cpp
         pgm_socket.cpp
         pipe.cpp
-	plain_mechanism.cpp
+        plain_mechanism.cpp
         poll.cpp
         poller_base.cpp
         precompiled.cpp
@@ -576,6 +576,52 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug") # Why?
   endforeach()
 endif()
 
+enable_testing()
+set(tests 
+        test_connect_delay
+        test_connect_resolve
+        test_ctx_options
+        test_disconnect_inproc
+        test_hwm
+        test_invalid_rep
+        test_iov
+        test_last_endpoint
+        test_monitor
+        test_msg_flags
+        test_pair_inproc
+        test_pair_ipc
+        test_pair_tcp
+        test_probe_router
+        test_raw_sock
+        test_req_request_ids
+        test_req_strict
+        test_reqrep_device
+        test_reqrep_inproc
+        test_reqrep_ipc
+        test_reqrep_tcp
+        test_router_mandatory
+        test_security
+        test_security_curve
+        test_shutdown_stress
+        test_spec_dealer
+        test_spec_pushpull
+        test_spec_rep
+        test_spec_req
+        test_spec_router
+        test_stream
+        test_sub_forward
+        test_term_endpoint
+        test_timeo)
+
+foreach(test ${tests})
+  add_executable(${test} tests/${test}.cpp)
+  target_link_libraries(${test} libzmq)
+
+  if(RT_LIBRARY)
+    target_link_libraries(${test} ${RT_LIBRARY})
+  endif()
+  add_test(NAME ${test} WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH}/Debug COMMAND ${test})
+endforeach()
 
 #-----------------------------------------------------------------------------
 # installer

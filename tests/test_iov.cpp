@@ -18,12 +18,11 @@
 */
 
 #include "../include/zmq.h"
+#include "../include/zmq_utils.h"
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#undef NDEBUG
-#include <assert.h>
+#include "testutil.hpp"
 
 // XSI vector I/O
 #if defined ZMQ_HAVE_UIO
@@ -37,6 +36,7 @@ struct iovec {
 
 void do_check(void* sb, void* sc, unsigned int msgsz)
 {
+    setup_test_environment();
     int rc;
     int sum =0;
     for (int i = 0; i < 10; i++)
@@ -85,7 +85,7 @@ int main (void)
     rc = zmq_bind (sb, "inproc://a");
     assert (rc == 0);
 
-    ::sleep(1);
+    zmq_sleep(1);
     void *sc = zmq_socket (ctx, ZMQ_PUSH);
   
     rc = zmq_connect (sc, "inproc://a");
@@ -107,5 +107,5 @@ int main (void)
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-	return 0;
+    return 0;
 }
