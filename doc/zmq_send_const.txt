@@ -58,9 +58,9 @@ ERRORS
 *EAGAIN*::
 Non-blocking mode was requested and the message cannot be sent at the moment.
 *ENOTSUP*::
-The _zmq_send_send()_ operation is not supported by this socket type.
+The _zmq_send_const()_ operation is not supported by this socket type.
 *EFSM*::
-The _zmq_send_send()_ operation cannot be performed on this socket at the moment
+The _zmq_send_const()_ operation cannot be performed on this socket at the moment
 due to the socket not being in the appropriate state.  This error may occur with
 socket types that switch between several states, such as ZMQ_REP.  See the
 _messaging patterns_ section of linkzmq:zmq_socket[3] for more information.
@@ -82,7 +82,7 @@ EXAMPLE
 /* Send a multi-part message consisting of three parts to socket */
 rc = zmq_send_const (socket, "ABC", 3, ZMQ_SNDMORE);
 assert (rc == 3);
-rc = zmq_send_send (socket, "DEFGH", 5, ZMQ_SNDMORE);
+rc = zmq_send_const (socket, "DEFGH", 5, ZMQ_SNDMORE);
 assert (rc == 5);
 /* Final part; no more parts to follow */
 rc = zmq_send_const (socket, "JK", 2, 0);
