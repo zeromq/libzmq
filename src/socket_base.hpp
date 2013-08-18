@@ -158,10 +158,11 @@ namespace zmq
 
     private:
         //  Creates new endpoint ID and adds the endpoint to the map.
-        void add_endpoint (const char *addr_, own_t *endpoint_);
+        void add_endpoint (const char *addr_, own_t *endpoint_, pipe_t *pipe);
 
         //  Map of open endpoints.
-        typedef std::multimap <std::string, own_t *> endpoints_t;
+        typedef std::pair <own_t *, pipe_t*> endpoint_pipe_t;
+        typedef std::multimap <std::string, endpoint_pipe_t> endpoints_t;
         endpoints_t endpoints;
 
         //  Map of open inproc endpoints.
