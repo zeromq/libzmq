@@ -451,8 +451,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         object_t *parents [2] = {this, peer.socket};
         pipe_t *new_pipes [2] = {NULL, NULL};
         int hwms [2] = {sndhwm, rcvhwm};
-        bool delays [2] = {options.delay_on_disconnect, options.delay_on_close};
-        int rc = pipepair (parents, new_pipes, hwms, delays);
+        int rc = pipepair (parents, new_pipes, hwms);
         errno_assert (rc == 0);
 
         //  Attach local end of the pipe to this socket object.
@@ -555,8 +554,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         object_t *parents [2] = {this, session};
         pipe_t *new_pipes [2] = {NULL, NULL};
         int hwms [2] = {options.sndhwm, options.rcvhwm};
-        bool delays [2] = {options.delay_on_disconnect, options.delay_on_close};
-        rc = pipepair (parents, new_pipes, hwms, delays);
+        rc = pipepair (parents, new_pipes, hwms);
         errno_assert (rc == 0);
 
         //  Attach local end of the pipe to the socket object.

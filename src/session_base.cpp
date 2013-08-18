@@ -299,14 +299,15 @@ int zmq::session_base_t::zap_connect ()
     object_t *parents [2] = {this, peer.socket};
     pipe_t *new_pipes [2] = {NULL, NULL};
     int hwms [2] = {0, 0};
-    bool delays [2] = {false, false};
-    int rc = pipepair (parents, new_pipes, hwms, delays);
+    int rc = pipepair (parents, new_pipes, hwms);
     errno_assert (rc == 0);
 
     //  Attach local end of the pipe to this socket object.
     zap_pipe = new_pipes [0];
+    zap_pipe->set_nodelay ();
     zap_pipe->set_event_sink (this);
 
+    new_pipes [1]->set_nodelay ();
     send_bind (peer.socket, new_pipes [1], false);
 
     //  Send empty identity if required by the peer.
@@ -332,8 +333,7 @@ void zmq::session_base_t::process_attach (i_engine *engine_)
         object_t *parents [2] = {this, socket};
         pipe_t *pipes [2] = {NULL, NULL};
         int hwms [2] = {options.rcvhwm, options.sndhwm};
-        bool delays [2] = {options.delay_on_close, options.delay_on_disconnect};
-        int rc = pipepair (parents, pipes, hwms, delays);
+        int rc = pipepair (parents, pipes, hwms);
         errno_assert (rc == 0);
 
         //  Plug the local end of the pipe.
@@ -378,7 +378,7 @@ void zmq::session_base_t::process_term (int linger_)
 
     //  If the termination of the pipe happens before the term command is
     //  delivered there's nothing much to do. We can proceed with the
-    //  stadard termination immediately.
+    //  standard termination immediately.
     if (!pipe && !zap_pipe) {
         proceed_with_term ();
         return;

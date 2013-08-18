@@ -97,14 +97,6 @@ namespace zmq
         //  on a socket with only connecting pipes would block
         int immediate;
 
-        //  If true, session reads all the pending messages from the pipe and
-        //  sends them to the network when socket is closed.
-        bool delay_on_close;
-
-        //  If true, socket reads all the messages from the pipe and delivers
-        //  them to the user when the peer terminates.
-        bool delay_on_disconnect;
-
         //  If 1, (X)SUB socket should filter the messages. If 0, it should not.
         bool filter;
 

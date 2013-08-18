@@ -41,7 +41,7 @@ namespace zmq
     //  pipe receives all the pending messages before terminating, otherwise it
     //  terminates straight away.
     int pipepair (zmq::object_t *parents_ [2], zmq::pipe_t* pipes_ [2],
-        int hwms_ [2], bool delays_ [2]);
+        int hwms_ [2]);
 
     struct i_pipe_events
     {
@@ -65,7 +65,7 @@ namespace zmq
     {
         //  This allows pipepair to create pipe objects.
         friend int pipepair (zmq::object_t *parents_ [2],
-            zmq::pipe_t* pipes_ [2], int hwms_ [2], bool delays_ [2]);
+            zmq::pipe_t* pipes_ [2], int hwms_ [2]);
 
     public:
 
@@ -100,6 +100,9 @@ namespace zmq
         //  all the messages on the fly. Causes 'hiccuped' event to be generated
         //  in the peer.
         void hiccup ();
+        
+        // Ensure the pipe wont block on receiving pipe_term.
+        void set_nodelay ();
 
         //  Ask pipe to terminate. The termination will happen asynchronously
         //  and user will be notified about actual deallocation by 'terminated'
@@ -125,7 +128,7 @@ namespace zmq
         //  Constructor is private. Pipe can only be created using
         //  pipepair function.
         pipe_t (object_t *parent_, upipe_t *inpipe_, upipe_t *outpipe_,
-            int inhwm_, int outhwm_, bool delay_);
+            int inhwm_, int outhwm_);
 
         //  Pipepair uses this function to let us know about
         //  the peer pipe object.

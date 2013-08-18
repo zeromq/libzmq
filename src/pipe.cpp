@@ -24,7 +24,7 @@
 #include "err.hpp"
 
 int zmq::pipepair (class object_t *parents_ [2], class pipe_t* pipes_ [2],
-    int hwms_ [2], bool delays_ [2])
+    int hwms_ [2])
 {
     //   Creates two pipe objects. These objects are connected by two ypipes,
     //   each to pass messages in one direction.
@@ -35,10 +35,10 @@ int zmq::pipepair (class object_t *parents_ [2], class pipe_t* pipes_ [2],
     alloc_assert (upipe2);
 
     pipes_ [0] = new (std::nothrow) pipe_t (parents_ [0], upipe1, upipe2,
-        hwms_ [1], hwms_ [0], delays_ [0]);
+        hwms_ [1], hwms_ [0]);
     alloc_assert (pipes_ [0]);
     pipes_ [1] = new (std::nothrow) pipe_t (parents_ [1], upipe2, upipe1,
-        hwms_ [0], hwms_ [1], delays_ [1]);
+        hwms_ [0], hwms_ [1]);
     alloc_assert (pipes_ [1]);
 
     pipes_ [0]->set_peer (pipes_ [1]);
@@ -48,7 +48,7 @@ int zmq::pipepair (class object_t *parents_ [2], class pipe_t* pipes_ [2],
 }
 
 zmq::pipe_t::pipe_t (object_t *parent_, upipe_t *inpipe_, upipe_t *outpipe_,
-      int inhwm_, int outhwm_, bool delay_) :
+      int inhwm_, int outhwm_) :
     object_t (parent_),
     inpipe (inpipe_),
     outpipe (outpipe_),
@@ -62,7 +62,7 @@ zmq::pipe_t::pipe_t (object_t *parent_, upipe_t *inpipe_, upipe_t *outpipe_,
     peer (NULL),
     sink (NULL),
     state (active),
-    delay (delay_)
+    delay (true)
 {
 }
 
@@ -312,6 +312,11 @@ void zmq::pipe_t::process_pipe_term_ack ()
 
     //  Deallocate the pipe object
     delete this;
+}
+
+void zmq::pipe_t::set_nodelay ()
+{
+    this->delay = false;
 }
 
 void zmq::pipe_t::terminate (bool delay_)
