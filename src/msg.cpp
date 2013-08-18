@@ -58,7 +58,7 @@ int zmq::msg_t::init_size (size_t size_)
         u.lmsg.flags = 0;
         u.lmsg.content =
             (content_t*) malloc (sizeof (content_t) + size_);
-        if (!u.lmsg.content) {
+        if (unlikely (!u.lmsg.content)) {
             errno = ENOMEM;
             return -1;
         }
@@ -75,7 +75,9 @@ int zmq::msg_t::init_size (size_t size_)
 int zmq::msg_t::init_data (void *data_, size_t size_, msg_free_fn *ffn_,
     void *hint_)
 {
-    // Initialize constant message if there's no need to deallocate
+    //  If data is NULL and size is not 0, a segfault
+    //  would occur once the data is accessed
+    assert (data_ != NULL || size_ == 0);
     if(ffn_ == NULL) {
         u.cmsg.type = type_cmsg;
         u.cmsg.flags = 0;
