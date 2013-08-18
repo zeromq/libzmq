@@ -26,6 +26,7 @@
 #include "stdint.hpp"
 #include "clock.hpp"
 #include "err.hpp"
+#include "thread.hpp"
 
 #if !defined ZMQ_HAVE_WINDOWS
 #include <unistd.h>
@@ -56,4 +57,18 @@ unsigned long zmq_stopwatch_stop (void *watch_)
     uint64_t start = *(uint64_t*) watch_;
     free (watch_);
     return (unsigned long) (end - start);
+}
+
+void *zmq_threadstart(zmq_thread_fn* func, void* arg)
+{
+    zmq::thread_t* thread = new zmq::thread_t;
+    thread->start(func, arg);
+    return thread;
+}
+
+void zmq_threadclose(void* thread)
+{
+    zmq::thread_t* pThread = static_cast<zmq::thread_t*>(thread);
+    pThread->stop();
+    delete pThread;
 }

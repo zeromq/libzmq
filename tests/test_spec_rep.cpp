@@ -123,6 +123,7 @@ void test_envelope (void *ctx)
 
 int main (void)
 {
+    setup_test_environment();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
