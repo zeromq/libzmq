@@ -105,13 +105,13 @@ namespace zmq
         enum type_t
         {
             type_min = 101,
-            // VSM messages store the content in the message itself
+            //  VSM messages store the content in the message itself
             type_vsm = 101,
-            // LMSG messages store the content in malloc-ed memory
+            //  LMSG messages store the content in malloc-ed memory
             type_lmsg = 102,
-            // Delimiter messages are used in envelopes
+            //  Delimiter messages are used in envelopes
             type_delimiter = 103,
-            // CMSG messages point to constant data
+            //  CMSG messages point to constant data
             type_cmsg = 104,
             type_max = 104
         };
