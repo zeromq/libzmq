@@ -320,8 +320,7 @@ void zmq::pipe_t::process_pipe_term_ack ()
     //  hand because msg_t doesn't have automatic destructor. Then deallocate
     //  the ypipe itself.
 
-    if (!conflate)
-    {
+    if (!conflate) {
         msg_t msg;
         while (inpipe->read (&msg)) {
             int rc = msg.close ();
