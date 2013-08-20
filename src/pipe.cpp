@@ -50,7 +50,7 @@ int zmq::pipepair (class object_t *parents_ [2], class pipe_t* pipes_ [2],
     alloc_assert (upipe2);
 
     pipes_ [0] = new (std::nothrow) pipe_t (parents_ [0], upipe1, upipe2,
-        hwms_ [1], hwms_, conflate_ [0]);
+        hwms_ [1], hwms_ [0], conflate_ [0]);
     alloc_assert (pipes_ [0]);
     pipes_ [1] = new (std::nothrow) pipe_t (parents_ [1], upipe2, upipe1,
         hwms_ [0], hwms_ [1], conflate_ [1]);
