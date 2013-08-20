@@ -29,11 +29,13 @@ static void zap_handler (void *zap)
     char *sequence = s_recv (zap);
     char *domain = s_recv (zap);
     char *address = s_recv (zap);
+    char *identity = s_recv(zap);
     char *mechanism = s_recv (zap);
     char *client_key = s_recv (zap);
     
     assert (streq (version, "1.0"));
     assert (streq (mechanism, "CURVE"));
+    assert (streq (identity, "IDENT"));
 
     s_sendmore (zap, version);
     s_sendmore (zap, sequence);
@@ -46,6 +48,7 @@ static void zap_handler (void *zap)
     free (sequence);
     free (domain);
     free (address);
+    free (identity);
     free (mechanism);
     free (client_key);
     
@@ -86,6 +89,8 @@ int main (void)
     rc = zmq_setsockopt (server, ZMQ_CURVE_SERVER, &as_server, sizeof (int));
     assert (rc == 0);
     rc = zmq_setsockopt (server, ZMQ_CURVE_SECRETKEY, server_secret, 40);
+    assert (rc == 0);
+    rc = zmq_setsockopt(server, ZMQ_IDENTITY, "IDENT",6);
     assert (rc == 0);
 
     rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, server_public, 40);
