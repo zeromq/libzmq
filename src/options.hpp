@@ -142,6 +142,12 @@ namespace zmq
 
         //  ID of the socket.
         int socket_id;
+
+        //  If true, socket conflates outgoing/incoming messages.
+        //  Applicable to dealer, push/pull, pub/sub socket types.
+        //  Cannot receive multi-part messages.
+        //  Ignores hwm
+        bool conflate;
     };
 }
 

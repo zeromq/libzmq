@@ -682,6 +682,22 @@ Default value:: NULL
 Applicable socket types:: all, when using TCP transport
 
 
+ZMQ_CONFLATE: Keep only last message
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If set, a socket shall keep only one message in its inbound/outbound
+queue, this message being the last message received/the last message
+to be sent.
+Ignores 'ZMQ_RECVHWM' and 'ZMQ_SENDHWM' options.
+Does not supports multi-part messages, in particular, only one part of it
+is kept in the socket internal queue.
+[horizontal]
+Option value type:: int
+Option value unit:: boolean
+Default value:: 0 (false)
+Applicable socket types:: ZMQ_PULL, ZMQ_PUSH, ZMQ_SUB, ZMQ_PUB, ZMQ_DEALER
+
+
 RETURN VALUE
 ------------
 The _zmq_setsockopt()_ function shall return zero if successful. Otherwise it
