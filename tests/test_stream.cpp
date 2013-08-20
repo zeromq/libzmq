@@ -19,9 +19,7 @@
 
 #include "../include/zmq.h"
 #include <string.h>
-#include <stdbool.h>
-#undef NDEBUG
-#include <assert.h>
+#include "testutil.hpp"
 
 //  ZMTP protocol greeting structure
 
@@ -222,6 +220,7 @@ test_stream_to_stream (void)
 
 int main (void)
 {
+    setup_test_environment();
     test_stream_to_dealer ();
     test_stream_to_stream ();
 }

@@ -19,12 +19,11 @@
 
 #include "../include/zmq.h"
 #include <string.h>
-
-#undef NDEBUG
-#include <assert.h>
+#include "testutil.hpp"
 
 int main (void)
 {
+    setup_test_environment();
     //  Create the infrastructure
     void *ctx = zmq_ctx_new ();
     assert (ctx);

@@ -52,7 +52,8 @@ zmq::options_t::options_t () :
     tcp_keepalive_intvl (-1),
     mechanism (ZMQ_NULL),
     as_server (0),
-    socket_id (0)
+    socket_id (0),
+    conflate (false)
 {
 }
 
@@ -338,6 +339,16 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             break;
 #       endif
+
+        case ZMQ_CONFLATE:
+            if (is_int && (value == 0 || value == 1)) {
+                conflate = (value != 0);
+                return 0;
+            }
+            break;
+
+        default:
+            break;
     }
     errno = EINVAL;
     return -1;
@@ -594,6 +605,14 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
             }
             break;
 #       endif
+
+        case ZMQ_CONFLATE:
+            if (is_int) {
+                *value = conflate;
+                return 0;
+            }
+            break;
+
     }
     errno = EINVAL;
     return -1;

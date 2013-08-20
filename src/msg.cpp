@@ -58,7 +58,7 @@ int zmq::msg_t::init_size (size_t size_)
         u.lmsg.flags = 0;
         u.lmsg.content =
             (content_t*) malloc (sizeof (content_t) + size_);
-        if (!u.lmsg.content) {
+        if (unlikely (!u.lmsg.content)) {
             errno = ENOMEM;
             return -1;
         }
@@ -75,19 +75,32 @@ int zmq::msg_t::init_size (size_t size_)
 int zmq::msg_t::init_data (void *data_, size_t size_, msg_free_fn *ffn_,
     void *hint_)
 {
-    u.lmsg.type = type_lmsg;
-    u.lmsg.flags = 0;
-    u.lmsg.content = (content_t*) malloc (sizeof (content_t));
-    if (!u.lmsg.content) {
-        errno = ENOMEM;
-        return -1;
+    //  If data is NULL and size is not 0, a segfault
+    //  would occur once the data is accessed
+    assert (data_ != NULL || size_ == 0);
+    
+    //  Initialize constant message if there's no need to deallocate
+    if(ffn_ == NULL) {
+        u.cmsg.type = type_cmsg;
+        u.cmsg.flags = 0;
+        u.cmsg.data = data_;
+        u.cmsg.size = size_;
     }
+    else {
+        u.lmsg.type = type_lmsg;
+        u.lmsg.flags = 0;
+        u.lmsg.content = (content_t*) malloc (sizeof (content_t));
+        if (!u.lmsg.content) {
+            errno = ENOMEM;
+            return -1;
+        }
 
-    u.lmsg.content->data = data_;
-    u.lmsg.content->size = size_;
-    u.lmsg.content->ffn = ffn_;
-    u.lmsg.content->hint = hint_;
-    new (&u.lmsg.content->refcnt) zmq::atomic_counter_t ();
+        u.lmsg.content->data = data_;
+        u.lmsg.content->size = size_;
+        u.lmsg.content->ffn = ffn_;
+        u.lmsg.content->hint = hint_;
+        new (&u.lmsg.content->refcnt) zmq::atomic_counter_t ();
+    }
     return 0;
 
 }
@@ -193,6 +206,8 @@ void *zmq::msg_t::data ()
         return u.vsm.data;
     case type_lmsg:
         return u.lmsg.content->data;
+    case type_cmsg:
+        return u.cmsg.data;
     default:
         zmq_assert (false);
         return NULL;
@@ -209,6 +224,8 @@ size_t zmq::msg_t::size ()
         return u.vsm.size;
     case type_lmsg:
         return u.lmsg.content->size;
+    case type_cmsg:
+        return u.cmsg.size;
     default:
         zmq_assert (false);
         return 0;
@@ -245,6 +262,11 @@ bool zmq::msg_t::is_vsm ()
     return u.base.type == type_vsm;
 }
 
+bool zmq::msg_t::is_cmsg ()
+{
+    return u.base.type == type_cmsg;
+}
+
 void zmq::msg_t::add_refs (int refs_)
 {
     zmq_assert (refs_ >= 0);
@@ -253,8 +275,8 @@ void zmq::msg_t::add_refs (int refs_)
     if (!refs_)
         return;
 
-    //  VSMs and delimiters can be copied straight away. The only message type
-    //  that needs special care are long messages.
+    //  VSMs, CMSGS and delimiters can be copied straight away. The only
+    //  message type that needs special care are long messages.
     if (u.base.type == type_lmsg) {
         if (u.lmsg.flags & msg_t::shared)
             u.lmsg.content->refcnt.add (refs_);

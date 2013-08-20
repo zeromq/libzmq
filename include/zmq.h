@@ -278,6 +278,7 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 #define ZMQ_PROBE_ROUTER 51
 #define ZMQ_REQ_REQUEST_IDS 52
 #define ZMQ_REQ_STRICT 53
+#define ZMQ_CONFLATE 54
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1

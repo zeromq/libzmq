@@ -44,7 +44,7 @@ namespace zmq
     {
     public:
 
-        //  Mesage flags.
+        //  Message flags.
         enum
         {
             more = 1,
@@ -69,6 +69,7 @@ namespace zmq
         bool is_identity () const;
         bool is_delimiter ();
         bool is_vsm ();
+        bool is_cmsg ();
 
         //  After calling this function you can copy the message in POD-style
         //  refs_ times. No need to call copy.
@@ -104,10 +105,15 @@ namespace zmq
         enum type_t
         {
             type_min = 101,
+            //  VSM messages store the content in the message itself
             type_vsm = 101,
+            //  LMSG messages store the content in malloc-ed memory
             type_lmsg = 102,
+            //  Delimiter messages are used in envelopes
             type_delimiter = 103,
-            type_max = 103
+            //  CMSG messages point to constant data
+            type_cmsg = 104,
+            type_max = 104
         };
 
         //  Note that fields shared between different message types are not
@@ -132,6 +138,14 @@ namespace zmq
                 unsigned char type;
                 unsigned char flags;
             } lmsg;
+            struct {
+                void* data;
+                size_t size;
+                unsigned char unused
+                    [max_vsm_size + 1 - sizeof (void*) - sizeof (size_t)];
+                unsigned char type;
+                unsigned char flags;
+            } cmsg;
             struct {
                 unsigned char unused [max_vsm_size + 1];
                 unsigned char type;

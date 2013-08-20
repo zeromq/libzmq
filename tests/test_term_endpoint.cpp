@@ -18,15 +18,14 @@
 */
 
 #include "../include/zmq.h"
+#include "../include/zmq_utils.h"
 #include <string.h>
-#include <unistd.h>
 #include <time.h>
-
-#undef NDEBUG
-#include <assert.h>
+#include "testutil.hpp"
 
 int main (void)
 {
+    setup_test_environment();
     int rc;
     char buf[32];
     const char *ep = "tcp://127.0.0.1:5560";
@@ -54,8 +53,7 @@ int main (void)
     assert (rc == 0);
 
     //  Allow unbind to settle
-    struct timespec t = { 0, 250 * 1000000 };
-    nanosleep (&t, NULL);
+    zmq_sleep(1);
 
     //  Check that sending would block (there's no outbound connection)
     rc = zmq_send (push, "ABC", 3, ZMQ_DONTWAIT);
@@ -92,7 +90,7 @@ int main (void)
     assert (rc == 0);
 
     //  Allow disconnect to settle
-    nanosleep (&t, NULL);
+    zmq_sleep(1);
 
     //  Check that sending would block (there's no inbound connections).
     rc = zmq_send (push, "ABC", 3, ZMQ_DONTWAIT);

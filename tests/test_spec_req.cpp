@@ -17,8 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "../include/zmq_utils.h"
 #include <stdio.h>
-#include <unistd.h>
 #include <time.h>
 #include "testutil.hpp"
 
@@ -49,8 +49,7 @@ void test_round_robin_out (void *ctx)
     //  We have to give the connects time to finish otherwise the requests 
     //  will not properly round-robin. We could alternatively connect the
     //  REQ sockets to the REP sockets.
-    struct timespec t = { 0, 250 * 1000000 };
-    nanosleep (&t, NULL);
+    zmq_sleep(1);
     
     // Send our peer-replies, and expect every REP it used once in order
     for (size_t peer = 0; peer < services; peer++) {
@@ -217,6 +216,7 @@ void test_block_on_send_no_peers (void *ctx)
 
 int main (void)
 {
+    setup_test_environment();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 

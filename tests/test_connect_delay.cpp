@@ -18,17 +18,16 @@
 */
 
 #include "../include/zmq.h"
+#include "../include/zmq_utils.h"
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <string>
-
-#undef NDEBUG
-#include <assert.h>
+#include "testutil.hpp"
 
 int main (void)
 {
+    setup_test_environment();
     int val;
     int rc;
     char buffer[16];
@@ -198,11 +197,10 @@ int main (void)
     
     rc = zmq_close (backend);
     assert (rc == 0);
-    
+
     //  Give time to process disconnect
     //  There's no way to do this except with a sleep
-    struct timespec t = { 0, 250 * 1000000 };
-    nanosleep (&t, NULL);
+    zmq_sleep(1);
     
     // Send a message, should fail
     rc = zmq_send (frontend, "Hello", 5, ZMQ_DONTWAIT);

@@ -1,3 +1,4 @@
+
 /*
     Copyright (c) 2007-2013 Contributors as noted in the AUTHORS file
 
@@ -17,35 +18,27 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdio.h>
-#include "testutil.hpp"
+#ifndef __ZMQ_YPIPE_BASE_HPP_INCLUDED__
+#define __ZMQ_YPIPE_BASE_HPP_INCLUDED__
 
-int main (void)
+
+namespace zmq
 {
-    setup_test_environment();
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
+    // ypipe_base abstracts ypipe and ypipe_conflate specific
+    // classes, one is selected according to a the conflate
+    // socket option
 
-    void *sb = zmq_socket (ctx, ZMQ_REP);
-    assert (sb);
-    int rc = zmq_bind (sb, "inproc://a");
-    assert (rc == 0);
-
-    void *sc = zmq_socket (ctx, ZMQ_REQ);
-    assert (sc);
-    rc = zmq_connect (sc, "inproc://a");
-    assert (rc == 0);
-    
-    bounce (sb, sc);
-
-    rc = zmq_close (sc);
-    assert (rc == 0);
-
-    rc = zmq_close (sb);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-
-    return 0 ;
+    template <typename T, int N> class ypipe_base_t
+    {
+    public:
+        virtual ~ypipe_base_t () {}
+        virtual void write (const T &value_, bool incomplete_) = 0;
+        virtual bool unwrite (T *value_) = 0;
+        virtual bool flush () = 0;
+        virtual bool check_read () = 0;
+        virtual bool read (T *value_) = 0;
+        virtual bool probe (bool (*fn)(T &)) = 0;
+    };
 }
+
+#endif

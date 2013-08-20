@@ -220,6 +220,7 @@ void test_block_on_send_no_peers (void *ctx)
 
 int main (void)
 {
+    setup_test_environment();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
