@@ -31,7 +31,8 @@ noinst_PROGRAMS = test_pair_inproc \
                   test_spec_router \
                   test_spec_pushpull \
                   test_req_request_ids \
-                  test_req_strict
+                  test_req_strict \
+                  test_conflate
 
 if !ON_MINGW
 noinst_PROGRAMS += test_shutdown_stress \
@@ -69,6 +70,7 @@ test_spec_router_SOURCES = test_spec_router.cpp
 test_spec_pushpull_SOURCES = test_spec_pushpull.cpp
 test_req_request_ids_SOURCES = test_req_request_ids.cpp
 test_req_strict_SOURCES = test_req_strict.cpp
+test_conflate_SOURCES = test_conflate.cpp
 if !ON_MINGW
 test_shutdown_stress_SOURCES = test_shutdown_stress.cpp
 test_pair_ipc_SOURCES = test_pair_ipc.cpp testutil.hpp

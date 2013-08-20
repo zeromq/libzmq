@@ -23,6 +23,7 @@
 #include "atomic_ptr.hpp"
 #include "yqueue.hpp"
 #include "platform.hpp"
+#include "ypipe_base.hpp"
 
 namespace zmq
 {
@@ -34,7 +35,7 @@ namespace zmq
     //  N is granularity of the pipe, i.e. how many items are needed to
     //  perform next memory allocation.
 
-    template <typename T, int N> class ypipe_t
+    template <typename T, int N> class ypipe_t : public ypipe_base_t<T,N>
     {
     public:
 
