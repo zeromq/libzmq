@@ -28,12 +28,15 @@ static void zap_handler (void *zap)
     char *sequence = s_recv (zap);
     char *domain = s_recv (zap);
     char *address = s_recv (zap);
+    char *identity = s_recv(zap);
     char *mechanism = s_recv (zap);
     char *username = s_recv (zap);
     char *password = s_recv (zap);
     
+    printf("identity: %s\n", identity);
     assert (streq (version, "1.0"));
     assert (streq (mechanism, "PLAIN"));
+    assert (streq (identity, "IDENT"));
 
     s_sendmore (zap, version);
     s_sendmore (zap, sequence);
@@ -55,6 +58,7 @@ static void zap_handler (void *zap)
     free (sequence);
     free (domain);
     free (address);
+    free (identity);
     free (mechanism);
     free (username);
     free (password);
@@ -115,6 +119,7 @@ int main (void)
     //  Check PLAIN security
     server = zmq_socket (ctx, ZMQ_DEALER);
     assert (server);
+    rc = zmq_setsockopt(server, ZMQ_IDENTITY, "IDENT",6);
     client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
     
