@@ -210,16 +210,22 @@ foreach (source ${rc-sources})
 	configure_file(${CMAKE_SOURCE_DIR}/src/${source}.in ${CMAKE_BINARY_DIR}/${source})
 endforeach()
 
-add_custom_command(
-	OUTPUT ${CMAKE_BINARY_DIR}/platform.hpp
-	COMMAND ${CMAKE_COMMAND}
-	ARGS	-E
-		copy
-		${CMAKE_SOURCE_DIR}/builds/msvc/platform.hpp
-		${CMAKE_BINARY_DIR}/platform.hpp
-	DEPENDS ${CMAKE_SOURCE_DIR}/builds/msvc/platform.hpp
-)
-list(APPEND sources ${CMAKE_BINARY_DIR}/platform.hpp)
+if(WIN32)
+	set(_platform_sp "builds/msvc")
+	if(MINGW)
+		set(_platform_sp "builds/mingw32")
+	endif()
+	add_custom_command(
+		OUTPUT ${CMAKE_SOURCE_DIR}/src/platform.hpp
+		COMMAND ${CMAKE_COMMAND}
+		ARGS	-E
+			copy
+			${CMAKE_SOURCE_DIR}/${_platform_sp}/platform.hpp
+			${CMAKE_SOURCE_DIR}/src/platform.hpp
+		DEPENDS ${CMAKE_SOURCE_DIR}/${_platform_sp}/platform.hpp
+	)
+	list(APPEND sources ${CMAKE_SOURCE_DIR}/src/platform.hpp)
+endif()
 
 if (CMAKE_CL_64)
 	set (nsis-template ${CMAKE_SOURCE_DIR}/cmake/NSIS.template64.in)
