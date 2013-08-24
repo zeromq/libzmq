@@ -76,6 +76,13 @@
     <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(ProjectDir)../../../bin/$(PlatformName)/$(Configuration)/</OutDir>
+    <TargetName>$(ProjectName)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(ProjectDir)../../../bin/$(PlatformName)/$(Configuration)/</OutDir>
+  </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\perf\remote_lat.cpp" />
   </ItemGroup>
