@@ -65,7 +65,7 @@ int zmq::dealer_t::xsetsockopt (int option_, const void *optval_,
     switch (option_) {
         case ZMQ_PROBE_ROUTER:
             if (is_int && value >= 0) {
-                probe_router = value;
+                probe_router = (value != 0);
                 return 0;
             }
             break;

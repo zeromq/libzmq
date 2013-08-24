@@ -200,14 +200,14 @@ int zmq::req_t::xsetsockopt (int option_, const void *optval_, size_t optvallen_
     switch (option_) {
         case ZMQ_REQ_REQUEST_IDS:
             if (is_int && value >= 0) {
-                request_id_frames_enabled = value;
+                request_id_frames_enabled = (value != 0);
                 return 0;
             }
             break;
 
         case ZMQ_REQ_STRICT:
             if (is_int && value >= 0) {
-                strict = value;
+                strict = (value != 0);
                 return 0;
             }
             break;
