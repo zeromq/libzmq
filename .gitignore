@@ -20,6 +20,7 @@ autom4te.cache
 .*
 *~
 .*~
+*.bak
 tools/curve_keygen.o
 tools/curve_keygen
 tests/test_term_endpoint
@@ -90,3 +91,4 @@ foreign/openpgm/*
 zeromq-*.tar.gz
 zeromq-*.zip
 core
+include/zmq.hpp
