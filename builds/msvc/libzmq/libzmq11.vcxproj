@@ -223,8 +223,10 @@
     <ClCompile Include="..\..\..\src\kqueue.cpp" />
     <ClCompile Include="..\..\..\src\lb.cpp" />
     <ClCompile Include="..\..\..\src\mailbox.cpp" />
+    <ClCompile Include="..\..\..\src\mechanism.cpp" />
     <ClCompile Include="..\..\..\src\msg.cpp" />
     <ClCompile Include="..\..\..\src\mtrie.cpp" />
+    <ClCompile Include="..\..\..\src\null_mechanism.cpp" />
     <ClCompile Include="..\..\..\src\object.cpp" />
     <ClCompile Include="..\..\..\src\options.cpp" />
     <ClCompile Include="..\..\..\src\own.cpp" />
@@ -233,6 +235,7 @@
     <ClCompile Include="..\..\..\src\pgm_sender.cpp" />
     <ClCompile Include="..\..\..\src\pgm_socket.cpp" />
     <ClCompile Include="..\..\..\src\pipe.cpp" />
+    <ClCompile Include="..\..\..\src\plain_mechanism.cpp" />
     <ClCompile Include="..\..\..\src\poll.cpp" />
     <ClCompile Include="..\..\..\src\poller_base.cpp" />
     <ClCompile Include="..\..\..\src\precompiled.cpp">
@@ -253,6 +256,7 @@
     <ClCompile Include="..\..\..\src\session_base.cpp" />
     <ClCompile Include="..\..\..\src\signaler.cpp" />
     <ClCompile Include="..\..\..\src\socket_base.cpp" />
+    <ClCompile Include="..\..\..\src\stream.cpp" />
     <ClCompile Include="..\..\..\src\stream_engine.cpp" />
     <ClCompile Include="..\..\..\src\sub.cpp" />
     <ClCompile Include="..\..\..\src\tcp.cpp" />
