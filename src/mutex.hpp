@@ -52,7 +52,7 @@ namespace zmq
 
         inline bool try_lock ()
         {
-            return (bool) TryEnterCriticalSection (&cs);
+            return (TryEnterCriticalSection (&cs)) ? true : false;
         }
 
         inline void unlock ()
