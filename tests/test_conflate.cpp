@@ -23,7 +23,7 @@
 
 int main (int argc, char *argv [])
 {
-    const char *bind_to = "tcp://127.0.0.1:77008";
+    const char *bind_to = "tcp://127.0.0.1:5555";
 
     int rc;
 
