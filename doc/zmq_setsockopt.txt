@@ -683,7 +683,7 @@ Applicable socket types:: all, when using TCP transport
 
 
 ZMQ_CONFLATE: Keep only last message
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If set, a socket shall keep only one message in its inbound/outbound
 queue, this message being the last message received/the last message
