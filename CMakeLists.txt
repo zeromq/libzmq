@@ -586,18 +586,14 @@ set(tests
         test_invalid_rep
         test_iov
         test_last_endpoint
-        test_monitor
         test_msg_flags
         test_pair_inproc
-        test_pair_ipc
         test_pair_tcp
         test_probe_router
-        test_raw_sock
         test_req_request_ids
         test_req_strict
         test_reqrep_device
         test_reqrep_inproc
-        test_reqrep_ipc
         test_reqrep_tcp
         test_router_mandatory
         test_security
@@ -608,10 +604,17 @@ set(tests
         test_spec_rep
         test_spec_req
         test_spec_router
-        test_stream
         test_sub_forward
         test_term_endpoint
         test_timeo)
+if(NOT WIN32)
+list(APPEND tests
+        test_monitor
+        test_pair_ipc
+        test_raw_sock
+        test_reqrep_ipc
+        test_stream)
+endif()		
 
 foreach(test ${tests})
   add_executable(${test} tests/${test}.cpp)
@@ -621,7 +624,7 @@ foreach(test ${tests})
     target_link_libraries(${test} ${RT_LIBRARY})
   endif()
   if(WIN32)
-    add_test(NAME ${test} WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH}/Debug COMMAND ${test})
+    add_test(NAME ${test} WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH} COMMAND ${test})
   else()
     add_test(NAME ${test} COMMAND ${test})
   endif() 
