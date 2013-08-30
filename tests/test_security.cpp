@@ -115,7 +115,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_close (server);
     assert (rc == 0);
-        
+    
     //  Check PLAIN security
     server = zmq_socket (ctx, ZMQ_DEALER);
     assert (server);
@@ -196,6 +196,84 @@ int main (void)
 
     //  Wait until ZAP handler terminates.
     zmq_threadclose(zap_thread);
+
+    //  Check PLAIN security -- failed authentication
+    server = zmq_socket (ctx, ZMQ_DEALER);
+    assert (server);
+    rc = zmq_setsockopt(server, ZMQ_IDENTITY, "IDENT", 6);
+    client = zmq_socket (ctx, ZMQ_DEALER);
+    assert (client);
+    
+    strcpy (username, "wronguser");
+    strcpy (password, "wrongpass");
+    rc = zmq_setsockopt (client, ZMQ_PLAIN_USERNAME, username, strlen (username));
+    assert (rc == 0);
+    rc = zmq_setsockopt (client, ZMQ_PLAIN_PASSWORD, password, strlen (password));
+    assert (rc == 0);
+    
+    as_server = 1;
+    rc = zmq_setsockopt (server, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
+    assert (rc == 0);
+    
+    optsize = sizeof (int);
+    rc = zmq_getsockopt (client, ZMQ_MECHANISM, &mechanism, &optsize);
+    assert (rc == 0);
+    assert (mechanism == ZMQ_PLAIN);
+    
+    rc = zmq_getsockopt (server, ZMQ_MECHANISM, &mechanism, &optsize);
+    assert (rc == 0);
+    assert (mechanism == ZMQ_PLAIN);
+    
+    rc = zmq_getsockopt (client, ZMQ_PLAIN_SERVER, &as_server, &optsize);
+    assert (rc == 0);
+    assert (as_server == 0);
+    
+    rc = zmq_getsockopt (server, ZMQ_PLAIN_SERVER, &as_server, &optsize);
+    assert (rc == 0);
+    assert (as_server == 1);
+    
+    //  Create and bind ZAP socket
+    zap = zmq_socket (ctx, ZMQ_REP);
+    assert (zap);
+    
+    rc = zmq_bind (zap, "inproc://zeromq.zap.01");
+    assert (rc == 0);
+    
+    //  Spawn ZAP handler
+    zap_thread = zmq_threadstart(&zap_handler, zap);
+    
+    rc = zmq_bind (server, "tcp://*:9996");
+    assert (rc == 0);
+    rc = zmq_connect (client, "tcp://localhost:9996");
+    assert (rc == 0);
+    
+    //  Send message from inauthenticated client to server
+    const char *content = "12345678ABCDEFGH12345678abcdefgh";
+    rc = zmq_send (client, content, 32, 0);
+    assert (rc == 32);
+    
+    //  Receive message at server side (shouldn't arrive)
+    //  Set timeout
+    optsize = sizeof (int);
+    int timeout = 1000;
+    rc = zmq_setsockopt(server, ZMQ_RCVTIMEO, &timeout, optsize);
+    assert (rc == 0);
+    
+    char buffer [32];
+    // Should raise EAGAIN, inauthenticated message should never arrive
+    rc = zmq_recv (server, buffer, 32, 0);
+    assert (rc == -1);
+    assert (zmq_errno() == EAGAIN);
+    
+    rc = zmq_close (client);
+    assert (rc == 0);
+
+    rc = zmq_close (server);
+    assert (rc == 0);
+
+    //  Wait until ZAP handler terminates.
+    zmq_threadclose(zap_thread);
+
     
     //  Check PLAIN security -- two servers trying to talk to each other
     server = zmq_socket (ctx, ZMQ_DEALER);
