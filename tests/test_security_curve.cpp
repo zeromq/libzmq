@@ -25,7 +25,17 @@
 
 static void zap_handler (void *zap)
 {
+    int timeout = 250;
+    int rc;
+    rc = zmq_setsockopt(zap, ZMQ_RCVTIMEO, &timeout, sizeof (int));
+    assert (rc == 0);
     char *version = s_recv (zap);
+    if (version == NULL) {
+      printf("ZAP timeout\n");
+      rc = zmq_close(zap);
+      assert (rc == 0);
+      return;
+    }
     char *sequence = s_recv (zap);
     char *domain = s_recv (zap);
     char *address = s_recv (zap);
@@ -52,9 +62,10 @@ static void zap_handler (void *zap)
     free (mechanism);
     free (client_key);
     
-    int rc = zmq_close (zap);
+    rc = zmq_close (zap);
     assert (rc == 0);
 }
+
 
 int main (void)
 {
@@ -84,7 +95,7 @@ int main (void)
     char client_secret [] = "D:)Q[IlAW!ahhC2ac:9*A}h:p?([4%wOTJ%JR%cs";
     char server_public [] = "rq:rM>}U?@Lns47E1%kR.o@n%FcmmsL/@{H8]yf7";
     char server_secret [] = "JTKVSB%%)wK0E.X)V>+}o?pNmC{O&4W4b!Ni{Lh6";
-        
+
     as_server = 1;
     rc = zmq_setsockopt (server, ZMQ_CURVE_SERVER, &as_server, sizeof (int));
     assert (rc == 0);
@@ -136,6 +147,74 @@ int main (void)
     
     rc = zmq_close (client);
     assert (rc == 0);
+    rc = zmq_close (server);
+    assert (rc == 0);
+
+    //  Wait until ZAP handler terminates.
+    zmq_threadclose(zap_thread);
+    
+    // Test that Curve rejects inauthenticated connections
+
+    // Use the wrong client key
+    strcpy(client_public, "1111222233334444555566667777888899990000");
+
+    //  Server socket will accept connections
+    server = zmq_socket (ctx, ZMQ_DEALER);
+    assert (server);
+
+    //  Client socket that will try to connect to server
+    client = zmq_socket (ctx, ZMQ_DEALER);
+    assert (client);
+
+    as_server = 1;
+    rc = zmq_setsockopt (server, ZMQ_CURVE_SERVER, &as_server, sizeof (int));
+    assert (rc == 0);
+    rc = zmq_setsockopt (server, ZMQ_CURVE_SECRETKEY, server_secret, 40);
+    assert (rc == 0);
+    rc = zmq_setsockopt(server, ZMQ_IDENTITY, "IDENT", 6);
+    assert (rc == 0);
+
+    rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, server_public, 40);
+    assert (rc == 0);
+    rc = zmq_setsockopt (client, ZMQ_CURVE_PUBLICKEY, client_public, 40);
+    assert (rc == 0);
+    rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, client_secret, 40);
+    assert (rc == 0);
+
+    // Test the client and server both have the right mechanism.
+    optsize = sizeof (int);
+    rc = zmq_getsockopt (client, ZMQ_MECHANISM, &mechanism, &optsize);
+    assert (rc == 0);
+    assert (mechanism == ZMQ_CURVE);
+    rc = zmq_getsockopt (server, ZMQ_MECHANISM, &mechanism, &optsize);
+    assert (rc == 0);
+    assert (mechanism == ZMQ_CURVE);
+
+    // Test the server bit on both client and server.
+    rc = zmq_getsockopt (client, ZMQ_CURVE_SERVER, &as_server, &optsize);
+    assert (rc == 0);
+    assert (as_server == 0);
+    rc = zmq_getsockopt (server, ZMQ_CURVE_SERVER, &as_server, &optsize);
+    assert (rc == 0);
+    assert (as_server == 1);
+
+    //  Create and bind ZAP socket
+    zap = zmq_socket (ctx, ZMQ_REP);
+    assert (zap);
+
+    rc = zmq_bind (zap, "inproc://zeromq.zap.01");
+    assert (rc == 0);
+
+    zap_thread = zmq_threadstart(&zap_handler, zap);
+
+    rc = zmq_bind (server, "tcp://*:9997");
+    assert (rc == 0);
+    rc = zmq_connect (client, "tcp://localhost:9997");
+    assert (rc == 0);
+
+    expect_bounce_fail(server, client);
+    
+    close_zero_linger (client);
     rc = zmq_close (server);
     assert (rc == 0);
 

@@ -248,22 +248,7 @@ int main (void)
     assert (rc == 0);
     
     //  Send message from inauthenticated client to server
-    const char *content = "12345678ABCDEFGH12345678abcdefgh";
-    rc = zmq_send (client, content, 32, 0);
-    assert (rc == 32);
-    
-    //  Receive message at server side (shouldn't arrive)
-    //  Set timeout
-    optsize = sizeof (int);
-    int timeout = 1000;
-    rc = zmq_setsockopt(server, ZMQ_RCVTIMEO, &timeout, optsize);
-    assert (rc == 0);
-    
-    char buffer [32];
-    // Should raise EAGAIN, inauthenticated message should never arrive
-    rc = zmq_recv (server, buffer, 32, 0);
-    assert (rc == -1);
-    assert (zmq_errno() == EAGAIN);
+    expect_bounce_fail(server, client);
     
     rc = zmq_close (client);
     assert (rc == 0);
