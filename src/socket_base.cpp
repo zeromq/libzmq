@@ -221,14 +221,14 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
     return 0;
 }
 
-void zmq::socket_base_t::attach_pipe (pipe_t *pipe_, bool icanhasall_)
+void zmq::socket_base_t::attach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 {
     //  First, register the pipe so that we can terminate it later on.
     pipe_->set_event_sink (this);
     pipes.push_back (pipe_);
     
     //  Let the derived socket type know about new pipe.
-    xattach_pipe (pipe_, icanhasall_);
+    xattach_pipe (pipe_, subscribe_to_all_);
 
     //  If the socket is already being closed, ask any new pipes to terminate
     //  straight away.
@@ -556,10 +556,10 @@ int zmq::socket_base_t::connect (const char *addr_)
 
     //  PGM does not support subscription forwarding; ask for all data to be
     //  sent to this pipe.
-    bool icanhasall = protocol == "pgm" || protocol == "epgm";
+    bool subscribe_to_all = protocol == "pgm" || protocol == "epgm";
     pipe_t *newpipe = NULL;
 
-    if (options.immediate != 1 || icanhasall) {
+    if (options.immediate != 1 || subscribe_to_all) {
         //  Create a bi-directional pipe.
         object_t *parents [2] = {this, session};
         pipe_t *new_pipes [2] = {NULL, NULL};
@@ -579,7 +579,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         errno_assert (rc == 0);
 
         //  Attach local end of the pipe to the socket object.
-        attach_pipe (new_pipes [0], icanhasall);
+        attach_pipe (new_pipes [0], subscribe_to_all);
         newpipe = new_pipes [0];
 
         //  Attach remote end of the pipe to the session object later on.
