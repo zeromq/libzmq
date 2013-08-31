@@ -53,10 +53,10 @@ zmq::router_t::~router_t ()
     prefetched_msg.close ();
 }
 
-void zmq::router_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
+void zmq::router_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 {
-    // icanhasall_ is unused
-    (void)icanhasall_;
+    // subscribe_to_all_ is unused
+    (void)subscribe_to_all_;
 
     zmq_assert (pipe_);
 

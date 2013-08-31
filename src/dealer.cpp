@@ -32,10 +32,10 @@ zmq::dealer_t::~dealer_t ()
 {
 }
 
-void zmq::dealer_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
+void zmq::dealer_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 {
-    // icanhasall_ is unused
-    (void) icanhasall_;
+    // subscribe_to_all_ is unused
+    (void) subscribe_to_all_;
 
     zmq_assert (pipe_);
 
