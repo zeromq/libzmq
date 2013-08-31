@@ -82,4 +82,3 @@ int zmq::mailbox_t::recv (command_t *cmd_, int timeout_)
     zmq_assert (ok);
     return 0;
 }
-

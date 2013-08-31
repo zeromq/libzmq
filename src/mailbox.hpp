@@ -44,6 +44,13 @@ namespace zmq
         void send (const command_t &cmd_);
         int recv (command_t *cmd_, int timeout_);
         
+#ifdef HAVE_FORK
+        // close the file descriptors in the signaller. This is used in a forked
+        // child process to close the file descriptors so that they do not interfere
+        // with the context in the parent process.
+        void forked() { signaler.forked(); }
+#endif
+
     private:
 
         //  The pipe to store actual commands.

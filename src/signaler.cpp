@@ -86,6 +86,10 @@ zmq::signaler_t::signaler_t ()
     //  Set both fds to non-blocking mode.
     unblock_socket (w);
     unblock_socket (r);
+
+#ifdef HAVE_FORK
+    pid = getpid();
+#endif
 }
 
 zmq::signaler_t::~signaler_t ()
@@ -117,6 +121,12 @@ zmq::fd_t zmq::signaler_t::get_fd ()
 
 void zmq::signaler_t::send ()
 {
+#if HAVE_FORK
+    if (unlikely(pid != getpid())) {
+        //printf("Child process %d signaler_t::send returning without sending #1\n", getpid());
+        return; // do not send anything in forked child context
+    }
+#endif
 #if defined ZMQ_HAVE_EVENTFD
     const uint64_t inc = 1;
     ssize_t sz = write (w, &inc, sizeof (inc));
@@ -132,6 +142,13 @@ void zmq::signaler_t::send ()
         ssize_t nbytes = ::send (w, &dummy, sizeof (dummy), 0);
         if (unlikely (nbytes == -1 && errno == EINTR))
             continue;
+#if HAVE_FORK
+        if (unlikely(pid != getpid())) {
+            //printf("Child process %d signaler_t::send returning without sending #2\n", getpid());
+            errno = EINTR;
+            break;
+        }
+#endif
         zmq_assert (nbytes == sizeof (dummy));
         break;
     }
@@ -140,6 +157,17 @@ void zmq::signaler_t::send ()
 
 int zmq::signaler_t::wait (int timeout_)
 {
+#ifdef HAVE_FORK
+    if (unlikely(pid != getpid()))
+    {
+        // we have forked and the file descriptor is closed. Emulate an interupt
+        // response.
+        //printf("Child process %d signaler_t::wait returning simulating interrupt #1\n", getpid());
+        errno = EINTR;
+        return -1;
+    }
+#endif
+
 #ifdef ZMQ_SIGNALER_WAIT_BASED_ON_POLL
 
     struct pollfd pfd;
@@ -155,6 +183,16 @@ int zmq::signaler_t::wait (int timeout_)
         errno = EAGAIN;
         return -1;
     }
+#ifdef HAVE_FORK
+    if (unlikely(pid != getpid()))
+    {
+        // we have forked and the file descriptor is closed. Emulate an interupt
+        // response.
+        //printf("Child process %d signaler_t::wait returning simulating interrupt #2\n", getpid());
+        errno = EINTR;
+        return -1;
+    }
+#endif
     zmq_assert (rc == 1);
     zmq_assert (pfd.revents & POLLIN);
     return 0;
@@ -224,6 +262,30 @@ void zmq::signaler_t::recv ()
     zmq_assert (dummy == 0);
 #endif
 }
+
+#ifdef HAVE_FORK
+void zmq::signaler_t::forked()
+{
+    int oldr = r;
+    int oldw = w;
+
+    // replace the file descriptors created in the parent with new
+    // ones, and close the inherited ones
+    make_fdpair(&r, &w);
+#if defined ZMQ_HAVE_EVENTFD
+    int rc = close (oldr);
+    errno_assert (rc == 0);
+#else
+    int rc = close (oldw);
+    errno_assert (rc == 0);
+    rc = close (oldr);
+    errno_assert (rc == 0);
+#endif
+}
+#endif
+
+
+
 
 int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
 {

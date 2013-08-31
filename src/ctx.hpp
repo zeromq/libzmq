@@ -167,6 +167,11 @@ namespace zmq
 
         ctx_t (const ctx_t&);
         const ctx_t &operator = (const ctx_t&);
+
+#ifdef HAVE_FORK
+        // the process that created this context. Used to detect forking.
+        pid_t pid;
+#endif
     };
 
 }
