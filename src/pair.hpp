@@ -40,7 +40,7 @@ namespace zmq
         ~pair_t ();
 
         //  Overloads of functions from socket_base_t.
-        void xattach_pipe (zmq::pipe_t *pipe_, bool icanhasall_);
+        void xattach_pipe (zmq::pipe_t *pipe_, bool subscribe_to_all_);
         int xsend (zmq::msg_t *msg_);
         int xrecv (zmq::msg_t *msg_);
         bool xhas_in ();

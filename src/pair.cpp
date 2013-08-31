@@ -34,10 +34,10 @@ zmq::pair_t::~pair_t ()
     zmq_assert (!pipe);
 }
 
-void zmq::pair_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
+void zmq::pair_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 {
-    // icanhasall_ is unused
-    (void)icanhasall_;
+    // subscribe_to_all_ is unused
+    (void)subscribe_to_all_;
 
     zmq_assert (pipe_ != NULL);
 

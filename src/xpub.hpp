@@ -46,7 +46,7 @@ namespace zmq
         ~xpub_t ();
 
         //  Implementations of virtual functions from socket_base_t.
-        void xattach_pipe (zmq::pipe_t *pipe_, bool icanhasall_ = false);
+        void xattach_pipe (zmq::pipe_t *pipe_, bool subscribe_to_all_ = false);
         int xsend (zmq::msg_t *msg_);
         bool xhas_out ();
         int xrecv (zmq::msg_t *msg_);
