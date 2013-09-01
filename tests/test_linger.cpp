@@ -51,7 +51,7 @@ static void sender(void *vsize)
     printf("Sending %lu B ... ", zmq_msg_size(&msg));
 
     rc = zmq_msg_send(&msg, push, 0);
-    assert (rc == size);
+    assert ((size_t) rc == size);
 
     rc = zmq_msg_close(&msg);
     assert (rc == 0);
@@ -92,7 +92,7 @@ int main (void)
       } else {
         printf("Received.\n");
       }
-      assert (rc == size);
+      assert ((size_t) rc == size);
       zmq_msg_close(&msg);
       zmq_threadclose(send_thread);
     }
