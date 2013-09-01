@@ -24,6 +24,8 @@
 #include "testutil.hpp"
 #include <unistd.h>
 #include <signal.h>
+#include <stdlib.h>
+#include <sys/wait.h>
 
 const char* address = "tcp://127.0.0.1:6571";
 
