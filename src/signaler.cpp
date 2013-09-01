@@ -267,7 +267,9 @@ void zmq::signaler_t::recv ()
 void zmq::signaler_t::forked()
 {
     int oldr = r;
+#if !defined ZMQ_HAVE_EVENTFD
     int oldw = w;
+#endif
 
     // replace the file descriptors created in the parent with new
     // ones, and close the inherited ones
