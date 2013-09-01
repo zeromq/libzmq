@@ -43,10 +43,10 @@ zmq::xsub_t::~xsub_t ()
     errno_assert (rc == 0);
 }
 
-void zmq::xsub_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
+void zmq::xsub_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 {
-    // icanhasall_ is unused
-    (void) icanhasall_;
+    // subscribe_to_all_ is unused
+    (void) subscribe_to_all_;
 
     zmq_assert (pipe_);
     fq.attach (pipe_);

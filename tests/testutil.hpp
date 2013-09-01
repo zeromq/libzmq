@@ -83,6 +83,43 @@ bounce (void *server, void *client)
     assert (memcmp (buffer, content, 32) == 0);
 }
 
+//  Same as bounce, but expect messages to never arrive
+//  for security or subscriber reasons.
+
+void
+expect_bounce_fail (void *server, void *client)
+{
+    const char *content = "12345678ABCDEFGH12345678abcdefgh";
+    char buffer [32];
+
+    //  Send message from client to server
+    int rc = zmq_send (client, content, 32, ZMQ_SNDMORE);
+    assert (rc == 32);
+    rc = zmq_send (client, content, 32, 0);
+    assert (rc == 32);
+
+    //  Receive message at server side (should not succeed)
+    int timeout = 250;
+    rc = zmq_setsockopt(server, ZMQ_RCVTIMEO, &timeout, sizeof (int));
+    assert (rc == 0);
+    rc = zmq_setsockopt(client, ZMQ_RCVTIMEO, &timeout, sizeof (int));
+    assert (rc == 0);
+    
+    rc = zmq_recv (server, buffer, 32, 0);
+    assert (rc == -1);
+    assert (zmq_errno() == EAGAIN);
+
+
+    rc = zmq_send (server, content, 32, ZMQ_SNDMORE);
+    assert (rc == 32);
+    rc = zmq_send (server, content, 32, 0);
+    assert (rc == 32);
+
+    rc = zmq_recv (client, buffer, 32, 0);
+    assert (rc == -1);
+    assert (zmq_errno() == EAGAIN);
+}
+
 //  Receive 0MQ string from socket and convert into C string
 //  Caller must free returned string. Returns NULL if the context
 //  is being terminated.
