@@ -16,6 +16,7 @@ noinst_PROGRAMS = test_pair_inproc \
                   test_connect_delay \
                   test_last_endpoint \
                   test_term_endpoint \
+                  test_linger \
                   test_monitor \
                   test_router_mandatory \
                   test_probe_router \
@@ -50,6 +51,7 @@ test_hwm_SOURCES = test_hwm.cpp
 test_reqrep_device_SOURCES = test_reqrep_device.cpp
 test_sub_forward_SOURCES = test_sub_forward.cpp
 test_invalid_rep_SOURCES = test_invalid_rep.cpp
+test_linger_SOURCES = test_linger.cpp
 test_msg_flags_SOURCES = test_msg_flags.cpp
 test_connect_resolve_SOURCES = test_connect_resolve.cpp
 test_connect_delay_SOURCES = test_connect_delay.cpp
