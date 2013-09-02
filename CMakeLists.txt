@@ -596,8 +596,9 @@ set(tests
         test_reqrep_inproc
         test_reqrep_tcp
         test_router_mandatory
-        test_security
         test_security_curve
+        test_security_null
+        test_security_plain
         test_shutdown_stress
         test_spec_dealer
         test_spec_pushpull
