@@ -72,6 +72,11 @@ namespace zmq
 
         reaper_t (const reaper_t&);
         const reaper_t &operator = (const reaper_t&);
+
+#ifdef HAVE_FORK
+        // the process that created this context. Used to detect forking.
+        pid_t pid;
+#endif
     };
 
 }

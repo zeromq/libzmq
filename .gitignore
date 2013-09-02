@@ -60,6 +60,7 @@ tests/test_spec_req
 tests/test_spec_router
 tests/test_req_request_ids
 tests/test_req_strict
+tests/test_fork
 src/platform.hpp*
 src/stamp-h1
 perf/local_lat
