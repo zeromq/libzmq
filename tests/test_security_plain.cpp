@@ -114,6 +114,18 @@ int main (void)
     rc = zmq_close (client);
     assert (rc == 0);
 
+    //  Check PLAIN security with badly configured client (as_server)
+    //  This will be caught by the plain_server class, not passed to ZAP
+    client = zmq_socket (ctx, ZMQ_DEALER);
+    assert (client);
+    as_server = 1;
+    rc = zmq_setsockopt (client, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
+    assert (rc == 0);
+    rc = zmq_connect (client, "tcp://localhost:9998");
+    assert (rc == 0);
+    expect_bounce_fail (server, client);
+    close_zero_linger (client);
+    
     //  Check PLAIN security -- failed authentication
     client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
@@ -125,22 +137,9 @@ int main (void)
     assert (rc == 0);
     rc = zmq_connect (client, "tcp://localhost:9998");
     assert (rc == 0);
-    //  TODO: this does not fail as it should
-    //     expect_bounce_fail (server, client);
+    expect_bounce_fail (server, client);
     close_zero_linger (client);
 
-    //  Check PLAIN security with badly configured client (as_server)
-    client = zmq_socket (ctx, ZMQ_DEALER);
-    assert (client);
-    as_server = 1;
-    rc = zmq_setsockopt (client, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
-    assert (rc == 0);
-    rc = zmq_connect (client, "tcp://localhost:9998");
-    assert (rc == 0);
-    //  TODO: this does not fail as it should
-    //     expect_bounce_fail (server, client);
-    close_zero_linger (client);
-    
     //  Shutdown
     rc = zmq_close (server);
     assert (rc == 0);

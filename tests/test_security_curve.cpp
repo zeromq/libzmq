@@ -18,10 +18,17 @@
 */
 
 #include "platform.hpp"
-#include "../include/zmq_utils.h"
 #include <string.h>
 #include <stdlib.h>
 #include "testutil.hpp"
+#include "../include/zmq_utils.h"
+#include "../src/z85_codec.hpp"
+
+//  Test keys from the zmq_curve man page
+static char client_public [] = "Yne@$w-vo<fVvi]a<NY6T1ed:M$fCG*[IaLV{hID";
+static char client_secret [] = "D:)Q[IlAW!ahhC2ac:9*A}h:p?([4%wOTJ%JR%cs";
+static char server_public [] = "rq:rM>}U?@Lns47E1%kR.o@n%FcmmsL/@{H8]yf7";
+static char server_secret [] = "JTKVSB%%)wK0E.X)V>+}o?pNmC{O&4W4b!Ni{Lh6";
 
 static void zap_handler (void *ctx)
 {
@@ -30,7 +37,7 @@ static void zap_handler (void *ctx)
     assert (zap);
     int rc = zmq_bind (zap, "inproc://zeromq.zap.01");
     assert (rc == 0);
-
+    
     //  Process ZAP requests forever
     while (true) {
         char *version = s_recv (zap);
@@ -42,26 +49,38 @@ static void zap_handler (void *ctx)
         char *address = s_recv (zap);
         char *identity = s_recv (zap);
         char *mechanism = s_recv (zap);
-        char *client_key = s_recv (zap);
-        
+        uint8_t client_key [32];
+        int size = zmq_recv (zap, client_key, 32, 0);
+        assert (size == 32);
+
+        char client_key_text [40];
+        Z85_encode (client_key_text, client_key, 32);
+
         assert (streq (version, "1.0"));
         assert (streq (mechanism, "CURVE"));
         assert (streq (identity, "IDENT"));
 
         s_sendmore (zap, version);
         s_sendmore (zap, sequence);
-        s_sendmore (zap, "200");
-        s_sendmore (zap, "OK");
-        s_sendmore (zap, "anonymous");
-        s_send (zap, "");
         
+        if (streq (client_key_text, client_public)) {
+            s_sendmore (zap, "200");
+            s_sendmore (zap, "OK");
+            s_sendmore (zap, "anonymous");
+            s_send (zap, "");
+        }
+        else {
+            s_sendmore (zap, "400");
+            s_sendmore (zap, "Invalid username or password");
+            s_sendmore (zap, "");
+            s_send (zap, "");
+        }
         free (version);
         free (sequence);
         free (domain);
         free (address);
         free (identity);
         free (mechanism);
-        free (client_key);
     }
     rc = zmq_close (zap);
     assert (rc == 0);
@@ -80,12 +99,6 @@ int main (void)
 
     //  Spawn ZAP handler
     void *zap_thread = zmq_threadstart (&zap_handler, ctx);
-
-    //  Test keys from the zmq_curve man page
-    char client_public [] = "Yne@$w-vo<fVvi]a<NY6T1ed:M$fCG*[IaLV{hID";
-    char client_secret [] = "D:)Q[IlAW!ahhC2ac:9*A}h:p?([4%wOTJ%JR%cs";
-    char server_public [] = "rq:rM>}U?@Lns47E1%kR.o@n%FcmmsL/@{H8]yf7";
-    char server_secret [] = "JTKVSB%%)wK0E.X)V>+}o?pNmC{O&4W4b!Ni{Lh6";
 
     //  Server socket will accept connections
     void *server = zmq_socket (ctx, ZMQ_DEALER);
@@ -176,8 +189,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_connect (client, "tcp://localhost:9998");
     assert (rc == 0);
-    //  TODO: does not handle ZAP failures properly
-    //     expect_bounce_fail (server, client);
+    expect_bounce_fail (server, client);
     close_zero_linger (client);
     
     //  Shutdown
