@@ -28,12 +28,12 @@ static void zap_handler (void *zap)
     char *sequence = s_recv (zap);
     char *domain = s_recv (zap);
     char *address = s_recv (zap);
-    char *identity = s_recv(zap);
+    char *identity = s_recv (zap);
     char *mechanism = s_recv (zap);
     char *username = s_recv (zap);
     char *password = s_recv (zap);
     
-    printf("identity: %s\n", identity);
+    printf ("identity: %s\n", identity);
     assert (streq (version, "1.0"));
     assert (streq (mechanism, "PLAIN"));
     assert (streq (identity, "IDENT"));

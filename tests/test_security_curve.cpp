@@ -39,7 +39,7 @@ static void zap_handler (void *zap)
     char *sequence = s_recv (zap);
     char *domain = s_recv (zap);
     char *address = s_recv (zap);
-    char *identity = s_recv(zap);
+    char *identity = s_recv (zap);
     char *mechanism = s_recv (zap);
     char *client_key = s_recv (zap);
     
