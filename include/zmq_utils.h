@@ -59,10 +59,10 @@ ZMQ_EXPORT unsigned long zmq_stopwatch_stop (void *watch_);
 ZMQ_EXPORT void zmq_sleep (int seconds_);
 
 /* Start a thread. Returns a handle to the thread.                            */
-ZMQ_EXPORT void *zmq_threadstart(zmq_thread_fn* func, void* arg);
+ZMQ_EXPORT void *zmq_threadstart (zmq_thread_fn* func, void* arg);
 
 /* Wait for thread to complete then free up resources.                        */
-ZMQ_EXPORT void zmq_threadclose(void* thread);
+ZMQ_EXPORT void zmq_threadclose (void* thread);
 
 #undef ZMQ_EXPORT
 

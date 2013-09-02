@@ -33,86 +33,57 @@ const char* address = "tcp://127.0.0.1:6571";
 
 int main (void)
 {
-    int rc;
-
-    setup_test_environment();
-
-    printf("parent: process id = %d\n", (int)getpid());
+    setup_test_environment ();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
+    
+    //  Create and bind pull socket to receive messages
+    void *pull = zmq_socket (ctx, ZMQ_PULL);
+    assert (pull);
+    int rc = zmq_bind (pull, address);
+    assert (rc == 0);
 
-    void* sock = zmq_socket(ctx, ZMQ_PULL);
-    assert(sock);
-
-    rc = zmq_bind(sock, address);
-    assert(rc == 0);
-
-    // wait for io threads to be running
-    usleep(100000);
-
-    printf("about to fork()\n");
-    int pid = fork();
+    int pid = fork ();
     if (pid == 0) {
-        // this is the child process
+        //  Child process
+        //  Immediately close parent sockets and context
+        zmq_close (pull);
+        zmq_term (ctx);
 
-        usleep(100000);
-        printf("child: process id = %d\n", (int)getpid());
-        printf("child: terminating inherited context...\n");
-        // close the socket, or the context gets stuck indefinitely
-        // zmq_close(sock);
-        zmq_term(ctx);
-
-        // create new context, socket, connect and send some messages
-        void *ctx2 = zmq_ctx_new ();
-        assert (ctx2);
-
-        void* push = zmq_socket(ctx2, ZMQ_PUSH);
-        assert(push);
-
-        rc = zmq_connect(push, address);
-        assert(rc == 0);
-
-        const char* message = "hello";
-
-        int i;
-        for (i = 0; i < NUM_MESSAGES; i += 1) {
-            printf("child: send message #%d\n", i);
-            zmq_send(push, message, strlen(message), 0);
-            usleep(100000);
+        //  Create new context, socket, connect and send some messages
+        void *child_ctx = zmq_ctx_new ();
+        assert (child_ctx);
+        void *push = zmq_socket (child_ctx, ZMQ_PUSH);
+        assert (push);
+        rc = zmq_connect (push, address);
+        assert (rc == 0);
+        int count;
+        for (count = 0; count < NUM_MESSAGES; count++)
+            zmq_send (push, "Hello", 5, 0);
+        
+        zmq_close (push);
+        zmq_ctx_destroy (child_ctx);
+        exit (0);
+    } 
+    else {
+        //  Parent process
+        int count;
+        for (count = 0; count < NUM_MESSAGES; count++) {
+            char buffer [5];
+            int num_bytes = zmq_recv (pull, buffer, 5, 0);
+            assert (num_bytes == 5);
         }
-
-        printf("child: closing push socket\n");
-        zmq_close(push);
-        printf("child: destroying child context\n");
-        zmq_ctx_destroy(ctx2);
-        printf("child: done\n");
-        exit(0);
-    } else {
-        // this is the parent process
-        printf("parent: waiting for %d messages\n", NUM_MESSAGES);
-
-        char buffer[1024];
-
-        int i;
-        for (i = 0; i < NUM_MESSAGES; i += 1) {
-            int num_bytes = zmq_recv(sock, buffer, 1024, 0);
-            assert(num_bytes > 0);
-            buffer[num_bytes] = 0;
-            printf("parent: received #%d: %s\n", i, buffer);
-        }
-
         int child_status;
         while (true) {
-            rc = waitpid(pid, &child_status, 0);
-            if (rc == -1 && errno == EINTR) continue;
-            printf("parent: child exit code = %d, rc = %d, errno = %d\n", WEXITSTATUS(child_status), rc, errno);
-            assert(rc > 0);
-            // verify the status code of the child was zero.
-            assert(WEXITSTATUS(child_status) == 0);
+            rc = waitpid (pid, &child_status, 0);
+            if (rc == -1 && errno == EINTR) 
+                continue;
+            assert (rc > 0);
+            //  Verify the status code of the child was zero
+            assert (WEXITSTATUS (child_status) == 0);
             break;
         }
-        printf("parent: done.\n");
-        exit(0);
+        exit (0);
     }
     return 0;
 }

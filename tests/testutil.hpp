@@ -99,16 +99,15 @@ expect_bounce_fail (void *server, void *client)
     assert (rc == 32);
 
     //  Receive message at server side (should not succeed)
-    int timeout = 250;
-    rc = zmq_setsockopt(server, ZMQ_RCVTIMEO, &timeout, sizeof (int));
+    int timeout = 150;
+    rc = zmq_setsockopt (server, ZMQ_RCVTIMEO, &timeout, sizeof (int));
     assert (rc == 0);
-    rc = zmq_setsockopt(client, ZMQ_RCVTIMEO, &timeout, sizeof (int));
+    rc = zmq_setsockopt (client, ZMQ_RCVTIMEO, &timeout, sizeof (int));
     assert (rc == 0);
     
     rc = zmq_recv (server, buffer, 32, 0);
     assert (rc == -1);
     assert (zmq_errno() == EAGAIN);
-
 
     rc = zmq_send (server, content, 32, ZMQ_SNDMORE);
     assert (rc == 32);
@@ -151,7 +150,6 @@ s_sendmore (void *socket, const char *string) {
 
 #define streq(s1,s2)    (!strcmp ((s1), (s2)))
 #define strneq(s1,s2)   (strcmp ((s1), (s2)))
-
 
 const char *SEQ_END = (const char *) 1;
 
@@ -229,7 +227,7 @@ void close_zero_linger (void *socket)
 {
     int linger = 0;
     int rc = zmq_setsockopt (socket, ZMQ_LINGER, &linger, sizeof(linger));
-    assert (rc == 0);
+    assert (rc == 0 || errno == ETERM);
     rc = zmq_close (socket);
     assert (rc == 0);
 }

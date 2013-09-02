@@ -61,6 +61,11 @@ tests/test_spec_router
 tests/test_req_request_ids
 tests/test_req_strict
 tests/test_fork
+tests/test_conflate
+tests/test_linger
+tests/test_security_null
+tests/test_security_null.opp
+tests/test_security_plain
 src/platform.hpp*
 src/stamp-h1
 perf/local_lat
