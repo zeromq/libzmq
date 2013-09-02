@@ -102,21 +102,22 @@ expect_bounce_fail (void *server, void *client)
     int timeout = 150;
     rc = zmq_setsockopt (server, ZMQ_RCVTIMEO, &timeout, sizeof (int));
     assert (rc == 0);
-    rc = zmq_setsockopt (client, ZMQ_RCVTIMEO, &timeout, sizeof (int));
-    assert (rc == 0);
-    
     rc = zmq_recv (server, buffer, 32, 0);
     assert (rc == -1);
-    assert (zmq_errno() == EAGAIN);
+    assert (zmq_errno () == EAGAIN);
 
+    //  Send message from server to client to test other direction
     rc = zmq_send (server, content, 32, ZMQ_SNDMORE);
     assert (rc == 32);
     rc = zmq_send (server, content, 32, 0);
     assert (rc == 32);
 
+    //  Receive message at client side (should not succeed)
+    rc = zmq_setsockopt (client, ZMQ_RCVTIMEO, &timeout, sizeof (int));
+    assert (rc == 0);
     rc = zmq_recv (client, buffer, 32, 0);
     assert (rc == -1);
-    assert (zmq_errno() == EAGAIN);
+    assert (zmq_errno () == EAGAIN);
 }
 
 //  Receive 0MQ string from socket and convert into C string

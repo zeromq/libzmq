@@ -439,24 +439,28 @@ int zmq::plain_mechanism_t::receive_and_process_zap_reply ()
 
     //  Address delimiter frame
     if (msg [0].size () > 0) {
+        rc = -1;
         errno = EPROTO;
         goto error;
     }
 
     //  Version frame
     if (msg [1].size () != 3 || memcmp (msg [1].data (), "1.0", 3)) {
+        rc = -1;
         errno = EPROTO;
         goto error;
     }
 
     //  Request id frame
     if (msg [2].size () != 1 || memcmp (msg [2].data (), "1", 1)) {
+        rc = -1;
         errno = EPROTO;
         goto error;
     }
 
     //  Status code frame
     if (msg [3].size () != 3 || memcmp (msg [3].data (), "200", 3)) {
+        rc = -1;
         errno = EACCES;
         goto error;
     }
