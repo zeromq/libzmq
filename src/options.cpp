@@ -43,8 +43,6 @@ zmq::options_t::options_t () :
     sndtimeo (-1),
     ipv6 (0),
     immediate (0),
-    delay_on_close (true),
-    delay_on_disconnect (true),
     filter (false),
     recv_identity (false),
     raw_sock (false),

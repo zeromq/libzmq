@@ -459,9 +459,8 @@ int zmq::socket_base_t::connect (const char *addr_)
              options.type == ZMQ_SUB);
 
         int hwms [2] = {conflate? -1 : sndhwm, conflate? -1 : rcvhwm};
-        bool delays [2] = {options.delay_on_disconnect, options.delay_on_close};
         bool conflates [2] = {conflate, conflate};
-        int rc = pipepair (parents, new_pipes, hwms, delays, conflates);
+        int rc = pipepair (parents, new_pipes, hwms, conflates);
         errno_assert (rc == 0);
 
         //  Attach local end of the pipe to this socket object.
@@ -573,9 +572,8 @@ int zmq::socket_base_t::connect (const char *addr_)
 
         int hwms [2] = {conflate? -1 : options.sndhwm,
             conflate? -1 : options.rcvhwm};
-        bool delays [2] = {options.delay_on_disconnect, options.delay_on_close};
         bool conflates [2] = {conflate, conflate};
-        rc = pipepair (parents, new_pipes, hwms, delays, conflates);
+        rc = pipepair (parents, new_pipes, hwms, conflates);
         errno_assert (rc == 0);
 
         //  Attach local end of the pipe to the socket object.
