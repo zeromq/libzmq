@@ -380,7 +380,7 @@ void zmq::plain_mechanism_t::send_zap_request (const std::string &username,
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);
 
-    // identity frame 
+    //  Identity frame 
     rc = msg.init_size (options.identity_size);
     errno_assert(rc == 0);
     memcpy (msg.data (), options.identity, options.identity_size);

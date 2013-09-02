@@ -23,7 +23,8 @@ noinst_PROGRAMS = test_pair_inproc \
                   test_stream \
                   test_disconnect_inproc \
                   test_ctx_options \
-                  test_security \
+                  test_security_null \
+                  test_security_plain \
                   test_security_curve \
                   test_iov \
                   test_spec_req \
@@ -64,7 +65,8 @@ test_stream_SOURCES = test_stream.cpp
 test_disconnect_inproc_SOURCES = test_disconnect_inproc.cpp
 test_ctx_options_SOURCES = test_ctx_options.cpp
 test_iov_SOURCES = test_iov.cpp
-test_security_SOURCES = test_security.cpp
+test_security_null_SOURCES = test_security_null.cpp
+test_security_plain_SOURCES = test_security_plain.cpp
 test_security_curve_SOURCES = test_security_curve.cpp
 test_spec_req_SOURCES = test_spec_req.cpp
 test_spec_rep_SOURCES = test_spec_rep.cpp

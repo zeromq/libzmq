@@ -196,6 +196,14 @@ void zmq::null_mechanism_t::send_zap_request ()
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);
 
+    //  Identity frame 
+    rc = msg.init_size (options.identity_size);
+    errno_assert (rc == 0);
+    memcpy (msg.data (), options.identity, options.identity_size);
+    msg.set_flags (msg_t::more);
+    rc = session->write_zap_msg (&msg);
+    errno_assert (rc == 0);
+
     //  Mechanism frame
     rc = msg.init_size (5);
     errno_assert (rc == 0);
