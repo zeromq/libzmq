@@ -388,7 +388,7 @@ AM_CONDITIONAL(ON_ANDROID, test "x$libzmq_on_android" = "xyes")
 
 # Checks for library functions.
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS(perror gettimeofday clock_gettime memset socket getifaddrs freeifaddrs)
+AC_CHECK_FUNCS(perror gettimeofday clock_gettime memset socket getifaddrs freeifaddrs fork)
 AC_CHECK_HEADERS([alloca.h])
 LIBZMQ_CHECK_SOCK_CLOEXEC([AC_DEFINE(
                               [ZMQ_HAVE_SOCK_CLOEXEC],
