@@ -81,9 +81,6 @@ int main (void)
     //  returning a "resource unavailable" or an assertion failure in
     //  poller_base.cpp:31.
     size_t size = 4000000;
-
-    //  TODO: Allow make check to pass, until this issue is resolved
-    size = 40000;
     
     //  Start the sender thread and get message
     void *send_thread = zmq_threadstart (&sender, (void *) &size);
