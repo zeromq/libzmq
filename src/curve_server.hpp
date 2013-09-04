@@ -55,8 +55,8 @@ namespace zmq
         virtual ~curve_server_t ();
 
         // mechanism implementation
-        virtual int next_handshake_message (msg_t *msg_);
-        virtual int process_handshake_message (msg_t *msg_);
+        virtual int next_handshake_command (msg_t *msg_);
+        virtual int process_handshake_command (msg_t *msg_);
         virtual int encode (msg_t *msg_);
         virtual int decode (msg_t *msg_);
         virtual int zap_msg_available ();
@@ -104,9 +104,9 @@ namespace zmq
         uint8_t cn_precom [crypto_box_BEFORENMBYTES];
 
         int process_hello (msg_t *msg_);
-        int welcome_msg (msg_t *msg_);
+        int produce_welcome (msg_t *msg_);
         int process_initiate (msg_t *msg_);
-        int ready_msg (msg_t *msg_);
+        int produce_ready (msg_t *msg_);
 
         void send_zap_request (const uint8_t *key);
         int receive_and_process_zap_reply ();

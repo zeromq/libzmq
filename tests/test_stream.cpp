@@ -38,7 +38,7 @@ typedef struct {
 //  8-byte size is set to 1 for backwards compatibility
 
 static zmtp_greeting_t greeting
-    = { { 0xFF, 0, 0, 0, 0, 0, 0, 0, 1, 0x7F }, {3, 0}, { 'N', 'U', 'L', 'L'} };
+    = { { 0xFF, 0, 0, 0, 0, 0, 0, 0, 1, 0x7F }, { 3, 0 }, { 'N', 'U', 'L', 'L'} };
 
 static void
 test_stream_to_dealer (void) 
@@ -106,13 +106,13 @@ test_stream_to_dealer (void)
     assert (buffer [1] == 0);
 
     //  Mechanism is "NULL"
-    assert (memcmp (buffer + 2, "NULL\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 22) == 0);
-    assert (memcmp (buffer + 54, "\0\51READY\0", 8) == 0);
+    assert (memcmp (buffer + 2, "NULL\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0);
+    assert (memcmp (buffer + 54, "\4\51\5READY", 8) == 0);
     assert (memcmp (buffer + 62, "\13Socket-Type\0\0\0\6DEALER", 22) == 0);
     assert (memcmp (buffer + 84, "\10Identity\0\0\0\0", 13) == 0);
 
     //  Announce we are ready
-    memcpy (buffer, "\0\51READY\0", 8);
+    memcpy (buffer, "\4\51\5READY", 8);
     memcpy (buffer + 8, "\13Socket-Type\0\0\0\6ROUTER", 22);
     memcpy (buffer + 30, "\10Identity\0\0\0\0", 13);
 

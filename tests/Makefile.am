@@ -85,4 +85,5 @@ test_fork_SOURCES = test_fork.cpp
 endif
 
 #  Run the test cases
-TESTS = $(noinst_PROGRAMS)
+# TESTS = $(noinst_PROGRAMS)
+TESTS = test_security_plain

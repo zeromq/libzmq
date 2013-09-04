@@ -50,18 +50,18 @@ zmq::curve_client_t::~curve_client_t ()
 {
 }
 
-int zmq::curve_client_t::next_handshake_message (msg_t *msg_)
+int zmq::curve_client_t::next_handshake_command (msg_t *msg_)
 {
     int rc = 0;
 
     switch (state) {
         case send_hello:
-            rc = hello_msg (msg_);
+            rc = produce_hello (msg_);
             if (rc == 0)
                 state = expect_welcome;
             break;
         case send_initiate:
-            rc = initiate_msg (msg_);
+            rc = produce_initiate (msg_);
             if (rc == 0)
                 state = expect_ready;
             break;
@@ -72,7 +72,7 @@ int zmq::curve_client_t::next_handshake_message (msg_t *msg_)
     return rc;
 }
 
-int zmq::curve_client_t::process_handshake_message (msg_t *msg_)
+int zmq::curve_client_t::process_handshake_command (msg_t *msg_)
 {
     int rc = 0;
 
@@ -138,7 +138,7 @@ int zmq::curve_client_t::encode (msg_t *msg_)
 
     uint8_t *message = static_cast <uint8_t *> (msg_->data ());
 
-    memcpy (message, "MESSAGE\0", 8);
+    memcpy (message, "\x07MESSAGE", 8);
     memcpy (message + 8, &cn_nonce, 8);
     memcpy (message + 16, message_box + crypto_box_BOXZEROBYTES,
             mlen - crypto_box_BOXZEROBYTES);
@@ -161,7 +161,7 @@ int zmq::curve_client_t::decode (msg_t *msg_)
     }
 
     const uint8_t *message = static_cast <uint8_t *> (msg_->data ());
-    if (memcmp (message, "MESSAGE\0", 8)) {
+    if (memcmp (message, "\x07MESSAGE", 8)) {
         errno = EPROTO;
         return -1;
     }
@@ -213,7 +213,7 @@ bool zmq::curve_client_t::is_handshake_complete () const
     return state == connected;
 }
 
-int zmq::curve_client_t::hello_msg (msg_t *msg_)
+int zmq::curve_client_t::produce_hello (msg_t *msg_)
 {
     uint8_t hello_nonce [crypto_box_NONCEBYTES];
     uint8_t hello_plaintext [crypto_box_ZEROBYTES + 64];
@@ -235,7 +235,7 @@ int zmq::curve_client_t::hello_msg (msg_t *msg_)
     errno_assert (rc == 0);
     uint8_t *hello = static_cast <uint8_t *> (msg_->data ());
 
-    memcpy (hello, "HELLO\0", 6);
+    memcpy (hello, "\x05HELLO", 6);
     //  CurveZMQ major and minor version numbers
     memcpy (hello + 6, "\1\0", 2);
     //  Anti-amplification padding
@@ -260,7 +260,7 @@ int zmq::curve_client_t::process_welcome (msg_t *msg_)
     }
 
     const uint8_t * welcome = static_cast <uint8_t *> (msg_->data ());
-    if (memcmp (welcome, "WELCOME\0", 8)) {
+    if (memcmp (welcome, "\x07WELCOME", 8)) {
         errno = EPROTO;
         return -1;
     }
@@ -294,7 +294,7 @@ int zmq::curve_client_t::process_welcome (msg_t *msg_)
     return 0;
 }
 
-int zmq::curve_client_t::initiate_msg (msg_t *msg_)
+int zmq::curve_client_t::produce_initiate (msg_t *msg_)
 {
     uint8_t vouch_nonce [crypto_box_NONCEBYTES];
     uint8_t vouch_plaintext [crypto_box_ZEROBYTES + 32];
@@ -351,7 +351,7 @@ int zmq::curve_client_t::initiate_msg (msg_t *msg_)
 
     uint8_t *initiate = static_cast <uint8_t *> (msg_->data ());
 
-    memcpy (initiate, "INITIATE\0", 9);
+    memcpy (initiate, "\x08INITIATE", 9);
     //  Cookie provided by the server in the WELCOME command
     memcpy (initiate + 9, cn_cookie, 96);
     //  Short nonce, prefixed by "CurveZMQINITIATE"
@@ -373,7 +373,7 @@ int zmq::curve_client_t::process_ready (msg_t *msg_)
     }
 
     const uint8_t *ready = static_cast <uint8_t *> (msg_->data ());
-    if (memcmp (ready, "READY\0", 6)) {
+    if (memcmp (ready, "\x05READY", 6)) {
         errno = EPROTO;
         return -1;
     }

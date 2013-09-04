@@ -47,7 +47,8 @@ namespace zmq
         //  Message flags.
         enum
         {
-            more = 1,
+            more = 1,           //  Followed by more parts
+            command = 2,        //  Command frame (see ZMTP spec)
             identity = 64,
             shared = 128
         };
