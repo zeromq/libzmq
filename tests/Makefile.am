@@ -84,9 +84,5 @@ test_timeo_SOURCES = test_timeo.cpp
 test_fork_SOURCES = test_fork.cpp
 endif
 
-#  Deprecated test cases
-noinst_PROGRAMS += test_raw_sock
-test_raw_sock_SOURCES = test_raw_sock.cpp
-
 #  Run the test cases
 TESTS = $(noinst_PROGRAMS)
