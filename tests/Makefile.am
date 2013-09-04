@@ -90,3 +90,4 @@ test_raw_sock_SOURCES = test_raw_sock.cpp
 
 #  Run the test cases
 TESTS = $(noinst_PROGRAMS)
+XFAIL_TESTS = test_linger
