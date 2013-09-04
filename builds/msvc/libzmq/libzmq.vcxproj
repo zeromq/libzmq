@@ -185,8 +185,10 @@
     <ClCompile Include="..\..\..\src\kqueue.cpp" />
     <ClCompile Include="..\..\..\src\lb.cpp" />
     <ClCompile Include="..\..\..\src\mailbox.cpp" />
+    <ClCompile Include="..\..\..\src\mechanism.cpp" />
     <ClCompile Include="..\..\..\src\msg.cpp" />
     <ClCompile Include="..\..\..\src\mtrie.cpp" />
+    <ClCompile Include="..\..\..\src\null_mechanism.cpp" />
     <ClCompile Include="..\..\..\src\object.cpp" />
     <ClCompile Include="..\..\..\src\options.cpp" />
     <ClCompile Include="..\..\..\src\own.cpp" />
@@ -195,6 +197,7 @@
     <ClCompile Include="..\..\..\src\pgm_sender.cpp" />
     <ClCompile Include="..\..\..\src\pgm_socket.cpp" />
     <ClCompile Include="..\..\..\src\pipe.cpp" />
+    <ClCompile Include="..\..\..\src\plain_mechanism.cpp" />
     <ClCompile Include="..\..\..\src\poll.cpp" />
     <ClCompile Include="..\..\..\src\poller_base.cpp" />
     <ClCompile Include="..\..\..\src\precompiled.cpp">
@@ -215,6 +218,7 @@
     <ClCompile Include="..\..\..\src\session_base.cpp" />
     <ClCompile Include="..\..\..\src\signaler.cpp" />
     <ClCompile Include="..\..\..\src\socket_base.cpp" />
+    <ClCompile Include="..\..\..\src\stream.cpp" />
     <ClCompile Include="..\..\..\src\stream_engine.cpp" />
     <ClCompile Include="..\..\..\src\sub.cpp" />
     <ClCompile Include="..\..\..\src\tcp.cpp" />
@@ -263,9 +267,11 @@
     <ClInclude Include="..\..\..\src\lb.hpp" />
     <ClInclude Include="..\..\..\src\likely.hpp" />
     <ClInclude Include="..\..\..\src\mailbox.hpp" />
+    <ClInclude Include="..\..\..\src\mechanism.hpp" />
     <ClInclude Include="..\..\..\src\msg.hpp" />
     <ClInclude Include="..\..\..\src\mtrie.hpp" />
     <ClInclude Include="..\..\..\src\mutex.hpp" />
+    <ClInclude Include="..\..\..\src\null_mechanism.hpp" />
     <ClInclude Include="..\..\..\src\object.hpp" />
     <ClInclude Include="..\..\..\src\options.hpp" />
     <ClInclude Include="..\..\..\src\own.hpp" />
@@ -274,6 +280,7 @@
     <ClInclude Include="..\..\..\src\pgm_sender.hpp" />
     <ClInclude Include="..\..\..\src\pgm_socket.hpp" />
     <ClInclude Include="..\..\..\src\pipe.hpp" />
+    <ClInclude Include="..\..\..\src\plain_mechanism.hpp" />
     <ClInclude Include="..\..\..\src\platform.hpp" />
     <ClInclude Include="..\..\..\src\poll.hpp" />
     <ClInclude Include="..\..\..\src\poller.hpp" />
@@ -294,6 +301,7 @@
     <ClInclude Include="..\..\..\src\signaler.hpp" />
     <ClInclude Include="..\..\..\src\socket_base.hpp" />
     <ClInclude Include="..\..\..\src\stdint.hpp" />
+    <ClInclude Include="..\..\..\src\stream.hpp" />
     <ClInclude Include="..\..\..\src\stream_engine.hpp" />
     <ClInclude Include="..\..\..\src\sub.hpp" />
     <ClInclude Include="..\..\..\src\tcp.hpp" />
