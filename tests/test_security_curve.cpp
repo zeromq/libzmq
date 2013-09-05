@@ -53,7 +53,7 @@ static void zap_handler (void *ctx)
         int size = zmq_recv (zap, client_key, 32, 0);
         assert (size == 32);
 
-        char client_key_text [40];
+        char client_key_text [41];
         Z85_encode (client_key_text, client_key, 32);
 
         assert (streq (version, "1.0"));
