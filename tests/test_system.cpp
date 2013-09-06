@@ -18,10 +18,40 @@
 */
 
 #include "../include/zmq.h"
+#include "platform.hpp"
+#if defined (ZMQ_HAVE_WINDOWS)
+#include <WinSock2.h>
+#include <stdexcept>
+#else
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
 #include <assert.h>
+#endif
+
+#if defined (ZMQ_HAVE_WINDOWS)
+
+void initialise_network()
+{
+    WSADATA info;
+    if (WSAStartup(MAKEWORD(2,0), &info) != 0)
+    {
+        throw std::runtime_error("Could not start WSA");
+    }
+}
+
+int close(int fd)
+{
+    return closesocket(fd);
+}
+
+#else
+
+void initialise_network()
+{
+}
+
+#endif
 
 //  This test case stresses the system to shake out known configuration
 //  problems. We're not using libzmq here but direct system calls. Note
@@ -29,12 +59,15 @@
 
 int main (void)
 {
+    initialise_network();
+
     //  Check that we can create 1,000 sockets
     int handle [1000];
     int count;
     for (count = 0; count < 1000; count++) {
         handle [count] = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
         if (handle [count] == -1) {
+            int err = ::WSAGetLastError();
             printf ("W: Only able to create %d sockets on this box\n", count);
             printf ("I: Tune your system to increase maximum allowed file handles\n");
 #if defined (ZMQ_HAVE_OSX)

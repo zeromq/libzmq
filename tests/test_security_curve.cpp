@@ -22,7 +22,7 @@
 #include "testutil.hpp"
 #include "../include/zmq_utils.h"
 #include "../src/z85_codec.hpp"
-#include "../src/platform.hpp"
+#include "platform.hpp"
 
 //  Test keys from the zmq_curve man page
 static char client_public [] = "Yne@$w-vo<fVvi]a<NY6T1ed:M$fCG*[IaLV{hID";
