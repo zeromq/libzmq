@@ -98,7 +98,12 @@ test_stream_to_dealer (void)
 
     //  Second frame contains the rest of greeting along with
     //  the Ready command
-    rc = zmq_recv (stream, buffer, 255, 0);
+    int bytes_read = 0;
+    while (bytes_read < 97) {
+        rc = zmq_recv (stream, buffer + bytes_read, 255 - bytes_read, 0);
+        assert (rc >= 0);
+        bytes_read += rc;
+    }
     assert (rc == 97);
 
     //  First two bytes are major and minor version numbers.
