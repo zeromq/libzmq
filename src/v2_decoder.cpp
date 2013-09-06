@@ -54,6 +54,8 @@ int zmq::v2_decoder_t::flags_ready ()
     msg_flags = 0;
     if (tmpbuf [0] & v2_protocol_t::more_flag)
         msg_flags |= msg_t::more;
+    if (tmpbuf [0] & v2_protocol_t::command_flag)
+        msg_flags |= msg_t::command;
 
     //  The payload length is either one or eight bytes,
     //  depending on whether the 'large' bit is set.

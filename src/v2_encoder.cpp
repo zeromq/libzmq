@@ -42,6 +42,8 @@ void zmq::v2_encoder_t::message_ready ()
         protocol_flags |= v2_protocol_t::more_flag;
     if (in_progress->size () > 255)
         protocol_flags |= v2_protocol_t::large_flag;
+    if (in_progress->flags () & msg_t::command)
+        protocol_flags |= v2_protocol_t::command_flag;
 
     //  Encode the message length. For messages less then 256 bytes,
     //  the length is encoded as 8-bit unsigned integer. For larger

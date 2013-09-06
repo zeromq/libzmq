@@ -50,8 +50,8 @@ namespace zmq
         virtual ~curve_client_t ();
 
         // mechanism implementation
-        virtual int next_handshake_message (msg_t *msg_);
-        virtual int process_handshake_message (msg_t *msg_);
+        virtual int next_handshake_command (msg_t *msg_);
+        virtual int process_handshake_command (msg_t *msg_);
         virtual int encode (msg_t *msg_);
         virtual int decode (msg_t *msg_);
         virtual bool is_handshake_complete () const;
@@ -96,9 +96,9 @@ namespace zmq
         //  Nonce
         uint64_t cn_nonce;
 
-        int hello_msg (msg_t *msg_);
+        int produce_hello (msg_t *msg_);
         int process_welcome (msg_t *msg_);
-        int initiate_msg (msg_t *msg_);
+        int produce_initiate (msg_t *msg_);
         int process_ready (msg_t *msg_);
     };
 

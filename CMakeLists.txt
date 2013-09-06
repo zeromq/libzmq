@@ -578,6 +578,7 @@ endif()
 
 enable_testing()
 set(tests 
+        test_system
         test_connect_delay
         test_connect_resolve
         test_ctx_options
@@ -612,7 +613,6 @@ if(NOT WIN32)
 list(APPEND tests
         test_monitor
         test_pair_ipc
-        test_raw_sock
         test_reqrep_ipc
         test_stream)
 endif()		
