@@ -67,7 +67,6 @@ int main (void)
     for (count = 0; count < 1000; count++) {
         handle [count] = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
         if (handle [count] == -1) {
-            int err = ::WSAGetLastError();
             printf ("W: Only able to create %d sockets on this box\n", count);
             printf ("I: Tune your system to increase maximum allowed file handles\n");
 #if defined (ZMQ_HAVE_OSX)
