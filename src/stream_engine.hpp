@@ -96,8 +96,8 @@ namespace zmq
         int read_identity (msg_t *msg_);
         int write_identity (msg_t *msg_);
 
-        int next_handshake_message (msg_t *msg);
-        int process_handshake_message (msg_t *msg);
+        int next_handshake_command (msg_t *msg);
+        int process_handshake_command (msg_t *msg);
 
         int pull_msg_from_session (msg_t *msg_);
         int push_msg_to_session (msg_t *msg);
@@ -171,8 +171,8 @@ namespace zmq
 
         bool io_error;
 
-        //  Indicates whether the engine is to inject a phony
-        //  subscription message into the incomming stream.
+        //  Indicates whether the engine is to inject a phantom
+        //  subscription message into the incoming stream.
         //  Needed to support old peers.
         bool subscription_required;
 

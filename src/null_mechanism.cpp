@@ -53,7 +53,7 @@ zmq::null_mechanism_t::~null_mechanism_t ()
 {
 }
 
-int zmq::null_mechanism_t::next_handshake_message (msg_t *msg_)
+int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
 {
     if (ready_command_sent) {
         errno = EAGAIN;
@@ -78,7 +78,7 @@ int zmq::null_mechanism_t::next_handshake_message (msg_t *msg_)
     unsigned char *ptr = command_buffer;
 
     //  Add mechanism string
-    memcpy (ptr, "READY\0", 6);
+    memcpy (ptr, "\5READY", 6);
     ptr += 6;
 
     //  Add socket type property
@@ -104,7 +104,7 @@ int zmq::null_mechanism_t::next_handshake_message (msg_t *msg_)
     return 0;
 }
 
-int zmq::null_mechanism_t::process_handshake_message (msg_t *msg_)
+int zmq::null_mechanism_t::process_handshake_command (msg_t *msg_)
 {
     if (ready_command_received) {
         errno = EPROTO;
@@ -115,7 +115,7 @@ int zmq::null_mechanism_t::process_handshake_message (msg_t *msg_)
         static_cast <unsigned char *> (msg_->data ());
     size_t bytes_left = msg_->size ();
 
-    if (bytes_left < 6 || memcmp (ptr, "READY\0", 6)) {
+    if (bytes_left < 6 || memcmp (ptr, "\5READY", 6)) {
         errno = EPROTO;
         return -1;
     }

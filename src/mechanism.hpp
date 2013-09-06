@@ -40,11 +40,11 @@ namespace zmq
 
         virtual ~mechanism_t ();
 
-        //  Prepare next handshake message that is to be sent to the peer.
-        virtual int next_handshake_message (msg_t *msg_) = 0;
+        //  Prepare next handshake command that is to be sent to the peer.
+        virtual int next_handshake_command (msg_t *msg_) = 0;
 
-        //  Process the handshake message received from the peer.
-        virtual int process_handshake_message (msg_t *msg_) = 0;
+        //  Process the handshake command received from the peer.
+        virtual int process_handshake_command (msg_t *msg_) = 0;
 
         virtual int encode (msg_t *msg_) { return 0; }
 

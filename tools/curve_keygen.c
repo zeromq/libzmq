@@ -56,7 +56,7 @@ int main (void)
     int rc = crypto_box_keypair (public_key, secret_key);
     assert (rc == 0);
     
-    char encoded [40];
+    char encoded [41];
     Z85_encode (encoded, public_key, 32);
     puts ("\n== CURVE PUBLIC KEY ==");
     puts (encoded);

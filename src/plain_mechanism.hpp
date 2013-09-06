@@ -39,8 +39,8 @@ namespace zmq
         virtual ~plain_mechanism_t ();
 
         // mechanism implementation
-        virtual int next_handshake_message (msg_t *msg_);
-        virtual int process_handshake_message (msg_t *msg_);
+        virtual int next_handshake_command (msg_t *msg_);
+        virtual int process_handshake_command (msg_t *msg_);
         virtual int zap_msg_available ();
         virtual bool is_handshake_complete () const;
 
@@ -68,15 +68,15 @@ namespace zmq
 
         state_t state;
 
-        int hello_command (msg_t *msg_) const;
-        int welcome_command (msg_t *msg_) const;
-        int initiate_command (msg_t *msg_) const;
-        int ready_command (msg_t *msg_) const;
+        int produce_hello (msg_t *msg_) const;
+        int produce_welcome (msg_t *msg_) const;
+        int produce_initiate (msg_t *msg_) const;
+        int produce_ready (msg_t *msg_) const;
 
-        int process_hello_command (msg_t *msg_);
-        int process_welcome_command (msg_t *msg);
-        int process_ready_command (msg_t *msg_);
-        int process_initiate_command (msg_t *msg_);
+        int process_hello (msg_t *msg_);
+        int process_welcome (msg_t *msg);
+        int process_ready (msg_t *msg_);
+        int process_initiate (msg_t *msg_);
 
         void send_zap_request (const std::string &username,
                                const std::string &password);

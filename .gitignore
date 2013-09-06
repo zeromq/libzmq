@@ -23,6 +23,7 @@ autom4te.cache
 tools/curve_keygen.o
 tools/curve_keygen
 tests/test_term_endpoint
+tests/test_system
 tests/test_monitor
 tests/test_last_endpoint
 tests/test_pair_inproc

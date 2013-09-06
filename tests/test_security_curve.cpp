@@ -17,12 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "platform.hpp"
 #include <string.h>
 #include <stdlib.h>
 #include "testutil.hpp"
 #include "../include/zmq_utils.h"
 #include "../src/z85_codec.hpp"
+#include "../src/platform.hpp"
 
 //  Test keys from the zmq_curve man page
 static char client_public [] = "Yne@$w-vo<fVvi]a<NY6T1ed:M$fCG*[IaLV{hID";
@@ -53,7 +53,7 @@ static void zap_handler (void *ctx)
         int size = zmq_recv (zap, client_key, 32, 0);
         assert (size == 32);
 
-        char client_key_text [40];
+        char client_key_text [41];
         Z85_encode (client_key_text, client_key, 32);
 
         assert (streq (version, "1.0"));

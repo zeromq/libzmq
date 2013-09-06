@@ -30,7 +30,8 @@ namespace zmq
         enum
         {
             more_flag = 1,
-            large_flag = 2
+            large_flag = 2,
+            command_flag = 4
         };
     };
 }
