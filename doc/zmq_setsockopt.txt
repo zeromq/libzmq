@@ -259,7 +259,7 @@ Applicable socket types:: all, only for connection-oriented transports
 
 ZMQ_RECONNECT_IVL_MAX: Set maximum reconnection interval
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_RECONNECT_IVL_MAX' option shall set the maximum reconnection interval 
+The 'ZMQ_RECONNECT_IVL_MAX' option shall set the maximum reconnection interval
 for the specified 'socket'.  This is the maximum period 0MQ shall wait between
 attempts to reconnect. On each reconnect attempt, the previous interval shall be
 doubled untill ZMQ_RECONNECT_IVL_MAX is reached. This allows for exponential
@@ -396,8 +396,8 @@ Applicable socket types:: all, only for connection-oriented transports.
 ZMQ_ROUTER_MANDATORY: accept only routable messages on ROUTER sockets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sets the ROUTER socket behavior when an unroutable message is encountered. A 
-value of `0` is the default and discards the message silently when it cannot be 
+Sets the ROUTER socket behavior when an unroutable message is encountered. A
+value of `0` is the default and discards the message silently when it cannot be
 routed.  A value of `1` returns an 'EHOSTUNREACH' error code if the message
 cannot be routed.
 
@@ -430,10 +430,10 @@ Applicable socket types:: ZMQ_ROUTER
 ZMQ_PROBE_ROUTER: bootstrap connections to ROUTER sockets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When set to 1, the socket will automatically send an empty message when a 
-new connection is made or accepted. You may set this on REQ, DEALER, or 
+When set to 1, the socket will automatically send an empty message when a
+new connection is made or accepted. You may set this on REQ, DEALER, or
 ROUTER sockets connected to a ROUTER socket. The application must filter
-such empty messages. The ZMQ_PROBE_ROUTER option in effect provides the 
+such empty messages. The ZMQ_PROBE_ROUTER option in effect provides the
 ROUTER application with an event signaling the arrival of a new peer.
 
 NOTE: do not set this option on a socket that talks to any other socket
@@ -449,8 +449,8 @@ Applicable socket types:: ZMQ_ROUTER, ZMQ_DEALER, ZMQ_REQ
 ZMQ_XPUB_VERBOSE: provide all subscription messages on XPUB sockets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sets the 'XPUB' socket behavior on new subscriptions and unsubscriptions. 
-A value of '0' is the default and passes only new subscription messages to 
+Sets the 'XPUB' socket behavior on new subscriptions and unsubscriptions.
+A value of '0' is the default and passes only new subscription messages to
 upstream. A value of '1' passes all subscription messages upstream.
 
 [horizontal]
@@ -481,7 +481,7 @@ ZMQ_REQ_STRICT: enforce strict alternation between request and reply
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When set to 1, a REQ socket does not allow initiating a new request with
-_zmq_send(3)_ until the reply to the previous one has been received. 
+_zmq_send(3)_ until the reply to the previous one has been received.
 When set to 0, sending another message is allowed and has the effect of
 disconnecting the underlying connection to the peer from which the reply was
 expected, triggering a reconnection attempt on transports that support it.
@@ -515,8 +515,8 @@ Applicable socket types:: all, when using TCP transports.
 ZMQ_TCP_KEEPALIVE_IDLE: Override TCP_KEEPCNT (or TCP_KEEPALIVE on some OS)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Override 'TCP_KEEPCNT'(or 'TCP_KEEPALIVE' on some OS) socket option (where 
-supported by OS). The default value of `-1` means to skip any overrides and 
+Override 'TCP_KEEPCNT'(or 'TCP_KEEPALIVE' on some OS) socket option (where
+supported by OS). The default value of `-1` means to skip any overrides and
 leave it to OS default.
 
 [horizontal]
@@ -529,7 +529,7 @@ Applicable socket types:: all, when using TCP transports.
 ZMQ_TCP_KEEPALIVE_CNT: Override TCP_KEEPCNT socket option
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Override 'TCP_KEEPCNT' socket option (where supported by OS). The default 
+Override 'TCP_KEEPCNT' socket option (where supported by OS). The default
 value of `-1` means to skip any overrides and leave it to OS default.
 
 [horizontal]
@@ -542,7 +542,7 @@ Applicable socket types:: all, when using TCP transports.
 ZMQ_TCP_KEEPALIVE_INTVL: Override TCP_KEEPINTVL socket option
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Override 'TCP_KEEPINTVL' socket option(where supported by OS). The default 
+Override 'TCP_KEEPINTVL' socket option(where supported by OS). The default
 value of `-1` means to skip any overrides and leave it to OS default.
 
 [horizontal]
@@ -555,11 +555,11 @@ Applicable socket types:: all, when using TCP transports.
 ZMQ_TCP_ACCEPT_FILTER: Assign filters to allow new TCP connections
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Assign an arbitrary number of filters that will be applied for each new TCP 
-transport connection on a listening socket. If no filters are applied, then 
-the TCP transport allows connections from any IP address. If at least one 
-filter is applied then new connection source ip should be matched. To clear 
-all filters call zmq_setsockopt(socket, ZMQ_TCP_ACCEPT_FILTER, NULL, 0). 
+Assign an arbitrary number of filters that will be applied for each new TCP
+transport connection on a listening socket. If no filters are applied, then
+the TCP transport allows connections from any IP address. If at least one
+filter is applied then new connection source ip should be matched. To clear
+all filters call zmq_setsockopt(socket, ZMQ_TCP_ACCEPT_FILTER, NULL, 0).
 Filter is a null-terminated string with ipv6 or ipv4 CIDR.
 
 [horizontal]
@@ -589,8 +589,8 @@ ZMQ_PLAIN_USERNAME: Set PLAIN security username
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Sets the username for outgoing connections over TCP or IPC. If you set this
-to a non-null value, the security mechanism used for connections shall be 
-PLAIN, see linkzmq:zmq_plain[7]. If you set this to a null value, the security 
+to a non-null value, the security mechanism used for connections shall be
+PLAIN, see linkzmq:zmq_plain[7]. If you set this to a null value, the security
 mechanism used for connections shall be NULL, see linkzmq:zmq_null[3].
 
 [horizontal]
@@ -604,8 +604,8 @@ ZMQ_PLAIN_PASSWORD: Set PLAIN security password
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Sets the password for outgoing connections over TCP or IPC. If you set this
-to a non-null value, the security mechanism used for connections shall be 
-PLAIN, see linkzmq:zmq_plain[7]. If you set this to a null value, the security 
+to a non-null value, the security mechanism used for connections shall be
+PLAIN, see linkzmq:zmq_plain[7]. If you set this to a null value, the security
 mechanism used for connections shall be NULL, see linkzmq:zmq_null[3].
 
 [horizontal]
@@ -638,10 +638,10 @@ ZMQ_CURVE_PUBLICKEY: Set CURVE public key
 Sets the socket's long term public key. You must set this on a CURVE
 client or server socket, see linkzmq:zmq_curve[7]. You can provide the
 key as 32 binary bytes, or as a 40-character string encoded in the Z85
-encoding format. For servers, the public key must be persisted and 
+encoding format. For servers, the public key must be persisted and
 shared through some unspecified but secure mechanism to clients. The
 public key must always be used with the matching secret key generated
-at the same time. To generate a public/secret key pair, use the 
+at the same time. To generate a public/secret key pair, use the
 tools/curve_keygen tool.
 
 [horizontal]
@@ -655,9 +655,9 @@ ZMQ_CURVE_SECRETKEY: Set CURVE secret key
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Sets the socket's long term secret key. You must set this on a CURVE
-client socket, see linkzmq:zmq_curve[7]. You can provide the key as 
-32 binary bytes, or as a 40-character string encoded in the Z85 encoding 
-format. 
+client socket, see linkzmq:zmq_curve[7]. You can provide the key as
+32 binary bytes, or as a 40-character string encoded in the Z85 encoding
+format.
 
 [horizontal]
 Option value type:: binary data or Z85 text string
@@ -670,15 +670,31 @@ ZMQ_CURVE_SERVERKEY: Set CURVE server key
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Sets the socket's long term server key. You must set this on a CURVE
-client socket, see linkzmq:zmq_curve[7]. You can provide the key as 
-32 binary bytes, or as a 40-character string encoded in the Z85 encoding 
-format. This key must be the same as the public key set on the server 
+client socket, see linkzmq:zmq_curve[7]. You can provide the key as
+32 binary bytes, or as a 40-character string encoded in the Z85 encoding
+format. This key must be the same as the public key set on the server
 socket.
 
 [horizontal]
 Option value type:: binary data or Z85 text string
 Option value size:: 32 or 40
 Default value:: NULL
+Applicable socket types:: all, when using TCP transport
+
+
+ZMQ_ZAP_DOMAIN: Set RFC 27 authentication domain
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sets the domain for ZAP (ZMQ RFC 27) authentication. For NULL security (the
+default on all tcp:// connections), ZAP authentication only happens if you
+set a non-empty domain. For PLAIN and CURVE security, ZAP requests are always
+made, if there is a ZAP handler present. See http://rfc.zeromq.org/spec:27
+for more details.
+
+[horizontal]
+Option value type:: character string
+Option value unit:: N/A
+Default value:: not set
 Applicable socket types:: all, when using TCP transport
 
 
