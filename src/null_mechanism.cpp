@@ -44,8 +44,10 @@ zmq::null_mechanism_t::null_mechanism_t (session_base_t *session_,
     zap_request_sent (false),
     zap_reply_received (false)
 {
-    const int rc = session->zap_connect ();
-    if (rc == 0)
+    //  NULL mechanism only uses ZAP if there's a domain defined
+    //  This prevents ZAP requests on naive sockets
+    if (options.zap_domain.size () > 0
+    &&  session->zap_connect () == 0)
         zap_connected = true;
 }
 
@@ -182,8 +184,9 @@ void zmq::null_mechanism_t::send_zap_request ()
     errno_assert (rc == 0);
 
     //  Domain frame
-    rc = msg.init ();
+    rc = msg.init_size (options.zap_domain.length ());
     errno_assert (rc == 0);
+    memcpy (msg.data (), options.zap_domain.c_str (), options.zap_domain.length ());
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);

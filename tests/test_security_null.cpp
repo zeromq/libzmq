@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include "testutil.hpp"
 
-static void 
+static void
 zap_handler (void *ctx)
 {
     //  Create and bind ZAP socket
@@ -36,19 +36,18 @@ zap_handler (void *ctx)
         char *version = s_recv (zap);
         if (!version)
             break;          //  Terminating
-            
+
         char *sequence = s_recv (zap);
         char *domain = s_recv (zap);
         char *address = s_recv (zap);
         char *identity = s_recv (zap);
         char *mechanism = s_recv (zap);
 
+        printf ("domain=%s address=%s identity=%s mechanism=%s\n",
+                domain, address, identity, mechanism);
         assert (streq (version, "1.0"));
         assert (streq (mechanism, "NULL"));
-        //  TODO: null_mechanism.cpp issues ZAP requests for connections other 
-        //  than the expected one. In these cases identity is not set, and the
-        //  test fails. We'd expect one ZAP request per real client connection.
-//         assert (streq (identity, "IDENT"));
+        assert (streq (identity, "IDENT"));
 
         s_sendmore (zap, version);
         s_sendmore (zap, sequence);
@@ -56,7 +55,7 @@ zap_handler (void *ctx)
         s_sendmore (zap, "OK");
         s_sendmore (zap, "anonymous");
         s_send (zap, "");
-        
+
         free (version);
         free (sequence);
         free (domain);
@@ -73,7 +72,7 @@ int main (void)
     setup_test_environment();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
-    
+
     //  Spawn ZAP handler
     void *zap_thread = zmq_threadstart (&zap_handler, ctx);
 
@@ -82,26 +81,28 @@ int main (void)
     assert (server);
     int rc = zmq_setsockopt (server, ZMQ_IDENTITY, "IDENT", 6);
     assert (rc == 0);
+    rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "TEST", 4);
+    assert (rc == 0);
     rc = zmq_bind (server, "tcp://*:9999");
     assert (rc == 0);
-        
+
     //  Client socket that will try to connect to server
     void *client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
     rc = zmq_connect (client, "tcp://localhost:9999");
     assert (rc == 0);
-    
+
     bounce (server, client);
-    
+
     rc = zmq_close (client);
     assert (rc == 0);
     rc = zmq_close (server);
     assert (rc == 0);
-    
+
     //  Shutdown
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
-    
+
     //  Wait until ZAP handler terminates.
     zmq_threadclose (zap_thread);
 
