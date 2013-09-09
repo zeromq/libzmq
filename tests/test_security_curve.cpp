@@ -37,7 +37,7 @@ static void zap_handler (void *ctx)
     assert (zap);
     int rc = zmq_bind (zap, "inproc://zeromq.zap.01");
     assert (rc == 0);
-    
+
     //  Process ZAP requests forever
     while (true) {
         char *version = s_recv (zap);
@@ -49,6 +49,8 @@ static void zap_handler (void *ctx)
         char *address = s_recv (zap);
         char *identity = s_recv (zap);
         char *mechanism = s_recv (zap);
+        printf ("CURVE domain=%s address=%s identity=%s mechanism=%s\n",
+                domain, address, identity, mechanism);
         uint8_t client_key [32];
         int size = zmq_recv (zap, client_key, 32, 0);
         assert (size == 32);
@@ -62,7 +64,7 @@ static void zap_handler (void *ctx)
 
         s_sendmore (zap, version);
         s_sendmore (zap, sequence);
-        
+
         if (streq (client_key_text, client_public)) {
             s_sendmore (zap, "200");
             s_sendmore (zap, "OK");
@@ -127,7 +129,7 @@ int main (void)
     bounce (server, client);
     rc = zmq_close (client);
     assert (rc == 0);
-    
+
     //  Check CURVE security with a garbage server key
     //  This will be caught by the curve_server class, not passed to ZAP
     char garbage_key [] = "0000111122223333444455556666777788889999";
@@ -143,7 +145,7 @@ int main (void)
     assert (rc == 0);
     expect_bounce_fail (server, client);
     close_zero_linger (client);
-    
+
     //  Check CURVE security with a garbage client public key
     //  This will be caught by the curve_server class, not passed to ZAP
     client = zmq_socket (ctx, ZMQ_DEALER);
@@ -158,7 +160,7 @@ int main (void)
     assert (rc == 0);
     expect_bounce_fail (server, client);
     close_zero_linger (client);
-    
+
     //  Check CURVE security with a garbage client secret key
     //  This will be caught by the curve_server class, not passed to ZAP
     client = zmq_socket (ctx, ZMQ_DEALER);
@@ -173,12 +175,12 @@ int main (void)
     assert (rc == 0);
     expect_bounce_fail (server, client);
     close_zero_linger (client);
-    
+
     //  Check CURVE security with bogus client credentials
     //  This must be caught by the ZAP handler
     char bogus_public [] = "8)<]6{NT{}=MZBsH)i%l0k}y*^i#80n-Yf{I8Z+P";
-    char bogus_secret [] = "[m9E0TW2Mf?Ke3K>fuBGCrkBpc6aJbj4jv4451Nx";    
-    
+    char bogus_secret [] = "[m9E0TW2Mf?Ke3K>fuBGCrkBpc6aJbj4jv4451Nx";
+
     client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
     rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, server_public, 40);
@@ -191,13 +193,13 @@ int main (void)
     assert (rc == 0);
     expect_bounce_fail (server, client);
     close_zero_linger (client);
-    
+
     //  Shutdown
     rc = zmq_close (server);
     assert (rc == 0);
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
-    
+
     //  Wait until ZAP handler terminates
     zmq_threadclose (zap_thread);
 

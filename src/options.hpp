@@ -92,7 +92,7 @@ namespace zmq
 
         //  If true, IPv6 is enabled (as well as IPv4)
         bool ipv6;
-        
+
         //  If 1, connecting pipes are not attached immediately, meaning a send()
         //  on a socket with only connecting pipes would block
         int immediate;
@@ -119,10 +119,13 @@ namespace zmq
 
         //  Security mechanism for all connections on this socket
         int mechanism;
-        
+
         //  If peer is acting as server for PLAIN or CURVE mechanisms
-        int as_server;          
-        
+        int as_server;
+
+        //  ZAP authentication domain
+        std::string zap_domain;
+
         //  Security credentials for PLAIN mechanism
         std::string plain_username;
         std::string plain_password;

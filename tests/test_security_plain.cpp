@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include "testutil.hpp"
 
-static void 
+static void
 zap_handler (void *ctx)
 {
     //  Create and bind ZAP socket
@@ -43,7 +43,9 @@ zap_handler (void *ctx)
         char *mechanism = s_recv (zap);
         char *username = s_recv (zap);
         char *password = s_recv (zap);
-        
+        printf ("PLAIN domain=%s address=%s identity=%s mechanism=%s\n",
+                domain, address, identity, mechanism);
+
         assert (streq (version, "1.0"));
         assert (streq (mechanism, "PLAIN"));
         assert (streq (identity, "IDENT"));
@@ -81,7 +83,7 @@ int main (void)
     setup_test_environment();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
-    
+
     //  Spawn ZAP handler
     void *zap_thread = zmq_threadstart (&zap_handler, ctx);
 
@@ -95,10 +97,10 @@ int main (void)
     assert (rc == 0);
     rc = zmq_bind (server, "tcp://*:9998");
     assert (rc == 0);
-        
+
     char username [256];
     char password [256];
-    
+
     //  Check PLAIN security with correct username/password
     void *client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
@@ -125,7 +127,7 @@ int main (void)
     assert (rc == 0);
     expect_bounce_fail (server, client);
     close_zero_linger (client);
-    
+
     //  Check PLAIN security -- failed authentication
     client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
@@ -145,7 +147,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
-    
+
     //  Wait until ZAP handler terminates
     zmq_threadclose (zap_thread);
 
