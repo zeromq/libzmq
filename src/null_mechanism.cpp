@@ -196,7 +196,7 @@ void zmq::null_mechanism_t::send_zap_request ()
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);
 
-    //  Identity frame 
+    //  Identity frame
     rc = msg.init_size (options.identity_size);
     errno_assert (rc == 0);
     memcpy (msg.data (), options.identity, options.identity_size);
@@ -205,9 +205,9 @@ void zmq::null_mechanism_t::send_zap_request ()
     errno_assert (rc == 0);
 
     //  Mechanism frame
-    rc = msg.init_size (5);
+    rc = msg.init_size (4);
     errno_assert (rc == 0);
-    memcpy (msg.data (), "NULL", 5);
+    memcpy (msg.data (), "NULL", 4);
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);
 }
