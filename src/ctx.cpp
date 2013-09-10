@@ -143,6 +143,25 @@ int zmq::ctx_t::terminate ()
     return 0;
 }
 
+int zmq::ctx_t::shutdown ()
+{
+    slot_sync.lock ();
+    if (!starting && !terminating) {
+        terminating = true;
+
+        //  Send stop command to sockets so that any blocking calls
+        //  can be interrupted. If there are no sockets we can ask reaper
+        //  thread to stop.
+        for (sockets_t::size_type i = 0; i != sockets.size (); i++)
+            sockets [i]->stop ();
+        if (sockets.empty ())
+            reaper->stop ();
+    }
+    slot_sync.unlock ();
+
+    return 0;
+}
+
 int zmq::ctx_t::set (int option_, int optval_)
 {
     int rc = 0;

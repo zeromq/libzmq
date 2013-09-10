@@ -190,6 +190,16 @@ int zmq_ctx_term (void *ctx_)
     return rc;
 }
 
+int zmq_ctx_shutdown (void *ctx_)
+{
+    if (!ctx_ || !((zmq::ctx_t*) ctx_)->check_tag ()) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    return ((zmq::ctx_t*) ctx_)->shutdown ();
+}
+
 int zmq_ctx_set (void *ctx_, int option_, int optval_)
 {
     if (!ctx_ || !((zmq::ctx_t*) ctx_)->check_tag ()) {
