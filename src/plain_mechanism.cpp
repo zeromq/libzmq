@@ -368,8 +368,9 @@ void zmq::plain_mechanism_t::send_zap_request (const std::string &username,
     errno_assert (rc == 0);
 
     //  Domain frame
-    rc = msg.init ();
+    rc = msg.init_size (options.zap_domain.length ());
     errno_assert (rc == 0);
+    memcpy (msg.data (), options.zap_domain.c_str (), options.zap_domain.length ());
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);
@@ -382,9 +383,9 @@ void zmq::plain_mechanism_t::send_zap_request (const std::string &username,
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);
 
-    //  Identity frame 
+    //  Identity frame
     rc = msg.init_size (options.identity_size);
-    errno_assert(rc == 0);
+    errno_assert (rc == 0);
     memcpy (msg.data (), options.identity, options.identity_size);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
