@@ -24,6 +24,7 @@ noinst_PROGRAMS = test_system \
                   test_stream \
                   test_disconnect_inproc \
                   test_ctx_options \
+                  test_ctx_destroy \
                   test_security_null \
                   test_security_plain \
                   test_security_curve \

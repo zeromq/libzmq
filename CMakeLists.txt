@@ -581,6 +581,7 @@ set(tests
         test_system
         test_connect_delay
         test_connect_resolve
+        test_ctx_destroy
         test_ctx_options
         test_disconnect_inproc
         test_hwm

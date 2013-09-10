@@ -178,6 +178,7 @@ ZMQ_EXPORT const char *zmq_strerror (int errnum);
 
 ZMQ_EXPORT void *zmq_ctx_new (void);
 ZMQ_EXPORT int zmq_ctx_term (void *context);
+ZMQ_EXPORT int zmq_ctx_shutdown (void *ctx_);
 ZMQ_EXPORT int zmq_ctx_set (void *context, int option, int optval);
 ZMQ_EXPORT int zmq_ctx_get (void *context, int option);
 

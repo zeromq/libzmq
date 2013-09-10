@@ -69,6 +69,15 @@ namespace zmq
         //  after the last one is closed.
         int terminate ();
 
+        // This function starts the terminate process by unblocking any blocking
+        // operations currently in progress and stopping any more socket activity
+        // (except zmq_close).
+        // This function is non-blocking.
+        // terminate must still be called afterwards.
+        // This function is optional, terminate will unblock any current 
+        // operations as well.
+        int shutdown();
+
         //  Set and get context properties.
         int set (int option_, int optval_);
         int get (int option_);
