@@ -68,6 +68,7 @@ test_stream_SOURCES = test_stream.cpp
 test_disconnect_inproc_SOURCES = test_disconnect_inproc.cpp
 test_ctx_options_SOURCES = test_ctx_options.cpp
 test_iov_SOURCES = test_iov.cpp
+test_ctx_destroy_SOURCES = test_ctx_destroy.cpp
 test_security_null_SOURCES = test_security_null.cpp
 test_security_plain_SOURCES = test_security_plain.cpp
 test_security_curve_SOURCES = test_security_curve.cpp
