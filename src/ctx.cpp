@@ -392,6 +392,34 @@ zmq::endpoint_t zmq::ctx_t::find_endpoint (const char *addr_)
      return endpoint;
 }
 
+void zmq::ctx_t::pend_connection (const char *addr_, const pending_connection_t &pending_connection_)
+{
+    endpoints_sync.lock ();
+
+    // Todo, use multimap to support multiple pending connections
+    pending_connections[addr_] = pending_connection_;
+
+    endpoints_sync.unlock ();
+}
+
+zmq::pending_connection_t zmq::ctx_t::next_pending_connection(const char *addr_)
+{
+    endpoints_sync.lock ();
+
+    pending_connections_t::iterator it = pending_connections.find (addr_);
+    if (it == pending_connections.end ()) {
+
+        endpoints_sync.unlock ();
+        pending_connection_t empty = {NULL, NULL};
+        return empty;
+    }
+    pending_connection_t pending_connection = it->second;
+    pending_connections.erase(it);
+
+    endpoints_sync.unlock ();
+    return pending_connection;
+}
+
 //  The last used socket ID, or 0 if no socket was used so far. Note that this
 //  is a global variable. Thus, even sockets created in different contexts have
 //  unique IDs.

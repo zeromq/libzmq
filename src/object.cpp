@@ -49,6 +49,11 @@ uint32_t zmq::object_t::get_tid ()
     return tid;
 }
 
+void zmq::object_t::set_tid(uint32_t id)
+{
+    tid = id;
+}
+
 zmq::ctx_t *zmq::object_t::get_ctx ()
 {
     return ctx;
@@ -141,6 +146,16 @@ void zmq::object_t::unregister_endpoints (socket_base_t *socket_)
 zmq::endpoint_t zmq::object_t::find_endpoint (const char *addr_)
 {
     return ctx->find_endpoint (addr_);
+}
+
+void zmq::object_t::pend_connection (const char *addr_, const pending_connection_t &pending_connection_)
+{
+    ctx->pend_connection (addr_, pending_connection_);
+}
+
+zmq::pending_connection_t zmq::object_t::next_pending_connection (const char *addr_)
+{
+    return ctx->next_pending_connection(addr_);
 }
 
 void zmq::object_t::destroy_socket (socket_base_t *socket_)

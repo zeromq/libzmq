@@ -609,7 +609,8 @@ set(tests
         test_spec_router
         test_sub_forward
         test_term_endpoint
-        test_timeo)
+        test_timeo
+        test_inproc_connect_before_bind)
 if(NOT WIN32)
 list(APPEND tests
         test_monitor
