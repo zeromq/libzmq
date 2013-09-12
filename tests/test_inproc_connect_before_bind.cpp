@@ -226,7 +226,7 @@ void test_multiple_connects()
 
 void test_multiple_threads()
 {
-    const unsigned int no_of_threads = 10;
+    const unsigned int no_of_threads = 30;
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
@@ -238,8 +238,6 @@ void test_multiple_threads()
     {
         threads [i] = zmq_threadstart (&pusher, ctx);
     }
-
-    //zmq_sleep(1);
 
     // Now bind
     void *bindSocket = zmq_socket (ctx, ZMQ_PULL);
@@ -272,15 +270,72 @@ void test_multiple_threads()
     assert (rc == 0);
 }
 
+void test_identity()
+{
+    //  Create the infrastructure
+    void *ctx = zmq_ctx_new ();
+    assert (ctx);
+    
+    void *sc = zmq_socket (ctx, ZMQ_DEALER);
+    assert (sc);
+    
+    int rc = zmq_connect (sc, "inproc://a");
+    assert (rc == 0);
+   
+    void *sb = zmq_socket (ctx, ZMQ_ROUTER);
+    assert (sb);
+    
+    rc = zmq_bind (sb, "inproc://a");
+    assert (rc == 0);
+
+    //  Send 2-part message.
+    rc = zmq_send (sc, "A", 1, ZMQ_SNDMORE);
+    assert (rc == 1);
+    rc = zmq_send (sc, "B", 1, 0);
+    assert (rc == 1);
+
+    //  Identity comes first.
+    zmq_msg_t msg;
+    rc = zmq_msg_init (&msg);
+    assert (rc == 0);
+    rc = zmq_msg_recv (&msg, sb, 0);
+    assert (rc >= 0);
+    int more = zmq_msg_more (&msg);
+    assert (more == 1);
+
+    //  Then the first part of the message body.
+    rc = zmq_msg_recv (&msg, sb, 0);
+    assert (rc == 1);
+    more = zmq_msg_more (&msg);
+    assert (more == 1);
+
+    //  And finally, the second part of the message body.
+    rc = zmq_msg_recv (&msg, sb, 0);
+    assert (rc == 1);
+    more = zmq_msg_more (&msg);
+    assert (more == 0);
+
+    //  Deallocate the infrastructure.
+    rc = zmq_close (sc);
+    assert (rc == 0);
+    
+    rc = zmq_close (sb);
+    assert (rc == 0);
+    
+    rc = zmq_ctx_term (ctx);
+    assert (rc == 0);
+}
+
 int main (void)
 {
     setup_test_environment();
 
-    test_bind_before_connect();
-    test_connect_before_bind();
-    test_connect_before_bind_pub_sub();
-    test_multiple_connects();
-    test_multiple_threads();
+    test_bind_before_connect ();
+    test_connect_before_bind ();
+    test_connect_before_bind_pub_sub ();
+    test_multiple_connects ();
+    test_multiple_threads ();
+    test_identity ();
 
     return 0;
 }

@@ -60,7 +60,7 @@ namespace zmq
         int register_endpoint (const char *addr_, zmq::endpoint_t &endpoint_);
         void unregister_endpoints (zmq::socket_base_t *socket_);
         zmq::endpoint_t find_endpoint (const char *addr_);
-        void pend_connection (const char *addr_, const pending_connection_t &pending_connection_);
+        void pend_connection (const char *addr_, pending_connection_t &pending_connection_);
         void connect_pending (const char *addr_, zmq::socket_base_t *bind_socket_);
 
         void destroy_socket (zmq::socket_base_t *socket_);

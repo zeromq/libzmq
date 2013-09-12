@@ -466,7 +466,8 @@ int zmq::socket_base_t::connect (const char *addr_)
 
         if (!peer.socket)
         {
-            pending_connection_t pending_connection = {this, new_pipes [1]};
+            endpoint_t endpoint = {this, options};
+            pending_connection_t pending_connection = {endpoint, new_pipes [0], new_pipes [1]};
             pend_connection (addr_, pending_connection);
         }
         else
