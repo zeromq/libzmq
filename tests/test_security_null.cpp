@@ -43,8 +43,6 @@ zap_handler (void *ctx)
         char *identity = s_recv (zap);
         char *mechanism = s_recv (zap);
 
-        printf ("domain=%s address=%s identity=%s mechanism=%s\n",
-                domain, address, identity, mechanism);
         assert (streq (version, "1.0"));
         assert (streq (mechanism, "NULL"));
         assert (streq (identity, "IDENT"));
