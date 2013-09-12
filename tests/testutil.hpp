@@ -50,6 +50,8 @@ bounce (void *server, void *client)
     char buffer [32];
     rc = zmq_recv (server, buffer, 32, 0);
     assert (rc == 32);
+    //  Check that message is still the same
+    assert (memcmp (buffer, content, 32) == 0);
     int rcvmore;
     size_t sz = sizeof (rcvmore);
     rc = zmq_getsockopt (server, ZMQ_RCVMORE, &rcvmore, &sz);
@@ -57,6 +59,8 @@ bounce (void *server, void *client)
     assert (rcvmore);
     rc = zmq_recv (server, buffer, 32, 0);
     assert (rc == 32);
+    //  Check that message is still the same
+    assert (memcmp (buffer, content, 32) == 0);
     rc = zmq_getsockopt (server, ZMQ_RCVMORE, &rcvmore, &sz);
     assert (rc == 0);
     assert (!rcvmore);
@@ -70,17 +74,18 @@ bounce (void *server, void *client)
     //  Receive the two parts at the client side
     rc = zmq_recv (client, buffer, 32, 0);
     assert (rc == 32);
+    //  Check that message is still the same
+    assert (memcmp (buffer, content, 32) == 0);
     rc = zmq_getsockopt (client, ZMQ_RCVMORE, &rcvmore, &sz);
     assert (rc == 0);
     assert (rcvmore);
     rc = zmq_recv (client, buffer, 32, 0);
     assert (rc == 32);
+    //  Check that message is still the same
+    assert (memcmp (buffer, content, 32) == 0);
     rc = zmq_getsockopt (client, ZMQ_RCVMORE, &rcvmore, &sz);
     assert (rc == 0);
     assert (!rcvmore);
-
-    //  Check that message is still the same
-    assert (memcmp (buffer, content, 32) == 0);
 }
 
 //  Same as bounce, but expect messages to never arrive
