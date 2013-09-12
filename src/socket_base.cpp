@@ -1231,20 +1231,20 @@ void zmq::socket_base_t::event_disconnected (std::string &addr_, int fd_)
 void zmq::socket_base_t::monitor_event (zmq_event_t event_, const std::string& addr_)
 {
     if (monitor_socket) {
-    const uint16_t eid = (uint16_t)event_.event ;
-    const uint32_t value = (uint32_t)event_.value ;
-    // prepare and send first message frame
-    // containing event id and value
+        const uint16_t eid = (uint16_t)event_.event;
+        const uint32_t value = (uint32_t)event_.value;
+        // prepare and send first message frame
+        // containing event id and value
         zmq_msg_t msg;
         zmq_msg_init_size (&msg, sizeof(eid) + sizeof(value));
-    char* data1 = (char*)zmq_msg_data(&msg);
+        char* data1 = (char*)zmq_msg_data(&msg);
         memcpy (data1, &eid, sizeof(eid));
         memcpy (data1+sizeof(eid), &value, sizeof(value));
         zmq_sendmsg (monitor_socket, &msg, ZMQ_SNDMORE);
-    // prepare and send second message frame
-    // containing the address (endpoint)
+        // prepare and send second message frame
+        // containing the address (endpoint)
         zmq_msg_init_size (&msg, addr_.size());
-    memcpy(zmq_msg_data(&msg), addr_.c_str(), addr_.size());
+        memcpy(zmq_msg_data(&msg), addr_.c_str(), addr_.size());
         zmq_sendmsg (monitor_socket, &msg, 0);
     }
 }
