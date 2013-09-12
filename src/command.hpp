@@ -55,6 +55,7 @@ namespace zmq
             term_ack,
             reap,
             reaped,
+            inproc_connected,
             done
         } type;
 
