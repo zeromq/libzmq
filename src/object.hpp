@@ -27,6 +27,7 @@ namespace zmq
 
     struct i_engine;
     struct endpoint_t;
+    struct pending_connection_t;
     struct command_t;
     class ctx_t;
     class pipe_t;
@@ -47,8 +48,10 @@ namespace zmq
         virtual ~object_t ();
 
         uint32_t get_tid ();
+        void set_tid(uint32_t id);
         ctx_t *get_ctx ();
         void process_command (zmq::command_t &cmd_);
+        void send_inproc_connected (zmq::socket_base_t *socket_);
 
     protected:
 
@@ -57,6 +60,9 @@ namespace zmq
         int register_endpoint (const char *addr_, zmq::endpoint_t &endpoint_);
         void unregister_endpoints (zmq::socket_base_t *socket_);
         zmq::endpoint_t find_endpoint (const char *addr_);
+        void pend_connection (const char *addr_, pending_connection_t &pending_connection_);
+        void connect_pending (const char *addr_, zmq::socket_base_t *bind_socket_);
+
         void destroy_socket (zmq::socket_base_t *socket_);
 
         //  Logs an message.

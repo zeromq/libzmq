@@ -392,6 +392,78 @@ zmq::endpoint_t zmq::ctx_t::find_endpoint (const char *addr_)
      return endpoint;
 }
 
+void zmq::ctx_t::pend_connection (const char *addr_, pending_connection_t &pending_connection_)
+{
+    endpoints_sync.lock ();
+
+    endpoints_t::iterator it = endpoints.find (addr_);
+    if (it == endpoints.end ())
+    {
+        // Still no bind.
+        pending_connection_.endpoint.socket->inc_seqnum ();
+        pending_connections.insert (pending_connections_t::value_type (std::string (addr_), pending_connection_));
+    }
+    else
+    {
+        // Bind has happened in the mean time, connect directly
+        it->second.socket->inc_seqnum();
+        pending_connection_.bind_pipe->set_tid(it->second.socket->get_tid());
+        command_t cmd;
+        cmd.type = command_t::bind;
+        cmd.args.bind.pipe = pending_connection_.bind_pipe;
+        it->second.socket->process_command(cmd);
+    }
+
+    endpoints_sync.unlock ();
+}
+
+void zmq::ctx_t::connect_pending (const char *addr_, zmq::socket_base_t *bind_socket_)
+{
+    endpoints_sync.lock ();
+
+    std::pair<pending_connections_t::iterator, pending_connections_t::iterator> pending = pending_connections.equal_range(addr_);
+
+    for (pending_connections_t::iterator p = pending.first; p != pending.second; ++p)
+    {
+        bind_socket_->inc_seqnum();
+        p->second.bind_pipe->set_tid(bind_socket_->get_tid());
+        command_t cmd;
+        cmd.type = command_t::bind;
+        cmd.args.bind.pipe = p->second.bind_pipe;
+        bind_socket_->process_command(cmd);
+                
+        bind_socket_->send_inproc_connected(p->second.endpoint.socket);
+
+        // Send identities
+        options_t& bind_options = endpoints[addr_].options;
+        if (bind_options.recv_identity) {
+    
+            msg_t id;
+            int rc = id.init_size (p->second.endpoint.options.identity_size);
+            errno_assert (rc == 0);
+            memcpy (id.data (), p->second.endpoint.options.identity, p->second.endpoint.options.identity_size);
+            id.set_flags (msg_t::identity);
+            bool written = p->second.connect_pipe->write (&id);
+            zmq_assert (written);
+            p->second.connect_pipe->flush ();
+        }
+        if (p->second.endpoint.options.recv_identity) {
+            msg_t id;
+            int rc = id.init_size (bind_options.identity_size);
+            errno_assert (rc == 0);
+            memcpy (id.data (), bind_options.identity, bind_options.identity_size);
+            id.set_flags (msg_t::identity);
+            bool written = p->second.bind_pipe->write (&id);
+            zmq_assert (written);
+            p->second.bind_pipe->flush ();
+        }
+    }
+
+    pending_connections.erase(pending.first, pending.second);
+
+    endpoints_sync.unlock ();
+}
+
 //  The last used socket ID, or 0 if no socket was used so far. Note that this
 //  is a global variable. Thus, even sockets created in different contexts have
 //  unique IDs.

@@ -63,6 +63,9 @@ void test_ctx_shutdown()
     // Spawn a thread to receive on socket
     void *receiver_thread = zmq_threadstart (&receiver, socket);
 
+    // Wait for thread to start up and block
+    zmq_sleep (1);
+
     // Shutdown context, if we used destroy here we would deadlock.
     rc = zmq_ctx_shutdown (ctx);
     assert (rc == 0);

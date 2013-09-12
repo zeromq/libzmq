@@ -40,6 +40,7 @@ namespace zmq
     class io_thread_t;
     class socket_base_t;
     class reaper_t;
+    class pipe_t;
 
     //  Information associated with inproc endpoint. Note that endpoint options
     //  are registered as well so that the peer can access them without a need
@@ -48,6 +49,13 @@ namespace zmq
     {
         socket_base_t *socket;
         options_t options;
+    };
+
+    struct pending_connection_t
+    {
+        endpoint_t endpoint;
+        pipe_t* connect_pipe;
+        pipe_t* bind_pipe;
     };
 
     //  Context object encapsulates all the global state associated with
@@ -101,6 +109,8 @@ namespace zmq
         int register_endpoint (const char *addr_, endpoint_t &endpoint_);
         void unregister_endpoints (zmq::socket_base_t *socket_);
         endpoint_t find_endpoint (const char *addr_);
+        void pend_connection (const char *addr_, pending_connection_t &pending_connection_);
+        void connect_pending (const char *addr_, zmq::socket_base_t *bind_socket_);
 
         enum {
             term_tid = 0,
@@ -155,6 +165,10 @@ namespace zmq
         //  List of inproc endpoints within this context.
         typedef std::map <std::string, endpoint_t> endpoints_t;
         endpoints_t endpoints;
+
+        // List of inproc connection endpoints pending a bind
+        typedef std::multimap <std::string, pending_connection_t> pending_connections_t;
+        pending_connections_t pending_connections;
 
         //  Synchronisation of access to the list of inproc endpoints.
         mutex_t endpoints_sync;
