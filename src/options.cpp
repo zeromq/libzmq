@@ -590,7 +590,7 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
                 return 0;
             }
             else
-            if (*optvallen_ == CURVE_KEYSIZE_Z85) {
+            if (*optvallen_ == CURVE_KEYSIZE_Z85 + 1) {
                 Z85_encode ((char *) optval_, curve_public_key, CURVE_KEYSIZE);
                 return 0;
             }
@@ -602,7 +602,7 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
                 return 0;
             }
             else
-            if (*optvallen_ == CURVE_KEYSIZE_Z85) {
+            if (*optvallen_ == CURVE_KEYSIZE_Z85 + 1) {
                 Z85_encode ((char *) optval_, curve_secret_key, CURVE_KEYSIZE);
                 return 0;
             }
@@ -614,7 +614,7 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
                 return 0;
             }
             else
-            if (*optvallen_ == CURVE_KEYSIZE_Z85) {
+            if (*optvallen_ == CURVE_KEYSIZE_Z85 + 1) {
                 Z85_encode ((char *) optval_, curve_server_key, CURVE_KEYSIZE);
                 return 0;
             }

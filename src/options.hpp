@@ -53,7 +53,7 @@ namespace zmq
         unsigned char identity_size;
         unsigned char identity [256];
 
-        //  Maximum tranfer rate [kb/s]. Default 100kb/s.
+        //  Maximum transfer rate [kb/s]. Default 100kb/s.
         int rate;
 
         //  Reliability time interval [ms]. Default 10 seconds.
