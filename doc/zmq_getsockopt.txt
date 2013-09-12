@@ -542,11 +542,13 @@ ZMQ_CURVE_PUBLICKEY: Retrieve current CURVE public key
 
 Retrieves the current long term public key for the socket. You can
 provide either a 32 byte buffer, to retrieve the binary key value, or
-a 40 byte buffer, to retrieve the key in a printable Z85 format.
+a 41 byte buffer, to retrieve the key in a printable Z85 format.
+NOTE: to fetch a printable key, the buffer must be 41 bytes large
+to hold the 40-char key value and one null byte.
 
 [horizontal]
 Option value type:: binary data or Z85 text string
-Option value size:: 32 or 40
+Option value size:: 32 or 41
 Default value:: null
 Applicable socket types:: all, when using TCP transport
 
@@ -556,11 +558,11 @@ ZMQ_CURVE_SECRETKEY: Retrieve current CURVE secret key
 
 Retrieves the current long term secret key for the socket. You can
 provide either a 32 byte buffer, to retrieve the binary key value, or
-a 40 byte buffer, to retrieve the key in a printable Z85 format.
+a 41 byte buffer, to retrieve the key in a printable Z85 format.
 
 [horizontal]
 Option value type:: binary data or Z85 text string
-Option value size:: 32 or 40
+Option value size:: 32 or 41
 Default value:: null
 Applicable socket types:: all, when using TCP transport
 
@@ -574,7 +576,7 @@ a 40 byte buffer, to retrieve the key in a printable Z85 format.
 
 [horizontal]
 Option value type:: binary data or Z85 text string
-Option value size:: 32 or 40
+Option value size:: 32 or 41
 Default value:: null
 Applicable socket types:: all, when using TCP transport
 

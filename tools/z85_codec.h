@@ -50,7 +50,8 @@ static uint8_t decoder [96] = {
 
 //  --------------------------------------------------------------------------
 //  Encode a binary frame as a string; destination string MUST be at least
-//  size * 5 / 4 bytes long. Returns dest. Size must be a multiple of 4.
+//  size * 5 / 4 bytes long plus 1 byte for the null terminator. Returns
+//  dest. Size must be a multiple of 4.
 
 char *
 Z85_encode (char *dest, uint8_t *data, size_t size)
