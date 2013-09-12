@@ -49,8 +49,6 @@ static void zap_handler (void *ctx)
         char *address = s_recv (zap);
         char *identity = s_recv (zap);
         char *mechanism = s_recv (zap);
-        printf ("CURVE domain=%s address=%s identity=%s mechanism=%s\n",
-                domain, address, identity, mechanism);
         uint8_t client_key [32];
         int size = zmq_recv (zap, client_key, 32, 0);
         assert (size == 32);
