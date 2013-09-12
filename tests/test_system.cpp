@@ -71,7 +71,7 @@ int main (void)
             printf ("I: Tune your system to increase maximum allowed file handles\n");
 #if defined (ZMQ_HAVE_OSX)
             printf ("I: On OS/X, run 'ulimit -n 1200' in bash");
-#elseif defined (ZMQ_HAVE_LINUX)
+#elif defined (ZMQ_HAVE_LINUX)
             printf ("I: On Linux, run 'ulimit -n 1200' in bash");
 #endif        
             return -1;
