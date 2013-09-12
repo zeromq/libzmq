@@ -51,6 +51,7 @@ namespace zmq
         void set_tid(uint32_t id);
         ctx_t *get_ctx ();
         void process_command (zmq::command_t &cmd_);
+        void send_inproc_connected (zmq::socket_base_t *socket_);
 
     protected:
 
@@ -60,7 +61,7 @@ namespace zmq
         void unregister_endpoints (zmq::socket_base_t *socket_);
         zmq::endpoint_t find_endpoint (const char *addr_);
         void pend_connection (const char *addr_, const pending_connection_t &pending_connection_);
-        zmq::pending_connection_t next_pending_connection (const char *addr_);
+        void connect_pending (const char *addr_, zmq::socket_base_t *bind_socket_);
 
         void destroy_socket (zmq::socket_base_t *socket_);
 

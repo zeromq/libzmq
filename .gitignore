@@ -64,6 +64,7 @@ tests/test_req_request_ids
 tests/test_req_strict
 tests/test_fork
 tests/test_conflate
+tests/test_inproc_connect_before_bind
 tests/test_linger
 tests/test_security_null
 tests/test_security_null.opp

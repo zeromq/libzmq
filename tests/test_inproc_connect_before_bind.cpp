@@ -17,8 +17,26 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "../include/zmq_utils.h"
 #include <stdio.h>
 #include "testutil.hpp"
+
+static void pusher (void *ctx)
+{
+    // Connect first
+    void *connectSocket = zmq_socket (ctx, ZMQ_PAIR);
+    assert (connectSocket);
+    int rc = zmq_connect (connectSocket, "inproc://a");
+    assert (rc == 0);
+
+    // Queue up some data
+    rc = zmq_send_const (connectSocket, "foobar", 6, 0);
+    assert (rc == 6);
+
+    // Cleanup
+    rc = zmq_close (connectSocket);
+    assert (rc == 0);
+}
 
 void test_bind_before_connect()
 {
@@ -45,7 +63,7 @@ void test_bind_before_connect()
     zmq_msg_t msg;
     rc = zmq_msg_init (&msg);
     assert (rc == 0);
-    rc = zmq_msg_recv (&msg, bindSocket, ZMQ_NOBLOCK);
+    rc = zmq_msg_recv (&msg, bindSocket, 0);
     assert (rc == 6);
     void *data = zmq_msg_data (&msg);
     assert (memcmp ("foobar", data, 6) == 0);
@@ -72,7 +90,6 @@ void test_connect_before_bind()
     int rc = zmq_connect (connectSocket, "inproc://a");
     assert (rc == 0);
 
-
     // Queue up some data
     rc = zmq_send_const (connectSocket, "foobar", 6, 0);
     assert (rc == 6);
@@ -87,7 +104,7 @@ void test_connect_before_bind()
     zmq_msg_t msg;
     rc = zmq_msg_init (&msg);
     assert (rc == 0);
-    rc = zmq_msg_recv (&msg, bindSocket, ZMQ_NOBLOCK);
+    rc = zmq_msg_recv (&msg, bindSocket, 0);
     assert (rc == 6);
     void *data = zmq_msg_data (&msg);
     assert (memcmp ("foobar", data, 6) == 0);
@@ -103,12 +120,167 @@ void test_connect_before_bind()
     assert (rc == 0);
 }
 
+void test_connect_before_bind_pub_sub()
+{
+    void *ctx = zmq_ctx_new ();
+    assert (ctx);
+
+    // Connect first
+    void *connectSocket = zmq_socket (ctx, ZMQ_PUB);
+    assert (connectSocket);
+    int rc = zmq_connect (connectSocket, "inproc://a");
+    assert (rc == 0);
+
+    // Queue up some data, this will be dropped
+    rc = zmq_send_const (connectSocket, "before", 6, 0);
+    assert (rc == 6);
+
+    // Now bind
+    void *bindSocket = zmq_socket (ctx, ZMQ_SUB);
+    assert (bindSocket);
+    rc = zmq_setsockopt (bindSocket, ZMQ_SUBSCRIBE, "", 0);
+    assert (rc == 0);
+    rc = zmq_bind (bindSocket, "inproc://a");
+    assert (rc == 0);
+   
+    // Wait for pub-sub connection to happen
+    zmq_sleep (1);
+
+    // Queue up some data, this not will be dropped
+    rc = zmq_send_const (connectSocket, "after", 6, 0);
+    assert (rc == 6);
+
+    // Read pending message
+    zmq_msg_t msg;
+    rc = zmq_msg_init (&msg);
+    assert (rc == 0);
+    rc = zmq_msg_recv (&msg, bindSocket, 0);
+    assert (rc == 6);
+    void *data = zmq_msg_data (&msg);
+    assert (memcmp ("after", data, 5) == 0);
+
+    // Cleanup
+    rc = zmq_close (connectSocket);
+    assert (rc == 0);
+
+    rc = zmq_close (bindSocket);
+    assert (rc == 0);
+
+    rc = zmq_ctx_term (ctx);
+    assert (rc == 0);
+}
+
+void test_multiple_connects()
+{
+    const unsigned int no_of_connects = 10;
+    void *ctx = zmq_ctx_new ();
+    assert (ctx);
+
+    int rc;
+    void *connectSocket[no_of_connects];
+
+    // Connect first
+    for (unsigned int i = 0; i < no_of_connects; ++i)
+    {
+        connectSocket [i] = zmq_socket (ctx, ZMQ_PUSH);
+        assert (connectSocket [i]);
+        rc = zmq_connect (connectSocket [i], "inproc://a");
+        assert (rc == 0);
+
+        // Queue up some data
+        rc = zmq_send_const (connectSocket [i], "foobar", 6, 0);
+        assert (rc == 6);
+    }
+
+    // Now bind
+    void *bindSocket = zmq_socket (ctx, ZMQ_PULL);
+    assert (bindSocket);
+    rc = zmq_bind (bindSocket, "inproc://a");
+    assert (rc == 0);
+    
+    for (unsigned int i = 0; i < no_of_connects; ++i)
+    {
+        // Read pending message
+        zmq_msg_t msg;
+        rc = zmq_msg_init (&msg);
+        assert (rc == 0);
+        rc = zmq_msg_recv (&msg, bindSocket, 0);
+        assert (rc == 6);
+        void *data = zmq_msg_data (&msg);
+        assert (memcmp ("foobar", data, 6) == 0);
+    }
+
+    // Cleanup
+    for (unsigned int i = 0; i < no_of_connects; ++i)
+    {
+        rc = zmq_close (connectSocket [i]);
+        assert (rc == 0);
+    }
+
+    rc = zmq_close (bindSocket);
+    assert (rc == 0);
+
+    rc = zmq_ctx_term (ctx);
+    assert (rc == 0);
+}
+
+void test_multiple_threads()
+{
+    const unsigned int no_of_threads = 10;
+    void *ctx = zmq_ctx_new ();
+    assert (ctx);
+
+    int rc;
+    void *threads [no_of_threads];
+
+    // Connect first
+    for (unsigned int i = 0; i < no_of_threads; ++i)
+    {
+        threads [i] = zmq_threadstart (&pusher, ctx);
+    }
+
+    //zmq_sleep(1);
+
+    // Now bind
+    void *bindSocket = zmq_socket (ctx, ZMQ_PULL);
+    assert (bindSocket);
+    rc = zmq_bind (bindSocket, "inproc://a");
+    assert (rc == 0);
+
+    for (unsigned int i = 0; i < no_of_threads; ++i)
+    {
+        // Read pending message
+        zmq_msg_t msg;
+        rc = zmq_msg_init (&msg);
+        assert (rc == 0);
+        rc = zmq_msg_recv (&msg, bindSocket, 0);
+        assert (rc == 6);
+        void *data = zmq_msg_data (&msg);
+        assert (memcmp ("foobar", data, 6) == 0);
+    }
+
+    // Cleanup
+    for (unsigned int i = 0; i < no_of_threads; ++i)
+    {
+        zmq_threadclose (threads [i]);
+    }
+
+    rc = zmq_close (bindSocket);
+    assert (rc == 0);
+
+    rc = zmq_ctx_term (ctx);
+    assert (rc == 0);
+}
+
 int main (void)
 {
     setup_test_environment();
 
     test_bind_before_connect();
     test_connect_before_bind();
+    test_connect_before_bind_pub_sub();
+    test_multiple_connects();
+    test_multiple_threads();
 
-    return 0 ;
+    return 0;
 }

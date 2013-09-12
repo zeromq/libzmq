@@ -127,6 +127,10 @@ void zmq::object_t::process_command (command_t &cmd_)
         process_reaped ();
         break;
 
+    case command_t::inproc_connected:
+        process_seqnum ();
+        break;
+
     case command_t::done:
     default:
         zmq_assert (false);
@@ -153,9 +157,9 @@ void zmq::object_t::pend_connection (const char *addr_, const pending_connection
     ctx->pend_connection (addr_, pending_connection_);
 }
 
-zmq::pending_connection_t zmq::object_t::next_pending_connection (const char *addr_)
+void zmq::object_t::connect_pending (const char *addr_, zmq::socket_base_t *bind_socket_)
 {
-    return ctx->next_pending_connection(addr_);
+    return ctx->connect_pending(addr_, bind_socket_);
 }
 
 void zmq::object_t::destroy_socket (socket_base_t *socket_)
@@ -309,6 +313,14 @@ void zmq::object_t::send_reaped ()
     command_t cmd;
     cmd.destination = ctx->get_reaper ();
     cmd.type = command_t::reaped;
+    send_command (cmd);
+}
+
+void zmq::object_t::send_inproc_connected (zmq::socket_base_t *socket_)
+{
+    command_t cmd;
+    cmd.destination = socket_;
+    cmd.type = command_t::inproc_connected;
     send_command (cmd);
 }
 

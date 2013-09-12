@@ -109,7 +109,7 @@ namespace zmq
         void unregister_endpoints (zmq::socket_base_t *socket_);
         endpoint_t find_endpoint (const char *addr_);
         void pend_connection (const char *addr_, const pending_connection_t &pending_connection_);
-        pending_connection_t next_pending_connection (const char *addr_);
+        void connect_pending (const char *addr_, zmq::socket_base_t *bind_socket_);
 
         enum {
             term_tid = 0,
@@ -166,7 +166,7 @@ namespace zmq
         endpoints_t endpoints;
 
         // List of inproc connection endpoints pending a bind
-        typedef std::map <std::string, pending_connection_t> pending_connections_t;
+        typedef std::multimap <std::string, pending_connection_t> pending_connections_t;
         pending_connections_t pending_connections;
 
         //  Synchronisation of access to the list of inproc endpoints.

@@ -342,52 +342,8 @@ int zmq::socket_base_t::bind (const char *addr_)
         endpoint_t endpoint = {this, options};
         int rc = register_endpoint (addr_, endpoint);
         if (rc == 0) {
-            // Save last endpoint URI
+            connect_pending(addr_, this);
             last_endpoint.assign (addr_);
-
-            pending_connection_t pending_connection = next_pending_connection(addr_);
-            while (pending_connection.pipe != NULL)
-            {
-                inc_seqnum();
-                ////  If required, send the identity of the local socket to the peer.
-                //if (peer.options.recv_identity) {
-                //	msg_t id;
-                //	rc = id.init_size (options.identity_size);
-                //	errno_assert (rc == 0);
-                //	memcpy (id.data (), options.identity, options.identity_size);
-                //	id.set_flags (msg_t::identity);
-                //	bool written = new_pipes [0]->write (&id);
-                //	zmq_assert (written);
-                //	new_pipes [0]->flush ();
-                //}
-
-                ////  If required, send the identity of the peer to the local socket.
-                //if (options.recv_identity) {
-                //	msg_t id;
-                //	rc = id.init_size (peer.options.identity_size);
-                //	errno_assert (rc == 0);
-                //	memcpy (id.data (), peer.options.identity, peer.options.identity_size);
-                //	id.set_flags (msg_t::identity);
-                //	bool written = new_pipes [1]->write (&id);
-                //	zmq_assert (written);
-                //	new_pipes [1]->flush ();
-                //}
-
-                ////  Attach remote end of the pipe to the peer socket. Note that peer's
-                ////  seqnum was incremented in find_endpoint function. We don't need it
-                ////  increased here.
-                //send_bind (peer.socket, new_pipes [1], false);
-
-                pending_connection.pipe->set_tid(get_tid());
-
-                command_t cmd;
-                cmd.type = command_t::bind;
-                cmd.args.bind.pipe = pending_connection.pipe;
-                process_command(cmd);
-                
-                    
-                pending_connection = next_pending_connection(addr_);
-            }
         }
         return rc;
     }

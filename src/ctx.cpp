@@ -396,28 +396,49 @@ void zmq::ctx_t::pend_connection (const char *addr_, const pending_connection_t 
 {
     endpoints_sync.lock ();
 
-    // Todo, use multimap to support multiple pending connections
-    pending_connections[addr_] = pending_connection_;
+    endpoints_t::iterator it = endpoints.find (addr_);
+    if (it == endpoints.end ())
+    {
+        // Still no bind.
+        pending_connection_.socket->inc_seqnum ();
+        pending_connections.insert (pending_connections_t::value_type (std::string (addr_), pending_connection_));
+    }
+    else
+    {
+        // Bind has happened in the mean time, connect directly
+        pending_connection_t copy = pending_connection_;
+        it->second.socket->inc_seqnum();
+        copy.pipe->set_tid(it->second.socket->get_tid());
+        command_t cmd;
+        cmd.type = command_t::bind;
+        cmd.args.bind.pipe = copy.pipe;
+        it->second.socket->process_command(cmd);
+    }
 
     endpoints_sync.unlock ();
 }
 
-zmq::pending_connection_t zmq::ctx_t::next_pending_connection(const char *addr_)
+void zmq::ctx_t::connect_pending (const char *addr_, zmq::socket_base_t *bind_socket_)
 {
     endpoints_sync.lock ();
 
-    pending_connections_t::iterator it = pending_connections.find (addr_);
-    if (it == pending_connections.end ()) {
+    std::pair<pending_connections_t::iterator, pending_connections_t::iterator> pending = pending_connections.equal_range(addr_);
 
-        endpoints_sync.unlock ();
-        pending_connection_t empty = {NULL, NULL};
-        return empty;
+    for (pending_connections_t::iterator p = pending.first; p != pending.second; ++p)
+    {
+        bind_socket_->inc_seqnum();
+        p->second.pipe->set_tid(bind_socket_->get_tid());
+        command_t cmd;
+        cmd.type = command_t::bind;
+        cmd.args.bind.pipe = p->second.pipe;
+        bind_socket_->process_command(cmd);
+                
+        bind_socket_->send_inproc_connected(p->second.socket);
     }
-    pending_connection_t pending_connection = it->second;
-    pending_connections.erase(it);
+
+    pending_connections.erase(pending.first, pending.second);
 
     endpoints_sync.unlock ();
-    return pending_connection;
 }
 
 //  The last used socket ID, or 0 if no socket was used so far. Note that this
