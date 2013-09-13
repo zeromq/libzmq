@@ -27,11 +27,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <sodium.h>
-#include "z85_codec.h"
+#include "../src/platform.hpp"
+
+#ifdef HAVE_LIBSODIUM
+#   include <sodium.h>
+#   include "z85_codec.h"
+#endif
 
 int main (void)
 {
+#ifdef HAVE_LIBSODIUM
 #   if crypto_box_PUBLICKEYBYTES != 32 \
     || crypto_box_SECRETKEYBYTES != 32
 #   error "libsodium not built correctly"
@@ -59,5 +64,8 @@ int main (void)
     puts ("\n== CURVE SECRET KEY ==");
     puts (encoded);
 
+#else
+    puts ("To build curve_keygen, please install libsodium and then rebuild libzmq.");
+#endif
     exit (0);
 }
