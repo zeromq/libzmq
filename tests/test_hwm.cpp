@@ -22,61 +22,127 @@
 #include <string.h>
 #include "testutil.hpp"
 
-int main (void)
+const int MAX_SENDS = 10000;
+
+enum TestType { BIND_FIRST, CONNECT_FIRST };
+
+int count_msg (int send_hwm, int recv_hwm, TestType testType)
 {
-    setup_test_environment();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
+    int rc;
 
-    //  Create pair of socket, each with high watermark of 2. Thus the total
-    //  buffer space should be 4 messages.
-    void *sb = zmq_socket (ctx, ZMQ_PULL);
-    assert (sb);
-    int hwm = 2;
-    int rc = zmq_setsockopt (sb, ZMQ_RCVHWM, &hwm, sizeof (hwm));
-    assert (rc == 0);
-    rc = zmq_bind (sb, "inproc://a");
-    assert (rc == 0);
-
-    void *sc = zmq_socket (ctx, ZMQ_PUSH);
-    assert (sc);
-    rc = zmq_setsockopt (sc, ZMQ_SNDHWM, &hwm, sizeof (hwm));
-    assert (rc == 0);
-    rc = zmq_connect (sc, "inproc://a");
-    assert (rc == 0);
-
-    //  Try to send 10 messages. Only 4 should succeed.
-    for (int i = 0; i < 10; i++)
+    void *bind_socket;
+    void *connect_socket;
+    if (testType == BIND_FIRST)
     {
-        int rc = zmq_send (sc, NULL, 0, ZMQ_DONTWAIT);
-        if (i < 4)
-            assert (rc == 0);
-        else
-            assert (rc < 0 && errno == EAGAIN);
-    }
+        // Set up bind socket
+        bind_socket = zmq_socket (ctx, ZMQ_PULL);
+        assert (bind_socket);
+        rc = zmq_setsockopt (bind_socket, ZMQ_RCVHWM, &recv_hwm, sizeof (recv_hwm));
+        assert (rc == 0);
+        rc = zmq_bind (bind_socket, "inproc://a");
+        assert (rc == 0);
 
-    // There should be now 4 messages pending, consume them.
-    for (int i = 0; i != 4; i++) {
-        rc = zmq_recv (sb, NULL, 0, 0);
+        // Set up connect socket
+        connect_socket = zmq_socket (ctx, ZMQ_PUSH);
+        assert (connect_socket);
+        rc = zmq_setsockopt (connect_socket, ZMQ_SNDHWM, &send_hwm, sizeof (send_hwm));
+        assert (rc == 0);
+        rc = zmq_connect (connect_socket, "inproc://a");
+        assert (rc == 0);
+    }
+    else
+    {
+        // Set up connect socket
+        connect_socket = zmq_socket (ctx, ZMQ_PUSH);
+        assert (connect_socket);
+        rc = zmq_setsockopt (connect_socket, ZMQ_SNDHWM, &send_hwm, sizeof (send_hwm));
+        assert (rc == 0);
+        rc = zmq_connect (connect_socket, "inproc://a");
+        assert (rc == 0);
+
+        // Set up bind socket
+        bind_socket = zmq_socket (ctx, ZMQ_PULL);
+        assert (bind_socket);
+        rc = zmq_setsockopt (bind_socket, ZMQ_RCVHWM, &recv_hwm, sizeof (recv_hwm));
+        assert (rc == 0);
+        rc = zmq_bind (bind_socket, "inproc://a");
         assert (rc == 0);
     }
 
+    // Send until we block
+    int send_count = 0;
+    while (send_count < MAX_SENDS && zmq_send (connect_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
+        ++send_count;
+
+    // Now receive all sent messages
+    int recv_count = 0;
+    while (zmq_recv (bind_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
+        ++recv_count;
+
+    assert (send_count == recv_count);
+
     // Now it should be possible to send one more.
-    rc = zmq_send (sc, NULL, 0, 0);
+    rc = zmq_send (connect_socket, NULL, 0, 0);
     assert (rc == 0);
 
     //  Consume the remaining message.
-    rc = zmq_recv (sb, NULL, 0, 0);
+    rc = zmq_recv (bind_socket, NULL, 0, 0);
     assert (rc == 0);
 
-    rc = zmq_close (sc);
+    // Clean up
+    rc = zmq_close (connect_socket);
     assert (rc == 0);
 
-    rc = zmq_close (sb);
+    rc = zmq_close (bind_socket);
     assert (rc == 0);
 
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-	return 0;
+    return send_count;
+}
+
+int test_inproc_bind_first (int send_hwm, int recv_hwm)
+{
+    return count_msg(send_hwm, recv_hwm, BIND_FIRST);
+}
+
+int test_inproc_connect_first (int send_hwm, int recv_hwm)
+{
+    return count_msg(send_hwm, recv_hwm, CONNECT_FIRST);
+}
+
+int main (void)
+{
+    setup_test_environment();
+    
+    int count;
+
+    // Infinite send and receive buffer
+    count = test_inproc_bind_first (0, 0);
+    assert (count == MAX_SENDS);
+    count = test_inproc_connect_first (0, 0);
+    assert (count == MAX_SENDS);
+
+    // Infinite send buffer
+    count = test_inproc_bind_first (1, 0);
+    assert (count == MAX_SENDS);
+    count = test_inproc_connect_first (1, 0);
+    assert (count == MAX_SENDS);
+
+    // Infinite receive buffer
+    count = test_inproc_bind_first (0, 1);
+    assert (count == MAX_SENDS);
+    count = test_inproc_connect_first (0, 1);
+    assert (count == MAX_SENDS);
+
+    // Send and recv buffers 1, so total that can be queued is 2
+    count = test_inproc_bind_first (1, 1);
+    assert (count == 2);
+    count = test_inproc_connect_first (1, 1);
+    assert (count == 2);
+
+    return 0;
 }

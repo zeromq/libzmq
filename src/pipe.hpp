@@ -112,6 +112,9 @@ namespace zmq
         //  before actual shutdown.
         void terminate (bool delay_);
 
+        // set the high water marks.
+        void set_hwms (int inhwm_, int outhwm_);
+
     private:
 
         //  Type of the underlying lock-free pipe.

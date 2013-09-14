@@ -478,3 +478,8 @@ void zmq::pipe_t::hiccup ()
     send_hiccup (peer, (void*) inpipe);
 }
 
+void zmq::pipe_t::set_hwms (int inhwm_, int outhwm_)
+{
+	lwm = compute_lwm (inhwm_);
+	hwm = outhwm_;
+}
