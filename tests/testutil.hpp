@@ -21,15 +21,23 @@
 #define __TESTUTIL_HPP_INCLUDED__
 
 #include "../include/zmq.h"
-#include <string.h>
+#include "../include/zmq_utils.h"
+#include "../src/platform.hpp"
 
 #undef NDEBUG
+#include <time.h>
 #include <assert.h>
 #include <stdarg.h>
+#include <string>
 
 #if defined _WIN32
-#include <crtdbg.h>
-#pragma warning(disable:4996)
+#   include <crtdbg.h>
+#   pragma warning(disable:4996)
+#else
+#   include <unistd.h>
+#   include <signal.h>
+#   include <stdlib.h>
+#   include <sys/wait.h>
 #endif
 
 //  Bounce a message from client to server and back

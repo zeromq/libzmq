@@ -17,8 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zmq.h"
-#include <string.h>
 #include "testutil.hpp"
 
 static void do_bind_and_verify (void *s, const char *endpoint)

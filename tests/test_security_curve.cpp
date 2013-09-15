@@ -17,11 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <string.h>
-#include <stdlib.h>
 #include "testutil.hpp"
-#include "../include/zmq_utils.h"
-#include "platform.hpp"
 
 //  Test keys from the zmq_curve man page
 static char client_public [] = "Yne@$w-vo<fVvi]a<NY6T1ed:M$fCG*[IaLV{hID";

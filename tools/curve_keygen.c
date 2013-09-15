@@ -24,50 +24,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include "../src/platform.hpp"
+#include <zmq_utils.h>
 #ifdef HAVE_LIBSODIUM
 #   include <sodium.h>
 #endif
-
-//  Maps base 256 to base 85
-static char encoder [85 + 1] = {
-    "0123456789" "abcdefghij" "klmnopqrst" "uvwxyzABCD"
-    "EFGHIJKLMN" "OPQRSTUVWX" "YZ.-:+=^!/" "*?&<>()[]{" 
-    "}@%$#"
-};
-
-//  --------------------------------------------------------------------------
-//  Encode a binary frame as a string; destination string MUST be at least
-//  size * 5 / 4 bytes long plus 1 byte for the null terminator. Returns
-//  dest. Size must be a multiple of 4.
-
-static char *
-Z85_encode (char *dest, uint8_t *data, size_t size)
-{
-    assert (size % 4 == 0);
-    uint char_nbr = 0;
-    uint byte_nbr = 0;
-    uint32_t value = 0;
-    while (byte_nbr < size) {
-        //  Accumulate value in base 256 (binary)
-        value = value * 256 + data [byte_nbr++];
-        if (byte_nbr % 4 == 0) {
-            //  Output value in base 85
-            uint divisor = 85 * 85 * 85 * 85;
-            while (divisor) {
-                dest [char_nbr++] = encoder [value / divisor % 85];
-                divisor /= 85;
-            }
-            value = 0;
-        }
-    }
-    assert (char_nbr == size * 5 / 4);
-    dest [char_nbr] = 0;
-    return dest;
-}
 
 int main (void)
 {
@@ -91,11 +51,11 @@ int main (void)
     assert (rc == 0);
     
     char encoded [41];
-    Z85_encode (encoded, public_key, 32);
+    zmq_z85_encode (encoded, public_key, 32);
     puts ("\n== CURVE PUBLIC KEY ==");
     puts (encoded);
     
-    Z85_encode (encoded, secret_key, 32);
+    zmq_z85_encode (encoded, secret_key, 32);
     puts ("\n== CURVE SECRET KEY ==");
     puts (encoded);
 

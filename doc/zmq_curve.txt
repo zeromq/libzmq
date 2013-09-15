@@ -78,6 +78,8 @@ secret:
 
 SEE ALSO
 --------
+linkzmq:zmq_z85_encode[3]
+linkzmq:zmq_z85_decode[3]
 linkzmq:zmq_setsockopt[3]
 linkzmq:zmq_null[7]
 linkzmq:zmq_plain[7]
