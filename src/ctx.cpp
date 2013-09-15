@@ -406,12 +406,7 @@ void zmq::ctx_t::pend_connection (const char *addr_, pending_connection_t &pendi
     else
     {
         // Bind has happened in the mean time, connect directly
-        it->second.socket->inc_seqnum();
-        pending_connection_.bind_pipe->set_tid(it->second.socket->get_tid());
-        command_t cmd;
-        cmd.type = command_t::bind;
-        cmd.args.bind.pipe = pending_connection_.bind_pipe;
-        it->second.socket->process_command(cmd);
+        connect_inproc_sockets(it->second.socket, it->second.options, pending_connection_, connect_side);
     }
 
     endpoints_sync.unlock ();
@@ -425,43 +420,71 @@ void zmq::ctx_t::connect_pending (const char *addr_, zmq::socket_base_t *bind_so
 
     for (pending_connections_t::iterator p = pending.first; p != pending.second; ++p)
     {
-        bind_socket_->inc_seqnum();
-        p->second.bind_pipe->set_tid(bind_socket_->get_tid());
-        command_t cmd;
-        cmd.type = command_t::bind;
-        cmd.args.bind.pipe = p->second.bind_pipe;
-        bind_socket_->process_command(cmd);
-                
-        bind_socket_->send_inproc_connected(p->second.endpoint.socket);
-
-        // Send identities
-        options_t& bind_options = endpoints[addr_].options;
-        if (bind_options.recv_identity) {
-    
-            msg_t id;
-            int rc = id.init_size (p->second.endpoint.options.identity_size);
-            errno_assert (rc == 0);
-            memcpy (id.data (), p->second.endpoint.options.identity, p->second.endpoint.options.identity_size);
-            id.set_flags (msg_t::identity);
-            bool written = p->second.connect_pipe->write (&id);
-            zmq_assert (written);
-            p->second.connect_pipe->flush ();
-        }
-        if (p->second.endpoint.options.recv_identity) {
-            msg_t id;
-            int rc = id.init_size (bind_options.identity_size);
-            errno_assert (rc == 0);
-            memcpy (id.data (), bind_options.identity, bind_options.identity_size);
-            id.set_flags (msg_t::identity);
-            bool written = p->second.bind_pipe->write (&id);
-            zmq_assert (written);
-            p->second.bind_pipe->flush ();
-        }
+        connect_inproc_sockets(bind_socket_, endpoints[addr_].options, p->second, bind_side);
     }
 
     pending_connections.erase(pending.first, pending.second);
 
     endpoints_sync.unlock ();
+}
+
+void zmq::ctx_t::connect_inproc_sockets(zmq::socket_base_t *bind_socket_, options_t& bind_options, pending_connection_t &pending_connection_, side side_)
+{
+    bind_socket_->inc_seqnum();
+    pending_connection_.bind_pipe->set_tid(bind_socket_->get_tid());
+
+    if (side_ == bind_side)
+    {
+        command_t cmd;
+        cmd.type = command_t::bind;
+        cmd.args.bind.pipe = pending_connection_.bind_pipe;
+        bind_socket_->process_command(cmd);
+        bind_socket_->send_inproc_connected(pending_connection_.endpoint.socket);
+    }
+    else
+    {
+        pending_connection_.connect_pipe->send_bind(bind_socket_, pending_connection_.bind_pipe, false);
+    }
+
+    int sndhwm = 0;
+    if (pending_connection_.endpoint.options.sndhwm != 0 && bind_options.rcvhwm != 0)
+        sndhwm = pending_connection_.endpoint.options.sndhwm + bind_options.rcvhwm;
+    int rcvhwm = 0;
+    if (pending_connection_.endpoint.options.rcvhwm != 0 && bind_options.sndhwm != 0)
+        rcvhwm = pending_connection_.endpoint.options.rcvhwm + bind_options.sndhwm;
+
+    bool conflate = pending_connection_.endpoint.options.conflate &&
+            (pending_connection_.endpoint.options.type == ZMQ_DEALER ||
+             pending_connection_.endpoint.options.type == ZMQ_PULL ||
+             pending_connection_.endpoint.options.type == ZMQ_PUSH ||
+             pending_connection_.endpoint.options.type == ZMQ_PUB ||
+             pending_connection_.endpoint.options.type == ZMQ_SUB);
+
+       int hwms [2] = {conflate? -1 : sndhwm, conflate? -1 : rcvhwm};
+       pending_connection_.connect_pipe->set_hwms(hwms [1], hwms [0]);
+       pending_connection_.bind_pipe->set_hwms(hwms [0], hwms [1]);
+
+    if (bind_options.recv_identity) {
+    
+        msg_t id;
+        int rc = id.init_size (pending_connection_.endpoint.options.identity_size);
+        errno_assert (rc == 0);
+        memcpy (id.data (), pending_connection_.endpoint.options.identity, pending_connection_.endpoint.options.identity_size);
+        id.set_flags (msg_t::identity);
+        bool written = pending_connection_.connect_pipe->write (&id);
+        zmq_assert (written);
+        pending_connection_.connect_pipe->flush ();
+    }
+    if (pending_connection_.endpoint.options.recv_identity) {
+        msg_t id;
+        int rc = id.init_size (bind_options.identity_size);
+        errno_assert (rc == 0);
+        memcpy (id.data (), bind_options.identity, bind_options.identity_size);
+        id.set_flags (msg_t::identity);
+        bool written = pending_connection_.bind_pipe->write (&id);
+        zmq_assert (written);
+        pending_connection_.bind_pipe->flush ();
+    }
 }
 
 //  The last used socket ID, or 0 if no socket was used so far. Note that this
