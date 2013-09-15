@@ -26,6 +26,49 @@ const int MAX_SENDS = 10000;
 
 enum TestType { BIND_FIRST, CONNECT_FIRST };
 
+int test_defaults ()
+{
+    void *ctx = zmq_ctx_new ();
+    assert (ctx);
+    int rc;
+
+    // Set up bind socket
+    void *bind_socket = zmq_socket (ctx, ZMQ_PULL);
+    assert (bind_socket);
+    rc = zmq_bind (bind_socket, "inproc://a");
+    assert (rc == 0);
+
+    // Set up connect socket
+    void *connect_socket = zmq_socket (ctx, ZMQ_PUSH);
+    assert (connect_socket);
+    rc = zmq_connect (connect_socket, "inproc://a");
+    assert (rc == 0);
+
+    // Send until we block
+    int send_count = 0;
+    while (send_count < MAX_SENDS && zmq_send (connect_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
+        ++send_count;
+
+    // Now receive all sent messages
+    int recv_count = 0;
+    while (zmq_recv (bind_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
+        ++recv_count;
+
+    assert (send_count == recv_count);
+
+    // Clean up
+    rc = zmq_close (connect_socket);
+    assert (rc == 0);
+
+    rc = zmq_close (bind_socket);
+    assert (rc == 0);
+
+    rc = zmq_ctx_term (ctx);
+    assert (rc == 0);
+
+    return send_count;
+}
+
 int count_msg (int send_hwm, int recv_hwm, TestType testType)
 {
     void *ctx = zmq_ctx_new ();
@@ -114,11 +157,113 @@ int test_inproc_connect_first (int send_hwm, int recv_hwm)
     return count_msg(send_hwm, recv_hwm, CONNECT_FIRST);
 }
 
+int test_inproc_connect_and_close_first (int send_hwm, int recv_hwm)
+{
+    void *ctx = zmq_ctx_new ();
+    assert (ctx);
+    int rc;
+
+    // Set up connect socket
+    void *connect_socket = zmq_socket (ctx, ZMQ_PUSH);
+    assert (connect_socket);
+    rc = zmq_setsockopt (connect_socket, ZMQ_SNDHWM, &send_hwm, sizeof (send_hwm));
+    assert (rc == 0);
+    rc = zmq_connect (connect_socket, "inproc://a");
+    assert (rc == 0);
+
+    // Send until we block
+    int send_count = 0;
+    while (send_count < MAX_SENDS && zmq_send (connect_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
+        ++send_count;
+
+    // Close connect
+    rc = zmq_close (connect_socket);
+    assert (rc == 0);
+
+    // Set up bind socket
+    void *bind_socket = zmq_socket (ctx, ZMQ_PULL);
+    assert (bind_socket);
+    rc = zmq_setsockopt (bind_socket, ZMQ_RCVHWM, &recv_hwm, sizeof (recv_hwm));
+    assert (rc == 0);
+    rc = zmq_bind (bind_socket, "inproc://a");
+    assert (rc == 0);
+
+    // Now receive all sent messages
+    int recv_count = 0;
+    while (zmq_recv (bind_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
+        ++recv_count;
+
+    assert (send_count == recv_count);
+
+    // Clean up
+    rc = zmq_close (bind_socket);
+    assert (rc == 0);
+
+    rc = zmq_ctx_term (ctx);
+    assert (rc == 0);
+
+    return send_count;
+}
+
+int test_inproc_bind_and_close_first (int send_hwm, int recv_hwm)
+{
+    void *ctx = zmq_ctx_new ();
+    assert (ctx);
+    int rc;
+
+    // Set up bind socket
+    void *bind_socket = zmq_socket (ctx, ZMQ_PUSH);
+    assert (bind_socket);
+    rc = zmq_setsockopt (bind_socket, ZMQ_SNDHWM, &send_hwm, sizeof (send_hwm));
+    assert (rc == 0);
+    rc = zmq_bind (bind_socket, "inproc://a");
+    assert (rc == 0);
+
+    // Send until we block
+    int send_count = 0;
+    while (send_count < MAX_SENDS && zmq_send (bind_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
+        ++send_count;
+
+    // Close bind
+    rc = zmq_close (bind_socket);
+    assert (rc == 0);
+
+    /* Can't currently do connect without then wiring up a bind as things hang, this needs top be fixed.
+    // Set up connect socket
+    void *connect_socket = zmq_socket (ctx, ZMQ_PULL);
+    assert (connect_socket);
+    rc = zmq_setsockopt (connect_socket, ZMQ_RCVHWM, &recv_hwm, sizeof (recv_hwm));
+    assert (rc == 0);
+    rc = zmq_connect (connect_socket, "inproc://a");
+    assert (rc == 0);
+
+    // Now receive all sent messages
+    int recv_count = 0;
+    while (zmq_recv (connect_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
+        ++recv_count;
+
+    assert (send_count == recv_count);
+    */
+
+    // Clean up
+    //rc = zmq_close (connect_socket);
+    //assert (rc == 0);
+
+    rc = zmq_ctx_term (ctx);
+    assert (rc == 0);
+
+    return send_count;
+}
+
 int main (void)
 {
     setup_test_environment();
     
     int count;
+
+    // Default values are 1000 on send and 1000 one receive, so 2000 total
+    count = test_defaults ();
+    assert (count == 2000);
 
     // Infinite send and receive buffer
     count = test_inproc_bind_first (0, 0);
@@ -138,11 +283,20 @@ int main (void)
     count = test_inproc_connect_first (0, 1);
     assert (count == MAX_SENDS);
 
-    // Send and recv buffers 1, so total that can be queued is 2
+    // Send and recv buffers hwm 1, so total that can be queued is 2
     count = test_inproc_bind_first (1, 1);
     assert (count == 2);
     count = test_inproc_connect_first (1, 1);
     assert (count == 2);
+
+    // Send hwm of 1, send before bind so total that can be queued is 1
+    count = test_inproc_connect_and_close_first (1, 0);
+    assert (count == 1);
+
+    // Send hwm of 1, send from bind side before connect so total that can be queued should be 1,
+    // however currently all messages get thrown away before the connect.  BUG?
+    count = test_inproc_bind_and_close_first (1, 0);
+    //assert (count == 1);
 
     return 0;
 }
