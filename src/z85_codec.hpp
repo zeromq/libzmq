@@ -51,7 +51,7 @@ static uint8_t decoder [96] = {
 //  size * 5 / 4 bytes long plus 1 byte for the null terminator. Returns
 //  dest. Size must be a multiple of 4.
 
-char *
+static char *
 Z85_encode (char *dest, uint8_t *data, size_t size)
 {
     assert (size % 4 == 0);
@@ -82,7 +82,7 @@ Z85_encode (char *dest, uint8_t *data, size_t size)
 //  strlen (string) * 4 / 5 bytes long. Returns dest. strlen (string) 
 //  must be a multiple of 5.
 
-uint8_t *
+static uint8_t *
 Z85_decode (uint8_t *dest, char *string)
 {
     assert (strlen (string) % 5 == 0);

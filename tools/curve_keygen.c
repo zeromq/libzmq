@@ -28,11 +28,46 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "../src/platform.hpp"
-
 #ifdef HAVE_LIBSODIUM
 #   include <sodium.h>
-#   include "z85_codec.h"
 #endif
+
+//  Maps base 256 to base 85
+static char encoder [85 + 1] = {
+    "0123456789" "abcdefghij" "klmnopqrst" "uvwxyzABCD"
+    "EFGHIJKLMN" "OPQRSTUVWX" "YZ.-:+=^!/" "*?&<>()[]{" 
+    "}@%$#"
+};
+
+//  --------------------------------------------------------------------------
+//  Encode a binary frame as a string; destination string MUST be at least
+//  size * 5 / 4 bytes long plus 1 byte for the null terminator. Returns
+//  dest. Size must be a multiple of 4.
+
+static char *
+Z85_encode (char *dest, uint8_t *data, size_t size)
+{
+    assert (size % 4 == 0);
+    uint char_nbr = 0;
+    uint byte_nbr = 0;
+    uint32_t value = 0;
+    while (byte_nbr < size) {
+        //  Accumulate value in base 256 (binary)
+        value = value * 256 + data [byte_nbr++];
+        if (byte_nbr % 4 == 0) {
+            //  Output value in base 85
+            uint divisor = 85 * 85 * 85 * 85;
+            while (divisor) {
+                dest [char_nbr++] = encoder [value / divisor % 85];
+                divisor /= 85;
+            }
+            value = 0;
+        }
+    }
+    assert (char_nbr == size * 5 / 4);
+    dest [char_nbr] = 0;
+    return dest;
+}
 
 int main (void)
 {

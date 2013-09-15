@@ -21,7 +21,6 @@
 #include <stdlib.h>
 #include "testutil.hpp"
 #include "../include/zmq_utils.h"
-#include "../src/z85_codec.hpp"
 #include "platform.hpp"
 
 //  Test keys from the zmq_curve man page
@@ -29,6 +28,44 @@ static char client_public [] = "Yne@$w-vo<fVvi]a<NY6T1ed:M$fCG*[IaLV{hID";
 static char client_secret [] = "D:)Q[IlAW!ahhC2ac:9*A}h:p?([4%wOTJ%JR%cs";
 static char server_public [] = "rq:rM>}U?@Lns47E1%kR.o@n%FcmmsL/@{H8]yf7";
 static char server_secret [] = "JTKVSB%%)wK0E.X)V>+}o?pNmC{O&4W4b!Ni{Lh6";
+
+//  --------------------------------------------------------------------------
+//  Encode a binary frame as a string; destination string MUST be at least
+//  size * 5 / 4 bytes long plus 1 byte for the null terminator. Returns
+//  dest. Size must be a multiple of 4.
+
+//  Maps base 256 to base 85
+static char encoder [85 + 1] = {
+    "0123456789" "abcdefghij" "klmnopqrst" "uvwxyzABCD"
+    "EFGHIJKLMN" "OPQRSTUVWX" "YZ.-:+=^!/" "*?&<>()[]{" 
+    "}@%$#"
+};
+
+static char *
+Z85_encode (char *dest, uint8_t *data, size_t size)
+{
+    assert (size % 4 == 0);
+    unsigned int char_nbr = 0;
+    unsigned int byte_nbr = 0;
+    uint32_t value = 0;
+    while (byte_nbr < size) {
+        //  Accumulate value in base 256 (binary)
+        value = value * 256 + data [byte_nbr++];
+        if (byte_nbr % 4 == 0) {
+            //  Output value in base 85
+            unsigned int divisor = 85 * 85 * 85 * 85;
+            while (divisor) {
+                dest [char_nbr++] = encoder [value / divisor % 85];
+                divisor /= 85;
+            }
+            value = 0;
+        }
+    }
+    assert (char_nbr == size * 5 / 4);
+    dest [char_nbr] = 0;
+    return dest;
+}
+
 
 static void zap_handler (void *ctx)
 {
@@ -71,7 +108,7 @@ static void zap_handler (void *ctx)
         }
         else {
             s_sendmore (zap, "400");
-            s_sendmore (zap, "Invalid username or password");
+            s_sendmore (zap, "Invalid client public key");
             s_sendmore (zap, "");
             s_send (zap, "");
         }
