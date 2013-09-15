@@ -17,8 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zmq.h"
-#include <stdio.h>
 #include "testutil.hpp"
 
 int main (void)
@@ -75,7 +73,7 @@ int main (void)
     //  Check whether we've got the valid reply.
     rc = zmq_recv (req_socket, body, sizeof (body), 0);
     assert (rc == 1);
-	assert (body [0] == 'b');
+    assert (body [0] == 'b');
 
     //  Tear down the wiring.
     rc = zmq_close (router_socket);

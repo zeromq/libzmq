@@ -17,17 +17,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zmq.h"
-#include "../include/zmq_utils.h"
-#include <stdio.h>
-#include <string.h>
 #include "testutil.hpp"
-#include <unistd.h>
-#include <signal.h>
-#include <stdlib.h>
-#include <sys/wait.h>
 
-const char* address = "tcp://127.0.0.1:6571";
+const char *address = "tcp://127.0.0.1:6571";
 
 #define NUM_MESSAGES 5
 

@@ -17,8 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdio.h>
-#include "../include/zmq_utils.h"
 #include "testutil.hpp"
 
 int main (int argc, char *argv [])

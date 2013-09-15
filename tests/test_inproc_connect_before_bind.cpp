@@ -17,8 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zmq_utils.h"
-#include <stdio.h>
 #include "testutil.hpp"
 
 static void pusher (void *ctx)
