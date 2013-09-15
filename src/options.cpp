@@ -21,7 +21,7 @@
 
 #include "options.hpp"
 #include "err.hpp"
-#include "z85_codec.hpp"
+#include "../include/zmq_utils.h"
 
 zmq::options_t::options_t () :
     sndhwm (1000),
@@ -310,7 +310,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             else
             if (optvallen_ == CURVE_KEYSIZE_Z85) {
-                Z85_decode (curve_public_key, (char *) optval_);
+                zmq_z85_decode (curve_public_key, (char *) optval_);
                 mechanism = ZMQ_CURVE;
                 return 0;
             }
@@ -324,7 +324,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             else
             if (optvallen_ == CURVE_KEYSIZE_Z85) {
-                Z85_decode (curve_secret_key, (char *) optval_);
+                zmq_z85_decode (curve_secret_key, (char *) optval_);
                 mechanism = ZMQ_CURVE;
                 return 0;
             }
@@ -339,7 +339,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             else
             if (optvallen_ == CURVE_KEYSIZE_Z85) {
-                Z85_decode (curve_server_key, (char *) optval_);
+                zmq_z85_decode (curve_server_key, (char *) optval_);
                 as_server = 0;
                 mechanism = ZMQ_CURVE;
                 return 0;
@@ -591,7 +591,7 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
             }
             else
             if (*optvallen_ == CURVE_KEYSIZE_Z85 + 1) {
-                Z85_encode ((char *) optval_, curve_public_key, CURVE_KEYSIZE);
+                zmq_z85_encode ((char *) optval_, curve_public_key, CURVE_KEYSIZE);
                 return 0;
             }
             break;
@@ -603,7 +603,7 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
             }
             else
             if (*optvallen_ == CURVE_KEYSIZE_Z85 + 1) {
-                Z85_encode ((char *) optval_, curve_secret_key, CURVE_KEYSIZE);
+                zmq_z85_encode ((char *) optval_, curve_secret_key, CURVE_KEYSIZE);
                 return 0;
             }
             break;
@@ -615,7 +615,7 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
             }
             else
             if (*optvallen_ == CURVE_KEYSIZE_Z85 + 1) {
-                Z85_encode ((char *) optval_, curve_server_key, CURVE_KEYSIZE);
+                zmq_z85_encode ((char *) optval_, curve_server_key, CURVE_KEYSIZE);
                 return 0;
             }
             break;

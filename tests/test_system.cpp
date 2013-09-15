@@ -17,16 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zmq.h"
-#include "platform.hpp"
+#include "testutil.hpp"
+
 #if defined (ZMQ_HAVE_WINDOWS)
-#include <WinSock2.h>
-#include <stdexcept>
+#   include <WinSock2.h>
+#   include <stdexcept>
 #else
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <assert.h>
+#   include <sys/socket.h>
+#   include <netinet/in.h>
+#   include <unistd.h>
 #endif
 
 #if defined (ZMQ_HAVE_WINDOWS)

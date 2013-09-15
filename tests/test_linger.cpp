@@ -21,9 +21,6 @@
 //  or alternatively we can change policy that issue test cases should be 
 //  added to the main build when they're useful. -- PH 2013/09/02
 
-#include "../include/zmq_utils.h"
-#include <stdio.h>
-#include <string.h>
 #include "testutil.hpp"
 
 #define URL "tcp://127.0.0.1:5560"
