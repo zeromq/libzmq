@@ -195,6 +195,8 @@ namespace zmq
         // the process that created this context. Used to detect forking.
         pid_t pid;
 #endif
+        enum side { connect_side, bind_side };
+        void connect_inproc_sockets(zmq::socket_base_t *bind_socket_, options_t& bind_options, pending_connection_t &pending_connection_, side side_);
     };
 
 }

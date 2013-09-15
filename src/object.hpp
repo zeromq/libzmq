@@ -52,6 +52,7 @@ namespace zmq
         ctx_t *get_ctx ();
         void process_command (zmq::command_t &cmd_);
         void send_inproc_connected (zmq::socket_base_t *socket_);
+        void send_bind (zmq::own_t *destination_, zmq::pipe_t *pipe_, bool inc_seqnum_ = true);
 
     protected:
 
@@ -80,8 +81,6 @@ namespace zmq
             zmq::own_t *object_);
         void send_attach (zmq::session_base_t *destination_,
              zmq::i_engine *engine_, bool inc_seqnum_ = true);
-        void send_bind (zmq::own_t *destination_, zmq::pipe_t *pipe_,
-             bool inc_seqnum_ = true);
         void send_activate_read (zmq::pipe_t *destination_);
         void send_activate_write (zmq::pipe_t *destination_,
              uint64_t msgs_read_);
