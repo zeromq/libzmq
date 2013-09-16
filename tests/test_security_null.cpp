@@ -20,36 +20,30 @@
 #include "testutil.hpp"
 
 static void
-zap_handler (void *ctx)
+zap_handler (void *handler)
 {
-    //  Create and bind ZAP socket
-    void *zap = zmq_socket (ctx, ZMQ_REP);
-    assert (zap);
-    int rc = zmq_bind (zap, "inproc://zeromq.zap.01");
-    assert (rc == 0);
-
     //  Process ZAP requests forever
     while (true) {
-        char *version = s_recv (zap);
+        char *version = s_recv (handler);
         if (!version)
             break;          //  Terminating
 
-        char *sequence = s_recv (zap);
-        char *domain = s_recv (zap);
-        char *address = s_recv (zap);
-        char *identity = s_recv (zap);
-        char *mechanism = s_recv (zap);
+        char *sequence = s_recv (handler);
+        char *domain = s_recv (handler);
+        char *address = s_recv (handler);
+        char *identity = s_recv (handler);
+        char *mechanism = s_recv (handler);
 
         assert (streq (version, "1.0"));
         assert (streq (mechanism, "NULL"));
         assert (streq (identity, "IDENT"));
 
-        s_sendmore (zap, version);
-        s_sendmore (zap, sequence);
-        s_sendmore (zap, "200");
-        s_sendmore (zap, "OK");
-        s_sendmore (zap, "anonymous");
-        s_send (zap, "");
+        s_sendmore (handler, version);
+        s_sendmore (handler, sequence);
+        s_sendmore (handler, "200");
+        s_sendmore (handler, "OK");
+        s_sendmore (handler, "anonymous");
+        s_send     (handler, "");
 
         free (version);
         free (sequence);
@@ -58,8 +52,7 @@ zap_handler (void *ctx)
         free (identity);
         free (mechanism);
     }
-    rc = zmq_close (zap);
-    assert (rc == 0);
+    zmq_close (handler);
 }
 
 int main (void)
@@ -69,12 +62,18 @@ int main (void)
     assert (ctx);
 
     //  Spawn ZAP handler
-    void *zap_thread = zmq_threadstart (&zap_handler, ctx);
+    //  We create and bind ZAP socket in main thread to avoid case
+    //  where child thread does not start up fast enough.
+    void *handler = zmq_socket (ctx, ZMQ_REP);
+    assert (handler);
+    int rc = zmq_bind (handler, "inproc://zeromq.zap.01");
+    assert (rc == 0);
+    void *zap_thread = zmq_threadstart (&zap_handler, handler);
 
     //  Server socket will accept connections
     void *server = zmq_socket (ctx, ZMQ_DEALER);
     assert (server);
-    int rc = zmq_setsockopt (server, ZMQ_IDENTITY, "IDENT", 6);
+    rc = zmq_setsockopt (server, ZMQ_IDENTITY, "IDENT", 6);
     assert (rc == 0);
     rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "TEST", 4);
     assert (rc == 0);

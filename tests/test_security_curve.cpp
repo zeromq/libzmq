@@ -30,27 +30,21 @@ static char server_secret [] = "JTKVSB%%)wK0E.X)V>+}o?pNmC{O&4W4b!Ni{Lh6";
 //  size * 5 / 4 bytes long plus 1 byte for the null terminator. Returns
 //  dest. Size must be a multiple of 4.
 
-static void zap_handler (void *ctx)
+static void zap_handler (void *handler)
 {
-    //  Create and bind ZAP socket
-    void *zap = zmq_socket (ctx, ZMQ_REP);
-    assert (zap);
-    int rc = zmq_bind (zap, "inproc://zeromq.zap.01");
-    assert (rc == 0);
-
     //  Process ZAP requests forever
     while (true) {
-        char *version = s_recv (zap);
+        char *version = s_recv (handler);
         if (!version)
             break;          //  Terminating
 
-        char *sequence = s_recv (zap);
-        char *domain = s_recv (zap);
-        char *address = s_recv (zap);
-        char *identity = s_recv (zap);
-        char *mechanism = s_recv (zap);
+        char *sequence = s_recv (handler);
+        char *domain = s_recv (handler);
+        char *address = s_recv (handler);
+        char *identity = s_recv (handler);
+        char *mechanism = s_recv (handler);
         uint8_t client_key [32];
-        int size = zmq_recv (zap, client_key, 32, 0);
+        int size = zmq_recv (handler, client_key, 32, 0);
         assert (size == 32);
 
         char client_key_text [41];
@@ -60,20 +54,20 @@ static void zap_handler (void *ctx)
         assert (streq (mechanism, "CURVE"));
         assert (streq (identity, "IDENT"));
 
-        s_sendmore (zap, version);
-        s_sendmore (zap, sequence);
+        s_sendmore (handler, version);
+        s_sendmore (handler, sequence);
 
         if (streq (client_key_text, client_public)) {
-            s_sendmore (zap, "200");
-            s_sendmore (zap, "OK");
-            s_sendmore (zap, "anonymous");
-            s_send (zap, "");
+            s_sendmore (handler, "200");
+            s_sendmore (handler, "OK");
+            s_sendmore (handler, "anonymous");
+            s_send     (handler, "");
         }
         else {
-            s_sendmore (zap, "400");
-            s_sendmore (zap, "Invalid client public key");
-            s_sendmore (zap, "");
-            s_send (zap, "");
+            s_sendmore (handler, "400");
+            s_sendmore (handler, "Invalid client public key");
+            s_sendmore (handler, "");
+            s_send     (handler, "");
         }
         free (version);
         free (sequence);
@@ -82,8 +76,7 @@ static void zap_handler (void *ctx)
         free (identity);
         free (mechanism);
     }
-    rc = zmq_close (zap);
-    assert (rc == 0);
+    zmq_close (handler);
 }
 
 
@@ -98,13 +91,19 @@ int main (void)
     assert (ctx);
 
     //  Spawn ZAP handler
-    void *zap_thread = zmq_threadstart (&zap_handler, ctx);
+    //  We create and bind ZAP socket in main thread to avoid case
+    //  where child thread does not start up fast enough.
+    void *handler = zmq_socket (ctx, ZMQ_REP);
+    assert (handler);
+    int rc = zmq_bind (handler, "inproc://zeromq.zap.01");
+    assert (rc == 0);
+    void *zap_thread = zmq_threadstart (&zap_handler, handler);
 
     //  Server socket will accept connections
     void *server = zmq_socket (ctx, ZMQ_DEALER);
     assert (server);
     int as_server = 1;
-    int rc = zmq_setsockopt (server, ZMQ_CURVE_SERVER, &as_server, sizeof (int));
+    rc = zmq_setsockopt (server, ZMQ_CURVE_SERVER, &as_server, sizeof (int));
     assert (rc == 0);
     rc = zmq_setsockopt (server, ZMQ_CURVE_SECRETKEY, server_secret, 40);
     assert (rc == 0);
