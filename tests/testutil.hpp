@@ -22,7 +22,7 @@
 
 #include "../include/zmq.h"
 #include "../include/zmq_utils.h"
-#include "../src/platform.hpp"
+#include "platform.hpp"
 
 #undef NDEBUG
 #include <time.h>
