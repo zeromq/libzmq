@@ -103,7 +103,7 @@ int main (void)
     void *server = zmq_socket (ctx, ZMQ_DEALER);
     assert (server);
     int as_server = ZMQ_SERVER;
-    rc = zmq_setsockopt (server, ZMQ_CURVE_NODE, &as_server, sizeof (int));
+    rc = zmq_setsockopt (server, ZMQ_CURVE_SERVER, &as_server, sizeof (int));
     assert (rc == 0);
     rc = zmq_setsockopt (server, ZMQ_CURVE_OUR_PERMA_SEC_KEY, server_secret, 40);
     assert (rc == 0);
@@ -116,7 +116,7 @@ int main (void)
     void *client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
     as_server = ZMQ_CLIENT;
-    rc = zmq_setsockopt (client, ZMQ_CURVE_NODE, &as_server, sizeof (int));
+    rc = zmq_setsockopt (client, ZMQ_CURVE_SERVER, &as_server, sizeof (int));
     assert (rc == 0);
     rc = zmq_setsockopt (client, ZMQ_CURVE_PEER_PERMA_PUB_KEY, server_public, 40);
     assert (rc == 0);
