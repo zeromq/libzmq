@@ -83,25 +83,25 @@ namespace zmq
         //  True iff we are awaiting reply from ZAP handler.
         bool expecting_zap_reply;
 
-        uint64_t nonce;
+        uint64_t cn_nonce;
 
-        //  Our permanent secret key (s)
-        uint8_t our_perma_sec_key [crypto_box_SECRETKEYBYTES];
+        //  Our secret key (s)
+        uint8_t secret_key [crypto_box_SECRETKEYBYTES];
 
-        //  Our transient public key (S')
-        uint8_t our_trans_pub_key [crypto_box_PUBLICKEYBYTES];
+        //  Our short-term public key (S')
+        uint8_t cn_public [crypto_box_PUBLICKEYBYTES];
 
-        //  Our transient secret key (s')
-        uint8_t our_trans_sec_key [crypto_box_SECRETKEYBYTES];
+        //  Our short-term secret key (s')
+        uint8_t cn_secret [crypto_box_SECRETKEYBYTES];
 
-        //  Client's transient public key (C')
-        uint8_t peer_trans_pub_key [crypto_box_PUBLICKEYBYTES];
+        //  Client's short-term public key (C')
+        uint8_t cn_client [crypto_box_PUBLICKEYBYTES];
 
         //  Key used to produce cookie
         uint8_t cookie_key [crypto_secretbox_KEYBYTES];
 
         //  Intermediary buffer used to speed up boxing and unboxing.
-        uint8_t precomputed [crypto_box_BEFORENMBYTES];
+        uint8_t cn_precom [crypto_box_BEFORENMBYTES];
 
         int process_hello (msg_t *msg_);
         int produce_welcome (msg_t *msg_);
