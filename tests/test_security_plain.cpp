@@ -87,8 +87,8 @@ int main (void)
     assert (server);
     int rc = zmq_setsockopt (server, ZMQ_IDENTITY, "IDENT", 6);
     assert (rc == 0);
-    int as_server = ZMQ_SERVER;
-    rc = zmq_setsockopt (server, ZMQ_PLAIN_NODE, &as_server, sizeof (int));
+    int as_server = 1;
+    rc = zmq_setsockopt (server, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
     assert (rc == 0);
     rc = zmq_bind (server, "tcp://*:9998");
     assert (rc == 0);
@@ -99,9 +99,6 @@ int main (void)
     //  Check PLAIN security with correct username/password
     void *client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
-    as_server = ZMQ_CLIENT;
-    rc = zmq_setsockopt (server, ZMQ_PLAIN_NODE, &as_server, sizeof (int));
-    assert (rc == 0);
     strcpy (username, "admin");
     rc = zmq_setsockopt (client, ZMQ_PLAIN_USERNAME, username, strlen (username));
     assert (rc == 0);
@@ -119,7 +116,7 @@ int main (void)
     client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
     as_server = 1;
-    rc = zmq_setsockopt (client, ZMQ_PLAIN_NODE, &as_server, sizeof (int));
+    rc = zmq_setsockopt (client, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
     assert (rc == 0);
     rc = zmq_connect (client, "tcp://localhost:9998");
     assert (rc == 0);

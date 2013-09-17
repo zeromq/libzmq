@@ -40,13 +40,13 @@ zmq::curve_server_t::curve_server_t (session_base_t *session_,
     peer_address (peer_address_),
     state (expect_hello),
     expecting_zap_reply (false),
-    nonce (1)
+    cn_nonce (1)
 {
     //  Fetch our secret key from socket options
-    memcpy (our_perma_sec_key, options_.curve_our_perma_sec_key, crypto_box_SECRETKEYBYTES);
+    memcpy (secret_key, options_.curve_secret_key, crypto_box_SECRETKEYBYTES);
 
-    //  Generate transient key pair
-    const int rc = crypto_box_keypair (our_trans_pub_key, our_trans_sec_key);
+    //  Generate short-term key pair
+    const int rc = crypto_box_keypair (cn_public, cn_secret);
     zmq_assert (rc == 0);
 }
 
@@ -114,7 +114,7 @@ int zmq::curve_server_t::encode (msg_t *msg_)
 
     uint8_t message_nonce [crypto_box_NONCEBYTES];
     memcpy (message_nonce, "CurveZMQMESSAGES", 16);
-    memcpy (message_nonce + 16, &nonce, 8);
+    memcpy (message_nonce + 16, &cn_nonce, 8);
 
     uint8_t flags = 0;
     if (msg_->flags () & msg_t::more)
@@ -132,7 +132,7 @@ int zmq::curve_server_t::encode (msg_t *msg_)
     alloc_assert (message_box);
 
     int rc = crypto_box_afternm (message_box, message_plaintext,
-                                 mlen, message_nonce, precomputed);
+                                 mlen, message_nonce, cn_precom);
     zmq_assert (rc == 0);
 
     rc = msg_->close ();
@@ -144,14 +144,14 @@ int zmq::curve_server_t::encode (msg_t *msg_)
     uint8_t *message = static_cast <uint8_t *> (msg_->data ());
 
     memcpy (message, "\x07MESSAGE", 8);
-    memcpy (message + 8, &nonce, 8);
+    memcpy (message + 8, &cn_nonce, 8);
     memcpy (message + 16, message_box + crypto_box_BOXZEROBYTES,
             mlen - crypto_box_BOXZEROBYTES);
 
     free (message_plaintext);
     free (message_box);
 
-    nonce++;
+    cn_nonce++;
 
     return 0;
 }
@@ -188,7 +188,7 @@ int zmq::curve_server_t::decode (msg_t *msg_)
             message + 16, msg_->size () - 16);
 
     int rc = crypto_box_open_afternm (message_plaintext, message_box,
-                                      clen, message_nonce, precomputed);
+                                      clen, message_nonce, cn_precom);
     if (rc == 0) {
         rc = msg_->close ();
         zmq_assert (rc == 0);
@@ -251,8 +251,8 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
         return -1;
     }
 
-    //  Save client's transient public key (C')
-    memcpy (peer_trans_pub_key, hello + 80, 32);
+    //  Save client's short-term public key (C')
+    memcpy (cn_client, hello + 80, 32);
 
     uint8_t hello_nonce [crypto_box_NONCEBYTES];
     uint8_t hello_plaintext [crypto_box_ZEROBYTES + 64];
@@ -267,7 +267,7 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
     //  Open Box [64 * %x0](C'->S)
     int rc = crypto_box_open (hello_plaintext, hello_box,
                               sizeof hello_box,
-                              hello_nonce, peer_trans_pub_key, our_perma_sec_key);
+                              hello_nonce, cn_client, secret_key);
     if (rc != 0) {
         errno = EPROTO;
         return -1;
@@ -290,9 +290,9 @@ int zmq::curve_server_t::produce_welcome (msg_t *msg_)
     //  Generate cookie = Box [C' + s'](t)
     memset (cookie_plaintext, 0, crypto_secretbox_ZEROBYTES);
     memcpy (cookie_plaintext + crypto_secretbox_ZEROBYTES,
-            peer_trans_pub_key, 32);
+            cn_client, 32);
     memcpy (cookie_plaintext + crypto_secretbox_ZEROBYTES + 32,
-            our_trans_sec_key, 32);
+            cn_secret, 32);
 
     //  Generate fresh cookie key
     randombytes (cookie_key, crypto_secretbox_KEYBYTES);
@@ -314,7 +314,7 @@ int zmq::curve_server_t::produce_welcome (msg_t *msg_)
 
     //  Create 144-byte Box [S' + cookie](S->C')
     memset (welcome_plaintext, 0, crypto_box_ZEROBYTES);
-    memcpy (welcome_plaintext + crypto_box_ZEROBYTES, our_trans_pub_key, 32);
+    memcpy (welcome_plaintext + crypto_box_ZEROBYTES, cn_public, 32);
     memcpy (welcome_plaintext + crypto_box_ZEROBYTES + 32,
             cookie_nonce + 8, 16);
     memcpy (welcome_plaintext + crypto_box_ZEROBYTES + 48,
@@ -322,7 +322,7 @@ int zmq::curve_server_t::produce_welcome (msg_t *msg_)
 
     rc = crypto_box (welcome_ciphertext, welcome_plaintext,
                      sizeof welcome_plaintext,
-                     welcome_nonce, peer_trans_pub_key, our_perma_sec_key);
+                     welcome_nonce, cn_client, secret_key);
     zmq_assert (rc == 0);
 
     rc = msg_->init_size (168);
@@ -370,9 +370,9 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
 
     //  Check cookie plain text is as expected [C' + s']
     if (memcmp (cookie_plaintext + crypto_secretbox_ZEROBYTES,
-                peer_trans_pub_key, 32)
+                cn_client, 32)
     ||  memcmp (cookie_plaintext + crypto_secretbox_ZEROBYTES + 32,
-                our_trans_sec_key, 32)) {
+                cn_secret, 32)) {
         errno = EAGAIN;
         return -1;
     }
@@ -392,7 +392,7 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     memcpy (initiate_nonce + 16, initiate + 105, 8);
 
     rc = crypto_box_open (initiate_plaintext, initiate_box,
-                          clen, initiate_nonce, peer_trans_pub_key, our_trans_sec_key);
+                          clen, initiate_nonce, cn_client, cn_secret);
     if (rc != 0) {
         errno = EPROTO;
         return -1;
@@ -415,20 +415,20 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
 
     rc = crypto_box_open (vouch_plaintext, vouch_box,
                           sizeof vouch_box,
-                          vouch_nonce, client_key, our_perma_sec_key);
+                          vouch_nonce, client_key, secret_key);
     if (rc != 0) {
         errno = EPROTO;
         return -1;
     }
 
-    //  What we decrypted must be the client's transient public key
-    if (memcmp (vouch_plaintext + crypto_box_ZEROBYTES, peer_trans_pub_key, 32)) {
+    //  What we decrypted must be the client's short-term public key
+    if (memcmp (vouch_plaintext + crypto_box_ZEROBYTES, cn_client, 32)) {
         errno = EPROTO;
         return -1;
     }
 
     //  Precompute connection secret from client key
-    rc = crypto_box_beforenm (precomputed, peer_trans_pub_key, our_trans_sec_key);
+    rc = crypto_box_beforenm (cn_precom, cn_client, cn_secret);
     zmq_assert (rc == 0);
 
     //  Use ZAP protocol (RFC 27) to authenticate the user.
@@ -471,10 +471,10 @@ int zmq::curve_server_t::produce_ready (msg_t *msg_)
     const size_t mlen = ptr - ready_plaintext;
 
     memcpy (ready_nonce, "CurveZMQREADY---", 16);
-    memcpy (ready_nonce + 16, &nonce, 8);
+    memcpy (ready_nonce + 16, &cn_nonce, 8);
 
     int rc = crypto_box_afternm (ready_box, ready_plaintext,
-                                 mlen, ready_nonce, precomputed);
+                                 mlen, ready_nonce, cn_precom);
     zmq_assert (rc == 0);
 
     rc = msg_->init_size (14 + mlen - crypto_box_BOXZEROBYTES);
@@ -484,12 +484,12 @@ int zmq::curve_server_t::produce_ready (msg_t *msg_)
 
     memcpy (ready, "\x05READY", 6);
     //  Short nonce, prefixed by "CurveZMQREADY---"
-    memcpy (ready + 6, &nonce, 8);
+    memcpy (ready + 6, &cn_nonce, 8);
     //  Box [metadata](S'->C')
     memcpy (ready + 14, ready_box + crypto_box_BOXZEROBYTES,
             mlen - crypto_box_BOXZEROBYTES);
 
-    nonce++;
+    cn_nonce++;
 
     return 0;
 }
