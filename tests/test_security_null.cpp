@@ -27,7 +27,6 @@ zap_handler (void *handler)
         char *version = s_recv (handler);
         if (!version)
             break;          //  Terminating
-
         char *sequence = s_recv (handler);
         char *domain = s_recv (handler);
         char *address = s_recv (handler);
@@ -36,15 +35,21 @@ zap_handler (void *handler)
 
         assert (streq (version, "1.0"));
         assert (streq (mechanism, "NULL"));
-        assert (streq (identity, "IDENT"));
-
+        
         s_sendmore (handler, version);
         s_sendmore (handler, sequence);
-        s_sendmore (handler, "200");
-        s_sendmore (handler, "OK");
-        s_sendmore (handler, "anonymous");
-        s_send     (handler, "");
-
+        if (streq (domain, "TEST")) {
+            s_sendmore (handler, "200");
+            s_sendmore (handler, "OK");
+            s_sendmore (handler, "anonymous");
+            s_send     (handler, "");
+        }
+        else {
+            s_sendmore (handler, "400");
+            s_sendmore (handler, "BAD DOMAIN");
+            s_sendmore (handler, "");
+            s_send     (handler, "");
+        }
         free (version);
         free (sequence);
         free (domain);
@@ -70,30 +75,69 @@ int main (void)
     assert (rc == 0);
     void *zap_thread = zmq_threadstart (&zap_handler, handler);
 
-    //  Server socket will accept connections
+    //  We bounce between a binding server and a connecting client
     void *server = zmq_socket (ctx, ZMQ_DEALER);
     assert (server);
-    rc = zmq_setsockopt (server, ZMQ_IDENTITY, "IDENT", 6);
-    assert (rc == 0);
-    rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "TEST", 4);
-    assert (rc == 0);
-    rc = zmq_bind (server, "tcp://*:9999");
-    assert (rc == 0);
-
-    //  Client socket that will try to connect to server
     void *client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
-    rc = zmq_connect (client, "tcp://localhost:9999");
+    
+    //  We first test client/server with no ZAP domain
+    //  Libzmq does not call our ZAP handler, the connect must succeed
+    rc = zmq_bind (server, "tcp://*:9000");
     assert (rc == 0);
-
+    rc = zmq_connect (client, "tcp://localhost:9000");
+    assert (rc == 0);
     bounce (server, client);
-
-    rc = zmq_close (client);
+    zmq_unbind (server, "tcp://*:9000");
+    zmq_disconnect (client, "tcp://localhost:9000");
+    
+    //  Now define a ZAP domain for the server; this enables 
+    //  authentication. We're using the wrong domain so this test
+    //  must fail.
+    //  **************************************************************
+    //  PH: the following causes libzmq to get confused, so that the
+    //  next step fails. To reproduce, uncomment this block. Note that
+    //  even creating a new client/server socket pair, the behaviour
+    //  does not change.
+    //  **************************************************************
+    //  Destroying the old sockets and creating new ones isn't needed,
+    //  but it shows that the problem isn't related to specific sockets.
+    //close_zero_linger (client);
+    //close_zero_linger (server);
+    //server = zmq_socket (ctx, ZMQ_DEALER);
+    //assert (server);
+    //client = zmq_socket (ctx, ZMQ_DEALER);
+    //assert (client);
+    ////  The above code should not be required
+    //rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "WRONG", 5);
+    //assert (rc == 0);
+    //rc = zmq_bind (server, "tcp://*:9001");
+    //assert (rc == 0);
+    //rc = zmq_connect (client, "tcp://localhost:9001");
+    //assert (rc == 0);
+    //expect_bounce_fail (server, client);
+    //zmq_unbind (server, "tcp://*:9001");
+    //zmq_disconnect (client, "tcp://localhost:9001");
+    
+    //  Now use the right domain, the test must pass
+    rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "TEST", 5);
     assert (rc == 0);
-    rc = zmq_close (server);
+    rc = zmq_bind (server, "tcp://*:9002");
     assert (rc == 0);
-
+    rc = zmq_connect (client, "tcp://localhost:9002");
+    assert (rc == 0);
+    //  **************************************************************
+    //  PH: it fails here; though the ZAP reply is 200 OK, and
+    //  null_mechanism.cpp correctly parses that, the connection
+    //  never succeeds and the test hangs.
+    //  **************************************************************
+    bounce (server, client);
+    zmq_unbind (server, "tcp://*:9002");
+    zmq_disconnect (client, "tcp://localhost:9002");
+    
     //  Shutdown
+    close_zero_linger (client);
+    close_zero_linger (server);
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
