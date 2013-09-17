@@ -275,10 +275,10 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             break;
 
-        case ZMQ_PLAIN_SERVER:
-            if (is_int && (value == 0 || value == 1)) {
+        case ZMQ_PLAIN_NODE:
+            if (is_int && (value == ZMQ_CLIENT || value == ZMQ_SERVER)) {
                 as_server = value;
-                mechanism = value? ZMQ_PLAIN: ZMQ_NULL;
+                mechanism = ZMQ_PLAIN;
                 return 0;
             }
             break;
@@ -291,7 +291,6 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             else
             if (optvallen_ > 0 && optvallen_ < 256 && optval_ != NULL) {
                 plain_username.assign ((const char *) optval_, optvallen_);
-                as_server = 0;
                 mechanism = ZMQ_PLAIN;
                 return 0;
             }
@@ -305,7 +304,6 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             else
             if (optvallen_ > 0 && optvallen_ < 256 && optval_ != NULL) {
                 plain_password.assign ((const char *) optval_, optvallen_);
-                as_server = 0;
                 mechanism = ZMQ_PLAIN;
                 return 0;
             }
@@ -320,7 +318,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
 
         //  If libsodium isn't installed, these options provoke EINVAL
 #       ifdef HAVE_LIBSODIUM
-        case ZMQ_CURVE_SERVER:
+        case ZMQ_CURVE_NODE:
             if (is_int && (value == ZMQ_CLIENT || value == ZMQ_SERVER)) {
                 as_server = value;
                 mechanism = ZMQ_CURVE;
@@ -542,9 +540,9 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
             }
             break;
 
-        case ZMQ_PLAIN_SERVER:
+        case ZMQ_PLAIN_NODE:
             if (is_int) {
-                *value = as_server && mechanism == ZMQ_PLAIN;
+                *value = as_server;
                 return 0;
             }
             break;
@@ -575,7 +573,7 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
 
         //  If libsodium isn't installed, these options provoke EINVAL
 #       ifdef HAVE_LIBSODIUM
-        case ZMQ_CURVE_SERVER:
+        case ZMQ_CURVE_NODE:
             if (is_int) {
                 *value = as_server;
                 return 0;
