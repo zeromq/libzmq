@@ -120,7 +120,7 @@ int main (void)
     //zmq_disconnect (client, "tcp://localhost:9001");
     
     //  Now use the right domain, the test must pass
-    rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "TEST", 5);
+    rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "TEST", 4);
     assert (rc == 0);
     rc = zmq_bind (server, "tcp://*:9002");
     assert (rc == 0);
