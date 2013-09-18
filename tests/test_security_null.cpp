@@ -83,12 +83,12 @@ int main (void)
     
     //  We first test client/server with no ZAP domain
     //  Libzmq does not call our ZAP handler, the connect must succeed
-    rc = zmq_bind (server, "tcp://*:9000");
+    rc = zmq_bind (server, "tcp://127.0.0.1:9000");
     assert (rc == 0);
     rc = zmq_connect (client, "tcp://localhost:9000");
     assert (rc == 0);
     bounce (server, client);
-    zmq_unbind (server, "tcp://*:9000");
+    zmq_unbind (server, "tcp://127.0.0.1:9000");
     zmq_disconnect (client, "tcp://localhost:9000");
     
     //  Now define a ZAP domain for the server; this enables 
@@ -111,18 +111,18 @@ int main (void)
     ////  The above code should not be required
     //rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "WRONG", 5);
     //assert (rc == 0);
-    //rc = zmq_bind (server, "tcp://*:9001");
+    //rc = zmq_bind (server, "tcp://127.0.0.1:9001");
     //assert (rc == 0);
     //rc = zmq_connect (client, "tcp://localhost:9001");
     //assert (rc == 0);
     //expect_bounce_fail (server, client);
-    //zmq_unbind (server, "tcp://*:9001");
+    //zmq_unbind (server, "tcp://127.0.0.1:9001");
     //zmq_disconnect (client, "tcp://localhost:9001");
     
     //  Now use the right domain, the test must pass
     rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "TEST", 4);
     assert (rc == 0);
-    rc = zmq_bind (server, "tcp://*:9002");
+    rc = zmq_bind (server, "tcp://127.0.0.1:9002");
     assert (rc == 0);
     rc = zmq_connect (client, "tcp://localhost:9002");
     assert (rc == 0);
@@ -132,7 +132,7 @@ int main (void)
     //  never succeeds and the test hangs.
     //  **************************************************************
     bounce (server, client);
-    zmq_unbind (server, "tcp://*:9002");
+    zmq_unbind (server, "tcp://127.0.0.1:9002");
     zmq_disconnect (client, "tcp://localhost:9002");
     
     //  Shutdown

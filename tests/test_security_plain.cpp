@@ -90,7 +90,7 @@ int main (void)
     int as_server = 1;
     rc = zmq_setsockopt (server, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
     assert (rc == 0);
-    rc = zmq_bind (server, "tcp://*:9998");
+    rc = zmq_bind (server, "tcp://127.0.0.1:9998");
     assert (rc == 0);
 
     char username [256];

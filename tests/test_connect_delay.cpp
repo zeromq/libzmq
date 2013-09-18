@@ -41,7 +41,7 @@ int main (void)
     val = 0;
     rc = zmq_setsockopt(to, ZMQ_LINGER, &val, sizeof(val));
     assert (rc == 0);
-    rc = zmq_bind (to, "tcp://*:6555");
+    rc = zmq_bind (to, "tcp://127.0.0.1:6555");
     assert (rc == 0);
 
     // Create a socket pushing to two endpoints - only 1 message should arrive.
@@ -100,7 +100,7 @@ int main (void)
     // Bind the valid socket
     to = zmq_socket (context, ZMQ_PULL);
     assert (to);
-    rc = zmq_bind (to, "tcp://*:5560");
+    rc = zmq_bind (to, "tcp://127.0.0.1:5560");
     assert (rc == 0);
 
     val = 0;
@@ -174,7 +174,7 @@ int main (void)
     int on = 1;
     rc = zmq_setsockopt (frontend, ZMQ_DELAY_ATTACH_ON_CONNECT, &on, sizeof (on));
     assert (rc == 0);
-    rc = zmq_bind (backend, "tcp://*:5560");
+    rc = zmq_bind (backend, "tcp://127.0.0.1:5560");
     assert (rc == 0);
     rc = zmq_connect (frontend, "tcp://localhost:5560");
     assert (rc == 0);
@@ -205,7 +205,7 @@ int main (void)
     assert (backend);
     rc = zmq_setsockopt (backend, ZMQ_LINGER, &zero, sizeof (zero));
     assert (rc == 0);
-    rc = zmq_bind (backend, "tcp://*:5560");
+    rc = zmq_bind (backend, "tcp://127.0.0.1:5560");
     assert (rc == 0);
 
     //  Ping backend to frontend so we know when the connection is up
