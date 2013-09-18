@@ -69,32 +69,32 @@ namespace zmq
         //  Current FSM state
         state_t state;
 
-        //  Our permanent public key (C)
-        uint8_t our_perma_pub_key [crypto_box_PUBLICKEYBYTES];
+        //  Our public key (C)
+        uint8_t public_key [crypto_box_PUBLICKEYBYTES];
 
-        //  Our permanent secret key (c)
-        uint8_t our_perma_sec_key [crypto_box_SECRETKEYBYTES];
+        //  Our secret key (c)
+        uint8_t secret_key [crypto_box_SECRETKEYBYTES];
 
-        //  Our transient public key (C')
-        uint8_t our_trans_pub_key [crypto_box_PUBLICKEYBYTES];
+        //  Our short-term public key (C')
+        uint8_t cn_public [crypto_box_PUBLICKEYBYTES];
 
-        //  Our transient secret key (c')
-        uint8_t our_trans_sec_key [crypto_box_SECRETKEYBYTES];
+        //  Our short-term secret key (c')
+        uint8_t cn_secret [crypto_box_SECRETKEYBYTES];
 
-        //  Peer's public key (S)
-        uint8_t peer_perma_pub_key [crypto_box_PUBLICKEYBYTES];
+        //  Server's public key (S)
+        uint8_t server_key [crypto_box_PUBLICKEYBYTES];
 
-        //  Server's transient public key (S')
-        uint8_t peer_trans_pub_key [crypto_box_PUBLICKEYBYTES];
+        //  Server's short-term public key (S')
+        uint8_t cn_server [crypto_box_PUBLICKEYBYTES];
 
         //  Cookie received from server
-        uint8_t cookie [16 + 80];
+        uint8_t cn_cookie [16 + 80];
 
         //  Intermediary buffer used to seepd up boxing and unboxing.
-        uint8_t precomputed [crypto_box_BEFORENMBYTES];
+        uint8_t cn_precom [crypto_box_BEFORENMBYTES];
 
         //  Nonce
-        uint64_t nonce;
+        uint64_t cn_nonce;
 
         int produce_hello (msg_t *msg_);
         int process_welcome (msg_t *msg_);

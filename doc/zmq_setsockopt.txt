@@ -16,8 +16,9 @@ Caution: All options, with the exception of ZMQ_SUBSCRIBE, ZMQ_UNSUBSCRIBE,
 ZMQ_LINGER, ZMQ_ROUTER_MANDATORY, ZMQ_PROBE_ROUTER, ZMQ_XPUB_VERBOSE,
 ZMQ_REQ_STRICT, ZMQ_REQ_REQUEST_IDS only take effect for subsequent socket
 bind/connects.
-Specifically, security options take effect for subsequent binds/connects and can be
-changed at any time to affect subsequent binds and/or connects.
+
+Specifically, security options take effect for subsequent bind/connect calls,
+and can be changed at any time to affect subsequent binds and/or connects.
 
 DESCRIPTION
 -----------

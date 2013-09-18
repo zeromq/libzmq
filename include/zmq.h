@@ -269,23 +269,18 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 #define ZMQ_ROUTER_RAW 41
 #define ZMQ_IPV6 42
 #define ZMQ_MECHANISM 43
-#define ZMQ_PLAIN_NODE 44
+#define ZMQ_PLAIN_SERVER 44
 #define ZMQ_PLAIN_USERNAME 45
 #define ZMQ_PLAIN_PASSWORD 46
-#define ZMQ_CURVE_NODE 47
-#define ZMQ_CURVE_OUR_PERMA_PUB_KEY 48
-#define ZMQ_CURVE_OUR_PERMA_SEC_KEY 49
-#define ZMQ_CURVE_PEER_PERMA_PUB_KEY 50
-#define ZMQ_CURVE_PEER_PERMA_SEC_KEY 51
-#define ZMQ_PROBE_ROUTER 52
-#define ZMQ_REQ_REQUEST_IDS 53
-#define ZMQ_REQ_STRICT 54
-#define ZMQ_CONFLATE 55
-#define ZMQ_ZAP_DOMAIN 56
-
-/*  Peer type : server or client                                              */
-#define ZMQ_SERVER 1
-#define ZMQ_CLIENT 0
+#define ZMQ_CURVE_SERVER 47
+#define ZMQ_CURVE_PUBLICKEY 48
+#define ZMQ_CURVE_SECRETKEY 49
+#define ZMQ_CURVE_SERVERKEY 50
+#define ZMQ_PROBE_ROUTER 51
+#define ZMQ_REQ_REQUEST_IDS 52
+#define ZMQ_REQ_STRICT 53
+#define ZMQ_CONFLATE 54
+#define ZMQ_ZAP_DOMAIN 55
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1

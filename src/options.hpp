@@ -42,9 +42,6 @@ namespace zmq
         int setsockopt (int option_, const void *optval_, size_t optvallen_);
         int getsockopt (int option_, void *optval_, size_t *optvallen_);
 
-        int setcurvekey (uint8_t* curve_key, const void *optval_, size_t optvallen_);
-        int getcurvekey (uint8_t* curve_key, void *optval_, size_t *optvallen_);
-
         //  High-water marks for message pipes.
         int sndhwm;
         int rcvhwm;
@@ -134,10 +131,9 @@ namespace zmq
         std::string plain_password;
 
         //  Security credentials for CURVE mechanism
-        uint8_t curve_our_perma_pub_key [CURVE_KEYSIZE];
-        uint8_t curve_our_perma_sec_key [CURVE_KEYSIZE];
-        uint8_t curve_peer_perma_pub_key [CURVE_KEYSIZE];
-        uint8_t curve_peer_perma_sec_key [CURVE_KEYSIZE]; // normally unused - for test and possible future extensions
+        uint8_t curve_public_key [CURVE_KEYSIZE];
+        uint8_t curve_secret_key [CURVE_KEYSIZE];
+        uint8_t curve_server_key [CURVE_KEYSIZE];
 
         //  ID of the socket.
         int socket_id;
