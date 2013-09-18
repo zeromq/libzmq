@@ -28,7 +28,7 @@ int main (void)
     //  Create server and bind to endpoint
     void *server = zmq_socket (ctx, ZMQ_ROUTER);
     assert (server);
-    int rc = zmq_bind (server, "tcp://*:5560");
+    int rc = zmq_bind (server, "tcp://127.0.0.1:5560");
     assert (rc == 0);
 
     //  Create client and connect to server, doing a probe

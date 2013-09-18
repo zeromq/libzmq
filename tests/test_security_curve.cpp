@@ -109,7 +109,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_setsockopt (server, ZMQ_IDENTITY, "IDENT", 6);
     assert (rc == 0);
-    rc = zmq_bind (server, "tcp://*:9998");
+    rc = zmq_bind (server, "tcp://127.0.0.1:9998");
     assert (rc == 0);
 
     //  Check CURVE security with valid credentials

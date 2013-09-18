@@ -125,7 +125,7 @@ int main (void)
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
-    const char *binds [] = { "inproc://a", "tcp://*:5555" };
+    const char *binds [] = { "inproc://a", "tcp://127.0.0.1:5555" };
     const char *connects [] = { "inproc://a", "tcp://localhost:5555" };
 
     for (int transport = 0; transport < 2; ++transport) {

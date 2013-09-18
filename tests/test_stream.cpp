@@ -54,7 +54,7 @@ test_stream_to_dealer (void)
     int zero = 0;
     rc = zmq_setsockopt (stream, ZMQ_LINGER, &zero, sizeof (zero));
     assert (rc == 0);
-    rc = zmq_bind (stream, "tcp://*:5556");
+    rc = zmq_bind (stream, "tcp://127.0.0.1:5556");
     assert (rc == 0);
 
     //  We'll be using this socket as the other peer
@@ -173,7 +173,7 @@ test_stream_to_stream (void)
     
     void *server = zmq_socket (ctx, ZMQ_STREAM);
     assert (server);
-    rc = zmq_bind (server, "tcp://*:8080");
+    rc = zmq_bind (server, "tcp://127.0.0.1:8080");
     assert (rc == 0);
 
     void *client = zmq_socket (ctx, ZMQ_STREAM);
