@@ -36,7 +36,7 @@ int main (void)
     rc = zmq_setsockopt (req, ZMQ_REQ_REQUEST_IDS, &enabled, sizeof (int));
     assert (rc == 0);
 
-    rc = zmq_bind (req, "tcp://*:5555");
+    rc = zmq_bind (req, "tcp://127.0.0.1:5555");
     assert (rc == 0);
 
     const size_t services = 5;

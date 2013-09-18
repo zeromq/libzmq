@@ -42,7 +42,7 @@ int main (void)
     rc = zmq_connect (req, "tcp://localhost:5555");
     assert (rc == 0);
 
-    rc = zmq_bind (router, "tcp://*:5555");
+    rc = zmq_bind (router, "tcp://127.0.0.1:5555");
     assert (rc == 0);
 
     // Send a multi-part request.
