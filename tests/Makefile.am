@@ -37,7 +37,7 @@ noinst_PROGRAMS = test_system \
                   test_req_request_ids \
                   test_req_strict \
                   test_conflate \
-                  test_inproc_connect_before_bind
+                  test_inproc_connect
 
 if !ON_MINGW
 noinst_PROGRAMS += test_shutdown_stress \
@@ -81,7 +81,7 @@ test_spec_pushpull_SOURCES = test_spec_pushpull.cpp
 test_req_request_ids_SOURCES = test_req_request_ids.cpp
 test_req_strict_SOURCES = test_req_strict.cpp
 test_conflate_SOURCES = test_conflate.cpp
-test_inproc_connect_before_bind_SOURCES = test_inproc_connect_before_bind.cpp
+test_inproc_connect_SOURCES = test_inproc_connect.cpp
 if !ON_MINGW
 test_shutdown_stress_SOURCES = test_shutdown_stress.cpp
 test_pair_ipc_SOURCES = test_pair_ipc.cpp testutil.hpp
