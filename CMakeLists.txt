@@ -610,7 +610,7 @@ set(tests
         test_sub_forward
         test_term_endpoint
         test_timeo
-        test_inproc_connect_before_bind)
+        test_inproc_connect)
 if(NOT WIN32)
 list(APPEND tests
         test_monitor
