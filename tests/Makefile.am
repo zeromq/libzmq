@@ -14,7 +14,7 @@ noinst_PROGRAMS = test_system \
                   test_invalid_rep \
                   test_msg_flags \
                   test_connect_resolve \
-                  test_connect_delay \
+                  test_immediate \
                   test_last_endpoint \
                   test_term_endpoint \
                   test_linger \
@@ -59,7 +59,7 @@ test_invalid_rep_SOURCES = test_invalid_rep.cpp
 test_linger_SOURCES = test_linger.cpp
 test_msg_flags_SOURCES = test_msg_flags.cpp
 test_connect_resolve_SOURCES = test_connect_resolve.cpp
-test_connect_delay_SOURCES = test_connect_delay.cpp
+test_immediate_SOURCES = test_immediate.cpp
 test_last_endpoint_SOURCES = test_last_endpoint.cpp
 test_term_endpoint_SOURCES = test_term_endpoint.cpp
 test_monitor_SOURCES = test_monitor.cpp
