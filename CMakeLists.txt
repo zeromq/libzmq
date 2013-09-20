@@ -421,8 +421,8 @@ foreach(source ${rc-sources})
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/${source}.in ${CMAKE_CURRENT_BINARY_DIR}/${source})
 endforeach()
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/platform.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/platform.hpp)
-list(APPEND sources ${CMAKE_CURRENT_BINARY_DIR}/platform.hpp)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/platform.hpp.in ${CMAKE_CURRENT_SOURCE_DIR}/src/platform.hpp)
+list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/src/platform.hpp)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/libzmq.pc.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/libzmq.pc)
 set(zmq-pkgconfig ${CMAKE_CURRENT_BINARY_DIR}/libzmq.pc)
