@@ -117,7 +117,7 @@ int main (void)
 
     // Set the key flag
     val = 1;
-    rc = zmq_setsockopt (from, ZMQ_DELAY_ATTACH_ON_CONNECT, &val, sizeof(val));
+    rc = zmq_setsockopt (from, ZMQ_IMMEDIATE, &val, sizeof(val));
     assert (rc == 0);
 
     // Connect to the invalid socket
@@ -170,9 +170,9 @@ int main (void)
     rc = zmq_setsockopt (frontend, ZMQ_LINGER, &zero, sizeof (zero));
     assert (rc == 0);
 
-    //  Frontend connects to backend using DELAY_ATTACH_ON_CONNECT
+    //  Frontend connects to backend using IMMEDIATE
     int on = 1;
-    rc = zmq_setsockopt (frontend, ZMQ_DELAY_ATTACH_ON_CONNECT, &on, sizeof (on));
+    rc = zmq_setsockopt (frontend, ZMQ_IMMEDIATE, &on, sizeof (on));
     assert (rc == 0);
     rc = zmq_bind (backend, "tcp://127.0.0.1:5560");
     assert (rc == 0);
