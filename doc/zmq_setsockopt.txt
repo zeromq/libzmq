@@ -14,7 +14,7 @@ SYNOPSIS
 
 Caution: All options, with the exception of ZMQ_SUBSCRIBE, ZMQ_UNSUBSCRIBE,
 ZMQ_LINGER, ZMQ_ROUTER_MANDATORY, ZMQ_PROBE_ROUTER, ZMQ_XPUB_VERBOSE,
-ZMQ_REQ_STRICT, ZMQ_REQ_REQUEST_IDS only take effect for subsequent socket
+ZMQ_REQ_CORRELATE, and ZMQ_REQ_RELAXED, only take effect for subsequent socket
 bind/connects.
 
 Specifically, security options take effect for subsequent bind/connect calls,
@@ -461,11 +461,11 @@ Default value:: 0
 Applicable socket types:: ZMQ_XPUB
 
 
-ZMQ_REQ_REQUEST_IDS: enable extra request identity frames
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_REQ_CORRELATE: match replies with requests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The default behavior of REQ sockets is to rely on the ordering of messages
-to match requests and responses and that is usually sufficient. When this option
+The default behavior of REQ sockets is to rely on the ordering of messages to 
+match requests and responses and that is usually sufficient. When this option
 is set to 1, the REQ socket will prefix outgoing messages with an extra frame
 containing a request id. That means the full message is (request id, 0,
 user frames...). The REQ socket will discard all incoming messages that don't
@@ -478,25 +478,25 @@ Default value:: 0
 Applicable socket types:: ZMQ_REQ
 
 
-ZMQ_REQ_STRICT: enforce strict alternation between request and reply
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_REQ_RELAXED: relax strict alternation between request and reply
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When set to 1, a REQ socket does not allow initiating a new request with
+By default, a REQ socket does not allow initiating a new request with
 _zmq_send(3)_ until the reply to the previous one has been received.
-When set to 0, sending another message is allowed and has the effect of
+When set to 1, sending another message is allowed and has the effect of
 disconnecting the underlying connection to the peer from which the reply was
 expected, triggering a reconnection attempt on transports that support it.
 The request-reply state machine is reset and a new request is sent to the
 next available peer.
 
-If set to 0, also enable ZMQ_REQ_REQUEST_IDS to ensure correct
-matching of requests and replies. Otherwise a late reply to an aborted request
-can be reported as the reply to the superseding request.
+If set to 1, also enable ZMQ_REQ_CORRELATE to ensure correct matching of
+requests and replies. Otherwise a late reply to an aborted request can be 
+reported as the reply to the superseding request.
 
 [horizontal]
 Option value type:: int
 Option value unit:: 0, 1
-Default value:: 1
+Default value:: 0
 Applicable socket types:: ZMQ_REQ
 
 
