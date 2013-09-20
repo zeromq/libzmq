@@ -24,7 +24,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "platform.hpp"
+/* Just specifying platform.hpp and relying on -I flags doesn't work on AIX */
+#include "../src/platform.hpp"
 
 #if defined ZMQ_HAVE_WINDOWS
 #include <windows.h>
