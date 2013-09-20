@@ -43,7 +43,7 @@ tests/test_invalid_rep
 tests/test_msg_flags
 tests/test_ts_context
 tests/test_connect_resolve
-tests/test_connect_delay
+tests/test_immediate
 tests/test_term_endpoint
 tests/test_router_mandatory
 tests/test_disconnect_inproc
