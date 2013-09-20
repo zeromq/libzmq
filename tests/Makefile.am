@@ -34,8 +34,8 @@ noinst_PROGRAMS = test_system \
                   test_spec_dealer \
                   test_spec_router \
                   test_spec_pushpull \
-                  test_req_request_ids \
-                  test_req_strict \
+                  test_req_correlate \
+                  test_req_relaxed \
                   test_conflate \
                   test_inproc_connect
 
@@ -78,8 +78,8 @@ test_spec_rep_SOURCES = test_spec_rep.cpp
 test_spec_dealer_SOURCES = test_spec_dealer.cpp
 test_spec_router_SOURCES = test_spec_router.cpp
 test_spec_pushpull_SOURCES = test_spec_pushpull.cpp
-test_req_request_ids_SOURCES = test_req_request_ids.cpp
-test_req_strict_SOURCES = test_req_strict.cpp
+test_req_correlate_SOURCES = test_req_correlate.cpp
+test_req_relaxed_SOURCES = test_req_relaxed.cpp
 test_conflate_SOURCES = test_conflate.cpp
 test_inproc_connect_SOURCES = test_inproc_connect.cpp
 if !ON_MINGW

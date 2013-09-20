@@ -60,8 +60,8 @@ tests/test_spec_pushpull
 tests/test_spec_rep
 tests/test_spec_req
 tests/test_spec_router
-tests/test_req_request_ids
-tests/test_req_strict
+tests/test_req_correlate
+tests/test_req_relaxed
 tests/test_fork
 tests/test_conflate
 tests/test_inproc_connect
