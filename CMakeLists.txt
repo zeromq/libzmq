@@ -579,7 +579,7 @@ endif()
 enable_testing()
 set(tests 
         test_system
-        test_connect_delay
+        test_immediate
         test_connect_resolve
         test_ctx_destroy
         test_ctx_options
@@ -592,8 +592,8 @@ set(tests
         test_pair_inproc
         test_pair_tcp
         test_probe_router
-        test_req_request_ids
-        test_req_strict
+        test_req_correlate
+        test_req_relaxed
         test_reqrep_device
         test_reqrep_inproc
         test_reqrep_tcp

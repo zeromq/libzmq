@@ -72,8 +72,8 @@ typedef unsigned __int16 uint16_t;
 /******************************************************************************/
 
 /*  Version macros for compile-time API version detection                     */
-#define ZMQ_VERSION_MAJOR 3
-#define ZMQ_VERSION_MINOR 3
+#define ZMQ_VERSION_MAJOR 4
+#define ZMQ_VERSION_MINOR 0
 #define ZMQ_VERSION_PATCH 0
 
 #define ZMQ_MAKE_VERSION(major, minor, patch) \
@@ -277,8 +277,8 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 #define ZMQ_CURVE_SECRETKEY 49
 #define ZMQ_CURVE_SERVERKEY 50
 #define ZMQ_PROBE_ROUTER 51
-#define ZMQ_REQ_REQUEST_IDS 52
-#define ZMQ_REQ_STRICT 53
+#define ZMQ_REQ_CORRELATE 52
+#define ZMQ_REQ_RELAXED 53
 #define ZMQ_CONFLATE 54
 #define ZMQ_ZAP_DOMAIN 55
 

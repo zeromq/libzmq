@@ -88,7 +88,6 @@ libzmq_la_SOURCES = \
     dealer.hpp \
     xsub.hpp \
     ypipe.hpp \
-    ypipe_flat.hpp \
     yqueue.hpp \
     address.cpp \
     clock.cpp \

@@ -14,7 +14,7 @@ noinst_PROGRAMS = test_system \
                   test_invalid_rep \
                   test_msg_flags \
                   test_connect_resolve \
-                  test_connect_delay \
+                  test_immediate \
                   test_last_endpoint \
                   test_term_endpoint \
                   test_linger \
@@ -34,8 +34,8 @@ noinst_PROGRAMS = test_system \
                   test_spec_dealer \
                   test_spec_router \
                   test_spec_pushpull \
-                  test_req_request_ids \
-                  test_req_strict \
+                  test_req_correlate \
+                  test_req_relaxed \
                   test_conflate \
                   test_inproc_connect
 
@@ -59,7 +59,7 @@ test_invalid_rep_SOURCES = test_invalid_rep.cpp
 test_linger_SOURCES = test_linger.cpp
 test_msg_flags_SOURCES = test_msg_flags.cpp
 test_connect_resolve_SOURCES = test_connect_resolve.cpp
-test_connect_delay_SOURCES = test_connect_delay.cpp
+test_immediate_SOURCES = test_immediate.cpp
 test_last_endpoint_SOURCES = test_last_endpoint.cpp
 test_term_endpoint_SOURCES = test_term_endpoint.cpp
 test_monitor_SOURCES = test_monitor.cpp
@@ -78,8 +78,8 @@ test_spec_rep_SOURCES = test_spec_rep.cpp
 test_spec_dealer_SOURCES = test_spec_dealer.cpp
 test_spec_router_SOURCES = test_spec_router.cpp
 test_spec_pushpull_SOURCES = test_spec_pushpull.cpp
-test_req_request_ids_SOURCES = test_req_request_ids.cpp
-test_req_strict_SOURCES = test_req_strict.cpp
+test_req_correlate_SOURCES = test_req_correlate.cpp
+test_req_relaxed_SOURCES = test_req_relaxed.cpp
 test_conflate_SOURCES = test_conflate.cpp
 test_inproc_connect_SOURCES = test_inproc_connect.cpp
 if !ON_MINGW

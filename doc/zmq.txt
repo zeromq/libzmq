@@ -140,6 +140,7 @@ Sending and receiving messages::
     linkzmq:zmq_msg_recv[3]
     linkzmq:zmq_send[3]
     linkzmq:zmq_recv[3]
+    linkzmq:zmq_send_const[3]
 
 .Input/output multiplexing
 0MQ provides a mechanism for applications to multiplex input/output events over

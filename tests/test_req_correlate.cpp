@@ -32,7 +32,7 @@ int main (void)
     assert (router);
 
     int enabled = 1;
-    int rc = zmq_setsockopt (req, ZMQ_REQ_REQUEST_IDS, &enabled, sizeof (int));
+    int rc = zmq_setsockopt (req, ZMQ_REQ_CORRELATE, &enabled, sizeof (int));
     assert (rc == 0);
 
     int rcvtimeo = 100;
