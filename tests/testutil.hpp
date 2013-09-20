@@ -22,7 +22,8 @@
 
 #include "../include/zmq.h"
 #include "../include/zmq_utils.h"
-#include "platform.hpp"
+/* Just specifying platform.hpp and relying on -I flags doesn't work on AIX */
+#include "../src/platform.hpp"
 
 #undef NDEBUG
 #include <time.h>
