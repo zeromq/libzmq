@@ -1,4 +1,4 @@
-EXTRA_DIST = curve_keygen.c z85_codec.h
+EXTRA_DIST = curve_keygen.c 
 
 INCLUDES = -I$(top_srcdir)/include
 
