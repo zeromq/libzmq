@@ -28,12 +28,11 @@ int main (void)
     void *req = zmq_socket (ctx, ZMQ_REQ);
     assert (req);
 
-    int disabled = 0;
-    int rc = zmq_setsockopt (req, ZMQ_REQ_STRICT, &disabled, sizeof (int));
+    int enabled = 1;
+    int rc = zmq_setsockopt (req, ZMQ_REQ_RELAXED, &enabled, sizeof (int));
     assert (rc == 0);
 
-    int enabled = 1;
-    rc = zmq_setsockopt (req, ZMQ_REQ_REQUEST_IDS, &enabled, sizeof (int));
+    rc = zmq_setsockopt (req, ZMQ_REQ_CORRELATE, &enabled, sizeof (int));
     assert (rc == 0);
 
     rc = zmq_bind (req, "tcp://127.0.0.1:5555");
