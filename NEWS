@@ -8,7 +8,7 @@ Major changes
   Does not yet implement the SUBSCRIBE, CANCEL, PING, and PONG commands.
   
 * New security framework, from plain user+password to strong encryption, 
-  see section below.
+  see section below. See http://hintjens.com/blog:49 for a tutorial.
   
 * New ZMQ_STREAM socket type for working as a TCP client or server. See: 
   tests/test_stream.cpp.
