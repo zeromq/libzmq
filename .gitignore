@@ -68,6 +68,8 @@ tests/test_inproc_connect
 tests/test_linger
 tests/test_security_null
 tests/test_security_plain
+tests/test*.log
+tests/test*.trs
 src/platform.hpp*
 src/stamp-h1
 perf/local_lat
