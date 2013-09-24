@@ -62,6 +62,9 @@ typedef __int32 int32_t;
 #   ifndef uint16_t
 typedef unsigned __int16 uint16_t;
 #   endif
+#   ifndef uint8_t
+typedef unsigned __int8 uint8_t;
+#   endif
 #else
 #   include <stdint.h>
 #endif
