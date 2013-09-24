@@ -22,8 +22,21 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <stdint.h>
 #include <stdlib.h>
+
+/*  Define integer types needed for event interface                          */
+#if defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_OPENVMS
+#   include <inttypes.h>
+#elif defined _MSC_VER && _MSC_VER < 1600
+#   ifndef int32_t
+typedef __int32 int32_t;
+#   endif
+#   ifndef uint16_t
+typedef unsigned __int16 uint16_t;
+#   endif
+#else
+#   include <stdint.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
