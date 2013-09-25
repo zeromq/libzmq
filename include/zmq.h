@@ -296,6 +296,8 @@ ZMQ_EXPORT char *zmq_msg_gets (zmq_msg_t *msg, char *property);
 #define ZMQ_IPC_FILTER_UID 59
 #define ZMQ_IPC_FILTER_GID 60
 #define ZMQ_CONNECT_RID 61 
+#define ZMQ_GSSAPI_SERVER 62
+#define ZMQ_GSSAPI_CLIENT 63
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1
@@ -309,6 +311,7 @@ ZMQ_EXPORT char *zmq_msg_gets (zmq_msg_t *msg, char *property);
 #define ZMQ_NULL 0
 #define ZMQ_PLAIN 1
 #define ZMQ_CURVE 2
+#define ZMQ_GSSAPI 3
 
 /*  Deprecated options and aliases                                            */
 #define ZMQ_IPV4ONLY                31
