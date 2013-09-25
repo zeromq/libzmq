@@ -29,9 +29,10 @@ AC_SUBST(PACKAGE_VERSION)
 # ZeroMQ versions 2.1.x: 1:0:0 (ABI version 1)
 # ZeroMQ version 3.0: 2:0:0 (ABI version 2)
 # ZeroMQ version 3.1: 3:0:0 (ABI version 3)
+# ZeroMQ version 4.0: 4:0:1 (ABI version 4)
 #
 # libzmq -version-info current:revision:age
-LTVER="3:0:0"
+LTVER="4:0:1"
 AC_SUBST(LTVER)
 
 # Take a copy of original flags
@@ -61,6 +62,45 @@ LIBZMQ_CHECK_ENABLE_DEBUG
 
 # Check wheter to enable code coverage
 LIBZMQ_WITH_GCOV
+
+# Allow libsodium to be installed in a custom path:
+
+AC_ARG_WITH([libsodium],
+            [AS_HELP_STRING([--with-libsodium],
+                            [Specify libsodium prefix])],
+            [zmq_search_libsodium="yes"],
+            [])
+
+if test "x$zmq_search_libsodium" = "xyes"; then
+    if test -r "${with_libsodium}/include/sodium.h"; then
+        CXXFLAGS="-I${with_libsodium}/include ${CXXFLAGS}"
+        LDFLAGS="-L${with_libsodium}/lib ${LDFLAGS}"
+    fi
+fi
+
+AC_ARG_WITH([libsodium-include-dir],
+            [AS_HELP_STRING([--with-libsodium-include-dir],
+                            [Specify libsodium include prefix])],
+            [zmq_search_libsodium_include="yes"],
+            [])
+
+if test "x$zmq_search_libsodium_include" = "xyes"; then
+    if test -r "${with_libsodium_include_dir}/sodium.h"; then
+        CXXFLAGS="-I${with_libsodium_include_dir}/include ${CXXFLAGS}"
+    fi
+fi
+
+AC_ARG_WITH([libsodium_lib_dir],
+            [AS_HELP_STRING([--with-libsodium-lib-dir],
+                            [Specify libsodium library prefix])],
+            [zmq_search_libsodium_lib="yes"],
+            [])
+
+if test "x$zmq_search_libsodium_lib" = "xyes"; then
+    if test -r "${with_libsodium_lib_dir}/libsodium.{a|so|dylib}"; then
+        LDFLAGS="-L${with_libsodium}/lib ${LDFLAGS}"
+    fi
+fi
 
 # Checks for libraries
 AC_CHECK_LIB([pthread], [pthread_create])
