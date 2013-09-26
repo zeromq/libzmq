@@ -739,7 +739,7 @@ int zmq::stream_engine_t::write (const void *data_, size_t size_)
     //  we'll get an error (this may happen during the speculative write).
     if (nbytes == SOCKET_ERROR && WSAGetLastError () == WSAEWOULDBLOCK)
         return 0;
-		
+        
     //  Signalise peer failure.
     if (nbytes == SOCKET_ERROR && (
           WSAGetLastError () == WSAENETDOWN ||
