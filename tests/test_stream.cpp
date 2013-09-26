@@ -102,7 +102,6 @@ test_stream_to_dealer (void)
         assert (rc >= 0);
         bytes_read += rc;
     }
-    assert (rc == 97);
 
     //  First two bytes are major and minor version numbers.
     assert (buffer [0] == 3);       //  ZMTP/3.0
