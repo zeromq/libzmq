@@ -610,14 +610,15 @@ set(tests
         test_sub_forward
         test_term_endpoint
         test_timeo
-        test_inproc_connect)
+        test_inproc_connect
+        test_issue_566)
 if(NOT WIN32)
 list(APPEND tests
         test_monitor
         test_pair_ipc
         test_reqrep_ipc
         test_stream)
-endif()		
+endif()     
 
 foreach(test ${tests})
   add_executable(${test} tests/${test}.cpp)
