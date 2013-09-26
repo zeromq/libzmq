@@ -286,7 +286,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             break;
 
         case ZMQ_ZAP_DOMAIN:
-            if (optvallen_ >= 0 && optvallen_ < 256) {
+            if (optvallen_ < 256) {
                 zap_domain.assign ((const char *) optval_, optvallen_);
                 return 0;
             }

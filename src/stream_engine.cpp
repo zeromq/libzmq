@@ -652,6 +652,7 @@ void zmq::stream_engine_t::mechanism_ready ()
             return;
         }
         errno_assert (rc == 0);
+        session->flush ();
     }
 
     read_msg = &stream_engine_t::pull_and_encode;
