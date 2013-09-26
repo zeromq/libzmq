@@ -1,3 +1,16 @@
+0MQ version 4.0.1 (RC2), released on 2013/
+===============================================
+
+Bug fixes
+---------
+
+* Fixed some build/test errors on OS/X + Clang++.
+
+* Updated CURVE mechanism to track revised RFC 27 (INITIATE vouch).
+
+* Fixed LIBZMQ-566 (dealer-to-router connections sometimes failing).
+
+
 0MQ version 4.0.0 (RC1), released on 2013/09/20
 ===============================================
 
