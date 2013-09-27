@@ -102,11 +102,6 @@ if test "x$zmq_search_libsodium_lib" = "xyes"; then
     fi
 fi
 
-# Checks for libraries
-AC_CHECK_LIB([pthread], [pthread_create])
-AC_CHECK_LIB([rt], [clock_gettime])
-AC_CHECK_LIB([sodium], [sodium_init],,AC_MSG_WARN(libsodium is needed for CURVE security))
-
 # Set pedantic
 libzmq_pedantic="yes"
 
@@ -161,6 +156,8 @@ case "${host_os}" in
         if test "x$solaris_has_atomic" = "xno"; then
             AC_DEFINE(ZMQ_FORCE_MUTEXES, 1, [Force to use mutexes])
         fi
+        # ssp library is required for libsodium on Solaris-like systems
+        LDFLAGS="-lssp $LDFLAGS"
         ;;
     *freebsd*)
         # Define on FreeBSD to enable all library features
@@ -253,6 +250,11 @@ case "${host_os}" in
         AC_MSG_ERROR([unsupported system: ${host_os}.])
         ;;
 esac
+
+# Checks for libraries
+AC_CHECK_LIB([pthread], [pthread_create])
+AC_CHECK_LIB([rt], [clock_gettime])
+AC_CHECK_LIB([sodium], [sodium_init],,AC_MSG_WARN(libsodium is needed for CURVE security))
 
 #
 # Check if the compiler supports -fvisibility=hidden flag. MinGW32 uses __declspec
