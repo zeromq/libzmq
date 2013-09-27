@@ -53,6 +53,8 @@ namespace zmq
             waiting_for_welcome,
             sending_initiate,
             waiting_for_initiate,
+            sending_token,
+            waiting_for_token,
             sending_ready,
             waiting_for_ready,
             waiting_for_zap_reply,
@@ -65,18 +67,22 @@ namespace zmq
 
         //  True iff we are awaiting reply from ZAP reply.
         bool expecting_zap_reply;
+        //  True iff we are awaiting another GSS token.
+        bool expecting_another_token;
 
         state_t state;
 
         int produce_hello (msg_t *msg_) const;
         int produce_welcome (msg_t *msg_) const;
         int produce_initiate (msg_t *msg_) const;
+        int produce_token (msg_t *msg_) const;
         int produce_ready (msg_t *msg_) const;
 
         int process_hello (msg_t *msg_);
         int process_welcome (msg_t *msg);
-        int process_ready (msg_t *msg_);
         int process_initiate (msg_t *msg_);
+        int process_token (msg_t *msg_);
+        int process_ready (msg_t *msg_);
 
         void send_zap_request (const std::string &username,
                                const std::string &password);
