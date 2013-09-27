@@ -158,6 +158,7 @@ case "${host_os}" in
         fi
         # ssp library is required for libsodium on Solaris-like systems
         LDFLAGS="-lssp $LDFLAGS"
+        CPPFLAGS="$CPPFLAGS -Wno-long-long"
         ;;
     *freebsd*)
         # Define on FreeBSD to enable all library features
