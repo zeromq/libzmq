@@ -82,6 +82,12 @@ ZMQ_EXPORT void *zmq_threadstart (zmq_thread_fn* func, void* arg);
 /* Wait for thread to complete then free up resources.                        */
 ZMQ_EXPORT void zmq_threadclose (void* thread);
 
+/* Encode data with Z85 encoding. Returns encoded data                        */
+ZMQ_EXPORT char *zmq_z85_encode (char *dest, uint8_t *data, size_t size);
+
+/* Decode data with Z85 encoding. Returns decoded data                        */
+ZMQ_EXPORT uint8_t *zmq_z85_decode (uint8_t *dest, char *string);
+
 #undef ZMQ_EXPORT
 
 #ifdef __cplusplus
