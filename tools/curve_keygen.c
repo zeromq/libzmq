@@ -25,6 +25,7 @@
 */
 
 #include <assert.h>
+#include <platform.hpp>
 #include <zmq_utils.h>
 #ifdef HAVE_LIBSODIUM
 #   include <sodium.h>
