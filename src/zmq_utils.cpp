@@ -30,6 +30,10 @@
 #else
 #include "windows.hpp"
 #endif
+#ifdef HAVE_LIBSODIUM
+#   include <sodium.h>
+#endif
+
 
 void zmq_sleep (int seconds_)
 {
@@ -125,7 +129,7 @@ char *zmq_z85_encode (char *dest, uint8_t *data, size_t size)
     return dest;
 }
 
-    
+
 //  --------------------------------------------------------------------------
 //  Decode an encoded string into a binary frame; dest must be at least
 //  strlen (string) * 4 / 5 bytes long. Returns dest. strlen (string) 
@@ -152,4 +156,35 @@ uint8_t *zmq_z85_decode (uint8_t *dest, char *string)
     }
     assert (byte_nbr == strlen (string) * 4 / 5);
     return dest;
+}
+
+//  --------------------------------------------------------------------------
+//  Generate a public/private keypair with libsodium.
+//  Generated keys will be 40 byte z85-encoded strings.
+//  Returns 0 on success, -1 on failure, setting errno.
+//  Sets errno = ENOTSUP in the absence of libsodium.
+
+int zmq_curve_keypair (char* z85_public_key, char *z85_secret_key)
+{
+#ifdef HAVE_LIBSODIUM
+#   if crypto_box_PUBLICKEYBYTES != 32 \
+    || crypto_box_SECRETKEYBYTES != 32
+#       error "libsodium not built correctly"
+#   endif
+
+    uint8_t public_key [32];
+    uint8_t secret_key [32];
+
+    int rc = crypto_box_keypair (public_key, secret_key);
+    // is there a sensible errno to set here?
+    if (rc) return rc;
+    
+    zmq_z85_encode (z85_public_key, public_key, 32);
+    zmq_z85_encode (z85_secret_key, secret_key, 32);
+    
+    return 0;
+#else // requires libsodium
+    errno = ENOTSUP;
+    return -1;
+#endif
 }
