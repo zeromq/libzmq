@@ -104,10 +104,14 @@ static uint8_t decoder [96] = {
 //  Encode a binary frame as a string; destination string MUST be at least
 //  size * 5 / 4 bytes long plus 1 byte for the null terminator. Returns
 //  dest. Size must be a multiple of 4.
+//  Returns NULL and sets errno = EINVAL for invalid input.
 
 char *zmq_z85_encode (char *dest, uint8_t *data, size_t size)
 {
-    assert (size % 4 == 0);
+    if (size % 4 != 0) {
+        errno = EINVAL;
+        return NULL;
+    }
     unsigned int char_nbr = 0;
     unsigned int byte_nbr = 0;
     uint32_t value = 0;
@@ -134,10 +138,15 @@ char *zmq_z85_encode (char *dest, uint8_t *data, size_t size)
 //  Decode an encoded string into a binary frame; dest must be at least
 //  strlen (string) * 4 / 5 bytes long. Returns dest. strlen (string) 
 //  must be a multiple of 5.
+//  Returns NULL and sets errno = EINVAL for invalid input.
 
 uint8_t *zmq_z85_decode (uint8_t *dest, char *string)
 {
-    assert (strlen (string) % 5 == 0);
+    
+    if (strlen (string) % 5 != 0) {
+        errno = EINVAL;
+        return NULL;
+    }
     unsigned int byte_nbr = 0;
     unsigned int char_nbr = 0;
     uint32_t value = 0;
