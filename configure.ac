@@ -101,7 +101,6 @@ if test "x$zmq_search_libsodium_lib" = "xyes"; then
         LDFLAGS="-L${with_libsodium}/lib ${LDFLAGS}"
     fi
 fi
->>>>>>> aa84e85... Add '-lssp' linker flag for Solaris. Check for libraries after host specific setup.
 
 # Set pedantic
 libzmq_pedantic="yes"
