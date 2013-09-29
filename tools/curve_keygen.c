@@ -26,19 +26,11 @@
 
 #include <assert.h>
 #include <platform.hpp>
+#include <zmq.h>
 #include <zmq_utils.h>
-#ifdef HAVE_LIBSODIUM
-#   include <sodium.h>
-#endif
 
 int main (void)
 {
-#ifdef HAVE_LIBSODIUM
-#   if crypto_box_PUBLICKEYBYTES != 32 \
-    || crypto_box_SECRETKEYBYTES != 32
-#   error "libsodium not built correctly"
-#   endif
-    
     puts ("This tool generates a CurveZMQ keypair, as two printable strings you can");
     puts ("use in configuration files or source code. The encoding uses Z85, which");
     puts ("is a base-85 format that is described in 0MQ RFC 32, and which has an");
@@ -46,23 +38,21 @@ int main (void)
     puts ("always works with the secret key held by one party and the public key");
     puts ("distributed (securely!) to peers wishing to connect to it.");
 
-    uint8_t public_key [32];
-    uint8_t secret_key [32];
+    char public_key [41];
+    char secret_key [41];
+    int rc = zmq_curve_keypair (public_key, secret_key);
+    if (rc != 0) {
+      if (zmq_errno () == ENOTSUP) {
+          puts ("To use curve_keygen, please install libsodium and then rebuild libzmq.");
+      }
+      exit (1);
+    }
 
-    int rc = crypto_box_keypair (public_key, secret_key);
-    assert (rc == 0);
-    
-    char encoded [41];
-    zmq_z85_encode (encoded, public_key, 32);
     puts ("\n== CURVE PUBLIC KEY ==");
-    puts (encoded);
+    puts (public_key);
     
-    zmq_z85_encode (encoded, secret_key, 32);
     puts ("\n== CURVE SECRET KEY ==");
-    puts (encoded);
+    puts (secret_key);
 
-#else
-    puts ("To build curve_keygen, please install libsodium and then rebuild libzmq.");
-#endif
     exit (0);
 }
