@@ -19,11 +19,11 @@
 
 #include "testutil.hpp"
 
-//  Test keys from the zmq_curve man page
-static char client_public [] = "Yne@$w-vo<fVvi]a<NY6T1ed:M$fCG*[IaLV{hID";
-static char client_secret [] = "D:)Q[IlAW!ahhC2ac:9*A}h:p?([4%wOTJ%JR%cs";
-static char server_public [] = "rq:rM>}U?@Lns47E1%kR.o@n%FcmmsL/@{H8]yf7";
-static char server_secret [] = "JTKVSB%%)wK0E.X)V>+}o?pNmC{O&4W4b!Ni{Lh6";
+//  We'll generate random test keys at startup
+static char client_public [41];
+static char client_secret [41];
+static char server_public [41];
+static char server_secret [41];
 
 //  --------------------------------------------------------------------------
 //  Encode a binary frame as a string; destination string MUST be at least
@@ -86,6 +86,13 @@ int main (void)
     printf ("libsodium not installed, skipping CURVE test\n");
     return 0;
 #endif
+
+    //  Generate new keypairs for this test
+    int rc = zmq_curve_keypair (client_public, client_secret);
+    assert (rc == 0);
+    rc = zmq_curve_keypair (server_public, server_secret);
+    assert (rc == 0);
+
     setup_test_environment ();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
@@ -95,7 +102,7 @@ int main (void)
     //  where child thread does not start up fast enough.
     void *handler = zmq_socket (ctx, ZMQ_REP);
     assert (handler);
-    int rc = zmq_bind (handler, "inproc://zeromq.zap.01");
+    rc = zmq_bind (handler, "inproc://zeromq.zap.01");
     assert (rc == 0);
     void *zap_thread = zmq_threadstart (&zap_handler, handler);
 
@@ -175,8 +182,9 @@ int main (void)
 
     //  Check CURVE security with bogus client credentials
     //  This must be caught by the ZAP handler
-    char bogus_public [] = "8)<]6{NT{}=MZBsH)i%l0k}y*^i#80n-Yf{I8Z+P";
-    char bogus_secret [] = "[m9E0TW2Mf?Ke3K>fuBGCrkBpc6aJbj4jv4451Nx";
+    char bogus_public [41];
+    char bogus_secret [41];
+    zmq_curve_keypair (bogus_public, bogus_secret);
 
     client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);

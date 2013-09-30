@@ -1,0 +1,56 @@
+zmq_curve_keypair(3)
+====================
+
+
+NAME
+----
+zmq_curve_keypair - generate a new CURVE keypair
+
+
+SYNOPSIS
+--------
+*int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key);*
+
+
+DESCRIPTION
+-----------
+The _zmq_curve_keypair()_ function shall return a newly generated random
+keypair consisting of a public key and a secret key. The caller provides
+two buffers, each at least 41 octets large, in which this method will
+store the keys. The keys are encoded using linkzmq:zmq_z85_encode[3].
+
+
+RETURN VALUE
+------------
+The _zmq_curve_keypair()_ function shall return 0 if successful, else it
+shall return `-1` and set 'errno' to one of the values defined below.
+
+
+ERRORS
+------
+*ENOTSUP*::
+The libzmq library was not built with cryptographic support (libsodium).
+
+
+EXAMPLE
+-------
+.Generating a new CURVE keypair
+----
+char public_key [41];
+char secret_key [41];
+int rc = crypto_box_keypair (public_key, secret_key);
+assert (rc == 0);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_z85_decode[3]
+linkzmq:zmq_z85_encode[3]
+linkzmq:zmq_curve[7]
+
+
+AUTHORS
+-------
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.
