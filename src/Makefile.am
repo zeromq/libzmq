@@ -25,6 +25,7 @@ libzmq_la_SOURCES = \
     err.hpp \
     fd.hpp \
     fq.hpp \
+    gssapi_mechanism_base.hpp \
     gssapi_client.hpp \
     gssapi_server.hpp \
     i_encoder.hpp \
@@ -103,6 +104,7 @@ libzmq_la_SOURCES = \
     epoll.cpp \
     err.cpp \
     fq.cpp \
+    gssapi_mechanism_base.cpp \
     gssapi_client.cpp \
     gssapi_server.cpp \
     io_object.cpp \

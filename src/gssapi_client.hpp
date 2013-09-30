@@ -20,6 +20,7 @@
 #ifndef __ZMQ_GSSAPI_CLIENT_HPP_INCLUDED__
 #define __ZMQ_GSSAPI_CLIENT_HPP_INCLUDED__
 
+#include "gssapi_mechanism_base.hpp"
 #include "mechanism.hpp"
 #include "options.hpp"
 
@@ -29,7 +30,9 @@ namespace zmq
     class msg_t;
     class session_base_t;
 
-    class gssapi_client_t : public mechanism_t
+    class gssapi_client_t :
+        public gssapi_mechanism_base_t,
+        public mechanism_t
     {
     public:
 
@@ -53,17 +56,12 @@ namespace zmq
             ready
         };
 
-        //  True iff we are awaiting another GSS token.
-        bool expecting_another_token;
-
         state_t state;
 
         int produce_hello (msg_t *msg_) const;
         int produce_initiate (msg_t *msg_) const;
-        int produce_token (msg_t *msg_) const;
 
         int process_welcome (msg_t *msg);
-        int process_token (msg_t *msg_);
         int process_ready (msg_t *msg_);
     };
 

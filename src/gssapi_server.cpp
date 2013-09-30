@@ -32,13 +32,13 @@
 #include "wire.hpp"
 
 zmq::gssapi_server_t::gssapi_server_t (session_base_t *session_,
-                                           const std::string &peer_address_,
-                                           const options_t &options_) :
+                                       const std::string &peer_address_,
+                                       const options_t &options_) :
+    gssapi_mechanism_base_t (),
     mechanism_t (options_),
     session (session_),
     peer_address (peer_address_),
     expecting_zap_reply (false),
-    expecting_another_token (true),
     state (waiting_for_hello)
 {
 }
@@ -206,55 +206,6 @@ int zmq::gssapi_server_t::process_initiate (msg_t *msg_)
     }
     ptr += 9;
     bytes_left -= 9;
-    return parse_metadata (ptr, bytes_left);
-}
-
-int zmq::gssapi_server_t::produce_token (msg_t *msg_) const
-{
-    unsigned char * const command_buffer = (unsigned char *) malloc (512);
-    alloc_assert (command_buffer);
-
-    unsigned char *ptr = command_buffer;
-
-    //  Add command name
-    memcpy (ptr, "\x05TOKEN", 6);
-    ptr += 6;
-
-    //  Add socket type property
-    const char *socket_type = socket_type_string (options.type);
-    ptr += add_property (ptr, "Socket-Type", socket_type, strlen (socket_type));
-
-    //  Add identity property
-    if (options.type == ZMQ_REQ
-    ||  options.type == ZMQ_DEALER
-    ||  options.type == ZMQ_ROUTER) {
-        ptr += add_property (ptr, "Identity",
-            options.identity, options.identity_size);
-    }
-
-    const size_t command_size = ptr - command_buffer;
-    const int rc = msg_->init_size (command_size);
-    errno_assert (rc == 0);
-    memcpy (msg_->data (), command_buffer, command_size);
-    free (command_buffer);
-
-    return 0;
-}
-
-int zmq::gssapi_server_t::process_token (msg_t *msg_)
-{
-    const unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
-    size_t bytes_left = msg_->size ();
-
-    if (bytes_left < 6 || memcmp (ptr, "\x05TOKEN", 6)) {
-        errno = EPROTO;
-        return -1;
-    }
-    ptr += 6;
-    bytes_left -= 6;
-
-    expecting_another_token = false;
-
     return parse_metadata (ptr, bytes_left);
 }
 
