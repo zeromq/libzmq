@@ -194,6 +194,15 @@ Plain-text authentication using username and password::
 Elliptic curve authentication and encryption::
     linkzmq:zmq_curve[7]
 
+Generate a CURVE keypair in armored text format:
+    linkzmq:zmq_curve_keypair[3]
+
+Convert an armored key into a 32-byte binary key:
+    linkzmq:zmq_z85_decode[3]
+
+Convert a 32-byte binary CURVE key to an armored text string:
+    linkzmq:zmq_z85_encode[3]
+
 
 ERROR HANDLING
 --------------
