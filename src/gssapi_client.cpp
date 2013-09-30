@@ -1,0 +1,245 @@
+/*
+    Copyright (c) 2007-2013 Contributors as noted in the AUTHORS file
+
+    This file is part of 0MQ.
+
+    0MQ is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 3 of the License, or
+    (at your option) any later version.
+
+    0MQ is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#include "platform.hpp"
+#ifdef ZMQ_HAVE_WINDOWS
+#include "windows.hpp"
+#endif
+
+#include <string.h>
+#include <string>
+
+#include "msg.hpp"
+#include "session_base.hpp"
+#include "err.hpp"
+#include "gssapi_client.hpp"
+#include "wire.hpp"
+
+zmq::gssapi_client_t::gssapi_client_t (const options_t &options_) :
+    mechanism_t (options_),
+    expecting_another_token (true),
+    state (sending_hello)
+{
+}
+
+zmq::gssapi_client_t::~gssapi_client_t ()
+{
+}
+
+int zmq::gssapi_client_t::next_handshake_command (msg_t *msg_)
+{
+    int rc = 0;
+
+    switch (state) {
+        case sending_hello:
+            rc = produce_hello (msg_);
+            if (rc == 0)
+                state = waiting_for_welcome;
+            break;
+        case sending_initiate:
+            rc = produce_initiate (msg_);
+            if (rc == 0)
+                state = waiting_for_token;
+            break;
+        case sending_token:
+            rc = produce_token (msg_);
+            if (rc == 0)
+                state = waiting_for_ready; //state = expecting_another_token? waiting_for_token: waiting_for_ready;
+            break;
+        default:
+            errno = EAGAIN;
+            rc = -1;
+    }
+    return rc;
+}
+
+int zmq::gssapi_client_t::process_handshake_command (msg_t *msg_)
+{
+    int rc = 0;
+
+    switch (state) {
+        case waiting_for_welcome:
+            rc = process_welcome (msg_);
+            if (rc == 0)
+                state = sending_initiate;
+            break;
+        case waiting_for_token:
+            rc = process_token (msg_);
+            if (rc == 0)
+                state = sending_token; // state = expecting_another_token? sending_token: sending_ready;
+            break;
+        case waiting_for_ready:
+            rc = process_ready (msg_);
+            if (rc == 0)
+                state = ready;
+            break;
+        default:
+            errno = EPROTO;
+            rc = -1;
+            break;
+    }
+    if (rc == 0) {
+        rc = msg_->close ();
+        errno_assert (rc == 0);
+        rc = msg_->init ();
+        errno_assert (rc == 0);
+    }
+    return rc;
+}
+
+bool zmq::gssapi_client_t::is_handshake_complete () const
+{
+    return state == ready;
+}
+
+int zmq::gssapi_client_t::produce_hello (msg_t *msg_) const
+{
+    const std::string username = "admin";
+    zmq_assert (username.length () < 256);
+
+    const std::string password = "secret";
+    zmq_assert (password.length () < 256);
+
+    const size_t command_size = 6 + 1 + username.length ()
+                                  + 1 + password.length ();
+    const int rc = msg_->init_size (command_size);
+    errno_assert (rc == 0);
+
+    unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
+    memcpy (ptr, "\x05HELLO", 6);
+    ptr += 6;
+
+    *ptr++ = static_cast <unsigned char> (username.length ());
+    memcpy (ptr, username.c_str (), username.length ());
+    ptr += username.length ();
+
+    *ptr++ = static_cast <unsigned char> (password.length ());
+    memcpy (ptr, password.c_str (), password.length ());
+    ptr += password.length ();
+
+    return 0;
+}
+
+int zmq::gssapi_client_t::process_welcome (msg_t *msg_)
+{
+    const unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
+    size_t bytes_left = msg_->size ();
+
+    if (bytes_left != 8 ||  memcmp (ptr, "\x07WELCOME", 8)) {
+        errno = EPROTO;
+        return -1;
+    }
+    return 0;
+}
+
+int zmq::gssapi_client_t::produce_initiate (msg_t *msg_) const
+{
+    unsigned char * const command_buffer = (unsigned char *) malloc (512);
+    alloc_assert (command_buffer);
+
+    unsigned char *ptr = command_buffer;
+
+    //  Add mechanism string
+    memcpy (ptr, "\x08INITIATE", 9);
+    ptr += 9;
+
+    //  Add socket type property
+    const char *socket_type = socket_type_string (options.type);
+    ptr += add_property (ptr, "Socket-Type", socket_type, strlen (socket_type));
+
+    //  Add identity property
+    if (options.type == ZMQ_REQ
+    ||  options.type == ZMQ_DEALER
+    ||  options.type == ZMQ_ROUTER) {
+        ptr += add_property (ptr, "Identity",
+            options.identity, options.identity_size);
+    }
+
+    const size_t command_size = ptr - command_buffer;
+    const int rc = msg_->init_size (command_size);
+    errno_assert (rc == 0);
+    memcpy (msg_->data (), command_buffer, command_size);
+    free (command_buffer);
+
+    return 0;
+}
+
+int zmq::gssapi_client_t::produce_token (msg_t *msg_) const
+{
+    unsigned char * const command_buffer = (unsigned char *) malloc (512);
+    alloc_assert (command_buffer);
+
+    unsigned char *ptr = command_buffer;
+
+    //  Add command name
+    memcpy (ptr, "\x05TOKEN", 6);
+    ptr += 6;
+
+    //  Add socket type property
+    const char *socket_type = socket_type_string (options.type);
+    ptr += add_property (ptr, "Socket-Type", socket_type, strlen (socket_type));
+
+    //  Add identity property
+    if (options.type == ZMQ_REQ
+    ||  options.type == ZMQ_DEALER
+    ||  options.type == ZMQ_ROUTER) {
+        ptr += add_property (ptr, "Identity",
+            options.identity, options.identity_size);
+    }
+
+    const size_t command_size = ptr - command_buffer;
+    const int rc = msg_->init_size (command_size);
+    errno_assert (rc == 0);
+    memcpy (msg_->data (), command_buffer, command_size);
+    free (command_buffer);
+
+    return 0;
+}
+
+int zmq::gssapi_client_t::process_token (msg_t *msg_)
+{
+    const unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
+    size_t bytes_left = msg_->size ();
+
+    if (bytes_left < 6 || memcmp (ptr, "\x05TOKEN", 6)) {
+        errno = EPROTO;
+        return -1;
+    }
+    ptr += 6;
+    bytes_left -= 6;
+
+    expecting_another_token = false;
+
+    return parse_metadata (ptr, bytes_left);
+}
+
+int zmq::gssapi_client_t::process_ready (msg_t *msg_)
+{
+    const unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
+    size_t bytes_left = msg_->size ();
+
+    if (bytes_left < 6 || memcmp (ptr, "\x05READY", 6)) {
+        errno = EPROTO;
+        return -1;
+    }
+    ptr += 6;
+    bytes_left -= 6;
+    return parse_metadata (ptr, bytes_left);
+}
+

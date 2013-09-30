@@ -43,7 +43,8 @@
 #include "v2_decoder.hpp"
 #include "null_mechanism.hpp"
 #include "plain_mechanism.hpp"
-#include "gssapi_mechanism.hpp"
+#include "gssapi_client.hpp"
+#include "gssapi_server.hpp"
 #include "curve_client.hpp"
 #include "curve_server.hpp"
 #include "raw_decoder.hpp"
@@ -596,8 +597,11 @@ bool zmq::stream_engine_t::handshake ()
 #endif
         else
         if (memcmp (greeting_recv + 12, "GSSAPI\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
-            mechanism = new (std::nothrow)
-                gssapi_mechanism_t (session, peer_address, options);
+            if (options.as_server)
+                mechanism = new (std::nothrow)
+                    gssapi_server_t (session, peer_address, options);
+            else
+                mechanism = new (std::nothrow) gssapi_client_t (options);
             alloc_assert (mechanism);
         }
         else {

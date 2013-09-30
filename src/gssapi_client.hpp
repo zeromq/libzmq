@@ -17,8 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_GSSAPI_MECHANISM_HPP_INCLUDED__
-#define __ZMQ_GSSAPI_MECHANISM_HPP_INCLUDED__
+#ifndef __ZMQ_GSSAPI_CLIENT_HPP_INCLUDED__
+#define __ZMQ_GSSAPI_CLIENT_HPP_INCLUDED__
 
 #include "mechanism.hpp"
 #include "options.hpp"
@@ -29,64 +29,42 @@ namespace zmq
     class msg_t;
     class session_base_t;
 
-    class gssapi_mechanism_t : public mechanism_t
+    class gssapi_client_t : public mechanism_t
     {
     public:
 
-        gssapi_mechanism_t (session_base_t *session_,
-                            const std::string &peer_address,
-                            const options_t &options_);
-        virtual ~gssapi_mechanism_t ();
+        gssapi_client_t (const options_t &options_);
+        virtual ~gssapi_client_t ();
 
         // mechanism implementation
         virtual int next_handshake_command (msg_t *msg_);
         virtual int process_handshake_command (msg_t *msg_);
-        virtual int zap_msg_available ();
         virtual bool is_handshake_complete () const;
 
     private:
 
         enum state_t {
             sending_hello,
-            waiting_for_hello,
-            sending_welcome,
             waiting_for_welcome,
             sending_initiate,
-            waiting_for_initiate,
             sending_token,
             waiting_for_token,
-            sending_ready,
             waiting_for_ready,
-            waiting_for_zap_reply,
             ready
         };
 
-        session_base_t * const session;
-
-        const std::string peer_address;
-
-        //  True iff we are awaiting reply from ZAP reply.
-        bool expecting_zap_reply;
         //  True iff we are awaiting another GSS token.
         bool expecting_another_token;
 
         state_t state;
 
         int produce_hello (msg_t *msg_) const;
-        int produce_welcome (msg_t *msg_) const;
         int produce_initiate (msg_t *msg_) const;
         int produce_token (msg_t *msg_) const;
-        int produce_ready (msg_t *msg_) const;
 
-        int process_hello (msg_t *msg_);
         int process_welcome (msg_t *msg);
-        int process_initiate (msg_t *msg_);
         int process_token (msg_t *msg_);
         int process_ready (msg_t *msg_);
-
-        void send_zap_request (const std::string &username,
-                               const std::string &password);
-        int receive_and_process_zap_reply ();
     };
 
 }
