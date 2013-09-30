@@ -31,7 +31,6 @@ EXAMPLE
 -------
 .Decoding a CURVE key
 ----
-#include <sodium.h>
 char decoded [] = "rq:rM>}U?@Lns47E1%kR.o@n%FcmmsL/@{H8]yf7";
 uint8_t public_key [32];
 zmq_z85_decode (public_key, decoded);
@@ -41,6 +40,7 @@ zmq_z85_decode (public_key, decoded);
 SEE ALSO
 --------
 linkzmq:zmq_z85_decode[3]
+linkzmq:zmq_curve_keypair[3]
 linkzmq:zmq_curve[7]
 
 
