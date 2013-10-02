@@ -54,7 +54,7 @@ EXAMPLE
 .Setting a limit on the number of sockets
 ----
 void *context = zmq_ctx_new ();
-zmq_ctx_get (context, ZMQ_MAX_SOCKETS, 256);
+zmq_ctx_set (context, ZMQ_MAX_SOCKETS, 256);
 int max_sockets = zmq_ctx_get (context, ZMQ_MAX_SOCKETS);
 assert (max_sockets == 256);
 ----
