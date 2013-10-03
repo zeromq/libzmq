@@ -102,6 +102,20 @@ int zmq::gssapi_client_t::process_handshake_command (msg_t *msg_)
     return rc;
 }
 
+int zmq::gssapi_client_t::encode (msg_t *msg_)
+{
+    int rc = 0;
+    zmq_assert (state == ready);
+    return rc;
+}
+
+int zmq::gssapi_client_t::decode (msg_t *msg_)
+{
+    int rc = 0;
+    zmq_assert (state == ready);
+    return rc;
+}
+
 bool zmq::gssapi_client_t::is_handshake_complete () const
 {
     fprintf(stderr, "%s:%d: is_handshake_complete=%d, security_context_established=%d\n", __FILE__, __LINE__, (state==ready), security_context_established); /// FIXME remove

@@ -107,6 +107,20 @@ int zmq::gssapi_server_t::process_handshake_command (msg_t *msg_)
     return rc;
 }
 
+int zmq::gssapi_server_t::encode (msg_t *msg_)
+{
+    int rc = 0;
+    zmq_assert (state == ready);
+    return rc;
+}
+
+int zmq::gssapi_server_t::decode (msg_t *msg_)
+{
+    int rc = 0;
+    zmq_assert (state == ready);
+    return rc;
+}
+
 int zmq::gssapi_server_t::zap_msg_available ()
 {
     return 0;

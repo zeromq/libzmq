@@ -29,9 +29,8 @@ namespace zmq
 
     class msg_t;
 
-    // Both gssapi_server and gssapi_client need to produce and process
-    // GSSAPI tokens.  Common implementation is captured here.
-
+    /// Both gssapi_server and gssapi_client need to produce and process
+    /// GSSAPI tokens.  Common implementation is captured here.
     class gssapi_mechanism_base_t
     {
     public:
@@ -39,8 +38,15 @@ namespace zmq
         virtual ~gssapi_mechanism_base_t () = 0;
 
     protected:
+        /// Produce a security context initialization token
         int produce_token (msg_t *msg_, int flags_, void *token_value_, size_t token_length_);
+        /// Process a security context initialization token
         int process_token (msg_t *msg_, int &flags_, void **token_value_, size_t &token_length_);
+        /// Produce a wrapped message using the established security context
+        int produce_message (msg_t *msg_);
+        /// Process a wrapped message using the established security context
+        int process_message (msg_t *msg_);
+        /// Acquire security context credentials
         static int acquire_credentials (char * service_name_, gss_cred_id_t * cred_);
 
     protected:

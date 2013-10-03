@@ -124,7 +124,7 @@ int zmq::gssapi_mechanism_base_t::process_token (msg_t *msg_, int &flags_, void 
     ptr += 4;
     bytes_left -= 4;
     
-    // Get token value
+    // Get token value.  TODO do unwrap here to prevent this extra memcpy.
     if (bytes_left < token_length_) {
         errno = EPROTO;
         return -1;
@@ -142,6 +142,72 @@ int zmq::gssapi_mechanism_base_t::process_token (msg_t *msg_, int &flags_, void 
         return -1;
     }
 
+    return 0;
+}
+
+/// TODO add support for TOKEN_SEND_MIC
+/// TODO use gss_wrap_size_limit
+int
+zmq::gssapi_mechanism_base_t::produce_message (msg_t *msg_)
+{
+    // wrap it
+    int state;
+    gss_buffer_desc plaintext;
+    gss_buffer_desc wrapped;
+    plaintext.value = msg_->data ();
+    plaintext.length = msg_->size ();
+ 
+    maj_stat = gss_wrap(&min_stat, context, 1, GSS_C_QOP_DEFAULT,
+                        &plaintext, &state, &wrapped);
+    
+    zmq_assert (maj_stat == GSS_S_COMPLETE);
+    zmq_assert (state);
+
+    // prepare msg_ for wrapped text
+    int rc = msg_->close ();
+    zmq_assert (rc == 0);
+    
+    // produce token
+    const int flags = (TOKEN_DATA | TOKEN_WRAPPED | TOKEN_ENCRYPTED);
+    rc = produce_token (msg_, flags, wrapped.value, wrapped.length);
+    zmq_assert (rc == 0);
+    gss_release_buffer (&min_stat, &wrapped);
+   
+    return 0;
+}
+
+int
+zmq::gssapi_mechanism_base_t::process_message (msg_t *msg_)
+{
+    // process token
+    int flags;
+    gss_buffer_desc wrapped;
+    int rc = process_token(msg_, flags, &wrapped.value, wrapped.length);
+    zmq_assert (rc == 0);
+
+    // ensure valid security context
+    zmq_assert (context != GSS_C_NO_CONTEXT);
+    zmq_assert (flags & TOKEN_WRAPPED);
+    zmq_assert (flags & TOKEN_ENCRYPTED);
+
+    // unwrap
+    int state;
+    gss_buffer_desc plaintext;
+    maj_stat = gss_unwrap(&min_stat, context, &wrapped, &plaintext,
+                          &state, (gss_qop_t *) NULL);
+
+    zmq_assert(maj_stat == GSS_S_COMPLETE);
+    zmq_assert(state);
+
+    // re-init msg_ with plaintext
+    rc = msg_->close ();
+    zmq_assert (rc == 0);
+    msg_->init_size (plaintext.length);
+    zmq_assert (rc == 0);
+    
+    memcpy (msg_->data (), plaintext.value, plaintext.length);
+    gss_release_buffer (&min_stat, &plaintext);
+    gss_release_buffer (&min_stat, &wrapped);
     return 0;
 }
 

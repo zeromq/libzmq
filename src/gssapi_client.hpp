@@ -41,6 +41,8 @@ namespace zmq
         // mechanism implementation
         virtual int next_handshake_command (msg_t *msg_);
         virtual int process_handshake_command (msg_t *msg_);
+        virtual int encode (msg_t *msg_);
+        virtual int decode (msg_t *msg_);
         virtual bool is_handshake_complete () const;
 
     private:
