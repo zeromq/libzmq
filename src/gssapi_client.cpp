@@ -58,7 +58,7 @@ int zmq::gssapi_client_t::next_handshake_command (msg_t *msg_)
                 state = waiting_for_token;
             break;
         case sending_token:
-            rc = produce_token (msg_);
+            rc = produce_token (msg_, 0, (char *) "o, hai!", 7);
             if (rc == 0)
                 state = waiting_for_ready; //state = expecting_another_token? waiting_for_token: waiting_for_ready;
             break;
@@ -72,6 +72,10 @@ int zmq::gssapi_client_t::next_handshake_command (msg_t *msg_)
 int zmq::gssapi_client_t::process_handshake_command (msg_t *msg_)
 {
     int rc = 0;
+    int flags = 0;
+    gss_buffer_desc buf;
+    buf.value = NULL;
+    buf.length = 0;
 
     switch (state) {
         case waiting_for_welcome:
@@ -80,7 +84,7 @@ int zmq::gssapi_client_t::process_handshake_command (msg_t *msg_)
                 state = sending_initiate;
             break;
         case waiting_for_token:
-            rc = process_token (msg_);
+            rc = process_token (msg_, flags, &buf.value, buf.length);
             if (rc == 0)
                 state = sending_token; // state = expecting_another_token? sending_token: sending_ready;
             break;
@@ -94,12 +98,18 @@ int zmq::gssapi_client_t::process_handshake_command (msg_t *msg_)
             rc = -1;
             break;
     }
+
+    if (buf.value) {
+        free (buf.value);
+    }
+
     if (rc == 0) {
         rc = msg_->close ();
         errno_assert (rc == 0);
         rc = msg_->init ();
         errno_assert (rc == 0);
     }
+    
     return rc;
 }
 

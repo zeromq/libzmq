@@ -20,6 +20,10 @@
 #ifndef __ZMQ_GSSAPI_MECHANISM_BASE_HPP_INCLUDED__
 #define __ZMQ_GSSAPI_MECHANISM_BASE_HPP_INCLUDED__
 
+#include <gssapi/gssapi_generic.h>
+#include <gssapi/gssapi_krb5.h>
+#include <gssapi/gssapi_ext.h>
+
 namespace zmq
 {
 
@@ -35,12 +39,8 @@ namespace zmq
         virtual ~gssapi_mechanism_base_t () = 0;
 
     protected:
-
-        //  True iff we are awaiting another GSSAPI token.
-        bool gss_continue_needed;
-
-        int produce_token (msg_t *msg_) const;
-        int process_token (msg_t *msg_);
+        int produce_token (msg_t *msg_, int flags_, void *token_value_, size_t token_length_);
+        int process_token (msg_t *msg_, int &flags_, void **token_value_, size_t &token_length_);
     };
 
 }

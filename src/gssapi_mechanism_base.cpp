@@ -31,8 +31,7 @@
 #include "gssapi_mechanism_base.hpp"
 #include "wire.hpp"
 
-zmq::gssapi_mechanism_base_t::gssapi_mechanism_base_t () :
-    gss_continue_needed (false)
+zmq::gssapi_mechanism_base_t::gssapi_mechanism_base_t ()
 {
 }
 
@@ -40,37 +39,91 @@ zmq::gssapi_mechanism_base_t::~gssapi_mechanism_base_t ()
 {
 }
 
-int zmq::gssapi_mechanism_base_t::produce_token (msg_t *msg_) const
+int zmq::gssapi_mechanism_base_t::produce_token (msg_t *msg_, int flags_, void *token_value_, size_t token_length_)
 {
-    unsigned char * const command_buffer = (unsigned char *) malloc (512);
-    alloc_assert (command_buffer);
+    zmq_assert (token_value_);
+    zmq_assert (token_length_ <= 0xFFFFFFFFUL);
 
-    unsigned char *ptr = command_buffer;
+    const size_t cmd_len = 6 + 1 + 4 + token_length_;
+    uint8_t *cmd_buf = static_cast <uint8_t *> (malloc (cmd_len));
+    alloc_assert (cmd_buf);
+
+    uint8_t *ptr = cmd_buf;
 
     //  Add command name
     memcpy (ptr, "\x05TOKEN", 6);
     ptr += 6;
 
-    const size_t command_size = ptr - command_buffer;
-    const int rc = msg_->init_size (command_size);
+    // Add gss flags
+    put_uint8 (ptr, static_cast <uint8_t> (flags_));
+    ptr += 1;
+
+    // Add token length
+    put_uint32 (ptr, static_cast <uint32_t> (token_length_));
+    ptr += 4;
+
+    // Add token value
+    memcpy (ptr, token_value_, token_length_);
+    ptr += token_length_;
+
+    const int rc = msg_->init_size (cmd_len);
     errno_assert (rc == 0);
-    memcpy (msg_->data (), command_buffer, command_size);
-    free (command_buffer);
+    memcpy (msg_->data (), cmd_buf, cmd_len);
+    free (cmd_buf);
 
     return 0;
 }
 
-int zmq::gssapi_mechanism_base_t::process_token (msg_t *msg_)
+int zmq::gssapi_mechanism_base_t::process_token (msg_t *msg_, int &flags_, void **token_value_, size_t &token_length_)
 {
-    const unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
+    zmq_assert (token_value_);
+
+    uint8_t *ptr = static_cast <uint8_t *> (msg_->data ());
     size_t bytes_left = msg_->size ();
 
+    // Get command name
     if (bytes_left < 6 || memcmp (ptr, "\x05TOKEN", 6)) {
         errno = EPROTO;
         return -1;
     }
     ptr += 6;
     bytes_left -= 6;
+ 
+    // Get flags
+    if (bytes_left < 1) {
+        errno = EPROTO;
+        return -1;
+    }
+    flags_ = static_cast <int> (get_uint8 (ptr));
+    ptr += 1;
+    bytes_left -= 1;
+
+    // Get token length
+    if (bytes_left < 4) {
+        errno = EPROTO;
+        return -1;
+    }
+    token_length_ = get_uint32 (ptr);
+    ptr += 4;
+    bytes_left -= 4;
+    
+    // Get token value
+    if (bytes_left < token_length_) {
+        errno = EPROTO;
+        return -1;
+    }
+    *token_value_ = static_cast <char *> (malloc (token_length_ ? token_length_ : 1));
+    if (token_length_) {
+        alloc_assert (*token_value_);
+        memcpy(*token_value_, ptr, token_length_);
+        ptr += token_length_;
+        bytes_left -= token_length_;
+    }
+
+    if (bytes_left > 0) {
+        errno = EPROTO;
+        return -1;
+    }
 
     return 0;
 }

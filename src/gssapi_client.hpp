@@ -28,7 +28,6 @@ namespace zmq
 {
 
     class msg_t;
-    class session_base_t;
 
     class gssapi_client_t :
         public gssapi_mechanism_base_t,
@@ -45,7 +44,7 @@ namespace zmq
         virtual bool is_handshake_complete () const;
 
     private:
-
+ 
         enum state_t {
             sending_hello,
             waiting_for_welcome,
