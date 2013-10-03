@@ -46,22 +46,19 @@ namespace zmq
     private:
  
         enum state_t {
-            sending_hello,
-            waiting_for_welcome,
-            sending_initiate,
-            sending_token,
-            waiting_for_token,
-            waiting_for_ready,
+            send_next_token,
+            recv_next_token,
+            almost_ready,
             ready
         };
 
         state_t state;
+        gss_buffer_desc *token_ptr;
+        gss_OID_set_desc mechs;
+        bool security_context_established;
 
-        int produce_hello (msg_t *msg_) const;
-        int produce_initiate (msg_t *msg_) const;
-
-        int process_welcome (msg_t *msg);
-        int process_ready (msg_t *msg_);
+        int produce_next_token (msg_t *msg_);
+        int process_next_token (msg_t *msg_);
     };
 
 }

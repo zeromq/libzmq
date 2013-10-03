@@ -41,6 +41,31 @@ namespace zmq
     protected:
         int produce_token (msg_t *msg_, int flags_, void *token_value_, size_t token_length_);
         int process_token (msg_t *msg_, int &flags_, void **token_value_, size_t &token_length_);
+        static int acquire_credentials (char * service_name_, gss_cred_id_t * cred_);
+
+    protected:
+        const static int TOKEN_NOOP         = (1<<0);
+        const static int TOKEN_CONTEXT      = (1<<1);
+        const static int TOKEN_DATA         = (1<<2);
+        const static int TOKEN_MIC          = (1<<3);
+        const static int TOKEN_CONTEXT_NEXT = (1<<4);
+        const static int TOKEN_WRAPPED      = (1<<5);
+        const static int TOKEN_ENCRYPTED    = (1<<6);
+        const static int TOKEN_SEND_MIC     = (1<<7);
+        
+        gss_buffer_desc send_tok;
+        gss_buffer_desc recv_tok;
+        gss_buffer_desc in_buf;
+        gss_name_t target_name;
+        char * service_name;
+        OM_uint32 maj_stat;
+        OM_uint32 min_stat;
+        OM_uint32 init_sec_min_stat;
+        OM_uint32 ret_flags;
+        OM_uint32 gss_flags;
+        int token_flags;
+        gss_cred_id_t cred;
+        gss_ctx_id_t context;
     };
 
 }

@@ -38,13 +38,25 @@ zmq::gssapi_server_t::gssapi_server_t (session_base_t *session_,
     mechanism_t (options_),
     session (session_),
     peer_address (peer_address_),
-    expecting_zap_reply (false),
-    state (waiting_for_hello)
+    state (recv_next_token),
+    security_context_established (false)
 {
+    service_name = (char *) "host";                         /// FIXME add service_name to options
+    int rc = acquire_credentials (service_name, &cred);     /// FIXME add creds to options too?
+    if (rc == 0) {
+        fprintf(stderr, "%s:%d: acquire creds successful\n", __FILE__, __LINE__); /// FIXME remove
+        maj_stat = GSS_S_CONTINUE_NEEDED;
+    }
+    else {
+        fprintf(stderr, "%s:%d: acquire creds failed\n", __FILE__, __LINE__); /// FIXME  remove
+        maj_stat = GSS_S_FAILURE;
+    }
 }
 
 zmq::gssapi_server_t::~gssapi_server_t ()
 {
+    if(cred)
+        gss_release_cred(&min_stat, &cred);
 }
 
 int zmq::gssapi_server_t::next_handshake_command (msg_t *msg_)
@@ -52,24 +64,18 @@ int zmq::gssapi_server_t::next_handshake_command (msg_t *msg_)
     int rc = 0;
 
     switch (state) {
-        case sending_welcome:
-            rc = produce_welcome (msg_);
+        case send_next_token:
+            rc = produce_next_token (msg_);
             if (rc == 0)
-                state = waiting_for_initiate;
+                state = security_context_established? almost_ready: recv_next_token;
             break;
-        case sending_token:
-            rc = produce_token (msg_, 0, (char *) "kthx! bye!", 10);
-            if (rc == 0)
-                state = waiting_for_token; //state = expecting_another_token? waiting_for_token: waiting_for_ready;
-            break;
-        case sending_ready:
-            rc = produce_ready (msg_);
-            if (rc == 0)
-                state = ready;
+        case almost_ready:
+            state = ready;
             break;
         default:
-            errno = EAGAIN;
+            errno = EPROTO;
             rc = -1;
+            break;
     }
     return rc;
 }
@@ -77,319 +83,94 @@ int zmq::gssapi_server_t::next_handshake_command (msg_t *msg_)
 int zmq::gssapi_server_t::process_handshake_command (msg_t *msg_)
 {
     int rc = 0;
-    int flags = 0;
-    gss_buffer_desc buf;
-    buf.value = NULL;
-    buf.length = 0;
 
     switch (state) {
-        case waiting_for_hello:
-            rc = process_hello (msg_);
+        case recv_next_token:
+            rc = process_next_token (msg_);
             if (rc == 0)
-                state = expecting_zap_reply? waiting_for_zap_reply: sending_welcome;
+                state = send_next_token;
             break;
-        case waiting_for_initiate:
-            rc = process_initiate (msg_);
-            if (rc == 0)
-                state = sending_token;
-            break;
-        case waiting_for_token:
-            rc = process_token (msg_, flags, &buf.value, buf.length);
-            if (rc == 0)
-                state = sending_ready; // state = expecting_another_token? sending_token: sending_ready;
+        case almost_ready:
+            state = ready;
             break;
         default:
-            errno = EPROTO;
+            errno = EAGAIN;
             rc = -1;
             break;
     }
-
-    if (buf.value) {
-        free (buf.value);
-    }
-
     if (rc == 0) {
         rc = msg_->close ();
         errno_assert (rc == 0);
         rc = msg_->init ();
         errno_assert (rc == 0);
     }
-    
     return rc;
-}
-
-bool zmq::gssapi_server_t::is_handshake_complete () const
-{
-    return state == ready;
 }
 
 int zmq::gssapi_server_t::zap_msg_available ()
 {
-    if (state != waiting_for_zap_reply) {
-        errno = EFSM;
-        return -1;
-    }
-    const int rc = receive_and_process_zap_reply ();
-    if (rc == 0)
-        state = sending_welcome;
-    return rc;
+    return 0;
 }
 
-int zmq::gssapi_server_t::process_hello (msg_t *msg_)
+bool zmq::gssapi_server_t::is_handshake_complete () const
 {
-    const unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
-    size_t bytes_left = msg_->size ();
+    fprintf(stderr, "%s:%d: is_handshake_complete=%d\n", __FILE__, __LINE__, (state==ready)); /// FIXME remove
+    return state == ready;
+}
 
-    if (bytes_left < 6 || memcmp (ptr, "\x05HELLO", 6)) {
-        errno = EPROTO;
-        return -1;
+int zmq::gssapi_server_t::produce_next_token (msg_t *msg_)
+{
+    if (send_tok.length != 0) { // client expects another token
+        fprintf(stderr, "%s:%d: producing token\n", __FILE__, __LINE__); /// FIXME die("creating context", maj_stat, init_sec_min_stat); /// FIXME die("creating context", maj_stat, init_sec_min_stat);
+        if (produce_token(msg_, TOKEN_CONTEXT, send_tok.value, send_tok.length) < 0) {
+            fprintf(stderr, "%s:%d: failed to produce token!\n", __FILE__, __LINE__); /// FIXME die("creating context", maj_stat, init_sec_min_stat); /// FIXME die("creating context", maj_stat, init_sec_min_stat);
+            return -1;
+        }
+        gss_release_buffer(&min_stat, &send_tok);
     }
-    ptr += 6;
-    bytes_left -= 6;
+    else
+        fprintf(stderr, "%s:%d: skip producing token\n", __FILE__, __LINE__); /// FIXME die("creating context", maj_stat, init_sec_min_stat); /// FIXME die("creating context", maj_stat, init_sec_min_stat);
 
-    if (bytes_left < 1) {
-        errno = EPROTO;
-        return -1;
-    }
-    const size_t username_length = static_cast <size_t> (*ptr++);
-    bytes_left -= 1;
-
-    if (bytes_left < username_length) {
-        errno = EPROTO;
-        return -1;
-    }
-    const std::string username = std::string ((char *) ptr, username_length);
-    ptr += username_length;
-    bytes_left -= username_length;
-
-    if (bytes_left < 1) {
-        errno = EPROTO;
-        return -1;
-    }
-    const size_t password_length = static_cast <size_t> (*ptr++);
-    bytes_left -= 1;
-
-    if (bytes_left < password_length) {
-        errno = EPROTO;
-        return -1;
-    }
-    const std::string password = std::string ((char *) ptr, password_length);
-    ptr += password_length;
-    bytes_left -= password_length;
-
-    if (bytes_left > 0) {
-        errno = EPROTO;
+    if (maj_stat != GSS_S_COMPLETE && maj_stat != GSS_S_CONTINUE_NEEDED) {
+        fprintf(stderr, "%s:%d: failed to create GSSAPI security context\n", __FILE__, __LINE__); /// FIXME die("creating context", maj_stat, init_sec_min_stat); /// FIXME die("creating context", maj_stat, init_sec_min_stat);
+        gss_release_name(&min_stat, &target_name);
+        if (context != GSS_C_NO_CONTEXT)
+            gss_delete_sec_context(&min_stat, &context, GSS_C_NO_BUFFER);
         return -1;
     }
 
-    //  Use ZAP protocol (RFC 27) to authenticate the user.
-    int rc = session->zap_connect ();
-    if (rc == 0) {
-        send_zap_request (username, password);
-        rc = receive_and_process_zap_reply ();
-        if (rc != 0) {
-            if (errno != EAGAIN)
-                return -1;
-            expecting_zap_reply = true;
+    if (maj_stat == GSS_S_COMPLETE) {
+        gss_release_name(&min_stat, &target_name);
+        security_context_established = true;
+    }
+
+    return 0;
+}
+
+int zmq::gssapi_server_t::process_next_token (msg_t *msg_)
+{
+    if (maj_stat == GSS_S_CONTINUE_NEEDED) {
+        fprintf(stderr, "%s:%d: processing token\n", __FILE__, __LINE__); /// FIXME die("creating context", maj_stat, init_sec_min_stat); /// FIXME die("creating context", maj_stat, init_sec_min_stat);
+        if (process_token(msg_, token_flags, &recv_tok.value, recv_tok.length) < 0) {
+            if (target_name != GSS_C_NO_NAME)
+                gss_release_name(&min_stat, &target_name);
+            fprintf(stderr, "%s:%d: failed to process token!\n", __FILE__, __LINE__); /// FIXME die("creating context", maj_stat, init_sec_min_stat); /// FIXME die("creating context", maj_stat, init_sec_min_stat);
+            return -1;
         }
     }
+    else
+        fprintf(stderr, "%s:%d: skip processing token\n", __FILE__, __LINE__); /// FIXME die("creating context", maj_stat, init_sec_min_stat); /// FIXME die("creating context", maj_stat, init_sec_min_stat);
+    
+    maj_stat = gss_accept_sec_context(&init_sec_min_stat, &context, cred,
+                                      &recv_tok, GSS_C_NO_CHANNEL_BINDINGS,
+                                      &target_name, &doid, &send_tok,
+                                      &ret_flags, NULL, NULL);
 
+    if (recv_tok.value) {
+        free (recv_tok.value);
+        recv_tok.value = NULL;
+    }
+ 
     return 0;
 }
 
-int zmq::gssapi_server_t::produce_welcome (msg_t *msg_) const
-{
-    const int rc = msg_->init_size (8);
-    errno_assert (rc == 0);
-    memcpy (msg_->data (), "\x07WELCOME", 8);
-    return 0;
-}
-
-int zmq::gssapi_server_t::process_initiate (msg_t *msg_)
-{
-    const unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
-    size_t bytes_left = msg_->size ();
-
-    if (bytes_left < 9 || memcmp (ptr, "\x08INITIATE", 9)) {
-        errno = EPROTO;
-        return -1;
-    }
-    ptr += 9;
-    bytes_left -= 9;
-    return parse_metadata (ptr, bytes_left);
-}
-
-int zmq::gssapi_server_t::produce_ready (msg_t *msg_) const
-{
-    unsigned char * const command_buffer = (unsigned char *) malloc (512);
-    alloc_assert (command_buffer);
-
-    unsigned char *ptr = command_buffer;
-
-    //  Add command name
-    memcpy (ptr, "\x05READY", 6);
-    ptr += 6;
-
-    //  Add socket type property
-    const char *socket_type = socket_type_string (options.type);
-    ptr += add_property (ptr, "Socket-Type", socket_type, strlen (socket_type));
-
-    //  Add identity property
-    if (options.type == ZMQ_REQ
-    ||  options.type == ZMQ_DEALER
-    ||  options.type == ZMQ_ROUTER) {
-        ptr += add_property (ptr, "Identity",
-            options.identity, options.identity_size);
-    }
-
-    const size_t command_size = ptr - command_buffer;
-    const int rc = msg_->init_size (command_size);
-    errno_assert (rc == 0);
-    memcpy (msg_->data (), command_buffer, command_size);
-    free (command_buffer);
-
-    return 0;
-}
-
-void zmq::gssapi_server_t::send_zap_request (const std::string &username,
-                                               const std::string &password)
-{
-    int rc;
-    msg_t msg;
-
-    //  Address delimiter frame
-    rc = msg.init ();
-    errno_assert (rc == 0);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
-
-    //  Version frame
-    rc = msg.init_size (3);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), "1.0", 3);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
-
-    //  Request id frame
-    rc = msg.init_size (1);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), "1", 1);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
-
-    //  Domain frame
-    rc = msg.init_size (options.zap_domain.length ());
-    errno_assert (rc == 0);
-    memcpy (msg.data (), options.zap_domain.c_str (), options.zap_domain.length ());
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
-
-    //  Address frame
-    rc = msg.init_size (peer_address.length ());
-    errno_assert (rc == 0);
-    memcpy (msg.data (), peer_address.c_str (), peer_address.length ());
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
-
-    //  Identity frame
-    rc = msg.init_size (options.identity_size);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), options.identity, options.identity_size);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
-
-    //  Mechanism frame
-    rc = msg.init_size (6);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), "GSSAPI", 6);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
-
-    //  Username frame
-    rc = msg.init_size (username.length ());
-    errno_assert (rc == 0);
-    memcpy (msg.data (), username.c_str (), username.length ());
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
-
-    //  Password frame
-    rc = msg.init_size (password.length ());
-    errno_assert (rc == 0);
-    memcpy (msg.data (), password.c_str (), password.length ());
-    rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
-}
-
-int zmq::gssapi_server_t::receive_and_process_zap_reply ()
-{
-    int rc = 0;
-    msg_t msg [7];  //  ZAP reply consists of 7 frames
-
-    //  Initialize all reply frames
-    for (int i = 0; i < 7; i++) {
-        rc = msg [i].init ();
-        errno_assert (rc == 0);
-    }
-
-    for (int i = 0; i < 7; i++) {
-        rc = session->read_zap_msg (&msg [i]);
-        if (rc == -1)
-            break;
-        if ((msg [i].flags () & msg_t::more) == (i < 6? 0: msg_t::more)) {
-            errno = EPROTO;
-            rc = -1;
-            break;
-        }
-    }
-
-    if (rc != 0)
-        goto error;
-
-    //  Address delimiter frame
-    if (msg [0].size () > 0) {
-        rc = -1;
-        errno = EPROTO;
-        goto error;
-    }
-
-    //  Version frame
-    if (msg [1].size () != 3 || memcmp (msg [1].data (), "1.0", 3)) {
-        rc = -1;
-        errno = EPROTO;
-        goto error;
-    }
-
-    //  Request id frame
-    if (msg [2].size () != 1 || memcmp (msg [2].data (), "1", 1)) {
-        rc = -1;
-        errno = EPROTO;
-        goto error;
-    }
-
-    //  Status code frame
-    if (msg [3].size () != 3 || memcmp (msg [3].data (), "200", 3)) {
-        rc = -1;
-        errno = EACCES;
-        goto error;
-    }
-
-    //  Process metadata frame
-    rc = parse_metadata (static_cast <const unsigned char*> (msg [6].data ()),
-                         msg [6].size ());
-
-error:
-    for (int i = 0; i < 7; i++) {
-        const int rc2 = msg [i].close ();
-        errno_assert (rc2 == 0);
-    }
-
-    return rc;
-}

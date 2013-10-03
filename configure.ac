@@ -305,6 +305,7 @@ else
     AC_CHECK_LIB([sodium], [sodium_init],,AC_MSG_WARN(libsodium is needed for CURVE security))
 fi
 
+AC_CHECK_LIB([gssapi_krb5], [gss_init_sec_context],,AC_MSG_WARN(libgssapi_krb5 is needed for GSSAPI security))
 
 #
 # Check if the compiler supports -fvisibility=hidden flag. MinGW32 uses __declspec

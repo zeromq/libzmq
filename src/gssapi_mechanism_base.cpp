@@ -31,12 +31,29 @@
 #include "gssapi_mechanism_base.hpp"
 #include "wire.hpp"
 
-zmq::gssapi_mechanism_base_t::gssapi_mechanism_base_t ()
+zmq::gssapi_mechanism_base_t::gssapi_mechanism_base_t () :
+    send_tok (),
+    recv_tok (),
+    in_buf (),
+    target_name (GSS_C_NO_NAME),
+    service_name (NULL),
+    maj_stat (GSS_S_COMPLETE),
+    min_stat (0),
+    init_sec_min_stat (0),
+    ret_flags (0),
+    gss_flags (GSS_C_MUTUAL_FLAG | GSS_C_REPLAY_FLAG),
+    token_flags (0),
+    cred (GSS_C_NO_CREDENTIAL),
+    context (GSS_C_NO_CONTEXT)
 {
 }
 
 zmq::gssapi_mechanism_base_t::~gssapi_mechanism_base_t ()
 {
+    if(target_name)
+        gss_release_name(&min_stat, &target_name);
+    if(context)
+        gss_delete_sec_context(&min_stat, &context, GSS_C_NO_BUFFER);
 }
 
 int zmq::gssapi_mechanism_base_t::produce_token (msg_t *msg_, int flags_, void *token_value_, size_t token_length_)
@@ -124,6 +141,34 @@ int zmq::gssapi_mechanism_base_t::process_token (msg_t *msg_, int &flags_, void 
         errno = EPROTO;
         return -1;
     }
+
+    return 0;
+}
+
+int zmq::gssapi_mechanism_base_t::acquire_credentials (char * service_name_, gss_cred_id_t * cred_)
+{
+    OM_uint32 maj_stat;
+    OM_uint32 min_stat;
+    gss_name_t server_name;
+    
+    gss_buffer_desc name_buf;
+    name_buf.value = service_name_;
+    name_buf.length = strlen ((char *) name_buf.value) + 1;
+    
+    maj_stat = gss_import_name (&min_stat, &name_buf,
+                                gss_nt_service_name, &server_name);
+
+    if (maj_stat != GSS_S_COMPLETE)
+        return -1;
+
+    maj_stat = gss_acquire_cred (&min_stat, server_name, 0,
+                                 GSS_C_NO_OID_SET, GSS_C_ACCEPT,
+                                 cred_, NULL, NULL);
+
+    if (maj_stat != GSS_S_COMPLETE)
+        return -1;
+
+    gss_release_name(&min_stat, &server_name);
 
     return 0;
 }

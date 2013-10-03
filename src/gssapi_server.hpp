@@ -50,34 +50,21 @@ namespace zmq
     private:
 
         enum state_t {
-            waiting_for_hello,
-            sending_welcome,
-            waiting_for_initiate,
-            sending_token,
-            waiting_for_token,
-            sending_ready,
+            send_next_token,
+            recv_next_token,
             waiting_for_zap_reply,
+            almost_ready,
             ready
         };
 
         session_base_t * const session;
-
         const std::string peer_address;
-
-        //  True iff we are awaiting reply from ZAP reply.
-        bool expecting_zap_reply;
-
         state_t state;
+        bool security_context_established;
+        gss_OID doid;
 
-        int produce_welcome (msg_t *msg_) const;
-        int produce_ready (msg_t *msg_) const;
-
-        int process_hello (msg_t *msg_);
-        int process_initiate (msg_t *msg_);
-
-        void send_zap_request (const std::string &username,
-                               const std::string &password);
-        int receive_and_process_zap_reply ();
+        int produce_next_token(msg_t *msg_);
+        int process_next_token(msg_t *msg_);
     };
 
 }
