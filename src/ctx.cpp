@@ -74,14 +74,12 @@ zmq::ctx_t::~ctx_t ()
         delete io_threads [i];
 
     //  Deallocate the reaper thread object.
-    if (reaper)
-        delete reaper;
+    delete reaper;
 
     //  Deallocate the array of mailboxes. No special work is
     //  needed as mailboxes themselves were deallocated with their
     //  corresponding io_thread/socket objects.
-    if (slots)
-        free (slots);
+    free (slots);
 
     //  Remove the tag, so that the object is considered dead.
     tag = ZMQ_CTX_TAG_VALUE_BAD;
