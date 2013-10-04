@@ -183,8 +183,10 @@ ZMQ_EXPORT const char *zmq_strerror (int errnum);
 enum zmq_ctx_opts_t {
     /*  Context options                                                       */
     ZMQ_IO_THREADS  = 1,
-    ZMQ_MAX_SOCKETS = 2,
+    ZMQ_MAX_SOCKETS = 2
+};
 
+enum zmq_ctx_defaults_t {
     /*  Default for new contexts                                              */
     ZMQ_IO_THREADS_DFLT  = 1,
     ZMQ_MAX_SOCKETS_DFLT = 1024
@@ -380,7 +382,10 @@ ZMQ_EXPORT int zmq_recviov (void *s, struct iovec *iov, size_t *count, int flags
 enum zmq_poll_types_t {
     ZMQ_POLLIN         = 1,
     ZMQ_POLLOUT        = 2,
-    ZMQ_POLLERR        = 4,
+    ZMQ_POLLERR        = 4
+};
+
+enum zmq_poll_defaults_t {
     ZMQ_POLLITEMS_DFLT = 16
 };
 
