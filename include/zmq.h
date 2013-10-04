@@ -171,13 +171,16 @@ ZMQ_EXPORT const char *zmq_strerror (int errnum);
 /******************************************************************************/
 
 /*  New API                                                                   */
-/*  Context options                                                           */
-#define ZMQ_IO_THREADS  1
-#define ZMQ_MAX_SOCKETS 2
 
-/*  Default for new contexts                                                  */
-#define ZMQ_IO_THREADS_DFLT  1
-#define ZMQ_MAX_SOCKETS_DFLT 1024
+enum zmq_ctx_opts_t {
+    /*  Context options                                                       */
+    ZMQ_IO_THREADS  = 1,
+    ZMQ_MAX_SOCKETS = 2,
+
+    /*  Default for new contexts                                              */
+    ZMQ_IO_THREADS_DFLT  = 1,
+    ZMQ_MAX_SOCKETS_DFLT = 1024
+};
 
 ZMQ_EXPORT void *zmq_ctx_new (void);
 ZMQ_EXPORT int zmq_ctx_term (void *context);
@@ -220,109 +223,110 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 /******************************************************************************/
 
 /*  Socket types.                                                             */
-#define ZMQ_PAIR 0
-#define ZMQ_PUB 1
-#define ZMQ_SUB 2
-#define ZMQ_REQ 3
-#define ZMQ_REP 4
-#define ZMQ_DEALER 5
-#define ZMQ_ROUTER 6
-#define ZMQ_PULL 7
-#define ZMQ_PUSH 8
-#define ZMQ_XPUB 9
-#define ZMQ_XSUB 10
-#define ZMQ_STREAM 11
-
-/*  Deprecated aliases                                                        */
-#define ZMQ_XREQ ZMQ_DEALER
-#define ZMQ_XREP ZMQ_ROUTER
+enum zmq_socket_types_t {
+    ZMQ_PAIR   = 0,
+    ZMQ_PUB    = 1,
+    ZMQ_SUB    = 2,
+    ZMQ_REQ    = 3,
+    ZMQ_REP    = 4,
+    ZMQ_DEALER = 5,
+    ZMQ_ROUTER = 6,
+    ZMQ_PULL   = 7,
+    ZMQ_PUSH   = 8,
+    ZMQ_XPUB   = 9,
+    ZMQ_XSUB   = 10,
+    ZMQ_STREAM = 11
+};
 
 /*  Socket options.                                                           */
-#define ZMQ_AFFINITY 4
-#define ZMQ_IDENTITY 5
-#define ZMQ_SUBSCRIBE 6
-#define ZMQ_UNSUBSCRIBE 7
-#define ZMQ_RATE 8
-#define ZMQ_RECOVERY_IVL 9
-#define ZMQ_SNDBUF 11
-#define ZMQ_RCVBUF 12
-#define ZMQ_RCVMORE 13
-#define ZMQ_FD 14
-#define ZMQ_EVENTS 15
-#define ZMQ_TYPE 16
-#define ZMQ_LINGER 17
-#define ZMQ_RECONNECT_IVL 18
-#define ZMQ_BACKLOG 19
-#define ZMQ_RECONNECT_IVL_MAX 21
-#define ZMQ_MAXMSGSIZE 22
-#define ZMQ_SNDHWM 23
-#define ZMQ_RCVHWM 24
-#define ZMQ_MULTICAST_HOPS 25
-#define ZMQ_RCVTIMEO 27
-#define ZMQ_SNDTIMEO 28
-#define ZMQ_LAST_ENDPOINT 32
-#define ZMQ_ROUTER_MANDATORY 33
-#define ZMQ_TCP_KEEPALIVE 34
-#define ZMQ_TCP_KEEPALIVE_CNT 35
-#define ZMQ_TCP_KEEPALIVE_IDLE 36
-#define ZMQ_TCP_KEEPALIVE_INTVL 37
-#define ZMQ_TCP_ACCEPT_FILTER 38
-#define ZMQ_IMMEDIATE 39
-#define ZMQ_XPUB_VERBOSE 40
-#define ZMQ_ROUTER_RAW 41
-#define ZMQ_IPV6 42
-#define ZMQ_MECHANISM 43
-#define ZMQ_PLAIN_SERVER 44
-#define ZMQ_PLAIN_USERNAME 45
-#define ZMQ_PLAIN_PASSWORD 46
-#define ZMQ_CURVE_SERVER 47
-#define ZMQ_CURVE_PUBLICKEY 48
-#define ZMQ_CURVE_SECRETKEY 49
-#define ZMQ_CURVE_SERVERKEY 50
-#define ZMQ_PROBE_ROUTER 51
-#define ZMQ_REQ_CORRELATE 52
-#define ZMQ_REQ_RELAXED 53
-#define ZMQ_CONFLATE 54
-#define ZMQ_ZAP_DOMAIN 55
+enum zmq_socket_opts_t {
+    ZMQ_AFFINITY            = 4,
+    ZMQ_IDENTITY            = 5,
+    ZMQ_SUBSCRIBE           = 6,
+    ZMQ_UNSUBSCRIBE         = 7,
+    ZMQ_RATE                = 8,
+    ZMQ_RECOVERY_IVL        = 9,
+    ZMQ_SNDBUF              = 11,
+    ZMQ_RCVBUF              = 12,
+    ZMQ_RCVMORE             = 13,
+    ZMQ_FD                  = 14,
+    ZMQ_EVENTS              = 15,
+    ZMQ_TYPE                = 16,
+    ZMQ_LINGER              = 17,
+    ZMQ_RECONNECT_IVL       = 18,
+    ZMQ_BACKLOG             = 19,
+    ZMQ_RECONNECT_IVL_MAX   = 21,
+    ZMQ_MAXMSGSIZE          = 22,
+    ZMQ_SNDHWM              = 23,
+    ZMQ_RCVHWM              = 24,
+    ZMQ_MULTICAST_HOPS      = 25,
+    ZMQ_RCVTIMEO            = 27,
+    ZMQ_SNDTIMEO            = 28,
+    ZMQ_LAST_ENDPOINT       = 32,
+    ZMQ_ROUTER_MANDATORY    = 33,
+    ZMQ_TCP_KEEPALIVE       = 34,
+    ZMQ_TCP_KEEPALIVE_CNT   = 35,
+    ZMQ_TCP_KEEPALIVE_IDLE  = 36,
+    ZMQ_TCP_KEEPALIVE_INTVL = 37,
+    ZMQ_TCP_ACCEPT_FILTER   = 38,
+    ZMQ_IMMEDIATE           = 39,
+    ZMQ_XPUB_VERBOSE        = 40,
+    ZMQ_ROUTER_RAW          = 41,
+    ZMQ_IPV6                = 42,
+    ZMQ_MECHANISM           = 43,
+    ZMQ_PLAIN_SERVER        = 44,
+    ZMQ_PLAIN_USERNAME      = 45,
+    ZMQ_PLAIN_PASSWORD      = 46,
+    ZMQ_CURVE_SERVER        = 47,
+    ZMQ_CURVE_PUBLICKEY     = 48,
+    ZMQ_CURVE_SECRETKEY     = 49,
+    ZMQ_CURVE_SERVERKEY     = 50,
+    ZMQ_PROBE_ROUTER        = 51,
+    ZMQ_REQ_CORRELATE       = 52,
+    ZMQ_REQ_RELAXED         = 53,
+    ZMQ_CONFLATE            = 54,
+    ZMQ_ZAP_DOMAIN          = 55
+};
 
 /*  Message options                                                           */
-#define ZMQ_MORE 1
+enum zmq_msg_opts_t {
+    ZMQ_MORE = 1
+};
 
 /*  Send/recv options.                                                        */
-#define ZMQ_DONTWAIT 1
-#define ZMQ_SNDMORE 2
+enum zmq_send_recv_opts_t {
+    ZMQ_DONTWAIT = 1,
+    ZMQ_SNDMORE  = 2
+};
 
 /*  Security mechanisms                                                       */
-#define ZMQ_NULL 0
-#define ZMQ_PLAIN 1
-#define ZMQ_CURVE 2
-
-/*  Deprecated options and aliases                                            */
-#define ZMQ_IPV4ONLY                31
-#define ZMQ_DELAY_ATTACH_ON_CONNECT ZMQ_IMMEDIATE
-#define ZMQ_NOBLOCK                 ZMQ_DONTWAIT
-#define ZMQ_FAIL_UNROUTABLE         ZMQ_ROUTER_MANDATORY
-#define ZMQ_ROUTER_BEHAVIOR         ZMQ_ROUTER_MANDATORY
+enum zmq_security_types_t {
+    ZMQ_NULL  = 0,
+    ZMQ_PLAIN = 1,
+    ZMQ_CURVE = 2
+};
 
 /******************************************************************************/
 /*  0MQ socket events and monitoring                                          */
 /******************************************************************************/
 
 /*  Socket transport events (tcp and ipc only)                                */
-#define ZMQ_EVENT_CONNECTED 1
-#define ZMQ_EVENT_CONNECT_DELAYED 2
-#define ZMQ_EVENT_CONNECT_RETRIED 4
+enum zmq_transport_events_t {
+    ZMQ_EVENT_CONNECTED       = 1,
+    ZMQ_EVENT_CONNECT_DELAYED = 2,
+    ZMQ_EVENT_CONNECT_RETRIED = 4,
 
-#define ZMQ_EVENT_LISTENING 8
-#define ZMQ_EVENT_BIND_FAILED 16
+    ZMQ_EVENT_LISTENING       = 8,
+    ZMQ_EVENT_BIND_FAILED     = 16,
 
-#define ZMQ_EVENT_ACCEPTED 32
-#define ZMQ_EVENT_ACCEPT_FAILED 64
+    ZMQ_EVENT_ACCEPTED        = 32,
+    ZMQ_EVENT_ACCEPT_FAILED   = 64,
 
-#define ZMQ_EVENT_CLOSED 128
-#define ZMQ_EVENT_CLOSE_FAILED 256
-#define ZMQ_EVENT_DISCONNECTED 512
-#define ZMQ_EVENT_MONITOR_STOPPED 1024
+    ZMQ_EVENT_CLOSED          = 128,
+    ZMQ_EVENT_CLOSE_FAILED    = 256,
+    ZMQ_EVENT_DISCONNECTED    = 512,
+    ZMQ_EVENT_MONITOR_STOPPED = 1024
+};
 
 #define ZMQ_EVENT_ALL ( ZMQ_EVENT_CONNECTED | ZMQ_EVENT_CONNECT_DELAYED | \
                         ZMQ_EVENT_CONNECT_RETRIED | ZMQ_EVENT_LISTENING | \
@@ -365,9 +369,12 @@ ZMQ_EXPORT int zmq_recviov (void *s, struct iovec *iov, size_t *count, int flags
 /*  I/O multiplexing.                                                         */
 /******************************************************************************/
 
-#define ZMQ_POLLIN 1
-#define ZMQ_POLLOUT 2
-#define ZMQ_POLLERR 4
+enum zmq_poll_types_t {
+    ZMQ_POLLIN         = 1,
+    ZMQ_POLLOUT        = 2,
+    ZMQ_POLLERR        = 4,
+    ZMQ_POLLITEMS_DFLT = 16
+};
 
 typedef struct
 {
@@ -381,8 +388,6 @@ typedef struct
     short revents;
 } zmq_pollitem_t;
 
-#define ZMQ_POLLITEMS_DFLT 16
-
 ZMQ_EXPORT int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
 
 /*  Built-in message proxy (3-way) */
@@ -395,12 +400,27 @@ ZMQ_EXPORT char *zmq_z85_encode (char *dest, uint8_t *data, size_t size);
 /*  Encode a binary key from printable text per ZMQ RFC 32  */
 ZMQ_EXPORT uint8_t *zmq_z85_decode (uint8_t *dest, char *string);
 
-/*  Deprecated aliases */
-#define ZMQ_STREAMER 1
-#define ZMQ_FORWARDER 2
-#define ZMQ_QUEUE 3
 /*  Deprecated method */
 ZMQ_EXPORT int zmq_device (int type, void *frontend, void *backend);
+
+/*  Deprecated options and aliases                                            */
+enum zmq_deprecated_t {
+    /* Misc                                                                   */
+    ZMQ_IPV4ONLY                = 31,
+    ZMQ_DELAY_ATTACH_ON_CONNECT = ZMQ_IMMEDIATE,
+    ZMQ_NOBLOCK                 = ZMQ_DONTWAIT,
+    ZMQ_FAIL_UNROUTABLE         = ZMQ_ROUTER_MANDATORY,
+    ZMQ_ROUTER_BEHAVIOR         = ZMQ_ROUTER_MANDATORY,
+
+    /*  Socket aliases                                                        */
+    ZMQ_XREQ=ZMQ_DEALER,
+    ZMQ_XREP=ZMQ_ROUTER,
+
+    /* I/O aliasses                                                           */
+    ZMQ_STREAMER  = 1,
+    ZMQ_FORWARDER = 2,
+    ZMQ_QUEUE     = 3
+};
 
 #undef ZMQ_EXPORT
 
