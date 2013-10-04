@@ -31,8 +31,10 @@
 #include <string>
 
 #if defined _WIN32
-#   include <crtdbg.h>
-#   pragma warning(disable:4996)
+#   if defined _MSC_VER
+#       include <crtdbg.h>
+#       pragma warning(disable:4996)
+#   endif
 #else
 #   include <unistd.h>
 #   include <signal.h>
@@ -249,9 +251,11 @@ void close_zero_linger (void *socket)
 void setup_test_environment()
 {
 #if defined _WIN32
+#   if defined _MSC_VER
     _set_abort_behavior( 0, _WRITE_ABORT_MSG);
     _CrtSetReportMode( _CRT_ASSERT, _CRTDBG_MODE_FILE );
     _CrtSetReportFile( _CRT_ASSERT, _CRTDBG_FILE_STDERR );
+#   endif
 #endif
 }
 
