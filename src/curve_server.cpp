@@ -371,7 +371,7 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     //  Check cookie plain text is as expected [C' + s']
     if (memcmp (cookie_plaintext + crypto_secretbox_ZEROBYTES, cn_client, 32)
     ||  memcmp (cookie_plaintext + crypto_secretbox_ZEROBYTES + 32, cn_secret, 32)) {
-        errno = EAGAIN;
+        errno = EPROTO;
         return -1;
     }
 
