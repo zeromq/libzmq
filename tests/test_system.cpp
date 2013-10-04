@@ -20,7 +20,7 @@
 #include "testutil.hpp"
 
 #if defined (ZMQ_HAVE_WINDOWS)
-#   include <WinSock2.h>
+#   include <winsock2.h>
 #   include <stdexcept>
 #else
 #   include <sys/socket.h>
