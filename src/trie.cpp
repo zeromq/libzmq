@@ -48,8 +48,7 @@ zmq::trie_t::~trie_t ()
     else
     if (count > 1) {
         for (unsigned short i = 0; i != count; ++i)
-            if (next.table [i])
-                delete next.table [i];
+            delete next.table [i];
         free (next.table);
     }
 }
