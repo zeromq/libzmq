@@ -38,7 +38,8 @@ noinst_PROGRAMS = test_system \
                   test_req_relaxed \
                   test_conflate \
                   test_inproc_connect \
-                  test_issue_566
+                  test_issue_566 \
+                  test_abstract_ipc
 
 if !ON_MINGW
 noinst_PROGRAMS += test_shutdown_stress \
@@ -84,6 +85,7 @@ test_req_relaxed_SOURCES = test_req_relaxed.cpp
 test_conflate_SOURCES = test_conflate.cpp
 test_inproc_connect_SOURCES = test_inproc_connect.cpp
 test_issue_566_SOURCES = test_issue_566.cpp
+test_abstract_ipc_SOURCES = test_abstract_ipc.cpp
 if !ON_MINGW
 test_shutdown_stress_SOURCES = test_shutdown_stress.cpp
 test_pair_ipc_SOURCES = test_pair_ipc.cpp testutil.hpp
@@ -95,3 +97,7 @@ endif
 #  Run the test cases
 TESTS = $(noinst_PROGRAMS)
 XFAIL_TESTS = test_linger
+
+if !ON_LINUX
+XFAIL_TESTS += test_abstract_ipc
+endif
