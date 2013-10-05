@@ -54,6 +54,10 @@ int zmq::ipc_address_t::resolve (const char *path_)
 
     address.sun_family = AF_UNIX;
     strcpy (address.sun_path, path_);
+#if defined ZMQ_HAVE_LINUX
+    if (*path_ == '@')
+        *address.sun_path = '\0';
+#endif
     return 0;
 }
 
@@ -65,7 +69,15 @@ int zmq::ipc_address_t::to_string (std::string &addr_)
     }
 
     std::stringstream s;
+#if !defined ZMQ_HAVE_LINUX
     s << "ipc://" << address.sun_path;
+#else
+    s << "ipc://";
+    if (*address.sun_path)
+       s << address.sun_path;
+    else
+       s << "@" << address.sun_path + 1;
+#endif
     addr_ = s.str ();
     return 0;
 }
