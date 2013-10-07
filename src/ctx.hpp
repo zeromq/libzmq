@@ -132,8 +132,8 @@ namespace zmq
         sockets_t sockets;
 
         //  List of unused thread slots.
-        typedef std::vector <uint32_t> emtpy_slots_t;
-        emtpy_slots_t empty_slots;
+        typedef std::vector <uint32_t> empty_slots_t;
+        empty_slots_t empty_slots;
 
         //  If true, zmq_init has been called but no socket has been created
         //  yet. Launching of I/O threads is delayed.
