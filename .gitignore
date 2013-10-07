@@ -69,6 +69,7 @@ tests/test_inproc_connect
 tests/test_linger
 tests/test_security_null
 tests/test_security_plain
+tests/test_abstract_ipc
 tests/test*.log
 tests/test*.trs
 src/platform.hpp*

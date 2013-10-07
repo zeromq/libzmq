@@ -48,6 +48,11 @@ NOTE: the endpoint pathname must be writable by the process. When the endpoint
 starts with '/', e.g., `ipc:///pathname`, this will be an _absolute_ pathname.
 If the endpoint specifies a directory that does not exist, the bind shall fail.
 
+NOTE: on Linux only, when the endpoint pathname starts with `@`, the abstract
+namespace shall be used.  The abstract namespace is independent of the
+filesystem and if a process attempts to bind an endpoint already bound by a
+process, it will fail.  See unix(7) for details.
+
 Connecting a socket
 ~~~~~~~~~~~~~~~~~~~
 When connecting a 'socket' to a peer address using _zmq_connect()_ with the
