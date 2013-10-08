@@ -54,19 +54,25 @@ namespace zmq
         enum state_t {
             send_next_token,
             recv_next_token,
-            waiting_for_zap_reply,
-            almost_ready,
-            ready
+            connected
         };
 
         session_base_t * const session;
+       
         const std::string peer_address;
+        
+        //  Current FSM state
         state_t state;
+
+        //  True iff server considers the client authenticated
         bool security_context_established;
+
+        //  The underlying mechanism type (ignored)
         gss_OID doid;
 
-        int produce_next_token(msg_t *msg_);
-        int process_next_token(msg_t *msg_);
+        void accept_context ();
+        int produce_next_token (msg_t *msg_);
+        int process_next_token (msg_t *msg_);
     };
 
 }

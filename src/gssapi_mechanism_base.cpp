@@ -34,7 +34,7 @@
 zmq::gssapi_mechanism_base_t::gssapi_mechanism_base_t () :
     send_tok (),
     recv_tok (),
-    in_buf (),
+    /// FIXME remove? in_buf (),
     target_name (GSS_C_NO_NAME),
     service_name (NULL),
     maj_stat (GSS_S_COMPLETE),
@@ -42,7 +42,6 @@ zmq::gssapi_mechanism_base_t::gssapi_mechanism_base_t () :
     init_sec_min_stat (0),
     ret_flags (0),
     gss_flags (GSS_C_MUTUAL_FLAG | GSS_C_REPLAY_FLAG),
-    token_flags (0),
     cred (GSS_C_NO_CREDENTIAL),
     context (GSS_C_NO_CONTEXT)
 {
@@ -56,24 +55,129 @@ zmq::gssapi_mechanism_base_t::~gssapi_mechanism_base_t ()
         gss_delete_sec_context(&min_stat, &context, GSS_C_NO_BUFFER);
 }
 
-int zmq::gssapi_mechanism_base_t::produce_token (msg_t *msg_, int flags_, void *token_value_, size_t token_length_)
+int zmq::gssapi_mechanism_base_t::encode_message (msg_t *msg_)
+{
+    // Wrap the token value
+    int state;
+    gss_buffer_desc plaintext;
+    gss_buffer_desc wrapped;
+    plaintext.value = msg_->data ();
+    plaintext.length = msg_->size ();
+ 
+    maj_stat = gss_wrap(&min_stat, context, 1, GSS_C_QOP_DEFAULT,
+                        &plaintext, &state, &wrapped);
+    
+    zmq_assert (maj_stat == GSS_S_COMPLETE);
+    zmq_assert (state);
+
+    // Re-initialize msg_ for wrapped text
+    int rc = msg_->close ();
+    zmq_assert (rc == 0);
+
+    rc = msg_->init_size (8 + 4 + wrapped.length);
+    zmq_assert (rc == 0);
+
+    uint8_t *ptr = static_cast <uint8_t *> (msg_->data ());
+    
+    // Add command string
+    memcpy (ptr, "\x07MESSAGE", 8);
+    ptr += 8;
+
+    // Add token length
+    put_uint32 (ptr, static_cast <uint32_t> (wrapped.length));
+    ptr += 4;
+
+    // Add wrapped token value
+    memcpy (ptr, wrapped.value, wrapped.length);
+    ptr += wrapped.length;
+
+    gss_release_buffer (&min_stat, &wrapped);
+
+    return 0;
+}
+
+int zmq::gssapi_mechanism_base_t::decode_message (msg_t *msg_)
+{
+    const uint8_t *ptr = static_cast <uint8_t *> (msg_->data ());
+    size_t bytes_left = msg_->size ();
+
+    // Get command string
+    if (bytes_left < 8 || memcmp (ptr, "\x07MESSAGE", 8)) {
+        errno = EPROTO;
+        return -1;
+    }
+    ptr += 8;
+    bytes_left -= 8;
+
+    // Get token length
+    if (bytes_left < 4) {
+        errno = EPROTO;
+        return -1;
+    }
+    gss_buffer_desc wrapped;
+    wrapped.length = get_uint32 (ptr);
+    ptr += 4;
+    bytes_left -= 4;
+    
+    // Get token value
+    if (bytes_left < wrapped.length) {
+        errno = EPROTO;
+        return -1;
+    }
+    // TODO: instead of malloc/memcpy, can we just do: wrapped.value = ptr;
+    const size_t alloc_length = wrapped.length? wrapped.length: 1;
+    wrapped.value = static_cast <char *> (malloc (alloc_length));
+    if (wrapped.length) {
+        alloc_assert (wrapped.value);
+        memcpy(wrapped.value, ptr, wrapped.length);
+        ptr += wrapped.length;
+        bytes_left -= wrapped.length;
+    }
+
+    // Unwrap the token value
+    int state;
+    gss_buffer_desc plaintext;
+    maj_stat = gss_unwrap(&min_stat, context, &wrapped, &plaintext,
+                          &state, (gss_qop_t *) NULL);
+
+    zmq_assert(maj_stat == GSS_S_COMPLETE);
+    zmq_assert(state);
+
+    // Re-initialize msg_ for plaintext
+    int rc = msg_->close ();
+    zmq_assert (rc == 0);
+
+    rc = msg_->init_size (plaintext.length);
+    zmq_assert (rc == 0);
+    
+    memcpy (msg_->data (), plaintext.value, plaintext.length);
+    
+    gss_release_buffer (&min_stat, &plaintext);
+    gss_release_buffer (&min_stat, &wrapped);
+
+    if (bytes_left > 0) {
+        errno = EPROTO;
+        return -1;
+    }
+
+    return 0;
+}
+
+int zmq::gssapi_mechanism_base_t::produce_initiate (msg_t *msg_, void *token_value_, size_t token_length_)
 {
     zmq_assert (token_value_);
     zmq_assert (token_length_ <= 0xFFFFFFFFUL);
 
-    const size_t cmd_len = 6 + 1 + 4 + token_length_;
-    uint8_t *cmd_buf = static_cast <uint8_t *> (malloc (cmd_len));
-    alloc_assert (cmd_buf);
-
-    uint8_t *ptr = cmd_buf;
-
-    //  Add command name
-    memcpy (ptr, "\x05TOKEN", 6);
-    ptr += 6;
-
-    // Add gss flags
-    put_uint8 (ptr, static_cast <uint8_t> (flags_));
-    ptr += 1;
+    const size_t command_size = 9 + 4 + token_length_;
+    
+    const int rc = msg_->init_size (command_size);
+    errno_assert (rc == 0);
+    
+    uint8_t *ptr = static_cast <uint8_t *> (msg_->data ());
+    
+    // Add command string
+    memcpy (ptr, "\x08INITIATE", 9);
+    ptr += 9;
 
     // Add token length
     put_uint32 (ptr, static_cast <uint32_t> (token_length_));
@@ -83,37 +187,23 @@ int zmq::gssapi_mechanism_base_t::produce_token (msg_t *msg_, int flags_, void *
     memcpy (ptr, token_value_, token_length_);
     ptr += token_length_;
 
-    const int rc = msg_->init_size (cmd_len);
-    errno_assert (rc == 0);
-    memcpy (msg_->data (), cmd_buf, cmd_len);
-    free (cmd_buf);
-
     return 0;
 }
 
-int zmq::gssapi_mechanism_base_t::process_token (msg_t *msg_, int &flags_, void **token_value_, size_t &token_length_)
+int zmq::gssapi_mechanism_base_t::process_initiate (msg_t *msg_, void **token_value_, size_t &token_length_)
 {
     zmq_assert (token_value_);
-
-    uint8_t *ptr = static_cast <uint8_t *> (msg_->data ());
+    
+    const uint8_t *ptr = static_cast <uint8_t *> (msg_->data ());
     size_t bytes_left = msg_->size ();
 
-    // Get command name
-    if (bytes_left < 6 || memcmp (ptr, "\x05TOKEN", 6)) {
+    // Get command string
+    if (bytes_left < 9 || memcmp (ptr, "\x08INITIATE", 9)) {
         errno = EPROTO;
         return -1;
     }
-    ptr += 6;
-    bytes_left -= 6;
- 
-    // Get flags
-    if (bytes_left < 1) {
-        errno = EPROTO;
-        return -1;
-    }
-    flags_ = static_cast <int> (get_uint8 (ptr));
-    ptr += 1;
-    bytes_left -= 1;
+    ptr += 9;
+    bytes_left -= 9;
 
     // Get token length
     if (bytes_left < 4) {
@@ -124,7 +214,7 @@ int zmq::gssapi_mechanism_base_t::process_token (msg_t *msg_, int &flags_, void 
     ptr += 4;
     bytes_left -= 4;
     
-    // Get token value.  TODO do unwrap here to prevent this extra memcpy.
+    // Get token value
     if (bytes_left < token_length_) {
         errno = EPROTO;
         return -1;
@@ -141,73 +231,7 @@ int zmq::gssapi_mechanism_base_t::process_token (msg_t *msg_, int &flags_, void 
         errno = EPROTO;
         return -1;
     }
-
-    return 0;
-}
-
-/// TODO add support for TOKEN_SEND_MIC
-/// TODO use gss_wrap_size_limit
-int
-zmq::gssapi_mechanism_base_t::produce_message (msg_t *msg_)
-{
-    // wrap it
-    int state;
-    gss_buffer_desc plaintext;
-    gss_buffer_desc wrapped;
-    plaintext.value = msg_->data ();
-    plaintext.length = msg_->size ();
  
-    maj_stat = gss_wrap(&min_stat, context, 1, GSS_C_QOP_DEFAULT,
-                        &plaintext, &state, &wrapped);
-    
-    zmq_assert (maj_stat == GSS_S_COMPLETE);
-    zmq_assert (state);
-
-    // prepare msg_ for wrapped text
-    int rc = msg_->close ();
-    zmq_assert (rc == 0);
-    
-    // produce token
-    const int flags = (TOKEN_DATA | TOKEN_WRAPPED | TOKEN_ENCRYPTED);
-    rc = produce_token (msg_, flags, wrapped.value, wrapped.length);
-    zmq_assert (rc == 0);
-    gss_release_buffer (&min_stat, &wrapped);
-   
-    return 0;
-}
-
-int
-zmq::gssapi_mechanism_base_t::process_message (msg_t *msg_)
-{
-    // process token
-    int flags;
-    gss_buffer_desc wrapped;
-    int rc = process_token(msg_, flags, &wrapped.value, wrapped.length);
-    zmq_assert (rc == 0);
-
-    // ensure valid security context
-    zmq_assert (context != GSS_C_NO_CONTEXT);
-    zmq_assert (flags & TOKEN_WRAPPED);
-    zmq_assert (flags & TOKEN_ENCRYPTED);
-
-    // unwrap
-    int state;
-    gss_buffer_desc plaintext;
-    maj_stat = gss_unwrap(&min_stat, context, &wrapped, &plaintext,
-                          &state, (gss_qop_t *) NULL);
-
-    zmq_assert(maj_stat == GSS_S_COMPLETE);
-    zmq_assert(state);
-
-    // re-init msg_ with plaintext
-    rc = msg_->close ();
-    zmq_assert (rc == 0);
-    msg_->init_size (plaintext.length);
-    zmq_assert (rc == 0);
-    
-    memcpy (msg_->data (), plaintext.value, plaintext.length);
-    gss_release_buffer (&min_stat, &plaintext);
-    gss_release_buffer (&min_stat, &wrapped);
     return 0;
 }
 

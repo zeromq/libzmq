@@ -34,13 +34,13 @@
 zmq::gssapi_client_t::gssapi_client_t (const options_t &options_) :
     gssapi_mechanism_base_t (),
     mechanism_t (options_),
-    state (send_next_token),
+    state (call_next_init),
     token_ptr (GSS_C_NO_BUFFER),
     mechs (),
     security_context_established (false)
 {
     maj_stat = GSS_S_COMPLETE;
-    service_name = strdup("host"); /// FIXME add service_name to options
+    service_name = strdup("host"); // TODO: add service_name to options
     mechs.elements = NULL;
     mechs.count = 0;
 }
@@ -49,80 +49,80 @@ zmq::gssapi_client_t::~gssapi_client_t ()
 {
     if(service_name)
         free (service_name);
-    /// FIXME release this or not?
     if(cred)
         gss_release_cred(&min_stat, &cred);
 }
 
 int zmq::gssapi_client_t::next_handshake_command (msg_t *msg_)
 {
-    int rc = 0;
-
-    switch (state) {
-        case send_next_token:
-            rc = produce_next_token (msg_);
-            if (rc == 0)
-                state = recv_next_token;
-            break;
-        case almost_ready:
-            state = ready;
-            break;
-        default:
-            errno = EAGAIN;
-            rc = -1;
-            break;
+    if (security_context_established) {
+        state = connected;
+        return 0;
     }
-    return rc;
+
+    if (state != call_next_init) {
+        errno = EAGAIN;
+        return -1;
+    }
+
+    if (initialize_context () < 0)
+        return -1;
+    
+    if (produce_next_token (msg_) < 0)
+        return -1;
+
+    if (maj_stat != GSS_S_CONTINUE_NEEDED && maj_stat != GSS_S_COMPLETE)
+        return -1;
+
+    if (maj_stat == GSS_S_COMPLETE)
+        security_context_established = true;
+    else
+        state = recv_next_token;
+    
+    return 0;
 }
 
 int zmq::gssapi_client_t::process_handshake_command (msg_t *msg_)
 {
-    int rc = 0;
+    if (state != recv_next_token) {
+        errno = EPROTO;
+        return -1;
+    }
 
-    switch (state) {
-        case recv_next_token:
-            rc = process_next_token (msg_);
-            if (rc == 0)
-                state = security_context_established? almost_ready: send_next_token;
-            break;
-        case almost_ready:
-            state = ready;
-            break;
-        default:
-            errno = EPROTO;
-            rc = -1;
-            break;
-    }
-    if (rc == 0) {
-        rc = msg_->close ();
-        errno_assert (rc == 0);
-        rc = msg_->init ();
-        errno_assert (rc == 0);
-    }
-    return rc;
+    if (process_next_token (msg_) < 0)
+        return -1;
+
+    if (maj_stat == GSS_S_COMPLETE)
+        security_context_established = true;
+    else if (maj_stat == GSS_S_CONTINUE_NEEDED)
+        state = call_next_init;
+    else
+        return -1;
+
+    errno_assert (msg_->close () == 0);
+    errno_assert (msg_->init () == 0);
+    
+    return 0;
 }
 
 int zmq::gssapi_client_t::encode (msg_t *msg_)
 {
-    int rc = 0;
-    zmq_assert (state == ready);
-    return rc;
+    zmq_assert (state == connected);
+    return encode_message (msg_);
 }
 
 int zmq::gssapi_client_t::decode (msg_t *msg_)
 {
-    int rc = 0;
-    zmq_assert (state == ready);
-    return rc;
+    zmq_assert (state == connected);
+    return decode_message (msg_);
 }
 
 bool zmq::gssapi_client_t::is_handshake_complete () const
 {
-    fprintf(stderr, "%s:%d: is_handshake_complete=%d, security_context_established=%d\n", __FILE__, __LINE__, (state==ready), security_context_established); /// FIXME remove
-    return state == ready;
+    return state == connected;
 }
 
-int zmq::gssapi_client_t::produce_next_token (msg_t *msg_)
+int zmq::gssapi_client_t::initialize_context ()
 {
     // First time through, import service_name into target_name
     if (target_name == GSS_C_NO_NAME) {
@@ -131,10 +131,8 @@ int zmq::gssapi_client_t::produce_next_token (msg_t *msg_)
         OM_uint32 maj = gss_import_name(&min_stat, &send_tok,
                                         gss_nt_service_name, &target_name);
  
-        if (maj != GSS_S_COMPLETE) {
-            fprintf(stderr, "%s:%d: failed to import service name\n", __FILE__, __LINE__); /// FIXME die("creating context", maj_stat, init_sec_min_stat); /// FIXME die("parsing name", maj_stat, min_stat);
+        if (maj != GSS_S_COMPLETE)
             return -1;
-        }
     }
 
     maj_stat = gss_init_sec_context(&init_sec_min_stat, cred, &context,
@@ -144,22 +142,22 @@ int zmq::gssapi_client_t::produce_next_token (msg_t *msg_)
 
     if (token_ptr != GSS_C_NO_BUFFER)
         free(recv_tok.value);
-     
-    if (send_tok.length != 0) { // server expects another token
-        fprintf(stderr, "%s:%d: producing token\n", __FILE__, __LINE__); /// FIXME die("creating context", maj_stat, init_sec_min_stat); /// FIXME die("parsing name", maj_stat, min_stat);
-        if (produce_token (msg_, TOKEN_CONTEXT, send_tok.value, send_tok.length) < 0) {
+    
+    return 0;
+}
+
+int zmq::gssapi_client_t::produce_next_token (msg_t *msg_)
+{
+    if (send_tok.length != 0) { // Server expects another token
+        if (produce_initiate(msg_, send_tok.value, send_tok.length) < 0) {
             gss_release_buffer(&min_stat, &send_tok);
             gss_release_name(&min_stat, &target_name);
             return -1;
         }
     }
-    else
-        fprintf(stderr, "%s:%d: skip producing token\n", __FILE__, __LINE__); /// FIXME die("creating context", maj_stat, init_sec_min_stat); /// FIXME die("parsing name", maj_stat, min_stat);
-
     gss_release_buffer(&min_stat, &send_tok);
 
     if (maj_stat != GSS_S_COMPLETE && maj_stat != GSS_S_CONTINUE_NEEDED) {
-        fprintf(stderr, "%s:%d: failed to create GSSAPI security context\n", __FILE__, __LINE__); /// FIXME die("creating context", maj_stat, init_sec_min_stat);
         gss_release_name(&min_stat, &target_name);
         if (context != GSS_C_NO_CONTEXT)
             gss_delete_sec_context(&min_stat, &context, GSS_C_NO_BUFFER);
@@ -172,18 +170,12 @@ int zmq::gssapi_client_t::produce_next_token (msg_t *msg_)
 int zmq::gssapi_client_t::process_next_token (msg_t *msg_)
 {
     if (maj_stat == GSS_S_CONTINUE_NEEDED) {
-        fprintf(stderr, "%s:%d: processing token\n", __FILE__, __LINE__); /// FIXME die("creating context", maj_stat, init_sec_min_stat); /// FIXME die("parsing name", maj_stat, min_stat);
-        if (process_token(msg_, token_flags, &recv_tok.value, recv_tok.length) < 0) {
+        if (process_initiate(msg_, &recv_tok.value, recv_tok.length) < 0) {
             gss_release_name(&min_stat, &target_name);
             return -1;
         }
         token_ptr = &recv_tok;
     }
-    else
-        fprintf(stderr, "%s:%d: skip processing token\n", __FILE__, __LINE__); /// FIXME die("creating context", maj_stat, init_sec_min_stat); /// FIXME die("parsing name", maj_stat, min_stat);
-
-    if (maj_stat == GSS_S_COMPLETE)
-        security_context_established = true;
 
     return 0;
 }

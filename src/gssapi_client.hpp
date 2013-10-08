@@ -48,17 +48,26 @@ namespace zmq
     private:
  
         enum state_t {
+            call_next_init,
             send_next_token,
             recv_next_token,
-            almost_ready,
-            ready
+            connected
         };
 
+        //  Current FSM state
         state_t state;
+
+        //  Points to either send_tok or recv_tok
+        //  during context initialization
         gss_buffer_desc *token_ptr;
+
+        //  The desired underlying mechanism
         gss_OID_set_desc mechs;
+
+        //  True iff client considers the server authenticated
         bool security_context_established;
 
+        int initialize_context ();
         int produce_next_token (msg_t *msg_);
         int process_next_token (msg_t *msg_);
     };
