@@ -5,20 +5,14 @@
 0MQ version 4.0.1 stable, released on 2013/10/08
 ================================================
 
-Bug fixes
----------
-
-* Fixed some build/test errors on OS/X + Clang++.
+Changes
+-------
 
 * Updated CURVE mechanism to track revised RFC 27 (INITIATE vouch).
 
   The INITIATE command vouch box is Box[C',S](C->S') instead of
   Box[C'](C->S), to reduce the risk of client impersonation, as per
   https://codesinchaos.wordpress.com/2012/09/09/curvecp-1/.
-
-* Fixed LIBZMQ-565, typo in code.
-
-* Fixed LIBZMQ-566, dealer-to-router connections sometimes failing.
 
 * Fixed LIBZMQ-567, adding abstract namespaces for IPC sockets on Linux.
 
@@ -29,18 +23,27 @@ Bug fixes
   the socket whereas binding to 'ipc:///tmp/tester' will create the file
   /tmp/tester. See issue 567 for more information.
 
-* Fixed builds for AIX, MSVC 2008, OS/X with clang++, Solaris.
-
 * Added zmq_z85_encode and zmq_z85_decode to core libzmq API.
 
 * Added zmq_curve_keypair to core libzmq API.
-
-* Improved CURVE handshake error handling.
 
 * Replaced macro constants in zmq.h with enum types for user-facing
   constants (except ZMQ version numbers).
 
 * Bumped library ABI version to 4:0:1.
+
+Bug fixes
+---------
+
+* Fixed some build/test errors on OS/X + Clang++.
+
+* Fixed LIBZMQ-565, typo in code.
+
+* Fixed LIBZMQ-566, dealer-to-router connections sometimes failing.
+
+* Fixed builds for AIX, MSVC 2008, OS/X with clang++, Solaris.
+
+* Improved CURVE handshake error handling.
 
 
 0MQ version 4.0.0 (RC1), released on 2013/09/20
