@@ -23,9 +23,6 @@ Changes
 
 * Added zmq_curve_keypair to core libzmq API.
 
-* Replaced macro constants in zmq.h with enum types for user-facing
-  constants (except ZMQ version numbers).
-
 * Bumped library ABI version to 4:0:1.
 
 Bug fixes
