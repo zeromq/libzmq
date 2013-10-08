@@ -72,8 +72,7 @@ namespace zmq
             }
 
             chunk_t *sc = spare_chunk.xchg (NULL);
-            if (sc)
-                free (sc);
+            free (sc);
         }
 
         //  Returns reference to the front element of the queue.
@@ -156,8 +155,7 @@ namespace zmq
                 //  so for cache reasons we'll get rid of the spare and
                 //  use 'o' as the spare.
                 chunk_t *cs = spare_chunk.xchg (o);
-                if (cs)
-                    free (cs);
+                free (cs);
             }
         }
 

@@ -114,12 +114,9 @@ zmq::stream_engine_t::~stream_engine_t ()
     int rc = tx_msg.close ();
     errno_assert (rc == 0);
 
-    if (encoder != NULL)
-        delete encoder;
-    if (decoder != NULL)
-        delete decoder;
-    if (mechanism != NULL)
-        delete mechanism;
+    delete encoder;
+    delete decoder;
+    delete mechanism;
 }
 
 void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
