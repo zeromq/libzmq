@@ -37,9 +37,6 @@ Bug fixes
 
 * Improved CURVE handshake error handling.
 
-* Replaced macro constants in zmq.h with enum types for user-facing
-  constants (except ZMQ version numbers).
-
 * Bumped library ABI version to 4:0:1.
 
 
