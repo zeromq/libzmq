@@ -150,7 +150,7 @@ results shall be undefined.
 Option value type:: binary data
 Option value unit:: N/A
 Default value:: NULL
-Applicable socket types:: all
+Applicable socket types:: ZMQ_REQ, ZMQ_REP, ZMQ_ROUTER, ZMQ_DEALER.
 
 
 ZMQ_RATE: Set multicast data rate
