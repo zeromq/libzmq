@@ -60,8 +60,8 @@ namespace zmq
         void plug (zmq::io_thread_t *io_thread_,
            zmq::session_base_t *session_);
         void terminate ();
-        void activate_in ();
-        void activate_out ();
+        void restart_input ();
+        void restart_output ();
         void zap_msg_available ();
 
         //  i_poll_events interface implementation.
@@ -179,10 +179,10 @@ namespace zmq
         mechanism_t *mechanism;
 
         //  True iff the engine couldn't consume the last decoded message.
-        bool input_paused;
+        bool input_stopped;
 
         //  True iff the engine doesn't have any message to encode.
-        bool output_paused;
+        bool output_stopped;
 
         // Socket
         zmq::socket_base_t *socket;

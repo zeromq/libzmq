@@ -243,7 +243,7 @@ void zmq::session_base_t::read_activated (pipe_t *pipe_)
     }
 
     if (likely (pipe_ == pipe))
-        engine->activate_out ();
+        engine->restart_output ();
     else
         engine->zap_msg_available ();
 }
@@ -257,7 +257,7 @@ void zmq::session_base_t::write_activated (pipe_t *pipe_)
     }
 
     if (engine)
-        engine->activate_in ();
+        engine->restart_input ();
 }
 
 void zmq::session_base_t::hiccuped (pipe_t *)
