@@ -120,8 +120,8 @@ Default value:: 0
 Applicable socket types:: N/A
 
 
-ZMQ_IDENTITY: Set socket identity
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_IDENTITY: Retrieve socket identity
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_IDENTITY' option shall retrieve the identity of the specified 'socket'.
 Socket identity is used only by request/reply pattern. Namely, it can be used
 in tandem with ROUTER socket to route messages to the peer with specific
@@ -134,7 +134,7 @@ starting with binary zero are reserved for use by 0MQ infrastructure.
 Option value type:: binary data
 Option value unit:: N/A
 Default value:: NULL
-Applicable socket types:: all
+Applicable socket types:: ZMQ_REP, ZMQ_REQ, ZMQ_ROUTER, ZMQ_DEALER.
 
 
 ZMQ_RATE: Retrieve multicast data rate
