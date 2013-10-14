@@ -1,3 +1,12 @@
+0MQ version 4.0.1 stable, released on 2013/xx/xx
+================================================
+
+Bug Fixes
+---------
+
+* Fixed issue LIBZMQ-569.
+
+
 0MQ version 4.0.1 stable, released on 2013/10/08
 ================================================
 
