@@ -51,9 +51,20 @@ int zmq::ipc_address_t::resolve (const char *path_)
         errno = ENAMETOOLONG;
         return -1;
     }
+#if defined ZMQ_HAVE_LINUX
+    if (path_[0] == '@' && !path_[1]) {
+            errno = EINVAL;
+            return -1;
+    }
+#endif
 
     address.sun_family = AF_UNIX;
     strcpy (address.sun_path, path_);
+#if defined ZMQ_HAVE_LINUX
+    /* Abstract sockets on Linux start with '\0' */
+    if (path_[0] == '@')
+        *address.sun_path = '\0';
+#endif
     return 0;
 }
 
@@ -65,7 +76,15 @@ int zmq::ipc_address_t::to_string (std::string &addr_)
     }
 
     std::stringstream s;
+#if !defined ZMQ_HAVE_LINUX
     s << "ipc://" << address.sun_path;
+#else
+    s << "ipc://";
+    if (!address.sun_path[0] && address.sun_path[1])
+       s << "@" << address.sun_path + 1;
+    else
+       s << address.sun_path;
+#endif
     addr_ = s.str ();
     return 0;
 }
@@ -77,6 +96,10 @@ const sockaddr *zmq::ipc_address_t::addr () const
 
 socklen_t zmq::ipc_address_t::addrlen () const
 {
+#if defined ZMQ_HAVE_LINUX
+    if (!address.sun_path[0] && address.sun_path[1])
+        return (socklen_t) strlen(address.sun_path + 1) + sizeof (sa_family_t) + 1;
+#endif
     return (socklen_t) sizeof (address);
 }
 

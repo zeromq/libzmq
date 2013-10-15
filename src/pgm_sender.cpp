@@ -119,13 +119,13 @@ void zmq::pgm_sender_t::terminate ()
     delete this;
 }
 
-void zmq::pgm_sender_t::activate_out ()
+void zmq::pgm_sender_t::restart_output ()
 {
     set_pollout (handle);
     out_event ();
 }
 
-void zmq::pgm_sender_t::activate_in ()
+void zmq::pgm_sender_t::restart_input ()
 {
     zmq_assert (false);
 }

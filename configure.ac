@@ -29,9 +29,10 @@ AC_SUBST(PACKAGE_VERSION)
 # ZeroMQ versions 2.1.x: 1:0:0 (ABI version 1)
 # ZeroMQ version 3.0: 2:0:0 (ABI version 2)
 # ZeroMQ version 3.1: 3:0:0 (ABI version 3)
+# ZeroMQ version 4.0: 4:0:1 (ABI version 4)
 #
 # libzmq -version-info current:revision:age
-LTVER="3:0:0"
+LTVER="4:0:1"
 AC_SUBST(LTVER)
 
 # Take a copy of original flags
@@ -62,10 +63,44 @@ LIBZMQ_CHECK_ENABLE_DEBUG
 # Check wheter to enable code coverage
 LIBZMQ_WITH_GCOV
 
-# Checks for libraries
-AC_CHECK_LIB([pthread], [pthread_create])
-AC_CHECK_LIB([rt], [clock_gettime])
-AC_CHECK_LIB([sodium], [sodium_init],,AC_MSG_WARN(libsodium is needed for CURVE security))
+# Allow libsodium to be installed in a custom path:
+
+AC_ARG_WITH([libsodium],
+            [AS_HELP_STRING([--with-libsodium],
+                            [Specify libsodium prefix])],
+            [zmq_search_libsodium="yes"],
+            [])
+
+if test "x$zmq_search_libsodium" = "xyes"; then
+    if test -r "${with_libsodium}/include/sodium.h"; then
+        CPPFLAGS="-I${with_libsodium}/include ${CPPFLAGS}"
+        LDFLAGS="-L${with_libsodium}/lib ${LDFLAGS}"
+    fi
+fi
+
+AC_ARG_WITH([libsodium-include-dir],
+            [AS_HELP_STRING([--with-libsodium-include-dir],
+                            [Specify libsodium include prefix])],
+            [zmq_search_libsodium_include="yes"],
+            [])
+
+if test "x$zmq_search_libsodium_include" = "xyes"; then
+    if test -r "${with_libsodium_include_dir}/sodium.h"; then
+        CPPFLAGS="-I${with_libsodium_include_dir}/include ${CPPFLAGS}"
+    fi
+fi
+
+AC_ARG_WITH([libsodium_lib_dir],
+            [AS_HELP_STRING([--with-libsodium-lib-dir],
+                            [Specify libsodium library prefix])],
+            [zmq_search_libsodium_lib="yes"],
+            [])
+
+if test "x$zmq_search_libsodium_lib" = "xyes"; then
+    if test -r "${with_libsodium_lib_dir}/libsodium.{a|so|dylib}"; then
+        LDFLAGS="-L${with_libsodium}/lib ${LDFLAGS}"
+    fi
+fi
 
 # Set pedantic
 libzmq_pedantic="yes"
@@ -79,6 +114,7 @@ libzmq_dso_visibility="yes"
 # Platform specific checks
 libzmq_on_mingw32="no"
 libzmq_on_android="no"
+libzmq_on_linux="no"
 
 # Set some default features required by 0MQ code.
 CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE $CPPFLAGS"
@@ -94,6 +130,7 @@ case "${host_os}" in
             CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
         fi
         AC_DEFINE(ZMQ_HAVE_LINUX, 1, [Have Linux OS])
+        libzmq_on_linux="yes"
 
         case "${host_os}" in
             *android*)
@@ -121,6 +158,9 @@ case "${host_os}" in
         if test "x$solaris_has_atomic" = "xno"; then
             AC_DEFINE(ZMQ_FORCE_MUTEXES, 1, [Force to use mutexes])
         fi
+        # ssp library is required for libsodium on Solaris-like systems
+        LDFLAGS="-lssp $LDFLAGS"
+        CPPFLAGS="$CPPFLAGS -Wno-long-long"
         ;;
     *freebsd*)
         # Define on FreeBSD to enable all library features
@@ -213,6 +253,11 @@ case "${host_os}" in
         AC_MSG_ERROR([unsupported system: ${host_os}.])
         ;;
 esac
+
+# Checks for libraries
+AC_CHECK_LIB([pthread], [pthread_create])
+AC_CHECK_LIB([rt], [clock_gettime])
+AC_CHECK_LIB([sodium], [sodium_init],,AC_MSG_WARN(libsodium is needed for CURVE security))
 
 #
 # Check if the compiler supports -fvisibility=hidden flag. MinGW32 uses __declspec
@@ -385,10 +430,11 @@ AC_LANG_POP([C++])
 AM_CONDITIONAL(BUILD_PGM, test "x$libzmq_pgm_ext" = "xyes")
 AM_CONDITIONAL(ON_MINGW, test "x$libzmq_on_mingw32" = "xyes")
 AM_CONDITIONAL(ON_ANDROID, test "x$libzmq_on_android" = "xyes")
+AM_CONDITIONAL(ON_LINUX, test "x$libzmq_on_linux" = "xyes")
 
 # Checks for library functions.
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS(perror gettimeofday clock_gettime memset socket getifaddrs freeifaddrs)
+AC_CHECK_FUNCS(perror gettimeofday clock_gettime memset socket getifaddrs freeifaddrs fork)
 AC_CHECK_HEADERS([alloca.h])
 LIBZMQ_CHECK_SOCK_CLOEXEC([AC_DEFINE(
                               [ZMQ_HAVE_SOCK_CLOEXEC],

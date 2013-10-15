@@ -102,12 +102,12 @@ void zmq::pgm_receiver_t::terminate ()
     delete this;
 }
 
-void zmq::pgm_receiver_t::activate_out ()
+void zmq::pgm_receiver_t::restart_output ()
 {
     drop_subscriptions ();
 }
 
-void zmq::pgm_receiver_t::activate_in ()
+void zmq::pgm_receiver_t::restart_input ()
 {
     zmq_assert (session != NULL);
     zmq_assert (active_tsi != NULL);

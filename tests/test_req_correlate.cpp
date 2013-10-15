@@ -17,8 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdio.h>
-#include <time.h>
 #include "testutil.hpp"
 
 int main (void)
@@ -34,7 +32,7 @@ int main (void)
     assert (router);
 
     int enabled = 1;
-    int rc = zmq_setsockopt (req, ZMQ_REQ_REQUEST_IDS, &enabled, sizeof (int));
+    int rc = zmq_setsockopt (req, ZMQ_REQ_CORRELATE, &enabled, sizeof (int));
     assert (rc == 0);
 
     int rcvtimeo = 100;
@@ -44,7 +42,7 @@ int main (void)
     rc = zmq_connect (req, "tcp://localhost:5555");
     assert (rc == 0);
 
-    rc = zmq_bind (router, "tcp://*:5555");
+    rc = zmq_bind (router, "tcp://127.0.0.1:5555");
     assert (rc == 0);
 
     // Send a multi-part request.

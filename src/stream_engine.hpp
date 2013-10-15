@@ -60,8 +60,8 @@ namespace zmq
         void plug (zmq::io_thread_t *io_thread_,
            zmq::session_base_t *session_);
         void terminate ();
-        void activate_in ();
-        void activate_out ();
+        void restart_input ();
+        void restart_output ();
         void zap_msg_available ();
 
         //  i_poll_events interface implementation.
@@ -96,8 +96,8 @@ namespace zmq
         int read_identity (msg_t *msg_);
         int write_identity (msg_t *msg_);
 
-        int next_handshake_message (msg_t *msg);
-        int process_handshake_message (msg_t *msg);
+        int next_handshake_command (msg_t *msg);
+        int process_handshake_command (msg_t *msg);
 
         int pull_msg_from_session (msg_t *msg_);
         int push_msg_to_session (msg_t *msg);
@@ -171,18 +171,18 @@ namespace zmq
 
         bool io_error;
 
-        //  Indicates whether the engine is to inject a phony
-        //  subscription message into the incomming stream.
+        //  Indicates whether the engine is to inject a phantom
+        //  subscription message into the incoming stream.
         //  Needed to support old peers.
         bool subscription_required;
 
         mechanism_t *mechanism;
 
         //  True iff the engine couldn't consume the last decoded message.
-        bool input_paused;
+        bool input_stopped;
 
         //  True iff the engine doesn't have any message to encode.
-        bool output_paused;
+        bool output_stopped;
 
         // Socket
         zmq::socket_base_t *socket;

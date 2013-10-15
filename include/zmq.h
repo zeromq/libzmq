@@ -15,6 +15,14 @@
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+    *************************************************************************
+    NOTE to contributors. This file comprises the principal public contract
+    for ZeroMQ API users (along with zmq_utils.h). Any change to this file
+    supplied in a stable release SHOULD not break existing applications.
+    In practice this means that the value of constants must not change, and
+    that old values may not be reused for new constants.
+    *************************************************************************
 */
 
 #ifndef __ZMQ_H_INCLUDED__
@@ -62,6 +70,9 @@ typedef __int32 int32_t;
 #   ifndef uint16_t
 typedef unsigned __int16 uint16_t;
 #   endif
+#   ifndef uint8_t
+typedef unsigned __int8 uint8_t;
+#   endif
 #else
 #   include <stdint.h>
 #endif
@@ -72,8 +83,8 @@ typedef unsigned __int16 uint16_t;
 /******************************************************************************/
 
 /*  Version macros for compile-time API version detection                     */
-#define ZMQ_VERSION_MAJOR 3
-#define ZMQ_VERSION_MINOR 3
+#define ZMQ_VERSION_MAJOR 4
+#define ZMQ_VERSION_MINOR 1
 #define ZMQ_VERSION_PATCH 0
 
 #define ZMQ_MAKE_VERSION(major, minor, patch) \
@@ -178,6 +189,7 @@ ZMQ_EXPORT const char *zmq_strerror (int errnum);
 
 ZMQ_EXPORT void *zmq_ctx_new (void);
 ZMQ_EXPORT int zmq_ctx_term (void *context);
+ZMQ_EXPORT int zmq_ctx_shutdown (void *ctx_);
 ZMQ_EXPORT int zmq_ctx_set (void *context, int option, int optval);
 ZMQ_EXPORT int zmq_ctx_get (void *context, int option);
 
@@ -215,7 +227,7 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 /*  0MQ socket definition.                                                    */
 /******************************************************************************/
 
-/*  Socket types.                                                             */ 
+/*  Socket types.                                                             */
 #define ZMQ_PAIR 0
 #define ZMQ_PUB 1
 #define ZMQ_SUB 2
@@ -276,9 +288,10 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 #define ZMQ_CURVE_SECRETKEY 49
 #define ZMQ_CURVE_SERVERKEY 50
 #define ZMQ_PROBE_ROUTER 51
-#define ZMQ_REQ_REQUEST_IDS 52
-#define ZMQ_REQ_STRICT 53
+#define ZMQ_REQ_CORRELATE 52
+#define ZMQ_REQ_RELAXED 53
 #define ZMQ_CONFLATE 54
+#define ZMQ_ZAP_DOMAIN 55
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1
@@ -335,7 +348,7 @@ typedef struct {
 ZMQ_EXPORT void *zmq_socket (void *, int type);
 ZMQ_EXPORT int zmq_close (void *s);
 ZMQ_EXPORT int zmq_setsockopt (void *s, int option, const void *optval,
-    size_t optvallen); 
+    size_t optvallen);
 ZMQ_EXPORT int zmq_getsockopt (void *s, int option, void *optval,
     size_t *optvallen);
 ZMQ_EXPORT int zmq_bind (void *s, const char *addr);
@@ -383,6 +396,12 @@ ZMQ_EXPORT int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
 /*  Built-in message proxy (3-way) */
 
 ZMQ_EXPORT int zmq_proxy (void *frontend, void *backend, void *capture);
+
+/*  Encode a binary key as printable text using ZMQ RFC 32  */
+ZMQ_EXPORT char *zmq_z85_encode (char *dest, uint8_t *data, size_t size);
+
+/*  Encode a binary key from printable text per ZMQ RFC 32  */
+ZMQ_EXPORT uint8_t *zmq_z85_decode (uint8_t *dest, char *string);
 
 /*  Deprecated aliases */
 #define ZMQ_STREAMER 1

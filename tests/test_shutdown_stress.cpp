@@ -17,10 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zmq.h"
-#include "../include/zmq_utils.h"
-#include <stddef.h>
-#include <stdio.h>
 #include "testutil.hpp"
 
 #define THREAD_COUNT 100

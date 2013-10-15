@@ -40,6 +40,7 @@ namespace zmq
     class io_thread_t;
     class socket_base_t;
     class reaper_t;
+    class pipe_t;
 
     //  Information associated with inproc endpoint. Note that endpoint options
     //  are registered as well so that the peer can access them without a need
@@ -48,6 +49,13 @@ namespace zmq
     {
         socket_base_t *socket;
         options_t options;
+    };
+
+    struct pending_connection_t
+    {
+        endpoint_t endpoint;
+        pipe_t* connect_pipe;
+        pipe_t* bind_pipe;
     };
 
     //  Context object encapsulates all the global state associated with
@@ -68,6 +76,15 @@ namespace zmq
         //  down. If there are open sockets still, the deallocation happens
         //  after the last one is closed.
         int terminate ();
+
+        // This function starts the terminate process by unblocking any blocking
+        // operations currently in progress and stopping any more socket activity
+        // (except zmq_close).
+        // This function is non-blocking.
+        // terminate must still be called afterwards.
+        // This function is optional, terminate will unblock any current 
+        // operations as well.
+        int shutdown();
 
         //  Set and get context properties.
         int set (int option_, int optval_);
@@ -92,6 +109,8 @@ namespace zmq
         int register_endpoint (const char *addr_, endpoint_t &endpoint_);
         void unregister_endpoints (zmq::socket_base_t *socket_);
         endpoint_t find_endpoint (const char *addr_);
+        void pend_connection (const char *addr_, pending_connection_t &pending_connection_);
+        void connect_pending (const char *addr_, zmq::socket_base_t *bind_socket_);
 
         enum {
             term_tid = 0,
@@ -113,8 +132,8 @@ namespace zmq
         sockets_t sockets;
 
         //  List of unused thread slots.
-        typedef std::vector <uint32_t> emtpy_slots_t;
-        emtpy_slots_t empty_slots;
+        typedef std::vector <uint32_t> empty_slots_t;
+        empty_slots_t empty_slots;
 
         //  If true, zmq_init has been called but no socket has been created
         //  yet. Launching of I/O threads is delayed.
@@ -147,6 +166,10 @@ namespace zmq
         typedef std::map <std::string, endpoint_t> endpoints_t;
         endpoints_t endpoints;
 
+        // List of inproc connection endpoints pending a bind
+        typedef std::multimap <std::string, pending_connection_t> pending_connections_t;
+        pending_connections_t pending_connections;
+
         //  Synchronisation of access to the list of inproc endpoints.
         mutex_t endpoints_sync;
 
@@ -167,6 +190,13 @@ namespace zmq
 
         ctx_t (const ctx_t&);
         const ctx_t &operator = (const ctx_t&);
+
+#ifdef HAVE_FORK
+        // the process that created this context. Used to detect forking.
+        pid_t pid;
+#endif
+        enum side { connect_side, bind_side };
+        void connect_inproc_sockets(zmq::socket_base_t *bind_socket_, options_t& bind_options, pending_connection_t &pending_connection_, side side_);
     };
 
 }

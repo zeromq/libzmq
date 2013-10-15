@@ -54,18 +54,18 @@ zmq::curve_server_t::~curve_server_t ()
 {
 }
 
-int zmq::curve_server_t::next_handshake_message (msg_t *msg_)
+int zmq::curve_server_t::next_handshake_command (msg_t *msg_)
 {
     int rc = 0;
 
     switch (state) {
         case send_welcome:
-            rc = welcome_msg (msg_);
+            rc = produce_welcome (msg_);
             if (rc == 0)
                 state = expect_initiate;
             break;
         case send_ready:
-            rc = ready_msg (msg_);
+            rc = produce_ready (msg_);
             if (rc == 0)
                 state = connected;
             break;
@@ -77,7 +77,7 @@ int zmq::curve_server_t::next_handshake_message (msg_t *msg_)
     return rc;
 }
 
-int zmq::curve_server_t::process_handshake_message (msg_t *msg_)
+int zmq::curve_server_t::process_handshake_command (msg_t *msg_)
 {
     int rc = 0;
 
@@ -143,7 +143,7 @@ int zmq::curve_server_t::encode (msg_t *msg_)
 
     uint8_t *message = static_cast <uint8_t *> (msg_->data ());
 
-    memcpy (message, "MESSAGE\0", 8);
+    memcpy (message, "\x07MESSAGE", 8);
     memcpy (message + 8, &cn_nonce, 8);
     memcpy (message + 16, message_box + crypto_box_BOXZEROBYTES,
             mlen - crypto_box_BOXZEROBYTES);
@@ -166,7 +166,7 @@ int zmq::curve_server_t::decode (msg_t *msg_)
     }
 
     const uint8_t *message = static_cast <uint8_t *> (msg_->data ());
-    if (memcmp (message, "MESSAGE\0", 8)) {
+    if (memcmp (message, "\x07MESSAGE", 8)) {
         errno = EPROTO;
         return -1;
     }
@@ -238,7 +238,7 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
     }
 
     const uint8_t * const hello = static_cast <uint8_t *> (msg_->data ());
-    if (memcmp (hello, "HELLO\0", 6)) {
+    if (memcmp (hello, "\x05HELLO", 6)) {
         errno = EPROTO;
         return -1;
     }
@@ -276,7 +276,7 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
     return rc;
 }
 
-int zmq::curve_server_t::welcome_msg (msg_t *msg_)
+int zmq::curve_server_t::produce_welcome (msg_t *msg_)
 {
     uint8_t cookie_nonce [crypto_secretbox_NONCEBYTES];
     uint8_t cookie_plaintext [crypto_secretbox_ZEROBYTES + 64];
@@ -329,7 +329,7 @@ int zmq::curve_server_t::welcome_msg (msg_t *msg_)
     errno_assert (rc == 0);
 
     uint8_t * const welcome = static_cast <uint8_t *> (msg_->data ());
-    memcpy (welcome, "WELCOME\0", 8);
+    memcpy (welcome, "\x07WELCOME", 8);
     memcpy (welcome + 8, welcome_nonce + 8, 16);
     memcpy (welcome + 24, welcome_ciphertext + crypto_box_BOXZEROBYTES, 144);
 
@@ -338,13 +338,13 @@ int zmq::curve_server_t::welcome_msg (msg_t *msg_)
 
 int zmq::curve_server_t::process_initiate (msg_t *msg_)
 {
-    if (msg_->size () < 225) {
+    if (msg_->size () < 257) {
         errno = EPROTO;
         return -1;
     }
 
     const uint8_t *initiate = static_cast <uint8_t *> (msg_->data ());
-    if (memcmp (initiate, "INITIATE\0", 9)) {
+    if (memcmp (initiate, "\x08INITIATE", 9)) {
         errno = EPROTO;
         return -1;
     }
@@ -369,19 +369,17 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     }
 
     //  Check cookie plain text is as expected [C' + s']
-    if (memcmp (cookie_plaintext + crypto_secretbox_ZEROBYTES,
-                cn_client, 32)
-    ||  memcmp (cookie_plaintext + crypto_secretbox_ZEROBYTES + 32,
-                cn_secret, 32)) {
-        errno = EAGAIN;
+    if (memcmp (cookie_plaintext + crypto_secretbox_ZEROBYTES, cn_client, 32)
+    ||  memcmp (cookie_plaintext + crypto_secretbox_ZEROBYTES + 32, cn_secret, 32)) {
+        errno = EPROTO;
         return -1;
     }
 
     const size_t clen = (msg_->size () - 113) + crypto_box_BOXZEROBYTES;
 
     uint8_t initiate_nonce [crypto_box_NONCEBYTES];
-    uint8_t initiate_plaintext [crypto_box_ZEROBYTES + 96 + 256];
-    uint8_t initiate_box [crypto_box_BOXZEROBYTES + 112 + 256];
+    uint8_t initiate_plaintext [crypto_box_ZEROBYTES + 128 + 256];
+    uint8_t initiate_box [crypto_box_BOXZEROBYTES + 144 + 256];
 
     //  Open Box [C + vouch + metadata](C'->S')
     memset (initiate_box, 0, crypto_box_BOXZEROBYTES);
@@ -401,13 +399,13 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     const uint8_t *client_key = initiate_plaintext + crypto_box_ZEROBYTES;
 
     uint8_t vouch_nonce [crypto_box_NONCEBYTES];
-    uint8_t vouch_plaintext [crypto_box_ZEROBYTES + 32];
-    uint8_t vouch_box [crypto_box_BOXZEROBYTES + 48];
+    uint8_t vouch_plaintext [crypto_box_ZEROBYTES + 64];
+    uint8_t vouch_box [crypto_box_BOXZEROBYTES + 80];
 
-    //  Open Box [C'](C->S) and check contents
+    //  Open Box Box [C',S](C->S') and check contents
     memset (vouch_box, 0, crypto_box_BOXZEROBYTES);
     memcpy (vouch_box + crypto_box_BOXZEROBYTES,
-            initiate_plaintext + crypto_box_ZEROBYTES + 48, 48);
+            initiate_plaintext + crypto_box_ZEROBYTES + 48, 80);
 
     memcpy (vouch_nonce, "VOUCH---", 8);
     memcpy (vouch_nonce + 8,
@@ -415,7 +413,7 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
 
     rc = crypto_box_open (vouch_plaintext, vouch_box,
                           sizeof vouch_box,
-                          vouch_nonce, client_key, secret_key);
+                          vouch_nonce, client_key, cn_secret);
     if (rc != 0) {
         errno = EPROTO;
         return -1;
@@ -443,11 +441,11 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
         }
     }
 
-    return parse_metadata (initiate_plaintext + crypto_box_ZEROBYTES + 96,
-                           clen - crypto_box_ZEROBYTES - 96);
+    return parse_metadata (initiate_plaintext + crypto_box_ZEROBYTES + 128,
+                           clen - crypto_box_ZEROBYTES - 128);
 }
 
-int zmq::curve_server_t::ready_msg (msg_t *msg_)
+int zmq::curve_server_t::produce_ready (msg_t *msg_)
 {
     uint8_t ready_nonce [crypto_box_NONCEBYTES];
     uint8_t ready_plaintext [crypto_box_ZEROBYTES + 256];
@@ -482,7 +480,7 @@ int zmq::curve_server_t::ready_msg (msg_t *msg_)
 
     uint8_t *ready = static_cast <uint8_t *> (msg_->data ());
 
-    memcpy (ready, "READY\0", 6);
+    memcpy (ready, "\x05READY", 6);
     //  Short nonce, prefixed by "CurveZMQREADY---"
     memcpy (ready + 6, &cn_nonce, 8);
     //  Box [metadata](S'->C')
@@ -523,8 +521,9 @@ void zmq::curve_server_t::send_zap_request (const uint8_t *key)
     errno_assert (rc == 0);
 
     //  Domain frame
-    rc = msg.init ();
+    rc = msg.init_size (options.zap_domain.length ());
     errno_assert (rc == 0);
+    memcpy (msg.data (), options.zap_domain.c_str (), options.zap_domain.length ());
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);
@@ -537,9 +536,9 @@ void zmq::curve_server_t::send_zap_request (const uint8_t *key)
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);
 
-    // identity frame 
+    //  Identity frame
     rc = msg.init_size (options.identity_size);
-    errno_assert(rc == 0);
+    errno_assert (rc == 0);
     memcpy (msg.data (), options.identity, options.identity_size);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
@@ -588,24 +587,28 @@ int zmq::curve_server_t::receive_and_process_zap_reply ()
 
     //  Address delimiter frame
     if (msg [0].size () > 0) {
+        rc = -1;
         errno = EPROTO;
         goto error;
     }
 
     //  Version frame
     if (msg [1].size () != 3 || memcmp (msg [1].data (), "1.0", 3)) {
+        rc = -1;
         errno = EPROTO;
         goto error;
     }
 
     //  Request id frame
     if (msg [2].size () != 1 || memcmp (msg [2].data (), "1", 1)) {
+        rc = -1;
         errno = EPROTO;
         goto error;
     }
 
     //  Status code frame
     if (msg [3].size () != 3 || memcmp (msg [3].data (), "200", 3)) {
+        rc = -1;
         errno = EACCES;
         goto error;
     }

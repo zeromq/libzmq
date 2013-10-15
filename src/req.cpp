@@ -198,16 +198,16 @@ int zmq::req_t::xsetsockopt (int option_, const void *optval_, size_t optvallen_
     bool is_int = (optvallen_ == sizeof (int));
     int value = is_int? *((int *) optval_): 0;
     switch (option_) {
-        case ZMQ_REQ_REQUEST_IDS:
+        case ZMQ_REQ_CORRELATE:
             if (is_int && value >= 0) {
                 request_id_frames_enabled = (value != 0);
                 return 0;
             }
             break;
 
-        case ZMQ_REQ_STRICT:
+        case ZMQ_REQ_RELAXED:
             if (is_int && value >= 0) {
-                strict = (value != 0);
+                strict = (value == 0);
                 return 0;
             }
             break;

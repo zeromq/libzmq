@@ -20,6 +20,24 @@
 #ifndef __ZMQ_UTILS_H_INCLUDED__
 #define __ZMQ_UTILS_H_INCLUDED__
 
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+/*  Define integer types needed for event interface                          */
+#if defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_OPENVMS
+#   include <inttypes.h>
+#elif defined _MSC_VER && _MSC_VER < 1600
+#   ifndef int32_t
+typedef __int32 int32_t;
+#   endif
+#   ifndef uint16_t
+typedef unsigned __int16 uint16_t;
+#   endif
+#else
+#   include <stdint.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -43,7 +61,21 @@ extern "C" {
 #   endif
 #endif
 
+/* These functions are documented by man pages                                */
+
+/* Encode data with Z85 encoding. Returns encoded data                        */
+ZMQ_EXPORT char *zmq_z85_encode (char *dest, uint8_t *data, size_t size);
+
+/* Decode data with Z85 encoding. Returns decoded data                        */
+ZMQ_EXPORT uint8_t *zmq_z85_decode (uint8_t *dest, char *string);
+
+/* Generate z85-encoded public and private keypair with libsodium.            */
+/* Returns 0 on success.                                                      */
+ZMQ_EXPORT int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key);
+
 typedef void (zmq_thread_fn) (void*);
+
+/*  These functions are not documented by man pages                           */
 
 /*  Helper functions are used by perf tests so that they don't have to care   */
 /*  about minutiae of time-related functions on different OS platforms.       */
@@ -59,10 +91,10 @@ ZMQ_EXPORT unsigned long zmq_stopwatch_stop (void *watch_);
 ZMQ_EXPORT void zmq_sleep (int seconds_);
 
 /* Start a thread. Returns a handle to the thread.                            */
-ZMQ_EXPORT void *zmq_threadstart(zmq_thread_fn* func, void* arg);
+ZMQ_EXPORT void *zmq_threadstart (zmq_thread_fn* func, void* arg);
 
 /* Wait for thread to complete then free up resources.                        */
-ZMQ_EXPORT void zmq_threadclose(void* thread);
+ZMQ_EXPORT void zmq_threadclose (void* thread);
 
 #undef ZMQ_EXPORT
 

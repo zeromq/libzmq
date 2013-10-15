@@ -46,28 +46,28 @@ zmq::plain_mechanism_t::~plain_mechanism_t ()
 {
 }
 
-int zmq::plain_mechanism_t::next_handshake_message (msg_t *msg_)
+int zmq::plain_mechanism_t::next_handshake_command (msg_t *msg_)
 {
     int rc = 0;
 
     switch (state) {
         case sending_hello:
-            rc = hello_command (msg_);
+            rc = produce_hello (msg_);
             if (rc == 0)
                 state = waiting_for_welcome;
             break;
         case sending_welcome:
-            rc = welcome_command (msg_);
+            rc = produce_welcome (msg_);
             if (rc == 0)
                 state = waiting_for_initiate;
             break;
         case sending_initiate:
-            rc = initiate_command (msg_);
+            rc = produce_initiate (msg_);
             if (rc == 0)
                 state = waiting_for_ready;
             break;
         case sending_ready:
-            rc = ready_command (msg_);
+            rc = produce_ready (msg_);
             if (rc == 0)
                 state = ready;
             break;
@@ -78,28 +78,28 @@ int zmq::plain_mechanism_t::next_handshake_message (msg_t *msg_)
     return rc;
 }
 
-int zmq::plain_mechanism_t::process_handshake_message (msg_t *msg_)
+int zmq::plain_mechanism_t::process_handshake_command (msg_t *msg_)
 {
     int rc = 0;
 
     switch (state) {
         case waiting_for_hello:
-            rc = process_hello_command (msg_);
+            rc = process_hello (msg_);
             if (rc == 0)
                 state = expecting_zap_reply? waiting_for_zap_reply: sending_welcome;
             break;
         case waiting_for_welcome:
-            rc = process_welcome_command (msg_);
+            rc = process_welcome (msg_);
             if (rc == 0)
                 state = sending_initiate;
             break;
         case waiting_for_initiate:
-            rc = process_initiate_command (msg_);
+            rc = process_initiate (msg_);
             if (rc == 0)
                 state = sending_ready;
             break;
         case waiting_for_ready:
-            rc = process_ready_command (msg_);
+            rc = process_ready (msg_);
             if (rc == 0)
                 state = ready;
             break;
@@ -134,7 +134,7 @@ int zmq::plain_mechanism_t::zap_msg_available ()
     return rc;
 }
 
-int zmq::plain_mechanism_t::hello_command (msg_t *msg_) const
+int zmq::plain_mechanism_t::produce_hello (msg_t *msg_) const
 {
     const std::string username = options.plain_username;
     zmq_assert (username.length () < 256);
@@ -142,15 +142,15 @@ int zmq::plain_mechanism_t::hello_command (msg_t *msg_) const
     const std::string password = options.plain_password;
     zmq_assert (password.length () < 256);
 
-    const size_t command_size = 8 + 1 + username.length ()
+    const size_t command_size = 6 + 1 + username.length ()
                                   + 1 + password.length ();
 
     const int rc = msg_->init_size (command_size);
     errno_assert (rc == 0);
 
     unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
-    memcpy (ptr, "HELLO   ", 8);
-    ptr += 8;
+    memcpy (ptr, "\x05HELLO", 6);
+    ptr += 6;
 
     *ptr++ = static_cast <unsigned char> (username.length ());
     memcpy (ptr, username.c_str (), username.length ());
@@ -164,17 +164,17 @@ int zmq::plain_mechanism_t::hello_command (msg_t *msg_) const
 }
 
 
-int zmq::plain_mechanism_t::process_hello_command (msg_t *msg_)
+int zmq::plain_mechanism_t::process_hello (msg_t *msg_)
 {
     const unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
     size_t bytes_left = msg_->size ();
 
-    if (bytes_left < 8 || memcmp (ptr, "HELLO   ", 8)) {
+    if (bytes_left < 6 || memcmp (ptr, "\x05HELLO", 6)) {
         errno = EPROTO;
         return -1;
     }
-    ptr += 8;
-    bytes_left -= 8;
+    ptr += 6;
+    bytes_left -= 6;
 
     if (bytes_left < 1) {
         errno = EPROTO;
@@ -226,27 +226,27 @@ int zmq::plain_mechanism_t::process_hello_command (msg_t *msg_)
     return 0;
 }
 
-int zmq::plain_mechanism_t::welcome_command (msg_t *msg_) const
+int zmq::plain_mechanism_t::produce_welcome (msg_t *msg_) const
 {
     const int rc = msg_->init_size (8);
     errno_assert (rc == 0);
-    memcpy (msg_->data (), "WELCOME ", 8);
+    memcpy (msg_->data (), "\x07WELCOME", 8);
     return 0;
 }
 
-int zmq::plain_mechanism_t::process_welcome_command (msg_t *msg_)
+int zmq::plain_mechanism_t::process_welcome (msg_t *msg_)
 {
     const unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
     size_t bytes_left = msg_->size ();
 
-    if (bytes_left != 8 ||  memcmp (ptr, "WELCOME ", 8)) {
+    if (bytes_left != 8 ||  memcmp (ptr, "\x07WELCOME", 8)) {
         errno = EPROTO;
         return -1;
     }
     return 0;
 }
 
-int zmq::plain_mechanism_t::initiate_command (msg_t *msg_) const
+int zmq::plain_mechanism_t::produce_initiate (msg_t *msg_) const
 {
     unsigned char * const command_buffer = (unsigned char *) malloc (512);
     alloc_assert (command_buffer);
@@ -254,8 +254,8 @@ int zmq::plain_mechanism_t::initiate_command (msg_t *msg_) const
     unsigned char *ptr = command_buffer;
 
     //  Add mechanism string
-    memcpy (ptr, "INITIATE", 8);
-    ptr += 8;
+    memcpy (ptr, "\x08INITIATE", 9);
+    ptr += 9;
 
     //  Add socket type property
     const char *socket_type = socket_type_string (options.type);
@@ -278,19 +278,21 @@ int zmq::plain_mechanism_t::initiate_command (msg_t *msg_) const
     return 0;
 }
 
-int zmq::plain_mechanism_t::process_initiate_command (msg_t *msg_)
+int zmq::plain_mechanism_t::process_initiate (msg_t *msg_)
 {
     const unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
     size_t bytes_left = msg_->size ();
 
-    if (bytes_left < 8 || memcmp (ptr, "INITIATE", 8)) {
+    if (bytes_left < 9 || memcmp (ptr, "\x08INITIATE", 9)) {
         errno = EPROTO;
         return -1;
     }
-    return parse_metadata (ptr + 8, bytes_left - 8);
+    ptr += 9;
+    bytes_left -= 9;
+    return parse_metadata (ptr, bytes_left);
 }
 
-int zmq::plain_mechanism_t::ready_command (msg_t *msg_) const
+int zmq::plain_mechanism_t::produce_ready (msg_t *msg_) const
 {
     unsigned char * const command_buffer = (unsigned char *) malloc (512);
     alloc_assert (command_buffer);
@@ -298,7 +300,7 @@ int zmq::plain_mechanism_t::ready_command (msg_t *msg_) const
     unsigned char *ptr = command_buffer;
 
     //  Add command name
-    memcpy (ptr, "READY\0", 6);
+    memcpy (ptr, "\x05READY", 6);
     ptr += 6;
 
     //  Add socket type property
@@ -322,12 +324,12 @@ int zmq::plain_mechanism_t::ready_command (msg_t *msg_) const
     return 0;
 }
 
-int zmq::plain_mechanism_t::process_ready_command (msg_t *msg_)
+int zmq::plain_mechanism_t::process_ready (msg_t *msg_)
 {
     const unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
     size_t bytes_left = msg_->size ();
 
-    if (bytes_left < 6 || memcmp (ptr, "READY\0", 6)) {
+    if (bytes_left < 6 || memcmp (ptr, "\x05READY", 6)) {
         errno = EPROTO;
         return -1;
     }
@@ -366,8 +368,9 @@ void zmq::plain_mechanism_t::send_zap_request (const std::string &username,
     errno_assert (rc == 0);
 
     //  Domain frame
-    rc = msg.init ();
+    rc = msg.init_size (options.zap_domain.length ());
     errno_assert (rc == 0);
+    memcpy (msg.data (), options.zap_domain.c_str (), options.zap_domain.length ());
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);
@@ -380,9 +383,9 @@ void zmq::plain_mechanism_t::send_zap_request (const std::string &username,
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);
 
-    // identity frame 
+    //  Identity frame
     rc = msg.init_size (options.identity_size);
-    errno_assert(rc == 0);
+    errno_assert (rc == 0);
     memcpy (msg.data (), options.identity, options.identity_size);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
@@ -439,24 +442,28 @@ int zmq::plain_mechanism_t::receive_and_process_zap_reply ()
 
     //  Address delimiter frame
     if (msg [0].size () > 0) {
+        rc = -1;
         errno = EPROTO;
         goto error;
     }
 
     //  Version frame
     if (msg [1].size () != 3 || memcmp (msg [1].data (), "1.0", 3)) {
+        rc = -1;
         errno = EPROTO;
         goto error;
     }
 
     //  Request id frame
     if (msg [2].size () != 1 || memcmp (msg [2].data (), "1", 1)) {
+        rc = -1;
         errno = EPROTO;
         goto error;
     }
 
     //  Status code frame
     if (msg [3].size () != 3 || memcmp (msg [3].data (), "200", 3)) {
+        rc = -1;
         errno = EACCES;
         goto error;
     }

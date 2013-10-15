@@ -21,7 +21,7 @@
 
 #include "options.hpp"
 #include "err.hpp"
-#include "z85_codec.hpp"
+#include "../include/zmq_utils.h"
 
 zmq::options_t::options_t () :
     sndhwm (1000),
@@ -43,8 +43,6 @@ zmq::options_t::options_t () :
     sndtimeo (-1),
     ipv6 (0),
     immediate (0),
-    delay_on_close (true),
-    delay_on_disconnect (true),
     filter (false),
     recv_identity (false),
     raw_sock (false),
@@ -64,7 +62,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
 {
     bool is_int = (optvallen_ == sizeof (int));
     int value = is_int? *((int *) optval_): 0;
-    
+
     switch (option_) {
         case ZMQ_SNDHWM:
             if (is_int && value >= 0) {
@@ -72,7 +70,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 return 0;
             }
             break;
-        
+
         case ZMQ_RCVHWM:
             if (is_int && value >= 0) {
                 rcvhwm = value;
@@ -226,7 +224,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 return 0;
             }
             break;
-            
+
         case ZMQ_IMMEDIATE:
             if (is_int && (value == 0 || value == 1)) {
                 immediate = value;
@@ -250,7 +248,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 }
             }
             break;
-            
+
         case ZMQ_PLAIN_SERVER:
             if (is_int && (value == 0 || value == 1)) {
                 as_server = value;
@@ -258,7 +256,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 return 0;
             }
             break;
-            
+
         case ZMQ_PLAIN_USERNAME:
             if (optvallen_ == 0 && optval_ == NULL) {
                 mechanism = ZMQ_NULL;
@@ -272,7 +270,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 return 0;
             }
             break;
-            
+
         case ZMQ_PLAIN_PASSWORD:
             if (optvallen_ == 0 && optval_ == NULL) {
                 mechanism = ZMQ_NULL;
@@ -286,7 +284,14 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 return 0;
             }
             break;
-        
+
+        case ZMQ_ZAP_DOMAIN:
+            if (optvallen_ < 256) {
+                zap_domain.assign ((const char *) optval_, optvallen_);
+                return 0;
+            }
+            break;
+
         //  If libsodium isn't installed, these options provoke EINVAL
 #       ifdef HAVE_LIBSODIUM
         case ZMQ_CURVE_SERVER:
@@ -296,7 +301,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 return 0;
             }
             break;
-            
+
         case ZMQ_CURVE_PUBLICKEY:
             if (optvallen_ == CURVE_KEYSIZE) {
                 memcpy (curve_public_key, optval_, CURVE_KEYSIZE);
@@ -305,12 +310,12 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             else
             if (optvallen_ == CURVE_KEYSIZE_Z85) {
-                Z85_decode (curve_public_key, (char *) optval_);
+                zmq_z85_decode (curve_public_key, (char *) optval_);
                 mechanism = ZMQ_CURVE;
                 return 0;
             }
             break;
-            
+
         case ZMQ_CURVE_SECRETKEY:
             if (optvallen_ == CURVE_KEYSIZE) {
                 memcpy (curve_secret_key, optval_, CURVE_KEYSIZE);
@@ -319,12 +324,12 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             else
             if (optvallen_ == CURVE_KEYSIZE_Z85) {
-                Z85_decode (curve_secret_key, (char *) optval_);
+                zmq_z85_decode (curve_secret_key, (char *) optval_);
                 mechanism = ZMQ_CURVE;
                 return 0;
             }
             break;
-            
+
         case ZMQ_CURVE_SERVERKEY:
             if (optvallen_ == CURVE_KEYSIZE) {
                 memcpy (curve_server_key, optval_, CURVE_KEYSIZE);
@@ -334,7 +339,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             else
             if (optvallen_ == CURVE_KEYSIZE_Z85) {
-                Z85_decode (curve_server_key, (char *) optval_);
+                zmq_z85_decode (curve_server_key, (char *) optval_);
                 as_server = 0;
                 mechanism = ZMQ_CURVE;
                 return 0;
@@ -360,7 +365,7 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
 {
     bool is_int = (*optvallen_ == sizeof (int));
     int *value = (int *) optval_;
-    
+
     switch (option_) {
         case ZMQ_SNDHWM:
             if (is_int) {
@@ -489,7 +494,7 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
                 return 0;
             }
             break;
-            
+
         case ZMQ_IPV6:
             if (is_int) {
                 *value = ipv6;
@@ -538,14 +543,14 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
                 return 0;
             }
             break;
-        
+
         case ZMQ_PLAIN_SERVER:
             if (is_int) {
                 *value = as_server && mechanism == ZMQ_PLAIN;
                 return 0;
             }
             break;
-            
+
         case ZMQ_PLAIN_USERNAME:
             if (*optvallen_ >= plain_username.size () + 1) {
                 memcpy (optval_, plain_username.c_str (), plain_username.size () + 1);
@@ -553,7 +558,7 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
                 return 0;
             }
             break;
-                
+
         case ZMQ_PLAIN_PASSWORD:
             if (*optvallen_ >= plain_password.size () + 1) {
                 memcpy (optval_, plain_password.c_str (), plain_password.size () + 1);
@@ -561,7 +566,15 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
                 return 0;
             }
             break;
-            
+
+        case ZMQ_ZAP_DOMAIN:
+            if (*optvallen_ >= zap_domain.size () + 1) {
+                memcpy (optval_, zap_domain.c_str (), zap_domain.size () + 1);
+                *optvallen_ = zap_domain.size () + 1;
+                return 0;
+            }
+            break;
+
         //  If libsodium isn't installed, these options provoke EINVAL
 #       ifdef HAVE_LIBSODIUM
         case ZMQ_CURVE_SERVER:
@@ -570,39 +583,39 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
                 return 0;
             }
             break;
-            
+
         case ZMQ_CURVE_PUBLICKEY:
             if (*optvallen_ == CURVE_KEYSIZE) {
                 memcpy (optval_, curve_public_key, CURVE_KEYSIZE);
                 return 0;
             }
             else
-            if (*optvallen_ == CURVE_KEYSIZE_Z85) {
-                Z85_encode ((char *) optval_, curve_public_key, CURVE_KEYSIZE);
+            if (*optvallen_ == CURVE_KEYSIZE_Z85 + 1) {
+                zmq_z85_encode ((char *) optval_, curve_public_key, CURVE_KEYSIZE);
                 return 0;
             }
             break;
-            
+
         case ZMQ_CURVE_SECRETKEY:
             if (*optvallen_ == CURVE_KEYSIZE) {
                 memcpy (optval_, curve_secret_key, CURVE_KEYSIZE);
                 return 0;
             }
             else
-            if (*optvallen_ == CURVE_KEYSIZE_Z85) {
-                Z85_encode ((char *) optval_, curve_secret_key, CURVE_KEYSIZE);
+            if (*optvallen_ == CURVE_KEYSIZE_Z85 + 1) {
+                zmq_z85_encode ((char *) optval_, curve_secret_key, CURVE_KEYSIZE);
                 return 0;
             }
             break;
-            
+
         case ZMQ_CURVE_SERVERKEY:
             if (*optvallen_ == CURVE_KEYSIZE) {
                 memcpy (optval_, curve_server_key, CURVE_KEYSIZE);
                 return 0;
             }
             else
-            if (*optvallen_ == CURVE_KEYSIZE_Z85) {
-                Z85_encode ((char *) optval_, curve_server_key, CURVE_KEYSIZE);
+            if (*optvallen_ == CURVE_KEYSIZE_Z85 + 1) {
+                zmq_z85_encode ((char *) optval_, curve_server_key, CURVE_KEYSIZE);
                 return 0;
             }
             break;

@@ -21,15 +21,25 @@
 #define __TESTUTIL_HPP_INCLUDED__
 
 #include "../include/zmq.h"
-#include <string.h>
+#include "../include/zmq_utils.h"
+#include "platform.hpp"
 
 #undef NDEBUG
+#include <time.h>
 #include <assert.h>
 #include <stdarg.h>
+#include <string>
 
 #if defined _WIN32
-#include <crtdbg.h>
-#pragma warning(disable:4996)
+#   if defined _MSC_VER
+#       include <crtdbg.h>
+#       pragma warning(disable:4996)
+#   endif
+#else
+#   include <unistd.h>
+#   include <signal.h>
+#   include <stdlib.h>
+#   include <sys/wait.h>
 #endif
 
 //  Bounce a message from client to server and back
@@ -50,6 +60,8 @@ bounce (void *server, void *client)
     char buffer [32];
     rc = zmq_recv (server, buffer, 32, 0);
     assert (rc == 32);
+    //  Check that message is still the same
+    assert (memcmp (buffer, content, 32) == 0);
     int rcvmore;
     size_t sz = sizeof (rcvmore);
     rc = zmq_getsockopt (server, ZMQ_RCVMORE, &rcvmore, &sz);
@@ -57,6 +69,8 @@ bounce (void *server, void *client)
     assert (rcvmore);
     rc = zmq_recv (server, buffer, 32, 0);
     assert (rc == 32);
+    //  Check that message is still the same
+    assert (memcmp (buffer, content, 32) == 0);
     rc = zmq_getsockopt (server, ZMQ_RCVMORE, &rcvmore, &sz);
     assert (rc == 0);
     assert (!rcvmore);
@@ -70,17 +84,18 @@ bounce (void *server, void *client)
     //  Receive the two parts at the client side
     rc = zmq_recv (client, buffer, 32, 0);
     assert (rc == 32);
+    //  Check that message is still the same
+    assert (memcmp (buffer, content, 32) == 0);
     rc = zmq_getsockopt (client, ZMQ_RCVMORE, &rcvmore, &sz);
     assert (rc == 0);
     assert (rcvmore);
     rc = zmq_recv (client, buffer, 32, 0);
     assert (rc == 32);
+    //  Check that message is still the same
+    assert (memcmp (buffer, content, 32) == 0);
     rc = zmq_getsockopt (client, ZMQ_RCVMORE, &rcvmore, &sz);
     assert (rc == 0);
     assert (!rcvmore);
-
-    //  Check that message is still the same
-    assert (memcmp (buffer, content, 32) == 0);
 }
 
 //  Same as bounce, but expect messages to never arrive
@@ -99,25 +114,25 @@ expect_bounce_fail (void *server, void *client)
     assert (rc == 32);
 
     //  Receive message at server side (should not succeed)
-    int timeout = 250;
-    rc = zmq_setsockopt(server, ZMQ_RCVTIMEO, &timeout, sizeof (int));
+    int timeout = 150;
+    rc = zmq_setsockopt (server, ZMQ_RCVTIMEO, &timeout, sizeof (int));
     assert (rc == 0);
-    rc = zmq_setsockopt(client, ZMQ_RCVTIMEO, &timeout, sizeof (int));
-    assert (rc == 0);
-    
     rc = zmq_recv (server, buffer, 32, 0);
     assert (rc == -1);
-    assert (zmq_errno() == EAGAIN);
+    assert (zmq_errno () == EAGAIN);
 
-
+    //  Send message from server to client to test other direction
     rc = zmq_send (server, content, 32, ZMQ_SNDMORE);
     assert (rc == 32);
     rc = zmq_send (server, content, 32, 0);
     assert (rc == 32);
 
+    //  Receive message at client side (should not succeed)
+    rc = zmq_setsockopt (client, ZMQ_RCVTIMEO, &timeout, sizeof (int));
+    assert (rc == 0);
     rc = zmq_recv (client, buffer, 32, 0);
     assert (rc == -1);
-    assert (zmq_errno() == EAGAIN);
+    assert (zmq_errno () == EAGAIN);
 }
 
 //  Receive 0MQ string from socket and convert into C string
@@ -151,7 +166,6 @@ s_sendmore (void *socket, const char *string) {
 
 #define streq(s1,s2)    (!strcmp ((s1), (s2)))
 #define strneq(s1,s2)   (strcmp ((s1), (s2)))
-
 
 const char *SEQ_END = (const char *) 1;
 
@@ -229,7 +243,7 @@ void close_zero_linger (void *socket)
 {
     int linger = 0;
     int rc = zmq_setsockopt (socket, ZMQ_LINGER, &linger, sizeof(linger));
-    assert (rc == 0);
+    assert (rc == 0 || errno == ETERM);
     rc = zmq_close (socket);
     assert (rc == 0);
 }
@@ -237,9 +251,11 @@ void close_zero_linger (void *socket)
 void setup_test_environment()
 {
 #if defined _WIN32
+#   if defined _MSC_VER
     _set_abort_behavior( 0, _WRITE_ABORT_MSG);
     _CrtSetReportMode( _CRT_ASSERT, _CRTDBG_MODE_FILE );
     _CrtSetReportFile( _CRT_ASSERT, _CRTDBG_FILE_STDERR );
+#   endif
 #endif
 }
 

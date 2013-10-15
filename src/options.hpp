@@ -53,7 +53,7 @@ namespace zmq
         unsigned char identity_size;
         unsigned char identity [256];
 
-        //  Maximum tranfer rate [kb/s]. Default 100kb/s.
+        //  Maximum transfer rate [kb/s]. Default 100kb/s.
         int rate;
 
         //  Reliability time interval [ms]. Default 10 seconds.
@@ -92,18 +92,10 @@ namespace zmq
 
         //  If true, IPv6 is enabled (as well as IPv4)
         bool ipv6;
-        
+
         //  If 1, connecting pipes are not attached immediately, meaning a send()
         //  on a socket with only connecting pipes would block
         int immediate;
-
-        //  If true, session reads all the pending messages from the pipe and
-        //  sends them to the network when socket is closed.
-        bool delay_on_close;
-
-        //  If true, socket reads all the messages from the pipe and delivers
-        //  them to the user when the peer terminates.
-        bool delay_on_disconnect;
 
         //  If 1, (X)SUB socket should filter the messages. If 0, it should not.
         bool filter;
@@ -127,10 +119,13 @@ namespace zmq
 
         //  Security mechanism for all connections on this socket
         int mechanism;
-        
+
         //  If peer is acting as server for PLAIN or CURVE mechanisms
-        int as_server;          
-        
+        int as_server;
+
+        //  ZAP authentication domain
+        std::string zap_domain;
+
         //  Security credentials for PLAIN mechanism
         std::string plain_username;
         std::string plain_password;

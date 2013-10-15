@@ -41,11 +41,11 @@ namespace zmq
 
         //  This method is called by the session to signalise that more
         //  messages can be written to the pipe.
-        virtual void activate_in () = 0;
+        virtual void restart_input () = 0;
 
         //  This method is called by the session to signalise that there
         //  are messages to send available.
-        virtual void activate_out () = 0;
+        virtual void restart_output () = 0;
 
         virtual void zap_msg_available () = 0;
     };

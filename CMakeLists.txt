@@ -578,8 +578,10 @@ endif()
 
 enable_testing()
 set(tests 
-        test_connect_delay
+        test_system
+        test_immediate
         test_connect_resolve
+        test_ctx_destroy
         test_ctx_options
         test_disconnect_inproc
         test_hwm
@@ -590,14 +592,15 @@ set(tests
         test_pair_inproc
         test_pair_tcp
         test_probe_router
-        test_req_request_ids
-        test_req_strict
+        test_req_correlate
+        test_req_relaxed
         test_reqrep_device
         test_reqrep_inproc
         test_reqrep_tcp
         test_router_mandatory
-        test_security
         test_security_curve
+        test_security_null
+        test_security_plain
         test_shutdown_stress
         test_spec_dealer
         test_spec_pushpull
@@ -606,15 +609,16 @@ set(tests
         test_spec_router
         test_sub_forward
         test_term_endpoint
-        test_timeo)
+        test_timeo
+        test_inproc_connect
+        test_issue_566)
 if(NOT WIN32)
 list(APPEND tests
         test_monitor
         test_pair_ipc
-        test_raw_sock
         test_reqrep_ipc
         test_stream)
-endif()		
+endif()     
 
 foreach(test ${tests})
   add_executable(${test} tests/${test}.cpp)

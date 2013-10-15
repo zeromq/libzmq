@@ -49,6 +49,9 @@ zmq::ctx_t::ctx_t () :
     io_thread_count (ZMQ_IO_THREADS_DFLT),
     ipv6 (false)
 {
+#ifdef HAVE_FORK
+    pid = getpid();
+#endif
 }
 
 bool zmq::ctx_t::check_tag ()
@@ -71,14 +74,12 @@ zmq::ctx_t::~ctx_t ()
         delete io_threads [i];
 
     //  Deallocate the reaper thread object.
-    if (reaper)
-        delete reaper;
+    delete reaper;
 
     //  Deallocate the array of mailboxes. No special work is
     //  needed as mailboxes themselves were deallocated with their
     //  corresponding io_thread/socket objects.
-    if (slots)
-        free (slots);
+    free (slots);
 
     //  Remove the tag, so that the object is considered dead.
     tag = ZMQ_CTX_TAG_VALUE_BAD;
@@ -89,6 +90,19 @@ int zmq::ctx_t::terminate ()
     slot_sync.lock ();
     if (!starting) {
 
+#ifdef HAVE_FORK
+        if (pid != getpid())
+        {
+            // we are a forked child process. Close all file descriptors
+            // inherited from the parent.
+            for (sockets_t::size_type i = 0; i != sockets.size (); i++)
+            {
+                sockets[i]->get_mailbox()->forked();
+            }
+
+            term_mailbox.forked();
+        }
+#endif
         //  Check whether termination was already underway, but interrupted and now
         //  restarted.
         bool restarted = terminating;
@@ -123,6 +137,25 @@ int zmq::ctx_t::terminate ()
 
     //  Deallocate the resources.
     delete this;
+
+    return 0;
+}
+
+int zmq::ctx_t::shutdown ()
+{
+    slot_sync.lock ();
+    if (!starting && !terminating) {
+        terminating = true;
+
+        //  Send stop command to sockets so that any blocking calls
+        //  can be interrupted. If there are no sockets we can ask reaper
+        //  thread to stop.
+        for (sockets_t::size_type i = 0; i != sockets.size (); i++)
+            sockets [i]->stop ();
+        if (sockets.empty ())
+            reaper->stop ();
+    }
+    slot_sync.unlock ();
 
     return 0;
 }
@@ -355,6 +388,101 @@ zmq::endpoint_t zmq::ctx_t::find_endpoint (const char *addr_)
 
      endpoints_sync.unlock ();
      return endpoint;
+}
+
+void zmq::ctx_t::pend_connection (const char *addr_, pending_connection_t &pending_connection_)
+{
+    endpoints_sync.lock ();
+
+    endpoints_t::iterator it = endpoints.find (addr_);
+    if (it == endpoints.end ())
+    {
+        // Still no bind.
+        pending_connection_.endpoint.socket->inc_seqnum ();
+        pending_connections.insert (pending_connections_t::value_type (std::string (addr_), pending_connection_));
+    }
+    else
+    {
+        // Bind has happened in the mean time, connect directly
+        connect_inproc_sockets(it->second.socket, it->second.options, pending_connection_, connect_side);
+    }
+
+    endpoints_sync.unlock ();
+}
+
+void zmq::ctx_t::connect_pending (const char *addr_, zmq::socket_base_t *bind_socket_)
+{
+    endpoints_sync.lock ();
+
+    std::pair<pending_connections_t::iterator, pending_connections_t::iterator> pending = pending_connections.equal_range(addr_);
+
+    for (pending_connections_t::iterator p = pending.first; p != pending.second; ++p)
+    {
+        connect_inproc_sockets(bind_socket_, endpoints[addr_].options, p->second, bind_side);
+    }
+
+    pending_connections.erase(pending.first, pending.second);
+
+    endpoints_sync.unlock ();
+}
+
+void zmq::ctx_t::connect_inproc_sockets(zmq::socket_base_t *bind_socket_, options_t& bind_options, pending_connection_t &pending_connection_, side side_)
+{
+    bind_socket_->inc_seqnum();
+    pending_connection_.bind_pipe->set_tid(bind_socket_->get_tid());
+
+    if (side_ == bind_side)
+    {
+        command_t cmd;
+        cmd.type = command_t::bind;
+        cmd.args.bind.pipe = pending_connection_.bind_pipe;
+        bind_socket_->process_command(cmd);
+        bind_socket_->send_inproc_connected(pending_connection_.endpoint.socket);
+    }
+    else
+    {
+        pending_connection_.connect_pipe->send_bind(bind_socket_, pending_connection_.bind_pipe, false);
+    }
+
+    int sndhwm = 0;
+    if (pending_connection_.endpoint.options.sndhwm != 0 && bind_options.rcvhwm != 0)
+        sndhwm = pending_connection_.endpoint.options.sndhwm + bind_options.rcvhwm;
+    int rcvhwm = 0;
+    if (pending_connection_.endpoint.options.rcvhwm != 0 && bind_options.sndhwm != 0)
+        rcvhwm = pending_connection_.endpoint.options.rcvhwm + bind_options.sndhwm;
+
+    bool conflate = pending_connection_.endpoint.options.conflate &&
+            (pending_connection_.endpoint.options.type == ZMQ_DEALER ||
+             pending_connection_.endpoint.options.type == ZMQ_PULL ||
+             pending_connection_.endpoint.options.type == ZMQ_PUSH ||
+             pending_connection_.endpoint.options.type == ZMQ_PUB ||
+             pending_connection_.endpoint.options.type == ZMQ_SUB);
+
+       int hwms [2] = {conflate? -1 : sndhwm, conflate? -1 : rcvhwm};
+       pending_connection_.connect_pipe->set_hwms(hwms [1], hwms [0]);
+       pending_connection_.bind_pipe->set_hwms(hwms [0], hwms [1]);
+
+    if (bind_options.recv_identity) {
+    
+        msg_t id;
+        int rc = id.init_size (pending_connection_.endpoint.options.identity_size);
+        errno_assert (rc == 0);
+        memcpy (id.data (), pending_connection_.endpoint.options.identity, pending_connection_.endpoint.options.identity_size);
+        id.set_flags (msg_t::identity);
+        bool written = pending_connection_.connect_pipe->write (&id);
+        zmq_assert (written);
+        pending_connection_.connect_pipe->flush ();
+    }
+    if (pending_connection_.endpoint.options.recv_identity) {
+        msg_t id;
+        int rc = id.init_size (bind_options.identity_size);
+        errno_assert (rc == 0);
+        memcpy (id.data (), bind_options.identity, bind_options.identity_size);
+        id.set_flags (msg_t::identity);
+        bool written = pending_connection_.bind_pipe->write (&id);
+        zmq_assert (written);
+        pending_connection_.bind_pipe->flush ();
+    }
 }
 
 //  The last used socket ID, or 0 if no socket was used so far. Note that this

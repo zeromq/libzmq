@@ -39,8 +39,8 @@ namespace zmq
         virtual ~null_mechanism_t ();
 
         // mechanism implementation
-        virtual int next_handshake_message (msg_t *msg_);
-        virtual int process_handshake_message (msg_t *msg_);
+        virtual int next_handshake_command (msg_t *msg_);
+        virtual int process_handshake_command (msg_t *msg_);
         virtual int zap_msg_available ();
         virtual bool is_handshake_complete () const;
 

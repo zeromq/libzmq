@@ -17,7 +17,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdio.h>
 #include "testutil.hpp"
 
 int main (void)
@@ -55,7 +54,7 @@ int main (void)
     rc = zmq_msg_recv (&msg, sc, 0);
     assert (rc == 6);
     data = zmq_msg_data (&msg);
-    assert (memcmp ("foobar", data, 3) == 0);
+    assert (memcmp ("foobar", data, 6) == 0);
     
     // Cleanup
 

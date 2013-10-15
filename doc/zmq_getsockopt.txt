@@ -120,8 +120,8 @@ Default value:: 0
 Applicable socket types:: N/A
 
 
-ZMQ_IDENTITY: Set socket identity
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_IDENTITY: Retrieve socket identity
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_IDENTITY' option shall retrieve the identity of the specified 'socket'.
 Socket identity is used only by request/reply pattern. Namely, it can be used
 in tandem with ROUTER socket to route messages to the peer with specific
@@ -134,7 +134,7 @@ starting with binary zero are reserved for use by 0MQ infrastructure.
 Option value type:: binary data
 Option value unit:: N/A
 Default value:: NULL
-Applicable socket types:: all
+Applicable socket types:: ZMQ_REP, ZMQ_REQ, ZMQ_ROUTER, ZMQ_DEALER.
 
 
 ZMQ_RATE: Retrieve multicast data rate
@@ -240,11 +240,11 @@ Applicable socket types:: all, only for connection-oriented transports
 
 ZMQ_RECONNECT_IVL_MAX: Retrieve maximum reconnection interval
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_RECONNECT_IVL_MAX' option shall retrieve the maximum reconnection 
-interval for the specified 'socket'.  This is the maximum period 0MQ shall wait 
-between attempts to reconnect. On each reconnect attempt, the previous interval 
-shall be doubled untill ZMQ_RECONNECT_IVL_MAX is reached. This allows for 
-exponential backoff strategy. Default value means no exponential backoff is 
+The 'ZMQ_RECONNECT_IVL_MAX' option shall retrieve the maximum reconnection
+interval for the specified 'socket'.  This is the maximum period 0MQ shall wait
+between attempts to reconnect. On each reconnect attempt, the previous interval
+shall be doubled untill ZMQ_RECONNECT_IVL_MAX is reached. This allows for
+exponential backoff strategy. Default value means no exponential backoff is
 performed and reconnect interval calculations are only based on
 ZMQ_RECONNECT_IVL.
 
@@ -352,8 +352,8 @@ Default value:: 1 (true)
 Applicable socket types:: all, when using TCP transports.
 
 
-ZMQ_DELAY_ATTACH_ON_CONNECT: Retrieve attach-on-connect value
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_IMMEDIATE: Retrieve attach-on-connect value
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Retrieve the state of the attach on connect value. If set to `1`, will delay the
 attachment of a pipe on connect until the underlying connection has completed.
 This will cause the socket to block if there are no other connections, but will
@@ -379,11 +379,11 @@ necessarily indicate that messages are available to be read from, or can be
 written to, the underlying socket; applications must retrieve the actual event
 state with a subsequent retrieval of the 'ZMQ_EVENTS' option.
 
-NOTE: The returned file descriptor is also used internally by the 'zmq_send' 
-and 'zmq_recv' functions. As the descriptor is edge triggered, applications 
-must update the state of 'ZMQ_EVENTS' after each invocation of 'zmq_send' 
-or 'zmq_recv'.To be more explicit: after calling 'zmq_send' the socket may 
-become readable (and vice versa) without triggering a read event on the 
+NOTE: The returned file descriptor is also used internally by the 'zmq_send'
+and 'zmq_recv' functions. As the descriptor is edge triggered, applications
+must update the state of 'ZMQ_EVENTS' after each invocation of 'zmq_send'
+or 'zmq_recv'.To be more explicit: after calling 'zmq_send' the socket may
+become readable (and vice versa) without triggering a read event on the
 file descriptor.
 
 CAUTION: The returned file descriptor is intended for use with a 'poll' or
@@ -425,7 +425,7 @@ Applicable socket types:: all
 
 ZMQ_LAST_ENDPOINT: Retrieve the last endpoint set
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_LAST_ENDPOINT' option shall retrieve the last endpoint bound for 
+The 'ZMQ_LAST_ENDPOINT' option shall retrieve the last endpoint bound for
 TCP and IPC transports. The returned value will be a string in the form of
 a ZMQ DSN. Note that if the TCP host is INADDR_ANY, indicated by a *, then
 the returned address will be 0.0.0.0 (for IPv4).
@@ -451,8 +451,8 @@ Applicable socket types:: all, when using TCP transports.
 
 ZMQ_TCP_KEEPALIVE_IDLE: Override TCP_KEEPCNT(or TCP_KEEPALIVE on some OS)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Override 'TCP_KEEPCNT'(or 'TCP_KEEPALIVE' on some OS) socket option (where 
-supported by OS). The default value of `-1` means to skip any overrides and 
+Override 'TCP_KEEPCNT'(or 'TCP_KEEPALIVE' on some OS) socket option (where
+supported by OS). The default value of `-1` means to skip any overrides and
 leave it to OS default.
 
 [horizontal]
@@ -512,7 +512,7 @@ Applicable socket types:: all, when using TCP or IPC transports
 ZMQ_PLAIN_USERNAME: Retrieve current PLAIN username
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_PLAIN_USERNAME' option shall retrieve the last username set for
-the PLAIN security mechanism. The returned value shall be a NULL-terminated 
+the PLAIN security mechanism. The returned value shall be a NULL-terminated
 string and MAY be empty. The returned size SHALL include the terminating
 null byte.
 
@@ -526,7 +526,7 @@ Applicable socket types:: all, when using TCP or IPC transports
 ZMQ_PLAIN_PASSWORD: Retrieve current password
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_PLAIN_PASSWORD' option shall retrieve the last password set for
-the PLAIN security mechanism. The returned value shall be a NULL-terminated 
+the PLAIN security mechanism. The returned value shall be a NULL-terminated
 string and MAY be empty. The returned size SHALL include the terminating
 null byte.
 
@@ -541,12 +541,14 @@ ZMQ_CURVE_PUBLICKEY: Retrieve current CURVE public key
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Retrieves the current long term public key for the socket. You can
-provide either a 32 byte buffer, to retrieve the binary key value, or 
-a 40 byte buffer, to retrieve the key in a printable Z85 format.
+provide either a 32 byte buffer, to retrieve the binary key value, or
+a 41 byte buffer, to retrieve the key in a printable Z85 format.
+NOTE: to fetch a printable key, the buffer must be 41 bytes large
+to hold the 40-char key value and one null byte.
 
 [horizontal]
 Option value type:: binary data or Z85 text string
-Option value size:: 32 or 40
+Option value size:: 32 or 41
 Default value:: null
 Applicable socket types:: all, when using TCP transport
 
@@ -555,12 +557,12 @@ ZMQ_CURVE_SECRETKEY: Retrieve current CURVE secret key
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Retrieves the current long term secret key for the socket. You can
-provide either a 32 byte buffer, to retrieve the binary key value, or 
-a 40 byte buffer, to retrieve the key in a printable Z85 format.
+provide either a 32 byte buffer, to retrieve the binary key value, or
+a 41 byte buffer, to retrieve the key in a printable Z85 format.
 
 [horizontal]
 Option value type:: binary data or Z85 text string
-Option value size:: 32 or 40
+Option value size:: 32 or 41
 Default value:: null
 Applicable socket types:: all, when using TCP transport
 
@@ -569,13 +571,27 @@ ZMQ_CURVE_SERVERKEY: Retrieve current CURVE server key
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Retrieves the current server key for the client socket. You can
-provide either a 32 byte buffer, to retrieve the binary key value, or 
+provide either a 32 byte buffer, to retrieve the binary key value, or
 a 40 byte buffer, to retrieve the key in a printable Z85 format.
 
 [horizontal]
 Option value type:: binary data or Z85 text string
-Option value size:: 32 or 40
+Option value size:: 32 or 41
 Default value:: null
+Applicable socket types:: all, when using TCP transport
+
+
+ZMQ_ZAP_DOMAIN: Retrieve RFC 27 authentication domain
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The 'ZMQ_ZAP_DOMAIN' option shall retrieve the last ZAP domain set for
+the socket. The returned value shall be a NULL-terminated string and MAY
+be empty. The returned size SHALL include the terminating null byte.
+
+[horizontal]
+Option value type:: character string
+Option value unit:: N/A
+Default value:: not set
 Applicable socket types:: all, when using TCP transport
 
 

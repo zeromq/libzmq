@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="libzmq"
 	ProjectGUID="{641C5F36-32EE-4323-B740-992B651CF9D6}"
 	RootNamespace="libzmq"
@@ -397,19 +397,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\decoder.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\src\devpoll.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\..\src\dist.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\encoder.cpp"
 				>
 			</File>
 			<File
@@ -465,11 +457,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\mechanism.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\msg.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\..\src\mtrie.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\null_mechanism.cpp"
 				>
 			</File>
 			<File
@@ -502,6 +502,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\pipe.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\plain_mechanism.cpp"
 				>
 			</File>
 			<File
@@ -573,6 +577,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\stream.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\stream_engine.cpp"
 				>
 			</File>
@@ -610,6 +618,14 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\v1_encoder.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\v2_decoder.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\v2_encoder.cpp"
 				>
 			</File>
 			<File
@@ -751,6 +767,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\mechanism.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\msg.hpp"
 				>
 			</File>
@@ -760,6 +780,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\mutex.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\null_mechanism.hpp"
 				>
 			</File>
 			<File
@@ -792,6 +816,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\pipe.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\plain_mechanism.hpp"
 				>
 			</File>
 			<File
@@ -871,6 +899,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\src\stream.hpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\stream_engine.hpp"
 				>
 			</File>
@@ -912,6 +944,18 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\v1_protocol.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\v2_decoder.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\v2_encoder.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\v2_protocol.hpp"
 				>
 			</File>
 			<File
