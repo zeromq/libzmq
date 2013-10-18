@@ -20,9 +20,6 @@ current application thread, as _zmq_proxy()_ do. Please, refer to this function
 for the general description and usage. We describe here only the additional 
 control flow provided by the socket passed as the fourth argument "control".
 
-_zmq_proxy()_ runs in the current thread and returns only if/when the current
-context is closed.
-
 If the control socket is not NULL, the proxy supports control flow. If 
 'SUSPEND\0' is received on this socket, the proxy suspends its activities. If 
 'RESUME\0' is received, it goes on. If 'TERMINATE\0' is received, it terminates
