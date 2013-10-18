@@ -395,7 +395,7 @@ ZMQ_EXPORT int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
 
 /*  Built-in message proxy (3-way) */
 
-ZMQ_EXPORT int zmq_proxy (void *frontend, void *backend, void *capture);
+ZMQ_EXPORT int zmq_proxy (void *frontend, void *backend, void *capture, void *control);
 
 /*  Encode a binary key as printable text using ZMQ RFC 32  */
 ZMQ_EXPORT char *zmq_z85_encode (char *dest, uint8_t *data, size_t size);
