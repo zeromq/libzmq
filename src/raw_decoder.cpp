@@ -34,7 +34,7 @@ zmq::raw_decoder_t::raw_decoder_t (size_t bufsize_) :
     int rc = in_progress.init ();
     errno_assert (rc == 0);
 
-    buffer = (unsigned char *) malloc (bufsize);
+    buffer = (unsigned char *) malloc (static_cast<size_t>(bufsize));
     alloc_assert (buffer);
 }
 
@@ -49,7 +49,7 @@ zmq::raw_decoder_t::~raw_decoder_t ()
 void zmq::raw_decoder_t::get_buffer (unsigned char **data_, size_t *size_)
 {
     *data_ = buffer;
-    *size_ = bufsize;
+    *size_ = static_cast<size_t>(bufsize);
 }
 
 int zmq::raw_decoder_t::decode (const uint8_t *data_, size_t size_,
