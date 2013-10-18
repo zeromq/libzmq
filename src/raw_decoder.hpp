@@ -52,7 +52,7 @@ namespace zmq
 
         msg_t in_progress;
 
-        const int64_t bufsize;
+        const size_t bufsize;
 
         unsigned char *buffer;
 
