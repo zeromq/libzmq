@@ -6,8 +6,11 @@ language: c
 before_script:
 
 #   libsodium
+#   Commit 8d0942 broke installation (sodium.h not found) so for now
+#   we're checking out the last good commit.
 - git clone git://github.com/jedisct1/libsodium.git
 - cd libsodium
+- git checkout e2a30a
 - ./autogen.sh
 - ./configure && make check
 - sudo make install

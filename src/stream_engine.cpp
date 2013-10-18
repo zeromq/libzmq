@@ -74,8 +74,8 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
     io_error (false),
     subscription_required (false),
     mechanism (NULL),
-    input_paused (false),
-    output_paused (false),
+    input_stopped (false),
+    output_stopped (false),
     socket (NULL)
 {
     int rc = tx_msg.init ();
@@ -114,12 +114,9 @@ zmq::stream_engine_t::~stream_engine_t ()
     int rc = tx_msg.close ();
     errno_assert (rc == 0);
 
-    if (encoder != NULL)
-        delete encoder;
-    if (decoder != NULL)
-        delete decoder;
-    if (mechanism != NULL)
-        delete mechanism;
+    delete encoder;
+    delete decoder;
+    delete mechanism;
 }
 
 void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
@@ -207,7 +204,7 @@ void zmq::stream_engine_t::in_event ()
     zmq_assert (decoder);
 
     //  If there has been an I/O error, stop polling.
-    if (input_paused) {
+    if (input_stopped) {
         rm_fd (handle);
         io_error = true;
         return;
@@ -255,7 +252,7 @@ void zmq::stream_engine_t::in_event ()
             error ();
             return;
         }
-        input_paused = true;
+        input_stopped = true;
         reset_pollin (handle);
     }
 
@@ -294,7 +291,7 @@ void zmq::stream_engine_t::out_event ()
 
         //  If there is no data to send, stop polling for output.
         if (outsize == 0) {
-            output_paused = true;
+            output_stopped = true;
             reset_pollout (handle);
             return;
         }
@@ -331,14 +328,14 @@ void zmq::stream_engine_t::out_event ()
             terminate ();
 }
 
-void zmq::stream_engine_t::activate_out ()
+void zmq::stream_engine_t::restart_output ()
 {
     if (unlikely (io_error))
         return;
 
-    if (likely (output_paused)) {
+    if (likely (output_stopped)) {
         set_pollout (handle);
-        output_paused = false;
+        output_stopped = false;
     }
 
     //  Speculative write: The assumption is that at the moment new message
@@ -348,9 +345,9 @@ void zmq::stream_engine_t::activate_out ()
     out_event ();
 }
 
-void zmq::stream_engine_t::activate_in ()
+void zmq::stream_engine_t::restart_input ()
 {
-    zmq_assert (input_paused);
+    zmq_assert (input_stopped);
     zmq_assert (session != NULL);
     zmq_assert (decoder != NULL);
 
@@ -382,7 +379,7 @@ void zmq::stream_engine_t::activate_in ()
     if (rc == -1 || io_error)
         error ();
     else {
-        input_paused = false;
+        input_stopped = false;
         set_pollin (handle);
         session->flush ();
 
@@ -483,6 +480,13 @@ bool zmq::stream_engine_t::handshake ()
         //  header data away.
         const size_t header_size = options.identity_size + 1 >= 255 ? 10 : 2;
         unsigned char tmp [10], *bufferp = tmp;
+
+        //  Prepare the identity message and load it into encoder.
+        //  Then consume bytes we have already sent to the peer.
+        const int rc = tx_msg.init_size (options.identity_size);
+        zmq_assert (rc == 0);
+        memcpy (tx_msg.data (), options.identity, options.identity_size);
+        encoder->load_msg (&tx_msg);
         size_t buffer_size = encoder->encode (&bufferp, header_size);
         zmq_assert (buffer_size == header_size);
 
@@ -617,8 +621,8 @@ int zmq::stream_engine_t::process_handshake_command (msg_t *msg_)
     if (rc == 0) {
         if (mechanism->is_handshake_complete ())
             mechanism_ready ();
-        if (output_paused)
-            activate_out ();
+        if (output_stopped)
+            restart_output ();
     }
 
     return rc;
@@ -633,10 +637,10 @@ void zmq::stream_engine_t::zap_msg_available ()
         error ();
         return;
     }
-    if (input_paused)
-        activate_in ();
-    if (output_paused)
-        activate_out ();
+    if (input_stopped)
+        restart_input ();
+    if (output_stopped)
+        restart_output ();
 }
 
 void zmq::stream_engine_t::mechanism_ready ()
@@ -652,6 +656,7 @@ void zmq::stream_engine_t::mechanism_ready ()
             return;
         }
         errno_assert (rc == 0);
+        session->flush ();
     }
 
     read_msg = &stream_engine_t::pull_and_encode;
@@ -738,7 +743,7 @@ int zmq::stream_engine_t::write (const void *data_, size_t size_)
     //  we'll get an error (this may happen during the speculative write).
     if (nbytes == SOCKET_ERROR && WSAGetLastError () == WSAEWOULDBLOCK)
         return 0;
-		
+        
     //  Signalise peer failure.
     if (nbytes == SOCKET_ERROR && (
           WSAGetLastError () == WSAENETDOWN ||

@@ -15,6 +15,14 @@
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+    *************************************************************************
+    NOTE to contributors. This file comprises the principal public contract
+    for ZeroMQ API users (along with zmq_utils.h). Any change to this file
+    supplied in a stable release SHOULD not break existing applications.
+    In practice this means that the value of constants must not change, and
+    that old values may not be reused for new constants.
+    *************************************************************************
 */
 
 #ifndef __ZMQ_H_INCLUDED__
