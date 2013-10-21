@@ -57,7 +57,8 @@
 int zmq::proxy (
     class socket_base_t *frontend_,
     class socket_base_t *backend_,
-    class socket_base_t *capture_)
+    class socket_base_t *capture_,
+    class socket_base_t *control_)
 {
     msg_t msg;
     int rc = msg.init ();
@@ -71,16 +72,59 @@ int zmq::proxy (
     size_t moresz;
     zmq_pollitem_t items [] = {
         { frontend_, 0, ZMQ_POLLIN, 0 },
-        { backend_, 0, ZMQ_POLLIN, 0 }
+        { backend_, 0, ZMQ_POLLIN, 0 },
+        { control_, 0, ZMQ_POLLIN, 0 }
     };
-    while (true) {
+    int qt_poll_items = (control_ ? 3 : 2);
+    enum {suspend, resume, terminate} state = resume;
+    while (state != terminate) {
         //  Wait while there are either requests or replies to process.
-        rc = zmq_poll (&items [0], 2, -1);
+        rc = zmq_poll (&items [0], qt_poll_items, -1);
         if (unlikely (rc < 0))
             return -1;
 
+        //  Process a control command if any
+        if (control_ && items [2].revents & ZMQ_POLLIN) {
+			rc = control_->recv (&msg, 0);
+			if (unlikely (rc < 0))
+				return -1;
+
+			moresz = sizeof more;
+			rc = control_->getsockopt (ZMQ_RCVMORE, &more, &moresz);
+			if (unlikely (rc < 0) || more)
+				return -1;
+
+			//  Copy message to capture socket if any
+			if (capture_) {
+				msg_t ctrl;
+				rc = ctrl.init ();
+				if (unlikely (rc < 0))
+					return -1;
+				rc = ctrl.copy (msg);
+				if (unlikely (rc < 0))
+					return -1;
+				rc = capture_->send (&ctrl, 0);
+				if (unlikely (rc < 0))
+					return -1;
+			}
+
+			// process control command
+			int size = msg.size();
+			char* message = (char*) malloc(size + 1);
+			memcpy(message, msg.data(), size);
+			message[size] = '\0';
+			if (size == 8 && !memcmp(message, "SUSPEND", 8))
+				state = suspend;
+			else if (size == 7 && !memcmp(message, "RESUME", 7))
+				state = resume;
+			else if (size == 10 && !memcmp(message, "TERMINATE", 10))
+				state = terminate;
+			else
+				fprintf(stderr, "Warning : \"%s\" bad command received by proxy\n", message); // prefered compared to "return -1"
+			free (message);
+        }
         //  Process a request
-        if (items [0].revents & ZMQ_POLLIN) {
+        if (state == resume && items [0].revents & ZMQ_POLLIN) {
             while (true) {
                 rc = frontend_->recv (&msg, 0);
                 if (unlikely (rc < 0))
@@ -112,7 +156,7 @@ int zmq::proxy (
             }
         }
         //  Process a reply
-        if (items [1].revents & ZMQ_POLLIN) {
+        if (state == resume && items [1].revents & ZMQ_POLLIN) {
             while (true) {
                 rc = backend_->recv (&msg, 0);
                 if (unlikely (rc < 0))

@@ -259,4 +259,23 @@ void setup_test_environment()
 #endif
 }
 
+// provide portable millisecond sleep
+#include <time.h>
+
+#ifdef ZMQ_HAVE_WINDOWS
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
+
+void msleep(int milliseconds)
+{ // http://www.cplusplus.com/forum/unices/60161/    http://en.cppreference.com/w/cpp/thread/sleep_for
+  #ifdef ZMQ_HAVE_WINDOWS
+  Sleep(milliseconds);
+  #else
+  usleep(static_cast<useconds_t>(milliseconds)*1000);
+  #endif
+}
+
+
 #endif

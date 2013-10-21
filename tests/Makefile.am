@@ -39,6 +39,7 @@ noinst_PROGRAMS = test_system \
                   test_conflate \
                   test_inproc_connect \
                   test_issue_566 \
+                  test_proxy \
                   test_abstract_ipc
 
 if !ON_MINGW
@@ -85,6 +86,7 @@ test_req_relaxed_SOURCES = test_req_relaxed.cpp
 test_conflate_SOURCES = test_conflate.cpp
 test_inproc_connect_SOURCES = test_inproc_connect.cpp
 test_issue_566_SOURCES = test_issue_566.cpp
+test_proxy_SOURCES = test_proxy.cpp
 test_abstract_ipc_SOURCES = test_abstract_ipc.cpp
 if !ON_MINGW
 test_shutdown_stress_SOURCES = test_shutdown_stress.cpp

@@ -1016,7 +1016,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 
 //  The proxy functionality
 
-int zmq_proxy (void *frontend_, void *backend_, void *control_)
+int zmq_proxy (void *frontend_, void *backend_, void *capture_)
 {
     if (!frontend_ || !backend_) {
         errno = EFAULT;
@@ -1025,6 +1025,19 @@ int zmq_proxy (void *frontend_, void *backend_, void *control_)
     return zmq::proxy (
         (zmq::socket_base_t*) frontend_,
         (zmq::socket_base_t*) backend_,
+        (zmq::socket_base_t*) capture_);
+}
+
+int zmq_proxy_steerable (void *frontend_, void *backend_, void *capture_, void *control_)
+{
+    if (!frontend_ || !backend_) {
+        errno = EFAULT;
+        return -1;
+    }
+    return zmq::proxy (
+        (zmq::socket_base_t*) frontend_,
+        (zmq::socket_base_t*) backend_,
+        (zmq::socket_base_t*) capture_,
         (zmq::socket_base_t*) control_);
 }
 
