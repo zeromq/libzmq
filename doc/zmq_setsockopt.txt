@@ -624,7 +624,8 @@ linkzmq:zmq_curve[7]. A value of '1' means the socket will act as
 CURVE server. A value of '0' means the socket will not act as CURVE
 server, and its security role then depends on other option settings.
 Setting this to '0' shall reset the socket security to NULL. When you
-set this you must also set the ZMQ_CURVE_PUBLICKEY option.
+set this you must also set both the public and secret keys using the
+ZMQ_CURVE_PUBLICKEY and ZMQ_CURVE_SECRETKEY options.
 
 [horizontal]
 Option value type:: int
@@ -636,8 +637,8 @@ Applicable socket types:: all, when using TCP transport
 ZMQ_CURVE_PUBLICKEY: Set CURVE public key
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sets the socket's long term public key. You must set this on a CURVE
-client or server socket, see linkzmq:zmq_curve[7]. You can provide the
+Sets the socket's long term public key. You must set this on both CURVE
+client and server sockets, see linkzmq:zmq_curve[7]. You can provide the
 key as 32 binary bytes, or as a 40-character string encoded in the Z85
 encoding format. For servers, the public key must be persisted and
 shared through some unspecified but secure mechanism to clients. The
@@ -655,10 +656,10 @@ Applicable socket types:: all, when using TCP transport
 ZMQ_CURVE_SECRETKEY: Set CURVE secret key
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sets the socket's long term secret key. You must set this on a CURVE
-client socket, see linkzmq:zmq_curve[7]. You can provide the key as
-32 binary bytes, or as a 40-character string encoded in the Z85 encoding
-format.
+Sets the socket's long term secret key. You must set this on both CURVE
+client and server sockets, see linkzmq:zmq_curve[7]. You can provide the
+key as 32 binary bytes, or as a 40-character string encoded in the Z85
+encoding format.
 
 [horizontal]
 Option value type:: binary data or Z85 text string
@@ -670,11 +671,10 @@ Applicable socket types:: all, when using TCP transport
 ZMQ_CURVE_SERVERKEY: Set CURVE server key
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sets the socket's long term server key. You must set this on a CURVE
-client socket, see linkzmq:zmq_curve[7]. You can provide the key as
-32 binary bytes, or as a 40-character string encoded in the Z85 encoding
-format. This key must be the same as the public key set on the server
-socket.
+Sets the socket's long term server key. You must set this on CURVE client
+sockets, see linkzmq:zmq_curve[7]. You can provide the key as 32 binary
+bytes, or as a 40-character string encoded in the Z85 encoding format.
+This key must be the same as the public key set on the server socket.
 
 [horizontal]
 Option value type:: binary data or Z85 text string
