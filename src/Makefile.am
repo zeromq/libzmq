@@ -187,4 +187,5 @@ endif
 dist-hook:
 		-rm $(distdir)/platform.hpp
 
-
+EXTRA_DIST = \
+	libzmq.pc.cmake.in

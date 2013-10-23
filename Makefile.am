@@ -9,6 +9,7 @@ endif
 DIST_SUBDIRS = foreign/openpgm src doc perf tests tools builds/msvc
 
 EXTRA_DIST = \
+	CMakeLists.txt \
 	autogen.sh	\
 	version.sh	\
 	MAINTAINERS	\
