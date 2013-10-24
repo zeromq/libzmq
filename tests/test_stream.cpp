@@ -89,15 +89,14 @@ test_stream_to_dealer (void)
     assert (rc == sizeof (greeting));
 
     //  Now we expect the data from the DEALER socket
-    //  First frame is, again, the identity of the connection
-    rc = zmq_msg_recv (&identity, stream, 0);
-    assert (rc > 0);
-    assert (zmq_msg_more (&identity));
-
-    //  Second frame contains the rest of greeting along with
-    //  the Ready command
+    //  We want the rest of greeting along with the Ready command
     int bytes_read = 0;
     while (bytes_read < 97) {
+        //  First frame is the identity of the connection (each time)
+        rc = zmq_msg_recv (&identity, stream, 0);
+        assert (rc > 0);
+        assert (zmq_msg_more (&identity));
+        //  Second frame contains the next chunk of data
         rc = zmq_recv (stream, buffer + bytes_read, 255 - bytes_read, 0);
         assert (rc >= 0);
         bytes_read += rc;
