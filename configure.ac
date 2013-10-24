@@ -102,8 +102,17 @@ if test "x$zmq_search_libsodium_lib" = "xyes"; then
     fi
 fi
 
-# Set pedantic
-libzmq_pedantic="yes"
+AC_ARG_WITH([relaxed],
+            [AS_HELP_STRING([--with-relaxed],
+                            [Switch off pedantic compiler])],
+            [zmq_relaxed="yes"],
+            [])
+
+if test "x$zmq_relaxed" = "xyes"; then
+    libzmq_pedantic="no"
+else
+    libzmq_pedantic="yes"
+fi
 
 # By default compiling with -Werror except OSX.
 libzmq_werror="yes"
