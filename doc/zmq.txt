@@ -44,9 +44,6 @@ Work with context properties::
 Destroy a 0MQ context::
     linkzmq:zmq_ctx_term[3]
 
-Monitor a 0MQ context::
-    linkzmq:zmq_ctx_set_monitor[3]
-
 These deprecated functions let you create and destroy 'contexts':
 
 Initialise 0MQ context::
@@ -141,6 +138,9 @@ Sending and receiving messages::
     linkzmq:zmq_send[3]
     linkzmq:zmq_recv[3]
     linkzmq:zmq_send_const[3]
+
+Monitoring socket events:
+    linkzmq:zmq_socket_monitor[3]
 
 .Input/output multiplexing
 0MQ provides a mechanism for applications to multiplex input/output events over
