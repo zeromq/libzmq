@@ -17,7 +17,6 @@ noinst_PROGRAMS = test_system \
                   test_immediate \
                   test_last_endpoint \
                   test_term_endpoint \
-                  test_linger \
                   test_monitor \
                   test_router_mandatory \
                   test_probe_router \
@@ -58,7 +57,6 @@ test_hwm_SOURCES = test_hwm.cpp
 test_reqrep_device_SOURCES = test_reqrep_device.cpp
 test_sub_forward_SOURCES = test_sub_forward.cpp
 test_invalid_rep_SOURCES = test_invalid_rep.cpp
-test_linger_SOURCES = test_linger.cpp
 test_msg_flags_SOURCES = test_msg_flags.cpp
 test_connect_resolve_SOURCES = test_connect_resolve.cpp
 test_immediate_SOURCES = test_immediate.cpp
@@ -96,7 +94,6 @@ endif
 
 #  Run the test cases
 TESTS = $(noinst_PROGRAMS)
-XFAIL_TESTS = test_linger
 
 if !ON_LINUX
 XFAIL_TESTS += test_abstract_ipc
