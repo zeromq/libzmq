@@ -20,9 +20,9 @@ noinst_PROGRAMS = test_system \
                   test_linger \
                   test_monitor \
                   test_router_mandatory \
-                  test_router_raw_empty \
                   test_probe_router \
                   test_stream \
+                  test_stream_empty \
                   test_disconnect_inproc \
                   test_ctx_options \
                   test_ctx_destroy \
