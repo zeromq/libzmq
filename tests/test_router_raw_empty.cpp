@@ -40,7 +40,7 @@ int main (void) {
     zmq_send(dealer, "", 0, 0);
     
     
-    zmq_msg_t ident, empty, echo;
+    zmq_msg_t ident, empty;
     zmq_msg_init(&ident);
     rc = zmq_msg_recv(&ident, router, 0);
     assert(rc >= 0);
