@@ -33,7 +33,7 @@ int main (void)
     assert (zmq_ctx_get (ctx, ZMQ_IPV6) == 0);
     
     rc = zmq_ctx_set (ctx, ZMQ_IPV6, true);
-    assert (zmq_ctx_get (ctx, ZMQ_IPV6) == true);
+    assert (zmq_ctx_get (ctx, ZMQ_IPV6) == 1);
     
     void *router = zmq_socket (ctx, ZMQ_ROUTER);
     int ipv6;
