@@ -96,5 +96,5 @@ endif
 TESTS = $(noinst_PROGRAMS)
 
 if !ON_LINUX
-XFAIL_TESTS += test_abstract_ipc
+XFAIL_TESTS = test_abstract_ipc
 endif
