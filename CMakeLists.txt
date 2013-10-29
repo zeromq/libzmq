@@ -583,47 +583,53 @@ endif()
 enable_testing()
 set(tests 
         test_system
-        test_immediate
-        test_connect_resolve
-        test_ctx_destroy
-        test_ctx_options
-        test_disconnect_inproc
-        test_hwm
-        test_invalid_rep
-        test_iov
-        test_last_endpoint
-        test_msg_flags
         test_pair_inproc
         test_pair_tcp
-        test_probe_router
-        test_req_correlate
-        test_req_relaxed
-        test_reqrep_device
         test_reqrep_inproc
         test_reqrep_tcp
+        test_hwm
+        test_reqrep_device
+        test_sub_forward
+        test_invalid_rep
+        test_msg_flags
+        test_connect_resolve
+        test_immediate
+        test_last_endpoint
+        test_term_endpoint
+        test_linger
         test_router_mandatory
-        test_security_curve
+        test_probe_router
+        test_stream
+        test_stream_empty
+        test_disconnect_inproc
+        test_ctx_options
+        test_ctx_destroy
         test_security_null
         test_security_plain
-        test_shutdown_stress
-        test_spec_dealer
-        test_spec_pushpull
-        test_spec_rep
+        test_security_curve
+        test_iov
         test_spec_req
+        test_spec_rep
+        test_spec_dealer
         test_spec_router
-        test_sub_forward
-        test_term_endpoint
-        test_timeo
+        test_spec_pushpull
+        test_req_correlate
+        test_req_relaxed
+        test_conflate
         test_inproc_connect
         test_issue_566
-        test_proxy)
+        test_shutdown_stress
+        test_timeo
+)
 if(NOT WIN32)
 list(APPEND tests
         test_monitor
         test_pair_ipc
         test_reqrep_ipc
         test_abstract_ipc
-        test_stream)
+        test_fork
+        test_proxy
+)
 endif()     
 
 foreach(test ${tests})
