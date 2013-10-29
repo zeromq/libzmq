@@ -629,12 +629,6 @@ list(APPEND tests
         test_abstract_ipc
         test_fork
 		test_proxy
-		
-#        test_monitor
-#        test_pair_ipc
-#        test_reqrep_ipc
-#        test_abstract_ipc
-#        test_stream
 )
 endif()     
 
