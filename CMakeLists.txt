@@ -628,7 +628,7 @@ list(APPEND tests
         test_reqrep_ipc
         test_abstract_ipc
         test_fork
-		test_proxy
+        test_proxy
 )
 endif()     
 
