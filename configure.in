@@ -93,7 +93,7 @@ case "${host_os}" in
             CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
         fi
         AC_DEFINE(ZMQ_HAVE_LINUX, 1, [Have Linux OS])
-
+	AM_CONDITIONAL(ON_LINUX, true)
         case "${host_os}" in
             *android*)
                 AC_DEFINE(ZMQ_HAVE_ANDROID, 1, [Have Android OS])
