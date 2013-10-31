@@ -146,13 +146,7 @@ libzmq_la_SOURCES = \
     v1_protocol.hpp \
     xsub.cpp \
     zmq.cpp \
-    zmq_utils.cpp \
-    tipc_address.cpp \
-    tipc_address.hpp \
-    tipc_listener.cpp \
-    tipc_listener.hpp \
-    tipc_connecter.cpp\
-    tipc_connecter.hpp
+    zmq_utils.cpp
 
 if ON_MINGW
 libzmq_la_LDFLAGS = -no-undefined -avoid-version -version-info @LTVER@ @LIBZMQ_EXTRA_LDFLAGS@

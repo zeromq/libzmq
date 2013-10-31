@@ -55,8 +55,6 @@
 #include "address.hpp"
 #include "ipc_address.hpp"
 #include "tcp_address.hpp"
-#include "tipc_address.hpp"
-#include "tipc_listener.hpp"
 #ifdef ZMQ_HAVE_OPENPGM
 #include "pgm_socket.hpp"
 #endif
@@ -184,7 +182,7 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
 {
     //  First check out whether the protcol is something we are aware of.
     if (protocol_ != "inproc" && protocol_ != "ipc" && protocol_ != "tcp" &&
-          protocol_ != "pgm" && protocol_ != "epgm" && protocol_ != "tipc") {
+          protocol_ != "pgm" && protocol_ != "epgm") {
         errno = EPROTONOSUPPORT;
         return -1;
     }
@@ -206,13 +204,7 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
         return -1;
     }
 #endif
-    // TIPC transport is only available on Linux.
-#if !defined ZMQ_HAVE_LINUX
-    if (protocol_ = "tipc") {
-        errno = EPROTONOSUPPORT;
-        return -1;
-    }
-#endif
+
     //  Check whether socket type and transport protocol match.
     //  Specifically, multicast protocols can't be combined with
     //  bi-directional messaging patterns (socket types).
@@ -395,25 +387,6 @@ int zmq::socket_base_t::bind (const char *addr_)
         return 0;
     }
 #endif
-#if defined ZMQ_HAVE_LINUX
-    if (protocol == "tipc") {
-         tipc_listener_t *listener = new (std::nothrow) tipc_listener_t (
-              io_thread, this, options);
-         alloc_assert (listener);
-         int rc = listener->set_address (address.c_str ());
-         if (rc != 0) {
-             delete listener;
-             event_bind_failed (address, zmq_errno());
-             return -1;
-         }
-
-        // Save last endpoint URI
-        listener->get_address (options.last_endpoint);
-
-        add_endpoint (addr_, (own_t *) listener);
-        return 0;
-    }
-#endif
 
     zmq_assert (false);
     return -1;
@@ -538,18 +511,6 @@ int zmq::socket_base_t::connect (const char *addr_)
         paddr->resolved.ipc_addr = new (std::nothrow) ipc_address_t ();
         alloc_assert (paddr->resolved.ipc_addr);
         int rc = paddr->resolved.ipc_addr->resolve (address.c_str ());
-        if (rc != 0) {
-            delete paddr;
-            return -1;
-        }
-    }
-#endif
-#if defined ZMQ_HAVE_LINUX
-    else
-    if (protocol == "tipc") {
-        paddr->resolved.tipc_addr = new (std::nothrow) tipc_address_t ();
-        alloc_assert (paddr->resolved.tipc_addr);
-        int rc = paddr->resolved.tipc_addr->resolve (address.c_str());
         if (rc != 0) {
             delete paddr;
             return -1;
