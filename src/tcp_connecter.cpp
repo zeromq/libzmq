@@ -279,6 +279,7 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
             err == WSAEHOSTUNREACH ||
             err == WSAENETUNREACH ||
             err == WSAENETDOWN ||
+            err == WSAEACCES ||
             err == WSAEINVAL)
             return retired_fd;
         wsa_assert_no (err);
