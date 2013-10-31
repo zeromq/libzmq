@@ -115,6 +115,11 @@ namespace zmq
         // if true, send an empty message to every connected router peer
         bool probe_router;
 
+        // If true, the router will reassign an identity upon encountering a
+        // name collision. The new pipe will take the identity, the old pipe
+        // will be terminated.
+        bool reassign_identities;
+
         router_t (const router_t&);
         const router_t &operator = (const router_t&);
     };
