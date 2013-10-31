@@ -292,6 +292,7 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 #define ZMQ_REQ_RELAXED 53
 #define ZMQ_CONFLATE 54
 #define ZMQ_ZAP_DOMAIN 55
+#define ZMQ_ROUTER_REASSIGN_IDENTITES 56
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1
