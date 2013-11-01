@@ -36,7 +36,7 @@ zmq::router_t::router_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     //  raw_sock functionality in ROUTER is deprecated
     raw_sock (false),       
     probe_router (false),
-    reassign_identities(false)
+    handover(false)
 {
     options.type = ZMQ_ROUTER;
     options.recv_identity = true;
@@ -112,9 +112,9 @@ int zmq::router_t::xsetsockopt (int option_, const void *optval_,
                 return 0;
             }
             break;
-        case ZMQ_ROUTER_REASSIGN_IDENTITES: 
+        case ZMQ_ROUTER_HANDOVER: 
             if (is_int && value >= 0) {
-                reassign_identities = (value != 0);
+                handover = (value != 0);
                 return 0;
             }
             break;
@@ -403,7 +403,7 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
 
             if (it != outpipes.end ())
             {
-                if (!reassign_identities) {
+                if (!handover) {
                     //  Ignore peers with duplicate ID.
                     return false;
                 }
