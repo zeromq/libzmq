@@ -211,7 +211,7 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
 
     // TIPC transport is only available on Linux.
 #if !defined ZMQ_HAVE_LINUX
-    if (protocol_ = "tipc") {
+    if (protocol_ == "tipc") {
         errno = EPROTONOSUPPORT;
         return -1;
     }
