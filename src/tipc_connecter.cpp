@@ -19,7 +19,7 @@
 
 #include "tipc_connecter.hpp"
 
-#if defined ZMQ_HAVE_LINUX
+#if defined ZMQ_HAVE_TIPC
 
 #include <new>
 #include <string>

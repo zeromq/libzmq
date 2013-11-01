@@ -22,7 +22,7 @@
 
 #include "platform.hpp"
 
-#if defined ZMQ_HAVE_LINUX
+#if defined ZMQ_HAVE_TIPC
 
 #include "fd.hpp"
 #include "own.hpp"

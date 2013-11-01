@@ -501,7 +501,7 @@ void zmq::session_base_t::start_connecting (bool wait_)
         return;
     }
 #endif
-#if defined ZMQ_HAVE_LINUX
+#if defined ZMQ_HAVE_TIPC
     if (addr->protocol == "tipc") {
         tipc_connecter_t *connecter = new (std::nothrow) tipc_connecter_t (
             io_thread, this, options, addr, wait_);

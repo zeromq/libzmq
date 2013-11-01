@@ -52,7 +52,7 @@ zmq::address_t::~address_t ()
         }
     }
 #endif
-#if defined ZMQ_HAVE_LINUX
+#if defined ZMQ_HAVE_TIPC
     else if (protocol == "tipc") {
         if (resolved.tipc_addr) {
             delete resolved.tipc_addr;
@@ -75,7 +75,7 @@ int zmq::address_t::to_string (std::string &addr_) const
             return resolved.ipc_addr->to_string(addr_);
     }
 #endif
-#if defined ZMQ_HAVE_LINUX
+#if defined ZMQ_HAVE_TIPC
     else if (protocol == "tipc") {
         if (resolved.tipc_addr) {
             return resolved.tipc_addr->to_string(addr_);
