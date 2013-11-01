@@ -52,7 +52,7 @@ noinst_PROGRAMS += test_shutdown_stress \
                    test_fork
 endif
 
-if ON_LINUX
+if BUILD_TIPC
 noinst_PROGRAMS += test_connect_delay_tipc \
                   test_pair_tipc \
                   test_reqrep_device_tipc \
@@ -110,7 +110,7 @@ test_reqrep_ipc_SOURCES = test_reqrep_ipc.cpp testutil.hpp
 test_timeo_SOURCES = test_timeo.cpp
 test_fork_SOURCES = test_fork.cpp
 endif
-if ON_LINUX
+if BUILD_TIPC
 test_connect_delay_tipc_SOURCES = test_connect_delay_tipc.cpp
 test_pair_tipc_SOURCES = test_pair_tipc.cpp
 test_reqrep_device_tipc_SOURCES = test_reqrep_device_tipc.cpp

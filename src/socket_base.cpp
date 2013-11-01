@@ -210,7 +210,7 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
 #endif
 
     // TIPC transport is only available on Linux.
-#if !defined ZMQ_HAVE_LINUX
+#if !defined ZMQ_HAVE_TIPC
     if (protocol_ == "tipc") {
         errno = EPROTONOSUPPORT;
         return -1;
@@ -409,7 +409,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         return 0;
     }
 #endif
-#if defined ZMQ_HAVE_LINUX
+#if defined ZMQ_HAVE_TIPC
     if (protocol == "tipc") {
          tipc_listener_t *listener = new (std::nothrow) tipc_listener_t (
               io_thread, this, options);
@@ -589,7 +589,7 @@ int zmq::socket_base_t::connect (const char *addr_)
             return -1;
     }
 #endif
-#if defined ZMQ_HAVE_LINUX
+#if defined ZMQ_HAVE_TIPC
     else
     if (protocol == "tipc") {
         paddr->resolved.tipc_addr = new (std::nothrow) tipc_address_t ();

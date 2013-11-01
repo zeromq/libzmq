@@ -19,7 +19,7 @@
 
 #include "tipc_address.hpp"
 
-#if defined ZMQ_HAVE_LINUX
+#if defined ZMQ_HAVE_TIPC
 
 #include "err.hpp"
 

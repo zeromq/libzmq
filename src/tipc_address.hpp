@@ -24,7 +24,7 @@
 
 #include "platform.hpp"
 
-#if defined ZMQ_HAVE_LINUX
+#if defined ZMQ_HAVE_TIPC
 
 #include <sys/socket.h>
 #include <linux/tipc.h>
