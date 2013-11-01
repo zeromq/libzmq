@@ -28,6 +28,9 @@ namespace zmq
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
     class ipc_address_t;
 #endif
+#if defined ZMQ_HAVE_LINUX
+    class tipc_address_t;
+#endif
     struct address_t {
         address_t (const std::string &protocol_, const std::string &address_);
 
@@ -41,6 +44,9 @@ namespace zmq
             tcp_address_t *tcp_addr;
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
             ipc_address_t *ipc_addr;
+#endif
+#if defined ZMQ_HAVE_LINUX
+            tipc_address_t *tipc_addr;
 #endif
         } resolved;
 
