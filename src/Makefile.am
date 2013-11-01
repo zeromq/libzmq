@@ -165,7 +165,14 @@ libzmq_la_SOURCES = \
     raw_encoder.hpp \
     raw_encoder.cpp \
     ypipe_conflate.hpp \
-    dbuffer.hpp
+    dbuffer.hpp \
+    tipc_address.cpp \
+    tipc_address.hpp \
+    tipc_listener.cpp \
+    tipc_listener.hpp \
+    tipc_connecter.cpp \
+    tipc_connecter.hpp
+
 
 if ON_MINGW
 libzmq_la_LDFLAGS = -no-undefined -avoid-version -version-info @LTVER@ @LIBZMQ_EXTRA_LDFLAGS@

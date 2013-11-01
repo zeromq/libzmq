@@ -17,10 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "platform.hpp"
 #include "address.hpp"
 #include "err.hpp"
 #include "tcp_address.hpp"
 #include "ipc_address.hpp"
+#include "tipc_address.hpp"
 
 #include <string>
 #include <sstream>
@@ -50,6 +52,14 @@ zmq::address_t::~address_t ()
         }
     }
 #endif
+#if defined ZMQ_HAVE_LINUX
+    else if (protocol == "tipc") {
+        if (resolved.tipc_addr) {
+            delete resolved.tipc_addr;
+            resolved.tipc_addr = 0;
+        }
+    }
+#endif
 }
 
 int zmq::address_t::to_string (std::string &addr_) const
@@ -59,10 +69,17 @@ int zmq::address_t::to_string (std::string &addr_) const
             return resolved.tcp_addr->to_string(addr_);
     }
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
-    else
+    else 
     if (protocol == "ipc") {
         if (resolved.ipc_addr)
             return resolved.ipc_addr->to_string(addr_);
+    }
+#endif
+#if defined ZMQ_HAVE_LINUX
+    else if (protocol == "tipc") {
+        if (resolved.tipc_addr) {
+            return resolved.tipc_addr->to_string(addr_);
+        }
     }
 #endif
 
