@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
     zmq_setsockopt(subSocket, ZMQ_SUBSCRIBE, "foo", 3)  && printf("zmq_setsockopt: %s\n",zmq_strerror(errno));
   
     zmq_bind(pubSocket, "inproc://someInProcDescriptor") && printf("zmq_bind: %s\n", zmq_strerror(errno));
-    //zmq_bind(pubSocket, "tcp://*:30010") && printf("zmq_bind: %s\n", zmq_strerror(errno));
+    //zmq_bind(pubSocket, "tcp://127.0.0.1:30010") && printf("zmq_bind: %s\n", zmq_strerror(errno));
   
     int32_t more;
     size_t more_size = sizeof(more);
