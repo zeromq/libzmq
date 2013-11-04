@@ -142,7 +142,6 @@ char *zmq_z85_encode (char *dest, uint8_t *data, size_t size)
 
 uint8_t *zmq_z85_decode (uint8_t *dest, char *string)
 {
-    
     if (strlen (string) % 5 != 0) {
         errno = EINVAL;
         return NULL;
@@ -150,7 +149,8 @@ uint8_t *zmq_z85_decode (uint8_t *dest, char *string)
     unsigned int byte_nbr = 0;
     unsigned int char_nbr = 0;
     uint32_t value = 0;
-    while (char_nbr < strlen (string)) {
+    uint string_len = strlen (string);
+    while (char_nbr < string_len) {
         //  Accumulate value in base 85
         value = value * 85 + decoder [(uint8_t) string [char_nbr++] - 32];
         if (char_nbr % 5 == 0) {
@@ -173,7 +173,7 @@ uint8_t *zmq_z85_decode (uint8_t *dest, char *string)
 //  Returns 0 on success, -1 on failure, setting errno.
 //  Sets errno = ENOTSUP in the absence of libsodium.
 
-int zmq_curve_keypair (char* z85_public_key, char *z85_secret_key)
+int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key)
 {
 #ifdef HAVE_LIBSODIUM
 #   if crypto_box_PUBLICKEYBYTES != 32 \
@@ -185,8 +185,9 @@ int zmq_curve_keypair (char* z85_public_key, char *z85_secret_key)
     uint8_t secret_key [32];
 
     int rc = crypto_box_keypair (public_key, secret_key);
-    // is there a sensible errno to set here?
-    if (rc) return rc;
+    //  Is there a sensible errno to set here?
+    if (rc)
+        return rc;
     
     zmq_z85_encode (z85_public_key, public_key, 32);
     zmq_z85_encode (z85_secret_key, secret_key, 32);
