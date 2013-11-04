@@ -45,7 +45,7 @@ while (true) {
         fprintf (stderr, "end\n");
         break;
     }
-    zmq_msg_close (part);
+    zmq_msg_close (&part);
 }
 ----
 
