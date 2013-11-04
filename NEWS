@@ -4,9 +4,13 @@
 Bug Fixes
 ---------
 
+* Fixed LIBZMQ-578 - z85_decode was extremely slow
+
 * Fixed LIBZMQ-569 - Socket server crashes with random client data
+
 * Fixed LIBZMQ-571 - test_stream failing in some cases
-* Pulled expected failing test_linger.cpp from release.
+
+* Pulled expected failing test_linger.cpp from release
 
 
 0MQ version 4.0.1 stable, released on 2013/10/08
