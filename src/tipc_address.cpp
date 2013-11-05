@@ -60,6 +60,10 @@ int zmq::tipc_address_t::resolve (const char *name)
         address.addrtype = TIPC_ADDR_NAME;
         address.addr.name.name.type = type;
         address.addr.name.name.instance = lower;
+        /* Since we can't specify lookup domain when connecting
+         * (and we're not sure that we want it to be configurable)
+         * Change from 'closest first' approach, to search entire zone */
+        address.addr.name.domain = tipc_addr(1, 0, 0);
         address.scope = 0;
         return 0;
     }
