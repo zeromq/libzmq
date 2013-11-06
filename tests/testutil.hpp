@@ -24,6 +24,11 @@
 #include "../include/zmq_utils.h"
 #include "platform.hpp"
 
+//  This defines the settle time used in tests; raise this if we
+//  get test failures on slower systems due to binds/connects not
+//  settled. Tested to work reliably at 1 msec on a fast PC.
+#define SETTLE_TIME 10         //  In msec
+
 #undef NDEBUG
 #include <time.h>
 #include <assert.h>
@@ -258,5 +263,17 @@ void setup_test_environment()
 #   endif
 #endif
 }
+
+//  Provide portable millisecond sleep
+// http://www.cplusplus.com/forum/unices/60161/    http://en.cppreference.com/w/cpp/thread/sleep_for
+void msleep (int milliseconds)
+{
+#ifdef ZMQ_HAVE_WINDOWS
+    Sleep (milliseconds);
+#else
+    usleep (static_cast <useconds_t> (milliseconds) * 1000);
+#endif
+}
+
 
 #endif

@@ -142,7 +142,7 @@ void test_connect_before_bind_pub_sub()
     assert (rc == 0);
    
     // Wait for pub-sub connection to happen
-    zmq_sleep (1);
+    msleep (SETTLE_TIME);
 
     // Queue up some data, this not will be dropped
     rc = zmq_send_const (connectSocket, "after", 6, 0);

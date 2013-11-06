@@ -45,7 +45,6 @@ int main (int argc, char *argv [])
     assert (rc == 0);
 
     int message_count = 20;
-
     for (int j = 0; j < message_count; ++j) {
         rc = zmq_send(s_out, (void*)&j, sizeof(int), 0);
         if (rc < 0) {
@@ -53,14 +52,12 @@ int main (int argc, char *argv [])
             return -1;
         }
     }
-
-    zmq_sleep (1);
+    msleep (SETTLE_TIME);
 
     int payload_recved = 0;
-    rc = zmq_recv(s_in, (void*)&payload_recved, sizeof(int), 0);
+    rc = zmq_recv (s_in, (void*)&payload_recved, sizeof(int), 0);
     assert (rc > 0);
     assert (payload_recved == message_count - 1);
-
 
     rc = zmq_close (s_in);
     assert (rc == 0);
