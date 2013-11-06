@@ -59,7 +59,7 @@ int main (void)
     assert (rc == 0);
 
     // Let events some time
-    zmq_sleep (1);
+    msleep (SETTLE_TIME);
 
     //  Check that sending would block (there's no outbound connection).
     rc = zmq_send (push, "ABC", 3, ZMQ_DONTWAIT);
@@ -100,8 +100,7 @@ int main (void)
     rc = zmq_disconnect (push, name);
     assert (rc == 0);
 
-    // Let events some time
-    zmq_sleep (1);
+    msleep (SETTLE_TIME);
 
     //  Check that sending would block (there's no inbound connections).
     rc = zmq_send (push, "ABC", 3, ZMQ_DONTWAIT);

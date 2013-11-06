@@ -67,7 +67,7 @@ int main (void)
     assert (rc >= 0);
 
     //  Wait a bit till the subscription gets to the publisher.
-    zmq_sleep (1);
+    msleep (SETTLE_TIME);
 
     //  Send an empty message.
     rc = zmq_send (pub, NULL, 0, 0);
