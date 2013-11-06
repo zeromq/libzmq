@@ -91,7 +91,6 @@ int zmq::ctx_t::terminate ()
         //  restarted.
         bool restarted = terminating;
         terminating = true;
-        slot_sync.unlock ();
 
         //  First attempt to terminate the context.
         if (!restarted) {
@@ -99,13 +98,12 @@ int zmq::ctx_t::terminate ()
             //  First send stop command to sockets so that any blocking calls
             //  can be interrupted. If there are no sockets we can ask reaper
             //  thread to stop.
-            slot_sync.lock ();
             for (sockets_t::size_type i = 0; i != sockets.size (); i++)
                 sockets [i]->stop ();
             if (sockets.empty ())
                 reaper->stop ();
-            slot_sync.unlock ();
         }
+        slot_sync.unlock();
 
         //  Wait till reaper thread closes all the sockets.
         command_t cmd;
