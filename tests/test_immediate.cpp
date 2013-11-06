@@ -193,8 +193,7 @@ int main (void)
     assert (rc == 0);
 
     //  Give time to process disconnect
-    //  There's no way to do this except with a sleep
-    zmq_sleep(1);
+    msleep (SETTLE_TIME);
     
     // Send a message, should fail
     rc = zmq_send (frontend, "Hello", 5, ZMQ_DONTWAIT);

@@ -200,9 +200,7 @@ int main (void)
     assert (rc == 0);
 
     //  Give time to process disconnect
-    //  There's no way to do this except with a sleep
-    struct timespec t = { 0, 250 * 1000000 };
-    nanosleep (&t, NULL);
+    msleep (SETTLE_TIME);
 
     // Send a message, should fail
     rc = zmq_send (frontend, "Hello", 5, ZMQ_DONTWAIT);
