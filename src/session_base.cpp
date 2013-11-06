@@ -27,7 +27,6 @@
 #include "err.hpp"
 #include "pipe.hpp"
 #include "likely.hpp"
-#include "tipc_connecter.hpp"
 #include "tcp_connecter.hpp"
 #include "ipc_connecter.hpp"
 #include "pgm_sender.hpp"
@@ -453,16 +452,6 @@ void zmq::session_base_t::start_connecting (bool wait_)
             io_thread, this, options, addr, wait_);
         alloc_assert (connecter);
         launch_child (connecter);
-        return;
-    }
-#endif
-
-#if defined ZMQ_HAVE_LINUX
-    if (addr->protocol == "tipc") {
-        tipc_connecter_t *connecter = new (std::nothrow) tipc_connecter_t (
-            io_thread, this, options, addr, wait_);
-        alloc_assert (connecter);
-        launch_child(connecter);
         return;
     }
 #endif
