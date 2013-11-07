@@ -181,8 +181,7 @@ int zmq::signaler_t::wait (int timeout_)
         return -1;
     }
 #ifdef HAVE_FORK
-    if (unlikely(pid != getpid()))
-    {
+    if (unlikely(pid != getpid())) {
         // we have forked and the file descriptor is closed. Emulate an interupt
         // response.
         //printf("Child process %d signaler_t::wait returning simulating interrupt #2\n", getpid());
@@ -263,23 +262,10 @@ void zmq::signaler_t::recv ()
 #ifdef HAVE_FORK
 void zmq::signaler_t::forked()
 {
-    int oldr = r;
-#if !defined ZMQ_HAVE_EVENTFD
-    int oldw = w;
-#endif
-
-    // replace the file descriptors created in the parent with new
-    // ones, and close the inherited ones
+    //  Close file descriptors created in the parent and create new pair
+    close (r);
+    close (w);
     make_fdpair (&r, &w);
-#if defined ZMQ_HAVE_EVENTFD
-    int rc = close (oldr);
-    errno_assert (rc == 0);
-#else
-    int rc = close (oldw);
-    errno_assert (rc == 0);
-    rc = close (oldr);
-    errno_assert (rc == 0);
-#endif
 }
 #endif
 
@@ -422,16 +408,9 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
         //  Cleanup writer if connection failed
         rc = closesocket (*w_);
         wsa_assert (rc != SOCKET_ERROR);
-
         *w_ = INVALID_SOCKET;
-
         //  Set errno from saved value
         errno = wsa_error_to_errno (conn_errno);
-
-        //  Ideally, we would return errno to the caller signaler_t()
-        //  Unfortunately, it uses errno_assert() which gives "Unknown error"
-        //  We might as well assert here and print the actual error message
-        wsa_assert_no (conn_errno);
         return -1;
     }
 
