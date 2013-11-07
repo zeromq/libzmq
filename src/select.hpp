@@ -69,7 +69,7 @@ namespace zmq
         void start ();
         void stop ();
 
-        static int max_fds();
+        static int max_fds ();
 
     private:
 

@@ -144,7 +144,7 @@ void zmq::select_t::stop ()
     stopping = true;
 }
 
-int zmq::select_t::max_fds()
+int zmq::select_t::max_fds ()
 {
     return FD_SETSIZE;
 }
