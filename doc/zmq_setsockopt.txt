@@ -13,9 +13,9 @@ SYNOPSIS
 *int zmq_setsockopt (void '*socket', int 'option_name', const void '*option_value', size_t 'option_len');*
 
 Caution: All options, with the exception of ZMQ_SUBSCRIBE, ZMQ_UNSUBSCRIBE,
-ZMQ_LINGER, ZMQ_ROUTER_MANDATORY, ZMQ_PROBE_ROUTER, ZMQ_XPUB_VERBOSE,
-ZMQ_REQ_CORRELATE, and ZMQ_REQ_RELAXED, only take effect for subsequent socket
-bind/connects.
+ZMQ_LINGER, ZMQ_ROUTER_HANDOVER, ZMQ_ROUTER_MANDATORY, ZMQ_PROBE_ROUTER, 
+ZMQ_XPUB_VERBOSE, ZMQ_REQ_CORRELATE, and ZMQ_REQ_RELAXED, only take effect for 
+subsequent socket bind/connects.
 
 Specifically, security options take effect for subsequent bind/connect calls,
 and can be changed at any time to affect subsequent binds and/or connects.
@@ -392,6 +392,22 @@ Option value type:: int
 Option value unit:: boolean
 Default value:: 0 (false)
 Applicable socket types:: all, only for connection-oriented transports.
+
+ZMQ_ROUTER_HANDOVER: handle peer identity name collisions on ROUTER sockets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sets the ROUTER socket behavior when it encounters peers with the same identity.
+By default, if two peers with the same identity connect to the same ROUTER 
+socket the results will be undefined. A value of `1` will cause the ROUTER 
+socket to reassign the identity upon encountering an identity name collision.
+Specifically, the first peer to connect with that identity will be terminated
+and the second peer will receive any subsequent messages routed to that 
+identity.
+
+Option value type:: int
+Option value unit:: 0, 1
+Default value:: 0
+Applicable socket types:: ZMQ_ROUTER
 
 
 ZMQ_ROUTER_MANDATORY: accept only routable messages on ROUTER sockets
