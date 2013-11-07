@@ -126,6 +126,11 @@ void zmq::epoll_t::stop ()
     stopping = true;
 }
 
+int zmq::epoll_t::max_fds()
+{
+    return -1;
+}
+
 void zmq::epoll_t::loop ()
 {
     epoll_event ev_buf [max_io_events];
