@@ -422,16 +422,9 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
         //  Cleanup writer if connection failed
         rc = closesocket (*w_);
         wsa_assert (rc != SOCKET_ERROR);
-
         *w_ = INVALID_SOCKET;
-
         //  Set errno from saved value
         errno = wsa_error_to_errno (conn_errno);
-
-        //  Ideally, we would return errno to the caller signaler_t()
-        //  Unfortunately, it uses errno_assert() which gives "Unknown error"
-        //  We might as well assert here and print the actual error message
-        wsa_assert_no (conn_errno);
         return -1;
     }
 
