@@ -152,7 +152,7 @@ void zmq::kqueue_t::stop ()
     stopping = true;
 }
 
-int zmq::kqueue_t::max_fds()
+int zmq::kqueue_t::max_fds ()
 {
     return -1;
 }

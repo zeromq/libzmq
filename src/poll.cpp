@@ -114,7 +114,7 @@ void zmq::poll_t::stop ()
     stopping = true;
 }
 
-int zmq::poll_t::max_fds()
+int zmq::poll_t::max_fds ()
 {
     return -1;
 }
