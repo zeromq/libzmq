@@ -40,7 +40,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=1024 -D_CRT_SECURE_NO_WARNINGS"
+				AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=1025 -D_CRT_SECURE_NO_WARNINGS"
 				Optimization="0"
 				PreprocessorDefinitions="NOMINMAX"
 				MinimalRebuild="true"
@@ -114,7 +114,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=1024 -D_CRT_SECURE_NO_WARNINGS"
+				AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=1025 -D_CRT_SECURE_NO_WARNINGS"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				RuntimeLibrary="2"
@@ -188,7 +188,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="-DZMQ_STATIC -DFD_SETSIZE=1024 -D_CRT_SECURE_NO_WARNINGS"
+				AdditionalOptions="-DZMQ_STATIC -DFD_SETSIZE=1025 -D_CRT_SECURE_NO_WARNINGS"
 				Optimization="0"
 				PreprocessorDefinitions="NOMINMAX"
 				MinimalRebuild="true"
@@ -254,7 +254,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="-DZMQ_STATIC -DFD_SETSIZE=1024 -D_CRT_SECURE_NO_WARNINGS"
+				AdditionalOptions="-DZMQ_STATIC -DFD_SETSIZE=1025 -D_CRT_SECURE_NO_WARNINGS"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				RuntimeLibrary="2"
@@ -319,7 +319,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=1024 -D_CRT_SECURE_NO_WARNINGS"
+				AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=1025 -D_CRT_SECURE_NO_WARNINGS"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				AdditionalIncludeDirectories="../../../../OpenPGM/include"
