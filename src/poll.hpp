@@ -59,6 +59,8 @@ namespace zmq
         void start ();
         void stop ();
 
+        static int max_fds ();
+
     private:
 
         //  Main worker thread routine.

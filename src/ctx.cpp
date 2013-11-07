@@ -38,6 +38,14 @@
 #define ZMQ_CTX_TAG_VALUE_GOOD 0xabadcafe
 #define ZMQ_CTX_TAG_VALUE_BAD  0xdeadbeef
 
+int clipped_maxsocket(int max_requested)
+{
+    if (max_requested >= zmq::poller_t::max_fds () && zmq::poller_t::max_fds () != -1)
+        max_requested = zmq::poller_t::max_fds () - 1;		// -1 because we need room for the repear mailbox.
+    
+    return max_requested;
+}
+
 zmq::ctx_t::ctx_t () :
     tag (ZMQ_CTX_TAG_VALUE_GOOD),
     starting (true),
@@ -45,7 +53,7 @@ zmq::ctx_t::ctx_t () :
     reaper (NULL),
     slot_count (0),
     slots (NULL),
-    max_sockets (ZMQ_MAX_SOCKETS_DFLT),
+    max_sockets (clipped_maxsocket (ZMQ_MAX_SOCKETS_DFLT)),
     io_thread_count (ZMQ_IO_THREADS_DFLT),
     ipv6 (false)
 {
@@ -161,7 +169,7 @@ int zmq::ctx_t::shutdown ()
 int zmq::ctx_t::set (int option_, int optval_)
 {
     int rc = 0;
-    if (option_ == ZMQ_MAX_SOCKETS && optval_ >= 1) {
+    if (option_ == ZMQ_MAX_SOCKETS && optval_ >= 1 && optval_ == clipped_maxsocket (optval_)) {
         opt_sync.lock ();
         max_sockets = optval_;
         opt_sync.unlock ();
