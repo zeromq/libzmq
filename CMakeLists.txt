@@ -620,6 +620,7 @@ set(tests
         test_issue_566
         test_shutdown_stress
         test_timeo
+        test_many_sockets
 )
 if(NOT WIN32)
 list(APPEND tests
