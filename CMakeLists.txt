@@ -611,7 +611,9 @@ set(tests
         test_term_endpoint
         test_timeo
         test_inproc_connect
-        test_issue_566)
+        test_issue_566
+        test_many_sockets
+)
 if(NOT WIN32)
 list(APPEND tests
         test_monitor
