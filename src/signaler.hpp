@@ -58,7 +58,8 @@ namespace zmq
         //  to pass the signals.
         static int make_fdpair (fd_t *r_, fd_t *w_);
 
-        //  Underlying write & read file descriptor.
+        //  Underlying write & read file descriptor
+        //  Will be -1 if we exceeded number of available handles
         fd_t w;
         fd_t r;
 
@@ -74,7 +75,6 @@ namespace zmq
         void close_internal();
 #endif
     };
-
 }
 
 #endif

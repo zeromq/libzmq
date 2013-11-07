@@ -79,47 +79,49 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
 {
     socket_base_t *s = NULL;
     switch (type_) {
-
-    case ZMQ_PAIR:
-        s = new (std::nothrow) pair_t (parent_, tid_, sid_);
-        break;
-    case ZMQ_PUB:
-        s = new (std::nothrow) pub_t (parent_, tid_, sid_);
-        break;
-    case ZMQ_SUB:
-        s = new (std::nothrow) sub_t (parent_, tid_, sid_);
-        break;
-    case ZMQ_REQ:
-        s = new (std::nothrow) req_t (parent_, tid_, sid_);
-        break;
-    case ZMQ_REP:
-        s = new (std::nothrow) rep_t (parent_, tid_, sid_);
-        break;
-    case ZMQ_DEALER:
-        s = new (std::nothrow) dealer_t (parent_, tid_, sid_);
-        break;
-    case ZMQ_ROUTER:
-        s = new (std::nothrow) router_t (parent_, tid_, sid_);
-        break;     
-    case ZMQ_PULL:
-        s = new (std::nothrow) pull_t (parent_, tid_, sid_);
-        break;
-    case ZMQ_PUSH:
-        s = new (std::nothrow) push_t (parent_, tid_, sid_);
-        break;
-    case ZMQ_XPUB:
-        s = new (std::nothrow) xpub_t (parent_, tid_, sid_);
-        break;
-    case ZMQ_XSUB:
-        s = new (std::nothrow) xsub_t (parent_, tid_, sid_);
-        break;
-    case ZMQ_STREAM:
-        s = new (std::nothrow) stream_t (parent_, tid_, sid_);
-        break;
-    default:
-        errno = EINVAL;
-        return NULL;
+        case ZMQ_PAIR:
+            s = new (std::nothrow) pair_t (parent_, tid_, sid_);
+            break;
+        case ZMQ_PUB:
+            s = new (std::nothrow) pub_t (parent_, tid_, sid_);
+            break;
+        case ZMQ_SUB:
+            s = new (std::nothrow) sub_t (parent_, tid_, sid_);
+            break;
+        case ZMQ_REQ:
+            s = new (std::nothrow) req_t (parent_, tid_, sid_);
+            break;
+        case ZMQ_REP:
+            s = new (std::nothrow) rep_t (parent_, tid_, sid_);
+            break;
+        case ZMQ_DEALER:
+            s = new (std::nothrow) dealer_t (parent_, tid_, sid_);
+            break;
+        case ZMQ_ROUTER:
+            s = new (std::nothrow) router_t (parent_, tid_, sid_);
+            break;
+        case ZMQ_PULL:
+            s = new (std::nothrow) pull_t (parent_, tid_, sid_);
+            break;
+        case ZMQ_PUSH:
+            s = new (std::nothrow) push_t (parent_, tid_, sid_);
+            break;
+        case ZMQ_XPUB:
+            s = new (std::nothrow) xpub_t (parent_, tid_, sid_);
+            break;
+        case ZMQ_XSUB:
+            s = new (std::nothrow) xsub_t (parent_, tid_, sid_);
+            break;
+        case ZMQ_STREAM:
+            s = new (std::nothrow) stream_t (parent_, tid_, sid_);
+            break;
+        default:
+            errno = EINVAL;
+            return NULL;
     }
+    if (s->mailbox.get_fd () == -1)
+        return NULL;
+
     alloc_assert (s);
     return s;
 }
