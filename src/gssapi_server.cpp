@@ -34,8 +34,7 @@
 zmq::gssapi_server_t::gssapi_server_t (session_base_t *session_,
                                        const std::string &peer_address_,
                                        const options_t &options_) :
-    gssapi_mechanism_base_t (),
-    mechanism_t (options_),
+    gssapi_mechanism_base_t (options_),
     session (session_),
     peer_address (peer_address_),
     state (recv_next_token),
@@ -57,6 +56,14 @@ zmq::gssapi_server_t::~gssapi_server_t ()
 
 int zmq::gssapi_server_t::next_handshake_command (msg_t *msg_)
 {
+    if (state == send_ready) {
+        int rc = produce_ready(msg_);
+        if (rc == 0)
+            state = recv_ready;
+
+        return rc;
+    }
+
     if (state != send_next_token) {
         errno = EAGAIN;
         return -1;
@@ -71,20 +78,31 @@ int zmq::gssapi_server_t::next_handshake_command (msg_t *msg_)
     if (maj_stat == GSS_S_COMPLETE) {
         gss_release_name(&min_stat, &target_name);
         security_context_established = true;
-        state = connected;
     }
-    else {
-        state = recv_next_token;
-    }
+
+    state = recv_next_token;
 
     return 0;
 }
 
 int zmq::gssapi_server_t::process_handshake_command (msg_t *msg_)
 {
+    if (state == recv_ready) {
+        int rc = process_ready(msg_);
+        if (rc == 0) 
+            state = connected;
+
+        return rc;
+    }
+
     if (state != recv_next_token) {
         errno = EPROTO;
         return -1;
+    }
+
+    if (security_context_established) {
+        state = send_ready;
+        return 0;
     }
 
     if (process_next_token (msg_) < 0)

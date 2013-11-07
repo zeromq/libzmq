@@ -22,7 +22,9 @@
 
 #include <gssapi/gssapi_generic.h>
 #include <gssapi/gssapi_krb5.h>
-#include <gssapi/gssapi_ext.h>
+
+#include "mechanism.hpp"
+#include "options.hpp"
 
 namespace zmq
 {
@@ -33,10 +35,11 @@ namespace zmq
     /// For example, clients and servers both need to produce and
     /// process context-level GSSAPI tokens (via INITIATE commands)
     /// and per-message GSSAPI tokens (via MESSAGE commands).
-    class gssapi_mechanism_base_t
+    class gssapi_mechanism_base_t:
+        public mechanism_t
     {
     public:
-        gssapi_mechanism_base_t ();
+        gssapi_mechanism_base_t (const options_t &options_);
         virtual ~gssapi_mechanism_base_t () = 0;
 
     protected:
@@ -47,6 +50,12 @@ namespace zmq
         //  Process a context-level GSSAPI token (INITIATE command)
         //  during security context initialization.
         int process_initiate (msg_t *msg_, void **data_, size_t &data_len_);
+
+        // Produce a metadata ready msg (READY) to conclude handshake
+        int produce_ready (msg_t *msg_) const;
+
+        // Process a metadata ready msg (READY)
+        int process_ready (msg_t *msg_);
         
         //  Encode a per-message GSSAPI token (MESSAGE command) using
         //  the established security context.

@@ -21,8 +21,6 @@
 #define __ZMQ_GSSAPI_CLIENT_HPP_INCLUDED__
 
 #include "gssapi_mechanism_base.hpp"
-#include "mechanism.hpp"
-#include "options.hpp"
 
 namespace zmq
 {
@@ -30,8 +28,7 @@ namespace zmq
     class msg_t;
 
     class gssapi_client_t :
-        public gssapi_mechanism_base_t,
-        public mechanism_t
+        public gssapi_mechanism_base_t
     {
     public:
 
@@ -51,6 +48,8 @@ namespace zmq
             call_next_init,
             send_next_token,
             recv_next_token,
+            send_ready,
+            recv_ready,
             connected
         };
 

@@ -21,8 +21,6 @@
 #define __ZMQ_GSSAPI_SERVER_HPP_INCLUDED__
 
 #include "gssapi_mechanism_base.hpp"
-#include "mechanism.hpp"
-#include "options.hpp"
 
 namespace zmq
 {
@@ -31,8 +29,7 @@ namespace zmq
     class session_base_t;
 
     class gssapi_server_t :
-        public gssapi_mechanism_base_t,
-        public mechanism_t
+        public gssapi_mechanism_base_t
     {
     public:
 
@@ -54,6 +51,8 @@ namespace zmq
         enum state_t {
             send_next_token,
             recv_next_token,
+            send_ready,
+            recv_ready,
             connected
         };
 

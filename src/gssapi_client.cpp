@@ -32,8 +32,7 @@
 #include "wire.hpp"
 
 zmq::gssapi_client_t::gssapi_client_t (const options_t &options_) :
-    gssapi_mechanism_base_t (),
-    mechanism_t (options_),
+    gssapi_mechanism_base_t (options_),
     state (call_next_init),
     token_ptr (GSS_C_NO_BUFFER),
     mechs (),
@@ -55,6 +54,14 @@ zmq::gssapi_client_t::~gssapi_client_t ()
 
 int zmq::gssapi_client_t::next_handshake_command (msg_t *msg_)
 {
+    if (state == send_ready) {
+        int rc = produce_ready(msg_);
+        if (rc == 0) 
+            state = connected;
+
+        return rc;
+    }
+
     if (security_context_established) {
         state = connected;
         return 0;
@@ -74,8 +81,10 @@ int zmq::gssapi_client_t::next_handshake_command (msg_t *msg_)
     if (maj_stat != GSS_S_CONTINUE_NEEDED && maj_stat != GSS_S_COMPLETE)
         return -1;
 
-    if (maj_stat == GSS_S_COMPLETE)
+    if (maj_stat == GSS_S_COMPLETE) {
         security_context_established = true;
+        state = recv_ready;
+    }
     else
         state = recv_next_token;
     
@@ -84,6 +93,14 @@ int zmq::gssapi_client_t::next_handshake_command (msg_t *msg_)
 
 int zmq::gssapi_client_t::process_handshake_command (msg_t *msg_)
 {
+    if (state == recv_ready) {
+        int rc = process_ready(msg_);
+        if (rc == 0)
+            state = send_ready;
+
+        return rc;
+    }
+
     if (state != recv_next_token) {
         errno = EPROTO;
         return -1;
@@ -92,12 +109,10 @@ int zmq::gssapi_client_t::process_handshake_command (msg_t *msg_)
     if (process_next_token (msg_) < 0)
         return -1;
 
-    if (maj_stat == GSS_S_COMPLETE)
-        security_context_established = true;
-    else if (maj_stat == GSS_S_CONTINUE_NEEDED)
-        state = call_next_init;
-    else
+    if (maj_stat != GSS_S_COMPLETE && maj_stat != GSS_S_CONTINUE_NEEDED)
         return -1;
+
+    state = call_next_init;
 
     errno_assert (msg_->close () == 0);
     errno_assert (msg_->init () == 0);
