@@ -42,6 +42,7 @@
 #include <time.h>
 #endif
 
+#ifdef ZMQ_HAVE_WINDOWS
 typedef ULONGLONG (*f_compatible_get_tick_count64)();
 
 static zmq::mutex_t compatible_get_tick_count64_mutex;
@@ -75,6 +76,7 @@ f_compatible_get_tick_count64 init_compatible_get_tick_count64()
 }
 
 static f_compatible_get_tick_count64 my_get_tick_count64 = init_compatible_get_tick_count64();
+#endif
 
 zmq::clock_t::clock_t () :
     last_tsc (rdtsc ()),
