@@ -62,8 +62,17 @@ int zmq::gssapi_mechanism_base_t::encode_message (msg_t *msg_)
     int state;
     gss_buffer_desc plaintext;
     gss_buffer_desc wrapped;
-    plaintext.value = msg_->data ();
-    plaintext.length = msg_->size ();
+
+    uint8_t flags = 0;
+    if (msg_->flags () & msg_t::more)
+        flags |= 0x01;
+
+    uint8_t *plaintext_buffer = static_cast <uint8_t *>(malloc(msg_->size ()+1));
+    plaintext_buffer[0] = flags;
+    memcpy (plaintext_buffer+1, msg_->data(), msg_->size());
+
+    plaintext.value = plaintext_buffer;
+    plaintext.length = msg_->size ()+1;
  
     maj_stat = gss_wrap(&min_stat, context, 1, GSS_C_QOP_DEFAULT,
                         &plaintext, &state, &wrapped);
@@ -148,10 +157,14 @@ int zmq::gssapi_mechanism_base_t::decode_message (msg_t *msg_)
     int rc = msg_->close ();
     zmq_assert (rc == 0);
 
-    rc = msg_->init_size (plaintext.length);
+    rc = msg_->init_size (plaintext.length-1);
     zmq_assert (rc == 0);
+
+    const uint8_t flags = static_cast <char *> (plaintext.value)[0];
+    if (flags & 0x01)
+	    msg_->set_flags (msg_t::more);
     
-    memcpy (msg_->data (), plaintext.value, plaintext.length);
+    memcpy (msg_->data (), static_cast <char *> (plaintext.value)+1, plaintext.length-1);
     
     gss_release_buffer (&min_stat, &plaintext);
     gss_release_buffer (&min_stat, &wrapped);
