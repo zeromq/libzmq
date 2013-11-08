@@ -62,11 +62,6 @@ int zmq::gssapi_client_t::next_handshake_command (msg_t *msg_)
         return rc;
     }
 
-    if (security_context_established) {
-        state = connected;
-        return 0;
-    }
-
     if (state != call_next_init) {
         errno = EAGAIN;
         return -1;
