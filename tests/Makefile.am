@@ -39,7 +39,6 @@ noinst_PROGRAMS = test_system \
                   test_conflate \
                   test_inproc_connect \
                   test_issue_566 \
-                  test_proxy \
                   test_abstract_ipc \
                   test_many_sockets
 

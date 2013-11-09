@@ -76,6 +76,7 @@ tests/test_reqrep_device_tipc
 tests/test_reqrep_tipc
 tests/test_router_handover
 tests/test_router_mandatory_tipc
+tests/test_router_raw_empty
 tests/test_shutdown_stress_tipc
 tests/test_sub_forward_tipc
 tests/test_term_endpoint_tipc
