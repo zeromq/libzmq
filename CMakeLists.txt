@@ -269,7 +269,7 @@ if(MSVC)
     -DWIN32
     -DDLL_EXPORT
     # NB: May require tweaking for highly connected applications.
-    -DFD_SETSIZE=1024
+    -DFD_SETSIZE=1025
     -D_CRT_SECURE_NO_WARNINGS)
 
   # Parallel make.
@@ -611,7 +611,9 @@ set(tests
         test_term_endpoint
         test_timeo
         test_inproc_connect
-        test_issue_566)
+        test_issue_566
+        test_many_sockets
+)
 if(NOT WIN32)
 list(APPEND tests
         test_monitor

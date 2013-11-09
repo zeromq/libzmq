@@ -80,7 +80,7 @@ int main (void)
     rc = zmq_bind (sb, "inproc://a");
     assert (rc == 0);
 
-    zmq_sleep(1);
+    msleep (SETTLE_TIME);
     void *sc = zmq_socket (ctx, ZMQ_PUSH);
   
     rc = zmq_connect (sc, "inproc://a");

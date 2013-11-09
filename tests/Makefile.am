@@ -39,7 +39,8 @@ noinst_PROGRAMS = test_system \
                   test_conflate \
                   test_inproc_connect \
                   test_issue_566 \
-                  test_abstract_ipc
+                  test_abstract_ipc \
+                  test_many_sockets
 
 if !ON_MINGW
 noinst_PROGRAMS += test_shutdown_stress \
@@ -86,6 +87,7 @@ test_conflate_SOURCES = test_conflate.cpp
 test_inproc_connect_SOURCES = test_inproc_connect.cpp
 test_issue_566_SOURCES = test_issue_566.cpp
 test_abstract_ipc_SOURCES = test_abstract_ipc.cpp
+test_many_sockets_SOURCES = test_many_sockets.cpp
 if !ON_MINGW
 test_shutdown_stress_SOURCES = test_shutdown_stress.cpp
 test_pair_ipc_SOURCES = test_pair_ipc.cpp testutil.hpp
