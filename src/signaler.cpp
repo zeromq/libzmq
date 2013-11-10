@@ -474,7 +474,7 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     int rc = socketpair (AF_UNIX, SOCK_STREAM, 0, sv);
     if (rc == -1) {
         errno_assert (errno == ENFILE || errno == EMFILE);
-        sv [0] = sv [1] = -1;
+        *w_ = *r_ = -1;
         return -1;
     }
     else {
