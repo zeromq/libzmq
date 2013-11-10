@@ -22,13 +22,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-const int no_of_sockets = 5000;
+const int no_of_sockets = 2 * 65536;
 
 int main(void)
 {
     setup_test_environment();
 
     void *ctx = zmq_ctx_new();
+    zmq_ctx_set(ctx, ZMQ_MAX_SOCKETS, no_of_sockets);
     void *sockets[no_of_sockets];
     
     int sockets_created = 0;
