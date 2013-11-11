@@ -28,7 +28,7 @@ void test_system_max ()
 {
     // Keep allocating sockets until we run out of system resources
 
-    const unsigned int no_of_sockets = 2 * 65536;
+    const int no_of_sockets = 2 * 65536;
     void *ctx = zmq_ctx_new();
     zmq_ctx_set(ctx, ZMQ_MAX_SOCKETS, no_of_sockets);
     std::vector<void*> sockets;
@@ -42,7 +42,7 @@ void test_system_max ()
         sockets.push_back(socket);
     }
 
-    assert(sockets.size() < no_of_sockets);
+    assert((int)sockets.size() < no_of_sockets);
 
     // System is out of resources, further calls to zmq_socket should return NULL.
     for (unsigned int i = 0; i < 10; ++i)
