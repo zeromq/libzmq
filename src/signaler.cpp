@@ -317,10 +317,6 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
 
     win_assert (sync != NULL);
 
-    //  Enter the critical section.
-    DWORD dwrc = WaitForSingleObject (sync, INFINITE);
-    zmq_assert (dwrc == WAIT_OBJECT_0);
-
     //  Windows has no 'socketpair' function. CreatePipe is no good as pipe
     //  handles cannot be polled on. Here we create the socketpair by hand.
     *w_ = INVALID_SOCKET;
@@ -341,63 +337,51 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
         (char *)&tcp_nodelay, sizeof (tcp_nodelay));
     wsa_assert (rc != SOCKET_ERROR);
 
-    //  Bind listening socket to signaler port.
+    //  Init sockaddr to signaler port.
     struct sockaddr_in addr;
     memset (&addr, 0, sizeof (addr));
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
     addr.sin_port = htons (signaler_port);
-    rc = bind (listener, (const struct sockaddr*) &addr, sizeof (addr));
-    if (rc == SOCKET_ERROR) {
-        int saved_errno = WSAGetLastError ();
-        closesocket (listener);
-        SetEvent (sync);
-        CloseHandle (sync);
-        //  Set errno from saved value
-        errno = wsa_error_to_errno (saved_errno);
-        return -1;
-    }
-
-    //  Listen for incomming connections.
-    rc = listen (listener, 1);
-    wsa_assert (rc != SOCKET_ERROR);
 
     //  Create the writer socket.
-    *w_ = WSASocket (AF_INET, SOCK_STREAM, 0, NULL, 0,  0);
+    *w_ = open_socket (AF_INET, SOCK_STREAM, 0);
     wsa_assert (*w_ != INVALID_SOCKET);
-
-#   if !defined _WIN32_WCE
-    //  On Windows, preventing sockets to be inherited by child processes.
-    BOOL brc = SetHandleInformation ((HANDLE) *w_, HANDLE_FLAG_INHERIT, 0);
-    win_assert (brc);
-#   else
-    BOOL brc;
-#   endif
 
     //  Set TCP_NODELAY on writer socket.
     rc = setsockopt (*w_, IPPROTO_TCP, TCP_NODELAY,
         (char *)&tcp_nodelay, sizeof (tcp_nodelay));
     wsa_assert (rc != SOCKET_ERROR);
 
-    //  Connect writer to the listener.
-    rc = connect (*w_, (struct sockaddr*) &addr, sizeof (addr));
+    //  Enter the critical section.
+    DWORD dwrc = WaitForSingleObject (sync, INFINITE);
+    zmq_assert (dwrc == WAIT_OBJECT_0);
 
-    //  Save errno if connection fails
-    int conn_errno = 0;
-    if (rc == SOCKET_ERROR)
-        conn_errno = WSAGetLastError ();
-    else {
-        //  Accept connection from writer.
+    //  Bind listening socket to signaler port.
+    rc = bind (listener, (const struct sockaddr*) &addr, sizeof (addr));
+
+    //  Listen for incoming connections.
+    if (rc != SOCKET_ERROR)
+        rc = listen (listener, 1);
+
+    //  Connect writer to the listener.
+    if (rc != SOCKET_ERROR)
+        rc = connect (*w_, (struct sockaddr*) &addr, sizeof (addr));
+
+    //  Accept connection from writer.
+    if (rc != SOCKET_ERROR)
         *r_ = accept (listener, NULL, NULL);
-        if (*r_ == INVALID_SOCKET)
-            conn_errno = WSAGetLastError ();
-    }
+
+    //  Save errno if error occurred in bind/listen/connect/accept.
+    int saved_errno = 0;
+    if (*r_ == INVALID_SOCKET)
+        saved_errno = WSAGetLastError ();
+
     //  We don't need the listening socket anymore. Close it.
-    rc = closesocket (listener);
-    wsa_assert (rc != SOCKET_ERROR);
+    closesocket (listener);
 
     //  Exit the critical section.
-    brc = SetEvent (sync);
+    BOOL brc = SetEvent (sync);
     win_assert (brc != 0);
 
     //  Release the kernel object
@@ -414,11 +398,13 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     }
     else {
         //  Cleanup writer if connection failed
-        rc = closesocket (*w_);
-        wsa_assert (rc != SOCKET_ERROR);
-        *w_ = INVALID_SOCKET;
+        if (*w_ != INVALID_SOCKET) {
+            rc = closesocket (*w_);
+            wsa_assert (rc != SOCKET_ERROR);
+            *w_ = INVALID_SOCKET;
+        }
         //  Set errno from saved value
-        errno = wsa_error_to_errno (conn_errno);
+        errno = wsa_error_to_errno (saved_errno);
         return -1;
     }
 
