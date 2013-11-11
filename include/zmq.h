@@ -185,7 +185,7 @@ ZMQ_EXPORT const char *zmq_strerror (int errnum);
 
 /*  Default for new contexts                                                  */
 #define ZMQ_IO_THREADS_DFLT  1
-#define ZMQ_MAX_SOCKETS_DFLT 1024
+#define ZMQ_MAX_SOCKETS_DFLT 1023
 
 ZMQ_EXPORT void *zmq_ctx_new (void);
 ZMQ_EXPORT int zmq_ctx_term (void *context);
