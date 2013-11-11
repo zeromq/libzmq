@@ -348,7 +348,15 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     addr.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
     addr.sin_port = htons (signaler_port);
     rc = bind (listener, (const struct sockaddr*) &addr, sizeof (addr));
-    wsa_assert (rc != SOCKET_ERROR);
+    if (rc == SOCKET_ERROR) {
+        int saved_errno = WSAGetLastError ();
+        closesocket (listener);
+        SetEvent (sync);
+        CloseHandle (sync);
+        //  Set errno from saved value
+        errno = wsa_error_to_errno (saved_errno);
+        return -1;
+    }
 
     //  Listen for incomming connections.
     rc = listen (listener, 1);
