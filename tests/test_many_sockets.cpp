@@ -21,32 +21,81 @@
 #include <zmq.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
 
-const int no_of_sockets = 2 * 65536;
+
+void test_system_max ()
+{
+    // Keep allocating sockets until we run out of system resources
+
+    const int no_of_sockets = 2 * 65536;
+    void *ctx = zmq_ctx_new();
+    zmq_ctx_set(ctx, ZMQ_MAX_SOCKETS, no_of_sockets);
+    std::vector<void*> sockets;
+
+    while (true)
+    {
+        void *socket = zmq_socket(ctx, ZMQ_PAIR);
+        if (!socket)
+            break;
+
+        sockets.push_back(socket);
+    }
+
+    assert((int)sockets.size() < no_of_sockets);
+
+    // System is out of resources, further calls to zmq_socket should return NULL.
+    for (unsigned int i = 0; i < 10; ++i)
+    {
+        void *socket = zmq_socket(ctx, ZMQ_PAIR);
+        assert(socket == NULL);
+    }
+
+    // Clean up.
+    for (unsigned int i = 0; i < sockets.size(); ++i)
+        zmq_close(sockets[i]);
+
+    zmq_ctx_destroy(ctx);
+}
+
+void test_zmq_default_max ()
+{
+    // Keep allocating sockets until we hit the default zeromq limit
+
+    void *ctx = zmq_ctx_new();
+    std::vector<void*> sockets;
+
+    while (true)
+    {
+        void *socket = zmq_socket(ctx, ZMQ_PAIR);
+        if (!socket)
+            break;
+
+        sockets.push_back(socket);
+    }
+
+    assert(sockets.size() == ZMQ_MAX_SOCKETS_DFLT);
+
+    // At zeromq max, further calls to zmq_socket should return NULL.
+    for (unsigned int i = 0; i < 10; ++i)
+    {
+        void *socket = zmq_socket(ctx, ZMQ_PAIR);
+        assert(socket == NULL);
+    }
+
+    // Clean up.
+    for (unsigned int i = 0; i < sockets.size(); ++i)
+        zmq_close(sockets[i]);
+
+    zmq_ctx_destroy(ctx);
+}
 
 int main(void)
 {
     setup_test_environment();
 
-    void *ctx = zmq_ctx_new();
-    zmq_ctx_set(ctx, ZMQ_MAX_SOCKETS, no_of_sockets);
-    void *sockets[no_of_sockets];
-    
-    int sockets_created = 0;
+    test_system_max ();
+    test_zmq_default_max ();
 
-    for ( int i = 0; i < no_of_sockets; ++i )
-    {
-        sockets[i] = zmq_socket(ctx, ZMQ_PAIR);
-        if (sockets[i])
-            ++sockets_created;
-    }
-
-    assert(sockets_created < no_of_sockets);
-
-    for ( int i = 0; i < no_of_sockets; ++i )
-        if (sockets[i])
-            zmq_close (sockets[i]);
-
-    zmq_ctx_destroy (ctx);
     return 0;
 }
