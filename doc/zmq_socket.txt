@@ -62,6 +62,7 @@ The request-reply pattern is used for sending requests from a ZMQ_REQ _client_
 to one or more ZMQ_REP _services_, and receiving subsequent replies to each
 request sent.
 
+The request-reply pattern is formally defined by http://rfc.zeromq.org/spec:28.
 
 ZMQ_REQ
 ^^^^^^^
@@ -168,6 +169,7 @@ Publish-subscribe pattern
 The publish-subscribe pattern is used for one-to-many distribution of data from
 a single _publisher_ to multiple _subscribers_ in a fan out fashion.
 
+The publish-subscribe pattern is formally defined by http://rfc.zeromq.org/spec:29.
 
 ZMQ_PUB
 ^^^^^^^
@@ -249,6 +251,7 @@ a pipeline. Data always flows down the pipeline, and each stage of the pipeline
 is connected to at least one _node_. When a pipeline stage is connected to
 multiple _nodes_ data is round-robined among all connected _nodes_.
 
+The pipeline pattern is formally defined by http://rfc.zeromq.org/spec:30.
 
 ZMQ_PUSH
 ^^^^^^^^
@@ -296,6 +299,7 @@ The exclusive pair pattern is used to connect a peer to precisely one other
 peer. This pattern is used for inter-thread communication across the inproc
 transport.
 
+The exclusive pair pattern is formally defined by http://rfc.zeromq.org/spec:31.
 
 ZMQ_PAIR
 ^^^^^^^^
