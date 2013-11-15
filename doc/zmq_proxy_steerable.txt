@@ -62,7 +62,7 @@ assert (zmq_connect (control, "tcp://*:5557") == 0);
 assert (zmq_setsockopt (control, ZMQ_SUBSCRIBE, "", 0));
 //  Start the queue proxy, which runs until ETERM or "TERMINATE" received on
 the control socket
-zmq_proxy (frontend, backend, NULL, control);
+zmq_proxy_steerable (frontend, backend, NULL, control);
 ----
 .Set up a controller in another node, process or whatever
 ----
