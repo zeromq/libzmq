@@ -31,6 +31,8 @@
 #include "gssapi_server.hpp"
 #include "wire.hpp"
 
+#include <gssapi/gssapi.h>
+
 zmq::gssapi_server_t::gssapi_server_t (session_base_t *session_,
                                        const std::string &peer_address_,
                                        const options_t &options_) :
@@ -101,7 +103,19 @@ int zmq::gssapi_server_t::process_handshake_command (msg_t *msg_)
     }
 
     if (security_context_established) {
-        state = send_ready;
+     	//  Use ZAP protocol (RFC 27) to authenticate the user.
+        bool expecting_zap_reply = false;
+        int rc = session->zap_connect ();
+        if (rc == 0) {
+            send_zap_request();
+            rc = receive_and_process_zap_reply ();
+            if (rc != 0) {
+                if (errno != EAGAIN)
+                    return -1;
+                expecting_zap_reply = true;
+            }
+        }
+        state = expecting_zap_reply? expect_zap_reply: send_ready;
         return 0;
     }
 
@@ -117,6 +131,145 @@ int zmq::gssapi_server_t::process_handshake_command (msg_t *msg_)
     return 0;
 }
 
+void zmq::gssapi_server_t::send_zap_request () 
+{
+    int rc;
+    msg_t msg;
+
+    //  Address delimiter frame
+    rc = msg.init ();
+    errno_assert (rc == 0);
+    msg.set_flags (msg_t::more);
+    rc = session->write_zap_msg (&msg);
+    errno_assert (rc == 0);
+
+    //  Version frame
+    rc = msg.init_size (3);
+    errno_assert (rc == 0);
+    memcpy (msg.data (), "1.0", 3);
+    msg.set_flags (msg_t::more);
+    rc = session->write_zap_msg (&msg);
+    errno_assert (rc == 0);
+
+    //  Request ID frame
+    rc = msg.init_size (1);
+    errno_assert (rc == 0);
+    memcpy (msg.data (), "1", 1);
+    msg.set_flags (msg_t::more);
+    rc = session->write_zap_msg (&msg);
+    errno_assert (rc == 0);
+
+    //  Domain frame
+    rc = msg.init_size (options.zap_domain.length ());
+    errno_assert (rc == 0);
+    memcpy (msg.data (), options.zap_domain.c_str (), options.zap_domain.length ());
+    msg.set_flags (msg_t::more);
+    rc = session->write_zap_msg (&msg);
+    errno_assert (rc == 0);
+
+    //  Address frame
+    rc = msg.init_size (peer_address.length ());
+    errno_assert (rc == 0);
+    memcpy (msg.data (), peer_address.c_str (), peer_address.length ());
+    msg.set_flags (msg_t::more);
+    rc = session->write_zap_msg (&msg);
+    errno_assert (rc == 0);
+
+    //  Identity frame
+    rc = msg.init_size (options.identity_size);
+    errno_assert (rc == 0);
+    memcpy (msg.data (), options.identity, options.identity_size);
+    msg.set_flags (msg_t::more);
+    rc = session->write_zap_msg (&msg);
+    errno_assert (rc == 0);
+
+    //  Mechanism frame
+    rc = msg.init_size (6);
+    errno_assert (rc == 0);
+    memcpy (msg.data (), "GSSAPI", 6);
+    msg.set_flags (msg_t::more);
+    rc = session->write_zap_msg (&msg);
+    errno_assert (rc == 0);
+
+    //Principle frame
+    gss_buffer_desc principle;
+    gss_display_name(&min_stat, target_name, &principle, NULL);
+
+    rc = msg.init_size (principle.length);
+    errno_assert (rc == 0);
+    memcpy (msg.data (), principle.value, principle.length);
+    rc = session->write_zap_msg (&msg);
+    errno_assert (rc == 0);
+    gss_release_buffer(&min_stat, &principle);
+}
+
+int zmq::gssapi_server_t::receive_and_process_zap_reply ()
+{
+    int rc = 0;
+    msg_t msg [7];  //  ZAP reply consists of 7 frames
+
+    //  Initialize all reply frames
+    for (int i = 0; i < 7; i++) {
+        rc = msg [i].init ();
+        errno_assert (rc == 0);
+    }
+
+    for (int i = 0; i < 7; i++) {
+        rc = session->read_zap_msg (&msg [i]);
+        if (rc == -1)
+            break;
+        if ((msg [i].flags () & msg_t::more) == (i < 6? 0: msg_t::more)) {
+            errno = EPROTO;
+            rc = -1;
+            break;
+        }
+    }
+
+    if (rc != 0)
+        goto error;
+
+    //  Address delimiter frame
+    if (msg [0].size () > 0) {
+        rc = -1;
+        errno = EPROTO;
+        goto error;
+    }
+
+    //  Version frame
+    if (msg [1].size () != 3 || memcmp (msg [1].data (), "1.0", 3)) {
+        rc = -1;
+        errno = EPROTO;
+        goto error;
+    }
+
+    //  Request id frame
+    if (msg [2].size () != 1 || memcmp (msg [2].data (), "1", 1)) {
+        rc = -1;
+        errno = EPROTO;
+        goto error;
+    }
+
+    //  Status code frame
+    if (msg [3].size () != 3 || memcmp (msg [3].data (), "200", 3)) {
+        rc = -1;
+        errno = EACCES;
+        goto error;
+    }
+
+    //  Process metadata frame
+    rc = parse_metadata (static_cast <const unsigned char*> (msg [6].data ()),
+                         msg [6].size ());
+
+error:
+    for (int i = 0; i < 7; i++) {
+        const int rc2 = msg [i].close ();
+        errno_assert (rc2 == 0);
+    }
+
+    return rc;
+}
+
+
 int zmq::gssapi_server_t::encode (msg_t *msg_)
 {
     zmq_assert (state == connected);
@@ -131,7 +284,14 @@ int zmq::gssapi_server_t::decode (msg_t *msg_)
 
 int zmq::gssapi_server_t::zap_msg_available ()
 {
-    return 0;
+    if (state != expect_zap_reply) {
+        errno = EFSM;
+        return -1;
+    }
+    const int rc = receive_and_process_zap_reply ();
+    if (rc == 0)
+        state = send_ready;
+    return rc;
 }
 
 bool zmq::gssapi_server_t::is_handshake_complete () const
