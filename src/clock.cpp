@@ -153,7 +153,6 @@ uint64_t zmq::clock_t::now_ms ()
         // does not guarantee that it will use a hardware that offers a monotonic timer.
         // So, lets use GetTickCount when GetTickCount64 is not available with an workaround
         // to its 32 bit limitation.
-        static_assert(sizeof(uint64_t) >= sizeof(ULONGLONG), "Loosing timer information");
         return static_cast<uint64_t>((*my_get_tick_count64)());
 #else
         return now_us () / 1000;
