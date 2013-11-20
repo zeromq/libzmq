@@ -38,8 +38,10 @@ zmq::gssapi_client_t::gssapi_client_t (const options_t &options_) :
     mechs (),
     security_context_established (false)
 {
-    maj_stat = GSS_S_COMPLETE;
-    service_name = strdup("host"); // TODO: add service_name to options
+    const std::string::size_type service_size = options_.gss_service_principle.size();
+    service_name = new char[service_size+1];
+    memcpy(service_name, options_.gss_service_principle.c_str(), service_size+1 );
+
     mechs.elements = NULL;
     mechs.count = 0;
 }

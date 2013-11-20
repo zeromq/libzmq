@@ -42,12 +42,6 @@ zmq::gssapi_server_t::gssapi_server_t (session_base_t *session_,
     state (recv_next_token),
     security_context_established (false)
 {
-    service_name = (char *) "host"; // TODO: add service_name to options
-    int rc = acquire_credentials (service_name, &cred); // TODO: add creds to options too?
-    if (rc == 0)
-        maj_stat = GSS_S_CONTINUE_NEEDED;
-    else
-        maj_stat = GSS_S_FAILURE;
 }
 
 zmq::gssapi_server_t::~gssapi_server_t ()

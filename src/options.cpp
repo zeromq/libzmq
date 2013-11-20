@@ -410,10 +410,19 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             break;
 		
-        case ZMQ_GSSAPI_CLIENT:
-            if (is_int && (value == 0 || value == 1)) {
-                as_server = (value == 0);
+        case ZMQ_GSSAPI_PRINCIPLE:
+            if (optvallen_ > 0 && optvallen_ < 256 && optval_ != NULL) {
+                gss_principle.assign ((const char *) optval_, optvallen_);
                 mechanism = ZMQ_GSSAPI;
+                return 0;
+            }
+            break;
+
+        case ZMQ_GSSAPI_SERVICE_PRINCIPLE:
+            if (optvallen_ > 0 && optvallen_ < 256 && optval_ != NULL) {
+                gss_service_principle.assign ((const char *) optval_, optvallen_);
+                mechanism = ZMQ_GSSAPI;
+                as_server = 1;
                 return 0;
             }
             break;
@@ -704,14 +713,22 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
                 return 0;
             }
             break;
-		
-        case ZMQ_GSSAPI_CLIENT:
-            if (is_int) {
-                *value = (as_server == 0) && mechanism == ZMQ_GSSAPI;
+
+        case ZMQ_GSSAPI_PRINCIPLE:
+            if (*optvallen_ >= gss_principle.size () + 1) {
+                memcpy (optval_, gss_principle.c_str (), gss_principle.size () + 1);
+                *optvallen_ = gss_principle.size () + 1;
                 return 0;
             }
             break;
 
+        case ZMQ_GSSAPI_SERVICE_PRINCIPLE:
+            if (*optvallen_ >= gss_service_principle.size () + 1) {
+                memcpy (optval_, gss_service_principle.c_str (), gss_service_principle.size () + 1);
+                *optvallen_ = gss_service_principle.size () + 1;
+                return 0;
+            }
+            break;
 
 	}
     errno = EINVAL;

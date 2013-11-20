@@ -37,8 +37,8 @@ zmq::gssapi_mechanism_base_t::gssapi_mechanism_base_t (const options_t & options
     recv_tok (),
     /// FIXME remove? in_buf (),
     target_name (GSS_C_NO_NAME),
-    service_name (NULL),
-    maj_stat (GSS_S_COMPLETE),
+    principle_name (NULL),
+    maj_stat (GSS_S_CONTINUE_NEEDED),
     min_stat (0),
     init_sec_min_stat (0),
     ret_flags (0),
@@ -46,6 +46,15 @@ zmq::gssapi_mechanism_base_t::gssapi_mechanism_base_t (const options_t & options
     cred (GSS_C_NO_CREDENTIAL),
     context (GSS_C_NO_CONTEXT)
 {
+    if(!options_.gss_principle.empty())
+    {
+      const std::string::size_type principle_size = options_.gss_principle.size();
+      principle_name = new char[principle_size+1];
+      memcpy(principle_name, options_.gss_principle.c_str(), principle_size+1 );
+
+      if (acquire_credentials (principle_name, &cred) != 0)
+        maj_stat = GSS_S_FAILURE;
+    }
 }
 
 zmq::gssapi_mechanism_base_t::~gssapi_mechanism_base_t ()
