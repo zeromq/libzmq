@@ -422,7 +422,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             if (optvallen_ > 0 && optvallen_ < 256 && optval_ != NULL) {
                 gss_service_principle.assign ((const char *) optval_, optvallen_);
                 mechanism = ZMQ_GSSAPI;
-                as_server = 1;
+                as_server = 0;
                 return 0;
             }
             break;

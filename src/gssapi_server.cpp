@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+
 #include "platform.hpp"
 #ifdef ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
@@ -42,12 +43,26 @@ zmq::gssapi_server_t::gssapi_server_t (session_base_t *session_,
     state (recv_next_token),
     security_context_established (false)
 {
+    maj_stat = GSS_S_CONTINUE_NEEDED;
+    if(!options_.gss_principle.empty())
+    {
+        const std::string::size_type principle_size = options_.gss_principle.size();
+        principle_name = static_cast <char *>(malloc(principle_size+1));
+        assert(principle_name);
+        memcpy(principle_name, options_.gss_principle.c_str(), principle_size+1 );
+
+        if (acquire_credentials (principle_name, &cred) != 0)
+            maj_stat = GSS_S_FAILURE;
+    }
 }
 
 zmq::gssapi_server_t::~gssapi_server_t ()
 {
     if(cred)
         gss_release_cred(&min_stat, &cred);
+
+    if(target_name)
+        gss_release_name(&min_stat, &target_name);
 }
 
 int zmq::gssapi_server_t::next_handshake_command (msg_t *msg_)
@@ -72,7 +87,6 @@ int zmq::gssapi_server_t::next_handshake_command (msg_t *msg_)
         return -1;
 
     if (maj_stat == GSS_S_COMPLETE) {
-        gss_release_name(&min_stat, &target_name);
         security_context_established = true;
     }
 
