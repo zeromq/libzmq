@@ -581,7 +581,7 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug") # Why?
 endif()
 
 enable_testing()
-set(tests 
+set(tests
         test_system
         test_pair_inproc
         test_pair_tcp
@@ -596,7 +596,6 @@ set(tests
         test_immediate
         test_last_endpoint
         test_term_endpoint
-        test_linger
         test_router_mandatory
         test_probe_router
         test_stream
@@ -631,7 +630,7 @@ list(APPEND tests
         test_fork
         test_proxy
 )
-endif()     
+endif()
 
 foreach(test ${tests})
   add_executable(${test} tests/${test}.cpp)
@@ -644,7 +643,7 @@ foreach(test ${tests})
     add_test(NAME ${test} WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH} COMMAND ${test})
   else()
     add_test(NAME ${test} COMMAND ${test})
-  endif() 
+  endif()
 endforeach()
 
 #-----------------------------------------------------------------------------
