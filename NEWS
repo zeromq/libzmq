@@ -1,4 +1,4 @@
-0MQ version 4.0.2 stable, released on 2013/xx/xx
+0MQ version 4.0.2 stable, released on 2013/11/24
 ================================================
 
 Bug Fixes
@@ -9,10 +9,12 @@ Bug Fixes
 * Fixed LIBZMQ-577 - fault in man pages.
 * Fixed LIBZMQ-574 - assertion failure when ran out of system file handles
 * Fixed LIBZMQ-571 - test_stream failing in some cases
-* Fixed LIBZMQ-569 - Socket server crashes with random client data
+* Fixed LIBZMQ-569 - Socket server crashes with random client data and when
+  talking to 2.2 versions
 * Fixed LIBZMQ-39 - Bad file descriptor during shutdown
 * Pulled expected failing test_linger.cpp from release
 * Reduced pause time in tests to allow "make check" to run faster
+
 
 0MQ version 4.0.1 stable, released on 2013/10/08
 ================================================
