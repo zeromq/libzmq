@@ -28,6 +28,16 @@
 #ifndef __ZMQ_H_INCLUDED__
 #define __ZMQ_H_INCLUDED__
 
+/*  Version macros for compile-time API version detection                     */
+#define ZMQ_VERSION_MAJOR 4
+#define ZMQ_VERSION_MINOR 1
+#define ZMQ_VERSION_PATCH 0
+
+#define ZMQ_MAKE_VERSION(major, minor, patch) \
+    ((major) * 10000 + (minor) * 100 + (patch))
+#define ZMQ_VERSION \
+    ZMQ_MAKE_VERSION(ZMQ_VERSION_MAJOR, ZMQ_VERSION_MINOR, ZMQ_VERSION_PATCH)
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -77,23 +87,6 @@ typedef unsigned __int8 uint8_t;
 #   include <stdint.h>
 #endif
 
-
-/******************************************************************************/
-/*  0MQ versioning support.                                                   */
-/******************************************************************************/
-
-/*  Version macros for compile-time API version detection                     */
-#define ZMQ_VERSION_MAJOR 4
-#define ZMQ_VERSION_MINOR 1
-#define ZMQ_VERSION_PATCH 0
-
-#define ZMQ_MAKE_VERSION(major, minor, patch) \
-    ((major) * 10000 + (minor) * 100 + (patch))
-#define ZMQ_VERSION \
-    ZMQ_MAKE_VERSION(ZMQ_VERSION_MAJOR, ZMQ_VERSION_MINOR, ZMQ_VERSION_PATCH)
-
-/*  Run-time API version detection                                            */
-ZMQ_EXPORT void zmq_version (int *major, int *minor, int *patch);
 
 /******************************************************************************/
 /*  0MQ errors.                                                               */
@@ -173,6 +166,9 @@ ZMQ_EXPORT int zmq_errno (void);
 
 /*  Resolves system errors and 0MQ errors to human-readable string.           */
 ZMQ_EXPORT const char *zmq_strerror (int errnum);
+
+/*  Run-time API version detection                                            */
+ZMQ_EXPORT void zmq_version (int *major, int *minor, int *patch);
 
 /******************************************************************************/
 /*  0MQ infrastructure (a.k.a. context) initialisation & termination.         */
