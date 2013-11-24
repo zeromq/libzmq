@@ -1,3 +1,13 @@
+0MQ version 4.0.3 stable, released on 2013/11/24
+================================================
+
+Bug Fixes
+---------
+
+* Fixed test_many_sockets case, which failed when process socket limit
+  was 1024.
+
+
 0MQ version 4.0.2 stable, released on 2013/11/24
 ================================================
 
