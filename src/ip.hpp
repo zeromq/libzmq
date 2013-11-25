@@ -39,6 +39,9 @@ namespace zmq
     //  Socket sockfd_ must be connected. Returns true iff successful.
     bool get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_);
 
+    // Sets the IP Type-Of-Service for the underlying socket
+    void set_ip_type_of_service (fd_t s_, int iptos);
+
 }
 
 #endif

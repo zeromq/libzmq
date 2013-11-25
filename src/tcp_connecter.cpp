@@ -190,14 +190,14 @@ int zmq::tcp_connecter_t::get_new_reconnect_ivl ()
 
     //  Only change the current reconnect interval  if the maximum reconnect
     //  interval was set and if it's larger than the reconnect interval.
-    if (options.reconnect_ivl_max > 0 && 
+    if (options.reconnect_ivl_max > 0 &&
         options.reconnect_ivl_max > options.reconnect_ivl) {
 
         //  Calculate the next interval
         current_reconnect_ivl = current_reconnect_ivl * 2;
         if(current_reconnect_ivl >= options.reconnect_ivl_max) {
             current_reconnect_ivl = options.reconnect_ivl_max;
-        }   
+        }
     }
     return this_interval;
 }
@@ -223,6 +223,10 @@ int zmq::tcp_connecter_t::open ()
     if (addr->resolved.tcp_addr->family () == AF_INET6)
         enable_ipv4_mapping (s);
 
+    // Set the IP Type-Of-Service priority for this socket
+    if (options.tos != 0)
+        set_ip_type_of_service (s, options.tos);
+
     // Set the socket to non-blocking mode so that we get async connect().
     unblock_socket (s);
 
@@ -231,6 +235,10 @@ int zmq::tcp_connecter_t::open ()
         set_tcp_send_buffer (s, options.sndbuf);
     if (options.rcvbuf != 0)
         set_tcp_receive_buffer (s, options.rcvbuf);
+
+    // Set the IP Type-Of-Service for the underlying socket
+    if (options.tos != 0)
+        set_ip_type_of_service (s, options.tos);
 
     //  Connect to the remote peer.
     int rc = ::connect (

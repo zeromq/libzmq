@@ -66,6 +66,9 @@ namespace zmq
         int sndbuf;
         int rcvbuf;
 
+        // Type of service (containing DSCP and ECN socket options)
+        int tos;
+
         //  Socket type.
         int type;
 

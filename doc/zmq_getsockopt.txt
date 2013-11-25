@@ -352,6 +352,17 @@ Default value:: 1 (true)
 Applicable socket types:: all, when using TCP transports.
 
 
+ZMQ_TOS: Retrieve the Type-of-Service socket override status
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Retrieve the IP_TOS option for the socket.
+
+[horizontal]
+Option value type:: int
+Option value unit:: >0
+Default value:: 0
+Applicable socket types:: all, only for connection-oriented transports
+
+
 ZMQ_IMMEDIATE: Retrieve attach-on-connect value
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Retrieve the state of the attach on connect value. If set to `1`, will delay the

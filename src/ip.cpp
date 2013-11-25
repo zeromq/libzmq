@@ -148,3 +148,18 @@ bool zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
     ip_addr_ = host;
     return true;
 }
+
+
+void zmq::set_ip_type_of_service (fd_t s_, int iptos)
+{
+  (void) s_;
+
+  int rc = setsockopt(s_, IPPROTO_IP, IP_TOS,  &iptos, sizeof(iptos));
+
+#ifdef ZMQ_HAVE_WINDOWS
+    wsa_assert (rc != SOCKET_ERROR);
+#else
+    errno_assert (rc == 0);
+#endif
+
+}
