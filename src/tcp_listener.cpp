@@ -100,7 +100,7 @@ void zmq::tcp_listener_t::in_event ()
     io_thread_t *io_thread = choose_io_thread (options.affinity);
     zmq_assert (io_thread);
 
-    //  Create and launch a session object. 
+    //  Create and launch a session object.
     session_base_t *session = session_base_t::create (io_thread, false, socket,
         options, NULL);
     errno_assert (session);
@@ -187,6 +187,10 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
     //  Switch it on in such cases.
     if (address.family () == AF_INET6)
         enable_ipv4_mapping (s);
+
+    // Set the IP Type-Of-Service for the underlying socket
+    if (options.tos != 0)
+        set_ip_type_of_service (s, options.tos);
 
     //  Set the socket buffer limits for the underlying socket.
     if (options.sndbuf != 0)
@@ -299,6 +303,10 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
             return retired_fd;
         }
     }
+
+    // Set the IP Type-Of-Service priority for this client socket
+    if (options.tos != 0)
+        set_ip_type_of_service (sock, options.tos);
 
     return sock;
 }

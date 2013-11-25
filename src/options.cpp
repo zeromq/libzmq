@@ -33,6 +33,7 @@ zmq::options_t::options_t () :
     multicast_hops (1),
     sndbuf (0),
     rcvbuf (0),
+    tos (0),
     type (-1),
     linger (-1),
     reconnect_ivl (100),
@@ -121,6 +122,13 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         case ZMQ_RCVBUF:
             if (is_int && value >= 0) {
                 rcvbuf = value;
+                return 0;
+            }
+            break;
+
+        case ZMQ_TOS:
+            if (is_int && value >= 0) {
+                tos = value;
                 return 0;
             }
             break;
@@ -424,6 +432,12 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
             }
             break;
 
+        case ZMQ_TOS:
+            if (is_int) {
+                *value = tos;
+                return 0;
+            }
+            break;
         case ZMQ_TYPE:
             if (is_int) {
                 *value = type;
