@@ -306,16 +306,21 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     //  Note that if the event object already exists, the CreateEvent requests
     //  EVENT_ALL_ACCESS access right. If this fails, we try to open
     //  the event object asking for SYNCHRONIZE access only.
-#   if !defined _WIN32_WCE
-    HANDLE sync = CreateEvent (&sa, FALSE, TRUE, TEXT ("Global\\zmq-signaler-port-sync"));
-#   else
-    HANDLE sync = CreateEvent (NULL, FALSE, TRUE, TEXT ("Global\\zmq-signaler-port-sync"));
-#   endif
-    if (sync == NULL && GetLastError () == ERROR_ACCESS_DENIED)
-        sync = OpenEvent (SYNCHRONIZE | EVENT_MODIFY_STATE,
-                          FALSE, TEXT ("Global\\zmq-signaler-port-sync"));
+    HANDLE sync = NULL;
 
-    win_assert (sync != NULL);
+    //  Create critical section only if using fixed signaler port
+    if (signaler_port != 0) {
+#       if !defined _WIN32_WCE
+        sync = CreateEvent (&sa, FALSE, TRUE, TEXT ("Global\\zmq-signaler-port-sync"));
+#       else
+        sync = CreateEvent (NULL, FALSE, TRUE, TEXT ("Global\\zmq-signaler-port-sync"));
+#       endif
+        if (sync == NULL && GetLastError () == ERROR_ACCESS_DENIED)
+            sync = OpenEvent (SYNCHRONIZE | EVENT_MODIFY_STATE,
+                              FALSE, TEXT ("Global\\zmq-signaler-port-sync"));
+
+        win_assert (sync != NULL);
+    }
 
     //  Windows has no 'socketpair' function. CreatePipe is no good as pipe
     //  handles cannot be polled on. Here we create the socketpair by hand.
@@ -353,12 +358,20 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
         (char *)&tcp_nodelay, sizeof (tcp_nodelay));
     wsa_assert (rc != SOCKET_ERROR);
 
-    //  Enter the critical section.
-    DWORD dwrc = WaitForSingleObject (sync, INFINITE);
-    zmq_assert (dwrc == WAIT_OBJECT_0);
+    if (sync != NULL) {
+        //  Enter the critical section.
+        DWORD dwrc = WaitForSingleObject (sync, INFINITE);
+        zmq_assert (dwrc == WAIT_OBJECT_0);
+    }
 
     //  Bind listening socket to signaler port.
     rc = bind (listener, (const struct sockaddr*) &addr, sizeof (addr));
+
+    if (rc != SOCKET_ERROR && signaler_port == 0) {
+        //  Retrieve ephemeral port number
+        int addrlen = sizeof (addr);
+        rc = getsockname (listener, (struct sockaddr*) &addr, &addrlen);
+    }
 
     //  Listen for incoming connections.
     if (rc != SOCKET_ERROR)
@@ -380,18 +393,20 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     //  We don't need the listening socket anymore. Close it.
     closesocket (listener);
 
-    //  Exit the critical section.
-    BOOL brc = SetEvent (sync);
-    win_assert (brc != 0);
+    if (sync != NULL) {
+        //  Exit the critical section.
+        BOOL brc = SetEvent (sync);
+        win_assert (brc != 0);
 
-    //  Release the kernel object
-    brc = CloseHandle (sync);
-    win_assert (brc != 0);
+        //  Release the kernel object
+        brc = CloseHandle (sync);
+        win_assert (brc != 0);
+    }
 
     if (*r_ != INVALID_SOCKET) {
 #   if !defined _WIN32_WCE
         //  On Windows, preventing sockets to be inherited by child processes.
-        brc = SetHandleInformation ((HANDLE) *r_, HANDLE_FLAG_INHERIT, 0);
+        BOOL brc = SetHandleInformation ((HANDLE) *r_, HANDLE_FLAG_INHERIT, 0);
         win_assert (brc);
 #   endif
         return 0;
