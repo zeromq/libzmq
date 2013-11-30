@@ -122,6 +122,8 @@ namespace zmq
 
         //  Security mechanism for all connections on this socket
         int mechanism;
+        int surrogation_mechanism; // the mechanism sent in the greeting may be different (i.e. to NULL-proxy CURVE-peers)
+        bool use_surrogation_mechanism; // default is false to conform to ZMTP 3.0
 
         //  If peer is acting as server for PLAIN or CURVE mechanisms
         int as_server;

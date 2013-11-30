@@ -27,8 +27,10 @@ noinst_PROGRAMS = test_system \
                   test_ctx_options \
                   test_ctx_destroy \
                   test_security_null \
+                  test_security_nop \
                   test_security_plain \
                   test_security_curve \
+                  test_surrogate_curve \
                   test_iov \
                   test_spec_req \
                   test_spec_rep \
@@ -89,8 +91,10 @@ test_ctx_options_SOURCES = test_ctx_options.cpp
 test_iov_SOURCES = test_iov.cpp
 test_ctx_destroy_SOURCES = test_ctx_destroy.cpp
 test_security_null_SOURCES = test_security_null.cpp
+test_security_nop_SOURCES = test_security_nop.cpp
 test_security_plain_SOURCES = test_security_plain.cpp
 test_security_curve_SOURCES = test_security_curve.cpp
+test_surrogate_curve_SOURCES = test_surrogate_curve.cpp
 test_spec_req_SOURCES = test_spec_req.cpp
 test_spec_rep_SOURCES = test_spec_rep.cpp
 test_spec_dealer_SOURCES = test_spec_dealer.cpp
