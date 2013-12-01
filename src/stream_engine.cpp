@@ -507,6 +507,13 @@ bool zmq::stream_engine_t::handshake ()
         //  message into the incoming message stream.
         if (options.type == ZMQ_PUB || options.type == ZMQ_XPUB)
             subscription_required = true;
+
+        //  We are sending our identity now and the next message
+        //  will come from the socket.
+        read_msg = &stream_engine_t::pull_msg_from_session;
+
+        //  We are expecting identity message.
+        write_msg = &stream_engine_t::write_identity;
     }
     else
     if (greeting_recv [revision_pos] == ZMTP_1_0) {
