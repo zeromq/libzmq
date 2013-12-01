@@ -87,7 +87,7 @@ client_task (void *ctx)
             if (items [1].revents & ZMQ_POLLIN) {
                 rc = zmq_recv (control, content, CONTENT_SIZE_MAX, 0);
                 if (is_verbose) printf("client receive - identity = %s    command = %s\n", identity, content);
-                if (memcmp (content, "TERMINATE", 10) == 0) {
+                if (memcmp (content, "TERMINATE", 9) == 0) {
                     run = false;
                     break;
                 }
@@ -184,7 +184,7 @@ server_worker (void *ctx)
         if (rc > 0) {
             if (is_verbose)
                 printf("server_worker receives command = %s\n", content);
-            if (memcmp (content, "TERMINATE", 10) == 0)
+            if (memcmp (content, "TERMINATE", 9) == 0)
                 run = false;
         }
         // The DEALER socket gives us the reply envelope and message
@@ -236,8 +236,8 @@ int main (void)
     threads[QT_CLIENTS] = zmq_threadstart  (&server_task, ctx);
     msleep (500); // Run for 500 ms then quit
 
-    rc = zmq_send (control, "TERMINATE", 10, 0);
-    assert (rc == 10);
+    rc = zmq_send (control, "TERMINATE", 9, 0);
+    assert (rc == 9);
 
     rc = zmq_close (control);
     assert (rc == 0);

@@ -114,13 +114,13 @@ int zmq::proxy (
                 if (unlikely (rc < 0))
                     return -1;
             }
-            if (msg.size () == 6 && memcmp (msg.data (), "PAUSE", 6) == 0)
+            if (msg.size () == 5 && memcmp (msg.data (), "PAUSE", 5) == 0)
                 state = paused;
             else
-            if (msg.size () == 7 && memcmp (msg.data (), "RESUME", 7) == 0)
+            if (msg.size () == 6 && memcmp (msg.data (), "RESUME", 6) == 0)
                 state = active;
             else
-            if (msg.size () == 10 && memcmp (msg.data (), "TERMINATE", 10) == 0)
+            if (msg.size () == 9 && memcmp (msg.data (), "TERMINATE", 9) == 0)
                 state = terminated;
             else {
                 //  This is an API error, we should assert
