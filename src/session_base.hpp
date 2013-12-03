@@ -46,7 +46,7 @@ namespace zmq
 
         //  Create a session of the particular type.
         static session_base_t *create (zmq::io_thread_t *io_thread_,
-            bool connect_, zmq::socket_base_t *socket_,
+            bool active_, zmq::socket_base_t *socket_,
             const options_t &options_, const address_t *addr_);
 
         //  To be used once only, when creating the session.
@@ -55,7 +55,7 @@ namespace zmq
         //  Following functions are the interface exposed towards the engine.
         virtual void reset ();
         void flush ();
-        void detach ();
+        void engine_error ();
 
         //  i_pipe_events interface implementation.
         void read_activated (zmq::pipe_t *pipe_);
@@ -88,7 +88,7 @@ namespace zmq
 
     protected:
 
-        session_base_t (zmq::io_thread_t *io_thread_, bool connect_,
+        session_base_t (zmq::io_thread_t *io_thread_, bool active_,
             zmq::socket_base_t *socket_, const options_t &options_,
             const address_t *addr_);
         virtual ~session_base_t ();
@@ -97,7 +97,7 @@ namespace zmq
 
         void start_connecting (bool wait_);
 
-        void detached ();
+        void reconnect ();
 
         //  Handlers for incoming commands.
         void process_plug ();
@@ -116,7 +116,7 @@ namespace zmq
 
         //  If true, this session (re)connects to the peer. Otherwise, it's
         //  a transient session created by the listener.
-        bool connect;
+        bool active;
 
         //  Pipe connecting the session to its socket.
         zmq::pipe_t *pipe;
