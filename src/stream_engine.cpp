@@ -743,7 +743,7 @@ void zmq::stream_engine_t::error ()
     zmq_assert (session);
     socket->event_disconnected (endpoint, s);
     session->flush ();
-    session->detach ();
+    session->engine_error ();
     unplug ();
     delete this;
 }
