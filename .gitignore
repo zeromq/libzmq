@@ -72,6 +72,7 @@ tests/test_security_null
 tests/test_security_plain
 tests/test_proxy
 tests/test_abstract_ipc
+tests/test_filter_ipc
 tests/test_connect_delay_tipc
 tests/test_pair_tipc
 tests/test_reqrep_device_tipc
