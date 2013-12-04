@@ -119,7 +119,7 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
             errno = EINVAL;
             return NULL;
     }
-    if (s->mailbox.get_fd () == -1)
+    if (s->mailbox.get_fd () == retired_fd)
         return NULL;
 
     alloc_assert (s);
