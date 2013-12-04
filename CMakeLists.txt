@@ -311,6 +311,7 @@ set(cxx-sources
         mechanism.cpp
         msg.cpp
         mtrie.cpp
+	nop_mechanism.cpp
         object.cpp
         options.cpp
         own.cpp
@@ -604,6 +605,7 @@ set(tests
         test_ctx_options
         test_ctx_destroy
         test_security_null
+	test_security_nop
         test_security_plain
         test_security_curve
         test_iov
@@ -612,6 +614,7 @@ set(tests
         test_spec_dealer
         test_spec_router
         test_spec_pushpull
+	test_surrogate_curve
         test_req_correlate
         test_req_relaxed
         test_conflate

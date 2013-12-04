@@ -290,6 +290,10 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 #define ZMQ_ZAP_DOMAIN 55
 #define ZMQ_ROUTER_HANDOVER 56
 #define ZMQ_TOS 57
+// 58 to 63 are reserved for PARANO
+#define ZMQ_SURROGATION_MECHANISM 64
+#define ZMQ_USE_SURROGATION_MECHANISM 65
+#define ZMQ_NOP_NODE 66
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1
@@ -302,6 +306,8 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 #define ZMQ_NULL 0
 #define ZMQ_PLAIN 1
 #define ZMQ_CURVE 2
+// 3 is reserved for ZMQ_PARANO
+#define ZMQ_NOP 4
 
 /*  Deprecated options and aliases                                            */
 #define ZMQ_IPV4ONLY                31

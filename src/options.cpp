@@ -52,6 +52,8 @@ zmq::options_t::options_t () :
     tcp_keepalive_idle (-1),
     tcp_keepalive_intvl (-1),
     mechanism (ZMQ_NULL),
+    surrogation_mechanism (ZMQ_NULL),
+    use_surrogation_mechanism (false),
     as_server (0),
     socket_id (0),
     conflate (false)
@@ -254,6 +256,31 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                     tcp_accept_filters.push_back (mask);
                     return 0;
                 }
+            }
+            break;
+
+        case ZMQ_SURROGATION_MECHANISM:
+            if (is_int) {
+            	surrogation_mechanism = value;
+                return 0;
+            }
+            break;
+
+        case ZMQ_USE_SURROGATION_MECHANISM:
+            if (optvallen_ == sizeof (bool)) {
+            	use_surrogation_mechanism = *((bool *) optval_);
+                return 0;
+            }
+            break;
+
+        case ZMQ_NOP_NODE:
+//			mechanism = ZMQ_NOP;
+//			return 0;
+//            break;
+            if (is_int && (value == 0 || value == 1)) {
+                as_server = value;
+                mechanism = ZMQ_NOP;
+                return 0;
             }
             break;
 
@@ -554,6 +581,27 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
         case ZMQ_MECHANISM:
             if (is_int) {
                 *value = mechanism;
+                return 0;
+            }
+            break;
+
+        case ZMQ_SURROGATION_MECHANISM:
+            if (is_int) {
+                *value = surrogation_mechanism;
+                return 0;
+            }
+            break;
+
+        case ZMQ_USE_SURROGATION_MECHANISM:
+            if (*optvallen_ == sizeof (bool)) {
+                *((bool *) optval_) = use_surrogation_mechanism;
+                return 0;
+            }
+            break;
+
+        case ZMQ_NOP_NODE:
+            if (is_int) {
+                *value = mechanism == ZMQ_NOP;
                 return 0;
             }
             break;

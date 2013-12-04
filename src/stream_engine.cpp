@@ -41,6 +41,7 @@
 #include "v2_encoder.hpp"
 #include "v2_decoder.hpp"
 #include "null_mechanism.hpp"
+#include "nop_mechanism.hpp"
 #include "plain_mechanism.hpp"
 #include "curve_client.hpp"
 #include "curve_server.hpp"
@@ -451,16 +452,25 @@ bool zmq::stream_engine_t::handshake ()
                     memset (outpos + outsize, 0, 20);
 
                     zmq_assert (options.mechanism == ZMQ_NULL
+                    		||  options.mechanism == ZMQ_NOP
                             ||  options.mechanism == ZMQ_PLAIN
                             ||  options.mechanism == ZMQ_CURVE);
 
-                    if (options.mechanism == ZMQ_NULL)
+                    if (options.mechanism == ZMQ_NULL || (options.use_surrogation_mechanism && options.surrogation_mechanism == ZMQ_NULL))
                         memcpy (outpos + outsize, "NULL", 4);
                     else
-                    if (options.mechanism == ZMQ_PLAIN)
+		    if (options.mechanism == ZMQ_NOP || (options.use_surrogation_mechanism && options.surrogation_mechanism == ZMQ_NOP))
+			memcpy (outpos + outsize, "NOP", 3);
+		    else
+                    if (options.mechanism == ZMQ_PLAIN || (options.use_surrogation_mechanism && options.surrogation_mechanism == ZMQ_PLAIN))
                         memcpy (outpos + outsize, "PLAIN", 5);
                     else
+                    if (options.mechanism == ZMQ_CURVE || (options.use_surrogation_mechanism && options.surrogation_mechanism == ZMQ_CURVE))
                         memcpy (outpos + outsize, "CURVE", 5);
+                    else {
+                        error ();
+                        return false;
+                    }
                     outsize += 20;
                     memset (outpos + outsize, 0, 32);
                     outsize += 32;
@@ -542,20 +552,30 @@ bool zmq::stream_engine_t::handshake ()
             in_batch_size, options.maxmsgsize);
         alloc_assert (decoder);
 
-        if (memcmp (greeting_recv + 12, "NULL\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
+        if ((memcmp (greeting_recv + 12, "NULL\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0 && !options.use_surrogation_mechanism)
+        		|| (options.use_surrogation_mechanism && options.mechanism == ZMQ_NULL)) {
             mechanism = new (std::nothrow)
                 null_mechanism_t (session, peer_address, options);
             alloc_assert (mechanism);
         }
         else
-        if (memcmp (greeting_recv + 12, "PLAIN\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
+	if ((memcmp (greeting_recv + 12, "NOP\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0 && !options.use_surrogation_mechanism)
+			|| (options.use_surrogation_mechanism && options.mechanism == ZMQ_NOP)) {
+	    mechanism = new (std::nothrow)
+	        nop_mechanism_t (session, peer_address, options);
+	    alloc_assert (mechanism);
+	}
+	else
+        if ((memcmp (greeting_recv + 12, "PLAIN\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0 && !options.use_surrogation_mechanism)
+        		|| (options.use_surrogation_mechanism && options.mechanism == ZMQ_PLAIN)) {
             mechanism = new (std::nothrow)
                 plain_mechanism_t (session, peer_address, options);
             alloc_assert (mechanism);
         }
 #ifdef HAVE_LIBSODIUM
         else
-        if (memcmp (greeting_recv + 12, "CURVE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
+        if ((memcmp (greeting_recv + 12, "CURVE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0 && !options.use_surrogation_mechanism)
+        		|| (options.use_surrogation_mechanism && options.mechanism == ZMQ_CURVE)) {
             if (options.as_server)
                 mechanism = new (std::nothrow)
                     curve_server_t (session, peer_address, options);
