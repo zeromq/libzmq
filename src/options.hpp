@@ -22,11 +22,16 @@
 
 #include <string>
 #include <vector>
+#include <set>
 
 #include "stddef.h"
 #include "stdint.hpp"
 #include "tcp_address.hpp"
 #include "../include/zmq.h"
+
+#if defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
+#include <sys/types.h>
+#endif
 
 //  Normal base 256 key is 32 bytes
 #define CURVE_KEYSIZE       32
@@ -119,6 +124,18 @@ namespace zmq
         // TCP accept() filters
         typedef std::vector <tcp_address_mask_t> tcp_accept_filters_t;
         tcp_accept_filters_t tcp_accept_filters;
+
+        // IPC accept() filters
+#       if defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
+        typedef std::set <uid_t> ipc_uid_accept_filters_t;
+        ipc_uid_accept_filters_t ipc_uid_accept_filters;
+        typedef std::set <gid_t> ipc_gid_accept_filters_t;
+        ipc_gid_accept_filters_t ipc_gid_accept_filters;
+#       endif
+#       if defined ZMQ_HAVE_SO_PEERCRED
+        typedef std::set <pid_t> ipc_pid_accept_filters_t;
+        ipc_pid_accept_filters_t ipc_pid_accept_filters;
+#       endif
 
         //  Security mechanism for all connections on this socket
         int mechanism;

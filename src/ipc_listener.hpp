@@ -63,6 +63,12 @@ namespace zmq
         //  Close the listening socket.
         int close ();
 
+        //  Filter new connections if the OS provides a mechanism to get
+        //  the credentials of the peer process.  Called from accept().
+#       if defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
+        bool filter (fd_t sock);
+#       endif
+
         //  Accept the new connection. Returns the file descriptor of the
         //  newly created connection. The function may return retired_fd
         //  if the connection was dropped while waiting in the listen backlog.

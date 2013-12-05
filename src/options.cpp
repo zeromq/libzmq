@@ -257,6 +257,46 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             break;
 
+#       if defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
+        case ZMQ_IPC_ACCEPT_FILTER_UID:
+            if (optvallen_ == 0 && optval_ == NULL) {
+                ipc_uid_accept_filters.clear ();
+                return 0;
+            }
+            else
+            if (optvallen_ == sizeof (uid_t) && optval_ != NULL) {
+                ipc_uid_accept_filters.insert (*((uid_t *) optval_));
+                return 0;
+            }
+            break;
+
+        case ZMQ_IPC_ACCEPT_FILTER_GID:
+            if (optvallen_ == 0 && optval_ == NULL) {
+                ipc_gid_accept_filters.clear ();
+                return 0;
+            }
+            else
+            if (optvallen_ == sizeof (gid_t) && optval_ != NULL) {
+                ipc_gid_accept_filters.insert (*((gid_t *) optval_));
+                return 0;
+            }
+            break;
+#       endif
+
+#       if defined ZMQ_HAVE_SO_PEERCRED
+        case ZMQ_IPC_ACCEPT_FILTER_PID:
+            if (optvallen_ == 0 && optval_ == NULL) {
+                ipc_pid_accept_filters.clear ();
+                return 0;
+            }
+            else
+            if (optvallen_ == sizeof (pid_t) && optval_ != NULL) {
+                ipc_pid_accept_filters.insert (*((pid_t *) optval_));
+                return 0;
+            }
+            break;
+#       endif
+
         case ZMQ_PLAIN_SERVER:
             if (is_int && (value == 0 || value == 1)) {
                 as_server = value;
