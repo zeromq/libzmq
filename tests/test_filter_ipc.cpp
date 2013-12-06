@@ -20,6 +20,9 @@
 #include <string.h>
 #include <sys/types.h>
 
+#include <string>
+#include <sstream>
+
 #include "testutil.hpp"
 
 static void bounce_fail (void *server, void *client)
@@ -52,6 +55,8 @@ static void bounce_fail (void *server, void *client)
 template <class T>
 static void run_test (int opt, T optval, int expected_error, int bounce_test)
 {
+    int rc;
+
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
@@ -59,7 +64,7 @@ static void run_test (int opt, T optval, int expected_error, int bounce_test)
     assert (sb);
 
     if (opt) {
-        int rc = zmq_setsockopt(sb, opt, &optval, sizeof (optval));
+        rc = zmq_setsockopt(sb, opt, &optval, sizeof (optval));
         if (expected_error) {
             assert (rc == -1);
             assert (zmq_errno () == expected_error);
@@ -70,6 +75,20 @@ static void run_test (int opt, T optval, int expected_error, int bounce_test)
 
     void *sc = zmq_socket (ctx, ZMQ_PAIR);
     assert (sc);
+
+    // If a test fails, don't hang for too long
+    int timeout = 1500;
+    rc = zmq_setsockopt (sb, ZMQ_RCVTIMEO, &timeout, sizeof (int));
+    assert (rc == 0);
+    rc = zmq_setsockopt (sb, ZMQ_SNDTIMEO, &timeout, sizeof (int));
+    assert (rc == 0);
+    rc = zmq_setsockopt (sc, ZMQ_RCVTIMEO, &timeout, sizeof (int));
+    assert (rc == 0);
+    rc = zmq_setsockopt (sc, ZMQ_SNDTIMEO, &timeout, sizeof (int));
+    assert (rc == 0);
+    int interval = -1;
+    rc = zmq_setsockopt (sc, ZMQ_RECONNECT_IVL, &interval, sizeof (int));
+    assert (rc == 0);
 
     if (bounce_test) {
         int rc = zmq_bind (sb, "ipc://@/tmp/test");
@@ -87,7 +106,7 @@ static void run_test (int opt, T optval, int expected_error, int bounce_test)
     close_zero_linger (sc);
     close_zero_linger (sb);
 
-    int rc = zmq_ctx_term (ctx);
+    rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 }
 

@@ -215,6 +215,7 @@ bool zmq::ipc_listener_t::filter (fd_t sock)
     if (getsockopt (sock, SOL_SOCKET, SO_PEERCRED, &cred, &size))
         return false;
     if (options.ipc_uid_accept_filters.find (cred.uid) != options.ipc_uid_accept_filters.end () ||
+            options.ipc_gid_accept_filters.find (cred.gid) != options.ipc_gid_accept_filters.end () ||
             options.ipc_pid_accept_filters.find (cred.pid) != options.ipc_pid_accept_filters.end ())
         return true;
 
@@ -227,9 +228,10 @@ bool zmq::ipc_listener_t::filter (fd_t sock)
             it != options.ipc_gid_accept_filters.end (); it++) {
         if (!(gr = getgrgid (*it)))
             continue;
-        for (char **mem = gr->gr_mem; *mem; mem++)
+        for (char **mem = gr->gr_mem; *mem; mem++) {
             if (!strcmp (*mem, pw->pw_name))
                 return true;
+        }
     }
     return false;
 }
