@@ -4,6 +4,8 @@
 Bug Fixes
 ---------
 
+* Fixed #775; compile error on Windows.
+
 * Fixed #763; when talking to a ZMTP v1 peer (libzmq 2.2), a socket would
   send an extra identity frame at the start of the connection.
 
