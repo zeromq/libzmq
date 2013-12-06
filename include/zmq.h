@@ -290,9 +290,9 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 #define ZMQ_ZAP_DOMAIN 55
 #define ZMQ_ROUTER_HANDOVER 56
 #define ZMQ_TOS 57
-#define ZMQ_IPC_ACCEPT_FILTER_PID 58
-#define ZMQ_IPC_ACCEPT_FILTER_UID 59
-#define ZMQ_IPC_ACCEPT_FILTER_GID 60
+#define ZMQ_IPC_FILTER_PID 58
+#define ZMQ_IPC_FILTER_UID 59
+#define ZMQ_IPC_FILTER_GID 60
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1

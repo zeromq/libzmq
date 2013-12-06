@@ -601,15 +601,15 @@ Default value:: no filters (allow from all)
 Applicable socket types:: all listening sockets, when using TCP transports.
 
 
-ZMQ_IPC_ACCEPT_FILTER_UID: Assign user ID filters to allow new IPC connections
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_IPC_FILTER_UID: Assign user ID filters to allow new IPC connections
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Assign an arbitrary number of filters that will be applied for each new IPC
 transport connection on a listening socket. If no IPC filters are applied, then
 the IPC transport allows connections from any process. If at least one UID,
 GID, or PID filter is applied then new connection credentials should be
 matched. To clear all UID filters call zmq_setsockopt(socket,
-ZMQ_IPC_ACCEPT_FILTER_UID, NULL, 0).
+ZMQ_IPC_FILTER_UID, NULL, 0).
 
 NOTE: UID filters are only available on platforms supporting SO_PEERCRED or
 LOCAL_PEERCRED socket options (currently only Linux and later versions of
@@ -622,15 +622,15 @@ Default value:: no filters (allow from all)
 Applicable socket types:: all listening sockets, when using IPC transports.
 
 
-ZMQ_IPC_ACCEPT_FILTER_GID: Assign group ID filters to allow new IPC connections
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_IPC_FILTER_GID: Assign group ID filters to allow new IPC connections
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Assign an arbitrary number of filters that will be applied for each new IPC
 transport connection on a listening socket. If no IPC filters are applied, then
 the IPC transport allows connections from any process. If at least one UID,
 GID, or PID filter is applied then new connection credentials should be
 matched. To clear all GID filters call zmq_setsockopt(socket,
-ZMQ_IPC_ACCEPT_FILTER_GID, NULL, 0).
+ZMQ_IPC_FILTER_GID, NULL, 0).
 
 NOTE: GID filters are only available on platforms supporting SO_PEERCRED or
 LOCAL_PEERCRED socket options (currently only Linux and later versions of
@@ -643,15 +643,15 @@ Default value:: no filters (allow from all)
 Applicable socket types:: all listening sockets, when using IPC transports.
 
 
-ZMQ_IPC_ACCEPT_FILTER_PID: Assign process ID filters to new IPC connections
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_IPC_FILTER_PID: Assign process ID filters to allow new IPC connections
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Assign an arbitrary number of filters that will be applied for each new IPC
 transport connection on a listening socket. If no IPC filters are applied, then
 the IPC transport allows connections from any process. If at least one UID,
 GID, or PID filter is applied then new connection credentials should be
 matched. To clear all PID filters call zmq_setsockopt(socket,
-ZMQ_IPC_ACCEPT_FILTER_PID, NULL, 0).
+ZMQ_IPC_FILTER_PID, NULL, 0).
 
 NOTE: PID filters are only available on platforms supporting the SO_PEERCRED
 socket option (currently only Linux).
