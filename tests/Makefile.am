@@ -51,7 +51,8 @@ noinst_PROGRAMS += test_shutdown_stress \
                    test_reqrep_ipc \
                    test_timeo \
                    test_fork \
-                   test_filter_ipc
+                   test_filter_ipc \
+                   test_zap_ipc_creds
 endif
 
 if BUILD_TIPC
@@ -113,6 +114,7 @@ test_reqrep_ipc_SOURCES = test_reqrep_ipc.cpp testutil.hpp
 test_timeo_SOURCES = test_timeo.cpp
 test_fork_SOURCES = test_fork.cpp
 test_filter_ipc_SOURCES = test_filter_ipc.cpp
+test_zap_ipc_creds_SOURCES = test_zap_ipc_creds.cpp
 endif
 if BUILD_TIPC
 test_connect_delay_tipc_SOURCES = test_connect_delay_tipc.cpp
@@ -127,7 +129,12 @@ endif
 
 #  Run the test cases
 TESTS = $(noinst_PROGRAMS)
+XFAIL_TESTS =
 
 if !ON_LINUX
-XFAIL_TESTS = test_abstract_ipc
+XFAIL_TESTS += test_abstract_ipc
+endif
+
+if !HAVE_IPC_PEERCRED
+XFAIL_TESTS += test_zap_ipc_creds
 endif

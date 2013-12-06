@@ -663,6 +663,25 @@ Default value:: no filters (allow from all)
 Applicable socket types:: all listening sockets, when using IPC transports.
 
 
+ZMQ_ZAP_IPC_CREDS: Append IPC peer credentials to ZAP address
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If set, the credentials of IPC peers will be appended to the address sent in
+ZAP request messages.  The new address will be formatted as ADDRESS:UID:GID:PID
+where UID and GID are the effective group and user IDs of the user owning the
+peer process and PID is the process ID.  PID will be empty on systems not
+supporting SO_PEERCRED.
+
+NOTE: IPC peer credentials are only available on platforms supporting the
+SO_PEERCRED or LOCAL_PEERCRED socket options.
+
+[horizontal]
+Option value type:: int
+Option value unit:: boolean
+Default value:: 0 (false)
+Applicable socket types:: all listening sockets, when using IPC transports.
+
+
 ZMQ_PLAIN_SERVER: Set PLAIN server role
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

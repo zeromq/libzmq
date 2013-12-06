@@ -631,10 +631,11 @@ list(APPEND tests
         test_monitor
         test_pair_ipc
         test_reqrep_ipc
-        test_abstract_ipc
         test_fork
+        test_abstract_ipc
         test_proxy
         test_filter_ipc
+        test_zap_ipc_creds
 )
 endif()
 
@@ -651,6 +652,15 @@ foreach(test ${tests})
     add_test(NAME ${test} COMMAND ${test})
   endif()
 endforeach()
+
+if(NOT WIN32)
+  if(NOT CMAKE_SYSTEM_NAME MATCHES "Linux")
+    set_tests_properties(test_abstract_ipc PROPERTIES WILL_FAIL true)
+  endif()
+  if(NOT ZMQ_HAVE_SO_PEERCRED AND NOT ZMQ_HAVE_LOCAL_PEERCRED)
+    set_tests_properties(test_zap_ipc_creds PROPERTIES WILL_FAIL true)
+  endif()
+endif()
 
 #-----------------------------------------------------------------------------
 # installer

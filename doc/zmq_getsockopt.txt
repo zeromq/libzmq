@@ -497,6 +497,25 @@ Default value:: -1 (leave to OS default)
 Applicable socket types:: all, when using TCP transports.
 
 
+ZMQ_ZAP_IPC_CREDS: Retrieve IPC peer credentials state
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The 'ZMQ_ZAP_IPC_CREDS' option shall return True (1) if credentials of IPC
+peers will be appended to the address sent in ZAP request messages and False
+(0) otherwise.
+
+Refer to linkzmq:zmq_setsockopt[3] for more information.
+
+NOTE: IPC peer credentials are only available on platforms supporting the
+SO_PEERCRED or LOCAL_PEERCRED socket options.
+
+[horizontal]
+Option value type:: int
+Option value unit:: boolean
+Default value:: 0 (false)
+Applicable socket types:: all listening sockets, when using IPC transports.
+
+
 ZMQ_MECHANISM: Retrieve current security mechanism
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_MECHANISM' option shall retrieve the current security mechanism
