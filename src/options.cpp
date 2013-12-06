@@ -258,7 +258,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             break;
 
 #       if defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
-        case ZMQ_IPC_ACCEPT_FILTER_UID:
+        case ZMQ_IPC_FILTER_UID:
             if (optvallen_ == 0 && optval_ == NULL) {
                 ipc_uid_accept_filters.clear ();
                 return 0;
@@ -270,7 +270,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             break;
 
-        case ZMQ_IPC_ACCEPT_FILTER_GID:
+        case ZMQ_IPC_FILTER_GID:
             if (optvallen_ == 0 && optval_ == NULL) {
                 ipc_gid_accept_filters.clear ();
                 return 0;
@@ -284,7 +284,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
 #       endif
 
 #       if defined ZMQ_HAVE_SO_PEERCRED
-        case ZMQ_IPC_ACCEPT_FILTER_PID:
+        case ZMQ_IPC_FILTER_PID:
             if (optvallen_ == 0 && optval_ == NULL) {
                 ipc_pid_accept_filters.clear ();
                 return 0;
