@@ -354,6 +354,7 @@ AC_LANG_PUSH(C++)
 
 AC_CHECK_DECLS([SO_PEERCRED], [AC_DEFINE(ZMQ_HAVE_SO_PEERCRED, 1, [Have SO_PEERCRED socket option])], [], [#include <sys/socket.h>])
 AC_CHECK_DECLS([LOCAL_PEERCRED], [AC_DEFINE(ZMQ_HAVE_LOCAL_PEERCRED, 1, [Have LOCAL_PEERCRED socket option])], [], [#include <sys/socket.h>])
+AM_CONDITIONAL(HAVE_IPC_PEERCRED, test "x$ac_cv_have_decl_SO_PEERCRED" = "xyes" || test "x$ac_cv_have_decl_LOCAL_PEERCRED" = "xyes")
 
 AC_HEADER_STDBOOL
 AC_C_CONST

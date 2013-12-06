@@ -109,7 +109,7 @@ void zmq::enable_ipv4_mapping (fd_t s_)
 #endif
 }
 
-bool zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
+int zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
 {
     int rc;
     struct sockaddr_storage ss;
@@ -126,7 +126,7 @@ bool zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
                     WSAGetLastError () != WSAEFAULT &&
                     WSAGetLastError () != WSAEINPROGRESS &&
                     WSAGetLastError () != WSAENOTSOCK);
-        return false;
+        return 0;
     }
 #else
     if (rc == -1) {
@@ -135,7 +135,7 @@ bool zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
                       errno != EINVAL &&
                       errno != ENOTCONN &&
                       errno != ENOTSOCK);
-        return false;
+        return 0;
     }
 #endif
 
@@ -143,10 +143,10 @@ bool zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
     rc = getnameinfo ((struct sockaddr*) &ss, addrlen, host, sizeof host,
         NULL, 0, NI_NUMERICHOST);
     if (rc != 0)
-        return false;
+        return 0;
 
     ip_addr_ = host;
-    return true;
+    return (int) ((struct sockaddr *) &ss)->sa_family;
 }
 
 void zmq::set_ip_type_of_service (fd_t s_, int iptos)

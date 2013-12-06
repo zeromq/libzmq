@@ -32,6 +32,7 @@
 
 #include <string.h>
 #include <new>
+#include <sstream>
 
 #include "stream_engine.hpp"
 #include "io_thread.hpp"
@@ -84,8 +85,34 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
     //  Put the socket into non-blocking mode.
     unblock_socket (s);
 
-    if (!get_peer_ip_address (s, peer_address))
+    int family = get_peer_ip_address (s, peer_address);
+    if (family == 0)
         peer_address = "";
+#if defined ZMQ_HAVE_SO_PEERCRED
+    else if (family == PF_UNIX && options.zap_ipc_creds) {
+        struct ucred cred;
+        socklen_t size = sizeof (cred);
+        if (!getsockopt (s, SOL_SOCKET, SO_PEERCRED, &cred, &size)) {
+            std::ostringstream buf;
+            buf << ":" << cred.uid << ":" << cred.gid << ":" << cred.pid;
+            peer_address += buf.str ();
+        }
+    }
+#elif defined ZMQ_HAVE_LOCAL_PEERCRED
+    else if (family == PF_UNIX && options.zap_ipc_creds) {
+        struct xucred cred;
+        socklen_t size = sizeof (cred);
+        if (!getsockopt (s, 0, LOCAL_PEERCRED, &cred, &size)
+                && cred.cr_version == XUCRED_VERSION) {
+            std::ostringstream buf;
+            buf << ":" << cred.cr_uid << ":";
+            if (cred.cr_ngroups > 0)
+                buf << cred.cr_groups[0];
+            buf << ":";
+            peer_address += buf.str ();
+        }
+    }
+#endif
 
 #ifdef SO_NOSIGPIPE
     //  Make sure that SIGPIPE signal is not generated when writing to a
