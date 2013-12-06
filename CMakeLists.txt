@@ -40,6 +40,7 @@ include(CheckCXXCompilerFlag)
 include(CheckCSourceCompiles)
 include(CheckCSourceRuns)
 include(CMakeDependentOption)
+include(CheckCXXSymbolExists)
 
 check_include_files(ifaddrs.h ZMQ_HAVE_IFADDRS)
 check_include_files(windows.h ZMQ_HAVE_WINDOWS)
@@ -50,6 +51,9 @@ check_library_exists(ws2_32 printf "" HAVE_WS2_32) # TODO: Why doesn't something
 check_library_exists(ws2 printf "" HAVE_WS2)
 check_library_exists(rpcrt4 printf "" HAVE_RPCRT4) # UuidCreateSequential
 check_library_exists(iphlpapi printf "" HAVE_IPHLAPI) # GetAdaptersAddresses
+
+check_cxx_symbol_exists(SO_PEERCRED sys/socket.h ZMQ_HAVE_SO_PEERCRED)
+check_cxx_symbol_exists(LOCAL_PEERCRED sys/socket.h ZMQ_HAVE_LOCAL_PEERCRED)
 
 find_library(RT_LIBRARY rt)
 
@@ -630,6 +634,7 @@ list(APPEND tests
         test_abstract_ipc
         test_fork
         test_proxy
+        test_filter_ipc
 )
 endif()
 

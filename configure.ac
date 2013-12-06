@@ -349,11 +349,11 @@ if test "x$zmq_disable_eventfd" != "xyes"; then
                      [AC_DEFINE(ZMQ_HAVE_EVENTFD, 1, [Have eventfd extension.])])
 fi
 
-AC_CHECK_DECLS([SO_PEERCRED], [AC_DEFINE(ZMQ_HAVE_SO_PEERCRED, 1, [Have SO_PEERCRED socket option])], [], [#include <sys/socket.h>])
-AC_CHECK_DECLS([LOCAL_PEERCRED], [AC_DEFINE(ZMQ_HAVE_LOCAL_PEERCRED, 1, [Have LOCAL_PEERCRED socket option])], [], [#include <sys/socket.h>])
-
 # Use c++ in subsequent tests
 AC_LANG_PUSH(C++)
+
+AC_CHECK_DECLS([SO_PEERCRED], [AC_DEFINE(ZMQ_HAVE_SO_PEERCRED, 1, [Have SO_PEERCRED socket option])], [], [#include <sys/socket.h>])
+AC_CHECK_DECLS([LOCAL_PEERCRED], [AC_DEFINE(ZMQ_HAVE_LOCAL_PEERCRED, 1, [Have LOCAL_PEERCRED socket option])], [], [#include <sys/socket.h>])
 
 AC_HEADER_STDBOOL
 AC_C_CONST

@@ -19,6 +19,9 @@
 #cmakedefine ZMQ_HAVE_EVENTFD
 #cmakedefine ZMQ_HAVE_IFADDRS
 
+#cmakedefine ZMQ_HAVE_SO_PEERCRED
+#cmakedefine ZMQ_HAVE_LOCAL_PEERCRED
+
 #cmakedefine ZMQ_HAVE_SOCK_CLOEXEC
 #cmakedefine ZMQ_HAVE_SO_KEEPALIVE
 #cmakedefine ZMQ_HAVE_TCP_KEEPCNT
