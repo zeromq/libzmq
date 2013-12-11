@@ -69,6 +69,7 @@
 
 #if defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
+#include <tchar.h>
 #else
 #include <unistd.h>
 #include <netinet/tcp.h>
@@ -309,7 +310,11 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     HANDLE sync = NULL;
 
     //  Create critical section only if using fixed signaler port
-    if (signaler_port != 0) {
+    //  Use problematic Event implementation for compatibility if using old port 5905.
+    //  Otherwise use Mutex implementation.
+    int event_signaler_port = 5905;
+
+    if (signaler_port == event_signaler_port) {
 #       if !defined _WIN32_WCE
         sync = CreateEvent (&sa, FALSE, TRUE, TEXT ("Global\\zmq-signaler-port-sync"));
 #       else
@@ -318,6 +323,20 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
         if (sync == NULL && GetLastError () == ERROR_ACCESS_DENIED)
             sync = OpenEvent (SYNCHRONIZE | EVENT_MODIFY_STATE,
                               FALSE, TEXT ("Global\\zmq-signaler-port-sync"));
+
+        win_assert (sync != NULL);
+    }
+    else if (signaler_port != 0) {
+        TCHAR mutex_name[64];
+        _stprintf (mutex_name, TEXT ("Global\\zmq-signaler-port-%d"), signaler_port);
+
+#       if !defined _WIN32_WCE
+        sync = CreateMutex (&sa, FALSE, mutex_name);
+#       else
+        sync = CreateMutex (NULL, FALSE, mutex_name);
+#       endif
+        if (sync == NULL && GetLastError () == ERROR_ACCESS_DENIED)
+            sync = OpenMutex (SYNCHRONIZE, FALSE, mutex_name);
 
         win_assert (sync != NULL);
     }
@@ -361,7 +380,7 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     if (sync != NULL) {
         //  Enter the critical section.
         DWORD dwrc = WaitForSingleObject (sync, INFINITE);
-        zmq_assert (dwrc == WAIT_OBJECT_0);
+        zmq_assert (dwrc == WAIT_OBJECT_0 || dwrc == WAIT_ABANDONED);
     }
 
     //  Bind listening socket to signaler port.
@@ -395,7 +414,11 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
 
     if (sync != NULL) {
         //  Exit the critical section.
-        BOOL brc = SetEvent (sync);
+        BOOL brc;
+        if (signaler_port == event_signaler_port)
+            brc = SetEvent (sync);
+        else
+            brc = ReleaseMutex (sync);
         win_assert (brc != 0);
 
         //  Release the kernel object
