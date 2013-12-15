@@ -86,6 +86,7 @@ tests/test_many_sockets
 tests/test_diffserv
 tests/test*.log
 tests/test*.trs
+tests/test_zap_ipc_creds
 src/platform.hpp*
 src/stamp-h1
 perf/local_lat
