@@ -546,6 +546,18 @@ int zmq::socket_base_t::connect (const char *addr_)
 
         return 0;
     }
+    bool is_single_connect = (options.type == ZMQ_DEALER ||
+                              options.type == ZMQ_SUB ||
+                              options.type == ZMQ_REQ);
+    if (unlikely (is_single_connect)) {
+        endpoints_t::iterator it = endpoints.find (addr_);
+        if (it != endpoints.end ()) {
+            // There is no valid use for multiple connects for SUB-PUB nor
+            // DEALER-ROUTER nor REQ-REP. Multiple connects produces
+            // nonsensical results.
+            return 0;
+        }
+    }
 
     //  Choose the I/O thread to run the session in.
     io_thread_t *io_thread = choose_io_thread (options.affinity);
