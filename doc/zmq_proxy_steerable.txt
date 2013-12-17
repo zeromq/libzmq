@@ -3,7 +3,7 @@ zmq_proxy_steerable(3)
 
 NAME
 ----
-zmq_proxy_steerable - start built-in 0MQ proxy with STOP/RESUME/TERMINATE 
+zmq_proxy_steerable - start built-in 0MQ proxy with PAUSE/RESUME/TERMINATE 
 control flow
 
 
@@ -21,8 +21,8 @@ for the general description and usage. We describe here only the additional
 control flow provided by the socket passed as the fourth argument "control".
 
 If the control socket is not NULL, the proxy supports control flow. If 
-'SUSPEND\0' is received on this socket, the proxy suspends its activities. If 
-'RESUME\0' is received, it goes on. If 'TERMINATE\0' is received, it terminates
+'PAUSE' is received on this socket, the proxy suspends its activities. If 
+'RESUME' is received, it goes on. If 'TERMINATE' is received, it terminates
 smoothly. At start, the proxy runs normally as if zmq_proxy was used.
 
 If the control socket is NULL, the function behave exactly as if zmq_proxy
@@ -69,12 +69,12 @@ zmq_proxy_steerable (frontend, backend, NULL, control);
 void *control = zmq_socket (context, ZMQ_PUB);
 assert (control);
 assert (zmq_bind (control, "tcp://*:5557") == 0);
-// stop the proxy
-assert (zmq_send (control, "STOP", 5, 0) == 0);
+// pause the proxy
+assert (zmq_send (control, "PAUSE", 5, 0) == 0);
 // resume the proxy
-assert (zmq_send (control, "RESUME", 7, 0) == 0);
+assert (zmq_send (control, "RESUME", 6, 0) == 0);
 // terminate the proxy
-assert (zmq_send (control, "TERMINATE", 10, 0) == 0);
+assert (zmq_send (control, "TERMINATE", 9, 0) == 0);
 ---
 
 
