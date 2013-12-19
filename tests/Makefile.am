@@ -18,6 +18,7 @@ noinst_PROGRAMS = test_system \
                   test_last_endpoint \
                   test_term_endpoint \
                   test_monitor \
+                  test_resource \
                   test_router_mandatory \
                   test_router_handover \
                   test_probe_router \
@@ -81,6 +82,7 @@ test_immediate_SOURCES = test_immediate.cpp
 test_last_endpoint_SOURCES = test_last_endpoint.cpp
 test_term_endpoint_SOURCES = test_term_endpoint.cpp
 test_monitor_SOURCES = test_monitor.cpp
+test_resource_SOURCES = test_resource.cpp
 test_router_mandatory_SOURCES = test_router_mandatory.cpp
 test_router_handover_SOURCES = test_router_handover.cpp
 test_probe_router_SOURCES = test_probe_router.cpp
@@ -129,7 +131,7 @@ endif
 
 #  Run the test cases
 TESTS = $(noinst_PROGRAMS)
-XFAIL_TESTS =
+XFAIL_TESTS = test_resource
 
 if !ON_LINUX
 XFAIL_TESTS += test_abstract_ipc
