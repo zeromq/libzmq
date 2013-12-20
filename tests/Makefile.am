@@ -44,6 +44,7 @@ noinst_PROGRAMS = test_system \
                   test_proxy \
                   test_abstract_ipc \
                   test_many_sockets \
+                  test_ipc_wildcard \
                   test_diffserv
 
 if !ON_MINGW
@@ -108,6 +109,7 @@ test_issue_566_SOURCES = test_issue_566.cpp
 test_proxy_SOURCES = test_proxy.cpp
 test_abstract_ipc_SOURCES = test_abstract_ipc.cpp
 test_many_sockets_SOURCES = test_many_sockets.cpp
+test_ipc_wildcard_SOURCES = test_ipc_wildcard.cpp
 test_diffserv_SOURCES = test_diffserv.cpp
 if !ON_MINGW
 test_shutdown_stress_SOURCES = test_shutdown_stress.cpp
