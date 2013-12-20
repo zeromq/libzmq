@@ -125,9 +125,11 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
     //  Allow wildcard file
     if (addr [0] == '*') {
         char buffer [12] = "2134XXXXXX";
-        if (mkstemp (buffer) == -1)
+        int fd = mkstemp (buffer);
+        if (fd == -1)
             return -1;
         addr.assign (buffer);
+        ::close (fd);
     }
 
     //  Get rid of the file associated with the UNIX domain socket that

@@ -22,6 +22,7 @@ autom4te.cache
 .*~
 tools/curve_keygen.o
 tools/curve_keygen
+tests/test_ipc_wildcard
 tests/test_issue_566
 tests/test_ctx_destroy
 tests/test_term_endpoint
