@@ -112,6 +112,7 @@ int zmq::router_t::xsetsockopt (int option_, const void *optval_,
                 return 0;
             }
             break;
+            
         case ZMQ_ROUTER_HANDOVER: 
             if (is_int && value >= 0) {
                 handover = (value != 0);

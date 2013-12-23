@@ -10,7 +10,7 @@ control flow
 SYNOPSIS
 --------
 *int zmq_proxy_steerable (const void '*frontend', const void '*backend', 
-							const void '*capture', const void '*control');*
+     const void '*capture', const void '*control');*
 
 
 DESCRIPTION
@@ -54,14 +54,17 @@ void *backend = zmq_socket (context, ZMQ_DEALER);
 assert (frontend);
 void *control = zmq_socket (context, ZMQ_SUB);
 assert (control);
+
 //  Bind sockets to TCP ports
 assert (zmq_bind (frontend, "tcp://*:5555") == 0);
 assert (zmq_bind (backend, "tcp://*:5556") == 0);
 assert (zmq_connect (control, "tcp://*:5557") == 0);
+
 // Subscribe to the control socket since we have chosen SUB here
 assert (zmq_setsockopt (control, ZMQ_SUBSCRIBE, "", 0));
-//  Start the queue proxy, which runs until ETERM or "TERMINATE" received on
-the control socket
+
+//  Start the queue proxy, which runs until ETERM or "TERMINATE" 
+//  received on the control socket
 zmq_proxy_steerable (frontend, backend, NULL, control);
 ----
 .Set up a controller in another node, process or whatever
@@ -69,10 +72,13 @@ zmq_proxy_steerable (frontend, backend, NULL, control);
 void *control = zmq_socket (context, ZMQ_PUB);
 assert (control);
 assert (zmq_bind (control, "tcp://*:5557") == 0);
+
 // pause the proxy
 assert (zmq_send (control, "PAUSE", 5, 0) == 0);
+
 // resume the proxy
 assert (zmq_send (control, "RESUME", 6, 0) == 0);
+
 // terminate the proxy
 assert (zmq_send (control, "TERMINATE", 9, 0) == 0);
 ---

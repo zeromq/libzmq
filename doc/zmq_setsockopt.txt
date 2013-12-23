@@ -419,6 +419,7 @@ Specifically, the first peer to connect with that identity will be terminated
 and the second peer will receive any subsequent messages routed to that
 identity.
 
+[horizontal]
 Option value type:: int
 Option value unit:: 0, 1
 Default value:: 0
