@@ -354,10 +354,10 @@ socket identity using the ZMQ_IDENTITY zmq_getsockopt call.
 To close a specific client connection, as a server, send the identity frame
 followed by a zero-length message (see EXAMPLE section).
 
-The ZMQ_MSGMORE flag is ignored on data frames. You must send one identity frame
+The ZMQ_SNDMORE flag is ignored on data frames. You must send one identity frame
 followed by one data frame.
 
-Also, please note that omitting the ZMQ_MSGMORE flag will prevent sending further
+Also, please note that omitting the ZMQ_SNDMORE flag will prevent sending further
 data (from any client) on the same socket.
 
 [horizontal]
