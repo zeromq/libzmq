@@ -165,6 +165,7 @@
  
 #include <winsock2.h>
 #include <mswsock.h>
+#include <Mstcpip.h>
 
 #include <ws2tcpip.h>
 #include <ipexport.h>
