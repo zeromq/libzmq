@@ -446,7 +446,7 @@ ZMQ_ROUTER_RAW: switch ROUTER socket to raw mode
 Sets the raw mode on the ROUTER, when set to 1. When the ROUTER socket is in
 raw mode, and when using the tcp:// transport, it will read and write TCP data
 without 0MQ framing. This lets 0MQ applications talk to non-0MQ applications.
-When using raw mode, you cannot set explicit identities, and the ZMQ_MSGMORE
+When using raw mode, you cannot set explicit identities, and the ZMQ_SNDMORE
 flag is ignored when sending data messages. In raw mode you can close a specific
 connection by sending it a zero-length message (following the identity frame).
 
