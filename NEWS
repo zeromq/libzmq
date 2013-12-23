@@ -4,6 +4,8 @@
 Bug Fixes
 ---------
 
+* Fixed #797; fixed setting TCP keepalive on Windows.
+
 * Fixed #775; compile error on Windows.
 
 * Fixed #763; when talking to a ZMTP v1 peer (libzmq 2.2), a socket would
