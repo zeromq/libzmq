@@ -135,16 +135,16 @@ Applicable socket types:: ZMQ_SUB
 
 ZMQ_IDENTITY: Set socket identity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_IDENTITY' option shall set the identity of the specified 'socket'.
-Socket identity is used only by request/reply pattern. Namely, it can be used
-in tandem with ROUTER socket to route messages to the peer with specific
-identity.
+The 'ZMQ_IDENTITY' option shall set the identity of the specified 'socket'
+when connecting to a ROUTER socket. The identity should be from 1 to 255
+bytes long and MAY NOT start with binary zero.
 
-Identity should be at least one byte and at most 255 bytes long. Identities
-starting with binary zero are reserved for use by 0MQ infrastructure.
-
-If two peers use the same identity when connecting to a third peer, the
-results shall be undefined.
+If two clients use the same identity when connecting to a ROUTER, the
+results shall depend on the ZMQ_ROUTER_HANDOVER option setting. If that
+is not set (or set to the default of zero), the ROUTER socket shall reject
+clients trying to connect with an already-used identity. If that option
+is set to 1, the ROUTER socket shall hand-over the connection to the new
+client and disconnect the existing one.
 
 [horizontal]
 Option value type:: binary data
@@ -408,16 +408,15 @@ Option value unit:: boolean
 Default value:: 0 (false)
 Applicable socket types:: all, only for connection-oriented transports.
 
-ZMQ_ROUTER_HANDOVER: handle peer identity name collisions on ROUTER sockets
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sets the ROUTER socket behavior when it encounters peers with the same identity.
-By default, if two peers with the same identity connect to the same ROUTER
-socket the results will be undefined. A value of `1` will cause the ROUTER
-socket to reassign the identity upon encountering an identity name collision.
-Specifically, the first peer to connect with that identity will be terminated
-and the second peer will receive any subsequent messages routed to that
-identity.
+ZMQ_ROUTER_HANDOVER: handle duplicate client identities on ROUTER sockets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+If two clients use the same identity when connecting to a ROUTER, the
+results shall depend on the ZMQ_ROUTER_HANDOVER option setting. If that
+is not set (or set to the default of zero), the ROUTER socket shall reject
+clients trying to connect with an already-used identity. If that option
+is set to 1, the ROUTER socket shall hand-over the connection to the new
+client and disconnect the existing one.
 
 [horizontal]
 Option value type:: int
