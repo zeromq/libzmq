@@ -89,7 +89,8 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
     if (family == 0)
         peer_address = "";
 #if defined ZMQ_HAVE_SO_PEERCRED
-    else if (family == PF_UNIX && options.zap_ipc_creds) {
+    else
+    if (family == PF_UNIX) {
         struct ucred cred;
         socklen_t size = sizeof (cred);
         if (!getsockopt (s, SOL_SOCKET, SO_PEERCRED, &cred, &size)) {
@@ -99,7 +100,8 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
         }
     }
 #elif defined ZMQ_HAVE_LOCAL_PEERCRED
-    else if (family == PF_UNIX && options.zap_ipc_creds) {
+    else
+    if (family == PF_UNIX) {
         struct xucred cred;
         socklen_t size = sizeof (cred);
         if (!getsockopt (s, 0, LOCAL_PEERCRED, &cred, &size)
