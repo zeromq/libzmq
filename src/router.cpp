@@ -36,7 +36,7 @@ zmq::router_t::router_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     //  raw_sock functionality in ROUTER is deprecated
     raw_sock (false),       
     probe_router (false),
-    handover(false)
+    handover (false)
 {
     options.type = ZMQ_ROUTER;
     options.recv_identity = true;
@@ -402,14 +402,11 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
             outpipes_t::iterator it = outpipes.find (identity);
             msg.close ();
 
-            if (it != outpipes.end ())
-            {
-                if (!handover) {
-                    //  Ignore peers with duplicate ID.
+            if (it != outpipes.end ()) {
+                if (!handover)
+                    //  Ignore peers with duplicate ID
                     return false;
-                }
-                else
-                {
+                else {
                     //  We will allow the new connection to take over this
                     //  identity. Temporarily assign a new identity to the 
                     //  existing pipe so we can terminate it asynchronously.
