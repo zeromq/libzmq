@@ -2,6 +2,7 @@
 ================================================
 
 * LIBZMQ-39  Assertion failure "Bad file descriptor" during shutdown (rare)
+* LIBZMQ-576 Crash closing a socket after zmq_msg_send returns EAGAIN (reverts LIBZMQ-497)
 
 
 0MQ version 3.2.4 stable, released on 2013/09/20
