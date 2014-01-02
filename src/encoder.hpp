@@ -127,11 +127,6 @@ namespace zmq
             (static_cast <T*> (this)->*next) ();
         }
 
-        inline bool has_data ()
-        {
-            return to_write > 0;
-        }
-
     protected:
 
         //  Prototype of state machine action.

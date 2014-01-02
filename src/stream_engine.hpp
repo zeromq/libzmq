@@ -162,7 +162,6 @@ namespace zmq
         std::string endpoint;
 
         bool plugged;
-        bool terminating;
 
         int (stream_engine_t::*read_msg) (msg_t *msg_);
 
