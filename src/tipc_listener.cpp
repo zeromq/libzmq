@@ -1,5 +1,5 @@
  /*
-    Copyright (c) 2013 Ericsson AB
+    Copyright (c) 2007-2013 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
