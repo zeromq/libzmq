@@ -11,6 +11,8 @@ Bug Fixes
 * Fixed #763; when talking to a ZMTP v1 peer (libzmq 2.2), a socket would
   send an extra identity frame at the start of the connection.
 
+* Fixed LIBZMQ-576 - Crash closing a socket after zmq_msg_send returns
+  EAGAIN (reverts LIBZMQ-497)
 
 0MQ version 4.0.3 stable, released on 2013/11/24
 ================================================
