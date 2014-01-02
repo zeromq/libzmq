@@ -53,8 +53,7 @@ noinst_PROGRAMS += test_shutdown_stress \
                    test_reqrep_ipc \
                    test_timeo \
                    test_fork \
-                   test_filter_ipc \
-                   test_zap_ipc_creds
+                   test_filter_ipc 
 endif
 
 if BUILD_TIPC

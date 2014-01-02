@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2013 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -51,9 +51,6 @@ zmq::options_t::options_t () :
     tcp_keepalive_cnt (-1),
     tcp_keepalive_idle (-1),
     tcp_keepalive_intvl (-1),
-#   if defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
-    zap_ipc_creds (false),
-#   endif
     mechanism (ZMQ_NULL),
     as_server (0),
     socket_id (0),
@@ -261,13 +258,6 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             break;
 
 #       if defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
-        case ZMQ_ZAP_IPC_CREDS:
-            if (is_int && (value == 0 || value == 1)) {
-                zap_ipc_creds = (value != 0);
-                return 0;
-            }
-            break;
-
         case ZMQ_IPC_FILTER_UID:
             if (optvallen_ == 0 && optval_ == NULL) {
                 ipc_uid_accept_filters.clear ();
@@ -600,15 +590,6 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
                 return 0;
             }
             break;
-
-#       if defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
-        case ZMQ_ZAP_IPC_CREDS:
-            if (is_int) {
-                *value = zap_ipc_creds;
-                return 0;
-            }
-            break;
-#       endif
 
         case ZMQ_MECHANISM:
             if (is_int) {

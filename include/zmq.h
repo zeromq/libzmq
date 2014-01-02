@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2013 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -293,7 +293,6 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 #define ZMQ_IPC_FILTER_PID 58
 #define ZMQ_IPC_FILTER_UID 59
 #define ZMQ_IPC_FILTER_GID 60
-#define ZMQ_ZAP_IPC_CREDS 61
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1
