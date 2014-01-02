@@ -69,7 +69,6 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
     options (options_),
     endpoint (endpoint_),
     plugged (false),
-    terminating (false),
     read_msg (&stream_engine_t::read_identity),
     write_msg (&stream_engine_t::write_identity),
     io_error (false),
@@ -212,11 +211,6 @@ void zmq::stream_engine_t::unplug ()
 
 void zmq::stream_engine_t::terminate ()
 {
-    if (!terminating && encoder && encoder->has_data ()) {
-        //  Give io_thread a chance to send in the buffer
-        terminating = true;
-        return;
-    }
     unplug ();
     delete this;
 }
@@ -343,8 +337,6 @@ void zmq::stream_engine_t::out_event ()
     //  this is necessary to prevent losing incoming messages.
     if (nbytes == -1) {
         reset_pollout (handle);
-        if (unlikely (terminating))
-            terminate ();
         return;
     }
 
@@ -356,10 +348,6 @@ void zmq::stream_engine_t::out_event ()
     if (unlikely (handshaking))
         if (outsize == 0)
             reset_pollout (handle);
-
-    if (unlikely (terminating))
-        if (outsize == 0)
-            terminate ();
 }
 
 void zmq::stream_engine_t::restart_output ()
