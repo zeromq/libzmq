@@ -25,7 +25,7 @@ int main (void)
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
-    void *sb = zmq_socket (ctx, ZMQ_PAIR);
+    void *sb = zmq_socket (ctx, ZMQ_DEALER);
     assert (sb);
     int rc = zmq_bind (sb, "ipc://@/tmp/tester");
     assert (rc == 0);
@@ -37,7 +37,7 @@ int main (void)
     rc = strncmp(endpoint, "ipc://@/tmp/tester", size);
     assert (rc == 0);
 
-    void *sc = zmq_socket (ctx, ZMQ_PAIR);
+    void *sc = zmq_socket (ctx, ZMQ_DEALER);
     assert (sc);
     rc = zmq_connect (sc, "ipc://@/tmp/tester");
     assert (rc == 0);
