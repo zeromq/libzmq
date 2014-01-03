@@ -60,7 +60,7 @@ static void run_test (int opt, T optval, int expected_error, int bounce_test)
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
-    void *sb = zmq_socket (ctx, ZMQ_PAIR);
+    void *sb = zmq_socket (ctx, ZMQ_DEALER);
     assert (sb);
 
     if (opt) {
@@ -73,7 +73,7 @@ static void run_test (int opt, T optval, int expected_error, int bounce_test)
         }
     }
 
-    void *sc = zmq_socket (ctx, ZMQ_PAIR);
+    void *sc = zmq_socket (ctx, ZMQ_DEALER);
     assert (sc);
 
     // If a test fails, don't hang for too long
@@ -91,10 +91,11 @@ static void run_test (int opt, T optval, int expected_error, int bounce_test)
     assert (rc == 0);
 
     if (bounce_test) {
-        int rc = zmq_bind (sb, "ipc://@/tmp/test");
+        const char* endpoint = "ipc://test_filter_ipc.sock";
+        int rc = zmq_bind (sb, endpoint);
         assert (rc == 0);
 
-        rc = zmq_connect (sc, "ipc://@/tmp/test");
+        rc = zmq_connect (sc, endpoint);
         assert (rc == 0);
         
         if (bounce_test > 0)
