@@ -67,6 +67,7 @@ int zmq::msg_t::init_size (size_t size_)
         u.lmsg.content->size = size_;
         u.lmsg.content->ffn = NULL;
         u.lmsg.content->hint = NULL;
+        u.lmsg.content->fd = -1;
         new (&u.lmsg.content->refcnt) zmq::atomic_counter_t ();
     }
     return 0;
@@ -99,6 +100,7 @@ int zmq::msg_t::init_data (void *data_, size_t size_, msg_free_fn *ffn_,
         u.lmsg.content->size = size_;
         u.lmsg.content->ffn = ffn_;
         u.lmsg.content->hint = hint_;
+        u.lmsg.content->fd = -1;
         new (&u.lmsg.content->refcnt) zmq::atomic_counter_t ();
     }
     return 0;
@@ -245,6 +247,19 @@ void zmq::msg_t::set_flags (unsigned char flags_)
 void zmq::msg_t::reset_flags (unsigned char flags_)
 {
     u.base.flags &= ~flags_;
+}
+
+zmq::fd_t zmq::msg_t::fd ()
+{
+  if (u.base.type == type_lmsg)
+    return u.lmsg.content->fd;
+  return -1;
+}
+ 
+void zmq::msg_t::set_fd (fd_t fd_)
+{
+  if (u.base.type == type_lmsg)
+    u.lmsg.content->fd = fd_;
 }
 
 bool zmq::msg_t::is_identity () const

@@ -640,6 +640,8 @@ int zmq_msg_get (zmq_msg_t *msg_, int option_)
     switch (option_) {
         case ZMQ_MORE:
             return (((zmq::msg_t*) msg_)->flags () & zmq::msg_t::more)? 1: 0;
+        case ZMQ_SRCFD:
+            return ((zmq::msg_t*) msg_)->fd ();
         default:
             errno = EINVAL;
             return -1;

@@ -20,6 +20,7 @@
 #include <new>
 
 #include <string>
+#include <stdio.h>
 
 #include "platform.hpp"
 #include "tcp_listener.hpp"
@@ -89,6 +90,9 @@ void zmq::tcp_listener_t::in_event ()
 
     tune_tcp_socket (fd);
     tune_tcp_keepalives (fd, options.tcp_keepalive, options.tcp_keepalive_cnt, options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
+
+    // remember our fd for ZMQ_SRCFD in messages
+    socket->set_fd(fd);
 
     //  Create the engine object for this connection.
     stream_engine_t *engine = new (std::nothrow)

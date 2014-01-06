@@ -296,6 +296,7 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1
+#define ZMQ_SRCFD 2
 
 /*  Send/recv options.                                                        */
 #define ZMQ_DONTWAIT 1
