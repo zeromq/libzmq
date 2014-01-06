@@ -118,7 +118,7 @@ namespace zmq
     private:
 
         //  Type of the underlying lock-free pipe.
-        typedef ypipe_base_t <msg_t, message_pipe_granularity> upipe_t;
+        typedef ypipe_base_t <msg_t> upipe_t;
 
         //  Command handlers.
         void process_activate_read ();

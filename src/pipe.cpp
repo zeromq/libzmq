@@ -32,8 +32,8 @@ int zmq::pipepair (class object_t *parents_ [2], class pipe_t* pipes_ [2],
     //   Creates two pipe objects. These objects are connected by two ypipes,
     //   each to pass messages in one direction.
 
-    typedef ypipe_t      <msg_t, message_pipe_granularity> upipe_normal_t;
-    typedef ypipe_conflate_t <msg_t, message_pipe_granularity> upipe_conflate_t;
+    typedef ypipe_t <msg_t, message_pipe_granularity> upipe_normal_t;
+    typedef ypipe_conflate_t <msg_t> upipe_conflate_t;
 
     pipe_t::upipe_t *upipe1;
     if(conflate_ [0])
@@ -469,7 +469,7 @@ void zmq::pipe_t::hiccup ()
             ypipe_t <msg_t, message_pipe_granularity> ();
     else
         inpipe = new (std::nothrow)
-            ypipe_conflate_t <msg_t, message_pipe_granularity> ();
+            ypipe_conflate_t <msg_t> ();
 
     alloc_assert (inpipe);
     in_active = true;
