@@ -117,10 +117,6 @@ int zmq::session_base_t::pull_msg (msg_t *msg_)
         return -1;
     }
 
-//    if (socket != NULL && socket->fd() >= 0) {
-//        msg_->set_fd(socket->fd());
-//    }
-
     incomplete_in = msg_->flags () & msg_t::more ? true : false;
 
     return 0;
