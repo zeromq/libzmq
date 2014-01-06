@@ -28,7 +28,7 @@ namespace zmq
     // classes, one is selected according to a the conflate
     // socket option
 
-    template <typename T, int N> class ypipe_base_t
+    template <typename T> class ypipe_base_t
     {
     public:
         virtual ~ypipe_base_t () {}

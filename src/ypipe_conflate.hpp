@@ -34,7 +34,7 @@ namespace zmq
     //  reader_awake flag is needed here to mimic ypipe delicate behaviour
     //  around the reader being asleep (see 'c' pointer being NULL in ypipe.hpp)
 
-    template <typename T, int N> class ypipe_conflate_t : public ypipe_base_t<T,N>
+    template <typename T> class ypipe_conflate_t : public ypipe_base_t <T>
     {
     public:
 
