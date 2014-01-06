@@ -136,6 +136,7 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t tid_, int sid_) :
     last_tsc (0),
     ticks (0),
     rcvmore (false),
+    file_desc(-1),
     monitor_socket (NULL),
     monitor_events (0)
 {
@@ -826,6 +827,10 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
     if (unlikely (rc != 0 && errno != EAGAIN))
         return -1;
 
+    // set file descriptor
+    if (file_desc >= 0)
+      msg_->set_fd(file_desc);
+
     //  If we have the message, return immediately.
     if (rc == 0) {
         extract_flags (msg_);
@@ -1186,6 +1191,16 @@ int zmq::socket_base_t::monitor (const char *addr_, int events_)
     if (rc == -1)
          stop_monitor ();
     return rc;
+}
+
+void zmq::socket_base_t::set_fd(zmq::fd_t fd_)
+{
+    file_desc = fd_;
+}
+
+zmq::fd_t zmq::socket_base_t::fd()
+{
+    return file_desc;
 }
 
 void zmq::socket_base_t::event_connected (std::string &addr_, int fd_)

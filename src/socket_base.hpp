@@ -106,6 +106,9 @@ namespace zmq
 
         int monitor (const char *endpoint_, int events_);
 
+        void set_fd(fd_t fd_);
+        fd_t fd();
+
         void event_connected (std::string &addr_, int fd_);
         void event_connect_delayed (std::string &addr_, int err_);
         void event_connect_retried (std::string &addr_, int interval_);
@@ -230,6 +233,9 @@ namespace zmq
         //  True if the last message received had MORE flag set.
         bool rcvmore;
 
+        // File descriptor if applicable
+        fd_t file_desc;
+			
         //  Improves efficiency of time measurement.
         clock_t clock;
 
