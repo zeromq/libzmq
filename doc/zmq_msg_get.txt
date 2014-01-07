@@ -25,7 +25,7 @@ Indicates that there are more message frames to follow after the 'message'.
 
 *ZMQ_SRCFD*::
 Returns the file descriptor of the socket the 'message' was read from. This 
-allows application to retrieve the remote endpoint via 'getpeername(2)'.Be 
+allows application to retrieve the remote endpoint via 'getpeername(2)'. Be 
 aware that the respective socket might be closed already, reused even. 
 Currently only implemented for TCP sockets.
 
