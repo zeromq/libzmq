@@ -30,6 +30,7 @@
 
 //  Check whether the sizes of public representation of the message (zmq_msg_t)
 //  and private representation of the message (zmq::msg_t) match.
+
 typedef char zmq_msg_size_check
     [2 * ((sizeof (zmq::msg_t) == sizeof (zmq_msg_t)) != 0) - 1];
 
@@ -43,11 +44,13 @@ int zmq::msg_t::init ()
     u.vsm.type = type_vsm;
     u.vsm.flags = 0;
     u.vsm.size = 0;
+    file_desc = -1;
     return 0;
 }
 
 int zmq::msg_t::init_size (size_t size_)
 {
+    file_desc = -1;
     if (size_ <= max_vsm_size) {
         u.vsm.type = type_vsm;
         u.vsm.flags = 0;
@@ -67,7 +70,6 @@ int zmq::msg_t::init_size (size_t size_)
         u.lmsg.content->size = size_;
         u.lmsg.content->ffn = NULL;
         u.lmsg.content->hint = NULL;
-        u.lmsg.content->fd = -1;
         new (&u.lmsg.content->refcnt) zmq::atomic_counter_t ();
     }
     return 0;
@@ -80,6 +82,8 @@ int zmq::msg_t::init_data (void *data_, size_t size_, msg_free_fn *ffn_,
     //  would occur once the data is accessed
     assert (data_ != NULL || size_ == 0);
     
+    file_desc = -1;
+
     //  Initialize constant message if there's no need to deallocate
     if(ffn_ == NULL) {
         u.cmsg.type = type_cmsg;
@@ -100,7 +104,6 @@ int zmq::msg_t::init_data (void *data_, size_t size_, msg_free_fn *ffn_,
         u.lmsg.content->size = size_;
         u.lmsg.content->ffn = ffn_;
         u.lmsg.content->hint = hint_;
-        u.lmsg.content->fd = -1;
         new (&u.lmsg.content->refcnt) zmq::atomic_counter_t ();
     }
     return 0;
@@ -249,17 +252,14 @@ void zmq::msg_t::reset_flags (unsigned char flags_)
     u.base.flags &= ~flags_;
 }
 
-zmq::fd_t zmq::msg_t::fd ()
+int64_t zmq::msg_t::fd ()
 {
-  if (u.base.type == type_lmsg)
-    return u.lmsg.content->fd;
-  return -1;
+    return file_desc;
 }
- 
-void zmq::msg_t::set_fd (fd_t fd_)
+
+void zmq::msg_t::set_fd (int64_t fd_)
 {
-  if (u.base.type == type_lmsg)
-    u.lmsg.content->fd = fd_;
+    file_desc = fd_;
 }
 
 bool zmq::msg_t::is_identity () const

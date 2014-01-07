@@ -827,12 +827,10 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
     if (unlikely (rc != 0 && errno != EAGAIN))
         return -1;
 
-    // set file descriptor
-    if (file_desc >= 0)
-      msg_->set_fd(file_desc);
-
     //  If we have the message, return immediately.
     if (rc == 0) {
+        if (file_desc >= 0)
+            msg_->set_fd(file_desc);
         extract_flags (msg_);
         return 0;
     }
@@ -849,6 +847,8 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
         rc = xrecv (msg_);
         if (rc < 0)
             return rc;
+        if (file_desc >= 0)
+            msg_->set_fd(file_desc);
         extract_flags (msg_);
         return 0;
     }
@@ -881,6 +881,8 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
         }
     }
 
+    if (file_desc >= 0)
+        msg_->set_fd(file_desc);
     extract_flags (msg_);
     return 0;
 }

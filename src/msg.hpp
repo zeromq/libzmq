@@ -25,7 +25,6 @@
 
 #include "config.hpp"
 #include "atomic_counter.hpp"
-#include "fd.hpp"
 
 //  Signature for free function to deallocate the message content.
 //  Note that it has to be declared as "C" so that it is the same as
@@ -68,8 +67,8 @@ namespace zmq
         unsigned char flags ();
         void set_flags (unsigned char flags_);
         void reset_flags (unsigned char flags_);
-        fd_t fd ();
-        void set_fd (fd_t fd_);
+        int64_t fd ();
+        void set_fd (int64_t fd_);
         bool is_identity () const;
         bool is_delimiter ();
         bool is_vsm ();
@@ -103,7 +102,6 @@ namespace zmq
             msg_free_fn *ffn;
             void *hint;
             zmq::atomic_counter_t refcnt;
-            fd_t fd;
         };
 
         //  Different message types.
@@ -120,6 +118,9 @@ namespace zmq
             type_cmsg = 104,
             type_max = 104
         };
+  
+        // the file descriptor where this message originated, needs to be 64bit due to alignment
+        int64_t file_desc;
 
         //  Note that fields shared between different message types are not
         //  moved to tha parent class (msg_t). This way we ger tighter packing

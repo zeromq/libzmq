@@ -235,7 +235,7 @@ namespace zmq
 
         // File descriptor if applicable
         fd_t file_desc;
-			
+
         //  Improves efficiency of time measurement.
         clock_t clock;
 
