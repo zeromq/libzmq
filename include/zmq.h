@@ -199,7 +199,7 @@ ZMQ_EXPORT int zmq_ctx_destroy (void *context);
 /*  0MQ message definition.                                                   */
 /******************************************************************************/
 
-typedef struct zmq_msg_t {unsigned char _ [32];} zmq_msg_t;
+typedef struct zmq_msg_t {unsigned char _ [40];} zmq_msg_t;
 
 typedef void (zmq_free_fn) (void *data, void *hint);
 

@@ -17,6 +17,7 @@ noinst_PROGRAMS = test_system \
                   test_immediate \
                   test_last_endpoint \
                   test_term_endpoint \
+                  test_srcfd \
                   test_monitor \
                   test_resource \
                   test_router_mandatory \
@@ -81,6 +82,7 @@ test_connect_resolve_SOURCES = test_connect_resolve.cpp
 test_immediate_SOURCES = test_immediate.cpp
 test_last_endpoint_SOURCES = test_last_endpoint.cpp
 test_term_endpoint_SOURCES = test_term_endpoint.cpp
+test_srcfd_SOURCES = test_srcfd.cpp
 test_monitor_SOURCES = test_monitor.cpp
 test_resource_SOURCES = test_resource.cpp
 test_router_mandatory_SOURCES = test_router_mandatory.cpp
