@@ -37,7 +37,7 @@ namespace zmq
         rep_t (zmq::ctx_t *parent_, uint32_t tid_, int sid);
         ~rep_t ();
 
-        //  Overloads of functions from socket_base_t.
+        //  Overrides of functions from socket_base_t.
         int xsend (zmq::msg_t *msg_);
         int xrecv (zmq::msg_t *msg_);
         bool xhas_in ();

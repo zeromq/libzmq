@@ -44,7 +44,7 @@ namespace zmq
 
     protected:
 
-        //  Overloads of functions from socket_base_t.
+        //  Overrides of functions from socket_base_t.
         void xattach_pipe (zmq::pipe_t *pipe_, bool subscribe_to_all_);
         int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
         int xsend (zmq::msg_t *msg_);
