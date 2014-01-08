@@ -125,7 +125,7 @@ int zmq::proxy (
             else {
                 //  This is an API error, we should assert
                 puts ("E: invalid command sent to proxy");
-                assert (false);
+                zmq_assert (false);
             }
         }
         //  Process a request

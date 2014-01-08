@@ -80,7 +80,7 @@ int zmq::msg_t::init_data (void *data_, size_t size_, msg_free_fn *ffn_,
 {
     //  If data is NULL and size is not 0, a segfault
     //  would occur once the data is accessed
-    assert (data_ != NULL || size_ == 0);
+    zmq_assert (data_ != NULL || size_ == 0);
     
     file_desc = -1;
 

@@ -217,7 +217,7 @@ void zmq::stream_engine_t::terminate ()
 
 void zmq::stream_engine_t::in_event ()
 {
-    assert (!io_error);
+    zmq_assert (!io_error);
 
     //  If still handshaking, receive and process the greeting message.
     if (unlikely (handshaking))
