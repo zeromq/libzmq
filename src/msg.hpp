@@ -70,7 +70,7 @@ namespace zmq
         int64_t fd ();
         void set_fd (int64_t fd_);
         bool is_identity () const;
-        bool is_delimiter ();
+        bool is_delimiter () const;
         bool is_vsm ();
         bool is_cmsg ();
 

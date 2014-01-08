@@ -199,7 +199,7 @@ namespace zmq
         blob_t identity;
 
         //  Returns true if the message is delimiter; false otherwise.
-        static bool is_delimiter (msg_t &msg_);
+        static bool is_delimiter (const msg_t &msg_);
 
         //  Computes appropriate low watermark from the given high watermark.
         static int compute_lwm (int hwm_);

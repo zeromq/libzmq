@@ -37,7 +37,7 @@ namespace zmq
         virtual bool flush () = 0;
         virtual bool check_read () = 0;
         virtual bool read (T *value_) = 0;
-        virtual bool probe (bool (*fn)(T &)) = 0;
+        virtual bool probe (bool (*fn)(const T &)) = 0;
     };
 }
 

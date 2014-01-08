@@ -406,7 +406,7 @@ void zmq::pipe_t::terminate (bool delay_)
     }
 }
 
-bool zmq::pipe_t::is_delimiter (msg_t &msg_)
+bool zmq::pipe_t::is_delimiter (const msg_t &msg_)
 {
     return msg_.is_delimiter ();
 }

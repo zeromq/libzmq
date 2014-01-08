@@ -111,7 +111,7 @@ namespace zmq
             return has_msg;
         }
 
-        inline bool probe (bool (*fn)(msg_t &))
+        inline bool probe (bool (*fn)(const msg_t &))
         {
             scoped_lock_t lock (sync);
             return (*fn) (*front);
