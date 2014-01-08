@@ -95,7 +95,7 @@ namespace zmq
         void send_reaped ();
         void send_done ();
 
-        //  These handlers can be overloaded by the derived objects. They are
+        //  These handlers can be overrided by the derived objects. They are
         //  called when command arrives from another thread.
         virtual void process_stop ();
         virtual void process_plug ();

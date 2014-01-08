@@ -131,7 +131,7 @@ namespace zmq
             bool subscribe_to_all_ = false) = 0;
 
         //  The default implementation assumes there are no specific socket
-        //  options for the particular socket type. If not so, overload this
+        //  options for the particular socket type. If not so, override this
         //  method.
         virtual int xsetsockopt (int option_, const void *optval_,
             size_t optvallen_);

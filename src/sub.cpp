@@ -68,13 +68,13 @@ int zmq::sub_t::xsetsockopt (int option_, const void *optval_,
 
 int zmq::sub_t::xsend (msg_t *)
 {
-    //  Overload the XSUB's send.
+    //  Override the XSUB's send.
     errno = ENOTSUP;
     return -1;
 }
 
 bool zmq::sub_t::xhas_out ()
 {
-    //  Overload the XSUB's send.
+    //  Override the XSUB's send.
     return false;
 }
