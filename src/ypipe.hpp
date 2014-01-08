@@ -166,7 +166,7 @@ namespace zmq
         //  Applies the function fn to the first elemenent in the pipe
         //  and returns the value returned by the fn.
         //  The pipe mustn't be empty or the function crashes.
-        inline bool probe (bool (*fn)(T &))
+        inline bool probe (bool (*fn)(const T &))
         {
                 bool rc = check_read ();
                 zmq_assert (rc);

@@ -267,7 +267,7 @@ bool zmq::msg_t::is_identity () const
     return (u.base.flags & identity) == identity;
 }
 
-bool zmq::msg_t::is_delimiter ()
+bool zmq::msg_t::is_delimiter () const
 {
     return u.base.type == type_delimiter;
 }
