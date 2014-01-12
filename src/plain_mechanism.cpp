@@ -468,6 +468,9 @@ int zmq::plain_mechanism_t::receive_and_process_zap_reply ()
         goto error;
     }
 
+    //  Save user id
+    set_user_id (msg [5].data (), msg [5].size ());
+
     //  Process metadata frame
     rc = parse_metadata (static_cast <const unsigned char*> (msg [6].data ()),
                          msg [6].size ());

@@ -60,3 +60,8 @@ bool zmq::pull_t::xhas_in ()
 {
     return fq.has_in ();
 }
+
+zmq::blob_t zmq::pull_t::get_credential () const
+{
+    return fq.get_credential ();
+}

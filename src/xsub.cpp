@@ -199,6 +199,11 @@ bool zmq::xsub_t::xhas_in ()
     }
 }
 
+zmq::blob_t zmq::xsub_t::get_credential () const
+{
+    return fq.get_credential ();
+}
+
 bool zmq::xsub_t::match (msg_t *msg_)
 {
     return subscriptions.check ((unsigned char*) msg_->data (), msg_->size ());

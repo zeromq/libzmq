@@ -21,6 +21,7 @@
 #define __ZMQ_FQ_HPP_INCLUDED__
 
 #include "array.hpp"
+#include "blob.hpp"
 #include "pipe.hpp"
 #include "msg.hpp"
 
@@ -45,6 +46,7 @@ namespace zmq
         int recv (msg_t *msg_);
         int recvpipe (msg_t *msg_, pipe_t **pipe_);
         bool has_in ();
+        blob_t get_credential () const;
 
     private:
 
@@ -56,12 +58,20 @@ namespace zmq
         //  beginning of the pipes array.
         pipes_t::size_type active;
 
+        //  Pointer to the last pipe we received message from.
+        //  NULL when no message has been received or the pipe
+        //  has terminated.
+        pipe_t *last_in;
+
         //  Index of the next bound pipe to read a message from.
         pipes_t::size_type current;
 
         //  If true, part of a multipart message was already received, but
         //  there are following parts still waiting in the current pipe.
         bool more;
+
+        //  Holds credential after the last_acive_pipe has terminated.
+        blob_t saved_credential;
 
         fq_t (const fq_t&);
         const fq_t &operator = (const fq_t&);

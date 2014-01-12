@@ -101,6 +101,7 @@ namespace zmq
         int pull_msg_from_session (msg_t *msg_);
         int push_msg_to_session (msg_t *msg);
 
+        int write_credential (msg_t *msg_);
         int pull_and_encode (msg_t *msg_);
         int decode_and_push (msg_t *msg_);
         int push_one_then_decode_and_push (msg_t *msg_);
