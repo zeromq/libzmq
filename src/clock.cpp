@@ -193,7 +193,6 @@ uint64_t zmq::clock_t::rdtsc ()
 #elif defined(__s390__)
     uint64_t tsc;
     asm("\tstck\t%0\n" : "=Q" (tsc) : : "cc");
-    tsc >>= 12;		/* convert to microseconds just to be consistent */
     return(tsc);
 #else
     return 0;
