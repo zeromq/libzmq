@@ -59,6 +59,7 @@ namespace zmq
 
         //  Rollback any message parts that were sent but not yet flushed.
         int rollback ();
+        blob_t get_credential () const;
 
     private:
 

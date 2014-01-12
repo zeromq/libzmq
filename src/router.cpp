@@ -371,6 +371,11 @@ bool zmq::router_t::xhas_out ()
     return true;
 }
 
+zmq::blob_t zmq::router_t::get_credential () const
+{
+    return fq.get_credential ();
+}
+
 bool zmq::router_t::identify_peer (pipe_t *pipe_)
 {
     msg_t msg;

@@ -47,6 +47,16 @@ void zmq::mechanism_t::peer_identity (msg_t *msg_)
     msg_->set_flags (msg_t::identity);
 }
 
+void zmq::mechanism_t::set_user_id (const void *data_, size_t size_)
+{
+    user_id = blob_t (static_cast <const unsigned char*> (data_), size_);
+}
+
+zmq::blob_t zmq::mechanism_t::get_user_id () const
+{
+    return user_id;
+}
+
 const char *zmq::mechanism_t::socket_type_string (int socket_type) const
 {
     static const char *names [] = {"PAIR", "PUB", "SUB", "REQ", "REP",

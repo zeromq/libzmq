@@ -24,7 +24,8 @@
 
 zmq::pair_t::pair_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     socket_base_t (parent_, tid_, sid_),
-    pipe (NULL)
+    pipe (NULL),
+    last_in (NULL)
 {
     options.type = ZMQ_PAIR;
 }
@@ -51,8 +52,13 @@ void zmq::pair_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 
 void zmq::pair_t::xpipe_terminated (pipe_t *pipe_)
 {
-    if (pipe_ == pipe)
+    if (pipe_ == pipe) {
+        if (last_in == pipe) {
+            saved_credential = last_in->get_credential ();
+            last_in = NULL;
+        }
         pipe = NULL;
+    }
 }
 
 void zmq::pair_t::xread_activated (pipe_t *)
@@ -99,6 +105,7 @@ int zmq::pair_t::xrecv (msg_t *msg_)
         errno = EAGAIN;
         return -1;
     }
+    last_in = pipe;
     return 0;
 }
 
@@ -116,4 +123,9 @@ bool zmq::pair_t::xhas_out ()
         return false;
 
     return pipe->check_write ();
+}
+
+zmq::blob_t zmq::pair_t::get_credential () const
+{
+    return last_in? last_in->get_credential (): saved_credential;
 }

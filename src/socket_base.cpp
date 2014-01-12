@@ -1043,6 +1043,11 @@ int zmq::socket_base_t::xrecv (msg_t *)
     return -1;
 }
 
+zmq::blob_t zmq::socket_base_t::get_credential () const
+{
+    return blob_t ();
+}
+
 void zmq::socket_base_t::xread_activated (pipe_t *)
 {
     zmq_assert (false);

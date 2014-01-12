@@ -60,6 +60,10 @@ namespace zmq
 
         void peer_identity (msg_t *msg_);
 
+        void set_user_id (const void *user_id, size_t size);
+
+        blob_t get_user_id () const;
+
     protected:
 
         //  Only used to identify the socket for the Socket-Type
@@ -90,6 +94,8 @@ namespace zmq
     private:
 
         blob_t identity;
+
+        blob_t user_id;
 
         //  Returns true iff socket associated with the mechanism
         //  is compatible with a given socket type 'type_'.
