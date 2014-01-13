@@ -24,6 +24,7 @@
 #ifdef _WIN32
 #include <Winsock2.h>
 #include <Ws2tcpip.h>
+#define usleep(a) Sleep((a) / 1000)
 #else
 #include <sys/types.h>
 #include <sys/socket.h>
