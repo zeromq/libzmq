@@ -25,6 +25,7 @@ noinst_PROGRAMS = test_system \
                   test_probe_router \
                   test_stream \
                   test_stream_empty \
+                  test_stream_disconnect_notifications \
                   test_disconnect_inproc \
                   test_ctx_options \
                   test_ctx_destroy \
@@ -90,6 +91,7 @@ test_router_handover_SOURCES = test_router_handover.cpp
 test_probe_router_SOURCES = test_probe_router.cpp
 test_stream_SOURCES = test_stream.cpp
 test_stream_empty_SOURCES = test_stream_empty.cpp
+test_stream_disconnect_notifications_SOURCES = test_stream_disconnect_notifications.cpp
 test_disconnect_inproc_SOURCES = test_disconnect_inproc.cpp
 test_ctx_options_SOURCES = test_ctx_options.cpp
 test_iov_SOURCES = test_iov.cpp

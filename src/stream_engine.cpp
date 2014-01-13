@@ -780,6 +780,14 @@ int zmq::stream_engine_t::write_subscription_msg (msg_t *msg_)
 
 void zmq::stream_engine_t::error ()
 {
+    if (options.raw_sock) {
+        //  For raw sockets, send a final 0-length message to the application
+        //  so that it knows the peer has been disconnected.
+        msg_t terminator;
+        terminator.init();
+        (this->*write_msg) (&terminator);
+        terminator.close();
+    }
     zmq_assert (session);
     socket->event_disconnected (endpoint, s);
     session->flush ();
