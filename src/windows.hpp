@@ -23,6 +23,9 @@
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
 #endif
+#ifndef NOMINMAX
+#define NOMINMAX          // Macros min(a,b) and max(a,b)
+#endif
 
 //  Set target version to Windows Server 2003, Windows XP/SP1 or higher.
 #ifndef _WIN32_WINNT
