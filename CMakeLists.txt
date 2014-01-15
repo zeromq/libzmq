@@ -635,7 +635,6 @@ list(APPEND tests
         test_abstract_ipc
         test_proxy
         test_filter_ipc
-        test_zap_ipc_creds
 )
 endif()
 
