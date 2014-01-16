@@ -1,4 +1,4 @@
-0MQ version 4.0.4 stable, released on 2013/xx/xx
+0MQ version 4.0.4 stable, released on 2014/xx/xx
 ================================================
 
 Bug Fixes
@@ -13,6 +13,9 @@ Bug Fixes
 
 * Fixed LIBZMQ-576 - Crash closing a socket after zmq_msg_send returns
   EAGAIN (reverts LIBZMQ-497)
+
+* Fixed LIBZMQ-584; subscription filters getting lost on reconnection.
+
 
 0MQ version 4.0.3 stable, released on 2013/11/24
 ================================================
