@@ -466,10 +466,10 @@ void zmq::pipe_t::hiccup ()
     //  Create new inpipe.
     if (conflate)
         inpipe = new (std::nothrow)
-            ypipe_t <msg_t, message_pipe_granularity> ();
+            ypipe_conflate_t <msg_t, message_pipe_granularity> ();
     else
         inpipe = new (std::nothrow)
-            ypipe_conflate_t <msg_t, message_pipe_granularity> ();
+            ypipe_t <msg_t, message_pipe_granularity> ();
 
     alloc_assert (inpipe);
     in_active = true;
