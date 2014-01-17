@@ -177,6 +177,14 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
 
         read_msg = &stream_engine_t::pull_msg_from_session;
         write_msg = &stream_engine_t::push_msg_to_session;
+
+        //  For raw sockets, send an initial 0-length message to the
+        // application so that it knows a peer has connected.
+        msg_t connector;
+        connector.init();
+        int rc = (this->*write_msg) (&connector);
+        connector.close();
+        session->flush ();
     }
     else {
         //  Send the 'length' and 'flags' fields of the identity message.

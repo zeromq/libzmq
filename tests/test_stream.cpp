@@ -68,6 +68,7 @@ test_stream_to_dealer (void)
     rc = zmq_send (dealer, "Hello", 5, 0);
     assert (rc == 5);
 
+    //  Connecting sends a zero message
     //  First frame is identity
     zmq_msg_t identity;
     rc = zmq_msg_init (&identity);
@@ -76,8 +77,18 @@ test_stream_to_dealer (void)
     assert (rc > 0);
     assert (zmq_msg_more (&identity));
 
-    //  Second frame is greeting signature
+    //  Second frame is zero
     byte buffer [255];
+    rc = zmq_recv (stream, buffer, 255, 0);
+    assert (rc == 0);
+    
+    //  Real data follows
+    //  First frame is identity
+    rc = zmq_msg_recv (&identity, stream, 0);
+    assert (rc > 0);
+    assert (zmq_msg_more (&identity));
+
+    //  Second frame is greeting signature
     rc = zmq_recv (stream, buffer, 255, 0);
     assert (rc == 10);
     assert (memcmp (buffer, greeting.signature, 10) == 0);
@@ -178,14 +189,26 @@ test_stream_to_stream (void)
     assert (client);
     rc = zmq_connect (client, "tcp://localhost:9070");
     assert (rc == 0);
-    //  It would be less surprising to get an empty message instead
-    //  of having to fetch the identity like this [PH 2013/06/27]
     uint8_t id [256];
     size_t id_size = 256;
+    uint8_t buffer [256];
+    
+    //  Connecting sends a zero message
+    //  Server: First frame is identity, second frame is zero
+    id_size = zmq_recv (server, id, 256, 0);
+    assert (id_size > 0);
+    rc = zmq_recv (server, buffer, 256, 0);
+    assert (rc == 0);
+    //  Client: First frame is identity, second frame is zero
+    id_size = zmq_recv (client, id, 256, 0);
+    assert (id_size > 0);
+    rc = zmq_recv (client, buffer, 256, 0);
+    assert (rc == 0);
+
+    //  Sent HTTP request on client socket
+    //  Get server identity
     rc = zmq_getsockopt (client, ZMQ_IDENTITY, id, &id_size);
     assert (rc == 0);
-    
-    //  Sent HTTP request on client socket
     //  First frame is server identity
     rc = zmq_send (client, id, id_size, ZMQ_SNDMORE);
     assert (rc == (int) id_size);
@@ -196,9 +219,8 @@ test_stream_to_stream (void)
     //  Get HTTP request; ID frame and then request
     id_size = zmq_recv (server, id, 256, 0);
     assert (id_size > 0);
-    uint8_t buffer [256];
     rc = zmq_recv (server, buffer, 256, 0);
-    assert (rc > 0);
+    assert (rc != -1);
     assert (memcmp (buffer, "GET /\n\n", 7) == 0);
     
     //  Send reply back to client
@@ -207,8 +229,16 @@ test_stream_to_stream (void)
         "Content-Type: text/plain\r\n" 
         "\r\n" 
         "Hello, World!";
-    zmq_send (server, id, id_size, ZMQ_SNDMORE);
-    zmq_send (server, http_response, sizeof (http_response), 0);
+    rc = zmq_send (server, id, id_size, ZMQ_SNDMORE);
+    assert (rc != -1);
+    rc = zmq_send (server, http_response, sizeof (http_response), ZMQ_SNDMORE);
+    assert (rc != -1);
+
+    //  Send zero to close connection to client
+    rc = zmq_send (server, id, id_size, ZMQ_SNDMORE);
+    assert (rc != -1);
+    rc = zmq_send (server, NULL, 0, ZMQ_SNDMORE);
+    assert (rc != -1);
 
     //  Get reply at client and check that it's complete
     id_size = zmq_recv (client, id, 256, 0);
@@ -216,6 +246,22 @@ test_stream_to_stream (void)
     rc = zmq_recv (client, buffer, 256, 0);
     assert (rc == sizeof (http_response));
     assert (memcmp (buffer, http_response, sizeof (http_response)) == 0);
+
+    // //  Get disconnection notification
+    // FIXME: why does this block? Bug in STREAM disconnect notification?
+    // id_size = zmq_recv (client, id, 256, 0);
+    // assert (id_size > 0);
+    // rc = zmq_recv (client, buffer, 256, 0);
+    // assert (rc == 0);
+
+    rc = zmq_close (server);
+    assert (rc == 0);
+
+    rc = zmq_close (client);
+    assert (rc == 0);
+
+    rc = zmq_ctx_term (ctx);
+    assert (rc == 0);
 }
 
 
