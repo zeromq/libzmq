@@ -88,6 +88,12 @@ int zmq::router_t::xsetsockopt (int option_, const void *optval_,
     int value = is_int? *((int *) optval_): 0;
 
     switch (option_) {
+        case ZMQ_NEXT_IDENTITY:
+            if(optval_ && optvallen_) {
+                next_identity.assign((char*)optval_,optvallen_);
+                return 0;
+            }
+        break;
         case ZMQ_ROUTER_RAW:
             if (is_int && value >= 0) {
                 raw_sock = (value != 0);
@@ -382,8 +388,13 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
     blob_t identity;
     bool ok;
 
-    if (options.raw_sock) { //  Always assign identity for raw-socket
-        unsigned char buf [5];
+    if (next_identity.length()) {
+        identity = blob_t((unsigned char*) next_identity.c_str(),
+            next_identity.length());
+        next_identity.clear();
+    }
+    else if (options.raw_sock) { //  Always assign identity for raw-socket
+       unsigned char buf [5];
         buf [0] = 0;
         put_uint32 (buf + 1, next_peer_id++);
         identity = blob_t (buf, sizeof buf);
