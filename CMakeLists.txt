@@ -653,9 +653,6 @@ if(NOT WIN32)
   if(NOT CMAKE_SYSTEM_NAME MATCHES "Linux")
     set_tests_properties(test_abstract_ipc PROPERTIES WILL_FAIL true)
   endif()
-  if(NOT ZMQ_HAVE_SO_PEERCRED AND NOT ZMQ_HAVE_LOCAL_PEERCRED)
-    set_tests_properties(test_zap_ipc_creds PROPERTIES WILL_FAIL true)
-  endif()
 endif()
 
 #-----------------------------------------------------------------------------
