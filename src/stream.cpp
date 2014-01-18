@@ -163,7 +163,25 @@ int zmq::stream_t::xsend (msg_t *msg_)
 
     return 0;
 }
+int zmq::stream_t::xsetsockopt (int option_, const void *optval_,
+    size_t optvallen_)
+{
+    bool is_int = (optvallen_ == sizeof (int));
+    int value = is_int? *((int *) optval_): 0;
 
+    switch (option_) {
+        case ZMQ_NEXT_IDENTITY:
+            if(optval_ && optvallen_) {
+                next_identity.assign((char*)optval_,optvallen_);
+                return 0;
+            }
+            break;
+        default:
+            break;
+    }
+    errno = EINVAL;
+    return -1;
+}
 int zmq::stream_t::xrecv (msg_t *msg_)
 {
     if (prefetched) {
@@ -244,12 +262,18 @@ void zmq::stream_t::identify_peer (pipe_t *pipe_)
     //  Always assign identity for raw-socket
     unsigned char buffer [5];
     buffer [0] = 0;
-    put_uint32 (buffer + 1, next_peer_id++);
-    blob_t identity = blob_t (buffer, sizeof buffer);
-
-    memcpy (options.identity, identity.data (), identity.size ());
-    options.identity_size = identity.size ();
-
+    blob_t identity;
+    if (next_identity.length()) {
+        identity = blob_t((unsigned char*) next_identity.c_str(),
+            next_identity.length());
+        next_identity.clear();
+    }
+    else { 
+        put_uint32 (buffer + 1, next_peer_id++);
+        blob_t identity = blob_t (buffer, sizeof buffer);
+        memcpy (options.identity, identity.data (), identity.size ());
+        options.identity_size = identity.size ();
+    }
     pipe_->set_identity (identity);
     //  Add the record into output pipes lookup table
     outpipe_t outpipe = {pipe_, true};

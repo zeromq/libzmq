@@ -293,7 +293,7 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int option, int optval);
 #define ZMQ_IPC_FILTER_PID 58
 #define ZMQ_IPC_FILTER_UID 59
 #define ZMQ_IPC_FILTER_GID 60
-
+#define ZMQ_NEXT_IDENTITY 61 
 /*  Message options                                                           */
 #define ZMQ_MORE 1
 #define ZMQ_SRCFD 2
