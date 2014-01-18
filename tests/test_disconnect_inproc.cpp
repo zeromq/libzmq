@@ -28,7 +28,7 @@ memcpy(zmq_msg_data(&msg), data, size + 1);
 int publicationsReceived = 0;
 bool isSubscribed = false;
 
-int main(int argc, char** argv) {
+int main(int, char**) {
     setup_test_environment();
     void* context = zmq_ctx_new();
     void* pubSocket;

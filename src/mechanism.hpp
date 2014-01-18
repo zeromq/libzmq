@@ -46,9 +46,9 @@ namespace zmq
         //  Process the handshake command received from the peer.
         virtual int process_handshake_command (msg_t *msg_) = 0;
 
-        virtual int encode (msg_t *msg_) { return 0; }
+        virtual int encode (msg_t *) { return 0; }
 
-        virtual int decode (msg_t *msg_) { return 0; }
+        virtual int decode (msg_t *) { return 0; }
 
         //  Notifies mechanism about availability of ZAP message.
         virtual int zap_msg_available () { return 0; }
