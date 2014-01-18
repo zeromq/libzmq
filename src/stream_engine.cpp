@@ -183,6 +183,7 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
         msg_t connector;
         connector.init();
         int rc = (this->*write_msg) (&connector);
+        zmq_assert(rc == 0);
         connector.close();
         session->flush ();
     }
