@@ -170,7 +170,7 @@ int zmq::stream_t::xsetsockopt (int option_, const void *optval_,
     int value = is_int? *((int *) optval_): 0;
 
     switch (option_) {
-        case ZMQ_NEXT_IDENTITY:
+		case ZMQ_NEXT_CONNECT_PEER_ID:
             if(optval_ && optvallen_) {
                 next_identity.assign((char*)optval_,optvallen_);
                 return 0;

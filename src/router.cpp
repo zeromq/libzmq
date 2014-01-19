@@ -88,7 +88,7 @@ int zmq::router_t::xsetsockopt (int option_, const void *optval_,
     int value = is_int? *((int *) optval_): 0;
 
     switch (option_) {
-        case ZMQ_NEXT_IDENTITY:
+        case ZMQ_NEXT_CONNECT_PEER_ID:
             if(optval_ && optvallen_) {
                 next_identity.assign((char*)optval_,optvallen_);
                 return 0;
@@ -387,11 +387,13 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
     msg_t msg;
     blob_t identity;
     bool ok;
+	bool next_identity_used = false;
 
     if (next_identity.length()) {
         identity = blob_t((unsigned char*) next_identity.c_str(),
             next_identity.length());
         next_identity.clear();
+        next_identity_used = true;
     }
     else if (options.raw_sock) { //  Always assign identity for raw-socket
        unsigned char buf [5];
@@ -399,13 +401,15 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
         put_uint32 (buf + 1, next_peer_id++);
         identity = blob_t (buf, sizeof buf);
     }
-    else {
+	if (!options.raw_sock){ // pick up handshake cases and also case where next identity is set
         msg.init ();
         ok = pipe_->read (&msg);
         if (!ok)
             return false;
-
-        if (msg.size () == 0) {
+        if (next_identity_used){ // we read but do not use identity from peer
+			msg.close(); 
+        }
+        else if (msg.size () == 0) {
             //  Fall back on the auto-generation
             unsigned char buf [5];
             buf [0] = 0;
