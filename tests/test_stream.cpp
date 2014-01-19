@@ -36,10 +36,10 @@ typedef struct {
 //  8-byte size is set to 1 for backwards compatibility
 
 static zmtp_greeting_t greeting
-    = { { 0xFF, 0, 0, 0, 0, 0, 0, 0, 1, 0x7F }, { 3, 0 }, { 'N', 'U', 'L', 'L'} };
+= { { 0xFF, 0, 0, 0, 0, 0, 0, 0, 1, 0x7F }, { 3, 0 }, { 'N', 'U', 'L', 'L'}, 0, { 0 } };
 
 static void
-test_stream_to_dealer (void) 
+test_stream_to_dealer (void)
 {
     int rc;
 

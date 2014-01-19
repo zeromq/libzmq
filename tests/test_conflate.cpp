@@ -19,7 +19,7 @@
 
 #include "testutil.hpp"
 
-int main (int argc, char *argv [])
+int main (int, char *[])
 {
     const char *bind_to = "tcp://127.0.0.1:5555";
 

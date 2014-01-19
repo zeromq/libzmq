@@ -182,7 +182,7 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
         // application so that it knows a peer has connected.
         msg_t connector;
         connector.init();
-        int rc = (this->*write_msg) (&connector);
+        (this->*write_msg) (&connector);
         connector.close();
         session->flush ();
     }

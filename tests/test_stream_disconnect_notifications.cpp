@@ -52,7 +52,7 @@ bool get_identity (void* socket, char* data, size_t* size)
     return rc == 0;
 }
 
-int main(int argc, char** argv)
+int main(int, char**)
 {
     setup_test_environment();
 

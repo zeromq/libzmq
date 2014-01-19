@@ -166,9 +166,6 @@ int zmq::stream_t::xsend (msg_t *msg_)
 int zmq::stream_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
-    bool is_int = (optvallen_ == sizeof (int));
-    int value = is_int? *((int *) optval_): 0;
-
     switch (option_) {
         case ZMQ_NEXT_IDENTITY:
             if(optval_ && optvallen_) {
@@ -268,7 +265,7 @@ void zmq::stream_t::identify_peer (pipe_t *pipe_)
             next_identity.length());
         next_identity.clear();
     }
-    else { 
+    else {
         put_uint32 (buffer + 1, next_peer_id++);
         blob_t identity = blob_t (buffer, sizeof buffer);
         memcpy (options.identity, identity.data (), identity.size ());

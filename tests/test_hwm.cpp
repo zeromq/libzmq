@@ -202,7 +202,7 @@ int test_inproc_connect_and_close_first (int send_hwm, int recv_hwm)
     return send_count;
 }
 
-int test_inproc_bind_and_close_first (int send_hwm, int recv_hwm)
+int test_inproc_bind_and_close_first (int send_hwm, int /* recv_hwm */)
 {
     void *ctx = zmq_ctx_new ();
     assert (ctx);
