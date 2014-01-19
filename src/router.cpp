@@ -402,6 +402,7 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
         put_uint32 (buf + 1, next_rid++);
         identity = blob_t (buf, sizeof buf);
     }
+    else
     if (!options.raw_sock) { 
         //  Pick up handshake cases and also case where next identity is set
         msg.init ();
@@ -409,9 +410,6 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
         if (!ok)
             return false;
 
-        if (connect_rid_used)  // we read but do not use identity from peer
-            msg.close(); 
-        else 
         if (msg.size () == 0) {
             //  Fall back on the auto-generation
             unsigned char buf [5];
