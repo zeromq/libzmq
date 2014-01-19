@@ -164,7 +164,8 @@ namespace zmq
 
         // Monitor socket cleanup
         void stop_monitor ();
-
+        // Next assigned name on a zmq_connect() call used by ROUTER and STREAM socket types
+        std::string next_identity;
     private:
         //  Creates new endpoint ID and adds the endpoint to the map.
         void add_endpoint (const char *addr_, own_t *endpoint_, pipe_t *pipe);
