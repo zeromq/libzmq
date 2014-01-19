@@ -84,9 +84,9 @@ namespace zmq
         //  If true, more outgoing message parts are expected.
         bool more_out;
 
-        //  Peer ID are generated. It's a simple increment and wrap-over
+        //  Routing IDs are generated. It's a simple increment and wrap-over
         //  algorithm. This value is the next ID to use (if not used already).
-        uint32_t next_peer_id;
+        uint32_t next_rid;
 
         stream_t (const stream_t&);
         const stream_t &operator = (const stream_t&);

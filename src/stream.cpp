@@ -30,7 +30,7 @@ zmq::stream_t::stream_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     identity_sent (false),
     current_out (NULL),
     more_out (false),
-    next_peer_id (generate_random ())
+    next_rid (generate_random ())
 {
     options.type = ZMQ_STREAM;
     options.raw_sock = true;
@@ -163,13 +163,14 @@ int zmq::stream_t::xsend (msg_t *msg_)
 
     return 0;
 }
+
 int zmq::stream_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
     switch (option_) {
-		case ZMQ_NEXT_CONNECT_PEER_ID:
-            if(optval_ && optvallen_) {
-                next_identity.assign((char*)optval_,optvallen_);
+        case ZMQ_CONNECT_RID:
+            if (optval_ && optvallen_) {
+                connect_rid.assign ((char*) optval_, optvallen_);
                 return 0;
             }
             break;
@@ -179,6 +180,7 @@ int zmq::stream_t::xsetsockopt (int option_, const void *optval_,
     errno = EINVAL;
     return -1;
 }
+
 int zmq::stream_t::xrecv (msg_t *msg_)
 {
     if (prefetched) {
@@ -260,13 +262,13 @@ void zmq::stream_t::identify_peer (pipe_t *pipe_)
     unsigned char buffer [5];
     buffer [0] = 0;
     blob_t identity;
-    if (next_identity.length()) {
-        identity = blob_t((unsigned char*) next_identity.c_str(),
-            next_identity.length());
-        next_identity.clear();
+    if (connect_rid.length ()) {
+        identity = blob_t ((unsigned char*) connect_rid.c_str(),
+            connect_rid.length ());
+        connect_rid.clear ();
     }
     else {
-        put_uint32 (buffer + 1, next_peer_id++);
+        put_uint32 (buffer + 1, next_rid++);
         blob_t identity = blob_t (buffer, sizeof buffer);
         memcpy (options.identity, identity.data (), identity.size ());
         options.identity_size = identity.size ();
