@@ -104,9 +104,9 @@ namespace zmq
         //  If true, more outgoing message parts are expected.
         bool more_out;
 
-        //  Peer ID are generated. It's a simple increment and wrap-over
+        //  Routing IDs are generated. It's a simple increment and wrap-over
         //  algorithm. This value is the next ID to use (if not used already).
-        uint32_t next_peer_id;
+        uint32_t next_rid;
 
         // If true, report EAGAIN to the caller instead of silently dropping 
         // the message targeting an unknown peer.
