@@ -67,6 +67,32 @@ Default value:: 100
 Applicable socket types:: all, only for connection-oriented transports.
 
 
+ZMQ_CONNECT_RID: Assign the next outbound connection id 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_CONNECT_RID' option sets the peer id of the next host connected 
+via the zmq_connect() call, and immediately readies that connection for 
+data transfer with the named id.  This option applies only to the first
+subsequent call to zmq_connect(), calls thereafter use default connection 
+behavior. 
+
+Typical use is to set this socket option on each zmq_connect() attempt 
+to a new host. Each connection should be assigned a unique name. Duplicated 
+names will trigger default connection behavior.
+
+Useful when connecting ROUTER to ROUTER, or STREAM to STREAM, as it 
+allows for immediate sending to peers. Outbound id framing requirements 
+for ROUTER and STREAM sockets apply.
+
+The peer id should be from 1 to 255 bytes long and MAY NOT start with 
+binary zero.
+
+[horizontal]
+Option value type:: binary data
+Option value unit:: N/A
+Default value:: NULL
+Applicable socket types:: ZMQ_ROUTER, ZMQ_STREAM
+
+
 ZMQ_CONFLATE: Keep only last message
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 If set, a socket shall keep only one message in its inbound/outbound

@@ -266,9 +266,12 @@ void zmq::stream_t::identify_peer (pipe_t *pipe_)
         identity = blob_t ((unsigned char*) connect_rid.c_str(),
             connect_rid.length ());
         connect_rid.clear ();
+        outpipes_t::iterator it = outpipes.find (identity);
+        if (it != outpipes.end ()) 
+            goto d;
     }
     else {
-        put_uint32 (buffer + 1, next_rid++);
+d:      put_uint32 (buffer + 1, next_rid++);
         identity = blob_t (buffer, sizeof buffer);
         memcpy (options.identity, identity.data (), identity.size ());
         options.identity_size = identity.size ();

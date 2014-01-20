@@ -387,13 +387,15 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
     msg_t msg;
     blob_t identity;
     bool ok;
-    bool connect_rid_used = false;
 
     if (connect_rid.length()) {
         identity = blob_t ((unsigned char*) connect_rid.c_str (),
             connect_rid.length());
         connect_rid.clear ();
-        connect_rid_used = true;
+        outpipes_t::iterator it = outpipes.find (identity);
+        if (it != outpipes.end ()) {
+            return false; // duplicate connection
+        }
     }
     else 
     if (options.raw_sock) { //  Always assign identity for raw-socket
