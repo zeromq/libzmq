@@ -622,7 +622,7 @@ set(tests
         test_timeo
         test_many_sockets
         test_diffserv
-	test_connect_rid
+        test_connect_rid
 )
 if(NOT WIN32)
 list(APPEND tests
