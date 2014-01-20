@@ -134,3 +134,4 @@ int main (void)
     printf ("'test_connect_rid' passed");
     return 0;
 }
+
