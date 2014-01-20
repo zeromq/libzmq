@@ -22,6 +22,7 @@
 
 #include "../include/zmq.h"
 #include "../include/zmq_utils.h"
+#include "../src/stdint.hpp"
 #include "platform.hpp"
 
 //  This defines the settle time used in tests; raise this if we
