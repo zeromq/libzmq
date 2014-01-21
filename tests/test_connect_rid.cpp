@@ -75,9 +75,12 @@ void test_stream_2_stream(void* ctx_){
     assert (5 == ret); 
     assert ('h' == buff[128]);
 
-    zmq_unbind (rbind, bindip);
-    zmq_close (rbind);
-    zmq_close (rconn1);
+    ret = zmq_unbind (rbind, bindip);
+    assert(0 == ret);
+    ret = zmq_close (rbind);
+    assert(0 == ret);
+    ret = zmq_close (rconn1);
+    assert(0 == ret);
 }
 
 void test_router_2_router(void* ctx,bool named){
