@@ -393,9 +393,8 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
             connect_rid.length());
         connect_rid.clear ();
         outpipes_t::iterator it = outpipes.find (identity);
-        if (it != outpipes.end ()) {
-            return false; // duplicate connection
-        }
+        if (it != outpipes.end ()) 
+            zmq_assert(false); //  Not allowed to duplicate an existing rid
     }
     else 
     if (options.raw_sock) { //  Always assign identity for raw-socket
