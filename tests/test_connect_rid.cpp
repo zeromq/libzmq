@@ -47,12 +47,13 @@ void test_stream_2_stream(void* ctx_){
     assert (0 == ret);
     ret = zmq_connect (rconn1, bindip);
 
+/*  Uncomment to test assert on duplicate rid.
     //  Test duplicate connect attempt.
     ret = zmq_setsockopt (rconn1, ZMQ_CONNECT_RID, "conn1", 6);
     assert (0 == ret);
     ret = zmq_connect (rconn1, bindip);
     assert (0 == ret);
-    
+*/   
     //  Send data to the bound stream.
     ret = zmq_send (rconn1, "conn1", 6, ZMQ_SNDMORE);
     assert (6 == ret);
@@ -66,13 +67,6 @@ void test_stream_2_stream(void* ctx_){
     ret = zmq_recv (rbind, buff, 256, 0);
     assert (0 == ret);
 
-    // Close the duplicate socket.
-    ret = zmq_recv (rbind, buff, 256, 0);
-    assert (ret);
-    assert (0 == buff[0]);
-    ret = zmq_recv (rbind, buff+128, 128, 0);
-    assert (0 == ret);
-    
     // Handle close of the socket.
     ret = zmq_recv (rbind, buff, 256, 0);
     assert (ret);
@@ -119,13 +113,13 @@ void test_router_2_router(void* ctx,bool named){
     assert (0 == ret);
     ret = zmq_connect (rconn1, bindip);
     assert (0 == ret);
-
+/*  Uncomment to test assert on duplicate rid 
     //  Test duplicate connect attempt.
     ret = zmq_setsockopt (rconn1, ZMQ_CONNECT_RID, "conn1", 6);
     assert (0 == ret);
     ret = zmq_connect (rconn1, bindip);
     assert (0 == ret);
-
+*/
     //  Send some data.
     ret = zmq_send (rconn1, "conn1", 6, ZMQ_SNDMORE);
     assert (6 == ret);
