@@ -97,7 +97,7 @@ ZMQ_CONFLATE: Keep only last message
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 If set, a socket shall keep only one message in its inbound/outbound
 queue, this message being the last message received/the last message
-to be sent. Ignores 'ZMQ_RECVHWM' and 'ZMQ_SENDHWM' options. Does not
+to be sent. Ignores 'ZMQ_RCVHWM' and 'ZMQ_SNDHWM' options. Does not
 support multi-part messages, in particular, only one part of it is kept
 in the socket internal queue.
 
