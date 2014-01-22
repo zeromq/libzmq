@@ -41,6 +41,48 @@
 #define QT_CLIENTS    3
 #define is_verbose 0
 
+// Our test Hook that uppercase the message from the frontend to the backend and vice versa
+struct stats_t {
+    void *ctx; // not usefull for the kook itself, but convenient to provide the thread with it without building an additional struct for arguments
+    int qt_upper_case;
+    int qt_lower_case;
+} stats = {NULL, 0, 0};
+
+int
+upper_case(void*, void*, void*, zmq_msg_t* msg_, size_t n_, void *stats_)
+{
+    size_t size = zmq_msg_size(msg_);
+    if (!size || n_ == 1) return 0; // skip identity and 0 frames
+    char* message = (char*) zmq_msg_data(msg_);
+    for (size_t i = 0; i < size; i++)
+        if ('a' <= message[i] && message[i] <= 'z')
+            message[i] += 'A' - 'a';
+    struct stats_t* stats = (struct stats_t*) stats_;
+    stats->qt_upper_case++;
+    return 0;
+}
+
+int
+lower_case(void*, void*, void*, zmq_msg_t* msg_, size_t n_, void *stats_)
+{
+    size_t size = zmq_msg_size(msg_);
+    if (!size || n_ == 1) return 0; // skip identity and 0 frames
+    char* message = (char*) zmq_msg_data(msg_);
+    for (size_t i = 0; i < size; i++)
+        if ('A' <= message[i] && message[i] <= 'Z')
+            message[i] += 'a' - 'A';
+    struct stats_t* stats = (struct stats_t*) stats_;
+    stats->qt_lower_case++;
+    return 0;
+}
+
+zmq_proxy_hook_t hook = {
+        &stats, // data used by the hook functions if needed, NULL otherwise
+        upper_case, // hook for messages going from frontend to backend
+        lower_case // hook for messages going from backend to frontend
+};
+
+
 static void
 client_task (void *ctx)
 {
@@ -86,10 +128,16 @@ client_task (void *ctx)
             }
             if (items [1].revents & ZMQ_POLLIN) {
                 rc = zmq_recv (control, content, CONTENT_SIZE_MAX, 0);
-                if (is_verbose) printf("client receive - identity = %s    command = %s\n", identity, content);
-                if (memcmp (content, "TERMINATE", 9) == 0) {
-                    run = false;
-                    break;
+                if (rc > 0) {
+                    if (is_verbose) {
+                        if (rc == 9 && memcmp(content, "TERMINATE", 9) == 0)
+                            content[9] = '\0'; // required to have a clean output since '\0' is not included in the command
+                        printf("client receive - identity = %s    command = %s\n", identity, content);
+                    }
+                    if (memcmp (content, "STOP", 4) == 0) {
+                        run = false;
+                        break;
+                    }
                 }
             }
         }
@@ -113,8 +161,11 @@ client_task (void *ctx)
 static void server_worker (void *ctx);
 
 void
-server_task (void *ctx)
+server_task (void *arg)
 {
+    zmq_proxy_hook_t* hook = (zmq_proxy_hook_t*) arg;
+    struct stats_t* stats = (struct stats_t*) hook->data;
+    void* ctx = stats->ctx;
     // Frontend socket talks to clients over TCP
     void *frontend = zmq_socket (ctx, ZMQ_ROUTER);
     assert (frontend);
@@ -142,7 +193,13 @@ server_task (void *ctx)
         threads[thread_nbr] = zmq_threadstart (&server_worker, ctx);
 
     // Connect backend to frontend via a proxy
-    zmq_proxy_steerable (frontend, backend, NULL, control);
+    if (is_verbose)
+        printf("---------- standard proxy ----------\n");
+    zmq_proxy_steerable (frontend, backend, NULL, control); // until TERMINATE is sent on control
+    // Connect backend to frontend via a hooked proxy
+    if (is_verbose)
+        printf("----------  hooked proxy  ----------\n");
+    zmq_proxy_hook (frontend, backend, NULL, hook, control); // until TERMINATE is sent on control
 
     for (thread_nbr = 0; thread_nbr < QT_WORKERS; thread_nbr++)
         zmq_threadclose (threads[thread_nbr]);
@@ -182,9 +239,12 @@ server_worker (void *ctx)
     while (run) {
         rc = zmq_recv (control, content, CONTENT_SIZE_MAX, ZMQ_DONTWAIT); // usually, rc == -1 (no message)
         if (rc > 0) {
-            if (is_verbose)
+            if (is_verbose) {
+                if (rc == 9 && memcmp(content, "TERMINATE", 9) == 0)
+                    content[9] = '\0'; // required to have a clean output since '\0' is not included in the command
                 printf("server_worker receives command = %s\n", content);
-            if (memcmp (content, "TERMINATE", 9) == 0)
+            }
+            if (memcmp (content, "STOP", 4) == 0)
                 run = false;
         }
         // The DEALER socket gives us the reply envelope and message
@@ -218,7 +278,8 @@ server_worker (void *ctx)
 // The main thread simply starts several clients and a server, and then
 // waits for the server to finish.
 
-int main (void)
+int
+main (void)
 {
     setup_test_environment ();
 
@@ -233,11 +294,19 @@ int main (void)
     void *threads [QT_CLIENTS + 1];
     for (int i = 0; i < QT_CLIENTS; i++)
         threads[i] = zmq_threadstart  (&client_task, ctx);
-    threads[QT_CLIENTS] = zmq_threadstart  (&server_task, ctx);
-    msleep (500); // Run for 500 ms then quit
+    stats.ctx = ctx;
+    threads[QT_CLIENTS] = zmq_threadstart  (&server_task, &hook);
 
-    rc = zmq_send (control, "TERMINATE", 9, 0);
+    msleep (500); // Run for 500 ms the standard proxy
+    rc = zmq_send (control, "TERMINATE", 9, 0); // stops the standard proxy
     assert (rc == 9);
+    msleep (200); // Run for 200 ms the standard proxy
+    rc = zmq_send (control, "TERMINATE", 9, 0); // stops the hooked proxy
+    assert (rc == 9);
+    rc = zmq_send (control, "STOP", 5, 0); // stops clients and workers (\0 is sent to ease the printf  of the verbose mode)
+    assert (rc == 5);
+
+    if (is_verbose) printf("frontend to backend hook hits = %d\nbackend to frontend hook hits = %d\n", stats.qt_upper_case, stats.qt_lower_case);
 
     rc = zmq_close (control);
     assert (rc == 0);
