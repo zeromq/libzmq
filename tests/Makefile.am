@@ -25,7 +25,7 @@ noinst_PROGRAMS = test_system \
                   test_probe_router \
                   test_stream \
                   test_stream_empty \
-                  test_stream_disconnect_notifications \
+                  test_stream_disconnect \
                   test_disconnect_inproc \
                   test_ctx_options \
                   test_ctx_destroy \
@@ -91,7 +91,7 @@ test_router_handover_SOURCES = test_router_handover.cpp
 test_probe_router_SOURCES = test_probe_router.cpp
 test_stream_SOURCES = test_stream.cpp
 test_stream_empty_SOURCES = test_stream_empty.cpp
-test_stream_disconnect_notifications_SOURCES = test_stream_disconnect_notifications.cpp
+test_stream_disconnect_SOURCES = test_stream_disconnect.cpp
 test_disconnect_inproc_SOURCES = test_disconnect_inproc.cpp
 test_ctx_options_SOURCES = test_ctx_options.cpp
 test_iov_SOURCES = test_iov.cpp
@@ -121,7 +121,6 @@ test_reqrep_ipc_SOURCES = test_reqrep_ipc.cpp testutil.hpp
 test_timeo_SOURCES = test_timeo.cpp
 test_fork_SOURCES = test_fork.cpp
 test_filter_ipc_SOURCES = test_filter_ipc.cpp
-test_zap_ipc_creds_SOURCES = test_zap_ipc_creds.cpp
 endif
 if BUILD_TIPC
 test_connect_delay_tipc_SOURCES = test_connect_delay_tipc.cpp
@@ -140,8 +139,4 @@ XFAIL_TESTS = test_resource
 
 if !ON_LINUX
 XFAIL_TESTS += test_abstract_ipc
-endif
-
-if !HAVE_IPC_PEERCRED
-XFAIL_TESTS += test_zap_ipc_creds
 endif
