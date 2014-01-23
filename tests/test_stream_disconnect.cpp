@@ -40,9 +40,8 @@ bool has_more (void* socket)
     int more = 0;
     size_t more_size = sizeof(more);
     int rc = zmq_getsockopt (socket, ZMQ_RCVMORE, &more, &more_size);
-    if (rc != 0) {
+    if (rc != 0) 
         return false;
-    }
     return more != 0;
 }
 
@@ -136,8 +135,6 @@ int main(int, char**)
         int rc = zmq_poll (items, 2, 100);
         assert (rc >= 0);
 
-        printf ("Event received for step %d.\n", step);
-
         // Check for data received by the server.
         if (items [SERVER].revents & ZMQ_POLLIN) {
             assert (dialog [step].turn == CLIENT);
@@ -164,15 +161,12 @@ int main(int, char**)
             // 0-length frame is a disconnection notification.  The server
             // should receive it as the last step in the dialogue.
             if (size == 0) {
-                printf ("server received disconnection notification!\n");
 		++step;
                 assert (step == steps);
             }
             else {
-                printf ("server received %d bytes.\n", size);
-		fprintf(stderr, "size = %d, len = %ld\n", size, strlen(dialog [step].text));
-		assert((size_t)size == strlen(dialog [step].text));
-		int cmp = memcmp(dialog [step].text, data, size);
+		assert ((size_t) size == strlen (dialog [step].text));
+		int cmp = memcmp (dialog [step].text, data, size);
 		assert (cmp == 0);
 
 		++step;
@@ -189,8 +183,6 @@ int main(int, char**)
 			zmq_msg_size (&data_frame));
 
                 // Send the response.
-                printf ("server sending %d bytes.\n",
-			(int)zmq_msg_size (&data_frame));
                 rc = zmq_msg_send (&peer_frame, sockets [SERVER], ZMQ_SNDMORE);
 		assert (rc != -1);
                 rc = zmq_msg_send (&data_frame, sockets [SERVER], ZMQ_SNDMORE);
@@ -228,12 +220,9 @@ int main(int, char**)
             // Make sure payload matches what we expect.
             const char * const data = (const char*)zmq_msg_data (&data_frame);
             const int size = zmq_msg_size (&data_frame);
-	    fprintf(stderr, "size = %d, len = %ld\n", size, strlen(dialog [step].text));
-	    assert((size_t)size == strlen(dialog [step].text));
+	    assert ((size_t)size == strlen(dialog [step].text));
             int cmp = memcmp(dialog [step].text, data, size);
             assert (cmp == 0);
-
-            printf ("client received %d bytes.\n", size);
 
             ++step;
 
@@ -246,7 +235,6 @@ int main(int, char**)
             memcpy (zmq_msg_data (&data_frame), dialog [step].text, zmq_msg_size (&data_frame));
 
             // Send the response.
-            printf ("client sending %d bytes.\n", (int)zmq_msg_size (&data_frame));
             rc = zmq_msg_send (&peer_frame, sockets [CLIENT], ZMQ_SNDMORE);
 	    assert (rc != -1);
             rc = zmq_msg_send (&data_frame, sockets [CLIENT], ZMQ_SNDMORE);
@@ -260,8 +248,6 @@ int main(int, char**)
         }
     }
     assert (step == steps);
-
-    printf ("Done, exiting now.\n");
     rc = zmq_close (sockets [CLIENT]);
     assert (rc == 0);
     rc = zmq_close (sockets [SERVER]);
