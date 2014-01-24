@@ -53,7 +53,8 @@
 // zmq.h must be included *after* poll.h for AIX to build properly
 #include "../include/zmq.h"
 
-int capture(
+int
+capture(
         class zmq::socket_base_t *capture_,
         zmq::msg_t& msg_,
         int more_ = 0)
@@ -74,15 +75,18 @@ int capture(
     return 0;
 }
 
-int forward(
+int
+forward(
         class zmq::socket_base_t *from_,
         class zmq::socket_base_t *to_,
         class zmq::socket_base_t *capture_,
-        zmq::msg_t& msg_)
+        zmq::msg_t& msg_,
+        zmq::hook_f do_hook_,
+        void *data_)
 {
     int more;
     size_t moresz;
-    while (true) {
+    for (size_t n = 1;; n++) {
         int rc = from_->recv (&msg_, 0);
         if (unlikely (rc < 0))
             return -1;
@@ -97,6 +101,13 @@ int forward(
         if (unlikely (rc < 0))
             return -1;
 
+        // Hook
+        if (do_hook_) {
+            rc = (*do_hook_)(from_, to_, capture_, &msg_, more ? n : 0, data_); // first message: n == 1, mth message: n == m, last message: n == 0
+            if (unlikely (rc < 0))
+                return -1;
+        }
+
         rc = to_->send (&msg_, more? ZMQ_SNDMORE: 0);
         if (unlikely (rc < 0))
             return -1;
@@ -106,12 +117,16 @@ int forward(
     return 0;
 }
 
-int zmq::proxy (
+int
+zmq::proxy (
     class socket_base_t *frontend_,
     class socket_base_t *backend_,
     class socket_base_t *capture_,
-    class socket_base_t *control_)
+    class socket_base_t *control_,
+    zmq::proxy_hook_t *hook_)
 {
+    static zmq::proxy_hook_t dummy_hook = {NULL, NULL, NULL};
+
     msg_t msg;
     int rc = msg.init ();
     if (rc != 0)
@@ -172,17 +187,20 @@ int zmq::proxy (
                 zmq_assert (false);
             }
         }
+        // Check if a hook is used
+        if (!hook_)
+            hook_ = &dummy_hook;
         //  Process a request
         if (state == active
         &&  items [0].revents & ZMQ_POLLIN) {
-            rc = forward(frontend_, backend_, capture_,msg);
+            rc = forward(frontend_, backend_, capture_, msg, hook_->front2back_hook, hook_->data);
             if (unlikely (rc < 0))
                 return -1;
         }
         //  Process a reply
         if (state == active
         &&  items [1].revents & ZMQ_POLLIN) {
-            rc = forward(backend_, frontend_, capture_,msg);
+            rc = forward(backend_, frontend_, capture_, msg, hook_->back2front_hook, hook_->data);
             if (unlikely (rc < 0))
                 return -1;
         }
