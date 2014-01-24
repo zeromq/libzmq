@@ -16,7 +16,7 @@ DESCRIPTION
 -----------
 The _zmq_msg_copy()_ function shall copy the message object referenced by 'src'
 to the message object referenced by 'dest'. The original content of 'dest', if
-any, shall be released.
+any, shall be released. You must initialize 'dest' before copying to it.
 
 CAUTION: The implementation may choose not to physically copy the message
 content, rather to share the underlying buffer between 'src' and 'dest'. Avoid
@@ -40,6 +40,21 @@ ERRORS
 *EFAULT*::
 Invalid message.
 
+
+EXAMPLE
+-------
+.Copying a message
+----
+zmq_msg_t msg;
+zmq_msg_init_size (&msg, 255);
+memcpy (zmq_msg_data (&msg, "Hello, World", 12);
+zmq_msg_t copy;
+zmq_msg_init (&copy);
+zmq_msg_copy (&copy, &msg);
+...
+zmq_msg_close (&copy);
+zmq_msg_close (&msg);
+----
 
 SEE ALSO
 --------
