@@ -88,7 +88,7 @@ zmq_msg_close (&msg);
 
 .Receiving a multi-part message
 ----
-int64_t more;
+int more;
 size_t more_size = sizeof (more);
 do {
     /* Create an empty 0MQ message to hold the message part */
