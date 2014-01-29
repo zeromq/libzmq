@@ -30,36 +30,43 @@
 
 #if defined (ZMQ_HAVE_WINDOWS)
 
-void initialise_network()
+void initialise_network (void)
 {
     WSADATA info;
     if (WSAStartup(MAKEWORD(2,0), &info) != 0)
-    {
         throw std::runtime_error("Could not start WSA");
-    }
 }
 
-int close(int fd)
+int close (int fd)
 {
-    return closesocket(fd);
+    return closesocket (fd);
 }
 
 #else
 
-void initialise_network()
+void initialise_network (void)
 {
 }
 
 #endif
 
 //  This test case stresses the system to shake out known configuration
-//  problems. We're not using libzmq here but direct system calls. Note
-//  that code may need wrapping to be properly portable.
+//  problems. We're direct system calls when necessary. Some code may
+//  need wrapping to be properly portable.
 
 int main (void)
 {
-    initialise_network();
+    initialise_network ();
 
+    //  Check that we have local networking via ZeroMQ
+    void *ctx = zmq_ctx_new ();
+    assert (ctx);
+    void *dealer = zmq_socket (ctx, ZMQ_DEALER);
+    if (zmq_bind (dealer, "tcp://127.0.0.1:5670") == -1) {
+        printf ("E: Cannot find 127.0.0.1 -- your system does not have local\n");
+        printf ("E: networking. Please fix this before running libzmq checks.\n");
+        return -1;
+    }
     //  Check that we can create 1,000 sockets
     int handle [1000];
     int count;
