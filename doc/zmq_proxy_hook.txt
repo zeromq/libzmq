@@ -29,7 +29,7 @@ it is sent to the backend. The second one, 'back2front_hook' is for the way back
 
 Both functions receive as an argument in addition to a pointer to the message, the 
 pointer to the data passed in the 'zmq_proxy_hook_t' structure. This data makes it
-possible to manage statefull behaviours in the proxy. They receive also the frame 
+possible to manage stateful behaviours in the proxy. They receive also the frame
 number n_ which is 1 for the first frame, n for the nth one, 0 for the last one. This 
 enable to manage specifically the identity frame when ROUTER | STREAM sockets are 
 concerned. Moreover, to give the hook full capabilities, the three sockets passed 
@@ -37,7 +37,7 @@ as parameters to the proxy are also provided to the hook functions, enabling to
 consume some frames or to add others:
 
 ----
-typedef int (*zmq_hook_f)(void *frontend, void *backend, void *capture, 
+typedef int (*zmq_hook_f)(void *frontend, void *backend, void *capture,
 zmq_msg_t* msg_, size_t n_, void *data_);
 typedef struct zmq_proxy_hook_t {
     void *data;
@@ -57,34 +57,33 @@ EXAMPLE USAGE
 -------------
 
 Filter
-------
+~~~~~~
 
 The most simple use is to simply filter the messages for example against vulgarity. 
 Messages are simply scanned against a dictionnary and target words are replaced.
 
 ROUTER | STREAM / ROUTER | STREAM proxy
----------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The data field enables to multiplex as desired identities in a ROUTER/ROUTER or in a 
 STREAM/STREAM proxy or what ever. Such architecture enables also custom load balancers.
 
 Sticky ROUTER / ROUTER proxy
-----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The data field enables to manage sticky identity pairing in a ROUTER/ROUTER proxy.
 
 Security mechanism proxying
----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We expect to be able to proxy CURVE with the use of this feature.
 
 Tests
------
+~~~~~
 
 In an existing application, just change zmq_proxy or zmq_proxy_steerable for 
 zmq_proxy_hook to test anythink, even "Man in the middle" attacks ws security
 mechanisms with a STREAM/STREAM proxy.
-
 
 
 RETURN VALUE
@@ -95,7 +94,7 @@ or zmq_proxy_steerable in the same conditions of use.
 
 EXAMPLE
 -------
-This simple example aims at uppercasing the traffic between the frontend and the 
+This simple example aims at uppercasing the traffic between the frontend and the
 backend, and lowercasing it on the way back.
 
 .Setup the hook
@@ -134,9 +133,9 @@ lower_case(void*, void*, void*, zmq_msg_t* msg_, size_t n_, void *stats_)
 }
 
 zmq_proxy_hook_t hook = {
-        &stats, // data used by the hook functions, passed as void* data_
-        upper_case, // hook for messages going from frontend to backend
-        lower_case // hook for messages going from backend to frontend
+    &stats, // data used by the hook functions, passed as void* data_
+    upper_case, // hook for messages going from frontend to backend
+    lower_case // hook for messages going from backend to frontend
 };
 ----
 .in main:
@@ -144,38 +143,38 @@ zmq_proxy_hook_t hook = {
 int
 main (void)
 {
-	setup_test_environment ();
-	void *context = zmq_ctx_new ();
-	assert (context);
-	//  Create frontend, backend and control sockets
-	void *frontend = zmq_socket (context, ZMQ_ROUTER);
-	assert (backend);
-	void *backend = zmq_socket (context, ZMQ_DEALER);
-	assert (frontend);
-	void *control = zmq_socket (context, ZMQ_PUB);
-	assert (control);
-	
-	//  Bind sockets to TCP ports
-	assert (zmq_bind (frontend, "tcp://*:5555") == 0);
-	assert (zmq_bind (backend, "tcp://*:5556") == 0);
-	assert (zmq_connect (control, "tcp://*:5557") == 0);
-	
-	//  Start the queue proxy, which runs until ETERM or "TERMINATE" 
-	//  received on the control socket
-	zmq_proxy_hook (frontend, backend, NULL, &hook, control);
-	
-	printf("frontend to backend hook hits = %d\nbackend to frontend hook hits = %d\n", stats.qt_upper_case, stats.qt_lower_case);
+    setup_test_environment ();
+    void *context = zmq_ctx_new ();
+    assert (context);
+    //  Create frontend, backend and control sockets
+    void *frontend = zmq_socket (context, ZMQ_ROUTER);
+    assert (backend);
+    void *backend = zmq_socket (context, ZMQ_DEALER);
+    assert (frontend);
+    void *control = zmq_socket (context, ZMQ_PUB);
+    assert (control);
 
-	// close sockets and context
-	rc = zmq_close (control);
-	assert (rc == 0);
-	rc = zmq_close (backend);
-	assert (rc == 0);
-	rc = zmq_close (frontend);
-	assert (rc == 0);
-	rc = zmq_ctx_term (ctx);
-	assert (rc == 0);
-	return 0;
+    //  Bind sockets to TCP ports
+    assert (zmq_bind (frontend, "tcp://*:5555") == 0);
+    assert (zmq_bind (backend, "tcp://*:5556") == 0);
+    assert (zmq_connect (control, "tcp://*:5557") == 0);
+
+    //  Start the queue proxy, which runs until ETERM or "TERMINATE"
+    //  received on the control socket
+    zmq_proxy_hook (frontend, backend, NULL, &hook, control);
+
+    printf("frontend to backend hook hits = %d\nbackend to frontend hook hits = %d\n", stats.qt_upper_case, stats.qt_lower_case);
+
+    // close sockets and context
+    rc = zmq_close (control);
+    assert (rc == 0);
+    rc = zmq_close (backend);
+    assert (rc == 0);
+    rc = zmq_close (frontend);
+    assert (rc == 0);
+    rc = zmq_ctx_term (ctx);
+    assert (rc == 0);
+    return 0;
 }
 ----
 .somewhere, the proxy is stopped with:
