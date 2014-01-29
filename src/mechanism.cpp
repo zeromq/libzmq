@@ -133,7 +133,7 @@ int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
     return 0;
 }
 
-int zmq::mechanism_t::property (const std::string /* name_ */,
+int zmq::mechanism_t::property (const std::string& /* name_ */,
                                 const void * /* value_ */, size_t /* length_ */)
 {
     //  Default implementation does not check
@@ -141,7 +141,7 @@ int zmq::mechanism_t::property (const std::string /* name_ */,
     return 0;
 }
 
-bool zmq::mechanism_t::check_socket_type (const std::string type_) const
+bool zmq::mechanism_t::check_socket_type (const std::string& type_) const
 {
     switch (options.type) {
         case ZMQ_REQ:

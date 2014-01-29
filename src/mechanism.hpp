@@ -86,7 +86,7 @@ namespace zmq
         //  parsing remaining data.
         //  Derived classes are supposed to override this
         //  method to handle custom processing.
-        virtual int property (const std::string name_,
+        virtual int property (const std::string& name_,
                               const void *value_, size_t length_);
 
         options_t options;
@@ -99,7 +99,7 @@ namespace zmq
 
         //  Returns true iff socket associated with the mechanism
         //  is compatible with a given socket type 'type_'.
-        bool check_socket_type (const std::string type_) const;
+        bool check_socket_type (const std::string& type_) const;
     };
 
 }
