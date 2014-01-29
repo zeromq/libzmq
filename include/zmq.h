@@ -372,6 +372,25 @@ struct iovec;
 ZMQ_EXPORT int zmq_sendiov (void *s, struct iovec *iov, size_t count, int flags);
 ZMQ_EXPORT int zmq_recviov (void *s, struct iovec *iov, size_t *count, int flags);
 
+/***********************************************************************************/
+/*  Where LTS is required (Local Thread Static), define thread_local when possible */
+/***********************************************************************************/
+// Do we have a fully featured C++0x compiler? https://github.com/DFHack/dfhack/blob/master/depends/tthread/tinythread.h
+#if (__cplusplus > 199711L) || (defined(__STDCXX_VERSION__) && (__STDCXX_VERSION__ >= 201001L))
+#define _TTHREAD_CPP0X_
+#endif
+
+#if !defined(_TTHREAD_CPP0X_) && !defined(thread_local)
+#if defined(__GNUC__) || defined(__INTEL_COMPILER) || defined(__SUNPRO_CC) || defined(__IBMCPP__)
+#define thread_local __thread
+#elif defined(_WIN32)
+#define thread_local __declspec(thread)
+#endif
+#endif
+
+#undef thread_local              // DEBUG
+#define thread_local __thread    // DEBUG
+
 /******************************************************************************/
 /*  I/O multiplexing.                                                         */
 /******************************************************************************/
@@ -403,6 +422,8 @@ ZMQ_EXPORT int zmq_proxy (void *frontend, void *backend, void *capture);
 ZMQ_EXPORT int zmq_proxy_steerable (void *frontend, void *backend, void *capture, void *control);
 ZMQ_EXPORT int zmq_proxy_hook (void *frontend, void *backend, void *capture, void *hook, void *control);
 ZMQ_EXPORT int zmq_proxy_chain (void **frontends_, void **backends_, void *capture_, void **hooks_, void *control_);
+ZMQ_EXPORT int zmq_proxy_open_chain (void **open_endpoints_, void **frontends_, void **backends_,
+        void *capture_, void **hooks_, void *control_, long time_out_);
 
 typedef int (*zmq_hook_f)(void *frontend, void *backend, void *capture, zmq_msg_t* msg_, size_t n_, void *data_);
 typedef struct zmq_proxy_hook_t {
