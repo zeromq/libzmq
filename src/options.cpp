@@ -206,7 +206,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             break;
 
         case ZMQ_TCP_KEEPALIVE:
-            if (is_int && (value >= -1 || value <= 1)) {
+            if (is_int && (value == -1 || value == 0 || value == 1)) {
                 tcp_keepalive = value;
                 return 0;
             }
