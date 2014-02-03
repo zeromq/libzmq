@@ -40,7 +40,7 @@ extern "C"
 void zmq::thread_t::start (thread_fn *tfn_, void *arg_)
 {
     tfn = tfn_;
-    arg =arg_;
+    arg = arg_;
 #if defined _WIN32_WCE
     descriptor = (HANDLE) CreateThread (NULL, 0,
         &::thread_routine, this, 0 , NULL);
@@ -86,7 +86,7 @@ extern "C"
 void zmq::thread_t::start (thread_fn *tfn_, void *arg_)
 {
     tfn = tfn_;
-    arg =arg_;
+    arg = arg_;
     int rc = pthread_create (&descriptor, NULL, thread_routine, this);
     posix_assert (rc);
 }
