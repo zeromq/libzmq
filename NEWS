@@ -4,6 +4,8 @@
 Bug Fixes
 ---------
 
+* Fixed #868; assertion failure at ip.cpp:137 when using port scanner.
+
 * Fixed #797; fixed setting TCP keepalive on Windows.
 
 * Fixed #775; compile error on Windows.
