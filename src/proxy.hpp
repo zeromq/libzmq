@@ -32,11 +32,13 @@ namespace zmq
     };
 
     int proxy (
+            class socket_base_t **open_endpoint_,
             class socket_base_t **frontend_,
             class socket_base_t **backend_,
             class socket_base_t *capture_ = NULL,
             class socket_base_t *control_ = NULL, // backward compatibility without this argument
-            proxy_hook_t **hook_ = NULL // backward compatibility without this argument
+            proxy_hook_t **hook_ = NULL, // backward compatibility without this argument
+            long time_out_ = -1
         );
 }
 

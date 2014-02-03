@@ -89,6 +89,7 @@ tests/test_diffserv
 tests/test_srcfd
 tests/test_stream_disconnect
 tests/test_proxy_chain
+tests/test_proxy_open_chain
 tests/test*.log
 tests/test*.trs
 src/platform.hpp*

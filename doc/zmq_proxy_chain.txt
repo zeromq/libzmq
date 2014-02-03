@@ -91,6 +91,7 @@ SEE ALSO
 linkzmq:zmq_proxy[3]
 linkzmq:zmq_proxy_steerable[3]
 linkzmq:zmq_proxy_hook[3]
+linkzmq:zmq_proxy_open_chain[3]
 linkzmq:zmq_bind[3]
 linkzmq:zmq_connect[3]
 linkzmq:zmq_socket[3]

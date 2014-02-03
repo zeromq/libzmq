@@ -117,75 +117,141 @@ forward(
     return 0;
 }
 
+#if defined(thread_local)
+#define STATIC4TLS_OR_NA static thread_local
+#else
+#define STATIC4TLS_OR_NA
+#endif
+
 int
 zmq::proxy (
+        class socket_base_t **open_endpoint_,
         class socket_base_t **frontend_,
         class socket_base_t **backend_,
         class socket_base_t *capture_,
         class socket_base_t *control_,
-        zmq::proxy_hook_t **hook_)
+        zmq::proxy_hook_t **hook_,
+        long time_out_)
 {
-    msg_t msg;
-    int rc = msg.init ();
-    if (rc != 0)
-        return -1;
-
-    //  The algorithm below assumes ratio of requests and replies processed
-    //  under full load to be 1:1.
-
-    int more;
-    size_t moresz;
-    size_t n = 0; // number of pair of sockets: the array ends with NULL
-    for (;; n++) { // counts the number of pair of sockets
-        if (!frontend_[n] && !backend_[n])
-            break;
-        if (!frontend_[n] || !backend_[n]) {
-            errno = EFAULT;
-            return -1;
-        }
-    }
-    if (!n) {
-        errno = EFAULT;
-        return -1;
-    }
-    // avoid dynamic allocation as we have no guarranty to reach the deallocator => limit the chain length
-    zmq_assert(n <= ZMQ_PROXY_CHAIN_MAX_LENGTH);
-    zmq_pollitem_t items [2 * ZMQ_PROXY_CHAIN_MAX_LENGTH + 1]; // +1 for the control socket
+    // all threads statics
     static zmq_pollitem_t null_item = { NULL, 0, ZMQ_POLLIN, 0 };
     static zmq::proxy_hook_t dummy_hook = {NULL, NULL, NULL};
     static zmq::proxy_hook_t* no_hooks[ZMQ_PROXY_CHAIN_MAX_LENGTH];
-    if (!hook_)
-        hook_ = no_hooks;
-    else
-        for (size_t i = 0; i < n; i++)
-            if (!hook_[i]) // Check if a hook is used
-                hook_[i] = &dummy_hook;
-    for (size_t i = 0; i < n; i++) {
-        memcpy(&items[2 * i], &null_item, sizeof(null_item));
-        items[2 * i].socket =     frontend_[i];
-        memcpy(&items[2 * i + 1], &null_item, sizeof(null_item));
-        items[2 * i + 1].socket = backend_[i];
-        no_hooks[i] = &dummy_hook;
-    }
-    memcpy(&items[2 * n], &null_item, sizeof(null_item));
-    items[2 * n].socket =     control_;
-    int qt_poll_items = (control_ ? 2 * n + 1 : 2 * n);
 
-    //  Proxy can be in these three states
-    enum {
+    // local thread statics or not static if LTS is not available (LTS is only required for zmq_proxy_open_chain
+    STATIC4TLS_OR_NA bool is_initialised = false;
+    STATIC4TLS_OR_NA msg_t msg;
+    STATIC4TLS_OR_NA int rc;
+    STATIC4TLS_OR_NA int more;
+    STATIC4TLS_OR_NA size_t moresz;
+    STATIC4TLS_OR_NA size_t qt_pairs_fb; // number of pair of sockets: both arrays frontend_ & backend_ ends with NULL
+    STATIC4TLS_OR_NA zmq_pollitem_t items [2 * ZMQ_PROXY_CHAIN_MAX_LENGTH + 1]; // +1 for the control socket
+    STATIC4TLS_OR_NA int linked_to [2 * ZMQ_PROXY_CHAIN_MAX_LENGTH + 1];
+    STATIC4TLS_OR_NA hook_f hook_func [2 * ZMQ_PROXY_CHAIN_MAX_LENGTH + 1];
+    STATIC4TLS_OR_NA void* hook_data [2 * ZMQ_PROXY_CHAIN_MAX_LENGTH + 1];
+    STATIC4TLS_OR_NA int qt_poll_items;
+    STATIC4TLS_OR_NA int qt_sockets;
+    STATIC4TLS_OR_NA enum {
         active,
         paused,
         terminated
-    } state = active;
+    } state; //  Proxy can be in these three states
+    STATIC4TLS_OR_NA zmq::proxy_hook_t **hook;
+
+    if (!open_endpoint_ && !frontend_ && !backend_ && !capture_ && !control_ && !hook_ && !time_out_) {
+        is_initialised = false; // hawful hack to force proxy reinitialisation
+        return 0;
+    }
+    if (!is_initialised || time_out_ == -1) { // if we wait on poll, then the proxy has no memory => we reinitialize everything
+        if (!msg.check()) {
+            rc = msg.init ();
+            if (rc != 0)
+                return -1;
+        }
+
+        //  The algorithm below assumes ratio of requests and replies processed
+        //  under full load to be 1:1.
+
+        // counts the number of pair of sockets in frontend_/backend_
+        for (qt_pairs_fb = 0; qt_pairs_fb < 2 * ZMQ_PROXY_CHAIN_MAX_LENGTH ; qt_pairs_fb++) // "2 *" is to be sure to assert later
+            if (!frontend_[qt_pairs_fb] && !backend_[qt_pairs_fb])
+                break;
+
+        // strick criteria for zmq_proxy, zmq_proxy_steerable, zmq_proxy_hook: one single proxy with frontend and backend defined
+        if (time_out_ == -1)
+            if (!frontend_[0] || !backend_[0]) {
+                errno = EFAULT;
+                return -1;
+            }
+
+        hook = hook_ ? hook_ : no_hooks;
+
+        // fill the zmq_pollitem_t array, identifying with linked_to if a socket is alone (open) or to which one it is proxied
+        int k = 0;
+        if (open_endpoint_)
+            while (open_endpoint_[k]) {
+                zmq_assert(k < ZMQ_PROXY_CHAIN_MAX_LENGTH); // avoid dynamic allocation as we have no guarranty to reach the deallocator => limit the chain length
+                memcpy(&items[k], &null_item, sizeof(null_item));
+                items[k].socket = open_endpoint_[k];
+                linked_to[k] = k; // this socket is alone (open)
+                hook_func[k] = NULL; // No hook will be executed on an end-point socket since we don't recv the messages
+                k++;
+            }
+        for (size_t i = 0; i < qt_pairs_fb; i++, k++) {
+            zmq_assert(k < ZMQ_PROXY_CHAIN_MAX_LENGTH); // avoid dynamic allocation as we have no guarranty to reach the deallocator => limit the chain length
+            if (hook_) { // TODO: utiliser plutôt hook
+                if (!hook_[i]) // Check if a hook is used (hooks are only for proxies defined with pairs of sockets in frontend_ & backend_)
+                    hook_[i] = &dummy_hook;
+            }
+            else
+                no_hooks[i] = &dummy_hook;
+            memcpy(&items[k], &null_item, sizeof(null_item));
+            hook_data[k] = hook[i]->data;
+            if (!frontend_[i]) {
+                items[k].socket = backend_[i];
+                linked_to[k] = k; // this socket is alone (open)
+                hook_func[k] = NULL; // No hook will be executed on an "open" socket since we don't recv the messages
+            }
+            else if (!backend_[i]) {
+                items[k].socket = frontend_[i];
+                linked_to[k] = k; // this socket is alone (open)
+                hook_func[k] = NULL; // No hook will be executed on an "open" socket since we don't recv the messages
+            }
+            else {
+                items[k].socket = frontend_[i];
+                linked_to[k] = k+1; // this socket is proxied to the next one
+                hook_func[k] = hook[i]->front2back_hook;
+                k++;
+                hook_data[k] = hook[i]->data;
+                memcpy(&items[k], &null_item, sizeof(null_item));
+                items[k].socket = backend_[i];
+                linked_to[k] = k-1; // this socket is proxied to the previous one
+                hook_func[k] = hook[i]->back2front_hook;
+            }
+        }
+        if (!k) { // we require at least one socket
+            errno = EFAULT;
+            return -1;
+        }
+        memcpy(&items[k], &null_item, sizeof(null_item));
+        items[k].socket =     control_;
+        qt_poll_items = (control_ ? k + 1 : k);
+        qt_sockets = k;
+
+        state = active;
+        is_initialised = true;
+    }
 
     while (state != terminated) {
         //  Wait while there are either requests or replies to process.
-        rc = zmq_poll (&items [0], qt_poll_items, -1);
+        rc = zmq_poll (&items [0], qt_poll_items, time_out_);
         if (unlikely (rc < 0))
             return -1;
+        if (rc == 0) // no message. Obviously, we are in the case where: time_out_ != -1
+            return 0;
 
         //  Process a control command if any
-        if (control_ && items [2 * n].revents & ZMQ_POLLIN) {
+        if (control_ && items [qt_poll_items - 1].revents & ZMQ_POLLIN) {
             rc = control_->recv (&msg, 0);
             if (unlikely (rc < 0))
                 return -1;
@@ -216,22 +282,27 @@ zmq::proxy (
         }
 
         // process each pair of sockets
-        for (size_t i = 0; i < n; i++) {
-            //  Process a request
+        for (int i = 0; i < qt_sockets; i++) {
             if (state == active
-            &&  items [2 * i].revents & ZMQ_POLLIN) {
-                rc = forward(frontend_[i], backend_[i], capture_, msg, hook_[i]->front2back_hook, hook_[i]->data);
-                if (unlikely (rc < 0))
-                    return -1;
-            }
-            //  Process a reply
-            if (state == active
-            &&  items [2 * i + 1].revents & ZMQ_POLLIN) {
-                rc = forward(backend_[i], frontend_[i], capture_, msg, hook_[i]->back2front_hook, hook_[i]->data);
-                if (unlikely (rc < 0))
-                    return -1;
+            &&  items [i].revents & ZMQ_POLLIN) {
+                if (i != linked_to[i]) { // this socket is proxied to the linked_to[i] one
+                    rc = forward((zmq::socket_base_t *) items[i].socket,
+                                 (zmq::socket_base_t *) items[linked_to[i]].socket,
+                                 (zmq::socket_base_t *) capture_,
+                                 msg,
+                                 hook_func[i],
+                                 hook_data[i]);
+                    if (unlikely (rc < 0))
+                        return -1;
+                }
+                else // this socket is alone (open)
+                    return time_out_ == -1 ? 1 : i + 1; // 1 is for backward compatibility, sockets are counted starting at 1
             }
         }
+
+        // proxy opening
+        if (time_out_ != -1)
+            break;
     }
     return 0;
 }
