@@ -135,16 +135,13 @@ Applicable socket types:: ZMQ_SUB
 
 ZMQ_IDENTITY: Set socket identity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_IDENTITY' option shall set the identity of the specified 'socket'.
-Socket identity is used only by request/reply pattern. Namely, it can be used
-in tandem with ROUTER socket to route messages to the peer with specific
-identity.
+The 'ZMQ_IDENTITY' option shall set the identity of the specified 'socket'
+when connecting to a ROUTER socket. The identity should be from 1 to 255
+bytes long and MAY NOT start with binary zero.
 
-Identity should be at least one byte and at most 255 bytes long. Identities
-starting with binary zero are reserved for use by 0MQ infrastructure.
-
-If two peers use the same identity when connecting to a third peer, the
-results shall be undefined.
+If two clients use the same identity when connecting to a ROUTER, the
+ROUTER socket shall accept only the first such client and reject the
+others.
 
 [horizontal]
 Option value type:: binary data
