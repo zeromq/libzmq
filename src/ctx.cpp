@@ -455,18 +455,14 @@ void zmq::ctx_t::connect_inproc_sockets (zmq::socket_base_t *bind_socket_,
        pending_connection_.connect_pipe->set_hwms(hwms [1], hwms [0]);
        pending_connection_.bind_pipe->set_hwms(hwms [0], hwms [1]);
 
-    if (bind_options.recv_identity) {
-    
-        msg_t id;
-        int rc = id.init_size (pending_connection_.endpoint.options.identity_size);
+    if (!bind_options.recv_identity) {
+        msg_t msg;
+        const bool ok = pending_connection_.bind_pipe->read (&msg);
+        zmq_assert (ok);
+        const int rc = msg.close ();
         errno_assert (rc == 0);
-        memcpy (id.data (), pending_connection_.endpoint.options.identity,
-                            pending_connection_.endpoint.options.identity_size);
-        id.set_flags (msg_t::identity);
-        bool written = pending_connection_.connect_pipe->write (&id);
-        zmq_assert (written);
-        pending_connection_.connect_pipe->flush ();
     }
+
     if (pending_connection_.endpoint.options.recv_identity) {
         msg_t id;
         int rc = id.init_size (bind_options.identity_size);
