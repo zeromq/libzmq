@@ -108,6 +108,14 @@ int zmq::ctx_t::terminate ()
             term_mailbox.forked();
         }
 #endif
+        // Connect up any pending inproc connections, otherwise we will hang
+        pending_connections_t copy = pending_connections;
+        for (pending_connections_t::iterator p = copy.begin (); p != copy.end (); ++p) {
+            zmq::socket_base_t *s = create_socket (ZMQ_PAIR);
+            s->bind (p->first.c_str ());
+            s->close ();
+        }
+
         //  Check whether termination was already underway, but interrupted and now
         //  restarted.
         bool restarted = terminating;
