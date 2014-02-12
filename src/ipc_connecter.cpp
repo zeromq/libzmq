@@ -27,7 +27,6 @@
 #include "stream_engine.hpp"
 #include "io_thread.hpp"
 #include "platform.hpp"
-#include "random.hpp"
 #include "err.hpp"
 #include "ip.hpp"
 #include "address.hpp"
@@ -49,8 +48,7 @@ zmq::ipc_connecter_t::ipc_connecter_t (class io_thread_t *io_thread_,
     handle_valid (false),
     delayed_start (delayed_start_),
     timer_started (false),
-    session (session_),
-    current_reconnect_ivl(options.reconnect_ivl)
+    session (session_)
 {
     zmq_assert (addr);
     zmq_assert (addr->protocol == "ipc");
@@ -67,7 +65,7 @@ zmq::ipc_connecter_t::~ipc_connecter_t ()
 
 void zmq::ipc_connecter_t::process_plug ()
 {
-    if (delayed_start)
+    if (delayed_start || session->current_reconnect_ivl ())
         add_reconnect_timer ();
     else
         start_connecting ();
@@ -163,30 +161,10 @@ void zmq::ipc_connecter_t::start_connecting ()
 
 void zmq::ipc_connecter_t::add_reconnect_timer()
 {
-    int rc_ivl = get_new_reconnect_ivl();
+    int rc_ivl = session->next_reconnect_ivl ();
     add_timer (rc_ivl, reconnect_timer_id);
     socket->event_connect_retried (endpoint, rc_ivl);
     timer_started = true;
-}
-
-int zmq::ipc_connecter_t::get_new_reconnect_ivl ()
-{
-    //  The new interval is the current interval + random value.
-    int this_interval = current_reconnect_ivl +
-        (generate_random () % options.reconnect_ivl);
-
-    //  Only change the current reconnect interval  if the maximum reconnect
-    //  interval was set and if it's larger than the reconnect interval.
-    if (options.reconnect_ivl_max > 0 && 
-        options.reconnect_ivl_max > options.reconnect_ivl) {
-
-        //  Calculate the next interval
-        current_reconnect_ivl = current_reconnect_ivl * 2;
-        if(current_reconnect_ivl >= options.reconnect_ivl_max) {
-            current_reconnect_ivl = options.reconnect_ivl_max;
-        }   
-    }
-    return this_interval;
 }
 
 int zmq::ipc_connecter_t::open ()

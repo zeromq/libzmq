@@ -67,11 +67,6 @@ namespace zmq
         //  Internal function to add a reconnect timer
         void add_reconnect_timer();
 
-        //  Internal function to return a reconnect backoff delay.
-        //  Will modify the current_reconnect_ivl used for next call
-        //  Returns the currently used interval
-        int get_new_reconnect_ivl ();
-
         //  Open IPC connecting socket. Returns -1 in case of error,
         //  0 if connect was successfull immediately. Returns -1 with
         //  EAGAIN errno if async connect was launched.
@@ -105,9 +100,6 @@ namespace zmq
 
         //  Reference to the session we belong to.
         zmq::session_base_t *session;
-
-        //  Current reconnect ivl, updated for backoff strategy
-        int current_reconnect_ivl;
 
         // String representation of endpoint to connect to
         std::string endpoint;

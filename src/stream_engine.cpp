@@ -685,6 +685,10 @@ void zmq::stream_engine_t::zap_msg_available ()
 
 void zmq::stream_engine_t::mechanism_ready ()
 {
+    //  Successful handshaking indicates a successful connection.
+    //  Reset the session reconnect interval.
+    session->reset_reconnect_ivl ();
+
     if (options.recv_identity) {
         msg_t identity;
         mechanism->peer_identity (&identity);
