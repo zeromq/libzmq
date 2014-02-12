@@ -86,6 +86,13 @@ namespace zmq
 
         socket_base_t *get_socket ();
 
+        //  Get the current reconnect interval.
+        int current_reconnect_ivl ();
+        //  Update and return the reconnect interval.
+        int next_reconnect_ivl ();
+        //  Reset the reconnect interval for future connections.
+        void reset_reconnect_ivl ();
+
     protected:
 
         session_base_t (zmq::io_thread_t *io_thread_, bool active_,
@@ -156,6 +163,9 @@ namespace zmq
 
         session_base_t (const session_base_t&);
         const session_base_t &operator = (const session_base_t&);
+
+        //  Saved reconnect interval, updated for backoff strategy.
+        int reconnect_ivl;
     };
 
 }

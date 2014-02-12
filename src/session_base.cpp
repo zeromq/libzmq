@@ -28,6 +28,7 @@
 #include "pgm_sender.hpp"
 #include "pgm_receiver.hpp"
 #include "address.hpp"
+#include "random.hpp"
 
 #include "ctx.hpp"
 #include "req.hpp"
@@ -79,7 +80,8 @@ zmq::session_base_t::session_base_t (class io_thread_t *io_thread_,
     socket (socket_),
     io_thread (io_thread_),
     has_linger_timer (false),
-    addr (addr_)
+    addr (addr_),
+    reconnect_ivl (0)
 {
 }
 
@@ -551,5 +553,43 @@ void zmq::session_base_t::start_connecting (bool wait_)
 #endif
 
     zmq_assert (false);
+}
+
+int zmq::session_base_t::current_reconnect_ivl ()
+{
+    return reconnect_ivl;
+}
+
+int zmq::session_base_t::next_reconnect_ivl ()
+{
+    //  Prevent update and division by zero error.
+    if (options.reconnect_ivl == 0)
+        return 0;
+
+    //  First update initializes the interval from options.
+    if (reconnect_ivl == 0)
+        reconnect_ivl = options.reconnect_ivl;
+
+    //  The new interval is the current interval + random value.
+    int this_interval = reconnect_ivl +
+        (generate_random () % options.reconnect_ivl);
+
+    //  Only change the current reconnect interval  if the maximum reconnect
+    //  interval was set and if it's larger than the reconnect interval.
+    if (options.reconnect_ivl_max > 0 &&
+        options.reconnect_ivl_max > options.reconnect_ivl) {
+
+        //  Calculate the next interval
+        reconnect_ivl = reconnect_ivl * 2;
+        if(reconnect_ivl >= options.reconnect_ivl_max) {
+            reconnect_ivl = options.reconnect_ivl_max;
+        }
+    }
+    return this_interval;
+}
+
+void zmq::session_base_t::reset_reconnect_ivl ()
+{
+    reconnect_ivl = 0;
 }
 
