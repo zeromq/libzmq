@@ -145,7 +145,14 @@ int zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
         return 0;
 
     ip_addr_ = host;
-    return (int) ((struct sockaddr *) &ss)->sa_family;
+
+    union {
+        struct sockaddr sa;
+        struct sockaddr_storage sa_stor;
+    } u;
+
+    u.sa_stor = ss;
+    return (int) u.sa.sa_family;
 }
 
 void zmq::set_ip_type_of_service (fd_t s_, int iptos)
