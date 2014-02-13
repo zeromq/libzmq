@@ -1018,11 +1018,6 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 
 //  The proxy functionality
 
-//  Compile time check whether proxy_hook_t fits into zmq_proxy_hook_t.
-typedef char check_proxy_hook_t_size
-    [sizeof (zmq::proxy_hook_t) ==  sizeof (zmq_proxy_hook_t) ? 1 : -1];
-
-
 int zmq_proxy (void *frontend_, void *backend_, void *capture_)
 {
     if (!frontend_ || !backend_) {
@@ -1048,25 +1043,11 @@ int zmq_proxy_steerable (void *frontend_, void *backend_, void *capture_, void *
         (zmq::socket_base_t*) control_);
 }
 
-int zmq_proxy_hook (void *frontend_, void *backend_, void *capture_, void *hook_, void *control_)
-{
-    if (!frontend_ || !backend_) {
-        errno = EFAULT;
-        return -1;
-    }
-    return zmq::proxy (
-        (zmq::socket_base_t*) frontend_,
-        (zmq::socket_base_t*) backend_,
-        (zmq::socket_base_t*) capture_,
-        (zmq::socket_base_t*) control_,
-        (zmq::proxy_hook_t*)  hook_);
-}
-
 //  The deprecated device functionality
 
 int zmq_device (int /* type */, void *frontend_, void *backend_)
 {
     return zmq::proxy (
         (zmq::socket_base_t*) frontend_,
-        (zmq::socket_base_t*) backend_);
+        (zmq::socket_base_t*) backend_, NULL);
 }
