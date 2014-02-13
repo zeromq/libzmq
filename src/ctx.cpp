@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2013 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -95,6 +95,14 @@ zmq::ctx_t::~ctx_t ()
 
 int zmq::ctx_t::terminate ()
 {
+    // Connect up any pending inproc connections, otherwise we will hang
+    pending_connections_t copy = pending_connections;
+    for (pending_connections_t::iterator p = copy.begin (); p != copy.end (); ++p) {
+        zmq::socket_base_t *s = create_socket (ZMQ_PAIR);
+        s->bind (p->first.c_str ());
+        s->close ();
+    }
+
     slot_sync.lock ();
     if (!starting) {
 

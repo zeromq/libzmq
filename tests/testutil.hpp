@@ -22,7 +22,7 @@
 
 #include "../include/zmq.h"
 #include "../include/zmq_utils.h"
-#include "../src/platform.hpp"
+#include "platform.hpp"
 
 //  This defines the settle time used in tests; raise this if we
 //  get test failures on slower systems due to binds/connects not
