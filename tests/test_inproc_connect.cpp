@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2013 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -324,6 +324,23 @@ void test_identity()
     assert (rc == 0);
 }
 
+void test_connect_only ()
+{
+    void *ctx = zmq_ctx_new ();
+    assert (ctx);
+
+    void *connectSocket = zmq_socket (ctx, ZMQ_PUSH);
+    assert (connectSocket);
+    int rc = zmq_connect (connectSocket, "inproc://a");
+    assert (rc == 0);
+
+    rc = zmq_close (connectSocket);
+    assert (rc == 0);
+
+    rc = zmq_ctx_term (ctx);
+    assert (rc == 0);
+}
+
 int main (void)
 {
     setup_test_environment();
@@ -334,6 +351,7 @@ int main (void)
     test_multiple_connects ();
     test_multiple_threads ();
     test_identity ();
+    test_connect_only ();
 
     return 0;
 }
