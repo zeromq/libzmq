@@ -428,7 +428,7 @@ endforeach()
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/platform.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/platform.hpp)
 list(APPEND sources ${CMAKE_CURRENT_BINARY_DIR}/platform.hpp)
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/libzmq.pc.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/libzmq.pc)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/libzmq.pc.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/libzmq.pc @ONLY)
 set(zmq-pkgconfig ${CMAKE_CURRENT_BINARY_DIR}/libzmq.pc)
 
 if(NOT ZMQ_BUILD_FRAMEWORK)
