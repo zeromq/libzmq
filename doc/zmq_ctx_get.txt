@@ -26,7 +26,7 @@ ZMQ_IO_THREADS: Get number of I/O threads
 The 'ZMQ_IO_THREADS' argument returns the size of the 0MQ thread pool
 for this context.
 
-ZMQ_MAX_SOCKETS: Set maximum number of sockets
+ZMQ_MAX_SOCKETS: Get maximum number of sockets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_MAX_SOCKETS' argument returns the maximum number of sockets
 allowed for this context.
