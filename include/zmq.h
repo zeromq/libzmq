@@ -178,6 +178,7 @@ ZMQ_EXPORT void zmq_version (int *major, int *minor, int *patch);
 /*  Context options                                                           */
 #define ZMQ_IO_THREADS  1
 #define ZMQ_MAX_SOCKETS 2
+#define ZMQ_MAX_SOCKETS_MAX 3
 
 /*  Default for new contexts                                                  */
 #define ZMQ_IO_THREADS_DFLT  1

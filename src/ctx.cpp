@@ -24,6 +24,7 @@
 #include <unistd.h>
 #endif
 
+#include <limits>
 #include <new>
 #include <string.h>
 
@@ -203,6 +204,9 @@ int zmq::ctx_t::get (int option_)
     int rc = 0;
     if (option_ == ZMQ_MAX_SOCKETS)
         rc = max_sockets;
+    else
+    if (option_ == ZMQ_MAX_SOCKETS_MAX)
+        rc = clipped_maxsocket (std::numeric_limits<int>::max());
     else
     if (option_ == ZMQ_IO_THREADS)
         rc = io_thread_count;
