@@ -53,8 +53,7 @@
 // zmq.h must be included *after* poll.h for AIX to build properly
 #include "../include/zmq.h"
 
-int
-capture(
+int capture(
         class zmq::socket_base_t *capture_,
         zmq::msg_t& msg_,
         int more_ = 0)
@@ -75,18 +74,15 @@ capture(
     return 0;
 }
 
-int
-forward(
+int forward(
         class zmq::socket_base_t *from_,
         class zmq::socket_base_t *to_,
         class zmq::socket_base_t *capture_,
-        zmq::msg_t& msg_,
-        zmq::hook_f do_hook_,
-        void *data_)
+        zmq::msg_t& msg_)
 {
     int more;
     size_t moresz;
-    for (size_t n = 1;; n++) {
+    while (true) {
         int rc = from_->recv (&msg_, 0);
         if (unlikely (rc < 0))
             return -1;
@@ -101,13 +97,6 @@ forward(
         if (unlikely (rc < 0))
             return -1;
 
-        // Hook
-        if (do_hook_) {
-            rc = (*do_hook_)(from_, to_, capture_, &msg_, more ? n : 0, data_); // first message: n == 1, mth message: n == m, last message: n == 0
-            if (unlikely (rc < 0))
-                return -1;
-        }
-
         rc = to_->send (&msg_, more? ZMQ_SNDMORE: 0);
         if (unlikely (rc < 0))
             return -1;
@@ -117,13 +106,11 @@ forward(
     return 0;
 }
 
-int
-zmq::proxy (
-        class socket_base_t **frontend_,
-        class socket_base_t **backend_,
-        class socket_base_t *capture_,
-        class socket_base_t *control_,
-        zmq::proxy_hook_t **hook_)
+int zmq::proxy (
+    class socket_base_t *frontend_,
+    class socket_base_t *backend_,
+    class socket_base_t *capture_,
+    class socket_base_t *control_)
 {
     msg_t msg;
     int rc = msg.init ();
@@ -135,41 +122,12 @@ zmq::proxy (
 
     int more;
     size_t moresz;
-    size_t n = 0; // number of pair of sockets: the array ends with NULL
-    for (;; n++) { // counts the number of pair of sockets
-        if (!frontend_[n] && !backend_[n])
-            break;
-        if (!frontend_[n] || !backend_[n]) {
-            errno = EFAULT;
-            return -1;
-        }
-    }
-    if (!n) {
-        errno = EFAULT;
-        return -1;
-    }
-    // avoid dynamic allocation as we have no guarranty to reach the deallocator => limit the chain length
-    zmq_assert(n <= ZMQ_PROXY_CHAIN_MAX_LENGTH);
-    zmq_pollitem_t items [2 * ZMQ_PROXY_CHAIN_MAX_LENGTH + 1]; // +1 for the control socket
-    static zmq_pollitem_t null_item = { NULL, 0, ZMQ_POLLIN, 0 };
-    static zmq::proxy_hook_t dummy_hook = {NULL, NULL, NULL};
-    static zmq::proxy_hook_t* no_hooks[ZMQ_PROXY_CHAIN_MAX_LENGTH];
-    if (!hook_)
-        hook_ = no_hooks;
-    else
-        for (size_t i = 0; i < n; i++)
-            if (!hook_[i]) // Check if a hook is used
-                hook_[i] = &dummy_hook;
-    for (size_t i = 0; i < n; i++) {
-        memcpy(&items[2 * i], &null_item, sizeof(null_item));
-        items[2 * i].socket =     frontend_[i];
-        memcpy(&items[2 * i + 1], &null_item, sizeof(null_item));
-        items[2 * i + 1].socket = backend_[i];
-        no_hooks[i] = &dummy_hook;
-    }
-    memcpy(&items[2 * n], &null_item, sizeof(null_item));
-    items[2 * n].socket =     control_;
-    int qt_poll_items = (control_ ? 2 * n + 1 : 2 * n);
+    zmq_pollitem_t items [] = {
+        { frontend_, 0, ZMQ_POLLIN, 0 },
+        { backend_, 0, ZMQ_POLLIN, 0 },
+        { control_, 0, ZMQ_POLLIN, 0 }
+    };
+    int qt_poll_items = (control_ ? 3 : 2);
 
     //  Proxy can be in these three states
     enum {
@@ -185,7 +143,7 @@ zmq::proxy (
             return -1;
 
         //  Process a control command if any
-        if (control_ && items [2 * n].revents & ZMQ_POLLIN) {
+        if (control_ && items [2].revents & ZMQ_POLLIN) {
             rc = control_->recv (&msg, 0);
             if (unlikely (rc < 0))
                 return -1;
@@ -214,23 +172,19 @@ zmq::proxy (
                 zmq_assert (false);
             }
         }
-
-        // process each pair of sockets
-        for (size_t i = 0; i < n; i++) {
-            //  Process a request
-            if (state == active
-            &&  items [2 * i].revents & ZMQ_POLLIN) {
-                rc = forward(frontend_[i], backend_[i], capture_, msg, hook_[i]->front2back_hook, hook_[i]->data);
-                if (unlikely (rc < 0))
-                    return -1;
-            }
-            //  Process a reply
-            if (state == active
-            &&  items [2 * i + 1].revents & ZMQ_POLLIN) {
-                rc = forward(backend_[i], frontend_[i], capture_, msg, hook_[i]->back2front_hook, hook_[i]->data);
-                if (unlikely (rc < 0))
-                    return -1;
-            }
+        //  Process a request
+        if (state == active
+        &&  items [0].revents & ZMQ_POLLIN) {
+            rc = forward(frontend_, backend_, capture_,msg);
+            if (unlikely (rc < 0))
+                return -1;
+        }
+        //  Process a reply
+        if (state == active
+        &&  items [1].revents & ZMQ_POLLIN) {
+            rc = forward(backend_, frontend_, capture_,msg);
+            if (unlikely (rc < 0))
+                return -1;
         }
     }
     return 0;
