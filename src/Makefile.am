@@ -181,7 +181,7 @@ if ON_ANDROID
 libzmq_la_LDFLAGS = -avoid-version -version-info @LTVER@ @LIBZMQ_EXTRA_LDFLAGS@
 else
 if ON_LINUX
-libzmq_la_LDFLAGS = -version-info @LTVER@ @LIBZMQ_EXTRA_LDFLAGS@ -Wl,--version-script=libzmq.vers
+libzmq_la_LDFLAGS = -version-info @LTVER@ @LIBZMQ_EXTRA_LDFLAGS@ -Wl,--version-script=$(srcdir)/libzmq.vers
 else
 libzmq_la_LDFLAGS = -version-info @LTVER@ @LIBZMQ_EXTRA_LDFLAGS@ -Wl
 endif
