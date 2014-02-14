@@ -876,21 +876,21 @@ dnl # Choose polling system                                                     
 dnl ################################################################################
 AC_DEFUN([LIBZMQ_CHECK_POLLER], [{
 
-    # Allow user to disable doc build
+    # Allow user to override poller autodetection
     AC_ARG_WITH([poller], [AS_HELP_STRING([--with-poller],
                 [choose polling system manually. valid values are kqueue, epoll, devpoll, poll or select [default=autodetect]])])
-
-    AC_MSG_CHECKING([for suitable polling system])
 
     case "${with_poller}" in
         kqueue|epoll|devpoll|poll|select)
             # User has chosen polling system
+            AC_MSG_CHECKING([for suitable polling system skipped for preselect])
             libzmq_cv_poller="${with_poller}"
         ;;
 
         *)
             # try to find suitable polling system. the order of testing is:
             # kqueue -> epoll -> devpoll -> poll -> select
+            AC_MSG_CHECKING([for suitable polling system])
             for subsystem in kqueue epoll devpoll poll select; do
 
                 case "${subsystem}" in
