@@ -31,10 +31,10 @@ ZMQ_MAX_SOCKETS: Get maximum number of sockets
 The 'ZMQ_MAX_SOCKETS' argument returns the maximum number of sockets
 allowed for this context.
 
-ZMQ_MAX_SOCKETS_MAX: Get largest configurable number of sockets
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_MAX_SOCKETS_MAX' argument returns the largest number of sockets
-that linkzmq:zmq_ctx_set[3] will accept.
+ZMQ_SOCKET_LIMIT: Get largest configurable number of sockets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_SOCKET_LIMIT' argument returns the largest number of sockets that
+linkzmq:zmq_ctx_set[3] will accept.
 
 ZMQ_IPV6: Set IPv6 option
 ~~~~~~~~~~~~~~~~~~~~~~~~~

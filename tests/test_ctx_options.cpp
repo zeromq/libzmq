@@ -31,10 +31,10 @@ int main (void)
     
     assert (zmq_ctx_get (ctx, ZMQ_MAX_SOCKETS) == ZMQ_MAX_SOCKETS_DFLT);
 #if defined(ZMQ_USE_SELECT)
-    assert (zmq_ctx_get (ctx, ZMQ_MAX_SOCKETS_MAX) == ZMQ_MAX_SOCKETS_DFLT);
+    assert (zmq_ctx_get (ctx, ZMQ_SOCKET_LIMIT) == ZMQ_MAX_SOCKETS_DFLT);
 #elif    defined(ZMQ_USE_POLL) || defined(ZMQ_USE_EPOLL)     \
       || defined(ZMQ_USE_DEVPOLL) || defined(ZMQ_USE_KQUEUE)
-    assert (zmq_ctx_get (ctx, ZMQ_MAX_SOCKETS_MAX)
+    assert (zmq_ctx_get (ctx, ZMQ_SOCKET_LIMIT)
                               == std::numeric_limits<int>::max());
 #endif
     assert (zmq_ctx_get (ctx, ZMQ_IO_THREADS) == ZMQ_IO_THREADS_DFLT);
