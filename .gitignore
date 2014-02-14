@@ -14,13 +14,13 @@ autom4te.cache
 *.lo
 *.loT
 *.la
+*.exe
 *.html
 *.pdf
 *.ps
 .*
 *~
 .*~
-tools/curve_keygen.o
 tools/curve_keygen
 tests/test_resource
 tests/test_ipc_wildcard
