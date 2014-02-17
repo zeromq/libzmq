@@ -922,7 +922,7 @@ AC_DEFUN([LIBZMQ_CHECK_POLLER], [{
       ;;
     esac
 
-    libzmq_cv_poller_flag=`echo "ZMQ_FORCE_${libzmq_cv_poller}" | tr a-z A-Z`
+    libzmq_cv_poller_flag=`echo "ZMQ_USE_${libzmq_cv_poller}" | tr a-z A-Z`
 
     AS_IF([test "x${libzmq_cv_poller}" != "x"],
           [AC_MSG_RESULT([using $libzmq_cv_poller]) ; $1], [AC_MSG_RESULT(no suitable polling system found) ; $2])

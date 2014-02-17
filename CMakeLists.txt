@@ -10,11 +10,56 @@ if(APPLE)
 endif()
 
 
-set(POLLER "" CACHE STRING "Choose polling system manually. valid values are
+set(POLLER "" CACHE STRING "Choose polling system. valid values are
                             kqueue, epoll, devpoll, poll or select [default=autodetect]")
 
-if(     NOT POLLER STREQUAL ""
-    AND NOT POLLER STREQUAL "kqueue"
+include(CheckFunctionExists)
+include(CheckTypeSize)
+if(POLLER STREQUAL "")
+    set(CMAKE_REQUIRED_INCLUDES sys/event.h)
+    check_function_exists(kqueue HAVE_KQUEUE)
+    set(CMAKE_REQUIRED_INCLUDES )
+    if(HAVE_KQUEUE)
+        set(POLLER "kqueue")
+    else()
+        set(CMAKE_REQUIRED_INCLUDES sys/epoll.h)
+        check_function_exists(epoll_create HAVE_EPOLL)
+        set(CMAKE_REQUIRED_INCLUDES )
+        if(HAVE_EPOLL)
+            set(POLLER "epoll")
+        else()
+            set(CMAKE_REQUIRED_INCLUDES sys/devpoll.h)
+            check_type_size("struct pollfd" DEVPOLL)
+            set(CMAKE_REQUIRED_INCLUDES )
+            if(HAVE_DEVPOLL)
+                set(POLLER "devpoll")
+            else()
+                set(CMAKE_REQUIRED_INCLUDES poll.h)
+                check_function_exists(poll HAVE_POLL)
+                set(CMAKE_REQUIRED_INCLUDES )
+                if(HAVE_POLL)
+                    set(POLLER "poll")
+                else()
+                    if(CMAKE_HOST_WIN32)
+                        set(CMAKE_REQUIRED_INCLUDES winsock2.h)
+                    else()
+                        set(CMAKE_REQUIRED_INCLUDES sys/select.h)
+                    endif()
+                    check_function_exists(select HAVE_SELECT)
+                    set(CMAKE_REQUIRED_INCLUDES )
+                    if(HAVE_SELECT)
+                        set(POLLER "select")
+                    else()
+                        message(FATAL_ERROR
+                            "Could not autodetect polling method")
+                    endif()
+                endif()
+            endif()
+        endif()
+    endif()
+endif()
+
+if(     NOT POLLER STREQUAL "kqueue"
     AND NOT POLLER STREQUAL "epoll"
     AND NOT POLLER STREQUAL "devpoll"
     AND NOT POLLER STREQUAL "poll"
@@ -24,7 +69,7 @@ endif()
 
 if(NOT ${POLLER} STREQUAL "")
   string(TOUPPER ${POLLER} UPPER_POLLER)
-  set(ZMQ_FORCE_${UPPER_POLLER} 1)
+  set(ZMQ_USE_${UPPER_POLLER} 1)
 endif()
 
 set(ZMQ_CMAKE_MODULES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/Modules)
@@ -34,7 +79,6 @@ include(TestZMQVersion)
 include(ZMQSourceRunChecks)
 include(CheckIncludeFiles)
 include(CheckLibraryExists)
-include(CheckFunctionExists)
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 include(CheckCSourceCompiles)
