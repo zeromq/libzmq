@@ -70,7 +70,8 @@ namespace zmq
             expect_initiate,
             expect_zap_reply,
             send_ready,
-            connected
+            connected,
+            errored
         };
 
         session_base_t * const session;
