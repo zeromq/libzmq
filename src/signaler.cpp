@@ -17,30 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "platform.hpp"
-
-#if defined ZMQ_FORCE_SELECT
-#define ZMQ_SIGNALER_WAIT_BASED_ON_SELECT
-#elif defined ZMQ_FORCE_POLL
-#define ZMQ_SIGNALER_WAIT_BASED_ON_POLL
-#elif defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD ||\
-    defined ZMQ_HAVE_OPENBSD || defined ZMQ_HAVE_SOLARIS ||\
-    defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_QNXNTO ||\
-    defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_AIX ||\
-    defined ZMQ_HAVE_NETBSD
-#define ZMQ_SIGNALER_WAIT_BASED_ON_POLL
-#elif defined ZMQ_HAVE_WINDOWS || defined ZMQ_HAVE_OPENVMS ||\
-	defined ZMQ_HAVE_CYGWIN
-#define ZMQ_SIGNALER_WAIT_BASED_ON_SELECT
-#endif
+#include "poller.hpp"
 
 //  On AIX, poll.h has to be included before zmq.h to get consistent
 //  definition of pollfd structure (AIX uses 'reqevents' and 'retnevents'
 //  instead of 'events' and 'revents' and defines macros to map from POSIX-y
 //  names to AIX-specific names).
-#if defined ZMQ_SIGNALER_WAIT_BASED_ON_POLL
+#if defined ZMQ_POLL_BASED_ON_POLL
 #include <poll.h>
-#elif defined ZMQ_SIGNALER_WAIT_BASED_ON_SELECT
+#elif defined ZMQ_POLL_BASED_ON_SELECT
 #if defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
 #elif defined ZMQ_HAVE_HPUX
@@ -166,7 +151,7 @@ int zmq::signaler_t::wait (int timeout_)
     }
 #endif
 
-#ifdef ZMQ_SIGNALER_WAIT_BASED_ON_POLL
+#ifdef ZMQ_POLL_BASED_ON_POLL
 
     struct pollfd pfd;
     pfd.fd = r;
@@ -194,7 +179,7 @@ int zmq::signaler_t::wait (int timeout_)
     zmq_assert (pfd.revents & POLLIN);
     return 0;
 
-#elif defined ZMQ_SIGNALER_WAIT_BASED_ON_SELECT
+#elif defined ZMQ_POLL_BASED_ON_SELECT
 
     fd_set fds;
     FD_ZERO (&fds);
@@ -516,11 +501,3 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     }
 #endif
 }
-
-#if defined ZMQ_SIGNALER_WAIT_BASED_ON_SELECT
-#undef ZMQ_SIGNALER_WAIT_BASED_ON_SELECT
-#endif
-#if defined ZMQ_SIGNALER_WAIT_BASED_ON_POLL
-#undef ZMQ_SIGNALER_WAIT_BASED_ON_POLL
-#endif
-

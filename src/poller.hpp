@@ -22,59 +22,30 @@
 
 #include "platform.hpp"
 
-#if defined ZMQ_FORCE_SELECT
-#define ZMQ_USE_SELECT
-#include "select.hpp"
-#elif defined ZMQ_FORCE_POLL
-#define ZMQ_USE_POLL
-#include "poll.hpp"
-#elif defined ZMQ_FORCE_EPOLL
-#define ZMQ_USE_EPOLL
+#if   defined ZMQ_USE_KQUEUE  + defined ZMQ_USE_EPOLL \
+    + defined ZMQ_USE_DEVPOLL + defined ZMQ_USE_POLL  \
+    + defined ZMQ_USE_SELECT > 1
+#error More than one of the ZMQ_USE_* macros defined
+#endif
+
+#if defined ZMQ_USE_KQUEUE
+#include "kqueue.hpp"
+#elif defined ZMQ_USE_EPOLL
 #include "epoll.hpp"
-#elif defined ZMQ_FORCE_DEVPOLL
-#define ZMQ_USE_DEVPOLL
+#elif defined ZMQ_USE_DEVPOLL
 #include "devpoll.hpp"
-#elif defined ZMQ_FORCE_KQUEUE
-#define ZMQ_USE_KQUEUE
-#include "kqueue.hpp"
-#elif defined ZMQ_HAVE_LINUX
-#define ZMQ_USE_EPOLL
-#include "epoll.hpp"
-#elif defined ZMQ_HAVE_WINDOWS
-#define ZMQ_USE_SELECT
-#include "select.hpp"
-#elif defined ZMQ_HAVE_FREEBSD
-#define ZMQ_USE_KQUEUE
-#include "kqueue.hpp"
-#elif defined ZMQ_HAVE_OPENBSD
-#define ZMQ_USE_KQUEUE
-#include "kqueue.hpp"
-#elif defined ZMQ_HAVE_NETBSD
-#define ZMQ_USE_KQUEUE
-#include "kqueue.hpp"
-#elif defined ZMQ_HAVE_SOLARIS
-#define ZMQ_USE_DEVPOLL
-#include "devpoll.hpp"
-#elif defined ZMQ_HAVE_OSX
-#define ZMQ_USE_KQUEUE
-#include "kqueue.hpp"
-#elif defined ZMQ_HAVE_QNXNTO
-#define ZMQ_USE_POLL
+#elif defined ZMQ_USE_POLL
 #include "poll.hpp"
-#elif defined ZMQ_HAVE_AIX
-#define ZMQ_USE_POLL
-#include "poll.hpp"
-#elif defined ZMQ_HAVE_HPUX
-#define ZMQ_USE_DEVPOLL
-#include "devpoll.hpp"
-#elif defined ZMQ_HAVE_OPENVMS
-#define ZMQ_USE_SELECT
-#include "select.hpp"
-#elif defined ZMQ_HAVE_CYGWIN
-#define ZMQ_USE_SELECT
+#elif defined ZMQ_USE_SELECT
 #include "select.hpp"
 #else
-#error Unsupported platform
+#error None of the ZMQ_USE_* macros defined
+#endif
+
+#if defined ZMQ_USE_SELECT
+#define ZMQ_POLL_BASED_ON_SELECT
+#else
+#define ZMQ_POLL_BASED_ON_POLL
 #endif
 
 #endif

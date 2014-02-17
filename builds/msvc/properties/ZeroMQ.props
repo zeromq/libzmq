@@ -13,7 +13,7 @@
       <Command>copy ..\platform.hpp ..\..\..\src</Command>
     </PreBuildEvent>
     <ClCompile>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;DLL_EXPORT;FD_SETSIZE=1024;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;DLL_EXPORT;FD_SETSIZE=1024;ZMQ_USE_SELECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Ws2_32.lib;Rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
