@@ -95,13 +95,15 @@ void zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_, int 
     //  Tuning TCP keep-alives if platform allows it
     //  All values = -1 means skip and leave it for OS
 #ifdef ZMQ_HAVE_WINDOWS
-	tcp_keepalive keepalive_opts;
-	keepalive_opts.onoff = keepalive_;
-	keepalive_opts.keepalivetime = keepalive_idle_ != -1 ? keepalive_idle_ * 1000 : 7200000;
-	keepalive_opts.keepaliveinterval = keepalive_intvl_ != -1 ? keepalive_intvl_ * 1000 : 1000;
-	DWORD num_bytes_returned;
-	int rc = WSAIoctl(s_, SIO_KEEPALIVE_VALS, &keepalive_opts, sizeof(keepalive_opts), NULL, 0, &num_bytes_returned, NULL, NULL);
-	wsa_assert (rc != SOCKET_ERROR);
+    if (keepalive_ != -1) {
+        tcp_keepalive keepalive_opts;
+        keepalive_opts.onoff = keepalive_;
+        keepalive_opts.keepalivetime = keepalive_idle_ != -1 ? keepalive_idle_ * 1000 : 7200000;
+        keepalive_opts.keepaliveinterval = keepalive_intvl_ != -1 ? keepalive_intvl_ * 1000 : 1000;
+        DWORD num_bytes_returned;
+        int rc = WSAIoctl(s_, SIO_KEEPALIVE_VALS, &keepalive_opts, sizeof(keepalive_opts), NULL, 0, &num_bytes_returned, NULL, NULL);
+        wsa_assert (rc != SOCKET_ERROR);
+    }
 #else
 #ifdef ZMQ_HAVE_SO_KEEPALIVE
     if (keepalive_ != -1) {
