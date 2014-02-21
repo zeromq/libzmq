@@ -842,7 +842,7 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
 
     //  If we have the message, return immediately.
     if (rc == 0) {
-        if (file_desc >= 0)
+        if (file_desc != retired_fd)
             msg_->set_fd(file_desc);
         extract_flags (msg_);
         return 0;
@@ -860,7 +860,7 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
         rc = xrecv (msg_);
         if (rc < 0)
             return rc;
-        if (file_desc >= 0)
+        if (file_desc != retired_fd)
             msg_->set_fd(file_desc);
         extract_flags (msg_);
         return 0;
@@ -894,7 +894,7 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
         }
     }
 
-    if (file_desc >= 0)
+    if (file_desc != retired_fd)
         msg_->set_fd(file_desc);
     extract_flags (msg_);
     return 0;
