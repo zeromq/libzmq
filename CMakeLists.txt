@@ -591,6 +591,10 @@ if(HAVE_IPHLAPI)
   target_link_libraries(libzmq iphlpapi)
 endif()
 
+if(RT_LIBRARY)
+  target_link_libraries(libzmq ${RT_LIBRARY})
+endif()
+
 set(perf-tools local_lat
                remote_lat
                local_thr
