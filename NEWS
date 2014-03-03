@@ -4,7 +4,15 @@
 Bug Fixes
 ---------
 
+* Fixed #909; out of tree build issue on Linux.
+
+* Fixed #888; hangs on terminate when inproc connected but never bound.
+
 * Fixed #868; assertion failure at ip.cpp:137 when using port scanner.
+
+* Fixed #818; fix timestamp counter on s390/s390x.
+
+* Fixed #817; only export zmq_* symbols.
 
 * Fixed #797; fixed setting TCP keepalive on Windows.
 
