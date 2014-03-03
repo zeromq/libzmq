@@ -620,9 +620,9 @@ int zmq_msg_more (zmq_msg_t *msg_)
     return zmq_msg_get (msg_, ZMQ_MORE);
 }
 
-int zmq_msg_get (zmq_msg_t *msg_, int option_)
+int zmq_msg_get (zmq_msg_t *msg_, int property_)
 {
-    switch (option_) {
+    switch (property_) {
         case ZMQ_MORE:
             return (((zmq::msg_t*) msg_)->flags () & zmq::msg_t::more)? 1: 0;
         case ZMQ_SRCFD:
@@ -635,9 +635,18 @@ int zmq_msg_get (zmq_msg_t *msg_, int option_)
 
 int zmq_msg_set (zmq_msg_t *, int, int)
 {
-    //  No options supported at present
+    //  No properties supported at present
     errno = EINVAL;
     return -1;
+}
+
+
+//  Get message metadata string
+
+char *zmq_msg_gets (zmq_msg_t *msg_, char *property_)
+{
+    //  All unknown properties return NULL
+    return NULL;
 }
 
 // Polling.

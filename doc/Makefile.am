@@ -4,7 +4,7 @@ MAN3 = zmq_bind.3 zmq_unbind.3 zmq_connect.3 zmq_disconnect.3 zmq_close.3 \
     zmq_msg_move.3 zmq_msg_copy.3 zmq_msg_size.3 zmq_msg_data.3 zmq_msg_close.3 \
     zmq_msg_send.3 zmq_msg_recv.3 \
     zmq_send.3 zmq_recv.3 zmq_send_const.3 \
-    zmq_msg_get.3 zmq_msg_set.3 zmq_msg_more.3 \
+    zmq_msg_get.3 zmq_msg_set.3 zmq_msg_more.3 zmq_msg_gets.3 \
     zmq_getsockopt.3 zmq_setsockopt.3 \
     zmq_socket.3 zmq_socket_monitor.3 zmq_poll.3 \
     zmq_errno.3 zmq_strerror.3 zmq_version.3 \
