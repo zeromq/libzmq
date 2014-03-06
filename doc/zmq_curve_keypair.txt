@@ -38,7 +38,7 @@ EXAMPLE
 ----
 char public_key [41];
 char secret_key [41];
-int rc = crypto_box_keypair (public_key, secret_key);
+int rc = zmq_curve_keypair (public_key, secret_key);
 assert (rc == 0);
 ----
 
