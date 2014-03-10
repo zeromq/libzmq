@@ -299,7 +299,12 @@ esac
 # Checks for libraries
 AC_CHECK_LIB([pthread], [pthread_create])
 AC_CHECK_LIB([rt], [clock_gettime])
-AC_CHECK_LIB([sodium], [sodium_init],,AC_MSG_WARN(libsodium is needed for CURVE security))
+if test "x$zmq_search_libsodium" = "xyes"; then
+    AC_CHECK_LIB([sodium], [sodium_init],,AC_MSG_ERROR(libsodium is not installed.  Install it or don't pass --with-libsodium to configure script))
+else
+    AC_CHECK_LIB([sodium], [sodium_init],,AC_MSG_WARN(libsodium is needed for CURVE security))
+fi
+
 
 #
 # Check if the compiler supports -fvisibility=hidden flag. MinGW32 uses __declspec
