@@ -181,6 +181,8 @@ endif
 endif
 endif
 
+EXTRA_DIST = libzmq.vers
+
 libzmq_la_CXXFLAGS = @LIBZMQ_EXTRA_CXXFLAGS@
 
 if BUILD_PGM
