@@ -50,7 +50,7 @@
 
 zmq::tcp_connecter_t::tcp_connecter_t (class io_thread_t *io_thread_,
       class session_base_t *session_, const options_t &options_,
-      const address_t *addr_, bool delayed_start_) :
+      address_t *addr_, bool delayed_start_) :
     own_t (io_thread_, options_),
     io_object_t (io_thread_),
     addr (addr_),
@@ -209,6 +209,24 @@ int zmq::tcp_connecter_t::open ()
 {
     zmq_assert (s == retired_fd);
 
+    //  Resolve the address
+    if (addr->resolved.tcp_addr != NULL) {
+        delete addr->resolved.tcp_addr;
+        addr->resolved.tcp_addr = NULL;
+    }
+    zmq_assert (addr->resolved.tcp_addr == NULL);
+
+    addr->resolved.tcp_addr = new (std::nothrow) tcp_address_t ();
+    alloc_assert (addr->resolved.tcp_addr);
+    int rc = addr->resolved.tcp_addr->resolve (
+        addr->address.c_str (), false, options.ipv6);
+    if (rc != 0) {
+        delete addr->resolved.tcp_addr;
+        addr->resolved.tcp_addr = NULL;
+        return -1;
+    }
+    zmq_assert (addr->resolved.tcp_addr != NULL);
+
     //  Create the socket.
     s = open_socket (addr->resolved.tcp_addr->family (), SOCK_STREAM, IPPROTO_TCP);
 #ifdef ZMQ_HAVE_WINDOWS
@@ -244,7 +262,7 @@ int zmq::tcp_connecter_t::open ()
         set_ip_type_of_service (s, options.tos);
 
     //  Connect to the remote peer.
-    int rc = ::connect (
+    rc = ::connect (
         s, addr->resolved.tcp_addr->addr (),
         addr->resolved.tcp_addr->addrlen ());
 

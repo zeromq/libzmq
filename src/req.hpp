@@ -87,7 +87,7 @@ namespace zmq
 
         req_session_t (zmq::io_thread_t *io_thread_, bool connect_,
             zmq::socket_base_t *socket_, const options_t &options_,
-            const address_t *addr_);
+            address_t *addr_);
         ~req_session_t ();
 
         //  Overrides of the functions from session_base_t.

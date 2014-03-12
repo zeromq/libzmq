@@ -30,15 +30,15 @@ int main (void)
 
     int rc = zmq_connect (sock, "tcp://localhost:1234");
     assert (rc == 0);
-
+    
+    // Because of lazy resolution of TCP names, this will succeed
     rc = zmq_connect (sock, "tcp://localhost:invalid");
-    assert (rc == -1);
-    assert (errno == EINVAL);
+    assert (rc == 0);
 
+    // Because of lazy resolution of TCP names, this will succeed
     rc = zmq_connect (sock, "tcp://in val id:1234");
-    assert (rc == -1);
-    assert (errno == EINVAL);
-
+    assert (rc == 0);
+    
     rc = zmq_connect (sock, "invalid://localhost:1234");
     assert (rc == -1);
     assert (errno == EPROTONOSUPPORT);

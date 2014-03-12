@@ -34,7 +34,7 @@
 
 zmq::session_base_t *zmq::session_base_t::create (class io_thread_t *io_thread_,
     bool active_, class socket_base_t *socket_, const options_t &options_,
-    const address_t *addr_)
+    address_t *addr_)
 {
 	
     session_base_t *s = NULL;
@@ -67,7 +67,7 @@ zmq::session_base_t *zmq::session_base_t::create (class io_thread_t *io_thread_,
 
 zmq::session_base_t::session_base_t (class io_thread_t *io_thread_,
       bool active_, class socket_base_t *socket_, const options_t &options_,
-      const address_t *addr_) :
+      address_t *addr_) :
     own_t (io_thread_, options_),
     io_object_t (io_thread_),
     active (active_),
