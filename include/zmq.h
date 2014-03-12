@@ -382,7 +382,7 @@ ZMQ_EXPORT int zmq_recviov (void *s, struct iovec *iov, size_t *count, int flags
 #define ZMQ_POLLOUT 2
 #define ZMQ_POLLERR 4
 
-typedef struct
+typedef struct zmq_pollitem_t
 {
     void *socket;
 #if defined _WIN32
