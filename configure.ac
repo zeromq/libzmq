@@ -463,6 +463,28 @@ fi
 
 AC_SUBST(pgm_basename)
 
+
+# This uses "--with-norm" to point to the "norm" directory
+# for "norm/include" and "norm/lib"
+#(if "--with-norm=yes" is given, then assume installed on system)
+AC_ARG_WITH([norm], [AS_HELP_STRING([--with-norm], 
+    [build libzmq with NORM protocol extension, optionally specifying norm path [default=no]])],
+    [with_norm_ext=$withval], [with_norm_ext=no])
+    
+    
+AC_MSG_CHECKING("with_norm_ext = ${with_norm_ext}")
+
+if test "x$with_norm_ext" != "xno"; then    
+    AC_DEFINE(ZMQ_HAVE_NORM, 1, [Have NORM protocol extension])
+    if test "x$wwith_norm_ext" != "xyes"; then
+        norm_path="${with_norm_ext}"
+        LIBZMQ_EXTRA_CXXFLAGS="-I${norm_path}/include ${LIBZMQ_EXTRA_CXXFLAGS}"
+        LIBZMQ_EXTRA_LDFLAGS="-I${norm_path}/include ${LIBZMQ_EXTRA_LDFLAGS}"
+    fi
+    LIBS="-lnorm $LIBS"
+fi
+
+
 # Set -Wall, -Werror and -pedantic
 AC_LANG_PUSH([C++])
 
