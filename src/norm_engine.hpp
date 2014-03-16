@@ -2,8 +2,6 @@
 #ifndef __ZMQ_NORM_ENGINE_HPP_INCLUDED__
 #define __ZMQ_NORM_ENGINE_HPP_INCLUDED__
 
-#define ZMQ_HAVE_NORM 1
-
 #if defined ZMQ_HAVE_NORM
 
 #include "io_object.hpp"
@@ -12,7 +10,7 @@
 #include "v2_decoder.hpp"
 #include "v2_encoder.hpp"
 
-#include <norm/include/normApi.h>
+#include <normApi.h>
 
 namespace zmq
 {

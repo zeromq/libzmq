@@ -60,7 +60,7 @@ namespace zmq
         {
             free (buf);
         }
-
+        
         //  The function returns a batch of binary data. The data
         //  are filled to a supplied buffer. If no buffer is supplied (data_
         //  points to NULL) decoder object will provide buffer of its own.
