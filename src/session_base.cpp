@@ -450,7 +450,7 @@ void zmq::session_base_t::reconnect ()
 {
     //  For delayed connect situations, terminate the pipe
     //  and reestablish later on
-    if (pipe && 1 == options.immediate == 1 
+    if (pipe && options.immediate == 1 
         && addr->protocol != "pgm" && addr->protocol != "epgm" 
         && addr->protocol != "norm") {
         pipe->hiccup ();
