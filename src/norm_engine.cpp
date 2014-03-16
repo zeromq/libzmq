@@ -1,8 +1,6 @@
 
 #include "platform.hpp"
 
-#define ZMQ_HAVE_NORM 1
-
 #if defined ZMQ_HAVE_NORM
 
 #include "norm_engine.hpp"
