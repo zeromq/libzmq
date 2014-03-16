@@ -28,6 +28,7 @@
 #include "pgm_sender.hpp"
 #include "pgm_receiver.hpp"
 #include "address.hpp"
+#include "norm_engine.hpp"
 
 #include "ctx.hpp"
 #include "req.hpp"
@@ -449,8 +450,9 @@ void zmq::session_base_t::reconnect ()
 {
     //  For delayed connect situations, terminate the pipe
     //  and reestablish later on
-    if (pipe && options.immediate == 1
-        && addr->protocol != "pgm" && addr->protocol != "epgm") {
+    if (pipe && 1 == options.immediate == 1 
+        && addr->protocol != "pgm" && addr->protocol != "epgm" 
+        && addr->protocol != "norm") {
         pipe->hiccup ();
         pipe->terminate (false);
         terminating_pipes.insert (pipe);
@@ -549,6 +551,38 @@ void zmq::session_base_t::start_connecting (bool wait_)
         return;
     }
 #endif
+    
+#ifdef ZMQ_HAVE_NORM
+    if (addr->protocol == "norm")
+    {
+        //  At this point we'll create message pipes to the session straight
+        //  away. There's no point in delaying it as no concept of 'connect'
+        //  exists with NORM anyway.
+        if (options.type == ZMQ_PUB || options.type == ZMQ_XPUB) {
+
+            //  NORM sender.
+            norm_engine_t* norm_sender = new (std::nothrow) norm_engine_t(io_thread, options);
+            alloc_assert (norm_sender);
+
+            int rc = norm_sender->init (addr->address.c_str (), true, false);
+            errno_assert (rc == 0);
+
+            send_attach (this, norm_sender);
+        }
+        else {  // ZMQ_SUB or ZMQ_XSUB
+
+            //  NORM receiver.
+            norm_engine_t* norm_receiver = new (std::nothrow) norm_engine_t (io_thread, options);
+            alloc_assert (norm_receiver);
+
+            int rc = norm_receiver->init (addr->address.c_str (), false, true);
+            errno_assert (rc == 0);
+
+            send_attach (this, norm_receiver);
+        }
+        return;
+    }
+#endif // ZMQ_HAVE_NORM
 
     zmq_assert (false);
 }

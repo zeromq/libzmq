@@ -190,11 +190,11 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
 {
     //  First check out whether the protcol is something we are aware of.
     if (protocol_ != "inproc" && protocol_ != "ipc" && protocol_ != "tcp" &&
-          protocol_ != "pgm" && protocol_ != "epgm" && protocol_ != "tipc") {
+          protocol_ != "pgm" && protocol_ != "epgm" && protocol_ != "tipc" &&
+          protocol_ != "norm") {
         errno = EPROTONOSUPPORT;
         return -1;
     }
-
     //  If 0MQ is not compiled with OpenPGM, pgm and epgm transports
     //  are not avaialble.
 #if !defined ZMQ_HAVE_OPENPGM
@@ -203,6 +203,13 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
         return -1;
     }
 #endif
+    
+#if !defined ZMQ_HAVE_NORM
+    if (protocol_ == "norm") {
+        errno = EPROTONOSUPPORT;
+        return -1;
+    }
+#endif // !ZMQ_HAVE_NORM
 
     //  IPC transport is not available on Windows and OpenVMS.
 #if defined ZMQ_HAVE_WINDOWS || defined ZMQ_HAVE_OPENVMS
@@ -224,7 +231,7 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
     //  Check whether socket type and transport protocol match.
     //  Specifically, multicast protocols can't be combined with
     //  bi-directional messaging patterns (socket types).
-    if ((protocol_ == "pgm" || protocol_ == "epgm") &&
+    if ((protocol_ == "pgm" || protocol_ == "epgm" || protocol_ == "norm") &&
           options.type != ZMQ_PUB && options.type != ZMQ_SUB &&
           options.type != ZMQ_XPUB && options.type != ZMQ_XSUB) {
         errno = ENOCOMPATPROTO;
@@ -362,9 +369,9 @@ int zmq::socket_base_t::bind (const char *addr_)
         return rc;
     }
 
-    if (protocol == "pgm" || protocol == "epgm") {
+    if (protocol == "pgm" || protocol == "epgm" || protocol == "norm") {
         //  For convenience's sake, bind can be used interchageable with
-        //  connect for PGM and EPGM transports.
+        //  connect for PGM, EPGM and NORM transports.
         return connect (addr_);
     }
 
@@ -600,6 +607,9 @@ int zmq::socket_base_t::connect (const char *addr_)
         }
     }
 #endif
+    
+// TBD - Should we check address for ZMQ_HAVE_NORM???
+    
 #ifdef ZMQ_HAVE_OPENPGM
     if (protocol == "pgm" || protocol == "epgm") {
         struct pgm_addrinfo_t *res = NULL;
@@ -630,8 +640,8 @@ int zmq::socket_base_t::connect (const char *addr_)
     errno_assert (session);
 
     //  PGM does not support subscription forwarding; ask for all data to be
-    //  sent to this pipe.
-    bool subscribe_to_all = protocol == "pgm" || protocol == "epgm";
+    //  sent to this pipe. (same for NORM, currently?)
+    bool subscribe_to_all = protocol == "pgm" || protocol == "epgm" || protocol == "norm";
     pipe_t *newpipe = NULL;
 
     if (options.immediate != 1 || subscribe_to_all) {
