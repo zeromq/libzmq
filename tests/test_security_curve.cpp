@@ -26,9 +26,8 @@ static char server_public [41];
 static char server_secret [41];
 
 //  --------------------------------------------------------------------------
-//  Encode a binary frame as a string; destination string MUST be at least
-//  size * 5 / 4 bytes long plus 1 byte for the null terminator. Returns
-//  dest. Size must be a multiple of 4.
+//  This methods receives and validates ZAP requestes (allowing or denying
+//  each client connection).
 
 static void zap_handler (void *handler)
 {
