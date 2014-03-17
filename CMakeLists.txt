@@ -123,6 +123,10 @@ set(CMAKE_REQUIRED_LIBRARIES rt)
 check_function_exists(clock_gettime HAVE_CLOCK_GETTIME)
 set(CMAKE_REQUIRED_LIBRARIES )
 
+set(CMAKE_REQUIRED_INCLUDES unistd.h)
+check_function_exists(fork HAVE_FORK)
+set(CMAKE_REQUIRED_INCLUDES )
+
 set(CMAKE_REQUIRED_INCLUDES sys/time.h)
 check_function_exists(gethrtime HAVE_GETHRTIME)
 set(CMAKE_REQUIRED_INCLUDES )
