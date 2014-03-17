@@ -20,16 +20,17 @@
 #include "testutil.hpp"
 
 
-void test_stream_2_stream(void* ctx_){
+void test_stream_2_stream(){
     void *rbind, *rconn1;
     int ret;
     char buff[256];
     char msg[] = "hi 1";
     const char *bindip = "tcp://127.0.0.1:5556";
     int zero = 0;
+    void *ctx = zmq_ctx_new ();
 
     //  Set up listener STREAM.
-    rbind = zmq_socket (ctx_, ZMQ_STREAM);
+    rbind = zmq_socket (ctx, ZMQ_STREAM);
     assert (rbind);
     ret = zmq_setsockopt (rbind, ZMQ_LINGER, &zero, sizeof (zero));
     assert (0 == ret);
@@ -37,7 +38,7 @@ void test_stream_2_stream(void* ctx_){
     assert(0 == ret);
 
     //  Set up connection stream.
-    rconn1 = zmq_socket (ctx_, ZMQ_STREAM);
+    rconn1 = zmq_socket (ctx, ZMQ_STREAM);
     assert (rconn1);
     ret = zmq_setsockopt (rconn1, ZMQ_LINGER, &zero, sizeof (zero));
     assert (0 == ret);
@@ -81,15 +82,18 @@ void test_stream_2_stream(void* ctx_){
     assert(0 == ret);
     ret = zmq_close (rconn1);
     assert(0 == ret);
+
+    zmq_ctx_destroy (ctx);
 }
 
-void test_router_2_router(void* ctx,bool named){
+void test_router_2_router(bool named){
     void *rbind, *rconn1;
     int ret;
     char buff[256];
     char msg[] = "hi 1";
     const char *bindip = "tcp://127.0.0.1:5556";
     int zero = 0;
+    void *ctx = zmq_ctx_new ();
 
     //  Create bind socket.
     rbind = zmq_socket (ctx, ZMQ_ROUTER);
@@ -164,21 +168,17 @@ void test_router_2_router(void* ctx,bool named){
     assert(0 == ret);
     ret = zmq_close (rconn1);
     assert(0 == ret);
+
+    zmq_ctx_destroy (ctx);
 }
 
 int main (void)
 {
-    void *ctx; 
     setup_test_environment ();
-    ctx = zmq_ctx_new ();
-    assert (ctx);
-    test_stream_2_stream (ctx);
-    msleep(100);	// Give time for bound socket to be closed.
-    test_router_2_router (ctx, false);
-    msleep(100);	// Give time for bound socket to be closed.
-    test_router_2_router (ctx, true);
-    zmq_ctx_destroy (ctx);
-    printf ("'test_connect_rid' passed");
+
+	test_stream_2_stream ();
+    test_router_2_router (false);
+    test_router_2_router (true);
+
     return 0;
 }
-
