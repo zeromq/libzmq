@@ -86,6 +86,7 @@ tests/test_sub_forward_tipc
 tests/test_term_endpoint_tipc
 tests/test_many_sockets
 tests/test_diffserv
+tests/test_connect_rid
 tests/test_srcfd
 tests/test_stream_disconnect
 tests/test_proxy_chain

@@ -173,7 +173,9 @@ int main (void)
     ctx = zmq_ctx_new ();
     assert (ctx);
     test_stream_2_stream (ctx);
+    msleep(100);	// Give time for bound socket to be closed.
     test_router_2_router (ctx, false);
+    msleep(100);	// Give time for bound socket to be closed.
     test_router_2_router (ctx, true);
     zmq_ctx_destroy (ctx);
     printf ("'test_connect_rid' passed");

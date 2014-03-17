@@ -47,7 +47,8 @@ noinst_PROGRAMS = test_system \
                   test_abstract_ipc \
                   test_many_sockets \
                   test_ipc_wildcard \
-                  test_diffserv
+                  test_diffserv \
+                  test_connect_rid
 
 if !ON_MINGW
 noinst_PROGRAMS += test_shutdown_stress \
@@ -114,6 +115,7 @@ test_abstract_ipc_SOURCES = test_abstract_ipc.cpp
 test_many_sockets_SOURCES = test_many_sockets.cpp
 test_ipc_wildcard_SOURCES = test_ipc_wildcard.cpp
 test_diffserv_SOURCES = test_diffserv.cpp
+test_connect_rid_SOURCES = test_connect_rid.cpp
 if !ON_MINGW
 test_shutdown_stress_SOURCES = test_shutdown_stress.cpp
 test_pair_ipc_SOURCES = test_pair_ipc.cpp testutil.hpp
