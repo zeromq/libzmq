@@ -44,8 +44,8 @@ EXAMPLE
 zmq_msg_t msg;
 rc = zmq_msg_init (&msg);
 assert (rc == 0);
-rc = zmq_recv (socket, &msg, 0);
-assert (rc == 0);
+int nbytes = zmq_recv (socket, &msg, 0);
+assert (nbytes != -1);
 ----
 
 
