@@ -48,7 +48,7 @@ noinst_PROGRAMS = test_system \
                   test_many_sockets \
                   test_ipc_wildcard \
                   test_diffserv \
-				  test_connect_rid
+                  test_connect_rid
 
 if !ON_MINGW
 noinst_PROGRAMS += test_shutdown_stress \
