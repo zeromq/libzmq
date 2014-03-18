@@ -10,7 +10,7 @@
 #cmakedefine ZMQ_FORCE_MUTEXES
 
 
-#cmakedefine01 HAVE_FORK
+#cmakedefine HAVE_FORK
 #cmakedefine HAVE_CLOCK_GETTIME
 #cmakedefine HAVE_GETHRTIME
 #cmakedefine ZMQ_HAVE_UIO

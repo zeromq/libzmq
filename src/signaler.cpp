@@ -104,7 +104,7 @@ zmq::fd_t zmq::signaler_t::get_fd ()
 
 void zmq::signaler_t::send ()
 {
-#if HAVE_FORK
+#if defined(HAVE_FORK)
     if (unlikely(pid != getpid())) {
         //printf("Child process %d signaler_t::send returning without sending #1\n", getpid());
         return; // do not send anything in forked child context
@@ -125,7 +125,7 @@ void zmq::signaler_t::send ()
         ssize_t nbytes = ::send (w, &dummy, sizeof (dummy), 0);
         if (unlikely (nbytes == -1 && errno == EINTR))
             continue;
-#if HAVE_FORK
+#if defined(HAVE_FORK)
         if (unlikely(pid != getpid())) {
             //printf("Child process %d signaler_t::send returning without sending #2\n", getpid());
             errno = EINTR;
