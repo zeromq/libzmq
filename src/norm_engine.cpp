@@ -33,6 +33,7 @@ int zmq::norm_engine_t::init(const char* network_, bool send, bool recv)
     // Parse the "network_" address int "iface", "addr", and "port"
     // norm endpoint format: [id,][<iface>;]<addr>:<port>
     // First, look for optional local NormNodeId
+    // (default NORM_NODE_ANY causes NORM to use host IP addr for NormNodeId)
     NormNodeId localId = NORM_NODE_ANY;
     const char* ifacePtr = strchr(network_, ',');
     if (NULL != ifacePtr)
