@@ -49,8 +49,8 @@
 #include <Mstcpip.h>
 #endif
 
-//  Workaround missing Mstcpip.h in mingw32
-#if defined __MINGW32__ && !defined SIO_KEEPALIVE_VALS
+//  Workaround missing Mstcpip.h in mingw32 (MinGW64 provides this)
+#if defined __MINGW32__ && !defined SIO_KEEPALIVE_VALS && !defined __MINGW64__
 struct tcp_keepalive {
     u_long onoff;
     u_long keepalivetime;
