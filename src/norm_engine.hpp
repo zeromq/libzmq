@@ -162,11 +162,12 @@ namespace zmq
             // Sender state
             msg_t                   tx_msg;
             v2_encoder_t            zmq_encoder;    // for tx messages (we use v2 for now)  
+            NormObjectHandle        norm_tx_stream;
+            bool                    tx_first_msg;
             bool                    tx_more_bit;
             bool                    zmq_output_ready; // zmq has msg(s) to send 
-            NormObjectHandle        norm_tx_stream;
             bool                    norm_tx_ready;    // norm has tx queue vacancy
-            // tbd - maybe don't need buffer if can access encoder buffer directly?
+            // tbd - maybe don't need buffer if can access zmq message buffer directly?
             char                    tx_buffer[BUFFER_SIZE];
             unsigned int            tx_index;
             unsigned int            tx_len;
