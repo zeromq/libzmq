@@ -533,7 +533,7 @@ int zmq_recviov (void *s_, iovec *a_, size_t *count_, int flags_)
         }
 
         a_[i].iov_len = zmq_msg_size (&msg);
-        a_[i].iov_base = malloc(a_[i].iov_len);
+        a_[i].iov_base = static_cast<char *> (malloc(a_[i].iov_len));
         if (unlikely (!a_[i].iov_base)) {
             errno = ENOMEM;
             return -1;
