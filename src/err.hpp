@@ -20,9 +20,6 @@
 #ifndef __ZMQ_ERR_HPP_INCLUDED__
 #define __ZMQ_ERR_HPP_INCLUDED__
 
-//  0MQ-specific error codes are defined in zmq.h
-#include "../include/zmq.h"
-
 #include <assert.h>
 #if defined _WIN32_WCE
 #include "..\builds\msvc\errno.hpp"
@@ -35,6 +32,9 @@
 
 #include "platform.hpp"
 #include "likely.hpp"
+
+//  0MQ-specific error codes are defined in zmq.h
+#include "../include/zmq.h"
 
 #ifdef ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
