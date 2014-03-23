@@ -9,6 +9,7 @@ if(APPLE)
   option(ZMQ_BUILD_FRAMEWORK "Build as OS X framework" ON)
 endif()
 
+find_library(SODIUM_FOUND sodium)
 
 set(POLLER "" CACHE STRING "Choose polling system. valid values are
                             kqueue, epoll, devpoll, poll or select [default=autodetect]")
@@ -582,7 +583,7 @@ else()
     endif()
 endif()
 
-target_link_libraries(libzmq ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(libzmq ${SODIUM_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
 if(HAVE_WS2_32)
   target_link_libraries(libzmq ws2_32)
 elseif(HAVE_WS2)
