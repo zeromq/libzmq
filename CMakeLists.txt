@@ -9,7 +9,7 @@ if(APPLE)
   option(ZMQ_BUILD_FRAMEWORK "Build as OS X framework" ON)
 endif()
 
-find_library(SODIUM_FOUND sodium)
+find_package(Sodium)
 
 set(POLLER "" CACHE STRING "Choose polling system. valid values are
                             kqueue, epoll, devpoll, poll or select [default=autodetect]")
