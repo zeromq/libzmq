@@ -1,0 +1,20 @@
+
+NuGet is a package management system for MS-Windows.
+It is similar in spirit to tools like Maven or Gradle.
+
+It was originaly for .Net only packages but it has 
+recently been augmented to working with native packages.
+http://docs.nuget.org/docs/reference/support-for-native-projects
+
+The instructions for building a NuGet package can be found here:
+http://coapp.org/pages/tutorials.html
+
+
+The basic procedure is to first build all 
+the artifacts and then run ...
+ Write-NuGetPackage .\libzmq.autopkg 
+
+The *.nuget files thus produced can then be installed
+in a local repository or uploaded to one of the nuget servers.
+
+
