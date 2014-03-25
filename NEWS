@@ -1,3 +1,9 @@
+0MQ version 4.0.5 stable, released on 2014/
+================================================
+
+* Fixed #797, keep-alive on Windows.
+
+
 0MQ version 4.0.4 stable, released on 2014/03/10
 ================================================
 
