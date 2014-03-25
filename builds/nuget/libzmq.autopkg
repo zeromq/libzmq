@@ -1,15 +1,15 @@
 nuget{
   nuspec{
-    id = czmq;
-    version: 2.1.0;
+    id = libzmq;
+    version : 4.1.0;
     title: ZMQ - Code Connected;
     authors: {phreed};
     owners: {phreed};
-    licenseUrl: https://www.gnu.org/licenses/lgpl.html;
-    projectUrl: http://czmq.zeromq.org/;
-    iconUrl: http://czmq.zeromq.org/local--files/admin:css/logo.gif;
+    licenseUrl: "https://www.gnu.org/licenses/lgpl.html";
+    projectUrl: "http://www.zeromq.org/";
+    iconUrl: "http://www.zeromq.org/local--files/admin:css/logo.gif";
     requireLicenseAcceptance: false;
-    summary: High-level C binding for ZeroMQ and all-round Slice of Heaven for C developers.;
+    summary: Code Connected;
     description: @" 
 ZeroMQ \zeromq\:
 - Connect your code in any language, on any platform.
@@ -40,6 +40,7 @@ ZeroMQ \zeromq\:
 
     [x64,v100,release] {
        lib: ${SDK_2010}Release\libzmq.lib;     
+       bin: ${SDK_2010}..\..\lib\libzmq.dll; 
     }    
 
     targets{
