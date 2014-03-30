@@ -203,26 +203,26 @@
   <Target Name="$(package.target)_AfterBuild_Win32_$(package.platformtoolset)_Dynamic_Release"
           Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(package.target))' == '' And $\(Configuration.IndexOf('Release')) != -1"
           AfterTargets="$(package.target)_AfterBuild">
-    <Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(package.target)-x86-$(package.platformtoolset)-mt-$(package.pathversion).dll" DestinationFolder="$\(TargetDir)" SkipUnchangedFiles="true" />
-    <!--<Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(package.target)-x86-$(package.platformtoolset)-mt-$(package.pathversion).pdb" DestinationFolder="$\(TargetDir)" SkipUnchangedFiles="true" />-->
+    <Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(package.target)-x86-$(package.platformtoolset)-mt-$(package.pathversion).dll" DestinationFiles="$\(TargetDir)$(package.target).dll" SkipUnchangedFiles="true" />
+    <!--<Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(package.target)-x86-$(package.platformtoolset)-mt-$(package.pathversion).pdb" DestinationFiles="$\(TargetDir)$(package.target).pdb" SkipUnchangedFiles="true" />-->
   </Target>
   <Target Name="$(package.target)_AfterBuild_Win32_$(package.platformtoolset)_Dynamic_Debug"
           Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(package.target))' == '' And $\(Configuration.IndexOf('Debug')) != -1"
           AfterTargets="$(package.target)_AfterBuild">
-    <Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(package.target)-x86-$(package.platformtoolset)-mt-gd-$(package.pathversion).dll" DestinationFolder="$\(TargetDir)" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(package.target)-x86-$(package.platformtoolset)-mt-gd-$(package.pathversion).pdb" DestinationFolder="$\(TargetDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(package.target)-x86-$(package.platformtoolset)-mt-gd-$(package.pathversion).dll" DestinationFiles="$\(TargetDir)$(package.target).dll" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(package.target)-x86-$(package.platformtoolset)-mt-gd-$(package.pathversion).pdb" DestinationFiles="$\(TargetDir)$(package.target).pdb" SkipUnchangedFiles="true" />
   </Target>
   <Target Name="$(package.target)_AfterBuild_x64_$(package.platformtoolset)_Dynamic_Release"
           Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(package.target))' == '' And $\(Configuration.IndexOf('Release')) != -1"
           AfterTargets="$(package.target)_AfterBuild">
-    <Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(package.target)-x64-$(package.platformtoolset)-mt-$(package.pathversion).dll" DestinationFolder="$\(TargetDir)" SkipUnchangedFiles="true" />
-    <!--<Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(package.target)-x64-$(package.platformtoolset)-mt-$(package.pathversion).pdb" DestinationFolder="$\(TargetDir)" SkipUnchangedFiles="true" />-->
+    <Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(package.target)-x64-$(package.platformtoolset)-mt-$(package.pathversion).dll" DestinationFiles="$\(TargetDir)$(package.target).dll" SkipUnchangedFiles="true" />
+    <!--<Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(package.target)-x64-$(package.platformtoolset)-mt-$(package.pathversion).pdb" DestinationFiles="$\(TargetDir)$(package.target).pdb" SkipUnchangedFiles="true" />-->
   </Target>
   <Target Name="$(package.target)_AfterBuild_x64_$(package.platformtoolset)_Dynamic_Debug"
           Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(package.target))' == '' And $\(Configuration.IndexOf('Debug')) != -1"
           AfterTargets="$(package.target)_AfterBuild">
-    <Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(package.target)-x64-$(package.platformtoolset)-mt-gd-$(package.pathversion).dll" DestinationFolder="$\(TargetDir)" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(package.target)-x64-$(package.platformtoolset)-mt-gd-$(package.pathversion).pdb" DestinationFolder="$\(TargetDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(package.target)-x64-$(package.platformtoolset)-mt-gd-$(package.pathversion).dll" DestinationFiles="$\(TargetDir)$(package.target).dll" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(package.target)-x64-$(package.platformtoolset)-mt-gd-$(package.pathversion).pdb" DestinationFiles="$\(TargetDir)$(package.target).pdb" SkipUnchangedFiles="true" />
   </Target>
 
 <!--

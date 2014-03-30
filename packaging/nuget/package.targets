@@ -97,26 +97,26 @@
   <Target Name="libzmq_AfterBuild_Win32_v120_Dynamic_Release"
           Condition="'$(Platform)' == 'Win32' And ('$(PlatformToolset)' == 'v120' Or '$(PlatformToolset)' == 'CTP_Nov2013') And '$(Linkage-libzmq)' == '' And $(Configuration.IndexOf('Release')) != -1"
           AfterTargets="libzmq_AfterBuild">
-    <Copy SourceFiles="$(MSBuildThisFileDirectory)bin\libzmq-x86-v120-mt-4_1_0_0.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
-    <!--<Copy SourceFiles="$(MSBuildThisFileDirectory)bin\libzmq-x86-v120-mt-4_1_0_0.pdb" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />-->
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)bin\libzmq-x86-v120-mt-4_1_0_0.dll" DestinationFiles="$(TargetDir)libzmq.dll" SkipUnchangedFiles="true" />
+    <!--<Copy SourceFiles="$(MSBuildThisFileDirectory)bin\libzmq-x86-v120-mt-4_1_0_0.pdb" DestinationFiles="$(TargetDir)libzmq.pdb" SkipUnchangedFiles="true" />-->
   </Target>
   <Target Name="libzmq_AfterBuild_Win32_v120_Dynamic_Debug"
           Condition="'$(Platform)' == 'Win32' And ('$(PlatformToolset)' == 'v120' Or '$(PlatformToolset)' == 'CTP_Nov2013') And '$(Linkage-libzmq)' == '' And $(Configuration.IndexOf('Debug')) != -1"
           AfterTargets="libzmq_AfterBuild">
-    <Copy SourceFiles="$(MSBuildThisFileDirectory)bin\libzmq-x86-v120-mt-gd-4_1_0_0.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="$(MSBuildThisFileDirectory)bin\libzmq-x86-v120-mt-gd-4_1_0_0.pdb" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)bin\libzmq-x86-v120-mt-gd-4_1_0_0.dll" DestinationFiles="$(TargetDir)libzmq.dll" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)bin\libzmq-x86-v120-mt-gd-4_1_0_0.pdb" DestinationFiles="$(TargetDir)libzmq.pdb" SkipUnchangedFiles="true" />
   </Target>
   <Target Name="libzmq_AfterBuild_x64_v120_Dynamic_Release"
           Condition="'$(Platform)' == 'x64' And ('$(PlatformToolset)' == 'v120' Or '$(PlatformToolset)' == 'CTP_Nov2013') And '$(Linkage-libzmq)' == '' And $(Configuration.IndexOf('Release')) != -1"
           AfterTargets="libzmq_AfterBuild">
-    <Copy SourceFiles="$(MSBuildThisFileDirectory)bin\libzmq-x64-v120-mt-4_1_0_0.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
-    <!--<Copy SourceFiles="$(MSBuildThisFileDirectory)bin\libzmq-x64-v120-mt-4_1_0_0.pdb" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />-->
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)bin\libzmq-x64-v120-mt-4_1_0_0.dll" DestinationFiles="$(TargetDir)libzmq.dll" SkipUnchangedFiles="true" />
+    <!--<Copy SourceFiles="$(MSBuildThisFileDirectory)bin\libzmq-x64-v120-mt-4_1_0_0.pdb" DestinationFiles="$(TargetDir)libzmq.pdb" SkipUnchangedFiles="true" />-->
   </Target>
   <Target Name="libzmq_AfterBuild_x64_v120_Dynamic_Debug"
           Condition="'$(Platform)' == 'x64' And ('$(PlatformToolset)' == 'v120' Or '$(PlatformToolset)' == 'CTP_Nov2013') And '$(Linkage-libzmq)' == '' And $(Configuration.IndexOf('Debug')) != -1"
           AfterTargets="libzmq_AfterBuild">
-    <Copy SourceFiles="$(MSBuildThisFileDirectory)bin\libzmq-x64-v120-mt-gd-4_1_0_0.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="$(MSBuildThisFileDirectory)bin\libzmq-x64-v120-mt-gd-4_1_0_0.pdb" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)bin\libzmq-x64-v120-mt-gd-4_1_0_0.dll" DestinationFiles="$(TargetDir)libzmq.dll" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)bin\libzmq-x64-v120-mt-gd-4_1_0_0.pdb" DestinationFiles="$(TargetDir)libzmq.pdb" SkipUnchangedFiles="true" />
   </Target>
 
 <!--
