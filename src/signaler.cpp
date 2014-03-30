@@ -313,6 +313,8 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     }
     else if (signaler_port != 0) {
         TCHAR mutex_name[64];
+        /* VC++ v120 swprintf has been changed to conform with the 
+        ISO C standard, adding an extra character count parameter. */
         _stprintf (mutex_name, TEXT ("Global\\zmq-signaler-port-%d"), signaler_port);
 
 #       if !defined _WIN32_WCE
