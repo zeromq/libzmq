@@ -26,6 +26,9 @@
     <ClCompile>
       <PreprocessorDefinitions>ZMQ_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <Lib>
+      <AdditionalOptions>/ignore:4221 %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
   </ItemDefinitionGroup>
 
   <ItemDefinitionGroup Condition="'$(ConfigurationType)'=='DynamicLibrary'">
@@ -34,6 +37,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
 
+  <!-- The sodium nuget library will inject HAVE_LIBSODIUM via a target when loaded. -->
   <!--<Target Name="LinkageInfo" BeforeTargets="PrepareForBuild">
     <Message Text="Linkage-sodium    : $(Linkage-sodium)" Importance="high"/>
   </Target>-->
