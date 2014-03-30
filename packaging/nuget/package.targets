@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+#################################################################
+#   GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY    #
+#################################################################
+-->
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- user interface -->
+  <ItemGroup>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)package.xml" />
+  </ItemGroup>
+
+  <!-- general -->
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(MSBuildThisFileDirectory)bin\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Linkage-libzmq)' == 'static' Or '$(Linkage-libzmq)' == 'ltcg'">
+    <ClCompile>
+      <PreprocessorDefinitions>ZMQ_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+  <!-- static libraries -->
+  <ItemDefinitionGroup Condition="'$(Platform)' == 'Win32' And ('$(PlatformToolset)' == 'v120' Or '$(PlatformToolset)' == 'CTP_Nov2013') And '$(Linkage-libzmq)' == 'static' And $(Configuration.IndexOf('Release')) != -1">
+    <Link>
+      <AdditionalDependencies>libzmq-x86-v120-mt-s-4_1_0_0.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Platform)' == 'Win32' And ('$(PlatformToolset)' == 'v120' Or '$(PlatformToolset)' == 'CTP_Nov2013') And '$(Linkage-libzmq)' == 'static' And $(Configuration.IndexOf('Debug')) != -1">
+    <Link>
+      <AdditionalDependencies>libzmq-x86-v120-mt-sgd-4_1_0_0.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Platform)' == 'x64' And ('$(PlatformToolset)' == 'v120' Or '$(PlatformToolset)' == 'CTP_Nov2013') And '$(Linkage-libzmq)' == 'static' And $(Configuration.IndexOf('Release')) != -1">
+    <Link>
+      <AdditionalDependencies>libzmq-x64-v120-mt-s-4_1_0_0.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Platform)' == 'x64' And ('$(PlatformToolset)' == 'v120' Or '$(PlatformToolset)' == 'CTP_Nov2013') And '$(Linkage-libzmq)' == 'static' And $(Configuration.IndexOf('Debug')) != -1">
+    <Link>
+      <AdditionalDependencies>libzmq-x64-v120-mt-sgd-4_1_0_0.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!-- static ltcg libraries -->
+  <ItemDefinitionGroup Condition="'$(Platform)' == 'Win32' And ('$(PlatformToolset)' == 'v120' Or '$(PlatformToolset)' == 'CTP_Nov2013') And '$(Linkage-libzmq)' == 'ltcg' And $(Configuration.IndexOf('Release')) != -1">
+    <Link>
+      <AdditionalDependencies>libzmq-x86-v120-mt-s-4_1_0_0.ltcg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Platform)' == 'Win32' And ('$(PlatformToolset)' == 'v120' Or '$(PlatformToolset)' == 'CTP_Nov2013') And '$(Linkage-libzmq)' == 'ltcg' And $(Configuration.IndexOf('Debug')) != -1">
+    <Link>
+      <AdditionalDependencies>libzmq-x86-v120-mt-sgd-4_1_0_0.ltcg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Platform)' == 'x64' And ('$(PlatformToolset)' == 'v120' Or '$(PlatformToolset)' == 'CTP_Nov2013') And '$(Linkage-libzmq)' == 'ltcg' And $(Configuration.IndexOf('Release')) != -1">
+    <Link>
+      <AdditionalDependencies>libzmq-x64-v120-mt-s-4_1_0_0.ltcg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Platform)' == 'x64' And ('$(PlatformToolset)' == 'v120' Or '$(PlatformToolset)' == 'CTP_Nov2013') And '$(Linkage-libzmq)' == 'ltcg' And $(Configuration.IndexOf('Debug')) != -1">
+    <Link>
+      <AdditionalDependencies>libzmq-x64-v120-mt-sgd-4_1_0_0.ltcg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  
+  <!-- dynamic import libraries -->
+  <ItemDefinitionGroup Condition="'$(Platform)' == 'Win32' And ('$(PlatformToolset)' == 'v120' Or '$(PlatformToolset)' == 'CTP_Nov2013') And '$(Linkage-libzmq)' == '' And $(Configuration.IndexOf('Release')) != -1">
+    <Link>
+      <AdditionalDependencies>libzmq-x86-v120-mt-4_1_0_0.imp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Platform)' == 'Win32' And ('$(PlatformToolset)' == 'v120' Or '$(PlatformToolset)' == 'CTP_Nov2013') And '$(Linkage-libzmq)' == '' And $(Configuration.IndexOf('Debug')) != -1">
+    <Link>
+      <AdditionalDependencies>libzmq-x86-v120-mt-gd-4_1_0_0.imp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Platform)' == 'x64' And ('$(PlatformToolset)' == 'v120' Or '$(PlatformToolset)' == 'CTP_Nov2013') And '$(Linkage-libzmq)' == '' And $(Configuration.IndexOf('Release')) != -1">
+    <Link>
+      <AdditionalDependencies>libzmq-x64-v120-mt-4_1_0_0.imp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Platform)' == 'x64' And ('$(PlatformToolset)' == 'v120' Or '$(PlatformToolset)' == 'CTP_Nov2013') And '$(Linkage-libzmq)' == '' And $(Configuration.IndexOf('Debug')) != -1">
+    <Link>
+      <AdditionalDependencies>libzmq-x64-v120-mt-gd-4_1_0_0.imp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!-- dynamic libraries with debug symbols -->
+  <Target Name="libzmq_AfterBuild" AfterTargets="AfterBuild" />
+  <Target Name="libzmq_AfterBuild_Win32_v120_Dynamic_Release"
+          Condition="'$(Platform)' == 'Win32' And ('$(PlatformToolset)' == 'v120' Or '$(PlatformToolset)' == 'CTP_Nov2013') And '$(Linkage-libzmq)' == '' And $(Configuration.IndexOf('Release')) != -1"
+          AfterTargets="libzmq_AfterBuild">
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)bin\libzmq-x86-v120-mt-4_1_0_0.dll" DestinationFiles="$(TargetDir)libzmq.dll" SkipUnchangedFiles="true" />
+    <!--<Copy SourceFiles="$(MSBuildThisFileDirectory)bin\libzmq-x86-v120-mt-4_1_0_0.pdb" DestinationFiles="$(TargetDir)libzmq.pdb" SkipUnchangedFiles="true" />-->
+  </Target>
+  <Target Name="libzmq_AfterBuild_Win32_v120_Dynamic_Debug"
+          Condition="'$(Platform)' == 'Win32' And ('$(PlatformToolset)' == 'v120' Or '$(PlatformToolset)' == 'CTP_Nov2013') And '$(Linkage-libzmq)' == '' And $(Configuration.IndexOf('Debug')) != -1"
+          AfterTargets="libzmq_AfterBuild">
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)bin\libzmq-x86-v120-mt-gd-4_1_0_0.dll" DestinationFiles="$(TargetDir)libzmq.dll" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)bin\libzmq-x86-v120-mt-gd-4_1_0_0.pdb" DestinationFiles="$(TargetDir)libzmq.pdb" SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="libzmq_AfterBuild_x64_v120_Dynamic_Release"
+          Condition="'$(Platform)' == 'x64' And ('$(PlatformToolset)' == 'v120' Or '$(PlatformToolset)' == 'CTP_Nov2013') And '$(Linkage-libzmq)' == '' And $(Configuration.IndexOf('Release')) != -1"
+          AfterTargets="libzmq_AfterBuild">
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)bin\libzmq-x64-v120-mt-4_1_0_0.dll" DestinationFiles="$(TargetDir)libzmq.dll" SkipUnchangedFiles="true" />
+    <!--<Copy SourceFiles="$(MSBuildThisFileDirectory)bin\libzmq-x64-v120-mt-4_1_0_0.pdb" DestinationFiles="$(TargetDir)libzmq.pdb" SkipUnchangedFiles="true" />-->
+  </Target>
+  <Target Name="libzmq_AfterBuild_x64_v120_Dynamic_Debug"
+          Condition="'$(Platform)' == 'x64' And ('$(PlatformToolset)' == 'v120' Or '$(PlatformToolset)' == 'CTP_Nov2013') And '$(Linkage-libzmq)' == '' And $(Configuration.IndexOf('Debug')) != -1"
+          AfterTargets="libzmq_AfterBuild">
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)bin\libzmq-x64-v120-mt-gd-4_1_0_0.dll" DestinationFiles="$(TargetDir)libzmq.dll" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)bin\libzmq-x64-v120-mt-gd-4_1_0_0.pdb" DestinationFiles="$(TargetDir)libzmq.pdb" SkipUnchangedFiles="true" />
+  </Target>
+
+<!--
+#################################################################
+#   GENERATED SOURCE CODE, DO NOT EDIT EXCEPT EXPERIMENTALLY    #
+#################################################################
+-->
+</Project>
