@@ -15,7 +15,7 @@ http://en.wikipedia.org/wiki/Visual_C%2B%2B
 Project configuration redundancies and inconsistencies:
 
 The vs2012 and vs2010 solution and project files differ only in versioning.
-The vs2012 and configurations are missing build configurations.
+The vs2012 and vs2010 configurations are missing build configurations.
 It would make sense to rationalize these two older configurations with vs2013 but this may impact external expectations.
 
 vs2010/properties and vs2012/properties are redundant project subdirectories.
