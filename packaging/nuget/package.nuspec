@@ -6,7 +6,7 @@
 -->
 <package xmlns="http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd">
     <metadata minClientVersion="2.5">
-        <id>libzmq</id>
+        <id>libzmq_v120</id>
         <version>4.1.0.0</version>
         <title>Libzmq (v120) [without OpenPGM or Sodium]</title>
         <authors>Libzmq contributors</authors>
@@ -18,7 +18,7 @@
         <developmentDependency>true</developmentDependency>
         <description>The 0MQ lightweight messaging kernel is a library which extends the standard socket interfaces with features traditionally provided by specialised messaging middleware products. 0MQ sockets provide an abstraction of asynchronous message queues, multiple messaging patterns, message filtering (subscriptions), seamless access to multiple transport protocols and more.</description>
         <summary>The 0MQ lightweight messaging kernel, packaged for Visual Studio 2013 (v120) and CTP_Nov2013 compilers, without OpenPGM or Sodium.</summary>
-        <releaseNotes>http://freecode.com/projects/libzmqduo/releases</releaseNotes>
+        <releaseNotes>https://raw.github.com/zeromq/libzmq/master/NEWS</releaseNotes>
         <copyright>GNU Lesser GPL v3</copyright>
         <tags>native, libzmq, zmq, 0MQ, messaging, sockets, C++</tags>
     </metadata>
