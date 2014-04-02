@@ -280,6 +280,13 @@ zmq::fd_t zmq::ipc_listener_t::accept ()
         return retired_fd;
     }
 
+    //  Race condition can cause socket not to be closed (if fork happens
+    //  between accept and this point).
+#ifdef FD_CLOEXEC
+    int rc = fcntl (sock, F_SETFD, FD_CLOEXEC);
+    errno_assert (rc != -1);
+#endif
+
     // IPC accept() filters
 #if defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
     if (!filter (sock)) {
