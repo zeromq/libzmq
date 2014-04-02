@@ -288,6 +288,13 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
     }
 #endif
 
+    //  Race condition can cause socket not to be closed (if fork happens
+    //  between accept and this point).
+#ifdef FD_CLOEXEC
+    int rc = fcntl (sock, F_SETFD, FD_CLOEXEC);
+    errno_assert (rc != -1);
+#endif
+
     if (!options.tcp_accept_filters.empty ()) {
         bool matched = false;
         for (options_t::tcp_accept_filters_t::size_type i = 0; i != options.tcp_accept_filters.size (); ++i) {
