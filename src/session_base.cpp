@@ -307,7 +307,6 @@ int zmq::session_base_t::zap_connect ()
     zap_pipe->set_nodelay ();
     zap_pipe->set_event_sink (this);
 
-    new_pipes [1]->set_nodelay ();
     send_bind (peer.socket, new_pipes [1], false);
 
     //  Send empty identity if required by the peer.
