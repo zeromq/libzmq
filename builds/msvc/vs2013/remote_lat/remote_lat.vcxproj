@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{1077E977-95DD-4E73-A692-74647DD0CC1E}</ProjectGuid>
-    <ProjectName>inproc_thr</ProjectName>
-    <RootNamespace>inproc_thr12</RootNamespace>
+    <ProjectGuid>{9C20A37C-5D9F-4C4C-A2D9-E6EE91A077D1}</ProjectGuid>
+    <ProjectName>remote_lat</ProjectName>
+    <RootNamespace>remote_lat12</RootNamespace>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="DebugDEXE|Win32">
@@ -137,7 +137,7 @@
     <ClInclude Include="..\..\..\..\perf\platform.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\perf\inproc_thr.cpp" />
+    <ClCompile Include="..\..\..\..\perf\remote_lat.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ItemGroup>

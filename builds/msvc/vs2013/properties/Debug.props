@@ -7,7 +7,6 @@
     <!-- RootNamespace is used to deconflict output files from differing project versions. -->
     <IntDir>$(ProjectDir)..\..\..\..\obj\$(PlatformName)\$(Configuration)\$(RootNamespace)\</IntDir>
     <OutDir>$(ProjectDir)..\..\..\..\bin\$(PlatformName)\Debug\$(RootNamespace)\</OutDir>
-    <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   
   <ItemDefinitionGroup>

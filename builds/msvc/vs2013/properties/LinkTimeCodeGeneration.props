@@ -9,9 +9,6 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      
-      <!-- This overrides Debug.props->LinkIncremental and therefore this reference must always be set after Debug.props is included. -->
-      <LinkIncremental>false</LinkIncremental>
     </ClCompile>
     <Link>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
