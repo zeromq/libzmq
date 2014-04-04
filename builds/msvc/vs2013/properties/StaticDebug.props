@@ -15,6 +15,7 @@
     <ClCompile>
       <!-- Linking CRT statically when building a static library is conventional. -->
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LinkIncremental>true</LinkIncremental>
     </ClCompile>
   </ItemDefinitionGroup>
 
