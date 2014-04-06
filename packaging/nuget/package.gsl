@@ -16,7 +16,7 @@
     <metadata minClientVersion="2.5">
         <id>$(package.id)</id>
         <version>$(package.version)</version>
-        <title>libzmq_v120 [without OpenPGM or Sodium]</title>
+        <title>$(package.id) [without OpenPGM or Sodium]</title>
         <authors>libzmq contributors</authors>
         <owners>Eric Voskuil</owners>
         <licenseUrl>https://raw.github.com/zeromq/libzmq/master/COPYING.LESSER</licenseUrl>
