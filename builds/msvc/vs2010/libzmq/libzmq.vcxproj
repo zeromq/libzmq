@@ -1,232 +1,181 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
-    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <ProjectGuid>{641C5F36-32EE-4323-B740-992B651CF9D6}</ProjectGuid>
-    <RootNamespace>libzmq</RootNamespace>
+    <ProjectName>libzmq</ProjectName>
+    <RootNamespace>libzmq10</RootNamespace>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|Win32">
-      <Configuration>Debug</Configuration>
+    <ProjectConfiguration Include="DebugDLL|Win32">
+      <Configuration>DebugDLL</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
+    <ProjectConfiguration Include="ReleaseDLL|Win32">
+      <Configuration>ReleaseDLL</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
+    <ProjectConfiguration Include="DebugDLL|x64">
+      <Configuration>DebugDLL</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x64">
-      <Configuration>Release</Configuration>
+    <ProjectConfiguration Include="ReleaseDLL|x64">
+      <Configuration>ReleaseDLL</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="StaticDebug|Win32">
-      <Configuration>StaticDebug</Configuration>
+    <ProjectConfiguration Include="DebugLTCG|Win32">
+      <Configuration>DebugLTCG</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="StaticRelease|Win32">
-      <Configuration>StaticRelease</Configuration>
+    <ProjectConfiguration Include="ReleaseLTCG|Win32">
+      <Configuration>ReleaseLTCG</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="WithOpenPGM|Win32">
-      <Configuration>WithOpenPGM</Configuration>
+    <ProjectConfiguration Include="DebugLTCG|x64">
+      <Configuration>DebugLTCG</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseLTCG|x64">
+      <Configuration>ReleaseLTCG</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="DebugLIB|Win32">
+      <Configuration>DebugLIB</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="WithOpenPGM|x64">
-      <Configuration>WithOpenPGM</Configuration>
+    <ProjectConfiguration Include="ReleaseLIB|Win32">
+      <Configuration>ReleaseLIB</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="DebugLIB|x64">
+      <Configuration>DebugLIB</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseLIB|x64">
+      <Configuration>ReleaseLIB</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <PropertyGroup>
-    <CharacterSet>MultiByte</CharacterSet>
+  <PropertyGroup Label="Configuration">
     <PlatformToolset>v100</PlatformToolset>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugLTCG|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='WithOpenPGM|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLTCG|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='WithOpenPGM|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugLTCG|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLTCG|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugLIB|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLIB|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugLIB|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLIB|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(ProjectDir)..\properties\ZeroMQ.props" />
+    <Import Project="$(ProjectDir)$(ProjectName).props" />
+    <Import Project="$(ProjectDir)..\properties\DynamicDebug.props" />
     <Import Project="$(ProjectDir)..\properties\Win32.props" />
-    <Import Project="$(ProjectDir)..\properties\Debug.props" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(ProjectDir)..\properties\ZeroMQ.props" />
-    <Import Project="$(ProjectDir)..\properties\x64.props" />
-    <Import Project="$(ProjectDir)..\properties\Release.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(ProjectDir)..\properties\ZeroMQ.props" />
-    <Import Project="$(ProjectDir)..\properties\x64.props" />
-    <Import Project="$(ProjectDir)..\properties\Debug.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(ProjectDir)..\properties\ZeroMQ.props" />
-    <Import Project="$(ProjectDir)..\properties\Win32_Release.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(ProjectDir)..\properties\ZeroMQ_Static.props" />
+    <Import Project="$(ProjectDir)$(ProjectName).props" />
+    <Import Project="$(ProjectDir)..\properties\DynamicRelease.props" />
     <Import Project="$(ProjectDir)..\properties\Win32.props" />
-    <Import Project="$(ProjectDir)..\properties\Debug.props" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'" Label="PropertySheets">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(ProjectDir)..\properties\ZeroMQ_Static.props" />
-    <Import Project="$(ProjectDir)..\properties\Win32_Release.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='WithOpenPGM|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(ProjectDir)..\properties\ZeroMQ.props" />
-    <Import Project="$(ProjectDir)..\properties\WithOpenPGM.props" />
-    <Import Project="$(ProjectDir)..\properties\Win32_Release.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='WithOpenPGM|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(ProjectDir)..\properties\ZeroMQ.props" />
-    <Import Project="$(ProjectDir)..\properties\WithOpenPGM.props" />
+    <Import Project="$(ProjectDir)$(ProjectName).props" />
+    <Import Project="$(ProjectDir)..\properties\DynamicDebug.props" />
     <Import Project="$(ProjectDir)..\properties\x64.props" />
-    <Import Project="$(ProjectDir)..\properties\Release.props" />
   </ImportGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TargetName>libzmq_d</TargetName>
-    <CodeAnalysisRules />
-    <CodeAnalysisRuleAssemblies />
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TargetName>libzmq</TargetName>
-    <CodeAnalysisRules />
-    <CodeAnalysisRuleAssemblies />
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <TargetName>libzmq_d</TargetName>
-    <CodeAnalysisRules />
-    <CodeAnalysisRuleAssemblies />
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <TargetName>libzmq</TargetName>
-    <CodeAnalysisRules />
-    <CodeAnalysisRuleAssemblies />
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'">
-    <TargetName>libzmq_d</TargetName>
-    <CodeAnalysisRules />
-    <CodeAnalysisRuleAssemblies />
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'">
-    <TargetName>libzmq</TargetName>
-    <CodeAnalysisRules />
-    <CodeAnalysisRuleAssemblies />
-  </PropertyGroup>
-  <ItemDefinitionGroup>
-    <PreBuildEvent>
-      <Command>copy ..\..\platform.hpp ..\..\..\..\src</Command>
-    </PreBuildEvent>
-  </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\..\..\src\address.cpp" />
-    <ClCompile Include="..\..\..\..\src\clock.cpp" />
-    <ClCompile Include="..\..\..\..\src\ctx.cpp" />
-    <ClCompile Include="..\..\..\..\src\dealer.cpp" />
-    <ClCompile Include="..\..\..\..\src\devpoll.cpp" />
-    <ClCompile Include="..\..\..\..\src\dist.cpp" />
-    <ClCompile Include="..\..\..\..\src\epoll.cpp" />
-    <ClCompile Include="..\..\..\..\src\err.cpp" />
-    <ClCompile Include="..\..\..\..\src\fq.cpp" />
-    <ClCompile Include="..\..\..\..\src\io_object.cpp" />
-    <ClCompile Include="..\..\..\..\src\io_thread.cpp" />
-    <ClCompile Include="..\..\..\..\src\ip.cpp" />
-    <ClCompile Include="..\..\..\..\src\ipc_address.cpp" />
-    <ClCompile Include="..\..\..\..\src\ipc_connecter.cpp" />
-    <ClCompile Include="..\..\..\..\src\ipc_listener.cpp" />
-    <ClCompile Include="..\..\..\..\src\kqueue.cpp" />
-    <ClCompile Include="..\..\..\..\src\lb.cpp" />
-    <ClCompile Include="..\..\..\..\src\mailbox.cpp" />
-    <ClCompile Include="..\..\..\..\src\mechanism.cpp" />
-    <ClCompile Include="..\..\..\..\src\msg.cpp" />
-    <ClCompile Include="..\..\..\..\src\mtrie.cpp" />
-    <ClCompile Include="..\..\..\..\src\null_mechanism.cpp" />
-    <ClCompile Include="..\..\..\..\src\object.cpp" />
-    <ClCompile Include="..\..\..\..\src\options.cpp" />
-    <ClCompile Include="..\..\..\..\src\own.cpp" />
-    <ClCompile Include="..\..\..\..\src\pair.cpp" />
-    <ClCompile Include="..\..\..\..\src\pgm_receiver.cpp" />
-    <ClCompile Include="..\..\..\..\src\pgm_sender.cpp" />
-    <ClCompile Include="..\..\..\..\src\pgm_socket.cpp" />
-    <ClCompile Include="..\..\..\..\src\pipe.cpp" />
-    <ClCompile Include="..\..\..\..\src\plain_mechanism.cpp" />
-    <ClCompile Include="..\..\..\..\src\poll.cpp" />
-    <ClCompile Include="..\..\..\..\src\poller_base.cpp" />
-    <ClCompile Include="..\..\..\..\src\precompiled.cpp">
-      <PrecompiledHeader>Create</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\src\proxy.cpp" />
-    <ClCompile Include="..\..\..\..\src\pub.cpp" />
-    <ClCompile Include="..\..\..\..\src\pull.cpp" />
-    <ClCompile Include="..\..\..\..\src\push.cpp" />
-    <ClCompile Include="..\..\..\..\src\random.cpp" />
-    <ClCompile Include="..\..\..\..\src\raw_decoder.cpp" />
-    <ClCompile Include="..\..\..\..\src\raw_encoder.cpp" />
-    <ClCompile Include="..\..\..\..\src\reaper.cpp" />
-    <ClCompile Include="..\..\..\..\src\rep.cpp" />
-    <ClCompile Include="..\..\..\..\src\req.cpp" />
-    <ClCompile Include="..\..\..\..\src\router.cpp" />
-    <ClCompile Include="..\..\..\..\src\select.cpp" />
-    <ClCompile Include="..\..\..\..\src\session_base.cpp" />
-    <ClCompile Include="..\..\..\..\src\signaler.cpp" />
-    <ClCompile Include="..\..\..\..\src\socket_base.cpp" />
-    <ClCompile Include="..\..\..\..\src\stream.cpp" />
-    <ClCompile Include="..\..\..\..\src\stream_engine.cpp" />
-    <ClCompile Include="..\..\..\..\src\sub.cpp" />
-    <ClCompile Include="..\..\..\..\src\tcp.cpp" />
-    <ClCompile Include="..\..\..\..\src\tcp_address.cpp" />
-    <ClCompile Include="..\..\..\..\src\tcp_connecter.cpp" />
-    <ClCompile Include="..\..\..\..\src\tcp_listener.cpp" />
-    <ClCompile Include="..\..\..\..\src\thread.cpp" />
-    <ClCompile Include="..\..\..\..\src\trie.cpp" />
-    <ClCompile Include="..\..\..\..\src\v1_decoder.cpp" />
-    <ClCompile Include="..\..\..\..\src\v1_encoder.cpp" />
-    <ClCompile Include="..\..\..\..\src\v2_decoder.cpp" />
-    <ClCompile Include="..\..\..\..\src\v2_encoder.cpp" />
-    <ClCompile Include="..\..\..\..\src\xpub.cpp" />
-    <ClCompile Include="..\..\..\..\src\xsub.cpp" />
-    <ClCompile Include="..\..\..\..\src\zmq.cpp" />
-    <ClCompile Include="..\..\..\..\src\zmq_utils.cpp" />
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(ProjectDir)$(ProjectName).props" />
+    <Import Project="$(ProjectDir)..\properties\DynamicRelease.props" />
+    <Import Project="$(ProjectDir)..\properties\x64.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugLTCG|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(ProjectDir)$(ProjectName).props" />
+    <Import Project="$(ProjectDir)..\properties\StaticDebugLinkTimeCodeGeneration.props" />
+    <Import Project="$(ProjectDir)..\properties\Win32.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLTCG|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(ProjectDir)$(ProjectName).props" />
+    <Import Project="$(ProjectDir)..\properties\StaticReleaseLinkTimeCodeGeneration.props" />
+    <Import Project="$(ProjectDir)..\properties\Win32.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugLTCG|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(ProjectDir)$(ProjectName).props" />
+    <Import Project="$(ProjectDir)..\properties\StaticDebugLinkTimeCodeGeneration.props" />
+    <Import Project="$(ProjectDir)..\properties\x64.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLTCG|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(ProjectDir)$(ProjectName).props" />
+    <Import Project="$(ProjectDir)..\properties\StaticReleaseLinkTimeCodeGeneration.props" />
+    <Import Project="$(ProjectDir)..\properties\x64.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugLIB|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(ProjectDir)$(ProjectName).props" />
+    <Import Project="$(ProjectDir)..\properties\StaticDebug.props" />
+    <Import Project="$(ProjectDir)..\properties\Win32.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLIB|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(ProjectDir)$(ProjectName).props" />
+    <Import Project="$(ProjectDir)..\properties\StaticRelease.props" />
+    <Import Project="$(ProjectDir)..\properties\Win32.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugLIB|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(ProjectDir)$(ProjectName).props" />
+    <Import Project="$(ProjectDir)..\properties\StaticDebug.props" />
+    <Import Project="$(ProjectDir)..\properties\x64.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLIB|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(ProjectDir)$(ProjectName).props" />
+    <Import Project="$(ProjectDir)..\properties\StaticRelease.props" />
+    <Import Project="$(ProjectDir)..\properties\x64.props" />
+  </ImportGroup>
+  <ItemGroup Label="BuildOptionsExtension">
+    <PropertyPageSchema Include="$(ProjectName).xml" />
   </ItemGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions Condition="'$(Option-openpgm)' == 'true'">ZMQ_HAVE_OPENPGM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\zmq.h" />
     <ClInclude Include="..\..\..\..\include\zmq_utils.h" />
@@ -308,8 +257,88 @@
     <ClInclude Include="..\..\..\..\src\xsub.hpp" />
     <ClInclude Include="..\..\..\..\src\ypipe.hpp" />
     <ClInclude Include="..\..\..\..\src\yqueue.hpp" />
+    <ClInclude Include="..\..\resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\src\address.cpp" />
+    <ClCompile Include="..\..\..\..\src\clock.cpp" />
+    <ClCompile Include="..\..\..\..\src\ctx.cpp" />
+    <ClCompile Include="..\..\..\..\src\dealer.cpp" />
+    <ClCompile Include="..\..\..\..\src\devpoll.cpp" />
+    <ClCompile Include="..\..\..\..\src\dist.cpp" />
+    <ClCompile Include="..\..\..\..\src\epoll.cpp" />
+    <ClCompile Include="..\..\..\..\src\err.cpp" />
+    <ClCompile Include="..\..\..\..\src\fq.cpp" />
+    <ClCompile Include="..\..\..\..\src\io_object.cpp" />
+    <ClCompile Include="..\..\..\..\src\io_thread.cpp" />
+    <ClCompile Include="..\..\..\..\src\ip.cpp" />
+    <ClCompile Include="..\..\..\..\src\ipc_address.cpp" />
+    <ClCompile Include="..\..\..\..\src\ipc_connecter.cpp" />
+    <ClCompile Include="..\..\..\..\src\ipc_listener.cpp" />
+    <ClCompile Include="..\..\..\..\src\kqueue.cpp" />
+    <ClCompile Include="..\..\..\..\src\lb.cpp" />
+    <ClCompile Include="..\..\..\..\src\mailbox.cpp" />
+    <ClCompile Include="..\..\..\..\src\mechanism.cpp" />
+    <ClCompile Include="..\..\..\..\src\msg.cpp" />
+    <ClCompile Include="..\..\..\..\src\mtrie.cpp" />
+    <ClCompile Include="..\..\..\..\src\null_mechanism.cpp" />
+    <ClCompile Include="..\..\..\..\src\object.cpp" />
+    <ClCompile Include="..\..\..\..\src\options.cpp" />
+    <ClCompile Include="..\..\..\..\src\own.cpp" />
+    <ClCompile Include="..\..\..\..\src\pair.cpp" />
+    <ClCompile Include="..\..\..\..\src\pgm_receiver.cpp" />
+    <ClCompile Include="..\..\..\..\src\pgm_sender.cpp" />
+    <ClCompile Include="..\..\..\..\src\pgm_socket.cpp" />
+    <ClCompile Include="..\..\..\..\src\pipe.cpp" />
+    <ClCompile Include="..\..\..\..\src\plain_mechanism.cpp" />
+    <ClCompile Include="..\..\..\..\src\poll.cpp" />
+    <ClCompile Include="..\..\..\..\src\poller_base.cpp" />
+    <ClCompile Include="..\..\..\..\src\precompiled.cpp" />
+    <ClCompile Include="..\..\..\..\src\proxy.cpp" />
+    <ClCompile Include="..\..\..\..\src\pub.cpp" />
+    <ClCompile Include="..\..\..\..\src\pull.cpp" />
+    <ClCompile Include="..\..\..\..\src\push.cpp" />
+    <ClCompile Include="..\..\..\..\src\random.cpp" />
+    <ClCompile Include="..\..\..\..\src\raw_decoder.cpp" />
+    <ClCompile Include="..\..\..\..\src\raw_encoder.cpp" />
+    <ClCompile Include="..\..\..\..\src\reaper.cpp" />
+    <ClCompile Include="..\..\..\..\src\rep.cpp" />
+    <ClCompile Include="..\..\..\..\src\req.cpp" />
+    <ClCompile Include="..\..\..\..\src\router.cpp" />
+    <ClCompile Include="..\..\..\..\src\select.cpp" />
+    <ClCompile Include="..\..\..\..\src\session_base.cpp" />
+    <ClCompile Include="..\..\..\..\src\signaler.cpp" />
+    <ClCompile Include="..\..\..\..\src\socket_base.cpp" />
+    <ClCompile Include="..\..\..\..\src\stream.cpp" />
+    <ClCompile Include="..\..\..\..\src\stream_engine.cpp" />
+    <ClCompile Include="..\..\..\..\src\sub.cpp" />
+    <ClCompile Include="..\..\..\..\src\tcp.cpp" />
+    <ClCompile Include="..\..\..\..\src\tcp_address.cpp" />
+    <ClCompile Include="..\..\..\..\src\tcp_connecter.cpp" />
+    <ClCompile Include="..\..\..\..\src\tcp_listener.cpp" />
+    <ClCompile Include="..\..\..\..\src\thread.cpp" />
+    <ClCompile Include="..\..\..\..\src\trie.cpp" />
+    <ClCompile Include="..\..\..\..\src\v1_decoder.cpp" />
+    <ClCompile Include="..\..\..\..\src\v1_encoder.cpp" />
+    <ClCompile Include="..\..\..\..\src\v2_decoder.cpp" />
+    <ClCompile Include="..\..\..\..\src\v2_encoder.cpp" />
+    <ClCompile Include="..\..\..\..\src\xpub.cpp" />
+    <ClCompile Include="..\..\..\..\src\xsub.cpp" />
+    <ClCompile Include="..\..\..\..\src\zmq.cpp" />
+    <ClCompile Include="..\..\..\..\src\zmq_utils.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\packaging\nuget\package.bat" />
+    <None Include="..\..\..\..\packaging\nuget\package.config" />
+    <None Include="..\..\..\..\packaging\nuget\package.gsl" />
+    <None Include="..\..\..\..\packaging\nuget\package.nuspec" />
+    <None Include="..\..\..\..\packaging\nuget\package.targets" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="..\..\..\..\packaging\nuget\package.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\libzmq.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
 </Project>

@@ -1,24 +1,24 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 9.00
+Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzmq", "libzmq\libzmq.vcproj", "{641C5F36-32EE-4323-B740-992B651CF9D6}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "local_lat", "c_local_lat\c_local_lat.vcproj", "{4FDB8C73-9D4A-4D87-A4A9-A7FC06DFEA57}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "local_lat", "local_lat\local_lat.vcproj", "{4FDB8C73-9D4A-4D87-A4A9-A7FC06DFEA57}"
 	ProjectSection(ProjectDependencies) = postProject
 		{641C5F36-32EE-4323-B740-992B651CF9D6} = {641C5F36-32EE-4323-B740-992B651CF9D6}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "remote_lat", "c_remote_lat\c_remote_lat.vcproj", "{9C20A37C-5D9F-4C4C-A2D9-E6EE91A077D1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "remote_lat", "remote_lat\remote_lat.vcproj", "{9C20A37C-5D9F-4C4C-A2D9-E6EE91A077D1}"
 	ProjectSection(ProjectDependencies) = postProject
 		{641C5F36-32EE-4323-B740-992B651CF9D6} = {641C5F36-32EE-4323-B740-992B651CF9D6}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "local_thr", "c_local_thr\c_local_thr.vcproj", "{8EF2DF6B-6646-460F-8032-913B70FE0E94}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "local_thr", "local_thr\local_thr.vcproj", "{8EF2DF6B-6646-460F-8032-913B70FE0E94}"
 	ProjectSection(ProjectDependencies) = postProject
 		{641C5F36-32EE-4323-B740-992B651CF9D6} = {641C5F36-32EE-4323-B740-992B651CF9D6}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "remote_thr", "c_remote_thr\c_remote_thr.vcproj", "{B15E059C-0CBB-4A82-8C42-6567FB650802}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "remote_thr", "remote_thr\remote_thr.vcproj", "{B15E059C-0CBB-4A82-8C42-6567FB650802}"
 	ProjectSection(ProjectDependencies) = postProject
 		{641C5F36-32EE-4323-B740-992B651CF9D6} = {641C5F36-32EE-4323-B740-992B651CF9D6}
 	EndProjectSection
