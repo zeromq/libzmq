@@ -126,73 +126,73 @@
       <AdditionalLibraryDirectories>$\(MSBuildThisFileDirectory)bin\\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$\($(package.target)-linkage-nuget)' == 'static' Or '$\($(package.target)-linkage-nuget)' == 'ltcg'">
+  <ItemDefinitionGroup Condition="'$\(Linkage-$(package.target))' == 'static' Or '$\(Linkage-$(package.target))' == 'ltcg'">
     <ClCompile>
       <PreprocessorDefinitions>ZMQ_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
 
   <!-- static libraries -->
-  <ItemDefinitionGroup Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\($(package.target)-linkage-nuget)' == 'static' And $\(Configuration.IndexOf('Release')) != -1">
+  <ItemDefinitionGroup Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(package.target))' == 'static' And $\(Configuration.IndexOf('Release')) != -1">
     <Link>
       <AdditionalDependencies>$(package.target)-x86-$(package.platformtoolset)-mt-s-$(package.pathversion).lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\($(package.target)-linkage-nuget)' == 'static' And $\(Configuration.IndexOf('Debug')) != -1">
+  <ItemDefinitionGroup Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(package.target))' == 'static' And $\(Configuration.IndexOf('Debug')) != -1">
     <Link>
       <AdditionalDependencies>$(package.target)-x86-$(package.platformtoolset)-mt-sgd-$(package.pathversion).lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\($(package.target)-linkage-nuget)' == 'static' And $\(Configuration.IndexOf('Release')) != -1">
+  <ItemDefinitionGroup Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(package.target))' == 'static' And $\(Configuration.IndexOf('Release')) != -1">
     <Link>
       <AdditionalDependencies>$(package.target)-x64-$(package.platformtoolset)-mt-s-$(package.pathversion).lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\($(package.target)-linkage-nuget)' == 'static' And $\(Configuration.IndexOf('Debug')) != -1">
+  <ItemDefinitionGroup Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(package.target))' == 'static' And $\(Configuration.IndexOf('Debug')) != -1">
     <Link>
       <AdditionalDependencies>$(package.target)-x64-$(package.platformtoolset)-mt-sgd-$(package.pathversion).lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 
   <!-- static ltcg libraries -->
-  <ItemDefinitionGroup Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\($(package.target)-linkage-nuget)' == 'ltcg' And $\(Configuration.IndexOf('Release')) != -1">
+  <ItemDefinitionGroup Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(package.target))' == 'ltcg' And $\(Configuration.IndexOf('Release')) != -1">
     <Link>
       <AdditionalDependencies>$(package.target)-x86-$(package.platformtoolset)-mt-s-$(package.pathversion).ltcg.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\($(package.target)-linkage-nuget)' == 'ltcg' And $\(Configuration.IndexOf('Debug')) != -1">
+  <ItemDefinitionGroup Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(package.target))' == 'ltcg' And $\(Configuration.IndexOf('Debug')) != -1">
     <Link>
       <AdditionalDependencies>$(package.target)-x86-$(package.platformtoolset)-mt-sgd-$(package.pathversion).ltcg.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\($(package.target)-linkage-nuget)' == 'ltcg' And $\(Configuration.IndexOf('Release')) != -1">
+  <ItemDefinitionGroup Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(package.target))' == 'ltcg' And $\(Configuration.IndexOf('Release')) != -1">
     <Link>
       <AdditionalDependencies>$(package.target)-x64-$(package.platformtoolset)-mt-s-$(package.pathversion).ltcg.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\($(package.target)-linkage-nuget)' == 'ltcg' And $\(Configuration.IndexOf('Debug')) != -1">
+  <ItemDefinitionGroup Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(package.target))' == 'ltcg' And $\(Configuration.IndexOf('Debug')) != -1">
     <Link>
       <AdditionalDependencies>$(package.target)-x64-$(package.platformtoolset)-mt-sgd-$(package.pathversion).ltcg.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   
   <!-- dynamic import libraries -->
-  <ItemDefinitionGroup Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\($(package.target)-linkage-nuget)' == '' And $\(Configuration.IndexOf('Release')) != -1">
+  <ItemDefinitionGroup Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(package.target))' == 'dynamic' And $\(Configuration.IndexOf('Release')) != -1">
     <Link>
       <AdditionalDependencies>$(package.target)-x86-$(package.platformtoolset)-mt-$(package.pathversion).imp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\($(package.target)-linkage-nuget)' == '' And $\(Configuration.IndexOf('Debug')) != -1">
+  <ItemDefinitionGroup Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(package.target))' == 'dynamic' And $\(Configuration.IndexOf('Debug')) != -1">
     <Link>
       <AdditionalDependencies>$(package.target)-x86-$(package.platformtoolset)-mt-gd-$(package.pathversion).imp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\($(package.target)-linkage-nuget)' == '' And $\(Configuration.IndexOf('Release')) != -1">
+  <ItemDefinitionGroup Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(package.target))' == 'dynamic' And $\(Configuration.IndexOf('Release')) != -1">
     <Link>
       <AdditionalDependencies>$(package.target)-x64-$(package.platformtoolset)-mt-$(package.pathversion).imp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\($(package.target)-linkage-nuget)' == '' And $\(Configuration.IndexOf('Debug')) != -1">
+  <ItemDefinitionGroup Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(package.target))' == 'dynamic' And $\(Configuration.IndexOf('Debug')) != -1">
     <Link>
       <AdditionalDependencies>$(package.target)-x64-$(package.platformtoolset)-mt-gd-$(package.pathversion).imp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
@@ -201,25 +201,25 @@
   <!-- dynamic libraries with debug symbols -->
   <Target Name="$(package.target)_AfterBuild" AfterTargets="AfterBuild" />
   <Target Name="$(package.target)_AfterBuild_Win32_$(package.platformtoolset)_Dynamic_Release"
-          Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\($(package.target)-linkage-nuget)' == '' And $\(Configuration.IndexOf('Release')) != -1"
+          Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(package.target))' == 'dynamic' And $\(Configuration.IndexOf('Release')) != -1"
           AfterTargets="$(package.target)_AfterBuild">
     <Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(package.target)-x86-$(package.platformtoolset)-mt-$(package.pathversion).dll" DestinationFiles="$\(TargetDir)$(package.target).dll" SkipUnchangedFiles="true" />
     <!--<Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(package.target)-x86-$(package.platformtoolset)-mt-$(package.pathversion).pdb" DestinationFiles="$\(TargetDir)$(package.target).pdb" SkipUnchangedFiles="true" />-->
   </Target>
   <Target Name="$(package.target)_AfterBuild_Win32_$(package.platformtoolset)_Dynamic_Debug"
-          Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\($(package.target)-linkage-nuget)' == '' And $\(Configuration.IndexOf('Debug')) != -1"
+          Condition="'$\(Platform)' == 'Win32' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(package.target))' == 'dynamic' And $\(Configuration.IndexOf('Debug')) != -1"
           AfterTargets="$(package.target)_AfterBuild">
     <Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(package.target)-x86-$(package.platformtoolset)-mt-gd-$(package.pathversion).dll" DestinationFiles="$\(TargetDir)$(package.target).dll" SkipUnchangedFiles="true" />
     <Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(package.target)-x86-$(package.platformtoolset)-mt-gd-$(package.pathversion).pdb" DestinationFiles="$\(TargetDir)$(package.target).pdb" SkipUnchangedFiles="true" />
   </Target>
   <Target Name="$(package.target)_AfterBuild_x64_$(package.platformtoolset)_Dynamic_Release"
-          Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\($(package.target)-linkage-nuget)' == '' And $\(Configuration.IndexOf('Release')) != -1"
+          Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(package.target))' == 'dynamic' And $\(Configuration.IndexOf('Release')) != -1"
           AfterTargets="$(package.target)_AfterBuild">
     <Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(package.target)-x64-$(package.platformtoolset)-mt-$(package.pathversion).dll" DestinationFiles="$\(TargetDir)$(package.target).dll" SkipUnchangedFiles="true" />
     <!--<Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(package.target)-x64-$(package.platformtoolset)-mt-$(package.pathversion).pdb" DestinationFiles="$\(TargetDir)$(package.target).pdb" SkipUnchangedFiles="true" />-->
   </Target>
   <Target Name="$(package.target)_AfterBuild_x64_$(package.platformtoolset)_Dynamic_Debug"
-          Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\($(package.target)-linkage-nuget)' == '' And $\(Configuration.IndexOf('Debug')) != -1"
+          Condition="'$\(Platform)' == 'x64' And ('$\(PlatformToolset)' == '$(package.platformtoolset)' Or '$\(PlatformToolset)' == 'CTP_Nov2013') And '$\(Linkage-$(package.target))' == 'dynamic' And $\(Configuration.IndexOf('Debug')) != -1"
           AfterTargets="$(package.target)_AfterBuild">
     <Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(package.target)-x64-$(package.platformtoolset)-mt-gd-$(package.pathversion).dll" DestinationFiles="$\(TargetDir)$(package.target).dll" SkipUnchangedFiles="true" />
     <Copy SourceFiles="$\(MSBuildThisFileDirectory)bin\\$(package.target)-x64-$(package.platformtoolset)-mt-gd-$(package.pathversion).pdb" DestinationFiles="$\(TargetDir)$(package.target).pdb" SkipUnchangedFiles="true" />
@@ -240,15 +240,16 @@
 #################################################################
 -->
 <ProjectSchemaDefinitions xmlns="clr-namespace:Microsoft.Build.Framework.XamlTypes;assembly=Microsoft.Build.Framework">
-  <Rule Name="$(package.target)-linkage-nuget-uiextension" PageTemplate="tool" DisplayName="NuGet Dependencies" SwitchPrefix="/" Order="1">
+  <Rule Name="Linkage-$(package.target)-uiextension" PageTemplate="tool" DisplayName="NuGet Dependencies" SwitchPrefix="/" Order="1">
     <Rule.Categories>
       <Category Name="$(package.target)" DisplayName="$(package.target)" />
     </Rule.Categories>
     <Rule.DataSource>
       <DataSource Persistence="ProjectFile" ItemType="" />
     </Rule.DataSource>
-    <EnumProperty Name="$(package.target)-linkage-nuget" DisplayName="Linkage" Description="How NuGet $(package.target) will be linked into the output of this project" Category="$(package.target)">
-      <EnumValue Name="" DisplayName="Dynamic (DLL)" />
+    <EnumProperty Name="Linkage-$(package.target)" DisplayName="Linkage" Description="How NuGet $(package.target) will be linked into the output of this project" Category="$(package.target)">
+      <EnumValue Name="" DisplayName="Not linked" />
+      <EnumValue Name="dynamic" DisplayName="Dynamic (DLL)" />
       <EnumValue Name="static" DisplayName="Static (LIB)" />
       <EnumValue Name="ltcg" DisplayName="Static using link time compile generation (LTCG)" />
     </EnumProperty>
