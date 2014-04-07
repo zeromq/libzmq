@@ -5,15 +5,16 @@
 #################################################################
 -->
 <ProjectSchemaDefinitions xmlns="clr-namespace:Microsoft.Build.Framework.XamlTypes;assembly=Microsoft.Build.Framework">
-  <Rule Name="libzmq-linkage-nuget-uiextension" PageTemplate="tool" DisplayName="NuGet Dependencies" SwitchPrefix="/" Order="1">
+  <Rule Name="Linkage-libzmq-uiextension" PageTemplate="tool" DisplayName="NuGet Dependencies" SwitchPrefix="/" Order="1">
     <Rule.Categories>
       <Category Name="libzmq" DisplayName="libzmq" />
     </Rule.Categories>
     <Rule.DataSource>
       <DataSource Persistence="ProjectFile" ItemType="" />
     </Rule.DataSource>
-    <EnumProperty Name="libzmq-linkage-nuget" DisplayName="Linkage" Description="How NuGet libzmq will be linked into the output of this project" Category="libzmq">
-      <EnumValue Name="" DisplayName="Dynamic (DLL)" />
+    <EnumProperty Name="Linkage-libzmq" DisplayName="Linkage" Description="How NuGet libzmq will be linked into the output of this project" Category="libzmq">
+      <EnumValue Name="" DisplayName="Not linked" />
+      <EnumValue Name="dynamic" DisplayName="Dynamic (DLL)" />
       <EnumValue Name="static" DisplayName="Static (LIB)" />
       <EnumValue Name="ltcg" DisplayName="Static using link time compile generation (LTCG)" />
     </EnumProperty>
