@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup Label="Globals">
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <_PropertySheetDisplayName>ZMQ Import Settings</_PropertySheetDisplayName>
+  </PropertyGroup>
+  
+  <!-- User Interface -->
+
+  <ItemGroup Label="BuildOptionsExtension">
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)libzmq.import.xml" />
+  </ItemGroup>
+
+  <!-- Configuration -->
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\..\libzmq\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Linkage-libzmq)' == 'static' Or '$(Linkage-libzmq)' == 'ltcg'">
+    <ClCompile>
+      <PreprocessorDefinitions>ZMQ_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+    <ItemDefinitionGroup Condition="'$(Linkage-libzmq)' == 'dynamic'">
+    <Link Condition="$(Configuration.IndexOf('Debug')) != -1">
+      <AdditionalDependencies>$(ProjectDir)..\..\..\..\..\libzmq\bin\$(PlatformName)\Debug\libzmq10\libzmq.imp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Link Condition="$(Configuration.IndexOf('Release')) != -1">
+      <AdditionalDependencies>$(ProjectDir)..\..\..\..\..\libzmq\bin\$(PlatformName)\Release\libzmq10\libzmq.imp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Linkage-libzmq)' == 'static'">
+    <Link Condition="$(Configuration.IndexOf('Debug')) != -1">
+      <AdditionalDependencies>$(ProjectDir)..\..\..\..\..\libzmq\bin\$(PlatformName)\Debug\libzmq10\libzmq.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Link Condition="$(Configuration.IndexOf('Release')) != -1">
+      <AdditionalDependencies>$(ProjectDir)..\..\..\..\..\libzmq\bin\$(PlatformName)\Release\libzmq10\libzmq.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="'$(Linkage-libzmq)' == 'ltcg'">
+    <Link Condition="$(Configuration.IndexOf('Debug')) != -1">
+      <AdditionalDependencies>$(ProjectDir)..\..\..\..\..\libzmq\bin\$(PlatformName)\Debug\libzmq10\libzmq.ltcg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Link Condition="$(Configuration.IndexOf('Release')) != -1">
+      <AdditionalDependencies>$(ProjectDir)..\..\..\..\..\libzmq\bin\$(PlatformName)\Release\libzmq10\libzmq.ltcg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!-- Copy -->
+
+  <Target Name="Linkage-libzmq-dynamic" AfterTargets="AfterBuild" Condition="'$(Linkage-libzmq)' == 'dynamic'">
+    <Copy Condition="$(Configuration.IndexOf('Debug')) != -1"
+          SourceFiles="$(ProjectDir)..\..\..\..\..\libzmq\bin\$(PlatformName)\Debug\libzmq10\libzmq.dll"
+          DestinationFiles="$(TargetDir)libzmq.dll"
+          SkipUnchangedFiles="true" />
+    <Copy Condition="$(Configuration.IndexOf('Debug')) != -1"
+          SourceFiles="$(ProjectDir)..\..\..\..\..\libzmq\bin\$(PlatformName)\Debug\libzmq10\libzmq.pdb"
+          DestinationFiles="$(TargetDir)libzmq.pdb"
+          SkipUnchangedFiles="true" />
+    <Copy Condition="$(Configuration.IndexOf('Release')) != -1"
+          SourceFiles="$(ProjectDir)..\..\..\..\..\libzmq\bin\$(PlatformName)\Release\libzmq10\libzmq.dll"
+          DestinationFiles="$(TargetDir)libzmq.dll"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+  <!-- Messages -->
+
+  <Target Name="libzmq-info" BeforeTargets="AfterBuild" Condition="'$(Linkage-libzmq)' == 'dynamic'">
+    <Message Text="Copying libzmq.dll -&gt; $(TargetDir)libzmq.dll" Importance="high"/>
+    <Message Text="Copying libzmq.pdb -&gt; $(TargetDir)libzmq.pdb" Importance="high" Condition="$(Configuration.IndexOf('Debug')) != -1" />
+  </Target>
+
+</Project>

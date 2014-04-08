@@ -199,6 +199,12 @@
     <ClCompile Include="..\..\..\..\src\precompiled.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\src\curve_client.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\curve_server.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\zmq_utils.h">
@@ -443,6 +449,12 @@
     </ClInclude>
     <ClInclude Include="..\..\resource.h">
       <Filter>resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\curve_client.hpp">
+      <Filter>src\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\curve_server.hpp">
+      <Filter>src\include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

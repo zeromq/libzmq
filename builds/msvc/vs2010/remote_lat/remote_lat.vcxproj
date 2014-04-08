@@ -132,7 +132,7 @@
     <Import Project="$(ProjectDir)$(ProjectName).props" />
     <Import Project="$(ProjectDir)..\properties\ConsoleReleaseStatic.props" />
     <Import Project="$(ProjectDir)..\properties\x64.props" />
-  </ImportGroup>
+  </ImportGroup> 
   <ItemGroup>
     <ClInclude Include="..\..\..\..\perf\platform.hpp" />
   </ItemGroup>
