@@ -8,6 +8,8 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
 
+  <!-- Configuration -->
+
   <ItemDefinitionGroup>
     <PreBuildEvent>
       <Command>copy $(ProjectDir)..\..\platform.hpp $(ProjectDir)..\..\..\..\perf\</Command>
@@ -23,8 +25,35 @@
     </Link>
   </ItemDefinitionGroup>
 
+  <!-- Extensions -->
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)libzmq.import.props" />
+    <Import Project="$(SolutionDir)libsodium.import.props" />
+  </ImportGroup>
+
+  <PropertyGroup Condition="$(Configuration.IndexOf('DEXE')) != -1">
+    <Linkage-libzmq>dynamic</Linkage-libzmq>
+    <Linkage-libsodium>dynamic</Linkage-libsodium>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(Configuration.IndexOf('LEXE')) != -1">
+    <Linkage-libzmq>ltcg</Linkage-libzmq>
+    <Linkage-libsodium>ltcg</Linkage-libsodium>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(Configuration.IndexOf('SEXE')) != -1">
+    <Linkage-libzmq>static</Linkage-libzmq>
+    <Linkage-libsodium>static</Linkage-libsodium>
+  </PropertyGroup>
+
+  <!-- Messages -->
+
   <Target Name="CustomInfo" BeforeTargets="PrepareForBuild">
     <Message Text="Will copy $(ProjectDir)..\..\platform.hpp -&gt; $(ProjectDir)..\..\..\..\perf\platform.hpp" Importance="high"/>
+  </Target>
+
+  <Target Name="LinkageInfo" BeforeTargets="PrepareForBuild">
+    <Message Text="Linkage-libzmq    : $(Linkage-libzmq)" Importance="high"/>
+    <Message Text="Linkage-libsodium : $(Linkage-libsodium)" Importance="high"/>
   </Target>
 
 </Project>

@@ -8,6 +8,8 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
 
+  <!-- Configuration -->
+  
   <ItemDefinitionGroup>
     <PreBuildEvent>
       <Command>copy $(ProjectDir)..\..\platform.hpp $(ProjectDir)..\..\..\..\src\</Command>
@@ -16,6 +18,8 @@
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnablePREfast>false</EnablePREfast>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;FD_SETSIZE=1024;ZMQ_USE_SELECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Option-openpgm)' == 'true'">ZMQ_HAVE_OPENPGM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Option-sodium)' == 'true'">HAVE_LIBSODIUM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Advapi32.lib;Ws2_32.lib;Rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -37,13 +41,45 @@
     </ClCompile>
   </ItemDefinitionGroup>
 
-  <!-- The sodium nuget library will inject HAVE_LIBSODIUM via a target when loaded. -->
-  <!--<Target Name="LinkageInfo" BeforeTargets="PrepareForBuild">
-    <Message Text="Linkage-sodium    : $(Linkage-sodium)" Importance="high"/>
-  </Target>-->
+  <!-- Options -->
+  
+  <ItemGroup Label="BuildOptionsExtension">
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)$(ProjectName).xml" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <Option-sodium>true</Option-sodium>
+  </PropertyGroup>
+
+  <!-- Extensions -->
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)libsodium.import.props" />
+  </ImportGroup>
+  
+  <PropertyGroup Condition="$(Configuration.IndexOf('DLL')) != -1">
+    <Linkage-libsodium>dynamic</Linkage-libsodium>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(Configuration.IndexOf('LTCG')) != -1">
+    <Linkage-libsodium>ltcg</Linkage-libsodium>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(Configuration.IndexOf('LIB')) != -1">
+    <Linkage-libsodium>static</Linkage-libsodium>
+  </PropertyGroup>
+
+  <!-- Messages -->
 
   <Target Name="CustomInfo" BeforeTargets="PrepareForBuild">
     <Message Text="Will copy $(ProjectDir)..\..\platform.hpp -&gt; $(ProjectDir)..\..\..\..\src\platform.hpp" Importance="high"/>
+  </Target>
+  
+  <Target Name="OptionInfo" BeforeTargets="PrepareForBuild">
+    <Message Text="Option-openpgm    : $(Option-openpgm)" Importance="high"/>
+    <Message Text="Option-sodium     : $(Option-sodium)" Importance="high"/>
+  </Target>
+
+  <Target Name="LinkageInfo" BeforeTargets="PrepareForBuild">
+    <Message Text="Linkage-libsodium : $(Linkage-libsodium)" Importance="high"/>
   </Target>
 
 </Project>
