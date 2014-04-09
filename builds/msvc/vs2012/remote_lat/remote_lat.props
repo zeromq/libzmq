@@ -7,25 +7,19 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
-
+  
   <!-- Configuration -->
 
   <ItemDefinitionGroup>
     <PreBuildEvent>
       <Command>copy $(ProjectDir)..\..\platform.hpp $(ProjectDir)..\..\..\..\perf\</Command>
     </PreBuildEvent>
-  </ItemDefinitionGroup>
-
-  <ItemDefinitionGroup Condition="$(Configuration.IndexOf('LEXE')) != -1 Or $(Configuration.IndexOf('SEXE')) != -1">
-    <ClCompile>
-      <PreprocessorDefinitions>ZMQ_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
     <Link>
-      <AdditionalDependencies>Advapi32.lib;Ws2_32.lib;Rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
+      <AdditionalDependencies>Advapi32.lib;Rpcrt4.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>    
   </ItemDefinitionGroup>
 
-  <!-- Extensions -->
+  <!-- Dependencies -->
 
   <ImportGroup Label="PropertySheets">
     <Import Project="$(SolutionDir)libzmq.import.props" />

@@ -12,7 +12,7 @@
     <PropertyPageSchema Include="$(MSBuildThisFileDirectory)libsodium.import.xml" />
   </ItemGroup>
 
-  <!-- Dependency linkage -->
+  <!-- Linkage -->
 
   <ItemDefinitionGroup>
     <ClCompile>
@@ -53,7 +53,7 @@
     </Link>
   </ItemDefinitionGroup>
 
-  <!-- Copy dynamic libraries to target -->
+  <!-- Copy -->
 
   <Target Name="Linkage-libsodium-dynamic" AfterTargets="AfterBuild" Condition="'$(Linkage-libsodium)' == 'dynamic'">
     <Copy Condition="$(Configuration.IndexOf('Debug')) != -1"
