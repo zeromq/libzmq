@@ -7,6 +7,16 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
+  
+    <!-- User Interface -->
+  
+  <ItemGroup Label="BuildOptionsExtension">
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)$(ProjectName).xml" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <Option-sodium>true</Option-sodium>
+  </PropertyGroup>
 
   <!-- Configuration -->
   
@@ -20,38 +30,18 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;FD_SETSIZE=1024;ZMQ_USE_SELECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Option-openpgm)' == 'true'">ZMQ_HAVE_OPENPGM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Option-sodium)' == 'true'">HAVE_LIBSODIUM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(ConfigurationType)' == 'StaticLibrary'">ZMQ_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(ConfigurationType)' == 'DynamicLibrary'">DLL_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Advapi32.lib;Ws2_32.lib;Rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-  </ItemDefinitionGroup>
-
-  <ItemDefinitionGroup Condition="'$(ConfigurationType)'=='StaticLibrary'">
-    <ClCompile>
-      <PreprocessorDefinitions>ZMQ_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-    <Lib>
+    <Lib Condition="'$(ConfigurationType)'=='StaticLibrary'">
       <AdditionalOptions>/ignore:4221 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
   </ItemDefinitionGroup>
 
-  <ItemDefinitionGroup Condition="'$(ConfigurationType)'=='DynamicLibrary'">
-    <ClCompile>
-      <PreprocessorDefinitions>DLL_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-  </ItemDefinitionGroup>
-
-  <!-- Options -->
-  
-  <ItemGroup Label="BuildOptionsExtension">
-    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)$(ProjectName).xml" />
-  </ItemGroup>
-
-  <PropertyGroup>
-    <Option-sodium>true</Option-sodium>
-  </PropertyGroup>
-
-  <!-- Extensions -->
+  <!-- Dependencies -->
 
   <ImportGroup Label="PropertySheets">
     <Import Project="$(SolutionDir)libsodium.import.props" />

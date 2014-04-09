@@ -17,6 +17,8 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\..\libzmq\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions Condition="'$(Option-openpgm)' == 'true'">ZMQ_HAVE_OPENPGM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Option-sodium)' == 'true'">HAVE_LIBSODIUM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
 
@@ -26,7 +28,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
 
-    <ItemDefinitionGroup Condition="'$(Linkage-libzmq)' == 'dynamic'">
+  <ItemDefinitionGroup Condition="'$(Linkage-libzmq)' == 'dynamic'">
     <Link Condition="$(Configuration.IndexOf('Debug')) != -1">
       <AdditionalDependencies>$(ProjectDir)..\..\..\..\..\libzmq\bin\$(PlatformName)\Debug\libzmq10\libzmq.imp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
@@ -52,6 +54,12 @@
       <AdditionalDependencies>$(ProjectDir)..\..\..\..\..\libzmq\bin\$(PlatformName)\Release\libzmq10\libzmq.ltcg.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
+  
+  <!-- Options -->
+
+  <PropertyGroup>
+    <Option-sodium>true</Option-sodium>
+  </PropertyGroup>
 
   <!-- Copy -->
 

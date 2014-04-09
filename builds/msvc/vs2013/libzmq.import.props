@@ -11,22 +11,25 @@
   <ItemGroup Label="BuildOptionsExtension">
     <PropertyPageSchema Include="$(MSBuildThisFileDirectory)libzmq.import.xml" />
   </ItemGroup>
+  
+  <PropertyGroup>
+    <Option-sodium>true</Option-sodium>
+  </PropertyGroup>
 
   <!-- Configuration -->
 
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\..\libzmq\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions Condition="'$(Option-openpgm)' == 'true'">ZMQ_HAVE_OPENPGM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Option-sodium)' == 'true'">HAVE_LIBSODIUM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Linkage-libzmq)' == 'static' Or '$(Linkage-libzmq)' == 'ltcg'">ZMQ_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
+  
+  <!-- Linkage -->
 
-  <ItemDefinitionGroup Condition="'$(Linkage-libzmq)' == 'static' Or '$(Linkage-libzmq)' == 'ltcg'">
-    <ClCompile>
-      <PreprocessorDefinitions>ZMQ_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-  </ItemDefinitionGroup>
-
-    <ItemDefinitionGroup Condition="'$(Linkage-libzmq)' == 'dynamic'">
+  <ItemDefinitionGroup Condition="'$(Linkage-libzmq)' == 'dynamic'">
     <Link Condition="$(Configuration.IndexOf('Debug')) != -1">
       <AdditionalDependencies>$(ProjectDir)..\..\..\..\..\libzmq\bin\$(PlatformName)\Debug\libzmq12\libzmq.imp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
@@ -52,7 +55,7 @@
       <AdditionalDependencies>$(ProjectDir)..\..\..\..\..\libzmq\bin\$(PlatformName)\Release\libzmq12\libzmq.ltcg.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-
+  
   <!-- Copy -->
 
   <Target Name="Linkage-libzmq-dynamic" AfterTargets="AfterBuild" Condition="'$(Linkage-libzmq)' == 'dynamic'">
