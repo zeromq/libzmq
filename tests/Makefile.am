@@ -1,5 +1,5 @@
-INCLUDES = -I$(top_builddir)/include \
-           -I$(top_srcdir)/include
+AM_CPPFLAGS = -I$(top_builddir)/include \
+              -I$(top_srcdir)/include
 
 LDADD = $(top_builddir)/src/libzmq.la
 
@@ -19,7 +19,6 @@ noinst_PROGRAMS = test_system \
                   test_term_endpoint \
                   test_srcfd \
                   test_monitor \
-                  test_resource \
                   test_router_mandatory \
                   test_router_handover \
                   test_probe_router \
@@ -86,7 +85,6 @@ test_last_endpoint_SOURCES = test_last_endpoint.cpp
 test_term_endpoint_SOURCES = test_term_endpoint.cpp
 test_srcfd_SOURCES = test_srcfd.cpp
 test_monitor_SOURCES = test_monitor.cpp
-test_resource_SOURCES = test_resource.cpp
 test_router_mandatory_SOURCES = test_router_mandatory.cpp
 test_router_handover_SOURCES = test_router_handover.cpp
 test_probe_router_SOURCES = test_probe_router.cpp
@@ -137,7 +135,7 @@ endif
 
 #  Run the test cases
 TESTS = $(noinst_PROGRAMS)
-XFAIL_TESTS = test_resource
+XFAIL_TESTS =
 
 if !ON_LINUX
 XFAIL_TESTS += test_abstract_ipc
