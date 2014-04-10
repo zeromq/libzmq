@@ -403,12 +403,6 @@ ZMQ_EXPORT int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
 ZMQ_EXPORT int zmq_proxy (void *frontend, void *backend, void *capture);
 ZMQ_EXPORT int zmq_proxy_steerable (void *frontend, void *backend, void *capture, void *control);
 
-/*  Encode a binary key as printable text using ZMQ RFC 32  */
-ZMQ_EXPORT char *zmq_z85_encode (char *dest, uint8_t *data, size_t size);
-
-/*  Encode a binary key from printable text per ZMQ RFC 32  */
-ZMQ_EXPORT uint8_t *zmq_z85_decode (uint8_t *dest, char *string);
-
 /*  Deprecated aliases */
 #define ZMQ_STREAMER 1
 #define ZMQ_FORWARDER 2
