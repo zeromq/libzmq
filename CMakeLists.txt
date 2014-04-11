@@ -365,7 +365,7 @@ if(MINGW)
     set(CMAKE_RC_COMPILER_INIT windres)
     enable_language(RC)
     set(CMAKE_RC_COMPILE_OBJECT
-        "<CMAKE_RC_COMPILER> <FLAGS> --target=${rc_target} <DEFINES> -i <SOURCE> -o <OBJECT>")
+        "<CMAKE_RC_COMPILER> <FLAGS> -O coff --target=${rc_target} <DEFINES> -i <SOURCE> -o <OBJECT>")
   endmacro()
 
   if(    ${CMAKE_SYSTEM_PROCESSOR} MATCHES "i386"
@@ -410,10 +410,6 @@ endif(WITH_OPENPGM)
 
 foreach(source ${cxx-sources})
   list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/src/${source})
-endforeach()
-
-foreach(source ${rc-sources})
-  list(APPEND sources ${CMAKE_CURRENT_BINARY_DIR}/${source})
 endforeach()
 
 foreach(source ${rc-sources})
