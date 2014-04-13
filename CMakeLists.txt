@@ -418,7 +418,7 @@ if(MINGW)
     set(CMAKE_RC_COMPILER_INIT windres)
     enable_language(RC)
     set(CMAKE_RC_COMPILE_OBJECT
-        "<CMAKE_RC_COMPILER> <FLAGS> --target=${rc_target} <DEFINES> -i <SOURCE> -o <OBJECT>")
+        "<CMAKE_RC_COMPILER> <FLAGS> -O coff --target=${rc_target} <DEFINES> -i <SOURCE> -o <OBJECT>")
   endmacro()
 
   if (NOT CMAKE_SYSTEM_PROCESSOR )
