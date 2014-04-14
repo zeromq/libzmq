@@ -170,7 +170,9 @@
 #endif
 
 //  Workaround missing Mstcpip.h in mingw32 (MinGW64 provides this)
-#if defined __MINGW32__ && !defined SIO_KEEPALIVE_VALS && !defined __MINGW64__
+//  __MINGW64_VERSION_MAJOR is only defined (through inclusion of private _mingw.h via 
+//  windows.h) in mingw-w64
+#if defined __MINGW32__ && !defined SIO_KEEPALIVE_VALS && !defined __MINGW64_VERSION_MAJOR
 struct tcp_keepalive {
     u_long onoff;
     u_long keepalivetime;
