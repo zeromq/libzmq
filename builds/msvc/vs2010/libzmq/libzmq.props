@@ -1,8 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
-    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
     <_PropertySheetDisplayName>ZeroMQ Library Common Settings</_PropertySheetDisplayName>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
@@ -36,9 +35,9 @@
     <Link>
       <AdditionalDependencies>Advapi32.lib;Ws2_32.lib;Rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <!--<Lib Condition="'$(ConfigurationType)'=='StaticLibrary'">
+    <Lib Condition="'$(ConfigurationType)'=='StaticLibrary'">
       <AdditionalOptions>/ignore:4221 %(AdditionalOptions)</AdditionalOptions>
-    </Lib>-->
+    </Lib>
   </ItemDefinitionGroup>
 
   <!-- Dependencies -->
