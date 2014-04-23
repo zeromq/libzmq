@@ -249,7 +249,7 @@ int zmq::gssapi_mechanism_base_t::process_initiate (msg_t *msg_, void **token_va
     return 0;
 }
 
-int zmq::gssapi_mechanism_base_t::produce_ready (msg_t *msg_) const
+int zmq::gssapi_mechanism_base_t::produce_ready (msg_t *msg_)
 {
     unsigned char * const command_buffer = (unsigned char *) malloc (512);
     alloc_assert (command_buffer);
@@ -278,11 +278,15 @@ int zmq::gssapi_mechanism_base_t::produce_ready (msg_t *msg_) const
     memcpy (msg_->data (), command_buffer, command_size);
     free (command_buffer);
 
-    return 0;
+    return encode_message(msg_);
 }
 
 int zmq::gssapi_mechanism_base_t::process_ready (msg_t *msg_)
 {
+    const int rc = decode_message(msg_);
+    if (rc!=0)
+      return rc;
+
     const unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
     size_t bytes_left = msg_->size ();
 

@@ -52,7 +52,7 @@ namespace zmq
         int process_initiate (msg_t *msg_, void **data_, size_t &data_len_);
 
         // Produce a metadata ready msg (READY) to conclude handshake
-        int produce_ready (msg_t *msg_) const;
+        int produce_ready (msg_t *msg_);
 
         // Process a metadata ready msg (READY)
         int process_ready (msg_t *msg_);
