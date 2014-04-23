@@ -38,20 +38,20 @@ zmq::gssapi_client_t::gssapi_client_t (const options_t &options_) :
     mechs (),
     security_context_established (false)
 {
-    const std::string::size_type service_size = options_.gss_service_principle.size();
+    const std::string::size_type service_size = options_.gss_service_principal.size();
     service_name = static_cast <char *>(malloc(service_size+1));
     assert(service_name);
-    memcpy(service_name, options_.gss_service_principle.c_str(), service_size+1 );
+    memcpy(service_name, options_.gss_service_principal.c_str(), service_size+1 );
 
     maj_stat = GSS_S_COMPLETE;
-    if(!options_.gss_principle.empty())
+    if(!options_.gss_principal.empty())
     {
-        const std::string::size_type principle_size = options_.gss_principle.size();
-        principle_name = static_cast <char *>(malloc(principle_size+1));
-        assert(principle_name);
-        memcpy(principle_name, options_.gss_principle.c_str(), principle_size+1 );
+        const std::string::size_type principal_size = options_.gss_principal.size();
+        principal_name = static_cast <char *>(malloc(principal_size+1));
+        assert(principal_name);
+        memcpy(principal_name, options_.gss_principal.c_str(), principal_size+1 );
 
-        if (acquire_credentials (principle_name, &cred) != 0)
+        if (acquire_credentials (principal_name, &cred) != 0)
             maj_stat = GSS_S_FAILURE;
     }
 

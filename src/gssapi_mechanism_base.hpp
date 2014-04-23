@@ -67,7 +67,7 @@ namespace zmq
         
         //  Acquire security context credentials from the
         //  underlying mechanism.
-        static int acquire_credentials (char * principle_name_,
+        static int acquire_credentials (char * principal_name_,
                                         gss_cred_id_t * cred_);
 
     protected:
@@ -77,11 +77,11 @@ namespace zmq
         //  Opaque GSSAPI token for incoming data
         gss_buffer_desc recv_tok;
         
-        //  Opaque GSSAPI representation of principle
+        //  Opaque GSSAPI representation of principal
         gss_name_t target_name;
         
         //  Human-readable principal name
-        char * principle_name;
+        char * principal_name;
 
         //  Status code returned by GSSAPI functions
         OM_uint32 maj_stat;

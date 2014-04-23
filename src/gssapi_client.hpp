@@ -53,7 +53,7 @@ namespace zmq
             connected
         };
 
-        //  Human-readable principle name of the service we are connecting to
+        //  Human-readable principal name of the service we are connecting to
         char * service_name;
 
         //  Current FSM state

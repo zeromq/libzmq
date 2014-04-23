@@ -44,14 +44,14 @@ zmq::gssapi_server_t::gssapi_server_t (session_base_t *session_,
     security_context_established (false)
 {
     maj_stat = GSS_S_CONTINUE_NEEDED;
-    if(!options_.gss_principle.empty())
+    if(!options_.gss_principal.empty())
     {
-        const std::string::size_type principle_size = options_.gss_principle.size();
-        principle_name = static_cast <char *>(malloc(principle_size+1));
-        assert(principle_name);
-        memcpy(principle_name, options_.gss_principle.c_str(), principle_size+1 );
+        const std::string::size_type principal_size = options_.gss_principal.size();
+        principal_name = static_cast <char *>(malloc(principal_size+1));
+        assert(principal_name);
+        memcpy(principal_name, options_.gss_principal.c_str(), principal_size+1 );
 
-        if (acquire_credentials (principle_name, &cred) != 0)
+        if (acquire_credentials (principal_name, &cred) != 0)
             maj_stat = GSS_S_FAILURE;
     }
 }
@@ -199,16 +199,16 @@ void zmq::gssapi_server_t::send_zap_request ()
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);
 
-    //Principle frame
-    gss_buffer_desc principle;
-    gss_display_name(&min_stat, target_name, &principle, NULL);
+    //  Principal frame
+    gss_buffer_desc principal;
+    gss_display_name(&min_stat, target_name, &principal, NULL);
 
-    rc = msg.init_size (principle.length);
+    rc = msg.init_size (principal.length);
     errno_assert (rc == 0);
-    memcpy (msg.data (), principle.value, principle.length);
+    memcpy (msg.data (), principal.value, principal.length);
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);
-    gss_release_buffer(&min_stat, &principle);
+    gss_release_buffer(&min_stat, &principal);
 }
 
 int zmq::gssapi_server_t::receive_and_process_zap_reply ()

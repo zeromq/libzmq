@@ -297,8 +297,8 @@ ZMQ_EXPORT char *zmq_msg_gets (zmq_msg_t *msg, char *property);
 #define ZMQ_IPC_FILTER_GID 60
 #define ZMQ_CONNECT_RID 61 
 #define ZMQ_GSSAPI_SERVER 62
-#define ZMQ_GSSAPI_PRINCIPLE 63
-#define ZMQ_GSSAPI_SERVICE_PRINCIPLE 64
+#define ZMQ_GSSAPI_PRINCIPAL 63
+#define ZMQ_GSSAPI_SERVICE_PRINCIPAL 64
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1

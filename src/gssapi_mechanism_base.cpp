@@ -37,7 +37,7 @@ zmq::gssapi_mechanism_base_t::gssapi_mechanism_base_t (const options_t & options
     recv_tok (),
     /// FIXME remove? in_buf (),
     target_name (GSS_C_NO_NAME),
-    principle_name (NULL),
+    principal_name (NULL),
     maj_stat (GSS_S_COMPLETE),
     min_stat (0),
     init_sec_min_stat (0),
