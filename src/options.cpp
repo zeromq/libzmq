@@ -53,9 +53,9 @@ zmq::options_t::options_t () :
     tcp_keepalive_intvl (-1),
     mechanism (ZMQ_NULL),
     as_server (0),
+    gss_plaintext (false),
     socket_id (0),
-    conflate (false),
-    gss_plaintext (false)
+    conflate (false)
 {
 }
 
