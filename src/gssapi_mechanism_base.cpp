@@ -44,7 +44,8 @@ zmq::gssapi_mechanism_base_t::gssapi_mechanism_base_t (const options_t & options
     ret_flags (0),
     gss_flags (GSS_C_MUTUAL_FLAG | GSS_C_REPLAY_FLAG),
     cred (GSS_C_NO_CREDENTIAL),
-    context (GSS_C_NO_CONTEXT)
+    context (GSS_C_NO_CONTEXT),
+    do_encryption (!options_.gss_plaintext)
 {
 }
 

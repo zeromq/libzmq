@@ -160,6 +160,9 @@ namespace zmq
         std::string gss_principal;
         std::string gss_service_principal;
 
+        //  If true, gss encryption will be disabled
+        bool gss_plaintext;
+
         //  ID of the socket.
         int socket_id;
 

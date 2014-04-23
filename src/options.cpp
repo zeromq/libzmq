@@ -54,7 +54,8 @@ zmq::options_t::options_t () :
     mechanism (ZMQ_NULL),
     as_server (0),
     socket_id (0),
-    conflate (false)
+    conflate (false),
+    gss_plaintext (false)
 {
 }
 
@@ -427,6 +428,14 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             break;
 
+        case ZMQ_GSSAPI_PLAINTEXT:
+            if (is_int && (value == 0 || value == 1)) {
+                gss_plaintext = (value != 0);
+                return 0;
+            }
+            break;
+	
+
         default:
             break;
     }
@@ -729,6 +738,14 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
                 return 0;
             }
             break;
+
+        case ZMQ_GSSAPI_PLAINTEXT:
+            if (is_int) {
+                *value = gss_plaintext;
+                return 0;
+            }
+            break;
+ 
 
 	}
     errno = EINVAL;

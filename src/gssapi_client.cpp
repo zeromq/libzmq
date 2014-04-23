@@ -133,13 +133,21 @@ int zmq::gssapi_client_t::process_handshake_command (msg_t *msg_)
 int zmq::gssapi_client_t::encode (msg_t *msg_)
 {
     zmq_assert (state == connected);
-    return encode_message (msg_);
+
+    if (do_encryption)
+      return encode_message (msg_);
+
+    return 0;
 }
 
 int zmq::gssapi_client_t::decode (msg_t *msg_)
 {
     zmq_assert (state == connected);
-    return decode_message (msg_);
+
+    if (do_encryption)
+      return decode_message (msg_);
+
+    return 0;
 }
 
 bool zmq::gssapi_client_t::is_handshake_complete () const

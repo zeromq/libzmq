@@ -104,6 +104,9 @@ namespace zmq
 
         //  Opaque GSSAPI representation of the security context
         gss_ctx_id_t context;
+
+        //  If true, use gss to encrypt messages. If false, only utilize gss for auth.
+        bool do_encryption;
     };
 
 }

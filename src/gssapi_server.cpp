@@ -281,13 +281,21 @@ error:
 int zmq::gssapi_server_t::encode (msg_t *msg_)
 {
     zmq_assert (state == connected);
-    return encode_message (msg_);
+
+    if (do_encryption)
+      return encode_message (msg_);
+
+    return 0;
 }
 
 int zmq::gssapi_server_t::decode (msg_t *msg_)
 {
     zmq_assert (state == connected);
-    return decode_message (msg_);
+
+    if (do_encryption)
+      return decode_message (msg_);
+
+    return 0;
 }
 
 int zmq::gssapi_server_t::zap_msg_available ()
