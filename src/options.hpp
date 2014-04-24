@@ -156,6 +156,13 @@ namespace zmq
         uint8_t curve_secret_key [CURVE_KEYSIZE];
         uint8_t curve_server_key [CURVE_KEYSIZE];
 
+        //  Principals for GSSAPI mechanism
+        std::string gss_principal;
+        std::string gss_service_principal;
+
+        //  If true, gss encryption will be disabled
+        bool gss_plaintext;
+
         //  ID of the socket.
         int socket_id;
 
