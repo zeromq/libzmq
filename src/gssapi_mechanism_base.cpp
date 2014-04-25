@@ -18,6 +18,9 @@
 */
 
 #include "platform.hpp"
+
+#ifdef HAVE_LIBGSSAPI_KRB5
+
 #ifdef ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
 #endif
@@ -74,10 +77,10 @@ int zmq::gssapi_mechanism_base_t::encode_message (msg_t *msg_)
 
     plaintext.value = plaintext_buffer;
     plaintext.length = msg_->size ()+1;
- 
+
     maj_stat = gss_wrap(&min_stat, context, 1, GSS_C_QOP_DEFAULT,
                         &plaintext, &state, &wrapped);
-    
+
     zmq_assert (maj_stat == GSS_S_COMPLETE);
     zmq_assert (state);
 
@@ -89,7 +92,7 @@ int zmq::gssapi_mechanism_base_t::encode_message (msg_t *msg_)
     zmq_assert (rc == 0);
 
     uint8_t *ptr = static_cast <uint8_t *> (msg_->data ());
-    
+
     // Add command string
     memcpy (ptr, "\x07MESSAGE", 8);
     ptr += 8;
@@ -129,7 +132,7 @@ int zmq::gssapi_mechanism_base_t::decode_message (msg_t *msg_)
     wrapped.length = get_uint32 (ptr);
     ptr += 4;
     bytes_left -= 4;
-    
+
     // Get token value
     if (bytes_left < wrapped.length) {
         errno = EPROTO;
@@ -164,9 +167,9 @@ int zmq::gssapi_mechanism_base_t::decode_message (msg_t *msg_)
     const uint8_t flags = static_cast <char *> (plaintext.value)[0];
     if (flags & 0x01)
 	    msg_->set_flags (msg_t::more);
-    
+
     memcpy (msg_->data (), static_cast <char *> (plaintext.value)+1, plaintext.length-1);
-    
+
     gss_release_buffer (&min_stat, &plaintext);
     gss_release_buffer (&min_stat, &wrapped);
 
@@ -184,12 +187,12 @@ int zmq::gssapi_mechanism_base_t::produce_initiate (msg_t *msg_, void *token_val
     zmq_assert (token_length_ <= 0xFFFFFFFFUL);
 
     const size_t command_size = 9 + 4 + token_length_;
-    
+
     const int rc = msg_->init_size (command_size);
     errno_assert (rc == 0);
-    
+
     uint8_t *ptr = static_cast <uint8_t *> (msg_->data ());
-    
+
     // Add command string
     memcpy (ptr, "\x08INITIATE", 9);
     ptr += 9;
@@ -208,7 +211,7 @@ int zmq::gssapi_mechanism_base_t::produce_initiate (msg_t *msg_, void *token_val
 int zmq::gssapi_mechanism_base_t::process_initiate (msg_t *msg_, void **token_value_, size_t &token_length_)
 {
     zmq_assert (token_value_);
-    
+
     const uint8_t *ptr = static_cast <uint8_t *> (msg_->data ());
     size_t bytes_left = msg_->size ();
 
@@ -228,7 +231,7 @@ int zmq::gssapi_mechanism_base_t::process_initiate (msg_t *msg_, void **token_va
     token_length_ = get_uint32 (ptr);
     ptr += 4;
     bytes_left -= 4;
-    
+
     // Get token value
     if (bytes_left < token_length_) {
         errno = EPROTO;
@@ -246,7 +249,7 @@ int zmq::gssapi_mechanism_base_t::process_initiate (msg_t *msg_, void **token_va
         errno = EPROTO;
         return -1;
     }
- 
+
     return 0;
 }
 
@@ -287,7 +290,7 @@ int zmq::gssapi_mechanism_base_t::produce_ready (msg_t *msg_)
 
 int zmq::gssapi_mechanism_base_t::process_ready (msg_t *msg_)
 {
-    if (do_encryption) { 
+    if (do_encryption) {
         const int rc = decode_message (msg_);
         if (rc != 0)
             return rc;
@@ -310,11 +313,11 @@ int zmq::gssapi_mechanism_base_t::acquire_credentials (char * service_name_, gss
     OM_uint32 maj_stat;
     OM_uint32 min_stat;
     gss_name_t server_name;
-    
+
     gss_buffer_desc name_buf;
     name_buf.value = service_name_;
     name_buf.length = strlen ((char *) name_buf.value) + 1;
-    
+
     maj_stat = gss_import_name (&min_stat, &name_buf,
                                 gss_nt_service_name, &server_name);
 
@@ -333,3 +336,4 @@ int zmq::gssapi_mechanism_base_t::acquire_credentials (char * service_name_, gss
     return 0;
 }
 
+#endif

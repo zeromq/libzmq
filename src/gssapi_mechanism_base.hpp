@@ -20,6 +20,10 @@
 #ifndef __ZMQ_GSSAPI_MECHANISM_BASE_HPP_INCLUDED__
 #define __ZMQ_GSSAPI_MECHANISM_BASE_HPP_INCLUDED__
 
+#include "platform.hpp"
+
+#ifdef HAVE_LIBGSSAPI_KRB5
+
 #include <gssapi/gssapi_generic.h>
 #include <gssapi/gssapi_krb5.h>
 
@@ -46,7 +50,7 @@ namespace zmq
         //  Produce a context-level GSSAPI token (INITIATE command)
         //  during security context initialization.
         int produce_initiate (msg_t *msg_, void *data_, size_t data_len_);
-        
+
         //  Process a context-level GSSAPI token (INITIATE command)
         //  during security context initialization.
         int process_initiate (msg_t *msg_, void **data_, size_t &data_len_);
@@ -56,15 +60,15 @@ namespace zmq
 
         // Process a metadata ready msg (READY)
         int process_ready (msg_t *msg_);
-        
+
         //  Encode a per-message GSSAPI token (MESSAGE command) using
         //  the established security context.
         int encode_message (msg_t *msg_);
-        
+
         //  Decode a per-message GSSAPI token (MESSAGE command) using
         //  the  established security context.
         int decode_message (msg_t *msg_);
-        
+
         //  Acquire security context credentials from the
         //  underlying mechanism.
         static int acquire_credentials (char * principal_name_,
@@ -73,13 +77,13 @@ namespace zmq
     protected:
         //  Opaque GSSAPI token for outgoing data
         gss_buffer_desc send_tok;
-        
+
         //  Opaque GSSAPI token for incoming data
         gss_buffer_desc recv_tok;
-        
+
         //  Opaque GSSAPI representation of principal
         gss_name_t target_name;
-        
+
         //  Human-readable principal name
         char * principal_name;
 
@@ -95,10 +99,10 @@ namespace zmq
 
         //  Flags returned by GSSAPI (ignored)
         OM_uint32 ret_flags;
-        
+
         //  Flags returned by GSSAPI (ignored)
         OM_uint32 gss_flags;
-        
+
         //  Credentials used to establish security context
         gss_cred_id_t cred;
 
@@ -110,6 +114,7 @@ namespace zmq
     };
 
 }
-    
+
 #endif
 
+#endif

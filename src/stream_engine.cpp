@@ -55,7 +55,7 @@
 #include "likely.hpp"
 #include "wire.hpp"
 
-zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_, 
+zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
                                        const std::string &endpoint_) :
     s (fd_),
     inpos (NULL),
@@ -82,7 +82,7 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
 {
     int rc = tx_msg.init ();
     errno_assert (rc == 0);
-    
+
     //  Put the socket into non-blocking mode.
     unblock_socket (s);
 
@@ -595,6 +595,7 @@ bool zmq::stream_engine_t::handshake ()
             alloc_assert (mechanism);
         }
 #endif
+#ifdef HAVE_LIBGSSAPI_KRB5
         else
         if (memcmp (greeting_recv + 12, "GSSAPI\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
             if (options.as_server)
@@ -604,6 +605,7 @@ bool zmq::stream_engine_t::handshake ()
                 mechanism = new (std::nothrow) gssapi_client_t (options);
             alloc_assert (mechanism);
         }
+#endif
         else {
             error ();
             return false;
@@ -829,7 +831,7 @@ int zmq::stream_engine_t::write (const void *data_, size_t size_)
     //  we'll get an error (this may happen during the speculative write).
     if (nbytes == SOCKET_ERROR && WSAGetLastError () == WSAEWOULDBLOCK)
         return 0;
-        
+
     //  Signalise peer failure.
     if (nbytes == SOCKET_ERROR && (
           WSAGetLastError () == WSAENETDOWN ||

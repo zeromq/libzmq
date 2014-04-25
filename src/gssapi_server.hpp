@@ -20,6 +20,8 @@
 #ifndef __ZMQ_GSSAPI_SERVER_HPP_INCLUDED__
 #define __ZMQ_GSSAPI_SERVER_HPP_INCLUDED__
 
+#ifdef HAVE_LIBGSSAPI_KRB5
+
 #include "gssapi_mechanism_base.hpp"
 
 namespace zmq
@@ -58,9 +60,9 @@ namespace zmq
         };
 
         session_base_t * const session;
-       
+
         const std::string peer_address;
-        
+
         //  Current FSM state
         state_t state;
 
@@ -78,5 +80,7 @@ namespace zmq
     };
 
 }
+
+#endif
 
 #endif
