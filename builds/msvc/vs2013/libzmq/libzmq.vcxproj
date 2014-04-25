@@ -189,6 +189,9 @@
     <ClInclude Include="..\..\..\..\src\err.hpp" />
     <ClInclude Include="..\..\..\..\src\fd.hpp" />
     <ClInclude Include="..\..\..\..\src\fq.hpp" />
+    <ClInclude Include="..\..\..\..\src\gssapi_client.hpp" />
+    <ClInclude Include="..\..\..\..\src\gssapi_mechanism_base.hpp" />
+    <ClInclude Include="..\..\..\..\src\gssapi_server.hpp" />
     <ClInclude Include="..\..\..\..\src\i_engine.hpp" />
     <ClInclude Include="..\..\..\..\src\i_poll_events.hpp" />
     <ClInclude Include="..\..\..\..\src\io_object.hpp" />
@@ -265,6 +268,9 @@
     <ClCompile Include="..\..\..\..\src\epoll.cpp" />
     <ClCompile Include="..\..\..\..\src\err.cpp" />
     <ClCompile Include="..\..\..\..\src\fq.cpp" />
+    <ClCompile Include="..\..\..\..\src\gssapi_client.cpp" />
+    <ClCompile Include="..\..\..\..\src\gssapi_mechanism_base.cpp" />
+    <ClCompile Include="..\..\..\..\src\gssapi_server.cpp" />
     <ClCompile Include="..\..\..\..\src\io_object.cpp" />
     <ClCompile Include="..\..\..\..\src\io_thread.cpp" />
     <ClCompile Include="..\..\..\..\src\ip.cpp" />
