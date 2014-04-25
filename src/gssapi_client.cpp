@@ -18,6 +18,9 @@
 */
 
 #include "platform.hpp"
+
+#ifdef HAVE_LIBGSSAPI_KRB5
+
 #ifdef ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
 #endif
@@ -71,7 +74,7 @@ int zmq::gssapi_client_t::next_handshake_command (msg_t *msg_)
 {
     if (state == send_ready) {
         int rc = produce_ready(msg_);
-        if (rc == 0) 
+        if (rc == 0)
             state = connected;
 
         return rc;
@@ -84,7 +87,7 @@ int zmq::gssapi_client_t::next_handshake_command (msg_t *msg_)
 
     if (initialize_context () < 0)
         return -1;
-    
+
     if (produce_next_token (msg_) < 0)
         return -1;
 
@@ -97,7 +100,7 @@ int zmq::gssapi_client_t::next_handshake_command (msg_t *msg_)
     }
     else
         state = recv_next_token;
-    
+
     return 0;
 }
 
@@ -126,7 +129,7 @@ int zmq::gssapi_client_t::process_handshake_command (msg_t *msg_)
 
     errno_assert (msg_->close () == 0);
     errno_assert (msg_->init () == 0);
-    
+
     return 0;
 }
 
@@ -163,7 +166,7 @@ int zmq::gssapi_client_t::initialize_context ()
         send_tok.length = strlen(service_name);
         OM_uint32 maj = gss_import_name(&min_stat, &send_tok,
                                         gss_nt_service_name, &target_name);
- 
+
         if (maj != GSS_S_COMPLETE)
             return -1;
     }
@@ -175,7 +178,7 @@ int zmq::gssapi_client_t::initialize_context ()
 
     if (token_ptr != GSS_C_NO_BUFFER)
         free(recv_tok.value);
-    
+
     return 0;
 }
 
@@ -213,3 +216,4 @@ int zmq::gssapi_client_t::process_next_token (msg_t *msg_)
     return 0;
 }
 
+#endif
