@@ -20,6 +20,8 @@
 #ifndef __ZMQ_GSSAPI_CLIENT_HPP_INCLUDED__
 #define __ZMQ_GSSAPI_CLIENT_HPP_INCLUDED__
 
+#ifdef HAVE_LIBGSSAPI_KRB5
+
 #include "gssapi_mechanism_base.hpp"
 
 namespace zmq
@@ -43,7 +45,7 @@ namespace zmq
         virtual bool is_handshake_complete () const;
 
     private:
- 
+
         enum state_t {
             call_next_init,
             send_next_token,
@@ -75,5 +77,7 @@ namespace zmq
     };
 
 }
+
+#endif
 
 #endif

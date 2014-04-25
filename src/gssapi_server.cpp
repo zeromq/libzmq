@@ -18,6 +18,9 @@
 */
 
 #include "platform.hpp"
+
+#ifdef HAVE_LIBGSSAPI_KRB5
+
 #ifdef ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
 #endif
@@ -98,7 +101,7 @@ int zmq::gssapi_server_t::process_handshake_command (msg_t *msg_)
 {
     if (state == recv_ready) {
         int rc = process_ready(msg_);
-        if (rc == 0) 
+        if (rc == 0)
             state = connected;
 
         return rc;
@@ -138,7 +141,7 @@ int zmq::gssapi_server_t::process_handshake_command (msg_t *msg_)
     return 0;
 }
 
-void zmq::gssapi_server_t::send_zap_request () 
+void zmq::gssapi_server_t::send_zap_request ()
 {
     int rc;
     msg_t msg;
@@ -358,3 +361,4 @@ void zmq::gssapi_server_t::accept_context ()
     }
 }
 
+#endif
