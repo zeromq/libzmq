@@ -305,7 +305,7 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
         sync = CreateEventW (NULL, FALSE, TRUE, L"Global\\zmq-signaler-port-sync");
 #       endif
         if (sync == NULL && GetLastError () == ERROR_ACCESS_DENIED)
-            sync = OpenEvent (SYNCHRONIZE | EVENT_MODIFY_STATE,
+            sync = OpenEventW (SYNCHRONIZE | EVENT_MODIFY_STATE,
                               FALSE, L"Global\\zmq-signaler-port-sync");
 
         win_assert (sync != NULL);
