@@ -97,6 +97,8 @@ int zmq::curve_server_t::process_handshake_command (msg_t *msg_)
                 state = errored;
             break;
         default:
+            //  Temporary support for security debugging
+            puts ("CURVE I: invalid handshake command");
             state = errored;
             errno = EPROTO;
             rc = -1;
@@ -166,12 +168,16 @@ int zmq::curve_server_t::decode (msg_t *msg_)
     zmq_assert (state == connected);
 
     if (msg_->size () < 33) {
+        //  Temporary support for security debugging
+        puts ("CURVE I: invalid CURVE client, sent malformed command");
         errno = EPROTO;
         return -1;
     }
 
     const uint8_t *message = static_cast <uint8_t *> (msg_->data ());
     if (memcmp (message, "\x07MESSAGE", 8)) {
+        //  Temporary support for security debugging
+        puts ("CURVE I: invalid CURVE client, did not send MESSAGE");
         errno = EPROTO;
         return -1;
     }
@@ -209,9 +215,11 @@ int zmq::curve_server_t::decode (msg_t *msg_)
                 message_plaintext + crypto_box_ZEROBYTES + 1,
                 msg_->size ());
     }
-    else
+    else {
+        //  Temporary support for security debugging
+        puts ("CURVE I: connection key used for MESSAGE is wrong");
         errno = EPROTO;
-
+    }
     free (message_plaintext);
     free (message_box);
 
@@ -238,7 +246,7 @@ bool zmq::curve_server_t::is_handshake_complete () const
 int zmq::curve_server_t::process_hello (msg_t *msg_)
 {
     if (msg_->size () != 200) {
-        //  Temporary support for CURVE debugging
+        //  Temporary support for security debugging
         puts ("CURVE I: client HELLO is not correct size");
         errno = EPROTO;
         return -1;
@@ -246,7 +254,7 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
 
     const uint8_t * const hello = static_cast <uint8_t *> (msg_->data ());
     if (memcmp (hello, "\x05HELLO", 6)) {
-        //  Temporary support for CURVE debugging
+        //  Temporary support for security debugging
         puts ("CURVE I: client HELLO has invalid command name");
         errno = EPROTO;
         return -1;
@@ -256,7 +264,7 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
     const uint8_t minor = hello [7];
 
     if (major != 1 || minor != 0) {
-        //  Temporary support for CURVE debugging
+        //  Temporary support for security debugging
         puts ("CURVE I: client HELLO has unknown version number");
         errno = EPROTO;
         return -1;
@@ -280,7 +288,7 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
                               sizeof hello_box,
                               hello_nonce, cn_client, secret_key);
     if (rc != 0) {
-        //  Temporary support for CURVE debugging
+        //  Temporary support for security debugging
         puts ("CURVE I: cannot open client HELLO -- wrong server key?");
         errno = EPROTO;
         return -1;
@@ -352,7 +360,7 @@ int zmq::curve_server_t::produce_welcome (msg_t *msg_)
 int zmq::curve_server_t::process_initiate (msg_t *msg_)
 {
     if (msg_->size () < 257) {
-        //  Temporary support for CURVE debugging
+        //  Temporary support for security debugging
         puts ("CURVE I: client INITIATE is not correct size");
         errno = EPROTO;
         return -1;
@@ -360,7 +368,7 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
 
     const uint8_t *initiate = static_cast <uint8_t *> (msg_->data ());
     if (memcmp (initiate, "\x08INITIATE", 9)) {
-        //  Temporary support for CURVE debugging
+        //  Temporary support for security debugging
         puts ("CURVE I: client INITIATE has invalid command name");
         errno = EPROTO;
         return -1;
@@ -381,7 +389,7 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
                                     sizeof cookie_box,
                                     cookie_nonce, cookie_key);
     if (rc != 0) {
-        //  Temporary support for CURVE debugging
+        //  Temporary support for security debugging
         puts ("CURVE I: cannot open client INITIATE cookie");
         errno = EPROTO;
         return -1;
@@ -390,7 +398,7 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     //  Check cookie plain text is as expected [C' + s']
     if (memcmp (cookie_plaintext + crypto_secretbox_ZEROBYTES, cn_client, 32)
     ||  memcmp (cookie_plaintext + crypto_secretbox_ZEROBYTES + 32, cn_secret, 32)) {
-        //  Temporary support for CURVE debugging
+        //  Temporary support for security debugging
         puts ("CURVE I: client INITIATE cookie is not valid");
         errno = EPROTO;
         return -1;
@@ -413,7 +421,7 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     rc = crypto_box_open (initiate_plaintext, initiate_box,
                           clen, initiate_nonce, cn_client, cn_secret);
     if (rc != 0) {
-        //  Temporary support for CURVE debugging
+        //  Temporary support for security debugging
         puts ("CURVE I: cannot open client INITIATE");
         errno = EPROTO;
         return -1;
@@ -438,7 +446,7 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
                           sizeof vouch_box,
                           vouch_nonce, client_key, cn_secret);
     if (rc != 0) {
-        //  Temporary support for CURVE debugging
+        //  Temporary support for security debugging
         puts ("CURVE I: cannot open client INITIATE vouch");
         errno = EPROTO;
         return -1;
@@ -446,6 +454,8 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
 
     //  What we decrypted must be the client's short-term public key
     if (memcmp (vouch_plaintext + crypto_box_ZEROBYTES, cn_client, 32)) {
+        //  Temporary support for security debugging
+        puts ("CURVE I: invalid handshake from client (public key)");
         errno = EPROTO;
         return -1;
     }
@@ -601,6 +611,8 @@ int zmq::curve_server_t::receive_and_process_zap_reply ()
         if (rc == -1)
             break;
         if ((msg [i].flags () & msg_t::more) == (i < 6? 0: msg_t::more)) {
+            //  Temporary support for security debugging
+            puts ("CURVE I: ZAP handler sent incomplete reply message");
             errno = EPROTO;
             rc = -1;
             break;
@@ -612,31 +624,37 @@ int zmq::curve_server_t::receive_and_process_zap_reply ()
 
     //  Address delimiter frame
     if (msg [0].size () > 0) {
-        rc = -1;
+        //  Temporary support for security debugging
+        puts ("CURVE I: ZAP handler sent malformed reply message");
         errno = EPROTO;
+        rc = -1;
         goto error;
     }
 
     //  Version frame
     if (msg [1].size () != 3 || memcmp (msg [1].data (), "1.0", 3)) {
-        rc = -1;
+        //  Temporary support for security debugging
+        puts ("CURVE I: ZAP handler sent bad version number");
         errno = EPROTO;
+        rc = -1;
         goto error;
     }
 
     //  Request id frame
     if (msg [2].size () != 1 || memcmp (msg [2].data (), "1", 1)) {
-        rc = -1;
+        //  Temporary support for security debugging
+        puts ("CURVE I: ZAP handler sent bad request ID");
         errno = EPROTO;
+        rc = -1;
         goto error;
     }
 
     //  Status code frame
     if (msg [3].size () != 3 || memcmp (msg [3].data (), "200", 3)) {
-        rc = -1;
-        //  Temporary support for CURVE debugging
+        //  Temporary support for security debugging
         puts ("CURVE I: ZAP handler rejected client authentication");
         errno = EACCES;
+        rc = -1;
         goto error;
     }
 
