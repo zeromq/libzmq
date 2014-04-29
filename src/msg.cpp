@@ -41,6 +41,7 @@ bool zmq::msg_t::check ()
 
 int zmq::msg_t::init ()
 {
+    u.vsm.properties = NULL;
     u.vsm.type = type_vsm;
     u.vsm.flags = 0;
     u.vsm.size = 0;
@@ -52,11 +53,13 @@ int zmq::msg_t::init_size (size_t size_)
 {
     file_desc = -1;
     if (size_ <= max_vsm_size) {
+        u.vsm.properties = NULL;
         u.vsm.type = type_vsm;
         u.vsm.flags = 0;
         u.vsm.size = (unsigned char) size_;
     }
     else {
+        u.lmsg.properties = NULL;
         u.lmsg.type = type_lmsg;
         u.lmsg.flags = 0;
         u.lmsg.content =
@@ -81,17 +84,19 @@ int zmq::msg_t::init_data (void *data_, size_t size_, msg_free_fn *ffn_,
     //  If data is NULL and size is not 0, a segfault
     //  would occur once the data is accessed
     zmq_assert (data_ != NULL || size_ == 0);
-    
+
     file_desc = -1;
 
     //  Initialize constant message if there's no need to deallocate
-    if(ffn_ == NULL) {
+    if (ffn_ == NULL) {
+        u.cmsg.properties = NULL;
         u.cmsg.type = type_cmsg;
         u.cmsg.flags = 0;
         u.cmsg.data = data_;
         u.cmsg.size = size_;
     }
     else {
+        u.lmsg.properties = NULL;
         u.lmsg.type = type_lmsg;
         u.lmsg.flags = 0;
         u.lmsg.content = (content_t*) malloc (sizeof (content_t));
@@ -112,6 +117,7 @@ int zmq::msg_t::init_data (void *data_, size_t size_, msg_free_fn *ffn_,
 
 int zmq::msg_t::init_delimiter ()
 {
+    u.delimiter.properties = NULL;
     u.delimiter.type = type_delimiter;
     u.delimiter.flags = 0;
     return 0;
@@ -336,4 +342,3 @@ bool zmq::msg_t::rm_refs (int refs_)
 
     return true;
 }
-
