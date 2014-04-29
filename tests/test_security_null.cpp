@@ -78,26 +78,26 @@ int main (void)
 
     //  We bounce between a binding server and a connecting client
     
-    //  We first test client/server with no ZAP domain
-    //  Libzmq does not call our ZAP handler, the connect must succeed
-    void *server = zmq_socket (ctx, ZMQ_DEALER);
-    assert (server);
-    void *client = zmq_socket (ctx, ZMQ_DEALER);
-    assert (client);
-    rc = zmq_bind (server, "tcp://127.0.0.1:9000");
-    assert (rc == 0);
-    rc = zmq_connect (client, "tcp://127.0.0.1:9000");
-    assert (rc == 0);
-    bounce (server, client);
-    close_zero_linger (client);
-    close_zero_linger (server);
+//     //  We first test client/server with no ZAP domain
+//     //  Libzmq does not call our ZAP handler, the connect must succeed
+//     void *server = zmq_socket (ctx, ZMQ_DEALER);
+//     assert (server);
+//     void *client = zmq_socket (ctx, ZMQ_DEALER);
+//     assert (client);
+//     rc = zmq_bind (server, "tcp://127.0.0.1:9000");
+//     assert (rc == 0);
+//     rc = zmq_connect (client, "tcp://127.0.0.1:9000");
+//     assert (rc == 0);
+//     bounce (server, client);
+//     close_zero_linger (client);
+//     close_zero_linger (server);
 
     //  Now define a ZAP domain for the server; this enables 
     //  authentication. We're using the wrong domain so this test
     //  must fail.
-    server = zmq_socket (ctx, ZMQ_DEALER);
+    void *server = zmq_socket (ctx, ZMQ_DEALER);
     assert (server);
-    client = zmq_socket (ctx, ZMQ_DEALER);
+    void *client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
     rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "WRONG", 5);
     assert (rc == 0);
@@ -109,20 +109,20 @@ int main (void)
     close_zero_linger (client);
     close_zero_linger (server);
 
-    //  Now use the right domain, the test must pass
-    server = zmq_socket (ctx, ZMQ_DEALER);
-    assert (server);
-    client = zmq_socket (ctx, ZMQ_DEALER);
-    assert (client);
-    rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "TEST", 4);
-    assert (rc == 0);
-    rc = zmq_bind (server, "tcp://127.0.0.1:9002");
-    assert (rc == 0);
-    rc = zmq_connect (client, "tcp://127.0.0.1:9002");
-    assert (rc == 0);
-    bounce (server, client);
-    close_zero_linger (client);
-    close_zero_linger (server);
+//     //  Now use the right domain, the test must pass
+//     server = zmq_socket (ctx, ZMQ_DEALER);
+//     assert (server);
+//     client = zmq_socket (ctx, ZMQ_DEALER);
+//     assert (client);
+//     rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "TEST", 4);
+//     assert (rc == 0);
+//     rc = zmq_bind (server, "tcp://127.0.0.1:9002");
+//     assert (rc == 0);
+//     rc = zmq_connect (client, "tcp://127.0.0.1:9002");
+//     assert (rc == 0);
+//     bounce (server, client);
+//     close_zero_linger (client);
+//     close_zero_linger (server);
 
     //  Shutdown
     rc = zmq_ctx_term (ctx);

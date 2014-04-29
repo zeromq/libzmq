@@ -104,6 +104,8 @@ int zmq::plain_mechanism_t::process_handshake_command (msg_t *msg_)
                 state = ready;
             break;
         default:
+            //  Temporary support for security debugging
+            puts ("PLAIN I: invalid handshake command");
             errno = EPROTO;
             rc = -1;
             break;
@@ -170,6 +172,8 @@ int zmq::plain_mechanism_t::process_hello (msg_t *msg_)
     size_t bytes_left = msg_->size ();
 
     if (bytes_left < 6 || memcmp (ptr, "\x05HELLO", 6)) {
+        //  Temporary support for security debugging
+        puts ("PLAIN I: invalid PLAIN client, did not send HELLO");
         errno = EPROTO;
         return -1;
     }
@@ -177,6 +181,8 @@ int zmq::plain_mechanism_t::process_hello (msg_t *msg_)
     bytes_left -= 6;
 
     if (bytes_left < 1) {
+        //  Temporary support for security debugging
+        puts ("PLAIN I: invalid PLAIN client, did not send username");
         errno = EPROTO;
         return -1;
     }
@@ -184,29 +190,36 @@ int zmq::plain_mechanism_t::process_hello (msg_t *msg_)
     bytes_left -= 1;
 
     if (bytes_left < username_length) {
+        //  Temporary support for security debugging
+        puts ("PLAIN I: invalid PLAIN client, sent malformed username");
         errno = EPROTO;
         return -1;
     }
     const std::string username = std::string ((char *) ptr, username_length);
     ptr += username_length;
     bytes_left -= username_length;
-
     if (bytes_left < 1) {
+        //  Temporary support for security debugging
+        puts ("PLAIN I: invalid PLAIN client, did not send password");
         errno = EPROTO;
         return -1;
     }
+
     const size_t password_length = static_cast <size_t> (*ptr++);
     bytes_left -= 1;
-
     if (bytes_left < password_length) {
+        //  Temporary support for security debugging
+        puts ("PLAIN I: invalid PLAIN client, sent malformed password");
         errno = EPROTO;
         return -1;
     }
+
     const std::string password = std::string ((char *) ptr, password_length);
     ptr += password_length;
     bytes_left -= password_length;
-
     if (bytes_left > 0) {
+        //  Temporary support for security debugging
+        puts ("PLAIN I: invalid PLAIN client, sent extraneous data");
         errno = EPROTO;
         return -1;
     }
@@ -240,6 +253,8 @@ int zmq::plain_mechanism_t::process_welcome (msg_t *msg_)
     size_t bytes_left = msg_->size ();
 
     if (bytes_left != 8 ||  memcmp (ptr, "\x07WELCOME", 8)) {
+        //  Temporary support for security debugging
+        puts ("PLAIN I: invalid PLAIN client, did not send WELCOME");
         errno = EPROTO;
         return -1;
     }
@@ -284,6 +299,8 @@ int zmq::plain_mechanism_t::process_initiate (msg_t *msg_)
     size_t bytes_left = msg_->size ();
 
     if (bytes_left < 9 || memcmp (ptr, "\x08INITIATE", 9)) {
+        //  Temporary support for security debugging
+        puts ("PLAIN I: invalid PLAIN client, did not send INITIATE");
         errno = EPROTO;
         return -1;
     }
@@ -330,6 +347,8 @@ int zmq::plain_mechanism_t::process_ready (msg_t *msg_)
     size_t bytes_left = msg_->size ();
 
     if (bytes_left < 6 || memcmp (ptr, "\x05READY", 6)) {
+        //  Temporary support for security debugging
+        puts ("PLAIN I: invalid PLAIN client, did not send READY");
         errno = EPROTO;
         return -1;
     }
@@ -431,6 +450,8 @@ int zmq::plain_mechanism_t::receive_and_process_zap_reply ()
         if (rc == -1)
             break;
         if ((msg [i].flags () & msg_t::more) == (i < 6? 0: msg_t::more)) {
+            //  Temporary support for security debugging
+            puts ("PLAIN I: ZAP handler sent incomplete reply message");
             errno = EPROTO;
             rc = -1;
             break;
@@ -442,20 +463,26 @@ int zmq::plain_mechanism_t::receive_and_process_zap_reply ()
 
     //  Address delimiter frame
     if (msg [0].size () > 0) {
-        rc = -1;
+        //  Temporary support for security debugging
+        puts ("PLAIN I: ZAP handler sent malformed reply message");
         errno = EPROTO;
+        rc = -1;
         goto error;
     }
 
     //  Version frame
     if (msg [1].size () != 3 || memcmp (msg [1].data (), "1.0", 3)) {
-        rc = -1;
+        //  Temporary support for security debugging
+        puts ("PLAIN I: ZAP handler sent bad version number");
         errno = EPROTO;
+        rc = -1;
         goto error;
     }
 
     //  Request id frame
     if (msg [2].size () != 1 || memcmp (msg [2].data (), "1", 1)) {
+        //  Temporary support for security debugging
+        puts ("PLAIN I: ZAP handler sent bad request ID");
         rc = -1;
         errno = EPROTO;
         goto error;
@@ -463,8 +490,10 @@ int zmq::plain_mechanism_t::receive_and_process_zap_reply ()
 
     //  Status code frame
     if (msg [3].size () != 3 || memcmp (msg [3].data (), "200", 3)) {
-        rc = -1;
+        //  Temporary support for security debugging
+        puts ("PLAIN I: ZAP handler rejected client authentication");
         errno = EACCES;
+        rc = -1;
         goto error;
     }
 

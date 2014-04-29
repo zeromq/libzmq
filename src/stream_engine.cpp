@@ -491,6 +491,7 @@ bool zmq::stream_engine_t::handshake ()
                     if (options.mechanism == ZMQ_GSSAPI)
                         memcpy (outpos + outsize, "GSSAPI", 6);
                     else
+                    if (options.mechanism == ZMQ_CURVE)
                         memcpy (outpos + outsize, "CURVE", 5);
                     outsize += 20;
                     memset (outpos + outsize, 0, 32);
@@ -667,6 +668,9 @@ int zmq::stream_engine_t::next_handshake_command (msg_t *msg_)
         if (mechanism->is_handshake_complete ())
             mechanism_ready ();
     }
+    //  TODO:
+    //  if (errno == EPROTO || errno == EACCES)
+    //      return ERROR command to client
 
     return rc;
 }
@@ -681,6 +685,9 @@ int zmq::stream_engine_t::process_handshake_command (msg_t *msg_)
         if (output_stopped)
             restart_output ();
     }
+    //  TODO:
+    //  if (errno == EPROTO || errno == EACCES)
+    //      return ERROR command to client
 
     return rc;
 }
@@ -691,6 +698,9 @@ void zmq::stream_engine_t::zap_msg_available ()
 
     const int rc = mechanism->zap_msg_available ();
     if (rc == -1) {
+        //  TODO:
+        //  if (errno == EACCES)
+        //      return ERROR command to client
         error ();
         return;
     }
@@ -846,7 +856,6 @@ int zmq::stream_engine_t::write (const void *data_, size_t size_)
     return nbytes;
 
 #else
-
     ssize_t nbytes = send (s, data_, size_, 0);
 
     //  Several errors are OK. When speculative write is being done we may not

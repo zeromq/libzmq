@@ -227,7 +227,7 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
         goto error;
 #endif
 
-    //  Listen for incomming connections.
+    //  Listen for incoming connections.
     rc = listen (s, options.backlog);
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
