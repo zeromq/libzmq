@@ -3,6 +3,8 @@
 
 * Fixed #797, keep-alive on Windows.
 
+* Fixed #939; occasional corrupt messages sent to ZAP handler.
+
 
 0MQ version 4.0.4 stable, released on 2014/03/10
 ================================================
