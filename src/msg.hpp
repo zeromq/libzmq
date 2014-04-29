@@ -86,9 +86,12 @@ namespace zmq
 
     private:
 
+        class i_properties;
+
         //  Size in bytes of the largest message that is still copied around
         //  rather than being reference-counted.
-        enum {max_vsm_size = 29};
+        enum { msg_t_size = 48 };
+        enum { max_vsm_size = msg_t_size - (8 + sizeof (i_properties *) + 3) };
 
         //  Shared message buffer. Message data are either allocated in one
         //  continuous block along with this structure - thus avoiding one
@@ -120,42 +123,47 @@ namespace zmq
             type_cmsg = 104,
             type_max = 104
         };
-  
+
         // the file descriptor where this message originated, needs to be 64bit due to alignment
         int64_t file_desc;
 
         //  Note that fields shared between different message types are not
-        //  moved to tha parent class (msg_t). This way we ger tighter packing
+        //  moved to tha parent class (msg_t). This way we get tighter packing
         //  of the data. Shared fields can be accessed via 'base' member of
         //  the union.
         union {
             struct {
-                unsigned char unused [max_vsm_size + 1];
+                i_properties *properties;
+                unsigned char unused [msg_t_size - (8 + sizeof (i_properties *) + 2)];
                 unsigned char type;
                 unsigned char flags;
             } base;
             struct {
+                i_properties *properties;
                 unsigned char data [max_vsm_size];
                 unsigned char size;
                 unsigned char type;
                 unsigned char flags;
             } vsm;
             struct {
+                i_properties *properties;
                 content_t *content;
-                unsigned char unused [max_vsm_size + 1 - sizeof (content_t*)];
+                unsigned char unused [msg_t_size - (8 + sizeof (i_properties *) + sizeof (content_t*) + 2)];
                 unsigned char type;
                 unsigned char flags;
             } lmsg;
             struct {
+                i_properties *properties;
                 void* data;
                 size_t size;
                 unsigned char unused
-                    [max_vsm_size + 1 - sizeof (void*) - sizeof (size_t)];
+                    [msg_t_size - (8 + sizeof (i_properties *) + sizeof (void*) + sizeof (size_t) + 2)];
                 unsigned char type;
                 unsigned char flags;
             } cmsg;
             struct {
-                unsigned char unused [max_vsm_size + 1];
+                i_properties *properties;
+                unsigned char unused [msg_t_size - (8 + sizeof (i_properties *) + 2)];
                 unsigned char type;
                 unsigned char flags;
             } delimiter;
