@@ -47,6 +47,7 @@ namespace zmq
         //  Overrides of functions from socket_base_t.
         void xattach_pipe (zmq::pipe_t *pipe_, bool subscribe_to_all_);
         int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
+        int xgetsockopt (int option_, const void *optval_, size_t *optvallen_);
         int xsend (zmq::msg_t *msg_);
         int xrecv (zmq::msg_t *msg_);
         bool xhas_in ();
@@ -54,7 +55,6 @@ namespace zmq
         void xread_activated (zmq::pipe_t *pipe_);
         void xwrite_activated (zmq::pipe_t *pipe_);
         void xpipe_terminated (zmq::pipe_t *pipe_);
-
     protected:
 
         //  Rollback any message parts that were sent but not yet flushed.

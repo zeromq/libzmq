@@ -68,6 +68,8 @@ namespace zmq
         void in_event ();
         void out_event ();
 
+        // export s via i_engine so it is possible to link a pipe to fd
+        fd_t get_assoc_fd (){ return s; };
     private:
 
         //  Unplug the engine from the session.
