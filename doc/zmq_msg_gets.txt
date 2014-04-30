@@ -9,7 +9,7 @@ zmq_msg_gets - get message metadata property
 
 SYNOPSIS
 --------
-*char *zmq_msg_gets (zmq_msg_t '*message', char *'property');*
+*const char *zmq_msg_gets (zmq_msg_t '*message', const char *'property');*
 
 
 DESCRIPTION
