@@ -14,6 +14,7 @@ noinst_PROGRAMS = test_system \
                   test_invalid_rep \
                   test_msg_flags \
                   test_connect_resolve \
+		  test_bind_src_address \
                   test_immediate \
                   test_last_endpoint \
                   test_term_endpoint \
@@ -114,6 +115,7 @@ test_many_sockets_SOURCES = test_many_sockets.cpp
 test_ipc_wildcard_SOURCES = test_ipc_wildcard.cpp
 test_diffserv_SOURCES = test_diffserv.cpp
 test_connect_rid_SOURCES = test_connect_rid.cpp
+test_bind_src_address_SOURCES = test_bind_src_address.cpp
 if !ON_MINGW
 test_shutdown_stress_SOURCES = test_shutdown_stress.cpp
 test_pair_ipc_SOURCES = test_pair_ipc.cpp testutil.hpp

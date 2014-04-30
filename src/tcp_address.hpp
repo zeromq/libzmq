@@ -44,7 +44,7 @@ namespace zmq
         //  strcuture. If 'local' is true, names are resolved as local interface
         //  names. If it is false, names are resolved as remote hostnames.
         //  If 'ipv6' is true, the name may resolve to IPv6 address.
-        int resolve (const char *name_, bool local_, bool ipv6_);
+        int resolve (const char *name_, bool local_, bool ipv6_, bool is_src_ = false);
 
         //  The opposite to resolve()
         virtual int to_string (std::string &addr_);
@@ -57,16 +57,27 @@ namespace zmq
         const sockaddr *addr () const;
         socklen_t addrlen () const;
 
+        const sockaddr *src_addr () const;
+        socklen_t src_addrlen () const;
+        bool has_src_addr () const;
+
     protected:
-        int resolve_nic_name (const char *nic_, bool ipv6_);
-        int resolve_interface (const char *interface_, bool ipv6_);
-        int resolve_hostname (const char *hostname_, bool ipv6_);
+        int resolve_nic_name (const char *nic_, bool ipv6_, bool is_src_ = false);
+        int resolve_interface (const char *interface_, bool ipv6_, bool is_src_ = false);
+        int resolve_hostname (const char *hostname_, bool ipv6_, bool is_src_ = false);
 
         union {
             sockaddr generic;
             sockaddr_in ipv4;
             sockaddr_in6 ipv6;
         } address;
+
+        union {
+            sockaddr generic;
+            sockaddr_in ipv4;
+            sockaddr_in6 ipv6;
+        } source_address;
+        bool _has_src_addr;
     };
 
     class tcp_address_mask_t : public tcp_address_t
