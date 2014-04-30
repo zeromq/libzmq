@@ -502,7 +502,7 @@ int zmq::plain_mechanism_t::receive_and_process_zap_reply ()
 
     //  Process metadata frame
     rc = parse_metadata (static_cast <const unsigned char*> (msg [6].data ()),
-                         msg [6].size ());
+                         msg [6].size (), true);
 
 error:
     for (int i = 0; i < 7; i++) {

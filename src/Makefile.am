@@ -46,6 +46,7 @@ libzmq_la_SOURCES = \
     likely.hpp \
     mailbox.hpp \
     mechanism.hpp  \
+    metadata.hpp \
     msg.hpp \
     mtrie.hpp \
     mutex.hpp \
@@ -118,6 +119,7 @@ libzmq_la_SOURCES = \
     lb.cpp \
     mailbox.cpp \
     mechanism.cpp \
+    metadata.cpp \
     msg.cpp \
     mtrie.cpp \
     norm_engine.cpp \
