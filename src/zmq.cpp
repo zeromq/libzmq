@@ -63,6 +63,7 @@ struct iovec {
 #include "err.hpp"
 #include "msg.hpp"
 #include "fd.hpp"
+#include "i_properties.hpp"
 
 #if !defined ZMQ_HAVE_WINDOWS
 #include <unistd.h>
@@ -646,8 +647,11 @@ int zmq_msg_set (zmq_msg_t *, int, int)
 
 const char *zmq_msg_gets (zmq_msg_t *msg_, const char *property_)
 {
-    //  All unknown properties return NULL
-    return NULL;
+    zmq::i_properties *properties = ((zmq::msg_t*) msg_)->properties ();
+    if (properties)
+        return properties->get (property_);
+    else
+        return NULL;
 }
 
 // Polling.

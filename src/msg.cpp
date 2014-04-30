@@ -26,6 +26,7 @@
 
 #include "stdint.hpp"
 #include "likely.hpp"
+#include "i_properties.hpp"
 #include "err.hpp"
 
 //  Check whether the sizes of public representation of the message (zmq_msg_t)
@@ -149,11 +150,14 @@ int zmq::msg_t::close ()
         }
     }
 
+    if (u.base.properties != NULL)
+        if (u.base.properties->drop_ref ())
+            delete u.base.properties;
+
     //  Make the message invalid.
     u.base.type = 0;
 
     return 0;
-
 }
 
 int zmq::msg_t::move (msg_t &src_)
@@ -200,6 +204,9 @@ int zmq::msg_t::copy (msg_t &src_)
             src_.u.lmsg.content->refcnt.set (2);
         }
     }
+
+    if (src_.u.base.properties != NULL)
+        src_.u.base.properties->add_ref ();
 
     *this = src_;
 
@@ -268,6 +275,19 @@ void zmq::msg_t::set_fd (int64_t fd_)
     file_desc = fd_;
 }
 
+zmq::i_properties *zmq::msg_t::properties () const
+{
+    return u.base.properties;
+}
+
+void zmq::msg_t::set_properties (zmq::i_properties *properties_)
+{
+    assert (properties_ != NULL);
+    assert (u.base.properties == NULL);
+    properties_->add_ref ();
+    u.base.properties = properties_;
+}
+
 bool zmq::msg_t::is_identity () const
 {
     return (u.base.flags & identity) == identity;
@@ -297,6 +317,9 @@ void zmq::msg_t::add_refs (int refs_)
 {
     zmq_assert (refs_ >= 0);
 
+    //  Operation not supported for messages with properties.
+    zmq_assert (u.base.properties == NULL);
+
     //  No copies required.
     if (!refs_)
         return;
@@ -316,6 +339,9 @@ void zmq::msg_t::add_refs (int refs_)
 bool zmq::msg_t::rm_refs (int refs_)
 {
     zmq_assert (refs_ >= 0);
+
+    //  Operation not supported for messages with properties.
+    zmq_assert (u.base.properties == NULL);
 
     //  No copies required.
     if (!refs_)
