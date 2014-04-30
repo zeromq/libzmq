@@ -25,6 +25,7 @@
 
 #include "config.hpp"
 #include "atomic_counter.hpp"
+#include "i_properties.hpp"
 
 //  Signature for free function to deallocate the message content.
 //  Note that it has to be declared as "C" so that it is the same as
@@ -70,6 +71,8 @@ namespace zmq
         void reset_flags (unsigned char flags_);
         int64_t fd ();
         void set_fd (int64_t fd_);
+        i_properties *properties () const;
+        void set_properties (i_properties *properties_);
         bool is_identity () const;
         bool is_credential () const;
         bool is_delimiter () const;
@@ -85,8 +88,6 @@ namespace zmq
         bool rm_refs (int refs_);
 
     private:
-
-        class i_properties;
 
         //  Size in bytes of the largest message that is still copied around
         //  rather than being reference-counted.
