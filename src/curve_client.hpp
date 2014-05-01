@@ -23,7 +23,12 @@
 #include "platform.hpp"
 
 #ifdef HAVE_LIBSODIUM
-#include <sodium.h>
+#ifdef HAVE_TWEETNACL
+#include "tweetnacl_base.h"
+#include "randombytes.h"
+#else
+#include "sodium.h"
+#endif
 
 #if crypto_box_NONCEBYTES != 24 \
 ||  crypto_box_PUBLICKEYBYTES != 32 \
