@@ -385,6 +385,7 @@ set(cxx-sources
         lb.cpp
         mailbox.cpp
         mechanism.cpp
+        metadata.cpp
         msg.cpp
         mtrie.cpp
         object.cpp
