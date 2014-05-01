@@ -9,6 +9,25 @@ if(APPLE)
   option(ZMQ_BUILD_FRAMEWORK "Build as OS X framework" ON)
 endif()
 
+option(WITH_TWEETNACL "Build with tweetnacl" ON)
+
+if(WITH_TWEETNACL)
+  add_definitions(-DHAVE_TWEETNACL -DHAVE_LIBSODIUM)
+  include_directories(
+	tweetnacl/contrib/randombytes
+	tweetnacl/src
+	)
+
+  set(TWEETNACL_SOURCES
+	tweetnacl/src/tweetnacl.c 
+	)
+  if(WIN32)
+  else()
+	list(APPEND TWEETNACL_SOURCES tweetnacl/contrib/randombytes/devurandom.c)
+  endif()
+endif()
+
+
 
 set(POLLER "" CACHE STRING "Choose polling system. valid values are
                             kqueue, epoll, devpoll, poll or select [default=autodetect]")
@@ -469,6 +488,10 @@ foreach(source ${cxx-sources})
   list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/src/${source})
 endforeach()
 
+foreach(source ${TWEETNACL_SOURCES})
+  list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/${source})
+endforeach()
+
 foreach(source ${rc-sources})
   list(APPEND sources ${CMAKE_CURRENT_BINARY_DIR}/${source})
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/${source}.in ${CMAKE_CURRENT_BINARY_DIR}/${source})
@@ -701,7 +724,7 @@ if(ZMQ_BUILD_TESTS)
     target_link_libraries(${test} libzmq)
 
     if(RT_LIBRARY)
-      target_link_libraries(${test} ${RT_LIBRARY})
+      target_link_libraries(${test} ${RT_LIBRARY} )
     endif()
     if(WIN32)
       add_test(NAME ${test} WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH} COMMAND ${test})

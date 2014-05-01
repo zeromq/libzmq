@@ -30,8 +30,13 @@
 #else
 #include "windows.hpp"
 #endif
+
 #ifdef HAVE_LIBSODIUM
-#   include <sodium.h>
+#ifdef HAVE_TWEETNACL
+#include "tweetnacl_base.h"
+#else
+#include "sodium.h"
+#endif
 #endif
 
 

@@ -21,8 +21,6 @@
 
 #ifdef HAVE_LIBSODIUM
 
-#include <sodium.h>
-
 #ifdef ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
 #endif
