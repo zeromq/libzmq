@@ -649,7 +649,7 @@ const char *zmq_msg_gets (zmq_msg_t *msg_, const char *property_)
 {
     zmq::i_properties *properties = ((zmq::msg_t*) msg_)->properties ();
     if (properties)
-        return properties->get (property_);
+        return properties->get (std::string (property_));
     else
         return NULL;
 }

@@ -17,31 +17,33 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_I_PROPERTIES_HPP_INCLUDED__
-#define __ZMQ_I_PROPERTIES_HPP_INCLUDED__
+#include "metadata.hpp"
 
-#include <string>
-
-namespace zmq
+zmq::metadata_t::metadata_t (dict_t &dict) :
+    ref_cnt (1),
+    dict (dict)
 {
-    //  Interface for accessing message properties.
-    //  Implementers are supposed to use reference counting to
-    //  manage object's lifetime.
-
-    struct i_properties
-    {
-        virtual ~i_properties () {}
-
-        //  Returns pointer to property value or NULL if
-        //  property not found.
-        virtual const char *get (const std::string &property) const = 0;
-
-        virtual void add_ref () = 0;
-
-        //  Drop reference. Returns true iff the reference
-        //  counter drops to zero.
-        virtual bool drop_ref () = 0;
-    };
 }
 
-#endif
+zmq::metadata_t::~metadata_t ()
+{
+}
+
+const char *zmq::metadata_t::get (const std::string &property) const
+{
+    dict_t::const_iterator it = dict.find (property);
+    if (it == dict.end ())
+        return NULL;
+    else
+        return it->second.c_str ();
+}
+
+void zmq::metadata_t::add_ref ()
+{
+    ref_cnt.add (1);
+}
+
+bool zmq::metadata_t::drop_ref ()
+{
+    return !ref_cnt.sub (1);
+}

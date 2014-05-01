@@ -18,6 +18,7 @@
 */
 
 #include <string.h>
+#include <map>
 
 #include "mechanism.hpp"
 #include "options.hpp"
@@ -26,12 +27,16 @@
 #include "wire.hpp"
 
 zmq::mechanism_t::mechanism_t (const options_t &options_) :
+    metadata (NULL),
     options (options_)
 {
 }
 
 zmq::mechanism_t::~mechanism_t ()
 {
+    if (metadata != NULL)
+        if (metadata->drop_ref ())
+            delete metadata;
 }
 
 void zmq::mechanism_t::set_peer_identity (const void *id_ptr, size_t id_size)
@@ -83,8 +88,9 @@ size_t zmq::mechanism_t::add_property (unsigned char *ptr, const char *name,
 }
 
 int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
-                                      size_t length_)
+                                      size_t length_, bool zap_flag)
 {
+    std::map <const std::string, const std::string> dict;
     size_t bytes_left = length_;
 
     while (bytes_left > 1) {
@@ -125,10 +131,18 @@ int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
             if (rc == -1)
                 return -1;
         }
+
+        dict.insert (
+            std::map <const std::string, const std::string>::value_type (
+                name, std::string ((char *) value, value_length)));
     }
     if (bytes_left > 0) {
         errno = EPROTO;
         return -1;
+    }
+    if (zap_flag) {
+        assert (metadata == NULL);
+        metadata = new (std::nothrow) metadata_t (dict);
     }
     return 0;
 }

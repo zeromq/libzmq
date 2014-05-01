@@ -780,6 +780,9 @@ int zmq::stream_engine_t::decode_and_push (msg_t *msg_)
 
     if (mechanism->decode (msg_) == -1)
         return -1;
+    metadata_t *metadata = mechanism->get_metadata ();
+    if (metadata)
+        msg_->set_properties (metadata);
     if (session->push_msg (msg_) == -1) {
         if (errno == EAGAIN)
             write_msg = &stream_engine_t::push_one_then_decode_and_push;

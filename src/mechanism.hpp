@@ -23,6 +23,7 @@
 #include "stdint.hpp"
 #include "options.hpp"
 #include "blob.hpp"
+#include "metadata.hpp"
 
 namespace zmq
 {
@@ -64,6 +65,8 @@ namespace zmq
 
         blob_t get_user_id () const;
 
+        metadata_t *get_metadata () { return metadata; }
+
     protected:
 
         //  Only used to identify the socket for the Socket-Type
@@ -77,7 +80,8 @@ namespace zmq
         //  Metadata consists of a list of properties consisting of
         //  name and value as size-specified strings.
         //  Returns 0 on success and -1 on error, in which case errno is set.
-        int parse_metadata (const unsigned char *ptr_, size_t length);
+        int parse_metadata (
+            const unsigned char *ptr_, size_t length, bool zap_flag = false);
 
         //  This is called by parse_property method whenever it
         //  parses a new property. The function should return 0
@@ -88,6 +92,10 @@ namespace zmq
         //  method to handle custom processing.
         virtual int property (const std::string& name_,
                               const void *value_, size_t length_);
+
+        //  Metadada as returned by ZAP protocol.
+        //  NULL if no metadata received.
+        metadata_t *metadata;
 
         options_t options;
 
