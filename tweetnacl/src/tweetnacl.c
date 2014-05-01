@@ -2,7 +2,7 @@
 /* NaCL Compabilty */
 #include "tweetnacl.h"
 #else
-/* direct tweenacl usage */
+/* direct tweetnacl usage */
 #include "tweetnacl_base.h"
 #endif
 
