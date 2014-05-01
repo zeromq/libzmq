@@ -9,21 +9,25 @@ if(APPLE)
   option(ZMQ_BUILD_FRAMEWORK "Build as OS X framework" ON)
 endif()
 
+if(WIN32)
+option(WITH_TWEETNACL "Build with tweetnacl" OFF)
+else()
 option(WITH_TWEETNACL "Build with tweetnacl" ON)
+endif()
 
 if(WITH_TWEETNACL)
   add_definitions(-DHAVE_TWEETNACL -DHAVE_LIBSODIUM)
   include_directories(
-	tweetnacl/contrib/randombytes
-	tweetnacl/src
-	)
+    tweetnacl/contrib/randombytes
+    tweetnacl/src
+    )
 
   set(TWEETNACL_SOURCES
-	tweetnacl/src/tweetnacl.c 
-	)
+    tweetnacl/src/tweetnacl.c 
+    )
   if(WIN32)
   else()
-	list(APPEND TWEETNACL_SOURCES tweetnacl/contrib/randombytes/devurandom.c)
+    list(APPEND TWEETNACL_SOURCES tweetnacl/contrib/randombytes/devurandom.c)
   endif()
 endif()
 
