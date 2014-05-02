@@ -255,9 +255,7 @@ int test_inproc_bind_and_close_first (int send_hwm, int /* recv_hwm */)
 int main (void)
 {
     setup_test_environment();
-
-	no_race_tests_please() ;
-
+    
     int count;
 
     // Default values are 1000 on send and 1000 one receive, so 2000 total

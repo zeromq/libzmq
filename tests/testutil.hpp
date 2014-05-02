@@ -263,12 +263,6 @@ void setup_test_environment()
     _CrtSetReportFile( _CRT_ASSERT, _CRTDBG_FILE_STDERR );
 #   endif
 #endif
-	zmq_lb_race_window_2_size = 1 ;
-}
-
-void no_race_tests_please()
-{
-	zmq_lb_race_window_2_size = 0 ;
 }
 
 //  Provide portable millisecond sleep
