@@ -16,18 +16,36 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include <stdio.h>
 
 #include "fq.hpp"
 #include "pipe.hpp"
 #include "err.hpp"
 #include "msg.hpp"
+#ifdef ZMQ_HAVE_WINDOWS
+#  define msleep(milliseconds)   {if(milliseconds)  Sleep (milliseconds);}
+#else
+#  include <unistd.h>
+#  define msleep(milliseconds)   {if(milliseconds) usleep (static_cast <useconds_t> (milliseconds) * 1000);}
+#endif
 
+#define DB_TRACE(tag) int my_seq = ++seq;  \
+				pthread_t self = pthread_self(); \
+				fprintf(stderr, "=> %12.12s thread=%lu this=%p seq=%d active=%lu\n", tag, self, (void *)this, my_seq, active) ; \
+			
+#define DB_TRACE_EXIT(tag) fprintf(stderr, "<= %12.12s thread=%lu this=%p seq=%d active=%lu\n", tag, self, (void *)this, my_seq, active) ; \
+
+int zmq_fq_race_window_1_size = 0 ;
+int zmq_fq_race_window_2_size = 0 ;
+
+static int seq = 0 ;
 zmq::fq_t::fq_t () :
     active (0),
     last_in (NULL),
     current (0),
     more (false)
 {
+	DB_TRACE("fq_cons"); 
 }
 
 zmq::fq_t::~fq_t ()
@@ -44,6 +62,7 @@ void zmq::fq_t::attach (pipe_t *pipe_)
 
 void zmq::fq_t::pipe_terminated (pipe_t *pipe_)
 {
+	DB_TRACE("fq_term") ;
     const pipes_t::size_type index = pipes.index (pipe_);
 
     //  Remove the pipe from the list; adjust number of active pipes
@@ -60,6 +79,7 @@ void zmq::fq_t::pipe_terminated (pipe_t *pipe_)
         saved_credential = last_in->get_credential ();
         last_in = NULL;
     }
+	DB_TRACE_EXIT("fq_term") ;
 }
 
 void zmq::fq_t::activated (pipe_t *pipe_)
@@ -76,16 +96,21 @@ int zmq::fq_t::recv (msg_t *msg_)
 
 int zmq::fq_t::recvpipe (msg_t *msg_, pipe_t **pipe_)
 {
+	DB_TRACE("fq_recvpipe");
     //  Deallocate old content of the message.
     int rc = msg_->close ();
     errno_assert (rc == 0);
 
     //  Round-robin over the pipes to get the next message.
     while (active > 0) {
-
+	// DAB - bias the race to provoke problems with read
+		msleep(zmq_fq_race_window_1_size) ;
         //  Try to fetch new message. If we've already read part of the message
         //  subsequent part should be immediately available.
         bool fetched = pipes [current]->read (msg_);
+
+	// DAB - bias the race to provoke problems with %
+		msleep(zmq_fq_race_window_2_size) ;
 
         //  Note that when message is not fetched, current pipe is deactivated
         //  and replaced by another active pipe. Thus we don't have to increase
@@ -98,6 +123,7 @@ int zmq::fq_t::recvpipe (msg_t *msg_, pipe_t **pipe_)
                 last_in = pipes [current];
                 current = (current + 1) % active;
             }
+			DB_TRACE_EXIT("fq_recvpipe");
             return 0;
         }
 
@@ -117,6 +143,7 @@ int zmq::fq_t::recvpipe (msg_t *msg_, pipe_t **pipe_)
     rc = msg_->init ();
     errno_assert (rc == 0);
     errno = EAGAIN;
+	DB_TRACE_EXIT("fq_recvpipe");
     return -1;
 }
 

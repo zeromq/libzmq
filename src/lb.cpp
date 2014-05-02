@@ -16,18 +16,29 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
+#include <stdio.h>
 #include "lb.hpp"
 #include "pipe.hpp"
 #include "err.hpp"
 #include "msg.hpp"
 
+#define DB_TRACE(tag) int my_seq = ++seq;  \
+				pthread_t self = pthread_self(); \
+				fprintf(stderr, "=> %12.12s thread=%lu this=%p seq=%d active=%lu\n", tag, self, (void *)this, my_seq, active) ; \
+			
+#define DB_TRACE_EXIT(tag) fprintf(stderr, "<= %12.12s thread=%lu this=%p seq=%d active=%lu\n", tag, self, (void *)this, my_seq, active) ; \
+
+int zmq_lb_race_window_1_size = 0 ;
+int zmq_lb_race_window_2_size = 0 ;
+static int seq = 0 ;
+
 zmq::lb_t::lb_t () :
-    active (0),
+    active (0), 
     current (0),
     more (false),
     dropping (false)
 {
+	DB_TRACE("lb_cons") ;
 }
 
 zmq::lb_t::~lb_t ()
@@ -43,6 +54,7 @@ void zmq::lb_t::attach (pipe_t *pipe_)
 
 void zmq::lb_t::pipe_terminated (pipe_t *pipe_)
 {
+	DB_TRACE("lb_term") ;
     pipes_t::size_type index = pipes.index (pipe_);
 
     //  If we are in the middle of multipart message and current pipe
@@ -59,6 +71,7 @@ void zmq::lb_t::pipe_terminated (pipe_t *pipe_)
             current = 0;
     }
     pipes.erase (pipe_);
+	DB_TRACE_EXIT("lb_term") ;
 }
 
 void zmq::lb_t::activated (pipe_t *pipe_)
@@ -73,8 +86,16 @@ int zmq::lb_t::send (msg_t *msg_)
     return sendpipe (msg_, NULL);
 }
 
+#ifdef ZMQ_HAVE_WINDOWS
+#  define msleep(milliseconds)    Sleep (milliseconds);
+#else
+#  include <unistd.h>
+#  define msleep(milliseconds)   usleep (static_cast <useconds_t> (milliseconds) * 1000);
+#endif
+
 int zmq::lb_t::sendpipe (msg_t *msg_, pipe_t **pipe_)
 {
+	DB_TRACE("lb_sendpipe") ;
     //  Drop the message if required. If we are at the end of the message
     //  switch back to non-dropping mode.
     if (dropping) {
@@ -90,13 +111,20 @@ int zmq::lb_t::sendpipe (msg_t *msg_, pipe_t **pipe_)
     }
 
     while (active > 0) {
-        if (pipes [current]->write (msg_))
+	// DAB - bias the race to provoke problems with write
+		msleep(zmq_lb_race_window_1_size ) ;
+
+       if (pipes [current]->write (msg_))
         {
             if (pipe_)
                 *pipe_ = pipes [current];
             break;
         }
-
+		if (!(!more))
+		{
+			DB_TRACE("lb_assert");
+			fflush(stderr) ;
+		}
         zmq_assert (!more);
         active--;
         if (current < active)
@@ -108,12 +136,17 @@ int zmq::lb_t::sendpipe (msg_t *msg_, pipe_t **pipe_)
     //  If there are no pipes we cannot send the message.
     if (active == 0) {
         errno = EAGAIN;
+		DB_TRACE_EXIT("lb_sendpipe") ;
         return -1;
     }
 
     //  If it's final part of the message we can flush it downstream and
     //  continue round-robining (load balance).
     more = msg_->flags () & msg_t::more? true: false;
+
+	// DAB - bias the race to provoke problems with %
+	msleep(zmq_lb_race_window_2_size) ;
+
     if (!more) {
         pipes [current]->flush ();
         current = (current + 1) % active;
@@ -123,6 +156,7 @@ int zmq::lb_t::sendpipe (msg_t *msg_, pipe_t **pipe_)
     int rc = msg_->init ();
     errno_assert (rc == 0);
 
+	DB_TRACE_EXIT("lb_sendpipe") ;
     return 0;
 }
 
