@@ -742,18 +742,18 @@ void zmq::stream_engine_t::mechanism_ready ()
     properties_t properties;
     properties_t::const_iterator it;
 
-    //  Add ZMTP properties.
-    const properties_t& zmtp_properties = mechanism->get_zmtp_properties ();
-    it = zmtp_properties.begin ();
-    while (it != zmtp_properties.end ()) {
-        properties.insert (properties_t::value_type (it->first, it->second));
-        it++;
-    }
-
     //  Add ZAP properties.
     const properties_t& zap_properties = mechanism->get_zap_properties ();
     it = zap_properties.begin ();
     while (it != zap_properties.end ()) {
+        properties.insert (properties_t::value_type (it->first, it->second));
+        it++;
+    }
+
+    //  Add ZMTP properties.
+    const properties_t& zmtp_properties = mechanism->get_zmtp_properties ();
+    it = zmtp_properties.begin ();
+    while (it != zmtp_properties.end ()) {
         properties.insert (properties_t::value_type (it->first, it->second));
         it++;
     }
