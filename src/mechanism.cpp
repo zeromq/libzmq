@@ -142,7 +142,8 @@ int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
     }
     if (zap_flag) {
         assert (metadata == NULL);
-        metadata = new (std::nothrow) metadata_t (dict);
+        if (!dict.empty ())
+            metadata = new (std::nothrow) metadata_t (dict);
     }
     return 0;
 }
