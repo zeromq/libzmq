@@ -220,6 +220,12 @@ ZMQ_EXPORT int zmq_msg_get (zmq_msg_t *msg, int property);
 ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int property, int optval);
 ZMQ_EXPORT const char *zmq_msg_gets (zmq_msg_t *msg, const char *property);
 
+// DAB - these are millisecond sleeps to bias data races
+extern ZMQ_EXPORT int zmq_lb_race_window_1_size;
+extern ZMQ_EXPORT int zmq_lb_race_window_2_size;
+extern ZMQ_EXPORT int zmq_fq_race_window_1_size;
+extern ZMQ_EXPORT int zmq_fq_race_window_2_size;
+
 
 /******************************************************************************/
 /*  0MQ socket definition.                                                    */

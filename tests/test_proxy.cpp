@@ -222,6 +222,8 @@ int main (void)
 {
     setup_test_environment ();
 
+	no_race_tests_please() ;
+
     void *ctx = zmq_ctx_new ();
     assert (ctx);
     // Control socket receives terminate command from main over inproc
