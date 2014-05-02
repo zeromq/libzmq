@@ -30,6 +30,7 @@
 #include "options.hpp"
 #include "socket_base.hpp"
 #include "../include/zmq.h"
+#include "metadata.hpp"
 
 namespace zmq
 {
@@ -130,6 +131,9 @@ namespace zmq
         unsigned char *outpos;
         size_t outsize;
         i_encoder *encoder;
+
+        //  Metadata to be attached to received messages. May be NULL.
+        metadata_t *metadata;
 
         //  When true, we are still trying to determine whether
         //  the peer is using versioned protocol, and if so, which

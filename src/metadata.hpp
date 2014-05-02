@@ -31,7 +31,9 @@ namespace zmq
     {
         public:
 
-            metadata_t (std::map <const std::string, const std::string> &dict);
+            typedef std::map <const std::string, const std::string> dict_t;
+
+            metadata_t (const dict_t &dict);
             virtual ~metadata_t ();
 
             //  Returns pointer to property value or NULL if
@@ -50,7 +52,6 @@ namespace zmq
             atomic_counter_t ref_cnt;
 
             //  Dictionary holding metadata.
-            typedef std::map <const std::string, const std::string> dict_t;
             const dict_t dict;
     };
 

@@ -19,7 +19,7 @@
 
 #include "metadata.hpp"
 
-zmq::metadata_t::metadata_t (dict_t &dict) :
+zmq::metadata_t::metadata_t (const dict_t &dict) :
     ref_cnt (1),
     dict (dict)
 {

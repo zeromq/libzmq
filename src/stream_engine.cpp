@@ -64,6 +64,7 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
     outpos (NULL),
     outsize (0),
     encoder (NULL),
+    metadata (NULL),
     handshaking (true),
     greeting_size (v2_greeting_size),
     greeting_bytes_read (0),
@@ -143,6 +144,12 @@ zmq::stream_engine_t::~stream_engine_t ()
 
     int rc = tx_msg.close ();
     errno_assert (rc == 0);
+
+    //  Drop reference to metadata and destroy it if we are
+    //  the only user.
+    if (metadata != NULL)
+        if (metadata->drop_ref ())
+            delete metadata;
 
     delete encoder;
     delete decoder;
@@ -728,6 +735,31 @@ void zmq::stream_engine_t::mechanism_ready ()
 
     read_msg = &stream_engine_t::pull_and_encode;
     write_msg = &stream_engine_t::write_credential;
+
+    //  Compile metadata.
+    typedef metadata_t::dict_t properties_t;
+    properties_t properties;
+    properties_t::const_iterator it;
+
+    //  Add ZAP properties.
+    const properties_t& zap_properties = mechanism->get_zap_properties ();
+    it = zap_properties.begin ();
+    while (it != zap_properties.end ()) {
+        properties.insert (properties_t::value_type (it->first, it->second));
+        it++;
+    }
+
+    //  Add ZMTP properties.
+    const properties_t& zmtp_properties = mechanism->get_zmtp_properties ();
+    it = zmtp_properties.begin ();
+    while (it != zmtp_properties.end ()) {
+        properties.insert (properties_t::value_type (it->first, it->second));
+        it++;
+    }
+
+    zmq_assert (metadata == NULL);
+    if (!properties.empty ())
+        metadata = new (std::nothrow) metadata_t (properties);
 }
 
 int zmq::stream_engine_t::pull_msg_from_session (msg_t *msg_)
@@ -780,7 +812,6 @@ int zmq::stream_engine_t::decode_and_push (msg_t *msg_)
 
     if (mechanism->decode (msg_) == -1)
         return -1;
-    metadata_t *metadata = mechanism->get_metadata ();
     if (metadata)
         msg_->set_properties (metadata);
     if (session->push_msg (msg_) == -1) {

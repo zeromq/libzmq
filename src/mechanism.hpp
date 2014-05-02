@@ -65,7 +65,13 @@ namespace zmq
 
         blob_t get_user_id () const;
 
-        metadata_t *get_metadata () { return metadata; }
+        const metadata_t::dict_t& get_zmtp_properties () {
+            return zmtp_properties;
+        }
+
+        const metadata_t::dict_t& get_zap_properties () {
+            return zap_properties;
+        }
 
     protected:
 
@@ -93,9 +99,11 @@ namespace zmq
         virtual int property (const std::string& name_,
                               const void *value_, size_t length_);
 
-        //  Metadada as returned by ZAP protocol.
-        //  NULL if no metadata received.
-        metadata_t *metadata;
+        //  Properties received from ZMTP peer.
+        metadata_t::dict_t zmtp_properties;
+
+        //  Properties received from ZAP server.
+        metadata_t::dict_t zap_properties;
 
         options_t options;
 
