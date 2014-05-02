@@ -95,9 +95,9 @@ int main (void)
     //  Now define a ZAP domain for the server; this enables 
     //  authentication. We're using the wrong domain so this test
     //  must fail.
-    void *server = zmq_socket (ctx, ZMQ_DEALER);
+    server = zmq_socket (ctx, ZMQ_DEALER);
     assert (server);
-    void *client = zmq_socket (ctx, ZMQ_DEALER);
+    client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
     rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "WRONG", 5);
     assert (rc == 0);
