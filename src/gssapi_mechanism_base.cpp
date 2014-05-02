@@ -271,10 +271,8 @@ int zmq::gssapi_mechanism_base_t::produce_ready (msg_t *msg_)
     //  Add identity property
     if (options.type == ZMQ_REQ
     ||  options.type == ZMQ_DEALER
-    ||  options.type == ZMQ_ROUTER) {
-        ptr += add_property (ptr, "Identity",
-            options.identity, options.identity_size);
-    }
+    ||  options.type == ZMQ_ROUTER)
+        ptr += add_property (ptr, "Identity", options.identity, options.identity_size);
 
     const size_t command_size = ptr - command_buffer;
     const int rc = msg_->init_size (command_size);

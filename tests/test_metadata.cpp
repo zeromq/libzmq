@@ -22,6 +22,11 @@
 static void
 zap_handler (void *handler)
 {
+    uint8_t metadata [] = {
+        5, 'H', 'e', 'l', 'l', 'o',
+        0, 0, 0, 5, 'W', 'o', 'r', 'l', 'd'
+    };
+
     //  Process ZAP requests forever
     while (true) {
         char *version = s_recv (handler);
@@ -39,11 +44,11 @@ zap_handler (void *handler)
         
         s_sendmore (handler, version);
         s_sendmore (handler, sequence);
-        if (streq (domain, "TEST")) {
+        if (streq (domain, "DOMAIN")) {
             s_sendmore (handler, "200");
             s_sendmore (handler, "OK");
             s_sendmore (handler, "anonymous");
-            s_send     (handler, "");
+            zmq_send (handler, metadata, sizeof (metadata), 0);
         }
         else {
             s_sendmore (handler, "400");
@@ -76,57 +81,34 @@ int main (void)
     assert (rc == 0);
     void *zap_thread = zmq_threadstart (&zap_handler, handler);
 
-    //  We bounce between a binding server and a connecting client
-    
-    //  We first test client/server with no ZAP domain
-    //  Libzmq does not call our ZAP handler, the connect must succeed
     void *server = zmq_socket (ctx, ZMQ_DEALER);
     assert (server);
     void *client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
-    rc = zmq_bind (server, "tcp://127.0.0.1:9000");
-    assert (rc == 0);
-    rc = zmq_connect (client, "tcp://127.0.0.1:9000");
-    assert (rc == 0);
-    bounce (server, client);
-    close_zero_linger (client);
-    close_zero_linger (server);
-
-    //  Now define a ZAP domain for the server; this enables 
-    //  authentication. We're using the wrong domain so this test
-    //  must fail.
-    server = zmq_socket (ctx, ZMQ_DEALER);
-    assert (server);
-    client = zmq_socket (ctx, ZMQ_DEALER);
-    assert (client);
-    rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "WRONG", 5);
+    rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "DOMAIN", 6);
     assert (rc == 0);
     rc = zmq_bind (server, "tcp://127.0.0.1:9001");
     assert (rc == 0);
     rc = zmq_connect (client, "tcp://127.0.0.1:9001");
     assert (rc == 0);
-    expect_bounce_fail (server, client);
-    close_zero_linger (client);
-    close_zero_linger (server);
 
-    //  Now use the right domain, the test must pass
-    server = zmq_socket (ctx, ZMQ_DEALER);
-    assert (server);
-    client = zmq_socket (ctx, ZMQ_DEALER);
-    assert (client);
-    rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "TEST", 4);
-    assert (rc == 0);
-    rc = zmq_bind (server, "tcp://127.0.0.1:9002");
-    assert (rc == 0);
-    rc = zmq_connect (client, "tcp://127.0.0.1:9002");
-    assert (rc == 0);
-    bounce (server, client);
+    s_send (client, "This is a message");
+    zmq_msg_t msg;
+    zmq_msg_init (&msg);
+    rc = zmq_msg_recv (&msg, server, 0);
+    assert (rc != -1);
+    assert (streq (zmq_msg_gets (&msg, "Hello"), "World"));
+    assert (streq (zmq_msg_gets (&msg, "Socket-Type"), "DEALER"));
+    assert (streq (zmq_msg_gets (&msg, "User-Id"), "anonymous"));
+    zmq_msg_close (&msg);
+
     close_zero_linger (client);
     close_zero_linger (server);
 
     //  Shutdown
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
+
     //  Wait until ZAP handler terminates
     zmq_threadclose (zap_thread);
 

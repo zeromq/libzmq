@@ -50,6 +50,9 @@ void zmq::mechanism_t::peer_identity (msg_t *msg_)
 void zmq::mechanism_t::set_user_id (const void *data_, size_t size_)
 {
     user_id = blob_t (static_cast <const unsigned char*> (data_), size_);
+    zap_properties.insert (
+        metadata_t::dict_t::value_type (
+            "User-Id", std::string ((char *) data_, size_)));
 }
 
 zmq::blob_t zmq::mechanism_t::get_user_id () const
@@ -125,7 +128,6 @@ int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
             if (rc == -1)
                 return -1;
         }
-
         if (zap_flag)
             zap_properties.insert (
                 metadata_t::dict_t::value_type (

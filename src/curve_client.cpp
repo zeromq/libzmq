@@ -336,8 +336,7 @@ int zmq::curve_client_t::produce_initiate (msg_t *msg_)
     if (options.type == ZMQ_REQ
     ||  options.type == ZMQ_DEALER
     ||  options.type == ZMQ_ROUTER)
-        ptr += add_property (ptr, "Identity",
-                             options.identity, options.identity_size);
+        ptr += add_property (ptr, "Identity", options.identity, options.identity_size);
 
     const size_t mlen = ptr - initiate_plaintext;
 

@@ -37,9 +37,14 @@ The requested _property_ is unknown.
 
 EXAMPLE
 -------
-.To be done
+.Getting the ZAP authenticated user id for a message:
 ----
-zmq_msg_t frame;
+zmq_msg_t msg;
+zmq_msg_init (&msg);
+rc = zmq_msg_recv (&msg, dealer, 0);
+assert (rc != -1);
+const char *user_id = zmq_msg_gets (&msg, "User-Id");
+zmq_msg_close (&msg);
 ----
 
 
