@@ -378,13 +378,15 @@ int zmq::tcp_address_t::resolve_hostname (const char *hostname_, bool ipv6_, boo
     return 0;
 }
 
-zmq::tcp_address_t::tcp_address_t ()
+zmq::tcp_address_t::tcp_address_t () :
+    _has_src_addr (false)
 {
     memset (&address, 0, sizeof (address));
     memset (&source_address, 0, sizeof (source_address));
 }
 
-zmq::tcp_address_t::tcp_address_t (const sockaddr *sa, socklen_t sa_len)
+zmq::tcp_address_t::tcp_address_t (const sockaddr *sa, socklen_t sa_len) :
+    _has_src_addr (false)
 {
     zmq_assert(sa && sa_len > 0);
 
