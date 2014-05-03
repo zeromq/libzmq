@@ -25,7 +25,7 @@
 
 #include "config.hpp"
 #include "atomic_counter.hpp"
-#include "i_properties.hpp"
+#include "metadata.hpp"
 
 //  Signature for free function to deallocate the message content.
 //  Note that it has to be declared as "C" so that it is the same as
@@ -71,8 +71,8 @@ namespace zmq
         void reset_flags (unsigned char flags_);
         int64_t fd ();
         void set_fd (int64_t fd_);
-        i_properties *properties () const;
-        void set_properties (i_properties *properties_);
+        metadata_t *metadata () const;
+        void set_metadata (metadata_t *metadata_);
         bool is_identity () const;
         bool is_credential () const;
         bool is_delimiter () const;
@@ -92,7 +92,7 @@ namespace zmq
         //  Size in bytes of the largest message that is still copied around
         //  rather than being reference-counted.
         enum { msg_t_size = 48 };
-        enum { max_vsm_size = msg_t_size - (8 + sizeof (i_properties *) + 3) };
+        enum { max_vsm_size = msg_t_size - (8 + sizeof (metadata_t *) + 3) };
 
         //  Shared message buffer. Message data are either allocated in one
         //  continuous block along with this structure - thus avoiding one
@@ -134,37 +134,37 @@ namespace zmq
         //  the union.
         union {
             struct {
-                i_properties *properties;
-                unsigned char unused [msg_t_size - (8 + sizeof (i_properties *) + 2)];
+                metadata_t *metadata;
+                unsigned char unused [msg_t_size - (8 + sizeof (metadata_t *) + 2)];
                 unsigned char type;
                 unsigned char flags;
             } base;
             struct {
-                i_properties *properties;
+                metadata_t *metadata;
                 unsigned char data [max_vsm_size];
                 unsigned char size;
                 unsigned char type;
                 unsigned char flags;
             } vsm;
             struct {
-                i_properties *properties;
+                metadata_t *metadata;
                 content_t *content;
-                unsigned char unused [msg_t_size - (8 + sizeof (i_properties *) + sizeof (content_t*) + 2)];
+                unsigned char unused [msg_t_size - (8 + sizeof (metadata_t *) + sizeof (content_t*) + 2)];
                 unsigned char type;
                 unsigned char flags;
             } lmsg;
             struct {
-                i_properties *properties;
+                metadata_t *metadata;
                 void* data;
                 size_t size;
                 unsigned char unused
-                    [msg_t_size - (8 + sizeof (i_properties *) + sizeof (void*) + sizeof (size_t) + 2)];
+                    [msg_t_size - (8 + sizeof (metadata_t *) + sizeof (void*) + sizeof (size_t) + 2)];
                 unsigned char type;
                 unsigned char flags;
             } cmsg;
             struct {
-                i_properties *properties;
-                unsigned char unused [msg_t_size - (8 + sizeof (i_properties *) + 2)];
+                metadata_t *metadata;
+                unsigned char unused [msg_t_size - (8 + sizeof (metadata_t *) + 2)];
                 unsigned char type;
                 unsigned char flags;
             } delimiter;

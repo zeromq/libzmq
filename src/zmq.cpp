@@ -63,7 +63,7 @@ struct iovec {
 #include "err.hpp"
 #include "msg.hpp"
 #include "fd.hpp"
-#include "i_properties.hpp"
+#include "metadata.hpp"
 
 #if !defined ZMQ_HAVE_WINDOWS
 #include <unistd.h>
@@ -647,9 +647,9 @@ int zmq_msg_set (zmq_msg_t *, int, int)
 
 const char *zmq_msg_gets (zmq_msg_t *msg_, const char *property_)
 {
-    zmq::i_properties *properties = ((zmq::msg_t*) msg_)->properties ();
-    if (properties)
-        return properties->get (std::string (property_));
+    zmq::metadata_t *metadata = ((zmq::msg_t*) msg_)->metadata ();
+    if (metadata)
+        return metadata->get (std::string (property_));
     else
         return NULL;
 }
