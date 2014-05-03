@@ -26,7 +26,7 @@
 
 #include "stdint.hpp"
 #include "likely.hpp"
-#include "i_properties.hpp"
+#include "metadata.hpp"
 #include "err.hpp"
 
 //  Check whether the sizes of public representation of the message (zmq_msg_t)
@@ -42,7 +42,7 @@ bool zmq::msg_t::check ()
 
 int zmq::msg_t::init ()
 {
-    u.vsm.properties = NULL;
+    u.vsm.metadata = NULL;
     u.vsm.type = type_vsm;
     u.vsm.flags = 0;
     u.vsm.size = 0;
@@ -54,13 +54,13 @@ int zmq::msg_t::init_size (size_t size_)
 {
     file_desc = -1;
     if (size_ <= max_vsm_size) {
-        u.vsm.properties = NULL;
+        u.vsm.metadata = NULL;
         u.vsm.type = type_vsm;
         u.vsm.flags = 0;
         u.vsm.size = (unsigned char) size_;
     }
     else {
-        u.lmsg.properties = NULL;
+        u.lmsg.metadata = NULL;
         u.lmsg.type = type_lmsg;
         u.lmsg.flags = 0;
         u.lmsg.content =
@@ -90,14 +90,14 @@ int zmq::msg_t::init_data (void *data_, size_t size_, msg_free_fn *ffn_,
 
     //  Initialize constant message if there's no need to deallocate
     if (ffn_ == NULL) {
-        u.cmsg.properties = NULL;
+        u.cmsg.metadata = NULL;
         u.cmsg.type = type_cmsg;
         u.cmsg.flags = 0;
         u.cmsg.data = data_;
         u.cmsg.size = size_;
     }
     else {
-        u.lmsg.properties = NULL;
+        u.lmsg.metadata = NULL;
         u.lmsg.type = type_lmsg;
         u.lmsg.flags = 0;
         u.lmsg.content = (content_t*) malloc (sizeof (content_t));
@@ -118,7 +118,7 @@ int zmq::msg_t::init_data (void *data_, size_t size_, msg_free_fn *ffn_,
 
 int zmq::msg_t::init_delimiter ()
 {
-    u.delimiter.properties = NULL;
+    u.delimiter.metadata = NULL;
     u.delimiter.type = type_delimiter;
     u.delimiter.flags = 0;
     return 0;
@@ -150,9 +150,9 @@ int zmq::msg_t::close ()
         }
     }
 
-    if (u.base.properties != NULL)
-        if (u.base.properties->drop_ref ())
-            delete u.base.properties;
+    if (u.base.metadata != NULL)
+        if (u.base.metadata->drop_ref ())
+            delete u.base.metadata;
 
     //  Make the message invalid.
     u.base.type = 0;
@@ -205,8 +205,8 @@ int zmq::msg_t::copy (msg_t &src_)
         }
     }
 
-    if (src_.u.base.properties != NULL)
-        src_.u.base.properties->add_ref ();
+    if (src_.u.base.metadata != NULL)
+        src_.u.base.metadata->add_ref ();
 
     *this = src_;
 
@@ -275,17 +275,17 @@ void zmq::msg_t::set_fd (int64_t fd_)
     file_desc = fd_;
 }
 
-zmq::i_properties *zmq::msg_t::properties () const
+zmq::metadata_t *zmq::msg_t::metadata () const
 {
-    return u.base.properties;
+    return u.base.metadata;
 }
 
-void zmq::msg_t::set_properties (zmq::i_properties *properties_)
+void zmq::msg_t::set_metadata (zmq::metadata_t *metadata_)
 {
-    assert (properties_ != NULL);
-    assert (u.base.properties == NULL);
-    properties_->add_ref ();
-    u.base.properties = properties_;
+    assert (metadata_ != NULL);
+    assert (u.base.metadata == NULL);
+    metadata_->add_ref ();
+    u.base.metadata = metadata_;
 }
 
 bool zmq::msg_t::is_identity () const
@@ -317,8 +317,8 @@ void zmq::msg_t::add_refs (int refs_)
 {
     zmq_assert (refs_ >= 0);
 
-    //  Operation not supported for messages with properties.
-    zmq_assert (u.base.properties == NULL);
+    //  Operation not supported for messages with metadata.
+    zmq_assert (u.base.metadata == NULL);
 
     //  No copies required.
     if (!refs_)
@@ -340,8 +340,8 @@ bool zmq::msg_t::rm_refs (int refs_)
 {
     zmq_assert (refs_ >= 0);
 
-    //  Operation not supported for messages with properties.
-    zmq_assert (u.base.properties == NULL);
+    //  Operation not supported for messages with metadata.
+    zmq_assert (u.base.metadata == NULL);
 
     //  No copies required.
     if (!refs_)

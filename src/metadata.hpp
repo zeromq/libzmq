@@ -21,13 +21,13 @@
 #define __ZMQ_METADATA_HPP_INCLUDED__
 
 #include <map>
+#include <string>
 
 #include "atomic_counter.hpp"
-#include "i_properties.hpp"
 
 namespace zmq
 {
-    class metadata_t : public i_properties
+    class metadata_t
     {
         public:
 
