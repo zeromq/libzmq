@@ -544,6 +544,8 @@ LIBZMQ_CHECK_TCP_KEEPALIVE([AC_DEFINE(
                               [Whether TCP_KEEPALIVE is supported.])
                           ])
 
+AM_CONDITIONAL(HAVE_FORK, test "x$ac_cv_func_fork" = "xyes")
+
 # Subst LIBZMQ_EXTRA_CFLAGS & CXXFLAGS & LDFLAGS
 AC_SUBST(LIBZMQ_EXTRA_CFLAGS)
 AC_SUBST(LIBZMQ_EXTRA_CXXFLAGS)
