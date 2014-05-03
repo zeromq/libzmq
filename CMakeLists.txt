@@ -717,11 +717,13 @@ if(ZMQ_BUILD_TESTS)
           test_monitor
           test_pair_ipc
           test_reqrep_ipc
-          test_fork
           test_abstract_ipc
           test_proxy
           test_filter_ipc
   )
+    if(HAVE_FORK)
+      list(APPEND tests test_fork)
+    endif()
   endif()
 
   foreach(test ${tests})
