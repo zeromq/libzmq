@@ -146,5 +146,5 @@ TESTS = $(noinst_PROGRAMS)
 XFAIL_TESTS =
 
 if !ON_LINUX
-XFAIL_TESTS += test_abstract_ipc
+XFAIL_TESTS +=
 endif
