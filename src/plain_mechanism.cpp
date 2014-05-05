@@ -22,7 +22,6 @@
 #include "windows.hpp"
 #endif
 
-#include <string.h>
 #include <string>
 
 #include "msg.hpp"

@@ -93,8 +93,8 @@ namespace zmq
         //  Zero indicates the peer has closed the connection.
         int read (void *data_, size_t size_);
 
-        int read_identity (msg_t *msg_);
-        int write_identity (msg_t *msg_);
+        int identity_msg (msg_t *msg_);
+        int process_identity_msg (msg_t *msg_);
 
         int next_handshake_command (msg_t *msg);
         int process_handshake_command (msg_t *msg);
@@ -168,9 +168,9 @@ namespace zmq
 
         bool plugged;
 
-        int (stream_engine_t::*read_msg) (msg_t *msg_);
+        int (stream_engine_t::*next_msg) (msg_t *msg_);
 
-        int (stream_engine_t::*write_msg) (msg_t *msg_);
+        int (stream_engine_t::*process_msg) (msg_t *msg_);
 
         bool io_error;
 
