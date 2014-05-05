@@ -24,7 +24,9 @@
 
 #ifdef HAVE_LIBGSSAPI_KRB5
 
+#ifndef ZMQ_HAVE_FREEBSD
 #include <gssapi/gssapi_generic.h>
+#endif
 #include <gssapi/gssapi_krb5.h>
 
 #include "mechanism.hpp"

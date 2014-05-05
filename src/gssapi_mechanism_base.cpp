@@ -317,7 +317,7 @@ int zmq::gssapi_mechanism_base_t::acquire_credentials (char * service_name_, gss
     name_buf.length = strlen ((char *) name_buf.value) + 1;
 
     maj_stat = gss_import_name (&min_stat, &name_buf,
-                                gss_nt_service_name, &server_name);
+                                GSS_C_NT_HOSTBASED_SERVICE, &server_name);
 
     if (maj_stat != GSS_S_COMPLETE)
         return -1;
