@@ -73,8 +73,8 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
     options (options_),
     endpoint (endpoint_),
     plugged (false),
-    read_msg (&stream_engine_t::read_identity),
-    write_msg (&stream_engine_t::write_identity),
+    next_msg (&stream_engine_t::identity_msg),
+    process_msg (&stream_engine_t::process_identity_msg),
     io_error (false),
     subscription_required (false),
     mechanism (NULL),
@@ -185,14 +185,14 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
         // disable handshaking for raw socket
         handshaking = false;
 
-        read_msg = &stream_engine_t::pull_msg_from_session;
-        write_msg = &stream_engine_t::push_msg_to_session;
+        next_msg = &stream_engine_t::pull_msg_from_session;
+        process_msg = &stream_engine_t::push_msg_to_session;
 
         //  For raw sockets, send an initial 0-length message to the
         // application so that it knows a peer has connected.
         msg_t connector;
         connector.init();
-        (this->*write_msg) (&connector);
+        push_msg_to_session (&connector);
         connector.close();
         session->flush ();
     }
@@ -286,7 +286,7 @@ void zmq::stream_engine_t::in_event ()
         insize -= processed;
         if (rc == 0 || rc == -1)
             break;
-        rc = (this->*write_msg) (decoder->msg ());
+        rc = (this->*process_msg) (decoder->msg ());
         if (rc == -1)
             break;
     }
@@ -324,7 +324,7 @@ void zmq::stream_engine_t::out_event ()
         outsize = encoder->encode (&outpos, 0);
 
         while (outsize < out_batch_size) {
-            if ((this->*read_msg) (&tx_msg) == -1)
+            if ((this->*next_msg) (&tx_msg) == -1)
                 break;
             encoder->load_msg (&tx_msg);
             unsigned char *bufptr = outpos + outsize;
@@ -391,7 +391,7 @@ void zmq::stream_engine_t::restart_input ()
     zmq_assert (session != NULL);
     zmq_assert (decoder != NULL);
 
-    int rc = (this->*write_msg) (decoder->msg ());
+    int rc = (this->*process_msg) (decoder->msg ());
     if (rc == -1) {
         if (errno == EAGAIN)
             session->flush ();
@@ -408,7 +408,7 @@ void zmq::stream_engine_t::restart_input ()
         insize -= processed;
         if (rc == 0 || rc == -1)
             break;
-        rc = (this->*write_msg) (decoder->msg ());
+        rc = (this->*process_msg) (decoder->msg ());
         if (rc == -1)
             break;
     }
@@ -550,10 +550,10 @@ bool zmq::stream_engine_t::handshake ()
 
         //  We are sending our identity now and the next message
         //  will come from the socket.
-        read_msg = &stream_engine_t::pull_msg_from_session;
+        next_msg = &stream_engine_t::pull_msg_from_session;
 
         //  We are expecting identity message.
-        write_msg = &stream_engine_t::write_identity;
+        process_msg = &stream_engine_t::process_identity_msg;
     }
     else
     if (greeting_recv [revision_pos] == ZMTP_1_0) {
@@ -619,8 +619,8 @@ bool zmq::stream_engine_t::handshake ()
             error ();
             return false;
         }
-        read_msg = &stream_engine_t::next_handshake_command;
-        write_msg = &stream_engine_t::process_handshake_command;
+        next_msg = &stream_engine_t::next_handshake_command;
+        process_msg = &stream_engine_t::process_handshake_command;
     }
 
     // Start polling for output if necessary.
@@ -634,17 +634,17 @@ bool zmq::stream_engine_t::handshake ()
     return true;
 }
 
-int zmq::stream_engine_t::read_identity (msg_t *msg_)
+int zmq::stream_engine_t::identity_msg (msg_t *msg_)
 {
     int rc = msg_->init_size (options.identity_size);
     errno_assert (rc == 0);
     if (options.identity_size > 0)
         memcpy (msg_->data (), options.identity, options.identity_size);
-    read_msg = &stream_engine_t::pull_msg_from_session;
+    next_msg = &stream_engine_t::pull_msg_from_session;
     return 0;
 }
 
-int zmq::stream_engine_t::write_identity (msg_t *msg_)
+int zmq::stream_engine_t::process_identity_msg (msg_t *msg_)
 {
     if (options.recv_identity) {
         msg_->set_flags (msg_t::identity);
@@ -659,9 +659,9 @@ int zmq::stream_engine_t::write_identity (msg_t *msg_)
     }
 
     if (subscription_required)
-        write_msg = &stream_engine_t::write_subscription_msg;
+        process_msg = &stream_engine_t::write_subscription_msg;
     else
-        write_msg = &stream_engine_t::push_msg_to_session;
+        process_msg = &stream_engine_t::push_msg_to_session;
 
     return 0;
 }
@@ -734,8 +734,8 @@ void zmq::stream_engine_t::mechanism_ready ()
         session->flush ();
     }
 
-    read_msg = &stream_engine_t::pull_and_encode;
-    write_msg = &stream_engine_t::write_credential;
+    next_msg = &stream_engine_t::pull_and_encode;
+    process_msg = &stream_engine_t::write_credential;
 
     //  Compile metadata.
     typedef metadata_t::dict_t properties_t;
@@ -792,7 +792,7 @@ int zmq::stream_engine_t::write_credential (msg_t *msg_)
             return -1;
         }
     }
-    write_msg = &stream_engine_t::decode_and_push;
+    process_msg = &stream_engine_t::decode_and_push;
     return decode_and_push (msg_);
 }
 
@@ -817,7 +817,7 @@ int zmq::stream_engine_t::decode_and_push (msg_t *msg_)
         msg_->set_metadata (metadata);
     if (session->push_msg (msg_) == -1) {
         if (errno == EAGAIN)
-            write_msg = &stream_engine_t::push_one_then_decode_and_push;
+            process_msg = &stream_engine_t::push_one_then_decode_and_push;
         return -1;
     }
     return 0;
@@ -827,7 +827,7 @@ int zmq::stream_engine_t::push_one_then_decode_and_push (msg_t *msg_)
 {
     const int rc = session->push_msg (msg_);
     if (rc == 0)
-        write_msg = &stream_engine_t::decode_and_push;
+        process_msg = &stream_engine_t::decode_and_push;
     return rc;
 }
 
@@ -844,7 +844,7 @@ int zmq::stream_engine_t::write_subscription_msg (msg_t *msg_)
     if (rc == -1)
        return -1;
 
-    write_msg = &stream_engine_t::push_msg_to_session;
+    process_msg = &stream_engine_t::push_msg_to_session;
     return push_msg_to_session (msg_);
 }
 
@@ -855,7 +855,7 @@ void zmq::stream_engine_t::error ()
         //  so that it knows the peer has been disconnected.
         msg_t terminator;
         terminator.init();
-        (this->*write_msg) (&terminator);
+        (this->*process_msg) (&terminator);
         terminator.close();
     }
     zmq_assert (session);
