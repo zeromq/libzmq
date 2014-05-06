@@ -4,6 +4,7 @@
     <Rule.Categories>
       <Category Name="openpgm" DisplayName="openpgm" />
       <Category Name="sodium" DisplayName="sodium" />
+      <Category Name="gssapi" DisplayName="gssapi" />
     </Rule.Categories>
     <Rule.DataSource>
       <DataSource Persistence="ProjectFile" ItemType="" />
@@ -13,6 +14,10 @@
       <EnumValue Name="true" DisplayName="Yes" />
     </EnumProperty>
     <EnumProperty Name="Option-sodium" DisplayName="Enable Sodium" Description="Enable the Sodium build option" Category="sodium">
+      <EnumValue Name="" DisplayName="No" />
+      <EnumValue Name="true" DisplayName="Yes" />
+    </EnumProperty>
+    <EnumProperty Name="Option-gssapi" DisplayName="Enable GSS API" Description="Enable GSS API build option" Category="gssapi">
       <EnumValue Name="" DisplayName="No" />
       <EnumValue Name="true" DisplayName="Yes" />
     </EnumProperty>

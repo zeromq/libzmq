@@ -29,6 +29,7 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;FD_SETSIZE=1024;ZMQ_USE_SELECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Option-openpgm)' == 'true'">ZMQ_HAVE_OPENPGM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Option-sodium)' == 'true'">HAVE_LIBSODIUM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Option-gssapi)' == 'true'">HAVE_LIBGSSAPI_KRB5;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(ConfigurationType)' == 'StaticLibrary'">ZMQ_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(ConfigurationType)' == 'DynamicLibrary'">DLL_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -65,6 +66,7 @@
   <Target Name="OptionInfo" BeforeTargets="PrepareForBuild">
     <Message Text="Option-openpgm    : $(Option-openpgm)" Importance="high"/>
     <Message Text="Option-sodium     : $(Option-sodium)" Importance="high"/>
+    <Message Text="Option-gssapi     : $(Option-gssapi)" Importance="high"/>
   </Target>
 
   <Target Name="LinkageInfo" BeforeTargets="PrepareForBuild">
