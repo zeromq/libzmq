@@ -152,9 +152,12 @@ int zmq::null_mechanism_t::zap_msg_available ()
     return rc;
 }
 
-bool zmq::null_mechanism_t::is_handshake_complete () const
+zmq::mechanism_t::status_t zmq::null_mechanism_t::status () const
 {
-    return ready_command_received && ready_command_sent;
+    if (ready_command_received && ready_command_sent)
+        return mechanism_t::ready;
+    else
+        return mechanism_t::handshaking;
 }
 
 void zmq::null_mechanism_t::send_zap_request ()

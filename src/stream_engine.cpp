@@ -670,17 +670,21 @@ int zmq::stream_engine_t::next_handshake_command (msg_t *msg_)
 {
     zmq_assert (mechanism != NULL);
 
-    const int rc = mechanism->next_handshake_command (msg_);
-    if (rc == 0) {
-        msg_->set_flags (msg_t::command);
-        if (mechanism->is_handshake_complete ())
-            mechanism_ready ();
+    if (mechanism->status () == mechanism_t::ready) {
+        mechanism_ready ();
+        return pull_and_encode (msg_);
     }
-    //  TODO:
-    //  if (errno == EPROTO || errno == EACCES)
-    //      return ERROR command to client
-
-    return rc;
+    else
+    if (mechanism->status () == mechanism_t::error) {
+        errno = EPROTO;
+        return -1;
+    }
+    else {
+        const int rc = mechanism->next_handshake_command (msg_);
+        if (rc == 0)
+            msg_->set_flags (msg_t::command);
+        return rc;
+    }
 }
 
 int zmq::stream_engine_t::process_handshake_command (msg_t *msg_)
@@ -688,14 +692,16 @@ int zmq::stream_engine_t::process_handshake_command (msg_t *msg_)
     zmq_assert (mechanism != NULL);
     const int rc = mechanism->process_handshake_command (msg_);
     if (rc == 0) {
-        if (mechanism->is_handshake_complete ())
+        if (mechanism->status () == mechanism_t::ready)
             mechanism_ready ();
+        else
+        if (mechanism->status () == mechanism_t::error) {
+            errno = EPROTO;
+            return -1;
+        }
         if (output_stopped)
             restart_output ();
     }
-    //  TODO:
-    //  if (errno == EPROTO || errno == EACCES)
-    //      return ERROR command to client
 
     return rc;
 }

@@ -42,7 +42,7 @@ namespace zmq
         virtual int next_handshake_command (msg_t *msg_);
         virtual int process_handshake_command (msg_t *msg_);
         virtual int zap_msg_available ();
-        virtual bool is_handshake_complete () const;
+        virtual status_t status () const;
 
     private:
 
