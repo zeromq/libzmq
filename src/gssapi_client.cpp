@@ -153,9 +153,9 @@ int zmq::gssapi_client_t::decode (msg_t *msg_)
     return 0;
 }
 
-bool zmq::gssapi_client_t::is_handshake_complete () const
+zmq::mechanism_t::status_t zmq::gssapi_client_t::status () const
 {
-    return state == connected;
+    return state == connected? mechanism_t::ready: mechanism_t::handshaking;
 }
 
 int zmq::gssapi_client_t::initialize_context ()
