@@ -118,9 +118,9 @@ int zmq::plain_mechanism_t::process_handshake_command (msg_t *msg_)
     return rc;
 }
 
-bool zmq::plain_mechanism_t::is_handshake_complete () const
+zmq::mechanism_t::status_t zmq::plain_mechanism_t::status () const
 {
-    return state == ready;
+    return state == ready? mechanism_t::ready: mechanism_t::handshaking;
 }
 
 int zmq::plain_mechanism_t::zap_msg_available ()

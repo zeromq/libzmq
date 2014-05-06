@@ -37,6 +37,12 @@ namespace zmq
     {
     public:
 
+        enum status_t {
+            handshaking,
+            ready,
+            error
+        };
+
         mechanism_t (const options_t &options_);
 
         virtual ~mechanism_t ();
@@ -54,8 +60,8 @@ namespace zmq
         //  Notifies mechanism about availability of ZAP message.
         virtual int zap_msg_available () { return 0; }
 
-        //  True iff the handshake stage is complete?
-        virtual bool is_handshake_complete () const = 0;
+        //  Returns the status of this mechanism.
+        virtual status_t status () const = 0;
 
         void set_peer_identity (const void *id_ptr, size_t id_size);
 
