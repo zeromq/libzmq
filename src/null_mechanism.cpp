@@ -39,7 +39,9 @@ zmq::null_mechanism_t::null_mechanism_t (session_base_t *session_,
     session (session_),
     peer_address (peer_address_),
     ready_command_sent (false),
+    error_command_sent (false),
     ready_command_received (false),
+    error_command_received (false),
     zap_connected (false),
     zap_request_sent (false),
     zap_reply_received (false)
@@ -57,7 +59,7 @@ zmq::null_mechanism_t::~null_mechanism_t ()
 
 int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
 {
-    if (ready_command_sent) {
+    if (ready_command_sent || error_command_sent) {
         errno = EAGAIN;
         return -1;
     }
@@ -72,6 +74,19 @@ int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
         if (rc != 0)
             return -1;
         zap_reply_received = true;
+    }
+
+    if (zap_reply_received
+    &&  strncmp (status_code, "200", sizeof status_code) != 0) {
+        const int rc = msg_->init_size (6 + 1 + sizeof status_code);
+        zmq_assert (rc == 0);
+        unsigned char *msg_data =
+            static_cast <unsigned char *> (msg_->data ());
+        memcpy (msg_data, "\5ERROR", 6);
+        msg_data [6] = sizeof status_code;
+        memcpy (msg_data + 7, status_code, sizeof status_code);
+        error_command_sent = true;
+        return 0;
     }
 
     unsigned char *const command_buffer = (unsigned char *) malloc (512);
@@ -106,38 +121,60 @@ int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
 
 int zmq::null_mechanism_t::process_handshake_command (msg_t *msg_)
 {
-    if (ready_command_received) {
+    if (ready_command_received || error_command_received) {
         //  Temporary support for security debugging
         puts ("NULL I: client sent invalid NULL handshake (duplicate READY)");
         errno = EPROTO;
         return -1;
     }
 
-    const unsigned char *ptr =
+    const unsigned char *cmd_data =
         static_cast <unsigned char *> (msg_->data ());
-    size_t bytes_left = msg_->size ();
+    const size_t data_size = msg_->size ();
 
-    if (bytes_left < 6 || memcmp (ptr, "\5READY", 6)) {
+    int rc = 0;
+    if (data_size >= 6 && !memcmp (cmd_data, "\5READY", 6))
+        rc = process_ready_command (cmd_data, data_size);
+    else
+    if (data_size >= 6 && !memcmp (cmd_data, "\5ERROR", 6))
+        rc = process_error_command (cmd_data, data_size);
+    else {
         //  Temporary support for security debugging
         puts ("NULL I: client sent invalid NULL handshake (not READY)");
         errno = EPROTO;
-        return -1;
+        rc = -1;
     }
 
-    ptr += 6;
-    bytes_left -= 6;
-
-    int rc = parse_metadata (ptr, bytes_left);
     if (rc == 0) {
         int rc = msg_->close ();
         errno_assert (rc == 0);
         rc = msg_->init ();
         errno_assert (rc == 0);
     }
-
-    ready_command_received = true;
-
     return rc;
+}
+
+int zmq::null_mechanism_t::process_ready_command (
+        const unsigned char *cmd_data, size_t data_size)
+{
+    ready_command_received = true;
+    return parse_metadata (cmd_data + 6, data_size - 6);
+}
+
+int zmq::null_mechanism_t::process_error_command (
+        const unsigned char *cmd_data, size_t data_size)
+{
+    error_command_received = true;
+    if (data_size == 6) {
+        errno = EPROTO;
+        return -1;
+    }
+    const size_t size = static_cast <size_t> (cmd_data [6]);
+    if (6 + 1 + size != data_size) {
+        errno = EPROTO;
+        return -1;
+    }
+    return 0;
 }
 
 int zmq::null_mechanism_t::zap_msg_available ()
@@ -154,10 +191,18 @@ int zmq::null_mechanism_t::zap_msg_available ()
 
 zmq::mechanism_t::status_t zmq::null_mechanism_t::status () const
 {
-    if (ready_command_received && ready_command_sent)
-        return mechanism_t::ready;
+    const bool command_sent =
+        ready_command_sent || error_command_sent;
+    const bool command_received =
+        ready_command_received || error_command_received;
+
+    if (ready_command_sent && ready_command_received)
+        return ready;
     else
-        return mechanism_t::handshaking;
+    if (command_sent && command_received)
+        return error;
+    else
+        return handshaking;
 }
 
 void zmq::null_mechanism_t::send_zap_request ()
@@ -275,13 +320,16 @@ int zmq::null_mechanism_t::receive_and_process_zap_reply ()
     }
 
     //  Status code frame
-    if (msg [3].size () != 3 || memcmp (msg [3].data (), "200", 3)) {
+    if (msg [3].size () != 3) {
         //  Temporary support for security debugging
         puts ("NULL I: ZAP handler rejected client authentication");
-        errno = EACCES;
+        errno = EPROTO;
         rc = -1;
         goto error;
     }
+
+    //  Save status code
+    memcpy (status_code, msg [3].data (), sizeof status_code);
 
     //  Save user id
     set_user_id (msg [5].data (), msg [5].size ());

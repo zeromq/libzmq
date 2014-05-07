@@ -712,9 +712,6 @@ void zmq::stream_engine_t::zap_msg_available ()
 
     const int rc = mechanism->zap_msg_available ();
     if (rc == -1) {
-        //  TODO:
-        //  if (errno == EACCES)
-        //      return ERROR command to client
         error ();
         return;
     }
