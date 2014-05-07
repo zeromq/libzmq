@@ -515,7 +515,7 @@
     </Xml>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\libzmq.rc">
+    <ResourceCompile Include="..\..\resource.rc">
       <Filter>resource</Filter>
     </ResourceCompile>
   </ItemGroup>

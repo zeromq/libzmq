@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by libzmq.rc
+// Used by resource.rc
 
 // Next default values for new objects
 // 
