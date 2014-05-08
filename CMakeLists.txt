@@ -29,6 +29,8 @@ if(WITH_TWEETNACL)
   else()
     list(APPEND TWEETNACL_SOURCES tweetnacl/contrib/randombytes/devurandom.c)
   endif()
+else()
+  find_library(SODIUM_FOUND sodium)
 endif()
 
 
@@ -610,7 +612,7 @@ else()
     endif()
 endif()
 
-target_link_libraries(libzmq ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(libzmq ${SODIUM_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
 if(HAVE_WS2_32)
   target_link_libraries(libzmq ws2_32)
 elseif(HAVE_WS2)

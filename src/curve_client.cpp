@@ -46,7 +46,7 @@ zmq::curve_client_t::curve_client_t (const options_t &options_) :
     randombytes(tmpbytes, 4);
 #else
     const int si = sodium_init();
-    zmq_assert (is == 0);
+    zmq_assert (si == 0);
 #endif
 
     //  Generate short-term key pair
