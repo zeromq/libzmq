@@ -45,8 +45,8 @@ zmq::curve_client_t::curve_client_t (const options_t &options_) :
     unsigned char tmpbytes[4];
     randombytes(tmpbytes, 4);
 #else
-    const int si = sodium_init();
-    zmq_assert (si == 0);
+	// todo check return code
+    sodium_init();
 #endif
 
     //  Generate short-term key pair
