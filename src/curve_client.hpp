@@ -21,6 +21,7 @@
 #define __ZMQ_CURVE_CLIENT_HPP_INCLUDED__
 
 #include "platform.hpp"
+#include "mutex.hpp"
 
 #ifdef HAVE_LIBSODIUM
 #ifdef HAVE_TWEETNACL
@@ -105,6 +106,7 @@ namespace zmq
         int process_welcome (msg_t *msg_);
         int produce_initiate (msg_t *msg_);
         int process_ready (msg_t *msg_);
+        mutex_t sync;
     };
 
 }
