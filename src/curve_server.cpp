@@ -50,7 +50,7 @@ zmq::curve_server_t::curve_server_t (session_base_t *session_,
     unsigned char tmpbytes[4];
     randombytes(tmpbytes, 4);
 #else
-	// todo check return code
+    // todo check return code
     sodium_init();
 #endif
 
