@@ -80,6 +80,7 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
     mechanism (NULL),
     input_stopped (false),
     output_stopped (false),
+    has_handshake_timer (false),
     socket (NULL)
 {
     int rc = tx_msg.init ();
@@ -197,6 +198,9 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
         session->flush ();
     }
     else {
+        // start optional timer, to prevent handshake hanging on no input
+        set_handshake_timer ();
+
         //  Send the 'length' and 'flags' fields of the identity message.
         //  The 'length' field is encoded in the long format.
         outpos = greeting_send;
@@ -216,6 +220,12 @@ void zmq::stream_engine_t::unplug ()
 {
     zmq_assert (plugged);
     plugged = false;
+
+    //  Cancel all timers.
+    if (has_handshake_timer) {
+        cancel_timer (handshake_timer_id);
+        has_handshake_timer = false;
+    }
 
     //  Cancel all fd subscriptions.
     if (!io_error)
@@ -631,6 +641,11 @@ bool zmq::stream_engine_t::handshake ()
     //  Switch into the normal message flow.
     handshaking = false;
 
+    if (has_handshake_timer) {
+        cancel_timer (handshake_timer_id);
+        has_handshake_timer = false;
+    }
+
     return true;
 }
 
@@ -968,4 +983,23 @@ int zmq::stream_engine_t::read (void *data_, size_t size_)
     return static_cast <int> (rc);
 
 #endif
+}
+
+void zmq::stream_engine_t::set_handshake_timer ()
+{
+    zmq_assert (!has_handshake_timer);
+
+    if (!options.raw_sock && options.handshake_ivl > 0) {
+        add_timer (options.handshake_ivl, handshake_timer_id);
+        has_handshake_timer = true;
+    }
+}
+
+void zmq::stream_engine_t::timer_event (int id_)
+{
+    zmq_assert (id_ == handshake_timer_id);
+    has_handshake_timer = false;
+
+    //  handshake timer expired before handshake completed, so engine fails
+    error ();
 }

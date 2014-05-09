@@ -68,6 +68,7 @@ namespace zmq
         //  i_poll_events interface implementation.
         void in_event ();
         void out_event ();
+        void timer_event (int id_);
 
     private:
 
@@ -113,6 +114,8 @@ namespace zmq
 
         size_t add_property (unsigned char *ptr,
             const char *name, const void *value, size_t value_len);
+
+        void set_handshake_timer();
 
         //  Underlying socket.
         fd_t s;
@@ -186,6 +189,12 @@ namespace zmq
 
         //  True iff the engine doesn't have any message to encode.
         bool output_stopped;
+
+        //  ID of the handshake timer
+        enum {handshake_timer_id = 0x40};
+
+        //  True is linger timer is running.
+        bool has_handshake_timer;
 
         // Socket
         zmq::socket_base_t *socket;

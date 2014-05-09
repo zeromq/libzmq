@@ -25,6 +25,7 @@ noinst_PROGRAMS = test_system \
                   test_stream \
                   test_stream_empty \
                   test_stream_disconnect \
+                  test_stream_timeout \
                   test_disconnect_inproc \
                   test_ctx_options \
                   test_ctx_destroy \
