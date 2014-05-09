@@ -300,6 +300,7 @@ ZMQ_EXPORT const char *zmq_msg_gets (zmq_msg_t *msg, const char *property);
 #define ZMQ_GSSAPI_PRINCIPAL 63
 #define ZMQ_GSSAPI_SERVICE_PRINCIPAL 64
 #define ZMQ_GSSAPI_PLAINTEXT 65
+#define ZMQ_HANDSHAKE_IVL 66
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1

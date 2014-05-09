@@ -171,6 +171,11 @@ namespace zmq
         //  Cannot receive multi-part messages.
         //  Ignores hwm
         bool conflate;
+
+        //  If connection handshake is not done after this many milliseconds,
+        //  close socket.  Default is 30 secs.  0 means no handshake timeout.
+        int handshake_ivl;
+
     };
 }
 
