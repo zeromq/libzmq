@@ -355,6 +355,7 @@ void zmq::session_base_t::process_attach (i_engine *engine_)
         pipe = pipes [0];
         // Store engine assoc_fd for lilnking pipe to fd 
         pipe->assoc_fd=engine_->get_assoc_fd();
+        pipes[1]->assoc_fd=pipe->assoc_fd;
         //  Ask socket to plug into the remote end of the pipe.
         send_bind (socket, pipes [1]);
     }
