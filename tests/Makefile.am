@@ -95,6 +95,7 @@ test_router_handover_SOURCES = test_router_handover.cpp
 test_probe_router_SOURCES = test_probe_router.cpp
 test_stream_SOURCES = test_stream.cpp
 test_stream_empty_SOURCES = test_stream_empty.cpp
+test_stream_timeout_SOURCES = test_stream_timeout.cpp
 test_stream_disconnect_SOURCES = test_stream_disconnect.cpp
 test_disconnect_inproc_SOURCES = test_disconnect_inproc.cpp
 test_ctx_options_SOURCES = test_ctx_options.cpp
