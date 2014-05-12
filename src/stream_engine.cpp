@@ -43,7 +43,8 @@
 #include "v2_encoder.hpp"
 #include "v2_decoder.hpp"
 #include "null_mechanism.hpp"
-#include "plain_mechanism.hpp"
+#include "plain_client.hpp"
+#include "plain_server.hpp"
 #include "gssapi_client.hpp"
 #include "gssapi_server.hpp"
 #include "curve_client.hpp"
@@ -599,8 +600,12 @@ bool zmq::stream_engine_t::handshake ()
         }
         else
         if (memcmp (greeting_recv + 12, "PLAIN\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
-            mechanism = new (std::nothrow)
-                plain_mechanism_t (session, peer_address, options);
+            if (options.as_server)
+                mechanism = new (std::nothrow)
+                    plain_server_t (session, peer_address, options);
+            else
+                mechanism = new (std::nothrow)
+                    plain_client_t (options);
             alloc_assert (mechanism);
         }
 #ifdef HAVE_LIBSODIUM

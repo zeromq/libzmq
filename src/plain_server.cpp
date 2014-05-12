@@ -27,43 +27,33 @@
 #include "msg.hpp"
 #include "session_base.hpp"
 #include "err.hpp"
-#include "plain_mechanism.hpp"
+#include "plain_server.hpp"
 #include "wire.hpp"
 
-zmq::plain_mechanism_t::plain_mechanism_t (session_base_t *session_,
-                                           const std::string &peer_address_,
-                                           const options_t &options_) :
+zmq::plain_server_t::plain_server_t (session_base_t *session_,
+                                     const std::string &peer_address_,
+                                     const options_t &options_) :
     mechanism_t (options_),
     session (session_),
     peer_address (peer_address_),
     expecting_zap_reply (false),
-    state (options.as_server? waiting_for_hello: sending_hello)
+    state (waiting_for_hello)
 {
 }
 
-zmq::plain_mechanism_t::~plain_mechanism_t ()
+zmq::plain_server_t::~plain_server_t ()
 {
 }
 
-int zmq::plain_mechanism_t::next_handshake_command (msg_t *msg_)
+int zmq::plain_server_t::next_handshake_command (msg_t *msg_)
 {
     int rc = 0;
 
     switch (state) {
-        case sending_hello:
-            rc = produce_hello (msg_);
-            if (rc == 0)
-                state = waiting_for_welcome;
-            break;
         case sending_welcome:
             rc = produce_welcome (msg_);
             if (rc == 0)
                 state = waiting_for_initiate;
-            break;
-        case sending_initiate:
-            rc = produce_initiate (msg_);
-            if (rc == 0)
-                state = waiting_for_ready;
             break;
         case sending_ready:
             rc = produce_ready (msg_);
@@ -77,7 +67,7 @@ int zmq::plain_mechanism_t::next_handshake_command (msg_t *msg_)
     return rc;
 }
 
-int zmq::plain_mechanism_t::process_handshake_command (msg_t *msg_)
+int zmq::plain_server_t::process_handshake_command (msg_t *msg_)
 {
     int rc = 0;
 
@@ -87,20 +77,10 @@ int zmq::plain_mechanism_t::process_handshake_command (msg_t *msg_)
             if (rc == 0)
                 state = expecting_zap_reply? waiting_for_zap_reply: sending_welcome;
             break;
-        case waiting_for_welcome:
-            rc = process_welcome (msg_);
-            if (rc == 0)
-                state = sending_initiate;
-            break;
         case waiting_for_initiate:
             rc = process_initiate (msg_);
             if (rc == 0)
                 state = sending_ready;
-            break;
-        case waiting_for_ready:
-            rc = process_ready (msg_);
-            if (rc == 0)
-                state = ready;
             break;
         default:
             //  Temporary support for security debugging
@@ -118,12 +98,12 @@ int zmq::plain_mechanism_t::process_handshake_command (msg_t *msg_)
     return rc;
 }
 
-zmq::mechanism_t::status_t zmq::plain_mechanism_t::status () const
+zmq::mechanism_t::status_t zmq::plain_server_t::status () const
 {
     return state == ready? mechanism_t::ready: mechanism_t::handshaking;
 }
 
-int zmq::plain_mechanism_t::zap_msg_available ()
+int zmq::plain_server_t::zap_msg_available ()
 {
     if (state != waiting_for_zap_reply) {
         errno = EFSM;
@@ -135,37 +115,7 @@ int zmq::plain_mechanism_t::zap_msg_available ()
     return rc;
 }
 
-int zmq::plain_mechanism_t::produce_hello (msg_t *msg_) const
-{
-    const std::string username = options.plain_username;
-    zmq_assert (username.length () < 256);
-
-    const std::string password = options.plain_password;
-    zmq_assert (password.length () < 256);
-
-    const size_t command_size = 6 + 1 + username.length ()
-                                  + 1 + password.length ();
-
-    const int rc = msg_->init_size (command_size);
-    errno_assert (rc == 0);
-
-    unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
-    memcpy (ptr, "\x05HELLO", 6);
-    ptr += 6;
-
-    *ptr++ = static_cast <unsigned char> (username.length ());
-    memcpy (ptr, username.c_str (), username.length ());
-    ptr += username.length ();
-
-    *ptr++ = static_cast <unsigned char> (password.length ());
-    memcpy (ptr, password.c_str (), password.length ());
-    ptr += password.length ();
-
-    return 0;
-}
-
-
-int zmq::plain_mechanism_t::process_hello (msg_t *msg_)
+int zmq::plain_server_t::process_hello (msg_t *msg_)
 {
     const unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
     size_t bytes_left = msg_->size ();
@@ -238,7 +188,7 @@ int zmq::plain_mechanism_t::process_hello (msg_t *msg_)
     return 0;
 }
 
-int zmq::plain_mechanism_t::produce_welcome (msg_t *msg_) const
+int zmq::plain_server_t::produce_welcome (msg_t *msg_) const
 {
     const int rc = msg_->init_size (8);
     errno_assert (rc == 0);
@@ -246,54 +196,10 @@ int zmq::plain_mechanism_t::produce_welcome (msg_t *msg_) const
     return 0;
 }
 
-int zmq::plain_mechanism_t::process_welcome (msg_t *msg_)
+int zmq::plain_server_t::process_initiate (msg_t *msg_)
 {
     const unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
-    size_t bytes_left = msg_->size ();
-
-    if (bytes_left != 8 ||  memcmp (ptr, "\x07WELCOME", 8)) {
-        //  Temporary support for security debugging
-        puts ("PLAIN I: invalid PLAIN client, did not send WELCOME");
-        errno = EPROTO;
-        return -1;
-    }
-    return 0;
-}
-
-int zmq::plain_mechanism_t::produce_initiate (msg_t *msg_) const
-{
-    unsigned char * const command_buffer = (unsigned char *) malloc (512);
-    alloc_assert (command_buffer);
-
-    unsigned char *ptr = command_buffer;
-
-    //  Add mechanism string
-    memcpy (ptr, "\x08INITIATE", 9);
-    ptr += 9;
-
-    //  Add socket type property
-    const char *socket_type = socket_type_string (options.type);
-    ptr += add_property (ptr, "Socket-Type", socket_type, strlen (socket_type));
-
-    //  Add identity property
-    if (options.type == ZMQ_REQ
-    ||  options.type == ZMQ_DEALER
-    ||  options.type == ZMQ_ROUTER)
-        ptr += add_property (ptr, "Identity", options.identity, options.identity_size);
-
-    const size_t command_size = ptr - command_buffer;
-    const int rc = msg_->init_size (command_size);
-    errno_assert (rc == 0);
-    memcpy (msg_->data (), command_buffer, command_size);
-    free (command_buffer);
-
-    return 0;
-}
-
-int zmq::plain_mechanism_t::process_initiate (msg_t *msg_)
-{
-    const unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
-    size_t bytes_left = msg_->size ();
+    const size_t bytes_left = msg_->size ();
 
     if (bytes_left < 9 || memcmp (ptr, "\x08INITIATE", 9)) {
         //  Temporary support for security debugging
@@ -301,12 +207,10 @@ int zmq::plain_mechanism_t::process_initiate (msg_t *msg_)
         errno = EPROTO;
         return -1;
     }
-    ptr += 9;
-    bytes_left -= 9;
-    return parse_metadata (ptr, bytes_left);
+    return parse_metadata (ptr + 9, bytes_left - 9);
 }
 
-int zmq::plain_mechanism_t::produce_ready (msg_t *msg_) const
+int zmq::plain_server_t::produce_ready (msg_t *msg_) const
 {
     unsigned char * const command_buffer = (unsigned char *) malloc (512);
     alloc_assert (command_buffer);
@@ -325,7 +229,8 @@ int zmq::plain_mechanism_t::produce_ready (msg_t *msg_) const
     if (options.type == ZMQ_REQ
     ||  options.type == ZMQ_DEALER
     ||  options.type == ZMQ_ROUTER)
-        ptr += add_property (ptr, "Identity", options.identity, options.identity_size);
+        ptr += add_property (
+            ptr, "Identity", options.identity, options.identity_size);
 
     const size_t command_size = ptr - command_buffer;
     const int rc = msg_->init_size (command_size);
@@ -336,24 +241,8 @@ int zmq::plain_mechanism_t::produce_ready (msg_t *msg_) const
     return 0;
 }
 
-int zmq::plain_mechanism_t::process_ready (msg_t *msg_)
-{
-    const unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
-    size_t bytes_left = msg_->size ();
-
-    if (bytes_left < 6 || memcmp (ptr, "\x05READY", 6)) {
-        //  Temporary support for security debugging
-        puts ("PLAIN I: invalid PLAIN client, did not send READY");
-        errno = EPROTO;
-        return -1;
-    }
-    ptr += 6;
-    bytes_left -= 6;
-    return parse_metadata (ptr, bytes_left);
-}
-
-void zmq::plain_mechanism_t::send_zap_request (const std::string &username,
-                                               const std::string &password)
+void zmq::plain_server_t::send_zap_request (const std::string &username,
+                                            const std::string &password)
 {
     int rc;
     msg_t msg;
@@ -429,7 +318,7 @@ void zmq::plain_mechanism_t::send_zap_request (const std::string &username,
     errno_assert (rc == 0);
 }
 
-int zmq::plain_mechanism_t::receive_and_process_zap_reply ()
+int zmq::plain_server_t::receive_and_process_zap_reply ()
 {
     int rc = 0;
     msg_t msg [7];  //  ZAP reply consists of 7 frames
