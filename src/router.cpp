@@ -133,6 +133,33 @@ int zmq::router_t::xsetsockopt (int option_, const void *optval_,
     return -1;
 }
 
+int zmq::router_t::xgetsockopt (int option_, const void *optval_,
+    size_t *optvallen_)
+{
+    switch (option_) {
+        case ZMQ_IDENTITY_FD:
+            if (optval_==NULL && optvallen_) {
+                *optvallen_=sizeof(fd_t);
+                return 0;
+            }
+            if (optval_ && optvallen_ && *optvallen_) {
+                blob_t identity= blob_t((unsigned char*)optval_,*optvallen_);
+                outpipes_t::iterator it = outpipes.find (identity);
+                if (it == outpipes.end() ){
+                    return ENOTSOCK;
+                }
+                *((fd_t*)optval_)=it->second.pipe->assoc_fd;
+                *optvallen_=sizeof(fd_t);
+                return 0;
+            }
+            break;
+        default:
+            break;
+    }
+    errno = EINVAL;
+    return -1;
+}
+
 
 void zmq::router_t::xpipe_terminated (pipe_t *pipe_)
 {
