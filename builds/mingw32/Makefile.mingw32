@@ -23,7 +23,7 @@ OBJS = ctx.o reaper.o dist.o err.o \
 	dealer.o router.o xpub.o xsub.o stream.o \
 	poller_base.o select.o poll.o epoll.o kqueue.o devpoll.o \
 	curve_client.o curve_server.o \
-	mechanism.o null_mechanism.o plain_mechanism.o \
+	mechanism.o null_mechanism.o plain_client.o plain_server.o \
 	zmq.o zmq_utils.o
 
 %.o: ../../src/%.cpp

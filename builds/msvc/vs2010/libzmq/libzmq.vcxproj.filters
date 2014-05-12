@@ -91,7 +91,10 @@
     <ClCompile Include="..\..\..\..\src\pipe.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\src\plain_mechanism.cpp">
+    <ClCompile Include="..\..\..\..\src\plain_client.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\plain_server.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\poll.cpp">

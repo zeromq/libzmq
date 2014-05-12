@@ -131,7 +131,8 @@
       <File RelativePath="..\..\..\..\src\pgm_sender.cpp" />
       <File RelativePath="..\..\..\..\src\pgm_socket.cpp" />
       <File RelativePath="..\..\..\..\src\pipe.cpp" />
-      <File RelativePath="..\..\..\..\src\plain_mechanism.cpp" />
+      <File RelativePath="..\..\..\..\src\plain_client.cpp" />
+      <File RelativePath="..\..\..\..\src\plain_server.cpp" />
       <File RelativePath="..\..\..\..\src\poll.cpp" />
       <File RelativePath="..\..\..\..\src\poller_base.cpp" />
       <File RelativePath="..\..\..\..\src\proxy.cpp" />
@@ -210,7 +211,8 @@
       <File RelativePath="..\..\..\..\src\pgm_sender.hpp" />
       <File RelativePath="..\..\..\..\src\pgm_socket.hpp" />
       <File RelativePath="..\..\..\..\src\pipe.hpp" />
-      <File RelativePath="..\..\..\..\src\plain_mechanism.hpp" />
+      <File RelativePath="..\..\..\..\src\plain_client.hpp" />
+      <File RelativePath="..\..\..\..\src\plain_server.hpp" />
       <File RelativePath="..\..\..\..\src\platform.hpp" />
       <File RelativePath="..\..\..\..\src\poll.hpp" />
       <File RelativePath="..\..\..\..\src\poller.hpp" />
