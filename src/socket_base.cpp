@@ -470,8 +470,20 @@ int zmq::socket_base_t::connect (const char *addr_)
         //  Attach local end of the pipe to this socket object.
         attach_pipe (new_pipes [0]);
 
-        if (!peer.socket)
-        {
+        if (!peer.socket) {
+            //  The peer doesn't exist yet so we don't know whether
+            //  to send the identity message or not. To resolve this,
+            //  we always send our identity and drop it later if
+            //  the peer doesn't expect it.
+            msg_t id;
+            rc = id.init_size (options.identity_size);
+            errno_assert (rc == 0);
+            memcpy (id.data (), options.identity, options.identity_size);
+            id.set_flags (msg_t::identity);
+            bool written = new_pipes [0]->write (&id);
+            zmq_assert (written);
+            new_pipes [0]->flush ();
+
             endpoint_t endpoint = {this, options};
             pending_connection_t pending_connection = {endpoint, new_pipes [0], new_pipes [1]};
             pend_connection (addr_, pending_connection);
