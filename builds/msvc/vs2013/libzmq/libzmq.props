@@ -21,7 +21,7 @@
   
   <ItemDefinitionGroup>
     <PreBuildEvent>
-      <Command>copy $(ProjectDir)..\..\platform.hpp $(ProjectDir)..\..\..\..\src\</Command>
+      <Command>xcopy /c /y $(ProjectDir)..\..\platform.hpp $(ProjectDir)..\..\..\..\src\</Command>
     </PreBuildEvent>
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

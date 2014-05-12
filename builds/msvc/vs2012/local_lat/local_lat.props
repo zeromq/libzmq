@@ -11,7 +11,7 @@
 
   <ItemDefinitionGroup>
     <PreBuildEvent>
-      <Command>copy $(ProjectDir)..\..\platform.hpp $(ProjectDir)..\..\..\..\perf\</Command>
+      <Command>xcopy /c /y $(ProjectDir)..\..\platform.hpp $(ProjectDir)..\..\..\..\perf\</Command>
     </PreBuildEvent>
     <Link>
       <AdditionalDependencies>Advapi32.lib;Rpcrt4.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
