@@ -55,6 +55,7 @@ namespace zmq
         void xread_activated (zmq::pipe_t *pipe_);
         void xwrite_activated (zmq::pipe_t *pipe_);
         void xpipe_terminated (zmq::pipe_t *pipe_);
+
     protected:
 
         //  Rollback any message parts that were sent but not yet flushed.
