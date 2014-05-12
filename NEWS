@@ -1,9 +1,13 @@
 0MQ version 4.0.5 stable, released on 2014/
 ================================================
 
+* Fixed #872; lost first part of message over inproc://.
+
 * Fixed #797, keep-alive on Windows.
 
 * Fixed #939; occasional corrupt messages sent to ZAP handler.
+
+* Fixed #994; bump so library number to 4.0.0
 
 
 0MQ version 4.0.4 stable, released on 2014/03/10
