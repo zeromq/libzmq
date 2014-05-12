@@ -281,6 +281,7 @@
     <ClCompile Include="..\..\..\..\src\lb.cpp" />
     <ClCompile Include="..\..\..\..\src\mailbox.cpp" />
     <ClCompile Include="..\..\..\..\src\mechanism.cpp" />
+    <ClCompile Include="..\..\..\..\src\metadata.cpp" />
     <ClCompile Include="..\..\..\..\src\msg.cpp" />
     <ClCompile Include="..\..\..\..\src\mtrie.cpp" />
     <ClCompile Include="..\..\..\..\src\null_mechanism.cpp" />
@@ -292,7 +293,8 @@
     <ClCompile Include="..\..\..\..\src\pgm_sender.cpp" />
     <ClCompile Include="..\..\..\..\src\pgm_socket.cpp" />
     <ClCompile Include="..\..\..\..\src\pipe.cpp" />
-    <ClCompile Include="..\..\..\..\src\plain_mechanism.cpp" />
+    <ClCompile Include="..\..\..\..\src\plain_client.cpp" />
+    <ClCompile Include="..\..\..\..\src\plain_server.cpp" />
     <ClCompile Include="..\..\..\..\src\poll.cpp" />
     <ClCompile Include="..\..\..\..\src\poller_base.cpp" />
     <ClCompile Include="..\..\..\..\src\precompiled.cpp" />
