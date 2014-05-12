@@ -120,6 +120,7 @@
       <File RelativePath="..\..\..\..\src\lb.cpp" />
       <File RelativePath="..\..\..\..\src\mailbox.cpp" />
       <File RelativePath="..\..\..\..\src\mechanism.cpp" />
+      <File RelativePath="..\..\..\..\src\metadata.cpp" />
       <File RelativePath="..\..\..\..\src\msg.cpp" />
       <File RelativePath="..\..\..\..\src\mtrie.cpp" />
       <File RelativePath="..\..\..\..\src\null_mechanism.cpp" />
@@ -199,6 +200,7 @@
       <File RelativePath="..\..\..\..\src\likely.hpp" />
       <File RelativePath="..\..\..\..\src\mailbox.hpp" />
       <File RelativePath="..\..\..\..\src\mechanism.hpp" />
+      <File RelativePath="..\..\..\..\src\metadata.hpp" />
       <File RelativePath="..\..\..\..\src\msg.hpp" />
       <File RelativePath="..\..\..\..\src\mtrie.hpp" />
       <File RelativePath="..\..\..\..\src\mutex.hpp" />

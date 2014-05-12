@@ -3,7 +3,7 @@ CFLAGS=-Wall -Os -g -DDLL_EXPORT -DFD_SETSIZE=1024 -DZMQ_USE_SELECT -I.
 LIBS=-lws2_32
 
 OBJS = ctx.o reaper.o dist.o err.o \
-	clock.o random.o \
+	clock.o metadata.o random.o \
 	object.o own.o \
 	io_object.o io_thread.o \
 	lb.o fq.o \
