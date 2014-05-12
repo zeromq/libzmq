@@ -205,6 +205,15 @@
     <ClCompile Include="..\..\..\..\src\curve_server.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\src\gssapi_mechanism_base.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\gssapi_server.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\gssapi_client.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\zmq_utils.h">
@@ -456,6 +465,15 @@
     <ClInclude Include="..\..\..\..\src\curve_server.hpp">
       <Filter>src\include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\src\gssapi_mechanism_base.hpp">
+      <Filter>src\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\gssapi_server.hpp">
+      <Filter>src\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\gssapi_client.hpp">
+      <Filter>src\include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="include">
@@ -497,7 +515,7 @@
     </Xml>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\libzmq.rc">
+    <ResourceCompile Include="..\..\resource.rc">
       <Filter>resource</Filter>
     </ResourceCompile>
   </ItemGroup>

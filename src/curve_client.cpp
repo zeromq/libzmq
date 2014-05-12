@@ -21,8 +21,6 @@
 
 #ifdef HAVE_LIBSODIUM
 
-#include <sodium.h>
-
 #ifdef ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
 #endif
@@ -35,11 +33,21 @@
 
 zmq::curve_client_t::curve_client_t (const options_t &options_) :
     mechanism_t (options_),
-    state (send_hello)
+    state (send_hello),
+    sync()
 {
     memcpy (public_key, options_.curve_public_key, crypto_box_PUBLICKEYBYTES);
     memcpy (secret_key, options_.curve_secret_key, crypto_box_SECRETKEYBYTES);
     memcpy (server_key, options_.curve_server_key, crypto_box_PUBLICKEYBYTES);
+    scoped_lock_t lock (sync);
+#if defined(HAVE_TWEETNACL)
+    // allow opening of /dev/urandom
+    unsigned char tmpbytes[4];
+    randombytes(tmpbytes, 4);
+#else
+    // todo check return code
+    sodium_init();
+#endif
 
     //  Generate short-term key pair
     const int rc = crypto_box_keypair (cn_public, cn_secret);
@@ -208,9 +216,9 @@ int zmq::curve_client_t::decode (msg_t *msg_)
     return rc;
 }
 
-bool zmq::curve_client_t::is_handshake_complete () const
+zmq::mechanism_t::status_t zmq::curve_client_t::status () const
 {
-    return state == connected;
+    return state == connected? mechanism_t::ready: mechanism_t::handshaking;
 }
 
 int zmq::curve_client_t::produce_hello (msg_t *msg_)
@@ -320,7 +328,7 @@ int zmq::curve_client_t::produce_initiate (msg_t *msg_)
 
     //  Create Box [C + vouch + metadata](C'->S')
     memset (initiate_plaintext, 0, crypto_box_ZEROBYTES);
-    memcpy (initiate_plaintext + crypto_box_ZEROBYTES, 
+    memcpy (initiate_plaintext + crypto_box_ZEROBYTES,
             public_key, 32);
     memcpy (initiate_plaintext + crypto_box_ZEROBYTES + 32,
             vouch_nonce + 8, 16);
@@ -338,8 +346,7 @@ int zmq::curve_client_t::produce_initiate (msg_t *msg_)
     if (options.type == ZMQ_REQ
     ||  options.type == ZMQ_DEALER
     ||  options.type == ZMQ_ROUTER)
-        ptr += add_property (ptr, "Identity",
-                             options.identity, options.identity_size);
+        ptr += add_property (ptr, "Identity", options.identity, options.identity_size);
 
     const size_t mlen = ptr - initiate_plaintext;
 

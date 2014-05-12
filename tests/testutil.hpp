@@ -244,7 +244,7 @@ void s_recv_seq (void *socket, ...)
 }
 
 
-// Sets a zero linger period on a socket and closes it.
+//  Sets a zero linger period on a socket and closes it.
 void close_zero_linger (void *socket)
 {
     int linger = 0;

@@ -170,6 +170,22 @@ Default value:: NULL
 Applicable socket types:: all, when using TCP transport
 
 
+ZMQ_HANDSHAKE_IVL: Set maximum handshake interval
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_HANDSHAKE_IVL' option shall set the maximum handshake interval for
+the specified 'socket'. Handshaking is the exchange of socket configuration
+information (socket type, identity, security) that occurs when a connection
+is first opened, only for connection-oriented transports. If handshaking does
+not complete within the configured time, the connection shall be closed.
+The value 0 means no handshake time limit.
+
+[horizontal]
+Option value type:: int
+Option value unit:: milliseconds
+Default value:: 30000
+Applicable socket types:: all but ZMQ_STREAM, only for connection-oriented transports
+
+
 ZMQ_IDENTITY: Set socket identity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_IDENTITY' option shall set the identity of the specified 'socket'

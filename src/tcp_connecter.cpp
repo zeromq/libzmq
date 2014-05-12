@@ -261,6 +261,15 @@ int zmq::tcp_connecter_t::open ()
     if (options.tos != 0)
         set_ip_type_of_service (s, options.tos);
 
+    // Set a source address for conversations
+    if (addr->resolved.tcp_addr->has_src_addr ()) {
+        rc = ::bind (s, addr->resolved.tcp_addr->src_addr (), addr->resolved.tcp_addr->src_addrlen ());
+
+        if (rc == -1) {
+            return -1;
+        }
+    }
+
     //  Connect to the remote peer.
     rc = ::connect (
         s, addr->resolved.tcp_addr->addr (),

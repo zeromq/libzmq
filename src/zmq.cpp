@@ -63,6 +63,7 @@ struct iovec {
 #include "err.hpp"
 #include "msg.hpp"
 #include "fd.hpp"
+#include "metadata.hpp"
 
 #if !defined ZMQ_HAVE_WINDOWS
 #include <unistd.h>
@@ -644,10 +645,13 @@ int zmq_msg_set (zmq_msg_t *, int, int)
 
 //  Get message metadata string
 
-char *zmq_msg_gets (zmq_msg_t *msg_, char *property_)
+const char *zmq_msg_gets (zmq_msg_t *msg_, const char *property_)
 {
-    //  All unknown properties return NULL
-    return NULL;
+    zmq::metadata_t *metadata = ((zmq::msg_t*) msg_)->metadata ();
+    if (metadata)
+        return metadata->get (std::string (property_));
+    else
+        return NULL;
 }
 
 // Polling.

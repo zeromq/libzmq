@@ -21,9 +21,15 @@
 #define __ZMQ_CURVE_CLIENT_HPP_INCLUDED__
 
 #include "platform.hpp"
+#include "mutex.hpp"
 
 #ifdef HAVE_LIBSODIUM
-#include <sodium.h>
+#ifdef HAVE_TWEETNACL
+#include "tweetnacl_base.h"
+#include "randombytes.h"
+#else
+#include "sodium.h"
+#endif
 
 #if crypto_box_NONCEBYTES != 24 \
 ||  crypto_box_PUBLICKEYBYTES != 32 \
@@ -54,7 +60,7 @@ namespace zmq
         virtual int process_handshake_command (msg_t *msg_);
         virtual int encode (msg_t *msg_);
         virtual int decode (msg_t *msg_);
-        virtual bool is_handshake_complete () const;
+        virtual status_t status () const;
 
     private:
 
@@ -100,6 +106,7 @@ namespace zmq
         int process_welcome (msg_t *msg_);
         int produce_initiate (msg_t *msg_);
         int process_ready (msg_t *msg_);
+        mutex_t sync;
     };
 
 }

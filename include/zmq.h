@@ -200,7 +200,7 @@ ZMQ_EXPORT int zmq_ctx_destroy (void *context);
 /*  0MQ message definition.                                                   */
 /******************************************************************************/
 
-typedef struct zmq_msg_t {unsigned char _ [40];} zmq_msg_t;
+typedef struct zmq_msg_t {unsigned char _ [48];} zmq_msg_t;
 
 typedef void (zmq_free_fn) (void *data, void *hint);
 
@@ -218,7 +218,7 @@ ZMQ_EXPORT size_t zmq_msg_size (zmq_msg_t *msg);
 ZMQ_EXPORT int zmq_msg_more (zmq_msg_t *msg);
 ZMQ_EXPORT int zmq_msg_get (zmq_msg_t *msg, int property);
 ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int property, int optval);
-ZMQ_EXPORT char *zmq_msg_gets (zmq_msg_t *msg, char *property);
+ZMQ_EXPORT const char *zmq_msg_gets (zmq_msg_t *msg, const char *property);
 
 
 /******************************************************************************/
@@ -300,7 +300,8 @@ ZMQ_EXPORT char *zmq_msg_gets (zmq_msg_t *msg, char *property);
 #define ZMQ_GSSAPI_PRINCIPAL 63
 #define ZMQ_GSSAPI_SERVICE_PRINCIPAL 64
 #define ZMQ_GSSAPI_PLAINTEXT 65
-#define ZMQ_IDENTITY_FD 66
+#define ZMQ_HANDSHAKE_IVL 66
+#define ZMQ_IDENTITY_FD 67
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1
@@ -327,34 +328,20 @@ ZMQ_EXPORT char *zmq_msg_gets (zmq_msg_t *msg, char *property);
 /*  0MQ socket events and monitoring                                          */
 /******************************************************************************/
 
-/*  Socket transport events (tcp and ipc only)                                */
-#define ZMQ_EVENT_CONNECTED 1
-#define ZMQ_EVENT_CONNECT_DELAYED 2
-#define ZMQ_EVENT_CONNECT_RETRIED 4
+/*  Socket transport events (TCP and IPC only)                                */
 
-#define ZMQ_EVENT_LISTENING 8
-#define ZMQ_EVENT_BIND_FAILED 16
-
-#define ZMQ_EVENT_ACCEPTED 32
-#define ZMQ_EVENT_ACCEPT_FAILED 64
-
-#define ZMQ_EVENT_CLOSED 128
-#define ZMQ_EVENT_CLOSE_FAILED 256
-#define ZMQ_EVENT_DISCONNECTED 512
-#define ZMQ_EVENT_MONITOR_STOPPED 1024
-
-#define ZMQ_EVENT_ALL ( ZMQ_EVENT_CONNECTED | ZMQ_EVENT_CONNECT_DELAYED | \
-                        ZMQ_EVENT_CONNECT_RETRIED | ZMQ_EVENT_LISTENING | \
-                        ZMQ_EVENT_BIND_FAILED | ZMQ_EVENT_ACCEPTED | \
-                        ZMQ_EVENT_ACCEPT_FAILED | ZMQ_EVENT_CLOSED | \
-                        ZMQ_EVENT_CLOSE_FAILED | ZMQ_EVENT_DISCONNECTED | \
-                        ZMQ_EVENT_MONITOR_STOPPED)
-
-/*  Socket event data  */
-typedef struct {
-    uint16_t event;  // id of the event as bitfield
-    int32_t  value ; // value is either error code, fd or reconnect interval
-} zmq_event_t;
+#define ZMQ_EVENT_CONNECTED         0x0001
+#define ZMQ_EVENT_CONNECT_DELAYED   0x0002
+#define ZMQ_EVENT_CONNECT_RETRIED   0x0004
+#define ZMQ_EVENT_LISTENING         0x0008
+#define ZMQ_EVENT_BIND_FAILED       0x0010
+#define ZMQ_EVENT_ACCEPTED          0x0020
+#define ZMQ_EVENT_ACCEPT_FAILED     0x0040
+#define ZMQ_EVENT_CLOSED            0x0080
+#define ZMQ_EVENT_CLOSE_FAILED      0x0100
+#define ZMQ_EVENT_DISCONNECTED      0x0200
+#define ZMQ_EVENT_MONITOR_STOPPED   0x0400
+#define ZMQ_EVENT_ALL               0xFFFF
 
 ZMQ_EXPORT void *zmq_socket (void *, int type);
 ZMQ_EXPORT int zmq_close (void *s);

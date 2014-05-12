@@ -99,74 +99,74 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(ProjectDir)$(ProjectName).props" />
-    <Import Project="$(ProjectDir)..\properties\DynamicDebug.props" />
-    <Import Project="$(ProjectDir)..\properties\Win32.props" />
+    <Import Project="$(ProjectDir)..\..\properties\DynamicDebug.props" />
+    <Import Project="$(ProjectDir)..\..\properties\Win32.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(ProjectDir)$(ProjectName).props" />
-    <Import Project="$(ProjectDir)..\properties\DynamicRelease.props" />
-    <Import Project="$(ProjectDir)..\properties\Win32.props" />
+    <Import Project="$(ProjectDir)..\..\properties\DynamicRelease.props" />
+    <Import Project="$(ProjectDir)..\..\properties\Win32.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(ProjectDir)$(ProjectName).props" />
-    <Import Project="$(ProjectDir)..\properties\DynamicDebug.props" />
-    <Import Project="$(ProjectDir)..\properties\x64.props" />
+    <Import Project="$(ProjectDir)..\..\properties\DynamicDebug.props" />
+    <Import Project="$(ProjectDir)..\..\properties\x64.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(ProjectDir)$(ProjectName).props" />
-    <Import Project="$(ProjectDir)..\properties\DynamicRelease.props" />
-    <Import Project="$(ProjectDir)..\properties\x64.props" />
+    <Import Project="$(ProjectDir)..\..\properties\DynamicRelease.props" />
+    <Import Project="$(ProjectDir)..\..\properties\x64.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugLTCG|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(ProjectDir)$(ProjectName).props" />
-    <Import Project="$(ProjectDir)..\properties\StaticDebugLinkTimeCodeGeneration.props" />
-    <Import Project="$(ProjectDir)..\properties\Win32.props" />
+    <Import Project="$(ProjectDir)..\..\properties\StaticDebugLinkTimeCodeGeneration.props" />
+    <Import Project="$(ProjectDir)..\..\properties\Win32.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLTCG|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(ProjectDir)$(ProjectName).props" />
-    <Import Project="$(ProjectDir)..\properties\StaticReleaseLinkTimeCodeGeneration.props" />
-    <Import Project="$(ProjectDir)..\properties\Win32.props" />
+    <Import Project="$(ProjectDir)..\..\properties\StaticReleaseLinkTimeCodeGeneration.props" />
+    <Import Project="$(ProjectDir)..\..\properties\Win32.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugLTCG|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(ProjectDir)$(ProjectName).props" />
-    <Import Project="$(ProjectDir)..\properties\StaticDebugLinkTimeCodeGeneration.props" />
-    <Import Project="$(ProjectDir)..\properties\x64.props" />
+    <Import Project="$(ProjectDir)..\..\properties\StaticDebugLinkTimeCodeGeneration.props" />
+    <Import Project="$(ProjectDir)..\..\properties\x64.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLTCG|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(ProjectDir)$(ProjectName).props" />
-    <Import Project="$(ProjectDir)..\properties\StaticReleaseLinkTimeCodeGeneration.props" />
-    <Import Project="$(ProjectDir)..\properties\x64.props" />
+    <Import Project="$(ProjectDir)..\..\properties\StaticReleaseLinkTimeCodeGeneration.props" />
+    <Import Project="$(ProjectDir)..\..\properties\x64.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugLIB|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(ProjectDir)$(ProjectName).props" />
-    <Import Project="$(ProjectDir)..\properties\StaticDebug.props" />
-    <Import Project="$(ProjectDir)..\properties\Win32.props" />
+    <Import Project="$(ProjectDir)..\..\properties\StaticDebug.props" />
+    <Import Project="$(ProjectDir)..\..\properties\Win32.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLIB|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(ProjectDir)$(ProjectName).props" />
-    <Import Project="$(ProjectDir)..\properties\StaticRelease.props" />
-    <Import Project="$(ProjectDir)..\properties\Win32.props" />
+    <Import Project="$(ProjectDir)..\..\properties\StaticRelease.props" />
+    <Import Project="$(ProjectDir)..\..\properties\Win32.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugLIB|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(ProjectDir)$(ProjectName).props" />
-    <Import Project="$(ProjectDir)..\properties\StaticDebug.props" />
-    <Import Project="$(ProjectDir)..\properties\x64.props" />
+    <Import Project="$(ProjectDir)..\..\properties\StaticDebug.props" />
+    <Import Project="$(ProjectDir)..\..\properties\x64.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLIB|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(ProjectDir)$(ProjectName).props" />
-    <Import Project="$(ProjectDir)..\properties\StaticRelease.props" />
-    <Import Project="$(ProjectDir)..\properties\x64.props" />
+    <Import Project="$(ProjectDir)..\..\properties\StaticRelease.props" />
+    <Import Project="$(ProjectDir)..\..\properties\x64.props" />
   </ImportGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\zmq.h" />
@@ -334,7 +334,7 @@
     <Xml Include="..\..\..\..\packaging\nuget\package.xml" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\libzmq.rc" />
+    <ResourceCompile Include="..\..\resource.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

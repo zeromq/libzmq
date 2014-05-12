@@ -266,9 +266,12 @@ int zmq::gssapi_server_t::receive_and_process_zap_reply ()
         goto error;
     }
 
+    //  Save user id
+    set_user_id (msg [5].data (), msg [5].size ());
+
     //  Process metadata frame
     rc = parse_metadata (static_cast <const unsigned char*> (msg [6].data ()),
-                         msg [6].size ());
+                         msg [6].size (), true);
 
 error:
     for (int i = 0; i < 7; i++) {
@@ -312,9 +315,9 @@ int zmq::gssapi_server_t::zap_msg_available ()
     return rc;
 }
 
-bool zmq::gssapi_server_t::is_handshake_complete () const
+zmq::mechanism_t::status_t zmq::gssapi_server_t::status () const
 {
-    return state == connected;
+    return state == connected? mechanism_t::ready: mechanism_t::handshaking;
 }
 
 int zmq::gssapi_server_t::produce_next_token (msg_t *msg_)

@@ -32,6 +32,7 @@ libzmq_la_SOURCES = \
     i_decoder.hpp \
     i_engine.hpp \
     i_poll_events.hpp \
+    i_properties.hpp \
     io_object.hpp \
     io_thread.hpp \
     ip.hpp \
@@ -45,6 +46,7 @@ libzmq_la_SOURCES = \
     likely.hpp \
     mailbox.hpp \
     mechanism.hpp  \
+    metadata.hpp \
     msg.hpp \
     mtrie.hpp \
     mutex.hpp \
@@ -57,7 +59,8 @@ libzmq_la_SOURCES = \
     pgm_sender.hpp \
     pgm_socket.hpp \
     pipe.hpp \
-    plain_mechanism.hpp \
+    plain_client.hpp \
+    plain_server.hpp \
     platform.hpp \
     poll.hpp \
     poller.hpp \
@@ -117,6 +120,7 @@ libzmq_la_SOURCES = \
     lb.cpp \
     mailbox.cpp \
     mechanism.cpp \
+    metadata.cpp \
     msg.cpp \
     mtrie.cpp \
     norm_engine.cpp \
@@ -129,7 +133,8 @@ libzmq_la_SOURCES = \
     pgm_sender.cpp \
     pgm_socket.cpp \
     pipe.cpp \
-    plain_mechanism.cpp \
+    plain_client.cpp \
+    plain_server.cpp \
     poll.cpp \
     poller_base.cpp \
     pull.cpp \

@@ -9,6 +9,31 @@ if(APPLE)
   option(ZMQ_BUILD_FRAMEWORK "Build as OS X framework" ON)
 endif()
 
+if(WIN32)
+option(WITH_TWEETNACL "Build with tweetnacl" OFF)
+else()
+option(WITH_TWEETNACL "Build with tweetnacl" ON)
+endif()
+
+if(WITH_TWEETNACL)
+  add_definitions(-DHAVE_TWEETNACL -DHAVE_LIBSODIUM)
+  include_directories(
+    tweetnacl/contrib/randombytes
+    tweetnacl/src
+    )
+
+  set(TWEETNACL_SOURCES
+    tweetnacl/src/tweetnacl.c 
+    )
+  if(WIN32)
+  else()
+    list(APPEND TWEETNACL_SOURCES tweetnacl/contrib/randombytes/devurandom.c)
+  endif()
+else()
+  find_library(SODIUM_FOUND sodium)
+endif()
+
+
 
 set(POLLER "" CACHE STRING "Choose polling system. valid values are
                             kqueue, epoll, devpoll, poll or select [default=autodetect]")
@@ -362,6 +387,7 @@ set(cxx-sources
         lb.cpp
         mailbox.cpp
         mechanism.cpp
+        metadata.cpp
         msg.cpp
         mtrie.cpp
         object.cpp
@@ -467,6 +493,10 @@ endif(WITH_OPENPGM)
 
 foreach(source ${cxx-sources})
   list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/src/${source})
+endforeach()
+
+foreach(source ${TWEETNACL_SOURCES})
+  list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/${source})
 endforeach()
 
 foreach(source ${rc-sources})
@@ -582,7 +612,7 @@ else()
     endif()
 endif()
 
-target_link_libraries(libzmq ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(libzmq ${SODIUM_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
 if(HAVE_WS2_32)
   target_link_libraries(libzmq ws2_32)
 elseif(HAVE_WS2)
@@ -685,15 +715,17 @@ if(ZMQ_BUILD_TESTS)
           test_connect_rid
   )
   if(NOT WIN32)
-  list(APPEND tests
-          test_monitor
-          test_pair_ipc
-          test_reqrep_ipc
-          test_fork
-          test_abstract_ipc
-          test_proxy
-          test_filter_ipc
-  )
+    list(APPEND tests
+            test_monitor
+            test_pair_ipc
+            test_reqrep_ipc
+            test_abstract_ipc
+            test_proxy
+            test_filter_ipc
+    )
+    if(HAVE_FORK)
+      list(APPEND tests test_fork)
+    endif()
   endif()
 
   foreach(test ${tests})
@@ -701,7 +733,7 @@ if(ZMQ_BUILD_TESTS)
     target_link_libraries(${test} libzmq)
 
     if(RT_LIBRARY)
-      target_link_libraries(${test} ${RT_LIBRARY})
+      target_link_libraries(${test} ${RT_LIBRARY} )
     endif()
     if(WIN32)
       add_test(NAME ${test} WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH} COMMAND ${test})

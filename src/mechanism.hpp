@@ -23,6 +23,7 @@
 #include "stdint.hpp"
 #include "options.hpp"
 #include "blob.hpp"
+#include "metadata.hpp"
 
 namespace zmq
 {
@@ -35,6 +36,12 @@ namespace zmq
     class mechanism_t
     {
     public:
+
+        enum status_t {
+            handshaking,
+            ready,
+            error
+        };
 
         mechanism_t (const options_t &options_);
 
@@ -53,8 +60,8 @@ namespace zmq
         //  Notifies mechanism about availability of ZAP message.
         virtual int zap_msg_available () { return 0; }
 
-        //  True iff the handshake stage is complete?
-        virtual bool is_handshake_complete () const = 0;
+        //  Returns the status of this mechanism.
+        virtual status_t status () const = 0;
 
         void set_peer_identity (const void *id_ptr, size_t id_size);
 
@@ -63,6 +70,14 @@ namespace zmq
         void set_user_id (const void *user_id, size_t size);
 
         blob_t get_user_id () const;
+
+        const metadata_t::dict_t& get_zmtp_properties () {
+            return zmtp_properties;
+        }
+
+        const metadata_t::dict_t& get_zap_properties () {
+            return zap_properties;
+        }
 
     protected:
 
@@ -77,7 +92,8 @@ namespace zmq
         //  Metadata consists of a list of properties consisting of
         //  name and value as size-specified strings.
         //  Returns 0 on success and -1 on error, in which case errno is set.
-        int parse_metadata (const unsigned char *ptr_, size_t length);
+        int parse_metadata (
+            const unsigned char *ptr_, size_t length, bool zap_flag = false);
 
         //  This is called by parse_property method whenever it
         //  parses a new property. The function should return 0
@@ -88,6 +104,12 @@ namespace zmq
         //  method to handle custom processing.
         virtual int property (const std::string& name_,
                               const void *value_, size_t length_);
+
+        //  Properties received from ZMTP peer.
+        metadata_t::dict_t zmtp_properties;
+
+        //  Properties received from ZAP server.
+        metadata_t::dict_t zap_properties;
 
         options_t options;
 

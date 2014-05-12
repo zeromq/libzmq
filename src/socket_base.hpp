@@ -163,7 +163,7 @@ namespace zmq
         void process_destroy ();
 
         // Socket event data dispath
-        void monitor_event (zmq_event_t data_, const std::string& addr_);
+        void monitor_event (int event_, int value_, const std::string& addr_);
 
         // Monitor socket cleanup
         void stop_monitor ();

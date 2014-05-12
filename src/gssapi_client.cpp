@@ -153,9 +153,9 @@ int zmq::gssapi_client_t::decode (msg_t *msg_)
     return 0;
 }
 
-bool zmq::gssapi_client_t::is_handshake_complete () const
+zmq::mechanism_t::status_t zmq::gssapi_client_t::status () const
 {
-    return state == connected;
+    return state == connected? mechanism_t::ready: mechanism_t::handshaking;
 }
 
 int zmq::gssapi_client_t::initialize_context ()
@@ -165,7 +165,8 @@ int zmq::gssapi_client_t::initialize_context ()
         send_tok.value = service_name;
         send_tok.length = strlen(service_name);
         OM_uint32 maj = gss_import_name(&min_stat, &send_tok,
-                                        gss_nt_service_name, &target_name);
+                                        GSS_C_NT_HOSTBASED_SERVICE,
+                                        &target_name);
 
         if (maj != GSS_S_COMPLETE)
             return -1;

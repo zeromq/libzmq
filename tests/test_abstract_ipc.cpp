@@ -27,19 +27,19 @@ int main (void)
 
     void *sb = zmq_socket (ctx, ZMQ_DEALER);
     assert (sb);
-    int rc = zmq_bind (sb, "ipc://@/tmp/tester");
+    int rc = zmq_bind (sb, "ipc://@tmp-tester");
     assert (rc == 0);
 
     char endpoint[200];
     size_t size = sizeof(endpoint);
     rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, endpoint, &size);
     assert (rc == 0);
-    rc = strncmp(endpoint, "ipc://@/tmp/tester", size);
+    rc = strncmp(endpoint, "ipc://@tmp-tester", size);
     assert (rc == 0);
 
     void *sc = zmq_socket (ctx, ZMQ_DEALER);
     assert (sc);
-    rc = zmq_connect (sc, "ipc://@/tmp/tester");
+    rc = zmq_connect (sc, "ipc://@tmp-tester");
     assert (rc == 0);
     
     bounce (sb, sc);

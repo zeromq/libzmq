@@ -55,7 +55,8 @@ zmq::options_t::options_t () :
     as_server (0),
     gss_plaintext (false),
     socket_id (0),
-    conflate (false)
+    conflate (false),
+    handshake_ivl (30000)
 {
 }
 
@@ -435,6 +436,13 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             break;
 	
+        case ZMQ_HANDSHAKE_IVL:
+            if (is_int && value >= 0) {
+                handshake_ivl = value;
+                return 0;
+            }
+            break;
+
 
         default:
             break;
@@ -746,6 +754,13 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
             }
             break;
  
+        case ZMQ_HANDSHAKE_IVL:
+            if (is_int) {
+                *value = handshake_ivl;
+                return 0;
+            }
+            break;
+
 
 	}
     errno = EINVAL;
