@@ -11,7 +11,7 @@
 
   <ItemDefinitionGroup>
     <PreBuildEvent>
-      <Command>xcopy /c /y $(ProjectDir)..\..\platform.hpp $(ProjectDir)..\..\..\..\perf\</Command>
+      <Command>xcopy /c /y $(BuildRoot)platform.hpp $(RepoRoot)perf\</Command>
     </PreBuildEvent>
     <Link>
       <AdditionalDependencies>Advapi32.lib;Rpcrt4.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -25,23 +25,15 @@
     <Import Project="$(SolutionDir)libsodium.import.props" />
   </ImportGroup>
 
-  <PropertyGroup Condition="$(Configuration.IndexOf('DEXE')) != -1">
-    <Linkage-libzmq>dynamic</Linkage-libzmq>
-    <Linkage-libsodium>dynamic</Linkage-libsodium>
-  </PropertyGroup>
-  <PropertyGroup Condition="$(Configuration.IndexOf('LEXE')) != -1">
-    <Linkage-libzmq>ltcg</Linkage-libzmq>
-    <Linkage-libsodium>ltcg</Linkage-libsodium>
-  </PropertyGroup>
-  <PropertyGroup Condition="$(Configuration.IndexOf('SEXE')) != -1">
-    <Linkage-libzmq>static</Linkage-libzmq>
-    <Linkage-libsodium>static</Linkage-libsodium>
+  <PropertyGroup>
+    <Linkage-libzmq>$(DefaultLinkage)</Linkage-libzmq>
+    <Linkage-libsodium>$(DefaultLinkage)</Linkage-libsodium>
   </PropertyGroup>
 
   <!-- Messages -->
 
   <Target Name="CustomInfo" BeforeTargets="PrepareForBuild">
-    <Message Text="Will copy $(ProjectDir)..\..\platform.hpp -&gt; $(ProjectDir)..\..\..\..\perf\platform.hpp" Importance="high"/>
+    <Message Text="Will copy $(BuildRoot)platform.hpp -&gt; $(RepoRoot)perf\platform.hpp" Importance="high"/>
   </Target>
 
   <Target Name="LinkageInfo" BeforeTargets="PrepareForBuild">
