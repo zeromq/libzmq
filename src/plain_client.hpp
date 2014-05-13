@@ -42,6 +42,8 @@ namespace zmq
 
     private:
 
+        bool error_command_received;
+
         enum state_t {
             sending_hello,
             waiting_for_welcome,
@@ -55,8 +57,12 @@ namespace zmq
         int produce_hello (msg_t *msg_) const;
         int produce_initiate (msg_t *msg_) const;
 
-        int process_welcome (msg_t *msg);
-        int process_ready (msg_t *msg_);
+        int process_welcome (
+            const unsigned char *cmd_data, size_t data_size);
+        int process_ready (
+            const unsigned char *cmd_data, size_t data_size);
+        int process_error (
+            const unsigned char *cmd_data, size_t data_size);
     };
 
 }
