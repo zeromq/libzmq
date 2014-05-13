@@ -50,7 +50,8 @@ noinst_PROGRAMS = test_system \
                   test_diffserv \
                   test_connect_rid \
 		  test_bind_src_address \
-		  test_metadata
+		  test_metadata\
+		  test_id2fd
 
 if !ON_MINGW
 noinst_PROGRAMS += test_shutdown_stress \
@@ -122,6 +123,7 @@ test_diffserv_SOURCES = test_diffserv.cpp
 test_connect_rid_SOURCES = test_connect_rid.cpp
 test_bind_src_address_SOURCES = test_bind_src_address.cpp
 test_metadata_SOURCES = test_metadata.cpp
+test_id2fd_SOURCES = test_id2fd.cpp
 if !ON_MINGW
 test_shutdown_stress_SOURCES = test_shutdown_stress.cpp
 test_pair_ipc_SOURCES = test_pair_ipc.cpp testutil.hpp
