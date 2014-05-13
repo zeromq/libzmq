@@ -3,7 +3,7 @@ CFLAGS=-Wall -Os -g -DDLL_EXPORT -DFD_SETSIZE=1024 -DZMQ_USE_SELECT -I.
 LIBS=-lws2_32
 
 OBJS = ctx.o reaper.o dist.o err.o \
-	clock.o random.o \
+	clock.o metadata.o random.o \
 	object.o own.o \
 	io_object.o io_thread.o \
 	lb.o fq.o \
@@ -23,7 +23,7 @@ OBJS = ctx.o reaper.o dist.o err.o \
 	dealer.o router.o xpub.o xsub.o stream.o \
 	poller_base.o select.o poll.o epoll.o kqueue.o devpoll.o \
 	curve_client.o curve_server.o \
-	mechanism.o null_mechanism.o plain_mechanism.o \
+	mechanism.o null_mechanism.o plain_client.o plain_server.o \
 	zmq.o zmq_utils.o
 
 %.o: ../../src/%.cpp

@@ -3,7 +3,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{641C5F36-32EE-4323-B740-992B651CF9D6}</ProjectGuid>
     <ProjectName>libzmq</ProjectName>
-    <RootNamespace>libzmq10</RootNamespace>
+    <PlatformToolset>v100</PlatformToolset>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="DebugDLL|Win32">
@@ -56,117 +56,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Configuration">
-    <PlatformToolset>v100</PlatformToolset>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugLTCG|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLTCG|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugLTCG|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLTCG|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugLIB|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLIB|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugLIB|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLIB|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
-  </PropertyGroup>
+    <ConfigurationType Condition="$(Configuration.IndexOf('DLL')) == -1">StaticLibrary</ConfigurationType>
+    <ConfigurationType Condition="$(Configuration.IndexOf('DLL')) != -1">DynamicLibrary</ConfigurationType>
+  </PropertyGroup> 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(ProjectDir)..\..\properties\$(Configuration).props" />
+    <Import Project="$(ProjectDir)..\..\properties\Output.props" />
     <Import Project="$(ProjectDir)$(ProjectName).props" />
-    <Import Project="$(ProjectDir)..\..\properties\DynamicDebug.props" />
-    <Import Project="$(ProjectDir)..\..\properties\Win32.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(ProjectDir)$(ProjectName).props" />
-    <Import Project="$(ProjectDir)..\..\properties\DynamicRelease.props" />
-    <Import Project="$(ProjectDir)..\..\properties\Win32.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(ProjectDir)$(ProjectName).props" />
-    <Import Project="$(ProjectDir)..\..\properties\DynamicDebug.props" />
-    <Import Project="$(ProjectDir)..\..\properties\x64.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(ProjectDir)$(ProjectName).props" />
-    <Import Project="$(ProjectDir)..\..\properties\DynamicRelease.props" />
-    <Import Project="$(ProjectDir)..\..\properties\x64.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugLTCG|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(ProjectDir)$(ProjectName).props" />
-    <Import Project="$(ProjectDir)..\..\properties\StaticDebugLinkTimeCodeGeneration.props" />
-    <Import Project="$(ProjectDir)..\..\properties\Win32.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLTCG|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(ProjectDir)$(ProjectName).props" />
-    <Import Project="$(ProjectDir)..\..\properties\StaticReleaseLinkTimeCodeGeneration.props" />
-    <Import Project="$(ProjectDir)..\..\properties\Win32.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugLTCG|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(ProjectDir)$(ProjectName).props" />
-    <Import Project="$(ProjectDir)..\..\properties\StaticDebugLinkTimeCodeGeneration.props" />
-    <Import Project="$(ProjectDir)..\..\properties\x64.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLTCG|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(ProjectDir)$(ProjectName).props" />
-    <Import Project="$(ProjectDir)..\..\properties\StaticReleaseLinkTimeCodeGeneration.props" />
-    <Import Project="$(ProjectDir)..\..\properties\x64.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugLIB|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(ProjectDir)$(ProjectName).props" />
-    <Import Project="$(ProjectDir)..\..\properties\StaticDebug.props" />
-    <Import Project="$(ProjectDir)..\..\properties\Win32.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLIB|Win32'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(ProjectDir)$(ProjectName).props" />
-    <Import Project="$(ProjectDir)..\..\properties\StaticRelease.props" />
-    <Import Project="$(ProjectDir)..\..\properties\Win32.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='DebugLIB|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(ProjectDir)$(ProjectName).props" />
-    <Import Project="$(ProjectDir)..\..\properties\StaticDebug.props" />
-    <Import Project="$(ProjectDir)..\..\properties\x64.props" />
-  </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLIB|x64'" Label="PropertySheets">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(ProjectDir)$(ProjectName).props" />
-    <Import Project="$(ProjectDir)..\..\properties\StaticRelease.props" />
-    <Import Project="$(ProjectDir)..\..\properties\x64.props" />
   </ImportGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\zmq.h" />
@@ -189,6 +87,9 @@
     <ClInclude Include="..\..\..\..\src\err.hpp" />
     <ClInclude Include="..\..\..\..\src\fd.hpp" />
     <ClInclude Include="..\..\..\..\src\fq.hpp" />
+    <ClInclude Include="..\..\..\..\src\gssapi_client.hpp" />
+    <ClInclude Include="..\..\..\..\src\gssapi_mechanism_base.hpp" />
+    <ClInclude Include="..\..\..\..\src\gssapi_server.hpp" />
     <ClInclude Include="..\..\..\..\src\i_engine.hpp" />
     <ClInclude Include="..\..\..\..\src\i_poll_events.hpp" />
     <ClInclude Include="..\..\..\..\src\io_object.hpp" />
@@ -265,6 +166,9 @@
     <ClCompile Include="..\..\..\..\src\epoll.cpp" />
     <ClCompile Include="..\..\..\..\src\err.cpp" />
     <ClCompile Include="..\..\..\..\src\fq.cpp" />
+    <ClCompile Include="..\..\..\..\src\gssapi_client.cpp" />
+    <ClCompile Include="..\..\..\..\src\gssapi_mechanism_base.cpp" />
+    <ClCompile Include="..\..\..\..\src\gssapi_server.cpp" />
     <ClCompile Include="..\..\..\..\src\io_object.cpp" />
     <ClCompile Include="..\..\..\..\src\io_thread.cpp" />
     <ClCompile Include="..\..\..\..\src\ip.cpp" />
@@ -275,6 +179,7 @@
     <ClCompile Include="..\..\..\..\src\lb.cpp" />
     <ClCompile Include="..\..\..\..\src\mailbox.cpp" />
     <ClCompile Include="..\..\..\..\src\mechanism.cpp" />
+    <ClCompile Include="..\..\..\..\src\metadata.cpp" />
     <ClCompile Include="..\..\..\..\src\msg.cpp" />
     <ClCompile Include="..\..\..\..\src\mtrie.cpp" />
     <ClCompile Include="..\..\..\..\src\null_mechanism.cpp" />
@@ -286,7 +191,8 @@
     <ClCompile Include="..\..\..\..\src\pgm_sender.cpp" />
     <ClCompile Include="..\..\..\..\src\pgm_socket.cpp" />
     <ClCompile Include="..\..\..\..\src\pipe.cpp" />
-    <ClCompile Include="..\..\..\..\src\plain_mechanism.cpp" />
+    <ClCompile Include="..\..\..\..\src\plain_client.cpp" />
+    <ClCompile Include="..\..\..\..\src\plain_server.cpp" />
     <ClCompile Include="..\..\..\..\src\poll.cpp" />
     <ClCompile Include="..\..\..\..\src\poller_base.cpp" />
     <ClCompile Include="..\..\..\..\src\precompiled.cpp" />

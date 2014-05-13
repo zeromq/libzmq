@@ -399,7 +399,8 @@ set(cxx-sources
         pgm_sender.cpp
         pgm_socket.cpp
         pipe.cpp
-        plain_mechanism.cpp
+        plain_client.cpp
+        plain_server.cpp
         poll.cpp
         poller_base.cpp
         precompiled.cpp
