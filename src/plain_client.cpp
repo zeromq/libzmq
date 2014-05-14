@@ -199,12 +199,8 @@ int zmq::plain_client_t::process_error (
         errno = EPROTO;
         return -1;
     }
-    if (data_size == 6) {
-        errno = EPROTO;
-        return -1;
-    }
-    const size_t size = static_cast <size_t> (cmd_data [6]);
-    if (6 + 1 + size != data_size) {
+    const size_t error_reason_len = data_size - 6;
+    if (error_reason_len < 1 || error_reason_len > 255) {
         errno = EPROTO;
         return -1;
     }
