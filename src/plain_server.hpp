@@ -52,6 +52,8 @@ namespace zmq
             waiting_for_initiate,
             sending_ready,
             waiting_for_zap_reply,
+            sending_error,
+            error_command_sent,
             ready
         };
 
@@ -59,13 +61,14 @@ namespace zmq
 
         const std::string peer_address;
 
-        //  True iff we are awaiting reply from ZAP reply.
-        bool expecting_zap_reply;
+        //  Status code as received from ZAP handler
+        std::string status_code;
 
         state_t state;
 
         int produce_welcome (msg_t *msg_) const;
         int produce_ready (msg_t *msg_) const;
+        int produce_error (msg_t *msg_) const;
 
         int process_hello (msg_t *msg_);
         int process_initiate (msg_t *msg_);
