@@ -261,11 +261,12 @@ int zmq::plain_server_t::produce_ready (msg_t *msg_) const
 int zmq::plain_server_t::produce_error (msg_t *msg_) const
 {
     zmq_assert (status_code.length () == 3);
-    const int rc = msg_->init_size (6 + status_code.length ());
+    const int rc = msg_->init_size (6 + 1 + status_code.length ());
     zmq_assert (rc == 0);
     char *msg_data = static_cast <char *> (msg_->data ());
     memcpy (msg_data, "\5ERROR", 6);
-    memcpy (msg_data + 6, status_code.c_str (), status_code.length ());
+    msg_data [6] = status_code.length ();
+    memcpy (msg_data + 7, status_code.c_str (), status_code.length ());
     return 0;
 }
 
