@@ -36,7 +36,6 @@ zmq::plain_server_t::plain_server_t (session_base_t *session_,
     mechanism_t (options_),
     session (session_),
     peer_address (peer_address_),
-    expecting_zap_reply (false),
     state (waiting_for_hello)
 {
 }
@@ -60,6 +59,11 @@ int zmq::plain_server_t::next_handshake_command (msg_t *msg_)
             if (rc == 0)
                 state = ready;
             break;
+        case sending_error:
+            rc = produce_error (msg_);
+            if (rc == 0)
+                state = error_command_sent;
+            break;
         default:
             errno = EAGAIN;
             rc = -1;
@@ -74,13 +78,9 @@ int zmq::plain_server_t::process_handshake_command (msg_t *msg_)
     switch (state) {
         case waiting_for_hello:
             rc = process_hello (msg_);
-            if (rc == 0)
-                state = expecting_zap_reply? waiting_for_zap_reply: sending_welcome;
             break;
         case waiting_for_initiate:
             rc = process_initiate (msg_);
-            if (rc == 0)
-                state = sending_ready;
             break;
         default:
             //  Temporary support for security debugging
@@ -100,7 +100,13 @@ int zmq::plain_server_t::process_handshake_command (msg_t *msg_)
 
 zmq::mechanism_t::status_t zmq::plain_server_t::status () const
 {
-    return state == ready? mechanism_t::ready: mechanism_t::handshaking;
+    if (state == ready)
+        return mechanism_t::ready;
+    else
+    if (state == error_command_sent)
+        return mechanism_t::error;
+    else
+        return mechanism_t::handshaking;
 }
 
 int zmq::plain_server_t::zap_msg_available ()
@@ -111,7 +117,9 @@ int zmq::plain_server_t::zap_msg_available ()
     }
     const int rc = receive_and_process_zap_reply ();
     if (rc == 0)
-        state = sending_welcome;
+        state = status_code == "200"
+            ? sending_welcome
+            : sending_error;
     return rc;
 }
 
@@ -178,12 +186,18 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     if (rc == 0) {
         send_zap_request (username, password);
         rc = receive_and_process_zap_reply ();
-        if (rc != 0) {
-            if (errno != EAGAIN)
-                return -1;
-            expecting_zap_reply = true;
-        }
+        if (rc == 0)
+            state = status_code == "200"
+                ? sending_welcome
+                : sending_error;
+        else
+        if (errno == EAGAIN)
+            state = waiting_for_zap_reply;
+        else
+            return -1;
     }
+    else
+        state = sending_welcome;
 
     return 0;
 }
@@ -207,7 +221,10 @@ int zmq::plain_server_t::process_initiate (msg_t *msg_)
         errno = EPROTO;
         return -1;
     }
-    return parse_metadata (ptr + 9, bytes_left - 9);
+    const int rc = parse_metadata (ptr + 9, bytes_left - 9);
+    if (rc == 0)
+        state = sending_ready;
+    return rc;
 }
 
 int zmq::plain_server_t::produce_ready (msg_t *msg_) const
@@ -238,6 +255,17 @@ int zmq::plain_server_t::produce_ready (msg_t *msg_) const
     memcpy (msg_->data (), command_buffer, command_size);
     free (command_buffer);
 
+    return 0;
+}
+
+int zmq::plain_server_t::produce_error (msg_t *msg_) const
+{
+    zmq_assert (status_code.length () == 3);
+    const int rc = msg_->init_size (6 + status_code.length ());
+    zmq_assert (rc == 0);
+    char *msg_data = static_cast <char *> (msg_->data ());
+    memcpy (msg_data, "\5ERROR", 6);
+    memcpy (msg_data + 6, status_code.c_str (), status_code.length ());
     return 0;
 }
 
@@ -373,13 +401,16 @@ int zmq::plain_server_t::receive_and_process_zap_reply ()
     }
 
     //  Status code frame
-    if (msg [3].size () != 3 || memcmp (msg [3].data (), "200", 3)) {
+    if (msg [3].size () != 3) {
         //  Temporary support for security debugging
         puts ("PLAIN I: ZAP handler rejected client authentication");
         errno = EACCES;
         rc = -1;
         goto error;
     }
+
+    //  Save status code
+    status_code.assign (static_cast <char *> (msg [3].data ()), 3);
 
     //  Save user id
     set_user_id (msg [5].data (), msg [5].size ());
