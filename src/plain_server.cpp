@@ -260,7 +260,6 @@ int zmq::plain_server_t::produce_ready (msg_t *msg_) const
 
 int zmq::plain_server_t::produce_error (msg_t *msg_) const
 {
-    printf ("producing error\n");
     zmq_assert (status_code.length () == 3);
     const int rc = msg_->init_size (6 + status_code.length ());
     zmq_assert (rc == 0);
