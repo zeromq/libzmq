@@ -78,12 +78,13 @@ int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
 
     if (zap_reply_received
     &&  strncmp (status_code, "200", sizeof status_code) != 0) {
-        const int rc = msg_->init_size (6 + sizeof status_code);
+        const int rc = msg_->init_size (6 + 1 + sizeof status_code);
         zmq_assert (rc == 0);
         unsigned char *msg_data =
             static_cast <unsigned char *> (msg_->data ());
         memcpy (msg_data, "\5ERROR", 6);
-        memcpy (msg_data + 6, status_code, sizeof status_code);
+        msg_data [6] = sizeof status_code;
+        memcpy (msg_data + 7, status_code, sizeof status_code);
         error_command_sent = true;
         return 0;
     }
@@ -163,8 +164,12 @@ int zmq::null_mechanism_t::process_ready_command (
 int zmq::null_mechanism_t::process_error_command (
         const unsigned char *cmd_data, size_t data_size)
 {
-    const size_t error_reason_len = data_size - 6;
-    if (error_reason_len < 1 || error_reason_len > 255) {
+    if (data_size < 7) {
+        errno = EPROTO;
+        return -1;
+    }
+    const size_t error_reason_len = static_cast <size_t> (cmd_data [6]);
+    if (error_reason_len > data_size - 7) {
         errno = EPROTO;
         return -1;
     }
