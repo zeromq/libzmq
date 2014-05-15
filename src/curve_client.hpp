@@ -69,6 +69,7 @@ namespace zmq
             expect_welcome,
             send_initiate,
             expect_ready,
+            error_received,
             connected
         };
 
@@ -103,9 +104,10 @@ namespace zmq
         uint64_t cn_nonce;
 
         int produce_hello (msg_t *msg_);
-        int process_welcome (msg_t *msg_);
+        int process_welcome (const uint8_t *cmd_data, size_t data_size);
         int produce_initiate (msg_t *msg_);
-        int process_ready (msg_t *msg_);
+        int process_ready (const uint8_t *cmd_data, size_t data_size);
+        int process_error (const uint8_t *cmd_data, size_t data_size);
         mutex_t sync;
     };
 
