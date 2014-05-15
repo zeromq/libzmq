@@ -190,7 +190,7 @@ ZMQ_IDENTITY: Set socket identity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_IDENTITY' option shall set the identity of the specified 'socket'
 when connecting to a ROUTER socket. The identity should be from 1 to 255
-bytes long and MAY NOT start with binary zero.
+bytes long and may contain any values.
 
 If two clients use the same identity when connecting to a ROUTER, the
 results shall depend on the ZMQ_ROUTER_HANDOVER option setting. If that

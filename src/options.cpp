@@ -89,11 +89,8 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             break;
 
         case ZMQ_IDENTITY:
-            //  Empty identity is invalid as well as identity longer than
-            //  255 bytes. Identity starting with binary zero is invalid
-            //  as these are used for auto-generated identities.
-            if (optvallen_ > 0 && optvallen_ < 256
-            && *((const unsigned char *) optval_) != 0) {
+            //  Identity is any binary string from 1 to 255 octets
+            if (optvallen_ > 0 && optvallen_ < 256) {
                 identity_size = optvallen_;
                 memcpy (identity, optval_, identity_size);
                 return 0;
