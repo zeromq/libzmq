@@ -38,7 +38,6 @@ zmq::curve_server_t::curve_server_t (session_base_t *session_,
     session (session_),
     peer_address (peer_address_),
     state (expect_hello),
-    expecting_zap_reply (false),
     cn_nonce (1),
     sync()
 {
@@ -78,6 +77,11 @@ int zmq::curve_server_t::next_handshake_command (msg_t *msg_)
             if (rc == 0)
                 state = connected;
             break;
+        case send_error:
+            rc = produce_error (msg_);
+            if (rc == 0)
+                state = error_sent;
+            break;
         default:
             errno = EAGAIN;
             rc = -1;
@@ -93,22 +97,13 @@ int zmq::curve_server_t::process_handshake_command (msg_t *msg_)
     switch (state) {
         case expect_hello:
             rc = process_hello (msg_);
-            if (rc == 0)
-                state = send_welcome;
-            else
-                state = errored;
             break;
         case expect_initiate:
             rc = process_initiate (msg_);
-            if (rc == 0)
-                state = expecting_zap_reply? expect_zap_reply: send_ready;
-            else
-                state = errored;
             break;
         default:
             //  Temporary support for security debugging
             puts ("CURVE I: invalid handshake command");
-            state = errored;
             errno = EPROTO;
             rc = -1;
             break;
@@ -243,13 +238,21 @@ int zmq::curve_server_t::zap_msg_available ()
     }
     const int rc = receive_and_process_zap_reply ();
     if (rc == 0)
-        state = send_ready;
+        state = status_code == "200"
+            ? send_ready
+            : send_error;
     return rc;
 }
 
 zmq::mechanism_t::status_t zmq::curve_server_t::status () const
 {
-    return state == connected? mechanism_t::ready: mechanism_t::handshaking;
+    if (state == connected)
+        return mechanism_t::ready;
+    else
+    if (state == error_sent)
+        return mechanism_t::error;
+    else
+        return mechanism_t::handshaking;
 }
 
 int zmq::curve_server_t::process_hello (msg_t *msg_)
@@ -303,6 +306,7 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
         return -1;
     }
 
+    state = send_welcome;
     return rc;
 }
 
@@ -478,12 +482,18 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     if (rc == 0) {
         send_zap_request (client_key);
         rc = receive_and_process_zap_reply ();
-        if (rc != 0) {
-            if (errno != EAGAIN)
-                return -1;
-            expecting_zap_reply = true;
-        }
+        if (rc == 0)
+            state = status_code == "200"
+                ? send_ready
+                : send_error;
+        else
+        if (errno == EAGAIN)
+            state = expect_zap_reply;
+        else
+            return -1;
     }
+    else
+        state = send_ready;
 
     return parse_metadata (initiate_plaintext + crypto_box_ZEROBYTES + 128,
                            clen - crypto_box_ZEROBYTES - 128);
@@ -532,6 +542,18 @@ int zmq::curve_server_t::produce_ready (msg_t *msg_)
 
     cn_nonce++;
 
+    return 0;
+}
+
+int zmq::curve_server_t::produce_error (msg_t *msg_) const
+{
+    zmq_assert (status_code.length () == 3);
+    const int rc = msg_->init_size (6 + 1 + status_code.length ());
+    zmq_assert (rc == 0);
+    char *msg_data = static_cast <char *> (msg_->data ());
+    memcpy (msg_data, "\5ERROR", 6);
+    msg_data [6] = sizeof status_code;
+    memcpy (msg_data + 7, status_code.c_str (), status_code.length ());
     return 0;
 }
 
@@ -658,13 +680,16 @@ int zmq::curve_server_t::receive_and_process_zap_reply ()
     }
 
     //  Status code frame
-    if (msg [3].size () != 3 || memcmp (msg [3].data (), "200", 3)) {
+    if (msg [3].size () != 3) {
         //  Temporary support for security debugging
         puts ("CURVE I: ZAP handler rejected client authentication");
         errno = EACCES;
         rc = -1;
         goto error;
     }
+
+    //  Save status code
+    status_code.assign (static_cast <char *> (msg [3].data ()), 3);
 
     //  Save user id
     set_user_id (msg [5].data (), msg [5].size ());
