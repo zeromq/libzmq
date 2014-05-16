@@ -74,8 +74,9 @@ namespace zmq
             expect_initiate,
             expect_zap_reply,
             send_ready,
-            connected,
-            errored
+            send_error,
+            error_sent,
+            connected
         };
 
         session_base_t * const session;
@@ -85,8 +86,8 @@ namespace zmq
         //  Current FSM state
         state_t state;
 
-        //  True iff we are awaiting reply from ZAP handler.
-        bool expecting_zap_reply;
+        //  Status code as received from ZAP handler
+        std::string status_code;
 
         uint64_t cn_nonce;
 
@@ -112,6 +113,7 @@ namespace zmq
         int produce_welcome (msg_t *msg_);
         int process_initiate (msg_t *msg_);
         int produce_ready (msg_t *msg_);
+        int produce_error (msg_t *msg_) const;
 
         void send_zap_request (const uint8_t *key);
         int receive_and_process_zap_reply ();
