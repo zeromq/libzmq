@@ -53,6 +53,12 @@ namespace zmq
     {
     public:
 
+        enum error_reason_t {
+            protocol_error,
+            connection_error,
+            timeout_error
+        };
+
         stream_engine_t (fd_t fd_, const options_t &options_, 
                          const std::string &endpoint);
         ~stream_engine_t ();
@@ -78,7 +84,7 @@ namespace zmq
         void unplug ();
 
         //  Function to handle network disconnections.
-        void error ();
+        void error (error_reason_t reason);
 
         //  Receives the greeting message from the peer.
         int receive_greeting ();

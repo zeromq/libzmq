@@ -366,7 +366,8 @@ void zmq::session_base_t::process_attach (i_engine *engine_)
     engine->plug (io_thread, this);
 }
 
-void zmq::session_base_t::engine_error ()
+void zmq::session_base_t::engine_error (
+        zmq::stream_engine_t::error_reason_t reason)
 {
     //  Engine is dead. Let's forget about it.
     engine = NULL;
