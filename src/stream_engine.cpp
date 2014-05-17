@@ -274,12 +274,12 @@ void zmq::stream_engine_t::in_event ()
 
         int const rc = read (inpos, bufsize);
         if (rc == 0) {
-            error ();
+            error (connection_error);
             return;
         }
         if (rc == -1) {
             if (errno != EAGAIN)
-                error ();
+                error (connection_error);
             return;
         }
 
@@ -306,7 +306,7 @@ void zmq::stream_engine_t::in_event ()
     //  or the session has rejected the message.
     if (rc == -1) {
         if (errno != EAGAIN) {
-            error ();
+            error (connection_error);
             return;
         }
         input_stopped = true;
@@ -407,7 +407,7 @@ void zmq::stream_engine_t::restart_input ()
         if (errno == EAGAIN)
             session->flush ();
         else
-            error ();
+            error (protocol_error);
         return;
     }
 
@@ -427,8 +427,11 @@ void zmq::stream_engine_t::restart_input ()
     if (rc == -1 && errno == EAGAIN)
         session->flush ();
     else
-    if (rc == -1 || io_error)
-        error ();
+    if (io_error)
+        error (connection_error);
+    else
+    if (rc == -1)
+        error (protocol_error);
     else {
         input_stopped = false;
         set_pollin (handle);
@@ -448,12 +451,12 @@ bool zmq::stream_engine_t::handshake ()
         const int n = read (greeting_recv + greeting_bytes_read,
                             greeting_size - greeting_bytes_read);
         if (n == 0) {
-            error ();
+            error (connection_error);
             return false;
         }
         if (n == -1) {
             if (errno != EAGAIN)
-                error ();
+                error (connection_error);
             return false;
         }
 
@@ -631,7 +634,7 @@ bool zmq::stream_engine_t::handshake ()
         }
 #endif
         else {
-            error ();
+            error (protocol_error);
             return false;
         }
         next_msg = &stream_engine_t::next_handshake_command;
@@ -732,7 +735,7 @@ void zmq::stream_engine_t::zap_msg_available ()
 
     const int rc = mechanism->zap_msg_available ();
     if (rc == -1) {
-        error ();
+        error (protocol_error);
         return;
     }
     if (input_stopped)
@@ -871,7 +874,7 @@ int zmq::stream_engine_t::write_subscription_msg (msg_t *msg_)
     return push_msg_to_session (msg_);
 }
 
-void zmq::stream_engine_t::error ()
+void zmq::stream_engine_t::error (error_reason_t reason)
 {
     if (options.raw_sock) {
         //  For raw sockets, send a final 0-length message to the application
@@ -884,7 +887,7 @@ void zmq::stream_engine_t::error ()
     zmq_assert (session);
     socket->event_disconnected (endpoint, s);
     session->flush ();
-    session->engine_error ();
+    session->engine_error (reason);
     unplug ();
     delete this;
 }
@@ -1006,5 +1009,5 @@ void zmq::stream_engine_t::timer_event (int id_)
     has_handshake_timer = false;
 
     //  handshake timer expired before handshake completed, so engine fails
-    error ();
+    error (timeout_error);
 }
