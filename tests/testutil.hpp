@@ -130,12 +130,13 @@ expect_bounce_fail (void *server, void *client)
     assert (zmq_errno () == EAGAIN);
 
     //  Send message from server to client to test other direction
+    //  If connection failed, send may block, without a timeout
     rc = zmq_setsockopt (server, ZMQ_SNDTIMEO, &timeout, sizeof (int));
     assert (rc == 0);
     rc = zmq_send (server, content, 32, ZMQ_SNDMORE);
-    assert ((rc == 32) || ((rc == -1) && (errno == EAGAIN)));
+    assert (rc == 32 || (rc == -1 && zmq_errno () == EAGAIN));
     rc = zmq_send (server, content, 32, 0);
-    assert ((rc == 32) || ((rc == -1) && (errno == EAGAIN)));
+    assert (rc == 32 || (rc == -1 && zmq_errno () == EAGAIN));
 
     //  Receive message at client side (should not succeed)
     rc = zmq_setsockopt (client, ZMQ_RCVTIMEO, &timeout, sizeof (int));
