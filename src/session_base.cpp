@@ -376,10 +376,22 @@ void zmq::session_base_t::engine_error (
     if (pipe)
         clean_pipes ();
 
-    if (active)
-        reconnect ();
-    else
-        terminate ();
+    zmq_assert (reason == stream_engine_t::connection_error
+             || reason == stream_engine_t::timeout_error
+             || reason == stream_engine_t::protocol_error);
+
+    switch (reason) {
+        case stream_engine_t::timeout_error:
+        case stream_engine_t::connection_error:
+            if (active)
+                reconnect ();
+            else
+                terminate ();
+            break;
+        case stream_engine_t::protocol_error:
+            terminate ();
+            break;
+    }
 
     //  Just in case there's only a delimiter in the pipe.
     if (pipe)
