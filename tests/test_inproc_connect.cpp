@@ -24,7 +24,7 @@ static void pusher (void *ctx)
     // Connect first
     void *connectSocket = zmq_socket (ctx, ZMQ_PAIR);
     assert (connectSocket);
-    int rc = zmq_connect (connectSocket, "inproc://a");
+    int rc = zmq_connect (connectSocket, "inproc://sink");
     assert (rc == 0);
 
     // Queue up some data
@@ -44,13 +44,13 @@ void test_bind_before_connect ()
     // Bind first
     void *bindSocket = zmq_socket (ctx, ZMQ_PAIR);
     assert (bindSocket);
-    int rc = zmq_bind (bindSocket, "inproc://a");
+    int rc = zmq_bind (bindSocket, "inproc://bbc");
     assert (rc == 0);
 
     // Now connect
     void *connectSocket = zmq_socket (ctx, ZMQ_PAIR);
     assert (connectSocket);
-    rc = zmq_connect (connectSocket, "inproc://a");
+    rc = zmq_connect (connectSocket, "inproc://bbc");
     assert (rc == 0);
 
     // Queue up some data
@@ -85,7 +85,7 @@ void test_connect_before_bind ()
     // Connect first
     void *connectSocket = zmq_socket (ctx, ZMQ_PAIR);
     assert (connectSocket);
-    int rc = zmq_connect (connectSocket, "inproc://a");
+    int rc = zmq_connect (connectSocket, "inproc://cbb");
     assert (rc == 0);
 
     // Queue up some data
@@ -95,7 +95,7 @@ void test_connect_before_bind ()
     // Now bind
     void *bindSocket = zmq_socket (ctx, ZMQ_PAIR);
     assert (bindSocket);
-    rc = zmq_bind (bindSocket, "inproc://a");
+    rc = zmq_bind (bindSocket, "inproc://cbb");
     assert (rc == 0);
 
     // Read pending message
@@ -126,7 +126,7 @@ void test_connect_before_bind_pub_sub ()
     // Connect first
     void *connectSocket = zmq_socket (ctx, ZMQ_PUB);
     assert (connectSocket);
-    int rc = zmq_connect (connectSocket, "inproc://a");
+    int rc = zmq_connect (connectSocket, "inproc://cbbps");
     assert (rc == 0);
 
     // Queue up some data, this will be dropped
@@ -138,7 +138,7 @@ void test_connect_before_bind_pub_sub ()
     assert (bindSocket);
     rc = zmq_setsockopt (bindSocket, ZMQ_SUBSCRIBE, "", 0);
     assert (rc == 0);
-    rc = zmq_bind (bindSocket, "inproc://a");
+    rc = zmq_bind (bindSocket, "inproc://cbbps");
     assert (rc == 0);
 
     // Wait for pub-sub connection to happen
@@ -182,7 +182,7 @@ void test_multiple_connects ()
     {
         connectSocket [i] = zmq_socket (ctx, ZMQ_PUSH);
         assert (connectSocket [i]);
-        rc = zmq_connect (connectSocket [i], "inproc://a");
+        rc = zmq_connect (connectSocket [i], "inproc://multiple");
         assert (rc == 0);
 
         // Queue up some data
@@ -193,7 +193,7 @@ void test_multiple_connects ()
     // Now bind
     void *bindSocket = zmq_socket (ctx, ZMQ_PULL);
     assert (bindSocket);
-    rc = zmq_bind (bindSocket, "inproc://a");
+    rc = zmq_bind (bindSocket, "inproc://multiple");
     assert (rc == 0);
 
     for (unsigned int i = 0; i < no_of_connects; ++i)
@@ -240,7 +240,7 @@ void test_multiple_threads ()
     // Now bind
     void *bindSocket = zmq_socket (ctx, ZMQ_PULL);
     assert (bindSocket);
-    rc = zmq_bind (bindSocket, "inproc://a");
+    rc = zmq_bind (bindSocket, "inproc://sink");
     assert (rc == 0);
 
     for (unsigned int i = 0; i < no_of_threads; ++i)
@@ -277,13 +277,13 @@ void test_identity ()
     void *sc = zmq_socket (ctx, ZMQ_DEALER);
     assert (sc);
 
-    int rc = zmq_connect (sc, "inproc://a");
+    int rc = zmq_connect (sc, "inproc://identity");
     assert (rc == 0);
 
     void *sb = zmq_socket (ctx, ZMQ_ROUTER);
     assert (sb);
 
-    rc = zmq_bind (sb, "inproc://a");
+    rc = zmq_bind (sb, "inproc://identity");
     assert (rc == 0);
 
     //  Send 2-part message.

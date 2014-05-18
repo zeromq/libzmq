@@ -42,7 +42,8 @@
 int clipped_maxsocket(int max_requested)
 {
     if (max_requested >= zmq::poller_t::max_fds () && zmq::poller_t::max_fds () != -1)
-        max_requested = zmq::poller_t::max_fds () - 1;		// -1 because we need room for the repear mailbox.
+        // -1 because we need room for the reaper mailbox.
+        max_requested = zmq::poller_t::max_fds () - 1;
     
     return max_requested;
 }
@@ -175,7 +176,8 @@ int zmq::ctx_t::shutdown ()
 int zmq::ctx_t::set (int option_, int optval_)
 {
     int rc = 0;
-    if (option_ == ZMQ_MAX_SOCKETS && optval_ >= 1 && optval_ == clipped_maxsocket (optval_)) {
+    if (option_ == ZMQ_MAX_SOCKETS
+    &&  optval_ >= 1 && optval_ == clipped_maxsocket (optval_)) {
         opt_sync.lock ();
         max_sockets = optval_;
         opt_sync.unlock ();
@@ -233,7 +235,7 @@ zmq::socket_base_t *zmq::ctx_t::create_socket (int type_)
         int ios = io_thread_count;
         opt_sync.unlock ();
         slot_count = mazmq + ios + 2;
-        slots = (mailbox_t**) malloc (sizeof (mailbox_t*) * slot_count);
+        slots = (mailbox_t **) malloc (sizeof (mailbox_t*) * slot_count);
         alloc_assert (slots);
 
         //  Initialise the infrastructure for zmq_ctx_term thread.
