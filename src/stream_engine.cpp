@@ -306,7 +306,7 @@ void zmq::stream_engine_t::in_event ()
     //  or the session has rejected the message.
     if (rc == -1) {
         if (errno != EAGAIN) {
-            error (connection_error);
+            error (protocol_error);
             return;
         }
         input_stopped = true;
