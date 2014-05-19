@@ -262,6 +262,9 @@ void setup_test_environment()
     _CrtSetReportMode( _CRT_ASSERT, _CRTDBG_MODE_FILE );
     _CrtSetReportFile( _CRT_ASSERT, _CRTDBG_FILE_STDERR );
 #   endif
+#else
+    // abort test after 60 seconds
+    alarm(60);
 #endif
 }
 
