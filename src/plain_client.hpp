@@ -42,13 +42,12 @@ namespace zmq
 
     private:
 
-        bool error_command_received;
-
         enum state_t {
             sending_hello,
             waiting_for_welcome,
             sending_initiate,
             waiting_for_ready,
+            error_command_received,
             ready
         };
 
