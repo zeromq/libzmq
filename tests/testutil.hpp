@@ -112,15 +112,17 @@ expect_bounce_fail (void *server, void *client)
 {
     const char *content = "12345678ABCDEFGH12345678abcdefgh";
     char buffer [32];
+    int timeout = 150;
 
     //  Send message from client to server
-    int rc = zmq_send (client, content, 32, ZMQ_SNDMORE);
-    assert (rc == 32);
+    int rc = zmq_setsockopt (client, ZMQ_SNDTIMEO, &timeout, sizeof (int));
+    assert (rc == 0);
+    rc = zmq_send (client, content, 32, ZMQ_SNDMORE);
+    assert ((rc == 32) || ((rc == -1) && (errno == EAGAIN)));
     rc = zmq_send (client, content, 32, 0);
-    assert (rc == 32);
+    assert ((rc == 32) || ((rc == -1) && (errno == EAGAIN)));
 
     //  Receive message at server side (should not succeed)
-    int timeout = 150;
     rc = zmq_setsockopt (server, ZMQ_RCVTIMEO, &timeout, sizeof (int));
     assert (rc == 0);
     rc = zmq_recv (server, buffer, 32, 0);
@@ -128,10 +130,12 @@ expect_bounce_fail (void *server, void *client)
     assert (zmq_errno () == EAGAIN);
 
     //  Send message from server to client to test other direction
+    rc = zmq_setsockopt (server, ZMQ_SNDTIMEO, &timeout, sizeof (int));
+    assert (rc == 0);
     rc = zmq_send (server, content, 32, ZMQ_SNDMORE);
-    assert (rc == 32);
+    assert ((rc == 32) || ((rc == -1) && (errno == EAGAIN)));
     rc = zmq_send (server, content, 32, 0);
-    assert (rc == 32);
+    assert ((rc == 32) || ((rc == -1) && (errno == EAGAIN)));
 
     //  Receive message at client side (should not succeed)
     rc = zmq_setsockopt (client, ZMQ_RCVTIMEO, &timeout, sizeof (int));
