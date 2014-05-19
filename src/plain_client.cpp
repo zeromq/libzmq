@@ -30,7 +30,6 @@
 
 zmq::plain_client_t::plain_client_t (const options_t &options_) :
     mechanism_t (options_),
-    error_command_received (false),
     state (sending_hello)
 {
 }
@@ -98,7 +97,7 @@ zmq::mechanism_t::status_t zmq::plain_client_t::status () const
     if (state == ready)
         return mechanism_t::ready;
     else
-    if (error_command_received)
+    if (state == error_command_received)
         return mechanism_t::error;
     else
         return mechanism_t::handshaking;
@@ -208,6 +207,6 @@ int zmq::plain_client_t::process_error (
         errno = EPROTO;
         return -1;
     }
-    error_command_received = true;
+    state = error_command_received;
     return 0;
 }
