@@ -3,8 +3,7 @@ zmq_proxy_steerable(3)
 
 NAME
 ----
-zmq_proxy_steerable - start built-in 0MQ proxy with PAUSE/RESUME/TERMINATE 
-control flow
+zmq_proxy_steerable - built-in 0MQ proxy with control flow
 
 
 SYNOPSIS
