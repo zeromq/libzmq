@@ -110,16 +110,16 @@ namespace zmq
         void set_fd(fd_t fd_);
         fd_t fd();
 
-        void event_connected (std::string &addr_, int fd_);
-        void event_connect_delayed (std::string &addr_, int err_);
-        void event_connect_retried (std::string &addr_, int interval_);
-        void event_listening (std::string &addr_, int fd_);
-        void event_bind_failed (std::string &addr_, int err_);
-        void event_accepted (std::string &addr_, int fd_);
-        void event_accept_failed (std::string &addr_, int err_);
-        void event_closed (std::string &addr_, int fd_);        
-        void event_close_failed (std::string &addr_, int fd_);  
-        void event_disconnected (std::string &addr_, int fd_); 
+        void event_connected (const std::string &addr_, int fd_);
+        void event_connect_delayed (const std::string &addr_, int err_);
+        void event_connect_retried (const std::string &addr_, int interval_);
+        void event_listening (const std::string &addr_, int fd_);
+        void event_bind_failed (const std::string &addr_, int err_);
+        void event_accepted (const std::string &addr_, int fd_);
+        void event_accept_failed (const std::string &addr_, int err_);
+        void event_closed (const std::string &addr_, int fd_);
+        void event_close_failed (const std::string &addr_, int fd_);
+        void event_disconnected (const std::string &addr_, int fd_);
 
     protected:
 
