@@ -33,13 +33,12 @@
 .for dependency
             <dependency id="$(id)" version="$(version)" />
 .endfor
-        </dependencies>        
+        </dependencies>
     </metadata>
     <files>
         <!-- include -->
         
-        <file src="..\\..\\include\\zmq.h" target="build\\native\\include" />
-        <file src="..\\..\\include\\zmq_utils.h" target="build\\native\\include" />
+        <file src="..\\..\\include\\*.h" target="build\\native\\include" />
 
         <!-- targets -->
       
