@@ -405,19 +405,23 @@ zmq::endpoint_t zmq::ctx_t::find_endpoint (const char *addr_)
      return endpoint;
 }
 
-void zmq::ctx_t::pend_connection (const char *addr_, pending_connection_t &pending_connection_)
+void zmq::ctx_t::pend_connection (const std::string &addr_,
+        const endpoint_t &endpoint_, pipe_t **pipes_)
 {
+    const pending_connection_t pending_connection =
+        {endpoint_, pipes_ [0], pipes_ [1]};
+
     endpoints_sync.lock ();
 
     endpoints_t::iterator it = endpoints.find (addr_);
     if (it == endpoints.end ()) {
         // Still no bind.
-        pending_connection_.endpoint.socket->inc_seqnum ();
-        pending_connections.insert (pending_connections_t::value_type (std::string (addr_), pending_connection_));
+        endpoint_.socket->inc_seqnum ();
+        pending_connections.insert (pending_connections_t::value_type (addr_, pending_connection));
     }
     else
         // Bind has happened in the mean time, connect directly
-        connect_inproc_sockets(it->second.socket, it->second.options, pending_connection_, connect_side);
+        connect_inproc_sockets (it->second.socket, it->second.options, pending_connection, connect_side);
 
     endpoints_sync.unlock ();
 }
@@ -436,7 +440,7 @@ void zmq::ctx_t::connect_pending (const char *addr_, zmq::socket_base_t *bind_so
 }
 
 void zmq::ctx_t::connect_inproc_sockets (zmq::socket_base_t *bind_socket_,
-    options_t& bind_options, pending_connection_t &pending_connection_, side side_)
+    options_t& bind_options, const pending_connection_t &pending_connection_, side side_)
 {
     bind_socket_->inc_seqnum();
     pending_connection_.bind_pipe->set_tid(bind_socket_->get_tid());
