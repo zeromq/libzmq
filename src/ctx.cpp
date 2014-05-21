@@ -445,6 +445,14 @@ void zmq::ctx_t::connect_inproc_sockets(zmq::socket_base_t *bind_socket_, option
     bind_socket_->inc_seqnum();
     pending_connection_.bind_pipe->set_tid(bind_socket_->get_tid());
 
+    if (!bind_options.recv_identity) {
+        msg_t msg;
+        const bool ok = pending_connection_.bind_pipe->read (&msg);
+        zmq_assert (ok);
+        const int rc = msg.close ();
+        errno_assert (rc == 0);
+    }
+
     if (side_ == bind_side)
     {
         command_t cmd;
@@ -475,14 +483,6 @@ void zmq::ctx_t::connect_inproc_sockets(zmq::socket_base_t *bind_socket_, option
        int hwms [2] = {conflate? -1 : sndhwm, conflate? -1 : rcvhwm};
        pending_connection_.connect_pipe->set_hwms(hwms [1], hwms [0]);
        pending_connection_.bind_pipe->set_hwms(hwms [0], hwms [1]);
-
-    if (!bind_options.recv_identity) {
-        msg_t msg;
-        const bool ok = pending_connection_.bind_pipe->read (&msg);
-        zmq_assert (ok);
-        const int rc = msg.close ();
-        errno_assert (rc == 0);
-    }
 
     if (pending_connection_.endpoint.options.recv_identity) {
         msg_t id;
