@@ -152,9 +152,10 @@ zmq::endpoint_t zmq::object_t::find_endpoint (const char *addr_)
     return ctx->find_endpoint (addr_);
 }
 
-void zmq::object_t::pend_connection (const char *addr_, pending_connection_t &pending_connection_)
+void zmq::object_t::pend_connection (const std::string &addr_,
+        const endpoint_t &endpoint_, pipe_t **pipes_)
 {
-    ctx->pend_connection (addr_, pending_connection_);
+    ctx->pend_connection (addr_, endpoint_, pipes_);
 }
 
 void zmq::object_t::connect_pending (const char *addr_, zmq::socket_base_t *bind_socket_)

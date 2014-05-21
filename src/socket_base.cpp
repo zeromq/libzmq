@@ -527,9 +527,8 @@ int zmq::socket_base_t::connect (const char *addr_)
             zmq_assert (written);
             new_pipes [0]->flush ();
 
-            endpoint_t endpoint = {this, options};
-            pending_connection_t pending_connection = {endpoint, new_pipes [0], new_pipes [1]};
-            pend_connection (addr_, pending_connection);
+            const endpoint_t endpoint = {this, options};
+            pend_connection (std::string (addr_), endpoint, new_pipes);
         }
         else
         {
