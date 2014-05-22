@@ -146,8 +146,6 @@ endif
 TESTS = $(noinst_PROGRAMS)
 XFAIL_TESTS =
 
-XFAIL_TESTS += test_inproc_connect
-
 if !ON_LINUX
 XFAIL_TESTS += test_abstract_ipc
 endif
