@@ -137,7 +137,8 @@ void zmq::object_t::process_command (command_t &cmd_)
     }
 }
 
-int zmq::object_t::register_endpoint (const char *addr_, endpoint_t &endpoint_)
+int zmq::object_t::register_endpoint (const char *addr_,
+        const endpoint_t &endpoint_)
 {
     return ctx->register_endpoint (addr_, endpoint_);
 }

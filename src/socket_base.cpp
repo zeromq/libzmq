@@ -365,7 +365,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         return -1;
 
     if (protocol == "inproc") {
-        endpoint_t endpoint = {this, options};
+        const endpoint_t endpoint = { this, options };
         int rc = register_endpoint (addr_, endpoint);
         if (rc == 0) {
             connect_pending(addr_, this);
