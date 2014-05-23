@@ -3,11 +3,13 @@
 
 * Fixed #872; lost first part of message over inproc://.
 
+* Fixed #939, assertion failed: !more (fq.cpp:99) after many ZAP requests.
+
 * Fixed #797, keep-alive on Windows.
 
-* Fixed #939; occasional corrupt messages sent to ZAP handler.
-
 * Fixed #994; bump so library number to 4.0.0
+
+* Fixed #1015; race condition while connecting inproc sockets.
 
 
 0MQ version 4.0.4 stable, released on 2014/03/10
