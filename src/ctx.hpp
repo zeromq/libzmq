@@ -99,7 +99,7 @@ namespace zmq
         zmq::object_t *get_reaper ();
 
         //  Management of inproc endpoints.
-        int register_endpoint (const char *addr_, endpoint_t &endpoint_);
+        int register_endpoint (const char *addr_, const endpoint_t &endpoint_);
         void unregister_endpoints (zmq::socket_base_t *socket_);
         endpoint_t find_endpoint (const char *addr_);
         void pend_connection (const std::string &addr_,

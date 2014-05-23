@@ -349,7 +349,8 @@ zmq::io_thread_t *zmq::ctx_t::choose_io_thread (uint64_t affinity_)
     return selected_io_thread;
 }
 
-int zmq::ctx_t::register_endpoint (const char *addr_, endpoint_t &endpoint_)
+int zmq::ctx_t::register_endpoint (const char *addr_,
+        const endpoint_t &endpoint_)
 {
     endpoints_sync.lock ();
 
