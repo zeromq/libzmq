@@ -104,6 +104,7 @@ perf/remote_lat
 perf/remote_thr
 perf/inproc_lat
 perf/inproc_thr
+perf/platform.hpp
 doc/*.1
 doc/*.3
 doc/*.7
