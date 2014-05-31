@@ -68,7 +68,7 @@
     <Import Project="$(ProjectDir)$(ProjectName).props" />
   </ImportGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\perf\platform.hpp" />
+    <ClInclude Include="..\..\..\..\src\platform.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\perf\local_thr.cpp" />

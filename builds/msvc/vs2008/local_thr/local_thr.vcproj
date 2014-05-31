@@ -6,7 +6,7 @@
   <ToolFiles />
   <Configurations>
     <Configuration Name="Debug|Win32" OutputDirectory="$(SolutionDir)$(ConfigurationName)" IntermediateDirectory="$(ConfigurationName)" ConfigurationType="1" CharacterSet="2">
-      <Tool Name="VCPreBuildEventTool" CommandLine="copy ..\..\platform.hpp ..\..\..\..\perf" />
+      <Tool Name="VCPreBuildEventTool" CommandLine="copy ..\..\platform.hpp ..\..\..\..\src" />
       <Tool Name="VCCustomBuildTool" />
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCMIDLTool" />
@@ -24,7 +24,7 @@
       <Tool Name="VCPostBuildEventTool" />
     </Configuration>
     <Configuration Name="Release|Win32" OutputDirectory="$(SolutionDir)$(ConfigurationName)" IntermediateDirectory="$(ConfigurationName)" ConfigurationType="1" CharacterSet="2" WholeProgramOptimization="1">
-      <Tool Name="VCPreBuildEventTool" CommandLine="copy ..\..\platform.hpp ..\..\..\..\perf" />
+      <Tool Name="VCPreBuildEventTool" CommandLine="copy ..\..\platform.hpp ..\..\..\..\src" />
       <Tool Name="VCCustomBuildTool" />
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCMIDLTool" />
