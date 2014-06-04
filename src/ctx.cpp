@@ -454,15 +454,6 @@ void zmq::ctx_t::connect_inproc_sockets (zmq::socket_base_t *bind_socket_,
         errno_assert (rc == 0);
     }
 
-    if (side_ == bind_side) {
-        command_t cmd;
-        cmd.type = command_t::bind;
-        cmd.args.bind.pipe = pending_connection_.bind_pipe;
-        bind_socket_->process_command(cmd);
-        bind_socket_->send_inproc_connected(pending_connection_.endpoint.socket);
-    }
-    else
-        pending_connection_.connect_pipe->send_bind(bind_socket_, pending_connection_.bind_pipe, false);
 
     int sndhwm = 0;
     if (pending_connection_.endpoint.options.sndhwm != 0 && bind_options.rcvhwm != 0)
@@ -479,9 +470,19 @@ void zmq::ctx_t::connect_inproc_sockets (zmq::socket_base_t *bind_socket_,
              pending_connection_.endpoint.options.type == ZMQ_PUB ||
              pending_connection_.endpoint.options.type == ZMQ_SUB);
 
-       int hwms [2] = {conflate? -1 : sndhwm, conflate? -1 : rcvhwm};
-       pending_connection_.connect_pipe->set_hwms(hwms [1], hwms [0]);
-       pending_connection_.bind_pipe->set_hwms(hwms [0], hwms [1]);
+    int hwms [2] = {conflate? -1 : sndhwm, conflate? -1 : rcvhwm};
+    pending_connection_.connect_pipe->set_hwms(hwms [1], hwms [0]);
+    pending_connection_.bind_pipe->set_hwms(hwms [0], hwms [1]);
+
+    if (side_ == bind_side) {
+        command_t cmd;
+        cmd.type = command_t::bind;
+        cmd.args.bind.pipe = pending_connection_.bind_pipe;
+        bind_socket_->process_command (cmd);
+        bind_socket_->send_inproc_connected (pending_connection_.endpoint.socket);
+    }
+    else
+        pending_connection_.connect_pipe->send_bind (bind_socket_, pending_connection_.bind_pipe, false);
 
     if (pending_connection_.endpoint.options.recv_identity) {
         msg_t id;
