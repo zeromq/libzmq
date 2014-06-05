@@ -10,9 +10,9 @@
   <!-- Configuration -->
 
   <ItemDefinitionGroup>
-    <PreBuildEvent>
-      <Command>xcopy /c /y $(BuildRoot)platform.hpp $(RepoRoot)src\</Command>
-    </PreBuildEvent>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
     <Link>
       <AdditionalDependencies>Advapi32.lib;Rpcrt4.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>    
@@ -39,10 +39,6 @@
   </PropertyGroup>  
 
   <!-- Messages -->
-
-  <Target Name="CustomInfo" BeforeTargets="PrepareForBuild">
-    <Message Text="Will copy $(BuildRoot)platform.hpp -&gt; $(RepoRoot)src\platform.hpp" Importance="high"/>
-  </Target>
 
   <Target Name="LinkageInfo" BeforeTargets="PrepareForBuild">
     <Message Text="Linkage-libzmq    : $(Linkage-libzmq)" Importance="high"/>

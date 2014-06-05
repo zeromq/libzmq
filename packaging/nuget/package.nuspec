@@ -23,12 +23,13 @@
         <tags>native, libzmq, zmq, 0MQ, messaging, sockets, C++</tags>
         <dependencies>
             <dependency id="libsodium_vc120" version="0.5.0.0" />
-        </dependencies>        
+        </dependencies>
     </metadata>
     <files>
         <!-- include -->
         
         <file src="..\..\include\*.h" target="build\native\include" />
+        <file src="..\..\builds\msvc\*.hpp" target="build\native\include" />
 
         <!-- targets -->
       
