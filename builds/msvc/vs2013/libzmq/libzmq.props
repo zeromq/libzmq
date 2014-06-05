@@ -20,11 +20,8 @@
   <!-- Configuration -->
   
   <ItemDefinitionGroup>
-    <PreBuildEvent>
-      <Command>xcopy /c /y $(BuildRoot)platform.hpp $(RepoRoot)src\</Command>
-    </PreBuildEvent>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\;$(ProjectDir)..\..\..\..\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnablePREfast>false</EnablePREfast>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;FD_SETSIZE=1024;ZMQ_USE_SELECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Option-openpgm)' == 'true'">ZMQ_HAVE_OPENPGM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -59,10 +56,6 @@
 
   <!-- Messages -->
 
-  <Target Name="CustomInfo" BeforeTargets="PrepareForBuild">
-    <Message Text="Will copy $(BuildRoot)platform.hpp -&gt; $(RepoRoot)src\platform.hpp" Importance="high"/>
-  </Target>
-  
   <Target Name="OptionInfo" BeforeTargets="PrepareForBuild">
     <Message Text="Option-openpgm    : $(Option-openpgm)" Importance="high"/>
     <Message Text="Option-sodium     : $(Option-sodium)" Importance="high"/>
