@@ -64,7 +64,7 @@
     <Import Project="$(ProjectDir)$(ProjectName).props" />
   </ImportGroup>  
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\src\platform.hpp" />
+    <ClInclude Include="..\..\platform.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\perf\remote_thr.cpp" />
