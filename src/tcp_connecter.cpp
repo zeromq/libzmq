@@ -319,7 +319,7 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
             err == WSAENETDOWN ||
             err == WSAEACCES ||
             err == WSAEINVAL ||
-            err == WSAEADDRINUSE )
+            err == WSAEADDRINUSE)
             return retired_fd;
         wsa_assert_no (err);
     }
