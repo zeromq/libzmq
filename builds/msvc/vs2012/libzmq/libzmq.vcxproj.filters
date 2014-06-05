@@ -450,7 +450,7 @@
     <ClInclude Include="..\..\..\..\src\poll.hpp">
       <Filter>src\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\src\platform.hpp">
+    <ClInclude Include="..\..\platform.hpp">
       <Filter>src\include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\pipe.hpp">

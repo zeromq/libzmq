@@ -113,7 +113,7 @@
     <ClInclude Include="..\..\..\..\src\pgm_sender.hpp" />
     <ClInclude Include="..\..\..\..\src\pgm_socket.hpp" />
     <ClInclude Include="..\..\..\..\src\pipe.hpp" />
-    <ClInclude Include="..\..\..\..\src\platform.hpp" />
+    <ClInclude Include="..\..\platform.hpp" />
     <ClInclude Include="..\..\..\..\src\poll.hpp" />
     <ClInclude Include="..\..\..\..\src\poller.hpp" />
     <ClInclude Include="..\..\..\..\src\poller_base.hpp" />
