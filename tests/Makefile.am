@@ -44,7 +44,6 @@ noinst_PROGRAMS = test_system \
                   test_inproc_connect \
                   test_issue_566 \
                   test_proxy \
-                  test_abstract_ipc \
                   test_many_sockets \
                   test_ipc_wildcard \
                   test_diffserv \
@@ -73,6 +72,10 @@ noinst_PROGRAMS += test_connect_delay_tipc \
                   test_shutdown_stress_tipc \
                   test_sub_forward_tipc \
                   test_term_endpoint_tipc
+endif
+
+if ON_LINUX
+noinst_PROGRAMS += test_abstract_ipc
 endif
 
 test_system_SOURCES = test_system.cpp
