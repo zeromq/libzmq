@@ -245,7 +245,7 @@ int zmq::wsa_error_to_errno (int errcode)
         return EAGAIN;
 //  10038 - Socket operation on non-socket.
     case WSAENOTSOCK:
-        return EFAULT;
+        return ENOTSOCK;
 //  10039 - Destination address required.
     case WSAEDESTADDRREQ:
         return EFAULT;
