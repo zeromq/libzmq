@@ -132,7 +132,6 @@ int zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
     if (rc == -1) {
         errno_assert (errno != EBADF &&
                       errno != EFAULT &&
-                      errno != EINVAL &&
                       errno != ENOTSOCK);
         return 0;
     }
