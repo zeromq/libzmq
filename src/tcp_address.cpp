@@ -35,13 +35,6 @@
 #include <netdb.h>
 #endif
 
-//  Some platforms (notably Darwin/OSX and NetBSD) do not define all AI_
-//  flags for getaddrinfo(). This can be worked around safely by defining
-//  these to 0.
-#ifndef AI_ADDRCONFIG
-#define AI_ADDRCONFIG 0
-#endif
-
 #ifdef ZMQ_HAVE_SOLARIS
 
 #include <sys/sockio.h>
@@ -142,11 +135,11 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
         return -1;
     }
     if (is_src_)
-        memcpy (&source_address.ipv4.sin_addr, &((sockaddr_in*) &ifr.ifr_addr)->sin_addr,
-            sizeof in_addr);
+        memcpy (&source_address.ipv4.sin_addr,
+            &((sockaddr_in*) &ifr.ifr_addr)->sin_addr, sizeof in_addr);
     else
-       memcpy (&address.ipv4.sin_addr, &((sockaddr_in*) &ifr.ifr_addr)->sin_addr,
-            sizeof in_addr);
+       memcpy (&address.ipv4.sin_addr,
+            &((sockaddr_in*) &ifr.ifr_addr)->sin_addr, sizeof in_addr);
 
     return 0;
 }
@@ -164,7 +157,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
 {
     //  Get the addresses.
     ifaddrs *ifa = NULL;
-    int rc = getifaddrs (&ifa);
+    const int rc = getifaddrs (&ifa);
     errno_assert (rc == 0);
     zmq_assert (ifa != NULL);
 
@@ -548,7 +541,7 @@ int zmq::tcp_address_mask_t::mask () const
 int zmq::tcp_address_mask_t::resolve (const char *name_, bool ipv6_)
 {
     // Find '/' at the end that separates address from the cidr mask number.
-    // Allow empty mask clause and threat it like '/32' for ipv4 or '/128' for ipv6.
+    // Allow empty mask clause and treat it like '/32' for ipv4 or '/128' for ipv6.
     std::string addr_str, mask_str;
     const char *delimiter = strrchr (name_, '/');
     if (delimiter != NULL) {
@@ -579,7 +572,7 @@ int zmq::tcp_address_mask_t::resolve (const char *name_, bool ipv6_)
     if (mask_str == "0")
         address_mask = 0;
     else {
-        int mask = atoi (mask_str.c_str ());
+        const int mask = atoi (mask_str.c_str ());
         if (
             (mask < 1) ||
             (address.generic.sa_family == AF_INET6 && mask > 128) ||
@@ -657,7 +650,7 @@ bool zmq::tcp_address_mask_t::match_address (const struct sockaddr *ss, const so
         if (memcmp (our_bytes, their_bytes, full_bytes))
             return false;
 
-        const uint8_t last_byte_bits = (0xffU << (8 - (mask % 8))) & 0xffU;
+        const uint8_t last_byte_bits = 0xffU << (8 - mask % 8);
         if (last_byte_bits) {
             if ((their_bytes [full_bytes] & last_byte_bits) != (our_bytes [full_bytes] & last_byte_bits))
                 return false;
