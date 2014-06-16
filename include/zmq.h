@@ -87,6 +87,7 @@ typedef unsigned __int8 uint8_t;
 #   include <stdint.h>
 #endif
 
+#include <sys/types.h>
 
 /******************************************************************************/
 /*  0MQ errors.                                                               */
@@ -212,8 +213,8 @@ ZMQ_EXPORT int zmq_msg_init (zmq_msg_t *msg);
 ZMQ_EXPORT int zmq_msg_init_size (zmq_msg_t *msg, size_t size);
 ZMQ_EXPORT int zmq_msg_init_data (zmq_msg_t *msg, void *data,
     size_t size, zmq_free_fn *ffn, void *hint);
-ZMQ_EXPORT int zmq_msg_send (zmq_msg_t *msg, void *s, int flags);
-ZMQ_EXPORT int zmq_msg_recv (zmq_msg_t *msg, void *s, int flags);
+ZMQ_EXPORT ssize_t zmq_msg_send (zmq_msg_t *msg, void *s, int flags);
+ZMQ_EXPORT ssize_t zmq_msg_recv (zmq_msg_t *msg, void *s, int flags);
 ZMQ_EXPORT int zmq_msg_close (zmq_msg_t *msg);
 ZMQ_EXPORT int zmq_msg_move (zmq_msg_t *dest, zmq_msg_t *src);
 ZMQ_EXPORT int zmq_msg_copy (zmq_msg_t *dest, zmq_msg_t *src);
@@ -360,9 +361,9 @@ ZMQ_EXPORT int zmq_bind (void *s, const char *addr);
 ZMQ_EXPORT int zmq_connect (void *s, const char *addr);
 ZMQ_EXPORT int zmq_unbind (void *s, const char *addr);
 ZMQ_EXPORT int zmq_disconnect (void *s, const char *addr);
-ZMQ_EXPORT int zmq_send (void *s, const void *buf, size_t len, int flags);
-ZMQ_EXPORT int zmq_send_const (void *s, const void *buf, size_t len, int flags);
-ZMQ_EXPORT int zmq_recv (void *s, void *buf, size_t len, int flags);
+ZMQ_EXPORT ssize_t zmq_send (void *s, const void *buf, size_t len, int flags);
+ZMQ_EXPORT ssize_t zmq_send_const (void *s, const void *buf, size_t len, int flags);
+ZMQ_EXPORT ssize_t zmq_recv (void *s, void *buf, size_t len, int flags);
 ZMQ_EXPORT int zmq_socket_monitor (void *s, const char *addr, int events);
 
 
