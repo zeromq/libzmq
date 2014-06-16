@@ -208,7 +208,7 @@ int zmq::ctx_t::get (int option_)
         rc = max_sockets;
     else
     if (option_ == ZMQ_SOCKET_LIMIT)
-        rc = clipped_maxsocket (std::numeric_limits<int>::max());
+        rc = clipped_maxsocket (65535);
     else
     if (option_ == ZMQ_IO_THREADS)
         rc = io_thread_count;
