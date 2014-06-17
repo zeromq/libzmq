@@ -144,6 +144,17 @@ else
     libzmq_pedantic="yes"
 fi
 
+AC_ARG_WITH([militant],
+            [AS_HELP_STRING([--with-militant],
+                            [Enable militant API assertions])],
+            [zmq_militant="yes"],
+            [])
+
+if test "x$zmq_militant" = "xyes"; then
+    AC_DEFINE(ZMQ_ACT_MILITANT, 1, [Enable militant API assertions])
+fi
+
+
 # By default compiling with -Werror except OSX.
 libzmq_werror="yes"
 
