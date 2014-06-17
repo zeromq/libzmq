@@ -68,6 +68,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
 #if defined (ZMQ_ACT_MILITANT)
     bool malformed = true;          //  Did caller pass a bad option value?
 #endif
+
     switch (option_) {
         case ZMQ_SNDHWM:
             if (is_int && value >= 0) {
@@ -467,6 +468,9 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
 {
     bool is_int = (*optvallen_ == sizeof (int));
     int *value = (int *) optval_;
+#if defined (ZMQ_ACT_MILITANT)
+    bool malformed = true;          //  Did caller pass a bad option value?
+#endif
 
     switch (option_) {
         case ZMQ_SNDHWM:
@@ -773,7 +777,17 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
                 return 0;
             }
             break;
+            
+        default:
+#if defined (ZMQ_ACT_MILITANT)
+            malformed = false;
+#endif
+            break;
     }
+#if defined (ZMQ_ACT_MILITANT)
+    if (malformed)
+        zmq_assert (false);
+#endif
     errno = EINVAL;
     return -1;
 }
