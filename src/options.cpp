@@ -403,7 +403,9 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 return 0;
             }
             break;
-	
+
+        //  If libgssapi isn't installed, these options provoke EINVAL
+#       ifdef HAVE_LIBGSSAPI_KRB5
         case ZMQ_GSSAPI_SERVER:
             if (is_int && (value == 0 || value == 1)) {
                 as_server = value;
@@ -411,7 +413,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 return 0;
             }
             break;
-		
+
         case ZMQ_GSSAPI_PRINCIPAL:
             if (optvallen_ > 0 && optvallen_ < 256 && optval_ != NULL) {
                 gss_principal.assign ((const char *) optval_, optvallen_);
@@ -435,7 +437,8 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 return 0;
             }
             break;
-	
+#       endif
+
         case ZMQ_HANDSHAKE_IVL:
             if (is_int && value >= 0) {
                 handshake_ivl = value;
@@ -741,6 +744,8 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
             }
             break;
  
+        //  If libgssapi isn't installed, these options provoke EINVAL
+#       ifdef HAVE_LIBGSSAPI_KRB5
         case ZMQ_GSSAPI_SERVER:
             if (is_int) {
                 *value = as_server && mechanism == ZMQ_GSSAPI;
@@ -770,7 +775,8 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
                 return 0;
             }
             break;
- 
+#endif
+
         case ZMQ_HANDSHAKE_IVL:
             if (is_int) {
                 *value = handshake_ivl;
