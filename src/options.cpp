@@ -65,7 +65,9 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
 {
     bool is_int = (optvallen_ == sizeof (int));
     int value = is_int? *((int *) optval_): 0;
-
+#if defined (ZMQ_ACT_MILITANT)
+    bool malformed = true;          //  Did caller pass a bad option value?
+#endif
     switch (option_) {
         case ZMQ_SNDHWM:
             if (is_int && value >= 0) {
@@ -440,10 +442,23 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             break;
 
-
         default:
+#if defined (ZMQ_ACT_MILITANT)
+            //  There are valid scenarios for probing with unknown socket option
+            //  values, e.g. to check if security is enabled or not. This will not
+            //  provoke a militant assert. However, passing bad values to a valid
+            //  socket option will, if ZMQ_ACT_MILITANT is defined.
+            malformed = false;
+#endif
             break;
     }
+#if defined (ZMQ_ACT_MILITANT)
+    //  There is no valid use case for passing an error back to the application
+    //  when it sent malformed arguments to a socket option. Use ./configure
+    //  --with-militant to enable this checking.
+    if (malformed)
+        zmq_assert (false);
+#endif
     errno = EINVAL;
     return -1;
 }
@@ -517,6 +532,7 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
                 return 0;
             }
             break;
+            
         case ZMQ_TYPE:
             if (is_int) {
                 *value = type;
@@ -757,9 +773,7 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
                 return 0;
             }
             break;
-
-
-	}
+    }
     errno = EINVAL;
     return -1;
 }
