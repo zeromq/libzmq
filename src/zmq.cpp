@@ -1043,3 +1043,35 @@ int zmq_device (int /* type */, void *frontend_, void *backend_)
         (zmq::socket_base_t*) frontend_,
         (zmq::socket_base_t*) backend_, NULL);
 }
+
+//  Probe library capabilities; for now, reports on transport and security
+
+int zmq_has (const char *capability)
+{
+#if !defined (ZMQ_HAVE_WINDOWS) && !defined (ZMQ_HAVE_OPENVMS)
+    if (strcmp (capability, "ipc") == 0)
+        return true;
+#endif
+#if defined (ZMQ_HAVE_OPENPGM)
+    if (strcmp (capability, "pgm") == 0)
+        return true;
+#endif
+#if defined (ZMQ_HAVE_TIPC)
+    if (strcmp (capability, "tipc") == 0)
+        return true;
+#endif
+#if defined (ZMQ_HAVE_NORM)
+    if (strcmp (capability, "norm") == 0)
+        return true;
+#endif
+#if defined (HAVE_LIBSODIUM)
+    if (strcmp (capability, "curve") == 0)
+        return true;
+#endif
+#if defined (HAVE_LIBGSSAPI_KRB5)
+    if (strcmp (capability, "gssapi") == 0)
+        return true;
+#endif
+    //  Whatever the application asked for, we don't have
+    return false;
+}
