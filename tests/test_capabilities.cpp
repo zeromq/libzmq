@@ -52,7 +52,7 @@ int main (void)
 #endif
     
 #if defined (HAVE_LIBGSSAPI_KRB5)
-    assert (zmq_has ("gssapi");
+    assert (zmq_has ("gssapi"));
 #else
     assert (!zmq_has ("gssapi"));
 #endif
