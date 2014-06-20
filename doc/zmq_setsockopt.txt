@@ -170,6 +170,55 @@ Default value:: NULL
 Applicable socket types:: all, when using TCP transport
 
 
+ZMQ_GSSAPI_PLAINTEXT: Disable GSSAPI encryption
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Defines whether communications on the socket will encrypted, see
+linkzmq:zmq_gssapi[7]. A value of '1' means  that communications will be
+plaintext.  A value of '0' means communications will be encrypted.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1
+Default value:: 0 (false)
+Applicable socket types:: all, when using TCP transport
+
+
+ZMQ_GSSAPI_PRINCIPAL: Set name of GSSAPI principal
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the name of the pricipal for whom GSSAPI credentials should be acquired.
+
+[horizontal]
+Option value type:: character string
+Option value unit:: N/A
+Default value:: not set
+Applicable socket types:: all, when using TCP transport
+
+
+ZMQ_GSSAPI_SERVER: Set GSSAPI server role
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Defines whether the socket will act as server for GSSAPI security, see
+linkzmq:zmq_gssapi[7]. A value of '1' means the socket will act as GSSAPI
+server. A value of '0' means the socket will act as GSSAPI client.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1
+Default value:: 0 (false)
+Applicable socket types:: all, when using TCP transport
+
+
+ZMQ_GSSAPI_SERVICE_PRINCIPAL: Set name of GSSAPI service principal
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the name of the pricipal of the GSSAPI server to which a GSSAPI client
+intends to connect.
+
+[horizontal]
+Option value type:: character string
+Option value unit:: N/A
+Default value:: not set
+Applicable socket types:: all, when using TCP transport
+
+
 ZMQ_HANDSHAKE_IVL: Set maximum handshake interval
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_HANDSHAKE_IVL' option shall set the maximum handshake interval for

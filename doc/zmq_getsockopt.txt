@@ -164,6 +164,57 @@ Default value:: N/A
 Applicable socket types:: all
 
 
+ZMQ_GSSAPI_PLAINTEXT: Retrieve GSSAPI plaintext or encrypted status
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Returns the 'ZMQ_GSSAPI_PLAINTEXT' option, if any, previously set on the
+socket.  A value of '1' means  that communications will be plaintext.  A value
+of '0' means communications will be encrypted.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1
+Default value:: 0 (false)
+Applicable socket types:: all, when using TCP or IPC transports
+
+
+ZMQ_GSSAPI_PRINCIPAL: Retrieve the name of the GSSAPI principal
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_GSSAPI_PRINCIPAL' option shall retrieve the principal name set for the
+GSSAPI security mechanism. The returned value shall be a NULL-terminated string
+and MAY be empty. The returned size SHALL include the terminating null byte.
+
+[horizontal]
+Option value type:: NULL-terminated character string
+Option value unit:: N/A
+Default value:: null string
+Applicable socket types:: all, when using TCP or IPC transports
+
+
+ZMQ_GSSAPI_SERVER: Retrieve current GSSAPI server role
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Returns the 'ZMQ_GSSAPI_SERVER' option, if any, previously set on the socket.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1
+Default value:: 0 (false)
+Applicable socket types:: all, when using TCP or IPC transports
+
+
+ZMQ_GSSAPI_SERVICE_PRINCIPAL: Retrieve the name of the GSSAPI service principal
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_GSSAPI_SERVICE_PRINCIPAL' option shall retrieve the principal name of
+the GSSAPI server to which a GSSAPI client socket intends to connect.  The
+returned value shall be a NULL-terminated string and MAY be empty. The returned
+size SHALL include the terminating null byte.
+
+[horizontal]
+Option value type:: NULL-terminated character string
+Option value unit:: N/A
+Default value:: null string
+Applicable socket types:: all, when using TCP or IPC transports
+
+
 ZMQ_HANDSHAKE_IVL: Retrieve maximum handshake interval
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_HANDSHAKE_IVL' option shall retrieve the maximum handshake interval
@@ -301,7 +352,7 @@ for the socket.
 
 [horizontal]
 Option value type:: int
-Option value unit:: ZMQ_NULL, ZMQ_PLAIN, or ZMQ_CURVE
+Option value unit:: ZMQ_NULL, ZMQ_PLAIN, ZMQ_CURVE, or ZMQ_GSSAPI
 Default value:: ZMQ_NULL
 Applicable socket types:: all, when using TCP or IPC transports
 
