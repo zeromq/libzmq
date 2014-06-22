@@ -25,6 +25,7 @@
 #include "tcp_connecter.hpp"
 #include "ipc_connecter.hpp"
 #include "tipc_connecter.hpp"
+#include "socks_connecter.hpp"
 #include "pgm_sender.hpp"
 #include "pgm_receiver.hpp"
 #include "address.hpp"
@@ -497,10 +498,22 @@ void zmq::session_base_t::start_connecting (bool wait_)
     //  Create the connecter object.
 
     if (addr->protocol == "tcp") {
-        tcp_connecter_t *connecter = new (std::nothrow) tcp_connecter_t (
-            io_thread, this, options, addr, wait_);
-        alloc_assert (connecter);
-        launch_child (connecter);
+        if (options.socks_proxy_address != "") {
+            address_t *proxy_address = new (std::nothrow)
+                address_t ("tcp", options.socks_proxy_address);
+            alloc_assert (proxy_address);
+            socks_connecter_t *connecter =
+                new (std::nothrow) socks_connecter_t (
+                    io_thread, this, options, addr, proxy_address, wait_);
+            alloc_assert (connecter);
+            launch_child (connecter);
+        }
+        else {
+            tcp_connecter_t *connecter = new (std::nothrow)
+                tcp_connecter_t (io_thread, this, options, addr, wait_);
+            alloc_assert (connecter);
+            launch_child (connecter);
+        }
         return;
     }
 

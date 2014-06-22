@@ -114,6 +114,9 @@ namespace zmq
         // if true, router socket accepts non-zmq tcp connections
         bool raw_sock;
 
+        //  Addres of SOCKS proxy
+        std::string socks_proxy_address;
+
         //  TCP keep-alive settings.
         //  Defaults to -1 = do not change socket options
         int tcp_keepalive;

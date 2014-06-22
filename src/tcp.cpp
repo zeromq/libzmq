@@ -141,3 +141,104 @@ void zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_, int 
 #endif // ZMQ_HAVE_SO_KEEPALIVE
 #endif // ZMQ_HAVE_WINDOWS
 }
+
+int zmq::tcp_write (fd_t s_, const void *data_, size_t size_)
+{
+#ifdef ZMQ_HAVE_WINDOWS
+
+    int nbytes = send (s_, (char*) data_, (int) size_, 0);
+
+    //  If not a single byte can be written to the socket in non-blocking mode
+    //  we'll get an error (this may happen during the speculative write).
+    if (nbytes == SOCKET_ERROR && WSAGetLastError () == WSAEWOULDBLOCK)
+        return 0;
+
+    //  Signalise peer failure.
+    if (nbytes == SOCKET_ERROR && (
+          WSAGetLastError () == WSAENETDOWN ||
+          WSAGetLastError () == WSAENETRESET ||
+          WSAGetLastError () == WSAEHOSTUNREACH ||
+          WSAGetLastError () == WSAECONNABORTED ||
+          WSAGetLastError () == WSAETIMEDOUT ||
+          WSAGetLastError () == WSAECONNRESET))
+        return -1;
+
+    wsa_assert (nbytes != SOCKET_ERROR);
+    return nbytes;
+
+#else
+    ssize_t nbytes = send (s_, data_, size_, 0);
+
+    //  Several errors are OK. When speculative write is being done we may not
+    //  be able to write a single byte from the socket. Also, SIGSTOP issued
+    //  by a debugging tool can result in EINTR error.
+    if (nbytes == -1 && (errno == EAGAIN || errno == EWOULDBLOCK ||
+          errno == EINTR))
+        return 0;
+
+    //  Signalise peer failure.
+    if (nbytes == -1) {
+        errno_assert (errno != EACCES
+                   && errno != EBADF
+                   && errno != EDESTADDRREQ
+                   && errno != EFAULT
+                   && errno != EINVAL
+                   && errno != EISCONN
+                   && errno != EMSGSIZE
+                   && errno != ENOMEM
+                   && errno != ENOTSOCK
+                   && errno != EOPNOTSUPP);
+        return -1;
+    }
+
+    return static_cast <int> (nbytes);
+
+#endif
+}
+
+int zmq::tcp_read (fd_t s_, void *data_, size_t size_)
+{
+#ifdef ZMQ_HAVE_WINDOWS
+
+    const int rc = recv (s_, (char*) data_, (int) size_, 0);
+
+    //  If not a single byte can be read from the socket in non-blocking mode
+    //  we'll get an error (this may happen during the speculative read).
+    if (rc == SOCKET_ERROR) {
+        if (WSAGetLastError () == WSAEWOULDBLOCK)
+            errno = EAGAIN;
+        else {
+            wsa_assert (WSAGetLastError () == WSAENETDOWN
+                     || WSAGetLastError () == WSAENETRESET
+                     || WSAGetLastError () == WSAECONNABORTED
+                     || WSAGetLastError () == WSAETIMEDOUT
+                     || WSAGetLastError () == WSAECONNRESET
+                     || WSAGetLastError () == WSAECONNREFUSED
+                     || WSAGetLastError () == WSAENOTCONN);
+            errno = wsa_error_to_errno (WSAGetLastError ());
+        }
+    }
+
+    return rc == SOCKET_ERROR? -1: rc;
+
+#else
+
+    const ssize_t rc = recv (s_, data_, size_, 0);
+
+    //  Several errors are OK. When speculative read is being done we may not
+    //  be able to read a single byte from the socket. Also, SIGSTOP issued
+    //  by a debugging tool can result in EINTR error.
+    if (rc == -1) {
+        errno_assert (errno != EBADF
+                   && errno != EFAULT
+                   && errno != EINVAL
+                   && errno != ENOMEM
+                   && errno != ENOTSOCK);
+        if (errno == EWOULDBLOCK || errno == EINTR)
+            errno = EAGAIN;
+    }
+
+    return static_cast <int> (rc);
+
+#endif
+}

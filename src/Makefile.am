@@ -78,6 +78,8 @@ libzmq_la_SOURCES = \
     session_base.hpp \
     signaler.hpp \
     socket_base.hpp \
+    socks.hpp \
+    socks_connecter.hpp \
     stdint.hpp \
     stream.hpp \
     stream_engine.hpp \
@@ -149,6 +151,8 @@ libzmq_la_SOURCES = \
     session_base.cpp \
     signaler.cpp \
     socket_base.cpp \
+    socks.cpp \
+    socks_connecter.cpp \
     stream.cpp \
     stream_engine.cpp \
     sub.cpp \
