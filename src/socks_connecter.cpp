@@ -62,6 +62,7 @@ zmq::socks_connecter_t::socks_connecter_t (class io_thread_t *io_thread_,
 zmq::socks_connecter_t::~socks_connecter_t ()
 {
     zmq_assert (s == retired_fd);
+    delete proxy_addr;
 }
 
 void zmq::socks_connecter_t::process_plug ()

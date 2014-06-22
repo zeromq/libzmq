@@ -112,6 +112,7 @@ namespace zmq
         //  Address to connect to. Owned by session_base_t.
         address_t *addr;
 
+        //  SOCKS address; owned by this connecter.
         address_t *proxy_addr;
 
         int status;
