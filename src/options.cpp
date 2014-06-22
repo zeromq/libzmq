@@ -206,6 +206,19 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             break;
 
+        case ZMQ_SOCKS_PROXY:
+            if (optval_ == NULL && optvallen_ == 0) {
+                socks_proxy_address.clear ();
+                return 0;
+            }
+            else
+            if (optval_ != NULL && optvallen_ > 0 ) {
+                socks_proxy_address =
+                    std::string ((const char *) optval_, optvallen_);
+                return 0;
+            }
+            break;
+
         case ZMQ_TCP_KEEPALIVE:
             if (is_int && (value == -1 || value == 0 || value == 1)) {
                 tcp_keepalive = value;
@@ -614,6 +627,14 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
         case ZMQ_IMMEDIATE:
             if (is_int) {
                 *value = immediate;
+                return 0;
+            }
+            break;
+
+        case ZMQ_SOCKS_PROXY:
+            if (*optvallen_ >= socks_proxy_address.size () + 1) {
+                memcpy (optval_, socks_proxy_address.c_str (), socks_proxy_address.size () + 1);
+                *optvallen_ = socks_proxy_address.size () + 1;
                 return 0;
             }
             break;

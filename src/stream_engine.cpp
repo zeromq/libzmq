@@ -54,6 +54,7 @@
 #include "config.hpp"
 #include "err.hpp"
 #include "ip.hpp"
+#include "tcp.hpp"
 #include "likely.hpp"
 #include "wire.hpp"
 
@@ -272,7 +273,7 @@ void zmq::stream_engine_t::in_event ()
         size_t bufsize = 0;
         decoder->get_buffer (&inpos, &bufsize);
 
-        int const rc = read (inpos, bufsize);
+        const int rc = tcp_read (s, inpos, bufsize);
         if (rc == 0) {
             error (connection_error);
             return;
@@ -359,7 +360,7 @@ void zmq::stream_engine_t::out_event ()
     //  arbitrarily large. However, we assume that underlying TCP layer has
     //  limited transmission buffer and thus the actual number of bytes
     //  written should be reasonably modest.
-    int nbytes = write (outpos, outsize);
+    const int nbytes = tcp_write (s, outpos, outsize);
 
     //  IO error has occurred. We stop waiting for output events.
     //  The engine is not terminated until we detect input error;
@@ -448,8 +449,8 @@ bool zmq::stream_engine_t::handshake ()
     zmq_assert (greeting_bytes_read < greeting_size);
     //  Receive the greeting.
     while (greeting_bytes_read < greeting_size) {
-        const int n = read (greeting_recv + greeting_bytes_read,
-                            greeting_size - greeting_bytes_read);
+        const int n = tcp_read (s, greeting_recv + greeting_bytes_read,
+                                greeting_size - greeting_bytes_read);
         if (n == 0) {
             error (connection_error);
             return false;
@@ -890,107 +891,6 @@ void zmq::stream_engine_t::error (error_reason_t reason)
     session->engine_error (reason);
     unplug ();
     delete this;
-}
-
-int zmq::stream_engine_t::write (const void *data_, size_t size_)
-{
-#ifdef ZMQ_HAVE_WINDOWS
-
-    int nbytes = send (s, (char*) data_, (int) size_, 0);
-
-    //  If not a single byte can be written to the socket in non-blocking mode
-    //  we'll get an error (this may happen during the speculative write).
-    if (nbytes == SOCKET_ERROR && WSAGetLastError () == WSAEWOULDBLOCK)
-        return 0;
-
-    //  Signalise peer failure.
-    if (nbytes == SOCKET_ERROR && (
-          WSAGetLastError () == WSAENETDOWN ||
-          WSAGetLastError () == WSAENETRESET ||
-          WSAGetLastError () == WSAEHOSTUNREACH ||
-          WSAGetLastError () == WSAECONNABORTED ||
-          WSAGetLastError () == WSAETIMEDOUT ||
-          WSAGetLastError () == WSAECONNRESET))
-        return -1;
-
-    wsa_assert (nbytes != SOCKET_ERROR);
-    return nbytes;
-
-#else
-    ssize_t nbytes = send (s, data_, size_, 0);
-
-    //  Several errors are OK. When speculative write is being done we may not
-    //  be able to write a single byte from the socket. Also, SIGSTOP issued
-    //  by a debugging tool can result in EINTR error.
-    if (nbytes == -1 && (errno == EAGAIN || errno == EWOULDBLOCK ||
-          errno == EINTR))
-        return 0;
-
-    //  Signalise peer failure.
-    if (nbytes == -1) {
-        errno_assert (errno != EACCES
-                   && errno != EBADF
-                   && errno != EDESTADDRREQ
-                   && errno != EFAULT
-                   && errno != EINVAL
-                   && errno != EISCONN
-                   && errno != EMSGSIZE
-                   && errno != ENOMEM
-                   && errno != ENOTSOCK
-                   && errno != EOPNOTSUPP);
-        return -1;
-    }
-
-    return static_cast <int> (nbytes);
-
-#endif
-}
-
-int zmq::stream_engine_t::read (void *data_, size_t size_)
-{
-#ifdef ZMQ_HAVE_WINDOWS
-
-    const int rc = recv (s, (char*) data_, (int) size_, 0);
-
-    //  If not a single byte can be read from the socket in non-blocking mode
-    //  we'll get an error (this may happen during the speculative read).
-    if (rc == SOCKET_ERROR) {
-        if (WSAGetLastError () == WSAEWOULDBLOCK)
-            errno = EAGAIN;
-        else {
-            wsa_assert (WSAGetLastError () == WSAENETDOWN
-                     || WSAGetLastError () == WSAENETRESET
-                     || WSAGetLastError () == WSAECONNABORTED
-                     || WSAGetLastError () == WSAETIMEDOUT
-                     || WSAGetLastError () == WSAECONNRESET
-                     || WSAGetLastError () == WSAECONNREFUSED
-                     || WSAGetLastError () == WSAENOTCONN);
-            errno = wsa_error_to_errno (WSAGetLastError ());
-        }
-    }
-
-    return rc == SOCKET_ERROR? -1: rc;
-
-#else
-
-    const ssize_t rc = recv (s, data_, size_, 0);
-
-    //  Several errors are OK. When speculative read is being done we may not
-    //  be able to read a single byte from the socket. Also, SIGSTOP issued
-    //  by a debugging tool can result in EINTR error.
-    if (rc == -1) {
-        errno_assert (errno != EBADF
-                   && errno != EFAULT
-                   && errno != EINVAL
-                   && errno != ENOMEM
-                   && errno != ENOTSOCK);
-        if (errno == EWOULDBLOCK || errno == EINTR)
-            errno = EAGAIN;
-    }
-
-    return static_cast <int> (rc);
-
-#endif
 }
 
 void zmq::stream_engine_t::set_handshake_timer ()
