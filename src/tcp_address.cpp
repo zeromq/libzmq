@@ -136,10 +136,10 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
     }
     if (is_src_)
         memcpy (&source_address.ipv4.sin_addr,
-            &((sockaddr_in*) &ifr.ifr_addr)->sin_addr, sizeof in_addr);
+            &((sockaddr_in*) &ifr.ifr_addr)->sin_addr, sizeof (struct in_addr));
     else
        memcpy (&address.ipv4.sin_addr,
-            &((sockaddr_in*) &ifr.ifr_addr)->sin_addr, sizeof in_addr);
+            &((sockaddr_in*) &ifr.ifr_addr)->sin_addr, sizeof (struct in_addr));
 
     return 0;
 }
