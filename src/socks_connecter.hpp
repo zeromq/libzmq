@@ -102,7 +102,7 @@ namespace zmq
 
         //  Get the file descriptor of newly created connection. Returns
         //  retired_fd if the connection was unsuccessfull.
-        int check_proxy_connection ();
+        zmq::fd_t check_proxy_connection ();
 
         socks_greeting_encoder_t greeting_encoder;
         socks_choice_decoder_t choice_decoder;
