@@ -419,6 +419,8 @@ set(cxx-sources
         session_base.cpp
         signaler.cpp
         socket_base.cpp
+        socks.cpp
+        socks_connecter.cpp
         stream.cpp
         stream_engine.cpp
         sub.cpp

@@ -18,13 +18,16 @@
 */
 
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
 
 #include "err.hpp"
 #include "platform.hpp"
 #include "socks.hpp"
 #include "tcp.hpp"
+
+#ifndef ZMQ_HAVE_WINDOWS
+#include <sys/socket.h>
+#include <netdb.h>
+#endif
 
 zmq::socks_greeting_t::socks_greeting_t (uint8_t method_) :
     num_methods (1)
