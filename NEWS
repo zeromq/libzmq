@@ -11,6 +11,8 @@
 
 * Fixed #1015; race condition while connecting inproc sockets.
 
+* Fixed #1088; assertion failure for WSAENOTSOCK on Windows.
+
 
 0MQ version 4.0.4 stable, released on 2014/03/10
 ================================================
