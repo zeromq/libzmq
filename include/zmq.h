@@ -359,9 +359,6 @@ ZMQ_EXPORT int zmq_send_const (void *s, const void *buf, size_t len, int flags);
 ZMQ_EXPORT int zmq_recv (void *s, void *buf, size_t len, int flags);
 ZMQ_EXPORT int zmq_socket_monitor (void *s, const char *addr, int events);
 
-ZMQ_EXPORT int zmq_sendmsg (void *s, zmq_msg_t *msg, int flags);
-ZMQ_EXPORT int zmq_recvmsg (void *s, zmq_msg_t *msg, int flags);
-
 /*  Experimental                                                              */
 struct iovec;
 
@@ -397,12 +394,21 @@ ZMQ_EXPORT int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
 ZMQ_EXPORT int zmq_proxy (void *frontend, void *backend, void *capture);
 ZMQ_EXPORT int zmq_proxy_steerable (void *frontend, void *backend, void *capture, void *control);
 
+/*  Probe library capabilities  */
+
+#define ZMQ_HAS_CAPABILITIES 1
+ZMQ_EXPORT int zmq_has (const char *capability);
+
 /*  Deprecated aliases */
 #define ZMQ_STREAMER 1
 #define ZMQ_FORWARDER 2
 #define ZMQ_QUEUE 3
-/*  Deprecated method */
+
+/*  Deprecated methods */
 ZMQ_EXPORT int zmq_device (int type, void *frontend, void *backend);
+ZMQ_EXPORT int zmq_sendmsg (void *s, zmq_msg_t *msg, int flags);
+ZMQ_EXPORT int zmq_recvmsg (void *s, zmq_msg_t *msg, int flags);
+
 
 #undef ZMQ_EXPORT
 
