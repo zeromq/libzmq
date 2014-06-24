@@ -466,7 +466,8 @@ int zmq::tcp_address_t::to_string (std::string &addr_)
         return -1;
     }
 
-    // not using service resolv because of https://github.com/zeromq/libzmq/commit/1824574f9b5a8ce786853320e3ea09fe1f822bc4
+    //  Not using service resolv because of
+    //  https://github.com/zeromq/libzmq/commit/1824574f9b5a8ce786853320e3ea09fe1f822bc4
     char hbuf [NI_MAXHOST];
     int rc = getnameinfo (addr (), addrlen (), hbuf, sizeof hbuf, NULL, 0, NI_NUMERICHOST);
     if (rc != 0) {
