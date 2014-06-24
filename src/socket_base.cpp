@@ -596,7 +596,39 @@ int zmq::socket_base_t::connect (const char *addr_)
 
     //  Resolve address (if needed by the protocol)
     if (protocol == "tcp") {
-        // Defer resolution until a socket is opened
+        //  Do some basic sanity checks on tcp:// address syntax
+        //  - hostname starts with digit or letter, with embedded '-' or '.'
+        //  - IPv6 address may contain hex chars and colons.
+        //  - IPv4 address may contain decimal digits and dots.
+        //  - Address must end in ":port" where port is *, or numeric
+        //  - Address may contain two parts separated by ':'
+        //  Following code is quick and dirty check to catch obvious errors,
+        //  without trying to be fully accurate.
+        const char *check = address.c_str ();
+        if (isalnum (*check) || isxdigit (*check)) {
+            check++;
+            while (isalnum  (*check)
+                || isxdigit (*check)
+                || *check == '.' || *check == '-' || *check == ':'|| *check == ';')
+                check++;
+        }
+        //  Assume the worst, now look for success
+        rc = -1;
+        //  Did we reach the end of the address safely?
+        if (*check == 0) {
+            //  Do we have a valid port string? (cannot be '*' in connect
+            check = strrchr (address.c_str (), ':');
+            if (check) {
+                check++;
+                if (*check && (isdigit (*check)))
+                    rc = 0;     //  Valid
+            }
+        }
+        if (rc == -1) {
+            delete paddr;
+            return -1;
+        }
+        //  Defer resolution until a socket is opened
         paddr->resolved.tcp_addr = NULL;
     }
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS

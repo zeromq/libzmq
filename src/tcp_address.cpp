@@ -413,11 +413,6 @@ int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_, boo
     std::string addr_str (name_, delimiter - name_);
     std::string port_str (delimiter + 1);
 
-    //  Remove square brackets around the address, if any.
-    if (addr_str.size () >= 2 && addr_str [0] == '[' &&
-          addr_str [addr_str.size () - 1] == ']')
-        addr_str = addr_str.substr (1, addr_str.size () - 2);
-
     //  Allow 0 specifically, to detect invalid port error in atoi if not
     uint16_t port;
     if (port_str == "*" || port_str == "0")
@@ -466,7 +461,8 @@ int zmq::tcp_address_t::to_string (std::string &addr_)
         return -1;
     }
 
-    // not using service resolv because of https://github.com/zeromq/libzmq/commit/1824574f9b5a8ce786853320e3ea09fe1f822bc4
+    //  Not using service resolv because of
+    //  https://github.com/zeromq/libzmq/commit/1824574f9b5a8ce786853320e3ea09fe1f822bc4
     char hbuf [NI_MAXHOST];
     int rc = getnameinfo (addr (), addrlen (), hbuf, sizeof hbuf, NULL, 0, NI_NUMERICHOST);
     if (rc != 0) {
