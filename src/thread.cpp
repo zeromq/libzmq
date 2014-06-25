@@ -84,13 +84,11 @@ extern "C"
     }
 }
 
-bool getenvi(const char *env_, int &result_)
+bool getenvi (const char *env_, int &result_)
 {
-    char *str = getenv(env_);
-    if(str == NULL)
-    {
+    char *str = getenv (env_);
+    if (str == NULL)
         return false;
-    }
 
     std::stringstream ss(str);
     return ss >> result_;
@@ -104,14 +102,13 @@ void zmq::thread_t::start (thread_fn *tfn_, void *arg_)
     posix_assert (rc);
 
     int prio;
-    if(getenvi("ZMQ_THREAD_PRIO", prio))
-    {
+    if (getenvi ("ZMQ_THREAD_PRIO", prio)) {
         int policy = SCHED_RR;
-        getenvi("ZMQ_THREAD_POLICY", policy);
+        getenvi ("ZMQ_THREAD_POLICY", policy);
 
         struct sched_param param;
         param.sched_priority = prio;
-        rc = pthread_setschedparam(descriptor, policy, &param);
+        rc = pthread_setschedparam (descriptor, policy, &param);
         posix_assert (rc);
     }
 }

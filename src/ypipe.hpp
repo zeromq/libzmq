@@ -168,10 +168,10 @@ namespace zmq
         //  The pipe mustn't be empty or the function crashes.
         inline bool probe (bool (*fn)(const T &))
         {
-                bool rc = check_read ();
-                zmq_assert (rc);
+            bool rc = check_read ();
+            zmq_assert (rc);
 
-                return (*fn) (queue.front ());
+            return (*fn) (queue.front ());
         }
 
     protected:

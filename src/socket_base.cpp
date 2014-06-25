@@ -189,9 +189,13 @@ int zmq::socket_base_t::parse_uri (const char *uri_,
 int zmq::socket_base_t::check_protocol (const std::string &protocol_)
 {
     //  First check out whether the protcol is something we are aware of.
-    if (protocol_ != "inproc" && protocol_ != "ipc" && protocol_ != "tcp" &&
-          protocol_ != "pgm" && protocol_ != "epgm" && protocol_ != "tipc" &&
-          protocol_ != "norm") {
+    if (protocol_ != "inproc"
+    &&  protocol_ != "ipc"
+    &&  protocol_ != "tcp"
+    &&  protocol_ != "pgm"
+    &&  protocol_ != "epgm"
+    &&  protocol_ != "tipc"
+    &&  protocol_ != "norm") {
         errno = EPROTONOSUPPORT;
         return -1;
     }
@@ -356,12 +360,7 @@ int zmq::socket_base_t::bind (const char *addr_)
     //  Parse addr_ string.
     std::string protocol;
     std::string address;
-    rc = parse_uri (addr_, protocol, address);
-    if (rc != 0)
-        return -1;
-
-    rc = check_protocol (protocol);
-    if (rc != 0)
+    if (parse_uri (addr_, protocol, address) || check_protocol (protocol))
         return -1;
 
     if (protocol == "inproc") {
@@ -464,12 +463,7 @@ int zmq::socket_base_t::connect (const char *addr_)
     //  Parse addr_ string.
     std::string protocol;
     std::string address;
-    rc = parse_uri (addr_, protocol, address);
-    if (rc != 0)
-        return -1;
-
-    rc = check_protocol (protocol);
-    if (rc != 0)
+    if (parse_uri (addr_, protocol, address) || check_protocol (protocol))
         return -1;
 
     if (protocol == "inproc") {
@@ -625,6 +619,7 @@ int zmq::socket_base_t::connect (const char *addr_)
             }
         }
         if (rc == -1) {
+            errno = EINVAL;
             delete paddr;
             return -1;
         }
@@ -743,12 +738,7 @@ int zmq::socket_base_t::term_endpoint (const char *addr_)
     //  Parse addr_ string.
     std::string protocol;
     std::string address;
-    rc = parse_uri (addr_, protocol, address);
-    if (rc != 0)
-        return -1;
-
-    rc = check_protocol (protocol);
-    if (rc != 0)
+    if (parse_uri (addr_, protocol, address) || check_protocol (protocol))
         return -1;
 
     // Disconnect an inproc socket
@@ -1222,12 +1212,7 @@ int zmq::socket_base_t::monitor (const char *addr_, int events_)
     //  Parse addr_ string.
     std::string protocol;
     std::string address;
-    int rc = parse_uri (addr_, protocol, address);
-    if (rc != 0)
-        return -1;
-
-    rc = check_protocol (protocol);
-    if (rc != 0)
+    if (parse_uri (addr_, protocol, address) || check_protocol (protocol))
         return -1;
 
     //  Event notification only supported over inproc://
@@ -1243,9 +1228,9 @@ int zmq::socket_base_t::monitor (const char *addr_, int events_)
 
     //  Never block context termination on pending event messages
     int linger = 0;
-    rc = zmq_setsockopt (monitor_socket, ZMQ_LINGER, &linger, sizeof (linger));
+    int rc = zmq_setsockopt (monitor_socket, ZMQ_LINGER, &linger, sizeof (linger));
     if (rc == -1)
-         stop_monitor ();
+        stop_monitor ();
 
     //  Spawn the monitor socket endpoint
     rc = zmq_bind (monitor_socket, addr_);
