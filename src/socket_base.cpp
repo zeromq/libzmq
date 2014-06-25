@@ -619,6 +619,7 @@ int zmq::socket_base_t::connect (const char *addr_)
             }
         }
         if (rc == -1) {
+            errno = EINVAL;
             delete paddr;
             return -1;
         }
