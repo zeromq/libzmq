@@ -100,6 +100,8 @@ int main (void)
     assert (streq (zmq_msg_gets (&msg, "Hello"), "World"));
     assert (streq (zmq_msg_gets (&msg, "Socket-Type"), "DEALER"));
     assert (streq (zmq_msg_gets (&msg, "User-Id"), "anonymous"));
+    assert (zmq_msg_gets (&msg, "No Such") == NULL);
+    assert (zmq_errno () == EINVAL);
     zmq_msg_close (&msg);
 
     close_zero_linger (client);
