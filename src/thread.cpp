@@ -62,6 +62,7 @@ void zmq::thread_t::stop ()
 #else
 
 #include <signal.h>
+#include <sstream>
 
 extern "C"
 {
@@ -83,12 +84,36 @@ extern "C"
     }
 }
 
+bool getenvi(const char *env_, int &result_)
+{
+    char *str = getenv(env_);
+    if(str == NULL)
+    {
+        return false;
+    }
+
+    std::stringstream ss(str);
+    return ss >> result_;
+}
+
 void zmq::thread_t::start (thread_fn *tfn_, void *arg_)
 {
     tfn = tfn_;
     arg = arg_;
     int rc = pthread_create (&descriptor, NULL, thread_routine, this);
     posix_assert (rc);
+
+    int prio;
+    if(getenvi("ZMQ_THREAD_PRIO", prio))
+    {
+        int policy = SCHED_RR;
+        getenvi("ZMQ_THREAD_POLICY", policy);
+
+        struct sched_param param;
+        param.sched_priority = prio;
+        rc = pthread_setschedparam(descriptor, policy, &param);
+        posix_assert (rc);
+    }
 }
 
 void zmq::thread_t::stop ()
