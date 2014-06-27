@@ -359,11 +359,6 @@ ZMQ_EXPORT int zmq_send_const (void *s, const void *buf, size_t len, int flags);
 ZMQ_EXPORT int zmq_recv (void *s, void *buf, size_t len, int flags);
 ZMQ_EXPORT int zmq_socket_monitor (void *s, const char *addr, int events);
 
-/*  Experimental                                                              */
-struct iovec;
-
-ZMQ_EXPORT int zmq_sendiov (void *s, struct iovec *iov, size_t count, int flags);
-ZMQ_EXPORT int zmq_recviov (void *s, struct iovec *iov, size_t *count, int flags);
 
 /******************************************************************************/
 /*  I/O multiplexing.                                                         */
@@ -389,12 +384,16 @@ typedef struct zmq_pollitem_t
 
 ZMQ_EXPORT int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
 
-/*  Built-in message proxy (3-way) */
+/******************************************************************************/
+/*  Message proxying                                                          */
+/******************************************************************************/
 
 ZMQ_EXPORT int zmq_proxy (void *frontend, void *backend, void *capture);
 ZMQ_EXPORT int zmq_proxy_steerable (void *frontend, void *backend, void *capture, void *control);
 
-/*  Probe library capabilities  */
+/******************************************************************************/
+/*  Probe library capabilities                                                */
+/******************************************************************************/
 
 #define ZMQ_HAS_CAPABILITIES 1
 ZMQ_EXPORT int zmq_has (const char *capability);
@@ -408,6 +407,54 @@ ZMQ_EXPORT int zmq_has (const char *capability);
 ZMQ_EXPORT int zmq_device (int type, void *frontend, void *backend);
 ZMQ_EXPORT int zmq_sendmsg (void *s, zmq_msg_t *msg, int flags);
 ZMQ_EXPORT int zmq_recvmsg (void *s, zmq_msg_t *msg, int flags);
+
+
+/******************************************************************************/
+/*  Encryption functions                                                      */
+/******************************************************************************/
+
+/*  Encode data with Z85 encoding. Returns encoded data                       */
+ZMQ_EXPORT char *zmq_z85_encode (char *dest, uint8_t *data, size_t size);
+
+/*  Decode data with Z85 encoding. Returns decoded data                       */
+ZMQ_EXPORT uint8_t *zmq_z85_decode (uint8_t *dest, char *string);
+
+/*  Generate z85-encoded public and private keypair with libsodium.           */
+/*  Returns 0 on success.                                                     */
+ZMQ_EXPORT int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key);
+
+
+/******************************************************************************/
+/*  These functions are not documented by man pages -- use at your own risk.  */
+/*  If you need these to be part of the formal ZMQ API, then (a) write a man  */
+/*  page, and (b) write a test case in tests.                                 */
+/******************************************************************************/
+
+struct iovec;
+
+ZMQ_EXPORT int zmq_sendiov (void *s, struct iovec *iov, size_t count, int flags);
+ZMQ_EXPORT int zmq_recviov (void *s, struct iovec *iov, size_t *count, int flags);
+
+/*  Helper functions are used by perf tests so that they don't have to care   */
+/*  about minutiae of time-related functions on different OS platforms.       */
+
+/*  Starts the stopwatch. Returns the handle to the watch.                    */
+ZMQ_EXPORT void *zmq_stopwatch_start (void);
+
+/*  Stops the stopwatch. Returns the number of microseconds elapsed since     */
+/*  the stopwatch was started.                                                */
+ZMQ_EXPORT unsigned long zmq_stopwatch_stop (void *watch_);
+
+/*  Sleeps for specified number of seconds.                                   */
+ZMQ_EXPORT void zmq_sleep (int seconds_);
+
+typedef void (zmq_thread_fn) (void*);
+
+/* Start a thread. Returns a handle to the thread.                            */
+ZMQ_EXPORT void *zmq_threadstart (zmq_thread_fn* func, void* arg);
+
+/* Wait for thread to complete then free up resources.                        */
+ZMQ_EXPORT void zmq_threadclose (void* thread);
 
 
 #undef ZMQ_EXPORT
