@@ -41,7 +41,7 @@ namespace zmq
         ~ipc_address_t ();
 
         //  This function sets up the address for UNIX domain transport.
-        int resolve (const char* path_);
+        int resolve (const char *path_);
 
         //  The opposite to resolve()
         int to_string (std::string &addr_);
@@ -56,7 +56,7 @@ namespace zmq
         ipc_address_t (const ipc_address_t&);
         const ipc_address_t &operator = (const ipc_address_t&);
     };
-    
+
 }
 
 #endif
