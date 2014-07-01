@@ -21,7 +21,6 @@
 #define __TESTUTIL_HPP_INCLUDED__
 
 #include "../include/zmq.h"
-#include "../include/zmq_utils.h"
 #include "../src/stdint.hpp"
 #include "platform.hpp"
 
@@ -35,6 +34,7 @@
 #include <assert.h>
 #include <stdarg.h>
 #include <string>
+#include <string.h>
 
 #if defined _WIN32
 #   if defined _MSC_VER
