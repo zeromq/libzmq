@@ -116,7 +116,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
     (void) ipv6_;
 
     //  Create a socket.
-    int sd = open_socket (AF_INET, SOCK_DGRAM, 0);
+    const int sd = open_socket (AF_INET, SOCK_DGRAM, 0);
     errno_assert (sd != -1);
 
     struct ifreq ifr;
@@ -125,7 +125,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
     strncpy (ifr.ifr_name, nic_, sizeof ifr.ifr_name);
 
     //  Fetch interface address.
-    int rc = ioctl (sd, SIOCGIFADDR, (caddr_t) &ifr, sizeof (struct ifreq));
+    const int rc = ioctl (sd, SIOCGIFADDR, (caddr_t) &ifr, sizeof ifr);
 
     //  Clean up.
     close (sd);

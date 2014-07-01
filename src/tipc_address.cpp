@@ -28,17 +28,16 @@
 
 zmq::tipc_address_t::tipc_address_t ()
 {
-    memset (&address, 0, sizeof (address));
+    memset (&address, 0, sizeof address);
 }
 
 zmq::tipc_address_t::tipc_address_t (const sockaddr *sa, socklen_t sa_len)
 {
-    zmq_assert(sa && sa_len > 0);
+    zmq_assert (sa && sa_len > 0);
 
-    memset (&address, 0, sizeof (address));
-    if (sa->sa_family == AF_TIPC) {
-        memcpy(&address, sa, sa_len);
-    }
+    memset (&address, 0, sizeof address);
+    if (sa->sa_family == AF_TIPC)
+        memcpy (&address, sa, sa_len);
 }
 
 zmq::tipc_address_t::~tipc_address_t ()
@@ -47,15 +46,15 @@ zmq::tipc_address_t::~tipc_address_t ()
 
 int zmq::tipc_address_t::resolve (const char *name)
 {
-    int res;
     unsigned int type = 0;
     unsigned int lower = 0;
     unsigned int upper = 0;
 
-    res = sscanf(name, "{%u,%u,%u}", &type, &lower, &upper);
+    const int res = sscanf (name, "{%u,%u,%u}", &type, &lower, &upper);
     if (res == 3)
         goto nameseq;
-    else if (res == 2 && type > TIPC_RESERVED_TYPES) {
+    else
+    if (res == 2 && type > TIPC_RESERVED_TYPES) {
         address.family = AF_TIPC;
         address.addrtype = TIPC_ADDR_NAME;
         address.addr.name.name.type = type;
@@ -63,7 +62,7 @@ int zmq::tipc_address_t::resolve (const char *name)
         /* Since we can't specify lookup domain when connecting
          * (and we're not sure that we want it to be configurable)
          * Change from 'closest first' approach, to search entire zone */
-        address.addr.name.domain = tipc_addr(1, 0, 0);
+        address.addr.name.domain = tipc_addr (1, 0, 0);
         address.scope = 0;
         return 0;
     }
@@ -71,7 +70,7 @@ int zmq::tipc_address_t::resolve (const char *name)
         return EINVAL;
 nameseq:
     if (type < TIPC_RESERVED_TYPES || upper < lower)
-               return EINVAL;
+        return EINVAL;
     address.family = AF_TIPC;
     address.addrtype = TIPC_ADDR_NAMESEQ;
     address.addr.nameseq.type = type;
@@ -102,8 +101,7 @@ const sockaddr *zmq::tipc_address_t::addr () const
 
 socklen_t zmq::tipc_address_t::addrlen () const
 {
-    return (socklen_t) sizeof (address);
+    return (socklen_t) sizeof address;
 }
 
 #endif
-
