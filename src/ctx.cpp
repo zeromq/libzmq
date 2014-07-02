@@ -57,7 +57,9 @@ zmq::ctx_t::ctx_t () :
     slots (NULL),
     max_sockets (clipped_maxsocket (ZMQ_MAX_SOCKETS_DFLT)),
     io_thread_count (ZMQ_IO_THREADS_DFLT),
-    ipv6 (false)
+    ipv6 (false),
+    thread_priority (ZMQ_THREAD_PRIORITY_DFLT),
+    thread_sched_policy (ZMQ_THREAD_SCHED_POLICY_DFLT)
 {
 #ifdef HAVE_FORK
     pid = getpid();
@@ -194,6 +196,18 @@ int zmq::ctx_t::set (int option_, int optval_)
         ipv6 = (optval_ != 0);
         opt_sync.unlock ();
     }
+    else
+    if (option_ == ZMQ_THREAD_PRIORITY && optval_ >= 0) {
+        opt_sync.lock();
+        thread_priority = optval_;
+        opt_sync.unlock();
+    }
+    else
+    if (option_ == ZMQ_THREAD_SCHED_POLICY && optval_ >= 0) {
+        opt_sync.lock();
+        thread_sched_policy = optval_;
+        opt_sync.unlock();
+    }
     else {
         errno = EINVAL;
         rc = -1;
@@ -322,6 +336,12 @@ void zmq::ctx_t::destroy_socket (class socket_base_t *socket_)
 zmq::object_t *zmq::ctx_t::get_reaper ()
 {
     return reaper;
+}
+
+void zmq::ctx_t::start_thread (thread_t &thread_, thread_fn *tfn_, void *arg_) const
+{
+    thread_.start(tfn_, arg_);
+    thread_.setSchedulingParameters(thread_priority, thread_sched_policy);
 }
 
 void zmq::ctx_t::send_command (uint32_t tid_, const command_t &command_)

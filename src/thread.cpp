@@ -59,10 +59,14 @@ void zmq::thread_t::stop ()
     win_assert (rc2 != 0);
 }
 
+void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_)
+{
+    // not implemented
+}
+
 #else
 
 #include <signal.h>
-#include <sstream>
 
 extern "C"
 {
@@ -84,38 +88,39 @@ extern "C"
     }
 }
 
-bool getenvi (const char *env_, int &result_)
-{
-    char *str = getenv (env_);
-    if (str == NULL)
-        return false;
-
-    std::stringstream ss(str);
-    return ss >> result_;
-}
-
 void zmq::thread_t::start (thread_fn *tfn_, void *arg_)
 {
     tfn = tfn_;
     arg = arg_;
     int rc = pthread_create (&descriptor, NULL, thread_routine, this);
     posix_assert (rc);
-
-    int prio;
-    if (getenvi ("ZMQ_THREAD_PRIO", prio)) {
-        int policy = SCHED_RR;
-        getenvi ("ZMQ_THREAD_POLICY", policy);
-
-        struct sched_param param;
-        param.sched_priority = prio;
-        rc = pthread_setschedparam (descriptor, policy, &param);
-        posix_assert (rc);
-    }
 }
 
 void zmq::thread_t::stop ()
 {
     int rc = pthread_join (descriptor, NULL);
+    posix_assert (rc);
+}
+
+void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_)
+{
+    int policy = 0;
+    struct sched_param param;
+
+    int rc = pthread_getschedparam(descriptor, &policy, &param);
+    posix_assert (rc);
+
+    if(priority_ != -1)
+    {
+        param.sched_priority = priority_;
+    }
+
+    if(schedulingPolicy_ != -1)
+    {
+        policy = schedulingPolicy_;
+    }
+
+    rc = pthread_setschedparam(descriptor, policy, &param);
     posix_assert (rc);
 }
 

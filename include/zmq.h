@@ -179,10 +179,14 @@ ZMQ_EXPORT void zmq_version (int *major, int *minor, int *patch);
 #define ZMQ_IO_THREADS  1
 #define ZMQ_MAX_SOCKETS 2
 #define ZMQ_SOCKET_LIMIT 3
+#define ZMQ_THREAD_PRIORITY 3
+#define ZMQ_THREAD_SCHED_POLICY 4
 
 /*  Default for new contexts                                                  */
 #define ZMQ_IO_THREADS_DFLT  1
 #define ZMQ_MAX_SOCKETS_DFLT 1023
+#define ZMQ_THREAD_PRIORITY_DFLT -1
+#define ZMQ_THREAD_SCHED_POLICY_DFLT -1
 
 ZMQ_EXPORT void *zmq_ctx_new (void);
 ZMQ_EXPORT int zmq_ctx_term (void *context);

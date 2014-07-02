@@ -41,7 +41,8 @@
 #include "config.hpp"
 #include "i_poll_events.hpp"
 
-zmq::select_t::select_t () :
+zmq::select_t::select_t (const zmq::ctx_t &ctx_) :
+    ctx(ctx_),
     maxfd (retired_fd),
     retired (false),
     stopping (false)
@@ -136,7 +137,7 @@ void zmq::select_t::reset_pollout (handle_t handle_)
 
 void zmq::select_t::start ()
 {
-    worker.start (worker_routine, this);
+    ctx.start_thread (worker, worker_routine, this);
 }
 
 void zmq::select_t::stop ()
