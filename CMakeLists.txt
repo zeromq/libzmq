@@ -522,6 +522,11 @@ else()
                              OUTPUT_NAME "zmq"
                              PUBLIC_HEADER "${public_headers}")
     endif()
+    add_library(libzmq-static STATIC ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig})
+    set_target_properties(libzmq-static PROPERTIES
+      PUBLIC_HEADER "${public_headers}"
+      COMPILE_FLAGS "-DZMQ_STATIC"
+      OUTPUT_NAME "zmq-static")
 endif()
 
 target_link_libraries(libzmq ${CMAKE_THREAD_LIBS_INIT})
@@ -573,7 +578,7 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug") # Why?
 endif()
 
 enable_testing()
-set(tests 
+set(tests
         test_system
         test_immediate
         test_connect_resolve
@@ -616,7 +621,7 @@ list(APPEND tests
         test_pair_ipc
         test_reqrep_ipc
         test_stream)
-endif()     
+endif()
 
 foreach(test ${tests})
   add_executable(${test} tests/${test}.cpp)
@@ -629,7 +634,7 @@ foreach(test ${tests})
     add_test(NAME ${test} WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH} COMMAND ${test})
   else()
     add_test(NAME ${test} COMMAND ${test})
-  endif() 
+  endif()
 endforeach()
 
 #-----------------------------------------------------------------------------
@@ -655,7 +660,7 @@ if(MSVC)
             COMPONENT Runtime)
   endif()
 else()
-  install(TARGETS libzmq
+  install(TARGETS libzmq libzmq-static
           RUNTIME DESTINATION bin
           ARCHIVE DESTINATION lib
           LIBRARY DESTINATION lib
