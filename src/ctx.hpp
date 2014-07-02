@@ -32,6 +32,7 @@
 #include "stdint.hpp"
 #include "options.hpp"
 #include "atomic_counter.hpp"
+#include "thread.hpp"
 
 namespace zmq
 {
@@ -86,6 +87,9 @@ namespace zmq
         //  Create and destroy a socket.
         zmq::socket_base_t *create_socket (int type_);
         void destroy_socket (zmq::socket_base_t *socket_);
+
+		//  Start a new thread with proper scheduling parameters.
+        void start_thread (thread_t &thread_, thread_fn *tfn_, void *arg_) const;
 
         //  Send command to the destination thread.
         void send_command (uint32_t tid_, const command_t &command_);
@@ -184,6 +188,10 @@ namespace zmq
 
         //  Is IPv6 enabled on this context?
         bool ipv6;
+
+		//  Thread scheduling parameters.
+        int thread_priority;
+        int thread_sched_policy;
 
         //  Synchronisation of access to context options.
         mutex_t opt_sync;
