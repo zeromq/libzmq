@@ -35,14 +35,7 @@
 #include <netdb.h>
 #endif
 
-//  Some platforms (notably Darwin/OSX and NetBSD) do not define all AI_
-//  flags for getaddrinfo(). This can be worked around safely by defining
-//  these to 0.
-#ifndef AI_ADDRCONFIG
-#define AI_ADDRCONFIG 0
-#endif
-
-#if defined ZMQ_HAVE_SOLARIS
+#ifdef ZMQ_HAVE_SOLARIS
 
 #include <sys/sockio.h>
 #include <net/if.h>
@@ -50,13 +43,13 @@
 #include <stdlib.h>
 
 //  On Solaris platform, network interface name can be queried by ioctl.
-int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_)
+int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_src_)
 {
     //  TODO: Unused parameter, IPv6 support not implemented for Solaris.
     (void) ipv6_;
 
     //  Create a socket.
-    int fd = open_socket (AF_INET, SOCK_DGRAM, 0);
+    const int fd = open_socket (AF_INET, SOCK_DGRAM, 0);
     errno_assert (fd != -1);
 
     //  Retrieve number of interfaces.
@@ -67,7 +60,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_)
     errno_assert (rc != -1);
 
     //  Allocate memory to get interface names.
-    size_t ifr_size = sizeof (struct lifreq) * ifn.lifn_count;
+    const size_t ifr_size = sizeof (struct lifreq) * ifn.lifn_count;
     char *ifr = (char*) malloc (ifr_size);
     alloc_assert (ifr);
 
@@ -83,13 +76,16 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_)
     //  Find the interface with the specified name and AF_INET family.
     bool found = false;
     lifreq *ifrp = ifc.lifc_req;
-    for (int n = 0; n < (int) (ifc.lifc_len / sizeof (lifreq));
+    for (int n = 0; n < (int) (ifc.lifc_len / sizeof lifreq);
           n ++, ifrp ++) {
         if (!strcmp (nic_, ifrp->lifr_name)) {
             rc = ioctl (fd, SIOCGLIFADDR, (char*) ifrp);
             errno_assert (rc != -1);
             if (ifrp->lifr_addr.ss_family == AF_INET) {
-                address.ipv4 = *(sockaddr_in*) &ifrp->lifr_addr;
+                if (is_src_)
+                    source_address.ipv4 = *(sockaddr_in*) &ifrp->lifr_addr;
+                else
+                    address.ipv4 = *(sockaddr_in*) &ifrp->lifr_addr;
                 found = true;
                 break;
             }
@@ -114,22 +110,22 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_)
 #include <sys/ioctl.h>
 #include <net/if.h>
 
-int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_)
+int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_src_)
 {
     //  TODO: Unused parameter, IPv6 support not implemented for AIX or HP/UX.
     (void) ipv6_;
 
     //  Create a socket.
-    int sd = open_socket (AF_INET, SOCK_DGRAM, 0);
+    const int sd = open_socket (AF_INET, SOCK_DGRAM, 0);
     errno_assert (sd != -1);
 
     struct ifreq ifr;
 
     //  Copy interface name for ioctl get.
-    strncpy (ifr.ifr_name, nic_, sizeof (ifr.ifr_name));
+    strncpy (ifr.ifr_name, nic_, sizeof ifr.ifr_name);
 
     //  Fetch interface address.
-    int rc = ioctl (sd, SIOCGIFADDR, (caddr_t) &ifr, sizeof (struct ifreq));
+    const int rc = ioctl (sd, SIOCGIFADDR, (caddr_t) &ifr, sizeof ifr);
 
     //  Clean up.
     close (sd);
@@ -138,8 +134,12 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_)
         errno = ENODEV;
         return -1;
     }
-    memcpy (&address.ipv4.sin_addr, &((sockaddr_in*) &ifr.ifr_addr)->sin_addr,
-        sizeof (in_addr));
+    if (is_src_)
+        memcpy (&source_address.ipv4.sin_addr,
+            &((sockaddr_in*) &ifr.ifr_addr)->sin_addr, sizeof (struct in_addr));
+    else
+       memcpy (&address.ipv4.sin_addr,
+            &((sockaddr_in*) &ifr.ifr_addr)->sin_addr, sizeof (struct in_addr));
 
     return 0;
 }
@@ -153,27 +153,31 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_)
 
 //  On these platforms, network interface name can be queried
 //  using getifaddrs function.
-int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_)
+int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_src_)
 {
     //  Get the addresses.
     ifaddrs *ifa = NULL;
-    int rc = getifaddrs (&ifa);
+    const int rc = getifaddrs (&ifa);
     errno_assert (rc == 0);
     zmq_assert (ifa != NULL);
 
     //  Find the corresponding network interface.
     bool found = false;
-    for (ifaddrs *ifp = ifa; ifp != NULL ;ifp = ifp->ifa_next)
-    {
+    for (ifaddrs *ifp = ifa; ifp != NULL; ifp = ifp->ifa_next) {
         if (ifp->ifa_addr == NULL)
             continue;
 
-        int family = ifp->ifa_addr->sa_family;
+        const int family = ifp->ifa_addr->sa_family;
         if ((family == AF_INET || (ipv6_ && family == AF_INET6))
         && !strcmp (nic_, ifp->ifa_name)) {
-            memcpy (&address, ifp->ifa_addr,
-                    (family == AF_INET) ? sizeof (struct sockaddr_in)
-                                        : sizeof (struct sockaddr_in6));
+            if (is_src_)
+                memcpy (&source_address, ifp->ifa_addr,
+                        (family == AF_INET) ? sizeof (struct sockaddr_in)
+                                            : sizeof (struct sockaddr_in6));
+            else
+                memcpy (&address, ifp->ifa_addr,
+                        (family == AF_INET) ? sizeof (struct sockaddr_in)
+                                            : sizeof (struct sockaddr_in6));
             found = true;
             break;
         }
@@ -193,7 +197,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_)
 
 //  On other platforms we assume there are no sane interface names.
 //  This is true especially of Windows.
-int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_)
+int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_src_)
 {
     //  All unused parameters.
     (void) nic_;
@@ -205,7 +209,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_)
 
 #endif
 
-int zmq::tcp_address_t::resolve_interface (const char *interface_, bool ipv6_)
+int zmq::tcp_address_t::resolve_interface (const char *interface_, bool ipv6_, bool is_src_)
 {
     //  Initialize temporary output pointers with storage address.
     sockaddr_storage ss;
@@ -216,15 +220,15 @@ int zmq::tcp_address_t::resolve_interface (const char *interface_, bool ipv6_)
     //  with the address.
     if (ipv6_) {
         sockaddr_in6 ip6_addr;
-        memset (&ip6_addr, 0, sizeof (ip6_addr));
+        memset (&ip6_addr, 0, sizeof ip6_addr);
         ip6_addr.sin6_family = AF_INET6;
-        memcpy (&ip6_addr.sin6_addr, &in6addr_any, sizeof (in6addr_any));
+        memcpy (&ip6_addr.sin6_addr, &in6addr_any, sizeof in6addr_any);
         out_addrlen = sizeof ip6_addr;
         memcpy (out_addr, &ip6_addr, out_addrlen);
     }
     else {
         sockaddr_in ip4_addr;
-        memset (&ip4_addr, 0, sizeof (ip4_addr));
+        memset (&ip4_addr, 0, sizeof ip4_addr);
         ip4_addr.sin_family = AF_INET;
         ip4_addr.sin_addr.s_addr = htonl (INADDR_ANY);
         out_addrlen = sizeof ip4_addr;
@@ -233,16 +237,17 @@ int zmq::tcp_address_t::resolve_interface (const char *interface_, bool ipv6_)
     //  "*" resolves to INADDR_ANY or in6addr_any.
     if (strcmp (interface_, "*") == 0) {
         zmq_assert (out_addrlen <= sizeof address);
-        memcpy (&address, out_addr, out_addrlen);
+        if (is_src_)
+            memcpy (&source_address, out_addr, out_addrlen);
+        else
+            memcpy (&address, out_addr, out_addrlen);
         return 0;
     }
 
     //  Try to resolve the string as a NIC name.
-    int rc = resolve_nic_name (interface_, ipv6_);
-    if (rc != 0 && errno != ENODEV)
+    int rc = resolve_nic_name (interface_, ipv6_, is_src_);
+    if (rc == 0 || errno != ENODEV)
         return rc;
-    if (rc == 0)
-        return 0;
 
     //  There's no such interface name. Assume literal address.
 #if defined ZMQ_HAVE_OPENVMS && defined __ia64
@@ -252,7 +257,7 @@ int zmq::tcp_address_t::resolve_interface (const char *interface_, bool ipv6_)
     addrinfo *res = NULL;
     addrinfo req;
 #endif
-    memset (&req, 0, sizeof (req));
+    memset (&req, 0, sizeof req);
 
     //  Choose IPv4 or IPv6 protocol family. Note that IPv6 allows for
     //  IPv4-in-IPv6 addresses.
@@ -285,8 +290,11 @@ int zmq::tcp_address_t::resolve_interface (const char *interface_, bool ipv6_)
 
     //  Use the first result.
     zmq_assert (res != NULL);
-    zmq_assert ((size_t) (res->ai_addrlen) <= sizeof (address));
-    memcpy (&address, res->ai_addr, res->ai_addrlen);
+    zmq_assert ((size_t) res->ai_addrlen <= sizeof address);
+    if (is_src_)
+        memcpy (&source_address, res->ai_addr, res->ai_addrlen);
+    else
+        memcpy (&address, res->ai_addr, res->ai_addrlen);
 
     //  Cleanup getaddrinfo after copying the possibly referenced result.
     freeaddrinfo (res);
@@ -294,7 +302,7 @@ int zmq::tcp_address_t::resolve_interface (const char *interface_, bool ipv6_)
     return 0;
 }
 
-int zmq::tcp_address_t::resolve_hostname (const char *hostname_, bool ipv6_)
+int zmq::tcp_address_t::resolve_hostname (const char *hostname_, bool ipv6_, bool is_src_)
 {
     //  Set up the query.
 #if defined ZMQ_HAVE_OPENVMS && defined __ia64 && __INITIAL_POINTER_SIZE == 64
@@ -302,7 +310,7 @@ int zmq::tcp_address_t::resolve_hostname (const char *hostname_, bool ipv6_)
 #else
     addrinfo req;
 #endif
-    memset (&req, 0, sizeof (req));
+    memset (&req, 0, sizeof req);
 
     //  Choose IPv4 or IPv6 protocol family. Note that IPv6 allows for
     //  IPv4-in-IPv6 addresses.
@@ -329,7 +337,7 @@ int zmq::tcp_address_t::resolve_hostname (const char *hostname_, bool ipv6_)
 #else
     addrinfo *res;
 #endif
-    int rc = getaddrinfo (hostname_, NULL, &req, &res);
+    const int rc = getaddrinfo (hostname_, NULL, &req, &res);
     if (rc) {
         switch (rc) {
         case EAI_MEMORY:
@@ -343,48 +351,69 @@ int zmq::tcp_address_t::resolve_hostname (const char *hostname_, bool ipv6_)
     }
 
     //  Copy first result to output addr with hostname and service.
-    zmq_assert ((size_t) (res->ai_addrlen) <= sizeof (address));
-    memcpy (&address, res->ai_addr, res->ai_addrlen);
+    zmq_assert ((size_t) res->ai_addrlen <= sizeof address);
+    if (is_src_)
+        memcpy (&source_address, res->ai_addr, res->ai_addrlen);
+    else
+        memcpy (&address, res->ai_addr, res->ai_addrlen);
 
     freeaddrinfo (res);
 
     return 0;
 }
 
-zmq::tcp_address_t::tcp_address_t ()
+zmq::tcp_address_t::tcp_address_t () :
+    _has_src_addr (false)
 {
-    memset (&address, 0, sizeof (address));
+    memset (&address, 0, sizeof address);
+    memset (&source_address, 0, sizeof source_address);
 }
 
-zmq::tcp_address_t::tcp_address_t (const sockaddr *sa, socklen_t sa_len)
+zmq::tcp_address_t::tcp_address_t (const sockaddr *sa, socklen_t sa_len) :
+    _has_src_addr (false)
 {
-    zmq_assert(sa && sa_len > 0);
+    zmq_assert (sa && sa_len > 0);
 
-    memset (&address, 0, sizeof (address));
-    if (sa->sa_family == AF_INET && sa_len >= (socklen_t) sizeof (address.ipv4))
-        memcpy(&address.ipv4, sa, sizeof (address.ipv4));
-    else 
-    if (sa->sa_family == AF_INET6 && sa_len >= (socklen_t) sizeof (address.ipv6))
-        memcpy(&address.ipv6, sa, sizeof (address.ipv6));
+    memset (&address, 0, sizeof address);
+    memset (&source_address, 0, sizeof source_address);
+    if (sa->sa_family == AF_INET && sa_len >= (socklen_t) sizeof address.ipv4)
+        memcpy (&address.ipv4, sa, sizeof address.ipv4);
+    else
+    if (sa->sa_family == AF_INET6 && sa_len >= (socklen_t) sizeof address.ipv6)
+        memcpy (&address.ipv6, sa, sizeof address.ipv6);
 }
 
 zmq::tcp_address_t::~tcp_address_t ()
 {
 }
 
-int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_)
+int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_, bool is_src_)
 {
+    if (!is_src_) {
+        // Test the ';' to know if we have a source address in name_
+        const char *src_delimiter = strrchr (name_, ';');
+        if (src_delimiter) {
+            std::string src_name (name_, src_delimiter - name_);
+            const int rc = resolve (src_name.c_str (), local_, ipv6_, true);
+            if (rc != 0)
+                return -1;
+            name_ = src_delimiter + 1;
+            _has_src_addr = true;
+        }
+    }
+
     //  Find the ':' at end that separates address from the port number.
     const char *delimiter = strrchr (name_, ':');
     if (!delimiter) {
         errno = EINVAL;
         return -1;
     }
+
     //  Separate the address/port.
     std::string addr_str (name_, delimiter - name_);
     std::string port_str (delimiter + 1);
 
-    //  Remove square brackets around the address, if any.
+    //  Remove square brackets around the address, if any, as used in IPv6
     if (addr_str.size () >= 2 && addr_str [0] == '[' &&
           addr_str [addr_str.size () - 1] == ']')
         addr_str = addr_str.substr (1, addr_str.size () - 2);
@@ -406,17 +435,25 @@ int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_)
     //  Resolve the IP address.
     int rc;
     if (local_)
-        rc = resolve_interface (addr_str.c_str (), ipv6_);
+        rc = resolve_interface (addr_str.c_str (), ipv6_, is_src_);
     else
-        rc = resolve_hostname (addr_str.c_str (), ipv6_);
+        rc = resolve_hostname (addr_str.c_str (), ipv6_, is_src_);
     if (rc != 0)
         return -1;
 
     //  Set the port into the address structure.
-    if (address.generic.sa_family == AF_INET6)
-        address.ipv6.sin6_port = htons (port);
-    else
-        address.ipv4.sin_port = htons (port);
+    if (is_src_) {
+        if (source_address.generic.sa_family == AF_INET6)
+            source_address.ipv6.sin6_port = htons (port);
+        else
+            source_address.ipv4.sin_port = htons (port);
+    }
+    else {
+        if (address.generic.sa_family == AF_INET6)
+            address.ipv6.sin6_port = htons (port);
+        else
+            address.ipv4.sin_port = htons (port);
+    }
 
     return 0;
 }
@@ -429,9 +466,10 @@ int zmq::tcp_address_t::to_string (std::string &addr_)
         return -1;
     }
 
-    // not using service resolv because of https://github.com/zeromq/libzmq/commit/1824574f9b5a8ce786853320e3ea09fe1f822bc4
-    char hbuf[NI_MAXHOST];
-    int rc = getnameinfo (addr (), addrlen (), hbuf, sizeof (hbuf), NULL, 0, NI_NUMERICHOST);
+    //  Not using service resolv because of
+    //  https://github.com/zeromq/libzmq/commit/1824574f9b5a8ce786853320e3ea09fe1f822bc4
+    char hbuf [NI_MAXHOST];
+    int rc = getnameinfo (addr (), addrlen (), hbuf, sizeof hbuf, NULL, 0, NI_NUMERICHOST);
     if (rc != 0) {
         addr_.clear ();
         return rc;
@@ -446,7 +484,7 @@ int zmq::tcp_address_t::to_string (std::string &addr_)
         std::stringstream s;
         s << "tcp://" << hbuf << ":" << ntohs (address.ipv4.sin_port);
         addr_ = s.str ();
-    };
+    }
     return 0;
 }
 
@@ -458,9 +496,27 @@ const sockaddr *zmq::tcp_address_t::addr () const
 socklen_t zmq::tcp_address_t::addrlen () const
 {
     if (address.generic.sa_family == AF_INET6)
-        return (socklen_t) sizeof (address.ipv6);
+        return (socklen_t) sizeof address.ipv6;
     else
-        return (socklen_t) sizeof (address.ipv4);
+        return (socklen_t) sizeof address.ipv4;
+}
+
+const sockaddr *zmq::tcp_address_t::src_addr () const
+{
+    return &source_address.generic;
+}
+
+socklen_t zmq::tcp_address_t::src_addrlen () const
+{
+    if (address.generic.sa_family == AF_INET6)
+        return (socklen_t) sizeof source_address.ipv6;
+    else
+        return (socklen_t) sizeof source_address.ipv4;
+}
+
+bool zmq::tcp_address_t::has_src_addr () const
+{
+    return _has_src_addr;
 }
 
 #if defined ZMQ_HAVE_WINDOWS
@@ -473,9 +529,9 @@ sa_family_t zmq::tcp_address_t::family () const
 }
 
 zmq::tcp_address_mask_t::tcp_address_mask_t () :
-    tcp_address_t ()
+    tcp_address_t (),
+    address_mask (-1)
 {
-    address_mask = -1;
 }
 
 int zmq::tcp_address_mask_t::mask () const
@@ -486,7 +542,7 @@ int zmq::tcp_address_mask_t::mask () const
 int zmq::tcp_address_mask_t::resolve (const char *name_, bool ipv6_)
 {
     // Find '/' at the end that separates address from the cidr mask number.
-    // Allow empty mask clause and threat it like '/32' for ipv4 or '/128' for ipv6.
+    // Allow empty mask clause and treat it like '/32' for ipv4 or '/128' for ipv6.
     std::string addr_str, mask_str;
     const char *delimiter = strrchr (name_, '/');
     if (delimiter != NULL) {
@@ -501,7 +557,8 @@ int zmq::tcp_address_mask_t::resolve (const char *name_, bool ipv6_)
         addr_str.assign (name_);
 
     // Parse address part using standard routines.
-    int rc = tcp_address_t::resolve_hostname (addr_str.c_str (), ipv6_);
+    const int rc =
+        tcp_address_t::resolve_hostname (addr_str.c_str (), ipv6_);
     if (rc != 0)
         return rc;
 
@@ -513,11 +570,10 @@ int zmq::tcp_address_mask_t::resolve (const char *name_, bool ipv6_)
             address_mask = 32;
     }
     else
-    if (mask_str == "0") {
+    if (mask_str == "0")
         address_mask = 0;
-    }
     else {
-        int mask = atoi (mask_str.c_str ());
+        const int mask = atoi (mask_str.c_str ());
         if (
             (mask < 1) ||
             (address.generic.sa_family == AF_INET6 && mask > 128) ||
@@ -534,7 +590,8 @@ int zmq::tcp_address_mask_t::resolve (const char *name_, bool ipv6_)
 
 int zmq::tcp_address_mask_t::to_string (std::string &addr_)
 {
-    if (address.generic.sa_family != AF_INET && address.generic.sa_family != AF_INET6) {
+    if (address.generic.sa_family != AF_INET
+    &&  address.generic.sa_family != AF_INET6) {
         addr_.clear ();
         return -1;
     }
@@ -543,8 +600,8 @@ int zmq::tcp_address_mask_t::to_string (std::string &addr_)
         return -1;
     }
 
-    char hbuf[NI_MAXHOST];
-    int rc = getnameinfo (addr (), addrlen (), hbuf, sizeof (hbuf), NULL, 0, NI_NUMERICHOST);
+    char hbuf [NI_MAXHOST];
+    int rc = getnameinfo (addr (), addrlen (), hbuf, sizeof hbuf, NULL, 0, NI_NUMERICHOST);
     if (rc != 0) {
         addr_.clear ();
         return rc;
@@ -559,13 +616,15 @@ int zmq::tcp_address_mask_t::to_string (std::string &addr_)
         std::stringstream s;
         s << hbuf << "/" << address_mask;
         addr_ = s.str ();
-    };
+    }
     return 0;
 }
 
 bool zmq::tcp_address_mask_t::match_address (const struct sockaddr *ss, const socklen_t ss_len) const
 {
-    zmq_assert (address_mask != -1 && ss != NULL && ss_len >= (socklen_t) sizeof (struct sockaddr));
+    zmq_assert (address_mask != -1
+             && ss != NULL
+             && ss_len >= (socklen_t) sizeof (struct sockaddr));
 
     if (ss->sa_family != address.generic.sa_family)
         return false;
@@ -585,15 +644,16 @@ bool zmq::tcp_address_mask_t::match_address (const struct sockaddr *ss, const so
             our_bytes = (const uint8_t *) &address.ipv4.sin_addr;
             mask = sizeof (struct in_addr) * 8;
         }
-        if (address_mask < mask) mask = address_mask;
+        if (address_mask < mask)
+            mask = address_mask;
 
-        size_t full_bytes = mask / 8;
-        if (memcmp(our_bytes, their_bytes, full_bytes))
+        const size_t full_bytes = mask / 8;
+        if (memcmp (our_bytes, their_bytes, full_bytes))
             return false;
 
-        uint8_t last_byte_bits = (0xffU << (8 - (mask % 8))) & 0xffU;
+        const uint8_t last_byte_bits = 0xffU << (8 - mask % 8);
         if (last_byte_bits) {
-            if ((their_bytes[full_bytes] & last_byte_bits) != (our_bytes[full_bytes] & last_byte_bits))
+            if ((their_bytes [full_bytes] & last_byte_bits) != (our_bytes [full_bytes] & last_byte_bits))
                 return false;
         }
     }

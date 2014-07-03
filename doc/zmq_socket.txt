@@ -351,10 +351,12 @@ routed to, and unroutable messages shall cause an EHOSTUNREACH or EAGAIN error.
 To open a connection to a server, use the zmq_connect call, and then fetch the 
 socket identity using the ZMQ_IDENTITY zmq_getsockopt call.
 
-To close a specific client connection, as a server, send the identity frame
-followed by a zero-length message (see EXAMPLE section).  Similarly, when the
-peer disconnects (or the connection is lost), a zero-length message will be
-received by the application.
+To close a specific connection, send the identity frame followed by a
+zero-length message (see EXAMPLE section).
+
+When a connection is made, a zero-length message will be received by the
+application.  Similarly, when the peer disconnects (or the connection is lost),
+a zero-length message will be received by the application.
 
 The ZMQ_SNDMORE flag is ignored on data frames. You must send one identity frame
 followed by one data frame.

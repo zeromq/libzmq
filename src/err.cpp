@@ -216,6 +216,9 @@ void zmq::win_error (char *buffer_, size_t buffer_size_)
 int zmq::wsa_error_to_errno (int errcode)
 {
     switch (errcode) {
+//  10004 - Interrupted system call.
+    case WSAEINTR:
+        return EINTR;
 //  10009 - File handle is not valid.
     case WSAEBADF:
         return EBADF;
@@ -231,14 +234,41 @@ int zmq::wsa_error_to_errno (int errcode)
 //  10024 - Too many open files.
     case WSAEMFILE:
         return EMFILE;
+//  10035 - Operation would block.
+    case WSAEWOULDBLOCK:
+        return EBUSY;
 //  10036 - Operation now in progress.
     case WSAEINPROGRESS:
         return EAGAIN;
+//  10037 - Operation already in progress.
+    case WSAEALREADY:
+        return EAGAIN;
+//  10038 - Socket operation on non-socket.
+    case WSAENOTSOCK:
+        return ENOTSOCK;
+//  10039 - Destination address required.
+    case WSAEDESTADDRREQ:
+        return EFAULT;
 //  10040 - Message too long.
     case WSAEMSGSIZE:
         return EMSGSIZE;
+//  10041 - Protocol wrong type for socket.
+    case WSAEPROTOTYPE:
+        return EFAULT;
+//  10042 - Bad protocol option.
+    case WSAENOPROTOOPT:
+        return EINVAL;
 //  10043 - Protocol not supported.
     case WSAEPROTONOSUPPORT:
+        return EPROTONOSUPPORT;
+//  10044 - Socket type not supported.
+    case WSAESOCKTNOSUPPORT:
+        return EFAULT;
+//  10045 - Operation not supported on socket.
+    case WSAEOPNOTSUPP:
+        return EFAULT;
+//  10046 - Protocol family not supported.
+    case WSAEPFNOSUPPORT:
         return EPROTONOSUPPORT;
 //  10047 - Address family not supported by protocol family.
     case WSAEAFNOSUPPORT:
@@ -267,18 +297,75 @@ int zmq::wsa_error_to_errno (int errcode)
 //  10055 - No buffer space available.
     case WSAENOBUFS:
         return ENOBUFS;
+//  10056 - Socket is already connected.
+    case WSAEISCONN:
+        return EFAULT;
 //  10057 - Socket is not connected.
     case WSAENOTCONN:
         return ENOTCONN;
+//  10058 - Can't send after socket shutdown.
+    case WSAESHUTDOWN:
+        return EFAULT;
+//  10059 - Too many references can't splice.
+    case WSAETOOMANYREFS:
+        return EFAULT;
 //  10060 - Connection timed out.
     case WSAETIMEDOUT:
         return ETIMEDOUT;
 //  10061 - Connection refused.
     case WSAECONNREFUSED:
         return ECONNREFUSED;
+//  10062 - Too many levels of symbolic links.
+    case WSAELOOP:
+        return EFAULT;
+//  10063 - File name too long.
+    case WSAENAMETOOLONG:
+        return EFAULT;
+//  10064 - Host is down.
+    case WSAEHOSTDOWN:
+        return EAGAIN;
 //  10065 - No route to host.
     case WSAEHOSTUNREACH:
         return EHOSTUNREACH;
+//  10066 - Directory not empty.
+    case WSAENOTEMPTY:
+        return EFAULT;
+//  10067 - Too many processes.
+    case WSAEPROCLIM:
+        return EFAULT;
+//  10068 - Too many users.
+    case WSAEUSERS:
+        return EFAULT;
+//  10069 - Disc Quota Exceeded.
+    case WSAEDQUOT:
+        return EFAULT;
+//  10070 - Stale NFS file handle.
+    case WSAESTALE:
+        return EFAULT;
+//  10071 - Too many levels of remote in path.
+    case WSAEREMOTE:
+        return EFAULT;
+//  10091 - Network SubSystem is unavailable.
+    case WSASYSNOTREADY:
+        return EFAULT;
+//  10092 - WINSOCK DLL Version out of range.
+    case WSAVERNOTSUPPORTED:
+        return EFAULT;
+//  10093 - Successful WSASTARTUP not yet performed.
+    case WSANOTINITIALISED:
+        return EFAULT;
+//  11001 - Host not found.
+    case WSAHOST_NOT_FOUND:
+        return EFAULT;
+//  11002 - Non-Authoritative Host not found.
+    case WSATRY_AGAIN:
+        return EFAULT;
+//  11003 - Non-Recoverable errors: FORMERR REFUSED NOTIMP.
+    case WSANO_RECOVERY:
+        return EFAULT;
+//  11004 - Valid name no data record of requested.
+    case WSANO_DATA:
+        return EFAULT;
     default:
         wsa_assert (false);
     }

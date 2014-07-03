@@ -114,6 +114,9 @@ namespace zmq
         // if true, router socket accepts non-zmq tcp connections
         bool raw_sock;
 
+        //  Addres of SOCKS proxy
+        std::string socks_proxy_address;
+
         //  TCP keep-alive settings.
         //  Defaults to -1 = do not change socket options
         int tcp_keepalive;
@@ -156,6 +159,13 @@ namespace zmq
         uint8_t curve_secret_key [CURVE_KEYSIZE];
         uint8_t curve_server_key [CURVE_KEYSIZE];
 
+        //  Principals for GSSAPI mechanism
+        std::string gss_principal;
+        std::string gss_service_principal;
+
+        //  If true, gss encryption will be disabled
+        bool gss_plaintext;
+
         //  ID of the socket.
         int socket_id;
 
@@ -164,6 +174,11 @@ namespace zmq
         //  Cannot receive multi-part messages.
         //  Ignores hwm
         bool conflate;
+
+        //  If connection handshake is not done after this many milliseconds,
+        //  close socket.  Default is 30 secs.  0 means no handshake timeout.
+        int handshake_ivl;
+
     };
 }
 

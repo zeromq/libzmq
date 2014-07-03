@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ProjectSchemaDefinitions xmlns="clr-namespace:Microsoft.Build.Framework.XamlTypes;assembly=Microsoft.Build.Framework">
+  <Rule Name="libzmq-options-uiextension" PageTemplate="tool" DisplayName="ZMQ Options" SwitchPrefix="/" Order="1">
+    <Rule.Categories>
+      <Category Name="openpgm" DisplayName="openpgm" />
+      <Category Name="sodium" DisplayName="sodium" />
+    </Rule.Categories>
+    <Rule.DataSource>
+      <DataSource Persistence="ProjectFile" ItemType="" />
+    </Rule.DataSource>
+    <EnumProperty Name="Option-openpgm" DisplayName="Enable OpenPGM" Description="Enable the OpenPGM build option" Category="openpgm">
+      <EnumValue Name="" DisplayName="No" />
+      <EnumValue Name="true" DisplayName="Yes" />
+    </EnumProperty>
+    <EnumProperty Name="Option-sodium" DisplayName="Enable Sodium" Description="Enable the Sodium build option" Category="sodium">
+      <EnumValue Name="" DisplayName="No" />
+      <EnumValue Name="true" DisplayName="Yes" />
+    </EnumProperty>
+    <EnumProperty Name="Option-gssapi" DisplayName="Enable GSS API" Description="Enable the GSS API build option" Category="gssapi">
+      <EnumValue Name="" DisplayName="No" />
+      <EnumValue Name="true" DisplayName="Yes" />
+    </EnumProperty>
+  </Rule>
+  <Rule Name="libzmq-linkage-uiextension" PageTemplate="tool" DisplayName="Local Dependencies" SwitchPrefix="/" Order="1">
+    <Rule.Categories>
+      <Category Name="libzmq" DisplayName="libzmq" />
+    </Rule.Categories>
+    <Rule.DataSource>
+      <DataSource Persistence="ProjectFile" ItemType="" />
+    </Rule.DataSource>
+    <EnumProperty Name="Linkage-libzmq" DisplayName="Linkage" Description="How libzmq will be linked into the output of this project" Category="libzmq">
+      <EnumValue Name="" DisplayName="Not linked" />
+      <EnumValue Name="dynamic" DisplayName="Dynamic (DLL)" />
+      <EnumValue Name="static" DisplayName="Static (LIB)" />
+      <EnumValue Name="ltcg" DisplayName="Static using link time compile generation (LTCG)" />
+    </EnumProperty>
+  </Rule>
+</ProjectSchemaDefinitions>

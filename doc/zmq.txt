@@ -42,16 +42,8 @@ Work with context properties::
     linkzmq:zmq_ctx_get[3]
 
 Destroy a 0MQ context::
+    linkzmq:zmq_ctx_shutdown[3]
     linkzmq:zmq_ctx_term[3]
-
-These deprecated functions let you create and destroy 'contexts':
-
-Initialise 0MQ context::
-    linkzmq:zmq_init[3]
-
-Terminate 0MQ context::
-    linkzmq:zmq_term[3]
-
 
 Thread safety
 ^^^^^^^^^^^^^
@@ -102,6 +94,7 @@ Access message content::
     linkzmq:zmq_msg_more[3]
 
 Work with message properties::
+    linkzmq:zmq_msg_gets[3]
     linkzmq:zmq_msg_get[3]
     linkzmq:zmq_msg_set[3]
 

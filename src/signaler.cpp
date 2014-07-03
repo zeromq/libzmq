@@ -54,7 +54,6 @@
 
 #if defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
-#include <tchar.h>
 #else
 #include <unistd.h>
 #include <netinet/tcp.h>
@@ -301,27 +300,27 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
 
     if (signaler_port == event_signaler_port) {
 #       if !defined _WIN32_WCE
-        sync = CreateEvent (&sa, FALSE, TRUE, TEXT ("Global\\zmq-signaler-port-sync"));
+        sync = CreateEventW (&sa, FALSE, TRUE, L"Global\\zmq-signaler-port-sync");
 #       else
-        sync = CreateEvent (NULL, FALSE, TRUE, TEXT ("Global\\zmq-signaler-port-sync"));
+        sync = CreateEventW (NULL, FALSE, TRUE, L"Global\\zmq-signaler-port-sync");
 #       endif
         if (sync == NULL && GetLastError () == ERROR_ACCESS_DENIED)
-            sync = OpenEvent (SYNCHRONIZE | EVENT_MODIFY_STATE,
-                              FALSE, TEXT ("Global\\zmq-signaler-port-sync"));
+            sync = OpenEventW (SYNCHRONIZE | EVENT_MODIFY_STATE,
+                              FALSE, L"Global\\zmq-signaler-port-sync");
 
         win_assert (sync != NULL);
     }
     else if (signaler_port != 0) {
-        TCHAR mutex_name[64];
-        _stprintf (mutex_name, TEXT ("Global\\zmq-signaler-port-%d"), signaler_port);
+        wchar_t mutex_name[MAX_PATH];
+        swprintf(mutex_name, MAX_PATH, L"Global\\zmq-signaler-port-%d", signaler_port);
 
 #       if !defined _WIN32_WCE
-        sync = CreateMutex (&sa, FALSE, mutex_name);
+        sync = CreateMutexW (&sa, FALSE, mutex_name);
 #       else
-        sync = CreateMutex (NULL, FALSE, mutex_name);
+        sync = CreateMutexW (NULL, FALSE, mutex_name);
 #       endif
         if (sync == NULL && GetLastError () == ERROR_ACCESS_DENIED)
-            sync = OpenMutex (SYNCHRONIZE, FALSE, mutex_name);
+            sync = OpenMutexW (SYNCHRONIZE, FALSE, mutex_name);
 
         win_assert (sync != NULL);
     }

@@ -63,6 +63,7 @@ struct iovec {
 #include "err.hpp"
 #include "msg.hpp"
 #include "fd.hpp"
+#include "metadata.hpp"
 
 #if !defined ZMQ_HAVE_WINDOWS
 #include <unistd.h>
@@ -644,10 +645,18 @@ int zmq_msg_set (zmq_msg_t *, int, int)
 
 //  Get message metadata string
 
-char *zmq_msg_gets (zmq_msg_t *msg_, char *property_)
+const char *zmq_msg_gets (zmq_msg_t *msg_, const char *property_)
 {
-    //  All unknown properties return NULL
-    return NULL;
+    zmq::metadata_t *metadata = ((zmq::msg_t*) msg_)->metadata ();
+    const char *value = NULL;
+    if (metadata)
+        value = metadata->get (std::string (property_));
+    if (value)
+        return value;
+    else {
+        errno = EINVAL;
+        return NULL;
+    }
 }
 
 // Polling.
@@ -1038,4 +1047,36 @@ int zmq_device (int /* type */, void *frontend_, void *backend_)
     return zmq::proxy (
         (zmq::socket_base_t*) frontend_,
         (zmq::socket_base_t*) backend_, NULL);
+}
+
+//  Probe library capabilities; for now, reports on transport and security
+
+int zmq_has (const char *capability)
+{
+#if !defined (ZMQ_HAVE_WINDOWS) && !defined (ZMQ_HAVE_OPENVMS)
+    if (strcmp (capability, "ipc") == 0)
+        return true;
+#endif
+#if defined (ZMQ_HAVE_OPENPGM)
+    if (strcmp (capability, "pgm") == 0)
+        return true;
+#endif
+#if defined (ZMQ_HAVE_TIPC)
+    if (strcmp (capability, "tipc") == 0)
+        return true;
+#endif
+#if defined (ZMQ_HAVE_NORM)
+    if (strcmp (capability, "norm") == 0)
+        return true;
+#endif
+#if defined (HAVE_LIBSODIUM)
+    if (strcmp (capability, "curve") == 0)
+        return true;
+#endif
+#if defined (HAVE_LIBGSSAPI_KRB5)
+    if (strcmp (capability, "gssapi") == 0)
+        return true;
+#endif
+    //  Whatever the application asked for, we don't have
+    return false;
 }

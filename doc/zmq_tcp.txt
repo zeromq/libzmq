@@ -52,6 +52,9 @@ Connecting a socket
 When connecting a socket to a peer address using _zmq_connect()_ with the 'tcp'
 transport, the 'endpoint' shall be interpreted as a 'peer address' followed by
 a colon and the TCP port number to use.
+You can optionally specify a 'source_endpoint' which will be used as the source
+address for your connection; tcp://'source_endpoint';'endpoint', see the
+'interface' description above for details.
 
 A 'peer address' may be specified by either of the following:
 
@@ -66,7 +69,7 @@ EXAMPLES
 .Assigning a local address to a socket
 ----
 //  TCP port 5555 on all available interfaces
-rc = zmq_bind(socket, "tcp:/// :5555");
+rc = zmq_bind(socket, "tcp://*:5555");
 assert (rc == 0);
 //  TCP port 5555 on the local loop-back interface on all platforms
 rc = zmq_bind(socket, "tcp://127.0.0.1:5555");
@@ -83,6 +86,12 @@ rc = zmq_connect(socket, "tcp://192.168.1.1:5555");
 assert (rc == 0);
 //  Connecting using a DNS name
 rc = zmq_connect(socket, "tcp://server1:5555");
+assert (rc == 0);
+//  Connecting using a DNS name and bind to eth1
+rc = zmq_connect(socket, "tcp://eth1:0;server1:5555");
+assert (rc == 0);
+//  Connecting using a IP address and bind to an IP address
+rc = zmq_connect(socket, "tcp://192.168.1.17:5555;192.168.1.1:5555");
 assert (rc == 0);
 ----
 

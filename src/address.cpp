@@ -32,7 +32,7 @@ zmq::address_t::address_t (
     : protocol (protocol_),
       address (address_)
 {
-    memset (&resolved, 0, sizeof (resolved));
+    memset (&resolved, 0, sizeof resolved);
 }
 
 zmq::address_t::~address_t ()
@@ -53,7 +53,8 @@ zmq::address_t::~address_t ()
     }
 #endif
 #if defined ZMQ_HAVE_TIPC
-    else if (protocol == "tipc") {
+    else
+    if (protocol == "tipc") {
         if (resolved.tipc_addr) {
             delete resolved.tipc_addr;
             resolved.tipc_addr = 0;
@@ -66,20 +67,20 @@ int zmq::address_t::to_string (std::string &addr_) const
 {
     if (protocol == "tcp") {
         if (resolved.tcp_addr)
-            return resolved.tcp_addr->to_string(addr_);
+            return resolved.tcp_addr->to_string (addr_);
     }
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
-    else 
+    else
     if (protocol == "ipc") {
         if (resolved.ipc_addr)
-            return resolved.ipc_addr->to_string(addr_);
+            return resolved.ipc_addr->to_string (addr_);
     }
 #endif
 #if defined ZMQ_HAVE_TIPC
-    else if (protocol == "tipc") {
-        if (resolved.tipc_addr) {
-            return resolved.tipc_addr->to_string(addr_);
-        }
+    else
+    if (protocol == "tipc") {
+        if (resolved.tipc_addr)
+            return resolved.tipc_addr->to_string (addr_);
     }
 #endif
 

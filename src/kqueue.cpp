@@ -42,7 +42,8 @@
 #define kevent_udata_t void *
 #endif
 
-zmq::kqueue_t::kqueue_t () :
+zmq::kqueue_t::kqueue_t (const zmq::ctx_t &ctx_) :
+    ctx(ctx_),
     stopping (false)
 {
     //  Create event queue
@@ -144,7 +145,7 @@ void zmq::kqueue_t::reset_pollout (handle_t handle_)
 
 void zmq::kqueue_t::start ()
 {
-    worker.start (worker_routine, this);
+    ctx.start_thread (worker, worker_routine, this);
 }
 
 void zmq::kqueue_t::stop ()

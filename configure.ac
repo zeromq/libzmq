@@ -29,10 +29,10 @@ AC_SUBST(PACKAGE_VERSION)
 # ZeroMQ versions 2.1.x: 1:0:0 (ABI version 1)
 # ZeroMQ version 3.0: 2:0:0 (ABI version 2)
 # ZeroMQ version 3.1: 3:0:0 (ABI version 3)
-# ZeroMQ version 4.0: 4:0:1 (ABI version 4)
+# ZeroMQ version 4.0: 4:0:0 (ABI version 4)
 #
 # libzmq -version-info current:revision:age
-LTVER="4:0:1"
+LTVER="4:0:0"
 AC_SUBST(LTVER)
 
 # Take a copy of original flags
@@ -143,6 +143,17 @@ if test "x$zmq_relaxed" = "xyes"; then
 else
     libzmq_pedantic="yes"
 fi
+
+AC_ARG_WITH([militant],
+            [AS_HELP_STRING([--with-militant],
+                            [Enable militant API assertions])],
+            [zmq_militant="yes"],
+            [])
+
+if test "x$zmq_militant" = "xyes"; then
+    AC_DEFINE(ZMQ_ACT_MILITANT, 1, [Enable militant API assertions])
+fi
+
 
 # By default compiling with -Werror except OSX.
 libzmq_werror="yes"
@@ -305,6 +316,7 @@ else
     AC_CHECK_LIB([sodium], [sodium_init],,AC_MSG_WARN(libsodium is needed for CURVE security))
 fi
 
+AC_CHECK_LIB([gssapi_krb5], [gss_init_sec_context],,AC_MSG_WARN(libgssapi_krb5 is needed for GSSAPI security))
 
 #
 # Check if the compiler supports -fvisibility=hidden flag. MinGW32 uses __declspec
@@ -542,6 +554,8 @@ LIBZMQ_CHECK_TCP_KEEPALIVE([AC_DEFINE(
                               [1],
                               [Whether TCP_KEEPALIVE is supported.])
                           ])
+
+AM_CONDITIONAL(HAVE_FORK, test "x$ac_cv_func_fork" = "xyes")
 
 # Subst LIBZMQ_EXTRA_CFLAGS & CXXFLAGS & LDFLAGS
 AC_SUBST(LIBZMQ_EXTRA_CFLAGS)

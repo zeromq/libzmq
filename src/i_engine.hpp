@@ -20,6 +20,8 @@
 #ifndef __ZMQ_I_ENGINE_HPP_INCLUDED__
 #define __ZMQ_I_ENGINE_HPP_INCLUDED__
 
+#include "fd.hpp"
+
 namespace zmq
 {
 
@@ -47,7 +49,10 @@ namespace zmq
         //  are messages to send available.
         virtual void restart_output () = 0;
 
-        virtual void zap_msg_available () = 0;
+        virtual void zap_msg_available () = 0; 
+        
+        // provide a way to link from engine to file descriptor 
+        virtual fd_t get_assoc_fd () { return retired_fd;};
     };
 
 }

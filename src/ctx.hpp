@@ -32,6 +32,7 @@
 #include "stdint.hpp"
 #include "options.hpp"
 #include "atomic_counter.hpp"
+#include "thread.hpp"
 
 namespace zmq
 {
@@ -49,13 +50,6 @@ namespace zmq
     {
         socket_base_t *socket;
         options_t options;
-    };
-
-    struct pending_connection_t
-    {
-        endpoint_t endpoint;
-        pipe_t* connect_pipe;
-        pipe_t* bind_pipe;
     };
 
     //  Context object encapsulates all the global state associated with
@@ -94,6 +88,9 @@ namespace zmq
         zmq::socket_base_t *create_socket (int type_);
         void destroy_socket (zmq::socket_base_t *socket_);
 
+		//  Start a new thread with proper scheduling parameters.
+        void start_thread (thread_t &thread_, thread_fn *tfn_, void *arg_) const;
+
         //  Send command to the destination thread.
         void send_command (uint32_t tid_, const command_t &command_);
 
@@ -106,10 +103,11 @@ namespace zmq
         zmq::object_t *get_reaper ();
 
         //  Management of inproc endpoints.
-        int register_endpoint (const char *addr_, endpoint_t &endpoint_);
+        int register_endpoint (const char *addr_, const endpoint_t &endpoint_);
         void unregister_endpoints (zmq::socket_base_t *socket_);
         endpoint_t find_endpoint (const char *addr_);
-        void pend_connection (const char *addr_, pending_connection_t &pending_connection_);
+        void pend_connection (const std::string &addr_,
+                const endpoint_t &endpoint_, pipe_t **pipes_);
         void connect_pending (const char *addr_, zmq::socket_base_t *bind_socket_);
 
         enum {
@@ -121,6 +119,12 @@ namespace zmq
 
     private:
 
+        struct pending_connection_t
+        {
+            endpoint_t endpoint;
+            pipe_t* connect_pipe;
+            pipe_t* bind_pipe;
+        };
 
         //  Used to check whether the object is a context.
         uint32_t tag;
@@ -185,6 +189,10 @@ namespace zmq
         //  Is IPv6 enabled on this context?
         bool ipv6;
 
+		//  Thread scheduling parameters.
+        int thread_priority;
+        int thread_sched_policy;
+
         //  Synchronisation of access to context options.
         mutex_t opt_sync;
 
@@ -196,7 +204,7 @@ namespace zmq
         pid_t pid;
 #endif
         enum side { connect_side, bind_side };
-        void connect_inproc_sockets(zmq::socket_base_t *bind_socket_, options_t& bind_options, pending_connection_t &pending_connection_, side side_);
+        void connect_inproc_sockets(zmq::socket_base_t *bind_socket_, options_t& bind_options, const pending_connection_t &pending_connection_, side side_);
     };
 
 }

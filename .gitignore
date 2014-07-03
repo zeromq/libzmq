@@ -25,6 +25,7 @@ tools/curve_keygen
 tests/test_resource
 tests/test_ipc_wildcard
 tests/test_stream_empty
+tests/test_stream_timeout
 tests/test_issue_566
 tests/test_ctx_destroy
 tests/test_term_endpoint
@@ -90,6 +91,10 @@ tests/test_connect_rid
 tests/test_srcfd
 tests/test_stream_disconnect
 tests/test_proxy_chain
+tests/test_bind_src_address
+tests/test_metadata
+tests/test_id2fd
+tests/test_capabilities
 tests/test*.log
 tests/test*.trs
 src/platform.hpp*
@@ -109,11 +114,11 @@ src/libzmq.pc
 bin/
 lib/
 obj/
-builds/msvc/*.suo
-builds/msvc/*.sdf
-builds/msvc/*/*.user
-builds/msvc/*/*Debug
-builds/msvc/*/*Release
+builds/msvc/**/*.suo
+builds/msvc/**/*.sdf
+builds/msvc/**/*.user
+builds/msvc/**/*Debug
+builds/msvc/**/*Release
 builds/redhat/zeromq.spec
 foreign/openpgm/*
 !foreign/openpgm/*.tar.bz2
@@ -122,3 +127,4 @@ foreign/openpgm/*
 zeromq-*.tar.gz
 zeromq-*.zip
 core
+build

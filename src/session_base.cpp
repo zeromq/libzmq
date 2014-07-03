@@ -25,6 +25,7 @@
 #include "tcp_connecter.hpp"
 #include "ipc_connecter.hpp"
 #include "tipc_connecter.hpp"
+#include "socks_connecter.hpp"
 #include "pgm_sender.hpp"
 #include "pgm_receiver.hpp"
 #include "address.hpp"
@@ -309,7 +310,6 @@ int zmq::session_base_t::zap_connect ()
     zap_pipe->set_nodelay ();
     zap_pipe->set_event_sink (this);
 
-    new_pipes [1]->set_nodelay ();
     send_bind (peer.socket, new_pipes [1], false);
 
     //  Send empty identity if required by the peer.
@@ -354,7 +354,9 @@ void zmq::session_base_t::process_attach (i_engine *engine_)
         //  Remember the local end of the pipe.
         zmq_assert (!pipe);
         pipe = pipes [0];
-
+        // Store engine assoc_fd for lilnking pipe to fd 
+        pipe->assoc_fd=engine_->get_assoc_fd();
+        pipes[1]->assoc_fd=pipe->assoc_fd;
         //  Ask socket to plug into the remote end of the pipe.
         send_bind (socket, pipes [1]);
     }
@@ -365,7 +367,8 @@ void zmq::session_base_t::process_attach (i_engine *engine_)
     engine->plug (io_thread, this);
 }
 
-void zmq::session_base_t::engine_error ()
+void zmq::session_base_t::engine_error (
+        zmq::stream_engine_t::error_reason_t reason)
 {
     //  Engine is dead. Let's forget about it.
     engine = NULL;
@@ -374,10 +377,22 @@ void zmq::session_base_t::engine_error ()
     if (pipe)
         clean_pipes ();
 
-    if (active)
-        reconnect ();
-    else
-        terminate ();
+    zmq_assert (reason == stream_engine_t::connection_error
+             || reason == stream_engine_t::timeout_error
+             || reason == stream_engine_t::protocol_error);
+
+    switch (reason) {
+        case stream_engine_t::timeout_error:
+        case stream_engine_t::connection_error:
+            if (active)
+                reconnect ();
+            else
+                terminate ();
+            break;
+        case stream_engine_t::protocol_error:
+            terminate ();
+            break;
+    }
 
     //  Just in case there's only a delimiter in the pipe.
     if (pipe)
@@ -483,10 +498,22 @@ void zmq::session_base_t::start_connecting (bool wait_)
     //  Create the connecter object.
 
     if (addr->protocol == "tcp") {
-        tcp_connecter_t *connecter = new (std::nothrow) tcp_connecter_t (
-            io_thread, this, options, addr, wait_);
-        alloc_assert (connecter);
-        launch_child (connecter);
+        if (options.socks_proxy_address != "") {
+            address_t *proxy_address = new (std::nothrow)
+                address_t ("tcp", options.socks_proxy_address);
+            alloc_assert (proxy_address);
+            socks_connecter_t *connecter =
+                new (std::nothrow) socks_connecter_t (
+                    io_thread, this, options, addr, proxy_address, wait_);
+            alloc_assert (connecter);
+            launch_child (connecter);
+        }
+        else {
+            tcp_connecter_t *connecter = new (std::nothrow)
+                tcp_connecter_t (io_thread, this, options, addr, wait_);
+            alloc_assert (connecter);
+            launch_child (connecter);
+        }
         return;
     }
 

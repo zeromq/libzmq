@@ -20,6 +20,7 @@
 #ifndef __ZMQ_OBJECT_HPP_INCLUDED__
 #define __ZMQ_OBJECT_HPP_INCLUDED__
 
+#include <string>
 #include "stdint.hpp"
 
 namespace zmq
@@ -58,10 +59,12 @@ namespace zmq
 
         //  Using following function, socket is able to access global
         //  repository of inproc endpoints.
-        int register_endpoint (const char *addr_, zmq::endpoint_t &endpoint_);
+        int register_endpoint (const char *addr_,
+                const zmq::endpoint_t &endpoint_);
         void unregister_endpoints (zmq::socket_base_t *socket_);
         zmq::endpoint_t find_endpoint (const char *addr_);
-        void pend_connection (const char *addr_, pending_connection_t &pending_connection_);
+        void pend_connection (const std::string &addr_,
+                const endpoint_t &endpoint, pipe_t **pipes_);
         void connect_pending (const char *addr_, zmq::socket_base_t *bind_socket_);
 
         void destroy_socket (zmq::socket_base_t *socket_);

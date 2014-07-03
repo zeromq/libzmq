@@ -227,7 +227,7 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
         goto error;
 #endif
 
-    //  Listen for incomming connections.
+    //  Listen for incoming connections.
     rc = listen (s, options.backlog);
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
@@ -286,6 +286,13 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
             errno == ENFILE);
         return retired_fd;
     }
+#endif
+
+    //  Race condition can cause socket not to be closed (if fork happens
+    //  between accept and this point).
+#ifdef FD_CLOEXEC
+    int rc = fcntl (sock, F_SETFD, FD_CLOEXEC);
+    errno_assert (rc != -1);
 #endif
 
     if (!options.tcp_accept_filters.empty ()) {

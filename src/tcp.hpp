@@ -37,6 +37,16 @@ namespace zmq
     //  Tunes TCP keep-alives
     void tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_, int keepalive_idle_, int keepalive_intvl_);
 
+    //  Writes data to the socket. Returns the number of bytes actually
+    //  written (even zero is to be considered to be a success). In case
+    //  of error or orderly shutdown by the other peer -1 is returned.
+    int tcp_write (fd_t s_, const void *data_, size_t size_);
+
+    //  Reads data from the socket (up to 'size' bytes).
+    //  Returns the number of bytes actually read or -1 on error.
+    //  Zero indicates the peer has closed the connection.
+    int tcp_read (fd_t s_, void *data_, size_t size_);
+
 }
 
 #endif 

@@ -189,9 +189,13 @@ int zmq::socket_base_t::parse_uri (const char *uri_,
 int zmq::socket_base_t::check_protocol (const std::string &protocol_)
 {
     //  First check out whether the protcol is something we are aware of.
-    if (protocol_ != "inproc" && protocol_ != "ipc" && protocol_ != "tcp" &&
-          protocol_ != "pgm" && protocol_ != "epgm" && protocol_ != "tipc" &&
-          protocol_ != "norm") {
+    if (protocol_ != "inproc"
+    &&  protocol_ != "ipc"
+    &&  protocol_ != "tcp"
+    &&  protocol_ != "pgm"
+    &&  protocol_ != "epgm"
+    &&  protocol_ != "tipc"
+    &&  protocol_ != "norm") {
         errno = EPROTONOSUPPORT;
         return -1;
     }
@@ -284,6 +288,11 @@ int zmq::socket_base_t::getsockopt (int option_, void *optval_,
         errno = ETERM;
         return -1;
     }
+    
+    //  First, check whether specific socket type overloads the option.
+    int rc = xgetsockopt (option_, optval_, optvallen_);
+    if (rc == 0 || errno != EINVAL)
+        return rc;
 
     if (option_ == ZMQ_RCVMORE) {
         if (*optvallen_ < sizeof (int)) {
@@ -351,16 +360,11 @@ int zmq::socket_base_t::bind (const char *addr_)
     //  Parse addr_ string.
     std::string protocol;
     std::string address;
-    rc = parse_uri (addr_, protocol, address);
-    if (rc != 0)
-        return -1;
-
-    rc = check_protocol (protocol);
-    if (rc != 0)
+    if (parse_uri (addr_, protocol, address) || check_protocol (protocol))
         return -1;
 
     if (protocol == "inproc") {
-        endpoint_t endpoint = {this, options};
+        const endpoint_t endpoint = { this, options };
         int rc = register_endpoint (addr_, endpoint);
         if (rc == 0) {
             connect_pending(addr_, this);
@@ -459,12 +463,7 @@ int zmq::socket_base_t::connect (const char *addr_)
     //  Parse addr_ string.
     std::string protocol;
     std::string address;
-    rc = parse_uri (addr_, protocol, address);
-    if (rc != 0)
-        return -1;
-
-    rc = check_protocol (protocol);
-    if (rc != 0)
+    if (parse_uri (addr_, protocol, address) || check_protocol (protocol))
         return -1;
 
     if (protocol == "inproc") {
@@ -522,9 +521,8 @@ int zmq::socket_base_t::connect (const char *addr_)
             zmq_assert (written);
             new_pipes [0]->flush ();
 
-            endpoint_t endpoint = {this, options};
-            pending_connection_t pending_connection = {endpoint, new_pipes [0], new_pipes [1]};
-            pend_connection (addr_, pending_connection);
+            const endpoint_t endpoint = {this, options};
+            pend_connection (std::string (addr_), endpoint, new_pipes);
         }
         else
         {
@@ -592,7 +590,40 @@ int zmq::socket_base_t::connect (const char *addr_)
 
     //  Resolve address (if needed by the protocol)
     if (protocol == "tcp") {
-        // Defer resolution until a socket is opened
+        //  Do some basic sanity checks on tcp:// address syntax
+        //  - hostname starts with digit or letter, with embedded '-' or '.'
+        //  - IPv6 address may contain hex chars and colons.
+        //  - IPv4 address may contain decimal digits and dots.
+        //  - Address must end in ":port" where port is *, or numeric
+        //  - Address may contain two parts separated by ':'
+        //  Following code is quick and dirty check to catch obvious errors,
+        //  without trying to be fully accurate.
+        const char *check = address.c_str ();
+        if (isalnum (*check) || isxdigit (*check)) {
+            check++;
+            while (isalnum  (*check)
+                || isxdigit (*check)
+                || *check == '.' || *check == '-' || *check == ':'|| *check == ';')
+                check++;
+        }
+        //  Assume the worst, now look for success
+        rc = -1;
+        //  Did we reach the end of the address safely?
+        if (*check == 0) {
+            //  Do we have a valid port string? (cannot be '*' in connect
+            check = strrchr (address.c_str (), ':');
+            if (check) {
+                check++;
+                if (*check && (isdigit (*check)))
+                    rc = 0;     //  Valid
+            }
+        }
+        if (rc == -1) {
+            errno = EINVAL;
+            delete paddr;
+            return -1;
+        }
+        //  Defer resolution until a socket is opened
         paddr->resolved.tcp_addr = NULL;
     }
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
@@ -707,12 +738,7 @@ int zmq::socket_base_t::term_endpoint (const char *addr_)
     //  Parse addr_ string.
     std::string protocol;
     std::string address;
-    rc = parse_uri (addr_, protocol, address);
-    if (rc != 0)
-        return -1;
-
-    rc = check_protocol (protocol);
-    if (rc != 0)
+    if (parse_uri (addr_, protocol, address) || check_protocol (protocol))
         return -1;
 
     // Disconnect an inproc socket
@@ -1037,6 +1063,11 @@ int zmq::socket_base_t::xsetsockopt (int, const void *, size_t)
     errno = EINVAL;
     return -1;
 }
+int zmq::socket_base_t::xgetsockopt (int, const void *, size_t*)
+{
+    errno = EINVAL;
+    return -1;
+}
 
 bool zmq::socket_base_t::xhas_out ()
 {
@@ -1169,48 +1200,39 @@ void zmq::socket_base_t::extract_flags (msg_t *msg_)
 
 int zmq::socket_base_t::monitor (const char *addr_, int events_)
 {
-    int rc;
     if (unlikely (ctx_terminated)) {
         errno = ETERM;
         return -1;
     }
-
-    // Support deregistering monitoring endpoints as well
+    //  Support deregistering monitoring endpoints as well
     if (addr_ == NULL) {
         stop_monitor ();
         return 0;
     }
-
     //  Parse addr_ string.
     std::string protocol;
     std::string address;
-    rc = parse_uri (addr_, protocol, address);
-    if (rc != 0)
+    if (parse_uri (addr_, protocol, address) || check_protocol (protocol))
         return -1;
 
-    rc = check_protocol (protocol);
-    if (rc != 0)
-        return -1;
-
-    // Event notification only supported over inproc://
+    //  Event notification only supported over inproc://
     if (protocol != "inproc") {
         errno = EPROTONOSUPPORT;
         return -1;
     }
-
-    // Register events to monitor
+    //  Register events to monitor
     monitor_events = events_;
     monitor_socket = zmq_socket (get_ctx (), ZMQ_PAIR);
     if (monitor_socket == NULL)
         return -1;
 
-    // Never block context termination on pending event messages
+    //  Never block context termination on pending event messages
     int linger = 0;
-    rc = zmq_setsockopt (monitor_socket, ZMQ_LINGER, &linger, sizeof (linger));
+    int rc = zmq_setsockopt (monitor_socket, ZMQ_LINGER, &linger, sizeof (linger));
     if (rc == -1)
-         stop_monitor ();
+        stop_monitor ();
 
-    // Spawn the monitor socket endpoint
+    //  Spawn the monitor socket endpoint
     rc = zmq_bind (monitor_socket, addr_);
     if (rc == -1)
          stop_monitor ();
@@ -1227,136 +1249,90 @@ zmq::fd_t zmq::socket_base_t::fd()
     return file_desc;
 }
 
-void zmq::socket_base_t::event_connected (std::string &addr_, int fd_)
+void zmq::socket_base_t::event_connected (const std::string &addr_, int fd_)
 {
-    if (monitor_events & ZMQ_EVENT_CONNECTED) {
-        zmq_event_t event;
-        event.event = ZMQ_EVENT_CONNECTED;
-        event.value = fd_;
-        monitor_event (event, addr_);
-    }
+    if (monitor_events & ZMQ_EVENT_CONNECTED)
+        monitor_event (ZMQ_EVENT_CONNECTED, fd_, addr_);
 }
 
-void zmq::socket_base_t::event_connect_delayed (std::string &addr_, int err_)
+void zmq::socket_base_t::event_connect_delayed (const std::string &addr_, int err_)
 {
-    if (monitor_events & ZMQ_EVENT_CONNECT_DELAYED) {
-        zmq_event_t event;
-        event.event = ZMQ_EVENT_CONNECT_DELAYED;
-        event.value = err_;
-        monitor_event (event, addr_);
-    }
+    if (monitor_events & ZMQ_EVENT_CONNECT_DELAYED)
+        monitor_event (ZMQ_EVENT_CONNECT_DELAYED, err_, addr_);
 }
 
-void zmq::socket_base_t::event_connect_retried (std::string &addr_, int interval_)
+void zmq::socket_base_t::event_connect_retried (const std::string &addr_, int interval_)
 {
-    if (monitor_events & ZMQ_EVENT_CONNECT_RETRIED) {
-        zmq_event_t event;
-        event.event = ZMQ_EVENT_CONNECT_RETRIED;
-        event.value = interval_;
-        monitor_event (event, addr_);
-    }
+    if (monitor_events & ZMQ_EVENT_CONNECT_RETRIED)
+        monitor_event (ZMQ_EVENT_CONNECT_RETRIED, interval_, addr_);
 }
 
-void zmq::socket_base_t::event_listening (std::string &addr_, int fd_)
+void zmq::socket_base_t::event_listening (const std::string &addr_, int fd_)
 {
-    if (monitor_events & ZMQ_EVENT_LISTENING) {
-        zmq_event_t event;
-        event.event = ZMQ_EVENT_LISTENING;
-        event.value = fd_;
-        monitor_event (event, addr_);
-    }
+    if (monitor_events & ZMQ_EVENT_LISTENING)
+        monitor_event (ZMQ_EVENT_LISTENING, fd_, addr_);
 }
 
-void zmq::socket_base_t::event_bind_failed (std::string &addr_, int err_)
+void zmq::socket_base_t::event_bind_failed (const std::string &addr_, int err_)
 {
-    if (monitor_events & ZMQ_EVENT_BIND_FAILED) {
-        zmq_event_t event;
-        event.event = ZMQ_EVENT_BIND_FAILED;
-        event.value = err_;
-        monitor_event (event, addr_);
-    }
+    if (monitor_events & ZMQ_EVENT_BIND_FAILED)
+        monitor_event (ZMQ_EVENT_BIND_FAILED, err_, addr_);
 }
 
-void zmq::socket_base_t::event_accepted (std::string &addr_, int fd_)
+void zmq::socket_base_t::event_accepted (const std::string &addr_, int fd_)
 {
-    if (monitor_events & ZMQ_EVENT_ACCEPTED) {
-        zmq_event_t event;
-        event.event = ZMQ_EVENT_ACCEPTED;
-        event.value = fd_;
-        monitor_event (event, addr_);
-    }
+    if (monitor_events & ZMQ_EVENT_ACCEPTED)
+        monitor_event (ZMQ_EVENT_ACCEPTED, fd_, addr_);
 }
 
-void zmq::socket_base_t::event_accept_failed (std::string &addr_, int err_)
+void zmq::socket_base_t::event_accept_failed (const std::string &addr_, int err_)
 {
-    if (monitor_events & ZMQ_EVENT_ACCEPT_FAILED) {
-        zmq_event_t event;
-        event.event = ZMQ_EVENT_ACCEPT_FAILED;
-        event.value= err_;
-        monitor_event (event, addr_);
-    }
+    if (monitor_events & ZMQ_EVENT_ACCEPT_FAILED)
+        monitor_event (ZMQ_EVENT_ACCEPT_FAILED, err_, addr_);
 }
 
-void zmq::socket_base_t::event_closed (std::string &addr_, int fd_)
+void zmq::socket_base_t::event_closed (const std::string &addr_, int fd_)
 {
-    if (monitor_events & ZMQ_EVENT_CLOSED) {
-        zmq_event_t event;
-        event.event = ZMQ_EVENT_CLOSED;
-        event.value = fd_;
-        monitor_event (event, addr_);
-    }
-}
-        
-void zmq::socket_base_t::event_close_failed (std::string &addr_, int err_)
-{
-    if (monitor_events & ZMQ_EVENT_CLOSE_FAILED) {
-        zmq_event_t event;
-        event.event = ZMQ_EVENT_CLOSE_FAILED;
-        event.value = err_;
-        monitor_event (event, addr_);
-    }
+    if (monitor_events & ZMQ_EVENT_CLOSED)
+        monitor_event (ZMQ_EVENT_CLOSED, fd_, addr_);
 }
 
-void zmq::socket_base_t::event_disconnected (std::string &addr_, int fd_)
+void zmq::socket_base_t::event_close_failed (const std::string &addr_, int err_)
 {
-    if (monitor_events & ZMQ_EVENT_DISCONNECTED) {
-        zmq_event_t event;
-        event.event = ZMQ_EVENT_DISCONNECTED;
-        event.value = fd_;
-        monitor_event (event, addr_);
-    }
+    if (monitor_events & ZMQ_EVENT_CLOSE_FAILED)
+        monitor_event (ZMQ_EVENT_CLOSE_FAILED, err_, addr_);
 }
 
-void zmq::socket_base_t::monitor_event (zmq_event_t event_, const std::string& addr_)
+void zmq::socket_base_t::event_disconnected (const std::string &addr_, int fd_)
+{
+    if (monitor_events & ZMQ_EVENT_DISCONNECTED)
+        monitor_event (ZMQ_EVENT_DISCONNECTED, fd_, addr_);
+}
+
+//  Send a monitor event
+void zmq::socket_base_t::monitor_event (int event_, int value_, const std::string &addr_)
 {
     if (monitor_socket) {
-        const uint16_t eid = (uint16_t)event_.event;
-        const uint32_t value = (uint32_t)event_.value;
-        // prepare and send first message frame
-        // containing event id and value
+        //  Send event in first frame
         zmq_msg_t msg;
-        zmq_msg_init_size (&msg, sizeof(eid) + sizeof(value));
-        char* data1 = (char*)zmq_msg_data(&msg);
-        memcpy (data1, &eid, sizeof(eid));
-        memcpy (data1+sizeof(eid), &value, sizeof(value));
+        zmq_msg_init_size (&msg, 6);
+        uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
+        *(uint16_t *) (data + 0) = (uint16_t) event_;
+        *(uint32_t *) (data + 2) = (uint32_t) value_;
         zmq_sendmsg (monitor_socket, &msg, ZMQ_SNDMORE);
-        // prepare and send second message frame
-        // containing the address (endpoint)
+
+        //  Send address in second frame
         zmq_msg_init_size (&msg, addr_.size());
-        memcpy(zmq_msg_data(&msg), addr_.c_str(), addr_.size());
+        memcpy (zmq_msg_data (&msg), addr_.c_str (), addr_.size ());
         zmq_sendmsg (monitor_socket, &msg, 0);
     }
 }
 
-void zmq::socket_base_t::stop_monitor()
+void zmq::socket_base_t::stop_monitor (void)
 {
     if (monitor_socket) {
-        if (monitor_events & ZMQ_EVENT_MONITOR_STOPPED) {
-            zmq_event_t event;
-            event.event = ZMQ_EVENT_MONITOR_STOPPED;
-            event.value = 0;
-            monitor_event (event, "");
-        }
+        if (monitor_events & ZMQ_EVENT_MONITOR_STOPPED)
+            monitor_event (ZMQ_EVENT_MONITOR_STOPPED, 0, "");
         zmq_close (monitor_socket);
         monitor_socket = NULL;
         monitor_events = 0;

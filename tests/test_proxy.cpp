@@ -61,7 +61,7 @@ client_task (void *ctx)
     sprintf (identity, "%04X-%04X", rand() % 0xFFFF, rand() % 0xFFFF);
     rc = zmq_setsockopt (client, ZMQ_IDENTITY, identity, ID_SIZE); // includes '\0' as an helper for printf
     assert (rc == 0);
-    rc = zmq_connect (client, "tcp://127.0.0.1:9999");
+    rc = zmq_connect (client, "tcp://127.0.0.1:5563");
     assert (rc == 0);
 
     zmq_pollitem_t items [] = { { client, 0, ZMQ_POLLIN, 0 }, { control, 0, ZMQ_POLLIN, 0 } };
@@ -118,7 +118,7 @@ server_task (void *ctx)
     // Frontend socket talks to clients over TCP
     void *frontend = zmq_socket (ctx, ZMQ_ROUTER);
     assert (frontend);
-    int rc = zmq_bind (frontend, "tcp://127.0.0.1:9999");
+    int rc = zmq_bind (frontend, "tcp://127.0.0.1:5563");
     assert (rc == 0);
 
     // Backend socket talks to workers over inproc
