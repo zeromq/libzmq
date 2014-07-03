@@ -45,6 +45,9 @@
 #ifdef ZMQ_HAVE_SO_PEERCRED
 #   include <pwd.h>
 #   include <grp.h>
+#   if defined ZMQ_HAVE_OPENBSD
+#       define ucred sockpeercred
+#   endif
 #endif
 
 zmq::ipc_listener_t::ipc_listener_t (io_thread_t *io_thread_,
