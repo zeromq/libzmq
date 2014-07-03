@@ -9,11 +9,13 @@
 #define FOR(i,n) for (i = 0;i < n;++i)
 #define sv static void
 
+#ifndef TWEETNACL_BASE_H
 typedef unsigned char u8;
 typedef unsigned long u32;
 typedef unsigned long long u64;
 typedef long long i64;
 typedef i64 gf[16];
+#endif
 extern void randombytes(u8 *,u64);
 
 static const u8
