@@ -59,26 +59,28 @@ int zmq::mailbox_t::recv (command_t *cmd_, int timeout_)
 {
     //  Try to get the command straight away.
     if (active) {
-        bool ok = cpipe.read (cmd_);
-        if (ok)
+        if (cpipe.read (cmd_))
             return 0;
 
         //  If there are no more commands available, switch into passive state.
         active = false;
-        signaler.recv ();
     }
 
     //  Wait for signal from the command sender.
-    int rc = signaler.wait (timeout_);
-    if (rc != 0 && (errno == EAGAIN || errno == EINTR))
+    const int rc = signaler.wait (timeout_);
+    if (rc == -1) {
+        errno_assert (errno == EAGAIN || errno == EINTR);
         return -1;
+    }
 
-    //  We've got the signal. Now we can switch into active state.
+    //  Receive the signal.
+    signaler.recv ();
+
+    //  Switch into active state.
     active = true;
 
     //  Get a command.
-    errno_assert (rc == 0);
-    bool ok = cpipe.read (cmd_);
+    const bool ok = cpipe.read (cmd_);
     zmq_assert (ok);
     return 0;
 }
