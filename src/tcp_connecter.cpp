@@ -303,15 +303,18 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
 #ifdef ZMQ_HAVE_WINDOWS
     zmq_assert (rc == 0);
     if (err != 0) {
-        wsa_assert (err == WSAECONNREFUSED
-                 || err == WSAETIMEDOUT
-                 || err == WSAECONNABORTED
-                 || err == WSAEHOSTUNREACH
-                 || err == WSAENETUNREACH
-                 || err == WSAENETDOWN
-                 || err == WSAEACCES
-                 || err == WSAEINVAL
-                 || err == WSAEADDRINUSE);
+        if (err != WSAECONNREFUSED
+            && err != WSAETIMEDOUT
+            && err != WSAECONNABORTED
+            && err != WSAEHOSTUNREACH
+            && err != WSAENETUNREACH
+            && err != WSAENETDOWN
+            && err != WSAEACCES
+            && err != WSAEINVAL
+            && err != WSAEADDRINUSE)
+        {
+            wsa_assert_no (err);
+        }
         return retired_fd;
     }
 #else
