@@ -113,6 +113,8 @@
     <ClInclude Include="..\..\..\..\src\pgm_sender.hpp" />
     <ClInclude Include="..\..\..\..\src\pgm_socket.hpp" />
     <ClInclude Include="..\..\..\..\src\pipe.hpp" />
+    <ClInclude Include="..\..\..\..\src\socks.hpp" />
+    <ClInclude Include="..\..\..\..\src\socks_connecter.hpp" />
     <ClInclude Include="..\..\platform.hpp" />
     <ClInclude Include="..\..\..\..\src\poll.hpp" />
     <ClInclude Include="..\..\..\..\src\poller.hpp" />
@@ -211,6 +213,8 @@
     <ClCompile Include="..\..\..\..\src\session_base.cpp" />
     <ClCompile Include="..\..\..\..\src\signaler.cpp" />
     <ClCompile Include="..\..\..\..\src\socket_base.cpp" />
+    <ClCompile Include="..\..\..\..\src\socks.cpp" />
+    <ClCompile Include="..\..\..\..\src\socks_connecter.cpp" />
     <ClCompile Include="..\..\..\..\src\stream.cpp" />
     <ClCompile Include="..\..\..\..\src\stream_engine.cpp" />
     <ClCompile Include="..\..\..\..\src\sub.cpp" />
