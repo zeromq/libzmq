@@ -70,7 +70,7 @@ zmq::signaler_t::signaler_t ()
         unblock_socket (r);
     }
 #ifdef HAVE_FORK
-    pid = getpid();
+    pid = getpid ();
 #endif
 }
 
@@ -80,9 +80,9 @@ zmq::signaler_t::~signaler_t ()
     int rc = close (r);
     errno_assert (rc == 0);
 #elif defined ZMQ_HAVE_WINDOWS
-    struct linger so_linger = { 1, 0 };
+    const struct linger so_linger = { 1, 0 };
     int rc = setsockopt (w, SOL_SOCKET, SO_LINGER,
-        (char *)&so_linger, sizeof (so_linger));
+        (const char *) &so_linger, sizeof so_linger);
     wsa_assert (rc != SOCKET_ERROR);
     rc = closesocket (w);
     wsa_assert (rc != SOCKET_ERROR);
@@ -96,15 +96,15 @@ zmq::signaler_t::~signaler_t ()
 #endif
 }
 
-zmq::fd_t zmq::signaler_t::get_fd ()
+zmq::fd_t zmq::signaler_t::get_fd () const
 {
     return r;
 }
 
 void zmq::signaler_t::send ()
 {
-#if defined(HAVE_FORK)
-    if (unlikely(pid != getpid())) {
+#if defined HAVE_FORK
+    if (unlikely (pid != getpid ())) {
         //printf("Child process %d signaler_t::send returning without sending #1\n", getpid());
         return; // do not send anything in forked child context
     }
@@ -125,13 +125,13 @@ void zmq::signaler_t::send ()
         if (unlikely (nbytes == -1 && errno == EINTR))
             continue;
 #if defined(HAVE_FORK)
-        if (unlikely(pid != getpid())) {
+        if (unlikely (pid != getpid ())) {
             //printf("Child process %d signaler_t::send returning without sending #2\n", getpid());
             errno = EINTR;
             break;
         }
 #endif
-        zmq_assert (nbytes == sizeof (dummy));
+        zmq_assert (nbytes == sizeof dummy);
         break;
     }
 #endif
@@ -140,8 +140,7 @@ void zmq::signaler_t::send ()
 int zmq::signaler_t::wait (int timeout_)
 {
 #ifdef HAVE_FORK
-    if (unlikely(pid != getpid()))
-    {
+    if (unlikely (pid != getpid ())) {
         // we have forked and the file descriptor is closed. Emulate an interupt
         // response.
         //printf("Child process %d signaler_t::wait returning simulating interrupt #1\n", getpid());
@@ -151,7 +150,6 @@ int zmq::signaler_t::wait (int timeout_)
 #endif
 
 #ifdef ZMQ_POLL_BASED_ON_POLL
-
     struct pollfd pfd;
     pfd.fd = r;
     pfd.events = POLLIN;
@@ -166,7 +164,8 @@ int zmq::signaler_t::wait (int timeout_)
         return -1;
     }
 #ifdef HAVE_FORK
-    if (unlikely(pid != getpid())) {
+    else
+    if (unlikely (pid != getpid ())) {
         // we have forked and the file descriptor is closed. Emulate an interupt
         // response.
         //printf("Child process %d signaler_t::wait returning simulating interrupt #2\n", getpid());
@@ -245,7 +244,7 @@ void zmq::signaler_t::recv ()
 }
 
 #ifdef HAVE_FORK
-void zmq::signaler_t::forked()
+void zmq::signaler_t::forked ()
 {
     //  Close file descriptors created in the parent and create new pair
     close (r);
@@ -274,13 +273,13 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     // Windows CE does not manage security attributes
     SECURITY_DESCRIPTOR sd;
     SECURITY_ATTRIBUTES sa;
-    memset (&sd, 0, sizeof (sd));
-    memset (&sa, 0, sizeof (sa));
+    memset (&sd, 0, sizeof sd);
+    memset (&sa, 0, sizeof sa);
 
-    InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION);
-    SetSecurityDescriptorDacl(&sd, TRUE, 0, FALSE);
+    InitializeSecurityDescriptor (&sd, SECURITY_DESCRIPTOR_REVISION);
+    SetSecurityDescriptorDacl (&sd, TRUE, 0, FALSE);
 
-    sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+    sa.nLength = sizeof (SECURITY_ATTRIBUTES);
     sa.lpSecurityDescriptor = &sd;
 #   endif
 
@@ -310,9 +309,10 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
 
         win_assert (sync != NULL);
     }
-    else if (signaler_port != 0) {
-        wchar_t mutex_name[MAX_PATH];
-        swprintf(mutex_name, MAX_PATH, L"Global\\zmq-signaler-port-%d", signaler_port);
+    else
+    if (signaler_port != 0) {
+        wchar_t mutex_name [MAX_PATH];
+        swprintf (mutex_name, MAX_PATH, L"Global\\zmq-signaler-port-%d", signaler_port);
 
 #       if !defined _WIN32_WCE
         sync = CreateMutexW (&sa, FALSE, mutex_name);
@@ -338,16 +338,16 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     //  Set SO_REUSEADDR and TCP_NODELAY on listening socket.
     BOOL so_reuseaddr = 1;
     int rc = setsockopt (listener, SOL_SOCKET, SO_REUSEADDR,
-        (char *)&so_reuseaddr, sizeof (so_reuseaddr));
+        (char *)&so_reuseaddr, sizeof so_reuseaddr);
     wsa_assert (rc != SOCKET_ERROR);
     BOOL tcp_nodelay = 1;
     rc = setsockopt (listener, IPPROTO_TCP, TCP_NODELAY,
-        (char *)&tcp_nodelay, sizeof (tcp_nodelay));
+        (char *)&tcp_nodelay, sizeof tcp_nodelay);
     wsa_assert (rc != SOCKET_ERROR);
 
     //  Init sockaddr to signaler port.
     struct sockaddr_in addr;
-    memset (&addr, 0, sizeof (addr));
+    memset (&addr, 0, sizeof addr);
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
     addr.sin_port = htons (signaler_port);
@@ -358,7 +358,7 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
 
     //  Set TCP_NODELAY on writer socket.
     rc = setsockopt (*w_, IPPROTO_TCP, TCP_NODELAY,
-        (char *)&tcp_nodelay, sizeof (tcp_nodelay));
+        (char *) &tcp_nodelay, sizeof tcp_nodelay);
     wsa_assert (rc != SOCKET_ERROR);
 
     if (sync != NULL) {
@@ -368,11 +368,11 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     }
 
     //  Bind listening socket to signaler port.
-    rc = bind (listener, (const struct sockaddr*) &addr, sizeof (addr));
+    rc = bind (listener, (const struct sockaddr*) &addr, sizeof addr);
 
     if (rc != SOCKET_ERROR && signaler_port == 0) {
         //  Retrieve ephemeral port number
-        int addrlen = sizeof (addr);
+        int addrlen = sizeof addr;
         rc = getsockname (listener, (struct sockaddr*) &addr, &addrlen);
     }
 
@@ -382,7 +382,7 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
 
     //  Connect writer to the listener.
     if (rc != SOCKET_ERROR)
-        rc = connect (*w_, (struct sockaddr*) &addr, sizeof (addr));
+        rc = connect (*w_, (struct sockaddr*) &addr, sizeof addr);
 
     //  Accept connection from writer.
     if (rc != SOCKET_ERROR)
@@ -439,7 +439,7 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     //  The bug will be fixed in V5.6 ECO4 and beyond.  In the meantime, we'll
     //  create the socket pair manually.
     struct sockaddr_in lcladdr;
-    memset (&lcladdr, 0, sizeof (lcladdr));
+    memset (&lcladdr, 0, sizeof lcladdr);
     lcladdr.sin_family = AF_INET;
     lcladdr.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
     lcladdr.sin_port = 0;
@@ -448,16 +448,16 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     errno_assert (listener != -1);
 
     int on = 1;
-    int rc = setsockopt (listener, IPPROTO_TCP, TCP_NODELAY, &on, sizeof (on));
+    int rc = setsockopt (listener, IPPROTO_TCP, TCP_NODELAY, &on, sizeof on);
     errno_assert (rc != -1);
 
-    rc = setsockopt (listener, IPPROTO_TCP, TCP_NODELACK, &on, sizeof (on));
+    rc = setsockopt (listener, IPPROTO_TCP, TCP_NODELACK, &on, sizeof on);
     errno_assert (rc != -1);
 
-    rc = bind (listener, (struct sockaddr*) &lcladdr, sizeof (lcladdr));
+    rc = bind (listener, (struct sockaddr*) &lcladdr, sizeof lcladdr);
     errno_assert (rc != -1);
 
-    socklen_t lcladdr_len = sizeof (lcladdr);
+    socklen_t lcladdr_len = sizeof lcladdr;
 
     rc = getsockname (listener, (struct sockaddr*) &lcladdr, &lcladdr_len);
     errno_assert (rc != -1);
@@ -468,13 +468,13 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     *w_ = open_socket (AF_INET, SOCK_STREAM, 0);
     errno_assert (*w_ != -1);
 
-    rc = setsockopt (*w_, IPPROTO_TCP, TCP_NODELAY, &on, sizeof (on));
+    rc = setsockopt (*w_, IPPROTO_TCP, TCP_NODELAY, &on, sizeof on);
     errno_assert (rc != -1);
 
-    rc = setsockopt (*w_, IPPROTO_TCP, TCP_NODELACK, &on, sizeof (on));
+    rc = setsockopt (*w_, IPPROTO_TCP, TCP_NODELACK, &on, sizeof on);
     errno_assert (rc != -1);
 
-    rc = connect (*w_, (struct sockaddr*) &lcladdr, sizeof (lcladdr));
+    rc = connect (*w_, (struct sockaddr*) &lcladdr, sizeof lcladdr);
     errno_assert (rc != -1);
 
     *r_ = accept (listener, NULL, NULL);

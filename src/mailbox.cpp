@@ -25,7 +25,7 @@ zmq::mailbox_t::mailbox_t ()
     //  Get the pipe into passive state. That way, if the users starts by
     //  polling on the associated file descriptor it will get woken up when
     //  new command is posted.
-    bool ok = cpipe.read (NULL);
+    const bool ok = cpipe.read (NULL);
     zmq_assert (!ok);
     active = false;
 }
@@ -40,7 +40,7 @@ zmq::mailbox_t::~mailbox_t ()
     sync.unlock ();
 }
 
-zmq::fd_t zmq::mailbox_t::get_fd ()
+zmq::fd_t zmq::mailbox_t::get_fd () const
 {
     return signaler.get_fd ();
 }
@@ -49,7 +49,7 @@ void zmq::mailbox_t::send (const command_t &cmd_)
 {
     sync.lock ();
     cpipe.write (cmd_, false);
-    bool ok = cpipe.flush ();
+    const bool ok = cpipe.flush ();
     sync.unlock ();
     if (!ok)
         signaler.send ();
