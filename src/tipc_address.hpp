@@ -41,7 +41,7 @@ namespace zmq
         ~tipc_address_t ();
 
         //  This function sets up the address "{type, lower, upper}" for TIPC transport
-        int resolve (const char* name);
+        int resolve (const char *name);
 
         //  The opposite to resolve()
         int to_string (std::string &addr_);

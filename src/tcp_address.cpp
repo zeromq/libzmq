@@ -116,7 +116,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
     (void) ipv6_;
 
     //  Create a socket.
-    int sd = open_socket (AF_INET, SOCK_DGRAM, 0);
+    const int sd = open_socket (AF_INET, SOCK_DGRAM, 0);
     errno_assert (sd != -1);
 
     struct ifreq ifr;
@@ -125,7 +125,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
     strncpy (ifr.ifr_name, nic_, sizeof ifr.ifr_name);
 
     //  Fetch interface address.
-    int rc = ioctl (sd, SIOCGIFADDR, (caddr_t) &ifr, sizeof (struct ifreq));
+    const int rc = ioctl (sd, SIOCGIFADDR, (caddr_t) &ifr, sizeof ifr);
 
     //  Clean up.
     close (sd);
@@ -413,7 +413,7 @@ int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_, boo
     std::string addr_str (name_, delimiter - name_);
     std::string port_str (delimiter + 1);
 
-    //  Remove square brackets around the address, if any.
+    //  Remove square brackets around the address, if any, as used in IPv6
     if (addr_str.size () >= 2 && addr_str [0] == '[' &&
           addr_str [addr_str.size () - 1] == ']')
         addr_str = addr_str.substr (1, addr_str.size () - 2);
@@ -466,7 +466,8 @@ int zmq::tcp_address_t::to_string (std::string &addr_)
         return -1;
     }
 
-    // not using service resolv because of https://github.com/zeromq/libzmq/commit/1824574f9b5a8ce786853320e3ea09fe1f822bc4
+    //  Not using service resolv because of
+    //  https://github.com/zeromq/libzmq/commit/1824574f9b5a8ce786853320e3ea09fe1f822bc4
     char hbuf [NI_MAXHOST];
     int rc = getnameinfo (addr (), addrlen (), hbuf, sizeof hbuf, NULL, 0, NI_NUMERICHOST);
     if (rc != 0) {

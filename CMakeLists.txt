@@ -613,6 +613,11 @@ else()
                              OUTPUT_NAME "zmq"
                              PUBLIC_HEADER "${public_headers}")
     endif()
+    add_library(libzmq-static STATIC ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig})
+    set_target_properties(libzmq-static PROPERTIES
+      PUBLIC_HEADER "${public_headers}"
+      COMPILE_FLAGS "-DZMQ_STATIC"
+      OUTPUT_NAME "zmq-static")
 endif()
 
 target_link_libraries(libzmq ${SODIUM_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
@@ -777,7 +782,7 @@ if(MSVC)
             COMPONENT Runtime)
   endif()
 else()
-  install(TARGETS libzmq
+  install(TARGETS libzmq libzmq-static
           RUNTIME DESTINATION bin
           ARCHIVE DESTINATION lib
           LIBRARY DESTINATION lib

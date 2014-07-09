@@ -24,10 +24,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <stdlib.h>
 #include <assert.h>
-#include <platform.hpp>
 #include <zmq.h>
-#include <zmq_utils.h>
 
 int main (void)
 {
@@ -40,11 +39,9 @@ int main (void)
 
     char public_key [41];
     char secret_key [41];
-    int rc = zmq_curve_keypair (public_key, secret_key);
-    if (rc != 0) {
-      if (zmq_errno () == ENOTSUP) {
+    if (zmq_curve_keypair (public_key, secret_key)) {
+      if (zmq_errno () == ENOTSUP)
           puts ("To use curve_keygen, please install libsodium and then rebuild libzmq.");
-      }
       exit (1);
     }
 

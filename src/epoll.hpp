@@ -27,6 +27,7 @@
 #include <vector>
 #include <sys/epoll.h>
 
+#include "ctx.hpp"
 #include "fd.hpp"
 #include "thread.hpp"
 #include "poller_base.hpp"
@@ -45,7 +46,7 @@ namespace zmq
 
         typedef void* handle_t;
 
-        epoll_t ();
+        epoll_t (const ctx_t &ctx_);
         ~epoll_t ();
 
         //  "poller" concept.
@@ -67,6 +68,9 @@ namespace zmq
 
         //  Main event loop.
         void loop ();
+
+        // Reference to ZMQ context.
+        const ctx_t &ctx;
 
         //  Main epoll file descriptor
         fd_t epoll_fd;

@@ -28,6 +28,9 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <fcntl.h>
+#if defined ZMQ_HAVE_OPENBSD
+#define ucred sockpeercred
+#endif
 #endif
 
 #include <string.h>

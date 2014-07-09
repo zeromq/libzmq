@@ -30,7 +30,8 @@
 #include "config.hpp"
 #include "i_poll_events.hpp"
 
-zmq::poll_t::poll_t () :
+zmq::poll_t::poll_t (const zmq::ctx_t &ctx_) :
+    ctx(ctx_),
     retired (false),
     stopping (false)
 {
@@ -106,7 +107,7 @@ void zmq::poll_t::reset_pollout (handle_t handle_)
 
 void zmq::poll_t::start ()
 {
-    worker.start (worker_routine, this);
+    ctx.start_thread (worker, worker_routine, this);
 }
 
 void zmq::poll_t::stop ()
