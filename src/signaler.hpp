@@ -41,7 +41,7 @@ namespace zmq
         signaler_t ();
         ~signaler_t ();
 
-        fd_t get_fd ();
+        fd_t get_fd () const;
         void send ();
         int wait (int timeout_);
         void recv ();
@@ -49,7 +49,7 @@ namespace zmq
 #ifdef HAVE_FORK
         // close the file descriptors in a forked child process so that they
         // do not interfere with the context in the parent process.
-        void forked();
+        void forked ();
 #endif
 
     private:
@@ -72,7 +72,7 @@ namespace zmq
         pid_t pid;
         // idempotent close of file descriptors that is safe to use by destructor
         // and forked().
-        void close_internal();
+        void close_internal ();
 #endif
     };
 }

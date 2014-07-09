@@ -44,7 +44,7 @@ int clipped_maxsocket(int max_requested)
     if (max_requested >= zmq::poller_t::max_fds () && zmq::poller_t::max_fds () != -1)
         // -1 because we need room for the reaper mailbox.
         max_requested = zmq::poller_t::max_fds () - 1;
-    
+
     return max_requested;
 }
 
@@ -115,9 +115,9 @@ int zmq::ctx_t::terminate ()
             // we are a forked child process. Close all file descriptors
             // inherited from the parent.
             for (sockets_t::size_type i = 0; i != sockets.size (); i++)
-                sockets[i]->get_mailbox()->forked();
+                sockets [i]->get_mailbox ()->forked ();
 
-            term_mailbox.forked();
+            term_mailbox.forked ();
         }
 #endif
 
@@ -374,8 +374,8 @@ int zmq::ctx_t::register_endpoint (const char *addr_,
 {
     endpoints_sync.lock ();
 
-    bool inserted = endpoints.insert (endpoints_t::value_type (
-        std::string (addr_), endpoint_)).second;
+    const bool inserted = endpoints.insert (
+        endpoints_t::value_type (std::string (addr_), endpoint_)).second;
 
     endpoints_sync.unlock ();
 
@@ -420,6 +420,7 @@ void zmq::ctx_t::unregister_endpoints (socket_base_t *socket_)
         }
         ++it;
     }
+
     endpoints_sync.unlock ();
 }
 
@@ -484,7 +485,7 @@ void zmq::ctx_t::connect_inproc_sockets (zmq::socket_base_t *bind_socket_,
     options_t& bind_options, const pending_connection_t &pending_connection_, side side_)
 {
     bind_socket_->inc_seqnum();
-    pending_connection_.bind_pipe->set_tid(bind_socket_->get_tid());
+    pending_connection_.bind_pipe->set_tid (bind_socket_->get_tid ());
 
     if (!bind_options.recv_identity) {
         msg_t msg;
