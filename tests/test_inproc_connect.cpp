@@ -411,6 +411,56 @@ void test_connect_only ()
     assert (rc == 0);
 }
 
+
+void test_unbind ()
+{
+    void *ctx = zmq_ctx_new ();
+    assert (ctx);
+
+    // Bind and unbind socket 1
+    void *bindSocket1 = zmq_socket (ctx, ZMQ_PAIR);
+    assert (bindSocket1);
+    int rc = zmq_bind (bindSocket1, "inproc://unbind");
+    assert (rc == 0);
+    zmq_unbind (bindSocket1, "inproc://unbind");
+    assert (rc == 0);
+
+    // Bind socket 2
+    void *bindSocket2 = zmq_socket (ctx, ZMQ_PAIR);
+    assert (bindSocket2);
+    rc = zmq_bind (bindSocket2, "inproc://unbind");
+    assert (rc == 0);
+
+    // Now connect
+    void *connectSocket = zmq_socket (ctx, ZMQ_PAIR);
+    assert (connectSocket);
+    rc = zmq_connect (connectSocket, "inproc://unbind");
+    assert (rc == 0);
+
+    // Queue up some data
+    rc = zmq_send_const (connectSocket, "foobar", 6, 0);
+    assert (rc == 6);
+
+    // Read pending message
+    zmq_msg_t msg;
+    rc = zmq_msg_init (&msg);
+    assert (rc == 0);
+    rc = zmq_msg_recv (&msg, bindSocket2, 0);
+    assert (rc == 6);
+    void *data = zmq_msg_data (&msg);
+    assert (memcmp ("foobar", data, 6) == 0);
+
+    // Cleanup
+    rc = zmq_close (connectSocket);
+    assert (rc == 0);
+    rc = zmq_close (bindSocket1);
+    assert (rc == 0);
+    rc = zmq_close (bindSocket2);
+    assert (rc == 0);
+    rc = zmq_ctx_term (ctx);
+    assert (rc == 0);
+}
+
 int main (void)
 {
     setup_test_environment ();
@@ -423,6 +473,7 @@ int main (void)
     test_simultaneous_connect_bind_threads ();
     test_identity ();
     test_connect_only ();
+    test_unbind ();
 
     return 0;
 }
