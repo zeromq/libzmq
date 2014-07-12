@@ -311,6 +311,7 @@ ZMQ_EXPORT const char *zmq_msg_gets (zmq_msg_t *msg, const char *property);
 /*  Message options                                                           */
 #define ZMQ_MORE 1
 #define ZMQ_SRCFD 2
+#define ZMQ_SHARED 3
 
 /*  Send/recv options.                                                        */
 #define ZMQ_DONTWAIT 1
