@@ -65,6 +65,26 @@ int main (void)
     more = zmq_msg_more (&msg);
     assert (more == 0);
 
+    // Test ZMQ_SHARED property
+    zmq_msg_t msg_a;
+    rc = zmq_msg_init_size(&msg_a, 1024); // large enough to be a type_lmsg
+    assert (rc == 0);
+
+    // Message is not shared
+    rc = zmq_msg_get(&msg_a, ZMQ_SHARED);
+    assert (rc == 0);
+
+    zmq_msg_t msg_b;
+    rc = zmq_msg_init(&msg_b);
+    assert (rc == 0);
+
+    rc = zmq_msg_copy(&msg_b, &msg_a);
+    assert (rc == 0);
+
+    // Message is now shared
+    rc = zmq_msg_get(&msg_b, ZMQ_SHARED);
+    assert (rc == 1);
+
     //  Deallocate the infrastructure.
     rc = zmq_close (sc);
     assert (rc == 0);

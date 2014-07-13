@@ -29,6 +29,10 @@ allows application to retrieve the remote endpoint via 'getpeername(2)'. Be
 aware that the respective socket might be closed already, reused even. 
 Currently only implemented for TCP sockets.
 
+*ZMQ_SHARED*::
+Indicates that a message has been copied and MAY share underlying storage
+with another copy of this message.
+
 RETURN VALUE
 ------------
 The _zmq_msg_get()_ function shall return the value for the property if
