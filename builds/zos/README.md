@@ -12,14 +12,15 @@ Tested build combinations:
 
 * ZeroMQ 4.0.4, using IBM XL C/C++ compiler, as XPLINK in LP64 mode
 
-(Other combinations are likely to work, possibly with minor changes,
-but have not been tested.)
+Other combinations are likely to work, possibly with minor changes,
+but have not been tested.  Both static library and DLL modes have been
+tested.
 
 There are some minor limitations (detailed below), but all core
 functionality tests run successfully.
 
 
-## Quickstart on z/OS UNIX System Services
+## Quickstart: building ZeroMQ on z/OS UNIX System Services
 
 Assuming [z/OS UNIX System
 Services](http://www-03.ibm.com/systems/z/os/zos/features/unix/) is
@@ -36,9 +37,17 @@ installed, ZeroMQ can be built as follows:
 
 *   (Optional) set ZCXXFLAGS for additional compile flags (see below)
 
-*   Build the `libzmq.a` static library with:
+*   Build `libzmq.a` static library and `libzmq.so` dynamic
+    library, with:
 
         cd zeromq-VERSION
+        builds/zos/makelibzmq
+
+    or to skip the `libzmq.so` dynamic library:
+
+        cd zeromq-VERSION
+        BUILD_DLL=false
+        export BUILD_DLL
         builds/zos/makelibzmq
 
 *   (Optional, but recommended) build the core tests with:
@@ -54,18 +63,61 @@ installed, ZeroMQ can be built as follows:
 
         builds/zos/makeclean
 
+There are details on specifying alternative compilation flags below.
 
-## Compilation flags
+
+## Quickstart: using ZeroMQ on z/OS UNIX System Services
+
+### Static linking
+
+Install `include/*.h` somewhere on your compiler include path.
+
+Install `src/libzmq.a` somewhere on your library search path.
+
+Compile and link application with:
+
+    c++ -Wc,xplink -Wl,xplink ... -+ -o myprog myprog.cpp -lzmq
+
+Run with:
+
+    ./myprog
+
+
+### Dynamic linking
+
+Install `include/*.h` somewhere on your compiler include path.
+
+Install `src/libzmq.so` somewhere on your LIBPATH.
+
+Install `src/libzmq.x` somewhere you an reference for import linking.
+
+Compile and link application:
+
+    c++ -Wc,xplink -Wc,dll ... -+ -c -o myprog.o myprog.cpp
+    c++ -Wl,xplink -o myprog myprog.o /PATH/TO/libzmq.x
+
+Run with:
+
+    LIBPATH=/PATH/OF/LIBZMQ.SO:/lib:/usr/lib:...    # if not in default path
+    ./myprog
+
+
+## Setting other compilation flags
+
+### Optimisation
 
 To build with optimisation:
 
 *   set `ZCXXFLAGS` to "`-O2`" before starting build process above
 
 
+### Full debugging symbols
+
 To build with debugging symbols:
 
 *   set `ZCXXFLAGS` to "`-g`" before starting build process above
 
+### 64-bit mode (LP64/amode=64)
 
 To build in 64-bit mode:
 
@@ -77,6 +129,8 @@ the default for the IBM XL C/C++ compiler.  To build in LP64 mode
 *    set  `ZCXXFLAGS` to "`-Wc,lp64 -Wl,lp64`" before starting build
 
 (64-bit mode can be combined with optimisation or debug symbols.)
+
+### Combining compilation flags
 
 Other build flags can be used in `ZXCCFLAGS` if desired.  Beware that
 they are passed through (Bourne) shell expansion, and passed to both
@@ -117,14 +171,16 @@ In addition there are some other minor test issues:
     [`libsodium`](http://doc.libsodium.org/), which has not been
     ported to z/OS UNIX System Services yet.
 
-*   `test_monitor` will sometimes fail with `SIGPIPE` (about 1 run
-    in 4); this appears to be a problem with SIGPIPE not being ignored
-    and has been reported upstream.
+*   Some tests will occassionally fail with `SIGPIPE` (about 1 run
+    in 4 one of the tests will fail); this appears to be a problem
+    with SIGPIPE not being ignored and has been reported upstream.
+    The tests work fine if run again.
 
-*   `test_spec_rep` (and possibly other tests) occassionally fail with
-    `Resource temporarily unavailable`, which is a result of EAGAIN
-    not being properly caught in all places and the function call
-    retried.  This has also been reported upstream.
+*   Some tests will occassionally fail with `Resource temporarily
+    unavailable`, which is a result of EAGAIN not being properly
+    caught in all places and the function call retried.  This has
+    also been reported upstream.  Again the tests work fine if
+    run again.
 
 
 ## ZeroMQ on z/OS UNIX System Services: Portability notes

@@ -4,7 +4,7 @@
 # additional compile arguments.
 #
 # Written by Ewen McNeill <ewen@imatix.com>, 2014-07-19
-# Updated by Ewen McNeill <ewen@imatix.com>, 2014-07-19
+# Updated by Ewen McNeill <ewen@imatix.com>, 2014-07-22
 #---------------------------------------------------------------------------
 
 VERBOSE="${VERBOSE:-}"    # Set to non-empty for already done status

@@ -22,7 +22,7 @@ TESTS="${TOP}/tests"
 
 # Remove object/library files
 echo "Removing libzmq built files"
-(cd "${SRC}" && rm -f *.o *.a *.dbg)
+(cd "${SRC}" && rm -f *.o *.a *.dbg *.x libzmq* *.so)
 
 # Remove test object files
 echo "Removing libzmq tests"
