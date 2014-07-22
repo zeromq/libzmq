@@ -1,5 +1,9 @@
 #! /bin/sh
-# Build tests/* executables; assumes that libzmq.a is already built
+# Build tests/* executables; assumes that libzmq.a or libzmq.so/libzmq.x
+# is already built
+#
+# If libzmq.so and libzmq.x exist, then dynamic linking is used, otherwise
+# static linking is used.
 #
 # Written by Ewen McNeill <ewen@imatix.com>, 2014-07-21
 # Updated by Ewen McNeill <ewen@imatix.com>, 2014-07-22
@@ -27,10 +31,15 @@ TOP="${BIN_DIR}/../.."
 SRC="${TOP}/src"
 TESTS="${TOP}/tests"
 
-if [ -f "${SRC}/platform.hpp" -a -f "${SRC}/libzmq.a" ]; then
-  :
+# Figure out how we are going to link to ZMQ
+LINK_TYPE=unknown
+
+if [ -f "${SRC}/platform.hpp" -a -f "${SRC}/libzmq.so" -a -f "${SRC}/libzmq.x" ]; then
+  LINK_TYPE=dynamic
+elif [ -f "${SRC}/platform.hpp" -a -f "${SRC}/libzmq.a" ]; then
+  LINK_TYPE=static
 else
-  echo "Error: run makezmqlib to build libzmq.a first" >&2
+  echo "Error: run makezmqlib to build libzmq.a and/or libzmq.so/libzmq.x first" >&2
   exit 1
 fi
 
@@ -46,6 +55,12 @@ else
 fi
 
 # Compile all the source
+if [ "${LINK_TYPE}" = "dynamic" ]; then
+  ZCXXFLAGS="${ZCXXFLAGS} -Wc,DLL"
+  export ZXCCFLAGS
+  echo "Building tests to use DLL: ${ZCXXFLAGS}"
+fi
+
 cd "${TESTS}"
 "${BIN_DIR}/cxxall"
 
@@ -58,11 +73,19 @@ skip() {
   fi    
 }
 
-compile() {
+link() {
   OBJ="$1"
   EXE="$2"
   echo " LD ${EXE}"
-  "${ZCXX}" -L ../src -o "${EXE}" "${OBJ}" -lzmq
+  case "${LINK_TYPE}" in
+    static)  "${ZCXX}" -L ../src -o "${EXE}" "${OBJ}" -lzmq
+             ;;
+    dynamic) "${ZCXX}" -o "${EXE}" "${OBJ}" ../src/libzmq.x
+             ;;
+    *)       echo "Do not know how to do ${LINK_TYPE} linking!" 2>&1
+             exit 1
+             ;;
+  esac
 }
 
 for OBJ in *.o; do 
@@ -71,9 +94,9 @@ for OBJ in *.o; do
     if [ "${EXE}" -nt	"${OBJ}" ]; then
       skip "${OBJ}" "${EXE}"
     else
-      compile "${OBJ}" "${EXE}"
+      link "${OBJ}" "${EXE}"
     fi
   else
-    compile "${OBJ}" "${EXE}"
+    link "${OBJ}" "${EXE}"
   fi
 done

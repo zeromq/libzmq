@@ -7,7 +7,7 @@
 # defines the order in which tests are run.
 #
 # Written by Ewen McNeill <ewen@imatix.com>, 2014-07-19
-# Updated by Ewen McNeill <ewen@imatix.com>, 2014-07-21
+# Updated by Ewen McNeill <ewen@imatix.com>, 2014-07-22
 #---------------------------------------------------------------------------
 
 set -e    # Stop if a test fails
@@ -96,6 +96,7 @@ esac
 
 # Locate top of source tree, assuming we're in builds/zos
 TOP="${BIN_DIR}/../.."
+SRCDIR="${TOP}/src"
 TESTDIR="${TOP}/tests"
 
 case "$(pwd)" in
@@ -111,6 +112,11 @@ else
   echo "Run makelibzmq and maketests before runtests" >&2
   exit 1
 fi
+
+# Explicitly add SRCDIR into library serach path, to make sure we
+# use our just-built version
+LIBPATH="${SRCDIR}:/lib:/usr/lib"
+export LIBPATH
 
 #---------------------------------------------------------------------------
 # check-TESTS: target from tests/Makefile, converted from Make syntax to
