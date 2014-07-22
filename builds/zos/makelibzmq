@@ -1,0 +1,30 @@
+#! /bin/sh
+# Build libzmq.a
+#
+# Written by Ewen McNeill <ewen@imatix.com>, 2014-07-21
+#---------------------------------------------------------------------------
+
+set -e    # Stop on errors
+
+# Figure out where we are
+BIN_DIR=$(dirname $0)
+if [ -z "${BIN_DIR}" ]; then BIN_DIR="."; fi
+case "${BIN_DIR}" in
+  .)  BIN_DIR="$(pwd)";            ;;
+  /*)                              ;; 
+  *)  BIN_DIR="$(pwd)/${BIN_DIR}"; ;;
+esac
+
+# Locate top of source tree, assuming we're in builds/zos
+TOP="${BIN_DIR}/../.."
+SRC="${TOP}/src"
+
+# Install pre-generated platform.hpp
+cp -p "${BIN_DIR}/platform.hpp" "${SRC}/platform.hpp"
+
+# Compile all the source
+cd "${SRC}"
+"${BIN_DIR}/cxxall"
+
+# Make static library
+ar r libzmq.a *.o
