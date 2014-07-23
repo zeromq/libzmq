@@ -43,24 +43,23 @@ installed, ZeroMQ can be built as follows:
         cd zeromq-VERSION
         builds/zos/makelibzmq
 
-    or to skip the `libzmq.so` dynamic library:
+    or to skip the `libzmq.so` dynamic library (only building `libzmq.a`):
 
         cd zeromq-VERSION
         BUILD_DLL=false
         export BUILD_DLL
         builds/zos/makelibzmq
 
-*   (Optional, but recommended) build the core tests with:
+*   (Optional, but recommended) build and run the core tests with:
 
+        cd zeromq-VERSION
         builds/zos/maketests
-
-*   (Optional, but recommended) run the core tests:
-
         builds/zos/runtests
 
 *   To remove built files, to start again (eg, rebuild with different
     compile/link flags):
 
+        cd zeromq-VERSION
         builds/zos/makeclean
 
 There are details on specifying alternative compilation flags below.
@@ -89,7 +88,7 @@ Install `include/*.h` somewhere on your compiler include path.
 
 Install `src/libzmq.so` somewhere on your LIBPATH.
 
-Install `src/libzmq.x` somewhere you an reference for import linking.
+Install `src/libzmq.x` somewhere you can reference for import linking.
 
 Compile and link application:
 
@@ -98,8 +97,49 @@ Compile and link application:
 
 Run with:
 
-    LIBPATH=/PATH/OF/LIBZMQ.SO:/lib:/usr/lib:...    # if not in default path
+    LIBPATH=/DIR/OF/LIBZMQ.SO:/lib:/usr/lib:...    # if not in default path
+    export LIBPATH
     ./myprog
+
+
+## ZeroMQ on z/OS UNIX System Services: Application considerations
+
+z/0S UNIX System Services does not provide a way to block the
+[`SIGPIPE` signal being generated when a thread writes to a closed socket](http://pic.dhe.ibm.com/infocenter/zvm/v6r2/index.jsp?topic=%2Fcom.ibm.zos.r12.cbcpx01%2Fcbcpg1b0287.htm)
+(compare with other platforms that support the `SO_NOSIGPIPE` socket
+option, and/or the `MSG_NOSIGNAL` flag on `send()`; z/OS UNIX System
+Services supports neither).
+
+As a result, applications using ZeroMQ on z/OS UNIX System Services
+have to expect to encounter `SIGPIPE` at various times during the use
+of the library, if sockets are unexpectedly disconnected.  Normally
+`SIGPIPE` will terminate the application.
+
+A simple solution, if `SIGPIPE` is not required for normal operation
+of the application (eg, it is not part of a unix pipeline, the
+traditional use of `SIGPIPE`), is to set `SIGPIPE` to be ignored
+with code like:
+
+    #include <signal.h>
+    ...
+    signal(SIGPIPE, SIG_IGN);
+
+near the start of the application (eg, before initialising the ZeroMQ
+library).
+
+If `SIGPIPE` is required for normal operation it is recommended that
+the application install a signal handler that flags the signal was
+received, and allows the application main loop to determine if it
+was received for one of its own file descriptors -- and ignores it if it
+none of the applications own file descriptors seems to have changed.
+
+Linking to the `libzmq.a` static library will pull in substantially
+all of the library code, which will add about 4MB to the application
+size (per executable statically linked with ZeroMQ).  If this is a
+significant consideration, use of the DLL version is recommended.
+
+See also ZeroMQ test status on z/OS UNIX System Services below
+for other caveats.
 
 
 ## Setting other compilation flags
@@ -152,38 +192,28 @@ pass. There are two tests that are expected to fail:
     pthreads both before *and* after fork.  On z/OS (and some other
     UNIX compliant platforms) functions like `pthreads_create` (used
     by ZeroMQ) cannot be used after fork and before exec; on z/OS the
-    call after fork fails with `ELEMULTITHREADFORK` (errno=257).  (On
-    z/OS it appears possible to use z/OS *after* fork, *providing* it
-    has not been used before fork -- the problem is the two separate
-    initialisations of the threading library before and after fork 
-    attempting to mix together.)  In practice this is unlikely to 
-    affect many real-world programs -- most programs use threads or 
-    fork without exec, but not both.
+    call after fork fails with `ELEMULTITHREADFORK` (errno=257) if
+    ZeroMQ was also used before fork.  (On z/OS it appears possible
+    to use z/OS *after* fork, *providing* it has not been used before
+    fork -- the problem is the two separate initialisations of the
+    threading library, before and after fork, attempting to mix
+    together.)  In practice this is unlikely to affect many real-world
+    programs -- most programs use threads or fork without exec, but
+    not both.
 
 These two "expected to fail" tests are listed as XFAIL_TESTS, and
 `runtests` will still consider the test run successful when they fail
 as expected.
 
-In addition there are some other minor test issues:
+In addition `test_security_curve` does not do any meaningful testing,
+as a result of the CURVE support not being compiled in; it requires
+[`libsodium`](http://doc.libsodium.org/), which has not been
+ported to z/OS UNIX System Services yet.
 
-*   `test_security_curve` does not do any meaningful testing, as a 
-    result of the CURVE support not being compiled in; it requires
-    [`libsodium`](http://doc.libsodium.org/), which has not been
-    ported to z/OS UNIX System Services yet.
-
-*   Some tests will occassionally fail with `SIGPIPE` (about 1 run
-    in 4 one of the tests will fail); this appears to be a problem
-    with SIGPIPE not being ignored and has been reported upstream.
-    The tests work fine if run again.
-
-*   Some tests will occassionally fail with `Resource temporarily
-    unavailable`, which is a result of EAGAIN not being properly
-    caught in all places and the function call retried.  This has
-    also been reported upstream.  Again the tests work fine if
-    run again.
+Multicast (via `libpgm`) is also not ported or compiled in.
 
 
-## ZeroMQ on z/OS UNIX System Services: Portability notes
+## ZeroMQ on z/OS UNIX System Services: Library portability notes
 
 ### *.cpp
 
@@ -222,9 +252,9 @@ ago, and are required as part of the X/Open Portability Guide at least
 as of XPG 4.2.  To access this functionality two feature macros are 
 defined:
 
-*    _XOPEN_SOURCE_EXTENDED=1
+    _XOPEN_SOURCE_EXTENDED=1
 
-*    _OPEN_SYS_SOCK_IPV6
+    _OPEN_SYS_SOCK_IPV6
 
 The first enables the XPG 4.2 features (including functionality like
 `getsockname()`), and the latter exposes IPv6 specific functionality
@@ -242,7 +272,7 @@ ZeroMQ uses the pthreads library to create additional threads to handle
 background communication without blocking the main application.  This
 functionaity is enabled on z/OS UNIX System Services by defining:
 
-*    _OPEN_THREADS=3
+    _OPEN_THREADS=3
 
 which is done in the `cxxall` script.  (The "3" value exposes later
 pthreads functionality like `pthread_atfork`, although ZeroMQ does not
