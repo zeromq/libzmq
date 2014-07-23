@@ -369,3 +369,58 @@ but note:
 
 However running `./configure` to regenerate `src/platform.hpp` may 
 be useful for later versions of ZeroMQ which add more feature tests.
+
+
+## Transferring from GitHub to z/OS UNIX System Services
+
+The process of transferring files from GitHub to z/OS UNIX System
+Services is somewhat convoluted because:
+
+*   There is not a port of git for z/OS UNIX System Services; and
+
+*   z/OS uses the EBCDIC (IBM-1047) character set rather than the
+    ASCII/ISO-8859-1 character set used by the ZeroMQ source code
+    on GitHub
+
+A workable transfer process is:
+
+*   On an ASCII/ISO-8859-1/UTF-8 system with `git` (eg, a Linux system):
+
+        git clone https://github.com/zeromq/libzmq.git
+        git archive --prefix=libzmq-git/ -o /var/tmp/libzmq-git.tar master
+
+*   On a ASCII/ISO-8859-1/UTF-8 system with `tar`, and `pax`, and
+    optionally the GNU auto tools (eg, the same Linux system):
+
+        mkdir /var/tmp/zos
+        cd /var/tmp/zos
+        tar -xpf /var/tmp/libzmq-git.tar
+        cd libzmq-git
+        ./autogen.sh             # Optional: to be able to run ./configure
+        cd ..
+        pax -wf /var/tmp/libzmq-git.pax libzmq-git
+        compress libzmq-git.pax  # If available, reduce transfer size
+
+*   Transfer the resulting file (`libzmq-git.pax` or `libzmq-git.pax.Z`)
+    to the z/OS UNIX System Services system.  If using FTP be sure to
+    transfer the file in `bin` (binary/Image) mode to avoid corruption.
+
+*   On the z/OS UNIX System Services system, unpack the `pax` file and
+    convert all the files to EBCDIC with:
+
+        pax -o from=iso8859-1 -pp -rvf  libzmq-git-2014-07-23.pax
+
+    or if the file was compressed:
+
+        pax -o from=iso8859-1 -pp -rvzf libzmq-git-2014-07-23.pax.Z
+
+The result should be a `libzmq-git` directory with the source in
+EBCDIC format, on the z/OS UNIX System Services system ready to start
+building.
+
+See also the [`pax` man
+page](http://pic.dhe.ibm.com/infocenter/zos/v1r13/index.jsp?topic=%2Fcom.ibm.zos.r13.bpxa500%2Fr4paxsh.htm),
+some [`pax` conversion
+examples](http://pic.dhe.ibm.com/infocenter/zos/v1r13/index.jsp?topic=%2Fcom.ibm.zos.r13.bpxa400%2Fbpxza4c0291.htm),
+and [IBM's advice on ASCII to EBCDIC conversion
+options](http://www-03.ibm.com/systems/z/os/zos/features/unix/bpxa1p03.html)
