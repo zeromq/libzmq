@@ -31,7 +31,7 @@ namespace zmq
     {
         public:
 
-            typedef std::map <const std::string, const std::string> dict_t;
+            typedef std::map <std::string, const std::string> dict_t;
 
             metadata_t (const dict_t &dict);
             virtual ~metadata_t ();
