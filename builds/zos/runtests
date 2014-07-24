@@ -7,80 +7,10 @@
 # defines the order in which tests are run.
 #
 # Written by Ewen McNeill <ewen@imatix.com>, 2014-07-19
-# Updated by Ewen McNeill <ewen@imatix.com>, 2014-07-22
+# Updated by Ewen McNeill <ewen@imatix.com>, 2014-07-24
 #---------------------------------------------------------------------------
 
 set -e    # Stop if a test fails
-
-# Test order taken from tests/Makefile.am
-noinst_PROGRAMS="test_system
-                 test_pair_inproc
-                 test_pair_tcp
-                 test_reqrep_inproc
-                 test_reqrep_tcp
-                 test_hwm
-                 test_reqrep_device
-                 test_sub_forward
-                 test_invalid_rep
-                 test_msg_flags
-                 test_connect_resolve
-                 test_immediate
-                 test_last_endpoint
-                 test_term_endpoint
-                 test_monitor
-                 test_router_mandatory
-                 test_router_raw_empty
-                 test_probe_router
-                 test_stream
-                 test_disconnect_inproc
-                 test_ctx_options
-                 test_ctx_destroy
-                 test_security_null
-                 test_security_plain
-                 test_security_curve
-                 test_iov
-                 test_spec_req
-                 test_spec_rep
-                 test_spec_dealer
-                 test_spec_router
-                 test_spec_pushpull
-                 test_req_correlate
-                 test_req_relaxed
-                 test_conflate
-                 test_inproc_connect
-                 test_issue_566
-                 test_abstract_ipc
-                 test_many_sockets
-                 test_shutdown_stress
-                 test_pair_ipc
-                 test_reqrep_ipc
-                 test_timeo
-                 test_fork"
-
-if [ -n "${1}" ]; then
-  TESTS="$*"     # Run tests on command line
-else
-  TESTS="${noinst_PROGRAMS}"
-fi
-
-# Explanation of tests expected to fail:
-# test_abstract_ipc: Relies on Linux-specific IPC functionality
-# test_fork:         Relies on using pthreads _after_ fork, _before_ exec
-#
-# (Note: there _must_ be spaces either side of the tests names to match)
-XFAIL_TESTS="
-             test_abstract_ipc
-             test_fork
-            "
-
-verbose() {
-   echo "Starting: $@" >&2
-   "$@"
-}
-
-# Uncomment TESTS_ENVIRONMENT=verbose to see "Starting: TEST" messages
-#TESTS_ENVIRONMENT=verbose
-TESTS_ENVIRONMENT=
 
 #---------------------------------------------------------------------------
 # Change to tests directory if necessary
@@ -113,6 +43,48 @@ else
   exit 1
 fi
 
+#---------------------------------------------------------------------------
+# Explanation of tests expected to fail:
+# test_abstract_ipc: Relies on Linux-specific IPC functionality
+# test_fork:         Relies on using pthreads _after_ fork, _before_ exec
+# test_diffserv:     Needs IP_PROTO, IP_TOS setsockopt(); the headers
+#                    are present on z/OS UNIX System Services, but
+#                    fails with:
+#                    EDC8109I Protocol not available. (./ip.cpp:164)
+#    NOTE: not listed as a valid IP setsockopt() option at:
+#       http://pic.dhe.ibm.com/infocenter/zos/v2r1/index.jsp?topic=%2Fcom.ibm.zos.v2r1.bpxbd00%2Fsetopt.htm
+#
+XFAIL_TESTS="test_abstract_ipc|test_fork|test_diffserv"
+
+# BUILD_TIPC is not defined, so we skip all these tests
+SKIP_TESTS="test_.*_tipc"
+
+# Extract list of all test programs from tests/Makefile.am
+#
+# Excluding tests we know will fail because of missing functionality
+#
+noinst_PROGRAMS=$(grep "test_" Makefile.am | egrep -v "_SOURCES|XFAIL" |
+                  sed 's/noinst_PROGRAMS.* test/test/; s/^ *//; s/ *\\ *$//;' |
+                  grep -v "${SKIP_TESTS}" | egrep -v "${XFAIL_TESTS}")
+#echo "Found tetsts: ${noinst_PROGRAMS}"
+
+# Run tests on command line, or all tests we found
+if [ -n "${1}" ]; then
+  TESTS="$*"     # Run tests on command line
+else
+  TESTS="${noinst_PROGRAMS}"
+fi
+
+verbose() {
+   echo "Starting: $@" >&2
+   "$@"
+}
+
+# Uncomment TESTS_ENVIRONMENT=verbose to see "Starting: TEST" messages
+#TESTS_ENVIRONMENT=verbose
+TESTS_ENVIRONMENT=
+
+#---------------------------------------------------------------------------
 # Explicitly add SRCDIR into library serach path, to make sure we
 # use our just-built version
 LIBPATH="${SRCDIR}:/lib:/usr/lib"
