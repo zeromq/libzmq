@@ -26,6 +26,8 @@
 #undef NDEBUG
 #include <assert.h>
 
+#include "testutil.hpp"
+
 int main (void)
 {
     fprintf (stderr, "test_sub_forward running...\n");

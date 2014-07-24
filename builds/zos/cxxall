@@ -4,7 +4,7 @@
 # additional compile arguments.
 #
 # Written by Ewen McNeill <ewen@imatix.com>, 2014-07-19
-# Updated by Ewen McNeill <ewen@imatix.com>, 2014-07-22
+# Updated by Ewen McNeill <ewen@imatix.com>, 2014-07-24
 #---------------------------------------------------------------------------
 
 VERBOSE="${VERBOSE:-}"    # Set to non-empty for already done status
@@ -22,7 +22,7 @@ ZCXX="${BIN_DIR}/zc++"
 
 # Determine compile flags
 CPPFLAGS="-D_XOPEN_SOURCE_EXTENDED=1 -D_OPEN_THREADS=3 -D_OPEN_SYS_SOCK_IPV6"
-CXXFLAGS="-DHAVE_CONFIG_H -D_REENTRANT -D_THREAD_SAFE -DZMQ_FORCE_POLL"
+CXXFLAGS="-DZMQ_HAVE_ZOS -DHAVE_CONFIG_H -D_REENTRANT -D_THREAD_SAFE -DZMQ_USE_POLL"
 case $(pwd) in
   *src)   CXXFLAGS="${CXXFLAGS} -I."
           ;;

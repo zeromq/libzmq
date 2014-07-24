@@ -12,6 +12,8 @@ Tested build combinations:
 
 * ZeroMQ 4.0.4, using IBM XL C/C++ compiler, as XPLINK in LP64 mode
 
+* ZeroMQ 4.1-git, using IBM XL C/C++ compiler, as XPLINK in ILP32 mode
+
 Other combinations are likely to work, possibly with minor changes,
 but have not been tested.  Both static library and DLL modes have been
 tested.
@@ -201,9 +203,18 @@ pass. There are two tests that are expected to fail:
     programs -- most programs use threads or fork without exec, but
     not both.
 
-These two "expected to fail" tests are listed as XFAIL_TESTS, and
+0.  `test_diffserv`: tests ability to set IP_TOS ([IP Type of
+    Service](http://en.wikipedia.org/wiki/Type_of_service), or
+    [DiffServ](http://en.wikipedia.org/wiki/Differentiated_Services_Code_Point))
+    values on sockets.  While z/OS UNIX System Services has the
+    preprocessor defines required, it appears not to support the
+    required functionality (call fails with "EDC8109I Protocol not
+    available.")
+
+These three "expected to fail" tests are listed as XFAIL_TESTS, and
 `runtests` will still consider the test run successful when they fail
-as expected.
+as expected.  (`builds/zos/runtests` will automatically skip these
+"expected to fail" tests if running "all" tests.)
 
 In addition `test_security_curve` does not do any meaningful testing,
 as a result of the CURVE support not being compiled in; it requires
@@ -211,6 +222,13 @@ as a result of the CURVE support not being compiled in; it requires
 ported to z/OS UNIX System Services yet.
 
 Multicast (via `libpgm`) is also not ported or compiled in.
+
+[TIPC](http://hintjens.com/blog:70), a cluster IPC protocol,
+is only supported on Linux, so it is not compiled into the z/OS
+UNIX System Services port -- and the tests are automatically skipped
+if running "all" tests.  (However they are not listed in XFAIL_TESTS
+because without the TIPC support there is no point in even running
+them, and it would be non-trivial to track them by hand.)
 
 
 ## ZeroMQ on z/OS UNIX System Services: Library portability notes
@@ -278,6 +296,18 @@ which is done in the `cxxall` script.  (The "3" value exposes later
 pthreads functionality like `pthread_atfork`, although ZeroMQ does not
 currently use all these features.)
 
+If compiling on a *recent* version of z/OS UNIX System Services it
+may be worth compiling with:
+
+    _UNIX03_THREADS=1
+
+which enables a later version of the threading support, potentially
+including `pthread_getschedparam` and pthread_setschedparam`; at
+present in the z/OS UNIX System Services port these functions are
+hidden and never called.  (See [IBM z/OS pthread.h
+documentation](http://pic.dhe.ibm.com/infocenter/zos/v1r11/index.jsp?topic=/com.ibm.zos.r11.bpxbd00/pthrdh.htm)
+for details on the differences.)
+
 
 ## `platform.hpp` on z/OS UNIX System Services
 
@@ -285,6 +315,11 @@ The build (described above) on z/OS UNIX System Services uses a static
 pre-built `platform.hpp` file.  (By default `src/platform.hpp` is 
 dynamically generated as a result of running the `./configure` script.)
 The master version of this is in `builds/zos/platform.hpp`.
+
+Beware that this file contains the version number for libzmq (usually
+included during the configure phase).  If taking the `platform.hpp` from
+an older version to use on a newer libzmq be sure to update the version
+information near the top of the file.
 
 The pre-built file is used because z/OS does not have the GNU auto tools
 (`automake`, `autoconf`, `libtool`, etc) installed, and particularly the
@@ -317,18 +352,20 @@ syntax):
 
 *   set `CPPFLAGS` to for the feature macros required, eg:
 
-        setenv CPPFLAGS "-D_XOPEN_SOURCE_EXTENDED=1 -D_OPEN_THREADS=3 -D_OPEN_SYS_SOCK_IPV6"
+        setenv CPPFLAGS "-D_XOPEN_SOURCE_EXTENDED=1 -D_OPEN_THREADS=3 -D_OPEN_SYS_SOCK_IPV6 -DZMQ_HAVE_ZOS"
 
 *   set `CXXFLAGS` to enable XPLINK:
 
         setenv CXXFLAGS "-Wc,xplink -Wl,xplink -+"
 
 *   run configure script with `--disable-eventfd` (`sys/eventfd.h` does
-    not exist, but the test for its existance has a false positive on 
-    z/OS UNIX System Services, apparently due to the way the `c++` 
-    compiler wrapper passes errors back from the IBM XL C/C++ compiler), viz:
+    not exist, but the test for its existance has a false positive on
+    z/OS UNIX System Services, apparently due to the way the `c++`
+    compiler wrapper passes errors back from the IBM XL C/C++ compiler),
+    and with `--with-poller=poll` because `poll` is the most advanced
+    of the file descriptor status tests available on z/OS.  That is:
 
-        ./configure --disable-eventfd
+        ./configure --disable-eventfd --with-poller=poll
 
 All going well several Makefiles, and `src/platform.hpp` should be
 produced.  Two additional changes are required to `src/platform.hpp`
@@ -369,3 +406,58 @@ but note:
 
 However running `./configure` to regenerate `src/platform.hpp` may 
 be useful for later versions of ZeroMQ which add more feature tests.
+
+
+## Transferring from GitHub to z/OS UNIX System Services
+
+The process of transferring files from GitHub to z/OS UNIX System
+Services is somewhat convoluted because:
+
+*   There is not a port of git for z/OS UNIX System Services; and
+
+*   z/OS uses the EBCDIC (IBM-1047) character set rather than the
+    ASCII/ISO-8859-1 character set used by the ZeroMQ source code
+    on GitHub
+
+A workable transfer process is:
+
+*   On an ASCII/ISO-8859-1/UTF-8 system with `git` (eg, a Linux system):
+
+        git clone https://github.com/zeromq/libzmq.git
+        git archive --prefix=libzmq-git/ -o /var/tmp/libzmq-git.tar master
+
+*   On a ASCII/ISO-8859-1/UTF-8 system with `tar`, and `pax`, and
+    optionally the GNU auto tools (eg, the same Linux system):
+
+        mkdir /var/tmp/zos
+        cd /var/tmp/zos
+        tar -xpf /var/tmp/libzmq-git.tar
+        cd libzmq-git
+        ./autogen.sh             # Optional: to be able to run ./configure
+        cd ..
+        pax -wf /var/tmp/libzmq-git.pax libzmq-git
+        compress libzmq-git.pax  # If available, reduce transfer size
+
+*   Transfer the resulting file (`libzmq-git.pax` or `libzmq-git.pax.Z`)
+    to the z/OS UNIX System Services system.  If using FTP be sure to
+    transfer the file in `bin` (binary/Image) mode to avoid corruption.
+
+*   On the z/OS UNIX System Services system, unpack the `pax` file and
+    convert all the files to EBCDIC with:
+
+        pax -o from=iso8859-1 -pp -rvf  libzmq-git-2014-07-23.pax
+
+    or if the file was compressed:
+
+        pax -o from=iso8859-1 -pp -rvzf libzmq-git-2014-07-23.pax.Z
+
+The result should be a `libzmq-git` directory with the source in
+EBCDIC format, on the z/OS UNIX System Services system ready to start
+building.
+
+See also the [`pax` man
+page](http://pic.dhe.ibm.com/infocenter/zos/v1r13/index.jsp?topic=%2Fcom.ibm.zos.r13.bpxa500%2Fr4paxsh.htm),
+some [`pax` conversion
+examples](http://pic.dhe.ibm.com/infocenter/zos/v1r13/index.jsp?topic=%2Fcom.ibm.zos.r13.bpxa400%2Fbpxza4c0291.htm),
+and [IBM's advice on ASCII to EBCDIC conversion
+options](http://www-03.ibm.com/systems/z/os/zos/features/unix/bpxa1p03.html)

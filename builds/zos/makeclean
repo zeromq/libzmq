@@ -2,6 +2,7 @@
 # Remove built object files and test executables
 #
 # Written by Ewen McNeill <ewen@imatix.com>, 2014-07-22
+# Updated by Ewen McNeill <ewen@imatix.com>, 2014-07-24
 #---------------------------------------------------------------------------
 
 set -e    # Stop on errors
@@ -22,7 +23,7 @@ TESTS="${TOP}/tests"
 
 # Remove object/library files
 echo "Removing libzmq built files"
-(cd "${SRC}" && rm -f *.o *.a *.dbg *.x libzmq* *.so)
+(cd "${SRC}" && rm -f *.o *.a *.dbg *.x *.so libzmq)
 
 # Remove test object files
 echo "Removing libzmq tests"
