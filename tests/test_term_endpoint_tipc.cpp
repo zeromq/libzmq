@@ -27,6 +27,8 @@
 #undef NDEBUG
 #include <assert.h>
 
+#include "testutil.hpp"
+
 int main (void)
 {
     int rc;
