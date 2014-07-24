@@ -1,0 +1,54 @@
+#! /bin/sh
+# Build libzmq.a static library and libzmq.so dynamic library
+#
+# Usage: makelibzmq
+#        BUILD_DLL=false makelibzmq     # Skip building DLL
+#
+# NOTE: We do a single compile run for both static and dynamic libraries
+# which results in the static library having -Wc,exportall compiled objects;
+# in practice this doesn't seem to cause a problem beyond using some extra
+# space (around 10%).
+#
+# Written by Ewen McNeill <ewen@imatix.com>, 2014-07-21
+# Updated by Ewen McNeill <ewen@imatix.com>, 2014-07-22
+#---------------------------------------------------------------------------
+
+set -e    # Stop on errors
+
+BUILD_DLL="${BUILD_DLL:-true}"     # Build DLL by default
+
+# Figure out where we are
+BIN_DIR=$(dirname $0)
+if [ -z "${BIN_DIR}" ]; then BIN_DIR="."; fi
+case "${BIN_DIR}" in
+  .)  BIN_DIR="$(pwd)";            ;;
+  /*)                              ;; 
+  *)  BIN_DIR="$(pwd)/${BIN_DIR}"; ;;
+esac
+ZCXX="${BIN_DIR}/zc++"
+
+# Locate top of source tree, assuming we're in builds/zos
+TOP="${BIN_DIR}/../.."
+SRC="${TOP}/src"
+
+# Install pre-generated platform.hpp
+cp -p "${BIN_DIR}/platform.hpp" "${SRC}/platform.hpp"
+
+# Compile all the source (optionally ready for a DLL)
+if [ "${BUILD_DLL}" = "true" ]; then
+  ZCXXFLAGS="${ZCXXFLAGS} -Wc,exportall"
+  export ZCXXFLAGS
+  #echo "Building DLL with ${ZCXXFLAGS}"
+fi
+
+cd "${SRC}"
+"${BIN_DIR}/cxxall"
+
+# Make static library
+ar r libzmq.a *.o
+
+# Optionally Make dynamic library
+if [ "${BUILD_DLL}" = "true" ]; then
+  #echo "Building libzmq.so DLL"
+  "${ZCXX}" -Wl,DLL -o libzmq.so *.o
+fi

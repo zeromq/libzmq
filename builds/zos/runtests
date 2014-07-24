@@ -1,0 +1,216 @@
+#! /bin/sh
+# Run ZeroMQ tests, in order.  This is extracted from the tests/Makefile
+# which won't run as-is because it relies on libtool building things, and 
+# thus creating various libtool files, which don't work well on z/OS
+#
+# noinst_PROGRAMS needs to be kept in sync with tests/Makefile.am, as it
+# defines the order in which tests are run.
+#
+# Written by Ewen McNeill <ewen@imatix.com>, 2014-07-19
+# Updated by Ewen McNeill <ewen@imatix.com>, 2014-07-22
+#---------------------------------------------------------------------------
+
+set -e    # Stop if a test fails
+
+# Test order taken from tests/Makefile.am
+noinst_PROGRAMS="test_system
+                 test_pair_inproc
+                 test_pair_tcp
+                 test_reqrep_inproc
+                 test_reqrep_tcp
+                 test_hwm
+                 test_reqrep_device
+                 test_sub_forward
+                 test_invalid_rep
+                 test_msg_flags
+                 test_connect_resolve
+                 test_immediate
+                 test_last_endpoint
+                 test_term_endpoint
+                 test_monitor
+                 test_router_mandatory
+                 test_router_raw_empty
+                 test_probe_router
+                 test_stream
+                 test_disconnect_inproc
+                 test_ctx_options
+                 test_ctx_destroy
+                 test_security_null
+                 test_security_plain
+                 test_security_curve
+                 test_iov
+                 test_spec_req
+                 test_spec_rep
+                 test_spec_dealer
+                 test_spec_router
+                 test_spec_pushpull
+                 test_req_correlate
+                 test_req_relaxed
+                 test_conflate
+                 test_inproc_connect
+                 test_issue_566
+                 test_abstract_ipc
+                 test_many_sockets
+                 test_shutdown_stress
+                 test_pair_ipc
+                 test_reqrep_ipc
+                 test_timeo
+                 test_fork"
+
+if [ -n "${1}" ]; then
+  TESTS="$*"     # Run tests on command line
+else
+  TESTS="${noinst_PROGRAMS}"
+fi
+
+# Explanation of tests expected to fail:
+# test_abstract_ipc: Relies on Linux-specific IPC functionality
+# test_fork:         Relies on using pthreads _after_ fork, _before_ exec
+#
+# (Note: there _must_ be spaces either side of the tests names to match)
+XFAIL_TESTS="
+             test_abstract_ipc
+             test_fork
+            "
+
+verbose() {
+   echo "Starting: $@" >&2
+   "$@"
+}
+
+# Uncomment TESTS_ENVIRONMENT=verbose to see "Starting: TEST" messages
+#TESTS_ENVIRONMENT=verbose
+TESTS_ENVIRONMENT=
+
+#---------------------------------------------------------------------------
+# Change to tests directory if necessary
+
+# Figure out where we are
+BIN_DIR=$(dirname $0)
+if [ -z "${BIN_DIR}" ]; then BIN_DIR="."; fi
+case "${BIN_DIR}" in
+  .)  BIN_DIR="$(pwd)";            ;;
+  /*)                              ;; 
+  *)  BIN_DIR="$(pwd)/${BIN_DIR}"; ;;
+esac
+
+# Locate top of source tree, assuming we're in builds/zos
+TOP="${BIN_DIR}/../.."
+SRCDIR="${TOP}/src"
+TESTDIR="${TOP}/tests"
+
+case "$(pwd)" in
+  *tests) ;;
+  *)      echo "Changing to ${TESTDIR}"
+          cd "${TESTDIR}"
+          ;;
+esac
+
+if [ -x "test_system" ]; then
+  :
+else
+  echo "Run makelibzmq and maketests before runtests" >&2
+  exit 1
+fi
+
+# Explicitly add SRCDIR into library serach path, to make sure we
+# use our just-built version
+LIBPATH="${SRCDIR}:/lib:/usr/lib"
+export LIBPATH
+
+#---------------------------------------------------------------------------
+# check-TESTS: target from tests/Makefile, converted from Make syntax to
+# shell syntax
+
+failed=0; all=0; xfail=0; xpass=0; skip=0; 
+srcdir=.; export srcdir; 
+list="${TESTS}";
+red=""; grn=""; lgn=""; blu=""; std="";
+if test -n "$list"; then 
+  for tst in $list; do 
+    if test -f ./$tst; then dir=./; 
+    elif test -f $tst; then dir=; 
+    else dir="${srcdir}/"; fi; 
+    if ${TESTS_ENVIRONMENT} ${dir}$tst; then 
+      all=`expr $all + 1`; 
+      case " ${XFAIL_TESTS} " in 
+      *"$tst"*) 
+        xpass=`expr $xpass + 1`; 
+        failed=`expr $failed + 1`; 
+        col=$red; res=XPASS; 
+      ;; 
+      *) 
+        col=$grn; res=PASS; 
+      ;; 
+      esac; 
+    elif test $? -ne 77; then 
+      all=`expr $all + 1`; 
+      case " ${XFAIL_TESTS} " in 
+       *"$tst"*) 
+        xfail=`expr $xfail + 1`; 
+        col=$lgn; res=XFAIL; 
+      ;; 
+      *) 
+        failed=`expr $failed + 1`; 
+        col=$red; res=FAIL; 
+      ;; 
+      esac; 
+    else 
+      skip=`expr $skip + 1`; 
+      col=$blu; res=SKIP; 
+    fi; 
+    echo "${col}$res${std}: $tst"; 
+  done; 
+  if test "$all" -eq 1; then 
+    tests="test"; 
+    All=""; 
+  else 
+    tests="tests"; 
+    All="All "; 
+  fi; 
+  if test "$failed" -eq 0; then 
+    if test "$xfail" -eq 0; then 
+      banner="$All$all $tests passed"; 
+    else 
+      if test "$xfail" -eq 1; then failures=failure; else failures=failures; fi;
+      banner="$All$all $tests behaved as expected ($xfail expected $failures)"; 
+    fi; 
+  else 
+    if test "$xpass" -eq 0; then 
+      banner="$failed of $all $tests failed"; 
+    else 
+      if test "$xpass" -eq 1; then passes=pass; else passes=passes; fi;
+      
+      banner="$failed of $all $tests did not behave as expected ($xpass unexpected $passes)"; 
+    fi; 
+  fi; 
+  dashes="$banner"; 
+  skipped=""; 
+  if test "$skip" -ne 0; then 
+    if test "$skip" -eq 1; then 
+      skipped="($skip test was not run)"; 
+    else 
+      skipped="($skip tests were not run)"; 
+    fi; 
+    test `echo "$skipped" | wc -c` -le `echo "$banner" | wc -c` || 
+       dashes="$skipped"; \        
+  fi; 
+  report=""; 
+  if test "$failed" -ne 0 && test -n "${PACKAGE_BUGREPORT}"; then 
+    report="Please report to ${PACKAGE_BUGREPORT}"; 
+    test `echo "$report" | wc -c` -le `echo "$banner" | wc -c` || 
+      dashes="$report"; 
+  fi; 
+  dashes=`echo "$dashes" | sed s/./=/g`; 
+  if test "$failed" -eq 0; then 
+    col="$grn"; 
+  else 
+    col="$red"; 
+  fi; 
+  echo "${col}$dashes${std}"; 
+  echo "${col}$banner${std}"; 
+  test -z "$skipped" || echo "${col}$skipped${std}"; 
+  test -z "$report" || echo "${col}$report${std}"; 
+  echo "${col}$dashes${std}"; 
+  test "$failed" -eq 0; 
+else :; fi

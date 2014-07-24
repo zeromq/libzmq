@@ -1,0 +1,36 @@
+#! /bin/sh
+# Remove built object files and test executables
+#
+# Written by Ewen McNeill <ewen@imatix.com>, 2014-07-22
+# Updated by Ewen McNeill <ewen@imatix.com>, 2014-07-24
+#---------------------------------------------------------------------------
+
+set -e    # Stop on errors
+
+# Figure out where we are
+BIN_DIR=$(dirname $0)
+if [ -z "${BIN_DIR}" ]; then BIN_DIR="."; fi
+case "${BIN_DIR}" in
+  .)  BIN_DIR="$(pwd)";            ;;
+  /*)                              ;; 
+  *)  BIN_DIR="$(pwd)/${BIN_DIR}"; ;;
+esac
+
+# Locate top of source tree, assuming we're in builds/zos
+TOP="${BIN_DIR}/../.."
+SRC="${TOP}/src"
+TESTS="${TOP}/tests"
+
+# Remove object/library files
+echo "Removing libzmq built files"
+(cd "${SRC}" && rm -f *.o *.a *.dbg *.x *.so libzmq)
+
+# Remove test object files
+echo "Removing libzmq tests"
+(cd "${TESTS}" && rm -f *.o *.dbg)
+(cd "${TESTS}"; 
+ EXES=$(ls test_* | grep -v "\.")
+ if [ -n "${EXES}" ]; then
+   rm ${EXES}
+ fi
+)

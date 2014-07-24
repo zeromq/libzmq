@@ -77,6 +77,55 @@
 #include <sys/socket.h>
 #endif
 
+#if !defined (ZMQ_HAVE_WINDOWS)
+// Helper to sleep for specific number of milliseconds (or until signal)
+//
+static int sleep_ms (unsigned int ms_)
+{
+    if (ms_ == 0)
+        return 0;
+#if defined ZMQ_HAVE_WINDOWS
+    Sleep (ms_ > 0 ? ms_ : INFINITE);
+    return 0;
+#elif defined ZMQ_HAVE_ANDROID
+    usleep (ms_ * 1000);
+    return 0;
+#else
+    return usleep (ms_ * 1000);
+#endif
+}
+
+// Helper to wait on close(), for non-blocking sockets, until it completes
+// If EAGAIN is received, will sleep briefly (1-100ms) then try again, until
+// the overall timeout is reached.
+//
+static int close_wait_ms (int fd_, unsigned int max_ms_ = 2000)
+{
+    unsigned int ms_so_far = 0;
+    unsigned int step_ms   = max_ms_ / 10;
+    if (step_ms < 1)
+        step_ms = 1;
+
+    if (step_ms > 100)
+        step_ms = 100;
+
+    int rc = 0;       // do not sleep on first attempt
+
+    do
+    {
+        if (rc == -1 && errno == EAGAIN)
+        {
+            sleep_ms (step_ms);
+            ms_so_far += step_ms;
+        }
+
+        rc = close (fd_);
+    } while (ms_so_far < max_ms_ && rc == -1 && errno == EAGAIN);
+
+    return rc;
+}
+#endif
+
 zmq::signaler_t::signaler_t ()
 {
     //  Create the socketpair for signaling.
@@ -92,7 +141,7 @@ zmq::signaler_t::signaler_t ()
 zmq::signaler_t::~signaler_t ()
 {
 #if defined ZMQ_HAVE_EVENTFD
-    int rc = close (r);
+    int rc = close_wait_ms (r);
     errno_assert (rc == 0);
 #elif defined ZMQ_HAVE_WINDOWS
     struct linger so_linger = { 1, 0 };
@@ -104,9 +153,9 @@ zmq::signaler_t::~signaler_t ()
     rc = closesocket (r);
     wsa_assert (rc != SOCKET_ERROR);
 #else
-    int rc = close (w);
+    int rc = close_wait_ms (w);
     errno_assert (rc == 0);
-    rc = close (r);
+    rc = close_wait_ms (r);
     errno_assert (rc == 0);
 #endif
 }
