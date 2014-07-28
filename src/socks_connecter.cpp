@@ -87,7 +87,7 @@ void zmq::socks_connecter_t::process_term (int linger_)
         case sending_request:
         case waiting_for_response:
             rm_fd (handle);
-            if (s != -1)
+            if (s != retired_fd)
                 close ();
             break;
     }
@@ -227,7 +227,7 @@ void zmq::socks_connecter_t::initiate_connect ()
     }
     //  Handle any other error condition by eventual reconnect.
     else {
-        if (s != -1)
+        if (s != retired_fd)
             close ();
         start_timer ();
     }
