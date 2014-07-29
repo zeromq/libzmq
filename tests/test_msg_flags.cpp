@@ -25,19 +25,19 @@ int main (void)
     //  Create the infrastructure
     void *ctx = zmq_ctx_new ();
     assert (ctx);
-    
+
     void *sb = zmq_socket (ctx, ZMQ_ROUTER);
     assert (sb);
-    
+
     int rc = zmq_bind (sb, "inproc://a");
     assert (rc == 0);
-    
+
     void *sc = zmq_socket (ctx, ZMQ_DEALER);
     assert (sc);
-    
+
     rc = zmq_connect (sc, "inproc://a");
     assert (rc == 0);
-   
+
     //  Send 2-part message.
     rc = zmq_send (sc, "A", 1, ZMQ_SNDMORE);
     assert (rc == 1);
@@ -65,7 +65,7 @@ int main (void)
     more = zmq_msg_more (&msg);
     assert (more == 0);
 
-    // Test ZMQ_SHARED property
+    // Test ZMQ_SHARED property (case 1, refcounted messages)
     zmq_msg_t msg_a;
     rc = zmq_msg_init_size(&msg_a, 1024); // large enough to be a type_lmsg
     assert (rc == 0);
@@ -85,13 +85,31 @@ int main (void)
     rc = zmq_msg_get(&msg_b, ZMQ_SHARED);
     assert (rc == 1);
 
+    // cleanup
+    rc = zmq_msg_close(&msg_a);
+    assert (rc == 0);
+    rc = zmq_msg_close(&msg_b);
+    assert (rc == 0);
+
+    // Test ZMQ_SHARED property (case 2, constant data messages)
+    rc = zmq_msg_init_data(&msg_a, (void*) "TEST", 5, 0, 0);
+    assert (rc == 0);
+
+    // Message reports as shared
+    rc = zmq_msg_get(&msg_a, ZMQ_SHARED);
+    assert (rc == 1);
+
+    // cleanup
+    rc = zmq_msg_close(&msg_a);
+    assert (rc == 0);
+
     //  Deallocate the infrastructure.
     rc = zmq_close (sc);
     assert (rc == 0);
-    
+
     rc = zmq_close (sb);
     assert (rc == 0);
-    
+
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
     return 0 ;
