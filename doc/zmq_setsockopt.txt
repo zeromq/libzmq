@@ -757,6 +757,9 @@ filter is applied then new connection source ip should be matched. To clear
 all filters call zmq_setsockopt(socket, ZMQ_TCP_ACCEPT_FILTER, NULL, 0).
 Filter is a null-terminated string with ipv6 or ipv4 CIDR.
 
+NOTE: This option is deprecated, please use authentication via the ZAP API
+and IP address whitelisting / blacklisting.
+
 [horizontal]
 Option value type:: binary data
 Option value unit:: N/A
