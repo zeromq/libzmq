@@ -404,7 +404,7 @@ uint8_t id [256];
 size_t id_size = 256;
 while (1) {
 	/*  Get HTTP request; ID frame and then request */
-	id_size = zmq_recv (server, id, 256, 0);
+	id_size = zmq_recv (socket, id, 256, 0);
 	assert (id_size > 0);
 	/* Prepares the response */
 	char http_response [] =
