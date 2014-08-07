@@ -20,6 +20,7 @@ noinst_PROGRAMS = test_system \
                   test_srcfd \
                   test_monitor \
                   test_router_mandatory \
+                  test_router_mandatory_hwm \
                   test_router_handover \
                   test_probe_router \
                   test_stream \
@@ -96,6 +97,7 @@ test_term_endpoint_SOURCES = test_term_endpoint.cpp
 test_srcfd_SOURCES = test_srcfd.cpp
 test_monitor_SOURCES = test_monitor.cpp
 test_router_mandatory_SOURCES = test_router_mandatory.cpp
+test_router_mandatory_hwm_SOURCES = test_router_mandatory_hwm.cpp
 test_router_handover_SOURCES = test_router_handover.cpp
 test_probe_router_SOURCES = test_probe_router.cpp
 test_stream_SOURCES = test_stream.cpp
