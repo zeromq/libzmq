@@ -644,8 +644,11 @@ ZMQ_ROUTER_MANDATORY: accept only routable messages on ROUTER sockets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sets the ROUTER socket behavior when an unroutable message is encountered. A
 value of `0` is the default and discards the message silently when it cannot be
-routed.  A value of `1` returns an 'EHOSTUNREACH' error code if the message
-cannot be routed.
+routed or the peers SNDHWM is reached.  A value of `1` returns an
+'EHOSTUNREACH' error code if the message cannot be routed or 'EAGAIN' error
+code if the SNDHWM is reached and ZMQ_DONTWAIT was used. Without ZMQ_DONTWAIT
+it will block until the SNDTIMEO is reached or a spot in the send queue opens
+up.
 
 [horizontal]
 Option value type:: int
