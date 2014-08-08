@@ -33,7 +33,7 @@ int main (void)
 
     //  set pub socket options
     int wait = 1;
-    rc = zmq_setsockopt (pub, ZMQ_XPUB_WAIT, &wait, 4);
+    rc = zmq_setsockopt (pub, ZMQ_XPUB_NODROP, &wait, 4);
     assert (rc == 0);
 
     int hwm = 2000;

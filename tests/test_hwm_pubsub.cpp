@@ -105,7 +105,7 @@ int test_blocking (int send_hwm, int msgCnt)
     //set a hwm on publisher
     rc = zmq_setsockopt (pub_socket, ZMQ_SNDHWM, &send_hwm, sizeof (send_hwm));
     int wait = 1;
-    rc = zmq_setsockopt (pub_socket, ZMQ_XPUB_WAIT, &wait, sizeof(wait));
+    rc = zmq_setsockopt (pub_socket, ZMQ_XPUB_NODROP, &wait, sizeof(wait));
     rc = zmq_setsockopt( sub_socket, ZMQ_SUBSCRIBE, 0, 0);
 
     // Send until we block

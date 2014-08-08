@@ -458,9 +458,9 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 return 0;
             }
             break;
-        case ZMQ_XPUB_WAIT:
+        case ZMQ_XPUB_NODROP:
             {
-                pubWait = true;
+                pub_nodrop = true;
                 return 0;
             }
             break;
@@ -811,9 +811,9 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
             }
             break;
 
-        case ZMQ_XPUB_WAIT:
+        case ZMQ_XPUB_NODROP:
             if( is_int) {
-                *value = pubWait;
+                *value = pub_nodrop;
                 return 0;
             }    
             break;
