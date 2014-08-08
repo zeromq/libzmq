@@ -7,6 +7,7 @@ set(tests
         test_reqrep_inproc
         test_reqrep_tcp
         test_hwm
+        test_hwm_pubsub
         test_reqrep_device
         test_sub_forward
         test_invalid_rep
@@ -42,6 +43,7 @@ set(tests
         test_many_sockets
         test_diffserv
         test_connect_rid
+        test_xpub_wait_inproc
 )
 if(NOT WIN32)
   list(APPEND tests

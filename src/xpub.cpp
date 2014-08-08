@@ -90,7 +90,7 @@ void zmq::xpub_t::xwrite_activated (pipe_t *pipe_)
 int zmq::xpub_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
-    if (option_ != ZMQ_XPUB_VERBOSE) {
+    if (option_ != ZMQ_XPUB_VERBOSE && option_ != ZMQ_XPUB_WAIT) {
         errno = EINVAL;
         return -1;
     }
@@ -98,7 +98,15 @@ int zmq::xpub_t::xsetsockopt (int option_, const void *optval_,
         errno = EINVAL;
         return -1;
     }
-    verbose = (*static_cast <const int*> (optval_) != 0);
+    if (option_ == ZMQ_XPUB_VERBOSE) {
+        verbose = (*static_cast <const int*> (optval_) != 0);
+    } else if (option_ == ZMQ_XPUB_WAIT) {
+        wait = (*static_cast <const int*> (optval_) != 0);
+    }
+    else {
+        return -1;
+    }
+
     return 0;
 }
 
@@ -126,6 +134,11 @@ int zmq::xpub_t::xsend (msg_t *msg_)
     if (!more)
         subscriptions.match ((unsigned char*) msg_->data (), msg_->size (),
             mark_as_matching, this);
+
+    if (wait && !dist.check_hwm()) {
+      return EAGAIN;
+    }
+
 
     //  Send the message to all the pipes that were marked as matching
     //  in the previous step.

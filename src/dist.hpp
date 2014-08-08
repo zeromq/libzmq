@@ -64,6 +64,9 @@ namespace zmq
 
         bool has_out ();
 
+        // check HWM of all pipes matching
+        bool check_hwm ();
+
     private:
 
         //  Write the message to the pipe. Make the pipe inactive if writing

@@ -458,6 +458,12 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 return 0;
             }
             break;
+        case ZMQ_XPUB_WAIT:
+            {
+                pubWait = true;
+                return 0;
+            }
+            break;
 
         default:
 #if defined (ZMQ_ACT_MILITANT)
@@ -804,7 +810,13 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
                 return 0;
             }
             break;
-            
+
+        case ZMQ_XPUB_WAIT:
+            if( is_int) {
+                *value = pubWait;
+                return 0;
+            }    
+            break;
         default:
 #if defined (ZMQ_ACT_MILITANT)
             malformed = false;
