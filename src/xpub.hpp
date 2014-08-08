@@ -79,6 +79,9 @@ namespace zmq
         //  True if we are in the middle of sending a multi-part message.
         bool more;
 
+        //  dont drop messages if hwm reached, just return with EAGAIN
+        bool nodrop;
+
         //  List of pending (un)subscriptions, ie. those that were already
         //  applied to the trie, but not yet received by the user.
         typedef std::basic_string <unsigned char> blob_t;

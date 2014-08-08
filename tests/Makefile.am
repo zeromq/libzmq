@@ -9,6 +9,7 @@ noinst_PROGRAMS = test_system \
                   test_reqrep_inproc \
                   test_reqrep_tcp \
                   test_hwm \
+                  test_hwm_pubsub \
                   test_reqrep_device \
                   test_sub_forward \
                   test_invalid_rep \
@@ -52,7 +53,8 @@ noinst_PROGRAMS = test_system \
                   test_bind_src_address \
                   test_metadata \
                   test_id2fd \
-                  test_capabilities
+                  test_capabilities \
+                  test_xpub_wait_inproc
 
 if !ON_MINGW
 noinst_PROGRAMS += test_shutdown_stress \
@@ -86,6 +88,7 @@ test_pair_tcp_SOURCES = test_pair_tcp.cpp testutil.hpp
 test_reqrep_inproc_SOURCES = test_reqrep_inproc.cpp testutil.hpp
 test_reqrep_tcp_SOURCES = test_reqrep_tcp.cpp testutil.hpp
 test_hwm_SOURCES = test_hwm.cpp
+test_hwm_pubsub_SOURCES = test_hwm_pubsub.cpp
 test_reqrep_device_SOURCES = test_reqrep_device.cpp
 test_sub_forward_SOURCES = test_sub_forward.cpp
 test_invalid_rep_SOURCES = test_invalid_rep.cpp
@@ -131,6 +134,7 @@ test_bind_src_address_SOURCES = test_bind_src_address.cpp
 test_metadata_SOURCES = test_metadata.cpp
 test_id2fd_SOURCES = test_id2fd.cpp
 test_capabilities_SOURCES = test_capabilities.cpp
+test_xpub_wait_inproc_SOURCES = test_xpub_wait_inproc.cpp
 if !ON_MINGW
 test_shutdown_stress_SOURCES = test_shutdown_stress.cpp
 test_pair_ipc_SOURCES = test_pair_ipc.cpp testutil.hpp

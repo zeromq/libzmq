@@ -118,6 +118,8 @@ namespace zmq
         // set the high water marks.
         void set_hwms (int inhwm_, int outhwm_);
 
+        // check HWM
+        bool check_hwm ();
         // provide a way to link pipe to engine fd. Set on session initialization
         fd_t assoc_fd; //=retired_fd
     private:

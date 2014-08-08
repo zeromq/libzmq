@@ -179,6 +179,9 @@ namespace zmq
         //  close socket.  Default is 30 secs.  0 means no handshake timeout.
         int handshake_ivl;
 
+        //  flag if PUB socket should not drop messages if reaching HWM
+        bool pub_nodrop;
+
     };
 }
 

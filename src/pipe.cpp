@@ -500,3 +500,9 @@ void zmq::pipe_t::set_hwms (int inhwm_, int outhwm_)
     lwm = compute_lwm (inhwm_);
     hwm = outhwm_;
 }
+
+bool zmq::pipe_t::check_hwm ()
+{
+    bool full = hwm > 0 && msgs_written - peers_msgs_read >= uint64_t (hwm - 1);
+    return( !full );
+}
