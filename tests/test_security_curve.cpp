@@ -111,7 +111,7 @@ int main (void)
     int as_server = 1;
     rc = zmq_setsockopt (server, ZMQ_CURVE_SERVER, &as_server, sizeof (int));
     assert (rc == 0);
-    rc = zmq_setsockopt (server, ZMQ_CURVE_SECRETKEY, server_secret, 40);
+    rc = zmq_setsockopt (server, ZMQ_CURVE_SECRETKEY, server_secret, 41);
     assert (rc == 0);
     rc = zmq_setsockopt (server, ZMQ_IDENTITY, "IDENT", 6);
     assert (rc == 0);
@@ -121,11 +121,11 @@ int main (void)
     //  Check CURVE security with valid credentials
     void *client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, server_public, 40);
+    rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, server_public, 41);
     assert (rc == 0);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_PUBLICKEY, client_public, 40);
+    rc = zmq_setsockopt (client, ZMQ_CURVE_PUBLICKEY, client_public, 41);
     assert (rc == 0);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, client_secret, 40);
+    rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, client_secret, 41);
     assert (rc == 0);
     rc = zmq_connect (client, "tcp://localhost:9998");
     assert (rc == 0);
@@ -138,11 +138,11 @@ int main (void)
     char garbage_key [] = "0000111122223333444455556666777788889999";
     client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, garbage_key, 40);
+    rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, garbage_key, 41);
     assert (rc == 0);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_PUBLICKEY, client_public, 40);
+    rc = zmq_setsockopt (client, ZMQ_CURVE_PUBLICKEY, client_public, 41);
     assert (rc == 0);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, client_secret, 40);
+    rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, client_secret, 41);
     assert (rc == 0);
     rc = zmq_connect (client, "tcp://localhost:9998");
     assert (rc == 0);
@@ -153,11 +153,11 @@ int main (void)
     //  This will be caught by the curve_server class, not passed to ZAP
     client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, server_public, 40);
+    rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, server_public, 41);
     assert (rc == 0);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_PUBLICKEY, garbage_key, 40);
+    rc = zmq_setsockopt (client, ZMQ_CURVE_PUBLICKEY, garbage_key, 41);
     assert (rc == 0);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, client_secret, 40);
+    rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, client_secret, 41);
     assert (rc == 0);
     rc = zmq_connect (client, "tcp://localhost:9998");
     assert (rc == 0);
@@ -168,11 +168,11 @@ int main (void)
     //  This will be caught by the curve_server class, not passed to ZAP
     client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, server_public, 40);
+    rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, server_public, 41);
     assert (rc == 0);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_PUBLICKEY, client_public, 40);
+    rc = zmq_setsockopt (client, ZMQ_CURVE_PUBLICKEY, client_public, 41);
     assert (rc == 0);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, garbage_key, 40);
+    rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, garbage_key, 41);
     assert (rc == 0);
     rc = zmq_connect (client, "tcp://localhost:9998");
     assert (rc == 0);
@@ -187,11 +187,11 @@ int main (void)
 
     client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, server_public, 40);
+    rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, server_public, 41);
     assert (rc == 0);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_PUBLICKEY, bogus_public, 40);
+    rc = zmq_setsockopt (client, ZMQ_CURVE_PUBLICKEY, bogus_public, 41);
     assert (rc == 0);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, bogus_secret, 40);
+    rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, bogus_secret, 41);
     assert (rc == 0);
     rc = zmq_connect (client, "tcp://localhost:9998");
     assert (rc == 0);

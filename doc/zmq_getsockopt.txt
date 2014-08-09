@@ -85,6 +85,8 @@ ZMQ_CURVE_SECRETKEY: Retrieve current CURVE secret key
 Retrieves the current long term secret key for the socket. You can
 provide either a 32 byte buffer, to retrieve the binary key value, or
 a 41 byte buffer, to retrieve the key in a printable Z85 format.
+NOTE: to fetch a printable key, the buffer must be 41 bytes large
+to hold the 40-char key value and one null byte.
 
 [horizontal]
 Option value type:: binary data or Z85 text string
@@ -98,7 +100,9 @@ ZMQ_CURVE_SERVERKEY: Retrieve current CURVE server key
 
 Retrieves the current server key for the client socket. You can
 provide either a 32 byte buffer, to retrieve the binary key value, or
-a 40 byte buffer, to retrieve the key in a printable Z85 format.
+a 41-byte buffer, to retrieve the key in a printable Z85 format.
+NOTE: to fetch a printable key, the buffer must be 41 bytes large
+to hold the 40-char key value and one null byte.
 
 [horizontal]
 Option value type:: binary data or Z85 text string
