@@ -54,7 +54,7 @@ noinst_PROGRAMS = test_system \
                   test_metadata \
                   test_id2fd \
                   test_capabilities \
-                  test_xpub_wait_inproc
+                  test_xpub_nodrop
 
 if !ON_MINGW
 noinst_PROGRAMS += test_shutdown_stress \
