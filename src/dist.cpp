@@ -196,21 +196,11 @@ bool zmq::dist_t::write (pipe_t *pipe_, msg_t *msg_)
 
 bool zmq::dist_t::check_hwm ()
 {
-  //  If there are no matching pipes available, there is nothing to write.
-  bool pipes_hwm_ok = true;
+    for (pipes_t::size_type i = 0; i < matching; ++i)
+        if (!pipes [i]->check_hwm ())
+            return false;
 
-  if (matching == 0) {
-      return true;
-  }
-
-  for (pipes_t::size_type i = 0; i < matching; ++i) {
-    if( !pipes [i] -> check_hwm()) {
-      pipes_hwm_ok = false;
-      break;
-    }
-  }
-
-  return pipes_hwm_ok;
+    return true;
 }
 
 
