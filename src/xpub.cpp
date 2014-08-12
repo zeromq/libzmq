@@ -98,14 +98,10 @@ int zmq::xpub_t::xsetsockopt (int option_, const void *optval_,
         errno = EINVAL;
         return -1;
     }
-    if (option_ == ZMQ_XPUB_VERBOSE) {
+    if (option_ == ZMQ_XPUB_VERBOSE)
         verbose = (*static_cast <const int*> (optval_) != 0);
-    } else if (option_ == ZMQ_XPUB_NODROP) {
+    else
         nodrop = (*static_cast <const int*> (optval_) != 0);
-    }
-    else {
-        return -1;
-    }
 
     return 0;
 }
@@ -135,10 +131,10 @@ int zmq::xpub_t::xsend (msg_t *msg_)
         subscriptions.match ((unsigned char*) msg_->data (), msg_->size (),
             mark_as_matching, this);
 
-    if (nodrop && !dist.check_hwm()) {
-      return EAGAIN;
+    if (nodrop && !dist.check_hwm ()) {
+        errno = EAGAIN;
+        return -1;
     }
-
 
     //  Send the message to all the pipes that were marked as matching
     //  in the previous step.
@@ -163,7 +159,7 @@ bool zmq::xpub_t::xhas_out ()
 
 int zmq::xpub_t::xrecv (msg_t *msg_)
 {
-    //  If there is at least one 
+    //  If there is at least one
     if (pending_data.empty ()) {
         errno = EAGAIN;
         return -1;
