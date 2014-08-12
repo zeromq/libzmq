@@ -1,4 +1,4 @@
-#   libzmq
+# Travis CI script
 
 language: c
 
@@ -9,6 +9,7 @@ before_script:
 - git clone git://github.com/jedisct1/libsodium.git
 - ( cd libsodium; ./autogen.sh; ./configure; make check; sudo make install; sudo ldconfig )
 
-#   Build and check libzmq
+#   Build and check this project
 script:
 - ./autogen.sh && ./configure && make && make check
+- sudo make install
