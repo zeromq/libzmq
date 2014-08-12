@@ -43,7 +43,7 @@ set(tests
         test_many_sockets
         test_diffserv
         test_connect_rid
-        test_xpub_wait_inproc
+        test_xpub_nodrop
 )
 if(NOT WIN32)
   list(APPEND tests
