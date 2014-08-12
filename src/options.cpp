@@ -366,14 +366,27 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             break;
 
         case ZMQ_CURVE_PUBLICKEY:
+            //  TODO: refactor repeated code for these three options
+            //  into set_curve_key (destination, optval, optlen) method
+            //  ==> set_curve_key (curve_public_key, optval_, optvallen_);
             if (optvallen_ == CURVE_KEYSIZE) {
                 memcpy (curve_public_key, optval_, CURVE_KEYSIZE);
                 mechanism = ZMQ_CURVE;
                 return 0;
             }
             else
-            if (optvallen_ == CURVE_KEYSIZE_Z85) {
+            if (optvallen_ == CURVE_KEYSIZE_Z85 + 1) {
                 zmq_z85_decode (curve_public_key, (char *) optval_);
+                mechanism = ZMQ_CURVE;
+                return 0;
+            }
+            else
+            //  Deprecated, not symmetrical with zmq_getsockopt
+            if (optvallen_ == CURVE_KEYSIZE_Z85) {
+                char z85_key [41];
+                memcpy (z85_key, (char *) optval_, CURVE_KEYSIZE_Z85);
+                z85_key [CURVE_KEYSIZE_Z85] = 0;
+                zmq_z85_decode (curve_public_key, z85_key);
                 mechanism = ZMQ_CURVE;
                 return 0;
             }
@@ -386,8 +399,18 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 return 0;
             }
             else
-            if (optvallen_ == CURVE_KEYSIZE_Z85) {
+            if (optvallen_ == CURVE_KEYSIZE_Z85 + 1) {
                 zmq_z85_decode (curve_secret_key, (char *) optval_);
+                mechanism = ZMQ_CURVE;
+                return 0;
+            }
+            else
+            //  Deprecated, not symmetrical with zmq_getsockopt
+            if (optvallen_ == CURVE_KEYSIZE_Z85) {
+                char z85_key [41];
+                memcpy (z85_key, (char *) optval_, CURVE_KEYSIZE_Z85);
+                z85_key [CURVE_KEYSIZE_Z85] = 0;
+                zmq_z85_decode (curve_secret_key, z85_key);
                 mechanism = ZMQ_CURVE;
                 return 0;
             }
@@ -396,15 +419,26 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         case ZMQ_CURVE_SERVERKEY:
             if (optvallen_ == CURVE_KEYSIZE) {
                 memcpy (curve_server_key, optval_, CURVE_KEYSIZE);
-                as_server = 0;
                 mechanism = ZMQ_CURVE;
+                as_server = 0;
                 return 0;
             }
             else
-            if (optvallen_ == CURVE_KEYSIZE_Z85) {
+            if (optvallen_ == CURVE_KEYSIZE_Z85 + 1) {
                 zmq_z85_decode (curve_server_key, (char *) optval_);
-                as_server = 0;
                 mechanism = ZMQ_CURVE;
+                as_server = 0;
+                return 0;
+            }
+            else
+            //  Deprecated, not symmetrical with zmq_getsockopt
+            if (optvallen_ == CURVE_KEYSIZE_Z85) {
+                char z85_key [41];
+                memcpy (z85_key, (char *) optval_, CURVE_KEYSIZE_Z85);
+                z85_key [CURVE_KEYSIZE_Z85] = 0;
+                zmq_z85_decode (curve_server_key, z85_key);
+                mechanism = ZMQ_CURVE;
+                as_server = 0;
                 return 0;
             }
             break;

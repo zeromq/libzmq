@@ -112,13 +112,17 @@ ZMQ_CURVE_PUBLICKEY: Set CURVE public key
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sets the socket's long term public key. You must set this on CURVE client
 sockets, see linkzmq:zmq_curve[7]. You can provide the key as 32 binary
-bytes, or as a 40-character string encoded in the Z85 encoding format.
-The public key must always be used with the matching secret key. To
-generate a public/secret key pair, use linkzmq:zmq_curve_keypair[3].
+bytes, or as a 40-character string encoded in the Z85 encoding format and
+terminated in a null byte. The public key must always be used with the
+matching secret key. To generate a public/secret key pair, use
+linkzmq:zmq_curve_keypair[3].
+
+NOTE: an option value size of 40 is supported for backwards compatibility,
+though is deprecated.
 
 [horizontal]
 Option value type:: binary data or Z85 text string
-Option value size:: 32 or 40
+Option value size:: 32 or 41
 Default value:: NULL
 Applicable socket types:: all, when using TCP transport
 
@@ -128,12 +132,15 @@ ZMQ_CURVE_SECRETKEY: Set CURVE secret key
 Sets the socket's long term secret key. You must set this on both CURVE
 client and server sockets, see linkzmq:zmq_curve[7]. You can provide the
 key as 32 binary bytes, or as a 40-character string encoded in the Z85
-encoding format. To generate a public/secret key pair, use
-linkzmq:zmq_curve_keypair[3].
+encoding format and terminated in a null byte. To generate a public/secret
+key pair, use linkzmq:zmq_curve_keypair[3].
+
+NOTE: an option value size of 40 is supported for backwards compatibility,
+though is deprecated.
 
 [horizontal]
 Option value type:: binary data or Z85 text string
-Option value size:: 32 or 40
+Option value size:: 32 or 41
 Default value:: NULL
 Applicable socket types:: all, when using TCP transport
 
@@ -160,12 +167,17 @@ ZMQ_CURVE_SERVERKEY: Set CURVE server key
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sets the socket's long term server key. You must set this on CURVE client
 sockets, see linkzmq:zmq_curve[7]. You can provide the key as 32 binary
-bytes, or as a 40-character string encoded in the Z85 encoding format.
-This key must have been generated together with the server's secret key.
+bytes, or as a 40-character string encoded in the Z85 encoding format and
+terminated in a null byte. This key must have been generated together with
+the server's secret key. To generate a public/secret key pair, use
+linkzmq:zmq_curve_keypair[3].
+
+NOTE: an option value size of 40 is supported for backwards compatibility,
+though is deprecated.
 
 [horizontal]
 Option value type:: binary data or Z85 text string
-Option value size:: 32 or 40
+Option value size:: 32 or 41
 Default value:: NULL
 Applicable socket types:: all, when using TCP transport
 
@@ -756,6 +768,9 @@ the TCP transport allows connections from any IP address. If at least one
 filter is applied then new connection source ip should be matched. To clear
 all filters call zmq_setsockopt(socket, ZMQ_TCP_ACCEPT_FILTER, NULL, 0).
 Filter is a null-terminated string with ipv6 or ipv4 CIDR.
+
+NOTE: This option is deprecated, please use authentication via the ZAP API
+and IP address whitelisting / blacklisting.
 
 [horizontal]
 Option value type:: binary data
