@@ -134,7 +134,7 @@ test_bind_src_address_SOURCES = test_bind_src_address.cpp
 test_metadata_SOURCES = test_metadata.cpp
 test_id2fd_SOURCES = test_id2fd.cpp
 test_capabilities_SOURCES = test_capabilities.cpp
-test_xpub_wait_inproc_SOURCES = test_xpub_wait_inproc.cpp
+test_xpub_nodrop_SOURCES = test_xpub_nodrop.cpp
 if !ON_MINGW
 test_shutdown_stress_SOURCES = test_shutdown_stress.cpp
 test_pair_ipc_SOURCES = test_pair_ipc.cpp testutil.hpp
