@@ -131,8 +131,10 @@ int zmq::xpub_t::xsend (msg_t *msg_)
         subscriptions.match ((unsigned char*) msg_->data (), msg_->size (),
             mark_as_matching, this);
 
-    if (nodrop && !dist.check_hwm ())
-      return EAGAIN;
+    if (nodrop && !dist.check_hwm ()) {
+        errno = EAGAIN;
+        return -1;
+    }
 
     //  Send the message to all the pipes that were marked as matching
     //  in the previous step.
