@@ -288,6 +288,15 @@ void zmq::msg_t::set_metadata (zmq::metadata_t *metadata_)
     u.base.metadata = metadata_;
 }
 
+void zmq::msg_t::reset_metadata ()
+{
+    if (u.base.metadata) {
+        if (u.base.metadata->drop_ref ())
+            delete u.base.metadata;
+        u.base.metadata = NULL;
+    }
+}
+
 bool zmq::msg_t::is_identity () const
 {
     return (u.base.flags & identity) == identity;
