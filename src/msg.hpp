@@ -73,6 +73,7 @@ namespace zmq
         void set_fd (int64_t fd_);
         metadata_t *metadata () const;
         void set_metadata (metadata_t *metadata_);
+        void reset_metadata ();
         bool is_identity () const;
         bool is_credential () const;
         bool is_delimiter () const;

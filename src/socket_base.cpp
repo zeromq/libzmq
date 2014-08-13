@@ -799,6 +799,8 @@ int zmq::socket_base_t::send (msg_t *msg_, int flags_)
     if (flags_ & ZMQ_SNDMORE)
         msg_->set_flags (msg_t::more);
 
+    msg_->reset_metadata ();
+
     //  Try to send the message.
     rc = xsend (msg_);
     if (rc == 0)
