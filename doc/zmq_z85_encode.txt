@@ -9,7 +9,7 @@ zmq_z85_encode - encode a binary key as Z85 printable text
 
 SYNOPSIS
 --------
-*char *zmq_z85_encode (char *dest, uint8_t *data, size_t size);*
+*char *zmq_z85_encode (char *dest, const uint8_t *data, size_t size);*
 
 
 DESCRIPTION

@@ -9,7 +9,7 @@ zmq_z85_decode - decode a binary key from Z85 printable text
 
 SYNOPSIS
 --------
-*uint8_t *zmq_z85_decode (uint8_t *dest, char *string);*
+*uint8_t *zmq_z85_decode (uint8_t *dest, const char *string);*
 
 
 DESCRIPTION
@@ -31,7 +31,7 @@ EXAMPLE
 -------
 .Decoding a CURVE key
 ----
-char decoded [] = "rq:rM>}U?@Lns47E1%kR.o@n%FcmmsL/@{H8]yf7";
+const char decoded [] = "rq:rM>}U?@Lns47E1%kR.o@n%FcmmsL/@{H8]yf7";
 uint8_t public_key [32];
 zmq_z85_decode (public_key, decoded);
 ----
