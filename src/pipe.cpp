@@ -275,43 +275,43 @@ void zmq::pipe_t::process_hiccup (void *pipe_)
 
 void zmq::pipe_t::process_pipe_term ()
 {
+    zmq_assert (state == active
+            ||  state == delimiter_received
+            ||  state == term_req_sent1);
+
     //  This is the simple case of peer-induced termination. If there are no
     //  more pending messages to read, or if the pipe was configured to drop
     //  pending messages, we can move directly to the term_ack_sent state.
     //  Otherwise we'll hang up in waiting_for_delimiter state till all
     //  pending messages are read.
     if (state == active) {
-        if (!delay) {
+        if (delay)
+            state = waiting_for_delimiter;
+        else {
             state = term_ack_sent;
             outpipe = NULL;
             send_pipe_term_ack (peer);
         }
-        else
-            state = waiting_for_delimiter;
-        return;
     }
 
     //  Delimiter happened to arrive before the term command. Now we have the
     //  term command as well, so we can move straight to term_ack_sent state.
+    else
     if (state == delimiter_received) {
         state = term_ack_sent;
         outpipe = NULL;
         send_pipe_term_ack (peer);
-        return;
     }
 
     //  This is the case where both ends of the pipe are closed in parallel.
     //  We simply reply to the request by ack and continue waiting for our
     //  own ack.
+    else
     if (state == term_req_sent1) {
         state = term_req_sent2;
         outpipe = NULL;
         send_pipe_term_ack (peer);
-        return;
     }
-
-    //  pipe_term is invalid in other states.
-    zmq_assert (false);
 }
 
 void zmq::pipe_t::process_pipe_term_ack ()

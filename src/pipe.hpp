@@ -214,7 +214,7 @@ namespace zmq
         //  Computes appropriate low watermark from the given high watermark.
         static int compute_lwm (int hwm_);
 
-        bool conflate;
+        const bool conflate;
 
         //  Disable copying.
         pipe_t (const pipe_t&);
