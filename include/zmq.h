@@ -420,10 +420,10 @@ ZMQ_EXPORT int zmq_recvmsg (void *s, zmq_msg_t *msg, int flags);
 /******************************************************************************/
 
 /*  Encode data with Z85 encoding. Returns encoded data                       */
-ZMQ_EXPORT char *zmq_z85_encode (char *dest, uint8_t *data, size_t size);
+ZMQ_EXPORT char *zmq_z85_encode (char *dest, const uint8_t *data, size_t size);
 
 /*  Decode data with Z85 encoding. Returns decoded data                       */
-ZMQ_EXPORT uint8_t *zmq_z85_decode (uint8_t *dest, char *string);
+ZMQ_EXPORT uint8_t *zmq_z85_decode (uint8_t *dest, const char *string);
 
 /*  Generate z85-encoded public and private keypair with libsodium.           */
 /*  Returns 0 on success.                                                     */

@@ -111,7 +111,7 @@ static uint8_t decoder [96] = {
 //  dest. Size must be a multiple of 4.
 //  Returns NULL and sets errno = EINVAL for invalid input.
 
-char *zmq_z85_encode (char *dest, uint8_t *data, size_t size)
+char *zmq_z85_encode (char *dest, const uint8_t *data, size_t size)
 {
     if (size % 4 != 0) {
         errno = EINVAL;
@@ -145,7 +145,7 @@ char *zmq_z85_encode (char *dest, uint8_t *data, size_t size)
 //  must be a multiple of 5.
 //  Returns NULL and sets errno = EINVAL for invalid input.
 
-uint8_t *zmq_z85_decode (uint8_t *dest, char *string)
+uint8_t *zmq_z85_decode (uint8_t *dest, const char *string)
 {
     if (strlen (string) % 5 != 0) {
         errno = EINVAL;
