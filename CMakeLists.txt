@@ -347,7 +347,7 @@ if(MSVC)
     -DWIN32
     -DDLL_EXPORT
     # NB: May require tweaking for highly connected applications.
-    -DFD_SETSIZE=1024
+    -DFD_SETSIZE=4096
     -D_CRT_SECURE_NO_WARNINGS)
 
   # Parallel make.
