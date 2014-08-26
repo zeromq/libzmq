@@ -31,7 +31,7 @@ int main (void)
     
     assert (zmq_ctx_get (ctx, ZMQ_MAX_SOCKETS) == ZMQ_MAX_SOCKETS_DFLT);
 #if defined(ZMQ_USE_SELECT)
-    assert (zmq_ctx_get (ctx, ZMQ_SOCKET_LIMIT) == ZMQ_MAX_SOCKETS_DFLT);
+    assert (zmq_ctx_get (ctx, ZMQ_SOCKET_LIMIT) == FD_SETSIZE - 1);
 #elif    defined(ZMQ_USE_POLL) || defined(ZMQ_USE_EPOLL)     \
       || defined(ZMQ_USE_DEVPOLL) || defined(ZMQ_USE_KQUEUE)
     assert (zmq_ctx_get (ctx, ZMQ_SOCKET_LIMIT) == 65535);
