@@ -132,25 +132,20 @@ int zmq::xpub_t::xsend (msg_t *msg_)
         subscriptions.match ((unsigned char*) msg_->data (), msg_->size (),
             mark_as_matching, this);
 
-    if (lossy == false && !dist.check_hwm ()) {
-        errno = EAGAIN;
-        return -1;
+    int rc = -1;            //  Assume we fail
+    if (lossy || dist.check_hwm ()) {
+        if (dist.send_to_matching (msg_) == 0) {
+            //  If we are at the end of multi-part message we can mark 
+            //  all the pipes as non-matching.
+            if (!msg_more)
+                dist.unmatch ();
+            more = msg_more;
+            rc = 0;         //  Yay, sent successfully
+        }
     }
-
-    //  Send the message to all the pipes that were marked as matching
-    //  in the previous step.
-    int rc = dist.send_to_matching (msg_);
-    if (rc != 0)
-        return rc;
-
-    //  If we are at the end of multi-part message we can mark all the pipes
-    //  as non-matching.
-    if (!msg_more)
-        dist.unmatch ();
-
-    more = msg_more;
-
-    return 0;
+    else
+        errno = EAGAIN;
+    return rc;
 }
 
 bool zmq::xpub_t::xhas_out ()
