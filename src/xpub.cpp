@@ -30,6 +30,7 @@ zmq::xpub_t::xpub_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     more (false)
 {
     options.type = ZMQ_XPUB;
+    lossy = true;
 }
 
 zmq::xpub_t::~xpub_t ()
@@ -90,10 +91,6 @@ void zmq::xpub_t::xwrite_activated (pipe_t *pipe_)
 int zmq::xpub_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
-    if (option_ != ZMQ_XPUB_VERBOSE && option_ != ZMQ_XPUB_NODROP) {
-        errno = EINVAL;
-        return -1;
-    }
     if (optvallen_ != sizeof (int) || *static_cast <const int*> (optval_) < 0) {
         errno = EINVAL;
         return -1;
@@ -101,8 +98,12 @@ int zmq::xpub_t::xsetsockopt (int option_, const void *optval_,
     if (option_ == ZMQ_XPUB_VERBOSE)
         verbose = (*static_cast <const int*> (optval_) != 0);
     else
-        nodrop = (*static_cast <const int*> (optval_) != 0);
-
+    if (option_ == ZMQ_XPUB_NODROP)
+        lossy = (*static_cast <const int*> (optval_) == 0);
+    else {
+        errno = EINVAL;
+        return -1;
+    }
     return 0;
 }
 
@@ -131,7 +132,7 @@ int zmq::xpub_t::xsend (msg_t *msg_)
         subscriptions.match ((unsigned char*) msg_->data (), msg_->size (),
             mark_as_matching, this);
 
-    if (nodrop && !dist.check_hwm ()) {
+    if (lossy == false && !dist.check_hwm ()) {
         errno = EAGAIN;
         return -1;
     }
