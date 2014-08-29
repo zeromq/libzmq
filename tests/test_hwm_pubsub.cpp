@@ -19,7 +19,7 @@
 
 #include "testutil.hpp"
 
-const int MAX_SENDS = 10000;
+// const int MAX_SENDS = 10000;
 
 int test_defaults (int send_hwm, int msgCnt)
 {
