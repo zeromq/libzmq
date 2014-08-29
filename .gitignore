@@ -117,6 +117,7 @@ src/libzmq.pc
 bin/
 lib/
 obj/
+builds/msvc/**/*.opensdf
 builds/msvc/**/*.suo
 builds/msvc/**/*.sdf
 builds/msvc/**/*.user
