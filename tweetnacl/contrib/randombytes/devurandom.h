@@ -12,6 +12,7 @@ extern "C" {
 #endif
 
 extern void randombytes(unsigned char *,unsigned long long);
+extern int randombytes_close(void);
 
 #ifdef __cplusplus
 }
