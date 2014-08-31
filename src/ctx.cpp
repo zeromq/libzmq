@@ -35,6 +35,10 @@
 #include "err.hpp"
 #include "msg.hpp"
 
+#ifdef HAVE_LIBSODIUM
+#include <sodium.h>
+#endif
+
 #define ZMQ_CTX_TAG_VALUE_GOOD 0xabadcafe
 #define ZMQ_CTX_TAG_VALUE_BAD  0xdeadbeef
 
@@ -88,6 +92,12 @@ zmq::ctx_t::~ctx_t ()
     //  needed as mailboxes themselves were deallocated with their
     //  corresponding io_thread/socket objects.
     free (slots);
+
+    //  If we've done any Curve encryption, we may have a file handle
+    //  to /dev/urandom open that needs to be cleaned up.
+#ifdef HAVE_LIBSODIUM
+    randombytes_close();
+#endif
 
     //  Remove the tag, so that the object is considered dead.
     tag = ZMQ_CTX_TAG_VALUE_BAD;
