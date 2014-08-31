@@ -32,3 +32,13 @@ void randombytes(unsigned char *x,unsigned long long xlen)
     xlen -= i;
   }
 }
+
+int randombytes_close(void)
+{
+  int rc = -1;
+  if(fd != -1 && close(fd) == 0) {
+    fd = -1;
+    rc = 0;
+  }
+  return rc;
+}
