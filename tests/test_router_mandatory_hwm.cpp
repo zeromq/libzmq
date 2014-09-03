@@ -21,12 +21,17 @@
 #include "testutil.hpp"
 #include <unistd.h>
 
-#define DEBUG 0
+// DEBUG shouldn't be defined in sources as it will cause a redefined symbol
+// error when it is defined in the build configuration. It appears that the
+// intent here is to semi-permanently disable DEBUG tracing statements, so the
+// implementation is changed to accomodate that intent.
+//#define DEBUG 0
+#define TRACE_ENABLED 0
 
 int main (void)
 {
     int rc;
-    if (DEBUG) fprintf(stderr, "Staring router mandatory HWM test ...\n");
+    if (TRACE_ENABLED) fprintf(stderr, "Staring router mandatory HWM test ...\n");
     setup_test_environment();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
@@ -72,12 +77,12 @@ int main (void)
     char buf[BUF_SIZE];
     // Send first batch of messages
     for(i = 0; i < 100000; ++i) {
-	if (DEBUG) fprintf(stderr, "Sending message %d ...\n", i);
-	rc = zmq_send (router, "X", 1, ZMQ_DONTWAIT | ZMQ_SNDMORE);
-	if (rc == -1 && zmq_errno() == EAGAIN) break;
-	assert (rc == 1);
-	rc = zmq_send (router, buf, BUF_SIZE, ZMQ_DONTWAIT);
-	assert (rc == BUF_SIZE);
+        if (TRACE_ENABLED) fprintf(stderr, "Sending message %d ...\n", i);
+        rc = zmq_send (router, "X", 1, ZMQ_DONTWAIT | ZMQ_SNDMORE);
+        if (rc == -1 && zmq_errno() == EAGAIN) break;
+        assert (rc == 1);
+        rc = zmq_send (router, buf, BUF_SIZE, ZMQ_DONTWAIT);
+        assert (rc == BUF_SIZE);
     }
     // This should fail after one message but kernel buffering could
     // skew results
@@ -85,18 +90,18 @@ int main (void)
     sleep(1);
     // Send second batch of messages
     for(; i < 100000; ++i) {
-	if (DEBUG) fprintf(stderr, "Sending message %d (part 2) ...\n", i);
-	rc = zmq_send (router, "X", 1, ZMQ_DONTWAIT | ZMQ_SNDMORE);
-	if (rc == -1 && zmq_errno() == EAGAIN) break;
-	assert (rc == 1);
-	rc = zmq_send (router, buf, BUF_SIZE, ZMQ_DONTWAIT);
-	assert (rc == BUF_SIZE);
+        if (TRACE_ENABLED) fprintf(stderr, "Sending message %d (part 2) ...\n", i);
+        rc = zmq_send (router, "X", 1, ZMQ_DONTWAIT | ZMQ_SNDMORE);
+        if (rc == -1 && zmq_errno() == EAGAIN) break;
+        assert (rc == 1);
+        rc = zmq_send (router, buf, BUF_SIZE, ZMQ_DONTWAIT);
+        assert (rc == BUF_SIZE);
     }
     // This should fail after two messages but kernel buffering could
     // skew results
     assert (i < 20);
 
-    if (DEBUG) fprintf(stderr, "Done sending messages.\n");
+    if (TRACE_ENABLED) fprintf(stderr, "Done sending messages.\n");
 
     rc = zmq_close (router);
     assert (rc == 0);
