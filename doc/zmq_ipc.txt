@@ -53,6 +53,10 @@ namespace shall be used.  The abstract namespace is independent of the
 filesystem and if a process attempts to bind an endpoint already bound by a
 process, it will fail.  See unix(7) for details.
 
+NOTE: IPC pathnames have a maximum size that depends on the operating system.
+On Linux, the maximum is 113 characters including the "ipc://" prefix (107
+characters for the real path name).
+
 Connecting a socket
 ~~~~~~~~~~~~~~~~~~~
 When connecting a 'socket' to a peer address using _zmq_connect()_ with the
