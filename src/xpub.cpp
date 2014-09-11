@@ -26,11 +26,11 @@
 
 zmq::xpub_t::xpub_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     socket_base_t (parent_, tid_, sid_),
-    verbose(false),
-    more (false)
+    verbose (false),
+    more (false),
+    lossy (true)
 {
     options.type = ZMQ_XPUB;
-    lossy = true;
 }
 
 zmq::xpub_t::~xpub_t ()

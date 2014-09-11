@@ -112,12 +112,9 @@ namespace zmq
         //  Call this function when engine disconnect to get rid of leftovers.
         void clean_pipes ();
 
-        //  Call this function to move on with the delayed process_term.
-        void proceed_with_term ();
-
         //  If true, this session (re)connects to the peer. Otherwise, it's
         //  a transient session created by the listener.
-        bool active;
+        const bool active;
 
         //  Pipe connecting the session to its socket.
         zmq::pipe_t *pipe;
