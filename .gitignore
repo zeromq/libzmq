@@ -124,6 +124,7 @@ builds/msvc/**/*.user
 builds/msvc/**/*Debug
 builds/msvc/**/*Release
 builds/redhat/zeromq.spec
+packaging/nuget/*.nupkg
 foreign/openpgm/*
 !foreign/openpgm/*.tar.bz2
 !foreign/openpgm/*.tar.gz
