@@ -206,10 +206,14 @@ void zmq::session_base_t::pipe_terminated (pipe_t *pipe_)
              || pipe_ == zap_pipe
              || terminating_pipes.count (pipe_) == 1);
 
-    if (pipe_ == pipe)
+    if (pipe_ == pipe) {
         // If this is our current pipe, remove it
         pipe = NULL;
-    else
+        if (has_linger_timer) {
+            cancel_timer (linger_timer_id);
+            has_linger_timer = false;
+        }
+    } else
     if (pipe_ == zap_pipe)
         zap_pipe = NULL;
     else
