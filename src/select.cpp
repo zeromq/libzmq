@@ -163,8 +163,12 @@ void zmq::select_t::loop ()
         memcpy (&exceptfds, &source_set_err, sizeof source_set_err);
 
         //  Wait for events.
+#ifdef ZMQ_HAVE_OSX
+        struct timeval tv = {(long) (timeout / 1000), timeout % 1000 * 1000};
+#else
         struct timeval tv = {(long) (timeout / 1000),
             (long) (timeout % 1000 * 1000)};
+#endif
 #ifdef ZMQ_HAVE_WINDOWS
         int rc = select (0, &readfds, &writefds, &exceptfds,
             timeout ? &tv : NULL);
