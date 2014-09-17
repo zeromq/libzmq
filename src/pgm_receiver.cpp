@@ -288,7 +288,7 @@ void zmq::pgm_receiver_t::drop_subscriptions ()
 {
     msg_t msg;
     msg.init ();
-    while (session->pull_msg (&msg))
+    while (session->pull_msg (&msg) == 0)
         msg.close ();
 }
 
