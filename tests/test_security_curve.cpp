@@ -199,6 +199,26 @@ int main (void)
     expect_bounce_fail (server, client);
     close_zero_linger (client);
 
+    //  Check CURVE security with NULL client credentials
+    //  This must be caught by the curve_server class, not passed to ZAP
+    client = zmq_socket (ctx, ZMQ_DEALER);
+    assert (client);
+    rc = zmq_connect (client, "tcp://localhost:9998");
+    assert (rc == 0);
+    expect_bounce_fail (server, client);
+    close_zero_linger (client);
+
+    //  Check CURVE security with PLAIN client credentials
+    //  This must be caught by the curve_server class, not passed to ZAP
+    client = zmq_socket (ctx, ZMQ_DEALER);
+    assert (client);
+    rc = zmq_setsockopt (client, ZMQ_PLAIN_USERNAME, "admin", 5);
+    assert (rc == 0);
+    rc = zmq_setsockopt (client, ZMQ_PLAIN_PASSWORD, "password", 8);
+    assert (rc == 0);
+    expect_bounce_fail (server, client);
+    close_zero_linger (client);
+    
     //  Shutdown
     rc = zmq_close (server);
     assert (rc == 0);
