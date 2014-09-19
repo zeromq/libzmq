@@ -600,13 +600,15 @@ bool zmq::stream_engine_t::handshake ()
             in_batch_size, options.maxmsgsize);
         alloc_assert (decoder);
 
-        if (memcmp (greeting_recv + 12, "NULL\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
+        if (options.mechanism == ZMQ_NULL
+        &&  memcmp (greeting_recv + 12, "NULL\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
             mechanism = new (std::nothrow)
                 null_mechanism_t (session, peer_address, options);
             alloc_assert (mechanism);
         }
         else
-        if (memcmp (greeting_recv + 12, "PLAIN\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
+        if (options.mechanism == ZMQ_PLAIN
+        &&  memcmp (greeting_recv + 12, "PLAIN\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
             if (options.as_server)
                 mechanism = new (std::nothrow)
                     plain_server_t (session, peer_address, options);
@@ -617,7 +619,8 @@ bool zmq::stream_engine_t::handshake ()
         }
 #ifdef HAVE_LIBSODIUM
         else
-        if (memcmp (greeting_recv + 12, "CURVE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
+        if (options.mechanism == ZMQ_CURVE
+        &&  memcmp (greeting_recv + 12, "CURVE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
             if (options.as_server)
                 mechanism = new (std::nothrow)
                     curve_server_t (session, peer_address, options);
@@ -628,7 +631,8 @@ bool zmq::stream_engine_t::handshake ()
 #endif
 #ifdef HAVE_LIBGSSAPI_KRB5
         else
-        if (memcmp (greeting_recv + 12, "GSSAPI\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
+        if (options.mechanism == ZMQ_GSSAPI
+        &&  memcmp (greeting_recv + 12, "GSSAPI\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
             if (options.as_server)
                 mechanism = new (std::nothrow)
                     gssapi_server_t (session, peer_address, options);
