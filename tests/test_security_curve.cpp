@@ -199,7 +199,7 @@ int main (void)
     close_zero_linger (client);
 
     //  Check CURVE security with NULL client credentials
-    //  This must be caught by the ZAP handler
+    //  This must be caught by the curve_server class, not passed to ZAP
     client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
     rc = zmq_connect (client, "tcp://localhost:9998");
@@ -208,7 +208,7 @@ int main (void)
     close_zero_linger (client);
 
     //  Check CURVE security with PLAIN client credentials
-    //  This must be caught by the ZAP handler
+    //  This must be caught by the curve_server class, not passed to ZAP
     client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
     rc = zmq_setsockopt (client, ZMQ_PLAIN_USERNAME, "admin", 5);
