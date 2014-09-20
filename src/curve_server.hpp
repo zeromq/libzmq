@@ -90,6 +90,7 @@ namespace zmq
         std::string status_code;
 
         uint64_t cn_nonce;
+        uint64_t cn_peer_nonce;
 
         //  Our secret key (s)
         uint8_t secret_key [crypto_box_SECRETKEYBYTES];

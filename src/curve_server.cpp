@@ -39,6 +39,7 @@ zmq::curve_server_t::curve_server_t (session_base_t *session_,
     peer_address (peer_address_),
     state (expect_hello),
     cn_nonce (1),
+    cn_peer_nonce(1),
     sync()
 {
     //  Fetch our secret key from socket options
@@ -125,7 +126,7 @@ int zmq::curve_server_t::encode (msg_t *msg_)
 
     uint8_t message_nonce [crypto_box_NONCEBYTES];
     memcpy (message_nonce, "CurveZMQMESSAGES", 16);
-    memcpy (message_nonce + 16, &cn_nonce, 8);
+    put_uint64 (message_nonce + 16, cn_nonce);
 
     uint8_t flags = 0;
     if (msg_->flags () & msg_t::more)
@@ -155,7 +156,7 @@ int zmq::curve_server_t::encode (msg_t *msg_)
     uint8_t *message = static_cast <uint8_t *> (msg_->data ());
 
     memcpy (message, "\x07MESSAGE", 8);
-    memcpy (message + 8, &cn_nonce, 8);
+    memcpy (message + 8, message_nonce + 16, 8);
     memcpy (message + 16, message_box + crypto_box_BOXZEROBYTES,
             mlen - crypto_box_BOXZEROBYTES);
 
@@ -189,6 +190,12 @@ int zmq::curve_server_t::decode (msg_t *msg_)
     uint8_t message_nonce [crypto_box_NONCEBYTES];
     memcpy (message_nonce, "CurveZMQMESSAGEC", 16);
     memcpy (message_nonce + 16, message + 8, 8);
+    uint64_t nonce = get_uint64(message + 8);
+    if (nonce <= cn_peer_nonce) {
+        errno = EPROTO;
+        return -1;
+    }
+    cn_peer_nonce = nonce;
 
     const size_t clen = crypto_box_BOXZEROBYTES + msg_->size () - 16;
 
@@ -291,6 +298,7 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
 
     memcpy (hello_nonce, "CurveZMQHELLO---", 16);
     memcpy (hello_nonce + 16, hello + 112, 8);
+    cn_peer_nonce = get_uint64(hello + 112);
 
     memset (hello_box, 0, crypto_box_BOXZEROBYTES);
     memcpy (hello_box + crypto_box_BOXZEROBYTES, hello + 120, 80);
@@ -430,6 +438,7 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
 
     memcpy (initiate_nonce, "CurveZMQINITIATE", 16);
     memcpy (initiate_nonce + 16, initiate + 105, 8);
+    cn_peer_nonce = get_uint64(initiate + 105);
 
     rc = crypto_box_open (initiate_plaintext, initiate_box,
                           clen, initiate_nonce, cn_client, cn_secret);
@@ -522,7 +531,7 @@ int zmq::curve_server_t::produce_ready (msg_t *msg_)
     const size_t mlen = ptr - ready_plaintext;
 
     memcpy (ready_nonce, "CurveZMQREADY---", 16);
-    memcpy (ready_nonce + 16, &cn_nonce, 8);
+    put_uint64 (ready_nonce + 16, cn_nonce);
 
     int rc = crypto_box_afternm (ready_box, ready_plaintext,
                                  mlen, ready_nonce, cn_precom);
@@ -535,7 +544,7 @@ int zmq::curve_server_t::produce_ready (msg_t *msg_)
 
     memcpy (ready, "\x05READY", 6);
     //  Short nonce, prefixed by "CurveZMQREADY---"
-    memcpy (ready + 6, &cn_nonce, 8);
+    memcpy (ready + 6, ready_nonce + 16, 8);
     //  Box [metadata](S'->C')
     memcpy (ready + 14, ready_box + crypto_box_BOXZEROBYTES,
             mlen - crypto_box_BOXZEROBYTES);
