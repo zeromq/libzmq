@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2013 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -20,15 +20,14 @@
 #include "testutil.hpp"
 
 //  We'll generate random test keys at startup
-static char client_public [41];
-static char client_secret [41];
-static char server_public [41];
-static char server_secret [41];
+static char client_public [40];
+static char client_secret [40];
+static char server_public [40];
+static char server_secret [40];
 
 //  --------------------------------------------------------------------------
-//  Encode a binary frame as a string; destination string MUST be at least
-//  size * 5 / 4 bytes long plus 1 byte for the null terminator. Returns
-//  dest. Size must be a multiple of 4.
+//  This methods receives and validates ZAP requestes (allowing or denying
+//  each client connection).
 
 static void zap_handler (void *handler)
 {
@@ -47,7 +46,7 @@ static void zap_handler (void *handler)
         int size = zmq_recv (handler, client_key, 32, 0);
         assert (size == 32);
 
-        char client_key_text [41];
+        char client_key_text [40];
         zmq_z85_encode (client_key_text, client_key, 32);
 
         assert (streq (version, "1.0"));
@@ -182,8 +181,8 @@ int main (void)
 
     //  Check CURVE security with bogus client credentials
     //  This must be caught by the ZAP handler
-    char bogus_public [41];
-    char bogus_secret [41];
+    char bogus_public [40];
+    char bogus_secret [40];
     zmq_curve_keypair (bogus_public, bogus_secret);
 
     client = zmq_socket (ctx, ZMQ_DEALER);
@@ -199,6 +198,26 @@ int main (void)
     expect_bounce_fail (server, client);
     close_zero_linger (client);
 
+    //  Check CURVE security with NULL client credentials
+    //  This must be caught by the curve_server class, not passed to ZAP
+    client = zmq_socket (ctx, ZMQ_DEALER);
+    assert (client);
+    rc = zmq_connect (client, "tcp://localhost:9998");
+    assert (rc == 0);
+    expect_bounce_fail (server, client);
+    close_zero_linger (client);
+
+    //  Check CURVE security with PLAIN client credentials
+    //  This must be caught by the curve_server class, not passed to ZAP
+    client = zmq_socket (ctx, ZMQ_DEALER);
+    assert (client);
+    rc = zmq_setsockopt (client, ZMQ_PLAIN_USERNAME, "admin", 5);
+    assert (rc == 0);
+    rc = zmq_setsockopt (client, ZMQ_PLAIN_PASSWORD, "password", 8);
+    assert (rc == 0);
+    expect_bounce_fail (server, client);
+    close_zero_linger (client);
+    
     //  Shutdown
     rc = zmq_close (server);
     assert (rc == 0);
