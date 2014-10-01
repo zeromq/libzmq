@@ -89,6 +89,9 @@ This package contains ZeroMQ related development libraries and header files.
 # docs in the main package
 %doc AUTHORS ChangeLog COPYING COPYING.LESSER NEWS README.md
 
+# binaries
+%{_bindir}/curve_keygen
+
 # libraries
 %{_libdir}/libzmq.so.3
 %{_libdir}/libzmq.so.3.0.0
