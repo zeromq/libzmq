@@ -87,7 +87,7 @@ This package contains ZeroMQ related development libraries and header files.
 %defattr(-,root,root,-)
 
 # docs in the main package
-%doc AUTHORS ChangeLog COPYING COPYING.LESSER NEWS README
+%doc AUTHORS ChangeLog COPYING COPYING.LESSER NEWS README.md
 
 # libraries
 %{_libdir}/libzmq.so.3

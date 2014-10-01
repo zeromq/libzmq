@@ -12,6 +12,7 @@ EXTRA_DIST = \
 	autogen.sh	\
 	version.sh	\
 	MAINTAINERS	\
+	README.md	\
 	foreign/openpgm/@pgm_basename@.tar.gz
 MAINTAINERCLEANFILES = \
 	$(srcdir)/aclocal.m4		\
