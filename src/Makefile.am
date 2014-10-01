@@ -32,7 +32,6 @@ libzmq_la_SOURCES = \
     i_decoder.hpp \
     i_engine.hpp \
     i_poll_events.hpp \
-    i_properties.hpp \
     io_object.hpp \
     io_thread.hpp \
     ip.hpp \
