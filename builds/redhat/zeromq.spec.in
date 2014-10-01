@@ -8,7 +8,7 @@ URL:           http://www.zeromq.org/
 Source:        http://download.zeromq.org/%{name}-%{version}.tar.gz
 Prefix:        %{_prefix}
 Buildroot:     %{_tmppath}/%{name}-%{version}-%{release}-root
-BuildRequires: gcc, make, gcc-c++, libstdc++-devel
+BuildRequires: gcc, make, gcc-c++, libstdc++-devel, asciidoc, xmlto
 Requires:      libstdc++
 
 %if 0%{?rhel}
@@ -87,11 +87,14 @@ This package contains ZeroMQ related development libraries and header files.
 %defattr(-,root,root,-)
 
 # docs in the main package
-%doc AUTHORS ChangeLog COPYING COPYING.LESSER NEWS README
+%doc AUTHORS ChangeLog COPYING COPYING.LESSER NEWS README.md
+
+# binaries
+%{_bindir}/curve_keygen
 
 # libraries
-%{_libdir}/libzmq.so.3
-%{_libdir}/libzmq.so.3.0.0
+%{_libdir}/libzmq.so.4
+%{_libdir}/libzmq.so.4.0.0
 
 %{_mandir}/man7/zmq.7.gz
 
@@ -144,11 +147,19 @@ This package contains ZeroMQ related development libraries and header files.
 %{_mandir}/man3/zmq_term.3.gz
 %{_mandir}/man3/zmq_version.3.gz
 %{_mandir}/man3/zmq_unbind.3.gz
+%{_mandir}/man3/zmq_curve_keypair.3.gz
+%{_mandir}/man3/zmq_proxy_steerable.3.gz
+%{_mandir}/man3/zmq_send_const.3.gz
+%{_mandir}/man3/zmq_z85_decode.3.gz
+%{_mandir}/man3/zmq_z85_encode.3.gz
 %{_mandir}/man7/zmq_epgm.7.gz
 %{_mandir}/man7/zmq_inproc.7.gz
 %{_mandir}/man7/zmq_ipc.7.gz
 %{_mandir}/man7/zmq_pgm.7.gz
 %{_mandir}/man7/zmq_tcp.7.gz
+%{_mandir}/man7/zmq_null.7.gz
+%{_mandir}/man7/zmq_plain.7.gz
+%{_mandir}/man7/zmq_curve.7.gz
 
 %changelog
 * Mon Nov 26 2012 Justin Cook <jhcook@gmail.com> 3.2.2
