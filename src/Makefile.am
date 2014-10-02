@@ -32,7 +32,6 @@ libzmq_la_SOURCES = \
     i_decoder.hpp \
     i_engine.hpp \
     i_poll_events.hpp \
-    i_properties.hpp \
     io_object.hpp \
     io_thread.hpp \
     ip.hpp \
@@ -216,4 +215,5 @@ dist-hook:
 		-rm $(distdir)/platform.hpp
 
 EXTRA_DIST = \
-	libzmq.pc.cmake.in
+	libzmq.pc.cmake.in \
+	libzmq.vers
