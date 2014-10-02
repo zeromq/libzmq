@@ -215,4 +215,5 @@ dist-hook:
 		-rm $(distdir)/platform.hpp
 
 EXTRA_DIST = \
-	libzmq.pc.cmake.in
+	libzmq.pc.cmake.in \
+	libzmq.vers
