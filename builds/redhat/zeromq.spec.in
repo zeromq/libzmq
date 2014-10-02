@@ -109,7 +109,6 @@ This package contains ZeroMQ related development libraries and header files.
 %{_mandir}/man3/zmq_close.3.gz
 %{_mandir}/man3/zmq_connect.3.gz
 %{_mandir}/man3/zmq_disconnect.3.gz
-%{_mandir}/man3/zmq_ctx_destroy.3.gz
 %{_mandir}/man3/zmq_ctx_get.3.gz
 %{_mandir}/man3/zmq_ctx_new.3.gz
 %{_mandir}/man3/zmq_ctx_set.3.gz
@@ -117,7 +116,6 @@ This package contains ZeroMQ related development libraries and header files.
 %{_mandir}/man3/zmq_msg_recv.3.gz
 %{_mandir}/man3/zmq_errno.3.gz
 %{_mandir}/man3/zmq_getsockopt.3.gz
-%{_mandir}/man3/zmq_init.3.gz
 %{_mandir}/man3/zmq_msg_close.3.gz
 %{_mandir}/man3/zmq_msg_copy.3.gz
 %{_mandir}/man3/zmq_msg_data.3.gz
@@ -140,9 +138,12 @@ This package contains ZeroMQ related development libraries and header files.
 %{_mandir}/man3/zmq_socket.3.gz
 %{_mandir}/man3/zmq_socket_monitor.3.gz
 %{_mandir}/man3/zmq_strerror.3.gz
-%{_mandir}/man3/zmq_term.3.gz
 %{_mandir}/man3/zmq_version.3.gz
 %{_mandir}/man3/zmq_unbind.3.gz
+%{_mandir}/man3/zmq_ctx_shutdown.3.gz
+%{_mandir}/man3/zmq_has.3.gz
+%{_mandir}/man3/zmq_msg_gets.3.gz
+%{_mandir}/man3/zmq_proxy_steerable.3.gz
 %{_mandir}/man7/zmq_epgm.7.gz
 %{_mandir}/man7/zmq_inproc.7.gz
 %{_mandir}/man7/zmq_ipc.7.gz
@@ -155,6 +156,7 @@ This package contains ZeroMQ related development libraries and header files.
 %{_mandir}/man7/zmq_curve.7.gz
 %{_mandir}/man7/zmq_null.7.gz
 %{_mandir}/man7/zmq_plain.7.gz
+%{_mandir}/man7/zmq_tipc.7.gz
 
 %changelog
 * Tue Jun 10 2014 Tristian Celestin <tristian.celestin@outlook.com> 4.0.4
