@@ -11,15 +11,9 @@ Buildroot:     %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildRequires: gcc, make, gcc-c++, libstdc++-devel, asciidoc, xmlto
 Requires:      libstdc++
 
-%if %{?rhel}%{!?rhel:0} >= 6
-BuildRequires: libuuid-devel
-Requires:      libuuid
-%elseif %{?rhel}%{!?rhel:0} >= 5
+%if %{?rhel}%{!?rhel:0} >= 5
 BuildRequires: e2fsprogs-devel
 Requires:      e2fsprogs
-%else
-BuildRequires: uuid-devel
-Requires:      uuid
 %endif
 
 # Build pgm only on supported archs
