@@ -96,7 +96,7 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
 
     int family = get_peer_ip_address (s, peer_address);
     if (family == 0)
-        peer_address = "";
+        peer_address.clear();
 #if defined ZMQ_HAVE_SO_PEERCRED
     else
     if (family == PF_UNIX) {
