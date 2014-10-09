@@ -494,7 +494,7 @@ void zmq::session_base_t::start_connecting (bool wait_)
     //  Create the connecter object.
 
     if (addr->protocol == "tcp") {
-        if (options.socks_proxy_address != "") {
+        if (!options.socks_proxy_address.empty()) {
             address_t *proxy_address = new (std::nothrow)
                 address_t ("tcp", options.socks_proxy_address);
             alloc_assert (proxy_address);
