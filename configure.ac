@@ -11,7 +11,7 @@ AC_INIT([zeromq],[m4_esyscmd([./version.sh])],[zeromq-dev@lists.zeromq.org])
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
 AC_CONFIG_HEADERS([src/platform.hpp])
-AM_INIT_AUTOMAKE(tar-ustar dist-zip foreign)
+AM_INIT_AUTOMAKE(subdir-objects tar-ustar dist-zip foreign)
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 # This lets us use PACKAGE_VERSION in Makefiles
@@ -562,13 +562,14 @@ AC_SUBST(LIBZMQ_EXTRA_CFLAGS)
 AC_SUBST(LIBZMQ_EXTRA_CXXFLAGS)
 AC_SUBST(LIBZMQ_EXTRA_LDFLAGS)
 
+AC_ARG_WITH([pkgconfigdir], AS_HELP_STRING([--with-pkgconfigdir=PATH],
+    [Path to the pkgconfig directory [[LIBDIR/pkgconfig]]]),
+    [pkgconfigdir="$withval"], [pkgconfigdir='${libdir}/pkgconfig'])
+AC_SUBST([pkgconfigdir])
+
 AC_CONFIG_FILES([Makefile \
-    src/Makefile \
     src/libzmq.pc \
     doc/Makefile \
-    perf/Makefile \
-    tests/Makefile \
-    tools/Makefile \
     builds/msvc/Makefile \
     foreign/openpgm/Makefile \
     builds/redhat/zeromq.spec])
