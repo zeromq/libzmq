@@ -1,19 +1,18 @@
 ACLOCAL_AMFLAGS = -I config
 
+SUBDIRS = doc
+
+DIST_SUBDIRS = builds/msvc doc
+
+pkgconfig_DATA = src/libzmq.pc
+
 AM_CPPFLAGS = \
 	-I$(top_builddir)/include \
 	-I$(top_srcdir)/include
 
-SUBDIRS = doc
-
-if BUILD_PGM
-SUBDIRS += foreign/openpgm
-endif
-
-DIST_SUBDIRS = builds/msvc doc foreign/openpgm
-
-pkgconfig_DATA = src/libzmq.pc
-
+#
+# libraries/binaries
+#
 lib_LTLIBRARIES = libzmq.la
 
 include_HEADERS = \
@@ -231,9 +230,9 @@ endif
 
 libzmq_la_CXXFLAGS = @LIBZMQ_EXTRA_CXXFLAGS@
 
-if BUILD_PGM
-libzmq_la_CPPFLAGS = -I$(top_srcdir)/@pgm_srcdir@/include/
-libzmq_la_LIBADD = $(top_srcdir)/@pgm_srcdir@/libpgm_noinst.la
+if HAVE_PGM
+libzmq_la_CPPFLAGS = ${pgm_CFLAGS}
+libzmq_la_LIBADD = ${pgm_LIBS}
 endif
 
 noinst_PROGRAMS = \
@@ -262,13 +261,14 @@ inproc_lat_SOURCES = perf/inproc_lat.cpp
 inproc_thr_LDADD = libzmq.la
 inproc_thr_SOURCES = perf/inproc_thr.cpp
 
-
-
 bin_PROGRAMS = curve_keygen
 
 curve_keygen_LDADD = libzmq.la
 curve_keygen_SOURCES = tools/curve_keygen.cpp
 
+#
+# tests
+#
 test_apps = \
 	test_system \
 	test_pair_inproc \
@@ -583,7 +583,6 @@ EXTRA_DIST = \
 	autogen.sh	\
 	version.sh	\
 	MAINTAINERS	\
-	foreign/openpgm/@pgm_basename@.tar.gz \
 	src/libzmq.pc.cmake.in \
 	src/libzmq.vers \
 	tools/curve_keygen.cpp
@@ -609,10 +608,6 @@ dist-hook:
 		echo A git clone is required to generate a ChangeLog >&2; \
 	fi
 	-cp $(top_srcdir)/builds/redhat/zeromq.spec $(distdir)/zeromq.spec
-	-rm -rf $(distdir)/foreign/openpgm/build-staging
-
-distclean-local:
-	-rm -rf $(top_srcdir)/foreign/openpgm/build-staging
 
 maintainer-clean-local:
 	-rm -rf $(top_srcdir)/config
