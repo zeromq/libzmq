@@ -283,77 +283,6 @@ Default value:: 0 (false)
 Applicable socket types:: all, only for connection-oriented transports.
 
 
-ZMQ_IPC_FILTER_GID: Assign group ID filters to allow new IPC connections
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Assign an arbitrary number of filters that will be applied for each new IPC
-transport connection on a listening socket. If no IPC filters are applied, then
-the IPC transport allows connections from any process. If at least one UID,
-GID, or PID filter is applied then new connection credentials should be
-matched. To clear all GID filters call zmq_setsockopt(socket,
-ZMQ_IPC_FILTER_GID, NULL, 0).
-
-NOTE: GID filters are only available on platforms supporting SO_PEERCRED or
-LOCAL_PEERCRED socket options (currently only Linux and later versions of
-OS X).
-
-[horizontal]
-Option value type:: gid_t
-Option value unit:: N/A
-Default value:: no filters (allow from all)
-Applicable socket types:: all listening sockets, when using IPC transports.
-
-
-ZMQ_IPC_FILTER_PID: Assign process ID filters to allow new IPC connections
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Assign an arbitrary number of filters that will be applied for each new IPC
-transport connection on a listening socket. If no IPC filters are applied, then
-the IPC transport allows connections from any process. If at least one UID,
-GID, or PID filter is applied then new connection credentials should be
-matched. To clear all PID filters call zmq_setsockopt(socket,
-ZMQ_IPC_FILTER_PID, NULL, 0).
-
-NOTE: PID filters are only available on platforms supporting the SO_PEERCRED
-socket option (currently only Linux).
-
-[horizontal]
-Option value type:: pid_t
-Option value unit:: N/A
-Default value:: no filters (allow from all)
-Applicable socket types:: all listening sockets, when using IPC transports.
-
-
-ZMQ_IPC_FILTER_UID: Assign user ID filters to allow new IPC connections
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Assign an arbitrary number of filters that will be applied for each new IPC
-transport connection on a listening socket. If no IPC filters are applied, then
-the IPC transport allows connections from any process. If at least one UID,
-GID, or PID filter is applied then new connection credentials should be
-matched. To clear all UID filters call zmq_setsockopt(socket,
-ZMQ_IPC_FILTER_UID, NULL, 0).
-
-NOTE: UID filters are only available on platforms supporting SO_PEERCRED or
-LOCAL_PEERCRED socket options (currently only Linux and later versions of
-OS X).
-
-[horizontal]
-Option value type:: uid_t
-Option value unit:: N/A
-Default value:: no filters (allow from all)
-Applicable socket types:: all listening sockets, when using IPC transports.
-
-
-ZMQ_IPV4ONLY: Use IPv4-only on socket
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Set the IPv4-only option for the socket. This option is deprecated.
-Please use the ZMQ_IPV6 option.
-
-[horizontal]
-Option value type:: int
-Option value unit:: boolean
-Default value:: 1 (true)
-Applicable socket types:: all, when using TCP transports.
-
-
 ZMQ_IPV6: Enable IPv6 on socket
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Set the IPv6 option for the socket. A value of `1` means IPv6 is
@@ -760,25 +689,6 @@ Default value:: N/A
 Applicable socket types:: ZMQ_SUB
 
 
-ZMQ_TCP_ACCEPT_FILTER: Assign filters to allow new TCP connections
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Assign an arbitrary number of filters that will be applied for each new TCP
-transport connection on a listening socket. If no filters are applied, then
-the TCP transport allows connections from any IP address. If at least one
-filter is applied then new connection source ip should be matched. To clear
-all filters call zmq_setsockopt(socket, ZMQ_TCP_ACCEPT_FILTER, NULL, 0).
-Filter is a null-terminated string with ipv6 or ipv4 CIDR.
-
-NOTE: This option is deprecated, please use authentication via the ZAP API
-and IP address whitelisting / blacklisting.
-
-[horizontal]
-Option value type:: binary data
-Option value unit:: N/A
-Default value:: no filters (allow from all)
-Applicable socket types:: all listening sockets, when using TCP transports.
-
-
 ZMQ_TCP_KEEPALIVE: Override SO_KEEPALIVE socket option
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Override 'SO_KEEPALIVE' socket option (where supported by OS).
@@ -885,6 +795,104 @@ Option value unit:: N/A
 Default value:: not set
 Applicable socket types:: all, when using TCP transport
 
+
+ZMQ_TCP_ACCEPT_FILTER: Assign filters to allow new TCP connections
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Assign an arbitrary number of filters that will be applied for each new TCP
+transport connection on a listening socket. If no filters are applied, then
+the TCP transport allows connections from any IP address. If at least one
+filter is applied then new connection source ip should be matched. To clear
+all filters call zmq_setsockopt(socket, ZMQ_TCP_ACCEPT_FILTER, NULL, 0).
+Filter is a null-terminated string with ipv6 or ipv4 CIDR.
+
+NOTE: This option is deprecated, please use authentication via the ZAP API
+and IP address whitelisting / blacklisting.
+
+[horizontal]
+Option value type:: binary data
+Option value unit:: N/A
+Default value:: no filters (allow from all)
+Applicable socket types:: all listening sockets, when using TCP transports.
+
+
+ZMQ_IPC_FILTER_GID: Assign group ID filters to allow new IPC connections
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Assign an arbitrary number of filters that will be applied for each new IPC
+transport connection on a listening socket. If no IPC filters are applied, then
+the IPC transport allows connections from any process. If at least one UID,
+GID, or PID filter is applied then new connection credentials should be
+matched. To clear all GID filters call zmq_setsockopt(socket,
+ZMQ_IPC_FILTER_GID, NULL, 0).
+
+NOTE: GID filters are only available on platforms supporting SO_PEERCRED or
+LOCAL_PEERCRED socket options (currently only Linux and later versions of
+OS X).
+
+NOTE: This option is deprecated, please use authentication via the ZAP API
+and IPC whitelisting / blacklisting.
+
+[horizontal]
+Option value type:: gid_t
+Option value unit:: N/A
+Default value:: no filters (allow from all)
+Applicable socket types:: all listening sockets, when using IPC transports.
+
+
+ZMQ_IPC_FILTER_PID: Assign process ID filters to allow new IPC connections
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Assign an arbitrary number of filters that will be applied for each new IPC
+transport connection on a listening socket. If no IPC filters are applied, then
+the IPC transport allows connections from any process. If at least one UID,
+GID, or PID filter is applied then new connection credentials should be
+matched. To clear all PID filters call zmq_setsockopt(socket,
+ZMQ_IPC_FILTER_PID, NULL, 0).
+
+NOTE: PID filters are only available on platforms supporting the SO_PEERCRED
+socket option (currently only Linux).
+
+NOTE: This option is deprecated, please use authentication via the ZAP API
+and IPC whitelisting / blacklisting.
+
+[horizontal]
+Option value type:: pid_t
+Option value unit:: N/A
+Default value:: no filters (allow from all)
+Applicable socket types:: all listening sockets, when using IPC transports.
+
+
+ZMQ_IPC_FILTER_UID: Assign user ID filters to allow new IPC connections
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Assign an arbitrary number of filters that will be applied for each new IPC
+transport connection on a listening socket. If no IPC filters are applied, then
+the IPC transport allows connections from any process. If at least one UID,
+GID, or PID filter is applied then new connection credentials should be
+matched. To clear all UID filters call zmq_setsockopt(socket,
+ZMQ_IPC_FILTER_UID, NULL, 0).
+
+NOTE: UID filters are only available on platforms supporting SO_PEERCRED or
+LOCAL_PEERCRED socket options (currently only Linux and later versions of
+OS X).
+
+NOTE: This option is deprecated, please use authentication via the ZAP API
+and IPC whitelisting / blacklisting.
+
+[horizontal]
+Option value type:: uid_t
+Option value unit:: N/A
+Default value:: no filters (allow from all)
+Applicable socket types:: all listening sockets, when using IPC transports.
+
+
+ZMQ_IPV4ONLY: Use IPv4-only on socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Set the IPv4-only option for the socket. This option is deprecated.
+Please use the ZMQ_IPV6 option.
+
+[horizontal]
+Option value type:: int
+Option value unit:: boolean
+Default value:: 1 (true)
+Applicable socket types:: all, when using TCP transports.
 
 RETURN VALUE
 ------------
