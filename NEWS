@@ -1,4 +1,4 @@
-0MQ version 3.2.5 stable, released on 2014/xx/xx
+0MQ version 3.2.5 stable, released on 2014/10/14
 ================================================
 
 * LIBZMQ-39  Assertion failure "Bad file descriptor" during shutdown (rare)
