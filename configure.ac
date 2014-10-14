@@ -11,7 +11,8 @@ AC_INIT([zeromq],[m4_esyscmd([./version.sh])],[zeromq-dev@lists.zeromq.org])
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
 AC_CONFIG_HEADERS([src/platform.hpp])
-AM_INIT_AUTOMAKE(tar-ustar dist-zip foreign)
+AM_INIT_AUTOMAKE(foreign subdir-objects tar-ustar dist-zip)
+
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 # This lets us use PACKAGE_VERSION in Makefiles
@@ -63,43 +64,51 @@ LIBZMQ_CHECK_ENABLE_DEBUG
 # Check wheter to enable code coverage
 LIBZMQ_WITH_GCOV
 
+
+
 AC_MSG_CHECKING([if TIPC is available and supports nonblocking connect])
-AC_RUN_IFELSE([AC_LANG_PROGRAM([[ #include <stdlib.h>
-                                  #include <string.h>
-                                  #include <fcntl.h>
-                                  #include <errno.h>
-                                  #include <sys/socket.h>
-                                  #include <linux/tipc.h>
-			          ]],[[
-                                      struct sockaddr_tipc topsrv;
-                                      int sd = socket(AF_TIPC, SOCK_SEQPACKET, 0);
-                                      if (sd == -EAFNOSUPPORT) {
-                                          return 1;
-                                      }
-                                      memset(&topsrv, 0, sizeof(topsrv));
-                                      topsrv.family = AF_TIPC;
-                                      topsrv.addrtype = TIPC_ADDR_NAME;
-                                      topsrv.addr.name.name.type = TIPC_TOP_SRV;
-                                      topsrv.addr.name.name.instance = TIPC_TOP_SRV;
-                                      fcntl(sd, F_SETFL, O_NONBLOCK);
-                                      if (connect(sd, (struct sockaddr *)&topsrv,
-					          sizeof(topsrv)) != 0) {
-                                          if (errno != EINPROGRESS)
-					  	return -1;
-                                      }]])
-                                  ],
-               [libzmq_tipc_support=yes],
-               [libzmq_tipc_support=no],
-               [libzmq_tipc_support=no])
+
+AC_RUN_IFELSE(
+    [AC_LANG_PROGRAM([[
+            #include <stdlib.h>
+            #include <string.h>
+            #include <fcntl.h>
+            #include <errno.h>
+            #include <sys/socket.h>
+            #include <linux/tipc.h>
+        ]],[[
+            struct sockaddr_tipc topsrv;
+            int sd = socket(AF_TIPC, SOCK_SEQPACKET, 0);
+            if (sd == -EAFNOSUPPORT) {
+                return 1;
+            }
+            memset(&topsrv, 0, sizeof(topsrv));
+            topsrv.family = AF_TIPC;
+            topsrv.addrtype = TIPC_ADDR_NAME;
+            topsrv.addr.name.name.type = TIPC_TOP_SRV;
+            topsrv.addr.name.name.instance = TIPC_TOP_SRV;
+            fcntl(sd, F_SETFL, O_NONBLOCK);
+            if (connect(sd, (struct sockaddr *)&topsrv, sizeof(topsrv)) != 0) {
+                if (errno != EINPROGRESS)
+                    return -1;
+            }
+        ]])
+    ],
+    [libzmq_tipc_support=yes],
+    [libzmq_tipc_support=no],
+    [libzmq_tipc_support=no])
+
 AC_MSG_RESULT([$libzmq_tipc_support])
+
+
 
 # Allow libsodium to be installed in a custom path:
 
 AC_ARG_WITH([libsodium],
-            [AS_HELP_STRING([--with-libsodium],
-                            [Specify libsodium prefix])],
-            [zmq_search_libsodium="yes"],
-            [])
+    [AS_HELP_STRING([--with-libsodium], 
+        [Specify libsodium prefix])],
+    [zmq_search_libsodium="yes"],
+    [])
 
 if test "x$zmq_search_libsodium" = "xyes"; then
     if test -r "${with_libsodium}/include/sodium.h"; then
@@ -109,10 +118,10 @@ if test "x$zmq_search_libsodium" = "xyes"; then
 fi
 
 AC_ARG_WITH([libsodium-include-dir],
-            [AS_HELP_STRING([--with-libsodium-include-dir],
-                            [Specify libsodium include prefix])],
-            [zmq_search_libsodium_include="yes"],
-            [])
+    [AS_HELP_STRING([--with-libsodium-include-dir], 
+        [Specify libsodium include prefix])],
+    [zmq_search_libsodium_include="yes"],
+    [])
 
 if test "x$zmq_search_libsodium_include" = "xyes"; then
     if test -r "${with_libsodium_include_dir}/sodium.h"; then
@@ -121,10 +130,10 @@ if test "x$zmq_search_libsodium_include" = "xyes"; then
 fi
 
 AC_ARG_WITH([libsodium_lib_dir],
-            [AS_HELP_STRING([--with-libsodium-lib-dir],
-                            [Specify libsodium library prefix])],
-            [zmq_search_libsodium_lib="yes"],
-            [])
+    [AS_HELP_STRING([--with-libsodium-lib-dir],
+        [Specify libsodium library prefix])],
+    [zmq_search_libsodium_lib="yes"],
+    [])
 
 if test "x$zmq_search_libsodium_lib" = "xyes"; then
     if test -r "${with_libsodium_lib_dir}/libsodium.{a|so|dylib}"; then
@@ -133,10 +142,10 @@ if test "x$zmq_search_libsodium_lib" = "xyes"; then
 fi
 
 AC_ARG_WITH([relaxed],
-            [AS_HELP_STRING([--with-relaxed],
-                            [Switch off pedantic compiler])],
-            [zmq_relaxed="yes"],
-            [])
+    [AS_HELP_STRING([--with-relaxed],
+        [Switch off pedantic compiler])],
+    [zmq_relaxed="yes"],
+    [])
 
 if test "x$zmq_relaxed" = "xyes"; then
     libzmq_pedantic="no"
@@ -145,10 +154,10 @@ else
 fi
 
 AC_ARG_WITH([militant],
-            [AS_HELP_STRING([--with-militant],
-                            [Enable militant API assertions])],
-            [zmq_militant="yes"],
-            [])
+    [AS_HELP_STRING([--with-militant],
+        [Enable militant API assertions])],
+    [zmq_militant="yes"],
+    [])
 
 if test "x$zmq_militant" = "xyes"; then
     AC_DEFINE(ZMQ_ACT_MILITANT, 1, [Enable militant API assertions])
@@ -310,8 +319,9 @@ esac
 # Checks for libraries
 AC_CHECK_LIB([pthread], [pthread_create])
 AC_CHECK_LIB([rt], [clock_gettime])
+
 if test "x$zmq_search_libsodium" = "xyes"; then
-    AC_CHECK_LIB([sodium], [sodium_init],,AC_MSG_ERROR(libsodium is not installed.  Install it or don't pass --with-libsodium to configure script))
+    AC_CHECK_LIB([sodium],[sodium_init],,AC_MSG_ERROR(libsodium is not installed.  Install it or don't pass --with-libsodium to configure script))
 else
     AC_CHECK_LIB([sodium], [sodium_init],,AC_MSG_WARN(libsodium is needed for CURVE security))
 fi
@@ -343,12 +353,23 @@ LIBZMQ_CHECK_DOC_BUILD
 
 # Check polling system
 LIBZMQ_CHECK_POLLER([CPPFLAGS="${CPPFLAGS} -D${libzmq_cv_poller_flag}"],
-                    [AC_MSG_ERROR([Unable to continue without polling system])])
+    [AC_MSG_ERROR([Unable to continue without polling system])])
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS(errno.h arpa/inet.h netinet/tcp.h netinet/in.h stddef.h \
-stdlib.h string.h sys/socket.h sys/time.h time.h unistd.h limits.h)
+AC_CHECK_HEADERS(\
+    errno.h \
+    time.h \
+    unistd.h \
+    limits.h \
+    stddef.h \
+    stdlib.h \
+    string.h \
+    arpa/inet.h \
+    netinet/tcp.h \
+    netinet/in.h \
+    sys/socket.h \
+    sys/time.h)
 
 # Check if we have ifaddrs.h header file.
 AC_CHECK_HEADERS(ifaddrs.h, [AC_DEFINE(ZMQ_HAVE_IFADDRS, 1, [Have ifaddrs.h header.])])
@@ -357,25 +378,36 @@ AC_CHECK_HEADERS(ifaddrs.h, [AC_DEFINE(ZMQ_HAVE_IFADDRS, 1, [Have ifaddrs.h head
 AC_CHECK_HEADERS(sys/uio.h, [AC_DEFINE(ZMQ_HAVE_UIO, 1, [Have uio.h header.])])
 
 # Force not to use eventfd
-AC_ARG_ENABLE([eventfd], [AS_HELP_STRING([--disable-eventfd], [disable eventfd [default=no]])],
-    [zmq_disable_eventfd=yes], [zmq_disable_eventfd=no])
+AC_ARG_ENABLE([eventfd],
+    [AS_HELP_STRING([--disable-eventfd], [disable eventfd [default=no]])],
+    [zmq_disable_eventfd=yes],
+    [zmq_disable_eventfd=no])
 
 if test "x$zmq_disable_eventfd" != "xyes"; then
     # Check if we have eventfd.h header file.
     AC_CHECK_HEADERS(sys/eventfd.h,
-                     [AC_DEFINE(ZMQ_HAVE_EVENTFD, 1, [Have eventfd extension.])])
+        [AC_DEFINE(ZMQ_HAVE_EVENTFD, 1, [Have eventfd extension.])])
 fi
 
 # Use c++ in subsequent tests
 AC_LANG_PUSH(C++)
 
-AC_CHECK_DECLS([SO_PEERCRED], [AC_DEFINE(ZMQ_HAVE_SO_PEERCRED, 1, [Have SO_PEERCRED socket option])], [], [#include <sys/socket.h>])
-AC_CHECK_DECLS([LOCAL_PEERCRED], [AC_DEFINE(ZMQ_HAVE_LOCAL_PEERCRED, 1, [Have LOCAL_PEERCRED socket option])], [], [#include <sys/socket.h>])
+AC_CHECK_DECLS([SO_PEERCRED],
+    [AC_DEFINE(ZMQ_HAVE_SO_PEERCRED, 1, [Have SO_PEERCRED socket option])],
+    [],
+    [#include <sys/socket.h>])
+
+AC_CHECK_DECLS([LOCAL_PEERCRED],
+    [AC_DEFINE(ZMQ_HAVE_LOCAL_PEERCRED, 1, [Have LOCAL_PEERCRED socket option])],
+    [],
+    [#include <sys/socket.h>])
+
 AM_CONDITIONAL(HAVE_IPC_PEERCRED, test "x$ac_cv_have_decl_SO_PEERCRED" = "xyes" || test "x$ac_cv_have_decl_LOCAL_PEERCRED" = "xyes")
 
 AC_HEADER_STDBOOL
 AC_C_CONST
 AC_C_INLINE
+
 # Checks for typedefs, structures, and compiler characteristics.
 if test "x$libzmq_cv_[]_AC_LANG_ABBREV[]_intel_compiler" = "xyes"; then
     dnl 279: controlling expression is constant
@@ -386,116 +418,61 @@ else
     AC_TYPE_SIZE_T
     AC_TYPE_SSIZE_T
 fi
+
 AC_HEADER_TIME
 AC_TYPE_UINT32_T
 AC_C_VOLATILE
 
-#  PGM extension
-libzmq_pgm_ext="no"
+# build using pgm
+have_pgm_library="no"
 
-pgm_basename="libpgm-5.2.122~dfsg"
-
-AC_ARG_WITH([pgm], [AS_HELP_STRING([--with-pgm], 
-    [build libzmq with PGM extension [default=no]])], 
-    [with_pgm_ext=$withval], [with_pgm_ext=no])
-
-# build using system pgm
-AC_ARG_WITH([system-pgm], [AS_HELP_STRING([--with-system-pgm],
+AC_ARG_WITH([pgm], [AS_HELP_STRING([--with-pgm],
     [build libzmq with PGM extension. Requires pkg-config [default=no]])],
-    [with_system_pgm_ext=yes], [with_system_pgm_ext=no])
+    [with_pgm_ext=yes], [with_pgm_ext=no])
 
-if test "x$with_pgm_ext" != "xno" -a "x$with_system_pgm_ext" != "xno"; then
-    AC_MSG_ERROR([--with-pgm and --with-system-pgm cannot be specified together])
-fi
-
+# conditionally require pgm package
 if test "x$with_pgm_ext" != "xno"; then
-
-    # This allows placing the tar.gz to foreign/openpgm
-    # and using ./configure --with-pgm=libpgm-x.y.z
-    if test "x$with_pgm_ext" != "xyes"; then
-        pgm_basename="$with_pgm_ext"
-    fi
-
-    # Unpack libpgm
-    AC_MSG_NOTICE([Unpacking ${pgm_basename}.tar.gz])
-    libzmq_pwd=`pwd`
-    cd foreign/openpgm
-
-    if ! (gzip -dc "${pgm_basename}.tar.gz" || echo "failed") | ${am__untar}; then
-        AC_MSG_ERROR([cannot unpack the foreign/openpgm/${pgm_basename}.tar.gz file])
-    fi
-
-    cd "${libzmq_pwd}"
-
-    if test -d foreign/openpgm/build-staging; then
-        rm -rf foreign/openpgm/build-staging
-    fi
-
-    mv foreign/openpgm/${pgm_basename} foreign/openpgm/build-staging
-    pgm_srcdir=foreign/openpgm/build-staging/openpgm/pgm
-
-    if ! test -d foreign/openpgm/build-staging/openpgm/pgm/config; then
-        mkdir foreign/openpgm/build-staging/openpgm/pgm/config
-    fi
-
-    # DSO symbol visibility for openpgm
-    AC_LANG_PUSH([C])
-    LIBZMQ_CHECK_LANG_VISIBILITY([ac_configure_args="CFLAGS='$libzmq_cv_[]_AC_LANG_ABBREV[]_visibility_flag' ${ac_configure_args}"])
-    AC_LANG_POP([C])
-
-    pgm_subdir=build-staging/openpgm/pgm
-    AC_SUBST(pgm_subdir)
-
-    AC_SUBST(pgm_srcdir)
-    AC_CONFIG_SUBDIRS([foreign/openpgm/build-staging/openpgm/pgm/])
-
-    # Success!
-    AC_DEFINE(ZMQ_HAVE_OPENPGM, 1, [Have OpenPGM extension])
-    libzmq_pgm_ext="yes"
-fi
-
-# Build with system openpgm
-if test "x$with_system_pgm_ext" != "xno"; then
     m4_ifdef([PKG_CHECK_MODULES], [
-        have_pgm_system_library="no"
-        PKG_CHECK_MODULES([OpenPGM], [openpgm-5.2 >= 5.2],
-            [ have_pgm_system_library="yes" ],
-            [PKG_CHECK_MODULES([OpenPGM], [openpgm-5.1 >= 5.1],
-                [ have_pgm_system_library="yes" ])
-            ]
+        PKG_CHECK_MODULES([pgm], [openpgm-5.2 >= 5.2],
+            [ have_pgm_library="yes" ],
+            [PKG_CHECK_MODULES([pgm], [openpgm-5.1 >= 5.1],
+                [ have_pgm_library="yes" ])]
         )
-        if test "x$have_pgm_system_library" = "xyes"; then
-            AC_DEFINE(ZMQ_HAVE_OPENPGM, 1, [Have OpenPGM extension])
-            LIBZMQ_EXTRA_CXXFLAGS="$OpenPGM_CFLAGS $LIBZMQ_EXTRA_CXXFLAGS"
-            LIBS="$OpenPGM_LIBS $LIBS"
-        fi
     ],
-    [AC_MSG_ERROR([--with-system-pgm requires a working pkg-config installation])])
+    [AC_MSG_ERROR([--with-pgm requires a working pkg-config installation])])
 fi
 
-AC_SUBST(pgm_basename)
+if test "x$have_pgm_library" = "xyes"; then
+    AC_DEFINE(ZMQ_HAVE_OPENPGM, [1], [Have OpenPGM extension])
+fi
+
+AM_CONDITIONAL(HAVE_PGM, test "x$have_pgm_library" = "xyes")
 
 
 # This uses "--with-norm" to point to the "norm" directory
 # for "norm/include" and "norm/lib"
 #(if "--with-norm=yes" is given, then assume installed on system)
-AC_ARG_WITH([norm], [AS_HELP_STRING([--with-norm], 
-    [build libzmq with NORM protocol extension, optionally specifying norm path [default=no]])],
-    [with_norm_ext=$withval], [with_norm_ext=no])
-    
-    
+AC_ARG_WITH([norm], 
+    [AS_HELP_STRING([--with-norm], 
+        [build libzmq with NORM protocol extension, optionally specifying norm path [default=no]])],
+    [with_norm_ext=$withval], 
+    [with_norm_ext=no])
+
+
+
 AC_MSG_CHECKING("with_norm_ext = ${with_norm_ext}")
 
-if test "x$with_norm_ext" != "xno"; then    
+if test "x$with_norm_ext" != "xno"; then
     AC_DEFINE(ZMQ_HAVE_NORM, 1, [Have NORM protocol extension])
+
     if test "x$wwith_norm_ext" != "xyes"; then
         norm_path="${with_norm_ext}"
         LIBZMQ_EXTRA_CXXFLAGS="-I${norm_path}/include ${LIBZMQ_EXTRA_CXXFLAGS}"
         LIBZMQ_EXTRA_LDFLAGS="-I${norm_path}/include ${LIBZMQ_EXTRA_LDFLAGS}"
     fi
+
     LIBS="-lnorm $LIBS"
 fi
-
 
 # Set -Wall, -Werror and -pedantic
 AC_LANG_PUSH([C++])
@@ -513,7 +490,6 @@ fi
 AC_LANG_POP([C++])
 
 AM_CONDITIONAL(BUILD_TIPC, test "x$libzmq_tipc_support" = "xyes")
-AM_CONDITIONAL(BUILD_PGM, test "x$libzmq_pgm_ext" = "xyes")
 AM_CONDITIONAL(ON_MINGW, test "x$libzmq_on_mingw32" = "xyes")
 AM_CONDITIONAL(ON_ANDROID, test "x$libzmq_on_android" = "xyes")
 AM_CONDITIONAL(ON_LINUX, test "x$libzmq_on_linux" = "xyes")
@@ -522,38 +498,43 @@ AM_CONDITIONAL(ON_LINUX, test "x$libzmq_on_linux" = "xyes")
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(perror gettimeofday clock_gettime memset socket getifaddrs freeifaddrs fork)
 AC_CHECK_HEADERS([alloca.h])
-LIBZMQ_CHECK_SOCK_CLOEXEC([AC_DEFINE(
-                              [ZMQ_HAVE_SOCK_CLOEXEC],
-                              [1],
-                              [Whether SOCK_CLOEXEC is defined and functioning.])
-                          ])
+
+LIBZMQ_CHECK_SOCK_CLOEXEC([
+    AC_DEFINE([ZMQ_HAVE_SOCK_CLOEXEC],
+        [1],
+        [Whether SOCK_CLOEXEC is defined and functioning.])
+    ])
 
 # TCP keep-alives Checks.
-LIBZMQ_CHECK_SO_KEEPALIVE([AC_DEFINE(
-                              [ZMQ_HAVE_SO_KEEPALIVE],
-                              [1],
-                              [Whether SO_KEEPALIVE is supported.])
-                          ])
-LIBZMQ_CHECK_TCP_KEEPCNT([AC_DEFINE(
-                              [ZMQ_HAVE_TCP_KEEPCNT],
-                              [1],
-                              [Whether TCP_KEEPCNT is supported.])
-                          ])
-LIBZMQ_CHECK_TCP_KEEPIDLE([AC_DEFINE(
-                              [ZMQ_HAVE_TCP_KEEPIDLE],
-                              [1],
-                              [Whether TCP_KEEPIDLE is supported.])
-                          ])
-LIBZMQ_CHECK_TCP_KEEPINTVL([AC_DEFINE(
-                              [ZMQ_HAVE_TCP_KEEPINTVL],
-                              [1],
-                              [Whether TCP_KEEPINTVL is supported.])
-                          ])
-LIBZMQ_CHECK_TCP_KEEPALIVE([AC_DEFINE(
-                              [ZMQ_HAVE_TCP_KEEPALIVE],
-                              [1],
-                              [Whether TCP_KEEPALIVE is supported.])
-                          ])
+LIBZMQ_CHECK_SO_KEEPALIVE([
+    AC_DEFINE([ZMQ_HAVE_SO_KEEPALIVE],
+        [1],
+        [Whether SO_KEEPALIVE is supported.])
+    ])
+
+LIBZMQ_CHECK_TCP_KEEPCNT([
+    AC_DEFINE([ZMQ_HAVE_TCP_KEEPCNT],
+        [1],
+        [Whether TCP_KEEPCNT is supported.])
+    ])
+
+LIBZMQ_CHECK_TCP_KEEPIDLE([
+    AC_DEFINE([ZMQ_HAVE_TCP_KEEPIDLE],
+        [1],
+        [Whether TCP_KEEPIDLE is supported.])
+    ])
+
+LIBZMQ_CHECK_TCP_KEEPINTVL([
+    AC_DEFINE([ZMQ_HAVE_TCP_KEEPINTVL],
+        [1],
+        [Whether TCP_KEEPINTVL is supported.])
+    ])
+
+LIBZMQ_CHECK_TCP_KEEPALIVE([
+    AC_DEFINE([ZMQ_HAVE_TCP_KEEPALIVE],
+        [1],
+        [Whether TCP_KEEPALIVE is supported.])
+    ])
 
 AM_CONDITIONAL(HAVE_FORK, test "x$ac_cv_func_fork" = "xyes")
 
@@ -562,14 +543,19 @@ AC_SUBST(LIBZMQ_EXTRA_CFLAGS)
 AC_SUBST(LIBZMQ_EXTRA_CXXFLAGS)
 AC_SUBST(LIBZMQ_EXTRA_LDFLAGS)
 
-AC_CONFIG_FILES([Makefile \
-    src/Makefile \
+# set pkgconfigdir, allow override
+AC_ARG_WITH([pkgconfigdir],
+    AS_HELP_STRING([--with-pkgconfigdir=PATH],
+        [Path to the pkgconfig directory [[LIBDIR/pkgconfig]]]),
+    [pkgconfigdir="$withval"],
+    [pkgconfigdir='${libdir}/pkgconfig'])
+AC_SUBST([pkgconfigdir])
+
+AC_CONFIG_FILES([ \
+    Makefile \
     src/libzmq.pc \
     doc/Makefile \
-    perf/Makefile \
-    tests/Makefile \
-    tools/Makefile \
     builds/msvc/Makefile \
-    foreign/openpgm/Makefile \
     builds/redhat/zeromq.spec])
+
 AC_OUTPUT
