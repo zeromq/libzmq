@@ -30,7 +30,7 @@
 
 /*  Version macros for compile-time API version detection                     */
 #define ZMQ_VERSION_MAJOR 4
-#define ZMQ_VERSION_MINOR 1
+#define ZMQ_VERSION_MINOR 2
 #define ZMQ_VERSION_PATCH 0
 
 #define ZMQ_MAKE_VERSION(major, minor, patch) \
