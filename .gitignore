@@ -71,3 +71,16 @@ foreign/openpgm/*
 !foreign/openpgm/Makefile.am
 zeromq-*.tar.gz
 zeromq-*.zip
+compile
+config.guess
+config.sub
+depcomp
+install-sh
+libtool.m4
+ltmain.sh
+ltoptions.m4
+ltsugar.m4
+ltversion.m4
+lt~obsolete.m4
+missing
+
