@@ -1,7 +1,31 @@
 0MQ version 4.1.0 rc1, released on 2014/10/14
 =============================================
 
-* Many changes, see ChangeLog.
+* All issues that were fixed in 4.0.x
+
+* Improved client reconnection strategy on errors
+
+* GSSAPI security mechanism
+
+* SOCKS5 support (ZMQ_SOCKS_PROXY)
+
+* ZMQ_ROUTER_HANDOVER
+
+* ZMQ_TOS
+
+* ZMQ_CONNECT_RID
+
+* ZMQ_HANDSHAKE_IVL
+
+* ZMQ_IDENTITY_FD
+
+* ZMQ_XPUB_NODROP
+
+* ZMQ_SRCFD and ZMQ_SHARED message options
+
+* Message metadata -- zmq_msg_gets ()
+
+* Probe library configuration -- zmq_has ()
 
 
 0MQ version 4.0.5 stable, released on 2014/10/14
