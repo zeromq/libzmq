@@ -1,3 +1,9 @@
+0MQ version 4.1.1 rc2, released on 2014/10/xx
+=============================================
+
+* #1208 - fix recursion in automake packaging
+
+
 0MQ version 4.1.0 rc1, released on 2014/10/14
 =============================================
 
