@@ -98,10 +98,10 @@ namespace zmq
         //  Remove unfinished parts of the outbound message from the pipe.
         void rollback ();
 
-        //  Flush the messages downsteam.
+        //  Flush the messages downstream.
         void flush ();
 
-        //  Temporaraily disconnects the inbound message stream and drops
+        //  Temporarily disconnects the inbound message stream and drops
         //  all the messages on the fly. Causes 'hiccuped' event to be generated
         //  in the peer.
         void hiccup ();
@@ -181,7 +181,7 @@ namespace zmq
         //  active: common state before any termination begins,
         //  delimiter_received: delimiter was read from pipe before
         //      term command was received,
-        //  waiting_fo_delimiter: term command was already received
+        //  waiting_for_delimiter: term command was already received
         //      from the peer but there are still pending messages to read,
         //  term_ack_sent: all pending messages were already read and
         //      all we are waiting for is ack from the peer,
