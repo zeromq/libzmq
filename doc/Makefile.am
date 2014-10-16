@@ -1,3 +1,6 @@
+#
+# documentation
+#
 MAN3 = zmq_bind.3 zmq_unbind.3 zmq_connect.3 zmq_disconnect.3 zmq_close.3 \
     zmq_ctx_new.3 zmq_ctx_term.3 zmq_ctx_get.3 zmq_ctx_set.3 zmq_ctx_shutdown.3 \
     zmq_msg_init.3 zmq_msg_init_data.3 zmq_msg_init_size.3 \
@@ -21,20 +24,17 @@ MAN_TXT = $(MAN3:%.3=%.txt)
 MAN_TXT += $(MAN7:%.7=%.txt)
 MAN_HTML = $(MAN_TXT:%.txt=%.html)
 
+MAINTAINERCLEANFILES = $(MAN_DOC) $(MAN_HTML)
+
+EXTRA_DIST = asciidoc.conf $(MAN_TXT)
+
+if BUILD_DOC
+EXTRA_DIST += $(MAN_HTML)
+
 if INSTALL_MAN
 dist_man_MANS = $(MAN_DOC)
 endif
 
-EXTRA_DIST = asciidoc.conf $(MAN_TXT)
-if BUILD_DOC
-EXTRA_DIST += $(MAN_HTML)
-endif
-
-MAINTAINERCLEANFILES = $(MAN_DOC) $(MAN_HTML)
-
-dist-hook : $(MAN_DOC) $(MAN_HTML)
-
-if BUILD_DOC
 SUFFIXES=.html .txt .xml .3 .7
 
 .txt.html:
@@ -52,3 +52,5 @@ SUFFIXES=.html .txt .xml .3 .7
 zmq_epgm.7: zmq_pgm.7
 	cp $< $@
 endif
+
+dist-hook : $(MAN_DOC) $(MAN_HTML)
