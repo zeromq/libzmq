@@ -72,29 +72,29 @@ PERF_DIST = vs2008/local_lat/local_lat.vcproj \
             vs2013/inproc_lat/inproc_lat.props \
             vs2013/inproc_thr/inproc_thr.props
 
-PROPERTIES_DIST = properties/Common.props
-		  properties/DebugDEXE.props
-		  properties/DebugDLL.props
-		  properties/DebugLEXE.props
-		  properties/DebugLIB.props
-		  properties/DebugLTCG.props
-		  properties/Debug.props
-		  properties/DebugSEXE.props
-		  properties/DLL.props
-		  properties/EXE.props
-		  properties/LIB.props
-		  properties/Link.props
-		  properties/LTCG.props
-		  properties/Messages.props
-		  properties/Output.props
-		  properties/ReleaseDEXE.props
-		  properties/ReleaseDLL.props
-		  properties/ReleaseLEXE.props
-		  properties/ReleaseLIB.props
-		  properties/ReleaseLTCG.props
-		  properties/Release.props
-		  properties/ReleaseSEXE.props
-		  properties/Win32.props
+PROPERTIES_DIST = properties/Common.props \
+		  properties/DebugDEXE.props \
+		  properties/DebugDLL.props \
+		  properties/DebugLEXE.props \
+		  properties/DebugLIB.props \
+		  properties/DebugLTCG.props \
+		  properties/Debug.props \
+		  properties/DebugSEXE.props \
+		  properties/DLL.props \
+		  properties/EXE.props \
+		  properties/LIB.props \
+		  properties/Link.props \
+		  properties/LTCG.props \
+		  properties/Messages.props \
+		  properties/Output.props \
+		  properties/ReleaseDEXE.props \
+		  properties/ReleaseDLL.props \
+		  properties/ReleaseLEXE.props \
+		  properties/ReleaseLIB.props \
+		  properties/ReleaseLTCG.props \
+		  properties/Release.props \
+		  properties/ReleaseSEXE.props \
+		  properties/Win32.props \
 		  properties/x64.props
 
 PRECOMPILED_DIST = ../../src/precompiled.hpp \
