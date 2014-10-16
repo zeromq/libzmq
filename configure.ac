@@ -393,7 +393,11 @@ else
         [AC_MSG_WARN(libsodium is needed for CURVE security)])
 fi
 
-AM_CONDITIONAL(HAVE_SODIUM, test "x$have_sodium_library" = "xyes")
+if test "x$have_sodium_library" != "xno"; then
+AC_DEFINE(HAVE_LIBSODIUM, 1, [The libsodium library is to be used.])
+fi
+
+AM_CONDITIONAL(HAVE_SODIUM, test "x$have_sodium_library" != "xno")
 
 # build using pgm
 have_pgm_library="no"
