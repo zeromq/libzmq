@@ -1,3 +1,58 @@
+0MQ version 4.1.0 rc1, released on 2014/10/14
+=============================================
+
+* Many changes, see ChangeLog.
+
+
+0MQ version 4.0.5 stable, released on 2014/10/14
+================================================
+
+* Fixed #1191; CURVE mechanism does not verify short term nonces.
+
+* Fixed #1190; stream_engine is vulnerable to downgrade attacks.
+
+* Fixed #1088; assertion failure for WSAENOTSOCK on Windows.
+
+* Fixed #1015; race condition while connecting inproc sockets.
+
+* Fixed #994; bump so library number to 4.0.0
+
+* Fixed #939, assertion failed: !more (fq.cpp:99) after many ZAP requests.
+
+* Fixed #872; lost first part of message over inproc://.
+
+* Fixed #797, keep-alive on Windows.
+
+
+0MQ version 4.0.4 stable, released on 2014/03/10
+================================================
+
+Bug Fixes
+---------
+
+* Fixed #909; out of tree build issue on Linux.
+
+* Fixed #888; hangs on terminate when inproc connected but never bound.
+
+* Fixed #868; assertion failure at ip.cpp:137 when using port scanner.
+
+* Fixed #818; fix timestamp counter on s390/s390x.
+
+* Fixed #817; only export zmq_* symbols.
+
+* Fixed #797; fixed setting TCP keepalive on Windows.
+
+* Fixed #775; compile error on Windows.
+
+* Fixed #763; when talking to a ZMTP v1 peer (libzmq 2.2), a socket would
+  send an extra identity frame at the start of the connection.
+
+* Fixed LIBZMQ-576 - Crash closing a socket after zmq_msg_send returns
+  EAGAIN (reverts LIBZMQ-497)
+
+* Fixed LIBZMQ-584; subscription filters getting lost on reconnection.
+
+
 0MQ version 4.0.3 stable, released on 2013/11/24
 ================================================
 
