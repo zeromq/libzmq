@@ -11,11 +11,6 @@ Buildroot:     %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildRequires: gcc, make, gcc-c++, libstdc++-devel, asciidoc, xmlto
 Requires:      libstdc++
 
-%if %{?rhel}%{!?rhel:0} >= 5
-BuildRequires: e2fsprogs-devel
-Requires:      e2fsprogs
-%endif
-
 # Build pgm only on supported archs
 %ifarch pentium3 pentium4 athlon i386 i486 i586 i686 x86_64
 BuildRequires: python, perl
