@@ -722,7 +722,8 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             pollfds [i].fd = items_ [i].fd;
             pollfds [i].events =
                 (items_ [i].events & ZMQ_POLLIN ? POLLIN : 0) |
-                (items_ [i].events & ZMQ_POLLOUT ? POLLOUT : 0);
+                (items_ [i].events & ZMQ_POLLOUT ? POLLOUT : 0) |
+                (items_ [i].events & ZMQ_POLLPRI ? POLLPRI : 0);
         }
     }
 
@@ -781,7 +782,9 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
                     items_ [i].revents |= ZMQ_POLLIN;
                 if (pollfds [i].revents & POLLOUT)
                     items_ [i].revents |= ZMQ_POLLOUT;
-                if (pollfds [i].revents & ~(POLLIN | POLLOUT))
+                if (pollfds [i].revents & POLLPRI)
+                   items_ [i].revents |= ZMQ_POLLPRI;
+                if (pollfds [i].revents & ~(POLLIN | POLLOUT | POLLPRI))
                     items_ [i].revents |= ZMQ_POLLERR;
             }
 
