@@ -373,6 +373,7 @@ ZMQ_EXPORT int zmq_socket_monitor (void *s, const char *addr, int events);
 #define ZMQ_POLLIN 1
 #define ZMQ_POLLOUT 2
 #define ZMQ_POLLERR 4
+#define ZMQ_POLLPRI 8
 
 typedef struct zmq_pollitem_t
 {
