@@ -383,18 +383,16 @@ have_sodium_library="no"
 
 AC_ARG_WITH([libsodium], [AS_HELP_STRING([--with-libsodium],
     [require libzmq build with libsodium. Requires pkg-config [default=no]])],
-    [require_libsodium_ext=yes], [require_libsodium_ext=no])
+    [require_libsodium_ext=$withval],
+    [require_libsodium_ext=no])
 
 #conditionally require libsodium package
 if test "x$require_libsodium_ext" != "xno"; then
     PKG_CHECK_MODULES([sodium], [libsodium], [have_sodium_library="yes"])
-else
-    PKG_CHECK_MODULES([sodium], [libsodium], [have_sodium_library="yes"],
-        [AC_MSG_WARN(libsodium is needed for CURVE security)])
 fi
 
 if test "x$have_sodium_library" != "xno"; then
-AC_DEFINE(HAVE_LIBSODIUM, 1, [The libsodium library is to be used.])
+    AC_DEFINE(HAVE_LIBSODIUM, 1, [The libsodium library is to be used.])
 fi
 
 AM_CONDITIONAL(HAVE_SODIUM, test "x$have_sodium_library" != "xno")
@@ -404,7 +402,8 @@ have_pgm_library="no"
 
 AC_ARG_WITH([pgm], [AS_HELP_STRING([--with-pgm],
     [build libzmq with PGM extension. Requires pkg-config [default=no]])],
-    [with_pgm_ext=yes], [with_pgm_ext=no])
+    [with_pgm_ext=$withval],
+    [with_pgm_ext=no])
 
 # conditionally require pgm package
 if test "x$with_pgm_ext" != "xno"; then
