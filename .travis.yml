@@ -11,5 +11,5 @@ before_script:
 
 #   Build and check this project
 script:
-- ./autogen.sh && ./configure && make && make check
+- ./autogen.sh && ./configure --with-libsodium=yes && make && make check
 - sudo make install
