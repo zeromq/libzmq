@@ -48,6 +48,7 @@ AC_PROG_CXX
 AM_PROG_CC_C_O
 AC_PROG_SED
 AC_PROG_AWK
+PKG_PROG_PKG_CONFIG
 
 # Libtool configuration for different targets. See acinclude.m4
 AC_ARG_VAR([XMLTO], [Path to xmlto command])
@@ -100,46 +101,6 @@ AC_RUN_IFELSE(
 
 AC_MSG_RESULT([$libzmq_tipc_support])
 
-
-
-# Allow libsodium to be installed in a custom path:
-
-AC_ARG_WITH([libsodium],
-    [AS_HELP_STRING([--with-libsodium], 
-        [Specify libsodium prefix])],
-    [zmq_search_libsodium="yes"],
-    [])
-
-if test "x$zmq_search_libsodium" = "xyes"; then
-    if test -r "${with_libsodium}/include/sodium.h"; then
-        CPPFLAGS="-I${with_libsodium}/include ${CPPFLAGS}"
-        LDFLAGS="-L${with_libsodium}/lib ${LDFLAGS}"
-    fi
-fi
-
-AC_ARG_WITH([libsodium-include-dir],
-    [AS_HELP_STRING([--with-libsodium-include-dir], 
-        [Specify libsodium include prefix])],
-    [zmq_search_libsodium_include="yes"],
-    [])
-
-if test "x$zmq_search_libsodium_include" = "xyes"; then
-    if test -r "${with_libsodium_include_dir}/sodium.h"; then
-        CPPFLAGS="-I${with_libsodium_include_dir}/include ${CPPFLAGS}"
-    fi
-fi
-
-AC_ARG_WITH([libsodium_lib_dir],
-    [AS_HELP_STRING([--with-libsodium-lib-dir],
-        [Specify libsodium library prefix])],
-    [zmq_search_libsodium_lib="yes"],
-    [])
-
-if test "x$zmq_search_libsodium_lib" = "xyes"; then
-    if test -r "${with_libsodium_lib_dir}/libsodium.{a|so|dylib}"; then
-        LDFLAGS="-L${with_libsodium}/lib ${LDFLAGS}"
-    fi
-fi
 
 AC_ARG_WITH([relaxed],
     [AS_HELP_STRING([--with-relaxed],
@@ -320,12 +281,6 @@ esac
 AC_CHECK_LIB([pthread], [pthread_create])
 AC_CHECK_LIB([rt], [clock_gettime])
 
-if test "x$zmq_search_libsodium" = "xyes"; then
-    AC_CHECK_LIB([sodium],[sodium_init],,AC_MSG_ERROR(libsodium is not installed.  Install it or don't pass --with-libsodium to configure script))
-else
-    AC_CHECK_LIB([sodium], [sodium_init],,AC_MSG_WARN(libsodium is needed for CURVE security))
-fi
-
 AC_CHECK_LIB([gssapi_krb5], [gss_init_sec_context],,AC_MSG_WARN(libgssapi_krb5 is needed for GSSAPI security))
 
 #
@@ -423,23 +378,38 @@ AC_HEADER_TIME
 AC_TYPE_UINT32_T
 AC_C_VOLATILE
 
+# build using libsodium
+have_sodium_library="no"
+
+AC_ARG_WITH([libsodium], [AS_HELP_STRING([--with-libsodium],
+    [require libzmq build with libsodium. Requires pkg-config [default=no]])],
+    [require_libsodium_ext=$withval],
+    [require_libsodium_ext=no])
+
+#conditionally require libsodium package
+if test "x$require_libsodium_ext" != "xno"; then
+    PKG_CHECK_MODULES([sodium], [libsodium], [have_sodium_library="yes"])
+fi
+
+if test "x$have_sodium_library" != "xno"; then
+    AC_DEFINE(HAVE_LIBSODIUM, 1, [The libsodium library is to be used.])
+fi
+
+AM_CONDITIONAL(HAVE_SODIUM, test "x$have_sodium_library" != "xno")
+
 # build using pgm
 have_pgm_library="no"
 
 AC_ARG_WITH([pgm], [AS_HELP_STRING([--with-pgm],
     [build libzmq with PGM extension. Requires pkg-config [default=no]])],
-    [with_pgm_ext=yes], [with_pgm_ext=no])
+    [with_pgm_ext=$withval],
+    [with_pgm_ext=no])
 
 # conditionally require pgm package
 if test "x$with_pgm_ext" != "xno"; then
-    m4_ifdef([PKG_CHECK_MODULES], [
-        PKG_CHECK_MODULES([pgm], [openpgm-5.2 >= 5.2],
-            [ have_pgm_library="yes" ],
-            [PKG_CHECK_MODULES([pgm], [openpgm-5.1 >= 5.1],
-                [ have_pgm_library="yes" ])]
-        )
-    ],
-    [AC_MSG_ERROR([--with-pgm requires a working pkg-config installation])])
+    PKG_CHECK_MODULES([pgm], [openpgm-5.2 >= 5.2], [ have_pgm_library="yes" ],
+        [PKG_CHECK_MODULES([pgm], [openpgm-5.1 >= 5.1],
+            [ have_pgm_library="yes" ])])
 fi
 
 if test "x$have_pgm_library" = "xyes"; then

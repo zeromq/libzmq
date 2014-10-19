@@ -228,11 +228,18 @@ endif
 endif
 endif
 
+libzmq_la_CPPFLAGS =
 libzmq_la_CXXFLAGS = @LIBZMQ_EXTRA_CXXFLAGS@
+libzmq_la_LIBADD =
+
+if HAVE_SODIUM
+libzmq_la_CPPFLAGS += ${sodium_CFLAGS}
+libzmq_la_LIBADD += ${sodium_LIBS}
+endif
 
 if HAVE_PGM
-libzmq_la_CPPFLAGS = ${pgm_CFLAGS}
-libzmq_la_LIBADD = ${pgm_LIBS}
+libzmq_la_CPPFLAGS += ${pgm_CFLAGS}
+libzmq_la_LIBADD += ${pgm_LIBS}
 endif
 
 noinst_PROGRAMS = \
