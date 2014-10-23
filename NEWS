@@ -3,6 +3,8 @@
 
 * #1208 - fix recursion in automake packaging
 
+* Fixed #1224 - crash when processing empty unsubscribe message.
+
 
 0MQ version 4.1.0 rc1, released on 2014/10/14
 =============================================
