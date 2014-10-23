@@ -189,7 +189,8 @@ void zmq::xpub_t::send_unsubscription (unsigned char *data_, size_t size_,
         //  to be retrived by the user later on.
         blob_t unsub (size_ + 1, 0);
         unsub [0] = 0;
-        memcpy (&unsub [1], data_, size_);
+        if (size_ > 0)
+            memcpy (&unsub [1], data_, size_);
         self->pending_data.push_back (unsub);
         self->pending_flags.push_back (0);
     }
