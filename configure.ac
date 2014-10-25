@@ -281,8 +281,6 @@ esac
 AC_CHECK_LIB([pthread], [pthread_create])
 AC_CHECK_LIB([rt], [clock_gettime])
 
-AC_CHECK_LIB([gssapi_krb5], [gss_init_sec_context],,AC_MSG_WARN(libgssapi_krb5 is needed for GSSAPI security))
-
 #
 # Check if the compiler supports -fvisibility=hidden flag. MinGW32 uses __declspec
 #
@@ -378,6 +376,18 @@ AC_HEADER_TIME
 AC_TYPE_UINT32_T
 AC_C_VOLATILE
 
+# build using libgssapi_krb5
+AC_ARG_WITH([libgssapi_krb5], [AS_HELP_STRING([--with-libgssapi_krb5],
+    [require libzmq build with libgssapi_krb5 [default=no]])],
+    [require_libgssapi_krb5_ext=$withval],
+    [require_libgssapi_krb5_ext=no])
+
+# conditionally require libgssapi_krb5
+if test "x$require_libgssapi_krb5_ext" != "xno"; then
+    AC_CHECK_LIB([gssapi_krb5], [gss_init_sec_context],,
+        AC_MSG_ERROR(libgssapi_krb5 is needed for GSSAPI security))
+fi
+
 # build using libsodium
 have_sodium_library="no"
 
@@ -386,7 +396,7 @@ AC_ARG_WITH([libsodium], [AS_HELP_STRING([--with-libsodium],
     [require_libsodium_ext=$withval],
     [require_libsodium_ext=no])
 
-#conditionally require libsodium package
+# conditionally require libsodium package
 if test "x$require_libsodium_ext" != "xno"; then
     PKG_CHECK_MODULES([sodium], [libsodium], [have_sodium_library="yes"])
 fi
