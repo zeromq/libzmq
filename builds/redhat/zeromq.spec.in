@@ -13,7 +13,7 @@ Requires:      libstdc++
 
 #
 # Conditional build options
-# Default values aree
+# Default values are:
 #    --without-libgssapi_krb5
 #    --without-libsodium
 #    --without-pgm
@@ -77,6 +77,8 @@ This package contains ZeroMQ related development libraries and header files.
     %{?_without_libsodium} \
     %{?_with_pgm} \
     %{?_without_pgm} \
+    %{?_with_libgssapi_krb5} \
+    %{?_without_libgssapi_krb5} \
     %{?_with_pic} \
     %{?_without_pic} \
     %{?_with_gnu_ld} \
