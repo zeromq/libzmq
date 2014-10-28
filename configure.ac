@@ -333,10 +333,10 @@ AC_CHECK_HEADERS(sys/uio.h, [AC_DEFINE(ZMQ_HAVE_UIO, 1, [Have uio.h header.])])
 # Force not to use eventfd
 AC_ARG_ENABLE([eventfd],
     [AS_HELP_STRING([--disable-eventfd], [disable eventfd [default=no]])],
-    [zmq_disable_eventfd=yes],
-    [zmq_disable_eventfd=no])
+    [zmq_enable_eventfd=$enableval],
+    [zmq_enable_eventfd=yes])
 
-if test "x$zmq_disable_eventfd" != "xyes"; then
+if test "x$zmq_enable_eventfd" = "xyes"; then
     # Check if we have eventfd.h header file.
     AC_CHECK_HEADERS(sys/eventfd.h,
         [AC_DEFINE(ZMQ_HAVE_EVENTFD, 1, [Have eventfd extension.])])
