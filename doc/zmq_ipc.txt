@@ -57,6 +57,12 @@ NOTE: IPC pathnames have a maximum size that depends on the operating system.
 On Linux, the maximum is 113 characters including the "ipc://" prefix (107
 characters for the real path name).
 
+Unbinding wild-card address from a socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When wild-card `*` 'endpoint' was used in _zmq_bind()_, the caller should use
+real 'endpoind' obtained from the ZMQ_LAST_ENDPOINT socket option to unbind
+this 'endpoint' from a socket using _zmq_unbind()_.
+
 Connecting a socket
 ~~~~~~~~~~~~~~~~~~~
 When connecting a 'socket' to a peer address using _zmq_connect()_ with the

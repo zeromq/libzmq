@@ -401,7 +401,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         // Save last endpoint URI
         listener->get_address (last_endpoint);
 
-        add_endpoint (addr_, (own_t *) listener, NULL);
+        add_endpoint (last_endpoint.c_str (), (own_t *) listener, NULL);
         return 0;
     }
 
@@ -420,7 +420,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         // Save last endpoint URI
         listener->get_address (last_endpoint);
 
-        add_endpoint (addr_, (own_t *) listener, NULL);
+        add_endpoint (last_endpoint.c_str (), (own_t *) listener, NULL);
         return 0;
     }
 #endif
