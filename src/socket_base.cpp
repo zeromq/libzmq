@@ -20,6 +20,7 @@
 #include <new>
 #include <string>
 #include <algorithm>
+#include <ctype.h>
 
 #include "platform.hpp"
 
