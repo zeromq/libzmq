@@ -27,7 +27,7 @@ wget "https://download.libsodium.org/libsodium/releases/LATEST.tar.gz" \
     -O "${cache}/libsodium.tar.gz"
 
 (cd "${cache}" && mkdir libsodium \
-    && tar -C libsodium -xvf libsodium.tar.gz --strip=1 \
+    && tar -C libsodium -xf libsodium.tar.gz --strip=1 \
     && cd "libsodium" && ./autogen.sh \
     && ./configure "${ANDROID_BUILD_OPTS[@]}" --disable-soname-versions \
     && make \

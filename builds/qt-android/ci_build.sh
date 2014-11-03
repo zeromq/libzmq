@@ -2,7 +2,7 @@
 
 (cd '/tmp' \
     && wget http://dl.google.com/android/ndk/android-ndk-r9-linux-x86_64.tar.bz2 \
-    && tar -xvf android-ndk-r9-linux-x86_64.tar.bz2 \
+    && tar -xf android-ndk-r9-linux-x86_64.tar.bz2 \
     && mv android-ndk-r9 android-ndk)
 
 export ANDROID_NDK_ROOT="/tmp/android-ndk"
