@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
 
-export ANDROID_NDK_ROOT="/android-ndk"
-export TOOLCHAIN_PATH="/android-ndk/toolchains/arm-linux-androideabi-4.8/prebuilt/linux-x86_64/bin"
-export TOOLCHAIN_NAME="arm-linux-androideabi-4.8"
-export TOOLCHAIN_HOST="arm-linux-androideabi"
-export TOOLCHAIN_ARCH="arm"
+ANDROID_NDK_ROOT="/android-ndk"
+TOOLCHAIN_PATH="/android-ndk/toolchains/arm-linux-androideabi-4.8/prebuilt/linux-x86_64/bin"
+TOOLCHAIN_NAME="arm-linux-androideabi-4.8"
+TOOLCHAIN_HOST="arm-linux-androideabi"
+TOOLCHAIN_ARCH="arm"
 
-source ./build.sh
+export ANDROID_NDK_ROOT
+export TOOLCHAIN_PATH
+export TOOLCHAIN_NAME
+export TOOLCHAIN_HOST
+export TOOLCHAIN_ARCH
+
+./build.sh
