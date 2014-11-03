@@ -11,5 +11,5 @@ if [ $BUILD_TYPE == "default" ]; then
     ./autogen.sh && ./configure --with-libsodium=yes && make && make check
     sudo make install
 else
-    cd ./builds/${BUILD_TYPE} && ./build.sh
+    cd ./builds/${BUILD_TYPE} && ./ci_build.sh
 fi
