@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 if [ $BUILD_TYPE == "default" ]; then
     #   Build required projects first
