@@ -24,7 +24,7 @@ Unbinding wild-card address from a socket
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 When wild-card `*` 'endpoint' (described in linkzmq:zmq_tcp[7] and 
 linkzmq:zmq_ipc[7]) was used in _zmq_bind()_, the caller should use 
-real 'endpoind' obtained from the ZMQ_LAST_ENDPOINT socket option 
+real 'endpoint' obtained from the ZMQ_LAST_ENDPOINT socket option 
 to unbind this 'endpoint' from a socket.
 
 RETURN VALUE
