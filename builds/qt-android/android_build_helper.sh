@@ -60,7 +60,7 @@ ANDROID_BUILD_FAIL=()
 
 function android_build_check_fail {
     if [ ! ${#ANDROID_BUILD_FAIL[@]} -eq 0 ]; then
-        echo "qt-android build failed for the following reasons:"
+        echo "Android build failed for the following reasons:"
         for reason in "${ANDROID_BUILD_FAIL[@]}"; do
             local formatted_reason="  ${reason}"
             echo "${formatted_reason}"
@@ -248,7 +248,7 @@ function android_build_opts {
     local CFLAGS="--sysroot=${ANDROID_BUILD_SYSROOT} -I${ANDROID_BUILD_PREFIX}/include"
     local CPPFLAGS="--sysroot=${ANDROID_BUILD_SYSROOT} -I${ANDROID_BUILD_PREFIX}/include"
     local CXXFLAGS="--sysroot=${ANDROID_BUILD_SYSROOT} -I${ANDROID_BUILD_PREFIX}/include"
-    local LDFLAGS=""
+    local LDFLAGS="-L${ANDROID_BUILD_PREFIX}/lib"
     local LIBS="-lc -lgcc -ldl"
     
     _android_build_opts_process_binaries

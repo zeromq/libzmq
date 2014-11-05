@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-# Get directory of current script
-ANDROID_BUILD_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# Use directory of current script as the build directory and working directory
+cd "$( dirname "${BASH_SOURCE[0]}" )"
+ANDROID_BUILD_DIR="$(pwd)"
 
 # Get access to android_build functions and variables
 source ${ANDROID_BUILD_DIR}/android_build_helper.sh
@@ -13,44 +14,43 @@ ANDROID_BUILD_CXXSTL="gnustl_shared_48"
 android_build_env
 android_build_opts
 
-# Clear a temporary build directory
+# Use a temporary build directory
 cache="/tmp/android_build/${TOOLCHAIN_NAME}"
-rm -rf "${cache}"
 mkdir -p "${cache}"
 
+##
+# Build libsodium from latest release tarball
 
-echo
-echo "Building qt-android libsodium from latest release tarball..."
-echo
+(android_build_verify_so "libsodium.so" &> /dev/null) || {
+    rm -rf "${cache}/libsodium"
+    (cd "${cache}" && mkdir libsodium \
+        && wget https://download.libsodium.org/libsodium/releases/LATEST.tar.gz\
+            -O "${cache}/libsodium.tar.gz" \
+        && tar -C libsodium -xf libsodium.tar.gz --strip=1) || exit 1
+    
+    (cd "${cache}/libsodium" && ./autogen.sh \
+        && ./configure "${ANDROID_BUILD_OPTS[@]}" --disable-soname-versions \
+        && make \
+        && make install) || exit 1
+}
 
-wget "https://download.libsodium.org/libsodium/releases/LATEST.tar.gz" \
-    -O "${cache}/libsodium.tar.gz"
+##
+# Build libzmq from local source
 
-(cd "${cache}" && mkdir libsodium \
-    && tar -C libsodium -xf libsodium.tar.gz --strip=1 \
-    && cd "libsodium" && ./autogen.sh \
-    && ./configure "${ANDROID_BUILD_OPTS[@]}" --disable-soname-versions \
-    && make \
-    && make install) || exit 1
+LIBTOOL_EXTRA_LDFLAGS='-avoid-version'
 
-echo
-echo "Building qt-android libzmq from local source..."
-echo
+(android_build_verify_so "libzmq.so" "libsodium.so" &> /dev/null) || {
+    rm -rf "${cache}/libzmq"
+    (cp -r ../.. "${cache}/libzmq" && cd "${cache}/libzmq" && make clean)
+    
+    (cd "${cache}/libzmq" && ./autogen.sh \
+        && ./configure "${ANDROID_BUILD_OPTS[@]}" --with-libsodium=yes \
+        && make \
+        && make install) || exit 1
+}
 
-cp -r ../.. "${cache}/libzmq"
-
-(cd "${cache}/libzmq" && ./autogen.sh \
-    && ./configure "${ANDROID_BUILD_OPTS[@]}" --with-libsodium=yes \
-    && make \
-    && make install) || exit 1
-
-echo
-echo "Verifying qt-android libsodium.so and libzmq.so libraries..."
-echo
+##
+# Verify shared libraries in prefix
 
 android_build_verify_so "libsodium.so"
 android_build_verify_so "libzmq.so" "libsodium.so"
-
-echo
-echo "Completed qt-android build!"
-echo
