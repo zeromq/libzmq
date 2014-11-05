@@ -20,7 +20,7 @@ argument.
 
 The 'endpoint' argument is as described in linkzmq:zmq_bind[3]
 
-Unbinding wild-card addres from a socket
+Unbinding wild-card address from a socket
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 When wild-card `*` 'endpoint' (described in linkzmq:zmq_tcp[7] and 
 linkzmq:zmq_ipc[7]) was used in _zmq_bind()_, the caller should use 
