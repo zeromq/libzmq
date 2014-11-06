@@ -23,8 +23,8 @@ Context termination is performed in the following steps:
    exception of _zmq_close()_, any further operations on sockets open within
    'context' shall fail with an error code of ETERM.
 
-2. After interrupting all blocking calls, _zmq_ctx_term()_ shall _block_ until the
-   following conditions are satisfied:
+2. After interrupting all blocking calls, _zmq_ctx_term()_ shall _block_ until
+   the following conditions are satisfied:
 
    * All sockets open within 'context' have been closed with _zmq_close()_.
 
@@ -37,6 +37,15 @@ For further details regarding socket linger behavior refer to the _ZMQ_LINGER_
 option in linkzmq:zmq_setsockopt[3].
 
 This function replaces the deprecated function linkzmq:zmq_term[3].
+
+
+WARNING
+-------
+
+As _ZMQ_LINGER_ defaults to "infinite", by default this function will block
+indefinitely if there are any pending connects or sends. We strongly
+recommend to (a) set _ZMQ_LINGER_ to zero on all sockets and (b) close all
+sockets, before calling this function.
 
 
 RETURN VALUE
