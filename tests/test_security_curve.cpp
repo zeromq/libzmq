@@ -217,7 +217,22 @@ int main (void)
     assert (rc == 0);
     expect_bounce_fail (server, client);
     close_zero_linger (client);
-    
+
+    //  Check return codes for invalid buffer sizes
+    client = zmq_socket (ctx, ZMQ_DEALER);
+    assert (client);
+    errno = 0;
+    rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, server_public, 123);
+    assert (rc == -1 && errno == EINVAL);
+    errno = 0;
+    rc = zmq_setsockopt (client, ZMQ_CURVE_PUBLICKEY, client_public, 123);
+    assert (rc == -1 && errno == EINVAL);
+    errno = 0;
+    rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, client_secret, 123);
+    assert (rc == -1 && errno == EINVAL);
+    rc = zmq_close (client);
+    assert (rc == 0);
+
     //  Shutdown
     rc = zmq_close (server);
     assert (rc == 0);
