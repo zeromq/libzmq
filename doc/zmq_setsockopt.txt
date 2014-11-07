@@ -306,7 +306,7 @@ linkzmq:zmq_disconnect[3] or closed with linkzmq:zmq_close[3], and further
 affects the termination of the socket's context with linkzmq:zmq_term[3]. The
 following outlines the different behaviours:
 
-* The default value of '-1' specifies an infinite linger period. Pending
+* A value of '-1' specifies an infinite linger period. Pending
   messages shall not be discarded after a call to _zmq_disconnect()_ or
   _zmq_close()_; attempting to terminate the socket's context with _zmq_term()_
   shall block until all pending messages have been sent to a peer.
@@ -323,7 +323,7 @@ following outlines the different behaviours:
 [horizontal]
 Option value type:: int
 Option value unit:: milliseconds
-Default value:: -1 (infinite)
+Default value:: 2000 (two seconds)
 Applicable socket types:: all
 
 

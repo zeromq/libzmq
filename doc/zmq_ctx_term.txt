@@ -39,15 +39,6 @@ option in linkzmq:zmq_setsockopt[3].
 This function replaces the deprecated function linkzmq:zmq_term[3].
 
 
-WARNING
--------
-
-As _ZMQ_LINGER_ defaults to "infinite", by default this function will block
-indefinitely if there are any pending connects or sends. We strongly
-recommend to (a) set _ZMQ_LINGER_ to zero on all sockets and (b) close all
-sockets, before calling this function.
-
-
 RETURN VALUE
 ------------
 The _zmq_ctx_term()_ function shall return zero if successful. Otherwise
