@@ -55,7 +55,7 @@ Individual 0MQ 'sockets' are _not_ thread safe except in the case where full
 memory barriers are issued when migrating a socket from one thread to another.
 In practice this means applications can create a socket in one thread with
 _zmq_socket()_ and then pass it to a _newly created_ thread as part of thread
-initialization, for example via a structure passed as an argument to
+initialisation, for example via a structure passed as an argument to
 _pthread_create()_.
 
 

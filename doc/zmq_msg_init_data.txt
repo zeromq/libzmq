@@ -36,7 +36,7 @@ will not be freed, and this may cause a memory leak.
 
 
 CAUTION: The functions _zmq_msg_init()_, _zmq_msg_init_data()_ and
-_zmq_msg_init_size()_ are mutually exclusive. Never initialize the same
+_zmq_msg_init_size()_ are mutually exclusive. Never initialise the same
 'zmq_msg_t' twice.
 
 
