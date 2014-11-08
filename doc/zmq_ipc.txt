@@ -41,7 +41,7 @@ socket option. See linkzmq:zmq_getsockopt[3] for details.
 
 NOTE: any existing binding to the same endpoint shall be overridden. That is,
 if a second process binds to an endpoint already bound by a process, this
-will succeed and the first process will lose its binding. In this behavior,
+will succeed and the first process will lose its binding. In this behaviour,
 the 'ipc' transport is not consistent with the 'tcp' or 'inproc' transports.
 
 NOTE: the endpoint pathname must be writable by the process. When the endpoint

@@ -23,10 +23,10 @@ CLIENT AND SERVER ROLES
 A socket using GSSAPI can be either client or server, but not both.
 
 To become either a GSSAPI client or server, the application sets the
-ZMQ_GSSAPI_PRINCIPAL option to provide the socket with the name of the pricipal
+ZMQ_GSSAPI_PRINCIPAL option to provide the socket with the name of the principal
 for whom GSSAPI credentials should be acquired.
 
-To become a GSSAPI server, the application addtionally sets the
+To become a GSSAPI server, the application additionally sets the
 ZMQ_GSSAPI_SERVER option on the socket.
 
 To become a GSSAPI client, the application sets additionally sets the

@@ -73,7 +73,7 @@ The 'ZMQ_CONNECT_RID' option sets the peer id of the next host connected
 via the zmq_connect() call, and immediately readies that connection for 
 data transfer with the named id.  This option applies only to the first
 subsequent call to zmq_connect(), calls thereafter use default connection 
-behavior. 
+behaviour. 
 
 Typical use is to set this socket option ahead of each zmq_connect() attempt 
 to a new host. Each connection MUST be assigned a unique name. Assigning a 
@@ -197,7 +197,7 @@ Applicable socket types:: all, when using TCP transport
 
 ZMQ_GSSAPI_PRINCIPAL: Set name of GSSAPI principal
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Sets the name of the pricipal for whom GSSAPI credentials should be acquired.
+Sets the name of the principal for whom GSSAPI credentials should be acquired.
 
 [horizontal]
 Option value type:: character string
@@ -221,7 +221,7 @@ Applicable socket types:: all, when using TCP transport
 
 ZMQ_GSSAPI_SERVICE_PRINCIPAL: Set name of GSSAPI service principal
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Sets the name of the pricipal of the GSSAPI server to which a GSSAPI client
+Sets the name of the principal of the GSSAPI server to which a GSSAPI client
 intends to connect.
 
 [horizontal]
@@ -530,7 +530,7 @@ Applicable socket types:: all, when using multicast transports
 
 ZMQ_REQ_CORRELATE: match replies with requests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The default behavior of REQ sockets is to rely on the ordering of messages to
+The default behaviour of REQ sockets is to rely on the ordering of messages to
 match requests and responses and that is usually sufficient. When this option
 is set to 1, the REQ socket will prefix outgoing messages with an extra frame
 containing a request id. That means the full message is (request id, 0,
@@ -583,7 +583,7 @@ Applicable socket types:: ZMQ_ROUTER
 
 ZMQ_ROUTER_MANDATORY: accept only routable messages on ROUTER sockets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Sets the ROUTER socket behavior when an unroutable message is encountered. A
+Sets the ROUTER socket behaviour when an unroutable message is encountered. A
 value of `0` is the default and discards the message silently when it cannot be
 routed or the peers SNDHWM is reached.  A value of `1` returns an
 'EHOSTUNREACH' error code if the message cannot be routed or 'EAGAIN' error
@@ -743,7 +743,7 @@ ZMQ_TOS: Set the Type-of-Service on socket
 Sets the ToS fields (Differentiated services (DS) and Explicit Congestion
 Notification (ECN) field of the IP header. The ToS field is typically used
 to specify a packets priority. The availability of this option is dependent
-on intermediate network equipment that inspect the ToS field andprovide a
+on intermediate network equipment that inspect the ToS field and provide a
 path for low-delay, high-throughput, highly-reliable service, etc.
 
 [horizontal]
@@ -770,7 +770,7 @@ Applicable socket types:: ZMQ_SUB
 
 ZMQ_XPUB_VERBOSE: provide all subscription messages on XPUB sockets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Sets the 'XPUB' socket behavior on new subscriptions and unsubscriptions.
+Sets the 'XPUB' socket behaviour on new subscriptions and unsubscriptions.
 A value of '0' is the default and passes only new subscription messages to
 upstream. A value of '1' passes all subscription messages upstream.
 

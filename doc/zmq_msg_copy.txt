@@ -16,7 +16,7 @@ DESCRIPTION
 -----------
 The _zmq_msg_copy()_ function shall copy the message object referenced by 'src'
 to the message object referenced by 'dest'. The original content of 'dest', if
-any, shall be released. You must initialize 'dest' before copying to it.
+any, shall be released. You must initialise 'dest' before copying to it.
 
 CAUTION: The implementation may choose not to physically copy the message
 content, rather to share the underlying buffer between 'src' and 'dest'. Avoid
