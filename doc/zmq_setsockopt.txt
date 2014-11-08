@@ -197,7 +197,7 @@ Applicable socket types:: all, when using TCP transport
 
 ZMQ_GSSAPI_PRINCIPAL: Set name of GSSAPI principal
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Sets the name of the pricipal for whom GSSAPI credentials should be acquired.
+Sets the name of the principal for whom GSSAPI credentials should be acquired.
 
 [horizontal]
 Option value type:: character string
@@ -221,7 +221,7 @@ Applicable socket types:: all, when using TCP transport
 
 ZMQ_GSSAPI_SERVICE_PRINCIPAL: Set name of GSSAPI service principal
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Sets the name of the pricipal of the GSSAPI server to which a GSSAPI client
+Sets the name of the principal of the GSSAPI server to which a GSSAPI client
 intends to connect.
 
 [horizontal]
@@ -743,7 +743,7 @@ ZMQ_TOS: Set the Type-of-Service on socket
 Sets the ToS fields (Differentiated services (DS) and Explicit Congestion
 Notification (ECN) field of the IP header. The ToS field is typically used
 to specify a packets priority. The availability of this option is dependent
-on intermediate network equipment that inspect the ToS field andprovide a
+on intermediate network equipment that inspect the ToS field and provide a
 path for low-delay, high-throughput, highly-reliable service, etc.
 
 [horizontal]
