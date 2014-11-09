@@ -323,7 +323,7 @@ following outlines the different behaviours:
 [horizontal]
 Option value type:: int
 Option value unit:: milliseconds
-Default value:: 2000 (two seconds)
+Default value:: 30000 (thirty seconds)
 Applicable socket types:: all
 
 
