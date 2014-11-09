@@ -35,7 +35,7 @@ zmq::options_t::options_t () :
     rcvbuf (0),
     tos (0),
     type (-1),
-    linger (2000),
+    linger (30000),
     reconnect_ivl (100),
     reconnect_ivl_max (0),
     backlog (100),
