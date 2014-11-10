@@ -197,6 +197,7 @@ void zmq::pgm_sender_t::out_event ()
 
     if (has_tx_timer) {
         cancel_timer (tx_timer_id);
+        set_pollout (handle);
         has_tx_timer = false;
     }
 
