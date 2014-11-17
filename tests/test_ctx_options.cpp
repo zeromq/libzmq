@@ -43,15 +43,26 @@ int main (void)
     assert (zmq_ctx_get (ctx, ZMQ_IPV6) == 1);
     
     void *router = zmq_socket (ctx, ZMQ_ROUTER);
-    int ipv6;
+    int value;
     size_t optsize = sizeof (int);
-    rc = zmq_getsockopt (router, ZMQ_IPV6, &ipv6, &optsize);
+    rc = zmq_getsockopt (router, ZMQ_IPV6, &value, &optsize);
     assert (rc == 0);
-    assert (ipv6);
-
+    assert (value == 1);
+    rc = zmq_getsockopt (router, ZMQ_LINGER, &value, &optsize);
+    assert (rc == 0);
+    assert (value == -1);
     rc = zmq_close (router);
     assert (rc == 0);
     
+    rc = zmq_ctx_set (ctx, ZMQ_BLOCKY, false);
+    assert (zmq_ctx_get (ctx, ZMQ_BLOCKY) == 0);
+    router = zmq_socket (ctx, ZMQ_ROUTER);
+    rc = zmq_getsockopt (router, ZMQ_LINGER, &value, &optsize);
+    assert (rc == 0);
+    assert (value == 0);
+    rc = zmq_close (router);
+    assert (rc == 0);
+
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 

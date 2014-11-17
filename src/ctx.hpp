@@ -187,6 +187,9 @@ namespace zmq
         //  Number of I/O threads to launch.
         int io_thread_count;
 
+        //  Does context wait (possibly forever) on termination?
+        bool blocky;
+
         //  Is IPv6 enabled on this context?
         bool ipv6;
 
