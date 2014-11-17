@@ -21,6 +21,21 @@ The _zmq_ctx_set()_ function shall set the option specified by the
 The _zmq_ctx_set()_ function accepts the following options:
 
 
+ZMQ_BLOCKY: Fix blocky behavior
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+By default the context will block, forever, on a zmq_ctx_term call. The
+assumption behind this behavior is that abrupt termination will cause
+message loss. Most real applications use some form of handshaking to ensure
+applications receive termination messages, and then terminate the context
+with 'ZMQ_LINGER' set to zero on all sockets. This setting is an easier way
+to get the same result. When 'ZMQ_BLOCKY' is set to false, all new sockets
+are given a linger timeout of zero. You must still close all sockets before
+calling zmq_term.
+
+[horizontal]
+Default value:: false (old behavior)
+
+
 ZMQ_IO_THREADS: Set number of I/O threads
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_IO_THREADS' argument specifies the size of the 0MQ thread pool to
