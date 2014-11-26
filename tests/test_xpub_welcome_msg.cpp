@@ -38,27 +38,26 @@ int main (void)
     //  Create a subscriber
     void *sub = zmq_socket (ctx, ZMQ_SUB);
 	
-	// Subscribe to the welcome message
-	rc = zmq_setsockopt(sub, ZMQ_SUBSCRIBE, "W", 1);
-	assert(rc == 0);
+    // Subscribe to the welcome message
+    rc = zmq_setsockopt(sub, ZMQ_SUBSCRIBE, "W", 1);
+    assert(rc == 0);
 
     assert (sub);
     rc = zmq_connect (sub, "inproc://soname");
     assert (rc == 0);	
 
-	char buffer[2];
+    char buffer[2];
 
-	// Receive the welcome subscription
-	rc = zmq_recv(pub, buffer, 2, 0);
-	assert(rc == 2);
-	assert(buffer[0] == 1);
-	assert(buffer[1] == 'W');
+    // Receive the welcome subscription
+    rc = zmq_recv(pub, buffer, 2, 0);
+    assert(rc == 2);
+    assert(buffer[0] == 1);
+    assert(buffer[1] == 'W');
   			
-	// Receive the welcome message
-	rc = zmq_recv(sub, buffer, 1, 0);
-	printf("%d\n", rc);
-	assert(rc == 1);
-	assert(buffer[0] == 'W');	
+    // Receive the welcome message
+    rc = zmq_recv(sub, buffer, 1, 0);
+    assert(rc == 1);
+    assert(buffer[0] == 'W');	
 
     //  Clean up.
     rc = zmq_close (pub);
