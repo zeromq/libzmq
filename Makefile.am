@@ -328,7 +328,9 @@ test_apps = \
 	tests/test_metadata \
 	tests/test_id2fd \
 	tests/test_capabilities \
-	tests/test_xpub_nodrop
+	tests/test_xpub_nodrop \
+	tests/test_xpub_manual \
+	tests/test_xpub_welcome_msg
 
 tests_test_system_SOURCES = tests/test_system.cpp
 tests_test_system_LDADD = src/libzmq.la
@@ -493,6 +495,12 @@ tests_test_capabilities_LDADD = src/libzmq.la
 
 tests_test_xpub_nodrop_SOURCES = tests/test_xpub_nodrop.cpp
 tests_test_xpub_nodrop_LDADD = src/libzmq.la
+
+tests_test_xpub_manual_SOURCES = tests/test_xpub_manual.cpp
+tests_test_xpub_manual_LDADD = src/libzmq.la
+
+tests_test_xpub_welcome_msg_SOURCES = tests/test_xpub_welcome_msg.cpp
+tests_test_xpub_welcome_msg_LDADD = src/libzmq.la
 
 if !ON_MINGW
 test_apps += \
