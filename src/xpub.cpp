@@ -29,25 +29,39 @@ zmq::xpub_t::xpub_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     verbose (false),
     more (false),
     lossy (true),
-	manual(false)
+	manual(false),
+	welcome_msg ()
 {
-	last_pipe = NULL;
+	last_pipe = NULL;	
     options.type = ZMQ_XPUB;	
+	welcome_msg.init();
 }
 
 zmq::xpub_t::~xpub_t ()
 {
+	welcome_msg.close();
 }
 
 void zmq::xpub_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 {
     zmq_assert (pipe_);
     dist.attach (pipe_);
-
+	
     //  If subscribe_to_all_ is specified, the caller would like to subscribe
     //  to all data on this pipe, implicitly.
     if (subscribe_to_all_)
-        subscriptions.add (NULL, 0, pipe_);
+        subscriptions.add (NULL, 0, pipe_);	
+
+	// if welcome message exist
+	if (welcome_msg.size() > 0)
+	{
+		msg_t copy;
+		copy.init();
+		copy.copy(welcome_msg);
+
+		pipe_->write(&copy);		
+		pipe_->flush();		
+	}
 
     //  The pipe is active when attached. Let's read the subscriptions from
     //  it, if any.
@@ -62,7 +76,7 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
         //  Apply the subscription to the trie
         unsigned char *const data = (unsigned char *) sub.data ();
         const size_t size = sub.size ();
-        if (size > 0 && (*data == 0 || *data == 1)) {
+        if (size > 0 && (*data == 0 || *data == 1)) {			
 			if (manual)
 			{
 				last_pipe = pipe_;
@@ -119,14 +133,23 @@ int zmq::xpub_t::xsetsockopt (int option_, const void *optval_,
 			manual = (*static_cast <const int*> (optval_) != 0);				
 	}        
     else    
-	if (option_ == ZMQ_SUBSCRIBE && manual && last_pipe != NULL)
-	{
-		subscriptions.add((unsigned char *)optval_, optvallen_, last_pipe);
-	}
+	if (option_ == ZMQ_SUBSCRIBE && manual && last_pipe != NULL)	
+		subscriptions.add((unsigned char *)optval_, optvallen_, last_pipe);	
 	else
-	if (option_ == ZMQ_UNSUBSCRIBE && manual && last_pipe != NULL)
-	{
-		subscriptions.rm((unsigned char *)optval_, optvallen_, last_pipe);
+	if (option_ == ZMQ_UNSUBSCRIBE && manual && last_pipe != NULL)	
+		subscriptions.rm((unsigned char *)optval_, optvallen_, last_pipe);	
+	else 
+	if (option_ == ZMQ_XPUB_WELCOME_MSG) {	
+		welcome_msg.close();
+
+		if (optvallen_ > 0)	{
+			welcome_msg.init_size(optvallen_);
+
+			unsigned char *data = (unsigned char*)welcome_msg.data();
+			memcpy(data, optval_, optvallen_);		
+		}
+		else
+			welcome_msg.init();
 	}
     else {
         errno = EINVAL;

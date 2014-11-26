@@ -88,6 +88,9 @@ namespace zmq
 		//  Last pipe send subscription message, only used if xpub is on manual
 		pipe_t *last_pipe;
 
+		//  Welcome message to send to pipe when attached
+		msg_t welcome_msg;		
+
         //  List of pending (un)subscriptions, ie. those that were already
         //  applied to the trie, but not yet received by the user.
         typedef std::basic_string <unsigned char> blob_t;
