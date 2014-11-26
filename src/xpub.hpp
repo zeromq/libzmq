@@ -82,6 +82,12 @@ namespace zmq
         //  Drop messages if HWM reached, otherwise return with EAGAIN
         bool lossy;
 
+		//  Subscriptions will not bed added automatically, only after calling set option with ZMQ_SUBSCRIBE or ZMQ_UNSUBSCRIBE
+		bool manual;
+
+		//  Last pipe send subscription message, only used if xpub is on manual
+		pipe_t *last_pipe;
+
         //  List of pending (un)subscriptions, ie. those that were already
         //  applied to the trie, but not yet received by the user.
         typedef std::basic_string <unsigned char> blob_t;

@@ -305,6 +305,7 @@ ZMQ_EXPORT const char *zmq_msg_gets (zmq_msg_t *msg, const char *property);
 #define ZMQ_SOCKS_PROXY 68
 #define ZMQ_XPUB_NODROP 69
 #define ZMQ_BLOCKY 70
+#define ZMQ_XPUB_MANUAL 71
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1
