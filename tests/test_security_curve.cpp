@@ -18,6 +18,15 @@
 */
 
 #include "testutil.hpp"
+#if defined (ZMQ_HAVE_WINDOWS)
+#   include <winsock2.h>
+#   include <stdexcept>
+#else
+#   include <sys/socket.h>
+#   include <netinet/in.h>
+#   include <arpa/inet.h>
+#   include <unistd.h>
+#endif
 
 //  We'll generate random test keys at startup
 static char client_public [41];
@@ -218,6 +227,39 @@ int main (void)
     expect_bounce_fail (server, client);
     close_zero_linger (client);
     
+    // Unauthenticated messages from a vanilla socket shouldn't be received
+    struct sockaddr_in ip4addr;
+    int s;
+
+    ip4addr.sin_family = AF_INET;
+    ip4addr.sin_port = htons (9998);
+    inet_pton (AF_INET, "127.0.0.1", &ip4addr.sin_addr);
+
+    s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    rc = connect (s, (struct sockaddr*) &ip4addr, sizeof (ip4addr));
+    assert (rc > -1);
+    send (s, "GET / HTTP/1.0\r\nUser-Agent: some_really_long_user_agent\r\nHost: localhost\r\nHeader: shouldn't arrive\r\n\r\n", 102, 0);
+    int timeout = 150;
+    zmq_setsockopt (server, ZMQ_RCVTIMEO, &timeout, sizeof (timeout));
+    char *buf = s_recv (server);
+    assert (buf == NULL);
+    close (s);
+
+    //  Check return codes for invalid buffer sizes
+    client = zmq_socket (ctx, ZMQ_DEALER);
+    assert (client);
+    errno = 0;
+    rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, server_public, 123);
+    assert (rc == -1 && errno == EINVAL);
+    errno = 0;
+    rc = zmq_setsockopt (client, ZMQ_CURVE_PUBLICKEY, client_public, 123);
+    assert (rc == -1 && errno == EINVAL);
+    errno = 0;
+    rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, client_secret, 123);
+    assert (rc == -1 && errno == EINVAL);
+    rc = zmq_close (client);
+    assert (rc == 0);
+
     //  Shutdown
     rc = zmq_close (server);
     assert (rc == 0);
