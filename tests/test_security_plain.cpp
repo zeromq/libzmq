@@ -159,11 +159,17 @@ int main (void)
     s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
     rc = connect (s, (struct sockaddr*) &ip4addr, sizeof (ip4addr));
     assert (rc > -1);
-    send (s, "GET / HTTP/1.0\r\nUser-Agent: some_really_long_user_agent\r\nHost: localhost\r\nHeader: shouldn't arrive\r\n\r\n", 102, 0);
+    // send anonymous ZMTP/1.0 greeting
+    send (s, "\x01\x00", 2, 0);
+    // send sneaky message that shouldn't be received
+    send (s, "\x08\x00sneaky\0", 9, 0);
     int timeout = 150;
     zmq_setsockopt (server, ZMQ_RCVTIMEO, &timeout, sizeof (timeout));
     char *buf = s_recv (server);
-    assert (buf == NULL);
+    if (buf != NULL) {
+        printf ("Received unauthenticated message: %s\n", buf);
+        assert (buf == NULL);
+    }
     close (s);
 
     //  Shutdown
