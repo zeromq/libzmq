@@ -20,7 +20,9 @@
 #include "testutil.hpp"
 #if defined (ZMQ_HAVE_WINDOWS)
 #   include <winsock2.h>
+#   include <ws2tcpip.h>
 #   include <stdexcept>
+#   define close closesocket
 #else
 #   include <sys/socket.h>
 #   include <netinet/in.h>
@@ -138,14 +140,14 @@ int main (void)
     assert (server);
     rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "WRONG", 5);
     assert (rc == 0);
-    rc = zmq_bind (server, "tcp://127.0.0.1:9002");
+    rc = zmq_bind (server, "tcp://127.0.0.1:9003");
     assert (rc == 0);
 
     struct sockaddr_in ip4addr;
     int s;
 
     ip4addr.sin_family = AF_INET;
-    ip4addr.sin_port = htons(9002);
+    ip4addr.sin_port = htons(9003);
     inet_pton(AF_INET, "127.0.0.1", &ip4addr.sin_addr);
 
     s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
