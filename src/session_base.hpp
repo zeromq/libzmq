@@ -69,6 +69,7 @@ namespace zmq
         int push_msg (msg_t *msg_);
 
         int zap_connect ();
+        bool zap_enabled ();
 
         //  Fetches a message. Returns 0 if successful; -1 otherwise.
         //  The caller is responsible for freeing the message when no
