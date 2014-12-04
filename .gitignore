@@ -133,3 +133,10 @@ zeromq-*.tar.gz
 zeromq-*.zip
 core
 build
+curve_keygen
+inproc_lat
+inproc_thr
+local_lat
+local_thr
+remote_lat
+remote_thr
