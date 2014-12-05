@@ -323,6 +323,14 @@ int zmq::session_base_t::zap_connect ()
     return 0;
 }
 
+bool zmq::session_base_t::zap_enabled ()
+{
+    return (
+         options.mechanism != ZMQ_NULL ||
+        (options.mechanism == ZMQ_NULL && options.zap_domain.length() > 0)
+    );
+}
+
 void zmq::session_base_t::process_attach (i_engine *engine_)
 {
     zmq_assert (engine_ != NULL);

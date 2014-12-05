@@ -464,6 +464,11 @@ bool zmq::stream_engine_t::handshake ()
     //  Is the peer using ZMTP/1.0 with no revision number?
     //  If so, we send and receive rest of identity message
     if (greeting_recv [0] != 0xff || !(greeting_recv [9] & 0x01)) {
+        if (session->zap_enabled ()) {
+            //  Reject ZMTP 1.0 connections if ZAP is enabled
+            error ();
+            return false;
+        }
         encoder = new (std::nothrow) v1_encoder_t (out_batch_size);
         alloc_assert (encoder);
 
@@ -505,6 +510,11 @@ bool zmq::stream_engine_t::handshake ()
     }
     else
     if (greeting_recv [revision_pos] == ZMTP_1_0) {
+        if (session->zap_enabled ()) {
+            //  Reject ZMTP 1.0 connections if ZAP is enabled
+            error ();
+            return false;
+        }
         encoder = new (std::nothrow) v1_encoder_t (
             out_batch_size);
         alloc_assert (encoder);
@@ -515,6 +525,11 @@ bool zmq::stream_engine_t::handshake ()
     }
     else
     if (greeting_recv [revision_pos] == ZMTP_2_0) {
+        if (session->zap_enabled ()) {
+            //  Reject ZMTP 1.0 connections if ZAP is enabled
+            error ();
+            return false;
+        }
         encoder = new (std::nothrow) v2_encoder_t (out_batch_size);
         alloc_assert (encoder);
 

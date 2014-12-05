@@ -1,5 +1,7 @@
-0MQ version 4.0.6 stable, released on 2015/xx/xx
+0MQ version 4.0.6 stable, released on 2015/12/xx
 ================================================
+
+* Fixed #1273 - V3 protocol handler vulnerable to downgrade attacks.
 
 
 0MQ version 4.0.5 stable, released on 2014/10/14
