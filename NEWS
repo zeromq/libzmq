@@ -1,13 +1,13 @@
-0MQ version 4.1.1 rc2, released on 2014/12/04
+0MQ version 4.1.1 rc2, released on 2014/12/xx
 =============================================
 
-* #1208 - fix recursion in automake packaging
+* Fixed #1208 - fix recursion in automake packaging
 
-* #1224 - crash when processing empty unsubscribe message.
+* Fixed #1224 - crash when processing empty unsubscribe message.
 
-* #1213 - properties files were missing from source packages.
+* Fixed #1213 - properties files were missing from source packages.
 
-* #1273 - V3 protocol handler vulnerable to downgrade attacks.
+* Fixed #1273 - V3 protocol handler vulnerable to downgrade attacks.
 
 
 0MQ version 4.1.0 rc1, released on 2014/10/14
