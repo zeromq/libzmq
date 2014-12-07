@@ -15,7 +15,7 @@ MAN3 = zmq_bind.3 zmq_unbind.3 zmq_connect.3 zmq_disconnect.3 zmq_close.3 \
     zmq_proxy.3 zmq_proxy_steerable.3 \
     zmq_z85_encode.3 zmq_z85_decode.3 zmq_curve_keypair.3 zmq_has.3
 
-MAN7 = zmq.7 zmq_tcp.7 zmq_pgm.7 zmq_epgm.7 zmq_inproc.7 zmq_ipc.7 \
+MAN7 = zmq.7 zmq_tcp.7 zmq_pgm.7 zmq_inproc.7 zmq_ipc.7 \
     zmq_null.7 zmq_plain.7 zmq_curve.7 zmq_tipc.7
 
 MAN_DOC = $(MAN1) $(MAN3) $(MAN7)
@@ -49,8 +49,6 @@ SUFFIXES=.html .txt .xml .3 .7
 	xmlto man $<
 .xml.7:
 	xmlto man $<
-zmq_epgm.7: zmq_pgm.7
-	cp $< $@
 endif
 
 dist-hook : $(MAN_DOC) $(MAN_HTML)
