@@ -266,9 +266,14 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
   add_definitions(-D_DARWIN_C_SOURCE)
 endif()
 
-set(CMAKE_PYTHON_VERSION 2.7 2.6 2.5 2.4)
-find_package(PythonInterp)
-find_package(AsciiDoc)
+if(NOT WITHOUT_ASCIIDOC)
+    set(CMAKE_PYTHON_VERSION 2.7 2.6 2.5 2.4)
+    find_package(PythonInterp)
+    find_package(AsciiDoc)
+else()
+    set(PYTHON_FOUND OFF)
+    set(ASCIIDOC_FOUND OFF)
+endif()
 
 cmake_dependent_option(WITH_DOC "Build Reference Guide documentation(requires DocBook)" ON
                        "PYTHON_FOUND;ASCIIDOC_FOUND" OFF)
@@ -335,9 +340,6 @@ if(NOT CMAKE_BUILD_TYPE)
       "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
       FORCE)
 endif()
-
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin)
-set(LIBRARY_OUTPUT_PATH  ${CMAKE_CURRENT_BINARY_DIR}/lib)
 
 #-----------------------------------------------------------------------------
 # platform specifics
