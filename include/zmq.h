@@ -433,6 +433,17 @@ ZMQ_EXPORT uint8_t *zmq_z85_decode (uint8_t *dest, const char *string);
 /*  Returns 0 on success.                                                     */
 ZMQ_EXPORT int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key);
 
+/******************************************************************************/
+/*  Atomic utility methods                                                    */
+/******************************************************************************/
+
+ZMQ_EXPORT void *zmq_atomic_counter_new (void);
+ZMQ_EXPORT void zmq_atomic_counter_set (void *counter, int value);
+ZMQ_EXPORT int zmq_atomic_counter_inc (void *counter);
+ZMQ_EXPORT bool zmq_atomic_counter_dec (void *counter);
+ZMQ_EXPORT int zmq_atomic_counter_value (void *counter);
+ZMQ_EXPORT void zmq_atomic_counter_destroy (void **counter_p);
+
 
 /******************************************************************************/
 /*  These functions are not documented by man pages -- use at your own risk.  */

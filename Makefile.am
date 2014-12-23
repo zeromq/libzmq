@@ -330,7 +330,8 @@ test_apps = \
 	tests/test_capabilities \
 	tests/test_xpub_nodrop \
 	tests/test_xpub_manual \
-	tests/test_xpub_welcome_msg
+	tests/test_xpub_welcome_msg \
+	tests/test_atomics
 
 tests_test_system_SOURCES = tests/test_system.cpp
 tests_test_system_LDADD = src/libzmq.la
@@ -501,6 +502,9 @@ tests_test_xpub_manual_LDADD = src/libzmq.la
 
 tests_test_xpub_welcome_msg_SOURCES = tests/test_xpub_welcome_msg.cpp
 tests_test_xpub_welcome_msg_LDADD = src/libzmq.la
+
+tests_test_atomics_SOURCES = tests/test_atomics.cpp
+tests_test_atomics_LDADD = src/libzmq.la
 
 if !ON_MINGW
 test_apps += \
