@@ -9,7 +9,7 @@ zmq_atomic_counter_dec - decrement an atomic counter
 
 SYNOPSIS
 --------
-*bool zmq_atomic_counter_dec (void *counter);*
+*int zmq_atomic_counter_dec (void *counter);*
 
 
 DESCRIPTION
@@ -21,8 +21,8 @@ operations.
 
 RETURN VALUE
 ------------
-The _zmq_atomic_counter_dec()_ function returns true if the counter is
-greater than zero after decrementing, or false if the counter reached
+The _zmq_atomic_counter_dec()_ function returns 1 if the counter is
+greater than zero after decrementing, or zero if the counter reached
 zero.
 
 
@@ -36,13 +36,14 @@ assert (zmq_atomic_counter_inc (counter) == 0);
 assert (zmq_atomic_counter_inc (counter) == 1);
 assert (zmq_atomic_counter_inc (counter) == 2);
 assert (zmq_atomic_counter_value (counter) == 3);
-assert (zmq_atomic_counter_dec (counter) == true);
-assert (zmq_atomic_counter_dec (counter) == true);
-assert (zmq_atomic_counter_dec (counter) == false);
+assert (zmq_atomic_counter_dec (counter) == 1);
+assert (zmq_atomic_counter_dec (counter) == 1);
+assert (zmq_atomic_counter_dec (counter) == 0);
 zmq_atomic_counter_set (counter, 2);
-assert (zmq_atomic_counter_dec (counter) == true);
-assert (zmq_atomic_counter_dec (counter) == false);
+assert (zmq_atomic_counter_dec (counter) == 1);
+assert (zmq_atomic_counter_dec (counter) == 0);
 zmq_atomic_counter_destroy (&counter);
+return 0;
 ----
 
 

@@ -232,11 +232,12 @@ int zmq_atomic_counter_inc (void *counter_)
     return ((zmq::atomic_counter_t *) counter_)->add (1);
 }
 
-//  Decrement the atomic counter and return true if still > zero
+//  Decrement the atomic counter and return 1 (if counter >= 1), or
+//  0 if counter hit zero.
 
-bool zmq_atomic_counter_dec (void *counter_)
+int zmq_atomic_counter_dec (void *counter_)
 {
-    return ((zmq::atomic_counter_t *) counter_)->sub (1);
+    return ((zmq::atomic_counter_t *) counter_)->sub (1)? 1: 0;
 }
 
 //  Return actual value of atomic counter

@@ -36,13 +36,14 @@ assert (zmq_atomic_counter_inc (counter) == 0);
 assert (zmq_atomic_counter_inc (counter) == 1);
 assert (zmq_atomic_counter_inc (counter) == 2);
 assert (zmq_atomic_counter_value (counter) == 3);
-assert (zmq_atomic_counter_dec (counter) == true);
-assert (zmq_atomic_counter_dec (counter) == true);
-assert (zmq_atomic_counter_dec (counter) == false);
+assert (zmq_atomic_counter_dec (counter) == 1);
+assert (zmq_atomic_counter_dec (counter) == 1);
+assert (zmq_atomic_counter_dec (counter) == 0);
 zmq_atomic_counter_set (counter, 2);
-assert (zmq_atomic_counter_dec (counter) == true);
-assert (zmq_atomic_counter_dec (counter) == false);
+assert (zmq_atomic_counter_dec (counter) == 1);
+assert (zmq_atomic_counter_dec (counter) == 0);
 zmq_atomic_counter_destroy (&counter);
+return 0;
 ----
 
 

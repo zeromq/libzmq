@@ -440,7 +440,7 @@ ZMQ_EXPORT int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key);
 ZMQ_EXPORT void *zmq_atomic_counter_new (void);
 ZMQ_EXPORT void zmq_atomic_counter_set (void *counter, int value);
 ZMQ_EXPORT int zmq_atomic_counter_inc (void *counter);
-ZMQ_EXPORT bool zmq_atomic_counter_dec (void *counter);
+ZMQ_EXPORT int zmq_atomic_counter_dec (void *counter);
 ZMQ_EXPORT int zmq_atomic_counter_value (void *counter);
 ZMQ_EXPORT void zmq_atomic_counter_destroy (void **counter_p);
 
