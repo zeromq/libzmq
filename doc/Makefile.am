@@ -13,7 +13,11 @@ MAN3 = zmq_bind.3 zmq_unbind.3 zmq_connect.3 zmq_disconnect.3 zmq_close.3 \
     zmq_errno.3 zmq_strerror.3 zmq_version.3 \
     zmq_sendmsg.3 zmq_recvmsg.3 \
     zmq_proxy.3 zmq_proxy_steerable.3 \
-    zmq_z85_encode.3 zmq_z85_decode.3 zmq_curve_keypair.3 zmq_has.3
+    zmq_z85_encode.3 zmq_z85_decode.3 zmq_curve_keypair.3 \
+    zmq_has.3 \
+    zmq_atomic_counter_new.3 zmq_atomic_counter_set.3 \
+    zmq_atomic_counter_inc.3 zmq_atomic_counter_dec.3 \
+    zmq_atomic_counter_value.3 zmq_atomic_counter_destroy.3
 
 MAN7 = zmq.7 zmq_tcp.7 zmq_pgm.7 zmq_inproc.7 zmq_ipc.7 \
     zmq_null.7 zmq_plain.7 zmq_curve.7 zmq_tipc.7

@@ -98,6 +98,9 @@ test_capabilities
 test_hwm_pubsub
 test_router_mandatory_hwm
 test_xpub_nodrop
+test_xpub_manual
+test_xpub_welcome_msg
+test_atomics
 tests/test*.log
 tests/test*.trs
 src/platform.hpp*
