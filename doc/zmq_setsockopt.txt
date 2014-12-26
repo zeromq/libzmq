@@ -73,7 +73,7 @@ The 'ZMQ_CONNECT_RID' option sets the peer id of the next host connected
 via the zmq_connect() call, and immediately readies that connection for 
 data transfer with the named id.  This option applies only to the first
 subsequent call to zmq_connect(), calls thereafter use default connection 
-behavior. 
+behaviour. 
 
 Typical use is to set this socket option ahead of each zmq_connect() attempt 
 to a new host. Each connection MUST be assigned a unique name. Assigning a 
@@ -197,7 +197,7 @@ Applicable socket types:: all, when using TCP transport
 
 ZMQ_GSSAPI_PRINCIPAL: Set name of GSSAPI principal
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Sets the name of the pricipal for whom GSSAPI credentials should be acquired.
+Sets the name of the principal for whom GSSAPI credentials should be acquired.
 
 [horizontal]
 Option value type:: character string
@@ -221,7 +221,7 @@ Applicable socket types:: all, when using TCP transport
 
 ZMQ_GSSAPI_SERVICE_PRINCIPAL: Set name of GSSAPI service principal
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Sets the name of the pricipal of the GSSAPI server to which a GSSAPI client
+Sets the name of the principal of the GSSAPI server to which a GSSAPI client
 intends to connect.
 
 [horizontal]
@@ -283,77 +283,6 @@ Default value:: 0 (false)
 Applicable socket types:: all, only for connection-oriented transports.
 
 
-ZMQ_IPC_FILTER_GID: Assign group ID filters to allow new IPC connections
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Assign an arbitrary number of filters that will be applied for each new IPC
-transport connection on a listening socket. If no IPC filters are applied, then
-the IPC transport allows connections from any process. If at least one UID,
-GID, or PID filter is applied then new connection credentials should be
-matched. To clear all GID filters call zmq_setsockopt(socket,
-ZMQ_IPC_FILTER_GID, NULL, 0).
-
-NOTE: GID filters are only available on platforms supporting SO_PEERCRED or
-LOCAL_PEERCRED socket options (currently only Linux and later versions of
-OS X).
-
-[horizontal]
-Option value type:: gid_t
-Option value unit:: N/A
-Default value:: no filters (allow from all)
-Applicable socket types:: all listening sockets, when using IPC transports.
-
-
-ZMQ_IPC_FILTER_PID: Assign process ID filters to allow new IPC connections
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Assign an arbitrary number of filters that will be applied for each new IPC
-transport connection on a listening socket. If no IPC filters are applied, then
-the IPC transport allows connections from any process. If at least one UID,
-GID, or PID filter is applied then new connection credentials should be
-matched. To clear all PID filters call zmq_setsockopt(socket,
-ZMQ_IPC_FILTER_PID, NULL, 0).
-
-NOTE: PID filters are only available on platforms supporting the SO_PEERCRED
-socket option (currently only Linux).
-
-[horizontal]
-Option value type:: pid_t
-Option value unit:: N/A
-Default value:: no filters (allow from all)
-Applicable socket types:: all listening sockets, when using IPC transports.
-
-
-ZMQ_IPC_FILTER_UID: Assign user ID filters to allow new IPC connections
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Assign an arbitrary number of filters that will be applied for each new IPC
-transport connection on a listening socket. If no IPC filters are applied, then
-the IPC transport allows connections from any process. If at least one UID,
-GID, or PID filter is applied then new connection credentials should be
-matched. To clear all UID filters call zmq_setsockopt(socket,
-ZMQ_IPC_FILTER_UID, NULL, 0).
-
-NOTE: UID filters are only available on platforms supporting SO_PEERCRED or
-LOCAL_PEERCRED socket options (currently only Linux and later versions of
-OS X).
-
-[horizontal]
-Option value type:: uid_t
-Option value unit:: N/A
-Default value:: no filters (allow from all)
-Applicable socket types:: all listening sockets, when using IPC transports.
-
-
-ZMQ_IPV4ONLY: Use IPv4-only on socket
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Set the IPv4-only option for the socket. This option is deprecated.
-Please use the ZMQ_IPV6 option.
-
-[horizontal]
-Option value type:: int
-Option value unit:: boolean
-Default value:: 1 (true)
-Applicable socket types:: all, when using TCP transports.
-
-
 ZMQ_IPV6: Enable IPv6 on socket
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Set the IPv6 option for the socket. A value of `1` means IPv6 is
@@ -377,7 +306,7 @@ linkzmq:zmq_disconnect[3] or closed with linkzmq:zmq_close[3], and further
 affects the termination of the socket's context with linkzmq:zmq_term[3]. The
 following outlines the different behaviours:
 
-* The default value of '-1' specifies an infinite linger period. Pending
+* A value of '-1' specifies an infinite linger period. Pending
   messages shall not be discarded after a call to _zmq_disconnect()_ or
   _zmq_close()_; attempting to terminate the socket's context with _zmq_term()_
   shall block until all pending messages have been sent to a peer.
@@ -394,7 +323,7 @@ following outlines the different behaviours:
 [horizontal]
 Option value type:: int
 Option value unit:: milliseconds
-Default value:: -1 (infinite)
+Default value:: 30000 (thirty seconds)
 Applicable socket types:: all
 
 
@@ -601,7 +530,7 @@ Applicable socket types:: all, when using multicast transports
 
 ZMQ_REQ_CORRELATE: match replies with requests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The default behavior of REQ sockets is to rely on the ordering of messages to
+The default behaviour of REQ sockets is to rely on the ordering of messages to
 match requests and responses and that is usually sufficient. When this option
 is set to 1, the REQ socket will prefix outgoing messages with an extra frame
 containing a request id. That means the full message is (request id, 0,
@@ -654,7 +583,7 @@ Applicable socket types:: ZMQ_ROUTER
 
 ZMQ_ROUTER_MANDATORY: accept only routable messages on ROUTER sockets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Sets the ROUTER socket behavior when an unroutable message is encountered. A
+Sets the ROUTER socket behaviour when an unroutable message is encountered. A
 value of `0` is the default and discards the message silently when it cannot be
 routed or the peers SNDHWM is reached.  A value of `1` returns an
 'EHOSTUNREACH' error code if the message cannot be routed or 'EAGAIN' error
@@ -760,25 +689,6 @@ Default value:: N/A
 Applicable socket types:: ZMQ_SUB
 
 
-ZMQ_TCP_ACCEPT_FILTER: Assign filters to allow new TCP connections
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Assign an arbitrary number of filters that will be applied for each new TCP
-transport connection on a listening socket. If no filters are applied, then
-the TCP transport allows connections from any IP address. If at least one
-filter is applied then new connection source ip should be matched. To clear
-all filters call zmq_setsockopt(socket, ZMQ_TCP_ACCEPT_FILTER, NULL, 0).
-Filter is a null-terminated string with ipv6 or ipv4 CIDR.
-
-NOTE: This option is deprecated, please use authentication via the ZAP API
-and IP address whitelisting / blacklisting.
-
-[horizontal]
-Option value type:: binary data
-Option value unit:: N/A
-Default value:: no filters (allow from all)
-Applicable socket types:: all listening sockets, when using TCP transports.
-
-
 ZMQ_TCP_KEEPALIVE: Override SO_KEEPALIVE socket option
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Override 'SO_KEEPALIVE' socket option (where supported by OS).
@@ -833,7 +743,7 @@ ZMQ_TOS: Set the Type-of-Service on socket
 Sets the ToS fields (Differentiated services (DS) and Explicit Congestion
 Notification (ECN) field of the IP header. The ToS field is typically used
 to specify a packets priority. The availability of this option is dependent
-on intermediate network equipment that inspect the ToS field andprovide a
+on intermediate network equipment that inspect the ToS field and provide a
 path for low-delay, high-throughput, highly-reliable service, etc.
 
 [horizontal]
@@ -860,7 +770,7 @@ Applicable socket types:: ZMQ_SUB
 
 ZMQ_XPUB_VERBOSE: provide all subscription messages on XPUB sockets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Sets the 'XPUB' socket behavior on new subscriptions and unsubscriptions.
+Sets the 'XPUB' socket behaviour on new subscriptions and unsubscriptions.
 A value of '0' is the default and passes only new subscription messages to
 upstream. A value of '1' passes all subscription messages upstream.
 
@@ -870,6 +780,36 @@ Option value unit:: 0, 1
 Default value:: 0
 Applicable socket types:: ZMQ_XPUB
 
+ZMQ_XPUB_MANUAL: change the subscription handling to manual
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sets the 'XPUB' socket subscription handling mode manual/automatic.
+A value of '0' is the default and subscription requests will be handled automatically.
+A value of '1' will change the subscription requests handling to manual, 
+with manual mode subscription requests are not added to the subscription list.
+To add subscription the user need to call setsockopt with ZMQ_SUBSCRIBE on XPUB socket.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1
+Default value:: 0
+Applicable socket types:: ZMQ_XPUB
+
+ZMQ_WELCOME_MSG: set welcome message that will be received by subscriber when connecting
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sets a welcome message the will be recieved by subscriber when connecting.
+Subscriber must subscribe to the Welcome message before connecting.
+Welcome message will also be sent on reconnecting.
+For welcome message to work well user must poll on incoming subscription messages on the XPUB socket and handle them.
+
+Use NULL and lenght of zero to disable welcome message.
+
+[horizontal]
+Option value type:: binary data
+Option value unit:: N/A
+Default value:: NULL
+Applicable socket types:: ZMQ_XPUB
 
 ZMQ_ZAP_DOMAIN: Set RFC 27 authentication domain
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -885,6 +825,104 @@ Option value unit:: N/A
 Default value:: not set
 Applicable socket types:: all, when using TCP transport
 
+
+ZMQ_TCP_ACCEPT_FILTER: Assign filters to allow new TCP connections
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Assign an arbitrary number of filters that will be applied for each new TCP
+transport connection on a listening socket. If no filters are applied, then
+the TCP transport allows connections from any IP address. If at least one
+filter is applied then new connection source ip should be matched. To clear
+all filters call zmq_setsockopt(socket, ZMQ_TCP_ACCEPT_FILTER, NULL, 0).
+Filter is a null-terminated string with ipv6 or ipv4 CIDR.
+
+NOTE: This option is deprecated, please use authentication via the ZAP API
+and IP address whitelisting / blacklisting.
+
+[horizontal]
+Option value type:: binary data
+Option value unit:: N/A
+Default value:: no filters (allow from all)
+Applicable socket types:: all listening sockets, when using TCP transports.
+
+
+ZMQ_IPC_FILTER_GID: Assign group ID filters to allow new IPC connections
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Assign an arbitrary number of filters that will be applied for each new IPC
+transport connection on a listening socket. If no IPC filters are applied, then
+the IPC transport allows connections from any process. If at least one UID,
+GID, or PID filter is applied then new connection credentials should be
+matched. To clear all GID filters call zmq_setsockopt(socket,
+ZMQ_IPC_FILTER_GID, NULL, 0).
+
+NOTE: GID filters are only available on platforms supporting SO_PEERCRED or
+LOCAL_PEERCRED socket options (currently only Linux and later versions of
+OS X).
+
+NOTE: This option is deprecated, please use authentication via the ZAP API
+and IPC whitelisting / blacklisting.
+
+[horizontal]
+Option value type:: gid_t
+Option value unit:: N/A
+Default value:: no filters (allow from all)
+Applicable socket types:: all listening sockets, when using IPC transports.
+
+
+ZMQ_IPC_FILTER_PID: Assign process ID filters to allow new IPC connections
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Assign an arbitrary number of filters that will be applied for each new IPC
+transport connection on a listening socket. If no IPC filters are applied, then
+the IPC transport allows connections from any process. If at least one UID,
+GID, or PID filter is applied then new connection credentials should be
+matched. To clear all PID filters call zmq_setsockopt(socket,
+ZMQ_IPC_FILTER_PID, NULL, 0).
+
+NOTE: PID filters are only available on platforms supporting the SO_PEERCRED
+socket option (currently only Linux).
+
+NOTE: This option is deprecated, please use authentication via the ZAP API
+and IPC whitelisting / blacklisting.
+
+[horizontal]
+Option value type:: pid_t
+Option value unit:: N/A
+Default value:: no filters (allow from all)
+Applicable socket types:: all listening sockets, when using IPC transports.
+
+
+ZMQ_IPC_FILTER_UID: Assign user ID filters to allow new IPC connections
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Assign an arbitrary number of filters that will be applied for each new IPC
+transport connection on a listening socket. If no IPC filters are applied, then
+the IPC transport allows connections from any process. If at least one UID,
+GID, or PID filter is applied then new connection credentials should be
+matched. To clear all UID filters call zmq_setsockopt(socket,
+ZMQ_IPC_FILTER_UID, NULL, 0).
+
+NOTE: UID filters are only available on platforms supporting SO_PEERCRED or
+LOCAL_PEERCRED socket options (currently only Linux and later versions of
+OS X).
+
+NOTE: This option is deprecated, please use authentication via the ZAP API
+and IPC whitelisting / blacklisting.
+
+[horizontal]
+Option value type:: uid_t
+Option value unit:: N/A
+Default value:: no filters (allow from all)
+Applicable socket types:: all listening sockets, when using IPC transports.
+
+
+ZMQ_IPV4ONLY: Use IPv4-only on socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Set the IPv4-only option for the socket. This option is deprecated.
+Please use the ZMQ_IPV6 option.
+
+[horizontal]
+Option value type:: int
+Option value unit:: boolean
+Default value:: 1 (true)
+Applicable socket types:: all, when using TCP transports.
 
 RETURN VALUE
 ------------

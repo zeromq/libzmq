@@ -69,6 +69,13 @@ condition is present on the socket specified by 'fd'. For 0MQ sockets this flag
 has no effect if set in 'events', and shall never be returned in 'revents' by
 _zmq_poll()_.
 
+*ZMQ_POLLPRI*::
+For 0MQ sockets this flags is of no use. For standard sockets this means there
+is urgent data to read. Refer to the POLLPRI flag for more informations.
+For file descriptor, refer to your use case: as an example, GPIO interrupts
+are signaled through a POLLPRI event.
+This flag has no effect on Windows.
+
 NOTE: The _zmq_poll()_ function may be implemented or emulated using operating
 system interfaces other than _poll()_, and as such may be subject to the limits
 of those interfaces in ways not defined in this documentation.

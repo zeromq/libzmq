@@ -676,7 +676,7 @@ Option value unit:: N/A
 Default value:: not set
 Applicable socket types:: all, when using TCP transport
 
-ZMQ_IDENTITY_FD: Retrieve FD associated with igven identity
+ZMQ_IDENTITY_FD: Retrieve FD associated with given identity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The 'ZMQ_IDENTITY_FD' option shall retrieve the FD associated with given identity. 

@@ -143,6 +143,7 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t tid_, int sid_) :
 {
     options.socket_id = sid_;
     options.ipv6 = (parent_->get (ZMQ_IPV6) != 0);
+    options.linger = parent_->get (ZMQ_BLOCKY)? -1: 0;
 }
 
 zmq::socket_base_t::~socket_base_t ()
@@ -401,7 +402,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         // Save last endpoint URI
         listener->get_address (last_endpoint);
 
-        add_endpoint (addr_, (own_t *) listener, NULL);
+        add_endpoint (last_endpoint.c_str (), (own_t *) listener, NULL);
         return 0;
     }
 
@@ -420,7 +421,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         // Save last endpoint URI
         listener->get_address (last_endpoint);
 
-        add_endpoint (addr_, (own_t *) listener, NULL);
+        add_endpoint (last_endpoint.c_str (), (own_t *) listener, NULL);
         return 0;
     }
 #endif
@@ -505,9 +506,6 @@ int zmq::socket_base_t::connect (const char *addr_)
         int rc = pipepair (parents, new_pipes, hwms, conflates);
         errno_assert (rc == 0);
 
-        //  Attach local end of the pipe to this socket object.
-        attach_pipe (new_pipes [0]);
-
         if (!peer.socket) {
             //  The peer doesn't exist yet so we don't know whether
             //  to send the identity message or not. To resolve this,
@@ -555,6 +553,9 @@ int zmq::socket_base_t::connect (const char *addr_)
             //  increased here.
             send_bind (peer.socket, new_pipes [1], false);
         }
+
+        //  Attach local end of the pipe to this socket object.
+        attach_pipe (new_pipes [0]);
 
         // Save last endpoint URI
         last_endpoint.assign (addr_);

@@ -27,7 +27,7 @@
 //  This defines the settle time used in tests; raise this if we
 //  get test failures on slower systems due to binds/connects not
 //  settled. Tested to work reliably at 1 msec on a fast PC.
-#define SETTLE_TIME 10         //  In msec
+#define SETTLE_TIME 50         //  In msec
 
 #undef NDEBUG
 #include <time.h>

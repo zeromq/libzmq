@@ -2,14 +2,9 @@
 
 language: c
 
-#   Build required projects first
-before_script:
+env:
+- BUILD_TYPE=default
+- BUILD_TYPE=qt-android
 
-#   libsodium
-- git clone git://github.com/jedisct1/libsodium.git
-- ( cd libsodium; ./autogen.sh; ./configure; make check; sudo make install; sudo ldconfig )
-
-#   Build and check this project
-script:
-- ./autogen.sh && ./configure && make && make check
-- sudo make install
+# Build and check this project according to the BUILD_TYPE
+script: ./ci_build.sh

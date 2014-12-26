@@ -197,6 +197,7 @@ void zmq::pgm_sender_t::out_event ()
 
     if (has_tx_timer) {
         cancel_timer (tx_timer_id);
+        set_pollout (handle);
         has_tx_timer = false;
     }
 
@@ -210,8 +211,10 @@ void zmq::pgm_sender_t::out_event ()
         zmq_assert (nbytes == 0);
 
         if (errno == ENOMEM) {
+            // Stop polling handle and wait for tx timeout
             const long timeout = pgm_socket.get_tx_timeout ();
             add_timer (timeout, tx_timer_id);
+            reset_pollout (handle);
             has_tx_timer = true;
         }
         else
@@ -228,7 +231,9 @@ void zmq::pgm_sender_t::timer_event (int token)
     }
     else
     if (token == tx_timer_id) {
+        // Restart polling handle and retry sending
         has_tx_timer = false;
+        set_pollout (handle);
         out_event ();
     }
     else

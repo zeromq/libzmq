@@ -388,7 +388,7 @@ void zmq::pipe_t::terminate (bool delay_)
         state = term_ack_sent;
     }
 
-    //  If there are pending messages still availabe, do nothing.
+    //  If there are pending messages still available, do nothing.
     else
     if (state == waiting_for_delimiter) {
     }

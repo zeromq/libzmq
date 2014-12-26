@@ -22,6 +22,8 @@
 #include "clock.hpp"
 #include "err.hpp"
 #include "thread.hpp"
+#include "atomic_counter.hpp"
+#include "atomic_ptr.hpp"
 #include <assert.h>
 #include "../include/zmq_utils.h"
 
@@ -203,4 +205,52 @@ int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key)
     errno = ENOTSUP;
     return -1;
 #endif
+}
+
+
+//  --------------------------------------------------------------------------
+//  Initialize a new atomic counter, which is set to zero
+
+void *zmq_atomic_counter_new (void)
+{
+    zmq::atomic_counter_t *counter = new zmq::atomic_counter_t;
+    alloc_assert (counter);
+    return counter;
+}
+
+//  Se the value of the atomic counter
+
+void zmq_atomic_counter_set (void *counter_, int value_)
+{
+    ((zmq::atomic_counter_t *) counter_)->set (value_);
+}
+
+//  Increment the atomic counter, and return the old value
+
+int zmq_atomic_counter_inc (void *counter_)
+{
+    return ((zmq::atomic_counter_t *) counter_)->add (1);
+}
+
+//  Decrement the atomic counter and return 1 (if counter >= 1), or
+//  0 if counter hit zero.
+
+int zmq_atomic_counter_dec (void *counter_)
+{
+    return ((zmq::atomic_counter_t *) counter_)->sub (1)? 1: 0;
+}
+
+//  Return actual value of atomic counter
+
+int zmq_atomic_counter_value (void *counter_)
+{
+    return ((zmq::atomic_counter_t *) counter_)->get ();
+}
+
+//  Destroy atomic counter, and set reference to NULL
+
+void zmq_atomic_counter_destroy (void **counter_p_)
+{
+    delete ((zmq::atomic_counter_t *) *counter_p_);
+    *counter_p_ = NULL;
 }

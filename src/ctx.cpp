@@ -65,6 +65,7 @@ zmq::ctx_t::ctx_t () :
     slots (NULL),
     max_sockets (clipped_maxsocket (ZMQ_MAX_SOCKETS_DFLT)),
     io_thread_count (ZMQ_IO_THREADS_DFLT),
+    blocky (true),
     ipv6 (false),
     thread_priority (ZMQ_THREAD_PRIORITY_DFLT),
     thread_sched_policy (ZMQ_THREAD_SCHED_POLICY_DFLT)
@@ -222,6 +223,12 @@ int zmq::ctx_t::set (int option_, int optval_)
         thread_sched_policy = optval_;
         opt_sync.unlock();
     }
+    else
+    if (option_ == ZMQ_BLOCKY && optval_ >= 0) {
+        opt_sync.lock ();
+        blocky = (optval_ != 0);
+        opt_sync.unlock ();
+    }
     else {
         errno = EINVAL;
         rc = -1;
@@ -243,6 +250,9 @@ int zmq::ctx_t::get (int option_)
     else
     if (option_ == ZMQ_IPV6)
         rc = ipv6;
+    else
+    if (option_ == ZMQ_BLOCKY)
+        rc = blocky;
     else {
         errno = EINVAL;
         rc = -1;

@@ -96,7 +96,7 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
 
     int family = get_peer_ip_address (s, peer_address);
     if (family == 0)
-        peer_address = "";
+        peer_address.clear();
 #if defined ZMQ_HAVE_SO_PEERCRED
     else
     if (family == PF_UNIX) {
@@ -534,6 +534,12 @@ bool zmq::stream_engine_t::handshake ()
     //  Is the peer using ZMTP/1.0 with no revision number?
     //  If so, we send and receive rest of identity message
     if (greeting_recv [0] != 0xff || !(greeting_recv [9] & 0x01)) {
+        if (session->zap_enabled ()) {
+           // reject ZMTP 1.0 connections if ZAP is enabled
+           error (protocol_error);
+           return false;
+        }
+
         encoder = new (std::nothrow) v1_encoder_t (out_batch_size);
         alloc_assert (encoder);
 
@@ -575,6 +581,12 @@ bool zmq::stream_engine_t::handshake ()
     }
     else
     if (greeting_recv [revision_pos] == ZMTP_1_0) {
+        if (session->zap_enabled ()) {
+           // reject ZMTP 1.0 connections if ZAP is enabled
+           error (protocol_error);
+           return false;
+        }
+
         encoder = new (std::nothrow) v1_encoder_t (
             out_batch_size);
         alloc_assert (encoder);
@@ -585,6 +597,12 @@ bool zmq::stream_engine_t::handshake ()
     }
     else
     if (greeting_recv [revision_pos] == ZMTP_2_0) {
+        if (session->zap_enabled ()) {
+           // reject ZMTP 2.0 connections if ZAP is enabled
+           error (protocol_error);
+           return false;
+        }
+
         encoder = new (std::nothrow) v2_encoder_t (out_batch_size);
         alloc_assert (encoder);
 
@@ -642,6 +660,18 @@ bool zmq::stream_engine_t::handshake ()
         }
 #endif
         else {
+            //  Temporary support for security debugging
+            char mechanism [21];
+            memcpy (mechanism, greeting_recv + 12, 20);
+            mechanism [20] = 0;
+            printf ("LIBZMQ I: security failure, self=%s peer=%s\n",
+                options.mechanism == ZMQ_NULL? "NULL":
+                options.mechanism == ZMQ_PLAIN? "PLAIN":
+                options.mechanism == ZMQ_CURVE? "CURVE":
+                options.mechanism == ZMQ_GSSAPI? "GSSAPI":
+                "OTHER",
+                mechanism);
+            
             error (protocol_error);
             return false;
         }
@@ -781,7 +811,7 @@ void zmq::stream_engine_t::mechanism_ready ()
     it = zap_properties.begin ();
     while (it != zap_properties.end ()) {
         properties.insert (properties_t::value_type (it->first, it->second));
-        it++;
+        ++it;
     }
 
     //  Add ZMTP properties.
@@ -789,7 +819,7 @@ void zmq::stream_engine_t::mechanism_ready ()
     it = zmtp_properties.begin ();
     while (it != zmtp_properties.end ()) {
         properties.insert (properties_t::value_type (it->first, it->second));
-        it++;
+        ++it;
     }
 
     zmq_assert (metadata == NULL);

@@ -28,24 +28,40 @@ zmq::xpub_t::xpub_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     socket_base_t (parent_, tid_, sid_),
     verbose (false),
     more (false),
-    lossy (true)
+    lossy (true),
+	manual(false),
+	welcome_msg ()
 {
-    options.type = ZMQ_XPUB;
+	last_pipe = NULL;	
+    options.type = ZMQ_XPUB;	
+	welcome_msg.init();
 }
 
 zmq::xpub_t::~xpub_t ()
 {
+	welcome_msg.close();
 }
 
 void zmq::xpub_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 {
     zmq_assert (pipe_);
     dist.attach (pipe_);
-
+	
     //  If subscribe_to_all_ is specified, the caller would like to subscribe
     //  to all data on this pipe, implicitly.
     if (subscribe_to_all_)
-        subscriptions.add (NULL, 0, pipe_);
+        subscriptions.add (NULL, 0, pipe_);	
+
+	// if welcome message exist
+	if (welcome_msg.size() > 0)
+	{
+		msg_t copy;
+		copy.init();
+		copy.copy(welcome_msg);
+
+		pipe_->write(&copy);		
+		pipe_->flush();		
+	}
 
     //  The pipe is active when attached. Let's read the subscriptions from
     //  it, if any.
@@ -60,19 +76,28 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
         //  Apply the subscription to the trie
         unsigned char *const data = (unsigned char *) sub.data ();
         const size_t size = sub.size ();
-        if (size > 0 && (*data == 0 || *data == 1)) {
-            bool unique;
-            if (*data == 0)
-                unique = subscriptions.rm (data + 1, size - 1, pipe_);
-            else
-                unique = subscriptions.add (data + 1, size - 1, pipe_);
+        if (size > 0 && (*data == 0 || *data == 1)) {			
+			if (manual)
+			{
+				last_pipe = pipe_;
+				pending_data.push_back(blob_t(data, size));
+				pending_flags.push_back(0);				
+			}
+			else
+			{
+				bool unique;
+				if (*data == 0)
+					unique = subscriptions.rm(data + 1, size - 1, pipe_);
+				else
+					unique = subscriptions.add(data + 1, size - 1, pipe_);
 
-            //  If the subscription is not a duplicate store it so that it can be
-            //  passed to used on next recv call. (Unsubscribe is not verbose.)
-            if (options.type == ZMQ_XPUB && (unique || (*data && verbose))) {
-                pending_data.push_back (blob_t (data, size));
-                pending_flags.push_back (0);
-            }
+				//  If the subscription is not a duplicate store it so that it can be
+				//  passed to used on next recv call. (Unsubscribe is not verbose.)
+				if (options.type == ZMQ_XPUB && (unique || (*data && verbose))) {
+					pending_data.push_back(blob_t(data, size));
+					pending_flags.push_back(0);
+				}
+			}
         }
         else {
             //  Process user message coming upstream from xsub socket
@@ -90,16 +115,42 @@ void zmq::xpub_t::xwrite_activated (pipe_t *pipe_)
 
 int zmq::xpub_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
-{
-    if (optvallen_ != sizeof (int) || *static_cast <const int*> (optval_) < 0) {
-        errno = EINVAL;
-        return -1;
-    }
-    if (option_ == ZMQ_XPUB_VERBOSE)
-        verbose = (*static_cast <const int*> (optval_) != 0);
-    else
-    if (option_ == ZMQ_XPUB_NODROP)
-        lossy = (*static_cast <const int*> (optval_) == 0);
+{	
+	if (option_ == ZMQ_XPUB_VERBOSE || option_ == ZMQ_XPUB_NODROP || option_ == ZMQ_XPUB_MANUAL)
+	{
+		if (optvallen_ != sizeof(int) || *static_cast <const int*> (optval_) < 0) {
+			errno = EINVAL;
+			return -1;
+		}
+
+		if (option_ == ZMQ_XPUB_VERBOSE)
+			verbose = (*static_cast <const int*> (optval_) != 0);
+		else
+		if (option_ == ZMQ_XPUB_NODROP)
+			lossy = (*static_cast <const int*> (optval_) == 0);
+		else
+		if (option_ == ZMQ_XPUB_MANUAL)
+			manual = (*static_cast <const int*> (optval_) != 0);				
+	}        
+    else    
+	if (option_ == ZMQ_SUBSCRIBE && manual && last_pipe != NULL)	
+		subscriptions.add((unsigned char *)optval_, optvallen_, last_pipe);	
+	else
+	if (option_ == ZMQ_UNSUBSCRIBE && manual && last_pipe != NULL)	
+		subscriptions.rm((unsigned char *)optval_, optvallen_, last_pipe);	
+	else 
+	if (option_ == ZMQ_XPUB_WELCOME_MSG) {	
+		welcome_msg.close();
+
+		if (optvallen_ > 0)	{
+			welcome_msg.init_size(optvallen_);
+
+			unsigned char *data = (unsigned char*)welcome_msg.data();
+			memcpy(data, optval_, optvallen_);		
+		}
+		else
+			welcome_msg.init();
+	}
     else {
         errno = EINVAL;
         return -1;
@@ -189,7 +240,8 @@ void zmq::xpub_t::send_unsubscription (unsigned char *data_, size_t size_,
         //  to be retrived by the user later on.
         blob_t unsub (size_ + 1, 0);
         unsub [0] = 0;
-        memcpy (&unsub [1], data_, size_);
+        if (size_ > 0)
+            memcpy (&unsub [1], data_, size_);
         self->pending_data.push_back (unsub);
         self->pending_flags.push_back (0);
     }

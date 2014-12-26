@@ -131,7 +131,7 @@ get_monitor_event (void *monitor, int *value, char **address)
     zmq_msg_t msg;
     zmq_msg_init (&msg);
     if (zmq_msg_recv (&msg, monitor, 0) == -1)
-        return -1;              //  Interruped, presumably
+        return -1;              //  Interrupted, presumably
     assert (zmq_msg_more (&msg));
 
     uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
@@ -142,7 +142,7 @@ get_monitor_event (void *monitor, int *value, char **address)
     //  Second frame in message contains event address
     zmq_msg_init (&msg);
     if (zmq_msg_recv (&msg, monitor, 0) == -1)
-        return -1;              //  Interruped, presumably
+        return -1;              //  Interrupted, presumably
     assert (!zmq_msg_more (&msg));
 
     if (address) {

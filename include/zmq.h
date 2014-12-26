@@ -30,7 +30,7 @@
 
 /*  Version macros for compile-time API version detection                     */
 #define ZMQ_VERSION_MAJOR 4
-#define ZMQ_VERSION_MINOR 1
+#define ZMQ_VERSION_MINOR 2
 #define ZMQ_VERSION_PATCH 0
 
 #define ZMQ_MAKE_VERSION(major, minor, patch) \
@@ -276,7 +276,6 @@ ZMQ_EXPORT const char *zmq_msg_gets (zmq_msg_t *msg, const char *property);
 #define ZMQ_TCP_KEEPALIVE_CNT 35
 #define ZMQ_TCP_KEEPALIVE_IDLE 36
 #define ZMQ_TCP_KEEPALIVE_INTVL 37
-#define ZMQ_TCP_ACCEPT_FILTER 38
 #define ZMQ_IMMEDIATE 39
 #define ZMQ_XPUB_VERBOSE 40
 #define ZMQ_ROUTER_RAW 41
@@ -296,9 +295,6 @@ ZMQ_EXPORT const char *zmq_msg_gets (zmq_msg_t *msg, const char *property);
 #define ZMQ_ZAP_DOMAIN 55
 #define ZMQ_ROUTER_HANDOVER 56
 #define ZMQ_TOS 57
-#define ZMQ_IPC_FILTER_PID 58
-#define ZMQ_IPC_FILTER_UID 59
-#define ZMQ_IPC_FILTER_GID 60
 #define ZMQ_CONNECT_RID 61 
 #define ZMQ_GSSAPI_SERVER 62
 #define ZMQ_GSSAPI_PRINCIPAL 63
@@ -308,6 +304,9 @@ ZMQ_EXPORT const char *zmq_msg_gets (zmq_msg_t *msg, const char *property);
 #define ZMQ_IDENTITY_FD 67
 #define ZMQ_SOCKS_PROXY 68
 #define ZMQ_XPUB_NODROP 69
+#define ZMQ_BLOCKY 70
+#define ZMQ_XPUB_MANUAL 71
+#define ZMQ_XPUB_WELCOME_MSG 72
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1
@@ -325,6 +324,10 @@ ZMQ_EXPORT const char *zmq_msg_gets (zmq_msg_t *msg, const char *property);
 #define ZMQ_GSSAPI 3
 
 /*  Deprecated options and aliases                                            */
+#define ZMQ_TCP_ACCEPT_FILTER       38
+#define ZMQ_IPC_FILTER_PID          58
+#define ZMQ_IPC_FILTER_UID          59
+#define ZMQ_IPC_FILTER_GID          60
 #define ZMQ_IPV4ONLY                31
 #define ZMQ_DELAY_ATTACH_ON_CONNECT ZMQ_IMMEDIATE
 #define ZMQ_NOBLOCK                 ZMQ_DONTWAIT
@@ -373,6 +376,7 @@ ZMQ_EXPORT int zmq_socket_monitor (void *s, const char *addr, int events);
 #define ZMQ_POLLIN 1
 #define ZMQ_POLLOUT 2
 #define ZMQ_POLLERR 4
+#define ZMQ_POLLPRI 8
 
 typedef struct zmq_pollitem_t
 {
@@ -428,6 +432,17 @@ ZMQ_EXPORT uint8_t *zmq_z85_decode (uint8_t *dest, const char *string);
 /*  Generate z85-encoded public and private keypair with libsodium.           */
 /*  Returns 0 on success.                                                     */
 ZMQ_EXPORT int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key);
+
+/******************************************************************************/
+/*  Atomic utility methods                                                    */
+/******************************************************************************/
+
+ZMQ_EXPORT void *zmq_atomic_counter_new (void);
+ZMQ_EXPORT void zmq_atomic_counter_set (void *counter, int value);
+ZMQ_EXPORT int zmq_atomic_counter_inc (void *counter);
+ZMQ_EXPORT int zmq_atomic_counter_dec (void *counter);
+ZMQ_EXPORT int zmq_atomic_counter_value (void *counter);
+ZMQ_EXPORT void zmq_atomic_counter_destroy (void **counter_p);
 
 
 /******************************************************************************/

@@ -23,8 +23,13 @@ int main (void)
 {
     setup_test_environment();
     int rc;
-    char buf[32];
+    const size_t buf_size = 32;
+    char buf[buf_size];
     const char *ep = "tcp://127.0.0.1:5560";
+    const char *ep_wc_tcp = "tcp://127.0.0.1:*";
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+    const char *ep_wc_ipc = "ipc://*";
+#endif
 
     //  Create infrastructure.
     void *ctx = zmq_ctx_new ();
@@ -99,6 +104,54 @@ int main (void)
     assert (rc == 0);
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
+
+    //  Create infrastructure (wild-card binding)
+    ctx = zmq_ctx_new ();
+    assert (ctx);
+    push = zmq_socket (ctx, ZMQ_PUSH);
+    assert (push);
+    rc = zmq_bind (push, ep_wc_tcp);
+    assert (rc == 0);
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+    pull = zmq_socket (ctx, ZMQ_PULL);
+    assert (pull);
+    rc = zmq_bind (pull, ep_wc_ipc);
+    assert (rc == 0);
+#endif
+
+    // Unbind sockets binded by wild-card address
+    rc = zmq_getsockopt (push, ZMQ_LAST_ENDPOINT, buf, (size_t *)&buf_size);
+    assert (rc == 0);
+    rc = zmq_unbind (push, buf);
+    assert (rc == 0);
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+    rc = zmq_getsockopt (pull, ZMQ_LAST_ENDPOINT, buf, (size_t *)&buf_size);
+    assert (rc == 0);
+    rc = zmq_unbind (pull, buf);
+    assert (rc == 0);
+#endif
+
+    //  Create infrastructure (wild-card binding)
+    ctx = zmq_ctx_new ();
+    assert (ctx);
+    push = zmq_socket (ctx, ZMQ_PUSH);
+    assert (push);
+    rc = zmq_bind (push, ep_wc_tcp);
+    assert (rc == 0);
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+    pull = zmq_socket (ctx, ZMQ_PULL);
+    assert (pull);
+    rc = zmq_bind (pull, ep_wc_ipc);
+    assert (rc == 0);
+#endif
+
+    // Sockets binded by wild-card address can't be unbinded by wild-card address
+    rc = zmq_unbind (push, ep_wc_tcp);
+    assert (rc == -1 && zmq_errno () == ENOENT);
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+    rc = zmq_unbind (pull, ep_wc_ipc);
+    assert (rc == -1 && zmq_errno () == ENOENT);
+#endif
 
     return 0;
 }
