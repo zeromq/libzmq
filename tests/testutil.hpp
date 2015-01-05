@@ -27,7 +27,7 @@
 //  This defines the settle time used in tests; raise this if we
 //  get test failures on slower systems due to binds/connects not
 //  settled. Tested to work reliably at 1 msec on a fast PC.
-#define SETTLE_TIME 10         //  In msec
+#define SETTLE_TIME 50         //  In msec
 
 #undef NDEBUG
 #include <time.h>
@@ -268,8 +268,13 @@ void setup_test_environment()
     _CrtSetReportFile( _CRT_ASSERT, _CRTDBG_FILE_STDERR );
 #   endif
 #else
+#if defined ZMQ_HAVE_CYGWIN
+    // abort test after 121 seconds
+    alarm(121);
+#else
     // abort test after 60 seconds
     alarm(60);
+#endif
 #endif
 #if defined __MVS__
     // z/OS UNIX System Services: Ignore SIGPIPE during test runs, as a

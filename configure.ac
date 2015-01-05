@@ -134,6 +134,7 @@ libzmq_dso_visibility="yes"
 
 # Platform specific checks
 libzmq_on_mingw32="no"
+libzmq_on_cygwin="no"
 libzmq_on_android="no"
 libzmq_on_linux="no"
 
@@ -269,6 +270,8 @@ case "${host_os}" in
         # Define on Cygwin to enable all library features
         CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_CYGWIN, 1, [Have Cygwin])
+        libzmq_on_cygwin="yes"
+        libzmq_dso_visibility="no"        
         if test "x$enable_static" = "xyes"; then
             AC_MSG_ERROR([Building static libraries is not supported under Cygwin])
         fi
@@ -472,6 +475,7 @@ AC_LANG_POP([C++])
 
 AM_CONDITIONAL(BUILD_TIPC, test "x$libzmq_tipc_support" = "xyes")
 AM_CONDITIONAL(ON_MINGW, test "x$libzmq_on_mingw32" = "xyes")
+AM_CONDITIONAL(ON_CYGWIN, test "x$libzmq_on_cygwin" = "xyes")
 AM_CONDITIONAL(ON_ANDROID, test "x$libzmq_on_android" = "xyes")
 AM_CONDITIONAL(ON_LINUX, test "x$libzmq_on_linux" = "xyes")
 

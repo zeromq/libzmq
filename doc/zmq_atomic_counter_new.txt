@@ -1,0 +1,62 @@
+zmq_atomic_counter_new(3)
+=========================
+
+
+NAME
+----
+zmq_atomic_counter_new - create a new atomic counter
+
+
+SYNOPSIS
+--------
+*void *zmq_atomic_counter_new (void);*
+
+
+DESCRIPTION
+-----------
+The _zmq_atomic_counter_new_ function creates a new atomic counter. You
+can use this in multithreaded applications to do, for example, reference
+counting of shared objects. The atomic counter is at least 32 bits large.
+This function uses platform specific atomic operations.
+
+
+RETURN VALUE
+------------
+The _zmq_atomic_counter_new()_ function returns the new atomic counter
+if successful. Otherwise it returns NULL.
+
+
+EXAMPLE
+-------
+.Test code for atomic counters
+----
+void *counter = zmq_atomic_counter_new ();
+assert (zmq_atomic_counter_value (counter) == 0);
+assert (zmq_atomic_counter_inc (counter) == 0);
+assert (zmq_atomic_counter_inc (counter) == 1);
+assert (zmq_atomic_counter_inc (counter) == 2);
+assert (zmq_atomic_counter_value (counter) == 3);
+assert (zmq_atomic_counter_dec (counter) == 1);
+assert (zmq_atomic_counter_dec (counter) == 1);
+assert (zmq_atomic_counter_dec (counter) == 0);
+zmq_atomic_counter_set (counter, 2);
+assert (zmq_atomic_counter_dec (counter) == 1);
+assert (zmq_atomic_counter_dec (counter) == 0);
+zmq_atomic_counter_destroy (&counter);
+return 0;
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_atomic_counter_set[3]
+linkzmq:zmq_atomic_counter_inc[3]
+linkzmq:zmq_atomic_counter_dec[3]
+linkzmq:zmq_atomic_counter_value[3]
+linkzmq:zmq_atomic_counter_destroy[3]
+
+
+AUTHORS
+-------
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.
