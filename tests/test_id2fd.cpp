@@ -26,7 +26,7 @@ int main (void)
 
     void *ctx = zmq_ctx_new ();
     assert (ctx);
-    
+
     void *client = zmq_socket (ctx, ZMQ_REQ);
     assert (client);
 
@@ -38,45 +38,53 @@ int main (void)
     assert (rc == 0);
     rc = zmq_connect (client, "tcp://127.0.0.1:9998");
     assert (rc == 0);
-    
+
     rc=zmq_send(client,"1234567890",10,0);
     assert (rc != -1);
-    
+
 
     int partnumber=1;
     int recvfd=-1;
     zmq_msg_t part;
     do {
         /* if not first free prev message part */
-        if (partnumber!=1) zmq_msg_close (&part); 
+        if (partnumber!=1) zmq_msg_close (&part);
 
         /* Create an empty ØMQ message to hold the message part */
         int rc = zmq_msg_init (&part);
         assert (rc == 0);
-        
+
         /* Block until a message is available to be received from socket */
         rc = zmq_msg_recv (&part,server, 0);
         assert (rc != -1);
         if (partnumber==1) {// this is the identity of the receiving pipe
-            
+
             //buffer for  zmq_getsockopt / ZMQ_IDENTITY_FD
-            char idbuf[255]; 
-            size_t  idbufsz=zmq_msg_size (&part);
-            
+            char idbuf[255];
+            char failbuf[2];
+            size_t idbufsz=zmq_msg_size (&part);
+            size_t failsz=2;
+
             assert (idbufsz<=255);
             memcpy(idbuf,zmq_msg_data(&part),idbufsz);
-            
+            failbuf[0] = idbuf[0];
+            failbuf[1] = 0;
+
+            // ensure that we validate buffer is sufficient to hold result
+            rc = zmq_getsockopt (server, ZMQ_IDENTITY_FD, failbuf, &failsz);
+            assert (rc == EINVAL);
+
             rc = zmq_getsockopt (server, ZMQ_IDENTITY_FD, idbuf, &idbufsz);
             assert (rc == 0);
-            
+
             memcpy(&recvfd,idbuf,sizeof(recvfd));
-            
+
             //depending on your system this should be around 14
             assert (recvfd > 0);
         }
         partnumber++;
     } while (zmq_msg_more(&part));
-    zmq_msg_close (&part); 
+    zmq_msg_close (&part);
 
     close_zero_linger (client);
     close_zero_linger (server);
