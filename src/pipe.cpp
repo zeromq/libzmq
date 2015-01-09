@@ -65,7 +65,6 @@ int zmq::pipepair (class object_t *parents_ [2], class pipe_t* pipes_ [2],
 zmq::pipe_t::pipe_t (object_t *parent_, upipe_t *inpipe_, upipe_t *outpipe_,
       int inhwm_, int outhwm_, bool conflate_) :
     object_t (parent_),
-    assoc_fd (retired_fd),
     inpipe (inpipe_),
     outpipe (outpipe_),
     in_active (true),

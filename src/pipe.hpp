@@ -27,7 +27,6 @@
 #include "stdint.hpp"
 #include "array.hpp"
 #include "blob.hpp"
-#include "fd.hpp"
 
 namespace zmq
 {
@@ -120,8 +119,6 @@ namespace zmq
 
         // check HWM
         bool check_hwm () const;
-        // provide a way to link pipe to engine fd. Set on session initialization
-        fd_t assoc_fd; //=retired_fd
     private:
 
         //  Type of the underlying lock-free pipe.
