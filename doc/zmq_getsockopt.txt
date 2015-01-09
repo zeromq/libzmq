@@ -676,23 +676,6 @@ Option value unit:: N/A
 Default value:: not set
 Applicable socket types:: all, when using TCP transport
 
-ZMQ_IDENTITY_FD: Retrieve FD associated with given identity
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The 'ZMQ_IDENTITY_FD' option shall retrieve the FD associated with given identity. 
-call _zmq_getsockopt()_ with _option_value_ / _option_len_ pointing to memory 
-holding the identity string. On return the start of _option_value_ buffer will be 
-filled with file descriptor of the pipe with given identity if found. If the identity 
-is not found ENOTSOCK is returned as _zmq_getsockopt()_  result. When the pipe is not 
-using FD as lower transport you might get -1 as FD. NB: _option_value_ must be always 
-big  enough to hold sizeof(fd_t) bytes no matter how small the identity length is.
-
-[horizontal]
-Option value type:: character string/fd_t
-Option value unit:: N/A
-Default value:: not set
-Applicable socket types:: ROUTER
-
 
 RETURN VALUE
 ------------
