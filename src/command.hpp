@@ -146,8 +146,12 @@ namespace zmq
             } done;
 
         } args;
+
+        enum { pad_size = 64 - (sizeof(destination) + sizeof(args)) };
+        unsigned char unused[ pad_size ];
+
     };
 
-}    
+}
 
 #endif
