@@ -246,12 +246,16 @@ int zmq::router_t::xsend (msg_t *msg_)
         }
 
         bool ok = current_out->write (msg_);
-        if (unlikely (!ok))
+        if (unlikely (!ok)) {
+            // Message failed to send - we must close it ourselves.
+            int rc = msg_->close ();
+            errno_assert (rc == 0);
             current_out = NULL;
-        else
-        if (!more_out) {
-            current_out->flush ();
-            current_out = NULL;
+        } else {
+          if (!more_out) {
+              current_out->flush ();
+              current_out = NULL;
+          }
         }
     }
     else {
