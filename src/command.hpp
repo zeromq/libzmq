@@ -59,7 +59,8 @@ namespace zmq
             done
         } type;
 
-        union {
+        union args_t
+        {
 
             //  Sent to I/O thread to let it know that it should
             //  terminate itself.
@@ -147,7 +148,7 @@ namespace zmq
 
         } args;
 
-        enum { pad_size = 64 - (sizeof(destination) + sizeof(args)) };
+        enum { pad_size = 64 - (sizeof(zmq::object_t*) + sizeof(args_t) + sizeof(type_t)) };
         unsigned char unused[ pad_size ];
 
     };
