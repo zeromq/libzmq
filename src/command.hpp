@@ -33,7 +33,11 @@ namespace zmq
 
     //  This structure defines the commands that can be sent between threads.
 
+#ifdef _MSC_VER
+    __declspec(align(64)) struct command_t
+#else
     struct command_t
+#endif
     {
         //  Object to process the command.
         zmq::object_t *destination;
@@ -147,12 +151,11 @@ namespace zmq
             } done;
 
         } args;
-
-        enum { pad_size = 64 - (sizeof(zmq::object_t*) + sizeof(args_t) + sizeof(type_t)) };
-        unsigned char unused[ pad_size ];
-
+#ifdef _MSC_VER
     };
-
+#else
+    } __attribute__((aligned(64)));
+#endif
 }
 
 #endif
