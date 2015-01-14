@@ -326,7 +326,6 @@ test_apps = \
 	test_connect_rid \
 	test_bind_src_address \
 	test_metadata \
-	test_id2fd \
 	test_capabilities \
 	test_xpub_nodrop
 
