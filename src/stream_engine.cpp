@@ -671,7 +671,7 @@ bool zmq::stream_engine_t::handshake ()
                 options.mechanism == ZMQ_GSSAPI? "GSSAPI":
                 "OTHER",
                 mechanism);
-            
+
             error (protocol_error);
             return false;
         }
@@ -805,6 +805,11 @@ void zmq::stream_engine_t::mechanism_ready ()
     typedef metadata_t::dict_t properties_t;
     properties_t properties;
     properties_t::const_iterator it;
+
+    //  If we have a peer_address, add it to metadata
+    if (!peer_address.empty()) {
+        properties.insert(std::make_pair("Peer-Address", peer_address));
+    }
 
     //  Add ZAP properties.
     const properties_t& zap_properties = mechanism->get_zap_properties ();

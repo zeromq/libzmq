@@ -137,3 +137,4 @@ zeromq-*.tar.gz
 zeromq-*.zip
 core
 build
+test-suite.log

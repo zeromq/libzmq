@@ -28,6 +28,7 @@ function:
     Socket-Type
     Identity
     Resource
+    Peer-Address
 
 Other properties may be defined based on the underlying security, see ZAP
 auththenticated connection sample below.
