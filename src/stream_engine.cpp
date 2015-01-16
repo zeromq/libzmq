@@ -813,11 +813,11 @@ void zmq::stream_engine_t::mechanism_ready ()
 
     //  Add ZAP properties.
     const properties_t& zap_properties = mechanism->get_zap_properties ();
-    properties.insert(zap_properties.begin(), zap_properties.end());
+    properties.insert(zap_properties.begin (), zap_properties.end ());
 
     //  Add ZMTP properties.
     const properties_t& zmtp_properties = mechanism->get_zmtp_properties ();
-    properties.insert(zmtp_properties.begin(), zmtp_properties.end ());
+    properties.insert(zmtp_properties.begin (), zmtp_properties.end ());
 
     zmq_assert (metadata == NULL);
     if (!properties.empty ())
