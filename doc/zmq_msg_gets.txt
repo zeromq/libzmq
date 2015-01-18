@@ -34,7 +34,7 @@ property will return the IP address of the remote endpoint as returned by
 getnameinfo(2).
 
 Other properties may be defined based on the underlying security mechanism,
-see ZAP auththenticated connection sample below.
+see ZAP authenticated connection sample below.
 
 RETURN VALUE
 ------------
