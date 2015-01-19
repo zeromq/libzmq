@@ -195,7 +195,7 @@ ZMQ_EXPORT int zmq_ctx_destroy (void *context);
 /*  0MQ message definition.                                                   */
 /******************************************************************************/
 
-typedef struct zmq_msg_t {unsigned char _ [48];} zmq_msg_t;
+typedef struct zmq_msg_t {unsigned char _ [64];} zmq_msg_t;
 
 typedef void (zmq_free_fn) (void *data, void *hint);
 
@@ -292,7 +292,6 @@ ZMQ_EXPORT const char *zmq_msg_gets (zmq_msg_t *msg, const char *property);
 #define ZMQ_GSSAPI_SERVICE_PRINCIPAL 64
 #define ZMQ_GSSAPI_PLAINTEXT 65
 #define ZMQ_HANDSHAKE_IVL 66
-#define ZMQ_IDENTITY_FD 67
 #define ZMQ_SOCKS_PROXY 68
 #define ZMQ_XPUB_NODROP 69
 #define ZMQ_BLOCKY 70

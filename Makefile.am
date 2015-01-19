@@ -334,7 +334,6 @@ test_apps = \
 	tests/test_connect_rid \
 	tests/test_bind_src_address \
 	tests/test_metadata \
-	tests/test_id2fd \
 	tests/test_capabilities \
 	tests/test_xpub_nodrop \
 	tests/test_xpub_manual \

@@ -41,7 +41,7 @@ zap_handler (void *handler)
 
         assert (streq (version, "1.0"));
         assert (streq (mechanism, "NULL"));
-        
+
         s_sendmore (handler, version);
         s_sendmore (handler, sequence);
         if (streq (domain, "DOMAIN")) {
@@ -100,6 +100,8 @@ int main (void)
     assert (streq (zmq_msg_gets (&msg, "Hello"), "World"));
     assert (streq (zmq_msg_gets (&msg, "Socket-Type"), "DEALER"));
     assert (streq (zmq_msg_gets (&msg, "User-Id"), "anonymous"));
+    assert (streq (zmq_msg_gets (&msg, "Peer-Address"), "127.0.0.1"));
+
     assert (zmq_msg_gets (&msg, "No Such") == NULL);
     assert (zmq_errno () == EINVAL);
     zmq_msg_close (&msg);

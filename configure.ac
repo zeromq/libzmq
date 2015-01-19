@@ -271,7 +271,7 @@ case "${host_os}" in
         CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_CYGWIN, 1, [Have Cygwin])
         libzmq_on_cygwin="yes"
-        libzmq_dso_visibility="no"        
+        libzmq_dso_visibility="no"
         if test "x$enable_static" = "xyes"; then
             AC_MSG_ERROR([Building static libraries is not supported under Cygwin])
         fi
@@ -436,10 +436,10 @@ AM_CONDITIONAL(HAVE_PGM, test "x$have_pgm_library" = "xyes")
 # This uses "--with-norm" to point to the "norm" directory
 # for "norm/include" and "norm/lib"
 #(if "--with-norm=yes" is given, then assume installed on system)
-AC_ARG_WITH([norm], 
-    [AS_HELP_STRING([--with-norm], 
+AC_ARG_WITH([norm],
+    [AS_HELP_STRING([--with-norm],
         [build libzmq with NORM protocol extension, optionally specifying norm path [default=no]])],
-    [with_norm_ext=$withval], 
+    [with_norm_ext=$withval],
     [with_norm_ext=no])
 
 
@@ -481,7 +481,7 @@ AM_CONDITIONAL(ON_LINUX, test "x$libzmq_on_linux" = "xyes")
 
 # Checks for library functions.
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS(perror gettimeofday clock_gettime memset socket getifaddrs freeifaddrs fork)
+AC_CHECK_FUNCS(perror gettimeofday clock_gettime memset socket getifaddrs freeifaddrs fork posix_memalign)
 AC_CHECK_HEADERS([alloca.h])
 
 LIBZMQ_CHECK_SOCK_CLOEXEC([
