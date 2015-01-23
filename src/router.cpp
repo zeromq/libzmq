@@ -33,14 +33,14 @@ zmq::router_t::router_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     more_out (false),
     next_rid (generate_random ()),
     mandatory (false),
-    //  raw_sock functionality in ROUTER is deprecated
-    raw_sock (false),       
+    //  raw_socket functionality in ROUTER is deprecated
+    raw_socket (false),       
     probe_router (false),
     handover (false)
 {
     options.type = ZMQ_ROUTER;
     options.recv_identity = true;
-    options.raw_sock = false;
+    options.raw_socket = false;
 
     prefetched_id.init ();
     prefetched_msg.init ();
@@ -96,10 +96,10 @@ int zmq::router_t::xsetsockopt (int option_, const void *optval_,
             break;
         case ZMQ_ROUTER_RAW:
             if (is_int && value >= 0) {
-                raw_sock = (value != 0);
-                if (raw_sock) {
+                raw_socket = (value != 0);
+                if (raw_socket) {
                     options.recv_identity = false;
-                    options.raw_sock = true;
+                    options.raw_socket = true;
                 }
                 return 0;
             }
@@ -223,7 +223,7 @@ int zmq::router_t::xsend (msg_t *msg_)
     }
 
     //  Ignore the MORE flag for raw-sock or assert?
-    if (options.raw_sock)
+    if (options.raw_socket)
         msg_->reset_flags (msg_t::more);
 
     //  Check whether this is the last part of the message.
@@ -235,7 +235,7 @@ int zmq::router_t::xsend (msg_t *msg_)
         // Close the remote connection if user has asked to do so
         // by sending zero length message.
         // Pending messages in the pipe will be dropped (on receiving term- ack)
-        if (raw_sock && msg_->size() == 0) {
+        if (raw_socket && msg_->size() == 0) {
             current_out->terminate (false);
             int rc = msg_->close ();
             errno_assert (rc == 0);
@@ -401,14 +401,14 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
             zmq_assert(false); //  Not allowed to duplicate an existing rid
     }
     else 
-    if (options.raw_sock) { //  Always assign identity for raw-socket
+    if (options.raw_socket) { //  Always assign identity for raw-socket
         unsigned char buf [5];
         buf [0] = 0;
         put_uint32 (buf + 1, next_rid++);
         identity = blob_t (buf, sizeof buf);
     }
     else
-    if (!options.raw_sock) { 
+    if (!options.raw_socket) { 
         //  Pick up handshake cases and also case where next identity is set
         msg.init ();
         ok = pipe_->read (&msg);

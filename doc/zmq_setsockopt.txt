@@ -670,6 +670,19 @@ Default value:: -1 (infinite)
 Applicable socket types:: all
 
 
+ZMQ_STREAM_NOTIFY: send connect notifications
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Enables connect notifications on a STREAM socket, when set to 1. By default a
+STREAM socket does not notify new connections. When notifications are enabled,
+it delivers a zero-length message to signal new client connections.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1
+Default value:: 0
+Applicable socket types:: ZMQ_STREAM
+
+
 ZMQ_SUBSCRIBE: Establish message filter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_SUBSCRIBE' option shall establish a new message filter on a 'ZMQ_SUB'
