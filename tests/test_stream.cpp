@@ -54,6 +54,9 @@ test_stream_to_dealer (void)
     int zero = 0;
     rc = zmq_setsockopt (stream, ZMQ_LINGER, &zero, sizeof (zero));
     assert (rc == 0);
+    int enabled = 1;
+    rc = zmq_setsockopt (stream, ZMQ_STREAM_NOTIFY, &enabled, sizeof (enabled));
+    assert (rc == 0);
     rc = zmq_bind (stream, "tcp://127.0.0.1:5556");
     assert (rc == 0);
 
@@ -182,11 +185,16 @@ test_stream_to_stream (void)
     
     void *server = zmq_socket (ctx, ZMQ_STREAM);
     assert (server);
+    int enabled = 1;
+    rc = zmq_setsockopt (server, ZMQ_STREAM_NOTIFY, &enabled, sizeof (enabled));
+    assert (rc == 0);
     rc = zmq_bind (server, "tcp://127.0.0.1:9070");
     assert (rc == 0);
 
     void *client = zmq_socket (ctx, ZMQ_STREAM);
     assert (client);
+    rc = zmq_setsockopt (client, ZMQ_STREAM_NOTIFY, &enabled, sizeof (enabled));
+    assert (rc == 0);
     rc = zmq_connect (client, "tcp://localhost:9070");
     assert (rc == 0);
     uint8_t id [256];

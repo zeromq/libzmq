@@ -213,14 +213,15 @@ void zmq::session_base_t::pipe_terminated (pipe_t *pipe_)
             cancel_timer (linger_timer_id);
             has_linger_timer = false;
         }
-    } else
+    }
+    else
     if (pipe_ == zap_pipe)
         zap_pipe = NULL;
     else
         // Remove the pipe from the detached pipes set
         terminating_pipes.erase (pipe_);
 
-    if (!is_terminating () && options.raw_sock) {
+    if (!is_terminating () && options.raw_socket) {
         if (engine) {
             engine->terminate ();
             engine = NULL;

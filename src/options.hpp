@@ -112,7 +112,8 @@ namespace zmq
         bool recv_identity;
 
         // if true, router socket accepts non-zmq tcp connections
-        bool raw_sock;
+        bool raw_socket;
+        bool raw_notify;        //  Provide connect notifications
 
         //  Addres of SOCKS proxy
         std::string socks_proxy_address;
