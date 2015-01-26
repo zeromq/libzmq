@@ -45,6 +45,7 @@ zmq::options_t::options_t () :
     ipv6 (0),
     immediate (0),
     filter (false),
+    invert_matching(false),
     recv_identity (false),
     raw_socket (false),
     raw_notify (false),
@@ -500,6 +501,13 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             break;
 
+        case ZMQ_INVERT_MATCHING:
+            if (is_int) {
+                invert_matching = (value != 0);
+                return 0;
+            }
+            break;
+
         default:
 #if defined (ZMQ_ACT_MILITANT)
             //  There are valid scenarios for probing with unknown socket option
@@ -842,6 +850,13 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
         case ZMQ_HANDSHAKE_IVL:
             if (is_int) {
                 *value = handshake_ivl;
+                return 0;
+            }
+            break;
+
+        case ZMQ_INVERT_MATCHING:
+            if (is_int) {
+                *value = invert_matching;
                 return 0;
             }
             break;

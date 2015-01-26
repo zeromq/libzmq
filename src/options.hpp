@@ -108,6 +108,11 @@ namespace zmq
         //  If 1, (X)SUB socket should filter the messages. If 0, it should not.
         bool filter;
 
+        //  If true, the subscription matching on (X)PUB and (X)SUB sockets
+        //  is reversed. Messages are sent to and received by non-matching
+        //  sockets.
+        bool invert_matching;
+
         //  If true, the identity message is forwarded to the socket.
         bool recv_identity;
 
