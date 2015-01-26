@@ -69,6 +69,22 @@ void zmq::dist_t::match (pipe_t *pipe_)
     matching++;    
 }
 
+void zmq::dist_t::reverse_match ()
+{
+    pipes_t::size_type prev_matching = matching;
+
+    // Reset matching to 0
+    unmatch();
+
+    // Mark all matching pipes as not matching and vice-versa.
+    // To do this, push all pipes that are eligible but not
+    // matched - i.e. between "matching" and "eligible" -
+    // to the beginning of the queue.
+    for (pipes_t::size_type i = prev_matching; i < eligible; ++i) {
+        pipes.swap(i, matching++);
+    }
+}
+
 void zmq::dist_t::unmatch ()
 {
     matching = 0;

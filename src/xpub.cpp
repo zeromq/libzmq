@@ -179,9 +179,14 @@ int zmq::xpub_t::xsend (msg_t *msg_)
     bool msg_more = msg_->flags () & msg_t::more ? true : false;
 
     //  For the first part of multi-part message, find the matching pipes.
-    if (!more)
+    if (!more) {
         subscriptions.match ((unsigned char*) msg_->data (), msg_->size (),
             mark_as_matching, this);
+        // If inverted matching is used, reverse the selection now
+        if (options.invert_matching) {
+            dist.reverse_match();
+        }
+    }
 
     int rc = -1;            //  Assume we fail
     if (lossy || dist.check_hwm ()) {

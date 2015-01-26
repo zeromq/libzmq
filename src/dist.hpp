@@ -50,6 +50,9 @@ namespace zmq
         //  will send message also to this pipe.
         void match (zmq::pipe_t *pipe_);
 
+        //  Marks all pipes that are not matched as matched and vice-versa.
+        void reverse_match();
+
         //  Mark all pipes as non-matching.
         void unmatch ();
 
