@@ -806,7 +806,6 @@ void zmq::stream_engine_t::mechanism_ready ()
     //  Compile metadata.
     typedef metadata_t::dict_t properties_t;
     properties_t properties;
-    properties_t::const_iterator it;
 
     //  If we have a peer_address, add it to metadata
     if (!peer_address.empty()) {
