@@ -25,10 +25,6 @@ zmq::metadata_t::metadata_t (const dict_t &dict) :
 {
 }
 
-zmq::metadata_t::~metadata_t ()
-{
-}
-
 const char *zmq::metadata_t::get (const std::string &property) const
 {
     dict_t::const_iterator it = dict.find (property);
