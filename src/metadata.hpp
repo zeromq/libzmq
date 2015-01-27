@@ -30,29 +30,29 @@ namespace zmq
     class metadata_t
     {
         public:
-
-            typedef std::map <std::string, const std::string> dict_t;
+            typedef std::map <std::string, std::string> dict_t;
 
             metadata_t (const dict_t &dict);
-            virtual ~metadata_t ();
 
             //  Returns pointer to property value or NULL if
             //  property is not found.
-            virtual const char *get (const std::string &property) const;
+            const char *get (const std::string &property) const;
 
-            virtual void add_ref ();
+            void add_ref ();
 
             //  Drop reference. Returns true iff the reference
             //  counter drops to zero.
-            virtual bool drop_ref ();
+            bool drop_ref ();
 
         private:
+            metadata_t(const metadata_t&);
+            metadata_t & operator=(const metadata_t&);
 
             //  Reference counter.
             atomic_counter_t ref_cnt;
 
             //  Dictionary holding metadata.
-            const dict_t dict;
+            dict_t dict;
     };
 
 }
