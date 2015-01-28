@@ -479,6 +479,15 @@ AM_CONDITIONAL(ON_CYGWIN, test "x$libzmq_on_cygwin" = "xyes")
 AM_CONDITIONAL(ON_ANDROID, test "x$libzmq_on_android" = "xyes")
 AM_CONDITIONAL(ON_LINUX, test "x$libzmq_on_linux" = "xyes")
 
+# Check for __atomic_Xxx compiler intrinsics
+AC_LANG_PUSH([C++])
+LIBZMQ_CHECK_ATOMIC_INTRINSICS([
+    AC_DEFINE([ZMQ_HAVE_ATOMIC_INTRINSICS],
+              [1],
+              [Whether compiler has __atomic_Xxx intrinsics.])
+    ])
+AC_LANG_POP([C++])
+
 # Checks for library functions.
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(perror gettimeofday clock_gettime memset socket getifaddrs freeifaddrs fork posix_memalign)
