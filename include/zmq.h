@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -195,7 +195,10 @@ ZMQ_EXPORT int zmq_ctx_destroy (void *context);
 /*  0MQ message definition.                                                   */
 /******************************************************************************/
 
-typedef struct zmq_msg_t {unsigned char _ [64];} zmq_msg_t;
+/* union here ensures correct alignment on architectures that require it, e.g.
+ * SPARC
+ */
+typedef union zmq_msg_t {unsigned char _ [64]; void *p; } zmq_msg_t;
 
 typedef void (zmq_free_fn) (void *data, void *hint);
 
@@ -286,7 +289,7 @@ ZMQ_EXPORT const char *zmq_msg_gets (zmq_msg_t *msg, const char *property);
 #define ZMQ_ZAP_DOMAIN 55
 #define ZMQ_ROUTER_HANDOVER 56
 #define ZMQ_TOS 57
-#define ZMQ_CONNECT_RID 61 
+#define ZMQ_CONNECT_RID 61
 #define ZMQ_GSSAPI_SERVER 62
 #define ZMQ_GSSAPI_PRINCIPAL 63
 #define ZMQ_GSSAPI_SERVICE_PRINCIPAL 64
@@ -297,6 +300,8 @@ ZMQ_EXPORT const char *zmq_msg_gets (zmq_msg_t *msg, const char *property);
 #define ZMQ_BLOCKY 70
 #define ZMQ_XPUB_MANUAL 71
 #define ZMQ_XPUB_WELCOME_MSG 72
+#define ZMQ_STREAM_NOTIFY 73
+#define ZMQ_INVERT_MATCHING 74
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1

@@ -266,6 +266,29 @@ Default value:: 0 (false)
 Applicable socket types:: all, primarily when using TCP/IPC transports.
 
 
+ZMQ_INVERT_MATCHING: Retrieve inverted filtering status
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Returns the value of the 'ZMQ_INVERT_MATCHING' option. A value of `1`
+means the socket uses inverted prefix matching.
+
+On 'PUB' and 'XPUB' sockets, this causes messages to be sent to all
+connected sockets 'except' those subscribed to a prefix that matches
+the message. On 'SUB' sockets, this causes only incoming messages that
+do 'not' match any of the socket's subscriptions to be received by the user.
+
+Whenever 'ZMQ_INVERT_MATCHING' is set to 1 on a 'PUB' socket, all 'SUB'
+sockets connecting to it must also have the option set to 1. Failure to
+do so will have the 'SUB' sockets reject everything the 'PUB' socket sends
+them. 'XSUB' sockets do not need to do this because they do not filter
+incoming messages.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0,1
+Default value:: 0
+Applicable socket types:: ZMQ_PUB, ZMQ_XPUB, ZMQ_SUB
+
+
 ZMQ_IPV4ONLY: Retrieve IPv4-only socket override status
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Retrieve the IPv4-only option for the socket. This option is deprecated.

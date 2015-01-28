@@ -44,6 +44,7 @@ set(tests
         test_diffserv
         test_connect_rid
         test_xpub_nodrop
+        test_pub_invert_matching
 )
 if(NOT WIN32)
   list(APPEND tests

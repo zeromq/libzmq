@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -213,14 +213,15 @@ void zmq::session_base_t::pipe_terminated (pipe_t *pipe_)
             cancel_timer (linger_timer_id);
             has_linger_timer = false;
         }
-    } else
+    }
+    else
     if (pipe_ == zap_pipe)
         zap_pipe = NULL;
     else
         // Remove the pipe from the detached pipes set
         terminating_pipes.erase (pipe_);
 
-    if (!is_terminating () && options.raw_sock) {
+    if (!is_terminating () && options.raw_socket) {
         if (engine) {
             engine->terminate ();
             engine = NULL;

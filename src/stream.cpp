@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -33,7 +33,7 @@ zmq::stream_t::stream_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     next_rid (generate_random ())
 {
     options.type = ZMQ_STREAM;
-    options.raw_sock = true;
+    options.raw_socket = true;
 
     prefetched_id.init ();
     prefetched_msg.init ();
@@ -167,6 +167,8 @@ int zmq::stream_t::xsend (msg_t *msg_)
 int zmq::stream_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
+    bool is_int = (optvallen_ == sizeof (int));
+    int value = is_int? *((int *) optval_): 0;
     switch (option_) {
         case ZMQ_CONNECT_RID:
             if (optval_ && optvallen_) {
@@ -174,6 +176,14 @@ int zmq::stream_t::xsetsockopt (int option_, const void *optval_,
                 return 0;
             }
             break;
+            
+        case ZMQ_STREAM_NOTIFY:
+            if (is_int && (value == 0 || value == 1)) {
+                options.raw_notify = value;
+                return 0;
+            }
+            break;
+
         default:
             break;
     }

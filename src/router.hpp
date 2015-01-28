@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -111,7 +111,7 @@ namespace zmq
         // If true, report EAGAIN to the caller instead of silently dropping 
         // the message targeting an unknown peer.
         bool mandatory;
-        bool raw_sock;
+        bool raw_socket;
 
         // if true, send an empty message to every connected router peer
         bool probe_router;
