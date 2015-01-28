@@ -25,6 +25,8 @@
 
 #if defined ZMQ_FORCE_MUTEXES
 #define ZMQ_ATOMIC_COUNTER_MUTEX
+#elif defined ZMQ_HAVE_ATOMIC_INTRINSICS
+#define ZMQ_ATOMIC_INTRINSIC
 #elif (defined __i386__ || defined __x86_64__) && defined __GNUC__
 #define ZMQ_ATOMIC_COUNTER_X86
 #elif defined __ARM_ARCH_7A__ && defined __GNUC__
@@ -83,11 +85,13 @@ namespace zmq
 
 #if defined ZMQ_ATOMIC_COUNTER_WINDOWS
             old_value = InterlockedExchangeAdd ((LONG*) &value, increment_);
+#elif defined ZMQ_ATOMIC_INTRINSIC
+            old_value = __atomic_fetch_add(&value, increment_, __ATOMIC_ACQ_REL);
 #elif defined ZMQ_ATOMIC_COUNTER_ATOMIC_H
             integer_t new_value = atomic_add_32_nv (&value, increment_);
             old_value = new_value - increment_;
 #elif defined ZMQ_ATOMIC_COUNTER_TILE
-	    old_value = arch_atomic_add (&value, increment_);
+            old_value = arch_atomic_add (&value, increment_);
 #elif defined ZMQ_ATOMIC_COUNTER_X86
             __asm__ volatile (
                 "lock; xadd %0, %1 \n\t"
@@ -125,6 +129,9 @@ namespace zmq
             LONG delta = - ((LONG) decrement);
             integer_t old = InterlockedExchangeAdd ((LONG*) &value, delta);
             return old - decrement != 0;
+#elif defined ZMQ_ATOMIC_INTRINSIC
+            integer_t nv = __atomic_sub_fetch(&value, decrement, __ATOMIC_ACQ_REL);
+            return nv != 0;
 #elif defined ZMQ_ATOMIC_COUNTER_ATOMIC_H
             int32_t delta = - ((int32_t) decrement);
             integer_t nv = atomic_add_32_nv (&value, delta);

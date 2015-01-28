@@ -24,6 +24,8 @@
 
 #if defined ZMQ_FORCE_MUTEXES
 #define ZMQ_ATOMIC_PTR_MUTEX
+#elif defined ZMQ_HAVE_ATOMIC_INTRINSICS
+#define ZMQ_ATOMIC_PTR_INTRINSIC
 #elif (defined __i386__ || defined __x86_64__) && defined __GNUC__
 #define ZMQ_ATOMIC_PTR_X86
 #elif defined __ARM_ARCH_7A__ && defined __GNUC__
@@ -82,6 +84,8 @@ namespace zmq
         {
 #if defined ZMQ_ATOMIC_PTR_WINDOWS
             return (T*) InterlockedExchangePointer ((PVOID*) &ptr, val_);
+#elif defined ZMQ_ATOMIC_PTR_INTRINSIC
+            return (T*) __atomic_exchange_n (&ptr, val_, __ATOMIC_ACQ_REL);
 #elif defined ZMQ_ATOMIC_PTR_ATOMIC_H
             return (T*) atomic_swap_ptr (&ptr, val_);
 #elif defined ZMQ_ATOMIC_PTR_TILE
@@ -127,6 +131,11 @@ namespace zmq
 #if defined ZMQ_ATOMIC_PTR_WINDOWS
             return (T*) InterlockedCompareExchangePointer (
                 (volatile PVOID*) &ptr, val_, cmp_);
+#elif defined ZMQ_ATOMIC_PTR_INTRINSIC
+            T *old = cmp_;
+            __atomic_compare_exchange_n (&ptr, &old, val_, false,
+                    __ATOMIC_RELEASE, __ATOMIC_ACQUIRE);
+            return old;
 #elif defined ZMQ_ATOMIC_PTR_ATOMIC_H
             return (T*) atomic_cas_ptr (&ptr, cmp_, val_);
 #elif defined ZMQ_ATOMIC_PTR_TILE
