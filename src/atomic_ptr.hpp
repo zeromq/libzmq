@@ -133,7 +133,7 @@ namespace zmq
                 (volatile PVOID*) &ptr, val_, cmp_);
 #elif defined ZMQ_ATOMIC_PTR_INTRINSIC
             T *old = cmp_;
-            __atomic_compare_exchange_n (&ptr, &old, val_, false,
+            __atomic_compare_exchange_n (&ptr, (volatile T**) &old, val_, false,
                     __ATOMIC_RELEASE, __ATOMIC_ACQUIRE);
             return old;
 #elif defined ZMQ_ATOMIC_PTR_ATOMIC_H
