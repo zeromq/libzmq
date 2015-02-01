@@ -46,6 +46,7 @@ int zmq::msg_t::init ()
     u.vsm.type = type_vsm;
     u.vsm.flags = 0;
     u.vsm.size = 0;
+    u.vsm.routing_id = 0;
     file_desc = -1;
     return 0;
 }
@@ -58,11 +59,13 @@ int zmq::msg_t::init_size (size_t size_)
         u.vsm.type = type_vsm;
         u.vsm.flags = 0;
         u.vsm.size = (unsigned char) size_;
+        u.vsm.routing_id = 0;
     }
     else {
         u.lmsg.metadata = NULL;
         u.lmsg.type = type_lmsg;
         u.lmsg.flags = 0;
+        u.lmsg.routing_id = 0;
         u.lmsg.content =
             (content_t*) malloc (sizeof (content_t) + size_);
         if (unlikely (!u.lmsg.content)) {
@@ -95,11 +98,13 @@ int zmq::msg_t::init_data (void *data_, size_t size_, msg_free_fn *ffn_,
         u.cmsg.flags = 0;
         u.cmsg.data = data_;
         u.cmsg.size = size_;
+        u.cmsg.routing_id = 0;
     }
     else {
         u.lmsg.metadata = NULL;
         u.lmsg.type = type_lmsg;
         u.lmsg.flags = 0;
+        u.lmsg.routing_id = 0;
         u.lmsg.content = (content_t*) malloc (sizeof (content_t));
         if (!u.lmsg.content) {
             errno = ENOMEM;
@@ -121,6 +126,7 @@ int zmq::msg_t::init_delimiter ()
     u.delimiter.metadata = NULL;
     u.delimiter.type = type_delimiter;
     u.delimiter.flags = 0;
+    u.delimiter.routing_id = 0;
     return 0;
 }
 
@@ -376,4 +382,15 @@ bool zmq::msg_t::rm_refs (int refs_)
     }
 
     return true;
+}
+
+uint32_t zmq::msg_t::get_routing_id() 
+{
+    return u.base.routing_id;
+}
+
+int zmq::msg_t::set_routing_id(uint32_t routing_id_) 
+{
+    u.base.routing_id = routing_id_;
+    return 0;
 }
