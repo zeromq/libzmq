@@ -344,7 +344,8 @@ test_apps = \
 	tests/test_xpub_welcome_msg \
 	tests/test_atomics \
 	tests/test_client_server \
-	tests/test_server_drop_more
+	tests/test_server_drop_more \
+	tests/test_client_drop_more
 
 tests_test_system_SOURCES = tests/test_system.cpp
 tests_test_system_LDADD = src/libzmq.la
@@ -521,6 +522,9 @@ tests_test_client_server_LDADD = src/libzmq.la
 
 tests_test_server_drop_more_SOURCES = tests/test_server_drop_more.cpp
 tests_test_server_drop_more_LDADD = src/libzmq.la
+
+tests_test_client_drop_more_SOURCES = tests/test_client_drop_more.cpp
+tests_test_client_drop_more_LDADD = src/libzmq.la
 
 if !ON_MINGW
 if !ON_CYGWIN
