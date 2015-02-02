@@ -55,6 +55,8 @@ zmq::session_base_t *zmq::session_base_t::create (class io_thread_t *io_thread_,
     case ZMQ_PULL:
     case ZMQ_PAIR:
     case ZMQ_STREAM:
+    case ZMQ_SERVER:
+    case ZMQ_CLIENT:
         s = new (std::nothrow) session_base_t (io_thread_, active_,
             socket_, options_, addr_);
         break;
@@ -297,7 +299,8 @@ int zmq::session_base_t::zap_connect ()
         return -1;
     }
     if (peer.options.type != ZMQ_REP
-    &&  peer.options.type != ZMQ_ROUTER) {
+    &&  peer.options.type != ZMQ_ROUTER
+    &&  peer.options.type != ZMQ_SERVER) {
         errno = ECONNREFUSED;
         return -1;
     }
