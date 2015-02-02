@@ -367,6 +367,7 @@ endif()
 
 set(cxx-sources
         address.cpp
+        client.cpp
         clock.cpp
         ctx.cpp
         curve_client.cpp
@@ -416,6 +417,7 @@ set(cxx-sources
         req.cpp
         router.cpp
         select.cpp
+        server.cpp
         session_base.cpp
         signaler.cpp
         socket_base.cpp
