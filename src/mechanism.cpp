@@ -64,8 +64,8 @@ const char *zmq::mechanism_t::socket_type_string (int socket_type) const
 {
     static const char *names [] = {"PAIR", "PUB", "SUB", "REQ", "REP",
                                    "DEALER", "ROUTER", "PULL", "PUSH",
-                                   "XPUB", "XSUB", "STREAM", "SERVER"};
-    zmq_assert (socket_type >= 0 && socket_type <= 12);
+                                   "XPUB", "XSUB", "STREAM", "SERVER", "CLIENT"};
+    zmq_assert (socket_type >= 0 && socket_type <= 13);
     return names [socket_type];
 }
 
@@ -160,7 +160,7 @@ bool zmq::mechanism_t::check_socket_type (const std::string& type_) const
         case ZMQ_REP:
             return type_ == "REQ" || type_ == "DEALER";
         case ZMQ_DEALER:
-            return type_ == "REP" || type_ == "DEALER" || type_ == "ROUTER" || type_ == "SERVER";
+            return type_ == "REP" || type_ == "DEALER" || type_ == "ROUTER";
         case ZMQ_ROUTER:
             return type_ == "REQ" || type_ == "DEALER" || type_ == "ROUTER";
         case ZMQ_PUSH:
@@ -178,7 +178,9 @@ bool zmq::mechanism_t::check_socket_type (const std::string& type_) const
         case ZMQ_PAIR:
             return type_ == "PAIR";
         case ZMQ_SERVER:
-            return type_ == "DEALER";
+            return type_ == "CLIENT";
+        case ZMQ_CLIENT:
+            return type_ == "CLIENT" || type_ == "SERVER";
         default:
             break;
     }

@@ -239,6 +239,7 @@ ZMQ_EXPORT uint32_t zmq_msg_get_routing_id(zmq_msg_t *msg);
 #define ZMQ_XSUB 10
 #define ZMQ_STREAM 11
 #define ZMQ_SERVER 12
+#define ZMQ_CLIENT 13
 
 /*  Deprecated aliases                                                        */
 #define ZMQ_XREQ ZMQ_DEALER

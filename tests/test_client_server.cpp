@@ -21,14 +21,12 @@
 
 int main (void)
 {
-    printf("0000");
-
     setup_test_environment();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
     void *server = zmq_socket (ctx, ZMQ_SERVER);
-    void *client = zmq_socket (ctx, ZMQ_DEALER);
+    void *client = zmq_socket (ctx, ZMQ_CLIENT);
 
     int rc;
 

@@ -17,32 +17,32 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_SERVER_HPP_INCLUDED__
-#define __ZMQ_SERVER_HPP_INCLUDED__
-
-#include <map>
+#ifndef __ZMQ_CLIENT_HPP_INCLUDED__
+#define __ZMQ_CLIENT_HPP_INCLUDED__
 
 #include "socket_base.hpp"
 #include "session_base.hpp"
-#include "stdint.hpp"
-#include "blob.hpp"
-#include "msg.hpp"
 #include "fq.hpp"
+#include "lb.hpp"
 
 namespace zmq
 {
 
     class ctx_t;
+    class msg_t;
     class pipe_t;
+    class io_thread_t;
+    class socket_base_t;
 
-    //  TODO: This class uses O(n) scheduling. Rewrite it to use O(1) algorithm.
-    class server_t :
+    class client_t :
         public socket_base_t
     {
     public:
 
-        server_t (zmq::ctx_t *parent_, uint32_t tid_, int sid);
-        ~server_t ();
+        client_t (zmq::ctx_t *parent_, uint32_t tid_, int sid);
+        ~client_t ();
+
+    protected:
 
         //  Overrides of functions from socket_base_t.
         void xattach_pipe (zmq::pipe_t *pipe_, bool subscribe_to_all_);        
@@ -50,35 +50,20 @@ namespace zmq
         int xrecv (zmq::msg_t *msg_);
         bool xhas_in ();
         bool xhas_out ();
+        blob_t get_credential () const;
         void xread_activated (zmq::pipe_t *pipe_);
         void xwrite_activated (zmq::pipe_t *pipe_);
         void xpipe_terminated (zmq::pipe_t *pipe_);
-
-    protected:
-
-        blob_t get_credential () const;
-
+        
     private:
 
-        //  Fair queueing object for inbound pipes.
+        //  Messages are fair-queued from inbound pipes. And load-balanced to
+        //  the outbound pipes.
         fq_t fq;
+        lb_t lb;
         
-        struct outpipe_t
-        {
-            zmq::pipe_t *pipe;
-            bool active;
-        };
-
-        //  Outbound pipes indexed by the peer IDs.
-        typedef std::map <uint32_t, outpipe_t> outpipes_t;
-        outpipes_t outpipes;
-        
-        //  Routing IDs are generated. It's a simple increment and wrap-over
-        //  algorithm. This value is the next ID to use (if not used already).
-        uint32_t next_rid;
-    
-        server_t (const server_t&);
-        const server_t &operator = (const server_t&);
+        client_t (const client_t &);
+        const client_t  &operator = (const client_t&);
     };
 
 }
