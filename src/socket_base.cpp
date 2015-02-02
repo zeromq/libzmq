@@ -71,6 +71,7 @@
 #include "xsub.hpp"
 #include "stream.hpp"
 #include "server.hpp"
+#include "client.hpp"
 
 bool zmq::socket_base_t::check_tag ()
 {
@@ -120,6 +121,9 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
             break;
         case ZMQ_SERVER:
             s = new (std::nothrow) server_t (parent_, tid_, sid_);
+            break;
+        case ZMQ_CLIENT:
+            s = new (std::nothrow) client_t (parent_, tid_, sid_);
             break;
         default:
             errno = EINVAL;

@@ -26,6 +26,8 @@ src_libzmq_la_SOURCES = \
 	src/atomic_counter.hpp \
 	src/atomic_ptr.hpp \
 	src/blob.hpp \
+	src/client.cpp \
+	src/client.hpp \
 	src/clock.cpp \
 	src/clock.hpp \
 	src/command.hpp \
@@ -341,7 +343,7 @@ test_apps = \
 	tests/test_xpub_manual \
 	tests/test_xpub_welcome_msg \
 	tests/test_atomics \
-	tests/test_server
+	tests/test_client_server
 
 tests_test_system_SOURCES = tests/test_system.cpp
 tests_test_system_LDADD = src/libzmq.la
@@ -513,8 +515,8 @@ tests_test_xpub_welcome_msg_LDADD = src/libzmq.la
 tests_test_atomics_SOURCES = tests/test_atomics.cpp
 tests_test_atomics_LDADD = src/libzmq.la
 
-tests_test_server_SOURCES = tests/test_server.cpp
-tests_test_server_LDADD = src/libzmq.la
+tests_test_client_server_SOURCES = tests/test_client_server.cpp
+tests_test_client_server_LDADD = src/libzmq.la
 
 if !ON_MINGW
 if !ON_CYGWIN
