@@ -100,6 +100,16 @@ void zmq::pipe_t::set_event_sink (i_pipe_events *sink_)
     sink = sink_;
 }
 
+void zmq::pipe_t::set_routing_id (uint32_t routing_id_)
+{
+    routing_id = routing_id_;
+}
+
+uint32_t zmq::pipe_t::get_routing_id ()
+{
+    return routing_id;
+}
+
 void zmq::pipe_t::set_identity (const blob_t &identity_)
 {
     identity = identity_;

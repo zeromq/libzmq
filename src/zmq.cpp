@@ -645,6 +645,15 @@ int zmq_msg_set (zmq_msg_t *, int, int)
     return -1;
 }
 
+int zmq_msg_set_routing_id (zmq_msg_t *msg_, uint32_t routing_id_)
+{
+    return ((zmq::msg_t*) msg_)->set_routing_id(routing_id_);
+}
+
+uint32_t zmq_msg_get_routing_id(zmq_msg_t *msg_)
+{
+    return ((zmq::msg_t*) msg_)->get_routing_id();
+}
 
 //  Get message metadata string
 
