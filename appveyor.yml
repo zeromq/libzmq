@@ -1,0 +1,19 @@
+environment:
+  matrix:
+  - configuration: Release
+branches:
+  only:
+    - master
+
+clone_folder: c:\libzmq
+
+build_script:
+  - md c:\build
+  - cd c:\build
+  - echo Running cmake...
+  - cmake -G "Visual Studio 12" -DCMAKE_BUILD_TYPE=%Configuration% c:\libzmq
+  - cmake --build .
+  
+test_script:
+  - cd c:\build
+  - ctest -C %Configuration%
