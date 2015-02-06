@@ -114,7 +114,7 @@ include(CheckCXXSymbolExists)
 macro(zmq_find_include include_name var_result)
     message(STATUS "Looking for header ${include_name}")
     find_file(file_result NAMES "${include_name}" )
-    message(STATUS "Find File result - ${file_result}")    
+#    message(STATUS "Find File result - ${file_result}")    
     string(FIND "${file_result}" "NOTFOUND" pos)
     if (pos EQUAL -1)
         #found include file
@@ -133,7 +133,7 @@ endmacro()
 macro(zmq_find_library library_name var_result)
     message(STATUS "Looking for library ${library_name}")
     find_library(lib_result NAMES "${library_name}" )
-    message(STATUS "Find Library result - ${lib_result}")    
+#    message(STATUS "Find Library result - ${lib_result}")    
     string(FIND "${lib_result}" "NOTFOUND" pos)
     if (pos EQUAL -1)
         #found library
@@ -156,7 +156,6 @@ zmq_find_include("sys/eventfd.h" ZMQ_HAVE_EVENTFD)
 
 #use find library instead of check library which fails on VS2015
 zmq_find_library("ws2_32" HAVE_WS2_32)
-    message(STATUS "${HAVE_WS2_32}")  
 zmq_find_library("ws2" HAVE_WS2)
 zmq_find_library("rpcrt4" HAVE_RPCRT4) # UuidCreateSequential
 zmq_find_library("iphlpapi" HAVE_IPHLAPI) # GetAdaptersAddresses
@@ -306,7 +305,7 @@ elseif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 endif()
 
 if(NOT WITHOUT_ASCIIDOC)
-    set(CMAKE_PYTHON_VERSION 2.7 2.6 2.5 2.4)
+    set(CMAKE_PYTHON_VERSION 3.4 3.3 3.2 3.1 3.0 2.7 2.6 2.5 2.4)
     find_package(PythonInterp)
     find_package(AsciiDoc)
 else()
