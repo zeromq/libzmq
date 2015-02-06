@@ -94,11 +94,10 @@ int main(int, char**) {
         }
         if (iteration == 1) {
             zmq_connect(subSocket, "inproc://someInProcDescriptor") && printf("zmq_connect: %s\n", zmq_strerror(errno));
-            //zmq_connect(subSocket, "tcp://127.0.0.1:30010") && printf("zmq_connect: %s\n", zmq_strerror(errno));
+            msleep (SETTLE_TIME);
         }
         if (iteration == 4) {
             zmq_disconnect(subSocket, "inproc://someInProcDescriptor") && printf("zmq_disconnect(%d): %s\n", errno, zmq_strerror(errno));
-            //zmq_disconnect(subSocket, "tcp://127.0.0.1:30010") && printf("zmq_disconnect: %s\n", zmq_strerror(errno));
         }
         if (iteration > 4 && rc == 0)
             break;
