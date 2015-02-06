@@ -103,8 +103,6 @@ list(APPEND CMAKE_MODULE_PATH ${ZMQ_CMAKE_MODULES_DIR})
 
 include(TestZMQVersion)
 include(ZMQSourceRunChecks)
-include(CheckIncludeFiles)
-include(CheckLibraryExists)
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 include(CheckCSourceCompiles)
@@ -112,16 +110,57 @@ include(CheckCSourceRuns)
 include(CMakeDependentOption)
 include(CheckCXXSymbolExists)
 
-check_include_files(ifaddrs.h ZMQ_HAVE_IFADDRS)
-check_include_files(windows.h ZMQ_HAVE_WINDOWS)
-check_include_files(sys/uio.h ZMQ_HAVE_UIO)
-check_include_files(sys/eventfd.h ZMQ_HAVE_EVENTFD)
+# MACRO to find include file
+macro(zmq_find_include include_name var_result)
+    message(STATUS "Looking for header ${include_name}")
+    find_file(file_result NAMES "${include_name}" )
+    message(STATUS "Find File result - ${file_result}")    
+    string(FIND "${file_result}" "NOTFOUND" pos)
+    if (pos EQUAL -1)
+        #found include file
+        message(STATUS "Looking for header ${include_name} - found")
+        set("${var_result}" "${file_result}")
+    else()
+        # did not find include
+        message(STATUS "Looking for header ${include_name} - not found")
+        set("${var_result}" "")
+    endif()
+    #clear the find result
+    unset(file_result CACHE)
+endmacro()
 
-check_library_exists(ws2_32 printf "" HAVE_WS2_32) # TODO: Why doesn't something logical like WSAStartup work?
-check_library_exists(ws2 printf "" HAVE_WS2)
-check_library_exists(rpcrt4 printf "" HAVE_RPCRT4) # UuidCreateSequential
-check_library_exists(iphlpapi printf "" HAVE_IPHLAPI) # GetAdaptersAddresses
+# MACRO to find a library
+macro(zmq_find_library library_name var_result)
+    message(STATUS "Looking for library ${library_name}")
+    find_library(lib_result NAMES "${library_name}" )
+    message(STATUS "Find Library result - ${lib_result}")    
+    string(FIND "${lib_result}" "NOTFOUND" pos)
+    if (pos EQUAL -1)
+        #found library
+        message(STATUS "Looking for library ${library_name} - found")
+        set("${var_result}" "${lib_result}")
+    else()
+        # did not find library
+        message(STATUS "Looking for library ${library_name} - not found")
+        set("${var_result}" "")
+    endif()
+    #clear the find result
+    unset(lib_result CACHE)
+endmacro()
 
+#use find file instead of check_include_files
+zmq_find_include("ifaddrs.h" ZMQ_HAVE_IFADDRS)
+zmq_find_include("windows.h" ZMQ_HAVE_WINDOWS)
+zmq_find_include("sys/uio.h" ZMQ_HAVE_UIO)
+zmq_find_include("sys/eventfd.h" ZMQ_HAVE_EVENTFD)
+
+#use find library instead of check library which fails on VS2015
+zmq_find_library("ws2_32" HAVE_WS2_32)
+    message(STATUS "${HAVE_WS2_32}")  
+zmq_find_library("ws2" HAVE_WS2)
+zmq_find_library("rpcrt4" HAVE_RPCRT4) # UuidCreateSequential
+zmq_find_library("iphlpapi" HAVE_IPHLAPI) # GetAdaptersAddresses
+     
 check_cxx_symbol_exists(SO_PEERCRED sys/socket.h ZMQ_HAVE_SO_PEERCRED)
 check_cxx_symbol_exists(LOCAL_PEERCRED sys/socket.h ZMQ_HAVE_LOCAL_PEERCRED)
 
