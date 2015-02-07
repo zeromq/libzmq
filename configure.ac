@@ -346,6 +346,14 @@ if test "x$zmq_enable_eventfd" = "xyes"; then
         [AC_DEFINE(ZMQ_HAVE_EVENTFD, 1, [Have eventfd extension.])])
 fi
 
+# Conditionally build performance measurement tools
+AC_ARG_ENABLE([perf],
+    [AS_HELP_STRING([--enable-perf], [Build performance measurement tools [default=yes].])],
+    [zmq_enable_perf=$enableval],
+    [zmq_enable_perf=yes])
+
+AM_CONDITIONAL(ENABLE_PERF, test "x$zmq_enable_perf" = "xyes")
+
 # Use c++ in subsequent tests
 AC_LANG_PUSH(C++)
 
