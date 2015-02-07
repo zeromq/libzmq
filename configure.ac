@@ -346,6 +346,22 @@ if test "x$zmq_enable_eventfd" = "xyes"; then
         [AC_DEFINE(ZMQ_HAVE_EVENTFD, 1, [Have eventfd extension.])])
 fi
 
+# Conditionally build performance measurement tools
+AC_ARG_ENABLE([perf],
+    [AS_HELP_STRING([--enable-perf], [Build performance measurement tools [default=yes].])],
+    [zmq_enable_perf=$enableval],
+    [zmq_enable_perf=yes])
+
+AM_CONDITIONAL(ENABLE_PERF, test "x$zmq_enable_perf" = "xyes")
+
+# Conditionally build curve key generation tool
+AC_ARG_ENABLE([curve-keygen],
+    [AS_HELP_STRING([--enable-curve-keygen], [Build curve key-generation tool [default=yes].])],
+    [zmq_enable_curve_keygen=$enableval],
+    [zmq_enable_curve_keygen=yes])
+
+AM_CONDITIONAL(ENABLE_CURVE_KEYGEN, test "x$zmq_enable_curve_keygen" = "xyes")
+
 # Use c++ in subsequent tests
 AC_LANG_PUSH(C++)
 

@@ -254,6 +254,7 @@ src_libzmq_la_CPPFLAGS += ${pgm_CFLAGS}
 src_libzmq_la_LIBADD += ${pgm_LIBS}
 endif
 
+if ENABLE_PERF
 noinst_PROGRAMS = \
 	perf/local_lat \
 	perf/remote_lat \
@@ -279,11 +280,14 @@ perf_inproc_lat_SOURCES = perf/inproc_lat.cpp
 
 perf_inproc_thr_LDADD = src/libzmq.la
 perf_inproc_thr_SOURCES = perf/inproc_thr.cpp
+endif
 
+if ENABLE_CURVE_KEYGEN
 bin_PROGRAMS = tools/curve_keygen
 
 tools_curve_keygen_LDADD = src/libzmq.la
 tools_curve_keygen_SOURCES = tools/curve_keygen.cpp
+endif
 
 #
 # tests
