@@ -282,10 +282,12 @@ perf_inproc_thr_LDADD = src/libzmq.la
 perf_inproc_thr_SOURCES = perf/inproc_thr.cpp
 endif
 
+if ENABLE_CURVE_KEYGEN
 bin_PROGRAMS = tools/curve_keygen
 
 tools_curve_keygen_LDADD = src/libzmq.la
 tools_curve_keygen_SOURCES = tools/curve_keygen.cpp
+endif
 
 #
 # tests
