@@ -16,7 +16,14 @@ android_build_opts
 
 # Use a temporary build directory
 cache="/tmp/android_build/${TOOLCHAIN_NAME}"
+rm -rf "${cache}"
 mkdir -p "${cache}"
+
+# Check for environment variable to clear the prefix and do a clean build
+if [[ $ANDROID_BUILD_CLEAN ]]; then
+    echo "Doing a clean build (removing previous build and depedencies)..."
+    rm -rf "${ANDROID_BUILD_PREFIX}"/*
+fi
 
 ##
 # Build libsodium from latest release tarball

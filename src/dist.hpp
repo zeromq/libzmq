@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -49,6 +49,9 @@ namespace zmq
         //  Mark the pipe as matching. Subsequent call to send_to_matching
         //  will send message also to this pipe.
         void match (zmq::pipe_t *pipe_);
+
+        //  Marks all pipes that are not matched as matched and vice-versa.
+        void reverse_match();
 
         //  Mark all pipes as non-matching.
         void unmatch ();

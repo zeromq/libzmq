@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -27,7 +27,7 @@ void test_fair_queue_in (void *ctx)
     void *receiver = zmq_socket (ctx, ZMQ_ROUTER);
     assert (receiver);
 
-    int timeout = 100;
+    int timeout = 250;
     int rc = zmq_setsockopt (receiver, ZMQ_RCVTIMEO, &timeout, sizeof (int));
     assert (rc == 0);
 

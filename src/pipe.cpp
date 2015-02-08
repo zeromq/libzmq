@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -65,7 +65,6 @@ int zmq::pipepair (class object_t *parents_ [2], class pipe_t* pipes_ [2],
 zmq::pipe_t::pipe_t (object_t *parent_, upipe_t *inpipe_, upipe_t *outpipe_,
       int inhwm_, int outhwm_, bool conflate_) :
     object_t (parent_),
-    assoc_fd (retired_fd),
     inpipe (inpipe_),
     outpipe (outpipe_),
     in_active (true),
@@ -99,6 +98,16 @@ void zmq::pipe_t::set_event_sink (i_pipe_events *sink_)
     // Sink can be set once only.
     zmq_assert (!sink);
     sink = sink_;
+}
+
+void zmq::pipe_t::set_routing_id (uint32_t routing_id_)
+{
+    routing_id = routing_id_;
+}
+
+uint32_t zmq::pipe_t::get_routing_id ()
+{
+    return routing_id;
 }
 
 void zmq::pipe_t::set_identity (const blob_t &identity_)

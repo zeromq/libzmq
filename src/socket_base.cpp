@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -70,6 +70,8 @@
 #include "xpub.hpp"
 #include "xsub.hpp"
 #include "stream.hpp"
+#include "server.hpp"
+#include "client.hpp"
 
 bool zmq::socket_base_t::check_tag ()
 {
@@ -116,6 +118,12 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
             break;
         case ZMQ_STREAM:
             s = new (std::nothrow) stream_t (parent_, tid_, sid_);
+            break;
+        case ZMQ_SERVER:
+            s = new (std::nothrow) server_t (parent_, tid_, sid_);
+            break;
+        case ZMQ_CLIENT:
+            s = new (std::nothrow) client_t (parent_, tid_, sid_);
             break;
         default:
             errno = EINVAL;
@@ -289,11 +297,6 @@ int zmq::socket_base_t::getsockopt (int option_, void *optval_,
         errno = ETERM;
         return -1;
     }
-    
-    //  First, check whether specific socket type overloads the option.
-    int rc = xgetsockopt (option_, optval_, optvallen_);
-    if (rc == 0 || errno != EINVAL)
-        return rc;
 
     if (option_ == ZMQ_RCVMORE) {
         if (*optvallen_ < sizeof (int)) {
@@ -1063,11 +1066,6 @@ void zmq::socket_base_t::process_destroy ()
 }
 
 int zmq::socket_base_t::xsetsockopt (int, const void *, size_t)
-{
-    errno = EINVAL;
-    return -1;
-}
-int zmq::socket_base_t::xgetsockopt (int, const void *, size_t*)
 {
     errno = EINVAL;
     return -1;

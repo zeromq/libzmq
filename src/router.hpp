@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -47,7 +47,6 @@ namespace zmq
         //  Overrides of functions from socket_base_t.
         void xattach_pipe (zmq::pipe_t *pipe_, bool subscribe_to_all_);
         int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
-        int xgetsockopt (int option_, const void *optval_, size_t *optvallen_);
         int xsend (zmq::msg_t *msg_);
         int xrecv (zmq::msg_t *msg_);
         bool xhas_in ();
@@ -112,7 +111,7 @@ namespace zmq
         // If true, report EAGAIN to the caller instead of silently dropping 
         // the message targeting an unknown peer.
         bool mandatory;
-        bool raw_sock;
+        bool raw_socket;
 
         // if true, send an empty message to every connected router peer
         bool probe_router;

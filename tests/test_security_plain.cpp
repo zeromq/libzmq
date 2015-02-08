@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -163,7 +163,7 @@ int main (void)
     send (s, "\x01\x00", 2, 0);
     // send sneaky message that shouldn't be received
     send (s, "\x08\x00sneaky\0", 9, 0);
-    int timeout = 150;
+    int timeout = 250;
     zmq_setsockopt (server, ZMQ_RCVTIMEO, &timeout, sizeof (timeout));
     char *buf = s_recv (server);
     if (buf != NULL) {

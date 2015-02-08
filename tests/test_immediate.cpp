@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
     
     This file is part of 0MQ.
 
@@ -66,7 +66,7 @@ int main (void)
 
     // We now consume from the connected pipe
     // - we should see just 5
-    int timeout = 100;
+    int timeout = 250;
     rc = zmq_setsockopt (to, ZMQ_RCVTIMEO, &timeout, sizeof (int));
     assert (rc == 0);
 

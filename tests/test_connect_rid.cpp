@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -63,19 +63,13 @@ void test_stream_2_stream(){
 
     //  Accept data on the bound stream.
     ret = zmq_recv (rbind, buff, 256, 0);
-    assert (ret && 0 == buff[0]);
-    assert (0 == buff[0]);
-    ret = zmq_recv (rbind, buff, 256, 0);
-    assert (0 == ret);
-
-    // Handle close of the socket.
-    ret = zmq_recv (rbind, buff, 256, 0);
     assert (ret);
     assert (0 == buff[0]);
     ret = zmq_recv (rbind, buff+128, 128, 0);
-    assert (5 == ret); 
+    assert (5 == ret);
     assert ('h' == buff[128]);
 
+    // Handle close of the socket.
     ret = zmq_unbind (rbind, bindip);
     assert(0 == ret);
     ret = zmq_close (rbind);

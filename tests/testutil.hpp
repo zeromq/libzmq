@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -112,7 +112,7 @@ expect_bounce_fail (void *server, void *client)
 {
     const char *content = "12345678ABCDEFGH12345678abcdefgh";
     char buffer [32];
-    int timeout = 150;
+    int timeout = 250;
 
     //  Send message from client to server
     int rc = zmq_setsockopt (client, ZMQ_SNDTIMEO, &timeout, sizeof (int));
@@ -268,8 +268,13 @@ void setup_test_environment()
     _CrtSetReportFile( _CRT_ASSERT, _CRTDBG_FILE_STDERR );
 #   endif
 #else
+#if defined ZMQ_HAVE_CYGWIN
+    // abort test after 121 seconds
+    alarm(121);
+#else
     // abort test after 60 seconds
     alarm(60);
+#endif
 #endif
 #if defined __MVS__
     // z/OS UNIX System Services: Ignore SIGPIPE during test runs, as a

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -71,18 +71,9 @@ extern "C" {
 #endif
 
 /*  Define integer types needed for event interface                          */
+#define ZMQ_DEFINED_STDINT 1
 #if defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_OPENVMS
 #   include <inttypes.h>
-#elif defined _MSC_VER && _MSC_VER < 1600
-#   ifndef int32_t
-typedef __int32 int32_t;
-#   endif
-#   ifndef uint16_t
-typedef unsigned __int16 uint16_t;
-#   endif
-#   ifndef uint8_t
-typedef unsigned __int8 uint8_t;
-#   endif
 #else
 #   include <stdint.h>
 #endif
@@ -204,7 +195,10 @@ ZMQ_EXPORT int zmq_ctx_destroy (void *context);
 /*  0MQ message definition.                                                   */
 /******************************************************************************/
 
-typedef struct zmq_msg_t {unsigned char _ [48];} zmq_msg_t;
+/* union here ensures correct alignment on architectures that require it, e.g.
+ * SPARC
+ */
+typedef union zmq_msg_t {unsigned char _ [64]; void *p; } zmq_msg_t;
 
 typedef void (zmq_free_fn) (void *data, void *hint);
 
@@ -223,6 +217,8 @@ ZMQ_EXPORT int zmq_msg_more (zmq_msg_t *msg);
 ZMQ_EXPORT int zmq_msg_get (zmq_msg_t *msg, int property);
 ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int property, int optval);
 ZMQ_EXPORT const char *zmq_msg_gets (zmq_msg_t *msg, const char *property);
+ZMQ_EXPORT int zmq_msg_set_routing_id(zmq_msg_t *msg, uint32_t routing_id);
+ZMQ_EXPORT uint32_t zmq_msg_get_routing_id(zmq_msg_t *msg);
 
 
 /******************************************************************************/
@@ -242,6 +238,8 @@ ZMQ_EXPORT const char *zmq_msg_gets (zmq_msg_t *msg, const char *property);
 #define ZMQ_XPUB 9
 #define ZMQ_XSUB 10
 #define ZMQ_STREAM 11
+#define ZMQ_SERVER 12
+#define ZMQ_CLIENT 13
 
 /*  Deprecated aliases                                                        */
 #define ZMQ_XREQ ZMQ_DEALER
@@ -295,18 +293,19 @@ ZMQ_EXPORT const char *zmq_msg_gets (zmq_msg_t *msg, const char *property);
 #define ZMQ_ZAP_DOMAIN 55
 #define ZMQ_ROUTER_HANDOVER 56
 #define ZMQ_TOS 57
-#define ZMQ_CONNECT_RID 61 
+#define ZMQ_CONNECT_RID 61
 #define ZMQ_GSSAPI_SERVER 62
 #define ZMQ_GSSAPI_PRINCIPAL 63
 #define ZMQ_GSSAPI_SERVICE_PRINCIPAL 64
 #define ZMQ_GSSAPI_PLAINTEXT 65
 #define ZMQ_HANDSHAKE_IVL 66
-#define ZMQ_IDENTITY_FD 67
 #define ZMQ_SOCKS_PROXY 68
 #define ZMQ_XPUB_NODROP 69
 #define ZMQ_BLOCKY 70
 #define ZMQ_XPUB_MANUAL 71
 #define ZMQ_XPUB_WELCOME_MSG 72
+#define ZMQ_STREAM_NOTIFY 73
+#define ZMQ_INVERT_MATCHING 74
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1

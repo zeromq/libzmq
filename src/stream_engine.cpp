@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -180,7 +180,7 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
     handle = add_fd (s);
     io_error = false;
 
-    if (options.raw_sock) {
+    if (options.raw_socket) {
         // no handshaking for raw sock, instantiate raw encoder and decoders
         encoder = new (std::nothrow) raw_encoder_t (out_batch_size);
         alloc_assert (encoder);
@@ -194,13 +194,15 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
         next_msg = &stream_engine_t::pull_msg_from_session;
         process_msg = &stream_engine_t::push_msg_to_session;
 
-        //  For raw sockets, send an initial 0-length message to the
-        // application so that it knows a peer has connected.
-        msg_t connector;
-        connector.init();
-        push_msg_to_session (&connector);
-        connector.close();
-        session->flush ();
+        if (options.raw_notify) {
+            //  For raw sockets, send an initial 0-length message to the
+            // application so that it knows a peer has connected.
+            msg_t connector;
+            connector.init();
+            push_msg_to_session (&connector);
+            connector.close();
+            session->flush ();
+        }
     }
     else {
         // start optional timer, to prevent handshake hanging on no input
@@ -671,7 +673,7 @@ bool zmq::stream_engine_t::handshake ()
                 options.mechanism == ZMQ_GSSAPI? "GSSAPI":
                 "OTHER",
                 mechanism);
-            
+
             error (protocol_error);
             return false;
         }
@@ -804,23 +806,19 @@ void zmq::stream_engine_t::mechanism_ready ()
     //  Compile metadata.
     typedef metadata_t::dict_t properties_t;
     properties_t properties;
-    properties_t::const_iterator it;
+
+    //  If we have a peer_address, add it to metadata
+    if (!peer_address.empty()) {
+        properties.insert(std::make_pair("Peer-Address", peer_address));
+    }
 
     //  Add ZAP properties.
     const properties_t& zap_properties = mechanism->get_zap_properties ();
-    it = zap_properties.begin ();
-    while (it != zap_properties.end ()) {
-        properties.insert (properties_t::value_type (it->first, it->second));
-        ++it;
-    }
+    properties.insert(zap_properties.begin (), zap_properties.end ());
 
     //  Add ZMTP properties.
     const properties_t& zmtp_properties = mechanism->get_zmtp_properties ();
-    it = zmtp_properties.begin ();
-    while (it != zmtp_properties.end ()) {
-        properties.insert (properties_t::value_type (it->first, it->second));
-        ++it;
-    }
+    properties.insert(zmtp_properties.begin (), zmtp_properties.end ());
 
     zmq_assert (metadata == NULL);
     if (!properties.empty ())
@@ -914,7 +912,7 @@ int zmq::stream_engine_t::write_subscription_msg (msg_t *msg_)
 
 void zmq::stream_engine_t::error (error_reason_t reason)
 {
-    if (options.raw_sock) {
+    if (options.raw_socket) {
         //  For raw sockets, send a final 0-length message to the application
         //  so that it knows the peer has been disconnected.
         msg_t terminator;
@@ -934,7 +932,7 @@ void zmq::stream_engine_t::set_handshake_timer ()
 {
     zmq_assert (!has_handshake_timer);
 
-    if (!options.raw_sock && options.handshake_ivl > 0) {
+    if (!options.raw_socket && options.handshake_ivl > 0) {
         add_timer (options.handshake_ivl, handshake_timer_id);
         has_handshake_timer = true;
     }

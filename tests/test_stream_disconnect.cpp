@@ -55,15 +55,20 @@ int main(int, char**)
 {
     setup_test_environment();
 
-    void* context = zmq_ctx_new ();
-    void* sockets [2];
+    void *context = zmq_ctx_new ();
+    void *sockets [2];
     int rc = 0;
 
     sockets [SERVER] = zmq_socket (context, ZMQ_STREAM);
+    int enabled = 1;
+    rc = zmq_setsockopt (sockets [SERVER], ZMQ_STREAM_NOTIFY, &enabled, sizeof (enabled));
+    assert (rc == 0);
     rc = zmq_bind (sockets [SERVER], "tcp://0.0.0.0:6666");
     assert (rc == 0);
 
     sockets [CLIENT] = zmq_socket (context, ZMQ_STREAM);
+    rc = zmq_setsockopt (sockets [CLIENT], ZMQ_STREAM_NOTIFY, &enabled, sizeof (enabled));
+    assert (rc == 0);
     rc = zmq_connect (sockets [CLIENT], "tcp://localhost:6666");
     assert (rc == 0);
 

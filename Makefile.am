@@ -26,6 +26,8 @@ src_libzmq_la_SOURCES = \
 	src/atomic_counter.hpp \
 	src/atomic_ptr.hpp \
 	src/blob.hpp \
+	src/client.cpp \
+	src/client.hpp \
 	src/clock.cpp \
 	src/clock.hpp \
 	src/command.hpp \
@@ -144,6 +146,8 @@ src_libzmq_la_SOURCES = \
 	src/router.hpp \
 	src/select.cpp \
 	src/select.hpp \
+	src/server.cpp \
+	src/server.hpp \
 	src/session_base.cpp \
 	src/session_base.hpp \
 	src/signaler.cpp \
@@ -208,6 +212,13 @@ src_libzmq_la_LDFLAGS = \
 	-version-info @LTVER@ \
 	@LIBZMQ_EXTRA_LDFLAGS@
 else
+if ON_CYGWIN
+src_libzmq_la_LDFLAGS = \
+	-no-undefined \
+	-avoid-version \
+	-version-info @LTVER@ \
+	@LIBZMQ_EXTRA_LDFLAGS@
+else
 if ON_ANDROID
 src_libzmq_la_LDFLAGS = \
 	-avoid-version \
@@ -227,6 +238,7 @@ src_libzmq_la_LDFLAGS = \
 endif
 endif
 endif
+endif
 
 src_libzmq_la_CPPFLAGS =
 src_libzmq_la_CXXFLAGS = @LIBZMQ_EXTRA_CXXFLAGS@
@@ -242,6 +254,7 @@ src_libzmq_la_CPPFLAGS += ${pgm_CFLAGS}
 src_libzmq_la_LIBADD += ${pgm_LIBS}
 endif
 
+if ENABLE_PERF
 noinst_PROGRAMS = \
 	perf/local_lat \
 	perf/remote_lat \
@@ -267,11 +280,14 @@ perf_inproc_lat_SOURCES = perf/inproc_lat.cpp
 
 perf_inproc_thr_LDADD = src/libzmq.la
 perf_inproc_thr_SOURCES = perf/inproc_thr.cpp
+endif
 
+if ENABLE_CURVE_KEYGEN
 bin_PROGRAMS = tools/curve_keygen
 
 tools_curve_keygen_LDADD = src/libzmq.la
 tools_curve_keygen_SOURCES = tools/curve_keygen.cpp
+endif
 
 #
 # tests
@@ -326,12 +342,14 @@ test_apps = \
 	tests/test_connect_rid \
 	tests/test_bind_src_address \
 	tests/test_metadata \
-	tests/test_id2fd \
 	tests/test_capabilities \
 	tests/test_xpub_nodrop \
 	tests/test_xpub_manual \
 	tests/test_xpub_welcome_msg \
-	tests/test_atomics
+	tests/test_atomics \
+	tests/test_client_server \
+	tests/test_server_drop_more \
+	tests/test_client_drop_more
 
 tests_test_system_SOURCES = tests/test_system.cpp
 tests_test_system_LDADD = src/libzmq.la
@@ -488,9 +506,6 @@ tests_test_bind_src_address_LDADD = src/libzmq.la
 tests_test_metadata_SOURCES = tests/test_metadata.cpp
 tests_test_metadata_LDADD = src/libzmq.la
 
-tests_test_id2fd_SOURCES = tests/test_id2fd.cpp
-tests_test_id2fd_LDADD = src/libzmq.la
-
 tests_test_capabilities_SOURCES = tests/test_capabilities.cpp
 tests_test_capabilities_LDADD = src/libzmq.la
 
@@ -506,7 +521,17 @@ tests_test_xpub_welcome_msg_LDADD = src/libzmq.la
 tests_test_atomics_SOURCES = tests/test_atomics.cpp
 tests_test_atomics_LDADD = src/libzmq.la
 
+tests_test_client_server_SOURCES = tests/test_client_server.cpp
+tests_test_client_server_LDADD = src/libzmq.la
+
+tests_test_server_drop_more_SOURCES = tests/test_server_drop_more.cpp
+tests_test_server_drop_more_LDADD = src/libzmq.la
+
+tests_test_client_drop_more_SOURCES = tests/test_client_drop_more.cpp
+tests_test_client_drop_more_LDADD = src/libzmq.la
+
 if !ON_MINGW
+if !ON_CYGWIN
 test_apps += \
 	tests/test_shutdown_stress \
 	tests/test_pair_ipc \
@@ -539,6 +564,7 @@ test_apps += tests/test_fork
 tests_test_fork_SOURCES = tests/test_fork.cpp
 tests_test_fork_LDADD = src/libzmq.la
 
+endif
 endif
 endif
 

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -206,7 +206,9 @@ zmq::blob_t zmq::xsub_t::get_credential () const
 
 bool zmq::xsub_t::match (msg_t *msg_)
 {
-    return subscriptions.check ((unsigned char*) msg_->data (), msg_->size ());
+    bool matching = subscriptions.check ((unsigned char*) msg_->data (), msg_->size ());
+
+    return matching ^ options.invert_matching;
 }
 
 void zmq::xsub_t::send_subscription (unsigned char *data_, size_t size_,

@@ -134,6 +134,7 @@ libzmq_dso_visibility="yes"
 
 # Platform specific checks
 libzmq_on_mingw32="no"
+libzmq_on_cygwin="no"
 libzmq_on_android="no"
 libzmq_on_linux="no"
 
@@ -269,6 +270,8 @@ case "${host_os}" in
         # Define on Cygwin to enable all library features
         CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_CYGWIN, 1, [Have Cygwin])
+        libzmq_on_cygwin="yes"
+        libzmq_dso_visibility="no"
         if test "x$enable_static" = "xyes"; then
             AC_MSG_ERROR([Building static libraries is not supported under Cygwin])
         fi
@@ -342,6 +345,22 @@ if test "x$zmq_enable_eventfd" = "xyes"; then
     AC_CHECK_HEADERS(sys/eventfd.h,
         [AC_DEFINE(ZMQ_HAVE_EVENTFD, 1, [Have eventfd extension.])])
 fi
+
+# Conditionally build performance measurement tools
+AC_ARG_ENABLE([perf],
+    [AS_HELP_STRING([--enable-perf], [Build performance measurement tools [default=yes].])],
+    [zmq_enable_perf=$enableval],
+    [zmq_enable_perf=yes])
+
+AM_CONDITIONAL(ENABLE_PERF, test "x$zmq_enable_perf" = "xyes")
+
+# Conditionally build curve key generation tool
+AC_ARG_ENABLE([curve-keygen],
+    [AS_HELP_STRING([--enable-curve-keygen], [Build curve key-generation tool [default=yes].])],
+    [zmq_enable_curve_keygen=$enableval],
+    [zmq_enable_curve_keygen=yes])
+
+AM_CONDITIONAL(ENABLE_CURVE_KEYGEN, test "x$zmq_enable_curve_keygen" = "xyes")
 
 # Use c++ in subsequent tests
 AC_LANG_PUSH(C++)
@@ -433,10 +452,10 @@ AM_CONDITIONAL(HAVE_PGM, test "x$have_pgm_library" = "xyes")
 # This uses "--with-norm" to point to the "norm" directory
 # for "norm/include" and "norm/lib"
 #(if "--with-norm=yes" is given, then assume installed on system)
-AC_ARG_WITH([norm], 
-    [AS_HELP_STRING([--with-norm], 
+AC_ARG_WITH([norm],
+    [AS_HELP_STRING([--with-norm],
         [build libzmq with NORM protocol extension, optionally specifying norm path [default=no]])],
-    [with_norm_ext=$withval], 
+    [with_norm_ext=$withval],
     [with_norm_ext=no])
 
 
@@ -472,12 +491,22 @@ AC_LANG_POP([C++])
 
 AM_CONDITIONAL(BUILD_TIPC, test "x$libzmq_tipc_support" = "xyes")
 AM_CONDITIONAL(ON_MINGW, test "x$libzmq_on_mingw32" = "xyes")
+AM_CONDITIONAL(ON_CYGWIN, test "x$libzmq_on_cygwin" = "xyes")
 AM_CONDITIONAL(ON_ANDROID, test "x$libzmq_on_android" = "xyes")
 AM_CONDITIONAL(ON_LINUX, test "x$libzmq_on_linux" = "xyes")
 
+# Check for __atomic_Xxx compiler intrinsics
+AC_LANG_PUSH([C++])
+LIBZMQ_CHECK_ATOMIC_INTRINSICS([
+    AC_DEFINE([ZMQ_HAVE_ATOMIC_INTRINSICS],
+              [1],
+              [Whether compiler has __atomic_Xxx intrinsics.])
+    ])
+AC_LANG_POP([C++])
+
 # Checks for library functions.
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS(perror gettimeofday clock_gettime memset socket getifaddrs freeifaddrs fork)
+AC_CHECK_FUNCS(perror gettimeofday clock_gettime memset socket getifaddrs freeifaddrs fork posix_memalign)
 AC_CHECK_HEADERS([alloca.h])
 
 LIBZMQ_CHECK_SOCK_CLOEXEC([

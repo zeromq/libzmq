@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -133,12 +133,9 @@ namespace zmq
 
         //  The default implementation assumes there are no specific socket
         //  options for the particular socket type. If not so, override this
-        //  methods.
+        //  method.
         virtual int xsetsockopt (int option_, const void *optval_,
             size_t optvallen_);
-
-        virtual int xgetsockopt (int option_, const void *optval_,
-            size_t *optvallen_);
 
         //  The default implementation assumes that send is not supported.
         virtual bool xhas_out ();

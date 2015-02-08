@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -36,7 +36,7 @@ void test_push_round_robin_out (void *ctx)
         pulls [peer] = zmq_socket (ctx, ZMQ_PULL);
         assert (pulls [peer]);
 
-        int timeout = 100;
+        int timeout = 250;
         rc = zmq_setsockopt (pulls [peer], ZMQ_RCVTIMEO, &timeout, sizeof (int));
         assert (rc == 0);
 
@@ -155,7 +155,7 @@ void test_push_block_on_send_no_peers (void *ctx)
     void *sc = zmq_socket (ctx, ZMQ_PUSH);
     assert (sc);
 
-    int timeout = 100;
+    int timeout = 250;
     int rc = zmq_setsockopt (sc, ZMQ_SNDTIMEO, &timeout, sizeof (timeout));
     assert (rc == 0);
 

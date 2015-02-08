@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -27,7 +27,6 @@
 #include "stdint.hpp"
 #include "array.hpp"
 #include "blob.hpp"
-#include "fd.hpp"
 
 namespace zmq
 {
@@ -75,6 +74,10 @@ namespace zmq
         //  Specifies the object to send events to.
         void set_event_sink (i_pipe_events *sink_);
 
+        //  Pipe endpoint can store an routing ID to be used by its clients.        
+        void set_routing_id(uint32_t routing_id_);
+        uint32_t get_routing_id();
+
         //  Pipe endpoint can store an opaque ID to be used by its clients.
         void set_identity (const blob_t &identity_);
         blob_t get_identity ();
@@ -87,12 +90,14 @@ namespace zmq
         //  Reads a message to the underlying pipe.
         bool read (msg_t *msg_);
 
-        //  Checks whether messages can be written to the pipe. If writing
-        //  the message would cause high watermark the function returns false.
+        //  Checks whether messages can be written to the pipe. If the pipe is
+        //  closed or if writing the message would cause high watermark the
+        //  function returns false.
         bool check_write ();
 
         //  Writes a message to the underlying pipe. Returns false if the
-        //  message cannot be written because high watermark was reached.
+        //  message does not pass check_write. If false, the message object
+        //  retains ownership of its message buffer.
         bool write (msg_t *msg_);
 
         //  Remove unfinished parts of the outbound message from the pipe.
@@ -120,8 +125,6 @@ namespace zmq
 
         // check HWM
         bool check_hwm () const;
-        // provide a way to link pipe to engine fd. Set on session initialization
-        fd_t assoc_fd; //=retired_fd
     private:
 
         //  Type of the underlying lock-free pipe.
@@ -204,6 +207,9 @@ namespace zmq
 
         //  Identity of the writer. Used uniquely by the reader side.
         blob_t identity;
+
+        //  Identity of the writer. Used uniquely by the reader side.
+        int routing_id;
 
         //  Pipe's credential.
         blob_t credential;

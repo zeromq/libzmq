@@ -586,8 +586,8 @@ dnl # LIBZMQ_CHECK_SOCK_CLOEXEC([action-if-found], [action-if-not-found])       
 dnl # Check if SOCK_CLOEXEC is supported                                           #
 dnl ################################################################################
 AC_DEFUN([LIBZMQ_CHECK_SOCK_CLOEXEC], [{
-    AC_MSG_CHECKING(whether SOCK_CLOEXEC is supported)
-    AC_TRY_RUN([/* SOCK_CLOEXEC test */
+    AC_CACHE_CHECK([whether SOCK_CLOEXEC is supported], [libzmq_cv_sock_cloexec],
+        [AC_TRY_RUN([/* SOCK_CLOEXEC test */
 #include <sys/types.h>
 #include <sys/socket.h>
 
@@ -596,10 +596,32 @@ int main (int argc, char *argv [])
     int s = socket (PF_INET, SOCK_STREAM | SOCK_CLOEXEC, 0);
     return (s == -1);
 }
-    ],
-    [AC_MSG_RESULT(yes) ; libzmq_cv_sock_cloexec="yes" ; $1],
-    [AC_MSG_RESULT(no)  ; libzmq_cv_sock_cloexec="no"  ; $2],
-    [AC_MSG_RESULT(not during cross-compile) ; libzmq_cv_sock_cloexec="no"]
+        ],
+        [libzmq_cv_sock_cloexec="yes"],
+        [libzmq_cv_sock_cloexec="no"],
+        [libzmq_cv_sock_cloexec="not during cross-compile"]
+        )]
+    )
+    AS_IF([test "x$libzmq_cv_sock_cloexec" = "xyes"], [$1], [$2])
+}])
+
+dnl ################################################################################
+dnl # LIBZMQ_CHECK_ATOMIC_INSTRINSICS([action-if-found], [action-if-not-found])    #
+dnl # Check if compiler supoorts __atomic_Xxx intrinsics                           #
+dnl ################################################################################
+AC_DEFUN([LIBZMQ_CHECK_ATOMIC_INTRINSICS], [{
+    AC_MSG_CHECKING(whether compiler supports __atomic_Xxx intrinsics)
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([
+/* atomic intrinsics test */
+int v = 0;
+int main (int, char **)
+{
+    int t = __atomic_add_fetch (&v, 1, __ATOMIC_ACQ_REL);
+    return t;
+}
+    ])],
+    [AC_MSG_RESULT(yes) ; libzmq_cv_has_atomic_instrisics="yes" ; $1],
+    [AC_MSG_RESULT(no)  ; libzmq_cv_has_atomic_instrisics="no"  ; $2]
     )
 }])
 
@@ -608,8 +630,8 @@ dnl # LIBZMQ_CHECK_SO_KEEPALIVE([action-if-found], [action-if-not-found])       
 dnl # Check if SO_KEEPALIVE is supported                                           #
 dnl ################################################################################
 AC_DEFUN([LIBZMQ_CHECK_SO_KEEPALIVE], [{
-    AC_MSG_CHECKING(whether SO_KEEPALIVE is supported)
-    AC_TRY_RUN([/* SO_KEEPALIVE test */
+    AC_CACHE_CHECK([whether SO_KEEPALIVE is supported], [libzmq_cv_so_keepalive],
+        [AC_TRY_RUN([/* SO_KEEPALIVE test */
 #include <sys/types.h>
 #include <sys/socket.h>
 
@@ -621,11 +643,13 @@ int main (int argc, char *argv [])
         ((rc = setsockopt (s, SOL_SOCKET, SO_KEEPALIVE, (char*) &opt, sizeof (int))) == -1)
     );
 }
-    ],
-    [AC_MSG_RESULT(yes) ; libzmq_cv_so_keepalive="yes" ; $1],
-    [AC_MSG_RESULT(no)  ; libzmq_cv_so_keepalive="no"  ; $2],
-    [AC_MSG_RESULT(not during cross-compile) ; libzmq_cv_so_keepalive="no"]
+        ],
+        [libzmq_cv_so_keepalive="yes"],
+        [libzmq_cv_so_keepalive="no"],
+        [libzmq_cv_so_keepalive="not during cross-compile"]
+        )]
     )
+    AS_IF([test "x$libzmq_cv_so_keepalive" = "xyes"], [$1], [$2])
 }])
 
 dnl ################################################################################
@@ -633,8 +657,8 @@ dnl # LIBZMQ_CHECK_TCP_KEEPCNT([action-if-found], [action-if-not-found])        
 dnl # Check if TCP_KEEPCNT is supported                                            #
 dnl ################################################################################
 AC_DEFUN([LIBZMQ_CHECK_TCP_KEEPCNT], [{
-    AC_MSG_CHECKING(whether TCP_KEEPCNT is supported)
-    AC_TRY_RUN([/* TCP_KEEPCNT test */
+    AC_CACHE_CHECK([whether TCP_KEEPCNT is supported], [libzmq_cv_tcp_keepcnt],
+        [AC_TRY_RUN([/* TCP_KEEPCNT test */
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -649,11 +673,13 @@ int main (int argc, char *argv [])
         ((rc = setsockopt (s, IPPROTO_TCP, TCP_KEEPCNT, (char*) &opt, sizeof (int))) == -1)
     );
 }
-    ],
-    [AC_MSG_RESULT(yes) ; libzmq_cv_tcp_keepcnt="yes" ; $1],
-    [AC_MSG_RESULT(no)  ; libzmq_cv_tcp_keepcnt="no"  ; $2],
-    [AC_MSG_RESULT(not during cross-compile) ; libzmq_cv_tcp_keepcnt="no"]
+        ],
+        [libzmq_cv_tcp_keepcnt="yes"],
+        [libzmq_cv_tcp_keepcnt="no"],
+        [libzmq_cv_tcp_keepcnt="not during cross-compile"]
+        )]
     )
+    AS_IF([test "x$libzmq_cv_tcp_keepcnt" = "xyes"], [$1], [$2])
 }])
 
 dnl ################################################################################
@@ -661,8 +687,8 @@ dnl # LIBZMQ_CHECK_TCP_KEEPIDLE([action-if-found], [action-if-not-found])       
 dnl # Check if TCP_KEEPIDLE is supported                                           #
 dnl ################################################################################
 AC_DEFUN([LIBZMQ_CHECK_TCP_KEEPIDLE], [{
-    AC_MSG_CHECKING(whether TCP_KEEPIDLE is supported)
-    AC_TRY_RUN([/* TCP_KEEPIDLE test */
+    AC_CACHE_CHECK([whether TCP_KEEPIDLE is supported], [libzmq_cv_tcp_keepidle],
+        [AC_TRY_RUN([/* TCP_KEEPIDLE test */
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -677,11 +703,13 @@ int main (int argc, char *argv [])
         ((rc = setsockopt (s, IPPROTO_TCP, TCP_KEEPIDLE, (char*) &opt, sizeof (int))) == -1)
     );
 }
-    ],
-    [AC_MSG_RESULT(yes) ; libzmq_cv_tcp_keepidle="yes" ; $1],
-    [AC_MSG_RESULT(no)  ; libzmq_cv_tcp_keepidle="no"  ; $2],
-    [AC_MSG_RESULT(not during cross-compile) ; libzmq_cv_tcp_keepidle="no"]
+        ],
+        [libzmq_cv_tcp_keepidle="yes"],
+        [libzmq_cv_tcp_keepidle="no"],
+        [libzmq_cv_tcp_keepidle="not during cross-compile"]
+        )]
     )
+    AS_IF([test "x$libzmq_cv_tcp_keepidle" = "xyes"], [$1], [$2])
 }])
 
 dnl ################################################################################
@@ -689,8 +717,8 @@ dnl # LIBZMQ_CHECK_TCP_KEEPINTVL([action-if-found], [action-if-not-found])      
 dnl # Check if TCP_KEEPINTVL is supported                                           #
 dnl ################################################################################
 AC_DEFUN([LIBZMQ_CHECK_TCP_KEEPINTVL], [{
-    AC_MSG_CHECKING(whether TCP_KEEPINTVL is supported)
-    AC_TRY_RUN([/* TCP_KEEPINTVL test */
+    AC_CACHE_CHECK([whether TCP_KEEPINTVL is supported], [libzmq_cv_tcp_keepintvl],
+        [AC_TRY_RUN([/* TCP_KEEPINTVL test */
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -705,11 +733,13 @@ int main (int argc, char *argv [])
         ((rc = setsockopt (s, IPPROTO_TCP, TCP_KEEPINTVL, (char*) &opt, sizeof (int))) == -1)
     );
 }
-    ],
-    [AC_MSG_RESULT(yes) ; libzmq_cv_tcp_keepintvl="yes" ; $1],
-    [AC_MSG_RESULT(no)  ; libzmq_cv_tcp_keepintvl="no"  ; $2],
-    [AC_MSG_RESULT(not during cross-compile) ; libzmq_cv_tcp_keepintvl="no"]
+        ],
+        [libzmq_cv_tcp_keepintvl="yes"],
+        [libzmq_cv_tcp_keepintvl="no"],
+        [libzmq_cv_tcp_keepintvl="not during cross-compile"]
+        )]
     )
+    AS_IF([test "x$libzmq_cv_tcp_keepintvl" = "xyes"], [$1], [$2])
 }])
 
 dnl ################################################################################
@@ -717,8 +747,8 @@ dnl # LIBZMQ_CHECK_TCP_KEEPALIVE([action-if-found], [action-if-not-found])      
 dnl # Check if TCP_KEEPALIVE is supported                                          #
 dnl ################################################################################
 AC_DEFUN([LIBZMQ_CHECK_TCP_KEEPALIVE], [{
-    AC_MSG_CHECKING(whether TCP_KEEPALIVE is supported)
-    AC_TRY_RUN([/* TCP_KEEPALIVE test */
+    AC_CACHE_CHECK([whether TCP_KEEPALIVE is supported], [libzmq_cv_tcp_keepalive],
+        [AC_TRY_RUN([/* TCP_KEEPALIVE test */
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -733,11 +763,13 @@ int main (int argc, char *argv [])
         ((rc = setsockopt (s, IPPROTO_TCP, TCP_KEEPALIVE, (char*) &opt, sizeof (int))) == -1)
     );
 }
-    ],
-    [AC_MSG_RESULT(yes) ; libzmq_cv_tcp_keepalive="yes" ; $1],
-    [AC_MSG_RESULT(no)  ; libzmq_cv_tcp_keepalive="no"  ; $2],
-    [AC_MSG_RESULT(not during cross-compile) ; libzmq_cv_tcp_keepalive="no"]
+        ],
+        [libzmq_cv_tcp_keepalive="yes"],
+        [libzmq_cv_tcp_keepalive="no"],
+        [libzmq_cv_tcp_keepalive="not during cross-compile"]
+        )]
     )
+    AS_IF([test "x$libzmq_cv_tcp_keepalive" = "xyes"], [$1], [$2])
 }])
 
 dnl ################################################################################
@@ -764,7 +796,7 @@ kqueue();
 dnl ################################################################################
 dnl # LIBZMQ_CHECK_POLLER_EPOLL_RUN([action-if-found], [action-if-not-found])      #
 dnl # Checks epoll polling system can actually run #
-dnl # For cross-compile, only requires that epoll can link # 
+dnl # For cross-compile, only requires that epoll can link #
 dnl ################################################################################
 AC_DEFUN([LIBZMQ_CHECK_POLLER_EPOLL], [{
     AC_RUN_IFELSE(
@@ -794,7 +826,7 @@ return(r < 0);
               )],
               [libzmq_cv_have_poller_epoll="yes" ; $1],
               [libzmq_cv_have_poller_epoll="no" ; $2])
-        
+
         ])
 }])
 

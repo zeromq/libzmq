@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -108,11 +108,17 @@ namespace zmq
         //  If 1, (X)SUB socket should filter the messages. If 0, it should not.
         bool filter;
 
+        //  If true, the subscription matching on (X)PUB and (X)SUB sockets
+        //  is reversed. Messages are sent to and received by non-matching
+        //  sockets.
+        bool invert_matching;
+
         //  If true, the identity message is forwarded to the socket.
         bool recv_identity;
 
         // if true, router socket accepts non-zmq tcp connections
-        bool raw_sock;
+        bool raw_socket;
+        bool raw_notify;        //  Provide connect notifications
 
         //  Addres of SOCKS proxy
         std::string socks_proxy_address;
