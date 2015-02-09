@@ -5,10 +5,6 @@ project(ZeroMQ)
 
 option(WITH_OPENPGM "Build with support for OpenPGM" OFF)
 
-if(APPLE)
-  option(ZMQ_BUILD_FRAMEWORK "Build as OS X framework" ON)
-endif()
-
 if(WIN32)
 option(WITH_TWEETNACL "Build with tweetnacl" OFF)
 else()
@@ -555,10 +551,8 @@ list(APPEND sources ${CMAKE_CURRENT_BINARY_DIR}/platform.hpp)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/libzmq.pc.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/libzmq.pc @ONLY)
 set(zmq-pkgconfig ${CMAKE_CURRENT_BINARY_DIR}/libzmq.pc)
 
-if(NOT ZMQ_BUILD_FRAMEWORK)
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libzmq.pc DESTINATION lib/pkgconfig)
-endif()
 
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libzmq.pc DESTINATION lib/pkgconfig)
 
 
 if(MSVC)
@@ -623,11 +617,16 @@ if(MSVC)
   set_target_properties(libzmq PROPERTIES
     PUBLIC_HEADER "${public_headers}"
     RELEASE_POSTFIX "${_zmq_COMPILER}-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+    RELWITHDEBINFO_POSTFIX "${_zmq_COMPILER}-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
     DEBUG_POSTFIX "${_zmq_COMPILER}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
   add_library(libzmq-static STATIC ${sources})
   set_target_properties(libzmq-static PROPERTIES
     PUBLIC_HEADER "${public_headers}"
+    RELEASE_POSTFIX "${_zmq_COMPILER}-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+    RELWITHDEBINFO_POSTFIX "${_zmq_COMPILER}-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+    DEBUG_POSTFIX "${_zmq_COMPILER}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
     COMPILE_FLAGS "/D ZMQ_STATIC"
     OUTPUT_NAME "zmq")
 else()
@@ -686,31 +685,22 @@ set(perf-tools local_lat
                inproc_lat
                inproc_thr)
 
-if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug") # Why?
-  foreach(perf-tool ${perf-tools})
-    add_executable(${perf-tool} perf/${perf-tool}.cpp)
-    target_link_libraries(${perf-tool} libzmq)
 
+foreach(perf-tool ${perf-tools})
+    add_executable("${perf-tool}" "perf/${perf-tool}.cpp")
+    target_link_libraries("${perf-tool}" libzmq)
+    set_target_properties("${perf-tool}" PROPERTIES
+                          RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
+                    
     if(RT_LIBRARY)
-      target_link_libraries(${perf-tool} ${RT_LIBRARY})
+      target_link_libraries("${perf-tool}" ${RT_LIBRARY})
     endif()
 
-    if(ZMQ_BUILD_FRAMEWORK)
-      # Copy perf-tools binaries into Framework
-      add_custom_command(
-        TARGET libzmq ${perf-tool}
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND}
-        ARGS -E copy "$<TARGET_FILE:${perf-tool}>" "${LIBRARY_OUTPUT_PATH}/ZeroMQ.framework/Versions/${ZMQ_VERSION_STRING}/MacOS/${perf-tool}"
-        VERBATIM
-        COMMENT "Perf tools")
-    else()
-      install(TARGETS ${perf-tool}
-              RUNTIME DESTINATION bin
-              COMPONENT PerfTools)
-    endif()
-  endforeach()
-endif()
+  install(TARGETS "${perf-tool}"
+          RUNTIME DESTINATION bin
+          COMPONENT PerfTools)
+endforeach()
+
 
 #-----------------------------------------------------------------------------
 # tests
@@ -726,159 +716,39 @@ endif()
 # installer
 
 if(MSVC)
-  install(TARGETS libzmq libzmq-static
-          ARCHIVE DESTINATION lib
-          LIBRARY DESTINATION lib
-          PUBLIC_HEADER DESTINATION include
-          COMPONENT SDK)
-  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    install(TARGETS libzmq libzmq-static
+    install(TARGETS libzmq libzmq-static EXPORT ZMQ-TARGETS
             RUNTIME DESTINATION bin
             ARCHIVE DESTINATION lib
             PUBLIC_HEADER DESTINATION include
             COMPONENT SDK)
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/bin/libzmq${_zmq_COMPILER}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}.pdb DESTINATION lib
-            COMPONENT SDK)
-  else()
-    install(TARGETS libzmq
-            RUNTIME DESTINATION bin
-            PUBLIC_HEADER DESTINATION include
-            COMPONENT Runtime)
-  endif()
 else()
-  install(TARGETS libzmq libzmq-static
-          RUNTIME DESTINATION bin
-          ARCHIVE DESTINATION lib
-          LIBRARY DESTINATION lib
-          FRAMEWORK DESTINATION "Library/Frameworks"
-          PUBLIC_HEADER DESTINATION include)
+    install(TARGETS libzmq libzmq-static EXPORT ZMQ-TARGETS
+            RUNTIME DESTINATION bin
+            ARCHIVE DESTINATION lib
+            FRAMEWORK DESTINATION "Library/Frameworks"
+            PUBLIC_HEADER DESTINATION include)
 endif()
 
-# install(FILES ${public_headers}
-#          DESTINATION include
-#          COMPONENT SDK)
+#desire would be to export these with below but broken
+#install(EXPORT ZMQ-TARGETS DESTINATION lib)
 
-if(NOT ZMQ_BUILD_FRAMEWORK)
   file(GLOB private_headers "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp")
-  install(FILES ${sources} ${private_headers} DESTINATION src/zmq
+  install(FILES "${sources}" "${private_headers}" DESTINATION src/zmq
           COMPONENT SourceCode)
-endif()
 
 foreach(readme ${readme-docs})
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${readme} ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt)
 
-  if(NOT ZMQ_BUILD_FRAMEWORK)
     if(MSVC)
       install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt DESTINATION .)
     else()
       install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt DESTINATION etc/zmq)
     endif()
-  endif()
+
 endforeach()
 
 if(WITH_DOC)
   if(NOT ZMQ_BUILD_FRAMEWORK)
     install(FILES ${html-docs} DESTINATION doc/zmq COMPONENT RefGuide)
-  endif()
-endif()
-
-
-if(MSVC)
-  include(InstallRequiredSystemLibraries)
-
-  if(CMAKE_CL_64)
-    set(arch_name "x64")
-  else()
-    set(arch_name "x86")
-  endif()
-
-  set(CPACK_NSIS_DISPLAY_NAME "ZeroMQ ${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.${ZMQ_VERSION_PATCH}(${arch_name})")
-  set(CPACK_PACKAGE_FILE_NAME "ZeroMQ-${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.${ZMQ_VERSION_PATCH}-${arch_name}")
-
-  # TODO: I think this part was intended to be used when running cpack
-  # separately from cmake but I don't know how that works.
-  #
-  # macro(add_crt_version version)
-  #   set(rel_dir "${CMAKE_CURRENT_BINARY_DIR}/build/${arch_name}/${version};ZeroMQ;ALL;/")
-  #   set(debug_dir "${CMAKE_CURRENT_BINARY_DIR}/debug/${arch_name}/${version};ZeroMQ;ALL;/")
-  #   if(EXISTS ${rel_dir})
-  #     list(APPEND CPACK_INSTALL_CMAKE_PROJECTS ${rel_dir})
-  #   endif()
-
-  #   if(EXISTS ${debug_dir})
-  #     list(APPEND CPACK_INSTALL_CMAKE_PROJECTS ${rel_dir})
-  #   endmacro()
-  # endmacro()
-
-  # add_crt_version(v110)
-  # add_crt_version(v100)
-  # add_crt_version(v90)
-
-  set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_BINARY_DIR}")
-  set(CPACK_GENERATOR "NSIS")
-  set(CPACK_PACKAGE_NAME "ZeroMQ")
-  set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "ZeroMQ lightweight messaging kernel")
-  set(CPACK_PACKAGE_VENDOR "Miru")
-  set(CPACK_NSIS_CONTACT "Steven McCoy <Steven.McCoy@miru.hk>")
-  set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_BINARY_DIR}\\\\COPYING.txt")
-#  set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_BINARY_DIR}\\\\README.txt")
-#  set(CPACK_RESOURCE_FILE_WELCOME "${CMAKE_CURRENT_BINARY_DIR}\\\\WELCOME.txt")
-  # There is a bug in NSI that does not handle full unix paths properly. Make
-  # sure there is at least one set of four(4) backslashes.
-  set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}\\\\installer.ico")
-  set(CPACK_NSIS_MUI_UNIICON "${CMAKE_CURRENT_SOURCE_DIR}\\\\installer.ico")
-
-  set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}\\\\branding.bmp")
-  set(CPACK_NSIS_COMPRESSOR "/SOLID lzma")
-  set(CPACK_PACKAGE_VERSION ${ZMQ_VERSION})
-  set(CPACK_PACKAGE_VERSION_MAJOR ${ZMQ_VERSION_MAJOR})
-  set(CPACK_PACKAGE_VERSION_MINOR ${ZMQ_VERSION_MINOR})
-  set(CPACK_PACKAGE_VERSION_PATCH ${ZMQ_VERSION_PATCH})
-#  set(CPACK_PACKAGE_INSTALL_DIRECTORY "ZMQ Install Directory")
-#  set(CPACK_TEMPORARY_DIRECTORY "ZMQ Temporary CPack Directory")
-
-  include(CPack)
-
-  cpack_add_component_group(Development
-    DISPLAY_NAME "ZeroMQ software development kit"
-    EXPANDED)
-  cpack_add_component(PerfTools
-    DISPLAY_NAME "ZeroMQ performance tools"
-    INSTALL_TYPES FullInstall DevInstall)
-  cpack_add_component(SourceCode
-    DISPLAY_NAME "ZeroMQ source code"
-    DISABLED
-    INSTALL_TYPES FullInstall)
-  cpack_add_component(SDK
-    DISPLAY_NAME "ZeroMQ headers and libraries"
-    INSTALL_TYPES FullInstall DevInstall
-    GROUP Development)
-  if(WITH_DOC)
-    cpack_add_component(RefGuide
-      DISPLAY_NAME "ZeroMQ reference guide"
-      INSTALL_TYPES FullInstall DevInstall
-      GROUP Development)
-  endif()
-  cpack_add_component(Runtime
-    DISPLAY_NAME "ZeroMQ runtime files"
-    REQUIRED
-    INSTALL_TYPES FullInstall DevInstall MinInstall)
-  cpack_add_install_type(FullInstall
-    DISPLAY_NAME "Full install, including source code")
-  cpack_add_install_type(DevInstall
-    DISPLAY_NAME "Developer install, headers and libraries")
-  cpack_add_install_type(MinInstall
-    DISPLAY_NAME "Minimal install, runtime only")
-endif()
-
-# Export this for library to help build this as a sub-project
-set(ZEROMQ_LIBRARY libzmq CACHE STRING "ZeroMQ library")
-
-# Workaround for MSVS10 to avoid the Dialog Hell
-# FIXME: This could be removed with future version of CMake.
-if(MSVC_VERSION EQUAL 1600)
-  set(ZMQ_SLN_FILENAME "${CMAKE_CURRENT_BINARY_DIR}/ZeroMQ.sln")
-  if(EXISTS "${ZMQ_SLN_FILENAME}")
-    file(APPEND "${ZMQ_SLN_FILENAME}" "\n# This should be regenerated!\n")
   endif()
 endif()
