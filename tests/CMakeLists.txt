@@ -61,16 +61,18 @@ if(NOT WIN32)
 endif()
 
 foreach(test ${tests})
-  add_executable(${test} ${test}.cpp)
-  target_link_libraries(${test} libzmq)
+  add_executable("${test}" "${test}.cpp")
+  target_link_libraries("${test}" libzmq)
+  set_target_properties("${test}" PROPERTIES
+    			RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
 
   if(RT_LIBRARY)
-    target_link_libraries(${test} ${RT_LIBRARY} )
+    target_link_libraries("${test}" "${RT_LIBRARY}" )
   endif()
   if(WIN32)
-    add_test(NAME ${test} WORKING_DIRECTORY ${LIBRARY_OUTPUT_PATH} COMMAND ${test})
+    add_test(NAME "${test}" WORKING_DIRECTORY "${LIBRARY_OUTPUT_PATH}" COMMAND "${test}")
   else()
-    add_test(NAME ${test} COMMAND ${test})
+    add_test(NAME "${test}" COMMAND "${test}")
   endif()
 endforeach()
 
