@@ -159,9 +159,9 @@ zmq_find_library("iphlpapi" HAVE_IPHLAPI) # GetAdaptersAddresses
 check_cxx_symbol_exists(SO_PEERCRED sys/socket.h ZMQ_HAVE_SO_PEERCRED)
 check_cxx_symbol_exists(LOCAL_PEERCRED sys/socket.h ZMQ_HAVE_LOCAL_PEERCRED)
 
-find_library(RT_LIBRARY rt)
+#find_library(RT_LIBRARY rt)
 
-find_package(Threads)
+#find_package(Threads)
 
 
 if(WIN32 AND NOT CYGWIN)
@@ -631,27 +631,9 @@ if(MSVC)
     OUTPUT_NAME "zmq")
 else()
     add_library(libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig})
-    if(ZMQ_BUILD_FRAMEWORK)
-      set_target_properties(libzmq PROPERTIES
-                            FRAMEWORK TRUE
-                            OUTPUT_NAME "ZeroMQ"
-                            PUBLIC_HEADER "${public_headers}"
-                            MACOSX_FRAMEWORK_IDENTIFIER "org.zeromq.libzmq"
-                            MACOSX_FRAMEWORK_SHORT_VERSION_STRING ${ZMQ_VERSION}
-                            MACOSX_FRAMEWORK_BUNDLE_VERSION ${ZMQ_VERSION}
-                            VERSION ${ZMQ_VERSION}
-                            SOVERSION "${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.0")
-      set_source_files_properties(${html-docs} PROPERTIES
-                                  MACOSX_PACKAGE_LOCATION doc)
-      set_source_files_properties(${readme-docs} PROPERTIES
-                                  MACOSX_PACKAGE_LOCATION etc)
-      set_source_files_properties(${zmq-pkgconfig} PROPERTIES
-                                  MACOSX_PACKAGE_LOCATION lib/pkgconfig)
-    else()
-      set_target_properties(libzmq PROPERTIES
-                             OUTPUT_NAME "zmq"
-                             PUBLIC_HEADER "${public_headers}")
-    endif()
+    set_target_properties(libzmq PROPERTIES
+                          OUTPUT_NAME "zmq"
+                          PUBLIC_HEADER "${public_headers}")
     add_library(libzmq-static STATIC ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig})
     set_target_properties(libzmq-static PROPERTIES
       PUBLIC_HEADER "${public_headers}"
@@ -690,10 +672,11 @@ foreach(perf-tool ${perf-tools})
     add_executable("${perf-tool}" "perf/${perf-tool}.cpp")
     target_link_libraries("${perf-tool}" libzmq)
     set_target_properties("${perf-tool}" PROPERTIES
-                          RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
+                          RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin"
+                          COMPILE_FLAGS "-DZMQ_STATIC")
                     
     if(RT_LIBRARY)
-      target_link_libraries("${perf-tool}" ${RT_LIBRARY})
+      target_link_libraries("${perf-tool}" libzmq-static ${RT_LIBRARY})
     endif()
 
   install(TARGETS "${perf-tool}"
