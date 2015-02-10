@@ -60,6 +60,11 @@ namespace zmq
             LeaveCriticalSection (&cs);
         }
 
+        inline CRITICAL_SECTION* get_cs()
+        {
+            return &cs;
+        }
+
     private:
 
         CRITICAL_SECTION cs;
@@ -113,6 +118,11 @@ namespace zmq
         {
             int rc = pthread_mutex_unlock (&mutex);
             posix_assert (rc);
+        }
+
+        inline pthread_mutex_t* get_mutex()
+        {
+            return &mutex;
         }
 
     private:

@@ -31,6 +31,7 @@ src_libzmq_la_SOURCES = \
 	src/clock.cpp \
 	src/clock.hpp \
 	src/command.hpp \
+	src/condition_variable.hpp \
 	src/config.hpp \
 	src/ctx.cpp \
 	src/ctx.hpp \
@@ -63,6 +64,7 @@ src_libzmq_la_SOURCES = \
 	src/i_encoder.hpp \
 	src/i_engine.hpp \
 	src/i_decoder.hpp \
+	src/i_mailbox.hpp \
 	src/i_poll_events.hpp \
 	src/io_object.cpp \
 	src/io_object.hpp \
@@ -83,6 +85,8 @@ src_libzmq_la_SOURCES = \
 	src/likely.hpp \
 	src/mailbox.cpp \
 	src/mailbox.hpp \
+	src/mailbox_safe.cpp \
+	src/mailbox_safe.hpp \
 	src/mechanism.cpp \
 	src/mechanism.hpp  \
 	src/metadata.cpp \
@@ -349,7 +353,8 @@ test_apps = \
 	tests/test_atomics \
 	tests/test_client_server \
 	tests/test_server_drop_more \
-	tests/test_client_drop_more
+	tests/test_client_drop_more \ 
+	tests/test_thread_safe
 
 tests_test_system_SOURCES = tests/test_system.cpp
 tests_test_system_LDADD = src/libzmq.la
@@ -529,6 +534,11 @@ tests_test_server_drop_more_LDADD = src/libzmq.la
 
 tests_test_client_drop_more_SOURCES = tests/test_client_drop_more.cpp
 tests_test_client_drop_more_LDADD = src/libzmq.la
+
+tests_test_thread_safe_SOURCES = tests/test_thread_safe.cpp							
+tests_test_thread_safe_LDADD = src/libzmq.la
+
+
 
 if !ON_MINGW
 if !ON_CYGWIN
