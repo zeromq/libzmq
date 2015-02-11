@@ -179,7 +179,7 @@ int zmq::stream_t::xsetsockopt (int option_, const void *optval_,
             
         case ZMQ_STREAM_NOTIFY:
             if (is_int && (value == 0 || value == 1)) {
-                options.raw_notify = value;
+                options.raw_notify = (value != 0);
                 return 0;
             }
             break;

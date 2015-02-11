@@ -73,6 +73,7 @@
     <ClInclude Include="..\..\..\..\src\array.hpp" />
     <ClInclude Include="..\..\..\..\src\atomic_counter.hpp" />
     <ClInclude Include="..\..\..\..\src\atomic_ptr.hpp" />
+    <ClInclude Include="..\..\..\..\src\client.hpp" />
     <ClInclude Include="..\..\..\..\src\clock.hpp" />
     <ClInclude Include="..\..\..\..\src\command.hpp" />
     <ClInclude Include="..\..\..\..\src\config.hpp" />
@@ -113,6 +114,7 @@
     <ClInclude Include="..\..\..\..\src\pgm_sender.hpp" />
     <ClInclude Include="..\..\..\..\src\pgm_socket.hpp" />
     <ClInclude Include="..\..\..\..\src\pipe.hpp" />
+    <ClInclude Include="..\..\..\..\src\server.hpp" />
     <ClInclude Include="..\..\..\..\src\socks.hpp" />
     <ClInclude Include="..\..\..\..\src\socks_connecter.hpp" />
     <ClInclude Include="..\..\platform.hpp" />
@@ -158,6 +160,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\src\address.cpp" />
+    <ClCompile Include="..\..\..\..\src\client.cpp" />
     <ClCompile Include="..\..\..\..\src\clock.cpp" />
     <ClCompile Include="..\..\..\..\src\ctx.cpp" />
     <ClCompile Include="..\..\..\..\src\curve_client.cpp" />
@@ -210,6 +213,7 @@
     <ClCompile Include="..\..\..\..\src\req.cpp" />
     <ClCompile Include="..\..\..\..\src\router.cpp" />
     <ClCompile Include="..\..\..\..\src\select.cpp" />
+    <ClCompile Include="..\..\..\..\src\server.cpp" />
     <ClCompile Include="..\..\..\..\src\session_base.cpp" />
     <ClCompile Include="..\..\..\..\src\signaler.cpp" />
     <ClCompile Include="..\..\..\..\src\socket_base.cpp" />
