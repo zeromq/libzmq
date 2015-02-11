@@ -226,6 +226,12 @@
     <ClCompile Include="..\..\..\..\src\socks_connecter.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\src\server.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\client.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\zmq_utils.h">
@@ -490,6 +496,12 @@
       <Filter>src\include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\socks_connecter.hpp">
+      <Filter>src\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\server.hpp">
+      <Filter>src\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\client.hpp">
       <Filter>src\include</Filter>
     </ClInclude>
   </ItemGroup>
