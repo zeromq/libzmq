@@ -47,36 +47,37 @@ set(tests
         test_pub_invert_matching
 )
 if(NOT WIN32)
-  list(APPEND tests
-          test_monitor
-          test_pair_ipc
-          test_reqrep_ipc
-          test_abstract_ipc
-          test_proxy
-          test_filter_ipc
-  )
-  if(HAVE_FORK)
-    list(APPEND tests test_fork)
-  endif()
+    list(APPEND tests
+         test_monitor
+         test_pair_ipc
+         test_reqrep_ipc
+         test_abstract_ipc
+         test_proxy
+         test_filter_ipc
+    )
+    if(HAVE_FORK)
+        list(APPEND tests test_fork)
+    endif()
 endif()
 
 foreach(test ${tests})
-  add_executable("${test}" "${test}.cpp")
-  set_target_properties("${test}" PROPERTIES
-                        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin"
-                        COMPILE_OPTIONS "-DZMQ_STATIC")
-  target_link_libraries("${test}" libzmq-static "${MORE_LIBRARIES}")
-  
-  if(WIN32)
-    add_test(NAME "${test}" WORKING_DIRECTORY "${LIBRARY_OUTPUT_PATH}" COMMAND "${test}")
-  else()
-    add_test(NAME "${test}" COMMAND "${test}")
-  endif()
+    add_executable("${test}" "${test}.cpp")
+    set_target_properties("${test}" PROPERTIES
+                          RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin"
+                          COMPILE_OPTIONS "-DZMQ_STATIC")
+    target_compile_options("${test}" PRIVATE "${STATIC_COMPILE_OPTIONS}")
+    target_link_libraries("${test}" libzmq-static "${MORE_LIBRARIES}")
+
+    if(WIN32)
+        add_test(NAME "${test}" WORKING_DIRECTORY "${LIBRARY_OUTPUT_PATH}" COMMAND "${test}")
+    else()
+        add_test(NAME "${test}" COMMAND "${test}")
+    endif()
 endforeach()
 
 if(NOT WIN32)
-  if(NOT CMAKE_SYSTEM_NAME MATCHES "Linux")
-    set_tests_properties(test_abstract_ipc PROPERTIES WILL_FAIL true)
-  endif()
+    if(NOT CMAKE_SYSTEM_NAME MATCHES "Linux")
+        set_tests_properties(test_abstract_ipc PROPERTIES WILL_FAIL true)
+    endif()
 endif()
 

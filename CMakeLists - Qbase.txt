@@ -6,27 +6,26 @@ project(ZeroMQ)
 option(WITH_OPENPGM "Build with support for OpenPGM" OFF)
 
 if(WIN32)
-option(WITH_TWEETNACL "Build with tweetnacl" OFF)
+    option(WITH_TWEETNACL "Build with tweetnacl" OFF)
 else()
-option(WITH_TWEETNACL "Build with tweetnacl" ON)
+    option(WITH_TWEETNACL "Build with tweetnacl" ON)
 endif()
 
 if(WITH_TWEETNACL)
-  add_definitions(-DHAVE_TWEETNACL -DHAVE_LIBSODIUM)
-  include_directories(
-    tweetnacl/contrib/randombytes
-    tweetnacl/src
-    )
+    add_definitions(-DHAVE_TWEETNACL -DHAVE_LIBSODIUM)
+    include_directories(tweetnacl/contrib/randombytes
+                        tweetnacl/src
+                        )
 
-  set(TWEETNACL_SOURCES
-    tweetnacl/src/tweetnacl.c 
-    )
-  if(WIN32)
-  else()
-    list(APPEND TWEETNACL_SOURCES tweetnacl/contrib/randombytes/devurandom.c)
-  endif()
+    set(TWEETNACL_SOURCES
+        tweetnacl/src/tweetnacl.c 
+        )
+    if(WIN32)
+    else()
+        list(APPEND TWEETNACL_SOURCES tweetnacl/contrib/randombytes/devurandom.c)
+    endif()
 else()
-  find_library(SODIUM_FOUND sodium)
+    find_library(SODIUM_FOUND sodium)
 endif()
 
 set(POLLER "" CACHE STRING "Choose polling system. valid values are
@@ -88,8 +87,8 @@ if(     NOT POLLER STREQUAL "kqueue"
 endif()
 
 if(NOT ${POLLER} STREQUAL "")
-  string(TOUPPER ${POLLER} UPPER_POLLER)
-  set(ZMQ_USE_${UPPER_POLLER} 1)
+    string(TOUPPER ${POLLER} UPPER_POLLER)
+    set(ZMQ_USE_${UPPER_POLLER} 1)
 endif()
 
 set(ZMQ_CMAKE_MODULES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/Modules)
@@ -158,22 +157,20 @@ check_cxx_symbol_exists(SO_PEERCRED sys/socket.h ZMQ_HAVE_SO_PEERCRED)
 check_cxx_symbol_exists(LOCAL_PEERCRED sys/socket.h ZMQ_HAVE_LOCAL_PEERCRED)
 
 #find_library(RT_LIBRARY rt)
-
 #find_package(Threads)
 
-
 if(WIN32 AND NOT CYGWIN)
-  if(NOT HAVE_WS2_32 AND NOT HAVE_WS2)
-    message(FATAL_ERROR "Cannot link to ws2_32 or ws2")
-  endif()
+    if(NOT HAVE_WS2_32 AND NOT HAVE_WS2)
+        message(FATAL_ERROR "Cannot link to ws2_32 or ws2")
+    endif()
 
-  if(NOT HAVE_RPCRT4)
-    message(FATAL_ERROR "Cannot link to rpcrt4")
-  endif()
+    if(NOT HAVE_RPCRT4)
+        message(FATAL_ERROR "Cannot link to rpcrt4")
+    endif()
 
-  if(NOT HAVE_IPHLAPI)
-    message(FATAL_ERROR "Cannot link to iphlapi")
-  endif()
+    if(NOT HAVE_IPHLAPI)
+        message(FATAL_ERROR "Cannot link to iphlapi")
+    endif()
 endif()
 
 set(CMAKE_REQUIRED_LIBRARIES rt)
@@ -188,27 +185,26 @@ set(CMAKE_REQUIRED_INCLUDES sys/time.h)
 check_function_exists(gethrtime HAVE_GETHRTIME)
 set(CMAKE_REQUIRED_INCLUDES )
 
-add_definitions(-D_REENTRANT -D_THREAD_SAFE)
-
-if(WIN32)
-  add_definitions(-DDLL_EXPORT)
+if(MSVC)
+else()
+    add_definitions(-D_REENTRANT -D_THREAD_SAFE)
 endif()
 
 option(ENABLE_EVENTFD "Enable/disable eventfd" ZMQ_HAVE_EVENTFD)
 
 macro(zmq_check_cxx_flag_prepend flag)
-  check_cxx_compiler_flag("${flag}" HAVE_FLAG_${flag})
+    check_cxx_compiler_flag("${flag}" HAVE_FLAG_${flag})
 
-  if(HAVE_FLAG_${flag})
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flag}")
-  endif()
+    if(HAVE_FLAG_${flag})
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flag}")
+    endif()
 endmacro()
 
 
 if(MSVC)
-  zmq_check_cxx_flag_prepend("/W3")
+    zmq_check_cxx_flag_prepend("/W3")
 else()
-  zmq_check_cxx_flag_prepend("-Wall")
+    zmq_check_cxx_flag_prepend("-Wall")
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -227,47 +223,12 @@ if(LIBZMQ_PEDANTIC)
   if(${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
     zmq_check_cxx_flag_prepend("-strict-ansi")
   endif()
-
-  if(${CMAKE_CXX_COMPILER_ID} MATCHES "SunPro")
-    zmq_check_cxx_flag_prepend("-compat=5")
-  endif()
 endif()
 
 if(LIBZMQ_WERROR)
   zmq_check_cxx_flag_prepend("-Werror")
   zmq_check_cxx_flag_prepend("-errwarn=%all")
 endif()
-
-
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "^sparc")
-  zmq_check_cxx_flag_prepend("-mcpu=v9")
-endif()
-
-if(${CMAKE_CXX_COMPILER_ID} MATCHES "SunPro")
-  zmq_check_cxx_flag_prepend("-features=zla")
-endif()
-
-
-if(CMAKE_SYSTEM_NAME MATCHES "SunOS" OR CMAKE_SYSTEM_NAME MATCHES "NetBSD")
-  message(STATUS "Checking whether atomic operations can be used")
-  check_c_source_compiles(
-  "
-   #include <atomic.h>
-
-    int main()
-    {
-      uint32_t value;
-      atomic_cas_32(&value, 0, 0);
-      return 0;
-    }
-    "
-    HAVE_ATOMIC_H)
-
-  if(NOT HAVE_ATOMIC_H)
-    set(ZMQ_FORCE_MUTEXES 1)
-  endif()
-endif()
-
 
 #-----------------------------------------------------------------------------
 zmq_check_sock_cloexec()
@@ -282,20 +243,7 @@ if(    CMAKE_SYSTEM_NAME MATCHES "Linux"
     OR CMAKE_SYSTEM_NAME MATCHES "GNU/kFreeBSD"
     OR CMAKE_SYSTEM_NAME MATCHES "GNU/Hurd"
     OR CYGWIN)
-  add_definitions(-D_GNU_SOURCE)
-elseif(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
-  add_definitions(-D__BSD_VISIBLE)
-elseif(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
-  add_definitions(-D_NETBSD_SOURCE)
-elseif(CMAKE_SYSTEM_NAME MATCHES "OpenBSD")
-  add_definitions(-D_OPENBSD_SOURCE)
-elseif(CMAKE_SYSTEM_NAME MATCHES "SunOS")
-  add_definitions(-D_PTHREADS)
-elseif(CMAKE_SYSTEM_NAME MATCHES "HP-UX")
-  add_definitions(-D_POSIX_C_SOURCE=200112L)
-  zmq_check_cxx_flag_prepend(-Ae)
-elseif(CMAKE_SYSTEM_NAME MATCHES "Darwin")
-  add_definitions(-D_DARWIN_C_SOURCE)
+    add_definitions(-D_GNU_SOURCE)
 endif()
 
 if(NOT WITHOUT_ASCIIDOC)
@@ -311,42 +259,43 @@ cmake_dependent_option(WITH_DOC "Build Reference Guide documentation(requires Do
                        "PYTHON_FOUND;ASCIIDOC_FOUND" OFF)
 
 if(MSVC)
-  if(WITH_OPENPGM)
-    #   set(OPENPGM_ROOT "" CACHE PATH "Location of OpenPGM")
-    set(OPENPGM_VERSION_MAJOR 5)
-    set(OPENPGM_VERSION_MINOR 2)
-    set(OPENPGM_VERSION_MICRO 122)
-    if(CMAKE_CL_64)
-      find_path(OPENPGM_ROOT include/pgm/pgm.h
-                PATHS
-                "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Miru\\OpenPGM ${OPENPGM_VERSION_MAJOR}.${OPENPGM_VERSION_MINOR}.${OPENPGM_VERSION_MICRO}]"
-                NO_DEFAULT_PATH
-                )
-      message(STATUS "OpenPGM x64 detected - ${OPENPGM_ROOT}")
-    else()
-      find_path(OPENPGM_ROOT include/pgm/pgm.h
-                PATHS
-                "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Miru\\OpenPGM ${OPENPGM_VERSION_MAJOR}.${OPENPGM_VERSION_MINOR}.${OPENPGM_VERSION_MICRO}]"
-                "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Miru\\OpenPGM ${OPENPGM_VERSION_MAJOR}.${OPENPGM_VERSION_MINOR}.${OPENPGM_VERSION_MICRO}]"
-                NO_DEFAULT_PATH
-                )
-      message(STATUS "OpenPGM x86 detected - ${OPENPGM_ROOT}")
-    endif(CMAKE_CL_64)
-    set(OPENPGM_INCLUDE_DIRS ${OPENPGM_ROOT}/include)
-    set(OPENPGM_LIBRARY_DIRS ${OPENPGM_ROOT}/lib)
-    set(OPENPGM_LIBRARIES
-      optimized libpgm${_zmq_COMPILER}-mt-${OPENPGM_VERSION_MAJOR}_${OPENPGM_VERSION_MINOR}_${OPENPGM_VERSION_MICRO}.lib
-      debug libpgm${_zmq_COMPILER}-mt-gd-${OPENPGM_VERSION_MAJOR}_${OPENPGM_VERSION_MINOR}_${OPENPGM_VERSION_MICRO}.lib)
-  endif()
-else()
-  if(WITH_OPENPGM)
-    message(FATAL_ERROR "WITH_OPENPGM not implemented")
-    # DSO symbol visibility for openpgm
-    if(HAVE_FLAG_VISIBILITY_HIDDEN)
-
-    elseif(HAVE_FLAG_LDSCOPE_HIDDEN)
+    if(WITH_OPENPGM)
+        #   set(OPENPGM_ROOT "" CACHE PATH "Location of OpenPGM")
+        set(OPENPGM_VERSION_MAJOR 5)
+        set(OPENPGM_VERSION_MINOR 2)
+        set(OPENPGM_VERSION_MICRO 122)
+        if(CMAKE_CL_64)
+            find_path(OPENPGM_ROOT include/pgm/pgm.h
+                      PATHS
+                      "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Miru\\OpenPGM ${OPENPGM_VERSION_MAJOR}.${OPENPGM_VERSION_MINOR}.${OPENPGM_VERSION_MICRO}]"
+                      NO_DEFAULT_PATH
+                      )
+            message(STATUS "OpenPGM x64 detected - ${OPENPGM_ROOT}")
+        else()
+            find_path(OPENPGM_ROOT include/pgm/pgm.h
+                      PATHS
+                      "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Miru\\OpenPGM ${OPENPGM_VERSION_MAJOR}.${OPENPGM_VERSION_MINOR}.${OPENPGM_VERSION_MICRO}]"
+                      "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Miru\\OpenPGM ${OPENPGM_VERSION_MAJOR}.${OPENPGM_VERSION_MINOR}.${OPENPGM_VERSION_MICRO}]"
+                      NO_DEFAULT_PATH
+                      )
+            message(STATUS "OpenPGM x86 detected - ${OPENPGM_ROOT}")
+        endif(CMAKE_CL_64)
+        
+        set(OPENPGM_INCLUDE_DIRS ${OPENPGM_ROOT}/include)
+        set(OPENPGM_LIBRARY_DIRS ${OPENPGM_ROOT}/lib)
+        set(OPENPGM_LIBRARIES
+            optimized libpgm$-mt-${OPENPGM_VERSION_MAJOR}_${OPENPGM_VERSION_MINOR}_${OPENPGM_VERSION_MICRO}.lib
+            debug libpgm$-mt-gd-${OPENPGM_VERSION_MAJOR}_${OPENPGM_VERSION_MINOR}_${OPENPGM_VERSION_MICRO}.lib)
     endif()
-  endif()
+else()
+    if(WITH_OPENPGM)
+        message(FATAL_ERROR "WITH_OPENPGM not implemented")
+        
+        # DSO symbol visibility for openpgm
+        if(HAVE_FLAG_VISIBILITY_HIDDEN)
+        elseif(HAVE_FLAG_LDSCOPE_HIDDEN)
+        endif()
+    endif()
 endif()
 
 
@@ -354,45 +303,50 @@ endif()
 # force off-tree build
 
 if(${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
-message(FATAL_ERROR "CMake generation is not allowed within the source directory!
-Remove the CMakeCache.txt file and try again from another folder, e.g.:
+    message(FATAL_ERROR "CMake generation is not allowed within the source directory!
+            Remove the CMakeCache.txt file and try again from another folder, e.g.:
 
-   rm CMakeCache.txt
-   mkdir cmake-make
-   cd cmake-make
-   cmake ..
-")
+            rm CMakeCache.txt
+            mkdir cmake-make
+            cd cmake-make
+            cmake ..
+            ")
 endif()
 
 #-----------------------------------------------------------------------------
 # default to Release build
 
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release CACHE STRING
-      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
-      FORCE)
+if(NOT DEFINED CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING
+        "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+        FORCE)
 endif()
 
 #-----------------------------------------------------------------------------
+ message("Runlib ${STATIC_RUNLIB}")
+
+#default to static runtime library
+if(NOT DEFINED STATIC_RUNLIB)
+    option(STATIC_RUNLIB "" ON)
+endif()
+ message("Runlib ${STATIC_RUNLIB}")
+ 
 # platform specifics
-
+  
 if(MSVC)
-  add_definitions(
-    -DWIN32
-    -DDLL_EXPORT
-    # NB: May require tweaking for highly connected applications.
-    -DFD_SETSIZE=4096
-    -D_CRT_SECURE_NO_WARNINGS)
+    add_definitions(-DWIN32
+                    # NB: May require tweaking for highly connected applications.
+                    -DFD_SETSIZE=4096
+                    -D_CRT_SECURE_NO_WARNINGS)
 
-  # Parallel make.
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+    #remove static/shared compiler options
+    string(REGEX REPLACE "/M[TD]d?" ""  CMAKE_CXX_FLAGS                "${CMAKE_CXX_FLAGS}")
+    string(REGEX REPLACE "/M[TD]d?" ""  CMAKE_CXX_FLAGS_DEBUG          "${CMAKE_CXX_FLAGS_DEBUG}")
+    string(REGEX REPLACE "/M[TD]d?" ""  CMAKE_CXX_FLAGS_RELEASE        "${CMAKE_CXX_FLAGS_RELEASE}")
+    string(REGEX REPLACE "/M[TD]d?" ""  CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
 
-  # Optimization flags.
-  # http://msdn.microsoft.com/en-us/magazine/cc301698.aspx
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /GL")
-  set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG")
-  set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /LTCG")
-  set(CMAKE_MODULE_LINKER_FLAGS_RELEASE "${CMAKE_MODULE_LINKER_FLAGS_RELEASE} /LTCG")
+    # Parallel make.
+    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 endif()
 
 
@@ -478,33 +432,33 @@ set(cxx-sources
 set(rc-sources version.rc)
 
 if(MINGW)
-  # Generate the right type when using -m32 or -m64
-  macro(set_rc_arch rc_target)
-    set(CMAKE_RC_COMPILER_INIT windres)
-    enable_language(RC)
-    set(CMAKE_RC_COMPILE_OBJECT
-        "<CMAKE_RC_COMPILER> <FLAGS> -O coff --target=${rc_target} <DEFINES> -i <SOURCE> -o <OBJECT>")
-  endmacro()
+    # Generate the right type when using -m32 or -m64
+    macro(set_rc_arch rc_target)
+        set(CMAKE_RC_COMPILER_INIT windres)
+        enable_language(RC)
+        set(CMAKE_RC_COMPILE_OBJECT
+            "<CMAKE_RC_COMPILER> <FLAGS> -O coff --target=${rc_target} <DEFINES> -i <SOURCE> -o <OBJECT>")
+    endmacro()
 
-  if (NOT CMAKE_SYSTEM_PROCESSOR )
-    set (CMAKE_SYSTEM_PROCESSOR ${CMAKE_HOST_SYSTEM_PROCESSOR} )
-  endif ()
+    if (NOT CMAKE_SYSTEM_PROCESSOR )
+        set (CMAKE_SYSTEM_PROCESSOR ${CMAKE_HOST_SYSTEM_PROCESSOR} )
+    endif ()
 
-  if(    CMAKE_SYSTEM_PROCESSOR MATCHES "i386"
-      OR CMAKE_SYSTEM_PROCESSOR MATCHES "i486"
-      OR CMAKE_SYSTEM_PROCESSOR MATCHES "i586"
-      OR CMAKE_SYSTEM_PROCESSOR MATCHES "i686"
-     # This also happens on x86_64 systems...what a worthless variable
-      OR CMAKE_SYSTEM_PROCESSOR MATCHES "x86"
-      OR CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64"
-      OR CMAKE_SYSTEM_PROCESSOR MATCHES "amd64")
+    if(    CMAKE_SYSTEM_PROCESSOR MATCHES "i386"
+        OR CMAKE_SYSTEM_PROCESSOR MATCHES "i486"
+        OR CMAKE_SYSTEM_PROCESSOR MATCHES "i586"
+        OR CMAKE_SYSTEM_PROCESSOR MATCHES "i686"
+        # This also happens on x86_64 systems...what a worthless variable
+        OR CMAKE_SYSTEM_PROCESSOR MATCHES "x86"
+        OR CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64"
+        OR CMAKE_SYSTEM_PROCESSOR MATCHES "amd64")
 
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      set_rc_arch("pe-x86-64")
-    else()
-      set_rc_arch("pe-i386")
+        if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+            set_rc_arch("pe-x86-64")
+        else()
+            set_rc_arch("pe-i386")
+        endif()
     endif()
-  endif()
 endif()
 
 include_directories(include ${CMAKE_CURRENT_BINARY_DIR})
@@ -521,26 +475,26 @@ set(readme-docs AUTHORS
 # optional modules
 
 if(WITH_OPENPGM)
-  add_definitions(-DZMQ_HAVE_OPENPGM)
-  include_directories(${OPENPGM_INCLUDE_DIRS})
-  link_directories(${OPENPGM_LIBRARY_DIRS})
-  set(OPTIONAL_LIBRARIES ${OPENPGM_LIBRARIES})
+    add_definitions(-DZMQ_HAVE_OPENPGM)
+    include_directories(${OPENPGM_INCLUDE_DIRS})
+    link_directories(${OPENPGM_LIBRARY_DIRS})
+    set(OPTIONAL_LIBRARIES ${OPENPGM_LIBRARIES})
 endif(WITH_OPENPGM)
 
 #-----------------------------------------------------------------------------
 # source generators
 
 foreach(source ${cxx-sources})
-  list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/src/${source})
+    list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/src/${source})
 endforeach()
 
 foreach(source ${TWEETNACL_SOURCES})
-  list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/${source})
+    list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/${source})
 endforeach()
 
 foreach(source ${rc-sources})
-  list(APPEND sources ${CMAKE_CURRENT_BINARY_DIR}/${source})
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/${source}.in ${CMAKE_CURRENT_BINARY_DIR}/${source})
+    list(APPEND sources ${CMAKE_CURRENT_BINARY_DIR}/${source})
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/${source}.in ${CMAKE_CURRENT_BINARY_DIR}/${source})
 endforeach()
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/platform.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/platform.hpp)
@@ -554,112 +508,142 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libzmq.pc DESTINATION lib/pkgconfig)
 
 
 if(MSVC)
-  if(CMAKE_CL_64)
-    set(nsis-template ${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/NSIS.template64.in)
-  else()
-    set(nsis-template ${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/NSIS.template32.in)
-  endif()
+    if(CMAKE_CL_64)
+        set(nsis-template ${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/NSIS.template64.in)
+    else()
+        set(nsis-template ${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/NSIS.template32.in)
+    endif()
 
-  add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.in
-    COMMAND ${CMAKE_COMMAND}
-    ARGS -E
-    copy
-    ${nsis-template}
-    ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.in
-    DEPENDS ${nsis-template})
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.in
+                       COMMAND ${CMAKE_COMMAND}
+                       ARGS -E
+                       copy
+                       ${nsis-template}
+                       ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.in
+                       DEPENDS ${nsis-template})
 endif()
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc)
 file(GLOB docs RELATIVE ${CMAKE_CURRENT_BINARY_DIR}/ "${CMAKE_CURRENT_SOURCE_DIR}/doc/*.txt")
 set(html-docs)
 foreach(txt ${docs})
-  string(REGEX REPLACE ".*/(.*)\\.txt" "\\1.html" html ${txt})
-  set(src ${txt})
-  set(dst doc/${html})
-  add_custom_command(
-    OUTPUT  ${dst}
-    COMMAND ${PYTHON_EXECUTABLE}
-    ARGS    -x
-    ${ASCIIDOC_EXECUTABLE}
-    -d manpage
-    -b xhtml11
-    -f ${CMAKE_CURRENT_SOURCE_DIR}/doc/asciidoc.conf
-    -azmq_version=${ZMQ_VERSION}
-    -o ${dst}
-    ${src}
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${src}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    COMMENT "Generating ${html}")
-  if(WITH_DOC)
-    list(APPEND html-docs ${CMAKE_CURRENT_BINARY_DIR}/${dst})
-  endif()
+    string(REGEX REPLACE ".*/(.*)\\.txt" "\\1.html" html ${txt})
+    set(src ${txt})
+    set(dst doc/${html})
+    add_custom_command(OUTPUT  ${dst}
+                       COMMAND ${PYTHON_EXECUTABLE}
+                       ARGS    -x
+                       ${ASCIIDOC_EXECUTABLE}
+                       -d manpage
+                       -b xhtml11
+                       -f ${CMAKE_CURRENT_SOURCE_DIR}/doc/asciidoc.conf
+                       -azmq_version=${ZMQ_VERSION}
+                       -o ${dst}
+                       ${src}
+                       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${src}
+                       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                       COMMENT "Generating ${html}")
+    if(WITH_DOC)
+        list(APPEND html-docs ${CMAKE_CURRENT_BINARY_DIR}/${dst})
+    endif()
 endforeach()
 
 #set up additional link libraries
 set(MORE_LIBRARIES ${SODIUM_LIBRARY} ${CMAKE_THREAD_LIBS_INIT} "${OPTIONAL_LIBRARIES}")
 if(HAVE_WS2_32)
-  set(MORE_LIBRARIES "${MORE_LIBRARIES}" ws2_32)
+    set(MORE_LIBRARIES "${MORE_LIBRARIES}" ws2_32)
 elseif(HAVE_WS2)
-  set(MORE_LIBRARIES "${MORE_LIBRARIES}" ws2)
+    set(MORE_LIBRARIES "${MORE_LIBRARIES}" ws2)
 endif()
 
 if(HAVE_RPCRT4)
-  set(MORE_LIBRARIES "${MORE_LIBRARIES}" rpcrt4)
+    set(MORE_LIBRARIES "${MORE_LIBRARIES}" rpcrt4)
 endif()
 
 if(HAVE_IPHLAPI)
-  set(MORE_LIBRARIES "${MORE_LIBRARIES}" iphlpapi)
+    set(MORE_LIBRARIES "${MORE_LIBRARIES}" iphlpapi)
 endif()
 
 if(RT_LIBRARY)
-  set(MORE_LIBRARIES "${MORE_LIBRARIES}" "${RT_LIBRARY}")
+    set(MORE_LIBRARIES "${MORE_LIBRARIES}" "${RT_LIBRARY}")
 endif()
 
 
 #-----------------------------------------------------------------------------
 # output
 
-if(MSVC)
-  add_library(libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs} ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.in)
-  set_target_properties(libzmq PROPERTIES
-                        PUBLIC_HEADER "${public_headers}"
-                        RELEASE_POSTFIX "${_zmq_COMPILER}-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                        RELWITHDEBINFO_POSTFIX "${_zmq_COMPILER}-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                        DEBUG_POSTFIX "${_zmq_COMPILER}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
-                        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
-                        OUTPUT_NAME "zmq")
-  target_link_libraries(libzmq "${MORE_LIBRARIES}")
-  add_library(libzmq-static STATIC ${sources})
-  set_target_properties(libzmq-static PROPERTIES
-                        PUBLIC_HEADER "${public_headers}"
-                        RELEASE_POSTFIX "${_zmq_COMPILER}-mt-s-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                        RELWITHDEBINFO_POSTFIX "${_zmq_COMPILER}-mt-s-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                        DEBUG_POSTFIX "${_zmq_COMPILER}-mt-sgd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
-                        COMPILE_OPTIONS "/D ZMQ_STATIC"
-                        OUTPUT_NAME "zmq")
+if(STATIC_RUNLIB)
+    #static runtime library
+    set(static_flag_debug "s")
+    set(static_flag_release "s-")
+    if (MSVC)
+        set(STATIC_COMPILE_OPTIONS "/MT$<$<CONFIG:Debug>:d>")
+    else()
+        #set other compiler options here
+    endif()    
 else()
-  add_library(libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig})
-  set_target_properties(libzmq PROPERTIES
-                        PUBLIC_HEADER "${public_headers}"
-                        RELEASE_POSTFIX "${_zmq_COMPILER}-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                        RELWITHDEBINFO_POSTFIX "${_zmq_COMPILER}-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                        DEBUG_POSTFIX "${_zmq_COMPILER}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
-                        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
-                        OUTPUT_NAME "zmq")
-  target_link_libraries(libzmq "${MORE_LIBRARIES}")
-  add_library(libzmq-static STATIC ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig})
-  set_target_properties(libzmq-static PROPERTIES
-                        PUBLIC_HEADER "${public_headers}"
-                        RELEASE_POSTFIX "${_zmq_COMPILER}-mt-s-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                        RELWITHDEBINFO_POSTFIX "${_zmq_COMPILER}-mt-s-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                        DEBUG_POSTFIX "${_zmq_COMPILER}-mt-sgd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
-                        COMPILE_OPTIONS "/D ZMQ_STATIC"
-                        OUTPUT_NAME "zmq")
+    #dynamic runtime library
+    set(static_flag_debug "")
+    set(static_flag_release "")
+    if (MSVC)
+        set(STATIC_COMPILE_OPTIONS "/MD$<$<CONFIG:Debug>:d>")
+    else()
+        #set other compiler options here
+    endif()
+endif()
+
+if(MSVC)
+    #build shared lib
+    add_library(libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs} ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.in)
+    set_target_properties(libzmq PROPERTIES
+                          PUBLIC_HEADER "${public_headers}"
+                          RELEASE_POSTFIX "-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+                          RELWITHDEBINFO_POSTFIX "-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+                          DEBUG_POSTFIX "-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+                          RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
+                          ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
+                          COMPILE_OPTIONS "/D DLL_EXPORT"
+                          OUTPUT_NAME "zmq")
+    target_compile_options(libzmq PRIVATE "/MD$<$<CONFIG:Debug>:d>")
+    target_link_libraries(libzmq "${MORE_LIBRARIES}")
+        
+    #build static lib - which is prefixed with lib to distinguish it from shared lib   
+    add_library(libzmq-static STATIC ${sources})
+    set_target_properties(libzmq-static PROPERTIES
+                          PUBLIC_HEADER "${public_headers}"
+                          RELEASE_POSTFIX "-mt-${static_flag_release}${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+                          RELWITHDEBINFO_POSTFIX "-mt-${static_flag_release}${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+                          DEBUG_POSTFIX "-mt-${static_flag_debug}gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+                          ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
+                          COMPILE_OPTIONS "/D ZMQ_STATIC"
+                          OUTPUT_NAME "libzmq")
+    target_compile_options(libzmq-static PRIVATE "${STATIC_COMPILE_OPTIONS}")
+        
+else()
+    #build shared lib   
+    add_library(libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig})
+    set_target_properties(libzmq PROPERTIES
+                         PUBLIC_HEADER "${public_headers}"
+                         RELEASE_POSTFIX "-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+                         RELWITHDEBINFO_POSTFIX "-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+                         DEBUG_POSTFIX "-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+                         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
+                         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
+                         COMPILE_OPTIONS "/D DLL_EXPORT"
+                         OUTPUT_NAME "zmq")
+                         
+    #build static lib - which is prefixed with lib to distinguish it from shared lib                      
+    target_link_libraries(libzmq "${MORE_LIBRARIES}")
+    add_library(libzmq-static STATIC ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig})
+    set_target_properties(libzmq-static PROPERTIES
+                          PUBLIC_HEADER "${public_headers}"
+                          RELEASE_POSTFIX "-mt-${static_flag_release}${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+                          RELWITHDEBINFO_POSTFIX "-mt-${static_flag_release}${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+                          DEBUG_POSTFIX "-mt-${static_flag_debug}gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+                          ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
+                          COMPILE_OPTIONS "/D ZMQ_STATIC"
+                          OUTPUT_NAME "libzmq")
+    target_compile_options(libzmq-static PRIVATE "${STATIC_COMPILE_OPTIONS}")
 endif()
 
 set(perf-tools local_lat
@@ -672,21 +656,29 @@ set(perf-tools local_lat
 
 foreach(perf-tool ${perf-tools})
     add_executable("${perf-tool}" "perf/${perf-tool}.cpp")
-    set_target_properties("${perf-tool}" PROPERTIES
-                          RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin"
-                          COMPILE_OPTIONS "-DZMQ_STATIC")
+    if(MSVC)
+        set_target_properties("${perf-tool}" PROPERTIES
+                              RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin"
+                              COMPILE_OPTIONS "/D ZMQ_STATIC")
+    else()
+        set_target_properties("${perf-tool}" PROPERTIES
+                              RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin"
+                              COMPILE_OPTIONS "/D ZMQ_STATIC")
+    endif() 
+    target_compile_options("${perf-tool}" PRIVATE "${STATIC_COMPILE_OPTIONS}")
     target_link_libraries("${perf-tool}" libzmq-static "${MORE_LIBRARIES}")
-                  
-  install(TARGETS "${perf-tool}"
-          RUNTIME DESTINATION bin
-          COMPONENT PerfTools)
+        
+    install(TARGETS "${perf-tool}"
+            RUNTIME DESTINATION bin
+            COMPONENT PerfTools)
 endforeach()
 
 
 #-----------------------------------------------------------------------------
 # tests
-
-set(ZMQ_BUILD_TESTS ON CACHE BOOL "Build the tests for ZeroMQ")
+if (NOT DEFINED ZMQ_BUILD_TESTS)
+    OPTION(ZMQ_BUILD_TESTS "" ON)
+endif()
 
 if(ZMQ_BUILD_TESTS)
   enable_testing() # Enable testing only works in root scope
@@ -713,19 +705,18 @@ endif()
 #desire would be to export these with below but broken
 #install(EXPORT ZMQ-TARGETS DESTINATION lib)
 
-  file(GLOB private_headers "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp")
-  install(FILES "${sources}" "${private_headers}" DESTINATION src/zmq
-          COMPONENT SourceCode)
+file(GLOB private_headers "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp")
+install(FILES "${sources}" "${private_headers}" DESTINATION src/zmq
+        COMPONENT SourceCode)
 
 foreach(readme ${readme-docs})
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${readme} ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${readme} ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt)
 
     if(MSVC)
-      install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt DESTINATION .)
+        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt DESTINATION .)
     else()
-      install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt DESTINATION etc/zmq)
+        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt DESTINATION etc/zmq)
     endif()
-
 endforeach()
 
 if(WITH_DOC)
