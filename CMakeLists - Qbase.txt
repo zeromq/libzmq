@@ -323,13 +323,10 @@ if(NOT DEFINED CMAKE_BUILD_TYPE)
 endif()
 
 #-----------------------------------------------------------------------------
- message("Runlib ${STATIC_RUNLIB}")
-
 #default to static runtime library
 if(NOT DEFINED STATIC_RUNLIB)
     option(STATIC_RUNLIB "" ON)
 endif()
- message("Runlib ${STATIC_RUNLIB}")
  
 # platform specifics
   
