@@ -29,4 +29,13 @@
 
 #define ZMQ_HAVE_WINDOWS
 
+#if defined _WIN32_WINNT && _WIN32_WINNT < 0x0600
+  #undef _WIN32_WINNT	
+#endif
+
+#ifndef _WIN32_WINNT 
+  #define _WIN32_WINNT 0x0600
+#endif
+
+
 #endif

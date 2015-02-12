@@ -423,6 +423,7 @@ set(cxx-sources
         kqueue.cpp
         lb.cpp
         mailbox.cpp
+        mailbox_safe.cpp
         mechanism.cpp
         metadata.cpp
         msg.cpp
