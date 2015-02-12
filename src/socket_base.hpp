@@ -31,7 +31,7 @@
 #include "poller.hpp"
 #include "atomic_counter.hpp"
 #include "i_poll_events.hpp"
-#include "mailbox.hpp"
+#include "i_mailbox.hpp"
 #include "stdint.hpp"
 #include "clock.hpp"
 #include "pipe.hpp"
@@ -66,7 +66,7 @@ namespace zmq
             uint32_t tid_, int sid_);
 
         //  Returns the mailbox associated with this socket.
-        mailbox_t *get_mailbox ();
+        i_mailbox *get_mailbox ();
 
         //  Interrupt blocking call if the socket is stuck in one.
         //  This function can be called from a different thread!
@@ -123,7 +123,7 @@ namespace zmq
 
     protected:
 
-        socket_base_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_);
+        socket_base_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_, bool thread_safe_ = false);
         virtual ~socket_base_t ();
 
         //  Concrete algorithms for the x- methods are to be defined by
@@ -223,7 +223,7 @@ namespace zmq
         void process_term (int linger_);
 
         //  Socket's mailbox object.
-        mailbox_t mailbox;
+        i_mailbox* mailbox;
 
         //  List of attached pipes.
         typedef array_t <pipe_t, 3> pipes_t;
@@ -257,9 +257,17 @@ namespace zmq
         // Last socket endpoint resolved URI
         std::string last_endpoint;
 
-        socket_base_t (const socket_base_t&);
-        const socket_base_t &operator = (const socket_base_t&);
+        // Indicate if the socket is thread safe
+        bool thread_safe;
+
+        // Signaler to be used in the reaping stage
+        signaler_t* reaper_signaler;
+
+        // Mutex for synchronize access to the socket in thread safe mode
         mutex_t sync;
+
+        socket_base_t (const socket_base_t&);
+        const socket_base_t &operator = (const socket_base_t&);        
     };
 
 }

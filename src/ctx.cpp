@@ -273,7 +273,7 @@ zmq::socket_base_t *zmq::ctx_t::create_socket (int type_)
         int ios = io_thread_count;
         opt_sync.unlock ();
         slot_count = mazmq + ios + 2;
-        slots = (mailbox_t **) malloc (sizeof (mailbox_t*) * slot_count);
+        slots = (i_mailbox **) malloc (sizeof (i_mailbox*) * slot_count);
         alloc_assert (slots);
 
         //  Initialise the infrastructure for zmq_ctx_term thread.

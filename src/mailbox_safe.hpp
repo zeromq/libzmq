@@ -12,14 +12,18 @@
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Lesser General Public License for more details.
+        void send (const command_t &cmd_);
+        int recv (command_t *cmd_, int timeout_);
+
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_MAILBOX_HPP_INCLUDED__
-#define __ZMQ_MAILBOX_HPP_INCLUDED__
+#ifndef __ZMQ_MAILBOX_SAFE_HPP_INCLUDED__
+#define __ZMQ_MAILBOX_SAFE_HPP_INCLUDED__
 
+#include <vector>
 #include <stddef.h>
 
 #include "platform.hpp"
@@ -30,26 +34,33 @@
 #include "ypipe.hpp"
 #include "mutex.hpp"
 #include "i_mailbox.hpp"
+#include "condition_variable.hpp"
 
 namespace zmq
 {
 
-    class mailbox_t : public i_mailbox
+    class mailbox_safe_t : public i_mailbox
     {
     public:
 
-        mailbox_t ();
-        ~mailbox_t ();
+        mailbox_safe_t (mutex_t* socket_mutex_);
+        ~mailbox_safe_t ();
 
-        fd_t get_fd () const;
         void send (const command_t &cmd_);
         int recv (command_t *cmd_, int timeout_);
+
+        // Add signaler to mailbox which will be called when a message is ready
+        void add_signaler(signaler_t* signaler);
+        void remove_signaler(signaler_t* signaler);
 
 #ifdef HAVE_FORK
         // close the file descriptors in the signaller. This is used in a forked
         // child process to close the file descriptors so that they do not interfere
         // with the context in the parent process.
-        void forked () { signaler.forked (); }
+        void forked () 
+        { 
+            // TODO: call fork on the condition variable
+        }
 #endif
 
     private:
@@ -58,8 +69,8 @@ namespace zmq
         typedef ypipe_t <command_t, command_pipe_granularity> cpipe_t;
         cpipe_t cpipe;
 
-        //  Signaler to pass signals from writer thread to reader thread.
-        signaler_t signaler;
+        //  Condition variable to pass signals from writer thread to reader thread.
+        condition_variable_t cond_var;
 
         //  There's only one thread receiving from the mailbox, but there
         //  is arbitrary number of threads sending. Given that ypipe requires
@@ -67,13 +78,13 @@ namespace zmq
         //  the sending side.
         mutex_t sync;
 
-        //  True if the underlying pipe is active, ie. when we are allowed to
-        //  read commands from it.
-        bool active;
+        mutex_t* socket_mutex;
+
+        std::vector <zmq::signaler_t* > signalers;
 
         //  Disable copying of mailbox_t object.
-        mailbox_t (const mailbox_t&);
-        const mailbox_t &operator = (const mailbox_t&);
+        mailbox_safe_t (const mailbox_safe_t&);
+        const mailbox_safe_t &operator = (const mailbox_safe_t&);
     };
 
 }
