@@ -161,7 +161,8 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t tid_, int sid_, bool
     file_desc(-1),
     monitor_socket (NULL),
     monitor_events (0),
-    thread_safe (thread_safe_)
+    thread_safe (thread_safe_),
+    reaper_signaler (NULL)
 {
     options.socket_id = sid_;
     options.ipv6 = (parent_->get (ZMQ_IPV6) != 0);
@@ -171,12 +172,15 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t tid_, int sid_, bool
         mailbox = new mailbox_safe_t(&sync);
     else
         mailbox = new mailbox_t();
-
 }
 
 zmq::socket_base_t::~socket_base_t ()
 {
     delete mailbox;
+    
+    if (reaper_signaler)
+        delete reaper_signaler;
+    
     stop_monitor ();
     zmq_assert (destroyed);
 }
@@ -1111,12 +1115,14 @@ void zmq::socket_base_t::start_reaping (poller_t *poller_)
     else {        
         ENTER_MUTEX();
 
+        reaper_signaler =  new signaler_t();
+
         //  Add signaler to the safe mailbox
-        fd = reaper_signaler.get_fd();        
-        ((mailbox_safe_t*)mailbox)->add_signaler(&reaper_signaler);
+        fd = reaper_signaler->get_fd();        
+        ((mailbox_safe_t*)mailbox)->add_signaler(reaper_signaler);
 
         //  Send a signal to make sure reaper handle existing commands
-        reaper_signaler.send();
+        reaper_signaler->send();
 
         EXIT_MUTEX();
     }
@@ -1277,6 +1283,11 @@ void zmq::socket_base_t::in_event ()
     //  be destroyed.
 
     ENTER_MUTEX();
+    
+    //  If the socket is thread safe we need to unsignal the reaper signaler
+    if (thread_safe)
+        reaper_signaler->recv();
+    
     process_commands (0, false);
     EXIT_MUTEX();
     check_destroy ();

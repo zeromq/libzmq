@@ -261,7 +261,7 @@ namespace zmq
         bool thread_safe;
 
         // Signaler to be used in the reaping stage
-        signaler_t reaper_signaler;
+        signaler_t* reaper_signaler;
 
         // Mutex for synchronize access to the socket in thread safe mode
         mutex_t sync;
