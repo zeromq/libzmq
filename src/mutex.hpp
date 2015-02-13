@@ -88,13 +88,22 @@ namespace zmq
     public:
         inline mutex_t ()
         {
-            int rc = pthread_mutex_init (&mutex, NULL);
+            int rc = pthread_mutexattr_init(&attr);
+            posix_assert (rc);
+
+            rc = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+            posix_assert (rc);
+
+            rc = pthread_mutex_init (&mutex, &attr);
             posix_assert (rc);
         }
 
         inline ~mutex_t ()
         {
             int rc = pthread_mutex_destroy (&mutex);
+            posix_assert (rc);
+
+            rc = pthread_mutexattr_destroy (&attr);
             posix_assert (rc);
         }
 
@@ -128,6 +137,7 @@ namespace zmq
     private:
 
         pthread_mutex_t mutex;
+        pthread_mutexattr_t attr;
 
         // Disable copy construction and assignment.
         mutex_t (const mutex_t&);

@@ -43,7 +43,7 @@ namespace zmq
     {
     public:
 
-        mailbox_safe_t (mutex_t* socket_mutex_);
+        mailbox_safe_t (mutex_t* sync_);
         ~mailbox_safe_t ();
 
         void send (const command_t &cmd_);
@@ -72,13 +72,8 @@ namespace zmq
         //  Condition variable to pass signals from writer thread to reader thread.
         condition_variable_t cond_var;
 
-        //  There's only one thread receiving from the mailbox, but there
-        //  is arbitrary number of threads sending. Given that ypipe requires
-        //  synchronised access on both of its endpoints, we have to synchronise
-        //  the sending side.
-        mutex_t sync;
-
-        mutex_t* socket_mutex;
+        //  Synchronize access to the mailbox from receivers and senders
+        mutex_t* sync;
 
         std::vector <zmq::signaler_t* > signalers;
 
