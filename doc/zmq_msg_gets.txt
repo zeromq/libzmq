@@ -19,8 +19,22 @@ property specified by the 'property' argument for the message pointed to by
 the 'message' argument. Both the 'property' argument and the 'value'
 shall be NULL-terminated UTF8-encoded strings.
 
-The following properties can be retrieved with the _zmq_msg_gets()_ function:
+Metadata is defined on a per-connection basis during the ZeroMQ connection
+handshake as specified in <rfc.zeromq.org/spec:37>.
 
+The following ZMTP properties can be retrieved with the _zmq_msg_gets()_
+function:
+
+    Socket-Type
+    Identity
+    Resource
+
+Additionally, when available for the underlying transport, the *Peer-Address*
+property will return the IP address of the remote endpoint as returned by
+getnameinfo(2).
+
+Other properties may be defined based on the underlying security mechanism,
+see ZAP authenticated connection sample below.
 
 RETURN VALUE
 ------------
