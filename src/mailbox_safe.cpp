@@ -18,6 +18,7 @@
 */
 
 #include "mailbox_safe.hpp"
+#include "clock.hpp"
 #include "err.hpp"
 
 zmq::mailbox_safe_t::mailbox_safe_t (mutex_t* sync_) :

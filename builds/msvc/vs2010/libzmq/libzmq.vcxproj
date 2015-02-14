@@ -76,6 +76,7 @@
     <ClInclude Include="..\..\..\..\src\client.hpp" />
     <ClInclude Include="..\..\..\..\src\clock.hpp" />
     <ClInclude Include="..\..\..\..\src\command.hpp" />
+    <ClInclude Include="..\..\..\..\src\condition_variable.hpp" />
     <ClInclude Include="..\..\..\..\src\config.hpp" />
     <ClInclude Include="..\..\..\..\src\ctx.hpp" />
     <ClInclude Include="..\..\..\..\src\curve_client.hpp" />
@@ -103,6 +104,7 @@
     <ClInclude Include="..\..\..\..\src\lb.hpp" />
     <ClInclude Include="..\..\..\..\src\likely.hpp" />
     <ClInclude Include="..\..\..\..\src\mailbox.hpp" />
+    <ClInclude Include="..\..\..\..\src\mailbox_safe.hpp" />
     <ClInclude Include="..\..\..\..\src\msg.hpp" />
     <ClInclude Include="..\..\..\..\src\mtrie.hpp" />
     <ClInclude Include="..\..\..\..\src\mutex.hpp" />
@@ -183,6 +185,7 @@
     <ClCompile Include="..\..\..\..\src\kqueue.cpp" />
     <ClCompile Include="..\..\..\..\src\lb.cpp" />
     <ClCompile Include="..\..\..\..\src\mailbox.cpp" />
+    <ClCompile Include="..\..\..\..\src\mailbox_safe.cpp" />
     <ClCompile Include="..\..\..\..\src\mechanism.cpp" />
     <ClCompile Include="..\..\..\..\src\metadata.cpp" />
     <ClCompile Include="..\..\..\..\src\msg.cpp" />
