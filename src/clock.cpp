@@ -51,8 +51,10 @@
 int clock_gettime (int clock_id, timespec *ts)
 {
     // The clock_id specified is not supported on this system.
-    if (clock_id != CLOCK_REALTIME)
-        return EINVAL;
+    if (clock_id != CLOCK_REALTIME) {
+        errno = EINVAL;
+        return -1;
+    }
 
     clock_serv_t cclock;
     mach_timespec_t mts;
@@ -61,6 +63,7 @@ int clock_gettime (int clock_id, timespec *ts)
     mach_port_deallocate (mach_task_self (), cclock);
     ts->tv_sec = mts.tv_sec;
     ts->tv_nsec = mts.tv_nsec;
+    return 0;
 }
 #endif
 
