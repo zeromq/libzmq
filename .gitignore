@@ -133,6 +133,7 @@ zeromq-*.tar.gz
 zeromq-*.zip
 core
 build
+test-suite.log
 curve_keygen
 inproc_lat
 inproc_thr
