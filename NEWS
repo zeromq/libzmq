@@ -9,6 +9,8 @@
 
 * Fixed #1273 - V3 protocol handler vulnerable to downgrade attacks.
 
+* Fixed #1347 - lack way to get peer address.
+
 
 0MQ version 4.1.0 rc1, released on 2014/10/14
 =============================================
