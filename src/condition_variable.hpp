@@ -21,6 +21,7 @@
 #define __ZMQ_CONDITON_VARIABLE_HPP_INCLUDED__
 
 #include "platform.hpp"
+#include "clock.hpp"
 #include "err.hpp"
 #include "mutex.hpp"
 
