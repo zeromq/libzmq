@@ -42,6 +42,31 @@
 #include <time.h>
 #endif
 
+#if defined ZMQ_HAVE_OSX
+#include <mach/clock.h>
+#include <mach/mach.h>
+#include <time.h>
+#include <sys/time.h>
+
+int clock_gettime (int clock_id, timespec *ts)
+{
+    // The clock_id specified is not supported on this system.
+    if (clock_id != CLOCK_REALTIME) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    clock_serv_t cclock;
+    mach_timespec_t mts;
+    host_get_clock_service (mach_host_self (), CALENDAR_CLOCK, &cclock);
+    clock_get_time (cclock, &mts);
+    mach_port_deallocate (mach_task_self (), cclock);
+    ts->tv_sec = mts.tv_sec;
+    ts->tv_nsec = mts.tv_nsec;
+    return 0;
+}
+#endif
+
 #ifdef ZMQ_HAVE_WINDOWS
 typedef ULONGLONG (*f_compatible_get_tick_count64)();
 

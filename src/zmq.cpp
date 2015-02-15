@@ -627,8 +627,7 @@ int zmq_msg_get (zmq_msg_t *msg_, int property_)
         case ZMQ_MORE:
             return (((zmq::msg_t*) msg_)->flags () & zmq::msg_t::more)? 1: 0;
         case ZMQ_SRCFD:
-            // warning: int64_t to int
-            return ((zmq::msg_t*) msg_)->fd ();
+            return (int)((zmq::msg_t*) msg_)->fd ();
         case ZMQ_SHARED:
             return (((zmq::msg_t*) msg_)->is_cmsg ()) ||
                    (((zmq::msg_t*) msg_)->flags () & zmq::msg_t::shared)? 1: 0;
