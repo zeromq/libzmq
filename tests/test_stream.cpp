@@ -94,10 +94,10 @@ test_stream_to_dealer (void)
     assert (rc > 0);
     assert (zmq_msg_more (&identity));
 
-    //  Second frame is greeting signature
     // Verify the existence of Peer-Address metadata
     assert (streq (zmq_msg_gets (&identity, "Peer-Address"), "127.0.0.1"));
 
+    //  Second frame is greeting signature
     rc = zmq_recv (stream, buffer, 255, 0);
     assert (rc == 10);
     assert (memcmp (buffer, greeting.signature, 10) == 0);
