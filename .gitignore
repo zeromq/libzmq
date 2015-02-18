@@ -101,6 +101,10 @@ test_xpub_nodrop
 test_xpub_manual
 test_xpub_welcome_msg
 test_atomics
+test_client_drop_more
+test_client_server
+test_server_drop_more
+test_thread_safe
 tests/test*.log
 tests/test*.trs
 src/platform.hpp*
