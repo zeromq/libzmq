@@ -208,7 +208,6 @@ int zmq::stream_t::xrecv (msg_t *msg_)
     //  We have received a frame with TCP data.
     //  Rather than sendig this frame, we keep it in prefetched
     //  buffer and send a frame with peer's ID.
-
     blob_t identity = pipe->get_identity ();
     rc = msg_->init_size (identity.size ());
     errno_assert (rc == 0);

@@ -36,6 +36,7 @@
 #include <string.h>
 #include <new>
 #include <sstream>
+#include <iostream>
 
 #include "stream_engine.hpp"
 #include "io_thread.hpp"
@@ -206,11 +207,9 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
         // application so that it knows a peer has connected.
         msg_t connector;
         connector.init();
-        if (metadata)
-            connector.set_metadata(metadata);
-        push_msg_to_session (&connector);
-        session->flush ();
+        push_raw_msg_to_session (&connector);
         connector.close();
+        session->flush ();
     }
     else {
         // start optional timer, to prevent handshake hanging on no input
@@ -802,6 +801,7 @@ void zmq::stream_engine_t::mechanism_ready ()
     //  Compile metadata.
     typedef metadata_t::dict_t properties_t;
     properties_t properties;
+    properties_t::const_iterator it;
 
     //  If we have a peer_address, add it to metadata
     if (!peer_address.empty()) {

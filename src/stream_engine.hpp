@@ -96,10 +96,10 @@ namespace zmq
         int next_handshake_command (msg_t *msg);
         int process_handshake_command (msg_t *msg);
 
+        int push_raw_msg_to_session (msg_t *msg);
+
         int pull_msg_from_session (msg_t *msg_);
         int push_msg_to_session (msg_t *msg);
-
-        int push_raw_msg_to_session (msg_t *msg);
 
         int write_credential (msg_t *msg_);
         int pull_and_encode (msg_t *msg_);
