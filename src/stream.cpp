@@ -208,16 +208,9 @@ int zmq::stream_t::xrecv (msg_t *msg_)
     //  We have received a frame with TCP data.
     //  Rather than sendig this frame, we keep it in prefetched
     //  buffer and send a frame with peer's ID.
-
     blob_t identity = pipe->get_identity ();
     rc = msg_->init_size (identity.size ());
     errno_assert (rc == 0);
-
-    // forward metadata (if any)
-    metadata_t *metadata = prefetched_msg.metadata();
-    if (metadata)
-        msg_->set_metadata(metadata);
-
     memcpy (msg_->data (), identity.data (), identity.size ());
     msg_->set_flags (msg_t::more);
 
@@ -274,7 +267,7 @@ void zmq::stream_t::identify_peer (pipe_t *pipe_)
             connect_rid.length ());
         connect_rid.clear ();
         outpipes_t::iterator it = outpipes.find (identity);
-        if (it != outpipes.end ())
+        if (it != outpipes.end ()) 
             zmq_assert(false);
     }
     else {

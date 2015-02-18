@@ -74,10 +74,6 @@ test_stream_to_dealer (void)
     rc = zmq_msg_init (&identity);
     assert (rc == 0);
     rc = zmq_msg_recv (&identity, stream, 0);
-
-    // Verify the existence of Peer-Address metadata
-    assert (streq (zmq_msg_gets (&identity, "Peer-Address"), "127.0.0.1"));
-
     assert (rc > 0);
     assert (zmq_msg_more (&identity));
 
@@ -85,15 +81,12 @@ test_stream_to_dealer (void)
     byte buffer [255];
     rc = zmq_recv (stream, buffer, 255, 0);
     assert (rc == 0);
-
+    
     //  Real data follows
     //  First frame is identity
     rc = zmq_msg_recv (&identity, stream, 0);
     assert (rc > 0);
     assert (zmq_msg_more (&identity));
-
-    // Verify the existence of Peer-Address metadata
-    assert (streq (zmq_msg_gets (&identity, "Peer-Address"), "127.0.0.1"));
 
     //  Second frame is greeting signature
     rc = zmq_recv (stream, buffer, 255, 0);
@@ -186,7 +179,7 @@ test_stream_to_stream (void)
     //  Set-up our context and sockets
     void *ctx = zmq_ctx_new ();
     assert (ctx);
-
+    
     void *server = zmq_socket (ctx, ZMQ_STREAM);
     assert (server);
     rc = zmq_bind (server, "tcp://127.0.0.1:9070");
@@ -199,7 +192,7 @@ test_stream_to_stream (void)
     uint8_t id [256];
     size_t id_size = 256;
     uint8_t buffer [256];
-
+    
     //  Connecting sends a zero message
     //  Server: First frame is identity, second frame is zero
     id_size = zmq_recv (server, id, 256, 0);
@@ -222,19 +215,19 @@ test_stream_to_stream (void)
     //  Second frame is HTTP GET request
     rc = zmq_send (client, "GET /\n\n", 7, 0);
     assert (rc == 7);
-
+    
     //  Get HTTP request; ID frame and then request
     id_size = zmq_recv (server, id, 256, 0);
     assert (id_size > 0);
     rc = zmq_recv (server, buffer, 256, 0);
     assert (rc != -1);
     assert (memcmp (buffer, "GET /\n\n", 7) == 0);
-
+    
     //  Send reply back to client
     char http_response [] =
-        "HTTP/1.0 200 OK\r\n"
-        "Content-Type: text/plain\r\n"
-        "\r\n"
+        "HTTP/1.0 200 OK\r\n" 
+        "Content-Type: text/plain\r\n" 
+        "\r\n" 
         "Hello, World!";
     rc = zmq_send (server, id, id_size, ZMQ_SNDMORE);
     assert (rc != -1);

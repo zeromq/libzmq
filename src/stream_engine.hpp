@@ -59,7 +59,7 @@ namespace zmq
             timeout_error
         };
 
-        stream_engine_t (fd_t fd_, const options_t &options_,
+        stream_engine_t (fd_t fd_, const options_t &options_, 
                          const std::string &endpoint);
         ~stream_engine_t ();
 
@@ -98,8 +98,6 @@ namespace zmq
 
         int pull_msg_from_session (msg_t *msg_);
         int push_msg_to_session (msg_t *msg);
-
-        int push_raw_msg_to_session (msg_t *msg);
 
         int write_credential (msg_t *msg_);
         int pull_and_encode (msg_t *msg_);
