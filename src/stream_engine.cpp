@@ -36,7 +36,6 @@
 #include <string.h>
 #include <new>
 #include <sstream>
-#include <iostream>
 
 #include "stream_engine.hpp"
 #include "io_thread.hpp"
@@ -60,6 +59,8 @@
 #include "tcp.hpp"
 #include "likely.hpp"
 #include "wire.hpp"
+
+#include <iostream>
 
 zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
                                        const std::string &endpoint_) :
@@ -192,14 +193,24 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
         handshaking = false;
 
         next_msg = &stream_engine_t::pull_msg_from_session;
-        process_msg = &stream_engine_t::push_msg_to_session;
+        process_msg = &stream_engine_t::push_raw_msg_to_session;
+
+        if (!peer_address.empty()) {
+            //  Compile metadata.
+            typedef metadata_t::dict_t properties_t;
+            properties_t properties;
+            properties.insert(std::make_pair("Peer-Address", peer_address));
+            zmq_assert (metadata == NULL);
+            metadata = new (std::nothrow) metadata_t (properties);
+        }
 
         //  For raw sockets, send an initial 0-length message to the
         // application so that it knows a peer has connected.
         msg_t connector;
         connector.init();
+        if (metadata)
+            connector.set_metadata(metadata);
         push_msg_to_session (&connector);
-        connector.close();
         session->flush ();
     }
     else {
@@ -792,7 +803,6 @@ void zmq::stream_engine_t::mechanism_ready ()
     //  Compile metadata.
     typedef metadata_t::dict_t properties_t;
     properties_t properties;
-    properties_t::const_iterator it;
 
     //  If we have a peer_address, add it to metadata
     if (!peer_address.empty()) {
@@ -820,6 +830,12 @@ int zmq::stream_engine_t::pull_msg_from_session (msg_t *msg_)
 int zmq::stream_engine_t::push_msg_to_session (msg_t *msg_)
 {
     return session->push_msg (msg_);
+}
+
+int zmq::stream_engine_t::push_raw_msg_to_session (msg_t *msg_) {
+    if (metadata)
+        msg_->set_metadata(metadata);
+    return push_msg_to_session(msg_);
 }
 
 int zmq::stream_engine_t::write_credential (msg_t *msg_)
