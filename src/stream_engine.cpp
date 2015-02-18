@@ -210,7 +210,6 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
             connector.set_metadata(metadata);
         push_msg_to_session (&connector);
         session->flush ();
-        connector.close();
     }
     else {
         // start optional timer, to prevent handshake hanging on no input
