@@ -60,6 +60,8 @@
 #include "likely.hpp"
 #include "wire.hpp"
 
+#include <iostream>
+
 zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
                                        const std::string &endpoint_) :
     s (fd_),
