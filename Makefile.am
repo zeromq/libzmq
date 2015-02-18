@@ -484,9 +484,6 @@ test_bind_src_address_LDADD = libzmq.la
 test_metadata_SOURCES = tests/test_metadata.cpp
 test_metadata_LDADD = libzmq.la
 
-test_id2fd_SOURCES = tests/test_id2fd.cpp
-test_id2fd_LDADD = libzmq.la
-
 test_capabilities_SOURCES = tests/test_capabilities.cpp
 test_capabilities_LDADD = libzmq.la
 
