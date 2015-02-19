@@ -59,7 +59,7 @@ namespace zmq
             timeout_error
         };
 
-        stream_engine_t (fd_t fd_, const options_t &options_, 
+        stream_engine_t (fd_t fd_, const options_t &options_,
                          const std::string &endpoint);
         ~stream_engine_t ();
 
@@ -77,7 +77,6 @@ namespace zmq
         void timer_event (int id_);
 
     private:
-
         //  Unplug the engine from the session.
         void unplug ();
 
@@ -99,6 +98,8 @@ namespace zmq
         int pull_msg_from_session (msg_t *msg_);
         int push_msg_to_session (msg_t *msg);
 
+        int push_raw_msg_to_session (msg_t *msg);
+
         int write_credential (msg_t *msg_);
         int pull_and_encode (msg_t *msg_);
         int decode_and_push (msg_t *msg_);
@@ -112,6 +113,9 @@ namespace zmq
             const char *name, const void *value, size_t value_len);
 
         void set_handshake_timer();
+
+        typedef metadata_t::dict_t properties_t;
+        bool init_properties (properties_t & properties);
 
         //  Underlying socket.
         fd_t s;
