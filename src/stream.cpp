@@ -245,12 +245,6 @@ bool zmq::stream_t::xhas_in ()
     blob_t identity = pipe->get_identity ();
     rc = prefetched_id.init_size (identity.size ());
     errno_assert (rc == 0);
-
-    // forward metadata (if any)
-    metadata_t *metadata = prefetched_msg.metadata();
-    if (metadata)
-        prefetched_id.set_metadata(metadata);
-
     memcpy (prefetched_id.data (), identity.data (), identity.size ());
     prefetched_id.set_flags (msg_t::more);
 
