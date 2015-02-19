@@ -85,6 +85,9 @@ test_stream_to_dealer (void)
     rc = zmq_recv (stream, buffer, 255, 0);
     assert (rc == 0);
 
+    // Verify the existence of Peer-Address metadata
+    assert (streq (zmq_msg_gets (&identity, "Peer-Address"), "127.0.0.1"));
+
     //  Real data follows
     //  First frame is identity
     rc = zmq_msg_recv (&identity, stream, 0);
