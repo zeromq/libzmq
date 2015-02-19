@@ -36,7 +36,6 @@
 #include <string.h>
 #include <new>
 #include <sstream>
-#include <iostream>
 
 #include "stream_engine.hpp"
 #include "io_thread.hpp"
