@@ -193,11 +193,9 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
         next_msg = &stream_engine_t::pull_msg_from_session;
         process_msg = &stream_engine_t::push_raw_msg_to_session;
 
-        if (!peer_address.empty()) {
+        properties_t properties;
+        if (init_properties(properties)) {
             //  Compile metadata.
-            typedef metadata_t::dict_t properties_t;
-            properties_t properties;
-            properties.insert(std::make_pair("Peer-Address", peer_address));
             zmq_assert (metadata == NULL);
             metadata = new (std::nothrow) metadata_t (properties);
         }
@@ -812,13 +810,8 @@ void zmq::stream_engine_t::mechanism_ready ()
     process_msg = &stream_engine_t::write_credential;
 
     //  Compile metadata.
-    typedef metadata_t::dict_t properties_t;
     properties_t properties;
-
-    //  If we have a peer_address, add it to metadata
-    if (!peer_address.empty()) {
-        properties.insert(std::make_pair("Peer-Address", peer_address));
-    }
+    init_properties(properties);
 
     //  Add ZAP properties.
     const properties_t& zap_properties = mechanism->get_zap_properties ();
@@ -950,6 +943,12 @@ void zmq::stream_engine_t::set_handshake_timer ()
         add_timer (options.handshake_ivl, handshake_timer_id);
         has_handshake_timer = true;
     }
+}
+
+bool zmq::stream_engine_t::init_properties (properties_t & properties) {
+    if (peer_address.empty()) return false;
+    properties.insert (std::make_pair("Peer-Address", peer_address));
+    return true;
 }
 
 void zmq::stream_engine_t::timer_event (int id_)

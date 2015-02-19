@@ -77,7 +77,6 @@ namespace zmq
         void timer_event (int id_);
 
     private:
-
         //  Unplug the engine from the session.
         void unplug ();
 
@@ -114,6 +113,9 @@ namespace zmq
             const char *name, const void *value, size_t value_len);
 
         void set_handshake_timer();
+
+        typedef metadata_t::dict_t properties_t;
+        bool init_properties (properties_t & properties);
 
         //  Underlying socket.
         fd_t s;
