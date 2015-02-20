@@ -81,7 +81,9 @@ test_stream_to_dealer (void)
     assert (zmq_msg_more (&identity));
 
     // Verify the existence of Peer-Address metadata
-    assert (streq (zmq_msg_gets (&identity, "Peer-Address"), "127.0.0.1"));
+    char const* peer_address = zmq_msg_gets (&identity, "Peer-Address");
+    assert (peer_address != 0);
+    assert (streq (peer_address, "127.0.0.1"));
 
     //  Second frame is zero
     byte buffer [255];
@@ -89,7 +91,9 @@ test_stream_to_dealer (void)
     assert (rc == 0);
 
     // Verify the existence of Peer-Address metadata
-    assert (streq (zmq_msg_gets (&identity, "Peer-Address"), "127.0.0.1"));
+    peer_address = zmq_msg_gets (&identity, "Peer-Address");
+    assert (peer_address != 0);
+    assert (streq (peer_address, "127.0.0.1"));
 
     //  Real data follows
     //  First frame is identity
@@ -98,7 +102,9 @@ test_stream_to_dealer (void)
     assert (zmq_msg_more (&identity));
 
     // Verify the existence of Peer-Address metadata
-    assert (streq (zmq_msg_gets (&identity, "Peer-Address"), "127.0.0.1"));
+    peer_address = zmq_msg_gets (&identity, "Peer-Address");
+    assert (peer_address != 0);
+    assert (streq (peer_address, "127.0.0.1"));
 
     //  Second frame is greeting signature
     rc = zmq_recv (stream, buffer, 255, 0);
