@@ -3,6 +3,8 @@
 
 * Fixed #1273 - V3 protocol handler vulnerable to downgrade attacks.
 
+* Fixed #1362 - SUB socket sometimes fails to resubscribe properly.
+
 
 0MQ version 4.0.5 stable, released on 2014/10/14
 ================================================

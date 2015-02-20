@@ -242,6 +242,8 @@ void zmq::pipe_t::process_hiccup (void *pipe_)
     outpipe->flush ();
     msg_t msg;
     while (outpipe->read (&msg)) {
+       if (!(msg.flags () & msg_t::more))
+            msgs_written--;
        int rc = msg.close ();
        errno_assert (rc == 0);
     }
