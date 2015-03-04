@@ -142,6 +142,8 @@ int zmq::stream_t::xsend (msg_t *msg_)
             current_out->terminate (false);
             int rc = msg_->close ();
             errno_assert (rc == 0);
+            rc = msg_->init ();
+            errno_assert (rc == 0);
             current_out = NULL;
             return 0;
         }
