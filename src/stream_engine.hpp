@@ -94,7 +94,7 @@ namespace zmq
 
         //  Size of the greeting message:
         //  Preamble (10 bytes) + version (1 byte) + socket type (1 byte).
-        const static size_t greeting_size = 12;
+        static const size_t greeting_size = 12;
 
         //  True iff we are registered with an I/O poller.
         bool io_enabled;
