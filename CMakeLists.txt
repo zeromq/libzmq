@@ -158,10 +158,6 @@ set(CMAKE_REQUIRED_INCLUDES )
 
 add_definitions(-D_REENTRANT -D_THREAD_SAFE)
 
-if(WIN32)
-  add_definitions(-DDLL_EXPORT)
-endif()
-
 option(ENABLE_EVENTFD "Enable/disable eventfd" ZMQ_HAVE_EVENTFD)
 
 macro(zmq_check_cxx_flag_prepend flag)
@@ -342,14 +338,13 @@ set(LIBRARY_OUTPUT_PATH  ${CMAKE_CURRENT_BINARY_DIR}/lib)
 #-----------------------------------------------------------------------------
 # platform specifics
 
-if(MSVC)
-  add_definitions(
-    -DWIN32
-    -DDLL_EXPORT
-    # NB: May require tweaking for highly connected applications.
-    -DFD_SETSIZE=4096
-    -D_CRT_SECURE_NO_WARNINGS)
+if (WIN32)
+  # NB: May require tweaking for highly connected applications.
+  add_definitions (-DFD_SETSIZE=4096)
+  add_definitions (-D_CRT_SECURE_NO_WARNINGS)
+endif ()
 
+if(MSVC)
   # Parallel make.
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 
@@ -585,7 +580,8 @@ if(MSVC)
     PUBLIC_HEADER "${public_headers}"
     RELEASE_POSTFIX "${_zmq_COMPILER}-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
     DEBUG_POSTFIX "${_zmq_COMPILER}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin"
+    COMPILE_DEFINITIONS "DLL_EXPORT")
   add_library(libzmq-static STATIC ${sources})
   set_target_properties(libzmq-static PROPERTIES
     PUBLIC_HEADER "${public_headers}"
@@ -595,16 +591,18 @@ if(MSVC)
     OUTPUT_NAME "libzmq")
 else()
     add_library(libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig})
+    set_target_properties(libzmq PROPERTIES
+                          COMPILE_DEFINITIONS "DLL_EXPORT"
+                          PUBLIC_HEADER "${public_headers}"
+                          VERSION ${ZMQ_VERSION}
+                          SOVERSION "${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.0")
     if(ZMQ_BUILD_FRAMEWORK)
       set_target_properties(libzmq PROPERTIES
                             FRAMEWORK TRUE
                             OUTPUT_NAME "ZeroMQ"
-                            PUBLIC_HEADER "${public_headers}"
                             MACOSX_FRAMEWORK_IDENTIFIER "org.zeromq.libzmq"
                             MACOSX_FRAMEWORK_SHORT_VERSION_STRING ${ZMQ_VERSION}
-                            MACOSX_FRAMEWORK_BUNDLE_VERSION ${ZMQ_VERSION}
-                            VERSION ${ZMQ_VERSION}
-                            SOVERSION "${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.0")
+                            MACOSX_FRAMEWORK_BUNDLE_VERSION ${ZMQ_VERSION})
       set_source_files_properties(${html-docs} PROPERTIES
                                   MACOSX_PACKAGE_LOCATION doc)
       set_source_files_properties(${readme-docs} PROPERTIES
@@ -613,13 +611,13 @@ else()
                                   MACOSX_PACKAGE_LOCATION lib/pkgconfig)
     else()
       set_target_properties(libzmq PROPERTIES
-                             OUTPUT_NAME "zmq"
-                             PUBLIC_HEADER "${public_headers}")
+                            OUTPUT_NAME "zmq"
+                            )
     endif()
     add_library(libzmq-static STATIC ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig})
     set_target_properties(libzmq-static PROPERTIES
       PUBLIC_HEADER "${public_headers}"
-      COMPILE_FLAGS "-DZMQ_STATIC"
+      COMPILE_DEFINITIONS "ZMQ_STATIC"
       OUTPUT_NAME "zmq-static")
 endif()
 
@@ -721,11 +719,11 @@ endif()
 #          DESTINATION include
 #          COMPONENT SDK)
 
-if(NOT ZMQ_BUILD_FRAMEWORK)
-  file(GLOB private_headers "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp")
-  install(FILES ${sources} ${private_headers} DESTINATION src/zmq
-          COMPONENT SourceCode)
-endif()
+#if(NOT ZMQ_BUILD_FRAMEWORK)
+#  file(GLOB private_headers "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp")
+#  install(FILES ${sources} ${private_headers} DESTINATION src/zmq
+#          COMPONENT SourceCode)
+#endif()
 
 foreach(readme ${readme-docs})
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${readme} ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt)
@@ -734,7 +732,7 @@ foreach(readme ${readme-docs})
     if(MSVC)
       install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt DESTINATION .)
     else()
-      install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt DESTINATION etc/zmq)
+      install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt DESTINATION share/zmq)
     endif()
   endif()
 endforeach()
