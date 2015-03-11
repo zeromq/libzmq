@@ -591,16 +591,18 @@ if(MSVC)
     OUTPUT_NAME "libzmq")
 else()
     add_library(libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig})
-    set_target_properties(libzmq PROPERTIES COMPILE_DEFINITIONS "DLL_EXPORT" PUBLIC_HEADER "${public_headers}")
+    set_target_properties(libzmq PROPERTIES
+                          COMPILE_DEFINITIONS "DLL_EXPORT"
+                          PUBLIC_HEADER "${public_headers}"
+                          VERSION ${ZMQ_VERSION}
+                          SOVERSION "${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.0")
     if(ZMQ_BUILD_FRAMEWORK)
       set_target_properties(libzmq PROPERTIES
                             FRAMEWORK TRUE
                             OUTPUT_NAME "ZeroMQ"
                             MACOSX_FRAMEWORK_IDENTIFIER "org.zeromq.libzmq"
                             MACOSX_FRAMEWORK_SHORT_VERSION_STRING ${ZMQ_VERSION}
-                            MACOSX_FRAMEWORK_BUNDLE_VERSION ${ZMQ_VERSION}
-                            VERSION ${ZMQ_VERSION}
-                            SOVERSION "${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.0")
+                            MACOSX_FRAMEWORK_BUNDLE_VERSION ${ZMQ_VERSION})
       set_source_files_properties(${html-docs} PROPERTIES
                                   MACOSX_PACKAGE_LOCATION doc)
       set_source_files_properties(${readme-docs} PROPERTIES
@@ -609,7 +611,8 @@ else()
                                   MACOSX_PACKAGE_LOCATION lib/pkgconfig)
     else()
       set_target_properties(libzmq PROPERTIES
-                             OUTPUT_NAME "zmq")
+                            OUTPUT_NAME "zmq"
+                            )
     endif()
     add_library(libzmq-static STATIC ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig})
     set_target_properties(libzmq-static PROPERTIES
