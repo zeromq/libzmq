@@ -338,13 +338,13 @@ set(LIBRARY_OUTPUT_PATH  ${CMAKE_CURRENT_BINARY_DIR}/lib)
 #-----------------------------------------------------------------------------
 # platform specifics
 
-if(MSVC)
-  add_definitions(
-    -DWIN32
-    # NB: May require tweaking for highly connected applications.
-    -DFD_SETSIZE=4096
-    -D_CRT_SECURE_NO_WARNINGS)
+if (WIN32)
+  # NB: May require tweaking for highly connected applications.
+  add_definitions (-DFD_SETSIZE=4096)
+  add_definitions (-D_CRT_SECURE_NO_WARNINGS)
+endif ()
 
+if(MSVC)
   # Parallel make.
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 
