@@ -721,11 +721,11 @@ endif()
 #          DESTINATION include
 #          COMPONENT SDK)
 
-if(NOT ZMQ_BUILD_FRAMEWORK)
-  file(GLOB private_headers "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp")
-  install(FILES ${sources} ${private_headers} DESTINATION src/zmq
-          COMPONENT SourceCode)
-endif()
+#if(NOT ZMQ_BUILD_FRAMEWORK)
+#  file(GLOB private_headers "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp")
+#  install(FILES ${sources} ${private_headers} DESTINATION src/zmq
+#          COMPONENT SourceCode)
+#endif()
 
 foreach(readme ${readme-docs})
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${readme} ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt)
