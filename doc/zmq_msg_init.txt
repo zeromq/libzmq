@@ -28,8 +28,7 @@ _zmq_msg_init_size()_ are mutually exclusive. Never initialize the same
 
 RETURN VALUE
 ------------
-The _zmq_msg_init()_ function shall return zero if successful. Otherwise it
-shall return `-1` and set 'errno' to one of the values defined below.
+The _zmq_msg_init()_ function always returns zero.
 
 
 ERRORS
