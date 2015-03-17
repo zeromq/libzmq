@@ -30,7 +30,7 @@ if(WITH_TWEETNACL)
     list(APPEND TWEETNACL_SOURCES tweetnacl/contrib/randombytes/devurandom.c)
   endif()
 else()
-  find_library(SODIUM_FOUND sodium)
+  find_library(SODIUM_FOUND sodium HINTS "${CMAKE_PREFIX_PATH}/libsodium/bin")
 endif()
 
 
