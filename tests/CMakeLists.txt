@@ -49,6 +49,7 @@ set(tests
         test_thread_safe
         test_client_server
 	test_sockopt_hwm
+        test_heartbeats
 )
 if(NOT WIN32)
   list(APPEND tests

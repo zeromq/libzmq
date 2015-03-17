@@ -127,6 +127,10 @@ namespace zmq
         typedef metadata_t::dict_t properties_t;
         bool init_properties (properties_t & properties);
 
+        int produce_ping_message(msg_t * msg_);
+        int process_heartbeat_message(msg_t * msg_);
+        int produce_pong_message(msg_t * msg_);
+
         //  Underlying socket.
         fd_t s;
 
@@ -205,6 +209,16 @@ namespace zmq
 
         //  True is linger timer is running.
         bool has_handshake_timer;
+
+        //  Heartbeat stuff
+        enum {
+            heartbeat_ivl_timer_id = 0x80,
+            heartbeat_timeout_timer_id = 0x81,
+            heartbeat_ttl_timer_id = 0x82
+        };
+        bool has_ttl_timer;
+        bool has_timeout_timer;
+        bool has_heartbeat_timer;
 
         // Socket
         zmq::socket_base_t *socket;
