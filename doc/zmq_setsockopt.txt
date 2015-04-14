@@ -810,10 +810,8 @@ Applicable socket types:: ZMQ_XPUB
 
 ZMQ_XPUB_NODROP: do not silently drop messages if SENDHWM is reached
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Sets the 'XPUB' socket behaviour to return error EAGAIN if SEND_HWM is
+Sets the 'XPUB' socket behaviour to return error EAGAIN if SENDHWM is
 reached and the message could not be send. 
-
-A value of '0' is the default and messages are dropped if SENDHWM is reached.
 
 A value of `0` is the default and drops the message silently when the peers
 SNDHWM is reached.  A value of `1` returns an 'EAGAIN' error code if the
