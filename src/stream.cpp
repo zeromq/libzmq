@@ -176,10 +176,10 @@ int zmq::stream_t::xsetsockopt (int option_, const void *optval_,
                 return 0;
             }
             break;
-            
+
         case ZMQ_STREAM_NOTIFY:
             if (is_int && (value == 0 || value == 1)) {
-                options.raw_notify = value;
+                options.raw_notify = (value != 0);
                 return 0;
             }
             break;
@@ -221,6 +221,12 @@ int zmq::stream_t::xrecv (msg_t *msg_)
     blob_t identity = pipe->get_identity ();
     rc = msg_->init_size (identity.size ());
     errno_assert (rc == 0);
+
+    // forward metadata (if any)
+    metadata_t *metadata = prefetched_msg.metadata();
+    if (metadata)
+        msg_->set_metadata(metadata);
+
     memcpy (msg_->data (), identity.data (), identity.size ());
     msg_->set_flags (msg_t::more);
 
@@ -249,6 +255,12 @@ bool zmq::stream_t::xhas_in ()
     blob_t identity = pipe->get_identity ();
     rc = prefetched_id.init_size (identity.size ());
     errno_assert (rc == 0);
+
+    // forward metadata (if any)
+    metadata_t *metadata = prefetched_msg.metadata();
+    if (metadata)
+        prefetched_id.set_metadata(metadata);
+
     memcpy (prefetched_id.data (), identity.data (), identity.size ());
     prefetched_id.set_flags (msg_t::more);
 
@@ -277,7 +289,7 @@ void zmq::stream_t::identify_peer (pipe_t *pipe_)
             connect_rid.length ());
         connect_rid.clear ();
         outpipes_t::iterator it = outpipes.find (identity);
-        if (it != outpipes.end ()) 
+        if (it != outpipes.end ())
             zmq_assert(false);
     }
     else {

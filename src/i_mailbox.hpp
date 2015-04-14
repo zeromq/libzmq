@@ -1,6 +1,5 @@
 /*
-    Copyright (c) 2007-2011 iMatix Corporation
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -18,24 +17,34 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_PLATFORM_HPP_INCLUDED__
-#define __ZMQ_PLATFORM_HPP_INCLUDED__
+#ifndef __ZMQ_I_MAILBOX_HPP_INCLUDED__
+#define __ZMQ_I_MAILBOX_HPP_INCLUDED__
 
-//  This is the platform definition for the MSVC platform.
-//  As a first step of the build process it is copied to
-//  zmq directory to take place of platform.hpp generated from
-//  platform.hpp.in on platforms supported by GNU autotools.
-//  Place any MSVC-specific definitions here.
+#include "stdint.hpp"
 
-#define ZMQ_HAVE_WINDOWS
+namespace zmq
+{
+    //  Interface to be implemented by mailbox.
 
-#if defined _WIN32_WINNT && _WIN32_WINNT < 0x0600
-  #undef _WIN32_WINNT	
+    class i_mailbox
+    {
+    public:
+        virtual ~i_mailbox () {}
+
+        virtual void send (const command_t &cmd_) = 0;
+        virtual int recv (command_t *cmd_, int timeout_) = 0;
+
+
+#ifdef HAVE_FORK
+        // close the file descriptors in the signaller. This is used in a forked
+        // child process to close the file descriptors so that they do not interfere
+        // with the context in the parent process.
+        virtual void forked () = 0;
 #endif
 
-#ifndef _WIN32_WINNT 
-  #define _WIN32_WINNT 0x0600
-#endif
 
+    };
+
+}
 
 #endif

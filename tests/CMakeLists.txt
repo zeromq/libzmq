@@ -45,6 +45,8 @@ set(tests
         test_connect_rid
         test_xpub_nodrop
         test_pub_invert_matching
+        test_thread_safe
+        test_client_server
 )
 if(NOT WIN32)
   list(APPEND tests

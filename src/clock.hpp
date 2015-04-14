@@ -22,6 +22,16 @@
 
 #include "stdint.hpp"
 
+#if defined ZMQ_HAVE_OSX
+#include <mach/clock.h>
+#include <mach/mach.h>
+#include <time.h>
+#include <sys/time.h>
+int clock_gettime (int clock_id, timespec *ts);
+#define CLOCK_REALTIME 0
+#define HAVE_CLOCK_GETTIME
+#endif
+
 namespace zmq
 {
 

@@ -4,7 +4,7 @@ zmq_ctx_term(3)
 
 NAME
 ----
-zmq_ctx_term - destroy a 0MQ context
+zmq_ctx_term - terminate a 0MQ context
 
 
 SYNOPSIS
@@ -36,7 +36,8 @@ Context termination is performed in the following steps:
 For further details regarding socket linger behaviour refer to the _ZMQ_LINGER_
 option in linkzmq:zmq_setsockopt[3].
 
-This function replaces the deprecated function linkzmq:zmq_term[3].
+This function replaces the deprecated functions linkzmq:zmq_term[3] and
+linkzmq:zmq_ctx_destroy[3].
 
 
 RETURN VALUE

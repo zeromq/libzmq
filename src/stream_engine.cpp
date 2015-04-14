@@ -36,7 +36,6 @@
 #include <string.h>
 #include <new>
 #include <sstream>
-#include <iostream>
 
 #include "stream_engine.hpp"
 #include "io_thread.hpp"
@@ -192,14 +191,21 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
         handshaking = false;
 
         next_msg = &stream_engine_t::pull_msg_from_session;
-        process_msg = &stream_engine_t::push_msg_to_session;
+        process_msg = &stream_engine_t::push_raw_msg_to_session;
+
+        properties_t properties;
+        if (init_properties(properties)) {
+            //  Compile metadata.
+            zmq_assert (metadata == NULL);
+            metadata = new (std::nothrow) metadata_t (properties);
+        }
 
         if (options.raw_notify) {
             //  For raw sockets, send an initial 0-length message to the
             // application so that it knows a peer has connected.
             msg_t connector;
             connector.init();
-            push_msg_to_session (&connector);
+            push_raw_msg_to_session (&connector);
             connector.close();
             session->flush ();
         }
@@ -804,13 +810,8 @@ void zmq::stream_engine_t::mechanism_ready ()
     process_msg = &stream_engine_t::write_credential;
 
     //  Compile metadata.
-    typedef metadata_t::dict_t properties_t;
     properties_t properties;
-
-    //  If we have a peer_address, add it to metadata
-    if (!peer_address.empty()) {
-        properties.insert(std::make_pair("Peer-Address", peer_address));
-    }
+    init_properties(properties);
 
     //  Add ZAP properties.
     const properties_t& zap_properties = mechanism->get_zap_properties ();
@@ -833,6 +834,12 @@ int zmq::stream_engine_t::pull_msg_from_session (msg_t *msg_)
 int zmq::stream_engine_t::push_msg_to_session (msg_t *msg_)
 {
     return session->push_msg (msg_);
+}
+
+int zmq::stream_engine_t::push_raw_msg_to_session (msg_t *msg_) {
+    if (metadata)
+        msg_->set_metadata(metadata);
+    return push_msg_to_session(msg_);
 }
 
 int zmq::stream_engine_t::write_credential (msg_t *msg_)
@@ -936,6 +943,12 @@ void zmq::stream_engine_t::set_handshake_timer ()
         add_timer (options.handshake_ivl, handshake_timer_id);
         has_handshake_timer = true;
     }
+}
+
+bool zmq::stream_engine_t::init_properties (properties_t & properties) {
+    if (peer_address.empty()) return false;
+    properties.insert (std::make_pair("Peer-Address", peer_address));
+    return true;
 }
 
 void zmq::stream_engine_t::timer_event (int id_)
