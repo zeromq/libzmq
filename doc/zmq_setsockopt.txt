@@ -808,6 +808,23 @@ Option value unit:: 0, 1
 Default value:: 0
 Applicable socket types:: ZMQ_XPUB
 
+ZMQ_XPUB_NODROP: do not silently drop messages if SENDHWM is reached
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the 'XPUB' socket behaviour to return error EAGAIN if SEND_HWM is
+reached and the message could not be send. 
+
+A value of '0' is the default and messages are dropped if SENDHWM is reached.
+
+A value of `0` is the default and drops the message silently when the peers
+SNDHWM is reached.  A value of `1` returns an 'EAGAIN' error code if the
+SNDHWM is reached and ZMQ_DONTWAIT was used.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1
+Default value:: 0
+Applicable socket types:: ZMQ_XPUB, ZMQ_PUB
+
 ZMQ_WELCOME_MSG: set welcome message that will be received by subscriber when connecting
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
