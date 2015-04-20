@@ -5,6 +5,8 @@
 
 * Fixed #1362 - SUB socket sometimes fails to resubscribe properly.
 
+* Fixed #1377, #1144 - failed with WSANOTINITIALISED in some cases.
+
 
 0MQ version 4.0.5 stable, released on 2014/10/14
 ================================================
