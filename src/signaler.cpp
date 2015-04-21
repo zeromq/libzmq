@@ -132,11 +132,14 @@ zmq::signaler_t::~signaler_t ()
     const struct linger so_linger = { 1, 0 };
     int rc = setsockopt (w, SOL_SOCKET, SO_LINGER,
         (const char *) &so_linger, sizeof so_linger);
-    wsa_assert (rc != SOCKET_ERROR);
-    rc = closesocket (w);
-    wsa_assert (rc != SOCKET_ERROR);
-    rc = closesocket (r);
-    wsa_assert (rc != SOCKET_ERROR);
+    //  Only check shutdown if WSASTARTUP was previously done
+    if (rc == 0 || WSAGetLastError () != WSANOTINITIALISED) {
+        wsa_assert (rc != SOCKET_ERROR);
+        rc = closesocket (w);
+        wsa_assert (rc != SOCKET_ERROR);
+        rc = closesocket (r);
+        wsa_assert (rc != SOCKET_ERROR);
+    }
 #else
     int rc = close_wait_ms (w);
     errno_assert (rc == 0);
