@@ -59,4 +59,8 @@ typedef unsigned __int64 uint64_t;
 
 #endif
 
+#ifndef UINT8_MAX
+#define UINT8_MAX 0xFF
+#endif
+
 #endif

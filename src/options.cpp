@@ -96,7 +96,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         case ZMQ_IDENTITY:
             //  Identity is any binary string from 1 to 255 octets
             if (optvallen_ > 0 && optvallen_ < 256) {
-                identity_size = optvallen_;
+                identity_size = (unsigned char) optvallen_;
                 memcpy (identity, optval_, identity_size);
                 return 0;
             }
