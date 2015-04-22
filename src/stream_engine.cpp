@@ -928,7 +928,7 @@ void zmq::stream_engine_t::error (error_reason_t reason)
         terminator.close();
     }
     zmq_assert (session);
-    socket->event_disconnected (endpoint, s);
+    socket->event_disconnected (endpoint, (int) s);
     session->flush ();
     session->engine_error (reason);
     unplug ();
