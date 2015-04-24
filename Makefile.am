@@ -340,6 +340,7 @@ test_apps = \
 	tests/test_inproc_connect \
 	tests/test_issue_566 \
 	tests/test_proxy \
+	tests/test_proxy_terminate \
 	tests/test_many_sockets \
 	tests/test_ipc_wildcard \
 	tests/test_diffserv \
