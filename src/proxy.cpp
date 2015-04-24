@@ -159,14 +159,16 @@ int zmq::proxy (
         }
         //  Process a request
         if (state == active
-        &&  items [0].revents & ZMQ_POLLIN) {
+        &&  items [0].revents & ZMQ_POLLIN
+        &&  items [1].revents & ZMQ_POLLOUT) {
             rc = forward(frontend_, backend_, capture_,msg);
             if (unlikely (rc < 0))
                 return -1;
         }
         //  Process a reply
         if (state == active
-        &&  items [1].revents & ZMQ_POLLIN) {
+        &&  items [1].revents & ZMQ_POLLIN
+        &&  items [0].revents & ZMQ_POLLOUT) {
             rc = forward(backend_, frontend_, capture_,msg);
             if (unlikely (rc < 0))
                 return -1;

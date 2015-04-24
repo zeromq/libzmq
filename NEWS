@@ -1,4 +1,4 @@
-0MQ version 4.1.1 rc2, released on 2014/12/xx
+0MQ version 4.1.1 rc2, released on 2015/xx/xx
 =============================================
 
 * Fixed #1208 - fix recursion in automake packaging
@@ -16,6 +16,8 @@
 * Fixed #1377, #1144 - failed with WSANOTINITIALISED in some cases.
 
 * Fixed #1389 - PUB, PUSH sockets had slow memory leak.
+
+* Fixed #1382 - zmq_proxy did not terminate if there were no readers.
 
 
 0MQ version 4.1.0 rc1, released on 2014/10/14
