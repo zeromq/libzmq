@@ -27,9 +27,9 @@
 #define NOMINMAX          // Macros min(a,b) and max(a,b)
 #endif
 
-//  Set target version to Windows Server 2003, Windows XP/SP1 or higher.
+//  Set target version to Windows Server 2008, Windows Vista or higher. Windows XP (0x0501) is also supported but without client & server socket types.
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0501
+#define _WIN32_WINNT 0x0600
 #endif
 
 #ifdef __MINGW32__
