@@ -130,7 +130,8 @@ int zmq::proxy (
             }
         }
         //  Process a request
-        if (items [0].revents & ZMQ_POLLIN
+        if (state == active
+        &&  items [0].revents & ZMQ_POLLIN
         &&  items [1].revents & ZMQ_POLLOUT) {
             while (true) {
                 rc = frontend_->recv (&msg, 0);
@@ -163,7 +164,8 @@ int zmq::proxy (
             }
         }
         //  Process a reply
-        if (items [1].revents & ZMQ_POLLIN
+        if (state == active
+        &&  items [1].revents & ZMQ_POLLIN
         &&  items [0].revents & ZMQ_POLLOUT) {
             while (true) {
                 rc = backend_->recv (&msg, 0);
