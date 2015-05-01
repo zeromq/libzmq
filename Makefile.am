@@ -320,6 +320,7 @@ test_apps = \
 	test_inproc_connect \
 	test_issue_566 \
 	test_proxy \
+	test_proxy_terminate \
 	test_many_sockets \
 	test_ipc_wildcard \
 	test_diffserv \
