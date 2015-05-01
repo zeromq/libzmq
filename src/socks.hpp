@@ -30,9 +30,9 @@ namespace zmq
     struct socks_greeting_t
     {
         socks_greeting_t (uint8_t method);
-        socks_greeting_t (uint8_t *methods_, size_t num_methods_);
+        socks_greeting_t (uint8_t *methods_, uint8_t num_methods_);
 
-        uint8_t methods [255];
+        uint8_t methods [UINT8_MAX];
         const size_t num_methods;
     };
 
@@ -48,7 +48,7 @@ namespace zmq
         private:
             size_t bytes_encoded;
             size_t bytes_written;
-            uint8_t buf [2 + 255];
+            uint8_t buf [2 + UINT8_MAX];
     };
 
     struct socks_choice_t
@@ -94,7 +94,7 @@ namespace zmq
         private:
             size_t bytes_encoded;
             size_t bytes_written;
-            uint8_t buf [4 + 256 + 2];
+            uint8_t buf [4 + UINT8_MAX + 1 + 2];
     };
 
     struct socks_response_t
@@ -116,7 +116,7 @@ namespace zmq
             void reset ();
 
         private:
-            uint8_t buf [4 + 256 + 2];
+            int8_t buf [4 + UINT8_MAX + 1 + 2];
             size_t bytes_read;
     };
 

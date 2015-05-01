@@ -289,14 +289,13 @@ void zmq::stream_t::identify_peer (pipe_t *pipe_)
             connect_rid.length ());
         connect_rid.clear ();
         outpipes_t::iterator it = outpipes.find (identity);
-        if (it != outpipes.end ())
-            zmq_assert(false);
+        zmq_assert (it == outpipes.end ());
     }
     else {
         put_uint32 (buffer + 1, next_rid++);
         identity = blob_t (buffer, sizeof buffer);
         memcpy (options.identity, identity.data (), identity.size ());
-        options.identity_size = identity.size ();
+        options.identity_size = (unsigned char) identity.size ();
     }
     pipe_->set_identity (identity);
     //  Add the record into output pipes lookup table
