@@ -266,7 +266,7 @@ case "${host_os}" in
             AC_MSG_ERROR([Building static libraries is not supported under MinGW32])
         fi
         
-	# Additional for windows to set FD_SETSIZE to a larger number
+	# Set FD_SETSIZE to 1024
 	CPPFLAGS=" -DFD_SETSIZE=1024 $CPPFLAGS"
         ;;
     *cygwin*)
