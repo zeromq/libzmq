@@ -15,6 +15,8 @@
 
 * Fixed #1377, #1144 - failed with WSANOTINITIALISED in some cases.
 
+* Fixed #1389 - PUB, PUSH sockets had slow memory leak.
+
 
 0MQ version 4.1.0 rc1, released on 2014/10/14
 =============================================
