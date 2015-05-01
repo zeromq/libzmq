@@ -614,6 +614,7 @@ set(tests
         test_inproc_connect
         test_issue_566
         test_many_sockets
+        test_proxy_terminate
 )
 if(NOT WIN32)
 list(APPEND tests

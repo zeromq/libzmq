@@ -87,6 +87,7 @@ tests/test_srcfd
 tests/test_stream_disconnect
 tests/test_proxy_chain
 tests/test_bind_src_address
+tests/test_proxy_terminate
 tests/test*.log
 tests/test*.trs
 src/platform.hpp*
