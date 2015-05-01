@@ -76,7 +76,7 @@ int zmq::proxy (
         { control_, 0, ZMQ_POLLIN, 0 }
     };
     int qt_poll_items = (control_ ? 3 : 2);
-    
+
     //  Proxy can be in these three states
     enum {
         active,
@@ -89,7 +89,7 @@ int zmq::proxy (
         rc = zmq_poll (&items [0], qt_poll_items, -1);
         if (unlikely (rc < 0))
             return -1;
-        
+
         //  Process a control command if any
         if (control_ && items [2].revents & ZMQ_POLLIN) {
             rc = control_->recv (&msg, 0);
@@ -130,7 +130,9 @@ int zmq::proxy (
             }
         }
         //  Process a request
-        if (items [0].revents & ZMQ_POLLIN) {
+        if (state == active
+        &&  items [0].revents & ZMQ_POLLIN
+        &&  items [1].revents & ZMQ_POLLOUT) {
             while (true) {
                 rc = frontend_->recv (&msg, 0);
                 if (unlikely (rc < 0))
@@ -162,7 +164,9 @@ int zmq::proxy (
             }
         }
         //  Process a reply
-        if (items [1].revents & ZMQ_POLLIN) {
+        if (state == active
+        &&  items [1].revents & ZMQ_POLLIN
+        &&  items [0].revents & ZMQ_POLLOUT) {
             while (true) {
                 rc = backend_->recv (&msg, 0);
                 if (unlikely (rc < 0))
