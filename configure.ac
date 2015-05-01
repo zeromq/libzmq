@@ -265,6 +265,9 @@ case "${host_os}" in
         if test "x$enable_static" = "xyes"; then
             AC_MSG_ERROR([Building static libraries is not supported under MinGW32])
         fi
+        
+	# Set FD_SETSIZE to 1024
+	CPPFLAGS=" -DFD_SETSIZE=1024 $CPPFLAGS"
         ;;
     *cygwin*)
         # Define on Cygwin to enable all library features
