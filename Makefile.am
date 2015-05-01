@@ -467,6 +467,9 @@ test_issue_566_LDADD = libzmq.la
 test_proxy_SOURCES = tests/test_proxy.cpp
 test_proxy_LDADD = libzmq.la
 
+test_proxy_terminate_SOURCES = tests/test_proxy_terminate.cpp
+test_proxy_terminate_LDADD = libzmq.la
+
 test_many_sockets_SOURCES = tests/test_many_sockets.cpp
 test_many_sockets_LDADD = libzmq.la
 
