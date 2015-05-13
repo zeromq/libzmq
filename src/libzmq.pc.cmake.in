@@ -7,4 +7,5 @@ Name: libzmq
 Description: 0MQ c++ library
 Version: @ZMQ_VERSION_MAJOR@.@ZMQ_VERSION_MINOR@.@ZMQ_VERSION_PATCH@
 Libs: -L${libdir} -lzmq
+Libs.private: -lstdc++
 Cflags: -I${includedir}
