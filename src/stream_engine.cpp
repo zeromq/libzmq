@@ -668,18 +668,6 @@ bool zmq::stream_engine_t::handshake ()
         }
 #endif
         else {
-            //  Temporary support for security debugging
-            char mechanism [21];
-            memcpy (mechanism, greeting_recv + 12, 20);
-            mechanism [20] = 0;
-            printf ("LIBZMQ I: security failure, self=%s peer=%s\n",
-                options.mechanism == ZMQ_NULL? "NULL":
-                options.mechanism == ZMQ_PLAIN? "PLAIN":
-                options.mechanism == ZMQ_CURVE? "CURVE":
-                options.mechanism == ZMQ_GSSAPI? "GSSAPI":
-                "OTHER",
-                mechanism);
-
             error (protocol_error);
             return false;
         }
