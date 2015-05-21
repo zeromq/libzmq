@@ -31,6 +31,47 @@
 
 #include "windows.hpp"
 
+// Condition variable is supported from Windows Vista only, to use condition variable define _WIN32_WINNT to 0x0600
+#if _WIN32_WINNT < 0x0600
+
+namespace zmq
+{
+
+	class condition_variable_t
+	{
+	public:
+		inline condition_variable_t ()
+		{
+			zmq_assert(false);
+		}
+
+		inline ~condition_variable_t ()
+		{
+
+		}
+
+		inline int wait (mutex_t* mutex_, int timeout_ )
+		{
+			zmq_assert(false);
+			return -1;
+		}
+
+		inline void broadcast ()
+		{
+			zmq_assert(false);
+		}
+
+	private:		
+
+		//  Disable copy construction and assignment.
+		condition_variable_t (const condition_variable_t&);
+		void operator = (const condition_variable_t&);
+	};
+
+}
+
+#else
+
 namespace zmq
 {
 
@@ -78,6 +119,8 @@ namespace zmq
     };
 
 }
+
+#endif
 
 #else
 
