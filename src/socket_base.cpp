@@ -737,9 +737,10 @@ int zmq::socket_base_t::connect (const char *addr_)
         int rc = pgm_socket_t::init_address(address.c_str(), &res, &port_number);
         if (res != NULL)
             pgm_freeaddrinfo (res);
-        if (rc != 0 || port_number == 0)
-            EXIT_MUTEX();
-            return -1;
+        if (rc != 0 || port_number == 0) {
+          EXIT_MUTEX();
+          return -1;
+        }
     }
 #endif
 #if defined ZMQ_HAVE_TIPC
