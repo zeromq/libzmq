@@ -71,8 +71,8 @@ int zmq::proxy (
     int more;
     size_t moresz;
     zmq_pollitem_t items [] = {
-        { frontend_, 0, ZMQ_POLLIN, 0 },
-        { backend_, 0, ZMQ_POLLIN, 0 },
+        { frontend_, 0, ZMQ_POLLIN | ZMQ_POLLOUT, 0 },
+        { backend_, 0, ZMQ_POLLIN | ZMQ_POLLOUT, 0 },
         { control_, 0, ZMQ_POLLIN, 0 }
     };
     int qt_poll_items = (control_ ? 3 : 2);
