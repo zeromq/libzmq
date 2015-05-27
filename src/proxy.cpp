@@ -108,11 +108,15 @@ int zmq::proxy (
     int more;
     size_t moresz;
     zmq_pollitem_t items [] = {
-        { frontend_, 0, ZMQ_POLLIN | ZMQ_POLLOUT, 0 },
-        { backend_, 0, ZMQ_POLLIN | ZMQ_POLLOUT, 0 },
+        { frontend_, 0, ZMQ_POLLIN, 0 },
+        { backend_, 0, ZMQ_POLLIN, 0 },
         { control_, 0, ZMQ_POLLIN, 0 }
     };
     int qt_poll_items = (control_ ? 3 : 2);
+    zmq_pollitem_t itemsout [] = {
+        { frontend_, 0, ZMQ_POLLOUT, 0 },
+        { backend_, 0, ZMQ_POLLOUT, 0 }
+    };
 
     //  Proxy can be in these three states
     enum {
@@ -124,6 +128,12 @@ int zmq::proxy (
     while (state != terminated) {
         //  Wait while there are either requests or replies to process.
         rc = zmq_poll (&items [0], qt_poll_items, -1);
+        if (unlikely (rc < 0))
+            return -1;
+
+        //  Get the pollout separately because when combining this with pollin it maxes the CPU
+        //  because pollout shall most of the time return directly
+        rc = zmq_poll (&itemsout [0], 2, 0);
         if (unlikely (rc < 0))
             return -1;
 
@@ -160,7 +170,7 @@ int zmq::proxy (
         //  Process a request
         if (state == active
         &&  items [0].revents & ZMQ_POLLIN
-        &&  items [1].revents & ZMQ_POLLOUT) {
+        &&  itemsout [1].revents & ZMQ_POLLOUT) {
             rc = forward(frontend_, backend_, capture_,msg);
             if (unlikely (rc < 0))
                 return -1;
@@ -168,7 +178,7 @@ int zmq::proxy (
         //  Process a reply
         if (state == active
         &&  items [1].revents & ZMQ_POLLIN
-        &&  items [0].revents & ZMQ_POLLOUT) {
+        &&  itemsout [0].revents & ZMQ_POLLOUT) {
             rc = forward(backend_, frontend_, capture_,msg);
             if (unlikely (rc < 0))
                 return -1;
