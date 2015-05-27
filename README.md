@@ -1,6 +1,6 @@
 # ZeroMQ
 
-[![Build Status](https://travis-ci.org/zeromq/libzmq.png?branch=master)](https://travis-ci.org/zeromq/libzmq)
+[![Build Status](https://travis-ci.org/zeromq/zeromq4-1.png?branch=master)](https://travis-ci.org/zeromq/zeromq4-1)
 
 ## Welcome
 
