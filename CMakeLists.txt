@@ -264,12 +264,15 @@ set(LIBRARY_OUTPUT_PATH  ${CMAKE_CURRENT_BINARY_DIR}/lib)
 #-----------------------------------------------------------------------------
 # platform specifics
 
+if(MSVC OR MINGW)
+  # NB: May require tweaking for highly connected applications.
+  add_definitions(-DFD_SETSIZE=1024) 
+endif()
+
 if(MSVC)
   add_definitions(
     -DWIN32
     -DDLL_EXPORT
-    # NB: May require tweaking for highly connected applications.
-    -DFD_SETSIZE=1024
     -D_CRT_SECURE_NO_WARNINGS)
 
   # Parallel make.
