@@ -36,7 +36,9 @@ namespace zmq
 {
     //  Decoder for ZMTP/1.0 protocol. Converts data batches into messages.
 
-    class v1_decoder_t : public decoder_base_t <v1_decoder_t>
+    class v1_decoder_t :
+            public zmq::c_single_allocator,
+            public decoder_base_t <v1_decoder_t>
     {
     public:
 
@@ -47,10 +49,10 @@ namespace zmq
 
     private:
 
-        int one_byte_size_ready ();
-        int eight_byte_size_ready ();
-        int flags_ready ();
-        int message_ready ();
+        int one_byte_size_ready (unsigned char const*);
+        int eight_byte_size_ready (unsigned char const*);
+        int flags_ready (unsigned char const*);
+        int message_ready (unsigned char const*);
 
         unsigned char tmpbuf [8];
         msg_t in_progress;
