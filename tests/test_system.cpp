@@ -84,6 +84,7 @@ int main (void)
         }
     }
     //  Release the socket handles
-    while (count)
-        close (handle [count--]);
+    for (count = 0; count < 1000; count++) {
+        close(handle[count]);
+    }
 }
