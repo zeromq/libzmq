@@ -104,7 +104,7 @@ void zmq::thread_t::stop ()
 
 void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_)
 {
-#if !defined ZMQ_HAVE_ZOS
+#if !defined ZMQ_HAVE_ZOS && !defined ZMQ_HAVE_HPUX
     int policy = 0;
     struct sched_param param;
 

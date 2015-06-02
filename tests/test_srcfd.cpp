@@ -67,7 +67,11 @@ int main (void)
 
 	  // get the remote endpoint
     struct sockaddr_storage ss;
+#ifdef ZMQ_HAVE_HPUX
+    int addrlen = sizeof ss;
+#else
     socklen_t addrlen = sizeof ss;
+#endif
     rc = getpeername (srcFd, (struct sockaddr*) &ss, &addrlen);
     assert (rc == 0);
 
