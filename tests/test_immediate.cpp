@@ -1,17 +1,27 @@
 /*
-    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
-    
-    This file is part of 0MQ.
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    This file is part of libzmq, the ZeroMQ core engine in C++.
+
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -25,13 +35,13 @@ int main (void)
     int val;
     int rc;
     char buffer[16];
-    // TEST 1. 
+    // TEST 1.
     // First we're going to attempt to send messages to two
     // pipes, one connected, the other not. We should see
     // the PUSH load balancing to both pipes, and hence half
     // of the messages getting queued, as connect() creates a
-    // pipe immediately. 
-    
+    // pipe immediately.
+
     void *context = zmq_ctx_new();
     assert (context);
     void *to = zmq_socket(context, ZMQ_PULL);
@@ -53,7 +63,7 @@ int main (void)
     // This pipe will not connect
     rc = zmq_connect (from, "tcp://localhost:5556");
     assert (rc == 0);
-    // This pipe will 
+    // This pipe will
     rc = zmq_connect (from, "tcp://localhost:6555");
     assert (rc == 0);
 
@@ -89,12 +99,12 @@ int main (void)
     assert (rc == 0);
 
     // TEST 2
-    // This time we will do the same thing, connect two pipes, 
-    // one of which will succeed in connecting to a bound 
-    // receiver, the other of which will fail. However, we will 
-    // also set the delay attach on connect flag, which should 
+    // This time we will do the same thing, connect two pipes,
+    // one of which will succeed in connecting to a bound
+    // receiver, the other of which will fail. However, we will
+    // also set the delay attach on connect flag, which should
     // cause the pipe attachment to be delayed until the connection
-    // succeeds. 
+    // succeeds.
     context = zmq_ctx_new();
 
     // Bind the valid socket
@@ -134,7 +144,7 @@ int main (void)
     }
     rc = zmq_setsockopt (to, ZMQ_RCVTIMEO, &timeout, sizeof (int));
     assert (rc == 0);
-    
+
     seen = 0;
     while (true) {
         rc = zmq_recv (to, &buffer, sizeof (buffer), 0);
@@ -149,7 +159,7 @@ int main (void)
 
     rc = zmq_close (to);
     assert (rc == 0);
-    
+
     rc = zmq_ctx_term (context);
     assert (rc == 0);
 
@@ -184,17 +194,17 @@ int main (void)
     assert (rc == 5);
     rc = zmq_recv (frontend, buffer, 255, 0);
     assert (rc == 5);
-    
+
     // Send message from frontend to backend
     rc = zmq_send (frontend, "Hello", 5, ZMQ_DONTWAIT);
     assert (rc == 5);
-    
+
     rc = zmq_close (backend);
     assert (rc == 0);
 
     //  Give time to process disconnect
     msleep (SETTLE_TIME * 10);
-    
+
     // Send a message, should fail
     rc = zmq_send (frontend, "Hello", 5, ZMQ_DONTWAIT);
     assert (rc == -1);
@@ -216,10 +226,10 @@ int main (void)
     // After the reconnect, should succeed
     rc = zmq_send (frontend, "Hello", 5, ZMQ_DONTWAIT);
     assert (rc == 5);
-    
+
     rc = zmq_close (backend);
     assert (rc == 0);
-    
+
     rc = zmq_close (frontend);
     assert (rc == 0);
 
