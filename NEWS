@@ -1,7 +1,7 @@
-0MQ version 4.1.1 rc2, released on 2015/xx/xx
-=============================================
+0MQ version 4.1.1 stable, released on 2015/06/02
+================================================
 
-* Fixed #1208 - fix recursion in automake packaging
+* Fixed #1208 - fix recursion in automake packaging.
 
 * Fixed #1224 - crash when processing empty unsubscribe message.
 
