@@ -1,17 +1,27 @@
 /*
-    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -94,108 +104,108 @@ const char *zmq::wsa_error_no (int no_)
     //         automatically (wsaError->HRESULT->string?).
     return
         (no_ == WSABASEERR) ?
-            "No Error" : 
+            "No Error" :
         (no_ == WSAEINTR) ?
-            "Interrupted system call" : 
+            "Interrupted system call" :
         (no_ == WSAEBADF) ?
-            "Bad file number" : 
+            "Bad file number" :
         (no_ == WSAEACCES) ?
-            "Permission denied" : 
+            "Permission denied" :
         (no_ == WSAEFAULT) ?
-            "Bad address" : 
+            "Bad address" :
         (no_ == WSAEINVAL) ?
-            "Invalid argument" : 
+            "Invalid argument" :
         (no_ == WSAEMFILE) ?
-            "Too many open files" : 
+            "Too many open files" :
         (no_ == WSAEWOULDBLOCK) ?
-            "Operation would block" : 
+            "Operation would block" :
         (no_ == WSAEINPROGRESS) ?
-            "Operation now in progress" : 
+            "Operation now in progress" :
         (no_ == WSAEALREADY) ?
-            "Operation already in progress" : 
+            "Operation already in progress" :
         (no_ == WSAENOTSOCK) ?
-            "Socket operation on non-socket" : 
+            "Socket operation on non-socket" :
         (no_ == WSAEDESTADDRREQ) ?
-            "Destination address required" : 
+            "Destination address required" :
         (no_ == WSAEMSGSIZE) ?
-            "Message too long" : 
+            "Message too long" :
         (no_ == WSAEPROTOTYPE) ?
-            "Protocol wrong type for socket" : 
+            "Protocol wrong type for socket" :
         (no_ == WSAENOPROTOOPT) ?
-            "Bad protocol option" : 
+            "Bad protocol option" :
         (no_ == WSAEPROTONOSUPPORT) ?
-            "Protocol not supported" : 
+            "Protocol not supported" :
         (no_ == WSAESOCKTNOSUPPORT) ?
-            "Socket type not supported" : 
+            "Socket type not supported" :
         (no_ == WSAEOPNOTSUPP) ?
-            "Operation not supported on socket" : 
+            "Operation not supported on socket" :
         (no_ == WSAEPFNOSUPPORT) ?
-            "Protocol family not supported" : 
+            "Protocol family not supported" :
         (no_ == WSAEAFNOSUPPORT) ?
-            "Address family not supported by protocol family" : 
+            "Address family not supported by protocol family" :
         (no_ == WSAEADDRINUSE) ?
-            "Address already in use" : 
+            "Address already in use" :
         (no_ == WSAEADDRNOTAVAIL) ?
-            "Can't assign requested address" : 
+            "Can't assign requested address" :
         (no_ == WSAENETDOWN) ?
-            "Network is down" : 
+            "Network is down" :
         (no_ == WSAENETUNREACH) ?
-            "Network is unreachable" : 
+            "Network is unreachable" :
         (no_ == WSAENETRESET) ?
-            "Net dropped connection or reset" : 
+            "Net dropped connection or reset" :
         (no_ == WSAECONNABORTED) ?
-            "Software caused connection abort" : 
+            "Software caused connection abort" :
         (no_ == WSAECONNRESET) ?
-            "Connection reset by peer" : 
+            "Connection reset by peer" :
         (no_ == WSAENOBUFS) ?
-            "No buffer space available" : 
+            "No buffer space available" :
         (no_ == WSAEISCONN) ?
-            "Socket is already connected" : 
+            "Socket is already connected" :
         (no_ == WSAENOTCONN) ?
-            "Socket is not connected" : 
+            "Socket is not connected" :
         (no_ == WSAESHUTDOWN) ?
-            "Can't send after socket shutdown" : 
+            "Can't send after socket shutdown" :
         (no_ == WSAETOOMANYREFS) ?
-            "Too many references can't splice" : 
+            "Too many references can't splice" :
         (no_ == WSAETIMEDOUT) ?
-            "Connection timed out" : 
+            "Connection timed out" :
         (no_ == WSAECONNREFUSED) ?
-            "Connection refused" : 
+            "Connection refused" :
         (no_ == WSAELOOP) ?
-            "Too many levels of symbolic links" : 
+            "Too many levels of symbolic links" :
         (no_ == WSAENAMETOOLONG) ?
-            "File name too long" : 
+            "File name too long" :
         (no_ == WSAEHOSTDOWN) ?
-            "Host is down" : 
+            "Host is down" :
         (no_ == WSAEHOSTUNREACH) ?
-            "No Route to Host" : 
+            "No Route to Host" :
         (no_ == WSAENOTEMPTY) ?
-            "Directory not empty" : 
+            "Directory not empty" :
         (no_ == WSAEPROCLIM) ?
-            "Too many processes" : 
+            "Too many processes" :
         (no_ == WSAEUSERS) ?
-            "Too many users" : 
+            "Too many users" :
         (no_ == WSAEDQUOT) ?
-            "Disc Quota Exceeded" : 
+            "Disc Quota Exceeded" :
         (no_ == WSAESTALE) ?
-            "Stale NFS file handle" : 
+            "Stale NFS file handle" :
         (no_ == WSAEREMOTE) ?
-            "Too many levels of remote in path" : 
+            "Too many levels of remote in path" :
         (no_ == WSASYSNOTREADY) ?
-            "Network SubSystem is unavailable" : 
+            "Network SubSystem is unavailable" :
         (no_ == WSAVERNOTSUPPORTED) ?
-            "WINSOCK DLL Version out of range" : 
+            "WINSOCK DLL Version out of range" :
         (no_ == WSANOTINITIALISED) ?
-            "Successful WSASTARTUP not yet performed" : 
+            "Successful WSASTARTUP not yet performed" :
         (no_ == WSAHOST_NOT_FOUND) ?
-            "Host not found" : 
+            "Host not found" :
         (no_ == WSATRY_AGAIN) ?
-            "Non-Authoritative Host not found" : 
+            "Non-Authoritative Host not found" :
         (no_ == WSANO_RECOVERY) ?
-            "Non-Recoverable errors: FORMERR REFUSED NOTIMP" : 
+            "Non-Recoverable errors: FORMERR REFUSED NOTIMP" :
         (no_ == WSANO_DATA) ?
             "Valid name no data record of requested" :
-        "error not defined"; 
+        "error not defined";
 }
 
 void zmq::win_error (char *buffer_, size_t buffer_size_)

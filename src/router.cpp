@@ -1,17 +1,27 @@
 /*
-    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -34,7 +44,7 @@ zmq::router_t::router_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     next_rid (generate_random ()),
     mandatory (false),
     //  raw_sock functionality in ROUTER is deprecated
-    raw_sock (false),       
+    raw_sock (false),
     probe_router (false),
     handover (false)
 {
@@ -118,8 +128,8 @@ int zmq::router_t::xsetsockopt (int option_, const void *optval_,
                 return 0;
             }
             break;
-            
-        case ZMQ_ROUTER_HANDOVER: 
+
+        case ZMQ_ROUTER_HANDOVER:
             if (is_int && value >= 0) {
                 handover = (value != 0);
                 return 0;
@@ -397,10 +407,10 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
             connect_rid.length());
         connect_rid.clear ();
         outpipes_t::iterator it = outpipes.find (identity);
-        if (it != outpipes.end ()) 
+        if (it != outpipes.end ())
             zmq_assert(false); //  Not allowed to duplicate an existing rid
     }
-    else 
+    else
     if (options.raw_sock) { //  Always assign identity for raw-socket
         unsigned char buf [5];
         buf [0] = 0;
@@ -408,7 +418,7 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
         identity = blob_t (buf, sizeof buf);
     }
     else
-    if (!options.raw_sock) { 
+    if (!options.raw_sock) {
         //  Pick up handshake cases and also case where next identity is set
         msg.init ();
         ok = pipe_->read (&msg);
@@ -434,7 +444,7 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
                     return false;
                 else {
                     //  We will allow the new connection to take over this
-                    //  identity. Temporarily assign a new identity to the 
+                    //  identity. Temporarily assign a new identity to the
                     //  existing pipe so we can terminate it asynchronously.
                     unsigned char buf [5];
                     buf [0] = 0;
@@ -442,13 +452,13 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
                     blob_t new_identity = blob_t (buf, sizeof buf);
 
                     it->second.pipe->set_identity (new_identity);
-                    outpipe_t existing_outpipe = 
+                    outpipe_t existing_outpipe =
                         {it->second.pipe, it->second.active};
-                
+
                     ok = outpipes.insert (outpipes_t::value_type (
                         new_identity, existing_outpipe)).second;
                     zmq_assert (ok);
-                
+
                     //  Remove the existing identity entry to allow the new
                     //  connection to take the identity.
                     outpipes.erase (it);
