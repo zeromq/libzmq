@@ -183,7 +183,7 @@ namespace zmq
 #endif
         }
 
-        inline integer_t get ()
+        inline integer_t get () const
         {
             return value;
         }

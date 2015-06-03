@@ -43,7 +43,8 @@
 #include "err.hpp"
 
 zmq::v1_decoder_t::v1_decoder_t (size_t bufsize_, int64_t maxmsgsize_) :
-    decoder_base_t <v1_decoder_t> (bufsize_),
+    c_single_allocator(bufsize_),
+    decoder_base_t <v1_decoder_t> (this),
     maxmsgsize (maxmsgsize_)
 {
     int rc = in_progress.init ();
@@ -59,7 +60,7 @@ zmq::v1_decoder_t::~v1_decoder_t ()
     errno_assert (rc == 0);
 }
 
-int zmq::v1_decoder_t::one_byte_size_ready ()
+int zmq::v1_decoder_t::one_byte_size_ready (unsigned char const*)
 {
     //  First byte of size is read. If it is 0xff read 8-byte size.
     //  Otherwise allocate the buffer for message data and read the
@@ -96,7 +97,7 @@ int zmq::v1_decoder_t::one_byte_size_ready ()
     return 0;
 }
 
-int zmq::v1_decoder_t::eight_byte_size_ready ()
+int zmq::v1_decoder_t::eight_byte_size_ready (unsigned char const*)
 {
     //  8-byte payload length is read. Allocate the buffer
     //  for message body and read the message data into it.
@@ -138,7 +139,7 @@ int zmq::v1_decoder_t::eight_byte_size_ready ()
     return 0;
 }
 
-int zmq::v1_decoder_t::flags_ready ()
+int zmq::v1_decoder_t::flags_ready (unsigned char const*)
 {
     //  Store the flags from the wire into the message structure.
     in_progress.set_flags (tmpbuf [0] & msg_t::more);
@@ -149,7 +150,7 @@ int zmq::v1_decoder_t::flags_ready ()
     return 0;
 }
 
-int zmq::v1_decoder_t::message_ready ()
+int zmq::v1_decoder_t::message_ready (unsigned char const*)
 {
     //  Message is completely read. Push it further and start reading
     //  new message. (in_progress is a 0-byte message after this point.)
