@@ -635,7 +635,7 @@ check_PROGRAMS = ${test_apps}
 
 #  Run the test cases
 TESTS = $(test_apps)
-XFAIL_TESTS =
+XFAIL_TESTS = tests/test_socketopt_hwm
 
 if !ON_LINUX
 XFAIL_TESTS += tests/test_abstract_ipc
