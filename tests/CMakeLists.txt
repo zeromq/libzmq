@@ -47,6 +47,7 @@ set(tests
         test_pub_invert_matching
         test_thread_safe
         test_client_server
+	test_sockopt_hwm
 )
 if(NOT WIN32)
   list(APPEND tests
