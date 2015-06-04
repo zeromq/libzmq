@@ -1,17 +1,27 @@
 /*
     Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -35,9 +45,28 @@
 typedef char zmq_msg_size_check
     [2 * ((sizeof (zmq::msg_t) == sizeof (zmq_msg_t)) != 0) - 1];
 
+// check whether the size of atomic_counter_t matches the size of the wrapped integer
+// to ensure that the lsmg union is correctly aligned
+typedef char zmq_msg_size_check
+    [2 * ((sizeof (zmq::atomic_counter_t) == sizeof (zmq::atomic_counter_t::integer_t)) != 0) - 1];
+
 bool zmq::msg_t::check ()
 {
      return u.base.type >= type_min && u.base.type <= type_max;
+}
+
+int zmq::msg_t::init (void *data_, size_t size_, msg_free_fn *ffn_, void *hint_)
+{
+    if (size_ <= max_vsm_size)
+    {
+        int rc = init_size(size_);
+        memcpy(data(), data_, size_);
+        return rc;
+    }
+    else
+    {
+        return init_data(data_, size_, ffn_, hint_);
+    }
 }
 
 int zmq::msg_t::init ()
@@ -66,18 +95,16 @@ int zmq::msg_t::init_size (size_t size_)
         u.lmsg.type = type_lmsg;
         u.lmsg.flags = 0;
         u.lmsg.routing_id = 0;
-        u.lmsg.content =
-            (content_t*) malloc (sizeof (content_t) + size_);
-        if (unlikely (!u.lmsg.content)) {
+        u.lmsg.data = malloc(size_);
+        if (unlikely (!u.lmsg.data)) {
             errno = ENOMEM;
             return -1;
         }
 
-        u.lmsg.content->data = u.lmsg.content + 1;
-        u.lmsg.content->size = size_;
-        u.lmsg.content->ffn = NULL;
-        u.lmsg.content->hint = NULL;
-        new (&u.lmsg.content->refcnt) zmq::atomic_counter_t ();
+        u.lmsg.size = size_;
+        u.lmsg.ffn = NULL;
+        u.lmsg.hint = NULL;
+        new (&u.lmsg.refcnt.counter) zmq::atomic_counter_t ();
     }
     return 0;
 }
@@ -105,17 +132,12 @@ int zmq::msg_t::init_data (void *data_, size_t size_, msg_free_fn *ffn_,
         u.lmsg.type = type_lmsg;
         u.lmsg.flags = 0;
         u.lmsg.routing_id = 0;
-        u.lmsg.content = (content_t*) malloc (sizeof (content_t));
-        if (!u.lmsg.content) {
-            errno = ENOMEM;
-            return -1;
-        }
 
-        u.lmsg.content->data = data_;
-        u.lmsg.content->size = size_;
-        u.lmsg.content->ffn = ffn_;
-        u.lmsg.content->hint = hint_;
-        new (&u.lmsg.content->refcnt) zmq::atomic_counter_t ();
+        u.lmsg.data = data_;
+        u.lmsg.size = size_;
+        u.lmsg.ffn = ffn_;
+        u.lmsg.hint = hint_;
+        new (&u.lmsg.refcnt.counter) zmq::atomic_counter_t ();
     }
     return 0;
 
@@ -128,6 +150,13 @@ int zmq::msg_t::init_delimiter ()
     u.delimiter.flags = 0;
     u.delimiter.routing_id = 0;
     return 0;
+}
+
+zmq::atomic_counter_t& zmq::msg_t::msg_counter()
+{
+    zmq_assert( is_lmsg() );
+    void* ptr = static_cast<void*>( &u.lmsg.refcnt.counter );
+    return *static_cast<atomic_counter_t*>( ptr );
 }
 
 int zmq::msg_t::close ()
@@ -143,16 +172,14 @@ int zmq::msg_t::close ()
         //  If the content is not shared, or if it is shared and the reference
         //  count has dropped to zero, deallocate it.
         if (!(u.lmsg.flags & msg_t::shared) ||
-              !u.lmsg.content->refcnt.sub (1)) {
+              !msg_counter().sub (1)) {
 
-            //  We used "placement new" operator to initialize the reference
-            //  counter so we call the destructor explicitly now.
-            u.lmsg.content->refcnt.~atomic_counter_t ();
-
-            if (u.lmsg.content->ffn)
-                u.lmsg.content->ffn (u.lmsg.content->data,
-                    u.lmsg.content->hint);
-            free (u.lmsg.content);
+            if (u.lmsg.ffn) {
+                u.lmsg.ffn(u.lmsg.data, u.lmsg.hint);
+            }
+            else {
+                free (u.lmsg.data);
+            }
         }
     }
 
@@ -204,10 +231,10 @@ int zmq::msg_t::copy (msg_t &src_)
         //  One reference is added to shared messages. Non-shared messages
         //  are turned into shared messages and reference count is set to 2.
         if (src_.u.lmsg.flags & msg_t::shared)
-            src_.u.lmsg.content->refcnt.add (1);
+            src_.msg_counter().add (1);
         else {
             src_.u.lmsg.flags |= msg_t::shared;
-            src_.u.lmsg.content->refcnt.set (2);
+            src_.msg_counter().set (2);
         }
     }
 
@@ -229,7 +256,7 @@ void *zmq::msg_t::data ()
     case type_vsm:
         return u.vsm.data;
     case type_lmsg:
-        return u.lmsg.content->data;
+        return u.lmsg.data;
     case type_cmsg:
         return u.cmsg.data;
     default:
@@ -247,7 +274,7 @@ size_t zmq::msg_t::size ()
     case type_vsm:
         return u.vsm.size;
     case type_lmsg:
-        return u.lmsg.content->size;
+        return u.lmsg.size;
     case type_cmsg:
         return u.cmsg.size;
     default:
@@ -323,6 +350,11 @@ bool zmq::msg_t::is_vsm ()
     return u.base.type == type_vsm;
 }
 
+bool zmq::msg_t::is_lmsg () const
+{
+    return u.base.type == type_lmsg;
+}
+
 bool zmq::msg_t::is_cmsg ()
 {
     return u.base.type == type_cmsg;
@@ -343,9 +375,9 @@ void zmq::msg_t::add_refs (int refs_)
     //  message type that needs special care are long messages.
     if (u.base.type == type_lmsg) {
         if (u.lmsg.flags & msg_t::shared)
-            u.lmsg.content->refcnt.add (refs_);
+            msg_counter().add (refs_);
         else {
-            u.lmsg.content->refcnt.set (refs_ + 1);
+            msg_counter().set (refs_ + 1);
             u.lmsg.flags |= msg_t::shared;
         }
     }
@@ -369,14 +401,14 @@ bool zmq::msg_t::rm_refs (int refs_)
     }
 
     //  The only message type that needs special care are long messages.
-    if (!u.lmsg.content->refcnt.sub (refs_)) {
+    if (!msg_counter().sub (refs_)) {
         //  We used "placement new" operator to initialize the reference
         //  counter so we call the destructor explicitly now.
-        u.lmsg.content->refcnt.~atomic_counter_t ();
+        msg_counter().~atomic_counter_t ();
 
-        if (u.lmsg.content->ffn)
-            u.lmsg.content->ffn (u.lmsg.content->data, u.lmsg.content->hint);
-        free (u.lmsg.content);
+        if (u.lmsg.ffn)
+            u.lmsg.ffn (u.lmsg.data, u.lmsg.hint);
+        free (u.lmsg.data);
 
         return false;
     }
@@ -394,3 +426,4 @@ int zmq::msg_t::set_routing_id(uint32_t routing_id_)
     u.base.routing_id = routing_id_;
     return 0;
 }
+

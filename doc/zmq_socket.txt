@@ -314,8 +314,7 @@ becomes available for sending; messages are not discarded.
 
 NOTE: 'ZMQ_PAIR' sockets are designed for inter-thread communication across
 the linkzmq:zmq_inproc[7] transport and do not implement functionality such
-as auto-reconnection. 'ZMQ_PAIR' sockets are considered experimental and may
-have other missing or broken aspects.
+as auto-reconnection.
 
 [horizontal]
 .Summary of ZMQ_PAIR characteristics
