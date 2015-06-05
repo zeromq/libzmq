@@ -93,17 +93,17 @@ int zmq::proxy (
         if (unlikely (rc < 0))
             return -1;
 
-        //  Process a control command if any
-        if (control_ && items [2].revents & ZMQ_POLLIN) {
-            rc = control_->recv (&msg, 0);
-            if (unlikely (rc < 0))
-                return -1;
-
         //  Get the pollout separately because when combining this with pollin it maxes the CPU
         //  because pollout shall most of the time return directly
         rc = zmq_poll (&itemsout [0], 2, 0);
         if (unlikely (rc < 0))
             return -1;
+
+        //  Process a control command if any
+        if (control_ && items [2].revents & ZMQ_POLLIN) {
+            rc = control_->recv (&msg, 0);
+            if (unlikely (rc < 0))
+                return -1;
 
             moresz = sizeof more;
             rc = control_->getsockopt (ZMQ_RCVMORE, &more, &moresz);
