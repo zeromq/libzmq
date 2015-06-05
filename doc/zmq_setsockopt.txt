@@ -14,8 +14,8 @@ SYNOPSIS
 
 Caution: All options, with the exception of ZMQ_SUBSCRIBE, ZMQ_UNSUBSCRIBE,
 ZMQ_LINGER, ZMQ_ROUTER_HANDOVER, ZMQ_ROUTER_MANDATORY, ZMQ_PROBE_ROUTER,
-ZMQ_XPUB_VERBOSE, ZMQ_REQ_CORRELATE, and ZMQ_REQ_RELAXED, only take effect for
-subsequent socket bind/connects.
+ZMQ_XPUB_VERBOSE, ZMQ_REQ_CORRELATE, ZMQ_REQ_RELAXED, ZMQ_SNDHWM
+and ZMQ_RCVHWM, only take effect for subsequent socket bind/connects.
 
 Specifically, security options take effect for subsequent bind/connect calls,
 and can be changed at any time to affect subsequent binds and/or connects.
