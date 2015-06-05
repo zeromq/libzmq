@@ -888,18 +888,5 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
 
 bool zmq::options_t::is_valid (int option_) const
 {
-    bool valid = true;
-
-    if (connected) {
-        switch (option_) {
-        case ZMQ_SNDHWM:
-        case ZMQ_RCVHWM:
-            valid = false;
-            break;
-        default:
-            break;
-        }
-    }
-
-    return valid;
+    return true;
 }

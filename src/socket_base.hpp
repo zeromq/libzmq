@@ -232,6 +232,8 @@ namespace zmq
         void process_bind (zmq::pipe_t *pipe_);
         void process_term (int linger_);
 
+        void update_pipe_options(int option_);
+
         //  Socket's mailbox object.
         i_mailbox* mailbox;
 

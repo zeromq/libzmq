@@ -335,6 +335,7 @@ int zmq::socket_base_t::setsockopt (int option_, const void *optval_,
     //  If the socket type doesn't support the option, pass it to
     //  the generic option parser.
     rc = options.setsockopt (option_, optval_, optvallen_);
+	update_pipe_options(option_);
 
     EXIT_MUTEX();
     return rc;
@@ -612,6 +613,11 @@ int zmq::socket_base_t::connect (const char *addr_)
         int hwms [2] = {conflate? -1 : sndhwm, conflate? -1 : rcvhwm};
         bool conflates [2] = {conflate, conflate};
         int rc = pipepair (parents, new_pipes, hwms, conflates);
+        if (!conflate) {
+            new_pipes[0]->set_hwms_boost(peer.options.sndhwm, peer.options.rcvhwm);
+            new_pipes[1]->set_hwms_boost(options.sndhwm, options.rcvhwm);
+        }
+
         errno_assert (rc == 0);
 
         if (!peer.socket) {
@@ -1247,6 +1253,18 @@ void zmq::socket_base_t::process_term (int linger_)
 
     //  Continue the termination process immediately.
     own_t::process_term (linger_);
+}
+
+void zmq::socket_base_t::update_pipe_options(int option_)
+{
+	if (option_ == ZMQ_SNDHWM || option_ == ZMQ_RCVHWM) 
+	{
+		for (pipes_t::size_type i = 0; i != pipes.size(); ++i)
+		{
+			pipes[i]->set_hwms(options.rcvhwm, options.sndhwm);
+		}
+	}
+
 }
 
 void zmq::socket_base_t::process_destroy ()
