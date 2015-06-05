@@ -86,21 +86,40 @@ int main (void)
     rc = zmq_connect (publisher, "tcp://127.0.0.1:15564");
     assert (rc == 0);
 
+    // Start a secondary puller which reads the data out the other end
+    char buf[255];
+    void *puller = zmq_socket (ctx, ZMQ_PULL);
+    assert (puller);
+    rc = zmq_connect (puller, "tcp://127.0.0.1:15563");
+    assert (rc == 0);
+
     msleep (50);
     rc = zmq_send (publisher, "This is a test", 14, 0);
+    assert (rc == 14);
+
+    rc = zmq_recv (puller, buf, 255, 0);
     assert (rc == 14);
 
     msleep (50);
     rc = zmq_send (publisher, "This is a test", 14, 0);
     assert (rc == 14);
 
+    rc = zmq_recv (puller, buf, 255, 0);
+    assert (rc == 14);
+
     msleep (50);
     rc = zmq_send (publisher, "This is a test", 14, 0);
     assert (rc == 14);
+
+    rc = zmq_recv (puller, buf, 255, 0);
+    assert (rc == 14);
+
     rc = zmq_send (control, "TERMINATE", 9, 0);
     assert (rc == 9);
 
     rc = zmq_close (publisher);
+    assert (rc == 0);
+    rc = zmq_close (puller);
     assert (rc == 0);
     rc = zmq_close (control);
     assert (rc == 0);
