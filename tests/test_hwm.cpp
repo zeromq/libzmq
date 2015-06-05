@@ -278,13 +278,13 @@ int main (void)
     count = test_inproc_connect_first (0, 0);
     assert (count == MAX_SENDS);
 
-    // Infinite send buffer
+    // Infinite receive buffer
     count = test_inproc_bind_first (1, 0);
     assert (count == MAX_SENDS);
     count = test_inproc_connect_first (1, 0);
     assert (count == MAX_SENDS);
 
-    // Infinite receive buffer
+    // Infinite send buffer
     count = test_inproc_bind_first (0, 1);
     assert (count == MAX_SENDS);
     count = test_inproc_connect_first (0, 1);

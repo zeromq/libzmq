@@ -520,8 +520,18 @@ void zmq::pipe_t::hiccup ()
 
 void zmq::pipe_t::set_hwms (int inhwm_, int outhwm_)
 {
-    lwm = compute_lwm(inhwm_ + inhwmboost);
-    hwm = outhwm_ + outhwmboost;
+    int in = inhwm_ + inhwmboost;
+    int out = outhwm_ + outhwmboost;
+
+    // if either send or recv side has hwm <= 0 it means infinite so we should set hwms infinite
+    if (inhwm_ <= 0 || inhwmboost <= 0)
+		in = 0;
+        
+    if (outhwm_ <= 0 || outhwmboost <= 0)
+		out = 0;
+
+	lwm = compute_lwm(in);
+	hwm = out;
 }
 
 void zmq::pipe_t::set_hwms_boost(int inhwmboost_, int outhwmboost_)
