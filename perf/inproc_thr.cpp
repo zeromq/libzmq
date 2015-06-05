@@ -125,7 +125,7 @@ int main (int argc, char *argv [])
     double megabits;
 
     if (argc != 3) {
-        printf ("usage: thread_thr <message-size> <message-count>\n");
+        printf ("usage: inproc_thr <message-size> <message-count>\n");
         return 1;
     }
 
