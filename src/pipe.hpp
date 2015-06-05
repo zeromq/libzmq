@@ -133,6 +133,9 @@ namespace zmq
         // set the high water marks.
         void set_hwms (int inhwm_, int outhwm_);
 
+        // set the boost to high water marks, used by inproc sockets so total hwm are sum of connect and bind sockets watermarks
+        void set_hwms_boost(int inhwmboost_, int outhwmboost_);
+
         // check HWM
         bool check_hwm () const;
     private:
@@ -175,6 +178,10 @@ namespace zmq
 
         //  Low watermark for the inbound pipe.
         int lwm;
+
+        // boosts for high and low watermarks, used with inproc sockets so hwm are sum of send and recv hmws on each side of pipe
+        int inhwmboost;
+        int outhwmboost;
 
         //  Number of messages read and written so far.
         uint64_t msgs_read;

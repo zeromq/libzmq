@@ -81,6 +81,8 @@ zmq::pipe_t::pipe_t (object_t *parent_, upipe_t *inpipe_, upipe_t *outpipe_,
     out_active (true),
     hwm (outhwm_),
     lwm (compute_lwm (inhwm_)),
+    inhwmboost(0),
+    outhwmboost(0),
     msgs_read (0),
     msgs_written (0),
     peers_msgs_read (0),
@@ -518,8 +520,14 @@ void zmq::pipe_t::hiccup ()
 
 void zmq::pipe_t::set_hwms (int inhwm_, int outhwm_)
 {
-    lwm = compute_lwm (inhwm_);
-    hwm = outhwm_;
+    lwm = compute_lwm(inhwm_ + inhwmboost);
+    hwm = outhwm_ + outhwmboost;
+}
+
+void zmq::pipe_t::set_hwms_boost(int inhwmboost_, int outhwmboost_)
+{
+    inhwmboost = inhwmboost_;
+    outhwmboost = outhwmboost_;
 }
 
 bool zmq::pipe_t::check_hwm () const
