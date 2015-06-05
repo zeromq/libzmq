@@ -55,7 +55,9 @@ namespace zmq
         options_t ();
 
         int setsockopt (int option_, const void *optval_, size_t optvallen_);
-        int getsockopt (int option_, void *optval_, size_t *optvallen_);
+        int getsockopt (int option_, void *optval_, size_t *optvallen_) const;
+
+        bool is_valid (int option_) const;
 
         //  High-water marks for message pipes.
         int sndhwm;
@@ -195,6 +197,7 @@ namespace zmq
         //  close socket.  Default is 30 secs.  0 means no handshake timeout.
         int handshake_ivl;
 
+        bool connected;
     };
 }
 

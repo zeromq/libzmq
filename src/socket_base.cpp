@@ -312,6 +312,13 @@ int zmq::socket_base_t::setsockopt (int option_, const void *optval_,
 {
     ENTER_MUTEX();
 
+	if (!options.is_valid(option_)) {
+		errno = EINVAL;
+		EXIT_MUTEX();
+		return -1;
+	}
+
+
     if (unlikely (ctx_terminated)) {
         errno = ETERM;
         EXIT_MUTEX();
@@ -447,6 +454,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         if (rc == 0) {
             connect_pending (addr_, this);
             last_endpoint.assign (addr_);
+            options.connected = true;
         }
         EXIT_MUTEX();
         return rc;
@@ -456,7 +464,10 @@ int zmq::socket_base_t::bind (const char *addr_)
         //  For convenience's sake, bind can be used interchageable with
         //  connect for PGM, EPGM and NORM transports.
         EXIT_MUTEX();
-        return connect (addr_);
+        rc = connect (addr_);
+        if (rc != -1)
+            options.connected = true;
+        return rc;
     }
 
     //  Remaining trasnports require to be run in an I/O thread, so at this
@@ -484,6 +495,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         listener->get_address (last_endpoint);
 
         add_endpoint (last_endpoint.c_str (), (own_t *) listener, NULL);
+        options.connected = true;
         EXIT_MUTEX();
         return 0;
     }
@@ -505,6 +517,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         listener->get_address (last_endpoint);
 
         add_endpoint (last_endpoint.c_str (), (own_t *) listener, NULL);
+        options.connected = true;
         EXIT_MUTEX();
         return 0;
     }
@@ -526,6 +539,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         listener->get_address (last_endpoint);
 
         add_endpoint (addr_, (own_t *) listener, NULL);
+        options.connected = true;
         EXIT_MUTEX();
         return 0;
     }
@@ -657,6 +671,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         // remember inproc connections for disconnect
         inprocs.insert (inprocs_t::value_type (std::string (addr_), new_pipes [0]));
 
+        options.connected = true;
         EXIT_MUTEX();
         return 0;
     }
