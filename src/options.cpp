@@ -68,7 +68,8 @@ zmq::options_t::options_t () :
     gss_plaintext (false),
     socket_id (0),
     conflate (false),
-    handshake_ivl (30000)
+    handshake_ivl (30000),
+    connected (false)
 {
 }
 
@@ -539,7 +540,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
     return -1;
 }
 
-int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
+int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) const
 {
     bool is_int = (*optvallen_ == sizeof (int));
     int *value = (int *) optval_;
@@ -883,4 +884,22 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
 #endif
     errno = EINVAL;
     return -1;
+}
+
+bool zmq::options_t::is_valid (int option_) const
+{
+    bool valid = true;
+
+    if (connected) {
+        switch (option_) {
+        case ZMQ_SNDHWM:
+        case ZMQ_RCVHWM:
+            valid = false;
+            break;
+        default:
+            break;
+        }
+    }
+
+    return valid;
 }
