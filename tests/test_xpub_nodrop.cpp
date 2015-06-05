@@ -38,7 +38,12 @@ int main (void)
     //  Create a publisher
     void *pub = zmq_socket (ctx, ZMQ_PUB);
     assert (pub);
-    int rc = zmq_bind (pub, "inproc://soname");
+
+    int hwm = 2000;
+    int rc = zmq_setsockopt(pub, ZMQ_SNDHWM, &hwm, 4);
+    assert(rc == 0);
+
+    rc = zmq_bind (pub, "inproc://soname");
     assert (rc == 0);
 
     //  set pub socket options
@@ -46,9 +51,6 @@ int main (void)
     rc = zmq_setsockopt (pub, ZMQ_XPUB_NODROP, &wait, 4);
     assert (rc == 0);
 
-    int hwm = 2000;
-    rc = zmq_setsockopt (pub, ZMQ_SNDHWM, &hwm, 4);
-    assert (rc == 0);
 
     //  Create a subscriber
     void *sub = zmq_socket (ctx, ZMQ_SUB);
