@@ -56,6 +56,7 @@ if(NOT WIN32)
           test_reqrep_ipc
           test_abstract_ipc
           test_proxy
+          test_proxy_single_socket
           test_proxy_terminate
           test_filter_ipc
   )
