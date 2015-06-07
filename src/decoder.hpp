@@ -47,8 +47,8 @@ namespace zmq
     {
     public:
         c_single_allocator(size_t bufsize_):
-                buf((unsigned char*) malloc (bufsize) ),
-                bufsize(bufsize_)
+                bufsize(bufsize_),
+                buf((unsigned char*) malloc (bufsize))
         {
             alloc_assert (buf);
         }
@@ -74,8 +74,8 @@ namespace zmq
         }
 
     private:
-        unsigned char* buf;
         size_t bufsize;
+        unsigned char* buf;
 
         c_single_allocator( c_single_allocator const& );
         c_single_allocator& operator=(c_single_allocator const&);
