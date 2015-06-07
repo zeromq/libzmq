@@ -320,6 +320,7 @@ test_apps = \
 	test_inproc_connect \
 	test_issue_566 \
 	test_proxy \
+	test_proxy_single_socket \
 	test_proxy_terminate \
 	test_many_sockets \
 	test_ipc_wildcard \
@@ -466,6 +467,9 @@ test_issue_566_LDADD = libzmq.la
 
 test_proxy_SOURCES = tests/test_proxy.cpp
 test_proxy_LDADD = libzmq.la
+
+test_proxy_single_socket_SOURCES = tests/test_proxy_single_socket.cpp
+test_proxy_single_socket_LDADD = libzmq.la
 
 test_proxy_terminate_SOURCES = tests/test_proxy_terminate.cpp
 test_proxy_terminate_LDADD = libzmq.la
