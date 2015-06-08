@@ -308,6 +308,7 @@ test_apps = \
 	tests/test_sub_forward \
 	tests/test_invalid_rep \
 	tests/test_msg_flags \
+	tests/test_msg_ffn \
 	tests/test_connect_resolve \
 	tests/test_immediate \
 	tests/test_last_endpoint \
@@ -399,6 +400,9 @@ tests_test_invalid_rep_LDADD = src/libzmq.la
 
 tests_test_msg_flags_SOURCES = tests/test_msg_flags.cpp
 tests_test_msg_flags_LDADD = src/libzmq.la
+
+tests_test_msg_ffn_SOURCES = tests/test_msg_ffn.cpp
+tests_test_msg_ffn_LDADD = src/libzmq.la
 
 tests_test_connect_resolve_SOURCES = tests/test_connect_resolve.cpp
 tests_test_connect_resolve_LDADD = src/libzmq.la
@@ -639,7 +643,7 @@ check_PROGRAMS = ${test_apps}
 
 #  Run the test cases
 TESTS = $(test_apps)
-XFAIL_TESTS =
+XFAIL_TESTS = tests/test_msg_ffn
 
 if !ON_LINUX
 XFAIL_TESTS += tests/test_abstract_ipc
