@@ -80,9 +80,16 @@ namespace zmq
             return buf;
         }
 
+        void resize(size_t new_size)
+        {
+            bufsize = new_size;
+        }
+
     private:
         unsigned char* buf;
         size_t bufsize;
+        size_t maxsize;
+        zmq::atomic_counter_t* msg_refcnt;
     };
 
     //  Decoder for ZMTP/2.x framing protocol. Converts data stream into messages.

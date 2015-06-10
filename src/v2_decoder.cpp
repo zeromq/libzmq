@@ -43,7 +43,8 @@
 
 zmq::shared_message_memory_allocator::shared_message_memory_allocator(size_t bufsize_):
     buf(NULL),
-    bufsize( bufsize_ )
+    bufsize( 0 ),
+    maxsize( bufsize_ )
 {
 
 }
@@ -71,6 +72,7 @@ unsigned char* zmq::shared_message_memory_allocator::allocate()
         new(buf) atomic_counter_t(1);
     }
 
+    bufsize = maxsize;
     return buf + sizeof( zmq::atomic_counter_t);
 }
 
@@ -78,12 +80,15 @@ void zmq::shared_message_memory_allocator::deallocate()
 {
     free(buf);
     buf = NULL;
+    bufsize = 0;
 }
 
 unsigned char* zmq::shared_message_memory_allocator::release()
 {
     unsigned char* b = buf;
     buf = NULL;
+    bufsize = 0;
+
     return b;
 }
 

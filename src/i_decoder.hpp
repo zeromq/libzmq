@@ -46,6 +46,7 @@ namespace zmq
 
         virtual void get_buffer (unsigned char **data_, size_t *size_) = 0;
 
+        virtual void resize_buffer(size_t) = 0;
         //  Decodes data pointed to by data_.
         //  When a message is decoded, 1 is returned.
         //  When the decoder needs more data, 0 is returnd.
@@ -54,6 +55,8 @@ namespace zmq
                             size_t &processed) = 0;
 
         virtual msg_t *msg () = 0;
+
+
     };
 
 }

@@ -56,7 +56,7 @@ namespace zmq
 
         virtual msg_t *msg () { return &in_progress; }
 
-
+        virtual void resize_buffer(size_t) {}
     private:
 
 
