@@ -63,7 +63,7 @@ int main (void) {
     rc = zmq_msg_close(&msg);
     assert (rc == 0);
 
-    usleep(50000);
+    msleep(50);
     assert (memcmp(hint, "freed", 5) == 0);
     memcpy(hint, (void *) "hint", 4);
 
@@ -79,7 +79,7 @@ int main (void) {
     rc = zmq_msg_close(&msg);
     assert (rc == 0);
 
-    usleep(50000);
+    msleep(50);
     assert (memcmp(hint, "freed", 5) == 0);
     memcpy(hint, (void *) "hint", 4);
 
@@ -95,7 +95,7 @@ int main (void) {
     assert (rc == 255);
     assert (memcmp(data, buf, 5) == 0);
 
-    usleep(50000);
+    msleep(50);
     assert (memcmp(hint, "freed", 5) == 0);
     memcpy(hint, (void *) "hint", 4);
     rc = zmq_msg_close(&msg);
@@ -120,7 +120,7 @@ int main (void) {
     rc = zmq_msg_close(&msg);
     assert (rc == 0);
 
-    usleep(50000);
+    msleep(50);
     assert (memcmp(hint, "freed", 5) == 0);
     memcpy(hint, (void *) "hint", 4);
 
