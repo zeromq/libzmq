@@ -63,7 +63,7 @@ int main (void) {
     rc = zmq_msg_close(&msg);
     assert (rc == 0);
 
-	msleep(50);
+    msleep(50);
     assert (memcmp(hint, "freed", 5) == 0);
     memcpy(hint, (void *) "hint", 4);
 
