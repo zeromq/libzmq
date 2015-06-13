@@ -86,7 +86,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
     //  Find the interface with the specified name and AF_INET family.
     bool found = false;
     lifreq *ifrp = ifc.lifc_req;
-    for (int n = 0; n < (int) (ifc.lifc_len / sizeof lifreq);
+    for (int n = 0; n < (int) (ifc.lifc_len / sizeof (lifreq));
           n ++, ifrp ++) {
         if (!strcmp (nic_, ifrp->lifr_name)) {
             rc = ioctl (fd, SIOCGLIFADDR, (char*) ifrp);
