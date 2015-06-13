@@ -643,7 +643,7 @@ check_PROGRAMS = ${test_apps}
 
 #  Run the test cases
 TESTS = $(test_apps)
-XFAIL_TESTS = tests/test_msg_ffn
+XFAIL_TESTS = 
 
 if !ON_LINUX
 XFAIL_TESTS += tests/test_abstract_ipc
