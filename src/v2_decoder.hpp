@@ -92,7 +92,7 @@ namespace zmq
     private:
         unsigned char* buf;
         size_t bufsize;
-        size_t maxsize;
+        size_t max_size;
         zmq::atomic_counter_t* msg_refcnt;
     };
 
