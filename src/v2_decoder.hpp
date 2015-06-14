@@ -31,71 +31,10 @@
 #define __ZMQ_V2_DECODER_HPP_INCLUDED__
 
 #include "decoder.hpp"
+#include "decoder_allocators.hpp"
 
 namespace zmq
 {
-    // This allocater allocates a reference counted buffer which is used by v2_decoder_t
-    // to use zero-copy msg::init_data to create messages with memory from this buffer as
-    // data storage.
-    //
-    // The buffer is allocated with a reference count of 1 to make sure that is is alive while
-    // decoding messages. Otherwise, it is possible that e.g. the first message increases the count
-    // from zero to one, gets passed to the user application, processed in the user thread and deleted
-    // which would then deallocate the buffer. The drawback is that the buffer may be allocated longer
-    // than necessary because it is only deleted when allocate is called the next time.
-    class shared_message_memory_allocator
-    {
-    public:
-        shared_message_memory_allocator(size_t bufsize_);
-
-        ~shared_message_memory_allocator();
-
-        // Allocate a new buffer
-        //
-        // This releases the current buffer to be bound to the lifetime of the messages
-        // created on this bufer.
-        unsigned char* allocate();
-
-        // force deallocation of buffer.
-        void deallocate();
-
-        // Give up ownership of the buffer. The buffer's lifetime is now coupled to
-        // the messages constructed on top of it.
-        unsigned char* release();
-
-        void inc_ref();
-
-        static void call_dec_ref(void*, void* buffer);
-
-        size_t size() const;
-
-        // Return pointer to the first message data byte.
-        unsigned char* data();
-
-        // Return pointer to the first byte of the buffer.
-        unsigned char* buffer()
-        {
-            return buf;
-        }
-
-        void resize(size_t new_size)
-        {
-            bufsize = new_size;
-        }
-
-        //
-        zmq::atomic_counter_t* create_refcnt()
-        {
-            return msg_refcnt++;
-        }
-
-    private:
-        unsigned char* buf;
-        size_t bufsize;
-        size_t max_size;
-        zmq::atomic_counter_t* msg_refcnt;
-    };
-
     //  Decoder for ZMTP/2.x framing protocol. Converts data stream into messages.
     //  The class has to inherit from shared_message_memory_allocator because
     //  the base class calls allocate in its constructor.

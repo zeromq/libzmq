@@ -39,35 +39,38 @@
 #include "err.hpp"
 
 zmq::raw_decoder_t::raw_decoder_t (size_t bufsize_) :
-    bufsize (bufsize_)
+    allocator( bufsize_, 1 )
 {
     int rc = in_progress.init ();
     errno_assert (rc == 0);
-
-    buffer = (unsigned char *) malloc (bufsize);
-    alloc_assert (buffer);
 }
 
 zmq::raw_decoder_t::~raw_decoder_t ()
 {
     int rc = in_progress.close ();
     errno_assert (rc == 0);
-
-    free (buffer);
 }
 
 void zmq::raw_decoder_t::get_buffer (unsigned char **data_, size_t *size_)
 {
-    *data_ = buffer;
-    *size_ = bufsize;
+    *data_ = allocator.allocate();
+    *size_ = allocator.size();
 }
 
 int zmq::raw_decoder_t::decode (const uint8_t *data_, size_t size_,
-    size_t &bytes_used_)
+                                size_t &bytes_used_)
 {
-    int rc = in_progress.init_size (size_);
+    int rc = in_progress.init ((unsigned char*)data_, size_,
+                               shared_message_memory_allocator::call_dec_ref,
+                               allocator.create_refcnt() );
+
+    // if the buffer serves as memory for a zero-copy message, release it
+    // and allocate a new buffer in get_buffer for the next decode
+    if (in_progress.is_zcmsg()) {
+        allocator.release();
+    }
+
     errno_assert (rc != -1);
-    memcpy (in_progress.data (), data_, size_);
     bytes_used_ = size_;
     return 1;
 }

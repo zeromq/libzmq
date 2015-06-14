@@ -207,7 +207,10 @@ src_libzmq_la_SOURCES = \
 	src/ypipe_conflate.hpp \
 	src/yqueue.hpp \
 	src/zmq.cpp \
-	src/zmq_utils.cpp
+	src/zmq_utils.cpp \
+        src/decoder_allocators.hpp \
+        src/decoder_allocators.cpp
+
 
 if ON_MINGW
 src_libzmq_la_LDFLAGS = \
