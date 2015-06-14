@@ -295,6 +295,7 @@ void zmq::stream_engine_t::in_event ()
         decoder->get_buffer (&inpos, &bufsize);
 
         const int rc = tcp_read (s, inpos, bufsize);
+
         if (rc == 0) {
             error (connection_error);
             return;
@@ -307,6 +308,8 @@ void zmq::stream_engine_t::in_event ()
 
         //  Adjust input size
         insize = static_cast <size_t> (rc);
+        // Adjust buffer size to received bytes
+        decoder->resize_buffer(insize);
     }
 
     int rc = 0;

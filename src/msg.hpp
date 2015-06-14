@@ -54,6 +54,7 @@ namespace zmq
     class msg_t
     {
     public:
+
         //  Message flags.
         enum
         {
@@ -65,12 +66,17 @@ namespace zmq
         };
 
         bool check ();
-        int init (void *data_, size_t size_, msg_free_fn *ffn_,
-                  void *hint_);
-        int init ();
+        int init();
+
+        int init (void* data, size_t size_,
+                  msg_free_fn* ffn_, void* hint,
+                  zmq::atomic_counter_t* refcnt_ = NULL);
+
         int init_size (size_t size_);
         int init_data (void *data_, size_t size_, msg_free_fn *ffn_,
-            void *hint_);
+                       void *hint_);
+        int init_external_storage(void *data_, size_t size_, zmq::atomic_counter_t* ctr,
+                                  msg_free_fn *ffn_, void *hint_);
         int init_delimiter ();
         int close ();
         int move (msg_t &src_);
@@ -88,9 +94,9 @@ namespace zmq
         bool is_identity () const;
         bool is_credential () const;
         bool is_delimiter () const;
-        bool is_vsm ();
-        bool is_lmsg () const;
-        bool is_cmsg ();
+        bool is_vsm () const;
+        bool is_cmsg () const;
+        bool is_zcmsg() const;
         uint32_t get_routing_id();
         int set_routing_id(uint32_t routing_id_);
 
@@ -102,12 +108,29 @@ namespace zmq
         //  references drops to 0, the message is closed and false is returned.
         bool rm_refs (int refs_);
 
-    private:
-
         //  Size in bytes of the largest message that is still copied around
         //  rather than being reference-counted.
         enum { msg_t_size = 64 };
         enum { max_vsm_size = msg_t_size - (8 + sizeof (metadata_t *) + 3 + sizeof(uint32_t)) };
+
+    private:
+        zmq::atomic_counter_t* refcnt();
+
+        //  Shared message buffer. Message data are either allocated in one
+        //  continuous block along with this structure - thus avoiding one
+        //  malloc/free pair or they are stored in used-supplied memory.
+        //  In the latter case, ffn member stores pointer to the function to be
+        //  used to deallocate the data. If the buffer is actually shared (there
+        //  are at least 2 references to it) refcount member contains number of
+        //  references.
+        struct content_t
+        {
+            void *data;
+            size_t size;
+            msg_free_fn *ffn;
+            void *hint;
+            zmq::atomic_counter_t refcnt;
+        };
 
         //  Different message types.
         enum type_t
@@ -121,10 +144,12 @@ namespace zmq
             type_delimiter = 103,
             //  CMSG messages point to constant data
             type_cmsg = 104,
-            type_max = 104
-        };
 
-        atomic_counter_t& msg_counter();
+            // zero-copy LMSG message for v2_decoder
+            type_zclmsg = 105,
+
+            type_max = 105
+        };
 
         // the file descriptor where this message originated, needs to be 64bit due to alignment
         int64_t file_desc;
@@ -149,36 +174,36 @@ namespace zmq
                 unsigned char flags;
                 uint32_t routing_id;
             } vsm;
-            struct lmsg_t {
+            struct {
                 metadata_t *metadata;
-                //  Shared message buffer. Message data are either allocated in one
-                //  continuous block along with this structure - thus avoiding one
-                //  malloc/free pair or they are stored in used-supplied memory.
-                //  In the latter case, ffn member stores pointer to the function to be
-                //  used to deallocate the data. If the buffer is actually shared (there
-                //  are at least 2 references to it) refcount member contains number of
-                //  references.
-                void *data;
-                size_t size;
-                msg_free_fn *ffn;
-                void *hint;
-                // create an aligned block for an atomic_counter_t object
-                union aligned_atomic_counter_storage {
-                    zmq::atomic_counter_t::integer_t maxAlign;
-                    unsigned char counter[ sizeof(zmq::atomic_counter_t) ];
-                } refcnt;
+                content_t *content;
                 unsigned char unused [msg_t_size - (8 + sizeof (metadata_t *)
-                                                    + sizeof(void*)
-                                                    + sizeof(size_t)
-                                                    + sizeof(msg_free_fn*)
-                                                    + sizeof(void*)
-                                                    + sizeof(aligned_atomic_counter_storage)
-                                                    + 2
-                                                    + sizeof(uint32_t))];
+                                                      + sizeof (content_t*)
+                                                      + 2
+                                                      + sizeof(uint32_t))];
                 unsigned char type;
                 unsigned char flags;
                 uint32_t routing_id;
             } lmsg;
+            struct {
+                metadata_t *metadata;
+                void *data;
+                size_t size;
+                msg_free_fn *ffn;
+                void *hint;
+                zmq::atomic_counter_t* refcnt;
+                unsigned char unused [msg_t_size - (8 + sizeof (metadata_t *)
+                                                      + sizeof (void*)
+                                                      + sizeof (size_t)
+                                                      + sizeof (msg_free_fn*)
+                                                      + sizeof (void*)
+                                                      + sizeof (zmq::atomic_counter_t*)
+                                                      + 2
+                                                      + sizeof(uint32_t))];
+                unsigned char type;
+                unsigned char flags;
+                uint32_t routing_id;
+            } zclmsg;
             struct {
                 metadata_t *metadata;
                 void* data;

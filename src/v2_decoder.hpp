@@ -63,8 +63,6 @@ namespace zmq
         // the messages constructed on top of it.
         unsigned char* release();
 
-        void reset(unsigned char* b);
-
         void inc_ref();
 
         static void call_dec_ref(void*, void* buffer);
@@ -80,9 +78,22 @@ namespace zmq
             return buf;
         }
 
+        void resize(size_t new_size)
+        {
+            bufsize = new_size;
+        }
+
+        //
+        zmq::atomic_counter_t* create_refcnt()
+        {
+            return msg_refcnt++;
+        }
+
     private:
         unsigned char* buf;
         size_t bufsize;
+        size_t max_size;
+        zmq::atomic_counter_t* msg_refcnt;
     };
 
     //  Decoder for ZMTP/2.x framing protocol. Converts data stream into messages.

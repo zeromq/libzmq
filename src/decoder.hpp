@@ -73,6 +73,10 @@ namespace zmq
             return bufsize;
         }
 
+        void resize(size_t new_size)
+        {
+            bufsize = new_size;
+        }
     private:
         size_t bufsize;
         unsigned char* buf;
@@ -188,6 +192,11 @@ namespace zmq
             }
 
             return 0;
+        }
+
+        virtual void resize_buffer(size_t new_size)
+        {
+            allocator->resize(new_size);
         }
 
     protected:
