@@ -1,3 +1,17 @@
+0MQ version 4.1.2 stable, released on 2015/06/15
+================================================
+
+* Added explicit reference to static link exception in every source file.
+
+* Bumped ABI version to 5:0:0 since 4.1.x changed the ABI.
+
+* Fixed STDINT event interface macros to work with CZMQ 3.0.
+
+* Fixed installation of man pages when BUILD_DOC is not set.
+
+* Fixed #1428 - regression on single-socket proxies.
+
+
 0MQ version 4.1.1 stable, released on 2015/06/02
 ================================================
 
@@ -176,38 +190,38 @@ Major changes
 
 * New wire level protocol, ZMTP/3.0, see http://rfc.zeromq.org/spec:23.
   Does not yet implement the SUBSCRIBE, CANCEL, PING, and PONG commands.
-  
-* New security framework, from plain user+password to strong encryption, 
+
+* New security framework, from plain user+password to strong encryption,
   see section below. See http://hintjens.com/blog:49 for a tutorial.
-  
-* New ZMQ_STREAM socket type for working as a TCP client or server. See: 
+
+* New ZMQ_STREAM socket type for working as a TCP client or server. See:
   tests/test_stream.cpp.
-  
+
 Improvements
 ------------
 
 * You can now connect to an inproc:// endpoint that does not already
   exist. This means inproc:// no longer needs careful set-up, but it may
-  break code that relied on the old behaviour. See: 
+  break code that relied on the old behaviour. See:
   tests/test_inproc_connect.cpp.
- 
-* Libzmq now checks socket types at connection time, so that trying to 
+
+* Libzmq now checks socket types at connection time, so that trying to
   connect a 'wrong' socket type will fail.
-  
+
 * New zmq_ctx_shutdown API method will shutdown a context and send ETERM
   to blocking calls, without blocking. Use zmq_ctx_term to finalise the
   process.
-  
+
 * The regression test suite has been significantly extended and improved.
-  
-* Contexts can now be terminated in forked child processes. See: 
+
+* Contexts can now be terminated in forked child processes. See:
   tests/test_fork.cpp.
-  
+
 * zmq_disconnect now respects the linger setting on sockets.
 
 * New zmq_send_const API method to send constant data (without copying).
   See: tests/test_inproc_connect.cpp.
-  
+
 * Added CMake support for static libraries.
 
 * Added test cases for socket semantics as defined in RFCs 28, 29, 30, 31.
@@ -215,23 +229,23 @@ Improvements
 
 * New socket option, ZMQ_PROBE_ROUTER triggers an empty message on connect.
   See: tests/test_probe_router.cpp.
-  
-* New socket option, ZMQ_REQ_CORRELATE allows for correlation of replies 
+
+* New socket option, ZMQ_REQ_CORRELATE allows for correlation of replies
   from a REP socket. See: tests/test_req_correlate.cpp.
-  
-* New socket option, ZMQ_REQ_RELAXED, lets you disable the state machine 
-  on a REQ socket, so you can send multiple requests without waiting for 
-  replies, and without getting an EFSM error. See: 
+
+* New socket option, ZMQ_REQ_RELAXED, lets you disable the state machine
+  on a REQ socket, so you can send multiple requests without waiting for
+  replies, and without getting an EFSM error. See:
   tests/test_req_relaxed.cpp.
-  
-* New socket option, ZMQ_CONFLATE restricts the outgoing and incoming 
+
+* New socket option, ZMQ_CONFLATE restricts the outgoing and incoming
   socket buffers to a single message. See: tests/test_conflate.cpp.
 
 Deprecated Options
 ------------------
 
 * ZMQ_IPV4ONLY deprecated and renamed to ZMQ_IPV6 so that options are
-  consistently "off" by default. 
+  consistently "off" by default.
 
 * ZMQ_DELAY_ATTACH_ON_CONNECT deprecated, and renamed to ZMQ_IMMEDIATE.
   See: tests/test_immediate.cpp.
@@ -239,37 +253,37 @@ Deprecated Options
 Security Framework
 ------------------
 
-Based on new ZMTP wire level protocol that negotiates a security 
+Based on new ZMTP wire level protocol that negotiates a security
 "mechanism" between client and server before exchanging any other data.
 
 Security mechanisms are extensible. ZMTP defines three by default:
 
-* NULL - classic ZeroMQ, with no authentication. See 
+* NULL - classic ZeroMQ, with no authentication. See
   http://rfc.zeromq.org/spec:23.
-  
+
 * PLAIN - plain-text username + password authentication. See
   http://rfc.zeromq.org/spec:24.
 
-* CURVE - secure authentication and encryption based on elliptic curve 
-  cryptography, using the Curve25519 algorithm from Daniel Bernstein and 
-  based on CurveCP's security handshake. See http://rfc.zeromq.org/spec:25, 
+* CURVE - secure authentication and encryption based on elliptic curve
+  cryptography, using the Curve25519 algorithm from Daniel Bernstein and
+  based on CurveCP's security handshake. See http://rfc.zeromq.org/spec:25,
   http://rfc.zeromq.org/spec:26, and http://curvecp.org.
-  
+
 Authentication is done by pluggable "authenticators" that connect to libzmq
 over an inproc endpoint, see http://rfc.zeromq.org/spec:27.
 
 Socket options to configure PLAIN security on client or server:
 
-* ZMQ_PLAIN_SERVER, ZMQ_PLAIN_USERNAME, ZMQ_PLAIN_PASSWORD. See 
+* ZMQ_PLAIN_SERVER, ZMQ_PLAIN_USERNAME, ZMQ_PLAIN_PASSWORD. See
   tests/test_security_plain.
-  
+
 Socket options to configure CURVE security on client or server:
 
-* ZMQ_CURVE_SERVER, ZMQ_CURVE_PUBLICKEY, ZMQ_CURVE_SECRETKEY, 
+* ZMQ_CURVE_SERVER, ZMQ_CURVE_PUBLICKEY, ZMQ_CURVE_SECRETKEY,
   ZMQ_CURVE_SERVERKEY. See tests/test_security_curve.cpp.
-  
+
 Socket options to configure "domain" for ZAP handler:
- 
+
 * ZMQ_ZAP_DOMAIN, see tests/test_security_null.cpp.
 
 Support for encoding/decoding CURVE binary keys to ASCII:
