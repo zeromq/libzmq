@@ -1,3 +1,8 @@
+0MQ version 4.1.3 stable, released on 2015/xx/xx
+================================================
+
+* Fixed validation of IPv6 addresses with brackets
+
 0MQ version 4.1.2 stable, released on 2015/06/15
 ================================================
 
