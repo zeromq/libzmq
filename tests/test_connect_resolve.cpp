@@ -40,7 +40,10 @@ int main (void)
 
     int rc = zmq_connect (sock, "tcp://localhost:1234");
     assert (rc == 0);
-    
+
+    rc = zmq_connect (sock, "tcp://[::1]:1234");
+    assert (rc == 0);
+
     rc = zmq_connect (sock, "tcp://localhost:invalid");
     assert (rc == -1);
 
