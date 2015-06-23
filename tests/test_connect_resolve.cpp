@@ -41,6 +41,9 @@ int main (void)
     int rc = zmq_connect (sock, "tcp://localhost:1234");
     assert (rc == 0);
 
+    rc = zmq_connect (sock, "tcp://[::1]:4506");
+    assert (rc == 0);
+
     rc = zmq_connect (sock, "tcp://localhost:invalid");
     assert (rc == -1);
 
