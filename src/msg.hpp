@@ -155,7 +155,7 @@ namespace zmq
         int64_t file_desc;
 
         //  Note that fields shared between different message types are not
-        //  moved to tha parent class (msg_t). This way we get tighter packing
+        //  moved to the parent class (msg_t). This way we get tighter packing
         //  of the data. Shared fields can be accessed via 'base' member of
         //  the union.
         union {
