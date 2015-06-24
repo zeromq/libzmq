@@ -246,6 +246,45 @@ Option value unit:: milliseconds
 Default value:: 30000
 Applicable socket types:: all but ZMQ_STREAM, only for connection-oriented transports
 
+ZMQ_HEARTBEAT_IVL: Set interval between sending ZMTP heartbeats
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_HEARTBEAT_IVL' option shall set the interval between sending ZMTP heartbeats
+for the specified 'socket'. If this option is set and is greater than 0, then a 'PING'
+ZMTP command will be sent every 'ZMQ_HEARTBEAT_IVL' milliseconds.
+
+[horizontal]
+Option value type:: int
+Option value unit:: milliseconds
+Default value:: 0
+Applicable socket types:: all, when using connection-oriented transports
+
+ZMQ_HEARTBEAT_TIMEOUT: Set timeout for ZMTP heartbeats
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_HEARTBEAT_TIMEOUT' option shall set how long to wait before timing-out a
+connection after sending a 'PING' ZMTP command and not receiving any traffic. This
+option is only valid if 'ZMQ_HEARTBEAT_IVL' is also set, and is greater than 0. The
+connection will time out if there is no traffic received after sending the 'PING'
+command, but the received traffic does not have to be a 'PONG' command - any received
+traffic will cancel the timeout.
+
+[horizontal]
+Option value type:: int
+Option value unit:: milliseconds
+Default value:: 0
+Applicable socket types:: all, when using connection-oriented transports
+
+ZMQ_HEARTBEAT_TTL: Set the TTL value for ZMTP heartbeats
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_HEARTBEAT_TTL' option shall set the timeout on the remote peer for ZMTP
+heartbeats. If this option is greater than 0, the remote side shall time out the
+connection if it does not receive any more traffic within the TTL period. This option
+does not have any effect if 'ZMQ_HEARTBEAT_IVL' is not set or is 0.
+
+[horizontal]
+Option value type:: uint16_t
+Option value unit:: deciseconds (1/10th of a second)
+Default value:: 0
+Applicable socket types:: all, when using connection-oriented transports
 
 ZMQ_IDENTITY: Set socket identity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
