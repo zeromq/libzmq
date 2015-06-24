@@ -250,11 +250,11 @@ test_heartbeat_ttl (void)
         0x4, 'P', 'I', 'N', 'G', // The command name
         0, 10 // This is a network-order 16-bit TTL value
     };
-    rc = send(s, ping_message, sizeof(ping_message), 0);
+    rc = send(s, (const char*)ping_message, sizeof(ping_message), 0);
     assert(rc == sizeof(ping_message));
 
     uint8_t pong_buffer[8] = { 0 };
-    rc = recv(s, pong_buffer, 7, 0);
+    rc = recv(s, (char*)pong_buffer, 7, 0);
     assert(rc == 7 && memcmp(pong_buffer, "\4\5\4PONG", 7) == 0);
 
     // We should have been disconnected
