@@ -69,7 +69,10 @@ zmq::options_t::options_t () :
     socket_id (0),
     conflate (false),
     handshake_ivl (30000),
-    connected (false)
+    connected (false),
+    heartbeat_ttl (0),
+    heartbeat_interval (0),
+    heartbeat_timeout (0)
 {
 }
 
@@ -519,6 +522,27 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             break;
 
+        case ZMQ_HEARTBEAT_IVL:
+            if (is_int && value >= 0) {
+                heartbeat_interval = value;
+                return 0;
+            }
+            break;
+
+        case ZMQ_HEARTBEAT_TTL:
+            if (is_int && value >= 0 && value < 0xffff) {
+                heartbeat_ttl = (uint16_t)value;
+                return 0;
+            }
+            break;
+
+        case ZMQ_HEARTBEAT_TIMEOUT:
+            if (is_int && value >= 0) {
+                heartbeat_timeout = value;
+                return 0;
+            }
+            break;
+
         default:
 #if defined (ZMQ_ACT_MILITANT)
             //  There are valid scenarios for probing with unknown socket option
@@ -868,6 +892,27 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
         case ZMQ_INVERT_MATCHING:
             if (is_int) {
                 *value = invert_matching;
+                return 0;
+            }
+            break;
+
+        case ZMQ_HEARTBEAT_IVL:
+            if (is_int) {
+                *value = heartbeat_interval;
+                return 0;
+            }
+            break;
+
+        case ZMQ_HEARTBEAT_TTL:
+            if (is_int) {
+                *(uint16_t*)value = heartbeat_ttl;
+                return 0;
+            }
+            break;
+
+        case ZMQ_HEARTBEAT_TIMEOUT:
+            if (is_int) {
+                *value = heartbeat_timeout;
                 return 0;
             }
             break;

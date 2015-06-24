@@ -198,6 +198,15 @@ namespace zmq
         int handshake_ivl;
 
         bool connected;
+        //  If remote peer receives a PING message and doesn't receive another
+        //  message within the ttl value, it should close the connection
+        //  (measured in tenths of a second)
+        uint16_t heartbeat_ttl;
+        //  Time in milliseconds between sending heartbeat PING messages.
+        int heartbeat_interval;
+        //  Time in milliseconds to wait for a PING response before disconnecting
+        int heartbeat_timeout;
+
     };
 }
 

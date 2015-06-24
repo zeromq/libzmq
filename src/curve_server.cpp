@@ -142,6 +142,8 @@ int zmq::curve_server_t::encode (msg_t *msg_)
     uint8_t flags = 0;
     if (msg_->flags () & msg_t::more)
         flags |= 0x01;
+    if (msg_->flags () & msg_t::command)
+        flags |= 0x02;
 
     uint8_t *message_plaintext = static_cast <uint8_t *> (malloc (mlen));
     alloc_assert (message_plaintext);
@@ -232,6 +234,8 @@ int zmq::curve_server_t::decode (msg_t *msg_)
         const uint8_t flags = message_plaintext [crypto_box_ZEROBYTES];
         if (flags & 0x01)
             msg_->set_flags (msg_t::more);
+        if (flags & 0x02)
+            msg_->set_flags (msg_t::command);
 
         memcpy (msg_->data (),
                 message_plaintext + crypto_box_ZEROBYTES + 1,

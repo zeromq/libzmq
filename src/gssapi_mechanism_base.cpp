@@ -80,6 +80,8 @@ int zmq::gssapi_mechanism_base_t::encode_message (msg_t *msg_)
     uint8_t flags = 0;
     if (msg_->flags () & msg_t::more)
         flags |= 0x01;
+    if (msg ->flags () & msg_t::command)
+        flags |= 0x02;
 
     uint8_t *plaintext_buffer = static_cast <uint8_t *>(malloc(msg_->size ()+1));
     plaintext_buffer[0] = flags;
@@ -177,6 +179,8 @@ int zmq::gssapi_mechanism_base_t::decode_message (msg_t *msg_)
     const uint8_t flags = static_cast <char *> (plaintext.value)[0];
     if (flags & 0x01)
 	    msg_->set_flags (msg_t::more);
+    if (flags & 0x02)
+        msg_->set_flags (msg_t::command);
 
     memcpy (msg_->data (), static_cast <char *> (plaintext.value)+1, plaintext.length-1);
 
