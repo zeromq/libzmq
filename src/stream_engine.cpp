@@ -98,6 +98,7 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
     has_ttl_timer (false),
     has_timeout_timer (false),
     has_heartbeat_timer (false),
+    heartbeat_timeout (0),
     socket (NULL)
 {
     int rc = tx_msg.init ();
@@ -144,6 +145,11 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
     rc = setsockopt (s, SOL_SOCKET, SO_NOSIGPIPE, &set, sizeof (int));
     errno_assert (rc == 0);
 #endif
+    if(options.heartbeat_interval > 0) {
+        heartbeat_timeout = options.heartbeat_timeout;
+        if(heartbeat_timeout == -1)
+            heartbeat_timeout = options.heartbeat_interval;
+    }
 }
 
 zmq::stream_engine_t::~stream_engine_t ()
@@ -1032,8 +1038,8 @@ int zmq::stream_engine_t::produce_ping_message(msg_t * msg_)
 
     rc = mechanism->encode (msg_);
     next_msg = &stream_engine_t::pull_and_encode;
-    if(!has_timeout_timer && options.heartbeat_timeout > 0) {
-        add_timer(options.heartbeat_timeout, heartbeat_timeout_timer_id);
+    if(!has_timeout_timer && heartbeat_timeout > 0) {
+        add_timer(heartbeat_timeout, heartbeat_timeout_timer_id);
         has_timeout_timer = true;
     }
     return rc;
@@ -1062,8 +1068,8 @@ int zmq::stream_engine_t::process_heartbeat_message(msg_t * msg_)
         memcpy(&remote_heartbeat_ttl, (uint8_t*)msg_->data() + 5, 2);
         remote_heartbeat_ttl = ntohs(remote_heartbeat_ttl);
         // The remote heartbeat is in 10ths of a second
-        // so we multiply it by 10 to get the timer interval.
-        remote_heartbeat_ttl *= 10;
+        // so we multiply it by 100 to get the timer interval in ms.
+        remote_heartbeat_ttl *= 100;
 
         if(!has_ttl_timer && remote_heartbeat_ttl > 0) {
             add_timer(remote_heartbeat_ttl, heartbeat_ttl_timer_id);

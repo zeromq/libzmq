@@ -72,7 +72,7 @@ zmq::options_t::options_t () :
     connected (false),
     heartbeat_ttl (0),
     heartbeat_interval (0),
-    heartbeat_timeout (0)
+    heartbeat_timeout (-1)
 {
 }
 
@@ -530,7 +530,9 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             break;
 
         case ZMQ_HEARTBEAT_TTL:
-            if (is_int && value >= 0 && value < 0xffff) {
+            // Convert this to deciseconds from milliseconds
+            value = value / 100;
+            if (is_int && value >= 0 && value <= 6553) {
                 heartbeat_ttl = (uint16_t)value;
                 return 0;
             }
@@ -905,7 +907,8 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
 
         case ZMQ_HEARTBEAT_TTL:
             if (is_int) {
-                *(uint16_t*)value = heartbeat_ttl;
+                // Convert the internal deciseconds value to milliseconds
+                *value = heartbeat_ttl * 100;
                 return 0;
             }
             break;

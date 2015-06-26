@@ -278,11 +278,13 @@ ZMQ_HEARTBEAT_TTL: Set the TTL value for ZMTP heartbeats
 The 'ZMQ_HEARTBEAT_TTL' option shall set the timeout on the remote peer for ZMTP
 heartbeats. If this option is greater than 0, the remote side shall time out the
 connection if it does not receive any more traffic within the TTL period. This option
-does not have any effect if 'ZMQ_HEARTBEAT_IVL' is not set or is 0.
+does not have any effect if 'ZMQ_HEARTBEAT_IVL' is not set or is 0. Internally, this
+value is rounded down to the nearest decisecond, any value less than 100 will have
+no effect.
 
 [horizontal]
-Option value type:: uint16_t
-Option value unit:: deciseconds (1/10th of a second)
+Option value type:: int
+Option value unit:: milliseconds
 Default value:: 0
 Applicable socket types:: all, when using connection-oriented transports
 
