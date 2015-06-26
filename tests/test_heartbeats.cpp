@@ -131,10 +131,6 @@ prep_server_socket(void * ctx, int set_heartbeats, int is_curve, void ** server_
         value = 50;
         rc = zmq_setsockopt (server, ZMQ_HEARTBEAT_IVL, &value, sizeof(value));
         assert (rc == 0);
-
-        value = 50;
-        rc = zmq_setsockopt (server, ZMQ_HEARTBEAT_TIMEOUT, &value, sizeof(value));
-        assert (rc == 0);
     }
 
     if(is_curve)
@@ -216,57 +212,47 @@ test_heartbeat_timeout (void)
 static void
 test_heartbeat_ttl (void)
 {
-    int rc;
+    int rc, value;
 
     //  Set up our context and sockets
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
-    void * server, * server_mon;
+    void * server, * server_mon, *client;
     prep_server_socket(ctx, 0, 0, &server, &server_mon);
 
-    struct sockaddr_in ip4addr;
-    int s;
+    client = zmq_socket(ctx, ZMQ_DEALER);
+    assert(client != NULL);
 
-    ip4addr.sin_family = AF_INET;
-    ip4addr.sin_port = htons(5556);
-    inet_pton(AF_INET, "127.0.0.1", &ip4addr.sin_addr);
+    // Set the heartbeat TTL to 0.1 seconds
+    value = 100;
+    zmq_setsockopt(client, ZMQ_HEARTBEAT_TTL, &value, sizeof(value));
 
-    s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    rc = connect (s, (struct sockaddr*) &ip4addr, sizeof ip4addr);
-    assert (rc > -1);
+    // Set the heartbeat interval to much longer than the TTL so that
+    // the socket times out oon the remote side.
+    value = 250;
+    zmq_setsockopt(client, ZMQ_HEARTBEAT_IVL, &value, sizeof(value));
 
-    // Mock a ZMTP 3 client so we can forcibly time out a connection
-    mock_handshake(s);
+    rc = zmq_connect(client, "tcp://localhost:5556");
+    assert(rc == 0);
 
     // By now everything should report as connected
     rc = get_monitor_event(server_mon);
     assert(rc == ZMQ_EVENT_ACCEPTED);
 
-    // This is a ping message with a 0.5 second TTL.
-    uint8_t ping_message[] = {
-        0x4, // This specifies that this is a command message
-        0x7, // The total payload length is 8 bytes
-        0x4, 'P', 'I', 'N', 'G', // The command name
-        0, 10 // This is a network-order 16-bit TTL value
-    };
-    rc = send(s, (const char*)ping_message, sizeof(ping_message), 0);
-    assert(rc == sizeof(ping_message));
-
-    uint8_t pong_buffer[8] = { 0 };
-    rc = recv(s, (char*)pong_buffer, 7, 0);
-    assert(rc == 7 && memcmp(pong_buffer, "\4\5\4PONG", 7) == 0);
+    msleep(100);
 
     // We should have been disconnected
     rc = get_monitor_event(server_mon);
     assert(rc == ZMQ_EVENT_DISCONNECTED);
 
-    close(s);
-
     rc = zmq_close (server);
     assert (rc == 0);
 
     rc = zmq_close (server_mon);
+    assert (rc == 0);
+
+    rc = zmq_close (client);
     assert (rc == 0);
 
     rc = zmq_ctx_term (ctx);

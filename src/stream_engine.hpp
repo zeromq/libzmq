@@ -219,6 +219,7 @@ namespace zmq
         bool has_ttl_timer;
         bool has_timeout_timer;
         bool has_heartbeat_timer;
+        int heartbeat_timeout;
 
         // Socket
         zmq::socket_base_t *socket;
