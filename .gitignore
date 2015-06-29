@@ -76,6 +76,7 @@ test_linger
 test_security_null
 test_security_plain
 test_proxy
+test_proxy_single_socket
 test_proxy_terminate
 test_abstract_ipc
 test_filter_ipc
