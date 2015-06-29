@@ -18,7 +18,9 @@ noinst_PROGRAMS = test_pair_inproc \
                   test_term_endpoint \
                   test_monitor \
                   test_router_mandatory \
-                  test_disconnect_inproc
+                  test_disconnect_inproc \
+                  test_unbind_inproc \
+                  test_unbind_wildcard
 
 
 if !ON_MINGW
@@ -43,6 +45,8 @@ test_last_endpoint_SOURCES = test_last_endpoint.cpp
 test_term_endpoint_SOURCES = test_term_endpoint.cpp
 test_monitor_SOURCES = test_monitor.cpp
 test_disconnect_inproc_SOURCES = test_disconnect_inproc.cpp
+test_unbind_inproc_SOURCES = test_unbind_inproc.cpp
+test_unbind_wildcard_SOURCES = test_unbind_wildcard.cpp
 test_router_mandatory_SOURCES = test_router_mandatory.cpp
 
 if !ON_MINGW
