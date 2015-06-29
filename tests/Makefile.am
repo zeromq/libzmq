@@ -23,6 +23,8 @@ noinst_PROGRAMS = test_system \
                   test_probe_router \
                   test_stream \
                   test_disconnect_inproc \
+                  test_unbind_inproc \
+                  test_unbind_wildcard \
                   test_ctx_options \
                   test_ctx_destroy \
                   test_security_null \
@@ -72,6 +74,8 @@ test_router_raw_empty_SOURCES = test_router_raw_empty.cpp
 test_probe_router_SOURCES = test_probe_router.cpp
 test_stream_SOURCES = test_stream.cpp
 test_disconnect_inproc_SOURCES = test_disconnect_inproc.cpp
+test_unbind_inproc_SOURCES = test_unbind_inproc.cpp
+test_unbind_wildcard_SOURCES = test_unbind_wildcard.cpp
 test_ctx_options_SOURCES = test_ctx_options.cpp
 test_iov_SOURCES = test_iov.cpp
 test_ctx_destroy_SOURCES = test_ctx_destroy.cpp

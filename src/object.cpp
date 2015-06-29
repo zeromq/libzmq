@@ -142,6 +142,12 @@ int zmq::object_t::register_endpoint (const char *addr_, endpoint_t &endpoint_)
     return ctx->register_endpoint (addr_, endpoint_);
 }
 
+int zmq::object_t::unregister_endpoint (
+        const std::string &addr_, socket_base_t *socket_)
+{
+    return ctx->unregister_endpoint (addr_, socket_);
+}
+
 void zmq::object_t::unregister_endpoints (socket_base_t *socket_)
 {
     return ctx->unregister_endpoints (socket_);

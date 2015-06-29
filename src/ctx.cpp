@@ -373,6 +373,26 @@ int zmq::ctx_t::register_endpoint (const char *addr_, endpoint_t &endpoint_)
     return 0;
 }
 
+int zmq::ctx_t::unregister_endpoint (
+        const std::string &addr_, socket_base_t *socket_)
+{
+    endpoints_sync.lock ();
+
+    const endpoints_t::iterator it = endpoints.find (addr_);
+    if (it == endpoints.end () || it->second.socket != socket_) {
+        endpoints_sync.unlock ();
+        errno = ENOENT;
+        return -1;
+    }
+
+    //  Remove endpoint.
+    endpoints.erase (it);
+
+    endpoints_sync.unlock ();
+
+    return 0;
+}
+
 void zmq::ctx_t::unregister_endpoints (socket_base_t *socket_)
 {
     endpoints_sync.lock ();
