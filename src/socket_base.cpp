@@ -600,6 +600,8 @@ int zmq::socket_base_t::term_endpoint (const char *addr_)
 
     // Disconnect an inproc socket
     if (protocol == "inproc") {
+        if (unregister_endpoint (std::string (addr_), this) == 0)
+            return 0;
         std::pair <inprocs_t::iterator, inprocs_t::iterator> range = inprocs.equal_range (std::string (addr_));
         if (range.first == range.second) {
             errno = ENOENT;

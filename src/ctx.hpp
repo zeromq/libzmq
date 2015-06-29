@@ -92,6 +92,7 @@ namespace zmq
 
         //  Management of inproc endpoints.
         int register_endpoint (const char *addr_, endpoint_t &endpoint_);
+        int unregister_endpoint (const std::string &addr_, socket_base_t *socket_);
         void unregister_endpoints (zmq::socket_base_t *socket_);
         endpoint_t find_endpoint (const char *addr_);
 
