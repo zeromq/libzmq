@@ -43,6 +43,8 @@ tests/test_connect_delay
 tests/test_term_endpoint
 tests/test_router_mandatory
 tests/test_disconnect_inproc
+tests/test*.log
+tests/test*.trs
 src/platform.hpp*
 src/stamp-h1
 perf/local_lat
