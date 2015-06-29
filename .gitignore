@@ -43,6 +43,8 @@ tests/test_connect_delay
 tests/test_term_endpoint
 tests/test_router_mandatory
 tests/test_disconnect_inproc
+tests/test_unbind_inproc
+tests/test_unbind_wildcard
 tests/test*.log
 tests/test*.trs
 src/platform.hpp*
