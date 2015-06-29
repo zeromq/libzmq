@@ -48,6 +48,8 @@ tests/test_immediate
 tests/test_term_endpoint
 tests/test_router_mandatory
 tests/test_disconnect_inproc
+tests/test_unbind_inproc
+tests/test_unbind_wildcard
 tests/test_raw_sock
 tests/test_disconnect_inproc
 tests/test_ctx_options
