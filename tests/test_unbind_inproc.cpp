@@ -33,8 +33,8 @@ int main (void)
     rc = zmq_unbind (sb, "inproc://a");
     assert (rc == 0);
 
-    // rc = zmq_ctx_term (ctx);
-    // assert (rc == 0);
+    rc = zmq_ctx_term (ctx);
+    assert (rc == 0);
 
     return 0;
 }
