@@ -52,6 +52,8 @@ test_immediate
 test_term_endpoint
 test_router_mandatory
 test_disconnect_inproc
+test_unbind_inproc
+test_unbind_wildcard
 test_raw_sock
 test_disconnect_inproc
 test_ctx_options
