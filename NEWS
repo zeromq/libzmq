@@ -1,3 +1,9 @@
+0MQ version 4.0.8 stable, released on 2015/07/xx
+================================================
+
+* Fixed LIBZMQ-949 - zmq_unbind fails for inproc and wildcard endpoints
+
+
 0MQ version 4.0.7 stable, released on 2015/06/15
 ================================================
 
