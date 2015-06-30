@@ -153,7 +153,7 @@ namespace zmq
                     __ATOMIC_RELEASE, __ATOMIC_ACQUIRE);
             return old;
 #elif defined ZMQ_ATOMIC_CXX11
-            ptr.compare_exchange_strong(cmp_, val_);
+            ptr.compare_exchange_strong(cmp_, val_, std::memory_order_acq_rel);
             return cmp_;
 #elif defined ZMQ_ATOMIC_PTR_ATOMIC_H
             return (T*) atomic_cas_ptr (&ptr, cmp_, val_);
