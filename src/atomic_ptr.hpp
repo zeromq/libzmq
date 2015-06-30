@@ -217,21 +217,13 @@ namespace zmq
 }
 
 //  Remove macros local to this file.
-#if defined ZMQ_ATOMIC_PTR_WINDOWS
-#undef ZMQ_ATOMIC_PTR_WINDOWS
-#endif
-#if defined ZMQ_ATOMIC_PTR_ATOMIC_H
-#undef ZMQ_ATOMIC_PTR_ATOMIC_H
-#endif
-#if defined ZMQ_ATOMIC_PTR_X86
-#undef ZMQ_ATOMIC_PTR_X86
-#endif
-#if defined ZMQ_ATOMIC_PTR_ARM
-#undef ZMQ_ATOMIC_PTR_ARM
-#endif
-#if defined ZMQ_ATOMIC_PTR_MUTEX
 #undef ZMQ_ATOMIC_PTR_MUTEX
-#endif
+#undef ZMQ_ATOMIC_PTR_INTRINSIC
+#undef ZMQ_ATOMIC_CXX11
+#undef ZMQ_ATOMIC_PTR_X86
+#undef ZMQ_ATOMIC_PTR_ARM
+#undef ZMQ_ATOMIC_PTR_TILE
+#undef ZMQ_ATOMIC_PTR_WINDOWS
+#undef ZMQ_ATOMIC_PTR_ATOMIC_H
 
 #endif
-
