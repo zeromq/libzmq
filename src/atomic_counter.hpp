@@ -37,6 +37,8 @@
 #define ZMQ_ATOMIC_COUNTER_MUTEX
 #elif defined ZMQ_HAVE_ATOMIC_INTRINSICS
 #define ZMQ_ATOMIC_INTRINSIC
+#elif (defined ZMQ_CXX11 && defined __cplusplus && __cplusplus >= 201103L)
+#define ZMQ_ATOMIC_COUNTER_CXX11
 #elif (defined __i386__ || defined __x86_64__) && defined __GNUC__
 #define ZMQ_ATOMIC_COUNTER_X86
 #elif defined __ARM_ARCH_7A__ && defined __GNUC__
@@ -53,6 +55,8 @@
 
 #if defined ZMQ_ATOMIC_COUNTER_MUTEX
 #include "mutex.hpp"
+#elif defined ZMQ_ATOMIC_COUNTER_CXX11
+#include <atomic>
 #elif defined ZMQ_ATOMIC_COUNTER_WINDOWS
 #include "windows.hpp"
 #elif defined ZMQ_ATOMIC_COUNTER_ATOMIC_H
@@ -97,6 +101,8 @@ namespace zmq
             old_value = InterlockedExchangeAdd ((LONG*) &value, increment_);
 #elif defined ZMQ_ATOMIC_INTRINSIC
             old_value = __atomic_fetch_add(&value, increment_, __ATOMIC_ACQ_REL);
+#elif defined ZMQ_ATOMIC_COUNTER_CXX11
+            old_value = value.fetch_add(increment_, std::memory_order_acq_rel);
 #elif defined ZMQ_ATOMIC_COUNTER_ATOMIC_H
             integer_t new_value = atomic_add_32_nv (&value, increment_);
             old_value = new_value - increment_;
@@ -142,6 +148,9 @@ namespace zmq
 #elif defined ZMQ_ATOMIC_INTRINSIC
             integer_t nv = __atomic_sub_fetch(&value, decrement, __ATOMIC_ACQ_REL);
             return nv != 0;
+#elif defined ZMQ_ATOMIC_COUNTER_CXX11
+            integer_t old = value.fetch_sub(decrement, std::memory_order_acq_rel);
+            return old - decrement != 0;
 #elif defined ZMQ_ATOMIC_COUNTER_ATOMIC_H
             int32_t delta = - ((int32_t) decrement);
             integer_t nv = atomic_add_32_nv (&value, delta);
@@ -190,33 +199,32 @@ namespace zmq
 
     private:
 
+#if defined ZMQ_ATOMIC_COUNTER_CXX11
+        std::atomic<integer_t> value;
+#else
         volatile integer_t value;
+#endif
+
 #if defined ZMQ_ATOMIC_COUNTER_MUTEX
         mutex_t sync;
 #endif
 
+#if ! defined ZMQ_ATOMIC_COUNTER_CXX11
         atomic_counter_t (const atomic_counter_t&);
         const atomic_counter_t& operator = (const atomic_counter_t&);
+#endif
     };
 
 }
 
 //  Remove macros local to this file.
-#if defined ZMQ_ATOMIC_COUNTER_WINDOWS
-#undef ZMQ_ATOMIC_COUNTER_WINDOWS
-#endif
-#if defined ZMQ_ATOMIC_COUNTER_ATOMIC_H
-#undef ZMQ_ATOMIC_COUNTER_ATOMIC_H
-#endif
-#if defined ZMQ_ATOMIC_COUNTER_X86
-#undef ZMQ_ATOMIC_COUNTER_X86
-#endif
-#if defined ZMQ_ATOMIC_COUNTER_ARM
-#undef ZMQ_ATOMIC_COUNTER_ARM
-#endif
-#if defined ZMQ_ATOMIC_COUNTER_MUTEX
 #undef ZMQ_ATOMIC_COUNTER_MUTEX
-#endif
+#undef ZMQ_ATOMIC_INTRINSIC
+#undef ZMQ_ATOMIC_COUNTER_CXX11
+#undef ZMQ_ATOMIC_COUNTER_X86
+#undef ZMQ_ATOMIC_COUNTER_ARM
+#undef ZMQ_ATOMIC_COUNTER_WINDOWS
+#undef ZMQ_ATOMIC_COUNTER_ATOMIC_H
+#undef ZMQ_ATOMIC_COUNTER_TILE
 
 #endif
-
