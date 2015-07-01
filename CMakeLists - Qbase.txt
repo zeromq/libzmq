@@ -733,7 +733,7 @@ foreach(perf-tool ${perf-tools})
             RUNTIME DESTINATION bin
             COMPONENT PerfTools)
 endforeach()
-
+endif()
 
 #-----------------------------------------------------------------------------
 # tests
