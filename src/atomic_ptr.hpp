@@ -37,7 +37,7 @@
 #elif defined ZMQ_HAVE_ATOMIC_INTRINSICS
 #define ZMQ_ATOMIC_PTR_INTRINSIC
 #elif (defined ZMQ_CXX11 && defined __cplusplus && __cplusplus >= 201103L)
-#define ZMQ_ATOMIC_CXX11
+#define ZMQ_ATOMIC_PTR_CXX11
 #elif (defined __i386__ || defined __x86_64__) && defined __GNUC__
 #define ZMQ_ATOMIC_PTR_X86
 #elif defined __ARM_ARCH_7A__ && defined __GNUC__
@@ -54,7 +54,7 @@
 
 #if defined ZMQ_ATOMIC_PTR_MUTEX
 #include "mutex.hpp"
-#elif defined ZMQ_ATOMIC_CXX11
+#elif defined ZMQ_ATOMIC_PTR_CXX11
 #include <atomic>
 #elif defined ZMQ_ATOMIC_PTR_WINDOWS
 #include "windows.hpp"
@@ -100,7 +100,7 @@ namespace zmq
             return (T*) InterlockedExchangePointer ((PVOID*) &ptr, val_);
 #elif defined ZMQ_ATOMIC_PTR_INTRINSIC
             return (T*) __atomic_exchange_n (&ptr, val_, __ATOMIC_ACQ_REL);
-#elif defined ZMQ_ATOMIC_CXX11
+#elif defined ZMQ_ATOMIC_PTR_CXX11
             return ptr.exchange(val_, std::memory_order_acq_rel);
 #elif defined ZMQ_ATOMIC_PTR_ATOMIC_H
             return (T*) atomic_swap_ptr (&ptr, val_);
@@ -152,7 +152,7 @@ namespace zmq
             __atomic_compare_exchange_n (&ptr, (volatile T**) &old, val_, false,
                     __ATOMIC_RELEASE, __ATOMIC_ACQUIRE);
             return old;
-#elif defined ZMQ_ATOMIC_CXX11
+#elif defined ZMQ_ATOMIC_PTR_CXX11
             ptr.compare_exchange_strong(cmp_, val_, std::memory_order_acq_rel);
             return cmp_;
 #elif defined ZMQ_ATOMIC_PTR_ATOMIC_H
@@ -198,7 +198,7 @@ namespace zmq
 
     private:
 
-#if defined ZMQ_ATOMIC_CXX11
+#if defined ZMQ_ATOMIC_PTR_CXX11
         std::atomic<T*> ptr;
 #else
         volatile T *ptr;
@@ -208,7 +208,7 @@ namespace zmq
         mutex_t sync;
 #endif
 
-#if ! defined ZMQ_ATOMIC_CXX11
+#if ! defined ZMQ_ATOMIC_PTR_CXX11
         atomic_ptr_t (const atomic_ptr_t&);
         const atomic_ptr_t &operator = (const atomic_ptr_t&);
 #endif
@@ -219,7 +219,7 @@ namespace zmq
 //  Remove macros local to this file.
 #undef ZMQ_ATOMIC_PTR_MUTEX
 #undef ZMQ_ATOMIC_PTR_INTRINSIC
-#undef ZMQ_ATOMIC_CXX11
+#undef ZMQ_ATOMIC_PTR_CXX11
 #undef ZMQ_ATOMIC_PTR_X86
 #undef ZMQ_ATOMIC_PTR_ARM
 #undef ZMQ_ATOMIC_PTR_TILE
