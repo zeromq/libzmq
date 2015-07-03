@@ -166,7 +166,6 @@ This package contains ZeroMQ related development libraries and header files.
 %{_mandir}/man3/zmq_has.3.gz
 %{_mandir}/man3/zmq_msg_gets.3.gz
 %{_mandir}/man3/zmq_proxy_steerable.3.gz
-%{_mandir}/man7/zmq_epgm.7.gz
 %{_mandir}/man7/zmq_inproc.7.gz
 %{_mandir}/man7/zmq_ipc.7.gz
 %{_mandir}/man7/zmq_pgm.7.gz
