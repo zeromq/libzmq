@@ -30,7 +30,7 @@
 #ifndef ZEROMQ_DECODER_ALLOCATORS_HPP
 #define ZEROMQ_DECODER_ALLOCATORS_HPP
 
-#include <stdlib.h>
+#include <cstdlib>
 
 #include "err.hpp"
 #include "atomic_counter.hpp"
@@ -41,16 +41,16 @@ namespace zmq
     class c_single_allocator
     {
     public:
-        c_single_allocator(size_t bufsize_):
+        explicit c_single_allocator(size_t bufsize_):
                 bufsize(bufsize_),
-                buf((unsigned char*) malloc (bufsize))
+                buf(static_cast<unsigned char*>( malloc (bufsize) ))
         {
             alloc_assert (buf);
         }
 
         ~c_single_allocator()
         {
-            free(buf);
+            std::free(buf);
         }
 
         unsigned char* allocate()
@@ -92,7 +92,7 @@ namespace zmq
     class shared_message_memory_allocator
     {
     public:
-        shared_message_memory_allocator(size_t bufsize_);
+        explicit shared_message_memory_allocator(size_t bufsize_);
 
         // Create an allocator for a maximum number of messages
         shared_message_memory_allocator(size_t bufsize_, size_t maxMessages);
