@@ -27,13 +27,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef ZEROMQ_DECODER_ALLOCATORS_HPP
-#define ZEROMQ_DECODER_ALLOCATORS_HPP
+#ifndef __ZMQ_DECODER_ALLOCATORS_HPP_INCLUDED__
+#define __ZMQ_DECODER_ALLOCATORS_HPP_INCLUDED__
 
+#include <cstddef>
 #include <cstdlib>
 
-#include "err.hpp"
 #include "atomic_counter.hpp"
+#include "err.hpp"
 
 namespace zmq
 {
@@ -41,43 +42,42 @@ namespace zmq
     class c_single_allocator
     {
     public:
-        explicit c_single_allocator(size_t bufsize_):
+        explicit c_single_allocator (std::size_t bufsize_) :
                 bufsize(bufsize_),
-                buf(static_cast<unsigned char*>( malloc (bufsize) ))
+                buf(static_cast <unsigned char*> (std::malloc (bufsize)))
         {
             alloc_assert (buf);
         }
 
-        ~c_single_allocator()
+        ~c_single_allocator ()
         {
-            std::free(buf);
+            std::free (buf);
         }
 
-        unsigned char* allocate()
+        unsigned char* allocate ()
         {
             return buf;
         }
 
-        void deallocate()
+        void deallocate ()
         {
-
         }
 
-        size_t size() const
+        std::size_t size () const
         {
             return bufsize;
         }
 
-        void resize(size_t new_size)
+        void resize (std::size_t new_size)
         {
             bufsize = new_size;
         }
     private:
-        size_t bufsize;
+        std::size_t bufsize;
         unsigned char* buf;
 
-        c_single_allocator( c_single_allocator const& );
-        c_single_allocator& operator=(c_single_allocator const&);
+        c_single_allocator (c_single_allocator const&);
+        c_single_allocator& operator = (c_single_allocator const&);
     };
 
     // This allocater allocates a reference counted buffer which is used by v2_decoder_t
@@ -92,58 +92,58 @@ namespace zmq
     class shared_message_memory_allocator
     {
     public:
-        explicit shared_message_memory_allocator(size_t bufsize_);
+        explicit shared_message_memory_allocator (std::size_t bufsize_);
 
         // Create an allocator for a maximum number of messages
-        shared_message_memory_allocator(size_t bufsize_, size_t maxMessages);
+        shared_message_memory_allocator (std::size_t bufsize_, std::size_t maxMessages);
 
-        ~shared_message_memory_allocator();
+        ~shared_message_memory_allocator ();
 
         // Allocate a new buffer
         //
         // This releases the current buffer to be bound to the lifetime of the messages
         // created on this bufer.
-        unsigned char* allocate();
+        unsigned char* allocate ();
 
         // force deallocation of buffer.
-        void deallocate();
+        void deallocate ();
 
         // Give up ownership of the buffer. The buffer's lifetime is now coupled to
         // the messages constructed on top of it.
-        unsigned char* release();
+        unsigned char* release ();
 
-        void inc_ref();
+        void inc_ref ();
 
-        static void call_dec_ref(void*, void* buffer);
+        static void call_dec_ref (void*, void* buffer);
 
-        size_t size() const;
+        std::size_t size () const;
 
         // Return pointer to the first message data byte.
-        unsigned char* data();
+        unsigned char* data ();
 
         // Return pointer to the first byte of the buffer.
-        unsigned char* buffer()
+        unsigned char* buffer ()
         {
             return buf;
         }
 
-        void resize(size_t new_size)
+        void resize (std::size_t new_size)
         {
             bufsize = new_size;
         }
 
-        //
-        zmq::atomic_counter_t* create_refcnt()
+        zmq::atomic_counter_t* create_refcnt ()
         {
             return msg_refcnt++;
         }
 
     private:
         unsigned char* buf;
-        size_t bufsize;
-        size_t max_size;
+        std::size_t bufsize;
+        std::size_t max_size;
         zmq::atomic_counter_t* msg_refcnt;
-        size_t maxCounters;
+        std::size_t maxCounters;
     };
 }
-#endif //ZEROMQ_DECODER_ALLOCATORS_HPP
+
+#endif
