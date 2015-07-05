@@ -32,7 +32,7 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <cstdlib>
+#include <cstring>
 
 #include "decoder_allocators.hpp"
 #include "err.hpp"
