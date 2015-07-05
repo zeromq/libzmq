@@ -435,7 +435,8 @@ set(cxx-sources
         xpub.cpp
         xsub.cpp
         zmq.cpp
-        zmq_utils.cpp)
+        zmq_utils.cpp
+        decoder_allocators.cpp)
 
 set(rc-sources version.rc)
 

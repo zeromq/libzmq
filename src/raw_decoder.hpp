@@ -34,6 +34,7 @@
 #include "msg.hpp"
 #include "i_decoder.hpp"
 #include "stdint.hpp"
+#include "decoder_allocators.hpp"
 
 namespace zmq
 {
@@ -57,14 +58,11 @@ namespace zmq
         virtual msg_t *msg () { return &in_progress; }
 
         virtual void resize_buffer(size_t) {}
+
     private:
-
-
         msg_t in_progress;
 
-        const size_t bufsize;
-
-        unsigned char *buffer;
+        shared_message_memory_allocator allocator;
 
         raw_decoder_t (const raw_decoder_t&);
         void operator = (const raw_decoder_t&);

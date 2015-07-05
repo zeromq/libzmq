@@ -39,52 +39,10 @@
 #include "msg.hpp"
 #include "i_decoder.hpp"
 #include "stdint.hpp"
+#include "decoder_allocators.hpp"
 
 namespace zmq
 {
-    // Static buffer policy.
-    class c_single_allocator
-    {
-    public:
-        c_single_allocator(size_t bufsize_):
-                bufsize(bufsize_),
-                buf((unsigned char*) malloc (bufsize))
-        {
-            alloc_assert (buf);
-        }
-
-        ~c_single_allocator()
-        {
-            free(buf);
-        }
-
-        unsigned char* allocate()
-        {
-            return buf;
-        }
-
-        void deallocate()
-        {
-
-        }
-
-        size_t size() const
-        {
-            return bufsize;
-        }
-
-        void resize(size_t new_size)
-        {
-            bufsize = new_size;
-        }
-    private:
-        size_t bufsize;
-        unsigned char* buf;
-
-        c_single_allocator( c_single_allocator const& );
-        c_single_allocator& operator=(c_single_allocator const&);
-    };
-
     //  Helper base class for decoders that know the amount of data to read
     //  in advance at any moment. Knowing the amount in advance is a property
     //  of the protocol used. 0MQ framing protocol is based size-prefixed
