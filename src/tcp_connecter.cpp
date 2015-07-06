@@ -258,9 +258,9 @@ int zmq::tcp_connecter_t::open ()
     unblock_socket (s);
 
     //  Set the socket buffer limits for the underlying socket.
-    if (options.sndbuf != 0)
+    if (options.sndbuf >= 0)
         set_tcp_send_buffer (s, options.sndbuf);
-    if (options.rcvbuf != 0)
+    if (options.rcvbuf >= 0)
         set_tcp_receive_buffer (s, options.rcvbuf);
 
     // Set the IP Type-Of-Service for the underlying socket
