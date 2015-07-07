@@ -173,6 +173,11 @@ int zmq::tcp_write (fd_t s_, const void *data_, size_t size_)
           WSAGetLastError () == WSAECONNRESET))
         return -1;
 
+    //  Circumvent a Windows bug; see https://support.microsoft.com/en-us/kb/201213
+    //  and https://zeromq.jira.com/browse/LIBZMQ-195
+    if (nbytes == SOCKET_ERROR && WSAGetLastError() == WSAENOBUFS)
+        return 0;
+
     wsa_assert (nbytes != SOCKET_ERROR);
     return nbytes;
 
