@@ -467,7 +467,7 @@ bool zmq::msg_t::rm_refs (int refs_)
     }
 
     //  The only message type that needs special care are long and zcopy messages.
-    if (!u.lmsg.content->refcnt.sub (refs_)) {
+    if (u.base.type == type_lmsg && !u.lmsg.content->refcnt.sub(refs_)) {
         //  We used "placement new" operator to initialize the reference
         //  counter so we call the destructor explicitly now.
         u.lmsg.content->refcnt.~atomic_counter_t ();
@@ -479,7 +479,7 @@ bool zmq::msg_t::rm_refs (int refs_)
         return false;
     }
 
-    if (!u.zclmsg.refcnt->sub (refs_)) {
+    if (is_zcmsg() && !u.zclmsg.refcnt->sub(refs_)) {
         // storage for rfcnt is provided externally
         if (u.zclmsg.ffn) {
             u.zclmsg.ffn(u.zclmsg.data, u.zclmsg.hint);
