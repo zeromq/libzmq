@@ -207,9 +207,9 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
         set_ip_type_of_service (s, options.tos);
 
     //  Set the socket buffer limits for the underlying socket.
-    if (options.sndbuf != 0)
+    if (options.sndbuf >= 0)
         set_tcp_send_buffer (s, options.sndbuf);
-    if (options.rcvbuf != 0)
+    if (options.rcvbuf >= 0)
         set_tcp_receive_buffer (s, options.rcvbuf);
 
     //  Allow reusing of the address.

@@ -196,14 +196,14 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
 
     {
 		const int rcvbuf = (int) options.rcvbuf;
-		if (rcvbuf) {
+		if (rcvbuf >= 0) {
 		    if (!pgm_setsockopt (sock, SOL_SOCKET, SO_RCVBUF, &rcvbuf,
 		          sizeof (rcvbuf)))
 		        goto err_abort;
 		}
 
 		const int sndbuf = (int) options.sndbuf;
-		if (sndbuf) {
+		if (sndbuf >= 0) {
 		    if (!pgm_setsockopt (sock, SOL_SOCKET, SO_SNDBUF, &sndbuf,
 		          sizeof (sndbuf)))
 		        goto err_abort;
