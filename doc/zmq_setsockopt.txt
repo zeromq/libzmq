@@ -469,14 +469,14 @@ Applicable socket types:: all, when using multicast transports
 ZMQ_RCVBUF: Set kernel receive buffer size
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_RCVBUF' option shall set the underlying kernel receive buffer size for
-the 'socket' to the specified size in bytes.  A value of zero means leave the
+the 'socket' to the specified size in bytes.  A value of -1 means leave the
 OS default unchanged. For details refer to your operating system documentation
 for the 'SO_RCVBUF' socket option.
 
 [horizontal]
 Option value type:: int
 Option value unit:: bytes
-Default value:: 0
+Default value:: -1
 Applicable socket types:: all
 
 

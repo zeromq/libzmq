@@ -450,14 +450,12 @@ Applicable socket types:: all, when using multicast transports
 ZMQ_RCVBUF: Retrieve kernel receive buffer size
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_RCVBUF' option shall retrieve the underlying kernel receive buffer
-size for the specified 'socket'. A value of zero means that the OS default is
-in effect. For details refer to your operating system documentation for the
-'SO_RCVBUF' socket option.
+size for the specified 'socket'. For details refer to your operating system
+documentation for the 'SO_RCVBUF' socket option.
 
 [horizontal]
 Option value type:: int
 Option value unit:: bytes
-Default value:: 0
 Applicable socket types:: all
 
 
