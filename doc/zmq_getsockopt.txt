@@ -566,14 +566,12 @@ Applicable socket types:: all, when using multicast transports
 ZMQ_SNDBUF: Retrieve kernel transmit buffer size
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_SNDBUF' option shall retrieve the underlying kernel transmit buffer
-size for the specified 'socket'. A value of zero means that the OS default is
-in effect. For details refer to your operating system documentation for the
-'SO_SNDBUF' socket option.
+size for the specified 'socket'. For details refer to your operating system
+documentation for the 'SO_SNDBUF' socket option.
 
 [horizontal]
 Option value type:: int
 Option value unit:: bytes
-Default value:: 0
 Applicable socket types:: all
 
 
