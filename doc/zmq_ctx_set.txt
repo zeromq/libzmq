@@ -32,6 +32,28 @@ context.
 [horizontal]
 Default value:: 1
 
+ZMQ_THREAD_SCHED_POLICY: Set scheduling policy for I/O threads
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_THREAD_SCHED_POLICY' argument sets the scheduling policy for
+internal context's thread pool. This option is not available on windows.
+Supported values for this option can be found in sched.h file,
+or at http://man7.org/linux/man-pages/man2/sched_setscheduler.2.html.
+This option only applies before creating any sockets on the context.
+
+[horizontal]
+Default value:: -1
+
+ZMQ_THREAD_PRIORITY: Set scheduling priority for I/O threads
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_THREAD_PRIORITY' argument sets scheduling priority for
+internal context's thread pool. This option is not available on windows.
+Supported values for this option depend on chosen scheduling policy.
+Details can be found in sched.h file, or at http://man7.org/linux/man-pages/man2/sched_setscheduler.2.html.
+This option only applies before creating any sockets on the context.
+
+[horizontal]
+Default value:: -1
+
 ZMQ_MAX_SOCKETS: Set maximum number of sockets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_MAX_SOCKETS' argument sets the maximum number of sockets allowed
