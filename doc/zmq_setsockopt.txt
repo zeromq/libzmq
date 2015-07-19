@@ -246,6 +246,7 @@ Option value unit:: milliseconds
 Default value:: 30000
 Applicable socket types:: all but ZMQ_STREAM, only for connection-oriented transports
 
+
 ZMQ_HEARTBEAT_IVL: Set interval between sending ZMTP heartbeats
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_HEARTBEAT_IVL' option shall set the interval between sending ZMTP heartbeats
@@ -257,6 +258,7 @@ Option value type:: int
 Option value unit:: milliseconds
 Default value:: 0
 Applicable socket types:: all, when using connection-oriented transports
+
 
 ZMQ_HEARTBEAT_TIMEOUT: Set timeout for ZMTP heartbeats
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -273,6 +275,7 @@ Option value unit:: milliseconds
 Default value:: 0
 Applicable socket types:: all, when using connection-oriented transports
 
+
 ZMQ_HEARTBEAT_TTL: Set the TTL value for ZMTP heartbeats
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_HEARTBEAT_TTL' option shall set the timeout on the remote peer for ZMTP
@@ -287,6 +290,7 @@ Option value type:: int
 Option value unit:: milliseconds
 Default value:: 0
 Applicable socket types:: all, when using connection-oriented transports
+
 
 ZMQ_IDENTITY: Set socket identity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -834,9 +838,9 @@ Option value unit:: 0, 1
 Default value:: 0
 Applicable socket types:: ZMQ_XPUB
 
-ZMQ_XPUB_MANUAL: change the subscription handling to manual
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+ZMQ_XPUB_MANUAL: change the subscription handling to manual
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sets the 'XPUB' socket subscription handling mode manual/automatic.
 A value of '0' is the default and subscription requests will be handled automatically.
 A value of '1' will change the subscription requests handling to manual, 
@@ -848,6 +852,7 @@ Option value type:: int
 Option value unit:: 0, 1
 Default value:: 0
 Applicable socket types:: ZMQ_XPUB
+
 
 ZMQ_XPUB_NODROP: do not silently drop messages if SENDHWM is reached
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -864,9 +869,9 @@ Option value unit:: 0, 1
 Default value:: 0
 Applicable socket types:: ZMQ_XPUB, ZMQ_PUB
 
-ZMQ_WELCOME_MSG: set welcome message that will be received by subscriber when connecting
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+ZMQ_WELCOME_MSG: set welcome message that will be received by subscriber when connecting
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sets a welcome message the will be recieved by subscriber when connecting.
 Subscriber must subscribe to the Welcome message before connecting.
 Welcome message will also be sent on reconnecting.
@@ -879,6 +884,7 @@ Option value type:: binary data
 Option value unit:: N/A
 Default value:: NULL
 Applicable socket types:: ZMQ_XPUB
+
 
 ZMQ_ZAP_DOMAIN: Set RFC 27 authentication domain
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
