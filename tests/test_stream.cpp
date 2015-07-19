@@ -45,8 +45,13 @@ typedef struct {
 //  This is a greeting matching what 0MQ will send us; note the
 //  8-byte size is set to 1 for backwards compatibility
 
-static zmtp_greeting_t greeting
-= { { 0xFF, 0, 0, 0, 0, 0, 0, 0, 1, 0x7F }, { 3, 0 }, { 'N', 'U', 'L', 'L'}, 0, { 0 } };
+static zmtp_greeting_t
+    greeting = { { 0xFF, 0, 0, 0, 0, 0, 0, 0, 1, 0x7F },
+                 { 3, 0 },
+                 { 'N', 'U', 'L', 'L'},
+                 0,
+                 { 0 }
+    };
 
 static void
 test_stream_to_dealer (void)
@@ -90,8 +95,8 @@ test_stream_to_dealer (void)
     assert (rc > 0);
     assert (zmq_msg_more (&identity));
 
-    // Verify the existence of Peer-Address metadata
-    char const* peer_address = zmq_msg_gets (&identity, "Peer-Address");
+    //  Verify the existence of Peer-Address metadata
+    char const *peer_address = zmq_msg_gets (&identity, "Peer-Address");
     assert (peer_address != 0);
     assert (streq (peer_address, "127.0.0.1"));
 
@@ -100,7 +105,7 @@ test_stream_to_dealer (void)
     rc = zmq_recv (stream, buffer, 255, 0);
     assert (rc == 0);
 
-    // Verify the existence of Peer-Address metadata
+    //  Verify the existence of Peer-Address metadata
     peer_address = zmq_msg_gets (&identity, "Peer-Address");
     assert (peer_address != 0);
     assert (streq (peer_address, "127.0.0.1"));
@@ -111,7 +116,7 @@ test_stream_to_dealer (void)
     assert (rc > 0);
     assert (zmq_msg_more (&identity));
 
-    // Verify the existence of Peer-Address metadata
+    //  Verify the existence of Peer-Address metadata
     peer_address = zmq_msg_gets (&identity, "Peer-Address");
     assert (peer_address != 0);
     assert (streq (peer_address, "127.0.0.1"));
@@ -189,6 +194,29 @@ test_stream_to_dealer (void)
     assert (rc == 5);
     assert (memcmp (buffer, "World", 5) == 0);
 
+    //  Test large messages over STREAM socket
+    int size = 64000;
+    uint8_t msgout [size];
+    memset (msgout, 0xAB, size);
+    zmq_send (dealer, msgout, size, 0);
+
+    uint8_t msgin [9 + size];
+    memset (msgin, 0, 9 + size);
+    bytes_read = 0;
+    while (bytes_read < 9 + size) {
+        //  Get identity frame
+        rc = zmq_recv (stream, buffer, 256, 0);
+        assert (rc > 0);
+        //  Get next chunk
+        rc = zmq_recv (stream, msgin + bytes_read, 9 + size - bytes_read, 0);
+        assert (rc > 0);
+        bytes_read += rc;
+    }
+    int byte_nbr;
+    for (byte_nbr = 0; byte_nbr < size; byte_nbr++) {
+        if (msgin [9 + byte_nbr] != 0xAB)
+            assert (false);
+    }
     rc = zmq_close (dealer);
     assert (rc == 0);
 
@@ -296,7 +324,6 @@ test_stream_to_stream (void)
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 }
-
 
 int main (void)
 {
