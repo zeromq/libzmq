@@ -62,6 +62,7 @@ int zmq::raw_decoder_t::decode (const uint8_t *data_, size_t size_,
 {
     int rc = in_progress.init ((unsigned char*)data_, size_,
                                shared_message_memory_allocator::call_dec_ref,
+                               allocator.buffer(),
                                allocator.create_refcnt() );
 
     // if the buffer serves as memory for a zero-copy message, release it

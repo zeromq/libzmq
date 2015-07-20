@@ -364,7 +364,8 @@ test_apps = \
 	tests/test_client_drop_more \
 	tests/test_thread_safe \
 	tests/test_socketopt_hwm \
-	tests/test_heartbeats
+	tests/test_heartbeats \
+	tests/test_stream_exceeds_buffer
 
 tests_test_system_SOURCES = tests/test_system.cpp
 tests_test_system_LDADD = src/libzmq.la
@@ -568,6 +569,9 @@ tests_test_socketopt_hwm_LDADD = src/libzmq.la
 
 tests_test_heartbeats_SOURCES = tests/test_heartbeats.cpp
 tests_test_heartbeats_LDADD = src/libzmq.la
+
+tests_test_stream_exceeds_buffer_SOURCES = tests/test_stream_exceeds_buffer.cpp
+tests_test_stream_exceeds_buffer_LDADD = src/libzmq.la
 
 if !ON_MINGW
 if !ON_CYGWIN
