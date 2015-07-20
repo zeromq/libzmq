@@ -33,7 +33,7 @@ are given a linger timeout of zero. You must still close all sockets before
 calling zmq_term.
 
 [horizontal]
-Default value:: false (old behavior)
+Default value:: true (old behavior)
 
 
 ZMQ_IO_THREADS: Set number of I/O threads
