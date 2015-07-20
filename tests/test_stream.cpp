@@ -195,7 +195,7 @@ test_stream_to_dealer (void)
     assert (memcmp (buffer, "World", 5) == 0);
 
     //  Test large messages over STREAM socket
-    int size = 64000;
+#   define size  64000
     uint8_t msgout [size];
     memset (msgout, 0xAB, size);
     zmq_send (dealer, msgout, size, 0);
