@@ -62,6 +62,9 @@ client_task (void *ctx)
     assert (control);
     int rc = zmq_setsockopt (control, ZMQ_SUBSCRIBE, "", 0);
     assert (rc == 0);
+    int linger = 0;
+    rc = zmq_setsockopt (control, ZMQ_LINGER, &linger, sizeof (linger));
+    assert (rc == 0);
     rc = zmq_connect (control, "inproc://control");
     assert (rc == 0);
 
@@ -70,6 +73,9 @@ client_task (void *ctx)
     char identity [ID_SIZE];
     sprintf (identity, "%04X-%04X", rand() % 0xFFFF, rand() % 0xFFFF);
     rc = zmq_setsockopt (client, ZMQ_IDENTITY, identity, ID_SIZE); // includes '\0' as an helper for printf
+    assert (rc == 0);
+    linger = 0;
+    rc = zmq_setsockopt (client, ZMQ_LINGER, &linger, sizeof (linger));
     assert (rc == 0);
     rc = zmq_connect (client, "tcp://127.0.0.1:5563");
     assert (rc == 0);
@@ -128,12 +134,17 @@ server_task (void *ctx)
     // Frontend socket talks to clients over TCP
     void *frontend = zmq_socket (ctx, ZMQ_ROUTER);
     assert (frontend);
-    int rc = zmq_bind (frontend, "tcp://127.0.0.1:5563");
+    int linger = 0;
+    int rc = zmq_setsockopt (frontend, ZMQ_LINGER, &linger, sizeof (linger));
+    assert (rc == 0);
+    rc = zmq_bind (frontend, "tcp://127.0.0.1:5563");
     assert (rc == 0);
 
     // Backend socket talks to workers over inproc
     void *backend = zmq_socket (ctx, ZMQ_DEALER);
     assert (backend);
+    rc = zmq_setsockopt (backend, ZMQ_LINGER, &linger, sizeof (linger));
+    assert (rc == 0);
     rc = zmq_bind (backend, "inproc://backend");
     assert (rc == 0);
 
@@ -141,6 +152,8 @@ server_task (void *ctx)
     void *control = zmq_socket (ctx, ZMQ_SUB);
     assert (control);
     rc = zmq_setsockopt (control, ZMQ_SUBSCRIBE, "", 0);
+    assert (rc == 0);
+    rc = zmq_setsockopt (control, ZMQ_LINGER, &linger, sizeof (linger));
     assert (rc == 0);
     rc = zmq_connect (control, "inproc://control");
     assert (rc == 0);
@@ -174,13 +187,18 @@ server_worker (void *ctx)
 {
     void *worker = zmq_socket (ctx, ZMQ_DEALER);
     assert (worker);
-    int rc = zmq_connect (worker, "inproc://backend");
+    int linger = 0;
+    int rc = zmq_setsockopt (worker, ZMQ_LINGER, &linger, sizeof (linger));
+    assert (rc == 0);
+    rc = zmq_connect (worker, "inproc://backend");
     assert (rc == 0);
 
     // Control socket receives terminate command from main over inproc
     void *control = zmq_socket (ctx, ZMQ_SUB);
     assert (control);
     rc = zmq_setsockopt (control, ZMQ_SUBSCRIBE, "", 0);
+    assert (rc == 0);
+    rc = zmq_setsockopt (control, ZMQ_LINGER, &linger, sizeof (linger));
     assert (rc == 0);
     rc = zmq_connect (control, "inproc://control");
     assert (rc == 0);
@@ -237,7 +255,10 @@ int main (void)
     // Control socket receives terminate command from main over inproc
     void *control = zmq_socket (ctx, ZMQ_PUB);
     assert (control);
-    int rc = zmq_bind (control, "inproc://control");
+    int linger = 0;
+    int rc = zmq_setsockopt (control, ZMQ_LINGER, &linger, sizeof (linger));
+    assert (rc == 0);
+    rc = zmq_bind (control, "inproc://control");
     assert (rc == 0);
 
     void *threads [QT_CLIENTS + 1];
