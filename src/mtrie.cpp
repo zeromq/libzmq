@@ -159,23 +159,28 @@ bool zmq::mtrie_t::add_helper (unsigned char *prefix_, size_t size_,
 
 void zmq::mtrie_t::rm (pipe_t *pipe_,
     void (*func_) (unsigned char *data_, size_t size_, void *arg_),
-    void *arg_)
+    void *arg_, bool call_on_uniq_)
 {
     unsigned char *buff = NULL;
-    rm_helper (pipe_, &buff, 0, 0, func_, arg_);
+    rm_helper (pipe_, &buff, 0, 0, func_, arg_, call_on_uniq_);
     free (buff);
 }
 
 void zmq::mtrie_t::rm_helper (pipe_t *pipe_, unsigned char **buff_,
     size_t buffsize_, size_t maxbuffsize_,
     void (*func_) (unsigned char *data_, size_t size_, void *arg_),
-    void *arg_)
+    void *arg_, bool call_on_uniq_)
 {
     //  Remove the subscription from this node.
-    if (pipes && pipes->erase (pipe_) && pipes->empty ()) {
-        func_ (*buff_, buffsize_, arg_);
-        delete pipes;
-        pipes = 0;
+    if (pipes && pipes->erase (pipe_)) {
+        if (!call_on_uniq_ || pipes->empty ()) {
+            func_ (*buff_, buffsize_, arg_);
+        }
+
+        if (pipes->empty ()) {
+            delete pipes;
+            pipes = 0;
+        }
     }
 
     //  Adjust the buffer.
@@ -194,7 +199,7 @@ void zmq::mtrie_t::rm_helper (pipe_t *pipe_, unsigned char **buff_,
         (*buff_) [buffsize_] = min;
         buffsize_++;
         next.node->rm_helper (pipe_, buff_, buffsize_, maxbuffsize_,
-            func_, arg_);
+            func_, arg_, call_on_uniq_);
 
         //  Prune the node if it was made redundant by the removal
         if (next.node->is_redundant ()) {
@@ -217,7 +222,7 @@ void zmq::mtrie_t::rm_helper (pipe_t *pipe_, unsigned char **buff_,
         (*buff_) [buffsize_] = min + c;
         if (next.table [c]) {
             next.table [c]->rm_helper (pipe_, buff_, buffsize_ + 1,
-                maxbuffsize_, func_, arg_);
+                maxbuffsize_, func_, arg_, call_on_uniq_);
 
             //  Prune redundant nodes from the mtrie
             if (next.table [c]->is_redundant ()) {

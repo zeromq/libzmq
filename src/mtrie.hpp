@@ -54,11 +54,12 @@ namespace zmq
         bool add (unsigned char *prefix_, size_t size_, zmq::pipe_t *pipe_);
 
         //  Remove all subscriptions for a specific peer from the trie.
-        //  If there are no subscriptions left on some topics, invoke the
-        //  supplied callback function.
+        //  The call_on_uniq_ flag controls if the callback is invoked
+        //  when there are no subscriptions left on some topics or on
+        //  every removal.
         void rm (zmq::pipe_t *pipe_,
             void (*func_) (unsigned char *data_, size_t size_, void *arg_),
-            void *arg_);
+            void *arg_, bool call_on_uniq_);
 
         //  Remove specific subscription from the trie. Return true is it was
         //  actually removed rather than de-duplicated.
@@ -75,7 +76,7 @@ namespace zmq
         void rm_helper (zmq::pipe_t *pipe_, unsigned char **buff_,
             size_t buffsize_, size_t maxbuffsize_,
             void (*func_) (unsigned char *data_, size_t size_, void *arg_),
-            void *arg_);
+            void *arg_, bool call_on_uniq_);
         bool rm_helper (unsigned char *prefix_, size_t size_,
             zmq::pipe_t *pipe_);
         bool is_redundant () const;

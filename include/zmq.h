@@ -319,6 +319,7 @@ ZMQ_EXPORT uint32_t zmq_msg_get_routing_id(zmq_msg_t *msg);
 #define ZMQ_HEARTBEAT_IVL 75
 #define ZMQ_HEARTBEAT_TTL 76
 #define ZMQ_HEARTBEAT_TIMEOUT 77
+#define ZMQ_XPUB_VERBOSE_UNSUBSCRIBE 78
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1
