@@ -132,9 +132,14 @@ namespace zmq
             bufsize = new_size;
         }
 
-        zmq::atomic_counter_t* create_refcnt ()
+        zmq::atomic_counter_t* provide_refcnt ()
         {
-            return msg_refcnt++;
+            return msg_refcnt;
+        }
+
+        void advance_refcnt ()
+        {
+            msg_refcnt++;
         }
 
     private:
