@@ -161,7 +161,7 @@ zmq::signaler_t::~signaler_t ()
         errno_assert (rc == 0);
     }
     if (r != retired_fd) {
-        rc = close_wait_ms (r);
+        int rc = close_wait_ms (r);
         errno_assert (rc == 0);
     }
 #endif
