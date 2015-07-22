@@ -56,6 +56,8 @@ int main (void)
     rc = zmq_msg_send(&msg, client, 0);
     assert (rc == 1);
 
+    rc = zmq_msg_init(&msg);
+    assert (rc == 0);
     rc = zmq_msg_recv(&msg, server, 0);
     assert (rc == 1);    
 
@@ -79,6 +81,9 @@ int main (void)
 
     rc = zmq_msg_recv(&msg, client, 0);
     assert (rc == 1);
+
+    rc = zmq_msg_close(&msg);
+    assert (rc == 0);
 
     rc = zmq_close (server);
     assert (rc == 0);

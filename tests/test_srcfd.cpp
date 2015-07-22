@@ -75,6 +75,9 @@ int main (void)
     int srcFd = zmq_msg_get(&msg, ZMQ_SRCFD);
     assert(srcFd >= 0);
 
+    rc = zmq_msg_close(&msg);
+    assert (rc == 0);
+
 	  // get the remote endpoint
     struct sockaddr_storage ss;
 #ifdef ZMQ_HAVE_HPUX

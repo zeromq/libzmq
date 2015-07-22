@@ -91,6 +91,8 @@ int main(int, char**)
     assert (rc != -1);
     assert(zmq_msg_size (&peer_frame) > 0);
     assert (has_more (sockets [SERVER]));
+    rc = zmq_msg_close (&peer_frame);
+    assert (rc == 0);
 
     // Server: Grab the 2nd frame (actual payload).
     zmq_msg_t data_frame;
@@ -99,6 +101,8 @@ int main(int, char**)
     rc = zmq_msg_recv (&data_frame, sockets [SERVER], 0);
     assert (rc != -1);
     assert(zmq_msg_size (&data_frame) == 0);
+    rc = zmq_msg_close (&data_frame);
+    assert (rc == 0);
 
     // Client: Grab the 1st frame (peer identity).
     rc = zmq_msg_init (&peer_frame);
@@ -107,6 +111,8 @@ int main(int, char**)
     assert (rc != -1);
     assert(zmq_msg_size (&peer_frame) > 0);
     assert (has_more (sockets [CLIENT]));
+    rc = zmq_msg_close (&peer_frame);
+    assert (rc == 0);
 
     // Client: Grab the 2nd frame (actual payload).
     rc = zmq_msg_init (&data_frame);
@@ -114,6 +120,8 @@ int main(int, char**)
     rc = zmq_msg_recv (&data_frame, sockets [CLIENT], 0);
     assert (rc != -1);
     assert(zmq_msg_size (&data_frame) == 0);
+    rc = zmq_msg_close (&data_frame);
+    assert (rc == 0);
 
     // Send initial message.
     char blob_data [256];
