@@ -133,28 +133,37 @@ zmq::signaler_t::signaler_t ()
 #endif
 }
 
+// This might get run after some part of construction failed, leaving one or
+// both of r and w retired_fd.
 zmq::signaler_t::~signaler_t ()
 {
 #if defined ZMQ_HAVE_EVENTFD
+    if (r == retired_fd) return;
     int rc = close_wait_ms (r);
     errno_assert (rc == 0);
 #elif defined ZMQ_HAVE_WINDOWS
-    const struct linger so_linger = { 1, 0 };
-    int rc = setsockopt (w, SOL_SOCKET, SO_LINGER,
-        (const char *) &so_linger, sizeof so_linger);
-    //  Only check shutdown if WSASTARTUP was previously done
-    if (rc == 0 || WSAGetLastError () != WSANOTINITIALISED) {
-        wsa_assert (rc != SOCKET_ERROR);
-        rc = closesocket (w);
-        wsa_assert (rc != SOCKET_ERROR);
-        rc = closesocket (r);
-        wsa_assert (rc != SOCKET_ERROR);
-    }
+    if (w != retired_fd) {
+        const struct linger so_linger = { 1, 0 };
+        int rc = setsockopt (w, SOL_SOCKET, SO_LINGER,
+            (const char *) &so_linger, sizeof so_linger);
+        //  Only check shutdown if WSASTARTUP was previously done
+        if (rc == 0 || WSAGetLastError () != WSANOTINITIALISED) {
+            wsa_assert (rc != SOCKET_ERROR);
+            rc = closesocket (w);
+            wsa_assert (rc != SOCKET_ERROR);
+            if (r == retired_fd) return;
+            rc = closesocket (r);
+            wsa_assert (rc != SOCKET_ERROR);
+        }
 #else
-    int rc = close_wait_ms (w);
-    errno_assert (rc == 0);
-    rc = close_wait_ms (r);
-    errno_assert (rc == 0);
+    if (w != retired_fd) {
+        int rc = close_wait_ms (w);
+        errno_assert (rc == 0);
+    }
+    if (r != retired_fd) {
+        rc = close_wait_ms (r);
+        errno_assert (rc == 0);
+    }
 #endif
 }
 

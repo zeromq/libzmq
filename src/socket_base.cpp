@@ -154,8 +154,11 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
 
     mailbox_t *mailbox = dynamic_cast<mailbox_t*> (s->mailbox);
 
-    if (mailbox != NULL && mailbox->get_fd () == retired_fd)
+    if (mailbox != NULL && mailbox->get_fd () == retired_fd) {
+        s->destroyed = true;
+        delete s;
         return NULL;
+    }
 
     return s;
 }
