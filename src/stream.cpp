@@ -229,6 +229,8 @@ int zmq::stream_t::xrecv (msg_t *msg_)
     //  Rather than sendig this frame, we keep it in prefetched
     //  buffer and send a frame with peer's ID.
     blob_t identity = pipe->get_identity ();
+    rc = msg_->close();
+    errno_assert (rc == 0);
     rc = msg_->init_size (identity.size ());
     errno_assert (rc == 0);
 
