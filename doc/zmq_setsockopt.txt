@@ -14,8 +14,9 @@ SYNOPSIS
 
 Caution: All options, with the exception of ZMQ_SUBSCRIBE, ZMQ_UNSUBSCRIBE,
 ZMQ_LINGER, ZMQ_ROUTER_HANDOVER, ZMQ_ROUTER_MANDATORY, ZMQ_PROBE_ROUTER,
-ZMQ_XPUB_VERBOSE, ZMQ_REQ_CORRELATE, ZMQ_REQ_RELAXED, ZMQ_SNDHWM
-and ZMQ_RCVHWM, only take effect for subsequent socket bind/connects.
+ZMQ_XPUB_VERBOSE, ZMQ_XPUB_VERBOSE_UNSUBSCRIBE, ZMQ_REQ_CORRELATE,
+ZMQ_REQ_RELAXED, ZMQ_SNDHWM and ZMQ_RCVHWM, only take effect for
+subsequent socket bind/connects.
 
 Specifically, security options take effect for subsequent bind/connect calls,
 and can be changed at any time to affect subsequent binds and/or connects.
@@ -831,6 +832,25 @@ ZMQ_XPUB_VERBOSE: provide all subscription messages on XPUB sockets
 Sets the 'XPUB' socket behaviour on new subscriptions and unsubscriptions.
 A value of '0' is the default and passes only new subscription messages to
 upstream. A value of '1' passes all subscription messages upstream.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1
+Default value:: 0
+Applicable socket types:: ZMQ_XPUB
+
+
+ZMQ_XPUB_VERBOSE_UNSUBSCRIBE: provide all unsubscription messages on XPUB sockets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the 'XPUB' socket behaviour on new subscriptions and unsubscriptions.
+A value of '0' is the default and passes only the last unsubscription message to
+upstream. A value of '1' passes all unsubscription messages upstream.
+
+This behaviour should be enabled in all the intermediary XPUB sockets if
+ZMQ_XPUB_VERBOSE is also being used in order to allow the correct forwarding
+of all the unsubscription messages.
+
+NOTE: This behaviour only takes effect when ZMQ_XPUB_VERBOSE is also enabled.
 
 [horizontal]
 Option value type:: int

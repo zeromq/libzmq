@@ -84,7 +84,11 @@ namespace zmq
 
         // If true, send all subscription messages upstream, not just
         // unique ones
-        bool verbose;
+        bool verbose_subs;
+
+        // If true, send all unsubscription messages upstream, not just
+        // unique ones
+        bool verbose_unsubs;
 
         //  True if we are in the middle of sending a multi-part message.
         bool more;
