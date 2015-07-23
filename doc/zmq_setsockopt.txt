@@ -716,11 +716,11 @@ Default value:: -1 (infinite)
 Applicable socket types:: all
 
 
-ZMQ_STREAM_NOTIFY: send connect notifications
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Enables connect notifications on a STREAM socket, when set to 1. By default a
-STREAM socket does not notify new connections. When notifications are enabled,
-it delivers a zero-length message to signal new client connections.
+ZMQ_STREAM_NOTIFY: send connect and disconnect notifications
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Enables connect and disconnect notifications on a STREAM socket, when set
+to 1. When notifications are enabled, the socket delivers a zero-length
+message when a peer connects or disconnects.
 
 [horizontal]
 Option value type:: int
