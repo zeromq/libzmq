@@ -155,6 +155,7 @@ zmq::signaler_t::~signaler_t ()
             rc = closesocket (r);
             wsa_assert (rc != SOCKET_ERROR);
         }
+    }
 #else
     if (w != retired_fd) {
         int rc = close_wait_ms (w);
