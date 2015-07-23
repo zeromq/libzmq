@@ -58,7 +58,7 @@ zmq::options_t::options_t () :
     invert_matching(false),
     recv_identity (false),
     raw_socket (false),
-    raw_notify (false),
+    raw_notify (true),
     tcp_keepalive (-1),
     tcp_keepalive_cnt (-1),
     tcp_keepalive_idle (-1),

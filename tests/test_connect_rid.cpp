@@ -36,12 +36,15 @@ void test_stream_2_stream(){
     char buff[256];
     char msg[] = "hi 1";
     const char *bindip = "tcp://127.0.0.1:5556";
+    int disabled = 0;
     int zero = 0;
     void *ctx = zmq_ctx_new ();
 
     //  Set up listener STREAM.
     rbind = zmq_socket (ctx, ZMQ_STREAM);
     assert (rbind);
+    ret = zmq_setsockopt (rbind, ZMQ_STREAM_NOTIFY, &disabled, sizeof (disabled));
+    assert (ret == 0);
     ret = zmq_setsockopt (rbind, ZMQ_LINGER, &zero, sizeof (zero));
     assert (0 == ret);
     ret = zmq_bind (rbind, bindip);
