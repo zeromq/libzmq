@@ -103,8 +103,9 @@ int zmq::msg_t::init_size (size_t size_)
         u.lmsg.type = type_lmsg;
         u.lmsg.flags = 0;
         u.lmsg.routing_id = 0;
-        u.lmsg.content =
-            (content_t*) malloc (sizeof (content_t) + size_);
+        u.lmsg.content = NULL;
+        if (sizeof (content_t) + size_ > size_)
+            u.lmsg.content = (content_t*) malloc (sizeof (content_t) + size_);
         if (unlikely (!u.lmsg.content)) {
             errno = ENOMEM;
             return -1;
