@@ -82,6 +82,7 @@
     <ClInclude Include="..\..\..\..\src\curve_client.hpp" />
     <ClInclude Include="..\..\..\..\src\curve_server.hpp" />
     <ClInclude Include="..\..\..\..\src\decoder.hpp" />
+    <ClInclude Include="..\..\..\..\src\decoder_allocators.hpp" />
     <ClInclude Include="..\..\..\..\src\devpoll.hpp" />
     <ClInclude Include="..\..\..\..\src\dist.hpp" />
     <ClInclude Include="..\..\..\..\src\encoder.hpp" />
@@ -168,6 +169,7 @@
     <ClCompile Include="..\..\..\..\src\curve_client.cpp" />
     <ClCompile Include="..\..\..\..\src\curve_server.cpp" />
     <ClCompile Include="..\..\..\..\src\dealer.cpp" />
+    <ClCompile Include="..\..\..\..\src\decoder_allocators.cpp" />
     <ClCompile Include="..\..\..\..\src\devpoll.cpp" />
     <ClCompile Include="..\..\..\..\src\dist.cpp" />
     <ClCompile Include="..\..\..\..\src\epoll.cpp" />

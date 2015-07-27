@@ -38,7 +38,7 @@ zmq::shared_message_memory_allocator::shared_message_memory_allocator (std::size
     bufsize(0),
     max_size(bufsize_),
     msg_refcnt(NULL),
-    maxCounters (std::ceil (static_cast <double> (max_size) / static_cast <double> (msg_t::max_vsm_size)))
+    maxCounters (static_cast <size_t> (std::ceil (static_cast <double> (max_size) / static_cast <double> (msg_t::max_vsm_size))))
 {
 }
 
