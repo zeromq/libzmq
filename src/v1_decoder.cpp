@@ -80,10 +80,9 @@ int zmq::v1_decoder_t::one_byte_size_ready (unsigned char const*)
             return -1;
         }
 
-        //  in_progress is initialised at this point so in theory we should
-        //  close it before calling zmq_msg_init_size, however, it's a 0-byte
-        //  message and thus we can treat it as uninitialised...
-        int rc = in_progress.init_size (*tmpbuf - 1);
+        int rc = in_progress.close();
+        assert(rc == 0);
+        rc = in_progress.init_size (*tmpbuf - 1);
         if (rc != 0) {
             errno_assert (errno == ENOMEM);
             rc = in_progress.init ();
@@ -123,10 +122,9 @@ int zmq::v1_decoder_t::eight_byte_size_ready (unsigned char const*)
 
     const size_t msg_size = static_cast <size_t> (payload_length - 1);
 
-    //  in_progress is initialised at this point so in theory we should
-    //  close it before calling init_size, however, it's a 0-byte
-    //  message and thus we can treat it as uninitialised...
-    int rc = in_progress.init_size (msg_size);
+    int rc = in_progress.close();
+    assert(rc == 0);
+    rc = in_progress.init_size (msg_size);
     if (rc != 0) {
         errno_assert (errno == ENOMEM);
         rc = in_progress.init ();
