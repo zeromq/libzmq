@@ -63,6 +63,18 @@ get_monitor_event (void *monitor)
 }
 
 static void
+recv_with_retry (int fd, char *buffer, int bytes) {
+  int received = 0;
+    while (true) {
+      int rc = recv(fd, buffer + received, bytes - received, 0);
+      assert(rc > 0);
+      received += rc;
+      assert(received <= bytes);
+      if (received == bytes) break;
+    }
+}
+
+static void
 mock_handshake (int fd) {
     const uint8_t zmtp_greeting[33] = { 0xff, 0, 0, 0, 0, 0, 0, 0, 0, 0x7f, 3, 0, 'N', 'U', 'L', 'L', 0 };
     char buffer[128];
@@ -72,8 +84,7 @@ mock_handshake (int fd) {
     int rc = send(fd, buffer, 64, 0);
     assert(rc == 64);
 
-    rc = recv(fd, buffer, 64, 0);
-    assert(rc == 64);
+    recv_with_retry(fd, buffer, 64);
 
     const uint8_t zmtp_ready[43] = {
         4, 41, 5, 'R', 'E', 'A', 'D', 'Y', 11, 'S', 'o', 'c', 'k', 'e', 't', '-', 'T', 'y', 'p', 'e',
@@ -86,8 +97,7 @@ mock_handshake (int fd) {
     rc = send(fd, buffer, 43, 0);
     assert(rc == 43);
 
-    rc = recv(fd, buffer, 43, 0);
-    assert(rc == 43);
+    recv_with_retry(fd, buffer, 43);
 }
 
 static void
