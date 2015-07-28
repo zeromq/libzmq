@@ -125,9 +125,14 @@ int main (void)
     event = get_monitor_event (server_mon, NULL, NULL);
     assert (event == ZMQ_EVENT_ACCEPTED);
     event = get_monitor_event (server_mon, NULL, NULL);
-    assert (event == ZMQ_EVENT_CLOSED);
-    event = get_monitor_event (server_mon, NULL, NULL);
-    assert (event == ZMQ_EVENT_MONITOR_STOPPED);
+    //  Sometimes the server sees the client closing before it gets closed.
+    if (event != ZMQ_EVENT_DISCONNECTED) {
+      assert (event == ZMQ_EVENT_CLOSED);
+      event = get_monitor_event (server_mon, NULL, NULL);
+    }
+    if (event != ZMQ_EVENT_DISCONNECTED) {
+      assert (event == ZMQ_EVENT_MONITOR_STOPPED);
+    }
     
     //  Close down the sockets
     close_zero_linger (client_mon);
