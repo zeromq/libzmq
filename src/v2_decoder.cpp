@@ -108,10 +108,8 @@ int zmq::v2_decoder_t::size_ready(uint64_t msg_size, unsigned char const* read_p
         return -1;
     }
 
-    //  in_progress is initialised at this point so in theory we should
-    //  close it before calling init_size, however, it's a 0-byte
-    //  message and thus we can treat it as uninitialised.
-    int rc = -1;
+    int rc = in_progress.close();
+    assert(rc == 0);
 
     // the current message can exceed the current buffer. We have to copy the buffer
     // data into a new message and complete it in the next receive.
