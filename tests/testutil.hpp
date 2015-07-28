@@ -282,8 +282,10 @@ void setup_test_environment()
     // abort test after 121 seconds
     alarm(121);
 #else
+#   if !defined ZMQ_DISABLE_TEST_TIMEOUT
     // abort test after 60 seconds
     alarm(60);
+#   endif
 #endif
 #endif
 #if defined __MVS__
