@@ -110,7 +110,7 @@ void worker1(void* s)
 
 		if (c == 0)
 		{
-			msleep(10);			
+			msleep(100);
 			rc = zmq_send_const(s,&worker_id, 1, 0);
 			assert(rc == 1);
 		}
@@ -136,7 +136,7 @@ void worker2(void* s)
 
 		if (c == 0)
 		{
-			msleep(10);			
+			msleep(100);
 			rc = zmq_send_const(s,&worker_id, 1, 0);
 			assert(rc == 1);
 		}
