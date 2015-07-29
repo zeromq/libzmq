@@ -58,7 +58,6 @@ int main()
         rcvbytes = zmq_msg_recv(&msg, zsock, 0);
         assert(rcvbytes!=-1);
         assert(!zmq_msg_more(&msg));
-        printf("got %d bytes\n", rcvbytes);
     }
 
     // for this test, we only collect the first chunk
@@ -72,7 +71,6 @@ int main()
     zmq_ctx_destroy(zctx);
 
     assert(rcvbytes >= 4);
-    printf("%x %x %x %x\n", rcvbuf[0], rcvbuf[1], rcvbuf[2], rcvbuf[3]);
 
     // notice that only the 1st byte gets corrupted
     assert(rcvbuf[3]==0xef);
