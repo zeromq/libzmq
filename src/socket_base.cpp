@@ -304,6 +304,7 @@ int zmq::socket_base_t::getsockopt (int option_, void *optval_,
             errno = EINVAL;
             return -1;
         }
+        memset(optval_, 0, *optvallen_);
         *((int*) optval_) = rcvmore ? 1 : 0;
         *optvallen_ = sizeof (int);
         return 0;
