@@ -2,6 +2,10 @@
 
 language: c
 
+os:
+- linux
+- osx
+
 env:
 - BUILD_TYPE=default
 - BUILD_TYPE=qt-android
