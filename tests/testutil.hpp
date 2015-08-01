@@ -122,7 +122,7 @@ expect_bounce_fail (void *server, void *client)
 {
     const char *content = "12345678ABCDEFGH12345678abcdefgh";
     char buffer [32];
-    int timeout = 150;
+    int timeout = 250;
 
     //  Send message from client to server
     int rc = zmq_setsockopt (client, ZMQ_SNDTIMEO, &timeout, sizeof (int));

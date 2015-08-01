@@ -47,7 +47,7 @@ static void bounce_fail (void *server, void *client)
     assert (rc == 32);
 
     //  Receive message at server side (should not succeed)
-    int timeout = 150;
+    int timeout = 250;
     rc = zmq_setsockopt (server, ZMQ_RCVTIMEO, &timeout, sizeof (int));
     assert (rc == 0);
     rc = zmq_recv (server, buffer, 32, 0);
@@ -87,7 +87,7 @@ static void run_test (int opt, T optval, int expected_error, int bounce_test)
     assert (sc);
 
     // If a test fails, don't hang for too long
-    int timeout = 1500;
+    int timeout = 2500;
     rc = zmq_setsockopt (sb, ZMQ_RCVTIMEO, &timeout, sizeof (int));
     assert (rc == 0);
     rc = zmq_setsockopt (sb, ZMQ_SNDTIMEO, &timeout, sizeof (int));
