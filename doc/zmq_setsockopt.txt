@@ -890,8 +890,8 @@ Default value:: 0
 Applicable socket types:: ZMQ_XPUB, ZMQ_PUB
 
 
-ZMQ_WELCOME_MSG: set welcome message that will be received by subscriber when connecting
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_XPUB_WELCOME_MSG: set welcome message that will be received by subscriber when connecting
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sets a welcome message the will be recieved by subscriber when connecting.
 Subscriber must subscribe to the Welcome message before connecting.
 Welcome message will also be sent on reconnecting.
