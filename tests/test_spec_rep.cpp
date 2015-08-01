@@ -27,7 +27,7 @@ void test_fair_queue_in (void *ctx)
     void *rep = zmq_socket (ctx, ZMQ_REP);
     assert (rep);
 
-    int timeout = 100;
+    int timeout = 250;
     int rc = zmq_setsockopt (rep, ZMQ_RCVTIMEO, &timeout, sizeof (int));
     assert (rc == 0);
 

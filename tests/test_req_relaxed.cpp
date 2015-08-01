@@ -44,7 +44,7 @@ int main (void)
         rep [peer] = zmq_socket (ctx, ZMQ_REP);
         assert (rep [peer]);
 
-        int timeout = 100;
+        int timeout = 250;
         rc = zmq_setsockopt (rep [peer], ZMQ_RCVTIMEO, &timeout, sizeof (int));
         assert (rc == 0);
 
