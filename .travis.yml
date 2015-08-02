@@ -2,12 +2,22 @@
 
 language: c
 
+os:
+- linux
+- osx
+
 #   Build required projects first
 before_script:
 
 #   libsodium
 - git clone git://github.com/jedisct1/libsodium.git
-- ( cd libsodium; ./autogen.sh; ./configure; make check; sudo make install; sudo ldconfig )
+- ( cd libsodium; ./autogen.sh; ./configure; make check; sudo make install;
+      if [ $TRAVIS_OS_NAME != "osx" ] ; then sudo ldconfig ; fi )
+
+# ZMQ stress tests need more open socket (files) than the usual default
+# On OSX, it seems the way to set the max files limit is constantly changing, so
+# try to use all known knobs to ensure compatibility across various versions
+- if [ $TRAVIS_OS_NAME == "osx" ] ; then sudo sysctl -w kern.maxfiles=64000 ; sudo sysctl -w kern.maxfilesperproc=64000 ; sudo launchctl limit maxfiles 64000 64000 ; fi ; ulimit -n 64000
 
 #   Build and check this project
 script:
