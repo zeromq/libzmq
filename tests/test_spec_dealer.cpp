@@ -46,7 +46,7 @@ void test_round_robin_out (void *ctx)
         rep [peer] = zmq_socket (ctx, ZMQ_REP);
         assert (rep [peer]);
 
-        int timeout = 100;
+        int timeout = 250;
         rc = zmq_setsockopt (rep [peer], ZMQ_RCVTIMEO, &timeout, sizeof (int));
         assert (rc == 0);
 
@@ -87,7 +87,7 @@ void test_fair_queue_in (void *ctx)
     void *receiver = zmq_socket (ctx, ZMQ_DEALER);
     assert (receiver);
 
-    int timeout = 100;
+    int timeout = 250;
     int rc = zmq_setsockopt (receiver, ZMQ_RCVTIMEO, &timeout, sizeof (int));
     assert (rc == 0);
 
@@ -210,7 +210,7 @@ void test_block_on_send_no_peers (void *ctx)
     void *sc = zmq_socket (ctx, ZMQ_DEALER);
     assert (sc);
 
-    int timeout = 100;
+    int timeout = 250;
     int rc = zmq_setsockopt (sc, ZMQ_SNDTIMEO, &timeout, sizeof (timeout));
     assert (rc == 0);
 
