@@ -44,7 +44,8 @@ noinst_PROGRAMS = test_system \
                   test_abstract_ipc \
                   test_proxy_single_socket \
                   test_proxy_terminate \
-                  test_many_sockets
+                  test_many_sockets \
+                  test_stream_empty
 
 if !ON_MINGW
 noinst_PROGRAMS += test_shutdown_stress \
@@ -96,6 +97,7 @@ test_abstract_ipc_SOURCES = test_abstract_ipc.cpp
 test_many_sockets_SOURCES = test_many_sockets.cpp
 test_proxy_single_socket_SOURCES = test_proxy_single_socket.cpp
 test_proxy_terminate_SOURCES = test_proxy_terminate.cpp
+test_stream_empty_SOURCES = test_stream_empty.cpp
 if !ON_MINGW
 test_shutdown_stress_SOURCES = test_shutdown_stress.cpp
 test_pair_ipc_SOURCES = test_pair_ipc.cpp testutil.hpp
