@@ -282,7 +282,16 @@ function android_build_verify_so {
     fi
     android_build_check_fail
     
-    local elfoutput=$(readelf -d ${sofile})
+    if command -v readelf >/dev/null 2>&1 ; then
+        local readelf_bin="readelf"
+    elif command -v greadelf >/dev/null 2>&1 ; then
+        local readelf_bin="greadelf"
+    else
+        ANDROID_BUILD_FAIL+=("Could not find [g]readelf")
+    fi
+    android_build_check_fail
+
+    local elfoutput=$($readelf_bin -d ${sofile})
     
     local soname_regexp='soname: \[([[:alnum:]\.]+)\]'
     if [[ $elfoutput =~ $soname_regexp ]]; then
