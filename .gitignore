@@ -22,6 +22,9 @@ autom4te.cache
 *~
 .*~
 curve_keygen
+test_heartbeats
+test_msg_ffn
+test_socketopt_hwm
 test_resource
 test_ipc_wildcard
 test_stream_empty
@@ -52,6 +55,8 @@ test_immediate
 test_term_endpoint
 test_router_mandatory
 test_disconnect_inproc
+test_unbind_inproc
+test_unbind_wildcard
 test_raw_sock
 test_disconnect_inproc
 test_ctx_options
@@ -74,6 +79,8 @@ test_linger
 test_security_null
 test_security_plain
 test_proxy
+test_proxy_single_socket
+test_proxy_terminate
 test_abstract_ipc
 test_filter_ipc
 test_connect_delay_tipc

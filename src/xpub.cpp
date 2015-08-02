@@ -1,17 +1,27 @@
 /*
     Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -26,7 +36,8 @@
 
 zmq::xpub_t::xpub_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     socket_base_t (parent_, tid_, sid_),
-    verbose (false),
+    verbose_subs (false),
+    verbose_unsubs (false),
     more (false),
     lossy (true),
 	manual(false),
@@ -91,9 +102,11 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
 				else
 					unique = subscriptions.add(data + 1, size - 1, pipe_);
 
-				//  If the subscription is not a duplicate store it so that it can be
-				//  passed to used on next recv call. (Unsubscribe is not verbose.)
-				if (options.type == ZMQ_XPUB && (unique || (*data && verbose))) {
+				//  If the (un)subscription is not a duplicate store it so that it can be
+				//  passed to the user on next recv call unless verbose mode is enabled
+				//  which makes to pass always these messages.
+				if (options.type == ZMQ_XPUB && (unique || (*data == 1 && verbose_subs) ||
+						(*data == 0 && verbose_unsubs && verbose_subs))) {
 					pending_data.push_back(blob_t(data, size));
 					pending_flags.push_back(0);
 				}
@@ -116,7 +129,8 @@ void zmq::xpub_t::xwrite_activated (pipe_t *pipe_)
 int zmq::xpub_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {	
-	if (option_ == ZMQ_XPUB_VERBOSE || option_ == ZMQ_XPUB_NODROP || option_ == ZMQ_XPUB_MANUAL)
+	if (option_ == ZMQ_XPUB_VERBOSE || option_ == ZMQ_XPUB_VERBOSE_UNSUBSCRIBE ||
+		option_ == ZMQ_XPUB_NODROP || option_ == ZMQ_XPUB_MANUAL)
 	{
 		if (optvallen_ != sizeof(int) || *static_cast <const int*> (optval_) < 0) {
 			errno = EINVAL;
@@ -124,7 +138,10 @@ int zmq::xpub_t::xsetsockopt (int option_, const void *optval_,
 		}
 
 		if (option_ == ZMQ_XPUB_VERBOSE)
-			verbose = (*static_cast <const int*> (optval_) != 0);
+			verbose_subs = (*static_cast <const int*> (optval_) != 0);
+		else
+		if (option_ == ZMQ_XPUB_VERBOSE_UNSUBSCRIBE)
+			verbose_unsubs = (*static_cast <const int*> (optval_) != 0);
 		else
 		if (option_ == ZMQ_XPUB_NODROP)
 			lossy = (*static_cast <const int*> (optval_) == 0);
@@ -163,7 +180,7 @@ void zmq::xpub_t::xpipe_terminated (pipe_t *pipe_)
     //  Remove the pipe from the trie. If there are topics that nobody
     //  is interested in anymore, send corresponding unsubscriptions
     //  upstream.
-    subscriptions.rm (pipe_, send_unsubscription, this);
+    subscriptions.rm (pipe_, send_unsubscription, this, !verbose_unsubs);
 
     dist.pipe_terminated (pipe_);
 }

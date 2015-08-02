@@ -207,7 +207,10 @@ src_libzmq_la_SOURCES = \
 	src/ypipe_conflate.hpp \
 	src/yqueue.hpp \
 	src/zmq.cpp \
-	src/zmq_utils.cpp
+	src/zmq_utils.cpp \
+        src/decoder_allocators.hpp \
+        src/decoder_allocators.cpp
+
 
 if ON_MINGW
 src_libzmq_la_LDFLAGS = \
@@ -308,6 +311,7 @@ test_apps = \
 	tests/test_sub_forward \
 	tests/test_invalid_rep \
 	tests/test_msg_flags \
+	tests/test_msg_ffn \
 	tests/test_connect_resolve \
 	tests/test_immediate \
 	tests/test_last_endpoint \
@@ -323,6 +327,8 @@ test_apps = \
 	tests/test_stream_disconnect \
 	tests/test_stream_timeout \
 	tests/test_disconnect_inproc \
+	tests/test_unbind_inproc \
+	tests/test_unbind_wildcard \
 	tests/test_ctx_options \
 	tests/test_ctx_destroy \
 	tests/test_security_null \
@@ -340,6 +346,8 @@ test_apps = \
 	tests/test_inproc_connect \
 	tests/test_issue_566 \
 	tests/test_proxy \
+	tests/test_proxy_single_socket \
+	tests/test_proxy_terminate \
 	tests/test_many_sockets \
 	tests/test_ipc_wildcard \
 	tests/test_diffserv \
@@ -354,7 +362,10 @@ test_apps = \
 	tests/test_client_server \
 	tests/test_server_drop_more \
 	tests/test_client_drop_more \
-	tests/test_thread_safe
+	tests/test_thread_safe \
+	tests/test_socketopt_hwm \
+	tests/test_heartbeats \
+	tests/test_stream_exceeds_buffer
 
 tests_test_system_SOURCES = tests/test_system.cpp
 tests_test_system_LDADD = src/libzmq.la
@@ -396,6 +407,9 @@ tests_test_invalid_rep_LDADD = src/libzmq.la
 
 tests_test_msg_flags_SOURCES = tests/test_msg_flags.cpp
 tests_test_msg_flags_LDADD = src/libzmq.la
+
+tests_test_msg_ffn_SOURCES = tests/test_msg_ffn.cpp
+tests_test_msg_ffn_LDADD = src/libzmq.la
 
 tests_test_connect_resolve_SOURCES = tests/test_connect_resolve.cpp
 tests_test_connect_resolve_LDADD = src/libzmq.la
@@ -441,6 +455,12 @@ tests_test_stream_disconnect_LDADD = src/libzmq.la
 
 tests_test_disconnect_inproc_SOURCES = tests/test_disconnect_inproc.cpp
 tests_test_disconnect_inproc_LDADD = src/libzmq.la
+
+tests_test_unbind_inproc_SOURCES = tests/test_unbind_inproc.cpp
+tests_test_unbind_inproc_LDADD = src/libzmq.la
+
+tests_test_unbind_wildcard_SOURCES = tests/test_unbind_wildcard.cpp
+tests_test_unbind_wildcard_LDADD = src/libzmq.la
 
 tests_test_ctx_options_SOURCES = tests/test_ctx_options.cpp
 tests_test_ctx_options_LDADD = src/libzmq.la
@@ -493,6 +513,12 @@ tests_test_issue_566_LDADD = src/libzmq.la
 tests_test_proxy_SOURCES = tests/test_proxy.cpp
 tests_test_proxy_LDADD = src/libzmq.la
 
+tests_test_proxy_single_socket_SOURCES = tests/test_proxy_single_socket.cpp
+tests_test_proxy_single_socket_LDADD = src/libzmq.la
+
+tests_test_proxy_terminate_SOURCES = tests/test_proxy_terminate.cpp
+tests_test_proxy_terminate_LDADD = src/libzmq.la
+
 tests_test_many_sockets_SOURCES = tests/test_many_sockets.cpp
 tests_test_many_sockets_LDADD = src/libzmq.la
 
@@ -538,7 +564,14 @@ tests_test_client_drop_more_LDADD = src/libzmq.la
 tests_test_thread_safe_SOURCES = tests/test_thread_safe.cpp
 tests_test_thread_safe_LDADD = src/libzmq.la
 
+tests_test_socketopt_hwm_SOURCES = tests/test_sockopt_hwm.cpp
+tests_test_socketopt_hwm_LDADD = src/libzmq.la
 
+tests_test_heartbeats_SOURCES = tests/test_heartbeats.cpp
+tests_test_heartbeats_LDADD = src/libzmq.la
+
+tests_test_stream_exceeds_buffer_SOURCES = tests/test_stream_exceeds_buffer.cpp
+tests_test_stream_exceeds_buffer_LDADD = src/libzmq.la
 
 if !ON_MINGW
 if !ON_CYGWIN
@@ -627,7 +660,7 @@ check_PROGRAMS = ${test_apps}
 
 #  Run the test cases
 TESTS = $(test_apps)
-XFAIL_TESTS =
+XFAIL_TESTS = 
 
 if !ON_LINUX
 XFAIL_TESTS += tests/test_abstract_ipc

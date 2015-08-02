@@ -1,17 +1,27 @@
 /*
     Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -144,8 +154,11 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
 
     mailbox_t *mailbox = dynamic_cast<mailbox_t*> (s->mailbox);
 
-    if (mailbox != NULL && mailbox->get_fd () == retired_fd)
+    if (mailbox != NULL && mailbox->get_fd () == retired_fd) {
+        s->destroyed = true;
+        delete s;
         return NULL;
+    }
 
     return s;
 }
@@ -302,6 +315,13 @@ int zmq::socket_base_t::setsockopt (int option_, const void *optval_,
 {
     ENTER_MUTEX();
 
+	if (!options.is_valid(option_)) {
+		errno = EINVAL;
+		EXIT_MUTEX();
+		return -1;
+	}
+
+
     if (unlikely (ctx_terminated)) {
         errno = ETERM;
         EXIT_MUTEX();
@@ -318,6 +338,7 @@ int zmq::socket_base_t::setsockopt (int option_, const void *optval_,
     //  If the socket type doesn't support the option, pass it to
     //  the generic option parser.
     rc = options.setsockopt (option_, optval_, optvallen_);
+	update_pipe_options(option_);
 
     EXIT_MUTEX();
     return rc;
@@ -437,6 +458,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         if (rc == 0) {
             connect_pending (addr_, this);
             last_endpoint.assign (addr_);
+            options.connected = true;
         }
         EXIT_MUTEX();
         return rc;
@@ -446,7 +468,10 @@ int zmq::socket_base_t::bind (const char *addr_)
         //  For convenience's sake, bind can be used interchageable with
         //  connect for PGM, EPGM and NORM transports.
         EXIT_MUTEX();
-        return connect (addr_);
+        rc = connect (addr_);
+        if (rc != -1)
+            options.connected = true;
+        return rc;
     }
 
     //  Remaining trasnports require to be run in an I/O thread, so at this
@@ -474,6 +499,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         listener->get_address (last_endpoint);
 
         add_endpoint (last_endpoint.c_str (), (own_t *) listener, NULL);
+        options.connected = true;
         EXIT_MUTEX();
         return 0;
     }
@@ -495,6 +521,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         listener->get_address (last_endpoint);
 
         add_endpoint (last_endpoint.c_str (), (own_t *) listener, NULL);
+        options.connected = true;
         EXIT_MUTEX();
         return 0;
     }
@@ -516,6 +543,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         listener->get_address (last_endpoint);
 
         add_endpoint (addr_, (own_t *) listener, NULL);
+        options.connected = true;
         EXIT_MUTEX();
         return 0;
     }
@@ -588,6 +616,11 @@ int zmq::socket_base_t::connect (const char *addr_)
         int hwms [2] = {conflate? -1 : sndhwm, conflate? -1 : rcvhwm};
         bool conflates [2] = {conflate, conflate};
         int rc = pipepair (parents, new_pipes, hwms, conflates);
+        if (!conflate) {
+            new_pipes[0]->set_hwms_boost(peer.options.sndhwm, peer.options.rcvhwm);
+            new_pipes[1]->set_hwms_boost(options.sndhwm, options.rcvhwm);
+        }
+
         errno_assert (rc == 0);
 
         if (!peer.socket) {
@@ -647,6 +680,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         // remember inproc connections for disconnect
         inprocs.insert (inprocs_t::value_type (std::string (addr_), new_pipes [0]));
 
+        options.connected = true;
         EXIT_MUTEX();
         return 0;
     }
@@ -686,11 +720,12 @@ int zmq::socket_base_t::connect (const char *addr_)
         //  Following code is quick and dirty check to catch obvious errors,
         //  without trying to be fully accurate.
         const char *check = address.c_str ();
-        if (isalnum (*check) || isxdigit (*check)) {
+        if (isalnum (*check) || isxdigit (*check) || *check == '[') {
             check++;
             while (isalnum  (*check)
                 || isxdigit (*check)
-                || *check == '.' || *check == '-' || *check == ':'|| *check == ';')
+                || *check == '.' || *check == '-' || *check == ':'|| *check == ';'
+                || *check == ']')
                 check++;
         }
         //  Assume the worst, now look for success
@@ -737,9 +772,10 @@ int zmq::socket_base_t::connect (const char *addr_)
         int rc = pgm_socket_t::init_address(address.c_str(), &res, &port_number);
         if (res != NULL)
             pgm_freeaddrinfo (res);
-        if (rc != 0 || port_number == 0)
-            EXIT_MUTEX();
-            return -1;
+        if (rc != 0 || port_number == 0) {
+          EXIT_MUTEX();
+          return -1;
+        }
     }
 #endif
 #if defined ZMQ_HAVE_TIPC
@@ -1223,6 +1259,18 @@ void zmq::socket_base_t::process_term (int linger_)
     own_t::process_term (linger_);
 }
 
+void zmq::socket_base_t::update_pipe_options(int option_)
+{
+	if (option_ == ZMQ_SNDHWM || option_ == ZMQ_RCVHWM) 
+	{
+		for (pipes_t::size_type i = 0; i != pipes.size(); ++i)
+		{
+			pipes[i]->set_hwms(options.rcvhwm, options.sndhwm);
+		}
+	}
+
+}
+
 void zmq::socket_base_t::process_destroy ()
 {
     destroyed = true;
@@ -1488,9 +1536,23 @@ void zmq::socket_base_t::monitor_event (int event_, int value_, const std::strin
         //  Send event in first frame
         zmq_msg_t msg;
         zmq_msg_init_size (&msg, 6);
+#ifdef ZMQ_HAVE_HPUX
+        // avoid SIGBUS
+        union {
+          uint8_t data[6];
+          struct {
+            uint16_t event;
+            uint32_t value;
+          } v;
+        } u;
+        u.v.event = event_;
+        u.v.value = value_;
+        memcpy(zmq_msg_data (&msg), u.data, 6);
+#else
         uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
         *(uint16_t *) (data + 0) = (uint16_t) event_;
         *(uint32_t *) (data + 2) = (uint32_t) value_;
+#endif
         zmq_sendmsg (monitor_socket, &msg, ZMQ_SNDMORE);
 
         //  Send address in second frame

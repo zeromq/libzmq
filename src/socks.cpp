@@ -1,17 +1,27 @@
 /*
     Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -37,12 +47,10 @@ zmq::socks_greeting_t::socks_greeting_t (uint8_t method_) :
 }
 
 zmq::socks_greeting_t::socks_greeting_t (
-        uint8_t *methods_, size_t num_methods_)
+    uint8_t *methods_, uint8_t num_methods_)
     : num_methods (num_methods_)
 {
-    zmq_assert (num_methods_ <= 255);
-
-    for (size_t i = 0; i < num_methods_; i++)
+    for (uint8_t i = 0; i < num_methods_; i++)
         methods [i] = methods_ [i];
 }
 
@@ -55,8 +63,8 @@ void zmq::socks_greeting_encoder_t::encode (const socks_greeting_t &greeting_)
     uint8_t *ptr = buf;
 
     *ptr++ = 0x05;
-    *ptr++ = greeting_.num_methods;
-    for (size_t i = 0; i < greeting_.num_methods; i++)
+    *ptr++ = (uint8_t) greeting_.num_methods;
+    for (uint8_t i = 0; i < greeting_.num_methods; i++)
         *ptr++ = greeting_.methods [i];
 
     bytes_encoded = 2 + greeting_.num_methods;
@@ -118,10 +126,13 @@ void zmq::socks_choice_decoder_t::reset ()
     bytes_read = 0;
 }
 
+
 zmq::socks_request_t::socks_request_t (
         uint8_t command_, std::string hostname_, uint16_t port_)
     : command (command_), hostname (hostname_), port (port_)
-{}
+{
+    zmq_assert (hostname_.size () <= UINT8_MAX);
+}
 
 zmq::socks_request_encoder_t::socks_request_encoder_t ()
     : bytes_encoded (0), bytes_written (0)
@@ -129,6 +140,8 @@ zmq::socks_request_encoder_t::socks_request_encoder_t ()
 
 void zmq::socks_request_encoder_t::encode (const socks_request_t &req)
 {
+    zmq_assert (req.hostname.size() <= UINT8_MAX);
+
     unsigned char *ptr = buf;
     *ptr++ = 0x05;
     *ptr++ = req.command;
@@ -163,7 +176,7 @@ void zmq::socks_request_encoder_t::encode (const socks_request_t &req)
     }
     else {
         *ptr++ = 0x03;
-        *ptr++ = req.hostname.size ();
+        *ptr++ = (unsigned char) req.hostname.size ();
         memcpy (ptr, req.hostname.c_str (), req.hostname.size ());
         ptr += req.hostname.size ();
     }

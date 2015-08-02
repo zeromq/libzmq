@@ -12,6 +12,7 @@ set(tests
         test_sub_forward
         test_invalid_rep
         test_msg_flags
+        test_msg_ffn
         test_connect_resolve
         test_immediate
         test_last_endpoint
@@ -22,6 +23,8 @@ set(tests
         test_stream_empty
         test_stream_disconnect
         test_disconnect_inproc
+        test_unbind_inproc
+        test_unbind_wildcard
         test_ctx_options
         test_ctx_destroy
         test_security_null
@@ -47,6 +50,8 @@ set(tests
         test_pub_invert_matching
         test_thread_safe
         test_client_server
+	test_sockopt_hwm
+        test_heartbeats
 )
 if(NOT WIN32)
   list(APPEND tests
@@ -55,6 +60,8 @@ if(NOT WIN32)
           test_reqrep_ipc
           test_abstract_ipc
           test_proxy
+          test_proxy_single_socket
+          test_proxy_terminate
           test_filter_ipc
   )
   if(HAVE_FORK)

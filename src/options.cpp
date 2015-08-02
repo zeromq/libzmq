@@ -1,17 +1,27 @@
 /*
     Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -31,8 +41,8 @@ zmq::options_t::options_t () :
     rate (100),
     recovery_ivl (10000),
     multicast_hops (1),
-    sndbuf (0),
-    rcvbuf (0),
+    sndbuf (-1),
+    rcvbuf (-1),
     tos (0),
     type (-1),
     linger (-1),
@@ -48,7 +58,7 @@ zmq::options_t::options_t () :
     invert_matching(false),
     recv_identity (false),
     raw_socket (false),
-    raw_notify (false),
+    raw_notify (true),
     tcp_keepalive (-1),
     tcp_keepalive_cnt (-1),
     tcp_keepalive_idle (-1),
@@ -58,7 +68,11 @@ zmq::options_t::options_t () :
     gss_plaintext (false),
     socket_id (0),
     conflate (false),
-    handshake_ivl (30000)
+    handshake_ivl (30000),
+    connected (false),
+    heartbeat_ttl (0),
+    heartbeat_interval (0),
+    heartbeat_timeout (-1)
 {
 }
 
@@ -96,7 +110,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         case ZMQ_IDENTITY:
             //  Identity is any binary string from 1 to 255 octets
             if (optvallen_ > 0 && optvallen_ < 256) {
-                identity_size = optvallen_;
+                identity_size = (unsigned char) optvallen_;
                 memcpy (identity, optval_, identity_size);
                 return 0;
             }
@@ -508,6 +522,29 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             break;
 
+        case ZMQ_HEARTBEAT_IVL:
+            if (is_int && value >= 0) {
+                heartbeat_interval = value;
+                return 0;
+            }
+            break;
+
+        case ZMQ_HEARTBEAT_TTL:
+            // Convert this to deciseconds from milliseconds
+            value = value / 100;
+            if (is_int && value >= 0 && value <= 6553) {
+                heartbeat_ttl = (uint16_t)value;
+                return 0;
+            }
+            break;
+
+        case ZMQ_HEARTBEAT_TIMEOUT:
+            if (is_int && value >= 0) {
+                heartbeat_timeout = value;
+                return 0;
+            }
+            break;
+
         default:
 #if defined (ZMQ_ACT_MILITANT)
             //  There are valid scenarios for probing with unknown socket option
@@ -529,7 +566,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
     return -1;
 }
 
-int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
+int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) const
 {
     bool is_int = (*optvallen_ == sizeof (int));
     int *value = (int *) optval_;
@@ -861,6 +898,28 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
             }
             break;
 
+        case ZMQ_HEARTBEAT_IVL:
+            if (is_int) {
+                *value = heartbeat_interval;
+                return 0;
+            }
+            break;
+
+        case ZMQ_HEARTBEAT_TTL:
+            if (is_int) {
+                // Convert the internal deciseconds value to milliseconds
+                *value = heartbeat_ttl * 100;
+                return 0;
+            }
+            break;
+
+        case ZMQ_HEARTBEAT_TIMEOUT:
+            if (is_int) {
+                *value = heartbeat_timeout;
+                return 0;
+            }
+            break;
+
         default:
 #if defined (ZMQ_ACT_MILITANT)
             malformed = false;
@@ -873,4 +932,9 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
 #endif
     errno = EINVAL;
     return -1;
+}
+
+bool zmq::options_t::is_valid (int option_) const
+{
+    return true;
 }

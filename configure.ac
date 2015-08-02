@@ -31,9 +31,10 @@ AC_SUBST(PACKAGE_VERSION)
 # ZeroMQ version 3.0: 2:0:0 (ABI version 2)
 # ZeroMQ version 3.1: 3:0:0 (ABI version 3)
 # ZeroMQ version 4.0: 4:0:0 (ABI version 4)
+# ZeroMQ version 4.1: 5:0:0 (ABI version 5)
 #
 # libzmq -version-info current:revision:age
-LTVER="4:0:0"
+LTVER="5:0:0"
 AC_SUBST(LTVER)
 
 # Take a copy of original flags
@@ -225,7 +226,7 @@ case "${host_os}" in
             AC_DEFINE(ZMQ_FORCE_MUTEXES, 1, [Force to use mutexes])
         fi
         ;;
-    *openbsd*)
+    *openbsd*|*bitrig*)
         # Define on OpenBSD to enable all library features
         CPPFLAGS="-D_BSD_SOURCE $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_OPENBSD, 1, [Have OpenBSD OS])
@@ -245,7 +246,7 @@ case "${host_os}" in
         LIBZMQ_CHECK_LANG_FLAG_PREPEND([-Ae])
         AC_CHECK_FUNCS(gethrtime)
         ;;
-    *mingw32*)
+    *mingw*)
         AC_DEFINE(ZMQ_HAVE_WINDOWS, 1, [Have Windows OS])
         AC_DEFINE(ZMQ_HAVE_MINGW32, 1, [Have MinGW32])
         AC_CHECK_HEADERS(windows.h)
@@ -265,6 +266,9 @@ case "${host_os}" in
         if test "x$enable_static" = "xyes"; then
             AC_MSG_ERROR([Building static libraries is not supported under MinGW32])
         fi
+        
+	# Set FD_SETSIZE to 1024
+	CPPFLAGS=" -DFD_SETSIZE=1024 $CPPFLAGS"
         ;;
     *cygwin*)
         # Define on Cygwin to enable all library features

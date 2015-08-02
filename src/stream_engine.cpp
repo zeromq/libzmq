@@ -1,17 +1,27 @@
 /*
     Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -85,6 +95,10 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
     input_stopped (false),
     output_stopped (false),
     has_handshake_timer (false),
+    has_ttl_timer (false),
+    has_timeout_timer (false),
+    has_heartbeat_timer (false),
+    heartbeat_timeout (0),
     socket (NULL)
 {
     int rc = tx_msg.init ();
@@ -131,6 +145,11 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
     rc = setsockopt (s, SOL_SOCKET, SO_NOSIGPIPE, &set, sizeof (int));
     errno_assert (rc == 0);
 #endif
+    if(options.heartbeat_interval > 0) {
+        heartbeat_timeout = options.heartbeat_timeout;
+        if(heartbeat_timeout == -1)
+            heartbeat_timeout = options.heartbeat_interval;
+    }
 }
 
 zmq::stream_engine_t::~stream_engine_t ()
@@ -240,6 +259,20 @@ void zmq::stream_engine_t::unplug ()
         has_handshake_timer = false;
     }
 
+    if (has_ttl_timer) {
+        cancel_timer (heartbeat_ttl_timer_id);
+        has_ttl_timer = false;
+    }
+
+    if (has_timeout_timer) {
+        cancel_timer (heartbeat_timeout_timer_id);
+        has_timeout_timer = false;
+    }
+
+    if (has_heartbeat_timer) {
+        cancel_timer (heartbeat_ivl_timer_id);
+        has_heartbeat_timer = false;
+    }
     //  Cancel all fd subscriptions.
     if (!io_error)
         rm_fd (handle);
@@ -285,6 +318,7 @@ void zmq::stream_engine_t::in_event ()
         decoder->get_buffer (&inpos, &bufsize);
 
         const int rc = tcp_read (s, inpos, bufsize);
+
         if (rc == 0) {
             error (connection_error);
             return;
@@ -297,6 +331,8 @@ void zmq::stream_engine_t::in_event ()
 
         //  Adjust input size
         insize = static_cast <size_t> (rc);
+        // Adjust buffer size to received bytes
+        decoder->resize_buffer(insize);
     }
 
     int rc = 0;
@@ -668,23 +704,16 @@ bool zmq::stream_engine_t::handshake ()
         }
 #endif
         else {
-            //  Temporary support for security debugging
-            char mechanism [21];
-            memcpy (mechanism, greeting_recv + 12, 20);
-            mechanism [20] = 0;
-            printf ("LIBZMQ I: security failure, self=%s peer=%s\n",
-                options.mechanism == ZMQ_NULL? "NULL":
-                options.mechanism == ZMQ_PLAIN? "PLAIN":
-                options.mechanism == ZMQ_CURVE? "CURVE":
-                options.mechanism == ZMQ_GSSAPI? "GSSAPI":
-                "OTHER",
-                mechanism);
-
             error (protocol_error);
             return false;
         }
         next_msg = &stream_engine_t::next_handshake_command;
         process_msg = &stream_engine_t::process_handshake_command;
+
+        if(options.heartbeat_interval > 0) {
+            add_timer(options.heartbeat_interval, heartbeat_ivl_timer_id);
+            has_heartbeat_timer = true;
+        }
     }
 
     // Start polling for output if necessary.
@@ -882,6 +911,23 @@ int zmq::stream_engine_t::decode_and_push (msg_t *msg_)
 
     if (mechanism->decode (msg_) == -1)
         return -1;
+
+    if(has_timeout_timer) {
+        has_timeout_timer = false;
+        cancel_timer(heartbeat_timeout_timer_id);
+    }
+
+    if(has_ttl_timer) {
+        has_ttl_timer = false;
+        cancel_timer(heartbeat_ttl_timer_id);
+    }
+
+    if(msg_->flags() & msg_t::command) {
+        uint8_t cmd_id = *((uint8_t*)msg_->data());
+        if(cmd_id == 4)
+            process_heartbeat_message(msg_);
+    }
+
     if (metadata)
         msg_->set_metadata (metadata);
     if (session->push_msg (msg_) == -1) {
@@ -919,7 +965,7 @@ int zmq::stream_engine_t::write_subscription_msg (msg_t *msg_)
 
 void zmq::stream_engine_t::error (error_reason_t reason)
 {
-    if (options.raw_socket) {
+    if (options.raw_socket && options.raw_notify) {
         //  For raw sockets, send a final 0-length message to the application
         //  so that it knows the peer has been disconnected.
         msg_t terminator;
@@ -928,7 +974,7 @@ void zmq::stream_engine_t::error (error_reason_t reason)
         terminator.close();
     }
     zmq_assert (session);
-    socket->event_disconnected (endpoint, s);
+    socket->event_disconnected (endpoint, (int) s);
     session->flush ();
     session->engine_error (reason);
     unplug ();
@@ -953,9 +999,86 @@ bool zmq::stream_engine_t::init_properties (properties_t & properties) {
 
 void zmq::stream_engine_t::timer_event (int id_)
 {
-    zmq_assert (id_ == handshake_timer_id);
-    has_handshake_timer = false;
+    if(id_ == handshake_timer_id) {
+        has_handshake_timer = false;
+        //  handshake timer expired before handshake completed, so engine fail
+        error (timeout_error);
+    }
+    else if(id_ == heartbeat_ivl_timer_id) {
+        next_msg = &stream_engine_t::produce_ping_message;
+        out_event();
+        add_timer(options.heartbeat_interval, heartbeat_ivl_timer_id);
+    }
+    else if(id_ == heartbeat_ttl_timer_id) {
+        has_ttl_timer = false;
+        error(timeout_error);
+    }
+    else if(id_ == heartbeat_timeout_timer_id) {
+        has_timeout_timer = false;
+        error(timeout_error);
+    }
+    else
+        // There are no other valid timer ids!
+        assert(false);
+}
 
-    //  handshake timer expired before handshake completed, so engine fails
-    error (timeout_error);
+int zmq::stream_engine_t::produce_ping_message(msg_t * msg_)
+{
+    int rc = 0;
+    zmq_assert (mechanism != NULL);
+
+    // 16-bit TTL + \4PING == 7
+    msg_->init_size(7);
+    msg_->set_flags(msg_t::command);
+    // Copy in the command message
+    memcpy(msg_->data(), "\4PING", 5);
+
+    uint16_t ttl_val = htons(options.heartbeat_ttl);
+    memcpy(((uint8_t*)msg_->data()) + 5, &ttl_val, sizeof(ttl_val));
+
+    rc = mechanism->encode (msg_);
+    next_msg = &stream_engine_t::pull_and_encode;
+    if(!has_timeout_timer && heartbeat_timeout > 0) {
+        add_timer(heartbeat_timeout, heartbeat_timeout_timer_id);
+        has_timeout_timer = true;
+    }
+    return rc;
+}
+
+int zmq::stream_engine_t::produce_pong_message(msg_t * msg_)
+{
+    int rc = 0;
+    zmq_assert (mechanism != NULL);
+
+    msg_->init_size(5);
+    msg_->set_flags(msg_t::command);
+
+    memcpy(msg_->data(), "\4PONG", 5);
+
+    rc = mechanism->encode (msg_);
+    next_msg = &stream_engine_t::pull_and_encode;
+    return rc;
+}
+
+int zmq::stream_engine_t::process_heartbeat_message(msg_t * msg_)
+{
+    if(memcmp(msg_->data(), "\4PING", 5) == 0) {
+        uint16_t remote_heartbeat_ttl;
+        // Get the remote heartbeat TTL to setup the timer
+        memcpy(&remote_heartbeat_ttl, (uint8_t*)msg_->data() + 5, 2);
+        remote_heartbeat_ttl = ntohs(remote_heartbeat_ttl);
+        // The remote heartbeat is in 10ths of a second
+        // so we multiply it by 100 to get the timer interval in ms.
+        remote_heartbeat_ttl *= 100;
+
+        if(!has_ttl_timer && remote_heartbeat_ttl > 0) {
+            add_timer(remote_heartbeat_ttl, heartbeat_ttl_timer_id);
+            has_ttl_timer = true;
+        }
+
+        next_msg = &stream_engine_t::produce_pong_message;
+        out_event();
+    }
+
+    return 0;
 }

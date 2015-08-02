@@ -1,17 +1,27 @@
 /*
     Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -52,6 +62,9 @@ client_task (void *ctx)
     assert (control);
     int rc = zmq_setsockopt (control, ZMQ_SUBSCRIBE, "", 0);
     assert (rc == 0);
+    int linger = 0;
+    rc = zmq_setsockopt (control, ZMQ_LINGER, &linger, sizeof (linger));
+    assert (rc == 0);
     rc = zmq_connect (control, "inproc://control");
     assert (rc == 0);
 
@@ -60,6 +73,9 @@ client_task (void *ctx)
     char identity [ID_SIZE];
     sprintf (identity, "%04X-%04X", rand() % 0xFFFF, rand() % 0xFFFF);
     rc = zmq_setsockopt (client, ZMQ_IDENTITY, identity, ID_SIZE); // includes '\0' as an helper for printf
+    assert (rc == 0);
+    linger = 0;
+    rc = zmq_setsockopt (client, ZMQ_LINGER, &linger, sizeof (linger));
     assert (rc == 0);
     rc = zmq_connect (client, "tcp://127.0.0.1:5563");
     assert (rc == 0);
@@ -118,12 +134,17 @@ server_task (void *ctx)
     // Frontend socket talks to clients over TCP
     void *frontend = zmq_socket (ctx, ZMQ_ROUTER);
     assert (frontend);
-    int rc = zmq_bind (frontend, "tcp://127.0.0.1:5563");
+    int linger = 0;
+    int rc = zmq_setsockopt (frontend, ZMQ_LINGER, &linger, sizeof (linger));
+    assert (rc == 0);
+    rc = zmq_bind (frontend, "tcp://127.0.0.1:5563");
     assert (rc == 0);
 
     // Backend socket talks to workers over inproc
     void *backend = zmq_socket (ctx, ZMQ_DEALER);
     assert (backend);
+    rc = zmq_setsockopt (backend, ZMQ_LINGER, &linger, sizeof (linger));
+    assert (rc == 0);
     rc = zmq_bind (backend, "inproc://backend");
     assert (rc == 0);
 
@@ -131,6 +152,8 @@ server_task (void *ctx)
     void *control = zmq_socket (ctx, ZMQ_SUB);
     assert (control);
     rc = zmq_setsockopt (control, ZMQ_SUBSCRIBE, "", 0);
+    assert (rc == 0);
+    rc = zmq_setsockopt (control, ZMQ_LINGER, &linger, sizeof (linger));
     assert (rc == 0);
     rc = zmq_connect (control, "inproc://control");
     assert (rc == 0);
@@ -164,13 +187,18 @@ server_worker (void *ctx)
 {
     void *worker = zmq_socket (ctx, ZMQ_DEALER);
     assert (worker);
-    int rc = zmq_connect (worker, "inproc://backend");
+    int linger = 0;
+    int rc = zmq_setsockopt (worker, ZMQ_LINGER, &linger, sizeof (linger));
+    assert (rc == 0);
+    rc = zmq_connect (worker, "inproc://backend");
     assert (rc == 0);
 
     // Control socket receives terminate command from main over inproc
     void *control = zmq_socket (ctx, ZMQ_SUB);
     assert (control);
     rc = zmq_setsockopt (control, ZMQ_SUBSCRIBE, "", 0);
+    assert (rc == 0);
+    rc = zmq_setsockopt (control, ZMQ_LINGER, &linger, sizeof (linger));
     assert (rc == 0);
     rc = zmq_connect (control, "inproc://control");
     assert (rc == 0);
@@ -227,7 +255,10 @@ int main (void)
     // Control socket receives terminate command from main over inproc
     void *control = zmq_socket (ctx, ZMQ_PUB);
     assert (control);
-    int rc = zmq_bind (control, "inproc://control");
+    int linger = 0;
+    int rc = zmq_setsockopt (control, ZMQ_LINGER, &linger, sizeof (linger));
+    assert (rc == 0);
+    rc = zmq_bind (control, "inproc://control");
     assert (rc == 0);
 
     void *threads [QT_CLIENTS + 1];

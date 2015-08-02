@@ -32,12 +32,12 @@ MAINTAINERCLEANFILES = $(MAN_DOC) $(MAN_HTML)
 
 EXTRA_DIST = asciidoc.conf $(MAN_TXT)
 
-if BUILD_DOC
-EXTRA_DIST += $(MAN_HTML)
-
 if INSTALL_MAN
 dist_man_MANS = $(MAN_DOC)
 endif
+
+if BUILD_DOC
+EXTRA_DIST += $(MAN_HTML)
 
 SUFFIXES=.html .txt .xml .3 .7
 
