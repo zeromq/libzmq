@@ -67,7 +67,8 @@ zmq::tcp_connecter_t::tcp_connecter_t (class io_thread_t *io_thread_,
     s (retired_fd),
     handle_valid (false),
     delayed_start (delayed_start_),
-    timer_started (false),
+    connect_timer_started (false),
+    reconnect_timer_started (false),
     session (session_),
     current_reconnect_ivl (options.reconnect_ivl)
 {
@@ -79,7 +80,8 @@ zmq::tcp_connecter_t::tcp_connecter_t (class io_thread_t *io_thread_,
 
 zmq::tcp_connecter_t::~tcp_connecter_t ()
 {
-    zmq_assert (!timer_started);
+    zmq_assert (!connect_timer_started);
+    zmq_assert (!reconnect_timer_started);
     zmq_assert (!handle_valid);
     zmq_assert (s == retired_fd);
 }
@@ -94,9 +96,14 @@ void zmq::tcp_connecter_t::process_plug ()
 
 void zmq::tcp_connecter_t::process_term (int linger_)
 {
-    if (timer_started) {
+    if (connect_timer_started) {
+        cancel_timer (connect_timer_id);
+        connect_timer_started = false;
+    }
+
+    if (reconnect_timer_started) {
         cancel_timer (reconnect_timer_id);
-        timer_started = false;
+        reconnect_timer_started = false;
     }
 
     if (handle_valid) {
@@ -120,6 +127,11 @@ void zmq::tcp_connecter_t::in_event ()
 
 void zmq::tcp_connecter_t::out_event ()
 {
+    if (connect_timer_started) {
+        cancel_timer (connect_timer_id);
+        connect_timer_started = false;
+    }
+
     rm_fd (handle);
     handle_valid = false;
 
@@ -153,9 +165,20 @@ void zmq::tcp_connecter_t::out_event ()
 
 void zmq::tcp_connecter_t::timer_event (int id_)
 {
-    zmq_assert (id_ == reconnect_timer_id);
-    timer_started = false;
-    start_connecting ();
+    zmq_assert (id_ == reconnect_timer_id || id_ == connect_timer_id);
+    if (id_ == connect_timer_id) {
+        connect_timer_started = false;
+
+        rm_fd (handle);
+        handle_valid = false;
+
+        close ();
+        add_reconnect_timer ();
+    }
+    else if (id_ == reconnect_timer_id) {
+        reconnect_timer_started = false;
+        start_connecting ();
+    }
 }
 
 void zmq::tcp_connecter_t::start_connecting ()
@@ -177,6 +200,9 @@ void zmq::tcp_connecter_t::start_connecting ()
         handle_valid = true;
         set_pollout (handle);
         socket->event_connect_delayed (endpoint, zmq_errno());
+
+        //  add userspace connect timeout
+        add_connect_timer ();
     }
 
     //  Handle any other error condition by eventual reconnect.
@@ -187,12 +213,20 @@ void zmq::tcp_connecter_t::start_connecting ()
     }
 }
 
+void zmq::tcp_connecter_t::add_connect_timer ()
+{
+    if (options.connect_timeout > 0) {
+        add_timer (options.connect_timeout, connect_timer_id);
+        connect_timer_started = true;
+    }
+}
+
 void zmq::tcp_connecter_t::add_reconnect_timer ()
 {
     const int interval = get_new_reconnect_ivl ();
     add_timer (interval, reconnect_timer_id);
     socket->event_connect_retried (endpoint, interval);
-    timer_started = true;
+    reconnect_timer_started = true;
 }
 
 int zmq::tcp_connecter_t::get_new_reconnect_ivl ()
