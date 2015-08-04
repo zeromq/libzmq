@@ -92,6 +92,11 @@ namespace zmq
         //  Linger time, in milliseconds.
         int linger;
 
+        //  Maximum interval in milliseconds beyond which userspace will
+        //  timeout connect().
+        //  Default 0 (unused)
+        int connect_timeout;
+
         //  Minimum interval between attempts to reconnect, in milliseconds.
         //  Default 100ms
         int reconnect_ivl;
