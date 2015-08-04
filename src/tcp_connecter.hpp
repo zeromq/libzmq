@@ -57,7 +57,7 @@ namespace zmq
     private:
 
         //  ID of the timer used to delay the reconnection.
-        enum {reconnect_timer_id = 1};
+        enum {reconnect_timer_id = 1, connect_timer_id};
 
         //  Handlers for incoming commands.
         void process_plug ();
@@ -70,6 +70,9 @@ namespace zmq
 
         //  Internal function to start the actual connection establishment.
         void start_connecting ();
+
+        //  Internal function to add a connect timer
+        void add_connect_timer();
 
         //  Internal function to add a reconnect timer
         void add_reconnect_timer();
@@ -108,6 +111,7 @@ namespace zmq
         const bool delayed_start;
 
         //  True iff a timer has been started.
+        bool connect_timer_started;
         bool reconnect_timer_started;
 
         //  Reference to the session we belong to.
