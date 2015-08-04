@@ -633,9 +633,9 @@ Default value:: -1 (leave to OS default)
 Applicable socket types:: all, when using TCP transports.
 
 
-ZMQ_TCP_KEEPALIVE_IDLE: Override TCP_KEEPCNT(or TCP_KEEPALIVE on some OS)
+ZMQ_TCP_KEEPALIVE_IDLE: Override TCP_KEEPIDLE (or TCP_KEEPALIVE on some OS)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Override 'TCP_KEEPCNT'(or 'TCP_KEEPALIVE' on some OS) socket option (where
+Override 'TCP_KEEPIDLE'(or 'TCP_KEEPALIVE' on some OS) socket option (where
 supported by OS). The default value of `-1` means to skip any overrides and
 leave it to OS default.
 
