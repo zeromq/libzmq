@@ -67,7 +67,7 @@ zmq::tcp_connecter_t::tcp_connecter_t (class io_thread_t *io_thread_,
     s (retired_fd),
     handle_valid (false),
     delayed_start (delayed_start_),
-    timer_started (false),
+    reconnect_timer_started (false),
     session (session_),
     current_reconnect_ivl (options.reconnect_ivl)
 {
@@ -79,7 +79,7 @@ zmq::tcp_connecter_t::tcp_connecter_t (class io_thread_t *io_thread_,
 
 zmq::tcp_connecter_t::~tcp_connecter_t ()
 {
-    zmq_assert (!timer_started);
+    zmq_assert (!reconnect_timer_started);
     zmq_assert (!handle_valid);
     zmq_assert (s == retired_fd);
 }
@@ -94,9 +94,9 @@ void zmq::tcp_connecter_t::process_plug ()
 
 void zmq::tcp_connecter_t::process_term (int linger_)
 {
-    if (timer_started) {
+    if (reconnect_timer_started) {
         cancel_timer (reconnect_timer_id);
-        timer_started = false;
+        reconnect_timer_started = false;
     }
 
     if (handle_valid) {
@@ -154,7 +154,7 @@ void zmq::tcp_connecter_t::out_event ()
 void zmq::tcp_connecter_t::timer_event (int id_)
 {
     zmq_assert (id_ == reconnect_timer_id);
-    timer_started = false;
+    reconnect_timer_started = false;
     start_connecting ();
 }
 
@@ -192,7 +192,7 @@ void zmq::tcp_connecter_t::add_reconnect_timer ()
     const int interval = get_new_reconnect_ivl ();
     add_timer (interval, reconnect_timer_id);
     socket->event_connect_retried (endpoint, interval);
-    timer_started = true;
+    reconnect_timer_started = true;
 }
 
 int zmq::tcp_connecter_t::get_new_reconnect_ivl ()

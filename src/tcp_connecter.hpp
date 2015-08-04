@@ -108,7 +108,7 @@ namespace zmq
         const bool delayed_start;
 
         //  True iff a timer has been started.
-        bool timer_started;
+        bool reconnect_timer_started;
 
         //  Reference to the session we belong to.
         zmq::session_base_t *session;
