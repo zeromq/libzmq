@@ -454,7 +454,8 @@ void zmq::session_base_t::process_term (int linger_)
         //  TODO: Should this go into pipe_t::terminate ?
         //  In case there's no engine and there's only delimiter in the
         //  pipe it wouldn't be ever read. Thus we check for it explicitly.
-        pipe->check_read ();
+        if (!engine)
+            pipe->check_read ();
     }
 
     if (zap_pipe != NULL)
