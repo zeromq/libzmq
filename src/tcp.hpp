@@ -47,6 +47,9 @@ namespace zmq
     //  Tunes TCP keep-alives
     void tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_, int keepalive_idle_, int keepalive_intvl_);
 
+    //  Tunes TCP retransmit timeout
+    void tune_tcp_retransmit_timeout (fd_t sockfd_, int timeout_);
+
     //  Writes data to the socket. Returns the number of bytes actually
     //  written (even zero is to be considered to be a success). In case
     //  of error or orderly shutdown by the other peer -1 is returned.
