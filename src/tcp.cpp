@@ -160,10 +160,12 @@ void zmq::tune_tcp_retransmit_timeout (fd_t sockfd_, int timeout_)
 #if defined (ZMQ_HAVE_WINDOWS) && defined (TCP_MAXRT)
     // msdn says it's supported in >= Vista, >= Windows Server 2003
     timeout_ /= 1000;    // in seconds
-    int rc = setsockopt (sockfd_, IPPROTO_TCP, TCP_MAXRT, &timeout_, sizeof(timeout_));
+    int rc = setsockopt (sockfd_, IPPROTO_TCP, TCP_MAXRT, (char*) &timeout_,
+        sizeof(timeout_));
     wsa_assert (rc != SOCKET_ERROR);
 #elif defined (TCP_USER_TIMEOUT)    // FIXME: should be ZMQ_HAVE_TCP_USER_TIMEOUT
-    int rc = setsockopt (sockfd_, IPPROTO_TCP, TCP_USER_TIMEOUT, &timeout_, sizeof(timeout_));
+    int rc = setsockopt (sockfd_, IPPROTO_TCP, TCP_USER_TIMEOUT, &timeout_,
+        sizeof(timeout_));
     errno_assert (rc == 0);
 #endif
 }
