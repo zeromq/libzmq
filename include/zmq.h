@@ -321,6 +321,7 @@ ZMQ_EXPORT uint32_t zmq_msg_get_routing_id(zmq_msg_t *msg);
 #define ZMQ_HEARTBEAT_TIMEOUT 77
 #define ZMQ_XPUB_VERBOSE_UNSUBSCRIBE 78
 #define ZMQ_CONNECT_TIMEOUT 79
+#define ZMQ_TCP_RETRANSMIT_TIMEOUT 80
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1

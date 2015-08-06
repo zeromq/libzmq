@@ -152,7 +152,23 @@ void zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_, int 
 #endif // ZMQ_HAVE_WINDOWS
 }
 
-int zmq::tcp_write (fd_t s_, const void *data_, size_t size_)
+void zmq::tune_tcp_retransmit_timeout (fd_t sockfd_, int timeout_)
+{
+    if (timeout_ <= 0)
+        return;
+
+#if defined (ZMQ_HAVE_WINDOWS) && defined (TCP_MAXRT)
+    // msdn says it's supported in >= Vista, >= Windows Server 2003
+    timeout_ /= 1000;    // in seconds
+    int rc = setsockopt (sockfd_, IPPROTO_TCP, TCP_MAXRT, &timeout_, sizeof(timeout_));
+    wsa_assert (rc != SOCKET_ERROR);
+#elif defined (TCP_USER_TIMEOUT)    // FIXME: should be ZMQ_HAVE_TCP_USER_TIMEOUT
+    int rc = setsockopt (sockfd_, IPPROTO_TCP, TCP_USER_TIMEOUT, &timeout_, sizeof(timeout_));
+    errno_assert (rc == 0);
+#endif
+}
+
+ int zmq::tcp_write (fd_t s_, const void *data_, size_t size_)
 {
 #ifdef ZMQ_HAVE_WINDOWS
 

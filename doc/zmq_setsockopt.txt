@@ -833,6 +833,22 @@ Default value:: -1 (leave to OS default)
 Applicable socket types:: all, when using TCP transports.
 
 
+ZMQ_TCP_RETRANSMIT_TIMEOUT: Set TCP Retransmit Timeout
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+On OSes where it is supported, sets how long before an unacknowledged TCP
+retransmit times out.
+The system normally attempts many TCP retransmits following an exponential
+backoff strategy. This means that after a network outage, it may take a long
+time before the session can be re-established. Setting this option allows
+the timeout to happen at a shorter interval.
+
+[horizontal]
+Option value type:: int
+Option value unit:: milliseconds
+Default value:: 0 (leave to OS default)
+Applicable socket types:: all, when using TCP transports.
+
+
 ZMQ_TOS: Set the Type-of-Service on socket
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sets the ToS fields (Differentiated services (DS) and Explicit Congestion
