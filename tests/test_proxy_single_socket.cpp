@@ -52,7 +52,8 @@ server_task (void *ctx)
     assert (rc == 0);
 
     // Use rep as both frontend and backend
-    zmq_proxy_steerable (rep, rep, NULL, control);
+    rc = zmq_proxy_steerable (rep, rep, NULL, control);
+    assert (rc == 0);
 
     rc = zmq_close (rep);
     assert (rc == 0);
