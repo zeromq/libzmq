@@ -533,7 +533,7 @@ ZMQ_REQ_CORRELATE: match replies with requests
 The default behavior of REQ sockets is to rely on the ordering of messages to
 match requests and responses and that is usually sufficient. When this option
 is set to 1, the REQ socket will prefix outgoing messages with an extra frame
-containing a request id. That means the full message is (request id, 0,
+containing a request id. That means the full message is (request id, identity, 0,
 user frames...). The REQ socket will discard all incoming messages that don't
 begin with these two frames.
 
