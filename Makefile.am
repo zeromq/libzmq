@@ -348,6 +348,7 @@ test_apps = \
 	tests/test_proxy \
 	tests/test_proxy_single_socket \
 	tests/test_proxy_terminate \
+	tests/test_getsockopt_memset \
 	tests/test_many_sockets \
 	tests/test_ipc_wildcard \
 	tests/test_diffserv \
@@ -518,6 +519,9 @@ tests_test_proxy_single_socket_LDADD = src/libzmq.la
 
 tests_test_proxy_terminate_SOURCES = tests/test_proxy_terminate.cpp
 tests_test_proxy_terminate_LDADD = src/libzmq.la
+
+tests_test_getsockopt_memset_SOURCES = tests/test_getsockopt_memset.cpp
+tests_test_getsockopt_memset_LDADD = libzmq.la
 
 tests_test_many_sockets_SOURCES = tests/test_many_sockets.cpp
 tests_test_many_sockets_LDADD = src/libzmq.la
