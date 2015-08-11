@@ -165,7 +165,8 @@ server_task (void *ctx)
         threads[thread_nbr] = zmq_threadstart (&server_worker, ctx);
 
     // Connect backend to frontend via a proxy
-    zmq_proxy_steerable (frontend, backend, NULL, control);
+    rc = zmq_proxy_steerable (frontend, backend, NULL, control);
+    assert (rc == 0);
 
     for (thread_nbr = 0; thread_nbr < QT_WORKERS; thread_nbr++)
         zmq_threadclose (threads[thread_nbr]);
