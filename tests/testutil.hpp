@@ -90,7 +90,7 @@ bounce (void *server, void *client)
     rc = zmq_getsockopt (server, ZMQ_RCVMORE, &rcvmore, &sz);
     assert (rc == 0);
     assert (!rcvmore);
-    
+
     //  Send two parts back to client
     rc = zmq_send (server, buffer, 32, ZMQ_SNDMORE);
     assert (rc == 32);
@@ -233,7 +233,7 @@ void s_recv_seq (void *socket, ...)
     va_list ap;
     va_start (ap, socket);
     const char * data = va_arg (ap, const char *);
-    
+
     while (true) {
         int rc = zmq_msg_recv (&msg, socket, 0);
         assert (rc != -1);
