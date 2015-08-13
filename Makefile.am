@@ -521,7 +521,7 @@ tests_test_proxy_terminate_SOURCES = tests/test_proxy_terminate.cpp
 tests_test_proxy_terminate_LDADD = src/libzmq.la
 
 tests_test_getsockopt_memset_SOURCES = tests/test_getsockopt_memset.cpp
-tests_test_getsockopt_memset_LDADD = libzmq.la
+tests_test_getsockopt_memset_LDADD = src/libzmq.la
 
 tests_test_many_sockets_SOURCES = tests/test_many_sockets.cpp
 tests_test_many_sockets_LDADD = src/libzmq.la
@@ -664,7 +664,7 @@ check_PROGRAMS = ${test_apps}
 
 #  Run the test cases
 TESTS = $(test_apps)
-XFAIL_TESTS = 
+XFAIL_TESTS =
 
 if !ON_LINUX
 XFAIL_TESTS += tests/test_abstract_ipc
@@ -677,7 +677,7 @@ EXTRA_DIST = \
 	MAINTAINERS	\
 	src/libzmq.pc.cmake.in \
 	src/libzmq.vers \
-	tools/curve_keygen.cpp 
+	tools/curve_keygen.cpp
 
 MAINTAINERCLEANFILES = \
 	$(srcdir)/aclocal.m4 \
