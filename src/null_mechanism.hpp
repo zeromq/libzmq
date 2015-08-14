@@ -70,12 +70,13 @@ namespace zmq
         bool zap_request_sent;
         bool zap_reply_received;
 
-        int process_ready_command (const unsigned char *cmd_data, size_t data_size);
-        int process_error_command (const unsigned char *cmd_data, size_t data_size);
+        int process_ready_command (
+            const unsigned char *cmd_data, size_t data_size);
+        int process_error_command (
+            const unsigned char *cmd_data, size_t data_size);
 
         void send_zap_request ();
         int receive_and_process_zap_reply ();
-		void close_message(msg_t (&msg)[7]);
     };
 
 }

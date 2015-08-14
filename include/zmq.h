@@ -498,6 +498,9 @@ ZMQ_EXPORT void zmq_threadclose (void* thread);
 /******************************************************************************/
 
 #define ZMQ_UNUSED(object) (void)object
+#define ZMQ_DELETE(p_object) \
+	delete p_object; \
+	p_object = 0;
 
 #undef ZMQ_EXPORT
 

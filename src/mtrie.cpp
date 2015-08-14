@@ -52,19 +52,17 @@ zmq::mtrie_t::mtrie_t () :
 zmq::mtrie_t::~mtrie_t ()
 {
     if (pipes) {
-        delete pipes;
-        pipes = 0;
+        ZMQ_DELETE(pipes);
     }
 
     if (count == 1) {
         zmq_assert (next.node);
-        delete next.node;
-        next.node = 0;
+        ZMQ_DELETE(next.node);
     }
-    else 
-    if (count > 1) {
-        for (unsigned short i = 0; i != count; ++i)
-            delete next.table [i];
+    else if (count > 1) {
+        for (unsigned short i = 0; i != count; ++i) {
+            ZMQ_DELETE(next.table[i]);
+        }
         free (next.table);
     }
 }
@@ -178,8 +176,7 @@ void zmq::mtrie_t::rm_helper (pipe_t *pipe_, unsigned char **buff_,
         }
 
         if (pipes->empty ()) {
-            delete pipes;
-            pipes = 0;
+            ZMQ_DELETE(pipes);
         }
     }
 
@@ -203,8 +200,7 @@ void zmq::mtrie_t::rm_helper (pipe_t *pipe_, unsigned char **buff_,
 
         //  Prune the node if it was made redundant by the removal
         if (next.node->is_redundant ()) {
-            delete next.node;
-            next.node = 0;
+            ZMQ_DELETE(next.node);
             count = 0;
             --live_nodes;
             zmq_assert (live_nodes == 0);
@@ -226,8 +222,7 @@ void zmq::mtrie_t::rm_helper (pipe_t *pipe_, unsigned char **buff_,
 
             //  Prune redundant nodes from the mtrie
             if (next.table [c]->is_redundant ()) {
-                delete next.table [c];
-                next.table [c] = 0;
+                ZMQ_DELETE(next.table[c]);
 
                 zmq_assert (live_nodes > 0);
                 --live_nodes;
@@ -306,8 +301,7 @@ bool zmq::mtrie_t::rm_helper (unsigned char *prefix_, size_t size_,
             pipes_t::size_type erased = pipes->erase (pipe_);
             zmq_assert (erased == 1);
             if (pipes->empty ()) {
-                delete pipes;
-                pipes = 0;
+                ZMQ_DELETE(pipes);
             }
         }
         return !pipes;
@@ -326,7 +320,7 @@ bool zmq::mtrie_t::rm_helper (unsigned char *prefix_, size_t size_,
     bool ret = next_node->rm_helper (prefix_ + 1, size_ - 1, pipe_);
 
     if (next_node->is_redundant ()) {
-        delete next_node;
+        ZMQ_DELETE(next_node);
         zmq_assert (count > 0);
 
         if (count == 1) {

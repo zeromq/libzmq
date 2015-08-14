@@ -138,7 +138,8 @@ int zmq::null_mechanism_t::process_handshake_command (msg_t *msg_)
         return -1;
     }
 
-    const unsigned char *cmd_data = static_cast <unsigned char *> (msg_->data ());
+    const unsigned char *cmd_data =
+        static_cast <unsigned char *> (msg_->data ());
     const size_t data_size = msg_->size ();
 
     int rc = 0;
@@ -200,8 +201,10 @@ int zmq::null_mechanism_t::zap_msg_available ()
 
 zmq::mechanism_t::status_t zmq::null_mechanism_t::status () const
 {
-    const bool command_sent = ready_command_sent || error_command_sent;
-    const bool command_received = ready_command_received || error_command_received;
+    const bool command_sent =
+        ready_command_sent || error_command_sent;
+    const bool command_received =
+        ready_command_received || error_command_received;
 
     if (ready_command_sent && ready_command_received)
         return ready;
@@ -297,18 +300,15 @@ int zmq::null_mechanism_t::receive_and_process_zap_reply ()
     }
 
     if (rc != 0)
-	{
-		close_message(msg);
-		return rc;
-	}
+        goto error;
 
     //  Address delimiter frame
     if (msg [0].size () > 0) {
         //  Temporary support for security debugging
         puts ("NULL I: ZAP handler sent malformed reply message");
         errno = EPROTO;
-		close_message(msg);
-		return -1;
+        rc = -1;
+        goto error;
     }
 
     //  Version frame
@@ -316,8 +316,8 @@ int zmq::null_mechanism_t::receive_and_process_zap_reply ()
         //  Temporary support for security debugging
         puts ("NULL I: ZAP handler sent bad version number");
         errno = EPROTO;
-		close_message(msg);
-		return -1;
+        rc = -1;
+        goto error;
     }
 
     //  Request id frame
@@ -325,8 +325,8 @@ int zmq::null_mechanism_t::receive_and_process_zap_reply ()
         //  Temporary support for security debugging
         puts ("NULL I: ZAP handler sent bad request ID");
         errno = EPROTO;
-		close_message(msg);
-		return -1;
+        rc = -1;
+        goto error;
     }
 
     //  Status code frame
@@ -334,8 +334,8 @@ int zmq::null_mechanism_t::receive_and_process_zap_reply ()
         //  Temporary support for security debugging
         puts ("NULL I: ZAP handler rejected client authentication");
         errno = EPROTO;
-		close_message(msg);
-		return -1;
+        rc = -1;
+        goto error;
     }
 
     //  Save status code
@@ -345,18 +345,14 @@ int zmq::null_mechanism_t::receive_and_process_zap_reply ()
     set_user_id (msg [5].data (), msg [5].size ());
 
     //  Process metadata frame
-    rc = parse_metadata (
-		static_cast <const unsigned char*> (msg [6].data ()), msg [6].size (), true
-		);
+    rc = parse_metadata (static_cast <const unsigned char*> (msg [6].data ()),
+                         msg [6].size (), true);
 
-    return rc;
-}
-
-//! internal method
-void zmq::null_mechanism_t::close_message(msg_t (&msg)[7])
-{
+error:
     for (int i = 0; i < 7; i++) {
-        const int rc2 = msg[i].close ();
+        const int rc2 = msg [i].close ();
         errno_assert (rc2 == 0);
     }
+
+    return rc;
 }

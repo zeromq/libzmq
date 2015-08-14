@@ -88,7 +88,7 @@ void zmq_threadclose(void* thread)
 {
     zmq::thread_t* pThread = static_cast<zmq::thread_t*>(thread);
     pThread->stop();
-    delete pThread;
+    ZMQ_DELETE(pThread);
 }
 
 //  Z85 codec, taken from 0MQ RFC project, implements RFC32 Z85 encoding
