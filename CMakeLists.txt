@@ -589,18 +589,18 @@ if(MSVC)
     RELEASE_POSTFIX "-${CMAKE_VS_PLATFORM_TOOLSET}-mt-s-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
     DEBUG_POSTFIX "-${CMAKE_VS_PLATFORM_TOOLSET}-mt-sgd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
     COMPILE_FLAGS "/D ZMQ_STATIC"
-    OUTPUT_NAME "libzmq")
+    OUTPUT_NAME "libzmq-static")
 else()
     add_library(libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig})
     set_target_properties(libzmq PROPERTIES
                           COMPILE_DEFINITIONS "DLL_EXPORT"
                           PUBLIC_HEADER "${public_headers}"
                           VERSION ${ZMQ_VERSION}
-                          SOVERSION "${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.0")
+                          SOVERSION "${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.0"
+						  OUTPUT_NAME "libzmq")
     if(ZMQ_BUILD_FRAMEWORK)
       set_target_properties(libzmq PROPERTIES
                             FRAMEWORK TRUE
-                            OUTPUT_NAME "ZeroMQ"
                             MACOSX_FRAMEWORK_IDENTIFIER "org.zeromq.libzmq"
                             MACOSX_FRAMEWORK_SHORT_VERSION_STRING ${ZMQ_VERSION}
                             MACOSX_FRAMEWORK_BUNDLE_VERSION ${ZMQ_VERSION})
@@ -610,16 +610,12 @@ else()
                                   MACOSX_PACKAGE_LOCATION etc)
       set_source_files_properties(${zmq-pkgconfig} PROPERTIES
                                   MACOSX_PACKAGE_LOCATION lib/pkgconfig)
-    else()
-      set_target_properties(libzmq PROPERTIES
-                            OUTPUT_NAME "zmq"
-                            )
     endif()
     add_library(libzmq-static STATIC ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig})
     set_target_properties(libzmq-static PROPERTIES
       PUBLIC_HEADER "${public_headers}"
       COMPILE_DEFINITIONS "ZMQ_STATIC"
-      OUTPUT_NAME "zmq-static")
+      OUTPUT_NAME "libzmq-static")
 endif()
 
 target_link_libraries(libzmq ${SODIUM_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
