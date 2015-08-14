@@ -493,6 +493,12 @@ ZMQ_EXPORT void *zmq_threadstart (zmq_thread_fn* func, void* arg);
 ZMQ_EXPORT void zmq_threadclose (void* thread);
 
 
+/******************************************************************************/
+/*  0MQ General                                                               */
+/******************************************************************************/
+
+#define ZMQ_UNUSED(object) (void)object
+
 #undef ZMQ_EXPORT
 
 #ifdef __cplusplus
