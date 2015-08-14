@@ -178,24 +178,24 @@ void zmq::tune_tcp_retransmit_timeout (fd_t sockfd_, int timeout_)
 
     //  If not a single byte can be written to the socket in non-blocking mode
     //  we'll get an error (this may happen during the speculative write).
-	const int lastError = WSAGetLastError();
-    if (nbytes == SOCKET_ERROR && lastError == WSAEWOULDBLOCK)
+	const int last_error = WSAGetLastError();
+    if (nbytes == SOCKET_ERROR && last_error == WSAEWOULDBLOCK)
         return 0;
 
     //  Signalise peer failure.
     if (nbytes == SOCKET_ERROR && (
-          lastError == WSAENETDOWN     ||
-          lastError == WSAENETRESET    ||
-          lastError == WSAEHOSTUNREACH ||
-          lastError == WSAECONNABORTED ||
-          lastError == WSAETIMEDOUT    ||
-          lastError == WSAECONNRESET
+          last_error == WSAENETDOWN     ||
+          last_error == WSAENETRESET    ||
+          last_error == WSAEHOSTUNREACH ||
+          last_error == WSAECONNABORTED ||
+          last_error == WSAETIMEDOUT    ||
+          last_error == WSAECONNRESET
 		  ))
         return -1;
 
     //  Circumvent a Windows bug; see https://support.microsoft.com/en-us/kb/201213
     //  and https://zeromq.jira.com/browse/LIBZMQ-195
-    if (nbytes == SOCKET_ERROR && lastError == WSAENOBUFS)
+    if (nbytes == SOCKET_ERROR && last_error == WSAENOBUFS)
         return 0;
 
     wsa_assert (nbytes != SOCKET_ERROR);
@@ -240,19 +240,19 @@ int zmq::tcp_read (fd_t s_, void *data_, size_t size_)
     //  If not a single byte can be read from the socket in non-blocking mode
     //  we'll get an error (this may happen during the speculative read).
 	if (rc == SOCKET_ERROR) {
-		const int lastError = WSAGetLastError();
-		if (lastError == WSAEWOULDBLOCK) {
+		const int last_error = WSAGetLastError();
+		if (last_error == WSAEWOULDBLOCK) {
 			errno = EAGAIN;
 		}
 		else {
-			wsa_assert (lastError == WSAENETDOWN   ||
-				lastError == WSAENETRESET	   ||
-				lastError == WSAECONNABORTED ||
-				lastError == WSAETIMEDOUT	   ||
-				lastError == WSAECONNRESET   ||
-				lastError == WSAECONNREFUSED ||
-				lastError == WSAENOTCONN);
-			errno = wsa_error_to_errno (lastError);
+			wsa_assert (last_error == WSAENETDOWN   ||
+				last_error == WSAENETRESET	   ||
+				last_error == WSAECONNABORTED ||
+				last_error == WSAETIMEDOUT	   ||
+				last_error == WSAECONNRESET   ||
+				last_error == WSAECONNREFUSED ||
+				last_error == WSAENOTCONN);
+			errno = wsa_error_to_errno (last_error);
 		}
     }
 
