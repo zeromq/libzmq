@@ -278,10 +278,11 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
 
 #ifdef ZMQ_HAVE_WINDOWS
     if (sock == INVALID_SOCKET) {
-        wsa_assert (WSAGetLastError () == WSAEWOULDBLOCK ||
-            WSAGetLastError () == WSAECONNRESET ||
-            WSAGetLastError () == WSAEMFILE ||
-            WSAGetLastError () == WSAENOBUFS);
+		const int lastError = WSAGetLastError();
+        wsa_assert (lastError == WSAEWOULDBLOCK ||
+            lastError == WSAECONNRESET ||
+            lastError == WSAEMFILE ||
+            lastError == WSAENOBUFS);
         return retired_fd;
     }
 #if !defined _WIN32_WCE

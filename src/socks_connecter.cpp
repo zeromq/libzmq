@@ -368,11 +368,11 @@ int zmq::socks_connecter_t::connect_to_proxy ()
     //  Translate error codes indicating asynchronous connect has been
     //  launched to a uniform EINPROGRESS.
 #ifdef ZMQ_HAVE_WINDOWS
-    const int error_code = WSAGetLastError ();
-    if (error_code == WSAEINPROGRESS || error_code == WSAEWOULDBLOCK)
+    const int lastError = WSAGetLastError();
+    if (lastError == WSAEINPROGRESS || lastError == WSAEWOULDBLOCK)
         errno = EINPROGRESS;
     else {
-        errno = wsa_error_to_errno (error_code);
+        errno = wsa_error_to_errno (lastError);
         close ();
     }
 #else

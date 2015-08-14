@@ -89,12 +89,12 @@ void zmq::zmq_abort(const char *errmsg_)
 
 const char *zmq::wsa_error()
 {
-    int no = WSAGetLastError ();
+    const int lastError = WSAGetLastError();
     //  TODO: This is not a generic way to handle this...
-    if (no == WSAEWOULDBLOCK)
+    if (lastError == WSAEWOULDBLOCK)
         return NULL;
 
-    return wsa_error_no (no);
+    return wsa_error_no (lastError);
 }
 
 const char *zmq::wsa_error_no (int no_)

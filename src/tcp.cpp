@@ -178,22 +178,24 @@ void zmq::tune_tcp_retransmit_timeout (fd_t sockfd_, int timeout_)
 
     //  If not a single byte can be written to the socket in non-blocking mode
     //  we'll get an error (this may happen during the speculative write).
-    if (nbytes == SOCKET_ERROR && WSAGetLastError () == WSAEWOULDBLOCK)
+	const int lastError = WSAGetLastError();
+    if (nbytes == SOCKET_ERROR && lastError == WSAEWOULDBLOCK)
         return 0;
 
     //  Signalise peer failure.
     if (nbytes == SOCKET_ERROR && (
-          WSAGetLastError () == WSAENETDOWN ||
-          WSAGetLastError () == WSAENETRESET ||
-          WSAGetLastError () == WSAEHOSTUNREACH ||
-          WSAGetLastError () == WSAECONNABORTED ||
-          WSAGetLastError () == WSAETIMEDOUT ||
-          WSAGetLastError () == WSAECONNRESET))
+          lastError == WSAENETDOWN     ||
+          lastError == WSAENETRESET    ||
+          lastError == WSAEHOSTUNREACH ||
+          lastError == WSAECONNABORTED ||
+          lastError == WSAETIMEDOUT    ||
+          lastError == WSAECONNRESET
+		  ))
         return -1;
 
     //  Circumvent a Windows bug; see https://support.microsoft.com/en-us/kb/201213
     //  and https://zeromq.jira.com/browse/LIBZMQ-195
-    if (nbytes == SOCKET_ERROR && WSAGetLastError() == WSAENOBUFS)
+    if (nbytes == SOCKET_ERROR && lastError == WSAENOBUFS)
         return 0;
 
     wsa_assert (nbytes != SOCKET_ERROR);
@@ -237,22 +239,24 @@ int zmq::tcp_read (fd_t s_, void *data_, size_t size_)
 
     //  If not a single byte can be read from the socket in non-blocking mode
     //  we'll get an error (this may happen during the speculative read).
-    if (rc == SOCKET_ERROR) {
-        if (WSAGetLastError () == WSAEWOULDBLOCK)
-            errno = EAGAIN;
-        else {
-            wsa_assert (WSAGetLastError () == WSAENETDOWN
-                     || WSAGetLastError () == WSAENETRESET
-                     || WSAGetLastError () == WSAECONNABORTED
-                     || WSAGetLastError () == WSAETIMEDOUT
-                     || WSAGetLastError () == WSAECONNRESET
-                     || WSAGetLastError () == WSAECONNREFUSED
-                     || WSAGetLastError () == WSAENOTCONN);
-            errno = wsa_error_to_errno (WSAGetLastError ());
-        }
+	if (rc == SOCKET_ERROR) {
+		const int lastError = WSAGetLastError();
+		if (lastError == WSAEWOULDBLOCK) {
+			errno = EAGAIN;
+		}
+		else {
+			wsa_assert (lastError == WSAENETDOWN   ||
+				lastError == WSAENETRESET	   ||
+				lastError == WSAECONNABORTED ||
+				lastError == WSAETIMEDOUT	   ||
+				lastError == WSAECONNRESET   ||
+				lastError == WSAECONNREFUSED ||
+				lastError == WSAENOTCONN);
+			errno = wsa_error_to_errno (lastError);
+		}
     }
 
-    return rc == SOCKET_ERROR? -1: rc;
+    return rc == SOCKET_ERROR ? -1 : rc;
 
 #else
 
