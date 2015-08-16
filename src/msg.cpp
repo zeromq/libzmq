@@ -235,9 +235,11 @@ int zmq::msg_t::close ()
         }
     }
 
-    if (u.base.metadata != NULL)
-        if (u.base.metadata->drop_ref ())
-            delete u.base.metadata;
+    if (u.base.metadata != NULL) {
+        if (u.base.metadata->drop_ref ()) {
+            LIBZMQ_DELETE(u.base.metadata);
+        }
+    }
 
     //  Make the message invalid.
     u.base.type = 0;
@@ -392,8 +394,7 @@ void zmq::msg_t::reset_metadata ()
 {
     if (u.base.metadata) {
         if (u.base.metadata->drop_ref ())
-            delete u.base.metadata;
-        u.base.metadata = NULL;
+            LIBZMQ_DELETE(u.base.metadata);
     }
 }
 
