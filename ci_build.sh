@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -x
+
 if [ $BUILD_TYPE == "default" ]; then
     mkdir tmp
     BUILD_PREFIX=$PWD/tmp
