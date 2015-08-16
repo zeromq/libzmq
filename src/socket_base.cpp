@@ -441,6 +441,38 @@ int zmq::socket_base_t::getsockopt (int option_, void *optval_,
     return rc;
 }
 
+int zmq::socket_base_t::add_signaler(signaler_t *s_)
+{
+    ENTER_MUTEX();
+
+    if (!thread_safe) {
+        errno = EINVAL;
+        EXIT_MUTEX();
+        return -1;  
+    }
+
+    ((mailbox_safe_t*)mailbox)->add_signaler(s_);
+
+    EXIT_MUTEX();
+    return 0;
+}
+
+int zmq::socket_base_t::remove_signaler(signaler_t *s_)
+{
+    ENTER_MUTEX();
+
+    if (!thread_safe) {
+        errno = EINVAL;
+        EXIT_MUTEX();
+        return -1;
+    }
+
+    ((mailbox_safe_t*)mailbox)->remove_signaler(s_);
+
+    EXIT_MUTEX();
+    return 0;
+}
+
 int zmq::socket_base_t::bind (const char *addr_)
 {
     ENTER_MUTEX();

@@ -74,6 +74,7 @@ struct iovec {
 #include "msg.hpp"
 #include "fd.hpp"
 #include "metadata.hpp"
+#include "signaler.hpp"
 
 #if !defined ZMQ_HAVE_WINDOWS
 #include <unistd.h>
@@ -561,6 +562,34 @@ int zmq_recviov (void *s_, iovec *a_, size_t *count_, int flags_)
     return nread;
 }
 
+// Add/remove poller from a socket
+
+int zmq_add_poller (void *s_, void *p_)
+{
+    if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
+        errno = ENOTSOCK;
+        return -1;
+    }
+    zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
+    zmq::signaler_t *p = (zmq::signaler_t *) p_;
+
+    return s->add_signaler(p);
+}
+
+int zmq_remove_poller (void *s_, void *p_)
+{
+    if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
+        errno = ENOTSOCK;
+        return -1;
+    }
+    zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
+    zmq::signaler_t *p = (zmq::signaler_t *) p_;
+
+    return s->remove_signaler(p);
+}
+
+
+
 // Message manipulators.
 
 int zmq_msg_init (zmq_msg_t *msg_)
@@ -678,6 +707,31 @@ const char *zmq_msg_gets (zmq_msg_t *msg_, const char *property_)
         errno = EINVAL;
         return NULL;
     }
+}
+
+// Create poller 
+
+void *zmq_poller_new () 
+{
+    return new zmq::signaler_t ();
+}
+
+// Close poller
+
+int zmq_poller_close (void* p)
+{
+    zmq::signaler_t *s = (zmq::signaler_t*)p;
+    delete s;
+
+    return 0;	
+}
+
+// Get poller fd
+
+zmq::fd_t zmq_poller_get_fd (void *p)
+{
+    zmq::signaler_t *s = (zmq::signaler_t*)p;
+    return s->get_fd ();	
 }
 
 // Polling.
