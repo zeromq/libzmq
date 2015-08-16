@@ -111,7 +111,7 @@ zmq::session_base_t::~session_base_t ()
     if (engine)
         engine->terminate ();
 
-    delete addr;
+    ZMQ_DELETE(addr);
 }
 
 void zmq::session_base_t::attach_pipe (pipe_t *pipe_)

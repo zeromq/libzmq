@@ -72,7 +72,7 @@ zmq::socks_connecter_t::socks_connecter_t (class io_thread_t *io_thread_,
 zmq::socks_connecter_t::~socks_connecter_t ()
 {
     zmq_assert (s == retired_fd);
-    delete proxy_addr;
+    ZMQ_DELETE(proxy_addr);
 }
 
 void zmq::socks_connecter_t::process_plug ()
@@ -303,15 +303,14 @@ int zmq::socks_connecter_t::connect_to_proxy ()
     zmq_assert (s == retired_fd);
 
     //  Resolve the address
-    delete proxy_addr->resolved.tcp_addr;
+    ZMQ_DELETE(proxy_addr->resolved.tcp_addr);
     proxy_addr->resolved.tcp_addr = new (std::nothrow) tcp_address_t ();
     alloc_assert (proxy_addr->resolved.tcp_addr);
 
     int rc = proxy_addr->resolved.tcp_addr->resolve (
         proxy_addr->address.c_str (), false, options.ipv6);
     if (rc != 0) {
-        delete proxy_addr->resolved.tcp_addr;
-        proxy_addr->resolved.tcp_addr = NULL;
+        ZMQ_DELETE(proxy_addr->resolved.tcp_addr);
         return -1;
     }
     zmq_assert (proxy_addr->resolved.tcp_addr != NULL);

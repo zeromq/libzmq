@@ -156,7 +156,7 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
 
     if (mailbox != NULL && mailbox->get_fd () == retired_fd) {
         s->destroyed = true;
-        delete s;
+        ZMQ_DELETE(s);
         return NULL;
     }
 
@@ -189,10 +189,10 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t tid_, int sid_, bool
 
 zmq::socket_base_t::~socket_base_t ()
 {
-    delete mailbox;
+    ZMQ_DELETE(mailbox);
     
     if (reaper_signaler)
-        delete reaper_signaler;
+        ZMQ_DELETE(reaper_signaler);
     
     stop_monitor ();
     zmq_assert (destroyed);
@@ -535,7 +535,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         alloc_assert (listener);
         int rc = listener->set_address (address.c_str ());
         if (rc != 0) {
-            delete listener;
+            ZMQ_DELETE(listener);
             event_bind_failed (address, zmq_errno());
             EXIT_MUTEX();
             return -1;
@@ -557,7 +557,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         alloc_assert (listener);
         int rc = listener->set_address (address.c_str ());
         if (rc != 0) {
-            delete listener;
+            ZMQ_DELETE(listener);
             event_bind_failed (address, zmq_errno());
             EXIT_MUTEX();
             return -1;
@@ -579,7 +579,7 @@ int zmq::socket_base_t::bind (const char *addr_)
          alloc_assert (listener);
          int rc = listener->set_address (address.c_str ());
          if (rc != 0) {
-             delete listener;
+             ZMQ_DELETE(listener);
              event_bind_failed (address, zmq_errno());
              EXIT_MUTEX();
              return -1;
@@ -788,7 +788,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         }
         if (rc == -1) {
             errno = EINVAL;
-            delete paddr;
+            ZMQ_DELETE(paddr);
             EXIT_MUTEX();
             return -1;
         }
@@ -802,7 +802,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         alloc_assert (paddr->resolved.ipc_addr);
         int rc = paddr->resolved.ipc_addr->resolve (address.c_str ());
         if (rc != 0) {
-            delete paddr;
+            ZMQ_DELETE(paddr);
             EXIT_MUTEX();
             return -1;
         }
@@ -831,7 +831,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         alloc_assert (paddr->resolved.tipc_addr);
         int rc = paddr->resolved.tipc_addr->resolve (address.c_str());
         if (rc != 0) {
-            delete paddr;
+            ZMQ_DELETE(paddr);
             EXIT_MUTEX();
             return -1;
         }
