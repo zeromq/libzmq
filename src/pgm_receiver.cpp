@@ -89,8 +89,9 @@ void zmq::pgm_receiver_t::unplug ()
 {
     //  Delete decoders.
     for (peers_t::iterator it = peers.begin (); it != peers.end (); ++it) {
-        if (it->second.decoder != NULL)
-            delete it->second.decoder;
+        if (it->second.decoder != NULL) {
+            LIBZMQ_DELETE(it->second.decoder);
+        }
     }
     peers.clear ();
     active_tsi = NULL;
@@ -141,8 +142,7 @@ void zmq::pgm_receiver_t::restart_input ()
             //  Data error. Delete message decoder, mark the
             //  peer as not joined and drop remaining data.
             it->second.joined = false;
-            delete it->second.decoder;
-            it->second.decoder = NULL;
+            LIBZMQ_DELETE(it->second.decoder);
             insize = 0;
         }
     }
@@ -194,8 +194,7 @@ void zmq::pgm_receiver_t::in_event ()
             if (it != peers.end ()) {
                 it->second.joined = false;
                 if (it->second.decoder != NULL) {
-                    delete it->second.decoder;
-                    it->second.decoder = NULL;
+                    LIBZMQ_DELETE(it->second.decoder);
                 }
             }
             break;
@@ -252,8 +251,7 @@ void zmq::pgm_receiver_t::in_event ()
             }
 
             it->second.joined = false;
-            delete it->second.decoder;
-            it->second.decoder = NULL;
+            LIBZMQ_DELETE(it->second.decoder);
             insize = 0;
         }
     }

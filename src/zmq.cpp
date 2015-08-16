@@ -721,7 +721,7 @@ void *zmq_poller_new ()
 int zmq_poller_close (void* p)
 {
     zmq::signaler_t *s = (zmq::signaler_t*)p;
-    delete s;
+    LIBZMQ_DELETE(s);
 
     return 0;	
 }

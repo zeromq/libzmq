@@ -49,16 +49,14 @@ zmq::address_t::~address_t ()
 {
     if (protocol == "tcp") {
         if (resolved.tcp_addr) {
-            delete resolved.tcp_addr;
-            resolved.tcp_addr = 0;
+            LIBZMQ_DELETE(resolved.tcp_addr);
         }
     }
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
     else
     if (protocol == "ipc") {
         if (resolved.ipc_addr) {
-            delete resolved.ipc_addr;
-            resolved.ipc_addr = 0;
+            LIBZMQ_DELETE(resolved.ipc_addr);
         }
     }
 #endif
@@ -66,8 +64,7 @@ zmq::address_t::~address_t ()
     else
     if (protocol == "tipc") {
         if (resolved.tipc_addr) {
-            delete resolved.tipc_addr;
-            resolved.tipc_addr = 0;
+            LIBZMQ_DELETE(resolved.tipc_addr);
         }
     }
 #endif

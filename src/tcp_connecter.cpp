@@ -252,8 +252,7 @@ int zmq::tcp_connecter_t::open ()
 
     //  Resolve the address
     if (addr->resolved.tcp_addr != NULL) {
-        delete addr->resolved.tcp_addr;
-        addr->resolved.tcp_addr = NULL;
+        LIBZMQ_DELETE(addr->resolved.tcp_addr);
     }
 
     addr->resolved.tcp_addr = new (std::nothrow) tcp_address_t ();
@@ -261,8 +260,7 @@ int zmq::tcp_connecter_t::open ()
     int rc = addr->resolved.tcp_addr->resolve (
         addr->address.c_str (), false, options.ipv6);
     if (rc != 0) {
-        delete addr->resolved.tcp_addr;
-        addr->resolved.tcp_addr = NULL;
+        LIBZMQ_DELETE(addr->resolved.tcp_addr);
         return -1;
     }
     zmq_assert (addr->resolved.tcp_addr != NULL);

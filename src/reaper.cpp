@@ -49,7 +49,7 @@ zmq::reaper_t::reaper_t (class ctx_t *ctx_, uint32_t tid_) :
 
 zmq::reaper_t::~reaper_t ()
 {
-    delete poller;
+    LIBZMQ_DELETE(poller);
 }
 
 zmq::mailbox_t *zmq::reaper_t::get_mailbox ()
