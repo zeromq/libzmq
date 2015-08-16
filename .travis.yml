@@ -10,6 +10,8 @@ env:
 - BUILD_TYPE=default
 - BUILD_TYPE=qt-android
 
+sudo: false
+
 before_script:
 # ZMQ stress tests need more open socket (files) than the usual default
 # On OSX, it seems the way to set the max files limit is constantly changing, so
