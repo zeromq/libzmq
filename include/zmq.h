@@ -322,6 +322,7 @@ ZMQ_EXPORT uint32_t zmq_msg_get_routing_id(zmq_msg_t *msg);
 #define ZMQ_XPUB_VERBOSE_UNSUBSCRIBE 78
 #define ZMQ_CONNECT_TIMEOUT 79
 #define ZMQ_TCP_RETRANSMIT_TIMEOUT 80
+#define ZMQ_THREAD_SAFE 81
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1
@@ -382,7 +383,8 @@ ZMQ_EXPORT int zmq_send (void *s, const void *buf, size_t len, int flags);
 ZMQ_EXPORT int zmq_send_const (void *s, const void *buf, size_t len, int flags);
 ZMQ_EXPORT int zmq_recv (void *s, void *buf, size_t len, int flags);
 ZMQ_EXPORT int zmq_socket_monitor (void *s, const char *addr, int events);
-
+ZMQ_EXPORT int zmq_add_poller (void *s, void *p);
+ZMQ_EXPORT int zmq_remove_poller (void *s, void *p);
 
 /******************************************************************************/
 /*  I/O multiplexing.                                                         */
@@ -396,6 +398,7 @@ ZMQ_EXPORT int zmq_socket_monitor (void *s, const char *addr, int events);
 typedef struct zmq_pollitem_t
 {
     void *socket;
+    void *poller;
 #if defined _WIN32
     SOCKET fd;
 #else
@@ -407,7 +410,9 @@ typedef struct zmq_pollitem_t
 
 #define ZMQ_POLLITEMS_DFLT 16
 
-ZMQ_EXPORT int zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
+ZMQ_EXPORT int  zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
+ZMQ_EXPORT void *zmq_poller_new ();
+ZMQ_EXPORT int  zmq_poller_close (void *p);
 
 /******************************************************************************/
 /*  Message proxying                                                          */

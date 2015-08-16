@@ -74,6 +74,7 @@ struct iovec {
 #include "msg.hpp"
 #include "fd.hpp"
 #include "metadata.hpp"
+#include "signaler.hpp"
 
 #if !defined ZMQ_HAVE_WINDOWS
 #include <unistd.h>
@@ -561,6 +562,34 @@ int zmq_recviov (void *s_, iovec *a_, size_t *count_, int flags_)
     return nread;
 }
 
+// Add/remove poller from a socket
+
+int zmq_add_poller (void *s_, void *p_)
+{
+    if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
+        errno = ENOTSOCK;
+        return -1;
+    }
+    zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
+    zmq::signaler_t *p = (zmq::signaler_t *) p_;
+
+    return s->add_signaler(p);
+}
+
+int zmq_remove_poller (void *s_, void *p_)
+{
+    if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
+        errno = ENOTSOCK;
+        return -1;
+    }
+    zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
+    zmq::signaler_t *p = (zmq::signaler_t *) p_;
+
+    return s->remove_signaler(p);
+}
+
+
+
 // Message manipulators.
 
 int zmq_msg_init (zmq_msg_t *msg_)
@@ -680,6 +709,31 @@ const char *zmq_msg_gets (zmq_msg_t *msg_, const char *property_)
     }
 }
 
+// Create poller 
+
+void *zmq_poller_new () 
+{
+    return new zmq::signaler_t ();
+}
+
+// Close poller
+
+int zmq_poller_close (void* p)
+{
+    zmq::signaler_t *s = (zmq::signaler_t*)p;
+    delete s;
+
+    return 0;	
+}
+
+// Get poller fd
+
+zmq::fd_t zmq_poller_get_fd (void *p)
+{
+    zmq::signaler_t *s = (zmq::signaler_t*)p;
+    return s->get_fd ();	
+}
+
 // Polling.
 
 int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
@@ -725,14 +779,36 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         //  If the poll item is a 0MQ socket, we poll on the file descriptor
         //  retrieved by the ZMQ_FD socket option.
         if (items_ [i].socket) {
-            size_t zmq_fd_size = sizeof (zmq::fd_t);
-            if (zmq_getsockopt (items_ [i].socket, ZMQ_FD, &pollfds [i].fd,
-                &zmq_fd_size) == -1) {
+            int thread_safe;
+            size_t thread_safe_size = sizeof(int);
+
+            if (zmq_getsockopt (items_ [i].socket, ZMQ_THREAD_SAFE, &thread_safe, 
+                &thread_safe_size) == -1) {
                 if (pollfds != spollfds)
                     free (pollfds);
                 return -1;
             }
-            pollfds [i].events = items_ [i].events ? POLLIN : 0;
+
+            if (thread_safe) {
+                if (!items_ [i].poller) {
+                    if (pollfds != spollfds)
+                        free (pollfds);
+                    errno = EINVAL;
+                    return -1;
+                }
+
+                pollfds [i].fd = zmq_poller_get_fd (items_ [i].poller);
+            }
+            else {
+                size_t zmq_fd_size = sizeof (zmq::fd_t);
+                if (zmq_getsockopt (items_ [i].socket, ZMQ_FD, &pollfds [i].fd,
+                    &zmq_fd_size) == -1) {
+                    if (pollfds != spollfds)
+                        free (pollfds);
+                    return -1;
+                }
+            }
+            pollfds [i].events = items_ [i].events ? POLLIN : 0;            
         }
         //  Else, the poll item is a raw file descriptor. Just convert the
         //  events to normal POLLIN/POLLOUT for poll ().
@@ -888,11 +964,29 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         //  If the poll item is a 0MQ socket we are interested in input on the
         //  notification file descriptor retrieved by the ZMQ_FD socket option.
         if (items_ [i].socket) {
-            size_t zmq_fd_size = sizeof (zmq::fd_t);
-            zmq::fd_t notify_fd;
-            if (zmq_getsockopt (items_ [i].socket, ZMQ_FD, &notify_fd,
-                &zmq_fd_size) == -1)
+            int thread_safe;
+            size_t thread_safe_size = sizeof(int);
+
+            if (zmq_getsockopt (items_ [i].socket, ZMQ_THREAD_SAFE, &thread_safe, 
+                &thread_safe_size) == -1) 
                 return -1;
+
+            zmq::fd_t notify_fd;
+
+            if (thread_safe) {
+                if (!items_ [i].poller) {
+                    errno = EINVAL;
+                    return -1;
+                }
+
+                notify_fd = zmq_poller_get_fd (items_ [i].poller);
+            }
+            else {
+                size_t zmq_fd_size = sizeof (zmq::fd_t);
+                if (zmq_getsockopt (items_ [i].socket, ZMQ_FD, &notify_fd,
+                    &zmq_fd_size) == -1)
+                    return -1;
+            }
             if (items_ [i].events) {
                 FD_SET (notify_fd, &pollset_in);
                 if (maxfd < notify_fd)

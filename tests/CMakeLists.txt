@@ -52,6 +52,7 @@ set(tests
         test_client_server
 	test_sockopt_hwm
         test_heartbeats
+        test_thread_safe_polling
 )
 if(NOT WIN32)
   list(APPEND tests

@@ -423,9 +423,54 @@ int zmq::socket_base_t::getsockopt (int option_, void *optval_,
         return 0;
     }
 
+    if (option_ == ZMQ_THREAD_SAFE) {
+        if (*optvallen_ < sizeof (int)) {
+            errno = EINVAL;
+            EXIT_MUTEX();
+            return -1;
+        }
+        memset(optval_, 0, *optvallen_);
+        *((int*) optval_) = thread_safe	? 1 : 0;
+        *optvallen_ = sizeof (int);
+        EXIT_MUTEX();
+        return 0;
+    }  
+
     int rc = options.getsockopt (option_, optval_, optvallen_);
     EXIT_MUTEX();
     return rc;
+}
+
+int zmq::socket_base_t::add_signaler(signaler_t *s_)
+{
+    ENTER_MUTEX();
+
+    if (!thread_safe) {
+        errno = EINVAL;
+        EXIT_MUTEX();
+        return -1;  
+    }
+
+    ((mailbox_safe_t*)mailbox)->add_signaler(s_);
+
+    EXIT_MUTEX();
+    return 0;
+}
+
+int zmq::socket_base_t::remove_signaler(signaler_t *s_)
+{
+    ENTER_MUTEX();
+
+    if (!thread_safe) {
+        errno = EINVAL;
+        EXIT_MUTEX();
+        return -1;
+    }
+
+    ((mailbox_safe_t*)mailbox)->remove_signaler(s_);
+
+    EXIT_MUTEX();
+    return 0;
 }
 
 int zmq::socket_base_t::bind (const char *addr_)
