@@ -397,8 +397,7 @@ ZMQ_EXPORT int zmq_remove_poller (void *s, void *p);
 
 typedef struct zmq_pollitem_t
 {
-    void *socket;
-    void *poller;
+    void *socket;  
 #if defined _WIN32
     SOCKET fd;
 #else
@@ -406,6 +405,7 @@ typedef struct zmq_pollitem_t
 #endif
     short events;
     short revents;
+    void *poller;
 } zmq_pollitem_t;
 
 #define ZMQ_POLLITEMS_DFLT 16
