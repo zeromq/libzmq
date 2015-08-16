@@ -41,6 +41,13 @@ int main (void)
     void *client = zmq_socket (ctx, ZMQ_CLIENT);
     void *client2 = zmq_socket (ctx, ZMQ_CLIENT);
 
+    int thread_safe;
+    size_t size = sizeof(int);
+
+    zmq_getsockopt (client, ZMQ_THREAD_SAFE, &thread_safe, &size);
+
+    assert (thread_safe == 1);
+
     int rc;
 
     rc = zmq_bind (client, "tcp://127.0.0.1:5560");
