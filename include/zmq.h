@@ -410,8 +410,16 @@ typedef struct zmq_pollitem_t
 #define ZMQ_POLLITEMS_DFLT 16
 
 ZMQ_EXPORT int  zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
+
+/******************************************************************************/
+/*  Pollfd polling on thread safe socket                                      */
+/******************************************************************************/
+
 ZMQ_EXPORT void *zmq_pollfd_new ();
 ZMQ_EXPORT int  zmq_pollfd_close (void *p);
+ZMQ_EXPORT void zmq_pollfd_recv (void *p);
+ZMQ_EXPORT int  zmq_pollfd_wait (void *p, int timeout_);
+ZMQ_EXPORT int  zmq_pollfd_poll (void *p, zmq_pollitem_t *items, int nitems, long timeout);
 
 #if defined _WIN32
 ZMQ_EXPORT SOCKET zmq_pollfd_fd (void *p);

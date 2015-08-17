@@ -50,8 +50,8 @@ int main (void)
     assert (rc == 0);
 
     zmq_pollitem_t items[] = {
-        {server,  zmq_pollfd_fd(pollfd), ZMQ_POLLIN, 0},
-        {server2, zmq_pollfd_fd(pollfd), ZMQ_POLLIN, 0}};
+        {server, 0, ZMQ_POLLIN, 0},
+        {server2, 0, ZMQ_POLLIN, 0}};
 
     rc = zmq_bind (server, "tcp://127.0.0.1:5560");
     assert (rc == 0);
@@ -63,7 +63,7 @@ int main (void)
 
     assert (rc == 0);    
 
-    rc = zmq_poll (items, 2, -1);
+    rc = zmq_pollfd_poll (pollfd, items, 2, -1);
     assert (rc == 1);
 
     assert (items[0].revents == ZMQ_POLLIN);
@@ -74,7 +74,7 @@ int main (void)
     rc = zmq_msg_recv(&msg, server, ZMQ_DONTWAIT);
     assert (rc == 1);    
 
-    rc = zmq_poll (items, 2, -1);
+    rc = zmq_pollfd_poll (pollfd, items, 2, -1);
     assert (rc == 1);
 
     assert (items[0].revents == 0); 
@@ -83,7 +83,7 @@ int main (void)
     rc = zmq_msg_recv(&msg, server2, ZMQ_DONTWAIT);
     assert (rc == 1);
 
-    rc = zmq_poll (items, 2, 0);
+    rc = zmq_pollfd_poll (pollfd, items, 2, 0);
     assert (rc == 0);
 
     assert (items[0].revents == 0); 
