@@ -562,9 +562,9 @@ int zmq_recviov (void *s_, iovec *a_, size_t *count_, int flags_)
     return nread;
 }
 
-// Add/remove poller from a socket
+// Add/remove pollfd from a socket
 
-int zmq_add_poller (void *s_, void *p_)
+int zmq_add_pollfd (void *s_, void *p_)
 {
     if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
         errno = ENOTSOCK;
@@ -576,7 +576,7 @@ int zmq_add_poller (void *s_, void *p_)
     return s->add_signaler(p);
 }
 
-int zmq_remove_poller (void *s_, void *p_)
+int zmq_remove_pollfd (void *s_, void *p_)
 {
     if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
         errno = ENOTSOCK;
@@ -709,16 +709,16 @@ const char *zmq_msg_gets (zmq_msg_t *msg_, const char *property_)
     }
 }
 
-// Create poller 
+// Create pollfd 
 
-void *zmq_poller_new () 
+void *zmq_pollfd_new () 
 {
     return new zmq::signaler_t ();
 }
 
-// Close poller
+// Close pollfd
 
-int zmq_poller_close (void* p)
+int zmq_pollfd_close (void* p)
 {
     zmq::signaler_t *s = (zmq::signaler_t*)p;
     delete s;
@@ -728,9 +728,9 @@ int zmq_poller_close (void* p)
 
 // Get poller fd
 #if defined _WIN32
-SOCKET zmq_poller_fd (void *p)
+SOCKET zmq_pollfd_fd (void *p)
 #else
-int    zmq_poller_fd (void *p)
+int    zmq_pollfd_fd (void *p)
 #endif
 {
     zmq::signaler_t *s = (zmq::signaler_t*)p;

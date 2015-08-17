@@ -383,8 +383,8 @@ ZMQ_EXPORT int zmq_send (void *s, const void *buf, size_t len, int flags);
 ZMQ_EXPORT int zmq_send_const (void *s, const void *buf, size_t len, int flags);
 ZMQ_EXPORT int zmq_recv (void *s, void *buf, size_t len, int flags);
 ZMQ_EXPORT int zmq_socket_monitor (void *s, const char *addr, int events);
-ZMQ_EXPORT int zmq_add_poller (void *s, void *p);
-ZMQ_EXPORT int zmq_remove_poller (void *s, void *p);
+ZMQ_EXPORT int zmq_add_pollfd (void *s, void *p);
+ZMQ_EXPORT int zmq_remove_pollfd (void *s, void *p);
 
 /******************************************************************************/
 /*  I/O multiplexing.                                                         */
@@ -410,13 +410,13 @@ typedef struct zmq_pollitem_t
 #define ZMQ_POLLITEMS_DFLT 16
 
 ZMQ_EXPORT int  zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
-ZMQ_EXPORT void *zmq_poller_new ();
-ZMQ_EXPORT int  zmq_poller_close (void *p);
+ZMQ_EXPORT void *zmq_pollfd_new ();
+ZMQ_EXPORT int  zmq_pollfd_close (void *p);
 
 #if defined _WIN32
-ZMQ_EXPORT SOCKET zmq_poller_fd (void *p);
+ZMQ_EXPORT SOCKET zmq_pollfd_fd (void *p);
 #else
-ZMQ_EXPORT int    zmq_poller_fd (void *p);
+ZMQ_EXPORT int    zmq_pollfd_fd (void *p);
 #endif
  
 /******************************************************************************/

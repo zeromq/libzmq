@@ -39,19 +39,19 @@ int main (void)
 
     void *server = zmq_socket (ctx, ZMQ_SERVER);
     void *server2 = zmq_socket (ctx, ZMQ_SERVER);
-    void *poller = zmq_poller_new ();
+    void *pollfd = zmq_pollfd_new ();
 
     int rc;
 
-    rc = zmq_add_poller (server, poller);
+    rc = zmq_add_pollfd (server, pollfd);
     assert (rc == 0);
 
-    rc = zmq_add_poller (server2, poller);
+    rc = zmq_add_pollfd (server2, pollfd);
     assert (rc == 0);
 
     zmq_pollitem_t items[] = {
-        {server,  zmq_poller_fd(poller), ZMQ_POLLIN, 0},
-        {server2, zmq_poller_fd(poller), ZMQ_POLLIN, 0}};
+        {server,  zmq_pollfd_fd(pollfd), ZMQ_POLLIN, 0},
+        {server2, zmq_pollfd_fd(pollfd), ZMQ_POLLIN, 0}};
 
     rc = zmq_bind (server, "tcp://127.0.0.1:5560");
     assert (rc == 0);
@@ -94,13 +94,13 @@ int main (void)
     rc = zmq_msg_close(&msg);
     assert (rc == 0);
 
-    rc = zmq_remove_poller (server, poller);
+    rc = zmq_remove_pollfd (server, pollfd);
     assert (rc == 0);
 
-    rc = zmq_remove_poller (server2, poller);
+    rc = zmq_remove_pollfd (server2, pollfd);
     assert (rc == 0);
 
-    rc = zmq_poller_close (poller);
+    rc = zmq_pollfd_close (pollfd);
     assert (rc == 0);
 
     rc = zmq_close (server);
