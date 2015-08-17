@@ -405,7 +405,6 @@ typedef struct zmq_pollitem_t
 #endif
     short events;
     short revents;
-    void *poller;
 } zmq_pollitem_t;
 
 #define ZMQ_POLLITEMS_DFLT 16
@@ -414,6 +413,12 @@ ZMQ_EXPORT int  zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
 ZMQ_EXPORT void *zmq_poller_new ();
 ZMQ_EXPORT int  zmq_poller_close (void *p);
 
+#if defined _WIN32
+ZMQ_EXPORT SOCKET zmq_poller_fd (void *p);
+#else
+ZMQ_EXPORT int    zmq_poller_fd (void *p);
+#endif
+ 
 /******************************************************************************/
 /*  Message proxying                                                          */
 /******************************************************************************/

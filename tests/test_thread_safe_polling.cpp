@@ -49,15 +49,9 @@ int main (void)
     rc = zmq_add_poller (server2, poller);
     assert (rc == 0);
 
-    zmq_pollitem_t items[2];
-
-    items[0].socket = server;
-    items[0].poller = poller;
-    items[0].events = ZMQ_POLLIN;
-
-    items[1].socket = server2;
-    items[1].poller = poller;
-    items[1].events = ZMQ_POLLIN;
+    zmq_pollitem_t items[] = {
+        {server,  zmq_poller_fd(poller), ZMQ_POLLIN, 0},
+        {server2, zmq_poller_fd(poller), ZMQ_POLLIN, 0}};
 
     rc = zmq_bind (server, "tcp://127.0.0.1:5560");
     assert (rc == 0);
