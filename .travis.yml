@@ -6,25 +6,31 @@ os:
 - linux
 - osx
 
+sudo: false
+
+env:
+ global:
+  - BUILD_PREFIX=$PWD/tmp
+  - CFLAGS=-I${BUILD_PREFIX}/include
+  - CPPFLAGS=-I${BUILD_PREFIX}/include
+  - CXXFLAGS=-I${BUILD_PREFIX}/include
+  - LDFLAGS=-L${BUILD_PREFIX}/lib
+  - PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig
+
 #   Build required projects first
 before_script:
 
+- mkdir tmp
 #   libsodium
-#   Commit 8d0942 broke installation (sodium.h not found) so for now
-#   we're checking out the last good commit.
 - git clone git://github.com/jedisct1/libsodium.git
-- cd libsodium
-- git checkout e2a30a
-- ./autogen.sh
-- ./configure && make check
-- sudo make install
-- if [ $TRAVIS_OS_NAME != "osx" ] ; then sudo ldconfig ; fi
-- cd ..
+- ( cd libsodium; ./autogen.sh; ./configure --prefix=${BUILD_PREFIX}; make check; make install )
 
 # ZMQ stress tests need more open socket (files) than the usual default
 # On OSX, it seems the way to set the max files limit is constantly changing, so
 # try to use all known knobs to ensure compatibility across various versions
 - if [ $TRAVIS_OS_NAME == "osx" ] ; then sudo sysctl -w kern.maxfiles=64000 ; sudo sysctl -w kern.maxfilesperproc=64000 ; sudo launchctl limit maxfiles 64000 64000 ; fi ; ulimit -n 64000
 
-#   Build and check libzmq
-script: ./autogen.sh && ./configure && make V=1 && make check
+#   Build and check this project
+script:
+- ./autogen.sh && ./configure --prefix=${BUILD_PREFIX} && make V=1 && make check
+- make install
