@@ -244,7 +244,12 @@ int zmq::xpub_t::xrecv (msg_t *msg_)
     memcpy (msg_->data (),
         pending_data.front ().data (),
         pending_data.front ().size ());
-    msg_->set_metadata (pending_metadata.front ());
+    
+	// set metadata only if there is some
+	if (metadata_t* metadata = pending_metadata.front ()) {
+		msg_->set_metadata (metadata);
+	}
+
     msg_->set_flags (pending_flags.front ());
     pending_data.pop_front ();
     pending_metadata.pop_front ();
