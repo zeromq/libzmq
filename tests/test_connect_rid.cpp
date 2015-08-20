@@ -55,7 +55,7 @@ void test_stream_2_stream(){
     assert (rconn1);
     ret = zmq_setsockopt (rconn1, ZMQ_LINGER, &zero, sizeof (zero));
     assert (0 == ret);
-    
+
     //  Do the connection.
     ret = zmq_setsockopt (rconn1, ZMQ_CONNECT_RID, "conn1", 6);
     assert (0 == ret);
@@ -67,7 +67,7 @@ void test_stream_2_stream(){
     assert (0 == ret);
     ret = zmq_connect (rconn1, bindip);
     assert (0 == ret);
-*/   
+*/
     //  Send data to the bound stream.
     ret = zmq_send (rconn1, "conn1", 6, ZMQ_SNDMORE);
     assert (6 == ret);
@@ -112,7 +112,7 @@ void test_router_2_router(bool named){
 
     //  Create connection socket.
     rconn1 = zmq_socket (ctx, ZMQ_ROUTER);
-    assert (rconn1); 
+    assert (rconn1);
     ret = zmq_setsockopt (rconn1, ZMQ_LINGER, &zero, sizeof (zero));
     assert (0 == ret);
 
@@ -122,12 +122,12 @@ void test_router_2_router(bool named){
         ret = zmq_setsockopt (rconn1, ZMQ_IDENTITY, "Y", 1);
     }
 
-    //  Make call to connect using a connect_rid. 
+    //  Make call to connect using a connect_rid.
     ret = zmq_setsockopt (rconn1, ZMQ_CONNECT_RID, "conn1", 6);
     assert (0 == ret);
     ret = zmq_connect (rconn1, bindip);
     assert (0 == ret);
-/*  Uncomment to test assert on duplicate rid 
+/*  Uncomment to test assert on duplicate rid
     //  Test duplicate connect attempt.
     ret = zmq_setsockopt (rconn1, ZMQ_CONNECT_RID, "conn1", 6);
     assert (0 == ret);
@@ -142,9 +142,9 @@ void test_router_2_router(bool named){
 
     //  Receive the name.
     ret = zmq_recv (rbind, buff, 256, 0);
-    if (named) 
+    if (named)
         assert (ret && 'Y' == buff[0]);
-    else 
+    else
         assert (ret && 0 == buff[0]);
 
     //  Receive the data.
@@ -162,7 +162,7 @@ void test_router_2_router(bool named){
     }
     ret = zmq_send_const (rbind, "ok", 3, 0);
     assert (3 == ret);
-    
+
     //  If bound socket identity naming a problem, we'll likely see something funky here.
     ret = zmq_recv (rconn1, buff, 256, 0);
     assert ('c' == buff[0] && 6 == ret);
@@ -183,7 +183,7 @@ int main (void)
 {
     setup_test_environment ();
 
-	test_stream_2_stream ();
+    test_stream_2_stream ();
     test_router_2_router (false);
     test_router_2_router (true);
 

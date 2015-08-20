@@ -397,7 +397,7 @@ ZMQ_EXPORT int zmq_remove_pollfd (void *s, void *p);
 
 typedef struct zmq_pollitem_t
 {
-    void *socket;  
+    void *socket;
 #if defined _WIN32
     SOCKET fd;
 #else
@@ -426,7 +426,7 @@ ZMQ_EXPORT SOCKET zmq_pollfd_fd (void *p);
 #else
 ZMQ_EXPORT int    zmq_pollfd_fd (void *p);
 #endif
- 
+
 /******************************************************************************/
 /*  Message proxying                                                          */
 /******************************************************************************/
@@ -517,8 +517,8 @@ ZMQ_EXPORT void zmq_threadclose (void* thread);
 
 #define ZMQ_UNUSED(object) (void)object
 #define LIBZMQ_DELETE(p_object) {\
-	delete p_object; \
-	p_object = 0; \
+    delete p_object; \
+    p_object = 0; \
 }
 
 #undef ZMQ_EXPORT

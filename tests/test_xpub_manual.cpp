@@ -43,42 +43,42 @@ int main (void)
 
     //  set pub socket options
     int manual = 1;
-	rc = zmq_setsockopt(pub, ZMQ_XPUB_MANUAL, &manual, 4);
-    assert (rc == 0); 
+    rc = zmq_setsockopt(pub, ZMQ_XPUB_MANUAL, &manual, 4);
+    assert (rc == 0);
 
     //  Create a subscriber
     void *sub = zmq_socket (ctx, ZMQ_XSUB);
     assert (sub);
     rc = zmq_connect (sub, "inproc://soname");
-    assert (rc == 0);	
-	
+    assert (rc == 0);
+
     //  Subscribe for A
-	char subscription[2] = { 1, 'A'};
-	rc = zmq_send_const(sub, subscription, 2, 0);    		
-    assert (rc == 2);	
+    char subscription[2] = { 1, 'A'};
+    rc = zmq_send_const(sub, subscription, 2, 0);
+    assert (rc == 2);
 
-	char buffer[2];
-	
-	// Receive subscriptions from subscriber
-	rc = zmq_recv(pub, buffer, 2, 0);	
-	assert(rc == 2);
-	assert(buffer[0] == 1);
-	assert(buffer[1] == 'A');	
+    char buffer[2];
 
-	// Subscribe socket for B instead
-	rc = zmq_setsockopt(pub, ZMQ_SUBSCRIBE, "B", 1);
-	assert(rc == 0);
+    // Receive subscriptions from subscriber
+    rc = zmq_recv(pub, buffer, 2, 0);
+    assert(rc == 2);
+    assert(buffer[0] == 1);
+    assert(buffer[1] == 'A');
 
-	// Sending A message and B Message
-	rc = zmq_send_const(pub, "A", 1, 0);
-	assert(rc == 1);	
+    // Subscribe socket for B instead
+    rc = zmq_setsockopt(pub, ZMQ_SUBSCRIBE, "B", 1);
+    assert(rc == 0);
 
-	rc = zmq_send_const(pub, "B", 1, 0);
-	assert(rc == 1);		
+    // Sending A message and B Message
+    rc = zmq_send_const(pub, "A", 1, 0);
+    assert(rc == 1);
 
-	rc = zmq_recv(sub, buffer, 1, ZMQ_DONTWAIT);
-	assert(rc == 1);
-	assert(buffer[0] == 'B');	
+    rc = zmq_send_const(pub, "B", 1, 0);
+    assert(rc == 1);
+
+    rc = zmq_recv(sub, buffer, 1, ZMQ_DONTWAIT);
+    assert(rc == 1);
+    assert(buffer[0] == 'B');
 
     //  Clean up.
     rc = zmq_close (pub);

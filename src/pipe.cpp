@@ -515,13 +515,13 @@ void zmq::pipe_t::set_hwms (int inhwm_, int outhwm_)
 
     // if either send or recv side has hwm <= 0 it means infinite so we should set hwms infinite
     if (inhwm_ <= 0 || inhwmboost <= 0)
-		in = 0;
-        
-    if (outhwm_ <= 0 || outhwmboost <= 0)
-		out = 0;
+        in = 0;
 
-	lwm = compute_lwm(in);
-	hwm = out;
+    if (outhwm_ <= 0 || outhwmboost <= 0)
+        out = 0;
+
+    lwm = compute_lwm(in);
+    hwm = out;
 }
 
 void zmq::pipe_t::set_hwms_boost(int inhwmboost_, int outhwmboost_)

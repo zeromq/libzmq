@@ -56,42 +56,42 @@ int main (void)
     rc = zmq_connect (client2, "tcp://127.0.0.1:5560");
     assert (rc == 0);
 
-	void*  t1 = zmq_threadstart(worker1, client2);
-	void*  t2 = zmq_threadstart(worker2, client2);	
+    void*  t1 = zmq_threadstart(worker1, client2);
+    void*  t2 = zmq_threadstart(worker2, client2);
 
-	char data[1];
-	data[0] = 0;
+    char data[1];
+    data[0] = 0;
 
-	for (int i=0; i < 10; i++) {
-		rc = zmq_send_const(client, data, 1, 0);
-		assert (rc == 1);
+    for (int i=0; i < 10; i++) {
+        rc = zmq_send_const(client, data, 1, 0);
+        assert (rc == 1);
 
-		rc = zmq_send_const(client, data, 1, 0);
-		assert(rc == 1);
+        rc = zmq_send_const(client, data, 1, 0);
+        assert(rc == 1);
 
-		char a, b;
+        char a, b;
 
-		rc = zmq_recv(client, &a, 1, 0);
-		assert(rc == 1);
+        rc = zmq_recv(client, &a, 1, 0);
+        assert(rc == 1);
 
-		rc = zmq_recv(client, &b, 1, 0);
-		assert(rc == 1);
+        rc = zmq_recv(client, &b, 1, 0);
+        assert(rc == 1);
 
-		// make sure they came from different threads
-		assert((a == 1 && b == 2) || (a == 2 && b == 1));
-	}
+        // make sure they came from different threads
+        assert((a == 1 && b == 2) || (a == 2 && b == 1));
+    }
 
-	// make the thread exit
-	data[0] = 1;
+    // make the thread exit
+    data[0] = 1;
 
-	rc = zmq_send_const(client, data, 1, 0);
-	assert (rc == 1);
+    rc = zmq_send_const(client, data, 1, 0);
+    assert (rc == 1);
 
-	rc = zmq_send_const(client, data, 1, 0);
-	assert(rc == 1);
+    rc = zmq_send_const(client, data, 1, 0);
+    assert(rc == 1);
 
-	zmq_threadclose(t1);
-	zmq_threadclose(t2);	
+    zmq_threadclose(t1);
+    zmq_threadclose(t2);
 
     rc = zmq_close (client2);
     assert (rc == 0);
@@ -107,52 +107,52 @@ int main (void)
 
 void worker1(void* s)
 {
-	const char worker_id = 1;
-	char c;
+    const char worker_id = 1;
+    char c;
 
-	while (true)
-	{
-		int rc = zmq_recv(s, &c,1, 0); 
-		assert(rc == 1);
+    while (true)
+    {
+        int rc = zmq_recv(s, &c,1, 0);
+        assert(rc == 1);
 
-		if (c == 0)
-		{
-			msleep(100);
-			rc = zmq_send_const(s,&worker_id, 1, 0);
-			assert(rc == 1);
-		}
-		else
-		{
-			// we got exit request
-			break;
-		}
-	}
+        if (c == 0)
+        {
+            msleep(100);
+            rc = zmq_send_const(s,&worker_id, 1, 0);
+            assert(rc == 1);
+        }
+        else
+        {
+            // we got exit request
+            break;
+        }
+    }
 }
 
 void worker2(void* s)
 {
-	const char worker_id = 2;
-	char c;
+    const char worker_id = 2;
+    char c;
 
-	while (true)
-	{
-		int rc = zmq_recv(s, &c,1, 0); 
-		assert(rc == 1);
+    while (true)
+    {
+        int rc = zmq_recv(s, &c,1, 0);
+        assert(rc == 1);
 
-		assert(c == 1 || c == 0);
+        assert(c == 1 || c == 0);
 
-		if (c == 0)
-		{
-			msleep(100);
-			rc = zmq_send_const(s,&worker_id, 1, 0);
-			assert(rc == 1);
-		}
-		else
-		{
-			// we got exit request
-			break;
-		}
-	}
+        if (c == 0)
+        {
+            msleep(100);
+            rc = zmq_send_const(s,&worker_id, 1, 0);
+            assert(rc == 1);
+        }
+        else
+        {
+            // we got exit request
+            break;
+        }
+    }
 }
 
 

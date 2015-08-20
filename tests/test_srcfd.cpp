@@ -44,7 +44,7 @@
 int main (void)
 {
     int rc;
- 
+
     setup_test_environment();
     //  Create the infrastructure
     void *ctx = zmq_ctx_new ();
@@ -70,15 +70,15 @@ int main (void)
 
     zmq_recvmsg(rep, &msg, 0);
     assert(zmq_msg_size(&msg) == MSG_SIZE);
-  
-	  // get the messages source file descriptor
+
+    // get the messages source file descriptor
     int srcFd = zmq_msg_get(&msg, ZMQ_SRCFD);
     assert(srcFd >= 0);
 
     rc = zmq_msg_close(&msg);
     assert (rc == 0);
 
-	  // get the remote endpoint
+    // get the remote endpoint
     struct sockaddr_storage ss;
 #ifdef ZMQ_HAVE_HPUX
     int addrlen = sizeof ss;
@@ -92,7 +92,7 @@ int main (void)
     rc = getnameinfo ((struct sockaddr*) &ss, addrlen, host, sizeof host, NULL, 0, NI_NUMERICHOST);
     assert (rc == 0);
 
-	  // assert it is localhost which connected
+    // assert it is localhost which connected
     assert (strcmp(host, "127.0.0.1") == 0);
 
     rc = zmq_close (rep);
@@ -100,14 +100,14 @@ int main (void)
     rc = zmq_close (req);
     assert (rc == 0);
 
-	  // sleep a bit for the socket to be freed
-	  usleep(30000);
-	
-	  // getting name from closed socket will fail
+    // sleep a bit for the socket to be freed
+    usleep(30000);
+
+    // getting name from closed socket will fail
     rc = getpeername (srcFd, (struct sockaddr*) &ss, &addrlen);
     assert (rc == -1);
     assert (errno == EBADF);
-    
+
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
