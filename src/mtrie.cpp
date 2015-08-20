@@ -96,7 +96,7 @@ bool zmq::mtrie_t::add_helper (unsigned char *prefix_, size_t size_,
             count = 1;
             next.node = NULL;
         }
-        else 
+        else
         if (count == 1) {
             unsigned char oldc = min;
             mtrie_t *oldp = next.node;
@@ -109,7 +109,7 @@ bool zmq::mtrie_t::add_helper (unsigned char *prefix_, size_t size_,
             min = std::min (min, c);
             next.table [oldc - min] = oldp;
         }
-        else 
+        else
         if (min < c) {
             //  The new character is above the current character range.
             unsigned short old_count = count;
@@ -252,7 +252,7 @@ void zmq::mtrie_t::rm_helper (pipe_t *pipe_, unsigned char **buff_,
         count = 0;
     }
     //  Compact the node table if possible
-    else 
+    else
     if (live_nodes == 1) {
         //  If there's only one live node in the table we can
         //  switch to using the more compact single-node
@@ -412,16 +412,16 @@ void zmq::mtrie_t::match (unsigned char *data_, size_t size_,
             break;
 
         //  If there's one subnode (optimisation).
-		if (current->count == 1) {
+        if (current->count == 1) {
             if (data_ [0] != current->min)
                 break;
             current = current->next.node;
             data_++;
             size_--;
-		    continue;
-		}
+            continue;
+        }
 
-		//  If there are multiple subnodes.
+        //  If there are multiple subnodes.
         if (data_ [0] < current->min || data_ [0] >=
               current->min + current->count)
             break;

@@ -299,7 +299,7 @@ void zmq::socket_base_t::attach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
     //  First, register the pipe so that we can terminate it later on.
     pipe_->set_event_sink (this);
     pipes.push_back (pipe_);
-    
+
     //  Let the derived socket type know about new pipe.
     xattach_pipe (pipe_, subscribe_to_all_);
 
@@ -316,12 +316,11 @@ int zmq::socket_base_t::setsockopt (int option_, const void *optval_,
 {
     ENTER_MUTEX();
 
-	if (!options.is_valid(option_)) {
-		errno = EINVAL;
-		EXIT_MUTEX();
-		return -1;
-	}
-
+    if (!options.is_valid(option_)) {
+        errno = EINVAL;
+        EXIT_MUTEX();
+        return -1;
+    }
 
     if (unlikely (ctx_terminated)) {
         errno = ETERM;
@@ -339,7 +338,7 @@ int zmq::socket_base_t::setsockopt (int option_, const void *optval_,
     //  If the socket type doesn't support the option, pass it to
     //  the generic option parser.
     rc = options.setsockopt (option_, optval_, optvallen_);
-	update_pipe_options(option_);
+    update_pipe_options(option_);
 
     EXIT_MUTEX();
     return rc;
@@ -382,10 +381,10 @@ int zmq::socket_base_t::getsockopt (int option_, void *optval_,
             EXIT_MUTEX();
             return -1;
         }
-        
+
         *((fd_t*)optval_) = ((mailbox_t*)mailbox)->get_fd();
-        *optvallen_ = sizeof(fd_t);                      
-        
+        *optvallen_ = sizeof(fd_t);
+
         EXIT_MUTEX();
         return 0;
     }
@@ -809,9 +808,9 @@ int zmq::socket_base_t::connect (const char *addr_)
         }
     }
 #endif
-    
+
 // TBD - Should we check address for ZMQ_HAVE_NORM???
-    
+
 #ifdef ZMQ_HAVE_OPENPGM
     if (protocol == "pgm" || protocol == "epgm") {
         struct pgm_addrinfo_t *res = NULL;
@@ -1027,7 +1026,7 @@ int zmq::socket_base_t::send (msg_t *msg_, int flags_)
         if (unlikely (process_commands (timeout, false) != 0)) {
             EXIT_MUTEX();
             return -1;
-        }        
+        }
         rc = xsend (msg_);
         if (rc == 0)
             break;
@@ -1167,7 +1166,7 @@ int zmq::socket_base_t::close ()
 {
     //  Mark the socket as dead
     tag = 0xdeadbeef;
-    
+
     //  Transfer the ownership of the socket from this application thread
     //  to the reaper thread which will take care of the rest of shutdown
     //  process.
@@ -1195,13 +1194,13 @@ void zmq::socket_base_t::start_reaping (poller_t *poller_)
 
     if (!thread_safe)
         fd = ((mailbox_t*)mailbox)->get_fd();
-    else {        
+    else {
         ENTER_MUTEX();
 
         reaper_signaler =  new signaler_t();
 
         //  Add signaler to the safe mailbox
-        fd = reaper_signaler->get_fd();        
+        fd = reaper_signaler->get_fd();
         ((mailbox_safe_t*)mailbox)->add_signaler(reaper_signaler);
 
         //  Send a signal to make sure reaper handle existing commands
@@ -1308,13 +1307,13 @@ void zmq::socket_base_t::process_term (int linger_)
 
 void zmq::socket_base_t::update_pipe_options(int option_)
 {
-	if (option_ == ZMQ_SNDHWM || option_ == ZMQ_RCVHWM) 
-	{
-		for (pipes_t::size_type i = 0; i != pipes.size(); ++i)
-		{
-			pipes[i]->set_hwms(options.rcvhwm, options.sndhwm);
-		}
-	}
+    if (option_ == ZMQ_SNDHWM || option_ == ZMQ_RCVHWM)
+    {
+        for (pipes_t::size_type i = 0; i != pipes.size(); ++i)
+        {
+            pipes[i]->set_hwms(options.rcvhwm, options.sndhwm);
+        }
+    }
 
 }
 
@@ -1378,11 +1377,11 @@ void zmq::socket_base_t::in_event ()
     //  be destroyed.
 
     ENTER_MUTEX();
-    
+
     //  If the socket is thread safe we need to unsignal the reaper signaler
     if (thread_safe)
         reaper_signaler->recv();
-    
+
     process_commands (0, false);
     EXIT_MUTEX();
     check_destroy ();

@@ -1065,11 +1065,11 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     errno = ENOTSUP;
     return -1;
 #endif
-} 
+}
 
-// Create pollfd 
+// Create pollfd
 
-void *zmq_pollfd_new () 
+void *zmq_pollfd_new ()
 {
     return new zmq::signaler_t ();
 }
@@ -1080,7 +1080,7 @@ int zmq_pollfd_close (void* p_)
 {
     zmq::signaler_t *s = (zmq::signaler_t*)p_;
     LIBZMQ_DELETE(s);
-    return 0;	
+    return 0;
 }
 
 // Recv signal from pollfd
@@ -1088,7 +1088,7 @@ int zmq_pollfd_close (void* p_)
 void zmq_pollfd_recv(void *p_)
 {
     zmq::signaler_t *s = (zmq::signaler_t*)p_;
-    s->recv (); 
+    s->recv ();
 }
 
 //  Wait until pollfd is signalled
@@ -1096,7 +1096,7 @@ void zmq_pollfd_recv(void *p_)
 int zmq_pollfd_wait(void *p_, int timeout_)
 {
     zmq::signaler_t *s = (zmq::signaler_t*)p_;
-    return s->wait (timeout_); 
+    return s->wait (timeout_);
 }
 
 // Get pollfd fd
@@ -1108,7 +1108,7 @@ int    zmq_pollfd_fd (void *p_)
 #endif
 {
     zmq::signaler_t *s = (zmq::signaler_t*)p_;
-    return s->get_fd ();	
+    return s->get_fd ();
 }
 
 // Polling thread safe sockets version
@@ -1153,27 +1153,27 @@ int zmq_pollfd_poll (void* p_, zmq_pollitem_t *items_, int nitems_, long timeout
             int thread_safe;
             size_t thread_safe_size = sizeof(int);
 
-            if (zmq_getsockopt (items_ [i].socket, ZMQ_THREAD_SAFE, &thread_safe, 
+            if (zmq_getsockopt (items_ [i].socket, ZMQ_THREAD_SAFE, &thread_safe,
                 &thread_safe_size) == -1) {
                 return -1;
             }
 
             //  All thread safe sockets share same fd
             if (thread_safe) {
-       
+
                 // if poll fd is not set yet and events are set for this socket
                 if (!use_pollfd && items_ [i].events) {
                     use_pollfd = true;
                     pollfds_size++;
                 }
             }
-            else 
+            else
                 pollfds_size++;
        }
        else
            pollfds_size++;
     }
-    
+
     if (pollfds_size > ZMQ_POLLITEMS_DFLT) {
         pollfds = (pollfd*) malloc (pollfds_size * sizeof (pollfd));
         alloc_assert (pollfds);
@@ -1195,7 +1195,7 @@ int zmq_pollfd_poll (void* p_, zmq_pollitem_t *items_, int nitems_, long timeout
             int thread_safe;
             size_t thread_safe_size = sizeof(int);
 
-            if (zmq_getsockopt (items_ [i].socket, ZMQ_THREAD_SAFE, &thread_safe, 
+            if (zmq_getsockopt (items_ [i].socket, ZMQ_THREAD_SAFE, &thread_safe,
                 &thread_safe_size) == -1) {
                 if (pollfds != spollfds)
                     free (pollfds);
@@ -1212,7 +1212,7 @@ int zmq_pollfd_poll (void* p_, zmq_pollitem_t *items_, int nitems_, long timeout
                     return -1;
                 }
                 pollfds [pollfds_index].events = items_ [i].events ? POLLIN : 0;
-                pollfds_index++;            
+                pollfds_index++;
             }
         }
         //  Else, the poll item is a raw file descriptor. Just convert the
@@ -1374,16 +1374,16 @@ int zmq_pollfd_poll (void* p_, zmq_pollitem_t *items_, int nitems_, long timeout
             int thread_safe;
             size_t thread_safe_size = sizeof(int);
 
-            if (zmq_getsockopt (items_ [i].socket, ZMQ_THREAD_SAFE, &thread_safe, 
-                &thread_safe_size) == -1) 
+            if (zmq_getsockopt (items_ [i].socket, ZMQ_THREAD_SAFE, &thread_safe,
+                &thread_safe_size) == -1)
                 return -1;
 
             if (thread_safe && items_ [i].events) {
                 use_pollfd = true;
                 FD_SET (zmq_pollfd_fd (p_), &pollset_in);
                 break;
-            }         
-        } 
+            }
+        }
     }
 
     zmq::fd_t maxfd = 0;
@@ -1397,17 +1397,17 @@ int zmq_pollfd_poll (void* p_, zmq_pollitem_t *items_, int nitems_, long timeout
             int thread_safe;
             size_t thread_safe_size = sizeof(int);
 
-            if (zmq_getsockopt (items_ [i].socket, ZMQ_THREAD_SAFE, &thread_safe, 
-                &thread_safe_size) == -1) 
+            if (zmq_getsockopt (items_ [i].socket, ZMQ_THREAD_SAFE, &thread_safe,
+                &thread_safe_size) == -1)
                 return -1;
-           
+
             if (!thread_safe) {
                 zmq::fd_t notify_fd;
                 size_t zmq_fd_size = sizeof (zmq::fd_t);
                 if (zmq_getsockopt (items_ [i].socket, ZMQ_FD, &notify_fd,
                     &zmq_fd_size) == -1)
                     return -1;
-            
+
                 if (items_ [i].events) {
                     FD_SET (notify_fd, &pollset_in);
                     if (maxfd < notify_fd)
