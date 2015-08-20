@@ -109,6 +109,7 @@ namespace zmq
         //  applied to the trie, but not yet received by the user.
         typedef std::basic_string <unsigned char> blob_t;
         std::deque <blob_t> pending_data;
+        std::deque <metadata_t*> pending_metadata;
         std::deque <unsigned char> pending_flags;
 
         xpub_t (const xpub_t&);
