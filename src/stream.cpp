@@ -58,7 +58,7 @@ zmq::stream_t::~stream_t ()
 
 void zmq::stream_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 {
-	ZMQ_UNUSED(subscribe_to_all_);
+	LIBZMQ_UNUSED(subscribe_to_all_);
 
     zmq_assert (pipe_);
 

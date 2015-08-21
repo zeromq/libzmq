@@ -94,13 +94,13 @@ void zmq::set_tcp_receive_buffer (fd_t sockfd_, int bufsize_)
 void zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_, int keepalive_idle_, int keepalive_intvl_)
 {
     // These options are used only under certain #ifdefs below.
-    ZMQ_UNUSED(keepalive_);
-    ZMQ_UNUSED(keepalive_cnt_);
-    ZMQ_UNUSED(keepalive_idle_);
-    ZMQ_UNUSED(keepalive_intvl_);
+    LIBZMQ_UNUSED(keepalive_);
+    LIBZMQ_UNUSED(keepalive_cnt_);
+    LIBZMQ_UNUSED(keepalive_idle_);
+    LIBZMQ_UNUSED(keepalive_intvl_);
 
     // If none of the #ifdefs apply, then s_ is unused.
-	ZMQ_UNUSED(s_);
+	LIBZMQ_UNUSED(s_);
 
     //  Tuning TCP keep-alives if platform allows it
     //  All values = -1 means skip and leave it for OS
