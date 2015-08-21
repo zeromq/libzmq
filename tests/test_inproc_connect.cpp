@@ -471,6 +471,27 @@ void test_unbind ()
     assert (rc == 0);
 }
 
+void test_shutdown_during_pend ()
+{
+    void *ctx = zmq_ctx_new ();
+    assert (ctx);
+
+    // Connect first
+    void *connectSocket = zmq_socket (ctx, ZMQ_PAIR);
+    assert (connectSocket);
+    int rc = zmq_connect (connectSocket, "inproc://cbb");
+    assert (rc == 0);
+
+    zmq_ctx_shutdown (ctx);
+
+    // Cleanup
+    rc = zmq_close (connectSocket);
+    assert (rc == 0);
+
+    rc = zmq_ctx_term (ctx);
+    assert (rc == 0);
+}
+
 int main (void)
 {
     setup_test_environment ();
@@ -484,6 +505,7 @@ int main (void)
     test_identity ();
     test_connect_only ();
     test_unbind ();
+    test_shutdown_during_pend ();
 
     return 0;
 }
