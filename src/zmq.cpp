@@ -28,6 +28,7 @@
 */
 #define ZMQ_TYPE_UNSAFE
 
+#include "macros.hpp"
 #include "poller.hpp"
 
 //  On AIX platform, poll.h has to be included first to get consistent

@@ -29,6 +29,7 @@
 
 #include <string.h>
 
+#include "macros.hpp"
 #include "xsub.hpp"
 #include "err.hpp"
 

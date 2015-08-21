@@ -30,6 +30,7 @@
 #include <new>
 #include <string>
 
+#include "macros.hpp"
 #include "socks_connecter.hpp"
 #include "stream_engine.hpp"
 #include "platform.hpp"
