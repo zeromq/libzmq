@@ -326,7 +326,9 @@ endif()
 #-----------------------------------------------------------------------------
 # default to Release build
 
-if(NOT CMAKE_BUILD_TYPE)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  # CMAKE_BUILD_TYPE is not used for multi-configuration generators like Visual Studio/XCode
+  # which instead use CMAKE_CONFIGURATION_TYPES
   set(CMAKE_BUILD_TYPE Release CACHE STRING
       "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
       FORCE)
@@ -436,7 +438,8 @@ set(cxx-sources
         xsub.cpp
         zmq.cpp
         zmq_utils.cpp
-        decoder_allocators.cpp)
+        decoder_allocators.cpp
+        config.hpp)
 
 set(rc-sources version.rc)
 
