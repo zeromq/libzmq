@@ -126,15 +126,20 @@ zmq::ctx_t::~ctx_t ()
 
 int zmq::ctx_t::terminate ()
 {
-    // Connect up any pending inproc connections, otherwise we will hang
+	slot_sync.lock();
+
+	bool saveTerminating = terminating;
+	terminating = false;
+
+	// Connect up any pending inproc connections, otherwise we will hang
     pending_connections_t copy = pending_connections;
     for (pending_connections_t::iterator p = copy.begin (); p != copy.end (); ++p) {
         zmq::socket_base_t *s = create_socket (ZMQ_PAIR);
         s->bind (p->first.c_str ());
         s->close ();
     }
+	terminating = saveTerminating;
 
-    slot_sync.lock ();
     if (!starting) {
 
 #ifdef HAVE_FORK
