@@ -89,7 +89,11 @@ namespace zmq
 
         //  On some OSes the signaler has to be emulated using a TCP
         //  connection. In such cases following port is used.
-        signaler_port = 5905
+        //  If 0, it lets the OS choose a free port without requiring use of a 
+        //  global mutex. The original implementation of a Windows signaler 
+        //  socket used port 5905 instead of letting the OS choose a free port.
+        //  https://github.com/zeromq/libzmq/issues/1542
+        signaler_port = 0
     };
 
 }
