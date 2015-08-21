@@ -512,14 +512,17 @@ ZMQ_EXPORT void zmq_threadclose (void* thread);
 
 
 /******************************************************************************/
-/*  0MQ General                                                               */
+/*  0MQ Internal Use                                                          */
 /******************************************************************************/
 
-#define ZMQ_UNUSED(object) (void)object
+#define LIBZMQ_UNUSED(object) (void)object
 #define LIBZMQ_DELETE(p_object) {\
     delete p_object; \
     p_object = 0; \
 }
+
+
+/******************************************************************************/
 
 #undef ZMQ_EXPORT
 
