@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "macros.hpp"
 #include "ip.hpp"
 #include "tcp.hpp"
 #include "err.hpp"

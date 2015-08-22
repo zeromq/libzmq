@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "macros.hpp"
 #include "pull.hpp"
 #include "err.hpp"
 #include "msg.hpp"

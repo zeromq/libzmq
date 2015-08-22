@@ -37,6 +37,7 @@
 #include <algorithm>
 #include <new>
 
+#include "macros.hpp"
 #include "epoll.hpp"
 #include "err.hpp"
 #include "config.hpp"
