@@ -327,6 +327,8 @@ int zmq::router_t::xrecv (msg_t *msg_)
         errno_assert (rc == 0);
         memcpy (msg_->data (), identity.data (), identity.size ());
         msg_->set_flags (msg_t::more);
+        if (prefetched_msg.metadata())
+            msg_->set_metadata(prefetched_msg.metadata());
         identity_sent = true;
     }
 
