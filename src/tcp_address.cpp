@@ -157,7 +157,8 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
 
 #elif ((defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD ||\
     defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_OPENBSD ||\
-    defined ZMQ_HAVE_QNXNTO || defined ZMQ_HAVE_NETBSD)\
+    defined ZMQ_HAVE_QNXNTO || defined ZMQ_HAVE_NETBSD ||\
+    defined ZMQ_HAVE_DRAGONFLY)\
     && defined ZMQ_HAVE_IFADDRS)
 
 #include <ifaddrs.h>
@@ -280,7 +281,7 @@ int zmq::tcp_address_t::resolve_interface (const char *interface_, bool ipv6_, b
     //  service-name irregularity due to indeterminate socktype.
     req.ai_flags = AI_PASSIVE | AI_NUMERICHOST;
 
-#if defined AI_V4MAPPED && !defined ZMQ_HAVE_FREEBSD
+#if defined AI_V4MAPPED && !defined ZMQ_HAVE_FREEBSD && !defined ZMQ_HAVE_DRAGONFLY
     //  In this API we only require IPv4-mapped addresses when
     //  no native IPv6 interfaces are available (~AI_ALL).
     //  This saves an additional DNS roundtrip for IPv4 addresses.
@@ -330,7 +331,7 @@ int zmq::tcp_address_t::resolve_hostname (const char *hostname_, bool ipv6_, boo
     //  doesn't really matter, since it's not included in the addr-output.
     req.ai_socktype = SOCK_STREAM;
 
-#if defined AI_V4MAPPED && !defined ZMQ_HAVE_FREEBSD
+#if defined AI_V4MAPPED && !defined ZMQ_HAVE_FREEBSD && !defined ZMQ_HAVE_DRAGONFLY
     //  In this API we only require IPv4-mapped addresses when
     //  no native IPv6 interfaces are available.
     //  This saves an additional DNS roundtrip for IPv4 addresses.
