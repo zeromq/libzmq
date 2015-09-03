@@ -34,7 +34,7 @@
 
 #ifdef HAVE_LIBGSSAPI_KRB5
 
-#ifndef ZMQ_HAVE_FREEBSD
+#if !defined(ZMQ_HAVE_FREEBSD) && !defined(ZMQ_HAVE_DRAGONFLY)
 #include <gssapi/gssapi_generic.h>
 #endif
 #include <gssapi/gssapi_krb5.h>

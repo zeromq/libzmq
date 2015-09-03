@@ -193,6 +193,10 @@ case "${host_os}" in
         CPPFLAGS="-D__BSD_VISIBLE $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_FREEBSD, 1, [Have FreeBSD OS])
         ;;
+    *dragonfly*)
+        CPPFLAGS="-D__BSD_VISIBLE $CPPFLAGS"
+        AC_DEFINE(ZMQ_HAVE_DRAGONFLY, 1, [Have DragonFly OS])
+        ;;
     *darwin*)
         # Define on Darwin to enable all library features
         CPPFLAGS="-D_DARWIN_C_SOURCE $CPPFLAGS"
