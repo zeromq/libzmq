@@ -124,11 +124,10 @@ static int close_wait_ms (int fd_, unsigned int max_ms_ = 2000)
 zmq::signaler_t::signaler_t ()
 {
     //  Create the socketpair for signaling.
-    int rc = make_fdpair (&r, &w);
-    zmq_assert (rc == 0);
-
-    unblock_socket (w);
-    unblock_socket (r);
+    if (make_fdpair (&r, &w) == 0) {
+        unblock_socket (w);
+        unblock_socket (r);
+    }
 #ifdef HAVE_FORK
     pid = getpid ();
 #endif
@@ -322,8 +321,7 @@ void zmq::signaler_t::forked ()
     //  Close file descriptors created in the parent and create new pair
     close (r);
     close (w);
-    int rc = make_fdpair (&r, &w);
-    zmq_assert (rc == 0);
+    make_fdpair (&r, &w);
 }
 #endif
 
