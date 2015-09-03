@@ -40,8 +40,10 @@ zmq::reaper_t::reaper_t (class ctx_t *ctx_, uint32_t tid_) :
     poller = new (std::nothrow) poller_t (*ctx_);
     alloc_assert (poller);
 
-    mailbox_handle = poller->add_fd (mailbox.get_fd (), this);
-    poller->set_pollin (mailbox_handle);
+    if (mailbox.get_fd () != retired_fd) {
+        mailbox_handle = poller->add_fd (mailbox.get_fd (), this);
+        poller->set_pollin (mailbox_handle);
+    }
 
 #ifdef HAVE_FORK
     pid = getpid();
