@@ -99,8 +99,11 @@ namespace zmq
         //  Subscriptions will not bed added automatically, only after calling set option with ZMQ_SUBSCRIBE or ZMQ_UNSUBSCRIBE
         bool manual;
 
-        //  Last pipe send subscription message, only used if xpub is on manual
+        //  Last pipe that sent subscription message, only used if xpub is on manual
         pipe_t *last_pipe;
+
+        // Pipes that sent subscriptions messages that have not yet been processed, only used if xpub is on manual
+        std::deque <pipe_t*> pending_pipes;
 
         //  Welcome message to send to pipe when attached
         msg_t welcome_msg;

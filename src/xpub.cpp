@@ -41,6 +41,7 @@ zmq::xpub_t::xpub_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     more (false),
     lossy (true),
     manual(false),
+    pending_pipes (),
     welcome_msg ()
 {
     last_pipe = NULL;
@@ -90,7 +91,7 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
         if (size > 0 && (*data == 0 || *data == 1)) {
             if (manual)
             {
-                last_pipe = pipe_;
+                pending_pipes.push_back(pipe_);
                 pending_data.push_back(blob_t(data, size));
                 pending_metadata.push_back(sub.metadata());
                 pending_flags.push_back(0);
@@ -243,6 +244,10 @@ int zmq::xpub_t::xrecv (msg_t *msg_)
         return -1;
     }
 
+    // User is reading a message, set last_pipe and remove it from the deque
+    last_pipe = pending_pipes.front ();
+    pending_pipes.pop_front ();
+
     int rc = msg_->close ();
     errno_assert (rc == 0);
     rc = msg_->init_size (pending_data.front ().size ());
@@ -281,6 +286,7 @@ void zmq::xpub_t::send_unsubscription (unsigned char *data_, size_t size_,
         if (size_ > 0)
             memcpy (&unsub [1], data_, size_);
         self->last_pipe = NULL;
+        self->pending_pipes.push_back (NULL);
         self->pending_data.push_back (unsub);
         self->pending_metadata.push_back (NULL);
         self->pending_flags.push_back (0);

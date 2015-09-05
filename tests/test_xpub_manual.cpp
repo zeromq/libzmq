@@ -228,11 +228,128 @@ int test_xpub_proxy_unsubscribe_on_disconnect()
     return 0;
 }
 
+int test_missing_subscriptions()
+{
+    const char* frontend = "ipc://frontend";
+    const char* backend = "ipc://backend";
+    const char* topic1 = "1";
+    const char* topic2 = "2";
+    const char* payload = "X";
+
+    int manual = 1;
+
+    void *ctx = zmq_ctx_new ();
+    assert (ctx);
+
+    // proxy frontend
+    void *xsub_proxy = zmq_socket (ctx, ZMQ_XSUB);
+    assert (xsub_proxy);
+    assert (zmq_bind (xsub_proxy, frontend) == 0);
+
+    // proxy backend
+    void *xpub_proxy = zmq_socket (ctx, ZMQ_XPUB);
+    assert (xpub_proxy);
+    assert (zmq_setsockopt (xpub_proxy, ZMQ_XPUB_MANUAL, &manual, 4) == 0);
+    assert (zmq_bind (xpub_proxy, backend) == 0);
+
+    // publisher
+    void *pub = zmq_socket (ctx, ZMQ_PUB);
+    assert (zmq_connect (pub, frontend) == 0);
+
+    // Here's the problem: because subscribers subscribe in quick succession,
+    // the proxy is unable to confirm the first subscription before receiving
+    // the second. This causes the first subscription to get lost.
+
+    // first subscriber
+    void *sub1 = zmq_socket (ctx, ZMQ_SUB);
+    assert (sub1);
+    assert (zmq_connect (sub1, backend) == 0);
+    assert (zmq_setsockopt (sub1, ZMQ_SUBSCRIBE, topic1, 1) == 0);
+
+    // second subscriber
+    void *sub2 = zmq_socket (ctx, ZMQ_SUB);
+    assert (sub2);
+    assert (zmq_connect (sub2, backend) == 0);
+    assert (zmq_setsockopt (sub2, ZMQ_SUBSCRIBE, topic2, 1) == 0);
+
+    // wait
+    assert (zmq_poll (0, 0, 100) == 0);
+
+    // proxy now reroutes and confirms subscriptions
+    char buffer[2];
+    assert (zmq_recv (xpub_proxy, buffer, 2, ZMQ_DONTWAIT) == 2);
+    assert (buffer [0] == 1);
+    assert (buffer [1] == *topic1);
+    assert (zmq_setsockopt (xpub_proxy, ZMQ_SUBSCRIBE, topic1, 1) == 0);
+    assert (zmq_send (xsub_proxy, buffer, 2, 0) == 2);
+
+    assert (zmq_recv (xpub_proxy, buffer, 2, ZMQ_DONTWAIT) == 2);
+    assert (buffer [0] == 1);
+    assert (buffer [1] == *topic2);
+    assert (zmq_setsockopt (xpub_proxy, ZMQ_SUBSCRIBE, topic2, 1) == 0);
+    assert (zmq_send (xsub_proxy, buffer, 2, 0) == 2);
+
+    // wait
+    assert (zmq_poll (0, 0, 100) == 0);
+
+    // let publisher send 2 msgs, each with its own topic
+    assert (zmq_send (pub, topic1, 1, ZMQ_SNDMORE) == 1);
+    assert (zmq_send (pub, payload, 1, 0) == 1);
+    assert (zmq_send (pub, topic2, 1, ZMQ_SNDMORE) == 1);
+    assert (zmq_send (pub, payload, 1, 0) == 1);
+
+    // wait
+    assert (zmq_poll (0, 0, 100) == 0);
+
+    // proxy reroutes data messages to subscribers
+    char topic_buff [1];
+    char data_buff [1];
+    assert (zmq_recv (xsub_proxy, topic_buff, 1, ZMQ_DONTWAIT) == 1);
+    assert (topic_buff [0] == *topic1);
+    assert (zmq_recv (xsub_proxy, data_buff, 1, ZMQ_DONTWAIT) == 1);
+    assert (data_buff [0] == *payload);
+    assert (zmq_send (xpub_proxy, topic_buff, 1, ZMQ_SNDMORE) == 1);
+    assert (zmq_send (xpub_proxy, data_buff, 1, 0) == 1);
+
+    assert (zmq_recv (xsub_proxy, topic_buff, 1, ZMQ_DONTWAIT) == 1);
+    assert (topic_buff [0] == *topic2);
+    assert (zmq_recv (xsub_proxy, data_buff, 1, ZMQ_DONTWAIT) == 1);
+    assert (data_buff [0] == *payload);
+    assert (zmq_send (xpub_proxy, topic_buff, 1, ZMQ_SNDMORE) == 1);
+    assert (zmq_send (xpub_proxy, data_buff, 1, 0) == 1);
+
+    // wait
+    assert (zmq_poll (0, 0, 100) == 0);
+
+    // each subscriber should now get a message
+    assert (zmq_recv (sub2, topic_buff, 1, ZMQ_DONTWAIT) == 1);
+    assert (topic_buff [0] == *topic2);
+    assert (zmq_recv (sub2, data_buff, 1, ZMQ_DONTWAIT) == 1);
+    assert (data_buff [0] == *payload);
+
+    assert (zmq_recv (sub1, topic_buff, 1, ZMQ_DONTWAIT) == 1);
+    assert (topic_buff [0] == *topic1);
+    assert (zmq_recv (sub1, data_buff, 1, ZMQ_DONTWAIT) == 1);
+    assert (data_buff [0] == *payload);
+
+    //  Clean up
+    assert (zmq_close (sub1) == 0);
+    assert (zmq_close (sub2) == 0);
+    assert (zmq_close (pub) == 0);
+    assert (zmq_close (xpub_proxy) == 0);
+    assert (zmq_close (xsub_proxy) == 0);
+    assert (zmq_ctx_term (ctx) == 0);
+
+    return 0;
+}
+
+
 int main(void)
 {
     setup_test_environment ();
     test_basic ();
     test_xpub_proxy_unsubscribe_on_disconnect ();
+    test_missing_subscriptions ();
 
     return 0;
 }
