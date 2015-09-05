@@ -153,11 +153,17 @@ int zmq::xpub_t::xsetsockopt (int option_, const void *optval_,
             manual = (*static_cast <const int*> (optval_) != 0);
     }
     else
-    if (option_ == ZMQ_SUBSCRIBE && manual && last_pipe != NULL)
-        subscriptions.add((unsigned char *)optval_, optvallen_, last_pipe);
+    if (option_ == ZMQ_SUBSCRIBE && manual) {
+        if (last_pipe != NULL) {
+            subscriptions.add((unsigned char *)optval_, optvallen_, last_pipe);
+        }
+    }
     else
-    if (option_ == ZMQ_UNSUBSCRIBE && manual && last_pipe != NULL)
-        subscriptions.rm((unsigned char *)optval_, optvallen_, last_pipe);
+    if (option_ == ZMQ_UNSUBSCRIBE && manual) {
+        if (last_pipe != NULL) {
+            subscriptions.rm((unsigned char *)optval_, optvallen_, last_pipe);
+        }
+    }
     else
     if (option_ == ZMQ_XPUB_WELCOME_MSG) {
         welcome_msg.close();
@@ -183,7 +189,7 @@ void zmq::xpub_t::xpipe_terminated (pipe_t *pipe_)
     //  Remove the pipe from the trie. If there are topics that nobody
     //  is interested in anymore, send corresponding unsubscriptions
     //  upstream.
-    subscriptions.rm (pipe_, send_unsubscription, this, !verbose_unsubs);
+    subscriptions.rm (pipe_, send_unsubscription, this, !(verbose_unsubs || manual));
 
     dist.pipe_terminated (pipe_);
 }
@@ -274,6 +280,7 @@ void zmq::xpub_t::send_unsubscription (unsigned char *data_, size_t size_,
         unsub [0] = 0;
         if (size_ > 0)
             memcpy (&unsub [1], data_, size_);
+        self->last_pipe = NULL;
         self->pending_data.push_back (unsub);
         self->pending_metadata.push_back (NULL);
         self->pending_flags.push_back (0);
