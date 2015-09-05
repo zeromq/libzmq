@@ -199,7 +199,7 @@ int test_xpub_proxy_unsubscribe_on_disconnect()
     assert (zmq_send (xsub_proxy, sub_buff, 2, 0) == 2);
 
     // should receive another unsubscribe msg
-    assert (zmq_recv (xpub_proxy, sub_buff, 2, ZMQ_DONTWAIT) == 2
+    assert (zmq_recv (xpub_proxy, sub_buff, 2, 0) == 2
         && "Should receive the second unsubscribe message.");
     assert (sub_buff [0] == 0);
     assert (sub_buff [1] == *topic);
