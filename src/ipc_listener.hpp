@@ -84,7 +84,7 @@ namespace zmq
         //  if the connection was dropped while waiting in the listen backlog.
         fd_t accept ();
 
-        //  True, if the undelying file for UNIX domain socket exists.
+        //  True, if the underlying file for UNIX domain socket exists.
         bool has_file;
 
         //  Name of the file associated with the UNIX domain address.
@@ -96,7 +96,7 @@ namespace zmq
         //  Handle corresponding to the listening socket.
         handle_t handle;
 
-        //  Socket the listerner belongs to.
+        //  Socket the listener belongs to.
         zmq::socket_base_t *socket;
 
        // String representation of endpoint to bind to

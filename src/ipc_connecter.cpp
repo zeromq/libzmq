@@ -103,7 +103,7 @@ void zmq::ipc_connecter_t::process_term (int linger_)
 
 void zmq::ipc_connecter_t::in_event ()
 {
-    //  We are not polling for incomming data, so we are actually called
+    //  We are not polling for incoming data, so we are actually called
     //  because of error here. However, we can get error on out event as well
     //  on some platforms, so we'll simply handle both events in the same way.
     out_event ();
@@ -216,7 +216,7 @@ int zmq::ipc_connecter_t::open ()
         s, addr->resolved.ipc_addr->addr (),
         addr->resolved.ipc_addr->addrlen ());
 
-    //  Connect was successfull immediately.
+    //  Connect was successful immediately.
     if (rc == 0)
         return 0;
         

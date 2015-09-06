@@ -142,7 +142,7 @@ namespace zmq
         bool raw_socket;
         bool raw_notify;        //  Provide connect notifications
 
-        //  Addres of SOCKS proxy
+        //  Address of SOCKS proxy
         std::string socks_proxy_address;
 
         //  TCP keep-alive settings.

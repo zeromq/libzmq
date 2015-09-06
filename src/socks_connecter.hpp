@@ -103,7 +103,7 @@ namespace zmq
         int get_new_reconnect_ivl ();
 
         //  Open TCP connecting socket. Returns -1 in case of error,
-        //  0 if connect was successfull immediately. Returns -1 with
+        //  0 if connect was successful immediately. Returns -1 with
         //  EAGAIN errno if async connect was launched.
         int open ();
 
@@ -111,7 +111,7 @@ namespace zmq
         void close ();
 
         //  Get the file descriptor of newly created connection. Returns
-        //  retired_fd if the connection was unsuccessfull.
+        //  retired_fd if the connection was unsuccessful.
         zmq::fd_t check_proxy_connection ();
 
         socks_greeting_encoder_t greeting_encoder;

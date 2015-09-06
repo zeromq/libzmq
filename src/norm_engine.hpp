@@ -167,7 +167,7 @@ namespace zmq
             bool                    tx_more_bit;
             bool                    zmq_output_ready; // zmq has msg(s) to send 
             bool                    norm_tx_ready;    // norm has tx queue vacancy
-            // tbd - maybe don't need buffer if can access zmq message buffer directly?
+            // TBD - maybe don't need buffer if can access zmq message buffer directly?
             char                    tx_buffer[BUFFER_SIZE];
             unsigned int            tx_index;
             unsigned int            tx_len;

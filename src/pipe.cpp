@@ -263,7 +263,7 @@ void zmq::pipe_t::process_activate_read ()
 
 void zmq::pipe_t::process_activate_write (uint64_t msgs_read_)
 {
-    //  Remember the peers's message sequence number.
+    //  Remember the peer's message sequence number.
     peers_msgs_read = msgs_read_;
 
     if (!out_active && state == active) {
@@ -385,7 +385,7 @@ void zmq::pipe_t::terminate (bool delay_)
     //  Overload the value specified at pipe creation.
     delay = delay_;
 
-    //  If terminate was already called, we can ignore the duplicit invocation.
+    //  If terminate was already called, we can ignore the duplicate invocation.
     if (state == term_req_sent1 || state == term_req_sent2) {
         return;
 	}

@@ -49,7 +49,7 @@ namespace zmq
         virtual void resize_buffer(size_t) = 0;
         //  Decodes data pointed to by data_.
         //  When a message is decoded, 1 is returned.
-        //  When the decoder needs more data, 0 is returnd.
+        //  When the decoder needs more data, 0 is returned.
         //  On error, -1 is returned and errno is set accordingly.
         virtual int decode (const unsigned char *data_, size_t size_,
                             size_t &processed) = 0;

@@ -80,7 +80,7 @@ namespace zmq
         c_single_allocator& operator = (c_single_allocator const&);
     };
 
-    // This allocater allocates a reference counted buffer which is used by v2_decoder_t
+    // This allocator allocates a reference counted buffer which is used by v2_decoder_t
     // to use zero-copy msg::init_data to create messages with memory from this buffer as
     // data storage.
     //
@@ -102,7 +102,7 @@ namespace zmq
         // Allocate a new buffer
         //
         // This releases the current buffer to be bound to the lifetime of the messages
-        // created on this bufer.
+        // created on this buffer.
         unsigned char* allocate ();
 
         // force deallocation of buffer.

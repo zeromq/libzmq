@@ -162,7 +162,7 @@ bool zmq::server_t::xhas_in ()
 bool zmq::server_t::xhas_out ()
 {
     //  In theory, SERVER socket is always ready for writing. Whether actual
-    //  attempt to write succeeds depends on whitch pipe the message is going
+    //  attempt to write succeeds depends on which pipe the message is going
     //  to be routed to.
     return true;
 }

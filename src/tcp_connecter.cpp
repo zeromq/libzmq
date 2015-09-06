@@ -311,7 +311,7 @@ int zmq::tcp_connecter_t::open ()
     //  Connect to the remote peer.
     rc = ::connect (s, tcp_addr->addr (), tcp_addr->addrlen ());
 
-    //  Connect was successfull immediately.
+    //  Connect was successful immediately.
     if (rc == 0)
         return 0;
 

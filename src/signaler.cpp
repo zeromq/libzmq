@@ -213,7 +213,7 @@ int zmq::signaler_t::wait (int timeout_)
 {
 #ifdef HAVE_FORK
     if (unlikely (pid != getpid ())) {
-        // we have forked and the file descriptor is closed. Emulate an interupt
+        // we have forked and the file descriptor is closed. Emulate an interrupt
         // response.
         //printf("Child process %d signaler_t::wait returning simulating interrupt #1\n", getpid());
         errno = EINTR;
@@ -238,7 +238,7 @@ int zmq::signaler_t::wait (int timeout_)
 #ifdef HAVE_FORK
     else
     if (unlikely (pid != getpid ())) {
-        // we have forked and the file descriptor is closed. Emulate an interupt
+        // we have forked and the file descriptor is closed. Emulate an interrupt
         // response.
         //printf("Child process %d signaler_t::wait returning simulating interrupt #2\n", getpid());
         errno = EINTR;

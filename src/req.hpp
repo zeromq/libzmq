@@ -65,7 +65,7 @@ namespace zmq
     private:
 
         //  If true, request was already sent and reply wasn't received yet or
-        //  was raceived partially.
+        //  was received partially.
         bool receiving_reply;
 
         //  If true, we are starting to send/recv a message. The first part
