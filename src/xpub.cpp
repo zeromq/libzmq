@@ -245,8 +245,10 @@ int zmq::xpub_t::xrecv (msg_t *msg_)
     }
 
     // User is reading a message, set last_pipe and remove it from the deque
-    last_pipe = pending_pipes.front ();
-    pending_pipes.pop_front ();
+    if (manual && !pending_pipes.empty ()) {
+        last_pipe = pending_pipes.front ();
+        pending_pipes.pop_front ();
+    }
 
     int rc = msg_->close ();
     errno_assert (rc == 0);
@@ -285,10 +287,13 @@ void zmq::xpub_t::send_unsubscription (unsigned char *data_, size_t size_,
         unsub [0] = 0;
         if (size_ > 0)
             memcpy (&unsub [1], data_, size_);
-        self->last_pipe = NULL;
-        self->pending_pipes.push_back (NULL);
         self->pending_data.push_back (unsub);
         self->pending_metadata.push_back (NULL);
         self->pending_flags.push_back (0);
+
+        if (self->manual) {
+            self->last_pipe = NULL;
+            self->pending_pipes.push_back (NULL);
+        }
     }
 }
