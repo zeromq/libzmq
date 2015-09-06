@@ -361,7 +361,7 @@ int zmq::socks_connecter_t::connect_to_proxy ()
     //  Connect to the remote peer.
     rc = ::connect (s, tcp_addr->addr (), tcp_addr->addrlen ());
 
-    //  Connect was successfull immediately.
+    //  Connect was successful immediately.
     if (rc == 0)
         return 0;
 

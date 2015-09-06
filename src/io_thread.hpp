@@ -52,7 +52,7 @@ namespace zmq
 
         io_thread_t (zmq::ctx_t *ctx_, uint32_t tid_);
 
-        //  Clean-up. If the thread was started, it's neccessary to call 'stop'
+        //  Clean-up. If the thread was started, it's necessary to call 'stop'
         //  before invoking destructor. Otherwise the destructor would hang up.
         ~io_thread_t ();
 
@@ -70,7 +70,7 @@ namespace zmq
         void out_event ();
         void timer_event (int id_);
 
-        //  Used by io_objects to retrieve the assciated poller object.
+        //  Used by io_objects to retrieve the associated poller object.
         poller_t *get_poller ();
 
         //  Command handlers.

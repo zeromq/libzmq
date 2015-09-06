@@ -96,12 +96,12 @@ namespace zmq
         //  specific type of the owned object correctly.
         virtual ~own_t ();
 
-        //  Term handler is protocted rather than private so that it can
+        //  Term handler is protected rather than private so that it can
         //  be intercepted by the derived class. This is useful to add custom
         //  steps to the beginning of the termination process.
         void process_term (int linger_);
 
-        //  A place to hook in when phyicallal destruction of the object
+        //  A place to hook in when physical destruction of the object
         //  is to be delayed.
         virtual void process_destroy ();
 
@@ -119,7 +119,7 @@ namespace zmq
         void process_term_ack ();
         void process_seqnum ();
 
-        //  Check whether all the peding term acks were delivered.
+        //  Check whether all the pending term acks were delivered.
         //  If so, deallocate this object.
         void check_term_acks ();
 

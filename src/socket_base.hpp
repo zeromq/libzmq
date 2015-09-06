@@ -99,7 +99,7 @@ namespace zmq
         bool has_in ();
         bool has_out ();
 
-        //  Using this function reaper thread ask the socket to regiter with
+        //  Using this function reaper thread ask the socket to register with
         //  its poller.
         void start_reaping (poller_t *poller_);
 
@@ -171,7 +171,7 @@ namespace zmq
         //  Delay actual destruction of the socket.
         void process_destroy ();
 
-        // Socket event data dispath
+        // Socket event data dispatch
         void monitor_event (int event_, int value_, const std::string& addr_);
 
         // Monitor socket cleanup

@@ -140,7 +140,7 @@ int zmq::tipc_listener_t::set_address (const char *addr_)
     if (rc != 0)
         goto error;
 
-    //  Listen for incomming connections.
+    //  Listen for incoming connections.
     rc = listen (s, options.backlog);
     if (rc != 0)
         goto error;

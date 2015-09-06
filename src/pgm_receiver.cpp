@@ -226,7 +226,7 @@ void zmq::pgm_receiver_t::in_event ()
             zmq_assert (offset <= insize);
             zmq_assert (it->second.decoder == NULL);
 
-            //  We have to move data to the begining of the first message.
+            //  We have to move data to the beginning of the first message.
             inpos += offset;
             insize -= offset;
 

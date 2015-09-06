@@ -39,7 +39,7 @@ namespace zmq
 {
 
     //  Abstract class representing security mechanism.
-    //  Different mechanism extedns this class.
+    //  Different mechanism extends this class.
 
     class msg_t;
 

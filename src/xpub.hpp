@@ -68,7 +68,7 @@ namespace zmq
 
     private:
 
-        //  Function to be applied to the trie to send all the subsciptions
+        //  Function to be applied to the trie to send all the subscriptions
         //  upstream.
         static void send_unsubscription (unsigned char *data_, size_t size_,
             void *arg_);

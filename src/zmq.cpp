@@ -841,7 +841,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
                 nevents++;
         }
 
-        //  If timout is zero, exit immediately whether there are events or not.
+        //  If timeout is zero, exit immediately whether there are events or not.
         if (timeout_ == 0)
             break;
 
@@ -1024,7 +1024,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
                 nevents++;
         }
 
-        //  If timout is zero, exit immediately whether there are events or not.
+        //  If timeout is zero, exit immediately whether there are events or not.
         if (timeout_ == 0)
             break;
 
@@ -1298,7 +1298,7 @@ int zmq_pollfd_poll (void* p_, zmq_pollitem_t *items_, int nitems_, long timeout
                 nevents++;
         }
 
-        //  If timout is zero, exit immediately whether there are events or not.
+        //  If timeout is zero, exit immediately whether there are events or not.
         if (timeout_ == 0)
             break;
 
@@ -1513,7 +1513,7 @@ int zmq_pollfd_poll (void* p_, zmq_pollitem_t *items_, int nitems_, long timeout
                 nevents++;
         }
 
-        //  If timout is zero, exit immediately whether there are events or not.
+        //  If timeout is zero, exit immediately whether there are events or not.
         if (timeout_ == 0)
             break;
 

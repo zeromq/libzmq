@@ -237,7 +237,7 @@ int zmq::socket_base_t::parse_uri (const char *uri_,
 
 int zmq::socket_base_t::check_protocol (const std::string &protocol_)
 {
-    //  First check out whether the protcol is something we are aware of.
+    //  First check out whether the protocol is something we are aware of.
     if (protocol_ != "inproc"
     &&  protocol_ != "ipc"
     &&  protocol_ != "tcp"
@@ -249,7 +249,7 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
         return -1;
     }
     //  If 0MQ is not compiled with OpenPGM, pgm and epgm transports
-    //  are not avaialble.
+    //  are not available.
 #if !defined ZMQ_HAVE_OPENPGM
     if (protocol_ == "pgm" || protocol_ == "epgm") {
         errno = EPROTONOSUPPORT;
@@ -512,7 +512,7 @@ int zmq::socket_base_t::bind (const char *addr_)
     }
 
     if (protocol == "pgm" || protocol == "epgm" || protocol == "norm") {
-        //  For convenience's sake, bind can be used interchageable with
+        //  For convenience's sake, bind can be used interchangeable with
         //  connect for PGM, EPGM and NORM transports.
         EXIT_MUTEX();
         rc = connect (addr_);
@@ -521,7 +521,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         return rc;
     }
 
-    //  Remaining trasnports require to be run in an I/O thread, so at this
+    //  Remaining transports require to be run in an I/O thread, so at this
     //  point we'll choose one.
     io_thread_t *io_thread = choose_io_thread (options.affinity);
     if (!io_thread) {

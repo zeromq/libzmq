@@ -53,7 +53,7 @@ namespace zmq
     //  This class implements the state machine that parses the incoming buffer.
     //  Derived class should implement individual state machine actions.
     //
-    //  Buffer managment is done by an allocator policy.
+    //  Buffer management is done by an allocator policy.
     template <typename T, typename A = c_single_allocator>
     class decoder_base_t : public i_decoder
     {
@@ -99,11 +99,11 @@ namespace zmq
         }
 
         //  Processes the data in the buffer previously allocated using
-        //  get_buffer function. size_ argument specifies nemuber of bytes
+        //  get_buffer function. size_ argument specifies number of bytes
         //  actually filled into the buffer. Function returns 1 when the
         //  whole message was decoded or 0 when more data is required.
         //  On error, -1 is returned and errno set accordingly.
-        //  Number of bytes processed is returned in byts_used_.
+        //  Number of bytes processed is returned in bytes_used_.
         int decode (const unsigned char *data_, std::size_t size_,
                     std::size_t &bytes_used_)
         {

@@ -75,7 +75,7 @@ bool zmq::trie_t::add (unsigned char *prefix_, size_t size_)
     if (c < min || c >= min + count) {
 
         //  The character is out of range of currently handled
-        //  charcters. We have to extend the table.
+        //  characters. We have to extend the table.
         if (!count) {
             min = c;
             count = 1;
