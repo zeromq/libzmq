@@ -23,9 +23,10 @@ argument to be sent to the socket referenced by the 'socket' argument.  The
 'flags' argument is a combination of the flags defined below:
 
 *ZMQ_DONTWAIT*::
-Specifies that the operation should be performed in non-blocking mode. If the
-message cannot be queued on the 'socket', the _zmq_msg_send()_ function shall
-fail with 'errno' set to EAGAIN.
+For socket types (DEALER, PUSH) that block when there are no available peers 
+(or all peers have full high-water mark), specifies that the operation should 
+be performed in non-blocking mode. If the message cannot be queued on the 
+'socket', the _zmq_msg_send()_ function shall fail with 'errno' set to EAGAIN. 
 
 *ZMQ_SNDMORE*::
 Specifies that the message being sent is a multi-part message, and that further
@@ -38,7 +39,8 @@ it using (e.g. using _zmq_msg_copy()_).
 
 NOTE: A successful invocation of _zmq_msg_send()_ does not indicate that the
 message has been transmitted to the network, only that it has been queued on
-the 'socket' and 0MQ has assumed responsibility for the message.
+the 'socket' and 0MQ has assumed responsibility for the message. You do not need
+to call _zmq_msg_close()_ after a successful _zmq_msg_send()_.
 
 
 Multi-part messages
@@ -79,6 +81,8 @@ The operation was interrupted by delivery of a signal before the message was
 sent.
 *EFAULT*::
 Invalid message.
+*EHOSTUNREACH*::
+The message cannot be routed.
 
 
 EXAMPLE
@@ -117,6 +121,5 @@ linkzmq:zmq[7]
 
 AUTHORS
 -------
-This 0MQ manual page was written by Martin Sustrik <sustrik@250bpm.com> and
-Martin Lucina <mato@kotelna.sk>, and Pieter Hintjens <ph@imatix.com>.
-
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

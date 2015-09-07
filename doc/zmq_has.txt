@@ -1,0 +1,43 @@
+zmq_has(3)
+==========
+
+
+NAME
+----
+zmq_has - check a ZMQ capability
+
+
+SYNOPSIS
+--------
+*int zmq_has (const char *capability);*
+
+
+DESCRIPTION
+-----------
+The _zmq_has()_ function shall report whether a specified capability is
+available in the library. This allows bindings and applications to probe
+a library directly, for transport and security options.
+
+Capabilities shall be lowercase strings. The following capabilities are
+defined:
+
+* ipc - the library supports the ipc:// protocol
+* pgm - the library supports the pgm:// protocol
+* tipc - the library supports the tipc:// protocol
+* norm - the library supports the norm:// protocol
+* curve - the library supports the CURVE security mechanism
+* gssapi - the library supports the GSSAPI security mechanism
+
+When this method is provided, the zmq.h header file will define
+ZMQ_HAS_CAPABILITIES.
+
+RETURN VALUE
+------------
+The _zmq_has()_ function shall return 1 if the specified capability is
+provided. Otherwise it shall return 0.
+
+
+AUTHORS
+-------
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

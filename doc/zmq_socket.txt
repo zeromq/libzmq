@@ -62,6 +62,7 @@ The request-reply pattern is used for sending requests from a ZMQ_REQ _client_
 to one or more ZMQ_REP _services_, and receiving subsequent replies to each
 request sent.
 
+The request-reply pattern is formally defined by http://rfc.zeromq.org/spec:28.
 
 ZMQ_REQ
 ^^^^^^^
@@ -71,11 +72,9 @@ sequence of _zmq_send(request)_ and subsequent _zmq_recv(reply)_ calls. Each
 request sent is round-robined among all _services_, and each reply received is
 matched with the last issued request.
 
-When a 'ZMQ_REQ' socket enters the 'mute' state due to having reached the
-high water mark for all _services_, or if there are no _services_ at all, then
-any linkzmq:zmq_send[3] operations on the socket shall block until the
-'mute' state ends or at least one _service_ becomes available for sending;
-messages are not discarded.
+If no services are available, then any send operation on the socket shall 
+block until at least one _service_ becomes available. The REQ socket shall
+not discard messages.
 
 [horizontal]
 .Summary of ZMQ_REQ characteristics
@@ -94,11 +93,7 @@ send replies to a _client_. This socket type allows only an alternating
 sequence of _zmq_recv(request)_ and subsequent _zmq_send(reply)_ calls. Each
 request received is fair-queued from among all _clients_, and each reply sent
 is routed to the _client_ that issued the last request. If the original
-requester doesn't exist any more the reply is silently discarded.
-
-When a 'ZMQ_REP' socket enters the 'mute' state due to having reached the
-high water mark for a _client_, then any replies sent to the _client_ in
-question shall be dropped until the mute state ends.
+requester does not exist any more the reply is silently discarded.
 
 [horizontal]
 .Summary of ZMQ_REP characteristics
@@ -107,7 +102,6 @@ Direction:: Bidirectional
 Send/receive pattern:: Receive, Send, Receive, Send, ...
 Incoming routing strategy:: Fair-queued
 Outgoing routing strategy:: Last peer
-Action in mute state:: Drop
 
 
 ZMQ_DEALER
@@ -125,8 +119,6 @@ discarded.
 When a 'ZMQ_DEALER' socket is connected to a 'ZMQ_REP' socket each message sent
 must consist of an empty message part, the _delimiter_, followed by one or more
 _body parts_.
-
-Deprecated alias: 'ZMQ_XREQ'.
 
 [horizontal]
 .Summary of ZMQ_DEALER characteristics
@@ -147,7 +139,7 @@ message before passing it to the application. Messages received are fair-queued
 from among all connected peers. When sending messages a 'ZMQ_ROUTER' socket shall
 remove the first part of the message and use it to determine the _identity_ of
 the peer the message shall be routed to. If the peer does not exist anymore
-the message shall be silently discarded by default, unless 'ZMQ_ROUTER_BEHAVIOR'
+the message shall be silently discarded by default, unless 'ZMQ_ROUTER_MANDATORY'
 socket option is set to '1'.
 
 When a 'ZMQ_ROUTER' socket enters the 'mute' state due to having reached the
@@ -161,8 +153,6 @@ _delimiter_ message part. Hence, the entire structure of each received message
 as seen by the application becomes: one or more _identity_ parts, _delimiter_
 part, one or more _body parts_. When sending replies to a 'ZMQ_REQ' socket the
 application must include the _delimiter_ part.
-
-Deprecated alias: 'ZMQ_XREP'.
 
 [horizontal]
 .Summary of ZMQ_ROUTER characteristics
@@ -179,6 +169,7 @@ Publish-subscribe pattern
 The publish-subscribe pattern is used for one-to-many distribution of data from
 a single _publisher_ to multiple _subscribers_ in a fan out fashion.
 
+The publish-subscribe pattern is formally defined by http://rfc.zeromq.org/spec:29.
 
 ZMQ_PUB
 ^^^^^^^
@@ -216,7 +207,6 @@ Direction:: Unidirectional
 Send/receive pattern:: Receive only
 Incoming routing strategy:: Fair-queued
 Outgoing routing strategy:: N/A
-Action in mute state:: Drop
 
 
 ZMQ_XPUB
@@ -261,6 +251,7 @@ a pipeline. Data always flows down the pipeline, and each stage of the pipeline
 is connected to at least one _node_. When a pipeline stage is connected to
 multiple _nodes_ data is round-robined among all connected _nodes_.
 
+The pipeline pattern is formally defined by http://rfc.zeromq.org/spec:30.
 
 ZMQ_PUSH
 ^^^^^^^^
@@ -308,6 +299,7 @@ The exclusive pair pattern is used to connect a peer to precisely one other
 peer. This pattern is used for inter-thread communication across the inproc
 transport.
 
+The exclusive pair pattern is formally defined by http://rfc.zeromq.org/spec:31.
 
 ZMQ_PAIR
 ^^^^^^^^
@@ -322,8 +314,7 @@ becomes available for sending; messages are not discarded.
 
 NOTE: 'ZMQ_PAIR' sockets are designed for inter-thread communication across
 the linkzmq:zmq_inproc[7] transport and do not implement functionality such
-as auto-reconnection. 'ZMQ_PAIR' sockets are considered experimental and may
-have other missing or broken aspects.
+as auto-reconnection.
 
 [horizontal]
 .Summary of ZMQ_PAIR characteristics
@@ -333,6 +324,53 @@ Send/receive pattern:: Unrestricted
 Incoming routing strategy:: N/A
 Outgoing routing strategy:: N/A
 Action in mute state:: Block
+
+
+Native Pattern
+~~~~~~~~~~~~~~
+The native pattern is used for communicating with TCP peers and allows 
+asynchronous requests and replies in either direction.
+
+
+ZMQ_STREAM
+^^^^^^^^^^
+A socket of type 'ZMQ_STREAM' is used to send and receive TCP data from a 
+non-0MQ peer, when using the tcp:// transport. A 'ZMQ_STREAM' socket can 
+act as client and/or server, sending and/or receiving TCP data asynchronously.
+
+When receiving TCP data, a 'ZMQ_STREAM' socket shall prepend a message part
+containing the _identity_ of the originating peer to the message before passing 
+it to the application. Messages received are fair-queued from among all 
+connected peers. 
+
+When sending TCP data, a 'ZMQ_STREAM' socket shall remove the first part of the 
+message and use it to determine the _identity_ of the peer the message shall be 
+routed to, and unroutable messages shall cause an EHOSTUNREACH or EAGAIN error.
+
+To open a connection to a server, use the zmq_connect call, and then fetch the 
+socket identity using the ZMQ_IDENTITY zmq_getsockopt call.
+
+To close a specific connection, send the identity frame followed by a
+zero-length message (see EXAMPLE section).
+
+When a connection is made, a zero-length message will be received by the
+application.  Similarly, when the peer disconnects (or the connection is lost),
+a zero-length message will be received by the application.
+
+The ZMQ_SNDMORE flag is ignored on data frames. You must send one identity frame
+followed by one data frame.
+
+Also, please note that omitting the ZMQ_SNDMORE flag will prevent sending further
+data (from any client) on the same socket.
+
+[horizontal]
+.Summary of ZMQ_STREAM characteristics
+Compatible peer sockets:: none.
+Direction:: Bidirectional
+Send/receive pattern:: Unrestricted
+Outgoing routing strategy:: See text
+Incoming routing strategy:: Fair-queued
+Action in mute state:: EAGAIN
 
 
 RETURN VALUE
@@ -353,6 +391,51 @@ The limit on the total number of open 0MQ sockets has been reached.
 *ETERM*::
 The context specified was terminated.
 
+EXAMPLE
+-------
+.Creating a simple HTTP server using ZMQ_STREAM
+----
+void *ctx = zmq_ctx_new ();
+assert (ctx);
+/* Create ZMQ_STREAM socket */
+void *socket = zmq_socket (ctx, ZMQ_STREAM);
+assert (socket);
+int rc = zmq_bind (socket, "tcp://*:8080");
+assert (rc == 0);
+/* Data structure to hold the ZMQ_STREAM ID */
+uint8_t id [256];
+size_t id_size = 256;
+/* Data structure to hold the ZMQ_STREAM received data */
+uint8_t raw [256];
+size_t raw_size = 256;
+while (1) {
+	/*  Get HTTP request; ID frame and then request */
+	id_size = zmq_recv (socket, id, 256, 0);
+	assert (id_size > 0);
+	do {
+		raw_size = zmq_recv (socket, raw, 256, 0);
+		assert (raw_size >= 0);
+	} while (raw_size == 256);
+	/* Prepares the response */
+	char http_response [] =
+		"HTTP/1.0 200 OK\r\n"
+		"Content-Type: text/plain\r\n"
+		"\r\n"
+		"Hello, World!";
+	/* Sends the ID frame followed by the response */
+	zmq_send (socket, id, id_size, ZMQ_SNDMORE);
+	zmq_send (socket, http_response, strlen (http_response), ZMQ_SNDMORE);
+	/* Closes the connection by sending the ID frame followed by a zero response */
+	zmq_send (socket, id, id_size, ZMQ_SNDMORE);
+	zmq_send (socket, 0, 0, ZMQ_SNDMORE);
+	/* NOTE: If we don't use ZMQ_SNDMORE, then we won't be able to send more */
+	/* message to any client */
+}
+zmq_close (socket);
+zmq_ctx_destroy (ctx);
+----
+
+
 SEE ALSO
 --------
 linkzmq:zmq_init[3]
@@ -367,5 +450,5 @@ linkzmq:zmq[7]
 
 AUTHORS
 -------
-This 0MQ manual page was written by Martin Sustrik <sustrik@250bpm.com>,
-Martin Lucina <mato@kotelna.sk>, and Pieter Hintjens <ph@imatix.com>.
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

@@ -26,77 +26,6 @@ value stored in the buffer.
 The following options can be retrieved with the _zmq_getsockopt()_ function:
 
 
-ZMQ_TYPE: Retrieve socket type
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_TYPE' option shall retrieve the socket type for the specified
-'socket'.  The socket type is specified at socket creation time and
-cannot be modified afterwards.
-
-[horizontal]
-Option value type:: int
-Option value unit:: N/A
-Default value:: N/A
-Applicable socket types:: all
-
-
-ZMQ_RCVMORE: More message data parts to follow
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_RCVMORE' option shall return True (1) if the message part last
-received from the 'socket' was a data part with more parts to follow. If there
-are no data parts to follow, this option shall return False (0).
-
-Refer to linkzmq:zmq_send[3] and linkzmq:zmq_recv[3] for a detailed description
-of multi-part messages.
-
-[horizontal]
-Option value type:: int
-Option value unit:: boolean
-Default value:: N/A
-Applicable socket types:: all
-
-
-ZMQ_SNDHWM: Retrieves high water mark for outbound messages
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_SNDHWM' option shall return the high water mark for outbound messages
-on the specified 'socket'. The high water mark is a hard limit on the maximum
-number of outstanding messages 0MQ shall queue in memory for any single peer
-that the specified 'socket' is communicating with. A value of zero means no
-limit.
-
-If this limit has been reached the socket shall enter an exceptional state and
-depending on the socket type, 0MQ shall take appropriate action such as
-blocking or dropping sent messages. Refer to the individual socket descriptions
-in linkzmq:zmq_socket[3] for details on the exact action taken for each socket
-type.
-
-[horizontal]
-Option value type:: int
-Option value unit:: messages
-Default value:: 1000
-Applicable socket types:: all
-
-
-ZMQ_RCVHWM: Retrieve high water mark for inbound messages
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_RCVHWM' option shall return the high water mark for inbound messages on
-the specified 'socket'. The high water mark is a hard limit on the maximum
-number of outstanding messages 0MQ shall queue in memory for any single peer
-that the specified 'socket' is communicating with. A value of zero means no
-limit.
-
-If this limit has been reached the socket shall enter an exceptional state and
-depending on the socket type, 0MQ shall take appropriate action such as
-blocking or dropping sent messages. Refer to the individual socket descriptions
-in linkzmq:zmq_socket[3] for details on the exact action taken for each socket
-type.
-
-[horizontal]
-Option value type:: int
-Option value unit:: messages
-Default value:: 1000
-Applicable socket types:: all
-
-
 ZMQ_AFFINITY: Retrieve I/O thread affinity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_AFFINITY' option shall retrieve the I/O thread affinity for newly
@@ -120,8 +49,208 @@ Default value:: 0
 Applicable socket types:: N/A
 
 
-ZMQ_IDENTITY: Set socket identity
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_BACKLOG: Retrieve maximum length of the queue of outstanding connections
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_BACKLOG' option shall retrieve the maximum length of the queue of
+outstanding peer connections for the specified 'socket'; this only applies to
+connection-oriented transports. For details refer to your operating system
+documentation for the 'listen' function.
+
+[horizontal]
+Option value type:: int
+Option value unit:: connections
+Default value:: 100
+Applicable socket types:: all, only for connection-oriented transports
+
+
+ZMQ_CONNECT_TIMEOUT: Retrieve connect() timeout
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Retrieves how long to wait before timing-out a connect() system call.
+The connect() system call normally takes a long time before it returns a
+time out error. Setting this option allows the library to time out the call
+at an earlier interval.
+
+[horizontal]
+Option value type:: int
+Option value unit:: milliseconds
+Default value:: 0 (disabled)
+Applicable socket types:: all, when using TCP transports.
+
+
+ZMQ_CURVE_PUBLICKEY: Retrieve current CURVE public key
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Retrieves the current long term public key for the socket. You can
+provide either a 32 byte buffer, to retrieve the binary key value, or
+a 41 byte buffer, to retrieve the key in a printable Z85 format.
+NOTE: to fetch a printable key, the buffer must be 41 bytes large
+to hold the 40-char key value and one null byte.
+
+[horizontal]
+Option value type:: binary data or Z85 text string
+Option value size:: 32 or 41
+Default value:: null
+Applicable socket types:: all, when using TCP transport
+
+
+ZMQ_CURVE_SECRETKEY: Retrieve current CURVE secret key
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Retrieves the current long term secret key for the socket. You can
+provide either a 32 byte buffer, to retrieve the binary key value, or
+a 41 byte buffer, to retrieve the key in a printable Z85 format.
+NOTE: to fetch a printable key, the buffer must be 41 bytes large
+to hold the 40-char key value and one null byte.
+
+[horizontal]
+Option value type:: binary data or Z85 text string
+Option value size:: 32 or 41
+Default value:: null
+Applicable socket types:: all, when using TCP transport
+
+
+ZMQ_CURVE_SERVERKEY: Retrieve current CURVE server key
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Retrieves the current server key for the client socket. You can
+provide either a 32 byte buffer, to retrieve the binary key value, or
+a 41-byte buffer, to retrieve the key in a printable Z85 format.
+NOTE: to fetch a printable key, the buffer must be 41 bytes large
+to hold the 40-char key value and one null byte.
+
+[horizontal]
+Option value type:: binary data or Z85 text string
+Option value size:: 32 or 41
+Default value:: null
+Applicable socket types:: all, when using TCP transport
+
+
+ZMQ_EVENTS: Retrieve socket event state
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_EVENTS' option shall retrieve the event state for the specified
+'socket'.  The returned value is a bit mask constructed by OR'ing a combination
+of the following event flags:
+
+*ZMQ_POLLIN*::
+Indicates that at least one message may be received from the specified socket
+without blocking.
+
+*ZMQ_POLLOUT*::
+Indicates that at least one message may be sent to the specified socket without
+blocking.
+
+The combination of a file descriptor returned by the 'ZMQ_FD' option being
+ready for reading but no actual events returned by a subsequent retrieval of
+the 'ZMQ_EVENTS' option is valid; applications should simply ignore this case
+and restart their polling operation/event loop.
+
+[horizontal]
+Option value type:: int
+Option value unit:: N/A (flags)
+Default value:: N/A
+Applicable socket types:: all
+
+
+ZMQ_FD: Retrieve file descriptor associated with the socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_FD' option shall retrieve the file descriptor associated with the
+specified 'socket'. The returned file descriptor can be used to integrate the
+socket into an existing event loop; the 0MQ library shall signal any pending
+events on the socket in an _edge-triggered_ fashion by making the file
+descriptor become ready for reading.
+
+NOTE: The ability to read from the returned file descriptor does not
+necessarily indicate that messages are available to be read from, or can be
+written to, the underlying socket; applications must retrieve the actual event
+state with a subsequent retrieval of the 'ZMQ_EVENTS' option.
+
+NOTE: The returned file descriptor is also used internally by the 'zmq_send'
+and 'zmq_recv' functions. As the descriptor is edge triggered, applications
+must update the state of 'ZMQ_EVENTS' after each invocation of 'zmq_send'
+or 'zmq_recv'.To be more explicit: after calling 'zmq_send' the socket may
+become readable (and vice versa) without triggering a read event on the
+file descriptor.
+
+CAUTION: The returned file descriptor is intended for use with a 'poll' or
+similar system call only. Applications must never attempt to read or write data
+to it directly, neither should they try to close it.
+
+[horizontal]
+Option value type:: int on POSIX systems, SOCKET on Windows
+Option value unit:: N/A
+Default value:: N/A
+Applicable socket types:: all
+
+
+ZMQ_GSSAPI_PLAINTEXT: Retrieve GSSAPI plaintext or encrypted status
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Returns the 'ZMQ_GSSAPI_PLAINTEXT' option, if any, previously set on the
+socket.  A value of '1' means  that communications will be plaintext.  A value
+of '0' means communications will be encrypted.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1
+Default value:: 0 (false)
+Applicable socket types:: all, when using TCP or IPC transports
+
+
+ZMQ_GSSAPI_PRINCIPAL: Retrieve the name of the GSSAPI principal
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_GSSAPI_PRINCIPAL' option shall retrieve the principal name set for the
+GSSAPI security mechanism. The returned value shall be a NULL-terminated string
+and MAY be empty. The returned size SHALL include the terminating null byte.
+
+[horizontal]
+Option value type:: NULL-terminated character string
+Option value unit:: N/A
+Default value:: null string
+Applicable socket types:: all, when using TCP or IPC transports
+
+
+ZMQ_GSSAPI_SERVER: Retrieve current GSSAPI server role
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Returns the 'ZMQ_GSSAPI_SERVER' option, if any, previously set on the socket.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1
+Default value:: 0 (false)
+Applicable socket types:: all, when using TCP or IPC transports
+
+
+ZMQ_GSSAPI_SERVICE_PRINCIPAL: Retrieve the name of the GSSAPI service principal
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_GSSAPI_SERVICE_PRINCIPAL' option shall retrieve the principal name of
+the GSSAPI server to which a GSSAPI client socket intends to connect.  The
+returned value shall be a NULL-terminated string and MAY be empty. The returned
+size SHALL include the terminating null byte.
+
+[horizontal]
+Option value type:: NULL-terminated character string
+Option value unit:: N/A
+Default value:: null string
+Applicable socket types:: all, when using TCP or IPC transports
+
+
+ZMQ_HANDSHAKE_IVL: Retrieve maximum handshake interval
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_HANDSHAKE_IVL' option shall retrieve the maximum handshake interval
+for the specified 'socket'. Handshaking is the exchange of socket configuration
+information (socket type, identity, security) that occurs when a connection
+is first opened, only for connection-oriented transports. If handshaking does
+not complete within the configured time, the connection shall be closed.
+The value 0 means no handshake time limit.
+
+[horizontal]
+Option value type:: int
+Option value unit:: milliseconds
+Default value:: 30000
+Applicable socket types:: all but ZMQ_STREAM, only for connection-oriented transports
+
+
+ZMQ_IDENTITY: Retrieve socket identity
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_IDENTITY' option shall retrieve the identity of the specified 'socket'.
 Socket identity is used only by request/reply pattern. Namely, it can be used
 in tandem with ROUTER socket to route messages to the peer with specific
@@ -134,61 +263,84 @@ starting with binary zero are reserved for use by 0MQ infrastructure.
 Option value type:: binary data
 Option value unit:: N/A
 Default value:: NULL
-Applicable socket types:: all
+Applicable socket types:: ZMQ_REP, ZMQ_REQ, ZMQ_ROUTER, ZMQ_DEALER.
 
 
-ZMQ_RATE: Retrieve multicast data rate
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_RATE' option shall retrieve the maximum send or receive data rate for
-multicast transports using the specified 'socket'.
-
-[horizontal]
-Option value type:: int
-Option value unit:: kilobits per second
-Default value:: 100
-Applicable socket types:: all, when using multicast transports
-
-
-ZMQ_RECOVERY_IVL: Get multicast recovery interval
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_RECOVERY_IVL' option shall retrieve the recovery interval for
-multicast transports using the specified 'socket'.  The recovery interval
-determines the maximum time in milliseconds that a receiver can be absent from a
-multicast group before unrecoverable data loss will occur.
-
-[horizontal]
-Option value type:: int
-Option value unit:: milliseconds
-Default value:: 10000
-Applicable socket types:: all, when using multicast transports
-
-
-ZMQ_SNDBUF: Retrieve kernel transmit buffer size
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_SNDBUF' option shall retrieve the underlying kernel transmit buffer
-size for the specified 'socket'. A value of zero means that the OS default is
-in effect. For details refer to your operating system documentation for the
-'SO_SNDBUF' socket option.
-
-[horizontal]
-Option value type:: int
-Option value unit:: bytes
-Default value:: 0
-Applicable socket types:: all
-
-
-ZMQ_RCVBUF: Retrieve kernel receive buffer size
+ZMQ_IMMEDIATE: Retrieve attach-on-connect value
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_RCVBUF' option shall retrieve the underlying kernel receive buffer
-size for the specified 'socket'. A value of zero means that the OS default is
-in effect. For details refer to your operating system documentation for the
-'SO_RCVBUF' socket option.
+Retrieve the state of the attach on connect value. If set to `1`, will delay the
+attachment of a pipe on connect until the underlying connection has completed.
+This will cause the socket to block if there are no other connections, but will
+prevent queues from filling on pipes awaiting connection.
 
 [horizontal]
 Option value type:: int
-Option value unit:: bytes
+Option value unit:: boolean
+Default value:: 0 (false)
+Applicable socket types:: all, primarily when using TCP/IPC transports.
+
+
+ZMQ_INVERT_MATCHING: Retrieve inverted filtering status
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Returns the value of the 'ZMQ_INVERT_MATCHING' option. A value of `1`
+means the socket uses inverted prefix matching.
+
+On 'PUB' and 'XPUB' sockets, this causes messages to be sent to all
+connected sockets 'except' those subscribed to a prefix that matches
+the message. On 'SUB' sockets, this causes only incoming messages that
+do 'not' match any of the socket's subscriptions to be received by the user.
+
+Whenever 'ZMQ_INVERT_MATCHING' is set to 1 on a 'PUB' socket, all 'SUB'
+sockets connecting to it must also have the option set to 1. Failure to
+do so will have the 'SUB' sockets reject everything the 'PUB' socket sends
+them. 'XSUB' sockets do not need to do this because they do not filter
+incoming messages.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0,1
 Default value:: 0
-Applicable socket types:: all
+Applicable socket types:: ZMQ_PUB, ZMQ_XPUB, ZMQ_SUB
+
+
+ZMQ_IPV4ONLY: Retrieve IPv4-only socket override status
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Retrieve the IPv4-only option for the socket. This option is deprecated.
+Please use the ZMQ_IPV6 option.
+
+[horizontal]
+Option value type:: int
+Option value unit:: boolean
+Default value:: 1 (true)
+Applicable socket types:: all, when using TCP transports.
+
+
+ZMQ_IPV6: Retrieve IPv6 socket status
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Retrieve the IPv6 option for the socket. A value of `1` means IPv6 is
+enabled on the socket, while `0` means the socket will use only IPv4.
+When IPv6 is enabled the socket will connect to, or accept connections
+from, both IPv4 and IPv6 hosts.
+
+[horizontal]
+Option value type:: int
+Option value unit:: boolean
+Default value:: 0 (false)
+Applicable socket types:: all, when using TCP transports.
+
+
+ZMQ_LAST_ENDPOINT: Retrieve the last endpoint set
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_LAST_ENDPOINT' option shall retrieve the last endpoint bound for
+TCP and IPC transports. The returned value will be a string in the form of
+a ZMQ DSN. Note that if the TCP host is INADDR_ANY, indicated by a *, then
+the returned address will be 0.0.0.0 (for IPv4).
+
+[horizontal]
+Option value type:: NULL-terminated character string
+Option value unit:: N/A
+Default value:: NULL
+Applicable socket types:: all, when binding TCP or IPC transports
 
 
 ZMQ_LINGER: Retrieve linger period for socket shutdown
@@ -221,6 +373,158 @@ Default value:: -1 (infinite)
 Applicable socket types:: all
 
 
+ZMQ_MAXMSGSIZE: Maximum acceptable inbound message size
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The option shall retrieve limit for the inbound messages. If a peer sends
+a message larger than ZMQ_MAXMSGSIZE it is disconnected. Value of -1 means
+'no limit'.
+
+[horizontal]
+Option value type:: int64_t
+Option value unit:: bytes
+Default value:: -1
+Applicable socket types:: all
+
+
+ZMQ_MECHANISM: Retrieve current security mechanism
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_MECHANISM' option shall retrieve the current security mechanism
+for the socket.
+
+[horizontal]
+Option value type:: int
+Option value unit:: ZMQ_NULL, ZMQ_PLAIN, ZMQ_CURVE, or ZMQ_GSSAPI
+Default value:: ZMQ_NULL
+Applicable socket types:: all, when using TCP or IPC transports
+
+
+ZMQ_MULTICAST_HOPS: Maximum network hops for multicast packets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The option shall retrieve time-to-live used for outbound multicast packets.
+The default of 1 means that the multicast packets don't leave the local network.
+
+[horizontal]
+Option value type:: int
+Option value unit:: network hops
+Default value:: 1
+Applicable socket types:: all, when using multicast transports
+
+
+ZMQ_PLAIN_PASSWORD: Retrieve current password
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_PLAIN_PASSWORD' option shall retrieve the last password set for
+the PLAIN security mechanism. The returned value shall be a NULL-terminated
+string and MAY be empty. The returned size SHALL include the terminating
+null byte.
+
+[horizontal]
+Option value type:: NULL-terminated character string
+Option value unit:: N/A
+Default value:: null string
+Applicable socket types:: all, when using TCP or IPC transports
+
+
+ZMQ_PLAIN_SERVER: Retrieve current PLAIN server role
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Returns the 'ZMQ_PLAIN_SERVER' option, if any, previously set on the socket.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1
+Default value:: int
+Applicable socket types:: all, when using TCP or IPC transports
+
+
+ZMQ_PLAIN_USERNAME: Retrieve current PLAIN username
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_PLAIN_USERNAME' option shall retrieve the last username set for
+the PLAIN security mechanism. The returned value shall be a NULL-terminated
+string and MAY be empty. The returned size SHALL include the terminating
+null byte.
+
+[horizontal]
+Option value type:: NULL-terminated character string
+Option value unit:: N/A
+Default value:: null string
+Applicable socket types:: all, when using TCP or IPC transports
+
+
+ZMQ_RATE: Retrieve multicast data rate
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_RATE' option shall retrieve the maximum send or receive data rate for
+multicast transports using the specified 'socket'.
+
+[horizontal]
+Option value type:: int
+Option value unit:: kilobits per second
+Default value:: 100
+Applicable socket types:: all, when using multicast transports
+
+
+ZMQ_RCVBUF: Retrieve kernel receive buffer size
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_RCVBUF' option shall retrieve the underlying kernel receive buffer
+size for the specified 'socket'. For details refer to your operating system
+documentation for the 'SO_RCVBUF' socket option.
+
+[horizontal]
+Option value type:: int
+Option value unit:: bytes
+Applicable socket types:: all
+
+
+ZMQ_RCVHWM: Retrieve high water mark for inbound messages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_RCVHWM' option shall return the high water mark for inbound messages on
+the specified 'socket'. The high water mark is a hard limit on the maximum
+number of outstanding messages 0MQ shall queue in memory for any single peer
+that the specified 'socket' is communicating with. A value of zero means no
+limit.
+
+If this limit has been reached the socket shall enter an exceptional state and
+depending on the socket type, 0MQ shall take appropriate action such as
+blocking or dropping sent messages. Refer to the individual socket descriptions
+in linkzmq:zmq_socket[3] for details on the exact action taken for each socket
+type.
+
+[horizontal]
+Option value type:: int
+Option value unit:: messages
+Default value:: 1000
+Applicable socket types:: all
+
+
+ZMQ_RCVMORE: More message data parts to follow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_RCVMORE' option shall return True (1) if the message part last
+received from the 'socket' was a data part with more parts to follow. If there
+are no data parts to follow, this option shall return False (0).
+
+Refer to linkzmq:zmq_send[3] and linkzmq:zmq_recv[3] for a detailed description
+of multi-part messages.
+
+[horizontal]
+Option value type:: int
+Option value unit:: boolean
+Default value:: N/A
+Applicable socket types:: all
+
+
+ZMQ_RCVTIMEO: Maximum time before a socket operation returns with EAGAIN
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Retrieve the timeout for recv operation on the socket.  If the value is `0`,
+_zmq_recv(3)_ will return immediately, with a EAGAIN error if there is no
+message to receive. If the value is `-1`, it will block until a message is
+available. For all other values, it will wait for a message for that amount
+of time before returning with an EAGAIN error.
+
+[horizontal]
+Option value type:: int
+Option value unit:: milliseconds
+Default value:: -1 (infinite)
+Applicable socket types:: all
+
+
 ZMQ_RECONNECT_IVL: Retrieve reconnection interval
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_RECONNECT_IVL' option shall retrieve the initial reconnection interval
@@ -240,11 +544,11 @@ Applicable socket types:: all, only for connection-oriented transports
 
 ZMQ_RECONNECT_IVL_MAX: Retrieve maximum reconnection interval
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_RECONNECT_IVL_MAX' option shall retrieve the maximum reconnection 
-interval for the specified 'socket'.  This is the maximum period 0MQ shall wait 
-between attempts to reconnect. On each reconnect attempt, the previous interval 
-shall be doubled untill ZMQ_RECONNECT_IVL_MAX is reached. This allows for 
-exponential backoff strategy. Default value means no exponential backoff is 
+The 'ZMQ_RECONNECT_IVL_MAX' option shall retrieve the maximum reconnection
+interval for the specified 'socket'.  This is the maximum period 0MQ shall wait
+between attempts to reconnect. On each reconnect attempt, the previous interval
+shall be doubled untill ZMQ_RECONNECT_IVL_MAX is reached. This allows for
+exponential backoff strategy. Default value means no exponential backoff is
 performed and reconnect interval calculations are only based on
 ZMQ_RECONNECT_IVL.
 
@@ -257,57 +561,50 @@ Default value:: 0 (only use ZMQ_RECONNECT_IVL)
 Applicable socket types:: all, only for connection-oriented transport
 
 
-ZMQ_BACKLOG: Retrieve maximum length of the queue of outstanding connections
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_BACKLOG' option shall retrieve the maximum length of the queue of
-outstanding peer connections for the specified 'socket'; this only applies to
-connection-oriented transports. For details refer to your operating system
-documentation for the 'listen' function.
-
-[horizontal]
-Option value type:: int
-Option value unit:: connections
-Default value:: 100
-Applicable socket types:: all, only for connection-oriented transports
-
-
-ZMQ_MAXMSGSIZE: Maximum acceptable inbound message size
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The option shall retrieve limit for the inbound messages. If a peer sends
-a message larger than ZMQ_MAXMSGSIZE it is disconnected. Value of -1 means
-'no limit'.
-
-[horizontal]
-Option value type:: int64_t
-Option value unit:: bytes
-Default value:: -1
-Applicable socket types:: all
-
-
-ZMQ_MULTICAST_HOPS: Maximum network hops for multicast packets
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The option shall retrieve time-to-live used for outbound multicast packets.
-The default of 1 means that the multicast packets don't leave the local network.
-
-[horizontal]
-Option value type:: int
-Option value unit:: network hops
-Default value:: 1
-Applicable socket types:: all, when using multicast transports
-
-
-ZMQ_RCVTIMEO: Maximum time before a socket operation returns with EAGAIN
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Retrieve the timeout for recv operation on the socket.  If the value is `0`,
-_zmq_recv(3)_ will return immediately, with a EAGAIN error if there is no
-message to receive. If the value is `-1`, it will block until a message is
-available. For all other values, it will wait for a message for that amount
-of time before returning with an EAGAIN error.
+ZMQ_RECOVERY_IVL: Get multicast recovery interval
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_RECOVERY_IVL' option shall retrieve the recovery interval for
+multicast transports using the specified 'socket'.  The recovery interval
+determines the maximum time in milliseconds that a receiver can be absent from a
+multicast group before unrecoverable data loss will occur.
 
 [horizontal]
 Option value type:: int
 Option value unit:: milliseconds
-Default value:: -1 (infinite)
+Default value:: 10000
+Applicable socket types:: all, when using multicast transports
+
+
+ZMQ_SNDBUF: Retrieve kernel transmit buffer size
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_SNDBUF' option shall retrieve the underlying kernel transmit buffer
+size for the specified 'socket'. For details refer to your operating system
+documentation for the 'SO_SNDBUF' socket option.
+
+[horizontal]
+Option value type:: int
+Option value unit:: bytes
+Applicable socket types:: all
+
+
+ZMQ_SNDHWM: Retrieves high water mark for outbound messages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_SNDHWM' option shall return the high water mark for outbound messages
+on the specified 'socket'. The high water mark is a hard limit on the maximum
+number of outstanding messages 0MQ shall queue in memory for any single peer
+that the specified 'socket' is communicating with. A value of zero means no
+limit.
+
+If this limit has been reached the socket shall enter an exceptional state and
+depending on the socket type, 0MQ shall take appropriate action such as
+blocking or dropping sent messages. Refer to the individual socket descriptions
+in linkzmq:zmq_socket[3] for details on the exact action taken for each socket
+type.
+
+[horizontal]
+Option value type:: int
+Option value unit:: messages
+Default value:: 1000
 Applicable socket types:: all
 
 
@@ -326,117 +623,6 @@ Default value:: -1 (infinite)
 Applicable socket types:: all
 
 
-ZMQ_IPV6: Retrieve IPv6 socket status
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Retrieve the IPv6 option for the socket. A value of `1` means IPv6 is
-enabled on the socket, while `0` means the socket will use only IPv4.
-When IPv6 is enabled the socket will connect to, or accept connections
-from, both IPv4 and IPv6 hosts.
-
-[horizontal]
-Option value type:: int
-Option value unit:: boolean
-Default value:: 0 (false)
-Applicable socket types:: all, when using TCP transports.
-
-
-ZMQ_IPV4ONLY: Retrieve IPv4-only socket override status
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Retrieve the IPv4-only option for the socket. This option is deprecated.
-Please use the ZMQ_IPV6 option.
-
-[horizontal]
-Option value type:: int
-Option value unit:: boolean
-Default value:: 1 (true)
-Applicable socket types:: all, when using TCP transports.
-
-
-ZMQ_DELAY_ATTACH_ON_CONNECT: Retrieve attach-on-connect value
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Retrieve the state of the attach on connect value. If set to `1`, will delay the
-attachment of a pipe on connect until the underlying connection has completed.
-This will cause the socket to block if there are no other connections, but will
-prevent queues from filling on pipes awaiting connection.
-
-[horizontal]
-Option value type:: int
-Option value unit:: boolean
-Default value:: 0 (false)
-Applicable socket types:: all, primarily when using TCP/IPC transports.
-
-
-ZMQ_FD: Retrieve file descriptor associated with the socket
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_FD' option shall retrieve the file descriptor associated with the
-specified 'socket'. The returned file descriptor can be used to integrate the
-socket into an existing event loop; the 0MQ library shall signal any pending
-events on the socket in an _edge-triggered_ fashion by making the file
-descriptor become ready for reading.
-
-NOTE: The ability to read from the returned file descriptor does not
-necessarily indicate that messages are available to be read from, or can be
-written to, the underlying socket; applications must retrieve the actual event
-state with a subsequent retrieval of the 'ZMQ_EVENTS' option.
-
-NOTE: The returned file descriptor is also used internally by the 'zmq_send' 
-and 'zmq_recv' functions. As the descriptor is edge triggered, applications 
-must update the state of 'ZMQ_EVENTS' after each invocation of 'zmq_send' 
-or 'zmq_recv'.To be more explicit: after calling 'zmq_send' the socket may 
-become readable (and vice versa) without triggering a read event on the 
-file descriptor.
-
-CAUTION: The returned file descriptor is intended for use with a 'poll' or
-similar system call only. Applications must never attempt to read or write data
-to it directly, neither should they try to close it.
-
-[horizontal]
-Option value type:: int on POSIX systems, SOCKET on Windows
-Option value unit:: N/A
-Default value:: N/A
-Applicable socket types:: all
-
-
-ZMQ_EVENTS: Retrieve socket event state
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_EVENTS' option shall retrieve the event state for the specified
-'socket'.  The returned value is a bit mask constructed by OR'ing a combination
-of the following event flags:
-
-*ZMQ_POLLIN*::
-Indicates that at least one message may be received from the specified socket
-without blocking.
-
-*ZMQ_POLLOUT*::
-Indicates that at least one message may be sent to the specified socket without
-blocking.
-
-The combination of a file descriptor returned by the 'ZMQ_FD' option being
-ready for reading but no actual events returned by a subsequent retrieval of
-the 'ZMQ_EVENTS' option is valid; applications should simply ignore this case
-and restart their polling operation/event loop.
-
-[horizontal]
-Option value type:: int
-Option value unit:: N/A (flags)
-Default value:: N/A
-Applicable socket types:: all
-
-
-ZMQ_LAST_ENDPOINT: Retrieve the last endpoint set
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_LAST_ENDPOINT' option shall retrieve the last endpoint bound for 
-TCP and IPC transports. The returned value will be a string in the form of
-a ZMQ DSN. Note that if the TCP host is INADDR_ANY, indicated by a *, then
-the returned address will be 0.0.0.0 (for IPv4).
-
-[horizontal]
-Option value type:: character string
-Option value unit:: N/A
-Default value:: NULL
-Applicable socket types:: all, when binding TCP or IPC transports
-
-
 ZMQ_TCP_KEEPALIVE: Override SO_KEEPALIVE socket option
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Override 'SO_KEEPALIVE' socket option(where supported by OS).
@@ -449,9 +635,9 @@ Default value:: -1 (leave to OS default)
 Applicable socket types:: all, when using TCP transports.
 
 
-ZMQ_TCP_KEEPALIVE_IDLE: Override TCP_KEEPCNT(or TCP_KEEPALIVE on some OS)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Override 'TCP_KEEPCNT'(or 'TCP_KEEPALIVE' on some OS) socket option(where supported by OS).
+ZMQ_TCP_KEEPALIVE_CNT: Override TCP_KEEPCNT socket option
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Override 'TCP_KEEPCNT' socket option(where supported by OS).
 The default value of `-1` means to skip any overrides and leave it to OS default.
 
 [horizontal]
@@ -461,10 +647,11 @@ Default value:: -1 (leave to OS default)
 Applicable socket types:: all, when using TCP transports.
 
 
-ZMQ_TCP_KEEPALIVE_CNT: Override TCP_KEEPCNT socket option
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Override 'TCP_KEEPCNT' socket option(where supported by OS).
-The default value of `-1` means to skip any overrides and leave it to OS default.
+ZMQ_TCP_KEEPALIVE_IDLE: Override TCP_KEEPIDLE (or TCP_KEEPALIVE on some OS)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Override 'TCP_KEEPIDLE'(or 'TCP_KEEPALIVE' on some OS) socket option (where
+supported by OS). The default value of `-1` means to skip any overrides and
+leave it to OS default.
 
 [horizontal]
 Option value type:: int
@@ -483,6 +670,60 @@ Option value type:: int
 Option value unit:: -1,>0
 Default value:: -1 (leave to OS default)
 Applicable socket types:: all, when using TCP transports.
+
+
+ZMQ_TCP_RETRANSMIT_TIMEOUT: Retrieve TCP Retransmit Timeout
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+On OSes where it is supported, retrieves how long before an unacknowledged TCP
+retransmit times out.
+The system normally attempts many TCP retransmits following an exponential
+backoff strategy. This means that after a network outage, it may take a long
+time before the session can be re-established. Setting this option allows
+the timeout to happen at a shorter interval.
+
+[horizontal]
+Option value type:: int
+Option value unit:: milliseconds
+Default value:: 0 (leave to OS default)
+Applicable socket types:: all, when using TCP transports.
+
+
+ZMQ_TOS: Retrieve the Type-of-Service socket override status
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Retrieve the IP_TOS option for the socket.
+
+[horizontal]
+Option value type:: int
+Option value unit:: >0
+Default value:: 0
+Applicable socket types:: all, only for connection-oriented transports
+
+
+ZMQ_TYPE: Retrieve socket type
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_TYPE' option shall retrieve the socket type for the specified
+'socket'.  The socket type is specified at socket creation time and
+cannot be modified afterwards.
+
+[horizontal]
+Option value type:: int
+Option value unit:: N/A
+Default value:: N/A
+Applicable socket types:: all
+
+
+ZMQ_ZAP_DOMAIN: Retrieve RFC 27 authentication domain
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The 'ZMQ_ZAP_DOMAIN' option shall retrieve the last ZAP domain set for
+the socket. The returned value shall be a NULL-terminated string and MAY
+be empty. The returned size SHALL include the terminating null byte.
+
+[horizontal]
+Option value type:: character string
+Option value unit:: N/A
+Default value:: not set
+Applicable socket types:: all, when using TCP transport
 
 
 RETURN VALUE
@@ -527,5 +768,5 @@ linkzmq:zmq[7]
 
 AUTHORS
 -------
-This 0MQ manual page was written by Martin Sustrik <sustrik@250bpm.com> and
-Martin Lucina <mato@kotelna.sk>.
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

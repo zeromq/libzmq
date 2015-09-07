@@ -1,17 +1,27 @@
 /*
-    Copyright (c) 2007-2013 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -79,12 +89,12 @@ void zmq::zmq_abort(const char *errmsg_)
 
 const char *zmq::wsa_error()
 {
-    int no = WSAGetLastError ();
+    const int last_error = WSAGetLastError();
     //  TODO: This is not a generic way to handle this...
-    if (no == WSAEWOULDBLOCK)
+    if (last_error == WSAEWOULDBLOCK)
         return NULL;
 
-    return wsa_error_no (no);
+    return wsa_error_no (last_error);
 }
 
 const char *zmq::wsa_error_no (int no_)
@@ -202,13 +212,13 @@ void zmq::win_error (char *buffer_, size_t buffer_size_)
 {
     DWORD errcode = GetLastError ();
 #if defined _WIN32_WCE
-    DWORD rc = FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM |
+    DWORD rc = FormatMessageW (FORMAT_MESSAGE_FROM_SYSTEM |
         FORMAT_MESSAGE_IGNORE_INSERTS, NULL, errcode, MAKELANGID(LANG_NEUTRAL,
-        SUBLANG_DEFAULT), (LPWSTR)buffer_, buffer_size_ / sizeof(wchar_t), NULL );
+        SUBLANG_DEFAULT), (LPWSTR)buffer_, buffer_size_ / sizeof(wchar_t), NULL);
 #else
     DWORD rc = FormatMessageA (FORMAT_MESSAGE_FROM_SYSTEM |
         FORMAT_MESSAGE_IGNORE_INSERTS, NULL, errcode, MAKELANGID(LANG_NEUTRAL,
-        SUBLANG_DEFAULT), buffer_, (DWORD) buffer_size_, NULL );
+        SUBLANG_DEFAULT), buffer_, (DWORD) buffer_size_, NULL);
 #endif
     zmq_assert (rc);
 }
@@ -216,6 +226,9 @@ void zmq::win_error (char *buffer_, size_t buffer_size_)
 int zmq::wsa_error_to_errno (int errcode)
 {
     switch (errcode) {
+//  10004 - Interrupted system call.
+    case WSAEINTR:
+        return EINTR;
 //  10009 - File handle is not valid.
     case WSAEBADF:
         return EBADF;
@@ -231,14 +244,41 @@ int zmq::wsa_error_to_errno (int errcode)
 //  10024 - Too many open files.
     case WSAEMFILE:
         return EMFILE;
+//  10035 - Operation would block.
+    case WSAEWOULDBLOCK:
+        return EBUSY;
 //  10036 - Operation now in progress.
     case WSAEINPROGRESS:
         return EAGAIN;
+//  10037 - Operation already in progress.
+    case WSAEALREADY:
+        return EAGAIN;
+//  10038 - Socket operation on non-socket.
+    case WSAENOTSOCK:
+        return ENOTSOCK;
+//  10039 - Destination address required.
+    case WSAEDESTADDRREQ:
+        return EFAULT;
 //  10040 - Message too long.
     case WSAEMSGSIZE:
         return EMSGSIZE;
+//  10041 - Protocol wrong type for socket.
+    case WSAEPROTOTYPE:
+        return EFAULT;
+//  10042 - Bad protocol option.
+    case WSAENOPROTOOPT:
+        return EINVAL;
 //  10043 - Protocol not supported.
     case WSAEPROTONOSUPPORT:
+        return EPROTONOSUPPORT;
+//  10044 - Socket type not supported.
+    case WSAESOCKTNOSUPPORT:
+        return EFAULT;
+//  10045 - Operation not supported on socket.
+    case WSAEOPNOTSUPP:
+        return EFAULT;
+//  10046 - Protocol family not supported.
+    case WSAEPFNOSUPPORT:
         return EPROTONOSUPPORT;
 //  10047 - Address family not supported by protocol family.
     case WSAEAFNOSUPPORT:
@@ -267,18 +307,75 @@ int zmq::wsa_error_to_errno (int errcode)
 //  10055 - No buffer space available.
     case WSAENOBUFS:
         return ENOBUFS;
+//  10056 - Socket is already connected.
+    case WSAEISCONN:
+        return EFAULT;
 //  10057 - Socket is not connected.
     case WSAENOTCONN:
         return ENOTCONN;
+//  10058 - Can't send after socket shutdown.
+    case WSAESHUTDOWN:
+        return EFAULT;
+//  10059 - Too many references can't splice.
+    case WSAETOOMANYREFS:
+        return EFAULT;
 //  10060 - Connection timed out.
     case WSAETIMEDOUT:
         return ETIMEDOUT;
 //  10061 - Connection refused.
     case WSAECONNREFUSED:
         return ECONNREFUSED;
+//  10062 - Too many levels of symbolic links.
+    case WSAELOOP:
+        return EFAULT;
+//  10063 - File name too long.
+    case WSAENAMETOOLONG:
+        return EFAULT;
+//  10064 - Host is down.
+    case WSAEHOSTDOWN:
+        return EAGAIN;
 //  10065 - No route to host.
     case WSAEHOSTUNREACH:
         return EHOSTUNREACH;
+//  10066 - Directory not empty.
+    case WSAENOTEMPTY:
+        return EFAULT;
+//  10067 - Too many processes.
+    case WSAEPROCLIM:
+        return EFAULT;
+//  10068 - Too many users.
+    case WSAEUSERS:
+        return EFAULT;
+//  10069 - Disc Quota Exceeded.
+    case WSAEDQUOT:
+        return EFAULT;
+//  10070 - Stale NFS file handle.
+    case WSAESTALE:
+        return EFAULT;
+//  10071 - Too many levels of remote in path.
+    case WSAEREMOTE:
+        return EFAULT;
+//  10091 - Network SubSystem is unavailable.
+    case WSASYSNOTREADY:
+        return EFAULT;
+//  10092 - WINSOCK DLL Version out of range.
+    case WSAVERNOTSUPPORTED:
+        return EFAULT;
+//  10093 - Successful WSASTARTUP not yet performed.
+    case WSANOTINITIALISED:
+        return EFAULT;
+//  11001 - Host not found.
+    case WSAHOST_NOT_FOUND:
+        return EFAULT;
+//  11002 - Non-Authoritative Host not found.
+    case WSATRY_AGAIN:
+        return EFAULT;
+//  11003 - Non-Recoverable errors: FORMERR REFUSED NOTIMP.
+    case WSANO_RECOVERY:
+        return EFAULT;
+//  11004 - Valid name no data record of requested.
+    case WSANO_DATA:
+        return EFAULT;
     default:
         wsa_assert (false);
     }

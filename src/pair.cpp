@@ -1,22 +1,33 @@
 /*
-    Copyright (c) 2007-2013 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "macros.hpp"
 #include "pair.hpp"
 #include "err.hpp"
 #include "pipe.hpp"
@@ -24,7 +35,8 @@
 
 zmq::pair_t::pair_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     socket_base_t (parent_, tid_, sid_),
-    pipe (NULL)
+    pipe (NULL),
+    last_in (NULL)
 {
     options.type = ZMQ_PAIR;
 }
@@ -34,10 +46,9 @@ zmq::pair_t::~pair_t ()
     zmq_assert (!pipe);
 }
 
-void zmq::pair_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
+void zmq::pair_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 {
-    // icanhasall_ is unused
-    (void)icanhasall_;
+	LIBZMQ_UNUSED(subscribe_to_all_);
 
     zmq_assert (pipe_ != NULL);
 
@@ -49,10 +60,15 @@ void zmq::pair_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
         pipe_->terminate (false);
 }
 
-void zmq::pair_t::xterminated (pipe_t *pipe_)
+void zmq::pair_t::xpipe_terminated (pipe_t *pipe_)
 {
-    if (pipe_ == pipe)
+    if (pipe_ == pipe) {
+        if (last_in == pipe) {
+            saved_credential = last_in->get_credential ();
+            last_in = NULL;
+        }
         pipe = NULL;
+    }
 }
 
 void zmq::pair_t::xread_activated (pipe_t *)
@@ -99,6 +115,7 @@ int zmq::pair_t::xrecv (msg_t *msg_)
         errno = EAGAIN;
         return -1;
     }
+    last_in = pipe;
     return 0;
 }
 
@@ -118,14 +135,7 @@ bool zmq::pair_t::xhas_out ()
     return pipe->check_write ();
 }
 
-zmq::pair_session_t::pair_session_t (io_thread_t *io_thread_, bool connect_,
-      socket_base_t *socket_, const options_t &options_,
-      const address_t *addr_) :
-    session_base_t (io_thread_, connect_, socket_, options_, addr_)
+zmq::blob_t zmq::pair_t::get_credential () const
 {
+    return last_in? last_in->get_credential (): saved_credential;
 }
-
-zmq::pair_session_t::~pair_session_t ()
-{
-}
-

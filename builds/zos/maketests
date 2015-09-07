@@ -1,0 +1,102 @@
+#! /bin/sh
+# Build tests/* executables; assumes that libzmq.a or libzmq.so/libzmq.x
+# is already built
+#
+# If libzmq.so and libzmq.x exist, then dynamic linking is used, otherwise
+# static linking is used.
+#
+# Written by Ewen McNeill <ewen@imatix.com>, 2014-07-21
+# Updated by Ewen McNeill <ewen@imatix.com>, 2014-07-22
+#---------------------------------------------------------------------------
+
+set -e    # Stop on errors
+
+VERBOSE="${VERBOSE:-}"    # Set to non-empty for already done status
+export VERBOSE
+
+# Figure out where we are
+BIN_DIR=$(dirname $0)
+if [ -z "${BIN_DIR}" ]; then BIN_DIR="."; fi
+case "${BIN_DIR}" in
+  .)  BIN_DIR="$(pwd)";            ;;
+  /*)                              ;; 
+  *)  BIN_DIR="$(pwd)/${BIN_DIR}"; ;;
+esac
+
+# Locate compiler wrapper
+ZCXX="${BIN_DIR}/zc++"
+
+# Locate top of source tree, assuming we're in builds/zos
+TOP="${BIN_DIR}/../.."
+SRC="${TOP}/src"
+TESTS="${TOP}/tests"
+
+# Figure out how we are going to link to ZMQ
+LINK_TYPE=unknown
+
+if [ -f "${SRC}/platform.hpp" -a -f "${SRC}/libzmq.so" -a -f "${SRC}/libzmq.x" ]; then
+  LINK_TYPE=dynamic
+elif [ -f "${SRC}/platform.hpp" -a -f "${SRC}/libzmq.a" ]; then
+  LINK_TYPE=static
+else
+  echo "Error: run makezmqlib to build libzmq.a and/or libzmq.so/libzmq.x first" >&2
+  exit 1
+fi
+
+# Copy in replacement test with timeout, if main version is not already
+# up to date
+#
+if [ -f "${TESTS}/test_fork.cpp" ] && 
+     grep "TIMEOUT" "${TESTS}/test_fork.cpp" >/dev/null 2>&1; then
+  :  # Already copied in
+else
+  echo "Updating test_fork.cpp to version with master timeout"
+  cp -p "${BIN_DIR}/test_fork.cpp" "${TESTS}/test_fork.cpp"
+fi
+
+# Compile all the source
+if [ "${LINK_TYPE}" = "dynamic" ]; then
+  ZCXXFLAGS="${ZCXXFLAGS} -Wc,DLL"
+  export ZXCCFLAGS
+  echo "Building tests to use DLL: ${ZCXXFLAGS}"
+fi
+
+cd "${TESTS}"
+"${BIN_DIR}/cxxall"
+
+# Link all the executables that are not already linked
+skip() {
+  OBJ="$1"
+  EXE="$2"
+  if [ -n "${VERBOSE}" ]; then
+    echo "${OBJ} linked to ${EXE}"
+  fi    
+}
+
+link() {
+  OBJ="$1"
+  EXE="$2"
+  echo " LD ${EXE}"
+  case "${LINK_TYPE}" in
+    static)  "${ZCXX}" -L ../src -o "${EXE}" "${OBJ}" -lzmq
+             ;;
+    dynamic) "${ZCXX}" -o "${EXE}" "${OBJ}" ../src/libzmq.x
+             ;;
+    *)       echo "Do not know how to do ${LINK_TYPE} linking!" 2>&1
+             exit 1
+             ;;
+  esac
+}
+
+for OBJ in *.o; do 
+  EXE=$(echo "${OBJ}" | sed 's/\.o//;')
+  if [ -f "${EXE}" ]; then 
+    if [ "${EXE}" -nt	"${OBJ}" ]; then
+      skip "${OBJ}" "${EXE}"
+    else
+      link "${OBJ}" "${EXE}"
+    fi
+  else
+    link "${OBJ}" "${EXE}"
+  fi
+done

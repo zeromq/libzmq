@@ -1,17 +1,27 @@
 /*
-    Copyright (c) 2007-2013 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -20,6 +30,7 @@
 #include <new>
 
 #include <string>
+#include <stdio.h>
 
 #include "platform.hpp"
 #include "tcp_listener.hpp"
@@ -89,9 +100,14 @@ void zmq::tcp_listener_t::in_event ()
 
     tune_tcp_socket (fd);
     tune_tcp_keepalives (fd, options.tcp_keepalive, options.tcp_keepalive_cnt, options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
+    tune_tcp_retransmit_timeout (fd, options.tcp_retransmit_timeout);
+
+    // remember our fd for ZMQ_SRCFD in messages
+    socket->set_fd(fd);
 
     //  Create the engine object for this connection.
-    stream_engine_t *engine = new (std::nothrow) stream_engine_t (fd, options, endpoint);
+    stream_engine_t *engine = new (std::nothrow)
+        stream_engine_t (fd, options, endpoint);
     alloc_assert (engine);
 
     //  Choose I/O thread to run connecter in. Given that we are already
@@ -99,14 +115,14 @@ void zmq::tcp_listener_t::in_event ()
     io_thread_t *io_thread = choose_io_thread (options.affinity);
     zmq_assert (io_thread);
 
-    //  Create and launch a session object. 
+    //  Create and launch a session object.
     session_base_t *session = session_base_t::create (io_thread, false, socket,
         options, NULL);
     errno_assert (session);
     session->inc_seqnum ();
     launch_child (session);
     send_attach (session, engine, false);
-    socket->event_accepted (endpoint, fd);
+    socket->event_accepted (endpoint, (int) fd);
 }
 
 void zmq::tcp_listener_t::close ()
@@ -119,7 +135,7 @@ void zmq::tcp_listener_t::close ()
     int rc = ::close (s);
     errno_assert (rc == 0);
 #endif
-    socket->event_closed (endpoint, s);
+    socket->event_closed (endpoint, (int) s);
     s = retired_fd;
 }
 
@@ -187,6 +203,16 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
     if (address.family () == AF_INET6)
         enable_ipv4_mapping (s);
 
+    // Set the IP Type-Of-Service for the underlying socket
+    if (options.tos != 0)
+        set_ip_type_of_service (s, options.tos);
+
+    //  Set the socket buffer limits for the underlying socket.
+    if (options.sndbuf >= 0)
+        set_tcp_send_buffer (s, options.sndbuf);
+    if (options.rcvbuf >= 0)
+        set_tcp_receive_buffer (s, options.rcvbuf);
+
     //  Allow reusing of the address.
     int flag = 1;
 #ifdef ZMQ_HAVE_WINDOWS
@@ -212,7 +238,7 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
         goto error;
 #endif
 
-    //  Listen for incomming connections.
+    //  Listen for incoming connections.
     rc = listen (s, options.backlog);
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
@@ -224,7 +250,7 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
         goto error;
 #endif
 
-    socket->event_listening (endpoint, s);
+    socket->event_listening (endpoint, (int) s);
     return 0;
 
 error:
@@ -252,10 +278,11 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
 
 #ifdef ZMQ_HAVE_WINDOWS
     if (sock == INVALID_SOCKET) {
-        wsa_assert (WSAGetLastError () == WSAEWOULDBLOCK ||
-            WSAGetLastError () == WSAECONNRESET ||
-            WSAGetLastError () == WSAEMFILE ||
-            WSAGetLastError () == WSAENOBUFS);
+		const int last_error = WSAGetLastError();
+        wsa_assert (last_error == WSAEWOULDBLOCK ||
+            last_error == WSAECONNRESET ||
+            last_error == WSAEMFILE ||
+            last_error == WSAENOBUFS);
         return retired_fd;
     }
 #if !defined _WIN32_WCE
@@ -271,6 +298,13 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
             errno == ENFILE);
         return retired_fd;
     }
+#endif
+
+    //  Race condition can cause socket not to be closed (if fork happens
+    //  between accept and this point).
+#ifdef FD_CLOEXEC
+    int rc = fcntl (sock, F_SETFD, FD_CLOEXEC);
+    errno_assert (rc != -1);
 #endif
 
     if (!options.tcp_accept_filters.empty ()) {
@@ -292,6 +326,10 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
             return retired_fd;
         }
     }
+
+    // Set the IP Type-Of-Service priority for this client socket
+    if (options.tos != 0)
+        set_ip_type_of_service (sock, options.tos);
 
     return sock;
 }

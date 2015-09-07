@@ -1,17 +1,27 @@
 /*
-    Copyright (c) 2007-2013 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -33,7 +43,7 @@ namespace zmq
     //  to minimise number of allocations/deallocations needed. Thus yqueue
     //  allocates/deallocates elements in batches of N.
     //
-    //  yqueue allows one thread to use push/back function and another one 
+    //  yqueue allows one thread to use push/back function and another one
     //  to use pop/front functions. However, user must ensure that there's no
     //  pop on the empty queue and that both threads don't access the same
     //  element in unsynchronised manner.
@@ -41,8 +51,16 @@ namespace zmq
     //  T is the type of the object in the queue.
     //  N is granularity of the queue (how many pushes have to be done till
     //  actual memory allocation is required).
-
+#ifdef HAVE_POSIX_MEMALIGN
+    // ALIGN is the memory alignment size to use in the case where we have
+    // posix_memalign available. Default value is 64, this alignment will
+    // prevent two queue chunks from occupying the same CPU cache line on
+    // architectures where cache lines are <= 64 bytes (e.g. most things
+    // except POWER).
+    template <typename T, int N, size_t ALIGN = 64> class yqueue_t
+#else
     template <typename T, int N> class yqueue_t
+#endif
     {
     public:
 
@@ -65,15 +83,14 @@ namespace zmq
                 if (begin_chunk == end_chunk) {
                     free (begin_chunk);
                     break;
-                } 
+                }
                 chunk_t *o = begin_chunk;
                 begin_chunk = begin_chunk->next;
                 free (o);
             }
 
             chunk_t *sc = spare_chunk.xchg (NULL);
-            if (sc)
-                free (sc);
+            free (sc);
         }
 
         //  Returns reference to the front element of the queue.
@@ -104,7 +121,13 @@ namespace zmq
                 end_chunk->next = sc;
                 sc->prev = end_chunk;
             } else {
+#ifdef HAVE_POSIX_MEMALIGN
+                void *pv;
+                if (posix_memalign(&pv, ALIGN, sizeof (chunk_t)) == 0)
+                    end_chunk->next = (chunk_t*) pv;
+#else
                 end_chunk->next = (chunk_t*) malloc (sizeof (chunk_t));
+#endif
                 alloc_assert (end_chunk->next);
                 end_chunk->next->prev = end_chunk;
             }
@@ -156,8 +179,7 @@ namespace zmq
                 //  so for cache reasons we'll get rid of the spare and
                 //  use 'o' as the spare.
                 chunk_t *cs = spare_chunk.xchg (o);
-                if (cs)
-                    free (cs);
+                free (cs);
             }
         }
 

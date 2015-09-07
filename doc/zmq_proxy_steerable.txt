@@ -1,0 +1,98 @@
+zmq_proxy_steerable(3)
+======================
+
+NAME
+----
+zmq_proxy_steerable - built-in 0MQ proxy with control flow
+
+
+SYNOPSIS
+--------
+*int zmq_proxy_steerable (const void '*frontend', const void '*backend', 
+     const void '*capture', const void '*control');*
+
+
+DESCRIPTION
+-----------
+The _zmq_proxy_steerable()_ function starts the built-in 0MQ proxy in the 
+current application thread, as _zmq_proxy()_ do. Please, refer to this function
+for the general description and usage. We describe here only the additional 
+control flow provided by the socket passed as the fourth argument "control".
+
+If the control socket is not NULL, the proxy supports control flow. If 
+'PAUSE' is received on this socket, the proxy suspends its activities. If 
+'RESUME' is received, it goes on. If 'TERMINATE' is received, it terminates
+smoothly. At start, the proxy runs normally as if zmq_proxy was used.
+
+If the control socket is NULL, the function behave exactly as if zmq_proxy
+had been called.
+
+
+Refer to linkzmq:zmq_socket[3] for a description of the available socket types.
+Refer to linkzmq:zmq_proxy[3] for a description of the zmq_proxy.
+
+EXAMPLE USAGE
+-------------
+cf zmq_proxy
+
+RETURN VALUE
+------------
+The _zmq_proxy_steerable()_ function returns 0 if TERMINATE is sent to its
+control socket. Otherwise, it returns `-1` and 'errno' set to *ETERM* (the
+0MQ 'context' associated with either of the specified sockets was terminated).
+
+
+EXAMPLE
+-------
+.Creating a shared queue proxy
+----
+//  Create frontend, backend and control sockets
+void *frontend = zmq_socket (context, ZMQ_ROUTER);
+assert (backend);
+void *backend = zmq_socket (context, ZMQ_DEALER);
+assert (frontend);
+void *control = zmq_socket (context, ZMQ_SUB);
+assert (control);
+
+//  Bind sockets to TCP ports
+assert (zmq_bind (frontend, "tcp://*:5555") == 0);
+assert (zmq_bind (backend, "tcp://*:5556") == 0);
+assert (zmq_connect (control, "tcp://*:5557") == 0);
+
+// Subscribe to the control socket since we have chosen SUB here
+assert (zmq_setsockopt (control, ZMQ_SUBSCRIBE, "", 0));
+
+//  Start the queue proxy, which runs until ETERM or "TERMINATE" 
+//  received on the control socket
+zmq_proxy_steerable (frontend, backend, NULL, control);
+----
+.Set up a controller in another node, process or whatever
+----
+void *control = zmq_socket (context, ZMQ_PUB);
+assert (control);
+assert (zmq_bind (control, "tcp://*:5557") == 0);
+
+// pause the proxy
+assert (zmq_send (control, "PAUSE", 5, 0) == 0);
+
+// resume the proxy
+assert (zmq_send (control, "RESUME", 6, 0) == 0);
+
+// terminate the proxy
+assert (zmq_send (control, "TERMINATE", 9, 0) == 0);
+---
+
+
+SEE ALSO
+--------
+linkzmq:zmq_proxy[3]
+linkzmq:zmq_bind[3]
+linkzmq:zmq_connect[3]
+linkzmq:zmq_socket[3]
+linkzmq:zmq[7]
+
+
+AUTHORS
+-------
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

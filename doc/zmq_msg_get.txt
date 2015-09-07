@@ -23,6 +23,16 @@ The following properties can be retrieved with the _zmq_msg_get()_ function:
 *ZMQ_MORE*::
 Indicates that there are more message frames to follow after the 'message'.
 
+*ZMQ_SRCFD*::
+Returns the file descriptor of the socket the 'message' was read from. This
+allows application to retrieve the remote endpoint via 'getpeername(2)'. Be
+aware that the respective socket might be closed already, reused even.
+Currently only implemented for TCP sockets.
+
+*ZMQ_SHARED*::
+Indicates that a message MAY share underlying storage with another copy of
+this message.
+
 RETURN VALUE
 ------------
 The _zmq_msg_get()_ function shall return the value for the property if
@@ -40,6 +50,7 @@ EXAMPLE
 -------
 .Receiving a multi-frame message
 ----
+zmq_msg_t frame;
 while (true) {
     //  Create an empty 0MQ message to hold the message frame
     int rc = zmq_msg_init (&frame);
@@ -53,7 +64,7 @@ while (true) {
         fprintf (stderr, "end\n");
         break;
     }
-    zmq_msg_close (frame);
+    zmq_msg_close (&frame);
 }
 ----
 
@@ -68,5 +79,5 @@ linkzmq:zmq[7]
 
 AUTHORS
 -------
-This 0MQ manual page was written by Chuck Remes <cremes@mac.com> and Pieter
-Hintjens <ph@imatix.com>.
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

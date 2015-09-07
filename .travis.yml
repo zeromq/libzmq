@@ -1,0 +1,25 @@
+# Travis CI script
+
+language: c
+
+os:
+- linux
+- osx
+
+env:
+- BUILD_TYPE=default
+- BUILD_TYPE=qt-android
+
+sudo: false
+
+before_install:
+- if [ $TRAVIS_OS_NAME == "osx" ] ; then brew update; brew install binutils ; fi
+
+before_script:
+# ZMQ stress tests need more open socket (files) than the usual default
+# On OSX, it seems the way to set the max files limit is constantly changing, so
+# try to use all known knobs to ensure compatibility across various versions
+- if [ $TRAVIS_OS_NAME == "osx" ] ; then sudo sysctl -w kern.maxfiles=64000 ; sudo sysctl -w kern.maxfilesperproc=64000 ; sudo launchctl limit maxfiles 64000 64000 ; fi ; ulimit -n 64000
+
+# Build and check this project according to the BUILD_TYPE
+script: ./ci_build.sh

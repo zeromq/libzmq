@@ -33,7 +33,7 @@ Context termination is performed in the following steps:
      peer, or the socket's linger period set with the _ZMQ_LINGER_ socket
      option has expired.
 
-For further details regarding socket linger behavior refer to the _ZMQ_LINGER_
+For further details regarding socket linger behaviour refer to the _ZMQ_LINGER_
 option in linkzmq:zmq_setsockopt[3].
 
 This function is deprecated by linkzmq:zmq_ctx_term[3].
@@ -63,4 +63,5 @@ linkzmq:zmq_setsockopt[3]
 
 AUTHORS
 -------
-This 0MQ manual page was written by Pieter Hintjens <ph@imatix.com>
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

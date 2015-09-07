@@ -45,7 +45,7 @@ while (true) {
         fprintf (stderr, "end\n");
         break;
     }
-    zmq_msg_close (part);
+    zmq_msg_close (&part);
 }
 ----
 
@@ -61,5 +61,5 @@ linkzmq:zmq[7]
 
 AUTHORS
 -------
-This 0MQ manual page was written by Chuck Remes <cremes@mac.com> and Pieter
-Hintjens <ph@imatix.com>.
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

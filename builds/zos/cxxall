@@ -1,0 +1,62 @@
+#! /bin/sh
+# Attempt to compile all *.cpp files in the current directory, that are
+# not already compiled.  Uses zc++ wrapper around C++ compiler, to add
+# additional compile arguments.
+#
+# Written by Ewen McNeill <ewen@imatix.com>, 2014-07-19
+# Updated by Ewen McNeill <ewen@imatix.com>, 2014-07-24
+#---------------------------------------------------------------------------
+
+VERBOSE="${VERBOSE:-}"    # Set to non-empty for already done status
+export VERBOSE
+
+# Locate compiler wrapper
+BIN_DIR=$(dirname $0)
+if [ -z "${BIN_DIR}" ]; then BIN_DIR="."; fi
+case "${BIN_DIR}" in
+  .)  BIN_DIR="$(pwd)";            ;;
+  /*)                              ;; 
+  *)  BIN_DIR="$(pwd)/${BIN_DIR}"; ;;
+esac
+ZCXX="${BIN_DIR}/zc++"
+
+# Determine compile flags
+CPPFLAGS="-D_XOPEN_SOURCE_EXTENDED=1 -D_OPEN_THREADS=3 -D_OPEN_SYS_SOCK_IPV6"
+CXXFLAGS="-DZMQ_HAVE_ZOS -DHAVE_CONFIG_H -D_REENTRANT -D_THREAD_SAFE -DZMQ_USE_POLL"
+case $(pwd) in
+  *src)   CXXFLAGS="${CXXFLAGS} -I."
+          ;;
+  *tests) CXXFLAGS="${CXXFLAGS} -I. -I../src -I../include"
+          ;;
+  *)      echo "Currently only builds in src/ and tests/" >&2
+          exit 1
+          ;;
+esac
+
+skip() {
+  SRC="$1"
+  OBJ="$2"
+  if [ -n "${VERBOSE}" ]; then
+    echo "    ${SRC} compiled already"
+  fi
+}
+
+compile() {
+  SRC="$1"
+  OBJ="$2"
+  echo "CXX ${SRC}"
+  "${ZCXX}" ${CXXFLAGS} ${CPPFLAGS} -+ -c -o "${OBJ}" "${SRC}"
+}
+
+for SRC in *.cpp; do 
+  OBJ=$(echo $SRC | sed 's/\.cpp/.o/;')
+  if [ -f "${OBJ}" ]; then 
+    if [ "${OBJ}" -nt "${SRC}" ]; then
+      skip "${SRC}" "${OBJ}"
+    else
+      compile "${SRC}" "${OBJ}"
+    fi
+  else
+    compile "${SRC}" "${OBJ}"
+  fi
+done
