@@ -1583,23 +1583,12 @@ void zmq::socket_base_t::monitor_event (int event_, int value_, const std::strin
         //  Send event in first frame
         zmq_msg_t msg;
         zmq_msg_init_size (&msg, 6);
-#ifdef ZMQ_HAVE_HPUX
-        // avoid SIGBUS
-        union {
-          uint8_t data[6];
-          struct {
-            uint16_t event;
-            uint32_t value;
-          } v;
-        } u;
-        u.v.event = event_;
-        u.v.value = value_;
-        memcpy(zmq_msg_data (&msg), u.data, 6);
-#else
         uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
-        *(uint16_t *) (data + 0) = (uint16_t) event_;
-        *(uint32_t *) (data + 2) = (uint32_t) value_;
-#endif
+        //  Avoid dereferencing uint32_t on unaligned address
+        uint16_t event = (uint16_t) event_;
+        uint32_t value = (uint32_t) value_;
+        memcpy (data + 0, &event, sizeof(event));
+        memcpy (data + 2, &value, sizeof(value));
         zmq_sendmsg (monitor_socket, &msg, ZMQ_SNDMORE);
 
         //  Send address in second frame
