@@ -39,11 +39,11 @@ zmq::server_t::server_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     socket_base_t (parent_, tid_, sid_, true),
     next_rid (generate_random ())
 {
-    options.type = ZMQ_SERVER;    
+    options.type = ZMQ_SERVER;
 }
 
 zmq::server_t::~server_t ()
-{    
+{
     zmq_assert (outpipes.empty ());
 }
 
@@ -51,16 +51,19 @@ void zmq::server_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 {
     LIBZMQ_UNUSED (subscribe_to_all_);
 
-    zmq_assert (pipe_);    
+    zmq_assert (pipe_);
 
     uint32_t routing_id = next_rid++;
+    if (!routing_id)
+        routing_id = next_rid++;        //  Never use RID zero
+
     pipe_->set_routing_id (routing_id);
     //  Add the record into output pipes lookup table
     outpipe_t outpipe = {pipe_, true};
     bool ok = outpipes.insert (outpipes_t::value_type (routing_id, outpipe)).second;
     zmq_assert (ok);
-    
-    fq.attach (pipe_);    
+
+    fq.attach (pipe_);
 }
 
 void zmq::server_t::xpipe_terminated (pipe_t *pipe_)
@@ -68,12 +71,12 @@ void zmq::server_t::xpipe_terminated (pipe_t *pipe_)
     outpipes_t::iterator it = outpipes.find (pipe_->get_routing_id ());
     zmq_assert (it != outpipes.end ());
     outpipes.erase (it);
-    fq.pipe_terminated (pipe_);    
+    fq.pipe_terminated (pipe_);
 }
 
 void zmq::server_t::xread_activated (pipe_t *pipe_)
-{    
-    fq.activated (pipe_); 
+{
+    fq.activated (pipe_);
 }
 
 void zmq::server_t::xwrite_activated (pipe_t *pipe_)
@@ -90,20 +93,20 @@ void zmq::server_t::xwrite_activated (pipe_t *pipe_)
 
 int zmq::server_t::xsend (msg_t *msg_)
 {
-    zmq_assert(!(msg_->flags () & msg_t::more));    
-    
-    //  Find the pipe associated with the routing stored in the message.    
+    zmq_assert(!(msg_->flags () & msg_t::more));
+
+    //  Find the pipe associated with the routing stored in the message.
     uint32_t routing_id = msg_->get_routing_id ();
     outpipes_t::iterator it = outpipes.find (routing_id);
-    
-    if (it != outpipes.end ()) {        
+
+    if (it != outpipes.end ()) {
         if (!it->second.pipe->check_write ()) {
-            it->second.active = false;            
+            it->second.active = false;
             errno = EAGAIN;
-            return -1;            
+            return -1;
         }
     }
-    else {        
+    else {
         errno = EHOSTUNREACH;
         return -1;
     }
@@ -113,10 +116,11 @@ int zmq::server_t::xsend (msg_t *msg_)
         // Message failed to send - we must close it ourselves.
         int rc = msg_->close ();
         errno_assert (rc == 0);
-    } else {
-        it->second.pipe->flush ();
     }
-        
+    else
+        it->second.pipe->flush ();
+
+
     //  Detach the message from the data buffer.
     int rc = msg_->init ();
     errno_assert (rc == 0);
@@ -125,7 +129,7 @@ int zmq::server_t::xsend (msg_t *msg_)
 }
 
 int zmq::server_t::xrecv (msg_t *msg_)
-{    
+{
     pipe_t *pipe = NULL;
     int rc = fq.recvpipe (msg_, &pipe);
 
@@ -134,17 +138,17 @@ int zmq::server_t::xrecv (msg_t *msg_)
 
         // drop all frames of the current multi-frame message
         rc = fq.recvpipe (msg_, NULL);
-        
+
         while (rc == 0 && msg_->flags () & msg_t::more)
-            rc = fq.recvpipe (msg_, NULL);            
+            rc = fq.recvpipe (msg_, NULL);
 
         // get the new message
-        if (rc == 0)            
+        if (rc == 0)
             rc = fq.recvpipe (msg_, &pipe);
-    }     
+    }
 
     if (rc != 0)
-        return rc;   
+        return rc;
 
     zmq_assert (pipe != NULL);
 
