@@ -45,7 +45,7 @@ zmq::router_t::router_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     next_rid (generate_random ()),
     mandatory (false),
     //  raw_socket functionality in ROUTER is deprecated
-    raw_socket (false),       
+    raw_socket (false),
     probe_router (false),
     handover (false)
 {
@@ -104,6 +104,7 @@ int zmq::router_t::xsetsockopt (int option_, const void *optval_,
                 return 0;
             }
             break;
+
         case ZMQ_ROUTER_RAW:
             if (is_int && value >= 0) {
                 raw_socket = (value != 0);
@@ -128,8 +129,8 @@ int zmq::router_t::xsetsockopt (int option_, const void *optval_,
                 return 0;
             }
             break;
-            
-        case ZMQ_ROUTER_HANDOVER: 
+
+        case ZMQ_ROUTER_HANDOVER:
             if (is_int && value >= 0) {
                 handover = (value != 0);
                 return 0;
@@ -409,10 +410,10 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
             connect_rid.length());
         connect_rid.clear ();
         outpipes_t::iterator it = outpipes.find (identity);
-        if (it != outpipes.end ()) 
+        if (it != outpipes.end ())
             zmq_assert(false); //  Not allowed to duplicate an existing rid
     }
-    else 
+    else
     if (options.raw_socket) { //  Always assign identity for raw-socket
         unsigned char buf [5];
         buf [0] = 0;
@@ -420,7 +421,7 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
         identity = blob_t (buf, sizeof buf);
     }
     else
-    if (!options.raw_socket) { 
+    if (!options.raw_socket) {
         //  Pick up handshake cases and also case where next identity is set
         msg.init ();
         ok = pipe_->read (&msg);
@@ -446,7 +447,7 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
                     return false;
                 else {
                     //  We will allow the new connection to take over this
-                    //  identity. Temporarily assign a new identity to the 
+                    //  identity. Temporarily assign a new identity to the
                     //  existing pipe so we can terminate it asynchronously.
                     unsigned char buf [5];
                     buf [0] = 0;
@@ -454,13 +455,13 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
                     blob_t new_identity = blob_t (buf, sizeof buf);
 
                     it->second.pipe->set_identity (new_identity);
-                    outpipe_t existing_outpipe = 
+                    outpipe_t existing_outpipe =
                         {it->second.pipe, it->second.active};
-                
+
                     ok = outpipes.insert (outpipes_t::value_type (
                         new_identity, existing_outpipe)).second;
                     zmq_assert (ok);
-                
+
                     //  Remove the existing identity entry to allow the new
                     //  connection to take the identity.
                     outpipes.erase (it);
