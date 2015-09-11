@@ -93,7 +93,7 @@ int zmq::server_t::xsend (msg_t *msg_)
     zmq_assert(!(msg_->flags () & msg_t::more));    
     
     //  Find the pipe associated with the routing stored in the message.    
-    uint32_t routing_id = msg_->get_routing_id();
+    uint32_t routing_id = msg_->get_routing_id ();
     outpipes_t::iterator it = outpipes.find (routing_id);
     
     if (it != outpipes.end ()) {        
@@ -148,8 +148,8 @@ int zmq::server_t::xrecv (msg_t *msg_)
 
     zmq_assert (pipe != NULL);
 
-    uint32_t routing_id = pipe->get_routing_id();
-    msg_->set_routing_id(routing_id);
+    uint32_t routing_id = pipe->get_routing_id ();
+    msg_->set_routing_id (routing_id);
 
     return 0;
 }
