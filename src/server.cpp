@@ -93,8 +93,6 @@ void zmq::server_t::xwrite_activated (pipe_t *pipe_)
 
 int zmq::server_t::xsend (msg_t *msg_)
 {
-    zmq_assert(!(msg_->flags () & msg_t::more));
-
     //  Find the pipe associated with the routing stored in the message.
     uint32_t routing_id = msg_->get_routing_id ();
     outpipes_t::iterator it = outpipes.find (routing_id);
