@@ -504,8 +504,12 @@ uint32_t zmq::msg_t::get_routing_id ()
 
 int zmq::msg_t::set_routing_id (uint32_t routing_id_)
 {
-    u.base.routing_id = routing_id_;
-    return 0;
+    if (routing_id_) {
+        u.base.routing_id = routing_id_;
+        return 0;
+    }
+    errno = EINVAL;
+    return -1;
 }
 
 zmq::atomic_counter_t *zmq::msg_t::refcnt()
