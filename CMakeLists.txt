@@ -10,9 +10,9 @@ if(APPLE)
 endif()
 
 if(WIN32)
-option(WITH_TWEETNACL "Build with tweetnacl" OFF)
+  option(WITH_TWEETNACL "Build with tweetnacl" OFF)
 else()
-option(WITH_TWEETNACL "Build with tweetnacl" ON)
+  option(WITH_TWEETNACL "Build with tweetnacl" ON)
 endif()
 
 if(WITH_TWEETNACL)
@@ -23,7 +23,7 @@ if(WITH_TWEETNACL)
     )
 
   set(TWEETNACL_SOURCES
-    tweetnacl/src/tweetnacl.c 
+    tweetnacl/src/tweetnacl.c
     )
   if(WIN32)
   else()
@@ -157,6 +157,7 @@ check_function_exists(gethrtime HAVE_GETHRTIME)
 set(CMAKE_REQUIRED_INCLUDES )
 
 add_definitions(-D_REENTRANT -D_THREAD_SAFE)
+add_definitions(-D_USING_CMAKE)
 
 option(ENABLE_EVENTFD "Enable/disable eventfd" ZMQ_HAVE_EVENTFD)
 

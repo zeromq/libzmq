@@ -29,7 +29,7 @@
 
 #include "testutil.hpp"
 
-int send_msg(zmq_msg_t* msg, void* s, int flags, int value);
+int send_msg (zmq_msg_t* msg, void* s, int flags, int value);
 
 int main (void)
 {
@@ -38,14 +38,14 @@ int main (void)
     assert (ctx);
 
     void *client = zmq_socket (ctx, ZMQ_CLIENT);
-    void *dealer = zmq_socket (ctx, ZMQ_DEALER);
+    void *server = zmq_socket (ctx, ZMQ_SERVER);
 
     int rc;
 
     rc = zmq_bind (client, "inproc://serverdropmore");
     assert (rc == 0);
 
-    rc = zmq_connect (dealer, "inproc://serverdropmore");
+    rc = zmq_connect (server, "inproc://serverdropmore");
     assert (rc == 0);
 
     zmq_msg_t msg;
@@ -53,34 +53,34 @@ int main (void)
     assert (rc == 0);
 
     // we will send 2 3-frames messages and then single frame message, only last one should be received
-    rc = send_msg (&msg, dealer, ZMQ_SNDMORE, 1);
+    rc = send_msg (&msg, client, ZMQ_SNDMORE, 1);
     assert(rc == 1);
 
-    rc = send_msg (&msg, dealer, ZMQ_SNDMORE, 2);
+    rc = send_msg (&msg, client, ZMQ_SNDMORE, 2);
     assert(rc == 1);
 
-    rc = send_msg (&msg, dealer, 0, 3);
-    assert(rc == 1);
-    
-    rc = send_msg (&msg, dealer, ZMQ_SNDMORE, 4);
+    rc = send_msg (&msg, client, 0, 3);
     assert(rc == 1);
 
-    rc = send_msg (&msg, dealer, ZMQ_SNDMORE, 5);
-    assert(rc == 1);
-    
-    rc = send_msg (&msg, dealer, 0, 6);
+    rc = send_msg (&msg, client, ZMQ_SNDMORE, 4);
     assert(rc == 1);
 
-    rc = send_msg (&msg, dealer, 0, 7);
+    rc = send_msg (&msg, client, ZMQ_SNDMORE, 5);
     assert(rc == 1);
 
-    rc = zmq_msg_recv (&msg, client, 0);
-    assert (rc == 1);  
+    rc = send_msg (&msg, client, 0, 6);
+    assert(rc == 1);
 
-    assert(zmq_msg_more(&msg) == 0);
+    rc = send_msg (&msg, client, 0, 7);
+    assert(rc == 1);
 
-    unsigned char* data = (unsigned char*)zmq_msg_data (&msg);      
-    assert (data[0] == 7);
+    rc = zmq_msg_recv (&msg, server, 0);
+    assert (rc == 1);
+
+    assert (zmq_msg_more (&msg) == 0);
+
+    unsigned char *data = (unsigned char*) zmq_msg_data (&msg);
+    assert (data [0] == 7);
 
     rc = zmq_msg_close (&msg);
     assert (rc == 0);
@@ -88,7 +88,7 @@ int main (void)
     rc = zmq_close (client);
     assert (rc == 0);
 
-    rc = zmq_close (dealer);
+    rc = zmq_close (server);
     assert (rc == 0);
 
     rc = zmq_ctx_term (ctx);
@@ -97,20 +97,18 @@ int main (void)
     return 0 ;
 }
 
-int send_msg(zmq_msg_t* msg, void* s, int flags, int value)
+int send_msg (zmq_msg_t *msg, void *s, int flags, int value)
 {
-    int rc = zmq_msg_close(msg);
-
+    int rc = zmq_msg_close (msg);
     if (rc != 0)
         return rc;
 
-    zmq_msg_init_size(msg, 1);
-
+    zmq_msg_init_size (msg, 1);
     if (rc != 0)
         return rc;
 
-    unsigned char* data = (unsigned char*)zmq_msg_data(msg);
-    data[0] = (unsigned char)value;
+    unsigned char *data = (unsigned char *) zmq_msg_data (msg);
+    data [0] = (unsigned char) value;
 
     return zmq_msg_send (msg, s, flags);
 }

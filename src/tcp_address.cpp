@@ -57,7 +57,7 @@
 int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_src_)
 {
     //  TODO: Unused parameter, IPv6 support not implemented for Solaris.
-	LIBZMQ_UNUSED(ipv6_);
+    LIBZMQ_UNUSED (ipv6_);
 
     //  Create a socket.
     const int fd = open_socket (AF_INET, SOCK_DGRAM, 0);
@@ -124,7 +124,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
 int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_src_)
 {
     //  TODO: Unused parameter, IPv6 support not implemented for AIX or HP/UX.
-    LIBZMQ_UNUSED(ipv6_);
+    LIBZMQ_UNUSED (ipv6_);
 
     //  Create a socket.
     const int sd = open_socket (AF_INET, SOCK_DGRAM, 0);
@@ -211,8 +211,8 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
 //  This is true especially of Windows.
 int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_src_)
 {
-	LIBZMQ_UNUSED(nic_);
-	LIBZMQ_UNUSED(ipv6_);
+    LIBZMQ_UNUSED (nic_);
+    LIBZMQ_UNUSED (ipv6_);
 
     errno = ENODEV;
     return -1;

@@ -29,7 +29,7 @@
 
 #include "testutil.hpp"
 
-int send_msg(zmq_msg_t* msg, void* s, int flags, int value);
+int send_msg (zmq_msg_t* msg, void* s, int flags, int value);
 
 int main (void)
 {
@@ -38,7 +38,7 @@ int main (void)
     assert (ctx);
 
     void *server = zmq_socket (ctx, ZMQ_SERVER);
-    void *client = zmq_socket (ctx, ZMQ_DEALER);
+    void *client = zmq_socket (ctx, ZMQ_CLIENT);
 
     int rc;
 
@@ -61,13 +61,13 @@ int main (void)
 
     rc = send_msg (&msg, client, 0, 3);
     assert(rc == 1);
-    
+
     rc = send_msg (&msg, client, ZMQ_SNDMORE, 4);
     assert(rc == 1);
 
     rc = send_msg (&msg, client, ZMQ_SNDMORE, 5);
     assert(rc == 1);
-    
+
     rc = send_msg (&msg, client, 0, 6);
     assert(rc == 1);
 
@@ -75,12 +75,12 @@ int main (void)
     assert(rc == 1);
 
     rc = zmq_msg_recv (&msg, server, 0);
-    assert (rc == 1);  
+    assert (rc == 1);
 
-    assert(zmq_msg_more(&msg) == 0);
+    assert (zmq_msg_more (&msg) == 0);
 
-    unsigned char* data = (unsigned char*)zmq_msg_data (&msg);      
-    assert (data[0] == 7);
+    unsigned char *data = (unsigned char*) zmq_msg_data (&msg);
+    assert (data [0] == 7);
 
     rc = zmq_msg_close (&msg);
     assert (rc == 0);
@@ -97,20 +97,18 @@ int main (void)
     return 0 ;
 }
 
-int send_msg(zmq_msg_t* msg, void* s, int flags, int value)
+int send_msg (zmq_msg_t *msg, void *s, int flags, int value)
 {
-    int rc = zmq_msg_close(msg);
-
+    int rc = zmq_msg_close (msg);
     if (rc != 0)
         return rc;
 
-    zmq_msg_init_size(msg, 1);
-
+    zmq_msg_init_size (msg, 1);
     if (rc != 0)
         return rc;
 
-    unsigned char* data = (unsigned char*)zmq_msg_data(msg);
-    data[0] = (unsigned char)value;
+    unsigned char *data = (unsigned char *) zmq_msg_data (msg);
+    data [0] = (unsigned char) value;
 
     return zmq_msg_send (msg, s, flags);
 }

@@ -38,31 +38,29 @@ int main (void)
     void *server = zmq_socket (ctx, ZMQ_SERVER);
     void *client = zmq_socket (ctx, ZMQ_CLIENT);
 
-    int rc;
-
-    rc = zmq_bind (server, "tcp://127.0.0.1:5560");
+    int rc = zmq_bind (server, "tcp://127.0.0.1:5560");
     assert (rc == 0);
 
     rc = zmq_connect (client, "tcp://127.0.0.1:5560");
     assert (rc == 0);
 
     zmq_msg_t msg;
-    rc = zmq_msg_init_size(&msg,1);
+    rc = zmq_msg_init_size (&msg, 1);
     assert (rc == 0);
 
-    char * data = (char *)zmq_msg_data(&msg);
-    data[0] = 1;
+    char *data = (char *) zmq_msg_data (&msg);
+    data [0] = 1;
 
     rc = zmq_msg_send(&msg, client, 0);
     assert (rc == 1);
 
-    rc = zmq_msg_init(&msg);
+    rc = zmq_msg_init (&msg);
     assert (rc == 0);
-    rc = zmq_msg_recv(&msg, server, 0);
+    rc = zmq_msg_recv (&msg, server, 0);
     assert (rc == 1);    
 
-    uint32_t routing_id = zmq_msg_get_routing_id(&msg);
-    assert(routing_id != 0);
+    uint32_t routing_id = zmq_msg_routing_id (&msg);
+    assert (routing_id != 0);
 
     rc = zmq_msg_close(&msg);
     assert (rc == 0);

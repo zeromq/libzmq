@@ -688,6 +688,17 @@ Default value:: 0 (leave to OS default)
 Applicable socket types:: all, when using TCP transports.
 
 
+ZMQ_THREADSAFE: Retrieve socket thread safety
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_THREADSAFE' option shall retrieve a boolean value indicating whether
+or not the socket is threadsafe. Currently only 'ZMQ_CLIENT' sockets are
+threadsafe.
+
+[horizontal]
+Option value type:: boolean
+Applicable socket types:: all
+
+
 ZMQ_TOS: Retrieve the Type-of-Service socket override status
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Retrieve the IP_TOS option for the socket.

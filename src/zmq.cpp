@@ -686,19 +686,19 @@ int zmq_msg_set (zmq_msg_t *, int, int)
 
 int zmq_msg_set_routing_id (zmq_msg_t *msg_, uint32_t routing_id_)
 {
-    return ((zmq::msg_t*) msg_)->set_routing_id(routing_id_);
+    return ((zmq::msg_t *) msg_)->set_routing_id (routing_id_);
 }
 
-uint32_t zmq_msg_get_routing_id(zmq_msg_t *msg_)
+uint32_t zmq_msg_routing_id (zmq_msg_t *msg_)
 {
-    return ((zmq::msg_t*) msg_)->get_routing_id();
+    return ((zmq::msg_t *) msg_)->get_routing_id ();
 }
 
 //  Get message metadata string
 
 const char *zmq_msg_gets (zmq_msg_t *msg_, const char *property_)
 {
-    zmq::metadata_t *metadata = ((zmq::msg_t*) msg_)->metadata ();
+    zmq::metadata_t *metadata = ((zmq::msg_t *) msg_)->metadata ();
     const char *value = NULL;
     if (metadata)
         value = metadata->get (std::string (property_));
