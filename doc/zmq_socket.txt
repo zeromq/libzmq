@@ -48,12 +48,84 @@ _zmq_bind()_, thus allowing many-to-many relationships.
 
 .Thread safety
 0MQ 'sockets' are _not_ thread safe. Applications MUST NOT use a socket
-from multiple threads except after migrating a socket from one thread to 
+from multiple threads except after migrating a socket from one thread to
 another with a "full fence" memory barrier.
 
 .Socket types
 The following sections present the socket types defined by 0MQ, grouped by the
 general _messaging pattern_ which is built from related socket types.
+
+
+Client-server pattern
+~~~~~~~~~~~~~~~~~~~~~
+
+The client-server pattern is used to allow a single 'ZMQ_SERVER' _server_ talk
+to one or more 'ZMQ_CLIENT' _clients_. The client always starts the conversation,
+after which either peer can send messages asynchronously, to the other.
+
+The client-server pattern is formally defined by http://rfc.zeromq.org/spec:41.
+
+Note: this pattern deprecates the use of 'ZMQ_DEALER' and 'ZMQ_ROUTER' to build
+client-server architectures.
+
+ZMQ_CLIENT
+^^^^^^^^^^
+A 'ZMQ_CLIENT' socket talks to a 'ZMQ_SERVER' socket. Either peer can connect,
+though the usual and recommended model is to bind the 'ZMQ_SERVER' and connect
+the 'ZMQ_CLIENT'.
+
+If the 'ZMQ_CLIENT' socket has established a connection, linkzmq:zmq_send[3]
+will accept messages, queue them, and send them as rapidly as the network
+allows. The outgoing buffer limit is defined by the high water mark for the
+socket. If the outgoing buffer is full, or if there is no connected peer,
+linkzmq:zmq_send[3] will block, by default. The 'ZMQ_CLIENT' socket will not
+drop messages.
+
+When a 'ZMQ_CLIENT' socket is connected to multiple 'ZMQ_SERVER' sockets,
+outgoing messages are distributed between connected peers on a round-robin
+basis. Likewise, the 'ZMQ_CLIENT' socket receives messages fairly from each
+connected  peer. This usage is sensible only for stateless protocols.
+
+'ZMQ_CLIENT' sockets are threadsafe and can be used from multiple threads
+at the same time. Note that replies from a 'ZMQ_SERVER' socket will go to
+the first client thread that calls libzmq:zmq_msg_recv. If you need to get
+replies back to the originating thread, use one 'ZMQ_CLIENT' socket per
+thread.
+
+[horizontal]
+.Summary of ZMQ_CLIENT characteristics
+Compatible peer sockets:: 'ZMQ_SERVER'
+Direction:: Bidirectional
+Send/receive pattern:: Unrestricted
+Outgoing routing strategy:: Round-robin
+Incoming routing strategy:: Fair-queued
+Action in mute state:: Block
+
+
+ZMQ_SERVER
+^^^^^^^^^^
+A 'ZMQ_SERVER' socket talks to a set of 'ZMQ_CLIENT' sockets. A 'ZMQ_SERVER'
+socket can only reply to an incoming message: the 'ZMQ_CLIENT' peer must
+always initiate a conversation.
+
+Each received message has a 'routing_id' that is a 32-bit unsigned integer.
+The application can fetch this with linkzmq:zmq_msg_routing_id[3]. To send
+a message to a given 'ZMQ_CLIENT' peer the application must set the peer's
+'routing_id' on the message, using linkzmq:zmq_msg_set_routing_id[3].
+
+If the 'routing_id' is not specified, or does not refer to a connected client
+peer, the send call will fail with EHOSTUNREACH. If the outgoing buffer for
+the client peer is full, the send call will fail with EAGAIN. The 'ZMQ_SERVER'
+socket shall not drop messages, nor shall it block.
+
+[horizontal]
+.Summary of ZMQ_SERVER characteristics
+Compatible peer sockets:: 'ZMQ_CLIENT'
+Direction:: Bidirectional
+Send/receive pattern:: Unrestricted
+Outgoing routing strategy:: See text
+Incoming routing strategy:: Fair-queued
+Action in mute state:: Return EAGAIN
 
 
 Request-reply pattern
@@ -72,7 +144,7 @@ sequence of _zmq_send(request)_ and subsequent _zmq_recv(reply)_ calls. Each
 request sent is round-robined among all _services_, and each reply received is
 matched with the last issued request.
 
-If no services are available, then any send operation on the socket shall 
+If no services are available, then any send operation on the socket shall
 block until at least one _service_ becomes available. The REQ socket shall
 not discard messages.
 
@@ -328,26 +400,26 @@ Action in mute state:: Block
 
 Native Pattern
 ~~~~~~~~~~~~~~
-The native pattern is used for communicating with TCP peers and allows 
+The native pattern is used for communicating with TCP peers and allows
 asynchronous requests and replies in either direction.
 
 
 ZMQ_STREAM
 ^^^^^^^^^^
-A socket of type 'ZMQ_STREAM' is used to send and receive TCP data from a 
-non-0MQ peer, when using the tcp:// transport. A 'ZMQ_STREAM' socket can 
+A socket of type 'ZMQ_STREAM' is used to send and receive TCP data from a
+non-0MQ peer, when using the tcp:// transport. A 'ZMQ_STREAM' socket can
 act as client and/or server, sending and/or receiving TCP data asynchronously.
 
 When receiving TCP data, a 'ZMQ_STREAM' socket shall prepend a message part
-containing the _identity_ of the originating peer to the message before passing 
-it to the application. Messages received are fair-queued from among all 
-connected peers. 
+containing the _identity_ of the originating peer to the message before passing
+it to the application. Messages received are fair-queued from among all
+connected peers.
 
-When sending TCP data, a 'ZMQ_STREAM' socket shall remove the first part of the 
-message and use it to determine the _identity_ of the peer the message shall be 
+When sending TCP data, a 'ZMQ_STREAM' socket shall remove the first part of the
+message and use it to determine the _identity_ of the peer the message shall be
 routed to, and unroutable messages shall cause an EHOSTUNREACH or EAGAIN error.
 
-To open a connection to a server, use the zmq_connect call, and then fetch the 
+To open a connection to a server, use the zmq_connect call, and then fetch the
 socket identity using the ZMQ_IDENTITY zmq_getsockopt call.
 
 To close a specific connection, send the identity frame followed by a
