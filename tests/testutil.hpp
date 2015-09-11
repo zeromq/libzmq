@@ -32,7 +32,11 @@
 
 #include "../include/zmq.h"
 #include "../src/stdint.hpp"
-#include "platform.hpp"
+#ifdef USING_CMAKE
+#   include "platform.hpp"
+#else
+#   include "../src/platform.hpp"
+#endif
 
 //  This defines the settle time used in tests; raise this if we
 //  get test failures on slower systems due to binds/connects not
@@ -60,7 +64,6 @@
 
 //  Bounce a message from client to server and back
 //  For REQ/REP or DEALER/DEALER pairs only
-
 void
 bounce (void *server, void *client)
 {
@@ -116,7 +119,6 @@ bounce (void *server, void *client)
 
 //  Same as bounce, but expect messages to never arrive
 //  for security or subscriber reasons.
-
 void
 expect_bounce_fail (void *server, void *client)
 {
@@ -193,7 +195,9 @@ const char *SEQ_END = (const char *) 1;
 //  Sends a message composed of frames that are C strings or null frames.
 //  The list must be terminated by SEQ_END.
 //  Example: s_send_seq (req, "ABC", 0, "DEF", SEQ_END);
-void s_send_seq (void *socket, ...)
+
+void
+s_send_seq (void *socket, ...)
 {
     va_list ap;
     va_start (ap, socket);
@@ -222,7 +226,9 @@ void s_send_seq (void *socket, ...)
 //  the given data which can be either C strings or 0 for a null frame.
 //  The list must be terminated by SEQ_END.
 //  Example: s_recv_seq (rep, "ABC", 0, "DEF", SEQ_END);
-void s_recv_seq (void *socket, ...)
+
+void
+s_recv_seq (void *socket, ...)
 {
     zmq_msg_t msg;
     zmq_msg_init (&msg);
@@ -260,7 +266,8 @@ void s_recv_seq (void *socket, ...)
 
 
 //  Sets a zero linger period on a socket and closes it.
-void close_zero_linger (void *socket)
+void
+close_zero_linger (void *socket)
 {
     int linger = 0;
     int rc = zmq_setsockopt (socket, ZMQ_LINGER, &linger, sizeof(linger));
@@ -269,7 +276,8 @@ void close_zero_linger (void *socket)
     assert (rc == 0);
 }
 
-void setup_test_environment()
+void
+setup_test_environment (void)
 {
 #if defined _WIN32
 #   if defined _MSC_VER
@@ -296,8 +304,11 @@ void setup_test_environment()
 }
 
 //  Provide portable millisecond sleep
-// http://www.cplusplus.com/forum/unices/60161/    http://en.cppreference.com/w/cpp/thread/sleep_for
-void msleep (int milliseconds)
+//  http://www.cplusplus.com/forum/unices/60161/
+//  http://en.cppreference.com/w/cpp/thread/sleep_for
+
+void
+msleep (int milliseconds)
 {
 #ifdef ZMQ_HAVE_WINDOWS
     Sleep (milliseconds);
