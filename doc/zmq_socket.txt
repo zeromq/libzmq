@@ -65,8 +65,9 @@ after which either peer can send messages asynchronously, to the other.
 
 The client-server pattern is formally defined by http://rfc.zeromq.org/spec:41.
 
-Note: this pattern deprecates the use of 'ZMQ_DEALER' and 'ZMQ_ROUTER' to build
-client-server architectures.
+Note: this pattern is meant to eventually deprecate the use of 'ZMQ_DEALER' and
+'ZMQ_ROUTER' to build client-server architectures, as well as 'ZMQ_REP' and
+'ZMQ_REQ' for request-reply.
 
 ZMQ_CLIENT
 ^^^^^^^^^^
@@ -91,6 +92,11 @@ at the same time. Note that replies from a 'ZMQ_SERVER' socket will go to
 the first client thread that calls libzmq:zmq_msg_recv. If you need to get
 replies back to the originating thread, use one 'ZMQ_CLIENT' socket per
 thread.
+
+NOTE: 'ZMQ_CLIENT' sockets are threadsafe. They do not accept the ZMQ_SNDMORE
+option on sends not ZMQ_RCVMORE on receives. This limits them to single part
+data. The intention is to extend the API to allow scatter/gather of multi-part
+data.
 
 [horizontal]
 .Summary of ZMQ_CLIENT characteristics
@@ -117,6 +123,11 @@ If the 'routing_id' is not specified, or does not refer to a connected client
 peer, the send call will fail with EHOSTUNREACH. If the outgoing buffer for
 the client peer is full, the send call will fail with EAGAIN. The 'ZMQ_SERVER'
 socket shall not drop messages, nor shall it block.
+
+NOTE: 'ZMQ_SERVER' sockets are threadsafe. They do not accept the ZMQ_SNDMORE
+option on sends not ZMQ_RCVMORE on receives. This limits them to single part
+data. The intention is to extend the API to allow scatter/gather of multi-part
+data.
 
 [horizontal]
 .Summary of ZMQ_SERVER characteristics
