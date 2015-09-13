@@ -361,8 +361,6 @@ test_apps = \
 	tests/test_xpub_welcome_msg \
 	tests/test_atomics \
 	tests/test_client_server \
-	tests/test_server_drop_more \
-	tests/test_client_drop_more \
 	tests/test_thread_safe \
 	tests/test_socketopt_hwm \
 	tests/test_heartbeats \
@@ -559,12 +557,6 @@ tests_test_atomics_LDADD = src/libzmq.la
 
 tests_test_client_server_SOURCES = tests/test_client_server.cpp
 tests_test_client_server_LDADD = src/libzmq.la
-
-tests_test_server_drop_more_SOURCES = tests/test_server_drop_more.cpp
-tests_test_server_drop_more_LDADD = src/libzmq.la
-
-tests_test_client_drop_more_SOURCES = tests/test_client_drop_more.cpp
-tests_test_client_drop_more_LDADD = src/libzmq.la
 
 tests_test_thread_safe_SOURCES = tests/test_thread_safe.cpp
 tests_test_thread_safe_LDADD = src/libzmq.la
