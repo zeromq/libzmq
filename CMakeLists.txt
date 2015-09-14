@@ -157,7 +157,7 @@ check_function_exists(gethrtime HAVE_GETHRTIME)
 set(CMAKE_REQUIRED_INCLUDES )
 
 add_definitions(-D_REENTRANT -D_THREAD_SAFE)
-add_definitions(-D_USING_CMAKE)
+add_definitions(-DZMQ_USING_CMAKE)
 
 option(ENABLE_EVENTFD "Enable/disable eventfd" ZMQ_HAVE_EVENTFD)
 
