@@ -355,7 +355,8 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
             && err != WSAENETDOWN
             && err != WSAEACCES
             && err != WSAEINVAL
-            && err != WSAEADDRINUSE)
+            && err != WSAEADDRINUSE
+			&& err != WSAEADDRNOTAVAIL)
         {
             wsa_assert_no (err);
         }
@@ -375,7 +376,8 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
             errno == EHOSTUNREACH ||
             errno == ENETUNREACH ||
             errno == ENETDOWN ||
-            errno == EINVAL);
+            errno == EINVAL ||
+			errno == EADDRNOTAVAIL);
         return retired_fd;
     }
 #endif
