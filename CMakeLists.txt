@@ -46,10 +46,10 @@ check_include_files(windows.h ZMQ_HAVE_WINDOWS)
 check_include_files(sys/uio.h ZMQ_HAVE_UIO)
 check_include_files(sys/eventfd.h ZMQ_HAVE_EVENTFD)
 
-check_library_exists(ws2_32 printf "" HAVE_WS2_32) # TODO: Why doesn't something logical like WSAStartup work?
-check_library_exists(ws2 printf "" HAVE_WS2)
-check_library_exists(rpcrt4 printf "" HAVE_RPCRT4) # UuidCreateSequential
-check_library_exists(iphlpapi printf "" HAVE_IPHLAPI) # GetAdaptersAddresses
+check_library_exists(ws2_32 fopen "" HAVE_WS2_32) # TODO: Why doesn't something logical like WSAStartup work?
+check_library_exists(ws2 fopen "" HAVE_WS2)
+check_library_exists(rpcrt4 fopen "" HAVE_RPCRT4) # UuidCreateSequential
+check_library_exists(iphlpapi fopen "" HAVE_IPHLAPI) # GetAdaptersAddresses
 
 find_library(RT_LIBRARY rt)
 
