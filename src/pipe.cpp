@@ -206,7 +206,7 @@ bool zmq::pipe_t::check_write ()
     if (unlikely (!out_active || state != active))
         return false;
 
-    bool full = hwm > 0 && msgs_written - peers_msgs_read == uint64_t (hwm);
+    bool full = !check_hwm();
 
     if (unlikely (full)) {
         out_active = false;
