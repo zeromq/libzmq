@@ -121,7 +121,7 @@ namespace zmq
         //  in the peer.
         void hiccup ();
 
-        // Ensure the pipe wont block on receiving pipe_term.
+        //  Ensure the pipe won't block on receiving pipe_term.
         void set_nodelay ();
 
         //  Ask pipe to terminate. The termination will happen asynchronously
@@ -130,13 +130,13 @@ namespace zmq
         //  before actual shutdown.
         void terminate (bool delay_);
 
-        // set the high water marks.
+        //  Set the high water marks.
         void set_hwms (int inhwm_, int outhwm_);
 
-        // set the boost to high water marks, used by inproc sockets so total hwm are sum of connect and bind sockets watermarks
+        //  Set the boost to high water marks, used by inproc sockets so total hwm are sum of connect and bind sockets watermarks
         void set_hwms_boost(int inhwmboost_, int outhwmboost_);
 
-        // check HWM
+        //  Returns true if HWM is not reached
         bool check_hwm () const;
     private:
 
