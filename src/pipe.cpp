@@ -533,6 +533,6 @@ void zmq::pipe_t::set_hwms_boost(int inhwmboost_, int outhwmboost_)
 
 bool zmq::pipe_t::check_hwm () const
 {
-    bool full = hwm > 0 && msgs_written - peers_msgs_read >= uint64_t (hwm - 1);
+    bool full = hwm > 0 && msgs_written - peers_msgs_read >= uint64_t (hwm);
     return( !full );
 }
