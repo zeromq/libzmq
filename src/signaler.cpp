@@ -289,23 +289,18 @@ void zmq::signaler_t::recv ()
 #if defined ZMQ_HAVE_EVENTFD
     uint64_t dummy;
     ssize_t sz = read (r, &dummy, sizeof (dummy));
-    if (sz == -1) {
-        errno_assert (errno == EAGAIN);
-    }
-    else {
-        errno_assert (sz == sizeof (dummy));
+    errno_assert (sz == sizeof (dummy));
 
-        //  If we accidentally grabbed the next signal(s) along with the current
-        //  one, return it back to the eventfd object.
-        if (unlikely (dummy > 1)) {
-            const uint64_t inc = dummy - 1;
-            ssize_t sz2 = write (w, &inc, sizeof (inc));
-            errno_assert (sz2 == sizeof (inc));
-            return;
-        }
-
-        zmq_assert (dummy == 1);
+    //  If we accidentally grabbed the next signal(s) along with the current
+    //  one, return it back to the eventfd object.
+    if (unlikely (dummy > 1)) {
+        const uint64_t inc = dummy - 1;
+        ssize_t sz2 = write (w, &inc, sizeof (inc));
+        errno_assert (sz2 == sizeof (inc));
+        return;
     }
+
+    zmq_assert (dummy == 1);
 #else
     unsigned char dummy;
 #if defined ZMQ_HAVE_WINDOWS
@@ -318,6 +313,58 @@ void zmq::signaler_t::recv ()
     zmq_assert (nbytes == sizeof (dummy));
     zmq_assert (dummy == 0);
 #endif
+}
+
+int zmq::signaler_t::recv_failable ()
+{
+    //  Attempt to read a signal.
+#if defined ZMQ_HAVE_EVENTFD
+    uint64_t dummy;
+    ssize_t sz = read (r, &dummy, sizeof (dummy));
+    if (sz == -1) {
+        errno_assert (errno == EAGAIN);
+        return -1;
+    }
+    else {
+        errno_assert (sz == sizeof (dummy));
+
+        //  If we accidentally grabbed the next signal(s) along with the current
+        //  one, return it back to the eventfd object.
+        if (unlikely (dummy > 1)) {
+            const uint64_t inc = dummy - 1;
+            ssize_t sz2 = write (w, &inc, sizeof (inc));
+            errno_assert (sz2 == sizeof (inc));
+            return 0;
+        }
+
+        zmq_assert (dummy == 1);
+    }
+#else
+    unsigned char dummy;
+#if defined ZMQ_HAVE_WINDOWS
+    int nbytes = ::recv (r, (char*) &dummy, sizeof (dummy), 0);
+    if (nbytes == SOCKET_ERROR) {
+		const int last_error = WSAGetLastError();
+		if (last_error == WSAEWOULDBLOCK) {
+			errno = EAGAIN;
+            return -1;
+		}
+        wsa_assert (last_error == WSAEWOULDBLOCK);
+    }
+#else
+    ssize_t nbytes = ::recv (r, &dummy, sizeof (dummy), 0);
+    if (nbytes == -1) {
+        if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) {
+            errno = EAGAIN;
+            return -1;
+        }
+        errno_assert (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR);
+    }
+#endif
+    zmq_assert (nbytes == sizeof (dummy));
+    zmq_assert (dummy == 0);
+#endif
+    return 0;
 }
 
 #ifdef HAVE_FORK

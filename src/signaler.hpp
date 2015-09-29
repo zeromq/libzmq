@@ -55,6 +55,7 @@ namespace zmq
         void send ();
         int wait (int timeout_);
         void recv ();
+        int recv_failable ();
 
 #ifdef HAVE_FORK
         // close the file descriptors in a forked child process so that they
