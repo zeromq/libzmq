@@ -107,7 +107,17 @@ int zmq::lb_t::sendpipe (msg_t *msg_, pipe_t **pipe_)
             break;
         }
 
-        zmq_assert (!more);
+        // If send fails for multi-part msg rollback other
+        // parts sent earlier and return EAGAIN.
+        // Application should handle this as suitable 
+        if (more)
+        {
+            pipes [current]->rollback ();
+            more = 0;
+            errno = EAGAIN;
+            return -1;
+        }
+
         active--;
         if (current < active)
             pipes.swap (current, active);
