@@ -417,9 +417,9 @@ fi
 have_sodium_library="no"
 
 AC_ARG_WITH([libsodium], [AS_HELP_STRING([--with-libsodium],
-    [require libzmq build with libsodium. Requires pkg-config [default=no]])],
+    [require libzmq build with libsodium crypto library. Requires pkg-config [default=yes]])],
     [require_libsodium_ext=$withval],
-    [require_libsodium_ext=no])
+    [require_libsodium_ext=yes])
 
 # conditionally require libsodium package
 if test "x$require_libsodium_ext" != "xno"; then
