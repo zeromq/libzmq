@@ -184,9 +184,6 @@ case "${host_os}" in
         if test "x$solaris_has_atomic" = "xno"; then
             AC_DEFINE(ZMQ_FORCE_MUTEXES, 1, [Force to use mutexes])
         fi
-        # ssp library is required for libsodium on Solaris-like systems
-        LDFLAGS="-lssp $LDFLAGS"
-        CPPFLAGS="$CPPFLAGS -Wno-long-long"
         ;;
     *freebsd*)
         # Define on FreeBSD to enable all library features
@@ -420,7 +417,7 @@ fi
 have_sodium_library="no"
 
 AC_ARG_WITH([libsodium], [AS_HELP_STRING([--with-libsodium],
-    [require libzmq build with libsodium. Requires pkg-config [default=no]])],
+    [require libzmq build with libsodium crypto library. Requires pkg-config [default=yes]])],
     [require_libsodium_ext=$withval],
     [require_libsodium_ext=yes])
 
@@ -431,7 +428,16 @@ fi
 
 if test "x$have_sodium_library" != "xno"; then
     AC_DEFINE(HAVE_LIBSODIUM, 1, [The libsodium library is to be used.])
+
+    # ssp library is required for libsodium on Solaris-like systems
+    case "${host_os}" in
+        *solaris*)
+            LDFLAGS="-lssp $LDFLAGS"
+            CPPFLAGS="$CPPFLAGS -Wno-long-long"
+        ;;
+    esac
 fi
+
 
 AM_CONDITIONAL(HAVE_SODIUM, test "x$have_sodium_library" != "xno")
 
