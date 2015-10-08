@@ -28,6 +28,7 @@
 */
 
 #include <string.h>
+#include <cmath>
 
 #include "options.hpp"
 #include "err.hpp"
@@ -65,6 +66,8 @@ zmq::options_t::options_t () :
     tcp_keepalive_cnt (-1),
     tcp_keepalive_idle (-1),
     tcp_keepalive_intvl (-1),
+    tcp_recv_buffer_size (3),
+    tcp_send_buffer_size (3),
     mechanism (ZMQ_NULL),
     as_server (0),
     gss_plaintext (false),
@@ -277,6 +280,18 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             if (is_int && (value == -1 || value >= 0)) {
                 tcp_keepalive_intvl = value;
                 return 0;
+            }
+            break;
+
+        case ZMQ_TCP_RECV_BUFFER:
+            if (is_int && (value >= 0 && value <= 10) ) {
+                tcp_send_buffer_size = static_cast<int>(std::pow(2, value)) * 1024;
+            }
+            break;
+
+        case ZMQ_TCP_SEND_BUFFER:
+            if (is_int && (value >= 0 && value <= 10) ) {
+                tcp_send_buffer_size = static_cast<int>(std::pow(2, value)) * 1024;
             }
             break;
 
@@ -786,6 +801,20 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
         case ZMQ_TCP_KEEPALIVE_INTVL:
             if (is_int) {
                 *value = tcp_keepalive_intvl;
+                return 0;
+            }
+            break;
+
+        case ZMQ_TCP_SEND_BUFFER:
+            if (is_int) {
+                *value = tcp_send_buffer_size;
+                return 0;
+            }
+            break;
+
+        case ZMQ_TCP_RECV_BUFFER:
+            if (is_int) {
+                *value = tcp_recv_buffer_size;
                 return 0;
             }
             break;
