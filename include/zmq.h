@@ -428,6 +428,35 @@ ZMQ_EXPORT int    zmq_pollfd_fd (void *p);
 #endif
 
 /******************************************************************************/
+/*  Poller polling on sockets,fd and threaf safe sockets                      */
+/******************************************************************************/
+
+typedef struct zmq_poller_event_t
+{
+    void *socket;
+#if defined _WIN32
+    SOCKET fd;
+#else
+    int fd;
+#endif
+    void *user_data;
+} zmq_poller_event_t;
+
+ZMQ_EXPORT void *zmq_poller_new ();
+ZMQ_EXPORT int  zmq_poller_close (void *poller);
+ZMQ_EXPORT int  zmq_poller_add_socket (void *poller, void *socket, void *user_data);
+ZMQ_EXPORT int  zmq_poller_remove_socket (void *poller, void *socket);
+ZMQ_EXPORT int  zmq_poller_wait (void *poller, zmq_poller_event_t *event, long timeout);
+
+#if defined _WIN32
+ZMQ_EXPORT int zmq_poller_add_fd (void *poller, SOCKET fd, void *user_data);
+ZMQ_EXPORT int zmq_poller_remove_fd (void *poller, SOCKET fd);
+#else
+ZMQ_EXPORT int zmq_poller_add_fd (void *poller, int fd, void *user_data);
+ZMQ_EXPORT int zmq_poller_remove_fd (void *poller, int fd);
+#endif
+
+/******************************************************************************/
 /*  Message proxying                                                          */
 /******************************************************************************/
 

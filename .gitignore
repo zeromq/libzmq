@@ -115,6 +115,7 @@ test_thread_safe
 test_thread_safe_polling
 test_getsockopt_memset
 test_stream_exceeds_buffer
+test_poller
 tests/test*.log
 tests/test*.trs
 src/platform.hpp*

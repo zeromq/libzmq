@@ -76,6 +76,7 @@ struct iovec {
 #include "fd.hpp"
 #include "metadata.hpp"
 #include "signaler.hpp"
+#include "socket_poller.hpp"
 
 #if !defined ZMQ_HAVE_WINDOWS
 #include <unistd.h>
@@ -1556,6 +1557,93 @@ int zmq_pollfd_poll (void* p_, zmq_pollitem_t *items_, int nitems_, long timeout
     errno = ENOTSUP;
     return -1;
 #endif
+}
+
+//  The poller functionality
+
+void* zmq_poller_new () 
+{
+    zmq::socket_poller_t *poller = new (std::nothrow) zmq::socket_poller_t;
+    alloc_assert (poller);
+    return poller;
+}
+
+int zmq_poller_close (void *poller_)
+{
+    if (!poller_ || !((zmq::socket_poller_t*)poller_)->check_tag ()) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    delete ((zmq::socket_poller_t*)poller_);
+    return 0;
+}
+
+int zmq_poller_add_socket (void *poller_, void *socket_, void *user_data_)
+{
+    if (!poller_ || !((zmq::socket_poller_t*)poller_)->check_tag ()) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    return ((zmq::socket_poller_t*)poller_)->add_socket (socket_, user_data_);
+}
+
+#if defined _WIN32
+int zmq_poller_add_fd (void *poller_, SOCKET fd_, void *user_data_)
+#else
+int zmq_poller_add_fd (void *poller_, int fd_, void *user_data_)
+#endif
+{
+    if (!poller_ || !((zmq::socket_poller_t*)poller_)->check_tag ()) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    return ((zmq::socket_poller_t*)poller_)->add_fd (fd_, user_data_);
+}
+
+int zmq_poller_remove_socket (void *poller_, void *socket)
+{
+    if (!poller_ || !((zmq::socket_poller_t*)poller_)->check_tag ()) {
+        errno = EFAULT;
+        return -1;
+    } 
+
+    return ((zmq::socket_poller_t*)poller_)->remove_socket (socket);
+}
+
+#if defined _WIN32
+int zmq_poller_remove_fd (void *poller_, SOCKET fd_)
+#else
+int zmq_poller_remove_fd (void *poller_, int fd_)
+#endif
+{
+    if (!poller_ || !((zmq::socket_poller_t*)poller_)->check_tag ()) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    return ((zmq::socket_poller_t*)poller_)->remove_fd (fd_);
+}
+ 
+
+int zmq_poller_wait (void *poller_, zmq_poller_event_t *event, long timeout_)
+{
+    if (!poller_ || !((zmq::socket_poller_t*)poller_)->check_tag ()) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    zmq::socket_poller_t::event_t e = {};
+
+    int rc = ((zmq::socket_poller_t*)poller_)->wait (&e, timeout_);
+
+    event->socket = e.socket;
+    event->fd = e.fd;
+    event->user_data = e.user_data; 
+
+    return rc;
 }
 
 //  The proxy functionality

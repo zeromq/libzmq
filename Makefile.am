@@ -209,7 +209,9 @@ src_libzmq_la_SOURCES = \
 	src/zmq.cpp \
 	src/zmq_utils.cpp \
         src/decoder_allocators.hpp \
-        src/decoder_allocators.cpp
+        src/decoder_allocators.cpp \
+        src/socket_poller.hpp \
+        src/socket_poller.cpp
 
 
 if ON_MINGW
@@ -365,7 +367,8 @@ test_apps = \
 	tests/test_socketopt_hwm \
 	tests/test_heartbeats \
 	tests/test_stream_exceeds_buffer \
-	tests/test_thread_safe_polling
+	tests/test_thread_safe_polling \
+	tests/test_poller
 
 tests_test_system_SOURCES = tests/test_system.cpp
 tests_test_system_LDADD = src/libzmq.la
@@ -572,6 +575,9 @@ tests_test_stream_exceeds_buffer_LDADD = src/libzmq.la
 
 tests_test_thread_safe_polling_SOURCES = tests/test_thread_safe_polling.cpp
 tests_test_thread_safe_polling_LDADD = src/libzmq.la
+
+tests_test_poller_SOURCES = tests/test_poller.cpp
+tests_test_poller_LDADD = src/libzmq.la
 
 
 if !ON_MINGW
