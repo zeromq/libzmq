@@ -43,6 +43,16 @@ zmq::socket_poller_t::~socket_poller_t ()
     //  Mark the socket_poller as dead
     tag = 0xdeadbeef;    
 
+    for (events_t::iterator it = events.begin(); it != events.end(); ++it) {
+        if (it->socket) {
+            int thread_safe;
+            size_t thread_safe_size = sizeof(int);
+
+            if (zmq_getsockopt(it->socket, ZMQ_THREAD_SAFE, &thread_safe, &thread_safe_size) == 0 && thread_safe)
+                zmq_remove_pollfd(it->socket, pollfd);                              			   		
+        }
+    }
+
     zmq_pollfd_close (pollfd);
 
     if (poll_set) {
