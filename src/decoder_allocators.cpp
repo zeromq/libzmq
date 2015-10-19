@@ -96,10 +96,11 @@ unsigned char* zmq::shared_message_memory_allocator::allocate ()
 
 void zmq::shared_message_memory_allocator::deallocate ()
 {
-    std::free (buf);
-    buf = NULL;
-    bufsize = 0;
-    msg_refcnt = NULL;
+    zmq::atomic_counter_t* c = reinterpret_cast<zmq::atomic_counter_t* >(buf);
+    if (buf && !c->sub(1)) {
+        std::free(buf);
+    }
+    release();
 }
 
 unsigned char* zmq::shared_message_memory_allocator::release ()
