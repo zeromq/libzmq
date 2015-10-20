@@ -265,7 +265,7 @@ case "${host_os}" in
         libzmq_dso_visibility="no"
 
         if test "x$enable_static" = "xyes"; then
-            AC_MSG_ERROR([Building static libraries is not supported under MinGW32])
+            CPPFLAGS="-DZMQ_STATIC"
         fi
         
 	# Set FD_SETSIZE to 1024
