@@ -32,6 +32,7 @@
 #include <new>
 #include <algorithm>
 
+#include "macros.hpp"
 #include "platform.hpp"
 #if defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
@@ -52,13 +53,12 @@ zmq::trie_t::~trie_t ()
 {
     if (count == 1) {
         zmq_assert (next.node);
-        delete next.node;
-        next.node = 0;
+        LIBZMQ_DELETE(next.node);
     }
-    else
-    if (count > 1) {
-        for (unsigned short i = 0; i != count; ++i)
-            delete next.table [i];
+    else if (count > 1) {
+        for (unsigned short i = 0; i != count; ++i) {
+            LIBZMQ_DELETE(next.table[i]);
+        }
         free (next.table);
     }
 }
@@ -75,7 +75,7 @@ bool zmq::trie_t::add (unsigned char *prefix_, size_t size_)
     if (c < min || c >= min + count) {
 
         //  The character is out of range of currently handled
-        //  charcters. We have to extend the table.
+        //  characters. We have to extend the table.
         if (!count) {
             min = c;
             count = 1;
@@ -165,7 +165,7 @@ bool zmq::trie_t::rm (unsigned char *prefix_, size_t size_)
 
     //  Prune redundant nodes
     if (next_node->is_redundant ()) {
-        delete next_node;
+        LIBZMQ_DELETE(next_node);
         zmq_assert (count > 0);
 
         if (count == 1) {

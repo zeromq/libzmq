@@ -37,6 +37,7 @@
 #include <algorithm>
 #include <new>
 
+#include "macros.hpp"
 #include "epoll.hpp"
 #include "err.hpp"
 #include "config.hpp"
@@ -56,8 +57,9 @@ zmq::epoll_t::~epoll_t ()
     worker.stop ();
 
     close (epoll_fd);
-    for (retired_t::iterator it = retired.begin (); it != retired.end (); ++it)
-        delete *it;
+    for (retired_t::iterator it = retired.begin (); it != retired.end (); ++it) {
+        LIBZMQ_DELETE(*it);
+    }
 }
 
 zmq::epoll_t::handle_t zmq::epoll_t::add_fd (fd_t fd_, i_poll_events *events_)
@@ -177,9 +179,9 @@ void zmq::epoll_t::loop ()
         }
 
         //  Destroy retired event sources.
-        for (retired_t::iterator it = retired.begin (); it != retired.end ();
-              ++it)
-            delete *it;
+        for (retired_t::iterator it = retired.begin (); it != retired.end (); ++it) {
+            LIBZMQ_DELETE(*it);
+        }
         retired.clear ();
     }
 }

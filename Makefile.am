@@ -2,7 +2,7 @@ ACLOCAL_AMFLAGS = -I config
 
 SUBDIRS = doc
 
-DIST_SUBDIRS = builds/msvc doc
+DIST_SUBDIRS = doc builds builds/msvc
 
 pkgconfig_DATA = src/libzmq.pc
 
@@ -209,7 +209,9 @@ src_libzmq_la_SOURCES = \
 	src/zmq.cpp \
 	src/zmq_utils.cpp \
         src/decoder_allocators.hpp \
-        src/decoder_allocators.cpp
+        src/decoder_allocators.cpp \
+        src/socket_poller.hpp \
+        src/socket_poller.cpp
 
 
 if ON_MINGW
@@ -348,6 +350,7 @@ test_apps = \
 	tests/test_proxy \
 	tests/test_proxy_single_socket \
 	tests/test_proxy_terminate \
+	tests/test_getsockopt_memset \
 	tests/test_many_sockets \
 	tests/test_ipc_wildcard \
 	tests/test_diffserv \
@@ -360,12 +363,12 @@ test_apps = \
 	tests/test_xpub_welcome_msg \
 	tests/test_atomics \
 	tests/test_client_server \
-	tests/test_server_drop_more \
-	tests/test_client_drop_more \
 	tests/test_thread_safe \
 	tests/test_socketopt_hwm \
 	tests/test_heartbeats \
-	tests/test_stream_exceeds_buffer
+	tests/test_stream_exceeds_buffer \
+	tests/test_thread_safe_polling \
+	tests/test_poller
 
 tests_test_system_SOURCES = tests/test_system.cpp
 tests_test_system_LDADD = src/libzmq.la
@@ -519,6 +522,9 @@ tests_test_proxy_single_socket_LDADD = src/libzmq.la
 tests_test_proxy_terminate_SOURCES = tests/test_proxy_terminate.cpp
 tests_test_proxy_terminate_LDADD = src/libzmq.la
 
+tests_test_getsockopt_memset_SOURCES = tests/test_getsockopt_memset.cpp
+tests_test_getsockopt_memset_LDADD = src/libzmq.la
+
 tests_test_many_sockets_SOURCES = tests/test_many_sockets.cpp
 tests_test_many_sockets_LDADD = src/libzmq.la
 
@@ -555,12 +561,6 @@ tests_test_atomics_LDADD = src/libzmq.la
 tests_test_client_server_SOURCES = tests/test_client_server.cpp
 tests_test_client_server_LDADD = src/libzmq.la
 
-tests_test_server_drop_more_SOURCES = tests/test_server_drop_more.cpp
-tests_test_server_drop_more_LDADD = src/libzmq.la
-
-tests_test_client_drop_more_SOURCES = tests/test_client_drop_more.cpp
-tests_test_client_drop_more_LDADD = src/libzmq.la
-
 tests_test_thread_safe_SOURCES = tests/test_thread_safe.cpp
 tests_test_thread_safe_LDADD = src/libzmq.la
 
@@ -572,6 +572,13 @@ tests_test_heartbeats_LDADD = src/libzmq.la
 
 tests_test_stream_exceeds_buffer_SOURCES = tests/test_stream_exceeds_buffer.cpp
 tests_test_stream_exceeds_buffer_LDADD = src/libzmq.la
+
+tests_test_thread_safe_polling_SOURCES = tests/test_thread_safe_polling.cpp
+tests_test_thread_safe_polling_LDADD = src/libzmq.la
+
+tests_test_poller_SOURCES = tests/test_poller.cpp
+tests_test_poller_LDADD = src/libzmq.la
+
 
 if !ON_MINGW
 if !ON_CYGWIN
@@ -660,7 +667,7 @@ check_PROGRAMS = ${test_apps}
 
 #  Run the test cases
 TESTS = $(test_apps)
-XFAIL_TESTS = 
+XFAIL_TESTS =
 
 if !ON_LINUX
 XFAIL_TESTS += tests/test_abstract_ipc

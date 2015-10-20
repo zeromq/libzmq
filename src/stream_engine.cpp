@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "macros.hpp"
 #include "platform.hpp"
 #if defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
@@ -172,13 +173,15 @@ zmq::stream_engine_t::~stream_engine_t ()
 
     //  Drop reference to metadata and destroy it if we are
     //  the only user.
-    if (metadata != NULL)
-        if (metadata->drop_ref ())
-            delete metadata;
+    if (metadata != NULL) {
+        if (metadata->drop_ref ()) {
+            LIBZMQ_DELETE(metadata);
+        }
+    }
 
-    delete encoder;
-    delete decoder;
-    delete mechanism;
+    LIBZMQ_DELETE(encoder);
+    LIBZMQ_DELETE(decoder);
+    LIBZMQ_DELETE(mechanism);
 }
 
 void zmq::stream_engine_t::plug (io_thread_t *io_thread_,

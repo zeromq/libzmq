@@ -30,6 +30,7 @@
 #include <new>
 #include <string>
 
+#include "macros.hpp"
 #include "socks_connecter.hpp"
 #include "stream_engine.hpp"
 #include "platform.hpp"
@@ -72,7 +73,7 @@ zmq::socks_connecter_t::socks_connecter_t (class io_thread_t *io_thread_,
 zmq::socks_connecter_t::~socks_connecter_t ()
 {
     zmq_assert (s == retired_fd);
-    delete proxy_addr;
+    LIBZMQ_DELETE(proxy_addr);
 }
 
 void zmq::socks_connecter_t::process_plug ()
@@ -303,15 +304,14 @@ int zmq::socks_connecter_t::connect_to_proxy ()
     zmq_assert (s == retired_fd);
 
     //  Resolve the address
-    delete proxy_addr->resolved.tcp_addr;
+    LIBZMQ_DELETE(proxy_addr->resolved.tcp_addr);
     proxy_addr->resolved.tcp_addr = new (std::nothrow) tcp_address_t ();
     alloc_assert (proxy_addr->resolved.tcp_addr);
 
     int rc = proxy_addr->resolved.tcp_addr->resolve (
         proxy_addr->address.c_str (), false, options.ipv6);
     if (rc != 0) {
-        delete proxy_addr->resolved.tcp_addr;
-        proxy_addr->resolved.tcp_addr = NULL;
+        LIBZMQ_DELETE(proxy_addr->resolved.tcp_addr);
         return -1;
     }
     zmq_assert (proxy_addr->resolved.tcp_addr != NULL);
@@ -361,18 +361,18 @@ int zmq::socks_connecter_t::connect_to_proxy ()
     //  Connect to the remote peer.
     rc = ::connect (s, tcp_addr->addr (), tcp_addr->addrlen ());
 
-    //  Connect was successfull immediately.
+    //  Connect was successful immediately.
     if (rc == 0)
         return 0;
 
     //  Translate error codes indicating asynchronous connect has been
     //  launched to a uniform EINPROGRESS.
 #ifdef ZMQ_HAVE_WINDOWS
-    const int error_code = WSAGetLastError ();
-    if (error_code == WSAEINPROGRESS || error_code == WSAEWOULDBLOCK)
+    const int last_error = WSAGetLastError();
+    if (last_error == WSAEINPROGRESS || last_error == WSAEWOULDBLOCK)
         errno = EINPROGRESS;
     else {
-        errno = wsa_error_to_errno (error_code);
+        errno = wsa_error_to_errno (last_error);
         close ();
     }
 #else

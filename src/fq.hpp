@@ -80,7 +80,7 @@ namespace zmq
         //  there are following parts still waiting in the current pipe.
         bool more;
 
-        //  Holds credential after the last_acive_pipe has terminated.
+        //  Holds credential after the last_active_pipe has terminated.
         blob_t saved_credential;
 
         fq_t (const fq_t&);

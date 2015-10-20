@@ -102,7 +102,7 @@ namespace zmq
         //  Checks if an fd_entry_t is retired.
         static bool is_retired_fd (const fd_entry_t &entry);
 
-        //  Set of file descriptors that are used to retreive
+        //  Set of file descriptors that are used to retrieve
         //  information for fd_set.
         typedef std::vector <fd_entry_t> fd_set_t;
         fd_set_t fds;

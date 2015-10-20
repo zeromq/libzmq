@@ -52,6 +52,8 @@ set(tests
         test_client_server
 	test_sockopt_hwm
         test_heartbeats
+        test_thread_safe_polling
+        test_poller
 )
 if(NOT WIN32)
   list(APPEND tests
@@ -62,6 +64,7 @@ if(NOT WIN32)
           test_proxy
           test_proxy_single_socket
           test_proxy_terminate
+          test_getsockopt_memset
           test_filter_ipc
   )
   if(HAVE_FORK)

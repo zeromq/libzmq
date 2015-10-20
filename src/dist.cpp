@@ -148,7 +148,7 @@ int zmq::dist_t::send_to_matching (msg_t *msg_)
     //  Push the message to matching pipes.
     distribute (msg_);
 
-    //  If mutlipart message is fully sent, activate all the eligible pipes.
+    //  If multipart message is fully sent, activate all the eligible pipes.
     if (!msg_more)
         active = eligible;
 

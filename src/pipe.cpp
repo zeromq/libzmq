@@ -30,6 +30,7 @@
 #include <new>
 #include <stddef.h>
 
+#include "macros.hpp"
 #include "pipe.hpp"
 #include "err.hpp"
 
@@ -205,7 +206,7 @@ bool zmq::pipe_t::check_write ()
     if (unlikely (!out_active || state != active))
         return false;
 
-    bool full = hwm > 0 && msgs_written - peers_msgs_read == uint64_t (hwm);
+    bool full = !check_hwm();
 
     if (unlikely (full)) {
         out_active = false;
@@ -262,7 +263,7 @@ void zmq::pipe_t::process_activate_read ()
 
 void zmq::pipe_t::process_activate_write (uint64_t msgs_read_)
 {
-    //  Remember the peers's message sequence number.
+    //  Remember the peer's message sequence number.
     peers_msgs_read = msgs_read_;
 
     if (!out_active && state == active) {
@@ -284,7 +285,7 @@ void zmq::pipe_t::process_hiccup (void *pipe_)
        int rc = msg.close ();
        errno_assert (rc == 0);
     }
-    delete outpipe;
+    LIBZMQ_DELETE(outpipe);
 
     //  Plug in the new outpipe.
     zmq_assert (pipe_);
@@ -368,7 +369,7 @@ void zmq::pipe_t::process_pipe_term_ack ()
         }
     }
 
-    delete inpipe;
+    LIBZMQ_DELETE(inpipe);
 
     //  Deallocate the pipe object
     delete this;
@@ -384,50 +385,42 @@ void zmq::pipe_t::terminate (bool delay_)
     //  Overload the value specified at pipe creation.
     delay = delay_;
 
-    //  If terminate was already called, we can ignore the duplicit invocation.
-    if (state == term_req_sent1 || state == term_req_sent2)
+    //  If terminate was already called, we can ignore the duplicate invocation.
+    if (state == term_req_sent1 || state == term_req_sent2) {
         return;
-
+	}
     //  If the pipe is in the final phase of async termination, it's going to
     //  closed anyway. No need to do anything special here.
-    else
-    if (state == term_ack_sent)
+    else if (state == term_ack_sent) {
         return;
-
+	}
     //  The simple sync termination case. Ask the peer to terminate and wait
     //  for the ack.
-    else
-    if (state == active) {
+    else if (state == active) {
         send_pipe_term (peer);
         state = term_req_sent1;
     }
-
     //  There are still pending messages available, but the user calls
     //  'terminate'. We can act as if all the pending messages were read.
-    else
-    if (state == waiting_for_delimiter && !delay) {
+    else if (state == waiting_for_delimiter && !delay) {
         outpipe = NULL;
         send_pipe_term_ack (peer);
         state = term_ack_sent;
     }
-
     //  If there are pending messages still available, do nothing.
-    else
-    if (state == waiting_for_delimiter) {
+    else if (state == waiting_for_delimiter) {
     }
-
     //  We've already got delimiter, but not term command yet. We can ignore
     //  the delimiter and ack synchronously terminate as if we were in
     //  active state.
-    else
-    if (state == delimiter_received) {
+    else if (state == delimiter_received) {
         send_pipe_term (peer);
         state = term_req_sent1;
     }
-
     //  There are no other states.
-    else
+    else {
         zmq_assert (false);
+	}
 
     //  Stop outbound flow of messages.
     out_active = false;
@@ -505,11 +498,9 @@ void zmq::pipe_t::hiccup ()
 
     //  Create new inpipe.
     if (conflate)
-        inpipe = new (std::nothrow)
-            ypipe_conflate_t <msg_t> ();
+        inpipe = new (std::nothrow)ypipe_conflate_t <msg_t>();
     else
-        inpipe = new (std::nothrow)
-            ypipe_t <msg_t, message_pipe_granularity> ();
+        inpipe = new (std::nothrow)ypipe_t <msg_t, message_pipe_granularity>();
 
     alloc_assert (inpipe);
     in_active = true;
@@ -525,13 +516,13 @@ void zmq::pipe_t::set_hwms (int inhwm_, int outhwm_)
 
     // if either send or recv side has hwm <= 0 it means infinite so we should set hwms infinite
     if (inhwm_ <= 0 || inhwmboost <= 0)
-		in = 0;
-        
-    if (outhwm_ <= 0 || outhwmboost <= 0)
-		out = 0;
+        in = 0;
 
-	lwm = compute_lwm(in);
-	hwm = out;
+    if (outhwm_ <= 0 || outhwmboost <= 0)
+        out = 0;
+
+    lwm = compute_lwm(in);
+    hwm = out;
 }
 
 void zmq::pipe_t::set_hwms_boost(int inhwmboost_, int outhwmboost_)
@@ -542,6 +533,6 @@ void zmq::pipe_t::set_hwms_boost(int inhwmboost_, int outhwmboost_)
 
 bool zmq::pipe_t::check_hwm () const
 {
-    bool full = hwm > 0 && msgs_written - peers_msgs_read >= uint64_t (hwm - 1);
+    bool full = hwm > 0 && msgs_written - peers_msgs_read >= uint64_t (hwm);
     return( !full );
 }

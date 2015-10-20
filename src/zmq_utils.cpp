@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "macros.hpp"
 #include "platform.hpp"
 
 #include "clock.hpp"
@@ -88,7 +89,7 @@ void zmq_threadclose(void* thread)
 {
     zmq::thread_t* pThread = static_cast<zmq::thread_t*>(thread);
     pThread->stop();
-    delete pThread;
+    LIBZMQ_DELETE(pThread);
 }
 
 //  Z85 codec, taken from 0MQ RFC project, implements RFC32 Z85 encoding

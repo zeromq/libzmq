@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "macros.hpp"
 #include "platform.hpp"
 #ifdef ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
@@ -97,15 +98,17 @@ zmq::ctx_t::~ctx_t ()
 
     //  Ask I/O threads to terminate. If stop signal wasn't sent to I/O
     //  thread subsequent invocation of destructor would hang-up.
-    for (io_threads_t::size_type i = 0; i != io_threads.size (); i++)
+    for (io_threads_t::size_type i = 0; i != io_threads.size (); i++) {
         io_threads [i]->stop ();
+    }
 
     //  Wait till I/O threads actually terminate.
-    for (io_threads_t::size_type i = 0; i != io_threads.size (); i++)
-        delete io_threads [i];
+    for (io_threads_t::size_type i = 0; i != io_threads.size (); i++) {
+        LIBZMQ_DELETE(io_threads [i]);
+    }
 
     //  Deallocate the reaper thread object.
-    delete reaper;
+    LIBZMQ_DELETE(reaper);
 
     //  Deallocate the array of mailboxes. No special work is
     //  needed as mailboxes themselves were deallocated with their
@@ -124,15 +127,20 @@ zmq::ctx_t::~ctx_t ()
 
 int zmq::ctx_t::terminate ()
 {
-    // Connect up any pending inproc connections, otherwise we will hang
+	slot_sync.lock();
+
+	bool saveTerminating = terminating;
+	terminating = false;
+
+	// Connect up any pending inproc connections, otherwise we will hang
     pending_connections_t copy = pending_connections;
     for (pending_connections_t::iterator p = copy.begin (); p != copy.end (); ++p) {
         zmq::socket_base_t *s = create_socket (ZMQ_PAIR);
         s->bind (p->first.c_str ());
         s->close ();
     }
+	terminating = saveTerminating;
 
-    slot_sync.lock ();
     if (!starting) {
 
 #ifdef HAVE_FORK

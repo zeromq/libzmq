@@ -132,10 +132,11 @@ int zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
     rc = getpeername (sockfd_, (struct sockaddr*) &ss, &addrlen);
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
-        wsa_assert (WSAGetLastError () != WSANOTINITIALISED &&
-                    WSAGetLastError () != WSAEFAULT &&
-                    WSAGetLastError () != WSAEINPROGRESS &&
-                    WSAGetLastError () != WSAENOTSOCK);
+		const int last_error = WSAGetLastError();
+        wsa_assert (last_error != WSANOTINITIALISED &&
+                    last_error != WSAEFAULT &&
+                    last_error != WSAEINPROGRESS &&
+                    last_error != WSAENOTSOCK);
         return 0;
     }
 #else

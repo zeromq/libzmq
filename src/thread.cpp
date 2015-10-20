@@ -36,7 +36,7 @@
 extern "C"
 {
 #if defined _WIN32_WCE
-	static DWORD thread_routine (LPVOID arg_)
+    static DWORD thread_routine (LPVOID arg_)
 #else
     static unsigned int __stdcall thread_routine (void *arg_)
 #endif
@@ -58,7 +58,7 @@ void zmq::thread_t::start (thread_fn *tfn_, void *arg_)
     descriptor = (HANDLE) _beginthreadex (NULL, 0,
         &::thread_routine, this, 0 , NULL);
 #endif
-    win_assert (descriptor != NULL);    
+    win_assert (descriptor != NULL);
 }
 
 void zmq::thread_t::stop ()
@@ -92,7 +92,7 @@ extern "C"
         posix_assert (rc);
 #endif
 
-        zmq::thread_t *self = (zmq::thread_t*) arg_;   
+        zmq::thread_t *self = (zmq::thread_t*) arg_;
         self->tfn (self->arg);
         return NULL;
     }

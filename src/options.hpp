@@ -92,6 +92,16 @@ namespace zmq
         //  Linger time, in milliseconds.
         int linger;
 
+        //  Maximum interval in milliseconds beyond which userspace will
+        //  timeout connect().
+        //  Default 0 (unused)
+        int connect_timeout;
+
+        //  Maximum interval in milliseconds beyond which TCP will timeout
+        //  retransmitted packets.
+        //  Default 0 (unused)
+        int tcp_retransmit_timeout;
+
         //  Minimum interval between attempts to reconnect, in milliseconds.
         //  Default 100ms
         int reconnect_ivl;
@@ -132,7 +142,7 @@ namespace zmq
         bool raw_socket;
         bool raw_notify;        //  Provide connect notifications
 
-        //  Addres of SOCKS proxy
+        //  Address of SOCKS proxy
         std::string socks_proxy_address;
 
         //  TCP keep-alive settings.

@@ -51,7 +51,7 @@ namespace zmq
         virtual ~tcp_address_t ();
 
         //  This function translates textual TCP address into an address
-        //  strcuture. If 'local' is true, names are resolved as local interface
+        //  structure. If 'local' is true, names are resolved as local interface
         //  names. If it is false, names are resolved as remote hostnames.
         //  If 'ipv6' is true, the name may resolve to IPv6 address.
         int resolve (const char *name_, bool local_, bool ipv6_, bool is_src_ = false);

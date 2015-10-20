@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "macros.hpp"
 #include "platform.hpp"
 
 #if defined ZMQ_HAVE_OPENPGM
@@ -89,8 +90,9 @@ void zmq::pgm_receiver_t::unplug ()
 {
     //  Delete decoders.
     for (peers_t::iterator it = peers.begin (); it != peers.end (); ++it) {
-        if (it->second.decoder != NULL)
-            delete it->second.decoder;
+        if (it->second.decoder != NULL) {
+            LIBZMQ_DELETE(it->second.decoder);
+        }
     }
     peers.clear ();
     active_tsi = NULL;
@@ -141,8 +143,7 @@ void zmq::pgm_receiver_t::restart_input ()
             //  Data error. Delete message decoder, mark the
             //  peer as not joined and drop remaining data.
             it->second.joined = false;
-            delete it->second.decoder;
-            it->second.decoder = NULL;
+            LIBZMQ_DELETE(it->second.decoder);
             insize = 0;
         }
     }
@@ -194,8 +195,7 @@ void zmq::pgm_receiver_t::in_event ()
             if (it != peers.end ()) {
                 it->second.joined = false;
                 if (it->second.decoder != NULL) {
-                    delete it->second.decoder;
-                    it->second.decoder = NULL;
+                    LIBZMQ_DELETE(it->second.decoder);
                 }
             }
             break;
@@ -226,7 +226,7 @@ void zmq::pgm_receiver_t::in_event ()
             zmq_assert (offset <= insize);
             zmq_assert (it->second.decoder == NULL);
 
-            //  We have to move data to the begining of the first message.
+            //  We have to move data to the beginning of the first message.
             inpos += offset;
             insize -= offset;
 
@@ -252,8 +252,7 @@ void zmq::pgm_receiver_t::in_event ()
             }
 
             it->second.joined = false;
-            delete it->second.decoder;
-            it->second.decoder = NULL;
+            LIBZMQ_DELETE(it->second.decoder);
             insize = 0;
         }
     }

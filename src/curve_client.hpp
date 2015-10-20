@@ -107,7 +107,7 @@ namespace zmq
         //  Cookie received from server
         uint8_t cn_cookie [16 + 80];
 
-        //  Intermediary buffer used to seepd up boxing and unboxing.
+        //  Intermediary buffer used to speed up boxing and unboxing.
         uint8_t cn_precom [crypto_box_BEFORENMBYTES];
 
         //  Nonce

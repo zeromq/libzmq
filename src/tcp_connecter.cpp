@@ -30,6 +30,7 @@
 #include <new>
 #include <string>
 
+#include "macros.hpp"
 #include "tcp_connecter.hpp"
 #include "stream_engine.hpp"
 #include "io_thread.hpp"
@@ -67,7 +68,8 @@ zmq::tcp_connecter_t::tcp_connecter_t (class io_thread_t *io_thread_,
     s (retired_fd),
     handle_valid (false),
     delayed_start (delayed_start_),
-    timer_started (false),
+    connect_timer_started (false),
+    reconnect_timer_started (false),
     session (session_),
     current_reconnect_ivl (options.reconnect_ivl)
 {
@@ -79,7 +81,8 @@ zmq::tcp_connecter_t::tcp_connecter_t (class io_thread_t *io_thread_,
 
 zmq::tcp_connecter_t::~tcp_connecter_t ()
 {
-    zmq_assert (!timer_started);
+    zmq_assert (!connect_timer_started);
+    zmq_assert (!reconnect_timer_started);
     zmq_assert (!handle_valid);
     zmq_assert (s == retired_fd);
 }
@@ -94,9 +97,14 @@ void zmq::tcp_connecter_t::process_plug ()
 
 void zmq::tcp_connecter_t::process_term (int linger_)
 {
-    if (timer_started) {
+    if (connect_timer_started) {
+        cancel_timer (connect_timer_id);
+        connect_timer_started = false;
+    }
+
+    if (reconnect_timer_started) {
         cancel_timer (reconnect_timer_id);
-        timer_started = false;
+        reconnect_timer_started = false;
     }
 
     if (handle_valid) {
@@ -120,6 +128,11 @@ void zmq::tcp_connecter_t::in_event ()
 
 void zmq::tcp_connecter_t::out_event ()
 {
+    if (connect_timer_started) {
+        cancel_timer (connect_timer_id);
+        connect_timer_started = false;
+    }
+
     rm_fd (handle);
     handle_valid = false;
 
@@ -133,6 +146,7 @@ void zmq::tcp_connecter_t::out_event ()
 
     tune_tcp_socket (fd);
     tune_tcp_keepalives (fd, options.tcp_keepalive, options.tcp_keepalive_cnt, options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
+    tune_tcp_retransmit_timeout (fd, options.tcp_retransmit_timeout);
 
     // remember our fd for ZMQ_SRCFD in messages
     socket->set_fd (fd);
@@ -153,9 +167,20 @@ void zmq::tcp_connecter_t::out_event ()
 
 void zmq::tcp_connecter_t::timer_event (int id_)
 {
-    zmq_assert (id_ == reconnect_timer_id);
-    timer_started = false;
-    start_connecting ();
+    zmq_assert (id_ == reconnect_timer_id || id_ == connect_timer_id);
+    if (id_ == connect_timer_id) {
+        connect_timer_started = false;
+
+        rm_fd (handle);
+        handle_valid = false;
+
+        close ();
+        add_reconnect_timer ();
+    }
+    else if (id_ == reconnect_timer_id) {
+        reconnect_timer_started = false;
+        start_connecting ();
+    }
 }
 
 void zmq::tcp_connecter_t::start_connecting ()
@@ -177,6 +202,9 @@ void zmq::tcp_connecter_t::start_connecting ()
         handle_valid = true;
         set_pollout (handle);
         socket->event_connect_delayed (endpoint, zmq_errno());
+
+        //  add userspace connect timeout
+        add_connect_timer ();
     }
 
     //  Handle any other error condition by eventual reconnect.
@@ -187,12 +215,20 @@ void zmq::tcp_connecter_t::start_connecting ()
     }
 }
 
+void zmq::tcp_connecter_t::add_connect_timer ()
+{
+    if (options.connect_timeout > 0) {
+        add_timer (options.connect_timeout, connect_timer_id);
+        connect_timer_started = true;
+    }
+}
+
 void zmq::tcp_connecter_t::add_reconnect_timer ()
 {
     const int interval = get_new_reconnect_ivl ();
     add_timer (interval, reconnect_timer_id);
     socket->event_connect_retried (endpoint, interval);
-    timer_started = true;
+    reconnect_timer_started = true;
 }
 
 int zmq::tcp_connecter_t::get_new_reconnect_ivl ()
@@ -217,8 +253,7 @@ int zmq::tcp_connecter_t::open ()
 
     //  Resolve the address
     if (addr->resolved.tcp_addr != NULL) {
-        delete addr->resolved.tcp_addr;
-        addr->resolved.tcp_addr = NULL;
+        LIBZMQ_DELETE(addr->resolved.tcp_addr);
     }
 
     addr->resolved.tcp_addr = new (std::nothrow) tcp_address_t ();
@@ -226,8 +261,7 @@ int zmq::tcp_connecter_t::open ()
     int rc = addr->resolved.tcp_addr->resolve (
         addr->address.c_str (), false, options.ipv6);
     if (rc != 0) {
-        delete addr->resolved.tcp_addr;
-        addr->resolved.tcp_addr = NULL;
+        LIBZMQ_DELETE(addr->resolved.tcp_addr);
         return -1;
     }
     zmq_assert (addr->resolved.tcp_addr != NULL);
@@ -277,18 +311,18 @@ int zmq::tcp_connecter_t::open ()
     //  Connect to the remote peer.
     rc = ::connect (s, tcp_addr->addr (), tcp_addr->addrlen ());
 
-    //  Connect was successfull immediately.
+    //  Connect was successful immediately.
     if (rc == 0)
         return 0;
 
     //  Translate error codes indicating asynchronous connect has been
     //  launched to a uniform EINPROGRESS.
 #ifdef ZMQ_HAVE_WINDOWS
-    const int error_code = WSAGetLastError ();
-    if (error_code == WSAEINPROGRESS || error_code == WSAEWOULDBLOCK)
+    const int last_error = WSAGetLastError();
+    if (last_error == WSAEINPROGRESS || last_error == WSAEWOULDBLOCK)
         errno = EINPROGRESS;
     else
-        errno = wsa_error_to_errno (error_code);
+        errno = wsa_error_to_errno (last_error);
 #else
     if (errno == EINTR)
         errno = EINPROGRESS;
@@ -321,7 +355,8 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
             && err != WSAENETDOWN
             && err != WSAEACCES
             && err != WSAEINVAL
-            && err != WSAEADDRINUSE)
+            && err != WSAEADDRINUSE
+			&& err != WSAEADDRNOTAVAIL)
         {
             wsa_assert_no (err);
         }
@@ -341,7 +376,8 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
             errno == EHOSTUNREACH ||
             errno == ENETUNREACH ||
             errno == ENETDOWN ||
-            errno == EINVAL);
+            errno == EINVAL ||
+			errno == EADDRNOTAVAIL);
         return retired_fd;
     }
 #endif

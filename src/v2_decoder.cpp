@@ -117,7 +117,7 @@ int zmq::v2_decoder_t::size_ready(uint64_t msg_size, unsigned char const* read_p
     if (unlikely ((unsigned char*)read_pos + msg_size > (data() + size())))
     {
         // a new message has started, but the size would exceed the pre-allocated arena
-        // this happens everytime when a message does not fit completely into the buffer
+        // this happens every time when a message does not fit completely into the buffer
         rc = in_progress.init_size (static_cast <size_t> (msg_size));
     }
     else

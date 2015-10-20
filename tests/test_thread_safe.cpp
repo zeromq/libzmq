@@ -29,64 +29,51 @@
 
 #include "testutil.hpp"
 
-void worker1(void* s);
-void worker2(void* s);
+//  Client threads loop on send/recv until told to exit
+void client_thread (void *client)
+{
+    char data = 0;
+    for (int count = 0; count < 100000; count++) {
+        int rc = zmq_send (client, &data, 1, 0);
+        assert (rc == 1);
+    }
+    data = 1;
+    int rc = zmq_send (client, &data, 1, 0);
+    assert (rc == 1);
+}
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
+    void *server = zmq_socket (ctx, ZMQ_SERVER);
+    int rc = zmq_bind (server, "tcp://127.0.0.1:5560");
+    assert (rc == 0);
+
     void *client = zmq_socket (ctx, ZMQ_CLIENT);
-    void *client2 = zmq_socket (ctx, ZMQ_CLIENT);
-
-    int rc;
-
-    rc = zmq_bind (client, "tcp://127.0.0.1:5560");
+    int thread_safe;
+    size_t size = sizeof (int);
+    zmq_getsockopt (client, ZMQ_THREAD_SAFE, &thread_safe, &size);
+    assert (thread_safe == 1);
+    rc = zmq_connect (client, "tcp://127.0.0.1:5560");
     assert (rc == 0);
 
-    rc = zmq_connect (client2, "tcp://127.0.0.1:5560");
-    assert (rc == 0);
+    void *t1 = zmq_threadstart (client_thread, client);
+    void *t2 = zmq_threadstart (client_thread, client);
 
-	void*  t1 = zmq_threadstart(worker1, client2);
-	void*  t2 = zmq_threadstart(worker2, client2);	
+    char data;
+    int threads_completed = 0;
+    while (threads_completed < 2) {
+        zmq_recv (server, &data, 1, 0);
+        if (data == 1)
+            threads_completed++;            //  Thread ended
+    }
+    zmq_threadclose (t1);
+    zmq_threadclose (t2);
 
-	char data[1];
-	data[0] = 0;
-
-	for (int i=0; i < 10; i++) {
-		rc = zmq_send_const(client, data, 1, 0);
-		assert (rc == 1);
-
-		rc = zmq_send_const(client, data, 1, 0);
-		assert(rc == 1);
-
-		char a, b;
-
-		rc = zmq_recv(client, &a, 1, 0);
-		assert(rc == 1);
-
-		rc = zmq_recv(client, &b, 1, 0);
-		assert(rc == 1);
-
-		// make sure they came from different threads
-		assert((a == 1 && b == 2) || (a == 2 && b == 1));
-	}
-
-	// make the thread exit
-	data[0] = 1;
-
-	rc = zmq_send_const(client, data, 1, 0);
-	assert (rc == 1);
-
-	rc = zmq_send_const(client, data, 1, 0);
-	assert(rc == 1);
-
-	zmq_threadclose(t1);
-	zmq_threadclose(t2);	
-
-    rc = zmq_close (client2);
+    rc = zmq_close (server);
     assert (rc == 0);
 
     rc = zmq_close (client);
@@ -97,59 +84,3 @@ int main (void)
 
     return 0 ;
 }
-
-void worker1(void* s)
-{
-	const char worker_id = 1;
-	char c;
-
-	while (true)
-	{
-		int rc = zmq_recv(s, &c,1, 0); 
-		assert(rc == 1);
-
-		if (c == 0)
-		{
-			msleep(100);
-			rc = zmq_send_const(s,&worker_id, 1, 0);
-			assert(rc == 1);
-		}
-		else
-		{
-			// we got exit request
-			break;
-		}
-	}
-}
-
-void worker2(void* s)
-{
-	const char worker_id = 2;
-	char c;
-
-	while (true)
-	{
-		int rc = zmq_recv(s, &c,1, 0); 
-		assert(rc == 1);
-
-		assert(c == 1 || c == 0);
-
-		if (c == 0)
-		{
-			msleep(100);
-			rc = zmq_send_const(s,&worker_id, 1, 0);
-			assert(rc == 1);
-		}
-		else
-		{
-			// we got exit request
-			break;
-		}
-	}
-}
-
-
-
-
-
-

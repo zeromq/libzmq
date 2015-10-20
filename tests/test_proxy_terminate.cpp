@@ -61,7 +61,8 @@ server_task (void *ctx)
     assert (rc == 0);
 
     // Connect backend to frontend via a proxy
-    zmq_proxy_steerable (frontend, backend, NULL, control);
+    rc = zmq_proxy_steerable (frontend, backend, NULL, control);
+    assert (rc == 0);
 
     rc = zmq_close (frontend);
     assert (rc == 0);

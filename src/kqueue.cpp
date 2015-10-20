@@ -38,6 +38,7 @@
 #include <algorithm>
 #include <new>
 
+#include "macros.hpp"
 #include "kqueue.hpp"
 #include "err.hpp"
 #include "config.hpp"
@@ -210,9 +211,9 @@ void zmq::kqueue_t::loop ()
         }
 
         //  Destroy retired event sources.
-        for (retired_t::iterator it = retired.begin (); it != retired.end ();
-              ++it)
-            delete *it;
+        for (retired_t::iterator it = retired.begin (); it != retired.end (); ++it) {
+            LIBZMQ_DELETE(*it);
+        }
         retired.clear ();
     }
 }

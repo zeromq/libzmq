@@ -90,6 +90,8 @@ namespace zmq
         int term_endpoint (const char *addr_);
         int send (zmq::msg_t *msg_, int flags_);
         int recv (zmq::msg_t *msg_, int flags_);
+        int add_signaler (signaler_t *s);
+        int remove_signaler (signaler_t *s);
         int close ();
 
         //  These functions are used by the polling mechanism to determine
@@ -97,7 +99,7 @@ namespace zmq
         bool has_in ();
         bool has_out ();
 
-        //  Using this function reaper thread ask the socket to regiter with
+        //  Using this function reaper thread ask the socket to register with
         //  its poller.
         void start_reaping (poller_t *poller_);
 
@@ -169,11 +171,11 @@ namespace zmq
         //  Delay actual destruction of the socket.
         void process_destroy ();
 
-        // Socket event data dispath
+        // Socket event data dispatch
         void monitor_event (int event_, int value_, const std::string& addr_);
 
         // Monitor socket cleanup
-        void stop_monitor ();
+        void stop_monitor (bool send_monitor_stopped_event_ = true);
         
         // Next assigned name on a zmq_connect() call used by ROUTER and STREAM socket types
         std::string connect_rid;

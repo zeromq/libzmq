@@ -95,7 +95,7 @@ namespace zmq
 #pragma message restore
 #endif
 
-        //  Pop an incomplete item from the pipe. Returns true is such
+        //  Pop an incomplete item from the pipe. Returns true if such
         //  item exists, false otherwise.
         inline bool unwrite (T *value_)
         {

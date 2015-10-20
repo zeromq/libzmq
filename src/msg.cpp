@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "macros.hpp"
 #include "msg.hpp"
 #include "../include/zmq.h"
 
@@ -235,9 +236,12 @@ int zmq::msg_t::close ()
         }
     }
 
-    if (u.base.metadata != NULL)
-        if (u.base.metadata->drop_ref ())
-            delete u.base.metadata;
+    if (u.base.metadata != NULL) {
+        if (u.base.metadata->drop_ref ()) {
+            LIBZMQ_DELETE(u.base.metadata);
+        }
+        u.base.metadata = NULL;
+    }
 
     //  Make the message invalid.
     u.base.type = 0;
@@ -391,8 +395,9 @@ void zmq::msg_t::set_metadata (zmq::metadata_t *metadata_)
 void zmq::msg_t::reset_metadata ()
 {
     if (u.base.metadata) {
-        if (u.base.metadata->drop_ref ())
-            delete u.base.metadata;
+        if (u.base.metadata->drop_ref ()) {
+            LIBZMQ_DELETE(u.base.metadata);
+        }
         u.base.metadata = NULL;
     }
 }
@@ -492,18 +497,22 @@ bool zmq::msg_t::rm_refs (int refs_)
     return true;
 }
 
-uint32_t zmq::msg_t::get_routing_id() 
+uint32_t zmq::msg_t::get_routing_id ()
 {
     return u.base.routing_id;
 }
 
-int zmq::msg_t::set_routing_id(uint32_t routing_id_) 
+int zmq::msg_t::set_routing_id (uint32_t routing_id_)
 {
-    u.base.routing_id = routing_id_;
-    return 0;
+    if (routing_id_) {
+        u.base.routing_id = routing_id_;
+        return 0;
+    }
+    errno = EINVAL;
+    return -1;
 }
 
-zmq::atomic_counter_t* zmq::msg_t::refcnt()
+zmq::atomic_counter_t *zmq::msg_t::refcnt()
 {
     switch(u.base.type)
     {

@@ -47,36 +47,36 @@
 namespace zmq
 {
 
-	class condition_variable_t
-	{
-	public:
-		inline condition_variable_t ()
-		{
-			zmq_assert(false);
-		}
+    class condition_variable_t
+    {
+    public:
+        inline condition_variable_t ()
+        {
+            zmq_assert(false);
+        }
 
-		inline ~condition_variable_t ()
-		{
+        inline ~condition_variable_t ()
+        {
 
-		}
+        }
 
-		inline int wait (mutex_t* mutex_, int timeout_ )
-		{
-			zmq_assert(false);
-			return -1;
-		}
+        inline int wait (mutex_t* mutex_, int timeout_ )
+        {
+            zmq_assert(false);
+            return -1;
+        }
 
-		inline void broadcast ()
-		{
-			zmq_assert(false);
-		}
+        inline void broadcast ()
+        {
+            zmq_assert(false);
+        }
 
-	private:		
+    private:
 
-		//  Disable copy construction and assignment.
-		condition_variable_t (const condition_variable_t&);
-		void operator = (const condition_variable_t&);
-	};
+        //  Disable copy construction and assignment.
+        condition_variable_t (const condition_variable_t&);
+        void operator = (const condition_variable_t&);
+    };
 
 }
 
@@ -95,7 +95,7 @@ namespace zmq
 
         inline ~condition_variable_t ()
         {
-            
+
         }
 
         inline int wait (mutex_t* mutex_, int timeout_ )
@@ -110,7 +110,7 @@ namespace zmq
             if (rc != ERROR_TIMEOUT)
                 win_assert(rc);
 
-            errno = EAGAIN;            
+            errno = EAGAIN;
             return -1;
         }
 
@@ -161,9 +161,9 @@ namespace zmq
             if (timeout_ != -1) {
                 struct timespec timeout;
                 clock_gettime(CLOCK_REALTIME, &timeout);
-    
+
                 timeout.tv_sec += timeout_ / 1000;
-                timeout.tv_nsec += (timeout_ % 1000) * 1000000; 
+                timeout.tv_nsec += (timeout_ % 1000) * 1000000;
                 rc = pthread_cond_timedwait (&cond, mutex_->get_mutex (), &timeout);
             }
             else

@@ -138,7 +138,7 @@ void zmq::own_t::terminate ()
     if (terminating)
         return;
 
-    //  As for the root of the ownership tree, there's noone to terminate it,
+    //  As for the root of the ownership tree, there's no one to terminate it,
     //  so it has to terminate itself.
     if (!owner) {
         process_term (options.linger);

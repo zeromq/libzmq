@@ -57,7 +57,7 @@ namespace zmq
     private:
 
         //  ID of the timer used to delay the reconnection.
-        enum {reconnect_timer_id = 1};
+        enum {reconnect_timer_id = 1, connect_timer_id};
 
         //  Handlers for incoming commands.
         void process_plug ();
@@ -71,6 +71,9 @@ namespace zmq
         //  Internal function to start the actual connection establishment.
         void start_connecting ();
 
+        //  Internal function to add a connect timer
+        void add_connect_timer();
+
         //  Internal function to add a reconnect timer
         void add_reconnect_timer();
 
@@ -80,7 +83,7 @@ namespace zmq
         int get_new_reconnect_ivl ();
 
         //  Open TCP connecting socket. Returns -1 in case of error,
-        //  0 if connect was successfull immediately. Returns -1 with
+        //  0 if connect was successful immediately. Returns -1 with
         //  EAGAIN errno if async connect was launched.
         int open ();
 
@@ -88,7 +91,7 @@ namespace zmq
         void close ();
 
         //  Get the file descriptor of newly created connection. Returns
-        //  retired_fd if the connection was unsuccessfull.
+        //  retired_fd if the connection was unsuccessful.
         fd_t connect ();
 
         //  Address to connect to. Owned by session_base_t.
@@ -108,7 +111,8 @@ namespace zmq
         const bool delayed_start;
 
         //  True iff a timer has been started.
-        bool timer_started;
+        bool connect_timer_started;
+        bool reconnect_timer_started;
 
         //  Reference to the session we belong to.
         zmq::session_base_t *session;

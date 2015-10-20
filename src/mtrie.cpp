@@ -32,6 +32,7 @@
 #include <new>
 #include <algorithm>
 
+#include "macros.hpp"
 #include "platform.hpp"
 #if defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
@@ -52,19 +53,17 @@ zmq::mtrie_t::mtrie_t () :
 zmq::mtrie_t::~mtrie_t ()
 {
     if (pipes) {
-        delete pipes;
-        pipes = 0;
+        LIBZMQ_DELETE(pipes);
     }
 
     if (count == 1) {
         zmq_assert (next.node);
-        delete next.node;
-        next.node = 0;
+        LIBZMQ_DELETE(next.node);
     }
-    else 
-    if (count > 1) {
-        for (unsigned short i = 0; i != count; ++i)
-            delete next.table [i];
+    else if (count > 1) {
+        for (unsigned short i = 0; i != count; ++i) {
+            LIBZMQ_DELETE(next.table[i]);
+        }
         free (next.table);
     }
 }
@@ -92,13 +91,13 @@ bool zmq::mtrie_t::add_helper (unsigned char *prefix_, size_t size_,
     if (c < min || c >= min + count) {
 
         //  The character is out of range of currently handled
-        //  charcters. We have to extend the table.
+        //  characters. We have to extend the table.
         if (!count) {
             min = c;
             count = 1;
             next.node = NULL;
         }
-        else 
+        else
         if (count == 1) {
             unsigned char oldc = min;
             mtrie_t *oldp = next.node;
@@ -111,7 +110,7 @@ bool zmq::mtrie_t::add_helper (unsigned char *prefix_, size_t size_,
             min = std::min (min, c);
             next.table [oldc - min] = oldp;
         }
-        else 
+        else
         if (min < c) {
             //  The new character is above the current character range.
             unsigned short old_count = count;
@@ -178,8 +177,7 @@ void zmq::mtrie_t::rm_helper (pipe_t *pipe_, unsigned char **buff_,
         }
 
         if (pipes->empty ()) {
-            delete pipes;
-            pipes = 0;
+            LIBZMQ_DELETE(pipes);
         }
     }
 
@@ -203,8 +201,7 @@ void zmq::mtrie_t::rm_helper (pipe_t *pipe_, unsigned char **buff_,
 
         //  Prune the node if it was made redundant by the removal
         if (next.node->is_redundant ()) {
-            delete next.node;
-            next.node = 0;
+            LIBZMQ_DELETE(next.node);
             count = 0;
             --live_nodes;
             zmq_assert (live_nodes == 0);
@@ -226,8 +223,7 @@ void zmq::mtrie_t::rm_helper (pipe_t *pipe_, unsigned char **buff_,
 
             //  Prune redundant nodes from the mtrie
             if (next.table [c]->is_redundant ()) {
-                delete next.table [c];
-                next.table [c] = 0;
+                LIBZMQ_DELETE(next.table[c]);
 
                 zmq_assert (live_nodes > 0);
                 --live_nodes;
@@ -257,7 +253,7 @@ void zmq::mtrie_t::rm_helper (pipe_t *pipe_, unsigned char **buff_,
         count = 0;
     }
     //  Compact the node table if possible
-    else 
+    else
     if (live_nodes == 1) {
         //  If there's only one live node in the table we can
         //  switch to using the more compact single-node
@@ -306,8 +302,7 @@ bool zmq::mtrie_t::rm_helper (unsigned char *prefix_, size_t size_,
             pipes_t::size_type erased = pipes->erase (pipe_);
             zmq_assert (erased == 1);
             if (pipes->empty ()) {
-                delete pipes;
-                pipes = 0;
+                LIBZMQ_DELETE(pipes);
             }
         }
         return !pipes;
@@ -326,7 +321,7 @@ bool zmq::mtrie_t::rm_helper (unsigned char *prefix_, size_t size_,
     bool ret = next_node->rm_helper (prefix_ + 1, size_ - 1, pipe_);
 
     if (next_node->is_redundant ()) {
-        delete next_node;
+        LIBZMQ_DELETE(next_node);
         zmq_assert (count > 0);
 
         if (count == 1) {
@@ -418,16 +413,16 @@ void zmq::mtrie_t::match (unsigned char *data_, size_t size_,
             break;
 
         //  If there's one subnode (optimisation).
-		if (current->count == 1) {
+        if (current->count == 1) {
             if (data_ [0] != current->min)
                 break;
             current = current->next.node;
             data_++;
             size_--;
-		    continue;
-		}
+            continue;
+        }
 
-		//  If there are multiple subnodes.
+        //  If there are multiple subnodes.
         if (data_ [0] < current->min || data_ [0] >=
               current->min + current->count)
             break;

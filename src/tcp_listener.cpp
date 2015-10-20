@@ -100,6 +100,7 @@ void zmq::tcp_listener_t::in_event ()
 
     tune_tcp_socket (fd);
     tune_tcp_keepalives (fd, options.tcp_keepalive, options.tcp_keepalive_cnt, options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
+    tune_tcp_retransmit_timeout (fd, options.tcp_retransmit_timeout);
 
     // remember our fd for ZMQ_SRCFD in messages
     socket->set_fd(fd);
@@ -277,10 +278,11 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
 
 #ifdef ZMQ_HAVE_WINDOWS
     if (sock == INVALID_SOCKET) {
-        wsa_assert (WSAGetLastError () == WSAEWOULDBLOCK ||
-            WSAGetLastError () == WSAECONNRESET ||
-            WSAGetLastError () == WSAEMFILE ||
-            WSAGetLastError () == WSAENOBUFS);
+		const int last_error = WSAGetLastError();
+        wsa_assert (last_error == WSAEWOULDBLOCK ||
+            last_error == WSAECONNRESET ||
+            last_error == WSAEMFILE ||
+            last_error == WSAENOBUFS);
         return retired_fd;
     }
 #if !defined _WIN32_WCE

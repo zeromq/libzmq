@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "macros.hpp"
 #include "stream.hpp"
 #include "pipe.hpp"
 #include "wire.hpp"
@@ -58,8 +59,7 @@ zmq::stream_t::~stream_t ()
 
 void zmq::stream_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 {
-    // subscribe_to_all_ is unused
-    (void)subscribe_to_all_;
+	LIBZMQ_UNUSED(subscribe_to_all_);
 
     zmq_assert (pipe_);
 
@@ -226,7 +226,7 @@ int zmq::stream_t::xrecv (msg_t *msg_)
     zmq_assert ((prefetched_msg.flags () & msg_t::more) == 0);
 
     //  We have received a frame with TCP data.
-    //  Rather than sendig this frame, we keep it in prefetched
+    //  Rather than sending this frame, we keep it in prefetched
     //  buffer and send a frame with peer's ID.
     blob_t identity = pipe->get_identity ();
     rc = msg_->close();

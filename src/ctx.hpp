@@ -86,7 +86,7 @@ namespace zmq
         // (except zmq_close).
         // This function is non-blocking.
         // terminate must still be called afterwards.
-        // This function is optional, terminate will unblock any current 
+        // This function is optional, terminate will unblock any current
         // operations as well.
         int shutdown();
 
@@ -98,7 +98,7 @@ namespace zmq
         zmq::socket_base_t *create_socket (int type_);
         void destroy_socket (zmq::socket_base_t *socket_);
 
-		//  Start a new thread with proper scheduling parameters.
+        //  Start a new thread with proper scheduling parameters.
         void start_thread (thread_t &thread_, thread_fn *tfn_, void *arg_) const;
 
         //  Send command to the destination thread.
@@ -203,7 +203,7 @@ namespace zmq
         //  Is IPv6 enabled on this context?
         bool ipv6;
 
-		//  Thread scheduling parameters.
+        //  Thread scheduling parameters.
         int thread_priority;
         int thread_sched_policy;
 

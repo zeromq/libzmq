@@ -55,6 +55,7 @@ namespace zmq
         void send ();
         int wait (int timeout_);
         void recv ();
+        int recv_failable ();
 
 #ifdef HAVE_FORK
         // close the file descriptors in a forked child process so that they
@@ -64,7 +65,7 @@ namespace zmq
 
     private:
 
-        //  Creates a pair of filedescriptors that will be used
+        //  Creates a pair of file descriptors that will be used
         //  to pass the signals.
         static int make_fdpair (fd_t *r_, fd_t *w_);
 

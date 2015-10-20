@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "macros.hpp"
 #include "session_base.hpp"
 #include "i_engine.hpp"
 #include "err.hpp"
@@ -111,7 +112,7 @@ zmq::session_base_t::~session_base_t ()
     if (engine)
         engine->terminate ();
 
-    delete addr;
+    LIBZMQ_DELETE(addr);
 }
 
 void zmq::session_base_t::attach_pipe (pipe_t *pipe_)
@@ -460,7 +461,8 @@ void zmq::session_base_t::process_term (int linger_)
         //  TODO: Should this go into pipe_t::terminate ?
         //  In case there's no engine and there's only delimiter in the
         //  pipe it wouldn't be ever read. Thus we check for it explicitly.
-        pipe->check_read ();
+        if (!engine)
+            pipe->check_read ();
     }
 
     if (zap_pipe != NULL)
