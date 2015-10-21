@@ -175,7 +175,7 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *event_, long time
     }
 
     if (rc == 0) {
-        errno = EAGAIN;
+        errno = ETIMEDOUT;
         return -1;
     }
 
