@@ -61,7 +61,7 @@ bool zmq::socket_poller_t::check_tag ()
     return tag == 0xCAFEBABE;
 }
 
-int zmq::socket_poller_t::add_socket (void *socket_, void* user_data_) 
+int zmq::socket_poller_t::add_socket (void *socket_, void* user_data_, short events_) 
 {
     for (events_t::iterator it = events.begin (); it != events.end (); ++it) {
         if (it->socket == socket_) {
@@ -81,7 +81,7 @@ int zmq::socket_poller_t::add_socket (void *socket_, void* user_data_)
            return -1;
     }
     
-    event_t event = {socket_, 0, user_data_};
+    event_t event = {socket_, 0, user_data_, events_};
     events.push_back (event);
     need_rebuild = true;
 
@@ -89,9 +89,9 @@ int zmq::socket_poller_t::add_socket (void *socket_, void* user_data_)
 }
 
 #if defined _WIN32
-int zmq::socket_poller_t::add_fd (SOCKET fd_, void *user_data_)
+int zmq::socket_poller_t::add_fd (SOCKET fd_, void *user_data_, short events_)
 #else 
-int zmq::socket_poller_t::add_fd (int fd_, void *user_data_)
+int zmq::socket_poller_t::add_fd (int fd_, void *user_data_, short events_)
 #endif
 {
    for (events_t::iterator it = events.begin (); it != events.end (); ++it) {
@@ -101,12 +101,58 @@ int zmq::socket_poller_t::add_fd (int fd_, void *user_data_)
         }            
     }
 
-    event_t event = {NULL, fd_, user_data_};
+    event_t event = {NULL, fd_, user_data_, events_};
     events.push_back (event);
     need_rebuild = true;
 
     return 0;
 }
+
+int zmq::socket_poller_t::modify_socket (void  *socket_, short events_)
+{
+    events_t::iterator it;
+
+    for (it = events.begin (); it != events.end (); ++it) {
+        if (it->socket == socket_)
+            break;
+    }
+
+    if (it == events.end()) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    it->events = events_;
+    need_rebuild = true;
+
+    return 0;
+}
+
+
+#if defined _WIN32
+int zmq::socket_poller_t::modify_fd (SOCKET fd_, short events_)
+#else 
+int zmq::socket_poller_t::modify_fd (int fd_, short events_)
+#endif
+{
+    events_t::iterator it;
+
+    for (it = events.begin (); it != events.end (); ++it) {
+        if (!it->socket && it->fd == fd_)
+            break;
+    }
+
+    if (it == events.end()) {
+        errno = EINVAL;
+        return -1;
+    }
+ 
+    it->events = events_;
+    need_rebuild = true;
+
+    return 0;
+} 
+
 
 int zmq::socket_poller_t::remove_socket (void* socket_)
 {
@@ -180,8 +226,9 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *event_, long time
     }
 
     for (int i = 0; i < poll_size; i++) {
-        if (poll_set [i].revents & ZMQ_POLLIN) {        
-            *event_ = poll_events[i];           
+        if ((poll_set [i].revents & poll_events [i].events) != 0) {        
+            *event_ = poll_events[i];
+            event_->events = poll_set [i].revents & poll_events [i].events;
 
             break;
         }
@@ -216,7 +263,7 @@ void zmq::socket_poller_t::rebuild ()
         if (!it->socket)
             poll_set [event_nbr].fd = it->fd;
 
-        poll_set [event_nbr].events = ZMQ_POLLIN;
+        poll_set [event_nbr].events = it->events;
         poll_events [event_nbr] = *it;
     }
 
