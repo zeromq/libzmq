@@ -61,7 +61,7 @@ bool zmq::socket_poller_t::check_tag ()
     return tag == 0xCAFEBABE;
 }
 
-int zmq::socket_poller_t::add_socket (void *socket_, void* user_data_, short events_) 
+int zmq::socket_poller_t::add (void *socket_, void* user_data_, short events_) 
 {
     for (events_t::iterator it = events.begin (); it != events.end (); ++it) {
         if (it->socket == socket_) {
@@ -108,7 +108,7 @@ int zmq::socket_poller_t::add_fd (int fd_, void *user_data_, short events_)
     return 0;
 }
 
-int zmq::socket_poller_t::modify_socket (void  *socket_, short events_)
+int zmq::socket_poller_t::modify (void  *socket_, short events_)
 {
     events_t::iterator it;
 
@@ -154,7 +154,7 @@ int zmq::socket_poller_t::modify_fd (int fd_, short events_)
 } 
 
 
-int zmq::socket_poller_t::remove_socket (void* socket_)
+int zmq::socket_poller_t::remove (void* socket_)
 {
     events_t::iterator it;
 

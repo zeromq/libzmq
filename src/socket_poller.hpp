@@ -56,9 +56,9 @@ namespace zmq
             short events;
         } event_t;
 
-        int add_socket (void *socket, void *user_data, short events);
-        int modify_socket (void *socket, short events);
-        int remove_socket (void *socket);
+        int add (void *socket, void *user_data, short events);
+        int modify (void *socket, short events);
+        int remove (void *socket);
 #if defined _WIN32
         int add_fd (SOCKET fd, void *user_data, short events);
         int modify_fd (SOCKET fd, short events);

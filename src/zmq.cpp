@@ -1579,14 +1579,14 @@ int zmq_poller_close (void *poller_)
     return 0;
 }
 
-int zmq_poller_add_socket (void *poller_, void *socket_, void *user_data_, short events_)
+int zmq_poller_add (void *poller_, void *socket_, void *user_data_, short events_)
 {
     if (!poller_ || !((zmq::socket_poller_t*)poller_)->check_tag ()) {
         errno = EFAULT;
         return -1;
     }
 
-    return ((zmq::socket_poller_t*)poller_)->add_socket (socket_, user_data_, events_);
+    return ((zmq::socket_poller_t*)poller_)->add (socket_, user_data_, events_);
 }
 
 #if defined _WIN32
@@ -1604,14 +1604,14 @@ int zmq_poller_add_fd (void *poller_, int fd_, void *user_data_, short events_)
 }
 
 
-int zmq_poller_modify_socket (void *poller_, void *socket_, short events_)
+int zmq_poller_modify (void *poller_, void *socket_, short events_)
 {
     if (!poller_ || !((zmq::socket_poller_t*)poller_)->check_tag ()) {
         errno = EFAULT;
         return -1;
     }
 
-    return ((zmq::socket_poller_t*)poller_)->modify_socket (socket_, events_);
+    return ((zmq::socket_poller_t*)poller_)->modify (socket_, events_);
 }
 
 
@@ -1630,14 +1630,14 @@ int zmq_poller_modify_fd (void *poller_, int fd_, short events_)
 }
 
 
-int zmq_poller_remove_socket (void *poller_, void *socket)
+int zmq_poller_remove (void *poller_, void *socket)
 {
     if (!poller_ || !((zmq::socket_poller_t*)poller_)->check_tag ()) {
         errno = EFAULT;
         return -1;
     } 
 
-    return ((zmq::socket_poller_t*)poller_)->remove_socket (socket);
+    return ((zmq::socket_poller_t*)poller_)->remove (socket);
 }
 
 #if defined _WIN32
