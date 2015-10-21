@@ -431,6 +431,8 @@ ZMQ_EXPORT int    zmq_pollfd_fd (void *p);
 /*  Poller polling on sockets,fd and threaf safe sockets                      */
 /******************************************************************************/
 
+#define ZMQ_HAVE_POLLER
+
 typedef struct zmq_poller_event_t
 {
     void *socket;
