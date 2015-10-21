@@ -61,7 +61,7 @@ int main (void)
 
     //  Set up poller
     void* poller = zmq_poller_new ();
-    rc = zmq_poller_add_socket (poller, sink, sink);
+    rc = zmq_poller_add (poller, sink, sink, ZMQ_POLLIN);
     assert (rc == 0);
     
     //  Send a message
@@ -79,7 +79,7 @@ int main (void)
     assert (rc == 1);
     
     //  Stop polling sink
-    rc = zmq_poller_remove_socket (poller, sink);
+    rc = zmq_poller_remove (poller, sink);
     assert (rc == 0);
 
     //  Check we can poll an FD
@@ -96,7 +96,7 @@ int main (void)
 
     rc = zmq_getsockopt (bowl, ZMQ_FD, &fd, &fd_size);
     assert (rc == 0);
-    rc = zmq_poller_add_fd (poller, fd, bowl);
+    rc = zmq_poller_add_fd (poller, fd, bowl, ZMQ_POLLIN);
     assert (rc == 0);
     rc = zmq_poller_wait (poller, &event, 500);
     assert (rc == 0);
@@ -106,7 +106,8 @@ int main (void)
     zmq_poller_remove_fd (poller, fd);
 
     //  Polling on thread safe sockets
-    zmq_poller_add_socket (poller, server, NULL);
+    rc = zmq_poller_add (poller, server, NULL, ZMQ_POLLIN);
+    assert (rc == 0);
     rc = zmq_connect (client, "tcp://127.0.0.1:55557");
     assert (rc == 0);
     rc = zmq_send_const (client, data, 1, 0);
@@ -116,8 +117,17 @@ int main (void)
     assert (event.socket == server);
     assert (event.user_data == NULL); 
     rc = zmq_recv (server, data, 1, 0);
-    assert (rc == 1);     
+    assert (rc == 1);    
 
+    //  Polling on pollout
+    rc = zmq_poller_modify (poller, server, ZMQ_POLLOUT | ZMQ_POLLIN); 
+    assert (rc == 0);
+    rc = zmq_poller_wait (poller, &event, 0);
+    assert (rc == 0);
+    assert (event.socket == server);
+    assert (event.user_data == NULL);
+    assert (event.events == ZMQ_POLLOUT);
+    
     //  Destory poller, sockets and ctx
     rc = zmq_poller_close (poller);
     assert (rc == 0);
