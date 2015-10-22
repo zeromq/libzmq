@@ -67,7 +67,7 @@ int main (void)
     //  Send a message
     char data[1] = {'H'};
     rc = zmq_send_const (vent, data, 1, 0);
-    assert (rc == 1);
+    assert (rc == 1);   
 
     //  We expect a message only on the sink
     zmq_poller_event_t event;
@@ -77,7 +77,12 @@ int main (void)
     assert (event.user_data == sink);
     rc = zmq_recv (sink, data, 1, 0);
     assert (rc == 1);
-    
+
+    //  We expect timed out
+    rc = zmq_poller_wait (poller, &event, 0);
+    assert (rc == -1);
+    assert (errno == ETIMEDOUT);
+
     //  Stop polling sink
     rc = zmq_poller_remove (poller, sink);
     assert (rc == 0);
@@ -127,7 +132,7 @@ int main (void)
     assert (event.socket == server);
     assert (event.user_data == NULL);
     assert (event.events == ZMQ_POLLOUT);
-    
+
     //  Destory poller, sockets and ctx
     rc = zmq_poller_close (poller);
     assert (rc == 0);
@@ -141,7 +146,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_close (client);
     assert (rc == 0);
-    rc = zmq_ctx_shutdown (ctx);
+    rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
     return 0;
