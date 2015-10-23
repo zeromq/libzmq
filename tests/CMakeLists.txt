@@ -50,7 +50,7 @@ set(tests
         test_pub_invert_matching
         test_thread_safe
         test_client_server
-	test_sockopt_hwm
+        test_sockopt_hwm
         test_heartbeats
         test_poller
 )
@@ -83,6 +83,7 @@ foreach(test ${tests})
   else()
     add_test(NAME ${test} COMMAND ${test})
   endif()
+  set_tests_properties(${test} PROPERTIES TIMEOUT 10)
 endforeach()
 
 if(NOT WIN32)
