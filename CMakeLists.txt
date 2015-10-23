@@ -3,21 +3,27 @@
 cmake_minimum_required(VERSION 2.8)
 project(ZeroMQ)
 
+list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}")
+
 option(WITH_OPENPGM "Build with support for OpenPGM" OFF)
 
 if(APPLE)
   option(ZMQ_BUILD_FRAMEWORK "Build as OS X framework" ON)
 endif()
 
-list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}")
-find_package(Sodium)
+option(WITH_SODIUM "Build with libsodium" ON)
+option(WITH_TWEETNACL "Build with tweetnacl" ON)
 
-set(USE_TWEETNACL OFF)
+if(WITH_SODIUM)
+  find_package(Sodium)
+  if(SODIUM_FOUND)
+    add_definitions(-DHAVE_LIBSODIUM)
+    include_directories(${SODIUM_INCLUDE_DIRS})
+  endif()
+endif()
 
-if(SODIUM_FOUND)
-  add_definitions(-DHAVE_LIBSODIUM)
-  include_directories(${SODIUM_INCLUDE_DIRS})
-else()
+if(WITH_TWEETNACL AND NOT SODIUM_FOUND)
+  message(STATUS "Building with TweetNaCL")
   set(USE_TWEETNACL ON)
   add_definitions(-DHAVE_TWEETNACL)
   include_directories(
@@ -29,7 +35,9 @@ else()
     tweetnacl/src/tweetnacl.c
     )
 
-  if(NOT WIN32)
+  if(WIN32)
+    list(APPEND TWEETNACL_SOURCES tweetnacl/contrib/randombytes/winrandom.c)
+  else()
     list(APPEND TWEETNACL_SOURCES tweetnacl/contrib/randombytes/devurandom.c)
   endif()
 endif()
