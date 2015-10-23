@@ -53,6 +53,21 @@ set(tests
         test_sockopt_hwm
         test_heartbeats
         test_poller
+        test_atomics
+        test_bind_src_address
+        test_capabilities
+        test_ipc_wildcard
+        test_metadata
+        test_pair_tipc
+        test_reqrep_device_tipc
+        test_reqrep_tipc
+        test_router_handover
+        test_router_mandatory_tipc
+        test_srcfd
+        test_stream_timeout
+        test_sub_forward_tipc
+        test_xpub_manual
+        test_xpub_welcome_msg
 )
 if(NOT WIN32)
   list(APPEND tests
@@ -65,6 +80,11 @@ if(NOT WIN32)
           test_proxy_terminate
           test_getsockopt_memset
           test_filter_ipc
+          test_connect_delay_tipc
+          test_shutdown_stress_tipc
+          test_stream_exceeds_buffer
+          test_router_mandatory_hwm
+          test_term_endpoint_tipc
   )
   if(HAVE_FORK)
     list(APPEND tests test_fork)
@@ -92,3 +112,13 @@ if(NOT WIN32)
   endif()
 endif()
 
+#Check whether all tests in the current folder are present
+file(READ "${CMAKE_CURRENT_LIST_FILE}" CURRENT_LIST_FILE_CONTENT)
+file(GLOB ALL_TEST_SOURCES "test_*.cpp")
+foreach(TEST_SOURCE ${ALL_TEST_SOURCES})
+  get_filename_component(TESTNAME "${TEST_SOURCE}" NAME_WE)
+  string(REGEX MATCH "${TESTNAME}" MATCH_TESTNAME "${CURRENT_LIST_FILE_CONTENT}")
+  if (NOT MATCH_TESTNAME)
+    message(AUTHOR_WARNING "Test '${TESTNAME}' is not known to CTest.")
+  endif()
+endforeach()
