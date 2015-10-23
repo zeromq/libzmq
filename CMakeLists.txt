@@ -22,7 +22,7 @@ if(WITH_SODIUM)
   endif()
 endif()
 
-if(WITH_TWEETNACL AND NOT SODIUM_FOUND)
+if(WITH_TWEETNACL)
   message(STATUS "Building with TweetNaCL")
   set(USE_TWEETNACL ON)
   add_definitions(-DHAVE_TWEETNACL)
