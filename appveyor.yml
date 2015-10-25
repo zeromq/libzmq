@@ -14,22 +14,26 @@ environment:
     - platform: Win32
       configuration: Release
       WITH_SODIUM: ON
-      WITH_TWEETNACL: OFF
+      WITH_TWEETNACL: ON
     - platform: Win32
+      configuration: Debug
+      WITH_SODIUM: ON
+      WITH_TWEETNACL: ON
+    - platform: x64
       configuration: Release
       WITH_SODIUM: ON
-      WITH_TWEETNACL: OFF
+      WITH_TWEETNACL: ON
     - platform: x64
       configuration: Debug
       WITH_SODIUM: ON
-      WITH_TWEETNACL: OFF
-    - platform: x64
-      configuration: Debug
-      WITH_SODIUM: ON
-      WITH_TWEETNACL: OFF
+      WITH_TWEETNACL: ON
     - platform: Win32
       configuration: Release
       WITH_SODIUM: OFF
+      WITH_TWEETNACL: OFF
+    - platform: Win32
+      configuration: Release
+      WITH_SODIUM: ON
       WITH_TWEETNACL: OFF
     - platform: Win32
       configuration: Release

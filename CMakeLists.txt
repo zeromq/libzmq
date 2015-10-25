@@ -611,7 +611,8 @@ else()
                           PUBLIC_HEADER "${public_headers}"
                           VERSION ${ZMQ_VERSION}
                           SOVERSION "${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.0"
-                          OUTPUT_NAME "libzmq")
+                          OUTPUT_NAME "libzmq"
+                          PREFIX "")
     if(ZMQ_BUILD_FRAMEWORK)
       set_target_properties(libzmq PROPERTIES
                             FRAMEWORK TRUE
@@ -629,7 +630,8 @@ else()
     set_target_properties(libzmq-static PROPERTIES
       PUBLIC_HEADER "${public_headers}"
       COMPILE_DEFINITIONS "ZMQ_STATIC"
-      OUTPUT_NAME "libzmq-static")
+      OUTPUT_NAME "libzmq-static"
+      PREFIX "")
 endif()
 
 target_link_libraries(libzmq ${CMAKE_THREAD_LIBS_INIT})
