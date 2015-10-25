@@ -22,7 +22,7 @@ void randombytes(unsigned char *x,unsigned long long xlen)
     if (xlen < 1048576) i = (unsigned) xlen; else i = 1048576;
 
     ret = CryptGenRandom(hProvider, i, x);
-    if (ret != FALSE) {
+    if (ret == FALSE) {
       Sleep(1);
       continue;
     }
