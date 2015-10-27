@@ -238,6 +238,9 @@
     <ClCompile Include="..\..\..\..\src\decoder_allocators.cpp">
       <Filter>src</Filter>
     </ClCompile>
+	<ClCompile Include="..\..\..\..\src\socket_poller.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\zmq_utils.h">
