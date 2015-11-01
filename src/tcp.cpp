@@ -192,7 +192,6 @@ int zmq::tcp_write (fd_t s_, const void *data_, size_t size_)
                    && errno != EBADF
                    && errno != EDESTADDRREQ
                    && errno != EFAULT
-                   && errno != EINVAL
                    && errno != EISCONN
                    && errno != EMSGSIZE
                    && errno != ENOMEM
@@ -241,7 +240,6 @@ int zmq::tcp_read (fd_t s_, void *data_, size_t size_)
     if (rc == -1) {
         errno_assert (errno != EBADF
                    && errno != EFAULT
-                   && errno != EINVAL
                    && errno != ENOMEM
                    && errno != ENOTSOCK);
         if (errno == EWOULDBLOCK || errno == EINTR)
