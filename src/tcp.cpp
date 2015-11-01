@@ -218,7 +218,6 @@ void zmq::tune_tcp_retransmit_timeout (fd_t sockfd_, int timeout_)
                    && errno != EBADF
                    && errno != EDESTADDRREQ
                    && errno != EFAULT
-                   && errno != EINVAL
                    && errno != EISCONN
                    && errno != EMSGSIZE
                    && errno != ENOMEM
@@ -240,21 +239,21 @@ int zmq::tcp_read (fd_t s_, void *data_, size_t size_)
 
     //  If not a single byte can be read from the socket in non-blocking mode
     //  we'll get an error (this may happen during the speculative read).
-	if (rc == SOCKET_ERROR) {
-		const int last_error = WSAGetLastError();
-		if (last_error == WSAEWOULDBLOCK) {
-			errno = EAGAIN;
-		}
-		else {
-			wsa_assert (last_error == WSAENETDOWN   ||
-				last_error == WSAENETRESET	   ||
-				last_error == WSAECONNABORTED ||
-				last_error == WSAETIMEDOUT	   ||
-				last_error == WSAECONNRESET   ||
-				last_error == WSAECONNREFUSED ||
-				last_error == WSAENOTCONN);
-			errno = wsa_error_to_errno (last_error);
-		}
+    if (rc == SOCKET_ERROR) {
+        const int last_error = WSAGetLastError();
+        if (last_error == WSAEWOULDBLOCK) {
+            errno = EAGAIN;
+        }
+        else {
+            wsa_assert (last_error == WSAENETDOWN   ||
+                last_error == WSAENETRESET	   ||
+                last_error == WSAECONNABORTED ||
+                last_error == WSAETIMEDOUT	   ||
+                last_error == WSAECONNRESET   ||
+                last_error == WSAECONNREFUSED ||
+                last_error == WSAENOTCONN);
+            errno = wsa_error_to_errno (last_error);
+        }
     }
 
     return rc == SOCKET_ERROR ? -1 : rc;
@@ -269,7 +268,6 @@ int zmq::tcp_read (fd_t s_, void *data_, size_t size_)
     if (rc == -1) {
         errno_assert (errno != EBADF
                    && errno != EFAULT
-                   && errno != EINVAL
                    && errno != ENOMEM
                    && errno != ENOTSOCK);
         if (errno == EWOULDBLOCK || errno == EINTR)
