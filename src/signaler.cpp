@@ -511,6 +511,27 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     if (rc != SOCKET_ERROR)
         *r_ = accept (listener, NULL, NULL);
 
+    //  Send/receive large chunk to work around TCP slow start
+    //  This code is a workaround for #1608
+    if (*r_ != INVALID_SOCKET) {
+        size_t dummy_size = 1024 * 1024;        //  1M to overload default receive buffer
+        unsigned char *dummy = (unsigned char *) malloc (dummy_size);
+        int still_to_send = (int) dummy_size;
+        int still_to_recv = (int) dummy_size;
+        while (still_to_send || still_to_recv) {
+            int nbytes;
+            if (still_to_send > 0) {
+                nbytes = ::send (*w_, (char *) (dummy + dummy_size - still_to_send), still_to_send, 0);
+                wsa_assert (nbytes != SOCKET_ERROR);
+                still_to_send -= nbytes;
+            }
+            nbytes = ::recv (*r_, (char *) (dummy + dummy_size - still_to_recv), still_to_recv, 0);
+            wsa_assert (nbytes != SOCKET_ERROR);
+            still_to_recv -= nbytes;
+        }
+        free (dummy);
+    }
+
     //  Save errno if error occurred in bind/listen/connect/accept.
     int saved_errno = 0;
     if (*r_ == INVALID_SOCKET)
