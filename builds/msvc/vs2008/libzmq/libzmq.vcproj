@@ -151,6 +151,7 @@
       <File RelativePath="..\..\..\..\src\session_base.cpp" />
       <File RelativePath="..\..\..\..\src\signaler.cpp" />
       <File RelativePath="..\..\..\..\src\socket_base.cpp" />
+      <File RelativePath="..\..\..\..\src\socket_poller.cpp" />
       <File RelativePath="..\..\..\..\src\stream.cpp" />
       <File RelativePath="..\..\..\..\src\stream_engine.cpp" />
       <File RelativePath="..\..\..\..\src\sub.cpp" />

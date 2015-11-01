@@ -3,20 +3,29 @@
 cmake_minimum_required(VERSION 2.8)
 project(ZeroMQ)
 
+list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}")
+
 option(WITH_OPENPGM "Build with support for OpenPGM" OFF)
 
 if(APPLE)
   option(ZMQ_BUILD_FRAMEWORK "Build as OS X framework" ON)
 endif()
 
-if(WIN32)
-  option(WITH_TWEETNACL "Build with tweetnacl" OFF)
-else()
-  option(WITH_TWEETNACL "Build with tweetnacl" ON)
+option(WITH_SODIUM "Build with libsodium" ON)
+option(WITH_TWEETNACL "Build with tweetnacl" ON)
+
+if(WITH_SODIUM)
+  find_package(Sodium)
+  if(SODIUM_FOUND)
+    add_definitions(-DHAVE_LIBSODIUM)
+    include_directories(${SODIUM_INCLUDE_DIRS})
+  endif()
 endif()
 
 if(WITH_TWEETNACL)
-  add_definitions(-DHAVE_TWEETNACL -DHAVE_LIBSODIUM)
+  message(STATUS "Building with TweetNaCL")
+  set(USE_TWEETNACL ON)
+  add_definitions(-DHAVE_TWEETNACL)
   include_directories(
     tweetnacl/contrib/randombytes
     tweetnacl/src
@@ -25,15 +34,13 @@ if(WITH_TWEETNACL)
   set(TWEETNACL_SOURCES
     tweetnacl/src/tweetnacl.c
     )
+
   if(WIN32)
+    list(APPEND TWEETNACL_SOURCES tweetnacl/contrib/randombytes/winrandom.c)
   else()
     list(APPEND TWEETNACL_SOURCES tweetnacl/contrib/randombytes/devurandom.c)
   endif()
-else()
-  find_library(SODIUM_FOUND sodium HINTS "${CMAKE_PREFIX_PATH}/libsodium/bin")
 endif()
-
-
 
 set(POLLER "" CACHE STRING "Choose polling system. valid values are
                             kqueue, epoll, devpoll, poll or select [default=autodetect]")
@@ -502,9 +509,11 @@ foreach(source ${cxx-sources})
   list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/src/${source})
 endforeach()
 
-foreach(source ${TWEETNACL_SOURCES})
-  list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/${source})
-endforeach()
+if(USE_TWEETNACL)
+  foreach(source ${TWEETNACL_SOURCES})
+    list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/${source})
+  endforeach()
+endif()
 
 foreach(source ${rc-sources})
   list(APPEND sources ${CMAKE_CURRENT_BINARY_DIR}/${source})
@@ -602,7 +611,8 @@ else()
                           PUBLIC_HEADER "${public_headers}"
                           VERSION ${ZMQ_VERSION}
                           SOVERSION "${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.0"
-						  OUTPUT_NAME "libzmq")
+                          OUTPUT_NAME "libzmq"
+                          PREFIX "")
     if(ZMQ_BUILD_FRAMEWORK)
       set_target_properties(libzmq PROPERTIES
                             FRAMEWORK TRUE
@@ -620,10 +630,15 @@ else()
     set_target_properties(libzmq-static PROPERTIES
       PUBLIC_HEADER "${public_headers}"
       COMPILE_DEFINITIONS "ZMQ_STATIC"
-      OUTPUT_NAME "libzmq-static")
+      OUTPUT_NAME "libzmq-static"
+      PREFIX "")
 endif()
 
-target_link_libraries(libzmq ${SODIUM_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(libzmq ${CMAKE_THREAD_LIBS_INIT})
+
+if(SODIUM_FOUND)
+  target_link_libraries(libzmq ${SODIUM_LIBRARIES})
+endif()
 if(HAVE_WS2_32)
   target_link_libraries(libzmq ws2_32)
 elseif(HAVE_WS2)

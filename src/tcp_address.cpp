@@ -445,7 +445,7 @@ int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_, boo
 
     //  Resolve the IP address.
     int rc;
-    if (local_)
+    if (local_ || is_src_)
         rc = resolve_interface (addr_str.c_str (), ipv6_, is_src_);
     else
         rc = resolve_hostname (addr_str.c_str (), ipv6_, is_src_);

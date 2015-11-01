@@ -100,20 +100,15 @@ static int close_wait_ms (int fd_, unsigned int max_ms_ = 2000)
     unsigned int step_ms   = max_ms_ / 10;
     if (step_ms < 1)
         step_ms = 1;
-
     if (step_ms > 100)
         step_ms = 100;
 
     int rc = 0;       // do not sleep on first attempt
-
-    do
-    {
-        if (rc == -1 && errno == EAGAIN)
-        {
+    do {
+        if (rc == -1 && errno == EAGAIN) {
             sleep_ms (step_ms);
             ms_so_far += step_ms;
         }
-
         rc = close (fd_);
     } while (ms_so_far < max_ms_ && rc == -1 && errno == EAGAIN);
 
@@ -187,7 +182,7 @@ void zmq::signaler_t::send ()
     errno_assert (sz == sizeof (inc));
 #elif defined ZMQ_HAVE_WINDOWS
     unsigned char dummy = 0;
-    int nbytes = ::send (w, (char*) &dummy, sizeof (dummy), 0);
+    int nbytes = ::send (w, (char *) &dummy, sizeof (dummy), 0);
     wsa_assert (nbytes != SOCKET_ERROR);
     zmq_assert (nbytes == sizeof (dummy));
 #else
@@ -304,7 +299,7 @@ void zmq::signaler_t::recv ()
 #else
     unsigned char dummy;
 #if defined ZMQ_HAVE_WINDOWS
-    int nbytes = ::recv (r, (char*) &dummy, sizeof (dummy), 0);
+    int nbytes = ::recv (r, (char *) &dummy, sizeof (dummy), 0);
     wsa_assert (nbytes != SOCKET_ERROR);
 #else
     ssize_t nbytes = ::recv (r, &dummy, sizeof (dummy), 0);
@@ -342,7 +337,7 @@ int zmq::signaler_t::recv_failable ()
 #else
     unsigned char dummy;
 #if defined ZMQ_HAVE_WINDOWS
-    int nbytes = ::recv (r, (char*) &dummy, sizeof (dummy), 0);
+    int nbytes = ::recv (r, (char *) &dummy, sizeof (dummy), 0);
     if (nbytes == SOCKET_ERROR) {
 		const int last_error = WSAGetLastError();
 		if (last_error == WSAEWOULDBLOCK) {
@@ -466,11 +461,11 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     //  Set SO_REUSEADDR and TCP_NODELAY on listening socket.
     BOOL so_reuseaddr = 1;
     int rc = setsockopt (listener, SOL_SOCKET, SO_REUSEADDR,
-        (char *)&so_reuseaddr, sizeof so_reuseaddr);
+        (char *) &so_reuseaddr, sizeof so_reuseaddr);
     wsa_assert (rc != SOCKET_ERROR);
     BOOL tcp_nodelay = 1;
     rc = setsockopt (listener, IPPROTO_TCP, TCP_NODELAY,
-        (char *)&tcp_nodelay, sizeof tcp_nodelay);
+        (char *) &tcp_nodelay, sizeof tcp_nodelay);
     wsa_assert (rc != SOCKET_ERROR);
 
     //  Init sockaddr to signaler port.
@@ -496,12 +491,12 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     }
 
     //  Bind listening socket to signaler port.
-    rc = bind (listener, (const struct sockaddr*) &addr, sizeof addr);
+    rc = bind (listener, (const struct sockaddr *) &addr, sizeof addr);
 
     if (rc != SOCKET_ERROR && signaler_port == 0) {
         //  Retrieve ephemeral port number
         int addrlen = sizeof addr;
-        rc = getsockname (listener, (struct sockaddr*) &addr, &addrlen);
+        rc = getsockname (listener, (struct sockaddr *) &addr, &addrlen);
     }
 
     //  Listen for incoming connections.
@@ -510,11 +505,32 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
 
     //  Connect writer to the listener.
     if (rc != SOCKET_ERROR)
-        rc = connect (*w_, (struct sockaddr*) &addr, sizeof addr);
+        rc = connect (*w_, (struct sockaddr *) &addr, sizeof addr);
 
     //  Accept connection from writer.
     if (rc != SOCKET_ERROR)
         *r_ = accept (listener, NULL, NULL);
+
+    //  Send/receive large chunk to work around TCP slow start
+    //  This code is a workaround for #1608
+    if (*r_ != INVALID_SOCKET) {
+        size_t dummy_size = 1024 * 1024;        //  1M to overload default receive buffer
+        unsigned char *dummy = (unsigned char *) malloc (dummy_size);
+        int still_to_send = (int) dummy_size;
+        int still_to_recv = (int) dummy_size;
+        while (still_to_send || still_to_recv) {
+            int nbytes;
+            if (still_to_send > 0) {
+                nbytes = ::send (*w_, (char *) (dummy + dummy_size - still_to_send), still_to_send, 0);
+                wsa_assert (nbytes != SOCKET_ERROR);
+                still_to_send -= nbytes;
+            }
+            nbytes = ::recv (*r_, (char *) (dummy + dummy_size - still_to_recv), still_to_recv, 0);
+            wsa_assert (nbytes != SOCKET_ERROR);
+            still_to_recv -= nbytes;
+        }
+        free (dummy);
+    }
 
     //  Save errno if error occurred in bind/listen/connect/accept.
     int saved_errno = 0;
@@ -582,12 +598,12 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     rc = setsockopt (listener, IPPROTO_TCP, TCP_NODELACK, &on, sizeof on);
     errno_assert (rc != -1);
 
-    rc = bind (listener, (struct sockaddr*) &lcladdr, sizeof lcladdr);
+    rc = bind (listener, (struct sockaddr *) &lcladdr, sizeof lcladdr);
     errno_assert (rc != -1);
 
     socklen_t lcladdr_len = sizeof lcladdr;
 
-    rc = getsockname (listener, (struct sockaddr*) &lcladdr, &lcladdr_len);
+    rc = getsockname (listener, (struct sockaddr *) &lcladdr, &lcladdr_len);
     errno_assert (rc != -1);
 
     rc = listen (listener, 1);
@@ -602,7 +618,7 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     rc = setsockopt (*w_, IPPROTO_TCP, TCP_NODELACK, &on, sizeof on);
     errno_assert (rc != -1);
 
-    rc = connect (*w_, (struct sockaddr*) &lcladdr, sizeof lcladdr);
+    rc = connect (*w_, (struct sockaddr *) &lcladdr, sizeof lcladdr);
     errno_assert (rc != -1);
 
     *r_ = accept (listener, NULL, NULL);
