@@ -347,16 +347,10 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
 #ifdef ZMQ_HAVE_WINDOWS
     zmq_assert (rc == 0);
     if (err != 0) {
-        if (err != WSAECONNREFUSED
-            && err != WSAETIMEDOUT
-            && err != WSAECONNABORTED
-            && err != WSAEHOSTUNREACH
-            && err != WSAENETUNREACH
-            && err != WSAENETDOWN
-            && err != WSAEACCES
-            && err != WSAEINVAL
-            && err != WSAEADDRINUSE
-			&& err != WSAEADDRNOTAVAIL)
+        if (err == WSAEBADF ||
+            err == WSAENOPROTOOPT ||
+            err == WSAENOTSOCK ||
+            err == WSAENOBUFS)
         {
             wsa_assert_no (err);
         }
@@ -370,14 +364,10 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
     if (err != 0) {
         errno = err;
         errno_assert (
-            errno == ECONNREFUSED ||
-            errno == ECONNRESET ||
-            errno == ETIMEDOUT ||
-            errno == EHOSTUNREACH ||
-            errno == ENETUNREACH ||
-            errno == ENETDOWN ||
-            errno == EINVAL ||
-			errno == EADDRNOTAVAIL);
+            errno != EBADF &&
+            errno != ENOPROTOOPT &&
+            errno != ENOTSOCK &&
+            errno != ENOBUFS);
         return retired_fd;
     }
 #endif
