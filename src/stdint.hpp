@@ -36,7 +36,7 @@
 
 #include <inttypes.h>
 
-#elif defined _MSC_VER && _MSC_VER < 1500
+#elif defined _MSC_VER && _MSC_VER < 1600
 
 #ifndef int8_t
 typedef __int8 int8_t;
