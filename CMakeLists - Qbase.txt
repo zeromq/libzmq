@@ -347,6 +347,7 @@ else()
 
     elseif(HAVE_FLAG_LDSCOPE_HIDDEN)
     endif()
+  endif()
 endif()
 
 
