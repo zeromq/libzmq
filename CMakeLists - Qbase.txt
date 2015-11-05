@@ -152,10 +152,10 @@ zmq_find_include("sys/uio.h" ZMQ_HAVE_UIO)
 zmq_find_include("sys/eventfd.h" ZMQ_HAVE_EVENTFD)
 
 #use find library instead of check library which fails on VS2015
-zmq_find_library("ws2_32" HAVE_WS2_32)
-zmq_find_library("ws2" HAVE_WS2)
-zmq_find_library("rpcrt4" HAVE_RPCRT4) # UuidCreateSequential
-zmq_find_library("iphlpapi" HAVE_IPHLAPI) # GetAdaptersAddresses
+#zmq_find_library("ws2_32" HAVE_WS2_32)
+#zmq_find_library("ws2" HAVE_WS2)
+#zmq_find_library("rpcrt4" HAVE_RPCRT4) # UuidCreateSequential
+#zmq_find_library("iphlpapi" HAVE_IPHLAPI) # GetAdaptersAddresses
      
 check_cxx_symbol_exists(SO_PEERCRED sys/socket.h ZMQ_HAVE_SO_PEERCRED)
 check_cxx_symbol_exists(LOCAL_PEERCRED sys/socket.h ZMQ_HAVE_LOCAL_PEERCRED)
