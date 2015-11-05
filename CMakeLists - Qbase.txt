@@ -711,6 +711,7 @@ else()
 message("CMAKE_CXX_FLAGS_DEBUG          - ${CMAKE_CXX_FLAGS_DEBUG}")
 message("CMAKE_CXX_FLAGS_RELEASE        - ${CMAKE_CXX_FLAGS_RELEASE}")
 message("CMAKE_CXX_FLAGS_RELWITHDEBINFO - ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+message("CMAKE_BUILD_TYPE               - ${CMAKE_BUILD_TYPE}")
 endif()
 
 set(perf-tools local_lat
