@@ -697,7 +697,6 @@ else()
 #                         OUTPUT_NAME "zmq")
                          
     #build debug static lib - which is prefixed with lib to distinguish it from shared lib                      
-    target_link_libraries(libzmq-static "${MORE_LIBRARIES}")
     add_library(libzmq-static STATIC ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig})
     set_target_properties(libzmq-static PROPERTIES
                           PUBLIC_HEADER "${public_headers}"
@@ -708,6 +707,7 @@ else()
                           COMPILE_OPTIONS "-DDEBUG"
                           OUTPUT_NAME "libzmq")
     target_compile_options(libzmq-static PRIVATE "${STATIC_COMPILE_OPTIONS}" ${CMAKE_CXX_FLAGS_DEBUG})
+    target_link_libraries(libzmq-static "${MORE_LIBRARIES}")
 
 message("CMAKE_CXX_FLAGS_DEBUG          - ${CMAKE_CXX_FLAGS_DEBUG}")
 message("CMAKE_CXX_FLAGS_RELEASE        - ${CMAKE_CXX_FLAGS_RELEASE}")
