@@ -704,8 +704,8 @@ else()
                           RELWITHDEBINFO_POSTFIX "-mt-${static_flag_release}${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
                           DEBUG_POSTFIX "-mt-${static_flag_debug}gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
                           ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib/Debug"
-                          COMPILE_OPTIONS "-DDEBUG"
-                          OUTPUT_NAME "libzmq")
+                          COMPILE_OPTIONS "-g -DDEBUG"
+                          OUTPUT_NAME "zmq")
     target_compile_options(libzmq-static PRIVATE "${STATIC_COMPILE_OPTIONS}" ${CMAKE_CXX_FLAGS_DEBUG})
     target_link_libraries(libzmq-static "${MORE_LIBRARIES}")
 
