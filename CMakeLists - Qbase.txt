@@ -703,16 +703,15 @@ else()
                           RELEASE_POSTFIX "-mt-${static_flag_release}${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
                           RELWITHDEBINFO_POSTFIX "-mt-${static_flag_release}${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
                           DEBUG_POSTFIX "-mt-${static_flag_debug}gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                          ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib/Debug"
+                          ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_BINARY_DIR}/lib"
+                          ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_BINARY_DIR}/lib"
+                          ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_CURRENT_BINARY_DIR}/lib"
                           OUTPUT_NAME "zmq")
-    target_compile_options(libzmq-static PRIVATE "${STATIC_COMPILE_OPTIONS}" ${CMAKE_CXX_FLAGS_DEBUG})
-    target_compile_options(libzmq-static PRIVATE "$<$<CONFIG:DEBUG>:${CMAKE_CXX_FLAGS_DEBUG}>" -DDEBUG)
+    target_compile_options(libzmq-static PRIVATE "${STATIC_COMPILE_OPTIONS}")
+    target_compile_options(libzmq-static PRIVATE "$<$<CONFIG:DEBUG>:${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG>")
+    target_compile_options(libzmq-static PRIVATE "$<$<CONFIG:RELEASE>:${CMAKE_CXX_FLAGS_RELEASE}>")
+    target_compile_options(libzmq-static PRIVATE "$<$<CONFIG:RELWITHDEBINFO>:${CMAKE_CXX_FLAGS_RELWITHDEBINFO}>")
     target_link_libraries(libzmq-static "${MORE_LIBRARIES}")
-
-message("CMAKE_CXX_FLAGS_DEBUG          - ${CMAKE_CXX_FLAGS_DEBUG}")
-message("CMAKE_CXX_FLAGS_RELEASE        - ${CMAKE_CXX_FLAGS_RELEASE}")
-message("CMAKE_CXX_FLAGS_RELWITHDEBINFO - ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
-message("CMAKE_BUILD_TYPE               - ${CMAKE_BUILD_TYPE}")
 endif()
 
 set(perf-tools local_lat
