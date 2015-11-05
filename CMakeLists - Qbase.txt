@@ -706,6 +706,7 @@ else()
                           ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib/Debug"
                           OUTPUT_NAME "zmq")
     target_compile_options(libzmq-static PRIVATE "${STATIC_COMPILE_OPTIONS}" ${CMAKE_CXX_FLAGS_DEBUG})
+    target_compile_options(libzmq-static PRIVATE "$<$<CONFIG:DEBUG>:${CMAKE_CXX_FLAGS_DEBUG}>" -DDEBUG)
     target_link_libraries(libzmq-static "${MORE_LIBRARIES}")
 
 message("CMAKE_CXX_FLAGS_DEBUG          - ${CMAKE_CXX_FLAGS_DEBUG}")
