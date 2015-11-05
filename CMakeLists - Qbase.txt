@@ -706,11 +706,11 @@ else()
                           ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_BINARY_DIR}/lib"
                           ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_BINARY_DIR}/lib"
                           ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_CURRENT_BINARY_DIR}/lib"
+                          COMPILE_OPTIONS_DEBUG "-g -DDEBUG"
+                          COMPILE_OPTIONS_RELEASE "-O3 -DNDEBUG"
+                          COMPILE_OPTIONS_RELWITHDEBINFO "-g -O2 -DNDEBUG"
                           OUTPUT_NAME "zmq")
     target_compile_options(libzmq-static PRIVATE "${STATIC_COMPILE_OPTIONS}")
-    target_compile_options(libzmq-static PRIVATE "$<$<CONFIG:DEBUG>:${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG>")
-    target_compile_options(libzmq-static PRIVATE "$<$<CONFIG:RELEASE>:${CMAKE_CXX_FLAGS_RELEASE}>")
-    target_compile_options(libzmq-static PRIVATE "$<$<CONFIG:RELWITHDEBINFO>:${CMAKE_CXX_FLAGS_RELWITHDEBINFO}>")
     target_link_libraries(libzmq-static "${MORE_LIBRARIES}")
 endif()
 
