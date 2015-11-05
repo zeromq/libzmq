@@ -687,16 +687,16 @@ if(MSVC)
         
 else()
     #build shared lib   
-    add_library(libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig})
-    set_target_properties(libzmq PROPERTIES
-                         PUBLIC_HEADER "${public_headers}"
-                         RELEASE_POSTFIX "-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                         RELWITHDEBINFO_POSTFIX "-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                         DEBUG_POSTFIX "-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
-                         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
-                         COMPILE_OPTIONS ""
-                         OUTPUT_NAME "zmq")
+#    add_library(libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig})
+#    set_target_properties(libzmq PROPERTIES
+#                         PUBLIC_HEADER "${public_headers}"
+#                         RELEASE_POSTFIX "-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+#                         RELWITHDEBINFO_POSTFIX "-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+#                         DEBUG_POSTFIX "-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+#                         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
+#                         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
+#                         COMPILE_OPTIONS ""
+#                         OUTPUT_NAME "zmq")
                          
     #build debug static lib - which is prefixed with lib to distinguish it from shared lib                      
     target_link_libraries(libzmq "${MORE_LIBRARIES}")
@@ -714,33 +714,6 @@ else()
 message("CMAKE_CXX_FLAGS_DEBUG          - ${CMAKE_CXX_FLAGS_DEBUG}")
 message("CMAKE_CXX_FLAGS_RELEASE        - ${CMAKE_CXX_FLAGS_RELEASE}")
 message("CMAKE_CXX_FLAGS_RELWITHDEBINFO - ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
-
-    #build static lib - which is prefixed with lib to distinguish it from shared lib                      
-    target_link_libraries(libzmq "${MORE_LIBRARIES}")
-    add_library(libzmq-static STATIC ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig})
-    set_target_properties(libzmq-static PROPERTIES
-                          PUBLIC_HEADER "${public_headers}"
-                          RELEASE_POSTFIX "-mt-${static_flag_release}${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                          RELWITHDEBINFO_POSTFIX "-mt-${static_flag_release}${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                          DEBUG_POSTFIX "-mt-${static_flag_debug}gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                          ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib/Release"
-                          COMPILE_OPTIONS ""
-                          OUTPUT_NAME "libzmq")
-    target_compile_options(libzmq-static PRIVATE "${STATIC_COMPILE_OPTIONS}" -O3 -DNDEBUG)
-
-    #build static lib - which is prefixed with lib to distinguish it from shared lib                      
-    target_link_libraries(libzmq "${MORE_LIBRARIES}")
-    add_library(libzmq-static-relwithdebinfo STATIC ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig})
-    set_target_properties(libzmq-static-relwithdebinfo PROPERTIES
-                          PUBLIC_HEADER "${public_headers}"
-                          RELEASE_POSTFIX "-mt-${static_flag_release}${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                          RELWITHDEBINFO_POSTFIX "-mt-${static_flag_release}${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                          DEBUG_POSTFIX "-mt-${static_flag_debug}gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                          ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib/RelWithDebInfo"
-                          COMPILE_OPTIONS ""
-                          OUTPUT_NAME "libzmq")
-    target_compile_options(libzmq-static-relwithdebinfo PRIVATE "${STATIC_COMPILE_OPTIONS}" -O2 -g -DNDEBUG)
-
 endif()
 
 set(perf-tools local_lat
