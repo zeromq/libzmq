@@ -685,16 +685,16 @@ if(MSVC)
         
 else()
     #build shared lib   
-#    add_library(libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig})
-#    set_target_properties(libzmq PROPERTIES
-#                         PUBLIC_HEADER "${public_headers}"
-#                         RELEASE_POSTFIX "-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-#                         RELWITHDEBINFO_POSTFIX "-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-#                         DEBUG_POSTFIX "-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-#                         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
-#                         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
-#                         COMPILE_OPTIONS ""
-#                         OUTPUT_NAME "zmq")
+    add_library(libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig})
+    set_target_properties(libzmq PROPERTIES
+                         PUBLIC_HEADER "${public_headers}"
+                         RELEASE_POSTFIX "-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+                         RELWITHDEBINFO_POSTFIX "-mt-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+                         DEBUG_POSTFIX "-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
+                         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
+                         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
+                         COMPILE_OPTIONS ""
+                         OUTPUT_NAME "zmq")
                          
     #build debug static lib - which is prefixed with lib to distinguish it from shared lib                      
     add_library(libzmq-static STATIC ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig})
