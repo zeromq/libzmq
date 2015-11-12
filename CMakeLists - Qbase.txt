@@ -706,9 +706,6 @@ else()
                           ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_BINARY_DIR}/lib/Debug"
                           ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_BINARY_DIR}/lib/Release"
                           ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_CURRENT_BINARY_DIR}/lib/RelWithDebInfo"
-                          COMPILE_OPTIONS_DEBUG "-g -DDEBUG"
-                          COMPILE_OPTIONS_RELEASE "-O3 -DNDEBUG"
-                          COMPILE_OPTIONS_RELWITHDEBINFO "-g -O2 -DNDEBUG"
                           OUTPUT_NAME "zmq")
     target_compile_options(libzmq-static PRIVATE "${STATIC_COMPILE_OPTIONS}")
     if(CMAKE_BUILD_TYPE MATCHES DEBUG)
@@ -783,8 +780,9 @@ if(MSVC)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/bin/libzmq-${CMAKE_VS_PLATFORM_TOOLSET}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}.pdb DESTINATION lib
             COMPONENT SDK)
   else()
-    install(TARGETS libzmq
+    install(TARGETS libzmq libzmq-static
             RUNTIME DESTINATION bin
+            ARCHIVE DESTINATION lib
             PUBLIC_HEADER DESTINATION include
             COMPONENT Runtime)
   endif()
