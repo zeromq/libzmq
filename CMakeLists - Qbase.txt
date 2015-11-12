@@ -703,9 +703,9 @@ else()
                           RELEASE_POSTFIX "-mt-${static_flag_release}${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
                           RELWITHDEBINFO_POSTFIX "-mt-${static_flag_release}${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
                           DEBUG_POSTFIX "-mt-${static_flag_debug}gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-                          ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_BINARY_DIR}/lib/Debug"
-                          ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_BINARY_DIR}/lib/Release"
-                          ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_CURRENT_BINARY_DIR}/lib/RelWithDebInfo"
+                          ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_BINARY_DIR}/lib"
+                          ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_BINARY_DIR}/lib"
+                          ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_CURRENT_BINARY_DIR}/lib"
                           OUTPUT_NAME "zmq")
     target_compile_options(libzmq-static PRIVATE "${STATIC_COMPILE_OPTIONS}")
     if(CMAKE_BUILD_TYPE MATCHES DEBUG)
