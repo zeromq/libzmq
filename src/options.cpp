@@ -285,13 +285,13 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
 
         case ZMQ_TCP_RECV_BUFFER:
             if (is_int && (value >= 0 && value <= 10) ) {
-                tcp_recv_buffer_size = static_cast<int>(std::pow(2.0, value)) * 1024;
+                tcp_recv_buffer_size = static_cast<unsigned int>(std::pow(2.0, value)) * 1024;
             }
             break;
 
         case ZMQ_TCP_SEND_BUFFER:
             if (is_int && (value >= 0 && value <= 10) ) {
-                tcp_send_buffer_size = static_cast<int>(std::pow(2.0, value)) * 1024;
+                tcp_send_buffer_size = static_cast<unsigned int>(std::pow(2.0, value)) * 1024;
             }
             break;
 
