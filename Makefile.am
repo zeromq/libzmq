@@ -351,6 +351,7 @@ test_apps = \
 	tests/test_proxy_single_socket \
 	tests/test_proxy_terminate \
 	tests/test_getsockopt_memset \
+	tests/test_setsockopt \
 	tests/test_many_sockets \
 	tests/test_ipc_wildcard \
 	tests/test_diffserv \
@@ -565,6 +566,9 @@ tests_test_thread_safe_LDADD = src/libzmq.la
 
 tests_test_socketopt_hwm_SOURCES = tests/test_sockopt_hwm.cpp
 tests_test_socketopt_hwm_LDADD = src/libzmq.la
+
+tests_test_setsockopt_SOURCES = tests/test_setsockopt.cpp
+tests_test_setsockopt_LDADD = src/libzmq.la
 
 tests_test_heartbeats_SOURCES = tests/test_heartbeats.cpp
 tests_test_heartbeats_LDADD = src/libzmq.la
