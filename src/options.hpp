@@ -156,6 +156,10 @@ namespace zmq
         typedef std::vector <tcp_address_mask_t> tcp_accept_filters_t;
         tcp_accept_filters_t tcp_accept_filters;
 
+        // TCO buffer sizes
+        int tcp_recv_buffer_size;
+        int tcp_send_buffer_size;
+
         // IPC accept() filters
 #       if defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
         bool zap_ipc_creds;
