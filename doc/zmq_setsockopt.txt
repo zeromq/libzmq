@@ -1080,8 +1080,8 @@ The default value is 8192.
 
 [horizontal]
 Option value type:: int
-Option value unit:: N/A
-Default value:: 3
+Option value unit:: >0
+Default value:: 8192
 Applicable socket types:: all, when using TCP transport
 
 ZMQ_TCP_SEND_BUFFER: Size of the TCP receive buffer
@@ -1093,8 +1093,8 @@ The default value is 8192.
 
 [horizontal]
 Option value type:: int
-Option value unit:: N/A
-Default value:: 3
+Option value unit:: >0
+Default value:: 8192
 Applicable socket types:: all, when using TCP transport
 
 RETURN VALUE
