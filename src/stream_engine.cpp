@@ -842,7 +842,7 @@ int zmq::stream_engine_t::push_msg_to_session (msg_t *msg_)
 }
 
 int zmq::stream_engine_t::push_raw_msg_to_session (msg_t *msg_) {
-    if (metadata)
+    if (metadata && metadata != msg_->metadata())
         msg_->set_metadata(metadata);
     return push_msg_to_session(msg_);
 }
