@@ -5,6 +5,8 @@
 
 * Fixed #1632 - build failure using latest libsodium.
 
+* Fixed #1644 - assertion failure in msg.cpp:390 on STREAM sockets.
+
 
 0MQ version 4.1.3 stable, released on 2015/08/17
 ================================================
