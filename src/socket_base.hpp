@@ -173,7 +173,7 @@ namespace zmq
         void monitor_event (int event_, int value_, const std::string& addr_);
 
         // Monitor socket cleanup
-        void stop_monitor ();
+        void stop_monitor (bool send_monitor_stopped_event_ = true);
 
         // Next assigned name on a zmq_connect() call used by ROUTER and STREAM socket types
         std::string connect_rid;
