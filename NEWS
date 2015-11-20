@@ -1,6 +1,8 @@
 0MQ version 4.1.4 stable, released on 2015/xx/xx
 ================================================
 
+* Fixed #1315 - socket monitor hangs if bind/setsockopt failed.
+
 * Fixed #1399 - assertion failure in tcp.cpp after network reconnect.
 
 * Fixed #1632 - build failure using latest libsodium.
