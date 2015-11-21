@@ -92,6 +92,12 @@ namespace zmq
         //  Holds the prefetched message.
         msg_t prefetched_msg;
 
+        //  The pipe we are currently reading from
+        zmq::pipe_t *current_in;
+
+        //  Should current_in should be terminate after all parts received?
+        bool terminate_current_in;
+
         //  If true, more incoming message parts are expected.
         bool more_in;
 
