@@ -325,6 +325,7 @@ ZMQ_EXPORT uint32_t zmq_msg_routing_id (zmq_msg_t *msg);
 #define ZMQ_THREAD_SAFE 81
 #define ZMQ_TCP_RECV_BUFFER 82
 #define ZMQ_TCP_SEND_BUFFER 83
+#define ZMQ_MULTICAST_MAXTPDU 84
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1
