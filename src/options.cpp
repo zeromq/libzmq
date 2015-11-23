@@ -41,6 +41,7 @@ zmq::options_t::options_t () :
     rate (100),
     recovery_ivl (10000),
     multicast_hops (1),
+    multicast_maxtpdu (1500),
     sndbuf (-1),
     rcvbuf (-1),
     tos (0),
@@ -207,6 +208,13 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         case ZMQ_MULTICAST_HOPS:
             if (is_int && value > 0) {
                 multicast_hops = value;
+                return 0;
+            }
+            break;
+
+        case ZMQ_MULTICAST_MAXTPDU:
+            if (is_int && value > 0) {
+                multicast_maxtpdu = value;
                 return 0;
             }
             break;
@@ -731,6 +739,13 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
         case ZMQ_MULTICAST_HOPS:
             if (is_int) {
                 *value = multicast_hops;
+                return 0;
+            }
+            break;
+
+        case ZMQ_MULTICAST_MAXTPDU:
+            if (is_int) {
+                *value = multicast_maxtpdu;
                 return 0;
             }
             break;

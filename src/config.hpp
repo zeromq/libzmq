@@ -84,9 +84,6 @@ namespace zmq
         //  possible latencies.
         clock_precision = 1000000,
 
-        //  Maximum transport data unit size for PGM (TPDU).
-        pgm_max_tpdu = 1500,
-
         //  On some OSes the signaler has to be emulated using a TCP
         //  connection. In such cases following port is used.
         //  If 0, it lets the OS choose a free port without requiring use of a 

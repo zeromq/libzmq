@@ -79,6 +79,10 @@ namespace zmq
         // Sets the time-to-live field in every multicast packet sent.
         int multicast_hops;
 
+        // Sets the maximum transport data unit size in every multicast
+        // packet sent.
+        int multicast_maxtpdu;
+
         // SO_SNDBUF and SO_RCVBUF to be passed to underlying transport sockets.
         int sndbuf;
         int rcvbuf;
