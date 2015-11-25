@@ -21,7 +21,13 @@ if [ $BUILD_TYPE == "default" ]; then
     ( cd libsodium; ./autogen.sh; ./configure --prefix=$BUILD_PREFIX; make check; make install)
 
     #   Build and check this project
-    (./autogen.sh && ./configure "${CONFIG_OPTS[@]}" --with-libsodium=yes && make && make check && make install) || exit 1
+    (
+        ./autogen.sh &&
+        ./configure "${CONFIG_OPTS[@]}" --with-libsodium=yes &&
+        make &&
+        ( if make check; then true; else cat test-suite.log; exit 1; fi ) &&
+        make install
+    ) || exit 1
 else
     cd ./builds/${BUILD_TYPE} && ./ci_build.sh
 fi
