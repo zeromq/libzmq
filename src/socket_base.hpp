@@ -109,6 +109,8 @@ namespace zmq
         void out_event ();
         void timer_event (int id_);
 
+        void flush_commands();
+
         //  i_pipe_events interface implementation.
         void read_activated (pipe_t *pipe_);
         void write_activated (pipe_t *pipe_);
