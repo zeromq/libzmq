@@ -1417,6 +1417,13 @@ void zmq::socket_base_t::check_destroy ()
     }
 }
 
+void zmq::socket_base_t::flush_commands ()
+{
+    ENTER_MUTEX();
+    process_commands (0, false);
+    EXIT_MUTEX();
+}
+
 void zmq::socket_base_t::read_activated (pipe_t *pipe_)
 {
     xread_activated (pipe_);
