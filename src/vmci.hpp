@@ -27,51 +27,35 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "testutil.hpp"
+#ifndef __ZMQ_VMCI_HPP_INCLUDED__
+#define __ZMQ_VMCI_HPP_INCLUDED__
 
-int main (void)
+#include <stdint.h>
+#include <string>
+
+#include "platform.hpp"
+#include "fd.hpp"
+#include "ctx.hpp"
+
+#if defined ZMQ_HAVE_VMCI
+
+#if defined ZMQ_HAVE_WINDOWS
+#include "windows.hpp"
+#else
+#include <sys/time.h>
+#endif
+
+namespace zmq
 {
-#if !defined (ZMQ_HAVE_WINDOWS) && !defined (ZMQ_HAVE_OPENVMS)
-    assert (zmq_has ("ipc"));
-#else
-    assert (!zmq_has ("ipc"));
-#endif
+    void tune_vmci_buffer_size (ctx_t *context_, fd_t sockfd_, uint64_t default_size_, uint64_t min_size_, uint64_t max_size_);
 
-#if defined (ZMQ_HAVE_OPENPGM)
-    assert (zmq_has ("pgm"));
+#if defined ZMQ_HAVE_WINDOWS
+    void tune_vmci_connect_timeout (ctx_t *context_, fd_t sockfd_, DWORD timeout_);
 #else
-    assert (!zmq_has ("pgm"));
+    void tune_vmci_connect_timeout (ctx_t *context_, fd_t sockfd_, struct timeval timeout_);
 #endif
-    
-#if defined (ZMQ_HAVE_TIPC)
-    assert (zmq_has ("tipc"));
-#else
-    assert (!zmq_has ("tipc"));
-#endif
-    
-#if defined (ZMQ_HAVE_NORM)
-    assert (zmq_has ("norm"));
-#else
-    assert (!zmq_has ("norm"));
-#endif
-    
-#if defined (HAVE_LIBSODIUM)
-    assert (zmq_has ("curve"));
-#else
-    assert (!zmq_has ("curve"));
-#endif
-    
-#if defined (HAVE_LIBGSSAPI_KRB5)
-    assert (zmq_has ("gssapi"));
-#else
-    assert (!zmq_has ("gssapi"));
-#endif
-
-#if defined (ZMQ_HAVE_VMCI)
-    assert (zmq_has("vmci"));
-#else
-    assert (!zmq_has("vmci"));
-#endif
-
-    return 0;
 }
+
+#endif
+
+#endif

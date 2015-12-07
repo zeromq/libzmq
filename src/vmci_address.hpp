@@ -27,51 +27,46 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "testutil.hpp"
+#ifndef __ZMQ_VMCI_ADDRESS_HPP_INCLUDED__
+#define __ZMQ_VMCI_ADDRESS_HPP_INCLUDED__
 
-int main (void)
+#include <string>
+
+#include "platform.hpp"
+#include "ctx.hpp"
+
+#if defined(ZMQ_HAVE_VMCI)
+#include <vmci_sockets.h>
+
+namespace zmq
 {
-#if !defined (ZMQ_HAVE_WINDOWS) && !defined (ZMQ_HAVE_OPENVMS)
-    assert (zmq_has ("ipc"));
-#else
-    assert (!zmq_has ("ipc"));
-#endif
+//    class ctx_t;
+    class vmci_address_t
+    {
+    public:
+        vmci_address_t (ctx_t *parent_);
+        vmci_address_t (const sockaddr *sa, socklen_t sa_len, ctx_t *parent_);
+        ~vmci_address_t ();
 
-#if defined (ZMQ_HAVE_OPENPGM)
-    assert (zmq_has ("pgm"));
-#else
-    assert (!zmq_has ("pgm"));
-#endif
-    
-#if defined (ZMQ_HAVE_TIPC)
-    assert (zmq_has ("tipc"));
-#else
-    assert (!zmq_has ("tipc"));
-#endif
-    
-#if defined (ZMQ_HAVE_NORM)
-    assert (zmq_has ("norm"));
-#else
-    assert (!zmq_has ("norm"));
-#endif
-    
-#if defined (HAVE_LIBSODIUM)
-    assert (zmq_has ("curve"));
-#else
-    assert (!zmq_has ("curve"));
-#endif
-    
-#if defined (HAVE_LIBGSSAPI_KRB5)
-    assert (zmq_has ("gssapi"));
-#else
-    assert (!zmq_has ("gssapi"));
-#endif
+        //  This function sets up the address for VMCI transport.
+        int resolve (const char *path_);
 
-#if defined (ZMQ_HAVE_VMCI)
-    assert (zmq_has("vmci"));
-#else
-    assert (!zmq_has("vmci"));
-#endif
+        //  The opposite to resolve()
+        int to_string (std::string &addr_);
 
-    return 0;
+        const sockaddr *addr () const;
+        socklen_t addrlen () const;
+
+    private:
+        struct sockaddr_vm address;
+        ctx_t *parent;
+
+        vmci_address_t ();
+        vmci_address_t (const vmci_address_t&);
+        const vmci_address_t &operator = (const vmci_address_t&);
+    };
 }
+
+#endif
+
+#endif

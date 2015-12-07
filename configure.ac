@@ -488,6 +488,28 @@ if test "x$with_norm_ext" != "xno"; then
     LIBS="-lnorm $LIBS"
 fi
 
+# build using vmci
+have_vmci_library="no"
+
+AC_ARG_WITH([vmci], [AS_HELP_STRING([--with-vmci],
+    [build libzmq with VMCI transport [default=no]])],
+    [have_vmci_ext=$withval],
+    [have_vmci_ext=yes])
+
+if test "x$have_vmci_ext" != "xno"; then
+    AC_DEFINE(ZMQ_HAVE_VMCI, 1, [Have VMCI transport])
+
+    if test "x$have_vmci_ext" != "xyes"; then
+        vmci_path="${have_vmci_ext}"
+        LIBZMQ_VMCI_CXXFLAGS="-I${vmci_path}"
+        LIBZMQ_VMCI_LDFLAGS="-I${vmci_path}"
+        LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_VMCI_CXXFLAGS} ${LIBZMQ_EXTRA_CXXFLAGS}"
+        LIBZMQ_EXTRA_LDFLAGS="${LIBZMQ_VMCI_LDFLAGS} ${LIBZMQ_EXTRA_LDFLAGS}"
+    fi
+fi
+
+AM_CONDITIONAL(HAVE_VMCI, test "x$have_vmci_ext" != "xno")
+
 # Set -Wall, -Werror and -pedantic
 AC_LANG_PUSH([C++])
 
@@ -566,6 +588,9 @@ AM_CONDITIONAL(HAVE_FORK, test "x$ac_cv_func_fork" = "xyes")
 AC_SUBST(LIBZMQ_EXTRA_CFLAGS)
 AC_SUBST(LIBZMQ_EXTRA_CXXFLAGS)
 AC_SUBST(LIBZMQ_EXTRA_LDFLAGS)
+
+AC_SUBST(LIBZMQ_VMCI_CXXFLAGS)
+AC_SUBST(LIBZMQ_VMCI_LDFLAGS)
 
 # set pkgconfigdir, allow override
 AC_ARG_WITH([pkgconfigdir],

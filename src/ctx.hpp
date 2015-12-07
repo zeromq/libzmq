@@ -121,6 +121,11 @@ namespace zmq
                 const endpoint_t &endpoint_, pipe_t **pipes_);
         void connect_pending (const char *addr_, zmq::socket_base_t *bind_socket_);
 
+#ifdef ZMQ_HAVE_VMCI
+        // Return family for the VMCI socket or -1 if it's not available.
+        int get_vmci_socket_family ();
+#endif
+
         enum {
             term_tid = 0,
             reaper_tid = 1
@@ -219,6 +224,12 @@ namespace zmq
 #endif
         enum side { connect_side, bind_side };
         void connect_inproc_sockets(zmq::socket_base_t *bind_socket_, options_t& bind_options, const pending_connection_t &pending_connection_, side side_);
+
+#ifdef ZMQ_HAVE_VMCI
+        int vmci_fd;
+        int vmci_family;
+        mutex_t vmci_sync;
+#endif
     };
 
 }
