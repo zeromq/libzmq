@@ -92,6 +92,13 @@ if(NOT WIN32)
   endif()
 endif()
 
+if(WITH_VMCI)
+  list(APPEND tests
+          test_pair_vmci
+          test_reqrep_vmci
+  )
+endif()
+
 foreach(test ${tests})
   add_executable(${test} ${test}.cpp)
   target_link_libraries(${test} libzmq)

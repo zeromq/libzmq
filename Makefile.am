@@ -196,6 +196,14 @@ src_libzmq_la_SOURCES = \
 	src/v2_encoder.cpp \
 	src/v2_encoder.hpp \
 	src/v2_protocol.hpp \
+	src/vmci.cpp \
+	src/vmci.hpp \
+	src/vmci_address.cpp \
+	src/vmci_address.hpp \
+	src/vmci_connecter.cpp \
+	src/vmci_connecter.hpp \
+	src/vmci_listener.cpp \
+	src/vmci_listener.hpp \
 	src/windows.hpp \
 	src/wire.hpp \
 	src/xpub.hpp \
@@ -660,6 +668,21 @@ test_apps += tests/test_abstract_ipc
 
 tests_test_abstract_ipc_SOURCES = tests/test_abstract_ipc.cpp
 tests_test_abstract_ipc_LDADD = src/libzmq.la
+
+endif
+
+if HAVE_VMCI
+test_apps += test_pair_vmci test_reqrep_vmci
+
+test_pair_vmci_SOURCES = tests/test_pair_vmci.cpp
+test_pair_vmci_LDADD = libzmq.la
+test_pair_vmci_LDFLAGS = @LIBZMQ_VMCI_LDFLAGS@
+test_pair_vmci_CXXFLAGS = @LIBZMQ_VMCI_CXXFLAGS@
+
+test_reqrep_vmci_SOURCES = tests/test_reqrep_vmci.cpp
+test_reqrep_vmci_LDADD = libzmq.la
+test_reqrep_vmci_LDFLAGS = @LIBZMQ_VMCI_LDFLAGS@
+test_reqrep_vmci_CXXFLAGS = @LIBZMQ_VMCI_CXXFLAGS@
 
 endif
 

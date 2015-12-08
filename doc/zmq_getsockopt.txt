@@ -777,6 +777,54 @@ Option value unit:: >0
 Default value:: 8192
 Applicable socket types:: all, when using TCP transport
 
+ZMQ_VMCI_BUFFER_SIZE: Retrieve buffer size of the VMCI socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The `ZMQ_VMCI_BUFFER_SIZE` option shall retrieve the size of the underlying
+buffer for the socket. Used during negotiation before the connection is established.
+
+[horizontal]
+Option value type:: uint64_t
+Option value unit:: bytes
+Default value:: 65546
+Applicable socket types:: all, when using VMCI transport
+
+
+ZMQ_VMCI_BUFFER_MIN_SIZE: Retrieve min buffer size of the VMCI socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The `ZMQ_VMCI_BUFFER_MIN_SIZE` option shall retrieve the min size of the underlying
+buffer for the socket. Used during negotiation before the connection is established.
+
+[horizontal]
+Option value type:: uint64_t
+Option value unit:: bytes
+Default value:: 128
+Applicable socket types:: all, when using VMCI transport
+
+
+ZMQ_VMCI_BUFFER_MAX_SIZE: Retrieve max buffer size of the VMCI socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The `ZMQ_VMCI_BUFFER_MAX_SIZE` option shall retrieve the max size of the underlying
+buffer for the socket. Used during negotiation before the connection is established.
+
+[horizontal]
+Option value type:: uint64_t
+Option value unit:: bytes
+Default value:: 262144
+Applicable socket types:: all, when using VMCI transport
+
+
+ZMQ_VMCI_CONNECT_TIMEOUT: Retrieve connection timeout of the VMCI socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The `ZMQ_VMCI_CONNECT_TIMEOUT` option shall retrieve connection timeout
+for the socket.
+
+[horizontal]
+Option value type:: int
+Option value unit:: milliseconds
+Default value:: -1
+Applicable socket types:: all, when using VMCI transport
+
+
 RETURN VALUE
 ------------
 The _zmq_getsockopt()_ function shall return zero if successful. Otherwise it

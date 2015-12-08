@@ -40,6 +40,9 @@ int main (void)
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
     const char *ep_wc_ipc = "ipc://*";
 #endif
+#if defined ZMQ_HAVE_VMCI
+    const char *ep_wc_vmci = "vmci://*:*";
+#endif
 
     //  Create infrastructure.
     void *ctx = zmq_ctx_new ();
@@ -128,6 +131,12 @@ int main (void)
     rc = zmq_bind (pull, ep_wc_ipc);
     assert (rc == 0);
 #endif
+#if defined ZMQ_HAVE_VMCI
+    void *req = zmq_socket (ctx, ZMQ_REQ);
+    assert (req);
+    rc = zmq_bind (req, ep_wc_vmci);
+    assert (rc == 0);
+#endif
 
     // Unbind sockets binded by wild-card address
     rc = zmq_getsockopt (push, ZMQ_LAST_ENDPOINT, buf, (size_t *)&buf_size);
@@ -138,6 +147,12 @@ int main (void)
     rc = zmq_getsockopt (pull, ZMQ_LAST_ENDPOINT, buf, (size_t *)&buf_size);
     assert (rc == 0);
     rc = zmq_unbind (pull, buf);
+    assert (rc == 0);
+#endif
+#if defined ZMQ_HAVE_VMCI
+    rc = zmq_getsockopt (req, ZMQ_LAST_ENDPOINT, buf, (size_t *)&buf_size);
+    assert (rc == 0);
+    rc = zmq_unbind(req, buf);
     assert (rc == 0);
 #endif
 
@@ -154,12 +169,22 @@ int main (void)
     rc = zmq_bind (pull, ep_wc_ipc);
     assert (rc == 0);
 #endif
+#if defined ZMQ_HAVE_VMCI
+    req = zmq_socket (ctx, ZMQ_REQ);
+    assert (req);
+    rc = zmq_bind (req, ep_wc_vmci);
+    assert (rc == 0);
+#endif
 
     // Sockets binded by wild-card address can't be unbinded by wild-card address
     rc = zmq_unbind (push, ep_wc_tcp);
     assert (rc == -1 && zmq_errno () == ENOENT);
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
     rc = zmq_unbind (pull, ep_wc_ipc);
+    assert (rc == -1 && zmq_errno () == ENOENT);
+#endif
+#if defined ZMQ_HAVE_VMCI
+    rc = zmq_unbind (req, ep_wc_vmci);
     assert (rc == -1 && zmq_errno () == ENOENT);
 #endif
 

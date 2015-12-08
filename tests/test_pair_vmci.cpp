@@ -27,51 +27,42 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <string>
+#include <sstream>
+#include <vmci_sockets.h>
+
 #include "testutil.hpp"
 
 int main (void)
 {
-#if !defined (ZMQ_HAVE_WINDOWS) && !defined (ZMQ_HAVE_OPENVMS)
-    assert (zmq_has ("ipc"));
-#else
-    assert (!zmq_has ("ipc"));
-#endif
+    setup_test_environment();
+    void *ctx = zmq_ctx_new ();
+    assert (ctx);
 
-#if defined (ZMQ_HAVE_OPENPGM)
-    assert (zmq_has ("pgm"));
-#else
-    assert (!zmq_has ("pgm"));
-#endif
-    
-#if defined (ZMQ_HAVE_TIPC)
-    assert (zmq_has ("tipc"));
-#else
-    assert (!zmq_has ("tipc"));
-#endif
-    
-#if defined (ZMQ_HAVE_NORM)
-    assert (zmq_has ("norm"));
-#else
-    assert (!zmq_has ("norm"));
-#endif
-    
-#if defined (HAVE_LIBSODIUM)
-    assert (zmq_has ("curve"));
-#else
-    assert (!zmq_has ("curve"));
-#endif
-    
-#if defined (HAVE_LIBGSSAPI_KRB5)
-    assert (zmq_has ("gssapi"));
-#else
-    assert (!zmq_has ("gssapi"));
-#endif
+    std::stringstream s;
+    s << "vmci://" << VMCISock_GetLocalCID() << ":" << 5560;
+    std::string endpoint = s.str();
 
-#if defined (ZMQ_HAVE_VMCI)
-    assert (zmq_has("vmci"));
-#else
-    assert (!zmq_has("vmci"));
-#endif
+    void *sb = zmq_socket (ctx, ZMQ_PAIR);
+    assert (sb);
+    int rc = zmq_bind (sb, endpoint.c_str());
+    assert (rc == 0);
+
+    void *sc = zmq_socket (ctx, ZMQ_PAIR);
+    assert (sc);
+    rc = zmq_connect (sc, endpoint.c_str());
+    assert (rc == 0);
+
+    bounce (sb, sc);
+
+    rc = zmq_close (sc);
+    assert (rc == 0);
+
+    rc = zmq_close (sb);
+    assert (rc == 0);
+
+    rc = zmq_ctx_term (ctx);
+    assert (rc == 0);
 
     return 0;
 }

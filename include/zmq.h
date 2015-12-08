@@ -326,6 +326,10 @@ ZMQ_EXPORT uint32_t zmq_msg_routing_id (zmq_msg_t *msg);
 #define ZMQ_TCP_RECV_BUFFER 82
 #define ZMQ_TCP_SEND_BUFFER 83
 #define ZMQ_MULTICAST_MAXTPDU 84
+#define ZMQ_VMCI_BUFFER_SIZE 85
+#define ZMQ_VMCI_BUFFER_MIN_SIZE 86
+#define ZMQ_VMCI_BUFFER_MAX_SIZE 87
+#define ZMQ_VMCI_CONNECT_TIMEOUT 88
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1

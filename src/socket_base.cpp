@@ -52,6 +52,7 @@
 #include "ipc_listener.hpp"
 #include "tipc_listener.hpp"
 #include "tcp_connecter.hpp"
+#include "vmci_listener.hpp"
 #include "io_thread.hpp"
 #include "session_base.hpp"
 #include "config.hpp"
@@ -67,6 +68,12 @@
 #include "tipc_address.hpp"
 #include "mailbox.hpp"
 #include "mailbox_safe.hpp"
+
+#if defined ZMQ_HAVE_VMCI
+#include "vmci_address.hpp"
+#include "vmci_listener.hpp"
+#endif
+
 #ifdef ZMQ_HAVE_OPENPGM
 #include "pgm_socket.hpp"
 #endif
@@ -244,7 +251,8 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
     &&  protocol_ != "pgm"
     &&  protocol_ != "epgm"
     &&  protocol_ != "tipc"
-    &&  protocol_ != "norm") {
+    &&  protocol_ != "norm"
+    &&  protocol_ != "vmci") {
         errno = EPROTONOSUPPORT;
         return -1;
     }
@@ -276,6 +284,13 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
     // TIPC transport is only available on Linux.
 #if !defined ZMQ_HAVE_TIPC
     if (protocol_ == "tipc") {
+        errno = EPROTONOSUPPORT;
+        return -1;
+    }
+#endif
+
+#if !defined ZMQ_HAVE_VMCI
+    if (protocol_ == "vmci") {
         errno = EPROTONOSUPPORT;
         return -1;
     }
@@ -595,6 +610,27 @@ int zmq::socket_base_t::bind (const char *addr_)
         return 0;
     }
 #endif
+#if defined ZMQ_HAVE_VMCI
+    if (protocol == "vmci") {
+        vmci_listener_t *listener = new (std::nothrow) vmci_listener_t (
+            io_thread, this, options);
+        alloc_assert (listener);
+        int rc = listener->set_address (address.c_str ());
+        if (rc != 0) {
+            LIBZMQ_DELETE(listener);
+            event_bind_failed (address, zmq_errno ());
+            EXIT_MUTEX();
+            return -1;
+        }
+
+        listener->get_address (last_endpoint);
+
+        add_endpoint (last_endpoint.c_str(), (own_t *) listener, NULL);
+        options.connected = true;
+        EXIT_MUTEX();
+        return 0;
+    }
+#endif
 
     EXIT_MUTEX();
     zmq_assert (false);
@@ -753,7 +789,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         return -1;
     }
 
-    address_t *paddr = new (std::nothrow) address_t (protocol, address);
+    address_t *paddr = new (std::nothrow) address_t (protocol, address, this->get_ctx ());
     alloc_assert (paddr);
 
     //  Resolve address (if needed by the protocol)
@@ -831,6 +867,19 @@ int zmq::socket_base_t::connect (const char *addr_)
         paddr->resolved.tipc_addr = new (std::nothrow) tipc_address_t ();
         alloc_assert (paddr->resolved.tipc_addr);
         int rc = paddr->resolved.tipc_addr->resolve (address.c_str());
+        if (rc != 0) {
+            LIBZMQ_DELETE(paddr);
+            EXIT_MUTEX();
+            return -1;
+        }
+    }
+#endif
+#if defined ZMQ_HAVE_VMCI
+    else
+    if (protocol == "vmci") {
+        paddr->resolved.vmci_addr = new (std::nothrow) vmci_address_t (this->get_ctx ());
+        alloc_assert (paddr->resolved.vmci_addr);
+        int rc = paddr->resolved.vmci_addr->resolve (address.c_str ());
         if (rc != 0) {
             LIBZMQ_DELETE(paddr);
             EXIT_MUTEX();

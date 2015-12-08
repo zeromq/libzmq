@@ -6,6 +6,7 @@ project(ZeroMQ)
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}")
 
 option(WITH_OPENPGM "Build with support for OpenPGM" OFF)
+option(WITH_VMCI "Build with support for VMware VMCI socket" OFF)
 
 if(APPLE)
   option(ZMQ_BUILD_FRAMEWORK "Build as OS X framework" ON)
@@ -501,6 +502,12 @@ if(WITH_OPENPGM)
   link_directories(${OPENPGM_LIBRARY_DIRS})
   set(OPTIONAL_LIBRARIES ${OPENPGM_LIBRARIES})
 endif(WITH_OPENPGM)
+
+if(WITH_VMCI)
+    add_definitions(-DZMQ_HAVE_VMCI)
+    include_directories(${VMCI_INCLUDE_DIRS})
+    list(APPEND cxx-sources vmci_address.cpp vmci_connecter.cpp vmci_listener.cpp vmci.cpp)
+endif(WITH_VMCI)
 
 #-----------------------------------------------------------------------------
 # source generators

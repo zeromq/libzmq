@@ -55,6 +55,10 @@
 #endif
 #endif
 
+#ifdef ZMQ_HAVE_VMCI
+#include <vmci_sockets.h>
+#endif
+
 #define ZMQ_CTX_TAG_VALUE_GOOD 0xabadcafe
 #define ZMQ_CTX_TAG_VALUE_BAD  0xdeadbeef
 
@@ -83,6 +87,10 @@ zmq::ctx_t::ctx_t () :
 {
 #ifdef HAVE_FORK
     pid = getpid();
+#endif
+#ifdef ZMQ_HAVE_VMCI
+    vmci_fd = -1;
+    vmci_family = -1;
 #endif
 }
 
@@ -182,6 +190,16 @@ int zmq::ctx_t::terminate ()
         zmq_assert (sockets.empty ());
     }
     slot_sync.unlock ();
+
+#ifdef ZMQ_HAVE_VMCI
+    vmci_sync.lock ();
+
+    VMCISock_ReleaseAFValueFd (vmci_fd);
+    vmci_family = -1;
+    vmci_fd = -1;
+
+    vmci_sync.unlock ();
+#endif
 
     //  Deallocate the resources.
     delete this;
@@ -577,6 +595,30 @@ void zmq::ctx_t::connect_inproc_sockets (zmq::socket_base_t *bind_socket_,
         pending_connection_.bind_pipe->flush ();
     }
 }
+
+#ifdef ZMQ_HAVE_VMCI
+
+int zmq::ctx_t::get_vmci_socket_family ()
+{
+    vmci_sync.lock ();
+
+    if (vmci_fd == -1)  {
+        vmci_family = VMCISock_GetAFValueFd (&vmci_fd);
+
+        if (vmci_fd != -1) {
+#ifdef FD_CLOEXEC
+            int rc = fcntl (vmci_fd, F_SETFD, FD_CLOEXEC);
+            errno_assert (rc != -1);
+#endif
+        }
+    }
+
+    vmci_sync.unlock ();
+
+    return vmci_family;
+}
+
+#endif
 
 //  The last used socket ID, or 0 if no socket was used so far. Note that this
 //  is a global variable. Thus, even sockets created in different contexts have

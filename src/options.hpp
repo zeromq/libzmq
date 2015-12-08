@@ -225,6 +225,12 @@ namespace zmq
         //  Time in milliseconds to wait for a PING response before disconnecting
         int heartbeat_timeout;
 
+#       if defined ZMQ_HAVE_VMCI
+        uint64_t vmci_buffer_size;
+        uint64_t vmci_buffer_min_size;
+        uint64_t vmci_buffer_max_size;
+        int vmci_connect_timeout;
+#       endif
     };
 }
 
