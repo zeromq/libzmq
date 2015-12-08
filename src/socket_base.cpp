@@ -52,7 +52,6 @@
 #include "ipc_listener.hpp"
 #include "tipc_listener.hpp"
 #include "tcp_connecter.hpp"
-#include "vmci_listener.hpp"
 #include "io_thread.hpp"
 #include "session_base.hpp"
 #include "config.hpp"
