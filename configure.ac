@@ -494,7 +494,7 @@ have_vmci_library="no"
 AC_ARG_WITH([vmci], [AS_HELP_STRING([--with-vmci],
     [build libzmq with VMCI transport [default=no]])],
     [have_vmci_ext=$withval],
-    [have_vmci_ext=yes])
+    [have_vmci_ext=no])
 
 if test "x$have_vmci_ext" != "xno"; then
     AC_DEFINE(ZMQ_HAVE_VMCI, 1, [Have VMCI transport])
