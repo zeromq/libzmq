@@ -160,6 +160,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
     && defined ZMQ_HAVE_IFADDRS)
 
 #include <ifaddrs.h>
+#include <net/if.h>
 
 //  On these platforms, network interface name can be queried
 //  using getifaddrs function.
@@ -428,6 +429,23 @@ int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_, boo
           addr_str [addr_str.size () - 1] == ']')
         addr_str = addr_str.substr (1, addr_str.size () - 2);
 
+    // Test the '%' to know if we have an interface name / zone_id in the address
+    // Reference: https://tools.ietf.org/html/rfc4007
+    std::size_t pos = addr_str.rfind("%");
+    uint32_t zone_id = 0;
+    if (pos != std::string::npos) {
+        std::string if_str = addr_str.substr(pos + 1);
+        addr_str = addr_str.substr(0, pos);
+        if (isalpha (if_str.at (0)))
+            zone_id = if_nametoindex(if_str.c_str());
+        else
+            zone_id = (uint32_t) atoi (if_str.c_str ());
+        if (zone_id == 0) {
+            errno = EINVAL;
+            return -1;
+        }
+    }
+
     //  Allow 0 specifically, to detect invalid port error in atoi if not
     uint16_t port;
     if (port_str == "*" || port_str == "0")
@@ -453,14 +471,18 @@ int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_, boo
 
     //  Set the port into the address structure.
     if (is_src_) {
-        if (source_address.generic.sa_family == AF_INET6)
+        if (source_address.generic.sa_family == AF_INET6) {
             source_address.ipv6.sin6_port = htons (port);
+            source_address.ipv6.sin6_scope_id = zone_id;
+        }
         else
             source_address.ipv4.sin_port = htons (port);
     }
     else {
-        if (address.generic.sa_family == AF_INET6)
+        if (address.generic.sa_family == AF_INET6) {
             address.ipv6.sin6_port = htons (port);
+            address.ipv6.sin6_scope_id = zone_id;
+        }
         else
             address.ipv4.sin_port = htons (port);
     }

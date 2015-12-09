@@ -598,6 +598,8 @@ int zmq::socket_base_t::connect (const char *addr_)
         //  Do some basic sanity checks on tcp:// address syntax
         //  - hostname starts with digit or letter, with embedded '-' or '.'
         //  - IPv6 address may contain hex chars and colons.
+        //  - IPv6 link local address may contain % followed by interface name / zone_id
+        //    (Reference: https://tools.ietf.org/html/rfc4007)
         //  - IPv4 address may contain decimal digits and dots.
         //  - Address must end in ":port" where port is *, or numeric
         //  - Address may contain two parts separated by ':'
@@ -608,8 +610,8 @@ int zmq::socket_base_t::connect (const char *addr_)
             check++;
             while (isalnum  (*check)
                 || isxdigit (*check)
-                || *check == '.' || *check == '-' || *check == ':'|| *check == ';'
-                || *check == ']')
+                || *check == '.' || *check == '-' || *check == ':' || *check == '%'
+                || *check == ';' || *check == ']')
                 check++;
         }
         //  Assume the worst, now look for success
