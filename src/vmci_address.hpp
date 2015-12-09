@@ -40,7 +40,6 @@
 
 namespace zmq
 {
-//    class ctx_t;
     class vmci_address_t
     {
     public:
