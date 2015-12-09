@@ -1,10 +1,10 @@
-zmq_ipc(7)
-==========
+zmq_vmci(7)
+===========
 
 
 NAME
 ----
-zmq_ipc - 0MQ transport over virtual machine communicatios interface (VMCI) sockets
+zmq_vmci - 0MQ transport over virtual machine communicatios interface (VMCI) sockets
 
 
 SYNOPSIS
