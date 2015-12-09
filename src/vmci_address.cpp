@@ -35,7 +35,6 @@
 #include <string>
 #include <sstream>
 
-#include "ctx.hpp"
 #include "err.hpp"
 
 zmq::vmci_address_t::vmci_address_t(ctx_t *parent_) :
