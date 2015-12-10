@@ -9,6 +9,8 @@
 
 * Fixed #1644 - assertion failure in msg.cpp:390 on STREAM sockets.
 
+* Fixed #1661 - does not handle IPv6 link local addresses.
+
 
 0MQ version 4.1.3 stable, released on 2015/08/17
 ================================================
