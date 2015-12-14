@@ -77,6 +77,14 @@ int zmq::vmci_address_t::resolve(const char *path_)
         errno = EINVAL;
         return -1;
     }
+    else if (addr_str == "@") {
+        cid = VMCISock_GetLocalCID();
+
+        if (cid == VMADDR_CID_ANY) {
+            errno = ENODEV;
+            return -1;
+        }
+    }
     else if (addr_str != "*" && addr_str != "-1") {
         const char *begin = addr_str.c_str();
         char *end = NULL;

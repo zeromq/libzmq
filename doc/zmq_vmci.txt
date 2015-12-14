@@ -34,7 +34,7 @@ colon and the TCP port number to use.
 An 'interface' may be specified by either of the following:
 
 * The wild-card `*`, meaning all available interfaces.
-* An integer returned by `VMCISock_GetLocalCID`
+* An integer returned by `VMCISock_GetLocalCID` or `@` (ZeroMQ will call VMCISock_GetLocalCID internally).
 
 The port may be specified by:
 
