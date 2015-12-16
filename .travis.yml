@@ -8,7 +8,7 @@ os:
 
 env:
 - BUILD_TYPE=default
-- BUILD_TYPE=qt-android
+- BUILD_TYPE=android
 
 sudo: false
 
