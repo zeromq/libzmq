@@ -55,5 +55,5 @@ LIBTOOL_EXTRA_LDFLAGS='-avoid-version'
 ##
 # Verify shared libraries in prefix
 
-android_build_verify_so "libsodium.so"
 android_build_verify_so "libzmq.so" "libsodium.so"
+echo "libzmq android build succeeded"
