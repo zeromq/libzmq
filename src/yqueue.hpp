@@ -67,7 +67,7 @@ namespace zmq
         //  Create the queue.
         inline yqueue_t ()
         {
-             begin_chunk = (chunk_t*) malloc (sizeof (chunk_t));
+             begin_chunk = allocate_chunk();
              alloc_assert (begin_chunk);
              begin_pos = 0;
              back_chunk = NULL;
@@ -121,13 +121,7 @@ namespace zmq
                 end_chunk->next = sc;
                 sc->prev = end_chunk;
             } else {
-#ifdef HAVE_POSIX_MEMALIGN
-                void *pv;
-                if (posix_memalign(&pv, ALIGN, sizeof (chunk_t)) == 0)
-                    end_chunk->next = (chunk_t*) pv;
-#else
-                end_chunk->next = (chunk_t*) malloc (sizeof (chunk_t));
-#endif
+                end_chunk->next = allocate_chunk();
                 alloc_assert (end_chunk->next);
                 end_chunk->next->prev = end_chunk;
             }
@@ -192,6 +186,18 @@ namespace zmq
              chunk_t *prev;
              chunk_t *next;
         };
+
+        inline chunk_t *allocate_chunk ()
+        {
+#ifdef HAVE_POSIX_MEMALIGN
+                void *pv;
+                if (posix_memalign(&pv, ALIGN, sizeof (chunk_t)) == 0)
+                    return (chunk_t*) pv;
+                return NULL;
+#else
+                return (chunk_t*) malloc (sizeof (chunk_t));
+#endif
+        }
 
         //  Back position may point to invalid memory if the queue is empty,
         //  while begin & end positions are always valid. Begin position is
