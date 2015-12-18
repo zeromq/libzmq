@@ -429,9 +429,6 @@ void zmq::session_base_t::engine_error (
 
     if (zap_pipe)
         zap_pipe->check_read ();
-
-    zmq_assert(socket);
-    socket->flush_commands();
 }
 
 void zmq::session_base_t::process_term (int linger_)
