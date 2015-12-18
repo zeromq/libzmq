@@ -77,6 +77,7 @@ struct iovec {
 #include "metadata.hpp"
 #include "signaler.hpp"
 #include "socket_poller.hpp"
+#include "timers.hpp"
 
 #if !defined ZMQ_HAVE_WINDOWS
 #include <unistd.h>
@@ -1044,7 +1045,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 
 //  The poller functionality
 
-void* zmq_poller_new () 
+void* zmq_poller_new ()
 {
     zmq::socket_poller_t *poller = new (std::nothrow) zmq::socket_poller_t;
     alloc_assert (poller);
@@ -1130,7 +1131,7 @@ int zmq_poller_remove (void *poller_, void *s_)
     if (!poller_ || !((zmq::socket_poller_t*)poller_)->check_tag ()) {
         errno = EFAULT;
         return -1;
-    } 
+    }
 
     if (!s_ || !((zmq::socket_base_t*)s_)->check_tag ()) {
         errno = ENOTSOCK;
@@ -1154,7 +1155,7 @@ int zmq_poller_remove_fd (void *poller_, int fd_)
 
     return ((zmq::socket_poller_t*)poller_)->remove_fd (fd_);
 }
- 
+
 
 int zmq_poller_wait (void *poller_, zmq_poller_event_t *event, long timeout_)
 {
@@ -1169,10 +1170,90 @@ int zmq_poller_wait (void *poller_, zmq_poller_event_t *event, long timeout_)
 
     event->socket = e.socket;
     event->fd = e.fd;
-    event->user_data = e.user_data; 
+    event->user_data = e.user_data;
     event->events = e.events;
 
     return rc;
+}
+
+//  Timers
+
+void *zmq_timers_new ()
+{
+    zmq::timers_t *timers = new (std::nothrow) zmq::timers_t;
+    alloc_assert (timers);
+    return timers;
+}
+
+int zmq_timers_close (void *timers_)
+{
+    if (!timers_ || !((zmq::timers_t*)timers_)->check_tag ()) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    delete ((zmq::timers_t*)timers_);
+    return 0;
+}
+
+int zmq_timers_add (void *timers_, size_t interval_, zmq_timer_fn handler_, void *arg_)
+{
+    if (!timers_ || !((zmq::timers_t*)timers_)->check_tag ()) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    return ((zmq::timers_t*)timers_)->add (interval_, handler_, arg_);
+}
+
+int zmq_timers_cancel (void *timers_, int timer_id_)
+{
+    if (!timers_ || !((zmq::timers_t*)timers_)->check_tag ()) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    return ((zmq::timers_t*)timers_)->cancel (timer_id_);
+}
+
+int zmq_timers_set_interval (void *timers_, int timer_id_, size_t interval_)
+{
+    if (!timers_ || !((zmq::timers_t*)timers_)->check_tag ()) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    return ((zmq::timers_t*)timers_)->set_interval (timer_id_, interval_);
+}
+
+int zmq_timers_reset (void *timers_, int timer_id_)
+{
+    if (!timers_ || !((zmq::timers_t*)timers_)->check_tag ()) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    return ((zmq::timers_t*)timers_)->reset (timer_id_);
+}
+
+long zmq_timers_timeout (void *timers_)
+{
+    if (!timers_ || !((zmq::timers_t*)timers_)->check_tag ()) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    return ((zmq::timers_t*)timers_)->timeout ();
+}
+
+int zmq_timers_execute (void *timers_)
+{
+    if (!timers_ || !((zmq::timers_t*)timers_)->check_tag ()) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    return ((zmq::timers_t*)timers_)->execute ();
 }
 
 //  The proxy functionality

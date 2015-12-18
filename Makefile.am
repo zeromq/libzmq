@@ -179,6 +179,8 @@ src_libzmq_la_SOURCES = \
 	src/tcp_listener.hpp \
 	src/thread.cpp \
 	src/thread.hpp \
+	src/timers.cpp \
+	src/timers.hpp \
 	src/tipc_address.cpp \
 	src/tipc_address.hpp \
 	src/tipc_connecter.cpp \
@@ -376,7 +378,8 @@ test_apps = \
 	tests/test_socketopt_hwm \
 	tests/test_heartbeats \
 	tests/test_stream_exceeds_buffer \
-	tests/test_poller
+	tests/test_poller \
+	tests/test_timers
 
 tests_test_system_SOURCES = tests/test_system.cpp
 tests_test_system_LDADD = src/libzmq.la
@@ -587,6 +590,9 @@ tests_test_stream_exceeds_buffer_LDADD = src/libzmq.la
 tests_test_poller_SOURCES = tests/test_poller.cpp
 tests_test_poller_LDADD = src/libzmq.la
 
+tests_test_timers_SOURCES = tests/test_timers.cpp
+tests_test_timers_LDADD = src/libzmq.la
+
 
 if !ON_MINGW
 if !ON_CYGWIN
@@ -729,4 +735,3 @@ dist-hook:
 
 maintainer-clean-local:
 	-rm -rf $(top_srcdir)/config
-
