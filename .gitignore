@@ -117,6 +117,7 @@ test_getsockopt_memset
 test_setsockopt
 test_stream_exceeds_buffer
 test_poller
+test_timers
 tests/test*.log
 tests/test*.trs
 src/platform.hpp*

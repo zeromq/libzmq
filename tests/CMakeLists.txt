@@ -69,6 +69,7 @@ set(tests
         test_sub_forward_tipc
         test_xpub_manual
         test_xpub_welcome_msg
+        test_timers
 )
 if(NOT WIN32)
   list(APPEND tests

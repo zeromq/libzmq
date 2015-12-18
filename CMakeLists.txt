@@ -449,6 +449,7 @@ set(cxx-sources
         zmq_utils.cpp
         decoder_allocators.cpp
         socket_poller.cpp
+        timers.cpp
         config.hpp)
 
 set(rc-sources version.rc)
