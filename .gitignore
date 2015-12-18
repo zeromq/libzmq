@@ -102,6 +102,7 @@ test_capabilities
 test_hwm_pubsub
 test_router_mandatory_hwm
 test_xpub_nodrop
+test_getsockopt_memset
 test*.log
 test*.trs
 src/platform.hpp*
