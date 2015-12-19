@@ -17,7 +17,7 @@ if [ $BUILD_TYPE == "default" ]; then
     #   Build required projects first
 
     #   libsodium
-    git clone git://github.com/jedisct1/libsodium.git
+    git clone --depth 1 git://github.com/jedisct1/libsodium.git
     ( cd libsodium; ./autogen.sh; ./configure --prefix=$BUILD_PREFIX; make check; make install)
 
     #   Build and check this project
