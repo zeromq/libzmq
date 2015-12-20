@@ -18,5 +18,5 @@ ENV TOOLCHAIN_HOST arm-linux-androideabi
 ENV TOOLCHAIN_PATH ${ANDROID_NDK_ROOT}/toolchains/${TOOLCHAIN_NAME}/prebuilt/linux-x86_64/bin
 ENV TOOLCHAIN_ARCH arm
 # build libzmq for android
-RUN cd ~ && git clone https://github.com/zeromq/libzmq.git
+RUN cd ~ && git clone --depth 1 https://github.com/zeromq/libzmq.git
 RUN cd ~/libzmq/builds/android && ./build.sh

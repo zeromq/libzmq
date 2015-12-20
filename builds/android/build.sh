@@ -30,7 +30,7 @@ fi
 
 (android_build_verify_so "libsodium.so" &> /dev/null) || {
     rm -rf "${cache}/libsodium"
-    (cd "${cache}" && git clone git://github.com/jedisct1/libsodium.git) || exit 1
+    (cd "${cache}" && git clone --depth 1 git://github.com/jedisct1/libsodium.git) || exit 1
     (cd "${cache}/libsodium" && ./autogen.sh \
         && ./configure "${ANDROID_BUILD_OPTS[@]}" --disable-soname-versions \
         && make \
