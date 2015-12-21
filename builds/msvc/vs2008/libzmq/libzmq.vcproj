@@ -15,7 +15,7 @@
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" />
       <Tool Name="VCPreLinkEventTool" />
-      <Tool Name="VCLinkerTool" AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib" OutputFile="../../../../lib/libzmq.dll" LinkDLL="true" GenerateDebugInformation="true" TargetMachine="1" />
+      <Tool Name="VCLinkerTool" AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib Iphlpapi.lib" OutputFile="../../../../lib/libzmq.dll" LinkDLL="true" GenerateDebugInformation="true" TargetMachine="1" />
       <Tool Name="VCALinkTool" />
       <Tool Name="VCManifestTool" />
       <Tool Name="VCXDCMakeTool" />
@@ -34,7 +34,7 @@
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" />
       <Tool Name="VCPreLinkEventTool" />
-      <Tool Name="VCLinkerTool" AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib" OutputFile="../../../../lib/libzmq.dll" LinkDLL="true" GenerateDebugInformation="true" OptimizeReferences="2" EnableCOMDATFolding="2" TargetMachine="1" />
+      <Tool Name="VCLinkerTool" AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib Iphlpapi.lib" OutputFile="../../../../lib/libzmq.dll" LinkDLL="true" GenerateDebugInformation="true" OptimizeReferences="2" EnableCOMDATFolding="2" TargetMachine="1" />
       <Tool Name="VCALinkTool" />
       <Tool Name="VCManifestTool" />
       <Tool Name="VCXDCMakeTool" />
@@ -53,7 +53,7 @@
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" />
       <Tool Name="VCPreLinkEventTool" />
-      <Tool Name="VCLibrarianTool" AdditionalOptions="/ignore:4006" AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib" OutputFile="../../../../lib/libzmq_d.lib" />
+      <Tool Name="VCLibrarianTool" AdditionalOptions="/ignore:4006" AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib Iphlpapi.lib" OutputFile="../../../../lib/libzmq_d.lib" />
       <Tool Name="VCALinkTool" />
       <Tool Name="VCXDCMakeTool" />
       <Tool Name="VCBscMakeTool" />
@@ -70,7 +70,7 @@
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" />
       <Tool Name="VCPreLinkEventTool" />
-      <Tool Name="VCLibrarianTool" AdditionalOptions="/ignore:4006" AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib" OutputFile="../../../../lib/libzmq.lib" />
+      <Tool Name="VCLibrarianTool" AdditionalOptions="/ignore:4006" AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib Iphlpapi.lib" OutputFile="../../../../lib/libzmq.lib" />
       <Tool Name="VCALinkTool" />
       <Tool Name="VCXDCMakeTool" />
       <Tool Name="VCBscMakeTool" />
@@ -87,7 +87,7 @@
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" />
       <Tool Name="VCPreLinkEventTool" />
-      <Tool Name="VCLinkerTool" AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib libpgm.lib" OutputFile="../../../../lib/libzmq.dll" AdditionalLibraryDirectories="../../../../../OpenPGM/lib" LinkDLL="true" GenerateDebugInformation="true" OptimizeReferences="2" EnableCOMDATFolding="2" TargetMachine="1" />
+      <Tool Name="VCLinkerTool" AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib Iphlpapi.lib libpgm.lib" OutputFile="../../../../lib/libzmq.dll" AdditionalLibraryDirectories="../../../../../OpenPGM/lib" LinkDLL="true" GenerateDebugInformation="true" OptimizeReferences="2" EnableCOMDATFolding="2" TargetMachine="1" />
       <Tool Name="VCALinkTool" />
       <Tool Name="VCManifestTool" />
       <Tool Name="VCXDCMakeTool" />
@@ -151,6 +151,7 @@
       <File RelativePath="..\..\..\..\src\session_base.cpp" />
       <File RelativePath="..\..\..\..\src\signaler.cpp" />
       <File RelativePath="..\..\..\..\src\socket_base.cpp" />
+      <File RelativePath="..\..\..\..\src\socket_poller.cpp" />
       <File RelativePath="..\..\..\..\src\stream.cpp" />
       <File RelativePath="..\..\..\..\src\stream_engine.cpp" />
       <File RelativePath="..\..\..\..\src\sub.cpp" />
@@ -159,6 +160,7 @@
       <File RelativePath="..\..\..\..\src\tcp_connecter.cpp" />
       <File RelativePath="..\..\..\..\src\tcp_listener.cpp" />
       <File RelativePath="..\..\..\..\src\thread.cpp" />
+      <File RelativePath="..\..\..\..\src\timers.cpp" />
       <File RelativePath="..\..\..\..\src\trie.cpp" />
       <File RelativePath="..\..\..\..\src\v1_decoder.cpp" />
       <File RelativePath="..\..\..\..\src\v1_encoder.cpp" />
@@ -242,6 +244,7 @@
       <File RelativePath="..\..\..\..\src\tcp_connecter.hpp" />
       <File RelativePath="..\..\..\..\src\tcp_listener.hpp" />
       <File RelativePath="..\..\..\..\src\thread.hpp" />
+      <File RelativePath="..\..\..\..\src\timers.hpp" />
       <File RelativePath="..\..\..\..\src\trie.hpp" />
       <File RelativePath="..\..\..\..\src\v1_decoder.hpp" />
       <File RelativePath="..\..\..\..\src\v1_encoder.hpp" />

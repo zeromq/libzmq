@@ -31,7 +31,7 @@
       <PreprocessorDefinitions Condition="'$(ConfigurationType)' == 'DynamicLibrary'">DLL_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Advapi32.lib;Ws2_32.lib;Rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Advapi32.lib;Ws2_32.lib;Rpcrt4.lib;Iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib Condition="'$(ConfigurationType)'=='StaticLibrary'">
       <AdditionalOptions>/ignore:4221 %(AdditionalOptions)</AdditionalOptions>

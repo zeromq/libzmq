@@ -206,7 +206,7 @@ bool zmq::pipe_t::check_write ()
     if (unlikely (!out_active || state != active))
         return false;
 
-    bool full = hwm > 0 && msgs_written - peers_msgs_read == uint64_t (hwm);
+    bool full = !check_hwm();
 
     if (unlikely (full)) {
         out_active = false;
@@ -460,14 +460,9 @@ int zmq::pipe_t::compute_lwm (int hwm_)
     //     result in low performance.
     //
     //  Given the 3. it would be good to keep HWM and LWM as far apart as
-    //  possible to reduce the thread switching overhead to almost zero,
-    //  say HWM-LWM should be max_wm_delta.
-    //
-    //  That done, we still we have to account for the cases where
-    //  HWM < max_wm_delta thus driving LWM to negative numbers.
-    //  Let's make LWM 1/2 of HWM in such cases.
-    int result = (hwm_ > max_wm_delta * 2) ?
-        hwm_ - max_wm_delta : (hwm_ + 1) / 2;
+    //  possible to reduce the thread switching overhead to almost zero.
+    //  Let's make LWM 1/2 of HWM.
+    int result = (hwm_ + 1) / 2;
 
     return result;
 }
@@ -533,6 +528,6 @@ void zmq::pipe_t::set_hwms_boost(int inhwmboost_, int outhwmboost_)
 
 bool zmq::pipe_t::check_hwm () const
 {
-    bool full = hwm > 0 && msgs_written - peers_msgs_read >= uint64_t (hwm - 1);
+    bool full = hwm > 0 && msgs_written - peers_msgs_read >= uint64_t (hwm);
     return( !full );
 }

@@ -209,7 +209,7 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
                 goto err_abort;
         }
 
-        const int max_tpdu = (int) pgm_max_tpdu;
+        const int max_tpdu = (int) options.multicast_maxtpdu;
         if (!pgm_setsockopt (sock, IPPROTO_PGM, PGM_MTU, &max_tpdu,
               sizeof (max_tpdu)))
             goto err_abort;
@@ -217,7 +217,7 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
 
     if (receiver) {
         const int recv_only        = 1,
-                  rxw_max_tpdu     = (int) pgm_max_tpdu,
+                  rxw_max_tpdu     = (int) options.multicast_maxtpdu,
                   rxw_sqns         = compute_sqns (rxw_max_tpdu),
                   peer_expiry      = pgm_secs (300),
                   spmr_expiry      = pgm_msecs (25),
@@ -250,7 +250,7 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
     else {
         const int send_only        = 1,
                   max_rte      = (int) ((options.rate * 1000) / 8),
-                  txw_max_tpdu     = (int) pgm_max_tpdu,
+                  txw_max_tpdu     = (int) options.multicast_maxtpdu,
                   txw_sqns         = compute_sqns (txw_max_tpdu),
                   ambient_spm      = pgm_secs (30),
                   heartbeat_spm[]  = { pgm_msecs (100),

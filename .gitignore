@@ -114,7 +114,10 @@ test_server_drop_more
 test_thread_safe
 test_thread_safe_polling
 test_getsockopt_memset
+test_setsockopt
 test_stream_exceeds_buffer
+test_poller
+test_timers
 tests/test*.log
 tests/test*.trs
 src/platform.hpp*
@@ -141,7 +144,7 @@ builds/msvc/**/*.user
 builds/msvc/**/*Debug
 builds/msvc/**/*Release
 builds/redhat/zeromq.spec
-builds/qt-android/prefix/
+builds/android/prefix/
 packaging/nuget/*.nupkg
 foreign/openpgm/*
 !foreign/openpgm/*.tar.bz2

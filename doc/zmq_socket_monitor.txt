@@ -150,7 +150,7 @@ get_monitor_event (void *monitor, int *value, char **address)
         size_t size = zmq_msg_size (&msg);
         *address = (char *) malloc (size + 1);
         memcpy (*address, data, size);
-        *address [size] = 0;
+        (*address)[size] = 0;
     }
     return event;
 }

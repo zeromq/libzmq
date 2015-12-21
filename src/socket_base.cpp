@@ -67,6 +67,12 @@
 #include "tipc_address.hpp"
 #include "mailbox.hpp"
 #include "mailbox_safe.hpp"
+
+#if defined ZMQ_HAVE_VMCI
+#include "vmci_address.hpp"
+#include "vmci_listener.hpp"
+#endif
+
 #ifdef ZMQ_HAVE_OPENPGM
 #include "pgm_socket.hpp"
 #endif
@@ -244,7 +250,8 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
     &&  protocol_ != "pgm"
     &&  protocol_ != "epgm"
     &&  protocol_ != "tipc"
-    &&  protocol_ != "norm") {
+    &&  protocol_ != "norm"
+    &&  protocol_ != "vmci") {
         errno = EPROTONOSUPPORT;
         return -1;
     }
@@ -276,6 +283,13 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
     // TIPC transport is only available on Linux.
 #if !defined ZMQ_HAVE_TIPC
     if (protocol_ == "tipc") {
+        errno = EPROTONOSUPPORT;
+        return -1;
+    }
+#endif
+
+#if !defined ZMQ_HAVE_VMCI
+    if (protocol_ == "vmci") {
         errno = EPROTONOSUPPORT;
         return -1;
     }
@@ -595,6 +609,27 @@ int zmq::socket_base_t::bind (const char *addr_)
         return 0;
     }
 #endif
+#if defined ZMQ_HAVE_VMCI
+    if (protocol == "vmci") {
+        vmci_listener_t *listener = new (std::nothrow) vmci_listener_t (
+            io_thread, this, options);
+        alloc_assert (listener);
+        int rc = listener->set_address (address.c_str ());
+        if (rc != 0) {
+            LIBZMQ_DELETE(listener);
+            event_bind_failed (address, zmq_errno ());
+            EXIT_MUTEX();
+            return -1;
+        }
+
+        listener->get_address (last_endpoint);
+
+        add_endpoint (last_endpoint.c_str(), (own_t *) listener, NULL);
+        options.connected = true;
+        EXIT_MUTEX();
+        return 0;
+    }
+#endif
 
     EXIT_MUTEX();
     zmq_assert (false);
@@ -753,7 +788,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         return -1;
     }
 
-    address_t *paddr = new (std::nothrow) address_t (protocol, address);
+    address_t *paddr = new (std::nothrow) address_t (protocol, address, this->get_ctx ());
     alloc_assert (paddr);
 
     //  Resolve address (if needed by the protocol)
@@ -761,6 +796,8 @@ int zmq::socket_base_t::connect (const char *addr_)
         //  Do some basic sanity checks on tcp:// address syntax
         //  - hostname starts with digit or letter, with embedded '-' or '.'
         //  - IPv6 address may contain hex chars and colons.
+        //  - IPv6 link local address may contain % followed by interface name / zone_id
+        //    (Reference: https://tools.ietf.org/html/rfc4007)
         //  - IPv4 address may contain decimal digits and dots.
         //  - Address must end in ":port" where port is *, or numeric
         //  - Address may contain two parts separated by ':'
@@ -771,8 +808,8 @@ int zmq::socket_base_t::connect (const char *addr_)
             check++;
             while (isalnum  (*check)
                 || isxdigit (*check)
-                || *check == '.' || *check == '-' || *check == ':'|| *check == ';'
-                || *check == ']')
+                || *check == '.' || *check == '-' || *check == ':' || *check == '%'
+                || *check == ';' || *check == ']')
                 check++;
         }
         //  Assume the worst, now look for success
@@ -831,6 +868,19 @@ int zmq::socket_base_t::connect (const char *addr_)
         paddr->resolved.tipc_addr = new (std::nothrow) tipc_address_t ();
         alloc_assert (paddr->resolved.tipc_addr);
         int rc = paddr->resolved.tipc_addr->resolve (address.c_str());
+        if (rc != 0) {
+            LIBZMQ_DELETE(paddr);
+            EXIT_MUTEX();
+            return -1;
+        }
+    }
+#endif
+#if defined ZMQ_HAVE_VMCI
+    else
+    if (protocol == "vmci") {
+        paddr->resolved.vmci_addr = new (std::nothrow) vmci_address_t (this->get_ctx ());
+        alloc_assert (paddr->resolved.vmci_addr);
+        int rc = paddr->resolved.vmci_addr->resolve (address.c_str ());
         if (rc != 0) {
             LIBZMQ_DELETE(paddr);
             EXIT_MUTEX();
@@ -1497,12 +1547,12 @@ int zmq::socket_base_t::monitor (const char *addr_, int events_)
     int linger = 0;
     int rc = zmq_setsockopt (monitor_socket, ZMQ_LINGER, &linger, sizeof (linger));
     if (rc == -1)
-        stop_monitor ();
+        stop_monitor (false);
 
     //  Spawn the monitor socket endpoint
     rc = zmq_bind (monitor_socket, addr_);
     if (rc == -1)
-         stop_monitor ();
+         stop_monitor (false);
     return rc;
 }
 
@@ -1583,23 +1633,12 @@ void zmq::socket_base_t::monitor_event (int event_, int value_, const std::strin
         //  Send event in first frame
         zmq_msg_t msg;
         zmq_msg_init_size (&msg, 6);
-#ifdef ZMQ_HAVE_HPUX
-        // avoid SIGBUS
-        union {
-          uint8_t data[6];
-          struct {
-            uint16_t event;
-            uint32_t value;
-          } v;
-        } u;
-        u.v.event = event_;
-        u.v.value = value_;
-        memcpy(zmq_msg_data (&msg), u.data, 6);
-#else
         uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
-        *(uint16_t *) (data + 0) = (uint16_t) event_;
-        *(uint32_t *) (data + 2) = (uint32_t) value_;
-#endif
+        //  Avoid dereferencing uint32_t on unaligned address
+        uint16_t event = (uint16_t) event_;
+        uint32_t value = (uint32_t) value_;
+        memcpy (data + 0, &event, sizeof(event));
+        memcpy (data + 2, &value, sizeof(value));
         zmq_sendmsg (monitor_socket, &msg, ZMQ_SNDMORE);
 
         //  Send address in second frame
@@ -1609,10 +1648,10 @@ void zmq::socket_base_t::monitor_event (int event_, int value_, const std::strin
     }
 }
 
-void zmq::socket_base_t::stop_monitor (void)
+void zmq::socket_base_t::stop_monitor (bool send_monitor_stopped_event_)
 {
     if (monitor_socket) {
-        if (monitor_events & ZMQ_EVENT_MONITOR_STOPPED)
+        if ((monitor_events & ZMQ_EVENT_MONITOR_STOPPED) && send_monitor_stopped_event_)
             monitor_event (ZMQ_EVENT_MONITOR_STOPPED, 0, "");
         zmq_close (monitor_socket);
         monitor_socket = NULL;

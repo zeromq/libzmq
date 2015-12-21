@@ -434,6 +434,21 @@ Default value:: 1
 Applicable socket types:: all, when using multicast transports
 
 
+ZMQ_MULTICAST_MAXTPDU: Maximum transport data unit size for multicast packets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the maximum transport data unit size used for outbound multicast
+packets.
+
+This must be set at or below the minimum Maximum Transmission Unit (MTU) for
+all network paths over which multicast reception is required.
+
+[horizontal]
+Option value type:: int
+Option value unit:: bytes
+Default value:: 1500
+Applicable socket types:: all, when using multicast transports
+
+
 ZMQ_PLAIN_PASSWORD: Set PLAIN security password
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sets the password for outgoing connections over TCP or IPC. If you set this
@@ -1070,6 +1085,79 @@ Option value type:: int
 Option value unit:: boolean
 Default value:: 1 (true)
 Applicable socket types:: all, when using TCP transports.
+
+ZMQ_TCP_RECV_BUFFER: Size of the TCP receive buffer
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_TCP_RECV_BUFFER' specifies the maximum number of bytes which can
+be received by an individual syscall to receive data from the TCP socket.
+The default value is 8192.
+
+
+[horizontal]
+Option value type:: int
+Option value unit:: >0
+Default value:: 8192
+Applicable socket types:: all, when using TCP transport
+
+ZMQ_TCP_SEND_BUFFER: Size of the TCP receive buffer
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_TCP_SEND_BUFFER' specifies the maximum number of bytes which can
+be sent by an individual syscall to transmit data to the TCP socket.
+The default value is 8192.
+
+
+[horizontal]
+Option value type:: int
+Option value unit:: >0
+Default value:: 8192
+Applicable socket types:: all, when using TCP transport
+
+ZMQ_VMCI_BUFFER_SIZE: Set buffer size of the VMCI socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The `ZMQ_VMCI_BUFFER_SIZE` option shall set the size of the underlying
+buffer for the socket. Used during negotiation before the connection is established.
+
+[horizontal]
+Option value type:: uint64_t
+Option value unit:: bytes
+Default value:: 65546
+Applicable socket types:: all, when using VMCI transport
+
+
+ZMQ_VMCI_BUFFER_MIN_SIZE: Set min buffer size of the VMCI socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The `ZMQ_VMCI_BUFFER_MIN_SIZE` option shall set the min size of the underlying
+buffer for the socket. Used during negotiation before the connection is established.
+
+[horizontal]
+Option value type:: uint64_t
+Option value unit:: bytes
+Default value:: 128
+Applicable socket types:: all, when using VMCI transport
+
+
+ZMQ_VMCI_BUFFER_MAX_SIZE: Set max buffer size of the VMCI socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The `ZMQ_VMCI_BUFFER_MAX_SIZE` option shall set the max size of the underlying
+buffer for the socket. Used during negotiation before the connection is established.
+
+[horizontal]
+Option value type:: uint64_t
+Option value unit:: bytes
+Default value:: 262144
+Applicable socket types:: all, when using VMCI transport
+
+
+ZMQ_VMCI_CONNECT_TIMEOUT: Set connection timeout of the VMCI socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The `ZMQ_VMCI_CONNECT_TIMEOUT` option shall set connection timeout
+for the socket.
+
+[horizontal]
+Option value type:: int
+Option value unit:: milliseconds
+Default value:: -1
+Applicable socket types:: all, when using VMCI transport
 
 
 RETURN VALUE

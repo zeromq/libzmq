@@ -203,10 +203,10 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
 
     if (options.raw_socket) {
         // no handshaking for raw sock, instantiate raw encoder and decoders
-        encoder = new (std::nothrow) raw_encoder_t (out_batch_size);
+        encoder = new (std::nothrow) raw_encoder_t (options.tcp_send_buffer_size);
         alloc_assert (encoder);
 
-        decoder = new (std::nothrow) raw_decoder_t (in_batch_size);
+        decoder = new (std::nothrow) raw_decoder_t (options.tcp_recv_buffer_size);
         alloc_assert (decoder);
 
         // disable handshaking for raw socket
@@ -385,12 +385,12 @@ void zmq::stream_engine_t::out_event ()
         outpos = NULL;
         outsize = encoder->encode (&outpos, 0);
 
-        while (outsize < out_batch_size) {
+        while (outsize < options.tcp_send_buffer_size) {
             if ((this->*next_msg) (&tx_msg) == -1)
                 break;
             encoder->load_msg (&tx_msg);
             unsigned char *bufptr = outpos + outsize;
-            size_t n = encoder->encode (&bufptr, out_batch_size - outsize);
+            size_t n = encoder->encode (&bufptr, options.tcp_send_buffer_size - outsize);
             zmq_assert (n > 0);
             if (outpos == NULL)
                 outpos = bufptr;
@@ -587,10 +587,10 @@ bool zmq::stream_engine_t::handshake ()
            return false;
         }
 
-        encoder = new (std::nothrow) v1_encoder_t (out_batch_size);
+        encoder = new (std::nothrow) v1_encoder_t (options.tcp_send_buffer_size);
         alloc_assert (encoder);
 
-        decoder = new (std::nothrow) v1_decoder_t (in_batch_size, options.maxmsgsize);
+        decoder = new (std::nothrow) v1_decoder_t (options.tcp_recv_buffer_size, options.maxmsgsize);
         alloc_assert (decoder);
 
         //  We have already sent the message header.
@@ -635,11 +635,11 @@ bool zmq::stream_engine_t::handshake ()
         }
 
         encoder = new (std::nothrow) v1_encoder_t (
-            out_batch_size);
+           options.tcp_send_buffer_size);
         alloc_assert (encoder);
 
         decoder = new (std::nothrow) v1_decoder_t (
-            in_batch_size, options.maxmsgsize);
+            options.tcp_recv_buffer_size, options.maxmsgsize);
         alloc_assert (decoder);
     }
     else
@@ -650,19 +650,19 @@ bool zmq::stream_engine_t::handshake ()
            return false;
         }
 
-        encoder = new (std::nothrow) v2_encoder_t (out_batch_size);
+        encoder = new (std::nothrow) v2_encoder_t (options.tcp_send_buffer_size);
         alloc_assert (encoder);
 
         decoder = new (std::nothrow) v2_decoder_t (
-            in_batch_size, options.maxmsgsize);
+            options.tcp_recv_buffer_size, options.maxmsgsize);
         alloc_assert (decoder);
     }
     else {
-        encoder = new (std::nothrow) v2_encoder_t (out_batch_size);
+        encoder = new (std::nothrow) v2_encoder_t (options.tcp_send_buffer_size);
         alloc_assert (encoder);
 
         decoder = new (std::nothrow) v2_decoder_t (
-            in_batch_size, options.maxmsgsize);
+                options.tcp_recv_buffer_size, options.maxmsgsize);
         alloc_assert (decoder);
 
         if (options.mechanism == ZMQ_NULL
@@ -712,11 +712,6 @@ bool zmq::stream_engine_t::handshake ()
         }
         next_msg = &stream_engine_t::next_handshake_command;
         process_msg = &stream_engine_t::process_handshake_command;
-
-        if(options.heartbeat_interval > 0) {
-            add_timer(options.heartbeat_interval, heartbeat_ivl_timer_id);
-            has_heartbeat_timer = true;
-        }
     }
 
     // Start polling for output if necessary.
@@ -824,6 +819,11 @@ void zmq::stream_engine_t::zap_msg_available ()
 
 void zmq::stream_engine_t::mechanism_ready ()
 {
+    if (options.heartbeat_interval > 0) {
+        add_timer(options.heartbeat_interval, heartbeat_ivl_timer_id);
+        has_heartbeat_timer = true;
+    }
+
     if (options.recv_identity) {
         msg_t identity;
         mechanism->peer_identity (&identity);
@@ -869,7 +869,7 @@ int zmq::stream_engine_t::push_msg_to_session (msg_t *msg_)
 }
 
 int zmq::stream_engine_t::push_raw_msg_to_session (msg_t *msg_) {
-    if (metadata)
+    if (metadata && metadata != msg_->metadata())
         msg_->set_metadata(metadata);
     return push_msg_to_session(msg_);
 }

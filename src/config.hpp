@@ -59,12 +59,6 @@ namespace zmq
         //  unnecessary network stack traversals.
         in_batch_size = 8192,
 
-        //  Maximal batching size for engines with sending functionality.
-        //  So, if there are 10 messages that fit into the batch size, all of
-        //  them may be written by a single 'send' system call, thus avoiding
-        //  unnecessary network stack traversals.
-        out_batch_size = 8192,
-
         //  Maximal delta between high and low watermark.
         max_wm_delta = 1024,
 
@@ -83,9 +77,6 @@ namespace zmq
         //  frequencies you may consider lowering this value to get best
         //  possible latencies.
         clock_precision = 1000000,
-
-        //  Maximum transport data unit size for PGM (TPDU).
-        pgm_max_tpdu = 1500,
 
         //  On some OSes the signaler has to be emulated using a TCP
         //  connection. In such cases following port is used.

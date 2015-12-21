@@ -37,6 +37,7 @@
 #include "ipc_connecter.hpp"
 #include "tipc_connecter.hpp"
 #include "socks_connecter.hpp"
+#include "vmci_connecter.hpp"
 #include "pgm_sender.hpp"
 #include "pgm_receiver.hpp"
 #include "address.hpp"
@@ -520,7 +521,7 @@ void zmq::session_base_t::start_connecting (bool wait_)
     if (addr->protocol == "tcp") {
         if (!options.socks_proxy_address.empty()) {
             address_t *proxy_address = new (std::nothrow)
-                address_t ("tcp", options.socks_proxy_address);
+                address_t ("tcp", options.socks_proxy_address, this->get_ctx ());
             alloc_assert (proxy_address);
             socks_connecter_t *connecter =
                 new (std::nothrow) socks_connecter_t (
@@ -629,6 +630,16 @@ void zmq::session_base_t::start_connecting (bool wait_)
         return;
     }
 #endif // ZMQ_HAVE_NORM
+
+#if defined ZMQ_HAVE_VMCI
+    if (addr->protocol == "vmci") {
+        vmci_connecter_t *connecter = new (std::nothrow) vmci_connecter_t (
+                io_thread, this, options, addr, wait_);
+        alloc_assert (connecter);
+        launch_child (connecter);
+        return;
+    }
+#endif
 
     zmq_assert (false);
 }

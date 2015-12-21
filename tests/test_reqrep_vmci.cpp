@@ -27,9 +27,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "testutil.hpp"
+#include <string>
+#include <sstream>
+#include <vmci_sockets.h>
 
-int send_msg(zmq_msg_t* msg, void* s, int flags, int value);
+#include "testutil.hpp"
 
 int main (void)
 {
@@ -37,80 +39,30 @@ int main (void)
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
-    void *server = zmq_socket (ctx, ZMQ_SERVER);
-    void *client = zmq_socket (ctx, ZMQ_DEALER);
+    std::stringstream s;
+    s << "vmci://" << VMCISock_GetLocalCID() << ":" << 5560;
+    std::string endpoint = s.str();
 
-    int rc;
-
-    rc = zmq_bind (server, "inproc://serverdropmore");
+    void *sb = zmq_socket (ctx, ZMQ_REP);
+    assert (sb);
+    int rc = zmq_bind (sb, endpoint.c_str());
     assert (rc == 0);
 
-    rc = zmq_connect (client, "inproc://serverdropmore");
+    void *sc = zmq_socket (ctx, ZMQ_REQ);
+    assert (sc);
+    rc = zmq_connect (sc, endpoint.c_str());
     assert (rc == 0);
 
-    zmq_msg_t msg;
-    rc = zmq_msg_init (&msg);
+    bounce (sb, sc);
+
+    rc = zmq_close (sc);
     assert (rc == 0);
 
-    // we will send 2 3-frames messages and then single frame message, only last one should be received
-    rc = send_msg (&msg, client, ZMQ_SNDMORE, 1);
-    assert(rc == 1);
-
-    rc = send_msg (&msg, client, ZMQ_SNDMORE, 2);
-    assert(rc == 1);
-
-    rc = send_msg (&msg, client, 0, 3);
-    assert(rc == 1);
-    
-    rc = send_msg (&msg, client, ZMQ_SNDMORE, 4);
-    assert(rc == 1);
-
-    rc = send_msg (&msg, client, ZMQ_SNDMORE, 5);
-    assert(rc == 1);
-    
-    rc = send_msg (&msg, client, 0, 6);
-    assert(rc == 1);
-
-    rc = send_msg (&msg, client, 0, 7);
-    assert(rc == 1);
-
-    rc = zmq_msg_recv (&msg, server, 0);
-    assert (rc == 1);  
-
-    assert(zmq_msg_more(&msg) == 0);
-
-    unsigned char* data = (unsigned char*)zmq_msg_data (&msg);      
-    assert (data[0] == 7);
-
-    rc = zmq_msg_close (&msg);
-    assert (rc == 0);
-
-    rc = zmq_close (server);
-    assert (rc == 0);
-
-    rc = zmq_close (client);
+    rc = zmq_close (sb);
     assert (rc == 0);
 
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    return 0 ;
-}
-
-int send_msg(zmq_msg_t* msg, void* s, int flags, int value)
-{
-    int rc = zmq_msg_close(msg);
-
-    if (rc != 0)
-        return rc;
-
-    zmq_msg_init_size(msg, 1);
-
-    if (rc != 0)
-        return rc;
-
-    unsigned char* data = (unsigned char*)zmq_msg_data(msg);
-    data[0] = (unsigned char)value;
-
-    return zmq_msg_send (msg, s, flags);
+    return 0;
 }

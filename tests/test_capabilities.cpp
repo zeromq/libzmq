@@ -67,5 +67,11 @@ int main (void)
     assert (!zmq_has ("gssapi"));
 #endif
 
+#if defined (ZMQ_HAVE_VMCI)
+    assert (zmq_has("vmci"));
+#else
+    assert (!zmq_has("vmci"));
+#endif
+
     return 0;
 }
