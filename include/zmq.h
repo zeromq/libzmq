@@ -457,8 +457,8 @@ ZMQ_EXPORT int zmq_poller_remove_fd (void *poller, int fd);
 
 typedef void (zmq_timer_fn)(int timer_id, void *arg);
 
-ZMQ_EXPORT void *zmq_timers_new ();
-ZMQ_EXPORT int   zmq_timers_close (void *timers);
+ZMQ_EXPORT void *zmq_timers_new (void);
+ZMQ_EXPORT int   zmq_timers_destroy (void **timers);
 ZMQ_EXPORT int   zmq_timers_add (void *timers, size_t interval, zmq_timer_fn handler, void *arg);
 ZMQ_EXPORT int   zmq_timers_cancel (void *timers, int timer_id);
 ZMQ_EXPORT int   zmq_timers_set_interval (void *timers, int timer_id, size_t interval);

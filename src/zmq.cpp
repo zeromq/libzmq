@@ -1185,14 +1185,15 @@ void *zmq_timers_new ()
     return timers;
 }
 
-int zmq_timers_close (void *timers_)
+int zmq_timers_destroy (void **timers_p_)
 {
-    if (!timers_ || !((zmq::timers_t*)timers_)->check_tag ()) {
+    void *timers = *timers_p_;
+    if (!timers || !((zmq::timers_t *) timers)->check_tag ()) {
         errno = EFAULT;
         return -1;
     }
-
-    delete ((zmq::timers_t*)timers_);
+    delete ((zmq::timers_t *) timers);
+    *timers_p_ = NULL;
     return 0;
 }
 
