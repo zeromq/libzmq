@@ -134,7 +134,7 @@ int main (void)
     assert (event.events == ZMQ_POLLOUT);
 
     //  Destory poller, sockets and ctx
-    rc = zmq_poller_close (poller);
+    rc = zmq_poller_destroy (&poller);
     assert (rc == 0);
     rc = zmq_close (sink);
     assert (rc == 0);

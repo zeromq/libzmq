@@ -1045,21 +1045,23 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 
 //  The poller functionality
 
-void* zmq_poller_new ()
+void *zmq_poller_new (void)
 {
     zmq::socket_poller_t *poller = new (std::nothrow) zmq::socket_poller_t;
     alloc_assert (poller);
     return poller;
 }
 
-int zmq_poller_close (void *poller_)
+int zmq_poller_destroy (void **poller_p_)
 {
-    if (!poller_ || !((zmq::socket_poller_t*)poller_)->check_tag ()) {
+    void *poller = *poller_p_;
+    if (!poller || !((zmq::socket_poller_t*) poller)->check_tag ()) {
         errno = EFAULT;
         return -1;
     }
 
-    delete ((zmq::socket_poller_t*)poller_);
+    delete ((zmq::socket_poller_t*) poller);
+    *poller_p_ = NULL;
     return 0;
 }
 
@@ -1185,14 +1187,15 @@ void *zmq_timers_new ()
     return timers;
 }
 
-int zmq_timers_close (void *timers_)
+int zmq_timers_destroy (void **timers_p_)
 {
-    if (!timers_ || !((zmq::timers_t*)timers_)->check_tag ()) {
+    void *timers = *timers_p_;
+    if (!timers || !((zmq::timers_t *) timers)->check_tag ()) {
         errno = EFAULT;
         return -1;
     }
-
-    delete ((zmq::timers_t*)timers_);
+    delete ((zmq::timers_t *) timers);
+    *timers_p_ = NULL;
     return 0;
 }
 

@@ -119,7 +119,7 @@ int main (void)
     assert (rc == 0);
     assert (!timer_invoked);
 
-    rc = zmq_timers_close (timers);
+    rc = zmq_timers_destroy (&timers);
     assert (rc == 0);
 
     return 0;

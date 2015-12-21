@@ -434,8 +434,8 @@ typedef struct zmq_poller_event_t
     short events;
 } zmq_poller_event_t;
 
-ZMQ_EXPORT void *zmq_poller_new ();
-ZMQ_EXPORT int  zmq_poller_close (void *poller);
+ZMQ_EXPORT void *zmq_poller_new (void);
+ZMQ_EXPORT int  zmq_poller_destroy (void **poller_p);
 ZMQ_EXPORT int  zmq_poller_add (void *poller, void *socket, void *user_data, short events);
 ZMQ_EXPORT int  zmq_poller_modify (void *poller, void *socket, short events);
 ZMQ_EXPORT int  zmq_poller_remove (void *poller, void *socket);
@@ -457,8 +457,8 @@ ZMQ_EXPORT int zmq_poller_remove_fd (void *poller, int fd);
 
 typedef void (zmq_timer_fn)(int timer_id, void *arg);
 
-ZMQ_EXPORT void *zmq_timers_new ();
-ZMQ_EXPORT int   zmq_timers_close (void *timers);
+ZMQ_EXPORT void *zmq_timers_new (void);
+ZMQ_EXPORT int   zmq_timers_destroy (void **timers_p);
 ZMQ_EXPORT int   zmq_timers_add (void *timers, size_t interval, zmq_timer_fn handler, void *arg);
 ZMQ_EXPORT int   zmq_timers_cancel (void *timers, int timer_id);
 ZMQ_EXPORT int   zmq_timers_set_interval (void *timers, int timer_id, size_t interval);
