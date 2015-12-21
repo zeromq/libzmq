@@ -234,7 +234,7 @@
     <ClCompile Include="..\..\..\..\src\tcp_connecter.cpp" />
     <ClCompile Include="..\..\..\..\src\tcp_listener.cpp" />
     <ClCompile Include="..\..\..\..\src\thread.cpp" />
-    <ClInclude Include="..\..\..\..\src\timers.cpp" />
+    <ClCompile Include="..\..\..\..\src\timers.cpp" />
     <ClCompile Include="..\..\..\..\src\trie.cpp" />
     <ClCompile Include="..\..\..\..\src\v1_decoder.cpp" />
     <ClCompile Include="..\..\..\..\src\v1_encoder.cpp" />
