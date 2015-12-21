@@ -1180,7 +1180,7 @@ int zmq_poller_wait (void *poller_, zmq_poller_event_t *event, long timeout_)
 
 //  Timers
 
-void *zmq_timers_new ()
+void *zmq_timers_new (void)
 {
     zmq::timers_t *timers = new (std::nothrow) zmq::timers_t;
     alloc_assert (timers);

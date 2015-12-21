@@ -146,6 +146,7 @@
     <ClInclude Include="..\..\..\..\src\tcp_address.hpp" />
     <ClInclude Include="..\..\..\..\src\tcp_connecter.hpp" />
     <ClInclude Include="..\..\..\..\src\tcp_listener.hpp" />
+    <ClInclude Include="..\..\..\..\src\timer.hpp" />
     <ClInclude Include="..\..\..\..\src\thread.hpp" />
     <ClInclude Include="..\..\..\..\src\trie.hpp" />
     <ClInclude Include="..\..\..\..\src\v1_decoder.hpp" />
@@ -233,6 +234,7 @@
     <ClCompile Include="..\..\..\..\src\tcp_connecter.cpp" />
     <ClCompile Include="..\..\..\..\src\tcp_listener.cpp" />
     <ClCompile Include="..\..\..\..\src\thread.cpp" />
+    <ClInclude Include="..\..\..\..\src\timer.cpp" />
     <ClCompile Include="..\..\..\..\src\trie.cpp" />
     <ClCompile Include="..\..\..\..\src\v1_decoder.cpp" />
     <ClCompile Include="..\..\..\..\src\v1_encoder.cpp" />
