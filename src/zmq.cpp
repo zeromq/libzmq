@@ -347,7 +347,7 @@ static int
 s_sendmsg (zmq::socket_base_t *s_, zmq_msg_t *msg_, int flags_)
 {
     int sz = (int) zmq_msg_size (msg_);
-    int rc = s_->send ((zmq::msg_t*) msg_, flags_);
+    int rc = s_->send ((zmq::msg_t *) msg_, flags_);
     if (unlikely (rc < 0))
         return -1;
     return sz;
@@ -393,7 +393,7 @@ int zmq_send_const (void *s_, const void *buf_, size_t len_, int flags_)
         return -1;
     }
     zmq_msg_t msg;
-    int rc = zmq_msg_init_data (&msg, (void*)buf_, len_, NULL, NULL);
+    int rc = zmq_msg_init_data (&msg, (void *)buf_, len_, NULL, NULL);
     if (rc != 0)
         return -1;
 
