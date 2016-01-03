@@ -110,6 +110,13 @@ int main (void)
     s_send_seq (rep [4], "GOOD", SEQ_END);
     s_recv_seq (req, "GOOD", SEQ_END);
 
+	//  Case 3: Check issue #1690. Two send() in a row should not close the
+	//  communication pipes. For example pipe from req to rep[0] should not be
+	//  closed after executing Case 1. So rep[0] should be the next to receive,
+	//  not rep[1].
+	s_send_seq(req, "J", SEQ_END);
+	s_recv_seq(rep [0], "J", SEQ_END);
+
 
     close_zero_linger (req);
     for (size_t peer = 0; peer < services; peer++)
