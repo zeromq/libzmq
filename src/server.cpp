@@ -93,6 +93,11 @@ void zmq::server_t::xwrite_activated (pipe_t *pipe_)
 
 int zmq::server_t::xsend (msg_t *msg_)
 {
+    //  SERVER sockets do not allow multipart data (ZMQ_SNDMORE)
+    if (msg_->flags () & msg_t::more) {
+        errno = EINVAL;
+        return -1;
+    }
     //  Find the pipe associated with the routing stored in the message.
     uint32_t routing_id = msg_->get_routing_id ();
     outpipes_t::iterator it = outpipes.find (routing_id);
@@ -108,7 +113,6 @@ int zmq::server_t::xsend (msg_t *msg_)
         errno = EHOSTUNREACH;
         return -1;
     }
-
     bool ok = it->second.pipe->write (msg_);
     if (unlikely (!ok)) {
         // Message failed to send - we must close it ourselves.
@@ -117,7 +121,6 @@ int zmq::server_t::xsend (msg_t *msg_)
     }
     else
         it->second.pipe->flush ();
-
 
     //  Detach the message from the data buffer.
     int rc = msg_->init ();

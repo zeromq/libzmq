@@ -31,7 +31,7 @@
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
@@ -51,36 +51,43 @@ int main (void)
     char *data = (char *) zmq_msg_data (&msg);
     data [0] = 1;
 
-    rc = zmq_msg_send(&msg, client, 0);
+    rc = zmq_msg_send (&msg, client, ZMQ_SNDMORE);
+    assert (rc == -1);
+
+    rc = zmq_msg_send (&msg, client, 0);
     assert (rc == 1);
 
     rc = zmq_msg_init (&msg);
     assert (rc == 0);
+
     rc = zmq_msg_recv (&msg, server, 0);
-    assert (rc == 1);    
+    assert (rc == 1);
 
     uint32_t routing_id = zmq_msg_routing_id (&msg);
     assert (routing_id != 0);
 
-    rc = zmq_msg_close(&msg);
+    rc = zmq_msg_close (&msg);
     assert (rc == 0);
 
     rc = zmq_msg_init_size (&msg, 1);
-    assert (rc == 0);    
+    assert (rc == 0);
 
-    data = (char *)zmq_msg_data(&msg);
+    data = (char *)zmq_msg_data (&msg);
     data[0] = 2;
 
-    rc = zmq_msg_set_routing_id(&msg, routing_id);
-    assert (rc == 0);    
+    rc = zmq_msg_set_routing_id (&msg, routing_id);
+    assert (rc == 0);
 
-    rc = zmq_msg_send(&msg, server, 0);
+    rc = zmq_msg_send (&msg, server, ZMQ_SNDMORE);
+    assert (rc == -1);
+
+    rc = zmq_msg_send (&msg, server, 0);
     assert (rc == 1);
 
-    rc = zmq_msg_recv(&msg, client, 0);
+    rc = zmq_msg_recv (&msg, client, 0);
     assert (rc == 1);
 
-    rc = zmq_msg_close(&msg);
+    rc = zmq_msg_close (&msg);
     assert (rc == 0);
 
     rc = zmq_close (server);

@@ -60,8 +60,6 @@ int zmq::req_t::xsend (msg_t *msg_)
             return -1;
         }
 
-        if (reply_pipe)
-            reply_pipe->terminate (false);
         receiving_reply = false;
         message_begins = true;
     }
