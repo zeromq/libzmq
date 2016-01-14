@@ -54,7 +54,7 @@ install:
   - cmd: echo "Generator='%CMAKE_GENERATOR%'"
   - cmd: echo "Platform='%Platform%'"
   - cmd: set LIBSODIUMDIR=C:\projects\libsodium
-  - cmd: git clone --depth 1 --quiet "https://github.com/jedisct1/libsodium.git" %LIBSODIUMDIR%
+  - cmd: git clone --branch stable --depth 1 --quiet "https://github.com/jedisct1/libsodium.git" %LIBSODIUMDIR%
   - cmd: msbuild /v:minimal /maxcpucount:%NUMBER_OF_PROCESSORS% /p:Configuration=%Configuration%DLL %LIBSODIUMDIR%\builds\msvc\%MSVCYEAR%\libsodium\libsodium.vcxproj
   - cmd: set SODIUM_LIBRARY_DIR="%LIBSODIUMDIR%\bin\%Platform%\%Configuration%\%MSVCVERSION%\dynamic"
   - cmd: set SODIUM_INCLUDE_DIR="%LIBSODIUMDIR%\src\libsodium\include"
