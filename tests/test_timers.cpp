@@ -36,7 +36,7 @@
 #include <unistd.h>
 #endif
 
-void _sleep (long timeout_)
+void sleep_ (long timeout_)
 {
 #if defined ZMQ_HAVE_WINDOWS
     Sleep (timeout_ > 0 ? timeout_ : INFINITE);
@@ -70,13 +70,13 @@ int main (void)
     assert (!timer_invoked);
 
     //  Wait half the time and check again
-    _sleep (zmq_timers_timeout (timers) / 2);
+    sleep_ (zmq_timers_timeout (timers) / 2);
     rc = zmq_timers_execute (timers);
     assert (rc == 0);
     assert (!timer_invoked);
 
     // Wait until the end
-    _sleep (zmq_timers_timeout (timers));
+    sleep_ (zmq_timers_timeout (timers));
     rc = zmq_timers_execute (timers);
     assert (rc == 0);
     assert (timer_invoked);
@@ -84,20 +84,20 @@ int main (void)
 
     //  Wait half the time and check again
     long timeout = zmq_timers_timeout (timers);
-    _sleep (timeout / 2);
+    sleep_ (timeout / 2);
     rc = zmq_timers_execute (timers);
     assert (rc == 0);
     assert (!timer_invoked);
 
     // Reset timer and wait half of the time left
     rc = zmq_timers_reset (timers, timer_id);
-    _sleep (timeout / 2);
+    sleep_ (timeout / 2);
     rc = zmq_timers_execute (timers);
     assert (rc == 0);
     assert (!timer_invoked);
 
     // Wait until the end
-    _sleep (zmq_timers_timeout (timers));
+    sleep_ (zmq_timers_timeout (timers));
     rc = zmq_timers_execute (timers);
     assert (rc == 0);
     assert (timer_invoked);
@@ -105,7 +105,7 @@ int main (void)
 
     // reschedule
     zmq_timers_set_interval (timers, timer_id, 50);
-    _sleep (51);
+    sleep_ (51);
     rc = zmq_timers_execute (timers);
     assert (rc == 0);
     assert (timer_invoked);
@@ -114,7 +114,7 @@ int main (void)
     // cancel timer
     timeout = zmq_timers_timeout (timers);
     zmq_timers_cancel (timers, timer_id);
-    _sleep (timeout * 2);
+    sleep_ (timeout * 2);
     rc = zmq_timers_execute (timers);
     assert (rc == 0);
     assert (!timer_invoked);
