@@ -10,10 +10,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=zeromq
-PKG_VERSION:=3.2.2
+PKG_VERSION:=master
+PKG_SOURCE_PROTO:=git
+PKG_SOURCE_URL:=https://github.com/zeromq/libzmq.git
+PKG_SOURCE:=$(PKG_NAME).tar.gz
+PKG_SOURCE_VERSION:=HEAD
+PKG_SOURCE_SUBDIR:=$(PKG_NAME)
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=http://download.zeromq.org/
+PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
 
 PKG_INSTALL:=1
 
@@ -23,7 +27,7 @@ define Package/zeromq
     MAINTAINER:=victor@iso3103.net
     TITLE:=zeromq
     SECTION:=libs
-    DEPENDS:=+libstdcpp +libpthread +librt
+    DEPENDS:=+libstdcpp +libpthread +librt +libsodium
     CATEGORY:=Libraries
     URL:=http://www.zeromq.org/
 endef
@@ -34,6 +38,12 @@ define Package/zeromq/description
     clustered products and supercomputing.
 endef
 
+define Build/Configure
+	( cd $(PKG_BUILD_DIR); ./autogen.sh );
+	$(call Build/Configure/Default)
+endef
+
+TARGET_CPPFLAGS:=$(filter-out -Werror, $(TARGET_CFLAGS))
 
 define Build/InstallDev
 	$(INSTALL_DIR) \
@@ -58,4 +68,3 @@ define Package/zeromq/install
 endef
 
 $(eval $(call BuildPackage,zeromq))
-
