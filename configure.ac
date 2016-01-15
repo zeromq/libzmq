@@ -606,6 +606,6 @@ AC_CONFIG_FILES([ \
     doc/Makefile \
     builds/Makefile \
     builds/msvc/Makefile \
-    builds/redhat/zeromq.spec])
+    packaging/redhat/zeromq.spec])
 
 AC_OUTPUT
