@@ -1,5 +1,9 @@
 syntax: glob # for hg-git users
-Makefile
+/Makefile
+builds/Makefile
+builds/msvc/Makefile
+configure
+doc/Makefile
 Makefile.in
 configure
 libtool
