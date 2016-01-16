@@ -158,7 +158,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
 #elif ((defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD ||\
     defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_OPENBSD ||\
     defined ZMQ_HAVE_QNXNTO || defined ZMQ_HAVE_NETBSD ||\
-    defined ZMQ_HAVE_DRAGONFLY)\
+    defined ZMQ_HAVE_DRAGONFLY || defined ZMQ_HAVE_GNU)\
     && defined ZMQ_HAVE_IFADDRS)
 
 #include <ifaddrs.h>

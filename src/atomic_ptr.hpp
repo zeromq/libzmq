@@ -46,7 +46,7 @@
 #define ZMQ_ATOMIC_PTR_TILE
 #elif defined ZMQ_HAVE_WINDOWS
 #define ZMQ_ATOMIC_PTR_WINDOWS
-#elif (defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_NETBSD)
+#elif (defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_NETBSD || defined ZMQ_HAVE_GNU)
 #define ZMQ_ATOMIC_PTR_ATOMIC_H
 #else
 #define ZMQ_ATOMIC_PTR_MUTEX
