@@ -252,8 +252,11 @@ zmq::fd_t zmq::ipc_connecter_t::connect ()
     socklen_t len = sizeof (err);
 #endif
     int rc = getsockopt (s, SOL_SOCKET, SO_ERROR, (char*) &err, &len);
-    if (rc == -1)
+    if (rc == -1) {
+        if (errno == ENOPROTOOPT)
+            errno = 0;
         err = errno;
+    }
     if (err != 0) {
 
         //  Assert if the error was caused by 0MQ bug.

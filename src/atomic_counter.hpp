@@ -45,7 +45,7 @@
 #define ZMQ_ATOMIC_COUNTER_ARM
 #elif defined ZMQ_HAVE_WINDOWS
 #define ZMQ_ATOMIC_COUNTER_WINDOWS
-#elif (defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_NETBSD)
+#elif (defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_NETBSD || defined ZMQ_HAVE_GNU)
 #define ZMQ_ATOMIC_COUNTER_ATOMIC_H
 #elif defined __tile__
 #define ZMQ_ATOMIC_COUNTER_TILE

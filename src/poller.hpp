@@ -48,6 +48,13 @@
 #include "poll.hpp"
 #elif defined ZMQ_USE_SELECT
 #include "select.hpp"
+#elif defined ZMQ_HAVE_GNU
+#define ZMQ_USE_SELECT
+#include "select.hpp"
+#if 0
+#define ZMQ_USE_POLL
+#include "poll.hpp"
+#endif
 #else
 #error None of the ZMQ_USE_* macros defined
 #endif

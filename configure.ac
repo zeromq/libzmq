@@ -138,12 +138,27 @@ libzmq_on_mingw32="no"
 libzmq_on_cygwin="no"
 libzmq_on_android="no"
 libzmq_on_linux="no"
+libzmq_on_gnu="no"
 
 # Set some default features required by 0MQ code.
 CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE $CPPFLAGS"
 
 # For host type checks
 AC_CANONICAL_HOST
+
+#For a working getsockopt() optname=SO_ERROR
+dnl AC_MSG_CHECKING([for getsockopt optname SO_ERROR)])
+dnl AC_TRY_COMPILE([
+dnl #include <sys/types.h>
+dnl #include <sys/socket.h>
+dnl ], [socklen_t t;], ac_cv_type_socklen_t=yes, ac_cv_type_socklen_t=no)
+dnl if test "x$ac_cv_type_socklen_t" = "xyes"; then
+dnl AC_MSG_RESULT([yes])
+dnl AC_DEFINE(HAVE_SOCKLEN_T,1,
+dnl   [Define if socklen_t is available])
+dnl   else
+dnl   AC_MSG_RESULT([no])
+dnl   fi
 
 # OS-specific tests
 case "${host_os}" in
@@ -280,6 +295,17 @@ case "${host_os}" in
         if test "x$enable_static" = "xyes"; then
             AC_MSG_ERROR([Building static libraries is not supported under Cygwin])
         fi
+        ;;
+    gnu*)
+        # Define on GNU/Hurd to enable all library features. Define if using a gnu compiler
+        if test "x$GXX" = "xyes"; then
+            CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
+        fi
+        AC_DEFINE(ZMQ_HAVE_GNU, 1, [Have GNU/Hurd OS])
+        libzmq_on_gnu="yes"
+	AC_CHECK_LIB(rt, sem_init)
+dnl        AC_CHECK_LIB(uuid, uuid_generate, ,
+dnl            [AC_MSG_ERROR([cannot link with -luuid, install uuid-dev.])])
         ;;
     *)
         AC_MSG_ERROR([unsupported system: ${host_os}.])
@@ -530,6 +556,7 @@ AM_CONDITIONAL(ON_MINGW, test "x$libzmq_on_mingw32" = "xyes")
 AM_CONDITIONAL(ON_CYGWIN, test "x$libzmq_on_cygwin" = "xyes")
 AM_CONDITIONAL(ON_ANDROID, test "x$libzmq_on_android" = "xyes")
 AM_CONDITIONAL(ON_LINUX, test "x$libzmq_on_linux" = "xyes")
+AM_CONDITIONAL(ON_GNU, test "x$libzmq_on_gnu" = "xyes")
 
 # Check for __atomic_Xxx compiler intrinsics
 AC_LANG_PUSH([C++])
