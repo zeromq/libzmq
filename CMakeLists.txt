@@ -26,6 +26,7 @@ if(WITH_TWEETNACL)
     tweetnacl/src/tweetnacl.c
     )
   if(WIN32)
+    list(APPEND TWEETNACL_SOURCES tweetnacl/contrib/randombytes/winrandom.c)
   else()
     list(APPEND TWEETNACL_SOURCES tweetnacl/contrib/randombytes/devurandom.c)
   endif()
