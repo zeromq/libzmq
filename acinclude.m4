@@ -88,11 +88,15 @@ dnl # LIBZMQ_CHECK_DOC_BUILD                                                    
 dnl # Check whether to build documentation and install man-pages                 #
 dnl ##############################################################################
 AC_DEFUN([LIBZMQ_CHECK_DOC_BUILD], [{
-    # Allow user to disable doc build
-    AC_ARG_WITH([documentation], [AS_HELP_STRING([--without-documentation],
-        [disable documentation build even if asciidoc and xmlto are present [default=no]])])
 
-    if test "x$with_documentation" = "xno"; then
+    # Man pages are built/installed if asciidoc and xmlto are present
+    #   --with-docs=no overrides this
+    AC_ARG_WITH([docs],
+        AS_HELP_STRING([--with-docs],
+            [Build and install man pages [default=yes]]),
+        [with_docs=$withval])
+
+    if test "x$with_docs" = "xno"; then
         libzmq_build_doc="no"
         libzmq_install_man="no"
     else
