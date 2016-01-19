@@ -113,6 +113,11 @@ int zmq::server_t::xsend (msg_t *msg_)
         errno = EHOSTUNREACH;
         return -1;
     }
+
+    //  Message might be delivired over inproc, so we reset routing id
+    int rc = msg_->reset_routing_id ();
+    errno_assert (rc == 0);
+
     bool ok = it->second.pipe->write (msg_);
     if (unlikely (!ok)) {
         // Message failed to send - we must close it ourselves.
@@ -123,7 +128,7 @@ int zmq::server_t::xsend (msg_t *msg_)
         it->second.pipe->flush ();
 
     //  Detach the message from the data buffer.
-    int rc = msg_->init ();
+    rc = msg_->init ();
     errno_assert (rc == 0);
 
     return 0;

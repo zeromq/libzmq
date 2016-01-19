@@ -512,6 +512,12 @@ int zmq::msg_t::set_routing_id (uint32_t routing_id_)
     return -1;
 }
 
+int zmq::msg_t::reset_routing_id ()
+{
+    u.base.routing_id = 0;
+    return 0;
+}
+
 zmq::atomic_counter_t *zmq::msg_t::refcnt()
 {
     switch(u.base.type)
