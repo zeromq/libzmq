@@ -99,6 +99,7 @@ namespace zmq
         bool is_zcmsg() const;
         uint32_t get_routing_id ();
         int set_routing_id (uint32_t routing_id_);
+        int reset_routing_id ();
 
         //  After calling this function you can copy the message in POD-style
         //  refs_ times. No need to call copy.
