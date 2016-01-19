@@ -114,7 +114,7 @@ int zmq::server_t::xsend (msg_t *msg_)
         return -1;
     }
 
-    //  Message might be delivired over inproc, so we reset routing id
+    //  Message might be delivered over inproc, so we reset routing id
     int rc = msg_->reset_routing_id ();
     errno_assert (rc == 0);
 
