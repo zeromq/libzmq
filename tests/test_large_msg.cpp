@@ -28,7 +28,6 @@
 */
 
 #include <limits.h>
-#include <stdint.h>
 #include "testutil.hpp"
 
 int main (void)
@@ -49,7 +48,6 @@ int main (void)
     
     zmq_msg_t msg, rcv;
     size_t big = 64 + (size_t) INT_MAX;
-    printf("Large msg: %u %llu %lu\n", INT_MAX, SIZE_MAX, big);
     
     rc = zmq_msg_init_size (&msg, big);
     assert (rc == 0);
