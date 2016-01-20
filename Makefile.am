@@ -702,6 +702,11 @@ if !ON_LINUX
 XFAIL_TESTS += tests/test_abstract_ipc
 endif
 
+if ON_GNU
+XFAIL_TESTS += test_ipc_wildcard \
+		test_term_endpoint
+endif
+
 EXTRA_DIST = \
 	CMakeLists.txt \
 	autogen.sh	\
