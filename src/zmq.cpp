@@ -346,11 +346,12 @@ int zmq_disconnect (void *s_, const char *addr_)
 static int
 s_sendmsg (zmq::socket_base_t *s_, zmq_msg_t *msg_, int flags_)
 {
-    int sz = (int) zmq_msg_size (msg_);
+    size_t sz = zmq_msg_size (msg_);
     int rc = s_->send ((zmq::msg_t *) msg_, flags_);
     if (unlikely (rc < 0))
         return -1;
-    return sz;
+    // truncate returned size to INT_MAX to avoid overflow to negative values
+    return (int) (sz < INT_MAX ? sz : INT_MAX);
 }
 
 /*  To be deprecated once zmq_msg_send() is stable                           */
@@ -460,7 +461,9 @@ s_recvmsg (zmq::socket_base_t *s_, zmq_msg_t *msg_, int flags_)
     int rc = s_->recv ((zmq::msg_t*) msg_, flags_);
     if (unlikely (rc < 0))
         return -1;
-    return (int) zmq_msg_size (msg_);
+    // truncate returned size to INT_MAX to avoid overflow to negative values
+    size_t sz = zmq_msg_size (msg_);
+    return (int) (sz < INT_MAX ? sz : INT_MAX);
 }
 
 /*  To be deprecated once zmq_msg_recv() is stable                           */
