@@ -63,6 +63,7 @@ struct iovec {
 #include <string.h>
 #include <stdlib.h>
 #include <new>
+#include <climits>
 
 #include "proxy.hpp"
 #include "socket_base.hpp"
