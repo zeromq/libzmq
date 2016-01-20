@@ -146,20 +146,6 @@ CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE $CPPFLAGS"
 # For host type checks
 AC_CANONICAL_HOST
 
-#For a working getsockopt() optname=SO_ERROR
-dnl AC_MSG_CHECKING([for getsockopt optname SO_ERROR)])
-dnl AC_TRY_COMPILE([
-dnl #include <sys/types.h>
-dnl #include <sys/socket.h>
-dnl ], [socklen_t t;], ac_cv_type_socklen_t=yes, ac_cv_type_socklen_t=no)
-dnl if test "x$ac_cv_type_socklen_t" = "xyes"; then
-dnl AC_MSG_RESULT([yes])
-dnl AC_DEFINE(HAVE_SOCKLEN_T,1,
-dnl   [Define if socklen_t is available])
-dnl   else
-dnl   AC_MSG_RESULT([no])
-dnl   fi
-
 # OS-specific tests
 case "${host_os}" in
     *linux*)
@@ -304,8 +290,6 @@ case "${host_os}" in
         AC_DEFINE(ZMQ_HAVE_GNU, 1, [Have GNU/Hurd OS])
         libzmq_on_gnu="yes"
 	AC_CHECK_LIB(rt, sem_init)
-dnl        AC_CHECK_LIB(uuid, uuid_generate, ,
-dnl            [AC_MSG_ERROR([cannot link with -luuid, install uuid-dev.])])
         ;;
     *)
         AC_MSG_ERROR([unsupported system: ${host_os}.])
