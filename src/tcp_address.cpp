@@ -44,6 +44,7 @@
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
 #include <netdb.h>
+#include <ctype.h>
 #endif
 
 #ifdef ZMQ_HAVE_SOLARIS
