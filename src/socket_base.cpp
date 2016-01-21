@@ -45,6 +45,7 @@
 #endif
 #else
 #include <unistd.h>
+#include <ctype.h>
 #endif
 
 #include "socket_base.hpp"
@@ -197,11 +198,11 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t tid_, int sid_, bool
 zmq::socket_base_t::~socket_base_t ()
 {
     LIBZMQ_DELETE(mailbox);
-    
+
     if (reaper_signaler) {
         LIBZMQ_DELETE(reaper_signaler);
     }
-    
+
     stop_monitor ();
     zmq_assert (destroyed);
 }
@@ -449,7 +450,7 @@ int zmq::socket_base_t::getsockopt (int option_, void *optval_,
         *optvallen_ = sizeof (int);
         EXIT_MUTEX ();
         return 0;
-    }  
+    }
 
     int rc = options.getsockopt (option_, optval_, optvallen_);
     EXIT_MUTEX ();
@@ -463,7 +464,7 @@ int zmq::socket_base_t::add_signaler(signaler_t *s_)
     if (!thread_safe) {
         errno = EINVAL;
         EXIT_MUTEX ();
-        return -1;  
+        return -1;
     }
 
     ((mailbox_safe_t*)mailbox)->add_signaler(s_);
