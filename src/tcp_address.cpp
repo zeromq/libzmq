@@ -122,11 +122,17 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
 
 int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_src_)
 {
-    //  TODO: Unused parameter, IPv6 support not implemented for AIX or HP/UX.
-    (void) ipv6_;
+#if defined ZMQ_HAVE_AIX || defined ZMQ_HAVE_HPUX
+    // IPv6 support not implemented for AIX or HP/UX.
+    if (ipv6_)
+    {
+        errno = ENODEV;
+        return -1;
+    }
+#endif
 
     //  Create a socket.
-    const int sd = open_socket (AF_INET, SOCK_DGRAM, 0);
+    const int sd = open_socket (ipv6_ ? AF_INET6 : AF_INET, SOCK_DGRAM, 0);
     errno_assert (sd != -1);
 
     struct ifreq ifr;
@@ -144,12 +150,25 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
         errno = ENODEV;
         return -1;
     }
-    if (is_src_)
-        memcpy (&source_address.ipv4.sin_addr,
-            &((sockaddr_in*) &ifr.ifr_addr)->sin_addr, sizeof (struct in_addr));
+
+    const int family = ifr.ifr_addr.sa_family;
+    if ((family == AF_INET || (ipv6_ && family == AF_INET6))
+        && !strcmp (nic_, ifr.ifr_name))
+    {
+        if (is_src_)
+            memcpy (&source_address, &ifr.ifr_addr,
+                    (family == AF_INET) ? sizeof (struct sockaddr_in)
+                                        : sizeof (struct sockaddr_in6));
+        else
+            memcpy (&address, &ifr.ifr_addr,
+                    (family == AF_INET) ? sizeof (struct sockaddr_in)
+                                        : sizeof (struct sockaddr_in6));
+    }
     else
-       memcpy (&address.ipv4.sin_addr,
-            &((sockaddr_in*) &ifr.ifr_addr)->sin_addr, sizeof (struct in_addr));
+    {
+        errno = ENODEV;
+        return -1;
+    }
 
     return 0;
 }
