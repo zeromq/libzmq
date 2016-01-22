@@ -41,8 +41,8 @@
 #include "err.hpp"
 #include "ip.hpp"
 #include "address.hpp"
-#include "ipc_address.hpp"
 #include "session_base.hpp"
+#include "vmci_address.hpp"
 #include "vmci.hpp"
 
 zmq::vmci_connecter_t::vmci_connecter_t (class io_thread_t *io_thread_,
@@ -226,8 +226,8 @@ int zmq::vmci_connecter_t::open ()
 
     //  Connect to the remote peer.
     int rc = ::connect (
-        s, addr->resolved.ipc_addr->addr (),
-        addr->resolved.ipc_addr->addrlen ());
+        s, addr->resolved.vmci_addr->addr (),
+        addr->resolved.vmci_addr->addrlen ());
 
     //  Connect was successful immediately.
     if (rc == 0)
@@ -244,14 +244,18 @@ int zmq::vmci_connecter_t::open ()
     return -1;
 }
 
-int zmq::vmci_connecter_t::close ()
+void zmq::vmci_connecter_t::close ()
 {
     zmq_assert (s != retired_fd);
-    int rc = ::close (s);
+#ifdef ZMQ_HAVE_WINDOWS
+    const int rc = closesocket (s);
+    wsa_assert (rc != SOCKET_ERROR);
+#else
+    const int rc = ::close (s);
     errno_assert (rc == 0);
+#endif
     socket->event_closed (endpoint, s);
     s = retired_fd;
-    return 0;
 }
 
 zmq::fd_t zmq::vmci_connecter_t::connect ()

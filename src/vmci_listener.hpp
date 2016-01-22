@@ -71,7 +71,7 @@ namespace zmq
         void in_event ();
 
         //  Close the listening socket.
-        int close ();
+        void close ();
 
         //  Accept the new connection. Returns the file descriptor of the
         //  newly created connection. The function may return retired_fd
