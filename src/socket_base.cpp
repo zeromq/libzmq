@@ -1537,6 +1537,10 @@ int zmq::socket_base_t::monitor (const char *addr_, int events_)
         errno = EPROTONOSUPPORT;
         return -1;
     }
+    // already monitoring. Stop previous monitor before starting new one.
+    if (monitor_socket != NULL) {
+        stop_monitor (true);
+    }
     //  Register events to monitor
     monitor_events = events_;
     monitor_socket = zmq_socket (get_ctx (), ZMQ_PAIR);
