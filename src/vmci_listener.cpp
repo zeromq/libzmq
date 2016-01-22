@@ -45,8 +45,12 @@
 #include "socket_base.hpp"
 #include "vmci.hpp"
 
+#if defined ZMQ_HAVE_WINDOWS
+#include "windows.hpp"
+#else
 #include <unistd.h>
 #include <fcntl.h>
+#endif
 
 zmq::vmci_listener_t::vmci_listener_t (io_thread_t *io_thread_,
       socket_base_t *socket_, const options_t &options_) :
@@ -174,16 +178,18 @@ int zmq::vmci_listener_t::set_address (const char *addr_)
     return -1;
 }
 
-int zmq::vmci_listener_t::close ()
+void zmq::vmci_listener_t::close ()
 {
     zmq_assert (s != retired_fd);
+#ifdef ZMQ_HAVE_WINDOWS
+    int rc = closesocket (s);
+    wsa_assert (rc != SOCKET_ERROR);
+#else
     int rc = ::close (s);
     errno_assert (rc == 0);
-
-    s = retired_fd;
-
+#endif
     socket->event_closed (endpoint, s);
-    return 0;
+    s = retired_fd;
 }
 
 zmq::fd_t zmq::vmci_listener_t::accept ()

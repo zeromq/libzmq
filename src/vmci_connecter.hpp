@@ -88,7 +88,7 @@ namespace zmq
         int open ();
 
         //  Close the connecting socket.
-        int close ();
+        void close ();
 
         //  Get the file descriptor of newly created connection. Returns
         //  retired_fd if the connection was unsuccessful.
