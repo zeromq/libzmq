@@ -92,6 +92,7 @@ struct iovec {
 typedef char check_msg_t_size
     [sizeof (zmq::msg_t) ==  sizeof (zmq_msg_t) ? 1 : -1];
 
+extern "C" {
 
 void zmq_version (int *major_, int *minor_, int *patch_)
 {
@@ -1049,3 +1050,5 @@ int zmq_device (int /* type */, void *frontend_, void *backend_)
         (zmq::socket_base_t*) frontend_,
         (zmq::socket_base_t*) backend_, NULL);
 }
+
+} //extern "C"
