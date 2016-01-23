@@ -34,6 +34,7 @@
 #   include <sodium.h>
 #endif
 
+extern "C" {
 
 void zmq_sleep (int seconds_)
 {
@@ -198,3 +199,5 @@ int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key)
     return -1;
 #endif
 }
+
+} //extern "C"
