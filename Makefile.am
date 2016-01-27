@@ -45,6 +45,8 @@ src_libzmq_la_SOURCES = \
 	src/decoder.hpp \
 	src/devpoll.cpp \
 	src/devpoll.hpp \
+	src/dish.cpp \
+	src/dish.hpp \
 	src/dist.cpp \
 	src/dist.hpp \
 	src/encoder.hpp \
@@ -134,6 +136,8 @@ src_libzmq_la_SOURCES = \
 	src/pull.hpp \
 	src/push.cpp \
 	src/push.hpp \
+	src/radio.cpp \
+	src/radio.hpp \
 	src/random.cpp \
 	src/random.hpp \
 	src/raw_decoder.cpp \
@@ -380,7 +384,8 @@ test_apps = \
 	tests/test_heartbeats \
 	tests/test_stream_exceeds_buffer \
 	tests/test_poller \
-	tests/test_timers
+	tests/test_timers \
+	tests/test_radio_dish
 
 tests_test_system_SOURCES = tests/test_system.cpp
 tests_test_system_LDADD = src/libzmq.la
@@ -596,6 +601,9 @@ tests_test_poller_LDADD = src/libzmq.la
 
 tests_test_timers_SOURCES = tests/test_timers.cpp
 tests_test_timers_LDADD = src/libzmq.la
+
+tests_test_radio_dish_SOURCES = tests/test_radio_dish.cpp
+tests_test_radio_dish_LDADD = src/libzmq.la
 
 
 if !ON_MINGW
