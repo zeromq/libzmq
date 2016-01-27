@@ -300,6 +300,28 @@ int zmq_socket_monitor (void *s_, const char *addr_, int events_)
     return result;
 }
 
+int zmq_join (void *s_, const char* group_)
+{
+    if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
+        errno = ENOTSOCK;
+        return -1;
+    }
+    zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
+    int result = s->join (group_);
+    return result;
+}
+
+int zmq_leave (void *s_, const char* group_)
+{
+    if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {
+        errno = ENOTSOCK;
+        return -1;
+    }
+    zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
+    int result = s->leave (group_);
+    return result;
+}
+
 int zmq_bind (void *s_, const char *addr_)
 {
     if (!s_ || !((zmq::socket_base_t*) s_)->check_tag ()) {

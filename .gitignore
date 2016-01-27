@@ -122,6 +122,8 @@ test_setsockopt
 test_stream_exceeds_buffer
 test_poller
 test_timers
+test_radio_dish
+test_large_msg
 tests/test*.log
 tests/test*.trs
 src/platform.hpp*

@@ -70,6 +70,7 @@ set(tests
         test_xpub_manual
         test_xpub_welcome_msg
         test_timers
+        test_radio_dish
 )
 if(NOT WIN32)
   list(APPEND tests

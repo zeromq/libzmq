@@ -458,7 +458,9 @@ set(cxx-sources
         decoder_allocators.cpp
         socket_poller.cpp
         timers.cpp
-        config.hpp)
+        config.hpp
+        radio.cpp
+        dish.cpp)
 
 set(rc-sources version.rc)
 

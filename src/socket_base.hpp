@@ -99,6 +99,10 @@ namespace zmq
         bool has_in ();
         bool has_out ();
 
+        //  Joining and leaving groups
+        int join (const char *group);
+        int leave (const char *group);
+
         //  Using this function reaper thread ask the socket to register with
         //  its poller.
         void start_reaping (poller_t *poller_);
@@ -168,6 +172,10 @@ namespace zmq
         virtual void xhiccuped (pipe_t *pipe_);
         virtual void xpipe_terminated (pipe_t *pipe_) = 0;
 
+        //  the default implementation assumes that joub and leave are not supported.
+        virtual int xjoin (const char *group_);
+        virtual int xleave (const char *group_);
+
         //  Delay actual destruction of the socket.
         void process_destroy ();
 
@@ -176,7 +184,7 @@ namespace zmq
 
         // Monitor socket cleanup
         void stop_monitor (bool send_monitor_stopped_event_ = true);
-        
+
         // Next assigned name on a zmq_connect() call used by ROUTER and STREAM socket types
         std::string connect_rid;
 
@@ -281,10 +289,9 @@ namespace zmq
         mutex_t sync;
 
         socket_base_t (const socket_base_t&);
-        const socket_base_t &operator = (const socket_base_t&);        
+        const socket_base_t &operator = (const socket_base_t&);
     };
 
 }
 
 #endif
-

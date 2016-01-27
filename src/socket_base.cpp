@@ -92,6 +92,8 @@
 #include "stream.hpp"
 #include "server.hpp"
 #include "client.hpp"
+#include "radio.hpp"
+#include "dish.hpp"
 
 #define ENTER_MUTEX() \
     if (thread_safe) \
@@ -152,6 +154,12 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
             break;
         case ZMQ_CLIENT:
             s = new (std::nothrow) client_t (parent_, tid_, sid_);
+            break;
+        case ZMQ_RADIO:
+            s = new (std::nothrow) radio_t (parent_, tid_, sid_);
+            break;
+        case ZMQ_DISH:
+            s = new (std::nothrow) dish_t (parent_, tid_, sid_);
             break;
         default:
             errno = EINVAL;
@@ -454,6 +462,28 @@ int zmq::socket_base_t::getsockopt (int option_, void *optval_,
 
     int rc = options.getsockopt (option_, optval_, optvallen_);
     EXIT_MUTEX ();
+    return rc;
+}
+
+int zmq::socket_base_t::join (const char* group_)
+{
+    ENTER_MUTEX ();
+
+    int rc = xjoin (group_);
+
+    EXIT_MUTEX();
+
+    return rc;
+}
+
+int zmq::socket_base_t::leave (const char* group_)
+{
+    ENTER_MUTEX ();
+
+    int rc = xleave (group_);
+
+    EXIT_MUTEX();
+
     return rc;
 }
 
@@ -1394,6 +1424,18 @@ int zmq::socket_base_t::xsend (msg_t *)
 bool zmq::socket_base_t::xhas_in ()
 {
     return false;
+}
+
+int zmq::socket_base_t::xjoin (const char *group_)
+{
+    errno = ENOTSUP;
+    return -1;
+}
+
+int zmq::socket_base_t::xleave (const char *group_)
+{
+    errno = ENOTSUP;
+    return -1;
 }
 
 int zmq::socket_base_t::xrecv (msg_t *)
