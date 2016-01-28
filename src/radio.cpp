@@ -120,9 +120,8 @@ int zmq::radio_t::xsend (msg_t *msg_)
     std::pair<subscriptions_t::iterator, subscriptions_t::iterator> range =
         subscriptions.equal_range (std::string(msg_->group ()));
 
-    for (subscriptions_t::iterator it = range.first; it != range.second; ++it) {
+    for (subscriptions_t::iterator it = range.first; it != range.second; ++it)
         dist.match (it-> second);
-    }
 
     int rc = dist.send_to_matching (msg_);
 
@@ -144,4 +143,48 @@ int zmq::radio_t::xrecv (msg_t *msg_)
 bool zmq::radio_t::xhas_in ()
 {
     return false;
+}
+
+zmq::radio_session_t::radio_session_t (io_thread_t *io_thread_, bool connect_,
+      socket_base_t *socket_, const options_t &options_,
+      address_t *addr_) :
+    session_base_t (io_thread_, connect_, socket_, options_, addr_),
+    state (group)
+{
+}
+
+zmq::radio_session_t::~radio_session_t ()
+{
+}
+
+int zmq::radio_session_t::pull_msg (msg_t *msg_)
+{
+    if (state == group) {
+        int rc = session_base_t::pull_msg (&pending_msg);
+        if (rc != 0)
+            return rc;
+
+        const char *group = pending_msg.group ();
+        int length = strlen (group);
+
+        //  First frame is the group
+        msg_->init_size (length);
+        msg_->set_flags (msg_t::more);
+        memcpy (msg_->data (), group, length);
+
+        //  Next status is the body
+        state = body;
+        return 0;
+    }
+    else {
+        *msg_ = pending_msg;
+        state = group;
+        return 0;
+    }
+}
+
+void zmq::radio_session_t::reset ()
+{
+    session_base_t::reset ();
+    state = group;
 }

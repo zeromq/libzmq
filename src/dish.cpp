@@ -29,6 +29,7 @@
 
 #include <string.h>
 
+#include "../include/zmq.h"
 #include "macros.hpp"
 #include "dish.hpp"
 #include "err.hpp"
@@ -243,4 +244,67 @@ void zmq::dish_t::send_subscriptions (pipe_t *pipe_)
     }
 
     pipe_->flush ();
+}
+
+zmq::dish_session_t::dish_session_t (io_thread_t *io_thread_, bool connect_,
+      socket_base_t *socket_, const options_t &options_,
+      address_t *addr_) :
+    session_base_t (io_thread_, connect_, socket_, options_, addr_),
+    state (group)
+{
+}
+
+zmq::dish_session_t::~dish_session_t ()
+{
+}
+
+int zmq::dish_session_t::push_msg (msg_t *msg_)
+{
+    if (state == group) {
+        if ((msg_->flags() & msg_t::more) != msg_t::more) {
+            errno = EFAULT;
+            return -1;
+        }
+
+        if (msg_->size() > ZMQ_GROUP_MAX_LENGTH) {
+            errno = EFAULT;
+            return -1;
+        }
+
+        group_msg = *msg_;
+        state = body;
+
+        int rc = msg_->init ();
+        errno_assert (rc == 0);
+        return 0;
+    }
+    else {
+        //  Set the message group
+        int rc = msg_->set_group ((char*)group_msg.data (), group_msg. size());
+        errno_assert (rc == 0);
+
+        //  We set the group, so we don't need the group_msg anymore
+        rc = group_msg.close ();
+        errno_assert (rc == 0);
+
+        //  Thread safe socket doesn't support multipart messages
+        if ((msg_->flags() & msg_t::more) == msg_t::more) {
+            errno = EFAULT;
+            return -1;
+        }
+
+        //  Push message to dish socket
+        rc = session_base_t::push_msg (msg_);
+
+        if (rc == 0)
+            state = group;
+
+        return rc;
+    }
+}
+
+void zmq::dish_session_t::reset ()
+{
+    session_base_t::reset ();
+    state = group;
 }

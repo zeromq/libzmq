@@ -89,7 +89,7 @@ int main (void)
     void *radio = zmq_socket (ctx, ZMQ_RADIO);
     void *dish = zmq_socket (ctx, ZMQ_DISH);
 
-    int rc = zmq_bind (radio, "inproc://test-radio-dish");
+    int rc = zmq_bind (radio, "tcp://127.0.0.1:5556");
     assert (rc == 0);
 
     //  Leaving a group which we didn't join
@@ -113,7 +113,7 @@ int main (void)
     assert (rc == -1);
 
     // Connecting
-    rc = zmq_connect (dish, "inproc://test-radio-dish");
+    rc = zmq_connect (dish, "tcp://127.0.0.1:5556");
     assert (rc == 0);
 
     zmq_sleep (1);

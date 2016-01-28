@@ -119,6 +119,7 @@ namespace zmq
         int reset_routing_id ();
         const char * group ();
         int set_group (const char* group_);
+        int set_group (const char*, size_t length);
 
         //  After calling this function you can copy the message in POD-style
         //  refs_ times. No need to call copy.

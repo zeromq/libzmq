@@ -77,6 +77,30 @@ namespace zmq
         const radio_t &operator = (const radio_t&);
     };
 
+    class radio_session_t : public session_base_t
+    {
+    public:
+
+        radio_session_t (zmq::io_thread_t *io_thread_, bool connect_,
+            zmq::socket_base_t *socket_, const options_t &options_,
+            address_t *addr_);
+        ~radio_session_t ();
+
+        //  Overrides of the functions from session_base_t.
+        int pull_msg (msg_t *msg_);
+        void reset ();
+    private:
+
+        enum {
+            group,
+            body
+        } state;
+
+        msg_t pending_msg;
+
+        radio_session_t (const radio_session_t&);
+        const radio_session_t &operator = (const radio_session_t&);
+    };
 }
 
 #endif

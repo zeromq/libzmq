@@ -533,13 +533,19 @@ const char * zmq::msg_t::group ()
 
 int zmq::msg_t::set_group (const char * group_)
 {
-    if (strlen (group_) > ZMQ_GROUP_MAX_LENGTH)
+    return set_group (group_, strlen (group_));
+}
+
+int zmq::msg_t::set_group (const char * group_, size_t length_)
+{
+    if (length_> ZMQ_GROUP_MAX_LENGTH)
     {
         errno = EINVAL;
         return -1;
     }
 
-    strcpy (u.base.group, group_);
+    strncpy (u.base.group, group_, length_);
+    u.base.group[length_] = '\0';
 
     return 0;
 }

@@ -45,6 +45,8 @@
 
 #include "ctx.hpp"
 #include "req.hpp"
+#include "radio.hpp"
+#include "dish.hpp"
 
 zmq::session_base_t *zmq::session_base_t::create (class io_thread_t *io_thread_,
     bool active_, class socket_base_t *socket_, const options_t &options_,
@@ -56,6 +58,14 @@ zmq::session_base_t *zmq::session_base_t::create (class io_thread_t *io_thread_,
         s = new (std::nothrow) req_session_t (io_thread_, active_,
             socket_, options_, addr_);
         break;
+    case ZMQ_RADIO:
+        s = new (std::nothrow) radio_session_t (io_thread_, active_,
+            socket_, options_, addr_);
+        break;
+    case ZMQ_DISH:
+        s = new (std::nothrow) dish_session_t (io_thread_, active_,
+            socket_, options_, addr_);
+            break;
     case ZMQ_DEALER:
     case ZMQ_REP:
     case ZMQ_ROUTER:
@@ -69,8 +79,6 @@ zmq::session_base_t *zmq::session_base_t::create (class io_thread_t *io_thread_,
     case ZMQ_STREAM:
     case ZMQ_SERVER:
     case ZMQ_CLIENT:
-    case ZMQ_RADIO:
-    case ZMQ_DISH:
         s = new (std::nothrow) session_base_t (io_thread_, active_,
             socket_, options_, addr_);
         break;
