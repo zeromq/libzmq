@@ -81,7 +81,7 @@ namespace zmq
         dist_t dist;
 
         //  The repository of subscriptions.
-        typedef std::vector<std::string> subscriptions_t;
+        typedef std::set<std::string> subscriptions_t;
         subscriptions_t subscriptions;
 
         //  If true, 'message' contains a matching message to return on the
