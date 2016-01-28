@@ -708,7 +708,8 @@ check_PROGRAMS = ${test_apps}
 
 #  Run the test cases
 TESTS = $(test_apps)
-XFAIL_TESTS =
+XFAIL_TESTS = tests/test_req_correlate \
+		tests/test_req_relaxed
 
 if !ON_LINUX
 XFAIL_TESTS += tests/test_abstract_ipc
