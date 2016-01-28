@@ -200,6 +200,28 @@ int zmq::msg_t::init_delimiter ()
     return 0;
 }
 
+int zmq::msg_t::init_join ()
+{
+    u.base.metadata = NULL;
+    u.base.type = type_join;
+    u.base.flags = 0;
+    u.base.group[0] = '\0';
+    u.base.routing_id = 0;
+    u.base.fd = retired_fd;
+    return 0;
+}
+
+int zmq::msg_t::init_leave ()
+{
+    u.base.metadata = NULL;
+    u.base.type = type_leave;
+    u.base.flags = 0;
+    u.base.group[0] = '\0';
+    u.base.routing_id = 0;
+    u.base.fd = retired_fd;
+    return 0;
+}
+
 int zmq::msg_t::close ()
 {
     //  Check the validity of the message.
@@ -438,6 +460,16 @@ bool zmq::msg_t::is_cmsg () const
 bool zmq::msg_t::is_zcmsg() const
 {
     return u.base.type == type_zclmsg;
+}
+
+bool zmq::msg_t::is_join() const
+{
+    return u.base.type == type_join;
+}
+
+bool zmq::msg_t::is_leave() const
+{
+    return u.base.type == type_leave;
 }
 
 void zmq::msg_t::add_refs (int refs_)

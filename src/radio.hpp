@@ -87,6 +87,7 @@ namespace zmq
         ~radio_session_t ();
 
         //  Overrides of the functions from session_base_t.
+        int push_msg (msg_t *msg_);
         int pull_msg (msg_t *msg_);
         void reset ();
     private:

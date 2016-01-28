@@ -95,6 +95,8 @@ namespace zmq
         int init_external_storage(content_t* content_, void *data_, size_t size_,
                                   msg_free_fn *ffn_, void *hint_);
         int init_delimiter ();
+        int init_join ();
+        int init_leave ();
         int close ();
         int move (msg_t &src_);
         int copy (msg_t &src_);
@@ -111,6 +113,8 @@ namespace zmq
         bool is_identity () const;
         bool is_credential () const;
         bool is_delimiter () const;
+        bool is_join () const;
+        bool is_leave () const;
         bool is_vsm () const;
         bool is_cmsg () const;
         bool is_zcmsg() const;
@@ -137,7 +141,6 @@ namespace zmq
                                             16 +
                                             sizeof (uint32_t) +
                                             sizeof (fd_t))};
-
     private:
         zmq::atomic_counter_t* refcnt();
 
@@ -157,7 +160,13 @@ namespace zmq
             // zero-copy LMSG message for v2_decoder
             type_zclmsg = 105,
 
-            type_max = 105
+            //  Join message for radio_dish
+            type_join = 106,
+
+            //  Leave message for radio_dish
+            type_leave = 107,
+
+            type_max = 107
         };
 
         //  Note that fields shared between different message types are not
