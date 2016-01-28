@@ -85,25 +85,26 @@ int zmq::msg_t::init ()
     u.vsm.flags = 0;
     u.vsm.size = 0;
     u.vsm.routing_id = 0;
-    file_desc = -1;
+    u.vsm.fd = retired_fd;
     return 0;
 }
 
 int zmq::msg_t::init_size (size_t size_)
 {
-    file_desc = -1;
     if (size_ <= max_vsm_size) {
         u.vsm.metadata = NULL;
         u.vsm.type = type_vsm;
         u.vsm.flags = 0;
         u.vsm.size = (unsigned char) size_;
         u.vsm.routing_id = 0;
+        u.vsm.fd = retired_fd;
     }
     else {
         u.lmsg.metadata = NULL;
         u.lmsg.type = type_lmsg;
         u.lmsg.flags = 0;
         u.lmsg.routing_id = 0;
+        u.lmsg.fd = retired_fd;
         u.lmsg.content = NULL;
         if (sizeof (content_t) + size_ > size_)
             u.lmsg.content = (content_t*) malloc (sizeof (content_t) + size_);
@@ -127,12 +128,12 @@ int zmq::msg_t::init_external_storage(void *data_, size_t size_, zmq::atomic_cou
     zmq_assert(NULL != data_);
     zmq_assert(NULL != ctr);
 
-    file_desc = -1;
 
     u.zclmsg.metadata = NULL;
     u.zclmsg.type = type_zclmsg;
     u.zclmsg.flags = 0;
     u.zclmsg.routing_id = 0;
+    u.zclmsg.fd = retired_fd;
 
     u.zclmsg.data = data_;
     u.zclmsg.size = size_;
@@ -151,8 +152,6 @@ int zmq::msg_t::init_data (void *data_, size_t size_,
     //  would occur once the data is accessed
     zmq_assert (data_ != NULL || size_ == 0);
 
-    file_desc = -1;
-
     //  Initialize constant message if there's no need to deallocate
     if (ffn_ == NULL) {
         u.cmsg.metadata = NULL;
@@ -161,12 +160,14 @@ int zmq::msg_t::init_data (void *data_, size_t size_,
         u.cmsg.data = data_;
         u.cmsg.size = size_;
         u.cmsg.routing_id = 0;
+        u.cmsg.fd = retired_fd;
     }
     else {
         u.lmsg.metadata = NULL;
         u.lmsg.type = type_lmsg;
         u.lmsg.flags = 0;
         u.lmsg.routing_id = 0;
+        u.lmsg.fd = retired_fd;
         u.lmsg.content = (content_t*) malloc (sizeof (content_t));
         if (!u.lmsg.content) {
             errno = ENOMEM;
@@ -189,6 +190,7 @@ int zmq::msg_t::init_delimiter ()
     u.delimiter.type = type_delimiter;
     u.delimiter.flags = 0;
     u.delimiter.routing_id = 0;
+    u.delimiter.fd = retired_fd;
     return 0;
 }
 
@@ -369,14 +371,14 @@ void zmq::msg_t::reset_flags (unsigned char flags_)
     u.base.flags &= ~flags_;
 }
 
-int64_t zmq::msg_t::fd ()
+zmq::fd_t zmq::msg_t::fd ()
 {
-    return file_desc;
+    return u.base.fd;
 }
 
-void zmq::msg_t::set_fd (int64_t fd_)
+void zmq::msg_t::set_fd (fd_t fd_)
 {
-    file_desc = fd_;
+    u.base.fd = fd_;
 }
 
 zmq::metadata_t *zmq::msg_t::metadata () const

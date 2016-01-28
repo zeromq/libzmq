@@ -34,6 +34,7 @@
 #include <stdio.h>
 
 #include "config.hpp"
+#include "fd.hpp"
 #include "atomic_counter.hpp"
 #include "metadata.hpp"
 
@@ -86,8 +87,8 @@ namespace zmq
         unsigned char flags ();
         void set_flags (unsigned char flags_);
         void reset_flags (unsigned char flags_);
-        int64_t fd ();
-        void set_fd (int64_t fd_);
+        fd_t fd ();
+        void set_fd (fd_t fd_);
         metadata_t *metadata () const;
         void set_metadata (metadata_t *metadata_);
         void reset_metadata ();
@@ -112,7 +113,10 @@ namespace zmq
         //  Size in bytes of the largest message that is still copied around
         //  rather than being reference-counted.
         enum { msg_t_size = 64 };
-        enum { max_vsm_size = msg_t_size - (8 + sizeof (metadata_t *) + 3 + sizeof(uint32_t)) };
+        enum { max_vsm_size = msg_t_size - (sizeof (metadata_t *) +
+                                            3 +
+                                            sizeof (uint32_t) +
+                                            sizeof (fd_t)) };
 
     private:
         zmq::atomic_counter_t* refcnt();
@@ -152,9 +156,6 @@ namespace zmq
             type_max = 105
         };
 
-        // the file descriptor where this message originated, needs to be 64bit due to alignment
-        int64_t file_desc;
-
         //  Note that fields shared between different message types are not
         //  moved to the parent class (msg_t). This way we get tighter packing
         //  of the data. Shared fields can be accessed via 'base' member of
@@ -162,10 +163,14 @@ namespace zmq
         union {
             struct {
                 metadata_t *metadata;
-                unsigned char unused [msg_t_size - (8 + sizeof (metadata_t *) + 2 + sizeof(uint32_t))];
+                unsigned char unused [msg_t_size - (sizeof (metadata_t *) +
+                                                    2 +
+                                                    sizeof (uint32_t) +
+                                                    sizeof (fd_t))];
                 unsigned char type;
                 unsigned char flags;
                 uint32_t routing_id;
+                fd_t fd;
             } base;
             struct {
                 metadata_t *metadata;
@@ -174,17 +179,20 @@ namespace zmq
                 unsigned char type;
                 unsigned char flags;
                 uint32_t routing_id;
+                fd_t fd;
             } vsm;
             struct {
                 metadata_t *metadata;
                 content_t *content;
-                unsigned char unused [msg_t_size - (8 + sizeof (metadata_t *)
-                                                      + sizeof (content_t*)
-                                                      + 2
-                                                      + sizeof(uint32_t))];
+                unsigned char unused [msg_t_size - (sizeof (metadata_t *) +
+                                                    sizeof (content_t*) +
+                                                    2 +
+                                                    sizeof (uint32_t) +
+                                                    sizeof (fd_t))];
                 unsigned char type;
                 unsigned char flags;
                 uint32_t routing_id;
+                fd_t fd;
             } lmsg;
             struct {
                 metadata_t *metadata;
@@ -193,34 +201,45 @@ namespace zmq
                 msg_free_fn *ffn;
                 void *hint;
                 zmq::atomic_counter_t* refcnt;
-                unsigned char unused [msg_t_size - (8 + sizeof (metadata_t *)
-                                                      + sizeof (void*)
-                                                      + sizeof (size_t)
-                                                      + sizeof (msg_free_fn*)
-                                                      + sizeof (void*)
-                                                      + sizeof (zmq::atomic_counter_t*)
-                                                      + 2
-                                                      + sizeof(uint32_t))];
+                unsigned char unused [msg_t_size - (sizeof (metadata_t *) +
+                                                    sizeof (void*) +
+                                                    sizeof (size_t) +
+                                                    sizeof (msg_free_fn*) +
+                                                    sizeof (void*) +
+                                                    sizeof (zmq::atomic_counter_t*) +
+                                                    2 +
+                                                    sizeof (uint32_t) +
+                                                    sizeof (fd_t))];
                 unsigned char type;
                 unsigned char flags;
                 uint32_t routing_id;
+                fd_t fd;
             } zclmsg;
             struct {
                 metadata_t *metadata;
                 void* data;
                 size_t size;
-                unsigned char unused
-                    [msg_t_size - (8 + sizeof (metadata_t *) + sizeof (void*) + sizeof (size_t) + 2 + sizeof(uint32_t))];
+                unsigned char unused [msg_t_size - (sizeof (metadata_t *) +
+                                                    sizeof (void*) +
+                                                    sizeof (size_t) +
+                                                    2 +
+                                                    sizeof (uint32_t) +
+                                                    sizeof (fd_t))];
                 unsigned char type;
                 unsigned char flags;
                 uint32_t routing_id;
+                fd_t fd;
             } cmsg;
             struct {
                 metadata_t *metadata;
-                unsigned char unused [msg_t_size - (8 + sizeof (metadata_t *) + 2 + sizeof(uint32_t))];
+                unsigned char unused [msg_t_size - (sizeof (metadata_t *) +
+                                                    2 +
+                                                    sizeof (uint32_t) +
+                                                    sizeof (fd_t))];
                 unsigned char type;
                 unsigned char flags;
                 uint32_t routing_id;
+                fd_t fd;
             } delimiter;
         } u;
     };
