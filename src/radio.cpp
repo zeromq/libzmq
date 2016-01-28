@@ -115,33 +115,10 @@ int zmq::radio_t::xsend (msg_t *msg_)
         return -1;
     }
 
-    size_t size = msg_->size ();
-    char *group = (char*) msg_->data();
-
-    //  Maximum allowed group length is 255
-    if (size > ZMQ_GROUP_MAX_LENGTH)
-        size = ZMQ_GROUP_MAX_LENGTH;
-
-    //  Check if NULL terminated
-    bool terminated = false;
-
-    for (size_t index = 0; index < size; index++) {
-        if (group[index] == '\0') {
-            terminated = true;
-            break;
-        }
-    }
-
-    if (!terminated) {
-        //  User didn't include a group in the message
-        errno = EINVAL;
-        return -1;
-    }
-
     dist.unmatch ();
 
     std::pair<subscriptions_t::iterator, subscriptions_t::iterator> range =
-        subscriptions.equal_range (std::string(group));
+        subscriptions.equal_range (std::string(msg_->group ()));
 
     for (subscriptions_t::iterator it = range.first; it != range.second; ++it) {
         dist.match (it-> second);

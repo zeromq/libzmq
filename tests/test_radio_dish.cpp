@@ -29,6 +29,57 @@
 
 #include "testutil.hpp"
 
+int msg_send (zmq_msg_t *msg_, void *s_, const char* group_, const char* body_)
+{
+    int rc = zmq_msg_init_size (msg_, strlen (body_));
+    if (rc != 0)
+        return rc;
+
+    memcpy (zmq_msg_data (msg_), body_, strlen (body_));
+
+    rc = zmq_msg_set_group (msg_, group_);
+    if (rc != 0) {
+        zmq_msg_close (msg_);
+        return rc;
+    }
+
+    rc = zmq_msg_send (msg_, s_, 0);
+
+    zmq_msg_close (msg_);
+
+    return rc;
+}
+
+int msg_recv_cmp (zmq_msg_t *msg_, void *s_, const char* group_, const char* body_)
+{
+    int rc = zmq_msg_init (msg_);
+    if (rc != 0)
+        return -1;
+
+    int recv_rc = zmq_msg_recv (msg_, s_, 0);
+    if (recv_rc == -1)
+        return -1;
+
+        if (strcmp (zmq_msg_group (msg_), group_) != 0)
+    {
+        zmq_msg_close (msg_);
+        return -1;
+    }
+
+    char * body = (char*) malloc (sizeof(char) * (zmq_msg_size (msg_) + 1));
+    memcpy (body, zmq_msg_data (msg_), zmq_msg_size (msg_));
+    body [zmq_msg_size (msg_)] = '\0';
+
+    if (strcmp (body, body_) != 0)
+    {
+        zmq_msg_close (msg_);
+        return -1;
+    }
+
+    zmq_msg_close (msg_);
+    return recv_rc;
+}
+
 int main (void)
 {
     setup_test_environment ();
@@ -42,7 +93,7 @@ int main (void)
     assert (rc == 0);
 
     //  Leaving a group which we didn't join
-    rc = zmq_leave (dish, "World");
+    rc = zmq_leave (dish, "Movies");
     assert (rc == -1);
 
     //  Joining too long group
@@ -54,11 +105,11 @@ int main (void)
     assert (rc == -1);
 
     // Joining
-    rc = zmq_join (dish, "World");
+    rc = zmq_join (dish, "Movies");
     assert (rc == 0);
 
     // Duplicate Joining
-    rc = zmq_join (dish, "World");
+    rc = zmq_join (dish, "Movies");
     assert (rc == -1);
 
     // Connecting
@@ -67,53 +118,51 @@ int main (void)
 
     zmq_sleep (1);
 
-    //  This is not going to be sent as dish only subscribe to "World"
-    rc = zmq_send (radio, "Hello\0Message", 13, 0);
-    assert (rc == 13);
+    zmq_msg_t msg;
+
+    //  This is not going to be sent as dish only subscribe to "Movies"
+    rc = msg_send (&msg, radio, "TV", "Friends");
+    assert (rc == 7);
 
     //  This is going to be sent to the dish
-    rc = zmq_send (radio, "World\0Message", 13, 0);
-    assert (rc == 13);
+    rc = msg_send (&msg, radio, "Movies", "Godfather");
+    assert (rc == 9);
 
-    char* data = (char*) malloc (sizeof(char) * 13);
-
-    rc = zmq_recv (dish, data, 13, 0);
-    assert (rc == 13);
-    assert (strcmp (data, "World") == 0);
+    //  Check the correct message arrived
+    rc = msg_recv_cmp (&msg, dish, "Movies", "Godfather");
+    assert (rc == 9);
 
     //  Join group during connection optvallen
-    rc = zmq_join (dish, "Hello");
+    rc = zmq_join (dish, "TV");
     assert (rc == 0);
 
     zmq_sleep (1);
 
     //  This should arrive now as we joined the group
-    rc = zmq_send (radio, "Hello\0Message", 13, 0);
-    assert (rc == 13);
+    rc = msg_send (&msg, radio, "TV", "Friends");
+    assert (rc == 7);
 
-    rc = zmq_recv (dish, data, 13, 0);
-    assert (rc == 13);
-    assert (strcmp (data, "Hello") == 0);
+    //  Check the correct message arrived
+    rc = msg_recv_cmp (&msg, dish, "TV", "Friends");
+    assert (rc == 7);
 
-    //  Leaving group
-    rc = zmq_leave (dish, "Hello");
+    //  Leaving groupr
+    rc = zmq_leave (dish, "TV");
     assert (rc == 0);
 
     zmq_sleep (1);
 
-    //  This is not going to be sent as dish only subscribe to "World"
-    rc = zmq_send (radio, "Hello\0Message", 13, 0);
-    assert (rc == 13);
+    //  This is not going to be sent as dish only subscribe to "Movies"
+    rc = msg_send (&msg, radio, "TV", "Friends");
+    assert (rc == 7);
 
     //  This is going to be sent to the dish
-    rc = zmq_send (radio, "World\0Message", 13, 0);
-    assert (rc == 13);
+    rc = msg_send (&msg, radio, "Movies", "Godfather");
+    assert (rc == 9);
 
-    rc = zmq_recv (dish, data, 13, 0);
-    assert (rc == 13);
-    assert (strcmp (data, "World") == 0);
-
-    free (data);
+    //  Check the correct message arrived
+    rc = msg_recv_cmp (&msg, dish, "Movies", "Godfather");
+    assert (rc == 9);
 
     rc = zmq_close (dish);
     assert (rc == 0);

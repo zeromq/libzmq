@@ -84,6 +84,7 @@ int zmq::msg_t::init ()
     u.vsm.type = type_vsm;
     u.vsm.flags = 0;
     u.vsm.size = 0;
+    u.vsm.group[0] = '\0';
     u.vsm.routing_id = 0;
     u.vsm.fd = retired_fd;
     return 0;
@@ -96,6 +97,7 @@ int zmq::msg_t::init_size (size_t size_)
         u.vsm.type = type_vsm;
         u.vsm.flags = 0;
         u.vsm.size = (unsigned char) size_;
+        u.vsm.group[0] = '\0';
         u.vsm.routing_id = 0;
         u.vsm.fd = retired_fd;
     }
@@ -103,6 +105,7 @@ int zmq::msg_t::init_size (size_t size_)
         u.lmsg.metadata = NULL;
         u.lmsg.type = type_lmsg;
         u.lmsg.flags = 0;
+        u.lmsg.group[0] = '\0';
         u.lmsg.routing_id = 0;
         u.lmsg.fd = retired_fd;
         u.lmsg.content = NULL;
@@ -131,6 +134,7 @@ int zmq::msg_t::init_external_storage(content_t* content_, void* data_, size_t s
     u.zclmsg.metadata = NULL;
     u.zclmsg.type = type_zclmsg;
     u.zclmsg.flags = 0;
+    u.zclmsg.group[0] = '\0';
     u.zclmsg.routing_id = 0;
     u.zclmsg.fd = retired_fd;
 
@@ -158,6 +162,7 @@ int zmq::msg_t::init_data (void *data_, size_t size_,
         u.cmsg.flags = 0;
         u.cmsg.data = data_;
         u.cmsg.size = size_;
+        u.cmsg.group[0] = '\0';
         u.cmsg.routing_id = 0;
         u.cmsg.fd = retired_fd;
     }
@@ -165,6 +170,7 @@ int zmq::msg_t::init_data (void *data_, size_t size_,
         u.lmsg.metadata = NULL;
         u.lmsg.type = type_lmsg;
         u.lmsg.flags = 0;
+        u.lmsg.group[0] = '\0';
         u.lmsg.routing_id = 0;
         u.lmsg.fd = retired_fd;
         u.lmsg.content = (content_t*) malloc (sizeof (content_t));
@@ -188,6 +194,7 @@ int zmq::msg_t::init_delimiter ()
     u.delimiter.metadata = NULL;
     u.delimiter.type = type_delimiter;
     u.delimiter.flags = 0;
+    u.delimiter.group[0] = '\0';
     u.delimiter.routing_id = 0;
     u.delimiter.fd = retired_fd;
     return 0;
@@ -516,6 +523,24 @@ int zmq::msg_t::set_routing_id (uint32_t routing_id_)
 int zmq::msg_t::reset_routing_id ()
 {
     u.base.routing_id = 0;
+    return 0;
+}
+
+const char * zmq::msg_t::group ()
+{
+    return u.base.group;
+}
+
+int zmq::msg_t::set_group (const char * group_)
+{
+    if (strlen (group_) > ZMQ_GROUP_MAX_LENGTH)
+    {
+        errno = EINVAL;
+        return -1;
+    }
+
+    strcpy (u.base.group, group_);
+
     return 0;
 }
 

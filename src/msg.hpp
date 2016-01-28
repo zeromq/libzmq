@@ -117,6 +117,8 @@ namespace zmq
         uint32_t get_routing_id ();
         int set_routing_id (uint32_t routing_id_);
         int reset_routing_id ();
+        const char * group ();
+        int set_group (const char* group_);
 
         //  After calling this function you can copy the message in POD-style
         //  refs_ times. No need to call copy.
@@ -131,8 +133,9 @@ namespace zmq
         enum { msg_t_size = 64 };
         enum { max_vsm_size = msg_t_size - (sizeof (metadata_t *) +
                                             3 +
+                                            16 +
                                             sizeof (uint32_t) +
-                                            sizeof (fd_t)) };
+                                            sizeof (fd_t))};
 
     private:
         zmq::atomic_counter_t* refcnt();
@@ -165,10 +168,12 @@ namespace zmq
                 metadata_t *metadata;
                 unsigned char unused [msg_t_size - (sizeof (metadata_t *) +
                                                     2 +
+                                                    16 +
                                                     sizeof (uint32_t) +
                                                     sizeof (fd_t))];
                 unsigned char type;
                 unsigned char flags;
+                char group [16];
                 uint32_t routing_id;
                 fd_t fd;
             } base;
@@ -178,6 +183,7 @@ namespace zmq
                 unsigned char size;
                 unsigned char type;
                 unsigned char flags;
+                char group [16];
                 uint32_t routing_id;
                 fd_t fd;
             } vsm;
@@ -187,10 +193,12 @@ namespace zmq
                 unsigned char unused [msg_t_size - (sizeof (metadata_t *) +
                                                     sizeof (content_t*) +
                                                     2 +
+                                                    16 +
                                                     sizeof (uint32_t) +
                                                     sizeof (fd_t))];
                 unsigned char type;
                 unsigned char flags;
+                char group [16];
                 uint32_t routing_id;
                 fd_t fd;
             } lmsg;
@@ -200,10 +208,12 @@ namespace zmq
                 unsigned char unused [msg_t_size - (sizeof (metadata_t *) +
                                                     sizeof (content_t*) +
                                                     2 +
+                                                    16 +
                                                     sizeof (uint32_t) +
                                                     sizeof (fd_t))];
                 unsigned char type;
                 unsigned char flags;
+                char group [16];
                 uint32_t routing_id;
                 fd_t fd;
             } zclmsg;
@@ -215,10 +225,12 @@ namespace zmq
                                                     sizeof (void*) +
                                                     sizeof (size_t) +
                                                     2 +
+                                                    16 +
                                                     sizeof (uint32_t) +
                                                     sizeof (fd_t))];
                 unsigned char type;
                 unsigned char flags;
+                char group [16];
                 uint32_t routing_id;
                 fd_t fd;
             } cmsg;
@@ -226,10 +238,12 @@ namespace zmq
                 metadata_t *metadata;
                 unsigned char unused [msg_t_size - (sizeof (metadata_t *) +
                                                     2 +
+                                                    16 +
                                                     sizeof (uint32_t) +
                                                     sizeof (fd_t))];
                 unsigned char type;
                 unsigned char flags;
+                char group [16];
                 uint32_t routing_id;
                 fd_t fd;
             } delimiter;
