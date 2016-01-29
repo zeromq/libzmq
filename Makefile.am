@@ -193,6 +193,10 @@ src_libzmq_la_SOURCES = \
 	src/tipc_listener.hpp \
 	src/trie.cpp \
 	src/trie.hpp \
+	src/udp_address.cpp \
+	src/udp_address.hpp \
+	src/udp_engine.cpp \
+	src/udp_engine.hpp \
 	src/v1_decoder.cpp \
 	src/v1_decoder.hpp \
 	src/v2_decoder.cpp \
@@ -385,7 +389,8 @@ test_apps = \
 	tests/test_stream_exceeds_buffer \
 	tests/test_poller \
 	tests/test_timers \
-	tests/test_radio_dish
+	tests/test_radio_dish \
+	tests/test_udp
 
 tests_test_system_SOURCES = tests/test_system.cpp
 tests_test_system_LDADD = src/libzmq.la
@@ -605,6 +610,8 @@ tests_test_timers_LDADD = src/libzmq.la
 tests_test_radio_dish_SOURCES = tests/test_radio_dish.cpp
 tests_test_radio_dish_LDADD = src/libzmq.la
 
+tests_test_udp_SOURCES = tests/test_udp.cpp
+tests_test_udp_LDADD = src/libzmq.la
 
 if !ON_MINGW
 if !ON_CYGWIN

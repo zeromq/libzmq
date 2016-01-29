@@ -57,9 +57,12 @@ void zmq::radio_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 
     dist.attach (pipe_);
 
+    if (subscribe_to_all_)
+        udp_pipes.push_back (pipe_);
     //  The pipe is active when attached. Let's read the subscriptions from
     //  it, if any.
-    xread_activated (pipe_);
+    else
+        xread_activated (pipe_);
 }
 
 void zmq::radio_t::xread_activated (pipe_t *pipe_)
@@ -102,6 +105,11 @@ void zmq::radio_t::xpipe_terminated (pipe_t *pipe_)
         }
     }
 
+    udp_pipes_t::iterator it = std::find(udp_pipes.begin(),
+        udp_pipes.end (), pipe_);
+    if (it != udp_pipes.end ())
+        udp_pipes.erase (it);
+
     dist.pipe_terminated (pipe_);
 }
 
@@ -120,6 +128,9 @@ int zmq::radio_t::xsend (msg_t *msg_)
 
     for (subscriptions_t::iterator it = range.first; it != range.second; ++it)
         dist.match (it-> second);
+
+    for (udp_pipes_t::iterator it = udp_pipes.begin (); it != udp_pipes.end (); ++it)
+        dist.match (*it);
 
     int rc = dist.send_to_matching (msg_);
 

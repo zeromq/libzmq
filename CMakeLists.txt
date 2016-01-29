@@ -460,7 +460,9 @@ set(cxx-sources
         timers.cpp
         config.hpp
         radio.cpp
-        dish.cpp)
+        dish.cpp
+        udp_engine.cpp
+        udp_address.cpp)
 
 set(rc-sources version.rc)
 
