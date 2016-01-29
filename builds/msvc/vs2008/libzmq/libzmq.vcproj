@@ -105,6 +105,7 @@
       <File RelativePath="..\..\..\..\src\ctx.cpp" />
       <File RelativePath="..\..\..\..\src\dealer.cpp" />
       <File RelativePath="..\..\..\..\src\devpoll.cpp" />
+      <File RelativePath="..\..\..\..\src\dish.cpp" />
       <File RelativePath="..\..\..\..\src\dist.cpp" />
       <File RelativePath="..\..\..\..\src\epoll.cpp" />
       <File RelativePath="..\..\..\..\src\err.cpp" />
@@ -140,6 +141,7 @@
       <File RelativePath="..\..\..\..\src\pub.cpp" />
       <File RelativePath="..\..\..\..\src\pull.cpp" />
       <File RelativePath="..\..\..\..\src\push.cpp" />
+      <File RelativePath="..\..\..\..\src\radio.cpp" />
       <File RelativePath="..\..\..\..\src\random.cpp" />
       <File RelativePath="..\..\..\..\src\raw_decoder.cpp" />
       <File RelativePath="..\..\..\..\src\raw_encoder.cpp" />
@@ -182,6 +184,7 @@
       <File RelativePath="..\..\..\..\src\ctx.hpp" />
       <File RelativePath="..\..\..\..\src\decoder.hpp" />
       <File RelativePath="..\..\..\..\src\devpoll.hpp" />
+      <File RelativePath="..\..\..\..\src\dish.hpp" />
       <File RelativePath="..\..\..\..\src\dist.hpp" />
       <File RelativePath="..\..\..\..\src\encoder.hpp" />
       <File RelativePath="..\..\..\..\src\epoll.hpp" />
@@ -225,6 +228,7 @@
       <File RelativePath="..\..\..\..\src\pub.hpp" />
       <File RelativePath="..\..\..\..\src\pull.hpp" />
       <File RelativePath="..\..\..\..\src\push.hpp" />
+      <File RelativePath="..\..\..\..\src\radio.hpp" />
       <File RelativePath="..\..\..\..\src\random.hpp" />
       <File RelativePath="..\..\..\..\src\raw_decoder.hpp" />
       <File RelativePath="..\..\..\..\src\raw_encoder.hpp" />
