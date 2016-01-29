@@ -84,6 +84,7 @@
     <ClInclude Include="..\..\..\..\src\decoder.hpp" />
     <ClInclude Include="..\..\..\..\src\decoder_allocators.hpp" />
     <ClInclude Include="..\..\..\..\src\devpoll.hpp" />
+    <ClInclude Include="..\..\..\..\src\dish.hpp" />
     <ClInclude Include="..\..\..\..\src\dist.hpp" />
     <ClInclude Include="..\..\..\..\src\encoder.hpp" />
     <ClInclude Include="..\..\..\..\src\epoll.hpp" />
@@ -129,6 +130,7 @@
     <ClInclude Include="..\..\..\..\src\pub.hpp" />
     <ClInclude Include="..\..\..\..\src\pull.hpp" />
     <ClInclude Include="..\..\..\..\src\push.hpp" />
+    <ClInclude Include="..\..\..\..\src\radio.hpp" />
     <ClInclude Include="..\..\..\..\src\random.hpp" />
     <ClInclude Include="..\..\..\..\src\raw_decoder.hpp" />
     <ClInclude Include="..\..\..\..\src\raw_encoder.hpp" />
@@ -172,6 +174,7 @@
     <ClCompile Include="..\..\..\..\src\dealer.cpp" />
     <ClCompile Include="..\..\..\..\src\decoder_allocators.cpp" />
     <ClCompile Include="..\..\..\..\src\devpoll.cpp" />
+    <ClCompile Include="..\..\..\..\src\dish.cpp" />
     <ClCompile Include="..\..\..\..\src\dist.cpp" />
     <ClCompile Include="..\..\..\..\src\epoll.cpp" />
     <ClCompile Include="..\..\..\..\src\err.cpp" />
@@ -211,6 +214,7 @@
     <ClCompile Include="..\..\..\..\src\pub.cpp" />
     <ClCompile Include="..\..\..\..\src\pull.cpp" />
     <ClCompile Include="..\..\..\..\src\push.cpp" />
+    <ClCompile Include="..\..\..\..\src\radio.cpp" />
     <ClCompile Include="..\..\..\..\src\random.cpp" />
     <ClCompile Include="..\..\..\..\src\raw_decoder.cpp" />
     <ClCompile Include="..\..\..\..\src\raw_encoder.cpp" />
