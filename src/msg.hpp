@@ -56,6 +56,22 @@ namespace zmq
     {
     public:
 
+        //  Shared message buffer. Message data are either allocated in one
+        //  continuous block along with this structure - thus avoiding one
+        //  malloc/free pair or they are stored in used-supplied memory.
+        //  In the latter case, ffn member stores pointer to the function to be
+        //  used to deallocate the data. If the buffer is actually shared (there
+        //  are at least 2 references to it) refcount member contains number of
+        //  references.
+        struct content_t
+        {
+            void *data;
+            size_t size;
+            msg_free_fn *ffn;
+            void *hint;
+            zmq::atomic_counter_t refcnt;
+        };
+
         //  Message flags.
         enum
         {
@@ -71,12 +87,12 @@ namespace zmq
 
         int init (void* data, size_t size_,
                   msg_free_fn* ffn_, void* hint,
-                  zmq::atomic_counter_t* refcnt_ = NULL);
+                  content_t* content_ = NULL);
 
         int init_size (size_t size_);
         int init_data (void *data_, size_t size_, msg_free_fn *ffn_,
                        void *hint_);
-        int init_external_storage(void *data_, size_t size_, zmq::atomic_counter_t* ctr,
+        int init_external_storage(content_t* content_, void *data_, size_t size_,
                                   msg_free_fn *ffn_, void *hint_);
         int init_delimiter ();
         int close ();
@@ -120,22 +136,6 @@ namespace zmq
 
     private:
         zmq::atomic_counter_t* refcnt();
-
-        //  Shared message buffer. Message data are either allocated in one
-        //  continuous block along with this structure - thus avoiding one
-        //  malloc/free pair or they are stored in used-supplied memory.
-        //  In the latter case, ffn member stores pointer to the function to be
-        //  used to deallocate the data. If the buffer is actually shared (there
-        //  are at least 2 references to it) refcount member contains number of
-        //  references.
-        struct content_t
-        {
-            void *data;
-            size_t size;
-            msg_free_fn *ffn;
-            void *hint;
-            zmq::atomic_counter_t refcnt;
-        };
 
         //  Different message types.
         enum type_t
@@ -196,17 +196,9 @@ namespace zmq
             } lmsg;
             struct {
                 metadata_t *metadata;
-                void *data;
-                size_t size;
-                msg_free_fn *ffn;
-                void *hint;
-                zmq::atomic_counter_t* refcnt;
+                content_t *content;
                 unsigned char unused [msg_t_size - (sizeof (metadata_t *) +
-                                                    sizeof (void*) +
-                                                    sizeof (size_t) +
-                                                    sizeof (msg_free_fn*) +
-                                                    sizeof (void*) +
-                                                    sizeof (zmq::atomic_counter_t*) +
+                                                    sizeof (content_t*) +
                                                     2 +
                                                     sizeof (uint32_t) +
                                                     sizeof (fd_t))];

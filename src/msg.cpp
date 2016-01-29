@@ -53,7 +53,7 @@ bool zmq::msg_t::check ()
 
 int zmq::msg_t::init (void* data_, size_t size_,
                       msg_free_fn* ffn_, void* hint,
-                      zmq::atomic_counter_t* refcnt_)
+                      content_t* content_)
 {
     if (size_ < max_vsm_size) {
         int const rc = init_size(size_);
@@ -68,9 +68,9 @@ int zmq::msg_t::init (void* data_, size_t size_,
             return -1;
         }
     }
-    else if(refcnt_)
+    else if(content_)
     {
-        return init_external_storage(data_, size_, refcnt_, ffn_, hint);
+        return init_external_storage(content_, data_, size_, ffn_, hint);
     }
     else
     {
@@ -122,12 +122,11 @@ int zmq::msg_t::init_size (size_t size_)
     return 0;
 }
 
-int zmq::msg_t::init_external_storage(void *data_, size_t size_, zmq::atomic_counter_t* ctr,
-                                      msg_free_fn *ffn_, void *hint_)
+int zmq::msg_t::init_external_storage(content_t* content_, void* data_, size_t size_,
+                                      msg_free_fn *ffn_, void* hint_)
 {
     zmq_assert(NULL != data_);
-    zmq_assert(NULL != ctr);
-
+    zmq_assert(NULL != content_);
 
     u.zclmsg.metadata = NULL;
     u.zclmsg.type = type_zclmsg;
@@ -135,12 +134,12 @@ int zmq::msg_t::init_external_storage(void *data_, size_t size_, zmq::atomic_cou
     u.zclmsg.routing_id = 0;
     u.zclmsg.fd = retired_fd;
 
-    u.zclmsg.data = data_;
-    u.zclmsg.size = size_;
-    u.zclmsg.ffn = ffn_;
-    u.zclmsg.hint = hint_;
-    u.zclmsg.refcnt = ctr;
-    new (u.zclmsg.refcnt) zmq::atomic_counter_t();
+    u.zclmsg.content = content_;
+    u.zclmsg.content->data = data_;
+    u.zclmsg.content->size = size_;
+    u.zclmsg.content->ffn = ffn_;
+    u.zclmsg.content->hint = hint_;
+    new (&u.zclmsg.content->refcnt) zmq::atomic_counter_t();
 
     return 0;
 }
@@ -222,19 +221,19 @@ int zmq::msg_t::close ()
 
     if (is_zcmsg())
     {
-        zmq_assert( u.zclmsg.ffn );
+        zmq_assert( u.zclmsg.content->ffn );
 
         //  If the content is not shared, or if it is shared and the reference
         //  count has dropped to zero, deallocate it.
         if (!(u.zclmsg.flags & msg_t::shared) ||
-            !u.zclmsg.refcnt->sub (1)) {
+            !u.zclmsg.content->refcnt.sub (1)) {
 
             //  We used "placement new" operator to initialize the reference
             //  counter so we call the destructor explicitly now.
-            u.zclmsg.refcnt->~atomic_counter_t ();
+            u.zclmsg.content->refcnt.~atomic_counter_t ();
 
-            u.zclmsg.ffn (u.zclmsg.data,
-                          u.zclmsg.hint);
+            u.zclmsg.content->ffn (u.zclmsg.content->data,
+                          u.zclmsg.content->hint);
         }
     }
 
@@ -329,7 +328,7 @@ void *zmq::msg_t::data ()
     case type_cmsg:
         return u.cmsg.data;
     case type_zclmsg:
-        return u.zclmsg.data;
+        return u.zclmsg.content->data;
     default:
         zmq_assert (false);
         return NULL;
@@ -347,7 +346,7 @@ size_t zmq::msg_t::size ()
     case type_lmsg:
         return u.lmsg.content->size;
     case type_zclmsg:
-        return u.zclmsg.size;
+        return u.zclmsg.content->size;
     case type_cmsg:
         return u.cmsg.size;
     default:
@@ -487,10 +486,10 @@ bool zmq::msg_t::rm_refs (int refs_)
         return false;
     }
 
-    if (is_zcmsg() && !u.zclmsg.refcnt->sub(refs_)) {
+    if (is_zcmsg() && !u.zclmsg.content->refcnt.sub(refs_)) {
         // storage for rfcnt is provided externally
-        if (u.zclmsg.ffn) {
-            u.zclmsg.ffn(u.zclmsg.data, u.zclmsg.hint);
+        if (u.zclmsg.content->ffn) {
+            u.zclmsg.content->ffn(u.zclmsg.content->data, u.zclmsg.content->hint);
         }
 
         return false;
@@ -527,7 +526,7 @@ zmq::atomic_counter_t *zmq::msg_t::refcnt()
         case type_lmsg:
             return &u.lmsg.content->refcnt;
         case type_zclmsg:
-            return u.zclmsg.refcnt;
+            return &u.zclmsg.content->refcnt;
         default:
             zmq_assert(false);
             return NULL;
