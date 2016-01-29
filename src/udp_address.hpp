@@ -27,50 +27,57 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_ADDRESS_HPP_INCLUDED__
-#define __ZMQ_ADDRESS_HPP_INCLUDED__
+#ifndef __ZMQ_UDP_ADDRESS_HPP_INCLUDED__
+#define __ZMQ_UDP_ADDRESS_HPP_INCLUDED__
 
-#include <string>
+#include "platform.hpp"
+
+#if defined ZMQ_HAVE_WINDOWS
+#include "windows.hpp"
+#else
+#include <sys/socket.h>
+#include <netinet/in.h>
+#endif
 
 namespace zmq
 {
-    class ctx_t;
-    class tcp_address_t;
-    class udp_address_t;
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
-    class ipc_address_t;
-#endif
-#if defined ZMQ_HAVE_LINUX
-    class tipc_address_t;
-#endif
-#if defined ZMQ_HAVE_VMCI
-    class vmci_address_t;
-#endif
-    struct address_t {
-        address_t (const std::string &protocol_, const std::string &address_, ctx_t *parent_);
 
-        ~address_t ();
+    class udp_address_t
+    {
+    public:
 
-        const std::string protocol;
-        const std::string address;
-        ctx_t *parent;
+        udp_address_t ();
+        virtual ~udp_address_t ();
 
-        //  Protocol specific resolved address
-        union {
-            tcp_address_t *tcp_addr;
-            udp_address_t *udp_addr;
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
-            ipc_address_t *ipc_addr;
-#endif
-#if defined ZMQ_HAVE_LINUX
-            tipc_address_t *tipc_addr;
-#endif
-#if defined ZMQ_HAVE_VMCI
-            vmci_address_t *vmci_addr;
-#endif
-        } resolved;
+        int resolve (const char *name_);
 
-        int to_string (std::string &addr_) const;
+        //  The opposite to resolve()
+        virtual int to_string (std::string &addr_);
+
+#if defined ZMQ_HAVE_WINDOWS
+        unsigned short family () const;
+#else
+        sa_family_t family () const;
+#endif
+        const sockaddr *bind_addr () const;
+        socklen_t bind_addrlen () const;
+
+        const sockaddr *dest_addr () const;
+        socklen_t dest_addrlen () const;
+
+        bool is_mcast () const;
+
+        const in_addr multicast_ip () const;
+        const in_addr interface_ip () const;
+
+    private:
+
+        in_addr  multicast;
+        in_addr  interface;
+        sockaddr_in bind_address;
+        sockaddr_in dest_address;
+        bool is_mutlicast;
+        std::string address;
     };
 }
 

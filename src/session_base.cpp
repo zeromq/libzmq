@@ -42,6 +42,7 @@
 #include "pgm_receiver.hpp"
 #include "address.hpp"
 #include "norm_engine.hpp"
+#include "udp_engine.hpp"
 
 #include "ctx.hpp"
 #include "req.hpp"
@@ -498,7 +499,7 @@ void zmq::session_base_t::reconnect ()
     //  and reestablish later on
     if (pipe && options.immediate == 1
         && addr->protocol != "pgm" && addr->protocol != "epgm"
-        && addr->protocol != "norm") {
+        && addr->protocol != "norm" && addr->protocol != "udp") {
         pipe->hiccup ();
         pipe->terminate (false);
         terminating_pipes.insert (pipe);
@@ -566,6 +567,32 @@ void zmq::session_base_t::start_connecting (bool wait_)
         return;
     }
 #endif
+
+if (addr->protocol == "udp") {
+    zmq_assert (options.type == ZMQ_DISH || options.type == ZMQ_RADIO);
+
+    udp_engine_t* engine = new (std::nothrow) udp_engine_t ();
+    alloc_assert (engine);
+
+    bool recv = false;
+    bool send = false;
+
+    if (options.type == ZMQ_RADIO) {
+        send = true;
+        recv = false;
+    }
+    else if (options.type == ZMQ_DISH) {
+        send = false;
+        recv = true;
+    }
+
+    int rc = engine->init (addr, send, recv);
+    errno_assert (rc == 0);
+
+    send_attach (this, engine);
+
+    return;
+}
 
 #ifdef ZMQ_HAVE_OPENPGM
 

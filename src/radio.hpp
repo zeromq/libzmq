@@ -32,6 +32,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "socket_base.hpp"
 #include "session_base.hpp"
@@ -69,6 +70,10 @@ namespace zmq
         //  List of all subscriptions mapped to corresponding pipes.
         typedef std::multimap<std::string, pipe_t*> subscriptions_t;
         subscriptions_t subscriptions;
+
+        //  List of udp pipes
+        typedef std::vector<pipe_t*> udp_pipes_t;
+        udp_pipes_t udp_pipes;
 
         //  Distributor of messages holding the list of outbound pipes.
         dist_t dist;

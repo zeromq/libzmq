@@ -65,6 +65,7 @@
 #include "address.hpp"
 #include "ipc_address.hpp"
 #include "tcp_address.hpp"
+#include "udp_address.hpp"
 #include "tipc_address.hpp"
 #include "mailbox.hpp"
 #include "mailbox_safe.hpp"
@@ -260,7 +261,8 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
     &&  protocol_ != "epgm"
     &&  protocol_ != "tipc"
     &&  protocol_ != "norm"
-    &&  protocol_ != "vmci") {
+    &&  protocol_ != "vmci"
+    &&  protocol_ != "udp") {
         errno = EPROTONOSUPPORT;
         return -1;
     }
@@ -313,6 +315,9 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
         errno = ENOCOMPATPROTO;
         return -1;
     }
+
+    if (protocol_ == "udp" && (options.type != ZMQ_DISH && options.type != ZMQ_RADIO))
+        return -1;
 
     //  Protocol is available.
     return 0;
@@ -556,9 +561,9 @@ int zmq::socket_base_t::bind (const char *addr_)
         return rc;
     }
 
-    if (protocol == "pgm" || protocol == "epgm" || protocol == "norm") {
+    if (protocol == "pgm" || protocol == "epgm" || protocol == "norm" || protocol == "udp") {
         //  For convenience's sake, bind can be used interchangeable with
-        //  connect for PGM, EPGM and NORM transports.
+        //  connect for PGM, EPGM, NORM and UDP transports.
         EXIT_MUTEX ();
         rc = connect (addr_);
         if (rc != -1)
@@ -878,6 +883,17 @@ int zmq::socket_base_t::connect (const char *addr_)
     }
 #endif
 
+if (protocol  == "udp") {
+    paddr->resolved.udp_addr = new (std::nothrow) udp_address_t ();
+    alloc_assert (paddr->resolved.udp_addr);
+    int rc = paddr->resolved.udp_addr->resolve (address.c_str());
+    if (rc != 0) {
+        LIBZMQ_DELETE(paddr);
+        EXIT_MUTEX ();
+        return -1;
+    }
+}
+
 // TBD - Should we check address for ZMQ_HAVE_NORM???
 
 #ifdef ZMQ_HAVE_OPENPGM
@@ -927,7 +943,7 @@ int zmq::socket_base_t::connect (const char *addr_)
 
     //  PGM does not support subscription forwarding; ask for all data to be
     //  sent to this pipe. (same for NORM, currently?)
-    bool subscribe_to_all = protocol == "pgm" || protocol == "epgm" || protocol == "norm";
+    bool subscribe_to_all = protocol == "pgm" || protocol == "epgm" || protocol == "norm" || protocol == "udp";
     pipe_t *newpipe = NULL;
 
     if (options.immediate != 1 || subscribe_to_all) {
