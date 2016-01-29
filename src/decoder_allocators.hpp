@@ -34,6 +34,7 @@
 #include <cstdlib>
 
 #include "atomic_counter.hpp"
+#include "msg.hpp"
 #include "err.hpp"
 
 namespace zmq
@@ -132,21 +133,21 @@ namespace zmq
             bufsize = new_size;
         }
 
-        zmq::atomic_counter_t* provide_refcnt ()
+        zmq::msg_t::content_t* provide_content ()
         {
-            return msg_refcnt;
+            return msg_content;
         }
 
-        void advance_refcnt ()
+        void advance_content ()
         {
-            msg_refcnt++;
+            msg_content++;
         }
 
     private:
         unsigned char* buf;
         std::size_t bufsize;
         std::size_t max_size;
-        zmq::atomic_counter_t* msg_refcnt;
+        zmq::msg_t::content_t* msg_content;
         std::size_t maxCounters;
     };
 }

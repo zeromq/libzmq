@@ -239,6 +239,8 @@ ZMQ_EXPORT int zmq_msg_set (zmq_msg_t *msg, int property, int optval);
 ZMQ_EXPORT const char *zmq_msg_gets (zmq_msg_t *msg, const char *property);
 ZMQ_EXPORT int zmq_msg_set_routing_id (zmq_msg_t *msg, uint32_t routing_id);
 ZMQ_EXPORT uint32_t zmq_msg_routing_id (zmq_msg_t *msg);
+ZMQ_EXPORT int zmq_msg_set_group (zmq_msg_t *msg, const char *group);
+ZMQ_EXPORT const char *zmq_msg_group (zmq_msg_t *msg);
 
 
 /******************************************************************************/
@@ -359,7 +361,7 @@ ZMQ_EXPORT uint32_t zmq_msg_routing_id (zmq_msg_t *msg);
 #define ZMQ_GSSAPI 3
 
 /*  RADIO-DISH protocol                                                       */
-#define ZMQ_GROUP_MAX_LENGTH        255
+#define ZMQ_GROUP_MAX_LENGTH        15
 
 /*  Deprecated options and aliases                                            */
 #define ZMQ_TCP_ACCEPT_FILTER       38

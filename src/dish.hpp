@@ -71,7 +71,7 @@ namespace zmq
         int xleave (const char *group_);
     private:
 
-        //  Send subscriptions to a pipe        
+        //  Send subscriptions to a pipe
         void send_subscriptions (pipe_t *pipe_);
 
         //  Fair queueing object for inbound pipes.
@@ -81,7 +81,7 @@ namespace zmq
         dist_t dist;
 
         //  The repository of subscriptions.
-        typedef std::vector<std::string> subscriptions_t;
+        typedef std::set<std::string> subscriptions_t;
         subscriptions_t subscriptions;
 
         //  If true, 'message' contains a matching message to return on the
@@ -91,6 +91,33 @@ namespace zmq
 
         dish_t (const dish_t&);
         const dish_t &operator = (const dish_t&);
+    };
+
+    class dish_session_t : public session_base_t
+    {
+    public:
+
+        dish_session_t (zmq::io_thread_t *io_thread_, bool connect_,
+            zmq::socket_base_t *socket_, const options_t &options_,
+            address_t *addr_);
+        ~dish_session_t ();
+
+        //  Overrides of the functions from session_base_t.
+        int push_msg (msg_t *msg_);
+        int pull_msg (msg_t *msg_);
+        void reset ();
+
+    private:
+
+        enum {
+            group,
+            body
+        } state;
+
+        msg_t group_msg;
+
+        dish_session_t (const dish_session_t&);
+        const dish_session_t &operator = (const dish_session_t&);
     };
 
 }

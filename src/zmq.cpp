@@ -695,6 +695,16 @@ uint32_t zmq_msg_routing_id (zmq_msg_t *msg_)
     return ((zmq::msg_t *) msg_)->get_routing_id ();
 }
 
+int zmq_msg_set_group (zmq_msg_t *msg_, const char *group_)
+{
+    return ((zmq::msg_t *) msg_)->set_group (group_);
+}
+
+const char *zmq_msg_group (zmq_msg_t *msg_)
+{
+    return ((zmq::msg_t *) msg_)->group ();
+}
+
 //  Get message metadata string
 
 const char *zmq_msg_gets (zmq_msg_t *msg_, const char *property_)
