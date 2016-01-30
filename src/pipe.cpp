@@ -20,6 +20,7 @@
 #include <new>
 #include <stddef.h>
 
+#include "macros.hpp"
 #include "pipe.hpp"
 #include "err.hpp"
 

@@ -18,6 +18,7 @@
 */
 #define ZMQ_TYPE_UNSAFE
 
+#include "macros.hpp"
 #include "platform.hpp"
 
 #if defined ZMQ_FORCE_SELECT

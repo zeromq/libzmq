@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "macros.hpp"
 #include "stream.hpp"
 #include "pipe.hpp"
 #include "wire.hpp"

@@ -20,6 +20,7 @@
 #include <string>
 #include <sstream>
 
+#include "macros.hpp"
 #include "tcp_address.hpp"
 #include "platform.hpp"
 #include "stdint.hpp"
