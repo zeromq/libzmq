@@ -31,6 +31,7 @@
 
 #include "options.hpp"
 #include "err.hpp"
+#include "macros.hpp"
 #include "../include/zmq_utils.h"
 
 zmq::options_t::options_t () :
@@ -1047,5 +1048,6 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
 
 bool zmq::options_t::is_valid (int option_) const
 {
+    LIBZMQ_UNUSED (option_);
     return true;
 }

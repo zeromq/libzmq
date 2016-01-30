@@ -1444,12 +1444,14 @@ bool zmq::socket_base_t::xhas_in ()
 
 int zmq::socket_base_t::xjoin (const char *group_)
 {
+    LIBZMQ_UNUSED (group_);
     errno = ENOTSUP;
     return -1;
 }
 
 int zmq::socket_base_t::xleave (const char *group_)
 {
+    LIBZMQ_UNUSED (group_);
     errno = ENOTSUP;
     return -1;
 }
