@@ -77,6 +77,7 @@ int msg_recv_cmp (zmq_msg_t *msg_, void *s_, const char* group_, const char* bod
     }
 
     zmq_msg_close (msg_);
+    free (body);
     return recv_rc;
 }
 
@@ -91,10 +92,10 @@ int main (void)
     void *radio = zmq_socket (ctx, ZMQ_RADIO);
     void *dish = zmq_socket (ctx, ZMQ_DISH);
 
-    int rc = zmq_bind (radio, "udp://127.0.0.1:5556");
+    int rc = zmq_connect (radio, "udp://127.0.0.1:5556");
     assert (rc == 0);
 
-    rc = zmq_connect (dish, "udp://127.0.0.1:5556");
+    rc = zmq_bind (dish, "udp://127.0.0.1:5556");
     assert (rc == 0);
 
     zmq_sleep (1);

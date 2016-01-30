@@ -91,7 +91,7 @@ void zmq::udp_engine_t::plug (io_thread_t* io_thread_, session_base_t *session_)
             mreq.imr_multiaddr = address->resolved.udp_addr->multicast_ip ();
             mreq.imr_interface = address->resolved.udp_addr->interface_ip ();
 
-            int rc = setsockopt (fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof (mreq));
+            int rc = setsockopt (fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*) &mreq, sizeof (mreq));
 
 #ifdef ZMQ_HAVE_WINDOWS
             wsa_assert (rc != SOCKET_ERROR);
@@ -145,10 +145,17 @@ void zmq::udp_engine_t::out_event()
         body_msg.close ();
         errno_assert (rc == 0);
 
+#ifdef ZMQ_HAVE_WINDOWS
+        rc = sendto(fd, (char*) out_buffer, size, 0,
+            address->resolved.udp_addr->dest_addr(),
+            address->resolved.udp_addr->dest_addrlen());
+        wsa_assert(rc != SOCKET_ERROR);
+#else
         rc = sendto (fd, out_buffer, size, 0,
             address->resolved.udp_addr->dest_addr (),
             address->resolved.udp_addr->dest_addrlen ());
         errno_assert (rc != -1);
+#endif
     }
     else
        reset_pollout (handle);
@@ -170,46 +177,63 @@ void zmq::udp_engine_t::restart_output()
 
 void zmq::udp_engine_t::in_event()
 {
-    size_t read = recv (fd, in_buffer, MAX_UDP_MSG, 0);
-
-    if (read > 0) {
-        size_t group_size = in_buffer[0];
-
-        //  This doesn't fit, just ingore
-        if (read - 1 < group_size)
-            return;
-
-        size_t body_size = read -1 - group_size;
-
-        msg_t msg;
-        int rc = msg.init_size (group_size);
-        errno_assert (rc == 0);
-        msg.set_flags (msg_t::more);
-        memcpy (msg.data (), in_buffer + 1, group_size);
-
-        rc = session->push_msg (&msg);
-        errno_assert (rc == 0 || (rc == -1 && errno == EAGAIN));
-
-        //  Pipe is full
-        if (rc != 0) {
-            rc = msg.close ();
-            errno_assert (rc == 0);
-
-            reset_pollin (handle);
-            return;
-        }
-
-        rc = msg.close ();
-        errno_assert (rc == 0);
-        rc = msg.init_size (body_size);
-        errno_assert (rc == 0);
-        memcpy (msg.data (), in_buffer + 1 + group_size, body_size);
-        rc = session->push_msg (&msg);
-        errno_assert (rc == 0);
-        rc = msg.close ();
-        errno_assert (rc == 0);
-        session->flush ();
+#ifdef ZMQ_HAVE_WINDOWS
+    int nbytes = recv(fd, (char*) in_buffer, MAX_UDP_MSG, 0);
+    const int last_error = WSAGetLastError();
+    if (nbytes == SOCKET_ERROR) {
+        wsa_assert(
+            last_error == WSAENETDOWN ||
+            last_error == WSAENETRESET ||
+            last_error == WSAEWOULDBLOCK);
+        return;
     }
+#else
+    int nbytes = recv(fd, in_buffer, MAX_UDP_MSG, 0);
+    if (nbytes == -1) {
+        errno_assert(errno != EBADF
+            && errno != EFAULT
+            && errno != ENOMEM
+            && errno != ENOTSOCK);
+        return;
+    }
+#endif
+
+    int group_size = in_buffer[0];
+
+    //  This doesn't fit, just ingore
+    if (nbytes - 1 < group_size)
+        return;
+
+    int body_size = nbytes - 1 - group_size;
+
+    msg_t msg;
+    int rc = msg.init_size (group_size);
+    errno_assert (rc == 0);
+    msg.set_flags (msg_t::more);
+    memcpy (msg.data (), in_buffer + 1, group_size);
+
+    rc = session->push_msg (&msg);
+    errno_assert (rc == 0 || (rc == -1 && errno == EAGAIN));
+
+    //  Pipe is full
+    if (rc != 0) {
+        rc = msg.close ();
+        errno_assert (rc == 0);
+
+        reset_pollin (handle);
+        return;
+    }
+
+    rc = msg.close ();
+    errno_assert (rc == 0);
+    rc = msg.init_size (body_size);
+    errno_assert (rc == 0);
+    memcpy (msg.data (), in_buffer + 1 + group_size, body_size);
+    rc = session->push_msg (&msg);
+    errno_assert (rc == 0);
+    rc = msg.close ();
+    errno_assert (rc == 0);
+    session->flush ();
 }
 
 void zmq::udp_engine_t::restart_input()
