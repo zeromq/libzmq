@@ -73,7 +73,7 @@ namespace zmq
     private:
 
         in_addr  multicast;
-        in_addr  interface;
+        in_addr  Interface;
         sockaddr_in bind_address;
         sockaddr_in dest_address;
         bool is_mutlicast;

@@ -100,8 +100,8 @@ int zmq::udp_address_t::resolve (const char *name_)
     else
         is_mutlicast = false;
 
-    interface.s_addr = htons (INADDR_ANY);
-    if (interface.s_addr == INADDR_NONE) {
+    Interface.s_addr = htons (INADDR_ANY);
+    if (Interface.s_addr == INADDR_NONE) {
         errno = EINVAL;
         return -1;
     }
@@ -153,7 +153,7 @@ const in_addr zmq::udp_address_t::multicast_ip () const
 
 const in_addr zmq::udp_address_t::interface_ip () const
 {
-    return interface;
+    return Interface;
 }
 
 #if defined ZMQ_HAVE_WINDOWS
