@@ -13,9 +13,9 @@ protocols and more.
 
 ## Stable Fork
 
-This repository is used for making stable releases. Please do not send
+[This repository](https://github.com/zeromq/zeromq4-x) is used for making stable releases. Please do not send
 pull requests here unless they are specifically and only for this fork.
-Rather, send them to libzmq/master. Issues with test cases may be back
+Rather, send them to [libzmq/master](https://github.com/zeromq/libzmq). Issues with test cases may be back
 ported to this repository by its maintainers.
 
 ## Building and installation
