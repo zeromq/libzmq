@@ -77,5 +77,7 @@ int main()
     assert(rcvbuf[2]==0xbe);
     assert(rcvbuf[1]==0xad);
     assert(rcvbuf[0]==0xde);
+
+    (void)(rc); // avoid -Wunused-but-set-variable warning in release build
 }
 
