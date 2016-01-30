@@ -408,10 +408,10 @@ ZMQ_EXPORT uint8_t *zmq_z85_decode (uint8_t *dest, char *string);
 ZMQ_EXPORT int zmq_device (int type, void *frontend, void *backend);
 
 /******************************************************************************/
-/*  0MQ General                                                               */
+/*  0MQ Internal Use                                                      */
 /******************************************************************************/
 
-#define ZMQ_UNUSED(object) (void)object
+#define LIBZMQ_UNUSED(object) (void)object
 
 #undef ZMQ_EXPORT
 
