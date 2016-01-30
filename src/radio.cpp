@@ -145,6 +145,7 @@ bool zmq::radio_t::xhas_out ()
 int zmq::radio_t::xrecv (msg_t *msg_)
 {
     //  Messages cannot be received from PUB socket.
+    LIBZMQ_UNUSED (msg_);
     errno = ENOTSUP;
     return -1;
 }

@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "macros.hpp"
 #include "testutil.hpp"
 #include "../include/zmq_utils.h"
 
@@ -49,6 +50,7 @@ void sleep_ (long timeout_)
 
 void handler (int timer_id, void* arg)
 {
+    LIBZMQ_UNUSED (timer_id);
     *((bool *)arg) = true;
 }
 

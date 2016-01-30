@@ -89,7 +89,11 @@ int zmq::socket_poller_t::add (socket_base_t *socket_, void* user_data_, short e
            return -1;
     }
 
-    item_t item = {socket_, 0, user_data_, events_};
+    item_t item = {socket_, 0, user_data_, events_
+#if defined ZMQ_POLL_BASED_ON_POLL
+                   ,-1
+#endif
+    };
     items.push_back (item);
     need_rebuild = true;
 
@@ -105,7 +109,11 @@ int zmq::socket_poller_t::add_fd (fd_t fd_, void *user_data_, short events_)
         }
     }
 
-    item_t item = {NULL, fd_, user_data_, events_};
+    item_t item = {NULL, fd_, user_data_, events_
+#if defined ZMQ_POLL_BASED_ON_POLL
+                   ,-1
+#endif
+                   };
     items.push_back (item);
     need_rebuild = true;
 

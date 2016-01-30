@@ -163,6 +163,7 @@ int zmq::dish_t::xleave (const char* group_)
 
 int zmq::dish_t::xsend (msg_t *msg_)
 {
+    LIBZMQ_UNUSED (msg_);
     errno = ENOTSUP;
     return -1;
 }
