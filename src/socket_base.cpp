@@ -845,8 +845,10 @@ int zmq::socket_base_t::connect (const char *addr_)
             while (isalnum  (*check)
                 || isxdigit (*check)
                 || *check == '.' || *check == '-' || *check == ':' || *check == '%'
-                || *check == ';' || *check == ']')
+                || *check == ';' || *check == ']' || *check == '_'
+            ) {
                 check++;
+            }
         }
         //  Assume the worst, now look for success
         rc = -1;
