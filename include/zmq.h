@@ -407,6 +407,12 @@ ZMQ_EXPORT uint8_t *zmq_z85_decode (uint8_t *dest, char *string);
 /*  Deprecated method */
 ZMQ_EXPORT int zmq_device (int type, void *frontend, void *backend);
 
+/******************************************************************************/
+/*  0MQ General                                                               */
+/******************************************************************************/
+
+#define ZMQ_UNUSED(object) (void)object
+
 #undef ZMQ_EXPORT
 
 #ifdef __cplusplus

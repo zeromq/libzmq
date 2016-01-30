@@ -34,8 +34,7 @@ zmq::dealer_t::~dealer_t ()
 
 void zmq::dealer_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 {
-    // subscribe_to_all_ is unused
-    (void) subscribe_to_all_;
+	ZMQ_UNUSED(subscribe_to_all_);
 
     zmq_assert (pipe_);
 
