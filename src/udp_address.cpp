@@ -49,6 +49,7 @@
 zmq::udp_address_t::udp_address_t ()
 {
     memset (&bind_address, 0, sizeof bind_address);
+    memset (&dest_address, 0, sizeof dest_address);
 }
 
 zmq::udp_address_t::~udp_address_t ()
@@ -67,11 +68,6 @@ int zmq::udp_address_t::resolve (const char *name_)
     //  Separate the address/port.
     std::string addr_str (name_, delimiter - name_);
     std::string port_str (delimiter + 1);
-
-    //  Remove square brackets around the address, if any, as used in IPv6
-    if (addr_str.size () >= 2 && addr_str [0] == '[' &&
-          addr_str [addr_str.size () - 1] == ']')
-        addr_str = addr_str.substr (1, addr_str.size () - 2);
 
     //  Parse the port number (0 is not a valid port).
     uint16_t port = (uint16_t) atoi (port_str.c_str ());
