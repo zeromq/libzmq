@@ -28,6 +28,7 @@
 #include <algorithm>
 #include <new>
 
+#include "macros.hpp"
 #include "kqueue.hpp"
 #include "err.hpp"
 #include "config.hpp"

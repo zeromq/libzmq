@@ -123,8 +123,8 @@ int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
     return 0;
 }
 
-int zmq::mechanism_t::property (const std::string name_,
-                                const void *value_, size_t length_)
+int zmq::mechanism_t::property (const std::string /* name_ */,
+                                const void * /* value_ */, size_t /* length_ */)
 {
     //  Default implementation does not check
     //  property values and returns 0 to signal success.

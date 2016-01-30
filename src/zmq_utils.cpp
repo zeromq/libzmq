@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "macros.hpp"
 #include "platform.hpp"
 
 #include "clock.hpp"
@@ -189,12 +190,13 @@ int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key)
     //  Is there a sensible errno to set here?
     if (rc)
         return rc;
-    
+
     zmq_z85_encode (z85_public_key, public_key, 32);
     zmq_z85_encode (z85_secret_key, secret_key, 32);
-    
+
     return 0;
 #else // requires libsodium
+    (void) z85_public_key, (void) z85_secret_key;
     errno = ENOTSUP;
     return -1;
 #endif

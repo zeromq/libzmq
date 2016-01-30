@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "macros.hpp"
 #include "router.hpp"
 #include "pipe.hpp"
 #include "wire.hpp"
@@ -55,8 +56,7 @@ zmq::router_t::~router_t ()
 
 void zmq::router_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 {
-    // subscribe_to_all_ is unused
-    (void)subscribe_to_all_;
+	LIBZMQ_UNUSED(subscribe_to_all_);
 
     zmq_assert (pipe_);
 

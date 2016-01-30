@@ -70,7 +70,7 @@ namespace zmq
 #endif
 
         // There are no incomplete items for conflate ypipe
-        inline bool unwrite (T *value_)
+        inline bool unwrite (T *)
         {
             return false;
         }

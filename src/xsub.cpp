@@ -19,6 +19,7 @@
 
 #include <string.h>
 
+#include "macros.hpp"
 #include "xsub.hpp"
 #include "err.hpp"
 
@@ -45,8 +46,7 @@ zmq::xsub_t::~xsub_t ()
 
 void zmq::xsub_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 {
-    // subscribe_to_all_ is unused
-    (void) subscribe_to_all_;
+    LIBZMQ_UNUSED(subscribe_to_all_);
 
     zmq_assert (pipe_);
     fq.attach (pipe_);

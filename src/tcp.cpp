@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "macros.hpp"
 #include "ip.hpp"
 #include "tcp.hpp"
 #include "err.hpp"
@@ -84,13 +85,13 @@ void zmq::set_tcp_receive_buffer (fd_t sockfd_, int bufsize_)
 void zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_, int keepalive_idle_, int keepalive_intvl_)
 {
     // These options are used only under certain #ifdefs below.
-    (void)keepalive_;
-    (void)keepalive_cnt_;
-    (void)keepalive_idle_;
-    (void)keepalive_intvl_;
+    LIBZMQ_UNUSED(keepalive_);
+    LIBZMQ_UNUSED(keepalive_cnt_);
+    LIBZMQ_UNUSED(keepalive_idle_);
+    LIBZMQ_UNUSED(keepalive_intvl_);
 
     // If none of the #ifdefs apply, then s_ is unused.
-    (void)s_;
+	LIBZMQ_UNUSED(s_);
 
     //  Tuning TCP keep-alives if platform allows it
     //  All values = -1 means skip and leave it for OS

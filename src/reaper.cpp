@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "macros.hpp"
 #include "reaper.hpp"
 #include "socket_base.hpp"
 #include "err.hpp"

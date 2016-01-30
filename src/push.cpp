@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "macros.hpp"
 #include "push.hpp"
 #include "pipe.hpp"
 #include "err.hpp"
@@ -34,8 +35,8 @@ zmq::push_t::~push_t ()
 
 void zmq::push_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 {
-    // subscribe_to_all_ is unused
-    (void)subscribe_to_all_;
+	LIBZMQ_UNUSED(subscribe_to_all_);
+
     //  Don't delay pipe termination as there is no one
     //  to receive the delimiter.
     pipe_->set_nodelay ();

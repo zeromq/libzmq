@@ -17,6 +17,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "macros.hpp"
 #include "dealer.hpp"
 #include "err.hpp"
 #include "msg.hpp"
@@ -34,8 +35,7 @@ zmq::dealer_t::~dealer_t ()
 
 void zmq::dealer_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 {
-    // subscribe_to_all_ is unused
-    (void) subscribe_to_all_;
+	LIBZMQ_UNUSED(subscribe_to_all_);
 
     zmq_assert (pipe_);
 

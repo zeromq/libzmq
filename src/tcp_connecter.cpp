@@ -20,6 +20,7 @@
 #include <new>
 #include <string>
 
+#include "macros.hpp"
 #include "tcp_connecter.hpp"
 #include "stream_engine.hpp"
 #include "io_thread.hpp"
