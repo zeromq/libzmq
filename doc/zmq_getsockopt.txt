@@ -349,12 +349,12 @@ The 'ZMQ_LINGER' option shall retrieve the linger period for the specified
 'socket'.  The linger period determines how long pending messages which have
 yet to be sent to a peer shall linger in memory after a socket is closed with
 linkzmq:zmq_close[3], and further affects the termination of the socket's
-context with linkzmq:zmq_ctx_term[3]. The following outlines the different
+context with linkzmq:zmq_term[3]. The following outlines the different
 behaviours:
 
 * The default value of '-1' specifies an infinite linger period. Pending
   messages shall not be discarded after a call to _zmq_close()_; attempting to
-  terminate the socket's context with _zmq_ctx_term()_ shall block until all
+  terminate the socket's context with _zmq_term()_ shall block until all
   pending messages have been sent to a peer.
 
 * The value of '0' specifies no linger period. Pending messages shall be
@@ -362,7 +362,7 @@ behaviours:
 
 * Positive values specify an upper bound for the linger period in milliseconds.
   Pending messages shall not be discarded after a call to _zmq_close()_;
-  attempting to terminate the socket's context with _zmq_ctx_term()_ shall block
+  attempting to terminate the socket's context with _zmq_term()_ shall block
   until either all pending messages have been sent to a peer, or the linger
   period expires, after which any pending messages shall be discarded.
 

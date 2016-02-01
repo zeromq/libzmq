@@ -81,7 +81,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_close (push);
     assert (rc == 0);
-    rc = zmq_ctx_term (ctx);
+    rc = zmq_term (ctx);
     assert (rc == 0);
 
 
@@ -122,7 +122,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_close (push);
     assert (rc == 0);
-    rc = zmq_ctx_term (ctx);
+    rc = zmq_term (ctx);
     assert (rc == 0);
 
     return 0;
