@@ -100,6 +100,7 @@
   <References />
   <Files>
     <Filter Name="Source Files" Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx" UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
+      <File RelativePath="..\..\errno.cpp" />
       <File RelativePath="..\..\..\..\src\address.cpp" />
       <File RelativePath="..\..\..\..\src\clock.cpp" />
       <File RelativePath="..\..\..\..\src\ctx.cpp" />
@@ -109,7 +110,6 @@
       <File RelativePath="..\..\..\..\src\dist.cpp" />
       <File RelativePath="..\..\..\..\src\epoll.cpp" />
       <File RelativePath="..\..\..\..\src\err.cpp" />
-      <File RelativePath="..\..\errno.cpp" />
       <File RelativePath="..\..\..\..\src\fq.cpp" />
       <File RelativePath="..\..\..\..\src\io_object.cpp" />
       <File RelativePath="..\..\..\..\src\io_thread.cpp" />
@@ -168,12 +168,15 @@
       <File RelativePath="..\..\..\..\src\v1_encoder.cpp" />
       <File RelativePath="..\..\..\..\src\v2_decoder.cpp" />
       <File RelativePath="..\..\..\..\src\v2_encoder.cpp" />
+      <File RelativePath="..\..\..\..\src\udp_address.cpp" />
+      <File RelativePath="..\..\..\..\src\udp_engine.cpp" />
       <File RelativePath="..\..\..\..\src\xpub.cpp" />
       <File RelativePath="..\..\..\..\src\xsub.cpp" />
       <File RelativePath="..\..\..\..\src\zmq.cpp" />
       <File RelativePath="..\..\..\..\src\zmq_utils.cpp" />
     </Filter>
     <Filter Name="Header Files" Filter="h;hpp;hxx;hm;inl;inc;xsd" UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
+      <File RelativePath="..\..\errno.hpp" />
       <File RelativePath="..\..\..\..\src\address.hpp" />
       <File RelativePath="..\..\..\..\src\array.hpp" />
       <File RelativePath="..\..\..\..\src\atomic_counter.hpp" />
@@ -189,7 +192,6 @@
       <File RelativePath="..\..\..\..\src\encoder.hpp" />
       <File RelativePath="..\..\..\..\src\epoll.hpp" />
       <File RelativePath="..\..\..\..\src\err.hpp" />
-      <File RelativePath="..\..\errno.hpp" />
       <File RelativePath="..\..\..\..\src\fd.hpp" />
       <File RelativePath="..\..\..\..\src\fq.hpp" />
       <File RelativePath="..\..\..\..\src\i_engine.hpp" />
@@ -256,6 +258,8 @@
       <File RelativePath="..\..\..\..\src\v2_decoder.hpp" />
       <File RelativePath="..\..\..\..\src\v2_encoder.hpp" />
       <File RelativePath="..\..\..\..\src\v2_protocol.hpp" />
+      <File RelativePath="..\..\..\..\src\udp_address.hpp" />
+      <File RelativePath="..\..\..\..\src\udp_engine.hpp" />
       <File RelativePath="..\..\..\..\src\windows.hpp" />
       <File RelativePath="..\..\..\..\src\wire.hpp" />
       <File RelativePath="..\..\..\..\src\xpub.hpp" />

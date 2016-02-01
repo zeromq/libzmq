@@ -497,8 +497,7 @@ if(MINGW)
 endif()
 
 include_directories(include ${CMAKE_CURRENT_BINARY_DIR})
-set(public_headers include/zmq.h
-                   include/zmq_utils.h)
+set(public_headers include/zmq.h)
 
 set(readme-docs AUTHORS
                 COPYING

@@ -261,9 +261,6 @@
 >>>>>>> parent of a464eec... Added "udp_address" and "udp_engine" to enable windows build
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\include\zmq_utils.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\include\zmq.h">
       <Filter>include</Filter>
     </ClInclude>
