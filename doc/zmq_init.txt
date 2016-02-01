@@ -43,7 +43,7 @@ An invalid number of 'io_threads' was requested.
 SEE ALSO
 --------
 linkzmq:zmq[7]
-linkzmq:zmq_term[3]
+linkzmq:zmq_ctx_term[3]
 
 
 AUTHORS
