@@ -30,7 +30,7 @@ applications receive termination messages, and then terminate the context
 with 'ZMQ_LINGER' set to zero on all sockets. This setting is an easier way
 to get the same result. When 'ZMQ_BLOCKY' is set to false, all new sockets
 are given a linger timeout of zero. You must still close all sockets before
-calling zmq_term.
+calling zmq_ctx_term.
 
 [horizontal]
 Default value:: true (old behavior)
