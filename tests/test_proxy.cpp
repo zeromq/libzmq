@@ -28,7 +28,6 @@
 */
 
 #include "testutil.hpp"
-#include "../include/zmq_utils.h"
 
 // Asynchronous client-to-server (DEALER to ROUTER) - pure libzmq
 //

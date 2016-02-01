@@ -28,7 +28,6 @@
 */
 
 #include "testutil.hpp"
-#include "../include/zmq_utils.h"
 
 // This is a test for issue #1382. The server thread creates a SUB-PUSH
 // steerable proxy. The main process then sends messages to the SUB
