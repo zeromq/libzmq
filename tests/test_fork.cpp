@@ -50,7 +50,7 @@ int main (void)
         //  Child process
         //  Immediately close parent sockets and context
         zmq_close (pull);
-        zmq_term (ctx);
+        zmq_ctx_term (ctx);
 
         //  Create new context, socket, connect and send some messages
         void *child_ctx = zmq_ctx_new ();
