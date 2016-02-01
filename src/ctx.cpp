@@ -135,19 +135,19 @@ zmq::ctx_t::~ctx_t ()
 
 int zmq::ctx_t::terminate ()
 {
-	slot_sync.lock();
+    slot_sync.lock();
 
-	bool saveTerminating = terminating;
-	terminating = false;
+    bool saveTerminating = terminating;
+    terminating = false;
 
-	// Connect up any pending inproc connections, otherwise we will hang
+    // Connect up any pending inproc connections, otherwise we will hang
     pending_connections_t copy = pending_connections;
     for (pending_connections_t::iterator p = copy.begin (); p != copy.end (); ++p) {
         zmq::socket_base_t *s = create_socket (ZMQ_PAIR);
         s->bind (p->first.c_str ());
         s->close ();
     }
-	terminating = saveTerminating;
+    terminating = saveTerminating;
 
     if (!starting) {
 

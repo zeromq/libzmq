@@ -223,8 +223,8 @@ zmq::i_mailbox *zmq::socket_base_t::get_mailbox ()
 
 void zmq::socket_base_t::stop ()
 {
-    //  Called by ctx when it is terminated (zmq_term).
-    //  'stop' command is sent from the threads that called zmq_term to
+    //  Called by ctx when it is terminated (zmq_ctx_term).
+    //  'stop' command is sent from the threads that called zmq_ctx_term to
     //  the thread owning the socket. This way, blocking call in the
     //  owner thread can be interrupted.
     send_stop ();
@@ -1376,7 +1376,7 @@ int zmq::socket_base_t::process_commands (int timeout_, bool throttle_)
 
 void zmq::socket_base_t::process_stop ()
 {
-    //  Here, someone have called zmq_term while the socket was still alive.
+    //  Here, someone have called zmq_ctx_term while the socket was still alive.
     //  We'll remember the fact so that any blocking call is interrupted and any
     //  further attempt to use the socket will return ETERM. The user is still
     //  responsible for calling zmq_close on the socket though!
