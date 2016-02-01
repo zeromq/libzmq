@@ -122,10 +122,6 @@
     <ClInclude Include="..\..\..\..\src\server.hpp" />
     <ClInclude Include="..\..\..\..\src\socks.hpp" />
     <ClInclude Include="..\..\..\..\src\socks_connecter.hpp" />
-<<<<<<< HEAD
-    <ClInclude Include="..\..\platform.hpp" />
-=======
->>>>>>> refs/remotes/zeromq/master
     <ClInclude Include="..\..\..\..\src\poll.hpp" />
     <ClInclude Include="..\..\..\..\src\poller.hpp" />
     <ClInclude Include="..\..\..\..\src\poller_base.hpp" />
