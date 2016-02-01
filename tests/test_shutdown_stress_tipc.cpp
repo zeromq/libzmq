@@ -95,7 +95,7 @@ int main (void)
         rc = zmq_close (s1);
         assert (rc == 0);
 
-        rc = zmq_ctx_term (ctx);
+        rc = zmq_term (ctx);
         assert (rc == 0);
     }
 

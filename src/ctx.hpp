@@ -75,7 +75,7 @@ namespace zmq
         //  Returns false if object is not a context.
         bool check_tag ();
 
-        //  This function is called when user invokes zmq_ctx_term. If there are
+        //  This function is called when user invokes zmq_term. If there are
         //  no more sockets open it'll cause all the infrastructure to be shut
         //  down. If there are open sockets still, the deallocation happens
         //  after the last one is closed.
@@ -146,8 +146,8 @@ namespace zmq
         uint32_t tag;
 
         //  Sockets belonging to this context. We need the list so that
-        //  we can notify the sockets when zmq_ctx_term() is called.
-        //  The sockets will return ETERM then.
+        //  we can notify the sockets when zmq_term() is called. The sockets
+        //  will return ETERM then.
         typedef array_t <socket_base_t> sockets_t;
         sockets_t sockets;
 
@@ -159,7 +159,7 @@ namespace zmq
         //  yet. Launching of I/O threads is delayed.
         bool starting;
 
-        //  If true, zmq_ctx_term was already called.
+        //  If true, zmq_term was already called.
         bool terminating;
 
         //  Synchronisation of accesses to global slot-related data:
@@ -179,7 +179,7 @@ namespace zmq
         uint32_t slot_count;
         i_mailbox **slots;
 
-        //  Mailbox for zmq_ctx_term thread.
+        //  Mailbox for zmq_term thread.
         mailbox_t term_mailbox;
 
         //  List of inproc endpoints within this context.
