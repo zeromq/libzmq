@@ -241,6 +241,7 @@
     <ClCompile Include="..\..\..\..\src\socket_poller.cpp">
       <Filter>src</Filter>
     </ClCompile>
+<<<<<<< HEAD
     <ClCompile Include="..\..\..\..\src\udp_address.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -256,6 +257,8 @@
     <ClCompile Include="..\..\..\..\src\timers.cpp">
       <Filter>src</Filter>
     </ClCompile>
+=======
+>>>>>>> parent of a464eec... Added "udp_address" and "udp_engine" to enable windows build
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\zmq.h">
@@ -534,6 +537,7 @@
     <ClInclude Include="..\..\..\..\src\decoder_allocators.hpp">
       <Filter>src\include</Filter>
     </ClInclude>
+<<<<<<< HEAD
     <ClInclude Include="..\..\..\..\src\udp_address.hpp">
       <Filter>src\include</Filter>
     </ClInclude>
@@ -549,6 +553,8 @@
     <ClInclude Include="..\..\..\..\src\timers.hpp">
       <Filter>src\include</Filter>
     </ClInclude>
+=======
+>>>>>>> parent of a464eec... Added "udp_address" and "udp_engine" to enable windows build
   </ItemGroup>
   <ItemGroup>
     <Filter Include="include">
