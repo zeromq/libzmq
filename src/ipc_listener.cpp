@@ -155,7 +155,12 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
 
     //  Get rid of the file associated with the UNIX domain socket that
     //  may have been left behind by the previous run of the application.
-    ::unlink (addr.c_str());
+    //  MUST NOT unlink if the FD is managed by the user, or it will stop
+    //  working after the first client connects. The user will take care of
+    //  cleaning up the file after the service is stopped.
+    if (options.pre_allocated_fd == -1) {
+        ::unlink (addr.c_str());
+    }
     filename.clear ();
 
     //  Initialise the address structure.
@@ -164,25 +169,29 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
     if (rc != 0)
         return -1;
 
-    //  Create a listening socket.
-    s = open_socket (AF_UNIX, SOCK_STREAM, 0);
-    if (s == -1)
-        return -1;
-
     address.to_string (endpoint);
 
-    //  Bind the socket to the file path.
-    rc = bind (s, address.addr (), address.addrlen ());
-    if (rc != 0)
-        goto error;
+    if (options.pre_allocated_fd != -1) {
+        s = options.pre_allocated_fd;
+    } else {
+        //  Create a listening socket.
+        s = open_socket (AF_UNIX, SOCK_STREAM, 0);
+        if (s == -1)
+            return -1;
+
+        //  Bind the socket to the file path.
+        rc = bind (s, address.addr (), address.addrlen ());
+        if (rc != 0)
+            goto error;
+
+        //  Listen for incoming connections.
+        rc = listen (s, options.backlog);
+        if (rc != 0)
+            goto error;
+    }
 
     filename.assign (addr.c_str());
     has_file = true;
-
-    //  Listen for incoming connections.
-    rc = listen (s, options.backlog);
-    if (rc != 0)
-        goto error;
 
     socket->event_listening (endpoint, s);
     return 0;
@@ -204,7 +213,10 @@ int zmq::ipc_listener_t::close ()
 
     //  If there's an underlying UNIX domain socket, get rid of the file it
     //  is associated with.
-    if (has_file && !filename.empty ()) {
+    //  MUST NOT unlink if the FD is managed by the user, or it will stop
+    //  working after the first client connects. The user will take care of
+    //  cleaning up the file after the service is stopped.
+    if (has_file && !filename.empty () && options.pre_allocated_fd == -1) {
         rc = ::unlink(filename.c_str ());
         if (rc != 0) {
             socket->event_close_failed (endpoint, zmq_errno());
