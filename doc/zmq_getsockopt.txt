@@ -464,6 +464,19 @@ Default value:: null string
 Applicable socket types:: all, when using TCP or IPC transports
 
 
+ZMQ_PRE_ALLOCATED_FD: Retrieve the pre-allocated socket file descriptor
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_PRE_ALLOCATED_FD' option shall retrieve the pre-allocated file
+descriptor that has been assigned to a ZMQ socket, if any. -1 shall be
+returned if a pre-allocated file descriptor was not set for the socket.
+
+[horizontal]
+Option value type:: int
+Option value unit:: file descriptor
+Default value:: -1
+Applicable socket types:: all bound sockets, when using IPC or TCP transport
+
+
 ZMQ_RATE: Retrieve multicast data rate
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_RATE' option shall retrieve the maximum send or receive data rate for

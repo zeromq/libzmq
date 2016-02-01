@@ -492,6 +492,28 @@ Default value:: not set
 Applicable socket types:: all, when using TCP transport
 
 
+ZMQ_PRE_ALLOCATED_FD: Set the pre-allocated socket file descriptor
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When set to a positive integer value before zmq_bind is called on the socket,
+the socket shall use the corresponding file descriptor for connections over
+TCP or IPC instead of allocating a new file descriptor.
+Useful for writing systemd socket activated services. If set to -1 (default),
+a new file descriptor will be allocated instead (default behaviour).
+
+NOTE: if set after calling zmq_bind, this option shall have no effect.
+NOTE: the file descriptor passed through MUST have been ran through the "bind"
+      and "listen" system calls beforehand. Also, socket option that would
+      normally be passed through zmq_setsockopt like TCP buffers length,
+      IP_TOS or SO_REUSEADDR MUST be set beforehand by the caller, as they
+      must be set before the socket is bound.
+
+[horizontal]
+Option value type:: int
+Option value unit:: file descriptor
+Default value:: -1
+Applicable socket types:: all bound sockets, when using IPC or TCP transport
+
+
 ZMQ_PROBE_ROUTER: bootstrap connections to ROUTER sockets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 When set to 1, the socket will automatically send an empty message when a
