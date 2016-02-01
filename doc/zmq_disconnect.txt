@@ -25,8 +25,8 @@ _ZMQ_LINGER_ socket option for the specified 'socket'.
 The 'endpoint' argument is as described in linkzmq:zmq_connect[3]
 
 NOTE: The default setting of _ZMQ_LINGER_ does not discard unsent messages;
-this behaviour may cause the application to block when calling _zmq_term()_.
-For details refer to linkzmq:zmq_setsockopt[3] and linkzmq:zmq_term[3].
+this behaviour may cause the application to block when calling _zmq_ctx_term()_.
+For details refer to linkzmq:zmq_setsockopt[3] and linkzmq:zmq_ctx_term[3].
 
 
 RETURN VALUE
