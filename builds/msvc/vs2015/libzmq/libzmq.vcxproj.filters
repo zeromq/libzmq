@@ -199,9 +199,6 @@
     <ClCompile Include="..\..\..\..\src\zmq.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\src\zmq_utils.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\src\precompiled.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -256,6 +253,7 @@
     <ClCompile Include="..\..\..\..\src\timers.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\src\udp_engine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\zmq.h">
