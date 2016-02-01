@@ -28,7 +28,6 @@
 */
 
 #include "testutil.hpp"
-#include "../include/zmq_utils.h"
 
 int main (void)
 {

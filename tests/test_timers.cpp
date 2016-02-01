@@ -29,7 +29,6 @@
 
 #include "macros.hpp"
 #include "testutil.hpp"
-#include "../include/zmq_utils.h"
 
 #if defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"

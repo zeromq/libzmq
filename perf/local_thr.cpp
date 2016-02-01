@@ -28,7 +28,6 @@
 */
 
 #include "../include/zmq.h"
-#include "../include/zmq_utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 

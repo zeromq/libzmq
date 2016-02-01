@@ -28,8 +28,8 @@
 
     *************************************************************************
     NOTE to contributors. This file comprises the principal public contract
-    for ZeroMQ API users (along with zmq_utils.h). Any change to this file
-    supplied in a stable release SHOULD not break existing applications.
+    for ZeroMQ API users. Any change to this file supplied in a stable
+    release SHOULD not break existing applications.
     In practice this means that the value of constants must not change, and
     that old values may not be reused for new constants.
     *************************************************************************
