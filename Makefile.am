@@ -16,8 +16,7 @@ AM_CPPFLAGS = \
 lib_LTLIBRARIES = src/libzmq.la
 
 include_HEADERS = \
-	include/zmq.h \
-	include/zmq_utils.h
+	include/zmq.h 
 
 src_libzmq_la_SOURCES = \
 	src/address.cpp \
@@ -230,7 +229,6 @@ src_libzmq_la_SOURCES = \
         src/decoder_allocators.cpp \
         src/socket_poller.hpp \
         src/socket_poller.cpp
-
 
 if ON_MINGW
 src_libzmq_la_LDFLAGS = \

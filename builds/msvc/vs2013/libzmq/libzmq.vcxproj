@@ -67,8 +67,9 @@
     <Import Project="$(ProjectDir)$(ProjectName).props" />
   </ImportGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\platform.hpp" />
+    <ClInclude Include="..\..\resource.h" />
     <ClInclude Include="..\..\..\..\include\zmq.h" />
-    <ClInclude Include="..\..\..\..\include\zmq_utils.h" />
     <ClInclude Include="..\..\..\..\src\address.hpp" />
     <ClInclude Include="..\..\..\..\src\array.hpp" />
     <ClInclude Include="..\..\..\..\src\atomic_counter.hpp" />
@@ -121,7 +122,6 @@
     <ClInclude Include="..\..\..\..\src\server.hpp" />
     <ClInclude Include="..\..\..\..\src\socks.hpp" />
     <ClInclude Include="..\..\..\..\src\socks_connecter.hpp" />
-    <ClInclude Include="..\..\platform.hpp" />
     <ClInclude Include="..\..\..\..\src\poll.hpp" />
     <ClInclude Include="..\..\..\..\src\poller.hpp" />
     <ClInclude Include="..\..\..\..\src\poller_base.hpp" />
@@ -154,6 +154,8 @@
     <ClInclude Include="..\..\..\..\src\v1_decoder.hpp" />
     <ClInclude Include="..\..\..\..\src\v1_encoder.hpp" />
     <ClInclude Include="..\..\..\..\src\v1_protocol.hpp" />
+    <ClInclude Include="..\..\..\..\src\udp_address.hpp" />
+    <ClInclude Include="..\..\..\..\src\udp_engine.hpp" />
     <ClInclude Include="..\..\..\..\src\windows.hpp" />
     <ClInclude Include="..\..\..\..\src\wire.hpp" />
     <ClInclude Include="..\..\..\..\src\xpub.hpp" />
@@ -162,7 +164,6 @@
     <ClInclude Include="..\..\..\..\src\xsub.hpp" />
     <ClInclude Include="..\..\..\..\src\ypipe.hpp" />
     <ClInclude Include="..\..\..\..\src\yqueue.hpp" />
-    <ClInclude Include="..\..\resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\src\address.cpp" />
@@ -244,6 +245,8 @@
     <ClCompile Include="..\..\..\..\src\v1_encoder.cpp" />
     <ClCompile Include="..\..\..\..\src\v2_decoder.cpp" />
     <ClCompile Include="..\..\..\..\src\v2_encoder.cpp" />
+    <ClCompile Include="..\..\..\..\src\udp_address.cpp" />
+    <ClCompile Include="..\..\..\..\src\udp_engine.cpp" />
     <ClCompile Include="..\..\..\..\src\xpub.cpp" />
     <ClCompile Include="..\..\..\..\src\xsub.cpp" />
     <ClCompile Include="..\..\..\..\src\zmq.cpp" />

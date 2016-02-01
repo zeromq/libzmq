@@ -258,9 +258,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\include\zmq_utils.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\include\zmq.h">
       <Filter>include</Filter>
     </ClInclude>
