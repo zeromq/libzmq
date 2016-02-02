@@ -255,12 +255,8 @@
     <ClCompile Include="..\..\..\..\src\v1_encoder.cpp" />
     <ClCompile Include="..\..\..\..\src\v2_decoder.cpp" />
     <ClCompile Include="..\..\..\..\src\v2_encoder.cpp" />
-    <ClCompile Include="..\..\..\..\src\udp_address.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugDLL|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\src\udp_engine.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugDLL|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\udp_address.cpp"/>
+    <ClCompile Include="..\..\..\..\src\udp_engine.cpp"/>
     <ClCompile Include="..\..\..\..\src\xpub.cpp" />
     <ClCompile Include="..\..\..\..\src\xsub.cpp" />
     <ClCompile Include="..\..\..\..\src\zmq.cpp" />
