@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{9C20A37C-5D9F-4C4C-A2D9-E6EE91A077D1}</ProjectGuid>
-    <ProjectName>remote_lat</ProjectName>
-    <PlatformToolset>v100</PlatformToolset>
+    <ProjectGuid>{4FDB8C73-9D4A-4D87-A4A9-A7FC06DFEA57}</ProjectGuid>
+    <ProjectName>local_lat</ProjectName>
+    <PlatformToolset>v140</PlatformToolset>
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
@@ -67,7 +67,7 @@
     <ClInclude Include="..\..\platform.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\perf\remote_lat.cpp" />
+    <ClCompile Include="..\..\..\..\perf\local_lat.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ItemGroup>
