@@ -37,18 +37,15 @@
 #define NOMINMAX          // Macros min(a,b) and max(a,b)
 #endif
 
-//  Set target version to Windows Server 2003, Windows XP/SP1 or higher.
+//  Set target version to Windows Vista or higher, required by if_nametoindex
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0501
+#define _WIN32_WINNT 0x0600
 #endif
 
-#ifdef __MINGW32__
-//  Require Windows XP or higher with MinGW for getaddrinfo().
-#if(_WIN32_WINNT >= 0x0501)
+#if(_WIN32_WINNT >= 0x0600)
 #else
 #undef _WIN32_WINNT
-#define _WIN32_WINNT 0x0501
-#endif
+#define _WIN32_WINNT 0x0600
 #endif
 
 #include <winsock2.h>
