@@ -117,9 +117,9 @@ long zmq::timers_t::timeout ()
         //  Live timer, lets return the timeout
         if (cancelled_it == cancelled_timers.end ()) {
             if (it->first > now)
-            return it->first - now;
+                return (long) (it->first - now);
             else
-            return 0;
+                return 0;
         }
 
         // Let's remove it from the begining of the list
