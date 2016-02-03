@@ -27,8 +27,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __VMCI_CONNECTER_HPP_INCLUDED__
-#define __VMCI_CONNECTER_HPP_INCLUDED__
+#ifndef __ZMQ_VMCI_CONNECTER_HPP_INCLUDED__
+#define __ZMQ_VMCI_CONNECTER_HPP_INCLUDED__
 
 #include "platform.hpp"
 
