@@ -13,10 +13,6 @@
     <PropertyPageSchema Include="$(MSBuildThisFileDirectory)$(ProjectName).xml" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <Option-sodium>true</Option-sodium>
-  </PropertyGroup>
-
   <!-- Configuration -->
   
   <ItemDefinitionGroup>
@@ -25,7 +21,6 @@
       <EnablePREfast>false</EnablePREfast>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;FD_SETSIZE=16384;ZMQ_USE_SELECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Option-openpgm)' == 'true'">ZMQ_HAVE_OPENPGM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Option-sodium)' == 'true'">HAVE_LIBSODIUM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Option-gssapi)' == 'true'">HAVE_LIBGSSAPI_KRB5;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(ConfigurationType)' == 'StaticLibrary'">ZMQ_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(ConfigurationType)' == 'DynamicLibrary'">DLL_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -41,29 +36,28 @@
   <!-- Dependencies -->
 
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)libsodium.import.props" />
+    <Import Project="$(SolutionDir)libsodium.import.props" Condition="'$(HAVE_SODIUM)'=='1'" />
   </ImportGroup>
   
   <PropertyGroup Condition="'$(DefaultLinkage)' == 'dynamic'">
-    <Linkage-libsodium>dynamic</Linkage-libsodium>
+    <Linkage-libsodium Condition="'$(HAVE_SODIUM)'=='1'">dynamic</Linkage-libsodium>
   </PropertyGroup>
   <PropertyGroup Condition="'$(DefaultLinkage)' == 'ltcg'">
-    <Linkage-libsodium>ltcg</Linkage-libsodium>
+    <Linkage-libsodium Condition="'$(HAVE_SODIUM)'=='1'">ltcg</Linkage-libsodium>
   </PropertyGroup>
   <PropertyGroup Condition="'$(DefaultLinkage)' == 'static'">
-    <Linkage-libsodium>static</Linkage-libsodium>
+    <Linkage-libsodium Condition="'$(HAVE_SODIUM)'=='1'">static</Linkage-libsodium>
   </PropertyGroup>
 
   <!-- Messages -->
 
   <Target Name="OptionInfo" BeforeTargets="PrepareForBuild">
     <Message Text="Option-openpgm    : $(Option-openpgm)" Importance="high"/>
-    <Message Text="Option-sodium     : $(Option-sodium)" Importance="high"/>
     <Message Text="Option-gssapi     : $(Option-gssapi)" Importance="high"/>
   </Target>
 
   <Target Name="LinkageInfo" BeforeTargets="PrepareForBuild">
-    <Message Text="Linkage-libsodium : $(Linkage-libsodium)" Importance="high"/>
+    <Message Text="Linkage-libsodium : $(Linkage-libsodium)" Importance="high" Condition="'$(HAVE_SODIUM)'=='1'"/>
   </Target>
 
 </Project>

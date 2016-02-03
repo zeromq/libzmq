@@ -11,16 +11,11 @@
     <PropertyPageSchema Include="$(MSBuildThisFileDirectory)libzmq.import.xml" />
   </ItemGroup>
   
-  <PropertyGroup>
-    <Option-sodium>true</Option-sodium>
-  </PropertyGroup>
-
   <!-- Configuration -->
 
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions Condition="'$(Option-openpgm)' == 'true'">ZMQ_HAVE_OPENPGM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Option-sodium)' == 'true'">HAVE_LIBSODIUM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Option-gssapi)' == 'true'">HAVE_LIBGSSAPI_KRB5;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
