@@ -1,17 +1,27 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -20,6 +30,7 @@
 #include <new>
 #include <stddef.h>
 
+#include "macros.hpp"
 #include "pipe.hpp"
 #include "err.hpp"
 
@@ -71,6 +82,8 @@ zmq::pipe_t::pipe_t (object_t *parent_, upipe_t *inpipe_, upipe_t *outpipe_,
     out_active (true),
     hwm (outhwm_),
     lwm (compute_lwm (inhwm_)),
+    inhwmboost(0),
+    outhwmboost(0),
     msgs_read (0),
     msgs_written (0),
     peers_msgs_read (0),
@@ -193,7 +206,7 @@ bool zmq::pipe_t::check_write ()
     if (unlikely (!out_active || state != active))
         return false;
 
-    bool full = hwm > 0 && msgs_written - peers_msgs_read == uint64_t (hwm);
+    bool full = !check_hwm();
 
     if (unlikely (full)) {
         out_active = false;
@@ -250,7 +263,7 @@ void zmq::pipe_t::process_activate_read ()
 
 void zmq::pipe_t::process_activate_write (uint64_t msgs_read_)
 {
-    //  Remember the peers's message sequence number.
+    //  Remember the peer's message sequence number.
     peers_msgs_read = msgs_read_;
 
     if (!out_active && state == active) {
@@ -272,7 +285,7 @@ void zmq::pipe_t::process_hiccup (void *pipe_)
        int rc = msg.close ();
        errno_assert (rc == 0);
     }
-    delete outpipe;
+    LIBZMQ_DELETE(outpipe);
 
     //  Plug in the new outpipe.
     zmq_assert (pipe_);
@@ -356,7 +369,7 @@ void zmq::pipe_t::process_pipe_term_ack ()
         }
     }
 
-    delete inpipe;
+    LIBZMQ_DELETE(inpipe);
 
     //  Deallocate the pipe object
     delete this;
@@ -372,50 +385,42 @@ void zmq::pipe_t::terminate (bool delay_)
     //  Overload the value specified at pipe creation.
     delay = delay_;
 
-    //  If terminate was already called, we can ignore the duplicit invocation.
-    if (state == term_req_sent1 || state == term_req_sent2)
+    //  If terminate was already called, we can ignore the duplicate invocation.
+    if (state == term_req_sent1 || state == term_req_sent2) {
         return;
-
+	}
     //  If the pipe is in the final phase of async termination, it's going to
     //  closed anyway. No need to do anything special here.
-    else
-    if (state == term_ack_sent)
+    else if (state == term_ack_sent) {
         return;
-
+	}
     //  The simple sync termination case. Ask the peer to terminate and wait
     //  for the ack.
-    else
-    if (state == active) {
+    else if (state == active) {
         send_pipe_term (peer);
         state = term_req_sent1;
     }
-
     //  There are still pending messages available, but the user calls
     //  'terminate'. We can act as if all the pending messages were read.
-    else
-    if (state == waiting_for_delimiter && !delay) {
+    else if (state == waiting_for_delimiter && !delay) {
         outpipe = NULL;
         send_pipe_term_ack (peer);
         state = term_ack_sent;
     }
-
     //  If there are pending messages still available, do nothing.
-    else
-    if (state == waiting_for_delimiter) {
+    else if (state == waiting_for_delimiter) {
     }
-
     //  We've already got delimiter, but not term command yet. We can ignore
     //  the delimiter and ack synchronously terminate as if we were in
     //  active state.
-    else
-    if (state == delimiter_received) {
+    else if (state == delimiter_received) {
         send_pipe_term (peer);
         state = term_req_sent1;
     }
-
     //  There are no other states.
-    else
+    else {
         zmq_assert (false);
+	}
 
     //  Stop outbound flow of messages.
     out_active = false;
@@ -455,14 +460,9 @@ int zmq::pipe_t::compute_lwm (int hwm_)
     //     result in low performance.
     //
     //  Given the 3. it would be good to keep HWM and LWM as far apart as
-    //  possible to reduce the thread switching overhead to almost zero,
-    //  say HWM-LWM should be max_wm_delta.
-    //
-    //  That done, we still we have to account for the cases where
-    //  HWM < max_wm_delta thus driving LWM to negative numbers.
-    //  Let's make LWM 1/2 of HWM in such cases.
-    int result = (hwm_ > max_wm_delta * 2) ?
-        hwm_ - max_wm_delta : (hwm_ + 1) / 2;
+    //  possible to reduce the thread switching overhead to almost zero.
+    //  Let's make LWM 1/2 of HWM.
+    int result = (hwm_ + 1) / 2;
 
     return result;
 }
@@ -493,11 +493,9 @@ void zmq::pipe_t::hiccup ()
 
     //  Create new inpipe.
     if (conflate)
-        inpipe = new (std::nothrow)
-            ypipe_conflate_t <msg_t> ();
+        inpipe = new (std::nothrow)ypipe_conflate_t <msg_t>();
     else
-        inpipe = new (std::nothrow)
-            ypipe_t <msg_t, message_pipe_granularity> ();
+        inpipe = new (std::nothrow)ypipe_t <msg_t, message_pipe_granularity>();
 
     alloc_assert (inpipe);
     in_active = true;
@@ -508,12 +506,28 @@ void zmq::pipe_t::hiccup ()
 
 void zmq::pipe_t::set_hwms (int inhwm_, int outhwm_)
 {
-    lwm = compute_lwm (inhwm_);
-    hwm = outhwm_;
+    int in = inhwm_ + inhwmboost;
+    int out = outhwm_ + outhwmboost;
+
+    // if either send or recv side has hwm <= 0 it means infinite so we should set hwms infinite
+    if (inhwm_ <= 0 || inhwmboost <= 0)
+        in = 0;
+
+    if (outhwm_ <= 0 || outhwmboost <= 0)
+        out = 0;
+
+    lwm = compute_lwm(in);
+    hwm = out;
+}
+
+void zmq::pipe_t::set_hwms_boost(int inhwmboost_, int outhwmboost_)
+{
+    inhwmboost = inhwmboost_;
+    outhwmboost = outhwmboost_;
 }
 
 bool zmq::pipe_t::check_hwm () const
 {
-    bool full = hwm > 0 && msgs_written - peers_msgs_read >= uint64_t (hwm - 1);
+    bool full = hwm > 0 && msgs_written - peers_msgs_read >= uint64_t (hwm);
     return( !full );
 }

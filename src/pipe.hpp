@@ -1,17 +1,27 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -75,8 +85,8 @@ namespace zmq
         void set_event_sink (i_pipe_events *sink_);
 
         //  Pipe endpoint can store an routing ID to be used by its clients.        
-        void set_routing_id(uint32_t routing_id_);
-        uint32_t get_routing_id();
+        void set_routing_id (uint32_t routing_id_);
+        uint32_t get_routing_id ();
 
         //  Pipe endpoint can store an opaque ID to be used by its clients.
         void set_identity (const blob_t &identity_);
@@ -111,7 +121,7 @@ namespace zmq
         //  in the peer.
         void hiccup ();
 
-        // Ensure the pipe wont block on receiving pipe_term.
+        //  Ensure the pipe won't block on receiving pipe_term.
         void set_nodelay ();
 
         //  Ask pipe to terminate. The termination will happen asynchronously
@@ -120,10 +130,13 @@ namespace zmq
         //  before actual shutdown.
         void terminate (bool delay_);
 
-        // set the high water marks.
+        //  Set the high water marks.
         void set_hwms (int inhwm_, int outhwm_);
 
-        // check HWM
+        //  Set the boost to high water marks, used by inproc sockets so total hwm are sum of connect and bind sockets watermarks
+        void set_hwms_boost(int inhwmboost_, int outhwmboost_);
+
+        //  Returns true if HWM is not reached
         bool check_hwm () const;
     private:
 
@@ -165,6 +178,10 @@ namespace zmq
 
         //  Low watermark for the inbound pipe.
         int lwm;
+
+        // boosts for high and low watermarks, used with inproc sockets so hwm are sum of send and recv hmws on each side of pipe
+        int inhwmboost;
+        int outhwmboost;
 
         //  Number of messages read and written so far.
         uint64_t msgs_read;

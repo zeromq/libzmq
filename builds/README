@@ -1,0 +1,4 @@
+This directory holds build tools, i.e. tools we use to build the current
+code tree. Packaging tools (which take released tarballs or github code
+repos) should go into /packaging.
+

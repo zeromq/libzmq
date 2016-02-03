@@ -1,17 +1,27 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -45,7 +55,9 @@ namespace zmq
         options_t ();
 
         int setsockopt (int option_, const void *optval_, size_t optvallen_);
-        int getsockopt (int option_, void *optval_, size_t *optvallen_);
+        int getsockopt (int option_, void *optval_, size_t *optvallen_) const;
+
+        bool is_valid (int option_) const;
 
         //  High-water marks for message pipes.
         int sndhwm;
@@ -67,6 +79,10 @@ namespace zmq
         // Sets the time-to-live field in every multicast packet sent.
         int multicast_hops;
 
+        // Sets the maximum transport data unit size in every multicast
+        // packet sent.
+        int multicast_maxtpdu;
+
         // SO_SNDBUF and SO_RCVBUF to be passed to underlying transport sockets.
         int sndbuf;
         int rcvbuf;
@@ -79,6 +95,16 @@ namespace zmq
 
         //  Linger time, in milliseconds.
         int linger;
+
+        //  Maximum interval in milliseconds beyond which userspace will
+        //  timeout connect().
+        //  Default 0 (unused)
+        int connect_timeout;
+
+        //  Maximum interval in milliseconds beyond which TCP will timeout
+        //  retransmitted packets.
+        //  Default 0 (unused)
+        int tcp_retransmit_timeout;
 
         //  Minimum interval between attempts to reconnect, in milliseconds.
         //  Default 100ms
@@ -120,7 +146,7 @@ namespace zmq
         bool raw_socket;
         bool raw_notify;        //  Provide connect notifications
 
-        //  Addres of SOCKS proxy
+        //  Address of SOCKS proxy
         std::string socks_proxy_address;
 
         //  TCP keep-alive settings.
@@ -133,6 +159,10 @@ namespace zmq
         // TCP accept() filters
         typedef std::vector <tcp_address_mask_t> tcp_accept_filters_t;
         tcp_accept_filters_t tcp_accept_filters;
+
+        // TCP buffer sizes
+        unsigned int tcp_recv_buffer_size;
+        unsigned int tcp_send_buffer_size;
 
         // IPC accept() filters
 #       if defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
@@ -185,6 +215,22 @@ namespace zmq
         //  close socket.  Default is 30 secs.  0 means no handshake timeout.
         int handshake_ivl;
 
+        bool connected;
+        //  If remote peer receives a PING message and doesn't receive another
+        //  message within the ttl value, it should close the connection
+        //  (measured in tenths of a second)
+        uint16_t heartbeat_ttl;
+        //  Time in milliseconds between sending heartbeat PING messages.
+        int heartbeat_interval;
+        //  Time in milliseconds to wait for a PING response before disconnecting
+        int heartbeat_timeout;
+
+#       if defined ZMQ_HAVE_VMCI
+        uint64_t vmci_buffer_size;
+        uint64_t vmci_buffer_min_size;
+        uint64_t vmci_buffer_max_size;
+        int vmci_connect_timeout;
+#       endif
     };
 }
 

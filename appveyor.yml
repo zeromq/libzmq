@@ -1,0 +1,85 @@
+version: build-{build}
+
+clone_depth: 1
+
+skip_tags: true
+
+os: Visual Studio 2015
+
+environment:
+  CMAKE_GENERATOR: "Visual Studio 14 2015"
+  MSVCVERSION: "v140"
+  MSVCYEAR: "vs2015"
+  matrix:
+    - platform: Win32
+      configuration: Release
+      WITH_SODIUM: ON
+      WITH_TWEETNACL: ON
+    - platform: Win32
+      configuration: Debug
+      WITH_SODIUM: ON
+      WITH_TWEETNACL: ON
+    - platform: x64
+      configuration: Release
+      WITH_SODIUM: ON
+      WITH_TWEETNACL: ON
+    - platform: x64
+      configuration: Debug
+      WITH_SODIUM: ON
+      WITH_TWEETNACL: ON
+    - platform: Win32
+      configuration: Release
+      WITH_SODIUM: OFF
+      WITH_TWEETNACL: OFF
+    - platform: Win32
+      configuration: Release
+      WITH_SODIUM: ON
+      WITH_TWEETNACL: OFF
+    - platform: Win32
+      configuration: Release
+      WITH_SODIUM: OFF
+      WITH_TWEETNACL: ON
+
+matrix:
+  fast_finish: false
+
+init:
+  #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  - cmake --version
+  - msbuild /version
+  - cmd: reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" /v UserAuthentication /t REG_DWORD /d 0 /f
+
+install:
+  - cmd: if "%Platform%"=="x64" set "CMAKE_GENERATOR=%CMAKE_GENERATOR% Win64"
+  - cmd: echo "Generator='%CMAKE_GENERATOR%'"
+  - cmd: echo "Platform='%Platform%'"
+  - cmd: set LIBSODIUMDIR=C:\projects\libsodium
+  - cmd: git clone --branch stable --depth 1 --quiet "https://github.com/jedisct1/libsodium.git" %LIBSODIUMDIR%
+  - cmd: msbuild /v:minimal /maxcpucount:%NUMBER_OF_PROCESSORS% /p:Configuration=%Configuration%DLL %LIBSODIUMDIR%\builds\msvc\%MSVCYEAR%\libsodium\libsodium.vcxproj
+  - cmd: set SODIUM_LIBRARY_DIR="%LIBSODIUMDIR%\bin\%Platform%\%Configuration%\%MSVCVERSION%\dynamic"
+  - cmd: set SODIUM_INCLUDE_DIR="%LIBSODIUMDIR%\src\libsodium\include"
+  - cmd: move "%SODIUM_LIBRARY_DIR%\libsodium.lib" "%SODIUM_LIBRARY_DIR%\sodium.lib"
+
+clone_folder: C:\projects\libzmq
+
+before_build:
+  - cmd: set LIBZMQ_BUILDDIR=C:\projects\build_libzmq
+  - cmd: md "%LIBZMQ_BUILDDIR%"
+  - cd "%LIBZMQ_BUILDDIR%"
+  - cmd: cmake -D CMAKE_INCLUDE_PATH="%SODIUM_INCLUDE_DIR%" -D CMAKE_LIBRARY_PATH="%SODIUM_LIBRARY_DIR%" -D WITH_SODIUM="%WITH_SODIUM%" -D WITH_TWEETNACL="%WITH_TWEETNACL%" -D CMAKE_C_FLAGS_RELEASE="/MT" -D CMAKE_C_FLAGS_DEBUG="/MTd" -D WITH_SODIUM="%WITH_SODIUM%" -G "%CMAKE_GENERATOR%" "%APPVEYOR_BUILD_FOLDER%"
+
+build:
+  parallel: true
+  project: C:\projects\build_libzmq\ZeroMQ.sln
+  verbosity: minimal
+
+after_build:
+  - cmd: cd %LIBZMQ_BUILDDIR%\bin\%Configuration%"
+  - cmd: copy "%SODIUM_LIBRARY_DIR%\libsodium.dll" .
+  - cmd: 7z a -y -bd -mx=9 libzmq.zip *.exe *.dll
+  - ps: Push-AppveyorArtifact "libzmq.zip" -Filename "libzmq-${env:Platform}-${env:Configuration}.zip"
+
+test_script:
+  - cmd: cd "%LIBZMQ_BUILDDIR%"
+  - cmd: ctest -C "%Configuration%" -V
+

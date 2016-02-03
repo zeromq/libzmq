@@ -31,7 +31,7 @@ below for a detailed description.
 
 The _zmq_msg_t_ structure passed to _zmq_sendmsg()_ is nullified during the
 call. If you want to send the same message to multiple sockets you have to copy
-it using (e.g. using _zmq_msg_copy()_).
+it (e.g. using _zmq_msg_copy()_).
 
 NOTE: A successful invocation of _zmq_sendmsg()_ does not indicate that the
 message has been transmitted to the network, only that it has been queued on
@@ -63,6 +63,8 @@ ERRORS
 Non-blocking mode was requested and the message cannot be sent at the moment.
 *ENOTSUP*::
 The _zmq_sendmsg()_ operation is not supported by this socket type.
+*EINVAL*::
+The sender tried to send multipart data, which the socket type does not allow.
 *EFSM*::
 The _zmq_sendmsg()_ operation cannot be performed on this socket at the moment
 due to the socket not being in the appropriate state.  This error may occur with

@@ -48,7 +48,7 @@ _zmq_bind()_, thus allowing many-to-many relationships.
 
 .Thread safety
 0MQ 'sockets' are _not_ thread safe. Applications MUST NOT use a socket
-from multiple threads except after migrating a socket from one thread to 
+from multiple threads except after migrating a socket from one thread to
 another with a "full fence" memory barrier.
 
 .Socket types
@@ -56,73 +56,51 @@ The following sections present the socket types defined by 0MQ, grouped by the
 general _messaging pattern_ which is built from related socket types.
 
 
-Request-reply pattern
+Client-server pattern
 ~~~~~~~~~~~~~~~~~~~~~
-The request-reply pattern is used for sending requests from a ZMQ_REQ _client_
-to one or more ZMQ_REP _services_, and receiving subsequent replies to each
-request sent.
 
-The request-reply pattern is formally defined by http://rfc.zeromq.org/spec:28.
+The client-server pattern is used to allow a single 'ZMQ_SERVER' _server_ talk
+to one or more 'ZMQ_CLIENT' _clients_. The client always starts the conversation,
+after which either peer can send messages asynchronously, to the other.
 
-ZMQ_REQ
-^^^^^^^
-A socket of type 'ZMQ_REQ' is used by a _client_ to send requests to and
-receive replies from a _service_. This socket type allows only an alternating
-sequence of _zmq_send(request)_ and subsequent _zmq_recv(reply)_ calls. Each
-request sent is round-robined among all _services_, and each reply received is
-matched with the last issued request.
+The client-server pattern is formally defined by http://rfc.zeromq.org/spec:41.
 
-If no services are available, then any send operation on the socket shall 
-block until at least one _service_ becomes available. The REQ socket shall
-not discard messages.
+Note: this pattern is meant to eventually deprecate the use of 'ZMQ_DEALER' and
+'ZMQ_ROUTER' to build client-server architectures, as well as 'ZMQ_REP' and
+'ZMQ_REQ' for request-reply.
 
-[horizontal]
-.Summary of ZMQ_REQ characteristics
-Compatible peer sockets:: 'ZMQ_REP', 'ZMQ_ROUTER'
-Direction:: Bidirectional
-Send/receive pattern:: Send, Receive, Send, Receive, ...
-Outgoing routing strategy:: Round-robin
-Incoming routing strategy:: Last peer
-Action in mute state:: Block
-
-
-ZMQ_REP
-^^^^^^^
-A socket of type 'ZMQ_REP' is used by a _service_ to receive requests from and
-send replies to a _client_. This socket type allows only an alternating
-sequence of _zmq_recv(request)_ and subsequent _zmq_send(reply)_ calls. Each
-request received is fair-queued from among all _clients_, and each reply sent
-is routed to the _client_ that issued the last request. If the original
-requester does not exist any more the reply is silently discarded.
-
-[horizontal]
-.Summary of ZMQ_REP characteristics
-Compatible peer sockets:: 'ZMQ_REQ', 'ZMQ_DEALER'
-Direction:: Bidirectional
-Send/receive pattern:: Receive, Send, Receive, Send, ...
-Incoming routing strategy:: Fair-queued
-Outgoing routing strategy:: Last peer
-
-
-ZMQ_DEALER
+ZMQ_CLIENT
 ^^^^^^^^^^
-A socket of type 'ZMQ_DEALER' is an advanced pattern used for extending
-request/reply sockets. Each message sent is round-robined among all connected
-peers, and each message received is fair-queued from all connected peers.
+A 'ZMQ_CLIENT' socket talks to a 'ZMQ_SERVER' socket. Either peer can connect,
+though the usual and recommended model is to bind the 'ZMQ_SERVER' and connect
+the 'ZMQ_CLIENT'.
 
-When a 'ZMQ_DEALER' socket enters the 'mute' state due to having reached the
-high water mark for all peers, or if there are no peers at all, then any
-linkzmq:zmq_send[3] operations on the socket shall block until the mute
-state ends or at least one peer becomes available for sending; messages are not
-discarded.
+If the 'ZMQ_CLIENT' socket has established a connection, linkzmq:zmq_send[3]
+will accept messages, queue them, and send them as rapidly as the network
+allows. The outgoing buffer limit is defined by the high water mark for the
+socket. If the outgoing buffer is full, or if there is no connected peer,
+linkzmq:zmq_send[3] will block, by default. The 'ZMQ_CLIENT' socket will not
+drop messages.
 
-When a 'ZMQ_DEALER' socket is connected to a 'ZMQ_REP' socket each message sent
-must consist of an empty message part, the _delimiter_, followed by one or more
-_body parts_.
+When a 'ZMQ_CLIENT' socket is connected to multiple 'ZMQ_SERVER' sockets,
+outgoing messages are distributed between connected peers on a round-robin
+basis. Likewise, the 'ZMQ_CLIENT' socket receives messages fairly from each
+connected  peer. This usage is sensible only for stateless protocols.
+
+'ZMQ_CLIENT' sockets are threadsafe and can be used from multiple threads
+at the same time. Note that replies from a 'ZMQ_SERVER' socket will go to
+the first client thread that calls libzmq:zmq_msg_recv. If you need to get
+replies back to the originating thread, use one 'ZMQ_CLIENT' socket per
+thread.
+
+NOTE: 'ZMQ_CLIENT' sockets are threadsafe. They do not accept the ZMQ_SNDMORE
+option on sends not ZMQ_RCVMORE on receives. This limits them to single part
+data. The intention is to extend the API to allow scatter/gather of multi-part
+data.
 
 [horizontal]
-.Summary of ZMQ_DEALER characteristics
-Compatible peer sockets:: 'ZMQ_ROUTER', 'ZMQ_REP', 'ZMQ_DEALER'
+.Summary of ZMQ_CLIENT characteristics
+Compatible peer sockets:: 'ZMQ_SERVER'
 Direction:: Bidirectional
 Send/receive pattern:: Unrestricted
 Outgoing routing strategy:: Round-robin
@@ -130,38 +108,35 @@ Incoming routing strategy:: Fair-queued
 Action in mute state:: Block
 
 
-ZMQ_ROUTER
+ZMQ_SERVER
 ^^^^^^^^^^
-A socket of type 'ZMQ_ROUTER' is an advanced socket type used for extending
-request/reply sockets. When receiving messages a 'ZMQ_ROUTER' socket shall
-prepend a message part containing the _identity_ of the originating peer to the
-message before passing it to the application. Messages received are fair-queued
-from among all connected peers. When sending messages a 'ZMQ_ROUTER' socket shall
-remove the first part of the message and use it to determine the _identity_ of
-the peer the message shall be routed to. If the peer does not exist anymore
-the message shall be silently discarded by default, unless 'ZMQ_ROUTER_MANDATORY'
-socket option is set to '1'.
+A 'ZMQ_SERVER' socket talks to a set of 'ZMQ_CLIENT' sockets. A 'ZMQ_SERVER'
+socket can only reply to an incoming message: the 'ZMQ_CLIENT' peer must
+always initiate a conversation.
 
-When a 'ZMQ_ROUTER' socket enters the 'mute' state due to having reached the
-high water mark for all peers, then any messages sent to the socket shall be dropped
-until the mute state ends. Likewise, any messages routed to a peer for which
-the individual high water mark has been reached shall also be dropped.
+Each received message has a 'routing_id' that is a 32-bit unsigned integer.
+The application can fetch this with linkzmq:zmq_msg_routing_id[3]. To send
+a message to a given 'ZMQ_CLIENT' peer the application must set the peer's
+'routing_id' on the message, using linkzmq:zmq_msg_set_routing_id[3].
 
-When a 'ZMQ_REQ' socket is connected to a 'ZMQ_ROUTER' socket, in addition to the
-_identity_ of the originating peer each message received shall contain an empty
-_delimiter_ message part. Hence, the entire structure of each received message
-as seen by the application becomes: one or more _identity_ parts, _delimiter_
-part, one or more _body parts_. When sending replies to a 'ZMQ_REQ' socket the
-application must include the _delimiter_ part.
+If the 'routing_id' is not specified, or does not refer to a connected client
+peer, the send call will fail with EHOSTUNREACH. If the outgoing buffer for
+the client peer is full, the send call will fail with EAGAIN. The 'ZMQ_SERVER'
+socket shall not drop messages, nor shall it block.
+
+NOTE: 'ZMQ_SERVER' sockets are threadsafe. They do not accept the ZMQ_SNDMORE
+option on sends not ZMQ_RCVMORE on receives. This limits them to single part
+data. The intention is to extend the API to allow scatter/gather of multi-part
+data.
 
 [horizontal]
-.Summary of ZMQ_ROUTER characteristics
-Compatible peer sockets:: 'ZMQ_DEALER', 'ZMQ_REQ', 'ZMQ_ROUTER'
+.Summary of ZMQ_SERVER characteristics
+Compatible peer sockets:: 'ZMQ_CLIENT'
 Direction:: Bidirectional
 Send/receive pattern:: Unrestricted
 Outgoing routing strategy:: See text
 Incoming routing strategy:: Fair-queued
-Action in mute state:: Drop
+Action in mute state:: Return EAGAIN
 
 
 Publish-subscribe pattern
@@ -314,8 +289,7 @@ becomes available for sending; messages are not discarded.
 
 NOTE: 'ZMQ_PAIR' sockets are designed for inter-thread communication across
 the linkzmq:zmq_inproc[7] transport and do not implement functionality such
-as auto-reconnection. 'ZMQ_PAIR' sockets are considered experimental and may
-have other missing or broken aspects.
+as auto-reconnection.
 
 [horizontal]
 .Summary of ZMQ_PAIR characteristics
@@ -329,26 +303,26 @@ Action in mute state:: Block
 
 Native Pattern
 ~~~~~~~~~~~~~~
-The native pattern is used for communicating with TCP peers and allows 
+The native pattern is used for communicating with TCP peers and allows
 asynchronous requests and replies in either direction.
 
 
 ZMQ_STREAM
 ^^^^^^^^^^
-A socket of type 'ZMQ_STREAM' is used to send and receive TCP data from a 
-non-0MQ peer, when using the tcp:// transport. A 'ZMQ_STREAM' socket can 
+A socket of type 'ZMQ_STREAM' is used to send and receive TCP data from a
+non-0MQ peer, when using the tcp:// transport. A 'ZMQ_STREAM' socket can
 act as client and/or server, sending and/or receiving TCP data asynchronously.
 
 When receiving TCP data, a 'ZMQ_STREAM' socket shall prepend a message part
-containing the _identity_ of the originating peer to the message before passing 
-it to the application. Messages received are fair-queued from among all 
-connected peers. 
+containing the _identity_ of the originating peer to the message before passing
+it to the application. Messages received are fair-queued from among all
+connected peers.
 
-When sending TCP data, a 'ZMQ_STREAM' socket shall remove the first part of the 
-message and use it to determine the _identity_ of the peer the message shall be 
+When sending TCP data, a 'ZMQ_STREAM' socket shall remove the first part of the
+message and use it to determine the _identity_ of the peer the message shall be
 routed to, and unroutable messages shall cause an EHOSTUNREACH or EAGAIN error.
 
-To open a connection to a server, use the zmq_connect call, and then fetch the 
+To open a connection to a server, use the zmq_connect call, and then fetch the
 socket identity using the ZMQ_IDENTITY zmq_getsockopt call.
 
 To close a specific connection, send the identity frame followed by a
@@ -372,6 +346,116 @@ Send/receive pattern:: Unrestricted
 Outgoing routing strategy:: See text
 Incoming routing strategy:: Fair-queued
 Action in mute state:: EAGAIN
+
+
+Request-reply pattern
+~~~~~~~~~~~~~~~~~~~~~
+The request-reply pattern is used for sending requests from a ZMQ_REQ _client_
+to one or more ZMQ_REP _services_, and receiving subsequent replies to each
+request sent.
+
+The request-reply pattern is formally defined by http://rfc.zeromq.org/spec:28.
+
+Note: this pattern will be deprecated in favor of the client-server pattern.
+
+ZMQ_REQ
+^^^^^^^
+A socket of type 'ZMQ_REQ' is used by a _client_ to send requests to and
+receive replies from a _service_. This socket type allows only an alternating
+sequence of _zmq_send(request)_ and subsequent _zmq_recv(reply)_ calls. Each
+request sent is round-robined among all _services_, and each reply received is
+matched with the last issued request.
+
+If no services are available, then any send operation on the socket shall
+block until at least one _service_ becomes available. The REQ socket shall
+not discard messages.
+
+[horizontal]
+.Summary of ZMQ_REQ characteristics
+Compatible peer sockets:: 'ZMQ_REP', 'ZMQ_ROUTER'
+Direction:: Bidirectional
+Send/receive pattern:: Send, Receive, Send, Receive, ...
+Outgoing routing strategy:: Round-robin
+Incoming routing strategy:: Last peer
+Action in mute state:: Block
+
+
+ZMQ_REP
+^^^^^^^
+A socket of type 'ZMQ_REP' is used by a _service_ to receive requests from and
+send replies to a _client_. This socket type allows only an alternating
+sequence of _zmq_recv(request)_ and subsequent _zmq_send(reply)_ calls. Each
+request received is fair-queued from among all _clients_, and each reply sent
+is routed to the _client_ that issued the last request. If the original
+requester does not exist any more the reply is silently discarded.
+
+[horizontal]
+.Summary of ZMQ_REP characteristics
+Compatible peer sockets:: 'ZMQ_REQ', 'ZMQ_DEALER'
+Direction:: Bidirectional
+Send/receive pattern:: Receive, Send, Receive, Send, ...
+Incoming routing strategy:: Fair-queued
+Outgoing routing strategy:: Last peer
+
+
+ZMQ_DEALER
+^^^^^^^^^^
+A socket of type 'ZMQ_DEALER' is an advanced pattern used for extending
+request/reply sockets. Each message sent is round-robined among all connected
+peers, and each message received is fair-queued from all connected peers.
+
+When a 'ZMQ_DEALER' socket enters the 'mute' state due to having reached the
+high water mark for all peers, or if there are no peers at all, then any
+linkzmq:zmq_send[3] operations on the socket shall block until the mute
+state ends or at least one peer becomes available for sending; messages are not
+discarded.
+
+When a 'ZMQ_DEALER' socket is connected to a 'ZMQ_REP' socket each message sent
+must consist of an empty message part, the _delimiter_, followed by one or more
+_body parts_.
+
+[horizontal]
+.Summary of ZMQ_DEALER characteristics
+Compatible peer sockets:: 'ZMQ_ROUTER', 'ZMQ_REP', 'ZMQ_DEALER'
+Direction:: Bidirectional
+Send/receive pattern:: Unrestricted
+Outgoing routing strategy:: Round-robin
+Incoming routing strategy:: Fair-queued
+Action in mute state:: Block
+
+
+ZMQ_ROUTER
+^^^^^^^^^^
+A socket of type 'ZMQ_ROUTER' is an advanced socket type used for extending
+request/reply sockets. When receiving messages a 'ZMQ_ROUTER' socket shall
+prepend a message part containing the _identity_ of the originating peer to the
+message before passing it to the application. Messages received are fair-queued
+from among all connected peers. When sending messages a 'ZMQ_ROUTER' socket shall
+remove the first part of the message and use it to determine the _identity_ of
+the peer the message shall be routed to. If the peer does not exist anymore
+the message shall be silently discarded by default, unless 'ZMQ_ROUTER_MANDATORY'
+socket option is set to '1'.
+
+When a 'ZMQ_ROUTER' socket enters the 'mute' state due to having reached the
+high water mark for all peers, then any messages sent to the socket shall be dropped
+until the mute state ends. Likewise, any messages routed to a peer for which
+the individual high water mark has been reached shall also be dropped.
+
+When a 'ZMQ_REQ' socket is connected to a 'ZMQ_ROUTER' socket, in addition to the
+_identity_ of the originating peer each message received shall contain an empty
+_delimiter_ message part. Hence, the entire structure of each received message
+as seen by the application becomes: one or more _identity_ parts, _delimiter_
+part, one or more _body parts_. When sending replies to a 'ZMQ_REQ' socket the
+application must include the _delimiter_ part.
+
+[horizontal]
+.Summary of ZMQ_ROUTER characteristics
+Compatible peer sockets:: 'ZMQ_DEALER', 'ZMQ_REQ', 'ZMQ_ROUTER'
+Direction:: Bidirectional
+Send/receive pattern:: Unrestricted
+Outgoing routing strategy:: See text
+Incoming routing strategy:: Fair-queued
+Action in mute state:: Drop
 
 
 RETURN VALUE

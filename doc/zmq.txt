@@ -162,6 +162,9 @@ Local inter-process communication transport::
 Local in-process (inter-thread) communication transport::
     linkzmq:zmq_inproc[7]
 
+Virtual Machine Communications Interface (VMC) transport::
+    linkzmq:zmq_vmci[7]
+
 
 Proxies
 ~~~~~~~

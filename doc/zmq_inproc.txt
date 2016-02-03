@@ -41,9 +41,11 @@ Connecting a socket
 ~~~~~~~~~~~~~~~~~~~
 When connecting a 'socket' to a peer address using _zmq_connect()_ with the
 'inproc' transport, the 'endpoint' shall be interpreted as an arbitrary string
-identifying the 'name' to connect to.  The 'name' must have been previously
-created by assigning it to at least one 'socket' within the same 0MQ 'context'
-as the 'socket' being connected.
+identifying the 'name' to connect to.  Before version 4.0 he 'name' must have
+been previously created by assigning it to at least one 'socket' within the
+same 0MQ 'context' as the 'socket' being connected.  Since version 4.0 the
+order of _zmq_bind()_ and _zmq_connect()_ does not matter just like for the tcp
+transport type.
 
 
 EXAMPLES
@@ -76,6 +78,7 @@ linkzmq:zmq_connect[3]
 linkzmq:zmq_ipc[7]
 linkzmq:zmq_tcp[7]
 linkzmq:zmq_pgm[7]
+linkzmq:zmq_vmci[7]
 linkzmq:zmq[7]
 
 

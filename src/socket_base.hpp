@@ -1,17 +1,27 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -80,6 +90,8 @@ namespace zmq
         int term_endpoint (const char *addr_);
         int send (zmq::msg_t *msg_, int flags_);
         int recv (zmq::msg_t *msg_, int flags_);
+        int add_signaler (signaler_t *s);
+        int remove_signaler (signaler_t *s);
         int close ();
 
         //  These functions are used by the polling mechanism to determine
@@ -87,7 +99,11 @@ namespace zmq
         bool has_in ();
         bool has_out ();
 
-        //  Using this function reaper thread ask the socket to regiter with
+        //  Joining and leaving groups
+        int join (const char *group);
+        int leave (const char *group);
+
+        //  Using this function reaper thread ask the socket to register with
         //  its poller.
         void start_reaping (poller_t *poller_);
 
@@ -156,15 +172,19 @@ namespace zmq
         virtual void xhiccuped (pipe_t *pipe_);
         virtual void xpipe_terminated (pipe_t *pipe_) = 0;
 
+        //  the default implementation assumes that joub and leave are not supported.
+        virtual int xjoin (const char *group_);
+        virtual int xleave (const char *group_);
+
         //  Delay actual destruction of the socket.
         void process_destroy ();
 
-        // Socket event data dispath
+        // Socket event data dispatch
         void monitor_event (int event_, int value_, const std::string& addr_);
 
         // Monitor socket cleanup
-        void stop_monitor ();
-        
+        void stop_monitor (bool send_monitor_stopped_event_ = true);
+
         // Next assigned name on a zmq_connect() call used by ROUTER and STREAM socket types
         std::string connect_rid;
 
@@ -222,6 +242,8 @@ namespace zmq
         void process_bind (zmq::pipe_t *pipe_);
         void process_term (int linger_);
 
+        void update_pipe_options(int option_);
+
         //  Socket's mailbox object.
         i_mailbox* mailbox;
 
@@ -267,10 +289,9 @@ namespace zmq
         mutex_t sync;
 
         socket_base_t (const socket_base_t&);
-        const socket_base_t &operator = (const socket_base_t&);        
+        const socket_base_t &operator = (const socket_base_t&);
     };
 
 }
 
 #endif
-

@@ -1,17 +1,27 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -72,7 +82,7 @@ int zmq::pgm_socket_t::init_address (const char *network_,
     }
 
     *port_number = atoi (port_delim + 1);
-  
+
     char network [256];
     if (port_delim - network_ >= (int) sizeof (network) - 1) {
         errno = EINVAL;
@@ -185,29 +195,29 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
     }
 
     {
-		const int rcvbuf = (int) options.rcvbuf;
-		if (rcvbuf) {
-		    if (!pgm_setsockopt (sock, SOL_SOCKET, SO_RCVBUF, &rcvbuf,
-		          sizeof (rcvbuf)))
-		        goto err_abort;
-		}
+        const int rcvbuf = (int) options.rcvbuf;
+        if (rcvbuf >= 0) {
+            if (!pgm_setsockopt (sock, SOL_SOCKET, SO_RCVBUF, &rcvbuf,
+                  sizeof (rcvbuf)))
+                goto err_abort;
+        }
 
-		const int sndbuf = (int) options.sndbuf;
-		if (sndbuf) {
-		    if (!pgm_setsockopt (sock, SOL_SOCKET, SO_SNDBUF, &sndbuf,
-		          sizeof (sndbuf)))
-		        goto err_abort;
-		}
+        const int sndbuf = (int) options.sndbuf;
+        if (sndbuf >= 0) {
+            if (!pgm_setsockopt (sock, SOL_SOCKET, SO_SNDBUF, &sndbuf,
+                  sizeof (sndbuf)))
+                goto err_abort;
+        }
 
-		const int max_tpdu = (int) pgm_max_tpdu;
-		if (!pgm_setsockopt (sock, IPPROTO_PGM, PGM_MTU, &max_tpdu,
-		      sizeof (max_tpdu)))
-		    goto err_abort;
+        const int max_tpdu = (int) options.multicast_maxtpdu;
+        if (!pgm_setsockopt (sock, IPPROTO_PGM, PGM_MTU, &max_tpdu,
+              sizeof (max_tpdu)))
+            goto err_abort;
     }
 
     if (receiver) {
         const int recv_only        = 1,
-                  rxw_max_tpdu     = (int) pgm_max_tpdu,
+                  rxw_max_tpdu     = (int) options.multicast_maxtpdu,
                   rxw_sqns         = compute_sqns (rxw_max_tpdu),
                   peer_expiry      = pgm_secs (300),
                   spmr_expiry      = pgm_msecs (25),
@@ -240,7 +250,7 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
     else {
         const int send_only        = 1,
                   max_rte      = (int) ((options.rate * 1000) / 8),
-                  txw_max_tpdu     = (int) pgm_max_tpdu,
+                  txw_max_tpdu     = (int) options.multicast_maxtpdu,
                   txw_sqns         = compute_sqns (txw_max_tpdu),
                   ambient_spm      = pgm_secs (30),
                   heartbeat_spm[]  = { pgm_msecs (100),
@@ -324,28 +334,28 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
 
     //  Set IP level parameters.
     {
-		// Multicast loopback disabled by default
-		const int multicast_loop = 0;
-		if (!pgm_setsockopt (sock, IPPROTO_PGM, PGM_MULTICAST_LOOP,
-		      &multicast_loop, sizeof (multicast_loop)))
-		    goto err_abort;
+        // Multicast loopback disabled by default
+        const int multicast_loop = 0;
+        if (!pgm_setsockopt (sock, IPPROTO_PGM, PGM_MULTICAST_LOOP,
+              &multicast_loop, sizeof (multicast_loop)))
+            goto err_abort;
 
-		const int multicast_hops = options.multicast_hops;
-		if (!pgm_setsockopt (sock, IPPROTO_PGM, PGM_MULTICAST_HOPS,
-		        &multicast_hops, sizeof (multicast_hops)))
-		    goto err_abort;
+        const int multicast_hops = options.multicast_hops;
+        if (!pgm_setsockopt (sock, IPPROTO_PGM, PGM_MULTICAST_HOPS,
+                &multicast_hops, sizeof (multicast_hops)))
+            goto err_abort;
 
-		//  Expedited Forwarding PHB for network elements, no ECN.
-		//  Ignore return value due to varied runtime support.
-		const int dscp = 0x2e << 2;
-		if (AF_INET6 != sa_family)
-		    pgm_setsockopt (sock, IPPROTO_PGM, PGM_TOS,
-		       &dscp, sizeof (dscp));
+        //  Expedited Forwarding PHB for network elements, no ECN.
+        //  Ignore return value due to varied runtime support.
+        const int dscp = 0x2e << 2;
+        if (AF_INET6 != sa_family)
+            pgm_setsockopt (sock, IPPROTO_PGM, PGM_TOS,
+               &dscp, sizeof (dscp));
 
-		const int nonblocking = 1;
-		if (!pgm_setsockopt (sock, IPPROTO_PGM, PGM_NOBLOCK,
-		      &nonblocking, sizeof (nonblocking)))
-		    goto err_abort;
+        const int nonblocking = 1;
+        if (!pgm_setsockopt (sock, IPPROTO_PGM, PGM_NOBLOCK,
+              &nonblocking, sizeof (nonblocking)))
+            goto err_abort;
     }
 
     //  Connect PGM transport to start state machine.
@@ -392,13 +402,13 @@ zmq::pgm_socket_t::~pgm_socket_t ()
 {
     if (pgm_msgv)
         free (pgm_msgv);
-    if (sock) 
+    if (sock)
         pgm_close (sock, TRUE);
 }
 
 //  Get receiver fds. receive_fd_ is signaled for incoming packets,
 //  waiting_pipe_fd_ is signaled for state driven events and data.
-void zmq::pgm_socket_t::get_receiver_fds (fd_t *receive_fd_, 
+void zmq::pgm_socket_t::get_receiver_fds (fd_t *receive_fd_,
     fd_t *waiting_pipe_fd_)
 {
     socklen_t socklen;
@@ -420,12 +430,12 @@ void zmq::pgm_socket_t::get_receiver_fds (fd_t *receive_fd_,
     zmq_assert (socklen == sizeof (*waiting_pipe_fd_));
 }
 
-//  Get fds and store them into user allocated memory. 
+//  Get fds and store them into user allocated memory.
 //  send_fd is for non-blocking send wire notifications.
 //  receive_fd_ is for incoming back-channel protocol packets.
 //  rdata_notify_fd_ is raised for waiting repair transmissions.
 //  pending_notify_fd_ is for state driven events.
-void zmq::pgm_socket_t::get_sender_fds (fd_t *send_fd_, fd_t *receive_fd_, 
+void zmq::pgm_socket_t::get_sender_fds (fd_t *send_fd_, fd_t *receive_fd_,
     fd_t *rdata_notify_fd_, fd_t *pending_notify_fd_)
 {
     socklen_t socklen;
@@ -465,7 +475,7 @@ void zmq::pgm_socket_t::get_sender_fds (fd_t *send_fd_, fd_t *receive_fd_,
 size_t zmq::pgm_socket_t::send (unsigned char *data_, size_t data_len_)
 {
     size_t nbytes = 0;
-   
+
     const int status = pgm_send (sock, data_, data_len_, &nbytes);
 
     //  We have to write all data as one packet.
@@ -541,7 +551,7 @@ ssize_t zmq::pgm_socket_t::receive (void **raw_data_, const pgm_tsi_t **tsi_)
 {
     size_t raw_data_len = 0;
 
-    //  We just sent all data from pgm_transport_recvmsgv up 
+    //  We just sent all data from pgm_transport_recvmsgv up
     //  and have to return 0 that another engine in this thread is scheduled.
     if (nbytes_rec == nbytes_processed && nbytes_rec > 0) {
 
@@ -562,7 +572,7 @@ ssize_t zmq::pgm_socket_t::receive (void **raw_data_, const pgm_tsi_t **tsi_)
         zmq_assert (nbytes_processed == 0);
         zmq_assert (nbytes_rec == 0);
 
-        //  Receive a vector of Application Protocol Domain Unit's (APDUs) 
+        //  Receive a vector of Application Protocol Domain Unit's (APDUs)
         //  from the transport.
         pgm_error_t *pgm_error = NULL;
 
@@ -580,7 +590,7 @@ ssize_t zmq::pgm_socket_t::receive (void **raw_data_, const pgm_tsi_t **tsi_)
 
             zmq_assert (nbytes_rec == 0);
 
-            //  In case if no RDATA/ODATA caused POLLIN 0 is 
+            //  In case if no RDATA/ODATA caused POLLIN 0 is
             //  returned.
             nbytes_rec = 0;
             errno = EBUSY;
@@ -636,8 +646,8 @@ ssize_t zmq::pgm_socket_t::receive (void **raw_data_, const pgm_tsi_t **tsi_)
 
     // Only one APDU per pgm_msgv_t structure is allowed.
     zmq_assert (pgm_msgv [pgm_msgv_processed].msgv_len == 1);
- 
-    struct pgm_sk_buff_t* skb = 
+
+    struct pgm_sk_buff_t* skb =
         pgm_msgv [pgm_msgv_processed].msgv_skb [0];
 
     //  Take pointers from pgm_msgv_t structure.
@@ -669,7 +679,7 @@ void zmq::pgm_socket_t::process_upstream ()
     zmq_assert (status != PGM_IO_STATUS_ERROR);
 
     //  No data should be returned.
-    zmq_assert (dummy_bytes == 0 && (status == PGM_IO_STATUS_TIMER_PENDING || 
+    zmq_assert (dummy_bytes == 0 && (status == PGM_IO_STATUS_TIMER_PENDING ||
         status == PGM_IO_STATUS_RATE_LIMITED ||
         status == PGM_IO_STATUS_WOULD_BLOCK));
 
@@ -688,7 +698,7 @@ int zmq::pgm_socket_t::compute_sqns (int tpdu_)
 {
     //  Convert rate into B/ms.
     uint64_t rate = uint64_t (options.rate) / 8;
-        
+
     //  Compute the size of the buffer in bytes.
     uint64_t size = uint64_t (options.recovery_ivl) * rate;
 

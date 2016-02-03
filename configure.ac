@@ -31,9 +31,10 @@ AC_SUBST(PACKAGE_VERSION)
 # ZeroMQ version 3.0: 2:0:0 (ABI version 2)
 # ZeroMQ version 3.1: 3:0:0 (ABI version 3)
 # ZeroMQ version 4.0: 4:0:0 (ABI version 4)
+# ZeroMQ version 4.1: 5:0:0 (ABI version 5)
 #
 # libzmq -version-info current:revision:age
-LTVER="4:0:0"
+LTVER="5:0:0"
 AC_SUBST(LTVER)
 
 # Take a copy of original flags
@@ -137,6 +138,7 @@ libzmq_on_mingw32="no"
 libzmq_on_cygwin="no"
 libzmq_on_android="no"
 libzmq_on_linux="no"
+libzmq_on_gnu="no"
 
 # Set some default features required by 0MQ code.
 CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE $CPPFLAGS"
@@ -183,14 +185,15 @@ case "${host_os}" in
         if test "x$solaris_has_atomic" = "xno"; then
             AC_DEFINE(ZMQ_FORCE_MUTEXES, 1, [Force to use mutexes])
         fi
-        # ssp library is required for libsodium on Solaris-like systems
-        LDFLAGS="-lssp $LDFLAGS"
-        CPPFLAGS="$CPPFLAGS -Wno-long-long"
         ;;
     *freebsd*)
         # Define on FreeBSD to enable all library features
         CPPFLAGS="-D__BSD_VISIBLE $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_FREEBSD, 1, [Have FreeBSD OS])
+        ;;
+    *dragonfly*)
+        CPPFLAGS="-D__BSD_VISIBLE $CPPFLAGS"
+        AC_DEFINE(ZMQ_HAVE_DRAGONFLY, 1, [Have DragonFly OS])
         ;;
     *darwin*)
         # Define on Darwin to enable all library features
@@ -263,7 +266,7 @@ case "${host_os}" in
         libzmq_dso_visibility="no"
 
         if test "x$enable_static" = "xyes"; then
-            AC_MSG_ERROR([Building static libraries is not supported under MinGW32])
+            CPPFLAGS="-DZMQ_STATIC"
         fi
         
 	# Set FD_SETSIZE to 1024
@@ -278,6 +281,15 @@ case "${host_os}" in
         if test "x$enable_static" = "xyes"; then
             AC_MSG_ERROR([Building static libraries is not supported under Cygwin])
         fi
+        ;;
+    gnu*)
+        # Define on GNU/Hurd to enable all library features. Define if using a gnu compiler
+        if test "x$GXX" = "xyes"; then
+            CPPFLAGS="-D_GNU_SOURCE $CPPFLAGS"
+        fi
+        AC_DEFINE(ZMQ_HAVE_GNU, 1, [Have GNU/Hurd OS])
+        libzmq_on_gnu="yes"
+	AC_CHECK_LIB(rt, sem_init)
         ;;
     *)
         AC_MSG_ERROR([unsupported system: ${host_os}.])
@@ -415,7 +427,7 @@ fi
 have_sodium_library="no"
 
 AC_ARG_WITH([libsodium], [AS_HELP_STRING([--with-libsodium],
-    [require libzmq build with libsodium. Requires pkg-config [default=no]])],
+    [require libzmq build with libsodium crypto library. Requires pkg-config [default=yes]])],
     [require_libsodium_ext=$withval],
     [require_libsodium_ext=yes])
 
@@ -426,7 +438,16 @@ fi
 
 if test "x$have_sodium_library" != "xno"; then
     AC_DEFINE(HAVE_LIBSODIUM, 1, [The libsodium library is to be used.])
+
+    # ssp library is required for libsodium on Solaris-like systems
+    case "${host_os}" in
+        *solaris*)
+            LDFLAGS="-lssp $LDFLAGS"
+            CPPFLAGS="$CPPFLAGS -Wno-long-long"
+        ;;
+    esac
 fi
+
 
 AM_CONDITIONAL(HAVE_SODIUM, test "x$have_sodium_library" != "xno")
 
@@ -468,7 +489,7 @@ AC_MSG_CHECKING("with_norm_ext = ${with_norm_ext}")
 if test "x$with_norm_ext" != "xno"; then
     AC_DEFINE(ZMQ_HAVE_NORM, 1, [Have NORM protocol extension])
 
-    if test "x$wwith_norm_ext" != "xyes"; then
+    if test "x$with_norm_ext" != "xyes"; then
         norm_path="${with_norm_ext}"
         LIBZMQ_EXTRA_CXXFLAGS="-I${norm_path}/include ${LIBZMQ_EXTRA_CXXFLAGS}"
         LIBZMQ_EXTRA_LDFLAGS="-I${norm_path}/include ${LIBZMQ_EXTRA_LDFLAGS}"
@@ -476,6 +497,28 @@ if test "x$with_norm_ext" != "xno"; then
 
     LIBS="-lnorm $LIBS"
 fi
+
+# build using vmci
+have_vmci_library="no"
+
+AC_ARG_WITH([vmci], [AS_HELP_STRING([--with-vmci],
+    [build libzmq with VMCI transport [default=no]])],
+    [have_vmci_ext=$withval],
+    [have_vmci_ext=no])
+
+if test "x$have_vmci_ext" != "xno"; then
+    AC_DEFINE(ZMQ_HAVE_VMCI, 1, [Have VMCI transport])
+
+    if test "x$have_vmci_ext" != "xyes"; then
+        vmci_path="${have_vmci_ext}"
+        LIBZMQ_VMCI_CXXFLAGS="-I${vmci_path}"
+        LIBZMQ_VMCI_LDFLAGS="-I${vmci_path}"
+        LIBZMQ_EXTRA_CXXFLAGS="${LIBZMQ_VMCI_CXXFLAGS} ${LIBZMQ_EXTRA_CXXFLAGS}"
+        LIBZMQ_EXTRA_LDFLAGS="${LIBZMQ_VMCI_LDFLAGS} ${LIBZMQ_EXTRA_LDFLAGS}"
+    fi
+fi
+
+AM_CONDITIONAL(HAVE_VMCI, test "x$have_vmci_ext" != "xno")
 
 # Set -Wall, -Werror and -pedantic
 AC_LANG_PUSH([C++])
@@ -497,6 +540,7 @@ AM_CONDITIONAL(ON_MINGW, test "x$libzmq_on_mingw32" = "xyes")
 AM_CONDITIONAL(ON_CYGWIN, test "x$libzmq_on_cygwin" = "xyes")
 AM_CONDITIONAL(ON_ANDROID, test "x$libzmq_on_android" = "xyes")
 AM_CONDITIONAL(ON_LINUX, test "x$libzmq_on_linux" = "xyes")
+AM_CONDITIONAL(ON_GNU, test "x$libzmq_on_gnu" = "xyes")
 
 # Check for __atomic_Xxx compiler intrinsics
 AC_LANG_PUSH([C++])
@@ -556,6 +600,9 @@ AC_SUBST(LIBZMQ_EXTRA_CFLAGS)
 AC_SUBST(LIBZMQ_EXTRA_CXXFLAGS)
 AC_SUBST(LIBZMQ_EXTRA_LDFLAGS)
 
+AC_SUBST(LIBZMQ_VMCI_CXXFLAGS)
+AC_SUBST(LIBZMQ_VMCI_LDFLAGS)
+
 # set pkgconfigdir, allow override
 AC_ARG_WITH([pkgconfigdir],
     AS_HELP_STRING([--with-pkgconfigdir=PATH],
@@ -568,7 +615,8 @@ AC_CONFIG_FILES([ \
     Makefile \
     src/libzmq.pc \
     doc/Makefile \
+    builds/Makefile \
     builds/msvc/Makefile \
-    builds/redhat/zeromq.spec])
+    packaging/redhat/zeromq.spec])
 
 AC_OUTPUT

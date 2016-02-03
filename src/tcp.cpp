@@ -1,22 +1,33 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "macros.hpp"
 #include "ip.hpp"
 #include "tcp.hpp"
 #include "err.hpp"
@@ -84,13 +95,13 @@ void zmq::set_tcp_receive_buffer (fd_t sockfd_, int bufsize_)
 void zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_, int keepalive_idle_, int keepalive_intvl_)
 {
     // These options are used only under certain #ifdefs below.
-    (void)keepalive_;
-    (void)keepalive_cnt_;
-    (void)keepalive_idle_;
-    (void)keepalive_intvl_;
+    LIBZMQ_UNUSED (keepalive_);
+    LIBZMQ_UNUSED (keepalive_cnt_);
+    LIBZMQ_UNUSED (keepalive_idle_);
+    LIBZMQ_UNUSED (keepalive_intvl_);
 
     // If none of the #ifdefs apply, then s_ is unused.
-    (void)s_;
+    LIBZMQ_UNUSED (s_);
 
     //  Tuning TCP keep-alives if platform allows it
     //  All values = -1 means skip and leave it for OS
@@ -142,7 +153,25 @@ void zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_, int 
 #endif // ZMQ_HAVE_WINDOWS
 }
 
-int zmq::tcp_write (fd_t s_, const void *data_, size_t size_)
+void zmq::tune_tcp_retransmit_timeout (fd_t sockfd_, int timeout_)
+{
+    if (timeout_ <= 0)
+        return;
+
+#if defined (ZMQ_HAVE_WINDOWS) && defined (TCP_MAXRT)
+    // msdn says it's supported in >= Vista, >= Windows Server 2003
+    timeout_ /= 1000;    // in seconds
+    int rc = setsockopt (sockfd_, IPPROTO_TCP, TCP_MAXRT, (char*) &timeout_,
+        sizeof(timeout_));
+    wsa_assert (rc != SOCKET_ERROR);
+#elif defined (TCP_USER_TIMEOUT)    // FIXME: should be ZMQ_HAVE_TCP_USER_TIMEOUT
+    int rc = setsockopt (sockfd_, IPPROTO_TCP, TCP_USER_TIMEOUT, &timeout_,
+        sizeof(timeout_));
+    errno_assert (rc == 0);
+#endif
+}
+
+ int zmq::tcp_write (fd_t s_, const void *data_, size_t size_)
 {
 #ifdef ZMQ_HAVE_WINDOWS
 
@@ -150,18 +179,25 @@ int zmq::tcp_write (fd_t s_, const void *data_, size_t size_)
 
     //  If not a single byte can be written to the socket in non-blocking mode
     //  we'll get an error (this may happen during the speculative write).
-    if (nbytes == SOCKET_ERROR && WSAGetLastError () == WSAEWOULDBLOCK)
+	const int last_error = WSAGetLastError();
+    if (nbytes == SOCKET_ERROR && last_error == WSAEWOULDBLOCK)
         return 0;
 
     //  Signalise peer failure.
     if (nbytes == SOCKET_ERROR && (
-          WSAGetLastError () == WSAENETDOWN ||
-          WSAGetLastError () == WSAENETRESET ||
-          WSAGetLastError () == WSAEHOSTUNREACH ||
-          WSAGetLastError () == WSAECONNABORTED ||
-          WSAGetLastError () == WSAETIMEDOUT ||
-          WSAGetLastError () == WSAECONNRESET))
+          last_error == WSAENETDOWN     ||
+          last_error == WSAENETRESET    ||
+          last_error == WSAEHOSTUNREACH ||
+          last_error == WSAECONNABORTED ||
+          last_error == WSAETIMEDOUT    ||
+          last_error == WSAECONNRESET
+		  ))
         return -1;
+
+    //  Circumvent a Windows bug; see https://support.microsoft.com/en-us/kb/201213
+    //  and https://zeromq.jira.com/browse/LIBZMQ-195
+    if (nbytes == SOCKET_ERROR && last_error == WSAENOBUFS)
+        return 0;
 
     wsa_assert (nbytes != SOCKET_ERROR);
     return nbytes;
@@ -182,7 +218,6 @@ int zmq::tcp_write (fd_t s_, const void *data_, size_t size_)
                    && errno != EBADF
                    && errno != EDESTADDRREQ
                    && errno != EFAULT
-                   && errno != EINVAL
                    && errno != EISCONN
                    && errno != EMSGSIZE
                    && errno != ENOMEM
@@ -205,21 +240,23 @@ int zmq::tcp_read (fd_t s_, void *data_, size_t size_)
     //  If not a single byte can be read from the socket in non-blocking mode
     //  we'll get an error (this may happen during the speculative read).
     if (rc == SOCKET_ERROR) {
-        if (WSAGetLastError () == WSAEWOULDBLOCK)
+        const int last_error = WSAGetLastError();
+        if (last_error == WSAEWOULDBLOCK) {
             errno = EAGAIN;
+        }
         else {
-            wsa_assert (WSAGetLastError () == WSAENETDOWN
-                     || WSAGetLastError () == WSAENETRESET
-                     || WSAGetLastError () == WSAECONNABORTED
-                     || WSAGetLastError () == WSAETIMEDOUT
-                     || WSAGetLastError () == WSAECONNRESET
-                     || WSAGetLastError () == WSAECONNREFUSED
-                     || WSAGetLastError () == WSAENOTCONN);
-            errno = wsa_error_to_errno (WSAGetLastError ());
+            wsa_assert (last_error == WSAENETDOWN   ||
+                last_error == WSAENETRESET	   ||
+                last_error == WSAECONNABORTED ||
+                last_error == WSAETIMEDOUT	   ||
+                last_error == WSAECONNRESET   ||
+                last_error == WSAECONNREFUSED ||
+                last_error == WSAENOTCONN);
+            errno = wsa_error_to_errno (last_error);
         }
     }
 
-    return rc == SOCKET_ERROR? -1: rc;
+    return rc == SOCKET_ERROR ? -1 : rc;
 
 #else
 
@@ -231,7 +268,6 @@ int zmq::tcp_read (fd_t s_, void *data_, size_t size_)
     if (rc == -1) {
         errno_assert (errno != EBADF
                    && errno != EFAULT
-                   && errno != EINVAL
                    && errno != ENOMEM
                    && errno != ENOTSOCK);
         if (errno == EWOULDBLOCK || errno == EINTR)

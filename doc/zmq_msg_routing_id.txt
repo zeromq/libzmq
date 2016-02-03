@@ -1,0 +1,61 @@
+zmq_msg_routing_id(3)
+=====================
+
+
+NAME
+----
+zmq_msg_routing_id - return routing ID for message, if any
+
+
+SYNOPSIS
+--------
+*uint32_t zmq_msg_routing_id (zmq_msg_t '*message');*
+
+
+DESCRIPTION
+-----------
+The _zmq_msg_routing_id()_ function returns the routing ID for the message,
+if any. The routing ID is set on all messages received from a 'ZMQ_SERVER'
+socket. To send a message to a 'ZMQ_SERVER' socket you must set the routing
+ID of a connected 'ZMQ_CLIENT' peer. Routing IDs are transient.
+
+
+RETURN VALUE
+------------
+The _zmq_msg_routing_id()_ function shall return zero if there is no routing
+ID, otherwise it shall return an unsigned 32-bit integer greater than zero.
+
+
+EXAMPLE
+-------
+.Receiving a client message and routing ID
+----
+void *ctx = zmq_ctx_new ();
+assert (ctx);
+
+void *server = zmq_socket (ctx, ZMQ_SERVER);
+assert (server);
+int rc = zmq_bind (server, "tcp://127.0.0.1:8080");
+assert (rc == 0);
+
+zmq_msg_t message;
+rc = zmq_msg_init (&message);
+assert (rc == 0);
+
+//  Receive a message from socket
+rc = zmq_msg_recv (server, &message, 0);
+assert (rc != -1);
+uint32_t routing_id = zmq_msg_routing_id (&message);
+assert (routing_id);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_msg_set_routing_id[3]
+
+
+AUTHORS
+-------
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

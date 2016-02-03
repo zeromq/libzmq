@@ -1,17 +1,27 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -113,6 +123,10 @@ int zmq::proxy (
         { control_, 0, ZMQ_POLLIN, 0 }
     };
     int qt_poll_items = (control_ ? 3 : 2);
+    zmq_pollitem_t itemsout [] = {
+        { frontend_, 0, ZMQ_POLLOUT, 0 },
+        { backend_, 0, ZMQ_POLLOUT, 0 }
+    };
 
     //  Proxy can be in these three states
     enum {
@@ -126,6 +140,16 @@ int zmq::proxy (
         rc = zmq_poll (&items [0], qt_poll_items, -1);
         if (unlikely (rc < 0))
             return -1;
+
+        //  Get the pollout separately because when combining this with pollin it maxes the CPU
+        //  because pollout shall most of the time return directly.
+        //  POLLOUT is only checked when frontend and backend sockets are not the same.
+        if (frontend_ != backend_) {
+            rc = zmq_poll (&itemsout [0], 2, 0);
+            if (unlikely (rc < 0)) {
+                return -1;
+            }
+        }
 
         //  Process a control command if any
         if (control_ && items [2].revents & ZMQ_POLLIN) {
@@ -160,15 +184,16 @@ int zmq::proxy (
         //  Process a request
         if (state == active
         &&  items [0].revents & ZMQ_POLLIN
-        &&  items [1].revents & ZMQ_POLLOUT) {
+        &&  (frontend_ == backend_ || itemsout [1].revents & ZMQ_POLLOUT)) {
             rc = forward(frontend_, backend_, capture_,msg);
             if (unlikely (rc < 0))
                 return -1;
         }
         //  Process a reply
         if (state == active
+        &&  frontend_ != backend_
         &&  items [1].revents & ZMQ_POLLIN
-        &&  items [0].revents & ZMQ_POLLOUT) {
+        &&  itemsout [0].revents & ZMQ_POLLOUT) {
             rc = forward(backend_, frontend_, capture_,msg);
             if (unlikely (rc < 0))
                 return -1;

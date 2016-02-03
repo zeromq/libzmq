@@ -1,22 +1,33 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "macros.hpp"
 #include "platform.hpp"
 
 #if defined ZMQ_HAVE_OPENPGM
@@ -79,8 +90,9 @@ void zmq::pgm_receiver_t::unplug ()
 {
     //  Delete decoders.
     for (peers_t::iterator it = peers.begin (); it != peers.end (); ++it) {
-        if (it->second.decoder != NULL)
-            delete it->second.decoder;
+        if (it->second.decoder != NULL) {
+            LIBZMQ_DELETE(it->second.decoder);
+        }
     }
     peers.clear ();
     active_tsi = NULL;
@@ -131,8 +143,7 @@ void zmq::pgm_receiver_t::restart_input ()
             //  Data error. Delete message decoder, mark the
             //  peer as not joined and drop remaining data.
             it->second.joined = false;
-            delete it->second.decoder;
-            it->second.decoder = NULL;
+            LIBZMQ_DELETE(it->second.decoder);
             insize = 0;
         }
     }
@@ -184,8 +195,7 @@ void zmq::pgm_receiver_t::in_event ()
             if (it != peers.end ()) {
                 it->second.joined = false;
                 if (it->second.decoder != NULL) {
-                    delete it->second.decoder;
-                    it->second.decoder = NULL;
+                    LIBZMQ_DELETE(it->second.decoder);
                 }
             }
             break;
@@ -216,7 +226,7 @@ void zmq::pgm_receiver_t::in_event ()
             zmq_assert (offset <= insize);
             zmq_assert (it->second.decoder == NULL);
 
-            //  We have to move data to the begining of the first message.
+            //  We have to move data to the beginning of the first message.
             inpos += offset;
             insize -= offset;
 
@@ -242,8 +252,7 @@ void zmq::pgm_receiver_t::in_event ()
             }
 
             it->second.joined = false;
-            delete it->second.decoder;
-            it->second.decoder = NULL;
+            LIBZMQ_DELETE(it->second.decoder);
             insize = 0;
         }
     }
