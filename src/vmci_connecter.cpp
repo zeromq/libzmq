@@ -32,7 +32,6 @@
 #if defined ZMQ_HAVE_VMCI
 
 #include <new>
-#include <string>
 
 #include "stream_engine.hpp"
 #include "io_thread.hpp"
@@ -118,7 +117,8 @@ void zmq::vmci_connecter_t::out_event ()
         return;
     }
 
-    tune_vmci_buffer_size (this->get_ctx (), fd, options.vmci_buffer_size, options.vmci_buffer_min_size, options.vmci_buffer_max_size);
+    tune_vmci_buffer_size (this->get_ctx (), fd, options.vmci_buffer_size,
+        options.vmci_buffer_min_size, options.vmci_buffer_max_size);
 
     if (options.vmci_connect_timeout > 0)
     {
@@ -218,8 +218,15 @@ int zmq::vmci_connecter_t::open ()
 
     //  Create the socket.
     s = open_socket (family, SOCK_STREAM, 0);
+#ifdef ZMQ_HAVE_WINDOWS
+    if (s == INVALID_SOCKET) {
+        errno = wsa_error_to_errno(WSAGetLastError());
+        return -1;
+    }
+#else
     if (s == -1)
         return -1;
+#endif
 
     //  Set the non-blocking flag.
     unblock_socket (s);
@@ -233,12 +240,18 @@ int zmq::vmci_connecter_t::open ()
     if (rc == 0)
         return 0;
 
-    //  Translate other error codes indicating asynchronous connect has been
+    //  Translate error codes indicating asynchronous connect has been
     //  launched to a uniform EINPROGRESS.
-    if (rc == -1 && errno == EINTR) {
+#ifdef ZMQ_HAVE_WINDOWS
+    const int error_code = WSAGetLastError();
+    if (error_code == WSAEINPROGRESS || error_code == WSAEWOULDBLOCK)
         errno = EINPROGRESS;
-        return -1;
-    }
+    else
+        errno = wsa_error_to_errno(error_code);
+#else
+    if (errno == EINTR)
+        errno = EINPROGRESS;
+#endif
 
     //  Forward the error.
     return -1;
@@ -269,19 +282,45 @@ zmq::fd_t zmq::vmci_connecter_t::connect ()
     socklen_t len = sizeof (err);
 #endif
     int rc = getsockopt (s, SOL_SOCKET, SO_ERROR, (char*) &err, &len);
+
+    //  Assert if the error was caused by 0MQ bug.
+    //  Networking problems are OK. No need to assert.
+#ifdef ZMQ_HAVE_WINDOWS
+    zmq_assert(rc == 0);
+    if (err != 0) {
+        if (err != WSAECONNREFUSED
+            && err != WSAETIMEDOUT
+            && err != WSAECONNABORTED
+            && err != WSAEHOSTUNREACH
+            && err != WSAENETUNREACH
+            && err != WSAENETDOWN
+            && err != WSAEACCES
+            && err != WSAEINVAL
+            && err != WSAEADDRINUSE
+            && err != WSAECONNRESET)
+        {
+            wsa_assert_no(err);
+        }
+        return retired_fd;
+    }
+#else
+    //  Following code should handle both Berkeley-derived socket
+    //  implementations and Solaris.
     if (rc == -1)
         err = errno;
     if (err != 0) {
-
-        //  Assert if the error was caused by 0MQ bug.
-        //  Networking problems are OK. No need to assert.
         errno = err;
-        errno_assert (errno == ECONNREFUSED || errno == ECONNRESET ||
-            errno == ETIMEDOUT || errno == EHOSTUNREACH ||
-            errno == ENETUNREACH || errno == ENETDOWN);
-
+        errno_assert(
+            errno == ECONNREFUSED ||
+            errno == ECONNRESET ||
+            errno == ETIMEDOUT ||
+            errno == EHOSTUNREACH ||
+            errno == ENETUNREACH ||
+            errno == ENETDOWN ||
+            errno == EINVAL);
         return retired_fd;
     }
+#endif
 
     fd_t result = s;
     s = retired_fd;
