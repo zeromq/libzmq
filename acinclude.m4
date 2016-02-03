@@ -7,7 +7,7 @@ AC_DEFUN([LIBZMQ_CONFIG_LIBTOOL],  [{
 
     # Libtool configuration for different targets
     case "${host_os}" in
-        *mingw32*|*cygwin*)
+        *mingw*|*cygwin*)
             # Disable static build by default
             AC_DISABLE_STATIC
         ;;
@@ -117,7 +117,7 @@ AC_DEFUN([LIBZMQ_CHECK_DOC_BUILD], [{
         fi
 
         # Do not install man pages if on mingw
-        if test "x$libzmq_on_mingw32" = "xyes"; then
+        if test "x$libzmq_on_mingw" = "xyes"; then
             libzmq_install_man="no"
         fi
     fi

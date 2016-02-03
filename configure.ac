@@ -134,7 +134,7 @@ libzmq_werror="yes"
 libzmq_dso_visibility="yes"
 
 # Platform specific checks
-libzmq_on_mingw32="no"
+libzmq_on_mingw="no"
 libzmq_on_cygwin="no"
 libzmq_on_android="no"
 libzmq_on_linux="no"
@@ -250,7 +250,7 @@ case "${host_os}" in
         ;;
     *mingw*)
         AC_DEFINE(ZMQ_HAVE_WINDOWS, 1, [Have Windows OS])
-        AC_DEFINE(ZMQ_HAVE_MINGW32, 1, [Have MinGW32])
+        AC_DEFINE(ZMQ_HAVE_MINGW, 1, [Have MinGW])
         AC_CHECK_HEADERS(windows.h)
         AC_CHECK_LIB(ws2_32, main, ,
             [AC_MSG_ERROR([cannot link with ws2_32.dll.])])
@@ -258,11 +258,11 @@ case "${host_os}" in
             [AC_MSG_ERROR([cannot link with rpcrt4.dll.])])
         AC_CHECK_LIB(iphlpapi, main, ,
             [AC_MSG_ERROR([cannot link with iphlpapi.dll.])])
-        # mingw32 defines __int64_t as long long
+        # mingw defines __int64_t as long long
         AC_LANG_PUSH([C++])
         LIBZMQ_CHECK_LANG_FLAG_PREPEND([-Wno-long-long])
         AC_LANG_POP([C++])
-        libzmq_on_mingw32="yes"
+        libzmq_on_mingw="yes"
         libzmq_dso_visibility="no"
 
         if test "x$enable_static" = "xyes"; then
@@ -301,7 +301,7 @@ AC_CHECK_LIB([pthread], [pthread_create])
 AC_CHECK_LIB([rt], [clock_gettime])
 
 #
-# Check if the compiler supports -fvisibility=hidden flag. MinGW32 uses __declspec
+# Check if the compiler supports -fvisibility=hidden flag. MinGW uses __declspec
 #
 if test "x$libzmq_dso_visibility" = "xyes"; then
     AC_LANG_PUSH([C++])
@@ -536,7 +536,7 @@ fi
 AC_LANG_POP([C++])
 
 AM_CONDITIONAL(BUILD_TIPC, test "x$libzmq_tipc_support" = "xyes")
-AM_CONDITIONAL(ON_MINGW, test "x$libzmq_on_mingw32" = "xyes")
+AM_CONDITIONAL(ON_MINGW, test "x$libzmq_on_mingw" = "xyes")
 AM_CONDITIONAL(ON_CYGWIN, test "x$libzmq_on_cygwin" = "xyes")
 AM_CONDITIONAL(ON_ANDROID, test "x$libzmq_on_android" = "xyes")
 AM_CONDITIONAL(ON_LINUX, test "x$libzmq_on_linux" = "xyes")
