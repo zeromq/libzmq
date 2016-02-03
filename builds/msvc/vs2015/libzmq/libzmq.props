@@ -36,17 +36,17 @@
   <!-- Dependencies -->
 
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)libsodium.import.props" Condition="'$(HAVE_SODIUM)'=='1'" />
+    <Import Project="$(SolutionDir)libsodium.import.props" Condition="'$(HAVE_LIBSODIUM)'=='1'" />
   </ImportGroup>
   
   <PropertyGroup Condition="'$(DefaultLinkage)' == 'dynamic'">
-    <Linkage-libsodium Condition="'$(HAVE_SODIUM)'=='1'">dynamic</Linkage-libsodium>
+    <Linkage-libsodium Condition="'$(HAVE_LIBSODIUM)'=='1'">dynamic</Linkage-libsodium>
   </PropertyGroup>
   <PropertyGroup Condition="'$(DefaultLinkage)' == 'ltcg'">
-    <Linkage-libsodium Condition="'$(HAVE_SODIUM)'=='1'">ltcg</Linkage-libsodium>
+    <Linkage-libsodium Condition="'$(HAVE_LIBSODIUM)'=='1'">ltcg</Linkage-libsodium>
   </PropertyGroup>
   <PropertyGroup Condition="'$(DefaultLinkage)' == 'static'">
-    <Linkage-libsodium Condition="'$(HAVE_SODIUM)'=='1'">static</Linkage-libsodium>
+    <Linkage-libsodium Condition="'$(HAVE_LIBSODIUM)'=='1'">static</Linkage-libsodium>
   </PropertyGroup>
 
   <!-- Messages -->
@@ -57,7 +57,7 @@
   </Target>
 
   <Target Name="LinkageInfo" BeforeTargets="PrepareForBuild">
-    <Message Text="Linkage-libsodium : $(Linkage-libsodium)" Importance="high" Condition="'$(HAVE_SODIUM)'=='1'"/>
+    <Message Text="Linkage-libsodium : $(Linkage-libsodium)" Importance="high" Condition="'$(HAVE_LIBSODIUM)'=='1'"/>
   </Target>
 
 </Project>
