@@ -117,7 +117,7 @@ AC_DEFUN([LIBZMQ_CHECK_DOC_BUILD], [{
         fi
 
         # Do not install man pages if on mingw
-        if test "x$libzmq_on_mingw32" = "xyes"; then
+        if test "x$libzmq_on_mingw" = "xyes"; then
             libzmq_install_man="no"
         fi
     fi
