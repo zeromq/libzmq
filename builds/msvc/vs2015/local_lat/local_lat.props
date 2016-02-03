@@ -22,27 +22,27 @@
 
   <ImportGroup Label="PropertySheets">
     <Import Project="$(SolutionDir)libzmq.import.props" />
-    <Import Project="$(SolutionDir)libsodium.import.props" />
+    <Import Project="$(SolutionDir)libsodium.import.props" Condition="'$(HAVE_SODIUM)'=='1'" />
   </ImportGroup>
 
   <PropertyGroup Condition="'$(DefaultLinkage)' == 'dynamic'">
     <Linkage-libzmq>dynamic</Linkage-libzmq>
-    <Linkage-libsodium>dynamic</Linkage-libsodium>
+    <Linkage-libsodium Condition="'$(HAVE_SODIUM)'=='1'">dynamic</Linkage-libsodium>
   </PropertyGroup>
   <PropertyGroup Condition="'$(DefaultLinkage)' == 'ltcg'">
     <Linkage-libzmq>ltcg</Linkage-libzmq>
-    <Linkage-libsodium>ltcg</Linkage-libsodium>
+    <Linkage-libsodium Condition="'$(HAVE_SODIUM)'=='1'">ltcg</Linkage-libsodium>
   </PropertyGroup>
   <PropertyGroup Condition="'$(DefaultLinkage)' == 'static'">
     <Linkage-libzmq>static</Linkage-libzmq>
-    <Linkage-libsodium>static</Linkage-libsodium>
+    <Linkage-libsodium Condition="'$(HAVE_SODIUM)'=='1'">static</Linkage-libsodium>
   </PropertyGroup>  
 
   <!-- Messages -->
 
   <Target Name="LinkageInfo" BeforeTargets="PrepareForBuild">
     <Message Text="Linkage-libzmq    : $(Linkage-libzmq)" Importance="high"/>
-    <Message Text="Linkage-libsodium : $(Linkage-libsodium)" Importance="high"/>
+    <Message Text="Linkage-libsodium : $(Linkage-libsodium)" Importance="high" Condition="'$(HAVE_SODIUM)'=='1'"/>
   </Target>
 
 </Project>

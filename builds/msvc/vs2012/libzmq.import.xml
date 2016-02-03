@@ -3,16 +3,11 @@
   <Rule Name="libzmq-options-uiextension" PageTemplate="tool" DisplayName="ZMQ Options" SwitchPrefix="/" Order="1">
     <Rule.Categories>
       <Category Name="openpgm" DisplayName="openpgm" />
-      <Category Name="sodium" DisplayName="sodium" />
     </Rule.Categories>
     <Rule.DataSource>
       <DataSource Persistence="ProjectFile" ItemType="" />
     </Rule.DataSource>
     <EnumProperty Name="Option-openpgm" DisplayName="Enable OpenPGM" Description="Enable the OpenPGM build option" Category="openpgm">
-      <EnumValue Name="" DisplayName="No" />
-      <EnumValue Name="true" DisplayName="Yes" />
-    </EnumProperty>
-    <EnumProperty Name="Option-sodium" DisplayName="Enable Sodium" Description="Enable the Sodium build option" Category="sodium">
       <EnumValue Name="" DisplayName="No" />
       <EnumValue Name="true" DisplayName="Yes" />
     </EnumProperty>
