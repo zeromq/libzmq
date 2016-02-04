@@ -46,10 +46,10 @@ check_include_files(windows.h ZMQ_HAVE_WINDOWS)
 check_include_files(sys/uio.h ZMQ_HAVE_UIO)
 check_include_files(sys/eventfd.h ZMQ_HAVE_EVENTFD)
 
-check_library_exists(ws2_32 printf "" HAVE_WS2_32) # TODO: Why doesn't something logical like WSAStartup work?
-check_library_exists(ws2 printf "" HAVE_WS2)
-check_library_exists(rpcrt4 printf "" HAVE_RPCRT4) # UuidCreateSequential
-check_library_exists(iphlpapi printf "" HAVE_IPHLAPI) # GetAdaptersAddresses
+check_library_exists(ws2_32 fopen "" HAVE_WS2_32) # TODO: Why doesn't something logical like WSAStartup work?
+check_library_exists(ws2 fopen "" HAVE_WS2)
+check_library_exists(rpcrt4 fopen "" HAVE_RPCRT4) # UuidCreateSequential
+check_library_exists(iphlpapi fopen "" HAVE_IPHLAPI) # GetAdaptersAddresses
 
 find_library(RT_LIBRARY rt)
 
@@ -500,7 +500,7 @@ if(MSVC)
     PUBLIC_HEADER "${public_headers}"
     RELEASE_POSTFIX "${_zmq_COMPILER}-mt-s-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
     DEBUG_POSTFIX "${_zmq_COMPILER}-mt-sgd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
-    COMPILE_FLAGS "/D ZMQ_STATIC"
+    COMPILE_FLAGS "/DZMQ_STATIC"
     OUTPUT_NAME "libzmq-static")
 else()
     add_library(libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig})
@@ -653,6 +653,7 @@ if(MSVC)
   if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     install(TARGETS libzmq libzmq-static
             RUNTIME DESTINATION bin
+            ARCHIVE DESTINATION lib
             PUBLIC_HEADER DESTINATION include
             COMPONENT SDK)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/lib/libzmq${_zmq_COMPILER}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}.pdb DESTINATION lib
