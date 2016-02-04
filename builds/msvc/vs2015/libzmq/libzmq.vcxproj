@@ -66,14 +66,6 @@
     <Import Project="$(ProjectDir)..\..\properties\Output.props" />
     <Import Project="$(ProjectDir)$(ProjectName).props" />
   </ImportGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|Win32'">
-    <Linkage-libsodium />
-    <Option-sodium />
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|x64'">
-    <Linkage-libsodium />
-    <Option-sodium />
-  </PropertyGroup>
   <ItemGroup>
     <ClInclude Include="..\..\platform.hpp" />
     <ClInclude Include="..\..\resource.h" />
