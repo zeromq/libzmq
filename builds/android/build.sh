@@ -32,7 +32,7 @@ fi
     rm -rf "${cache}/libsodium"
     (cd "${cache}" && git clone --depth 1 git://github.com/jedisct1/libsodium.git) || exit 1
     (cd "${cache}/libsodium" && ./autogen.sh \
-        && ./configure "${ANDROID_BUILD_OPTS[@]}" --disable-soname-versions \
+        && ./configure --quiet "${ANDROID_BUILD_OPTS[@]}" --disable-soname-versions \
         && make -j 4 \
         && make install) || exit 1
 }
@@ -47,7 +47,7 @@ LIBTOOL_EXTRA_LDFLAGS='-avoid-version'
     (cp -r ../.. "${cache}/libzmq" && cd "${cache}/libzmq" && make clean)
     
     (cd "${cache}/libzmq" && ./autogen.sh \
-        && ./configure "${ANDROID_BUILD_OPTS[@]}" --without-documentation --with-libsodium=yes \
+        && ./configure --quiet "${ANDROID_BUILD_OPTS[@]}" --without-docs --with-libsodium=yes \
         && make -j 4 \
         && make install) || exit 1
 }
