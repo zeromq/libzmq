@@ -99,9 +99,11 @@ void zmq::radio_t::xwrite_activated (pipe_t *pipe_)
 
 void zmq::radio_t::xpipe_terminated (pipe_t *pipe_)
 {
-    for (subscriptions_t::iterator it = subscriptions.begin (); it != subscriptions.end (); ++it) {
+    for (subscriptions_t::iterator it = subscriptions.begin (); it != subscriptions.end (); ) {
         if (it->second == pipe_) {
-            subscriptions.erase (it);
+            subscriptions.erase (it++);
+        } else {
+            ++it;
         }
     }
 
