@@ -77,7 +77,8 @@ zmq::options_t::options_t () :
     connected (false),
     heartbeat_ttl (0),
     heartbeat_interval (0),
-    heartbeat_timeout (-1)
+    heartbeat_timeout (-1),
+    pre_allocated_fd (-1)
 {
 #if defined ZMQ_HAVE_VMCI
     vmci_buffer_size = 0;
@@ -621,6 +622,13 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             break;
 #       endif
 
+        case ZMQ_PRE_ALLOCATED_FD:
+            if (is_int && value >= -1) {
+                pre_allocated_fd = value;
+                return 0;
+            }
+            break;
+
         default:
 #if defined (ZMQ_ACT_MILITANT)
             //  There are valid scenarios for probing with unknown socket option
@@ -1027,6 +1035,13 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
         case ZMQ_HEARTBEAT_TIMEOUT:
             if (is_int) {
                 *value = heartbeat_timeout;
+                return 0;
+            }
+            break;
+
+        case ZMQ_PRE_ALLOCATED_FD:
+            if (is_int) {
+                *value = pre_allocated_fd;
                 return 0;
             }
             break;

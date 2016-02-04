@@ -231,6 +231,11 @@ namespace zmq
         uint64_t vmci_buffer_max_size;
         int vmci_connect_timeout;
 #       endif
+
+        //  When creating a new ZMQ socket, if this option is set the value
+        //  will be used as the File Descriptor instead of allocating a new
+        //  one via the socket () system call.
+        int pre_allocated_fd;
     };
 }
 

@@ -125,6 +125,8 @@ test_timers
 test_radio_dish
 test_udp
 test_large_msg
+test_pre_allocated_fd_ipc
+test_pre_allocated_fd_tcp
 tests/test*.log
 tests/test*.trs
 src/platform.hpp*

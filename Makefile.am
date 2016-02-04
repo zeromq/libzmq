@@ -617,6 +617,8 @@ test_apps += \
 	tests/test_shutdown_stress \
 	tests/test_pair_ipc \
 	tests/test_reqrep_ipc \
+	tests/test_pre_allocated_fd_ipc \
+	tests/test_pre_allocated_fd_tcp \
 	tests/test_timeo \
 	tests/test_filter_ipc
 
@@ -638,6 +640,16 @@ tests_test_timeo_LDADD = src/libzmq.la
 
 tests_test_filter_ipc_SOURCES = tests/test_filter_ipc.cpp
 tests_test_filter_ipc_LDADD = src/libzmq.la
+
+tests_test_pre_allocated_fd_ipc_SOURCES = \
+	tests/test_pre_allocated_fd_ipc.cpp \
+	tests/testutil.hpp
+tests_test_pre_allocated_fd_ipc_LDADD = src/libzmq.la
+
+tests_test_pre_allocated_fd_tcp_SOURCES = \
+	tests/test_pre_allocated_fd_tcp.cpp \
+	tests/testutil.hpp
+tests_test_pre_allocated_fd_tcp_LDADD = src/libzmq.la
 
 if HAVE_FORK
 test_apps += tests/test_fork

@@ -166,6 +166,14 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
     if (rc != 0)
         return -1;
 
+    address.to_string (endpoint);
+
+    if (options.pre_allocated_fd != -1) {
+        s = options.pre_allocated_fd;
+        socket->event_listening (endpoint, (int) s);
+        return 0;
+    }
+
     //  Create a listening socket.
     s = open_socket (address.family (), SOCK_STREAM, IPPROTO_TCP);
 #ifdef ZMQ_HAVE_WINDOWS
@@ -223,8 +231,6 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
     rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
     errno_assert (rc == 0);
 #endif
-
-    address.to_string (endpoint);
 
     //  Bind the socket to the network interface and port.
     rc = bind (s, address.addr (), address.addrlen ());
