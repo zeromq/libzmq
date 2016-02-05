@@ -13,10 +13,13 @@ env:
 - BUILD_TYPE=default CURVE=libsodium
 - BUILD_TYPE=default
 - BUILD_TYPE=coverage CURVE=tweetnacl
+- BUILD_TYPE=valgrind CURVE=tweetnacl
 
 matrix:
   exclude:
     -  env: BUILD_TYPE=coverage CURVE=tweetnacl
+       os: osx
+    -  env: BUILD_TYPE=valgrind CURVE=tweetnacl
        os: osx
 
 sudo: false
@@ -28,6 +31,7 @@ addons:
     packages:
     - cmake
     - lcov
+    - valgrind
 
 before_install:
 - if [ $TRAVIS_OS_NAME == "osx" ] ; then brew update; brew install binutils ; fi
