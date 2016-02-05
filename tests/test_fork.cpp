@@ -86,6 +86,8 @@ int main (void)
             assert (WEXITSTATUS (child_status) == 0);
             break;
         }
+        zmq_close (pull);
+        zmq_ctx_term (ctx);
         exit (0);
     }
 #endif
