@@ -55,6 +55,8 @@ void pre_allocate_sock (void *zmq_socket, const char *address,
     rc = zmq_setsockopt (zmq_socket, ZMQ_USE_FD, &s_pre,
             sizeof (s_pre));
     assert(rc == 0);
+
+    freeaddrinfo(addr);
 }
 
 void test_req_rep ()
