@@ -94,7 +94,7 @@ int main (void) {
     assert (rc > -1);
     rc = zmq_recv(router, buf, 255, 0);
     assert (rc == 255);
-    assert (memcmp(data, buf, 5) == 0);
+    assert (memcmp(data, buf, 4) == 0);
 
     msleep(50);
     assert (memcmp(hint, "freed", 5) == 0);
@@ -115,7 +115,7 @@ int main (void) {
     assert (rc > -1);
     rc = zmq_recv(router, buf, 255, 0);
     assert (rc == 255);
-    assert (memcmp(data, buf, 5) == 0);
+    assert (memcmp(data, buf, 4) == 0);
     rc = zmq_msg_close(&msg2);
     assert (rc == 0);
     rc = zmq_msg_close(&msg);
