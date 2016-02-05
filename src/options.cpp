@@ -92,7 +92,8 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
     bool is_int = (optvallen_ == sizeof (int));
-    int value = is_int? *((int *) optval_): 0;
+    int value = 0;
+    if (is_int) memcpy(&value, optval_, sizeof (int));
 #if defined (ZMQ_ACT_MILITANT)
     bool malformed = true;          //  Did caller pass a bad option value?
 #endif

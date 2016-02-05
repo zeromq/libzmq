@@ -62,7 +62,8 @@ int zmq::sub_t::xsetsockopt (int option_, const void *optval_,
     else
     if (option_ == ZMQ_UNSUBSCRIBE)
         *data = 0;
-    memcpy (data + 1, optval_, optvallen_);
+    if (optvallen_ > 0)
+        memcpy (data + 1, optval_, optvallen_);
 
     //  Pass it further on in the stack.
     int err = 0;
