@@ -777,3 +777,5 @@ dist-hook:
 
 maintainer-clean-local:
 	-rm -rf $(top_srcdir)/config
+
+@VALGRIND_CHECK_RULES@
