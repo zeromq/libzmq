@@ -97,4 +97,7 @@ int main (void)
     for (count = 0; count < 1000; count++) {
         close(handle[count]);
     }
+
+    zmq_close(dealer);
+    zmq_ctx_term(ctx);
 }
