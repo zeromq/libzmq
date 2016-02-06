@@ -434,7 +434,7 @@ bool zmq::select_t::is_retired_fd (const fd_entry_t &entry)
 #if defined ZMQ_HAVE_WINDOWS
 u_short zmq::select_t::get_fd_family (fd_t fd_)
 {
-    sockaddr addr{ 0 };
+    sockaddr addr = { 0 };
     int addr_size = sizeof addr;
     int rc = getsockname (fd_, &addr, &addr_size);
 

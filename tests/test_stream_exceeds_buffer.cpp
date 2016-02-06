@@ -2,8 +2,18 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <netinet/in.h>
-#include <unistd.h>
+#include "testutil.hpp"
+#if defined (ZMQ_HAVE_WINDOWS)
+#   include <winsock2.h>
+#   include <ws2tcpip.h>
+#   include <stdexcept>
+#   define close closesocket
+#else
+#   include <sys/socket.h>
+#   include <netinet/in.h>
+#   include <arpa/inet.h>
+#   include <unistd.h>
+#endif
 
 #include <zmq.h>
 
