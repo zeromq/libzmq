@@ -29,6 +29,12 @@
 
 #include <string.h>
 
+#include "platform.hpp"
+
+#ifdef ZMQ_HAVE_WINDOWS
+#include "windows.hpp"
+#endif
+
 #include "../include/zmq.h"
 #include "macros.hpp"
 #include "dish.hpp"
