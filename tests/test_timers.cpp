@@ -27,7 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "macros.hpp"
+#include "testutil.hpp"
 
 #if defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
@@ -50,7 +50,7 @@ void sleep_ (long timeout_)
 
 void handler (int timer_id, void* arg)
 {
-    LIBZMQ_UNUSED (timer_id);
+    (void) timer_id;               //  Stop 'unused' compiler warnings
     *((bool *)arg) = true;
 }
 

@@ -27,12 +27,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "macros.hpp"
 #include "testutil.hpp"
 
 void ffn(void *data, void *hint) {
-    LIBZMQ_UNUSED (data);
     // Signal that ffn has been called by writing "freed" to hint
+    (void) data;      //  Suppress 'unused' warnings at compile time
     memcpy(hint, (void *) "freed", 5);
 }
 

@@ -62,9 +62,11 @@ int zmq::sub_t::xsetsockopt (int option_, const void *optval_,
     else
     if (option_ == ZMQ_UNSUBSCRIBE)
         *data = 0;
-    if (optvallen_ > 0)
+    //  We explicitly allow a NULL subscription with size zero
+    if (optvallen_) {
+        assert (optval_);
         memcpy (data + 1, optval_, optvallen_);
-
+    }
     //  Pass it further on in the stack.
     int err = 0;
     rc = xsub_t::xsend (&msg);

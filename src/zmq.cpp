@@ -390,14 +390,16 @@ int zmq_send (void *s_, const void *buf_, size_t len_, int flags_)
         return -1;
     }
     zmq_msg_t msg;
-    int rc = zmq_msg_init_size (&msg, len_);
-    if (rc != 0)
+    if (zmq_msg_init_size (&msg, len_))
         return -1;
-    if (len_ > 0)
-        memcpy (zmq_msg_data (&msg), buf_, len_);
 
+    //  We explicitly allow a send from NULL, size zero
+    if (len_) {
+        assert (buf_);
+        memcpy (zmq_msg_data (&msg), buf_, len_);
+    }
     zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
-    rc = s_sendmsg (s, &msg, flags_);
+    int rc = s_sendmsg (s, &msg, flags_);
     if (unlikely (rc < 0)) {
         int err = errno;
         int rc2 = zmq_msg_close (&msg);
@@ -517,12 +519,14 @@ int zmq_recv (void *s_, void *buf_, size_t len_, int flags_)
         return -1;
     }
 
-    //  At the moment an oversized message is silently truncated.
-    //  TODO: Build in a notification mechanism to report the overflows.
+    //  An oversized message is silently truncated.
     size_t to_copy = size_t (nbytes) < len_ ? size_t (nbytes) : len_;
-    if (to_copy > 0)
-        memcpy (buf_, zmq_msg_data (&msg), to_copy);
 
+    //  We explicitly allow a null buffer argument if len is zero
+    if (to_copy) {
+        assert (buf_);
+        memcpy (buf_, zmq_msg_data (&msg), to_copy);
+    }
     rc = zmq_msg_close (&msg);
     errno_assert (rc == 0);
 
