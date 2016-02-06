@@ -232,7 +232,8 @@ void zmq::xsub_t::send_subscription (unsigned char *data_, size_t size_,
     errno_assert (rc == 0);
     unsigned char *data = (unsigned char*) msg.data ();
     data [0] = 1;
-    memcpy (data + 1, data_, size_);
+    if (size_ > 0)
+        memcpy (data + 1, data_, size_);
 
     //  Send it to the pipe.
     bool sent = pipe->write (&msg);
