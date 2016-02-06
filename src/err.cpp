@@ -28,7 +28,6 @@
 */
 
 #include "err.hpp"
-#include "platform.hpp"
 
 const char *zmq::errno_to_string (int errno_)
 {
