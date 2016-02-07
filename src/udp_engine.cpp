@@ -38,7 +38,7 @@ zmq::udp_engine_t::~udp_engine_t()
     }
 }
 
-int zmq::udp_engine_t::init (address_t* address_, bool send_, bool recv_)
+int zmq::udp_engine_t::init (address_t *address_, bool send_, bool recv_)
 {
     zmq_assert (address_);
     zmq_assert (send_ || recv_);
@@ -74,33 +74,31 @@ void zmq::udp_engine_t::plug (io_thread_t* io_thread_, session_base_t *session_)
     if (recv_enabled) {
         int on = 1;
         int rc = setsockopt (fd, SOL_SOCKET, SO_REUSEADDR, (char *) &on, sizeof (on));
-        #ifdef ZMQ_HAVE_WINDOWS
-                wsa_assert (rc != SOCKET_ERROR);
-        #else
-                errno_assert (rc == 0);
-        #endif
+#ifdef ZMQ_HAVE_WINDOWS
+        wsa_assert (rc != SOCKET_ERROR);
+#else
+        errno_assert (rc == 0);
+#endif
 
-        rc = bind (fd, address->resolved.udp_addr->bind_addr (), address->resolved.udp_addr->bind_addrlen ());
-        #ifdef ZMQ_HAVE_WINDOWS
-                wsa_assert (rc != SOCKET_ERROR);
-        #else
-                errno_assert (rc == 0);
-        #endif
+        rc = bind (fd, address->resolved.udp_addr->bind_addr (),
+                       address->resolved.udp_addr->bind_addrlen ());
+#ifdef ZMQ_HAVE_WINDOWS
+        wsa_assert (rc != SOCKET_ERROR);
+#else
+        errno_assert (rc == 0);
+#endif
 
         if (address->resolved.udp_addr->is_mcast ()) {
             struct ip_mreq mreq;
             mreq.imr_multiaddr = address->resolved.udp_addr->multicast_ip ();
             mreq.imr_interface = address->resolved.udp_addr->interface_ip ();
-
             int rc = setsockopt (fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*) &mreq, sizeof (mreq));
-
 #ifdef ZMQ_HAVE_WINDOWS
             wsa_assert (rc != SOCKET_ERROR);
 #else
             errno_assert (rc == 0);
 #endif
         }
-
         set_pollin (handle);
 
         //  Call restart output to drop all join/leave commands
@@ -147,10 +145,10 @@ void zmq::udp_engine_t::out_event()
         errno_assert (rc == 0);
 
 #ifdef ZMQ_HAVE_WINDOWS
-        rc = sendto(fd, (char*) out_buffer, size, 0,
-            address->resolved.udp_addr->dest_addr(),
-            address->resolved.udp_addr->dest_addrlen());
-        wsa_assert(rc != SOCKET_ERROR);
+        rc = sendto (fd, (const char *) out_buffer, (int) size, 0,
+            address->resolved.udp_addr->dest_addr (),
+            (int) address->resolved.udp_addr->dest_addrlen ());
+        wsa_assert (rc != SOCKET_ERROR);
 #else
         rc = sendto (fd, out_buffer, size, 0,
             address->resolved.udp_addr->dest_addr (),
