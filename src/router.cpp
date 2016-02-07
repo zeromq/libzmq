@@ -97,7 +97,8 @@ int zmq::router_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
     bool is_int = (optvallen_ == sizeof (int));
-    int value = is_int? *((int *) optval_): 0;
+    int value = 0;
+    if (is_int) memcpy(&value, optval_, sizeof (int));
 
     switch (option_) {
         case ZMQ_CONNECT_RID:
