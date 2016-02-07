@@ -77,6 +77,7 @@ void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_
 #else
 
 #include <signal.h>
+#include <unistd.h>
 
 extern "C"
 {
@@ -114,10 +115,15 @@ void zmq::thread_t::stop ()
 
 void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_)
 {
-#if !defined ZMQ_HAVE_ZOS && !defined ZMQ_HAVE_HPUX && !defined ZMQ_HAVE_GNU
+#if defined _POSIX_THREAD_PRIORITY_SCHEDULING && _POSIX_THREAD_PRIORITY_SCHEDULING >= 0
     int policy = 0;
     struct sched_param param;
 
+#if _POSIX_THREAD_PRIORITY_SCHEDULING == 0 && defined _SC_THREAD_PRIORITY_SCHEDULING
+    if (sysconf(_SC_THREAD_PRIORITY_SCHEDULING) < 0) {
+        return;
+    }
+#endif
     int rc = pthread_getschedparam(descriptor, &policy, &param);
     posix_assert (rc);
 
