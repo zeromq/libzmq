@@ -325,7 +325,7 @@ int zmq::dish_session_t::pull_msg (msg_t *msg_)
     if (!msg_->is_join () && !msg_->is_leave ())
         return rc;
     else {
-        int group_length = strlen (msg_->group ());
+        int group_length = (int) strlen (msg_->group ());
 
         msg_t command;
         int offset;

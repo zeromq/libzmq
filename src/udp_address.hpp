@@ -41,7 +41,6 @@
 
 namespace zmq
 {
-
     class udp_address_t
     {
     public:
@@ -71,7 +70,6 @@ namespace zmq
         const in_addr interface_ip () const;
 
     private:
-
         in_addr  multicast;
         in_addr  iface;
         sockaddr_in bind_address;
