@@ -80,7 +80,7 @@ int zmq::gssapi_mechanism_base_t::encode_message (msg_t *msg_)
     uint8_t flags = 0;
     if (msg_->flags () & msg_t::more)
         flags |= 0x01;
-    if (msg ->flags () & msg_t::command)
+    if (msg_->flags () & msg_t::command)
         flags |= 0x02;
 
     uint8_t *plaintext_buffer = static_cast <uint8_t *>(malloc(msg_->size ()+1));
