@@ -9,8 +9,17 @@ os:
 env:
 - BUILD_TYPE=default
 - BUILD_TYPE=android
+- BUILD_TYPE=tweetnacl
+- BUILD_TYPE=cmake
 
 sudo: false
+
+addons:
+  apt:
+    sources:
+    - kubuntu-backports
+    packages:
+    - cmake
 
 before_install:
 - if [ $TRAVIS_OS_NAME == "osx" ] ; then brew update; brew install binutils ; fi

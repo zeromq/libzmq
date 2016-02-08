@@ -470,6 +470,7 @@ if test "x$have_sodium_library" != "xno"; then
 elif test "x$with_tweetnacl" != "xno"; then
     AC_DEFINE(HAVE_LIBSODIUM, 1, [Sodium is provided by tweetnacl.])
     AC_DEFINE(HAVE_TWEETNACL, 1, [Using tweetnacl.])
+    libzmq_pedantic="no"
 fi
 
 AM_CONDITIONAL(HAVE_SODIUM, test "x$have_sodium_library" != "xno")
