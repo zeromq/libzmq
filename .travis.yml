@@ -9,6 +9,7 @@ os:
 env:
 - BUILD_TYPE=default
 - BUILD_TYPE=android
+- BUILD_TYPE=tweetnacl
 
 sudo: false
 
