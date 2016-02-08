@@ -397,6 +397,12 @@ AC_ARG_WITH([libsodium], [AS_HELP_STRING([--with-libsodium],
     [require_libsodium_ext=$withval],
     [require_libsodium_ext=yes])
 
+AC_ARG_WITH([tweetnacl], [AS_HELP_STRING([--with-tweetnacl],
+    [build libzmq  with bundled tweetnacl crypto library [default=no]])],
+    [require_libsodium_ext=no
+     with_tweetnacl=yes],
+    [with_tweetnacl=no])
+
 # conditionally require libsodium package
 if test "x$require_libsodium_ext" != "xno"; then
     PKG_CHECK_MODULES([sodium], [libsodium], [have_sodium_library="yes"])
@@ -404,9 +410,14 @@ fi
 
 if test "x$have_sodium_library" != "xno"; then
     AC_DEFINE(HAVE_LIBSODIUM, 1, [The libsodium library is to be used.])
+elif test "x$with_tweetnacl" != "xno"; then
+    echo "using tweetnacl"
+    AC_DEFINE(HAVE_LIBSODIUM, 1, [Sodium is provided by tweetnacl.])
+    AC_DEFINE(HAVE_TWEETNACL, 1, [Using tweetnacl.])
 fi
 
 AM_CONDITIONAL(HAVE_SODIUM, test "x$have_sodium_library" != "xno")
+AM_CONDITIONAL(USE_TWEETNACL, test "x$with_tweetnacl" != "xno")
 
 # build using pgm
 have_pgm_library="no"
