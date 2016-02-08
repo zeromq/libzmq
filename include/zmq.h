@@ -344,7 +344,7 @@ ZMQ_EXPORT const char *zmq_msg_group (zmq_msg_t *msg);
 #define ZMQ_VMCI_BUFFER_MIN_SIZE 86
 #define ZMQ_VMCI_BUFFER_MAX_SIZE 87
 #define ZMQ_VMCI_CONNECT_TIMEOUT 88
-#define ZMQ_PRE_ALLOCATED_FD 89
+#define ZMQ_USEFD 89
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1

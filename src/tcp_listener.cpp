@@ -168,8 +168,8 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
 
     address.to_string (endpoint);
 
-    if (options.pre_allocated_fd != -1) {
-        s = options.pre_allocated_fd;
+    if (options.usefd != -1) {
+        s = options.usefd;
         socket->event_listening (endpoint, (int) s);
         return 0;
     }

@@ -235,7 +235,7 @@ namespace zmq
         //  When creating a new ZMQ socket, if this option is set the value
         //  will be used as the File Descriptor instead of allocating a new
         //  one via the socket () system call.
-        int pre_allocated_fd;
+        int usefd;
     };
 }
 

@@ -70,7 +70,7 @@ void test_setsockopt_tcp_send_buffer()
     zmq_ctx_term(ctx);
 }
 
-void test_setsockopt_pre_allocated_fd()
+void test_setsockopt_usefd()
 {
     int rc;
     void *ctx = zmq_ctx_new();
@@ -79,17 +79,17 @@ void test_setsockopt_pre_allocated_fd()
     int val = 0;
     size_t placeholder = sizeof(val);
 
-    rc = zmq_getsockopt(socket, ZMQ_PRE_ALLOCATED_FD, &val, &placeholder);
+    rc = zmq_getsockopt(socket, ZMQ_USEFD, &val, &placeholder);
     assert(rc == 0);
     assert(val == -1);
 
     val = 3;
 
-    rc = zmq_setsockopt(socket, ZMQ_PRE_ALLOCATED_FD, &val, sizeof(val));
+    rc = zmq_setsockopt(socket, ZMQ_USEFD, &val, sizeof(val));
     assert(rc == 0);
     assert(val == 3);
 
-    rc = zmq_getsockopt(socket, ZMQ_PRE_ALLOCATED_FD, &val, &placeholder);
+    rc = zmq_getsockopt(socket, ZMQ_USEFD, &val, &placeholder);
     assert(rc == 0);
     assert(val == 3);
 
@@ -102,5 +102,5 @@ int main()
 {
     test_setsockopt_tcp_recv_buffer();
     test_setsockopt_tcp_send_buffer();
-    test_setsockopt_pre_allocated_fd();
+    test_setsockopt_usefd();
 }
