@@ -274,6 +274,15 @@ src_libzmq_la_CPPFLAGS += ${sodium_CFLAGS}
 src_libzmq_la_LIBADD += ${sodium_LIBS}
 endif
 
+if USE_TWEETNACL
+src_libzmq_la_SOURCES += \
+    tweetnacl/src/tweetnacl.c \
+    tweetnacl/contrib/randombytes/devurandom.c
+src_libzmq_la_CXXFLAGS += \
+    -I$(top_builddir)/tweetnacl/contrib/randombytes \
+    -I$(top_builddir)/tweetnacl/src
+endif
+
 if HAVE_PGM
 src_libzmq_la_CPPFLAGS += ${pgm_CFLAGS}
 src_libzmq_la_LIBADD += ${pgm_LIBS}
