@@ -245,7 +245,7 @@ namespace zmq
         void update_pipe_options(int option_);
 
         //  Socket's mailbox object.
-        i_mailbox* mailbox;
+        i_mailbox *mailbox;
 
         //  List of attached pipes.
         typedef array_t <pipe_t, 3> pipes_t;

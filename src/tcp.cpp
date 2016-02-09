@@ -84,7 +84,7 @@ void zmq::set_tcp_send_buffer (fd_t sockfd_, int bufsize_)
 void zmq::set_tcp_receive_buffer (fd_t sockfd_, int bufsize_)
 {
     const int rc = setsockopt (sockfd_, SOL_SOCKET, SO_RCVBUF,
-        (char*) &bufsize_, sizeof bufsize_);
+        (char *) &bufsize_, sizeof bufsize_);
 #ifdef ZMQ_HAVE_WINDOWS
     wsa_assert (rc != SOCKET_ERROR);
 #else
@@ -153,7 +153,7 @@ void zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_, int 
 #endif // ZMQ_HAVE_WINDOWS
 }
 
-void zmq::tune_tcp_retransmit_timeout (fd_t sockfd_, int timeout_)
+void zmq::tune_tcp_maxrt (fd_t sockfd_, int timeout_)
 {
     if (timeout_ <= 0)
         return;

@@ -498,6 +498,7 @@ documentation for the 'SO_RCVBUF' socket option.
 [horizontal]
 Option value type:: int
 Option value unit:: bytes
+Default value:: 8192
 Applicable socket types:: all
 
 
@@ -612,6 +613,7 @@ documentation for the 'SO_SNDBUF' socket option.
 [horizontal]
 Option value type:: int
 Option value unit:: bytes
+Default value:: 8192
 Applicable socket types:: all
 
 
@@ -700,14 +702,13 @@ Default value:: -1 (leave to OS default)
 Applicable socket types:: all, when using TCP transports.
 
 
-ZMQ_TCP_RETRANSMIT_TIMEOUT: Retrieve TCP Retransmit Timeout
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_TCP_MAXRT: Retrieve Max TCP Retransmit Timeout
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 On OSes where it is supported, retrieves how long before an unacknowledged TCP
-retransmit times out.
-The system normally attempts many TCP retransmits following an exponential
-backoff strategy. This means that after a network outage, it may take a long
-time before the session can be re-established. Setting this option allows
-the timeout to happen at a shorter interval.
+retransmit times out. The system normally attempts many TCP retransmits
+following an exponential backoff strategy. This means that after a network
+outage, it may take a long time before the session can be re-established.
+Setting this option allows the timeout to happen at a shorter interval.
 
 [horizontal]
 Option value type:: int
@@ -716,9 +717,9 @@ Default value:: 0 (leave to OS default)
 Applicable socket types:: all, when using TCP transports.
 
 
-ZMQ_THREADSAFE: Retrieve socket thread safety
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_THREADSAFE' option shall retrieve a boolean value indicating whether
+ZMQ_THREAD_SAFE: Retrieve socket thread safety
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_THREAD_SAFE' option shall retrieve a boolean value indicating whether
 or not the socket is threadsafe. Currently 'ZMQ_CLIENT' and 'ZMQ_SERVER' sockets
 are threadsafe.
 
@@ -764,31 +765,6 @@ Option value unit:: N/A
 Default value:: not set
 Applicable socket types:: all, when using TCP transport
 
-ZMQ_TCP_RECV_BUFFER: Size of the TCP receive buffer
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_TCP_RECV_BUFFER' specifies the maximum number of bytes which can
-be received by an individual syscall to receive data from the TCP socket.
-The default value is 8192.
-
-
-[horizontal]
-Option value type:: int
-Option value unit:: >0
-Default value:: 8192
-Applicable socket types:: all, when using TCP transport
-
-ZMQ_TCP_SEND_BUFFER: Size of the TCP receive buffer
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_TCP_SEND_BUFFER' specifies the maximum number of bytes which can
-be sent by an individual syscall to transmit data to the TCP socket.
-The default value is 8192.
-
-
-[horizontal]
-Option value type:: int
-Option value unit:: >0
-Default value:: 8192
-Applicable socket types:: all, when using TCP transport
 
 ZMQ_VMCI_BUFFER_SIZE: Retrieve buffer size of the VMCI socket
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

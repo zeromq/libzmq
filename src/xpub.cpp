@@ -133,19 +133,23 @@ void zmq::xpub_t::xwrite_activated (pipe_t *pipe_)
 int zmq::xpub_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
-    if (option_ == ZMQ_XPUB_VERBOSE || option_ == ZMQ_XPUB_VERBOSE_UNSUBSCRIBE ||
-        option_ == ZMQ_XPUB_NODROP || option_ == ZMQ_XPUB_MANUAL)
-    {
+    if (option_ == ZMQ_XPUB_VERBOSE
+     || option_ == ZMQ_XPUB_VERBOSER
+     || option_ == ZMQ_XPUB_NODROP
+     || option_ == ZMQ_XPUB_MANUAL) {
         if (optvallen_ != sizeof(int) || *static_cast <const int*> (optval_) < 0) {
             errno = EINVAL;
             return -1;
         }
-
-        if (option_ == ZMQ_XPUB_VERBOSE)
+        if (option_ == ZMQ_XPUB_VERBOSE) {
             verbose_subs = (*static_cast <const int*> (optval_) != 0);
+            verbose_unsubs = 0;
+        }
         else
-        if (option_ == ZMQ_XPUB_VERBOSE_UNSUBSCRIBE)
-            verbose_unsubs = (*static_cast <const int*> (optval_) != 0);
+        if (option_ == ZMQ_XPUB_VERBOSER) {
+            verbose_subs = (*static_cast <const int*> (optval_) != 0);
+            verbose_unsubs = verbose_subs;
+        }
         else
         if (option_ == ZMQ_XPUB_NODROP)
             lossy = (*static_cast <const int*> (optval_) == 0);
@@ -155,15 +159,13 @@ int zmq::xpub_t::xsetsockopt (int option_, const void *optval_,
     }
     else
     if (option_ == ZMQ_SUBSCRIBE && manual) {
-        if (last_pipe != NULL) {
-            subscriptions.add((unsigned char *)optval_, optvallen_, last_pipe);
-        }
+        if (last_pipe != NULL)
+            subscriptions.add ((unsigned char *)optval_, optvallen_, last_pipe);
     }
     else
     if (option_ == ZMQ_UNSUBSCRIBE && manual) {
-        if (last_pipe != NULL) {
-            subscriptions.rm((unsigned char *)optval_, optvallen_, last_pipe);
-        }
+        if (last_pipe != NULL)
+            subscriptions.rm ((unsigned char *)optval_, optvallen_, last_pipe);
     }
     else
     if (option_ == ZMQ_XPUB_WELCOME_MSG) {

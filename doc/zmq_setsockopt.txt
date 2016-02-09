@@ -870,14 +870,13 @@ Default value:: -1 (leave to OS default)
 Applicable socket types:: all, when using TCP transports.
 
 
-ZMQ_TCP_RETRANSMIT_TIMEOUT: Set TCP Retransmit Timeout
+ZMQ_TCP_MAXRT: Set TCP Maximum Retransmit Timeout
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 On OSes where it is supported, sets how long before an unacknowledged TCP
-retransmit times out.
-The system normally attempts many TCP retransmits following an exponential
-backoff strategy. This means that after a network outage, it may take a long
-time before the session can be re-established. Setting this option allows
-the timeout to happen at a shorter interval.
+retransmit times out. The system normally attempts many TCP retransmits
+following an exponential backoff strategy. This means that after a network
+outage, it may take a long time before the session can be re-established.
+Setting this option allows the timeout to happen at a shorter interval.
 
 [horizontal]
 Option value type:: int
@@ -916,11 +915,11 @@ Default value:: N/A
 Applicable socket types:: ZMQ_SUB
 
 
-ZMQ_XPUB_VERBOSE: provide all subscription messages on XPUB sockets
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Sets the 'XPUB' socket behaviour on new subscriptions and unsubscriptions.
-A value of '0' is the default and passes only new subscription messages to
-upstream. A value of '1' passes all subscription messages upstream.
+ZMQ_XPUB_VERBOSE: pass subscribe messages on XPUB socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the 'XPUB' socket behaviour on new subscriptions. If enabled,
+the socket passes all subscribe messages to the caller. If disabled,
+these are not visible to the caller. The default is 0 (disabled).
 
 [horizontal]
 Option value type:: int
@@ -929,17 +928,12 @@ Default value:: 0
 Applicable socket types:: ZMQ_XPUB
 
 
-ZMQ_XPUB_VERBOSE_UNSUBSCRIBE: provide all unsubscription messages on XPUB sockets
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Sets the 'XPUB' socket behaviour on new subscriptions and unsubscriptions.
-A value of '0' is the default and passes only the last unsubscription message to
-upstream. A value of '1' passes all unsubscription messages upstream.
-
-This behaviour should be enabled in all the intermediary XPUB sockets if
-ZMQ_XPUB_VERBOSE is also being used in order to allow the correct forwarding
-of all the unsubscription messages.
-
-NOTE: This behaviour only takes effect when ZMQ_XPUB_VERBOSE is also enabled.
+ZMQ_XPUB_VERBOSER: pass subscribe and unsubscribe messages on XPUB socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the 'XPUB' socket behaviour on new subscriptions and ubsubscriptions.
+If enabled, the socket passes all subscribe and unsubscribe messages to the
+caller. If disabled, these are not visible to the caller. The default is 0
+(disabled).
 
 [horizontal]
 Option value type:: int
@@ -1108,31 +1102,6 @@ Option value unit:: boolean
 Default value:: 1 (true)
 Applicable socket types:: all, when using TCP transports.
 
-ZMQ_TCP_RECV_BUFFER: Size of the TCP receive buffer
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_TCP_RECV_BUFFER' specifies the maximum number of bytes which can
-be received by an individual syscall to receive data from the TCP socket.
-The default value is 8192.
-
-
-[horizontal]
-Option value type:: int
-Option value unit:: >0
-Default value:: 8192
-Applicable socket types:: all, when using TCP transport
-
-ZMQ_TCP_SEND_BUFFER: Size of the TCP receive buffer
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_TCP_SEND_BUFFER' specifies the maximum number of bytes which can
-be sent by an individual syscall to transmit data to the TCP socket.
-The default value is 8192.
-
-
-[horizontal]
-Option value type:: int
-Option value unit:: >0
-Default value:: 8192
-Applicable socket types:: all, when using TCP transport
 
 ZMQ_VMCI_BUFFER_SIZE: Set buffer size of the VMCI socket
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

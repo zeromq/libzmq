@@ -36,6 +36,7 @@
 #endif
 
 #include <limits>
+#include <climits>
 #include <new>
 #include <string.h>
 
@@ -79,6 +80,7 @@ zmq::ctx_t::ctx_t () :
     slot_count (0),
     slots (NULL),
     max_sockets (clipped_maxsocket (ZMQ_MAX_SOCKETS_DFLT)),
+    max_msgsz (INT_MAX),
     io_thread_count (ZMQ_IO_THREADS_DFLT),
     blocky (true),
     ipv6 (false),
@@ -251,18 +253,24 @@ int zmq::ctx_t::set (int option_, int optval_)
     if (option_ == ZMQ_THREAD_PRIORITY && optval_ >= 0) {
         opt_sync.lock();
         thread_priority = optval_;
-        opt_sync.unlock();
+        opt_sync.unlock ();
     }
     else
     if (option_ == ZMQ_THREAD_SCHED_POLICY && optval_ >= 0) {
         opt_sync.lock();
         thread_sched_policy = optval_;
-        opt_sync.unlock();
+        opt_sync.unlock ();
     }
     else
     if (option_ == ZMQ_BLOCKY && optval_ >= 0) {
         opt_sync.lock ();
         blocky = (optval_ != 0);
+        opt_sync.unlock ();
+    }
+    else
+    if (option_ == ZMQ_MAX_MSGSZ && optval_ >= 0) {
+        opt_sync.lock ();
+        max_msgsz = optval_ < INT_MAX? optval_: INT_MAX;
         opt_sync.unlock ();
     }
     else {
@@ -289,6 +297,9 @@ int zmq::ctx_t::get (int option_)
     else
     if (option_ == ZMQ_BLOCKY)
         rc = blocky;
+    else
+    if (option_ == ZMQ_MAX_MSGSZ)
+        rc = max_msgsz;
     else {
         errno = EINVAL;
         rc = -1;
