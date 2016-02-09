@@ -492,7 +492,7 @@ Default value:: not set
 Applicable socket types:: all, when using TCP transport
 
 
-ZMQ_USEFD: Set the pre-allocated socket file descriptor
+ZMQ_USE_FD: Set the pre-allocated socket file descriptor
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 When set to a positive integer value before zmq_bind is called on the socket,
 the socket shall use the corresponding file descriptor for connections over
