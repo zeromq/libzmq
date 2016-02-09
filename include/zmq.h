@@ -185,13 +185,13 @@ ZMQ_EXPORT void zmq_version (int *major, int *minor, int *patch);
 /*  0MQ infrastructure (a.k.a. context) initialisation & termination.         */
 /******************************************************************************/
 
-/*  New API                                                                   */
 /*  Context options                                                           */
 #define ZMQ_IO_THREADS  1
 #define ZMQ_MAX_SOCKETS 2
 #define ZMQ_SOCKET_LIMIT 3
 #define ZMQ_THREAD_PRIORITY 3
 #define ZMQ_THREAD_SCHED_POLICY 4
+#define ZMQ_MAX_MSGSZ 5
 
 /*  Default for new contexts                                                  */
 #define ZMQ_IO_THREADS_DFLT  1

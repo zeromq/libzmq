@@ -164,12 +164,12 @@ void *zmq_ctx_new (void)
 
 int zmq_ctx_term (void *ctx_)
 {
-    if (!ctx_ || !((zmq::ctx_t*) ctx_)->check_tag ()) {
+    if (!ctx_ || !((zmq::ctx_t *) ctx_)->check_tag ()) {
         errno = EFAULT;
         return -1;
     }
 
-    int rc = ((zmq::ctx_t*) ctx_)->terminate ();
+    int rc = ((zmq::ctx_t *) ctx_)->terminate ();
     int en = errno;
 
     //  Shut down only if termination was not interrupted by a signal.
@@ -193,30 +193,29 @@ int zmq_ctx_term (void *ctx_)
 
 int zmq_ctx_shutdown (void *ctx_)
 {
-    if (!ctx_ || !((zmq::ctx_t*) ctx_)->check_tag ()) {
+    if (!ctx_ || !((zmq::ctx_t *) ctx_)->check_tag ()) {
         errno = EFAULT;
         return -1;
     }
-
-    return ((zmq::ctx_t*) ctx_)->shutdown ();
+    return ((zmq::ctx_t *) ctx_)->shutdown ();
 }
 
 int zmq_ctx_set (void *ctx_, int option_, int optval_)
 {
-    if (!ctx_ || !((zmq::ctx_t*) ctx_)->check_tag ()) {
+    if (!ctx_ || !((zmq::ctx_t *) ctx_)->check_tag ()) {
         errno = EFAULT;
         return -1;
     }
-    return ((zmq::ctx_t*) ctx_)->set (option_, optval_);
+    return ((zmq::ctx_t *) ctx_)->set (option_, optval_);
 }
 
 int zmq_ctx_get (void *ctx_, int option_)
 {
-    if (!ctx_ || !((zmq::ctx_t*) ctx_)->check_tag ()) {
+    if (!ctx_ || !((zmq::ctx_t *) ctx_)->check_tag ()) {
         errno = EFAULT;
         return -1;
     }
-    return ((zmq::ctx_t*) ctx_)->get (option_);
+    return ((zmq::ctx_t *) ctx_)->get (option_);
 }
 
 //  Stable/legacy context API
@@ -247,11 +246,11 @@ int zmq_ctx_destroy (void *ctx_)
 
 void *zmq_socket (void *ctx_, int type_)
 {
-    if (!ctx_ || !((zmq::ctx_t*) ctx_)->check_tag ()) {
+    if (!ctx_ || !((zmq::ctx_t *) ctx_)->check_tag ()) {
         errno = EFAULT;
         return NULL;
     }
-    zmq::ctx_t *ctx = (zmq::ctx_t*) ctx_;
+    zmq::ctx_t *ctx = (zmq::ctx_t *) ctx_;
     zmq::socket_base_t *s = ctx->create_socket (type_);
     return (void *) s;
 }
@@ -366,15 +365,20 @@ int zmq_disconnect (void *s_, const char *addr_)
 
 // Sending functions.
 
-static int
+static inline int
 s_sendmsg (zmq::socket_base_t *s_, zmq_msg_t *msg_, int flags_)
 {
     size_t sz = zmq_msg_size (msg_);
     int rc = s_->send ((zmq::msg_t *) msg_, flags_);
     if (unlikely (rc < 0))
         return -1;
-    // truncate returned size to INT_MAX to avoid overflow to negative values
-    return (int) (sz < INT_MAX ? sz : INT_MAX);
+
+    //  This is what I'd like to do, my C++ fu is too weak -- PH 2016/02/09
+    //  int max_msgsz = s_->parent->get (ZMQ_MAX_MSGSZ);
+    size_t max_msgsz = INT_MAX;
+
+    //  Truncate returned size to INT_MAX to avoid overflow to negative values
+    return (int) (sz < max_msgsz? sz: max_msgsz);
 }
 
 /*  To be deprecated once zmq_msg_send() is stable                           */
@@ -407,7 +411,6 @@ int zmq_send (void *s_, const void *buf_, size_t len_, int flags_)
         errno = err;
         return -1;
     }
-
     //  Note the optimisation here. We don't close the msg object as it is
     //  empty anyway. This may change when implementation of zmq_msg_t changes.
     return rc;
@@ -433,7 +436,6 @@ int zmq_send_const (void *s_, const void *buf_, size_t len_, int flags_)
         errno = err;
         return -1;
     }
-
     //  Note the optimisation here. We don't close the msg object as it is
     //  empty anyway. This may change when implementation of zmq_msg_t changes.
     return rc;
@@ -484,12 +486,13 @@ int zmq_sendiov (void *s_, iovec *a_, size_t count_, int flags_)
 static int
 s_recvmsg (zmq::socket_base_t *s_, zmq_msg_t *msg_, int flags_)
 {
-    int rc = s_->recv ((zmq::msg_t*) msg_, flags_);
+    int rc = s_->recv ((zmq::msg_t *) msg_, flags_);
     if (unlikely (rc < 0))
         return -1;
-    // truncate returned size to INT_MAX to avoid overflow to negative values
+
+    //  Truncate returned size to INT_MAX to avoid overflow to negative values
     size_t sz = zmq_msg_size (msg_);
-    return (int) (sz < INT_MAX ? sz : INT_MAX);
+    return (int) (sz < INT_MAX? sz: INT_MAX);
 }
 
 /*  To be deprecated once zmq_msg_recv() is stable                           */

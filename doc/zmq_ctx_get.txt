@@ -26,19 +26,29 @@ ZMQ_IO_THREADS: Get number of I/O threads
 The 'ZMQ_IO_THREADS' argument returns the size of the 0MQ thread pool
 for this context.
 
+
 ZMQ_MAX_SOCKETS: Get maximum number of sockets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_MAX_SOCKETS' argument returns the maximum number of sockets
 allowed for this context.
+
+
+ZMQ_MAX_MSGSZ: Get maximum message size
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_MAX_MSGSZ' argument returns the maximum size of a message
+allowed for this context. Default value is INT_MAX.
+
 
 ZMQ_SOCKET_LIMIT: Get largest configurable number of sockets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_SOCKET_LIMIT' argument returns the largest number of sockets that
 linkzmq:zmq_ctx_set[3] will accept.
 
+
 ZMQ_IPV6: Set IPv6 option
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_IPV6' argument returns the IPv6 option for the context.
+
 
 ZMQ_BLOCKY: Get blocky setting
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
