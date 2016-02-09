@@ -335,7 +335,7 @@ ZMQ_EXPORT const char *zmq_msg_group (zmq_msg_t *msg);
 #define ZMQ_HEARTBEAT_IVL 75
 #define ZMQ_HEARTBEAT_TTL 76
 #define ZMQ_HEARTBEAT_TIMEOUT 77
-#define ZMQ_XPUB_VERBOSE_UNSUBSCRIBE 78
+#define ZMQ_XPUB_VERBOSER 78
 #define ZMQ_CONNECT_TIMEOUT 79
 #define ZMQ_TCP_MAXRT 80
 #define ZMQ_THREAD_SAFE 81
