@@ -52,7 +52,7 @@ void pre_allocate_sock (void *zmq_socket, const char *address,
     rc = listen (s_pre, SOMAXCONN);
     assert (rc == 0);
 
-    rc = zmq_setsockopt (zmq_socket, ZMQ_USEFD, &s_pre,
+    rc = zmq_setsockopt (zmq_socket, ZMQ_USE_FD, &s_pre,
             sizeof (s_pre));
     assert(rc == 0);
 }

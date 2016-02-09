@@ -90,8 +90,8 @@ if(NOT WIN32)
           test_stream_exceeds_buffer
           test_router_mandatory_hwm
           test_term_endpoint_tipc
-          test_usefd_ipc
-          test_usefd_tcp
+          test_use_fd_ipc
+          test_use_fd_tcp
   )
   if(HAVE_FORK)
     list(APPEND tests test_fork)

@@ -158,7 +158,7 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
     //  MUST NOT unlink if the FD is managed by the user, or it will stop
     //  working after the first client connects. The user will take care of
     //  cleaning up the file after the service is stopped.
-    if (options.usefd == -1) {
+    if (options.use_fd == -1) {
         ::unlink (addr.c_str());
     }
     filename.clear ();
@@ -171,8 +171,8 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
 
     address.to_string (endpoint);
 
-    if (options.usefd != -1) {
-        s = options.usefd;
+    if (options.use_fd != -1) {
+        s = options.use_fd;
     } else {
         //  Create a listening socket.
         s = open_socket (AF_UNIX, SOCK_STREAM, 0);
@@ -216,7 +216,7 @@ int zmq::ipc_listener_t::close ()
     //  MUST NOT unlink if the FD is managed by the user, or it will stop
     //  working after the first client connects. The user will take care of
     //  cleaning up the file after the service is stopped.
-    if (has_file && !filename.empty () && options.usefd == -1) {
+    if (has_file && !filename.empty () && options.use_fd == -1) {
         rc = ::unlink(filename.c_str ());
         if (rc != 0) {
             socket->event_close_failed (endpoint, zmq_errno());
