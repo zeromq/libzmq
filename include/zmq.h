@@ -325,6 +325,8 @@ ZMQ_EXPORT const char *zmq_msg_group (zmq_msg_t *msg);
 #define ZMQ_HANDSHAKE_IVL 66
 #define ZMQ_SOCKS_PROXY 68
 #define ZMQ_XPUB_NODROP 69
+//  All options after this is for version 4.2 and still *draft*
+//  Subject to arbitrary change without notice
 #define ZMQ_BLOCKY 70
 #define ZMQ_XPUB_MANUAL 71
 #define ZMQ_XPUB_WELCOME_MSG 72
@@ -335,7 +337,7 @@ ZMQ_EXPORT const char *zmq_msg_group (zmq_msg_t *msg);
 #define ZMQ_HEARTBEAT_TIMEOUT 77
 #define ZMQ_XPUB_VERBOSE_UNSUBSCRIBE 78
 #define ZMQ_CONNECT_TIMEOUT 79
-#define ZMQ_TCP_RETRANSMIT_TIMEOUT 80
+#define ZMQ_TCP_MAXRT 80
 #define ZMQ_THREAD_SAFE 81
 #define ZMQ_TCP_RECV_BUFFER 82
 #define ZMQ_TCP_SEND_BUFFER 83

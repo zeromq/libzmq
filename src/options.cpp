@@ -48,7 +48,7 @@ zmq::options_t::options_t () :
     type (-1),
     linger (-1),
     connect_timeout (0),
-    tcp_retransmit_timeout (0),
+    tcp_maxrt (0),
     reconnect_ivl (100),
     reconnect_ivl_max (0),
     backlog (100),
@@ -178,9 +178,9 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             break;
 
-        case ZMQ_TCP_RETRANSMIT_TIMEOUT:
+        case ZMQ_TCP_MAXRT:
             if (is_int && value >= 0) {
-                tcp_retransmit_timeout = value;
+                tcp_maxrt = value;
                 return 0;
             }
             break;
@@ -745,9 +745,9 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
             }
             break;
 
-        case ZMQ_TCP_RETRANSMIT_TIMEOUT:
+        case ZMQ_TCP_MAXRT:
             if (is_int) {
-                *value = tcp_retransmit_timeout;
+                *value = tcp_maxrt;
                 return 0;
             }
             break;

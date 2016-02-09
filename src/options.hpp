@@ -104,7 +104,7 @@ namespace zmq
         //  Maximum interval in milliseconds beyond which TCP will timeout
         //  retransmitted packets.
         //  Default 0 (unused)
-        int tcp_retransmit_timeout;
+        int tcp_maxrt;
 
         //  Minimum interval between attempts to reconnect, in milliseconds.
         //  Default 100ms
