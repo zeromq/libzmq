@@ -84,7 +84,7 @@ void zmq::set_tcp_send_buffer (fd_t sockfd_, int bufsize_)
 void zmq::set_tcp_receive_buffer (fd_t sockfd_, int bufsize_)
 {
     const int rc = setsockopt (sockfd_, SOL_SOCKET, SO_RCVBUF,
-        (char*) &bufsize_, sizeof bufsize_);
+        (char *) &bufsize_, sizeof bufsize_);
 #ifdef ZMQ_HAVE_WINDOWS
     wsa_assert (rc != SOCKET_ERROR);
 #else

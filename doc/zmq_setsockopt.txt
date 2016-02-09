@@ -1102,31 +1102,6 @@ Option value unit:: boolean
 Default value:: 1 (true)
 Applicable socket types:: all, when using TCP transports.
 
-ZMQ_TCP_RECV_BUFFER: Size of the TCP receive buffer
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_TCP_RECV_BUFFER' specifies the maximum number of bytes which can
-be received by an individual syscall to receive data from the TCP socket.
-The default value is 8192.
-
-
-[horizontal]
-Option value type:: int
-Option value unit:: >0
-Default value:: 8192
-Applicable socket types:: all, when using TCP transport
-
-ZMQ_TCP_SEND_BUFFER: Size of the TCP receive buffer
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_TCP_SEND_BUFFER' specifies the maximum number of bytes which can
-be sent by an individual syscall to transmit data to the TCP socket.
-The default value is 8192.
-
-
-[horizontal]
-Option value type:: int
-Option value unit:: >0
-Default value:: 8192
-Applicable socket types:: all, when using TCP transport
 
 ZMQ_VMCI_BUFFER_SIZE: Set buffer size of the VMCI socket
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

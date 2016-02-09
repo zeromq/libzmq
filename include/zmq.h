@@ -339,8 +339,6 @@ ZMQ_EXPORT const char *zmq_msg_group (zmq_msg_t *msg);
 #define ZMQ_CONNECT_TIMEOUT 79
 #define ZMQ_TCP_MAXRT 80
 #define ZMQ_THREAD_SAFE 81
-#define ZMQ_TCP_RECV_BUFFER 82
-#define ZMQ_TCP_SEND_BUFFER 83
 #define ZMQ_MULTICAST_MAXTPDU 84
 #define ZMQ_VMCI_BUFFER_SIZE 85
 #define ZMQ_VMCI_BUFFER_MIN_SIZE 86
