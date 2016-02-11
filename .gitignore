@@ -172,3 +172,6 @@ zeromq-*.zip
 core
 build
 test-suite.log
+project.Makefile
+libzmq.target.mk
+
