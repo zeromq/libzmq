@@ -461,7 +461,7 @@ else
     libzmq_pedantic="no"    #   Disable pedantic warnings
 fi
 
-AM_CONDITIONAL(USE_LIBSODIUM, test "$curve_library" == "sodium")
+AM_CONDITIONAL(USE_LIBSODIUM, test "$curve_library" == "libsodium")
 AM_CONDITIONAL(USE_TWEETNACL, test "$curve_library" == "tweetnacl")
 
 # build using pgm
