@@ -427,33 +427,22 @@ fi
 have_sodium_library="no"
 
 AC_ARG_WITH([libsodium], [AS_HELP_STRING([--with-libsodium],
-    [require libzmq build with libsodium crypto library. Requires pkg-config [default=check]])],
+    [build libzmq with libsodium crypto library. Requires pkg-config [default=no]])],
     [require_libsodium_ext=$withval],
-    [require_libsodium_ext=check])
+    [require_libsodium_ext=no])
 
 AC_ARG_WITH([tweetnacl], [AS_HELP_STRING([--with-tweetnacl],
-    [build libzmq  with bundled tweetnacl crypto library [default=no]])],
-    [require_libsodium_ext=no
-     with_tweetnacl=yes
-     AC_MSG_CHECKING(for sodium)
-     AC_MSG_RESULT(tweetnacl)],
-    [with_tweetnacl=check])
+    [build libzmq with bundled tweetnacl crypto library [default=yes]])],
+    [with_tweetnacl=$withval],
+    [with_tweetnacl=yes])
 
 # conditionally require libsodium package
 if test "x$require_libsodium_ext" != "xno"; then
+  with_tweetnacl=no
   PKG_CHECK_MODULES([sodium], [libsodium],
+    [have_sodium_library=yes],
     [
-      have_sodium_library=yes
-      with_tweetnacl=no
-    ],
-    [
-      if test "x$require_libsodium_ext" == "xyes"; then
-        AC_MSG_ERROR(libsodium has been requested but not found)
-      else
-        AC_MSG_RESULT([             libsodium not found, using tweetnacl])
-        have_sodium_library=no
-        with_tweetnacl=yes
-      fi
+      AC_MSG_ERROR(libsodium could not be found. Build with tweetnacl instead?)
     ])
 fi
 
@@ -468,6 +457,8 @@ if test "x$have_sodium_library" != "xno"; then
         ;;
     esac
 elif test "x$with_tweetnacl" != "xno"; then
+    AC_MSG_CHECKING(for sodium)
+    AC_MSG_RESULT(tweetnacl)
     AC_DEFINE(HAVE_LIBSODIUM, 1, [Sodium is provided by tweetnacl.])
     AC_DEFINE(HAVE_TWEETNACL, 1, [Using tweetnacl.])
     libzmq_pedantic="no"
