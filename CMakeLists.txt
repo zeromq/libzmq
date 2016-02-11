@@ -26,13 +26,14 @@ elseif (WITH_SODIUM)
     find_package (Sodium)
     if (SODIUM_FOUND)
         message (STATUS "Using libsodium for CURVE security")
-        add_definitions (-DZMQ_HAVE_CURVE -DHAVE_LIBSODIUM)
         include_directories (${SODIUM_INCLUDE_DIRS})
 
         # On Solaris, libsodium depends on libssp
         if (${CMAKE_SYSTEM_NAME} matches "SunOS")
             target_link_libraries (libzmq ssp)
         endif ()
+        set (HAVE_LIBSODIUM 1)
+        set (ZMQ_HAVE_CURVE 1)
     else ()
         message (FATAL_ERROR
             "libsodium is not installed. Install it, then run CMake again")
@@ -40,17 +41,9 @@ elseif (WITH_SODIUM)
 
 else ()
     message (STATUS "Using tweetnacl for CURVE security")
-    add_definitions (-DZMQ_HAVE_CURVE -DHAVE_TWEETNACL)
-    include_directories (tweetnacl/contrib/randombytes tweetnacl/src)
-    list (APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/tweetnacl/src/tweetnacl.c)
-    #   TODO: this should be a single coherent source file
-    if (WIN32)
-        list (APPEND sources
-            ${CMAKE_CURRENT_SOURCE_DIR}/tweetnacl/contrib/randombytes/winrandom.c)
-    else ()
-        list (APPEND sources
-            ${CMAKE_CURRENT_SOURCE_DIR}/tweetnacl/contrib/randombytes/devurandom.c)
-    endif ()
+    list (APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/src/tweetnacl.c)
+    set (ZMQ_USE_TWEETNACL 1)
+    set (ZMQ_HAVE_CURVE 1)
 endif ()
 
 set (POLLER "" CACHE STRING "Choose polling system. valid values are
@@ -564,8 +557,6 @@ set (zmq-pkgconfig ${CMAKE_CURRENT_BINARY_DIR}/libzmq.pc)
 if (NOT ZMQ_BUILD_FRAMEWORK)
   install (FILES ${CMAKE_CURRENT_BINARY_DIR}/libzmq.pc DESTINATION lib/pkgconfig)
 endif ()
-
-
 
 if (MSVC)
   if (CMAKE_CL_64)
