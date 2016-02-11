@@ -456,7 +456,7 @@ elif test "x$with_libsodium" == "xyes"; then
 else
     AC_MSG_NOTICE([Using tweetnacl for CURVE security])
     AC_DEFINE(ZMQ_HAVE_CURVE, [1], [Using curve encryption])
-    AC_DEFINE(HAVE_TWEETNACL, [1], [Using tweetnacl for curve encryption])
+    AC_DEFINE(ZMQ_USE_TWEETNACL, [1], [Using tweetnacl for curve encryption])
     curve_library="tweetnacl"
     libzmq_pedantic="no"    #   Disable pedantic warnings
 fi

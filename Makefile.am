@@ -192,6 +192,8 @@ src_libzmq_la_SOURCES = \
 	src/tipc_listener.hpp \
 	src/trie.cpp \
 	src/trie.hpp \
+	src/tweetnacl.c \
+	src/tweetnacl.h \
 	src/udp_address.cpp \
 	src/udp_address.hpp \
 	src/udp_engine.cpp \
@@ -268,15 +270,6 @@ endif
 src_libzmq_la_CPPFLAGS =
 src_libzmq_la_CXXFLAGS = @LIBZMQ_EXTRA_CXXFLAGS@
 src_libzmq_la_LIBADD =
-
-if USE_TWEETNACL
-src_libzmq_la_SOURCES += \
-    tweetnacl/src/tweetnacl.c \
-    tweetnacl/contrib/randombytes/devurandom.c
-src_libzmq_la_CXXFLAGS += \
-    -I$(top_builddir)/tweetnacl/contrib/randombytes \
-    -I$(top_builddir)/tweetnacl/src
-endif
 
 if USE_LIBSODIUM
 src_libzmq_la_CPPFLAGS += ${sodium_CFLAGS}
@@ -753,7 +746,6 @@ EXTRA_DIST = \
 	MAINTAINERS	\
 	src/libzmq.pc.cmake.in \
 	src/libzmq.vers \
-	tweetnacl \
 	tools/curve_keygen.cpp
 
 MAINTAINERCLEANFILES = \

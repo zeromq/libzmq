@@ -48,8 +48,8 @@
 #include "err.hpp"
 #include "msg.hpp"
 
-#if defined (HAVE_TWEETNACL)
-#   include "randombytes.h"
+#if defined (ZMQ_USE_TWEETNACL)
+#   include "tweetnacl.h"
 #elif defined (HAVE_LIBSODIUM)
 #   include "sodium.h"
 #endif

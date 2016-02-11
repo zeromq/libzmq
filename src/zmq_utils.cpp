@@ -38,14 +38,13 @@
 #include <assert.h>
 
 #if !defined ZMQ_HAVE_WINDOWS
-#include <unistd.h>
+#   include <unistd.h>
 #else
-#include "windows.hpp"
+#   include "windows.hpp"
 #endif
 
-#if defined (HAVE_TWEETNACL)
-#   include "tweetnacl_base.h"
-#   include "randombytes.h"
+#if defined (ZMQ_USE_TWEETNACL)
+#   include "tweetnacl.h"
 #elif defined (HAVE_LIBSODIUM)
 #   include "sodium.h"
 #endif

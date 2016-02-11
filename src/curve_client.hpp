@@ -35,9 +35,8 @@
 #include "platform.hpp"
 #include "mutex.hpp"
 
-#if defined (HAVE_TWEETNACL)
-#   include "tweetnacl_base.h"
-#   include "randombytes.h"
+#if defined (ZMQ_USE_TWEETNACL)
+#   include "tweetnacl.h"
 #elif defined (HAVE_LIBSODIUM)
 #   include "sodium.h"
 #endif
@@ -47,7 +46,7 @@
 ||  crypto_box_SECRETKEYBYTES != 32 \
 ||  crypto_box_ZEROBYTES != 32 \
 ||  crypto_box_BOXZEROBYTES != 16
-#   error "libsodium not built properly"
+#   error "CURVE library not built properly"
 #endif
 
 #include "mechanism.hpp"

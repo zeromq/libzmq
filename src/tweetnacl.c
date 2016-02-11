@@ -1,22 +1,39 @@
-#if defined(HAVE_NACL_COMPABILTY)
-/* NaCL Compabilty */
+/*
+    Copyright (c) 2016 Contributors as noted in the AUTHORS file
+
+    This file is part of libzmq, the ZeroMQ core engine in C++.
+
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
+    (at your option) any later version.
+
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
+
+    You should have received a copy of the GNU Lesser General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#include "platform.hpp"
+#if defined (ZMQ_USE_TWEETNACL)
+
 #include "tweetnacl.h"
-#else
-/* direct tweetnacl usage */
-#include "tweetnacl_base.h"
-#endif
 
 #define FOR(i,n) for (i = 0;i < n;++i)
 #define sv static void
-
-#ifndef TWEETNACL_BASE_H
-typedef unsigned char u8;
-typedef unsigned long u32;
-typedef unsigned long long u64;
-typedef long long i64;
-typedef i64 gf[16];
-#endif
-extern void randombytes(u8 *,u64);
 
 static const u8
   _0[16],
@@ -816,3 +833,102 @@ int crypto_sign_open(u8 *m,u64 *mlen,const u8 *sm,u64 n,const u8 *pk)
   *mlen = n;
   return 0;
 }
+
+
+#ifdef ZMQ_HAVE_WINDOWS
+
+#include <windows.h>
+#include <WinCrypt.h>
+
+#define NCP ((HCRYPTPROV) 0)
+
+HCRYPTPROV hProvider = NCP;
+
+void randombytes(unsigned char *x,unsigned long long xlen)
+{
+    unsigned i;
+    BOOL ret;
+
+    if (hProvider == NCP) {
+        for (;;) {
+            ret = CryptAcquireContext(&hProvider, NULL, NULL,
+                                      PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_SILENT);
+            if (ret != FALSE)
+                break;
+            Sleep (1);
+        }
+    }
+    while (xlen > 0) {
+        if (xlen < 1048576)
+            i = (unsigned) xlen;
+        else
+            i = 1048576;
+
+        ret = CryptGenRandom(hProvider, i, x);
+        if (ret == FALSE) {
+            Sleep(1);
+            continue;
+        }
+        x += i;
+        xlen -= i;
+    }
+}
+
+int randombytes_close(void)
+{
+    int rc = -1;
+    if ((hProvider != NCP) && (CryptReleaseContext(hProvider, 0) != FALSE)) {
+        hProvider = NCP;
+        rc = 0;
+    }
+    return rc;
+}
+
+#else
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+static int fd = -1;
+
+void randombytes (unsigned char *x,unsigned long long xlen)
+{
+    int i;
+    if (fd == -1) {
+        for (;;) {
+            fd = open("/dev/urandom",O_RDONLY);
+            if (fd != -1) break;
+                sleep (1);
+        }
+    }
+    while (xlen > 0) {
+        if (xlen < 1048576)
+            i = xlen;
+        else
+            i = 1048576;
+
+        i = read(fd,x,i);
+        if (i < 1) {
+            sleep (1);
+            continue;
+        }
+        x += i;
+        xlen -= i;
+    }
+}
+
+int randombytes_close (void)
+{
+    int rc = -1;
+    if (fd != -1 && close(fd) == 0) {
+        fd = -1;
+        rc = 0;
+    }
+    return rc;
+}
+
+#endif
+
+#endif
