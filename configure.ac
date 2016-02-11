@@ -53,9 +53,9 @@ PKG_PROG_PKG_CONFIG
 m4_pattern_forbid([^PKG_[A-Z_]+$], [missing some pkg-config macros (pkg-config package)])
 
 # Libtool configuration for different targets. See acinclude.m4
-AC_ARG_VAR([XMLTO], [Path to xmlto command])
+AC_ARG_VAR([XMLTO], [path to xmlto command])
 AC_PATH_PROG([XMLTO], [xmlto])
-AC_ARG_VAR([ASCIIDOC], [Path to asciidoc command])
+AC_ARG_VAR([ASCIIDOC], [path to asciidoc command])
 AC_PATH_PROG([ASCIIDOC], [asciidoc])
 LIBZMQ_CONFIG_LIBTOOL
 AC_LIBTOOL_WIN32_DLL
@@ -103,7 +103,7 @@ AC_MSG_RESULT([$libzmq_tipc_support])
 
 AC_ARG_WITH([relaxed],
     [AS_HELP_STRING([--with-relaxed],
-        [Switch off pedantic compiler])],
+        [switch off pedantic compiler])],
     [zmq_relaxed="yes"],
     [])
 
@@ -115,7 +115,7 @@ fi
 
 AC_ARG_WITH([militant],
     [AS_HELP_STRING([--with-militant],
-        [Enable militant API assertions])],
+        [enable militant API assertions])],
     [zmq_militant="yes"],
     [])
 
@@ -347,19 +347,19 @@ AC_CHECK_HEADERS(sys/uio.h, [AC_DEFINE(ZMQ_HAVE_UIO, 1, [Have uio.h header.])])
 
 # Force not to use eventfd
 AC_ARG_ENABLE([eventfd],
-    [AS_HELP_STRING([--disable-eventfd], [disable eventfd [default=no]])],
+    [AS_HELP_STRING([--disable-eventfd], [disable eventfd [default=enabled]])],
     [zmq_enable_eventfd=$enableval],
     [zmq_enable_eventfd=yes])
 
 if test "x$zmq_enable_eventfd" = "xyes"; then
     # Check if we have eventfd.h header file.
     AC_CHECK_HEADERS(sys/eventfd.h,
-        [AC_DEFINE(ZMQ_HAVE_EVENTFD, 1, [Have eventfd extension.])])
+        [AC_DEFINE(ZMQ_HAVE_EVENTFD, 1, [Have eventfd extension])])
 fi
 
 # Conditionally build performance measurement tools
 AC_ARG_ENABLE([perf],
-    [AS_HELP_STRING([--enable-perf], [Build performance measurement tools [default=yes].])],
+    [AS_HELP_STRING([--disable-perf], [don't build performance measurement tools [default=build]])],
     [zmq_enable_perf=$enableval],
     [zmq_enable_perf=yes])
 
@@ -367,7 +367,7 @@ AM_CONDITIONAL(ENABLE_PERF, test "x$zmq_enable_perf" = "xyes")
 
 # Conditionally build curve key generation tool
 AC_ARG_ENABLE([curve-keygen],
-    [AS_HELP_STRING([--enable-curve-keygen], [Build curve key-generation tool [default=yes].])],
+    [AS_HELP_STRING([--disable-curve-keygen], [don't build curve-keygen tool [default=build]])],
     [zmq_enable_curve_keygen=$enableval],
     [zmq_enable_curve_keygen=yes])
 
@@ -424,7 +424,7 @@ fi
 # To disable curve, use --disable-curve
 
 AC_ARG_WITH([libsodium],
-    AS_HELP_STRING([--with-libsodium], [Use libsodium instead of built-in tweetnacl [default=no]]))
+    AS_HELP_STRING([--with-libsodium], [use libsodium instead of built-in tweetnacl [default=no]]))
 
 AS_IF([test "x$with_libsodium" = "xyes"], [
     PKG_CHECK_MODULES([sodium], [libsodium], [libsodium_found=yes], [
@@ -433,11 +433,12 @@ AS_IF([test "x$with_libsodium" = "xyes"], [
 ])
 
 AC_ARG_ENABLE([curve],
-    AS_HELP_STRING([--disable-curve], [Disable CURVE security [default=no]]))
+    AS_HELP_STRING([--disable-curve], [disable CURVE security [default=no]]))
 
 if test "x$enable_curve" == "xno"; then
     curve_library=""
     AC_MSG_NOTICE([CURVE security is disabled])
+    AM_CONDITIONAL(ENABLE_CURVE_KEYGEN, 0)
 
 elif test "x$with_libsodium" == "xyes"; then
     AC_MSG_NOTICE([Using libsodium for CURVE security])

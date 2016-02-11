@@ -92,8 +92,8 @@ AC_DEFUN([LIBZMQ_CHECK_DOC_BUILD], [{
     # Man pages are built/installed if asciidoc and xmlto are present
     #   --with-docs=no overrides this
     AC_ARG_WITH([docs],
-        AS_HELP_STRING([--with-docs],
-            [Build and install man pages [default=yes]]),
+        AS_HELP_STRING([--without-docs],
+            [Don't build and install man pages [default=build]]),
         [with_docs=$withval])
 
     if test "x$with_docs" = "xno"; then
@@ -279,7 +279,7 @@ AC_DEFUN([LIBZMQ_CHECK_ENABLE_DEBUG], [{
 
     # This flag is checked also in
     AC_ARG_ENABLE([debug], [AS_HELP_STRING([--enable-debug],
-        [Enable debugging information [default=no]])])
+        [enable debugging information [default=disabled]])])
 
     AC_MSG_CHECKING(whether to enable debugging information)
 
@@ -330,7 +330,7 @@ AC_DEFUN([LIBZMQ_WITH_GCOV], [{
     AC_REQUIRE([LIBZMQ_CHECK_COMPILERS])
 
     AC_ARG_WITH(gcov, [AS_HELP_STRING([--with-gcov=yes/no],
-                      [With GCC Code Coverage reporting.])],
+                      [with GCC Code Coverage reporting.])],
                       [ZMQ_GCOV="$withval"])
 
     AC_MSG_CHECKING(whether to enable code coverage)
