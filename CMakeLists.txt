@@ -29,7 +29,7 @@ elseif (WITH_LIBSODIUM)
         include_directories (${SODIUM_INCLUDE_DIRS})
 
         # On Solaris, libsodium depends on libssp
-        if (${CMAKE_SYSTEM_NAME} matches "SunOS")
+        if (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
             target_link_libraries (libzmq ssp)
         endif ()
         set (HAVE_LIBSODIUM 1)
