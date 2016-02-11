@@ -14,6 +14,15 @@ if [ $BUILD_TYPE == "default" ]; then
     CONFIG_OPTS+=("PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig")
     CONFIG_OPTS+=("--prefix=${BUILD_PREFIX}")
 
+    if [ -z $CURVE ]; then
+        CONFIG_OPTS+=("--disable-curve")
+    elif [ $CURVE == "libsodium" ]; then
+        CONFIG_OPTS+=("--with-libsodium=yes")
+
+        git clone --depth 1 -b stable git://github.com/jedisct1/libsodium.git
+        ( cd libsodium; ./autogen.sh; ./configure --prefix=$BUILD_PREFIX; make check; make install)
+    fi
+
     #   Build and check this project
     (
         ./autogen.sh &&
