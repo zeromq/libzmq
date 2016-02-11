@@ -22,7 +22,7 @@ option (ENABLE_CURVE "Enable CURVE security" ON)
 if (NOT ENABLE_CURVE)
     message (STATUS "CURVE security is disabled")
 
-elseif (WITH_SODIUM)
+elseif (WITH_LIBSODIUM)
     find_package (Sodium)
     if (SODIUM_FOUND)
         message (STATUS "Using libsodium for CURVE security")
