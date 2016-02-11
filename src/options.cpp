@@ -320,7 +320,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             break;
 
-#       if defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
+#if defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
         case ZMQ_IPC_FILTER_UID:
             if (optvallen_ == 0 && optval_ == NULL) {
                 ipc_uid_accept_filters.clear ();
@@ -344,9 +344,9 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 return 0;
             }
             break;
-#       endif
+#endif
 
-#       if defined ZMQ_HAVE_SO_PEERCRED
+#if defined ZMQ_HAVE_SO_PEERCRED
         case ZMQ_IPC_FILTER_PID:
             if (optvallen_ == 0 && optval_ == NULL) {
                 ipc_pid_accept_filters.clear ();
@@ -358,7 +358,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 return 0;
             }
             break;
-#       endif
+#endif
 
         case ZMQ_PLAIN_SERVER:
             if (is_int && (value == 0 || value == 1)) {
@@ -403,8 +403,8 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             break;
 
-        //  If libsodium isn't installed, these options provoke EINVAL
-#       ifdef HAVE_LIBSODIUM
+        //  If curve encryption isn't built, these options provoke EINVAL
+#ifdef ZMQ_HAVE_CURVE
         case ZMQ_CURVE_SERVER:
             if (is_int && (value == 0 || value == 1)) {
                 as_server = value;
@@ -496,7 +496,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 }
             }
             break;
-#       endif
+#endif
 
         case ZMQ_CONFLATE:
             if (is_int && (value == 0 || value == 1)) {
@@ -506,7 +506,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             break;
 
         //  If libgssapi isn't installed, these options provoke EINVAL
-#       ifdef HAVE_LIBGSSAPI_KRB5
+#ifdef HAVE_LIBGSSAPI_KRB5
         case ZMQ_GSSAPI_SERVER:
             if (is_int && (value == 0 || value == 1)) {
                 as_server = value;
@@ -538,7 +538,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 return 0;
             }
             break;
-#       endif
+#endif
 
         case ZMQ_HANDSHAKE_IVL:
             if (is_int && value >= 0) {
@@ -577,7 +577,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             break;
 
-#       ifdef ZMQ_HAVE_VMCI
+#ifdef ZMQ_HAVE_VMCI
         case ZMQ_VMCI_BUFFER_SIZE:
             if (optvallen_ == sizeof (uint64_t)) {
                 vmci_buffer_size = *((uint64_t*) optval_);
@@ -605,7 +605,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 return 0;
             }
             break;
-#       endif
+#endif
 
         case ZMQ_USE_FD:
             if (is_int && value >= -1) {
@@ -888,8 +888,8 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
             }
             break;
 
-        //  If libsodium isn't installed, these options provoke EINVAL
-#       ifdef HAVE_LIBSODIUM
+        //  If curve encryption isn't built, these options provoke EINVAL
+#ifdef ZMQ_HAVE_CURVE
         case ZMQ_CURVE_SERVER:
             if (is_int) {
                 *value = as_server && mechanism == ZMQ_CURVE;
@@ -932,7 +932,7 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
                 return 0;
             }
             break;
-#       endif
+#endif
 
         case ZMQ_CONFLATE:
             if (is_int) {
@@ -942,7 +942,7 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
             break;
 
         //  If libgssapi isn't installed, these options provoke EINVAL
-#       ifdef HAVE_LIBGSSAPI_KRB5
+#ifdef HAVE_LIBGSSAPI_KRB5
         case ZMQ_GSSAPI_SERVER:
             if (is_int) {
                 *value = as_server && mechanism == ZMQ_GSSAPI;

@@ -48,12 +48,10 @@
 #include "err.hpp"
 #include "msg.hpp"
 
-#ifdef HAVE_LIBSODIUM
-#ifdef HAVE_TWEETNACL
-#include "randombytes.h"
-#else
-#include "sodium.h"
-#endif
+#if defined (HAVE_TWEETNACL)
+#   include "randombytes.h"
+#elif defined (HAVE_LIBSODIUM)
+#   include "sodium.h"
 #endif
 
 #ifdef ZMQ_HAVE_VMCI
@@ -63,7 +61,7 @@
 #define ZMQ_CTX_TAG_VALUE_GOOD 0xabadcafe
 #define ZMQ_CTX_TAG_VALUE_BAD  0xdeadbeef
 
-int clipped_maxsocket(int max_requested)
+int clipped_maxsocket (int max_requested)
 {
     if (max_requested >= zmq::poller_t::max_fds () && zmq::poller_t::max_fds () != -1)
         // -1 because we need room for the reaper mailbox.
@@ -127,8 +125,8 @@ zmq::ctx_t::~ctx_t ()
 
     //  If we've done any Curve encryption, we may have a file handle
     //  to /dev/urandom open that needs to be cleaned up.
-#ifdef HAVE_LIBSODIUM
-    randombytes_close();
+#ifdef ZMQ_HAVE_CURVE
+    randombytes_close ();
 #endif
 
     //  Remove the tag, so that the object is considered dead.

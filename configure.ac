@@ -67,8 +67,6 @@ LIBZMQ_CHECK_ENABLE_DEBUG
 # Check wheter to enable code coverage
 LIBZMQ_WITH_GCOV
 
-
-
 AC_MSG_CHECKING([if TIPC is available and supports nonblocking connect])
 
 AC_RUN_IFELSE(
@@ -102,7 +100,6 @@ AC_RUN_IFELSE(
     [libzmq_tipc_support=no])
 
 AC_MSG_RESULT([$libzmq_tipc_support])
-
 
 AC_ARG_WITH([relaxed],
     [AS_HELP_STRING([--with-relaxed],
@@ -423,58 +420,49 @@ if test "x$require_libgssapi_krb5_ext" != "xno"; then
         AC_MSG_ERROR(libgssapi_krb5 is needed for GSSAPI security))
 fi
 
-# build using libsodium
-have_sodium_library="no"
+# Select curve encryption library, defaults to tweetnacl
+# To use libsodium instead, use --with-libsodium (must be installed)
+# To disable curve, use --disable-curve
 
-AC_ARG_WITH([libsodium], [AS_HELP_STRING([--with-libsodium],
-    [require libzmq build with libsodium crypto library. Requires pkg-config [default=check]])],
-    [require_libsodium_ext=$withval],
-    [require_libsodium_ext=check])
+AC_ARG_WITH([libsodium],
+    AS_HELP_STRING([--with-libsodium], [Use libsodium instead of built-in tweetnacl [default=no]]))
 
-AC_ARG_WITH([tweetnacl], [AS_HELP_STRING([--with-tweetnacl],
-    [build libzmq  with bundled tweetnacl crypto library [default=no]])],
-    [require_libsodium_ext=no
-     with_tweetnacl=yes
-     AC_MSG_CHECKING(for sodium)
-     AC_MSG_RESULT(tweetnacl)],
-    [with_tweetnacl=check])
-
-# conditionally require libsodium package
-if test "x$require_libsodium_ext" != "xno"; then
-  PKG_CHECK_MODULES([sodium], [libsodium],
-    [
-      have_sodium_library=yes
-      with_tweetnacl=no
-    ],
-    [
-      if test "x$require_libsodium_ext" == "xyes"; then
-        AC_MSG_ERROR(libsodium has been requested but not found)
-      else
-        AC_MSG_RESULT([             libsodium not found, using tweetnacl])
-        have_sodium_library=no
-        with_tweetnacl=yes
-      fi
+AS_IF([test "x$with_libsodium" = "xyes"], [
+    PKG_CHECK_MODULES([sodium], [libsodium], [libsodium_found=yes], [
+        AC_MSG_ERROR(libsodium is not installed. Install it, then run configure again)
     ])
-fi
+])
 
-if test "x$have_sodium_library" != "xno"; then
-    AC_DEFINE(HAVE_LIBSODIUM, 1, [The libsodium library is to be used.])
+AC_ARG_ENABLE([curve],
+    AS_HELP_STRING([--disable-curve], [Disable CURVE security [default=no]]))
 
-    # ssp library is required for libsodium on Solaris-like systems
+if test "x$enable_curve" == "xno"; then
+    curve_library=""
+    AC_MSG_NOTICE([CURVE security is disabled])
+
+elif test "x$with_libsodium" == "xyes"; then
+    AC_MSG_NOTICE([Using libsodium for CURVE security])
+    AC_DEFINE(ZMQ_HAVE_CURVE, [1], [Using curve encryption])
+    AC_DEFINE(HAVE_LIBSODIUM, [1], [Using libsodium for curve encryption])
+    curve_library="libsodium"
+
+    # On Solaris, libsodium depends on libssp
     case "${host_os}" in
         *solaris*)
             LDFLAGS="-lssp $LDFLAGS"
-            CPPFLAGS="$CPPFLAGS -Wno-long-long"
+            CPPFLAGS="-Wno-long-long $CPPFLAGS"
         ;;
     esac
-elif test "x$with_tweetnacl" != "xno"; then
-    AC_DEFINE(HAVE_LIBSODIUM, 1, [Sodium is provided by tweetnacl.])
-    AC_DEFINE(HAVE_TWEETNACL, 1, [Using tweetnacl.])
-    libzmq_pedantic="no"
+else
+    AC_MSG_NOTICE([Using tweetnacl for CURVE security])
+    AC_DEFINE(ZMQ_HAVE_CURVE, [1], [Using curve encryption])
+    AC_DEFINE(HAVE_TWEETNACL, [1], [Using tweetnacl for curve encryption])
+    curve_library="tweetnacl"
+    libzmq_pedantic="no"    #   Disable pedantic warnings
 fi
 
-AM_CONDITIONAL(HAVE_SODIUM, test "x$have_sodium_library" != "xno")
-AM_CONDITIONAL(USE_TWEETNACL, test "x$with_tweetnacl" != "xno")
+AM_CONDITIONAL(USE_LIBSODIUM, test "$curve_library" == "sodium")
+AM_CONDITIONAL(USE_TWEETNACL, test "$curve_library" == "tweetnacl")
 
 # build using pgm
 have_pgm_library="no"
@@ -506,8 +494,6 @@ AC_ARG_WITH([norm],
         [build libzmq with NORM protocol extension, optionally specifying norm path [default=no]])],
     [with_norm_ext=$withval],
     [with_norm_ext=no])
-
-
 
 AC_MSG_CHECKING("with_norm_ext = ${with_norm_ext}")
 
