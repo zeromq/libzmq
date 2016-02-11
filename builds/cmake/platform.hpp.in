@@ -31,7 +31,7 @@
 #cmakedefine ZMQ_MAKE_VALGRIND_HAPPY
 
 #cmakedefine ZMQ_HAVE_CURVE
-#cmakedefine HAVE_TWEETNACL
+#cmakedefine ZMQ_USE_TWEETNACL
 #cmakedefine HAVE_LIBSODIUM
 
 #ifdef _AIX
