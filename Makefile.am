@@ -192,8 +192,6 @@ src_libzmq_la_SOURCES = \
 	src/tipc_listener.hpp \
 	src/trie.cpp \
 	src/trie.hpp \
-	src/tweetnacl.c \
-	src/tweetnacl.h \
 	src/udp_address.cpp \
 	src/udp_address.hpp \
 	src/udp_engine.cpp \
@@ -231,6 +229,12 @@ src_libzmq_la_SOURCES = \
         src/decoder_allocators.cpp \
         src/socket_poller.hpp \
         src/socket_poller.cpp
+
+if USE_TWEETNACL
+src_libzmq_la_SOURCES += \
+	src/tweetnacl.c \
+	src/tweetnacl.h
+endif
 
 if ON_MINGW
 src_libzmq_la_LDFLAGS = \
