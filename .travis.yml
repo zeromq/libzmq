@@ -9,7 +9,7 @@ os:
 env:
 - BUILD_TYPE=default
 - BUILD_TYPE=android
-- BUILD_TYPE=tweetnacl
+- BUILD_TYPE=libsodium
 - BUILD_TYPE=cmake
 
 sudo: false

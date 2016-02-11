@@ -22,14 +22,14 @@ option (ENABLE_CURVE "Enable CURVE security" ON)
 if (NOT ENABLE_CURVE)
     message (STATUS "CURVE security is disabled")
 
-elseif (WITH_SODIUM)
+elseif (WITH_LIBSODIUM)
     find_package (Sodium)
     if (SODIUM_FOUND)
         message (STATUS "Using libsodium for CURVE security")
         include_directories (${SODIUM_INCLUDE_DIRS})
 
         # On Solaris, libsodium depends on libssp
-        if (${CMAKE_SYSTEM_NAME} matches "SunOS")
+        if (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
             target_link_libraries (libzmq ssp)
         endif ()
         set (HAVE_LIBSODIUM 1)
