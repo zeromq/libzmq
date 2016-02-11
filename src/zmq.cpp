@@ -1211,7 +1211,8 @@ int zmq_poller_wait (void *poller_, zmq_poller_event_t *event, long timeout_)
         return -1;
     }
 
-    zmq::socket_poller_t::event_t e = {};
+    zmq::socket_poller_t::event_t e;
+    memset (&e, 0, sizeof (e));
 
     int rc = ((zmq::socket_poller_t*)poller_)->wait (&e, timeout_);
 
@@ -1360,7 +1361,7 @@ int zmq_has (const char *capability)
     if (strcmp (capability, "norm") == 0)
         return true;
 #endif
-#if defined (HAVE_LIBSODIUM)
+#if defined (ZMQ_HAVE_CURVE)
     if (strcmp (capability, "curve") == 0)
         return true;
 #endif

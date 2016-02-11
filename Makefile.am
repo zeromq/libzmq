@@ -269,11 +269,6 @@ src_libzmq_la_CPPFLAGS =
 src_libzmq_la_CXXFLAGS = @LIBZMQ_EXTRA_CXXFLAGS@
 src_libzmq_la_LIBADD =
 
-if HAVE_SODIUM
-src_libzmq_la_CPPFLAGS += ${sodium_CFLAGS}
-src_libzmq_la_LIBADD += ${sodium_LIBS}
-endif
-
 if USE_TWEETNACL
 src_libzmq_la_SOURCES += \
     tweetnacl/src/tweetnacl.c \
@@ -281,6 +276,11 @@ src_libzmq_la_SOURCES += \
 src_libzmq_la_CXXFLAGS += \
     -I$(top_builddir)/tweetnacl/contrib/randombytes \
     -I$(top_builddir)/tweetnacl/src
+endif
+
+if USE_LIBSODIUM
+src_libzmq_la_CPPFLAGS += ${sodium_CFLAGS}
+src_libzmq_la_LIBADD += ${sodium_LIBS}
 endif
 
 if HAVE_PGM

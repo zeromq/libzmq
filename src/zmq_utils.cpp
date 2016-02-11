@@ -43,14 +43,12 @@
 #include "windows.hpp"
 #endif
 
-#ifdef HAVE_LIBSODIUM
-#ifdef HAVE_TWEETNACL
-#include "tweetnacl_base.h"
-#else
-#include "sodium.h"
+#if defined (HAVE_TWEETNACL)
+#   include "tweetnacl_base.h"
+#   include "randombytes.h"
+#elif defined (HAVE_LIBSODIUM)
+#   include "sodium.h"
 #endif
-#endif
-
 
 void zmq_sleep (int seconds_)
 {
@@ -185,17 +183,17 @@ uint8_t *zmq_z85_decode (uint8_t *dest, const char *string)
 }
 
 //  --------------------------------------------------------------------------
-//  Generate a public/private keypair with libsodium.
+//  Generate a public/private keypair with tweetnacl or libsodium.
 //  Generated keys will be 40 byte z85-encoded strings.
 //  Returns 0 on success, -1 on failure, setting errno.
-//  Sets errno = ENOTSUP in the absence of libsodium.
+//  Sets errno = ENOTSUP in the absence of a CURVE library.
 
 int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key)
 {
-#ifdef HAVE_LIBSODIUM
+#if defined (ZMQ_HAVE_CURVE)
 #   if crypto_box_PUBLICKEYBYTES != 32 \
     || crypto_box_SECRETKEYBYTES != 32
-#       error "libsodium not built correctly"
+#       error "CURVE encryption library not built correctly"
 #   endif
 
     uint8_t public_key [32];
@@ -210,7 +208,7 @@ int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key)
     zmq_z85_encode (z85_secret_key, secret_key, 32);
 
     return 0;
-#else // requires libsodium
+#else
     (void) z85_public_key, (void) z85_secret_key;
     errno = ENOTSUP;
     return -1;

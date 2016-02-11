@@ -30,15 +30,16 @@
 #ifndef __ZMQ_CURVE_CLIENT_HPP_INCLUDED__
 #define __ZMQ_CURVE_CLIENT_HPP_INCLUDED__
 
+#ifdef ZMQ_HAVE_CURVE
+
 #include "platform.hpp"
 #include "mutex.hpp"
 
-#ifdef HAVE_LIBSODIUM
-#ifdef HAVE_TWEETNACL
-#include "tweetnacl_base.h"
-#include "randombytes.h"
-#else
-#include "sodium.h"
+#if defined (HAVE_TWEETNACL)
+#   include "tweetnacl_base.h"
+#   include "randombytes.h"
+#elif defined (HAVE_LIBSODIUM)
+#   include "sodium.h"
 #endif
 
 #if crypto_box_NONCEBYTES != 24 \
@@ -46,7 +47,7 @@
 ||  crypto_box_SECRETKEYBYTES != 32 \
 ||  crypto_box_ZEROBYTES != 32 \
 ||  crypto_box_BOXZEROBYTES != 16
-#error "libsodium not built properly"
+#   error "libsodium not built properly"
 #endif
 
 #include "mechanism.hpp"

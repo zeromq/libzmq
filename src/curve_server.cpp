@@ -29,7 +29,7 @@
 
 #include "platform.hpp"
 
-#ifdef HAVE_LIBSODIUM
+#ifdef ZMQ_HAVE_CURVE
 
 #ifdef ZMQ_HAVE_WINDOWS
 #include "windows.hpp"

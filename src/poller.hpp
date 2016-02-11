@@ -39,20 +39,20 @@
 #endif
 
 #if defined ZMQ_USE_KQUEUE
-#include "kqueue.hpp"
+#   include "kqueue.hpp"
 #elif defined ZMQ_USE_EPOLL
-#include "epoll.hpp"
+#   include "epoll.hpp"
 #elif defined ZMQ_USE_DEVPOLL
-#include "devpoll.hpp"
+#   include "devpoll.hpp"
 #elif defined ZMQ_USE_POLL
-#include "poll.hpp"
+#   include "poll.hpp"
 #elif defined ZMQ_USE_SELECT
-#include "select.hpp"
+#   include "select.hpp"
 #elif defined ZMQ_HAVE_GNU
-#define ZMQ_USE_POLL
-#include "poll.hpp"
+#   define ZMQ_USE_POLL
+#   include "poll.hpp"
 #else
-#error None of the ZMQ_USE_* macros defined
+#   error None of the ZMQ_USE_* macros defined
 #endif
 
 #if defined ZMQ_USE_SELECT
