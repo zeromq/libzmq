@@ -32,6 +32,10 @@
 
 #include "platform.hpp"
 
+#ifdef ZMQ_HAVE_WINDOWS
+#include "windows.hpp"
+#endif
+
 #if   defined ZMQ_USE_KQUEUE  + defined ZMQ_USE_EPOLL \
     + defined ZMQ_USE_DEVPOLL + defined ZMQ_USE_POLL  \
     + defined ZMQ_USE_SELECT > 1
