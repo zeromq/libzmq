@@ -8,4 +8,6 @@ If you must write non-portable code, wrap it in #ifdefs to ensure it will compil
 
 Note that testutil.hpp includes platform.h. Do not include it yourself as it changes location depending on the build system and OS.
 
+All sources must contain the correct header. Please copy from test_system.cpp if you're not certain.
+
 

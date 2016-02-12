@@ -27,10 +27,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/un.h>
 #include "testutil.hpp"
+
+#if !defined (ZMQ_HAVE_WINDOWS)
+#   include <sys/socket.h>
+#   include <sys/un.h>
 
 void pre_allocate_sock (void *zmq_socket, const char *path)
 {
@@ -211,3 +212,10 @@ int main (void)
 
     return 0 ;
 }
+
+#else
+int main (void)
+{
+    return 0 ;
+}
+#endif

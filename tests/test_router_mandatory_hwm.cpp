@@ -27,9 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdio.h>
 #include "testutil.hpp"
-#include <unistd.h>
 
 // DEBUG shouldn't be defined in sources as it will cause a redefined symbol
 // error when it is defined in the build configuration. It appears that the
