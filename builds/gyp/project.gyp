@@ -15,7 +15,10 @@
       '.'
     ],
     'defines': [
-      'ZMQ_CUSTOM_PLATFORM_HPP'
+      '_REENTRANT',
+      '_THREAD_SAFE',
+      'ZMQ_CUSTOM_PLATFORM_HPP',
+      'ZMQ_GYP_BUILD'
     ],
     'conditions': [
       [ 'OS=="win"', {
@@ -264,6 +267,14 @@
         '../../src/yqueue.hpp',
         '../../src/zmq.cpp',
         '../../src/zmq_utils.cpp'
+      ],
+      'copies': [
+        {
+          'destination': '../../src',
+          'files': [
+              'platform.hpp'
+          ]
+        }
       ]
     }
   ]

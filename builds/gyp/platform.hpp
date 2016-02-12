@@ -33,6 +33,11 @@
 //  This file provides the configuration for Linux, Windows, and OS/X
 //  as determined by ZMQ_HAVE_XXX macros passed from project.gyp
 
+//  Check that we're being called from our gyp makefile
+#ifndef ZMQ_GYP_BUILD
+#   error "foreign platform.hpp detected, please re-configure"
+#endif
+
 //  Set for all platforms
 #define ZMQ_HAVE_CURVE 1
 #define ZMQ_USE_TWEETNACL 1
