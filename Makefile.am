@@ -384,7 +384,7 @@ test_apps = \
 	tests/test_atomics \
 	tests/test_client_server \
 	tests/test_thread_safe \
-	tests/test_socketopt_hwm \
+	tests/test_sockopt_hwm \
 	tests/test_heartbeats \
 	tests/test_stream_exceeds_buffer \
 	tests/test_poller \
@@ -589,8 +589,8 @@ tests_test_client_server_LDADD = src/libzmq.la
 tests_test_thread_safe_SOURCES = tests/test_thread_safe.cpp
 tests_test_thread_safe_LDADD = src/libzmq.la
 
-tests_test_socketopt_hwm_SOURCES = tests/test_sockopt_hwm.cpp
-tests_test_socketopt_hwm_LDADD = src/libzmq.la
+tests_test_sockopt_hwm_SOURCES = tests/test_sockopt_hwm.cpp
+tests_test_sockopt_hwm_LDADD = src/libzmq.la
 
 tests_test_setsockopt_SOURCES = tests/test_setsockopt.cpp
 tests_test_setsockopt_LDADD = src/libzmq.la
