@@ -22,7 +22,9 @@
       [ 'OS=="win"', {
         'defines': [
           'ZMQ_HAVE_WINDOWS=1',
-          'ZMQ_STATIC'
+          'ZMQ_STATIC',
+          'FD_SETSIZE=16384',
+          '_CRT_SECURE_NO_WARNINGS'
         ],
         'libraries': [
           'ws2_32',
