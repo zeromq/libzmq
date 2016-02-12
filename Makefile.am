@@ -215,8 +215,8 @@ src_libzmq_la_SOURCES = \
 	src/vmci_listener.hpp \
 	src/windows.hpp \
 	src/wire.hpp \
-	src/xpub.hpp \
 	src/xpub.cpp \
+	src/xpub.hpp \
 	src/xsub.cpp \
 	src/xsub.hpp \
 	src/ypipe.hpp \
@@ -225,10 +225,10 @@ src_libzmq_la_SOURCES = \
 	src/yqueue.hpp \
 	src/zmq.cpp \
 	src/zmq_utils.cpp \
-        src/decoder_allocators.hpp \
-        src/decoder_allocators.cpp \
-        src/socket_poller.hpp \
-        src/socket_poller.cpp
+	src/decoder_allocators.cpp \
+	src/decoder_allocators.hpp \
+	src/socket_poller.cpp \
+	src/socket_poller.hpp
 
 if USE_TWEETNACL
 src_libzmq_la_SOURCES += \
