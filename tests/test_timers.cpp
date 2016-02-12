@@ -29,14 +29,6 @@
 
 #include "testutil.hpp"
 
-#if defined ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
-#include <unistd.h>
-#endif
-
-#include "testutil.hpp"
-
 void sleep_ (long timeout_)
 {
 #if defined ZMQ_HAVE_WINDOWS

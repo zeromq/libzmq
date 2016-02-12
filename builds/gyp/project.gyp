@@ -21,7 +21,13 @@
     'conditions': [
       [ 'OS=="win"', {
         'defines': [
-          'ZMQ_HAVE_WINDOWS=1'
+          'ZMQ_HAVE_WINDOWS=1',
+          'ZMQ_STATIC'
+        ],
+        'libraries': [
+          'ws2_32',
+          'advapi32',
+          'iphlpapi'
         ]
       }],
       [ 'OS=="mac"', {
