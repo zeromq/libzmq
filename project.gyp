@@ -1,6 +1,7 @@
 #
 #   This is the gyp script for libzmq
 #
+#   Use:
 #   gyp --depth=.
 {
   'targets': [
@@ -138,17 +139,17 @@
       'conditions': [
         [ 'OS=="win"', {
             "defines": [
-              "ZMQ_HAVE_WINDOWS"
+              "ZMQ_HAVE_WINDOWS=1"
             ]
         }],
         [ 'OS=="mac"', {
             "defines": [
-              "ZMQ_HAVE_OSX"
+              "ZMQ_HAVE_OSX=1"
             ]
         }],
         [ 'OS=="linux"', {
             "defines": [
-              "ZMQ_HAVE_LINUX"
+              "ZMQ_HAVE_LINUX=1"
             ]
         }]
       ]

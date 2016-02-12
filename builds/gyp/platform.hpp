@@ -40,29 +40,33 @@
 #if defined ZMQ_HAVE_WINDOWS
 #   define ZMQ_USE_SELECT 1
 
-#elseif defined ZMQ_HAVE_OSX
+#elif defined ZMQ_HAVE_OSX
 #   define ZMQ_USE_KQUEUE 1
-#   define ZMQ_HAVE_UIO 1
+#   define HAVE_POSIX_MEMALIGN 1
 #   define ZMQ_HAVE_SO_KEEPALIVE 1
 #   define ZMQ_HAVE_TCP_KEEPALIVE 1
 #   define ZMQ_HAVE_TCP_KEEPCNT 1
 #   define ZMQ_HAVE_TCP_KEEPINTVL 1
-#   define HAVE_POSIX_MEMALIGN 1
+#   define ZMQ_HAVE_UIO 1
 #   define HAVE_FORK 1
 
-#elseif defined ZMQ_HAVE_LINUX
+#elif defined ZMQ_HAVE_LINUX
 #   define ZMQ_USE_EPOLL 1
+#   define HAVE_POSIX_MEMALIGN 1
 #   define ZMQ_HAVE_EVENTFD 1
+#   define ZMQ_HAVE_IFADDRS 1
 #   define ZMQ_HAVE_SOCK_CLOEXEC 1
-#   define ZMQ_HAVE_SO_PEERCRED 1
-#   define ZMQ_HAVE_UIO 1
 #   define ZMQ_HAVE_SO_KEEPALIVE 1
+#   define ZMQ_HAVE_SO_PEERCRED 1
 #   define ZMQ_HAVE_TCP_KEEPCNT 1
 #   define ZMQ_HAVE_TCP_KEEPIDLE 1
 #   define ZMQ_HAVE_TCP_KEEPINTVL 1
-#   define HAVE_POSIX_MEMALIGN 1
+#   define ZMQ_HAVE_UIO 1
 #   define HAVE_CLOCK_GETTIME 1
 #   define HAVE_FORK 1
+
+#else
+#   error "No platform defined, abandoning"
 #endif
 
 #endif
