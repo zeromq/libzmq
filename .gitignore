@@ -22,7 +22,6 @@ autom4te.cache
 *.html
 *.pdf
 *.ps
-.*
 *~
 .*~
 curve_keygen
@@ -170,6 +169,3 @@ zeromq-*.zip
 core
 build
 test-suite.log
-project.Makefile
-libzmq.target.mk
-out/

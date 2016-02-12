@@ -5,7 +5,6 @@
 #
 #       gyp --depth=. --format=make
 #       make
-#
 {
   'includes': [
     'project-tests.gypi',
@@ -21,7 +20,7 @@
     'conditions': [
       [ 'OS=="win"', {
         'defines': [
-          'ZMQ_HAVE_WINDOWS=1',
+          'ZMQ_HAVE_WINDOWS',
           'ZMQ_STATIC',
           'FD_SETSIZE=16384',
           '_CRT_SECURE_NO_WARNINGS'
@@ -34,12 +33,12 @@
       }],
       [ 'OS=="mac"', {
         'defines': [
-          'ZMQ_HAVE_OSX=1'
+          'ZMQ_HAVE_OSX'
         ]
       }],
       [ 'OS=="linux"', {
         'defines': [
-          'ZMQ_HAVE_LINUX=1'
+          'ZMQ_HAVE_LINUX'
         ],
         'libraries': [
           '-lpthread'
