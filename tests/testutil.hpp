@@ -32,7 +32,7 @@
 
 #include "../include/zmq.h"
 #include "../src/stdint.hpp"
-#ifdef ZMQ_USING_CMAKE
+#if defined ZMQ_CUSTOM_PLATFORM_HPP
 #   include "platform.hpp"
 #else
 #   include "../src/platform.hpp"
