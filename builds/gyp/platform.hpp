@@ -43,6 +43,7 @@
 #elif defined ZMQ_HAVE_OSX
 #   define ZMQ_USE_KQUEUE 1
 #   define HAVE_POSIX_MEMALIGN 1
+#   define ZMQ_HAVE_IFADDRS 1
 #   define ZMQ_HAVE_SO_KEEPALIVE 1
 #   define ZMQ_HAVE_TCP_KEEPALIVE 1
 #   define ZMQ_HAVE_TCP_KEEPCNT 1
