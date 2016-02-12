@@ -32,27 +32,23 @@
 
 #include "macros.hpp"
 #include "tcp_address.hpp"
-#include "platform.hpp"
 #include "stdint.hpp"
 #include "err.hpp"
 #include "ip.hpp"
 
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
+#ifndef ZMQ_HAVE_WINDOWS
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
+#include <net/if.h>
 #include <netdb.h>
 #include <ctype.h>
+#include <unistd.h>
+#include <stdlib.h>
 #endif
 
 #ifdef ZMQ_HAVE_SOLARIS
-
 #include <sys/sockio.h>
-#include <net/if.h>
-#include <unistd.h>
-#include <stdlib.h>
 
 //  On Solaris platform, network interface name can be queried by ioctl.
 int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_src_)
@@ -116,11 +112,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
 }
 
 #elif defined ZMQ_HAVE_AIX || defined ZMQ_HAVE_HPUX || defined ZMQ_HAVE_ANDROID
-
-#include <sys/types.h>
-#include <unistd.h>
 #include <sys/ioctl.h>
-#include <net/if.h>
 
 int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_src_)
 {
@@ -182,7 +174,6 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
     && defined ZMQ_HAVE_IFADDRS)
 
 #include <ifaddrs.h>
-#include <net/if.h>
 
 //  On these platforms, network interface name can be queried
 //  using getifaddrs function.
