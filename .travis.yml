@@ -7,15 +7,11 @@ os:
 - osx
 
 env:
-- BUILD_TYPE=default CURVE=libsodium
-- BUILD_TYPE=android CURVE=libsodium
-- BUILD_TYPE=cmake CURVE=libsodium
 - BUILD_TYPE=default CURVE=tweetnacl
 - BUILD_TYPE=android CURVE=tweetnacl
 - BUILD_TYPE=cmake CURVE=tweetnacl
+- BUILD_TYPE=default CURVE=libsodium
 - BUILD_TYPE=default
-- BUILD_TYPE=android
-- BUILD_TYPE=cmake
 
 sudo: false
 
