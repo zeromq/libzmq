@@ -52,7 +52,7 @@ int main()
     int server_sock = socket(AF_INET, SOCK_STREAM, 0);
     assert(server_sock!=-1);
     int enable = 1;
-    int rc = setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable));
+    int rc = setsockopt (server_sock, SOL_SOCKET, SO_REUSEADDR, (char *) &enable, sizeof(enable));
     assert(rc!=-1);
 
     struct sockaddr_in saddr;

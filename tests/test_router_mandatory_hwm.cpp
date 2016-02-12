@@ -95,7 +95,7 @@ int main (void)
     // This should fail after one message but kernel buffering could
     // skew results
     assert (i < 10);
-    sleep(1);
+    msleep (1000);
     // Send second batch of messages
     for(; i < 100000; ++i) {
         if (TRACE_ENABLED) fprintf(stderr, "Sending message %d (part 2) ...\n", i);

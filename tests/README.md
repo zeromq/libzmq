@@ -10,4 +10,4 @@ Note that testutil.hpp includes platform.h. Do not include it yourself as it cha
 
 All sources must contain the correct header. Please copy from test_system.cpp if you're not certain.
 
-
+Please use only ANSI C99 in test cases, no C++. This is to make the code more reusable.
