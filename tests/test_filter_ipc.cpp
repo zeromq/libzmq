@@ -27,12 +27,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <string.h>
-#include <sys/types.h>
-
-#include <string>
-#include <sstream>
-
 #include "testutil.hpp"
 
 static void bounce_fail (void *server, void *client)
@@ -78,9 +72,9 @@ static void run_test (int opt, T optval, int expected_error, int bounce_test)
         if (expected_error) {
             assert (rc == -1);
             assert (zmq_errno () == expected_error);
-        } else {
-            assert (rc == 0);
         }
+        else
+            assert (rc == 0);
     }
 
     void *sc = zmq_socket (ctx, ZMQ_DEALER);
@@ -113,7 +107,6 @@ static void run_test (int opt, T optval, int expected_error, int bounce_test)
         else
             bounce_fail (sb, sc);
     }
-
     close_zero_linger (sc);
     close_zero_linger (sb);
 
@@ -123,6 +116,7 @@ static void run_test (int opt, T optval, int expected_error, int bounce_test)
 
 int main (void)
 {
+#if !defined (ZMQ_HAVE_WINDOWS)
     setup_test_environment();
 
     // No filters
@@ -166,6 +160,7 @@ int main (void)
     run_test<pid_t> (ZMQ_IPC_FILTER_PID, 0, EINVAL, 0);
 #endif // defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
 
+#endif
     return 0 ;
 }
 
