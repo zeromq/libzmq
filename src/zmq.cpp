@@ -552,7 +552,8 @@ int zmq_recviov (void *s_, iovec *a_, size_t *count_, int flags_)
         memcpy(a_[i].iov_base,static_cast<char *> (zmq_msg_data (&msg)),
                a_[i].iov_len);
         // Assume zmq_socket ZMQ_RVCMORE is properly set.
-        recvmore = ((zmq::msg_t*) (void *) &msg)->flags () & zmq::msg_t::more;
+        zmq::msg_t* p_msg = reinterpret_cast<zmq::msg_t*>(&msg);
+        recvmore = p_msg->flags() & zmq::msg_t::more;
         rc = zmq_msg_close(&msg);
         errno_assert (rc == 0);
         ++*count_;
