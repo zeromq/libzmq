@@ -56,6 +56,7 @@
 #       pragma warning(disable:4996)
 #   endif
 #else
+#   include <pthread.h>
 #   include <unistd.h>
 #   include <signal.h>
 #   include <stdlib.h>
