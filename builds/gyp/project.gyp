@@ -37,11 +37,17 @@
       [ 'OS=="mac"', {
         'defines': [
           'ZMQ_HAVE_OSX'
-        ]
+        ],
+        'xcode_settings': {
+          'GCC_ENABLE_CPP_RTTI': 'YES'
+        }
       }],
       [ 'OS=="linux"', {
         'defines': [
           'ZMQ_HAVE_LINUX'
+        ],
+        'cflags_cc!': [
+          '-fno-rtti'
         ],
         'libraries': [
           '-lpthread'
