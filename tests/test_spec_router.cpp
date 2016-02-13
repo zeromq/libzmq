@@ -63,6 +63,8 @@ void test_fair_queue_in (void *ctx)
         assert (rc == 0);
     }
 
+    msleep (SETTLE_TIME);
+
     zmq_msg_t msg;
     rc = zmq_msg_init (&msg);
     assert (rc == 0);

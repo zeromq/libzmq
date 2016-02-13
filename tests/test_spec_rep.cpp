@@ -57,6 +57,8 @@ void test_fair_queue_in (void *ctx)
         assert (rc == 0);
     }
 
+    msleep (SETTLE_TIME);
+
     s_send_seq (reqs [0], "A", SEQ_END);
     s_recv_seq (rep, "A", SEQ_END);
     s_send_seq (rep, "A", SEQ_END);
