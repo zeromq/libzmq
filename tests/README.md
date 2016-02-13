@@ -11,3 +11,8 @@ Note that testutil.hpp includes platform.h. Do not include it yourself as it cha
 All sources must contain the correct header. Please copy from test_system.cpp if you're not certain.
 
 Please use only ANSI C99 in test cases, no C++. This is to make the code more reusable.
+
+On many slower environments, like embedded systems, VMs or CI systems, test might
+fail because it takes time for sockets to settle after a connect. If you need
+to add a sleep, please be consistent with all the other tests and use:
+  msleep (SETTLE_TIME);
