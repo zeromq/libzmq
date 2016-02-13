@@ -28,7 +28,7 @@ autom4te.cache
 curve_keygen
 test_heartbeats
 test_msg_ffn
-test_socketopt_hwm
+test_sockopt_hwm
 test_resource
 test_ipc_wildcard
 test_stream_empty
