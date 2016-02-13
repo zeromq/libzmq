@@ -57,6 +57,7 @@ int main (void) {
     zmq_msg_t msg;
     char hint[5];
     char data[255];
+    memset(data, 0, 255);
     memcpy(data, (void *) "data", 4);
     memcpy(hint, (void *) "hint", 4);
     rc = zmq_msg_init_data(&msg, (void *)data, 255, ffn, (void*)hint);
