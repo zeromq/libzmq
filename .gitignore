@@ -24,6 +24,9 @@ autom4te.cache
 *.ps
 *~
 .*~
+.deps
+.dirstamp
+.libs
 curve_keygen
 test_heartbeats
 test_msg_ffn

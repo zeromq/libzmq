@@ -101,17 +101,9 @@ AC_RUN_IFELSE(
 
 AC_MSG_RESULT([$libzmq_tipc_support])
 
-AC_ARG_WITH([relaxed],
-    [AS_HELP_STRING([--with-relaxed],
-        [switch off pedantic compiler])],
-    [zmq_relaxed="yes"],
-    [])
-
-if test "x$zmq_relaxed" = "xyes"; then
-    libzmq_pedantic="no"
-else
-    libzmq_pedantic="yes"
-fi
+AC_ARG_ENABLE([pedantic],
+    [AS_HELP_STRING([--disable-pedantic], [disable pedantic compiler checks [default=enabled]])],
+    [libzmq_pedantic=$enableval], [libzmq_pedantic=yes])
 
 AC_ARG_WITH([militant],
     [AS_HELP_STRING([--with-militant],
@@ -137,8 +129,8 @@ libzmq_on_android="no"
 libzmq_on_linux="no"
 libzmq_on_gnu="no"
 
-# Set some default features required by 0MQ code.
-CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE $CPPFLAGS"
+# Set some default features required by ZeroMQ code
+CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE -Wno-long-long $CPPFLAGS"
 
 # For host type checks
 AC_CANONICAL_HOST
@@ -255,10 +247,6 @@ case "${host_os}" in
             [AC_MSG_ERROR([cannot link with rpcrt4.dll.])])
         AC_CHECK_LIB(iphlpapi, main, ,
             [AC_MSG_ERROR([cannot link with iphlpapi.dll.])])
-        # mingw defines __int64_t as long long
-        AC_LANG_PUSH([C++])
-        LIBZMQ_CHECK_LANG_FLAG_PREPEND([-Wno-long-long])
-        AC_LANG_POP([C++])
         libzmq_on_mingw="yes"
         libzmq_dso_visibility="no"
 
@@ -434,7 +422,7 @@ AS_IF([test "x$with_libsodium" = "xyes"], [
 
 AC_ARG_ENABLE([curve],
     AS_HELP_STRING([--disable-curve], [disable CURVE security [default=no]]))
-
+x
 if test "x$enable_curve" == "xno"; then
     curve_library=""
     AC_MSG_NOTICE([CURVE security is disabled])
@@ -450,7 +438,6 @@ elif test "x$with_libsodium" == "xyes"; then
     case "${host_os}" in
         *solaris*)
             LDFLAGS="-lssp $LDFLAGS"
-            CPPFLAGS="-Wno-long-long $CPPFLAGS"
         ;;
     esac
 else
@@ -458,7 +445,6 @@ else
     AC_DEFINE(ZMQ_HAVE_CURVE, [1], [Using curve encryption])
     AC_DEFINE(ZMQ_USE_TWEETNACL, [1], [Using tweetnacl for curve encryption])
     curve_library="tweetnacl"
-    libzmq_pedantic="no"    #   Disable pedantic warnings
 fi
 
 AM_CONDITIONAL(USE_LIBSODIUM, test "$curve_library" == "libsodium")

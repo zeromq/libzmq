@@ -31,6 +31,7 @@
 #define TWEETNACL_H
 
 #include "platform.hpp"
+
 #if defined (ZMQ_USE_TWEETNACL)
 
 #define crypto_box_SECRETKEYBYTES 32

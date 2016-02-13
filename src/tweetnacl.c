@@ -30,6 +30,8 @@
 #include "platform.hpp"
 #if defined (ZMQ_USE_TWEETNACL)
 
+#pragma GCC diagnostic ignored "-Wsign-compare"
+
 #include "tweetnacl.h"
 
 #define FOR(i,n) for (i = 0;i < n;++i)
