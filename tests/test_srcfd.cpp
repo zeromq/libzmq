@@ -62,6 +62,7 @@ int main (void)
     assert (rc == 0);
 
     char tmp[MSG_SIZE];
+    memset (tmp, 0, MSG_SIZE);
     zmq_send(req, tmp, MSG_SIZE, 0);
 
     zmq_msg_t msg;
