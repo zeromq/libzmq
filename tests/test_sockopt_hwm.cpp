@@ -150,7 +150,7 @@ void test_decrease_when_full()
     assert(read_count == 101);
 
     // Give io thread some time to catch up
-    msleep(10);
+    msleep (SETTLE_TIME);
 
     // Fill up to new hwm
     send_count = 0;

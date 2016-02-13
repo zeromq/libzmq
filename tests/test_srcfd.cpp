@@ -34,7 +34,6 @@
 #ifdef _WIN32
 #include <Winsock2.h>
 #include <Ws2tcpip.h>
-#define usleep(a) Sleep((a) / 1000)
 #else
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -102,7 +101,7 @@ int main (void)
     assert (rc == 0);
 
     // sleep a bit for the socket to be freed
-    usleep(30000);
+    msleep (SETTLE_TIME);
 
     // getting name from closed socket will fail
     rc = getpeername (srcFd, (struct sockaddr*) &ss, &addrlen);

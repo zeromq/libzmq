@@ -96,7 +96,7 @@ int main (void)
     rc = zmq_connect (publisher, "tcp://127.0.0.1:15564");
     assert (rc == 0);
 
-    msleep (50);
+    msleep (SETTLE_TIME);
     rc = zmq_send (publisher, "This is a test", 14, 0);
     assert (rc == 14);
 
