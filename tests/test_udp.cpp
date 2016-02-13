@@ -98,7 +98,7 @@ int main (void)
     rc = zmq_bind (dish, "udp://127.0.0.1:5556");
     assert (rc == 0);
 
-    zmq_sleep (1);
+    msleep (SETTLE_TIME);
 
     rc = zmq_join (dish, "TV");
     assert (rc == 0);

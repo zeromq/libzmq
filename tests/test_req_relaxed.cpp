@@ -103,8 +103,7 @@ int main (void)
     s_send_seq (rep [3], "BAD", SEQ_END);
 
     // Wait for message to be there.
-    rc = zmq_poll (0, 0, 100);
-    assert (rc == 0);
+    msleep (SETTLE_TIME);
 
     //  Without receiving that reply, send another request on the REQ socket
     s_send_seq (req, "I", SEQ_END);
@@ -127,8 +126,7 @@ int main (void)
         close_zero_linger (rep [peer]);
 
     // Wait for disconnects.
-    rc = zmq_poll (0, 0, 100);
-    assert (rc == 0);
+    msleep (SETTLE_TIME);
 
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);

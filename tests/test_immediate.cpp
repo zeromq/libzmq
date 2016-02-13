@@ -67,6 +67,8 @@ int main (void)
     rc = zmq_connect (from, "tcp://localhost:6555");
     assert (rc == 0);
 
+    msleep (SETTLE_TIME);
+
     // We send 10 messages, 5 should just get stuck in the queue
     // for the not-yet-connected pipe
     for (int i = 0; i < 10; ++i) {

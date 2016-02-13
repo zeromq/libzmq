@@ -39,7 +39,7 @@ get_monitor_event (void *monitor)
         zmq_msg_t msg;
         zmq_msg_init (&msg);
         if (zmq_msg_recv (&msg, monitor, ZMQ_DONTWAIT) == -1) {
-            msleep(150);
+            msleep (SETTLE_TIME);
             continue;           //  Interruped, presumably
         }
         assert (zmq_msg_more (&msg));
@@ -251,7 +251,7 @@ test_heartbeat_ttl (void)
     rc = get_monitor_event(server_mon);
     assert(rc == ZMQ_EVENT_ACCEPTED);
 
-    msleep(100);
+    msleep (SETTLE_TIME);
 
     // We should have been disconnected
     rc = get_monitor_event(server_mon);
@@ -291,7 +291,7 @@ test_heartbeat_notimeout (int is_curve)
     rc = zmq_connect(client, "tcp://127.0.0.1:5556");
 
     // Give it a sec to connect and handshake
-    msleep(100);
+    msleep (SETTLE_TIME);
 
     // By now everything should report as connected
     rc = get_monitor_event(server_mon);

@@ -180,7 +180,7 @@ void test_reset_hwm ()
     rc = zmq_setsockopt( sub_socket, ZMQ_SUBSCRIBE, 0, 0);
     assert (rc == 0);
 
-    msleep (100);
+    msleep (SETTLE_TIME);
 
     // Send messages
     int send_count = 0;
@@ -188,7 +188,7 @@ void test_reset_hwm ()
         ++send_count;
     assert (first_count == send_count);
 
-    msleep (100);
+    msleep (SETTLE_TIME);
 
     // Now receive all sent messages
     int recv_count = 0;
@@ -198,7 +198,7 @@ void test_reset_hwm ()
     }
     assert (first_count == recv_count);
 
-    msleep (100);
+    msleep (SETTLE_TIME);
 
     // Send messages
     send_count = 0;
@@ -206,7 +206,7 @@ void test_reset_hwm ()
         ++send_count;
     assert (second_count == send_count);
 
-    msleep (100);
+    msleep (SETTLE_TIME);
 
     // Now receive all sent messages
     recv_count = 0;

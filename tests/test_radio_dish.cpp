@@ -117,7 +117,7 @@ int main (void)
     rc = zmq_connect (dish, "tcp://127.0.0.1:5556");
     assert (rc == 0);
 
-    zmq_sleep (1);
+    msleep (SETTLE_TIME);
 
     zmq_msg_t msg;
 

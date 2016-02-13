@@ -156,6 +156,14 @@ int main (void)
     assert (rc == 0);
 #endif
 
+    //  Clean up.
+    rc = zmq_close (pull);
+    assert (rc == 0);
+    rc = zmq_close (push);
+    assert (rc == 0);
+    rc = zmq_ctx_term (ctx);
+    assert (rc == 0);
+
     //  Create infrastructure (wild-card binding)
     ctx = zmq_ctx_new ();
     assert (ctx);
@@ -187,6 +195,14 @@ int main (void)
     rc = zmq_unbind (req, ep_wc_vmci);
     assert (rc == -1 && zmq_errno () == ENOENT);
 #endif
+
+    //  Clean up.
+    rc = zmq_close (pull);
+    assert (rc == 0);
+    rc = zmq_close (push);
+    assert (rc == 0);
+    rc = zmq_ctx_term (ctx);
+    assert (rc == 0);
 
     return 0;
 }

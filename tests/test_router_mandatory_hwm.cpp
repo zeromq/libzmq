@@ -83,6 +83,7 @@ int main (void)
     int i;
     const int BUF_SIZE = 65536;
     char buf[BUF_SIZE];
+    memset(buf, 0, BUF_SIZE);
     // Send first batch of messages
     for(i = 0; i < 100000; ++i) {
         if (TRACE_ENABLED) fprintf(stderr, "Sending message %d ...\n", i);
