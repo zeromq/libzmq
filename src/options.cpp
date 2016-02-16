@@ -55,6 +55,9 @@ zmq::options_t::options_t () :
     socket_id (0),
     conflate (false)
 {
+    memset (curve_public_key, 0, CURVE_KEYSIZE);
+    memset (curve_secret_key, 0, CURVE_KEYSIZE);
+    memset (curve_server_key, 0, CURVE_KEYSIZE);
 }
 
 int zmq::options_t::setsockopt (int option_, const void *optval_,
