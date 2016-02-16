@@ -3,7 +3,10 @@
 
 * Fixed #1673 - CMake on Windows put PDB in wrong directory.
 
-* Fixed #1723 - Family is not set when resolving NIC on android.
+* Fixed #1723 - Family is not set when resolving NIC on Android.
+
+* Fixed #1608 - Windows 7 TCP slow start issue.
+
 
 0MQ version 4.1.4 stable, released on 2015/12/18
 ================================================
