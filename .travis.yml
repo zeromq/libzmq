@@ -21,7 +21,7 @@ env:
 before_script:
 - mkdir tmp
 #   libsodium
-- git clone git://github.com/jedisct1/libsodium.git
+- git clone --depth 1 -b stable git://github.com/jedisct1/libsodium.git
 - ( cd libsodium; ./autogen.sh; ./configure --prefix=${BUILD_PREFIX}; make check; make install )
 
 # ZMQ stress tests need more open socket (files) than the usual default
