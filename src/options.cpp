@@ -78,6 +78,9 @@ zmq::options_t::options_t () :
     heartbeat_timeout (-1),
     use_fd (-1)
 {
+    memset (curve_public_key, 0, CURVE_KEYSIZE);
+    memset (curve_secret_key, 0, CURVE_KEYSIZE);
+    memset (curve_server_key, 0, CURVE_KEYSIZE);
 #if defined ZMQ_HAVE_VMCI
     vmci_buffer_size = 0;
     vmci_buffer_min_size = 0;
