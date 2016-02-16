@@ -7,6 +7,10 @@
 
 * Fixed #1608 - Windows 7 TCP slow start issue.
 
+* Fixed #1806 - uninitialised read in curve getsockopt.
+
+* Fixed #1807 - build broken with GCC 6.
+
 
 0MQ version 4.1.4 stable, released on 2015/12/18
 ================================================
