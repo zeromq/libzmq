@@ -22,9 +22,11 @@ autom4te.cache
 *.html
 *.pdf
 *.ps
-.*
 *~
 .*~
+.deps
+.dirstamp
+.libs
 curve_keygen
 test_heartbeats
 test_msg_ffn
@@ -170,6 +172,3 @@ zeromq-*.zip
 core
 build
 test-suite.log
-project.Makefile
-libzmq.target.mk
-out/

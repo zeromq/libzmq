@@ -368,8 +368,8 @@ set (LIBRARY_OUTPUT_PATH  ${CMAKE_CURRENT_BINARY_DIR}/lib)
 # platform specifics
 
 if (WIN32)
-    #   Socket limit is 4K (can be raised arbitrarily)
-    add_definitions (-DFD_SETSIZE=4096)
+    #   Socket limit is 16K (can be raised arbitrarily)
+    add_definitions (-DFD_SETSIZE=16384)
     add_definitions (-D_CRT_SECURE_NO_WARNINGS)
 endif ()
 

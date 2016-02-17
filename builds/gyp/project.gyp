@@ -5,7 +5,6 @@
 #
 #       gyp --depth=. --format=make
 #       make
-#
 {
   'includes': [
     'project-tests.gypi',
@@ -16,13 +15,18 @@
       '.'
     ],
     'defines': [
-      'ZMQ_CUSTOM_PLATFORM_HPP'
+      '_REENTRANT',
+      '_THREAD_SAFE',
+      'ZMQ_CUSTOM_PLATFORM_HPP',
+      'ZMQ_GYP_BUILD'
     ],
     'conditions': [
       [ 'OS=="win"', {
         'defines': [
-          'ZMQ_HAVE_WINDOWS=1',
-          'ZMQ_STATIC'
+          'ZMQ_HAVE_WINDOWS',
+          'ZMQ_STATIC',
+          'FD_SETSIZE=16384',
+          '_CRT_SECURE_NO_WARNINGS'
         ],
         'libraries': [
           'ws2_32',
@@ -32,12 +36,18 @@
       }],
       [ 'OS=="mac"', {
         'defines': [
-          'ZMQ_HAVE_OSX=1'
-        ]
+          'ZMQ_HAVE_OSX'
+        ],
+        'xcode_settings': {
+          'GCC_ENABLE_CPP_RTTI': 'YES'
+        }
       }],
       [ 'OS=="linux"', {
         'defines': [
-          'ZMQ_HAVE_LINUX=1'
+          'ZMQ_HAVE_LINUX'
+        ],
+        'cflags_cc!': [
+          '-fno-rtti'
         ],
         'libraries': [
           '-lpthread'
@@ -263,6 +273,14 @@
         '../../src/yqueue.hpp',
         '../../src/zmq.cpp',
         '../../src/zmq_utils.cpp'
+      ],
+      'copies': [
+        {
+          'destination': '../../src',
+          'files': [
+              'platform.hpp'
+          ]
+        }
       ]
     }
   ]
