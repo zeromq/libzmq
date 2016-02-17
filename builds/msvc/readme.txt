@@ -13,3 +13,12 @@ The vs2015/vs2013/vs2012/vs2010 solution and project files differ only in versio
 More info here:
 
 http://en.wikipedia.org/wiki/Visual_C%2B%2B
+
+
+For building Windows, use the buildall.bat script in this directory.
+
+It requires that the CMD.EXE be created using the DevStudio Tools link to create a CMD.EXE windo.
+
+If multiple DevStudio versions are installed on the machine, you can run buildall.bat on separate windows that each were created by the desired DevStudio target.
+
+If you prefer to build all versions (or several) at the same time, you should uncomment the specific version desired in buildall.bat to build them from a single window.
