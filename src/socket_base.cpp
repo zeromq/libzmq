@@ -169,9 +169,7 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
 
     alloc_assert (s);
 
-    mailbox_t *mailbox = dynamic_cast<mailbox_t*> (s->mailbox);
-
-    if (mailbox != NULL && mailbox->get_fd () == retired_fd) {
+    if (s->mailbox == NULL) {
         s->destroyed = true;
         LIBZMQ_DELETE(s);
         return NULL;
@@ -200,17 +198,24 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t tid_, int sid_, bool
 
     if (thread_safe)
         mailbox = new mailbox_safe_t(&sync);
-    else
-        mailbox = new mailbox_t();
+    else {
+        mailbox_t *m = new mailbox_t();
+        if (m->get_fd () != retired_fd)
+            mailbox = m;
+        else {
+            LIBZMQ_DELETE (m);
+            mailbox = NULL;
+        }
+    }
 }
 
 zmq::socket_base_t::~socket_base_t ()
 {
-    LIBZMQ_DELETE(mailbox);
+    if (mailbox)
+        LIBZMQ_DELETE(mailbox);
 
-    if (reaper_signaler) {
+    if (reaper_signaler)
         LIBZMQ_DELETE(reaper_signaler);
-    }
 
     stop_monitor ();
     zmq_assert (destroyed);
