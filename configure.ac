@@ -422,7 +422,7 @@ AS_IF([test "x$with_libsodium" = "xyes"], [
 
 AC_ARG_ENABLE([curve],
     AS_HELP_STRING([--disable-curve], [disable CURVE security [default=no]]))
-x
+
 if test "x$enable_curve" == "xno"; then
     curve_library=""
     AC_MSG_NOTICE([CURVE security is disabled])
