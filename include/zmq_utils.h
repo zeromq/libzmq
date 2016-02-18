@@ -28,3 +28,5 @@
 */
 
 /*  This file is deprecated, and all its functionality provided by zmq.h     */
+
+#warning zmq_utils.h is deprecated. All its functionality is provided by zmq.h.
