@@ -30,20 +30,6 @@
 #include "precompiled.hpp"
 #include "macros.hpp"
 #include "platform.hpp"
-#if defined ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
-#include <unistd.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netinet/tcp.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <fcntl.h>
-#if defined ZMQ_HAVE_OPENBSD
-#define ucred sockpeercred
-#endif
-#endif
 
 #include <string.h>
 #include <new>
