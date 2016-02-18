@@ -26,7 +26,8 @@
           'ZMQ_HAVE_WINDOWS',
           'ZMQ_STATIC',
           'FD_SETSIZE=16384',
-          '_CRT_SECURE_NO_WARNINGS'
+          '_CRT_SECURE_NO_WARNINGS',
+          '_WINSOCK_DEPRECATED_NO_WARNINGS'
         ],
         'libraries': [
           'ws2_32',
