@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include "metadata.hpp"
 
 zmq::metadata_t::metadata_t (const dict_t &dict) :

@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include "poller_base.hpp"
 #include "i_poll_events.hpp"
 #include "err.hpp"

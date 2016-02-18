@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include "epoll.hpp"
 #if defined ZMQ_USE_EPOLL
 

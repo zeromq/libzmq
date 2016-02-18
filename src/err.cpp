@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include "err.hpp"
 
 const char *zmq::errno_to_string (int errno_)

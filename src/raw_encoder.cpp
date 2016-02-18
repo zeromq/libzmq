@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include "encoder.hpp"
 #include "raw_encoder.hpp"
 #include "likely.hpp"

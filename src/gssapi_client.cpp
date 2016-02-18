@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include "platform.hpp"
 
 #ifdef HAVE_LIBGSSAPI_KRB5
