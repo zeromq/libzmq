@@ -30,7 +30,13 @@
 #include "platform.hpp"
 #if defined (ZMQ_USE_TWEETNACL)
 
-#pragma GCC diagnostic ignored "-Wsign-compare"
+//  Disable warnings for this source only, rather than for the whole
+//  codebase
+#ifdef __GNUC__
+#   pragma GCC diagnostic ignored "-Wsign-compare"
+#elif defined _MSC_VER
+#   pragma warning (disable:4018 4244 4146)
+#endif
 
 #include "tweetnacl.h"
 
