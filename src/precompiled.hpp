@@ -34,23 +34,113 @@
 
 // Windows headers
 #include "platform.hpp"
+
+#if defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
+#else
+#include <unistd.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/tcp.h>
+#include <netinet/in.h>
+#include <netdb.h>
 #include <fcntl.h>
+#if defined ZMQ_HAVE_OPENBSD
+#define ucred sockpeercred
+#endif
+#endif
+
+
+// system headers
 #include <intrin.h>
 #include <io.h>
 #include <rpc.h>
 #include <sys/stat.h>
+#include <assert.h>
+#if defined _MSC_VER
+#if defined _WIN32_WCE
+#include <cmnintrin.h>
+#else
+#include <intrin.h>
+#endif
+#endif
+#include <ctype.h>
+#include <errno.h>
+
+#ifdef HAVE_LIBGSSAPI_KRB5
+#include <string.h>
+#include <string>
+
+#include "msg.hpp"
+#include "session_base.hpp"
+#include "err.hpp"
+#include "gssapi_server.hpp"
+#include "wire.hpp"
+
+#include <gssapi/gssapi.h>
+#endif
+#ifdef HAVE_LIBGSSAPI_KRB5
+
+#if !defined(ZMQ_HAVE_FREEBSD) && !defined(ZMQ_HAVE_DRAGONFLY)
+#include <gssapi/gssapi_generic.h>
+#endif
+#include <gssapi/gssapi_krb5.h>
+
+#include "mechanism.hpp"
+#include "options.hpp"
+#include <gssapi/gssapi_krb5.h>
+#endif
+#if ((defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD ||\
+    defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_OPENBSD ||\
+    defined ZMQ_HAVE_QNXNTO || defined ZMQ_HAVE_NETBSD ||\
+    defined ZMQ_HAVE_DRAGONFLY || defined ZMQ_HAVE_GNU)\
+    && defined ZMQ_HAVE_IFADDRS)
+#include <ifaddrs.h>
+#endif
+#include <intrin.h>
+#include <inttypes.h>
+#include <io.h>
+#include <ipexport.h>
+#include <iphlpapi.h>
+#include <limits.h>
+#include <Mstcpip.h>
+#include <mswsock.h>
+#include <process.h>
+#include <rpc.h>
+#include <signal.h>
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <time.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
 
 // standard C++ headers
 #include <algorithm>
+#include <atomic>
+#include <climits>
+#include <cmath>
+#include <cstddef>
+#include <cstdlib>
+#include <cstring>
+#include <deque>
+#include <limits>
 #include <map>
+#include <new>
 #include <set>
+#include <sstream>
 #include <string>
 #include <vector>
+
 
 // 0MQ definitions and exported functions
 #include "../include/zmq.h"
 
 #endif // _MSC_VER
 
-#endif
+#endif //ifndef __ZMQ_PRECOMPILED_HPP_INCLUDED__

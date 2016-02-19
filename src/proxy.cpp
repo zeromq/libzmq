@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include <stddef.h>
 #include "poller.hpp"
 #include "proxy.hpp"
