@@ -47,8 +47,9 @@ ZMQ_ORIG_CXXFLAGS="${CXXFLAGS:-none}"
 
 # Checks for programs.
 AC_PROG_CC
-AC_PROG_CC_C99
+AX_CHECK_COMPILE_FLAG([-std=gnu11], [CFLAGS+=" -std=gnu11"], [AC_PROG_CC_C99])
 AC_PROG_CXX
+AX_CXX_COMPILE_STDCXX_11([ext], [optional])
 AM_PROG_CC_C_O
 AC_PROG_SED
 AC_PROG_AWK
