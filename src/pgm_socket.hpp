@@ -41,7 +41,7 @@
 
 #include <pgm/pgm.h>
 
-#ifdef ZMQ_HAVE_OSX
+#if defined(ZMQ_HAVE_OSX) || defined(ZMQ_HAVE_NETBSD)
 #include <pgm/in.h>
 #endif
 
