@@ -61,6 +61,8 @@
 zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
                                        const std::string &endpoint_) :
     s (fd_),
+    as_server(false),
+    handle(NULL),
     inpos (NULL),
     insize (0),
     decoder (NULL),
@@ -87,8 +89,6 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
     has_timeout_timer (false),
     has_heartbeat_timer (false),
     heartbeat_timeout (0),
-    as_server(false),
-    handle(NULL),
     socket (NULL)
 {
     int rc = tx_msg.init ();
