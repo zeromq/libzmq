@@ -13,6 +13,9 @@ AC_CONFIG_MACRO_DIR(config)
 AC_CONFIG_HEADERS([src/platform.hpp])
 AM_INIT_AUTOMAKE(foreign subdir-objects tar-ustar dist-zip)
 
+m4_pattern_allow([AC_PROG_CC_C99])
+m4_include([m4/ax_check_compile_flag.m4])
+m4_include([m4/ax_cxx_compile_stdcxx_11.m4])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 # This lets us use PACKAGE_VERSION in Makefiles
@@ -44,8 +47,9 @@ ZMQ_ORIG_CXXFLAGS="${CXXFLAGS:-none}"
 
 # Checks for programs.
 AC_PROG_CC
-AC_PROG_CC_C99
+AX_CHECK_COMPILE_FLAG([-std=gnu11], [CFLAGS+=" -std=gnu11"], [AC_PROG_CC_C99])
 AC_PROG_CXX
+AX_CXX_COMPILE_STDCXX_11([ext], [optional])
 AM_PROG_CC_C_O
 AC_PROG_SED
 AC_PROG_AWK
