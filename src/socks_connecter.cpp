@@ -61,11 +61,11 @@ zmq::socks_connecter_t::socks_connecter_t (class io_thread_t *io_thread_,
     proxy_addr (proxy_addr_),
     status (unplugged),
     s (retired_fd),
-    delayed_start (delayed_start_),
-    session (session_),
     handle(NULL),
     handle_valid(false),
+    delayed_start (delayed_start_),
     timer_started(false),
+    session (session_),
     current_reconnect_ivl (options.reconnect_ivl)
 {
     zmq_assert (addr);
