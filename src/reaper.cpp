@@ -36,7 +36,7 @@
 zmq::reaper_t::reaper_t (class ctx_t *ctx_, uint32_t tid_) :
     object_t (ctx_, tid_),
     sockets (0),
-	mailbox_handle(NULL),
+    mailbox_handle(NULL),
     terminating (false)
 {
     poller = new (std::nothrow) poller_t (*ctx_);

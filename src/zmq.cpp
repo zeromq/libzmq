@@ -925,9 +925,9 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     //  file descriptors.
     zmq_assert (nitems_ <= FD_SETSIZE);
 
-	fd_set pollset_in  = { 0 };
-	fd_set pollset_out = { 0 };
-	fd_set pollset_err = { 0 };
+    fd_set pollset_in  = { 0 };
+    fd_set pollset_out = { 0 };
+    fd_set pollset_err = { 0 };
 
     zmq::fd_t maxfd = 0;
 

@@ -63,9 +63,9 @@ zmq::socks_connecter_t::socks_connecter_t (class io_thread_t *io_thread_,
     s (retired_fd),
     delayed_start (delayed_start_),
     session (session_),
-	handle(NULL),
-	handle_valid(false),
-	timer_started(false),
+    handle(NULL),
+    handle_valid(false),
+    timer_started(false),
     current_reconnect_ivl (options.reconnect_ivl)
 {
     zmq_assert (addr);
