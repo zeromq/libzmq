@@ -184,6 +184,8 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t tid_, int sid_, bool
     tag (0xbaddecaf),
     ctx_terminated (false),
     destroyed (false),
+    poller(nullptr),
+    handle(NULL),
     last_tsc (0),
     ticks (0),
     rcvmore (false),
@@ -191,8 +193,6 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t tid_, int sid_, bool
     monitor_socket (NULL),
     monitor_events (0),
     thread_safe (thread_safe_),
-    poller(nullptr),
-    handle(NULL),
     reaper_signaler (NULL)
 {
     options.socket_id = sid_;
