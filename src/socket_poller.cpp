@@ -35,7 +35,9 @@ zmq::socket_poller_t::socket_poller_t () :
     tag (0xCAFEBABE),
     need_rebuild (true),
     poll_size(0),
+#if defined ZMQ_POLL_BASED_ON_SELECT
     maxfd(0),
+#endif
     use_signaler (false)
 #if defined ZMQ_POLL_BASED_ON_POLL
     ,
@@ -46,7 +48,6 @@ zmq::socket_poller_t::socket_poller_t () :
     memset(&pollset_in, 0, sizeof(pollset_in));
     memset(&pollset_out, 0, sizeof(pollset_in));
     memset(&pollset_err, 0, sizeof(pollset_in));
-    maxfd = 0;
 #endif
 }
 
