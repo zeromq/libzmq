@@ -157,7 +157,7 @@ int zmq::null_mechanism_t::process_handshake_command (msg_t *msg_)
     }
 
     if (rc == 0) {
-        int rc = msg_->close ();
+        rc = msg_->close ();
         errno_assert (rc == 0);
         rc = msg_->init ();
         errno_assert (rc == 0);

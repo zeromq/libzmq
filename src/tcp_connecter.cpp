@@ -72,6 +72,7 @@ zmq::tcp_connecter_t::tcp_connecter_t (class io_thread_t *io_thread_,
     connect_timer_started (false),
     reconnect_timer_started (false),
     session (session_),
+	handle(NULL),
     current_reconnect_ivl (options.reconnect_ivl)
 {
     zmq_assert (addr);

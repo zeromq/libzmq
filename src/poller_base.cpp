@@ -53,7 +53,7 @@ void zmq::poller_base_t::adjust_load (int amount_)
         load.add (amount_);
     else
     if (amount_ < 0)
-        load.sub (-amount_);
+        bool reset = load.sub (-amount_);
 }
 
 void zmq::poller_base_t::add_timer (int timeout_, i_poll_events *sink_, int id_)
