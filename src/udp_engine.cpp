@@ -49,11 +49,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 zmq::udp_engine_t::udp_engine_t() :
     plugged (false),
     fd(NULL),
+    session(NULL),
+    handle(NULL),
     address(nullptr),
     send_enabled(false),
-    recv_enabled(false),
-    handle(NULL),
-    session(NULL)
+    recv_enabled(false)
 {
 }
 
