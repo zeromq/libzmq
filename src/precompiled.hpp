@@ -36,6 +36,7 @@
 #include "platform.hpp"
 
 #if defined ZMQ_HAVE_WINDOWS
+#define WIN32_LEAN_AND_MEAN		// speeds up compilation by removing rarely used windows definitions from headers
 #include "windows.hpp"
 #else
 #include <unistd.h>
