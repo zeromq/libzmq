@@ -539,7 +539,8 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
         saved_errno = WSAGetLastError ();
 
     //  We don't need the listening socket anymore. Close it.
-    closesocket (listener);
+    rc = closesocket (listener);
+	wsa_assert(rc != SOCKET_ERROR);
 
     if (sync != NULL) {
         //  Exit the critical section.

@@ -332,13 +332,15 @@ int zmq::dish_session_t::pull_msg (msg_t *msg_)
         int offset;
 
         if (msg_->is_join ()) {
-            command.init_size (group_length + 5);
-            offset = 5;
+            rc = command.init_size (group_length + 5);
+			errno_assert(rc == 0);
+			offset = 5;
             memcpy (command.data (), "\4JOIN", 5);
         }
         else {
-            command.init_size (group_length + 6);
-            offset = 6;
+            rc = command.init_size (group_length + 6);
+			errno_assert(rc == 0);
+			offset = 6;
             memcpy (command.data (), "\5LEAVE", 6);
         }
 
@@ -349,7 +351,7 @@ int zmq::dish_session_t::pull_msg (msg_t *msg_)
         memcpy (command_data + offset, msg_->group (), group_length);
 
         //  Close the join message
-        int rc = msg_->close ();
+        rc = msg_->close ();
         errno_assert (rc == 0);
 
         *msg_ = command;

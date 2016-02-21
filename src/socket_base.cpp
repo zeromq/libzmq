@@ -191,6 +191,8 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t tid_, int sid_, bool
     monitor_socket (NULL),
     monitor_events (0),
     thread_safe (thread_safe_),
+	poller(nullptr),
+	handle(NULL),
     reaper_signaler (NULL)
 {
     options.socket_id = sid_;
@@ -452,7 +454,7 @@ int zmq::socket_base_t::getsockopt (int option_, void *optval_,
             EXIT_MUTEX ();
             return -1;
         }
-        strcpy (static_cast <char *> (optval_), last_endpoint.c_str ());
+		strncpy(static_cast <char *> (optval_), last_endpoint.c_str(), last_endpoint.size() + 1);
         *optvallen_ = last_endpoint.size () + 1;
         EXIT_MUTEX ();
         return 0;
@@ -557,7 +559,7 @@ int zmq::socket_base_t::bind (const char *addr_)
 
     if (protocol == "inproc") {
         const endpoint_t endpoint = { this, options };
-        const int rc = register_endpoint (addr_, endpoint);
+        rc = register_endpoint (addr_, endpoint);
         if (rc == 0) {
             connect_pending (addr_, this);
             last_endpoint.assign (addr_);
@@ -590,7 +592,7 @@ int zmq::socket_base_t::bind (const char *addr_)
         tcp_listener_t *listener = new (std::nothrow) tcp_listener_t (
             io_thread, this, options);
         alloc_assert (listener);
-        int rc = listener->set_address (address.c_str ());
+        rc = listener->set_address (address.c_str ());
         if (rc != 0) {
             LIBZMQ_DELETE(listener);
             event_bind_failed (address, zmq_errno());
@@ -739,7 +741,7 @@ int zmq::socket_base_t::connect (const char *addr_)
 
         int hwms [2] = {conflate? -1 : sndhwm, conflate? -1 : rcvhwm};
         bool conflates [2] = {conflate, conflate};
-        int rc = pipepair (parents, new_pipes, hwms, conflates);
+        rc = pipepair (parents, new_pipes, hwms, conflates);
         if (!conflate) {
             new_pipes[0]->set_hwms_boost(peer.options.sndhwm, peer.options.rcvhwm);
             new_pipes[1]->set_hwms_boost(options.sndhwm, options.rcvhwm);
@@ -894,7 +896,7 @@ int zmq::socket_base_t::connect (const char *addr_)
 if (protocol  == "udp") {
     paddr->resolved.udp_addr = new (std::nothrow) udp_address_t ();
     alloc_assert (paddr->resolved.udp_addr);
-    int rc = paddr->resolved.udp_addr->resolve (address.c_str());
+    rc = paddr->resolved.udp_addr->resolve (address.c_str());
     if (rc != 0) {
         LIBZMQ_DELETE(paddr);
         EXIT_MUTEX ();
@@ -1501,9 +1503,10 @@ void zmq::socket_base_t::in_event ()
     if (thread_safe)
         reaper_signaler->recv();
 
-    process_commands (0, false);
-    EXIT_MUTEX ();
-    check_destroy ();
+    int rc = process_commands (0, false);
+	EXIT_MUTEX();
+	errno_assert(rc == 0);
+	check_destroy();
 }
 
 void zmq::socket_base_t::out_event ()

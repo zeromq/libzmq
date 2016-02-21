@@ -155,9 +155,9 @@ void zmq::router_t::xpipe_terminated (pipe_t *pipe_)
     if (it != anonymous_pipes.end ())
         anonymous_pipes.erase (it);
     else {
-        outpipes_t::iterator it = outpipes.find (pipe_->get_identity ());
-        zmq_assert (it != outpipes.end ());
-        outpipes.erase (it);
+        outpipes_t::iterator iter = outpipes.find (pipe_->get_identity ());
+        zmq_assert (iter != outpipes.end ());
+        outpipes.erase (iter);
         fq.pipe_terminated (pipe_);
         if (pipe_ == current_out)
             current_out = NULL;

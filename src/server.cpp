@@ -122,7 +122,7 @@ int zmq::server_t::xsend (msg_t *msg_)
     bool ok = it->second.pipe->write (msg_);
     if (unlikely (!ok)) {
         // Message failed to send - we must close it ourselves.
-        int rc = msg_->close ();
+        rc = msg_->close ();
         errno_assert (rc == 0);
     }
     else

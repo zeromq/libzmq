@@ -108,6 +108,8 @@ f_compatible_get_tick_count64 init_compatible_get_tick_count64()
   if (func == NULL)
     func = compatible_get_tick_count64;
 
+  ::FreeLibrary(module);
+
   return func;
 }
 

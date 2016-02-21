@@ -63,6 +63,9 @@ zmq::socks_connecter_t::socks_connecter_t (class io_thread_t *io_thread_,
     s (retired_fd),
     delayed_start (delayed_start_),
     session (session_),
+	handle(NULL),
+	handle_valid(false),
+	timer_started(false),
     current_reconnect_ivl (options.reconnect_ivl)
 {
     zmq_assert (addr);
@@ -113,13 +116,13 @@ void zmq::socks_connecter_t::in_event ()
              && status != waiting_for_reconnect_time);
 
     if (status == waiting_for_choice) {
-        const int rc = choice_decoder.input (s);
+        int rc = choice_decoder.input (s);
         if (rc == 0 || rc == -1)
             error ();
         else
         if (choice_decoder.message_ready ()) {
              const socks_choice_t choice = choice_decoder.decode ();
-             const int rc = process_server_response (choice);
+             rc = process_server_response (choice);
              if (rc == -1)
                  error ();
              else {
@@ -139,13 +142,13 @@ void zmq::socks_connecter_t::in_event ()
     }
     else
     if (status == waiting_for_response) {
-        const int rc = response_decoder.input (s);
+        int rc = response_decoder.input (s);
         if (rc == 0 || rc == -1)
             error ();
         else
         if (response_decoder.message_ready ()) {
             const socks_response_t response = response_decoder.decode ();
-            const int rc = process_server_response (response);
+            rc = process_server_response (response);
             if (rc == -1)
                 error ();
             else {
