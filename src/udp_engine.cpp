@@ -51,7 +51,7 @@ zmq::udp_engine_t::udp_engine_t() :
     fd(-1),
     session(NULL),
     handle(NULL),
-    address(nullptr),
+    address(NULL),
     send_enabled(false),
     recv_enabled(false)
 {
