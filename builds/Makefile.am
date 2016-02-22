@@ -21,10 +21,7 @@ EXTRA_DIST = \
 	cmake/Modules/ZMQSourceRunChecks.cmake \
 	cmake/NSIS.template32.in \
 	cmake/platform.hpp.in \
-	cmake/Makefile.am \
-	cmake/Makefile \
 	cmake/NSIS.template64.in \
-	cmake/Makefile.in \
 	valgrind/valgrind.supp \
 	valgrind/vg \
 	nuget/readme.nuget \
