@@ -55,9 +55,8 @@ namespace zmq
     public:
 
         inline thread_t ()
-			: tfn(nullptr)
-			, arg(nullptr)
-			, descriptor(NULL)
+            : tfn(NULL)
+            , arg(NULL)
         {
         }
 

@@ -48,12 +48,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 zmq::udp_engine_t::udp_engine_t() :
     plugged (false),
-	fd(NULL),
-	address(nullptr),
-	send_enabled(false),
-	recv_enabled(false),
-	handle(NULL),
-    session(NULL)
+    fd(-1),
+    session(NULL),
+    handle(NULL),
+    address(NULL),
+    send_enabled(false),
+    recv_enabled(false)
 {
 }
 

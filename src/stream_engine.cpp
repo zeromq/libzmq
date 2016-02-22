@@ -61,6 +61,8 @@
 zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
                                        const std::string &endpoint_) :
     s (fd_),
+    as_server(false),
+    handle(NULL),
     inpos (NULL),
     insize (0),
     decoder (NULL),
@@ -87,8 +89,6 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
     has_timeout_timer (false),
     has_heartbeat_timer (false),
     heartbeat_timeout (0),
-	as_server(false),
-	handle(NULL),
     socket (NULL)
 {
     int rc = tx_msg.init ();
@@ -1021,8 +1021,8 @@ int zmq::stream_engine_t::produce_ping_message(msg_t * msg_)
 
     // 16-bit TTL + \4PING == 7
     rc = msg_->init_size(7);
-	errno_assert(rc == 0);
-	msg_->set_flags(msg_t::command);
+    errno_assert(rc == 0);
+    msg_->set_flags(msg_t::command);
     // Copy in the command message
     memcpy(msg_->data(), "\4PING", 5);
 
@@ -1044,8 +1044,8 @@ int zmq::stream_engine_t::produce_pong_message(msg_t * msg_)
     zmq_assert (mechanism != NULL);
 
     rc = msg_->init_size(5);
-	errno_assert(rc == 0);
-	msg_->set_flags(msg_t::command);
+    errno_assert(rc == 0);
+    msg_->set_flags(msg_t::command);
 
     memcpy(msg_->data(), "\4PONG", 5);
 

@@ -184,6 +184,8 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t tid_, int sid_, bool
     tag (0xbaddecaf),
     ctx_terminated (false),
     destroyed (false),
+    poller(NULL),
+    handle(NULL),
     last_tsc (0),
     ticks (0),
     rcvmore (false),
@@ -191,8 +193,6 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t tid_, int sid_, bool
     monitor_socket (NULL),
     monitor_events (0),
     thread_safe (thread_safe_),
-	poller(nullptr),
-	handle(NULL),
     reaper_signaler (NULL)
 {
     options.socket_id = sid_;
@@ -454,7 +454,7 @@ int zmq::socket_base_t::getsockopt (int option_, void *optval_,
             EXIT_MUTEX ();
             return -1;
         }
-		strncpy(static_cast <char *> (optval_), last_endpoint.c_str(), last_endpoint.size() + 1);
+        strncpy(static_cast <char *> (optval_), last_endpoint.c_str(), last_endpoint.size() + 1);
         *optvallen_ = last_endpoint.size () + 1;
         EXIT_MUTEX ();
         return 0;
@@ -1503,10 +1503,9 @@ void zmq::socket_base_t::in_event ()
     if (thread_safe)
         reaper_signaler->recv();
 
-    int rc = process_commands (0, false);
-	EXIT_MUTEX();
-	errno_assert(rc == 0);
-	check_destroy();
+    process_commands (0, false);
+    EXIT_MUTEX();
+    check_destroy();
 }
 
 void zmq::socket_base_t::out_event ()

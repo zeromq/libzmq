@@ -57,11 +57,11 @@ namespace zmq
     public:
 
         inline encoder_base_t (size_t bufsize_) :
+            write_pos(0),
+            to_write(0),
+            next(NULL),
+            new_msg_flag(false),
             bufsize (bufsize_),
-			write_pos(0),
-			to_write(0),
-			next(nullptr),
-			new_msg_flag(false),
             in_progress (NULL)
         {
             buf = (unsigned char*) malloc (bufsize_);
