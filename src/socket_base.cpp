@@ -1503,9 +1503,8 @@ void zmq::socket_base_t::in_event ()
     if (thread_safe)
         reaper_signaler->recv();
 
-    int rc = process_commands (0, false);
+    process_commands (0, false);
     EXIT_MUTEX();
-    errno_assert(rc == 0);
     check_destroy();
 }
 
