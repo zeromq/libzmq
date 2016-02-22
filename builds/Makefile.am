@@ -26,6 +26,6 @@ EXTRA_DIST = \
 	valgrind/vg \
 	nuget/readme.nuget \
 	nuget/libzmq.autopkg \
-	qt-android/android_build_helper.sh \
-	qt-android/ci_build.sh \
-	qt-android/build.sh
+	android/android_build_helper.sh \
+	android/ci_build.sh \
+	android/build.sh
