@@ -42,6 +42,9 @@
 #if defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
 #include <sys/types.h>
 #endif
+#ifdef ZMQ_HAVE_LOCAL_PEERCRED
+#include <sys/ucred.h>
+#endif
 
 //  Normal base 256 key is 32 bytes
 #define CURVE_KEYSIZE       32
