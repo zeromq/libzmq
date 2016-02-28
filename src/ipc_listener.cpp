@@ -50,10 +50,12 @@
 #include <fcntl.h>
 #include <sys/un.h>
 
-#if defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
+#ifdef ZMQ_HAVE_LOCAL_PEERCRED
 #   include <sys/types.h>
+#   include <sys/ucred.h>
 #endif
 #ifdef ZMQ_HAVE_SO_PEERCRED
+#   include <sys/types.h>
 #   include <pwd.h>
 #   include <grp.h>
 #   if defined ZMQ_HAVE_OPENBSD
