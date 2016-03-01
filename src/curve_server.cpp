@@ -376,7 +376,8 @@ int zmq::curve_server_t::produce_welcome (msg_t *msg_)
     rc = crypto_box (welcome_ciphertext, welcome_plaintext,
                      sizeof welcome_plaintext,
                      welcome_nonce, cn_client, secret_key);
-    zmq_assert (rc == 0);
+    if (rc == -1)
+        return -1;
 
     rc = msg_->init_size (168);
     errno_assert (rc == 0);

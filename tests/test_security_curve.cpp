@@ -156,7 +156,7 @@ int main (void)
 
     //  Check CURVE security with a garbage server key
     //  This will be caught by the curve_server class, not passed to ZAP
-    char garbage_key [] = "0000111122223333444455556666777788889999";
+    char garbage_key [] = "0000000000000000000000000000000000000000";
     client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
     rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, garbage_key, 41);

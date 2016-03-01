@@ -198,7 +198,6 @@ int zmq::curve_client_t::decode (msg_t *msg_)
     }
     cn_peer_nonce = nonce;
 
-
     const size_t clen = crypto_box_BOXZEROBYTES + (msg_->size () - 16);
 
     uint8_t *message_plaintext = static_cast <uint8_t *> (malloc (clen));
@@ -264,7 +263,8 @@ int zmq::curve_client_t::produce_hello (msg_t *msg_)
     int rc = crypto_box (hello_box, hello_plaintext,
                          sizeof hello_plaintext,
                          hello_nonce, server_key, cn_secret);
-    zmq_assert (rc == 0);
+    if (rc == -1)
+        return -1;
 
     rc = msg_->init_size (200);
     errno_assert (rc == 0);
@@ -343,7 +343,8 @@ int zmq::curve_client_t::produce_initiate (msg_t *msg_)
     int rc = crypto_box (vouch_box, vouch_plaintext,
                          sizeof vouch_plaintext,
                          vouch_nonce, cn_server, secret_key);
-    zmq_assert (rc == 0);
+    if (rc == -1)
+        return -1;
 
     //  Assume here that metadata is limited to 256 bytes
     uint8_t initiate_nonce [crypto_box_NONCEBYTES];
@@ -379,7 +380,8 @@ int zmq::curve_client_t::produce_initiate (msg_t *msg_)
 
     rc = crypto_box (initiate_box, initiate_plaintext,
                      mlen, initiate_nonce, cn_server, cn_secret);
-    zmq_assert (rc == 0);
+    if (rc == -1)
+        return -1;
 
     rc = msg_->init_size (113 + mlen - crypto_box_BOXZEROBYTES);
     errno_assert (rc == 0);
