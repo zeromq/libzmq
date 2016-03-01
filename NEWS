@@ -11,6 +11,8 @@
 
 * Fixed #1807 - build broken with GCC 6.
 
+* Fixed #1831 - potential assertion failure with latest libsodium.
+
 
 0MQ version 4.1.4 stable, released on 2015/12/18
 ================================================
