@@ -416,7 +416,7 @@ fi
 # To disable curve, use --disable-curve
 
 AC_ARG_WITH([libsodium],
-    AS_HELP_STRING([--with-libsodium], [use libsodium instead of built-in tweetnacl [default=no]]))
+    [AS_HELP_STRING([--with-libsodium], [use libsodium instead of built-in tweetnacl [default=no]])])
 
 AS_IF([test "x$with_libsodium" = "xyes"], [
     PKG_CHECK_MODULES([sodium], [libsodium], [libsodium_found=yes], [
@@ -425,7 +425,7 @@ AS_IF([test "x$with_libsodium" = "xyes"], [
 ])
 
 AC_ARG_ENABLE([curve],
-    AS_HELP_STRING([--disable-curve], [disable CURVE security [default=no]]))
+    [AS_HELP_STRING([--disable-curve], [disable CURVE security [default=no]])])
 
 if test "x$enable_curve" == "xno"; then
     curve_library=""
