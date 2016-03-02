@@ -416,7 +416,7 @@ fi
 # To disable curve, use --disable-curve
 
 AC_ARG_WITH([libsodium],
-    AS_HELP_STRING([--with-libsodium], [use libsodium instead of built-in tweetnacl [default=no]]))
+    [AS_HELP_STRING([--with-libsodium], [use libsodium instead of built-in tweetnacl [default=no]])])
 
 AS_IF([test "x$with_libsodium" = "xyes"], [
     PKG_CHECK_MODULES([sodium], [libsodium], [libsodium_found=yes], [
@@ -425,12 +425,11 @@ AS_IF([test "x$with_libsodium" = "xyes"], [
 ])
 
 AC_ARG_ENABLE([curve],
-    AS_HELP_STRING([--disable-curve], [disable CURVE security [default=no]]))
+    [AS_HELP_STRING([--disable-curve], [disable CURVE security [default=no]])])
 
 if test "x$enable_curve" == "xno"; then
     curve_library=""
     AC_MSG_NOTICE([CURVE security is disabled])
-    AM_CONDITIONAL(ENABLE_CURVE_KEYGEN, 0)
 
 elif test "x$with_libsodium" == "xyes"; then
     AC_MSG_NOTICE([Using libsodium for CURVE security])
@@ -451,6 +450,7 @@ else
     curve_library="tweetnacl"
 fi
 
+AM_CONDITIONAL(ENABLE_CURVE_KEYGEN, test "x$enable_curve" == "xyes")
 AM_CONDITIONAL(USE_LIBSODIUM, test "$curve_library" == "libsodium")
 AM_CONDITIONAL(USE_TWEETNACL, test "$curve_library" == "tweetnacl")
 
