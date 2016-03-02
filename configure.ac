@@ -430,7 +430,6 @@ AC_ARG_ENABLE([curve],
 if test "x$enable_curve" == "xno"; then
     curve_library=""
     AC_MSG_NOTICE([CURVE security is disabled])
-    AM_CONDITIONAL(ENABLE_CURVE_KEYGEN, 0)
 
 elif test "x$with_libsodium" == "xyes"; then
     AC_MSG_NOTICE([Using libsodium for CURVE security])
@@ -451,6 +450,7 @@ else
     curve_library="tweetnacl"
 fi
 
+AM_CONDITIONAL(ENABLE_CURVE_KEYGEN, test "x$enable_curve" == "xyes")
 AM_CONDITIONAL(USE_LIBSODIUM, test "$curve_library" == "libsodium")
 AM_CONDITIONAL(USE_TWEETNACL, test "$curve_library" == "tweetnacl")
 
