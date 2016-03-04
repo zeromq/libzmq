@@ -407,7 +407,8 @@ AC_ARG_WITH([libgssapi_krb5], [AS_HELP_STRING([--with-libgssapi_krb5],
 
 # conditionally require libgssapi_krb5
 if test "x$require_libgssapi_krb5_ext" != "xno"; then
-    AC_CHECK_LIB([gssapi_krb5], [gss_init_sec_context],,
+    AC_CHECK_HEADERS(gssapi/gssapi_generic.h)
+    AC_SEARCH_LIBS([gss_init_sec_context], [gssapi_krb5 gssapi],,
         AC_MSG_ERROR(libgssapi_krb5 is needed for GSSAPI security))
 fi
 
