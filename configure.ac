@@ -427,11 +427,11 @@ AS_IF([test "x$with_libsodium" = "xyes"], [
 AC_ARG_ENABLE([curve],
     [AS_HELP_STRING([--disable-curve], [disable CURVE security [default=no]])])
 
-if test "x$enable_curve" == "xno"; then
+if test "x$enable_curve" = "xno"; then
     curve_library=""
     AC_MSG_NOTICE([CURVE security is disabled])
 
-elif test "x$with_libsodium" == "xyes"; then
+elif test "x$with_libsodium" = "xyes"; then
     AC_MSG_NOTICE([Using libsodium for CURVE security])
     AC_DEFINE(ZMQ_HAVE_CURVE, [1], [Using curve encryption])
     AC_DEFINE(HAVE_LIBSODIUM, [1], [Using libsodium for curve encryption])
@@ -450,9 +450,9 @@ else
     curve_library="tweetnacl"
 fi
 
-AM_CONDITIONAL(ENABLE_CURVE_KEYGEN, test "x$enable_curve" == "xyes")
-AM_CONDITIONAL(USE_LIBSODIUM, test "$curve_library" == "libsodium")
-AM_CONDITIONAL(USE_TWEETNACL, test "$curve_library" == "tweetnacl")
+AM_CONDITIONAL(ENABLE_CURVE_KEYGEN, test "x$enable_curve" = "xyes")
+AM_CONDITIONAL(USE_LIBSODIUM, test "$curve_library" = "libsodium")
+AM_CONDITIONAL(USE_TWEETNACL, test "$curve_library" = "tweetnacl")
 
 # build using pgm
 have_pgm_library="no"
