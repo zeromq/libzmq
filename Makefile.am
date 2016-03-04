@@ -273,9 +273,10 @@ endif
 endif
 endif
 
-src_libzmq_la_CPPFLAGS =
-src_libzmq_la_CXXFLAGS = @LIBZMQ_EXTRA_CXXFLAGS@
-src_libzmq_la_LIBADD =
+src_libzmq_la_CPPFLAGS = $(CODE_COVERAGE_CPPFLAGS)
+src_libzmq_la_CFLAGS = $(CODE_COVERAGE_CFLAGS)
+src_libzmq_la_CXXFLAGS = @LIBZMQ_EXTRA_CXXFLAGS@ $(CODE_COVERAGE_CXXFLAGS)
+src_libzmq_la_LIBADD = $(CODE_COVERAGE_LDFLAGS)
 
 if USE_LIBSODIUM
 src_libzmq_la_CPPFLAGS += ${sodium_CFLAGS}
@@ -759,6 +760,8 @@ MAINTAINERCLEANFILES = \
 	$(srcdir)/autom4te.cache \
 	$(srcdir)/configure \
 	`find "$(srcdir)" -type f -name Makefile.in -print`
+
+@CODE_COVERAGE_RULES@
 
 dist-hook:
 	-rm $(distdir)/src/platform.hpp
