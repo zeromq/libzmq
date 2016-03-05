@@ -1,5 +1,5 @@
 # CMake build script for ZeroMQ tests
-cmake_minimum_required(VERSION "3.0")
+cmake_minimum_required(VERSION "2.8.1")
 
 # name of Windows project will tests.sln
 PROJECT(tests)
