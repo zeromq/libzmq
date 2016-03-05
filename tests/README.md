@@ -16,3 +16,11 @@ On many slower environments, like embedded systems, VMs or CI systems, test migh
 fail because it takes time for sockets to settle after a connect. If you need
 to add a sleep, please be consistent with all the other tests and use:
   msleep (SETTLE_TIME);
+
+# Building tests in Windows
+
+Install CMAKE
+CMD> CMAKE libzmq/tests
+CMD> tests.sln
+CMD> # build all projects in the solution
+
