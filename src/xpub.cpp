@@ -173,7 +173,8 @@ int zmq::xpub_t::xsetsockopt (int option_, const void *optval_,
         welcome_msg.close();
 
         if (optvallen_ > 0) {
-            welcome_msg.init_size(optvallen_);
+            int rc = welcome_msg.init_size(optvallen_);
+            errno_assert(rc == 0);
 
             unsigned char *data = (unsigned char*)welcome_msg.data();
             memcpy(data, optval_, optvallen_);

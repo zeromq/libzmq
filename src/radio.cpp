@@ -227,8 +227,9 @@ int zmq::radio_session_t::pull_msg (msg_t *msg_)
         int length = (int) strlen (group);
 
         //  First frame is the group
-        msg_->init_size (length);
-        msg_->set_flags (msg_t::more);
+        rc = msg_->init_size (length);
+        errno_assert(rc == 0);
+        msg_->set_flags(msg_t::more);
         memcpy (msg_->data (), group, length);
 
         //  Next status is the body

@@ -48,7 +48,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 zmq::udp_engine_t::udp_engine_t() :
     plugged (false),
-    session(NULL)
+    fd(-1),
+    session(NULL),
+    handle(NULL),
+    address(NULL),
+    send_enabled(false),
+    recv_enabled(false)
 {
 }
 
@@ -122,7 +127,7 @@ void zmq::udp_engine_t::plug (io_thread_t* io_thread_, session_base_t *session_)
             struct ip_mreq mreq;
             mreq.imr_multiaddr = address->resolved.udp_addr->multicast_ip ();
             mreq.imr_interface = address->resolved.udp_addr->interface_ip ();
-            int rc = setsockopt (fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*) &mreq, sizeof (mreq));
+            rc = setsockopt (fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*) &mreq, sizeof (mreq));
 #ifdef ZMQ_HAVE_WINDOWS
             wsa_assert (rc != SOCKET_ERROR);
 #else

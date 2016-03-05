@@ -407,7 +407,8 @@ AC_ARG_WITH([libgssapi_krb5], [AS_HELP_STRING([--with-libgssapi_krb5],
 
 # conditionally require libgssapi_krb5
 if test "x$require_libgssapi_krb5_ext" != "xno"; then
-    AC_CHECK_LIB([gssapi_krb5], [gss_init_sec_context],,
+    AC_CHECK_HEADERS(gssapi/gssapi_generic.h)
+    AC_SEARCH_LIBS([gss_init_sec_context], [gssapi_krb5 gssapi],,
         AC_MSG_ERROR(libgssapi_krb5 is needed for GSSAPI security))
 fi
 
@@ -416,7 +417,7 @@ fi
 # To disable curve, use --disable-curve
 
 AC_ARG_WITH([libsodium],
-    AS_HELP_STRING([--with-libsodium], [use libsodium instead of built-in tweetnacl [default=no]]))
+    [AS_HELP_STRING([--with-libsodium], [use libsodium instead of built-in tweetnacl [default=no]])])
 
 AS_IF([test "x$with_libsodium" = "xyes"], [
     PKG_CHECK_MODULES([sodium], [libsodium], [libsodium_found=yes], [
@@ -425,14 +426,13 @@ AS_IF([test "x$with_libsodium" = "xyes"], [
 ])
 
 AC_ARG_ENABLE([curve],
-    AS_HELP_STRING([--disable-curve], [disable CURVE security [default=no]]))
+    [AS_HELP_STRING([--disable-curve], [disable CURVE security [default=no]])])
 
-if test "x$enable_curve" == "xno"; then
+if test "x$enable_curve" = "xno"; then
     curve_library=""
     AC_MSG_NOTICE([CURVE security is disabled])
-    AM_CONDITIONAL(ENABLE_CURVE_KEYGEN, 0)
 
-elif test "x$with_libsodium" == "xyes"; then
+elif test "x$with_libsodium" = "xyes"; then
     AC_MSG_NOTICE([Using libsodium for CURVE security])
     AC_DEFINE(ZMQ_HAVE_CURVE, [1], [Using curve encryption])
     AC_DEFINE(HAVE_LIBSODIUM, [1], [Using libsodium for curve encryption])
@@ -451,8 +451,9 @@ else
     curve_library="tweetnacl"
 fi
 
-AM_CONDITIONAL(USE_LIBSODIUM, test "$curve_library" == "libsodium")
-AM_CONDITIONAL(USE_TWEETNACL, test "$curve_library" == "tweetnacl")
+AM_CONDITIONAL(ENABLE_CURVE_KEYGEN, test "x$enable_curve" = "xyes")
+AM_CONDITIONAL(USE_LIBSODIUM, test "$curve_library" = "libsodium")
+AM_CONDITIONAL(USE_TWEETNACL, test "$curve_library" = "tweetnacl")
 
 # build using pgm
 have_pgm_library="no"

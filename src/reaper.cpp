@@ -35,6 +35,7 @@
 
 zmq::reaper_t::reaper_t (class ctx_t *ctx_, uint32_t tid_) :
     object_t (ctx_, tid_),
+    mailbox_handle(NULL),
     sockets (0),
     terminating (false)
 {
