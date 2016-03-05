@@ -1,4 +1,8 @@
 # CMake build script for ZeroMQ tests
+cmake_minimum_required(VERSION "2.8.1")
+
+# name of Windows project will tests.sln
+PROJECT(tests)
 
 set(tests
         test_system
@@ -105,10 +109,26 @@ if(WITH_VMCI)
   )
 endif()
 
+# add location of platform.hpp for Windows builds
+if(WIN32)
+    add_definitions(-DZMQ_CUSTOM_PLATFORM_HPP)
+    include_directories(../builds/msvc)
+    link_libraries(Ws2_32.lib)
+endif()
+
+# add library and include dirs for all targets
+link_libraries(libzmq)
+include_directories("${CMAKE_SOURCE_DIR}/../include")
+include_directories("${CMAKE_SOURCE_DIR}/src")
+
 foreach(test ${tests})
   add_executable(${test} ${test}.cpp)
-  target_include_directories(${test} PRIVATE "${CMAKE_SOURCE_DIR}/src")
-  target_link_libraries(${test} libzmq)
+  if(WIN32)
+    # it will only link correctly for DEBUG builds in Windows (I don't know how to specify the target and target library in CMake)
+    SET_TARGET_PROPERTIES( ${test} PROPERTIES LINK_FLAGS "/LIBPATH:../bin/Win32/Debug/v120/dynamic" )
+  else()
+    link_directories(${test} PRIVATE "${CMAKE_SOURCE_DIR}/../lib")
+  endif()
 
   if(RT_LIBRARY)
     target_link_libraries(${test} ${RT_LIBRARY} )
@@ -137,3 +157,4 @@ foreach(TEST_SOURCE ${ALL_TEST_SOURCES})
     message(AUTHOR_WARNING "Test '${TESTNAME}' is not known to CTest.")
   endif()
 endforeach()
+
