@@ -28,7 +28,7 @@ if [ $BUILD_TYPE == "default" ]; then
         ./autogen.sh &&
         ./configure "${CONFIG_OPTS[@]}" &&
         make &&
-        ( if make check; then true; else cat test-suite.log; exit 1; fi ) &&
+        make VERBOSE=1 check &&
         make install
     ) || exit 1
 else
