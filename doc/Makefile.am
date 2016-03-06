@@ -18,22 +18,26 @@ MAN3 = zmq_bind.3 zmq_unbind.3 zmq_connect.3 zmq_disconnect.3 zmq_close.3 \
 MAN7 = zmq.7 zmq_tcp.7 zmq_pgm.7 zmq_inproc.7 zmq_ipc.7 \
     zmq_null.7 zmq_plain.7 zmq_curve.7 zmq_tipc.7
 
-MAN_DOC = $(MAN1) $(MAN3) $(MAN7)
+MAN_DOC =
 
 MAN_TXT = $(MAN3:%.3=%.txt)
 MAN_TXT += $(MAN7:%.7=%.txt)
-MAN_HTML = $(MAN_TXT:%.txt=%.html)
+MAN_HTML =
 
-MAINTAINERCLEANFILES = $(MAN_DOC) $(MAN_HTML)
+MAINTAINERCLEANFILES =
 
 EXTRA_DIST = asciidoc.conf $(MAN_TXT)
 
 if INSTALL_MAN
+MAN_DOC += $(MAN1) $(MAN3) $(MAN7)
 dist_man_MANS = $(MAN_DOC)
+MAINTAINERCLEANFILES += $(MAN_DOC)
 endif
 
 if BUILD_DOC
+MAN_HTML += $(MAN_TXT:%.txt=%.html)
 EXTRA_DIST += $(MAN_HTML)
+MAINTAINERCLEANFILES += $(MAN_HTML)
 
 SUFFIXES=.html .txt .xml .3 .7
 
