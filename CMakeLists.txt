@@ -8,12 +8,12 @@ list (INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}")
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=gnu++11" COMPILER_SUPPORTS_CXX11)
 if(COMPILER_SUPPORTS_CXX11)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
 endif()
 include(CheckCCompilerFlag)
 CHECK_C_COMPILER_FLAG("-std=gnu11" COMPILER_SUPPORTS_C11)
 if(COMPILER_SUPPORTS_C11)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
 endif()
 
 option (WITH_OPENPGM "Build with support for OpenPGM" OFF)
@@ -382,6 +382,7 @@ if (WIN32)
     #   Socket limit is 16K (can be raised arbitrarily)
     add_definitions (-DFD_SETSIZE=16384)
     add_definitions (-D_CRT_SECURE_NO_WARNINGS)
+    add_definitions (-D_WINSOCK_DEPRECATED_NO_WARNINGS)
 endif ()
 
 if (MSVC)
@@ -620,6 +621,26 @@ if (ZMQ_BUILD_FRAMEWORK)
     COMMAND ${CMAKE_COMMAND}
     ARGS -E make_directory "${CMAKE_LIBRARY_OUTPUT_PATH}/ZeroMQ.framework/Versions/${ZMQ_VERSION}/MacOS"
     COMMENT "Perf tools")
+endif ()
+
+if (MSVC)
+    # default for all sources is to use precompiled headers
+    foreach(source ${sources})
+        set_source_files_properties(${source}
+            PROPERTIES
+            COMPILE_FLAGS "/Yuprecompiled.hpp"
+            )
+    endforeach()
+    # create precompiled header
+    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/precompiled.cpp
+        PROPERTIES
+        COMPILE_FLAGS "/Ycprecompiled.hpp"
+        )
+    # C and C++ can not use the same precompiled header
+    set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/tweetnacl.c
+        PROPERTIES
+        COMPILE_FLAGS "/Y-"
+        )
 endif ()
 
 
