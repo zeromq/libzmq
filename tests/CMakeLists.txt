@@ -112,6 +112,7 @@ endif()
 # add location of platform.hpp for Windows builds
 if(WIN32)
     add_definitions(-DZMQ_CUSTOM_PLATFORM_HPP)
+    add_definitions(-D_WINSOCK_DEPRECATED_NO_WARNINGS)
     include_directories(../builds/msvc)
     link_libraries(Ws2_32.lib)
 endif()
