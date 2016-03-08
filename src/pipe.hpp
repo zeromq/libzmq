@@ -67,7 +67,7 @@ namespace zmq
 
     //  Note that pipe can be stored in three different arrays.
     //  The array of inbound pipes (1), the array of outbound pipes (2) and
-    //  the generic array of pipes to deallocate (3).
+    //  the generic array of pipes to be deallocated (3).
 
     class pipe_t :
         public object_t,
