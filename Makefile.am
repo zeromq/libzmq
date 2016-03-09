@@ -339,7 +339,6 @@ test_apps = \
 	tests/test_invalid_rep \
 	tests/test_msg_flags \
 	tests/test_msg_ffn \
-	tests/test_large_msg \
 	tests/test_connect_resolve \
 	tests/test_immediate \
 	tests/test_last_endpoint \
@@ -442,9 +441,6 @@ tests_test_msg_flags_LDADD = src/libzmq.la
 
 tests_test_msg_ffn_SOURCES = tests/test_msg_ffn.cpp
 tests_test_msg_ffn_LDADD = src/libzmq.la
-
-tests_test_large_msg_SOURCES = tests/test_large_msg.cpp
-tests_test_large_msg_LDADD = src/libzmq.la
 
 tests_test_connect_resolve_SOURCES = tests/test_connect_resolve.cpp
 tests_test_connect_resolve_LDADD = src/libzmq.la

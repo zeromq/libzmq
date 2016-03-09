@@ -126,7 +126,6 @@ test_poller
 test_timers
 test_radio_dish
 test_udp
-test_large_msg
 test_use_fd_ipc
 test_use_fd_tcp
 tests/test*.log
