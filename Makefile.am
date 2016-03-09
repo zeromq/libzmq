@@ -85,6 +85,7 @@ src_libzmq_la_SOURCES = \
 	src/lb.cpp \
 	src/lb.hpp \
 	src/likely.hpp \
+	src/macros.hpp \
 	src/mailbox.cpp \
 	src/mailbox.hpp \
 	src/mailbox_safe.cpp \

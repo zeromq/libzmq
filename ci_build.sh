@@ -27,9 +27,8 @@ if [ $BUILD_TYPE == "default" ]; then
     (
         ./autogen.sh &&
         ./configure "${CONFIG_OPTS[@]}" &&
-        make &&
-        ( if make check; then true; else cat test-suite.log; exit 1; fi ) &&
-        make install
+        export DISTCHECK_CONFIGURE_FLAGS="${CONFIG_OPTS[@]}" &&
+        make VERBOSE=1 distcheck
     ) || exit 1
 else
     cd ./builds/${BUILD_TYPE} && ./ci_build.sh
