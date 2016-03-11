@@ -201,7 +201,7 @@ ZMQ_EXPORT void zmq_version (int *major, int *minor, int *patch);
 
 ZMQ_EXPORT void *zmq_ctx_new (void);
 ZMQ_EXPORT int zmq_ctx_term (void *context);
-ZMQ_EXPORT int zmq_ctx_shutdown (void *ctx_);
+ZMQ_EXPORT int zmq_ctx_shutdown (void *context);
 ZMQ_EXPORT int zmq_ctx_set (void *context, int option, int optval);
 ZMQ_EXPORT int zmq_ctx_get (void *context, int option);
 
