@@ -74,6 +74,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLTCG|Win32'">
     <ClCompile>
       <PrecompiledHeaderFile>$(ProjectDir)\..\..\..\src\precompiled.hpp</PrecompiledHeaderFile>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugLTCG|Win32'">
@@ -95,6 +96,9 @@
     <ClCompile>
       <PrecompiledHeaderFile>$(ProjectDir)\..\..\..\src\precompiled.hpp</PrecompiledHeaderFile>
     </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLIB|Win32'">
     <ClCompile>
@@ -104,6 +108,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLIB|Win32'">
     <ClCompile>
       <PrecompiledHeaderFile>$(ProjectDir)\..\..\..\src\precompiled.hpp</PrecompiledHeaderFile>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugLIB|Win32'">
@@ -134,6 +139,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLTCG|x64'">
     <ClCompile>
       <PrecompiledHeaderFile>percompiled.h</PrecompiledHeaderFile>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugLTCG|x64'">
@@ -155,6 +161,9 @@
     <ClCompile>
       <PrecompiledHeaderFile>percompiled.h</PrecompiledHeaderFile>
     </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLIB|x64'">
     <ClCompile>
@@ -164,6 +173,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLIB|x64'">
     <ClCompile>
       <PrecompiledHeaderFile>percompiled.h</PrecompiledHeaderFile>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugLIB|x64'">
