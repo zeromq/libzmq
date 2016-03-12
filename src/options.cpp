@@ -368,8 +368,8 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             break;
 
-        //  If libsodium isn't installed, these options provoke EINVAL
-#       ifdef HAVE_LIBSODIUM
+        //  If CURVE encryption isn't built, these options provoke EINVAL
+#       ifdef ZMQ_HAVE_CURVE
         case ZMQ_CURVE_SERVER:
             if (is_int && (value == 0 || value == 1)) {
                 as_server = value;
@@ -759,8 +759,8 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_)
             }
             break;
 
-        //  If libsodium isn't installed, these options provoke EINVAL
-#       ifdef HAVE_LIBSODIUM
+        //  If CURVE encryption isn't built, these options provoke EINVAL
+#       ifdef ZMQ_HAVE_CURVE
         case ZMQ_CURVE_SERVER:
             if (is_int) {
                 *value = as_server && mechanism == ZMQ_CURVE;

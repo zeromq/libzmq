@@ -41,14 +41,11 @@
 #include "windows.hpp"
 #endif
 
-#ifdef HAVE_LIBSODIUM
-#ifdef HAVE_TWEETNACL
-#include "tweetnacl_base.h"
-#else
-#include "sodium.h"
+#if defined (ZMQ_USE_TWEETNACL)
+#   include "tweetnacl_base.h"
+#elif defined (ZMQ_USE_LIBSODIUM)
+#   include "sodium.h"
 #endif
-#endif
-
 
 void zmq_sleep (int seconds_)
 {
@@ -190,10 +187,10 @@ uint8_t *zmq_z85_decode (uint8_t *dest, const char *string)
 
 int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key)
 {
-#ifdef HAVE_LIBSODIUM
+#ifdef ZMQ_HAVE_CURVE
 #   if crypto_box_PUBLICKEYBYTES != 32 \
     || crypto_box_SECRETKEYBYTES != 32
-#       error "libsodium not built correctly"
+#       error "CURVE encryption library not built correctly"
 #   endif
 
     uint8_t public_key [32];
@@ -208,7 +205,7 @@ int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key)
     zmq_z85_encode (z85_secret_key, secret_key, 32);
 
     return 0;
-#else // requires libsodium
+#else
     (void) z85_public_key, (void) z85_secret_key;
     errno = ENOTSUP;
     return -1;

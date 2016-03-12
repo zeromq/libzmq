@@ -55,7 +55,7 @@ int main (void)
     assert (!zmq_has ("norm"));
 #endif
 
-#if defined (HAVE_LIBSODIUM)
+#if defined (ZMQ_HAVE_CURVE)
     assert (zmq_has ("curve"));
 #else
     assert (!zmq_has ("curve"));

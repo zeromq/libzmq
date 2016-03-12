@@ -102,8 +102,8 @@ static void zap_handler (void *handler)
 
 int main (void)
 {
-#ifndef HAVE_LIBSODIUM
-    printf ("libsodium not installed, skipping CURVE test\n");
+#ifndef ZMQ_HAVE_CURVE
+    printf ("CURVE encryption not installed, skipping test\n");
     return 0;
 #endif
 
