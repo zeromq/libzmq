@@ -1083,7 +1083,7 @@ int zmq_has (const char *capability)
     if (strcmp (capability, "norm") == 0)
         return true;
 #endif
-#if defined (HAVE_LIBSODIUM)
+#if defined (ZMQ_HAVE_CURVE)
     if (strcmp (capability, "curve") == 0)
         return true;
 #endif

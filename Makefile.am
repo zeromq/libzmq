@@ -232,7 +232,7 @@ libzmq_la_CPPFLAGS =
 libzmq_la_CXXFLAGS = @LIBZMQ_EXTRA_CXXFLAGS@
 libzmq_la_LIBADD =
 
-if HAVE_SODIUM
+if USE_LIBSODIUM
 libzmq_la_CPPFLAGS += ${sodium_CFLAGS}
 libzmq_la_LIBADD += ${sodium_LIBS}
 endif

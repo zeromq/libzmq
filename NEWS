@@ -13,6 +13,8 @@
 
 * Fixed #1831 - potential assertion failure with latest libsodium.
 
+* Fixed #1850 - detection issues with tweetnacl/libsodium.
+
 
 0MQ version 4.1.4 stable, released on 2015/12/18
 ================================================

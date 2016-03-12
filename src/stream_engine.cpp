@@ -654,7 +654,7 @@ bool zmq::stream_engine_t::handshake ()
                     plain_client_t (options);
             alloc_assert (mechanism);
         }
-#ifdef HAVE_LIBSODIUM
+#ifdef ZMQ_HAVE_CURVE
         else
         if (options.mechanism == ZMQ_CURVE
         &&  memcmp (greeting_recv + 12, "CURVE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {

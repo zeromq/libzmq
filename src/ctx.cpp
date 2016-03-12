@@ -46,12 +46,10 @@
 #include "err.hpp"
 #include "msg.hpp"
 
-#ifdef HAVE_LIBSODIUM
-#ifdef HAVE_TWEETNACL
-#include "randombytes.h"
-#else
-#include "sodium.h"
-#endif
+#if defined (ZMQ_USE_TWEETNACL)
+#   include "randombytes.h"
+#elif defined (ZMQ_USE_LIBSODIUM)
+#   include "sodium.h"
 #endif
 
 #define ZMQ_CTX_TAG_VALUE_GOOD 0xabadcafe

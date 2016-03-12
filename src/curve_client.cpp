@@ -29,7 +29,7 @@
 
 #include "platform.hpp"
 
-#ifdef HAVE_LIBSODIUM
+#ifdef ZMQ_HAVE_CURVE
 
 #ifdef ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
@@ -53,7 +53,7 @@ zmq::curve_client_t::curve_client_t (const options_t &options_) :
     memcpy (secret_key, options_.curve_secret_key, crypto_box_SECRETKEYBYTES);
     memcpy (server_key, options_.curve_server_key, crypto_box_PUBLICKEYBYTES);
     scoped_lock_t lock (sync);
-#if defined(HAVE_TWEETNACL)
+#if defined (ZMQ_USE_TWEETNACL)
     // allow opening of /dev/urandom
     unsigned char tmpbytes[4];
     randombytes(tmpbytes, 4);
