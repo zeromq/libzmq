@@ -46,7 +46,7 @@
 
 #if defined (ZMQ_USE_TWEETNACL)
 #   include "tweetnacl.h"
-#elif defined (HAVE_LIBSODIUM)
+#elif defined (ZMQ_USE_LIBSODIUM)
 #   include "sodium.h"
 #endif
 

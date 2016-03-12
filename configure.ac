@@ -439,7 +439,7 @@ if test "x$enable_curve" = "xno"; then
 elif test "x$with_libsodium" = "xyes"; then
     AC_MSG_NOTICE([Using libsodium for CURVE security])
     AC_DEFINE(ZMQ_HAVE_CURVE, [1], [Using curve encryption])
-    AC_DEFINE(HAVE_LIBSODIUM, [1], [Using libsodium for curve encryption])
+    AC_DEFINE(ZMQ_USE_LIBSODIUM, [1], [Using libsodium for curve encryption])
     curve_library="libsodium"
 
     # On Solaris, libsodium depends on libssp

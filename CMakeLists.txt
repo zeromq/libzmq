@@ -43,7 +43,7 @@ elseif (WITH_LIBSODIUM)
         if (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
             target_link_libraries (libzmq ssp)
         endif ()
-        set (HAVE_LIBSODIUM 1)
+        set (ZMQ_USE_LIBSODIUM 1)
         set (ZMQ_HAVE_CURVE 1)
     else ()
         message (FATAL_ERROR
