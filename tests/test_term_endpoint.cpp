@@ -29,7 +29,7 @@
 
 #include "testutil.hpp"
 
-#define BUF_SIZE 32
+#define BUF_SIZE 73
 
 int main (void)
 {
