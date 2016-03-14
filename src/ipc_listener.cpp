@@ -49,6 +49,7 @@
 #include <sys/socket.h>
 #include <fcntl.h>
 #include <sys/un.h>
+#include <sys/stat.h>
 
 #ifdef ZMQ_HAVE_LOCAL_PEERCRED
 #   include <sys/types.h>
@@ -62,6 +63,58 @@
 #       define ucred sockpeercred
 #   endif
 #endif
+
+const char *zmq::ipc_listener_t::tmp_env_vars[] = {
+  "TMPDIR",
+  "TEMPDIR",
+  "TMP",
+  0  // Sentinel
+};
+
+int zmq::ipc_listener_t::create_wildcard_address(std::string& path_)
+{
+    std::string tmp_path;
+
+    // If TMPDIR, TEMPDIR, or TMP are available and are directories, create
+    // the socket directory there.
+    const char **tmp_env = tmp_env_vars;
+    while ( tmp_path.empty() && *tmp_env != 0 ) {
+        char *tmpdir = getenv(*tmp_env);
+        struct stat statbuf;
+
+        // Confirm it is actually a directory before trying to use
+        if ( tmpdir != 0 && ::stat(tmpdir, &statbuf) == 0 && S_ISDIR(statbuf.st_mode) ) {
+            tmp_path.assign(tmpdir);
+            if ( *(tmp_path.rbegin()) != '/' ) {
+                tmp_path.push_back('/');
+            }
+        }
+
+        // Try the next environment variable
+        ++tmp_env;
+    }
+
+    // Append a directory name
+    tmp_path.append("tmpXXXXXX");
+
+    // We need room for tmp_path + trailing NUL
+    std::vector<char> buffer(tmp_path.length()+1);
+    strcpy(buffer.data(), tmp_path.c_str());
+
+    // Create the directory.  POSIX requires that mkdtemp() creates the
+    // directory with 0700 permissions, meaning the only possible race
+    // with socket creation could be the same user.  However, since
+    // each socket is created in a directory created by mkdtemp(), and
+    // mkdtemp() guarantees a unique directory name, there will be no
+    // collision.
+    if ( mkdtemp(buffer.data()) == 0 ) {
+        return -1;
+    }
+
+    path_.assign(buffer.data());
+
+    return 0;
+}
 
 zmq::ipc_listener_t::ipc_listener_t (io_thread_t *io_thread_,
       socket_base_t *socket_, const options_t &options_) :
@@ -113,7 +166,7 @@ void zmq::ipc_listener_t::in_event ()
     io_thread_t *io_thread = choose_io_thread (options.affinity);
     zmq_assert (io_thread);
 
-    //  Create and launch a session object. 
+    //  Create and launch a session object.
     session_base_t *session = session_base_t::create (io_thread, false, socket,
         options, NULL);
     errno_assert (session);
@@ -148,12 +201,15 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
 
     //  Allow wildcard file
     if (addr [0] == '*') {
-        char buffer [12] = "2134XXXXXX";
-        int fd = mkstemp (buffer);
-        if (fd == -1)
+        std::string tmp_path;
+
+        if ( create_wildcard_address(tmp_path) < 0 ) {
             return -1;
-        addr.assign (buffer);
-        ::close (fd);
+        }
+
+        tmp_socket_dirname.assign(tmp_path);
+
+        addr.assign (tmp_path + "/socket");
     }
 
     //  Get rid of the file associated with the UNIX domain socket that
@@ -169,8 +225,16 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
     //  Initialise the address structure.
     ipc_address_t address;
     int rc = address.resolve (addr.c_str());
-    if (rc != 0)
+    if (rc != 0) {
+        if ( !tmp_socket_dirname.empty() ) {
+            // We need to preserve errno to return to the user
+            int errno_ = errno;
+            ::rmdir(tmp_socket_dirname.c_str ());
+            tmp_socket_dirname.clear();
+            errno = errno_;
+        }
         return -1;
+    }
 
     address.to_string (endpoint);
 
@@ -179,8 +243,16 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
     } else {
         //  Create a listening socket.
         s = open_socket (AF_UNIX, SOCK_STREAM, 0);
-        if (s == -1)
+        if (s == -1) {
+            if ( !tmp_socket_dirname.empty() ) {
+                // We need to preserve errno to return to the user
+                int errno_ = errno;
+                ::rmdir(tmp_socket_dirname.c_str ());
+                tmp_socket_dirname.clear();
+                errno = errno_;
+            }
             return -1;
+        }
 
         //  Bind the socket to the file path.
         rc = bind (s, address.addr (), address.addrlen ());
@@ -219,8 +291,18 @@ int zmq::ipc_listener_t::close ()
     //  MUST NOT unlink if the FD is managed by the user, or it will stop
     //  working after the first client connects. The user will take care of
     //  cleaning up the file after the service is stopped.
-    if (has_file && !filename.empty () && options.use_fd == -1) {
-        rc = ::unlink(filename.c_str ());
+    if (has_file && options.use_fd == -1) {
+        rc = 0;
+
+        if ( !filename.empty () ) {
+          rc = ::unlink(filename.c_str ());
+        }
+
+        if ( rc == 0 && !tmp_socket_dirname.empty() ) {
+          rc = ::rmdir(tmp_socket_dirname.c_str ());
+          tmp_socket_dirname.clear();
+        }
+
         if (rc != 0) {
             socket->event_close_failed (endpoint, zmq_errno());
             return -1;

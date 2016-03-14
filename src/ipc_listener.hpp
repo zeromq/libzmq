@@ -73,6 +73,9 @@ namespace zmq
         //  Close the listening socket.
         int close ();
 
+        // Create wildcard path address
+        static int create_wildcard_address(std::string& path_);
+
         //  Filter new connections if the OS provides a mechanism to get
         //  the credentials of the peer process.  Called from accept().
 #       if defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
@@ -87,6 +90,10 @@ namespace zmq
         //  True, if the underlying file for UNIX domain socket exists.
         bool has_file;
 
+        //  Name of the temporary directory (if any) that has the
+        //  the UNIX domain socket
+        std::string tmp_socket_dirname;
+
         //  Name of the file associated with the UNIX domain address.
         std::string filename;
 
@@ -99,8 +106,11 @@ namespace zmq
         //  Socket the listener belongs to.
         zmq::socket_base_t *socket;
 
-       // String representation of endpoint to bind to
+        // String representation of endpoint to bind to
         std::string endpoint;
+
+        // Acceptable temporary directory environment variables
+        static const char *tmp_env_vars[];
 
         ipc_listener_t (const ipc_listener_t&);
         const ipc_listener_t &operator = (const ipc_listener_t&);

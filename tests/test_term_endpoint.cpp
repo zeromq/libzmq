@@ -29,12 +29,14 @@
 
 #include "testutil.hpp"
 
+#define BUF_SIZE 32
+
 int main (void)
 {
     setup_test_environment();
     int rc;
-    const size_t buf_size = 32;
-    char buf[buf_size];
+    char buf[BUF_SIZE];
+    size_t buf_size;
     const char *ep = "tcp://127.0.0.1:5560";
     const char *ep_wc_tcp = "tcp://127.0.0.1:*";
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
@@ -139,18 +141,21 @@ int main (void)
 #endif
 
     // Unbind sockets binded by wild-card address
-    rc = zmq_getsockopt (push, ZMQ_LAST_ENDPOINT, buf, (size_t *)&buf_size);
+    buf_size = sizeof(buf);
+    rc = zmq_getsockopt (push, ZMQ_LAST_ENDPOINT, buf, &buf_size);
     assert (rc == 0);
     rc = zmq_unbind (push, buf);
     assert (rc == 0);
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
-    rc = zmq_getsockopt (pull, ZMQ_LAST_ENDPOINT, buf, (size_t *)&buf_size);
+    buf_size = sizeof(buf);
+    rc = zmq_getsockopt (pull, ZMQ_LAST_ENDPOINT, buf, &buf_size);
     assert (rc == 0);
     rc = zmq_unbind (pull, buf);
     assert (rc == 0);
 #endif
 #if defined ZMQ_HAVE_VMCI
-    rc = zmq_getsockopt (req, ZMQ_LAST_ENDPOINT, buf, (size_t *)&buf_size);
+    buf_size = sizeof(buf);
+    rc = zmq_getsockopt (req, ZMQ_LAST_ENDPOINT, buf, &buf_size);
     assert (rc == 0);
     rc = zmq_unbind(req, buf);
     assert (rc == 0);
