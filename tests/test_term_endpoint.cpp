@@ -27,9 +27,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <stdio.h>
 #include "testutil.hpp"
 
-#define BUF_SIZE 73
+/* Use the worst case filename size for the buffer (+1 for trailing NUL) */
+#define BUF_SIZE (FILENAME_MAX+1)
 
 int main (void)
 {
