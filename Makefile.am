@@ -779,3 +779,5 @@ maintainer-clean-local:
 	-rm -rf $(top_srcdir)/config
 
 @VALGRIND_CHECK_RULES@
+
+VALGRIND_SUPPRESSIONS_FILES = builds/valgrind/valgrind.supp
