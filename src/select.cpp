@@ -435,14 +435,16 @@ bool zmq::select_t::is_retired_fd (const fd_entry_t &entry)
 #if defined ZMQ_HAVE_WINDOWS
 u_short zmq::select_t::get_fd_family (fd_t fd_)
 {
-    sockaddr addr = { 0 };
-    int addr_size = sizeof addr;
-    int rc = getsockname (fd_, &addr, &addr_size);
+	// Use sockaddr_storage instead of sockaddr to accomodate differect structure sizes
+	sockaddr_storage addr = { 0 };
+	int addr_size = sizeof addr;
+
+    int rc = getsockname (fd_, (sockaddr *)&addr, &addr_size);
 
     //  AF_INET and AF_INET6 can be mixed in select
     //  TODO: If proven otherwise, should simply return addr.sa_family
     if (rc != SOCKET_ERROR)
-        return addr.sa_family == AF_INET6 ? AF_INET : addr.sa_family;
+        return addr.ss_family == AF_INET6 ? AF_INET : addr.ss_family;
     else
         return AF_UNSPEC;
 }
