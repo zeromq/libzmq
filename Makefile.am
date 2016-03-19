@@ -657,11 +657,13 @@ tests_test_use_fd_tcp_SOURCES = \
 tests_test_use_fd_tcp_LDADD = src/libzmq.la
 
 if HAVE_FORK
+if !VALGRIND_ENABLED
 test_apps += tests/test_fork
 
 tests_test_fork_SOURCES = tests/test_fork.cpp
 tests_test_fork_LDADD = src/libzmq.la
 
+endif
 endif
 endif
 endif
@@ -777,3 +779,7 @@ dist-hook:
 
 maintainer-clean-local:
 	-rm -rf $(top_srcdir)/config
+
+@VALGRIND_CHECK_RULES@
+
+VALGRIND_SUPPRESSIONS_FILES = builds/valgrind/valgrind.supp

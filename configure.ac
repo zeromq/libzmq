@@ -17,6 +17,7 @@ m4_pattern_allow([AC_PROG_CC_C99])
 m4_include([m4/ax_check_compile_flag.m4])
 m4_include([m4/ax_cxx_compile_stdcxx_11.m4])
 m4_include([m4/ax_code_coverage.m4])
+m4_include([m4/ax_valgrind_check.m4])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 # This lets us use PACKAGE_VERSION in Makefiles
@@ -66,6 +67,7 @@ AC_PATH_PROG([ASCIIDOC], [asciidoc])
 LIBZMQ_CONFIG_LIBTOOL
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
+AX_VALGRIND_CHECK
 
 # Check whether to build a with debug symbols
 LIBZMQ_CHECK_ENABLE_DEBUG
