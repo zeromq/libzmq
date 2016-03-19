@@ -26,4 +26,4 @@ fi
 pip install --user cpp-coveralls
 
 # Build, check, and install from local source
-( cd ../..; ./autogen.sh && ./configure "${CONFIG_OPTS[@]}" && make -j5 && make check && coveralls --exclude tests --gcov-options '\-lp') || exit 1
+( cd ../..; ./autogen.sh && ./configure "${CONFIG_OPTS[@]}" && make -j5 && make check && coveralls --exclude tests --build-root . --gcov-options '\-lp') || exit 1
