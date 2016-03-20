@@ -35,13 +35,21 @@
 #include "random.hpp"
 #include "likely.hpp"
 
+extern "C"
+{
+    static void free_id (void *data, void *hint)
+    {
+        free (data);
+    }
+}
+
 zmq::req_t::req_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     dealer_t (parent_, tid_, sid_),
     receiving_reply (false),
     message_begins (true),
     reply_pipe (NULL),
     request_id_frames_enabled (false),
-    request_id (generate_random()),
+    request_id (generate_random ()),
     strict (true)
 {
     options.type = ZMQ_REQ;
@@ -72,8 +80,13 @@ int zmq::req_t::xsend (msg_t *msg_)
         if (request_id_frames_enabled) {
             request_id++;
 
+            //  Copy request id before sending (see issue #1695 for details).
+            uint32_t *request_id_copy = (uint32_t *) malloc (sizeof (uint32_t));
+            *request_id_copy = request_id;
+
             msg_t id;
-            int rc = id.init_data (&request_id, sizeof (request_id), NULL, NULL);
+            int rc = id.init_data (request_id_copy, sizeof (uint32_t),
+                free_id, NULL);
             errno_assert (rc == 0);
             id.set_flags (msg_t::more);
 
@@ -206,7 +219,8 @@ int zmq::req_t::xsetsockopt (int option_, const void *optval_, size_t optvallen_
 {
     bool is_int = (optvallen_ == sizeof (int));
     int value = 0;
-    if (is_int) memcpy(&value, optval_, sizeof (int));
+    if (is_int)
+        memcpy (&value, optval_, sizeof (int));
 
     switch (option_) {
         case ZMQ_REQ_CORRELATE:

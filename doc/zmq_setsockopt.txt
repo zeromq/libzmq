@@ -667,11 +667,9 @@ ZMQ_REQ_RELAXED: relax strict alternation between request and reply
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 By default, a REQ socket does not allow initiating a new request with
 _zmq_send(3)_ until the reply to the previous one has been received.
-When set to 1, sending another message is allowed and has the effect of
-disconnecting the underlying connection to the peer from which the reply was
-expected, triggering a reconnection attempt on transports that support it.
-The request-reply state machine is reset and a new request is sent to the
-next available peer.
+When set to 1, sending another message is allowed and previous replies will
+be discarded if any. The request-reply state machine is reset and a new
+request is sent to the next available peer.
 
 If set to 1, also enable ZMQ_REQ_CORRELATE to ensure correct matching of
 requests and replies. Otherwise a late reply to an aborted request can be
