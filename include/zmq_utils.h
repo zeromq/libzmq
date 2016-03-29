@@ -29,4 +29,8 @@
 
 /*  This file is deprecated, and all its functionality provided by zmq.h     */
 
-#warning zmq_utils.h is deprecated. All its functionality is provided by zmq.h.
+#ifndef _MSC_VER
+#warning(zmq_utils.h is deprecated.All its functionality is provided by zmq.h.)
+#else
+#pragma message("Warning: zmq_utils.h is deprecated. All its functionality is provided by zmq.h.")
+#endif
