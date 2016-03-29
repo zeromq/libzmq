@@ -99,7 +99,7 @@ zmq::ctx_t::ctx_t () :
     // allow opening of /dev/urandom
     unsigned char tmpbytes[4];
     randombytes(tmpbytes, 4);
-#else
+#elif defined (HAVE_LIBSODIUM)
     int rc = sodium_init ();
     zmq_assert (rc != -1);
 #endif
