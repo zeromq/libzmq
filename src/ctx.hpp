@@ -233,6 +233,8 @@ namespace zmq
         int vmci_family;
         mutex_t vmci_sync;
 #endif
+
+        mutex_t crypto_sync;
     };
 
 }

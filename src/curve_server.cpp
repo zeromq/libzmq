@@ -51,21 +51,11 @@ zmq::curve_server_t::curve_server_t (session_base_t *session_,
     peer_address (peer_address_),
     state (expect_hello),
     cn_nonce (1),
-    cn_peer_nonce(1),
-    sync()
+    cn_peer_nonce(1)
 {
     int rc;
     //  Fetch our secret key from socket options
     memcpy (secret_key, options_.curve_secret_key, crypto_box_SECRETKEYBYTES);
-    scoped_lock_t lock (sync);
-#if defined (ZMQ_USE_TWEETNACL)
-    // allow opening of /dev/urandom
-    unsigned char tmpbytes[4];
-    randombytes (tmpbytes, 4);
-#else
-    rc = sodium_init ();
-    zmq_assert (rc != -1);
-#endif
 
     //  Generate short-term key pair
     rc = crypto_box_keypair (cn_public, cn_secret);
