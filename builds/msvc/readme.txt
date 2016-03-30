@@ -1,3 +1,11 @@
+For building on Windows, use:
+
+     ./configure.bat
+     cd build
+     ./buildall.bat
+
+This requires that the CMD.EXE be created using the DevStudio Tools link to create a CMD.EXE windo.
+
 Visual Studio product and C++ compiler Versions:
 
 Visual C++ 2008 => Visual C++ 9
@@ -13,11 +21,6 @@ The vs2015/vs2013/vs2012/vs2010 solution and project files differ only in versio
 More info here:
 
 http://en.wikipedia.org/wiki/Visual_C%2B%2B
-
-
-For building Windows, use the buildall.bat script in this directory.
-
-It requires that the CMD.EXE be created using the DevStudio Tools link to create a CMD.EXE windo.
 
 If multiple DevStudio versions are installed on the machine, you can run buildall.bat on separate windows that each were created by the desired DevStudio target.
 
