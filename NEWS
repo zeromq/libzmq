@@ -15,6 +15,8 @@
 
 * Fixed #1850 - detection issues with tweetnacl/libsodium.
 
+* Fixed #1877 - Avoid terminating connections prematurely
+
 
 0MQ version 4.1.4 stable, released on 2015/12/18
 ================================================
