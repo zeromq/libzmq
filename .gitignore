@@ -153,12 +153,6 @@ src/libzmq.pc
 bin/
 lib/
 obj/
-builds/msvc/**/*.opensdf
-builds/msvc/**/*.suo
-builds/msvc/**/*.sdf
-builds/msvc/**/*.user
-builds/msvc/**/*Debug
-builds/msvc/**/*Release
 builds/redhat/zeromq.spec
 builds/android/prefix/
 packaging/nuget/*.nupkg
