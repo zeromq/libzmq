@@ -64,7 +64,7 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="$(ProjectDir)..\..\properties\$(Configuration).props" />
     <Import Project="$(ProjectDir)..\..\properties\Output.props" />
-    <Import Project="$(ProjectDir)$(ProjectName).props" />
+    <Import Project="$(ProjectDir)..\..\vs2015\$(ProjectName)\$(ProjectName).props" />
   </ImportGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLTCG|Win32'">
     <ClCompile>
