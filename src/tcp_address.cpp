@@ -450,13 +450,23 @@ int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_, boo
         std::string if_str = addr_str.substr(pos + 1);
         addr_str = addr_str.substr(0, pos);
         if (isalpha (if_str.at (0)))
+#if !defined ZMQ_HAVE_WINDOWS_TARGET_XP
             zone_id = if_nametoindex(if_str.c_str());
+#else
+            // The function 'if_nametoindex' is not supported on Windows XP.
+            // If we are targeting XP using a vxxx_xp toolset then fail.
+            // This is brutal as this code could be run on later windows clients
+            // meaning the IPv6 zone_id cannot have an interface name.
+            // This could be fixed with a runtime check.
+            zone_id = 0;
+#endif
         else
             zone_id = (uint32_t) atoi (if_str.c_str ());
         if (zone_id == 0) {
             errno = EINVAL;
             return -1;
         }
+
     }
 
     //  Allow 0 specifically, to detect invalid port error in atoi if not

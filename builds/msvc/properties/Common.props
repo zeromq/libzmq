@@ -18,4 +18,11 @@
     </ClCompile>
   </ItemDefinitionGroup>
 
+  <!-- When using a tool set to target Windows XP, define a pre-processor definition and modify the target Windows version -->
+  <ItemDefinitionGroup Condition="$(PlatformToolset.Contains('_xp'))">
+    <ClCompile>
+      <PreprocessorDefinitions>ZMQ_HAVE_WINDOWS_TARGET_XP;_WIN32_WINNT=0x0501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
 </Project>
