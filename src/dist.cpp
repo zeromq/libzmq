@@ -124,12 +124,14 @@ void zmq::dist_t::pipe_terminated (pipe_t *pipe_)
 void zmq::dist_t::activated (pipe_t *pipe_)
 {
     //  Move the pipe from passive to eligible state.
-    pipes.swap (pipes.index (pipe_), eligible);
-    eligible++;
+    if (eligible < pipes.size ()) {
+        pipes.swap (pipes.index (pipe_), eligible);
+        eligible++;
+    }
 
     //  If there's no message being sent at the moment, move it to
     //  the active state.
-    if (!more) {
+    if (!more && active < pipes.size ()) {
         pipes.swap (eligible - 1, active);
         active++;
     }
