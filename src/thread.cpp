@@ -138,6 +138,10 @@ void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_
         policy = schedulingPolicy_;
     }
 
+#ifdef __NetBSD__
+    if(policy == SCHED_OTHER) param.sched_priority = -1;
+#endif
+
     rc = pthread_setschedparam(descriptor, policy, &param);
     posix_assert (rc);
 #endif
