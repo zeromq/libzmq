@@ -108,6 +108,7 @@ namespace zmq
 
         enum {
             bottom,
+            request_id,
             body
         } state;
 
