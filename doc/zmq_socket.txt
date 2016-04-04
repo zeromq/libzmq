@@ -121,8 +121,9 @@ a message to a given 'ZMQ_CLIENT' peer the application must set the peer's
 
 If the 'routing_id' is not specified, or does not refer to a connected client
 peer, the send call will fail with EHOSTUNREACH. If the outgoing buffer for
-the client peer is full, the send call will fail with EAGAIN. The 'ZMQ_SERVER'
-socket shall not drop messages, nor shall it block.
+the client peer is full, the send call shall block, unless ZMQ_DONT_WAIT is
+used in the send, in which case it shall fail with EAGAIN. The 'ZMQ_SERVER'
+socket shall not drop messages in any case.
 
 NOTE: 'ZMQ_SERVER' sockets are threadsafe. They do not accept the ZMQ_SNDMORE
 option on sends not ZMQ_RCVMORE on receives. This limits them to single part
