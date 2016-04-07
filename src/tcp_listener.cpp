@@ -178,10 +178,6 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
 
     //  Create a listening socket.
     s = open_socket (address.family (), SOCK_STREAM, IPPROTO_TCP);
-#ifdef ZMQ_HAVE_WINDOWS
-    if (s == INVALID_SOCKET)
-        errno = wsa_error_to_errno (WSAGetLastError ());
-#endif
 
     //  IPv6 address family not supported, try automatic downgrade to IPv4.
     if (s == -1 && address.family () == AF_INET6
