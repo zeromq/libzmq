@@ -17,6 +17,8 @@
 
 * Fixed #1877 - Avoid terminating connections prematurely
 
+* Fixed #1887 - zmq_bind IPv4 fallback still tries IPv6
+
 
 0MQ version 4.1.4 stable, released on 2015/12/18
 ================================================
