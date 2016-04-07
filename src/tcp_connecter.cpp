@@ -271,6 +271,20 @@ int zmq::tcp_connecter_t::open ()
 
     //  Create the socket.
     s = open_socket (tcp_addr->family (), SOCK_STREAM, IPPROTO_TCP);
+
+    //  IPv6 address family not supported, try automatic downgrade to IPv4.
+    if (s == -1 && tcp_addr->family () == AF_INET6
+    && errno == EAFNOSUPPORT
+    && options.ipv6) {
+        rc = addr->resolved.tcp_addr->resolve (
+            addr->address.c_str (), false, false);
+        if (rc != 0) {
+            LIBZMQ_DELETE(addr->resolved.tcp_addr);
+            return -1;
+        }
+        s = open_socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    }
+
 #ifdef ZMQ_HAVE_WINDOWS
     if (s == INVALID_SOCKET) {
         errno = wsa_error_to_errno (WSAGetLastError ());
