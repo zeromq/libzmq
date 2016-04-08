@@ -47,7 +47,7 @@ void test_system_max ()
             break;
         sockets.push_back (socket);
     }
-    assert ((int) sockets.size () < no_of_sockets);
+    assert ((int) sockets.size () <= no_of_sockets);
 
     //  System is out of resources, further calls to zmq_socket should return NULL
     for (unsigned int i = 0; i < 10; ++i) {
