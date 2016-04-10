@@ -12,6 +12,7 @@
 #cmakedefine HAVE_FORK
 #cmakedefine HAVE_CLOCK_GETTIME
 #cmakedefine HAVE_GETHRTIME
+#cmakedefine HAVE_MKDTEMP
 #cmakedefine ZMQ_HAVE_UIO
 
 #cmakedefine ZMQ_HAVE_EVENTFD
