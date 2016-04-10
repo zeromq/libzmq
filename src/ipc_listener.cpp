@@ -214,7 +214,7 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
     std::string addr (addr_);
 
     //  Allow wildcard file
-    if (addr [0] == '*') {
+    if (options.use_fd == -1 && addr [0] == '*') {
         if ( create_wildcard_address(tmp_socket_dirname, addr) < 0 ) {
             return -1;
         }
