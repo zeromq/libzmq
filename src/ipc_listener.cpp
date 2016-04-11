@@ -99,8 +99,10 @@ int zmq::ipc_listener_t::create_wildcard_address(std::string& path_,
     tmp_path.append("tmpXXXXXX");
 
     // We need room for tmp_path + trailing NUL
-    std::vector<char> buffer(tmp_path.length()+1);
-    strcpy(buffer.data(), tmp_path.c_str());
+    char *buffer = (char *) malloc (tmp_path.length() + 1);
+    if (buffer == NULL)
+        return -1;
+    strcpy (buffer, tmp_path.c_str ());
 
 #ifdef HAVE_MKDTEMP
     // Create the directory.  POSIX requires that mkdtemp() creates the
@@ -109,24 +111,28 @@ int zmq::ipc_listener_t::create_wildcard_address(std::string& path_,
     // each socket is created in a directory created by mkdtemp(), and
     // mkdtemp() guarantees a unique directory name, there will be no
     // collision.
-    if ( mkdtemp(buffer.data()) == 0 ) {
+    if ( mkdtemp (buffer) == 0 ) {
+        free (buffer);
         return -1;
     }
 
-    path_.assign(buffer.data());
+    path_.assign (buffer);
     file_.assign (path_ + "/socket");
 #else
     // Silence -Wunused-parameter. #pragma and __attribute__((unused)) are not
     // very portable unfortunately...
     (void) path_;
-    int fd = mkstemp (buffer.data());
-    if (fd == -1)
-         return -1;
+    int fd = mkstemp (buffer);
+    if (fd == -1) {
+        free (buffer);
+        return -1;
+    }
     ::close (fd);
 
-    file_.assign (buffer.data());
+    file_.assign (buffer);
 #endif
 
+    free (buffer);
     return 0;
 }
 
