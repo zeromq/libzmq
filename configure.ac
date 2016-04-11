@@ -165,7 +165,7 @@ case "${host_os}" in
         ;;
     *solaris*)
         # Define on Solaris to enable all library features
-        CPPFLAGS="-D_PTHREADS $CPPFLAGS"
+        CPPFLAGS="-Wno-sign-compare -D_PTHREADS $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_SOLARIS, 1, [Have Solaris OS])
         AC_CHECK_LIB(socket, socket)
         AC_CHECK_LIB(nsl, gethostbyname)
