@@ -1209,6 +1209,8 @@ int zmq_poller_wait (void *poller_, zmq_poller_event_t *event, long timeout_)
         return -1;
     }
 
+    zmq_assert (event != NULL);
+
     zmq::socket_poller_t::event_t e;
     memset (&e, 0, sizeof (e));
 
