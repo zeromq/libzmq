@@ -60,6 +60,14 @@ int main (void)
 
     //  Set up poller
     void* poller = zmq_poller_new ();
+    zmq_poller_event_t event;
+
+    // waiting on poller with no registered sockets should report error
+    rc = zmq_poller_wait(poller, &event, 0);
+    assert (rc == -1);
+    assert (errno == ETIMEDOUT);
+
+    // register sink
     rc = zmq_poller_add (poller, sink, sink, ZMQ_POLLIN);
     assert (rc == 0);
     
@@ -69,7 +77,6 @@ int main (void)
     assert (rc == 1);   
 
     //  We expect a message only on the sink
-    zmq_poller_event_t event;
     rc = zmq_poller_wait (poller, &event, -1);
     assert (rc == 0);
     assert (event.socket == sink);
