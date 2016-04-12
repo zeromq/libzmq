@@ -446,6 +446,8 @@ elif test "x$with_libsodium" = "xyes"; then
     case "${host_os}" in
         *solaris*)
             LDFLAGS="-lssp $LDFLAGS"
+            libzmq_pedantic="no"
+            libzmq_werror="no"
         ;;
     esac
 else
