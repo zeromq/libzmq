@@ -11,6 +11,8 @@
 
 * Fixed #1887 - zmq_bind IPv4 fallback still tries IPv6
 
+* Fixed #98 - don't require libssp without libsodium on Solaris
+
 
 0MQ version 4.0.7 stable, released on 2015/06/15
 ================================================
