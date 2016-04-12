@@ -182,8 +182,6 @@ case "${host_os}" in
         if test "x$solaris_has_atomic" = "xno"; then
             AC_DEFINE(ZMQ_FORCE_MUTEXES, 1, [Force to use mutexes])
         fi
-        # ssp library is required for libsodium on Solaris-like systems
-        LDFLAGS="-lssp $LDFLAGS"
         CPPFLAGS="$CPPFLAGS -Wno-long-long"
         ;;
     *freebsd*)
@@ -419,6 +417,8 @@ elif test "x$with_libsodium" = "xyes"; then
     case "${host_os}" in
         *solaris*)
             LDFLAGS="-lssp $LDFLAGS"
+            libzmq_pedantic="no"
+            libzmq_werror="no"
         ;;
     esac
 else
