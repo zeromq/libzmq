@@ -19,6 +19,8 @@
 
 * Fixed #1887 - zmq_bind IPv4 fallback still tries IPv6
 
+* Fixed #1866 - fails to build on SunOS 5.10 / Solaris 10
+
 
 0MQ version 4.1.4 stable, released on 2015/12/18
 ================================================
