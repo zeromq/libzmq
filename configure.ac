@@ -158,8 +158,6 @@ case "${host_os}" in
         if test "x$solaris_has_atomic" = "xno"; then
             AC_DEFINE(ZMQ_FORCE_MUTEXES, 1, [Force to use mutexes])
         fi
-        # ssp library is required for libsodium on Solaris-like systems
-        LDFLAGS="-lssp $LDFLAGS"
         CPPFLAGS="$CPPFLAGS -Wno-long-long"
         ;;
     *freebsd*)
@@ -259,7 +257,20 @@ AC_CHECK_LIB([pthread], [pthread_create])
 AC_CHECK_LIB([rt], [clock_gettime])
 
 if test "x$with_libsodium" != "xno"; then
-    AC_CHECK_LIB([sodium], [sodium_init],,AC_MSG_WARN(libsodium is needed for CURVE security))
+    AC_SEARCH_LIBS([sodium_init], [sodium], [
+        case "${host_os}" in
+            *solaris*)
+                # ssp library is required for libsodium on Solaris-like systems
+                LDFLAGS="-lssp $LDFLAGS"
+                # Cannot compile with libsodium, pragma diagnostic causes warnings
+                libzmq_pedantic="no"
+                libzmq_werror="no"
+                ;;
+            *)
+                ;;
+        esac
+        AC_DEFINE(HAVE_LIBSODIUM, 1, [Have libsodium])
+        ], AC_MSG_WARN(libsodium is needed for CURVE security))
 else
     AC_MSG_WARN(libsodium is needed for CURVE security)
 fi
