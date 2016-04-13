@@ -393,10 +393,10 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *event_, long time
 
 #if defined ZMQ_POLL_BASED_ON_POLL
     if (unlikely (poll_size == 0)) {
-	// We'll report an error (timed out) as if the list was non-empty and
-	// no event occured within the specified timeout. Otherwise the caller
-	// needs to check the return value AND the event to avoid using the
-	// nullified event data.
+        // We'll report an error (timed out) as if the list was non-empty and
+        // no event occured within the specified timeout. Otherwise the caller
+        // needs to check the return value AND the event to avoid using the
+        // nullified event data.
         errno = ETIMEDOUT;
         if (timeout_ == 0)
             return -1;
@@ -528,13 +528,19 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *event_, long time
 #elif defined ZMQ_POLL_BASED_ON_SELECT
 
     if (unlikely (poll_size == 0)) {
+        // We'll report an error (timed out) as if the list was non-empty and
+        // no event occured within the specified timeout. Otherwise the caller
+        // needs to check the return value AND the event to avoid using the
+        // nullified event data.
+        errno = ETIMEDOUT;
         if (timeout_ == 0)
-            return 0;
+            return -1;
 #if defined ZMQ_HAVE_WINDOWS
         Sleep (timeout_ > 0 ? timeout_ : INFINITE);
-        return 0;
+        return -1;
 #else
-        return usleep (timeout_ * 1000);
+        usleep (timeout_ * 1000);
+        return -1;
 #endif
     }
     zmq::clock_t clock;
