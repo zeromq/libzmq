@@ -11,7 +11,7 @@ Public domain.
     Disable warnings for this source only, rather than for the whole
     codebase when building with C99 or with Microsoft's compiler
 */
-#if defined __GNUC__ && __STDC_VERSION__ < 201112L
+#if defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2)) && __STDC_VERSION__ < 201112L
 #   pragma GCC diagnostic ignored "-Wsign-compare"
 #elif defined _MSC_VER
 #   pragma warning (disable:4018 4244 4146)
