@@ -71,7 +71,8 @@ const char *zmq::ipc_listener_t::tmp_env_vars[] = {
   0  // Sentinel
 };
 
-int zmq::ipc_listener_t::create_wildcard_address(std::string& path_)
+int zmq::ipc_listener_t::create_wildcard_address(std::string& path_,
+        std::string& file_)
 {
     std::string tmp_path;
 
@@ -101,6 +102,7 @@ int zmq::ipc_listener_t::create_wildcard_address(std::string& path_)
     std::vector<char> buffer(tmp_path.length()+1);
     strcpy(buffer.data(), tmp_path.c_str());
 
+#ifdef HAVE_MKDTEMP
     // Create the directory.  POSIX requires that mkdtemp() creates the
     // directory with 0700 permissions, meaning the only possible race
     // with socket creation could be the same user.  However, since
@@ -112,6 +114,18 @@ int zmq::ipc_listener_t::create_wildcard_address(std::string& path_)
     }
 
     path_.assign(buffer.data());
+    file_.assign (path_ + "/socket");
+#else
+    // Silence -Wunused-parameter. #pragma and __attribute__((unused)) are not
+    // very portable unfortunately...
+    (void) path_;
+    int fd = mkstemp (buffer.data());
+    if (fd == -1)
+         return -1;
+    ::close (fd);
+
+    file_.assign (buffer.data());
+#endif
 
     return 0;
 }
@@ -200,16 +214,10 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
     std::string addr (addr_);
 
     //  Allow wildcard file
-    if (addr [0] == '*') {
-        std::string tmp_path;
-
-        if ( create_wildcard_address(tmp_path) < 0 ) {
+    if (options.use_fd == -1 && addr [0] == '*') {
+        if ( create_wildcard_address(tmp_socket_dirname, addr) < 0 ) {
             return -1;
         }
-
-        tmp_socket_dirname.assign(tmp_path);
-
-        addr.assign (tmp_path + "/socket");
     }
 
     //  Get rid of the file associated with the UNIX domain socket that

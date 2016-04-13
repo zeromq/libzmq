@@ -165,9 +165,9 @@ namespace zmq
                 timeout.tv_sec += timeout_ / 1000;
                 timeout.tv_nsec += (timeout_ % 1000) * 1000000;
 
-                if (timeout.tv_nsec > 1E9) {
+                if (timeout.tv_nsec > 1000000000) {
                     timeout.tv_sec++;
-                    timeout.tv_nsec -= 1E9;
+                    timeout.tv_nsec -= 1000000000;
                 }
 
                 rc = pthread_cond_timedwait (&cond, mutex_->get_mutex (), &timeout);

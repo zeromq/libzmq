@@ -165,7 +165,7 @@ case "${host_os}" in
         ;;
     *solaris*)
         # Define on Solaris to enable all library features
-        CPPFLAGS="-D_PTHREADS $CPPFLAGS"
+        CPPFLAGS="-Wno-sign-compare -D_PTHREADS $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_SOLARIS, 1, [Have Solaris OS])
         AC_CHECK_LIB(socket, socket)
         AC_CHECK_LIB(nsl, gethostbyname)
@@ -446,6 +446,8 @@ elif test "x$with_libsodium" = "xyes"; then
     case "${host_os}" in
         *solaris*)
             LDFLAGS="-lssp $LDFLAGS"
+            libzmq_pedantic="no"
+            libzmq_werror="no"
         ;;
     esac
 else
@@ -561,7 +563,7 @@ AC_LANG_POP([C++])
 
 # Checks for library functions.
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS(perror gettimeofday clock_gettime memset socket getifaddrs freeifaddrs fork posix_memalign)
+AC_CHECK_FUNCS(perror gettimeofday clock_gettime memset socket getifaddrs freeifaddrs fork posix_memalign mkdtemp)
 AC_CHECK_HEADERS([alloca.h])
 
 LIBZMQ_CHECK_SOCK_CLOEXEC([
