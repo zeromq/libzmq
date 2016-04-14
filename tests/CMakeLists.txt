@@ -63,14 +63,9 @@ set(tests
         test_capabilities
         test_ipc_wildcard
         test_metadata
-        test_pair_tipc
-        test_reqrep_device_tipc
-        test_reqrep_tipc
         test_router_handover
-        test_router_mandatory_tipc
         test_srcfd
         test_stream_timeout
-        test_sub_forward_tipc
         test_xpub_manual
         test_xpub_welcome_msg
         test_timers
@@ -82,22 +77,31 @@ if(NOT WIN32)
           test_monitor
           test_pair_ipc
           test_reqrep_ipc
-          test_abstract_ipc
           test_proxy
           test_proxy_single_socket
           test_proxy_terminate
           test_getsockopt_memset
           test_filter_ipc
-          test_connect_delay_tipc
-          test_shutdown_stress_tipc
           test_stream_exceeds_buffer
           test_router_mandatory_hwm
-          test_term_endpoint_tipc
           test_use_fd_ipc
           test_use_fd_tcp
   )
   if(HAVE_FORK)
     list(APPEND tests test_fork)
+  endif()
+  if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+    list(APPEND tests
+          test_abstract_ipc
+          test_pair_tipc
+          test_reqrep_device_tipc
+          test_reqrep_tipc
+          test_router_mandatory_tipc
+          test_sub_forward_tipc
+          test_connect_delay_tipc
+          test_shutdown_stress_tipc
+          test_term_endpoint_tipc
+    )
   endif()
 endif()
 
@@ -140,12 +144,6 @@ foreach(test ${tests})
   endif()
   set_tests_properties(${test} PROPERTIES TIMEOUT 10)
 endforeach()
-
-if(NOT WIN32)
-  if(NOT CMAKE_SYSTEM_NAME MATCHES "Linux")
-    set_tests_properties(test_abstract_ipc PROPERTIES WILL_FAIL true)
-  endif()
-endif()
 
 #Check whether all tests in the current folder are present
 file(READ "${CMAKE_CURRENT_LIST_FILE}" CURRENT_LIST_FILE_CONTENT)
