@@ -324,8 +324,11 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
         return -1;
     }
 
-    if (protocol_ == "udp" && (options.type != ZMQ_DISH && options.type != ZMQ_RADIO))
+    if (protocol_ == "udp" && (options.type != ZMQ_DISH &&
+                               options.type != ZMQ_RADIO)) {
+        errno = ENOCOMPATPROTO;
         return -1;
+    }
 
     //  Protocol is available.
     return 0;
