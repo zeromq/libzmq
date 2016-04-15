@@ -263,66 +263,41 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
 {
     //  First check out whether the protocol is something we are aware of.
     if (protocol_ != "inproc"
+#if !defined ZMQ_HAVE_WINDOWS || !defined ZMQ_HAVE_OPENVMS
     &&  protocol_ != "ipc"
+#endif
     &&  protocol_ != "tcp"
+#if defined ZMQ_HAVE_OPENPGM
+    //  pgm/epgm transports only available if 0MQ is compiled with OpenPGM.
     &&  protocol_ != "pgm"
     &&  protocol_ != "epgm"
+#endif
+#if defined ZMQ_HAVE_TIPC
+    // TIPC transport is only available on Linux.
     &&  protocol_ != "tipc"
+#endif
+#if defined ZMQ_HAVE_NORM
     &&  protocol_ != "norm"
+#endif
+#if defined ZMQ_HAVE_VMCI
     &&  protocol_ != "vmci"
+#endif
     &&  protocol_ != "udp") {
         errno = EPROTONOSUPPORT;
         return -1;
     }
-    //  If 0MQ is not compiled with OpenPGM, pgm and epgm transports
-    //  are not available.
-#if !defined ZMQ_HAVE_OPENPGM
-    if (protocol_ == "pgm" || protocol_ == "epgm") {
-        errno = EPROTONOSUPPORT;
-        return -1;
-    }
-#endif
-
-#if !defined ZMQ_HAVE_NORM
-    if (protocol_ == "norm") {
-        errno = EPROTONOSUPPORT;
-        return -1;
-    }
-#endif // !ZMQ_HAVE_NORM
-
-    //  IPC transport is not available on Windows and OpenVMS.
-#if defined ZMQ_HAVE_WINDOWS || defined ZMQ_HAVE_OPENVMS
-    if (protocol_ == "ipc") {
-        //  Unknown protocol.
-        errno = EPROTONOSUPPORT;
-        return -1;
-    }
-#endif
-
-    // TIPC transport is only available on Linux.
-#if !defined ZMQ_HAVE_TIPC
-    if (protocol_ == "tipc") {
-        errno = EPROTONOSUPPORT;
-        return -1;
-    }
-#endif
-
-#if !defined ZMQ_HAVE_VMCI
-    if (protocol_ == "vmci") {
-        errno = EPROTONOSUPPORT;
-        return -1;
-    }
-#endif
 
     //  Check whether socket type and transport protocol match.
     //  Specifically, multicast protocols can't be combined with
     //  bi-directional messaging patterns (socket types).
+#if defined ZMQ_HAVE_OPENPGM || defined ZMQ_HAVE_NORM
     if ((protocol_ == "pgm" || protocol_ == "epgm" || protocol_ == "norm") &&
           options.type != ZMQ_PUB && options.type != ZMQ_SUB &&
           options.type != ZMQ_XPUB && options.type != ZMQ_XSUB) {
         errno = ENOCOMPATPROTO;
         return -1;
     }
+#endif
 
     if (protocol_ == "udp" && (options.type != ZMQ_DISH &&
                                options.type != ZMQ_RADIO)) {
