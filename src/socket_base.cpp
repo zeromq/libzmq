@@ -764,8 +764,38 @@ int zmq::socket_base_t::term_endpoint (const char *addr_)
         return 0;
     }
 
+    std::string resolved_addr = std::string (addr_);
+    std::pair <endpoints_t::iterator, endpoints_t::iterator> range;
+
+    // The resolved last_endpoint is used as a key in the endpoints map.
+    // The address passed by the user might not match in the TCP case due to
+    // IPv4-in-IPv6 mapping (EG: tcp://[::ffff:127.0.0.1]:9999), so try to
+    // resolve before giving up. Given at this stage we don't know whether a
+    // socket is connected or bound, try with both.
+    if (protocol == "tcp") {
+        range = endpoints.equal_range (resolved_addr);
+        if (range.first == range.second) {
+            tcp_address_t *tcp_addr = new (std::nothrow) tcp_address_t ();
+            alloc_assert (tcp_addr);
+            rc = tcp_addr->resolve (address.c_str (), false, options.ipv6);
+
+            if (rc == 0) {
+                tcp_addr->to_string (resolved_addr);
+                range = endpoints.equal_range (resolved_addr);
+
+                if (range.first == range.second) {
+                    rc = tcp_addr->resolve (address.c_str (), true, options.ipv6);
+                    if (rc == 0) {
+                        tcp_addr->to_string (resolved_addr);
+                    }
+                }
+            }
+            delete tcp_addr;
+        }
+    }
+
     //  Find the endpoints range (if any) corresponding to the addr_ string.
-    std::pair <endpoints_t::iterator, endpoints_t::iterator> range = endpoints.equal_range (std::string (addr_));
+    range = endpoints.equal_range (resolved_addr);
     if (range.first == range.second) {
         errno = ENOENT;
         return -1;

@@ -22,11 +22,16 @@
 int main (void)
 {
     setup_test_environment();
+    int ipv6 = is_ipv6_available ();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
+    /* Address wildcard, IPv6 disabled */
     void *sb = zmq_socket (ctx, ZMQ_REP);
     assert (sb);
+    void *sc = zmq_socket (ctx, ZMQ_REQ);
+    assert (sc);
+
     int rc = zmq_bind (sb, "tcp://*:5555");
     assert (rc == 0);
 
@@ -35,11 +40,234 @@ int main (void)
     rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, endpoint, &endpoint_len);
     assert (rc == 0);
 
+    rc = zmq_connect (sc, endpoint);
+    assert (rc == 0);
+
+    bounce (sb, sc);
+
+    rc = zmq_disconnect (sc, endpoint);
+    assert (rc == 0);
     rc = zmq_unbind (sb, endpoint);
     assert (rc == 0);
 
+    rc = zmq_close (sc);
+    assert (rc == 0);
     rc = zmq_close (sb);
     assert (rc == 0);
+
+    /* Address wildcard, IPv6 enabled */
+    sb = zmq_socket (ctx, ZMQ_REP);
+    assert (sb);
+    sc = zmq_socket (ctx, ZMQ_REQ);
+    assert (sc);
+
+    rc = zmq_setsockopt (sb, ZMQ_IPV6, &ipv6, sizeof (int));
+    assert (rc == 0);
+    rc = zmq_setsockopt (sc, ZMQ_IPV6, &ipv6, sizeof (int));
+    assert (rc == 0);
+
+    rc = zmq_bind (sb, "tcp://*:5556");
+    assert (rc == 0);
+
+    endpoint_len = sizeof (endpoint);
+    memset(endpoint, 0, endpoint_len);
+    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, endpoint, &endpoint_len);
+    assert (rc == 0);
+
+    rc = zmq_connect (sc, endpoint);
+    assert (rc == 0);
+
+    bounce (sb, sc);
+
+    rc = zmq_disconnect (sc, endpoint);
+    assert (rc == 0);
+    rc = zmq_unbind (sb, endpoint);
+    assert (rc == 0);
+
+    rc = zmq_close (sc);
+    assert (rc == 0);
+    rc = zmq_close (sb);
+    assert (rc == 0);
+
+    /* Port wildcard, IPv4 address, IPv6 disabled */
+    sb = zmq_socket (ctx, ZMQ_REP);
+    assert (sb);
+    sc = zmq_socket (ctx, ZMQ_REQ);
+    assert (sc);
+
+    rc = zmq_bind (sb, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+
+    endpoint_len = sizeof (endpoint);
+    memset(endpoint, 0, endpoint_len);
+    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, endpoint, &endpoint_len);
+    assert (rc == 0);
+
+    rc = zmq_connect (sc, endpoint);
+    assert (rc == 0);
+
+    bounce (sb, sc);
+
+    rc = zmq_disconnect (sc, endpoint);
+    assert (rc == 0);
+    rc = zmq_unbind (sb, endpoint);
+    assert (rc == 0);
+
+    rc = zmq_close (sc);
+    assert (rc == 0);
+    rc = zmq_close (sb);
+    assert (rc == 0);
+
+    /* Port wildcard, IPv4 address, IPv6 enabled */
+    sb = zmq_socket (ctx, ZMQ_REP);
+    assert (sb);
+    sc = zmq_socket (ctx, ZMQ_REQ);
+    assert (sc);
+
+    rc = zmq_setsockopt (sb, ZMQ_IPV6, &ipv6, sizeof (int));
+    assert (rc == 0);
+    rc = zmq_setsockopt (sc, ZMQ_IPV6, &ipv6, sizeof (int));
+    assert (rc == 0);
+
+    rc = zmq_bind (sb, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+
+    endpoint_len = sizeof (endpoint);
+    memset(endpoint, 0, endpoint_len);
+    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, endpoint, &endpoint_len);
+    assert (rc == 0);
+
+    rc = zmq_connect (sc, endpoint);
+    assert (rc == 0);
+
+    bounce (sb, sc);
+
+    rc = zmq_disconnect (sc, endpoint);
+    assert (rc == 0);
+    rc = zmq_unbind (sb, endpoint);
+    assert (rc == 0);
+
+    rc = zmq_close (sc);
+    assert (rc == 0);
+    rc = zmq_close (sb);
+    assert (rc == 0);
+
+    if (ipv6) {
+        /* Port wildcard, IPv6 address, IPv6 enabled */
+        sb = zmq_socket (ctx, ZMQ_REP);
+        assert (sb);
+        sc = zmq_socket (ctx, ZMQ_REQ);
+        assert (sc);
+
+        rc = zmq_setsockopt (sb, ZMQ_IPV6, &ipv6, sizeof (int));
+        assert (rc == 0);
+        rc = zmq_setsockopt (sc, ZMQ_IPV6, &ipv6, sizeof (int));
+        assert (rc == 0);
+
+        rc = zmq_bind (sb, "tcp://[::1]:*");
+        assert (rc == 0);
+
+        endpoint_len = sizeof (endpoint);
+        memset(endpoint, 0, endpoint_len);
+        rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, endpoint, &endpoint_len);
+        assert (rc == 0);
+
+        rc = zmq_connect (sc, endpoint);
+        assert (rc == 0);
+
+        bounce (sb, sc);
+
+        rc = zmq_disconnect (sc, endpoint);
+        assert (rc == 0);
+        rc = zmq_unbind (sb, endpoint);
+        assert (rc == 0);
+
+        rc = zmq_close (sc);
+        assert (rc == 0);
+        rc = zmq_close (sb);
+        assert (rc == 0);
+    }
+
+    /* No wildcard, IPv4 address, IPv6 disabled */
+    sb = zmq_socket (ctx, ZMQ_REP);
+    assert (sb);
+    sc = zmq_socket (ctx, ZMQ_REQ);
+    assert (sc);
+
+    rc = zmq_bind (sb, "tcp://127.0.0.1:5557");
+    assert (rc == 0);
+    rc = zmq_connect (sc, "tcp://127.0.0.1:5557");
+    assert (rc == 0);
+
+    bounce (sb, sc);
+
+    rc = zmq_disconnect (sc, "tcp://127.0.0.1:5557");
+    assert (rc == 0);
+    rc = zmq_unbind (sb, "tcp://127.0.0.1:5557");
+    assert (rc == 0);
+
+    rc = zmq_close (sc);
+    assert (rc == 0);
+    rc = zmq_close (sb);
+    assert (rc == 0);
+
+    /* No wildcard, IPv4 address, IPv6 enabled */
+    sb = zmq_socket (ctx, ZMQ_REP);
+    assert (sb);
+    sc = zmq_socket (ctx, ZMQ_REQ);
+    assert (sc);
+
+    rc = zmq_setsockopt (sb, ZMQ_IPV6, &ipv6, sizeof (int));
+    assert (rc == 0);
+    rc = zmq_setsockopt (sc, ZMQ_IPV6, &ipv6, sizeof (int));
+    assert (rc == 0);
+
+    rc = zmq_bind (sb, "tcp://127.0.0.1:5558");
+    assert (rc == 0);
+    rc = zmq_connect (sc, "tcp://127.0.0.1:5558");
+    assert (rc == 0);
+
+    bounce (sb, sc);
+
+    rc = zmq_disconnect (sc, "tcp://127.0.0.1:5558");
+    assert (rc == 0);
+    rc = zmq_unbind (sb, "tcp://127.0.0.1:5558");
+    assert (rc == 0);
+
+    rc = zmq_close (sc);
+    assert (rc == 0);
+    rc = zmq_close (sb);
+    assert (rc == 0);
+
+    if (ipv6) {
+        /* No wildcard, IPv6 address, IPv6 enabled */
+        sb = zmq_socket (ctx, ZMQ_REP);
+        assert (sb);
+        sc = zmq_socket (ctx, ZMQ_REQ);
+        assert (sc);
+
+        rc = zmq_setsockopt (sb, ZMQ_IPV6, &ipv6, sizeof (int));
+        assert (rc == 0);
+        rc = zmq_setsockopt (sc, ZMQ_IPV6, &ipv6, sizeof (int));
+        assert (rc == 0);
+
+        rc = zmq_bind (sb, "tcp://[::1]:5559");
+        assert (rc == 0);
+        rc = zmq_connect (sc, "tcp://[::1]:5559");
+        assert (rc == 0);
+
+        bounce (sb, sc);
+
+        rc = zmq_disconnect (sc, "tcp://[::1]:5559");
+        assert (rc == 0);
+        rc = zmq_unbind (sb, "tcp://[::1]:5559");
+        assert (rc == 0);
+
+        rc = zmq_close (sc);
+        assert (rc == 0);
+        rc = zmq_close (sb);
+        assert (rc == 0);
+    }
 
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
