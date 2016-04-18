@@ -23,6 +23,11 @@ matrix:
        os: osx
     -  env: BUILD_TYPE=valgrind CURVE=tweetnacl
        os: osx
+  include:
+    -  env: BUILD_TYPE=default CURVE=tweetnacl IPv6=ON
+       os: linux
+       dist: precise
+       sudo: false
 
 sudo: required
 
