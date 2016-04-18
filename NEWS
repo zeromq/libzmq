@@ -23,6 +23,9 @@
 
 * Fixed #919 - ZMQ_LINGER (related to #1877)
 
+* Fixed #114 - cannot unbind with same endpoint with IPv6 enabled.
+
+
 0MQ version 4.1.4 stable, released on 2015/12/18
 ================================================
 
