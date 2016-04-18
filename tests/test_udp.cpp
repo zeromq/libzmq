@@ -57,8 +57,10 @@ int msg_recv_cmp (zmq_msg_t *msg_, void *s_, const char* group_, const char* bod
         return -1;
 
     int recv_rc = zmq_msg_recv (msg_, s_, 0);
-    if (recv_rc == -1)
+    if (recv_rc == -1) {
+        zmq_msg_close(msg_);
         return -1;
+    }
 
     if (strcmp (zmq_msg_group (msg_), group_) != 0)
     {
@@ -73,6 +75,7 @@ int msg_recv_cmp (zmq_msg_t *msg_, void *s_, const char* group_, const char* bod
     if (strcmp (body, body_) != 0)
     {
         zmq_msg_close (msg_);
+        free(body);
         return -1;
     }
 
