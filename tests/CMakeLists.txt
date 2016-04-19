@@ -131,7 +131,10 @@ foreach(test ${tests})
     # it will only link correctly for DEBUG builds in Windows (I don't know how to specify the target and target library in CMake)
     SET_TARGET_PROPERTIES( ${test} PROPERTIES LINK_FLAGS "/LIBPATH:../bin/Win32/Debug/v120/dynamic" )
   else()
-    link_directories(${test} PRIVATE "${CMAKE_SOURCE_DIR}/../lib")
+    # per-test directories not generated on OS X / Darwin
+    if (NOT APPLE)
+        link_directories(${test} PRIVATE "${CMAKE_SOURCE_DIR}/../lib")
+    endif()
   endif()
 
   if(RT_LIBRARY)
