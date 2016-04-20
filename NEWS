@@ -21,6 +21,7 @@
 
 * Fixed #1866 - fails to build on SunOS 5.10 / Solaris 10
 
+* Fixed #919 - ZMQ_LINGER (related to #1877)
 
 0MQ version 4.1.4 stable, released on 2015/12/18
 ================================================
