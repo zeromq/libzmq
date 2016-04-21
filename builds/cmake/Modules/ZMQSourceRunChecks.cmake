@@ -127,3 +127,37 @@ int main(int argc, char *argv [])
 "
     ZMQ_HAVE_TCP_KEEPALIVE)
 endmacro()
+
+
+macro(zmq_check_tcp_tipc)
+  message(STATUS "Checking whether TIPC is supported")
+  check_c_source_runs(
+    "
+#include <stdlib.h>
+#include <string.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <sys/socket.h>
+#include <linux/tipc.h>
+
+int main(int argc, char *argv [])
+{
+    struct sockaddr_tipc topsrv;
+    int sd = socket(AF_TIPC, SOCK_SEQPACKET, 0);
+    if (sd == -EAFNOSUPPORT) {
+        return 1;
+    }
+    memset(&topsrv, 0, sizeof(topsrv));
+    topsrv.family = AF_TIPC;
+    topsrv.addrtype = TIPC_ADDR_NAME;
+    topsrv.addr.name.name.type = TIPC_TOP_SRV;
+    topsrv.addr.name.name.instance = TIPC_TOP_SRV;
+    fcntl(sd, F_SETFL, O_NONBLOCK);
+    if (connect(sd, (struct sockaddr *)&topsrv, sizeof(topsrv)) != 0) {
+        if (errno != EINPROGRESS)
+            return -1;
+    }
+}
+"
+    ZMQ_HAVE_TIPC)
+endmacro()
