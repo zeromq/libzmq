@@ -382,7 +382,6 @@ test_apps = \
 	tests/test_getsockopt_memset \
 	tests/test_setsockopt \
 	tests/test_many_sockets \
-	tests/test_ipc_wildcard \
 	tests/test_diffserv \
 	tests/test_connect_rid \
 	tests/test_bind_src_address \
@@ -561,9 +560,6 @@ tests_test_getsockopt_memset_LDADD = src/libzmq.la
 tests_test_many_sockets_SOURCES = tests/test_many_sockets.cpp
 tests_test_many_sockets_LDADD = src/libzmq.la
 
-tests_test_ipc_wildcard_SOURCES = tests/test_ipc_wildcard.cpp
-tests_test_ipc_wildcard_LDADD = src/libzmq.la
-
 tests_test_diffserv_SOURCES = tests/test_diffserv.cpp
 tests_test_diffserv_LDADD = src/libzmq.la
 
@@ -628,6 +624,7 @@ if !ON_MINGW
 if !ON_CYGWIN
 test_apps += \
 	tests/test_shutdown_stress \
+	tests/test_ipc_wildcard \
 	tests/test_pair_ipc \
 	tests/test_reqrep_ipc \
 	tests/test_use_fd_ipc \
@@ -637,6 +634,9 @@ test_apps += \
 
 tests_test_shutdown_stress_SOURCES = tests/test_shutdown_stress.cpp
 tests_test_shutdown_stress_LDADD = src/libzmq.la
+
+tests_test_ipc_wildcard_SOURCES = tests/test_ipc_wildcard.cpp
+tests_test_ipc_wildcard_LDADD = src/libzmq.la
 
 tests_test_pair_ipc_SOURCES = \
 	tests/test_pair_ipc.cpp \
