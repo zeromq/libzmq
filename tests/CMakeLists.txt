@@ -137,7 +137,7 @@ foreach(test ${tests})
     SET_TARGET_PROPERTIES( ${test} PROPERTIES LINK_FLAGS "/LIBPATH:../bin/Win32/Debug/v120/dynamic" )
   else()
     # per-test directories not generated on OS X / Darwin
-    if (NOT APPLE)
+    if (NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang.*")
         link_directories(${test} PRIVATE "${CMAKE_SOURCE_DIR}/../lib")
     endif()
   endif()
