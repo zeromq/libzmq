@@ -105,8 +105,13 @@ int main (void)
 
     // getting name from closed socket will fail
     rc = getpeername (srcFd, (struct sockaddr*) &ss, &addrlen);
+#ifdef ZMQ_HAVE_WINDOWS
+    assert (rc == SOCKET_ERROR);
+    assert (WSAGetLastError() == WSAENOTSOCK);
+#else
     assert (rc == -1);
     assert (errno == EBADF);
+#endif
 
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
