@@ -57,6 +57,8 @@ src_libzmq_la_SOURCES = \
 	src/fd.hpp \
 	src/fq.cpp \
 	src/fq.hpp \
+	src/gather.cpp \
+	src/gather.hpp \
 	src/gssapi_mechanism_base.cpp \
 	src/gssapi_mechanism_base.hpp \
 	src/gssapi_client.cpp \
@@ -153,6 +155,8 @@ src_libzmq_la_SOURCES = \
 	src/req.hpp \
 	src/router.cpp \
 	src/router.hpp \
+	src/scatter.cpp \
+	src/scatter.hpp \
 	src/select.cpp \
 	src/select.hpp \
 	src/server.cpp \
@@ -396,7 +400,8 @@ test_apps = \
 	tests/test_poller \
 	tests/test_timers \
 	tests/test_radio_dish \
-	tests/test_udp
+	tests/test_udp \
+	tests/test_scatter_gather
 
 tests_test_system_SOURCES = tests/test_system.cpp
 tests_test_system_LDADD = src/libzmq.la
@@ -615,6 +620,9 @@ tests_test_radio_dish_LDADD = src/libzmq.la
 
 tests_test_udp_SOURCES = tests/test_udp.cpp
 tests_test_udp_LDADD = src/libzmq.la
+
+tests_test_scatter_gather_SOURCES = tests/test_scatter_gather.cpp
+tests_test_scatter_gather_LDADD = src/libzmq.la
 
 if !ON_MINGW
 if !ON_CYGWIN

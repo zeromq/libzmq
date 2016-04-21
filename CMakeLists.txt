@@ -491,7 +491,9 @@ set (cxx-sources
         radio.cpp
         dish.cpp
         udp_engine.cpp
-        udp_address.cpp)
+        udp_address.cpp
+        scatter.cpp
+        gather.cpp)
 
 set (rc-sources version.rc)
 

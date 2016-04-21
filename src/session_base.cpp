@@ -81,6 +81,8 @@ zmq::session_base_t *zmq::session_base_t::create (class io_thread_t *io_thread_,
     case ZMQ_STREAM:
     case ZMQ_SERVER:
     case ZMQ_CLIENT:
+    case ZMQ_GATHER:
+    case ZMQ_SCATTER:
         s = new (std::nothrow) session_base_t (io_thread_, active_,
             socket_, options_, addr_);
         break;
