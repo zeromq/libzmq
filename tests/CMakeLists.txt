@@ -61,7 +61,6 @@ set(tests
         test_atomics
         test_bind_src_address
         test_capabilities
-        test_ipc_wildcard
         test_metadata
         test_router_handover
         test_srcfd
@@ -76,6 +75,7 @@ set(tests
 if(NOT WIN32)
   list(APPEND tests
           test_monitor
+          test_ipc_wildcard
           test_pair_ipc
           test_reqrep_ipc
           test_proxy
