@@ -96,6 +96,8 @@
 #include "client.hpp"
 #include "radio.hpp"
 #include "dish.hpp"
+#include "gather.hpp"
+#include "scatter.hpp"
 
 #define ENTER_MUTEX() \
     if (thread_safe) \
@@ -162,6 +164,12 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
             break;
         case ZMQ_DISH:
             s = new (std::nothrow) dish_t (parent_, tid_, sid_);
+            break;
+        case ZMQ_GATHER:
+            s = new (std::nothrow) gather_t (parent_, tid_, sid_);
+            break;
+        case ZMQ_SCATTER:
+            s = new (std::nothrow) scatter_t (parent_, tid_, sid_);
             break;
         default:
             errno = EINVAL;

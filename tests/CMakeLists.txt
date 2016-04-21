@@ -71,6 +71,7 @@ set(tests
         test_timers
         test_radio_dish
         test_udp
+        test_scatter_gather
 )
 if(NOT WIN32)
   list(APPEND tests
@@ -158,4 +159,3 @@ foreach(TEST_SOURCE ${ALL_TEST_SOURCES})
     message(AUTHOR_WARNING "Test '${TESTNAME}' is not known to CTest.")
   endif()
 endforeach()
-
