@@ -282,6 +282,7 @@ zmq_check_tcp_keepcnt ()
 zmq_check_tcp_keepidle ()
 zmq_check_tcp_keepintvl ()
 zmq_check_tcp_keepalive ()
+zmq_check_tcp_tipc ()
 
 
 if (    CMAKE_SYSTEM_NAME MATCHES "Linux"
@@ -549,6 +550,11 @@ if (WITH_VMCI)
     include_directories (${VMCI_INCLUDE_DIRS})
     list (APPEND cxx-sources vmci_address.cpp vmci_connecter.cpp vmci_listener.cpp vmci.cpp)
 endif (WITH_VMCI)
+
+if (ZMQ_HAVE_TIPC)
+    add_definitions (-DZMQ_HAVE_TIPC)
+    list (APPEND cxx-source tipc_address.cpp tipc_connecter.cpp tipc_listener.cpp)
+endif (ZMQ_HAVE_TIPC)
 
 #-----------------------------------------------------------------------------
 # source generators

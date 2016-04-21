@@ -93,15 +93,19 @@ if(NOT WIN32)
   if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     list(APPEND tests
           test_abstract_ipc
-          test_pair_tipc
-          test_reqrep_device_tipc
-          test_reqrep_tipc
-          test_router_mandatory_tipc
-          test_sub_forward_tipc
-          test_connect_delay_tipc
-          test_shutdown_stress_tipc
-          test_term_endpoint_tipc
     )
+    if(ZMQ_HAVE_TIPC)
+      list(APPEND tests
+            test_pair_tipc
+            test_reqrep_device_tipc
+            test_reqrep_tipc
+            test_router_mandatory_tipc
+            test_sub_forward_tipc
+            test_connect_delay_tipc
+            test_shutdown_stress_tipc
+            test_term_endpoint_tipc
+      )
+    endif()
   endif()
 endif()
 
