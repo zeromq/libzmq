@@ -439,14 +439,25 @@ u_short zmq::select_t::get_fd_family (fd_t fd_)
 	sockaddr_storage addr = { 0 };
 	int addr_size = sizeof addr;
 
-    int rc = getsockname (fd_, (sockaddr *)&addr, &addr_size);
+    int type;
+    int type_length = sizeof(int);
+    
+    int rc = getsockopt(fd_, SOL_SOCKET, SO_TYPE, (char*) &type, &type_length);
 
-    //  AF_INET and AF_INET6 can be mixed in select
-    //  TODO: If proven otherwise, should simply return addr.sa_family
-    if (rc != SOCKET_ERROR)
-        return addr.ss_family == AF_INET6 ? AF_INET : addr.ss_family;
-    else
-        return AF_UNSPEC;
+    if (rc == 0) {
+        if (type == SOCK_DGRAM)
+            return AF_INET;
+        else {
+            rc = getsockname(fd_, (sockaddr *)&addr, &addr_size);
+
+            //  AF_INET and AF_INET6 can be mixed in select
+            //  TODO: If proven otherwise, should simply return addr.sa_family
+            if (rc != SOCKET_ERROR)
+                return addr.ss_family == AF_INET6 ? AF_INET : addr.ss_family;            
+        }
+    }    
+
+    return AF_UNSPEC;    
 }
 
 zmq::select_t::family_entry_t::family_entry_t () :
