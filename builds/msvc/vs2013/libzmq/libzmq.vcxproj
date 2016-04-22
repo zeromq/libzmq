@@ -222,6 +222,7 @@
     <ClInclude Include="..\..\..\..\src\err.hpp" />
     <ClInclude Include="..\..\..\..\src\fd.hpp" />
     <ClInclude Include="..\..\..\..\src\fq.hpp" />
+    <ClInclude Include="..\..\..\..\src\gather.hpp" />
     <ClInclude Include="..\..\..\..\src\gssapi_client.hpp" />
     <ClInclude Include="..\..\..\..\src\gssapi_mechanism_base.hpp" />
     <ClInclude Include="..\..\..\..\src\gssapi_server.hpp" />
@@ -267,6 +268,7 @@
     <ClInclude Include="..\..\..\..\src\reaper.hpp" />
     <ClInclude Include="..\..\..\..\src\rep.hpp" />
     <ClInclude Include="..\..\..\..\src\req.hpp" />
+    <ClInclude Include="..\..\..\..\src\scatter.hpp" />
     <ClInclude Include="..\..\..\..\src\select.hpp" />
     <ClInclude Include="..\..\..\..\src\session_base.hpp" />
     <ClInclude Include="..\..\..\..\src\signaler.hpp" />
@@ -557,6 +559,26 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='DebugLIB|x64'">precompiled.hpp</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\fq.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseLIB|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='ReleaseLIB|Win32'">precompiled.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='ReleaseLTCG|Win32'">precompiled.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='DebugLTCG|Win32'">precompiled.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|Win32'">precompiled.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='DebugDLL|Win32'">precompiled.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='DebugLIB|Win32'">precompiled.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseLTCG|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='DebugLTCG|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='DebugDLL|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='DebugLIB|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='ReleaseLTCG|x64'">precompiled.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='DebugLTCG|x64'">precompiled.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|x64'">precompiled.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='ReleaseLIB|x64'">precompiled.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='DebugDLL|x64'">precompiled.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='DebugLIB|x64'">precompiled.hpp</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\gather.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseLIB|Win32'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='ReleaseLIB|Win32'">precompiled.hpp</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='ReleaseLTCG|Win32'">precompiled.hpp</PrecompiledHeaderFile>
@@ -1423,6 +1445,26 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='DebugLIB|x64'">precompiled.hpp</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\router.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseLIB|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='ReleaseLIB|Win32'">precompiled.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='ReleaseLTCG|Win32'">precompiled.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='DebugLTCG|Win32'">precompiled.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|Win32'">precompiled.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='DebugDLL|Win32'">precompiled.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='DebugLIB|Win32'">precompiled.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseLTCG|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='DebugLTCG|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='DebugDLL|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='DebugLIB|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='ReleaseLTCG|x64'">precompiled.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='DebugLTCG|x64'">precompiled.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|x64'">precompiled.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='ReleaseLIB|x64'">precompiled.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='DebugDLL|x64'">precompiled.hpp</PrecompiledHeaderFile>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='DebugLIB|x64'">precompiled.hpp</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\scatter.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseLIB|Win32'">Use</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='ReleaseLIB|Win32'">precompiled.hpp</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='ReleaseLTCG|Win32'">precompiled.hpp</PrecompiledHeaderFile>
