@@ -271,7 +271,7 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
 {
     //  First check out whether the protocol is something we are aware of.
     if (protocol_ != "inproc"
-#if !defined ZMQ_HAVE_WINDOWS || !defined ZMQ_HAVE_OPENVMS
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
     &&  protocol_ != "ipc"
 #endif
     &&  protocol_ != "tcp"
