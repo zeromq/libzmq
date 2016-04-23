@@ -35,19 +35,27 @@ int main (void)
     int rc = zmq_bind (sb, "tcp://*:5555");
     assert (rc == 0);
 
-    char endpoint[256];
-    size_t endpoint_len = sizeof (endpoint);
-    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, endpoint, &endpoint_len);
+    char bindEndpoint[256];
+    size_t endpoint_len = sizeof (bindEndpoint);    
+    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, bindEndpoint, &endpoint_len);
     assert (rc == 0);
 
-    rc = zmq_connect (sc, endpoint);
+    char connectEndpoint[256];
+    
+#ifdef ZMQ_HAVE_WINDOWS
+    strcpy(connectEndpoint, "tcp://127.0.0.1:5555");
+#else
+    strcpy(connectEndpoint, bindEndpoint);
+#endif
+
+    rc = zmq_connect (sc, connectEndpoint);
     assert (rc == 0);
 
     bounce (sb, sc);
 
-    rc = zmq_disconnect (sc, endpoint);
+    rc = zmq_disconnect (sc, connectEndpoint);
     assert (rc == 0);
-    rc = zmq_unbind (sb, endpoint);
+    rc = zmq_unbind (sb, bindEndpoint);
     assert (rc == 0);
 
     rc = zmq_close (sc);
@@ -68,20 +76,29 @@ int main (void)
 
     rc = zmq_bind (sb, "tcp://*:5556");
     assert (rc == 0);
+    
+    endpoint_len = sizeof (bindEndpoint);
+    memset(bindEndpoint, 0, endpoint_len);
+    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, bindEndpoint, &endpoint_len);
+    assert (rc == 0);    
 
-    endpoint_len = sizeof (endpoint);
-    memset(endpoint, 0, endpoint_len);
-    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, endpoint, &endpoint_len);
-    assert (rc == 0);
+#ifdef ZMQ_HAVE_WINDOWS
+    if (ipv6)
+        strcpy(connectEndpoint, "tcp://[::1]:5556");
+    else 
+        strcpy(connectEndpoint, "tcp://127.0.0.1:5556");
+#else
+    strcpy(connectEndpoint, bindEndpoint);
+#endif
 
-    rc = zmq_connect (sc, endpoint);
+    rc = zmq_connect (sc, connectEndpoint);
     assert (rc == 0);
 
     bounce (sb, sc);
 
-    rc = zmq_disconnect (sc, endpoint);
+    rc = zmq_disconnect (sc, connectEndpoint);
     assert (rc == 0);
-    rc = zmq_unbind (sb, endpoint);
+    rc = zmq_unbind (sb, bindEndpoint);
     assert (rc == 0);
 
     rc = zmq_close (sc);
@@ -98,6 +115,7 @@ int main (void)
     rc = zmq_bind (sb, "tcp://127.0.0.1:*");
     assert (rc == 0);
 
+    char endpoint[256];
     endpoint_len = sizeof (endpoint);
     memset(endpoint, 0, endpoint_len);
     rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, endpoint, &endpoint_len);
