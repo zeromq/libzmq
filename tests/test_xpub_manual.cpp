@@ -230,7 +230,7 @@ int test_xpub_proxy_unsubscribe_on_disconnect()
 
 int test_missing_subscriptions(const char *frontend, const char *backend)
 {
-    assert (!frontend && !backend);
+    assert (frontend && backend);
 
     const char* topic1 = "1";
     const char* topic2 = "2";
