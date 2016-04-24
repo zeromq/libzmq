@@ -478,6 +478,8 @@ ZMQ_EXPORT int zmq_poller_remove_fd (void *poller, int fd);
 /*  Scheduling timers                                                         */
 /******************************************************************************/
 
+#define ZMQ_HAVE_TIMERS
+
 typedef void (zmq_timer_fn)(int timer_id, void *arg);
 
 ZMQ_EXPORT void *zmq_timers_new (void);
