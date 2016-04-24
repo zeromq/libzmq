@@ -90,10 +90,11 @@ int test_basic()
     return 0 ;
 }
 
-int test_xpub_proxy_unsubscribe_on_disconnect()
+int test_xpub_proxy_unsubscribe_on_disconnect(const char *frontend,
+                                              const char *backend)
 {
-    const char* frontend = "ipc://frontend";
-    const char* backend = "ipc://backend";
+    assert (frontend && backend);
+
     const char* topic = "1";
     const char* payload = "X";
 
@@ -348,12 +349,20 @@ int main(void)
 {
     setup_test_environment ();
     test_basic ();
-    test_xpub_proxy_unsubscribe_on_disconnect ();
+
+    const char *frontend;
+    const char *backend;
+
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
-    test_missing_subscriptions("ipc://frontend", "ipc://backend");
+    frontend = "ipc://frontend";
+    backend = "ipc://backend";
+    test_xpub_proxy_unsubscribe_on_disconnect (frontend, backend);
+    test_missing_subscriptions (frontend, backend);
 #endif
-    test_missing_subscriptions ("tcp://127.0.0.1:5560",
-                                "tcp://127.0.0.1:5561");
+    frontend = "tcp://127.0.0.1:5560";
+    backend = "tcp://127.0.0.1:5561";
+    test_xpub_proxy_unsubscribe_on_disconnect (frontend, backend);
+    test_missing_subscriptions (frontend, backend);
 
     return 0;
 }
