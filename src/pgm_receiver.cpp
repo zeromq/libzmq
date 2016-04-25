@@ -46,7 +46,7 @@
 #include "wire.hpp"
 #include "err.hpp"
 
-zmq::pgm_receiver_t::pgm_receiver_t (class io_thread_t *parent_, 
+zmq::pgm_receiver_t::pgm_receiver_t (class io_thread_t *parent_,
       const options_t &options_) :
     io_object_t (parent_),
     has_rx_timer (false),

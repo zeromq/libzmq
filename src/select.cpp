@@ -441,7 +441,7 @@ u_short zmq::select_t::get_fd_family (fd_t fd_)
 
     int type;
     int type_length = sizeof(int);
-    
+
     int rc = getsockopt(fd_, SOL_SOCKET, SO_TYPE, (char*) &type, &type_length);
 
     if (rc == 0) {
@@ -455,9 +455,9 @@ u_short zmq::select_t::get_fd_family (fd_t fd_)
             if (rc != SOCKET_ERROR)
                 return addr.ss_family == AF_INET6 ? AF_INET : addr.ss_family;
         }
-    }    
+    }
 
-    return AF_UNSPEC;    
+    return AF_UNSPEC;
 }
 
 zmq::select_t::family_entry_t::family_entry_t () :

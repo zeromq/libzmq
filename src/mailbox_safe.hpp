@@ -64,8 +64,8 @@ namespace zmq
         // close the file descriptors in the signaller. This is used in a forked
         // child process to close the file descriptors so that they do not interfere
         // with the context in the parent process.
-        void forked () 
-        { 
+        void forked ()
+        {
             // TODO: call fork on the condition variable
         }
 #endif

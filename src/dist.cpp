@@ -77,7 +77,7 @@ void zmq::dist_t::match (pipe_t *pipe_)
 
     //  Mark the pipe as matching.
     pipes.swap (pipes.index (pipe_), matching);
-    matching++;    
+    matching++;
 }
 
 void zmq::dist_t::reverse_match ()

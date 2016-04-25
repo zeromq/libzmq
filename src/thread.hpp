@@ -75,7 +75,7 @@ namespace zmq
         //  they would not be accessible from the main C routine of the thread.
         thread_fn *tfn;
         void *arg;
-        
+
     private:
 
 #ifdef ZMQ_HAVE_WINDOWS

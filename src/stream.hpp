@@ -57,7 +57,7 @@ namespace zmq
         void xread_activated (zmq::pipe_t *pipe_);
         void xwrite_activated (zmq::pipe_t *pipe_);
         void xpipe_terminated (zmq::pipe_t *pipe_);
-        int xsetsockopt (int option_, const void *optval_, size_t optvallen_); 
+        int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
     private:
         //  Generate peer's id and update lookup map
         void identify_peer (pipe_t *pipe_);

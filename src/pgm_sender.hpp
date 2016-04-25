@@ -111,7 +111,7 @@ namespace zmq
 
         //  Output buffer from pgm_socket.
         unsigned char *out_buffer;
-        
+
         //  Output buffer size.
         size_t out_buffer_size;
 
