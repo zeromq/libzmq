@@ -104,8 +104,8 @@ void zmq::select_t::rm_fd (handle_t handle_)
 
     if (family_entry_it != current_family_entry_it) {
         //  Family is not currently being iterated and can be safely
-        //  modified in palce. So later it can be skipped withour re-verifying
-        //  its content.
+        //  modified in-place. So later it can be skipped without
+        //  re-verifying its content.
         fd_entries_t::iterator fd_entry_it;
         for (fd_entry_it = family_entry.fd_entries.begin ();
               fd_entry_it != family_entry.fd_entries.end (); ++fd_entry_it)
@@ -453,7 +453,7 @@ u_short zmq::select_t::get_fd_family (fd_t fd_)
             //  AF_INET and AF_INET6 can be mixed in select
             //  TODO: If proven otherwise, should simply return addr.sa_family
             if (rc != SOCKET_ERROR)
-                return addr.ss_family == AF_INET6 ? AF_INET : addr.ss_family;            
+                return addr.ss_family == AF_INET6 ? AF_INET : addr.ss_family;
         }
     }    
 
