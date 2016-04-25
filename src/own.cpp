@@ -183,7 +183,7 @@ void zmq::own_t::unregister_term_ack ()
     term_acks--;
 
     //  This may be a last ack we are waiting for before termination...
-    check_term_acks (); 
+    check_term_acks ();
 }
 
 void zmq::own_t::process_term_ack ()

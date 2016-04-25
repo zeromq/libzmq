@@ -299,7 +299,7 @@ int zmq::router_t::xrecv (msg_t *msg_)
             prefetched = false;
         }
         more_in = msg_->flags () & msg_t::more ? true : false;
- 
+
         if (!more_in) {
             if (terminate_current_in) {
                 current_in->terminate (true);

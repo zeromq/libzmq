@@ -440,7 +440,7 @@ typedef struct zmq_pollitem_t
 ZMQ_EXPORT int  zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
 
 /******************************************************************************/
-/*  Poller polling on sockets,fd and threaf safe sockets                      */
+/*  Poller polling on sockets,fd and thread-safe sockets                      */
 /******************************************************************************/
 
 #define ZMQ_HAVE_POLLER

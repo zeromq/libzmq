@@ -84,7 +84,7 @@ namespace zmq
         //  Specifies the object to send events to.
         void set_event_sink (i_pipe_events *sink_);
 
-        //  Pipe endpoint can store an routing ID to be used by its clients.        
+        //  Pipe endpoint can store an routing ID to be used by its clients.
         void set_routing_id (uint32_t routing_id_);
         uint32_t get_routing_id ();
 

@@ -64,7 +64,7 @@ void zmq::mailbox_safe_t::remove_signaler(signaler_t* signaler)
     // TODO: make a copy of array and signal outside the lock
     for (; it != signalers.end(); ++it){
         if (*it == signaler)
-           break;        
+           break;
     }
 
     if (it != signalers.end())
@@ -92,7 +92,7 @@ int zmq::mailbox_safe_t::recv (command_t *cmd_, int timeout_)
     //  Try to get the command straight away.
     if (cpipe.read (cmd_))
         return 0;
-    
+
     //  Wait for signal from the command sender.
     int rc = cond_var.wait (sync, timeout_);
     if (rc == -1) {
