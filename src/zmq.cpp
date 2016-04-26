@@ -81,10 +81,6 @@ struct iovec {
 #include "socket_poller.hpp"
 #include "timers.hpp"
 
-#if !defined ZMQ_HAVE_WINDOWS
-#include <unistd.h>
-#endif
-
 #if defined ZMQ_HAVE_OPENPGM
 #define __PGM_WININT_H__
 #include <pgm/pgm.h>
