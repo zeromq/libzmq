@@ -400,7 +400,8 @@ test_apps = \
 	tests/test_timers \
 	tests/test_radio_dish \
 	tests/test_udp \
-	tests/test_scatter_gather
+	tests/test_scatter_gather \
+	tests/test_pub_invert_matching
 
 tests_test_system_SOURCES = tests/test_system.cpp
 tests_test_system_LDADD = src/libzmq.la
@@ -619,6 +620,9 @@ tests_test_udp_LDADD = src/libzmq.la
 
 tests_test_scatter_gather_SOURCES = tests/test_scatter_gather.cpp
 tests_test_scatter_gather_LDADD = src/libzmq.la
+
+tests_test_pub_invert_matching_SOURCES = tests/test_pub_invert_matching.cpp
+tests_test_pub_invert_matching_LDADD = src/libzmq.la
 
 if !ON_MINGW
 if !ON_CYGWIN
