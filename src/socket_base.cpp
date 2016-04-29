@@ -882,7 +882,7 @@ int zmq::socket_base_t::connect (const char *addr_)
 if (protocol  == "udp") {
     paddr->resolved.udp_addr = new (std::nothrow) udp_address_t ();
     alloc_assert (paddr->resolved.udp_addr);
-    rc = paddr->resolved.udp_addr->resolve (address.c_str());
+    rc = paddr->resolved.udp_addr->resolve (address.c_str(), options.type == ZMQ_DISH);
     if (rc != 0) {
         LIBZMQ_DELETE(paddr);
         EXIT_MUTEX ();
