@@ -48,7 +48,7 @@ namespace zmq
         udp_address_t ();
         virtual ~udp_address_t ();
 
-        int resolve (const char *name_);
+        int resolve (const char *name_, bool receiver_);
 
         //  The opposite to resolve()
         virtual int to_string (std::string &addr_);

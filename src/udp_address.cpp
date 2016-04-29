@@ -58,7 +58,7 @@ zmq::udp_address_t::~udp_address_t ()
 {
 }
 
-int zmq::udp_address_t::resolve (const char *name_)
+int zmq::udp_address_t::resolve (const char *name_, bool receiver_)
 {
     //  Find the ':' at end that separates address from the port number.
     const char *delimiter = strrchr (name_, ':');
@@ -80,7 +80,12 @@ int zmq::udp_address_t::resolve (const char *name_)
 
     dest_address.sin_family = AF_INET;
     dest_address.sin_port = htons (port);
-    dest_address.sin_addr.s_addr = inet_addr (addr_str.c_str ());
+
+    //  Only when the udp is receiver we allow * as the address
+    if (addr_str == "*" && receiver_)
+        dest_address.sin_addr.s_addr = htons (INADDR_ANY);
+    else
+        dest_address.sin_addr.s_addr = inet_addr (addr_str.c_str ());
 
     if (dest_address.sin_addr.s_addr == INADDR_NONE) {
         errno = EINVAL;
@@ -104,9 +109,15 @@ int zmq::udp_address_t::resolve (const char *name_)
         return -1;
     }
 
-    bind_address.sin_family = AF_INET;
-    bind_address.sin_port = htons (port);
-    bind_address.sin_addr.s_addr = htons (INADDR_ANY);
+    //  If a receiver and not a multicast, the dest address
+    //  is actually the bind address
+    if (receiver_ && !is_mutlicast)
+        bind_address = dest_address;
+    else {
+        bind_address.sin_family = AF_INET;
+        bind_address.sin_port = htons (port);
+        bind_address.sin_addr.s_addr = htons (INADDR_ANY);
+    }
 
     address = name_;
 
