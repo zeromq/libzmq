@@ -572,7 +572,7 @@ void zmq::session_base_t::start_connecting (bool wait_)
 #endif
 
 if (addr->protocol == "udp") {
-    zmq_assert (options.type == ZMQ_DISH || options.type == ZMQ_RADIO);
+    zmq_assert (options.type == ZMQ_DISH || options.type == ZMQ_RADIO || options.type == ZMQ_CLIENT || options.type == ZMQ_SERVER);
 
     udp_engine_t* engine = new (std::nothrow) udp_engine_t ();
     alloc_assert (engine);
@@ -586,6 +586,10 @@ if (addr->protocol == "udp") {
     }
     else if (options.type == ZMQ_DISH) {
         send = false;
+        recv = true;
+    }
+    else if (options.type == ZMQ_CLIENT || options.type == ZMQ_SERVER) {
+        send = true;
         recv = true;
     }
 
