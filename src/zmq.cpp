@@ -452,6 +452,11 @@ int zmq_sendiov (void *s_, iovec *a_, size_t count_, int flags_)
         errno = ENOTSOCK;
         return -1;
     }
+    if (unlikely (count_ <= 0 || !a_)) {
+        errno = EINVAL;
+        return -1;
+    }
+
     int rc = 0;
     zmq_msg_t msg;
     zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
@@ -555,6 +560,11 @@ int zmq_recviov (void *s_, iovec *a_, size_t *count_, int flags_)
         errno = ENOTSOCK;
         return -1;
     }
+    if (unlikely (!count_ || *count_ <= 0 || !a_)) {
+        errno = EINVAL;
+        return -1;
+    }
+
     zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
 
     size_t count = *count_;
