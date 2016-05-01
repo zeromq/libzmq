@@ -70,7 +70,7 @@
 #   You should have received a copy of the GNU Lesser General Public License
 #   along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-#serial 15
+#serial 16
 
 AC_DEFUN([AX_CODE_COVERAGE],[
 	dnl Check for --enable-code-coverage
@@ -253,10 +253,11 @@ code-coverage-capture-hook:
 
 ifeq ($(CODE_COVERAGE_ENABLED),yes)
 clean: code-coverage-clean
+distclean: code-coverage-clean
 code-coverage-clean:
 	-$(LCOV) --directory $(top_builddir) -z
 	-rm -rf $(CODE_COVERAGE_OUTPUT_FILE) $(CODE_COVERAGE_OUTPUT_FILE).tmp $(CODE_COVERAGE_OUTPUT_DIRECTORY)
-	-find . -name "*.gcda" -o -name "*.gcov" -delete
+	-find . \( -name "*.gcda" -o -name "*.gcno" -o -name "*.gcov" \) -delete
 endif
 
 GITIGNOREFILES ?=
