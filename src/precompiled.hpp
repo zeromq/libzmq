@@ -152,6 +152,10 @@
 
 #ifndef ZMQ_BUILD_DRAFT_API
 
+/*  DRAFT Socket types.                                                       */
+#define ZMQ_SERVER 12
+#define ZMQ_CLIENT 13
+
 #endif // ZMQ_BUILD_DRAFT_API
 
 #endif //ifndef __ZMQ_PRECOMPILED_HPP_INCLUDED__

@@ -391,8 +391,6 @@ test_apps = \
 	tests/test_xpub_manual \
 	tests/test_xpub_welcome_msg \
 	tests/test_atomics \
-	tests/test_client_server \
-	tests/test_thread_safe \
 	tests/test_sockopt_hwm \
 	tests/test_heartbeats \
 	tests/test_stream_exceeds_buffer \
@@ -588,12 +586,6 @@ tests_test_xpub_welcome_msg_LDADD = src/libzmq.la
 tests_test_atomics_SOURCES = tests/test_atomics.cpp
 tests_test_atomics_LDADD = src/libzmq.la
 
-tests_test_client_server_SOURCES = tests/test_client_server.cpp
-tests_test_client_server_LDADD = src/libzmq.la
-
-tests_test_thread_safe_SOURCES = tests/test_thread_safe.cpp
-tests_test_thread_safe_LDADD = src/libzmq.la
-
 tests_test_sockopt_hwm_SOURCES = tests/test_sockopt_hwm.cpp
 tests_test_sockopt_hwm_LDADD = src/libzmq.la
 
@@ -741,7 +733,14 @@ test_reqrep_vmci_CXXFLAGS = @LIBZMQ_VMCI_CXXFLAGS@
 endif
 
 if ENABLE_DRAFTS
-test_apps +=
+test_apps += tests/test_client_server \
+	tests/test_thread_safe
+
+tests_test_client_server_SOURCES = tests/test_client_server.cpp
+tests_test_client_server_LDADD = src/libzmq.la
+
+tests_test_thread_safe_SOURCES = tests/test_thread_safe.cpp
+tests_test_thread_safe_LDADD = src/libzmq.la
 endif
 
 check_PROGRAMS = ${test_apps}

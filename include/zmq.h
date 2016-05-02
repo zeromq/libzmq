@@ -260,8 +260,6 @@ ZMQ_EXPORT const char *zmq_msg_group (zmq_msg_t *msg);
 #define ZMQ_XPUB 9
 #define ZMQ_XSUB 10
 #define ZMQ_STREAM 11
-#define ZMQ_SERVER 12
-#define ZMQ_CLIENT 13
 #define ZMQ_RADIO 14
 #define ZMQ_DISH 15
 #define ZMQ_GATHER 16
@@ -581,6 +579,10 @@ ZMQ_EXPORT void zmq_threadclose (void* thread);
 /******************************************************************************/
 
 #ifdef ZMQ_BUILD_DRAFT_API
+
+/*  DRAFT Socket types.                                                       */
+#define ZMQ_SERVER 12
+#define ZMQ_CLIENT 13
 
 #endif // ZMQ_BUILD_DRAFT_API
 
