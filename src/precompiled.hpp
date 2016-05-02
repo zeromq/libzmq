@@ -156,6 +156,45 @@
 #define ZMQ_SERVER 12
 #define ZMQ_CLIENT 13
 
+/*  DRAFT Socket events.                                                      */
+int zmq_join (void *s, const char *group);
+int zmq_leave (void *s, const char *group);
+
+/******************************************************************************/
+/*  Poller polling on sockets,fd and thread-safe sockets                      */
+/******************************************************************************/
+
+#define ZMQ_HAVE_POLLER
+
+typedef struct zmq_poller_event_t
+{
+    void *socket;
+#if defined _WIN32
+    SOCKET fd;
+#else
+    int fd;
+#endif
+    void *user_data;
+    short events;
+} zmq_poller_event_t;
+
+void *zmq_poller_new (void);
+int  zmq_poller_destroy (void **poller_p);
+int  zmq_poller_add (void *poller, void *socket, void *user_data, short events);
+int  zmq_poller_modify (void *poller, void *socket, short events);
+int  zmq_poller_remove (void *poller, void *socket);
+int  zmq_poller_wait (void *poller, zmq_poller_event_t *event, long timeout);
+
+#if defined _WIN32
+int zmq_poller_add_fd (void *poller, SOCKET fd, void *user_data, short events);
+int zmq_poller_modify_fd (void *poller, SOCKET fd, short events);
+int zmq_poller_remove_fd (void *poller, SOCKET fd);
+#else
+int zmq_poller_add_fd (void *poller, int fd, void *user_data, short events);
+int zmq_poller_modify_fd (void *poller, int fd, short events);
+int zmq_poller_remove_fd (void *poller, int fd);
+#endif
+
 #endif // ZMQ_BUILD_DRAFT_API
 
 #endif //ifndef __ZMQ_PRECOMPILED_HPP_INCLUDED__

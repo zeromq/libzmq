@@ -55,7 +55,6 @@ set(tests
         test_setsockopt
         test_sockopt_hwm
         test_heartbeats
-        test_poller
         test_atomics
         test_bind_src_address
         test_capabilities
@@ -118,6 +117,7 @@ endif()
 
 IF (ENABLE_DRAFTS)
     list(APPEND tests
+        test_poller
         test_thread_safe
         test_client_server
     )

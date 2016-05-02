@@ -394,7 +394,6 @@ test_apps = \
 	tests/test_sockopt_hwm \
 	tests/test_heartbeats \
 	tests/test_stream_exceeds_buffer \
-	tests/test_poller \
 	tests/test_timers \
 	tests/test_radio_dish \
 	tests/test_udp \
@@ -598,9 +597,6 @@ tests_test_heartbeats_LDADD = src/libzmq.la
 tests_test_stream_exceeds_buffer_SOURCES = tests/test_stream_exceeds_buffer.cpp
 tests_test_stream_exceeds_buffer_LDADD = src/libzmq.la
 
-tests_test_poller_SOURCES = tests/test_poller.cpp
-tests_test_poller_LDADD = src/libzmq.la
-
 tests_test_timers_SOURCES = tests/test_timers.cpp
 tests_test_timers_LDADD = src/libzmq.la
 
@@ -733,8 +729,12 @@ test_reqrep_vmci_CXXFLAGS = @LIBZMQ_VMCI_CXXFLAGS@
 endif
 
 if ENABLE_DRAFTS
-test_apps += tests/test_client_server \
+test_apps += tests/test_poller \
+	tests/test_client_server \
 	tests/test_thread_safe
+
+tests_test_poller_SOURCES = tests/test_poller.cpp
+tests_test_poller_LDADD = src/libzmq.la
 
 tests_test_client_server_SOURCES = tests/test_client_server.cpp
 tests_test_client_server_LDADD = src/libzmq.la

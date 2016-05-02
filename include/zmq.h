@@ -438,42 +438,6 @@ typedef struct zmq_pollitem_t
 ZMQ_EXPORT int  zmq_poll (zmq_pollitem_t *items, int nitems, long timeout);
 
 /******************************************************************************/
-/*  Poller polling on sockets,fd and thread-safe sockets                      */
-/******************************************************************************/
-
-#define ZMQ_HAVE_POLLER
-
-typedef struct zmq_poller_event_t
-{
-    void *socket;
-#if defined _WIN32
-    SOCKET fd;
-#else
-    int fd;
-#endif
-    void *user_data;
-    short events;
-} zmq_poller_event_t;
-
-ZMQ_EXPORT void *zmq_poller_new (void);
-ZMQ_EXPORT int  zmq_poller_destroy (void **poller_p);
-ZMQ_EXPORT int  zmq_poller_add (void *poller, void *socket, void *user_data, short events);
-ZMQ_EXPORT int  zmq_poller_modify (void *poller, void *socket, short events);
-ZMQ_EXPORT int  zmq_poller_remove (void *poller, void *socket);
-ZMQ_EXPORT int  zmq_poller_wait (void *poller, zmq_poller_event_t *event, long timeout);
-
-#if defined _WIN32
-ZMQ_EXPORT int zmq_poller_add_fd (void *poller, SOCKET fd, void *user_data, short events);
-ZMQ_EXPORT int zmq_poller_modify_fd (void *poller, SOCKET fd, short events);
-ZMQ_EXPORT int zmq_poller_remove_fd (void *poller, SOCKET fd);
-#else
-ZMQ_EXPORT int zmq_poller_add_fd (void *poller, int fd, void *user_data, short events);
-ZMQ_EXPORT int zmq_poller_modify_fd (void *poller, int fd, short events);
-ZMQ_EXPORT int zmq_poller_remove_fd (void *poller, int fd);
-#endif
-
-/******************************************************************************/
-/*  Scheduling timers                                                         */
 /******************************************************************************/
 
 #define ZMQ_HAVE_TIMERS
@@ -583,6 +547,41 @@ ZMQ_EXPORT void zmq_threadclose (void* thread);
 /*  DRAFT Socket types.                                                       */
 #define ZMQ_SERVER 12
 #define ZMQ_CLIENT 13
+
+/******************************************************************************/
+/*  Poller polling on sockets,fd and thread-safe sockets                      */
+/******************************************************************************/
+
+#define ZMQ_HAVE_POLLER
+
+typedef struct zmq_poller_event_t
+{
+    void *socket;
+#if defined _WIN32
+    SOCKET fd;
+#else
+    int fd;
+#endif
+    void *user_data;
+    short events;
+} zmq_poller_event_t;
+
+ZMQ_EXPORT void *zmq_poller_new (void);
+ZMQ_EXPORT int  zmq_poller_destroy (void **poller_p);
+ZMQ_EXPORT int  zmq_poller_add (void *poller, void *socket, void *user_data, short events);
+ZMQ_EXPORT int  zmq_poller_modify (void *poller, void *socket, short events);
+ZMQ_EXPORT int  zmq_poller_remove (void *poller, void *socket);
+ZMQ_EXPORT int  zmq_poller_wait (void *poller, zmq_poller_event_t *event, long timeout);
+
+#if defined _WIN32
+ZMQ_EXPORT int zmq_poller_add_fd (void *poller, SOCKET fd, void *user_data, short events);
+ZMQ_EXPORT int zmq_poller_modify_fd (void *poller, SOCKET fd, short events);
+ZMQ_EXPORT int zmq_poller_remove_fd (void *poller, SOCKET fd);
+#else
+ZMQ_EXPORT int zmq_poller_add_fd (void *poller, int fd, void *user_data, short events);
+ZMQ_EXPORT int zmq_poller_modify_fd (void *poller, int fd, short events);
+ZMQ_EXPORT int zmq_poller_remove_fd (void *poller, int fd);
+#endif
 
 #endif // ZMQ_BUILD_DRAFT_API
 
