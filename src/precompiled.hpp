@@ -145,5 +145,13 @@
 #include "platform.hpp"
 #include "../include/zmq.h"
 
+/******************************************************************************/
+/*  These functions are DRAFT and disabled in stable releases, and subject to */
+/*  change at ANY time until declared stable.                                 */
+/******************************************************************************/
+
+#ifndef ZMQ_BUILD_DRAFT_API
+
+#endif // ZMQ_BUILD_DRAFT_API
 
 #endif //ifndef __ZMQ_PRECOMPILED_HPP_INCLUDED__

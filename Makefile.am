@@ -740,6 +740,10 @@ test_reqrep_vmci_CXXFLAGS = @LIBZMQ_VMCI_CXXFLAGS@
 
 endif
 
+if ENABLE_DRAFTS
+test_apps +=
+endif
+
 check_PROGRAMS = ${test_apps}
 
 #  Run the test cases

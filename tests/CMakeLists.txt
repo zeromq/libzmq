@@ -117,6 +117,12 @@ if(WITH_VMCI)
   )
 endif()
 
+
+IF (ENABLE_DRAFTS)
+    list(APPEND tests
+    )
+ENDIF (ENABLE_DRAFTS)
+
 # add location of platform.hpp for Windows builds
 if(WIN32)
     add_definitions(-DZMQ_CUSTOM_PLATFORM_HPP)

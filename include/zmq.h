@@ -575,6 +575,16 @@ ZMQ_EXPORT void *zmq_threadstart (zmq_thread_fn* func, void* arg);
 ZMQ_EXPORT void zmq_threadclose (void* thread);
 
 
+/******************************************************************************/
+/*  These functions are DRAFT and disabled in stable releases, and subject to */
+/*  change at ANY time until declared stable.                                 */
+/******************************************************************************/
+
+#ifdef ZMQ_BUILD_DRAFT_API
+
+#endif // ZMQ_BUILD_DRAFT_API
+
+
 #undef ZMQ_EXPORT
 
 #ifdef __cplusplus
