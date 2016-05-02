@@ -195,6 +195,23 @@ int zmq_poller_modify_fd (void *poller, int fd, short events);
 int zmq_poller_remove_fd (void *poller, int fd);
 #endif
 
+/******************************************************************************/
+/*  Scheduling timers                                                         */
+/******************************************************************************/
+
+#define ZMQ_HAVE_TIMERS
+
+typedef void (zmq_timer_fn)(int timer_id, void *arg);
+
+void *zmq_timers_new (void);
+int   zmq_timers_destroy (void **timers_p);
+int   zmq_timers_add (void *timers, size_t interval, zmq_timer_fn handler, void *arg);
+int   zmq_timers_cancel (void *timers, int timer_id);
+int   zmq_timers_set_interval (void *timers, int timer_id, size_t interval);
+int   zmq_timers_reset (void *timers, int timer_id);
+long  zmq_timers_timeout (void *timers);
+int   zmq_timers_execute (void *timers);
+
 #endif // ZMQ_BUILD_DRAFT_API
 
 #endif //ifndef __ZMQ_PRECOMPILED_HPP_INCLUDED__

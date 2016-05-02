@@ -64,7 +64,6 @@ set(tests
         test_stream_timeout
         test_xpub_manual
         test_xpub_welcome_msg
-        test_timers
         test_radio_dish
         test_udp
         test_scatter_gather
@@ -120,6 +119,7 @@ IF (ENABLE_DRAFTS)
         test_poller
         test_thread_safe
         test_client_server
+        test_timers
     )
 ENDIF (ENABLE_DRAFTS)
 
