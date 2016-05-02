@@ -260,8 +260,6 @@ ZMQ_EXPORT const char *zmq_msg_group (zmq_msg_t *msg);
 #define ZMQ_XPUB 9
 #define ZMQ_XSUB 10
 #define ZMQ_STREAM 11
-#define ZMQ_GATHER 16
-#define ZMQ_SCATTER 17
 
 /*  Deprecated aliases                                                        */
 #define ZMQ_XREQ ZMQ_DEALER
@@ -529,6 +527,8 @@ ZMQ_EXPORT void zmq_threadclose (void* thread);
 #define ZMQ_CLIENT 13
 #define ZMQ_RADIO 14
 #define ZMQ_DISH 15
+#define ZMQ_GATHER 16
+#define ZMQ_SCATTER 17
 
 /*  DRAFT Socket events.                                                      */
 ZMQ_EXPORT int zmq_join (void *s, const char *group);

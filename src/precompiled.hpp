@@ -157,6 +157,8 @@
 #define ZMQ_CLIENT 13
 #define ZMQ_RADIO 14
 #define ZMQ_DISH 15
+#define ZMQ_GATHER 16
+#define ZMQ_SCATTER 17
 
 /*  DRAFT Socket events.                                                      */
 int zmq_join (void *s, const char *group);

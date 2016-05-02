@@ -64,7 +64,6 @@ set(tests
         test_stream_timeout
         test_xpub_manual
         test_xpub_welcome_msg
-        test_scatter_gather
 )
 if(NOT WIN32)
   list(APPEND tests
@@ -120,6 +119,7 @@ IF (ENABLE_DRAFTS)
         test_timers
         test_radio_dish
         test_udp
+        test_scatter_gather
     )
 ENDIF (ENABLE_DRAFTS)
 
