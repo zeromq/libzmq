@@ -138,10 +138,12 @@
 #include <string>
 #include <vector>
 
+#endif // _MSC_VER
+
 
 // 0MQ definitions and exported functions
+#include "platform.hpp"
 #include "../include/zmq.h"
 
-#endif // _MSC_VER
 
 #endif //ifndef __ZMQ_PRECOMPILED_HPP_INCLUDED__
