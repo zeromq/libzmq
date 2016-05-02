@@ -124,6 +124,7 @@ void test_pair ()
 
 void test_client_server ()
 {
+#if defined(ZMQ_SERVER) && defined(ZMQ_CLIENT)
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
@@ -200,6 +201,7 @@ void test_client_server ()
 
     rc = unlink ("/tmp/tester");
     assert (rc == 0);
+#endif
 }
 
 int main (void)
