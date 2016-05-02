@@ -260,8 +260,6 @@ ZMQ_EXPORT const char *zmq_msg_group (zmq_msg_t *msg);
 #define ZMQ_XPUB 9
 #define ZMQ_XSUB 10
 #define ZMQ_STREAM 11
-#define ZMQ_RADIO 14
-#define ZMQ_DISH 15
 #define ZMQ_GATHER 16
 #define ZMQ_SCATTER 17
 
@@ -408,8 +406,6 @@ ZMQ_EXPORT int zmq_send (void *s, const void *buf, size_t len, int flags);
 ZMQ_EXPORT int zmq_send_const (void *s, const void *buf, size_t len, int flags);
 ZMQ_EXPORT int zmq_recv (void *s, void *buf, size_t len, int flags);
 ZMQ_EXPORT int zmq_socket_monitor (void *s, const char *addr, int events);
-ZMQ_EXPORT int zmq_join (void *s, const char *group);
-ZMQ_EXPORT int zmq_leave (void *s, const char *group);
 
 
 /******************************************************************************/
@@ -531,6 +527,12 @@ ZMQ_EXPORT void zmq_threadclose (void* thread);
 /*  DRAFT Socket types.                                                       */
 #define ZMQ_SERVER 12
 #define ZMQ_CLIENT 13
+#define ZMQ_RADIO 14
+#define ZMQ_DISH 15
+
+/*  DRAFT Socket events.                                                      */
+ZMQ_EXPORT int zmq_join (void *s, const char *group);
+ZMQ_EXPORT int zmq_leave (void *s, const char *group);
 
 /******************************************************************************/
 /*  Poller polling on sockets,fd and thread-safe sockets                      */

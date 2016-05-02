@@ -394,8 +394,6 @@ test_apps = \
 	tests/test_sockopt_hwm \
 	tests/test_heartbeats \
 	tests/test_stream_exceeds_buffer \
-	tests/test_radio_dish \
-	tests/test_udp \
 	tests/test_scatter_gather \
 	tests/test_pub_invert_matching
 
@@ -596,12 +594,6 @@ tests_test_heartbeats_LDADD = src/libzmq.la
 tests_test_stream_exceeds_buffer_SOURCES = tests/test_stream_exceeds_buffer.cpp
 tests_test_stream_exceeds_buffer_LDADD = src/libzmq.la
 
-tests_test_radio_dish_SOURCES = tests/test_radio_dish.cpp
-tests_test_radio_dish_LDADD = src/libzmq.la
-
-tests_test_udp_SOURCES = tests/test_udp.cpp
-tests_test_udp_LDADD = src/libzmq.la
-
 tests_test_scatter_gather_SOURCES = tests/test_scatter_gather.cpp
 tests_test_scatter_gather_LDADD = src/libzmq.la
 
@@ -728,7 +720,9 @@ if ENABLE_DRAFTS
 test_apps += tests/test_poller \
 	tests/test_client_server \
 	tests/test_thread_safe \
-	tests/test_timers
+	tests/test_timers \
+	tests/test_radio_dish \
+	tests/test_udp
 
 tests_test_poller_SOURCES = tests/test_poller.cpp
 tests_test_poller_LDADD = src/libzmq.la
@@ -741,6 +735,12 @@ tests_test_thread_safe_LDADD = src/libzmq.la
 
 tests_test_timers_SOURCES = tests/test_timers.cpp
 tests_test_timers_LDADD = src/libzmq.la
+
+tests_test_radio_dish_SOURCES = tests/test_radio_dish.cpp
+tests_test_radio_dish_LDADD = src/libzmq.la
+
+tests_test_udp_SOURCES = tests/test_udp.cpp
+tests_test_udp_LDADD = src/libzmq.la
 endif
 
 check_PROGRAMS = ${test_apps}
