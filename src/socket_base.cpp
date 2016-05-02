@@ -308,7 +308,9 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
 #endif
 
     if (protocol_ == "udp" && (options.type != ZMQ_DISH &&
-                               options.type != ZMQ_RADIO)) {
+                               options.type != ZMQ_RADIO &&
+                               options.type != ZMQ_CLIENT &&
+                               options.type != ZMQ_SERVER)) {
         errno = ENOCOMPATPROTO;
         return -1;
     }
@@ -882,7 +884,7 @@ int zmq::socket_base_t::connect (const char *addr_)
 if (protocol  == "udp") {
     paddr->resolved.udp_addr = new (std::nothrow) udp_address_t ();
     alloc_assert (paddr->resolved.udp_addr);
-    rc = paddr->resolved.udp_addr->resolve (address.c_str(), options.type == ZMQ_DISH);
+    rc = paddr->resolved.udp_addr->resolve (address.c_str(), (options.type == ZMQ_DISH || options.type == ZMQ_CLIENT || options.type == ZMQ_SERVER));
     if (rc != 0) {
         LIBZMQ_DELETE(paddr);
         EXIT_MUTEX ();
