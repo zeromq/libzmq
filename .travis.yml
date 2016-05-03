@@ -9,19 +9,19 @@ os:
 dist: trusty
 
 env:
-- BUILD_TYPE=default CURVE=tweetnacl
+- BUILD_TYPE=default CURVE=tweetnacl DRAFT=enabled
 - BUILD_TYPE=android CURVE=tweetnacl
 - BUILD_TYPE=cmake CURVE=tweetnacl
 - BUILD_TYPE=default CURVE=libsodium
 - BUILD_TYPE=default
-- BUILD_TYPE=coverage CURVE=tweetnacl
-- BUILD_TYPE=valgrind CURVE=tweetnacl
+- BUILD_TYPE=coverage CURVE=tweetnacl DRAFT=enabled
+- BUILD_TYPE=valgrind CURVE=tweetnacl DRAFT=enabled
 
 matrix:
   exclude:
-    -  env: BUILD_TYPE=coverage CURVE=tweetnacl
+    -  env: BUILD_TYPE=coverage CURVE=tweetnacl DRAFT=enabled
        os: osx
-    -  env: BUILD_TYPE=valgrind CURVE=tweetnacl
+    -  env: BUILD_TYPE=valgrind CURVE=tweetnacl DRAFT=enabled
        os: osx
   include:
     -  env: BUILD_TYPE=default CURVE=tweetnacl IPv6=ON

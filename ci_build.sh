@@ -23,6 +23,12 @@ if [ $BUILD_TYPE == "default" ]; then
         ( cd libsodium; ./autogen.sh; ./configure --prefix=$BUILD_PREFIX; make check; make install)
     fi
 
+    if [ -z $DRAFT ] || [ $DRAFT == "disabled" ]; then
+        CONFIG_OPTS+=("--enable-drafts=no")
+    elif [ $DRAFT == "enabled" ]; then
+        CONFIG_OPTS+=("--enable-drafts=yes")
+    fi
+
     #   Build and check this project
     (
         ./autogen.sh &&

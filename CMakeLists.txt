@@ -57,6 +57,20 @@ else ()
     set (ZMQ_HAVE_CURVE 1)
 endif ()
 
+set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+
+if (EXISTS "${SOURCE_DIR}/.git")
+    OPTION (ENABLE_DRAFTS "Build and install draft classes and methods" ON)
+else ()
+    OPTION (ENABLE_DRAFTS "Build and install draft classes and methods" OFF)
+endif ()
+IF (ENABLE_DRAFTS)
+    ADD_DEFINITIONS (-DZMQ_BUILD_DRAFT_API)
+    set (pkg_config_defines "-DZMQ_BUILD_DRAFT_API=1")
+ELSE (ENABLE_DRAFTS)
+    set (pkg_config_defines "")
+ENDIF (ENABLE_DRAFTS)
+
 set (POLLER "" CACHE STRING "Choose polling system. valid values are
                             kqueue, epoll, devpoll, poll or select [default=autodetect]")
 

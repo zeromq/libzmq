@@ -52,12 +52,9 @@ set(tests
         test_connect_rid
         test_xpub_nodrop
         test_pub_invert_matching
-        test_thread_safe
-        test_client_server
         test_setsockopt
         test_sockopt_hwm
         test_heartbeats
-        test_poller
         test_atomics
         test_bind_src_address
         test_capabilities
@@ -67,10 +64,6 @@ set(tests
         test_stream_timeout
         test_xpub_manual
         test_xpub_welcome_msg
-        test_timers
-        test_radio_dish
-        test_udp
-        test_scatter_gather
 )
 if(NOT WIN32)
   list(APPEND tests
@@ -116,6 +109,19 @@ if(WITH_VMCI)
           test_reqrep_vmci
   )
 endif()
+
+
+IF (ENABLE_DRAFTS)
+    list(APPEND tests
+        test_poller
+        test_thread_safe
+        test_client_server
+        test_timers
+        test_radio_dish
+        test_udp
+        test_scatter_gather
+    )
+ENDIF (ENABLE_DRAFTS)
 
 # add location of platform.hpp for Windows builds
 if(WIN32)

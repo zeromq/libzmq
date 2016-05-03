@@ -50,6 +50,7 @@ int main (void)
     void *bowl = zmq_socket (ctx, ZMQ_PULL);
     assert (bowl);
 
+#if defined(ZMQ_SERVER) && defined(ZMQ_CLIENT)
     void *server = zmq_socket (ctx, ZMQ_SERVER);
     assert (server);
     rc = zmq_bind (server, "tcp://127.0.0.1:55557");
@@ -57,6 +58,7 @@ int main (void)
 
     void *client = zmq_socket (ctx, ZMQ_CLIENT);
     assert (client);
+#endif
 
     //  Set up poller
     void* poller = zmq_poller_new ();
@@ -116,6 +118,7 @@ int main (void)
     assert (event.user_data == bowl);
     zmq_poller_remove_fd (poller, fd);
 
+#if defined(ZMQ_SERVER) && defined(ZMQ_CLIENT)
     //  Polling on thread safe sockets
     rc = zmq_poller_add (poller, server, NULL, ZMQ_POLLIN);
     assert (rc == 0);
@@ -138,6 +141,7 @@ int main (void)
     assert (event.socket == server);
     assert (event.user_data == NULL);
     assert (event.events == ZMQ_POLLOUT);
+#endif
 
     //  Destory poller, sockets and ctx
     rc = zmq_poller_destroy (&poller);
@@ -148,10 +152,12 @@ int main (void)
     assert (rc == 0);
     rc = zmq_close (bowl);
     assert (rc == 0);
+#if defined(ZMQ_SERVER) && defined(ZMQ_CLIENT)
     rc = zmq_close (server);
     assert (rc == 0);
     rc = zmq_close (client);
     assert (rc == 0);
+#endif
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 

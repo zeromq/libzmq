@@ -30,13 +30,13 @@
 #ifndef __TESTUTIL_HPP_INCLUDED__
 #define __TESTUTIL_HPP_INCLUDED__
 
-#include "../include/zmq.h"
-#include "../src/stdint.hpp"
 #if defined ZMQ_CUSTOM_PLATFORM_HPP
 #   include "platform.hpp"
 #else
 #   include "../src/platform.hpp"
 #endif
+#include "../include/zmq.h"
+#include "../src/stdint.hpp"
 
 //  This defines the settle time used in tests; raise this if we
 //  get test failures on slower systems due to binds/connects not

@@ -8,4 +8,4 @@ Description: 0MQ c++ library
 Version: @VERSION@
 Libs: -L${libdir} -lzmq
 Libs.private: -lstdc++
-Cflags: -I${includedir}
+Cflags: -I${includedir} @pkg_config_defines@
