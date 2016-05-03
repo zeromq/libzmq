@@ -25,5 +25,18 @@ IF EXIST "..\..\..\libsodium" (
     ECHO #undef HAVE_LIBSODIUM>> platform.hpp
 )
 
+:-  Check if we want to build the draft API
+if "%1" == "--enable-drafts" goto :with_draft
+if "%1" == "--disable-drafts" goto :no_draft
+IF NOT EXIST "..\..\.git" GOTO no_draft
+:with_draft
+    ECHO Building with draft API (stable + legacy + draft API)
+    ECHO //  Provide draft classes and methods>>platform.hpp
+    ECHO #define ZMQ_BUILD_DRAFT_API 1>>platform.hpp
+    GOTO end_draft
+:no_draft
+    ECHO Building without draft API (stable + legacy API)
+    ECHO #undef ZMQ_BUILD_DRAFT_API 1>>platform.hpp
+:end_draft
 ECHO. >> platform.hpp
 ECHO #endif>> platform.hpp

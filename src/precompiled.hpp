@@ -160,9 +160,15 @@
 #define ZMQ_GATHER 16
 #define ZMQ_SCATTER 17
 
-/*  DRAFT Socket events.                                                      */
+/*  DRAFT Socket methods.                                                     */
 int zmq_join (void *s, const char *group);
 int zmq_leave (void *s, const char *group);
+
+/*  DRAFT Msg methods.                                                        */
+int zmq_msg_set_routing_id(zmq_msg_t *msg, uint32_t routing_id);
+uint32_t zmq_msg_routing_id(zmq_msg_t *msg);
+int zmq_msg_set_group(zmq_msg_t *msg, const char *group);
+const char *zmq_msg_group(zmq_msg_t *msg);
 
 /******************************************************************************/
 /*  Poller polling on sockets,fd and thread-safe sockets                      */
