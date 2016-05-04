@@ -34,3 +34,19 @@ before_script:
 #   Build and check this project
 script:
 - ./autogen.sh && ./configure --with-libsodium --prefix=${BUILD_PREFIX} && make distcheck
+
+# Deploy tags
+before_deploy:
+- . ./ci_deploy.sh
+deploy:
+  provider: releases
+  api_key:
+    secure: "VIOyO6gR+E4PH9i48eq8gF15PYTZamUOLwbaa4nnwCgmKy+iiwIrXBF/FZ9SdzjeUUSrK0v1gAfC389U+ZBjdD0NQTcSZ9UngvSALgtI7w4gQMJ09G74Sowcm21PIO/Pn3V4xpO0ciJ7xb2aGP6zhbGOiK/nmv8MXUM/PzxvH6A="
+  file_glob: true
+  file: ${ZEROMQ4X_DEPLOYMENT}
+  skip_cleanup: true
+  on:
+    repo: zeromq/zeromq4-x
+    branch: master
+    tags: true
+    condition: "$TRAVIS_OS_NAME =~ (linux)"
