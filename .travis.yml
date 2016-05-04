@@ -33,3 +33,19 @@ before_script:
 #   Build and check this project
 script:
 - ./autogen.sh && ./configure --with-libsodium --prefix=${BUILD_PREFIX} && make distcheck
+
+# Deploy tags
+before_deploy:
+- . ./ci_deploy.sh
+deploy:
+  provider: releases
+  api_key:
+    secure: "F05Ia6El6hhB0uFAGPztZioIN33XnVO6HT2l2RW/JGojr6yAUqM3ZD8kLxu/KCA7hX1fQw45VBf4oqu34uNRBks3vzjeBjZRvZx9mag4y979q5cMppUCyfdV8ugFcsUaEFmsCp/7IIweWMuymmaHJPpzswwCHsyPNyWsj4WMxTmI9Cs0mZjR1G48Vf3DcfLcosU5lPW/8HItU8ZOCRuqPOGJLZaGnJqdK5k0Zh4owNUXMbZuKH3slcXurGICJ9bRsPVue2bBkbLa8w0DfkAQlGXpihXufGEz8ue9+9ay1IjDONHCnoc1tqLoNXq1pX1kZtZRy/fHw5k0IVjHUQV57XXgqcvQOdb0pjI0R7HJQqdH/SslsYPH+6jXc2ClwxtghuTO5S98CTHBCjqbeMDJ3NnkAK3nQ/cgujNyxNo4x7xQpsfpHLq443pm5qX6XJCGSFv45S/znlarDmxHblVFj1P8OmeaB0Ui/NU3Kwc41e5X1HtXDK9DWRSDqtKS5jnQC7ITsnTTmmOLgr/c4r7OMIq33ZVj72WSGlE4b1PKLfXNJ7xCsRlkNY5sSVBOHoaaawKbSgBaeHdobnYZFw8oz/ReFOJpftZ743OqYT5KdSUHTaRyYULDOFOT8pstMQrszuoDNO27pwhHJ9Fap7oI7cXkXz4cawNUSoJHm4geaPM="
+  file_glob: true
+  file: ${ZEROMQ41_DEPLOYMENT}
+  skip_cleanup: true
+  on:
+    repo: zeromq/zeromq4-1
+    branch: master
+    tags: true
+    condition: "$TRAVIS_OS_NAME =~ (linux)"
