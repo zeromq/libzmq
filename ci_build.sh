@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -x
+set -e
 
 if [ $BUILD_TYPE == "default" ]; then
     mkdir tmp
@@ -29,7 +30,7 @@ if [ $BUILD_TYPE == "default" ]; then
         CONFIG_OPTS+=("--enable-drafts=yes")
     fi
 
-    #   Build and check this project
+    # Build and check this project
     (
         ./autogen.sh &&
         ./configure "${CONFIG_OPTS[@]}" &&
