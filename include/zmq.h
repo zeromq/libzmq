@@ -370,7 +370,7 @@ ZMQ_EXPORT const char *zmq_msg_gets (zmq_msg_t *msg, const char *property);
 /*  0MQ socket events and monitoring                                          */
 /******************************************************************************/
 
-/*  Socket transport events (TCP and IPC only)                                */
+/*  Socket transport events (TCP, IPC and TIPC only)                          */
 
 #define ZMQ_EVENT_CONNECTED         0x0001
 #define ZMQ_EVENT_CONNECT_DELAYED   0x0002
