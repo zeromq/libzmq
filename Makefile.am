@@ -762,7 +762,6 @@ EXTRA_DIST = \
 	CMakeLists.txt \
 	autogen.sh	\
 	version.sh	\
-	MAINTAINERS	\
 	src/libzmq.pc.cmake.in \
 	src/libzmq.vers \
 	tools/curve_keygen.cpp

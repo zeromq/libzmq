@@ -548,7 +548,6 @@ set (public_headers include/zmq.h
 set (readme-docs AUTHORS
                 COPYING
                 COPYING.LESSER
-                MAINTAINERS
                 NEWS)
 
 #-----------------------------------------------------------------------------
