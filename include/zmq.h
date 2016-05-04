@@ -451,7 +451,9 @@ ZMQ_EXPORT int zmq_has (const char *capability);
 ZMQ_EXPORT int zmq_device (int type, void *frontend, void *backend);
 ZMQ_EXPORT int zmq_sendmsg (void *s, zmq_msg_t *msg, int flags);
 ZMQ_EXPORT int zmq_recvmsg (void *s, zmq_msg_t *msg, int flags);
-
+struct iovec;
+ZMQ_EXPORT int zmq_sendiov (void *s, struct iovec *iov, size_t count, int flags);
+ZMQ_EXPORT int zmq_recviov (void *s, struct iovec *iov, size_t *count, int flags);
 
 /******************************************************************************/
 /*  Encryption functions                                                      */
@@ -484,11 +486,6 @@ ZMQ_EXPORT void zmq_atomic_counter_destroy (void **counter_p);
 /*  If you need these to be part of the formal ZMQ API, then (a) write a man  */
 /*  page, and (b) write a test case in tests.                                 */
 /******************************************************************************/
-
-struct iovec;
-
-ZMQ_EXPORT int zmq_sendiov (void *s, struct iovec *iov, size_t count, int flags);
-ZMQ_EXPORT int zmq_recviov (void *s, struct iovec *iov, size_t *count, int flags);
 
 /*  Helper functions are used by perf tests so that they don't have to care   */
 /*  about minutiae of time-related functions on different OS platforms.       */
