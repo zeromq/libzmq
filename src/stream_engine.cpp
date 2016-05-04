@@ -987,8 +987,10 @@ bool zmq::stream_engine_t::init_properties (properties_t & properties) {
     properties.insert (std::make_pair("Peer-Address", peer_address));
 
     //  Private property to support deprecated SRCFD
-    std::string fd_string = static_cast<std::ostringstream*>(&(std::ostringstream() << (int)s))->str();
-    properties.insert (std::make_pair("__fd", fd_string));
+    std::ostringstream stream;
+    stream << (int)s;
+    std::string fd_string = stream.str();
+    properties.insert(std::make_pair("__fd", fd_string));
     return true;
 }
 
