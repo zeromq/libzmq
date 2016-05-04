@@ -25,6 +25,8 @@
 
 * Fixed #114 - cannot unbind with same endpoint with IPv6 enabled.
 
+* Fixed #1952 - CMake scripts not part of release tarballs
+
 
 0MQ version 4.1.4 stable, released on 2015/12/18
 ================================================
