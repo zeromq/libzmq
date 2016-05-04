@@ -568,7 +568,7 @@ endif (WITH_VMCI)
 
 if (ZMQ_HAVE_TIPC)
     add_definitions (-DZMQ_HAVE_TIPC)
-    list (APPEND cxx-source tipc_address.cpp tipc_connecter.cpp tipc_listener.cpp)
+    list (APPEND cxx-sources tipc_address.cpp tipc_connecter.cpp tipc_listener.cpp)
 endif (ZMQ_HAVE_TIPC)
 
 #-----------------------------------------------------------------------------
