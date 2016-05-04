@@ -680,11 +680,17 @@ int zmq_msg_more (zmq_msg_t *msg_)
 
 int zmq_msg_get (zmq_msg_t *msg_, int property_)
 {
+    const char* fd_string;
+
     switch (property_) {
         case ZMQ_MORE:
             return (((zmq::msg_t*) msg_)->flags () & zmq::msg_t::more)? 1: 0;
         case ZMQ_SRCFD:
-            return (int)((zmq::msg_t*) msg_)->fd ();
+            fd_string = zmq_msg_gets(msg_, "__fd");
+            if (fd_string == NULL)
+                return (int)-1;
+
+            return atoi(fd_string);
         case ZMQ_SHARED:
             return (((zmq::msg_t*) msg_)->is_cmsg ()) ||
                    (((zmq::msg_t*) msg_)->flags () & zmq::msg_t::shared)? 1: 0;

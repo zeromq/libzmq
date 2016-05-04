@@ -105,8 +105,6 @@ namespace zmq
         unsigned char flags ();
         void set_flags (unsigned char flags_);
         void reset_flags (unsigned char flags_);
-        fd_t fd ();
-        void set_fd (fd_t fd_);
         metadata_t *metadata () const;
         void set_metadata (metadata_t *metadata_);
         void reset_metadata ();
@@ -139,8 +137,7 @@ namespace zmq
         enum { max_vsm_size = msg_t_size - (sizeof (metadata_t *) +
                                             3 +
                                             16 +
-                                            sizeof (uint32_t) +
-                                            sizeof (fd_t))};
+                                            sizeof (uint32_t))};
     private:
         zmq::atomic_counter_t* refcnt();
 
@@ -179,13 +176,11 @@ namespace zmq
                 unsigned char unused [msg_t_size - (sizeof (metadata_t *) +
                                                     2 +
                                                     16 +
-                                                    sizeof (uint32_t) +
-                                                    sizeof (fd_t))];
+                                                    sizeof (uint32_t))];
                 unsigned char type;
                 unsigned char flags;
                 char group [16];
                 uint32_t routing_id;
-                fd_t fd;
             } base;
             struct {
                 metadata_t *metadata;
@@ -195,7 +190,6 @@ namespace zmq
                 unsigned char flags;
                 char group [16];
                 uint32_t routing_id;
-                fd_t fd;
             } vsm;
             struct {
                 metadata_t *metadata;
@@ -204,13 +198,11 @@ namespace zmq
                                                     sizeof (content_t*) +
                                                     2 +
                                                     16 +
-                                                    sizeof (uint32_t) +
-                                                    sizeof (fd_t))];
+                                                    sizeof (uint32_t))];
                 unsigned char type;
                 unsigned char flags;
                 char group [16];
                 uint32_t routing_id;
-                fd_t fd;
             } lmsg;
             struct {
                 metadata_t *metadata;
@@ -219,13 +211,11 @@ namespace zmq
                                                     sizeof (content_t*) +
                                                     2 +
                                                     16 +
-                                                    sizeof (uint32_t) +
-                                                    sizeof (fd_t))];
+                                                    sizeof (uint32_t))];
                 unsigned char type;
                 unsigned char flags;
                 char group [16];
                 uint32_t routing_id;
-                fd_t fd;
             } zclmsg;
             struct {
                 metadata_t *metadata;
@@ -236,26 +226,22 @@ namespace zmq
                                                     sizeof (size_t) +
                                                     2 +
                                                     16 +
-                                                    sizeof (uint32_t) +
-                                                    sizeof (fd_t))];
+                                                    sizeof (uint32_t))];
                 unsigned char type;
                 unsigned char flags;
                 char group [16];
                 uint32_t routing_id;
-                fd_t fd;
             } cmsg;
             struct {
                 metadata_t *metadata;
                 unsigned char unused [msg_t_size - (sizeof (metadata_t *) +
                                                     2 +
                                                     16 +
-                                                    sizeof (uint32_t) +
-                                                    sizeof (fd_t))];
+                                                    sizeof (uint32_t))];
                 unsigned char type;
                 unsigned char flags;
                 char group [16];
                 uint32_t routing_id;
-                fd_t fd;
             } delimiter;
         } u;
     };

@@ -105,9 +105,6 @@ void zmq::tcp_listener_t::in_event ()
             options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
     tune_tcp_maxrt (fd, options.tcp_maxrt);
 
-    // remember our fd for ZMQ_SRCFD in messages
-    socket->set_fd(fd);
-
     //  Create the engine object for this connection.
     stream_engine_t *engine = new (std::nothrow)
         stream_engine_t (fd, options, endpoint);

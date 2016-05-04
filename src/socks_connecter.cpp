@@ -152,9 +152,6 @@ void zmq::socks_connecter_t::in_event ()
             if (rc == -1)
                 error ();
             else {
-                //  Remember our fd for ZMQ_SRCFD in messages
-                socket->set_fd (s);
-
                 //  Create the engine object for this connection.
                 stream_engine_t *engine = new (std::nothrow)
                     stream_engine_t (s, options, endpoint);
