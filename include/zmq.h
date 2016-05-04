@@ -339,7 +339,6 @@ ZMQ_EXPORT const char *zmq_msg_gets (zmq_msg_t *msg, const char *property);
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1
-#define ZMQ_SRCFD 2
 #define ZMQ_SHARED 3
 
 /*  Send/recv options.                                                        */
@@ -365,6 +364,9 @@ ZMQ_EXPORT const char *zmq_msg_gets (zmq_msg_t *msg, const char *property);
 #define ZMQ_NOBLOCK                 ZMQ_DONTWAIT
 #define ZMQ_FAIL_UNROUTABLE         ZMQ_ROUTER_MANDATORY
 #define ZMQ_ROUTER_BEHAVIOR         ZMQ_ROUTER_MANDATORY
+
+/*  Deprecated Message options                                                */
+#define ZMQ_SRCFD 2
 
 /******************************************************************************/
 /*  0MQ socket events and monitoring                                          */
