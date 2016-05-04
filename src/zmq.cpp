@@ -747,7 +747,8 @@ const char *zmq_msg_gets (zmq_msg_t *msg_, const char *property_)
 
 int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 {
-    //  TODO: the function implementation can just call zmq_pollfd_poll with pollfd as NULL, however pollfd is not yet stable
+    //  TODO: the function implementation can just call zmq_pollfd_poll with
+    //  pollfd as NULL, however pollfd is not yet stable.
 #if defined ZMQ_POLL_BASED_ON_POLL
     if (unlikely (nitems_ < 0)) {
         errno = EINVAL;
