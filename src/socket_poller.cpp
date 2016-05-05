@@ -186,19 +186,14 @@ int zmq::socket_poller_t::remove (socket_base_t *socket_)
         return -1;
     }
 
+    items.erase(it);
+    need_rebuild = true;
+
     int thread_safe;
     size_t thread_safe_size = sizeof(int);
 
-    if (socket_->getsockopt (ZMQ_THREAD_SAFE, &thread_safe, &thread_safe_size) == -1)
-        return -1;
-
-    if (thread_safe) {
-        if (socket_->remove_signaler (&signaler) == -1)
-            return -1;
-    }
-
-    items.erase (it);
-    need_rebuild = true;
+    if (socket_->getsockopt (ZMQ_THREAD_SAFE, &thread_safe, &thread_safe_size) == 0 && thread_safe)
+        socket_->remove_signaler (&signaler);
 
     return 0;
 }

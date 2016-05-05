@@ -1281,6 +1281,12 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
 
 int zmq::socket_base_t::close ()
 {
+    ENTER_MUTEX ();
+    
+    //  Remove all existing signalers for thread safe sockets
+    if (thread_safe)
+        ((mailbox_safe_t*)mailbox)->clear_signalers();
+
     //  Mark the socket as dead
     tag = 0xdeadbeef;
 
@@ -1289,6 +1295,7 @@ int zmq::socket_base_t::close ()
     //  process.
     send_reap (this);
 
+    EXIT_MUTEX ();
     return 0;
 }
 

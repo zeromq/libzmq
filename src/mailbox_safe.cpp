@@ -52,12 +52,12 @@ zmq::mailbox_safe_t::~mailbox_safe_t ()
     sync->unlock ();
 }
 
-void zmq::mailbox_safe_t::add_signaler(signaler_t* signaler)
+void zmq::mailbox_safe_t::add_signaler (signaler_t* signaler)
 {
     signalers.push_back(signaler);
 }
 
-void zmq::mailbox_safe_t::remove_signaler(signaler_t* signaler)
+void zmq::mailbox_safe_t::remove_signaler (signaler_t* signaler)
 {
     std::vector<signaler_t*>::iterator it = signalers.begin();
 
@@ -69,6 +69,11 @@ void zmq::mailbox_safe_t::remove_signaler(signaler_t* signaler)
 
     if (it != signalers.end())
         signalers.erase(it);
+}
+
+void zmq::mailbox_safe_t::clear_signalers ()
+{
+    signalers.clear ();
 }
 
 void zmq::mailbox_safe_t::send (const command_t &cmd_)

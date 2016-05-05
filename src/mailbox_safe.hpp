@@ -57,8 +57,9 @@ namespace zmq
         int recv (command_t *cmd_, int timeout_);
 
         // Add signaler to mailbox which will be called when a message is ready
-        void add_signaler(signaler_t* signaler);
-        void remove_signaler(signaler_t* signaler);
+        void add_signaler (signaler_t* signaler);
+        void remove_signaler (signaler_t* signaler);
+        void clear_signalers ();
 
 #ifdef HAVE_FORK
         // close the file descriptors in the signaller. This is used in a forked
