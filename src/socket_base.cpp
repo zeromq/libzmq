@@ -1290,12 +1290,13 @@ int zmq::socket_base_t::close ()
     //  Mark the socket as dead
     tag = 0xdeadbeef;
 
+    EXIT_MUTEX ();
+
     //  Transfer the ownership of the socket from this application thread
     //  to the reaper thread which will take care of the rest of shutdown
     //  process.
     send_reap (this);
 
-    EXIT_MUTEX ();
     return 0;
 }
 
