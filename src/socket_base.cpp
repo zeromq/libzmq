@@ -1282,7 +1282,7 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
 int zmq::socket_base_t::close ()
 {
     ENTER_MUTEX ();
-    
+
     //  Remove all existing signalers for thread safe sockets
     if (thread_safe)
         ((mailbox_safe_t*)mailbox)->clear_signalers();
@@ -1514,14 +1514,12 @@ void zmq::socket_base_t::in_event ()
     //  of the reaper thread. Process any commands from other threads/sockets
     //  that may be available at the moment. Ultimately, the socket will
     //  be destroyed.
-    ENTER_MUTEX ();
 
     //  If the socket is thread safe we need to unsignal the reaper signaler
     if (thread_safe)
         reaper_signaler->recv();
 
     process_commands (0, false);
-    EXIT_MUTEX();
     check_destroy();
 }
 
