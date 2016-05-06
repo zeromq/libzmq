@@ -626,7 +626,6 @@ if test "x$enable_drafts" = "xyes"; then
     AC_MSG_NOTICE([Building stable and legacy API + draft API])
     AC_DEFINE(ZMQ_BUILD_DRAFT_API, 1, [Provide draft classes and methods])
     AC_SUBST(pkg_config_defines, "-DZMQ_BUILD_DRAFT_API=1")
-#    CPPFLAGS="-DZMQ_BUILD_DRAFT_API=1 $CPPFLAGS"
 else
     AC_MSG_NOTICE([Building stable and legacy API (no draft API)])
     AC_SUBST(pkg_config_defines, "")
