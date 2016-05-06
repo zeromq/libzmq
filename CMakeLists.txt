@@ -71,6 +71,11 @@ ELSE (ENABLE_DRAFTS)
     set (pkg_config_defines "")
 ENDIF (ENABLE_DRAFTS)
 
+option (WITH_MILITANT "Enable militant assertions" OFF)
+if (WITH_MILITANT)
+    add_definitions(-DZMQ_ACT_MILITANT)
+endif()
+
 set (POLLER "" CACHE STRING "Choose polling system. valid values are
                             kqueue, epoll, devpoll, poll or select [default=autodetect]")
 
