@@ -62,6 +62,7 @@ namespace zmq
 {
     const char *errno_to_string (int errno_);
     void zmq_abort (const char *errmsg_);
+    void print_backtrace (void);
 }
 
 #ifdef ZMQ_HAVE_WINDOWS

@@ -632,6 +632,16 @@ else
     AC_SUBST(pkg_config_defines, "")
 fi
 
+PKG_CHECK_MODULES(LIBUNWIND, [libunwind],
+    [
+        AC_DEFINE(HAVE_LIBUNWIND, 1, [The libunwind library is to be used])
+        AC_SUBST([LIBUNWIND_CFLAGS])
+        AC_SUBST([LIBUNWIND_LIBS])
+    ],
+    [
+        AC_MSG_WARN([Cannot find libunwind])
+    ])
+
 # Subst LIBZMQ_EXTRA_CFLAGS & CXXFLAGS & LDFLAGS
 AC_SUBST(LIBZMQ_EXTRA_CFLAGS)
 AC_SUBST(LIBZMQ_EXTRA_CXXFLAGS)
