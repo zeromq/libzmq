@@ -5,6 +5,7 @@ cmake_minimum_required(VERSION "2.8.1")
 PROJECT(tests)
 
 set(tests
+        test_ancillaries
         test_system
         test_pair_inproc
         test_pair_tcp

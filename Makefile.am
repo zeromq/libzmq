@@ -332,6 +332,7 @@ endif
 # tests
 #
 test_apps = \
+	tests/test_ancillaries \
 	tests/test_system \
 	tests/test_pair_inproc \
 	tests/test_pair_tcp \
@@ -396,6 +397,9 @@ test_apps = \
 	tests/test_heartbeats \
 	tests/test_stream_exceeds_buffer \
 	tests/test_pub_invert_matching
+
+tests_test_ancillaries_SOURCES = tests/test_ancillaries.cpp
+tests_test_ancillaries_LDADD = src/libzmq.la
 
 tests_test_system_SOURCES = tests/test_system.cpp
 tests_test_system_LDADD = src/libzmq.la
