@@ -237,7 +237,7 @@ int zmq::tcp_connecter_t::open ()
     s = open_socket (tcp_addr->family (), SOCK_STREAM, IPPROTO_TCP);
 
     //  IPv6 address family not supported, try automatic downgrade to IPv4.
-    if (s == -1 && tcp_addr->family () == AF_INET6
+    if (s == zmq::retired_fd && tcp_addr->family () == AF_INET6
     && errno == EAFNOSUPPORT
     && options.ipv6) {
         rc = addr->resolved.tcp_addr->resolve (

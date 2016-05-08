@@ -169,7 +169,7 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
     s = open_socket (address.family (), SOCK_STREAM, IPPROTO_TCP);
 
     //  IPv6 address family not supported, try automatic downgrade to IPv4.
-    if (s == -1 && address.family () == AF_INET6
+    if (s == zmq::retired_fd && address.family () == AF_INET6
     && errno == EAFNOSUPPORT
     && options.ipv6) {
         rc = address.resolve (addr_, true, false);
