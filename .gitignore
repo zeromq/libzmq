@@ -30,6 +30,7 @@ autom4te.cache
 .dirstamp
 .libs
 curve_keygen
+test_ancillaries
 test_heartbeats
 test_msg_ffn
 test_sockopt_hwm
