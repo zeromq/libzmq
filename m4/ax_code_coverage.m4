@@ -143,7 +143,14 @@ AC_DEFUN([AX_CODE_COVERAGE],[
 		CODE_COVERAGE_CPPFLAGS="-DNDEBUG"
 		CODE_COVERAGE_CFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
 		CODE_COVERAGE_CXXFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
-		CODE_COVERAGE_LDFLAGS="-lgcov"
+
+		dnl Libgcov is not required for the LLVM GCOV frontend
+		case "`$GCOV -version`" in
+			*LLVM*)
+				CODE_COVERAGE_LDFLAGS="";;
+			*)
+				CODE_COVERAGE_LDFLAGS="-lgcov";;
+		esac
 
 		AC_SUBST([CODE_COVERAGE_CPPFLAGS])
 		AC_SUBST([CODE_COVERAGE_CFLAGS])
