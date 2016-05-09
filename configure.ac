@@ -72,7 +72,7 @@ AX_VALGRIND_CHECK
 # Check whether to build a with debug symbols
 LIBZMQ_CHECK_ENABLE_DEBUG
 
-# Check wheter to enable code coverage
+# Check whether to enable code coverage
 LIBZMQ_WITH_GCOV
 
 AC_MSG_CHECKING([if TIPC is available and supports nonblocking connect])
