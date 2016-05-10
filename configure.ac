@@ -259,7 +259,7 @@ case "${host_os}" in
         libzmq_dso_visibility="no"
 
         if test "x$enable_static" = "xyes"; then
-            CPPFLAGS="-DZMQ_STATIC"
+            CPPFLAGS="-DZMQ_STATIC $CPPFLAGS"
         fi
         
 	# Set FD_SETSIZE to 1024
