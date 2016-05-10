@@ -168,6 +168,8 @@ void zmq::tune_tcp_maxrt (fd_t sockfd_, int timeout_)
     if (timeout_ <= 0)
         return;
 
+    LIBZMQ_UNUSED (sockfd_);
+
 #if defined (ZMQ_HAVE_WINDOWS) && defined (TCP_MAXRT)
     // msdn says it's supported in >= Vista, >= Windows Server 2003
     timeout_ /= 1000;    // in seconds
