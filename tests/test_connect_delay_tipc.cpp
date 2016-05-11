@@ -60,10 +60,10 @@ int main (void)
     val = 0;
     zmq_setsockopt (from, ZMQ_LINGER, &val, sizeof (val));
     // This pipe will not connect
-    rc = zmq_connect (from, "tipc://{5556,0}");
+    rc = zmq_connect (from, "tipc://{5556,0}@0.0.0");
     assert (rc == 0);
     // This pipe will
-    rc = zmq_connect (from, "tipc://{6555,0}");
+    rc = zmq_connect (from, "tipc://{6555,0}@0.0.0");
     assert (rc == 0);
 
     // We send 10 messages, 5 should just get stuck in the queue
@@ -130,10 +130,10 @@ int main (void)
     assert (rc == 0);
 
     // Connect to the invalid socket
-    rc = zmq_connect (from, "tipc://{5561,0}");
+    rc = zmq_connect (from, "tipc://{5561,0}@0.0.0");
     assert (rc == 0);
     // Connect to the valid socket
-    rc = zmq_connect (from, "tipc://{5560,0}");
+    rc = zmq_connect (from, "tipc://{5560,0}@0.0.0");
     assert (rc == 0);
 
     // Send 10 messages, all should be routed to the connected pipe
@@ -185,7 +185,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_bind (backend, "tipc://{5560,0,0}");
     assert (rc == 0);
-    rc = zmq_connect (frontend, "tipc://{5560,0}");
+    rc = zmq_connect (frontend, "tipc://{5560,0}@0.0.0");
     assert (rc == 0);
 
     //  Ping backend to frontend so we know when the connection is up

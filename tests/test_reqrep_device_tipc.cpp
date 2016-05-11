@@ -49,13 +49,13 @@ int main (void)
     //  Create a worker.
     void *rep = zmq_socket (ctx, ZMQ_REP);
     assert (rep);
-    rc = zmq_connect (rep, "tipc://{5560,0}");
+    rc = zmq_connect (rep, "tipc://{5560,0}@0.0.0");
     assert (rc == 0);
 
     //  Create a client.
     void *req = zmq_socket (ctx, ZMQ_REQ);
     assert (req);
-    rc = zmq_connect (req, "tipc://{5561,0}");
+    rc = zmq_connect (req, "tipc://{5561,0}@0.0.0");
     assert (rc == 0);
 
     //  Send a request.
