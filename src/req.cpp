@@ -28,6 +28,7 @@
 */
 
 #include "precompiled.hpp"
+#include "macros.hpp"
 #include "req.hpp"
 #include "err.hpp"
 #include "msg.hpp"
@@ -39,6 +40,7 @@ extern "C"
 {
     static void free_id (void *data, void *hint)
     {
+        LIBZMQ_UNUSED (hint);
         free (data);
     }
 }
