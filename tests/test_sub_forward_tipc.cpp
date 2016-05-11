@@ -49,13 +49,13 @@ int main (void)
     //  Create a publisher.
     void *pub = zmq_socket (ctx, ZMQ_PUB);
     assert (pub);
-    rc = zmq_connect (pub, "tipc://{5561,0}");
+    rc = zmq_connect (pub, "tipc://{5561,0}@0.0.0");
     assert (rc == 0);
 
     //  Create a subscriber.
     void *sub = zmq_socket (ctx, ZMQ_SUB);
     assert (sub);
-    rc = zmq_connect (sub, "tipc://{5560,0}");
+    rc = zmq_connect (sub, "tipc://{5560,0}@0.0.0");
     assert (rc == 0);
 
     //  Subscribe for all messages.

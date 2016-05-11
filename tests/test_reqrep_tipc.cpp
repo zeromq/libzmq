@@ -43,7 +43,7 @@ int main (void)
 
     void *sc = zmq_socket (ctx, ZMQ_REQ);
     assert (sc);
-    rc = zmq_connect (sc, "tipc://{5560,0}");
+    rc = zmq_connect (sc, "tipc://{5560,0}@0.0.0");
     assert (rc == 0);
 
     bounce (sb, sc);

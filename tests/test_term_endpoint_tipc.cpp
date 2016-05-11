@@ -34,7 +34,7 @@ int main (void)
     int rc;
     char buf[32];
     const char *ep = "tipc://{5560,0,0}";
-    const char *name = "tipc://{5560,0}";
+    const char *name = "tipc://{5560,0}@0.0.0";
 
     fprintf (stderr, "unbind endpoint test running...\n");
 

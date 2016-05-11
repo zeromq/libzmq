@@ -37,7 +37,7 @@ extern "C"
     {
         int rc;
 
-        rc = zmq_connect (s, "tipc://{5560,0}");
+        rc = zmq_connect (s, "tipc://{5560,0}@0.0.0");
         assert (rc == 0);
 
         //  Start closing the socket while the connecting process is underway.
