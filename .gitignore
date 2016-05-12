@@ -2,10 +2,8 @@ syntax: glob # for hg-git users
 /Makefile
 builds/Makefile
 builds/msvc/Makefile
-configure
 doc/Makefile
 Makefile.in
-configure
 libtool
 config
 config.status
