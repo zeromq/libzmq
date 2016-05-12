@@ -1110,8 +1110,9 @@ void *zmq_poller_new (void)
 
 int zmq_poller_destroy (void **poller_p_)
 {
-    void *poller = *poller_p_;
-    if (!poller || !((zmq::socket_poller_t*) poller)->check_tag ()) {
+    void *poller;
+    if (!poller_p_ || !(poller = *poller_p_) ||
+            !((zmq::socket_poller_t*) poller)->check_tag ()) {
         errno = EFAULT;
         return -1;
     }
