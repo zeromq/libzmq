@@ -64,6 +64,9 @@
 #else
 #include <intrin.h>
 #endif
+#else
+#include <atomic>
+#include <inttypes.h>
 #endif
 #include <ctype.h>
 #include <errno.h>
@@ -99,7 +102,6 @@
 #include <ifaddrs.h>
 #endif
 #include <intrin.h>
-#include <inttypes.h>
 #include <io.h>
 #include <ipexport.h>
 #include <iphlpapi.h>
@@ -123,7 +125,6 @@
 
 // standard C++ headers
 #include <algorithm>
-#include <atomic>
 #include <climits>
 #include <cmath>
 #include <cstddef>
