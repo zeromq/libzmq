@@ -2,7 +2,7 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup Label="Globals">
-    <_PropertySheetDisplayName>ZeroMQ Import Settings</_PropertySheetDisplayName>
+    <_PropertySheetDisplayName>ZMQ Import Settings</_PropertySheetDisplayName>
   </PropertyGroup>
   
   <!-- User Interface -->
