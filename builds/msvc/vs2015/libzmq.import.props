@@ -4,13 +4,13 @@
   <PropertyGroup Label="Globals">
     <_PropertySheetDisplayName>ZMQ Import Settings</_PropertySheetDisplayName>
   </PropertyGroup>
-  
+
   <!-- User Interface -->
 
   <ItemGroup Label="BuildOptionsExtension">
     <PropertyPageSchema Include="$(MSBuildThisFileDirectory)libzmq.import.xml" />
   </ItemGroup>
-  
+
   <!-- Configuration -->
 
   <ItemDefinitionGroup>
@@ -19,7 +19,7 @@
       <PreprocessorDefinitions Condition="'$(Option-gssapi)' == 'true'">HAVE_LIBGSSAPI_KRB5;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
-  
+
   <!-- Linkage -->
 
   <ItemDefinitionGroup>
@@ -33,7 +33,7 @@
       <AdditionalLibraryDirectories Condition="$(Configuration.IndexOf('Release')) != -1">$(ProjectDir)..\..\..\..\..\libzmq\bin\$(PlatformName)\Release\$(PlatformToolset)\$(Linkage-libzmq)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
-  
+
   <!-- Copy -->
 
   <Target Name="Linkage-libzmq-dynamic" AfterTargets="AfterBuild" Condition="'$(Linkage-libzmq)' == 'dynamic'">

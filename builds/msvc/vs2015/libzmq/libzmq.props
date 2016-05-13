@@ -6,15 +6,15 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
-  
-    <!-- User Interface -->
-  
+
+  <!-- User Interface -->
+
   <ItemGroup Label="BuildOptionsExtension">
     <PropertyPageSchema Include="$(MSBuildThisFileDirectory)$(ProjectName).xml" />
   </ItemGroup>
 
   <!-- Configuration -->
-  
+
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\;$(ProjectDir)..\..\..\..\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -36,9 +36,10 @@
   <!-- Dependencies -->
 
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)libsodium.import.props" Condition="'$(HAVE_LIBSODIUM)'=='1'" />
+    <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\..\libsodium\builds\msvc\vs2015\libsodium.import.props"
+            Condition="Exists('$(MSBuildThisFileDirectory)..\..\..\..\..\libsodium\builds\msvc\vs2015\libsodium.import.props')" /> 
   </ImportGroup>
-  
+
   <PropertyGroup Condition="'$(DefaultLinkage)' == 'dynamic'">
     <Linkage-libsodium Condition="'$(HAVE_LIBSODIUM)'=='1'">dynamic</Linkage-libsodium>
   </PropertyGroup>

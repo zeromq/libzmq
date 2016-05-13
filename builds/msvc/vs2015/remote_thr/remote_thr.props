@@ -21,10 +21,11 @@
   <!-- Dependencies -->
 
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)libzmq.import.props" />
-    <Import Project="$(SolutionDir)libsodium.import.props" Condition="'$(HAVE_LIBSODIUM)'=='1'" />
+    <Import Project="..\libzmq.import.props" />
+    <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\..\libsodium\builds\msvc\vs2015\libsodium.import.props"
+            Condition="Exists('$(MSBuildThisFileDirectory)..\..\..\..\..\libsodium\builds\msvc\vs2015\libsodium.import.props')" /> 
   </ImportGroup>
-
+  
   <PropertyGroup Condition="'$(DefaultLinkage)' == 'dynamic'">
     <Linkage-libzmq>dynamic</Linkage-libzmq>
     <Linkage-libsodium Condition="'$(HAVE_LIBSODIUM)'=='1'">dynamic</Linkage-libsodium>
@@ -36,7 +37,7 @@
   <PropertyGroup Condition="'$(DefaultLinkage)' == 'static'">
     <Linkage-libzmq>static</Linkage-libzmq>
     <Linkage-libsodium Condition="'$(HAVE_LIBSODIUM)'=='1'">static</Linkage-libsodium>
-  </PropertyGroup>  
+  </PropertyGroup>
 
   <!-- Messages -->
 
