@@ -1,5 +1,5 @@
-#ifndef __PLATFORM_H_INCLUDED__
-#define __PLATFORM_H_INCLUDED__
+#ifndef __PLATFORM_HPP_INCLUDED__
+#define __PLATFORM_HPP_INCLUDED__
 
 #define ZMQ_HAVE_WINDOWS
 
