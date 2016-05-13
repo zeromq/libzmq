@@ -33,7 +33,7 @@
 void client_thread (void *client)
 {
     char data = 0;
-    for (int count = 0; count < 100000; count++) {
+    for (int count = 0; count < 15000; count++) {
         int rc = zmq_send (client, &data, 1, 0);
         assert (rc == 1);
     }
