@@ -401,7 +401,8 @@ test_apps = \
 	tests/test_sockopt_hwm \
 	tests/test_heartbeats \
 	tests/test_stream_exceeds_buffer \
-	tests/test_pub_invert_matching
+	tests/test_pub_invert_matching \
+	tests/test_dgram
 
 tests_test_ancillaries_SOURCES = tests/test_ancillaries.cpp
 tests_test_ancillaries_LDADD = src/libzmq.la

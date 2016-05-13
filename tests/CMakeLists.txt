@@ -121,6 +121,7 @@ IF (ENABLE_DRAFTS)
         test_radio_dish
         test_udp
         test_scatter_gather
+        test_dgram
     )
 ENDIF (ENABLE_DRAFTS)
 
