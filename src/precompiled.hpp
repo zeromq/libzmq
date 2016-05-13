@@ -32,74 +32,12 @@
 
 #ifdef _MSC_VER
 
-// Windows headers
-#include "platform.hpp"
-
-#if defined ZMQ_HAVE_WINDOWS
-#define WIN32_LEAN_AND_MEAN		// speeds up compilation by removing rarely used windows definitions from headers
 #include "windows.hpp"
-#else
-#include <unistd.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netinet/tcp.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <fcntl.h>
-#if defined ZMQ_HAVE_OPENBSD
-#define ucred sockpeercred
-#endif
-#endif
 
-
-// system headers
-#include <intrin.h>
-#include <io.h>
-#include <rpc.h>
-#include <sys/stat.h>
+// standard C headers
 #include <assert.h>
-#if defined _MSC_VER
-#if defined _WIN32_WCE
-#include <cmnintrin.h>
-#else
-#include <intrin.h>
-#endif
-#endif
 #include <ctype.h>
 #include <errno.h>
-
-#ifdef HAVE_LIBGSSAPI_KRB5
-#include <string.h>
-#include <string>
-
-#include "msg.hpp"
-#include "session_base.hpp"
-#include "err.hpp"
-#include "gssapi_server.hpp"
-#include "wire.hpp"
-
-#include <gssapi/gssapi.h>
-#endif
-#ifdef HAVE_LIBGSSAPI_KRB5
-
-#if !defined(ZMQ_HAVE_FREEBSD) && !defined(ZMQ_HAVE_DRAGONFLY)
-#include <gssapi/gssapi_generic.h>
-#endif
-#include <gssapi/gssapi_krb5.h>
-
-#include "mechanism.hpp"
-#include "options.hpp"
-#include <gssapi/gssapi_krb5.h>
-#endif
-#if ((defined ZMQ_HAVE_LINUX || defined ZMQ_HAVE_FREEBSD ||\
-    defined ZMQ_HAVE_OSX || defined ZMQ_HAVE_OPENBSD ||\
-    defined ZMQ_HAVE_QNXNTO || defined ZMQ_HAVE_NETBSD ||\
-    defined ZMQ_HAVE_DRAGONFLY || defined ZMQ_HAVE_GNU)\
-    && defined ZMQ_HAVE_IFADDRS)
-#include <ifaddrs.h>
-#endif
-#include <intrin.h>
-#include <inttypes.h>
 #include <io.h>
 #include <ipexport.h>
 #include <iphlpapi.h>
@@ -123,7 +61,6 @@
 
 // standard C++ headers
 #include <algorithm>
-#include <atomic>
 #include <climits>
 #include <cmath>
 #include <cstddef>
@@ -137,6 +74,33 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
+#if _MSC_VER >= 1800
+#include <inttypes.h>
+#endif
+
+#if _MSC_VER >= 1700
+#include <atomic>
+#endif
+
+#if defined _WIN32_WCE
+#include <cmnintrin.h>
+#else
+#include <intrin.h>
+#endif
+
+#if defined HAVE_LIBGSSAPI_KRB5
+#include "err.hpp"
+#include "msg.hpp"
+#include "mechanism.hpp"
+#include "session_base.hpp"
+#include "gssapi_server.hpp"
+#include "wire.hpp"
+#include <gssapi/gssapi.h>
+#include <gssapi/gssapi_krb5.h>
+#endif
+
+#include "options.hpp"
 
 #endif // _MSC_VER
 
