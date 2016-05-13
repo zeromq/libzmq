@@ -401,8 +401,7 @@ test_apps = \
 	tests/test_sockopt_hwm \
 	tests/test_heartbeats \
 	tests/test_stream_exceeds_buffer \
-	tests/test_pub_invert_matching \
-	tests/test_dgram
+	tests/test_pub_invert_matching
 
 tests_test_ancillaries_SOURCES = tests/test_ancillaries.cpp
 tests_test_ancillaries_LDADD = src/libzmq.la
@@ -730,7 +729,8 @@ test_apps += tests/test_poller \
 	tests/test_timers \
 	tests/test_radio_dish \
 	tests/test_udp \
-	tests/test_scatter_gather
+	tests/test_scatter_gather \
+	tests/test_dgram
 
 tests_test_poller_SOURCES = tests/test_poller.cpp
 tests_test_poller_LDADD = src/libzmq.la
@@ -752,6 +752,9 @@ tests_test_udp_LDADD = src/libzmq.la
 
 tests_test_scatter_gather_SOURCES = tests/test_scatter_gather.cpp
 tests_test_scatter_gather_LDADD = src/libzmq.la
+
+tests_test_dgram_SOURCES = tests/test_dgram.cpp
+tests_test_dgram_LDADD = src/libzmq.la
 endif
 
 check_PROGRAMS = ${test_apps}
