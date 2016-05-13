@@ -45,6 +45,8 @@ src_libzmq_la_SOURCES = \
 	src/decoder.hpp \
 	src/devpoll.cpp \
 	src/devpoll.hpp \
+	src/dgram.cpp \
+	src/dgram.hpp \
 	src/dish.cpp \
 	src/dish.hpp \
 	src/dist.cpp \

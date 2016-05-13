@@ -523,6 +523,7 @@ ZMQ_EXPORT void zmq_threadclose (void* thread);
 #define ZMQ_DISH 15
 #define ZMQ_GATHER 16
 #define ZMQ_SCATTER 17
+#define ZMQ_DGRAM 18
 
 /*  DRAFT Socket methods.                                                     */
 ZMQ_EXPORT int zmq_join (void *s, const char *group);
