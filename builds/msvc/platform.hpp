@@ -5,7 +5,7 @@
 
 // MSVC build configuration is controlled via options exposed in the Visual
 // Studio user interface. The option to use libsodium is not exposed in the
-// user interface unless a sibling `libsodium` directory to the that of this
+// user interface unless a sibling `libsodium` directory to that of this
 // repository exists and contains the following files:
 //
 // \builds\msvc\vs2015\libsodium.import.props
