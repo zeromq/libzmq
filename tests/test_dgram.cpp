@@ -88,8 +88,6 @@ int str_recv_from (void *s_, char **ptr_content_, void **ptr_address_, size_t *p
     *ptr_content_ = (char*) malloc (sizeof(char) * (zmq_msg_size (&msg) + 1));
     memcpy (*ptr_content_, zmq_msg_data (&msg), zmq_msg_size (&msg));
     *ptr_content_ [zmq_msg_size (&msg)] = '\0';
-    
-    printf( "received string: %s", *ptr_content_ );
 
     zmq_msg_close (&msg);
 
@@ -123,6 +121,7 @@ int main (void)
     rc = str_recv_from (listener, &message_string, &address, &address_length);
     assert (rc == 0);
     assert (address_length == sizeof(sockaddr_in));
+    assert (strcmp(message_string, "Is someone there ?") == 0);
     
     rc = str_send_to (sender, "Yes, there is !", address, address_length);
     assert (rc == 0);
@@ -148,6 +147,7 @@ int main (void)
     rc = str_recv_from (listener, &message_string, &address, &address_length);
     assert (rc == 0);
     assert (address_length == sizeof(sockaddr_in));
+    assert (strcmp(message_string, "Is someone there ?") == 0);
     
     rc = str_send_to (sender, "Yes, there is [MULTICAST]!", address, address_length);
     assert (rc == 0);
