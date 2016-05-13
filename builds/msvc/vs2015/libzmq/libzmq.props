@@ -19,6 +19,8 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\;$(ProjectDir)..\..\..\..\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnablePREfast>false</EnablePREfast>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>precompiled.hpp</PrecompiledHeaderFile>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;FD_SETSIZE=16384;ZMQ_USE_SELECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Option-tweet)' == 'true'">ZMQ_USE_TWEETNACL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Option-sodium)' == 'true'">ZMQ_USE_LIBSODIUM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
