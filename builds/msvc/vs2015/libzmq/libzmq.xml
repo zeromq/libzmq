@@ -3,16 +3,29 @@
   <Rule Name="libzmq-uiextension" PageTemplate="tool" DisplayName="ZMQ Options" SwitchPrefix="/" Order="1">
     <Rule.Categories>
       <Category Name="openpgm" DisplayName="openpgm" />
+      <Category Name="sodium" DisplayName="sodium" />
       <Category Name="gssapi" DisplayName="gssapi" />
     </Rule.Categories>
     <Rule.DataSource>
       <DataSource Persistence="ProjectFile" ItemType="" />
     </Rule.DataSource>
-    <EnumProperty Name="Option-openpgm" DisplayName="Enable OpenPGM" Description="Enable the OpenPGM build option" Category="openpgm">
+    <EnumProperty Name="Option-tweet" DisplayName="Enable Tweet NaCl" Description="Enable Tweet NaCl build option (overrides Sodium)" Category="tweet">
+      <EnumValue Name="" DisplayName="No" />
+      <EnumValue Name="true" DisplayName="Yes" />
+    </EnumProperty>
+    <EnumProperty Name="Option-sodium" DisplayName="Enable Sodium" Description="Enable Sodium build option" Category="sodium">
+      <EnumValue Name="" DisplayName="No" />
+      <EnumValue Name="true" DisplayName="Yes" />
+    </EnumProperty>
+    <EnumProperty Name="Option-openpgm" DisplayName="Enable OpenPGM" Description="Enable OpenPGM build option" Category="openpgm">
       <EnumValue Name="" DisplayName="No" />
       <EnumValue Name="true" DisplayName="Yes" />
     </EnumProperty>
     <EnumProperty Name="Option-gssapi" DisplayName="Enable GSS API" Description="Enable GSS API build option" Category="gssapi">
+      <EnumValue Name="" DisplayName="No" />
+      <EnumValue Name="true" DisplayName="Yes" />
+    </EnumProperty>
+    <EnumProperty Name="Option-draftapi" DisplayName="Enable Draft API" Description="Enable Draft API build option" Category="draftapi">
       <EnumValue Name="" DisplayName="No" />
       <EnumValue Name="true" DisplayName="Yes" />
     </EnumProperty>
