@@ -30,9 +30,21 @@
 #ifndef __ZMQ_PRECOMPILED_HPP_INCLUDED__
 #define __ZMQ_PRECOMPILED_HPP_INCLUDED__
 
-#ifdef _MSC_VER
+#include "platform.hpp"
 
+// This must be included before any windows headers are compiled.
+#if defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
+#endif
+
+// 0MQ definitions and exported functions
+#include "../include/zmq.h"
+
+// 0MQ DRAFT definitions and exported functions
+#include "zmq_draft.h"
+
+// TODO: expand pch implementation to non-windows builds.
+#ifdef _MSC_VER
 
 // standard C headers
 #include <assert.h>
@@ -103,89 +115,5 @@
 #include "options.hpp"
 
 #endif // _MSC_VER
-
-
-// 0MQ definitions and exported functions
-#include "platform.hpp"
-#include "../include/zmq.h"
-
-/******************************************************************************/
-/*  These functions are DRAFT and disabled in stable releases, and subject to */
-/*  change at ANY time until declared stable.                                 */
-/******************************************************************************/
-
-#ifndef ZMQ_BUILD_DRAFT_API
-
-/*  DRAFT Socket types.                                                       */
-#define ZMQ_SERVER 12
-#define ZMQ_CLIENT 13
-#define ZMQ_RADIO 14
-#define ZMQ_DISH 15
-#define ZMQ_GATHER 16
-#define ZMQ_SCATTER 17
-
-/*  DRAFT Socket methods.                                                     */
-int zmq_join (void *s, const char *group);
-int zmq_leave (void *s, const char *group);
-
-/*  DRAFT Msg methods.                                                        */
-int zmq_msg_set_routing_id(zmq_msg_t *msg, uint32_t routing_id);
-uint32_t zmq_msg_routing_id(zmq_msg_t *msg);
-int zmq_msg_set_group(zmq_msg_t *msg, const char *group);
-const char *zmq_msg_group(zmq_msg_t *msg);
-
-/******************************************************************************/
-/*  Poller polling on sockets,fd and thread-safe sockets                      */
-/******************************************************************************/
-
-#define ZMQ_HAVE_POLLER
-
-typedef struct zmq_poller_event_t
-{
-    void *socket;
-#if defined _WIN32
-    SOCKET fd;
-#else
-    int fd;
-#endif
-    void *user_data;
-    short events;
-} zmq_poller_event_t;
-
-void *zmq_poller_new (void);
-int  zmq_poller_destroy (void **poller_p);
-int  zmq_poller_add (void *poller, void *socket, void *user_data, short events);
-int  zmq_poller_modify (void *poller, void *socket, short events);
-int  zmq_poller_remove (void *poller, void *socket);
-int  zmq_poller_wait (void *poller, zmq_poller_event_t *event, long timeout);
-
-#if defined _WIN32
-int zmq_poller_add_fd (void *poller, SOCKET fd, void *user_data, short events);
-int zmq_poller_modify_fd (void *poller, SOCKET fd, short events);
-int zmq_poller_remove_fd (void *poller, SOCKET fd);
-#else
-int zmq_poller_add_fd (void *poller, int fd, void *user_data, short events);
-int zmq_poller_modify_fd (void *poller, int fd, short events);
-int zmq_poller_remove_fd (void *poller, int fd);
-#endif
-
-/******************************************************************************/
-/*  Scheduling timers                                                         */
-/******************************************************************************/
-
-#define ZMQ_HAVE_TIMERS
-
-typedef void (zmq_timer_fn)(int timer_id, void *arg);
-
-void *zmq_timers_new (void);
-int   zmq_timers_destroy (void **timers_p);
-int   zmq_timers_add (void *timers, size_t interval, zmq_timer_fn handler, void *arg);
-int   zmq_timers_cancel (void *timers, int timer_id);
-int   zmq_timers_set_interval (void *timers, int timer_id, size_t interval);
-int   zmq_timers_reset (void *timers, int timer_id);
-long  zmq_timers_timeout (void *timers);
-int   zmq_timers_execute (void *timers);
-
-#endif // ZMQ_BUILD_DRAFT_API
 
 #endif //ifndef __ZMQ_PRECOMPILED_HPP_INCLUDED__

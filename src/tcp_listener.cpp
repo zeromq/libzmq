@@ -33,7 +33,6 @@
 #include <string>
 #include <stdio.h>
 
-#include "platform.hpp"
 #include "tcp_listener.hpp"
 #include "stream_engine.hpp"
 #include "io_thread.hpp"
@@ -44,9 +43,7 @@
 #include "tcp.hpp"
 #include "socket_base.hpp"
 
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
+#ifndef ZMQ_HAVE_WINDOWS
 #include <unistd.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>

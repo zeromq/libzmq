@@ -29,15 +29,10 @@
 
 #include "precompiled.hpp"
 #include "macros.hpp"
-#include "platform.hpp"
 
 #if defined ZMQ_HAVE_OPENPGM
 
 #include <new>
-
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#endif
 
 #include "pgm_receiver.hpp"
 #include "session_base.hpp"

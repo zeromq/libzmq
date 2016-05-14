@@ -28,19 +28,14 @@
 */
 
 #include "precompiled.hpp"
+#include "macros.hpp"
+#include "err.hpp"
+#include "trie.hpp"
+
 #include <stdlib.h>
 
 #include <new>
 #include <algorithm>
-
-#include "macros.hpp"
-#include "platform.hpp"
-#if defined ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#endif
-
-#include "err.hpp"
-#include "trie.hpp"
 
 zmq::trie_t::trie_t () :
     refcnt (0),

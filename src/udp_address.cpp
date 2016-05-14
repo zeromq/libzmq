@@ -33,14 +33,11 @@
 
 #include "macros.hpp"
 #include "udp_address.hpp"
-#include "platform.hpp"
 #include "stdint.hpp"
 #include "err.hpp"
 #include "ip.hpp"
 
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
+#ifndef ZMQ_HAVE_WINDOWS
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <netdb.h>

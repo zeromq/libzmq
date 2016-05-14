@@ -46,8 +46,9 @@
 #include "socket_base.hpp"
 #include "err.hpp"
 
+// TODO: determine if this is an issue, since zmq.h is being loaded from pch.
 // zmq.h must be included *after* poll.h for AIX to build properly
-#include "../include/zmq.h"
+//#include "../include/zmq.h"
 
 int capture(
         class zmq::socket_base_t *capture_,

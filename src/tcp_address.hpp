@@ -30,11 +30,7 @@
 #ifndef __ZMQ_TCP_ADDRESS_HPP_INCLUDED__
 #define __ZMQ_TCP_ADDRESS_HPP_INCLUDED__
 
-#include "platform.hpp"
-
-#if defined ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
+#if !defined ZMQ_HAVE_WINDOWS
 #include <sys/socket.h>
 #include <netinet/in.h>
 #endif

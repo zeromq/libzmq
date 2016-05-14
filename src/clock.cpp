@@ -29,7 +29,6 @@
 
 #include "precompiled.hpp"
 #include "clock.hpp"
-#include "platform.hpp"
 #include "likely.hpp"
 #include "config.hpp"
 #include "err.hpp"

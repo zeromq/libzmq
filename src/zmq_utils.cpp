@@ -29,7 +29,6 @@
 
 #include "precompiled.hpp"
 #include "macros.hpp"
-#include "platform.hpp"
 
 #include "clock.hpp"
 #include "err.hpp"
@@ -39,15 +38,13 @@
 #include <assert.h>
 
 #if !defined ZMQ_HAVE_WINDOWS
-#   include <unistd.h>
-#else
-#   include "windows.hpp"
+#include <unistd.h>
 #endif
 
 #if defined (ZMQ_USE_TWEETNACL)
-#   include "tweetnacl.h"
+#include "tweetnacl.h"
 #elif defined (ZMQ_USE_LIBSODIUM)
-#   include "sodium.h"
+#include "sodium.h"
 #endif
 
 void zmq_sleep (int seconds_)

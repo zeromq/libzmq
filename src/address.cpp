@@ -29,7 +29,6 @@
 
 #include "precompiled.hpp"
 #include "macros.hpp"
-#include "platform.hpp"
 #include "address.hpp"
 #include "ctx.hpp"
 #include "err.hpp"
