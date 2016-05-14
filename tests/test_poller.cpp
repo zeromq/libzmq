@@ -156,7 +156,15 @@ int main (void)
     rc = zmq_close (client);
     assert (rc == 0);
 #endif
-    rc = zmq_poller_destroy(&poller);
+
+    // Test error - null poller pointers
+    rc = zmq_poller_destroy (NULL);
+    assert (rc == -1 && errno == EFAULT);
+    void *null_poller = NULL;
+    rc = zmq_poller_destroy (&null_poller);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_poller_destroy (&poller);
     assert(rc == 0);
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
