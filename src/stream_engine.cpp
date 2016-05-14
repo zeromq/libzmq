@@ -29,7 +29,6 @@
 
 #include "precompiled.hpp"
 #include "macros.hpp"
-#include "platform.hpp"
 
 #include <string.h>
 #include <new>

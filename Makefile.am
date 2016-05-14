@@ -131,6 +131,8 @@ src_libzmq_la_SOURCES = \
 	src/poller.hpp \
 	src/poller_base.cpp \
 	src/poller_base.hpp \
+	src/precompiled.cpp \
+	src/precompiled.hpp \
 	src/proxy.cpp \
 	src/proxy.hpp \
 	src/pub.cpp \
@@ -234,7 +236,8 @@ src_libzmq_la_SOURCES = \
 	src/decoder_allocators.cpp \
 	src/decoder_allocators.hpp \
 	src/socket_poller.cpp \
-	src/socket_poller.hpp
+	src/socket_poller.hpp \
+	src/zmq_draft.h
 
 if USE_TWEETNACL
 src_libzmq_la_SOURCES += \

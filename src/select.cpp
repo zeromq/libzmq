@@ -31,10 +31,7 @@
 #include "select.hpp"
 #if defined ZMQ_USE_SELECT
 
-#include "platform.hpp"
-
 #if defined ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
 #elif defined ZMQ_HAVE_HPUX
 #include <sys/param.h>
 #include <sys/types.h>

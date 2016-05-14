@@ -28,13 +28,8 @@
 */
 
 #include "precompiled.hpp"
-#include "platform.hpp"
 
 #ifdef ZMQ_HAVE_OPENPGM
-
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#endif
 
 #ifdef ZMQ_HAVE_LINUX
 #include <poll.h>

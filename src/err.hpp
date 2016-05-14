@@ -40,18 +40,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "platform.hpp"
-
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
+#ifndef ZMQ_HAVE_WINDOWS
 #include <netdb.h>
 #endif
 
 #include "likely.hpp"
 
 //  0MQ-specific error codes are defined in zmq.h
-#include "../include/zmq.h"
 
 // EPROTO is not used by OpenBSD and maybe other platforms.
 #ifndef EPROTO

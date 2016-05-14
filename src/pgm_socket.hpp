@@ -30,12 +30,9 @@
 #ifndef __PGM_SOCKET_HPP_INCLUDED__
 #define __PGM_SOCKET_HPP_INCLUDED__
 
-#include "platform.hpp"
-
 #if defined ZMQ_HAVE_OPENPGM
 
 #ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
 #define __PGM_WININT_H__
 #endif
 

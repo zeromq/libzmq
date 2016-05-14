@@ -31,7 +31,6 @@
 #include <sys/types.h>
 
 #include "err.hpp"
-#include "platform.hpp"
 #include "socks.hpp"
 #include "tcp.hpp"
 

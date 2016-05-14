@@ -67,6 +67,7 @@
     <Import Project="$(ProjectDir)..\..\vs2015\$(ProjectName)\$(ProjectName).props" />
   </ImportGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\src\zmq_draft.h" />
     <ClInclude Include="..\..\platform.hpp" />
     <ClInclude Include="..\..\resource.h" />
     <ClInclude Include="..\..\..\..\include\zmq.h" />

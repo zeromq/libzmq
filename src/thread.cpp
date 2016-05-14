@@ -31,7 +31,6 @@
 #include "macros.hpp"
 #include "thread.hpp"
 #include "err.hpp"
-#include "platform.hpp"
 
 #ifdef ZMQ_HAVE_WINDOWS
 

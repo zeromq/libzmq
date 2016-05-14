@@ -27,7 +27,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/*
+    The precompiled header is not used for c files so this is required here.
+*/
 #include "platform.hpp"
+
 #if defined (ZMQ_USE_TWEETNACL)
 
 /*

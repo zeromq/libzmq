@@ -32,18 +32,11 @@
 #include <string.h>
 #include <cmath>
 
-#include "platform.hpp"
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#endif
-
 #include "v2_protocol.hpp"
 #include "v2_decoder.hpp"
 #include "likely.hpp"
 #include "wire.hpp"
 #include "err.hpp"
-
-
 
 zmq::v2_decoder_t::v2_decoder_t (size_t bufsize_, int64_t maxmsgsize_) :
     shared_message_memory_allocator( bufsize_),

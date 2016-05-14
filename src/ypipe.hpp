@@ -32,7 +32,6 @@
 
 #include "atomic_ptr.hpp"
 #include "yqueue.hpp"
-#include "platform.hpp"
 #include "ypipe_base.hpp"
 
 namespace zmq

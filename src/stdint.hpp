@@ -30,8 +30,6 @@
 #ifndef __ZMQ_STDINT_HPP_INCLUDED__
 #define __ZMQ_STDINT_HPP_INCLUDED__
 
-#include "platform.hpp"
-
 #if defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_OPENVMS
 
 #include <inttypes.h>

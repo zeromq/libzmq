@@ -29,10 +29,7 @@
 
 #include "precompiled.hpp"
 #include "macros.hpp"
-#include "platform.hpp"
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
+#ifndef ZMQ_HAVE_WINDOWS
 #include <unistd.h>
 #endif
 

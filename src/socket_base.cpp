@@ -33,10 +33,8 @@
 #include <algorithm>
 
 #include "macros.hpp"
-#include "platform.hpp"
 
 #if defined ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
 #if defined _MSC_VER
 #if defined _WIN32_WCE
 #include <cmnintrin.h>
@@ -60,7 +58,6 @@
 #include "pipe.hpp"
 #include "err.hpp"
 #include "ctx.hpp"
-#include "platform.hpp"
 #include "likely.hpp"
 #include "msg.hpp"
 #include "address.hpp"

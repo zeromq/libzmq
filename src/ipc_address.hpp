@@ -32,8 +32,6 @@
 
 #include <string>
 
-#include "platform.hpp"
-
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
 
 #include <sys/socket.h>

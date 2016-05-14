@@ -40,15 +40,13 @@
 #include <poll.h>
 #endif
 
+// TODO: determine if this is an issue, since zmq.h is being loaded from pch.
 // zmq.h must be included *after* poll.h for AIX to build properly
-#include "../include/zmq.h"
+//#include "../include/zmq.h"
 
-#if defined ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
+#if !defined ZMQ_HAVE_WINDOWS
 #include <unistd.h>
 #endif
-
 
 // XSI vector I/O
 #if defined ZMQ_HAVE_UIO
@@ -59,7 +57,6 @@ struct iovec {
     size_t iov_len;
 };
 #endif
-
 
 #include <string.h>
 #include <stdlib.h>

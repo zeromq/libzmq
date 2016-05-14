@@ -32,8 +32,6 @@
 
 #ifdef ZMQ_HAVE_CURVE
 
-#include "platform.hpp"
-
 #if defined (ZMQ_USE_TWEETNACL)
 #   include "tweetnacl.h"
 #elif defined (ZMQ_USE_LIBSODIUM)

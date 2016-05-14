@@ -11,3 +11,4 @@ ECHO NOTE: Ignore warnings not applicable to native code: "Issue: Assembly outsi
 ECHO.
 ECHO Completed nuget packaging build. The package is in the following folder:
 CD
+PAUSE

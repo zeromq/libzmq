@@ -33,7 +33,6 @@
 #include <vector>
 #include <stddef.h>
 
-#include "platform.hpp"
 #include "signaler.hpp"
 #include "fd.hpp"
 #include "config.hpp"
