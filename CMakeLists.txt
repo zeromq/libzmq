@@ -436,6 +436,7 @@ set (cxx-sources
         curve_server.cpp
         dealer.cpp
         devpoll.cpp
+        dgram.cpp
         dist.cpp
         epoll.cpp
         err.cpp

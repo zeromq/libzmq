@@ -17,7 +17,7 @@ namespace zmq
     class udp_engine_t : public io_object_t, public i_engine
     {
         public:
-            udp_engine_t ();
+            udp_engine_t (const options_t &options_);
             ~udp_engine_t ();
 
             int init (address_t *address_, bool send_, bool recv_);
@@ -51,6 +51,8 @@ namespace zmq
             session_base_t* session;
             handle_t handle;
             address_t *address;
+            
+            options_t options;
 
             unsigned char out_buffer[MAX_UDP_MSG];
             unsigned char in_buffer[MAX_UDP_MSG];

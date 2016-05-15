@@ -43,12 +43,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "err.hpp"
 #include "ip.hpp"
 
-zmq::udp_engine_t::udp_engine_t() :
+zmq::udp_engine_t::udp_engine_t(const options_t &options_) :
     plugged (false),
     fd(-1),
     session(NULL),
     handle(NULL),
     address(NULL),
+    options(options_),
     send_enabled(false),
     recv_enabled(false)
 {
@@ -165,10 +166,23 @@ void zmq::udp_engine_t::out_event()
         size_t body_size = body_msg.size ();
         size_t size = group_size + body_size + 1;
 
-        // TODO: check if larger than maximum size
-        out_buffer[0] = (unsigned char) group_size;
-        memcpy (out_buffer + 1, group_msg.data (), group_size);
-        memcpy (out_buffer + 1 + group_size, body_msg.data (), body_size);
+        struct sockaddr* out_address = (struct sockaddr*) address->resolved.udp_addr->dest_addr ();
+        socklen_t out_addrlen = address->resolved.udp_addr->dest_addrlen ();
+        
+        if (options.raw_socket) {
+            if (group_size > 0) {
+                out_address = (struct sockaddr*) group_msg.data();  
+                out_addrlen = group_size;
+                size = body_size;
+            }
+            memcpy (out_buffer, body_msg.data (), body_size);
+        }
+        else {
+            // TODO: check if larger than maximum size
+            out_buffer[0] = (unsigned char) group_size;
+            memcpy (out_buffer + 1, group_msg.data (), group_size);
+            memcpy (out_buffer + 1 + group_size, body_msg.data (), body_size);
+        }
 
         rc = group_msg.close ();
         errno_assert (rc == 0);
@@ -182,9 +196,7 @@ void zmq::udp_engine_t::out_event()
             (int) address->resolved.udp_addr->dest_addrlen ());
         wsa_assert (rc != SOCKET_ERROR);
 #else
-        rc = sendto (fd, out_buffer, size, 0,
-            address->resolved.udp_addr->dest_addr (),
-            address->resolved.udp_addr->dest_addrlen ());
+        rc = sendto (fd, out_buffer, size, 0, out_address, out_addrlen);
         errno_assert (rc != -1);
 #endif
     }
@@ -208,8 +220,10 @@ void zmq::udp_engine_t::restart_output()
 
 void zmq::udp_engine_t::in_event()
 {
+  struct sockaddr_in in_address;
+  socklen_t in_addrlen;
 #ifdef ZMQ_HAVE_WINDOWS
-    int nbytes = recv(fd, (char*) in_buffer, MAX_UDP_MSG, 0);
+    int nbytes = recvfrom(fd, (char*) in_buffer, MAX_UDP_MSG, 0, (sockaddr*) &address, &addrlen);
     const int last_error = WSAGetLastError();
     if (nbytes == SOCKET_ERROR) {
         wsa_assert(
@@ -219,7 +233,7 @@ void zmq::udp_engine_t::in_event()
         return;
     }
 #else
-    int nbytes = recv(fd, in_buffer, MAX_UDP_MSG, 0);
+    int nbytes = recvfrom(fd, in_buffer, MAX_UDP_MSG, 0, (sockaddr*) &in_address, &in_addrlen);
     if (nbytes == -1) {
         errno_assert(errno != EBADF
             && errno != EFAULT
@@ -229,20 +243,33 @@ void zmq::udp_engine_t::in_event()
     }
 #endif
 
-    int group_size = in_buffer[0];
-
-    //  This doesn't fit, just ingore
-    if (nbytes - 1 < group_size)
-        return;
-
-    int body_size = nbytes - 1 - group_size;
-
+    void* group_buffer;
+    int group_size;
+    int body_size;
     msg_t msg;
+    
+    if (options.raw_socket) {
+        group_buffer = (void*) &(in_address);
+        group_size = in_addrlen;
+      
+        body_size = nbytes - 1;
+    }
+    else {
+        group_buffer = in_buffer + 1;
+        group_size = in_buffer[0];
+
+        //  This doesn't fit, just ingore
+        if (nbytes - 1 < group_size)
+            return;
+
+        body_size = nbytes - 1 - group_size;
+    }
+    
     int rc = msg.init_size (group_size);
     errno_assert (rc == 0);
     msg.set_flags (msg_t::more);
-    memcpy (msg.data (), in_buffer + 1, group_size);
-
+    memcpy (msg.data (), group_buffer, group_size);
+    
     rc = session->push_msg (&msg);
     errno_assert (rc == 0 || (rc == -1 && errno == EAGAIN));
 
