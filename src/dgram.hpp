@@ -30,15 +30,17 @@
 #ifndef __ZMQ_DGRAM_HPP_INCLUDED__
 #define __ZMQ_DGRAM_HPP_INCLUDED__
 
-#include <map>
-
-#include "router.hpp"
+#include "blob.hpp"
+#include "socket_base.hpp"
+#include "session_base.hpp"
 
 namespace zmq
 {
 
     class ctx_t;
+    class msg_t;
     class pipe_t;
+    class io_thread_t;
 
     class dgram_t :
         public socket_base_t
@@ -54,49 +56,24 @@ namespace zmq
         int xrecv (zmq::msg_t *msg_);
         bool xhas_in ();
         bool xhas_out ();
+        blob_t get_credential () const;
         void xread_activated (zmq::pipe_t *pipe_);
         void xwrite_activated (zmq::pipe_t *pipe_);
         void xpipe_terminated (zmq::pipe_t *pipe_);
-        int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
+
     private:
-        //  Generate peer's id and update lookup map
-        void identify_peer (pipe_t *pipe_);
 
-        //  Fair queueing object for inbound pipes.
-        fq_t fq;
+        zmq::pipe_t *pipe;
 
+        zmq::pipe_t *last_in;
+
+        blob_t saved_credential;
+        
         //  True iff there is a message held in the pre-fetch buffer.
         bool prefetched;
 
-        //  If true, the receiver got the message part with
-        //  the peer's identity.
-        bool identity_sent;
-
-        //  Holds the prefetched identity.
-        msg_t prefetched_id;
-
-        //  Holds the prefetched message.
-        msg_t prefetched_msg;
-
-        struct outpipe_t
-        {
-            zmq::pipe_t *pipe;
-            bool active;
-        };
-
-        //  Outbound pipes indexed by the peer IDs.
-        typedef std::map <blob_t, outpipe_t> outpipes_t;
-        outpipes_t outpipes;
-
-        //  The pipe we are currently writing to.
-        zmq::pipe_t *current_out;
-
         //  If true, more outgoing message parts are expected.
         bool more_out;
-
-        //  Routing IDs are generated. It's a simple increment and wrap-over
-        //  algorithm. This value is the next ID to use (if not used already).
-        uint32_t next_rid;
 
         dgram_t (const dgram_t&);
         const dgram_t &operator = (const dgram_t&);
