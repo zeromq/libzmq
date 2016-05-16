@@ -29,69 +29,23 @@
 
 #include "testutil.hpp"
 
-int str_send_to (void *s_, const char *content_, const void *address_, const size_t addrlen_)
+void str_send_to (void *s_, const char *content_, const char *address_)
 {
-    zmq_msg_t msg;
-  
-    int rc = zmq_msg_init_size (&msg, addrlen_);
-    if (rc != 0)
-        return rc;
+    //  Send the address part
+    int rc = s_sendmore (s_, address_);
+    assert (rc > 0);
 
-    if (address_ != NULL)
-        memcpy (zmq_msg_data (&msg), address_, addrlen_);
-
-    rc = zmq_msg_send (&msg, s_, ZMQ_SNDMORE);
-    if (rc != 0) {
-        zmq_msg_close (&msg);
-        return rc;
-    }
-    
-    zmq_msg_close (&msg);
-    
-    rc = zmq_msg_init_size (&msg, strlen(content_));
-    if (rc != 0)
-        return rc;
-
-    memcpy (zmq_msg_data (&msg), content_, strlen(content_));
-    
-    rc = zmq_msg_send (&msg, s_, 0);
-
-    zmq_msg_close (&msg);
-
-    return rc;
+    rc = s_send (s_, content_);
+    assert (rc > 0);
 }
 
-int str_recv_from (void *s_, char **ptr_content_, void **ptr_address_, size_t *ptr_addrlen_)
+void str_recv_from (void *s_, char **ptr_content_, char **ptr_address_)
 {
-    zmq_msg_t msg;
-  
-    int rc = zmq_msg_init (&msg);
-    if (rc != 0)
-        return -1;
+    *ptr_address_ = s_recv (s_);
+    assert (ptr_address_);
 
-    rc = zmq_msg_recv (&msg, s_, ZMQ_RCVMORE);
-    if (rc == -1) {
-        zmq_msg_close(&msg);
-        return -1;
-    }
-
-    *ptr_addrlen_ = zmq_msg_size (&msg);
-    *ptr_address_ = malloc( *ptr_addrlen_ );
-    memcpy (*ptr_address_, zmq_msg_data (&msg), *ptr_addrlen_);
-    
-    rc = zmq_msg_recv (&msg, s_, 0);
-    if (rc == -1) {
-        zmq_msg_close(&msg);
-        return -1;
-    }
-    
-    *ptr_content_ = (char*) malloc (sizeof(char) * (zmq_msg_size (&msg) + 1));
-    memcpy (*ptr_content_, zmq_msg_data (&msg), zmq_msg_size (&msg));
-    *ptr_content_ [zmq_msg_size (&msg)] = '\0';
-
-    zmq_msg_close (&msg);
-
-    return rc;
+    *ptr_content_ = s_recv (s_);
+    assert (ptr_content_);
 }
 
 int main (void)
@@ -99,10 +53,9 @@ int main (void)
     setup_test_environment ();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
-    
+
     char* message_string;
-    void* address;
-    size_t address_length;
+    char* address;
 
     void *sender = zmq_socket (ctx, ZMQ_DGRAM);
     void *listener = zmq_socket (ctx, ZMQ_DGRAM);
@@ -110,47 +63,24 @@ int main (void)
     int rc = zmq_bind (listener, "udp://*:5556");
     assert (rc == 0);
 
-    rc = zmq_connect (sender, "udp://127.0.0.1:5556");
+    rc = zmq_bind (sender, "udp://*:5557");
     assert (rc == 0);
 
-    msleep (SETTLE_TIME);
+    str_send_to (sender, "Is someone there ?", "127.0.0.1:5556");
 
-    rc = str_send_to (sender, "Is someone there ?", NULL, 0);
-    assert (rc == 0);
-
-    rc = str_recv_from (listener, &message_string, &address, &address_length);
-    assert (rc == 0);
-    assert (address_length == sizeof(sockaddr_in));
+    str_recv_from (listener, &message_string, &address);    
     assert (strcmp(message_string, "Is someone there ?") == 0);
-    
-    rc = str_send_to (sender, "Yes, there is !", address, address_length);
-    assert (rc == 0);
+    assert (strcmp(address, "127.0.0.1:5557") == 0);
+    free (message_string);
 
-    rc = zmq_close (sender);
-    assert (rc == 0);
+    str_send_to (listener, "Yes, there is !", address);
+    free (address);
 
-    rc = zmq_close (listener);
-    assert (rc == 0);
-    
-    
-    rc = zmq_bind (listener, "udp://226.1.1.1:5556");
-    assert (rc == 0);
-
-    rc = zmq_connect (sender, "udp://226.1.1.1:5556");
-    assert (rc == 0);
-
-    msleep (SETTLE_TIME);
-
-    rc = str_send_to (sender, "Is someone there [MULTICAST]?", NULL, 0);
-    assert (rc == 0);
-
-    rc = str_recv_from (listener, &message_string, &address, &address_length);
-    assert (rc == 0);
-    assert (address_length == sizeof(sockaddr_in));
-    assert (strcmp(message_string, "Is someone there ?") == 0);
-    
-    rc = str_send_to (sender, "Yes, there is [MULTICAST]!", address, address_length);
-    assert (rc == 0);
+    str_recv_from (sender, &message_string, &address);
+    assert (strcmp(message_string, "Yes, there is !") == 0);
+    assert (strcmp(address, "127.0.0.1:5556") == 0);
+    free (message_string);
+    free (address);
 
     rc = zmq_close (sender);
     assert (rc == 0);
