@@ -95,6 +95,7 @@
 #include "dish.hpp"
 #include "gather.hpp"
 #include "scatter.hpp"
+#include "dgram.hpp"
 
 #define ENTER_MUTEX() \
     if (thread_safe) \
@@ -167,6 +168,9 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
             break;
         case ZMQ_SCATTER:
             s = new (std::nothrow) scatter_t (parent_, tid_, sid_);
+            break;
+        case ZMQ_DGRAM:
+            s = new (std::nothrow) dgram_t (parent_, tid_, sid_);
             break;
         default:
             errno = EINVAL;
@@ -304,7 +308,8 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
 #endif
 
     if (protocol_ == "udp" && (options.type != ZMQ_DISH &&
-                               options.type != ZMQ_RADIO)) {
+                               options.type != ZMQ_RADIO &&
+                               options.type != ZMQ_DGRAM)) {
         errno = ENOCOMPATPROTO;
         return -1;
     }
@@ -878,7 +883,7 @@ int zmq::socket_base_t::connect (const char *addr_)
 if (protocol  == "udp") {
     paddr->resolved.udp_addr = new (std::nothrow) udp_address_t ();
     alloc_assert (paddr->resolved.udp_addr);
-    rc = paddr->resolved.udp_addr->resolve (address.c_str(), options.type == ZMQ_DISH);
+    rc = paddr->resolved.udp_addr->resolve (address.c_str(), (options.type == ZMQ_DISH || options.type == ZMQ_DGRAM));
     if (rc != 0) {
         LIBZMQ_DELETE(paddr);
         EXIT_MUTEX ();

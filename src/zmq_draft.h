@@ -44,6 +44,7 @@
 #define ZMQ_DISH 15
 #define ZMQ_GATHER 16
 #define ZMQ_SCATTER 17
+#define ZMQ_DGRAM 18
 
 /*  DRAFT Socket methods.                                                     */
 int zmq_join (void *s, const char *group);

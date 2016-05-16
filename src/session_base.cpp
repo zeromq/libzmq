@@ -83,6 +83,7 @@ zmq::session_base_t *zmq::session_base_t::create (class io_thread_t *io_thread_,
     case ZMQ_CLIENT:
     case ZMQ_GATHER:
     case ZMQ_SCATTER:
+    case ZMQ_DGRAM:
         s = new (std::nothrow) session_base_t (io_thread_, active_,
             socket_, options_, addr_);
         break;
@@ -572,9 +573,9 @@ void zmq::session_base_t::start_connecting (bool wait_)
 #endif
 
     if (addr->protocol == "udp") {
-        zmq_assert (options.type == ZMQ_DISH || options.type == ZMQ_RADIO);
+        zmq_assert (options.type == ZMQ_DISH || options.type == ZMQ_RADIO || options.type == ZMQ_DGRAM);
 
-        udp_engine_t* engine = new (std::nothrow) udp_engine_t ();
+        udp_engine_t* engine = new (std::nothrow) udp_engine_t (options);
         alloc_assert (engine);
 
         bool recv = false;
@@ -586,6 +587,10 @@ void zmq::session_base_t::start_connecting (bool wait_)
         }
         else if (options.type == ZMQ_DISH) {
             send = false;
+            recv = true;
+        }
+        else if (options.type == ZMQ_DGRAM) {
+            send = true;
             recv = true;
         }
 
