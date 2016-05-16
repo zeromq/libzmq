@@ -95,8 +95,16 @@ int main (void)
     void *radio = zmq_socket (ctx, ZMQ_RADIO);
     void *dish = zmq_socket (ctx, ZMQ_DISH);
 
-    int rc = zmq_bind (dish, "udp://*:5556");
+    //  Connecting dish should fail
+    int rc = zmq_connect (dish, "udp://127.0.0.1:5556");
+    assert (rc == -1);
+
+    rc = zmq_bind (dish, "udp://*:5556");
     assert (rc == 0);
+
+    //  Bind radio should fail
+    rc = zmq_bind (radio, "udp://*:5556");
+    assert (rc == -1);
 
     rc = zmq_connect (radio, "udp://127.0.0.1:5556");
     assert (rc == 0);

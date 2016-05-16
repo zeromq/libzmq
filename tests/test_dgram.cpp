@@ -60,7 +60,11 @@ int main (void)
     void *sender = zmq_socket (ctx, ZMQ_DGRAM);
     void *listener = zmq_socket (ctx, ZMQ_DGRAM);
 
-    int rc = zmq_bind (listener, "udp://*:5556");
+    //  Connecting dgram shoudl fail
+    int rc = zmq_connect (listener, "udp://127.0.0.1:5556");
+    assert (rc == -1);
+
+    rc = zmq_bind (listener, "udp://*:5556");
     assert (rc == 0);
 
     rc = zmq_bind (sender, "udp://*:5557");
@@ -68,7 +72,7 @@ int main (void)
 
     str_send_to (sender, "Is someone there ?", "127.0.0.1:5556");
 
-    str_recv_from (listener, &message_string, &address);    
+    str_recv_from (listener, &message_string, &address);
     assert (strcmp(message_string, "Is someone there ?") == 0);
     assert (strcmp(address, "127.0.0.1:5557") == 0);
     free (message_string);
