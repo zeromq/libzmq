@@ -167,7 +167,7 @@ void zmq::udp_engine_t::sockaddr_to_msg (zmq::msg_t *msg, sockaddr_in* addr)
     char* name = inet_ntoa(addr->sin_addr);
 
     char port[6];
-    snprintf (port, 6, "%d", (int)ntohs (addr->sin_port));
+    sprintf (port, "%d", (int)ntohs (addr->sin_port));
 
     int size = strlen (name) + strlen (port) + 1 + 1; //  Colon + NULL
     int rc = msg->init_size (size);
@@ -287,9 +287,9 @@ void zmq::udp_engine_t::restart_output()
 void zmq::udp_engine_t::in_event()
 {
   struct sockaddr_in in_address;
-  socklen_t in_addrlen;
+  socklen_t in_addrlen = sizeof(sockaddr_in);
 #ifdef ZMQ_HAVE_WINDOWS
-    int nbytes = recvfrom(fd, (char*) in_buffer, MAX_UDP_MSG, 0, (sockaddr*) &address, &addrlen);
+    int nbytes = recvfrom(fd, (char*) in_buffer, MAX_UDP_MSG, 0, (sockaddr*) &in_address, &in_addrlen);
     const int last_error = WSAGetLastError();
     if (nbytes == SOCKET_ERROR) {
         wsa_assert(
