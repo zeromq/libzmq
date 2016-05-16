@@ -40,7 +40,6 @@ zmq::dgram_t::dgram_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     socket_base_t (parent_, tid_, sid_),
     pipe (NULL),
     last_in (NULL),
-    prefetched (false),
     more_out (false)
 {
     options.type = ZMQ_DGRAM;
@@ -115,7 +114,7 @@ int zmq::dgram_t::xsend (msg_t *msg_)
         //  This is the last part of the message.
         more_out = false;
     }
-    
+
     // Push the message into the pipe.
     if (!pipe->write (msg_)) {
         errno = EAGAIN;
@@ -148,24 +147,11 @@ int zmq::dgram_t::xrecv (msg_t *msg_)
     }
     last_in = pipe;
 
-    if (prefetched) {
-        msg_->reset_flags (msg_t::more);
-        prefetched = false;
-    }
-    else {
-        msg_->set_flags (msg_t::more);
-        prefetched = true;
-    }
-
     return 0;
 }
 
 bool zmq::dgram_t::xhas_in ()
 {
-    //  We may already have a message pre-fetched.
-    if (prefetched)
-        return true;
-
     if (!pipe)
         return false;
 

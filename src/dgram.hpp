@@ -68,9 +68,6 @@ namespace zmq
         zmq::pipe_t *last_in;
 
         blob_t saved_credential;
-        
-        //  True iff there is a message held in the pre-fetch buffer.
-        bool prefetched;
 
         //  If true, more outgoing message parts are expected.
         bool more_out;
