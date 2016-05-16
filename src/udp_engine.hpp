@@ -6,6 +6,7 @@
 #include "i_engine.hpp"
 #include "address.hpp"
 #include "udp_address.hpp"
+#include "msg.hpp"
 
 #define MAX_UDP_MSG 8192
 
@@ -45,14 +46,21 @@ namespace zmq
 
         private:
 
+            int resolve_raw_address (char *addr_, int length_);
+            void sockaddr_to_msg (zmq::msg_t *msg, sockaddr_in* addr);
+
             bool plugged;
 
             fd_t fd;
             session_base_t* session;
             handle_t handle;
             address_t *address;
-            
+
             options_t options;
+
+            sockaddr_in raw_address;
+            const struct sockaddr* out_address;
+            socklen_t out_addrlen;
 
             unsigned char out_buffer[MAX_UDP_MSG];
             unsigned char in_buffer[MAX_UDP_MSG];
