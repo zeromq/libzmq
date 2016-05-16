@@ -556,14 +556,72 @@ int zmq::socket_base_t::bind (const char *addr_)
         return rc;
     }
 
-    if (protocol == "pgm" || protocol == "epgm" || protocol == "norm" || protocol == "udp") {
+    if (protocol == "pgm" || protocol == "epgm" || protocol == "norm") {
         //  For convenience's sake, bind can be used interchangeable with
-        //  connect for PGM, EPGM, NORM and UDP transports.
+        //  connect for PGM, EPGM, NORM transports.
         EXIT_MUTEX ();
         rc = connect (addr_);
         if (rc != -1)
             options.connected = true;
         return rc;
+    }
+
+    if (protocol == "udp") {
+        if (!(options.type == ZMQ_DGRAM || options.type == ZMQ_DISH)) {
+            errno = ENOCOMPATPROTO;
+            EXIT_MUTEX ();
+            return -1;
+        }
+
+        //  Choose the I/O thread to run the session in.
+        io_thread_t *io_thread = choose_io_thread (options.affinity);
+        if (!io_thread) {
+            errno = EMTHREAD;
+            EXIT_MUTEX ();
+            return -1;
+        }
+
+        address_t *paddr = new (std::nothrow) address_t (protocol, address, this->get_ctx ());
+        alloc_assert (paddr);
+
+        paddr->resolved.udp_addr = new (std::nothrow) udp_address_t ();
+        alloc_assert (paddr->resolved.udp_addr);
+        rc = paddr->resolved.udp_addr->resolve (address.c_str(), true);
+        if (rc != 0) {
+            LIBZMQ_DELETE(paddr);
+            EXIT_MUTEX ();
+            return -1;
+        }
+
+        session_base_t *session = session_base_t::create (io_thread, true, this,
+            options, paddr);
+        errno_assert (session);
+
+        pipe_t *newpipe = NULL;
+
+        //  Create a bi-directional pipe.
+        object_t *parents [2] = {this, session};
+        pipe_t *new_pipes [2] = {NULL, NULL};
+
+        int hwms [2] = {options.sndhwm, options.rcvhwm};
+        bool conflates [2] = {false, false};
+        rc = pipepair (parents, new_pipes, hwms, conflates);
+        errno_assert (rc == 0);
+
+        //  Attach local end of the pipe to the socket object.
+        attach_pipe (new_pipes [0], true);
+        newpipe = new_pipes [0];
+
+        //  Attach remote end of the pipe to the session object later on.
+        session->attach_pipe (new_pipes [1]);
+
+        //  Save last endpoint URI
+        paddr->to_string (last_endpoint);
+
+        add_endpoint (addr_, (own_t *) session, newpipe);
+
+        EXIT_MUTEX ();
+        return 0;
     }
 
     //  Remaining transports require to be run in an I/O thread, so at this
@@ -881,9 +939,15 @@ int zmq::socket_base_t::connect (const char *addr_)
 #endif
 
 if (protocol  == "udp") {
+    if (options.type != ZMQ_RADIO) {
+        errno = ENOCOMPATPROTO;
+        EXIT_MUTEX ();
+        return -1;
+    }
+
     paddr->resolved.udp_addr = new (std::nothrow) udp_address_t ();
     alloc_assert (paddr->resolved.udp_addr);
-    rc = paddr->resolved.udp_addr->resolve (address.c_str(), (options.type == ZMQ_DISH || options.type == ZMQ_DGRAM));
+    rc = paddr->resolved.udp_addr->resolve (address.c_str(), false);
     if (rc != 0) {
         LIBZMQ_DELETE(paddr);
         EXIT_MUTEX ();
@@ -1284,7 +1348,7 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
 int zmq::socket_base_t::close ()
 {
     ENTER_MUTEX ();
-    
+
     //  Remove all existing signalers for thread safe sockets
     if (thread_safe)
         ((mailbox_safe_t*)mailbox)->clear_signalers();
