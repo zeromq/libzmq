@@ -134,6 +134,7 @@ test_socketopt_hwm
 test_use_fd_ipc
 test_use_fd_tcp
 test_pub_invert_matching
+test_dgram
 tests/test*.log
 tests/test*.trs
 src/platform.hpp*
