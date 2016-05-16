@@ -99,18 +99,16 @@ int zmq::dgram_t::xsend (msg_t *msg_)
 
     //  If this is the first part of the message it's the ID of the
     //  peer to send the message to.
-    if (!more_out) {
-        //  If we have malformed message (prefix with no subsequent message) then ignore it.
-        if (msg_->flags () & msg_t::more) {
+    if (!more_out) {        
+        if (!(msg_->flags () & msg_t::more)) {
             errno = EINVAL;
             return -1;
         }
+
         //  Expect one more message frame.
         more_out = true;
     }
     else {
-        //  Ignore the MORE flag
-        msg_->reset_flags (msg_t::more);
         //  This is the last part of the message.
         more_out = false;
     }
