@@ -180,16 +180,31 @@ void zmq::udp_engine_t::sockaddr_to_msg (zmq::msg_t *msg, sockaddr_in* addr)
     strcat (address, port);
 }
 
-int zmq::udp_engine_t::resolve_raw_address (char *name_, int length_)
+int zmq::udp_engine_t::resolve_raw_address (char *name_, size_t length_)
 {
-    const char *delimiter = strrchr (name_, ':');
+    memset (&raw_address, 0, sizeof raw_address);
+
+    const char *delimiter = NULL;
+
+    // Find delimiter, cannot use memrchr as it is not supported on windows
+    if (length_ != 0) {
+        int chars_left = length_;
+        char *current_char = name_ + length_;
+        do {
+            if (*(--current_char) == ':') {
+                delimiter = current_char;
+                break;
+            }
+        } while (--chars_left != 0);
+    }
+
     if (!delimiter) {
         errno = EINVAL;
         return -1;
     }
 
     std::string addr_str (name_, delimiter - name_);
-    std::string port_str (delimiter + 1);
+    std::string port_str (delimiter + 1, name_ + length_ - delimiter - 1);
 
     //  Parse the port number (0 is not a valid port).
     uint16_t port = (uint16_t) atoi (port_str.c_str ());

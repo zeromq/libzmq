@@ -46,7 +46,7 @@ namespace zmq
 
         private:
 
-            int resolve_raw_address (char *addr_, int length_);
+            int resolve_raw_address (char *addr_, size_t length_);
             void sockaddr_to_msg (zmq::msg_t *msg, sockaddr_in* addr);
 
             bool plugged;
