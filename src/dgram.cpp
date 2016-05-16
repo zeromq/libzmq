@@ -97,7 +97,7 @@ int zmq::dgram_t::xsend (msg_t *msg_)
         errno_assert (rc == 0);
         return -1;
     }
-  
+
     //  If this is the first part of the message it's the ID of the
     //  peer to send the message to.
     if (!more_out) {
@@ -115,25 +115,13 @@ int zmq::dgram_t::xsend (msg_t *msg_)
         //  This is the last part of the message.
         more_out = false;
     }
-
-    // Close the remote connection if user has asked to do so
-    // by sending zero length message.
-    // Pending messages in the pipe will be dropped (on receiving term- ack)
-    if (msg_->size () == 0) {
-      pipe->terminate (false);
-      int rc = msg_->close ();
-      errno_assert (rc == 0);
-      rc = msg_->init ();
-      errno_assert (rc == 0);
-      pipe = NULL;
-      return 0;
-    }
-    // Push the message into the pipe. 
+    
+    // Push the message into the pipe.
     if (!pipe->write (msg_)) {
         errno = EAGAIN;
         return -1;
     }
-      
+
     if (!(msg_->flags () & msg_t::more))
         pipe->flush ();
 
@@ -149,7 +137,7 @@ int zmq::dgram_t::xrecv (msg_t *msg_)
     //  Deallocate old content of the message.
     int rc = msg_->close ();
     errno_assert (rc == 0);
-  
+
     if (!pipe || !pipe->read (msg_)) {
         //  Initialise the output parameter to be a 0-byte message.
         rc = msg_->init ();
@@ -159,7 +147,7 @@ int zmq::dgram_t::xrecv (msg_t *msg_)
         return -1;
     }
     last_in = pipe;
-    
+
     if (prefetched) {
         msg_->reset_flags (msg_t::more);
         prefetched = false;
@@ -188,7 +176,7 @@ bool zmq::dgram_t::xhas_out ()
 {
     //if (more_out)
     //    return false;
-  
+
     if (!pipe)
         return false;
 
