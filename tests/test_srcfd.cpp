@@ -89,7 +89,8 @@ int main (void)
     assert (rc == 0);
 
     char host [NI_MAXHOST];
-    rc = getnameinfo ((struct sockaddr*) &ss, addrlen, host, sizeof host, NULL, 0, NI_NUMERICHOST);
+    rc = getnameinfo ((struct sockaddr*) &ss, addrlen, host, sizeof host,
+            NULL, 0, NI_NUMERICHOST);
     assert (rc == 0);
 
     // assert it is localhost which connected
