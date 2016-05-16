@@ -941,6 +941,7 @@ int zmq::socket_base_t::connect (const char *addr_)
 if (protocol  == "udp") {
     if (options.type != ZMQ_RADIO) {
         errno = ENOCOMPATPROTO;
+        LIBZMQ_DELETE(paddr);
         EXIT_MUTEX ();
         return -1;
     }
