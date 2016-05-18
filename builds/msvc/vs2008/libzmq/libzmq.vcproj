@@ -106,6 +106,7 @@
       <File RelativePath="..\..\..\..\src\ctx.cpp" />
       <File RelativePath="..\..\..\..\src\dealer.cpp" />
       <File RelativePath="..\..\..\..\src\devpoll.cpp" />
+      <File RelativePath="..\..\..\..\src\dgram.cpp" />
       <File RelativePath="..\..\..\..\src\dish.cpp" />
       <File RelativePath="..\..\..\..\src\dist.cpp" />
       <File RelativePath="..\..\..\..\src\epoll.cpp" />
@@ -181,12 +182,14 @@
       <File RelativePath="..\..\..\..\src\array.hpp" />
       <File RelativePath="..\..\..\..\src\atomic_counter.hpp" />
       <File RelativePath="..\..\..\..\src\atomic_ptr.hpp" />
+      <File RelativePath="..\..\..\..\src\blob.hpp" />
       <File RelativePath="..\..\..\..\src\clock.hpp" />
       <File RelativePath="..\..\..\..\src\command.hpp" />
       <File RelativePath="..\..\..\..\src\config.hpp" />
       <File RelativePath="..\..\..\..\src\ctx.hpp" />
       <File RelativePath="..\..\..\..\src\decoder.hpp" />
       <File RelativePath="..\..\..\..\src\devpoll.hpp" />
+      <File RelativePath="..\..\..\..\src\dgram.hpp" />
       <File RelativePath="..\..\..\..\src\dish.hpp" />
       <File RelativePath="..\..\..\..\src\dist.hpp" />
       <File RelativePath="..\..\..\..\src\encoder.hpp" />
