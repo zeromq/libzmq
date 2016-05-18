@@ -16,6 +16,9 @@
     <ClCompile Include="..\..\..\..\src\devpoll.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\src\dgram.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\..\src\dist.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -282,6 +285,9 @@
     <ClInclude Include="..\..\..\..\src\atomic_ptr.hpp">
       <Filter>src\include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\src\blob.hpp">
+      <Filter>src\include</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\..\src\clock.hpp">
       <Filter>src\include</Filter>
     </ClInclude>
@@ -295,6 +301,9 @@
       <Filter>src\include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\devpoll.hpp">
+      <Filter>src\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\dgram.hpp">
       <Filter>src\include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\dist.hpp">
@@ -565,6 +574,9 @@
       <Filter>src\include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\src\tweetnacl.h">
+      <Filter>src\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\src\zmq_draft.h">
       <Filter>src\include</Filter>
     </ClInclude>
   </ItemGroup>

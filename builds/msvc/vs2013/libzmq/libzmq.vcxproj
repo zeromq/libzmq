@@ -67,14 +67,15 @@
     <Import Project="$(ProjectDir)..\..\vs2015\$(ProjectName)\$(ProjectName).props" />
   </ImportGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\src\zmq_draft.h" />
     <ClInclude Include="..\..\platform.hpp" />
     <ClInclude Include="..\..\resource.h" />
     <ClInclude Include="..\..\..\..\include\zmq.h" />
+    <ClInclude Include="..\..\..\..\src\zmq_draft.h" />
     <ClInclude Include="..\..\..\..\src\address.hpp" />
     <ClInclude Include="..\..\..\..\src\array.hpp" />
     <ClInclude Include="..\..\..\..\src\atomic_counter.hpp" />
     <ClInclude Include="..\..\..\..\src\atomic_ptr.hpp" />
+    <ClInclude Include="..\..\..\..\src\blob.hpp" />
     <ClInclude Include="..\..\..\..\src\client.hpp" />
     <ClInclude Include="..\..\..\..\src\clock.hpp" />
     <ClInclude Include="..\..\..\..\src\command.hpp" />
@@ -86,6 +87,7 @@
     <ClInclude Include="..\..\..\..\src\decoder.hpp" />
     <ClInclude Include="..\..\..\..\src\decoder_allocators.hpp" />
     <ClInclude Include="..\..\..\..\src\devpoll.hpp" />
+    <ClInclude Include="..\..\..\..\src\dgram.hpp" />
     <ClInclude Include="..\..\..\..\src\dish.hpp" />
     <ClInclude Include="..\..\..\..\src\dist.hpp" />
     <ClInclude Include="..\..\..\..\src\encoder.hpp" />
@@ -179,6 +181,7 @@
     <ClCompile Include="..\..\..\..\src\dealer.cpp" />
     <ClCompile Include="..\..\..\..\src\decoder_allocators.cpp" />
     <ClCompile Include="..\..\..\..\src\devpoll.cpp" />
+    <ClCompile Include="..\..\..\..\src\dgram.cpp" />
     <ClCompile Include="..\..\..\..\src\dish.cpp" />
     <ClCompile Include="..\..\..\..\src\dist.cpp" />
     <ClCompile Include="..\..\..\..\src\epoll.cpp" />
