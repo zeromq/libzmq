@@ -167,9 +167,9 @@ void zmq::udp_engine_t::sockaddr_to_msg (zmq::msg_t *msg, sockaddr_in* addr)
     char* name = inet_ntoa(addr->sin_addr);
 
     char port[6];
-    sprintf (port, "%d", (int)ntohs (addr->sin_port));
+    sprintf (port, "%d", (int) ntohs (addr->sin_port));
 
-    int size = strlen (name) + strlen (port) + 1 + 1; //  Colon + NULL
+    int size = (int) strlen (name) + (int) strlen (port) + 1 + 1; //  Colon + NULL
     int rc = msg->init_size (size);
     errno_assert (rc == 0);
     msg->set_flags (msg_t::more);
@@ -188,7 +188,7 @@ int zmq::udp_engine_t::resolve_raw_address (char *name_, size_t length_)
 
     // Find delimiter, cannot use memrchr as it is not supported on windows
     if (length_ != 0) {
-        int chars_left = length_;
+        int chars_left = (int) length_;
         char *current_char = name_ + length_;
         do {
             if (*(--current_char) == ':') {
