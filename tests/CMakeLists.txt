@@ -65,6 +65,8 @@ set(tests
         test_stream_timeout
         test_xpub_manual
         test_xpub_welcome_msg
+        test_base85
+        test_sodium
 )
 if(NOT WIN32)
   list(APPEND tests

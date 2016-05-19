@@ -196,11 +196,8 @@ int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key)
     uint8_t public_key [32];
     uint8_t secret_key [32];
 
-    int rc = crypto_box_keypair (public_key, secret_key);
-    //  Is there a sensible errno to set here (no, it cannot fail)?
-    if (rc)
-        return rc;
-
+    // Return codes are suppressed as none of these can actually fail.
+    crypto_box_keypair (public_key, secret_key);
     zmq_z85_encode (z85_public_key, public_key, 32);
     zmq_z85_encode (z85_secret_key, secret_key, 32);
 
@@ -232,11 +229,8 @@ int zmq_curve_public (char *z85_public_key, const char *z85_secret_key)
     if (zmq_z85_decode (secret_key, z85_secret_key) == NULL)
         return -1;
 
-    int rc = crypto_scalarmult_base (public_key, secret_key);
-    //  Is there a sensible errno to set here (no, it cannot fail)?
-    if (rc)
-        return rc;
-
+    // Return codes are suppressed as none of these can actually fail.
+    crypto_scalarmult_base (public_key, secret_key);
     zmq_z85_encode (z85_public_key, public_key, 32);
 
     return 0;

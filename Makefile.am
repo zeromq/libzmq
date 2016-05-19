@@ -401,7 +401,9 @@ test_apps = \
 	tests/test_sockopt_hwm \
 	tests/test_heartbeats \
 	tests/test_stream_exceeds_buffer \
-	tests/test_pub_invert_matching
+	tests/test_pub_invert_matching \
+	tests/test_base85 \
+	tests/test_sodium
 
 tests_test_ancillaries_SOURCES = tests/test_ancillaries.cpp
 tests_test_ancillaries_LDADD = src/libzmq.la
@@ -605,6 +607,12 @@ tests_test_stream_exceeds_buffer_LDADD = src/libzmq.la
 
 tests_test_pub_invert_matching_SOURCES = tests/test_pub_invert_matching.cpp
 tests_test_pub_invert_matching_LDADD = src/libzmq.la
+
+tests_test_base85_SOURCES = tests/test_base85.cpp
+tests_test_base85_LDADD = src/libzmq.la
+
+tests_test_sodium_SOURCES = tests/test_sodium.cpp
+tests_test_sodium_LDADD = src/libzmq.la
 
 if !ON_MINGW
 if !ON_CYGWIN
