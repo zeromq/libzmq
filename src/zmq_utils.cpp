@@ -197,12 +197,47 @@ int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key)
     uint8_t secret_key [32];
 
     int rc = crypto_box_keypair (public_key, secret_key);
-    //  Is there a sensible errno to set here?
+    //  Is there a sensible errno to set here (no, it cannot fail)?
     if (rc)
         return rc;
 
     zmq_z85_encode (z85_public_key, public_key, 32);
     zmq_z85_encode (z85_secret_key, secret_key, 32);
+
+    return 0;
+#else
+    (void) z85_public_key, (void) z85_secret_key;
+    errno = ENOTSUP;
+    return -1;
+#endif
+}
+
+//  --------------------------------------------------------------------------
+//  Derive the public key from a private key using tweetnacl or libsodium.
+//  Derived key will be 40 byte z85-encoded string.
+//  Returns 0 on success, -1 on failure, setting errno.
+//  Sets errno = ENOTSUP in the absence of a CURVE library.
+
+int zmq_curve_public (char *z85_public_key, const char *z85_secret_key)
+{
+#if defined (ZMQ_HAVE_CURVE)
+#   if crypto_box_PUBLICKEYBYTES != 32 \
+    || crypto_box_SECRETKEYBYTES != 32
+#       error "CURVE encryption library not built correctly"
+#   endif
+
+    uint8_t public_key[32];
+    uint8_t secret_key[32];
+
+    if (zmq_z85_decode (secret_key, z85_secret_key) == NULL)
+        return -1;
+
+    int rc = crypto_scalarmult_base (public_key, secret_key);
+    //  Is there a sensible errno to set here (no, it cannot fail)?
+    if (rc)
+        return rc;
+
+    zmq_z85_encode (z85_public_key, public_key, 32);
 
     return 0;
 #else
