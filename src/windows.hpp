@@ -37,7 +37,8 @@
 #define NOMINMAX          // Macros min(a,b) and max(a,b)
 #endif
 
-//  Set target version to Windows Server 2008, Windows Vista or higher. Windows XP (0x0501) is also supported but without client & server socket types.
+//  Set target version to Windows Server 2008, Windows Vista or higher.
+//  Windows XP (0x0501) is supported but without client & server socket types.
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0600
 #endif
@@ -62,7 +63,8 @@
 
 //  Workaround missing Mstcpip.h in mingw32 (MinGW64 provides this)
 //  __MINGW64_VERSION_MAJOR is only defined when using in mingw-w64
-#if defined __MINGW32__ && !defined SIO_KEEPALIVE_VALS && !defined __MINGW64_VERSION_MAJOR
+#if defined __MINGW32__ && !defined SIO_KEEPALIVE_VALS && \
+    !defined __MINGW64_VERSION_MAJOR
 struct tcp_keepalive {
     u_long onoff;
     u_long keepalivetime;
