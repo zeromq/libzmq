@@ -2,9 +2,11 @@
 <ProjectSchemaDefinitions xmlns="clr-namespace:Microsoft.Build.Framework.XamlTypes;assembly=Microsoft.Build.Framework">
   <Rule Name="libzmq-uiextension" PageTemplate="tool" DisplayName="ZMQ Options" SwitchPrefix="/" Order="1">
     <Rule.Categories>
-      <Category Name="openpgm" DisplayName="openpgm" />
+      <Category Name="tweet" DisplayName="tweet" />
       <Category Name="sodium" DisplayName="sodium" />
+      <Category Name="openpgm" DisplayName="openpgm" />
       <Category Name="gssapi" DisplayName="gssapi" />
+      <Category Name="draftapi" DisplayName="draftapi" />
     </Rule.Categories>
     <Rule.DataSource>
       <DataSource Persistence="ProjectFile" ItemType="" />
