@@ -183,6 +183,14 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
     //  Get the addresses.
     ifaddrs *ifa = NULL;
     const int rc = getifaddrs (&ifa);
+    if (rc != 0 && errno == EINVAL) {
+        // Windows Subsystem for Linux compatibility
+        LIBZMQ_UNUSED (nic_);
+        LIBZMQ_UNUSED (ipv6_);
+
+        errno = ENODEV;
+        return -1;
+    }
     errno_assert (rc == 0);
     zmq_assert (ifa != NULL);
 
