@@ -298,6 +298,11 @@ src_libzmq_la_CPPFLAGS += ${pgm_CFLAGS}
 src_libzmq_la_LIBADD += ${pgm_LIBS}
 endif
 
+if HAVE_SYSTEMD
+src_libzmq_la_CPPFLAGS += ${libsystemd_CFLAGS}
+src_libzmq_la_LIBADD += ${libsystemd_LIBS}
+endif
+
 if ENABLE_PERF
 noinst_PROGRAMS = \
 	perf/local_lat \
