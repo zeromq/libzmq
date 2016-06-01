@@ -277,7 +277,7 @@ void zmq::select_t::loop ()
         if (family_entries.size () > 1) {
             rc = WSAWaitForMultipleEvents (4, wsa_events.events, FALSE,
                 timeout ? timeout : INFINITE, FALSE);
-            wsa_assert (rc != WSA_WAIT_FAILED);
+            wsa_assert (rc != (int)WSA_WAIT_FAILED);
             zmq_assert (rc != WSA_WAIT_IO_COMPLETION);
 
             if (rc == WSA_WAIT_TIMEOUT)

@@ -47,7 +47,7 @@ zmq::udp_engine_t::udp_engine_t(const options_t &options_) :
     plugged (false),
     fd(-1),
     session(NULL),
-    handle(NULL),
+    handle((handle_t)NULL),
     address(NULL),
     options(options_),
     send_enabled(false),

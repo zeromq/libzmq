@@ -194,7 +194,7 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t tid_, int sid_, bool
     ctx_terminated (false),
     destroyed (false),
     poller(NULL),
-    handle(NULL),
+    handle((poller_t::handle_t)NULL),
     last_tsc (0),
     ticks (0),
     rcvmore (false),
