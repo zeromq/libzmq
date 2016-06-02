@@ -30,6 +30,10 @@
 #ifndef __ZMQ_FD_HPP_INCLUDED__
 #define __ZMQ_FD_HPP_INCLUDED__
 
+#if defined _WIN32
+#include <windows.hpp>
+#endif
+
 namespace zmq
 {
 #ifdef ZMQ_HAVE_WINDOWS

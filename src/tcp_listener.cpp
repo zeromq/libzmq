@@ -62,7 +62,7 @@ zmq::tcp_listener_t::tcp_listener_t (io_thread_t *io_thread_,
     own_t (io_thread_, options_),
     io_object_t (io_thread_),
     s (retired_fd),
-    handle(NULL),
+    handle((handle_t)NULL),
     socket (socket_)
 {
 }
