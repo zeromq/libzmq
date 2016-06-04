@@ -291,7 +291,7 @@ fi
 
 # CPU-specific optimizations
 case "${host_cpu}" in
-    *sparc*)
+    *sparc64*)
         AC_LANG_PUSH([C++])
         LIBZMQ_CHECK_LANG_FLAG_PREPEND([-mcpu=v9])
         AC_LANG_POP([C++])
