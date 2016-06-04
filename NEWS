@@ -29,6 +29,8 @@
 
 * Fixed #1542 - Fix a crash on Windows when port 5905 is in use.
 
+* Fixed #2021 - Fix building on sparc32.
+
 
 0MQ version 4.1.4 stable, released on 2015/12/18
 ================================================
