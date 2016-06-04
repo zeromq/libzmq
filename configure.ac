@@ -304,8 +304,8 @@ esac
 LIBZMQ_CHECK_DOC_BUILD
 
 # Check polling system
-LIBZMQ_CHECK_POLLER([CPPFLAGS="${CPPFLAGS} -D${libzmq_cv_poller_flag}"],
-    [AC_MSG_ERROR([Unable to continue without polling system])])
+# Check polling system, set appropriate macro in src/platform.hpp
+LIBZMQ_CHECK_POLLER
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -468,6 +468,7 @@ AC_ARG_WITH([norm],
 AC_MSG_CHECKING("with_norm_ext = ${with_norm_ext}")
 
 if test "x$with_norm_ext" != "xno"; then
+    AC_MSG_RESULT([yes])
     AC_DEFINE(ZMQ_HAVE_NORM, 1, [Have NORM protocol extension])
 
     if test "x$wwith_norm_ext" != "xyes"; then
@@ -475,8 +476,9 @@ if test "x$with_norm_ext" != "xno"; then
         LIBZMQ_EXTRA_CXXFLAGS="-I${norm_path}/include ${LIBZMQ_EXTRA_CXXFLAGS}"
         LIBZMQ_EXTRA_LDFLAGS="-I${norm_path}/include ${LIBZMQ_EXTRA_LDFLAGS}"
     fi
-
     LIBS="-lnorm $LIBS"
+else
+    AC_MSG_RESULT([no])
 fi
 
 # Set -Wall, -Werror and -pedantic
