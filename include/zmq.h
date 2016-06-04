@@ -1,4 +1,6 @@
-/*
+/*  =========================================================================
+    zmq - 0MQ lightweight messaging kernel
+
     Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
@@ -33,6 +35,7 @@
     In practice this means that the value of constants must not change, and
     that old values may not be reused for new constants.
     *************************************************************************
+    =========================================================================
 */
 
 #ifndef __ZMQ_H_INCLUDED__
@@ -112,6 +115,8 @@ extern "C" {
 #   include <stdint.h>
 #endif
 
+//  @interface
+//  zmq - 0MQ lightweight messaging kernel
 
 /******************************************************************************/
 /*  0MQ errors.                                                               */
@@ -604,6 +609,8 @@ ZMQ_EXPORT int   zmq_timers_set_interval (void *timers, int timer_id, size_t int
 ZMQ_EXPORT int   zmq_timers_reset (void *timers, int timer_id);
 ZMQ_EXPORT long  zmq_timers_timeout (void *timers);
 ZMQ_EXPORT int   zmq_timers_execute (void *timers);
+
+//  @end
 
 #endif // ZMQ_BUILD_DRAFT_API
 

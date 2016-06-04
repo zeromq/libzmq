@@ -1,0 +1,15 @@
+#! /bin/bash
+#
+#   mkmans - rebuild man page sources from classes
+#
+#   Author: Pieter Hintjens <ph@imatix.com>
+#   License: public domain
+#
+#   syntax: mkmans
+#
+
+rm -f *.xml    #   Makefile does not detect version differences for XML
+for FILE in z*.txt; do 
+    ./mkman $FILE
+done
+
