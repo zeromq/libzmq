@@ -16,6 +16,7 @@ env:
   - CXXFLAGS=-I${BUILD_PREFIX}/include
   - LDFLAGS=-L${BUILD_PREFIX}/lib
   - PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig
+  - DISTCHECK_CONFIGURE_FLAGS="--with-libsodium --prefix=${BUILD_PREFIX}"
 
 #   Build required projects first
 before_script:
@@ -32,5 +33,4 @@ before_script:
 
 #   Build and check this project
 script:
-- ./autogen.sh && ./configure --prefix=${BUILD_PREFIX} && make V=1 && make check
-- make install
+- ./autogen.sh && ./configure --with-libsodium --prefix=${BUILD_PREFIX} && make distcheck
