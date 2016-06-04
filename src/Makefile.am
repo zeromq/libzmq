@@ -40,6 +40,7 @@ libzmq_la_SOURCES = \
     kqueue.hpp \
     lb.hpp \
     likely.hpp \
+    macros.hpp \
     mailbox.hpp \
     mechanism.hpp  \
     msg.hpp \
