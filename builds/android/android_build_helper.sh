@@ -75,17 +75,17 @@ function android_build_env {
     
     if [ -z "$ANDROID_NDK_ROOT" ]; then
         ANDROID_BUILD_FAIL+=("Please set the ANDROID_NDK_ROOT environment variable")
-        ANDROID_BUILD_FAIL+=("  (eg. \"/home/user/android/android-ndk-r9d\")")
+        ANDROID_BUILD_FAIL+=("  (eg. \"/home/user/android/android-ndk-r11c\")")
     fi
     
     if [ -z "$TOOLCHAIN_PATH" ]; then
         ANDROID_BUILD_FAIL+=("Please set the TOOLCHAIN_PATH environment variable")
-        ANDROID_BUILD_FAIL+=("  (eg. \"/home/user/android/android-ndk-r9d/toolchains/arm-linux-androideabi-4.8/prebuilt/linux-x86_64/bin\")")
+        ANDROID_BUILD_FAIL+=("  (eg. \"/home/user/android/android-ndk-r11c/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin\")")
     fi
     
     if [ -z "$TOOLCHAIN_NAME" ]; then
         ANDROID_BUILD_FAIL+=("Please set the TOOLCHAIN_NAME environment variable")
-        ANDROID_BUILD_FAIL+=("  (eg. \"arm-linux-androideabi-4.8\")")
+        ANDROID_BUILD_FAIL+=("  (eg. \"arm-linux-androideabi-4.9\")")
     fi
     
     if [ -z "$TOOLCHAIN_HOST" ]; then
@@ -210,21 +210,21 @@ function _android_build_opts_process_cxx_stl {
         ;;
         esac
     ;;
-    gnustl_shared_48)
+    gnustl_shared_49)
         LIBS+=" -lgnustl_shared"
-        CPPFLAGS+=" -I${ANDROID_NDK_ROOT}/sources/cxx-stl/gnu-libstdc++/4.8/include"
+        CPPFLAGS+=" -I${ANDROID_NDK_ROOT}/sources/cxx-stl/gnu-libstdc++/4.9/include"
         case "${TOOLCHAIN_ARCH}" in
         arm)
-            LDFLAGS+=" -L${ANDROID_NDK_ROOT}/sources/cxx-stl/gnu-libstdc++/4.8/libs/armeabi"
-            CPPFLAGS+=" -I${ANDROID_NDK_ROOT}/sources/cxx-stl/gnu-libstdc++/4.8/libs/armeabi/include"
+            LDFLAGS+=" -L${ANDROID_NDK_ROOT}/sources/cxx-stl/gnu-libstdc++/4.9/libs/armeabi"
+            CPPFLAGS+=" -I${ANDROID_NDK_ROOT}/sources/cxx-stl/gnu-libstdc++/4.9/libs/armeabi/include"
         ;;
         x86)
-            LDFLAGS+=" -L${ANDROID_NDK_ROOT}/sources/cxx-stl/gnu-libstdc++/4.8/libs/x86"
-            CPPFLAGS+=" -I${ANDROID_NDK_ROOT}/sources/cxx-stl/gnu-libstdc++/4.8/libs/x86/include"
+            LDFLAGS+=" -L${ANDROID_NDK_ROOT}/sources/cxx-stl/gnu-libstdc++/4.9/libs/x86"
+            CPPFLAGS+=" -I${ANDROID_NDK_ROOT}/sources/cxx-stl/gnu-libstdc++/4.9/libs/x86/include"
         ;;
         mips)
-            LDFLAGS+=" -L${ANDROID_NDK_ROOT}/sources/cxx-stl/gnu-libstdc++/4.8/libs/mips"
-            CPPFLAGS+=" -I${ANDROID_NDK_ROOT}/sources/cxx-stl/gnu-libstdc++/4.8/libs/mips/include"
+            LDFLAGS+=" -L${ANDROID_NDK_ROOT}/sources/cxx-stl/gnu-libstdc++/4.9/libs/mips"
+            CPPFLAGS+=" -I${ANDROID_NDK_ROOT}/sources/cxx-stl/gnu-libstdc++/4.9/libs/mips/include"
         ;;
         *)
             ANDROID_BUILD_FAIL+=("Unknown combination for ANDROID_BUILD_CXXSTL and TOOLCHAIN_ARCH")
