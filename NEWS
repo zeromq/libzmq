@@ -15,6 +15,8 @@
 
 * Fixed #919 - ZMQ_LINGER (related to #1877)
 
+* Fixed #139 - "tempnam" is deprecated.
+
 
 0MQ version 4.0.7 stable, released on 2015/06/15
 ================================================

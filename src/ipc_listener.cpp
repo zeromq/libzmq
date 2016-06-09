@@ -123,10 +123,13 @@ int zmq::ipc_listener_t::set_address (const char *addr_)
     std::string addr (addr_);
 
     //  Allow wildcard file
-    if (addr[0] == '*') {
-        char *tmpstr = tempnam (NULL, NULL);
-        addr.assign (tmpstr);
-        free (tmpstr);
+    if (addr [0] == '*') {
+        char buffer [12] = "2134XXXXXX";
+        int fd = mkstemp (buffer);
+        if (fd == -1)
+            return -1;
+        addr.assign (buffer);
+        ::close (fd);
     }
 
     //  Get rid of the file associated with the UNIX domain socket that
