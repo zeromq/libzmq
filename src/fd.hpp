@@ -31,7 +31,7 @@
 #define __ZMQ_FD_HPP_INCLUDED__
 
 #if defined _WIN32
-#include <windows.hpp>
+#include "windows.hpp"
 #endif
 
 namespace zmq
