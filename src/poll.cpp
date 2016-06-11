@@ -32,8 +32,10 @@
 #if defined ZMQ_USE_POLL
 
 #include <sys/types.h>
+#if !defined ZMQ_HAVE_WINDOWS
 #include <sys/time.h>
 #include <poll.h>
+#endif
 #include <algorithm>
 
 #include "poll.hpp"
