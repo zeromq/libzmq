@@ -79,6 +79,10 @@ struct tcp_keepalive {
 #include <process.h>
 #endif
 
+#if ZMQ_USE_POLL
+static inline int poll(struct pollfd *pfd, unsigned long nfds, int timeout) { return WSAPoll(pfd, nfds, timeout); }
+#endif
+
 //  In MinGW environment AI_NUMERICSERV is not defined.
 #ifndef AI_NUMERICSERV
 #define AI_NUMERICSERV 0x0400

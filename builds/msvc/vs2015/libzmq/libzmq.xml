@@ -7,6 +7,7 @@
       <Category Name="openpgm" DisplayName="openpgm" />
       <Category Name="gssapi" DisplayName="gssapi" />
       <Category Name="draftapi" DisplayName="draftapi" />
+      <Category Name="usepoll" DisplayName="usepoll" />
     </Rule.Categories>
     <Rule.DataSource>
       <DataSource Persistence="ProjectFile" ItemType="" />
@@ -28,6 +29,10 @@
       <EnumValue Name="true" DisplayName="Yes" />
     </EnumProperty>
     <EnumProperty Name="Option-draftapi" DisplayName="Enable Draft API" Description="Enable Draft API build option" Category="draftapi">
+      <EnumValue Name="" DisplayName="No" />
+      <EnumValue Name="true" DisplayName="Yes" />
+    </EnumProperty>
+    <EnumProperty Name="Option-usepoll" DisplayName="Enable poll() usage (Vista+ only)" Description="Use poll() instead of select() for waiting on incoming data. Increases performance, but the binary will only run on Windows Vista or later." Category="usepoll">
       <EnumValue Name="" DisplayName="No" />
       <EnumValue Name="true" DisplayName="Yes" />
     </EnumProperty>
