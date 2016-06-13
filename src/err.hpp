@@ -78,6 +78,7 @@ namespace zmq
             if (errstr != NULL) {\
                 fprintf (stderr, "Assertion failed: %s (%s:%d)\n", errstr, \
                     __FILE__, __LINE__);\
+                fflush (stderr);\
                 zmq::zmq_abort (errstr);\
             }\
         }\
@@ -90,6 +91,7 @@ namespace zmq
         if (errstr != NULL) {\
             fprintf (stderr, "Assertion failed: %s (%s:%d)\n", errstr, \
                 __FILE__, __LINE__);\
+            fflush (stderr);\
             zmq::zmq_abort (errstr);\
         }\
     } while (false)
@@ -102,6 +104,7 @@ namespace zmq
             zmq::win_error (errstr, 256);\
             fprintf (stderr, "Assertion failed: %s (%s:%d)\n", errstr, \
                 __FILE__, __LINE__);\
+            fflush (stderr);\
             zmq::zmq_abort (errstr);\
         }\
     } while (false)
@@ -116,6 +119,7 @@ namespace zmq
         if (unlikely (!(x))) {\
             fprintf (stderr, "Assertion failed: %s (%s:%d)\n", #x, \
                 __FILE__, __LINE__);\
+            fflush (stderr);\
             zmq::zmq_abort (#x);\
         }\
     } while (false)
@@ -126,6 +130,7 @@ namespace zmq
         if (unlikely (!(x))) {\
             const char *errstr = strerror (errno);\
             fprintf (stderr, "%s (%s:%d)\n", errstr, __FILE__, __LINE__);\
+            fflush (stderr);\
             zmq::zmq_abort (errstr);\
         }\
     } while (false)
@@ -136,6 +141,7 @@ namespace zmq
         if (unlikely (x)) {\
             const char *errstr = strerror (x);\
             fprintf (stderr, "%s (%s:%d)\n", errstr, __FILE__, __LINE__);\
+            fflush (stderr);\
             zmq::zmq_abort (errstr);\
         }\
     } while (false)
@@ -146,6 +152,7 @@ namespace zmq
         if (unlikely (x)) {\
             const char *errstr = gai_strerror (x);\
             fprintf (stderr, "%s (%s:%d)\n", errstr, __FILE__, __LINE__);\
+            fflush (stderr);\
             zmq::zmq_abort (errstr);\
         }\
     } while (false)
@@ -156,6 +163,7 @@ namespace zmq
         if (unlikely (!x)) {\
             fprintf (stderr, "FATAL ERROR: OUT OF MEMORY (%s:%d)\n",\
                 __FILE__, __LINE__);\
+            fflush (stderr);\
             zmq::zmq_abort ("FATAL ERROR: OUT OF MEMORY");\
         }\
     } while (false)
