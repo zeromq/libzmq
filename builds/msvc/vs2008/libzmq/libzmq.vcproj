@@ -11,7 +11,7 @@
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" />
-      <Tool Name="VCCLCompilerTool" AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=4096 -DZMQ_USE_SELECT -D_CRT_SECURE_NO_WARNINGS" Optimization="0" PreprocessorDefinitions="NOMINMAX" MinimalRebuild="true" BasicRuntimeChecks="3" RuntimeLibrary="3" WarningLevel="3" DebugInformationFormat="4" />
+      <Tool Name="VCCLCompilerTool" AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=16384 -DZMQ_USE_SELECT -D_CRT_SECURE_NO_WARNINGS" Optimization="0" PreprocessorDefinitions="NOMINMAX" MinimalRebuild="true" BasicRuntimeChecks="3" RuntimeLibrary="3" WarningLevel="3" DebugInformationFormat="4" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" />
       <Tool Name="VCPreLinkEventTool" />
@@ -30,7 +30,7 @@
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" />
-      <Tool Name="VCCLCompilerTool" AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=4096 -DZMQ_USE_SELECT -D_CRT_SECURE_NO_WARNINGS" Optimization="2" EnableIntrinsicFunctions="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" WarningLevel="3" DebugInformationFormat="3" />
+      <Tool Name="VCCLCompilerTool" AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=16384 -DZMQ_USE_SELECT -D_CRT_SECURE_NO_WARNINGS" Optimization="2" EnableIntrinsicFunctions="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" WarningLevel="3" DebugInformationFormat="3" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" />
       <Tool Name="VCPreLinkEventTool" />
@@ -49,7 +49,7 @@
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" />
-      <Tool Name="VCCLCompilerTool" AdditionalOptions="-DZMQ_STATIC -DFD_SETSIZE=4096 -DZMQ_USE_SELECT -D_CRT_SECURE_NO_WARNINGS" Optimization="0" PreprocessorDefinitions="NOMINMAX" MinimalRebuild="true" BasicRuntimeChecks="3" RuntimeLibrary="3" WarningLevel="3" DebugInformationFormat="4" />
+      <Tool Name="VCCLCompilerTool" AdditionalOptions="-DZMQ_STATIC -DFD_SETSIZE=16384 -DZMQ_USE_SELECT -D_CRT_SECURE_NO_WARNINGS" Optimization="0" PreprocessorDefinitions="NOMINMAX" MinimalRebuild="true" BasicRuntimeChecks="3" RuntimeLibrary="3" WarningLevel="3" DebugInformationFormat="4" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" />
       <Tool Name="VCPreLinkEventTool" />
@@ -66,7 +66,7 @@
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" />
-      <Tool Name="VCCLCompilerTool" AdditionalOptions="-DZMQ_STATIC -DFD_SETSIZE=4096 -DZMQ_USE_SELECT -D_CRT_SECURE_NO_WARNINGS" Optimization="2" EnableIntrinsicFunctions="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" WarningLevel="3" DebugInformationFormat="3" />
+      <Tool Name="VCCLCompilerTool" AdditionalOptions="-DZMQ_STATIC -DFD_SETSIZE=16384 -DZMQ_USE_SELECT -D_CRT_SECURE_NO_WARNINGS" Optimization="2" EnableIntrinsicFunctions="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" WarningLevel="3" DebugInformationFormat="3" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" />
       <Tool Name="VCPreLinkEventTool" />
@@ -83,7 +83,7 @@
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" />
-      <Tool Name="VCCLCompilerTool" AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=4096 -DZMQ_USE_SELECT -D_CRT_SECURE_NO_WARNINGS" Optimization="2" EnableIntrinsicFunctions="true" AdditionalIncludeDirectories="../../../../OpenPGM/include" PreprocessorDefinitions="ZMQ_HAVE_OPENPGM" RuntimeLibrary="2" EnableFunctionLevelLinking="true" WarningLevel="3" DebugInformationFormat="3" />
+      <Tool Name="VCCLCompilerTool" AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=16384 -DZMQ_USE_SELECT -D_CRT_SECURE_NO_WARNINGS" Optimization="2" EnableIntrinsicFunctions="true" AdditionalIncludeDirectories="../../../../OpenPGM/include" PreprocessorDefinitions="ZMQ_HAVE_OPENPGM" RuntimeLibrary="2" EnableFunctionLevelLinking="true" WarningLevel="3" DebugInformationFormat="3" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" />
       <Tool Name="VCPreLinkEventTool" />

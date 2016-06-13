@@ -262,8 +262,8 @@ case "${host_os}" in
             CPPFLAGS="-DZMQ_STATIC $CPPFLAGS"
         fi
         
-	# Set FD_SETSIZE to 1024
-	CPPFLAGS=" -DFD_SETSIZE=1024 $CPPFLAGS"
+	# Set FD_SETSIZE to 16384
+	CPPFLAGS=" -DFD_SETSIZE=16384 $CPPFLAGS"
         ;;
     *cygwin*)
         # Define on Cygwin to enable all library features
