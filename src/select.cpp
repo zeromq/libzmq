@@ -312,7 +312,7 @@ void zmq::select_t::loop ()
 
             //  Size is cached to avoid iteration through recently added descriptors.
             for (fd_entries_t::size_type i = 0, size = family_entry.fd_entries.size (); i < size && rc > 0; ++i) {
-                fd_entry_t& fd_entry = family_entry.fd_entries [i];
+                fd_entry_t fd_entry = family_entry.fd_entries [i];
 
                 if (fd_entry.fd == retired_fd)
                     continue;
