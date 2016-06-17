@@ -1,4 +1,4 @@
-0MQ version 4.1.5 stable, released on 2016/xx/xx
+0MQ version 4.1.5 stable, released on 2016/06/17
 ================================================
 
 * Fixed #1673 - CMake on Windows put PDB in wrong directory.

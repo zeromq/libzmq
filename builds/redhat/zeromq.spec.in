@@ -113,7 +113,7 @@ This package contains ZeroMQ related development libraries and header files.
 
 # libraries
 %{_libdir}/libzmq.so.5
-%{_libdir}/libzmq.so.5.0.0
+%{_libdir}/libzmq.so.5.0.1
 
 %{_mandir}/man7/zmq.7.gz
 
