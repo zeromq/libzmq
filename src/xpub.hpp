@@ -79,6 +79,9 @@ namespace zmq
         //  List of all subscriptions mapped to corresponding pipes.
         mtrie_t subscriptions;
 
+        //  List of manual subscriptions mapped to corresponding pipes.
+        mtrie_t manual_subscriptions;
+
         //  Distributor of messages holding the list of outbound pipes.
         dist_t dist;
 
