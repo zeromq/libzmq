@@ -92,6 +92,12 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
         if (size > 0 && (*data == 0 || *data == 1)) {
             if (manual)
             {
+                // Store manual subscription to use on termination
+                if (*data == 0)
+                    manual_subscriptions.rm(data + 1, size - 1, pipe_);
+                else
+                    manual_subscriptions.add(data + 1, size - 1, pipe_);
+
                 pending_pipes.push_back(pipe_);
                 pending_data.push_back(blob_t(data, size));
                 pending_metadata.push_back(sub.metadata());
@@ -191,10 +197,19 @@ int zmq::xpub_t::xsetsockopt (int option_, const void *optval_,
 
 void zmq::xpub_t::xpipe_terminated (pipe_t *pipe_)
 {
-    //  Remove the pipe from the trie. If there are topics that nobody
-    //  is interested in anymore, send corresponding unsubscriptions
-    //  upstream.
-    subscriptions.rm (pipe_, send_unsubscription, this, !(verbose_unsubs || manual));
+    if (manual)
+    {
+        //  Remove the pipe from the trie and send corresponding manual
+        //  unsubscriptions upstream.
+        manual_subscriptions.rm (pipe_, send_unsubscription, this, false);
+    }
+    else
+    {
+        //  Remove the pipe from the trie. If there are topics that nobody
+        //  is interested in anymore, send corresponding unsubscriptions
+        //  upstream.
+        subscriptions.rm (pipe_, send_unsubscription, this, !verbose_unsubs);
+    }
 
     dist.pipe_terminated (pipe_);
 }
