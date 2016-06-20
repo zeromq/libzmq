@@ -1714,7 +1714,7 @@ int zmq::socket_base_t::monitor (const char *addr_, int events_)
     return rc;
 }
 
-void zmq::socket_base_t::event_connected (const std::string &addr_, int fd_)
+void zmq::socket_base_t::event_connected (const std::string &addr_, zmq::fd_t fd_)
 {
     if (monitor_events & ZMQ_EVENT_CONNECTED)
         monitor_event (ZMQ_EVENT_CONNECTED, fd_, addr_);
@@ -1732,7 +1732,7 @@ void zmq::socket_base_t::event_connect_retried (const std::string &addr_, int in
         monitor_event (ZMQ_EVENT_CONNECT_RETRIED, interval_, addr_);
 }
 
-void zmq::socket_base_t::event_listening (const std::string &addr_, int fd_)
+void zmq::socket_base_t::event_listening (const std::string &addr_, zmq::fd_t fd_)
 {
     if (monitor_events & ZMQ_EVENT_LISTENING)
         monitor_event (ZMQ_EVENT_LISTENING, fd_, addr_);
@@ -1744,7 +1744,7 @@ void zmq::socket_base_t::event_bind_failed (const std::string &addr_, int err_)
         monitor_event (ZMQ_EVENT_BIND_FAILED, err_, addr_);
 }
 
-void zmq::socket_base_t::event_accepted (const std::string &addr_, int fd_)
+void zmq::socket_base_t::event_accepted (const std::string &addr_, zmq::fd_t fd_)
 {
     if (monitor_events & ZMQ_EVENT_ACCEPTED)
         monitor_event (ZMQ_EVENT_ACCEPTED, fd_, addr_);
@@ -1756,7 +1756,7 @@ void zmq::socket_base_t::event_accept_failed (const std::string &addr_, int err_
         monitor_event (ZMQ_EVENT_ACCEPT_FAILED, err_, addr_);
 }
 
-void zmq::socket_base_t::event_closed (const std::string &addr_, int fd_)
+void zmq::socket_base_t::event_closed (const std::string &addr_, zmq::fd_t fd_)
 {
     if (monitor_events & ZMQ_EVENT_CLOSED)
         monitor_event (ZMQ_EVENT_CLOSED, fd_, addr_);
@@ -1768,14 +1768,14 @@ void zmq::socket_base_t::event_close_failed (const std::string &addr_, int err_)
         monitor_event (ZMQ_EVENT_CLOSE_FAILED, err_, addr_);
 }
 
-void zmq::socket_base_t::event_disconnected (const std::string &addr_, int fd_)
+void zmq::socket_base_t::event_disconnected (const std::string &addr_, zmq::fd_t fd_)
 {
     if (monitor_events & ZMQ_EVENT_DISCONNECTED)
         monitor_event (ZMQ_EVENT_DISCONNECTED, fd_, addr_);
 }
 
 //  Send a monitor event
-void zmq::socket_base_t::monitor_event (int event_, int value_, const std::string &addr_)
+void zmq::socket_base_t::monitor_event (int event_, intptr_t value_, const std::string &addr_)
 {
     if (monitor_socket) {
         //  Send event in first frame
