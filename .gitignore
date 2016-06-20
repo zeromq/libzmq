@@ -135,6 +135,8 @@ test_use_fd_ipc
 test_use_fd_tcp
 test_pub_invert_matching
 test_dgram
+test_base85
+test_sodium
 tests/test*.log
 tests/test*.trs
 src/platform.hpp*
