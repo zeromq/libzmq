@@ -32,4 +32,7 @@ set STOPTIME=%DATE% %TIME%
 :done
 @endlocal
 
+if NOT %1 == "" if /I %1 == "skip_pause" goto :quit
+
 PAUSE
+:quit
