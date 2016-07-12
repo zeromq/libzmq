@@ -51,10 +51,14 @@
 #include <string.h>
 
 #if defined _WIN32
-#   include "windows.hpp"
+#   include "../src/windows.hpp"
 #   if defined _MSC_VER
 #       include <crtdbg.h>
 #       pragma warning(disable:4996)
+// iphlpapi is needed for if_nametoindex (not on Windows XP)
+#       if !defined ZMQ_HAVE_WINDOWS_TARGET_XP
+#           pragma comment(lib,"iphlpapi")
+#       endif
 #   endif
 #else
 #   include <pthread.h>

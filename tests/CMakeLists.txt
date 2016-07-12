@@ -132,19 +132,23 @@ if(WIN32)
     add_definitions(-DZMQ_CUSTOM_PLATFORM_HPP)
     add_definitions(-D_WINSOCK_DEPRECATED_NO_WARNINGS)
     include_directories(../builds/msvc)
+    # Same name on 64bit systems
     link_libraries(Ws2_32.lib)
 endif()
 
 # add library and include dirs for all targets
 link_libraries(libzmq)
 include_directories("${CMAKE_SOURCE_DIR}/../include")
-include_directories("${CMAKE_SOURCE_DIR}/src")
 
 foreach(test ${tests})
   add_executable(${test} ${test}.cpp)
   if(WIN32)
-    # it will only link correctly for DEBUG builds in Windows (I don't know how to specify the target and target library in CMake)
-    SET_TARGET_PROPERTIES( ${test} PROPERTIES LINK_FLAGS "/LIBPATH:../bin/Win32/Debug/v120/dynamic" )
+    # This is the output for Debug dynamic builds on Visual Studio 6.0
+    # You should provide the correct directory, don't know how to do it automatically
+    find_path(LIBZMQ_PATH "libzmq.lib" PATHS "../bin/Win32/Debug/v120/dynamic")
+    if(NOT ${LIBZMQ_PATH} STREQUAL "LIBZMQ_PATH-NOTFOUND")
+        SET_TARGET_PROPERTIES( ${test} PROPERTIES LINK_FLAGS "/LIBPATH:${LIBZMQ_PATH}" )
+    endif()
   else()
     # per-test directories not generated on OS X / Darwin
     if (NOT ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang.*")
