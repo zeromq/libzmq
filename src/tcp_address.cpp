@@ -179,6 +179,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
     && defined ZMQ_HAVE_IFADDRS)
 
 #include <ifaddrs.h>
+#include <unistd.h>
 
 //  On these platforms, network interface name can be queried
 //  using getifaddrs function.
@@ -186,7 +187,15 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
 {
     //  Get the addresses.
     ifaddrs *ifa = NULL;
-    const int rc = getifaddrs (&ifa);
+    int rc;
+    const int max_attempts = 10;
+    const int backoff_msec = 1;
+    for (int i = 0; i < max_attempts; i++) {
+        rc = getifaddrs (&ifa);
+        if (rc == 0 || (rc < 0 && errno != ECONNREFUSED))
+            break;
+        usleep ((backoff_msec << i) * 1000);
+    }
     errno_assert (rc == 0);
     zmq_assert (ifa != NULL);
 
