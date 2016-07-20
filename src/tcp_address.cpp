@@ -182,7 +182,16 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
 {
     //  Get the addresses.
     ifaddrs *ifa = NULL;
-    const int rc = getifaddrs (&ifa);
+    int rc;
+    const int max_attempts = 10;
+    const int backoff_msec = 1;
+    for (int i = 0; i < max_attempts; i++) {
+        rc = getifaddrs (&ifa);
+        if (rc == 0 || (rc < 0 && errno != ECONNREFUSED))
+            break;
+        usleep ((backoff_msec << i) * 1000);
+    }
+
     if (rc != 0 && errno == EINVAL) {
         // Windows Subsystem for Linux compatibility
         LIBZMQ_UNUSED (nic_);
