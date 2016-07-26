@@ -1,6 +1,8 @@
 0MQ version 4.1.6 stable, released on 2016/xx/xx
 ================================================
 
+* Fixed #2051 - getifaddrs can fail with ECONNREFUSED
+
 
 0MQ version 4.1.5 stable, released on 2016/06/17
 ================================================
