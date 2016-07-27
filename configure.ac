@@ -501,9 +501,9 @@ if test "x$with_norm_ext" != "xno"; then
     if test "x$with_norm_ext" != "xyes"; then
         norm_path="${with_norm_ext}"
         LIBZMQ_EXTRA_CXXFLAGS="-I${norm_path}/include ${LIBZMQ_EXTRA_CXXFLAGS}"
-        LIBZMQ_EXTRA_LDFLAGS="-I${norm_path}/include ${LIBZMQ_EXTRA_LDFLAGS}"
+        LIBZMQ_EXTRA_LDFLAGS="-L${norm_path}/lib ${LIBZMQ_EXTRA_LDFLAGS}"
     fi
-    LIBS="-lnorm $LIBS"
+    LIBS="-L${norm_path}/lib -lnorm $LIBS"
 else
     AC_MSG_RESULT([no])
 fi
