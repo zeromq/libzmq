@@ -28,11 +28,11 @@
 */
 
 #include "precompiled.hpp"
+
 #include <new>
 
 #include "macros.hpp"
 #include "io_thread.hpp"
-#include "platform.hpp"
 #include "err.hpp"
 #include "ctx.hpp"
 

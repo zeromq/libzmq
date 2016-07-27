@@ -28,10 +28,6 @@
 */
 
 #include "precompiled.hpp"
-#include "platform.hpp"
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#endif
 
 #include <string>
 

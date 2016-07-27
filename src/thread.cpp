@@ -28,9 +28,9 @@
 */
 
 #include "precompiled.hpp"
+#include "macros.hpp"
 #include "thread.hpp"
 #include "err.hpp"
-#include "platform.hpp"
 
 #ifdef ZMQ_HAVE_WINDOWS
 
@@ -73,6 +73,8 @@ void zmq::thread_t::stop ()
 void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_)
 {
     // not implemented
+    LIBZMQ_UNUSED (priority_);
+    LIBZMQ_UNUSED (schedulingPolicy_);
 }
 
 #else
@@ -138,14 +140,17 @@ void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_
         policy = schedulingPolicy_;
     }
 
+#ifdef __NetBSD__
+    if(policy == SCHED_OTHER) param.sched_priority = -1;
+#endif
+
     rc = pthread_setschedparam(descriptor, policy, &param);
     posix_assert (rc);
+#else
+
+    LIBZMQ_UNUSED (priority_);
+    LIBZMQ_UNUSED (schedulingPolicy_);
 #endif
 }
 
 #endif
-
-
-
-
-

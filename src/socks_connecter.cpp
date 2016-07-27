@@ -34,7 +34,6 @@
 #include "macros.hpp"
 #include "socks_connecter.hpp"
 #include "stream_engine.hpp"
-#include "platform.hpp"
 #include "random.hpp"
 #include "err.hpp"
 #include "ip.hpp"
@@ -44,9 +43,7 @@
 #include "session_base.hpp"
 #include "socks.hpp"
 
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
+#ifndef ZMQ_HAVE_WINDOWS
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -61,7 +58,7 @@ zmq::socks_connecter_t::socks_connecter_t (class io_thread_t *io_thread_,
     proxy_addr (proxy_addr_),
     status (unplugged),
     s (retired_fd),
-    handle(NULL),
+    handle((handle_t)NULL),
     handle_valid(false),
     delayed_start (delayed_start_),
     timer_started(false),
@@ -152,9 +149,6 @@ void zmq::socks_connecter_t::in_event ()
             if (rc == -1)
                 error ();
             else {
-                //  Remember our fd for ZMQ_SRCFD in messages
-                socket->set_fd (s);
-
                 //  Create the engine object for this connection.
                 stream_engine_t *engine = new (std::nothrow)
                     stream_engine_t (s, options, endpoint);

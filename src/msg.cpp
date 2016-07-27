@@ -30,7 +30,6 @@
 #include "precompiled.hpp"
 #include "macros.hpp"
 #include "msg.hpp"
-#include "../include/zmq.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -87,7 +86,6 @@ int zmq::msg_t::init ()
     u.vsm.size = 0;
     u.vsm.group[0] = '\0';
     u.vsm.routing_id = 0;
-    u.vsm.fd = retired_fd;
     return 0;
 }
 
@@ -100,7 +98,6 @@ int zmq::msg_t::init_size (size_t size_)
         u.vsm.size = (unsigned char) size_;
         u.vsm.group[0] = '\0';
         u.vsm.routing_id = 0;
-        u.vsm.fd = retired_fd;
     }
     else {
         u.lmsg.metadata = NULL;
@@ -108,7 +105,6 @@ int zmq::msg_t::init_size (size_t size_)
         u.lmsg.flags = 0;
         u.lmsg.group[0] = '\0';
         u.lmsg.routing_id = 0;
-        u.lmsg.fd = retired_fd;
         u.lmsg.content = NULL;
         if (sizeof (content_t) + size_ > size_)
             u.lmsg.content = (content_t*) malloc (sizeof (content_t) + size_);
@@ -137,7 +133,6 @@ int zmq::msg_t::init_external_storage(content_t* content_, void* data_, size_t s
     u.zclmsg.flags = 0;
     u.zclmsg.group[0] = '\0';
     u.zclmsg.routing_id = 0;
-    u.zclmsg.fd = retired_fd;
 
     u.zclmsg.content = content_;
     u.zclmsg.content->data = data_;
@@ -165,7 +160,6 @@ int zmq::msg_t::init_data (void *data_, size_t size_,
         u.cmsg.size = size_;
         u.cmsg.group[0] = '\0';
         u.cmsg.routing_id = 0;
-        u.cmsg.fd = retired_fd;
     }
     else {
         u.lmsg.metadata = NULL;
@@ -173,7 +167,6 @@ int zmq::msg_t::init_data (void *data_, size_t size_,
         u.lmsg.flags = 0;
         u.lmsg.group[0] = '\0';
         u.lmsg.routing_id = 0;
-        u.lmsg.fd = retired_fd;
         u.lmsg.content = (content_t*) malloc (sizeof (content_t));
         if (!u.lmsg.content) {
             errno = ENOMEM;
@@ -197,7 +190,6 @@ int zmq::msg_t::init_delimiter ()
     u.delimiter.flags = 0;
     u.delimiter.group[0] = '\0';
     u.delimiter.routing_id = 0;
-    u.delimiter.fd = retired_fd;
     return 0;
 }
 
@@ -208,7 +200,6 @@ int zmq::msg_t::init_join ()
     u.base.flags = 0;
     u.base.group[0] = '\0';
     u.base.routing_id = 0;
-    u.base.fd = retired_fd;
     return 0;
 }
 
@@ -219,7 +210,6 @@ int zmq::msg_t::init_leave ()
     u.base.flags = 0;
     u.base.group[0] = '\0';
     u.base.routing_id = 0;
-    u.base.fd = retired_fd;
     return 0;
 }
 
@@ -398,16 +388,6 @@ void zmq::msg_t::set_flags (unsigned char flags_)
 void zmq::msg_t::reset_flags (unsigned char flags_)
 {
     u.base.flags &= ~flags_;
-}
-
-zmq::fd_t zmq::msg_t::fd ()
-{
-    return u.base.fd;
-}
-
-void zmq::msg_t::set_fd (fd_t fd_)
-{
-    u.base.fd = fd_;
 }
 
 zmq::metadata_t *zmq::msg_t::metadata () const

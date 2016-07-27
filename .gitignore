@@ -14,6 +14,8 @@ aclocal.m4
 autom4te.cache
 *.o
 *.gcno
+*.gcda
+*.gcov
 *.ncb
 *.lo
 *.loT
@@ -28,6 +30,7 @@ autom4te.cache
 .dirstamp
 .libs
 curve_keygen
+test_ancillaries
 test_heartbeats
 test_msg_ffn
 test_sockopt_hwm
@@ -126,8 +129,14 @@ test_poller
 test_timers
 test_radio_dish
 test_udp
+test_scatter_gather
+test_socketopt_hwm
 test_use_fd_ipc
 test_use_fd_tcp
+test_pub_invert_matching
+test_dgram
+test_base85
+test_sodium
 tests/test*.log
 tests/test*.trs
 src/platform.hpp*
@@ -149,6 +158,7 @@ doc/*.3
 doc/*.7
 doc/*.html
 doc/*.xml
+doxygen/
 src/libzmq.pc
 bin/
 lib/

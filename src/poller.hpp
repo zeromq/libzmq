@@ -30,8 +30,6 @@
 #ifndef __ZMQ_POLLER_HPP_INCLUDED__
 #define __ZMQ_POLLER_HPP_INCLUDED__
 
-#include "platform.hpp"
-
 #if   defined ZMQ_USE_KQUEUE  + defined ZMQ_USE_EPOLL \
     + defined ZMQ_USE_DEVPOLL + defined ZMQ_USE_POLL  \
     + defined ZMQ_USE_SELECT > 1

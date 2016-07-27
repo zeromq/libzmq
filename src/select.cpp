@@ -31,10 +31,7 @@
 #include "select.hpp"
 #if defined ZMQ_USE_SELECT
 
-#include "platform.hpp"
-
 #if defined ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
 #elif defined ZMQ_HAVE_HPUX
 #include <sys/param.h>
 #include <sys/types.h>
@@ -104,8 +101,8 @@ void zmq::select_t::rm_fd (handle_t handle_)
 
     if (family_entry_it != current_family_entry_it) {
         //  Family is not currently being iterated and can be safely
-        //  modified in palce. So later it can be skipped withour re-verifying
-        //  its content.
+        //  modified in-place. So later it can be skipped without
+        //  re-verifying its content.
         fd_entries_t::iterator fd_entry_it;
         for (fd_entry_it = family_entry.fd_entries.begin ();
               fd_entry_it != family_entry.fd_entries.end (); ++fd_entry_it)
@@ -280,7 +277,7 @@ void zmq::select_t::loop ()
         if (family_entries.size () > 1) {
             rc = WSAWaitForMultipleEvents (4, wsa_events.events, FALSE,
                 timeout ? timeout : INFINITE, FALSE);
-            wsa_assert (rc != WSA_WAIT_FAILED);
+            wsa_assert (rc != (int)WSA_WAIT_FAILED);
             zmq_assert (rc != WSA_WAIT_IO_COMPLETION);
 
             if (rc == WSA_WAIT_TIMEOUT)
@@ -312,7 +309,7 @@ void zmq::select_t::loop ()
 
             //  Size is cached to avoid iteration through recently added descriptors.
             for (fd_entries_t::size_type i = 0, size = family_entry.fd_entries.size (); i < size && rc > 0; ++i) {
-                fd_entry_t& fd_entry = family_entry.fd_entries [i];
+                fd_entry_t fd_entry = family_entry.fd_entries [i];
 
                 if (fd_entry.fd == retired_fd)
                     continue;
@@ -439,14 +436,25 @@ u_short zmq::select_t::get_fd_family (fd_t fd_)
 	sockaddr_storage addr = { 0 };
 	int addr_size = sizeof addr;
 
-    int rc = getsockname (fd_, (sockaddr *)&addr, &addr_size);
+    int type;
+    int type_length = sizeof(int);
 
-    //  AF_INET and AF_INET6 can be mixed in select
-    //  TODO: If proven otherwise, should simply return addr.sa_family
-    if (rc != SOCKET_ERROR)
-        return addr.ss_family == AF_INET6 ? AF_INET : addr.ss_family;
-    else
-        return AF_UNSPEC;
+    int rc = getsockopt(fd_, SOL_SOCKET, SO_TYPE, (char*) &type, &type_length);
+
+    if (rc == 0) {
+        if (type == SOCK_DGRAM)
+            return AF_INET;
+        else {
+            rc = getsockname(fd_, (sockaddr *)&addr, &addr_size);
+
+            //  AF_INET and AF_INET6 can be mixed in select
+            //  TODO: If proven otherwise, should simply return addr.sa_family
+            if (rc != SOCKET_ERROR)
+                return addr.ss_family == AF_INET6 ? AF_INET : addr.ss_family;
+        }
+    }
+
+    return AF_UNSPEC;
 }
 
 zmq::select_t::family_entry_t::family_entry_t () :

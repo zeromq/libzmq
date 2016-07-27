@@ -43,8 +43,8 @@ zmq::options_t::options_t () :
     recovery_ivl (10000),
     multicast_hops (1),
     multicast_maxtpdu (1500),
-    sndbuf (8192),
-    rcvbuf (8192),
+    sndbuf (-1),
+    rcvbuf (-1),
     tos (0),
     type (-1),
     linger (-1),
@@ -146,14 +146,14 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             break;
 
         case ZMQ_SNDBUF:
-            if (is_int && value >= 0) {
+            if (is_int && value >= -1) {
                 sndbuf = value;
                 return 0;
             }
             break;
 
         case ZMQ_RCVBUF:
-            if (is_int && value >= 0) {
+            if (is_int && value >= -1) {
                 rcvbuf = value;
                 return 0;
             }

@@ -34,7 +34,6 @@
 #include "io_object.hpp"
 #include "own.hpp"
 #include "stdint.hpp"
-#include "../include/zmq.h"
 #include "socks.hpp"
 
 namespace zmq

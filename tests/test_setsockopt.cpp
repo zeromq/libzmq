@@ -40,15 +40,7 @@ void test_setsockopt_tcp_recv_buffer (void)
 
     rc = zmq_getsockopt (socket, ZMQ_RCVBUF, &val, &placeholder);
     assert (rc == 0);
-    assert (val == 8192);
-
-    rc = zmq_setsockopt (socket, ZMQ_RCVBUF, &val, sizeof (val));
-    assert (rc == 0);
-    assert (val == 8192);
-
-    rc = zmq_getsockopt (socket, ZMQ_RCVBUF, &val, &placeholder);
-    assert (rc == 0);
-    assert (val == 8192);
+    assert (val == -1);
 
     val = 16384;
 
@@ -75,15 +67,7 @@ void test_setsockopt_tcp_send_buffer (void)
 
     rc = zmq_getsockopt (socket, ZMQ_SNDBUF, &val, &placeholder);
     assert (rc == 0);
-    assert (val == 8192);
-
-    rc = zmq_setsockopt (socket, ZMQ_SNDBUF, &val, sizeof (val));
-    assert (rc == 0);
-    assert (val == 8192);
-
-    rc = zmq_getsockopt (socket, ZMQ_SNDBUF, &val, &placeholder);
-    assert (rc == 0);
-    assert (val == 8192);
+    assert (val == -1);
 
     val = 16384;
 

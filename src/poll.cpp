@@ -32,8 +32,10 @@
 #if defined ZMQ_USE_POLL
 
 #include <sys/types.h>
+#if !defined ZMQ_HAVE_WINDOWS
 #include <sys/time.h>
 #include <poll.h>
+#endif
 #include <algorithm>
 
 #include "poll.hpp"
@@ -94,25 +96,25 @@ void zmq::poll_t::rm_fd (handle_t handle_)
 
 void zmq::poll_t::set_pollin (handle_t handle_)
 {
-    int index = fd_table [handle_].index;
+    fd_t index = fd_table [handle_].index;
     pollset [index].events |= POLLIN;
 }
 
 void zmq::poll_t::reset_pollin (handle_t handle_)
 {
-    int index = fd_table [handle_].index;
+    fd_t index = fd_table [handle_].index;
     pollset [index].events &= ~((short) POLLIN);
 }
 
 void zmq::poll_t::set_pollout (handle_t handle_)
 {
-    int index = fd_table [handle_].index;
+    fd_t index = fd_table [handle_].index;
     pollset [index].events |= POLLOUT;
 }
 
 void zmq::poll_t::reset_pollout (handle_t handle_)
 {
-    int index = fd_table [handle_].index;
+    fd_t index = fd_table [handle_].index;
     pollset [index].events &= ~((short) POLLOUT);
 }
 

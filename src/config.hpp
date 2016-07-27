@@ -59,6 +59,12 @@ namespace zmq
         //  unnecessary network stack traversals.
         in_batch_size = 8192,
 
+        //  Maximal batching size for engines with sending functionality.
+        //  So, if there are 10 messages that fit into the batch size, all of
+        //  them may be written by a single 'send' system call, thus avoiding
+        //  unnecessary network stack traversals.
+        out_batch_size = 8192,
+
         //  Maximal delta between high and low watermark.
         max_wm_delta = 1024,
 
@@ -80,8 +86,8 @@ namespace zmq
 
         //  On some OSes the signaler has to be emulated using a TCP
         //  connection. In such cases following port is used.
-        //  If 0, it lets the OS choose a free port without requiring use of a 
-        //  global mutex. The original implementation of a Windows signaler 
+        //  If 0, it lets the OS choose a free port without requiring use of a
+        //  global mutex. The original implementation of a Windows signaler
         //  socket used port 5905 instead of letting the OS choose a free port.
         //  https://github.com/zeromq/libzmq/issues/1542
         signaler_port = 0

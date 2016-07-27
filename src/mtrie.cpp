@@ -33,14 +33,9 @@
 #include <new>
 #include <algorithm>
 
-#include "macros.hpp"
-#include "platform.hpp"
-#if defined ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#endif
-
 #include "err.hpp"
 #include "pipe.hpp"
+#include "macros.hpp"
 #include "mtrie.hpp"
 
 zmq::mtrie_t::mtrie_t () :

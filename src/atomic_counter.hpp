@@ -31,7 +31,6 @@
 #define __ZMQ_ATOMIC_COUNTER_HPP_INCLUDED__
 
 #include "stdint.hpp"
-#include "platform.hpp"
 
 #if defined ZMQ_FORCE_MUTEXES
 #define ZMQ_ATOMIC_COUNTER_MUTEX

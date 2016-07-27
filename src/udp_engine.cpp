@@ -28,11 +28,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "precompiled.hpp"
-#include "platform.hpp"
 
-#if defined ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
+#if !defined ZMQ_HAVE_WINDOWS
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -46,12 +43,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "err.hpp"
 #include "ip.hpp"
 
-zmq::udp_engine_t::udp_engine_t() :
+zmq::udp_engine_t::udp_engine_t(const options_t &options_) :
     plugged (false),
     fd(-1),
     session(NULL),
-    handle(NULL),
+    handle((handle_t)NULL),
     address(NULL),
+    options(options_),
     send_enabled(false),
     recv_enabled(false)
 {
@@ -103,8 +101,18 @@ void zmq::udp_engine_t::plug (io_thread_t* io_thread_, session_base_t *session_)
     io_object_t::plug (io_thread_);
     handle = add_fd (fd);
 
-    if (send_enabled)
+    if (send_enabled) {
+        if (!options.raw_socket) {
+            out_address = address->resolved.udp_addr->dest_addr ();
+            out_addrlen = address->resolved.udp_addr->dest_addrlen ();
+        }
+        else {
+            out_address = (sockaddr *) &raw_address;
+            out_addrlen = sizeof (sockaddr_in);
+        }
+
         set_pollout (handle);
+    }
 
     if (recv_enabled) {
         int on = 1;
@@ -154,6 +162,69 @@ void zmq::udp_engine_t::terminate()
     delete this;
 }
 
+void zmq::udp_engine_t::sockaddr_to_msg (zmq::msg_t *msg, sockaddr_in* addr)
+{
+    char* name = inet_ntoa(addr->sin_addr);
+
+    char port[6];
+    sprintf (port, "%d", (int) ntohs (addr->sin_port));
+
+    int size = (int) strlen (name) + (int) strlen (port) + 1 + 1; //  Colon + NULL
+    int rc = msg->init_size (size);
+    errno_assert (rc == 0);
+    msg->set_flags (msg_t::more);
+    char *address = (char*)msg->data ();
+
+    strcpy (address, name);
+    strcat (address, ":");
+    strcat (address, port);
+}
+
+int zmq::udp_engine_t::resolve_raw_address (char *name_, size_t length_)
+{
+    memset (&raw_address, 0, sizeof raw_address);
+
+    const char *delimiter = NULL;
+
+    // Find delimiter, cannot use memrchr as it is not supported on windows
+    if (length_ != 0) {
+        int chars_left = (int) length_;
+        char *current_char = name_ + length_;
+        do {
+            if (*(--current_char) == ':') {
+                delimiter = current_char;
+                break;
+            }
+        } while (--chars_left != 0);
+    }
+
+    if (!delimiter) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    std::string addr_str (name_, delimiter - name_);
+    std::string port_str (delimiter + 1, name_ + length_ - delimiter - 1);
+
+    //  Parse the port number (0 is not a valid port).
+    uint16_t port = (uint16_t) atoi (port_str.c_str ());
+    if (port == 0) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    raw_address.sin_family = AF_INET;
+    raw_address.sin_port = htons (port);
+    raw_address.sin_addr.s_addr = inet_addr (addr_str.c_str ());
+
+    if (raw_address.sin_addr.s_addr == INADDR_NONE) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    return 0;
+}
+
 void zmq::udp_engine_t::out_event()
 {
     msg_t group_msg;
@@ -166,12 +237,34 @@ void zmq::udp_engine_t::out_event()
 
         size_t group_size = group_msg.size ();
         size_t body_size = body_msg.size ();
-        size_t size = group_size + body_size + 1;
+        size_t size;
 
-        // TODO: check if larger than maximum size
-        out_buffer[0] = (unsigned char) group_size;
-        memcpy (out_buffer + 1, group_msg.data (), group_size);
-        memcpy (out_buffer + 1 + group_size, body_msg.data (), body_size);
+        if (options.raw_socket) {
+            rc = resolve_raw_address ((char*) group_msg.data(), group_size);
+
+            //  We discard the message if address is not valid
+            if (rc != 0) {
+                rc = group_msg.close ();
+                errno_assert (rc == 0);
+
+                body_msg.close ();
+                errno_assert (rc == 0);
+
+                return;
+            }
+
+            size = body_size;
+
+            memcpy (out_buffer, body_msg.data (), body_size);
+        }
+        else {
+            size = group_size + body_size + 1;
+
+            // TODO: check if larger than maximum size
+            out_buffer[0] = (unsigned char) group_size;
+            memcpy (out_buffer + 1, group_msg.data (), group_size);
+            memcpy (out_buffer + 1 + group_size, body_msg.data (), body_size);
+        }
 
         rc = group_msg.close ();
         errno_assert (rc == 0);
@@ -181,13 +274,10 @@ void zmq::udp_engine_t::out_event()
 
 #ifdef ZMQ_HAVE_WINDOWS
         rc = sendto (fd, (const char *) out_buffer, (int) size, 0,
-            address->resolved.udp_addr->dest_addr (),
-            (int) address->resolved.udp_addr->dest_addrlen ());
+            out_address, (int) out_addrlen);
         wsa_assert (rc != SOCKET_ERROR);
 #else
-        rc = sendto (fd, out_buffer, size, 0,
-            address->resolved.udp_addr->dest_addr (),
-            address->resolved.udp_addr->dest_addrlen ());
+        rc = sendto (fd, out_buffer, size, 0, out_address, out_addrlen);
         errno_assert (rc != -1);
 #endif
     }
@@ -211,8 +301,10 @@ void zmq::udp_engine_t::restart_output()
 
 void zmq::udp_engine_t::in_event()
 {
+  struct sockaddr_in in_address;
+  socklen_t in_addrlen = sizeof(sockaddr_in);
 #ifdef ZMQ_HAVE_WINDOWS
-    int nbytes = recv(fd, (char*) in_buffer, MAX_UDP_MSG, 0);
+    int nbytes = recvfrom(fd, (char*) in_buffer, MAX_UDP_MSG, 0, (sockaddr*) &in_address, &in_addrlen);
     const int last_error = WSAGetLastError();
     if (nbytes == SOCKET_ERROR) {
         wsa_assert(
@@ -222,7 +314,7 @@ void zmq::udp_engine_t::in_event()
         return;
     }
 #else
-    int nbytes = recv(fd, in_buffer, MAX_UDP_MSG, 0);
+    int nbytes = recvfrom(fd, in_buffer, MAX_UDP_MSG, 0, (sockaddr*) &in_address, &in_addrlen);
     if (nbytes == -1) {
         errno_assert(errno != EBADF
             && errno != EFAULT
@@ -231,20 +323,33 @@ void zmq::udp_engine_t::in_event()
         return;
     }
 #endif
-
-    int group_size = in_buffer[0];
-
-    //  This doesn't fit, just ingore
-    if (nbytes - 1 < group_size)
-        return;
-
-    int body_size = nbytes - 1 - group_size;
-
+    int rc;
+    int body_size;
+    int body_offset;
     msg_t msg;
-    int rc = msg.init_size (group_size);
-    errno_assert (rc == 0);
-    msg.set_flags (msg_t::more);
-    memcpy (msg.data (), in_buffer + 1, group_size);
+
+    if (options.raw_socket) {
+        sockaddr_to_msg (&msg, &in_address);
+
+        body_size = nbytes;
+        body_offset = 0;
+    }
+    else {
+        char* group_buffer = (char *)in_buffer + 1;
+        int group_size = in_buffer[0];
+
+        rc = msg.init_size (group_size);
+        errno_assert (rc == 0);
+        msg.set_flags (msg_t::more);
+        memcpy (msg.data (), group_buffer, group_size);
+
+        //  This doesn't fit, just ingore
+        if (nbytes - 1 < group_size)
+            return;
+
+        body_size = nbytes - 1 - group_size;
+        body_offset = 1 + group_size;
+    }
 
     rc = session->push_msg (&msg);
     errno_assert (rc == 0 || (rc == -1 && errno == EAGAIN));
@@ -262,7 +367,7 @@ void zmq::udp_engine_t::in_event()
     errno_assert (rc == 0);
     rc = msg.init_size (body_size);
     errno_assert (rc == 0);
-    memcpy (msg.data (), in_buffer + 1 + group_size, body_size);
+    memcpy (msg.data (), in_buffer + body_offset, body_size);
     rc = session->push_msg (&msg);
     errno_assert (rc == 0);
     rc = msg.close ();

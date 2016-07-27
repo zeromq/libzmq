@@ -123,19 +123,16 @@ namespace zmq
 
         int monitor (const char *endpoint_, int events_);
 
-        void set_fd(fd_t fd_);
-        fd_t fd();
-
-        void event_connected (const std::string &addr_, int fd_);
+        void event_connected (const std::string &addr_, zmq::fd_t fd_);
         void event_connect_delayed (const std::string &addr_, int err_);
         void event_connect_retried (const std::string &addr_, int interval_);
-        void event_listening (const std::string &addr_, int fd_);
+        void event_listening (const std::string &addr_, zmq::fd_t fd_);
         void event_bind_failed (const std::string &addr_, int err_);
-        void event_accepted (const std::string &addr_, int fd_);
+        void event_accepted (const std::string &addr_, zmq::fd_t fd_);
         void event_accept_failed (const std::string &addr_, int err_);
-        void event_closed (const std::string &addr_, int fd_);
-        void event_close_failed (const std::string &addr_, int fd_);
-        void event_disconnected (const std::string &addr_, int fd_);
+        void event_closed (const std::string &addr_, zmq::fd_t fd_);
+        void event_close_failed (const std::string &addr_, int err_);
+        void event_disconnected (const std::string &addr_, zmq::fd_t fd_);
 
     protected:
 
@@ -180,7 +177,7 @@ namespace zmq
         void process_destroy ();
 
         // Socket event data dispatch
-        void monitor_event (int event_, int value_, const std::string& addr_);
+        void monitor_event (int event_, intptr_t value_, const std::string& addr_);
 
         // Monitor socket cleanup
         void stop_monitor (bool send_monitor_stopped_event_ = true);
@@ -263,9 +260,6 @@ namespace zmq
 
         //  True if the last message received had MORE flag set.
         bool rcvmore;
-
-        // File descriptor if applicable
-        fd_t file_desc;
 
         //  Improves efficiency of time measurement.
         clock_t clock;

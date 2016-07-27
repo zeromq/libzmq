@@ -90,10 +90,117 @@ int test_basic()
     return 0 ;
 }
 
-int test_xpub_proxy_unsubscribe_on_disconnect()
+
+int test_unsubscribe_manual()
 {
-    const char* frontend = "ipc://frontend";
-    const char* backend = "ipc://backend";
+    void *ctx = zmq_ctx_new ();
+    assert (ctx);
+
+    //  Create a publisher
+    void *pub = zmq_socket (ctx, ZMQ_XPUB);
+    assert (pub);
+    int rc = zmq_bind (pub, "inproc://soname");
+    assert (rc == 0);
+
+    //  set pub socket options
+    int manual = 1;
+    rc = zmq_setsockopt(pub, ZMQ_XPUB_MANUAL, &manual, 4);
+    assert (rc == 0);
+
+    //  Create a subscriber
+    void *sub = zmq_socket (ctx, ZMQ_XSUB);
+    assert (sub);
+    rc = zmq_connect (sub, "inproc://soname");
+    assert (rc == 0);
+
+    //  Subscribe for A
+    char subscription1[2] = { 1, 'A'};
+    rc = zmq_send_const(sub, subscription1, 2, 0);
+    assert (rc == 2);
+
+    //  Subscribe for B
+    char subscription2[2] = { 1, 'B'};
+    rc = zmq_send_const(sub, subscription2, 2, 0);
+    assert (rc == 2);
+
+    char buffer[3];
+
+    // Receive subscription "A" from subscriber
+    rc = zmq_recv(pub, buffer, 2, 0);
+    assert(rc == 2);
+    assert(buffer[0] == 1);
+    assert(buffer[1] == 'A');
+
+    // Subscribe socket for XA instead
+    rc = zmq_setsockopt(pub, ZMQ_SUBSCRIBE, "XA", 2);
+    assert(rc == 0);
+
+    // Receive subscription "B" from subscriber
+    rc = zmq_recv(pub, buffer, 2, 0);
+    assert(rc == 2);
+    assert(buffer[0] == 1);
+    assert(buffer[1] == 'B');
+
+    // Subscribe socket for XB instead
+    rc = zmq_setsockopt(pub, ZMQ_SUBSCRIBE, "XB", 2);
+    assert(rc == 0);
+
+    //  Unsubscribe from A
+    char unsubscription1[2] = { 0, 'A'};
+    rc = zmq_send_const(sub, unsubscription1, 2, 0);
+    assert (rc == 2);
+
+    // Receive unsubscription "A" from subscriber
+    rc = zmq_recv(pub, buffer, 2, 0);
+    assert(rc == 2);
+    assert(buffer[0] == 0);
+    assert(buffer[1] == 'A');
+
+    // Unsubscribe socket from XA instead
+    rc = zmq_setsockopt(pub, ZMQ_UNSUBSCRIBE, "XA", 2);
+    assert(rc == 0);
+
+    // Sending messages XA, XB
+    rc = zmq_send_const(pub, "XA", 2, 0);
+    assert(rc == 2);
+    rc = zmq_send_const(pub, "XB", 2, 0);
+    assert(rc == 2);
+
+    // Subscriber should receive XB only
+    rc = zmq_recv(sub, buffer, 2, ZMQ_DONTWAIT);
+    assert(rc == 2);
+    assert(buffer[0] == 'X');
+    assert(buffer[1] == 'B');
+
+    // Close subscriber
+    rc = zmq_close (sub);
+    assert (rc == 0);
+
+    // Receive unsubscription "B"
+    rc = zmq_recv(pub, buffer, 2, 0);
+    assert(rc == 2);
+    assert(buffer[0] == 0);
+    assert(buffer[1] == 'B');
+
+    // Unsubscribe socket from XB instead
+    rc = zmq_setsockopt(pub, ZMQ_UNSUBSCRIBE, "XB", 2);
+    assert(rc == 0);
+
+    //  Clean up.
+    rc = zmq_close (pub);
+    assert (rc == 0);
+    rc = zmq_ctx_term (ctx);
+    assert (rc == 0);
+
+    return 0 ;
+}
+
+
+int test_xpub_proxy_unsubscribe_on_disconnect(const char *frontend,
+                                              const char *backend)
+{
+    assert (frontend && backend);
+
     const char* topic = "1";
     const char* payload = "X";
 
@@ -228,10 +335,10 @@ int test_xpub_proxy_unsubscribe_on_disconnect()
     return 0;
 }
 
-int test_missing_subscriptions()
+int test_missing_subscriptions(const char *frontend, const char *backend)
 {
-    const char* frontend = "ipc://frontend";
-    const char* backend = "ipc://backend";
+    assert (frontend && backend);
+
     const char* topic1 = "1";
     const char* topic2 = "2";
     const char* payload = "X";
@@ -348,8 +455,21 @@ int main(void)
 {
     setup_test_environment ();
     test_basic ();
-    test_xpub_proxy_unsubscribe_on_disconnect ();
-    test_missing_subscriptions ();
+    test_unsubscribe_manual ();
+
+    const char *frontend;
+    const char *backend;
+
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
+    frontend = "ipc://frontend";
+    backend = "ipc://backend";
+    test_xpub_proxy_unsubscribe_on_disconnect (frontend, backend);
+    test_missing_subscriptions (frontend, backend);
+#endif
+    frontend = "tcp://127.0.0.1:5560";
+    backend = "tcp://127.0.0.1:5561";
+    test_xpub_proxy_unsubscribe_on_disconnect (frontend, backend);
+    test_missing_subscriptions (frontend, backend);
 
     return 0;
 }

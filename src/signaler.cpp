@@ -35,10 +35,11 @@
 //  instead of 'events' and 'revents' and defines macros to map from POSIX-y
 //  names to AIX-specific names).
 #if defined ZMQ_POLL_BASED_ON_POLL
+#if !defined ZMQ_HAVE_WINDOWS
 #include <poll.h>
+#endif
 #elif defined ZMQ_POLL_BASED_ON_SELECT
 #if defined ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
 #elif defined ZMQ_HAVE_HPUX
 #include <sys/param.h>
 #include <sys/types.h>
@@ -63,12 +64,9 @@
 #include <sys/eventfd.h>
 #endif
 
-#if defined ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
+#if !defined ZMQ_HAVE_WINDOWS
 #include <unistd.h>
 #include <netinet/tcp.h>
-#include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #endif

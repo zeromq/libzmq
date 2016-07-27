@@ -35,8 +35,17 @@
 void pre_allocate_sock (void *zmq_socket, const char *address,
         const char *port)
 {
-    struct addrinfo *addr;
-    int rc = getaddrinfo (address, port, NULL, &addr);
+    struct addrinfo *addr, hint;
+    hint.ai_flags=0;
+    hint.ai_family=AF_INET;
+    hint.ai_socktype=SOCK_STREAM;
+    hint.ai_protocol=IPPROTO_TCP;
+    hint.ai_addrlen=0;
+    hint.ai_canonname=NULL;
+    hint.ai_addr=NULL;
+    hint.ai_next=NULL;
+
+    int rc = getaddrinfo (address, port, &hint, &addr);
     assert (rc == 0);
 
     int s_pre = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -121,6 +130,7 @@ void test_pair ()
 
 void test_client_server ()
 {
+#if defined(ZMQ_SERVER) && defined(ZMQ_CLIENT)
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
@@ -194,6 +204,7 @@ void test_client_server ()
 
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
+#endif
 }
 
 int main (void)

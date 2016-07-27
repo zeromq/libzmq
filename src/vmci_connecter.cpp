@@ -163,15 +163,6 @@ void zmq::vmci_connecter_t::start_connecting ()
         out_event ();
     }
 
-    //  Connection establishment may be delayed. Poll for its completion.
-    else
-    if (rc == -1 && errno == EINPROGRESS) {
-        handle = add_fd (s);
-        handle_valid = true;
-        set_pollout (handle);
-        socket->event_connect_delayed (endpoint, zmq_errno());
-    }
-
     //  Handle any other error condition by eventual reconnect.
     else {
         if (s != retired_fd)
@@ -228,9 +219,6 @@ int zmq::vmci_connecter_t::open ()
         return -1;
 #endif
 
-    //  Set the non-blocking flag.
-    unblock_socket (s);
-
     //  Connect to the remote peer.
     int rc = ::connect (
         s, addr->resolved.vmci_addr->addr (),
@@ -239,19 +227,6 @@ int zmq::vmci_connecter_t::open ()
     //  Connect was successful immediately.
     if (rc == 0)
         return 0;
-
-    //  Translate error codes indicating asynchronous connect has been
-    //  launched to a uniform EINPROGRESS.
-#ifdef ZMQ_HAVE_WINDOWS
-    const int error_code = WSAGetLastError();
-    if (error_code == WSAEINPROGRESS || error_code == WSAEWOULDBLOCK)
-        errno = EINPROGRESS;
-    else
-        errno = wsa_error_to_errno(error_code);
-#else
-    if (errno == EINTR)
-        errno = EINPROGRESS;
-#endif
 
     //  Forward the error.
     return -1;

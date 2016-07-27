@@ -32,11 +32,8 @@
 #include "ip.hpp"
 #include "tcp.hpp"
 #include "err.hpp"
-#include "platform.hpp"
 
-#if defined ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
+#if !defined ZMQ_HAVE_WINDOWS
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -63,7 +60,7 @@ void zmq::tune_tcp_socket (fd_t s_)
 #endif
 
 #ifdef ZMQ_HAVE_OPENVMS
-    //  Disable delayed acknowledgements as they hurt latency is serious manner.
+    //  Disable delayed acknowledgements as they hurt latency significantly.
     int nodelack = 1;
     rc = setsockopt (s_, IPPROTO_TCP, TCP_NODELACK, (char*) &nodelack,
         sizeof (int));
@@ -93,7 +90,8 @@ void zmq::set_tcp_receive_buffer (fd_t sockfd_, int bufsize_)
 #endif
 }
 
-void zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_, int keepalive_idle_, int keepalive_intvl_)
+void zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_,
+        int keepalive_idle_, int keepalive_intvl_)
 {
     // These options are used only under certain #ifdefs below.
     LIBZMQ_UNUSED (keepalive_);
@@ -110,34 +108,41 @@ void zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_, int 
     if (keepalive_ != -1) {
         tcp_keepalive keepalive_opts;
         keepalive_opts.onoff = keepalive_;
-        keepalive_opts.keepalivetime = keepalive_idle_ != -1 ? keepalive_idle_ * 1000 : 7200000;
-        keepalive_opts.keepaliveinterval = keepalive_intvl_ != -1 ? keepalive_intvl_ * 1000 : 1000;
+        keepalive_opts.keepalivetime = keepalive_idle_ != -1 ?
+                                            keepalive_idle_ * 1000 : 7200000;
+        keepalive_opts.keepaliveinterval = keepalive_intvl_ != -1 ?
+                                            keepalive_intvl_ * 1000 : 1000;
         DWORD num_bytes_returned;
-        int rc = WSAIoctl(s_, SIO_KEEPALIVE_VALS, &keepalive_opts, sizeof(keepalive_opts), NULL, 0, &num_bytes_returned, NULL, NULL);
+        int rc = WSAIoctl(s_, SIO_KEEPALIVE_VALS, &keepalive_opts,
+            sizeof(keepalive_opts), NULL, 0, &num_bytes_returned, NULL, NULL);
         wsa_assert (rc != SOCKET_ERROR);
     }
 #else
 #ifdef ZMQ_HAVE_SO_KEEPALIVE
     if (keepalive_ != -1) {
-        int rc = setsockopt (s_, SOL_SOCKET, SO_KEEPALIVE, (char*) &keepalive_, sizeof (int));
+        int rc = setsockopt (s_, SOL_SOCKET, SO_KEEPALIVE,
+                (char*) &keepalive_, sizeof (int));
         errno_assert (rc == 0);
 
 #ifdef ZMQ_HAVE_TCP_KEEPCNT
         if (keepalive_cnt_ != -1) {
-            int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPCNT, &keepalive_cnt_, sizeof (int));
+            int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPCNT,
+                    &keepalive_cnt_, sizeof (int));
             errno_assert (rc == 0);
         }
 #endif // ZMQ_HAVE_TCP_KEEPCNT
 
 #ifdef ZMQ_HAVE_TCP_KEEPIDLE
         if (keepalive_idle_ != -1) {
-            int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPIDLE, &keepalive_idle_, sizeof (int));
+            int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPIDLE,
+                    &keepalive_idle_, sizeof (int));
             errno_assert (rc == 0);
         }
 #else // ZMQ_HAVE_TCP_KEEPIDLE
 #ifdef ZMQ_HAVE_TCP_KEEPALIVE
         if (keepalive_idle_ != -1) {
-            int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPALIVE, &keepalive_idle_, sizeof (int));
+            int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPALIVE,
+                    &keepalive_idle_, sizeof (int));
             errno_assert (rc == 0);
         }
 #endif // ZMQ_HAVE_TCP_KEEPALIVE
@@ -145,7 +150,8 @@ void zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_, int 
 
 #ifdef ZMQ_HAVE_TCP_KEEPINTVL
         if (keepalive_intvl_ != -1) {
-            int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPINTVL, &keepalive_intvl_, sizeof (int));
+            int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPINTVL,
+                    &keepalive_intvl_, sizeof (int));
             errno_assert (rc == 0);
         }
 #endif // ZMQ_HAVE_TCP_KEEPINTVL
@@ -159,13 +165,16 @@ void zmq::tune_tcp_maxrt (fd_t sockfd_, int timeout_)
     if (timeout_ <= 0)
         return;
 
+    LIBZMQ_UNUSED (sockfd_);
+
 #if defined (ZMQ_HAVE_WINDOWS) && defined (TCP_MAXRT)
     // msdn says it's supported in >= Vista, >= Windows Server 2003
     timeout_ /= 1000;    // in seconds
     int rc = setsockopt (sockfd_, IPPROTO_TCP, TCP_MAXRT, (char*) &timeout_,
         sizeof(timeout_));
     wsa_assert (rc != SOCKET_ERROR);
-#elif defined (TCP_USER_TIMEOUT)    // FIXME: should be ZMQ_HAVE_TCP_USER_TIMEOUT
+// FIXME: should be ZMQ_HAVE_TCP_USER_TIMEOUT
+#elif defined (TCP_USER_TIMEOUT)
     int rc = setsockopt (sockfd_, IPPROTO_TCP, TCP_USER_TIMEOUT, &timeout_,
         sizeof(timeout_));
     errno_assert (rc == 0);
@@ -195,8 +204,9 @@ void zmq::tune_tcp_maxrt (fd_t sockfd_, int timeout_)
 		  ))
         return -1;
 
-    //  Circumvent a Windows bug; see https://support.microsoft.com/en-us/kb/201213
-    //  and https://zeromq.jira.com/browse/LIBZMQ-195
+    //  Circumvent a Windows bug:
+    //  See https://support.microsoft.com/en-us/kb/201213
+    //  See https://zeromq.jira.com/browse/LIBZMQ-195
     if (nbytes == SOCKET_ERROR && last_error == WSAENOBUFS)
         return 0;
 

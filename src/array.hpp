@@ -57,7 +57,7 @@ namespace zmq
         {
         }
 
-        //  The destructor doesn't have to be virtual. It is mad virtual
+        //  The destructor doesn't have to be virtual. It is made virtual
         //  just to keep ICC and code checking tools from complaining.
         inline virtual ~array_item_t ()
         {

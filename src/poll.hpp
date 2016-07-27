@@ -34,7 +34,9 @@
 #include "poller.hpp"
 #if defined ZMQ_USE_POLL
 
+#if !defined ZMQ_HAVE_WINDOWS
 #include <poll.h>
+#endif
 #include <stddef.h>
 #include <vector>
 

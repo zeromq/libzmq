@@ -33,10 +33,8 @@
 #include <algorithm>
 
 #include "macros.hpp"
-#include "platform.hpp"
 
 #if defined ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
 #if defined _MSC_VER
 #if defined _WIN32_WCE
 #include <cmnintrin.h>
@@ -60,7 +58,6 @@
 #include "pipe.hpp"
 #include "err.hpp"
 #include "ctx.hpp"
-#include "platform.hpp"
 #include "likely.hpp"
 #include "msg.hpp"
 #include "address.hpp"
@@ -96,6 +93,9 @@
 #include "client.hpp"
 #include "radio.hpp"
 #include "dish.hpp"
+#include "gather.hpp"
+#include "scatter.hpp"
+#include "dgram.hpp"
 
 #define ENTER_MUTEX() \
     if (thread_safe) \
@@ -163,6 +163,15 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
         case ZMQ_DISH:
             s = new (std::nothrow) dish_t (parent_, tid_, sid_);
             break;
+        case ZMQ_GATHER:
+            s = new (std::nothrow) gather_t (parent_, tid_, sid_);
+            break;
+        case ZMQ_SCATTER:
+            s = new (std::nothrow) scatter_t (parent_, tid_, sid_);
+            break;
+        case ZMQ_DGRAM:
+            s = new (std::nothrow) dgram_t (parent_, tid_, sid_);
+            break;
         default:
             errno = EINVAL;
             return NULL;
@@ -185,11 +194,10 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t tid_, int sid_, bool
     ctx_terminated (false),
     destroyed (false),
     poller(NULL),
-    handle(NULL),
+    handle((poller_t::handle_t)NULL),
     last_tsc (0),
     ticks (0),
     rcvmore (false),
-    file_desc(-1),
     monitor_socket (NULL),
     monitor_events (0),
     thread_safe (thread_safe_),
@@ -263,69 +271,48 @@ int zmq::socket_base_t::check_protocol (const std::string &protocol_)
 {
     //  First check out whether the protocol is something we are aware of.
     if (protocol_ != "inproc"
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
     &&  protocol_ != "ipc"
+#endif
     &&  protocol_ != "tcp"
+#if defined ZMQ_HAVE_OPENPGM
+    //  pgm/epgm transports only available if 0MQ is compiled with OpenPGM.
     &&  protocol_ != "pgm"
     &&  protocol_ != "epgm"
+#endif
+#if defined ZMQ_HAVE_TIPC
+    // TIPC transport is only available on Linux.
     &&  protocol_ != "tipc"
+#endif
+#if defined ZMQ_HAVE_NORM
     &&  protocol_ != "norm"
+#endif
+#if defined ZMQ_HAVE_VMCI
     &&  protocol_ != "vmci"
+#endif
     &&  protocol_ != "udp") {
         errno = EPROTONOSUPPORT;
         return -1;
     }
-    //  If 0MQ is not compiled with OpenPGM, pgm and epgm transports
-    //  are not available.
-#if !defined ZMQ_HAVE_OPENPGM
-    if (protocol_ == "pgm" || protocol_ == "epgm") {
-        errno = EPROTONOSUPPORT;
-        return -1;
-    }
-#endif
-
-#if !defined ZMQ_HAVE_NORM
-    if (protocol_ == "norm") {
-        errno = EPROTONOSUPPORT;
-        return -1;
-    }
-#endif // !ZMQ_HAVE_NORM
-
-    //  IPC transport is not available on Windows and OpenVMS.
-#if defined ZMQ_HAVE_WINDOWS || defined ZMQ_HAVE_OPENVMS
-    if (protocol_ == "ipc") {
-        //  Unknown protocol.
-        errno = EPROTONOSUPPORT;
-        return -1;
-    }
-#endif
-
-    // TIPC transport is only available on Linux.
-#if !defined ZMQ_HAVE_TIPC
-    if (protocol_ == "tipc") {
-        errno = EPROTONOSUPPORT;
-        return -1;
-    }
-#endif
-
-#if !defined ZMQ_HAVE_VMCI
-    if (protocol_ == "vmci") {
-        errno = EPROTONOSUPPORT;
-        return -1;
-    }
-#endif
 
     //  Check whether socket type and transport protocol match.
     //  Specifically, multicast protocols can't be combined with
     //  bi-directional messaging patterns (socket types).
+#if defined ZMQ_HAVE_OPENPGM || defined ZMQ_HAVE_NORM
     if ((protocol_ == "pgm" || protocol_ == "epgm" || protocol_ == "norm") &&
           options.type != ZMQ_PUB && options.type != ZMQ_SUB &&
           options.type != ZMQ_XPUB && options.type != ZMQ_XSUB) {
         errno = ENOCOMPATPROTO;
         return -1;
     }
+#endif
 
-    if (protocol_ == "udp" && (options.type != ZMQ_DISH && options.type != ZMQ_RADIO))
+    if (protocol_ == "udp" && (options.type != ZMQ_DISH &&
+                               options.type != ZMQ_RADIO &&
+                               options.type != ZMQ_DGRAM)) {
+        errno = ENOCOMPATPROTO;
         return -1;
+    }
 
     //  Protocol is available.
     return 0;
@@ -569,14 +556,72 @@ int zmq::socket_base_t::bind (const char *addr_)
         return rc;
     }
 
-    if (protocol == "pgm" || protocol == "epgm" || protocol == "norm" || protocol == "udp") {
+    if (protocol == "pgm" || protocol == "epgm" || protocol == "norm") {
         //  For convenience's sake, bind can be used interchangeable with
-        //  connect for PGM, EPGM, NORM and UDP transports.
+        //  connect for PGM, EPGM, NORM transports.
         EXIT_MUTEX ();
         rc = connect (addr_);
         if (rc != -1)
             options.connected = true;
         return rc;
+    }
+
+    if (protocol == "udp") {
+        if (!(options.type == ZMQ_DGRAM || options.type == ZMQ_DISH)) {
+            errno = ENOCOMPATPROTO;
+            EXIT_MUTEX ();
+            return -1;
+        }
+
+        //  Choose the I/O thread to run the session in.
+        io_thread_t *io_thread = choose_io_thread (options.affinity);
+        if (!io_thread) {
+            errno = EMTHREAD;
+            EXIT_MUTEX ();
+            return -1;
+        }
+
+        address_t *paddr = new (std::nothrow) address_t (protocol, address, this->get_ctx ());
+        alloc_assert (paddr);
+
+        paddr->resolved.udp_addr = new (std::nothrow) udp_address_t ();
+        alloc_assert (paddr->resolved.udp_addr);
+        rc = paddr->resolved.udp_addr->resolve (address.c_str(), true);
+        if (rc != 0) {
+            LIBZMQ_DELETE(paddr);
+            EXIT_MUTEX ();
+            return -1;
+        }
+
+        session_base_t *session = session_base_t::create (io_thread, true, this,
+            options, paddr);
+        errno_assert (session);
+
+        pipe_t *newpipe = NULL;
+
+        //  Create a bi-directional pipe.
+        object_t *parents [2] = {this, session};
+        pipe_t *new_pipes [2] = {NULL, NULL};
+
+        int hwms [2] = {options.sndhwm, options.rcvhwm};
+        bool conflates [2] = {false, false};
+        rc = pipepair (parents, new_pipes, hwms, conflates);
+        errno_assert (rc == 0);
+
+        //  Attach local end of the pipe to the socket object.
+        attach_pipe (new_pipes [0], true);
+        newpipe = new_pipes [0];
+
+        //  Attach remote end of the pipe to the session object later on.
+        session->attach_pipe (new_pipes [1]);
+
+        //  Save last endpoint URI
+        paddr->to_string (last_endpoint);
+
+        add_endpoint (addr_, (own_t *) session, newpipe);
+
+        EXIT_MUTEX ();
+        return 0;
     }
 
     //  Remaining transports require to be run in an I/O thread, so at this
@@ -894,9 +939,16 @@ int zmq::socket_base_t::connect (const char *addr_)
 #endif
 
 if (protocol  == "udp") {
+    if (options.type != ZMQ_RADIO) {
+        errno = ENOCOMPATPROTO;
+        LIBZMQ_DELETE(paddr);
+        EXIT_MUTEX ();
+        return -1;
+    }
+
     paddr->resolved.udp_addr = new (std::nothrow) udp_address_t ();
     alloc_assert (paddr->resolved.udp_addr);
-    rc = paddr->resolved.udp_addr->resolve (address.c_str());
+    rc = paddr->resolved.udp_addr->resolve (address.c_str(), false);
     if (rc != 0) {
         LIBZMQ_DELETE(paddr);
         EXIT_MUTEX ();
@@ -1051,8 +1103,38 @@ int zmq::socket_base_t::term_endpoint (const char *addr_)
         return 0;
     }
 
+    std::string resolved_addr = std::string (addr_);
+    std::pair <endpoints_t::iterator, endpoints_t::iterator> range;
+
+    // The resolved last_endpoint is used as a key in the endpoints map.
+    // The address passed by the user might not match in the TCP case due to
+    // IPv4-in-IPv6 mapping (EG: tcp://[::ffff:127.0.0.1]:9999), so try to
+    // resolve before giving up. Given at this stage we don't know whether a
+    // socket is connected or bound, try with both.
+    if (protocol == "tcp") {
+        range = endpoints.equal_range (resolved_addr);
+        if (range.first == range.second) {
+            tcp_address_t *tcp_addr = new (std::nothrow) tcp_address_t ();
+            alloc_assert (tcp_addr);
+            rc = tcp_addr->resolve (address.c_str (), false, options.ipv6);
+
+            if (rc == 0) {
+                tcp_addr->to_string (resolved_addr);
+                range = endpoints.equal_range (resolved_addr);
+
+                if (range.first == range.second) {
+                    rc = tcp_addr->resolve (address.c_str (), true, options.ipv6);
+                    if (rc == 0) {
+                        tcp_addr->to_string (resolved_addr);
+                    }
+                }
+            }
+            LIBZMQ_DELETE(tcp_addr);
+        }
+    }
+
     //  Find the endpoints range (if any) corresponding to the addr_ string.
-    std::pair <endpoints_t::iterator, endpoints_t::iterator> range = endpoints.equal_range (std::string (addr_));
+    range = endpoints.equal_range (resolved_addr);
     if (range.first == range.second) {
         errno = ENOENT;
         EXIT_MUTEX ();
@@ -1199,8 +1281,6 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
 
     //  If we have the message, return immediately.
     if (rc == 0) {
-        if (file_desc != retired_fd)
-            msg_->set_fd(file_desc);
         extract_flags (msg_);
         EXIT_MUTEX ();
         return 0;
@@ -1222,8 +1302,6 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
             EXIT_MUTEX ();
             return rc;
         }
-        if (file_desc != retired_fd)
-            msg_->set_fd(file_desc);
         extract_flags (msg_);
 
         EXIT_MUTEX ();
@@ -1263,8 +1341,6 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
         }
     }
 
-    if (file_desc != retired_fd)
-        msg_->set_fd(file_desc);
     extract_flags (msg_);
     EXIT_MUTEX ();
     return 0;
@@ -1272,8 +1348,16 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
 
 int zmq::socket_base_t::close ()
 {
+    ENTER_MUTEX ();
+
+    //  Remove all existing signalers for thread safe sockets
+    if (thread_safe)
+        ((mailbox_safe_t*)mailbox)->clear_signalers();
+
     //  Mark the socket as dead
     tag = 0xdeadbeef;
+
+    EXIT_MUTEX ();
 
     //  Transfer the ownership of the socket from this application thread
     //  to the reaper thread which will take care of the rest of shutdown
@@ -1630,17 +1714,7 @@ int zmq::socket_base_t::monitor (const char *addr_, int events_)
     return rc;
 }
 
-void zmq::socket_base_t::set_fd(zmq::fd_t fd_)
-{
-    file_desc = fd_;
-}
-
-zmq::fd_t zmq::socket_base_t::fd()
-{
-    return file_desc;
-}
-
-void zmq::socket_base_t::event_connected (const std::string &addr_, int fd_)
+void zmq::socket_base_t::event_connected (const std::string &addr_, zmq::fd_t fd_)
 {
     if (monitor_events & ZMQ_EVENT_CONNECTED)
         monitor_event (ZMQ_EVENT_CONNECTED, fd_, addr_);
@@ -1658,7 +1732,7 @@ void zmq::socket_base_t::event_connect_retried (const std::string &addr_, int in
         monitor_event (ZMQ_EVENT_CONNECT_RETRIED, interval_, addr_);
 }
 
-void zmq::socket_base_t::event_listening (const std::string &addr_, int fd_)
+void zmq::socket_base_t::event_listening (const std::string &addr_, zmq::fd_t fd_)
 {
     if (monitor_events & ZMQ_EVENT_LISTENING)
         monitor_event (ZMQ_EVENT_LISTENING, fd_, addr_);
@@ -1670,7 +1744,7 @@ void zmq::socket_base_t::event_bind_failed (const std::string &addr_, int err_)
         monitor_event (ZMQ_EVENT_BIND_FAILED, err_, addr_);
 }
 
-void zmq::socket_base_t::event_accepted (const std::string &addr_, int fd_)
+void zmq::socket_base_t::event_accepted (const std::string &addr_, zmq::fd_t fd_)
 {
     if (monitor_events & ZMQ_EVENT_ACCEPTED)
         monitor_event (ZMQ_EVENT_ACCEPTED, fd_, addr_);
@@ -1682,7 +1756,7 @@ void zmq::socket_base_t::event_accept_failed (const std::string &addr_, int err_
         monitor_event (ZMQ_EVENT_ACCEPT_FAILED, err_, addr_);
 }
 
-void zmq::socket_base_t::event_closed (const std::string &addr_, int fd_)
+void zmq::socket_base_t::event_closed (const std::string &addr_, zmq::fd_t fd_)
 {
     if (monitor_events & ZMQ_EVENT_CLOSED)
         monitor_event (ZMQ_EVENT_CLOSED, fd_, addr_);
@@ -1694,14 +1768,14 @@ void zmq::socket_base_t::event_close_failed (const std::string &addr_, int err_)
         monitor_event (ZMQ_EVENT_CLOSE_FAILED, err_, addr_);
 }
 
-void zmq::socket_base_t::event_disconnected (const std::string &addr_, int fd_)
+void zmq::socket_base_t::event_disconnected (const std::string &addr_, zmq::fd_t fd_)
 {
     if (monitor_events & ZMQ_EVENT_DISCONNECTED)
         monitor_event (ZMQ_EVENT_DISCONNECTED, fd_, addr_);
 }
 
 //  Send a monitor event
-void zmq::socket_base_t::monitor_event (int event_, int value_, const std::string &addr_)
+void zmq::socket_base_t::monitor_event (int event_, intptr_t value_, const std::string &addr_)
 {
     if (monitor_socket) {
         //  Send event in first frame

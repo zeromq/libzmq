@@ -165,6 +165,9 @@ Local in-process (inter-thread) communication transport::
 Virtual Machine Communications Interface (VMC) transport::
     linkzmq:zmq_vmci[7]
 
+Unreliable unicast and multicast using UDP::
+    linkzmq:zmq_udp[7]
+
 
 Proxies
 ~~~~~~~

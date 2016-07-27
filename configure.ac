@@ -72,7 +72,7 @@ AX_VALGRIND_CHECK
 # Check whether to build a with debug symbols
 LIBZMQ_CHECK_ENABLE_DEBUG
 
-# Check wheter to enable code coverage
+# Check whether to enable code coverage
 LIBZMQ_WITH_GCOV
 
 AC_MSG_CHECKING([if TIPC is available and supports nonblocking connect])
@@ -165,7 +165,7 @@ case "${host_os}" in
         ;;
     *solaris*)
         # Define on Solaris to enable all library features
-        CPPFLAGS="-D_PTHREADS $CPPFLAGS"
+        CPPFLAGS="-Wno-sign-compare -D_PTHREADS $CPPFLAGS"
         AC_DEFINE(ZMQ_HAVE_SOLARIS, 1, [Have Solaris OS])
         AC_CHECK_LIB(socket, socket)
         AC_CHECK_LIB(nsl, gethostbyname)
@@ -259,11 +259,11 @@ case "${host_os}" in
         libzmq_dso_visibility="no"
 
         if test "x$enable_static" = "xyes"; then
-            CPPFLAGS="-DZMQ_STATIC"
+            CPPFLAGS="-DZMQ_STATIC $CPPFLAGS"
         fi
         
-	# Set FD_SETSIZE to 1024
-	CPPFLAGS=" -DFD_SETSIZE=1024 $CPPFLAGS"
+	# Set FD_SETSIZE to 16384
+	CPPFLAGS=" -DFD_SETSIZE=16384 $CPPFLAGS"
         ;;
     *cygwin*)
         # Define on Cygwin to enable all library features
@@ -304,7 +304,7 @@ fi
 
 # CPU-specific optimizations
 case "${host_cpu}" in
-    *sparc*)
+    *sparc64*)
         AC_LANG_PUSH([C++])
         LIBZMQ_CHECK_LANG_FLAG_PREPEND([-mcpu=v9])
         AC_LANG_POP([C++])
@@ -446,6 +446,8 @@ elif test "x$with_libsodium" = "xyes"; then
     case "${host_os}" in
         *solaris*)
             LDFLAGS="-lssp $LDFLAGS"
+            libzmq_pedantic="no"
+            libzmq_werror="no"
         ;;
     esac
 else
@@ -561,7 +563,7 @@ AC_LANG_POP([C++])
 
 # Checks for library functions.
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS(perror gettimeofday clock_gettime memset socket getifaddrs freeifaddrs fork posix_memalign)
+AC_CHECK_FUNCS(perror gettimeofday clock_gettime memset socket getifaddrs freeifaddrs fork posix_memalign mkdtemp)
 AC_CHECK_HEADERS([alloca.h])
 
 LIBZMQ_CHECK_SOCK_CLOEXEC([
@@ -602,6 +604,42 @@ LIBZMQ_CHECK_TCP_KEEPALIVE([
     ])
 
 AM_CONDITIONAL(HAVE_FORK, test "x$ac_cv_func_fork" = "xyes")
+
+if test "x$cross_compiling" = "xyes"; then
+    #   Enable draft by default when cross-compiling
+    defaultval=yes
+else
+    # enable draft API by default if we're in a git repository
+    # else disable it by default; then allow --enable-drafts=yes/no override
+    AC_CHECK_FILE($srcdir/.git, [defaultval=yes], [defaultval=no])
+fi
+
+AC_ARG_ENABLE([drafts],
+    AS_HELP_STRING([--enable-drafts],
+        [Build and install draft classes and methods [default=yes]]),
+    [enable_drafts=$enableval],
+    [enable_drafts=$defaultval])
+
+AM_CONDITIONAL([ENABLE_DRAFTS], [test x$enable_drafts != xno])
+
+if test "x$enable_drafts" = "xyes"; then
+    AC_MSG_NOTICE([Building stable and legacy API + draft API])
+    AC_DEFINE(ZMQ_BUILD_DRAFT_API, 1, [Provide draft classes and methods])
+    AC_SUBST(pkg_config_defines, "-DZMQ_BUILD_DRAFT_API=1")
+else
+    AC_MSG_NOTICE([Building stable and legacy API (no draft API)])
+    AC_SUBST(pkg_config_defines, "")
+fi
+
+PKG_CHECK_MODULES(LIBUNWIND, [libunwind],
+    [
+        AC_DEFINE(HAVE_LIBUNWIND, 1, [The libunwind library is to be used])
+        AC_SUBST([LIBUNWIND_CFLAGS])
+        AC_SUBST([LIBUNWIND_LIBS])
+    ],
+    [
+        AC_MSG_WARN([Cannot find libunwind])
+    ])
 
 # Subst LIBZMQ_EXTRA_CFLAGS & CXXFLAGS & LDFLAGS
 AC_SUBST(LIBZMQ_EXTRA_CFLAGS)

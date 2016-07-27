@@ -8,7 +8,7 @@ ANDROID_BUILD_DIR="$(pwd)"
 source ${ANDROID_BUILD_DIR}/android_build_helper.sh
 
 # Choose a C++ standard library implementation from the ndk
-ANDROID_BUILD_CXXSTL="gnustl_shared_48"
+ANDROID_BUILD_CXXSTL="gnustl_shared_49"
 
 # Set up android build environment and set ANDROID_BUILD_OPTS array
 android_build_env

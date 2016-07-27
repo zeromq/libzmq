@@ -14,7 +14,7 @@ SYNOPSIS
 
 Caution: All options, with the exception of ZMQ_SUBSCRIBE, ZMQ_UNSUBSCRIBE,
 ZMQ_LINGER, ZMQ_ROUTER_HANDOVER, ZMQ_ROUTER_MANDATORY, ZMQ_PROBE_ROUTER,
-ZMQ_XPUB_VERBOSE, ZMQ_XPUB_VERBOSE_UNSUBSCRIBE, ZMQ_REQ_CORRELATE,
+ZMQ_XPUB_VERBOSE, ZMQ_XPUB_VERBOSER, ZMQ_REQ_CORRELATE,
 ZMQ_REQ_RELAXED, ZMQ_SNDHWM and ZMQ_RCVHWM, only take effect for
 subsequent socket bind/connects.
 
@@ -493,7 +493,7 @@ Applicable socket types:: all, when using TCP transport
 
 
 ZMQ_USE_FD: Set the pre-allocated socket file descriptor
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 When set to a positive integer value before zmq_bind is called on the socket,
 the socket shall use the corresponding file descriptor for connections over
 TCP or IPC instead of allocating a new file descriptor.
@@ -869,7 +869,7 @@ Applicable socket types:: all, when using TCP transports.
 
 
 ZMQ_TCP_MAXRT: Set TCP Maximum Retransmit Timeout
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 On OSes where it is supported, sets how long before an unacknowledged TCP
 retransmit times out. The system normally attempts many TCP retransmits
 following an exponential backoff strategy. This means that after a network

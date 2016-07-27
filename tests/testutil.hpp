@@ -30,13 +30,13 @@
 #ifndef __TESTUTIL_HPP_INCLUDED__
 #define __TESTUTIL_HPP_INCLUDED__
 
-#include "../include/zmq.h"
-#include "../src/stdint.hpp"
 #if defined ZMQ_CUSTOM_PLATFORM_HPP
 #   include "platform.hpp"
 #else
 #   include "../src/platform.hpp"
 #endif
+#include "../include/zmq.h"
+#include "../src/stdint.hpp"
 
 //  This defines the settle time used in tests; raise this if we
 //  get test failures on slower systems due to binds/connects not
@@ -51,9 +51,14 @@
 #include <string.h>
 
 #if defined _WIN32
+#   include "../src/windows.hpp"
 #   if defined _MSC_VER
 #       include <crtdbg.h>
 #       pragma warning(disable:4996)
+// iphlpapi is needed for if_nametoindex (not on Windows XP)
+#       if !defined ZMQ_HAVE_WINDOWS_TARGET_XP
+#           pragma comment(lib,"iphlpapi")
+#       endif
 #   endif
 #else
 #   include <pthread.h>
@@ -61,6 +66,9 @@
 #   include <signal.h>
 #   include <stdlib.h>
 #   include <sys/wait.h>
+#   include <sys/socket.h>
+#   include <netinet/in.h>
+#   include <arpa/inet.h>
 #endif
 
 //  Bounce a message from client to server and back
@@ -318,5 +326,53 @@ msleep (int milliseconds)
 #endif
 }
 
+// check if IPv6 is available (0/false if not, 1/true if it is)
+// only way to reliably check is to actually open a socket and try to bind it
+int
+is_ipv6_available(void)
+{
+    int rc, ipv6 = 1;
+    struct sockaddr_in6 test_addr;
+
+    memset (&test_addr, 0, sizeof (test_addr));
+    test_addr.sin6_family = AF_INET6;
+    inet_pton (AF_INET6, "::1", &(test_addr.sin6_addr));
+
+#ifdef ZMQ_HAVE_WINDOWS
+    SOCKET fd = socket (AF_INET6, SOCK_STREAM, IPPROTO_IP);
+    if (fd == INVALID_SOCKET)
+        ipv6 = 0;
+    else {
+        setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const char *)&ipv6, sizeof(int));
+        rc = setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, (const char *)&ipv6, sizeof(int));
+        if (rc == SOCKET_ERROR)
+            ipv6 = 0;
+        else {
+            rc = bind (fd, (struct sockaddr *)&test_addr, sizeof (test_addr));
+            if (rc == SOCKET_ERROR)
+                ipv6 = 0;
+        }
+        closesocket (fd);
+    }
+#else
+    int fd = socket (AF_INET6, SOCK_STREAM, IPPROTO_IP);
+    if (fd == -1)
+        ipv6 = 0;
+    else {
+        setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &ipv6, sizeof(int));
+        rc = setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, &ipv6, sizeof(int));
+        if (rc != 0)
+            ipv6 = 0;
+        else {
+            rc = bind (fd, (struct sockaddr *)&test_addr, sizeof (test_addr));
+            if (rc != 0)
+                ipv6 = 0;
+        }
+        close (fd);
+    }
+#endif
+
+    return ipv6;
+}
 
 #endif

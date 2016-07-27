@@ -89,7 +89,8 @@ int main (void)
     assert (rc == 0);
 
     char host [NI_MAXHOST];
-    rc = getnameinfo ((struct sockaddr*) &ss, addrlen, host, sizeof host, NULL, 0, NI_NUMERICHOST);
+    rc = getnameinfo ((struct sockaddr*) &ss, addrlen, host, sizeof host,
+            NULL, 0, NI_NUMERICHOST);
     assert (rc == 0);
 
     // assert it is localhost which connected
@@ -105,8 +106,13 @@ int main (void)
 
     // getting name from closed socket will fail
     rc = getpeername (srcFd, (struct sockaddr*) &ss, &addrlen);
+#ifdef ZMQ_HAVE_WINDOWS
+    assert (rc == SOCKET_ERROR);
+    assert (WSAGetLastError() == WSAENOTSOCK);
+#else
     assert (rc == -1);
     assert (errno == EBADF);
+#endif
 
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);

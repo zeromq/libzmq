@@ -121,7 +121,7 @@ void zmq::object_t::process_command (command_t &cmd_)
     case command_t::term_req:
         process_term_req (cmd_.args.term_req.object);
         break;
-    
+
     case command_t::term:
         process_term (cmd_.args.term.linger);
         break;
@@ -194,7 +194,7 @@ zmq::io_thread_t *zmq::object_t::choose_io_thread (uint64_t affinity_)
 void zmq::object_t::send_stop ()
 {
     //  'stop' command goes always from administrative thread to
-    //  the current object. 
+    //  the current object.
     command_t cmd;
     cmd.destination = this;
     cmd.type = command_t::stop;

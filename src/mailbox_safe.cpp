@@ -52,23 +52,28 @@ zmq::mailbox_safe_t::~mailbox_safe_t ()
     sync->unlock ();
 }
 
-void zmq::mailbox_safe_t::add_signaler(signaler_t* signaler)
+void zmq::mailbox_safe_t::add_signaler (signaler_t* signaler)
 {
     signalers.push_back(signaler);
 }
 
-void zmq::mailbox_safe_t::remove_signaler(signaler_t* signaler)
+void zmq::mailbox_safe_t::remove_signaler (signaler_t* signaler)
 {
     std::vector<signaler_t*>::iterator it = signalers.begin();
 
     // TODO: make a copy of array and signal outside the lock
     for (; it != signalers.end(); ++it){
         if (*it == signaler)
-           break;        
+           break;
     }
 
     if (it != signalers.end())
         signalers.erase(it);
+}
+
+void zmq::mailbox_safe_t::clear_signalers ()
+{
+    signalers.clear ();
 }
 
 void zmq::mailbox_safe_t::send (const command_t &cmd_)
@@ -92,7 +97,7 @@ int zmq::mailbox_safe_t::recv (command_t *cmd_, int timeout_)
     //  Try to get the command straight away.
     if (cpipe.read (cmd_))
         return 0;
-    
+
     //  Wait for signal from the command sender.
     int rc = cond_var.wait (sync, timeout_);
     if (rc == -1) {

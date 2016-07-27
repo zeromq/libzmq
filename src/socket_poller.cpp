@@ -186,19 +186,14 @@ int zmq::socket_poller_t::remove (socket_base_t *socket_)
         return -1;
     }
 
+    items.erase(it);
+    need_rebuild = true;
+
     int thread_safe;
     size_t thread_safe_size = sizeof(int);
 
-    if (socket_->getsockopt (ZMQ_THREAD_SAFE, &thread_safe, &thread_safe_size) == -1)
-        return -1;
-
-    if (thread_safe) {
-        if (socket_->remove_signaler (&signaler) == -1)
-            return -1;
-    }
-
-    items.erase (it);
-    need_rebuild = true;
+    if (socket_->getsockopt (ZMQ_THREAD_SAFE, &thread_safe, &thread_safe_size) == 0 && thread_safe)
+        socket_->remove_signaler (&signaler);
 
     return 0;
 }
@@ -393,16 +388,22 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *event_, long time
 
 #if defined ZMQ_POLL_BASED_ON_POLL
     if (unlikely (poll_size == 0)) {
+        // We'll report an error (timed out) as if the list was non-empty and
+        // no event occured within the specified timeout. Otherwise the caller
+        // needs to check the return value AND the event to avoid using the
+        // nullified event data.
+        errno = ETIMEDOUT;
         if (timeout_ == 0)
-            return 0;
+            return -1;
 #if defined ZMQ_HAVE_WINDOWS
         Sleep (timeout_ > 0 ? timeout_ : INFINITE);
-        return 0;
+        return -1;
 #elif defined ZMQ_HAVE_ANDROID
         usleep (timeout_ * 1000);
-        return 0;
+        return -1;
 #else
-        return usleep (timeout_ * 1000);
+        usleep (timeout_ * 1000);
+        return -1;
 #endif
     }
 
@@ -522,13 +523,19 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *event_, long time
 #elif defined ZMQ_POLL_BASED_ON_SELECT
 
     if (unlikely (poll_size == 0)) {
+        // We'll report an error (timed out) as if the list was non-empty and
+        // no event occured within the specified timeout. Otherwise the caller
+        // needs to check the return value AND the event to avoid using the
+        // nullified event data.
+        errno = ETIMEDOUT;
         if (timeout_ == 0)
-            return 0;
+            return -1;
 #if defined ZMQ_HAVE_WINDOWS
         Sleep (timeout_ > 0 ? timeout_ : INFINITE);
-        return 0;
+        return -1;
 #else
-        return usleep (timeout_ * 1000);
+        usleep (timeout_ * 1000);
+        return -1;
 #endif
     }
     zmq::clock_t clock;

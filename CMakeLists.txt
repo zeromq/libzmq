@@ -57,6 +57,25 @@ else ()
     set (ZMQ_HAVE_CURVE 1)
 endif ()
 
+set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+
+if (EXISTS "${SOURCE_DIR}/.git")
+    OPTION (ENABLE_DRAFTS "Build and install draft classes and methods" ON)
+else ()
+    OPTION (ENABLE_DRAFTS "Build and install draft classes and methods" OFF)
+endif ()
+IF (ENABLE_DRAFTS)
+    ADD_DEFINITIONS (-DZMQ_BUILD_DRAFT_API)
+    set (pkg_config_defines "-DZMQ_BUILD_DRAFT_API=1")
+ELSE (ENABLE_DRAFTS)
+    set (pkg_config_defines "")
+ENDIF (ENABLE_DRAFTS)
+
+option (WITH_MILITANT "Enable militant assertions" OFF)
+if (WITH_MILITANT)
+    add_definitions(-DZMQ_ACT_MILITANT)
+endif()
+
 set (POLLER "" CACHE STRING "Choose polling system. valid values are
                             kqueue, epoll, devpoll, poll or select [default=autodetect]")
 
@@ -186,6 +205,10 @@ set (CMAKE_REQUIRED_INCLUDES sys/time.h)
 check_function_exists (gethrtime HAVE_GETHRTIME)
 set (CMAKE_REQUIRED_INCLUDES)
 
+set (CMAKE_REQUIRED_INCLUDES stdlib.h)
+check_function_exists (mkdtemp HAVE_MKDTEMP)
+set (CMAKE_REQUIRED_INCLUDES)
+
 add_definitions (-D_REENTRANT -D_THREAD_SAFE)
 add_definitions (-DZMQ_CUSTOM_PLATFORM_HPP)
 
@@ -278,6 +301,7 @@ zmq_check_tcp_keepcnt ()
 zmq_check_tcp_keepidle ()
 zmq_check_tcp_keepintvl ()
 zmq_check_tcp_keepalive ()
+zmq_check_tcp_tipc ()
 
 
 if (    CMAKE_SYSTEM_NAME MATCHES "Linux"
@@ -412,6 +436,7 @@ set (cxx-sources
         curve_server.cpp
         dealer.cpp
         devpoll.cpp
+        dgram.cpp
         dist.cpp
         epoll.cpp
         err.cpp
@@ -486,7 +511,9 @@ set (cxx-sources
         radio.cpp
         dish.cpp
         udp_engine.cpp
-        udp_address.cpp)
+        udp_address.cpp
+        scatter.cpp
+        gather.cpp)
 
 set (rc-sources version.rc)
 
@@ -527,7 +554,6 @@ set (public_headers include/zmq.h
 set (readme-docs AUTHORS
                 COPYING
                 COPYING.LESSER
-                MAINTAINERS
                 NEWS)
 
 #-----------------------------------------------------------------------------
@@ -545,6 +571,11 @@ if (WITH_VMCI)
     include_directories (${VMCI_INCLUDE_DIRS})
     list (APPEND cxx-sources vmci_address.cpp vmci_connecter.cpp vmci_listener.cpp vmci.cpp)
 endif (WITH_VMCI)
+
+if (ZMQ_HAVE_TIPC)
+    add_definitions (-DZMQ_HAVE_TIPC)
+    list (APPEND cxx-sources tipc_address.cpp tipc_connecter.cpp tipc_listener.cpp)
+endif (ZMQ_HAVE_TIPC)
 
 #-----------------------------------------------------------------------------
 # source generators

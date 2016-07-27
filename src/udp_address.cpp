@@ -33,14 +33,11 @@
 
 #include "macros.hpp"
 #include "udp_address.hpp"
-#include "platform.hpp"
 #include "stdint.hpp"
 #include "err.hpp"
 #include "ip.hpp"
 
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
+#ifndef ZMQ_HAVE_WINDOWS
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -58,7 +55,7 @@ zmq::udp_address_t::~udp_address_t ()
 {
 }
 
-int zmq::udp_address_t::resolve (const char *name_)
+int zmq::udp_address_t::resolve (const char *name_, bool bind_)
 {
     //  Find the ':' at end that separates address from the port number.
     const char *delimiter = strrchr (name_, ':');
@@ -80,7 +77,12 @@ int zmq::udp_address_t::resolve (const char *name_)
 
     dest_address.sin_family = AF_INET;
     dest_address.sin_port = htons (port);
-    dest_address.sin_addr.s_addr = inet_addr (addr_str.c_str ());
+
+    //  Only when the udp should bind we allow * as the address
+    if (addr_str == "*" && bind_)
+        dest_address.sin_addr.s_addr = htons (INADDR_ANY);
+    else
+        dest_address.sin_addr.s_addr = inet_addr (addr_str.c_str ());
 
     if (dest_address.sin_addr.s_addr == INADDR_NONE) {
         errno = EINVAL;
@@ -104,9 +106,15 @@ int zmq::udp_address_t::resolve (const char *name_)
         return -1;
     }
 
-    bind_address.sin_family = AF_INET;
-    bind_address.sin_port = htons (port);
-    bind_address.sin_addr.s_addr = htons (INADDR_ANY);
+    //  If a should bind and not a multicast, the dest address
+    //  is actually the bind address
+    if (bind_ && !is_mutlicast)
+        bind_address = dest_address;
+    else {
+        bind_address.sin_family = AF_INET;
+        bind_address.sin_port = htons (port);
+        bind_address.sin_addr.s_addr = htons (INADDR_ANY);
+    }
 
     address = name_;
 

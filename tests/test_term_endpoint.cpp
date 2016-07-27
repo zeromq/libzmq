@@ -129,9 +129,9 @@ int main (void)
     assert (push);
     rc = zmq_bind (push, ep_wc_tcp);
     assert (rc == 0);
+    pull = zmq_socket(ctx, ZMQ_PULL);
+    assert(pull);
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
-    pull = zmq_socket (ctx, ZMQ_PULL);
-    assert (pull);
     rc = zmq_bind (pull, ep_wc_ipc);
     assert (rc == 0);
 #endif
@@ -178,9 +178,9 @@ int main (void)
     assert (push);
     rc = zmq_bind (push, ep_wc_tcp);
     assert (rc == 0);
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
-    pull = zmq_socket (ctx, ZMQ_PULL);
-    assert (pull);
+    pull = zmq_socket(ctx, ZMQ_PULL);
+    assert(pull);
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS    
     rc = zmq_bind (pull, ep_wc_ipc);
     assert (rc == 0);
 #endif

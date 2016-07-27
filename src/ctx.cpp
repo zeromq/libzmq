@@ -29,10 +29,7 @@
 
 #include "precompiled.hpp"
 #include "macros.hpp"
-#include "platform.hpp"
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
+#ifndef ZMQ_HAVE_WINDOWS
 #include <unistd.h>
 #endif
 
@@ -99,7 +96,7 @@ zmq::ctx_t::ctx_t () :
     // allow opening of /dev/urandom
     unsigned char tmpbytes[4];
     randombytes(tmpbytes, 4);
-#elif defined (ZMQ_USE_SODIUM)
+#elif defined (ZMQ_USE_LIBSODIUM)
     int rc = sodium_init ();
     zmq_assert (rc != -1);
 #endif

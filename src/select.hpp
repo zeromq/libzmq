@@ -34,14 +34,11 @@
 #include "poller.hpp"
 #if defined ZMQ_USE_SELECT
 
-#include "platform.hpp"
-
 #include <stddef.h>
 #include <vector>
 #include <map>
 
 #if defined ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
 #elif defined ZMQ_HAVE_OPENVMS
 #include <sys/types.h>
 #include <sys/time.h>

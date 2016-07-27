@@ -30,10 +30,7 @@
 #include "precompiled.hpp"
 #include <stdlib.h>
 
-#include "platform.hpp"
-#if defined ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
+#if !defined ZMQ_HAVE_WINDOWS
 #include <unistd.h>
 #endif
 

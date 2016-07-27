@@ -37,7 +37,7 @@
 //  definition of pollfd structure (AIX uses 'reqevents' and 'retnevents'
 //  instead of 'events' and 'revents' and defines macros to map from POSIX-y
 //  names to AIX-specific names).
-#if defined ZMQ_POLL_BASED_ON_POLL
+#if defined ZMQ_POLL_BASED_ON_POLL && !defined ZMQ_HAVE_WINDOWS
 #include <poll.h>
 #endif
 
@@ -46,8 +46,9 @@
 #include "socket_base.hpp"
 #include "err.hpp"
 
+// TODO: determine if this is an issue, since zmq.h is being loaded from pch.
 // zmq.h must be included *after* poll.h for AIX to build properly
-#include "../include/zmq.h"
+//#include "../include/zmq.h"
 
 int capture(
         class zmq::socket_base_t *capture_,

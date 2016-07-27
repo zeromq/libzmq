@@ -28,13 +28,8 @@
 */
 
 #include "precompiled.hpp"
-#include "platform.hpp"
 
 #ifdef HAVE_LIBGSSAPI_KRB5
-
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#endif
 
 #include <string.h>
 #include <string>

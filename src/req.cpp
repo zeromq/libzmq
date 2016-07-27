@@ -28,6 +28,7 @@
 */
 
 #include "precompiled.hpp"
+#include "macros.hpp"
 #include "req.hpp"
 #include "err.hpp"
 #include "msg.hpp"
@@ -39,6 +40,7 @@ extern "C"
 {
     static void free_id (void *data, void *hint)
     {
+        LIBZMQ_UNUSED (hint);
         free (data);
     }
 }
@@ -279,6 +281,21 @@ int zmq::req_session_t::push_msg (msg_t *msg_)
 {
     switch (state) {
     case bottom:
+        if (msg_->flags () == msg_t::more) {
+            //  In case option ZMQ_CORRELATE is on, allow request_id to be
+            //  transfered as first frame (would be too cumbersome to check
+            //  whether the option is actually on or not).
+            if (msg_->size () == sizeof (uint32_t)) {
+                state = request_id;
+                return session_base_t::push_msg (msg_);
+            }
+            else if (msg_->size () == 0) {
+                state = body;
+                return session_base_t::push_msg (msg_);
+            }
+        }
+        break;
+    case request_id:
         if (msg_->flags () == msg_t::more && msg_->size () == 0) {
             state = body;
             return session_base_t::push_msg (msg_);

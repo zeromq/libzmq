@@ -30,8 +30,6 @@
 #ifndef __ZMQ_ATOMIC_PTR_HPP_INCLUDED__
 #define __ZMQ_ATOMIC_PTR_HPP_INCLUDED__
 
-#include "platform.hpp"
-
 #if defined ZMQ_FORCE_MUTEXES
 #define ZMQ_ATOMIC_PTR_MUTEX
 #elif defined ZMQ_HAVE_ATOMIC_INTRINSICS

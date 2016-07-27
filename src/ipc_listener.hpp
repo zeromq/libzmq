@@ -30,8 +30,6 @@
 #ifndef __ZMQ_IPC_LISTENER_HPP_INCLUDED__
 #define __ZMQ_IPC_LISTENER_HPP_INCLUDED__
 
-#include "platform.hpp"
-
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
 
 #include <string>
@@ -74,7 +72,8 @@ namespace zmq
         int close ();
 
         // Create wildcard path address
-        static int create_wildcard_address(std::string& path_);
+        static int create_wildcard_address(std::string& path_,
+                std::string& file_);
 
         //  Filter new connections if the OS provides a mechanism to get
         //  the credentials of the peer process.  Called from accept().

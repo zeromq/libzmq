@@ -77,8 +77,9 @@ const char *zmq::mechanism_t::socket_type_string (int socket_type) const
                                    "DEALER", "ROUTER", "PULL", "PUSH",
                                    "XPUB", "XSUB", "STREAM",
                                    "SERVER", "CLIENT",
-                                   "RADIO", "DISH"};
-    zmq_assert (socket_type >= 0 && socket_type <= 15);
+                                   "RADIO", "DISH",
+                                   "GATHER", "SCATTER", "DGRAM"};
+    zmq_assert (socket_type >= 0 && socket_type <= 18);
     return names [socket_type];
 }
 
@@ -198,6 +199,12 @@ bool zmq::mechanism_t::check_socket_type (const std::string& type_) const
             return type_ == "DISH";
         case ZMQ_DISH:
             return type_ == "RADIO";
+        case ZMQ_GATHER:
+            return type_ == "SCATTER";
+        case ZMQ_SCATTER:
+            return type_ == "GATHER";
+        case ZMQ_DGRAM:
+            return type_ == "DGRAM";
         default:
             break;
     }

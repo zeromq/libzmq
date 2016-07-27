@@ -30,8 +30,6 @@
 #ifndef __IPC_CONNECTER_HPP_INCLUDED__
 #define __IPC_CONNECTER_HPP_INCLUDED__
 
-#include "platform.hpp"
-
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
 
 #include "fd.hpp"

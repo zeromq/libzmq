@@ -32,7 +32,7 @@
 static void bounce (void *socket)
 {
     int more;
-    size_t more_size = sizeof(more);
+    size_t more_size = sizeof (more);
     do {
         zmq_msg_t recv_part, sent_part;
         int rc = zmq_msg_init (&recv_part);
@@ -50,13 +50,13 @@ static void bounce (void *socket)
         rc = zmq_msg_send (&sent_part, socket, more ? ZMQ_SNDMORE : 0);
         assert (rc != -1);
 
-        zmq_msg_close(&recv_part);
+        zmq_msg_close (&recv_part);
     } while (more);
 }
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
@@ -68,10 +68,6 @@ int main (void)
     assert (rc == 0);
 
     rc = zmq_setsockopt (req, ZMQ_REQ_CORRELATE, &enabled, sizeof (int));
-    assert (rc == 0);
-
-    int rcvtimeo = 100;
-    rc = zmq_setsockopt (req, ZMQ_RCVTIMEO, &rcvtimeo, sizeof (int));
     assert (rc == 0);
 
     rc = zmq_bind (req, "tcp://127.0.0.1:5555");
@@ -127,7 +123,7 @@ int main (void)
     s_recv_seq (rep [3], "H", SEQ_END);
     s_send_seq (rep [3], "BAD", SEQ_END);
 
-    // Wait for message to be there.
+    //  Wait for message to be there.
     msleep (SETTLE_TIME);
 
     //  Without receiving that reply, send another request on the REQ socket
@@ -142,8 +138,8 @@ int main (void)
     //  communication pipes. For example pipe from req to rep[0] should not be
     //  closed after executing Case 1. So rep[0] should be the next to receive,
     //  not rep[1].
-    s_send_seq(req, "J", SEQ_END);
-    s_recv_seq(rep [0], "J", SEQ_END);
+    s_send_seq (req, "J", SEQ_END);
+    s_recv_seq (rep [0], "J", SEQ_END);
 
     close_zero_linger (req);
     for (size_t peer = 0; peer < services; peer++)
@@ -171,18 +167,14 @@ int main (void)
 
     //  Setup ROUTER socket as server but do not bind it just yet
     void *router = zmq_socket (ctx, ZMQ_ROUTER);
-    assert(router);
-
-    int timeout = 1000;
-    rc = zmq_setsockopt (router, ZMQ_RCVTIMEO, &timeout, sizeof(int));
-    assert (rc == 0);
+    assert (router);
 
     //  Send two requests
     s_send_seq (req, "TO_BE_DISCARDED", SEQ_END);
     s_send_seq (req, "TO_BE_ANSWERED", SEQ_END);
 
     //  Bind server allowing it to receive messages
-    rc = zmq_bind(router, "tcp://127.0.0.1:5555");
+    rc = zmq_bind (router, "tcp://127.0.0.1:5555");
     assert (rc == 0);
 
     //  Read the two messages and send them back as is

@@ -30,7 +30,6 @@
 #ifndef __ZMQ_CONDITON_VARIABLE_HPP_INCLUDED__
 #define __ZMQ_CONDITON_VARIABLE_HPP_INCLUDED__
 
-#include "platform.hpp"
 #include "clock.hpp"
 #include "err.hpp"
 #include "mutex.hpp"
@@ -165,9 +164,9 @@ namespace zmq
                 timeout.tv_sec += timeout_ / 1000;
                 timeout.tv_nsec += (timeout_ % 1000) * 1000000;
 
-                if (timeout.tv_nsec > 1E9) {
+                if (timeout.tv_nsec > 1000000000) {
                     timeout.tv_sec++;
-                    timeout.tv_nsec -= 1E9;
+                    timeout.tv_nsec -= 1000000000;
                 }
 
                 rc = pthread_cond_timedwait (&cond, mutex_->get_mutex (), &timeout);

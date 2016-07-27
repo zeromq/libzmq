@@ -29,13 +29,8 @@
 
 #include "precompiled.hpp"
 #include "macros.hpp"
-#include "platform.hpp"
 
 #ifdef ZMQ_HAVE_CURVE
-
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#endif
 
 #include "msg.hpp"
 #include "session_base.hpp"

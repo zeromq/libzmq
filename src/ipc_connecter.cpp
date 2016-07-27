@@ -37,7 +37,6 @@
 
 #include "stream_engine.hpp"
 #include "io_thread.hpp"
-#include "platform.hpp"
 #include "random.hpp"
 #include "err.hpp"
 #include "ip.hpp"
@@ -188,14 +187,14 @@ int zmq::ipc_connecter_t::get_new_reconnect_ivl ()
 
     //  Only change the current reconnect interval  if the maximum reconnect
     //  interval was set and if it's larger than the reconnect interval.
-    if (options.reconnect_ivl_max > 0 && 
+    if (options.reconnect_ivl_max > 0 &&
         options.reconnect_ivl_max > options.reconnect_ivl) {
 
         //  Calculate the next interval
         current_reconnect_ivl = current_reconnect_ivl * 2;
         if(current_reconnect_ivl >= options.reconnect_ivl_max) {
             current_reconnect_ivl = options.reconnect_ivl_max;
-        }   
+        }
     }
     return this_interval;
 }
@@ -220,7 +219,7 @@ int zmq::ipc_connecter_t::open ()
     //  Connect was successful immediately.
     if (rc == 0)
         return 0;
-        
+
     //  Translate other error codes indicating asynchronous connect has been
     //  launched to a uniform EINPROGRESS.
     if (rc == -1 && errno == EINTR) {

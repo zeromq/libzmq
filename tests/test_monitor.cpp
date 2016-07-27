@@ -105,7 +105,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_connect (client, "tcp://127.0.0.1:9998");
     assert (rc == 0);
-    bounce (client, server);
+    bounce (server, client);
 
     //  Close client and server
     close_zero_linger (client);

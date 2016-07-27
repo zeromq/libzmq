@@ -36,19 +36,17 @@
 //  definition of pollfd structure (AIX uses 'reqevents' and 'retnevents'
 //  instead of 'events' and 'revents' and defines macros to map from POSIX-y
 //  names to AIX-specific names).
-#if defined ZMQ_POLL_BASED_ON_POLL
+#if defined ZMQ_POLL_BASED_ON_POLL && !defined ZMQ_HAVE_WINDOWS
 #include <poll.h>
 #endif
 
+// TODO: determine if this is an issue, since zmq.h is being loaded from pch.
 // zmq.h must be included *after* poll.h for AIX to build properly
-#include "../include/zmq.h"
+//#include "../include/zmq.h"
 
-#if defined ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
+#if !defined ZMQ_HAVE_WINDOWS
 #include <unistd.h>
 #endif
-
 
 // XSI vector I/O
 #if defined ZMQ_HAVE_UIO
@@ -59,7 +57,6 @@ struct iovec {
     size_t iov_len;
 };
 #endif
-
 
 #include <string.h>
 #include <stdlib.h>
@@ -80,10 +77,6 @@ struct iovec {
 #include "signaler.hpp"
 #include "socket_poller.hpp"
 #include "timers.hpp"
-
-#if !defined ZMQ_HAVE_WINDOWS
-#include <unistd.h>
-#endif
 
 #if defined ZMQ_HAVE_OPENPGM
 #define __PGM_WININT_H__
@@ -456,6 +449,11 @@ int zmq_sendiov (void *s_, iovec *a_, size_t count_, int flags_)
         errno = ENOTSOCK;
         return -1;
     }
+    if (unlikely (count_ <= 0 || !a_)) {
+        errno = EINVAL;
+        return -1;
+    }
+
     int rc = 0;
     zmq_msg_t msg;
     zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
@@ -559,6 +557,11 @@ int zmq_recviov (void *s_, iovec *a_, size_t *count_, int flags_)
         errno = ENOTSOCK;
         return -1;
     }
+    if (unlikely (!count_ || *count_ <= 0 || !a_)) {
+        errno = EINVAL;
+        return -1;
+    }
+
     zmq::socket_base_t *s = (zmq::socket_base_t *) s_;
 
     size_t count = *count_;
@@ -674,11 +677,17 @@ int zmq_msg_more (zmq_msg_t *msg_)
 
 int zmq_msg_get (zmq_msg_t *msg_, int property_)
 {
+    const char* fd_string;
+
     switch (property_) {
         case ZMQ_MORE:
             return (((zmq::msg_t*) msg_)->flags () & zmq::msg_t::more)? 1: 0;
         case ZMQ_SRCFD:
-            return (int)((zmq::msg_t*) msg_)->fd ();
+            fd_string = zmq_msg_gets(msg_, "__fd");
+            if (fd_string == NULL)
+                return (int)-1;
+
+            return atoi(fd_string);
         case ZMQ_SHARED:
             return (((zmq::msg_t*) msg_)->is_cmsg ()) ||
                    (((zmq::msg_t*) msg_)->flags () & zmq::msg_t::shared)? 1: 0;
@@ -735,7 +744,8 @@ const char *zmq_msg_gets (zmq_msg_t *msg_, const char *property_)
 
 int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 {
-    //  TODO: the function implementation can just call zmq_pollfd_poll with pollfd as NULL, however pollfd is not yet stable
+    //  TODO: the function implementation can just call zmq_pollfd_poll with
+    //  pollfd as NULL, however pollfd is not yet stable.
 #if defined ZMQ_POLL_BASED_ON_POLL
     if (unlikely (nitems_ < 0)) {
         errno = EINVAL;
@@ -1097,8 +1107,9 @@ void *zmq_poller_new (void)
 
 int zmq_poller_destroy (void **poller_p_)
 {
-    void *poller = *poller_p_;
-    if (!poller || !((zmq::socket_poller_t*) poller)->check_tag ()) {
+    void *poller;
+    if (!poller_p_ || !(poller = *poller_p_) ||
+            !((zmq::socket_poller_t*) poller)->check_tag ()) {
         errno = EFAULT;
         return -1;
     }
@@ -1208,6 +1219,8 @@ int zmq_poller_wait (void *poller_, zmq_poller_event_t *event, long timeout_)
         errno = EFAULT;
         return -1;
     }
+
+    zmq_assert (event != NULL);
 
     zmq::socket_poller_t::event_t e;
     memset (&e, 0, sizeof (e));
