@@ -391,7 +391,7 @@ zmq::fd_t zmq::ipc_listener_t::accept ()
     //  resources is considered valid and treated by ignoring the connection.
     zmq_assert (s != retired_fd);
 #if defined ZMQ_HAVE_SOCK_CLOEXEC
-    fd_t sock = ::accept4 (s, (struct sockaddr *) &ss, &ss_len, SOCK_CLOEXEC);
+    fd_t sock = ::accept4 (s, NULL, NULL, SOCK_CLOEXEC);
 #else
     fd_t sock = ::accept (s, NULL, NULL);
 #endif
