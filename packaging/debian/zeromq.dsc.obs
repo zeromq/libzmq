@@ -1,0 +1,15 @@
+Format: 3.0 (quilt)
+Source: zeromq
+Binary: libzmq5, libzmq3-dev, libzmq5-dbg
+Architecture: any
+Version: 4.2.0
+Maintainer: libzmq Developers <zeromq-dev@lists.zeromq.org>
+Homepage: http://www.zeromq.org/
+Standards-Version: 3.9.8
+Build-Depends: debhelper (>= 9), dh-autoreconf, libpgm-dev, libsodium-dev, libunwind-dev | libunwind7-dev, pkg-config
+Package-List:
+ libzmq3-dev deb libdevel optional arch=any
+ libzmq5 deb libs optional arch=any
+ libzmq5-dbg deb debug extra arch=any
+Files:
+ e7adf4b7dbae09b28cfd10d26cd67fac 794853 zeromq.orig.tar.gz
