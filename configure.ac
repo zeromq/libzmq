@@ -662,7 +662,6 @@ AC_CONFIG_FILES([ \
     src/libzmq.pc \
     doc/Makefile \
     builds/Makefile \
-    builds/msvc/Makefile \
-    packaging/redhat/zeromq.spec])
+    builds/msvc/Makefile])
 
 AC_OUTPUT
