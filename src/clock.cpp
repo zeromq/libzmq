@@ -84,16 +84,18 @@ static zmq::mutex_t compatible_get_tick_count64_mutex;
 
 ULONGLONG compatible_get_tick_count64()
 {
-  compatible_get_tick_count64_mutex.lock();
+  zmq::scoped_lock_t locker(compatible_get_tick_count64_mutex);
+
   static DWORD s_wrap = 0;
   static DWORD s_last_tick = 0;
   const DWORD current_tick = ::GetTickCount();
+
   if (current_tick < s_last_tick)
     ++s_wrap;
 
   s_last_tick = current_tick;
   const ULONGLONG result = (static_cast<ULONGLONG>(s_wrap) << 32) + static_cast<ULONGLONG>(current_tick);
-  compatible_get_tick_count64_mutex.unlock();
+
   return result;
 }
 
