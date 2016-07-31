@@ -1,3 +1,4 @@
+%define lib_name libzmq5
 Name:          zeromq
 Version:       4.2.0
 Release:       1%{?dist}
@@ -62,12 +63,25 @@ abstraction of asynchronous message queues, multiple messaging
 patterns, message filtering (subscriptions), seamless access to
 multiple transport protocols and more.
 
+%package -n %{lib_name}
+Summary:   Shared Library for ZeroMQ
+Group:     Productivity/Networking/Web/Servers
+Conflicts: zeromq
+
+%description -n %{lib_name}
+The 0MQ lightweight messaging kernel is a library which extends the
+standard socket interfaces with features traditionally provided by
+specialised messaging middleware products. 0MQ sockets provide an
+abstraction of asynchronous message queues, multiple messaging
+patterns, message filtering (subscriptions), seamless access to
+multiple transport protocols and more.
+
 This package contains the ZeroMQ shared library.
 
 %package devel
 Summary:  Development files and static library for the ZeroMQ library
 Group:    Development/Libraries
-Requires: %{name} = %{version}-%{release}, pkgconfig
+Requires: %{lib_name} = %{version}-%{release}, pkgconfig
 
 %description devel
 The 0MQ lightweight messaging kernel is a library which extends the
@@ -119,14 +133,11 @@ autoreconf -fi
 %clean
 [ "%{buildroot}" != "/" ] && %{__rm} -rf %{buildroot}
 
-%files
+%files -n %{lib_name}
 %defattr(-,root,root,-)
 
 # docs in the main package
-%doc AUTHORS ChangeLog COPYING COPYING.LESSER NEWS
-
-# binaries
-%{_bindir}/curve_keygen
+%doc AUTHORS COPYING COPYING.LESSER NEWS
 
 # libraries
 %{_libdir}/libzmq.so.*
@@ -156,6 +167,9 @@ autoreconf -fi
 %{_mandir}/man7/zmq_vmci.7.gz
 
 %changelog
+* Sun Jul 31 2016 Luca Boccassi <luca.boccassi@gmail.com>
+- Follow RPM standards and rename zeromq to libzmq5
+
 * Sat Oct 25 2014 Phillip Mienk <mienkphi@gmail.com>
 - Add --with/--without libgssapi_krb5 support following J.T.Conklin's pattern
 
