@@ -9,6 +9,16 @@ Source:        http://download.zeromq.org/%{name}-%{version}.tar.gz
 Prefix:        %{_prefix}
 Buildroot:     %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildRequires:  autoconf automake libtool libsodium-devel glib2-devel
+%if ! (0%{?fedora} > 12 || 0%{?rhel} > 5)
+BuildRequires:  e2fsprogs-devel
+BuildRoot:      %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
+%else
+BuildRequires:  libuuid-devel
+%endif
+%if %{with pgm}
+BuildRequires:  openpgm-devel
+BuildRequires:  krb5-devel
+%endif
 BuildRequires: gcc, make, gcc-c++, libstdc++-devel, asciidoc, xmlto
 Requires:      libstdc++
 
@@ -71,6 +81,11 @@ This package contains ZeroMQ related development libraries and header files.
 
 %prep
 %setup -q
+
+# Sed version number of openpgm into configure
+%global openpgm_pc $(basename %{_libdir}/pkgconfig/openpgm*.pc .pc)
+sed -i "s/openpgm-[0-9].[0-9]/%{openpgm_pc}/g" \
+    configure*
 
 %build
 autoreconf -fi
