@@ -1,0 +1,37 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+export TEST_VERBOSE=1
+
+ifeq ($(DEB_BUILD_ARCH_OS), kfreebsd)
+	DO_TEST = no
+endif
+
+override_dh_clean:
+	dh_clean
+	find $(CURDIR) -type s -exec rm {} \;
+	rm -f $(CURDIR)/doc/*.xml $(CURDIR)/doc/*.3 $(CURDIR)/doc/*.7
+	rm -f config.log
+
+override_dh_auto_configure:
+	dh_auto_configure -- --with-pgm --with-libsodium
+
+override_dh_auto_test:
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+ifneq ($(DO_TEST), no)
+	-dh_auto_test -- VERBOSE=1
+else
+	-dh_auto_test -- VERBOSE=1
+endif
+endif
+
+override_dh_strip:
+	dh_strip --dbg-package=libzmq5-dbg
+
+%:
+	dh $@ --with=autoreconf --parallel
+
+.PHONY: override_dh_auto_configure override_dh_strip

@@ -1,0 +1,61 @@
+Source: zeromq
+Section: libs
+Priority: optional
+Maintainer: libzmq Developers <zeromq-dev@lists.zeromq.org>
+Build-Depends: debhelper (>= 9),
+ dh-autoreconf,
+ libpgm-dev,
+ libsodium-dev,
+ libunwind-dev | libunwind7-dev,
+ pkg-config
+Standards-Version: 3.9.8
+Homepage: http://www.zeromq.org/
+
+Package: libzmq5
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Pre-Depends: ${misc:Pre-Depends}
+Multi-Arch: same
+Description: lightweight messaging kernel (shared library)
+ ØMQ is a library which extends the standard socket interfaces with features
+ traditionally provided by specialised messaging middleware products.
+ .
+ ØMQ sockets provide an abstraction of asynchronous message queues, multiple
+ messaging patterns, message filtering (subscriptions), seamless access to
+ multiple transport protocols and more.
+ .
+ This package contains the libzmq shared library.
+
+Package: libzmq3-dev
+Architecture: any
+Section: libdevel
+Depends: libzmq5 (= ${binary:Version}), ${misc:Depends}
+Conflicts: libzmq-dev, libzmq5-dev
+Replaces: libzmq5-dev
+Provides: libzmq5-dev
+Multi-Arch: same
+Description: lightweight messaging kernel (development files)
+ ØMQ is a library which extends the standard socket interfaces with features
+ traditionally provided by specialised messaging middleware products.
+ .
+ ØMQ sockets provide an abstraction of asynchronous message queues, multiple
+ messaging patterns, message filtering (subscriptions), seamless access to
+ multiple transport protocols and more.
+ .
+ This package contains the ZeroMQ development libraries and header files.
+
+Package: libzmq5-dbg
+Architecture: any
+Priority: extra
+Section: debug
+Depends: libzmq5 (= ${binary:Version}), ${misc:Depends}
+Multi-Arch: same
+Description: lightweight messaging kernel (debugging symbols)
+ ØMQ is a library which extends the standard socket interfaces with features
+ traditionally provided by specialised messaging middleware products.
+ .
+ ØMQ sockets provide an abstraction of asynchronous message queues, multiple
+ messaging patterns, message filtering (subscriptions), seamless access to
+ multiple transport protocols and more.
+ .
+ This package contains the debugging symbols for the ZeroMQ library.

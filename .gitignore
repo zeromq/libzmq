@@ -163,10 +163,8 @@ src/libzmq.pc
 bin/
 lib/
 obj/
-builds/redhat/zeromq.spec
 builds/android/prefix/
 packaging/nuget/*.nupkg
-packaging/redhat/zeromq.spec
 foreign/openpgm/*
 !foreign/openpgm/*.tar.bz2
 !foreign/openpgm/*.tar.gz

@@ -810,7 +810,6 @@ dist-hook:
 	else \
 		echo A git clone is required to generate a ChangeLog >&2; \
 	fi
-	-cp $(top_srcdir)/packaging/redhat/zeromq.spec $(distdir)/zeromq.spec
 
 maintainer-clean-local:
 	-rm -rf $(top_srcdir)/config
