@@ -129,8 +129,7 @@ autoreconf -fi
 %{_bindir}/curve_keygen
 
 # libraries
-%{_libdir}/libzmq.so.4
-%{_libdir}/libzmq.so.4.0.0
+%{_libdir}/libzmq.so.*
 
 %{_mandir}/man7/zmq.7.gz
 
