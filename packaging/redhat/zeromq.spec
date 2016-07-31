@@ -8,6 +8,7 @@ URL:           http://www.zeromq.org/
 Source:        http://download.zeromq.org/%{name}-%{version}.tar.gz
 Prefix:        %{_prefix}
 Buildroot:     %{_tmppath}/%{name}-%{version}-%{release}-root
+BuildRequires:  autoconf automake libtool libsodium-devel glib2-devel
 BuildRequires: gcc, make, gcc-c++, libstdc++-devel, asciidoc, xmlto
 Requires:      libstdc++
 
@@ -72,6 +73,7 @@ This package contains ZeroMQ related development libraries and header files.
 %setup -q
 
 %build
+autoreconf -fi
 %configure \
     %{?_with_libsodium} \
     %{?_without_libsodium} \
