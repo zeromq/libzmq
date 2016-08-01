@@ -72,8 +72,8 @@
     <param name="outfilename">debian.libzmq5.install</param>
   </service>
 
-  <service name="recompress" mode="buildtime">
-    <param name="file">zeromq-*.tar</param>
+  <service name="recompress">
+    <param name="file">*.tar</param>
     <param name="compression">gz</param>
   </service>
 
