@@ -406,11 +406,8 @@ When a connection is made, a zero-length message will be received by the
 application.  Similarly, when the peer disconnects (or the connection is lost),
 a zero-length message will be received by the application.
 
-The ZMQ_SNDMORE flag is ignored on data frames. You must send one identity frame
-followed by one data frame.
-
-Also, please note that omitting the ZMQ_SNDMORE flag will prevent sending further
-data (from any client) on the same socket.
+You must send one identity frame followed by one data frame. The ZMQ_SNDMORE
+flag is required for identity frames but is ignored on data frames.
 
 [horizontal]
 .Summary of ZMQ_STREAM characteristics
@@ -583,12 +580,10 @@ while (1) {
 		"Hello, World!";
 	/* Sends the ID frame followed by the response */
 	zmq_send (socket, id, id_size, ZMQ_SNDMORE);
-	zmq_send (socket, http_response, strlen (http_response), ZMQ_SNDMORE);
+	zmq_send (socket, http_response, strlen (http_response), 0);
 	/* Closes the connection by sending the ID frame followed by a zero response */
 	zmq_send (socket, id, id_size, ZMQ_SNDMORE);
-	zmq_send (socket, 0, 0, ZMQ_SNDMORE);
-	/* NOTE: If we don't use ZMQ_SNDMORE, then we won't be able to send more */
-	/* message to any client */
+	zmq_send (socket, 0, 0, 0);
 }
 zmq_close (socket);
 zmq_ctx_destroy (ctx);
