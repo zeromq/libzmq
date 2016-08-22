@@ -47,7 +47,7 @@
 #include <string.h>
 
 #if defined _WIN32
-#   include "windows.hpp"
+#   include "../src/windows.hpp"
 #   if defined _MSC_VER
 #       include <crtdbg.h>
 #       pragma warning(disable:4996)
