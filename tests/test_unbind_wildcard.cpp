@@ -22,9 +22,9 @@
 int main (void)
 {
     setup_test_environment();
-    int ipv6 = is_ipv6_available ();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
+    int ipv6 = is_ipv6_available ();
 
     /* Address wildcard, IPv6 disabled */
     void *sb = zmq_socket (ctx, ZMQ_REP);
