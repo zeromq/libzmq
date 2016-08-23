@@ -339,6 +339,10 @@ is_ipv6_available(void)
     inet_pton (AF_INET6, "::1", &(test_addr.sin6_addr));
 
 #ifdef ZMQ_HAVE_WINDOWS
+    // initialize network stack
+    void *ctx = zmq_ctx_new();
+    assert(ctx);
+
     SOCKET fd = socket (AF_INET6, SOCK_STREAM, IPPROTO_IP);
     if (fd == INVALID_SOCKET)
         ipv6 = 0;
@@ -354,6 +358,9 @@ is_ipv6_available(void)
         }
         closesocket (fd);
     }
+
+    rc = zmq_ctx_term(ctx);
+    assert(rc == 0);
 #else
     int fd = socket (AF_INET6, SOCK_STREAM, IPPROTO_IP);
     if (fd == -1)
