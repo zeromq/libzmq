@@ -181,7 +181,7 @@ int zmq::gssapi_mechanism_base_t::decode_message (msg_t *msg_)
     memcpy (msg_->data (), static_cast <char *> (plaintext.value)+1, plaintext.length-1);
 
     gss_release_buffer (&min_stat, &plaintext);
-    gss_release_buffer (&min_stat, &wrapped);
+    free(wrapped.value);
 
     if (bytes_left > 0) {
         errno = EPROTO;
