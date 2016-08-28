@@ -329,7 +329,7 @@ find_package (PythonInterp)
 find_package (AsciiDoc)
 
 cmake_dependent_option (WITH_DOC "Build Reference Guide documentation (requires DocBook)" ON
-                       "PYTHON_FOUND;ASCIIDOC_FOUND" OFF)
+                       "PYTHONINTERP_FOUND;ASCIIDOC_FOUND" OFF)
 
 if (MSVC)
   if (WITH_OPENPGM)
@@ -623,7 +623,7 @@ file (MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc)
 file (GLOB docs RELATIVE ${CMAKE_CURRENT_BINARY_DIR}/ "${CMAKE_CURRENT_SOURCE_DIR}/doc/*.txt")
 set (html-docs)
 foreach (txt ${docs})
-  string (REGEX REPLACE ".*/ (.*)\\.txt" "\\1.html" html ${txt})
+  string (REGEX REPLACE ".*/(.*)\\.txt" "\\1.html" html ${txt})
   set (src ${txt})
   set (dst doc/${html})
   add_custom_command (
