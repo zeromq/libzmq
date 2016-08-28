@@ -623,7 +623,7 @@ file (MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc)
 file (GLOB docs RELATIVE ${CMAKE_CURRENT_BINARY_DIR}/ "${CMAKE_CURRENT_SOURCE_DIR}/doc/*.txt")
 set (html-docs)
 foreach (txt ${docs})
-  string (REGEX REPLACE ".*/ (.*)\\.txt" "\\1.html" html ${txt})
+  string (REGEX REPLACE ".*/(.*)\\.txt" "\\1.html" html ${txt})
   set (src ${txt})
   set (dst doc/${html})
   add_custom_command (
