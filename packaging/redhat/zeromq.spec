@@ -1,3 +1,13 @@
+# To build with draft APIs, use "--with drafts" in rpmbuild for local builds or add
+#   Macros:
+#   %_with_drafts 1
+# at the BOTTOM of the OBS prjconf
+%bcond_with drafts
+%if %{with drafts}
+%define DRAFTS yes
+%else
+%define DRAFTS no
+%endif
 %define lib_name libzmq5
 Name:          zeromq
 Version:       4.2.0
@@ -103,7 +113,7 @@ sed -i "s/openpgm-[0-9].[0-9]/%{openpgm_pc}/g" \
 
 %build
 autoreconf -fi
-%configure \
+%configure --enable-drafts=%{DRAFTS} \
     %{?_with_libsodium} \
     %{?_without_libsodium} \
     %{?_with_pgm} \
