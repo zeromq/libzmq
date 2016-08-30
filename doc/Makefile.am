@@ -58,6 +58,10 @@ SUFFIXES=.html .txt .xml .3 .7
 	xmlto man $<
 .xml.7:
 	xmlto man $<
+
+.PHONY: zmq.txt
+zmq.txt:
+	./mkman $@
 endif
 
 dist-hook : $(MAN_DOC) $(MAN_HTML)

@@ -1,0 +1,160 @@
+#! /usr/bin/perl
+#
+#   mkman - Generates man pages from C++ source and header files.
+#
+#   Syntax: './mkman classname', in doc subdirectory.
+#
+#   Copyright (c) 1996-2016 iMatix Corporation
+#
+#   This is free software; you can redistribute it and/or modify it under the
+#   terms of the GNU General Public License as published by the Free Software
+#   Foundation; either version 3 of the License, or (at your option) any later
+#   version.
+#
+#   This software is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABIL-
+#   ITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+#   License for more details.
+#
+#   You should have received a copy of the GNU General Public License along
+#   with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+use File::Basename;
+
+sub pull {
+    local ($_) = @_;
+    if (/^(.*)(@[a-zA-Z0-9]+)(,(\w*)\s*)?/) {
+        $file = $1;
+        $tag = $2;
+        $opts = $4;
+        $text = "";
+        die "Can't read $file: $!"
+            unless open (SOURCE, $file);
+        while (<SOURCE>) {
+            if (/$tag/) {
+                while (<SOURCE>) {
+                    last if /\@discuss/ || /\@end/ || /\@ignore/;
+                    $_ = "    $_" if $opts eq "code";
+                    s/^    // if $opts eq "left";
+                    $_ = "    $_" if $opts eq "test";
+                    s/^        /    / if $opts eq "test";
+                    $text .= $_;
+                }
+            }
+        }
+        close (SOURCE);
+        $text = "Please add $tag section in $file.\n" unless $text;
+        return $text;
+    }
+    else {
+        print "E: bad pull request: $_\n";
+    }
+}
+
+sub generate_manpage {
+    local ($name) = @_;
+    $name = $1 if $name =~ /(\w+)\.\w+/;
+
+    #   Check if we're making the man page for a main program, or a class
+
+    $cat = 0;           #   Unknown category
+    exit unless open (MAKEFILE, "Makefile");
+    while (<MAKEFILE>) {
+        if (/MAN1.*$name\.1/) {
+            $source = "../src/$name.cpp";
+            $header = "../src/$name.cpp";
+            $cat = 1;
+            last;
+        }
+        elsif (/MAN3.*$name\.3/) {
+            $source = "../src/$name.cpp";
+            $header = "../src/$name.hpp";
+            $cat = 3;
+            last;
+        }
+        elsif (/MAN7.*$name\.7/) {
+            $source = "../src/$name.cpp";
+            $header = "../include/$name.h";
+            $cat = 3;
+            last;
+        }
+    }
+    close MAKEFILE;
+
+    #   Look for class title in 2nd line of source
+    #   If there's no class file, leave hand-written man page alone
+    exit unless open (SOURCE, $source);
+    $_ = <SOURCE>;
+    $_ = <SOURCE>;
+    $title = "no title found";
+    $title = $1 if (/    \w+ - (.*)/);
+    close (SOURCE);
+
+    #   Open output file
+    die "Can't create $name.txt: $!"
+        unless open (OUTPUT, ">$name.txt");
+
+    printf "Generating $name.txt...\n";
+    $underline = "=" x (length ($name) + 3);
+
+    $template = <<"END";
+$name($cat)
+$underline
+
+NAME
+----
+$name - $title
+
+SYNOPSIS
+--------
+----
+pull $header\@interface
+----
+
+DESCRIPTION
+-----------
+
+pull $source\@header,left
+
+pull $source\@discuss,left
+
+EXAMPLE
+-------
+.From $name\_test method
+----
+pull $source\@selftest,left
+----
+END
+
+    #   Now process template
+    for (split /^/, $template) {
+        if (/^pull (.*)$/) {
+            print OUTPUT pull ($1);
+        }
+        else {
+            print OUTPUT $_;
+        }
+    }
+
+    #   Generate a simple text documentation for README.txt
+    close OUTPUT;
+    printf "Generating $name.doc...\n";
+    die "Can't create $name.doc: $!"
+        unless open (OUTPUT, ">$name.doc");
+    print OUTPUT "#### $name - $title\n\n";
+    print OUTPUT pull ("$source\@header,left");
+    print OUTPUT "\n";
+    print OUTPUT pull ("$source\@discuss,left");
+    print OUTPUT "\nThis is the class interface:\n\n";
+    print OUTPUT pull ("$header\@interface,code");
+    print OUTPUT "\nThis is the class self test code:\n\n";
+    print OUTPUT pull ("$source\@selftest,test");
+    print OUTPUT "\n";
+    close OUTPUT;
+}
+
+$name = shift (@ARGV);
+while ($name) {
+    generate_manpage ($name);
+    $name = shift (@ARGV);
+}

@@ -1,127 +1,41 @@
+#### zmq - 0MQ lightweight messaging kernel
 
-<A name="toc1-3" title="ZeroMQ" />
-# ZeroMQ
-
-[![Build Status](https://travis-ci.org/zeromq/libzmq.png?branch=master)](https://travis-ci.org/zeromq/libzmq)
-[![Build status](https://ci.appveyor.com/api/projects/status/e2ks424yrs1un3wt?svg=true)](https://ci.appveyor.com/project/zeromq/libzmq)
-[![Coverage Status](https://coveralls.io/repos/github/zeromq/libzmq/badge.svg?branch=master)](https://coveralls.io/github/zeromq/libzmq?branch=master)
-
-<A name="toc2-10" title="Contents" />
-## Contents
-
-
-**<a href="#toc2-15">Welcome</a>**
-
-**<a href="#toc2-26">Building and installation</a>**
-
-**<a href="#toc2-31">Resources</a>**
-
-**<a href="#toc2-47">License</a>**
-
-**<a href="#toc3-72">API Summary</a>**
-*  <a href="#toc4-75">zmq - ØMQ lightweight messaging kernel</a>
-
-**<a href="#toc3-815">This Document</a>**
-
-<A name="toc2-15" title="Welcome" />
-## Welcome
-
-The ZeroMQ lightweight messaging kernel is a library which extends the
-standard socket interfaces with features traditionally provided by
-specialised messaging middleware products. ZeroMQ sockets provide an
-abstraction of asynchronous message queues, multiple messaging patterns,
-message filtering (subscriptions), seamless access to multiple transport
-protocols and more.
-
-
-<A name="toc2-26" title="Building and installation" />
-## Building and installation
-
-See the INSTALL file included with the distribution.
-
-<A name="toc2-31" title="Resources" />
-## Resources
-
-Extensive documentation is provided with the distribution. Refer to
-doc/zmq.html, or "man zmq" after you have installed libzmq on your system.
-
-Website: http://www.zeromq.org/
-
-Development mailing list: zeromq-dev@lists.zeromq.org
-Announcements mailing list: zeromq-announce@lists.zeromq.org
-
-Git repository: http://github.com/zeromq/libzmq
-
-ZeroMQ developers can also be found on the IRC channel #zeromq, on the
-Freenode network (irc.freenode.net).
-
-<A name="toc2-47" title="License" />
-## License
-
-The project license is specified in COPYING and COPYING.LESSER.
-
-libzmq is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License (LGPL) as published
-by the Free Software Foundation; either version 3 of the License, or
-(at your option) any later version.
-
-As a special exception, the Contributors give you permission to link
-this library with independent modules to produce an executable,
-regardless of the license terms of these independent modules, and to
-copy and distribute the resulting executable under terms of your choice,
-provided that you also meet, for each linked independent module, the
-terms and conditions of the license of that module. An independent
-module is a module which is not derived from or based on this library.
-If you modify this library, you must extend this exception to your
-version of the library.
-
-libzmq is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
-License for more details.
-
-<A name="toc3-72" title="API Summary" />
-### API Summary
-
-<A name="toc4-75" title="zmq - ØMQ lightweight messaging kernel" />
-#### zmq - ØMQ lightweight messaging kernel
-
-The ØMQ lightweight messaging kernel is a library which extends the standard
+The 0MQ lightweight messaging kernel is a library which extends the standard
 socket interfaces with features traditionally provided by specialised
-_messaging middleware_ products. ØMQ sockets provide an abstraction of
+_messaging middleware_ products. 0MQ sockets provide an abstraction of
 asynchronous _message queues_, multiple _messaging patterns_, message
 filtering (_subscriptions_), seamless access to multiple _transport protocols_
 and more.
 
-This documentation presents an overview of ØMQ concepts, describes how ØMQ
+This documentation presents an overview of 0MQ concepts, describes how 0MQ
 abstracts standard sockets and provides a reference manual for the functions
-provided by the ØMQ library.
+provided by the 0MQ library.
 
 
 Context:
 
-Before using any ØMQ library functions you must create a ØMQ 'context'. When
+Before using any 0MQ library functions you must create a 0MQ 'context'. When
 you exit your application you must destroy the 'context'. These functions let
 you work with 'contexts':
 
-Create a new ØMQ context::
+Create a new 0MQ context::
     linkzmq:zmq_ctx_new[3]
 
 Work with context properties::
     linkzmq:zmq_ctx_set[3]
     linkzmq:zmq_ctx_get[3]
 
-Destroy a ØMQ context::
+Destroy a 0MQ context::
     linkzmq:zmq_ctx_shutdown[3]
     linkzmq:zmq_ctx_term[3]
 
 Thread safety:
 
-A ØMQ 'context' is thread safe and may be shared among as many application
+A 0MQ 'context' is thread safe and may be shared among as many application
 threads as necessary, without any additional locking required on the part of
 the caller.
 
-Individual ØMQ 'sockets' are _not_ thread safe except in the case where full
+Individual 0MQ 'sockets' are _not_ thread safe except in the case where full
 memory barriers are issued when migrating a socket from one thread to another.
 In practice this means applications can create a socket in one thread with
 _zmq_socket()_ and then pass it to a _newly created_ thread as part of thread
@@ -132,16 +46,16 @@ _pthread_create()_.
 Multiple contexts:
 
 Multiple 'contexts' may coexist within a single application. Thus, an
-application can use ØMQ directly and at the same time make use of any number of
-additional libraries or components which themselves make use of ØMQ as long as
+application can use 0MQ directly and at the same time make use of any number of
+additional libraries or components which themselves make use of 0MQ as long as
 the above guidelines regarding thread safety are adhered to.
 
 
 Messages:
 
-A ØMQ message is a discrete unit of data passed between applications or
-components of the same application. ØMQ messages have no internal structure and
-from the point of view of ØMQ itself they are considered to be opaque binary
+A 0MQ message is a discrete unit of data passed between applications or
+components of the same application. 0MQ messages have no internal structure and
+from the point of view of 0MQ itself they are considered to be opaque binary
 data.
 
 The following functions are provided to work with messages:
@@ -175,7 +89,7 @@ Message manipulation::
 
 Sockets:
 
-ØMQ sockets present an abstraction of a asynchronous _message queue_, with the
+0MQ sockets present an abstraction of a asynchronous _message queue_, with the
 exact queueing semantics depending on the socket type in use. See
 linkzmq:zmq_socket[3] for the socket types provided.
 
@@ -205,15 +119,16 @@ Sending and receiving messages::
 Monitoring socket events::
     linkzmq:zmq_socket_monitor[3]
 
-ØMQ provides a mechanism for applications to multiplex input/output events over
-a set containing both ØMQ sockets and standard sockets. This mechanism mirrors
+.Input/output multiplexing
+0MQ provides a mechanism for applications to multiplex input/output events over
+a set containing both 0MQ sockets and standard sockets. This mechanism mirrors
 the standard _poll()_ system call, and is described in detail in
 linkzmq:zmq_poll[3].
 
 
 Transports:
 
-A ØMQ socket can use multiple different underlying transport mechanisms.
+A 0MQ socket can use multiple different underlying transport mechanisms.
 Each transport mechanism is suited to a particular purpose and has its own
 advantages and drawbacks.
 
@@ -240,7 +155,7 @@ Unreliable unicast and multicast using UDP::
 
 Proxies:
 
-ØMQ provides 'proxies' to create fanout and fan-in topologies. A proxy connects
+0MQ provides 'proxies' to create fanout and fan-in topologies. A proxy connects
 a 'frontend' socket to a 'backend' socket and switches all messages between the
 two sockets, opaquely. A proxy may optionally capture all traffic to a third
 socket. To start a proxy in an application thread, use linkzmq:zmq_proxy[3].
@@ -248,7 +163,7 @@ socket. To start a proxy in an application thread, use linkzmq:zmq_proxy[3].
 
 Security:
 
-A ØMQ socket can select a security mechanism. Both peers must use the same
+A 0MQ socket can select a security mechanism. Both peers must use the same
 security mechanism.
 
 The following security mechanisms are provided for IPC and TCP connections:
@@ -272,8 +187,8 @@ Converting keys to/from armoured text strings::
 
 ERROR HANDLING:
 
-The ØMQ library functions handle errors using the standard conventions found on
-POSIX systems. Generally, this means that upon failure a ØMQ library function
+The 0MQ library functions handle errors using the standard conventions found on
+POSIX systems. Generally, this means that upon failure a 0MQ library function
 shall return either a NULL value (if returning a pointer) or a negative value
 (if returning an integer), and the actual error code shall be stored in the
 'errno' variable.
@@ -282,7 +197,7 @@ On non-POSIX systems some users may experience issues with retrieving the
 correct value of the 'errno' variable. The _zmq_errno()_ function is provided
 to assist in these cases; for details refer to linkzmq:zmq_errno[3].
 
-The _zmq_strerror()_ function is provided to translate ØMQ-specific error codes
+The _zmq_strerror()_ function is provided to translate 0MQ-specific error codes
 into error message strings; for details refer to linkzmq:zmq_strerror[3].
 
 
@@ -303,29 +218,29 @@ MISCELLANEOUS:
 
 The following miscellaneous functions are provided:
 
-Report ØMQ library version::
+Report 0MQ library version::
     linkzmq:zmq_version[3]
 
 
 LANGUAGE BINDINGS:
 
-The ØMQ library provides interfaces suitable for calling from programs in any
+The 0MQ library provides interfaces suitable for calling from programs in any
 language; this documentation documents those interfaces as they would be used
-by C programmers. The intent is that programmers using ØMQ from other languages
+by C programmers. The intent is that programmers using 0MQ from other languages
 shall refer to this documentation alongside any documentation provided by the
 vendor of their language binding.
 
 Language bindings ($$C++$$, Python, PHP, Ruby, Java and more) are provided by
-members of the ØMQ community and pointers can be found on the ØMQ website.
+members of the 0MQ community and pointers can be found on the 0MQ website.
 
 Please add @discuss section in ../src/zmq.cpp.
 
 This is the class interface:
 
-    //  zmq - ØMQ lightweight messaging kernel
+    //  zmq - 0MQ lightweight messaging kernel
     
     /******************************************************************************/
-    /*  ØMQ errors.                                                               */
+    /*  0MQ errors.                                                               */
     /******************************************************************************/
     
     /*  A number random enough not to collide with different errno ranges on      */
@@ -388,26 +303,26 @@ This is the class interface:
     #define ENETRESET (ZMQ_HAUSNUMERO + 18)
     #endif
     
-    /*  Native ØMQ error codes.                                                   */
+    /*  Native 0MQ error codes.                                                   */
     #define EFSM (ZMQ_HAUSNUMERO + 51)
     #define ENOCOMPATPROTO (ZMQ_HAUSNUMERO + 52)
     #define ETERM (ZMQ_HAUSNUMERO + 53)
     #define EMTHREAD (ZMQ_HAUSNUMERO + 54)
     
-    /*  This function retrieves the errno as it is known to ØMQ library. The goal */
-    /*  of this function is to make the code 100% portable, including where ØMQ   */
+    /*  This function retrieves the errno as it is known to 0MQ library. The goal */
+    /*  of this function is to make the code 100% portable, including where 0MQ   */
     /*  compiled with certain CRT library (on Windows) is linked to an            */
     /*  application that uses different CRT library.                              */
     ZMQ_EXPORT int zmq_errno (void);
     
-    /*  Resolves system errors and ØMQ errors to human-readable string.           */
+    /*  Resolves system errors and 0MQ errors to human-readable string.           */
     ZMQ_EXPORT const char *zmq_strerror (int errnum);
     
     /*  Run-time API version detection                                            */
     ZMQ_EXPORT void zmq_version (int *major, int *minor, int *patch);
     
     /******************************************************************************/
-    /*  ØMQ infrastructure (a.k.a. context) initialisation & termination.         */
+    /*  0MQ infrastructure (a.k.a. context) initialisation & termination.         */
     /******************************************************************************/
     
     /*  Context options                                                           */
@@ -437,7 +352,7 @@ This is the class interface:
     
     
     /******************************************************************************/
-    /*  ØMQ message definition.                                                   */
+    /*  0MQ message definition.                                                   */
     /******************************************************************************/
     
     /* union here ensures correct alignment on architectures that require it, e.g.
@@ -464,7 +379,7 @@ This is the class interface:
     ZMQ_EXPORT const char *zmq_msg_gets (zmq_msg_t *msg, const char *property);
     
     /******************************************************************************/
-    /*  ØMQ socket definition.                                                    */
+    /*  0MQ socket definition.                                                    */
     /******************************************************************************/
     
     /*  Socket types.                                                             */
@@ -594,7 +509,7 @@ This is the class interface:
     #define ZMQ_SRCFD 2
     
     /******************************************************************************/
-    /*  ØMQ socket events and monitoring                                          */
+    /*  0MQ socket events and monitoring                                          */
     /******************************************************************************/
     
     /*  Socket transport events (TCP, IPC and TIPC only)                          */
@@ -821,8 +736,3 @@ This is the class self test code:
 
 Please add @selftest section in ../src/zmq.cpp.
 
-
-<A name="toc3-815" title="This Document" />
-### This Document
-
-_This documentation was generated from libzmq/README.txt using [Gitdown](https://github.com/zeromq/gitdown)_
