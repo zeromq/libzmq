@@ -617,6 +617,8 @@ EXTRA_DIST = \
 	MAINTAINERS	\
 	src/libzmq.pc.cmake.in \
 	src/libzmq.vers \
+	src/version.rc.in \
+	tests/CMakeLists.txt \
 	tweetnacl \
 	tools/curve_keygen.cpp
 
