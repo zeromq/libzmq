@@ -786,6 +786,8 @@ EXTRA_DIST = \
 	version.sh	\
 	src/libzmq.pc.cmake.in \
 	src/libzmq.vers \
+	src/version.rc.in \
+	tests/CMakeLists.txt \
 	tools/curve_keygen.cpp
 
 MAINTAINERCLEANFILES = \
