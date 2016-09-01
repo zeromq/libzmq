@@ -5,6 +5,8 @@
 
 * Fixed #2091 - testutil.hpp fails to build on Windows XP
 
+* Fixed #2096 - add tests/CMakeLists.in and version.rc.in to dist tar
+
 
 0MQ version 4.1.5 stable, released on 2016/06/17
 ================================================
