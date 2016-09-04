@@ -332,7 +332,7 @@ void zmq::socket_base_t::attach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 int zmq::socket_base_t::setsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
-    scoped_optional_lock_t sync_lock(thread_safe ? &sync : 0);
+    scoped_optional_lock_t sync_lock(thread_safe ? &sync : NULL);
 
     if (!options.is_valid(option_)) {
         errno = EINVAL;
@@ -361,7 +361,7 @@ int zmq::socket_base_t::setsockopt (int option_, const void *optval_,
 int zmq::socket_base_t::getsockopt (int option_, void *optval_,
     size_t *optvallen_)
 {
-    scoped_optional_lock_t sync_lock(thread_safe ? &sync : 0);
+    scoped_optional_lock_t sync_lock(thread_safe ? &sync : NULL);
 
     if (unlikely (ctx_terminated)) {
         errno = ETERM;
@@ -443,7 +443,7 @@ int zmq::socket_base_t::getsockopt (int option_, void *optval_,
 
 int zmq::socket_base_t::join (const char* group_)
 {
-    scoped_optional_lock_t sync_lock(thread_safe ? &sync : 0);
+    scoped_optional_lock_t sync_lock(thread_safe ? &sync : NULL);
 
     int rc = xjoin (group_);
 
@@ -453,7 +453,7 @@ int zmq::socket_base_t::join (const char* group_)
 
 int zmq::socket_base_t::leave (const char* group_)
 {
-    scoped_optional_lock_t sync_lock(thread_safe ? &sync : 0);
+    scoped_optional_lock_t sync_lock(thread_safe ? &sync : NULL);
 
     int rc = xleave (group_);
 
@@ -463,7 +463,7 @@ int zmq::socket_base_t::leave (const char* group_)
 
 int zmq::socket_base_t::add_signaler(signaler_t *s_)
 {
-    scoped_optional_lock_t sync_lock(thread_safe ? &sync : 0);
+    scoped_optional_lock_t sync_lock(thread_safe ? &sync : NULL);
 
     if (!thread_safe) {
         errno = EINVAL;
@@ -477,7 +477,7 @@ int zmq::socket_base_t::add_signaler(signaler_t *s_)
 
 int zmq::socket_base_t::remove_signaler(signaler_t *s_)
 {
-    scoped_optional_lock_t sync_lock(thread_safe ? &sync : 0);
+    scoped_optional_lock_t sync_lock(thread_safe ? &sync : NULL);
 
     if (!thread_safe) {
         errno = EINVAL;
@@ -491,7 +491,7 @@ int zmq::socket_base_t::remove_signaler(signaler_t *s_)
 
 int zmq::socket_base_t::bind (const char *addr_)
 {
-    scoped_optional_lock_t sync_lock(thread_safe ? &sync : 0);
+    scoped_optional_lock_t sync_lock(thread_safe ? &sync : NULL);
 
     if (unlikely (ctx_terminated)) {
         errno = ETERM;
@@ -678,7 +678,7 @@ int zmq::socket_base_t::bind (const char *addr_)
 
 int zmq::socket_base_t::connect (const char *addr_)
 {
-    scoped_optional_lock_t sync_lock(thread_safe ? &sync : 0);
+    scoped_optional_lock_t sync_lock(thread_safe ? &sync : NULL);
 
     if (unlikely (ctx_terminated)) {
         errno = ETERM;
@@ -988,7 +988,7 @@ void zmq::socket_base_t::add_endpoint (const char *addr_, own_t *endpoint_, pipe
 
 int zmq::socket_base_t::term_endpoint (const char *addr_)
 {
-    scoped_optional_lock_t sync_lock(thread_safe ? &sync : 0);
+    scoped_optional_lock_t sync_lock(thread_safe ? &sync : NULL);
 
     //  Check whether the library haven't been shut down yet.
     if (unlikely (ctx_terminated)) {
@@ -1082,7 +1082,7 @@ int zmq::socket_base_t::term_endpoint (const char *addr_)
 
 int zmq::socket_base_t::send (msg_t *msg_, int flags_)
 {
-    scoped_optional_lock_t sync_lock(thread_safe ? &sync : 0);
+    scoped_optional_lock_t sync_lock(thread_safe ? &sync : NULL);
 
     //  Check whether the library haven't been shut down yet.
     if (unlikely (ctx_terminated)) {
@@ -1158,7 +1158,7 @@ int zmq::socket_base_t::send (msg_t *msg_, int flags_)
 
 int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
 {
-    scoped_optional_lock_t sync_lock(thread_safe ? &sync : 0);
+    scoped_optional_lock_t sync_lock(thread_safe ? &sync : NULL);
 
     //  Check whether the library haven't been shut down yet.
     if (unlikely (ctx_terminated)) {
@@ -1254,7 +1254,7 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
 
 int zmq::socket_base_t::close ()
 {
-    scoped_optional_lock_t sync_lock(thread_safe ? &sync : 0);
+    scoped_optional_lock_t sync_lock(thread_safe ? &sync : NULL);
 
     //  Remove all existing signalers for thread safe sockets
     if (thread_safe)
@@ -1292,7 +1292,7 @@ void zmq::socket_base_t::start_reaping (poller_t *poller_)
     if (!thread_safe)
         fd = ((mailbox_t*)mailbox)->get_fd();
     else {
-        scoped_optional_lock_t sync_lock(thread_safe ? &sync : 0);
+        scoped_optional_lock_t sync_lock(thread_safe ? &sync : NULL);
 
         reaper_signaler =  new signaler_t();
 
@@ -1485,13 +1485,15 @@ void zmq::socket_base_t::in_event ()
     //  of the reaper thread. Process any commands from other threads/sockets
     //  that may be available at the moment. Ultimately, the socket will
     //  be destroyed.
-    scoped_optional_lock_t sync_lock(thread_safe ? &sync : 0);
+  {
+    scoped_optional_lock_t sync_lock(thread_safe ? &sync : NULL);
 
     //  If the socket is thread safe we need to unsignal the reaper signaler
     if (thread_safe)
         reaper_signaler->recv();
 
     process_commands (0, false);
+  }
     check_destroy();
 }
 
