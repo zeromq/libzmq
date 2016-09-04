@@ -188,13 +188,13 @@ namespace zmq
         scoped_optional_lock_t (mutex_t* mutex_)
             : mutex (mutex_)
         {
-            if(mutex != 0)
+            if(mutex != NULL)
                 mutex->lock ();
         }
 
         ~scoped_optional_lock_t ()
         {
-            if(mutex != 0)
+            if(mutex != NULL)
                 mutex->unlock ();
         }
 
