@@ -852,7 +852,7 @@ int crypto_sign_open(u8 *m,u64 *mlen,const u8 *sm,u64 n,const u8 *pk)
 #ifdef ZMQ_HAVE_WINDOWS
 
 #include <windows.h>
-#include <WinCrypt.h>
+#include <wincrypt.h>
 
 #define NCP ((HCRYPTPROV) 0)
 
