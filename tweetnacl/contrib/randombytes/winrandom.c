@@ -1,5 +1,5 @@
 #include <windows.h>
-#include <WinCrypt.h>
+#include <wincrypt.h>
 
 #define NCP ((HCRYPTPROV) 0)
 
