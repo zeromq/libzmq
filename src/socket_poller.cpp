@@ -380,7 +380,7 @@ int zmq::socket_poller_t::rebuild ()
     return 0;
 }
 
-int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *event_, long timeout_)
+int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_, long timeout_)
 {
     if (need_rebuild)
         if (rebuild () == -1)
@@ -412,6 +412,7 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *event_, long time
     uint64_t end = 0;
 
     bool first_pass = true;
+    bool found = false;
 
     while (true) {
         //  Compute the timeout for the subsequent poll.
@@ -439,7 +440,13 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *event_, long time
             signaler.recv ();
 
         //  Check for the events.
-        for (items_t::iterator it = items.begin (); it != items.end (); ++it) {
+        int i=0;
+        for (items_t::iterator it = items.begin (); it != items.end (); ++i, ++it) {
+
+            events_[i].socket = NULL;
+            events_[i].fd = 0;
+            events_[i].user_data = NULL;
+            events_[i].events = 0;
 
             //  The poll item is a 0MQ socket. Retrieve pending events
             //  using the ZMQ_EVENTS socket option.
@@ -451,12 +458,10 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *event_, long time
                 }
 
                 if (it->events & events) {
-                    event_->socket = it->socket;
-                    event_->user_data = it->user_data;
-                    event_->events = it->events & events;
-
-                    //  If there is event to return, we can exit immediately.
-                    return 0;
+                    events_[i].socket = it->socket;
+                    events_[i].user_data = it->user_data;
+                    events_[i].events = it->events & events;
+                    found = true;
                 }
             }
             //  Else, the poll item is a raw file descriptor, simply convert
@@ -475,15 +480,16 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *event_, long time
                     events |= ZMQ_POLLERR;
 
                 if (events) {
-                    event_->socket = NULL;
-                    event_->user_data = it->user_data;
-                    event_->fd = it->fd;
-                    event_->events = events;
-
-                    //  If there is event to return, we can exit immediately.
-                    return 0;
+                    events_[i].socket = NULL;
+                    events_[i].user_data = it->user_data;
+                    events_[i].fd = it->fd;
+                    events_[i].events = events;
+                    found = true;
                 }
             }
+        }
+        if (found) {
+            return 0;
         }
 
         //  If timeout is zero, exit immediately whether there are events or not.
@@ -516,7 +522,6 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *event_, long time
         if (now >= end)
             break;
     }
-
     errno = ETIMEDOUT;
     return -1;
 
