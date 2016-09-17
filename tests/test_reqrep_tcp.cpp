@@ -131,6 +131,132 @@ void test_multi_connect_ipv4 (void)
     assert (rc == 0);
 }
 
+void test_single_connect_ipv6 (void)
+{
+    void *ctx = zmq_ctx_new ();
+    assert (ctx);
+
+    if (!is_ipv6_available ()) {
+        zmq_ctx_term (ctx);
+        return;
+    }
+
+    void *sb = zmq_socket (ctx, ZMQ_REP);
+    assert (sb);
+    int ipv6 = 1;
+    int rc = zmq_setsockopt (sb, ZMQ_IPV6, &ipv6, sizeof (int));
+    assert (rc == 0);
+    rc = zmq_bind (sb, "tcp://[::1]:5560");
+    assert (rc == 0);
+
+    void *sc = zmq_socket (ctx, ZMQ_REQ);
+    assert (sc);
+    rc = zmq_setsockopt (sc, ZMQ_IPV6, &ipv6, sizeof (int));
+    assert (rc == 0);
+    rc = zmq_connect (sc, "tcp://[::1]:5560");
+    assert (rc == 0);
+
+    bounce (sb, sc);
+
+    rc = zmq_disconnect (sc, "tcp://[::1]:5560");
+    assert (rc == 0);
+
+    rc = zmq_unbind (sb, "tcp://[::1]:5560");
+    assert (rc == 0);
+
+    rc = zmq_close (sc);
+    assert (rc == 0);
+
+    rc = zmq_close (sb);
+    assert (rc == 0);
+
+    rc = zmq_ctx_term (ctx);
+    assert (rc == 0);
+}
+
+void test_multi_connect_ipv6 (void)
+{
+    void *ctx = zmq_ctx_new ();
+    assert (ctx);
+
+    if (!is_ipv6_available ()) {
+        zmq_ctx_term (ctx);
+        return;
+    }
+
+    void *sb0 = zmq_socket (ctx, ZMQ_REP);
+    assert (sb0);
+    int ipv6 = 1;
+    int rc = zmq_setsockopt (sb0, ZMQ_IPV6, &ipv6, sizeof (int));
+    assert (rc == 0);
+    rc = zmq_bind (sb0, "tcp://[::1]:5560");
+    assert (rc == 0);
+
+    void *sb1 = zmq_socket (ctx, ZMQ_REP);
+    assert (sb1);
+    rc = zmq_setsockopt (sb1, ZMQ_IPV6, &ipv6, sizeof (int));
+    assert (rc == 0);
+    rc = zmq_bind (sb1, "tcp://[::1]:5561");
+    assert (rc == 0);
+
+    void *sb2 = zmq_socket (ctx, ZMQ_REP);
+    assert (sb2);
+    rc = zmq_setsockopt (sb2, ZMQ_IPV6, &ipv6, sizeof (int));
+    assert (rc == 0);
+    rc = zmq_bind (sb2, "tcp://[::1]:5562");
+    assert (rc == 0);
+
+    void *sc = zmq_socket (ctx, ZMQ_REQ);
+    assert (sc);
+    rc = zmq_setsockopt (sc, ZMQ_IPV6, &ipv6, sizeof (int));
+    assert (rc == 0);
+    rc = zmq_connect (sc, "tcp://[::1]:5560");
+    assert (rc == 0);
+    rc = zmq_connect (sc, "tcp://[::1]:5561");
+    assert (rc == 0);
+    rc = zmq_connect (sc, "tcp://[::1]:5562");
+    assert (rc == 0);
+
+    bounce (sb0, sc);
+    bounce (sb1, sc);
+    bounce (sb2, sc);
+    bounce (sb0, sc);
+    bounce (sb1, sc);
+    bounce (sb2, sc);
+    bounce (sb0, sc);
+
+    rc = zmq_disconnect (sc, "tcp://[::1]:5560");
+    assert (rc == 0);
+    rc = zmq_disconnect (sc, "tcp://[::1]:5562");
+    assert (rc == 0);
+    rc = zmq_disconnect (sc, "tcp://[::1]:5561");
+    assert (rc == 0);
+
+    rc = zmq_unbind (sb0, "tcp://[::1]:5560");
+    assert (rc == 0);
+
+    rc = zmq_unbind (sb1, "tcp://[::1]:5561");
+    assert (rc == 0);
+
+    rc = zmq_unbind (sb2, "tcp://[::1]:5562");
+    assert (rc == 0);
+
+    rc = zmq_close (sc);
+    assert (rc == 0);
+
+    rc = zmq_close (sb0);
+    assert (rc == 0);
+
+    rc = zmq_close (sb1);
+    assert (rc == 0);
+
+    rc = zmq_close (sb2);
+    assert (rc == 0);
+
+    rc = zmq_ctx_term (ctx);
+    assert (rc == 0);
+}
+
 int main (void)
 {
     setup_test_environment ();
@@ -138,6 +264,10 @@ int main (void)
     test_single_connect_ipv4 ();
 
     test_multi_connect_ipv4 ();
+
+    test_single_connect_ipv6 ();
+
+    test_multi_connect_ipv6 ();
 
     return 0 ;
 }
