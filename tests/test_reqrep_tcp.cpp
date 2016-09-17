@@ -46,6 +46,12 @@ void test_single_connect_ipv4 (void)
     
     bounce (sb, sc);
 
+    rc = zmq_disconnect (sc, "tcp://127.0.0.1:5560");
+    assert (rc == 0);
+
+    rc = zmq_unbind (sb, "tcp://127.0.0.1:5560");
+    assert (rc == 0);
+
     rc = zmq_close (sc);
     assert (rc == 0);
 
