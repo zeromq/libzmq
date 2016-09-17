@@ -432,9 +432,9 @@ bool zmq::select_t::is_retired_fd (const fd_entry_t &entry)
 #if defined ZMQ_HAVE_WINDOWS
 u_short zmq::select_t::get_fd_family (fd_t fd_)
 {
-	// Use sockaddr_storage instead of sockaddr to accomodate differect structure sizes
-	sockaddr_storage addr = { 0 };
-	int addr_size = sizeof addr;
+    //  Use sockaddr_storage instead of sockaddr to accomodate differect structure sizes
+    sockaddr_storage addr = { 0 };
+    int addr_size = sizeof addr;
 
     int type;
     int type_length = sizeof(int);

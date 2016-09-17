@@ -573,8 +573,8 @@ int crypto_hashblocks(u8 *x,const u8 *m,u64 n)
       b[3] += t;
       FOR(j,8) a[(j+1)%8] = b[j];
       if (i%16 == 15)
-	FOR(j,16)
-	  w[j] += w[(j+9)%16] + sigma0(w[(j+1)%16]) + sigma1(w[(j+14)%16]);
+        FOR(j,16)
+          w[j] += w[(j+9)%16] + sigma0(w[(j+1)%16]) + sigma1(w[(j+14)%16]);
     }
 
     FOR(i,8) { a[i] += z[i]; z[i] = a[i]; }

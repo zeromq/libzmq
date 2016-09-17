@@ -281,7 +281,7 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
 
 #ifdef ZMQ_HAVE_WINDOWS
     if (sock == INVALID_SOCKET) {
-		const int last_error = WSAGetLastError();
+        const int last_error = WSAGetLastError();
         wsa_assert (last_error == WSAEWOULDBLOCK ||
             last_error == WSAECONNRESET ||
             last_error == WSAEMFILE ||
