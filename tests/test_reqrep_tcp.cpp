@@ -88,7 +88,7 @@ void test_multi_connect_ipv4 (void)
     assert (rc == 0);
     rc = zmq_connect (sc, "tcp://127.0.0.1:5561");
     assert (rc == 0);
-    rc = zmq_connect (sc, "tcp://127.0.0.1:5562");
+    rc = zmq_connect (sc, "tcp://127.0.0.1:5564;127.0.0.1:5562");
     assert (rc == 0);
 
     bounce (sb0, sc);
@@ -101,7 +101,7 @@ void test_multi_connect_ipv4 (void)
 
     rc = zmq_disconnect (sc, "tcp://127.0.0.1:5560");
     assert (rc == 0);
-    rc = zmq_disconnect (sc, "tcp://127.0.0.1:5562");
+    rc = zmq_disconnect (sc, "tcp://127.0.0.1:5564;127.0.0.1:5562");
     assert (rc == 0);
     rc = zmq_disconnect (sc, "tcp://127.0.0.1:5561");
     assert (rc == 0);
@@ -214,7 +214,7 @@ void test_multi_connect_ipv6 (void)
     assert (rc == 0);
     rc = zmq_connect (sc, "tcp://[::1]:5561");
     assert (rc == 0);
-    rc = zmq_connect (sc, "tcp://[::1]:5562");
+    rc = zmq_connect (sc, "tcp://[::1]:5564;[::1]:5562");
     assert (rc == 0);
 
     bounce (sb0, sc);
@@ -227,7 +227,7 @@ void test_multi_connect_ipv6 (void)
 
     rc = zmq_disconnect (sc, "tcp://[::1]:5560");
     assert (rc == 0);
-    rc = zmq_disconnect (sc, "tcp://[::1]:5562");
+    rc = zmq_disconnect (sc, "tcp://[::1]:5564;[::1]:5562");
     assert (rc == 0);
     rc = zmq_disconnect (sc, "tcp://[::1]:5561");
     assert (rc == 0);
