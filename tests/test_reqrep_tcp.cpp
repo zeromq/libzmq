@@ -29,9 +29,8 @@
 
 #include "testutil.hpp"
 
-int main (void)
+void test_single_connect_ipv4 (void)
 {
-    setup_test_environment();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
@@ -55,6 +54,13 @@ int main (void)
 
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
+}
+
+int main (void)
+{
+    setup_test_environment ();
+
+    test_single_connect_ipv4 ();
 
     return 0 ;
 }
