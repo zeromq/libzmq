@@ -119,7 +119,7 @@ namespace zmq
                 bytes_used_ = size_;
 
                 while (!to_read) {
-                    const int rc = 
+                    const int rc =
                       (static_cast <T *> (this)->*next) (data_ + bytes_used_);
                     if (rc != 0)
                         return rc;
