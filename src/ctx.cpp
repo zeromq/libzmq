@@ -91,7 +91,7 @@ zmq::ctx_t::ctx_t () :
     vmci_family = -1;
 #endif
 
-	scoped_lock_t locker(crypto_sync);
+    scoped_lock_t locker(crypto_sync);
 #if defined (ZMQ_USE_TWEETNACL)
     // allow opening of /dev/urandom
     unsigned char tmpbytes[4];
@@ -510,13 +510,13 @@ void zmq::ctx_t::pend_connection (const std::string &addr_,
 
     endpoints_t::iterator it = endpoints.find (addr_);
     if (it == endpoints.end ()) {
-        // Still no bind.
+        //  Still no bind.
         endpoint_.socket->inc_seqnum ();
         pending_connections.insert (pending_connections_t::value_type (addr_, pending_connection));
     } else {
-		// Bind has happened in the mean time, connect directly
-		connect_inproc_sockets(it->second.socket, it->second.options, pending_connection, connect_side);
-	}
+        //  Bind has happened in the mean time, connect directly
+        connect_inproc_sockets(it->second.socket, it->second.options, pending_connection, connect_side);
+    }
 }
 
 void zmq::ctx_t::connect_pending (const char *addr_, zmq::socket_base_t *bind_socket_)

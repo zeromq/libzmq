@@ -189,7 +189,7 @@ void zmq::tune_tcp_maxrt (fd_t sockfd_, int timeout_)
 
     //  If not a single byte can be written to the socket in non-blocking mode
     //  we'll get an error (this may happen during the speculative write).
-	const int last_error = WSAGetLastError();
+    const int last_error = WSAGetLastError();
     if (nbytes == SOCKET_ERROR && last_error == WSAEWOULDBLOCK)
         return 0;
 
@@ -201,7 +201,7 @@ void zmq::tune_tcp_maxrt (fd_t sockfd_, int timeout_)
           last_error == WSAECONNABORTED ||
           last_error == WSAETIMEDOUT    ||
           last_error == WSAECONNRESET
-		  ))
+        ))
         return -1;
 
     //  Circumvent a Windows bug:
@@ -256,12 +256,12 @@ int zmq::tcp_read (fd_t s_, void *data_, size_t size_)
             errno = EAGAIN;
         }
         else {
-            wsa_assert (last_error == WSAENETDOWN   ||
-                last_error == WSAENETRESET	   ||
-                last_error == WSAECONNABORTED ||
-                last_error == WSAETIMEDOUT	   ||
-                last_error == WSAECONNRESET   ||
-                last_error == WSAECONNREFUSED ||
+            wsa_assert (last_error == WSAENETDOWN ||
+                last_error == WSAENETRESET        ||
+                last_error == WSAECONNABORTED     ||
+                last_error == WSAETIMEDOUT        ||
+                last_error == WSAECONNRESET       ||
+                last_error == WSAECONNREFUSED     ||
                 last_error == WSAENOTCONN);
             errno = wsa_error_to_errno (last_error);
         }

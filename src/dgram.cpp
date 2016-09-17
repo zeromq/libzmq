@@ -53,7 +53,7 @@ zmq::dgram_t::~dgram_t ()
 
 void zmq::dgram_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 {
-	LIBZMQ_UNUSED(subscribe_to_all_);
+    LIBZMQ_UNUSED(subscribe_to_all_);
 
     zmq_assert (pipe_);
 

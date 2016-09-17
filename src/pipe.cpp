@@ -390,12 +390,12 @@ void zmq::pipe_t::terminate (bool delay_)
     //  If terminate was already called, we can ignore the duplicate invocation.
     if (state == term_req_sent1 || state == term_req_sent2) {
         return;
-	}
+    }
     //  If the pipe is in the final phase of async termination, it's going to
     //  closed anyway. No need to do anything special here.
     else if (state == term_ack_sent) {
         return;
-	}
+    }
     //  The simple sync termination case. Ask the peer to terminate and wait
     //  for the ack.
     else if (state == active) {
@@ -422,7 +422,7 @@ void zmq::pipe_t::terminate (bool delay_)
     //  There are no other states.
     else {
         zmq_assert (false);
-	}
+    }
 
     //  Stop outbound flow of messages.
     out_active = false;

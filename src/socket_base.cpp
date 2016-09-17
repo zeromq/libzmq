@@ -432,7 +432,7 @@ int zmq::socket_base_t::getsockopt (int option_, void *optval_,
             return -1;
         }
         memset(optval_, 0, *optvallen_);
-        *((int*) optval_) = thread_safe	? 1 : 0;
+        *((int*) optval_) = thread_safe ? 1 : 0;
         *optvallen_ = sizeof (int);
         return 0;
     }
