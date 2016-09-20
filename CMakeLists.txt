@@ -77,7 +77,7 @@ if (WITH_MILITANT)
 endif()
 
 set (POLLER "" CACHE STRING "Choose polling system. valid values are
-                            kqueue, epoll, devpoll, poll or select [default=autodetect]")
+                            kqueue, pollset, epoll, devpoll, poll or select [default=autodetect]")
 
 include (CheckFunctionExists)
 include (CheckTypeSize)
@@ -88,6 +88,15 @@ if (POLLER STREQUAL "")
     set (CMAKE_REQUIRED_INCLUDES)
     if (HAVE_KQUEUE)
         set (POLLER "kqueue")
+    endif()
+endif ()
+
+if (POLLER STREQUAL "")
+    set (CMAKE_REQUIRED_INCLUDES sys/pollset.h)
+    check_function_exists (pollset_create HAVE_POLLSET)
+    set (CMAKE_REQUIRED_INCLUDES)
+    if (HAVE_POLLSET)
+        set (POLLER "pollset")
     endif()
 endif ()
 
@@ -136,6 +145,7 @@ if (POLLER STREQUAL "")
 endif ()
 
 if (POLLER STREQUAL "kqueue"
+ OR POLLER STREQUAL "pollset"
  OR POLLER STREQUAL "epoll"
  OR POLLER STREQUAL "devpoll"
  OR POLLER STREQUAL "poll"
@@ -468,6 +478,7 @@ set (cxx-sources
         plain_server.cpp
         poll.cpp
         poller_base.cpp
+		pollset.cpp
         precompiled.cpp
         proxy.cpp
         pub.cpp

@@ -133,6 +133,8 @@ src_libzmq_la_SOURCES = \
 	src/poller.hpp \
 	src/poller_base.cpp \
 	src/poller_base.hpp \
+	src/pollset.cpp \
+	src/pollset.hpp \
 	src/precompiled.cpp \
 	src/precompiled.hpp \
 	src/proxy.cpp \
