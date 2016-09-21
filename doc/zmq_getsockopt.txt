@@ -465,7 +465,7 @@ Applicable socket types:: all, when using TCP or IPC transports
 
 
 ZMQ_USE_FD: Retrieve the pre-allocated socket file descriptor
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_USE_FD' option shall retrieve the pre-allocated file
 descriptor that has been assigned to a ZMQ socket, if any. -1 shall be
 returned if a pre-allocated file descriptor was not set for the socket.
