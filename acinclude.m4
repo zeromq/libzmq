@@ -795,22 +795,6 @@ kqueue();
 }])
 
 dnl ################################################################################
-dnl # LIBZMQ_CHECK_POLLER_POLLSET([action-if-found], [action-if-not-found])        #
-dnl # Checks pollset polling system                                                #
-dnl ################################################################################
-AC_DEFUN([LIBZMQ_CHECK_POLLER_POLLSET], [{
-    AC_LINK_IFELSE([
-        AC_LANG_PROGRAM([
-#include <sys/poll.h>
-#include <sys/pollset.h>
-        ],[[
-pollset_t ps = pollset_create(-1);
-        ]])],
-        [$1], [$2]
-    )
-}])
-
-dnl ################################################################################
 dnl # LIBZMQ_CHECK_POLLER_EPOLL_RUN([action-if-found], [action-if-not-found])      #
 dnl # Checks epoll polling system can actually run #
 dnl # For cross-compile, only requires that epoll can link #
@@ -850,6 +834,22 @@ AC_DEFUN([LIBZMQ_CHECK_POLLER_DEVPOLL], [{
         ],[[
 struct pollfd t_devpoll;
 int fd = open("/dev/poll", O_RDWR);
+        ]])],
+        [$1], [$2]
+    )
+}])
+
+dnl ################################################################################
+dnl # LIBZMQ_CHECK_POLLER_POLLSET([action-if-found], [action-if-not-found])        #
+dnl # Checks pollset polling system                                                #
+dnl ################################################################################
+AC_DEFUN([LIBZMQ_CHECK_POLLER_POLLSET], [{
+    AC_LINK_IFELSE([
+        AC_LANG_PROGRAM([
+#include <sys/poll.h>
+#include <sys/pollset.h>
+        ],[[
+pollset_t ps = pollset_create(-1);
         ]])],
         [$1], [$2]
     )
@@ -908,7 +908,7 @@ AC_DEFUN([LIBZMQ_CHECK_POLLER], [{
     # Allow user to override poller autodetection
     AC_ARG_WITH([poller],
         [AS_HELP_STRING([--with-poller],
-        [choose polling system manually. Valid values are 'kqueue', 'pollset', 'epoll', 'devpoll', 'poll', 'select', or 'auto'. [default=auto]])])
+        [choose polling system manually. Valid values are 'kqueue', 'epoll', 'devpoll', 'pollset', 'poll', 'select', or 'auto'. [default=auto]])])
 
     if test "x$with_poller" == "x"; then
         pollers=auto
@@ -917,7 +917,7 @@ AC_DEFUN([LIBZMQ_CHECK_POLLER], [{
     fi
     if test "$pollers" == "auto"; then
         # We search for pollers in this order
-        pollers="kqueue pollset epoll devpoll poll select"
+        pollers="kqueue epoll devpoll pollset poll select"
     fi
 
     # try to find suitable polling system. the order of testing is:
@@ -932,13 +932,6 @@ AC_DEFUN([LIBZMQ_CHECK_POLLER], [{
                     poller_found=1
                 ])
             ;;
-            pollset)
-                LIBZMQ_CHECK_POLLER_POLLSET([
-                    AC_MSG_NOTICE([Using 'pollset' polling system])
-                    AC_DEFINE(ZMQ_USE_POLLSET, 1, [Use 'pollset' polling system])
-                    poller_found=1
-                ])
-            ;;
             epoll)
                 LIBZMQ_CHECK_POLLER_EPOLL([
                     AC_MSG_NOTICE([Using 'epoll' polling system])
@@ -950,6 +943,13 @@ AC_DEFUN([LIBZMQ_CHECK_POLLER], [{
                 LIBZMQ_CHECK_POLLER_DEVPOLL([
                     AC_MSG_NOTICE([Using 'devpoll' polling system])
                     AC_DEFINE(ZMQ_USE_DEVPOLL, 1, [Use 'devpoll' polling system])
+                    poller_found=1
+                ])
+            ;;
+            pollset)
+                LIBZMQ_CHECK_POLLER_POLLSET([
+                    AC_MSG_NOTICE([Using 'pollset' polling system])
+                    AC_DEFINE(ZMQ_USE_POLLSET, 1, [Use 'pollset' polling system])
                     poller_found=1
                 ])
             ;;
