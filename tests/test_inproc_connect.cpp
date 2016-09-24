@@ -212,6 +212,30 @@ void test_connect_before_bind_pub_sub ()
     assert (rc == 0);
 }
 
+void test_connect_before_bind_ctx_term ()
+{
+    void *ctx = zmq_ctx_new ();
+    assert (ctx);
+
+    for (int i = 0; i < 20; ++i) {
+        // Connect first
+        void *connectSocket = zmq_socket (ctx, ZMQ_ROUTER);
+        assert (connectSocket);
+
+        char ep[20];
+        sprintf(ep, "inproc://cbbrr%d", i);
+        int rc = zmq_connect (connectSocket, ep);
+        assert (rc == 0);
+
+        // Cleanup
+        rc = zmq_close (connectSocket);
+        assert (rc == 0);
+    }
+
+    int rc = zmq_ctx_term (ctx);
+    assert (rc == 0);
+}
+
 void test_multiple_connects ()
 {
     const unsigned int no_of_connects = 10;
@@ -499,6 +523,7 @@ int main (void)
     test_bind_before_connect ();
     test_connect_before_bind ();
     test_connect_before_bind_pub_sub ();
+    test_connect_before_bind_ctx_term ();
     test_multiple_connects ();
     test_multiple_threads ();
     test_simultaneous_connect_bind_threads ();
