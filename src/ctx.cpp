@@ -152,6 +152,8 @@ int zmq::ctx_t::terminate ()
     pending_connections_t copy = pending_connections;
     for (pending_connections_t::iterator p = copy.begin (); p != copy.end (); ++p) {
         zmq::socket_base_t *s = create_socket (ZMQ_PAIR);
+        // create_socket might fail eg: out of memory/sockets limit reached
+        zmq_assert (s);
         s->bind (p->first.c_str ());
         s->close ();
     }
