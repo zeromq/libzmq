@@ -9,6 +9,8 @@
 
 * Fixed #2107 - zmq_connect with IPv6 "source:port;dest:port" broken
 
+* Fixed #2117 - ctx_term assert with inproc zmq_router connect-before-bind
+
 
 0MQ version 4.1.5 stable, released on 2016/06/17
 ================================================
