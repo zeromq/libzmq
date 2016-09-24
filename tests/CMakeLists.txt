@@ -66,6 +66,7 @@ set(tests
         test_xpub_manual
         test_xpub_welcome_msg
         test_base85
+        test_bind_after_connect_tcp
         test_sodium
 )
 if(NOT WIN32)

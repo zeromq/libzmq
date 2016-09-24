@@ -405,6 +405,7 @@ test_apps = \
 	tests/test_stream_exceeds_buffer \
 	tests/test_pub_invert_matching \
 	tests/test_base85 \
+	tests/test_bind_after_connect_tcp \
 	tests/test_sodium
 
 tests_test_ancillaries_SOURCES = tests/test_ancillaries.cpp
@@ -609,6 +610,9 @@ tests_test_stream_exceeds_buffer_LDADD = src/libzmq.la
 
 tests_test_pub_invert_matching_SOURCES = tests/test_pub_invert_matching.cpp
 tests_test_pub_invert_matching_LDADD = src/libzmq.la
+
+tests_test_bind_after_connect_tcp_SOURCES = tests/test_bind_after_connect_tcp.cpp
+tests_test_bind_after_connect_tcp_LDADD = src/libzmq.la
 
 tests_test_base85_SOURCES = tests/test_base85.cpp
 tests_test_base85_LDADD = src/libzmq.la

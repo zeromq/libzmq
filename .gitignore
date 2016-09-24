@@ -136,6 +136,7 @@ test_use_fd_tcp
 test_pub_invert_matching
 test_dgram
 test_base85
+test_bind_after_connect_tcp
 test_sodium
 tests/test*.log
 tests/test*.trs
