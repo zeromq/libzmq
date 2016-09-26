@@ -135,7 +135,7 @@ void zmq::pollset_t::reset_pollin (handle_t handle_)
     pc.events = 0;
 
     pc.cmd = PS_DELETE;
-       int rc = pollset_ctl (pollset_fd, &pc, 1);
+    int rc = pollset_ctl (pollset_fd, &pc, 1);
     
     if (pe->flag_pollout) {
         pc.events = POLLOUT;
@@ -183,20 +183,7 @@ void zmq::pollset_t::reset_pollout (handle_t handle_)
         pc.events = POLLIN;
         rc = pollset_ctl (pollset_fd, &pc, 1);
         errno_assert (rc != -1);
-    }struct poll_ctl pc;
-    pc.fd     = pe->fd;
-    pc.events = 0;
-
-    if (pe->flag_pollin) {
-        pc.cmd    = PS_DELETE;
-        pc.events = POLLIN;
-        pollset_ctl (pollset_fd, &pc, 1);
     }
-
-    pc.cmd = PS_MOD;
-    int rc = pollset_ctl (pollset_fd, &pc, 1);
-    errno_assert (rc != -1);
-
     pe->flag_pollout = false;
 }
 
