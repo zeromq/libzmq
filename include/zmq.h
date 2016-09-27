@@ -577,7 +577,7 @@ ZMQ_EXPORT int  zmq_poller_add (void *poller, void *socket, void *user_data, sho
 ZMQ_EXPORT int  zmq_poller_modify (void *poller, void *socket, short events);
 ZMQ_EXPORT int  zmq_poller_remove (void *poller, void *socket);
 ZMQ_EXPORT int  zmq_poller_wait (void *poller, zmq_poller_event_t *event, long timeout);
-ZMQ_EXPORT int  zmq_poller_wait_all (void *poller, zmq_poller_event_t *events, long timeout);
+ZMQ_EXPORT int  zmq_poller_wait_all (void *poller, zmq_poller_event_t *events, int n_events, long timeout);
 
 #if defined _WIN32
 ZMQ_EXPORT int zmq_poller_add_fd (void *poller, SOCKET fd, void *user_data, short events);

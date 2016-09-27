@@ -380,7 +380,7 @@ int zmq::socket_poller_t::rebuild ()
     return 0;
 }
 
-int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_, long timeout_)
+int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_, int n_events_, long timeout_)
 {
     if (need_rebuild)
         if (rebuild () == -1)
@@ -441,7 +441,7 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_, long tim
 
         //  Check for the events.
         int i=0;
-        for (items_t::iterator it = items.begin (); it != items.end (); ++i, ++it) {
+        for (items_t::iterator it = items.begin (); it != items.end () && i < n_events_; ++i, ++it) {
 
             events_[i].socket = NULL;
             events_[i].fd = 0;
