@@ -252,4 +252,3 @@ void zmq::pollset_t::worker_routine (void *arg_)
 }
 
 #endif
--
