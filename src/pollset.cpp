@@ -81,7 +81,9 @@ zmq::pollset_t::handle_t zmq::pollset_t::add_fd (fd_t fd_, i_poll_events *events
     //  Increase the load metric of the thread.
     adjust_load (1);
 
-    fd_table.resize(fd_ + 1, NULL);
+    if (fd_ >= fd_table.size ()) {
+        fd_table.resize(fd_ + 1, NULL);
+    }
     fd_table [fd_] = pe;
     return pe;
 }
@@ -132,15 +134,15 @@ void zmq::pollset_t::reset_pollin (handle_t handle_)
     pc.fd     = pe->fd;
     pc.events = 0;
 
-    if (pe->flag_pollout) {
-        pc.cmd    = PS_DELETE;
-        pc.events = POLLOUT;
-        pollset_ctl(pollset_fd, &pc, 1);
-    }
-
-    pc.cmd = PS_MOD;
+    pc.cmd = PS_DELETE;
     int rc = pollset_ctl (pollset_fd, &pc, 1);
-    errno_assert (rc != -1);
+    
+    if (pe->flag_pollout) {
+        pc.events = POLLOUT;
+        pc.cmd    = PS_MOD;
+        rc = pollset_ctl (pollset_fd, &pc, 1);
+        errno_assert (rc != -1);
+    }
 
     pe->flag_pollin = false;
 }
@@ -172,16 +174,16 @@ void zmq::pollset_t::reset_pollout (handle_t handle_)
     pc.fd     = pe->fd;
     pc.events = 0;
 
-    if (pe->flag_pollin) {
-        pc.cmd    = PS_DELETE;
-        pc.events = POLLIN;
-        pollset_ctl (pollset_fd, &pc, 1);
-    }
-
-    pc.cmd = PS_MOD;
+    pc.cmd = PS_DELETE;
     int rc = pollset_ctl (pollset_fd, &pc, 1);
     errno_assert (rc != -1);
-
+    
+    if (pe->flag_pollin) {
+        pc.cmd    = PS_MOD;
+        pc.events = POLLIN;
+        rc = pollset_ctl (pollset_fd, &pc, 1);
+        errno_assert (rc != -1);
+    }
     pe->flag_pollout = false;
 }
 
