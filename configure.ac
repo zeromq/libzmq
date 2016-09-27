@@ -141,7 +141,6 @@ libzmq_on_gnu="no"
 CPPFLAGS="-D_REENTRANT -D_THREAD_SAFE -Wno-long-long $CPPFLAGS"
 
 # Will be used to add flags to pkg-config useful when apps want to statically link
-PKGCFG_REQUIRES_PRIVATE=""
 PKGCFG_LIBS_PRIVATE=""
 
 # For host type checks
@@ -455,7 +454,7 @@ elif test "x$with_libsodium" = "xyes"; then
         ;;
     esac
 
-    PKGCFG_REQUIRES_PRIVATE="$PKGCFG_REQUIRES_PRIVATE libsodium"
+    PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $sodium_LIBS"
 else
     AC_MSG_NOTICE([Using tweetnacl for CURVE security])
     AC_DEFINE(ZMQ_HAVE_CURVE, [1], [Using curve encryption])
@@ -477,18 +476,14 @@ AC_ARG_WITH([pgm], [AS_HELP_STRING([--with-pgm],
 
 # conditionally require pgm package
 if test "x$with_pgm_ext" != "xno"; then
-    PKG_CHECK_MODULES([pgm], [openpgm-5.2 >= 5.2], [
-            have_pgm_library="yes"
-            PKGCFG_REQUIRES_PRIVATE="$PKGCFG_REQUIRES_PRIVATE openpgm-5.2" ],
+    PKG_CHECK_MODULES([pgm], [openpgm-5.2 >= 5.2], [ have_pgm_library="yes" ],
         [PKG_CHECK_MODULES([pgm], [openpgm-5.1 >= 5.1],
-            [
-                have_pgm_library="yes"
-                PKGCFG_REQUIRES_PRIVATE="$PKGCFG_REQUIRES_PRIVATE openpgm-5.1"
-            ])])
+            [ have_pgm_library="yes" ])])
 fi
 
 if test "x$have_pgm_library" = "xyes"; then
     AC_DEFINE(ZMQ_HAVE_OPENPGM, [1], [Have OpenPGM extension])
+    PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $pgm_LIBS"
 fi
 
 AM_CONDITIONAL(HAVE_PGM, test "x$have_pgm_library" = "xyes")
@@ -515,7 +510,7 @@ if test "x$with_norm_ext" != "xno"; then
         LIBZMQ_EXTRA_LDFLAGS="-L${norm_path}/lib ${LIBZMQ_EXTRA_LDFLAGS}"
     fi
     LIBS="-L${norm_path}/lib -lnorm $LIBS"
-    PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE libnorm.a"
+    PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -lnorm"
 else
     AC_MSG_RESULT([no])
 fi
@@ -661,7 +656,6 @@ AC_SUBST(LIBZMQ_EXTRA_LDFLAGS)
 AC_SUBST(LIBZMQ_VMCI_CXXFLAGS)
 AC_SUBST(LIBZMQ_VMCI_LDFLAGS)
 
-AC_SUBST(pkg_config_requires_private, $PKGCFG_REQUIRES_PRIVATE)
 AC_SUBST(pkg_config_libs_private, $PKGCFG_LIBS_PRIVATE)
 
 # set pkgconfigdir, allow override
