@@ -1243,16 +1243,8 @@ int zmq_poller_wait_all (void *poller_, zmq_poller_event_t *events, int n_events
     }
 
     zmq_assert (events != NULL);
-    zmq::socket_poller_t::event_t evts[n_events];
 
-    int rc = ((zmq::socket_poller_t*)poller_)->wait (evts, n_events, timeout_);
-
-    for(int i = 0; i < n_events; ++i) {
-        events[i].socket = evts[i].socket;
-        events[i].fd = evts[i].fd;
-        events[i].user_data = evts[i].user_data;
-        events[i].events = evts[i].events;
-    }
+    int rc = ((zmq::socket_poller_t*)poller_)->wait ((zmq::socket_poller_t::event_t *)events, n_events, timeout_);
 
     return rc;
 }
