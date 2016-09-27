@@ -1223,9 +1223,7 @@ int zmq_poller_wait (void *poller_, zmq_poller_event_t *event, long timeout_)
     zmq_assert (event != NULL);
 
     int n_items = ((zmq::socket_poller_t*)poller_)->size ();
-    zmq_poller_event_t *events;
-    events = new zmq_poller_event_t[n_items];
-    alloc_assert(events);
+    zmq_poller_event_t events[n_items];
 
     int rc = zmq_poller_wait_all(poller_, events, timeout_);
 
@@ -1234,7 +1232,6 @@ int zmq_poller_wait (void *poller_, zmq_poller_event_t *event, long timeout_)
     } else {
         memset (event, 0, sizeof(zmq_poller_event_t));
     }
-    delete [] events;
 
     return rc;
 }
@@ -1249,9 +1246,7 @@ int zmq_poller_wait_all (void *poller_, zmq_poller_event_t *events, long timeout
     zmq_assert (events != NULL);
 
     int n_items = ((zmq::socket_poller_t*)poller_)->size ();
-    zmq::socket_poller_t::event_t *evts;
-    evts = new zmq::socket_poller_t::event_t[n_items];
-    alloc_assert(evts);
+    zmq::socket_poller_t::event_t evts[n_items];
 
     int rc = ((zmq::socket_poller_t*)poller_)->wait (evts, timeout_);
 
@@ -1261,7 +1256,6 @@ int zmq_poller_wait_all (void *poller_, zmq_poller_event_t *events, long timeout
         events[i].user_data = evts[i].user_data;
         events[i].events = evts[i].events;
     }
-    delete [] evts;
 
     return rc;
 }
