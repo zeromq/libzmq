@@ -747,10 +747,12 @@ inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 {
     // implement zmq_poll on top of zmq_poller
     int rc;
-    zmq_poller_event_t events[nitems_];
+    zmq_poller_event_t *events;
+    events = new zmq_poller_event_t[nitems_];
+    alloc_assert(events);
     void *poller = zmq_poller_new ();
     alloc_assert(poller);
-    
+
     //  Register sockets with poller
     for (int i = 0; i < nitems_; i++) {
         if (items_[i].socket) {
@@ -758,6 +760,7 @@ inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             rc = zmq_poller_add (poller, items_[i].socket, NULL, items_[i].events);
             if (rc < 0) {
                 zmq_poller_destroy (&poller);
+                delete [] events;
                 return rc;
             }
         } else {
@@ -765,6 +768,7 @@ inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             rc = zmq_poller_add_fd (poller, items_[i].fd, NULL, items_[i].events);
             if (rc < 0) {
                 zmq_poller_destroy (&poller);
+                delete [] events;
                 return rc;
             }
         }
@@ -774,6 +778,7 @@ inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     rc = zmq_poller_wait_all (poller, events, nitems_, timeout_);
     if (rc < 0) {
         zmq_poller_destroy (&poller);
+        delete [] events;
         return rc;
     }
 
@@ -784,6 +789,7 @@ inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 
     //  Cleanup
     rc = zmq_poller_destroy (&poller);
+    delete [] events;
     return rc;
 }
 #endif // ZMQ_HAVE_POLLER
