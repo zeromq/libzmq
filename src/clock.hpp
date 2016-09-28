@@ -38,8 +38,12 @@
 #include <time.h>
 #include <sys/time.h>
 int clock_gettime (int clock_id, timespec *ts);
+#ifndef CLOCK_REALTIME
 #define CLOCK_REALTIME 0
+#endif
+#ifndef HAVE_CLOCK_GETTIME
 #define HAVE_CLOCK_GETTIME
+#endif
 #endif
 
 namespace zmq
