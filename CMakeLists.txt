@@ -17,7 +17,6 @@ if(COMPILER_SUPPORTS_C11)
 endif()
 
 # Will be used to add flags to pkg-config useful when apps want to statically link
-set (pkg_config_requires_private "")
 set (pkg_config_libs_private "")
 
 option (WITH_OPENPGM "Build with support for OpenPGM" OFF)
@@ -49,7 +48,7 @@ elseif (WITH_LIBSODIUM)
         endif ()
         set (ZMQ_USE_LIBSODIUM 1)
         set (ZMQ_HAVE_CURVE 1)
-        list (APPEND pkg_config_requires_private "libsodium")
+        set (pkg_config_libs_private "${pkg_config_libs_private} -lsodium")
     else ()
         message (FATAL_ERROR
             "libsodium is not installed. Install it, then run CMake again")
