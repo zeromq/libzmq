@@ -161,6 +161,15 @@ int main (void)
     rc = msg_send (&msg, radio, "Movies", "Godfather");
     assert (rc == 9);
 
+    // test zmq_poll with dish
+    zmq_pollitem_t items [] = {
+        { radio, 0, ZMQ_POLLIN, 0 }, // read publications
+        { dish, 0, ZMQ_POLLIN, 0 }, // read subscriptions
+    };
+    rc = zmq_poll(items, 2, 2000);
+    assert (rc == 0);
+    assert (items[1].revents == ZMQ_POLLIN);
+
     //  Check the correct message arrived
     rc = msg_recv_cmp (&msg, dish, "Movies", "Godfather");
     assert (rc == 9);

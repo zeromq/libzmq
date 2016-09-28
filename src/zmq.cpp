@@ -742,10 +742,60 @@ const char *zmq_msg_gets (zmq_msg_t *msg_, const char *property_)
 
 // Polling.
 
+#if defined ZMQ_HAVE_POLLER
+inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
+{
+    // implement zmq_poll on top of zmq_poller
+    int rc;
+    zmq_poller_event_t events[nitems_];
+    void *poller = zmq_poller_new ();
+    alloc_assert(poller);
+    
+    //  Register sockets with poller
+    for (int i = 0; i < nitems_; i++) {
+        if (items_[i].socket) {
+            //  Poll item is a 0MQ socket.
+            rc = zmq_poller_add (poller, items_[i].socket, NULL, items_[i].events);
+            if (rc < 0) {
+                zmq_poller_destroy (&poller);
+                return rc;
+            }
+        } else {
+            //  Poll item is a raw file descriptor.
+            rc = zmq_poller_add_fd (poller, items_[i].fd, NULL, items_[i].events);
+            if (rc < 0) {
+                zmq_poller_destroy (&poller);
+                return rc;
+            }
+        }
+    }
+
+    //  Wait for events
+    rc = zmq_poller_wait_all (poller, events, nitems_, timeout_);
+    if (rc < 0) {
+        zmq_poller_destroy (&poller);
+        return rc;
+    }
+
+    //  Put the event information where zmq_poll expects it to go.
+    for (int i = 0; i < nitems_; i++) {
+        items_[i].revents = events[i].events;
+    }
+
+    //  Cleanup
+    rc = zmq_poller_destroy (&poller);
+    return rc;
+}
+#endif // ZMQ_HAVE_POLLER
+
 int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 {
     //  TODO: the function implementation can just call zmq_pollfd_poll with
     //  pollfd as NULL, however pollfd is not yet stable.
+#if defined ZMQ_HAVE_POLLER
+    // if poller is present, use that.
+    return zmq_poller_poll(items_, nitems_, timeout_);
+#else
 #if defined ZMQ_POLL_BASED_ON_POLL
     if (unlikely (nitems_ < 0)) {
         errno = EINVAL;
@@ -1094,6 +1144,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     errno = ENOTSUP;
     return -1;
 #endif
+#endif // ZMQ_HAVE_POLLER
 }
 
 //  The poller functionality
