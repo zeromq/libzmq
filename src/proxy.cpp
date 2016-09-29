@@ -130,15 +130,6 @@ int zmq::proxy (
         { backend_, 0, ZMQ_POLLOUT, 0 }
     };
 
-    int control_idx = 2;
-    if (frontend_ == backend_) {
-        // when frontend & backend are the same,
-        // avoid duplicate poll entries
-        qt_poll_items -= 1;
-        items[1] = items[2];
-        control_idx = 1;
-    }
-
     //  Proxy can be in these three states
     enum {
         active,
@@ -163,7 +154,7 @@ int zmq::proxy (
         }
 
         //  Process a control command if any
-        if (control_ && items [control_idx].revents & ZMQ_POLLIN) {
+        if (control_ && items [2].revents & ZMQ_POLLIN) {
             rc = control_->recv (&msg, 0);
             if (unlikely (rc < 0))
                 return -1;
