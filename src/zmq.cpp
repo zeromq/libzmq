@@ -755,6 +755,7 @@ inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 
     //  Register sockets with poller
     for (int i = 0; i < nitems_; i++) {
+        items_[i].revents = 0;
         if (items_[i].socket) {
             //  Poll item is a 0MQ socket.
             rc = zmq_poller_add (poller, items_[i].socket, NULL, items_[i].events);
@@ -782,9 +783,19 @@ inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         return rc;
     }
 
-    //  Put the event information where zmq_poll expects it to go.
-    for (int i = 0; i < nitems_; i++) {
-        items_[i].revents = events[i].events;
+    //  Transform poller events into zmq_pollitem events
+    //  items_ contains all items, while events only contains fired events.
+    //  The two are still co-ordered, so the step through items
+    //  Checking for matches only on the first event
+    int found_events = rc;
+    for (int i = 0, j = 0; i < nitems_ && j < found_events; i++) {
+        if (
+            (items_[i].socket && items_[i].socket == events[j].socket) ||
+            (items_[i].fd && items_[i].fd == events[j].fd)
+        ) {
+            items_[i].revents = events[j].events;
+            j++;
+        }
     }
 
     //  Cleanup
@@ -1284,8 +1295,8 @@ int zmq_poller_wait (void *poller_, zmq_poller_event_t *event, long timeout_)
     if (rc < 0) {
         memset (event, 0, sizeof(zmq_poller_event_t));
     }
-
-    return rc;
+    // wait_all returns number of events, but we return 0 for any success
+    return rc >= 0 ? 0 : rc;
 }
 
 int zmq_poller_wait_all (void *poller_, zmq_poller_event_t *events, int n_events, long timeout_)
