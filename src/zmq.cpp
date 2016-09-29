@@ -780,6 +780,9 @@ inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     if (rc < 0) {
         zmq_poller_destroy (&poller);
         delete [] events;
+        if (zmq_errno() == ETIMEDOUT) {
+            return 0;
+        }
         return rc;
     }
 
