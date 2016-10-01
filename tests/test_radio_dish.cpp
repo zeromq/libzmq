@@ -167,7 +167,7 @@ int main (void)
         { dish, 0, ZMQ_POLLIN, 0 }, // read subscriptions
     };
     rc = zmq_poll(items, 2, 2000);
-    assert (rc == 0);
+    assert (rc == 1);
     assert (items[1].revents == ZMQ_POLLIN);
 
     //  Check the correct message arrived

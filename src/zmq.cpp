@@ -842,7 +842,7 @@ inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     }
 
     //  Cleanup
-    rc = zmq_poller_destroy (&poller);
+    zmq_poller_destroy (&poller);
     delete [] events;
     return rc;
 }

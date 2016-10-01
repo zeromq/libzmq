@@ -31,6 +31,11 @@
 #include "macros.hpp"
 
 #include <string.h>
+
+#ifndef ZMQ_HAVE_WINDOWS
+#include <unistd.h>
+#endif
+
 #include <new>
 #include <sstream>
 
