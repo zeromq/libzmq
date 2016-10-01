@@ -31,6 +31,7 @@
 #include "macros.hpp"
 
 #include <string.h>
+#include <unistd.h>
 #include <new>
 #include <sstream>
 
