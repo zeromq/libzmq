@@ -145,7 +145,8 @@ socket option is set to '1'.
 When a 'ZMQ_ROUTER' socket enters the 'mute' state due to having reached the
 high water mark for all peers, then any messages sent to the socket shall be dropped
 until the mute state ends. Likewise, any messages routed to a peer for which
-the individual high water mark has been reached shall also be dropped.
+the individual high water mark has been reached shall also be dropped,
+unless 'ZMQ_ROUTER_MANDATORY' socket option is set.
 
 When a 'ZMQ_REQ' socket is connected to a 'ZMQ_ROUTER' socket, in addition to the
 _identity_ of the originating peer each message received shall contain an empty
@@ -161,7 +162,7 @@ Direction:: Bidirectional
 Send/receive pattern:: Unrestricted
 Outgoing routing strategy:: See text
 Incoming routing strategy:: Fair-queued
-Action in mute state:: Drop
+Action in mute state:: Drop (see text)
 
 
 Publish-subscribe pattern
