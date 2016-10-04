@@ -26,6 +26,15 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+// "Tell them I was a writer.
+//  A maker of software.
+//  A humanist. A father.
+//  And many things.
+//  But above all, a writer.
+//  Thank You. :)"
+//  - Pieter Hintjens
+
 #include "precompiled.hpp"
 #define ZMQ_TYPE_UNSAFE
 
