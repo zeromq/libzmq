@@ -150,7 +150,8 @@ Action in mute state:: Return EAGAIN
 
 
 Radio-dish pattern
-~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
+
 The radio-dish pattern is used for one-to-many distribution of data from
 a single _publisher_ to multiple _subscribers_ in a fan out fashion.
 
