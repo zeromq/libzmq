@@ -192,7 +192,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
         usleep ((backoff_msec << i) * 1000);
     }
 
-    if (rc != 0 && errno == EINVAL) {
+    if (rc != 0 && ((errno == EINVAL) || (errno==EOPNOTSUPP))) {
         // Windows Subsystem for Linux compatibility
         LIBZMQ_UNUSED (nic_);
         LIBZMQ_UNUSED (ipv6_);
