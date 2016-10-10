@@ -48,9 +48,7 @@ zmq::mtrie_t::mtrie_t () :
 
 zmq::mtrie_t::~mtrie_t ()
 {
-    if (pipes) {
-        LIBZMQ_DELETE(pipes);
-    }
+    LIBZMQ_DELETE(pipes);
 
     if (count == 1) {
         zmq_assert (next.node);
