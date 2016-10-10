@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -59,8 +59,16 @@ int zmq::tipc_address_t::resolve (const char *name)
     unsigned int type = 0;
     unsigned int lower = 0;
     unsigned int upper = 0;
-
+    unsigned int z = 1, c = 0, n = 0;
+    char eof;
+    const char *domain;
     const int res = sscanf (name, "{%u,%u,%u}", &type, &lower, &upper);
+
+    /* Fetch optional domain suffix. */
+    if ((domain = strchr(name, '@'))) {
+        if (sscanf(domain, "@%u.%u.%u%c", &z, &c, &n, &eof) != 3)
+            return EINVAL;
+    }
     if (res == 3)
         goto nameseq;
     else
@@ -69,10 +77,7 @@ int zmq::tipc_address_t::resolve (const char *name)
         address.addrtype = TIPC_ADDR_NAME;
         address.addr.name.name.type = type;
         address.addr.name.name.instance = lower;
-        /* Since we can't specify lookup domain when connecting
-         * (and we're not sure that we want it to be configurable)
-         * Change from 'closest first' approach, to search entire zone */
-        address.addr.name.domain = tipc_addr (1, 0, 0);
+        address.addr.name.domain = tipc_addr (z, c, n);
         address.scope = 0;
         return 0;
     }

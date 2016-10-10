@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
     
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -66,6 +66,8 @@ int main (void)
     // This pipe will 
     rc = zmq_connect (from, "tcp://localhost:6555");
     assert (rc == 0);
+
+    msleep (SETTLE_TIME);
 
     // We send 10 messages, 5 should just get stuck in the queue
     // for the not-yet-connected pipe

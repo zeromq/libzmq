@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -50,7 +50,13 @@ void test_ctx_destroy()
     // Close the socket
     rc = zmq_close (socket);
     assert (rc == 0);
-    
+
+    // Test error - API has multiple ways to kill Contexts
+    rc = zmq_ctx_term (NULL);
+    assert (rc == -1 && errno == EFAULT);
+    rc = zmq_term (NULL);
+    assert (rc == -1 && errno == EFAULT);
+
     // Destroy the context
     rc = zmq_ctx_destroy (ctx);
     assert (rc == 0);
@@ -72,6 +78,10 @@ void test_ctx_shutdown()
 
     // Wait for thread to start up and block
     msleep (SETTLE_TIME);
+
+    // Test error - Shutdown context
+    rc = zmq_ctx_shutdown (NULL);
+    assert (rc == -1 && errno == EFAULT);
 
     // Shutdown context, if we used destroy here we would deadlock.
     rc = zmq_ctx_shutdown (ctx);

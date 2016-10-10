@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,24 +27,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include "macros.hpp"
-#include "platform.hpp"
-#if defined ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
-#include <unistd.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netinet/tcp.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <fcntl.h>
-#if defined ZMQ_HAVE_OPENBSD
-#define ucred sockpeercred
-#endif
-#endif
 
 #include <string.h>
+
+#ifndef ZMQ_HAVE_WINDOWS
+#include <unistd.h>
+#endif
+
 #include <new>
 #include <sstream>
 
@@ -74,6 +65,8 @@
 zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
                                        const std::string &endpoint_) :
     s (fd_),
+    as_server(false),
+    handle((handle_t)NULL),
     inpos (NULL),
     insize (0),
     decoder (NULL),
@@ -203,10 +196,10 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
 
     if (options.raw_socket) {
         // no handshaking for raw sock, instantiate raw encoder and decoders
-        encoder = new (std::nothrow) raw_encoder_t (options.tcp_send_buffer_size);
+        encoder = new (std::nothrow) raw_encoder_t (out_batch_size);
         alloc_assert (encoder);
 
-        decoder = new (std::nothrow) raw_decoder_t (options.tcp_recv_buffer_size);
+        decoder = new (std::nothrow) raw_decoder_t (in_batch_size);
         alloc_assert (decoder);
 
         // disable handshaking for raw socket
@@ -385,12 +378,12 @@ void zmq::stream_engine_t::out_event ()
         outpos = NULL;
         outsize = encoder->encode (&outpos, 0);
 
-        while (outsize < options.tcp_send_buffer_size) {
+        while (outsize < (size_t) out_batch_size) {
             if ((this->*next_msg) (&tx_msg) == -1)
                 break;
             encoder->load_msg (&tx_msg);
             unsigned char *bufptr = outpos + outsize;
-            size_t n = encoder->encode (&bufptr, options.tcp_send_buffer_size - outsize);
+            size_t n = encoder->encode (&bufptr, out_batch_size - outsize);
             zmq_assert (n > 0);
             if (outpos == NULL)
                 outpos = bufptr;
@@ -587,10 +580,10 @@ bool zmq::stream_engine_t::handshake ()
            return false;
         }
 
-        encoder = new (std::nothrow) v1_encoder_t (options.tcp_send_buffer_size);
+        encoder = new (std::nothrow) v1_encoder_t (out_batch_size);
         alloc_assert (encoder);
 
-        decoder = new (std::nothrow) v1_decoder_t (options.tcp_recv_buffer_size, options.maxmsgsize);
+        decoder = new (std::nothrow) v1_decoder_t (in_batch_size, options.maxmsgsize);
         alloc_assert (decoder);
 
         //  We have already sent the message header.
@@ -634,12 +627,11 @@ bool zmq::stream_engine_t::handshake ()
            return false;
         }
 
-        encoder = new (std::nothrow) v1_encoder_t (
-           options.tcp_send_buffer_size);
+        encoder = new (std::nothrow) v1_encoder_t (out_batch_size);
         alloc_assert (encoder);
 
         decoder = new (std::nothrow) v1_decoder_t (
-            options.tcp_recv_buffer_size, options.maxmsgsize);
+            in_batch_size, options.maxmsgsize);
         alloc_assert (decoder);
     }
     else
@@ -650,19 +642,19 @@ bool zmq::stream_engine_t::handshake ()
            return false;
         }
 
-        encoder = new (std::nothrow) v2_encoder_t (options.tcp_send_buffer_size);
+        encoder = new (std::nothrow) v2_encoder_t (out_batch_size);
         alloc_assert (encoder);
 
         decoder = new (std::nothrow) v2_decoder_t (
-            options.tcp_recv_buffer_size, options.maxmsgsize);
+            in_batch_size, options.maxmsgsize);
         alloc_assert (decoder);
     }
     else {
-        encoder = new (std::nothrow) v2_encoder_t (options.tcp_send_buffer_size);
+        encoder = new (std::nothrow) v2_encoder_t (out_batch_size);
         alloc_assert (encoder);
 
         decoder = new (std::nothrow) v2_decoder_t (
-                options.tcp_recv_buffer_size, options.maxmsgsize);
+                in_batch_size, options.maxmsgsize);
         alloc_assert (decoder);
 
         if (options.mechanism == ZMQ_NULL
@@ -682,7 +674,7 @@ bool zmq::stream_engine_t::handshake ()
                     plain_client_t (options);
             alloc_assert (mechanism);
         }
-#ifdef HAVE_LIBSODIUM
+#ifdef ZMQ_HAVE_CURVE
         else
         if (options.mechanism == ZMQ_CURVE
         &&  memcmp (greeting_recv + 12, "CURVE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 20) == 0) {
@@ -712,11 +704,6 @@ bool zmq::stream_engine_t::handshake ()
         }
         next_msg = &stream_engine_t::next_handshake_command;
         process_msg = &stream_engine_t::process_handshake_command;
-
-        if(options.heartbeat_interval > 0) {
-            add_timer(options.heartbeat_interval, heartbeat_ivl_timer_id);
-            has_heartbeat_timer = true;
-        }
     }
 
     // Start polling for output if necessary.
@@ -824,6 +811,11 @@ void zmq::stream_engine_t::zap_msg_available ()
 
 void zmq::stream_engine_t::mechanism_ready ()
 {
+    if (options.heartbeat_interval > 0) {
+        add_timer(options.heartbeat_interval, heartbeat_ivl_timer_id);
+        has_heartbeat_timer = true;
+    }
+
     if (options.recv_identity) {
         msg_t identity;
         mechanism->peer_identity (&identity);
@@ -869,7 +861,7 @@ int zmq::stream_engine_t::push_msg_to_session (msg_t *msg_)
 }
 
 int zmq::stream_engine_t::push_raw_msg_to_session (msg_t *msg_) {
-    if (metadata)
+    if (metadata && metadata != msg_->metadata())
         msg_->set_metadata(metadata);
     return push_msg_to_session(msg_);
 }
@@ -997,6 +989,12 @@ void zmq::stream_engine_t::set_handshake_timer ()
 bool zmq::stream_engine_t::init_properties (properties_t & properties) {
     if (peer_address.empty()) return false;
     properties.insert (std::make_pair("Peer-Address", peer_address));
+
+    //  Private property to support deprecated SRCFD
+    std::ostringstream stream;
+    stream << (int)s;
+    std::string fd_string = stream.str();
+    properties.insert(std::make_pair("__fd", fd_string));
     return true;
 }
 
@@ -1031,7 +1029,8 @@ int zmq::stream_engine_t::produce_ping_message(msg_t * msg_)
     zmq_assert (mechanism != NULL);
 
     // 16-bit TTL + \4PING == 7
-    msg_->init_size(7);
+    rc = msg_->init_size(7);
+    errno_assert(rc == 0);
     msg_->set_flags(msg_t::command);
     // Copy in the command message
     memcpy(msg_->data(), "\4PING", 5);
@@ -1053,7 +1052,8 @@ int zmq::stream_engine_t::produce_pong_message(msg_t * msg_)
     int rc = 0;
     zmq_assert (mechanism != NULL);
 
-    msg_->init_size(5);
+    rc = msg_->init_size(5);
+    errno_assert(rc == 0);
     msg_->set_flags(msg_t::command);
 
     memcpy(msg_->data(), "\4PONG", 5);

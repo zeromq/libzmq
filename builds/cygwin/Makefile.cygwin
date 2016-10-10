@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -Os -g -DDLL_EXPORT -DFD_SETSIZE=4096 -DZMQ_USE_SELECT -I.
+CFLAGS=-Wall -Os -g -DDLL_EXPORT -DFD_SETSIZE=16384 -DZMQ_USE_SELECT -I.
 LIBS=-lws2_32
 
 OBJS = ctx.o reaper.o dist.o err.o \
@@ -18,6 +18,7 @@ OBJS = ctx.o reaper.o dist.o err.o \
 	pgm_socket.o pgm_receiver.o pgm_sender.o \
 	raw_decoder.o raw_encoder.o \
 	v1_decoder.o v1_encoder.o v2_decoder.o v2_encoder.o \
+        udp_address.o upd_engine.o radio.o dish.o \
 	socket_base.o session_base.o options.o \
 	req.o rep.o push.o pull.o pub.o sub.o pair.o \
 	dealer.o router.o xpub.o xsub.o stream.o \

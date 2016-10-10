@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,13 +27,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "platform.hpp"
+#include "precompiled.hpp"
 
 #ifdef ZMQ_HAVE_OPENPGM
-
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#endif
 
 #ifdef ZMQ_HAVE_LINUX
 #include <poll.h>
@@ -209,7 +205,7 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
                 goto err_abort;
         }
 
-        const int max_tpdu = (int) pgm_max_tpdu;
+        const int max_tpdu = (int) options.multicast_maxtpdu;
         if (!pgm_setsockopt (sock, IPPROTO_PGM, PGM_MTU, &max_tpdu,
               sizeof (max_tpdu)))
             goto err_abort;
@@ -217,7 +213,7 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
 
     if (receiver) {
         const int recv_only        = 1,
-                  rxw_max_tpdu     = (int) pgm_max_tpdu,
+                  rxw_max_tpdu     = (int) options.multicast_maxtpdu,
                   rxw_sqns         = compute_sqns (rxw_max_tpdu),
                   peer_expiry      = pgm_secs (300),
                   spmr_expiry      = pgm_msecs (25),
@@ -250,7 +246,7 @@ int zmq::pgm_socket_t::init (bool udp_encapsulation_, const char *network_)
     else {
         const int send_only        = 1,
                   max_rte      = (int) ((options.rate * 1000) / 8),
-                  txw_max_tpdu     = (int) pgm_max_tpdu,
+                  txw_max_tpdu     = (int) options.multicast_maxtpdu,
                   txw_sqns         = compute_sqns (txw_max_tpdu),
                   ambient_spm      = pgm_secs (30),
                   heartbeat_spm[]  = { pgm_msecs (100),

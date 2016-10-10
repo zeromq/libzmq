@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -47,7 +47,7 @@ void test_system_max ()
             break;
         sockets.push_back (socket);
     }
-    assert ((int) sockets.size () < no_of_sockets);
+    assert ((int) sockets.size () <= no_of_sockets);
 
     //  System is out of resources, further calls to zmq_socket should return NULL
     for (unsigned int i = 0; i < 10; ++i) {

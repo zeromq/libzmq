@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,8 +27,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include "macros.hpp"
-#include "platform.hpp"
 
 #include "clock.hpp"
 #include "err.hpp"
@@ -36,22 +36,16 @@
 #include "atomic_counter.hpp"
 #include "atomic_ptr.hpp"
 #include <assert.h>
-#include "../include/zmq_utils.h"
 
 #if !defined ZMQ_HAVE_WINDOWS
 #include <unistd.h>
-#else
-#include "windows.hpp"
 #endif
 
-#ifdef HAVE_LIBSODIUM
-#ifdef HAVE_TWEETNACL
-#include "tweetnacl_base.h"
-#else
+#if defined (ZMQ_USE_TWEETNACL)
+#include "tweetnacl.h"
+#elif defined (ZMQ_USE_LIBSODIUM)
 #include "sodium.h"
 #endif
-#endif
-
 
 void zmq_sleep (int seconds_)
 {
@@ -97,24 +91,24 @@ void zmq_threadclose(void* thread)
 //  Maps base 256 to base 85
 static char encoder [85 + 1] = {
     "0123456789" "abcdefghij" "klmnopqrst" "uvwxyzABCD"
-    "EFGHIJKLMN" "OPQRSTUVWX" "YZ.-:+=^!/" "*?&<>()[]{" 
+    "EFGHIJKLMN" "OPQRSTUVWX" "YZ.-:+=^!/" "*?&<>()[]{"
     "}@%$#"
 };
 
 //  Maps base 85 to base 256
 //  We chop off lower 32 and higher 128 ranges
 static uint8_t decoder [96] = {
-    0x00, 0x44, 0x00, 0x54, 0x53, 0x52, 0x48, 0x00, 
-    0x4B, 0x4C, 0x46, 0x41, 0x00, 0x3F, 0x3E, 0x45, 
-    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 
-    0x08, 0x09, 0x40, 0x00, 0x49, 0x42, 0x4A, 0x47, 
-    0x51, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 
-    0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x32, 
-    0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 
-    0x3B, 0x3C, 0x3D, 0x4D, 0x00, 0x4E, 0x43, 0x00, 
-    0x00, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 
-    0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 
-    0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 
+    0x00, 0x44, 0x00, 0x54, 0x53, 0x52, 0x48, 0x00,
+    0x4B, 0x4C, 0x46, 0x41, 0x00, 0x3F, 0x3E, 0x45,
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+    0x08, 0x09, 0x40, 0x00, 0x49, 0x42, 0x4A, 0x47,
+    0x51, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A,
+    0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x32,
+    0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A,
+    0x3B, 0x3C, 0x3D, 0x4D, 0x00, 0x4E, 0x43, 0x00,
+    0x00, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
+    0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+    0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20,
     0x21, 0x22, 0x23, 0x4F, 0x00, 0x50, 0x00, 0x00
 };
 
@@ -154,7 +148,7 @@ char *zmq_z85_encode (char *dest, const uint8_t *data, size_t size)
 
 //  --------------------------------------------------------------------------
 //  Decode an encoded string into a binary frame; dest must be at least
-//  strlen (string) * 4 / 5 bytes long. Returns dest. strlen (string) 
+//  strlen (string) * 4 / 5 bytes long. Returns dest. strlen (string)
 //  must be a multiple of 5.
 //  Returns NULL and sets errno = EINVAL for invalid input.
 
@@ -186,32 +180,61 @@ uint8_t *zmq_z85_decode (uint8_t *dest, const char *string)
 }
 
 //  --------------------------------------------------------------------------
-//  Generate a public/private keypair with libsodium.
+//  Generate a public/private keypair with tweetnacl or libsodium.
 //  Generated keys will be 40 byte z85-encoded strings.
 //  Returns 0 on success, -1 on failure, setting errno.
-//  Sets errno = ENOTSUP in the absence of libsodium.
+//  Sets errno = ENOTSUP in the absence of a CURVE library.
 
 int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key)
 {
-#ifdef HAVE_LIBSODIUM
+#if defined (ZMQ_HAVE_CURVE)
 #   if crypto_box_PUBLICKEYBYTES != 32 \
     || crypto_box_SECRETKEYBYTES != 32
-#       error "libsodium not built correctly"
+#       error "CURVE encryption library not built correctly"
 #   endif
 
     uint8_t public_key [32];
     uint8_t secret_key [32];
 
-    int rc = crypto_box_keypair (public_key, secret_key);
-    //  Is there a sensible errno to set here?
-    if (rc)
-        return rc;
-
+    // Return codes are suppressed as none of these can actually fail.
+    crypto_box_keypair (public_key, secret_key);
     zmq_z85_encode (z85_public_key, public_key, 32);
     zmq_z85_encode (z85_secret_key, secret_key, 32);
 
     return 0;
-#else // requires libsodium
+#else
+    (void) z85_public_key, (void) z85_secret_key;
+    errno = ENOTSUP;
+    return -1;
+#endif
+}
+
+//  --------------------------------------------------------------------------
+//  Derive the public key from a private key using tweetnacl or libsodium.
+//  Derived key will be 40 byte z85-encoded string.
+//  Returns 0 on success, -1 on failure, setting errno.
+//  Sets errno = ENOTSUP in the absence of a CURVE library.
+
+int zmq_curve_public (char *z85_public_key, const char *z85_secret_key)
+{
+#if defined (ZMQ_HAVE_CURVE)
+#   if crypto_box_PUBLICKEYBYTES != 32 \
+    || crypto_box_SECRETKEYBYTES != 32
+#       error "CURVE encryption library not built correctly"
+#   endif
+
+    uint8_t public_key[32];
+    uint8_t secret_key[32];
+
+    if (zmq_z85_decode (secret_key, z85_secret_key) == NULL)
+        return -1;
+
+    // Return codes are suppressed as none of these can actually fail.
+    crypto_scalarmult_base (public_key, secret_key);
+    zmq_z85_encode (z85_public_key, public_key, 32);
+
+    return 0;
+#else
     (void) z85_public_key, (void) z85_secret_key;
     errno = ENOTSUP;
     return -1;

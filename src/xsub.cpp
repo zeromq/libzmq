@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include <string.h>
 
 #include "macros.hpp"
@@ -104,13 +105,13 @@ int zmq::xsub_t::xsend (msg_t *msg_)
         subscriptions.add (data + 1, size - 1);
         return dist.send_to_all (msg_);
     }
-    else 
+    else
     if (size > 0 && *data == 0) {
         //  Process unsubscribe message
         if (subscriptions.rm (data + 1, size - 1))
             return dist.send_to_all (msg_);
     }
-    else 
+    else
         //  User message sent upstream to XPUB socket
         return dist.send_to_all (msg_);
 
@@ -154,7 +155,7 @@ int zmq::xsub_t::xrecv (msg_t *msg_)
             return -1;
 
         //  Check whether the message matches at least one subscription.
-        //  Non-initial parts of the message are passed 
+        //  Non-initial parts of the message are passed
         if (more || !options.filter || match (msg_)) {
             more = msg_->flags () & msg_t::more ? true : false;
             return 0;
@@ -226,13 +227,18 @@ void zmq::xsub_t::send_subscription (unsigned char *data_, size_t size_,
 {
     pipe_t *pipe = (pipe_t*) arg_;
 
-    //  Create the subsctription message.
+    //  Create the subscription message.
     msg_t msg;
     int rc = msg.init_size (size_ + 1);
     errno_assert (rc == 0);
     unsigned char *data = (unsigned char*) msg.data ();
     data [0] = 1;
-    memcpy (data + 1, data_, size_);
+
+    //  We explicitly allow a NULL subscription with size zero
+    if (size_) {
+        assert (data_);
+        memcpy (data + 1, data_, size_);
+    }
 
     //  Send it to the pipe.
     bool sent = pipe->write (&msg);

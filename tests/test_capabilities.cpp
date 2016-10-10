@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -55,7 +55,7 @@ int main (void)
     assert (!zmq_has ("norm"));
 #endif
     
-#if defined (HAVE_LIBSODIUM)
+#if defined (ZMQ_HAVE_CURVE)
     assert (zmq_has ("curve"));
 #else
     assert (!zmq_has ("curve"));
@@ -65,6 +65,12 @@ int main (void)
     assert (zmq_has ("gssapi"));
 #else
     assert (!zmq_has ("gssapi"));
+#endif
+
+#if defined (ZMQ_HAVE_VMCI)
+    assert (zmq_has("vmci"));
+#else
+    assert (!zmq_has("vmci"));
 #endif
 
     return 0;

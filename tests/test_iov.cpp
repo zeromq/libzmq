@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -39,47 +39,88 @@ struct iovec {
 };
 #endif
 
-void do_check(void* sb, void* sc, unsigned int msgsz)
+void do_check(void* sb, void* sc, size_t msg_size)
 {
-    setup_test_environment();
-    int rc;
-    int sum =0;
-    for (int i = 0; i < 10; i++)
+    assert (sb && sc && msg_size > 0);
+
+    int rc = 0;
+    const char msg_val = '1';
+    const int num_messages = 10;
+    size_t send_count, recv_count;
+
+    send_count = recv_count = num_messages;
+
+    char *ref_msg = (char *) malloc (msg_size);
+    assert (ref_msg);
+    memset (ref_msg, msg_val, msg_size);
+
+    // zmq_sendiov(3) as a single multi-part send
+    struct iovec send_iov[num_messages];
+    char *buf = (char *) malloc (msg_size * num_messages);
+
+    for (int i = 0; i < num_messages; i++)
     {
-        zmq_msg_t msg;
-        zmq_msg_init_size(&msg, msgsz);
-        void * data = zmq_msg_data(&msg);
-        memcpy(data,&i, sizeof(int));
-        rc = zmq_msg_send(&msg,sc,i==9 ? 0 :ZMQ_SNDMORE);
-        assert (rc == (int)msgsz);
-        zmq_msg_close(&msg);
-        sum += i;
+        send_iov[i].iov_base = &buf[i * msg_size];
+        send_iov[i].iov_len = msg_size;
+        memcpy (send_iov[i].iov_base, ref_msg, msg_size);
+        assert (memcmp (ref_msg, send_iov[i].iov_base, msg_size) == 0);
     }
 
-    struct iovec ibuffer[32] ;
-    memset(&ibuffer[0], 0, sizeof(ibuffer));
-    
-    size_t count = 10;
-    rc = zmq_recviov(sb,&ibuffer[0],&count,0);
-    assert (rc == 10);
+    // Test errors - zmq_recviov - null socket
+    rc = zmq_sendiov (NULL, send_iov, send_count, ZMQ_SNDMORE);
+    assert (rc == -1 && errno == ENOTSOCK);
+    // Test errors - zmq_recviov - invalid send count
+    rc = zmq_sendiov (sc, send_iov, 0, 0);
+    assert (rc == -1 && errno == EINVAL);
+    // Test errors - zmq_recviov - null iovec
+    rc = zmq_sendiov (sc, NULL, send_count, 0);
+    assert (rc == -1 && errno == EINVAL);
 
-    int rsum=0;
-    for(;count;--count)
+    // Test success
+    rc = zmq_sendiov (sc, send_iov, send_count, ZMQ_SNDMORE);
+    // The zmq_sendiov(3) API method does not follow the same semantics as
+    // zmq_recviov(3); the latter returns the count of messages sent, rightly
+    // so, whilst the former sends the number of bytes successfully sent from
+    // the last message, which does not hold much sense from a batch send
+    // perspective; hence the assert checks if rc is same as msg_size.
+    assert ((size_t)rc == msg_size);
+
+    // zmq_recviov(3) single-shot
+    struct iovec recv_iov[num_messages];
+
+    // Test errors - zmq_recviov - null socket
+    rc = zmq_recviov (NULL, recv_iov, &recv_count, 0);
+    assert (rc == -1 && errno == ENOTSOCK);
+    // Test error - zmq_recviov - invalid receive count
+    rc = zmq_recviov (sb, recv_iov, NULL, 0);
+    assert (rc == -1 && errno == EINVAL);
+    size_t invalid_recv_count = 0;
+    rc = zmq_recviov (sb, recv_iov, &invalid_recv_count, 0);
+    assert (rc == -1 && errno == EINVAL);
+    // Test error - zmq_recviov - null iovec
+    rc = zmq_recviov (sb, NULL, &recv_count, 0);
+    assert (rc == -1 && errno == EINVAL);
+
+    // Test success
+    rc = zmq_recviov (sb, recv_iov, &recv_count, 0);
+    assert (rc == num_messages);
+
+    for (int i = 0; i < num_messages; i++)
     {
-        int v;
-        memcpy(&v,ibuffer[count-1].iov_base,sizeof(int));
-        rsum += v;
-        assert(ibuffer[count-1].iov_len == msgsz);
-        // free up the memory
-        free(ibuffer[count-1].iov_base);
+        assert (recv_iov[i].iov_base);
+        assert (memcmp (ref_msg, recv_iov[i].iov_base, msg_size) == 0);
+        free(recv_iov[i].iov_base);
     }
-    
-    assert ( sum == rsum );
 
+    assert (send_count == recv_count);
+    free (ref_msg);
+    free (buf);
 }
 
 int main (void)
 {
+    setup_test_environment ();
+
     void *ctx = zmq_ctx_new ();
     assert (ctx);
     int rc;
@@ -97,11 +138,11 @@ int main (void)
     assert (rc == 0);
 
 
-    // message bigger than vsm max
-    do_check(sb,sc,100);
+    // message bigger than VSM max
+    do_check (sb, sc, 100);
 
-    // message smaller than vsm max
-    do_check(sb,sc,10);
+    // message smaller than VSM max
+    do_check (sb, sc, 10);
 
     rc = zmq_close (sc);
     assert (rc == 0);

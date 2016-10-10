@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -55,8 +55,7 @@ void test_round_robin_out (void *ctx)
     }
 
     // Wait for connections.
-    rc = zmq_poll (0, 0, 100);
-    assert (rc == 0);
+    msleep (SETTLE_TIME);
 
     // Send all requests
     for (size_t i = 0; i < services; ++i)
@@ -78,8 +77,7 @@ void test_round_robin_out (void *ctx)
         close_zero_linger (rep [peer]);
 
     // Wait for disconnects.
-    rc = zmq_poll (0, 0, 100);
-    assert (rc == 0);
+    msleep (SETTLE_TIME);
 }
 
 void test_fair_queue_in (void *ctx)
@@ -122,8 +120,7 @@ void test_fair_queue_in (void *ctx)
         s_send_seq (senders [peer], "B", SEQ_END);
 
     // Wait for data.
-    rc = zmq_poll (0, 0, 50);
-    assert (rc == 0);
+    msleep (SETTLE_TIME);
 
     // handle the requests
     for (size_t peer = 0; peer < services; ++peer)
@@ -138,8 +135,7 @@ void test_fair_queue_in (void *ctx)
         close_zero_linger (senders [peer]);
 
     // Wait for disconnects.
-    rc = zmq_poll (0, 0, 100);
-    assert (rc == 0);
+    msleep (SETTLE_TIME);
 }
 
 void test_destroy_queue_on_disconnect (void *ctx)
@@ -201,8 +197,7 @@ void test_destroy_queue_on_disconnect (void *ctx)
     close_zero_linger (B);
 
     // Wait for disconnects.
-    rc = zmq_poll (0, 0, 100);
-    assert (rc == 0);
+    msleep (SETTLE_TIME);
 }
 
 void test_block_on_send_no_peers (void *ctx)

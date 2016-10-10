@@ -1,7 +1,5 @@
 /*
-    Copyright (c) 2010-2011 250bpm s.r.o.
-    Copyright (c) 2011 VMware, Inc.
-    Copyright (c) 2010-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -29,12 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zmq.h"
-#include <stdio.h>
-#include <string.h>
-
-#undef NDEBUG
-#include <assert.h>
+#include "testutil.hpp"
 
 int main (void)
 {
@@ -56,13 +49,13 @@ int main (void)
     //  Create a worker.
     void *rep = zmq_socket (ctx, ZMQ_REP);
     assert (rep);
-    rc = zmq_connect (rep, "tipc://{5560,0}");
+    rc = zmq_connect (rep, "tipc://{5560,0}@0.0.0");
     assert (rc == 0);
 
     //  Create a client.
     void *req = zmq_socket (ctx, ZMQ_REQ);
     assert (req);
-    rc = zmq_connect (req, "tipc://{5561,0}");
+    rc = zmq_connect (req, "tipc://{5561,0}@0.0.0");
     assert (rc == 0);
 
     //  Send a request.
@@ -146,7 +139,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_close (dealer);
     assert (rc == 0);
-    rc = zmq_term (ctx);
+    rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
     return 0 ;

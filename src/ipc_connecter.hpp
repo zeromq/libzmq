@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -29,8 +29,6 @@
 
 #ifndef __IPC_CONNECTER_HPP_INCLUDED__
 #define __IPC_CONNECTER_HPP_INCLUDED__
-
-#include "platform.hpp"
 
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
 

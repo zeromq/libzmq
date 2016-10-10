@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -55,7 +55,7 @@ namespace zmq
         ~server_t ();
 
         //  Overrides of functions from socket_base_t.
-        void xattach_pipe (zmq::pipe_t *pipe_, bool subscribe_to_all_);        
+        void xattach_pipe (zmq::pipe_t *pipe_, bool subscribe_to_all_);
         int xsend (zmq::msg_t *msg_);
         int xrecv (zmq::msg_t *msg_);
         bool xhas_in ();
@@ -72,7 +72,7 @@ namespace zmq
 
         //  Fair queueing object for inbound pipes.
         fq_t fq;
-        
+
         struct outpipe_t
         {
             zmq::pipe_t *pipe;
@@ -82,11 +82,11 @@ namespace zmq
         //  Outbound pipes indexed by the peer IDs.
         typedef std::map <uint32_t, outpipe_t> outpipes_t;
         outpipes_t outpipes;
-        
+
         //  Routing IDs are generated. It's a simple increment and wrap-over
         //  algorithm. This value is the next ID to use (if not used already).
         uint32_t next_rid;
-    
+
         server_t (const server_t&);
         const server_t &operator = (const server_t&);
     };

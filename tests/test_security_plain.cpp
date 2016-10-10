@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -164,10 +164,10 @@ int main (void)
 
     ip4addr.sin_family = AF_INET;
     ip4addr.sin_port = htons (9998);
-#if (_WIN32_WINNT < 0x0600)
+#if defined (ZMQ_HAVE_WINDOWS) && (_WIN32_WINNT < 0x0600)
     ip4addr.sin_addr.s_addr = inet_addr ("127.0.0.1");
 #else
-    inet_pton(AF_INET, "127.0.0.1", &ip4addr.sin_addr);
+    inet_pton (AF_INET, "127.0.0.1", &ip4addr.sin_addr);
 #endif
 
     s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);

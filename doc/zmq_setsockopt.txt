@@ -14,7 +14,7 @@ SYNOPSIS
 
 Caution: All options, with the exception of ZMQ_SUBSCRIBE, ZMQ_UNSUBSCRIBE,
 ZMQ_LINGER, ZMQ_ROUTER_HANDOVER, ZMQ_ROUTER_MANDATORY, ZMQ_PROBE_ROUTER,
-ZMQ_XPUB_VERBOSE, ZMQ_XPUB_VERBOSE_UNSUBSCRIBE, ZMQ_REQ_CORRELATE,
+ZMQ_XPUB_VERBOSE, ZMQ_XPUB_VERBOSER, ZMQ_REQ_CORRELATE,
 ZMQ_REQ_RELAXED, ZMQ_SNDHWM and ZMQ_RCVHWM, only take effect for
 subsequent socket bind/connects.
 
@@ -385,12 +385,12 @@ The 'ZMQ_LINGER' option shall set the linger period for the specified 'socket'.
 The linger period determines how long pending messages which have yet to be
 sent to a peer shall linger in memory after a socket is disconnected with
 linkzmq:zmq_disconnect[3] or closed with linkzmq:zmq_close[3], and further
-affects the termination of the socket's context with linkzmq:zmq_term[3]. The
-following outlines the different behaviours:
+affects the termination of the socket's context with linkzmq:zmq_ctx_term[3].
+The following outlines the different behaviours:
 
 * A value of '-1' specifies an infinite linger period. Pending
   messages shall not be discarded after a call to _zmq_disconnect()_ or
-  _zmq_close()_; attempting to terminate the socket's context with _zmq_term()_
+  _zmq_close()_; attempting to terminate the socket's context with _zmq_ctx_term()_
   shall block until all pending messages have been sent to a peer.
 
 * The value of '0' specifies no linger period. Pending messages shall be
@@ -398,7 +398,7 @@ following outlines the different behaviours:
 
 * Positive values specify an upper bound for the linger period in milliseconds.
   Pending messages shall not be discarded after a call to _zmq_disconnect()_ or
-  _zmq_close()_; attempting to terminate the socket's context with _zmq_term()_
+  _zmq_close()_; attempting to terminate the socket's context with _zmq_ctx_term()_
   shall block until either all pending messages have been sent to a peer, or the
   linger period expires, after which any pending messages shall be discarded.
 
@@ -431,6 +431,21 @@ network.
 Option value type:: int
 Option value unit:: network hops
 Default value:: 1
+Applicable socket types:: all, when using multicast transports
+
+
+ZMQ_MULTICAST_MAXTPDU: Maximum transport data unit size for multicast packets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the maximum transport data unit size used for outbound multicast
+packets.
+
+This must be set at or below the minimum Maximum Transmission Unit (MTU) for
+all network paths over which multicast reception is required.
+
+[horizontal]
+Option value type:: int
+Option value unit:: bytes
+Default value:: 1500
 Applicable socket types:: all, when using multicast transports
 
 
@@ -475,6 +490,28 @@ Option value type:: character string
 Option value unit:: N/A
 Default value:: not set
 Applicable socket types:: all, when using TCP transport
+
+
+ZMQ_USE_FD: Set the pre-allocated socket file descriptor
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When set to a positive integer value before zmq_bind is called on the socket,
+the socket shall use the corresponding file descriptor for connections over
+TCP or IPC instead of allocating a new file descriptor.
+Useful for writing systemd socket activated services. If set to -1 (default),
+a new file descriptor will be allocated instead (default behaviour).
+
+NOTE: if set after calling zmq_bind, this option shall have no effect.
+NOTE: the file descriptor passed through MUST have been ran through the "bind"
+      and "listen" system calls beforehand. Also, socket option that would
+      normally be passed through zmq_setsockopt like TCP buffers length,
+      IP_TOS or SO_REUSEADDR MUST be set beforehand by the caller, as they
+      must be set before the socket is bound.
+
+[horizontal]
+Option value type:: int
+Option value unit:: file descriptor
+Default value:: -1
+Applicable socket types:: all bound sockets, when using IPC or TCP transport
 
 
 ZMQ_PROBE_ROUTER: bootstrap connections to ROUTER sockets
@@ -630,11 +667,9 @@ ZMQ_REQ_RELAXED: relax strict alternation between request and reply
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 By default, a REQ socket does not allow initiating a new request with
 _zmq_send(3)_ until the reply to the previous one has been received.
-When set to 1, sending another message is allowed and has the effect of
-disconnecting the underlying connection to the peer from which the reply was
-expected, triggering a reconnection attempt on transports that support it.
-The request-reply state machine is reset and a new request is sent to the
-next available peer.
+When set to 1, sending another message is allowed and previous replies will
+be discarded if any. The request-reply state machine is reset and a new
+request is sent to the next available peer.
 
 If set to 1, also enable ZMQ_REQ_CORRELATE to ensure correct matching of
 requests and replies. Otherwise a late reply to an aborted request can be
@@ -833,14 +868,13 @@ Default value:: -1 (leave to OS default)
 Applicable socket types:: all, when using TCP transports.
 
 
-ZMQ_TCP_RETRANSMIT_TIMEOUT: Set TCP Retransmit Timeout
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_TCP_MAXRT: Set TCP Maximum Retransmit Timeout
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 On OSes where it is supported, sets how long before an unacknowledged TCP
-retransmit times out.
-The system normally attempts many TCP retransmits following an exponential
-backoff strategy. This means that after a network outage, it may take a long
-time before the session can be re-established. Setting this option allows
-the timeout to happen at a shorter interval.
+retransmit times out. The system normally attempts many TCP retransmits
+following an exponential backoff strategy. This means that after a network
+outage, it may take a long time before the session can be re-established.
+Setting this option allows the timeout to happen at a shorter interval.
 
 [horizontal]
 Option value type:: int
@@ -879,11 +913,11 @@ Default value:: N/A
 Applicable socket types:: ZMQ_SUB
 
 
-ZMQ_XPUB_VERBOSE: provide all subscription messages on XPUB sockets
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Sets the 'XPUB' socket behaviour on new subscriptions and unsubscriptions.
-A value of '0' is the default and passes only new subscription messages to
-upstream. A value of '1' passes all subscription messages upstream.
+ZMQ_XPUB_VERBOSE: pass subscribe messages on XPUB socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the 'XPUB' socket behaviour on new subscriptions. If enabled,
+the socket passes all subscribe messages to the caller. If disabled,
+these are not visible to the caller. The default is 0 (disabled).
 
 [horizontal]
 Option value type:: int
@@ -892,17 +926,12 @@ Default value:: 0
 Applicable socket types:: ZMQ_XPUB
 
 
-ZMQ_XPUB_VERBOSE_UNSUBSCRIBE: provide all unsubscription messages on XPUB sockets
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Sets the 'XPUB' socket behaviour on new subscriptions and unsubscriptions.
-A value of '0' is the default and passes only the last unsubscription message to
-upstream. A value of '1' passes all unsubscription messages upstream.
-
-This behaviour should be enabled in all the intermediary XPUB sockets if
-ZMQ_XPUB_VERBOSE is also being used in order to allow the correct forwarding
-of all the unsubscription messages.
-
-NOTE: This behaviour only takes effect when ZMQ_XPUB_VERBOSE is also enabled.
+ZMQ_XPUB_VERBOSER: pass subscribe and unsubscribe messages on XPUB socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the 'XPUB' socket behaviour on new subscriptions and ubsubscriptions.
+If enabled, the socket passes all subscribe and unsubscribe messages to the
+caller. If disabled, these are not visible to the caller. The default is 0
+(disabled).
 
 [horizontal]
 Option value type:: int
@@ -1071,33 +1100,54 @@ Option value unit:: boolean
 Default value:: 1 (true)
 Applicable socket types:: all, when using TCP transports.
 
-ZMQ_TCP_RECV_BUFFER: Size of the TCP receive buffer
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_RECV_BUFFER' specifies the maximum number of bytes which can
-be received by an individual syscall to receive data from the TCP
-socket. The buffer size is specified as an integer number from 0 (very small)
-to 10 (very large). The default value is 3.
 
+ZMQ_VMCI_BUFFER_SIZE: Set buffer size of the VMCI socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The `ZMQ_VMCI_BUFFER_SIZE` option shall set the size of the underlying
+buffer for the socket. Used during negotiation before the connection is established.
+
+[horizontal]
+Option value type:: uint64_t
+Option value unit:: bytes
+Default value:: 65546
+Applicable socket types:: all, when using VMCI transport
+
+
+ZMQ_VMCI_BUFFER_MIN_SIZE: Set min buffer size of the VMCI socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The `ZMQ_VMCI_BUFFER_MIN_SIZE` option shall set the min size of the underlying
+buffer for the socket. Used during negotiation before the connection is established.
+
+[horizontal]
+Option value type:: uint64_t
+Option value unit:: bytes
+Default value:: 128
+Applicable socket types:: all, when using VMCI transport
+
+
+ZMQ_VMCI_BUFFER_MAX_SIZE: Set max buffer size of the VMCI socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The `ZMQ_VMCI_BUFFER_MAX_SIZE` option shall set the max size of the underlying
+buffer for the socket. Used during negotiation before the connection is established.
+
+[horizontal]
+Option value type:: uint64_t
+Option value unit:: bytes
+Default value:: 262144
+Applicable socket types:: all, when using VMCI transport
+
+
+ZMQ_VMCI_CONNECT_TIMEOUT: Set connection timeout of the VMCI socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The `ZMQ_VMCI_CONNECT_TIMEOUT` option shall set connection timeout
+for the socket.
 
 [horizontal]
 Option value type:: int
-Option value unit:: N/A
-Default value:: 3
-Applicable socket types:: all, when using TCP transport
+Option value unit:: milliseconds
+Default value:: -1
+Applicable socket types:: all, when using VMCI transport
 
-ZMQ_TCP_SEND_BUFFER: Size of the TCP receive buffer
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_SEND_BUFFER' specifies the maximum number of bytes which can
-be sent by an individual syscall to transmit data to the TCP
-socket. The buffer size is specified as an integer number from 0 (very small)
-to 10 (very large). The default value is 3.
-
-
-[horizontal]
-Option value type:: int
-Option value unit:: N/A
-Default value:: 3
-Applicable socket types:: all, when using TCP transport
 
 RETURN VALUE
 ------------

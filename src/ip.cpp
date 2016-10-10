@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,13 +27,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include "ip.hpp"
 #include "err.hpp"
-#include "platform.hpp"
 
-#if defined ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
+#if !defined ZMQ_HAVE_WINDOWS
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -132,7 +130,7 @@ int zmq::get_peer_ip_address (fd_t sockfd_, std::string &ip_addr_)
     rc = getpeername (sockfd_, (struct sockaddr*) &ss, &addrlen);
 #ifdef ZMQ_HAVE_WINDOWS
     if (rc == SOCKET_ERROR) {
-		const int last_error = WSAGetLastError();
+        const int last_error = WSAGetLastError();
         wsa_assert (last_error != WSANOTINITIALISED &&
                     last_error != WSAEFAULT &&
                     last_error != WSAEINPROGRESS &&

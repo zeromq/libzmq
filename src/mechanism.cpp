@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include <string.h>
 
 #include "mechanism.hpp"
@@ -74,9 +75,11 @@ const char *zmq::mechanism_t::socket_type_string (int socket_type) const
 {
     static const char *names [] = {"PAIR", "PUB", "SUB", "REQ", "REP",
                                    "DEALER", "ROUTER", "PULL", "PUSH",
-                                   "XPUB", "XSUB", "STREAM", 
-                                   "SERVER", "CLIENT"};
-    zmq_assert (socket_type >= 0 && socket_type <= 13);
+                                   "XPUB", "XSUB", "STREAM",
+                                   "SERVER", "CLIENT",
+                                   "RADIO", "DISH",
+                                   "GATHER", "SCATTER", "DGRAM"};
+    zmq_assert (socket_type >= 0 && socket_type <= 18);
     return names [socket_type];
 }
 
@@ -192,6 +195,16 @@ bool zmq::mechanism_t::check_socket_type (const std::string& type_) const
             return type_ == "CLIENT";
         case ZMQ_CLIENT:
             return type_ == "SERVER";
+        case ZMQ_RADIO:
+            return type_ == "DISH";
+        case ZMQ_DISH:
+            return type_ == "RADIO";
+        case ZMQ_GATHER:
+            return type_ == "SCATTER";
+        case ZMQ_SCATTER:
+            return type_ == "GATHER";
+        case ZMQ_DGRAM:
+            return type_ == "DGRAM";
         default:
             break;
     }

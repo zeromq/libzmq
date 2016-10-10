@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -28,7 +28,6 @@
 */
 
 #include "testutil.hpp"
-#include "../include/zmq_utils.h"
 
 int main (void)
 {
@@ -51,6 +50,7 @@ int main (void)
     void *bowl = zmq_socket (ctx, ZMQ_PULL);
     assert (bowl);
 
+#if defined(ZMQ_SERVER) && defined(ZMQ_CLIENT)
     void *server = zmq_socket (ctx, ZMQ_SERVER);
     assert (server);
     rc = zmq_bind (server, "tcp://127.0.0.1:55557");
@@ -58,9 +58,18 @@ int main (void)
 
     void *client = zmq_socket (ctx, ZMQ_CLIENT);
     assert (client);
+#endif
 
     //  Set up poller
     void* poller = zmq_poller_new ();
+    zmq_poller_event_t event;
+
+    // waiting on poller with no registered sockets should report error
+    rc = zmq_poller_wait(poller, &event, 0);
+    assert (rc == -1);
+    assert (errno == ETIMEDOUT);
+
+    // register sink
     rc = zmq_poller_add (poller, sink, sink, ZMQ_POLLIN);
     assert (rc == 0);
     
@@ -70,7 +79,6 @@ int main (void)
     assert (rc == 1);   
 
     //  We expect a message only on the sink
-    zmq_poller_event_t event;
     rc = zmq_poller_wait (poller, &event, -1);
     assert (rc == 0);
     assert (event.socket == sink);
@@ -110,6 +118,7 @@ int main (void)
     assert (event.user_data == bowl);
     zmq_poller_remove_fd (poller, fd);
 
+#if defined(ZMQ_SERVER) && defined(ZMQ_CLIENT)
     //  Polling on thread safe sockets
     rc = zmq_poller_add (poller, server, NULL, ZMQ_POLLIN);
     assert (rc == 0);
@@ -132,20 +141,31 @@ int main (void)
     assert (event.socket == server);
     assert (event.user_data == NULL);
     assert (event.events == ZMQ_POLLOUT);
+#endif
 
-    //  Destory poller, sockets and ctx
-    rc = zmq_poller_close (poller);
-    assert (rc == 0);
+    //  Destory sockets, poller and ctx    
     rc = zmq_close (sink);
     assert (rc == 0);
     rc = zmq_close (vent);
     assert (rc == 0);
     rc = zmq_close (bowl);
     assert (rc == 0);
+#if defined(ZMQ_SERVER) && defined(ZMQ_CLIENT)
     rc = zmq_close (server);
     assert (rc == 0);
     rc = zmq_close (client);
     assert (rc == 0);
+#endif
+
+    // Test error - null poller pointers
+    rc = zmq_poller_destroy (NULL);
+    assert (rc == -1 && errno == EFAULT);
+    void *null_poller = NULL;
+    rc = zmq_poller_destroy (&null_poller);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_poller_destroy (&poller);
+    assert(rc == 0);
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include "macros.hpp"
 #include "stream.hpp"
 #include "pipe.hpp"
@@ -59,7 +60,7 @@ zmq::stream_t::~stream_t ()
 
 void zmq::stream_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 {
-	LIBZMQ_UNUSED(subscribe_to_all_);
+    LIBZMQ_UNUSED(subscribe_to_all_);
 
     zmq_assert (pipe_);
 
@@ -178,7 +179,9 @@ int zmq::stream_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
     bool is_int = (optvallen_ == sizeof (int));
-    int value = is_int? *((int *) optval_): 0;
+    int value = 0;
+    if (is_int) memcpy(&value, optval_, sizeof (int));
+
     switch (option_) {
         case ZMQ_CONNECT_RID:
             if (optval_ && optvallen_) {

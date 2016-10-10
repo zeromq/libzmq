@@ -1,0 +1,58 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+export TEST_VERBOSE=1
+
+ifeq ($(DEB_BUILD_ARCH_OS), kfreebsd)
+	DO_TEST = no
+endif
+
+DRAFTS=no
+
+# OBS build: add
+#   Macros:
+#   %_with_drafts 1
+# at the BOTTOM of the OBS prjconf
+OBS_BUILD_CFG=/.build/build.dist
+ifeq ("$(wildcard $(OBS_BUILD_CFG))","")
+BUILDCONFIG=$(shell ls -1 /usr/src/packages/SOURCES/_buildconfig* | head -n 1)
+endif
+ifneq ("$(wildcard $(OBS_BUILD_CFG))","")
+ifneq ("$(shell grep drafts $(OBS_BUILD_CFG))","")
+DRAFTS=yes
+endif
+endif
+
+# User build: DEB_BUILD_OPTIONS=drafts dpkg-buildpackage
+ifneq (,$(findstring drafts,$(DEB_BUILD_OPTIONS)))
+DRAFTS=yes
+endif
+
+override_dh_clean:
+	dh_clean
+	find $(CURDIR) -type s -exec rm {} \;
+	rm -f $(CURDIR)/doc/*.xml $(CURDIR)/doc/*.3 $(CURDIR)/doc/*.7
+	rm -f config.log
+
+override_dh_auto_configure:
+	dh_auto_configure -- --with-pgm --with-libsodium --enable-drafts=$(DRAFTS)
+
+override_dh_auto_test:
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+ifneq ($(DO_TEST), no)
+	-dh_auto_test -- VERBOSE=1
+else
+	-dh_auto_test -- VERBOSE=1
+endif
+endif
+
+override_dh_strip:
+	dh_strip --dbg-package=libzmq5-dbg
+
+%:
+	dh $@ --with=autoreconf --parallel
+
+.PHONY: override_dh_auto_configure override_dh_strip

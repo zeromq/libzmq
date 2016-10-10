@@ -1,0 +1,5 @@
+zeromq (4.2.0) UNRELEASED; urgency=low
+
+  * Initial packaging.
+
+ -- libzmq Developers <zeromq-dev@lists.zeromq.org>  Wed, 31 Dec 2014 00:00:00 +0000

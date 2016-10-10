@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include <string.h>
 
 #include "xpub.hpp"
@@ -91,6 +92,12 @@ void zmq::xpub_t::xread_activated (pipe_t *pipe_)
         if (size > 0 && (*data == 0 || *data == 1)) {
             if (manual)
             {
+                // Store manual subscription to use on termination
+                if (*data == 0)
+                    manual_subscriptions.rm(data + 1, size - 1, pipe_);
+                else
+                    manual_subscriptions.add(data + 1, size - 1, pipe_);
+
                 pending_pipes.push_back(pipe_);
                 pending_data.push_back(blob_t(data, size));
                 pending_metadata.push_back(sub.metadata());
@@ -133,19 +140,23 @@ void zmq::xpub_t::xwrite_activated (pipe_t *pipe_)
 int zmq::xpub_t::xsetsockopt (int option_, const void *optval_,
     size_t optvallen_)
 {
-    if (option_ == ZMQ_XPUB_VERBOSE || option_ == ZMQ_XPUB_VERBOSE_UNSUBSCRIBE ||
-        option_ == ZMQ_XPUB_NODROP || option_ == ZMQ_XPUB_MANUAL)
-    {
+    if (option_ == ZMQ_XPUB_VERBOSE
+     || option_ == ZMQ_XPUB_VERBOSER
+     || option_ == ZMQ_XPUB_NODROP
+     || option_ == ZMQ_XPUB_MANUAL) {
         if (optvallen_ != sizeof(int) || *static_cast <const int*> (optval_) < 0) {
             errno = EINVAL;
             return -1;
         }
-
-        if (option_ == ZMQ_XPUB_VERBOSE)
+        if (option_ == ZMQ_XPUB_VERBOSE) {
             verbose_subs = (*static_cast <const int*> (optval_) != 0);
+            verbose_unsubs = 0;
+        }
         else
-        if (option_ == ZMQ_XPUB_VERBOSE_UNSUBSCRIBE)
-            verbose_unsubs = (*static_cast <const int*> (optval_) != 0);
+        if (option_ == ZMQ_XPUB_VERBOSER) {
+            verbose_subs = (*static_cast <const int*> (optval_) != 0);
+            verbose_unsubs = verbose_subs;
+        }
         else
         if (option_ == ZMQ_XPUB_NODROP)
             lossy = (*static_cast <const int*> (optval_) == 0);
@@ -155,22 +166,21 @@ int zmq::xpub_t::xsetsockopt (int option_, const void *optval_,
     }
     else
     if (option_ == ZMQ_SUBSCRIBE && manual) {
-        if (last_pipe != NULL) {
-            subscriptions.add((unsigned char *)optval_, optvallen_, last_pipe);
-        }
+        if (last_pipe != NULL)
+            subscriptions.add ((unsigned char *)optval_, optvallen_, last_pipe);
     }
     else
     if (option_ == ZMQ_UNSUBSCRIBE && manual) {
-        if (last_pipe != NULL) {
-            subscriptions.rm((unsigned char *)optval_, optvallen_, last_pipe);
-        }
+        if (last_pipe != NULL)
+            subscriptions.rm ((unsigned char *)optval_, optvallen_, last_pipe);
     }
     else
     if (option_ == ZMQ_XPUB_WELCOME_MSG) {
         welcome_msg.close();
 
         if (optvallen_ > 0) {
-            welcome_msg.init_size(optvallen_);
+            int rc = welcome_msg.init_size(optvallen_);
+            errno_assert(rc == 0);
 
             unsigned char *data = (unsigned char*)welcome_msg.data();
             memcpy(data, optval_, optvallen_);
@@ -187,10 +197,19 @@ int zmq::xpub_t::xsetsockopt (int option_, const void *optval_,
 
 void zmq::xpub_t::xpipe_terminated (pipe_t *pipe_)
 {
-    //  Remove the pipe from the trie. If there are topics that nobody
-    //  is interested in anymore, send corresponding unsubscriptions
-    //  upstream.
-    subscriptions.rm (pipe_, send_unsubscription, this, !(verbose_unsubs || manual));
+    if (manual)
+    {
+        //  Remove the pipe from the trie and send corresponding manual
+        //  unsubscriptions upstream.
+        manual_subscriptions.rm (pipe_, send_unsubscription, this, false);
+    }
+    else
+    {
+        //  Remove the pipe from the trie. If there are topics that nobody
+        //  is interested in anymore, send corresponding unsubscriptions
+        //  upstream.
+        subscriptions.rm (pipe_, send_unsubscription, this, !verbose_unsubs);
+    }
 
     dist.pipe_terminated (pipe_);
 }

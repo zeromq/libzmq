@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -x
+set -e
 
 if [ $BUILD_TYPE == "default" ]; then
     mkdir tmp
@@ -14,14 +15,28 @@ if [ $BUILD_TYPE == "default" ]; then
     CONFIG_OPTS+=("PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig")
     CONFIG_OPTS+=("--prefix=${BUILD_PREFIX}")
 
-    #   Build required projects first
+    if [ -z $CURVE ]; then
+        CONFIG_OPTS+=("--disable-curve")
+    elif [ $CURVE == "libsodium" ]; then
+        CONFIG_OPTS+=("--with-libsodium=yes")
 
-    #   libsodium
-    git clone git://github.com/jedisct1/libsodium.git
-    ( cd libsodium; ./autogen.sh; ./configure --prefix=$BUILD_PREFIX; make check; make install)
+        git clone --depth 1 -b stable git://github.com/jedisct1/libsodium.git
+        ( cd libsodium; ./autogen.sh; ./configure --prefix=$BUILD_PREFIX; make check; make install)
+    fi
 
-    #   Build and check this project
-    (./autogen.sh && ./configure "${CONFIG_OPTS[@]}" --with-libsodium=yes && make && make check && make install) || exit 1
+    if [ -z $DRAFT ] || [ $DRAFT == "disabled" ]; then
+        CONFIG_OPTS+=("--enable-drafts=no")
+    elif [ $DRAFT == "enabled" ]; then
+        CONFIG_OPTS+=("--enable-drafts=yes")
+    fi
+
+    # Build and check this project
+    (
+        ./autogen.sh &&
+        ./configure "${CONFIG_OPTS[@]}" &&
+        export DISTCHECK_CONFIGURE_FLAGS="${CONFIG_OPTS[@]}" &&
+        make VERBOSE=1 distcheck
+    ) || exit 1
 else
     cd ./builds/${BUILD_TYPE} && ./ci_build.sh
 fi

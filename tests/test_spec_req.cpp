@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -71,8 +71,7 @@ void test_round_robin_out (void *ctx)
         close_zero_linger (rep [peer]);
 
     // Wait for disconnects.
-    rc = zmq_poll (0, 0, 100);
-    assert (rc == 0);
+    msleep (SETTLE_TIME);
 }
 
 void test_req_only_listens_to_current_peer (void *ctx)
@@ -106,8 +105,7 @@ void test_req_only_listens_to_current_peer (void *ctx)
     }
 
     // Wait for connects to finish.
-    rc = zmq_poll (0, 0, 100);
-    assert (rc == 0);
+    msleep (SETTLE_TIME);
 
     for (size_t i = 0; i < services; ++i) {
         // There still is a race condition when a stale peer's message
@@ -137,8 +135,7 @@ void test_req_only_listens_to_current_peer (void *ctx)
         close_zero_linger (router [i]);
 
     // Wait for disconnects.
-    rc = zmq_poll (0, 0, 100);
-    assert (rc == 0);
+    msleep (SETTLE_TIME);
 }
 
 void test_req_message_format (void *ctx)
@@ -196,8 +193,7 @@ void test_req_message_format (void *ctx)
     close_zero_linger (router);
 
     // Wait for disconnects.
-    rc = zmq_poll (0, 0, 100);
-    assert (rc == 0);
+    msleep (SETTLE_TIME);
 }
 
 void test_block_on_send_no_peers (void *ctx)

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -45,10 +45,11 @@ namespace zmq
     void set_tcp_receive_buffer (fd_t sockfd_, int bufsize_);
 
     //  Tunes TCP keep-alives
-    void tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_, int keepalive_idle_, int keepalive_intvl_);
+    void tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_,
+                              int keepalive_idle_, int keepalive_intvl_);
 
-    //  Tunes TCP retransmit timeout
-    void tune_tcp_retransmit_timeout (fd_t sockfd_, int timeout_);
+    //  Tunes TCP max retransmit timeout
+    void tune_tcp_maxrt (fd_t sockfd_, int timeout_);
 
     //  Writes data to the socket. Returns the number of bytes actually
     //  written (even zero is to be considered to be a success). In case
@@ -62,4 +63,4 @@ namespace zmq
 
 }
 
-#endif 
+#endif

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -55,7 +55,7 @@ namespace zmq
     protected:
 
         //  Overrides of functions from socket_base_t.
-        void xattach_pipe (zmq::pipe_t *pipe_, bool subscribe_to_all_);        
+        void xattach_pipe (zmq::pipe_t *pipe_, bool subscribe_to_all_);
         int xsend (zmq::msg_t *msg_);
         int xrecv (zmq::msg_t *msg_);
         bool xhas_in ();
@@ -64,14 +64,14 @@ namespace zmq
         void xread_activated (zmq::pipe_t *pipe_);
         void xwrite_activated (zmq::pipe_t *pipe_);
         void xpipe_terminated (zmq::pipe_t *pipe_);
-        
+
     private:
 
         //  Messages are fair-queued from inbound pipes. And load-balanced to
         //  the outbound pipes.
         fq_t fq;
         lb_t lb;
-        
+
         client_t (const client_t &);
         const client_t  &operator = (const client_t&);
     };

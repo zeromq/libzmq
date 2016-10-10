@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -34,13 +34,11 @@
 #include "poller.hpp"
 #if defined ZMQ_USE_SELECT
 
-#include "platform.hpp"
-
 #include <stddef.h>
 #include <vector>
+#include <map>
 
-#ifdef ZMQ_HAVE_WINDOWS
-#include <winsock2.h>
+#if defined ZMQ_HAVE_WINDOWS
 #elif defined ZMQ_HAVE_OPENVMS
 #include <sys/types.h>
 #include <sys/time.h>
@@ -90,36 +88,68 @@ namespace zmq
         //  Main event loop.
         void loop ();
 
-        // Reference to ZMQ context.
+        //  Reference to ZMQ context.
         const ctx_t &ctx;
+
+        //  Internal state.
+        struct fds_set_t
+        {
+            fds_set_t ();
+            fds_set_t (const fds_set_t& other_);
+            fds_set_t& operator=(const fds_set_t& other_);
+            //  Convinient method to descriptor from all sets.
+            void remove_fd (const fd_t& fd_);
+
+            fd_set read;
+            fd_set write;
+            fd_set error;
+        };
 
         struct fd_entry_t
         {
             fd_t fd;
-            zmq::i_poll_events *events;
+            zmq::i_poll_events* events;
         };
+        typedef std::vector<fd_entry_t> fd_entries_t;
 
+#if defined ZMQ_HAVE_WINDOWS
+        struct family_entry_t
+        {
+            family_entry_t ();
+
+            fd_entries_t fd_entries;
+            fds_set_t fds_set;
+            bool retired;
+        };
+        typedef std::map<u_short, family_entry_t> family_entries_t;
+
+        struct wsa_events_t
+        {
+            wsa_events_t ();
+            ~wsa_events_t ();
+
+            //  read, write, error and readwrite
+            WSAEVENT events [4];
+        };
+#endif
+
+#if defined ZMQ_HAVE_WINDOWS
+        family_entries_t family_entries;
+        // See loop for details.
+        family_entries_t::iterator current_family_entry_it;
+#else
+        fd_entries_t fd_entries;
+        fds_set_t fds_set;
+        fd_t maxfd;
+        bool retired;
+#endif
+
+#if defined ZMQ_HAVE_WINDOWS
+        //  Socket's family or AF_UNSPEC on error.
+        static u_short get_fd_family (fd_t fd_);
+#endif
         //  Checks if an fd_entry_t is retired.
         static bool is_retired_fd (const fd_entry_t &entry);
-
-        //  Set of file descriptors that are used to retrieve
-        //  information for fd_set.
-        typedef std::vector <fd_entry_t> fd_set_t;
-        fd_set_t fds;
-
-        fd_set source_set_in;
-        fd_set source_set_out;
-        fd_set source_set_err;
-
-        fd_set readfds;
-        fd_set writefds;
-        fd_set exceptfds;
-
-        //  Maximum file descriptor.
-        fd_t maxfd;
-
-        //  If true, at least one file descriptor has retired.
-        bool retired;
 
         //  If true, thread is shutting down.
         bool stopping;

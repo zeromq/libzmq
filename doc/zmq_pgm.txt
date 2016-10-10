@@ -154,6 +154,7 @@ linkzmq:zmq_setsockopt[3]
 linkzmq:zmq_tcp[7]
 linkzmq:zmq_ipc[7]
 linkzmq:zmq_inproc[7]
+linkzmq:zmq_vmci[7]
 linkzmq:zmq[7]
 
 

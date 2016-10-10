@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -102,11 +102,10 @@ static void zap_handler (void *handler)
 
 int main (void)
 {
-#ifndef HAVE_LIBSODIUM
-    printf ("libsodium not installed, skipping CURVE test\n");
+#ifndef ZMQ_HAVE_CURVE
+    printf ("CURVE encryption not installed, skipping test\n");
     return 0;
 #endif
-
     //  Generate new keypairs for this test
     int rc = zmq_curve_keypair (client_public, client_secret);
     assert (rc == 0);
@@ -156,7 +155,7 @@ int main (void)
 
     //  Check CURVE security with a garbage server key
     //  This will be caught by the curve_server class, not passed to ZAP
-    char garbage_key [] = "0000111122223333444455556666777788889999";
+    char garbage_key [] = "0000000000000000000000000000000000000000";
     client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
     rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, garbage_key, 41);
@@ -245,7 +244,7 @@ int main (void)
 
     ip4addr.sin_family = AF_INET;
     ip4addr.sin_port = htons (9998);
-#if (_WIN32_WINNT < 0x0600)
+#if defined (ZMQ_HAVE_WINDOWS) && (_WIN32_WINNT < 0x0600)
     ip4addr.sin_addr.s_addr = inet_addr ("127.0.0.1");
 #else
     inet_pton(AF_INET, "127.0.0.1", &ip4addr.sin_addr);

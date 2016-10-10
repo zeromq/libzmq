@@ -1,5 +1,5 @@
 /*:
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -33,7 +33,7 @@
 void client_thread (void *client)
 {
     char data = 0;
-    for (int count = 0; count < 100000; count++) {
+    for (int count = 0; count < 15000; count++) {
         int rc = zmq_send (client, &data, 1, 0);
         assert (rc == 1);
     }

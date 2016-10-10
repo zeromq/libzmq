@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -28,7 +28,6 @@
 */
 
 #include "testutil.hpp"
-#include "../include/zmq_utils.h"
 
 // This is a test for issue #1382. The server thread creates a SUB-PUSH
 // steerable proxy. The main process then sends messages to the SUB
@@ -97,7 +96,7 @@ int main (void)
     rc = zmq_connect (publisher, "tcp://127.0.0.1:15564");
     assert (rc == 0);
 
-    msleep (50);
+    msleep (SETTLE_TIME);
     rc = zmq_send (publisher, "This is a test", 14, 0);
     assert (rc == 14);
 

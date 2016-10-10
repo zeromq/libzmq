@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -30,13 +30,7 @@
 #ifndef __ZMQ_PGM_RECEIVER_HPP_INCLUDED__
 #define __ZMQ_PGM_RECEIVER_HPP_INCLUDED__
 
-#include "platform.hpp"
-
 #if defined ZMQ_HAVE_OPENPGM
-
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#endif
 
 #include <map>
 #include <algorithm>
@@ -55,7 +49,7 @@ namespace zmq
 
     class pgm_receiver_t : public io_object_t, public i_engine
     {
-    
+
     public:
 
         pgm_receiver_t (zmq::io_thread_t *parent_, const options_t &options_);

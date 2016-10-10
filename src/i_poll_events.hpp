@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -26,30 +26,30 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
- 
+
 #ifndef __ZMQ_I_POLL_EVENTS_HPP_INCLUDED__
 #define __ZMQ_I_POLL_EVENTS_HPP_INCLUDED__
- 
+
 namespace zmq
 {
- 
+
     // Virtual interface to be exposed by object that want to be notified
     // about events on file descriptors.
- 
+
     struct i_poll_events
     {
         virtual ~i_poll_events () {}
- 
+
         // Called by I/O thread when file descriptor is ready for reading.
         virtual void in_event () = 0;
- 
+
         // Called by I/O thread when file descriptor is ready for writing.
         virtual void out_event () = 0;
- 
+
         // Called when timer expires.
         virtual void timer_event (int id_) = 0;
     };
- 
+
 }
- 
+
 #endif

@@ -11,11 +11,11 @@
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" />
-      <Tool Name="VCCLCompilerTool" AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=4096 -DZMQ_USE_SELECT -D_CRT_SECURE_NO_WARNINGS" Optimization="0" PreprocessorDefinitions="NOMINMAX" MinimalRebuild="true" BasicRuntimeChecks="3" RuntimeLibrary="3" WarningLevel="3" DebugInformationFormat="4" />
+      <Tool Name="VCCLCompilerTool" AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=16384 -DZMQ_USE_SELECT -D_CRT_SECURE_NO_WARNINGS" Optimization="0" PreprocessorDefinitions="NOMINMAX" MinimalRebuild="true" BasicRuntimeChecks="3" RuntimeLibrary="3" WarningLevel="3" DebugInformationFormat="4" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" />
       <Tool Name="VCPreLinkEventTool" />
-      <Tool Name="VCLinkerTool" AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib" OutputFile="../../../../lib/libzmq.dll" LinkDLL="true" GenerateDebugInformation="true" TargetMachine="1" />
+      <Tool Name="VCLinkerTool" AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib Iphlpapi.lib" OutputFile="../../../../lib/libzmq.dll" LinkDLL="true" GenerateDebugInformation="true" TargetMachine="1" />
       <Tool Name="VCALinkTool" />
       <Tool Name="VCManifestTool" />
       <Tool Name="VCXDCMakeTool" />
@@ -30,11 +30,11 @@
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" />
-      <Tool Name="VCCLCompilerTool" AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=4096 -DZMQ_USE_SELECT -D_CRT_SECURE_NO_WARNINGS" Optimization="2" EnableIntrinsicFunctions="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" WarningLevel="3" DebugInformationFormat="3" />
+      <Tool Name="VCCLCompilerTool" AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=16384 -DZMQ_USE_SELECT -D_CRT_SECURE_NO_WARNINGS" Optimization="2" EnableIntrinsicFunctions="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" WarningLevel="3" DebugInformationFormat="3" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" />
       <Tool Name="VCPreLinkEventTool" />
-      <Tool Name="VCLinkerTool" AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib" OutputFile="../../../../lib/libzmq.dll" LinkDLL="true" GenerateDebugInformation="true" OptimizeReferences="2" EnableCOMDATFolding="2" TargetMachine="1" />
+      <Tool Name="VCLinkerTool" AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib Iphlpapi.lib" OutputFile="../../../../lib/libzmq.dll" LinkDLL="true" GenerateDebugInformation="true" OptimizeReferences="2" EnableCOMDATFolding="2" TargetMachine="1" />
       <Tool Name="VCALinkTool" />
       <Tool Name="VCManifestTool" />
       <Tool Name="VCXDCMakeTool" />
@@ -49,11 +49,11 @@
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" />
-      <Tool Name="VCCLCompilerTool" AdditionalOptions="-DZMQ_STATIC -DFD_SETSIZE=4096 -DZMQ_USE_SELECT -D_CRT_SECURE_NO_WARNINGS" Optimization="0" PreprocessorDefinitions="NOMINMAX" MinimalRebuild="true" BasicRuntimeChecks="3" RuntimeLibrary="3" WarningLevel="3" DebugInformationFormat="4" />
+      <Tool Name="VCCLCompilerTool" AdditionalOptions="-DZMQ_STATIC -DFD_SETSIZE=16384 -DZMQ_USE_SELECT -D_CRT_SECURE_NO_WARNINGS" Optimization="0" PreprocessorDefinitions="NOMINMAX" MinimalRebuild="true" BasicRuntimeChecks="3" RuntimeLibrary="3" WarningLevel="3" DebugInformationFormat="4" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" />
       <Tool Name="VCPreLinkEventTool" />
-      <Tool Name="VCLibrarianTool" AdditionalOptions="/ignore:4006" AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib" OutputFile="../../../../lib/libzmq_d.lib" />
+      <Tool Name="VCLibrarianTool" AdditionalOptions="/ignore:4006" AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib Iphlpapi.lib" OutputFile="../../../../lib/libzmq_d.lib" />
       <Tool Name="VCALinkTool" />
       <Tool Name="VCXDCMakeTool" />
       <Tool Name="VCBscMakeTool" />
@@ -66,11 +66,11 @@
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" />
-      <Tool Name="VCCLCompilerTool" AdditionalOptions="-DZMQ_STATIC -DFD_SETSIZE=4096 -DZMQ_USE_SELECT -D_CRT_SECURE_NO_WARNINGS" Optimization="2" EnableIntrinsicFunctions="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" WarningLevel="3" DebugInformationFormat="3" />
+      <Tool Name="VCCLCompilerTool" AdditionalOptions="-DZMQ_STATIC -DFD_SETSIZE=16384 -DZMQ_USE_SELECT -D_CRT_SECURE_NO_WARNINGS" Optimization="2" EnableIntrinsicFunctions="true" RuntimeLibrary="2" EnableFunctionLevelLinking="true" WarningLevel="3" DebugInformationFormat="3" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" />
       <Tool Name="VCPreLinkEventTool" />
-      <Tool Name="VCLibrarianTool" AdditionalOptions="/ignore:4006" AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib" OutputFile="../../../../lib/libzmq.lib" />
+      <Tool Name="VCLibrarianTool" AdditionalOptions="/ignore:4006" AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib Iphlpapi.lib" OutputFile="../../../../lib/libzmq.lib" />
       <Tool Name="VCALinkTool" />
       <Tool Name="VCXDCMakeTool" />
       <Tool Name="VCBscMakeTool" />
@@ -83,11 +83,11 @@
       <Tool Name="VCXMLDataGeneratorTool" />
       <Tool Name="VCWebServiceProxyGeneratorTool" />
       <Tool Name="VCMIDLTool" />
-      <Tool Name="VCCLCompilerTool" AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=4096 -DZMQ_USE_SELECT -D_CRT_SECURE_NO_WARNINGS" Optimization="2" EnableIntrinsicFunctions="true" AdditionalIncludeDirectories="../../../../OpenPGM/include" PreprocessorDefinitions="ZMQ_HAVE_OPENPGM" RuntimeLibrary="2" EnableFunctionLevelLinking="true" WarningLevel="3" DebugInformationFormat="3" />
+      <Tool Name="VCCLCompilerTool" AdditionalOptions="-DDLL_EXPORT -DFD_SETSIZE=16384 -DZMQ_USE_SELECT -D_CRT_SECURE_NO_WARNINGS" Optimization="2" EnableIntrinsicFunctions="true" AdditionalIncludeDirectories="../../../../OpenPGM/include" PreprocessorDefinitions="ZMQ_HAVE_OPENPGM" RuntimeLibrary="2" EnableFunctionLevelLinking="true" WarningLevel="3" DebugInformationFormat="3" />
       <Tool Name="VCManagedResourceCompilerTool" />
       <Tool Name="VCResourceCompilerTool" />
       <Tool Name="VCPreLinkEventTool" />
-      <Tool Name="VCLinkerTool" AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib libpgm.lib" OutputFile="../../../../lib/libzmq.dll" AdditionalLibraryDirectories="../../../../../OpenPGM/lib" LinkDLL="true" GenerateDebugInformation="true" OptimizeReferences="2" EnableCOMDATFolding="2" TargetMachine="1" />
+      <Tool Name="VCLinkerTool" AdditionalDependencies="Ws2_32.lib Rpcrt4.lib Advapi32.lib Iphlpapi.lib libpgm.lib" OutputFile="../../../../lib/libzmq.dll" AdditionalLibraryDirectories="../../../../../OpenPGM/lib" LinkDLL="true" GenerateDebugInformation="true" OptimizeReferences="2" EnableCOMDATFolding="2" TargetMachine="1" />
       <Tool Name="VCALinkTool" />
       <Tool Name="VCManifestTool" />
       <Tool Name="VCXDCMakeTool" />
@@ -100,15 +100,17 @@
   <References />
   <Files>
     <Filter Name="Source Files" Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx" UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
+      <File RelativePath="..\..\errno.cpp" />
       <File RelativePath="..\..\..\..\src\address.cpp" />
       <File RelativePath="..\..\..\..\src\clock.cpp" />
       <File RelativePath="..\..\..\..\src\ctx.cpp" />
       <File RelativePath="..\..\..\..\src\dealer.cpp" />
       <File RelativePath="..\..\..\..\src\devpoll.cpp" />
+      <File RelativePath="..\..\..\..\src\dgram.cpp" />
+      <File RelativePath="..\..\..\..\src\dish.cpp" />
       <File RelativePath="..\..\..\..\src\dist.cpp" />
       <File RelativePath="..\..\..\..\src\epoll.cpp" />
       <File RelativePath="..\..\..\..\src\err.cpp" />
-      <File RelativePath="..\..\errno.cpp" />
       <File RelativePath="..\..\..\..\src\fq.cpp" />
       <File RelativePath="..\..\..\..\src\io_object.cpp" />
       <File RelativePath="..\..\..\..\src\io_thread.cpp" />
@@ -140,6 +142,7 @@
       <File RelativePath="..\..\..\..\src\pub.cpp" />
       <File RelativePath="..\..\..\..\src\pull.cpp" />
       <File RelativePath="..\..\..\..\src\push.cpp" />
+      <File RelativePath="..\..\..\..\src\radio.cpp" />
       <File RelativePath="..\..\..\..\src\random.cpp" />
       <File RelativePath="..\..\..\..\src\raw_decoder.cpp" />
       <File RelativePath="..\..\..\..\src\raw_encoder.cpp" />
@@ -160,32 +163,38 @@
       <File RelativePath="..\..\..\..\src\tcp_connecter.cpp" />
       <File RelativePath="..\..\..\..\src\tcp_listener.cpp" />
       <File RelativePath="..\..\..\..\src\thread.cpp" />
+      <File RelativePath="..\..\..\..\src\timers.cpp" />
       <File RelativePath="..\..\..\..\src\trie.cpp" />
       <File RelativePath="..\..\..\..\src\v1_decoder.cpp" />
       <File RelativePath="..\..\..\..\src\v1_encoder.cpp" />
       <File RelativePath="..\..\..\..\src\v2_decoder.cpp" />
       <File RelativePath="..\..\..\..\src\v2_encoder.cpp" />
+      <File RelativePath="..\..\..\..\src\udp_address.cpp" />
+      <File RelativePath="..\..\..\..\src\udp_engine.cpp" />
       <File RelativePath="..\..\..\..\src\xpub.cpp" />
       <File RelativePath="..\..\..\..\src\xsub.cpp" />
       <File RelativePath="..\..\..\..\src\zmq.cpp" />
       <File RelativePath="..\..\..\..\src\zmq_utils.cpp" />
     </Filter>
     <Filter Name="Header Files" Filter="h;hpp;hxx;hm;inl;inc;xsd" UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
+      <File RelativePath="..\..\errno.hpp" />
       <File RelativePath="..\..\..\..\src\address.hpp" />
       <File RelativePath="..\..\..\..\src\array.hpp" />
       <File RelativePath="..\..\..\..\src\atomic_counter.hpp" />
       <File RelativePath="..\..\..\..\src\atomic_ptr.hpp" />
+      <File RelativePath="..\..\..\..\src\blob.hpp" />
       <File RelativePath="..\..\..\..\src\clock.hpp" />
       <File RelativePath="..\..\..\..\src\command.hpp" />
       <File RelativePath="..\..\..\..\src\config.hpp" />
       <File RelativePath="..\..\..\..\src\ctx.hpp" />
       <File RelativePath="..\..\..\..\src\decoder.hpp" />
       <File RelativePath="..\..\..\..\src\devpoll.hpp" />
+      <File RelativePath="..\..\..\..\src\dgram.hpp" />
+      <File RelativePath="..\..\..\..\src\dish.hpp" />
       <File RelativePath="..\..\..\..\src\dist.hpp" />
       <File RelativePath="..\..\..\..\src\encoder.hpp" />
       <File RelativePath="..\..\..\..\src\epoll.hpp" />
       <File RelativePath="..\..\..\..\src\err.hpp" />
-      <File RelativePath="..\..\errno.hpp" />
       <File RelativePath="..\..\..\..\src\fd.hpp" />
       <File RelativePath="..\..\..\..\src\fq.hpp" />
       <File RelativePath="..\..\..\..\src\i_engine.hpp" />
@@ -224,6 +233,7 @@
       <File RelativePath="..\..\..\..\src\pub.hpp" />
       <File RelativePath="..\..\..\..\src\pull.hpp" />
       <File RelativePath="..\..\..\..\src\push.hpp" />
+      <File RelativePath="..\..\..\..\src\radio.hpp" />
       <File RelativePath="..\..\..\..\src\random.hpp" />
       <File RelativePath="..\..\..\..\src\raw_decoder.hpp" />
       <File RelativePath="..\..\..\..\src\raw_encoder.hpp" />
@@ -243,6 +253,7 @@
       <File RelativePath="..\..\..\..\src\tcp_connecter.hpp" />
       <File RelativePath="..\..\..\..\src\tcp_listener.hpp" />
       <File RelativePath="..\..\..\..\src\thread.hpp" />
+      <File RelativePath="..\..\..\..\src\timers.hpp" />
       <File RelativePath="..\..\..\..\src\trie.hpp" />
       <File RelativePath="..\..\..\..\src\v1_decoder.hpp" />
       <File RelativePath="..\..\..\..\src\v1_encoder.hpp" />
@@ -250,6 +261,8 @@
       <File RelativePath="..\..\..\..\src\v2_decoder.hpp" />
       <File RelativePath="..\..\..\..\src\v2_encoder.hpp" />
       <File RelativePath="..\..\..\..\src\v2_protocol.hpp" />
+      <File RelativePath="..\..\..\..\src\udp_address.hpp" />
+      <File RelativePath="..\..\..\..\src\udp_engine.hpp" />
       <File RelativePath="..\..\..\..\src\windows.hpp" />
       <File RelativePath="..\..\..\..\src\wire.hpp" />
       <File RelativePath="..\..\..\..\src\xpub.hpp" />

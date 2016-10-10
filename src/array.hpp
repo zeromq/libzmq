@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -35,9 +35,16 @@
 
 namespace zmq
 {
+    //  Implementation of fast arrays with O(1) access, insertion and
+    //  removal. The array stores pointers rather than objects.
+    //  O(1) is achieved by making items inheriting from
+    //  array_item_t<ID> class which internally stores the position
+    //  in the array.
+    //  The ID template argument is used to differentiate among arrays
+    //  and thus let an object be stored in different arrays.
 
     //  Base class for objects stored in the array. If you want to store
-    //  same object in mutliple arrays, each of those arrays has to have
+    //  same object in multiple arrays, each of those arrays has to have
     //  different ID. The item itself has to be derived from instantiations of
     //  array_item_t template for all relevant IDs.
 
@@ -50,7 +57,7 @@ namespace zmq
         {
         }
 
-        //  The destructor doesn't have to be virtual. It is mad virtual
+        //  The destructor doesn't have to be virtual. It is made virtual
         //  just to keep ICC and code checking tools from complaining.
         inline virtual ~array_item_t ()
         {
@@ -74,9 +81,6 @@ namespace zmq
         const array_item_t &operator = (const array_item_t&);
     };
 
-    //  Fast array implementation with O(1) access to item, insertion and
-    //  removal. Array stores pointers rather than objects. The objects have
-    //  to be derived from array_item_t<ID> class.
 
     template <typename T, int ID = 0> class array_t
     {

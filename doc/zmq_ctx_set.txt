@@ -30,7 +30,7 @@ applications receive termination messages, and then terminate the context
 with 'ZMQ_LINGER' set to zero on all sockets. This setting is an easier way
 to get the same result. When 'ZMQ_BLOCKY' is set to false, all new sockets
 are given a linger timeout of zero. You must still close all sockets before
-calling zmq_term.
+calling zmq_ctx_term.
 
 [horizontal]
 Default value:: true (old behavior)
@@ -47,6 +47,7 @@ context.
 [horizontal]
 Default value:: 1
 
+
 ZMQ_THREAD_SCHED_POLICY: Set scheduling policy for I/O threads
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_THREAD_SCHED_POLICY' argument sets the scheduling policy for
@@ -57,6 +58,7 @@ This option only applies before creating any sockets on the context.
 
 [horizontal]
 Default value:: -1
+
 
 ZMQ_THREAD_PRIORITY: Set scheduling priority for I/O threads
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -69,6 +71,19 @@ This option only applies before creating any sockets on the context.
 [horizontal]
 Default value:: -1
 
+
+ZMQ_MAX_MSGSZ: Set maximum message size
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_MAX_MSGSZ' argument sets the maximum allowed size
+of a message sent in the context. You can query the maximal
+allowed value with linkzmq:zmq_ctx_get[3] using the
+'ZMQ_MAX_MSGSZ' option.
+
+[horizontal]
+Default value:: INT_MAX
+Maximum value:: INT_MAX
+
+
 ZMQ_MAX_SOCKETS: Set maximum number of sockets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_MAX_SOCKETS' argument sets the maximum number of sockets allowed
@@ -77,6 +92,7 @@ linkzmq:zmq_ctx_get[3] using the 'ZMQ_SOCKET_LIMIT' option.
 
 [horizontal]
 Default value:: 1024
+
 
 ZMQ_IPV6: Set IPv6 option
 ~~~~~~~~~~~~~~~~~~~~~~~~~

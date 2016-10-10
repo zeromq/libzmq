@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,8 +27,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include "clock.hpp"
-#include "platform.hpp"
 #include "likely.hpp"
 #include "config.hpp"
 #include "err.hpp"
@@ -84,16 +84,18 @@ static zmq::mutex_t compatible_get_tick_count64_mutex;
 
 ULONGLONG compatible_get_tick_count64()
 {
-  compatible_get_tick_count64_mutex.lock();
+  zmq::scoped_lock_t locker(compatible_get_tick_count64_mutex);
+
   static DWORD s_wrap = 0;
   static DWORD s_last_tick = 0;
   const DWORD current_tick = ::GetTickCount();
+
   if (current_tick < s_last_tick)
     ++s_wrap;
 
   s_last_tick = current_tick;
   const ULONGLONG result = (static_cast<ULONGLONG>(s_wrap) << 32) + static_cast<ULONGLONG>(current_tick);
-  compatible_get_tick_count64_mutex.unlock();
+
   return result;
 }
 
@@ -106,6 +108,8 @@ f_compatible_get_tick_count64 init_compatible_get_tick_count64()
 
   if (func == NULL)
     func = compatible_get_tick_count64;
+
+  ::FreeLibrary(module);
 
   return func;
 }

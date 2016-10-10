@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -30,26 +30,29 @@
 #ifndef __ZMQ_POLLER_HPP_INCLUDED__
 #define __ZMQ_POLLER_HPP_INCLUDED__
 
-#include "platform.hpp"
-
-#if   defined ZMQ_USE_KQUEUE  + defined ZMQ_USE_EPOLL \
-    + defined ZMQ_USE_DEVPOLL + defined ZMQ_USE_POLL  \
-    + defined ZMQ_USE_SELECT > 1
+#if   defined ZMQ_USE_KQUEUE  + defined ZMQ_USE_EPOLL   \
+    + defined ZMQ_USE_DEVPOLL + defined ZMQ_USE_POLLSET \
+    + defined ZMQ_USE_POLL    + defined ZMQ_USE_SELECT > 1
 #error More than one of the ZMQ_USE_* macros defined
 #endif
 
 #if defined ZMQ_USE_KQUEUE
-#include "kqueue.hpp"
+#   include "kqueue.hpp"
 #elif defined ZMQ_USE_EPOLL
-#include "epoll.hpp"
+#   include "epoll.hpp"
 #elif defined ZMQ_USE_DEVPOLL
-#include "devpoll.hpp"
+#   include "devpoll.hpp"
+#elif defined ZMQ_USE_POLLSET
+#   include "pollset.hpp"
 #elif defined ZMQ_USE_POLL
-#include "poll.hpp"
+#   include "poll.hpp"
 #elif defined ZMQ_USE_SELECT
-#include "select.hpp"
+#   include "select.hpp"
+#elif defined ZMQ_HAVE_GNU
+#   define ZMQ_USE_POLL
+#   include "poll.hpp"
 #else
-#error None of the ZMQ_USE_* macros defined
+#   error None of the ZMQ_USE_* macros defined
 #endif
 
 #if defined ZMQ_USE_SELECT

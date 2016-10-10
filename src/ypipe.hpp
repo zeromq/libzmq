@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -32,7 +32,6 @@
 
 #include "atomic_ptr.hpp"
 #include "yqueue.hpp"
-#include "platform.hpp"
 #include "ypipe_base.hpp"
 
 namespace zmq
@@ -61,7 +60,7 @@ namespace zmq
             c.set (&queue.back ());
         }
 
-        //  The destructor doesn't have to be virtual. It is mad virtual
+        //  The destructor doesn't have to be virtual. It is made virtual
         //  just to keep ICC and code checking tools from complaining.
         inline virtual ~ypipe_t ()
         {

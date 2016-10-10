@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include "macros.hpp"
 #include "server.hpp"
 #include "pipe.hpp"
@@ -93,6 +94,11 @@ void zmq::server_t::xwrite_activated (pipe_t *pipe_)
 
 int zmq::server_t::xsend (msg_t *msg_)
 {
+    //  SERVER sockets do not allow multipart data (ZMQ_SNDMORE)
+    if (msg_->flags () & msg_t::more) {
+        errno = EINVAL;
+        return -1;
+    }
     //  Find the pipe associated with the routing stored in the message.
     uint32_t routing_id = msg_->get_routing_id ();
     outpipes_t::iterator it = outpipes.find (routing_id);
@@ -109,18 +115,21 @@ int zmq::server_t::xsend (msg_t *msg_)
         return -1;
     }
 
+    //  Message might be delivered over inproc, so we reset routing id
+    int rc = msg_->reset_routing_id ();
+    errno_assert (rc == 0);
+
     bool ok = it->second.pipe->write (msg_);
     if (unlikely (!ok)) {
         // Message failed to send - we must close it ourselves.
-        int rc = msg_->close ();
+        rc = msg_->close ();
         errno_assert (rc == 0);
     }
     else
         it->second.pipe->flush ();
 
-
     //  Detach the message from the data buffer.
-    int rc = msg_->init ();
+    rc = msg_->init ();
     errno_assert (rc == 0);
 
     return 0;

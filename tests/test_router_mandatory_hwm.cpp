@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,9 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdio.h>
 #include "testutil.hpp"
-#include <unistd.h>
 
 // DEBUG shouldn't be defined in sources as it will cause a redefined symbol
 // error when it is defined in the build configuration. It appears that the
@@ -85,6 +83,7 @@ int main (void)
     int i;
     const int BUF_SIZE = 65536;
     char buf[BUF_SIZE];
+    memset(buf, 0, BUF_SIZE);
     // Send first batch of messages
     for(i = 0; i < 100000; ++i) {
         if (TRACE_ENABLED) fprintf(stderr, "Sending message %d ...\n", i);
@@ -97,7 +96,7 @@ int main (void)
     // This should fail after one message but kernel buffering could
     // skew results
     assert (i < 10);
-    sleep(1);
+    msleep (1000);
     // Send second batch of messages
     for(; i < 100000; ++i) {
         if (TRACE_ENABLED) fprintf(stderr, "Sending message %d (part 2) ...\n", i);

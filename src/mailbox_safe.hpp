@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -33,7 +33,6 @@
 #include <vector>
 #include <stddef.h>
 
-#include "platform.hpp"
 #include "signaler.hpp"
 #include "fd.hpp"
 #include "config.hpp"
@@ -57,15 +56,16 @@ namespace zmq
         int recv (command_t *cmd_, int timeout_);
 
         // Add signaler to mailbox which will be called when a message is ready
-        void add_signaler(signaler_t* signaler);
-        void remove_signaler(signaler_t* signaler);
+        void add_signaler (signaler_t* signaler);
+        void remove_signaler (signaler_t* signaler);
+        void clear_signalers ();
 
 #ifdef HAVE_FORK
         // close the file descriptors in the signaller. This is used in a forked
         // child process to close the file descriptors so that they do not interfere
         // with the context in the parent process.
-        void forked () 
-        { 
+        void forked ()
+        {
             // TODO: call fork on the condition variable
         }
 #endif

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,10 +27,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "platform.hpp"
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#endif
+#include "precompiled.hpp"
+#include "macros.hpp"
 
 #include <string>
 
@@ -145,6 +143,8 @@ int zmq::plain_client_t::produce_hello (msg_t *msg_) const
 int zmq::plain_client_t::process_welcome (
         const unsigned char *cmd_data, size_t data_size)
 {
+    LIBZMQ_UNUSED (cmd_data);
+
     if (state != waiting_for_welcome) {
         errno = EPROTO;
         return -1;

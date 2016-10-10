@@ -349,12 +349,12 @@ The 'ZMQ_LINGER' option shall retrieve the linger period for the specified
 'socket'.  The linger period determines how long pending messages which have
 yet to be sent to a peer shall linger in memory after a socket is closed with
 linkzmq:zmq_close[3], and further affects the termination of the socket's
-context with linkzmq:zmq_term[3]. The following outlines the different
+context with linkzmq:zmq_ctx_term[3]. The following outlines the different
 behaviours:
 
 * The default value of '-1' specifies an infinite linger period. Pending
   messages shall not be discarded after a call to _zmq_close()_; attempting to
-  terminate the socket's context with _zmq_term()_ shall block until all
+  terminate the socket's context with _zmq_ctx_term()_ shall block until all
   pending messages have been sent to a peer.
 
 * The value of '0' specifies no linger period. Pending messages shall be
@@ -362,7 +362,7 @@ behaviours:
 
 * Positive values specify an upper bound for the linger period in milliseconds.
   Pending messages shall not be discarded after a call to _zmq_close()_;
-  attempting to terminate the socket's context with _zmq_term()_ shall block
+  attempting to terminate the socket's context with _zmq_ctx_term()_ shall block
   until either all pending messages have been sent to a peer, or the linger
   period expires, after which any pending messages shall be discarded.
 
@@ -410,6 +410,21 @@ Default value:: 1
 Applicable socket types:: all, when using multicast transports
 
 
+ZMQ_MULTICAST_MAXTPDU: Maximum transport data unit size for multicast packets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_MULTICAST_MAXTPDU' option shall retrieve the maximum transport
+data unit size used for outbound multicast packets.
+
+This must be set at or below the minimum Maximum Transmission Unit (MTU) for
+all network paths over which multicast reception is required.
+
+[horizontal]
+Option value type:: int
+Option value unit:: bytes
+Default value:: 1500
+Applicable socket types:: all, when using multicast transports
+
+
 ZMQ_PLAIN_PASSWORD: Retrieve current password
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_PLAIN_PASSWORD' option shall retrieve the last password set for
@@ -449,6 +464,19 @@ Default value:: null string
 Applicable socket types:: all, when using TCP or IPC transports
 
 
+ZMQ_USE_FD: Retrieve the pre-allocated socket file descriptor
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_USE_FD' option shall retrieve the pre-allocated file
+descriptor that has been assigned to a ZMQ socket, if any. -1 shall be
+returned if a pre-allocated file descriptor was not set for the socket.
+
+[horizontal]
+Option value type:: int
+Option value unit:: file descriptor
+Default value:: -1
+Applicable socket types:: all bound sockets, when using IPC or TCP transport
+
+
 ZMQ_RATE: Retrieve multicast data rate
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_RATE' option shall retrieve the maximum send or receive data rate for
@@ -470,6 +498,7 @@ documentation for the 'SO_RCVBUF' socket option.
 [horizontal]
 Option value type:: int
 Option value unit:: bytes
+Default value:: 8192
 Applicable socket types:: all
 
 
@@ -584,6 +613,7 @@ documentation for the 'SO_SNDBUF' socket option.
 [horizontal]
 Option value type:: int
 Option value unit:: bytes
+Default value:: 8192
 Applicable socket types:: all
 
 
@@ -672,14 +702,13 @@ Default value:: -1 (leave to OS default)
 Applicable socket types:: all, when using TCP transports.
 
 
-ZMQ_TCP_RETRANSMIT_TIMEOUT: Retrieve TCP Retransmit Timeout
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZMQ_TCP_MAXRT: Retrieve Max TCP Retransmit Timeout
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 On OSes where it is supported, retrieves how long before an unacknowledged TCP
-retransmit times out.
-The system normally attempts many TCP retransmits following an exponential
-backoff strategy. This means that after a network outage, it may take a long
-time before the session can be re-established. Setting this option allows
-the timeout to happen at a shorter interval.
+retransmit times out. The system normally attempts many TCP retransmits
+following an exponential backoff strategy. This means that after a network
+outage, it may take a long time before the session can be re-established.
+Setting this option allows the timeout to happen at a shorter interval.
 
 [horizontal]
 Option value type:: int
@@ -688,9 +717,9 @@ Default value:: 0 (leave to OS default)
 Applicable socket types:: all, when using TCP transports.
 
 
-ZMQ_THREADSAFE: Retrieve socket thread safety
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_THREADSAFE' option shall retrieve a boolean value indicating whether
+ZMQ_THREAD_SAFE: Retrieve socket thread safety
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_THREAD_SAFE' option shall retrieve a boolean value indicating whether
 or not the socket is threadsafe. Currently 'ZMQ_CLIENT' and 'ZMQ_SERVER' sockets
 are threadsafe.
 
@@ -736,33 +765,54 @@ Option value unit:: N/A
 Default value:: not set
 Applicable socket types:: all, when using TCP transport
 
-ZMQ_TCP_RECV_BUFFER: Size of the TCP receive buffer
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_RECV_BUFFER' specifies the maximum number of bytes which can
-be received by an individual syscall to receive data from the TCP
-socket. The buffer size is specified as an integer number from 0 (very small)
-to 10 (very large). The default value is 3.
 
+ZMQ_VMCI_BUFFER_SIZE: Retrieve buffer size of the VMCI socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The `ZMQ_VMCI_BUFFER_SIZE` option shall retrieve the size of the underlying
+buffer for the socket. Used during negotiation before the connection is established.
+
+[horizontal]
+Option value type:: uint64_t
+Option value unit:: bytes
+Default value:: 65546
+Applicable socket types:: all, when using VMCI transport
+
+
+ZMQ_VMCI_BUFFER_MIN_SIZE: Retrieve min buffer size of the VMCI socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The `ZMQ_VMCI_BUFFER_MIN_SIZE` option shall retrieve the min size of the underlying
+buffer for the socket. Used during negotiation before the connection is established.
+
+[horizontal]
+Option value type:: uint64_t
+Option value unit:: bytes
+Default value:: 128
+Applicable socket types:: all, when using VMCI transport
+
+
+ZMQ_VMCI_BUFFER_MAX_SIZE: Retrieve max buffer size of the VMCI socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The `ZMQ_VMCI_BUFFER_MAX_SIZE` option shall retrieve the max size of the underlying
+buffer for the socket. Used during negotiation before the connection is established.
+
+[horizontal]
+Option value type:: uint64_t
+Option value unit:: bytes
+Default value:: 262144
+Applicable socket types:: all, when using VMCI transport
+
+
+ZMQ_VMCI_CONNECT_TIMEOUT: Retrieve connection timeout of the VMCI socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The `ZMQ_VMCI_CONNECT_TIMEOUT` option shall retrieve connection timeout
+for the socket.
 
 [horizontal]
 Option value type:: int
-Option value unit:: N/A
-Default value:: 3
-Applicable socket types:: all, when using TCP transport
+Option value unit:: milliseconds
+Default value:: -1
+Applicable socket types:: all, when using VMCI transport
 
-ZMQ_TCP_SEND_BUFFER: Size of the TCP receive buffer
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_SEND_BUFFER' specifies the maximum number of bytes which can
-be sent by an individual syscall to transmit data to the TCP
-socket. The buffer size is specified as an integer number from 0 (very small)
-to 10 (very large). The default value is 3.
-
-
-[horizontal]
-Option value type:: int
-Option value unit:: N/A
-Default value:: 3
-Applicable socket types:: all, when using TCP transport
 
 RETURN VALUE
 ------------

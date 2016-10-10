@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,10 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "platform.hpp"
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#endif
+#include "precompiled.hpp"
 
 #include <stddef.h>
 #include <string.h>
@@ -156,7 +153,7 @@ int zmq::null_mechanism_t::process_handshake_command (msg_t *msg_)
     }
 
     if (rc == 0) {
-        int rc = msg_->close ();
+        rc = msg_->close ();
         errno_assert (rc == 0);
         rc = msg_->init ();
         errno_assert (rc == 0);

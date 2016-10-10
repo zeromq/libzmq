@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include "decoder_allocators.hpp"
 
 #include <cmath>
@@ -37,7 +38,7 @@ zmq::shared_message_memory_allocator::shared_message_memory_allocator (std::size
     buf(NULL),
     bufsize(0),
     max_size(bufsize_),
-    msg_refcnt(NULL),
+    msg_content(NULL),
     maxCounters (static_cast <size_t> (std::ceil (static_cast <double> (max_size) / static_cast <double> (msg_t::max_vsm_size))))
 {
 }
@@ -46,7 +47,7 @@ zmq::shared_message_memory_allocator::shared_message_memory_allocator (std::size
     buf(NULL),
     bufsize(0),
     max_size(bufsize_),
-    msg_refcnt(NULL),
+    msg_content(NULL),
     maxCounters(maxMessages)
 {
 }
@@ -77,7 +78,7 @@ unsigned char* zmq::shared_message_memory_allocator::allocate ()
         // allocate memory for reference counters together with reception buffer
         std::size_t const allocationsize =
               max_size + sizeof (zmq::atomic_counter_t) +
-              maxCounters * sizeof (zmq::atomic_counter_t);
+              maxCounters * sizeof (zmq::msg_t::content_t);
 
         buf = static_cast <unsigned char *> (std::malloc (allocationsize));
         alloc_assert (buf);
@@ -90,7 +91,7 @@ unsigned char* zmq::shared_message_memory_allocator::allocate ()
     }
 
     bufsize = max_size;
-    msg_refcnt = reinterpret_cast <zmq::atomic_counter_t*> (buf + sizeof (atomic_counter_t) + max_size);
+    msg_content = reinterpret_cast <zmq::msg_t::content_t*> (buf + sizeof (atomic_counter_t) + max_size);
     return buf + sizeof (zmq::atomic_counter_t);
 }
 
@@ -108,7 +109,7 @@ unsigned char* zmq::shared_message_memory_allocator::release ()
     unsigned char* b = buf;
     buf = NULL;
     bufsize = 0;
-    msg_refcnt = NULL;
+    msg_content = NULL;
 
     return b;
 }

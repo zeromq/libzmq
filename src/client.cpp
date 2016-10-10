@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include "macros.hpp"
 #include "client.hpp"
 #include "err.hpp"
@@ -54,6 +55,11 @@ void zmq::client_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 
 int zmq::client_t::xsend (msg_t *msg_)
 {
+    //  CLIENT sockets do not allow multipart data (ZMQ_SNDMORE)
+    if (msg_->flags () & msg_t::more) {
+        errno = EINVAL;
+        return -1;
+    }
     return lb.sendpipe (msg_, NULL);
 }
 

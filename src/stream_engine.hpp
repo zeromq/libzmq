@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -39,7 +39,6 @@
 #include "i_decoder.hpp"
 #include "options.hpp"
 #include "socket_base.hpp"
-#include "../include/zmq.h"
 #include "metadata.hpp"
 
 namespace zmq

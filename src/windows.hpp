@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -37,23 +37,25 @@
 #define NOMINMAX          // Macros min(a,b) and max(a,b)
 #endif
 
-//  Set target version to Windows Server 2008, Windows Vista or higher. Windows XP (0x0501) is also supported but without client & server socket types.
+//  Set target version to Windows Server 2008, Windows Vista or higher.
+//  Windows XP (0x0501) is supported but without client & server socket types.
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0600
 #endif
 
 #ifdef __MINGW32__
 //  Require Windows XP or higher with MinGW for getaddrinfo().
-#if(_WIN32_WINNT >= 0x0501)
+#if(_WIN32_WINNT >= 0x0600)
 #else
 #undef _WIN32_WINNT
-#define _WIN32_WINNT 0x0501
+#define _WIN32_WINNT 0x0600
 #endif
 #endif
- 
+
 #include <winsock2.h>
 #include <windows.h>
 #include <mswsock.h>
+#include <iphlpapi.h>
 
 #if !defined __MINGW32__
 #include <Mstcpip.h>
@@ -61,7 +63,8 @@
 
 //  Workaround missing Mstcpip.h in mingw32 (MinGW64 provides this)
 //  __MINGW64_VERSION_MAJOR is only defined when using in mingw-w64
-#if defined __MINGW32__ && !defined SIO_KEEPALIVE_VALS && !defined __MINGW64_VERSION_MAJOR
+#if defined __MINGW32__ && !defined SIO_KEEPALIVE_VALS && \
+    !defined __MINGW64_VERSION_MAJOR
 struct tcp_keepalive {
     u_long onoff;
     u_long keepalivetime;
@@ -74,6 +77,10 @@ struct tcp_keepalive {
 #include <ipexport.h>
 #if !defined _WIN32_WCE
 #include <process.h>
+#endif
+
+#if ZMQ_USE_POLL
+static inline int poll(struct pollfd *pfd, unsigned long nfds, int timeout) { return WSAPoll(pfd, nfds, timeout); }
 #endif
 
 //  In MinGW environment AI_NUMERICSERV is not defined.

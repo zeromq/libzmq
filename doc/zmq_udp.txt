@@ -1,0 +1,99 @@
+zmq_udp(7)
+==========
+
+
+NAME
+----
+zmq_udp - 0MQ UDP multicast and unicast transport
+
+
+SYNOPSIS
+--------
+UDP is unreliable protocol transport of data over IP networks.
+UDP support both unicast and multicast communication.
+
+
+DESCRIPTION
+-----------
+UDP transport can only be used with the 'ZMQ_RADIO' and
+'ZMQ_DISH' socket types.
+
+ADDRESSING
+----------
+A 0MQ endpoint is a string consisting of a 'transport'`://` followed by an
+'address'. The 'transport' specifies the underlying protocol to use. The
+'address' specifies the transport-specific address to connect to.
+
+For the UDP transport, the transport is `udp`.
+The meaning of the 'address' part is defined below.
+
+Binding a socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+With 'udp' we can only bind the 'ZMQ_DISH' socket type.
+When binding a socket using _zmq_bind()_ with the 'udp'
+transport the 'endpoint' shall be interpreted as an 'interface' followed by a
+colon and the UDP port number to use.
+
+An 'interface' may be specified by either of the following:
+
+* The wild-card `*`, meaning all available interfaces.
+* The primary IPv4 address assigned to the interface, in its numeric
+  representation.
+* Multicast address in its numeric representation the socket should join.
+
+The UDP port number may be specified a numeric value, usually above 1024 on POSIX systems.
+
+Connecting a socket
+~~~~~~~~~~~~~~~~~~~
+With 'udp' we can only connect the 'ZMQ_RADIO' socket type.
+When connecting a socket to a peer address using _zmq_connect()_ with the 'udp'
+transport, the 'endpoint' shall be interpreted as a 'peer address' followed by
+a colon and the UDP port number to use.
+
+A 'peer address' may be specified by either of the following:
+
+* The IPv4 or IPv6 address of the peer, in its numeric representation.
+* Multicast address in its numeric representation.
+
+EXAMPLES
+--------
+.Binding a socket
+----
+//  Unicast - UDP port 5555 on all available interfaces
+rc = zmq_bind(dish, "udp://*:5555");
+assert (rc == 0);
+//  Unicast - UDP port 5555 on the local loop-back interface
+rc = zmq_bind(dish, "udp://127.0.0.1:5555");
+assert (rc == 0);
+//  Multicast - UDP port 5555 on a Multicast address
+rc = zmq_bind(dish, "udp://239.0.0.1:5555");
+assert (rc == 0);
+----
+
+
+.Connecting a socket
+----
+//  Connecting using an Unicast IP address
+rc = zmq_connect(radio, "udp://192.168.1.1:5555");
+assert (rc == 0);
+//  Connecting using a Multicast address"
+rc = zmq_connect(socket, "udp://239.0.0.1:5555);
+assert (rc == 0);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_connect[3]
+linkzmq:zmq_setsockopt[3]
+linkzmq:zmq_tcp[7]
+linkzmq:zmq_ipc[7]
+linkzmq:zmq_inproc[7]
+linkzmq:zmq_vmci[7]
+linkzmq:zmq[7]
+
+
+AUTHORS
+-------
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

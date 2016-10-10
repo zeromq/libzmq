@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include <new>
 #include <string>
 
@@ -34,7 +35,6 @@
 #include "tcp_connecter.hpp"
 #include "stream_engine.hpp"
 #include "io_thread.hpp"
-#include "platform.hpp"
 #include "random.hpp"
 #include "err.hpp"
 #include "ip.hpp"
@@ -43,9 +43,7 @@
 #include "tcp_address.hpp"
 #include "session_base.hpp"
 
-#if defined ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
+#if !defined ZMQ_HAVE_WINDOWS
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -66,6 +64,7 @@ zmq::tcp_connecter_t::tcp_connecter_t (class io_thread_t *io_thread_,
     io_object_t (io_thread_),
     addr (addr_),
     s (retired_fd),
+    handle((handle_t)NULL),
     handle_valid (false),
     delayed_start (delayed_start_),
     connect_timer_started (false),
@@ -145,11 +144,9 @@ void zmq::tcp_connecter_t::out_event ()
     }
 
     tune_tcp_socket (fd);
-    tune_tcp_keepalives (fd, options.tcp_keepalive, options.tcp_keepalive_cnt, options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
-    tune_tcp_retransmit_timeout (fd, options.tcp_retransmit_timeout);
-
-    // remember our fd for ZMQ_SRCFD in messages
-    socket->set_fd (fd);
+    tune_tcp_keepalives (fd, options.tcp_keepalive, options.tcp_keepalive_cnt,
+            options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
+    tune_tcp_maxrt (fd, options.tcp_maxrt);
 
     //  Create the engine object for this connection.
     stream_engine_t *engine = new (std::nothrow)
@@ -269,6 +266,20 @@ int zmq::tcp_connecter_t::open ()
 
     //  Create the socket.
     s = open_socket (tcp_addr->family (), SOCK_STREAM, IPPROTO_TCP);
+
+    //  IPv6 address family not supported, try automatic downgrade to IPv4.
+    if (s == zmq::retired_fd && tcp_addr->family () == AF_INET6
+    && errno == EAFNOSUPPORT
+    && options.ipv6) {
+        rc = addr->resolved.tcp_addr->resolve (
+            addr->address.c_str (), false, false);
+        if (rc != 0) {
+            LIBZMQ_DELETE(addr->resolved.tcp_addr);
+            return -1;
+        }
+        s = open_socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    }
+
 #ifdef ZMQ_HAVE_WINDOWS
     if (s == INVALID_SOCKET) {
         errno = wsa_error_to_errno (WSAGetLastError ());

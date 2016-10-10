@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -105,7 +105,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_connect (client, "tcp://127.0.0.1:9998");
     assert (rc == 0);
-    bounce (client, server);
+    bounce (server, client);
 
     //  Close client and server
     close_zero_linger (client);

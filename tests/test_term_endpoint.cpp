@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,18 +27,25 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <stdio.h>
 #include "testutil.hpp"
+
+/* Use the worst case filename size for the buffer (+1 for trailing NUL) */
+#define BUF_SIZE (FILENAME_MAX+1)
 
 int main (void)
 {
     setup_test_environment();
     int rc;
-    const size_t buf_size = 32;
-    char buf[buf_size];
+    char buf[BUF_SIZE];
+    size_t buf_size;
     const char *ep = "tcp://127.0.0.1:5560";
     const char *ep_wc_tcp = "tcp://127.0.0.1:*";
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
     const char *ep_wc_ipc = "ipc://*";
+#endif
+#if defined ZMQ_HAVE_VMCI
+    const char *ep_wc_vmci = "vmci://*:*";
 #endif
 
     //  Create infrastructure.
@@ -122,24 +129,47 @@ int main (void)
     assert (push);
     rc = zmq_bind (push, ep_wc_tcp);
     assert (rc == 0);
+    pull = zmq_socket(ctx, ZMQ_PULL);
+    assert(pull);
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
-    pull = zmq_socket (ctx, ZMQ_PULL);
-    assert (pull);
     rc = zmq_bind (pull, ep_wc_ipc);
+    assert (rc == 0);
+#endif
+#if defined ZMQ_HAVE_VMCI
+    void *req = zmq_socket (ctx, ZMQ_REQ);
+    assert (req);
+    rc = zmq_bind (req, ep_wc_vmci);
     assert (rc == 0);
 #endif
 
     // Unbind sockets binded by wild-card address
-    rc = zmq_getsockopt (push, ZMQ_LAST_ENDPOINT, buf, (size_t *)&buf_size);
+    buf_size = sizeof(buf);
+    rc = zmq_getsockopt (push, ZMQ_LAST_ENDPOINT, buf, &buf_size);
     assert (rc == 0);
     rc = zmq_unbind (push, buf);
     assert (rc == 0);
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
-    rc = zmq_getsockopt (pull, ZMQ_LAST_ENDPOINT, buf, (size_t *)&buf_size);
+    buf_size = sizeof(buf);
+    rc = zmq_getsockopt (pull, ZMQ_LAST_ENDPOINT, buf, &buf_size);
     assert (rc == 0);
     rc = zmq_unbind (pull, buf);
     assert (rc == 0);
 #endif
+#if defined ZMQ_HAVE_VMCI
+    buf_size = sizeof(buf);
+    rc = zmq_getsockopt (req, ZMQ_LAST_ENDPOINT, buf, &buf_size);
+    assert (rc == 0);
+    rc = zmq_unbind(req, buf);
+    assert (rc == 0);
+#endif
+
+    //  Clean up.
+    rc = zmq_close (pull);
+    assert (rc == 0);
+    rc = zmq_close (push);
+    assert (rc == 0);
+    rc = zmq_ctx_term (ctx);
+    assert (rc == 0);
 
     //  Create infrastructure (wild-card binding)
     ctx = zmq_ctx_new ();
@@ -148,10 +178,16 @@ int main (void)
     assert (push);
     rc = zmq_bind (push, ep_wc_tcp);
     assert (rc == 0);
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
-    pull = zmq_socket (ctx, ZMQ_PULL);
-    assert (pull);
+    pull = zmq_socket(ctx, ZMQ_PULL);
+    assert(pull);
+#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS    
     rc = zmq_bind (pull, ep_wc_ipc);
+    assert (rc == 0);
+#endif
+#if defined ZMQ_HAVE_VMCI
+    req = zmq_socket (ctx, ZMQ_REQ);
+    assert (req);
+    rc = zmq_bind (req, ep_wc_vmci);
     assert (rc == 0);
 #endif
 
@@ -162,6 +198,18 @@ int main (void)
     rc = zmq_unbind (pull, ep_wc_ipc);
     assert (rc == -1 && zmq_errno () == ENOENT);
 #endif
+#if defined ZMQ_HAVE_VMCI
+    rc = zmq_unbind (req, ep_wc_vmci);
+    assert (rc == -1 && zmq_errno () == ENOENT);
+#endif
+
+    //  Clean up.
+    rc = zmq_close (pull);
+    assert (rc == 0);
+    rc = zmq_close (push);
+    assert (rc == 0);
+    rc = zmq_ctx_term (ctx);
+    assert (rc == 0);
 
     return 0;
 }

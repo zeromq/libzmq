@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,13 +27,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "platform.hpp"
+#include "precompiled.hpp"
+#include "macros.hpp"
 
-#ifdef HAVE_LIBSODIUM
-
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#endif
+#ifdef ZMQ_HAVE_CURVE
 
 #include "msg.hpp"
 #include "session_base.hpp"
@@ -49,21 +46,11 @@ zmq::curve_server_t::curve_server_t (session_base_t *session_,
     peer_address (peer_address_),
     state (expect_hello),
     cn_nonce (1),
-    cn_peer_nonce(1),
-    sync()
+    cn_peer_nonce(1)
 {
     int rc;
     //  Fetch our secret key from socket options
     memcpy (secret_key, options_.curve_secret_key, crypto_box_SECRETKEYBYTES);
-    scoped_lock_t lock (sync);
-#if defined(HAVE_TWEETNACL)
-    // allow opening of /dev/urandom
-    unsigned char tmpbytes[4];
-    randombytes(tmpbytes, 4);
-#else
-    rc = sodium_init ();
-    zmq_assert (rc != -1);
-#endif
 
     //  Generate short-term key pair
     rc = crypto_box_keypair (cn_public, cn_secret);
@@ -380,7 +367,8 @@ int zmq::curve_server_t::produce_welcome (msg_t *msg_)
     rc = crypto_box (welcome_ciphertext, welcome_plaintext,
                      sizeof welcome_plaintext,
                      welcome_nonce, cn_client, secret_key);
-    zmq_assert (rc == 0);
+    if (rc == -1)
+        return -1;
 
     rc = msg_->init_size (168);
     errno_assert (rc == 0);

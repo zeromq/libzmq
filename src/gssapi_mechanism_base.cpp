@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,13 +27,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "platform.hpp"
+#include "precompiled.hpp"
 
 #ifdef HAVE_LIBGSSAPI_KRB5
-
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#endif
 
 #include <string.h>
 #include <string>
@@ -80,7 +76,7 @@ int zmq::gssapi_mechanism_base_t::encode_message (msg_t *msg_)
     uint8_t flags = 0;
     if (msg_->flags () & msg_t::more)
         flags |= 0x01;
-    if (msg ->flags () & msg_t::command)
+    if (msg_->flags () & msg_t::command)
         flags |= 0x02;
 
     uint8_t *plaintext_buffer = static_cast <uint8_t *>(malloc(msg_->size ()+1));
@@ -185,7 +181,7 @@ int zmq::gssapi_mechanism_base_t::decode_message (msg_t *msg_)
     memcpy (msg_->data (), static_cast <char *> (plaintext.value)+1, plaintext.length-1);
 
     gss_release_buffer (&min_stat, &plaintext);
-    gss_release_buffer (&min_stat, &wrapped);
+    free(wrapped.value);
 
     if (bytes_left > 0) {
         errno = EPROTO;

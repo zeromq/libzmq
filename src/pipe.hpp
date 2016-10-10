@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -67,7 +67,7 @@ namespace zmq
 
     //  Note that pipe can be stored in three different arrays.
     //  The array of inbound pipes (1), the array of outbound pipes (2) and
-    //  the generic array of pipes to deallocate (3).
+    //  the generic array of pipes to be deallocated (3).
 
     class pipe_t :
         public object_t,
@@ -84,7 +84,7 @@ namespace zmq
         //  Specifies the object to send events to.
         void set_event_sink (i_pipe_events *sink_);
 
-        //  Pipe endpoint can store an routing ID to be used by its clients.        
+        //  Pipe endpoint can store an routing ID to be used by its clients.
         void set_routing_id (uint32_t routing_id_);
         uint32_t get_routing_id ();
 

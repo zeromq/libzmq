@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,9 +27,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include "macros.hpp"
 #include "msg.hpp"
-#include "../include/zmq.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -53,7 +53,7 @@ bool zmq::msg_t::check ()
 
 int zmq::msg_t::init (void* data_, size_t size_,
                       msg_free_fn* ffn_, void* hint,
-                      zmq::atomic_counter_t* refcnt_)
+                      content_t* content_)
 {
     if (size_ < max_vsm_size) {
         int const rc = init_size(size_);
@@ -68,9 +68,9 @@ int zmq::msg_t::init (void* data_, size_t size_,
             return -1;
         }
     }
-    else if(refcnt_)
+    else if(content_)
     {
-        return init_external_storage(data_, size_, refcnt_, ffn_, hint);
+        return init_external_storage(content_, data_, size_, ffn_, hint);
     }
     else
     {
@@ -84,25 +84,26 @@ int zmq::msg_t::init ()
     u.vsm.type = type_vsm;
     u.vsm.flags = 0;
     u.vsm.size = 0;
+    u.vsm.group[0] = '\0';
     u.vsm.routing_id = 0;
-    file_desc = -1;
     return 0;
 }
 
 int zmq::msg_t::init_size (size_t size_)
 {
-    file_desc = -1;
     if (size_ <= max_vsm_size) {
         u.vsm.metadata = NULL;
         u.vsm.type = type_vsm;
         u.vsm.flags = 0;
         u.vsm.size = (unsigned char) size_;
+        u.vsm.group[0] = '\0';
         u.vsm.routing_id = 0;
     }
     else {
         u.lmsg.metadata = NULL;
         u.lmsg.type = type_lmsg;
         u.lmsg.flags = 0;
+        u.lmsg.group[0] = '\0';
         u.lmsg.routing_id = 0;
         u.lmsg.content = NULL;
         if (sizeof (content_t) + size_ > size_)
@@ -121,25 +122,24 @@ int zmq::msg_t::init_size (size_t size_)
     return 0;
 }
 
-int zmq::msg_t::init_external_storage(void *data_, size_t size_, zmq::atomic_counter_t* ctr,
-                                      msg_free_fn *ffn_, void *hint_)
+int zmq::msg_t::init_external_storage(content_t* content_, void* data_, size_t size_,
+                                      msg_free_fn *ffn_, void* hint_)
 {
     zmq_assert(NULL != data_);
-    zmq_assert(NULL != ctr);
-
-    file_desc = -1;
+    zmq_assert(NULL != content_);
 
     u.zclmsg.metadata = NULL;
     u.zclmsg.type = type_zclmsg;
     u.zclmsg.flags = 0;
+    u.zclmsg.group[0] = '\0';
     u.zclmsg.routing_id = 0;
 
-    u.zclmsg.data = data_;
-    u.zclmsg.size = size_;
-    u.zclmsg.ffn = ffn_;
-    u.zclmsg.hint = hint_;
-    u.zclmsg.refcnt = ctr;
-    new (u.zclmsg.refcnt) zmq::atomic_counter_t();
+    u.zclmsg.content = content_;
+    u.zclmsg.content->data = data_;
+    u.zclmsg.content->size = size_;
+    u.zclmsg.content->ffn = ffn_;
+    u.zclmsg.content->hint = hint_;
+    new (&u.zclmsg.content->refcnt) zmq::atomic_counter_t();
 
     return 0;
 }
@@ -151,8 +151,6 @@ int zmq::msg_t::init_data (void *data_, size_t size_,
     //  would occur once the data is accessed
     zmq_assert (data_ != NULL || size_ == 0);
 
-    file_desc = -1;
-
     //  Initialize constant message if there's no need to deallocate
     if (ffn_ == NULL) {
         u.cmsg.metadata = NULL;
@@ -160,12 +158,14 @@ int zmq::msg_t::init_data (void *data_, size_t size_,
         u.cmsg.flags = 0;
         u.cmsg.data = data_;
         u.cmsg.size = size_;
+        u.cmsg.group[0] = '\0';
         u.cmsg.routing_id = 0;
     }
     else {
         u.lmsg.metadata = NULL;
         u.lmsg.type = type_lmsg;
         u.lmsg.flags = 0;
+        u.lmsg.group[0] = '\0';
         u.lmsg.routing_id = 0;
         u.lmsg.content = (content_t*) malloc (sizeof (content_t));
         if (!u.lmsg.content) {
@@ -188,7 +188,28 @@ int zmq::msg_t::init_delimiter ()
     u.delimiter.metadata = NULL;
     u.delimiter.type = type_delimiter;
     u.delimiter.flags = 0;
+    u.delimiter.group[0] = '\0';
     u.delimiter.routing_id = 0;
+    return 0;
+}
+
+int zmq::msg_t::init_join ()
+{
+    u.base.metadata = NULL;
+    u.base.type = type_join;
+    u.base.flags = 0;
+    u.base.group[0] = '\0';
+    u.base.routing_id = 0;
+    return 0;
+}
+
+int zmq::msg_t::init_leave ()
+{
+    u.base.metadata = NULL;
+    u.base.type = type_leave;
+    u.base.flags = 0;
+    u.base.group[0] = '\0';
+    u.base.routing_id = 0;
     return 0;
 }
 
@@ -220,19 +241,19 @@ int zmq::msg_t::close ()
 
     if (is_zcmsg())
     {
-        zmq_assert( u.zclmsg.ffn );
+        zmq_assert( u.zclmsg.content->ffn );
 
         //  If the content is not shared, or if it is shared and the reference
         //  count has dropped to zero, deallocate it.
         if (!(u.zclmsg.flags & msg_t::shared) ||
-            !u.zclmsg.refcnt->sub (1)) {
+            !u.zclmsg.content->refcnt.sub (1)) {
 
             //  We used "placement new" operator to initialize the reference
             //  counter so we call the destructor explicitly now.
-            u.zclmsg.refcnt->~atomic_counter_t ();
+            u.zclmsg.content->refcnt.~atomic_counter_t ();
 
-            u.zclmsg.ffn (u.zclmsg.data,
-                          u.zclmsg.hint);
+            u.zclmsg.content->ffn (u.zclmsg.content->data,
+                          u.zclmsg.content->hint);
         }
     }
 
@@ -327,7 +348,7 @@ void *zmq::msg_t::data ()
     case type_cmsg:
         return u.cmsg.data;
     case type_zclmsg:
-        return u.zclmsg.data;
+        return u.zclmsg.content->data;
     default:
         zmq_assert (false);
         return NULL;
@@ -345,7 +366,7 @@ size_t zmq::msg_t::size ()
     case type_lmsg:
         return u.lmsg.content->size;
     case type_zclmsg:
-        return u.zclmsg.size;
+        return u.zclmsg.content->size;
     case type_cmsg:
         return u.cmsg.size;
     default:
@@ -367,16 +388,6 @@ void zmq::msg_t::set_flags (unsigned char flags_)
 void zmq::msg_t::reset_flags (unsigned char flags_)
 {
     u.base.flags &= ~flags_;
-}
-
-int64_t zmq::msg_t::fd ()
-{
-    return file_desc;
-}
-
-void zmq::msg_t::set_fd (int64_t fd_)
-{
-    file_desc = fd_;
 }
 
 zmq::metadata_t *zmq::msg_t::metadata () const
@@ -432,6 +443,16 @@ bool zmq::msg_t::is_zcmsg() const
     return u.base.type == type_zclmsg;
 }
 
+bool zmq::msg_t::is_join() const
+{
+    return u.base.type == type_join;
+}
+
+bool zmq::msg_t::is_leave() const
+{
+    return u.base.type == type_leave;
+}
+
 void zmq::msg_t::add_refs (int refs_)
 {
     zmq_assert (refs_ >= 0);
@@ -485,10 +506,10 @@ bool zmq::msg_t::rm_refs (int refs_)
         return false;
     }
 
-    if (is_zcmsg() && !u.zclmsg.refcnt->sub(refs_)) {
+    if (is_zcmsg() && !u.zclmsg.content->refcnt.sub(refs_)) {
         // storage for rfcnt is provided externally
-        if (u.zclmsg.ffn) {
-            u.zclmsg.ffn(u.zclmsg.data, u.zclmsg.hint);
+        if (u.zclmsg.content->ffn) {
+            u.zclmsg.content->ffn(u.zclmsg.content->data, u.zclmsg.content->hint);
         }
 
         return false;
@@ -512,6 +533,36 @@ int zmq::msg_t::set_routing_id (uint32_t routing_id_)
     return -1;
 }
 
+int zmq::msg_t::reset_routing_id ()
+{
+    u.base.routing_id = 0;
+    return 0;
+}
+
+const char * zmq::msg_t::group ()
+{
+    return u.base.group;
+}
+
+int zmq::msg_t::set_group (const char * group_)
+{
+    return set_group (group_, strlen (group_));
+}
+
+int zmq::msg_t::set_group (const char * group_, size_t length_)
+{
+    if (length_> ZMQ_GROUP_MAX_LENGTH)
+    {
+        errno = EINVAL;
+        return -1;
+    }
+
+    strncpy (u.base.group, group_, length_);
+    u.base.group[length_] = '\0';
+
+    return 0;
+}
+
 zmq::atomic_counter_t *zmq::msg_t::refcnt()
 {
     switch(u.base.type)
@@ -519,7 +570,7 @@ zmq::atomic_counter_t *zmq::msg_t::refcnt()
         case type_lmsg:
             return &u.lmsg.content->refcnt;
         case type_zclmsg:
-            return u.zclmsg.refcnt;
+            return &u.zclmsg.content->refcnt;
         default:
             zmq_assert(false);
             return NULL;

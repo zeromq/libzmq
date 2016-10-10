@@ -1,6 +1,6 @@
 CC=gcc
-CFLAGS=-Wall -Os -g -DDLL_EXPORT -DFD_SETSIZE=4096 -DZMQ_USE_SELECT -I.
-LIBS=-lws2_32
+CFLAGS=-Wall -Os -g -DDLL_EXPORT -DFD_SETSIZE=16384 -DZMQ_USE_SELECT -I.
+LIBS=-lws2_32 -lIphlpapi
 
 OBJS = ctx.o reaper.o dist.o err.o \
 	clock.o metadata.o random.o \
@@ -18,12 +18,15 @@ OBJS = ctx.o reaper.o dist.o err.o \
 	pgm_socket.o pgm_receiver.o pgm_sender.o \
 	raw_decoder.o raw_encoder.o \
 	v1_decoder.o v1_encoder.o v2_decoder.o v2_encoder.o \
+        udp_address.o udp_engine.o radio.o dish.o \
 	socket_base.o session_base.o options.o \
 	req.o rep.o push.o pull.o pub.o sub.o pair.o \
 	dealer.o router.o xpub.o xsub.o stream.o \
 	poller_base.o select.o poll.o epoll.o kqueue.o devpoll.o \
 	curve_client.o curve_server.o \
 	mechanism.o null_mechanism.o plain_client.o plain_server.o \
+	socks.o server.o decoder_allocators.o socks_connecter.o \
+	socket_poller.o mailbox_safe.o plain_server.o client.o timers.o \
 	zmq.o zmq_utils.o
 
 %.o: ../../src/%.cpp
@@ -44,4 +47,3 @@ libzmq.dll: $(OBJS)
 
 clean:
 	del *.o *.a *.dll *.exe
-	

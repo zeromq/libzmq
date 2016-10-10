@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -34,29 +34,39 @@
 
 namespace zmq
 {
+    class ctx_t;
     class tcp_address_t;
+    class udp_address_t;
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
     class ipc_address_t;
 #endif
 #if defined ZMQ_HAVE_LINUX
     class tipc_address_t;
 #endif
+#if defined ZMQ_HAVE_VMCI
+    class vmci_address_t;
+#endif
     struct address_t {
-        address_t (const std::string &protocol_, const std::string &address_);
+        address_t (const std::string &protocol_, const std::string &address_, ctx_t *parent_);
 
         ~address_t ();
 
         const std::string protocol;
         const std::string address;
+        ctx_t *parent;
 
         //  Protocol specific resolved address
         union {
             tcp_address_t *tcp_addr;
+            udp_address_t *udp_addr;
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
             ipc_address_t *ipc_addr;
 #endif
 #if defined ZMQ_HAVE_LINUX
             tipc_address_t *tipc_addr;
+#endif
+#if defined ZMQ_HAVE_VMCI
+            vmci_address_t *vmci_addr;
 #endif
         } resolved;
 

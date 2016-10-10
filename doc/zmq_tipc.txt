@@ -23,7 +23,7 @@ For the TIPC transport, the transport is `tipc`, and the meaning of the
 
 
 Assigning a port name to a socket
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 When assigning a port name to a socket using _zmq_bind()_ with the 'tipc'
 transport, the 'endpoint' is defined in the form:
 {type, lower, upper}
@@ -73,6 +73,7 @@ linkzmq:zmq_tcp[7]
 linkzmq:zmq_pgm[7]
 linkzmq:zmq_ipc[7]
 linkzmq:zmq_inproc[7]
+linkzmq:zmq_vmci[7]
 linkzmq:zmq[7]
 
 

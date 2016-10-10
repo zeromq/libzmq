@@ -1,0 +1,5 @@
+project.Makefile
+*.mk
+out/
+Makefile
+

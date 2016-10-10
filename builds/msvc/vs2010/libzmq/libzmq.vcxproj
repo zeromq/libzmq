@@ -64,15 +64,18 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="$(ProjectDir)..\..\properties\$(Configuration).props" />
     <Import Project="$(ProjectDir)..\..\properties\Output.props" />
-    <Import Project="$(ProjectDir)$(ProjectName).props" />
+    <Import Project="$(ProjectDir)..\..\vs2015\$(ProjectName)\$(ProjectName).props" />
   </ImportGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\platform.hpp" />
+    <ClInclude Include="..\..\resource.h" />
     <ClInclude Include="..\..\..\..\include\zmq.h" />
-    <ClInclude Include="..\..\..\..\include\zmq_utils.h" />
+    <ClInclude Include="..\..\..\..\src\zmq_draft.h" />
     <ClInclude Include="..\..\..\..\src\address.hpp" />
     <ClInclude Include="..\..\..\..\src\array.hpp" />
     <ClInclude Include="..\..\..\..\src\atomic_counter.hpp" />
     <ClInclude Include="..\..\..\..\src\atomic_ptr.hpp" />
+    <ClInclude Include="..\..\..\..\src\blob.hpp" />
     <ClInclude Include="..\..\..\..\src\client.hpp" />
     <ClInclude Include="..\..\..\..\src\clock.hpp" />
     <ClInclude Include="..\..\..\..\src\command.hpp" />
@@ -84,12 +87,15 @@
     <ClInclude Include="..\..\..\..\src\decoder.hpp" />
     <ClInclude Include="..\..\..\..\src\decoder_allocators.hpp" />
     <ClInclude Include="..\..\..\..\src\devpoll.hpp" />
+    <ClInclude Include="..\..\..\..\src\dgram.hpp" />
+    <ClInclude Include="..\..\..\..\src\dish.hpp" />
     <ClInclude Include="..\..\..\..\src\dist.hpp" />
     <ClInclude Include="..\..\..\..\src\encoder.hpp" />
     <ClInclude Include="..\..\..\..\src\epoll.hpp" />
     <ClInclude Include="..\..\..\..\src\err.hpp" />
     <ClInclude Include="..\..\..\..\src\fd.hpp" />
     <ClInclude Include="..\..\..\..\src\fq.hpp" />
+    <ClInclude Include="..\..\..\..\src\gather.hpp" />
     <ClInclude Include="..\..\..\..\src\gssapi_client.hpp" />
     <ClInclude Include="..\..\..\..\src\gssapi_mechanism_base.hpp" />
     <ClInclude Include="..\..\..\..\src\gssapi_server.hpp" />
@@ -120,7 +126,6 @@
     <ClInclude Include="..\..\..\..\src\server.hpp" />
     <ClInclude Include="..\..\..\..\src\socks.hpp" />
     <ClInclude Include="..\..\..\..\src\socks_connecter.hpp" />
-    <ClInclude Include="..\..\platform.hpp" />
     <ClInclude Include="..\..\..\..\src\poll.hpp" />
     <ClInclude Include="..\..\..\..\src\poller.hpp" />
     <ClInclude Include="..\..\..\..\src\poller_base.hpp" />
@@ -129,12 +134,14 @@
     <ClInclude Include="..\..\..\..\src\pub.hpp" />
     <ClInclude Include="..\..\..\..\src\pull.hpp" />
     <ClInclude Include="..\..\..\..\src\push.hpp" />
+    <ClInclude Include="..\..\..\..\src\radio.hpp" />
     <ClInclude Include="..\..\..\..\src\random.hpp" />
     <ClInclude Include="..\..\..\..\src\raw_decoder.hpp" />
     <ClInclude Include="..\..\..\..\src\raw_encoder.hpp" />
     <ClInclude Include="..\..\..\..\src\reaper.hpp" />
     <ClInclude Include="..\..\..\..\src\rep.hpp" />
     <ClInclude Include="..\..\..\..\src\req.hpp" />
+    <ClInclude Include="..\..\..\..\src\scatter.hpp" />
     <ClInclude Include="..\..\..\..\src\select.hpp" />
     <ClInclude Include="..\..\..\..\src\session_base.hpp" />
     <ClInclude Include="..\..\..\..\src\signaler.hpp" />
@@ -146,8 +153,12 @@
     <ClInclude Include="..\..\..\..\src\tcp_address.hpp" />
     <ClInclude Include="..\..\..\..\src\tcp_connecter.hpp" />
     <ClInclude Include="..\..\..\..\src\tcp_listener.hpp" />
+    <ClInclude Include="..\..\..\..\src\timers.hpp" />
     <ClInclude Include="..\..\..\..\src\thread.hpp" />
     <ClInclude Include="..\..\..\..\src\trie.hpp" />
+    <ClInclude Include="..\..\..\..\src\tweetnacl.h" />
+    <ClInclude Include="..\..\..\..\src\udp_address.hpp" />
+    <ClInclude Include="..\..\..\..\src\udp_engine.hpp" />
     <ClInclude Include="..\..\..\..\src\v1_decoder.hpp" />
     <ClInclude Include="..\..\..\..\src\v1_encoder.hpp" />
     <ClInclude Include="..\..\..\..\src\v1_protocol.hpp" />
@@ -159,7 +170,6 @@
     <ClInclude Include="..\..\..\..\src\xsub.hpp" />
     <ClInclude Include="..\..\..\..\src\ypipe.hpp" />
     <ClInclude Include="..\..\..\..\src\yqueue.hpp" />
-    <ClInclude Include="..\..\resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\src\address.cpp" />
@@ -171,10 +181,13 @@
     <ClCompile Include="..\..\..\..\src\dealer.cpp" />
     <ClCompile Include="..\..\..\..\src\decoder_allocators.cpp" />
     <ClCompile Include="..\..\..\..\src\devpoll.cpp" />
+    <ClCompile Include="..\..\..\..\src\dgram.cpp" />
+    <ClCompile Include="..\..\..\..\src\dish.cpp" />
     <ClCompile Include="..\..\..\..\src\dist.cpp" />
     <ClCompile Include="..\..\..\..\src\epoll.cpp" />
     <ClCompile Include="..\..\..\..\src\err.cpp" />
     <ClCompile Include="..\..\..\..\src\fq.cpp" />
+    <ClCompile Include="..\..\..\..\src\gather.cpp" />
     <ClCompile Include="..\..\..\..\src\gssapi_client.cpp" />
     <ClCompile Include="..\..\..\..\src\gssapi_mechanism_base.cpp" />
     <ClCompile Include="..\..\..\..\src\gssapi_server.cpp" />
@@ -205,11 +218,14 @@
     <ClCompile Include="..\..\..\..\src\plain_server.cpp" />
     <ClCompile Include="..\..\..\..\src\poll.cpp" />
     <ClCompile Include="..\..\..\..\src\poller_base.cpp" />
-    <ClCompile Include="..\..\..\..\src\precompiled.cpp" />
+    <ClCompile Include="..\..\..\..\src\precompiled.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\..\..\src\proxy.cpp" />
     <ClCompile Include="..\..\..\..\src\pub.cpp" />
     <ClCompile Include="..\..\..\..\src\pull.cpp" />
     <ClCompile Include="..\..\..\..\src\push.cpp" />
+    <ClCompile Include="..\..\..\..\src\radio.cpp" />
     <ClCompile Include="..\..\..\..\src\random.cpp" />
     <ClCompile Include="..\..\..\..\src\raw_decoder.cpp" />
     <ClCompile Include="..\..\..\..\src\raw_encoder.cpp" />
@@ -217,6 +233,7 @@
     <ClCompile Include="..\..\..\..\src\rep.cpp" />
     <ClCompile Include="..\..\..\..\src\req.cpp" />
     <ClCompile Include="..\..\..\..\src\router.cpp" />
+    <ClCompile Include="..\..\..\..\src\scatter.cpp" />
     <ClCompile Include="..\..\..\..\src\select.cpp" />
     <ClCompile Include="..\..\..\..\src\server.cpp" />
     <ClCompile Include="..\..\..\..\src\session_base.cpp" />
@@ -233,7 +250,13 @@
     <ClCompile Include="..\..\..\..\src\tcp_connecter.cpp" />
     <ClCompile Include="..\..\..\..\src\tcp_listener.cpp" />
     <ClCompile Include="..\..\..\..\src\thread.cpp" />
+    <ClCompile Include="..\..\..\..\src\timers.cpp" />
     <ClCompile Include="..\..\..\..\src\trie.cpp" />
+    <ClCompile Include="..\..\..\..\src\tweetnacl.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\udp_address.cpp" />
+    <ClCompile Include="..\..\..\..\src\udp_engine.cpp" />
     <ClCompile Include="..\..\..\..\src\v1_decoder.cpp" />
     <ClCompile Include="..\..\..\..\src\v1_encoder.cpp" />
     <ClCompile Include="..\..\..\..\src\v2_decoder.cpp" />

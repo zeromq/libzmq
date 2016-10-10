@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -63,6 +63,8 @@ void test_fair_queue_in (void *ctx)
         assert (rc == 0);
     }
 
+    msleep (SETTLE_TIME);
+
     zmq_msg_t msg;
     rc = zmq_msg_init (&msg);
     assert (rc == 0);
@@ -104,8 +106,7 @@ void test_fair_queue_in (void *ctx)
         close_zero_linger (senders [peer]);
 
     // Wait for disconnects.
-    rc = zmq_poll (0, 0, 100);
-    assert (rc == 0);
+    msleep (SETTLE_TIME);
 }
 
 void test_destroy_queue_on_disconnect (void *ctx)
@@ -130,8 +131,7 @@ void test_destroy_queue_on_disconnect (void *ctx)
     assert (rc == 0);
 
     // Wait for connection.
-    rc = zmq_poll (0, 0, 100);
-    assert (rc == 0);
+    msleep (SETTLE_TIME);
 
     // Send a message in both directions
     s_send_seq (A, "B", "ABC", SEQ_END);
@@ -178,8 +178,7 @@ void test_destroy_queue_on_disconnect (void *ctx)
     close_zero_linger (B);
 
     // Wait for disconnects.
-    rc = zmq_poll (0, 0, 100);
-    assert (rc == 0);
+    msleep (SETTLE_TIME);
 }
 
 

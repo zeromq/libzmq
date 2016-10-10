@@ -30,7 +30,6 @@
 */
 
 #include "../include/zmq.h"
-#include "../include/zmq_utils.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -233,9 +232,9 @@ int main (int argc, char *argv [])
         return -1;
     }
 
-    rc = zmq_term (ctx);
+    rc = zmq_ctx_term (ctx);
     if (rc != 0) {
-        printf ("error in zmq_term: %s\n", zmq_strerror (errno));
+        printf ("error in zmq_ctx_term: %s\n", zmq_strerror (errno));
         return -1;
     }
 

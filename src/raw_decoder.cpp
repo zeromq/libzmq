@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,13 +27,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include <stdlib.h>
 #include <string.h>
-
-#include "platform.hpp"
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#endif
 
 #include "raw_decoder.hpp"
 #include "err.hpp"
@@ -62,13 +58,13 @@ int zmq::raw_decoder_t::decode (const uint8_t *data_, size_t size_,
 {
     int rc = in_progress.init ((unsigned char*)data_, size_,
                                shared_message_memory_allocator::call_dec_ref,
-                               allocator.buffer(),
-                               allocator.provide_refcnt() );
+                               allocator.buffer (),
+                               allocator.provide_content ());
 
     // if the buffer serves as memory for a zero-copy message, release it
     // and allocate a new buffer in get_buffer for the next decode
-    if (in_progress.is_zcmsg()) {
-        allocator.advance_refcnt();
+    if (in_progress.is_zcmsg ()) {
+        allocator.advance_content();
         allocator.release();
     }
 

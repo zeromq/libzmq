@@ -9,10 +9,10 @@
 
 #cmakedefine ZMQ_FORCE_MUTEXES
 
-
 #cmakedefine HAVE_FORK
 #cmakedefine HAVE_CLOCK_GETTIME
 #cmakedefine HAVE_GETHRTIME
+#cmakedefine HAVE_MKDTEMP
 #cmakedefine ZMQ_HAVE_UIO
 
 #cmakedefine ZMQ_HAVE_EVENTFD
@@ -31,6 +31,9 @@
 #cmakedefine ZMQ_HAVE_OPENPGM
 #cmakedefine ZMQ_MAKE_VALGRIND_HAPPY
 
+#cmakedefine ZMQ_HAVE_CURVE
+#cmakedefine ZMQ_USE_TWEETNACL
+#cmakedefine HAVE_LIBSODIUM
 
 #ifdef _AIX
   #define ZMQ_HAVE_AIX

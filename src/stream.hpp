@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -57,7 +57,7 @@ namespace zmq
         void xread_activated (zmq::pipe_t *pipe_);
         void xwrite_activated (zmq::pipe_t *pipe_);
         void xpipe_terminated (zmq::pipe_t *pipe_);
-        int xsetsockopt (int option_, const void *optval_, size_t optvallen_); 
+        int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
     private:
         //  Generate peer's id and update lookup map
         void identify_peer (pipe_t *pipe_);

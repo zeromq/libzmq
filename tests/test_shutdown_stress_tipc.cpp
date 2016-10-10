@@ -1,7 +1,5 @@
 /*
-    Copyright (c) 2010-2011 250bpm s.r.o.
-    Copyright (c) 2011 iMatix Corporation
-    Copyright (c) 2010-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -29,13 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "../include/zmq.h"
-#include <pthread.h>
-#include <stddef.h>
-#include <stdio.h>
-
-#undef NDEBUG
-#include <assert.h>
+#include "testutil.hpp"
 
 #define THREAD_COUNT 100
 
@@ -45,7 +37,7 @@ extern "C"
     {
         int rc;
 
-        rc = zmq_connect (s, "tipc://{5560,0}");
+        rc = zmq_connect (s, "tipc://{5560,0}@0.0.0");
         assert (rc == 0);
 
         //  Start closing the socket while the connecting process is underway.
@@ -95,7 +87,7 @@ int main (void)
         rc = zmq_close (s1);
         assert (rc == 0);
 
-        rc = zmq_term (ctx);
+        rc = zmq_ctx_term (ctx);
         assert (rc == 0);
     }
 

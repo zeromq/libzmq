@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,12 +27,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include <new>
 
 #include <string>
 #include <stdio.h>
 
-#include "platform.hpp"
 #include "tcp_listener.hpp"
 #include "stream_engine.hpp"
 #include "io_thread.hpp"
@@ -43,9 +43,7 @@
 #include "tcp.hpp"
 #include "socket_base.hpp"
 
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
+#ifndef ZMQ_HAVE_WINDOWS
 #include <unistd.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -64,6 +62,7 @@ zmq::tcp_listener_t::tcp_listener_t (io_thread_t *io_thread_,
     own_t (io_thread_, options_),
     io_object_t (io_thread_),
     s (retired_fd),
+    handle((handle_t)NULL),
     socket (socket_)
 {
 }
@@ -99,11 +98,9 @@ void zmq::tcp_listener_t::in_event ()
     }
 
     tune_tcp_socket (fd);
-    tune_tcp_keepalives (fd, options.tcp_keepalive, options.tcp_keepalive_cnt, options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
-    tune_tcp_retransmit_timeout (fd, options.tcp_retransmit_timeout);
-
-    // remember our fd for ZMQ_SRCFD in messages
-    socket->set_fd(fd);
+    tune_tcp_keepalives (fd, options.tcp_keepalive, options.tcp_keepalive_cnt,
+            options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
+    tune_tcp_maxrt (fd, options.tcp_maxrt);
 
     //  Create the engine object for this connection.
     stream_engine_t *engine = new (std::nothrow)
@@ -166,21 +163,25 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
     if (rc != 0)
         return -1;
 
+    address.to_string (endpoint);
+
+    if (options.use_fd != -1) {
+        s = options.use_fd;
+        socket->event_listening (endpoint, (int) s);
+        return 0;
+    }
+
     //  Create a listening socket.
     s = open_socket (address.family (), SOCK_STREAM, IPPROTO_TCP);
-#ifdef ZMQ_HAVE_WINDOWS
-    if (s == INVALID_SOCKET)
-        errno = wsa_error_to_errno (WSAGetLastError ());
-#endif
 
     //  IPv6 address family not supported, try automatic downgrade to IPv4.
-    if (address.family () == AF_INET6
+    if (s == zmq::retired_fd && address.family () == AF_INET6
     && errno == EAFNOSUPPORT
     && options.ipv6) {
-        rc = address.resolve (addr_, true, true);
+        rc = address.resolve (addr_, true, false);
         if (rc != 0)
             return rc;
-        s = ::socket (address.family (), SOCK_STREAM, IPPROTO_TCP);
+        s = open_socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
     }
 
 #ifdef ZMQ_HAVE_WINDOWS
@@ -223,8 +224,6 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
     rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
     errno_assert (rc == 0);
 #endif
-
-    address.to_string (endpoint);
 
     //  Bind the socket to the network interface and port.
     rc = bind (s, address.addr (), address.addrlen ());
@@ -274,11 +273,15 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
 #else
     socklen_t ss_len = sizeof (ss);
 #endif
+#if defined ZMQ_HAVE_SOCK_CLOEXEC
+    fd_t sock = ::accept4 (s, (struct sockaddr *) &ss, &ss_len, SOCK_CLOEXEC);
+#else
     fd_t sock = ::accept (s, (struct sockaddr *) &ss, &ss_len);
+#endif
 
 #ifdef ZMQ_HAVE_WINDOWS
     if (sock == INVALID_SOCKET) {
-		const int last_error = WSAGetLastError();
+        const int last_error = WSAGetLastError();
         wsa_assert (last_error == WSAEWOULDBLOCK ||
             last_error == WSAECONNRESET ||
             last_error == WSAEMFILE ||
@@ -300,9 +303,9 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
     }
 #endif
 
+#if !defined ZMQ_HAVE_SOCK_CLOEXEC && defined FD_CLOEXEC
     //  Race condition can cause socket not to be closed (if fork happens
     //  between accept and this point).
-#ifdef FD_CLOEXEC
     int rc = fcntl (sock, F_SETFD, FD_CLOEXEC);
     errno_assert (rc != -1);
 #endif

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -86,9 +86,9 @@ int main (void)
             printf ("W: Only able to create %d sockets on this box\n", count);
             printf ("I: Tune your system to increase maximum allowed file handles\n");
 #if defined (ZMQ_HAVE_OSX)
-            printf ("I: On OS/X, run 'ulimit -n 1200' in bash");
+            printf ("I: On OS/X, run 'ulimit -n 1200' in bash\n");
 #elif defined (ZMQ_HAVE_LINUX)
-            printf ("I: On Linux, run 'ulimit -n 1200' in bash");
+            printf ("I: On Linux, run 'ulimit -n 1200' in bash\n");
 #endif        
             return -1;
         }
@@ -97,4 +97,7 @@ int main (void)
     for (count = 0; count < 1000; count++) {
         close(handle[count]);
     }
+
+    zmq_close(dealer);
+    zmq_ctx_term(ctx);
 }

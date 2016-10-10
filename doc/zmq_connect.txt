@@ -27,6 +27,7 @@ The 'endpoint' is a string consisting of a 'transport'`://` followed by an
 'ipc':: local inter-process communication transport, see linkzmq:zmq_ipc[7]
 'inproc':: local in-process (inter-thread) communication transport, see linkzmq:zmq_inproc[7]
 'pgm', 'epgm':: reliable multicast transport using PGM, see linkzmq:zmq_pgm[7]
+'vmci':: virtual machine communications interface (VMCI), see linkzmq:zmq_vmci[7]
 
 Every 0MQ socket type except 'ZMQ_PAIR' supports one-to-many and many-to-one
 semantics. The precise semantics depend on the socket type and are defined in

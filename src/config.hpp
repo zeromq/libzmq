@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -84,13 +84,10 @@ namespace zmq
         //  possible latencies.
         clock_precision = 1000000,
 
-        //  Maximum transport data unit size for PGM (TPDU).
-        pgm_max_tpdu = 1500,
-
         //  On some OSes the signaler has to be emulated using a TCP
         //  connection. In such cases following port is used.
-        //  If 0, it lets the OS choose a free port without requiring use of a 
-        //  global mutex. The original implementation of a Windows signaler 
+        //  If 0, it lets the OS choose a free port without requiring use of a
+        //  global mutex. The original implementation of a Windows signaler
         //  socket used port 5905 instead of letting the OS choose a free port.
         //  https://github.com/zeromq/libzmq/issues/1542
         signaler_port = 0

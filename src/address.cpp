@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,21 +27,28 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include "macros.hpp"
-#include "platform.hpp"
 #include "address.hpp"
+#include "ctx.hpp"
 #include "err.hpp"
 #include "tcp_address.hpp"
+#include "udp_address.hpp"
 #include "ipc_address.hpp"
 #include "tipc_address.hpp"
+
+#if defined ZMQ_HAVE_VMCI
+#include "vmci_address.hpp"
+#endif
 
 #include <string>
 #include <sstream>
 
 zmq::address_t::address_t (
-    const std::string &protocol_, const std::string &address_)
+    const std::string &protocol_, const std::string &address_, ctx_t *parent_)
     : protocol (protocol_),
-      address (address_)
+      address (address_),
+      parent (parent_)
 {
     memset (&resolved, 0, sizeof resolved);
 }
@@ -51,6 +58,11 @@ zmq::address_t::~address_t ()
     if (protocol == "tcp") {
         if (resolved.tcp_addr) {
             LIBZMQ_DELETE(resolved.tcp_addr);
+        }
+    }
+    if (protocol == "udp") {
+        if (resolved.udp_addr) {
+            LIBZMQ_DELETE(resolved.udp_addr);
         }
     }
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
@@ -69,6 +81,14 @@ zmq::address_t::~address_t ()
         }
     }
 #endif
+#if defined ZMQ_HAVE_VMCI
+    else
+    if (protocol == "vmci") {
+        if (resolved.vmci_addr) {
+            LIBZMQ_DELETE(resolved.vmci_addr);
+        }
+    }
+#endif
 }
 
 int zmq::address_t::to_string (std::string &addr_) const
@@ -76,6 +96,10 @@ int zmq::address_t::to_string (std::string &addr_) const
     if (protocol == "tcp") {
         if (resolved.tcp_addr)
             return resolved.tcp_addr->to_string (addr_);
+    }
+    if (protocol == "udp") {
+        if (resolved.udp_addr)
+            return resolved.udp_addr->to_string (addr_);
     }
 #if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
     else
@@ -89,6 +113,13 @@ int zmq::address_t::to_string (std::string &addr_) const
     if (protocol == "tipc") {
         if (resolved.tipc_addr)
             return resolved.tipc_addr->to_string (addr_);
+    }
+#endif
+#if defined ZMQ_HAVE_VMCI
+    else
+    if (protocol == "vmci") {
+        if (resolved.vmci_addr)
+            return resolved.vmci_addr->to_string (addr_);
     }
 #endif
 

@@ -2,13 +2,16 @@
 <ProjectSchemaDefinitions xmlns="clr-namespace:Microsoft.Build.Framework.XamlTypes;assembly=Microsoft.Build.Framework">
   <Rule Name="libzmq-options-uiextension" PageTemplate="tool" DisplayName="ZMQ Options" SwitchPrefix="/" Order="1">
     <Rule.Categories>
-      <Category Name="openpgm" DisplayName="openpgm" />
+      <Category Name="tweet" DisplayName="tweet" />
       <Category Name="sodium" DisplayName="sodium" />
+      <Category Name="openpgm" DisplayName="openpgm" />
+      <Category Name="gssapi" DisplayName="gssapi" />
+      <Category Name="draftapi" DisplayName="draftapi" />
     </Rule.Categories>
     <Rule.DataSource>
       <DataSource Persistence="ProjectFile" ItemType="" />
     </Rule.DataSource>
-    <EnumProperty Name="Option-openpgm" DisplayName="Enable OpenPGM" Description="Enable the OpenPGM build option" Category="openpgm">
+    <EnumProperty Name="Option-tweet" DisplayName="Enable Tweet NaCl" Description="Enable the Tweet NaCl build option" Category="tweet">
       <EnumValue Name="" DisplayName="No" />
       <EnumValue Name="true" DisplayName="Yes" />
     </EnumProperty>
@@ -16,7 +19,15 @@
       <EnumValue Name="" DisplayName="No" />
       <EnumValue Name="true" DisplayName="Yes" />
     </EnumProperty>
+    <EnumProperty Name="Option-openpgm" DisplayName="Enable OpenPGM" Description="Enable the OpenPGM build option" Category="openpgm">
+      <EnumValue Name="" DisplayName="No" />
+      <EnumValue Name="true" DisplayName="Yes" />
+    </EnumProperty>
     <EnumProperty Name="Option-gssapi" DisplayName="Enable GSS API" Description="Enable the GSS API build option" Category="gssapi">
+      <EnumValue Name="" DisplayName="No" />
+      <EnumValue Name="true" DisplayName="Yes" />
+    </EnumProperty>
+    <EnumProperty Name="Option-draftapi" DisplayName="Enable Draft API" Description="Enable Draft API build option" Category="draftapi">
       <EnumValue Name="" DisplayName="No" />
       <EnumValue Name="true" DisplayName="Yes" />
     </EnumProperty>

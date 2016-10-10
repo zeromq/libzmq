@@ -4,27 +4,25 @@
   <PropertyGroup Label="Globals">
     <_PropertySheetDisplayName>ZMQ Import Settings</_PropertySheetDisplayName>
   </PropertyGroup>
-  
+
   <!-- User Interface -->
 
   <ItemGroup Label="BuildOptionsExtension">
     <PropertyPageSchema Include="$(MSBuildThisFileDirectory)libzmq.import.xml" />
   </ItemGroup>
-  
-  <PropertyGroup>
-    <Option-sodium>true</Option-sodium>
-  </PropertyGroup>
 
   <!-- Configuration -->
 
   <ItemDefinitionGroup>
     <ClCompile>
+      <PreprocessorDefinitions Condition="'$(Option-tweet)' == 'true'">ZMQ_USE_TWEETNACL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Option-sodium)' == 'true'">ZMQ_USE_LIBSODIUM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Option-openpgm)' == 'true'">ZMQ_HAVE_OPENPGM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Option-sodium)' == 'true'">HAVE_LIBSODIUM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Option-gssapi)' == 'true'">HAVE_LIBGSSAPI_KRB5;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Option-draftapi)' == 'true'">ZMQ_BUILD_DRAFT_API;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
-  
+
   <!-- Linkage -->
 
   <ItemDefinitionGroup>
@@ -38,7 +36,7 @@
       <AdditionalLibraryDirectories Condition="$(Configuration.IndexOf('Release')) != -1">$(ProjectDir)..\..\..\..\..\libzmq\bin\$(PlatformName)\Release\$(PlatformToolset)\$(Linkage-libzmq)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
-  
+
   <!-- Copy -->
 
   <Target Name="Linkage-libzmq-dynamic" AfterTargets="AfterBuild" Condition="'$(Linkage-libzmq)' == 'dynamic'">

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -93,58 +93,7 @@ int main (void)
     // Receive the rest.
     s_recv_seq (router, 0, "ABC", "DEF", SEQ_END);
 
-    // Send back a bad reply: correct req id
-    zmq_msg_copy (&msg, &peer_id_msg);
-    rc = zmq_msg_send (&msg, router, ZMQ_SNDMORE);
-    assert (rc != -1);
-    zmq_msg_copy (&msg, &req_id_msg);
-    rc = zmq_msg_send (&msg, router, 0);
-    assert (rc != -1);
-
-    // Send back a bad reply: wrong req id
-    zmq_msg_copy (&msg, &peer_id_msg);
-    rc = zmq_msg_send (&msg, router, ZMQ_SNDMORE);
-    assert (rc != -1);
     uint32_t bad_req_id = req_id + 1;
-    zmq_msg_init_data (&msg, &bad_req_id, sizeof (uint32_t), NULL, NULL);
-    rc = zmq_msg_send (&msg, router, 0);
-    assert (rc != -1);
-
-    // Send back a bad reply: correct req id, 0
-    zmq_msg_copy (&msg, &peer_id_msg);
-    rc = zmq_msg_send (&msg, router, ZMQ_SNDMORE);
-    assert (rc != -1);
-    zmq_msg_copy (&msg, &req_id_msg);
-    rc = zmq_msg_send (&msg, router, ZMQ_SNDMORE);
-    assert (rc != -1);
-    s_send_seq (router, 0, SEQ_END);
-
-    // Send back a bad reply: correct req id, garbage
-    zmq_msg_copy (&msg, &peer_id_msg);
-    rc = zmq_msg_send (&msg, router, ZMQ_SNDMORE);
-    assert (rc != -1);
-    zmq_msg_copy (&msg, &req_id_msg);
-    rc = zmq_msg_send (&msg, router, ZMQ_SNDMORE);
-    assert (rc != -1);
-    s_send_seq (router, "FOO", SEQ_END);
-
-    // Send back a bad reply: wrong req id, 0
-    zmq_msg_copy (&msg, &peer_id_msg);
-    rc = zmq_msg_send (&msg, router, ZMQ_SNDMORE);
-    assert (rc != -1);
-    zmq_msg_init_data (&msg, &bad_req_id, sizeof (uint32_t), NULL, NULL);
-    rc = zmq_msg_send (&msg, router, ZMQ_SNDMORE);
-    assert (rc != -1);
-    s_send_seq (router, 0, SEQ_END);
-
-    // Send back a bad reply: correct req id, garbage, data
-    zmq_msg_copy (&msg, &peer_id_msg);
-    rc = zmq_msg_send (&msg, router, ZMQ_SNDMORE);
-    assert (rc != -1);
-    zmq_msg_copy (&msg, &req_id_msg);
-    rc = zmq_msg_send (&msg, router, ZMQ_SNDMORE);
-    assert (rc != -1);
-    s_send_seq (router, "FOO", "DATA", SEQ_END);
 
     // Send back a bad reply: wrong req id, 0, data
     zmq_msg_copy (&msg, &peer_id_msg);
@@ -155,7 +104,7 @@ int main (void)
     assert (rc != -1);
     s_send_seq (router, 0, "DATA", SEQ_END);
 
-    // Send back a good reply.
+    // Send back a good reply: good req id, 0, data
     zmq_msg_copy (&msg, &peer_id_msg);
     rc = zmq_msg_send (&msg, router, ZMQ_SNDMORE);
     assert (rc != -1);
@@ -164,7 +113,7 @@ int main (void)
     assert (rc != -1);
     s_send_seq (router, 0, "GHI", SEQ_END);
 
-    // Receive reply. If any of the other messages got through, we wouldn't see
+    // Receive reply. If bad reply got through, we wouldn't see
     // this particular data.
     s_recv_seq (req, "GHI", SEQ_END);
 

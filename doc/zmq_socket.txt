@@ -47,9 +47,18 @@ incoming connections *from multiple endpoints* bound to the socket using
 _zmq_bind()_, thus allowing many-to-many relationships.
 
 .Thread safety
-0MQ 'sockets' are _not_ thread safe. Applications MUST NOT use a socket
+0MQ has both thread safe socket type and _not_ thread safe socket types.
+Applications MUST NOT use a _not_ thread safe socket
 from multiple threads except after migrating a socket from one thread to
 another with a "full fence" memory barrier.
+
+Following are the thread safe sockets:
+* ZMQ_CLIENT
+* ZMQ_SERVER
+* ZMQ_DISH
+* ZMQ_RADIO
+* ZMQ_SCATTER
+* ZMQ_GATHER
 
 .Socket types
 The following sections present the socket types defined by 0MQ, grouped by the
@@ -121,8 +130,9 @@ a message to a given 'ZMQ_CLIENT' peer the application must set the peer's
 
 If the 'routing_id' is not specified, or does not refer to a connected client
 peer, the send call will fail with EHOSTUNREACH. If the outgoing buffer for
-the client peer is full, the send call will fail with EAGAIN. The 'ZMQ_SERVER'
-socket shall not drop messages, nor shall it block.
+the client peer is full, the send call shall block, unless ZMQ_DONT_WAIT is
+used in the send, in which case it shall fail with EAGAIN. The 'ZMQ_SERVER'
+socket shall not drop messages in any case.
 
 NOTE: 'ZMQ_SERVER' sockets are threadsafe. They do not accept the ZMQ_SNDMORE
 option on sends not ZMQ_RCVMORE on receives. This limits them to single part
@@ -137,6 +147,71 @@ Send/receive pattern:: Unrestricted
 Outgoing routing strategy:: See text
 Incoming routing strategy:: Fair-queued
 Action in mute state:: Return EAGAIN
+
+
+Radio-dish pattern
+~~~~~~~~~~~~~~~~~~
+
+The radio-dish pattern is used for one-to-many distribution of data from
+a single _publisher_ to multiple _subscribers_ in a fan out fashion.
+
+Radio-dish is using groups (vs Pub-sub topics), Dish sockets can join a group
+and each message sent by Radio sockets belong to a group.
+
+Groups are null terminated strings limited to 16 chars length (including null).
+The intention is to increase the length to 40 chars (including null).
+
+Groups are matched using exact matching (vs prefix matching of PubSub).
+
+NOTE: Radio-dish is still in draft phase.
+
+Note: this pattern is meant to eventually deprecate the use of 'ZMQ_PUB' and
+'ZMQ_SUB' to build pub-sub architectures.
+
+ZMQ_RADIO
+^^^^^^^
+A socket of type 'ZMQ_RADIO' is used by a _publisher_ to distribute data.
+Each message belong to a group, a group is specified with linkzmq_zmq_msg_set_group[3].
+Messages are distributed to all members of a group.
+The linkzmq:zmq_recv[3] function is not implemented for this socket type.
+
+When a 'ZMQ_RADIO' socket enters the 'mute' state due to having reached the
+high water mark for a _subscriber_, then any messages that would be sent to the
+_subscriber_ in question shall instead be dropped until the mute state
+ends. The _zmq_send()_ function shall never block for this socket type.
+
+NOTE: 'ZMQ_RADIO' sockets are threadsafe. They do not accept the ZMQ_SNDMORE
+option on sends. This limits them to single part data.
+
+[horizontal]
+.Summary of ZMQ_RADIO characteristics
+Compatible peer sockets:: 'ZMQ_DISH'
+Direction:: Unidirectional
+Send/receive pattern:: Send only
+Incoming routing strategy:: N/A
+Outgoing routing strategy:: Fan out
+Action in mute state:: Drop
+
+
+ZMQ_DISH
+^^^^^^^
+A socket of type 'ZMQ_DISH' is used by a _subscriber_ to subscribe to groups
+distributed by a _radio_. Initially a 'ZMQ_DISH' socket is not subscribed to
+any groups, use linkzmq:zmq_join[3] to
+join a group.
+To get the group the message belong to call linkzmq:zmq_msg_group[3].
+The _zmq_send()_ function is not implemented for this socket type.
+
+NOTE: 'ZMQ_DISH' sockets are threadsafe. They do not accept ZMQ_RCVMORE on receives.
+This limits them to single part data.
+
+[horizontal]
+.Summary of ZMQ_DISH characteristics
+Compatible peer sockets:: 'ZMQ_RADIO'
+Direction:: Unidirectional
+Send/receive pattern:: Receive only
+Incoming routing strategy:: Fair-queued
+Outgoing routing strategy:: N/A
 
 
 Publish-subscribe pattern
@@ -332,11 +407,8 @@ When a connection is made, a zero-length message will be received by the
 application.  Similarly, when the peer disconnects (or the connection is lost),
 a zero-length message will be received by the application.
 
-The ZMQ_SNDMORE flag is ignored on data frames. You must send one identity frame
-followed by one data frame.
-
-Also, please note that omitting the ZMQ_SNDMORE flag will prevent sending further
-data (from any client) on the same socket.
+You must send one identity frame followed by one data frame. The ZMQ_SNDMORE
+flag is required for identity frames but is ignored on data frames.
 
 [horizontal]
 .Summary of ZMQ_STREAM characteristics
@@ -439,7 +511,8 @@ socket option is set to '1'.
 When a 'ZMQ_ROUTER' socket enters the 'mute' state due to having reached the
 high water mark for all peers, then any messages sent to the socket shall be dropped
 until the mute state ends. Likewise, any messages routed to a peer for which
-the individual high water mark has been reached shall also be dropped.
+the individual high water mark has been reached shall also be dropped,
+unless 'ZMQ_ROUTER_MANDATORY' socket option is set.
 
 When a 'ZMQ_REQ' socket is connected to a 'ZMQ_ROUTER' socket, in addition to the
 _identity_ of the originating peer each message received shall contain an empty
@@ -455,7 +528,7 @@ Direction:: Bidirectional
 Send/receive pattern:: Unrestricted
 Outgoing routing strategy:: See text
 Incoming routing strategy:: Fair-queued
-Action in mute state:: Drop
+Action in mute state:: Drop (see text)
 
 
 RETURN VALUE
@@ -509,12 +582,10 @@ while (1) {
 		"Hello, World!";
 	/* Sends the ID frame followed by the response */
 	zmq_send (socket, id, id_size, ZMQ_SNDMORE);
-	zmq_send (socket, http_response, strlen (http_response), ZMQ_SNDMORE);
+	zmq_send (socket, http_response, strlen (http_response), 0);
 	/* Closes the connection by sending the ID frame followed by a zero response */
 	zmq_send (socket, id, id_size, ZMQ_SNDMORE);
-	zmq_send (socket, 0, 0, ZMQ_SNDMORE);
-	/* NOTE: If we don't use ZMQ_SNDMORE, then we won't be able to send more */
-	/* message to any client */
+	zmq_send (socket, 0, 0, 0);
 }
 zmq_close (socket);
 zmq_ctx_destroy (ctx);

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -31,6 +31,7 @@
 
 void ffn(void *data, void *hint) {
     // Signal that ffn has been called by writing "freed" to hint
+    (void) data;      //  Suppress 'unused' warnings at compile time
     memcpy(hint, (void *) "freed", 5);
 }
 
@@ -56,6 +57,7 @@ int main (void) {
     zmq_msg_t msg;
     char hint[5];
     char data[255];
+    memset(data, 0, 255);
     memcpy(data, (void *) "data", 4);
     memcpy(hint, (void *) "hint", 4);
     rc = zmq_msg_init_data(&msg, (void *)data, 255, ffn, (void*)hint);
@@ -63,7 +65,7 @@ int main (void) {
     rc = zmq_msg_close(&msg);
     assert (rc == 0);
 
-    msleep(50);
+    msleep (SETTLE_TIME);
     assert (memcmp(hint, "freed", 5) == 0);
     memcpy(hint, (void *) "hint", 4);
 
@@ -79,7 +81,7 @@ int main (void) {
     rc = zmq_msg_close(&msg);
     assert (rc == 0);
 
-    msleep(50);
+    msleep (SETTLE_TIME);
     assert (memcmp(hint, "freed", 5) == 0);
     memcpy(hint, (void *) "hint", 4);
 
@@ -93,9 +95,9 @@ int main (void) {
     assert (rc > -1);
     rc = zmq_recv(router, buf, 255, 0);
     assert (rc == 255);
-    assert (memcmp(data, buf, 5) == 0);
+    assert (memcmp(data, buf, 4) == 0);
 
-    msleep(50);
+    msleep (SETTLE_TIME);
     assert (memcmp(hint, "freed", 5) == 0);
     memcpy(hint, (void *) "hint", 4);
     rc = zmq_msg_close(&msg);
@@ -114,13 +116,13 @@ int main (void) {
     assert (rc > -1);
     rc = zmq_recv(router, buf, 255, 0);
     assert (rc == 255);
-    assert (memcmp(data, buf, 5) == 0);
+    assert (memcmp(data, buf, 4) == 0);
     rc = zmq_msg_close(&msg2);
     assert (rc == 0);
     rc = zmq_msg_close(&msg);
     assert (rc == 0);
 
-    msleep(50);
+    msleep (SETTLE_TIME);
     assert (memcmp(hint, "freed", 5) == 0);
     memcpy(hint, (void *) "hint", 4);
 

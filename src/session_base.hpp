@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -76,7 +76,7 @@ namespace zmq
 
         //  Delivers a message. Returns 0 if successful; -1 otherwise.
         //  The function takes ownership of the message.
-        int push_msg (msg_t *msg_);
+        virtual int push_msg (msg_t *msg_);
 
         int zap_connect ();
         bool zap_enabled ();
@@ -84,7 +84,7 @@ namespace zmq
         //  Fetches a message. Returns 0 if successful; -1 otherwise.
         //  The caller is responsible for freeing the message when no
         //  longer used.
-        int pull_msg (msg_t *msg_);
+        virtual int pull_msg (msg_t *msg_);
 
         //  Receives message from ZAP socket.
         //  Returns 0 on success; -1 otherwise.

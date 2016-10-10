@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include "poller.hpp"
 
 //  On AIX, poll.h has to be included before zmq.h to get consistent
@@ -34,10 +35,11 @@
 //  instead of 'events' and 'revents' and defines macros to map from POSIX-y
 //  names to AIX-specific names).
 #if defined ZMQ_POLL_BASED_ON_POLL
+#if !defined ZMQ_HAVE_WINDOWS
 #include <poll.h>
+#endif
 #elif defined ZMQ_POLL_BASED_ON_SELECT
 #if defined ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
 #elif defined ZMQ_HAVE_HPUX
 #include <sys/param.h>
 #include <sys/types.h>
@@ -62,12 +64,9 @@
 #include <sys/eventfd.h>
 #endif
 
-#if defined ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
+#if !defined ZMQ_HAVE_WINDOWS
 #include <unistd.h>
 #include <netinet/tcp.h>
-#include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #endif
@@ -339,11 +338,11 @@ int zmq::signaler_t::recv_failable ()
 #if defined ZMQ_HAVE_WINDOWS
     int nbytes = ::recv (r, (char *) &dummy, sizeof (dummy), 0);
     if (nbytes == SOCKET_ERROR) {
-		const int last_error = WSAGetLastError();
-		if (last_error == WSAEWOULDBLOCK) {
-			errno = EAGAIN;
+        const int last_error = WSAGetLastError();
+        if (last_error == WSAEWOULDBLOCK) {
+            errno = EAGAIN;
             return -1;
-		}
+        }
         wsa_assert (last_error == WSAEWOULDBLOCK);
     }
 #else
@@ -389,7 +388,7 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
 
 #elif defined ZMQ_HAVE_WINDOWS
 #   if !defined _WIN32_WCE
-    // Windows CE does not manage security attributes
+    //  Windows CE does not manage security attributes
     SECURITY_DESCRIPTOR sd;
     SECURITY_ATTRIBUTES sa;
     memset (&sd, 0, sizeof sd);
@@ -538,7 +537,8 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
         saved_errno = WSAGetLastError ();
 
     //  We don't need the listening socket anymore. Close it.
-    closesocket (listener);
+    rc = closesocket (listener);
+    wsa_assert(rc != SOCKET_ERROR);
 
     if (sync != NULL) {
         //  Exit the critical section.

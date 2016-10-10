@@ -6,32 +6,35 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
-  
-    <!-- User Interface -->
-  
+
+  <!-- User Interface -->
+
   <ItemGroup Label="BuildOptionsExtension">
     <PropertyPageSchema Include="$(MSBuildThisFileDirectory)$(ProjectName).xml" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <Option-sodium>true</Option-sodium>
-  </PropertyGroup>
-
   <!-- Configuration -->
-  
+
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\;$(ProjectDir)..\..\..\..\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnablePREfast>false</EnablePREfast>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;FD_SETSIZE=4096;ZMQ_USE_SELECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>precompiled.hpp</PrecompiledHeaderFile>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;FD_SETSIZE=16384;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Option-tweet)' == 'true'">ZMQ_USE_TWEETNACL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Option-sodium)' == 'true'">ZMQ_USE_LIBSODIUM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Option-tweet)' == 'true' Or '$(Option-sodium)' == 'true'">ZMQ_HAVE_CURVE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Option-openpgm)' == 'true'">ZMQ_HAVE_OPENPGM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Option-sodium)' == 'true'">HAVE_LIBSODIUM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Option-gssapi)' == 'true'">HAVE_LIBGSSAPI_KRB5;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Option-draftapi)' == 'true'">ZMQ_BUILD_DRAFT_API;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Option-usepoll)' == 'true'">ZMQ_USE_POLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Option-usepoll)' != 'true'">ZMQ_USE_SELECT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(ConfigurationType)' == 'StaticLibrary'">ZMQ_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(ConfigurationType)' == 'DynamicLibrary'">DLL_EXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Advapi32.lib;Ws2_32.lib;Rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Advapi32.lib;Ws2_32.lib;Rpcrt4.lib;Iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib Condition="'$(ConfigurationType)'=='StaticLibrary'">
       <AdditionalOptions>/ignore:4221 %(AdditionalOptions)</AdditionalOptions>
@@ -41,9 +44,10 @@
   <!-- Dependencies -->
 
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)libsodium.import.props" />
+    <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\..\libsodium\builds\msvc\vs2015\libsodium.import.props"
+            Condition="Exists('$(MSBuildThisFileDirectory)..\..\..\..\..\libsodium\builds\msvc\vs2015\libsodium.import.props')" /> 
   </ImportGroup>
-  
+
   <PropertyGroup Condition="'$(DefaultLinkage)' == 'dynamic'">
     <Linkage-libsodium>dynamic</Linkage-libsodium>
   </PropertyGroup>
@@ -57,13 +61,16 @@
   <!-- Messages -->
 
   <Target Name="OptionInfo" BeforeTargets="PrepareForBuild">
-    <Message Text="Option-openpgm    : $(Option-openpgm)" Importance="high"/>
+    <Message Text="Option-tweet      : $(Option-tweet)" Importance="high"/>
     <Message Text="Option-sodium     : $(Option-sodium)" Importance="high"/>
+    <Message Text="Option-openpgm    : $(Option-openpgm)" Importance="high"/>
     <Message Text="Option-gssapi     : $(Option-gssapi)" Importance="high"/>
+    <Message Text="Option-draftapi   : $(Option-draftapi)" Importance="high"/>
+    <Message Text="Option-usepoll    : $(Option-usepoll)" Importance="high"/>
   </Target>
 
   <Target Name="LinkageInfo" BeforeTargets="PrepareForBuild">
-    <Message Text="Linkage-libsodium : $(Linkage-libsodium)" Importance="high"/>
+    <Message Text="Linkage-libsodium : $(Linkage-libsodium)" Importance="high" Condition="'$(Option-sodium)' == 'true'"/>
   </Target>
 
 </Project>

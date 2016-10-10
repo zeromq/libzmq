@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -30,11 +30,7 @@
 #ifndef __ZMQ_THREAD_HPP_INCLUDED__
 #define __ZMQ_THREAD_HPP_INCLUDED__
 
-#include "platform.hpp"
-
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
+#ifndef ZMQ_HAVE_WINDOWS
 #include <pthread.h>
 #endif
 
@@ -55,6 +51,8 @@ namespace zmq
     public:
 
         inline thread_t ()
+            : tfn(NULL)
+            , arg(NULL)
         {
         }
 
@@ -73,7 +71,7 @@ namespace zmq
         //  they would not be accessible from the main C routine of the thread.
         thread_fn *tfn;
         void *arg;
-        
+
     private:
 
 #ifdef ZMQ_HAVE_WINDOWS

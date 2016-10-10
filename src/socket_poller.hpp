@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -32,7 +32,7 @@
 
 #include "poller.hpp"
 
-#if defined ZMQ_POLL_BASED_ON_POLL
+#if defined ZMQ_POLL_BASED_ON_POLL && !defined ZMQ_HAVE_WINDOWS
 #include <poll.h>
 #endif
 
@@ -61,7 +61,7 @@ namespace zmq
         {
             socket_base_t *socket;
             fd_t fd;
-            void *user_data; 
+            void *user_data;
             short events;
         } event_t;
 
@@ -73,13 +73,15 @@ namespace zmq
         int modify_fd (fd_t fd, short events);
         int remove_fd (fd_t fd);
 
-        int wait (event_t *event, long timeout);
+        int wait (event_t *event, int n_events, long timeout);
+
+        inline int size (void) { return items.size (); };
 
         //  Return false if object is not a socket.
         bool check_tag ();
 
     private:
-        int rebuild ();     
+        int rebuild ();
 
         //  Used to check whether the object is a socket_poller.
         uint32_t tag;
@@ -90,7 +92,7 @@ namespace zmq
         typedef struct item_t {
             socket_base_t *socket;
             fd_t fd;
-            void *user_data; 
+            void *user_data;
             short events;
 #if defined ZMQ_POLL_BASED_ON_POLL
             int  pollfd_index;
@@ -106,10 +108,10 @@ namespace zmq
 
         //  Should the signaler be used for the thread safe polling?
         bool use_signaler;
-   
+
         //  Size of the pollset
         int poll_size;
-   
+
 #if defined ZMQ_POLL_BASED_ON_POLL
         pollfd *pollfds;
 #elif defined ZMQ_POLL_BASED_ON_SELECT
@@ -118,7 +120,7 @@ namespace zmq
         fd_set pollset_err;
         zmq::fd_t maxfd;
 #endif
-        
+
         socket_poller_t (const socket_poller_t&);
         const socket_poller_t &operator = (const socket_poller_t&);
     };

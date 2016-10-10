@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -30,13 +30,7 @@
 #ifndef __ZMQ_PGM_SENDER_HPP_INCLUDED__
 #define __ZMQ_PGM_SENDER_HPP_INCLUDED__
 
-#include "platform.hpp"
-
 #if defined ZMQ_HAVE_OPENPGM
-
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#endif
 
 #include "stdint.hpp"
 #include "io_object.hpp"
@@ -111,7 +105,7 @@ namespace zmq
 
         //  Output buffer from pgm_socket.
         unsigned char *out_buffer;
-        
+
         //  Output buffer size.
         size_t out_buffer_size;
 

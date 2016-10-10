@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include "macros.hpp"
 #include "session_base.hpp"
 #include "i_engine.hpp"
@@ -37,13 +38,17 @@
 #include "ipc_connecter.hpp"
 #include "tipc_connecter.hpp"
 #include "socks_connecter.hpp"
+#include "vmci_connecter.hpp"
 #include "pgm_sender.hpp"
 #include "pgm_receiver.hpp"
 #include "address.hpp"
 #include "norm_engine.hpp"
+#include "udp_engine.hpp"
 
 #include "ctx.hpp"
 #include "req.hpp"
+#include "radio.hpp"
+#include "dish.hpp"
 
 zmq::session_base_t *zmq::session_base_t::create (class io_thread_t *io_thread_,
     bool active_, class socket_base_t *socket_, const options_t &options_,
@@ -55,6 +60,14 @@ zmq::session_base_t *zmq::session_base_t::create (class io_thread_t *io_thread_,
         s = new (std::nothrow) req_session_t (io_thread_, active_,
             socket_, options_, addr_);
         break;
+    case ZMQ_RADIO:
+        s = new (std::nothrow) radio_session_t (io_thread_, active_,
+            socket_, options_, addr_);
+        break;
+    case ZMQ_DISH:
+        s = new (std::nothrow) dish_session_t (io_thread_, active_,
+            socket_, options_, addr_);
+            break;
     case ZMQ_DEALER:
     case ZMQ_REP:
     case ZMQ_ROUTER:
@@ -68,6 +81,9 @@ zmq::session_base_t *zmq::session_base_t::create (class io_thread_t *io_thread_,
     case ZMQ_STREAM:
     case ZMQ_SERVER:
     case ZMQ_CLIENT:
+    case ZMQ_GATHER:
+    case ZMQ_SCATTER:
+    case ZMQ_DGRAM:
         s = new (std::nothrow) session_base_t (io_thread_, active_,
             socket_, options_, addr_);
         break;
@@ -487,7 +503,7 @@ void zmq::session_base_t::reconnect ()
     //  and reestablish later on
     if (pipe && options.immediate == 1
         && addr->protocol != "pgm" && addr->protocol != "epgm"
-        && addr->protocol != "norm") {
+        && addr->protocol != "norm" && addr->protocol != "udp") {
         pipe->hiccup ();
         pipe->terminate (false);
         terminating_pipes.insert (pipe);
@@ -520,7 +536,7 @@ void zmq::session_base_t::start_connecting (bool wait_)
     if (addr->protocol == "tcp") {
         if (!options.socks_proxy_address.empty()) {
             address_t *proxy_address = new (std::nothrow)
-                address_t ("tcp", options.socks_proxy_address);
+                address_t ("tcp", options.socks_proxy_address, this->get_ctx ());
             alloc_assert (proxy_address);
             socks_connecter_t *connecter =
                 new (std::nothrow) socks_connecter_t (
@@ -555,6 +571,36 @@ void zmq::session_base_t::start_connecting (bool wait_)
         return;
     }
 #endif
+
+    if (addr->protocol == "udp") {
+        zmq_assert (options.type == ZMQ_DISH || options.type == ZMQ_RADIO || options.type == ZMQ_DGRAM);
+
+        udp_engine_t* engine = new (std::nothrow) udp_engine_t (options);
+        alloc_assert (engine);
+
+        bool recv = false;
+        bool send = false;
+
+        if (options.type == ZMQ_RADIO) {
+            send = true;
+            recv = false;
+        }
+        else if (options.type == ZMQ_DISH) {
+            send = false;
+            recv = true;
+        }
+        else if (options.type == ZMQ_DGRAM) {
+            send = true;
+            recv = true;
+        }
+
+        int rc = engine->init (addr, send, recv);
+        errno_assert (rc == 0);
+
+        send_attach (this, engine);
+
+        return;
+    }
 
 #ifdef ZMQ_HAVE_OPENPGM
 
@@ -630,6 +676,15 @@ void zmq::session_base_t::start_connecting (bool wait_)
     }
 #endif // ZMQ_HAVE_NORM
 
+#if defined ZMQ_HAVE_VMCI
+    if (addr->protocol == "vmci") {
+        vmci_connecter_t *connecter = new (std::nothrow) vmci_connecter_t (
+                io_thread, this, options, addr, wait_);
+        alloc_assert (connecter);
+        launch_child (connecter);
+        return;
+    }
+#endif
+
     zmq_assert (false);
 }
-

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -30,18 +30,15 @@
 #ifndef __PGM_SOCKET_HPP_INCLUDED__
 #define __PGM_SOCKET_HPP_INCLUDED__
 
-#include "platform.hpp"
-
 #if defined ZMQ_HAVE_OPENPGM
 
 #ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
 #define __PGM_WININT_H__
 #endif
 
 #include <pgm/pgm.h>
 
-#ifdef ZMQ_HAVE_OSX
+#if defined(ZMQ_HAVE_OSX) || defined(ZMQ_HAVE_NETBSD)
 #include <pgm/in.h>
 #endif
 
@@ -67,11 +64,11 @@ namespace zmq
 
         //  Resolve PGM socket address.
         static int init_address(const char *network_, struct pgm_addrinfo_t **addr, uint16_t *port_number);
-        
+
         //   Get receiver fds and store them into user allocated memory.
         void get_receiver_fds (fd_t *receive_fd_, fd_t *waiting_pipe_fd_);
 
-        //   Get sender and receiver fds and store it to user allocated 
+        //   Get sender and receiver fds and store it to user allocated
         //   memory. Receive fd is used to process NAKs from peers.
         void get_sender_fds (fd_t *send_fd_, fd_t *receive_fd_,
             fd_t *rdata_notify_fd_, fd_t *pending_notify_fd_);
@@ -88,7 +85,7 @@ namespace zmq
         long get_rx_timeout ();
         long get_tx_timeout ();
 
-        //  POLLIN on sender side should mean NAK or SPMR receiving. 
+        //  POLLIN on sender side should mean NAK or SPMR receiving.
         //  process_upstream function is used to handle such a situation.
         void process_upstream ();
 
@@ -96,7 +93,7 @@ namespace zmq
 
         //  Compute size of the buffer based on rate and recovery interval.
         int compute_sqns (int tpdu_);
-    
+
         //  OpenPGM transport.
         pgm_sock_t* sock;
 
@@ -104,7 +101,7 @@ namespace zmq
 
         //  Associated socket options.
         options_t options;
-       
+
         //  true when pgm_socket should create receiving side.
         bool receiver;
 
@@ -120,7 +117,7 @@ namespace zmq
 
         //  How many bytes were processed from last pgm socket read.
         size_t nbytes_processed;
-        
+
         //  How many messages from pgm_msgv were already sent up.
         size_t pgm_msgv_processed;
     };

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -92,6 +92,12 @@ namespace zmq
         //  Holds the prefetched message.
         msg_t prefetched_msg;
 
+        //  The pipe we are currently reading from
+        zmq::pipe_t *current_in;
+
+        //  Should current_in should be terminate after all parts received?
+        bool terminate_current_in;
+
         //  If true, more incoming message parts are expected.
         bool more_in;
 
@@ -118,7 +124,7 @@ namespace zmq
         //  algorithm. This value is the next ID to use (if not used already).
         uint32_t next_rid;
 
-        // If true, report EAGAIN to the caller instead of silently dropping 
+        // If true, report EAGAIN to the caller instead of silently dropping
         // the message targeting an unknown peer.
         bool mandatory;
         bool raw_socket;

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -75,7 +75,7 @@ namespace zmq
         //  Returns false if object is not a context.
         bool check_tag ();
 
-        //  This function is called when user invokes zmq_term. If there are
+        //  This function is called when user invokes zmq_ctx_term. If there are
         //  no more sockets open it'll cause all the infrastructure to be shut
         //  down. If there are open sockets still, the deallocation happens
         //  after the last one is closed.
@@ -121,6 +121,11 @@ namespace zmq
                 const endpoint_t &endpoint_, pipe_t **pipes_);
         void connect_pending (const char *addr_, zmq::socket_base_t *bind_socket_);
 
+#ifdef ZMQ_HAVE_VMCI
+        // Return family for the VMCI socket or -1 if it's not available.
+        int get_vmci_socket_family ();
+#endif
+
         enum {
             term_tid = 0,
             reaper_tid = 1
@@ -141,8 +146,8 @@ namespace zmq
         uint32_t tag;
 
         //  Sockets belonging to this context. We need the list so that
-        //  we can notify the sockets when zmq_term() is called. The sockets
-        //  will return ETERM then.
+        //  we can notify the sockets when zmq_ctx_term() is called.
+        //  The sockets will return ETERM then.
         typedef array_t <socket_base_t> sockets_t;
         sockets_t sockets;
 
@@ -154,7 +159,7 @@ namespace zmq
         //  yet. Launching of I/O threads is delayed.
         bool starting;
 
-        //  If true, zmq_term was already called.
+        //  If true, zmq_ctx_term was already called.
         bool terminating;
 
         //  Synchronisation of accesses to global slot-related data:
@@ -174,7 +179,7 @@ namespace zmq
         uint32_t slot_count;
         i_mailbox **slots;
 
-        //  Mailbox for zmq_term thread.
+        //  Mailbox for zmq_ctx_term thread.
         mailbox_t term_mailbox;
 
         //  List of inproc endpoints within this context.
@@ -193,6 +198,9 @@ namespace zmq
 
         //  Maximum number of sockets that can be opened at the same time.
         int max_sockets;
+
+        //  Maximum allowed message size
+        int max_msgsz;
 
         //  Number of I/O threads to launch.
         int io_thread_count;
@@ -219,6 +227,14 @@ namespace zmq
 #endif
         enum side { connect_side, bind_side };
         void connect_inproc_sockets(zmq::socket_base_t *bind_socket_, options_t& bind_options, const pending_connection_t &pending_connection_, side side_);
+
+#ifdef ZMQ_HAVE_VMCI
+        int vmci_fd;
+        int vmci_family;
+        mutex_t vmci_sync;
+#endif
+
+        mutex_t crypto_sync;
     };
 
 }

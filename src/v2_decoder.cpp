@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,22 +27,16 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include <stdlib.h>
 #include <string.h>
 #include <cmath>
-
-#include "platform.hpp"
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#endif
 
 #include "v2_protocol.hpp"
 #include "v2_decoder.hpp"
 #include "likely.hpp"
 #include "wire.hpp"
 #include "err.hpp"
-
-
 
 zmq::v2_decoder_t::v2_decoder_t (size_t bufsize_, int64_t maxmsgsize_) :
     shared_message_memory_allocator( bufsize_),
@@ -125,14 +119,14 @@ int zmq::v2_decoder_t::size_ready(uint64_t msg_size, unsigned char const* read_p
         // construct message using n bytes from the buffer as storage
         // increase buffer ref count
         // if the message will be a large message, pass a valid refcnt memory location as well
-        rc = in_progress.init( (unsigned char*)read_pos, msg_size,
-                               shared_message_memory_allocator::call_dec_ref, buffer(),
-                               provide_refcnt() );
+        rc = in_progress.init ((unsigned char *) read_pos, static_cast <size_t> (msg_size),
+                                shared_message_memory_allocator::call_dec_ref, buffer(),
+                                provide_content ());
 
         // For small messages, data has been copied and refcount does not have to be increased
         if (in_progress.is_zcmsg())
         {
-            advance_refcnt();
+            advance_content();
             inc_ref();
         }
     }

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,15 +27,14 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include "macros.hpp"
-#include "platform.hpp"
-#ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
-#else
+#ifndef ZMQ_HAVE_WINDOWS
 #include <unistd.h>
 #endif
 
 #include <limits>
+#include <climits>
 #include <new>
 #include <string.h>
 
@@ -47,18 +46,20 @@
 #include "err.hpp"
 #include "msg.hpp"
 
-#ifdef HAVE_LIBSODIUM
-#ifdef HAVE_TWEETNACL
-#include "randombytes.h"
-#else
-#include "sodium.h"
+#if defined (ZMQ_USE_TWEETNACL)
+#   include "tweetnacl.h"
+#elif defined (ZMQ_USE_LIBSODIUM)
+#   include "sodium.h"
 #endif
+
+#ifdef ZMQ_HAVE_VMCI
+#include <vmci_sockets.h>
 #endif
 
 #define ZMQ_CTX_TAG_VALUE_GOOD 0xabadcafe
 #define ZMQ_CTX_TAG_VALUE_BAD  0xdeadbeef
 
-int clipped_maxsocket(int max_requested)
+int clipped_maxsocket (int max_requested)
 {
     if (max_requested >= zmq::poller_t::max_fds () && zmq::poller_t::max_fds () != -1)
         // -1 because we need room for the reaper mailbox.
@@ -75,6 +76,7 @@ zmq::ctx_t::ctx_t () :
     slot_count (0),
     slots (NULL),
     max_sockets (clipped_maxsocket (ZMQ_MAX_SOCKETS_DFLT)),
+    max_msgsz (INT_MAX),
     io_thread_count (ZMQ_IO_THREADS_DFLT),
     blocky (true),
     ipv6 (false),
@@ -83,6 +85,20 @@ zmq::ctx_t::ctx_t () :
 {
 #ifdef HAVE_FORK
     pid = getpid();
+#endif
+#ifdef ZMQ_HAVE_VMCI
+    vmci_fd = -1;
+    vmci_family = -1;
+#endif
+
+    scoped_lock_t locker(crypto_sync);
+#if defined (ZMQ_USE_TWEETNACL)
+    // allow opening of /dev/urandom
+    unsigned char tmpbytes[4];
+    randombytes(tmpbytes, 4);
+#elif defined (ZMQ_USE_LIBSODIUM)
+    int rc = sodium_init ();
+    zmq_assert (rc != -1);
 #endif
 }
 
@@ -117,8 +133,8 @@ zmq::ctx_t::~ctx_t ()
 
     //  If we've done any Curve encryption, we may have a file handle
     //  to /dev/urandom open that needs to be cleaned up.
-#ifdef HAVE_LIBSODIUM
-    randombytes_close();
+#ifdef ZMQ_HAVE_CURVE
+    randombytes_close ();
 #endif
 
     //  Remove the tag, so that the object is considered dead.
@@ -127,19 +143,21 @@ zmq::ctx_t::~ctx_t ()
 
 int zmq::ctx_t::terminate ()
 {
-	slot_sync.lock();
+    slot_sync.lock();
 
-	bool saveTerminating = terminating;
-	terminating = false;
+    bool saveTerminating = terminating;
+    terminating = false;
 
-	// Connect up any pending inproc connections, otherwise we will hang
+    // Connect up any pending inproc connections, otherwise we will hang
     pending_connections_t copy = pending_connections;
     for (pending_connections_t::iterator p = copy.begin (); p != copy.end (); ++p) {
         zmq::socket_base_t *s = create_socket (ZMQ_PAIR);
+        // create_socket might fail eg: out of memory/sockets limit reached
+        zmq_assert (s);
         s->bind (p->first.c_str ());
         s->close ();
     }
-	terminating = saveTerminating;
+    terminating = saveTerminating;
 
     if (!starting) {
 
@@ -183,6 +201,16 @@ int zmq::ctx_t::terminate ()
     }
     slot_sync.unlock ();
 
+#ifdef ZMQ_HAVE_VMCI
+    vmci_sync.lock ();
+
+    VMCISock_ReleaseAFValueFd (vmci_fd);
+    vmci_family = -1;
+    vmci_fd = -1;
+
+    vmci_sync.unlock ();
+#endif
+
     //  Deallocate the resources.
     delete this;
 
@@ -191,7 +219,8 @@ int zmq::ctx_t::terminate ()
 
 int zmq::ctx_t::shutdown ()
 {
-    slot_sync.lock ();
+    scoped_lock_t locker(slot_sync);
+
     if (!starting && !terminating) {
         terminating = true;
 
@@ -203,7 +232,6 @@ int zmq::ctx_t::shutdown ()
         if (sockets.empty ())
             reaper->stop ();
     }
-    slot_sync.unlock ();
 
     return 0;
 }
@@ -213,39 +241,38 @@ int zmq::ctx_t::set (int option_, int optval_)
     int rc = 0;
     if (option_ == ZMQ_MAX_SOCKETS
     &&  optval_ >= 1 && optval_ == clipped_maxsocket (optval_)) {
-        opt_sync.lock ();
+        scoped_lock_t locker(opt_sync);
         max_sockets = optval_;
-        opt_sync.unlock ();
     }
     else
     if (option_ == ZMQ_IO_THREADS && optval_ >= 0) {
-        opt_sync.lock ();
+        scoped_lock_t locker(opt_sync);
         io_thread_count = optval_;
-        opt_sync.unlock ();
     }
     else
     if (option_ == ZMQ_IPV6 && optval_ >= 0) {
-        opt_sync.lock ();
+        scoped_lock_t locker(opt_sync);
         ipv6 = (optval_ != 0);
-        opt_sync.unlock ();
     }
     else
     if (option_ == ZMQ_THREAD_PRIORITY && optval_ >= 0) {
-        opt_sync.lock();
+        scoped_lock_t locker(opt_sync);
         thread_priority = optval_;
-        opt_sync.unlock();
     }
     else
     if (option_ == ZMQ_THREAD_SCHED_POLICY && optval_ >= 0) {
-        opt_sync.lock();
+        scoped_lock_t locker(opt_sync);
         thread_sched_policy = optval_;
-        opt_sync.unlock();
     }
     else
     if (option_ == ZMQ_BLOCKY && optval_ >= 0) {
-        opt_sync.lock ();
+        scoped_lock_t locker(opt_sync);
         blocky = (optval_ != 0);
-        opt_sync.unlock ();
+    }
+    else
+    if (option_ == ZMQ_MAX_MSGSZ && optval_ >= 0) {
+        scoped_lock_t locker(opt_sync);
+        max_msgsz = optval_ < INT_MAX? optval_: INT_MAX;
     }
     else {
         errno = EINVAL;
@@ -271,6 +298,9 @@ int zmq::ctx_t::get (int option_)
     else
     if (option_ == ZMQ_BLOCKY)
         rc = blocky;
+    else
+    if (option_ == ZMQ_MAX_MSGSZ)
+        rc = max_msgsz;
     else {
         errno = EINVAL;
         rc = -1;
@@ -280,7 +310,8 @@ int zmq::ctx_t::get (int option_)
 
 zmq::socket_base_t *zmq::ctx_t::create_socket (int type_)
 {
-    slot_sync.lock ();
+    scoped_lock_t locker(slot_sync);
+
     if (unlikely (starting)) {
 
         starting = false;
@@ -322,14 +353,12 @@ zmq::socket_base_t *zmq::ctx_t::create_socket (int type_)
 
     //  Once zmq_ctx_term() was called, we can't create new sockets.
     if (terminating) {
-        slot_sync.unlock ();
         errno = ETERM;
         return NULL;
     }
 
     //  If max_sockets limit was reached, return error.
     if (empty_slots.empty ()) {
-        slot_sync.unlock ();
         errno = EMFILE;
         return NULL;
     }
@@ -345,19 +374,17 @@ zmq::socket_base_t *zmq::ctx_t::create_socket (int type_)
     socket_base_t *s = socket_base_t::create (type_, this, slot, sid);
     if (!s) {
         empty_slots.push_back (slot);
-        slot_sync.unlock ();
         return NULL;
     }
     sockets.push_back (s);
     slots [slot] = s->get_mailbox ();
 
-    slot_sync.unlock ();
     return s;
 }
 
 void zmq::ctx_t::destroy_socket (class socket_base_t *socket_)
 {
-    slot_sync.lock ();
+    scoped_lock_t locker(slot_sync);
 
     //  Free the associated thread slot.
     uint32_t tid = socket_->get_tid ();
@@ -371,8 +398,6 @@ void zmq::ctx_t::destroy_socket (class socket_base_t *socket_)
     //  we can ask reaper thread to terminate.
     if (terminating && sockets.empty ())
         reaper->stop ();
-
-    slot_sync.unlock ();
 }
 
 zmq::object_t *zmq::ctx_t::get_reaper ()
@@ -414,13 +439,9 @@ zmq::io_thread_t *zmq::ctx_t::choose_io_thread (uint64_t affinity_)
 int zmq::ctx_t::register_endpoint (const char *addr_,
         const endpoint_t &endpoint_)
 {
-    endpoints_sync.lock ();
+    scoped_lock_t locker(endpoints_sync);
 
-    const bool inserted = endpoints.insert (
-        endpoints_t::value_type (std::string (addr_), endpoint_)).second;
-
-    endpoints_sync.unlock ();
-
+    const bool inserted = endpoints.insert (endpoints_t::value_type (std::string (addr_), endpoint_)).second;
     if (!inserted) {
         errno = EADDRINUSE;
         return -1;
@@ -431,11 +452,10 @@ int zmq::ctx_t::register_endpoint (const char *addr_,
 int zmq::ctx_t::unregister_endpoint (
         const std::string &addr_, socket_base_t *socket_)
 {
-    endpoints_sync.lock ();
+    scoped_lock_t locker(endpoints_sync);
 
     const endpoints_t::iterator it = endpoints.find (addr_);
     if (it == endpoints.end () || it->second.socket != socket_) {
-        endpoints_sync.unlock ();
         errno = ENOENT;
         return -1;
     }
@@ -443,14 +463,12 @@ int zmq::ctx_t::unregister_endpoint (
     //  Remove endpoint.
     endpoints.erase (it);
 
-    endpoints_sync.unlock ();
-
     return 0;
 }
 
 void zmq::ctx_t::unregister_endpoints (socket_base_t *socket_)
 {
-    endpoints_sync.lock ();
+    scoped_lock_t locker(endpoints_sync);
 
     endpoints_t::iterator it = endpoints.begin ();
     while (it != endpoints.end ()) {
@@ -462,20 +480,17 @@ void zmq::ctx_t::unregister_endpoints (socket_base_t *socket_)
         }
         ++it;
     }
-
-    endpoints_sync.unlock ();
 }
 
 zmq::endpoint_t zmq::ctx_t::find_endpoint (const char *addr_)
 {
-     endpoints_sync.lock ();
+    scoped_lock_t locker(endpoints_sync);
 
-     endpoints_t::iterator it = endpoints.find (addr_);
-     if (it == endpoints.end ()) {
-         endpoints_sync.unlock ();
-         errno = ECONNREFUSED;
-         endpoint_t empty = {NULL, options_t()};
-         return empty;
+    endpoints_t::iterator it = endpoints.find (addr_);
+    if (it == endpoints.end ()) {
+        errno = ECONNREFUSED;
+        endpoint_t empty = {NULL, options_t()};
+        return empty;
      }
      endpoint_t endpoint = it->second;
 
@@ -485,42 +500,36 @@ zmq::endpoint_t zmq::ctx_t::find_endpoint (const char *addr_)
      //  set to false, so that the seqnum isn't incremented twice.
      endpoint.socket->inc_seqnum ();
 
-     endpoints_sync.unlock ();
      return endpoint;
 }
 
 void zmq::ctx_t::pend_connection (const std::string &addr_,
         const endpoint_t &endpoint_, pipe_t **pipes_)
 {
-    const pending_connection_t pending_connection =
-        {endpoint_, pipes_ [0], pipes_ [1]};
+    scoped_lock_t locker(endpoints_sync);
 
-    endpoints_sync.lock ();
+    const pending_connection_t pending_connection = {endpoint_, pipes_ [0], pipes_ [1]};
 
     endpoints_t::iterator it = endpoints.find (addr_);
     if (it == endpoints.end ()) {
-        // Still no bind.
+        //  Still no bind.
         endpoint_.socket->inc_seqnum ();
         pending_connections.insert (pending_connections_t::value_type (addr_, pending_connection));
+    } else {
+        //  Bind has happened in the mean time, connect directly
+        connect_inproc_sockets(it->second.socket, it->second.options, pending_connection, connect_side);
     }
-    else
-        // Bind has happened in the mean time, connect directly
-        connect_inproc_sockets (it->second.socket, it->second.options, pending_connection, connect_side);
-
-    endpoints_sync.unlock ();
 }
 
 void zmq::ctx_t::connect_pending (const char *addr_, zmq::socket_base_t *bind_socket_)
 {
-    endpoints_sync.lock ();
+    scoped_lock_t locker(endpoints_sync);
 
     std::pair<pending_connections_t::iterator, pending_connections_t::iterator> pending = pending_connections.equal_range(addr_);
-
     for (pending_connections_t::iterator p = pending.first; p != pending.second; ++p)
         connect_inproc_sockets(bind_socket_, endpoints[addr_].options, p->second, bind_side);
 
     pending_connections.erase(pending.first, pending.second);
-    endpoints_sync.unlock ();
 }
 
 void zmq::ctx_t::connect_inproc_sockets (zmq::socket_base_t *bind_socket_,
@@ -566,17 +575,45 @@ void zmq::ctx_t::connect_inproc_sockets (zmq::socket_base_t *bind_socket_,
     else
         pending_connection_.connect_pipe->send_bind (bind_socket_, pending_connection_.bind_pipe, false);
 
-    if (pending_connection_.endpoint.options.recv_identity) {
+    // When a ctx is terminated all pending inproc connection will be
+    // connected, but the socket will already be closed and the pipe will be
+    // in waiting_for_delimiter state, which means no more writes can be done
+    // and the identity write fails and causes an assert. Check if the socket
+    // is open before sending.
+    if (pending_connection_.endpoint.options.recv_identity &&
+            pending_connection_.endpoint.socket->check_tag ()) {
         msg_t id;
-        int rc = id.init_size (bind_options.identity_size);
+        const int rc = id.init_size (bind_options.identity_size);
         errno_assert (rc == 0);
         memcpy (id.data (), bind_options.identity, bind_options.identity_size);
         id.set_flags (msg_t::identity);
-        bool written = pending_connection_.bind_pipe->write (&id);
+        const bool written = pending_connection_.bind_pipe->write (&id);
         zmq_assert (written);
         pending_connection_.bind_pipe->flush ();
     }
 }
+
+#ifdef ZMQ_HAVE_VMCI
+
+int zmq::ctx_t::get_vmci_socket_family ()
+{
+    zmq::scoped_lock_t locker(vmci_sync);
+
+    if (vmci_fd == -1)  {
+        vmci_family = VMCISock_GetAFValueFd (&vmci_fd);
+
+        if (vmci_fd != -1) {
+#ifdef FD_CLOEXEC
+            int rc = fcntl (vmci_fd, F_SETFD, FD_CLOEXEC);
+            errno_assert (rc != -1);
+#endif
+        }
+    }
+
+    return vmci_family;
+}
+
+#endif
 
 //  The last used socket ID, or 0 if no socket was used so far. Note that this
 //  is a global variable. Thus, even sockets created in different contexts have

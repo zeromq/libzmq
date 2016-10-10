@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -119,7 +119,8 @@ namespace zmq
                 bytes_used_ = size_;
 
                 while (!to_read) {
-                    const int rc = (static_cast <T *> (this)->*next) (data_ + bytes_used_);
+                    const int rc =
+                      (static_cast <T *> (this)->*next) (data_ + bytes_used_);
                     if (rc != 0)
                         return rc;
                 }
@@ -128,11 +129,11 @@ namespace zmq
 
             while (bytes_used_ < size_) {
                 //  Copy the data from buffer to the message.
-                const std::size_t to_copy = std::min (to_read, size_ - bytes_used_);
-                // only copy when the destination address is different from the
-                // current address in the buffer
+                const size_t to_copy = std::min (to_read, size_ - bytes_used_);
+                // Only copy when destination address is different from the
+                // current address in the buffer.
                 if (read_pos != data_ + bytes_used_) {
-                    std::memcpy (read_pos, data_ + bytes_used_, to_copy);
+                    memcpy (read_pos, data_ + bytes_used_, to_copy);
                 }
 
                 read_pos += to_copy;
@@ -142,7 +143,8 @@ namespace zmq
                 //  If none is available, return.
                 while (to_read == 0) {
                     // pass current address in the buffer
-                    const int rc = (static_cast <T *> (this)->*next) (data_ + bytes_used_);
+                    const int rc =
+                      (static_cast <T *> (this)->*next) (data_ + bytes_used_);
                     if (rc != 0)
                         return rc;
                 }

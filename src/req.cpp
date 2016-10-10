@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -27,6 +27,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
+#include "macros.hpp"
 #include "req.hpp"
 #include "err.hpp"
 #include "msg.hpp"
@@ -34,13 +36,22 @@
 #include "random.hpp"
 #include "likely.hpp"
 
+extern "C"
+{
+    static void free_id (void *data, void *hint)
+    {
+        LIBZMQ_UNUSED (hint);
+        free (data);
+    }
+}
+
 zmq::req_t::req_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     dealer_t (parent_, tid_, sid_),
     receiving_reply (false),
     message_begins (true),
     reply_pipe (NULL),
     request_id_frames_enabled (false),
-    request_id (generate_random()),
+    request_id (generate_random ()),
     strict (true)
 {
     options.type = ZMQ_REQ;
@@ -60,8 +71,6 @@ int zmq::req_t::xsend (msg_t *msg_)
             return -1;
         }
 
-        if (reply_pipe)
-            reply_pipe->terminate (false);
         receiving_reply = false;
         message_begins = true;
     }
@@ -73,8 +82,13 @@ int zmq::req_t::xsend (msg_t *msg_)
         if (request_id_frames_enabled) {
             request_id++;
 
+            //  Copy request id before sending (see issue #1695 for details).
+            uint32_t *request_id_copy = (uint32_t *) malloc (sizeof (uint32_t));
+            *request_id_copy = request_id;
+
             msg_t id;
-            int rc = id.init_data (&request_id, sizeof (request_id), NULL, NULL);
+            int rc = id.init_data (request_id_copy, sizeof (uint32_t),
+                free_id, NULL);
             errno_assert (rc == 0);
             id.set_flags (msg_t::more);
 
@@ -206,7 +220,10 @@ bool zmq::req_t::xhas_out ()
 int zmq::req_t::xsetsockopt (int option_, const void *optval_, size_t optvallen_)
 {
     bool is_int = (optvallen_ == sizeof (int));
-    int value = is_int? *((int *) optval_): 0;
+    int value = 0;
+    if (is_int)
+        memcpy (&value, optval_, sizeof (int));
+
     switch (option_) {
         case ZMQ_REQ_CORRELATE:
             if (is_int && value >= 0) {
@@ -264,6 +281,21 @@ int zmq::req_session_t::push_msg (msg_t *msg_)
 {
     switch (state) {
     case bottom:
+        if (msg_->flags () == msg_t::more) {
+            //  In case option ZMQ_CORRELATE is on, allow request_id to be
+            //  transfered as first frame (would be too cumbersome to check
+            //  whether the option is actually on or not).
+            if (msg_->size () == sizeof (uint32_t)) {
+                state = request_id;
+                return session_base_t::push_msg (msg_);
+            }
+            else if (msg_->size () == 0) {
+                state = body;
+                return session_base_t::push_msg (msg_);
+            }
+        }
+        break;
+    case request_id:
         if (msg_->flags () == msg_t::more && msg_->size () == 0) {
             state = body;
             return session_base_t::push_msg (msg_);
