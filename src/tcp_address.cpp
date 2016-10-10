@@ -235,10 +235,141 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
     return 0;
 }
 
+#elif (defined ZMQ_HAVE_WINDOWS)
+
+int zmq::tcp_address_t::get_interface_name(unsigned long index, char ** dest) const {
+	char * buffer = (char*)malloc(IF_MAX_STRING_SIZE);
+	alloc_assert(buffer);
+	
+	char * if_name_result = NULL;
+
+	if_name_result = if_indextoname(index, buffer);
+	
+	if (if_name_result == NULL) {
+		free(buffer);
+		return -1;
+	}
+
+	*dest = buffer;
+	return 0;
+}
+
+int zmq::tcp_address_t::wchar_to_utf8(const WCHAR * src, char ** dest) const {
+	int rc;
+	int buffer_len = WideCharToMultiByte(CP_UTF8, 0,
+		src, -1,
+		NULL, 0,
+		NULL, 0);
+
+	char * buffer = (char*) malloc(buffer_len);
+	alloc_assert(buffer);
+
+	rc = WideCharToMultiByte(CP_UTF8, 0,
+		src, -1,
+		buffer, buffer_len,
+		NULL, 0);
+
+	if (rc == 0) {
+		free(buffer);
+		return -1;
+	}
+
+	*dest = buffer;
+	return 0;
+}
+
+int zmq::tcp_address_t::resolve_nic_name(const char *nic_, bool ipv6_, bool is_src_)
+{
+	int rc;
+	bool found = false;
+	const int max_attempts = 10;
+	
+	int iterations = 0;
+	IP_ADAPTER_ADDRESSES * addresses = NULL;
+	IP_ADAPTER_ADDRESSES * current_addresses = NULL;
+	unsigned long out_buf_len = sizeof(IP_ADAPTER_ADDRESSES);
+
+	do {
+		addresses = (IP_ADAPTER_ADDRESSES *) malloc(out_buf_len);
+		alloc_assert(addresses);
+
+		rc = GetAdaptersAddresses(AF_UNSPEC,
+			GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER,
+			NULL,
+			addresses, &out_buf_len);
+		if (rc == ERROR_BUFFER_OVERFLOW) {
+			free(addresses);
+			addresses = NULL;
+		}
+		else {
+			break;
+		}
+		iterations++;
+	} while ((rc == ERROR_BUFFER_OVERFLOW) && (iterations < max_attempts));
+
+	if (rc == 0) {
+		current_addresses = addresses;
+		while (current_addresses) {
+			char * if_name = NULL;
+			char * if_friendly_name = NULL;
+			int str_rc1, str_rc2;
+
+			str_rc1 = get_interface_name(current_addresses->IfIndex, &if_name);
+			str_rc2 = wchar_to_utf8(current_addresses->FriendlyName, &if_friendly_name);
+
+			//  Find a network adapter by its "name" or "friendly name"
+			if (
+				((str_rc1 == 0) && (!strcmp(nic_, if_name)))
+				|| ((str_rc2 == 0) && (!strcmp(nic_, if_friendly_name)))
+				) {
+
+				//  Iterate over all unicast addresses bound to the current network interface
+				IP_ADAPTER_UNICAST_ADDRESS_LH * unicast_address = current_addresses->FirstUnicastAddress;
+				IP_ADAPTER_UNICAST_ADDRESS_LH * current_unicast_address = unicast_address;
+
+				while (current_unicast_address) {
+					ADDRESS_FAMILY family = current_unicast_address->Address.lpSockaddr->sa_family;
+
+					if (family == AF_INET ||
+						(ipv6_ && family == AF_INET6)
+					) {
+						if (is_src_)
+							memcpy(&source_address, current_unicast_address->Address.lpSockaddr,
+							(family == AF_INET) ? sizeof(struct sockaddr_in)
+								: sizeof(struct sockaddr_in6));
+						else
+							memcpy(&address, current_unicast_address->Address.lpSockaddr,
+							(family == AF_INET) ? sizeof(struct sockaddr_in)
+								: sizeof(struct sockaddr_in6));
+						found = true;
+						break;
+					}
+
+					current_unicast_address = current_unicast_address->Next;
+				}
+
+				if (found) break;
+			}
+
+			if (str_rc1 == 0) free(if_name);
+			if (str_rc2 == 0) free(if_friendly_name);
+
+			current_addresses = current_addresses->Next;
+		}
+
+		free(addresses);
+	}
+
+	if (!found) {
+		errno = ENODEV;
+		return -1;
+	}
+	return 0;
+}
+
 #else
 
 //  On other platforms we assume there are no sane interface names.
-//  This is true especially of Windows.
 int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_src_)
 {
     LIBZMQ_UNUSED (nic_);
@@ -323,11 +454,22 @@ int zmq::tcp_address_t::resolve_interface (const char *interface_, bool ipv6_, b
 
     //  Resolve the literal address. Some of the error info is lost in case
     //  of error, however, there's no way to report EAI errors via errno.
-    rc = getaddrinfo (interface_, NULL, &req, &res);
-    if (rc) {
-        errno = ENODEV;
-        return -1;
-    }
+
+	rc = getaddrinfo(interface_, NULL, &req, &res);
+
+#if defined ZMQ_HAVE_WINDOWS
+	//  Resolve specific case on Windows platform when using IPv4 address
+	//  with ZMQ_IPv6 socket option.
+	if ((req.ai_family = AF_INET6) && (rc == WSAHOST_NOT_FOUND)) {
+		req.ai_family = AF_INET;
+		rc = getaddrinfo(interface_, NULL, &req, &res);
+	}
+#endif
+
+	if (rc) {
+		errno = ENODEV;
+		return -1;
+	}
 
     //  Use the first result.
     zmq_assert (res != NULL);

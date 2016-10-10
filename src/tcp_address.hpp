@@ -72,6 +72,11 @@ namespace zmq
         int resolve_interface (const char *interface_, bool ipv6_, bool is_src_ = false);
         int resolve_hostname (const char *hostname_, bool ipv6_, bool is_src_ = false);
 
+#if defined ZMQ_HAVE_WINDOWS
+		int get_interface_name(unsigned long index, char ** dest) const;
+		int wchar_to_utf8(const WCHAR * src, char ** dest) const;
+#endif
+
         union {
             sockaddr generic;
             sockaddr_in ipv4;
