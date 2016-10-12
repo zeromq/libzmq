@@ -1678,7 +1678,7 @@ void zmq::socket_base_t::event_disconnected (const std::string &addr_, zmq::fd_t
     event(addr_, fd_, ZMQ_EVENT_DISCONNECTED);
 }
 
-void zmq::socket_base_t::event(const std::string &addr_, int value_, int type_)
+void zmq::socket_base_t::event(const std::string &addr_, intptr_t value_, int type_)
 {
     scoped_lock_t lock(monitor_sync);
     if (monitor_events & type_)
