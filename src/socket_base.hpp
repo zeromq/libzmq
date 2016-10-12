@@ -182,7 +182,7 @@ namespace zmq
 
     private:
         // test if event should be sent and then dispatch it        
-        void event(const std::string &addr_, int fd_, int type_);
+        void event(const std::string &addr_, intptr_t fd_, int type_);
 
         // Socket event data dispatch
         void monitor_event (int event_, intptr_t value_, const std::string& addr_);
