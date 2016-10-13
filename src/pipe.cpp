@@ -455,14 +455,9 @@ int zmq::pipe_t::compute_lwm (int hwm_)
     //     result in low performance.
     //
     //  Given the 3. it would be good to keep HWM and LWM as far apart as
-    //  possible to reduce the thread switching overhead to almost zero,
-    //  say HWM-LWM should be max_wm_delta.
-    //
-    //  That done, we still we have to account for the cases where
-    //  HWM < max_wm_delta thus driving LWM to negative numbers.
-    //  Let's make LWM 1/2 of HWM in such cases.
-    int result = (hwm_ > max_wm_delta * 2) ?
-        hwm_ - max_wm_delta : (hwm_ + 1) / 2;
+    //  possible to reduce the thread switching overhead to almost zero.
+    //  Let's make LWM 1/2 of HWM.
+    int result = (hwm_ + 1) / 2;
 
     return result;
 }
