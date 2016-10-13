@@ -169,16 +169,18 @@ namespace zmq
         //  Delay actual destruction of the socket.
         void process_destroy ();
 
+        // Next assigned name on a zmq_connect() call used by ROUTER and STREAM socket types
+        std::string connect_rid;
+
+    private:
+        void event(const std::string &addr_, intptr_t fd_, int type_);
+
         // Socket event data dispath
         void monitor_event (int event_, int value_, const std::string& addr_);
 
         // Monitor socket cleanup
         void stop_monitor (bool send_monitor_stopped_event_ = true);
 
-        // Next assigned name on a zmq_connect() call used by ROUTER and STREAM socket types
-        std::string connect_rid;
-
-    private:
         //  Creates new endpoint ID and adds the endpoint to the map.
         void add_endpoint (const char *addr_, own_t *endpoint_, pipe_t *pipe);
 
@@ -270,6 +272,7 @@ namespace zmq
         socket_base_t (const socket_base_t&);
         const socket_base_t &operator = (const socket_base_t&);
         mutex_t sync;
+        mutex_t monitor_sync;
     };
 
 }
