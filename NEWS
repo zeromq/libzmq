@@ -11,6 +11,10 @@
 
 * Fixed #2117 - ctx_term assert with inproc zmq_router connect-before-bind
 
+* Fixed #2158 - Socket monitor uses internal Pair from multiple threads
+
+* Fixed #2161 - messages dropped due to HWM race
+
 
 0MQ version 4.1.5 stable, released on 2016/06/17
 ================================================
