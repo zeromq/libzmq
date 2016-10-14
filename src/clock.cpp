@@ -234,6 +234,8 @@ uint64_t zmq::clock_t::rdtsc ()
     asm("\tstck\t%0\n" : "=Q" (tsc) : : "cc");
     return(tsc);
 #else
-    return 0;
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (uint64_t)(ts.tv_sec) * 1000000000 + ts.tv_nsec;
 #endif
 }
