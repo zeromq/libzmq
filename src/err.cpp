@@ -59,6 +59,8 @@ const char *zmq::errno_to_string (int errno_)
         return "Context was terminated";
     case EMTHREAD:
         return "No thread available";
+    case EHOSTUNREACH:
+        return "Host unreachable";
     default:
 #if defined _MSC_VER
 #pragma warning (push)
