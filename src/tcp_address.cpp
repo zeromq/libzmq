@@ -237,6 +237,8 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
 
 #elif (defined ZMQ_HAVE_WINDOWS)
 
+#include <netioapi.h>
+
 int zmq::tcp_address_t::get_interface_name(unsigned long index, char ** dest) const {
 	char * buffer = (char*)malloc(IF_MAX_STRING_SIZE);
 	alloc_assert(buffer);
@@ -324,8 +326,8 @@ int zmq::tcp_address_t::resolve_nic_name(const char *nic_, bool ipv6_, bool is_s
 				) {
 
 				//  Iterate over all unicast addresses bound to the current network interface
-				IP_ADAPTER_UNICAST_ADDRESS_LH * unicast_address = current_addresses->FirstUnicastAddress;
-				IP_ADAPTER_UNICAST_ADDRESS_LH * current_unicast_address = unicast_address;
+				IP_ADAPTER_UNICAST_ADDRESS * unicast_address = current_addresses->FirstUnicastAddress;
+				IP_ADAPTER_UNICAST_ADDRESS * current_unicast_address = unicast_address;
 
 				while (current_unicast_address) {
 					ADDRESS_FAMILY family = current_unicast_address->Address.lpSockaddr->sa_family;
