@@ -314,6 +314,18 @@ int zmq::tcp_connecter_t::open ()
 
     // Set a source address for conversations
     if (tcp_addr->has_src_addr ()) {
+        //  Allow reusing of the address, to connect to different servers
+        //  using the same source port on the client.
+        int flag = 1;
+#ifdef ZMQ_HAVE_WINDOWS
+        rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, (const char*) &flag,
+                sizeof (int));
+        wsa_assert (rc != SOCKET_ERROR);
+#else
+        rc = setsockopt (s, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof (int));
+        errno_assert (rc == 0);
+#endif
+
         rc = ::bind (s, tcp_addr->src_addr (), tcp_addr->src_addrlen ());
         if (rc == -1)
             return -1;
