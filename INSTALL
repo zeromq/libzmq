@@ -67,7 +67,8 @@ The simplest way to compile this package is:
   2. Type `make' to compile the package.
 
   3. Optionally, type `make check' to run any self-tests that come with
-     the package.
+     the package. Note that `make -j check' is not supported as some
+     tests share infrastructure and cannot be run in parallel.
 
   4. Type `make install' to install the programs and any data files and
      documentation.
