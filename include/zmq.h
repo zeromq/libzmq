@@ -239,7 +239,7 @@ typedef struct zmq_msg_t {
         (defined (__SUNPRO_CC) && __SUNPRO_CC >= 0x590)
     unsigned char _ [64] __attribute__ ((aligned (sizeof (void *))));
 #elif defined(_MSC_VER)
-    __declspec (align (sizeof (void *))) unsigned char _ [64];
+    __declspec (align (__alignof (void *))) unsigned char _ [64];
 #else
     unsigned char _ [64];
 #endif
