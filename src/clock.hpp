@@ -37,7 +37,7 @@
 #include <mach/mach.h>
 #include <time.h>
 #include <sys/time.h>
-int clock_gettime (int clock_id, timespec *ts);
+int alt_clock_gettime (int clock_id, timespec *ts);
 #ifndef CLOCK_REALTIME
 #define CLOCK_REALTIME 0
 #endif
