@@ -159,7 +159,12 @@ namespace zmq
 
             if (timeout_ != -1) {
                 struct timespec timeout;
+
+#if defined ZMQ_HAVE_OSX && __MAC_OS_X_VERSION_MIN_REQUIRED < 101200 // less than macOS 10.12
+                alt_clock_gettime(CLOCK_REALTIME, &timeout);
+#else
                 clock_gettime(CLOCK_REALTIME, &timeout);
+#endif
 
                 timeout.tv_sec += timeout_ / 1000;
                 timeout.tv_nsec += (timeout_ % 1000) * 1000000;
