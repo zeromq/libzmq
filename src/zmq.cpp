@@ -941,7 +941,7 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             timeout = end - now;
 
         //  Wait for events.
-        while (true) {
+        {
             int rc = poll (pollfds, nitems_, timeout);
             if (rc == -1 && errno == EINTR) {
                 if (pollfds != spollfds)
@@ -949,7 +949,6 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
                 return -1;
             }
             errno_assert (rc >= 0);
-            break;
         }
         //  Check for the events.
         for (int i = 0; i != nitems_; i++) {
