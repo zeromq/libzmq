@@ -375,11 +375,31 @@ if (MSVC)
   endif ()
 else ()
   if (WITH_OPENPGM)
-    message (FATAL_ERROR "WITH_OPENPGM not implemented")
+    #  message (FATAL_ERROR "WITH_OPENPGM not implemented")
+    
+    if (NOT OPENPGM_PKGCONFIG_NAME)
+      SET (OPENPGM_PKGCONFIG_NAME "openpgm-5.2")
+    endif(NOT OPENPGM_PKGCONFIG_NAME)
+    
+    SET (OPENPGM_PKGCONFIG_NAME ${OPENPGM_PKGCONFIG_NAME} CACHE STRING 
+      "Name pkg-config shall use to find openpgm libraries and include paths"
+      FORCE )
+    
+    find_package(PkgConfig)
+    pkg_check_modules (OPENPGM  ${OPENPGM_PKGCONFIG_NAME})
+
+    if (OPENPGM_FOUND)
+        message (STATUS ${OPENPGM_PKGCONFIG_NAME}" found")
+    else ()
+        message (FATAL_ERROR
+            ${OPENPGM_PKGCONFIG_NAME}"  not found. openpgm is searchd via `pkg-config ${OPENPGM_PKGCONFIG_NAME}`. Consider providing a valid OPENPGM_PKGCONFIG_NAME")
+    endif ()
+
     # DSO symbol visibility for openpgm
     if (HAVE_FLAG_VISIBILITY_HIDDEN)
 
     elseif (HAVE_FLAG_LDSCOPE_HIDDEN)
+    
     endif ()
   endif ()
 endif ()
@@ -780,7 +800,7 @@ endif ()
 if (WITH_PERF_TOOL)
   foreach (perf-tool ${perf-tools})
     add_executable (${perf-tool} perf/${perf-tool}.cpp)
-    target_link_libraries (${perf-tool} libzmq)
+    target_link_libraries (${perf-tool} libzmq ${OPTIONAL_LIBRARIES})
 
     if (RT_LIBRARY)
       target_link_libraries (${perf-tool} ${RT_LIBRARY})
