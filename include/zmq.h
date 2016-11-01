@@ -205,10 +205,23 @@ ZMQ_EXPORT int zmq_ctx_destroy (void *context);
 /*  0MQ message definition.                                                   */
 /******************************************************************************/
 
-/* union here ensures correct alignment on architectures that require it, e.g.
- * SPARC and ARM
+/* Some architectures, like sparc64 and some variants of aarch64, enforce pointer
+ * alignment and raise sigbus on violations. Make sure applications allocate
+ * zmq_msg_t on addresses aligned on a pointer-size boundary to avoid this issue.
  */
-typedef union zmq_msg_t { unsigned char _ [64]; void *p; } zmq_msg_t;
+typedef struct zmq_msg_t {
+#if defined (__GNUC__) || defined ( __INTEL_COMPILER) || \
+        (defined (__SUNPRO_C) && __SUNPRO_C >= 0x590) || \
+        (defined (__SUNPRO_CC) && __SUNPRO_CC >= 0x590)
+    unsigned char _ [64] __attribute__ ((aligned (sizeof (void *))));
+#elif defined (_MSC_VER) && (defined (_M_X64) || defined (_M_ARM64))
+    __declspec (align (8)) unsigned char _ [64];
+#elif defined (_MSC_VER) && (defined (_M_IX86) || defined (_M_ARM_ARMV7VE))
+    __declspec (align (4)) unsigned char _ [64];
+#else
+    unsigned char _ [64];
+#endif
+} zmq_msg_t;
 
 typedef void (zmq_free_fn) (void *data, void *hint);
 

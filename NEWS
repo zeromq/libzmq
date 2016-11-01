@@ -15,6 +15,8 @@
 
 * Fixed #2161 - messages dropped due to HWM race
 
+* Fixed #1325 - alignment issue with zmq_msg_t causes SIGBUS on SPARC and ARM
+
 
 0MQ version 4.1.5 stable, released on 2016/06/17
 ================================================
