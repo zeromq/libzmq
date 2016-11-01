@@ -138,7 +138,7 @@ if(WIN32)
 endif()
 
 # add library and include dirs for all targets
-link_libraries(libzmq)
+link_libraries(libzmq ${OPTIONAL_LIBRARIES})
 include_directories("${CMAKE_SOURCE_DIR}/../include")
 
 foreach(test ${tests})
@@ -156,6 +156,7 @@ foreach(test ${tests})
         link_directories(${test} PRIVATE "${CMAKE_SOURCE_DIR}/../lib")
     endif()
   endif()
+
 
   if(RT_LIBRARY)
     target_link_libraries(${test} ${RT_LIBRARY} )
