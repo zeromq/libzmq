@@ -245,7 +245,9 @@ int zmq::tcp_address_t::get_interface_name(unsigned long index, char ** dest) co
 	
 	char * if_name_result = NULL;
 
+#ifndef ZMQ_HAVE_WINDOWS_TARGET_XP
 	if_name_result = if_indextoname(index, buffer);
+#endif
 	
 	if (if_name_result == NULL) {
 		free(buffer);
