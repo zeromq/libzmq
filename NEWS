@@ -77,7 +77,7 @@
     ZMQ_DGRAM
   All these sockets are THREAD SAFE, unlike the existing socket types. They do
   NOT support multipart messages (ZMQ_SNDMORE/ZMQ_RCVMORE).
-  All these sockets minus ZMQ_SERVER and ZMQ_CLIENT also support UDP as transport,
+  ZMQ_RADIO, ZMQ_DISH and ZMQ_DGRAM also support UDP as transport,
   both unicast and multicast. See doc/zmq_udp.txt for more details.
   New methods to support the new socket types functionality:
     zmq_join, zmq_leave, zmq_msg_set_routing_id, zmq_msg_routing_id,
