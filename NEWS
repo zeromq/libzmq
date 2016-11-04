@@ -1,13 +1,294 @@
+0MQ version 4.2.0 stable, released on 2016/11/xx
+=============================================
+
+* For Pieter. Thanks for making all of this possible.
+
+  "Tell them I was a writer.
+   A maker of software.
+   A humanist. A father.
+   And many things.
+   But above all, a writer.
+   Thank You. :)"
+   - Pieter Hintjens
+
+* This release introduces new APIs, but it is ABI compatible with
+  libzmq 4.1.2 and up.
+
+* Note for ARM and SPARC users: an alignment problem in zmq_msg_t that could in
+  some cases and on some CPUs cause a SIGBUS error was solved, but it requires
+  a rebuild of your application against the 4.2.0 version of include/zmq.h.
+  To clarify, this change does not affect the internals of the library but only
+  the public definition of zmq_msg_t, so there is no ABI incompatibility.
+
+* Security with Curve is now available by default thanks to Tweetnacl sources:
+  https://tweetnacl.cr.yp.to/index.html
+  Libsodium is still fully supported but has to be enabled with the build flag
+  --with-libsodium. Distribution and package maintainers are encouraged to use
+  libsodium so that the security implementation can be audited and maintained
+  separately.
+
+* New Context options:
+  - ZMQ_MAX_MSGSZ
+  See doc/zmq_ctx_set.txt and doc/zmq_ctx_get.txt for details.
+
+* New Socket options:
+  - ZMQ_HANDSHAKE_IVL
+  - ZMQ_SOCKS_PROXY
+  - ZMQ_XPUB_NODROP
+  - ZMQ_BLOCKY
+  - ZMQ_XPUB_MANUAL
+  - ZMQ_XPUB_WELCOME_MSG
+  - ZMQ_STREAM_NOTIFY
+  - ZMQ_INVERT_MATCHING
+  - ZMQ_HEARTBEAT_IVL
+  - ZMQ_HEARTBEAT_TTL
+  - ZMQ_HEARTBEAT_TIMEOUT
+  - ZMQ_XPUB_VERBOSER
+  - ZMQ_CONNECT_TIMEOUT
+  - ZMQ_TCP_MAXRT
+  - ZMQ_THREAD_SAFE
+  - ZMQ_MULTICAST_MAXTPDU
+  - ZMQ_VMCI_BUFFER_SIZE
+  - ZMQ_VMCI_BUFFER_MIN_SIZE
+  - ZMQ_VMCI_BUFFER_MAX_SIZE
+  - ZMQ_VMCI_CONNECT_TIMEOUT
+  - ZMQ_USE_FD
+  See doc/zmq_setsockopt.txt and doc/zmq_getsockopt.txt for details.
+
+* New CURVE helper function to derive z85 public key from secret key:
+    zmq_curve_public
+
+* New cross-platform atomic counter helper functions:
+    zmq_atomic_counter_new, zmq_atomic_counter_set, zmq_atomic_counter_inc,
+    zmq_atomic_counter_dec, zmq_atomic_counter_value, zmq_atomic_counter_destroy
+  See doc/zmq_atomic_*.txt for details.
+
+* New DRAFT APIs early-release mechanism. New APIs will be introduced early
+  in public releases, and until they are stabilized and guaranteed not to
+  change anymore they will be unavailable unless the new build flag
+  --enable-drafts is used. This will allow developers and early adopters to
+  test new APIs before they are finalized.
+  NOTE: as the name implies, NO GUARANTEE is made on the stability of these APIs.
+  They might change or disappear entirely. Distributions are recommended NOT to
+  build with them.
+
+  New socket types have been introduced in DRAFT state:
+    ZMQ_SERVER, ZMQ_CLIENT, ZMQ_RADIO, ZMQ_DISH, ZMQ_GATHER, ZMQ_SCATTER,
+    ZMQ_DGRAM
+  All these sockets are THREAD SAFE, unlike the existing socket types. They do
+  NOT support multipart messages (ZMQ_SNDMORE/ZMQ_RCVMORE).
+  All these sockets minus ZMQ_SERVER and ZMQ_CLIENT also support UDP as transport.
+  New methods to support the new socket types functionality:
+    zmq_join, zmq_leave, zmq_msg_set_routing_id, zmq_msg_routing_id,
+    zmq_msg_set_group, zmq_msg_group
+  See doc/zmq_socket.txt for more details.
+
+  New poller mechanism and APIs have been introduced in DRAFT state:
+    zmq_poller_new, zmq_poller_destroy, zmq_poller_add, zmq_poller_modify,
+    zmq_poller_remove, zmq_poller_wait, zmq_poller_wait_all, zmq_poller_add_fd
+    zmq_poller_modify_fd, zmq_poller_remove_fd
+  and a new supporting struct typedef: zmq_poller_event_t
+  They support existing socket type, new thread-safe socket types and file
+  descriptors (cross-platform).
+  Documentation will be made available in the future before these APIs are declared
+  stable.
+
+  New cross-platform timers helper functions have been introduced in DRAFT state:
+    zmq_timers_new, zmq_timers_destroy, zmq_timers_add, zmq_timers_cancel,
+    zmq_timers_set_interval, zmq_timers_reset, zmq_timers_timeout,
+    zmq_timers_execute
+  and a new supporting callback typedef: zmq_timer_fn
+
+* Many, many bug fixes. The most important fixes are backported and captured in the
+  4.1.x and 4.0.x changelogs.
+
+
 0MQ version 4.2.0 rc1, released on 2016/11/01
 =============================================
 
 * Many changes, see ChangeLog.
 
 
+0MQ version 4.1.6 stable, released on 2016/11/01
+================================================
+
+* Fixed #2051 - getifaddrs can fail with ECONNREFUSED
+
+* Fixed #2091 - testutil.hpp fails to build on Windows XP
+
+* Fixed #2096 - add tests/CMakeLists.in and version.rc.in to dist tar
+
+* Fixed #2107 - zmq_connect with IPv6 "source:port;dest:port" broken
+
+* Fixed #2117 - ctx_term assert with inproc zmq_router connect-before-bind
+
+* Fixed #2158 - Socket monitor uses internal Pair from multiple threads
+
+* Fixed #2161 - messages dropped due to HWM race
+
+* Fixed #1325 - alignment issue with zmq_msg_t causes SIGBUS on SPARC and ARM
+
+
+0MQ version 4.1.5 stable, released on 2016/06/17
+================================================
+
+* Fixed #1673 - CMake on Windows put PDB in wrong directory.
+
+* Fixed #1723 - Family is not set when resolving NIC on Android.
+
+* Fixed #1608 - Windows 7 TCP slow start issue.
+
+* Fixed #1806 - uninitialised read in curve getsockopt.
+
+* Fixed #1807 - build broken with GCC 6.
+
+* Fixed #1831 - potential assertion failure with latest libsodium.
+
+* Fixed #1850 - detection issues with tweetnacl/libsodium.
+
+* Fixed #1877 - Avoid terminating connections prematurely
+
+* Fixed #1887 - zmq_bind IPv4 fallback still tries IPv6
+
+* Fixed #1866 - fails to build on SunOS 5.10 / Solaris 10
+
+* Fixed #919 - ZMQ_LINGER (related to #1877)
+
+* Fixed #114 - cannot unbind with same endpoint with IPv6 enabled.
+
+* Fixed #1952 - CMake scripts not part of release tarballs
+
+* Fixed #1542 - Fix a crash on Windows when port 5905 is in use.
+
+* Fixed #2021 - Fix building on sparc32.
+
+
+0MQ version 4.1.4 stable, released on 2015/12/18
+================================================
+
+* Fixed #1315 - socket monitor hangs if bind/setsockopt failed.
+
+* Fixed #1399 - assertion failure in tcp.cpp after network reconnect.
+
+* Fixed #1632 - build failure using latest libsodium.
+
+* Fixed #1644 - assertion failure in msg.cpp:390 on STREAM sockets.
+
+* Fixed #1661 - does not handle IPv6 link local addresses.
+
+
+0MQ version 4.1.3 stable, released on 2015/08/17
+================================================
+
+* Fixed #1532 - getsockopt ZMQ_RCVMORE now resets all bits instead of only 32
+
+* Fixed #1445 - zmq::socket_base_t::connect fails on tcp ipv6 address
+
+
+0MQ version 4.1.2 stable, released on 2015/06/15
+================================================
+
+* Added explicit reference to static link exception in every source file.
+
+* Bumped ABI version to 5:0:0 since 4.1.x changed the ABI.
+
+* Fixed STDINT event interface macros to work with CZMQ 3.0.
+
+* Fixed installation of man pages when BUILD_DOC is not set.
+
+* Fixed #1428 - regression on single-socket proxies.
+
+
+0MQ version 4.1.1 stable, released on 2015/06/02
+================================================
+
+* Fixed #1208 - fix recursion in automake packaging.
+
+* Fixed #1224 - crash when processing empty unsubscribe message.
+
+* Fixed #1213 - properties files were missing from source packages.
+
+* Fixed #1273 - V3 protocol handler vulnerable to downgrade attacks.
+
+* Fixed #1347 - lack way to get peer address.
+
+* Fixed #1362 - SUB socket sometimes fails to resubscribe properly.
+
+* Fixed #1377, #1144 - failed with WSANOTINITIALISED in some cases.
+
+* Fixed #1389 - PUB, PUSH sockets had slow memory leak.
+
+* Fixed #1382 - zmq_proxy did not terminate if there were no readers.
+
+
 0MQ version 4.1.0 rc1, released on 2014/10/14
 =============================================
 
-* Many changes, see ChangeLog.
+* All issues that were fixed in 4.0.x
+
+* Improved client reconnection strategy on errors
+
+* GSSAPI security mechanism
+
+* SOCKS5 support (ZMQ_SOCKS_PROXY)
+
+* ZMQ_ROUTER_HANDOVER
+
+* ZMQ_TOS
+
+* ZMQ_CONNECT_RID
+
+* ZMQ_HANDSHAKE_IVL
+
+* ZMQ_IDENTITY_FD
+
+* ZMQ_XPUB_NODROP
+
+* ZMQ_SRCFD and ZMQ_SHARED message options
+
+* Message metadata -- zmq_msg_gets ()
+
+* Probe library configuration -- zmq_has ()
+
+
+0MQ version 4.0.8 stable, released on 2016/06/17
+================================================
+
+* Fixed LIBZMQ-949 - zmq_unbind fails for inproc and wildcard endpoints
+
+* Fixed #1806 - uninitialised read in curve getsockopt.
+
+* Fixed #1807 - build broken with GCC 6.
+
+* Fixed #1877 - Avoid terminating connections prematurely
+
+* Fixed #1887 - zmq_bind IPv4 fallback still tries IPv6
+
+* Fixed #98 - don't require libssp without libsodium on Solaris
+
+* Fixed #919 - ZMQ_LINGER (related to #1877)
+
+* Fixed #139 - "tempnam" is deprecated.
+
+
+0MQ version 4.0.7 stable, released on 2015/06/15
+================================================
+
+* Fixed #1428 - regression on single-socket proxies.
+
+
+0MQ version 4.0.6 stable, released on 2015/06/02
+================================================
+
+* Fixed #1273 - V3 protocol handler vulnerable to downgrade attacks.
+
+* Fixed #1362 - SUB socket sometimes fails to resubscribe properly.
+
+* Fixed #1377, #1144 - failed with WSANOTINITIALISED in some cases.
+
+* Fixed #1389 - PUB, PUSH sockets had slow memory leak.
+
+* Fixed #1382 - zmq_proxy did not terminate if there were no readers.
 
 
 0MQ version 4.0.5 stable, released on 2014/10/14
