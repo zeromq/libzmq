@@ -367,8 +367,6 @@ AC_ARG_ENABLE([curve-keygen],
     [zmq_enable_curve_keygen=$enableval],
     [zmq_enable_curve_keygen=yes])
 
-AM_CONDITIONAL(ENABLE_CURVE_KEYGEN, test "x$zmq_enable_curve_keygen" = "xyes")
-
 # Use c++ in subsequent tests
 AC_LANG_PUSH(C++)
 
@@ -441,6 +439,7 @@ elif test "x$with_libsodium" = "xyes"; then
     AC_DEFINE(ZMQ_HAVE_CURVE, [1], [Using curve encryption])
     AC_DEFINE(ZMQ_USE_LIBSODIUM, [1], [Using libsodium for curve encryption])
     curve_library="libsodium"
+    enable_curve="yes"
 
     # On Solaris, libsodium depends on libssp
     case "${host_os}" in
@@ -455,9 +454,11 @@ else
     AC_DEFINE(ZMQ_HAVE_CURVE, [1], [Using curve encryption])
     AC_DEFINE(ZMQ_USE_TWEETNACL, [1], [Using tweetnacl for curve encryption])
     curve_library="tweetnacl"
+    enable_curve="yes"
 fi
 
-AM_CONDITIONAL(ENABLE_CURVE_KEYGEN, test "x$enable_curve" = "xyes")
+AM_CONDITIONAL(ENABLE_CURVE_KEYGEN, test "x$enable_curve" = "xyes" -a "x$zmq_enable_curve_keygen" = "xyes")
+
 AM_CONDITIONAL(USE_LIBSODIUM, test "$curve_library" = "libsodium")
 AM_CONDITIONAL(USE_TWEETNACL, test "$curve_library" = "tweetnacl")
 
