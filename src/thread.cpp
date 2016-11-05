@@ -145,6 +145,12 @@ void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_
 #endif
 
     rc = pthread_setschedparam(descriptor, policy, &param);
+
+#ifdef __FreeBSD_kernel__
+    // If this feature is unavailable at run-time, don't abort.
+    if(rc == ENOSYS) return;
+#endif
+
     posix_assert (rc);
 #else
 
