@@ -157,6 +157,11 @@ case "${host_os}" in
         AC_DEFINE(ZMQ_HAVE_LINUX, 1, [Have Linux OS])
         libzmq_on_linux="yes"
 
+        # dladdr/dlopen is in libdl on glibc
+        AC_SEARCH_LIBS([dladdr], [dl dld], [], [
+          AC_MSG_ERROR([unable to find the dladdr() function])
+        ])
+
         if test "x$libzmq_tipc_support" = "xyes"; then
             AC_DEFINE(ZMQ_HAVE_TIPC, 1, [Have TIPC support])
         fi
