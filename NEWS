@@ -29,13 +29,13 @@
 
 * New Context options:
   - ZMQ_MAX_MSGSZ
+  - ZMQ_BLOCKY
   See doc/zmq_ctx_set.txt and doc/zmq_ctx_get.txt for details.
 
 * New Socket options:
   - ZMQ_HANDSHAKE_IVL
   - ZMQ_SOCKS_PROXY
   - ZMQ_XPUB_NODROP
-  - ZMQ_BLOCKY
   - ZMQ_XPUB_MANUAL
   - ZMQ_XPUB_WELCOME_MSG
   - ZMQ_STREAM_NOTIFY
