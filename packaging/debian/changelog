@@ -1,4 +1,4 @@
-zeromq (4.2.0) UNRELEASED; urgency=low
+zeromq (4.2.1) UNRELEASED; urgency=low
 
   * Initial packaging.
 

@@ -2,7 +2,7 @@ Format: 3.0 (quilt)
 Source: zeromq
 Binary: libzmq5, libzmq3-dev, libzmq5-dbg
 Architecture: any
-Version: 4.2.0
+Version: 4.2.1
 Maintainer: libzmq Developers <zeromq-dev@lists.zeromq.org>
 Homepage: http://www.zeromq.org/
 Standards-Version: 3.9.8
