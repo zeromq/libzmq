@@ -650,6 +650,7 @@ PKG_CHECK_MODULES(LIBUNWIND, [libunwind],
         AC_DEFINE(HAVE_LIBUNWIND, 1, [The libunwind library is to be used])
         AC_SUBST([LIBUNWIND_CFLAGS])
         AC_SUBST([LIBUNWIND_LIBS])
+        AC_CHECK_LIB([dl], [dladdr])
     ],
     [
         AC_MSG_WARN([Cannot find libunwind])
