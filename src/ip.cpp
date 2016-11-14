@@ -172,4 +172,17 @@ void zmq::set_ip_type_of_service (fd_t s_, int iptos)
 #else
     errno_assert (rc == 0);
 #endif
+
+    rc = setsockopt(
+        s_,
+        IPPROTO_IPV6,
+        IPV6_TCLASS,
+        reinterpret_cast<const char*>(&iptos),
+        sizeof(iptos));
+
+#ifdef ZMQ_HAVE_WINDOWS
+    wsa_assert (rc != SOCKET_ERROR);
+#else
+    errno_assert (rc == 0);
+#endif
 }
