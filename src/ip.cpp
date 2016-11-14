@@ -180,9 +180,17 @@ void zmq::set_ip_type_of_service (fd_t s_, int iptos)
         reinterpret_cast<const char*>(&iptos),
         sizeof(iptos));
 
+    //  If IPv6 is not enabled ENOPROTOOPT will be returned on Windows and
+    //  Linux, and EINVAL on OSX
 #ifdef ZMQ_HAVE_WINDOWS
-    wsa_assert (rc != SOCKET_ERROR);
+    if (rc == SOCKET_ERROR) {
+        const int last_error = WSAGetLastError();
+        wsa_assert (last_error == WSAENOPROTOOPT);
+    }
 #else
-    errno_assert (rc == 0);
+    if (rc == -1) {
+        errno_assert (errno == ENOPROTOOPT ||
+                      errno == EINVAL);
+    }
 #endif
 }
