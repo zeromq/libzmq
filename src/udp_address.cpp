@@ -45,7 +45,7 @@
 #endif
 
 zmq::udp_address_t::udp_address_t ()
-        : is_mutlicast(false)
+        : is_multicast(false)
 {
     memset (&bind_address, 0, sizeof bind_address);
     memset (&dest_address, 0, sizeof dest_address);
@@ -95,10 +95,10 @@ int zmq::udp_address_t::resolve (const char *name_, bool bind_)
     int i = dest_address.sin_addr.s_addr & 0xFF;
     if(i >=  224 && i <= 239) {
         multicast = dest_address.sin_addr;
-        is_mutlicast = true;
+        is_multicast = true;
     }
     else
-        is_mutlicast = false;
+        is_multicast = false;
 
     iface.s_addr = htonl (INADDR_ANY);
     if (iface.s_addr == INADDR_NONE) {
@@ -108,7 +108,7 @@ int zmq::udp_address_t::resolve (const char *name_, bool bind_)
 
     //  If a should bind and not a multicast, the dest address
     //  is actually the bind address
-    if (bind_ && !is_mutlicast)
+    if (bind_ && !is_multicast)
         bind_address = dest_address;
     else {
         bind_address.sin_family = AF_INET;
@@ -129,7 +129,7 @@ int zmq::udp_address_t::to_string (std::string &addr_)
 
 bool zmq::udp_address_t::is_mcast () const
 {
-    return is_mutlicast;
+    return is_multicast;
 }
 
 const sockaddr* zmq::udp_address_t::bind_addr () const

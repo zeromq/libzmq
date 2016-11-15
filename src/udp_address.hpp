@@ -70,7 +70,7 @@ namespace zmq
         in_addr  iface;
         sockaddr_in bind_address;
         sockaddr_in dest_address;
-        bool is_mutlicast;
+        bool is_multicast;
         std::string address;
     };
 }
