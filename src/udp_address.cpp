@@ -80,7 +80,7 @@ int zmq::udp_address_t::resolve (const char *name_, bool bind_)
 
     //  Only when the udp should bind we allow * as the address
     if (addr_str == "*" && bind_)
-        dest_address.sin_addr.s_addr = htons (INADDR_ANY);
+        dest_address.sin_addr.s_addr = htonl (INADDR_ANY);
     else
         dest_address.sin_addr.s_addr = inet_addr (addr_str.c_str ());
 
@@ -100,7 +100,7 @@ int zmq::udp_address_t::resolve (const char *name_, bool bind_)
     else
         is_mutlicast = false;
 
-    iface.s_addr = htons (INADDR_ANY);
+    iface.s_addr = htonl (INADDR_ANY);
     if (iface.s_addr == INADDR_NONE) {
         errno = EINVAL;
         return -1;
@@ -113,7 +113,7 @@ int zmq::udp_address_t::resolve (const char *name_, bool bind_)
     else {
         bind_address.sin_family = AF_INET;
         bind_address.sin_port = htons (port);
-        bind_address.sin_addr.s_addr = htons (INADDR_ANY);
+        bind_address.sin_addr.s_addr = htonl (INADDR_ANY);
     }
 
     address = name_;
