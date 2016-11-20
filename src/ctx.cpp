@@ -301,6 +301,9 @@ int zmq::ctx_t::get (int option_)
     else
     if (option_ == ZMQ_MAX_MSGSZ)
         rc = max_msgsz;
+    else
+    if (option_ == ZMQ_MSG_T_SIZE)
+        rc = sizeof (zmq_msg_t);
     else {
         errno = EINVAL;
         rc = -1;
