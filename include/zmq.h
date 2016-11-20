@@ -206,6 +206,9 @@ ZMQ_EXPORT void zmq_version (int *major, int *minor, int *patch);
 #define ZMQ_THREAD_PRIORITY 3
 #define ZMQ_THREAD_SCHED_POLICY 4
 #define ZMQ_MAX_MSGSZ 5
+//  All options after this is for version 4.3 and still *draft*
+//  Subject to arbitrary change without notice
+#define ZMQ_MSG_T_SIZE 6
 
 /*  Default for new contexts                                                  */
 #define ZMQ_IO_THREADS_DFLT  1
