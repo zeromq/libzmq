@@ -1,6 +1,9 @@
 0MQ version 4.2.1 stable, released on 201x/xx/xx
 =============================================
 
+* New Context options:
+  - ZMQ_MSG_T_SIZE
+
 
 0MQ version 4.2.0 stable, released on 2016/11/04
 =============================================
