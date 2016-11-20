@@ -57,6 +57,13 @@ zero if the "block forever on context termination" gambit was disabled by
 setting ZMQ_BLOCKY to false on all new contexts.
 
 
+ZMQ_MSG_T_SIZE: Get the zmq_msg_t size at runtime
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_MSG_T_SIZE' argument returns the size of the zmq_msg_t structure at
+runtime, as defined in the include/zmq.h public header.
+This is useful for example for FFI bindings that can't simply do a sizeof().
+
+
 RETURN VALUE
 ------------
 The _zmq_ctx_get()_ function returns a value of 0 or greater if successful.
