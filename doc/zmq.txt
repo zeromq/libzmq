@@ -30,6 +30,9 @@ provided by the 0MQ library.
 
 Context
 ~~~~~~~
+The 0MQ 'context' keeps the list of sockets and manages the async I/O thread
+and internal queries.
+
 Before using any 0MQ library functions you must create a 0MQ 'context'. When
 you exit your application you must destroy the 'context'. These functions let
 you work with 'contexts':
