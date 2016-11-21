@@ -793,7 +793,7 @@ inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
             //  Poll item is a raw file descriptor.
             for (int j = 0; j < i; ++j) {
                 // Check for repeat entries
-                if (items_[j].fd == items_[i].fd) {
+                if (!items_[j].socket && items_[j].fd == items_[i].fd) {
                     repeat_items = true;
                     modify = true;
                     e |= items_[j].events;
@@ -825,8 +825,8 @@ inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 
     //  Transform poller events into zmq_pollitem events.
     //  items_ contains all items, while events only contains fired events.
-    //  If no sockets are repeated (likely), the two are still co-ordered, so the step through items
-    //  Checking for matches only on the first event.
+    //  If no sockets are repeated (likely), the two are still co-ordered, so step through the items
+    //  checking for matches only on the first event.
     //  If there are repeat items, they cannot be assumed to be co-ordered,
     //  so each pollitem must check fired events from the beginning.
     int j_start = 0, found_events = rc;
@@ -834,7 +834,7 @@ inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         for (int j = j_start; j < found_events; ++j) {
             if (
                 (items_[i].socket && items_[i].socket == events[j].socket) ||
-                (items_[i].fd && items_[i].fd == events[j].fd)
+                (!(items_[i].socket || items_[j].socket) && items_[i].fd == events[j].fd)
             ) {
                 items_[i].revents = events[j].events & items_[i].events;
                 if (!repeat_items) {
