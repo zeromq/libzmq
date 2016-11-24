@@ -53,8 +53,8 @@ zmq::select_t::select_t (const zmq::ctx_t &ctx_) :
     //  Fine as long as map is not cleared.
     current_family_entry_it (family_entries.end ()),
 #else
-    retired (false),
     maxfd (retired_fd),
+    retired (false),
 #endif
     stopping (false)
 {
