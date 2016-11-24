@@ -898,7 +898,7 @@ FD_ZERO(&t_rfds);
 FD_SET(0, &t_rfds);
 tv.tv_sec = 5;
 tv.tv_usec = 0;
-select(1, &t_rfds, NULL, NULL, &tv);
+select(1, &t_rfds, 0, 0, &tv);
         ]])],
         [$1],[$2]
     )
