@@ -99,10 +99,10 @@ void zmq::pollset_t::rm_fd (handle_t handle_)
     pollset_ctl (pollset_fd, &pc, 1);
 
     fd_table [pe->fd] = NULL;
-    
+
     pe->fd = retired_fd;
-    retired.push_back (pe);    
-    
+    retired.push_back (pe);
+
     //  Decrease the load metric of the thread.
     adjust_load (-1);
 }
