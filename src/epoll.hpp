@@ -41,6 +41,7 @@
 #include "fd.hpp"
 #include "thread.hpp"
 #include "poller_base.hpp"
+#include "mutex.hpp"
 
 namespace zmq
 {
@@ -101,6 +102,9 @@ namespace zmq
 
         //  Handle of the physical thread doing the I/O work.
         thread_t worker;
+
+        //  Synchronisation of retired event sources
+        mutex_t retired_sync;
 
         epoll_t (const epoll_t&);
         const epoll_t &operator = (const epoll_t&);
