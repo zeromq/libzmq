@@ -112,6 +112,13 @@ extern "C" {
 #   include <stdint.h>
 #endif
 
+//  32-bit AIX's pollfd struct members are called reqevents and rtnevents so it
+//  defines compatibility macros for them. Need to include that header first to
+//  stop build failures since zmq_pollset_t defines them as events and revents.
+#ifdef ZMQ_HAVE_AIX
+    #include <poll.h>
+#endif
+
 
 /******************************************************************************/
 /*  0MQ errors.                                                               */
