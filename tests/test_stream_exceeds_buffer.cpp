@@ -34,14 +34,7 @@
 #   include <ws2tcpip.h>
 #   include <stdexcept>
 #   define close closesocket
-#else
-#   include <sys/socket.h>
-#   include <netinet/in.h>
-#   include <arpa/inet.h>
-#   include <unistd.h>
 #endif
-
-#include <zmq.h>
 
 int main()
 {
