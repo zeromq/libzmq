@@ -69,6 +69,10 @@
 #   include <sys/socket.h>
 #   include <netinet/in.h>
 #   include <arpa/inet.h>
+#   if defined (ZMQ_HAVE_AIX)
+#      include <sys/types.h>
+#      include <sys/socketvar.h>
+#   endif
 #endif
 
 //  Bounce a message from client to server and back
