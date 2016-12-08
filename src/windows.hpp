@@ -58,10 +58,10 @@
 #include <iphlpapi.h>
 
 #if !defined __MINGW32__
-#include <Mstcpip.h>
+#include <mstcpip.h>
 #endif
 
-//  Workaround missing Mstcpip.h in mingw32 (MinGW64 provides this)
+//  Workaround missing mstcpip.h in mingw32 (MinGW64 provides this)
 //  __MINGW64_VERSION_MAJOR is only defined when using in mingw-w64
 #if defined __MINGW32__ && !defined SIO_KEEPALIVE_VALS && \
     !defined __MINGW64_VERSION_MAJOR
