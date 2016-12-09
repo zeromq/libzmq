@@ -6,7 +6,7 @@ Version: 4.2.1
 Maintainer: libzmq Developers <zeromq-dev@lists.zeromq.org>
 Homepage: http://www.zeromq.org/
 Standards-Version: 3.9.8
-Build-Depends: debhelper (>= 9), dh-autoreconf, libpgm-dev, libsodium-dev, libunwind-dev | libunwind7-dev, pkg-config
+Build-Depends: debhelper (>= 9), dh-autoreconf, libpgm-dev, libsodium-dev, libunwind-dev | libunwind8-dev | libunwind7-dev, pkg-config
 Package-List:
  libzmq3-dev deb libdevel optional arch=any
  libzmq5 deb libs optional arch=any

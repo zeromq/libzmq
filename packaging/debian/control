@@ -6,7 +6,7 @@ Build-Depends: debhelper (>= 9),
  dh-autoreconf,
  libpgm-dev,
  libsodium-dev,
- libunwind-dev | libunwind7-dev,
+ libunwind-dev | libunwind8-dev | libunwind7-dev,
  pkg-config
 Standards-Version: 3.9.8
 Homepage: http://www.zeromq.org/
