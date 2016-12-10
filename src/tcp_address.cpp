@@ -607,7 +607,7 @@ int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_, boo
 
     // Test the '%' to know if we have an interface name / zone_id in the address
     // Reference: https://tools.ietf.org/html/rfc4007
-    std::size_t pos = addr_str.rfind("%");
+    std::size_t pos = addr_str.rfind('%');
     uint32_t zone_id = 0;
     if (pos != std::string::npos) {
         std::string if_str = addr_str.substr(pos + 1);
