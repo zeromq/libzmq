@@ -55,7 +55,7 @@ zmq::pollset_t::~pollset_t ()
     //  Wait till the worker thread exits.
     worker.stop ();
 
-    close (pollset_fd);
+    pollset_destroy (pollset_fd);
     for (retired_t::iterator it = retired.begin (); it != retired.end (); ++it)
         LIBZMQ_DELETE(*it);
 }
