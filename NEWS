@@ -1,6 +1,8 @@
 0MQ version 4.1.7 stable, released on 20xx/xx/xx
 ================================================
 
+* Fixed #2254 - zmq 4.1.6 cannot pub msg to a zmq 2.x
+
 
 0MQ version 4.1.6 stable, released on 2016/11/01
 ================================================
