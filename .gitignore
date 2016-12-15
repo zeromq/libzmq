@@ -138,6 +138,7 @@ test_dgram
 test_base85
 test_bind_after_connect_tcp
 test_sodium
+test_zmq_poll_fd
 tests/test*.log
 tests/test*.trs
 src/platform.hpp*
