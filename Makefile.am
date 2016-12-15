@@ -629,6 +629,7 @@ test_apps += \
 	tests/test_reqrep_ipc \
 	tests/test_use_fd_ipc \
 	tests/test_use_fd_tcp \
+	tests/test_zmq_poll_fd \
 	tests/test_timeo \
 	tests/test_filter_ipc
 
@@ -663,6 +664,9 @@ tests_test_use_fd_tcp_SOURCES = \
 	tests/test_use_fd_tcp.cpp \
 	tests/testutil.hpp
 tests_test_use_fd_tcp_LDADD = src/libzmq.la
+
+tests_test_zmq_poll_fd_SOURCES = tests/test_zmq_poll_fd.cpp
+tests_test_zmq_poll_fd_LDADD = src/libzmq.la
 
 if HAVE_FORK
 if !VALGRIND_ENABLED
