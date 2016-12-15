@@ -116,8 +116,6 @@ namespace zmq
 
         void mechanism_ready ();
 
-        int write_subscription_msg (msg_t *msg_);
-
         size_t add_property (unsigned char *ptr,
             const char *name, const void *value, size_t value_len);
 
