@@ -834,7 +834,7 @@ inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
         for (int j = j_start; j < found_events; ++j) {
             if (
                 (items_[i].socket && items_[i].socket == events[j].socket) ||
-                (!items_[i].socket && items_[i].fd == events[j].fd)
+                (!(items_[i].socket || events[j].socket) && items_[i].fd == events[j].fd)
             ) {
                 items_[i].revents = events[j].events & items_[i].events;
                 if (!repeat_items) {
