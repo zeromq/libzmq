@@ -92,12 +92,7 @@ void zmq::zmq_abort(const char *errmsg_)
 
 const char *zmq::wsa_error()
 {
-    const int last_error = WSAGetLastError();
-    //  TODO: This is not a generic way to handle this...
-    if (last_error == WSAEWOULDBLOCK)
-        return NULL;
-
-    return wsa_error_no (last_error);
+    return wsa_error_no (WSAGetLastError());
 }
 
 const char *zmq::wsa_error_no (int no_)
@@ -121,7 +116,7 @@ const char *zmq::wsa_error_no (int no_)
         (no_ == WSAEMFILE) ?
             "Too many open files" :
         (no_ == WSAEWOULDBLOCK) ?
-            "Operation would block" :
+            NULL :
         (no_ == WSAEINPROGRESS) ?
             "Operation now in progress" :
         (no_ == WSAEALREADY) ?
