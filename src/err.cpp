@@ -92,10 +92,10 @@ void zmq::zmq_abort(const char *errmsg_)
 
 const char *zmq::wsa_error()
 {
-    return wsa_error_no (WSAGetLastError());
+    return wsa_error_no (WSAGetLastError(), NULL);
 }
 
-const char *zmq::wsa_error_no (int no_)
+const char *zmq::wsa_error_no (int no_, const char * wsae_wouldblock_string = "Operation would block")
 {
     //  TODO:  It seems that list of Windows socket errors is longer than this.
     //         Investigate whether there's a way to convert it into the string
@@ -116,7 +116,7 @@ const char *zmq::wsa_error_no (int no_)
         (no_ == WSAEMFILE) ?
             "Too many open files" :
         (no_ == WSAEWOULDBLOCK) ?
-            NULL :
+            wsae_wouldblock_string :
         (no_ == WSAEINPROGRESS) ?
             "Operation now in progress" :
         (no_ == WSAEALREADY) ?
