@@ -65,7 +65,7 @@ namespace zmq
 namespace zmq
 {
     const char *wsa_error ();
-    const char *wsa_error_no (int no_);
+    const char *wsa_error_no (int no_, const char * wsae_wouldblock_string = "Operation would block");
     void win_error (char *buffer_, size_t buffer_size_);
     int wsa_error_to_errno (int errcode);
 }

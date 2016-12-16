@@ -95,7 +95,7 @@ const char *zmq::wsa_error()
     return wsa_error_no (WSAGetLastError(), NULL);
 }
 
-const char *zmq::wsa_error_no (int no_, const char * wsae_wouldblock_string = "Operation would block")
+const char *zmq::wsa_error_no (int no_, const char * wsae_wouldblock_string)
 {
     //  TODO:  It seems that list of Windows socket errors is longer than this.
     //         Investigate whether there's a way to convert it into the string
