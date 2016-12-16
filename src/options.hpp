@@ -56,6 +56,8 @@ namespace zmq
     {
         options_t ();
 
+        int set_curve_key(uint8_t * destination, const void * optval_, size_t optvallen_);
+
         int setsockopt (int option_, const void *optval_, size_t optvallen_);
         int getsockopt (int option_, void *optval_, size_t *optvallen_) const;
 
