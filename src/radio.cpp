@@ -100,18 +100,18 @@ void zmq::radio_t::xwrite_activated (pipe_t *pipe_)
 
 void zmq::radio_t::xpipe_terminated (pipe_t *pipe_)
 {
-    for (subscriptions_t::iterator it = subscriptions.begin (); it != subscriptions.end (); ) {
-        if (it->second == pipe_) {
-            subscriptions.erase (it++);
-        } else {
-            ++it;
-        }
+    for (subscriptions_t::iterator it = subscriptions.begin (); it != subscriptions.end (); ++it) {
+        if (it->second == pipe_)
+            subscriptions.erase (it);
     }
 
     udp_pipes_t::iterator it = std::find(udp_pipes.begin(),
         udp_pipes.end (), pipe_);
     if (it != udp_pipes.end ())
-        udp_pipes.erase (it);
+    {
+        std::swap(*it, udp_pipes.back());
+        udp_pipes.pop_back();
+    }
 
     dist.pipe_terminated (pipe_);
 }
