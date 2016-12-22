@@ -38,4 +38,6 @@
 
 #define ZMQ_HAVE_WINDOWS
 
+#define ZMQ_USE_LIBSODIUM
+
 #endif

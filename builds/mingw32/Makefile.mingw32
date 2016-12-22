@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-Wall -Os -g -DDLL_EXPORT -DFD_SETSIZE=16384 -DZMQ_USE_SELECT -I.
-LIBS=-lws2_32 -lIphlpapi
+LIBS=-lws2_32 -lIphlpapi -lsodium
 
 OBJS = ctx.o reaper.o dist.o err.o \
 	clock.o metadata.o random.o \
@@ -27,7 +27,7 @@ OBJS = ctx.o reaper.o dist.o err.o \
 	mechanism.o null_mechanism.o plain_client.o plain_server.o \
 	socks.o server.o decoder_allocators.o socks_connecter.o \
 	socket_poller.o mailbox_safe.o plain_server.o client.o timers.o \
-	zmq.o zmq_utils.o
+	zmq.o zmq_utils.o gather.o scatter.o dgram.o
 
 %.o: ../../src/%.cpp
 	$(CC) -c -o $@ $< $(CFLAGS)
@@ -40,10 +40,10 @@ all: libzmq.dll
 perf: inproc_lat.exe inproc_thr.exe local_lat.exe local_thr.exe remote_lat.exe remote_thr.exe
 
 libzmq.dll: $(OBJS)
-	g++ -shared -o $@ $^ -Wl,--out-implib,$@.a $(LIBS)
+	g++ -shared -static -O2 -s -o $@ $^ -Wl,--out-implib,$@.a $(LIBS)
 
 %.exe: %.o libzmq.dll
-	g++ -o $@ $^
+	g++ -o -O2 $@ $^
 
 clean:
 	del *.o *.a *.dll *.exe
