@@ -26,6 +26,7 @@
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include <algorithm>
 
 #include "precompiled.hpp"
 #include "mailbox_safe.hpp"
@@ -59,16 +60,8 @@ void zmq::mailbox_safe_t::add_signaler (signaler_t* signaler)
 
 void zmq::mailbox_safe_t::remove_signaler (signaler_t* signaler)
 {
-    std::vector<signaler_t*>::iterator it = signalers.begin();
-
     // TODO: make a copy of array and signal outside the lock
-    for (; it != signalers.end(); ++it){
-        if (*it == signaler)
-           break;
-    }
-
-    if (it != signalers.end())
-        signalers.erase(it);
+    signalers.erase(std::remove(signalers.begin(), signalers.end(), signaler), signalers.end());
 }
 
 void zmq::mailbox_safe_t::clear_signalers ()
@@ -84,8 +77,9 @@ void zmq::mailbox_safe_t::send (const command_t &cmd_)
 
     if (!ok) {
         cond_var.broadcast ();
-        for (std::vector<signaler_t*>::iterator it = signalers.begin(); it != signalers.end(); ++it){
-            (*it)->send();
+        for (const auto & signaler : signalers)
+        {
+            signaler->send();
         }
     }
 
