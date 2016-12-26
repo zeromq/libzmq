@@ -358,8 +358,14 @@ AC_ARG_ENABLE([eventfd],
 
 if test "x$zmq_enable_eventfd" = "xyes"; then
     # Check if we have eventfd.h header file.
-    AC_CHECK_HEADERS(sys/eventfd.h,
-        [AC_DEFINE(ZMQ_HAVE_EVENTFD, 1, [Have eventfd extension])])
+    AC_CHECK_HEADERS(sys/eventfd.h, [
+        AC_DEFINE(ZMQ_HAVE_EVENTFD, 1, [Have eventfd extension])
+        LIBZMQ_CHECK_EVENTFD_CLOEXEC([
+            AC_DEFINE([ZMQ_HAVE_EVENTFD_CLOEXEC],
+               [1],
+               [Whether EFD_CLOEXEC is defined and functioning.])
+            ])
+    ])
 fi
 
 # Conditionally build performance measurement tools

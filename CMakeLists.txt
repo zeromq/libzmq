@@ -183,6 +183,9 @@ check_include_files (ifaddrs.h ZMQ_HAVE_IFADDRS)
 check_include_files (windows.h ZMQ_HAVE_WINDOWS)
 check_include_files (sys/uio.h ZMQ_HAVE_UIO)
 check_include_files (sys/eventfd.h ZMQ_HAVE_EVENTFD)
+if (ZMQ_HAVE_EVENTFD)
+  zmq_check_efd_cloexec ()
+endif ()
 
 check_library_exists (ws2_32 fopen "" HAVE_WS2_32) # TODO: Why doesn't something logical like WSAStartup work?
 check_library_exists (ws2 fopen "" HAVE_WS2)

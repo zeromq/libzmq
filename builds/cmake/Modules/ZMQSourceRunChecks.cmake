@@ -16,6 +16,21 @@ int main(int argc, char *argv [])
     ZMQ_HAVE_SOCK_CLOEXEC)
 endmacro()
 
+macro(zmq_check_efd_cloexec)
+  message(STATUS "Checking whether EFD_CLOEXEC is supported")
+  check_c_source_runs(
+    "
+#include <sys/eventfd.h>
+
+int main(int argc, char *argv [])
+{
+    int s = eventfd (0, EFD_CLOEXEC);
+    return(s == -1);
+}
+"
+    ZMQ_HAVE_EVENTFD_CLOEXEC)
+endmacro()
+
 # TCP keep-alives Checks.
 
 macro(zmq_check_so_keepalive)

@@ -615,6 +615,29 @@ int main (int argc, char *argv [])
 }])
 
 dnl ################################################################################
+dnl # LIBZMQ_CHECK_EVENTFD_CLOEXEC([action-if-found], [action-if-not-found])          #
+dnl # Check if EFD_CLOEXEC is supported                                           #
+dnl ################################################################################
+AC_DEFUN([LIBZMQ_CHECK_EVENTFD_CLOEXEC], [{
+    AC_CACHE_CHECK([whether EFD_CLOEXEC is supported], [libzmq_cv_efd_cloexec],
+        [AC_TRY_RUN([/* EFD_CLOEXEC test */
+#include <sys/eventfd.h>
+
+int main (int argc, char *argv [])
+{
+    int s = eventfd (0, EFD_CLOEXEC);
+    return (s == -1);
+}
+        ],
+        [libzmq_cv_efd_cloexec="yes"],
+        [libzmq_cv_efd_cloexec="no"],
+        [libzmq_cv_efd_cloexec="not during cross-compile"]
+        )]
+    )
+    AS_IF([test "x$libzmq_cv_efd_cloexec" = "xyes"], [$1], [$2])
+}])
+
+dnl ################################################################################
 dnl # LIBZMQ_CHECK_ATOMIC_INSTRINSICS([action-if-found], [action-if-not-found])    #
 dnl # Check if compiler supoorts __atomic_Xxx intrinsics                           #
 dnl ################################################################################

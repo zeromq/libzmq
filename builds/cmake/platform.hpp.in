@@ -17,6 +17,7 @@
 #cmakedefine ZMQ_HAVE_UIO
 
 #cmakedefine ZMQ_HAVE_EVENTFD
+#cmakedefine ZMQ_HAVE_EVENTFD_CLOEXEC
 #cmakedefine ZMQ_HAVE_IFADDRS
 
 #cmakedefine ZMQ_HAVE_SO_PEERCRED

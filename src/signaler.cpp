@@ -381,7 +381,14 @@ void zmq::signaler_t::forked ()
 int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
 {
 #if defined ZMQ_HAVE_EVENTFD
-    fd_t fd = eventfd (0, 0);
+    int flags = 0;
+#if defined ZMQ_HAVE_EVENTFD_CLOEXEC
+    //  Setting this option result in sane behaviour when exec() functions
+    //  are used. Old sockets are closed and don't block TCP ports, avoid
+    //  leaks, etc.
+    flags |= EFD_CLOEXEC;
+#endif
+    fd_t fd = eventfd (0, flags);
     if (fd == -1) {
         errno_assert (errno == ENFILE || errno == EMFILE);
         *w_ = *r_ = -1;
