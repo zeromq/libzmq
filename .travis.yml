@@ -14,29 +14,27 @@ env:
 - BUILD_TYPE=cmake CURVE=tweetnacl
 - BUILD_TYPE=default CURVE=libsodium
 - BUILD_TYPE=default
-- BUILD_TYPE=coverage CURVE=tweetnacl DRAFT=enabled
-- BUILD_TYPE=valgrind CURVE=tweetnacl DRAFT=enabled
 
 matrix:
-  exclude:
-  - env: BUILD_TYPE=coverage CURVE=tweetnacl DRAFT=enabled
-    os: osx
-  - env: BUILD_TYPE=valgrind CURVE=tweetnacl DRAFT=enabled
-    os: osx
   include:
   - env: BUILD_TYPE=default CURVE=tweetnacl IPv6=ON
     os: linux
     dist: precise
     sudo: false
+  - env: BUILD_TYPE=coverage CURVE=tweetnacl DRAFT=enabled
+    os: linux
+    addons:
+      apt:
+        packages:
+        - lcov
+  - env: BUILD_TYPE=valgrind CURVE=tweetnacl DRAFT=enabled
+    os: linux
+    addons:
+      apt:
+        packages:
+        - valgrind
 
 sudo: required
-
-addons:
-  apt:
-    packages:
-    - cmake
-    - lcov
-    - valgrind
 
 before_install:
 - if [ $TRAVIS_OS_NAME == "osx" ] ; then brew update; brew install binutils ; fi
