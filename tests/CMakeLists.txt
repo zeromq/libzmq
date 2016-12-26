@@ -84,6 +84,7 @@ if(NOT WIN32)
           test_router_mandatory_hwm
           test_use_fd_ipc
           test_use_fd_tcp
+          test_zmq_poll_fd
   )
   if(HAVE_FORK)
     list(APPEND tests test_fork)
