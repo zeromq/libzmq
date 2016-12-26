@@ -48,7 +48,14 @@ zmq::epoll_t::epoll_t (const zmq::ctx_t &ctx_) :
     ctx(ctx_),
     stopping (false)
 {
+#ifdef ZMQ_USE_EPOLL_CLOEXEC
+    //  Setting this option result in sane behaviour when exec() functions
+    //  are used. Old sockets are closed and don't block TCP ports, avoid
+    //  leaks, etc.
+    epoll_fd = epoll_create1 (EPOLL_CLOEXEC);
+#else
     epoll_fd = epoll_create (1);
+#endif
     errno_assert (epoll_fd != -1);
 }
 

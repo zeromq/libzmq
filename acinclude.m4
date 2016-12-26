@@ -801,6 +801,7 @@ kqueue();
 
 dnl ################################################################################
 dnl # LIBZMQ_CHECK_POLLER_EPOLL_RUN([action-if-found], [action-if-not-found])      #
+dnl # LIBZMQ_CHECK_POLLER_EPOLL_CLOEXEC([action-if-found], [action-if-not-found])  #
 dnl # Checks epoll polling system can actually run #
 dnl # For cross-compile, only requires that epoll can link #
 dnl ################################################################################
@@ -821,6 +822,30 @@ return(r < 0);
                 ],[[
 struct epoll_event t_ev;
 epoll_create(10);
+                ]])],
+                [$1], [$2]
+            )
+        ]
+    )
+}])
+
+AC_DEFUN([LIBZMQ_CHECK_POLLER_EPOLL_CLOEXEC], [{
+    AC_RUN_IFELSE([
+        AC_LANG_PROGRAM([
+#include <sys/epoll.h>
+        ],[[
+struct epoll_event t_ev;
+int r;
+r = epoll_create1(EPOLL_CLOEXEC);
+return(r < 0);
+        ]])],
+        [$1],[$2],[
+            AC_LINK_IFELSE([
+                AC_LANG_PROGRAM([
+#include <sys/epoll.h>
+                ],[[
+struct epoll_event t_ev;
+epoll_create1(EPOLL_CLOEXEC);
                 ]])],
                 [$1], [$2]
             )
@@ -938,10 +963,17 @@ AC_DEFUN([LIBZMQ_CHECK_POLLER], [{
                 ])
             ;;
             epoll)
-                LIBZMQ_CHECK_POLLER_EPOLL([
-                    AC_MSG_NOTICE([Using 'epoll' polling system])
+                LIBZMQ_CHECK_POLLER_EPOLL_CLOEXEC([
+                    AC_MSG_NOTICE([Using 'epoll' polling system with CLOEXEC])
                     AC_DEFINE(ZMQ_USE_EPOLL, 1, [Use 'epoll' polling system])
+                    AC_DEFINE(ZMQ_USE_EPOLL_CLOEXEC, 1, [Use 'epoll' polling system with CLOEXEC])
                     poller_found=1
+                    ],[
+                    LIBZMQ_CHECK_POLLER_EPOLL([
+                        AC_MSG_NOTICE([Using 'epoll' polling system with CLOEXEC])
+                        AC_DEFINE(ZMQ_USE_EPOLL, 1, [Use 'epoll' polling system])
+                        poller_found=1
+                    ])
                 ])
             ;;
             devpoll)

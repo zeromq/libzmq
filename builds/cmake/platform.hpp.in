@@ -3,6 +3,7 @@
 
 #cmakedefine ZMQ_USE_KQUEUE
 #cmakedefine ZMQ_USE_EPOLL
+#cmakedefine ZMQ_USE_EPOLL_CLOEXEC
 #cmakedefine ZMQ_USE_DEVPOLL
 #cmakedefine ZMQ_USE_POLL
 #cmakedefine ZMQ_USE_SELECT
