@@ -791,6 +791,21 @@ Default value:: -1 (infinite)
 Applicable socket types:: all
 
 
+ZMQ_SOCKS_PROXY: Set SOCKS5 proxy address
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the SOCKS5 proxy address that shall be used by the socket for the TCP
+connection(s). Does not support SOCKS5 authentication. If the endpoints are
+domain names instead of addresses they shall not be resolved and they shall
+be forwarded unchanged to the SOCKS proxy service in the client connection
+request message (address type 0x03 domain name).
+
+[horizontal]
+Option value type:: character string
+Option value unit:: N/A
+Default value:: not set
+Applicable socket types:: all, when using TCP transport
+
+
 ZMQ_STREAM_NOTIFY: send connect and disconnect notifications
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Enables connect and disconnect notifications on a STREAM socket, when set
