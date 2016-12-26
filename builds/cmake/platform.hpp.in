@@ -3,6 +3,7 @@
 
 #cmakedefine ZMQ_USE_KQUEUE
 #cmakedefine ZMQ_USE_EPOLL
+#cmakedefine ZMQ_USE_EPOLL_CLOEXEC
 #cmakedefine ZMQ_USE_DEVPOLL
 #cmakedefine ZMQ_USE_POLL
 #cmakedefine ZMQ_USE_SELECT
@@ -16,6 +17,7 @@
 #cmakedefine ZMQ_HAVE_UIO
 
 #cmakedefine ZMQ_HAVE_EVENTFD
+#cmakedefine ZMQ_HAVE_EVENTFD_CLOEXEC
 #cmakedefine ZMQ_HAVE_IFADDRS
 
 #cmakedefine ZMQ_HAVE_SO_PEERCRED

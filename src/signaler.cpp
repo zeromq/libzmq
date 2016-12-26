@@ -381,7 +381,14 @@ void zmq::signaler_t::forked ()
 int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
 {
 #if defined ZMQ_HAVE_EVENTFD
-    fd_t fd = eventfd (0, 0);
+    int flags = 0;
+#if defined ZMQ_HAVE_EVENTFD_CLOEXEC
+    //  Setting this option result in sane behaviour when exec() functions
+    //  are used. Old sockets are closed and don't block TCP ports, avoid
+    //  leaks, etc.
+    flags |= EFD_CLOEXEC;
+#endif
+    fd_t fd = eventfd (0, flags);
     if (fd == -1) {
         errno_assert (errno == ENFILE || errno == EMFILE);
         *w_ = *r_ = -1;
@@ -637,13 +644,29 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
 #else
     // All other implementations support socketpair()
     int sv [2];
-    int rc = socketpair (AF_UNIX, SOCK_STREAM, 0, sv);
+    int type = SOCK_STREAM;
+    //  Setting this option result in sane behaviour when exec() functions
+    //  are used. Old sockets are closed and don't block TCP ports, avoid
+    //  leaks, etc.
+#if defined ZMQ_HAVE_SOCK_CLOEXEC
+    type |= SOCK_CLOEXEC;
+#endif
+    int rc = socketpair (AF_UNIX, type, 0, sv);
     if (rc == -1) {
         errno_assert (errno == ENFILE || errno == EMFILE);
         *w_ = *r_ = -1;
         return -1;
     }
     else {
+        //  If there's no SOCK_CLOEXEC, let's try the second best option. Note that
+        //  race condition can cause socket not to be closed (if fork happens
+        //  between socket creation and this point).
+#if !defined ZMQ_HAVE_SOCK_CLOEXEC && defined FD_CLOEXEC
+        rc = fcntl (sv [0], F_SETFD, FD_CLOEXEC);
+        errno_assert (rc != -1);
+        rc = fcntl (sv [1], F_SETFD, FD_CLOEXEC);
+        errno_assert (rc != -1);
+#endif
         *w_ = sv [0];
         *r_ = sv [1];
         return 0;
