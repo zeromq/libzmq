@@ -41,6 +41,7 @@ SEE ALSO
 --------
 linkzmq:zmq_z85_decode[3]
 linkzmq:zmq_curve_keypair[3]
+linkzmq:zmq_curve_public[3]
 linkzmq:zmq_curve[7]
 
 

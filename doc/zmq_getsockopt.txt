@@ -653,6 +653,19 @@ Default value:: -1 (infinite)
 Applicable socket types:: all
 
 
+ZMQ_SOCKS_PROXY: Retrieve SOCKS5 proxy address
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_SOCKS_PROXY' option shall retrieve the SOCKS5 proxy address in string
+format. The returned value shall be a NULL-terminated string and MAY be empty.
+The returned size SHALL include the terminating null byte.
+
+[horizontal]
+Option value type:: NULL-terminated character string
+Option value unit:: N/A
+Default value:: null string
+Applicable socket types:: all, when using TCP transports
+
+
 ZMQ_TCP_KEEPALIVE: Override SO_KEEPALIVE socket option
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Override 'SO_KEEPALIVE' socket option(where supported by OS).

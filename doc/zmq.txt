@@ -199,6 +199,9 @@ Elliptic curve authentication and encryption::
 Generate a CURVE keypair in armored text format::
     linkzmq:zmq_curve_keypair[3]
 
+Derive a CURVE public key from a secret key:
+    linkzmq:zmq_curve_public[3]
+
 Converting keys to/from armoured text strings::
     linkzmq:zmq_z85_decode[3]
     linkzmq:zmq_z85_encode[3]
