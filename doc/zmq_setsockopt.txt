@@ -132,7 +132,8 @@ sockets, see linkzmq:zmq_curve[7]. You can provide the key as 32 binary
 bytes, or as a 40-character string encoded in the Z85 encoding format and
 terminated in a null byte. The public key must always be used with the
 matching secret key. To generate a public/secret key pair, use
-linkzmq:zmq_curve_keypair[3].
+linkzmq:zmq_curve_keypair[3]. To derive the public key from a secret key,
+use linkzmq:zmq_curve_public[3].
 
 NOTE: an option value size of 40 is supported for backwards compatibility,
 though is deprecated.
@@ -150,7 +151,8 @@ Sets the socket's long term secret key. You must set this on both CURVE
 client and server sockets, see linkzmq:zmq_curve[7]. You can provide the
 key as 32 binary bytes, or as a 40-character string encoded in the Z85
 encoding format and terminated in a null byte. To generate a public/secret
-key pair, use linkzmq:zmq_curve_keypair[3].
+key pair, use linkzmq:zmq_curve_keypair[3]. To derive the public key from
+a secret key, use linkzmq:zmq_curve_public[3].
 
 NOTE: an option value size of 40 is supported for backwards compatibility,
 though is deprecated.
