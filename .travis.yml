@@ -12,36 +12,45 @@ env:
 - BUILD_TYPE=default CURVE=tweetnacl DRAFT=enabled
 - BUILD_TYPE=android CURVE=tweetnacl
 - BUILD_TYPE=cmake CURVE=tweetnacl
-- BUILD_TYPE=default CURVE=libsodium
 - BUILD_TYPE=default
-- BUILD_TYPE=coverage CURVE=tweetnacl DRAFT=enabled
-- BUILD_TYPE=valgrind CURVE=tweetnacl DRAFT=enabled
 
 matrix:
-  exclude:
-  - env: BUILD_TYPE=coverage CURVE=tweetnacl DRAFT=enabled
-    os: osx
-  - env: BUILD_TYPE=valgrind CURVE=tweetnacl DRAFT=enabled
-    os: osx
   include:
   - env: BUILD_TYPE=default CURVE=tweetnacl IPv6=ON
     os: linux
     dist: precise
     sudo: false
+  - env: BUILD_TYPE=coverage CURVE=tweetnacl DRAFT=enabled
+    os: linux
+    addons:
+      apt:
+        packages:
+        - lcov
+  - env: BUILD_TYPE=valgrind CURVE=tweetnacl DRAFT=enabled
+    os: linux
+    addons:
+      apt:
+        packages:
+        - valgrind
+  - env: BUILD_TYPE=default CURVE=libsodium
+    os: linux
+    addons:
+      apt:
+        sources:
+        - sourceline: 'deb http://download.opensuse.org/repositories/home:/zeromq:/git-stable/xUbuntu_14.04/ ./'
+          key_url: 'http://download.opensuse.org/repositories/home:/zeromq:/git-stable/xUbuntu_14.04/Release.key'
+        packages:
+        - libsodium-dev
+        - asciidoc
+        - xmlto
+  - env: BUILD_TYPE=default CURVE=libsodium
+    os: osx
 
 sudo: required
 
-addons:
-  apt:
-    packages:
-    - cmake
-    - lcov
-    - valgrind
-
 before_install:
 - if [ $TRAVIS_OS_NAME == "osx" ] ; then brew update; brew install binutils ; fi
-# workaround for Travis OSX CI bug, hasn't been fixed in a month so time for a hack
-- if [ $TRAVIS_OS_NAME == "osx" ] ; then brew uninstall libtool && brew install libtool ; fi
+- if [ $TRAVIS_OS_NAME == "osx" -a $CURVE == "libsodium" ] ; then brew install libsodium ; fi
 
 before_script:
 # ZMQ stress tests need more open socket (files) than the usual default
