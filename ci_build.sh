@@ -20,16 +20,8 @@ if [ $BUILD_TYPE == "default" ]; then
     elif [ $CURVE == "libsodium" ]; then
         CONFIG_OPTS+=("--with-libsodium=yes")
 
-        if command -v dpkg-query >/dev/null 2>&1; then
-            dpkg-query --list libsodium-dev >/dev/null 2>&1
-            HAVE_SODIUM=$?
-        elif command -v brew >/dev/null 2>&1; then
-            brew ls --versions libsodium >/dev/null 2>&1
-            HAVE_SODIUM=$?
-        else
-            HAVE_SODIUM=1
-        fi
-        if [ $HAVE_SODIUM -ne 0 ]; then
+        if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list libsodium-dev >/dev/null 2>&1) || \
+                (command -v brew >/dev/null 2>&1 && brew ls --versions libsodium >/dev/null 2>&1)); then
             git clone --depth 1 -b stable git://github.com/jedisct1/libsodium.git
             ( cd libsodium; ./autogen.sh; ./configure --prefix=$BUILD_PREFIX; make check; make install)
         fi
