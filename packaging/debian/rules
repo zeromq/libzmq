@@ -31,6 +31,9 @@ ifneq (,$(findstring drafts,$(DEB_BUILD_OPTIONS)))
 DRAFTS=yes
 endif
 
+# Workaround for automake < 1.14 bug
+$(shell dpkg --compare-versions `dpkg-query -W -f='$${Version}\n' automake` lt 1:1.14 && mkdir -p config)
+
 override_dh_clean:
 	dh_clean
 	find $(CURDIR) -type s -exec rm {} \;
