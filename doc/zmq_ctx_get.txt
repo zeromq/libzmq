@@ -62,6 +62,7 @@ ZMQ_MSG_T_SIZE: Get the zmq_msg_t size at runtime
 The 'ZMQ_MSG_T_SIZE' argument returns the size of the zmq_msg_t structure at
 runtime, as defined in the include/zmq.h public header.
 This is useful for example for FFI bindings that can't simply do a sizeof().
+NOTE: in DRAFT state, not yet available in stable releases.
 
 
 RETURN VALUE

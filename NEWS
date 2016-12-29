@@ -1,8 +1,32 @@
 0MQ version 4.2.1 stable, released on 201x/xx/xx
 =============================================
 
-* New Context options:
+* New DRAFT (see NEWS for 4.2.0) Context options:
   - ZMQ_MSG_T_SIZE
+
+* Fixed #2268 - improved compatibility with mingw32
+
+* Fixed #2254 - ZMQ_PUB compatibility with libzmq 2.x broken
+
+* Fixed #2245 - added support for VS2017, Windows SDK 10.0.14393.0, toolset v141
+
+* Fixed #2242 - file descriptors leaks on fork+exec
+
+* Fixed #2239 - retired poller item crash from reaper thread
+
+* Fixed #2234 - improved compatibility with AIX 7.1
+
+* Fixed #2225 - cannot pick select for poller
+
+* Fixed #2217 - CMake build uses library version as the ABI version
+
+* Fixed #2208 - added support for ZMQ_TOS on IPv6
+
+* Fixed #2200 - no documentation for ZMQ_SOCKS_PROXY
+
+* Fixed #2199 - no documentation for zmq_curve_public
+
+* Fixed #2196 - fixed build and runtime errors on kFreeBSD
 
 
 0MQ version 4.2.0 stable, released on 2016/11/04
