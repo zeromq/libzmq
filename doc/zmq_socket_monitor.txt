@@ -99,6 +99,18 @@ ZMQ_EVENT_MONITOR_STOPPED
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 Monitoring on this socket ended.
 
+ZMQ_EVENT_HANDSHAKE_FAILED
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+The ZMTP security mechanism handshake failed.
+The event value is unspecified.
+NOTE: in DRAFT state, not yet available in stable releases.
+
+ZMQ_EVENT_HANDSHAKE_SUCCEED
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The ZMTP security mechanism handshake succeeded.
+The event value is unspecified.
+NOTE: in DRAFT state, not yet available in stable releases.
+
 
 RETURN VALUE
 ------------
