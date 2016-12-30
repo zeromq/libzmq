@@ -46,7 +46,11 @@
 #define ZMQ_SCATTER 17
 #define ZMQ_DGRAM 18
 
-/*  DRAFT Context options                                                           */
+/*  DRAFT 0MQ socket events and monitoring                                    */
+#define ZMQ_EVENT_HANDSHAKE_FAILED  0x0800
+#define ZMQ_EVENT_HANDSHAKE_SUCCEED 0x1000
+
+/*  DRAFT Context options                                                     */
 #define ZMQ_MSG_T_SIZE 6
 
 /*  DRAFT Socket methods.                                                     */

@@ -1680,12 +1680,12 @@ void zmq::socket_base_t::event_disconnected (const std::string &addr_, zmq::fd_t
 
 void zmq::socket_base_t::event_handshake_failed(const std::string &addr_, int err_)
 {
-	event(addr_, err_, ZMQ_EVENT_HANDSHAKE_FAILED);
+    event(addr_, err_, ZMQ_EVENT_HANDSHAKE_FAILED);
 }
 
 void zmq::socket_base_t::event_handshake_succeed(const std::string &addr_, int err_)
 {
-	event(addr_, err_, ZMQ_EVENT_HANDSHAKE_SUCCEED);
+    event(addr_, err_, ZMQ_EVENT_HANDSHAKE_SUCCEED);
 }
 
 void zmq::socket_base_t::event(const std::string &addr_, intptr_t value_, int type_)
