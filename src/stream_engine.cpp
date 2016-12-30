@@ -356,7 +356,10 @@ void zmq::stream_engine_t::in_event ()
     //  or the session has rejected the message.
     if (rc == -1) {
         if (errno != EAGAIN) {
-            error (protocol_error);
+            if(this->process_msg == &stream_engine_t::process_handshake_command)
+                error(encryption_error);
+            else
+                error(protocol_error);
             return;
         }
         input_stopped = true;
@@ -784,8 +787,12 @@ int zmq::stream_engine_t::next_handshake_command (msg_t *msg_)
     }
     else {
         const int rc = mechanism->next_handshake_command (msg_);
+
         if (rc == 0)
             msg_->set_flags (msg_t::command);
+		if(mechanism->status() == mechanism_t::error)
+			socket->event_handshake_failed(endpoint, 0);
+
         return rc;
     }
 }
@@ -863,6 +870,8 @@ void zmq::stream_engine_t::mechanism_ready ()
     zmq_assert (metadata == NULL);
     if (!properties.empty ())
         metadata = new (std::nothrow) metadata_t (properties);
+
+    socket->event_handshake_succeed(endpoint, 0);
 }
 
 int zmq::stream_engine_t::pull_msg_from_session (msg_t *msg_)
@@ -967,6 +976,8 @@ void zmq::stream_engine_t::error (error_reason_t reason)
         terminator.close();
     }
     zmq_assert (session);
+    if(reason == encryption_error)
+        socket->event_handshake_failed(endpoint, (int) s);
     socket->event_disconnected (endpoint, (int) s);
     session->flush ();
     session->engine_error (reason);

@@ -417,6 +417,8 @@ ZMQ_EXPORT const char *zmq_msg_gets (zmq_msg_t *msg, const char *property);
 #define ZMQ_EVENT_CLOSE_FAILED      0x0100
 #define ZMQ_EVENT_DISCONNECTED      0x0200
 #define ZMQ_EVENT_MONITOR_STOPPED   0x0400
+#define ZMQ_EVENT_HANDSHAKE_FAILED  0x0800
+#define ZMQ_EVENT_HANDSHAKE_SUCCEED 0x1000
 #define ZMQ_EVENT_ALL               0xFFFF
 
 ZMQ_EXPORT void *zmq_socket (void *, int type);

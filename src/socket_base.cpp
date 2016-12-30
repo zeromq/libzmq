@@ -1678,6 +1678,16 @@ void zmq::socket_base_t::event_disconnected (const std::string &addr_, zmq::fd_t
     event(addr_, fd_, ZMQ_EVENT_DISCONNECTED);
 }
 
+void zmq::socket_base_t::event_handshake_failed(const std::string &addr_, int err_)
+{
+	event(addr_, err_, ZMQ_EVENT_HANDSHAKE_FAILED);
+}
+
+void zmq::socket_base_t::event_handshake_succeed(const std::string &addr_, int err_)
+{
+	event(addr_, err_, ZMQ_EVENT_HANDSHAKE_SUCCEED);
+}
+
 void zmq::socket_base_t::event(const std::string &addr_, intptr_t value_, int type_)
 {
     scoped_lock_t lock(monitor_sync);
