@@ -23,7 +23,10 @@ your own 'ZMQ_PAIR' socket, and connect that to the endpoint.
 
 The 'events' argument is a bitmask of the socket events you wish to
 monitor, see 'Supported events' below. To monitor all events, use the
-event value ZMQ_EVENT_ALL.
+event value ZMQ_EVENT_ALL. NOTE: as new events are added, the catch-all
+value will start returning them. An application that relies on a strict
+and fixed sequence of events must not use ZMQ_EVENT_ALL in order to
+guarantee compatibility with future versions.
 
 Each event is sent as two frames. The first frame contains an event
 number (16 bits), and an event value (32 bits) that provides additional
