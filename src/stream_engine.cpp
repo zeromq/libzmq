@@ -790,8 +790,8 @@ int zmq::stream_engine_t::next_handshake_command (msg_t *msg_)
 
         if (rc == 0)
             msg_->set_flags (msg_t::command);
-		if(mechanism->status() == mechanism_t::error)
-			socket->event_handshake_failed(endpoint, 0);
+        if(mechanism->status() == mechanism_t::error)
+            socket->event_handshake_failed(endpoint, 0);
 
         return rc;
     }
