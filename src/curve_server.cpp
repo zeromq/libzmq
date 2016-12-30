@@ -310,13 +310,14 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
                               sizeof hello_box,
                               hello_nonce, cn_client, secret_key);
     if (rc != 0) {
-        //  Temporary support for security debugging
-        puts ("CURVE I: cannot open client HELLO -- wrong server key?");
-        errno = EPROTO;
-        return -1;
+        // Hard error, the client knows a wrong server public key, it shall not try to reconnect using the same.
+        status_code = "100";
+        state = send_error;
+        rc = 0;
     }
+    else
+        state = send_welcome;
 
-    state = send_welcome;
     return rc;
 }
 
