@@ -9,6 +9,7 @@
 
 * New DRAFT (see NEWS for 4.2.0) Context options:
   - ZMQ_MSG_T_SIZE
+  See doc/zmq_ctx_get.txt for more information.
 
 * Fixed #2268 - improved compatibility with mingw32
 
