@@ -46,6 +46,44 @@ static char client_secret [41];
 static char server_public [41];
 static char server_secret [41];
 
+#ifdef ZMQ_BUILD_DRAFT_API
+//  Read one event off the monitor socket; return value and address
+//  by reference, if not null, and event number by value. Returns -1
+//  in case of error.
+
+static int
+get_monitor_event (void *monitor, int *value, char **address)
+{
+    //  First frame in message contains event number and value
+    zmq_msg_t msg;
+    zmq_msg_init (&msg);
+    if (zmq_msg_recv (&msg, monitor, 0) == -1)
+        return -1;              //  Interruped, presumably
+    assert (zmq_msg_more (&msg));
+
+    uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
+    uint16_t event = *(uint16_t *) (data);
+    if (value)
+        *value = *(uint32_t *) (data + 2);
+
+    //  Second frame in message contains event address
+    zmq_msg_init (&msg);
+    if (zmq_msg_recv (&msg, monitor, 0) == -1)
+        return -1;              //  Interruped, presumably
+    assert (!zmq_msg_more (&msg));
+
+    if (address) {
+        uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
+        size_t size = zmq_msg_size (&msg);
+        *address = (char *) malloc (size + 1);
+        memcpy (*address, data, size);
+        *address [size] = 0;
+    }
+    return event;
+}
+#endif
+
+
 //  --------------------------------------------------------------------------
 //  This methods receives and validates ZAP requestes (allowing or denying
 //  each client connection).
@@ -138,6 +176,21 @@ int main (void)
     rc = zmq_bind (server, "tcp://127.0.0.1:9998");
     assert (rc == 0);
 
+#ifdef ZMQ_BUILD_DRAFT_API
+    //  Monitor handshake events on the server
+    rc = zmq_socket_monitor (server, "inproc://monitor-server",
+            ZMQ_EVENT_HANDSHAKE_SUCCEED | ZMQ_EVENT_HANDSHAKE_FAILED);
+    assert (rc == 0);
+
+    //  Create socket for collecting monitor events
+    void *server_mon = zmq_socket (ctx, ZMQ_PAIR);
+    assert (server_mon);
+
+    //  Connect it to the inproc endpoints so they'll get events
+    rc = zmq_connect (server_mon, "inproc://monitor-server");
+    assert (rc == 0);
+#endif
+
     //  Check CURVE security with valid credentials
     void *client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
@@ -152,6 +205,11 @@ int main (void)
     bounce (server, client);
     rc = zmq_close (client);
     assert (rc == 0);
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    int event = get_monitor_event (server_mon, NULL, NULL);
+    assert (event == ZMQ_EVENT_HANDSHAKE_SUCCEED);
+#endif
 
     //  Check CURVE security with a garbage server key
     //  This will be caught by the curve_server class, not passed to ZAP
@@ -169,6 +227,11 @@ int main (void)
     expect_bounce_fail (server, client);
     close_zero_linger (client);
 
+#ifdef ZMQ_BUILD_DRAFT_API
+    event = get_monitor_event (server_mon, NULL, NULL);
+    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED);
+#endif
+
     //  Check CURVE security with a garbage client public key
     //  This will be caught by the curve_server class, not passed to ZAP
     client = zmq_socket (ctx, ZMQ_DEALER);
@@ -184,6 +247,11 @@ int main (void)
     expect_bounce_fail (server, client);
     close_zero_linger (client);
 
+#ifdef ZMQ_BUILD_DRAFT_API
+    event = get_monitor_event (server_mon, NULL, NULL);
+    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED);
+#endif
+
     //  Check CURVE security with a garbage client secret key
     //  This will be caught by the curve_server class, not passed to ZAP
     client = zmq_socket (ctx, ZMQ_DEALER);
@@ -198,6 +266,11 @@ int main (void)
     assert (rc == 0);
     expect_bounce_fail (server, client);
     close_zero_linger (client);
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    event = get_monitor_event (server_mon, NULL, NULL);
+    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED);
+#endif
 
     //  Check CURVE security with bogus client credentials
     //  This must be caught by the ZAP handler
@@ -218,6 +291,11 @@ int main (void)
     expect_bounce_fail (server, client);
     close_zero_linger (client);
 
+#ifdef ZMQ_BUILD_DRAFT_API
+    event = get_monitor_event (server_mon, NULL, NULL);
+    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED);
+#endif
+
     //  Check CURVE security with NULL client credentials
     //  This must be caught by the curve_server class, not passed to ZAP
     client = zmq_socket (ctx, ZMQ_DEALER);
@@ -226,6 +304,11 @@ int main (void)
     assert (rc == 0);
     expect_bounce_fail (server, client);
     close_zero_linger (client);
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    event = get_monitor_event (server_mon, NULL, NULL);
+    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED);
+#endif
 
     //  Check CURVE security with PLAIN client credentials
     //  This must be caught by the curve_server class, not passed to ZAP
@@ -282,6 +365,9 @@ int main (void)
     assert (rc == 0);
 
     //  Shutdown
+#ifdef ZMQ_BUILD_DRAFT_API
+    close_zero_linger (server_mon);
+#endif
     rc = zmq_close (server);
     assert (rc == 0);
     rc = zmq_ctx_term (ctx);
