@@ -790,8 +790,10 @@ int zmq::stream_engine_t::next_handshake_command (msg_t *msg_)
 
         if (rc == 0)
             msg_->set_flags (msg_t::command);
+#ifdef ZMQ_BUILD_DRAFT_API
         if(mechanism->status() == mechanism_t::error)
             socket->event_handshake_failed(endpoint, 0);
+#endif
 
         return rc;
     }
@@ -871,7 +873,9 @@ void zmq::stream_engine_t::mechanism_ready ()
     if (!properties.empty ())
         metadata = new (std::nothrow) metadata_t (properties);
 
+#ifdef ZMQ_BUILD_DRAFT_API
     socket->event_handshake_succeed(endpoint, 0);
+#endif
 }
 
 int zmq::stream_engine_t::pull_msg_from_session (msg_t *msg_)
@@ -976,8 +980,10 @@ void zmq::stream_engine_t::error (error_reason_t reason)
         terminator.close();
     }
     zmq_assert (session);
+#ifdef ZMQ_BUILD_DRAFT_API
     if(reason == encryption_error)
         socket->event_handshake_failed(endpoint, (int) s);
+#endif
     socket->event_disconnected (endpoint, (int) s);
     session->flush ();
     session->engine_error (reason);
