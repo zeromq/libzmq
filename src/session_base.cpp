@@ -421,8 +421,7 @@ void zmq::session_base_t::engine_error (
     if (pipe)
         clean_pipes ();
 
-    zmq_assert (reason == stream_engine_t::encryption_error
-             || reason == stream_engine_t::connection_error
+    zmq_assert (reason == stream_engine_t::connection_error
              || reason == stream_engine_t::timeout_error
              || reason == stream_engine_t::protocol_error);
 
@@ -434,7 +433,6 @@ void zmq::session_base_t::engine_error (
             else
                 terminate ();
             break;
-        case stream_engine_t::encryption_error:
         case stream_engine_t::protocol_error:
             terminate ();
             break;

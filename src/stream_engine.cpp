@@ -356,10 +356,7 @@ void zmq::stream_engine_t::in_event ()
     //  or the session has rejected the message.
     if (rc == -1) {
         if (errno != EAGAIN) {
-            if(this->process_msg == &stream_engine_t::process_handshake_command)
-                error(encryption_error);
-            else
-                error(protocol_error);
+            error(protocol_error);
             return;
         }
         input_stopped = true;
@@ -981,7 +978,7 @@ void zmq::stream_engine_t::error (error_reason_t reason)
     }
     zmq_assert (session);
 #ifdef ZMQ_BUILD_DRAFT_API
-    if(reason == encryption_error)
+    if(mechanism->status() == mechanism_t::handshaking)
         socket->event_handshake_failed(endpoint, (int) s);
 #endif
     socket->event_disconnected (endpoint, (int) s);
