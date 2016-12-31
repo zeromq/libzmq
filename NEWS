@@ -1,8 +1,15 @@
 0MQ version 4.2.1 stable, released on 201x/xx/xx
 =============================================
 
+* New DRAFT (see NEWS for 4.2.0) Socket Monitor events:
+  - ZMQ_EVENT_HANDSHAKE_SUCCEED
+  - ZMQ_EVENT_HANDSHAKE_FAILED
+  These events trigger when the ZMTP security mechanism handshake is
+  completed. See doc/zmq_socket_monitor.txt for more information.
+
 * New DRAFT (see NEWS for 4.2.0) Context options:
   - ZMQ_MSG_T_SIZE
+  See doc/zmq_ctx_get.txt for more information.
 
 * Fixed #2268 - improved compatibility with mingw32
 
