@@ -173,8 +173,8 @@ void zmq::set_ip_type_of_service (fd_t s_, int iptos)
     errno_assert (rc == 0);
 #endif
 
-    //  Windows does not support IPV6_TCLASS
-#ifndef ZMQ_HAVE_WINDOWS
+    //  Windows and Hurd do not support IPV6_TCLASS
+#if !defined (ZMQ_HAVE_WINDOWS) && defined (IPV6_TCLASS)
     rc = setsockopt(
         s_,
         IPPROTO_IPV6,
