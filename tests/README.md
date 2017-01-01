@@ -19,6 +19,8 @@ to add a sleep, please be consistent with all the other tests and use:
 
 # Building tests in Windows
 
+According to the version of your compiler, you should adapt the path `libzmq.lib` in the file `tests/CMakeLists.txt`.
+
 Install CMAKE
 CMD> CMAKE libzmq/tests
 CMD> tests.sln
