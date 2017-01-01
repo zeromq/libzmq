@@ -978,7 +978,7 @@ void zmq::stream_engine_t::error (error_reason_t reason)
     }
     zmq_assert (session);
 #ifdef ZMQ_BUILD_DRAFT_API
-    if(mechanism->status() == mechanism_t::handshaking)
+    if(mechanism == NULL || mechanism->status() == mechanism_t::handshaking)
         socket->event_handshake_failed(endpoint, (int) s);
 #endif
     socket->event_disconnected (endpoint, (int) s);
