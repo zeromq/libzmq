@@ -73,7 +73,8 @@ namespace zmq
         virtual int encode (msg_t *msg_);
         virtual int decode (msg_t *msg_);
         virtual int zap_msg_available ();
-        virtual status_t status () const;
+        virtual status_t status() const;
+        virtual error_detail_t error_detail() const;
 
     private:
 
