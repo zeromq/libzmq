@@ -29,9 +29,9 @@ for whom GSSAPI credentials should be acquired.
 To become a GSSAPI server, the application additionally sets the
 ZMQ_GSSAPI_SERVER option on the socket.
 
-To become a GSSAPI client, the application sets additionally sets the
+To become a GSSAPI client, the application additionally sets the
 ZMQ_GSSAPI_SERVICE_PRINCIPAL option to the name of the principal of the server
-to which it intends to connect.  
+to which it intends to connect.
 
 
 OPTIONAL ENCRYPTION
