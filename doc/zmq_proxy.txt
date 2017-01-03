@@ -63,8 +63,9 @@ of workers using the pipeline pattern.
 
 RETURN VALUE
 ------------
-The _zmq_proxy()_ function always returns `-1` and 'errno' set to *ETERM* (the
-0MQ 'context' associated with either of the specified sockets was terminated).
+The _zmq_proxy()_ function always returns `-1` and 'errno' set to *ETERM* or
+*EINTR* (the 0MQ 'context' associated with either of the specified sockets was
+terminated).
 
 
 EXAMPLE
