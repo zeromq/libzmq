@@ -418,6 +418,17 @@ zmq::fd_t zmq::ipc_listener_t::accept ()
     }
 #endif
 
+    if (zmq::set_nosigpipe (sock)) {
+#ifdef ZMQ_HAVE_WINDOWS
+        int rc = closesocket (sock);
+        wsa_assert (rc != SOCKET_ERROR);
+#else
+        int rc = ::close (sock);
+        errno_assert (rc == 0);
+#endif
+        return retired_fd;
+    }
+
     return sock;
 }
 

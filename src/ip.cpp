@@ -30,6 +30,7 @@
 #include "precompiled.hpp"
 #include "ip.hpp"
 #include "err.hpp"
+#include "macros.hpp"
 
 #if !defined ZMQ_HAVE_WINDOWS
 #include <fcntl.h>
@@ -46,6 +47,8 @@
 
 zmq::fd_t zmq::open_socket (int domain_, int type_, int protocol_)
 {
+    int rc;
+
     //  Setting this option result in sane behaviour when exec() functions
     //  are used. Old sockets are closed and don't block TCP ports etc.
 #if defined ZMQ_HAVE_SOCK_CLOEXEC
@@ -65,7 +68,7 @@ zmq::fd_t zmq::open_socket (int domain_, int type_, int protocol_)
     //  race condition can cause socket not to be closed (if fork happens
     //  between socket creation and this point).
 #if !defined ZMQ_HAVE_SOCK_CLOEXEC && defined FD_CLOEXEC
-    int rc = fcntl (s, F_SETFD, FD_CLOEXEC);
+    rc = fcntl (s, F_SETFD, FD_CLOEXEC);
     errno_assert (rc != -1);
 #endif
 
@@ -74,6 +77,10 @@ zmq::fd_t zmq::open_socket (int domain_, int type_, int protocol_)
     BOOL brc = SetHandleInformation ((HANDLE) s, HANDLE_FLAG_INHERIT, 0);
     win_assert (brc);
 #endif
+
+    //  Socket is not yet connected so EINVAL is not a valid networking error
+    rc = zmq::set_nosigpipe (s);
+    errno_assert (rc == 0);
 
     return s;
 }
@@ -189,4 +196,24 @@ void zmq::set_ip_type_of_service (fd_t s_, int iptos)
                       errno == EINVAL);
     }
 #endif
+}
+
+int zmq::set_nosigpipe (fd_t s_)
+{
+#ifdef SO_NOSIGPIPE
+    //  Make sure that SIGPIPE signal is not generated when writing to a
+    //  connection that was already closed by the peer.
+    //  As per POSIX spec, EINVAL will be returned if the socket was valid but
+    //  the connection has been reset by the peer. Return an error so that the
+    //  socket can be closed and the connection retried if necessary.
+    int set = 1;
+    int rc = setsockopt (s_, SOL_SOCKET, SO_NOSIGPIPE, &set, sizeof (int));
+    if (rc != 0 && errno == EINVAL)
+        return -1;
+    errno_assert (rc == 0);
+#else
+    LIBZMQ_UNUSED (s_);
+#endif
+
+    return 0;
 }
