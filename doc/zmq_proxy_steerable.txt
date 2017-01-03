@@ -38,8 +38,9 @@ cf zmq_proxy
 RETURN VALUE
 ------------
 The _zmq_proxy_steerable()_ function returns 0 if TERMINATE is sent to its
-control socket. Otherwise, it returns `-1` and 'errno' set to *ETERM* (the
-0MQ 'context' associated with either of the specified sockets was terminated).
+control socket. Otherwise, it returns `-1` and 'errno' set to *ETERM* or
+*EINTR* (the 0MQ 'context' associated with either of the specified sockets was
+terminated).
 
 
 EXAMPLE
