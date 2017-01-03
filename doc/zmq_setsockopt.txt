@@ -203,7 +203,7 @@ Applicable socket types:: all, when using TCP transport
 
 ZMQ_GSSAPI_PLAINTEXT: Disable GSSAPI encryption
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Defines whether communications on the socket will encrypted, see
+Defines whether communications on the socket will be encrypted, see
 linkzmq:zmq_gssapi[7]. A value of '1' means  that communications will be
 plaintext.  A value of '0' means communications will be encrypted.
 

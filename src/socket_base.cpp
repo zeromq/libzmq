@@ -1205,7 +1205,7 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
 
     //  If the message cannot be fetched immediately, there are two scenarios.
     //  For non-blocking recv, commands are processed in case there's an
-    //  activate_reader command already waiting int a command pipe.
+    //  activate_reader command already waiting in a command pipe.
     //  If it's not, return EAGAIN.
     if (flags_ & ZMQ_DONTWAIT || options.rcvtimeo == 0) {
         if (unlikely (process_commands (0, false) != 0)) {
