@@ -469,6 +469,7 @@ endif ()
 # source files
 
 set (cxx-sources
+        precompiled.cpp
         address.cpp
         client.cpp
         clock.cpp
@@ -510,7 +511,6 @@ set (cxx-sources
         poll.cpp
         poller_base.cpp
         pollset.cpp
-        precompiled.cpp
         proxy.cpp
         pub.cpp
         pull.cpp
