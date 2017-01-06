@@ -889,11 +889,7 @@ foreach (readme ${readme-docs})
   configure_file (${CMAKE_CURRENT_SOURCE_DIR}/${readme} ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt)
 
   if (NOT ZMQ_BUILD_FRAMEWORK)
-    if (MSVC)
-      install (FILES ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt DESTINATION .)
-    else ()
-      install (FILES ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt DESTINATION share/zmq)
-    endif ()
+    install (FILES ${CMAKE_CURRENT_BINARY_DIR}/${readme}.txt DESTINATION share/zmq)
   endif ()
 endforeach ()
 
@@ -903,8 +899,8 @@ if (WITH_DOC)
   endif ()
 endif ()
 
-
-if (MSVC)
+option(ENABLE_CPACK "Enables cpack rules" ON)
+if (MSVC AND ENABLE_CPACK)
   include (InstallRequiredSystemLibraries)
 
   if (CMAKE_CL_64)
