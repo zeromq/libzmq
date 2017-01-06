@@ -844,17 +844,19 @@ endif ()
 #-----------------------------------------------------------------------------
 # installer
 
+include(GNUInstallDirs)
+
 if (MSVC)
   install (TARGETS libzmq libzmq-static
-          ARCHIVE DESTINATION lib
-          LIBRARY DESTINATION lib
-          PUBLIC_HEADER DESTINATION include
+          ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+          LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+          PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
           COMPONENT SDK)
   if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     install (TARGETS libzmq libzmq-static
-            RUNTIME DESTINATION bin
-            ARCHIVE DESTINATION lib
-            PUBLIC_HEADER DESTINATION include
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
             COMPONENT SDK)
     if (NOT CMAKE_PDB_OUTPUT_DIRECTORY)
       install (FILES ${CMAKE_CURRENT_BINARY_DIR}/bin/libzmq${MSVC_TOOLSET}-mt-gd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}.pdb DESTINATION lib
@@ -862,17 +864,17 @@ if (MSVC)
     endif ()
   else ()
     install (TARGETS libzmq
-            RUNTIME DESTINATION bin
-            PUBLIC_HEADER DESTINATION include
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+            PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
             COMPONENT Runtime)
   endif ()
 else ()
   install (TARGETS libzmq libzmq-static
-          RUNTIME DESTINATION bin
-          ARCHIVE DESTINATION lib
-          LIBRARY DESTINATION lib
+          RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+          ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+          LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
           FRAMEWORK DESTINATION "Library/Frameworks"
-          PUBLIC_HEADER DESTINATION include)
+          PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 endif ()
 
 # install (FILES ${public_headers}
@@ -898,6 +900,27 @@ if (WITH_DOC)
     install (FILES ${html-docs} DESTINATION doc/zmq COMPONENT RefGuide)
   endif ()
 endif ()
+
+include(CMakePackageConfigHelpers)
+
+string(TOUPPER "${CMAKE_BUILD_TYPE}" U_CMAKE_BUILD_TYPE)
+get_property(libzmq_pf TARGET libzmq PROPERTY ${U_CMAKE_BUILD_TYPE}_POSTFIX)
+set(libzmq_file libzmq${libzmq_pf}${CMAKE_LINK_LIBRARY_SUFFIX})
+get_property(libzmq_static_pf TARGET libzmq-static PROPERTY ${U_CMAKE_BUILD_TYPE}_POSTFIX)
+set(libzmq_static_file libzmq-static${libzmq_static_pf}${CMAKE_LINK_LIBRARY_SUFFIX})
+
+# GNUInstallDirs "DATADIR" wrong here; CMake search path wants "share".
+set(ZEROMQ_CMAKECONFIG_INSTALL_DIR "share/cmake/${PROJECT_NAME}" CACHE STRING "install path for ZeroMQConfig.cmake")
+
+configure_package_config_file(${PROJECT_NAME}Config.cmake.in
+                              "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+                              INSTALL_DESTINATION ${ZEROMQ_CMAKECONFIG_INSTALL_DIR})
+write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+                                 VERSION ${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.${ZMQ_VERSION_PATCH}
+                                 COMPATIBILITY AnyNewerVersion)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+              ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+              DESTINATION ${ZEROMQ_CMAKECONFIG_INSTALL_DIR})
 
 option(ENABLE_CPACK "Enables cpack rules" ON)
 if (MSVC AND ENABLE_CPACK)
