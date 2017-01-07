@@ -14,6 +14,28 @@ If you clone the Git repository then you should start by running the
 command `./autogen.sh`. This is not necessary if you get the source
 packages.
 
+CMake installation
+==================
+
+The following options are available for cmake invocation:
+
+- `WITH_PERF_TOOL'
+    Enables the build of performance tools. Default value is ON.
+- `ZMQ_BUILD_TESTS'
+    Builds ZeroMQ tests. Default value is ON.
+- `ENABLE_CPACK'
+    Enables CPack build rules. This option has effect on Windows
+    platform only. Default value is ON. Turn it to OFF if you
+    don't want the runtime libraries to be installed (typically
+    if your installation destination already contains them).
+    
+
+Example: installing ZeroMQ on Windows with no tests, no performance
+tools, and no runtime library copy:
+
+cmake -G "NMake Makefiles" -D WITH_PERF_TOOL=OFF -D ZMQ_BUILD_TESTS=OFF
+-D ENABLE_CPACK=OFF -D CMAKE_BUILD_TYPE=Release
+
 Windows Builds
 ==============
 
