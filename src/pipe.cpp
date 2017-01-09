@@ -83,8 +83,8 @@ zmq::pipe_t::pipe_t (object_t *parent_, upipe_t *inpipe_, upipe_t *outpipe_,
     out_active (true),
     hwm (outhwm_),
     lwm (compute_lwm (inhwm_)),
-    inhwmboost(0),
-    outhwmboost(0),
+    inhwmboost(1),
+    outhwmboost(1),
     msgs_read (0),
     msgs_written (0),
     peers_msgs_read (0),
@@ -520,6 +520,11 @@ void zmq::pipe_t::set_hwms (int inhwm_, int outhwm_)
 
     lwm = compute_lwm(in);
     hwm = out;
+}
+
+void zmq::pipe_t::set_peer_hwms (int inhwm_, int outhwm_)
+{
+    peer->set_hwms(inhwm_, outhwm_);
 }
 
 void zmq::pipe_t::set_hwms_boost(int inhwmboost_, int outhwmboost_)
