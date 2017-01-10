@@ -1414,7 +1414,6 @@ void zmq::socket_base_t::update_pipe_options(int option_)
         for (pipes_t::size_type i = 0; i != pipes.size(); ++i)
         {
             pipes[i]->set_hwms(options.rcvhwm, options.sndhwm);
-            pipes[i]->set_peer_hwms(options.sndhwm, options.rcvhwm);
         }
     }
 

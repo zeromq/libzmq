@@ -133,9 +133,6 @@ namespace zmq
         //  Set the high water marks.
         void set_hwms (int inhwm_, int outhwm_);
 
-        //  Set the high water marks for peer.
-        void set_peer_hwms (int inhwm_, int outhwm_);
-
         //  Set the boost to high water marks, used by inproc sockets so total hwm are sum of connect and bind sockets watermarks
         void set_hwms_boost(int inhwmboost_, int outhwmboost_);
 
