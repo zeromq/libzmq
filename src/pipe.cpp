@@ -522,11 +522,6 @@ void zmq::pipe_t::set_hwms (int inhwm_, int outhwm_)
     hwm = out;
 }
 
-void zmq::pipe_t::set_peer_hwms (int inhwm_, int outhwm_)
-{
-    peer->set_hwms(inhwm_, outhwm_);
-}
-
 void zmq::pipe_t::set_hwms_boost(int inhwmboost_, int outhwmboost_)
 {
     inhwmboost = inhwmboost_;
