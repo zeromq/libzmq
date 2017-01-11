@@ -102,6 +102,7 @@ namespace zmq
         void send_hiccup (zmq::pipe_t *destination_, void *pipe_);
         void send_pipe_term (zmq::pipe_t *destination_);
         void send_pipe_term_ack (zmq::pipe_t *destination_);
+        void send_pipe_hwm (zmq::pipe_t *destination_, int inhwm_, int outhwm_);
         void send_term_req (zmq::own_t *destination_,
             zmq::own_t *object_);
         void send_term (zmq::own_t *destination_, int linger_);
@@ -122,6 +123,7 @@ namespace zmq
         virtual void process_hiccup (void *pipe_);
         virtual void process_pipe_term ();
         virtual void process_pipe_term_ack ();
+        virtual void process_pipe_hwm (int inhwm_, int outhwm_);
         virtual void process_term_req (zmq::own_t *object_);
         virtual void process_term (int linger_);
         virtual void process_term_ack ();

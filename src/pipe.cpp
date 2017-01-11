@@ -377,6 +377,11 @@ void zmq::pipe_t::process_pipe_term_ack ()
     delete this;
 }
 
+void zmq::pipe_t::process_pipe_hwm (int inhwm_, int outhwm_)
+{
+    set_hwms(inhwm_, outhwm_);
+}
+
 void zmq::pipe_t::set_nodelay ()
 {
     this->delay = false;
@@ -532,4 +537,9 @@ bool zmq::pipe_t::check_hwm () const
 {
     bool full = hwm > 0 && msgs_written - peers_msgs_read >= uint64_t (hwm);
     return( !full );
+}
+
+void zmq::pipe_t::send_hwms_to_peer(int inhwm_, int outhwm_)
+{
+    send_pipe_hwm(peer, inhwm_, outhwm_);
 }

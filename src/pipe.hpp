@@ -136,6 +136,9 @@ namespace zmq
         //  Set the boost to high water marks, used by inproc sockets so total hwm are sum of connect and bind sockets watermarks
         void set_hwms_boost(int inhwmboost_, int outhwmboost_);
 
+        // send command to peer for notify the change of hwm
+        void send_hwms_to_peer(int inhwm_, int outhwm_);
+
         //  Returns true if HWM is not reached
         bool check_hwm () const;
     private:
@@ -149,6 +152,7 @@ namespace zmq
         void process_hiccup (void *pipe_);
         void process_pipe_term ();
         void process_pipe_term_ack ();
+        void process_pipe_hwm (int inhwm_, int outhwm_);
 
         //  Handler for delimiter read from the pipe.
         void process_delimiter ();
