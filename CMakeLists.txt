@@ -731,6 +731,8 @@ if (MSVC)
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin"
     COMPILE_DEFINITIONS "DLL_EXPORT")
   add_library (libzmq-static STATIC ${sources})
+  # NOTE: on windows platform the static library name cannot be the same as the shared library name.
+  # since the .dll also requires a .lib companion file for linking.
   set_target_properties (libzmq-static PROPERTIES
     PUBLIC_HEADER "${public_headers}"
     RELEASE_POSTFIX "${MSVC_TOOLSET}-mt-s-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
@@ -765,7 +767,7 @@ else ()
     set_target_properties (libzmq-static PROPERTIES
       PUBLIC_HEADER "${public_headers}"
       COMPILE_DEFINITIONS "ZMQ_STATIC"
-      OUTPUT_NAME "libzmq-static"
+      OUTPUT_NAME "libzmq"
       PREFIX "")
 endif ()
 
