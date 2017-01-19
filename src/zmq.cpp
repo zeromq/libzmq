@@ -1517,6 +1517,10 @@ int zmq_has (const char *capability)
     if (strcmp (capability, "vmci") == 0)
         return true;
 #endif
+#if defined (ZMQ_BUILD_DRAFT_API)
+    if (strcmp (capability, "draft") == 0)
+        return true;
+#endif
     //  Whatever the application asked for, we don't have
     return false;
 }
