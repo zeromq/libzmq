@@ -908,10 +908,10 @@ if (MSVC)
   get_property(libzmq_pf TARGET libzmq PROPERTY ${U_CMAKE_BUILD_TYPE}_POSTFIX)
   set(libzmq_file libzmq${libzmq_pf}${CMAKE_LINK_LIBRARY_SUFFIX})
   get_property(libzmq_static_pf TARGET libzmq-static PROPERTY ${U_CMAKE_BUILD_TYPE}_POSTFIX)
-  set(libzmq_static_file libzmq-static${libzmq_static_pf}${CMAKE_LINK_LIBRARY_SUFFIX})
+  set(libzmq_static_file libzmq${libzmq_static_pf}${CMAKE_LINK_LIBRARY_SUFFIX})
 else()
   set(libzmq_file libzmq${CMAKE_SHARED_LIBRARY_SUFFIX})
-  set(libzmq_static_file libzmq-static${CMAKE_STATIC_LIBRARY_SUFFIX})
+  set(libzmq_static_file libzmq${CMAKE_STATIC_LIBRARY_SUFFIX})
 endif()
 
 # GNUInstallDirs "DATADIR" wrong here; CMake search path wants "share".
