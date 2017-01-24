@@ -161,22 +161,22 @@ char *zmq_z85_encode (char *dest, const uint8_t *data, size_t size)
 
 uint8_t *zmq_z85_decode (uint8_t *dest, const char *string)
 {
-    if (strlen (string) % 5 != 0) {
-        goto error_inval;
-    }
     unsigned int byte_nbr = 0;
     unsigned int char_nbr = 0;
-    size_t string_len = strlen (string);
     uint32_t value = 0;
-    while (char_nbr < string_len) {
+    while (string[char_nbr]) {
         //  Accumulate value in base 85
+        if (UINT32_MAX / 85 < value) {
+            //  Invalid z85 encoding, represented value exceeds 0xffffffff
+            goto error_inval;
+        }
         value *= 85;
-        uint8_t index = string[char_nbr++] - 32;
-        if (index > sizeof(decoder)) {
+        uint8_t index = string [char_nbr++] - 32;
+        if (index >= sizeof(decoder)) {
             //  Invalid z85 encoding, character outside range
             goto error_inval;
         }
-        uint32_t summand = decoder[index];
+        uint32_t summand = decoder [index];
         if (value == 0xFF || summand > (UINT32_MAX - value)) {
             //  Invalid z85 encoding, invalid character or represented value exceeds 0xffffffff
             goto error_inval;
@@ -191,6 +191,9 @@ uint8_t *zmq_z85_decode (uint8_t *dest, const char *string)
             }
             value = 0;
         }
+    }
+    if (char_nbr % 5 != 0) {
+        goto error_inval;
     }
     assert (byte_nbr == strlen (string) * 4 / 5);
     return dest;
