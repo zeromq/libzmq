@@ -68,6 +68,7 @@ set(tests
         test_base85
         test_bind_after_connect_tcp
         test_sodium
+		test_utils_z85
 )
 if(NOT WIN32)
   list(APPEND tests
