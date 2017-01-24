@@ -28,6 +28,7 @@
 */
 
 #include <cassert>
+#include <cstring>
 #include <zmq.h>
 
 template<size_t SIZE>
