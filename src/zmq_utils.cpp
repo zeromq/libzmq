@@ -36,6 +36,7 @@
 #include "atomic_counter.hpp"
 #include "atomic_ptr.hpp"
 #include <assert.h>
+#include <stdint.h>
 
 #if !defined ZMQ_HAVE_WINDOWS
 #include <unistd.h>
