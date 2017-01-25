@@ -174,7 +174,7 @@ uint8_t *zmq_z85_decode (uint8_t *dest, const char *string)
             goto error_inval;
         }
         uint32_t summand = decoder [index];
-        if (value == 0xFF || summand > (UINT32_MAX - value)) {
+        if (summand == 0xFF || summand > (UINT32_MAX - value)) {
             //  Invalid z85 encoding, invalid character or represented value exceeds 0xffffffff
             goto error_inval;
         }

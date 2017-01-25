@@ -97,6 +97,23 @@ void test__zmq_z85_encode__zmq_z85_decode__roundtrip(const uint8_t (&test_data)[
     assert(res3 == 0);
 }
 
+// call zmq_z85_encode, then zmq_z85_decode, and compare the results with the original
+template<size_t SIZE>
+void test__zmq_z85_decode__zmq_z85_encode__roundtrip(const char (&test_data)[SIZE])
+{
+    const size_t decoded_size = (SIZE - 1) * 4 / 5;
+    uint8_t test_data_decoded[decoded_size];
+    uint8_t *res1 = zmq_z85_decode(test_data_decoded, test_data);
+    assert(res1 != NULL);
+
+    char test_data_z85[SIZE];
+    char *res2 = zmq_z85_encode(test_data_z85, test_data_decoded, decoded_size);
+    assert(res2 != NULL);
+
+    int res3 = memcmp(test_data, test_data_z85, SIZE);
+    assert(res3 == 0);
+}
+
 
 int main (void)
 {
@@ -138,6 +155,8 @@ int main (void)
       const uint8_t test_data[] = {0xff, 0xff, 0xff, 0xff};
       test__zmq_z85_encode__zmq_z85_decode__roundtrip(test_data);
     }
+
+    test__zmq_z85_decode__zmq_z85_encode__roundtrip("r^/rM9M=rMToK)63O8dCvd9D<PY<7iGlC+{BiSnG");
 
     return 0;
 }
