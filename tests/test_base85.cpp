@@ -71,10 +71,12 @@ void test__zmq_z85_decode__valid__success ()
 }
 
 // String length must be evenly divisible by 5 or must fail with EINVAL.
-void test__zmq_z85_decode__invalid__failure (const char *encoded)
+template<size_t SIZE>
+void test__zmq_z85_decode__invalid__failure (const char (&encoded)[SIZE])
 {
+    uint8_t decoded[SIZE * 4 / 5 + 1];
     errno = 0;
-    assert (zmq_z85_decode(NULL, encoded) == NULL);
+    assert (zmq_z85_decode(decoded, encoded) == NULL);
     assert (zmq_errno () == EINVAL);
 }
 
