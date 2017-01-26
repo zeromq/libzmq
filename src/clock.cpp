@@ -240,7 +240,11 @@ uint64_t zmq::clock_t::rdtsc ()
     return(tsc);
 #else
     struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
+    #if defined ZMQ_HAVE_OSX && __MAC_OS_X_VERSION_MIN_REQUIRED < 101200 // less than macOS 10.12
+        alt_clock_gettime (CLOCK_MONOTONIC, &ts);
+    #else
+        clock_gettime (CLOCK_MONOTONIC, &ts);
+    #endif
     return (uint64_t)(ts.tv_sec) * 1000000000 + ts.tv_nsec;
 #endif
 }
