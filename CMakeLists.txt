@@ -23,7 +23,7 @@ option (WITH_OPENPGM "Build with support for OpenPGM" OFF)
 option (WITH_VMCI "Build with support for VMware VMCI socket" OFF)
 
 if (APPLE)
-    option (ZMQ_BUILD_FRAMEWORK "Build as OS X framework" ON)
+    option (ZMQ_BUILD_FRAMEWORK "Build as OS X framework" OFF)
 endif ()
 
 # Select curve encryption library, defaults to tweetnacl
