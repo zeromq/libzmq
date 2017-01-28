@@ -137,7 +137,8 @@ int zmq::lb_t::sendpipe (msg_t *msg_, pipe_t **pipe_)
     more = msg_->flags () & msg_t::more? true: false;
     if (!more) {
         pipes [current]->flush ();
-        current = (current + 1) % active;
+        current = (current + 1) % active; //  in zmq 3.x this causes crash if the last pipe is terminated beween the 
+                                          //    the test for active == 0 at 109  and here as %(active==0) causes a crash. 
     }
 
     //  Detach the message from the data buffer.
