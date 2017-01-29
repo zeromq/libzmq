@@ -37,7 +37,9 @@
 // This must be included before any windows headers are compiled.
 #if defined ZMQ_HAVE_WINDOWS
 #if defined ZMQ_HAVE_WINDOWS_UWP
-#define WIN32_LEAN_AND_MEAN
+#define WINVER _WIN32_WINNT_WIN10  
+#define _WIN32_WINNT _WIN32_WINNT_WIN10 
+//#define WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_SYSTEM)
 #endif
 #include "windows.hpp"
 #endif
