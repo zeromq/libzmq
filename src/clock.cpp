@@ -78,7 +78,10 @@ int alt_clock_gettime (int clock_id, timespec *ts)
 #endif
 
 #ifdef ZMQ_HAVE_WINDOWS
-typedef ULONGLONG (*f_compatible_get_tick_count64)();
+typedef ULONGLONG(*f_compatible_get_tick_count64)();
+#ifdef ZMQ_HAVE_WINDOWS_UWP
+static f_compatible_get_tick_count64 my_get_tick_count64 = ::GetTickCount64;
+#else
 
 static zmq::mutex_t compatible_get_tick_count64_mutex;
 
@@ -115,6 +118,7 @@ f_compatible_get_tick_count64 init_compatible_get_tick_count64()
 }
 
 static f_compatible_get_tick_count64 my_get_tick_count64 = init_compatible_get_tick_count64();
+#endif
 #endif
 
 zmq::clock_t::clock_t () :
