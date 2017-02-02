@@ -986,18 +986,29 @@ AC_DEFUN([LIBZMQ_CHECK_POLLER], [{
                 ])
             ;;
             epoll)
-                LIBZMQ_CHECK_POLLER_EPOLL_CLOEXEC([
-                    AC_MSG_NOTICE([Using 'epoll' polling system with CLOEXEC])
-                    AC_DEFINE(ZMQ_USE_EPOLL, 1, [Use 'epoll' polling system])
-                    AC_DEFINE(ZMQ_USE_EPOLL_CLOEXEC, 1, [Use 'epoll' polling system with CLOEXEC])
-                    poller_found=1
-                    ],[
-                    LIBZMQ_CHECK_POLLER_EPOLL([
-                        AC_MSG_NOTICE([Using 'epoll' polling system with CLOEXEC])
-                        AC_DEFINE(ZMQ_USE_EPOLL, 1, [Use 'epoll' polling system])
-                        poller_found=1
-                    ])
-                ])
+                case "$host_os" in
+                    solaris*|sunos*)
+                        # Recent illumos and Solaris systems did add epoll()
+                        # syntax, but it does not fully satisfy expectations
+                        # that ZMQ has from Linux systems. Unless you undertake
+                        # to fix the integration, do not disable this exception
+                        # and use select() or poll() on Solarish OSes for now.
+                        AC_MSG_NOTICE([NOT using 'epoll' polling system on '$host_os']) ;;
+                    *)
+                        LIBZMQ_CHECK_POLLER_EPOLL_CLOEXEC([
+                            AC_MSG_NOTICE([Using 'epoll' polling system with CLOEXEC])
+                            AC_DEFINE(ZMQ_USE_EPOLL, 1, [Use 'epoll' polling system])
+                            AC_DEFINE(ZMQ_USE_EPOLL_CLOEXEC, 1, [Use 'epoll' polling system with CLOEXEC])
+                            poller_found=1
+                            ],[
+                            LIBZMQ_CHECK_POLLER_EPOLL([
+                                AC_MSG_NOTICE([Using 'epoll' polling system with CLOEXEC])
+                                AC_DEFINE(ZMQ_USE_EPOLL, 1, [Use 'epoll' polling system])
+                                poller_found=1
+                            ])
+                        ])
+                        ;;
+                esac
             ;;
             devpoll)
                 LIBZMQ_CHECK_POLLER_DEVPOLL([
