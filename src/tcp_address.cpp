@@ -240,12 +240,16 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
 #include <netioapi.h>
 
 int zmq::tcp_address_t::get_interface_name(unsigned long index, char ** dest) const {
-    char * buffer = (char*)malloc(IF_MAX_STRING_SIZE);
+#ifdef ZMQ_HAVE_WINDOWS_UWP
+	char * buffer = (char*)malloc(1024);
+#else
+	char * buffer = (char*)malloc(IF_MAX_STRING_SIZE);
+#endif
     alloc_assert(buffer);
 
     char * if_name_result = NULL;
 
-#ifndef ZMQ_HAVE_WINDOWS_TARGET_XP
+#if !defined ZMQ_HAVE_WINDOWS_TARGET_XP && !defined ZMQ_HAVE_WINDOWS_UWP 
     if_name_result = if_indextoname(index, buffer);
 #endif
 
@@ -613,7 +617,7 @@ int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_, boo
         std::string if_str = addr_str.substr(pos + 1);
         addr_str = addr_str.substr(0, pos);
         if (isalpha (if_str.at (0)))
-#if !defined ZMQ_HAVE_WINDOWS_TARGET_XP
+#if !defined ZMQ_HAVE_WINDOWS_TARGET_XP && !defined ZMQ_HAVE_WINDOWS_UWP 
             zone_id = if_nametoindex(if_str.c_str());
 #else
             // The function 'if_nametoindex' is not supported on Windows XP.
