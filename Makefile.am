@@ -791,6 +791,7 @@ XFAIL_TESTS += test_ipc_wildcard \
 endif
 
 EXTRA_DIST = \
+	FindSodium.cmake \
 	CMakeLists.txt \
 	autogen.sh	\
 	version.sh	\
