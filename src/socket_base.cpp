@@ -842,7 +842,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         //  Following code is quick and dirty check to catch obvious errors,
         //  without trying to be fully accurate.
         const char *check = address.c_str ();
-        if (isalnum (*check) || isxdigit (*check) || *check == '[') {
+        if (isalnum (*check) || isxdigit (*check) || *check == '[' || *check == ':') {
             check++;
             while (isalnum  (*check)
                 || isxdigit (*check)
