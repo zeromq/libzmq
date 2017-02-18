@@ -1,5 +1,40 @@
-0MQ version 4.2.2 stable, released on 20xx/xx/xx
+0MQ version 4.2.2 stable, released on 2017/02/18
 =============================================
+
+* Improve compatibility with GNU Hurd
+
+* Fixed #2286 - improve CMake on Windows documentation
+
+* Fixed #1235 - improved compatibility with mingw64
+
+* Improve zmq_proxy documentation to state it can return ETERM as well
+
+* Fixed #1442 - SO_NOSIGPIPE and connection closing by peer race condition
+
+* Improve CMake functionality on Windows: ZeroMQConfig.cmake generation CPack
+  option, correct static library filename, ship FindSodium.cmake in tarball
+
+* Fixed #2228 - setting HWM after connect on inproc transport leads to infinite
+  HWM
+
+* Add support for Visual Studio 2017
+
+* New DRAFT (see NEWS for 4.2.0) zmq_has option "draft" option that returns
+  true if the library was built with DRAFT enabled. Useful for FFI bindings.
+  See doc/zmq_has.txt for more information
+
+* Fixed #2321 - zmq_z85_decode does not validate its input. The function has
+  been fixed to correctly follow RFC32 and return NULL if the input is invalid
+
+* Fixed #2323 - clock_t related crash on Apple iOS 9.3.2 and 9.3.5
+
+* Fixed #1801 - OSX: Cmake installs libzmq in a weird PATH
+
+* Fixed potential divide by zero in zmq::lb_t::sendpipe
+
+* Improve compatibility with OpenIndiana by skipping epoll and using poll/select
+
+* Fix IPv4-in-IPv6 mapped addresses parsing error
 
 
 0MQ version 4.2.1 stable, released on 2016/12/31
