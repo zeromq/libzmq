@@ -35,7 +35,7 @@
 
 #cmakedefine ZMQ_HAVE_CURVE
 #cmakedefine ZMQ_USE_TWEETNACL
-#cmakedefine ZMQ_USE_LIBSOIUM
+#cmakedefine ZMQ_USE_LIBSODIUM
 
 #ifdef _AIX
   #define ZMQ_HAVE_AIX
