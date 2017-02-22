@@ -133,7 +133,7 @@ zmq::ctx_t::~ctx_t ()
 
     //  If we've done any Curve encryption, we may have a file handle
     //  to /dev/urandom open that needs to be cleaned up.
-#if defined (ZMQ_USE_TWEETNACL)
+#ifdef ZMQ_HAVE_CURVE
     randombytes_close ();
 #endif
 
