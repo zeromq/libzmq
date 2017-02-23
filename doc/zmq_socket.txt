@@ -98,7 +98,7 @@ connected  peer. This usage is sensible only for stateless protocols.
 
 'ZMQ_CLIENT' sockets are threadsafe and can be used from multiple threads
 at the same time. Note that replies from a 'ZMQ_SERVER' socket will go to
-the first client thread that calls libzmq:zmq_msg_recv. If you need to get
+the first client thread that calls linkzmq:zmq_msg_recv[3]. If you need to get
 replies back to the originating thread, use one 'ZMQ_CLIENT' socket per
 thread.
 
@@ -171,7 +171,7 @@ Note: this pattern is meant to eventually deprecate the use of 'ZMQ_PUB' and
 ZMQ_RADIO
 ^^^^^^^
 A socket of type 'ZMQ_RADIO' is used by a _publisher_ to distribute data.
-Each message belong to a group, a group is specified with linkzmq_zmq_msg_set_group[3].
+Each message belong to a group, a group is specified with linkzmq:zmq_msg_set_group[3].
 Messages are distributed to all members of a group.
 The linkzmq:zmq_recv[3] function is not implemented for this socket type.
 
