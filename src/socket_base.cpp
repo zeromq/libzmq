@@ -1120,13 +1120,7 @@ int zmq::socket_base_t::send (msg_t *msg_, int flags_)
     if (rc == 0) {
         return 0;
     }
-
-    // In case of ZMQ_ROUTER_MANDATORY option set and peer disconnected
-    if (likely(errno == EHOSTUNREACH)) {
-        return -1;
-    }
-
-    if (unlikely(errno != EAGAIN)) {
+    if (unlikely (errno != EAGAIN)) {
         return -1;
     }
 

@@ -84,15 +84,11 @@ int main (void)
     const int BUF_SIZE = 65536;
     char buf[BUF_SIZE];
     memset(buf, 0, BUF_SIZE);
-
     // Send first batch of messages
     for(i = 0; i < 100000; ++i) {
-        if (TRACE_ENABLED) 
-            fprintf(stderr, "Sending message %d ...\n", i);
-
+        if (TRACE_ENABLED) fprintf(stderr, "Sending message %d ...\n", i);
         rc = zmq_send (router, "X", 1, ZMQ_DONTWAIT | ZMQ_SNDMORE);
-        if (rc == -1 && zmq_errno() == EHOSTUNREACH)
-            break;
+        if (rc == -1 && zmq_errno() == EAGAIN) break;
         assert (rc == 1);
         rc = zmq_send (router, buf, BUF_SIZE, ZMQ_DONTWAIT);
         assert (rc == BUF_SIZE);
@@ -100,17 +96,12 @@ int main (void)
     // This should fail after one message but kernel buffering could
     // skew results
     assert (i < 10);
-
     msleep (1000);
-
     // Send second batch of messages
     for(; i < 100000; ++i) {
-        if (TRACE_ENABLED) 
-            fprintf(stderr, "Sending message %d (part 2) ...\n", i);
-
+        if (TRACE_ENABLED) fprintf(stderr, "Sending message %d (part 2) ...\n", i);
         rc = zmq_send (router, "X", 1, ZMQ_DONTWAIT | ZMQ_SNDMORE);
-        if (rc == -1 && zmq_errno() == EHOSTUNREACH)
-            break;
+        if (rc == -1 && zmq_errno() == EAGAIN) break;
         assert (rc == 1);
         rc = zmq_send (router, buf, BUF_SIZE, ZMQ_DONTWAIT);
         assert (rc == BUF_SIZE);
@@ -119,8 +110,7 @@ int main (void)
     // skew results
     assert (i < 20);
 
-    if (TRACE_ENABLED) 
-        fprintf(stderr, "Done sending messages.\n");
+    if (TRACE_ENABLED) fprintf(stderr, "Done sending messages.\n");
 
     rc = zmq_close (router);
     assert (rc == 0);
