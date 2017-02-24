@@ -212,12 +212,27 @@ int zmq::router_t::xsend (msg_t *msg_)
 
             if (it != outpipes.end ()) {
                 current_out = it->second.pipe;
-                if (!current_out->check_write ()) {
+
+                // Check whether pipe is full or not
+                if (!current_out->check_hwm()) {
                     it->second.active = false;
                     current_out = NULL;
+
                     if (mandatory) {
                         more_out = false;
                         errno = EAGAIN;
+                        return -1;
+                    }
+                }
+                // Check whether pipe is closed or not
+                else 
+                if (!current_out->check_write()) {
+                    it->second.active = false;
+                    current_out = NULL;
+
+                    if (mandatory) {
+                        more_out = false;
+                        errno = EHOSTUNREACH;
                         return -1;
                     }
                 }
