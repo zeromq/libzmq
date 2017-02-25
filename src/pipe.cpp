@@ -203,17 +203,13 @@ read_message:
     return true;
 }
 
-bool zmq::pipe_t::check_write ()
+bool zmq::pipe_t::check_write () const
 {
     if (unlikely (!out_active || state != active))
         return false;
 
-    bool full = !check_hwm();
-
-    if (unlikely (full)) {
-        out_active = false;
+    if (unlikely (!check_hwm()))
         return false;
-    }
 
     return true;
 }
@@ -223,11 +219,14 @@ bool zmq::pipe_t::write (msg_t *msg_)
     if (unlikely (!check_write ()))
         return false;
 
-    bool more = msg_->flags () & msg_t::more ? true : false;
+    const bool more = msg_->flags () & msg_t::more ? true : false;
     const bool is_identity = msg_->is_identity ();
+    
     outpipe->write (*msg_, more);
     if (!more && !is_identity)
         msgs_written++;
+
+    process_out_pipe_state();
 
     return true;
 }
@@ -272,6 +271,8 @@ void zmq::pipe_t::process_activate_write (uint64_t msgs_read_)
         out_active = true;
         sink->write_activated (this);
     }
+
+    process_out_pipe_state();
 }
 
 void zmq::pipe_t::process_hiccup (void *pipe_)
@@ -525,6 +526,8 @@ void zmq::pipe_t::set_hwms (int inhwm_, int outhwm_)
 
     lwm = compute_lwm(in);
     hwm = out;
+
+    process_out_pipe_state();
 }
 
 void zmq::pipe_t::set_hwms_boost(int inhwmboost_, int outhwmboost_)
@@ -542,4 +545,10 @@ bool zmq::pipe_t::check_hwm () const
 void zmq::pipe_t::send_hwms_to_peer(int inhwm_, int outhwm_)
 {
     send_pipe_hwm(peer, inhwm_, outhwm_);
+}
+
+void zmq::pipe_t::process_out_pipe_state()
+{
+	if (unlikely(!check_hwm()))
+		out_active = false;
 }
