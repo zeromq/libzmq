@@ -176,3 +176,55 @@ int main(int argc, char *argv [])
 "
     ZMQ_HAVE_TIPC)
 endmacro()
+
+
+macro(zmq_check_pthread_setname)
+  message(STATUS "Checking pthread_setname signature")
+  set(SAVE_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
+  set(CMAKE_REQUIRED_FLAGS "-D_GNU_SOURCE -Werror -pthread")
+  check_c_source_runs(
+    "
+#include <pthread.h>
+
+int main(int argc, char *argv [])
+{
+    pthread_setname_np (\"foo\");
+    return 0;
+}
+"
+    ZMQ_HAVE_PTHREAD_SETNAME_1)
+  check_c_source_runs(
+    "
+#include <pthread.h>
+
+int main(int argc, char *argv [])
+{
+    pthread_setname_np (pthread_self(), \"foo\");
+    return 0;
+}
+"
+    ZMQ_HAVE_PTHREAD_SETNAME_2)
+  check_c_source_runs(
+    "
+#include <pthread.h>
+
+int main(int argc, char *argv [])
+{
+    pthread_setname_np (pthread_self(), \"foo\", (void *)0);
+    return 0;
+}
+"
+    ZMQ_HAVE_PTHREAD_SETNAME_3)
+  check_c_source_runs(
+    "
+#include <pthread.h>
+
+int main(int argc, char *argv [])
+{
+    pthread_set_name_np (pthread_self(), \"foo\");
+    return 0;
+}
+"
+    ZMQ_HAVE_PTHREAD_SET_NAME)
+  set(CMAKE_REQUIRED_FLAGS ${SAVE_CMAKE_REQUIRED_FLAGS})
+endmacro()

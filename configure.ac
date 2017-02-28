@@ -589,6 +589,56 @@ AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(perror gettimeofday clock_gettime memset socket getifaddrs freeifaddrs fork posix_memalign mkdtemp)
 AC_CHECK_HEADERS([alloca.h])
 
+# pthread_setname is non-posix, and there are at least 4 different implementations
+AC_MSG_CHECKING([whether signature of pthread_setname_np() has 1 argument])
+AC_COMPILE_IFELSE(
+	[AC_LANG_PROGRAM(
+		[[#include <pthread.h>]],
+		[[pthread_setname_np ("foo"); return 0;]])
+	],[
+		AC_MSG_RESULT([yes])
+		AC_DEFINE(ZMQ_HAVE_PTHREAD_SETNAME_1, [1],
+		    [Whether pthread_setname_np() has 1 argument])
+	],[
+		AC_MSG_RESULT([no])
+])
+AC_MSG_CHECKING([whether signature of pthread_setname_np() has 2 arguments])
+AC_COMPILE_IFELSE(
+	[AC_LANG_PROGRAM(
+		[[#include <pthread.h>]],
+		[[pthread_setname_np (pthread_self (), "foo"); return 0;]])
+	],[
+		AC_MSG_RESULT([yes])
+		AC_DEFINE(ZMQ_HAVE_PTHREAD_SETNAME_2, [1],
+		    [Whether pthread_setname_np() has 2 arguments])
+	],[
+		AC_MSG_RESULT([no])
+])
+AC_MSG_CHECKING([whether signature of pthread_setname_np() has 3 arguments])
+AC_COMPILE_IFELSE(
+	[AC_LANG_PROGRAM(
+		[[#include <pthread.h>]],
+		[[pthread_setname_np (pthread_self(), "foo", (void *)0); return 0;]])
+	],[
+		AC_MSG_RESULT([yes])
+		AC_DEFINE(ZMQ_HAVE_PTHREAD_SETNAME_3, [1],
+		    [Whether pthread_setname_np() has 3 arguments])
+	],[
+		AC_MSG_RESULT([no])
+])
+AC_MSG_CHECKING([whether pthread_set_name_np() exists])
+AC_COMPILE_IFELSE(
+	[AC_LANG_PROGRAM(
+		[[#include <pthread.h>]],
+		[[pthread_set_name_np (pthread_self(), "foo"); return 0;]])
+	],[
+		AC_MSG_RESULT([yes])
+		AC_DEFINE(ZMQ_HAVE_PTHREAD_SET_NAME, [1],
+		    [Whether pthread_set_name_np() exists])
+	],[
+		AC_MSG_RESULT([no])
+])
+
 LIBZMQ_CHECK_SOCK_CLOEXEC([
     AC_DEFINE([ZMQ_HAVE_SOCK_CLOEXEC],
         [1],

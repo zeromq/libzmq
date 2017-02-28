@@ -323,6 +323,7 @@ zmq_check_tcp_keepidle ()
 zmq_check_tcp_keepintvl ()
 zmq_check_tcp_keepalive ()
 zmq_check_tcp_tipc ()
+zmq_check_pthread_setname ()
 
 
 if (    CMAKE_SYSTEM_NAME MATCHES "Linux"
