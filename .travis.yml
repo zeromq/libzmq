@@ -37,8 +37,8 @@ matrix:
     addons:
       apt:
         sources:
-        - sourceline: 'deb http://download.opensuse.org/repositories/home:/zeromq:/git-stable/xUbuntu_14.04/ ./'
-          key_url: 'http://download.opensuse.org/repositories/home:/zeromq:/git-stable/xUbuntu_14.04/Release.key'
+        - sourceline: 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_14.04/ ./'
+          key_url: 'http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_14.04/Release.key'
         packages:
         - libsodium-dev
         - asciidoc
