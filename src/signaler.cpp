@@ -189,6 +189,7 @@ void zmq::signaler_t::send ()
     unsigned char dummy = 0;
     while (true) {
         int nbytes = ::send (w, (char*) &dummy, sizeof (dummy), 0);
+        wsa_assert (nbytes != SOCKET_ERROR);
         if (unlikely (nbytes == SOCKET_ERROR))
             continue;
         zmq_assert (nbytes == sizeof (dummy));
