@@ -436,7 +436,7 @@ ZMQ_EXPORT int zmq_socket_monitor (void *s, const char *addr, int events);
 
 
 /******************************************************************************/
-/*  I/O multiplexing.                                                         */
+/*  Deprecated I/O multiplexing. Prefer using zmq_poller API                  */
 /******************************************************************************/
 
 #define ZMQ_POLLIN 1
