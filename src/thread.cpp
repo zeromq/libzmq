@@ -170,16 +170,16 @@ void zmq::thread_t::setThreadName(const char *name_)
     if (!name_)
         return;
 
-#if defined(HAVE_PTHREAD_SETNAME_1)
+#if defined(ZMQ_HAVE_PTHREAD_SETNAME_1)
     int rc = pthread_setname_np(name_);
     posix_assert (rc);
-#elif defined(HAVE_PTHREAD_SETNAME_2)
+#elif defined(ZMQ_HAVE_PTHREAD_SETNAME_2)
     int rc = pthread_setname_np(descriptor, name_);
     posix_assert (rc);
-#elif defined(HAVE_PTHREAD_SETNAME_3)
+#elif defined(ZMQ_HAVE_PTHREAD_SETNAME_3)
     int rc = pthread_setname_np(descriptor, name_, NULL);
     posix_assert (rc);
-#elif defined(HAVE_PTHREAD_SET_NAME)
+#elif defined(ZMQ_HAVE_PTHREAD_SET_NAME)
     pthread_set_name_np(descriptor, name_);
 #endif
 }
