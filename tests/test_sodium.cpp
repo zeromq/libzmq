@@ -28,6 +28,7 @@
 */
 
 #include "testutil.hpp"
+#include <stdio.h>
 
 // There is no way to test for correctness because of the embedded RNG.
 void test__zmq_curve_keypair__always__success (void)
@@ -40,7 +41,8 @@ void test__zmq_curve_keypair__always__success (void)
 
 #if defined (ZMQ_HAVE_CURVE)
     assert (rc == 0);
-    assert (zmq_errno () == 0);
+    // libsodium leaves errno set to ENOENT from searching for random bits
+    // assert (zmq_errno () == 0);
 #else
     assert (rc == -1);
     assert (zmq_errno () == ENOTSUP);
