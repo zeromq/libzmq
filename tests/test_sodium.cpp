@@ -40,7 +40,6 @@ void test__zmq_curve_keypair__always__success (void)
 
 #if defined (ZMQ_HAVE_CURVE)
     assert (rc == 0);
-    assert (zmq_errno () == 0);
 #else
     assert (rc == -1);
     assert (zmq_errno () == ENOTSUP);

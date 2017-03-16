@@ -217,12 +217,11 @@ int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key)
     uint8_t public_key [32];
     uint8_t secret_key [32];
 
-    // Return codes are suppressed as none of these can actually fail.
-    crypto_box_keypair (public_key, secret_key);
+    int res = crypto_box_keypair (public_key, secret_key);
     zmq_z85_encode (z85_public_key, public_key, 32);
     zmq_z85_encode (z85_secret_key, secret_key, 32);
 
-    return 0;
+    return res;
 #else
     (void) z85_public_key, (void) z85_secret_key;
     errno = ENOTSUP;
