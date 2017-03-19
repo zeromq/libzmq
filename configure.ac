@@ -257,7 +257,7 @@ case "${host_os}" in
         LIBZMQ_CHECK_LANG_FLAG_PREPEND([-Ae])
         AC_CHECK_FUNCS(gethrtime)
         ;;
-    *mingw*)
+    *mingw*|*msys*)
         AC_DEFINE(ZMQ_HAVE_WINDOWS, 1, [Have Windows OS])
         AC_DEFINE(ZMQ_HAVE_MINGW, 1, [Have MinGW])
         AC_CHECK_HEADERS(windows.h)
@@ -273,7 +273,6 @@ case "${host_os}" in
         if test "x$enable_static" = "xyes"; then
             CPPFLAGS="-DZMQ_STATIC $CPPFLAGS"
         fi
-        
 	# Set FD_SETSIZE to 16384
 	CPPFLAGS=" -DFD_SETSIZE=16384 $CPPFLAGS"
         ;;

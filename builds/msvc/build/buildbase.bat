@@ -12,7 +12,7 @@ if NOT "%target%" == "" set target=/t:%target%&set ACTION=Cleaning
 
 SET log=build_%version%.log
 SET tools=Microsoft Visual Studio %version%.0\VC\vcvarsall.bat
-if "%version%" == "17" SET tools=Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat
+if "%version%" == "15" SET tools=Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat
 SET environment="%programfiles(x86)%\%tools%"
 IF NOT EXIST %environment% SET environment="%programfiles%\%tools%"
 IF NOT EXIST %environment% GOTO no_tools

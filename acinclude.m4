@@ -7,7 +7,7 @@ AC_DEFUN([LIBZMQ_CONFIG_LIBTOOL],  [{
 
     # Libtool configuration for different targets
     case "${host_os}" in
-        *mingw*|*cygwin*)
+        *mingw*|*cygwin*|*msys*)
             # Disable static build by default
             AC_DISABLE_STATIC
         ;;
