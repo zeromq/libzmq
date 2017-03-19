@@ -2,7 +2,7 @@
 :: Usage: buildall.bat
 
 :: Build all configurations for all solutions.
-call buildbase.bat ..\vs2017\libzmq.sln 17
+call buildbase.bat ..\vs2017\libzmq.sln 15
 ECHO.
 CALL buildbase.bat ..\vs2015\libzmq.sln 14
 ECHO.
