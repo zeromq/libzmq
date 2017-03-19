@@ -3,7 +3,7 @@ For building on Windows, use:
      cd build
      ./build.bat
 
-This requires that the CMD.EXE be created using the DevStudio Tools link to create a CMD.EXE window.
+This requires that the CMD.EXE be created using the DevStudio Tools link to create a CMD.EXE window. Also, make sure that the name of the project folder is libzmq (not e.g. libzmq-master) as this is required for correct linking.
 
 Visual Studio product and C++ compiler Versions:
 

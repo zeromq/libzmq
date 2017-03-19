@@ -27,13 +27,13 @@
 
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\..\libzmq\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\..\..\..\..\libzmq\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Linkage-libzmq)' == 'static' Or '$(Linkage-libzmq)' == 'ltcg'">ZMQ_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies Condition="'$(Linkage-libzmq)' != ''">libzmq.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories Condition="$(Configuration.IndexOf('Debug')) != -1">$(ProjectDir)..\..\..\..\bin\$(PlatformName)\Debug\$(PlatformToolset)\$(Linkage-libzmq)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalLibraryDirectories Condition="$(Configuration.IndexOf('Release')) != -1">$(ProjectDir)..\..\..\..\bin\$(PlatformName)\Release\$(PlatformToolset)\$(Linkage-libzmq)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="$(Configuration.IndexOf('Debug')) != -1">$(ProjectDir)\..\..\..\..\..\libzmq\bin\$(PlatformName)\Debug\$(PlatformToolset)\$(Linkage-libzmq)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="$(Configuration.IndexOf('Release')) != -1">$(ProjectDir)\..\..\..\..\..\libzmq\bin\$(PlatformName)\Release\$(PlatformToolset)\$(Linkage-libzmq)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
 
@@ -41,15 +41,15 @@
 
   <Target Name="Linkage-libzmq-dynamic" AfterTargets="AfterBuild" Condition="'$(Linkage-libzmq)' == 'dynamic'">
     <Copy Condition="$(Configuration.IndexOf('Debug')) != -1"
-          SourceFiles="$(ProjectDir)..\..\..\..\bin\$(PlatformName)\Debug\$(PlatformToolset)\dynamic\libzmq.dll"
+          SourceFiles="$(ProjectDir)\..\..\..\..\..\libzmq\bin\$(PlatformName)\Debug\$(PlatformToolset)\dynamic\libzmq.dll"
           DestinationFiles="$(TargetDir)libzmq.dll"
           SkipUnchangedFiles="true" />
     <Copy Condition="$(Configuration.IndexOf('Debug')) != -1"
-          SourceFiles="$(ProjectDir)..\..\..\..\bin\$(PlatformName)\Debug\$(PlatformToolset)\dynamic\libzmq.pdb"
+          SourceFiles="$(ProjectDir)\..\..\..\..\..\libzmq\bin\$(PlatformName)\Debug\$(PlatformToolset)\dynamic\libzmq.pdb"
           DestinationFiles="$(TargetDir)libzmq.pdb"
           SkipUnchangedFiles="true" />
     <Copy Condition="$(Configuration.IndexOf('Release')) != -1"
-          SourceFiles="$(ProjectDir)..\..\..\..\bin\$(PlatformName)\Release\$(PlatformToolset)\dynamic\libzmq.dll"
+          SourceFiles="$(ProjectDir)\..\..\..\..\..\libzmq\bin\$(PlatformName)\Release\$(PlatformToolset)\dynamic\libzmq.dll"
           DestinationFiles="$(TargetDir)libzmq.dll"
           SkipUnchangedFiles="true" />
   </Target>
