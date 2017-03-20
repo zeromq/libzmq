@@ -12,4 +12,5 @@ This document hereby grants the libzmq project team to relicense libzmq,
 including all past, present and future contributions of the author listed above.
 
 Diego Fons
+
 2017/03/20
