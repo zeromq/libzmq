@@ -7,7 +7,7 @@ Open Source Initiative approved license chosen by the current ZeroMQ
 BDFL (Benevolent Dictator for Life).
 
 A portion of the commits made by the Github handle "scemama", with
-commit author "Anthony Scemama", are copyright of Anthony Scemama.
+commit author "Anthony Scemama <scemama@irsamc.ups-tlse.fr>", are copyright of Anthony Scemama.
 This document hereby grants the libzmq project team to relicense libzmq, 
 including all past, present and future contributions of the author listed above.
 
