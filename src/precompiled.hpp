@@ -32,6 +32,8 @@
 
 #include "platform.hpp"
 
+#define __STDC_LIMIT_MACROS 
+
 // This must be included before any windows headers are compiled.
 #if defined ZMQ_HAVE_WINDOWS
 #include "windows.hpp"
