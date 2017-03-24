@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ProjectSchemaDefinitions xmlns="clr-namespace:Microsoft.Build.Framework.XamlTypes;assembly=Microsoft.Build.Framework">
+  <Rule Name="libzmq-uiextension" PageTemplate="tool" DisplayName="ZMQ Options" SwitchPrefix="/" Order="1">
+    <Rule.Categories>
+      <Category Name="tweet" DisplayName="tweet" />
+      <Category Name="sodium" DisplayName="sodium" />
+      <Category Name="openpgm" DisplayName="openpgm" />
+      <Category Name="gssapi" DisplayName="gssapi" />
+      <Category Name="draftapi" DisplayName="draftapi" />
+      <Category Name="usepoll" DisplayName="usepoll" />
+    </Rule.Categories>
+    <Rule.DataSource>
+      <DataSource Persistence="ProjectFile" ItemType="" />
+    </Rule.DataSource>
+    <EnumProperty Name="Option-tweet" DisplayName="Enable Tweet NaCl" Description="Enable Tweet NaCl build option (overrides Sodium)" Category="tweet">
+      <EnumValue Name="" DisplayName="No" />
+      <EnumValue Name="true" DisplayName="Yes" />
+    </EnumProperty>
+    <EnumProperty Name="Option-sodium" DisplayName="Enable Sodium" Description="Enable Sodium build option" Category="sodium">
+      <EnumValue Name="" DisplayName="No" />
+      <EnumValue Name="true" DisplayName="Yes" />
+    </EnumProperty>
+    <EnumProperty Name="Option-openpgm" DisplayName="Enable OpenPGM" Description="Enable OpenPGM build option" Category="openpgm">
+      <EnumValue Name="" DisplayName="No" />
+      <EnumValue Name="true" DisplayName="Yes" />
+    </EnumProperty>
+    <EnumProperty Name="Option-gssapi" DisplayName="Enable GSS API" Description="Enable GSS API build option" Category="gssapi">
+      <EnumValue Name="" DisplayName="No" />
+      <EnumValue Name="true" DisplayName="Yes" />
+    </EnumProperty>
+    <EnumProperty Name="Option-draftapi" DisplayName="Enable Draft API" Description="Enable Draft API build option" Category="draftapi">
+      <EnumValue Name="" DisplayName="No" />
+      <EnumValue Name="true" DisplayName="Yes" />
+    </EnumProperty>
+    <EnumProperty Name="Option-usepoll" DisplayName="Enable poll() usage (Vista+ only)" Description="Use poll() instead of select() for waiting on incoming data. Increases performance, but the binary will only run on Windows Vista or later." Category="usepoll">
+      <EnumValue Name="" DisplayName="No" />
+      <EnumValue Name="true" DisplayName="Yes" />
+    </EnumProperty>
+  </Rule>
+</ProjectSchemaDefinitions>
