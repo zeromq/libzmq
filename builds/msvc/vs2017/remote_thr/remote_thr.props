@@ -6,7 +6,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
-  
+
   <!-- Configuration -->
 
   <ItemDefinitionGroup>
@@ -15,7 +15,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>Advapi32.lib;Rpcrt4.lib;Ws2_32.lib;Iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>    
+    </Link>
   </ItemDefinitionGroup>
 
   <!-- Dependencies -->

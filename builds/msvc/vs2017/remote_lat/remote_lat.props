@@ -6,7 +6,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
-  
+
   <!-- Configuration -->
 
   <ItemDefinitionGroup>
@@ -15,7 +15,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>Advapi32.lib;Rpcrt4.lib;Ws2_32.lib;Iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>    
+    </Link>
   </ItemDefinitionGroup>
 
   <!-- Dependencies -->
@@ -25,7 +25,7 @@
     <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\..\libsodium\builds\msvc\vs2015\libsodium.import.props"
             Condition="Exists('$(MSBuildThisFileDirectory)..\..\..\..\..\libsodium\builds\msvc\vs2015\libsodium.import.props')" /> 
   </ImportGroup>
-  
+
   <PropertyGroup Condition="'$(DefaultLinkage)' == 'dynamic'">
     <Linkage-libzmq>dynamic</Linkage-libzmq>
     <Linkage-libsodium>dynamic</Linkage-libsodium>
