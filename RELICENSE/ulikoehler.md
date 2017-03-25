@@ -9,7 +9,7 @@ BDFL (Benevolent Dictator for Life).
 All commits made by the Github handle "ulikoehler", with
 commit author "Uli Köhler", are copyright of Uli Köhler.
 
-This document hereby grants the libzmq project team to relicense libzmq, 
+This document hereby grants the libzmq project team to relicense libzmq and / or CZMQ, 
 including all past, present and future contributions of the author listed above.
 
 Uli Köhler
