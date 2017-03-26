@@ -674,17 +674,17 @@ void *zmq_msg_data (zmq_msg_t *msg_)
     return ((zmq::msg_t*) msg_)->data ();
 }
 
-size_t zmq_msg_size (zmq_msg_t *msg_)
+size_t zmq_msg_size (const zmq_msg_t *msg_)
 {
     return ((zmq::msg_t*) msg_)->size ();
 }
 
-int zmq_msg_more (zmq_msg_t *msg_)
+int zmq_msg_more (const zmq_msg_t *msg_)
 {
     return zmq_msg_get (msg_, ZMQ_MORE);
 }
 
-int zmq_msg_get (zmq_msg_t *msg_, int property_)
+int zmq_msg_get (const zmq_msg_t *msg_, int property_)
 {
     const char* fd_string;
 
@@ -735,7 +735,7 @@ const char *zmq_msg_group (zmq_msg_t *msg_)
 
 //  Get message metadata string
 
-const char *zmq_msg_gets (zmq_msg_t *msg_, const char *property_)
+const char *zmq_msg_gets (const zmq_msg_t *msg_, const char *property_)
 {
     zmq::metadata_t *metadata = ((zmq::msg_t *) msg_)->metadata ();
     const char *value = NULL;
