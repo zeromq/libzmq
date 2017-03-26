@@ -82,7 +82,7 @@ namespace zmq
             shared = 128
         };
 
-        bool check ();
+        bool check () const;
         int init();
 
         int init (void* data, size_t size_,
@@ -101,8 +101,8 @@ namespace zmq
         int move (msg_t &src_);
         int copy (msg_t &src_);
         void *data ();
-        size_t size ();
-        unsigned char flags ();
+        size_t size () const;
+        unsigned char flags () const;
         void set_flags (unsigned char flags_);
         void reset_flags (unsigned char flags_);
         metadata_t *metadata () const;
