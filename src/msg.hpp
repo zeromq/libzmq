@@ -58,7 +58,7 @@ namespace zmq
 
         //  Shared message buffer. Message data are either allocated in one
         //  continuous block along with this structure - thus avoiding one
-        //  malloc/free pair or they are stored in used-supplied memory.
+        //  malloc/free pair or they are stored in user-supplied memory.
         //  In the latter case, ffn member stores pointer to the function to be
         //  used to deallocate the data. If the buffer is actually shared (there
         //  are at least 2 references to it) refcount member contains number of
