@@ -416,6 +416,7 @@ void zmq::norm_engine_t::recv_data(NormObjectHandle object)
         {
             // This is a new stream, so create rxState with zmq decoder, etc
             rxState = new (std::nothrow) NormRxStreamState(object, options.maxmsgsize);
+            errno_assert(rxState);
 
             if (!rxState->Init())
             {

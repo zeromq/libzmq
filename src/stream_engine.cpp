@@ -212,6 +212,7 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
             //  Compile metadata.
             zmq_assert (metadata == NULL);
             metadata = new (std::nothrow) metadata_t (properties);
+            alloc_assert (metadata);
         }
 
         if (options.raw_notify) {
@@ -861,7 +862,10 @@ void zmq::stream_engine_t::mechanism_ready ()
 
     zmq_assert (metadata == NULL);
     if (!properties.empty ())
+    {
         metadata = new (std::nothrow) metadata_t (properties);
+        alloc_assert (metadata);
+    }
 
 #ifdef ZMQ_BUILD_DRAFT_API
     socket->event_handshake_succeed(endpoint, 0);

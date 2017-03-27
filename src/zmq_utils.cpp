@@ -77,6 +77,7 @@ unsigned long zmq_stopwatch_stop (void *watch_)
 void *zmq_threadstart(zmq_thread_fn* func, void* arg)
 {
     zmq::thread_t* thread = new (std::nothrow) zmq::thread_t;
+    alloc_assert(thread);
     thread->start(func, arg);
     return thread;
 }
