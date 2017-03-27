@@ -204,9 +204,10 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t tid_, int sid_, bool
     options.linger = parent_->get (ZMQ_BLOCKY)? -1: 0;
 
     if (thread_safe)
-        mailbox = new mailbox_safe_t(&sync);
+        mailbox = new (std::nothrow) mailbox_safe_t(&sync);
     else {
-        mailbox_t *m = new mailbox_t();
+        mailbox_t *m = new (std::nothrow) mailbox_t();
+
         if (m->get_fd () != retired_fd)
             mailbox = m;
         else {
@@ -1298,7 +1299,7 @@ void zmq::socket_base_t::start_reaping (poller_t *poller_)
     else {
         scoped_optional_lock_t sync_lock(thread_safe ? &sync : NULL);
 
-        reaper_signaler =  new signaler_t();
+        reaper_signaler = new (std::nothrow) signaler_t();
 
         //  Add signaler to the safe mailbox
         fd = reaper_signaler->get_fd();
