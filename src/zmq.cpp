@@ -757,7 +757,7 @@ inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     // implement zmq_poll on top of zmq_poller
     int rc;
     zmq_poller_event_t *events;
-    events = new zmq_poller_event_t[nitems_];
+    events = new (std::nothrow) zmq_poller_event_t[nitems_];
     alloc_assert(events);
     void *poller = zmq_poller_new ();
     alloc_assert(poller);

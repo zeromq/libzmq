@@ -533,6 +533,8 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     if (*r_ != INVALID_SOCKET) {
         size_t dummy_size = 1024 * 1024;        //  1M to overload default receive buffer
         unsigned char *dummy = (unsigned char *) malloc (dummy_size);
+        wsa_assert (dummy);
+
         int still_to_send = (int) dummy_size;
         int still_to_recv = (int) dummy_size;
         while (still_to_send || still_to_recv) {

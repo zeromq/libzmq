@@ -36,6 +36,7 @@
 #include "atomic_counter.hpp"
 #include "atomic_ptr.hpp"
 #include <assert.h>
+#include <new>
 #include <stdint.h>
 
 #if !defined ZMQ_HAVE_WINDOWS
@@ -75,7 +76,8 @@ unsigned long zmq_stopwatch_stop (void *watch_)
 
 void *zmq_threadstart(zmq_thread_fn* func, void* arg)
 {
-    zmq::thread_t* thread = new zmq::thread_t;
+    zmq::thread_t* thread = new (std::nothrow) zmq::thread_t;
+    alloc_assert(thread);
     thread->start(func, arg);
     return thread;
 }
@@ -265,7 +267,7 @@ int zmq_curve_public (char *z85_public_key, const char *z85_secret_key)
 
 void *zmq_atomic_counter_new (void)
 {
-    zmq::atomic_counter_t *counter = new zmq::atomic_counter_t;
+    zmq::atomic_counter_t *counter = new (std::nothrow) zmq::atomic_counter_t;
     alloc_assert (counter);
     return counter;
 }
