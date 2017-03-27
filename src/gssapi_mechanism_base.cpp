@@ -149,8 +149,9 @@ int zmq::gssapi_mechanism_base_t::decode_message (msg_t *msg_)
     // TODO: instead of malloc/memcpy, can we just do: wrapped.value = ptr;
     const size_t alloc_length = wrapped.length? wrapped.length: 1;
     wrapped.value = static_cast <char *> (malloc (alloc_length));
+    alloc_assert (wrapped.value);
+
     if (wrapped.length) {
-        alloc_assert (wrapped.value);
         memcpy(wrapped.value, ptr, wrapped.length);
         ptr += wrapped.length;
         bytes_left -= wrapped.length;
@@ -247,9 +248,11 @@ int zmq::gssapi_mechanism_base_t::process_initiate (msg_t *msg_, void **token_va
         errno = EPROTO;
         return -1;
     }
+
     *token_value_ = static_cast <char *> (malloc (token_length_ ? token_length_ : 1));
+    alloc_assert (*token_value_);
+
     if (token_length_) {
-        alloc_assert (*token_value_);
         memcpy(*token_value_, ptr, token_length_);
         ptr += token_length_;
         bytes_left -= token_length_;
