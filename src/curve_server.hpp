@@ -99,6 +99,9 @@ namespace zmq
         //  Status code as received from ZAP handler
         std::string status_code;
 
+        //  Details about the current error state
+        error_detail_t current_error_detail;
+
         uint64_t cn_nonce;
         uint64_t cn_peer_nonce;
 

@@ -783,7 +783,7 @@ int zmq::stream_engine_t::next_handshake_command (msg_t *msg_)
             msg_->set_flags (msg_t::command);
 #ifdef ZMQ_BUILD_DRAFT_API
         if(mechanism->status() == mechanism_t::error)
-            socket->event_handshake_failed(endpoint, 0);
+            socket->event_handshake_failed(endpoint, (int) mechanism->error_detail());
 #endif
 
         return rc;
@@ -975,8 +975,10 @@ void zmq::stream_engine_t::error (error_reason_t reason)
     }
     zmq_assert (session);
 #ifdef ZMQ_BUILD_DRAFT_API
-    if(mechanism == NULL || mechanism->status() == mechanism_t::handshaking)
+    if(mechanism == NULL)
         socket->event_handshake_failed(endpoint, (int) s);
+    else if(mechanism->status() == mechanism_t::handshaking)
+        socket->event_handshake_failed(endpoint, (int) mechanism->error_detail());
 #endif
     socket->event_disconnected (endpoint, (int) s);
     session->flush ();
