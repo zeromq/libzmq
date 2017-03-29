@@ -491,23 +491,21 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
 
     //  Use ZAP protocol (RFC 27) to authenticate the user.
     rc = session->zap_connect ();
-    if (rc == 0) {
-        rc = send_zap_request (client_key);
-        if (rc != 0)
-            return -1;
-        rc = receive_and_process_zap_reply ();
-        if (rc == 0)
-            state = status_code == "200"
-                ? send_ready
-                : send_error;
-        else
-        if (errno == EAGAIN)
-            state = expect_zap_reply;
-        else
-            return -1;
-    }
+    if (rc != 0)
+        return -1;
+    rc = send_zap_request (client_key);
+    if (rc != 0)
+        return -1;
+    rc = receive_and_process_zap_reply ();
+    if (rc == 0)
+        state = status_code == "200"
+            ? send_ready
+            : send_error;
     else
-        state = send_ready;
+    if (errno == EAGAIN)
+        state = expect_zap_reply;
+    else
+        return -1;
 
     return parse_metadata (initiate_plaintext + crypto_box_ZEROBYTES + 128,
                            clen - crypto_box_ZEROBYTES - 128);

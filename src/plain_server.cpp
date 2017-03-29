@@ -190,23 +190,21 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
 
     //  Use ZAP protocol (RFC 27) to authenticate the user.
     int rc = session->zap_connect ();
-    if (rc == 0) {
-        rc = send_zap_request (username, password);
-        if (rc != 0)
-            return -1;
-        rc = receive_and_process_zap_reply ();
-        if (rc == 0)
-            state = status_code == "200"
-                ? sending_welcome
-                : sending_error;
-        else
-        if (errno == EAGAIN)
-            state = waiting_for_zap_reply;
-        else
-            return -1;
-    }
+    if (rc != 0)
+        return -1;
+    rc = send_zap_request (username, password);
+    if (rc != 0)
+        return -1;
+    rc = receive_and_process_zap_reply ();
+    if (rc == 0)
+        state = status_code == "200"
+            ? sending_welcome
+            : sending_error;
     else
-        state = sending_welcome;
+    if (errno == EAGAIN)
+        state = waiting_for_zap_reply;
+    else
+        return -1;
 
     return 0;
 }

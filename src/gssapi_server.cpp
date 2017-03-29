@@ -120,20 +120,21 @@ int zmq::gssapi_server_t::process_handshake_command (msg_t *msg_)
 
     if (security_context_established) {
         //  Use ZAP protocol (RFC 27) to authenticate the user.
-        bool expecting_zap_reply = false;
         int rc = session->zap_connect ();
-        if (rc == 0) {
-            rc = send_zap_request ();
-            if (rc != 0)
-                return -1;
-            rc = receive_and_process_zap_reply ();
-            if (rc != 0) {
-                if (errno != EAGAIN)
-                    return -1;
-                expecting_zap_reply = true;
-            }
-        }
-        state = expecting_zap_reply? expect_zap_reply: send_ready;
+        if (rc != 0)
+            return -1;
+        rc = send_zap_request ();
+        if (rc != 0)
+            return -1;
+        rc = receive_and_process_zap_reply ();
+        if (rc == 0)
+            state = send_ready;
+        else
+        if (errno == EAGAIN)
+            state = expect_zap_reply;
+        else
+            return -1;
+
         return 0;
     }
 
