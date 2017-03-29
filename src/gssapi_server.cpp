@@ -123,7 +123,9 @@ int zmq::gssapi_server_t::process_handshake_command (msg_t *msg_)
         bool expecting_zap_reply = false;
         int rc = session->zap_connect ();
         if (rc == 0) {
-            send_zap_request();
+            rc = send_zap_request ();
+            if (rc != 0)
+                return -1;
             rc = receive_and_process_zap_reply ();
             if (rc != 0) {
                 if (errno != EAGAIN)
@@ -147,7 +149,7 @@ int zmq::gssapi_server_t::process_handshake_command (msg_t *msg_)
     return 0;
 }
 
-void zmq::gssapi_server_t::send_zap_request ()
+int zmq::gssapi_server_t::send_zap_request ()
 {
     int rc;
     msg_t msg;
@@ -157,7 +159,8 @@ void zmq::gssapi_server_t::send_zap_request ()
     errno_assert (rc == 0);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
+    if (rc != 0)
+        return -1;
 
     //  Version frame
     rc = msg.init_size (3);
@@ -165,7 +168,8 @@ void zmq::gssapi_server_t::send_zap_request ()
     memcpy (msg.data (), "1.0", 3);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
+    if (rc != 0)
+        return -1;
 
     //  Request ID frame
     rc = msg.init_size (1);
@@ -173,7 +177,8 @@ void zmq::gssapi_server_t::send_zap_request ()
     memcpy (msg.data (), "1", 1);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
+    if (rc != 0)
+        return -1;
 
     //  Domain frame
     rc = msg.init_size (options.zap_domain.length ());
@@ -181,7 +186,8 @@ void zmq::gssapi_server_t::send_zap_request ()
     memcpy (msg.data (), options.zap_domain.c_str (), options.zap_domain.length ());
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
+    if (rc != 0)
+        return -1;
 
     //  Address frame
     rc = msg.init_size (peer_address.length ());
@@ -189,7 +195,8 @@ void zmq::gssapi_server_t::send_zap_request ()
     memcpy (msg.data (), peer_address.c_str (), peer_address.length ());
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
+    if (rc != 0)
+        return -1;
 
     //  Identity frame
     rc = msg.init_size (options.identity_size);
@@ -197,7 +204,8 @@ void zmq::gssapi_server_t::send_zap_request ()
     memcpy (msg.data (), options.identity, options.identity_size);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
+    if (rc != 0)
+        return -1;
 
     //  Mechanism frame
     rc = msg.init_size (6);
@@ -205,7 +213,8 @@ void zmq::gssapi_server_t::send_zap_request ()
     memcpy (msg.data (), "GSSAPI", 6);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
+    if (rc != 0)
+        return -1;
 
     //  Principal frame
     gss_buffer_desc principal;
@@ -215,8 +224,11 @@ void zmq::gssapi_server_t::send_zap_request ()
     errno_assert (rc == 0);
     memcpy (msg.data (), principal.value, principal.length);
     rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
     gss_release_buffer(&min_stat, &principal);
+    if (rc != 0)
+        return -1;
+
+    return 0;
 }
 
 int zmq::gssapi_server_t::receive_and_process_zap_reply ()

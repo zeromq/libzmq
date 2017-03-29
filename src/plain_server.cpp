@@ -191,7 +191,9 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     //  Use ZAP protocol (RFC 27) to authenticate the user.
     int rc = session->zap_connect ();
     if (rc == 0) {
-        send_zap_request (username, password);
+        rc = send_zap_request (username, password);
+        if (rc != 0)
+            return -1;
         rc = receive_and_process_zap_reply ();
         if (rc == 0)
             state = status_code == "200"
@@ -277,8 +279,8 @@ int zmq::plain_server_t::produce_error (msg_t *msg_) const
     return 0;
 }
 
-void zmq::plain_server_t::send_zap_request (const std::string &username,
-                                            const std::string &password)
+int zmq::plain_server_t::send_zap_request (const std::string &username,
+                                           const std::string &password)
 {
     int rc;
     msg_t msg;
@@ -288,7 +290,8 @@ void zmq::plain_server_t::send_zap_request (const std::string &username,
     errno_assert (rc == 0);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
+    if (rc != 0)
+        return -1;
 
     //  Version frame
     rc = msg.init_size (3);
@@ -296,7 +299,8 @@ void zmq::plain_server_t::send_zap_request (const std::string &username,
     memcpy (msg.data (), "1.0", 3);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
+    if (rc != 0)
+        return -1;
 
     //  Request id frame
     rc = msg.init_size (1);
@@ -304,7 +308,8 @@ void zmq::plain_server_t::send_zap_request (const std::string &username,
     memcpy (msg.data (), "1", 1);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
+    if (rc != 0)
+        return -1;
 
     //  Domain frame
     rc = msg.init_size (options.zap_domain.length ());
@@ -312,7 +317,8 @@ void zmq::plain_server_t::send_zap_request (const std::string &username,
     memcpy (msg.data (), options.zap_domain.c_str (), options.zap_domain.length ());
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
+    if (rc != 0)
+        return -1;
 
     //  Address frame
     rc = msg.init_size (peer_address.length ());
@@ -320,7 +326,8 @@ void zmq::plain_server_t::send_zap_request (const std::string &username,
     memcpy (msg.data (), peer_address.c_str (), peer_address.length ());
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
+    if (rc != 0)
+        return -1;
 
     //  Identity frame
     rc = msg.init_size (options.identity_size);
@@ -328,7 +335,8 @@ void zmq::plain_server_t::send_zap_request (const std::string &username,
     memcpy (msg.data (), options.identity, options.identity_size);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
+    if (rc != 0)
+        return -1;
 
     //  Mechanism frame
     rc = msg.init_size (5);
@@ -336,7 +344,8 @@ void zmq::plain_server_t::send_zap_request (const std::string &username,
     memcpy (msg.data (), "PLAIN", 5);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
+    if (rc != 0)
+        return -1;
 
     //  Username frame
     rc = msg.init_size (username.length ());
@@ -344,14 +353,18 @@ void zmq::plain_server_t::send_zap_request (const std::string &username,
     memcpy (msg.data (), username.c_str (), username.length ());
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
+    if (rc != 0)
+        return -1;
 
     //  Password frame
     rc = msg.init_size (password.length ());
     errno_assert (rc == 0);
     memcpy (msg.data (), password.c_str (), password.length ());
     rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
+    if (rc != 0)
+        return -1;
+
+    return 0;
 }
 
 int zmq::plain_server_t::receive_and_process_zap_reply ()
