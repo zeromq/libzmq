@@ -289,7 +289,7 @@ int zmq::plain_server_t::send_zap_request (const std::string &username,
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     if (rc != 0)
-        return -1;
+        return send_failure (&msg);
 
     //  Version frame
     rc = msg.init_size (3);
@@ -298,7 +298,7 @@ int zmq::plain_server_t::send_zap_request (const std::string &username,
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     if (rc != 0)
-        return -1;
+        return send_failure (&msg);
 
     //  Request id frame
     rc = msg.init_size (1);
@@ -307,7 +307,7 @@ int zmq::plain_server_t::send_zap_request (const std::string &username,
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     if (rc != 0)
-        return -1;
+        return send_failure (&msg);
 
     //  Domain frame
     rc = msg.init_size (options.zap_domain.length ());
@@ -316,7 +316,7 @@ int zmq::plain_server_t::send_zap_request (const std::string &username,
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     if (rc != 0)
-        return -1;
+        return send_failure (&msg);
 
     //  Address frame
     rc = msg.init_size (peer_address.length ());
@@ -325,7 +325,7 @@ int zmq::plain_server_t::send_zap_request (const std::string &username,
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     if (rc != 0)
-        return -1;
+        return send_failure (&msg);
 
     //  Identity frame
     rc = msg.init_size (options.identity_size);
@@ -334,7 +334,7 @@ int zmq::plain_server_t::send_zap_request (const std::string &username,
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     if (rc != 0)
-        return -1;
+        return send_failure (&msg);
 
     //  Mechanism frame
     rc = msg.init_size (5);
@@ -343,7 +343,7 @@ int zmq::plain_server_t::send_zap_request (const std::string &username,
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     if (rc != 0)
-        return -1;
+        return send_failure (&msg);
 
     //  Username frame
     rc = msg.init_size (username.length ());
@@ -352,7 +352,7 @@ int zmq::plain_server_t::send_zap_request (const std::string &username,
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     if (rc != 0)
-        return -1;
+        return send_failure (&msg);
 
     //  Password frame
     rc = msg.init_size (password.length ());
@@ -360,7 +360,7 @@ int zmq::plain_server_t::send_zap_request (const std::string &username,
     memcpy (msg.data (), password.c_str (), password.length ());
     rc = session->write_zap_msg (&msg);
     if (rc != 0)
-        return -1;
+        return send_failure (&msg);
 
     return 0;
 }
@@ -379,26 +379,21 @@ int zmq::plain_server_t::receive_and_process_zap_reply ()
     for (int i = 0; i < 7; i++) {
         rc = session->read_zap_msg (&msg [i]);
         if (rc == -1)
-            break;
+            return send_failure (msg);
         if ((msg [i].flags () & msg_t::more) == (i < 6? 0: msg_t::more)) {
             //  Temporary support for security debugging
             puts ("PLAIN I: ZAP handler sent incomplete reply message");
             errno = EPROTO;
-            rc = -1;
-            break;
+            return send_failure (msg);
         }
     }
-
-    if (rc != 0)
-        goto error;
 
     //  Address delimiter frame
     if (msg [0].size () > 0) {
         //  Temporary support for security debugging
         puts ("PLAIN I: ZAP handler sent malformed reply message");
         errno = EPROTO;
-        rc = -1;
-        goto error;
+        return send_failure (msg);
     }
 
     //  Version frame
@@ -406,17 +401,15 @@ int zmq::plain_server_t::receive_and_process_zap_reply ()
         //  Temporary support for security debugging
         puts ("PLAIN I: ZAP handler sent bad version number");
         errno = EPROTO;
-        rc = -1;
-        goto error;
+        return send_failure (msg);
     }
 
     //  Request id frame
     if (msg [2].size () != 1 || memcmp (msg [2].data (), "1", 1)) {
         //  Temporary support for security debugging
         puts ("PLAIN I: ZAP handler sent bad request ID");
-        rc = -1;
         errno = EPROTO;
-        goto error;
+        return send_failure (msg);
     }
 
     //  Status code frame
@@ -424,8 +417,7 @@ int zmq::plain_server_t::receive_and_process_zap_reply ()
         //  Temporary support for security debugging
         puts ("PLAIN I: ZAP handler rejected client authentication");
         errno = EACCES;
-        rc = -1;
-        goto error;
+        return send_failure (msg);
     }
 
     //  Save status code
@@ -438,11 +430,14 @@ int zmq::plain_server_t::receive_and_process_zap_reply ()
     rc = parse_metadata (static_cast <const unsigned char*> (msg [6].data ()),
                          msg [6].size (), true);
 
-error:
+    if (rc != 0)
+        return send_failure (msg);
+
+    //  Close all reply frames
     for (int i = 0; i < 7; i++) {
         const int rc2 = msg [i].close ();
         errno_assert (rc2 == 0);
     }
 
-    return rc;
+    return 0;
 }
