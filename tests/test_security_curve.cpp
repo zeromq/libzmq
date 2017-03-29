@@ -207,8 +207,10 @@ int main (void)
     assert (rc == 0);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    int event = get_monitor_event (server_mon, NULL, NULL);
+    int event_value = -1;
+    int event = get_monitor_event (server_mon, &event_value, NULL);
     assert (event == ZMQ_EVENT_HANDSHAKE_SUCCEED);
+    assert (event_value == 0);
 #endif
 
     //  Check CURVE security with a garbage server key
@@ -228,8 +230,10 @@ int main (void)
     close_zero_linger (client);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    event = get_monitor_event (server_mon, NULL, NULL);
+    event_value = -1;
+    event = get_monitor_event (server_mon, &event_value, NULL);
     assert (event == ZMQ_EVENT_HANDSHAKE_FAILED);
+    assert (event_value == 2);
 #endif
 
     //  Check CURVE security with a garbage client public key
@@ -248,8 +252,10 @@ int main (void)
     close_zero_linger (client);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    event = get_monitor_event (server_mon, NULL, NULL);
+    event_value = -1;
+    event = get_monitor_event (server_mon, &event_value, NULL);
     assert (event == ZMQ_EVENT_HANDSHAKE_FAILED);
+    assert (event_value == 2);
 #endif
 
     //  Check CURVE security with a garbage client secret key
@@ -268,8 +274,10 @@ int main (void)
     close_zero_linger (client);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    event = get_monitor_event (server_mon, NULL, NULL);
+    event_value = -1;
+    event = get_monitor_event (server_mon, &event_value, NULL);
     assert (event == ZMQ_EVENT_HANDSHAKE_FAILED);
+    assert (event_value == 2);
 #endif
 
     //  Check CURVE security with bogus client credentials
@@ -292,8 +300,10 @@ int main (void)
     close_zero_linger (client);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    event = get_monitor_event (server_mon, NULL, NULL);
+    event_value = -1;
+    event = get_monitor_event(server_mon, &event_value, NULL);
     assert (event == ZMQ_EVENT_HANDSHAKE_FAILED);
+    assert (event_value == 2);
 #endif
 
     //  Check CURVE security with NULL client credentials
@@ -306,8 +316,10 @@ int main (void)
     close_zero_linger (client);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    event = get_monitor_event (server_mon, NULL, NULL);
+    event_value = -1;
+    event = get_monitor_event(server_mon, &event_value, NULL);
     assert (event == ZMQ_EVENT_HANDSHAKE_FAILED);
+    assert (event_value == 2);
 #endif
 
     //  Check CURVE security with PLAIN client credentials
