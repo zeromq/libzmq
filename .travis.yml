@@ -45,6 +45,8 @@ matrix:
         - xmlto
   - env: BUILD_TYPE=default CURVE=libsodium
     os: osx
+  - env: BUILD_TYPE=default CURVE=tweetnacl DRAFT=enabled ADDRESS_SANITIZER=enabled
+    os: linux
 
 sudo: required
 

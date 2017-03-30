@@ -15,6 +15,11 @@ if [ $BUILD_TYPE == "default" ]; then
     CONFIG_OPTS+=("PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig")
     CONFIG_OPTS+=("--prefix=${BUILD_PREFIX}")
 
+    if [ -n "$ADDRESS_SANITIZER" ] && [ "$ADDRESS_SANITIZER" == "enabled" ]; then
+        CONFIG_OPTS+=("CFLAGS=-fsanitize=address")
+        CONFIG_OPTS+=("CXXFLAGS=-fsanitize=address")
+    fi
+
     if [ -z $CURVE ]; then
         CONFIG_OPTS+=("--disable-curve")
     elif [ $CURVE == "libsodium" ]; then
