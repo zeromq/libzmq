@@ -241,7 +241,7 @@ int zmq::msg_t::close ()
 
     if (is_zcmsg())
     {
-        zmq_assert( u.zclmsg.content->ffn );
+        zmq_assert(u.zclmsg.content->ffn);
 
         //  If the content is not shared, or if it is shared and the reference
         //  count has dropped to zero, deallocate it.
