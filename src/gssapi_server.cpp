@@ -161,7 +161,7 @@ int zmq::gssapi_server_t::send_zap_request ()
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     if (rc != 0)
-        return send_failure (&msg);
+        return close_and_return (&msg, -1);
 
     //  Version frame
     rc = msg.init_size (3);
@@ -170,7 +170,7 @@ int zmq::gssapi_server_t::send_zap_request ()
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     if (rc != 0)
-        return send_failure (&msg);
+        return close_and_return (&msg, -1);
 
     //  Request ID frame
     rc = msg.init_size (1);
@@ -179,7 +179,7 @@ int zmq::gssapi_server_t::send_zap_request ()
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     if (rc != 0)
-        return send_failure (&msg);
+        return close_and_return (&msg, -1);
 
     //  Domain frame
     rc = msg.init_size (options.zap_domain.length ());
@@ -188,7 +188,7 @@ int zmq::gssapi_server_t::send_zap_request ()
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     if (rc != 0)
-        return send_failure (&msg);
+        return close_and_return (&msg, -1);
 
     //  Address frame
     rc = msg.init_size (peer_address.length ());
@@ -197,7 +197,7 @@ int zmq::gssapi_server_t::send_zap_request ()
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     if (rc != 0)
-        return send_failure (&msg);
+        return close_and_return (&msg, -1);
 
     //  Identity frame
     rc = msg.init_size (options.identity_size);
@@ -206,7 +206,7 @@ int zmq::gssapi_server_t::send_zap_request ()
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     if (rc != 0)
-        return send_failure (&msg);
+        return close_and_return (&msg, -1);
 
     //  Mechanism frame
     rc = msg.init_size (6);
@@ -215,7 +215,7 @@ int zmq::gssapi_server_t::send_zap_request ()
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     if (rc != 0)
-        return send_failure (&msg);
+        return close_and_return (&msg, -1);
 
     //  Principal frame
     gss_buffer_desc principal;
@@ -227,7 +227,7 @@ int zmq::gssapi_server_t::send_zap_request ()
     rc = session->write_zap_msg (&msg);
     gss_release_buffer(&min_stat, &principal);
     if (rc != 0)
-        return send_failure (&msg);
+        return close_and_return (&msg, -1);
 
     return 0;
 }
@@ -246,35 +246,35 @@ int zmq::gssapi_server_t::receive_and_process_zap_reply ()
     for (int i = 0; i < 7; i++) {
         rc = session->read_zap_msg (&msg [i]);
         if (rc == -1)
-            return send_failure (msg);
+            return close_and_return (msg, -1);
         if ((msg [i].flags () & msg_t::more) == (i < 6? 0: msg_t::more)) {
             errno = EPROTO;
-            return send_failure (msg);
+            return close_and_return (msg, -1);
         }
     }
 
     //  Address delimiter frame
     if (msg [0].size () > 0) {
         errno = EPROTO;
-        return send_failure (msg);
+        return close_and_return (msg, -1);
     }
 
     //  Version frame
     if (msg [1].size () != 3 || memcmp (msg [1].data (), "1.0", 3)) {
         errno = EPROTO;
-        return send_failure (msg);
+        return close_and_return (msg, -1);
     }
 
     //  Request id frame
     if (msg [2].size () != 1 || memcmp (msg [2].data (), "1", 1)) {
         errno = EPROTO;
-        return send_failure (msg);
+        return close_and_return (msg, -1);
     }
 
     //  Status code frame
     if (msg [3].size () != 3 || memcmp (msg [3].data (), "200", 3)) {
         errno = EACCES;
-        return send_failure (msg);
+        return close_and_return (msg, -1);
     }
 
     //  Save user id
@@ -285,7 +285,7 @@ int zmq::gssapi_server_t::receive_and_process_zap_reply ()
                          msg [6].size (), true);
 
     if (rc != 0)
-        return send_failure (msg);
+        return close_and_return (msg, -1);
 
     //  Close all reply frames
     for (int i = 0; i < 7; i++) {
