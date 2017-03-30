@@ -353,9 +353,10 @@ int zmq::session_base_t::zap_connect ()
         rc = id.init ();
         errno_assert (rc == 0);
         id.set_flags (msg_t::identity);
-        bool ok = zap_pipe->write (&id);
-        zmq_assert (ok);
-        zap_pipe->flush ();
+        if (zap_pipe->write (&id))
+            zap_pipe->flush ();
+        else
+            return -1;
     }
 
     return 0;

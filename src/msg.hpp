@@ -34,6 +34,7 @@
 #include <stdio.h>
 
 #include "config.hpp"
+#include "err.hpp"
 #include "fd.hpp"
 #include "atomic_counter.hpp"
 #include "metadata.hpp"
@@ -246,6 +247,20 @@ namespace zmq
         } u;
     };
 
+    inline int send_failure (zmq::msg_t *msg)
+    {
+        const int rc = msg->close ();
+        errno_assert (rc == 0);
+        return -1;
+    }
+
+    inline int send_failure (zmq::msg_t msg[], int count)
+    {
+        for (int i = 0; i < count; i++)
+            send_failure (&msg [i]);
+
+        return -1;
+    }
 }
 
 #endif
