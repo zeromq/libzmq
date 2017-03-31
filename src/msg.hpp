@@ -247,19 +247,21 @@ namespace zmq
         } u;
     };
 
-    inline int send_failure (zmq::msg_t *msg)
+    inline int close_and_return (zmq::msg_t *msg, int echo)
     {
+        // Since we abort on close failure we preserve errno for success case.
+        int err = errno;
         const int rc = msg->close ();
         errno_assert (rc == 0);
-        return -1;
+        errno = err;
+        return echo;
     }
 
-    inline int send_failure (zmq::msg_t msg[], int count)
+    inline int close_and_return (zmq::msg_t msg [], int count, int echo)
     {
         for (int i = 0; i < count; i++)
-            send_failure (&msg [i]);
-
-        return -1;
+            close_and_return (&msg [i], 0);
+        return echo;
     }
 }
 

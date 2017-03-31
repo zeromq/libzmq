@@ -31,7 +31,7 @@
 
 int main (void)
 {
-    setup_test_environment();
+    setup_test_environment ();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
@@ -42,15 +42,15 @@ int main (void)
     assert (rc == 0);
 
     //  set pub socket options
-    rc = zmq_setsockopt(pub, ZMQ_XPUB_WELCOME_MSG, "W", 1);
+    rc = zmq_setsockopt (pub, ZMQ_XPUB_WELCOME_MSG, "W", 1);
     assert (rc == 0);
 
     //  Create a subscriber
     void *sub = zmq_socket (ctx, ZMQ_SUB);
 
     // Subscribe to the welcome message
-    rc = zmq_setsockopt(sub, ZMQ_SUBSCRIBE, "W", 1);
-    assert(rc == 0);
+    rc = zmq_setsockopt (sub, ZMQ_SUBSCRIBE, "W", 1);
+    assert (rc == 0);
 
     assert (sub);
     rc = zmq_connect (sub, "inproc://soname");
@@ -60,14 +60,14 @@ int main (void)
 
     // Receive the welcome subscription
     rc = zmq_recv(pub, buffer, 2, 0);
-    assert(rc == 2);
-    assert(buffer[0] == 1);
-    assert(buffer[1] == 'W');
+    assert (rc == 2);
+    assert (buffer [0] == 1);
+    assert (buffer [1] == 'W');
 
     // Receive the welcome message
-    rc = zmq_recv(sub, buffer, 1, 0);
-    assert(rc == 1);
-    assert(buffer[0] == 'W');
+    rc = zmq_recv (sub, buffer, 1, 0);
+    assert (rc == 1);
+    assert (buffer [0] == 'W');
 
     //  Clean up.
     rc = zmq_close (pub);

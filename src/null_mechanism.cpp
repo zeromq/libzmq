@@ -225,7 +225,7 @@ int zmq::null_mechanism_t::send_zap_request ()
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     if (rc != 0)
-        return send_failure (&msg);
+        return close_and_return (&msg, -1);
 
     //  Version frame
     rc = msg.init_size (3);
@@ -234,7 +234,7 @@ int zmq::null_mechanism_t::send_zap_request ()
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     if (rc != 0)
-        return send_failure (&msg);
+        return close_and_return (&msg, -1);
 
     //  Request id frame
     rc = msg.init_size (1);
@@ -243,7 +243,7 @@ int zmq::null_mechanism_t::send_zap_request ()
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     if (rc != 0)
-        return send_failure (&msg);
+        return close_and_return (&msg, -1);
 
     //  Domain frame
     rc = msg.init_size (options.zap_domain.length ());
@@ -252,7 +252,7 @@ int zmq::null_mechanism_t::send_zap_request ()
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     if (rc != 0)
-        return send_failure (&msg);
+        return close_and_return (&msg, -1);
 
     //  Address frame
     rc = msg.init_size (peer_address.length ());
@@ -261,7 +261,7 @@ int zmq::null_mechanism_t::send_zap_request ()
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     if (rc != 0)
-        return send_failure (&msg);
+        return close_and_return (&msg, -1);
 
     //  Identity frame
     rc = msg.init_size (options.identity_size);
@@ -270,7 +270,7 @@ int zmq::null_mechanism_t::send_zap_request ()
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     if (rc != 0)
-        return send_failure (&msg);
+        return close_and_return (&msg, -1);
 
     //  Mechanism frame
     rc = msg.init_size (4);
@@ -278,7 +278,7 @@ int zmq::null_mechanism_t::send_zap_request ()
     memcpy (msg.data (), "NULL", 4);
     rc = session->write_zap_msg (&msg);
     if (rc != 0)
-        return send_failure (&msg);
+        return close_and_return (&msg, -1);
 
     return 0;
 }
@@ -297,12 +297,12 @@ int zmq::null_mechanism_t::receive_and_process_zap_reply ()
     for (int i = 0; i < 7; i++) {
         rc = session->read_zap_msg (&msg [i]);
         if (rc == -1)
-            return send_failure (msg);
+            return close_and_return (msg, -1);
         if ((msg [i].flags () & msg_t::more) == (i < 6? 0: msg_t::more)) {
             //  Temporary support for security debugging
             puts ("NULL I: ZAP handler sent incomplete reply message");
             errno = EPROTO;
-            return send_failure (msg);
+            return close_and_return (msg, -1);
         }
     }
 
@@ -311,7 +311,7 @@ int zmq::null_mechanism_t::receive_and_process_zap_reply ()
         //  Temporary support for security debugging
         puts ("NULL I: ZAP handler sent malformed reply message");
         errno = EPROTO;
-        return send_failure (msg);
+        return close_and_return (msg, -1);
     }
 
     //  Version frame
@@ -319,7 +319,7 @@ int zmq::null_mechanism_t::receive_and_process_zap_reply ()
         //  Temporary support for security debugging
         puts ("NULL I: ZAP handler sent bad version number");
         errno = EPROTO;
-        return send_failure (msg);
+        return close_and_return (msg, -1);
     }
 
     //  Request id frame
@@ -327,7 +327,7 @@ int zmq::null_mechanism_t::receive_and_process_zap_reply ()
         //  Temporary support for security debugging
         puts ("NULL I: ZAP handler sent bad request ID");
         errno = EPROTO;
-        return send_failure (msg);
+        return close_and_return (msg, -1);
     }
 
     //  Status code frame
@@ -335,7 +335,7 @@ int zmq::null_mechanism_t::receive_and_process_zap_reply ()
         //  Temporary support for security debugging
         puts ("NULL I: ZAP handler rejected client authentication");
         errno = EPROTO;
-        return send_failure (msg);
+        return close_and_return (msg, -1);
     }
 
     //  Save status code
@@ -349,7 +349,7 @@ int zmq::null_mechanism_t::receive_and_process_zap_reply ()
                          msg [6].size (), true);
 
     if (rc != 0)
-        return send_failure (msg);
+        return close_and_return (msg, -1);
 
     //  Close all reply frames
     for (int i = 0; i < 7; i++) {

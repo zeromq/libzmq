@@ -69,15 +69,8 @@ int zmq::sub_t::xsetsockopt (int option_, const void *optval_,
         memcpy (data + 1, optval_, optvallen_);
     }
     //  Pass it further on in the stack.
-    int err = 0;
     rc = xsub_t::xsend (&msg);
-    if (rc != 0)
-        err = errno;
-    int rc2 = msg.close ();
-    errno_assert (rc2 == 0);
-    if (rc != 0)
-        errno = err;
-    return rc;
+    return close_and_return (&msg, rc);
 }
 
 int zmq::sub_t::xsend (msg_t *)
