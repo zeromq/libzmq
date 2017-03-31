@@ -179,7 +179,8 @@ int main (void)
 #ifdef ZMQ_BUILD_DRAFT_API
     //  Monitor handshake events on the server
     rc = zmq_socket_monitor (server, "inproc://monitor-server",
-            ZMQ_EVENT_HANDSHAKE_SUCCEED | ZMQ_EVENT_HANDSHAKE_FAILED);
+            ZMQ_EVENT_HANDSHAKE_SUCCEED | ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL |
+            ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL | ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
     assert (rc == 0);
 
     //  Create socket for collecting monitor events
@@ -232,7 +233,7 @@ int main (void)
 #ifdef ZMQ_BUILD_DRAFT_API
     event_value = -1;
     event = get_monitor_event (server_mon, &event_value, NULL);
-    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED);
+    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
     assert (event_value == 2);
 #endif
 
@@ -254,7 +255,7 @@ int main (void)
 #ifdef ZMQ_BUILD_DRAFT_API
     event_value = -1;
     event = get_monitor_event (server_mon, &event_value, NULL);
-    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED);
+    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
     assert (event_value == 2);
 #endif
 
@@ -276,7 +277,7 @@ int main (void)
 #ifdef ZMQ_BUILD_DRAFT_API
     event_value = -1;
     event = get_monitor_event (server_mon, &event_value, NULL);
-    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED);
+    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
     assert (event_value == 2);
 #endif
 
@@ -302,7 +303,7 @@ int main (void)
 #ifdef ZMQ_BUILD_DRAFT_API
     event_value = -1;
     event = get_monitor_event(server_mon, &event_value, NULL);
-    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED);
+    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
     assert (event_value == 2);
 #endif
 
@@ -318,7 +319,7 @@ int main (void)
 #ifdef ZMQ_BUILD_DRAFT_API
     event_value = -1;
     event = get_monitor_event(server_mon, &event_value, NULL);
-    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED);
+    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
     assert (event_value == 2);
 #endif
 
