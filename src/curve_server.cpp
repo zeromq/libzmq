@@ -45,6 +45,7 @@ zmq::curve_server_t::curve_server_t (session_base_t *session_,
     session (session_),
     peer_address (peer_address_),
     state (expect_hello),
+    current_error_detail(no_detail),
     cn_nonce (1),
     cn_peer_nonce(1)
 {
