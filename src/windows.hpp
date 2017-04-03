@@ -39,7 +39,7 @@
 
 //  Set target version to Windows Server 2008, Windows Vista or higher.
 //  Windows XP (0x0501) is supported but without client & server socket types.
-#if defined _WIN32_WINNT && !defined ZMQ_HAVE_WINDOWS_UWP
+#if !defined _WIN32_WINNT && !defined ZMQ_HAVE_WINDOWS_UWP
 #define _WIN32_WINNT 0x0600
 #endif
 

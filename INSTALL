@@ -41,6 +41,12 @@ Windows Builds
 
 For Windows building, see the libzmq\builds\msvc\readme.txt file.
 
+The library can also be built for the Windows 10 UWP platform through CMake :
+cmake -H. -B<build dir> -G"Visual Studio 14 2015 Win64" \
+   -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 \
+   -DENABLE_CURVE=OFF -DZMQ_BUILD_TESTS=OFF
+
+
 Basic Installation
 ==================
 

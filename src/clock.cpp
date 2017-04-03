@@ -78,7 +78,7 @@ int alt_clock_gettime (int clock_id, timespec *ts)
 #endif
 
 #ifdef ZMQ_HAVE_WINDOWS
-typedef ULONGLONG(*f_compatible_get_tick_count64)();
+typedef ULONGLONG (*f_compatible_get_tick_count64)();
 
 static zmq::mutex_t compatible_get_tick_count64_mutex;
 
