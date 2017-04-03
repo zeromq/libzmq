@@ -978,8 +978,12 @@ void zmq::stream_engine_t::error (error_reason_t reason)
     }
     zmq_assert (session);
 #ifdef ZMQ_BUILD_DRAFT_API
-    if(mechanism == NULL)
-        socket->event_handshake_failed_no_detail(endpoint, (int) s);
+    if(mechanism == NULL) {
+        if(reason == protocol_error)
+            socket->event_handshake_failed_protocol(endpoint, (int) s);
+        else
+            socket->event_handshake_failed_no_detail(endpoint, (int) s);
+    }
     else if(mechanism->status() == mechanism_t::handshaking) {
         if(mechanism->error_detail() == mechanism_t::protocol)
             socket->event_handshake_failed_protocol(endpoint, (int) s);

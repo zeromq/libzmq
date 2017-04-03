@@ -308,7 +308,7 @@ int main (void)
 
 #ifdef ZMQ_BUILD_DRAFT_API
     event = get_monitor_event(server_mon, NULL, NULL);
-    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
+    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL);
 #endif
 
     //  Check CURVE security with PLAIN client credentials
