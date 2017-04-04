@@ -136,17 +136,25 @@ void zmq::tcp_connecter_t::out_event ()
     handle_valid = false;
 
     const fd_t fd = connect ();
-    //  Handle the error condition by attempt to reconnect.
-    if (fd == retired_fd) {
+    
+    auto event_failure = [this]() {
         close ();
         add_reconnect_timer ();
+    };
+    //  Handle the error condition by attempt to reconnect.
+    if (fd == retired_fd) {
+        event_failure ();
         return;
     }
 
-    tune_tcp_socket (fd);
-    tune_tcp_keepalives (fd, options.tcp_keepalive, options.tcp_keepalive_cnt,
-            options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
-    tune_tcp_maxrt (fd, options.tcp_maxrt);
+    int rc = tune_tcp_socket (fd);
+    rc = rc | tune_tcp_keepalives (fd, options.tcp_keepalive, options.tcp_keepalive_cnt,
+        options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
+    rc = rc | tune_tcp_maxrt (fd, options.tcp_maxrt);
+    if (rc != 0) {
+        event_failure ();
+        return;
+    }
 
     //  Create the engine object for this connection.
     stream_engine_t *engine = new (std::nothrow)
