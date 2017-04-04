@@ -94,5 +94,6 @@
 #endif
 
 #cmakedefine ZMQ_HAVE_WINDOWS
+#cmakedefine ZMQ_HAVE_WINDOWS_UWP
 
 #endif
