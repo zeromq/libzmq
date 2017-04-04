@@ -50,6 +50,7 @@
 // These headers end up pulling in zmq.h somewhere in their include
 // dependency chain
 #include "socket_base.hpp"
+#include "socket_poller.hpp"
 #include "err.hpp"
 
 int capture(
@@ -114,7 +115,7 @@ int zmq::proxy (
     msg_t msg;
     int rc = msg.init ();
     if (rc != 0)
-        return -1;
+        return close_and_return (&msg, -1);
 
     //  The algorithm below assumes ratio of requests and replies processed
     //  under full load to be 1:1.
@@ -139,20 +140,172 @@ int zmq::proxy (
         terminated
     } state = active;
 
+    zmq_poller_event_t events[3], eventsout[2];
+    zmq::socket_poller_t poller, pollerout;
+    bool repeat_items = false;
+
+    //  Register 'items' sockets with 'poller'.
+    for(int i = 0; i < qt_poll_items; i++) {
+
+      bool modify = false;
+      short e = items[i].events;
+      if(items[i].socket) {
+        //  Poll item is a 0MQ socket.
+        for(int j = 0; j < i; ++j) {
+          // Check for repeat entries
+          if(items[j].socket == items[i].socket) {
+            repeat_items = true;
+            modify = true;
+            e |= items[j].events;
+          }
+        }
+        if(modify) {
+          rc = zmq_poller_modify (&poller,items[i].socket,e);
+        }
+        else {
+          rc = zmq_poller_add (&poller,items[i].socket,NULL,e);
+        }
+        if(unlikely (rc < 0)) {
+          return close_and_return (&msg, -1);
+        }
+      }
+      else {
+        //  Poll item is a raw file descriptor.
+        for(int j = 0; j < i; ++j) {
+          // Check for repeat entries
+          if(!items[j].socket && items[j].fd == items[i].fd) {
+            repeat_items = true;
+            modify = true;
+            e |= items[j].events;
+          }
+        }
+        if(modify) {
+          rc = zmq_poller_modify_fd (&poller,items[i].fd,e);
+        }
+        else {
+          rc = zmq_poller_add_fd (&poller,items[i].fd,NULL,e);
+        }
+        if(unlikely (rc < 0)) {
+          return close_and_return (&msg, -1);
+        }
+      }
+    }
+
+    //  Register 'itemsout' sockets with 'pollerout'.
+    repeat_items = false;
+    for(int i = 0; i < 2; i++) {
+
+      bool modify = false;
+      short e = itemsout[i].events;
+      if(itemsout[i].socket) {
+        //  Poll item is a 0MQ socket.
+        for(int j = 0; j < i; ++j) {
+          // Check for repeat entries
+          if(itemsout[j].socket == itemsout[i].socket) {
+            repeat_items = true;
+            modify = true;
+            e |= itemsout[j].events;
+          }
+        }
+        if(modify) {
+          rc = zmq_poller_modify (&pollerout,itemsout[i].socket,e);
+        }
+        else {
+          rc = zmq_poller_add (&pollerout,itemsout[i].socket,NULL,e);
+        }
+        if(unlikely (rc < 0)) {
+          return close_and_return (&msg, -1);
+        }
+      }
+      else {
+        //  Poll item is a raw file descriptor.
+        for(int j = 0; j < i; ++j) {
+          // Check for repeat entries
+          if(!itemsout[j].socket && itemsout[j].fd == itemsout[i].fd) {
+            repeat_items = true;
+            modify = true;
+            e |= itemsout[j].events;
+          }
+        }
+        if(modify) {
+          rc = zmq_poller_modify_fd (&pollerout,itemsout[i].fd,e);
+        }
+        else {
+          rc = zmq_poller_add_fd (&pollerout,itemsout[i].fd,NULL,e);
+        }
+        if(unlikely (rc < 0)) {
+          return close_and_return (&msg, -1);
+        }
+      }
+    }
+
+    int j_start,found_events;
+
     while (state != terminated) {
         //  Wait while there are either requests or replies to process.
-        rc = zmq_poll (&items [0], qt_poll_items, -1);
+        rc = zmq_poller_wait_all (&poller,events,qt_poll_items,-1);
         if (unlikely (rc < 0))
             return close_and_return (&msg, -1);
+
+        //  Transform poller events into zmq_pollitem events.
+        //  items_ contains all items, while events only contains fired events.
+        //  If no sockets are repeated (likely), the two are still co-ordered, so step through the items
+        //  checking for matches only on the first event.
+        //  If there are repeat items, they cannot be assumed to be co-ordered,
+        //  so each pollitem must check fired events from the beginning.
+        j_start = 0;
+        found_events = rc;
+        for(int i = 0; i < qt_poll_items; i++) {
+          for(int j = j_start; j < found_events; ++j) {
+            if(
+              (items[i].socket && items[i].socket == events[j].socket) ||
+              (!(items[i].socket || events[j].socket) && items[i].fd == events[j].fd)
+              ) {
+              items[i].revents = events[j].events & items[i].events;
+              if(!repeat_items) {
+                // no repeats, we can ignore events we've already seen
+                j_start++;
+              }
+              break;
+            }
+            if(!repeat_items) {
+              // no repeats, never have to look at j > j_start
+              break;
+            }
+          }
+        }
 
         //  Get the pollout separately because when combining this with pollin it maxes the CPU
         //  because pollout shall most of the time return directly.
         //  POLLOUT is only checked when frontend and backend sockets are not the same.
         if (frontend_ != backend_) {
-            rc = zmq_poll (&itemsout [0], 2, 0);
+            rc = zmq_poller_wait_all (&pollerout, eventsout, 2, 0);
             if (unlikely (rc < 0)) {
                 return close_and_return (&msg, -1);
             }
+        }
+
+        //  Transform poller events into zmq_pollitem events.
+        j_start = 0;
+        found_events = rc;
+        for(int i = 0; i < 2; i++) {
+          for(int j = j_start; j < found_events; ++j) {
+            if(
+              (itemsout[i].socket && itemsout[i].socket == eventsout[j].socket) ||
+              (!(itemsout[i].socket || eventsout[j].socket) && itemsout[i].fd == eventsout[j].fd)
+              ) {
+              itemsout[i].revents = eventsout[j].events & itemsout[i].events;
+              if(!repeat_items) {
+                // no repeats, we can ignore eventsout we've already seen
+                j_start++;
+              }
+              break;
+            }
+            if(!repeat_items) {
+              // no repeats, never have to look at j > j_start
+              break;
+            }
+          }
         }
 
         //  Process a control command if any
@@ -167,7 +320,7 @@ int zmq::proxy (
                 return close_and_return (&msg, -1);
 
             //  Copy message to capture socket if any
-            rc = capture (capture_, msg);
+            rc = capture(capture_, msg);
             if (unlikely (rc < 0))
                 return close_and_return (&msg, -1);
 
@@ -180,7 +333,7 @@ int zmq::proxy (
             if (msg.size () == 9 && memcmp (msg.data (), "TERMINATE", 9) == 0)
                 state = terminated;
             else {
-                //  This is an API error, so we assert
+                //  This is an API error, we assert
                 puts ("E: invalid command sent to proxy");
                 zmq_assert (false);
             }
@@ -202,7 +355,9 @@ int zmq::proxy (
             if (unlikely (rc < 0))
                 return close_and_return (&msg, -1);
         }
-    }
 
+        items[0].revents=items[1].revents=items[2].revents=events[0].events=events[1].events=events[2].events=0;
+        itemsout[0].revents=itemsout[1].revents=eventsout[0].events=eventsout[1].events=0;
+    }
     return close_and_return (&msg, 0);
 }
