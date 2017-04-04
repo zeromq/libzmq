@@ -3,7 +3,7 @@
 cmake_minimum_required (VERSION 2.8.12)
 project (ZeroMQ)
 
-list (INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}")
+list (INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}")
 
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=gnu++11" COMPILER_SUPPORTS_CXX11)
