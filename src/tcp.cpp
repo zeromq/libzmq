@@ -45,7 +45,7 @@
 #include <ioctl.h>
 #endif
 
-void zmq::tune_tcp_socket (fd_t s_)
+int zmq::tune_tcp_socket (fd_t s_)
 {
     //  Disable Nagle's algorithm. We are doing data batching on 0MQ level,
     //  so using Nagle wouldn't improve throughput in anyway, but it would
@@ -53,44 +53,37 @@ void zmq::tune_tcp_socket (fd_t s_)
     int nodelay = 1;
     int rc = setsockopt (s_, IPPROTO_TCP, TCP_NODELAY, (char*) &nodelay,
         sizeof (int));
-#ifdef ZMQ_HAVE_WINDOWS
-    wsa_assert (rc != SOCKET_ERROR);
-#else
-    errno_assert (rc == 0);
-#endif
+    tcp_assert_tuning_error(s_, rc);
+    if (rc != 0)
+        return rc;
 
 #ifdef ZMQ_HAVE_OPENVMS
     //  Disable delayed acknowledgements as they hurt latency significantly.
     int nodelack = 1;
     rc = setsockopt (s_, IPPROTO_TCP, TCP_NODELACK, (char*) &nodelack,
         sizeof (int));
-    errno_assert (rc != SOCKET_ERROR);
+    tcp_assert_tuning_error(s_, rc);
 #endif
+    return rc;
 }
 
-void zmq::set_tcp_send_buffer (fd_t sockfd_, int bufsize_)
+int zmq::set_tcp_send_buffer (fd_t sockfd_, int bufsize_)
 {
     const int rc = setsockopt (sockfd_, SOL_SOCKET, SO_SNDBUF,
         (char*) &bufsize_, sizeof bufsize_);
-#ifdef ZMQ_HAVE_WINDOWS
-    wsa_assert (rc != SOCKET_ERROR);
-#else
-    errno_assert (rc == 0);
-#endif
+    tcp_assert_tuning_error(sockfd_, rc);
+    return rc;
 }
 
-void zmq::set_tcp_receive_buffer (fd_t sockfd_, int bufsize_)
+int zmq::set_tcp_receive_buffer (fd_t sockfd_, int bufsize_)
 {
     const int rc = setsockopt (sockfd_, SOL_SOCKET, SO_RCVBUF,
         (char *) &bufsize_, sizeof bufsize_);
-#ifdef ZMQ_HAVE_WINDOWS
-    wsa_assert (rc != SOCKET_ERROR);
-#else
-    errno_assert (rc == 0);
-#endif
+    tcp_assert_tuning_error(sockfd_, rc);
+    return rc;
 }
 
-void zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_,
+int zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_,
         int keepalive_idle_, int keepalive_intvl_)
 {
     // These options are used only under certain #ifdefs below.
@@ -115,20 +108,26 @@ void zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_,
         DWORD num_bytes_returned;
         int rc = WSAIoctl(s_, SIO_KEEPALIVE_VALS, &keepalive_opts,
             sizeof(keepalive_opts), NULL, 0, &num_bytes_returned, NULL, NULL);
-        wsa_assert (rc != SOCKET_ERROR);
+        tcp_assert_tuning_error(s_, rc);
+        if (rc == SOCKET_ERROR)
+            return rc;
     }
 #else
 #ifdef ZMQ_HAVE_SO_KEEPALIVE
     if (keepalive_ != -1) {
         int rc = setsockopt (s_, SOL_SOCKET, SO_KEEPALIVE,
                 (char*) &keepalive_, sizeof (int));
-        errno_assert (rc == 0);
+        tcp_assert_tuning_error(s_, rc);
+        if (rc != 0)
+            return rc;
 
 #ifdef ZMQ_HAVE_TCP_KEEPCNT
         if (keepalive_cnt_ != -1) {
             int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPCNT,
                     &keepalive_cnt_, sizeof (int));
-            errno_assert (rc == 0);
+            tcp_assert_tuning_error(s_, rc);
+            if (rc != 0)
+                return rc;
         }
 #endif // ZMQ_HAVE_TCP_KEEPCNT
 
@@ -136,14 +135,18 @@ void zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_,
         if (keepalive_idle_ != -1) {
             int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPIDLE,
                     &keepalive_idle_, sizeof (int));
-            errno_assert (rc == 0);
+            tcp_assert_tuning_error(s_, rc);
+            if (rc != 0)
+                return rc;
         }
 #else // ZMQ_HAVE_TCP_KEEPIDLE
 #ifdef ZMQ_HAVE_TCP_KEEPALIVE
         if (keepalive_idle_ != -1) {
             int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPALIVE,
                     &keepalive_idle_, sizeof (int));
-            errno_assert (rc == 0);
+            tcp_assert_tuning_error(s_, rc);
+            if (rc != 0)
+                return rc;
         }
 #endif // ZMQ_HAVE_TCP_KEEPALIVE
 #endif // ZMQ_HAVE_TCP_KEEPIDLE
@@ -152,18 +155,22 @@ void zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_,
         if (keepalive_intvl_ != -1) {
             int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPINTVL,
                     &keepalive_intvl_, sizeof (int));
-            errno_assert (rc == 0);
+            tcp_assert_tuning_error(s_, rc);
+            if (rc != 0)
+                return rc;
         }
 #endif // ZMQ_HAVE_TCP_KEEPINTVL
     }
 #endif // ZMQ_HAVE_SO_KEEPALIVE
 #endif // ZMQ_HAVE_WINDOWS
+    
+    return 0;
 }
 
-void zmq::tune_tcp_maxrt (fd_t sockfd_, int timeout_)
+int zmq::tune_tcp_maxrt (fd_t sockfd_, int timeout_)
 {
     if (timeout_ <= 0)
-        return;
+        return 0;
 
     LIBZMQ_UNUSED (sockfd_);
 
@@ -172,13 +179,16 @@ void zmq::tune_tcp_maxrt (fd_t sockfd_, int timeout_)
     timeout_ /= 1000;    // in seconds
     int rc = setsockopt (sockfd_, IPPROTO_TCP, TCP_MAXRT, (char*) &timeout_,
         sizeof(timeout_));
-    wsa_assert (rc != SOCKET_ERROR);
+    tcp_assert_tuning_error(sockfd_, rc);
+    return rc;
 // FIXME: should be ZMQ_HAVE_TCP_USER_TIMEOUT
 #elif defined (TCP_USER_TIMEOUT)
     int rc = setsockopt (sockfd_, IPPROTO_TCP, TCP_USER_TIMEOUT, &timeout_,
         sizeof(timeout_));
-    errno_assert (rc == 0);
+    tcp_assert_tuning_error(sockfd_, rc);
+    return rc;
 #endif
+    return 0;
 }
 
  int zmq::tcp_write (fd_t s_, const void *data_, size_t size_)
@@ -287,5 +297,56 @@ int zmq::tcp_read (fd_t s_, void *data_, size_t size_)
 
     return static_cast <int> (rc);
 
+#endif
+}
+
+void zmq::tcp_assert_tuning_error(zmq::fd_t s_, int rc_)
+{
+    if (rc_ == 0)
+        return;
+
+    //  Check whether an error occurred
+    int err = 0;
+#ifdef ZMQ_HAVE_HPUX
+    int len = sizeof err;
+#else
+    socklen_t len = sizeof err;
+#endif
+    
+    int rc = getsockopt (s_, SOL_SOCKET, SO_ERROR, (char*) &err, &len);
+    
+    //  Assert if the error was caused by 0MQ bug.
+    //  Networking problems are OK. No need to assert.
+#ifdef ZMQ_HAVE_WINDOWS
+    zmq_assert (rc == 0);
+    if (err != 0) {
+        wsa_assert (err == WSAECONNREFUSED
+                 || err == WSAETIMEDOUT
+                 || err == WSAECONNABORTED
+                 || err == WSAEHOSTUNREACH
+                 || err == WSAENETUNREACH
+                 || err == WSAENETDOWN
+                 || err == WSAEACCES
+                 || err == WSAEINVAL
+                 || err == WSAEADDRINUSE);
+    }
+#else
+    //  Following code should handle both Berkeley-derived socket
+    //  implementations and Solaris.
+    if (rc == -1)
+        err = errno;
+    if (err != 0) {
+        errno = err;
+        errno_assert (
+            errno == ECONNREFUSED ||
+            errno == ECONNRESET ||
+            errno == ECONNABORTED ||
+            errno == EINTR ||
+            errno == ETIMEDOUT ||
+            errno == EHOSTUNREACH ||
+            errno == ENETUNREACH ||
+            errno == ENETDOWN ||
+            errno == EINVAL);
+    }
 #endif
 }
