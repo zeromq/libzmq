@@ -136,14 +136,11 @@ void zmq::tcp_connecter_t::out_event ()
     handle_valid = false;
 
     const fd_t fd = connect ();
-    
-    auto event_failure = [this]() {
-        close ();
-        add_reconnect_timer ();
-    };
+
     //  Handle the error condition by attempt to reconnect.
     if (fd == retired_fd) {
-        event_failure ();
+        close ();
+        add_reconnect_timer ();
         return;
     }
 
@@ -152,7 +149,8 @@ void zmq::tcp_connecter_t::out_event ()
         options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
     rc = rc | tune_tcp_maxrt (fd, options.tcp_maxrt);
     if (rc != 0) {
-        event_failure ();
+        close ();
+        add_reconnect_timer ();
         return;
     }
 
