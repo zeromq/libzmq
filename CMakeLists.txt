@@ -169,7 +169,9 @@ set (ZMQ_CMAKE_MODULES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/Modules)
 list (APPEND CMAKE_MODULE_PATH ${ZMQ_CMAKE_MODULES_DIR})
 
 include (TestZMQVersion)
-include (ZMQSourceRunChecks)
+if (NOT CMAKE_CROSSCOMPILING)
+  include (ZMQSourceRunChecks)
+endif ()
 include (CheckIncludeFiles)
 include (CheckLibraryExists)
 include (CheckCCompilerFlag)
@@ -187,7 +189,7 @@ if( ${CMAKE_SYSTEM_NAME} STREQUAL "WindowsStore" AND ${CMAKE_SYSTEM_VERSION} STR
 endif()
 check_include_files (sys/uio.h ZMQ_HAVE_UIO)
 check_include_files (sys/eventfd.h ZMQ_HAVE_EVENTFD)
-if (ZMQ_HAVE_EVENTFD)
+if (ZMQ_HAVE_EVENTFD AND NOT CMAKE_CROSSCOMPILING)
   zmq_check_efd_cloexec ()
 endif ()
 
@@ -320,15 +322,16 @@ endif ()
 
 
 #-----------------------------------------------------------------------------
-zmq_check_sock_cloexec ()
-zmq_check_so_keepalive ()
-zmq_check_tcp_keepcnt ()
-zmq_check_tcp_keepidle ()
-zmq_check_tcp_keepintvl ()
-zmq_check_tcp_keepalive ()
-zmq_check_tcp_tipc ()
-zmq_check_pthread_setname ()
-
+if (NOT CMAKE_CROSSCOMPILING)
+  zmq_check_sock_cloexec ()
+  zmq_check_so_keepalive ()
+  zmq_check_tcp_keepcnt ()
+  zmq_check_tcp_keepidle ()
+  zmq_check_tcp_keepintvl ()
+  zmq_check_tcp_keepalive ()
+  zmq_check_tcp_tipc ()
+  zmq_check_pthread_setname ()
+endif ()
 
 if (    CMAKE_SYSTEM_NAME MATCHES "Linux"
     OR CMAKE_SYSTEM_NAME MATCHES "GNU/kFreeBSD"
