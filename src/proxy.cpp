@@ -283,29 +283,29 @@ int zmq::proxy (
             if (unlikely (rc < 0)) {
                 return close_and_return (&msg, -1);
             }
-        }
 
-        //  Transform poller events into zmq_pollitem events.
-        j_start = 0;
-        found_events = rc;
-        for(int i = 0; i < 2; i++) {
-          for(int j = j_start; j < found_events; ++j) {
-            if(
-              (itemsout[i].socket && itemsout[i].socket == eventsout[j].socket) ||
-              (!(itemsout[i].socket || eventsout[j].socket) && itemsout[i].fd == eventsout[j].fd)
-              ) {
-              itemsout[i].revents = eventsout[j].events & itemsout[i].events;
-              if(!repeat_items) {
-                // no repeats, we can ignore eventsout we've already seen
-                j_start++;
+            //  Transform poller events into zmq_pollitem events.
+            j_start = 0;
+            found_events = rc;
+            for(int i = 0; i < 2; i++) {
+              for(int j = j_start; j < found_events; ++j) {
+                if(
+                  (itemsout[i].socket && itemsout[i].socket == eventsout[j].socket) ||
+                  (!(itemsout[i].socket || eventsout[j].socket) && itemsout[i].fd == eventsout[j].fd)
+                  ) {
+                  itemsout[i].revents = eventsout[j].events & itemsout[i].events;
+                  if(!repeat_items) {
+                    // no repeats, we can ignore eventsout we've already seen
+                    j_start++;
+                  }
+                  break;
+                }
+                if(!repeat_items) {
+                  // no repeats, never have to look at j > j_start
+                  break;
+                }
               }
-              break;
             }
-            if(!repeat_items) {
-              // no repeats, never have to look at j > j_start
-              break;
-            }
-          }
         }
 
         //  Process a control command if any
