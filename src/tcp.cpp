@@ -179,13 +179,13 @@ int zmq::tune_tcp_maxrt (fd_t sockfd_, int timeout_)
     timeout_ /= 1000;    // in seconds
     int rc = setsockopt (sockfd_, IPPROTO_TCP, TCP_MAXRT, (char*) &timeout_,
         sizeof(timeout_));
-    tcp_assert_tuning_error(s_, rc);
+    tcp_assert_tuning_error(sockfd_, rc);
     return rc;
 // FIXME: should be ZMQ_HAVE_TCP_USER_TIMEOUT
 #elif defined (TCP_USER_TIMEOUT)
     int rc = setsockopt (sockfd_, IPPROTO_TCP, TCP_USER_TIMEOUT, &timeout_,
         sizeof(timeout_));
-    tcp_assert_tuning_error(s_, rc);
+    tcp_assert_tuning_error(sockfd_, rc);
     return rc;
 #endif
     return 0;
