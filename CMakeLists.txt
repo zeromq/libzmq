@@ -777,6 +777,15 @@ else ()
       PREFIX "")
 endif ()
 
+foreach (target libzmq libzmq-static)
+  target_include_directories (${target}
+    PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+      $<INSTALL_INTERFACE:include>
+  )
+endforeach()
+
 target_link_libraries (libzmq ${CMAKE_THREAD_LIBS_INIT})
 
 if (SODIUM_FOUND)
@@ -856,6 +865,7 @@ include(GNUInstallDirs)
 
 if (MSVC)
   install (TARGETS libzmq libzmq-static
+          EXPORT ${PROJECT_NAME}-targets
           ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
           LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
           PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
@@ -878,6 +888,7 @@ if (MSVC)
   endif ()
 else ()
   install (TARGETS libzmq libzmq-static
+          EXPORT ${PROJECT_NAME}-targets
           RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
           ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
           LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -911,26 +922,22 @@ endif ()
 
 include(CMakePackageConfigHelpers)
 
-if (MSVC)
-  string(TOUPPER "${CMAKE_BUILD_TYPE}" U_CMAKE_BUILD_TYPE)
-  get_property(libzmq_pf TARGET libzmq PROPERTY ${U_CMAKE_BUILD_TYPE}_POSTFIX)
-  set(libzmq_file libzmq${libzmq_pf}${CMAKE_LINK_LIBRARY_SUFFIX})
-  get_property(libzmq_static_pf TARGET libzmq-static PROPERTY ${U_CMAKE_BUILD_TYPE}_POSTFIX)
-  set(libzmq_static_file libzmq${libzmq_static_pf}${CMAKE_LINK_LIBRARY_SUFFIX})
-else()
-  set(libzmq_file libzmq${CMAKE_SHARED_LIBRARY_SUFFIX})
-  set(libzmq_static_file libzmq${CMAKE_STATIC_LIBRARY_SUFFIX})
-endif()
-
 # GNUInstallDirs "DATADIR" wrong here; CMake search path wants "share".
 set(ZEROMQ_CMAKECONFIG_INSTALL_DIR "share/cmake/${PROJECT_NAME}" CACHE STRING "install path for ZeroMQConfig.cmake")
 
+if (NOT CMAKE_VERSION VERSION_LESS 3.0)
+  export(EXPORT ${PROJECT_NAME}-targets
+         FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Targets.cmake")
+endif()
 configure_package_config_file(${PROJECT_NAME}Config.cmake.in
                               "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
                               INSTALL_DESTINATION ${ZEROMQ_CMAKECONFIG_INSTALL_DIR})
 write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
                                  VERSION ${ZMQ_VERSION_MAJOR}.${ZMQ_VERSION_MINOR}.${ZMQ_VERSION_PATCH}
                                  COMPATIBILITY AnyNewerVersion)
+install(EXPORT ${PROJECT_NAME}-targets
+        FILE ${PROJECT_NAME}Targets.cmake
+        DESTINATION ${ZEROMQ_CMAKECONFIG_INSTALL_DIR})
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
               ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
               DESTINATION ${ZEROMQ_CMAKECONFIG_INSTALL_DIR})
