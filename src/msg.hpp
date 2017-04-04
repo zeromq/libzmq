@@ -1,20 +1,27 @@
 /*
-    Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2007-2009 iMatix Corporation
-    Copyright (c) 2011 VMware, Inc.
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -27,7 +34,10 @@
 #include <stdio.h>
 
 #include "config.hpp"
+#include "err.hpp"
+#include "fd.hpp"
 #include "atomic_counter.hpp"
+#include "metadata.hpp"
 
 //  Signature for free function to deallocate the message content.
 //  Note that it has to be declared as "C" so that it is the same as
@@ -47,48 +57,9 @@ namespace zmq
     {
     public:
 
-        //  Mesage flags.
-        enum
-        {
-            more = 1,
-            identity = 64,
-            shared = 128
-        };
-
-        bool check ();
-        int init ();
-        int init_size (size_t size_);
-        int init_data (void *data_, size_t size_, msg_free_fn *ffn_,
-            void *hint_);
-        int init_delimiter ();
-        int close ();
-        int move (msg_t &src_);
-        int copy (msg_t &src_);
-        void *data ();
-        size_t size ();
-        unsigned char flags ();
-        void set_flags (unsigned char flags_);
-        void reset_flags (unsigned char flags_);
-        bool is_delimiter ();
-        bool is_vsm ();
-
-        //  After calling this function you can copy the message in POD-style
-        //  refs_ times. No need to call copy.
-        void add_refs (int refs_);
-
-        //  Removes references previously added by add_refs. If the number of
-        //  references drops to 0, the message is closed and false is returned.
-        bool rm_refs (int refs_);
-
-    private:
-
-        //  Size in bytes of the largest message that is still copied around
-        //  rather than being reference-counted.
-        enum {max_vsm_size = 29};
-
         //  Shared message buffer. Message data are either allocated in one
         //  continuous block along with this structure - thus avoiding one
-        //  malloc/free pair or they are stored in used-supplied memory.
+        //  malloc/free pair or they are stored in user-supplied memory.
         //  In the latter case, ffn member stores pointer to the function to be
         //  used to deallocate the data. If the buffer is actually shared (there
         //  are at least 2 references to it) refcount member contains number of
@@ -102,46 +73,196 @@ namespace zmq
             zmq::atomic_counter_t refcnt;
         };
 
+        //  Message flags.
+        enum
+        {
+            more = 1,           //  Followed by more parts
+            command = 2,        //  Command frame (see ZMTP spec)
+            credential = 32,
+            identity = 64,
+            shared = 128
+        };
+
+        bool check () const;
+        int init();
+
+        int init (void* data, size_t size_,
+                  msg_free_fn* ffn_, void* hint,
+                  content_t* content_ = NULL);
+
+        int init_size (size_t size_);
+        int init_data (void *data_, size_t size_, msg_free_fn *ffn_,
+                       void *hint_);
+        int init_external_storage(content_t* content_, void *data_, size_t size_,
+                                  msg_free_fn *ffn_, void *hint_);
+        int init_delimiter ();
+        int init_join ();
+        int init_leave ();
+        int close ();
+        int move (msg_t &src_);
+        int copy (msg_t &src_);
+        void *data ();
+        size_t size () const;
+        unsigned char flags () const;
+        void set_flags (unsigned char flags_);
+        void reset_flags (unsigned char flags_);
+        metadata_t *metadata () const;
+        void set_metadata (metadata_t *metadata_);
+        void reset_metadata ();
+        bool is_identity () const;
+        bool is_credential () const;
+        bool is_delimiter () const;
+        bool is_join () const;
+        bool is_leave () const;
+        bool is_vsm () const;
+        bool is_cmsg () const;
+        bool is_zcmsg() const;
+        uint32_t get_routing_id ();
+        int set_routing_id (uint32_t routing_id_);
+        int reset_routing_id ();
+        const char * group ();
+        int set_group (const char* group_);
+        int set_group (const char*, size_t length);
+
+        //  After calling this function you can copy the message in POD-style
+        //  refs_ times. No need to call copy.
+        void add_refs (int refs_);
+
+        //  Removes references previously added by add_refs. If the number of
+        //  references drops to 0, the message is closed and false is returned.
+        bool rm_refs (int refs_);
+
+        //  Size in bytes of the largest message that is still copied around
+        //  rather than being reference-counted.
+        enum { msg_t_size = 64 };
+        enum { max_vsm_size = msg_t_size - (sizeof (metadata_t *) +
+                                            3 +
+                                            16 +
+                                            sizeof (uint32_t))};
+    private:
+        zmq::atomic_counter_t* refcnt();
+
         //  Different message types.
         enum type_t
         {
             type_min = 101,
+            //  VSM messages store the content in the message itself
             type_vsm = 101,
+            //  LMSG messages store the content in malloc-ed memory
             type_lmsg = 102,
+            //  Delimiter messages are used in envelopes
             type_delimiter = 103,
-            type_max = 103
+            //  CMSG messages point to constant data
+            type_cmsg = 104,
+
+            // zero-copy LMSG message for v2_decoder
+            type_zclmsg = 105,
+
+            //  Join message for radio_dish
+            type_join = 106,
+
+            //  Leave message for radio_dish
+            type_leave = 107,
+
+            type_max = 107
         };
 
         //  Note that fields shared between different message types are not
-        //  moved to tha parent class (msg_t). This way we ger tighter packing
+        //  moved to the parent class (msg_t). This way we get tighter packing
         //  of the data. Shared fields can be accessed via 'base' member of
         //  the union.
         union {
             struct {
-                unsigned char unused [max_vsm_size + 1];
+                metadata_t *metadata;
+                unsigned char unused [msg_t_size - (sizeof (metadata_t *) +
+                                                    2 +
+                                                    16 +
+                                                    sizeof (uint32_t))];
                 unsigned char type;
                 unsigned char flags;
+                char group [16];
+                uint32_t routing_id;
             } base;
             struct {
+                metadata_t *metadata;
                 unsigned char data [max_vsm_size];
                 unsigned char size;
                 unsigned char type;
                 unsigned char flags;
+                char group [16];
+                uint32_t routing_id;
             } vsm;
             struct {
+                metadata_t *metadata;
                 content_t *content;
-                unsigned char unused [max_vsm_size + 1 - sizeof (content_t*)];
+                unsigned char unused [msg_t_size - (sizeof (metadata_t *) +
+                                                    sizeof (content_t*) +
+                                                    2 +
+                                                    16 +
+                                                    sizeof (uint32_t))];
                 unsigned char type;
                 unsigned char flags;
+                char group [16];
+                uint32_t routing_id;
             } lmsg;
             struct {
-                unsigned char unused [max_vsm_size + 1];
+                metadata_t *metadata;
+                content_t *content;
+                unsigned char unused [msg_t_size - (sizeof (metadata_t *) +
+                                                    sizeof (content_t*) +
+                                                    2 +
+                                                    16 +
+                                                    sizeof (uint32_t))];
                 unsigned char type;
                 unsigned char flags;
+                char group [16];
+                uint32_t routing_id;
+            } zclmsg;
+            struct {
+                metadata_t *metadata;
+                void* data;
+                size_t size;
+                unsigned char unused [msg_t_size - (sizeof (metadata_t *) +
+                                                    sizeof (void*) +
+                                                    sizeof (size_t) +
+                                                    2 +
+                                                    16 +
+                                                    sizeof (uint32_t))];
+                unsigned char type;
+                unsigned char flags;
+                char group [16];
+                uint32_t routing_id;
+            } cmsg;
+            struct {
+                metadata_t *metadata;
+                unsigned char unused [msg_t_size - (sizeof (metadata_t *) +
+                                                    2 +
+                                                    16 +
+                                                    sizeof (uint32_t))];
+                unsigned char type;
+                unsigned char flags;
+                char group [16];
+                uint32_t routing_id;
             } delimiter;
         } u;
     };
 
+    inline int close_and_return (zmq::msg_t *msg, int echo)
+    {
+        // Since we abort on close failure we preserve errno for success case.
+        int err = errno;
+        const int rc = msg->close ();
+        errno_assert (rc == 0);
+        errno = err;
+        return echo;
+    }
+
+    inline int close_and_return (zmq::msg_t msg [], int count, int echo)
+    {
+        for (int i = 0; i < count; i++)
+            close_and_return (&msg [i], 0);
+        return echo;
+    }
 }
 
 #endif

@@ -1,0 +1,62 @@
+zmq_curve_public(3)
+===================
+
+
+NAME
+----
+zmq_curve_public - derive the public key from a private key
+
+
+SYNOPSIS
+--------
+*int zmq_curve_public (char *z85_public_key, char *z85_secret_key);*
+
+
+DESCRIPTION
+-----------
+The _zmq_curve_public()_ function shall derive the public key from a
+private key. The caller provides two buffers, each at least 41 octets
+large. In z85_secret_key the caller shall provide the private key, and
+the function will store the public key in z85_public_key. The keys are
+encoded using linkzmq:zmq_z85_encode[3].
+
+
+RETURN VALUE
+------------
+The _zmq_curve_public()_ function shall return 0 if successful, else it
+shall return `-1` and set 'errno' to one of the values defined below.
+
+
+ERRORS
+------
+*ENOTSUP*::
+The libzmq library was not built with cryptographic support (libsodium).
+
+
+EXAMPLE
+-------
+.Deriving the public key from a CURVE private key
+----
+char public_key [41];
+char secret_key [41];
+int rc = zmq_curve_keypair (public_key, secret_key);
+assert (rc == 0);
+char derived_public[41];
+rc = zmq_curve_public (derived_public, secret_key);
+assert (rc == 0);
+assert (!strcmp (derived_public, public_key));
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_z85_decode[3]
+linkzmq:zmq_z85_encode[3]
+linkzmq:zmq_curve_keypair[3]
+linkzmq:zmq_curve[7]
+
+
+AUTHORS
+-------
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

@@ -1,20 +1,27 @@
 /*
-    Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2011 iMatix Corporation
-    Copyright (c) 2011 VMware, Inc.
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -47,21 +54,22 @@ namespace zmq
         router_t (zmq::ctx_t *parent_, uint32_t tid_, int sid);
         ~router_t ();
 
-        //  Overloads of functions from socket_base_t.
-        void xattach_pipe (zmq::pipe_t *pipe_, bool icanhasall_);
+        //  Overrides of functions from socket_base_t.
+        void xattach_pipe (zmq::pipe_t *pipe_, bool subscribe_to_all_);
         int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
-        int xsend (msg_t *msg_, int flags_);
-        int xrecv (msg_t *msg_, int flags_);
+        int xsend (zmq::msg_t *msg_);
+        int xrecv (zmq::msg_t *msg_);
         bool xhas_in ();
         bool xhas_out ();
         void xread_activated (zmq::pipe_t *pipe_);
         void xwrite_activated (zmq::pipe_t *pipe_);
-        void xterminated (zmq::pipe_t *pipe_);
+        void xpipe_terminated (zmq::pipe_t *pipe_);
 
     protected:
 
         //  Rollback any message parts that were sent but not yet flushed.
         int rollback ();
+        blob_t get_credential () const;
 
     private:
 
@@ -83,6 +91,12 @@ namespace zmq
 
         //  Holds the prefetched message.
         msg_t prefetched_msg;
+
+        //  The pipe we are currently reading from
+        zmq::pipe_t *current_in;
+
+        //  Should current_in should be terminate after all parts received?
+        bool terminate_current_in;
 
         //  If true, more incoming message parts are expected.
         bool more_in;
@@ -106,30 +120,25 @@ namespace zmq
         //  If true, more outgoing message parts are expected.
         bool more_out;
 
-        //  Peer ID are generated. It's a simple increment and wrap-over
+        //  Routing IDs are generated. It's a simple increment and wrap-over
         //  algorithm. This value is the next ID to use (if not used already).
-        uint32_t next_peer_id;
+        uint32_t next_rid;
 
-        // If true, fail on unroutable messages instead of silently dropping them.
-        bool fail_unroutable;
+        // If true, report EAGAIN to the caller instead of silently dropping
+        // the message targeting an unknown peer.
+        bool mandatory;
+        bool raw_socket;
+
+        // if true, send an empty message to every connected router peer
+        bool probe_router;
+
+        // If true, the router will reassign an identity upon encountering a
+        // name collision. The new pipe will take the identity, the old pipe
+        // will be terminated.
+        bool handover;
 
         router_t (const router_t&);
         const router_t &operator = (const router_t&);
-    };
-
-    class router_session_t : public session_base_t
-    {
-    public:
-
-        router_session_t (zmq::io_thread_t *io_thread_, bool connect_,
-            socket_base_t *socket_, const options_t &options_,
-            const address_t *addr_);
-        ~router_session_t ();
-
-    private:
-
-        router_session_t (const router_session_t&);
-        const router_session_t &operator = (const router_session_t&);
     };
 
 }

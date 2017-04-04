@@ -1,3 +1,797 @@
+0MQ version 4.2.3 stable, released on 20xx/xx/xx
+=============================================
+
+0MQ version 4.2.2 stable, released on 2017/02/18
+=============================================
+
+* Improve compatibility with GNU Hurd
+
+* Fixed #2286 - improve CMake on Windows documentation
+
+* Fixed #1235 - improved compatibility with mingw64
+
+* Improve zmq_proxy documentation to state it can return ETERM as well
+
+* Fixed #1442 - SO_NOSIGPIPE and connection closing by peer race condition
+
+* Improve CMake functionality on Windows: ZeroMQConfig.cmake generation CPack
+  option, correct static library filename, ship FindSodium.cmake in tarball
+
+* Fixed #2228 - setting HWM after connect on inproc transport leads to infinite
+  HWM
+
+* Add support for Visual Studio 2017
+
+* New DRAFT (see NEWS for 4.2.0) zmq_has option "draft" option that returns
+  true if the library was built with DRAFT enabled. Useful for FFI bindings.
+  See doc/zmq_has.txt for more information
+
+* Fixed #2321 - zmq_z85_decode does not validate its input. The function has
+  been fixed to correctly follow RFC32 and return NULL if the input is invalid
+
+* Fixed #2323 - clock_t related crash on Apple iOS 9.3.2 and 9.3.5
+
+* Fixed #1801 - OSX: Cmake installs libzmq in a weird PATH
+
+* Fixed potential divide by zero in zmq::lb_t::sendpipe
+
+* Improve compatibility with OpenIndiana by skipping epoll and using poll/select
+
+* Fix IPv4-in-IPv6 mapped addresses parsing error
+
+
+0MQ version 4.2.1 stable, released on 2016/12/31
+=============================================
+
+* New DRAFT (see NEWS for 4.2.0) Socket Monitor events:
+  - ZMQ_EVENT_HANDSHAKE_SUCCEED
+  - ZMQ_EVENT_HANDSHAKE_FAILED
+  These events trigger when the ZMTP security mechanism handshake is
+  completed. See doc/zmq_socket_monitor.txt for more information.
+
+* New DRAFT (see NEWS for 4.2.0) Context options:
+  - ZMQ_MSG_T_SIZE
+  See doc/zmq_ctx_get.txt for more information.
+
+* Fixed #2268 - improved compatibility with mingw32
+
+* Fixed #2254 - ZMQ_PUB compatibility with libzmq 2.x broken
+
+* Fixed #2245 - added support for VS2017, Windows SDK 10.0.14393.0, toolset v141
+
+* Fixed #2242 - file descriptors leaks on fork+exec
+
+* Fixed #2239 - retired poller item crash from reaper thread
+
+* Fixed #2234 - improved compatibility with AIX 7.1
+
+* Fixed #2225 - cannot pick select for poller
+
+* Fixed #2217 - CMake build uses library version as the ABI version
+
+* Fixed #2208 - added support for ZMQ_TOS on IPv6
+
+* Fixed #2200 - no documentation for ZMQ_SOCKS_PROXY
+
+* Fixed #2199 - no documentation for zmq_curve_public
+
+* Fixed #2196 - fixed build and runtime errors on kFreeBSD
+
+
+0MQ version 4.2.0 stable, released on 2016/11/04
+=============================================
+
+* For Pieter. Thanks for making all of this possible.
+
+  "Tell them I was a writer.
+   A maker of software.
+   A humanist. A father.
+   And many things.
+   But above all, a writer.
+   Thank You. :)"
+   - Pieter Hintjens
+
+* This release introduces new APIs, but it is ABI compatible with
+  libzmq 4.1.2 and up.
+
+* Note for ARM and SPARC users: an alignment problem in zmq_msg_t that could in
+  some cases and on some CPUs cause a SIGBUS error was solved, but it requires
+  a rebuild of your application against the 4.2.0 version of include/zmq.h.
+  To clarify, this change does not affect the internals of the library but only
+  the public definition of zmq_msg_t, so there is no ABI incompatibility.
+
+* Security with Curve is now available by default thanks to Tweetnacl sources:
+  https://tweetnacl.cr.yp.to/index.html
+  Libsodium is still fully supported but has to be enabled with the build flag
+  --with-libsodium. Distribution and package maintainers are encouraged to use
+  libsodium so that the security implementation can be audited and maintained
+  separately.
+
+* New Context options:
+  - ZMQ_MAX_MSGSZ
+  - ZMQ_BLOCKY
+  See doc/zmq_ctx_set.txt and doc/zmq_ctx_get.txt for details.
+
+* New Socket options:
+  - ZMQ_HANDSHAKE_IVL
+  - ZMQ_SOCKS_PROXY
+  - ZMQ_XPUB_NODROP
+  - ZMQ_XPUB_MANUAL
+  - ZMQ_XPUB_WELCOME_MSG
+  - ZMQ_STREAM_NOTIFY
+  - ZMQ_INVERT_MATCHING
+  - ZMQ_HEARTBEAT_IVL
+  - ZMQ_HEARTBEAT_TTL
+  - ZMQ_HEARTBEAT_TIMEOUT
+  - ZMQ_XPUB_VERBOSER
+  - ZMQ_CONNECT_TIMEOUT
+  - ZMQ_TCP_MAXRT
+  - ZMQ_THREAD_SAFE
+  - ZMQ_MULTICAST_MAXTPDU
+  - ZMQ_VMCI_BUFFER_SIZE
+  - ZMQ_VMCI_BUFFER_MIN_SIZE
+  - ZMQ_VMCI_BUFFER_MAX_SIZE
+  - ZMQ_VMCI_CONNECT_TIMEOUT
+  - ZMQ_USE_FD
+  See doc/zmq_setsockopt.txt and doc/zmq_getsockopt.txt for details.
+
+* New CURVE helper function to derive z85 public key from secret key:
+    zmq_curve_public
+
+* New cross-platform atomic counter helper functions:
+    zmq_atomic_counter_new, zmq_atomic_counter_set, zmq_atomic_counter_inc,
+    zmq_atomic_counter_dec, zmq_atomic_counter_value, zmq_atomic_counter_destroy
+  See doc/zmq_atomic_*.txt for details.
+
+* New DRAFT APIs early-release mechanism. New APIs will be introduced early
+  in public releases, and until they are stabilized and guaranteed not to
+  change anymore they will be unavailable unless the new build flag
+  --enable-drafts is used. This will allow developers and early adopters to
+  test new APIs before they are finalized.
+  NOTE: as the name implies, NO GUARANTEE is made on the stability of these APIs.
+  They might change or disappear entirely. Distributions are recommended NOT to
+  build with them.
+
+  New socket types have been introduced in DRAFT state:
+    ZMQ_SERVER, ZMQ_CLIENT, ZMQ_RADIO, ZMQ_DISH, ZMQ_GATHER, ZMQ_SCATTER,
+    ZMQ_DGRAM
+  All these sockets are THREAD SAFE, unlike the existing socket types. They do
+  NOT support multipart messages (ZMQ_SNDMORE/ZMQ_RCVMORE).
+  ZMQ_RADIO, ZMQ_DISH and ZMQ_DGRAM also support UDP as transport,
+  both unicast and multicast. See doc/zmq_udp.txt for more details.
+  New methods to support the new socket types functionality:
+    zmq_join, zmq_leave, zmq_msg_set_routing_id, zmq_msg_routing_id,
+    zmq_msg_set_group, zmq_msg_group
+  See doc/zmq_socket.txt for more details.
+
+  New poller mechanism and APIs have been introduced in DRAFT state:
+    zmq_poller_new, zmq_poller_destroy, zmq_poller_add, zmq_poller_modify,
+    zmq_poller_remove, zmq_poller_wait, zmq_poller_wait_all, zmq_poller_add_fd
+    zmq_poller_modify_fd, zmq_poller_remove_fd
+  and a new supporting struct typedef: zmq_poller_event_t
+  They support existing socket type, new thread-safe socket types and file
+  descriptors (cross-platform).
+  Documentation will be made available in the future before these APIs are declared
+  stable.
+
+  New cross-platform timers helper functions have been introduced in DRAFT state:
+    zmq_timers_new, zmq_timers_destroy, zmq_timers_add, zmq_timers_cancel,
+    zmq_timers_set_interval, zmq_timers_reset, zmq_timers_timeout,
+    zmq_timers_execute
+  and a new supporting callback typedef: zmq_timer_fn
+
+* Many, many bug fixes. The most important fixes are backported and captured in the
+  4.1.x and 4.0.x changelogs.
+
+
+0MQ version 4.2.0 rc1, released on 2016/11/01
+=============================================
+
+* Many changes, see ChangeLog.
+
+
+0MQ version 4.1.6 stable, released on 2016/11/01
+================================================
+
+* Fixed #2051 - getifaddrs can fail with ECONNREFUSED
+
+* Fixed #2091 - testutil.hpp fails to build on Windows XP
+
+* Fixed #2096 - add tests/CMakeLists.in and version.rc.in to dist tar
+
+* Fixed #2107 - zmq_connect with IPv6 "source:port;dest:port" broken
+
+* Fixed #2117 - ctx_term assert with inproc zmq_router connect-before-bind
+
+* Fixed #2158 - Socket monitor uses internal Pair from multiple threads
+
+* Fixed #2161 - messages dropped due to HWM race
+
+* Fixed #1325 - alignment issue with zmq_msg_t causes SIGBUS on SPARC and ARM
+
+
+0MQ version 4.1.5 stable, released on 2016/06/17
+================================================
+
+* Fixed #1673 - CMake on Windows put PDB in wrong directory.
+
+* Fixed #1723 - Family is not set when resolving NIC on Android.
+
+* Fixed #1608 - Windows 7 TCP slow start issue.
+
+* Fixed #1806 - uninitialised read in curve getsockopt.
+
+* Fixed #1807 - build broken with GCC 6.
+
+* Fixed #1831 - potential assertion failure with latest libsodium.
+
+* Fixed #1850 - detection issues with tweetnacl/libsodium.
+
+* Fixed #1877 - Avoid terminating connections prematurely
+
+* Fixed #1887 - zmq_bind IPv4 fallback still tries IPv6
+
+* Fixed #1866 - fails to build on SunOS 5.10 / Solaris 10
+
+* Fixed #919 - ZMQ_LINGER (related to #1877)
+
+* Fixed #114 - cannot unbind with same endpoint with IPv6 enabled.
+
+* Fixed #1952 - CMake scripts not part of release tarballs
+
+* Fixed #1542 - Fix a crash on Windows when port 5905 is in use.
+
+* Fixed #2021 - Fix building on sparc32.
+
+
+0MQ version 4.1.4 stable, released on 2015/12/18
+================================================
+
+* Fixed #1315 - socket monitor hangs if bind/setsockopt failed.
+
+* Fixed #1399 - assertion failure in tcp.cpp after network reconnect.
+
+* Fixed #1632 - build failure using latest libsodium.
+
+* Fixed #1644 - assertion failure in msg.cpp:390 on STREAM sockets.
+
+* Fixed #1661 - does not handle IPv6 link local addresses.
+
+
+0MQ version 4.1.3 stable, released on 2015/08/17
+================================================
+
+* Fixed #1532 - getsockopt ZMQ_RCVMORE now resets all bits instead of only 32
+
+* Fixed #1445 - zmq::socket_base_t::connect fails on tcp ipv6 address
+
+
+0MQ version 4.1.2 stable, released on 2015/06/15
+================================================
+
+* Added explicit reference to static link exception in every source file.
+
+* Bumped ABI version to 5:0:0 since 4.1.x changed the ABI.
+
+* Fixed STDINT event interface macros to work with CZMQ 3.0.
+
+* Fixed installation of man pages when BUILD_DOC is not set.
+
+* Fixed #1428 - regression on single-socket proxies.
+
+
+0MQ version 4.1.1 stable, released on 2015/06/02
+================================================
+
+* Fixed #1208 - fix recursion in automake packaging.
+
+* Fixed #1224 - crash when processing empty unsubscribe message.
+
+* Fixed #1213 - properties files were missing from source packages.
+
+* Fixed #1273 - V3 protocol handler vulnerable to downgrade attacks.
+
+* Fixed #1347 - lack way to get peer address.
+
+* Fixed #1362 - SUB socket sometimes fails to resubscribe properly.
+
+* Fixed #1377, #1144 - failed with WSANOTINITIALISED in some cases.
+
+* Fixed #1389 - PUB, PUSH sockets had slow memory leak.
+
+* Fixed #1382 - zmq_proxy did not terminate if there were no readers.
+
+
+0MQ version 4.1.0 rc1, released on 2014/10/14
+=============================================
+
+* All issues that were fixed in 4.0.x
+
+* Improved client reconnection strategy on errors
+
+* GSSAPI security mechanism
+
+* SOCKS5 support (ZMQ_SOCKS_PROXY)
+
+* ZMQ_ROUTER_HANDOVER
+
+* ZMQ_TOS
+
+* ZMQ_CONNECT_RID
+
+* ZMQ_HANDSHAKE_IVL
+
+* ZMQ_IDENTITY_FD
+
+* ZMQ_XPUB_NODROP
+
+* ZMQ_SRCFD and ZMQ_SHARED message options
+
+* Message metadata -- zmq_msg_gets ()
+
+* Probe library configuration -- zmq_has ()
+
+
+0MQ version 4.0.8 stable, released on 2016/06/17
+================================================
+
+* Fixed LIBZMQ-949 - zmq_unbind fails for inproc and wildcard endpoints
+
+* Fixed #1806 - uninitialised read in curve getsockopt.
+
+* Fixed #1807 - build broken with GCC 6.
+
+* Fixed #1877 - Avoid terminating connections prematurely
+
+* Fixed #1887 - zmq_bind IPv4 fallback still tries IPv6
+
+* Fixed #98 - don't require libssp without libsodium on Solaris
+
+* Fixed #919 - ZMQ_LINGER (related to #1877)
+
+* Fixed #139 - "tempnam" is deprecated.
+
+
+0MQ version 4.0.7 stable, released on 2015/06/15
+================================================
+
+* Fixed #1428 - regression on single-socket proxies.
+
+
+0MQ version 4.0.6 stable, released on 2015/06/02
+================================================
+
+* Fixed #1273 - V3 protocol handler vulnerable to downgrade attacks.
+
+* Fixed #1362 - SUB socket sometimes fails to resubscribe properly.
+
+* Fixed #1377, #1144 - failed with WSANOTINITIALISED in some cases.
+
+* Fixed #1389 - PUB, PUSH sockets had slow memory leak.
+
+* Fixed #1382 - zmq_proxy did not terminate if there were no readers.
+
+
+0MQ version 4.0.5 stable, released on 2014/10/14
+================================================
+
+* Fixed #1191; CURVE mechanism does not verify short term nonces.
+
+* Fixed #1190; stream_engine is vulnerable to downgrade attacks.
+
+* Fixed #1088; assertion failure for WSAENOTSOCK on Windows.
+
+* Fixed #1015; race condition while connecting inproc sockets.
+
+* Fixed #994; bump so library number to 4.0.0
+
+* Fixed #939, assertion failed: !more (fq.cpp:99) after many ZAP requests.
+
+* Fixed #872; lost first part of message over inproc://.
+
+* Fixed #797, keep-alive on Windows.
+
+
+0MQ version 4.0.4 stable, released on 2014/03/10
+================================================
+
+Bug Fixes
+---------
+
+* Fixed #909; out of tree build issue on Linux.
+
+* Fixed #888; hangs on terminate when inproc connected but never bound.
+
+* Fixed #868; assertion failure at ip.cpp:137 when using port scanner.
+
+* Fixed #818; fix timestamp counter on s390/s390x.
+
+* Fixed #817; only export zmq_* symbols.
+
+* Fixed #797; fixed setting TCP keepalive on Windows.
+
+* Fixed #775; compile error on Windows.
+
+* Fixed #763; when talking to a ZMTP v1 peer (libzmq 2.2), a socket would
+  send an extra identity frame at the start of the connection.
+
+* Fixed LIBZMQ-576 - Crash closing a socket after zmq_msg_send returns
+  EAGAIN (reverts LIBZMQ-497)
+
+* Fixed LIBZMQ-584; subscription filters getting lost on reconnection.
+
+
+0MQ version 4.0.3 stable, released on 2013/11/24
+================================================
+
+Bug Fixes
+---------
+
+* Fixed test_many_sockets case, which failed when process socket limit
+  was 1024.
+
+
+0MQ version 4.0.2 stable, released on 2013/11/24
+================================================
+
+Bug Fixes
+---------
+
+* Fixed LIBZMQ-583 - improved low-res timer for Windows
+* Fixed LIBZMQ-578 - z85_decode was extremely slow
+* Fixed LIBZMQ-577 - fault in man pages.
+* Fixed LIBZMQ-574 - assertion failure when ran out of system file handles
+* Fixed LIBZMQ-571 - test_stream failing in some cases
+* Fixed LIBZMQ-569 - Socket server crashes with random client data and when
+  talking to 2.2 versions
+* Fixed LIBZMQ-39 - Bad file descriptor during shutdown
+* Pulled expected failing test_linger.cpp from release
+* Reduced pause time in tests to allow "make check" to run faster
+
+
+0MQ version 4.0.1 stable, released on 2013/10/08
+================================================
+
+Changes
+-------
+
+* Updated CURVE mechanism to track revised RFC 27 (INITIATE vouch).
+
+  The INITIATE command vouch box is Box[C',S](C->S') instead of
+  Box[C'](C->S), to reduce the risk of client impersonation, as per
+  https://codesinchaos.wordpress.com/2012/09/09/curvecp-1/.
+
+* Fixed LIBZMQ-567, adding abstract namespaces for IPC sockets on Linux.
+
+  Converts an initial strudel or "at sign" (@) in the Unix socket path to
+  a NULL character ('\0') indicating that the socket uses the abstract
+  namespace instead of the filesystem namespace.  For instance, binding a
+  socket to 'ipc://@/tmp/tester' will not create a file associated with
+  the socket whereas binding to 'ipc:///tmp/tester' will create the file
+  /tmp/tester. See issue 567 for more information.
+
+* Added zmq_z85_encode and zmq_z85_decode to core libzmq API.
+
+* Added zmq_curve_keypair to core libzmq API.
+
+* Bumped library ABI version to 4:0:1.
+
+Bug fixes
+---------
+
+* Fixed some build/test errors on OS/X + Clang++.
+
+* Fixed LIBZMQ-565, typo in code.
+
+* Fixed LIBZMQ-566, dealer-to-router connections sometimes failing.
+
+* Fixed builds for AIX, MSVC 2008, OS/X with clang++, Solaris.
+
+* Improved CURVE handshake error handling.
+
+
+0MQ version 4.0.0 (RC1), released on 2013/09/20
+===============================================
+
+Major changes
+-------------
+
+* New wire level protocol, ZMTP/3.0, see http://rfc.zeromq.org/spec:23.
+  Does not yet implement the SUBSCRIBE, CANCEL, PING, and PONG commands.
+  
+* New security framework, from plain user+password to strong encryption, 
+  see section below. See http://hintjens.com/blog:49 for a tutorial.
+  
+* New ZMQ_STREAM socket type for working as a TCP client or server. See: 
+  tests/test_stream.cpp.
+  
+Improvements
+------------
+
+* You can now connect to an inproc:// endpoint that does not already
+  exist. This means inproc:// no longer needs careful set-up, but it may
+  break code that relied on the old behaviour. See: 
+  tests/test_inproc_connect.cpp.
+ 
+* Libzmq now checks socket types at connection time, so that trying to 
+  connect a 'wrong' socket type will fail.
+  
+* New zmq_ctx_shutdown API method will shutdown a context and send ETERM
+  to blocking calls, without blocking. Use zmq_ctx_term to finalise the
+  process.
+  
+* The regression test suite has been significantly extended and improved.
+  
+* Contexts can now be terminated in forked child processes. See: 
+  tests/test_fork.cpp.
+  
+* zmq_disconnect now respects the linger setting on sockets.
+
+* New zmq_send_const API method to send constant data (without copying).
+  See: tests/test_inproc_connect.cpp.
+  
+* Added CMake support for static libraries.
+
+* Added test cases for socket semantics as defined in RFCs 28, 29, 30, 31.
+  See: tests/test_spec_*.cpp.
+
+* New socket option, ZMQ_PROBE_ROUTER triggers an empty message on connect.
+  See: tests/test_probe_router.cpp.
+  
+* New socket option, ZMQ_REQ_CORRELATE allows for correlation of replies 
+  from a REP socket. See: tests/test_req_correlate.cpp.
+  
+* New socket option, ZMQ_REQ_RELAXED, lets you disable the state machine 
+  on a REQ socket, so you can send multiple requests without waiting for 
+  replies, and without getting an EFSM error. See: 
+  tests/test_req_relaxed.cpp.
+  
+* New socket option, ZMQ_CONFLATE restricts the outgoing and incoming 
+  socket buffers to a single message. See: tests/test_conflate.cpp.
+
+Deprecated Options
+------------------
+
+* ZMQ_IPV4ONLY deprecated and renamed to ZMQ_IPV6 so that options are
+  consistently "off" by default. 
+
+* ZMQ_DELAY_ATTACH_ON_CONNECT deprecated, and renamed to ZMQ_IMMEDIATE.
+  See: tests/test_immediate.cpp.
+
+Security Framework
+------------------
+
+Based on new ZMTP wire level protocol that negotiates a security 
+"mechanism" between client and server before exchanging any other data.
+
+Security mechanisms are extensible. ZMTP defines three by default:
+
+* NULL - classic ZeroMQ, with no authentication. See 
+  http://rfc.zeromq.org/spec:23.
+  
+* PLAIN - plain-text username + password authentication. See
+  http://rfc.zeromq.org/spec:24.
+
+* CURVE - secure authentication and encryption based on elliptic curve 
+  cryptography, using the Curve25519 algorithm from Daniel Bernstein and 
+  based on CurveCP's security handshake. See http://rfc.zeromq.org/spec:25, 
+  http://rfc.zeromq.org/spec:26, and http://curvecp.org.
+  
+Authentication is done by pluggable "authenticators" that connect to libzmq
+over an inproc endpoint, see http://rfc.zeromq.org/spec:27.
+
+Socket options to configure PLAIN security on client or server:
+
+* ZMQ_PLAIN_SERVER, ZMQ_PLAIN_USERNAME, ZMQ_PLAIN_PASSWORD. See 
+  tests/test_security_plain.
+  
+Socket options to configure CURVE security on client or server:
+
+* ZMQ_CURVE_SERVER, ZMQ_CURVE_PUBLICKEY, ZMQ_CURVE_SECRETKEY, 
+  ZMQ_CURVE_SERVERKEY. See tests/test_security_curve.cpp.
+  
+Socket options to configure "domain" for ZAP handler:
+ 
+* ZMQ_ZAP_DOMAIN, see tests/test_security_null.cpp.
+
+Support for encoding/decoding CURVE binary keys to ASCII:
+
+* zmq_z85_encode, zmq_z85_decode.
+
+Other issues addressed in this release
+--------------------------------------
+
+* LIBZMQ-525 Multipart upstreaming from XSUB to XPUB
+
+
+0MQ version 3.2.4 stable, released on 2013/09/20
+================================================
+
+* LIBZMQ-84  (Windows) Assertion failed: Address already in use at signaler.cpp:80
+* LIBZMQ-456 ZMQ_XPUB_VERBOSE does not propagate in a tree of XPUB/XSUB devices
+* LIBZMQ-532 (Windows) critical section not released on error
+* LIBZMQ-569 Detect OpenPGM 5.2 system library
+* LIBZMQ-563 Subscribers sometimes stopped receiving messages (aka LIBZMQ-541)
+* LIBZMQ-XXX Added support for Travis Continuous Integration
+* LIBZMQ-XXX Several improvements to MSVC support
+
+
+0MQ version 3.2.3 stable, released on 2013/05/02
+================================================
+
+Issues addressed in this release
+--------------------------------
+
+* LIBZMQ-526 Assertion failure "Invalid argument (tcp_connecter.cpp:285)"
+* LIBZMQ-446 Setting the DSCP bits by default causes CAP_NET_ADMIN error
+* LIBZMQ-496 Crash on heavy socket opening/closing: Device or resource busy (mutex.hpp:90)
+* LIBZMQ-462 test_connect_delay fails at test_connect_delay.cpp:80
+* LIBZMQ-497 Messages getting dropped
+* LIBZMQ-488 signaler.cpp leaks the win32 Event Handle
+* LIBZMQ-476 zmq_disconnect has no effect for inproc sockets
+* LIBZMQ-475 zmq_disconnect does not sent unsubscribe messages
+
+
+0MQ version 3.2.2 stable, released on 2012/11/23
+================================================
+
+Issues addressed in this release
+--------------------------------
+
+* LIBZMQ-384 No meta data for ZMQ_EVENT_DISCONNECTED monitor event
+* LIBZMQ-414 Error in ARM/Thumb2 assembly (atomic_ptr.hpp)
+* LIBZMQ-417 zmq_assert (!incomplete_in) in session_base.cpp 228
+* LIBZMQ-447 socket_base_t::recv() packet loss and memory leak at high receiving rate
+* LIBZMQ-448 Builds fail on older versions of GCC
+* LIBZMQ-449 Builds fail on AIX
+* LIBZMQ-450 lt-test_monitor: fails with assertion at test_monitor.cpp:81
+* LIBZMQ-451 ZMQ_ROUTER_MANDATORY blocks forever
+* LIBZMQ-452 test_connect_delay.cpp:175:12: error: 'sleep' was not declared in this scope
+* LIBZMQ-458 lt-test_router_mandatory fails with assertion at test_router_mandatory.cpp:53
+* LIBZMQ-459 Assertion failed: encoder (stream_engine.cpp:266
+* LIBZMQ-464 PUB socket with HWM set leaks memory
+* LIBZMQ-465 PUB/SUB results in 80-90% of CPU load
+* LIBZMQ-468 ZMQ_XPUB_VERBOSE & unsubscribe
+* LIBZMQ-472 Segfault in zmq_poll in REQ to ROUTER dialog
+
+
+0MQ version 3.2.1 (RC2), released on 2012/10/15
+===============================================
+
+Issues addressed in this release
+--------------------------------
+
+* Fixed issue xxx - handle insufficient resources on accept() properly.
+* Fixed issue 443 - added ZMQ_XPUB_VERBOSE setsocket option.
+* Fixed issue 433 - ZeroMQ died on receiving EPIPE
+* Fixed issue 423 - test_pair_tcp hangs
+* Fixed issue 416 - socket_base: fix 'va_list' has not been declared error
+* Fixed issue 409 - Pub-sub interoperability between 2.x and 3.x.
+* Fixed issue 404 - zmq_term can not safely be re-entered with pgm transport
+* Fixed issue 399 - zmq_ctx_set_monitor callback is not works properly
+* Fixed issue 393 - libzmq does not build on Android (socklen_t signed comparison)
+* Fixed issue 392 - Interaction with pyzmq on Android
+* Fixed issue 389 - Assertion failure in mtrie.cpp:317
+* Fixed issue 388 - tests/test_monitor.cpp has no newline at EOF (causes compile error)
+* Fixed issue 387 - "sa_family_t sa_family;" in pgm_socket.cpp is unused variable
+* Fixed issue 385 - Rework ZMQ_FAIL_UNROUTABLE socket option to actually work
+* Fixed issue 382 - Current libzmq doesn't compile on Android NDK
+* Fixed issue 377 - ZeroMQ will not build on Windows with OpenPGM
+* Fixed issue 375 - error: unused variable 'sa_family'
+* Fixed issue 373 - Unable to build libzmq/zeromq3.x on AIX7
+* Fixed issue 372 - Unable to build libzmq/zeromq3.x on HPUX 11iv3
+* Fixed issue 371 - Unable to build libzmq/zeromq3.x on RHEL5/SLES10
+* Fixed issue 329 - wsa_error_to_errno() calls abort() on WSAEACCES
+* Fixed issue 309 - Assertion failed: options.recv_identity (socket_base.cpp:864)
+* Fixed issue 211 - Assertion failed: msg_->flags & ZMQ_MSG_MORE (rep.cpp:81)
+
+API changes
+-----------
+
+* zmq_device () deprecated and replaced by zmq_proxy ().
+* zmq_ctx_set_monitor () replaced by zmq_socket_monitor ().
+* ZMQ_ROUTER_BEHAVIOR/ZMQ_FAIL_UNROUTABLE renamed experimentally to
+  ZMQ_ROUTER_MANDATORY.
+
+
+0MQ version 3.2.0 (RC1), released on 2012/06/05
+===============================================
+
+Bug fixes
+---------
+
+* Fixed issue 264 - Potential bug with linger, messages dropped during
+  socket close.
+
+* Fixed issue 293 - libzmq doesn't follow the ZMTP/1.0 spec (did not
+  set reserved bits to 0).
+
+* Fixed issue 303 - Assertion failure in pgm_sender.cpp:102.
+
+* Fixed issue 320 - Assertion failure in connect_session.cpp:96 when
+  connecting epgm to an invalid endpoint.
+
+* Fixed issue 325 - Assertion failure in xrep.cpp:93, when two sockets
+  connect using the same identity.
+
+* Fixed issue 327 - Assertion failure in mtrie.cpp:246, when
+  unsubscribing from channel.
+
+* Fixed issue 346 - Assertion failure in signaler.cpp:155, when using a
+  closed socket.
+
+* Fixed issue 328 - unsubscribe wrongly clears multiple subscriptions.
+
+* Fixed issue 330 - IPC listener does not remove unix domain stream file
+  when terminated.
+
+* Fixed issue 334 - Memory leak in session_base.cpp:59.
+
+* Fixed issue 369 - ROUTER cannot close/reopen while DEALER connected.
+
+Operating systems
+-----------------
+
+* Fixed issue 301 - HPUX 11iv2 - build fails, CLOCK_MONOTONIC
+  undefined.
+
+* Fixed issue 324 - OS/X - build fails, ECANTROUTE undefined.
+
+* Fixed issue 368 - Solaris / Sun C++ - build fails, no insert method
+  in multimap classes.
+
+* Fixed issue 366 - Windows - ports not freed after crash.
+
+* Fixed issue 355 - Windows - build fails, MSVC solution file is out of
+  date.
+
+* Fixed issue 331 - FreeBSD 8 and 9 - getaddrinfo fails with
+  EAI_BADFLAGS on AI_V4MAPPED flag.
+
+* Fixed issue xxx - Added support for WinCE.
+
+Performance
+-----------
+
+* Fixed issue xxx - Implemented atomic operations for ARMv7a (runs 15-20% faster).
+
+API changes
+-----------
+
+* Fixed issue 337 - Cleaned-up context API:
+
+    zmq_ctx_new() - create new context (will deprecate zmq_init)
+    zmq_ctx_destroy() - destroy context (will deprecate zmq_term)
+    zmq_ctx_set() - set context property
+    zmq_ctx_get() - get context property
+
+* Fixed issue xxx - Cleaned-up message API:
+
+    zmq_msg_send() - send a message (will deprecate zmq_sendmsg)
+    zmq_msg_recv() - receive a message (will deprecate zmq_recvmsg)
+    zmq_msg_more() - indicate whether this is final part of message
+    zmq_msg_get() - get message property
+    zmq_msg_set() - set message property
+
+* Fixed issue xxx - Added context monitoring API:
+
+    zmq_ctx_set_monitor() - configure monitor callback.
+
+* Fixed issue xxx - Added unbind/disconnect API:
+
+    zmq_unbind() - unbind socket.
+    zmq_disconnect() - disconnect socket.
+
+* Fixed issue xxx - Added ZMQ_TCP_ACCEPT_FILTER setsockopt() for listening TCP sockets.
+
+* Fixed issue 336 - Removed sys: transport.
+
+* Fixed issue 333 - Added zmq_device function back to API (was removed
+  in 3.0).
+
+* Fixed issue 340 - Add support for MAX_SOCKETS to new context API.
+
+
 OMQ version 3.1.0 (beta), released on 2011/12/18
 ================================================
 
@@ -56,6 +850,9 @@ Building
 
 New functionality
 -----------------
+
+* A zmq_ctx_set_monitor() API to register a callback / event sink for changes
+  in socket state.
 
 * POSIX-compliant zmq_send and zmq_recv introduced (uses raw buffer
   instead of message object).
@@ -147,7 +944,403 @@ Distribution
   or via apt-get.
 
 
-Older versions
-==============
+0MQ version 2.2.0 (Stable), released on 2012/04/04
+==================================================
 
-* See NEWS in ZeroMQ 2.1.x repository at http://github.com/zeromq/zeromq2-1.
+Changes
+-------
+
+* Fixed issue 349, add send/recv timeout socket options.
+
+Bug fixes
+---------
+
+* Fixed issue 301, fix builds on HP-UX 11iv3 when using either gcc or aCC.
+
+* Fixed issue 305, memory leakage when using dynamic subscriptions.
+
+* Fixed issue 332, libzmq doesn't compile on Android NDK.
+
+* Fixed issue 293, libzmq doesn't follow ZMTP/1.0 spec.
+
+* Fixed issue 342, cannot build against zmq.hpp under C++11.
+
+
+0MQ version 2.1.11 (Stable), released on 2011/12/18
+===================================================
+
+Bug fixes
+---------
+
+* Fixed issue 290, zmq_poll was using system time instead of monotonic
+  clock (Mika Fischer).
+
+* Fixed issue 281, crash on heavy socket creation - assertion failure in
+  mutex.hpp:91. (Mika Fischer).
+
+* Fixed issue 273, O_CLOEXEC flag used in ip.cpp:192 is supported only
+  on Linux kernels 2.6.27+
+
+* Fixed issue 261, assertion failure in kqueue.cpp:76.
+
+* Fixed issue 269, faulty diagnostic code in 2.1.10.
+
+* Fixed issue 254, assertion failure at tcp_socket.cpp:229 on ENOTCONN.
+
+Changes
+-------
+
+* Now builds properly on AIX 6.1 (AJ Lewis).
+
+* Builds using libdcekt on HP-UX (AJ Lewis).
+
+* New upstream OpenPGM maintenance release 5.1.118.
+
+* Enabled debugging on assertion failure on Windows (Paul Betts).
+
+
+0MQ version 2.1.10 (Stable), released on 2011/10/03
+===================================================
+
+Bug fixes
+---------
+
+* Fixed issue 140, SWAP failed with assertion failure in pipe.cpp:187
+  if the current directory was not writeable. Behavior now is to return
+  -1 at zmq_setsockopt in this situation.
+
+* Fixed issue 207, assertion failure in zmq_connecter.cpp:48, when an
+  invalid zmq_connect() string was used, or the hostname could not be
+  resolved. The zmq_connect() call now returns -1 in both those cases.
+
+* Fixed issue 218, sockets not opened with SOCK_CLOEXEC, causing fork/exec
+  to sit on sockets unnecessarily.
+
+* Fixed issue 250, build errors on Windows (Mikko Koppanen).
+
+* Fixed issue 252, assertion failure in req.cpp:87 and req.cpp:88 (Mikko
+  Koppanen).
+
+
+0MQ version 2.1.9 (Stable), released on 2011/08/29
+==================================================
+
+Bug fixes
+---------
+
+* Fixed issue 240, assertion failure in pgm_socket.cpp:437.
+
+* Fixed issue 238, assertion failure in zmq.cpp:655, when zmq_poll is
+  used on an empty set, on Windows.
+
+* Fixed issue 239, assertion failure in zmq.cpp:223, when ZMQ_SWAP was
+  used with explicit identities and multiple SUB sockets.
+
+* Fixed issue 236, zmq_send() and zmq_recv() did not always return
+  error conditions such as EFSM properly. This bug was introduced in
+  version 2.1.8 by the backport of changes for issue 231.
+
+Building
+--------
+
+* 0MQ support for Android added (Bill Roberts, Mikko Koppanen).
+
+
+0MQ version 2.1.8 (RC), released on 2011/07/28
+==============================================
+
+Bug fixes
+---------
+
+* Fixed issue 223, assertion failure in tcp_connecter.cpp:300 when
+  connecting to a server that is on an unreachable network (errno is
+  equal to ENETUNREACH).
+
+* Fixed issue 228, assertion failure at rep.cpp:88 when HWM was reached.
+
+* Fixed issue 231, assertion failure at mailbox.cpp:183 when too many
+  pending socketpair operations were queued (major backport from 3.0).
+
+* Fixed issue 234, assertion failure at mailbox.cpp:77 when Ctrl-C was
+  used (only affected git master following backport for 231).
+
+* Fixed issue 230, SIGPIPE killing servers when client disconnected, hit
+  OS/X only.
+
+Note: this release was renamed "release candidate" due to issue 236,
+fixed in 2.1.9.
+
+
+0MQ version 2.1.7 (Stable), released on 2011/05/12
+==================================================
+
+Bug fixes
+---------
+
+* Fixed issue 188, assert when closing socket that had unread multipart
+  data still on it (affected PULL, SUB, ROUTER, and DEALER sockets).
+
+* Fixed issue 191, message atomicity issue with PUB sockets (an old issue).
+
+* Fixed issue 199 (affected ROUTER/XREP sockets, an old issue).
+
+* Fixed issue 206, assertion failure in zmq.cpp:223, affected all sockets
+  (bug was introduced in 2.1.6 as part of message validity checking).
+
+* Fixed issue 211, REP socket asserted if sent malformed envelope (old issue
+  due to abuse of assertions for error checking).
+
+* Fixed issue 212, reconnect failing after resume from sleep on Windows
+  (due to not handling WSAENETDOWN).
+
+* Properly handle WSAENETUNREACH on Windows (e.g. if client connects
+  before server binds).
+
+* Fixed memory leak with threads on Windows.
+
+Changes
+-------
+
+* Checks zmq_msg_t validity at each operation.
+
+* Inproc performance tests now work on Windows.
+
+* PGM wire format specification improved in zmq_pgm(7)
+
+* Added thread latency/throughput performance examples.
+
+* Added "--with-system-pgm" configure option to use already installed
+  OpenPGM.
+
+* Runtime checking of socket and context validity, to catch e.g. using a
+  socket after closing it, or passing an invalid pointer to context/socket
+  methods.
+
+* Test cases moved off port 5555, which conflicts with other services.
+
+* Clarified zmq_poll man page that the resolution of the timeout is 1msec.
+
+
+0MQ version 2.1.6 (Broken), released on 2011/04/26
+==================================================
+
+Note that this version contained a malformed patch and is not usable.
+It is not available for download, but is available in the git via the
+2.1.6 tag.
+
+0MQ version 2.1.5 (Broken), released on 2011/04/20
+==================================================
+
+Note that this version contained a malformed patch and is not usable.
+It is not available for download, but is available in the git via the
+2.1.5 tag.
+
+
+0MQ version 2.1.4 (Stable), released on 2011/03/30
+==================================================
+
+Bug fixes
+---------
+
+* Fix to OpenPGM which was asserting on small messages (Steven McCoy).
+
+Changes
+-------
+
+* Upgraded OpenPGM to version 5.1.115 (Pieter Hintjens).
+
+* OpenPGM build changed to not install OpenPGM artifacts.
+
+
+0MQ version 2.1.3 (Stable), released on 2011/03/21
+==================================================
+
+Bug fixes
+---------
+
+* Fix to PUSH sockets, which would sometimes deliver tail frames of a
+  multipart message to new subscribers (Martin Sustrik).
+
+* Fix to PUB sockets, which would sometimes deliver tail frames of a
+  multipart message to new subscribers (Martin Sustrik).
+
+* Windows build was broken due to EPROTONOSUPPORT not being defined. This
+  has now been fixed (Martin Sustrik).
+
+* Various fixes to make OpenVMS port work (Brett Cameron).
+
+* Corrected Reference Manual to note that ZMQ_LINGER socket option may be
+  set at any time, not just before connecting/binding (Pieter Hintjens).
+
+* Fix to C++ binding to properly close sockets (Guido Goldstein).
+
+* Removed obsolete assert from pgm_socket.cpp (Martin Sustrik).
+
+Changes
+-------
+
+* Removed stand-alone devices (/devices subdirectory) from distribution.
+  These undocumented programs remain available in older packages (Pieter
+  Hintjens).
+
+* OpenPGM default rate raised to 40mbps by default (Steven McCoy).
+
+* ZMQ_DEALER and ZMQ_ROUTER macros provided to ease upgrade to 0MQ/3.0.
+  These are scheduled to replace ZMQ_XREQ and ZMQ_XREP (Pieter Hintjens).
+
+* Added man page for zmq_device(3) which was hereto undocumented (Pieter
+  Hintjens).
+
+* Removed zmq_queue(3), zmq_forwarder(3), zmq_streamer(3) man pages
+  (Pieter Hintjens).
+
+OpenPGM Integration
+-------------------
+
+* Upgraded OpenPGM to version 5.1.114 (Steven McCoy, Mikko Koppanen).
+
+* Build system now calls OpenPGM build process directly, allowing easier
+  future upgrades of OpenPGM (Mikko Koppanen).
+
+* Build system allows configuration with arbitrary versions of OpenPGM
+  (./configure --with-pgm=libpgm-x.y.z) (Mikko Koppanen).
+
+* OpenPGM uses new PGM_ODATA_MAX_RTE controlling original data instead of
+  PGM_TXW_MAX_RTE covering entire channel (Steven McCoy).
+
+Building
+--------
+
+* 0MQ builds properly on FreeBSD (Mikko Koppanen).
+
+
+0MQ version 2.1.2 (rc2), released on 2011/03/06
+===============================================
+
+Bug fixes
+---------
+
+* 0MQ now correctly handles durable inproc sockets; previously it ignored
+  explicit identities on inproc sockets.
+
+* Various memory leaks were fixed.
+
+* OpenPGM sender/receiver creation fixed.
+
+
+0MQ version 2.1.1 (rc1), released on 2011/02/23
+===============================================
+
+New functionality
+-----------------
+
+* New socket option ZMQ_RECONNECT_IVL_MAX added, allows for exponential
+  back-off strategy when reconnecting.
+
+* New socket option ZMQ_RECOVERY_IVL_MSEC added, as a fine-grained
+  counterpart to ZMQ_RECOVERY_IVL (for multicast transports).
+
+* If memory is exhausted, 0MQ warns with an explicit message before
+  aborting the process.
+
+* Size of inproc HWM and SWAP is sum of peers' HWMs and SWAPs (Douglas
+  Greager, Martin Sustrik).
+
+Bug fixes
+---------
+
+* 0MQ no longer asserts in mailbox.cpp when multiple peers connect with
+  the same identity.
+
+* 0MQ no longer asserts when rejecting an oversized message.
+
+* 0MQ no longer asserts in pipe.cpp when the swap fills up.
+
+* zmq_poll now works correctly with an empty poll set.
+
+* Many more.
+
+Building
+--------
+
+* 0MQ now builds correctly on CentOS, Debian 6, and SunOS/gcc3.
+
+* Added WithOpenPGM configuration into MSVC builds.
+
+Known issues
+------------
+
+* OpenPGM integration is still not fully stable.
+
+
+0MQ version 2.1.0 (Beta), released on 2010/12/01
+================================================
+
+New functionality
+-----------------
+
+* New semantics for zmq_close () and zmq_term () ensure that all messages
+  are sent before the application terminates. This behaviour may be
+  modified using the new ZMQ_LINGER socket option; for further details
+  refer to the reference manual.
+
+* The new socket options ZMQ_FD and ZMQ_EVENTS provide a way to integrate
+  0MQ sockets into existing poll/event loops.
+
+* Sockets may now be migrated between OS threads, as long as the
+  application ensures that a full memory barrier is issued.
+
+* The 0MQ ABI exported by libzmq.so has been formalised; DSO symbol
+  visibility is used on supported platforms to ensure that only public ABI
+  symbols are exported. The library ABI version has been set to 1.0.0 for
+  this release.
+
+* OpenPGM has been updated to version 5.0.92. This version no longer
+  depends on GLIB, and integration with 0MQ should be much improved.
+
+* zmq_poll() now honors timeouts precisely, and no longer returns if no
+  events are signaled.
+
+* Blocking calls now return EINTR if interrupted by the delivery of a
+  signal; this also means that language bindings which previously had
+  problems with handling SIGINT/^C should now work correctly.
+
+* The ZMQ_TYPE socket option was added; this allows retrieval of the socket
+  type after creation.
+
+* Added a ZMQ_VERSION macro to zmq.h for compile-time API version
+  detection.
+
+* The ZMQ_RECONNECT_IVL and ZMQ_BACKLOG socket options have been added.
+
+Bug fixes
+---------
+
+* Forwarder and streamer devices now handle multi-part messages correctly.
+
+* 0MQ no longer asserts when malformed data is received on the wire.
+
+* 0MQ internal timers now work correctly if the TSC jumps backwards.
+
+* The internal signalling functionality (mailbox) has been improved
+  to automatically resize socket buffers on POSIX systems.
+
+* Many more.
+
+Building
+--------
+
+* 0MQ now builds correctly with many more non-GCC compilers (Sun Studio,
+  Intel ICC, CLang).
+
+* AIX and HP-UX builds should work now.
+
+* FD_SETSIZE has been set to 1024 by default for MSVC builds.
+
+* Windows builds using GCC (MinGW) now work out of the box.
+
+Distribution
+------------
+
+* A simple framework for regression tests has been added, along with a few
+  basic self-tests. The tests can be run using "make check".

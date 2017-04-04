@@ -1,0 +1,90 @@
+zmq_unbind(3)
+==============
+
+
+NAME
+----
+zmq_unbind - Stop accepting connections on a socket
+
+
+SYNOPSIS
+--------
+int zmq_unbind (void '*socket', const char '*endpoint');
+
+
+DESCRIPTION
+-----------
+The _zmq_unbind()_ function shall unbind a socket specified
+by the 'socket' argument from the endpoint specified by the 'endpoint'
+argument. 
+
+The 'endpoint' argument is as described in linkzmq:zmq_bind[3]
+
+Unbinding wild-card address from a socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When wild-card `*` 'endpoint' (described in linkzmq:zmq_tcp[7],
+linkzmq:zmq_ipc[7] and linkzmq:zmq_vmci[7]) was used in _zmq_bind()_, the caller should use
+real 'endpoint' obtained from the ZMQ_LAST_ENDPOINT socket option
+to unbind this 'endpoint' from a socket.
+
+RETURN VALUE
+------------
+The _zmq_unbind()_ function shall return zero if successful. Otherwise it
+shall return `-1` and set 'errno' to one of the values defined below.
+
+ERRORS
+------
+*EINVAL*::
+The endpoint supplied is invalid.
+*ETERM*::
+The 0MQ 'context' associated with the specified 'socket' was terminated.
+*ENOTSOCK*::
+The provided 'socket' was invalid.
+*ENOENT*::
+The endpoint supplied was not previously bound.
+
+
+EXAMPLES
+--------
+.Unbind a subscriber socket from a TCP transport
+----
+/* Create a ZMQ_SUB socket */
+void *socket = zmq_socket (context, ZMQ_SUB);
+assert (socket);
+/* Connect it to the host server001, port 5555 using a TCP transport */
+rc = zmq_bind (socket, "tcp://127.0.0.1:5555");
+assert (rc == 0);
+/* Disconnect from the previously connected endpoint */
+rc = zmq_unbind (socket, "tcp://127.0.0.1:5555");
+assert (rc == 0);
+----
+
+.Unbind wild-card `*` binded socket
+----
+/* Create a ZMQ_SUB socket */
+void *socket = zmq_socket (context, ZMQ_SUB);
+assert (socket);
+/* Bind it to the system-assigned ephemeral port using a TCP transport */
+rc = zmq_bind (socket, "tcp://127.0.0.1:*");
+assert (rc == 0);
+/* Obtain real endpoint */
+const size_t buf_size = 32;
+char buf[buf_size];
+rc = zmq_getsockopt (socket, ZMQ_LAST_ENDPOINT, buf, (size_t *)&buf_size);
+assert (rc == 0);
+/* Unbind socket by real endpoint */
+rc = zmq_unbind (socket, buf);
+assert (rc == 0);
+----
+
+SEE ALSO
+--------
+linkzmq:zmq_bind[3]
+linkzmq:zmq_socket[3]
+linkzmq:zmq[7]
+
+
+AUTHORS
+-------
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

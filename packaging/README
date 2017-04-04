@@ -1,0 +1,4 @@
+This directory is for packaging tools. Please do not hardcode version
+numbers into your scripts; you can get them at runtime by calling
+version.sh, or at configure time if you use autoconf.
+

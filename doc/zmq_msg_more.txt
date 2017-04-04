@@ -15,7 +15,9 @@ SYNOPSIS
 DESCRIPTION
 -----------
 The _zmq_msg_more()_ function indicates whether this is part of a multi-part
-message, and there are further parts to receive.
+message, and there are further parts to receive. This method can safely be
+called after _zmq_msg_close()_. This method is identical to _zmq_msg_get()_
+with an argument of ZMQ_MORE.
 
 
 RETURN VALUE
@@ -35,7 +37,7 @@ while (true) {
     int rc = zmq_msg_init (&part);
     assert (rc == 0);
     //  Block until a message is available to be received from socket
-    rc = zmq_recvmsg (socket, &part, 0);
+    rc = zmq_msg_recv (socket, &part, 0);
     assert (rc != -1);
     if (zmq_msg_more (&part))
         fprintf (stderr, "more\n");
@@ -43,7 +45,7 @@ while (true) {
         fprintf (stderr, "end\n");
         break;
     }
-    zmq_msg_close (part);
+    zmq_msg_close (&part);
 }
 ----
 
@@ -59,5 +61,5 @@ linkzmq:zmq[7]
 
 AUTHORS
 -------
-This 0MQ manual page was written by Chuck Remes <cremes@mac.com> and Pieter
-Hintjens <ph@imatix.com>.
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

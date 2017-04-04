@@ -19,9 +19,10 @@ argument to be sent to the socket referenced by the 'socket' argument.  The
 'flags' argument is a combination of the flags defined below:
 
 *ZMQ_DONTWAIT*::
-Specifies that the operation should be performed in non-blocking mode. If the
-message cannot be queued on the 'socket', the _zmq_sendmsg()_ function shall
-fail with 'errno' set to EAGAIN.
+For socket types (DEALER, PUSH) that block when there are no available peers 
+(or all peers have full high-water mark), specifies that the operation should 
+be performed in non-blocking mode. If the message cannot be queued on the 
+'socket', the _zmq_sendmsg()_ function shall fail with 'errno' set to EAGAIN.
 
 *ZMQ_SNDMORE*::
 Specifies that the message being sent is a multi-part message, and that further
@@ -30,12 +31,13 @@ below for a detailed description.
 
 The _zmq_msg_t_ structure passed to _zmq_sendmsg()_ is nullified during the
 call. If you want to send the same message to multiple sockets you have to copy
-it using (e.g. using _zmq_msg_copy()_).
+it (e.g. using _zmq_msg_copy()_).
 
 NOTE: A successful invocation of _zmq_sendmsg()_ does not indicate that the
 message has been transmitted to the network, only that it has been queued on
 the 'socket' and 0MQ has assumed responsibility for the message.
 
+NOTE: this API method is deprecated in favor of zmq_msg_send(3).
 
 Multi-part messages
 ~~~~~~~~~~~~~~~~~~~
@@ -61,6 +63,8 @@ ERRORS
 Non-blocking mode was requested and the message cannot be sent at the moment.
 *ENOTSUP*::
 The _zmq_sendmsg()_ operation is not supported by this socket type.
+*EINVAL*::
+The sender tried to send multipart data, which the socket type does not allow.
 *EFSM*::
 The _zmq_sendmsg()_ operation cannot be performed on this socket at the moment
 due to the socket not being in the appropriate state.  This error may occur with
@@ -75,6 +79,8 @@ The operation was interrupted by delivery of a signal before the message was
 sent.
 *EFAULT*::
 Invalid message.
+*EHOSTUNREACH*::
+The message cannot be routed.
 
 
 EXAMPLE
@@ -105,14 +111,11 @@ rc = zmq_sendmsg (socket, &part3, 0);
 SEE ALSO
 --------
 linkzmq:zmq_recv[3]
-linkzmq:zmq_recv[3]
-linkzmq:zmq_recvmsg[3]
 linkzmq:zmq_socket[7]
 linkzmq:zmq[7]
 
 
 AUTHORS
 -------
-This 0MQ manual page was written by Martin Sustrik <sustrik@250bpm.com> and
-Martin Lucina <mato@kotelna.sk>, and Pieter Hintjens <ph@imatix.com>.
-
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

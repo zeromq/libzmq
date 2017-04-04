@@ -22,8 +22,8 @@ not yet physically transferred to the network depends on the value of the
 _ZMQ_LINGER_ socket option for the specified 'socket'.
 
 NOTE: The default setting of _ZMQ_LINGER_ does not discard unsent messages;
-this behaviour may cause the application to block when calling _zmq_term()_.
-For details refer to linkzmq:zmq_setsockopt[3] and linkzmq:zmq_term[3].
+this behaviour may cause the application to block when calling _zmq_ctx_term()_.
+For details refer to linkzmq:zmq_setsockopt[3] and linkzmq:zmq_ctx_term[3].
 
 
 RETURN VALUE
@@ -41,12 +41,12 @@ The provided 'socket' was invalid.
 SEE ALSO
 --------
 linkzmq:zmq_socket[3]
-linkzmq:zmq_term[3]
+linkzmq:zmq_ctx_term[3]
 linkzmq:zmq_setsockopt[3]
 linkzmq:zmq[7]
 
 
 AUTHORS
 -------
-This 0MQ manual page was written by Martin Sustrik <sustrik@250bpm.com> and
-Martin Lucina <mato@kotelna.sk>.
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

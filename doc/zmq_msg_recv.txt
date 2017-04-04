@@ -14,8 +14,8 @@ SYNOPSIS
 
 DESCRIPTION
 -----------
-The _zmq_msg_send()_ function is identical to linkzmq:zmq_sendmsg[3], which
-shall be deprecated in future versions. _zmq_msg_send()_ is more consistent
+The _zmq_msg_recv()_ function is identical to linkzmq:zmq_recvmsg[3], which
+shall be deprecated in future versions. _zmq_msg_recv()_ is more consistent
 with other message manipulation functions.
 
 The _zmq_msg_recv()_ function shall receive a message part from the socket
@@ -90,8 +90,8 @@ zmq_msg_close (&msg);
 
 .Receiving a multi-part message
 ----
-int64_t more;
-size_t more_size = sizeof more;
+int more;
+size_t more_size = sizeof (more);
 do {
     /* Create an empty 0MQ message to hold the message part */
     zmq_msg_t part;
@@ -120,6 +120,5 @@ linkzmq:zmq[7]
 
 AUTHORS
 -------
-This man page was written by Martin Sustrik <sustrik@250bpm.com>, Martin
-Lucina <martin@lucina.net>, and Pieter Hintjens <ph@imatix.com>.
-
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

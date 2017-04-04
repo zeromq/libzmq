@@ -1,24 +1,33 @@
 /*
-    Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2007-2009 iMatix Corporation
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include "kqueue.hpp"
 #if defined ZMQ_USE_KQUEUE
 
@@ -30,6 +39,7 @@
 #include <algorithm>
 #include <new>
 
+#include "macros.hpp"
 #include "kqueue.hpp"
 #include "err.hpp"
 #include "config.hpp"
@@ -44,12 +54,16 @@
 #define kevent_udata_t void *
 #endif
 
-zmq::kqueue_t::kqueue_t () :
+zmq::kqueue_t::kqueue_t (const zmq::ctx_t &ctx_) :
+    ctx(ctx_),
     stopping (false)
 {
     //  Create event queue
     kqueue_fd = kqueue ();
     errno_assert (kqueue_fd != -1);
+#ifdef HAVE_FORK
+    pid = getpid();
+#endif
 }
 
 zmq::kqueue_t::~kqueue_t ()
@@ -143,12 +157,17 @@ void zmq::kqueue_t::reset_pollout (handle_t handle_)
 
 void zmq::kqueue_t::start ()
 {
-    worker.start (worker_routine, this);
+    ctx.start_thread (worker, worker_routine, this);
 }
 
 void zmq::kqueue_t::stop ()
 {
     stopping = true;
+}
+
+int zmq::kqueue_t::max_fds ()
+{
+    return -1;
 }
 
 void zmq::kqueue_t::loop ()
@@ -163,9 +182,17 @@ void zmq::kqueue_t::loop ()
         timespec ts = {timeout / 1000, (timeout % 1000) * 1000000};
         int n = kevent (kqueue_fd, NULL, 0, &ev_buf [0], max_io_events,
             timeout ? &ts: NULL);
-        if (n == -1 && errno == EINTR)
+#ifdef HAVE_FORK
+        if (unlikely(pid != getpid())) {
+            //printf("zmq::kqueue_t::loop aborting on forked child %d\n", (int)getpid());
+            // simply exit the loop in a forked process.
+            return;
+        }
+#endif
+        if (n == -1) {
+            errno_assert (errno == EINTR);
             continue;
-        errno_assert (n != -1);
+        }
 
         for (int i = 0; i < n; i ++) {
             poll_entry_t *pe = (poll_entry_t*) ev_buf [i].udata;
@@ -185,9 +212,9 @@ void zmq::kqueue_t::loop ()
         }
 
         //  Destroy retired event sources.
-        for (retired_t::iterator it = retired.begin (); it != retired.end ();
-              ++it)
-            delete *it;
+        for (retired_t::iterator it = retired.begin (); it != retired.end (); ++it) {
+            LIBZMQ_DELETE(*it);
+        }
         retired.clear ();
     }
 }

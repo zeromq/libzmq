@@ -7,6 +7,46 @@ Copyright (C) 1994, 1995, 1996, 1999, 2000, 2001, 2002, 2004, 2005,
 This file is free documentation; the Free Software Foundation gives
 unlimited permission to copy, distribute and modify it.
 
+From GitHub
+===========
+
+If you clone the Git repository then you should start by running the
+command `./autogen.sh`. This is not necessary if you get the source
+packages.
+
+CMake installation
+==================
+
+The following options are available for cmake invocation:
+
+- `WITH_PERF_TOOL'
+    Enables the build of performance tools. Default value is ON.
+- `ZMQ_BUILD_TESTS'
+    Builds ZeroMQ tests. Default value is ON.
+- `ENABLE_CPACK'
+    Enables CPack build rules. This option has effect on Windows
+    platform only. Default value is ON. Turn it to OFF if you
+    don't want the runtime libraries to be installed (typically
+    if your installation destination already contains them).
+    
+
+Example: installing ZeroMQ on Windows with no tests, no performance
+tools, and no runtime library copy:
+
+cmake -G "NMake Makefiles" -D WITH_PERF_TOOL=OFF -D ZMQ_BUILD_TESTS=OFF
+-D ENABLE_CPACK=OFF -D CMAKE_BUILD_TYPE=Release
+
+Windows Builds
+==============
+
+For Windows building, see the libzmq\builds\msvc\readme.txt file.
+
+The library can also be built for the Windows 10 UWP platform through CMake :
+cmake -H. -B<build dir> -G"Visual Studio 14 2015 Win64" \
+   -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 \
+   -DENABLE_CURVE=OFF -DZMQ_BUILD_TESTS=OFF
+
+
 Basic Installation
 ==================
 
@@ -55,7 +95,8 @@ The simplest way to compile this package is:
   2. Type `make' to compile the package.
 
   3. Optionally, type `make check' to run any self-tests that come with
-     the package.
+     the package. Note that `make -j check' is not supported as some
+     tests share infrastructure and cannot be run in parallel.
 
   4. Type `make install' to install the programs and any data files and
      documentation.

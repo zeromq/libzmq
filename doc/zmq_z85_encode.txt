@@ -1,0 +1,58 @@
+zmq_z85_encode(3)
+=================
+
+
+NAME
+----
+zmq_z85_encode - encode a binary key as Z85 printable text
+
+
+SYNOPSIS
+--------
+*char *zmq_z85_encode (char *dest, const uint8_t *data, size_t size);*
+
+
+DESCRIPTION
+-----------
+The _zmq_z85_encode()_ function shall encode the binary block specified 
+by 'data' and 'size' into a string in 'dest'. The size of the binary block
+must be divisible by 4. The 'dest' must have sufficient space for size * 1.25 
+plus 1 for a null terminator. A 32-byte CURVE key is encoded as 40 ASCII 
+characters plus a null terminator.
+
+The encoding shall follow the ZMQ RFC 32 specification.
+
+
+RETURN VALUE
+------------
+The _zmq_z85_encode()_ function shall return 'dest' if successful, else it
+shall return NULL.
+
+
+EXAMPLE
+-------
+.Encoding a CURVE key
+----
+#include <sodium.h>
+uint8_t public_key [32];
+uint8_t secret_key [32];
+int rc = crypto_box_keypair (public_key, secret_key);
+assert (rc == 0);
+char encoded [41];
+zmq_z85_encode (encoded, public_key, 32);
+puts (encoded);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_z85_decode[3]
+linkzmq:zmq_curve_keypair[3]
+linkzmq:zmq_curve_public[3]
+linkzmq:zmq_curve[7]
+
+
+AUTHORS
+-------
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

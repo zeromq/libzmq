@@ -20,10 +20,14 @@
 
 # Script to generate all required files from fresh git checkout.
 
-command -v libtool >/dev/null 2>&1
+# Debian and Ubuntu do not ship libtool anymore, but OSX does not ship libtoolize.
+command -v libtoolize >/dev/null 2>&1
 if  [ $? -ne 0 ]; then
-    echo "autogen.sh: error: could not find libtool.  libtool is required to run autogen.sh." 1>&2
-    exit 1
+    command -v libtool >/dev/null 2>&1
+    if  [ $? -ne 0 ]; then
+        echo "autogen.sh: error: could not find libtool.  libtool is required to run autogen.sh." 1>&2
+        exit 1
+    fi
 fi
 
 command -v autoreconf >/dev/null 2>&1

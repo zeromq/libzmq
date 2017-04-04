@@ -1,0 +1,42 @@
+#! /bin/sh
+# Wrapper around IBM C++ compiler to add "-+" to preprocessor calls
+# and thus work with C++ in files other than *.C.  Also add -Wc,lang(longlong)
+# with appropriate quoting to avoid shell confusion -- this is difficult 
+# to get through both ./configure arguments _and_ Makefile/shell expansion
+# safely so more easily added in this wrapper.
+#
+# Finally, by default will enable xplink for C++ compatibilty and performance
+# (c++ standard library requires xplink enabled).
+#
+# Additional compile/link flags can be passed in as ZCXXFLAGS, eg:
+#
+# For debug:  ZXCCFLAGS=-g ...
+#
+# Written by Ewen McNeill <ewen@imatix.com>, 2014-07-18
+# Updated by Ewen McNeill <ewen@imatix.com>, 2014-07-21
+#---------------------------------------------------------------------------
+
+CPPFLAGS="-+"
+LONGLONG="-Wc,lang(longlong)"
+XPLINK="${XPLINK:--Wc,xplink -Wl,xplink}"
+CXX="/bin/c++"
+ZCXXFLAGS="${ZCXXFLAGS:-}"   # Extra compile/link arguments, eg "-g"
+
+# For debugging calling conventions issues
+#echo "Called with: $0 $@" >>/tmp/zc++.log 2>&1
+#exec >>/tmp/zc++.log 2>&1
+#set -x
+
+case "$1" in 
+  -E) exec "${CXX}"                            "${CPPFLAGS}"           "$@"
+      ;;
+  -o) exec "${CXX}" ${ZCXXFLAGS} "${LONGLONG}" "${CPPFLAGS}" ${XPLINK} "$@"
+      ;;
+  -c) exec "${CXX}" ${ZCXXFLAGS} "${LONGLONG}" "${CPPFLAGS}" ${XPLINK} "$@"
+      ;;
+  -L) # Special case for linking via C++, called from linkall
+      exec "${CXX}" ${ZCXXFLAGS}                             ${XPLINK} "$@"
+      ;;
+  *)  exec "${CXX}" ${ZCXXFLAGS} "${LONGLONG}"               ${XPLINK} "$@"
+      ;;
+esac

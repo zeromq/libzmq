@@ -1,0 +1,15 @@
+# ZeroMQ cmake module
+# This module sets the following variables in your project::
+#
+#   ZeroMQ_FOUND - true if ZeroMQ found on the system
+#   ZeroMQ_INCLUDE_DIR - the directory containing ZeroMQ headers
+#   ZeroMQ_LIBRARY - 
+#   ZeroMQ_STATIC_LIBRARY
+
+@PACKAGE_INIT@
+
+set(PN ZeroMQ)
+set_and_check(${PN}_INCLUDE_DIR "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_INCLUDEDIR@")
+set_and_check(${PN}_LIBRARY "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_LIBDIR@/@libzmq_file@")
+set_and_check(${PN}_STATIC_LIBRARY "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_LIBDIR@/@libzmq_static_file@")
+check_required_components(${PN})

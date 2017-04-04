@@ -1,20 +1,27 @@
 /*
-    Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2007-2009 iMatix Corporation
-    Copyright (c) 2010-2011 Miru Limited
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -23,18 +30,15 @@
 #ifndef __PGM_SOCKET_HPP_INCLUDED__
 #define __PGM_SOCKET_HPP_INCLUDED__
 
-#include "platform.hpp"
-
 #if defined ZMQ_HAVE_OPENPGM
 
 #ifdef ZMQ_HAVE_WINDOWS
-#include "windows.hpp"
 #define __PGM_WININT_H__
 #endif
 
 #include <pgm/pgm.h>
 
-#ifdef ZMQ_HAVE_OSX
+#if defined(ZMQ_HAVE_OSX) || defined(ZMQ_HAVE_NETBSD)
 #include <pgm/in.h>
 #endif
 
@@ -57,11 +61,14 @@ namespace zmq
 
         //  Initialize PGM network structures (GSI, GSRs).
         int init (bool udp_encapsulation_, const char *network_);
-        
+
+        //  Resolve PGM socket address.
+        static int init_address(const char *network_, struct pgm_addrinfo_t **addr, uint16_t *port_number);
+
         //   Get receiver fds and store them into user allocated memory.
         void get_receiver_fds (fd_t *receive_fd_, fd_t *waiting_pipe_fd_);
 
-        //   Get sender and receiver fds and store it to user allocated 
+        //   Get sender and receiver fds and store it to user allocated
         //   memory. Receive fd is used to process NAKs from peers.
         void get_sender_fds (fd_t *send_fd_, fd_t *receive_fd_,
             fd_t *rdata_notify_fd_, fd_t *pending_notify_fd_);
@@ -78,7 +85,7 @@ namespace zmq
         long get_rx_timeout ();
         long get_tx_timeout ();
 
-        //  POLLIN on sender side should mean NAK or SPMR receiving. 
+        //  POLLIN on sender side should mean NAK or SPMR receiving.
         //  process_upstream function is used to handle such a situation.
         void process_upstream ();
 
@@ -86,7 +93,7 @@ namespace zmq
 
         //  Compute size of the buffer based on rate and recovery interval.
         int compute_sqns (int tpdu_);
-    
+
         //  OpenPGM transport.
         pgm_sock_t* sock;
 
@@ -94,7 +101,7 @@ namespace zmq
 
         //  Associated socket options.
         options_t options;
-       
+
         //  true when pgm_socket should create receiving side.
         bool receiver;
 
@@ -110,7 +117,7 @@ namespace zmq
 
         //  How many bytes were processed from last pgm socket read.
         size_t nbytes_processed;
-        
+
         //  How many messages from pgm_msgv were already sent up.
         size_t pgm_msgv_processed;
     };

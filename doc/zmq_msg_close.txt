@@ -21,7 +21,8 @@ message object shall be postponed by 0MQ until all users of the message or
 underlying data buffer have indicated it is no longer required.
 
 Applications should ensure that _zmq_msg_close()_ is called once a message is
-no longer required, otherwise memory leaks may occur.
+no longer required, otherwise memory leaks may occur. Note that this is NOT
+necessary after a successful _zmq_msg_send()_.
 
 CAUTION: Never access 'zmq_msg_t' members directly, instead always use the
 _zmq_msg_ family of functions.
@@ -51,5 +52,5 @@ linkzmq:zmq[7]
 
 AUTHORS
 -------
-This 0MQ manual page was written by Martin Sustrik <sustrik@250bpm.com> and
-Martin Lucina <mato@kotelna.sk>.
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

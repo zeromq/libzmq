@@ -1,19 +1,27 @@
 /*
-    Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2007-2009 iMatix Corporation
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -23,28 +31,37 @@
 #define __ZMQ_ATOMIC_COUNTER_HPP_INCLUDED__
 
 #include "stdint.hpp"
-#include "platform.hpp"
 
 #if defined ZMQ_FORCE_MUTEXES
 #define ZMQ_ATOMIC_COUNTER_MUTEX
+#elif defined ZMQ_HAVE_ATOMIC_INTRINSICS
+#define ZMQ_ATOMIC_COUNTER_INTRINSIC
+#elif (defined ZMQ_CXX11 && defined __cplusplus && __cplusplus >= 201103L)
+#define ZMQ_ATOMIC_COUNTER_CXX11
 #elif (defined __i386__ || defined __x86_64__) && defined __GNUC__
 #define ZMQ_ATOMIC_COUNTER_X86
 #elif defined __ARM_ARCH_7A__ && defined __GNUC__
 #define ZMQ_ATOMIC_COUNTER_ARM
 #elif defined ZMQ_HAVE_WINDOWS
 #define ZMQ_ATOMIC_COUNTER_WINDOWS
-#elif (defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_NETBSD)
+#elif (defined ZMQ_HAVE_SOLARIS || defined ZMQ_HAVE_NETBSD || defined ZMQ_HAVE_GNU)
 #define ZMQ_ATOMIC_COUNTER_ATOMIC_H
+#elif defined __tile__
+#define ZMQ_ATOMIC_COUNTER_TILE
 #else
 #define ZMQ_ATOMIC_COUNTER_MUTEX
 #endif
 
 #if defined ZMQ_ATOMIC_COUNTER_MUTEX
 #include "mutex.hpp"
+#elif defined ZMQ_ATOMIC_COUNTER_CXX11
+#include <atomic>
 #elif defined ZMQ_ATOMIC_COUNTER_WINDOWS
 #include "windows.hpp"
 #elif defined ZMQ_ATOMIC_COUNTER_ATOMIC_H
 #include <atomic.h>
+#elif defined ZMQ_ATOMIC_COUNTER_TILE
+#include <arch/atomic.h>
 #endif
 
 namespace zmq
@@ -81,9 +98,15 @@ namespace zmq
 
 #if defined ZMQ_ATOMIC_COUNTER_WINDOWS
             old_value = InterlockedExchangeAdd ((LONG*) &value, increment_);
+#elif defined ZMQ_ATOMIC_COUNTER_INTRINSIC
+            old_value = __atomic_fetch_add(&value, increment_, __ATOMIC_ACQ_REL);
+#elif defined ZMQ_ATOMIC_COUNTER_CXX11
+            old_value = value.fetch_add(increment_, std::memory_order_acq_rel);
 #elif defined ZMQ_ATOMIC_COUNTER_ATOMIC_H
             integer_t new_value = atomic_add_32_nv (&value, increment_);
             old_value = new_value - increment_;
+#elif defined ZMQ_ATOMIC_COUNTER_TILE
+            old_value = arch_atomic_add (&value, increment_);
 #elif defined ZMQ_ATOMIC_COUNTER_X86
             __asm__ volatile (
                 "lock; xadd %0, %1 \n\t"
@@ -121,9 +144,19 @@ namespace zmq
             LONG delta = - ((LONG) decrement);
             integer_t old = InterlockedExchangeAdd ((LONG*) &value, delta);
             return old - decrement != 0;
+#elif defined ZMQ_ATOMIC_COUNTER_INTRINSIC
+            integer_t nv = __atomic_sub_fetch(&value, decrement, __ATOMIC_ACQ_REL);
+            return nv != 0;
+#elif defined ZMQ_ATOMIC_COUNTER_CXX11
+            integer_t old = value.fetch_sub(decrement, std::memory_order_acq_rel);
+            return old - decrement != 0;
 #elif defined ZMQ_ATOMIC_COUNTER_ATOMIC_H
             int32_t delta = - ((int32_t) decrement);
             integer_t nv = atomic_add_32_nv (&value, delta);
+            return nv != 0;
+#elif defined ZMQ_ATOMIC_COUNTER_TILE
+            int32_t delta = - ((int32_t) decrement);
+            integer_t nv = arch_atomic_add (&value, delta);
             return nv != 0;
 #elif defined ZMQ_ATOMIC_COUNTER_X86
             integer_t oldval = -decrement;
@@ -158,40 +191,39 @@ namespace zmq
 #endif
         }
 
-        inline integer_t get ()
+        inline integer_t get () const
         {
             return value;
         }
 
     private:
 
+#if defined ZMQ_ATOMIC_COUNTER_CXX11
+        std::atomic<integer_t> value;
+#else
         volatile integer_t value;
+#endif
+
 #if defined ZMQ_ATOMIC_COUNTER_MUTEX
         mutex_t sync;
 #endif
 
+#if ! defined ZMQ_ATOMIC_COUNTER_CXX11
         atomic_counter_t (const atomic_counter_t&);
         const atomic_counter_t& operator = (const atomic_counter_t&);
+#endif
     };
 
 }
 
 //  Remove macros local to this file.
-#if defined ZMQ_ATOMIC_COUNTER_WINDOWS
-#undef ZMQ_ATOMIC_COUNTER_WINDOWS
-#endif
-#if defined ZMQ_ATOMIC_COUNTER_ATOMIC_H
-#undef ZMQ_ATOMIC_COUNTER_ATOMIC_H
-#endif
-#if defined ZMQ_ATOMIC_COUNTER_X86
-#undef ZMQ_ATOMIC_COUNTER_X86
-#endif
-#if defined ZMQ_ATOMIC_COUNTER_ARM
-#undef ZMQ_ATOMIC_COUNTER_ARM
-#endif
-#if defined ZMQ_ATOMIC_COUNTER_MUTEX
 #undef ZMQ_ATOMIC_COUNTER_MUTEX
-#endif
+#undef ZMQ_ATOMIC_COUNTER_INTRINSIC
+#undef ZMQ_ATOMIC_COUNTER_CXX11
+#undef ZMQ_ATOMIC_COUNTER_X86
+#undef ZMQ_ATOMIC_COUNTER_ARM
+#undef ZMQ_ATOMIC_COUNTER_WINDOWS
+#undef ZMQ_ATOMIC_COUNTER_ATOMIC_H
+#undef ZMQ_ATOMIC_COUNTER_TILE
 
 #endif
-

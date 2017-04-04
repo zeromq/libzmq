@@ -1,103 +1,120 @@
 /*
-    Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2011 VMware, Inc.
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
+#include "macros.hpp"
 #include "dealer.hpp"
 #include "err.hpp"
 #include "msg.hpp"
 
 zmq::dealer_t::dealer_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     socket_base_t (parent_, tid_, sid_),
-    prefetched (false)
+    probe_router (false)
 {
     options.type = ZMQ_DEALER;
-
-    //  TODO: Uncomment the following line when DEALER will become true DEALER
-    //  rather than generic dealer socket.
-    //  If the socket is closing we can drop all the outbound requests. There'll
-    //  be noone to receive the replies anyway.
-    //  options.delay_on_close = false;
-
-    options.send_identity = true;
-    options.recv_identity = true;
-
-    prefetched_msg.init ();
 }
 
 zmq::dealer_t::~dealer_t ()
 {
-    prefetched_msg.close ();
 }
 
-void zmq::dealer_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
+void zmq::dealer_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 {
+    LIBZMQ_UNUSED (subscribe_to_all_);
+
     zmq_assert (pipe_);
+
+    if (probe_router) {
+        msg_t probe_msg_;
+        int rc = probe_msg_.init ();
+        errno_assert (rc == 0);
+
+        rc = pipe_->write (&probe_msg_);
+        // zmq_assert (rc) is not applicable here, since it is not a bug.
+        pipe_->flush ();
+
+        rc = probe_msg_.close ();
+        errno_assert (rc == 0);
+    }
+
     fq.attach (pipe_);
     lb.attach (pipe_);
 }
 
-int zmq::dealer_t::xsend (msg_t *msg_, int flags_)
+int zmq::dealer_t::xsetsockopt (int option_, const void *optval_,
+    size_t optvallen_)
 {
-    return lb.send (msg_, flags_);
-}
+    bool is_int = (optvallen_ == sizeof (int));
+    int value = 0;
+    if (is_int) memcpy(&value, optval_, sizeof (int));
 
-int zmq::dealer_t::xrecv (msg_t *msg_, int flags_)
-{
-    //  If there is a prefetched message, return it.
-    if (prefetched) {
-        int rc = msg_->move (prefetched_msg);
-        errno_assert (rc == 0);
-        prefetched = false;
-        return 0;
-    }
+    switch (option_) {
+        case ZMQ_PROBE_ROUTER:
+            if (is_int && value >= 0) {
+                probe_router = (value != 0);
+                return 0;
+            }
+            break;
 
-    //  DEALER socket doesn't use identities. We can safely drop it and 
-    while (true) {
-        int rc = fq.recv (msg_);
-        if (rc != 0)
-            return rc;
-        if (likely (!(msg_->flags () & msg_t::identity)))
+        default:
             break;
     }
-    return 0;
+
+    errno = EINVAL;
+    return -1;
+}
+
+int zmq::dealer_t::xsend (msg_t *msg_)
+{
+    return sendpipe (msg_, NULL);
+}
+
+int zmq::dealer_t::xrecv (msg_t *msg_)
+{
+    return recvpipe (msg_, NULL);
 }
 
 bool zmq::dealer_t::xhas_in ()
 {
-    //  We may already have a message pre-fetched.
-    if (prefetched)
-        return true;
-
-    //  Try to read the next message to the pre-fetch buffer.
-    int rc = dealer_t::xrecv (&prefetched_msg, ZMQ_DONTWAIT);
-    if (rc != 0 && errno == EAGAIN)
-        return false;
-    zmq_assert (rc == 0);
-    prefetched = true;
-    return true;
+    return fq.has_in ();
 }
 
 bool zmq::dealer_t::xhas_out ()
 {
     return lb.has_out ();
 }
+
+zmq::blob_t zmq::dealer_t::get_credential () const
+{
+    return fq.get_credential ();
+}
+
 
 void zmq::dealer_t::xread_activated (pipe_t *pipe_)
 {
@@ -109,20 +126,18 @@ void zmq::dealer_t::xwrite_activated (pipe_t *pipe_)
     lb.activated (pipe_);
 }
 
-void zmq::dealer_t::xterminated (pipe_t *pipe_)
+void zmq::dealer_t::xpipe_terminated (pipe_t *pipe_)
 {
-    fq.terminated (pipe_);
-    lb.terminated (pipe_);
+    fq.pipe_terminated (pipe_);
+    lb.pipe_terminated (pipe_);
 }
 
-zmq::dealer_session_t::dealer_session_t (io_thread_t *io_thread_, bool connect_,
-      socket_base_t *socket_, const options_t &options_,
-      const address_t *addr_) :
-    session_base_t (io_thread_, connect_, socket_, options_, addr_)
+int zmq::dealer_t::sendpipe (msg_t *msg_, pipe_t **pipe_)
 {
+    return lb.sendpipe (msg_, pipe_);
 }
 
-zmq::dealer_session_t::~dealer_session_t ()
+int zmq::dealer_t::recvpipe (msg_t *msg_, pipe_t **pipe_)
 {
+    return fq.recvpipe (msg_, pipe_);
 }
-

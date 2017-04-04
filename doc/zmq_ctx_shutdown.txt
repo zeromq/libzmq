@@ -1,0 +1,52 @@
+zmq_ctx_shutdown(3)
+==================
+
+
+NAME
+----
+zmq_ctx_shutdown - shutdown a 0MQ context
+
+
+SYNOPSIS
+--------
+*int zmq_ctx_shutdown (void '*context');*
+
+
+DESCRIPTION
+-----------
+The _zmq_ctx_shutdown()_ function shall shutdown the 0MQ context 'context'.
+
+Context shutdown will cause any blocking operations currently in progress on 
+sockets open within 'context' to return immediately with an error code of ETERM.
+With the exception of _zmq_close()_, any further operations on sockets open within
+'context' shall fail with an error code of ETERM.
+
+This function is optional, client code is still required to call the linkzmq:zmq_ctx_term[3]
+function to free all resources allocated by zeromq.
+
+
+RETURN VALUE
+------------
+The _zmq_ctx_shutdown()_ function shall return zero if successful. Otherwise
+it shall return `-1` and set 'errno' to one of the values defined below.
+
+
+ERRORS
+------
+*EFAULT*::
+The provided 'context' was invalid.
+
+
+SEE ALSO
+--------
+linkzmq:zmq[7]
+linkzmq:zmq_init[3]
+linkzmq:zmq_ctx_term[3]
+linkzmq:zmq_close[3]
+linkzmq:zmq_setsockopt[3]
+
+
+AUTHORS
+-------
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

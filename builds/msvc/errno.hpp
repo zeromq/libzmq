@@ -13,7 +13,7 @@
 //#define ECHILD          10
 #define EAGAIN          11
 //#define ENOMEM          12
-//#define EACCES          13
+#define EACCES          13
 #define EFAULT          14
 //#define EOSERR          15 // rk
 //#define EBUSY           16

@@ -31,8 +31,12 @@ _zmq_msg_ family of functions.
 CAUTION: The deallocation function 'ffn' needs to be thread-safe, since it
 will be called from an arbitrary thread.
 
+CAUTION: If the deallocation function is not provided, the allocated memory
+will not be freed, and this may cause a memory leak.
+
+
 CAUTION: The functions _zmq_msg_init()_, _zmq_msg_init_data()_ and
-_zmq_msg_init_size()_ are mutually exclusive. Never initialize the same
+_zmq_msg_init_size()_ are mutually exclusive. Never initialise the same
 'zmq_msg_t' twice.
 
 
@@ -81,5 +85,5 @@ linkzmq:zmq[7]
 
 AUTHORS
 -------
-This 0MQ manual page was written by Martin Sustrik <sustrik@250bpm.com> and
-Martin Lucina <mato@kotelna.sk>.
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

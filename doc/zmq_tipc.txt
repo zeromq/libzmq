@@ -1,0 +1,83 @@
+zmq_tipc(7)
+==========
+
+
+NAME
+----
+zmq_tipc - 0MQ unicast transport using TIPC
+
+
+SYNOPSIS
+--------
+TIPC is a cluster IPC protocol with a location transparent addressing scheme.
+
+
+ADDRESSING
+----------
+A 0MQ endpoint is a string consisting of a 'transport'`://` followed by an
+'address'. The 'transport' specifies the underlying protocol to use. The
+'address' specifies the transport-specific address to connect to.
+
+For the TIPC transport, the transport is `tipc`, and the meaning of the
+'address' part is defined below.
+
+
+Assigning a port name to a socket
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When assigning a port name to a socket using _zmq_bind()_ with the 'tipc'
+transport, the 'endpoint' is defined in the form:
+{type, lower, upper}
+
+* Type is the numerical (u32) ID of your service.
+* Lower and Upper specify a range for your service.
+
+Publishing the same service with overlapping lower/upper ID's will
+cause connection requests to be distributed over these in a round-robin
+manner.
+
+
+Connecting a socket
+~~~~~~~~~~~~~~~~~~~
+When connecting a socket to a peer address using _zmq_connect()_ with the 'tipc'
+transport, the 'endpoint' shall be interpreted as a service ID, followed by a 
+comma and the instance ID.
+
+The instance ID must be within the lower/upper range of a published port name
+for the endpoint to be valid.
+
+EXAMPLES
+--------
+.Assigning a local address to a socket
+----
+//  Publish TIPC service ID 5555
+rc = zmq_bind(socket, "tipc://{5555,0,0}");
+assert (rc == 0);
+//  Publish TIPC service ID 5555 with a service range of 0-100
+rc = zmq_bind(socket, "tipc://{5555,0,100}");
+assert (rc == 0);
+----
+
+.Connecting a socket
+----
+//  Connect to service 5555 instance id 50
+rc = zmq_connect(socket, "tipc://{5555,50}");
+assert (rc == 0);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq_bind[3]
+linkzmq:zmq_connect[3]
+linkzmq:zmq_tcp[7]
+linkzmq:zmq_pgm[7]
+linkzmq:zmq_ipc[7]
+linkzmq:zmq_inproc[7]
+linkzmq:zmq_vmci[7]
+linkzmq:zmq[7]
+
+
+AUTHORS
+-------
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

@@ -1,25 +1,33 @@
 /*
-    Copyright (c) 2010-2011 250bpm s.r.o.
-    Copyright (c) 2007-2009 iMatix Corporation
-    Copyright (c) 2011 VMware, Inc.
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include "lb.hpp"
 #include "pipe.hpp"
 #include "err.hpp"
@@ -41,11 +49,10 @@ zmq::lb_t::~lb_t ()
 void zmq::lb_t::attach (pipe_t *pipe_)
 {
     pipes.push_back (pipe_);
-    pipes.swap (active, pipes.size () - 1);
-    active++;
+    activated (pipe_);
 }
 
-void zmq::lb_t::terminated (pipe_t *pipe_)
+void zmq::lb_t::pipe_terminated (pipe_t *pipe_)
 {
     pipes_t::size_type index = pipes.index (pipe_);
 
@@ -58,6 +65,7 @@ void zmq::lb_t::terminated (pipe_t *pipe_)
     //  accordingly.
     if (index < active) {
         active--;
+        pipes.swap (index, active);
         if (current == active)
             current = 0;
     }
@@ -71,30 +79,46 @@ void zmq::lb_t::activated (pipe_t *pipe_)
     active++;
 }
 
-int zmq::lb_t::send (msg_t *msg_, int flags_)
+int zmq::lb_t::send (msg_t *msg_)
+{
+    return sendpipe (msg_, NULL);
+}
+
+int zmq::lb_t::sendpipe (msg_t *msg_, pipe_t **pipe_)
 {
     //  Drop the message if required. If we are at the end of the message
     //  switch back to non-dropping mode.
     if (dropping) {
 
         more = msg_->flags () & msg_t::more ? true : false;
-        if (!more)
-            dropping = false;
+        dropping = more;
 
         int rc = msg_->close ();
         errno_assert (rc == 0);
         rc = msg_->init ();
-        zmq_assert (rc == 0);
+        errno_assert (rc == 0);
         return 0;
     }
 
     while (active > 0) {
-        if (pipes [current]->write (msg_)) {
-            more = msg_->flags () & msg_t::more ? true : false;
+        if (pipes [current]->write (msg_))
+        {
+            if (pipe_)
+                *pipe_ = pipes [current];
             break;
         }
 
-        zmq_assert (!more);
+        // If send fails for multi-part msg rollback other
+        // parts sent earlier and return EAGAIN.
+        // Application should handle this as suitable
+        if (more)
+        {
+            pipes [current]->rollback ();
+            more = 0;
+            errno = EAGAIN;
+            return -1;
+        }
+
         active--;
         if (current < active)
             pipes.swap (current, active);
@@ -108,11 +132,14 @@ int zmq::lb_t::send (msg_t *msg_, int flags_)
         return -1;
     }
 
-    //  If it's final part of the message we can fluch it downstream and
-    //  continue round-robinning (load balance).
+    //  If it's final part of the message we can flush it downstream and
+    //  continue round-robining (load balance).
+    more = msg_->flags () & msg_t::more? true: false;
     if (!more) {
         pipes [current]->flush ();
-        current = (current + 1) % active;
+
+        if (++current >= active)
+            current = 0;
     }
 
     //  Detach the message from the data buffer.
@@ -144,4 +171,3 @@ bool zmq::lb_t::has_out ()
 
     return false;
 }
-

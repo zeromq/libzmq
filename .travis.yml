@@ -1,0 +1,80 @@
+# Travis CI script
+
+language: c
+
+os:
+- linux
+- osx
+
+dist: trusty
+
+env:
+- BUILD_TYPE=default CURVE=tweetnacl DRAFT=enabled
+- BUILD_TYPE=android CURVE=tweetnacl
+- BUILD_TYPE=cmake CURVE=tweetnacl
+- BUILD_TYPE=default
+
+matrix:
+  include:
+  - env: BUILD_TYPE=default CURVE=tweetnacl IPv6=ON
+    os: linux
+    dist: precise
+    sudo: false
+  - env: BUILD_TYPE=coverage CURVE=tweetnacl DRAFT=enabled
+    os: linux
+    addons:
+      apt:
+        packages:
+        - lcov
+  - env: BUILD_TYPE=valgrind CURVE=tweetnacl DRAFT=enabled
+    os: linux
+    addons:
+      apt:
+        packages:
+        - valgrind
+  - env: BUILD_TYPE=default CURVE=libsodium
+    os: linux
+    addons:
+      apt:
+        sources:
+        - sourceline: 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_14.04/ ./'
+          key_url: 'http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_14.04/Release.key'
+        packages:
+        - libsodium-dev
+        - asciidoc
+        - xmlto
+  - env: BUILD_TYPE=default CURVE=libsodium
+    os: osx
+  - env: BUILD_TYPE=default CURVE=tweetnacl DRAFT=enabled ADDRESS_SANITIZER=enabled
+    os: linux
+
+sudo: required
+
+before_install:
+- if [ $TRAVIS_OS_NAME == "osx" ] ; then brew update; brew install binutils ; fi
+- if [ $TRAVIS_OS_NAME == "osx" -a $CURVE == "libsodium" ] ; then brew install libsodium ; fi
+
+before_script:
+# ZMQ stress tests need more open socket (files) than the usual default
+# On OSX, it seems the way to set the max files limit is constantly changing, so
+# try to use all known knobs to ensure compatibility across various versions
+- if [ $TRAVIS_OS_NAME == "osx" ] ; then sudo sysctl -w kern.maxfiles=64000 ; sudo sysctl -w kern.maxfilesperproc=64000 ; sudo launchctl limit maxfiles 64000 64000 ; ulimit -n 64000; fi
+
+# Build and check this project according to the BUILD_TYPE
+script: ./ci_build.sh
+
+# Deploy tags
+before_deploy:
+- . ./ci_deploy.sh
+deploy:
+  provider: releases
+  api_key:
+    secure: vGB5E+A8wxm2J1GJZzmIgT9PrjEzvd9gE8iui8FyxSbxAsW9vFZFGZC/21sTtpVcmRarwQCHH1UEbtg+nJwN2iD9YzMRnSVks8xqP+b709YW+VXaMuhZgTzWa74IorQku7NuvLibvQk72/OSgdwPGaNJ6f5AX9pnWVWbEoW1svE=
+  file_glob: true
+  file: ${LIBZMQ_DEPLOYMENT}
+  skip_cleanup: true
+  on:
+    repo: zeromq/libzmq
+    branch: master
+    tags: true
+    condition: "$TRAVIS_OS_NAME =~ (linux) && $BUILD_TYPE =~ (default) && $CURVE =~ (libsodium) && -z $DRAFT"

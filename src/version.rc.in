@@ -1,0 +1,93 @@
+/////////////////////////////////////////////////////////////////////////////
+//
+// VERSIONINFO resource
+//
+// http://msdn.microsoft.com/en-us/library/windows/desktop/aa381058(v=vs.85).aspx
+
+// @MAJOR@,@MINOR@,@BUILD@,@PATCH@
+#define VER_FILEVERSION		@ZMQ_VERSION_MAJOR@,@ZMQ_VERSION_MINOR@,@ZMQ_VERSION_PATCH@,0
+#define VER_FILEVERSION_STR	"@ZMQ_VERSION_MAJOR@.@ZMQ_VERSION_MINOR@.@ZMQ_VERSION_PATCH@.0\0"
+
+#define VER_PRODUCTVERSION	VER_FILEVERSION
+#define VER_PRODUCTVERSION_STR	VER_FILEVERSION_STR
+
+
+// versionID
+// Version-information resource identifier.  This value must be 1.
+1 VERSIONINFO
+
+//// fixed-info
+// Binary version number for the file.
+	FILEVERSION VER_FILEVERSION
+
+// Binary version number for the product with which the file is distributed.
+	PRODUCTVERSION VER_PRODUCTVERSION
+
+// Bits in the FILEFLAGS statement are valid.
+	FILEFLAGSMASK 0x17L
+
+// Attributes of the file.
+// VS_FF_DEBUG        =  1 : File contains debugging information or is compiled with debugging features enabled.
+// VS_FF_PATCHED      =  4 : File has been modified and is not identical to the original shipping file of the 
+//                           same version number.
+// VS_FF_PRERELEASE   =  2 : File is a development version, not a commercially released product.
+// VS_FF_PRIVATEBUILD =  8 : File was not built using standard release procedures.
+// VS_FF_SPECIALBUILD = 20 : File was built by the original company using standard release procedures but is a
+//                         : variation of the standard file of the same version number.
+#ifdef _DEBUG
+	FILEFLAGS 0x1L
+#else
+	FILEFLAGS 0x2L
+#endif
+
+// Operating system for which this file was designed.
+// VOS_DOS           = 0x10000 : File was designed for MS-DOS.
+// VOS_NT            = 0x40000 : File was designed for 32-bit Windows.
+// VOS_WINDOWS16     =     0x1 : File was designed for 16-bit Windows.
+// VOS_WINDOWS32     =     0x4 : File was designed for 32-bit Windows.
+// VOS_DOS_WINDOWS16 = 0x10001 : File was designed for 16-bit Windows running with MS-DOS.
+// VOS_DOS_WINDOWS32 = 0x10004 : File was designed for 32-bit Windows running with MS-DOS.
+// VOS_NT_WINDOWS32  = 0x40004 : File was designed for 32-bit Windows.
+// NB: appears obsolete, nothing for x64.
+	FILEOS 0x4L
+
+// General type of file.
+// VFT_APP        = 0x1 : File contains an application.
+// VFT_DLL        = 0x2 : File contains a dynamic-link library (DLL).
+// VFT_DRV        = 0x3 : File contains a device driver.
+// VFT_FONT       = 0x4 : File contains a font.
+// VFT_VXD        = 0x5 : File contains a virtual device.
+// VFT_STATIC_LIB = 0x7 : File contains a static-link library.
+	FILETYPE 0x2L
+
+// Function of the file.
+	FILESUBTYPE 0x0L
+
+BEGIN
+	BLOCK "StringFileInfo"
+	BEGIN
+		BLOCK "080904b0"
+		BEGIN
+			VALUE "CompanyName",      "iMatix Corporation"
+			VALUE "FileDescription",  "ZeroMQ lightweight messaging kernel"
+			VALUE "FileVersion",      VER_FILEVERSION_STR
+			VALUE "InternalName",     "zeromq"
+			VALUE "LegalCopyright",   "Copyright (c) 2012 The ZeroMQ Authors."
+			VALUE "OriginalFilename", "libzmq.dll"
+			VALUE "ProductName",      "ZeroMQ"
+			VALUE "ProductVersion",   VER_PRODUCTVERSION_STR
+		END
+	END
+
+	BLOCK "VarFileInfo"
+	BEGIN
+// langID, one of the following language codes.
+// 0x409 : U.S. English
+// 0x809 : U.K. English
+// charsetID, one of the following character-set identifiers.
+// 1200 : Unicode
+		VALUE "Translation", 0x809, 1200
+	END
+END
+
+// end of file.

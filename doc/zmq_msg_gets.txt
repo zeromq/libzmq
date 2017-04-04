@@ -1,0 +1,75 @@
+zmq_msg_gets(3)
+===============
+
+
+NAME
+----
+zmq_msg_gets - get message metadata property
+
+
+SYNOPSIS
+--------
+*const char *zmq_msg_gets (zmq_msg_t '*message', const char *'property');*
+
+
+DESCRIPTION
+-----------
+The _zmq_msg_gets()_ function shall return the string value for the metadata
+property specified by the 'property' argument for the message pointed to by
+the 'message' argument. Both the 'property' argument and the 'value'
+shall be NULL-terminated UTF8-encoded strings.
+
+Metadata is defined on a per-connection basis during the ZeroMQ connection
+handshake as specified in <rfc.zeromq.org/spec:37>.
+
+The following ZMTP properties can be retrieved with the _zmq_msg_gets()_
+function:
+
+    Socket-Type
+    Identity
+    Resource
+
+Additionally, when available for the underlying transport, the *Peer-Address*
+property will return the IP address of the remote endpoint as returned by
+getnameinfo(2).
+
+Other properties may be defined based on the underlying security mechanism,
+see ZAP authenticated connection sample below.
+
+RETURN VALUE
+------------
+The _zmq_msg_gets()_ function shall return the string value for the property
+if successful. Otherwise it shall return NULL and set 'errno' to one of the
+values defined below. The caller shall not modify or free the returned value,
+which shall be owned by the message. The encoding of the property and value
+shall be UTF8.
+
+
+ERRORS
+------
+*EINVAL*::
+The requested _property_ is unknown.
+
+
+EXAMPLE
+-------
+.Getting the ZAP authenticated user id for a message:
+----
+zmq_msg_t msg;
+zmq_msg_init (&msg);
+rc = zmq_msg_recv (&msg, dealer, 0);
+assert (rc != -1);
+const char *user_id = zmq_msg_gets (&msg, "User-Id");
+zmq_msg_close (&msg);
+----
+
+
+SEE ALSO
+--------
+linkzmq:zmq[7]
+
+
+AUTHORS
+-------
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.

@@ -1,0 +1,19 @@
+.echo "Generating project-tests.gypi..."
+.output "project-tests.gypi"
+{
+  'targets': [
+.for test
+    {
+      'target_name': '$(name)',
+      'type': 'executable',
+      'sources': [
+        '../../tests/$(name).cpp',
+        '../../tests/testutil.hpp'
+      ],
+      'dependencies': [
+        'libzmq'
+      ],
+    }$(last ()?? ""? ",")
+.endfor
+  ]
+}

@@ -1,26 +1,36 @@
 /*
-    Copyright (c) 2010-2011 250bpm s.r.o.
-    Copyright (c) 2011 VMware, Inc.
-    Copyright (c) 2010-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "precompiled.hpp"
 #include <string.h>
 
+#include "macros.hpp"
 #include "xsub.hpp"
 #include "err.hpp"
 
@@ -45,8 +55,10 @@ zmq::xsub_t::~xsub_t ()
     errno_assert (rc == 0);
 }
 
-void zmq::xsub_t::xattach_pipe (pipe_t *pipe_, bool icanhasall_)
+void zmq::xsub_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 {
+    LIBZMQ_UNUSED (subscribe_to_all_);
+
     zmq_assert (pipe_);
     fq.attach (pipe_);
     dist.attach (pipe_);
@@ -66,10 +78,10 @@ void zmq::xsub_t::xwrite_activated (pipe_t *pipe_)
     dist.activated (pipe_);
 }
 
-void zmq::xsub_t::xterminated (pipe_t *pipe_)
+void zmq::xsub_t::xpipe_terminated (pipe_t *pipe_)
 {
-    fq.terminated (pipe_);
-    dist.terminated (pipe_);
+    fq.pipe_terminated (pipe_);
+    dist.pipe_terminated (pipe_);
 }
 
 void zmq::xsub_t::xhiccuped (pipe_t *pipe_)
@@ -79,26 +91,29 @@ void zmq::xsub_t::xhiccuped (pipe_t *pipe_)
     pipe_->flush ();
 }
 
-int zmq::xsub_t::xsend (msg_t *msg_, int flags_)
+int zmq::xsub_t::xsend (msg_t *msg_)
 {
     size_t size = msg_->size ();
-    unsigned char *data = (unsigned char*) msg_->data ();
+    unsigned char *data = (unsigned char *) msg_->data ();
 
-    // Malformed subscriptions.
-    if (size < 1 || (*data != 0 && *data != 1)) {
-        errno = EINVAL;
-        return -1;
+    if (size > 0 && *data == 1) {
+        //  Process subscribe message
+        //  This used to filter out duplicate subscriptions,
+        //  however this is alread done on the XPUB side and
+        //  doing it here as well breaks ZMQ_XPUB_VERBOSE
+        //  when there are forwarding devices involved.
+        subscriptions.add (data + 1, size - 1);
+        return dist.send_to_all (msg_);
     }
-
-    // Process the subscription.
-    if (*data == 1) {
-        if (subscriptions.add (data + 1, size - 1))
-            return dist.send_to_all (msg_, flags_);
-    }
-    else {
+    else
+    if (size > 0 && *data == 0) {
+        //  Process unsubscribe message
         if (subscriptions.rm (data + 1, size - 1))
-            return dist.send_to_all (msg_, flags_);
+            return dist.send_to_all (msg_);
     }
+    else
+        //  User message sent upstream to XPUB socket
+        return dist.send_to_all (msg_);
 
     int rc = msg_->close ();
     errno_assert (rc == 0);
@@ -114,7 +129,7 @@ bool zmq::xsub_t::xhas_out ()
     return true;
 }
 
-int zmq::xsub_t::xrecv (msg_t *msg_, int flags_)
+int zmq::xsub_t::xrecv (msg_t *msg_)
 {
     //  If there's already a message prepared by a previous call to zmq_poll,
     //  return it straight ahead.
@@ -140,7 +155,7 @@ int zmq::xsub_t::xrecv (msg_t *msg_, int flags_)
             return -1;
 
         //  Check whether the message matches at least one subscription.
-        //  Non-initial parts of the message are passed 
+        //  Non-initial parts of the message are passed
         if (more || !options.filter || match (msg_)) {
             more = msg_->flags () & msg_t::more ? true : false;
             return 0;
@@ -150,7 +165,7 @@ int zmq::xsub_t::xrecv (msg_t *msg_, int flags_)
         //  from the pipe.
         while (msg_->flags () & msg_t::more) {
             rc = fq.recv (msg_);
-            zmq_assert (rc == 0);
+            errno_assert (rc == 0);
         }
     }
 }
@@ -176,7 +191,7 @@ bool zmq::xsub_t::xhas_in ()
         //  If there's no message available, return immediately.
         //  The same when error occurs.
         if (rc != 0) {
-            zmq_assert (errno == EAGAIN);
+            errno_assert (errno == EAGAIN);
             return false;
         }
 
@@ -190,14 +205,21 @@ bool zmq::xsub_t::xhas_in ()
         //  from the pipe.
         while (message.flags () & msg_t::more) {
             rc = fq.recv (&message);
-            zmq_assert (rc == 0);
+            errno_assert (rc == 0);
         }
     }
 }
 
+zmq::blob_t zmq::xsub_t::get_credential () const
+{
+    return fq.get_credential ();
+}
+
 bool zmq::xsub_t::match (msg_t *msg_)
 {
-    return subscriptions.check ((unsigned char*) msg_->data (), msg_->size ());
+    bool matching = subscriptions.check ((unsigned char*) msg_->data (), msg_->size ());
+
+    return matching ^ options.invert_matching;
 }
 
 void zmq::xsub_t::send_subscription (unsigned char *data_, size_t size_,
@@ -205,13 +227,18 @@ void zmq::xsub_t::send_subscription (unsigned char *data_, size_t size_,
 {
     pipe_t *pipe = (pipe_t*) arg_;
 
-    //  Create the subsctription message.
+    //  Create the subscription message.
     msg_t msg;
     int rc = msg.init_size (size_ + 1);
-    zmq_assert (rc == 0);
+    errno_assert (rc == 0);
     unsigned char *data = (unsigned char*) msg.data ();
     data [0] = 1;
-    memcpy (data + 1, data_, size_);
+
+    //  We explicitly allow a NULL subscription with size zero
+    if (size_) {
+        assert (data_);
+        memcpy (data + 1, data_, size_);
+    }
 
     //  Send it to the pipe.
     bool sent = pipe->write (&msg);
@@ -222,15 +249,3 @@ void zmq::xsub_t::send_subscription (unsigned char *data_, size_t size_,
     if (!sent)
         msg.close ();
 }
-
-zmq::xsub_session_t::xsub_session_t (io_thread_t *io_thread_, bool connect_,
-      socket_base_t *socket_, const options_t &options_,
-      const address_t *addr_) :
-    session_base_t (io_thread_, connect_, socket_, options_, addr_)
-{
-}
-
-zmq::xsub_session_t::~xsub_session_t ()
-{
-}
-

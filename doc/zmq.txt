@@ -19,7 +19,7 @@ DESCRIPTION
 The 0MQ lightweight messaging kernel is a library which extends the standard
 socket interfaces with features traditionally provided by specialised
 _messaging middleware_ products. 0MQ sockets provide an abstraction of
-asynchronous  _message queues_, multiple _messaging patterns_, message
+asynchronous _message queues_, multiple _messaging patterns_, message
 filtering (_subscriptions_), seamless access to multiple _transport protocols_
 and more.
 
@@ -30,6 +30,9 @@ provided by the 0MQ library.
 
 Context
 ~~~~~~~
+The 0MQ 'context' keeps the list of sockets and manages the async I/O thread
+and internal queries.
+
 Before using any 0MQ library functions you must create a 0MQ 'context'. When
 you exit your application you must destroy the 'context'. These functions let
 you work with 'contexts':
@@ -42,16 +45,8 @@ Work with context properties::
     linkzmq:zmq_ctx_get[3]
 
 Destroy a 0MQ context::
-    linkzmq:zmq_ctx_destroy[3]
-
-These deprecated functions let you create and destroy 'contexts':
-
-Initialise 0MQ context::
-    linkzmq:zmq_init[3]
-
-Terminate 0MQ context::
-    linkzmq:zmq_term[3]
-
+    linkzmq:zmq_ctx_shutdown[3]
+    linkzmq:zmq_ctx_term[3]
 
 Thread safety
 ^^^^^^^^^^^^^
@@ -63,7 +58,7 @@ Individual 0MQ 'sockets' are _not_ thread safe except in the case where full
 memory barriers are issued when migrating a socket from one thread to another.
 In practice this means applications can create a socket in one thread with
 _zmq_socket()_ and then pass it to a _newly created_ thread as part of thread
-initialization, for example via a structure passed as an argument to
+initialisation, for example via a structure passed as an argument to
 _pthread_create()_.
 
 
@@ -102,6 +97,7 @@ Access message content::
     linkzmq:zmq_msg_more[3]
 
 Work with message properties::
+    linkzmq:zmq_msg_gets[3]
     linkzmq:zmq_msg_get[3]
     linkzmq:zmq_msg_set[3]
 
@@ -133,10 +129,14 @@ Establishing a message flow::
     linkzmq:zmq_connect[3]
 
 Sending and receiving messages::
+    linkzmq:zmq_msg_send[3]
+    linkzmq:zmq_msg_recv[3]
     linkzmq:zmq_send[3]
-    linkzmq:zmq_sendmsg[3]
     linkzmq:zmq_recv[3]
-    linkzmq:zmq_recvmsg[3]
+    linkzmq:zmq_send_const[3]
+
+Monitoring socket events::
+    linkzmq:zmq_socket_monitor[3]
 
 .Input/output multiplexing
 0MQ provides a mechanism for applications to multiplex input/output events over
@@ -165,15 +165,46 @@ Local inter-process communication transport::
 Local in-process (inter-thread) communication transport::
     linkzmq:zmq_inproc[7]
 
+Virtual Machine Communications Interface (VMC) transport::
+    linkzmq:zmq_vmci[7]
 
-Devices
+Unreliable unicast and multicast using UDP::
+    linkzmq:zmq_udp[7]
+
+
+Proxies
 ~~~~~~~
-0MQ provides 'devices', which are building blocks that act as intermediate
-nodes in complex messaging topologies. Devices can act as brokers that other
-nodes connect to, proxies that connect through to other nodes, or any mix of
-these two models.
+0MQ provides 'proxies' to create fanout and fan-in topologies. A proxy connects
+a 'frontend' socket to a 'backend' socket and switches all messages between the
+two sockets, opaquely. A proxy may optionally capture all traffic to a third
+socket. To start a proxy in an application thread, use linkzmq:zmq_proxy[3].
 
-You can start a device in an application thread, see linkzmq:zmq_device[3].
+
+Security
+~~~~~~~~
+A 0MQ socket can select a security mechanism. Both peers must use the same
+security mechanism.
+
+The following security mechanisms are provided for IPC and TCP connections:
+
+Null security::
+    linkzmq:zmq_null[7]
+
+Plain-text authentication using username and password::
+    linkzmq:zmq_plain[7]
+
+Elliptic curve authentication and encryption::
+    linkzmq:zmq_curve[7]
+
+Generate a CURVE keypair in armored text format::
+    linkzmq:zmq_curve_keypair[3]
+
+Derive a CURVE public key from a secret key:
+    linkzmq:zmq_curve_public[3]
+
+Converting keys to/from armoured text strings::
+    linkzmq:zmq_z85_decode[3]
+    linkzmq:zmq_z85_encode[3]
 
 
 ERROR HANDLING
@@ -192,6 +223,19 @@ The _zmq_strerror()_ function is provided to translate 0MQ-specific error codes
 into error message strings; for details refer to linkzmq:zmq_strerror[3].
 
 
+UTILITY
+-------
+The following utility functions are provided:
+
+Working with atomic counters::
+    linkzmq:zmq_atomic_counter_new[3]
+    linkzmq:zmq_atomic_counter_set[3]
+    linkzmq:zmq_atomic_counter_inc[3]
+    linkzmq:zmq_atomic_counter_dec[3]
+    linkzmq:zmq_atomic_counter_value[3]
+    linkzmq:zmq_atomic_counter_destroy[3]
+
+
 MISCELLANEOUS
 -------------
 The following miscellaneous functions are provided:
@@ -208,14 +252,14 @@ by C programmers. The intent is that programmers using 0MQ from other languages
 shall refer to this documentation alongside any documentation provided by the
 vendor of their language binding.
 
-Language bindings (Python, PHP, Ruby, Java and more) are provided by members
-of the 0MQ community and pointers can be found on the 0MQ website.
+Language bindings ($$C++$$, Python, PHP, Ruby, Java and more) are provided by
+members of the 0MQ community and pointers can be found on the 0MQ website.
 
 
 AUTHORS
 -------
-This 0MQ manual page was written by Martin Sustrik <sustrik@250bpm.com>,
-Martin Lucina <martin@lucina.net>, and Pieter Hintjens <ph@imatix.com>.
+This page was written by the 0MQ community. To make a change please
+read the 0MQ Contribution Policy at <http://www.zeromq.org/docs:contributing>.
 
 
 RESOURCES

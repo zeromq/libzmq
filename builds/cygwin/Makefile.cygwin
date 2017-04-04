@@ -1,0 +1,48 @@
+CC=gcc
+CFLAGS=-Wall -Os -g -DDLL_EXPORT -DFD_SETSIZE=16384 -DZMQ_USE_SELECT -I.
+LIBS=-lws2_32
+
+OBJS = ctx.o reaper.o dist.o err.o \
+	clock.o metadata.o random.o \
+	object.o own.o \
+	io_object.o io_thread.o \
+	lb.o fq.o \
+	address.o tcp_address.o ipc_address.o \
+	ipc_connecter.o ipc_listener.o \
+	tcp_connecter.o tcp_listener.o \
+	mailbox.o msg.o mtrie.o \
+	pipe.o precompiled.o proxy.o \
+	signaler.o stream_engine.o \
+	thread.o trie.o \
+	ip.o tcp.o \
+	pgm_socket.o pgm_receiver.o pgm_sender.o \
+	raw_decoder.o raw_encoder.o \
+	v1_decoder.o v1_encoder.o v2_decoder.o v2_encoder.o \
+        udp_address.o upd_engine.o radio.o dish.o \
+	socket_base.o session_base.o options.o \
+	req.o rep.o push.o pull.o pub.o sub.o pair.o \
+	dealer.o router.o xpub.o xsub.o stream.o \
+	poller_base.o select.o poll.o epoll.o kqueue.o devpoll.o \
+	curve_client.o curve_server.o \
+	mechanism.o null_mechanism.o plain_client.o plain_server.o \
+	zmq.o zmq_utils.o
+
+%.o: ../../src/%.cpp
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+%.o: ../../perf/%.cpp
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+all: libzmq.dll
+
+perf: inproc_lat.exe inproc_thr.exe local_lat.exe local_thr.exe remote_lat.exe remote_thr.exe
+
+libzmq.dll: $(OBJS)
+	g++ -shared -o $@ $^ -Wl,--out-implib,-Wl,--export-all-symbols -Wl,--enable-auto-import -Wl,--whole-archive $@.a -Wl,--no-whole-archive $(LIBS)
+
+%.exe: %.o libzmq.dll
+	g++ -o $@ $^
+
+clean:
+	del *.o *.a *.dll *.exe
+	

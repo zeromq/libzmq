@@ -1,19 +1,27 @@
 /*
-    Copyright (c) 2009-2011 250bpm s.r.o.
-    Copyright (c) 2007-2009 iMatix Corporation
-    Copyright (c) 2007-2011 Other contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -27,9 +35,16 @@
 
 namespace zmq
 {
+    //  Implementation of fast arrays with O(1) access, insertion and
+    //  removal. The array stores pointers rather than objects.
+    //  O(1) is achieved by making items inheriting from
+    //  array_item_t<ID> class which internally stores the position
+    //  in the array.
+    //  The ID template argument is used to differentiate among arrays
+    //  and thus let an object be stored in different arrays.
 
     //  Base class for objects stored in the array. If you want to store
-    //  same object in mutliple arrays, each of those arrays has to have
+    //  same object in multiple arrays, each of those arrays has to have
     //  different ID. The item itself has to be derived from instantiations of
     //  array_item_t template for all relevant IDs.
 
@@ -42,7 +57,7 @@ namespace zmq
         {
         }
 
-        //  The destructor doesn't have to be virtual. It is mad virtual
+        //  The destructor doesn't have to be virtual. It is made virtual
         //  just to keep ICC and code checking tools from complaining.
         inline virtual ~array_item_t ()
         {
@@ -66,9 +81,6 @@ namespace zmq
         const array_item_t &operator = (const array_item_t&);
     };
 
-    //  Fast array implementation with O(1) access to item, insertion and
-    //  removal. Array stores pointers rather than objects. The objects have
-    //  to be derived from array_item_t<ID> class.
 
     template <typename T, int ID = 0> class array_t
     {
