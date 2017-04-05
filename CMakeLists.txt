@@ -677,9 +677,7 @@ foreach (txt ${docs})
   set (dst doc/${html})
   add_custom_command (
     OUTPUT  ${dst}
-    COMMAND ${PYTHON_EXECUTABLE}
-    ARGS    -x
-    ${ASCIIDOC_EXECUTABLE}
+    COMMAND ${ASCIIDOC_EXECUTABLE}
     -d manpage
     -b xhtml11
     -f ${CMAKE_CURRENT_SOURCE_DIR}/doc/asciidoc.conf
