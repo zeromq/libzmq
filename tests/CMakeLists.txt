@@ -133,7 +133,6 @@ ENDIF (ENABLE_DRAFTS)
 if(WIN32)
     add_definitions(-DZMQ_CUSTOM_PLATFORM_HPP)
     add_definitions(-D_WINSOCK_DEPRECATED_NO_WARNINGS)
-    include_directories(../builds/msvc)
     # Same name on 64bit systems
     link_libraries(Ws2_32.lib)
 endif()
