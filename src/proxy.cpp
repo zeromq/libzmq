@@ -267,12 +267,15 @@ int zmq::proxy (
             rc = 0;
         CHECK_RC_EXIT_ON_FAILURE();
 
+        // Process events.
         for (i = 0; i < rc; i++) {
             if (events [i].socket == frontend_) {
                 frontend_in  = (events [i].events & ZMQ_POLLIN ) != 0;
                 frontend_out = (events [i].events & ZMQ_POLLOUT) != 0;
             }
             else
+            // This 'if' needs to be after check for 'frontend_' in order never
+            // to be reached in case frontend_==backend_, so we ensure backend_in=false in that case.
             if (events [i].socket == backend_) {
                 backend_in   = (events [i].events & ZMQ_POLLIN ) != 0;
                 backend_out  = (events [i].events & ZMQ_POLLOUT) != 0;
@@ -330,9 +333,10 @@ int zmq::proxy (
             else request_processed = false;
 
             // Process a reply, 'ZMQ_POLLIN' on 'backend_' and 'ZMQ_POLLOUT' on 'frontend_'.
-            // If 'frontend_' and 'backend_' are the same this is skipped because previous processing 
-            // covers all of the cases.
-            if (backend_in && frontend_out && !frontend_equal_to_backend) {
+            // If 'frontend_' and 'backend_' are the same this is not needed because previous processing 
+            // covers all of the cases. 'backend_in' is always false if frontend_==backend_ due to
+            // Design in 'for' event processing loop.
+            if (backend_in && frontend_out) {
                 rc = forward (backend_, frontend_, capture_, msg);
                 CHECK_RC_EXIT_ON_FAILURE();
                 reply_processed = true;
@@ -370,7 +374,9 @@ int zmq::proxy (
                     else
                         poller_wait = poller_receive_blocked;
                 }
-                if (backend_in && !frontend_equal_to_backend) {
+                if (backend_in) {
+                    // Will never be reached if frontend_==backend_, 'backend_in' will
+                    // always be false due to design in 'for' event processing loop.
                     if (poller_wait == poller_receive_blocked)
                         poller_wait = poller_both_blocked;
                     else
