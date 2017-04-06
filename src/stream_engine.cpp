@@ -786,6 +786,10 @@ int zmq::stream_engine_t::next_handshake_command (msg_t *msg_)
         {
             if(mechanism->error_detail() == mechanism_t::protocol)
                 socket->event_handshake_failed_protocol(endpoint, 0);
+            else if(mechanism->error_detail() == mechanism_t::encryption)
+                socket->event_handshake_failed_encryption(endpoint, 0);
+            else
+                socket->event_handshake_failed_no_detail(endpoint, 0);
         }
 #endif
 

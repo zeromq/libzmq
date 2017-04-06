@@ -52,12 +52,12 @@ static char server_secret [41];
 //  in case of error.
 
 static int
-get_monitor_event (void *monitor, int *value, char **address)
+get_monitor_event (void *monitor, int *value, char **address, int recv_flag)
 {
     //  First frame in message contains event number and value
     zmq_msg_t msg;
     zmq_msg_init (&msg);
-    if (zmq_msg_recv (&msg, monitor, 0) == -1)
+    if (zmq_msg_recv (&msg, monitor, recv_flag) == -1)
         return -1;              //  Interruped, presumably
     assert (zmq_msg_more (&msg));
 
@@ -68,7 +68,7 @@ get_monitor_event (void *monitor, int *value, char **address)
 
     //  Second frame in message contains event address
     zmq_msg_init (&msg);
-    if (zmq_msg_recv (&msg, monitor, 0) == -1)
+    if (zmq_msg_recv (&msg, monitor, recv_flag) == -1)
         return -1;              //  Interruped, presumably
     assert (!zmq_msg_more (&msg));
 
@@ -166,6 +166,9 @@ int main (void)
     //  Server socket will accept connections
     void *server = zmq_socket (ctx, ZMQ_DEALER);
     assert (server);
+    //int reconnect = 10000;
+    //rc = zmq_setsockopt (server, ZMQ_RECONNECT_IVL, &reconnect, sizeof(int));
+    //assert(rc == 0);
     int as_server = 1;
     rc = zmq_setsockopt (server, ZMQ_CURVE_SERVER, &as_server, sizeof (int));
     assert (rc == 0);
@@ -208,8 +211,13 @@ int main (void)
     assert (rc == 0);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    int event = get_monitor_event (server_mon, NULL, NULL);
+    int event = get_monitor_event (server_mon, NULL, NULL, 0);
     assert (event == ZMQ_EVENT_HANDSHAKE_SUCCEED);
+
+    // This event has to be the last one
+    Sleep(250);
+    event = get_monitor_event (server_mon, NULL, NULL, ZMQ_DONTWAIT);
+    assert (event == -1);
 #endif
 
     //  Check CURVE security with a garbage server key
@@ -229,12 +237,28 @@ int main (void)
     close_zero_linger (client);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    event = get_monitor_event (server_mon, NULL, NULL);
+    event = get_monitor_event (server_mon, NULL, NULL, 0);
     assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
+    // Two times because expect_bounce_fail involves two exchanges
+    event = get_monitor_event (server_mon, NULL, NULL, 0);
+    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
+
+    // This event has to be the last one
+    event = get_monitor_event(server_mon, NULL, NULL, ZMQ_DONTWAIT);
+    assert (event == -1);
 #endif
 
     //  Check CURVE security with a garbage client public key
     //  This will be caught by the curve_server class, not passed to ZAP
+    
+    // This enables to flush the incoming monitoring events that disturbs the test.
+    // Even though the client socket is closed, the server still handles HELLO
+    // messages.
+    Sleep(250);
+    do {
+        event = get_monitor_event(server_mon, NULL, NULL, ZMQ_DONTWAIT);
+    } while(event != -1);
+
     client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
     rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, server_public, 41);
@@ -249,8 +273,15 @@ int main (void)
     close_zero_linger (client);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    event = get_monitor_event (server_mon, NULL, NULL);
+    event = get_monitor_event (server_mon, NULL, NULL, 0);
     assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
+    // Two times because expect_bounce_fail involves two exchanges
+    event = get_monitor_event (server_mon, NULL, NULL, 0);
+    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
+
+    // This event has to be the last one
+    event = get_monitor_event(server_mon, NULL, NULL, ZMQ_DONTWAIT);
+    assert(event == -1);
 #endif
 
     //  Check CURVE security with a garbage client secret key
@@ -269,8 +300,15 @@ int main (void)
     close_zero_linger (client);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    event = get_monitor_event (server_mon, NULL, NULL);
+    event = get_monitor_event (server_mon, NULL, NULL, 0);
     assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
+    // Two times because expect_bounce_fail involves two exchanges
+    event = get_monitor_event (server_mon, NULL, NULL, 0);
+    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
+
+    // This event has to be the last one
+    event = get_monitor_event(server_mon, NULL, NULL, ZMQ_DONTWAIT);
+    assert(event == -1);
 #endif
 
     //  Check CURVE security with bogus client credentials
@@ -293,8 +331,12 @@ int main (void)
     close_zero_linger (client);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    event = get_monitor_event(server_mon, NULL, NULL);
-    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
+    event = get_monitor_event(server_mon, NULL, NULL, 0);
+    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL); // ZAP handle the error,  not curve_server
+
+    // This event has to be the last one
+    event = get_monitor_event(server_mon, NULL, NULL, ZMQ_DONTWAIT);
+    assert (event == -1);
 #endif
 
     //  Check CURVE security with NULL client credentials
@@ -307,7 +349,8 @@ int main (void)
     close_zero_linger (client);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    event = get_monitor_event(server_mon, NULL, NULL);
+    event = get_monitor_event(server_mon, NULL, NULL, 0);
+
     assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL);
 #endif
 
@@ -318,6 +361,8 @@ int main (void)
     rc = zmq_setsockopt (client, ZMQ_PLAIN_USERNAME, "admin", 5);
     assert (rc == 0);
     rc = zmq_setsockopt (client, ZMQ_PLAIN_PASSWORD, "password", 8);
+    assert (rc == 0);
+    rc = zmq_connect (client, "tcp://localhost:9998");
     assert (rc == 0);
     expect_bounce_fail (server, client);
     close_zero_linger (client);
