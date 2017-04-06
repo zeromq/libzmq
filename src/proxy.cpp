@@ -206,7 +206,7 @@ int zmq::proxy (
         // so we don't need 'poller_send_blocked'. We need only 'poller_receive_blocked'.
         // We also don't need 'poller_both_blocked', no need to initialize it.
         rc = poller_receive_blocked->add (frontend_, NULL, ZMQ_POLLOUT);
-        CHECK_RC_EXIT_ON_FAILURE ();
+        CHECK_RC_EXIT_ON_FAILURE();
     }
     else {
         rc = poller_all->add             (backend_ , NULL, ZMQ_POLLIN | ZMQ_POLLOUT);  // Everything.
@@ -214,7 +214,7 @@ int zmq::proxy (
         rc = poller_in->add              (backend_ , NULL, ZMQ_POLLIN );               // All 'ZMQ_POLLIN's.
         CHECK_RC_EXIT_ON_FAILURE();
         rc = poller_both_blocked->add    (frontend_, NULL, ZMQ_POLLOUT);               // Waiting only for 'ZMQ_POLLOUT'.
-        CHECK_RC_EXIT_ON_FAILURE ();
+        CHECK_RC_EXIT_ON_FAILURE();
         rc = poller_both_blocked->add    (backend_ , NULL, ZMQ_POLLOUT);               // Waiting only for 'ZMQ_POLLOUT'.
         CHECK_RC_EXIT_ON_FAILURE();
         rc = poller_send_blocked->add    (backend_ , NULL, ZMQ_POLLOUT);               // All except 'ZMQ_POLLIN' on 'backend_'.
@@ -225,7 +225,6 @@ int zmq::proxy (
         CHECK_RC_EXIT_ON_FAILURE();
         rc = poller_receive_blocked->add (backend_ , NULL, ZMQ_POLLIN | ZMQ_POLLOUT);  // All except 'ZMQ_POLLIN' on 'frontend_'.
         CHECK_RC_EXIT_ON_FAILURE();
-        frontend_equal_to_backend = false;
     }
 
     // Register 'control_' with pollers.
@@ -237,12 +236,12 @@ int zmq::proxy (
         rc = poller_control->add          (control_, NULL, ZMQ_POLLIN);  // When proxy is paused we wait only for ZMQ_POLLIN on 'control_' socket.
         CHECK_RC_EXIT_ON_FAILURE();
         rc = poller_receive_blocked->add  (control_, NULL, ZMQ_POLLIN);
-        CHECK_RC_EXIT_ON_FAILURE ();
+        CHECK_RC_EXIT_ON_FAILURE();
         if (!frontend_equal_to_backend) {
             rc = poller_send_blocked->add (control_, NULL, ZMQ_POLLIN);
-            CHECK_RC_EXIT_ON_FAILURE ();
+            CHECK_RC_EXIT_ON_FAILURE();
             rc = poller_both_blocked->add (control_, NULL, ZMQ_POLLIN);
-            CHECK_RC_EXIT_ON_FAILURE ();
+            CHECK_RC_EXIT_ON_FAILURE();
         }
     }
 
@@ -296,7 +295,7 @@ int zmq::proxy (
                 return close_and_return (&msg, -1);
             }
 
-            //  Copy message to capture socket if any
+            //  Copy message to capture socket if any.
             rc = capture (capture_, msg);
             CHECK_RC_EXIT_ON_FAILURE();
 
@@ -335,7 +334,7 @@ int zmq::proxy (
             // Process a reply, 'ZMQ_POLLIN' on 'backend_' and 'ZMQ_POLLOUT' on 'frontend_'.
             // If 'frontend_' and 'backend_' are the same this is not needed because previous processing 
             // covers all of the cases. 'backend_in' is always false if frontend_==backend_ due to
-            // Design in 'for' event processing loop.
+            // design in 'for' event processing loop.
             if (backend_in && frontend_out) {
                 rc = forward (backend_, frontend_, capture_, msg);
                 CHECK_RC_EXIT_ON_FAILURE();
@@ -346,7 +345,7 @@ int zmq::proxy (
 
             if (request_processed || reply_processed) {
               // If request/reply is processed that means we had at least one 'ZMQ_POLLOUT' event.
-              // Enable corresponding 'ZMQ_POLLIN' if any was disabled.
+              // Enable corresponding 'ZMQ_POLLIN' for blocking wait if any was disabled.
                 if (poller_wait != poller_in) {
                     if (request_processed) {   // 'frontend_' -> 'backend_'
                         if (poller_wait == poller_both_blocked)
@@ -365,9 +364,9 @@ int zmq::proxy (
                 }
             }
             else {
-              // No requests have been processed, there were no 'ZMQ_POLLOUT' events.
-              // That means that receiving end queue(s) is/are full.
-              // Disable receiving 'ZMQ_POLLIN' for sockets for which there's no 'ZMQ_POLLOUT'.
+                // No requests have been processed, there were no 'ZMQ_POLLOUT' events.
+                // That means that receiving end queue(s) is/are full.
+                // Disable receiving 'ZMQ_POLLIN' for sockets for which there's no 'ZMQ_POLLOUT'.
                 if (frontend_in) {
                     if (poller_wait == poller_send_blocked)
                         poller_wait = poller_both_blocked;
