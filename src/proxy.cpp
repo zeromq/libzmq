@@ -259,14 +259,15 @@ int zmq::proxy (
             if (rc < 0 && errno != ETIMEDOUT)
                 return close_and_return (&msg, -1);
         } else {
-          //  Wait while there are either requests or replies to process.
+
+            //  Wait until there are either requests or replies to process.
             rc = poller_in.wait( (zmq::socket_poller_t::event_t *)&events_in [0], qt_poll_items, -1);
             if (rc < 0 && errno != ETIMEDOUT)
                 return close_and_return (&msg, -1);
 
-              // Transform 'poller_in' events into zmq_pollitem events.
-              // 'items_in' contains all items, while 'events_in' only contains fired events.
-              // If there are some duplicate items (frontend_==backend_) in 'items_in' all of them are marked as signalled.
+            // Transform 'poller_in' events into zmq_pollitem events.
+            // 'items_in' contains all items, while 'events_in' only contains fired events.
+            // If there are some duplicate items (frontend_==backend_) in 'items_in' all of them are marked as signalled.
             for (i = 0; i < qt_poll_items; i++) {
                 for (j = 0; j < qt_poll_items; j++) {
                     if (
