@@ -248,6 +248,7 @@ int zmq::proxy (
 
 
     int i, j;
+    bool processed;
 
     while (state != terminated) {
 
@@ -255,12 +256,12 @@ int zmq::proxy (
         // We wait for either "RESUME" or "TERMINATE".
         if (state == paused) {
             rc = poller_control.wait( (zmq::socket_poller_t::event_t *)&event_control, 1, -1);
-            if (unlikely (rc < 0))
+            if (rc < 0 && errno != ETIMEDOUT)
                 return close_and_return (&msg, -1);
         } else {
           //  Wait while there are either requests or replies to process.
             rc = poller_in.wait( (zmq::socket_poller_t::event_t *)&events_in [0], qt_poll_items, -1);
-            if (unlikely (rc < 0))
+            if (rc < 0 && errno != ETIMEDOUT)
                 return close_and_return (&msg, -1);
 
               // Transform 'poller_in' events into zmq_pollitem events.
@@ -283,9 +284,8 @@ int zmq::proxy (
             //  POLLOUT is only checked when frontend and backend sockets are not the same.
             if (frontend_ != backend_) {
                 rc = poller_out.wait( (zmq::socket_poller_t::event_t *)&events_out [0], 2, 0);
-                if (unlikely (rc < 0)) {
+                if (rc < 0 && errno != ETIMEDOUT)
                     return close_and_return (&msg, -1);
-                }
 
                 // Transform 'poller_out' events into zmq_pollitem events.
                 // 'items_out' contains all items, while 'events_out' only contains fired events.
@@ -338,33 +338,35 @@ int zmq::proxy (
 
         if (state == active) {
 
+            processed = false;
+
             //  Process a request.
             if (items_in [0].revents
-               && (frontend_ == backend_ || items_out [1].revents != 0)) {
+            && (frontend_ == backend_ || items_out [1].revents != 0)) {
                 rc = forward (frontend_, backend_, capture_, msg);
                 if (unlikely (rc < 0))
                     return close_and_return (&msg, -1);
                 items_in [0].revents = items_out [1].revents = 0;
+                processed = true;
             }
 
             //  Process a reply.
             if (frontend_ != backend_
-               &&  items_in [1].revents != 0
-               && items_out [0].revents != 0) {
+            &&  items_in [1].revents != 0
+            && items_out [0].revents != 0) {
                 rc = forward (backend_, frontend_, capture_, msg);
                 if (unlikely (rc < 0))
                     return close_and_return (&msg, -1);
                 items_in [1].revents = items_out [0].revents = 0;
+                processed = true;
             }
 
-            // If 'frontend_' is signalled with both 'ZMQ_POLLIN' and 'ZMQ_POLLOUT' and 'ZMQ_POLLOUT' is
-            // not available for 'backend_', we need to make pause. Otherwise we will get a 100% CPU loop.
-            // The same stands for 'backend_' signalled with both 'ZMQ_POLLIN' and 'ZMQ_POLLOUT' without
-            // 'frontend_' signalled with 'ZMQ_POLLOUT'.
-            // This is generally highly irregular situation but this is just to prevent eating up CPU.
-            if (frontend_ != backend_
-               && ( (items_in [0].revents != 0 && items_out [0].revents != 0)
-                   || (items_in [1].revents != 0 && items_out [1].revents != 0))) {
+            // If 'ZMQ_POLLOUT' is not available on any of 'items_out' and 'ZMQ_POLLIN' on 'items_in' is
+            // then we get a 100% CPU loop because both of the 'poller::wait()' commands will not block.
+            // In this case we make a small pause just to prevent high CPU utilization.
+            // This is generally rregular situation but it happens.
+            if (!processed && frontend_ != backend_
+            && ( items_in [0].revents != 0 || items_in [1].revents != 0) ) {
                 sleep_ms (10);
             }
 
@@ -372,5 +374,4 @@ int zmq::proxy (
     }
     return close_and_return (&msg, 0);
 }
-
 
