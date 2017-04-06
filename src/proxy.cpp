@@ -75,26 +75,6 @@
 
 
 
-// sleep_ms () copied from signaller.cpp.
-// Helper to sleep for specific number of milliseconds (or until signal)
-//
-static int sleep_ms (unsigned int ms_)
-{
-    if (ms_ == 0)
-        return 0;
-#if defined ZMQ_HAVE_WINDOWS
-    Sleep (ms_ > 0 ? ms_ : INFINITE);
-    return 0;
-#elif defined ZMQ_HAVE_ANDROID
-    usleep (ms_ * 1000);
-    return 0;
-#else
-    return usleep (ms_ * 1000);
-#endif
-}
-
-
-
 int capture (
     class zmq::socket_base_t *capture_,
     zmq::msg_t& msg_,
