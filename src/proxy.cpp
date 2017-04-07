@@ -42,7 +42,6 @@
 #include "poller.hpp"
 #include "proxy.hpp"
 #include "likely.hpp"
-#include <memory>
 
 #if defined ZMQ_POLL_BASED_ON_POLL && !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_AIX
 #include <poll.h>
@@ -51,9 +50,11 @@
 // These headers end up pulling in zmq.h somewhere in their include
 // dependency chain
 #include "socket_base.hpp"
-#include "socket_poller.hpp"
 #include "err.hpp"
 
+#ifdef ZMQ_BUILD_DRAFT_API
+
+#include "socket_poller.hpp"
 
 // Macros for repetitive code.
 
@@ -73,6 +74,7 @@
         return close_and_return (&msg, -1);\
     }
 
+#endif // ZMQ_BUILD_DRAFT_API
 
 
 int capture (
@@ -131,6 +133,7 @@ int forward (
 }
 
 
+#ifdef ZMQ_BUILD_DRAFT_API
 
 int zmq::proxy (
     class socket_base_t *frontend_,
@@ -388,4 +391,111 @@ int zmq::proxy (
     PROXY_CLEANUP();
     return close_and_return (&msg, 0);
 }
+
+#else // ZMQ_BUILD_DRAFT_API
+
+int zmq::proxy (
+    class socket_base_t *frontend_,
+    class socket_base_t *backend_,
+    class socket_base_t *capture_,
+    class socket_base_t *control_)
+{
+    msg_t msg;
+    int rc = msg.init ();
+    if (rc != 0)
+        return -1;
+
+    //  The algorithm below assumes ratio of requests and replies processed
+    //  under full load to be 1:1.
+
+    int more;
+    size_t moresz;
+    zmq_pollitem_t items [] = {
+        { frontend_, 0, ZMQ_POLLIN, 0 },
+        { backend_, 0, ZMQ_POLLIN, 0 },
+        { control_, 0, ZMQ_POLLIN, 0 }
+    };
+    int qt_poll_items = (control_ ? 3 : 2);
+    zmq_pollitem_t itemsout [] = {
+        { frontend_, 0, ZMQ_POLLOUT, 0 },
+        { backend_, 0, ZMQ_POLLOUT, 0 }
+    };
+
+    //  Proxy can be in these three states
+    enum
+    {
+        active,
+        paused,
+        terminated
+    } state = active;
+
+    while (state != terminated) {
+        //  Wait while there are either requests or replies to process.
+        rc = zmq_poll (&items [0], qt_poll_items, -1);
+        if (unlikely (rc < 0))
+            return close_and_return (&msg, -1);
+
+        //  Get the pollout separately because when combining this with pollin it maxes the CPU
+        //  because pollout shall most of the time return directly.
+        //  POLLOUT is only checked when frontend and backend sockets are not the same.
+        if (frontend_ != backend_) {
+            rc = zmq_poll (&itemsout [0], 2, 0);
+            if (unlikely (rc < 0)) {
+                return close_and_return (&msg, -1);
+            }
+        }
+
+        //  Process a control command if any
+        if (control_ && items [2].revents & ZMQ_POLLIN) {
+            rc = control_->recv (&msg, 0);
+            if (unlikely (rc < 0))
+                return close_and_return (&msg, -1);
+
+            moresz = sizeof more;
+            rc = control_->getsockopt (ZMQ_RCVMORE, &more, &moresz);
+            if (unlikely (rc < 0) || more)
+                return close_and_return (&msg, -1);
+
+            //  Copy message to capture socket if any
+            rc = capture (capture_, msg);
+            if (unlikely (rc < 0))
+                return close_and_return (&msg, -1);
+
+            if (msg.size () == 5 && memcmp (msg.data (), "PAUSE", 5) == 0)
+                state = paused;
+            else
+                if (msg.size () == 6 && memcmp (msg.data (), "RESUME", 6) == 0)
+                    state = active;
+                else
+                    if (msg.size () == 9 && memcmp (msg.data (), "TERMINATE", 9) == 0)
+                        state = terminated;
+                    else {
+                        //  This is an API error, so we assert
+                        puts ("E: invalid command sent to proxy");
+                        zmq_assert (false);
+                    }
+        }
+        //  Process a request
+        if (state == active
+            &&  items [0].revents & ZMQ_POLLIN
+            && (frontend_ == backend_ || itemsout [1].revents & ZMQ_POLLOUT)) {
+            rc = forward (frontend_, backend_, capture_, msg);
+            if (unlikely (rc < 0))
+                return close_and_return (&msg, -1);
+        }
+        //  Process a reply
+        if (state == active
+            &&  frontend_ != backend_
+            &&  items [1].revents & ZMQ_POLLIN
+            &&  itemsout [0].revents & ZMQ_POLLOUT) {
+            rc = forward (backend_, frontend_, capture_, msg);
+            if (unlikely (rc < 0))
+                return close_and_return (&msg, -1);
+        }
+    }
+
+    return close_and_return (&msg, 0);
+}
+
+#endif // ZMQ_BUILD_DRAFT_API
 
