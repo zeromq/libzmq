@@ -518,9 +518,6 @@ int zmq::socket_base_t::connect (const char *addr_)
         int rc = pipepair (parents, new_pipes, hwms, conflates);
         errno_assert (rc == 0);
 
-        //  Attach local end of the pipe to this socket object.
-        attach_pipe (new_pipes [0]);
-
         if (!peer.socket) {
             //  The peer doesn't exist yet so we don't know whether
             //  to send the identity message or not. To resolve this,
@@ -568,6 +565,9 @@ int zmq::socket_base_t::connect (const char *addr_)
             //  increased here.
             send_bind (peer.socket, new_pipes [1], false);
         }
+
+        //  Attach local end of the pipe to this socket object.
+        attach_pipe (new_pipes [0]);
 
         // Save last endpoint URI
         last_endpoint.assign (addr_);
