@@ -147,7 +147,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
     }
 
     const int family = ifr.ifr_addr.sa_family;
-    if ((family == AF_INET || (ipv6_ && family == AF_INET6))
+    if (family == (ipv6_ ? AF_INET6 : AF_INET)
         && !strcmp (nic_, ifr.ifr_name))
     {
         if (is_src_)
@@ -210,7 +210,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
             continue;
 
         const int family = ifp->ifa_addr->sa_family;
-        if ((family == AF_INET || (ipv6_ && family == AF_INET6))
+        if (family == (ipv6_ ? AF_INET6 : AF_INET)
         && !strcmp (nic_, ifp->ifa_name)) {
             if (is_src_)
                 memcpy (&source_address, ifp->ifa_addr,
@@ -338,9 +338,7 @@ int zmq::tcp_address_t::resolve_nic_name(const char *nic_, bool ipv6_, bool is_s
                 while (current_unicast_address) {
                     ADDRESS_FAMILY family = current_unicast_address->Address.lpSockaddr->sa_family;
 
-                    if (family == AF_INET ||
-                        (ipv6_ && family == AF_INET6)
-                        ) {
+                    if (family == (ipv6_ ? AF_INET6 : AF_INET)) {
                         if (is_src_)
                             memcpy(&source_address, current_unicast_address->Address.lpSockaddr,
                                    (family == AF_INET) ? sizeof(struct sockaddr_in)
