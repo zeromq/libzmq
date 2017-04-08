@@ -52,7 +52,7 @@
 #include "socket_base.hpp"
 #include "err.hpp"
 
-#ifdef ZMQ_BUILD_DRAFT_API
+#ifdef ZMQ_HAVE_POLLER
 
 #include "socket_poller.hpp"
 
@@ -74,7 +74,7 @@
         return close_and_return (&msg, -1);\
     }
 
-#endif // ZMQ_BUILD_DRAFT_API
+#endif // ZMQ_HAVE_POLLER
 
 
 int capture (
@@ -133,7 +133,7 @@ int forward (
 }
 
 
-#ifdef ZMQ_BUILD_DRAFT_API
+#ifdef ZMQ_HAVE_POLLER
 
 int zmq::proxy (
     class socket_base_t *frontend_,
@@ -392,7 +392,7 @@ int zmq::proxy (
     return close_and_return (&msg, 0);
 }
 
-#else // ZMQ_BUILD_DRAFT_API
+#else // ZMQ_HAVE_POLLER
 
 int zmq::proxy (
     class socket_base_t *frontend_,
@@ -497,5 +497,5 @@ int zmq::proxy (
     return close_and_return (&msg, 0);
 }
 
-#endif // ZMQ_BUILD_DRAFT_API
+#endif // ZMQ_HAVE_POLLER
 
