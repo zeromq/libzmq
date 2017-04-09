@@ -466,7 +466,7 @@ int zmq::tcp_address_t::resolve_interface (const char *interface_, bool ipv6_, b
 #if defined ZMQ_HAVE_WINDOWS
     //  Resolve specific case on Windows platform when using IPv4 address
     //  with ZMQ_IPv6 socket option.
-    if ((req.ai_family = AF_INET6) && (rc == WSAHOST_NOT_FOUND)) {
+    if ((req.ai_family == AF_INET6) && (rc == WSAHOST_NOT_FOUND)) {
         req.ai_family = AF_INET;
         rc = getaddrinfo(interface_, NULL, &req, &res);
     }
