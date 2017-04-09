@@ -448,12 +448,10 @@ int zmq::tcp_address_t::resolve_interface (const char *interface_, bool ipv6_, b
     //  service-name irregularity due to indeterminate socktype.
     req.ai_flags = AI_PASSIVE | AI_NUMERICHOST;
 
-#if defined AI_V4MAPPED && !defined ZMQ_HAVE_FREEBSD && !defined ZMQ_HAVE_DRAGONFLY
+#if defined AI_V4MAPPED
     //  In this API we only require IPv4-mapped addresses when
     //  no native IPv6 interfaces are available (~AI_ALL).
     //  This saves an additional DNS roundtrip for IPv4 addresses.
-    //  Note: While the AI_V4MAPPED flag is defined on FreeBSD system,
-    //  it is not supported here. See libzmq issue #331.
     if (req.ai_family == AF_INET6)
         req.ai_flags |= AI_V4MAPPED;
 #endif
@@ -462,6 +460,15 @@ int zmq::tcp_address_t::resolve_interface (const char *interface_, bool ipv6_, b
     //  of error, however, there's no way to report EAI errors via errno.
 
     rc = getaddrinfo(interface_, NULL, &req, &res);
+
+#if defined AI_V4MAPPED
+    // Some OS do have AI_V4MAPPED defined but it is not supported in getaddrinfo()
+    // returning EAI_BADFLAGS. Detect this and retry
+    if (rc == EAI_BADFLAGS && (req.ai_flags & AI_V4MAPPED)) {
+        req.ai_flags &= ~AI_V4MAPPED;
+        rc = getaddrinfo(interface_, NULL, &req, &res);
+    }
+#endif
 
 #if defined ZMQ_HAVE_WINDOWS
     //  Resolve specific case on Windows platform when using IPv4 address
@@ -509,12 +516,10 @@ int zmq::tcp_address_t::resolve_hostname (const char *hostname_, bool ipv6_, boo
     //  doesn't really matter, since it's not included in the addr-output.
     req.ai_socktype = SOCK_STREAM;
 
-#if defined AI_V4MAPPED && !defined ZMQ_HAVE_FREEBSD && !defined ZMQ_HAVE_DRAGONFLY
+#if defined AI_V4MAPPED
     //  In this API we only require IPv4-mapped addresses when
     //  no native IPv6 interfaces are available.
     //  This saves an additional DNS roundtrip for IPv4 addresses.
-    //  Note: While the AI_V4MAPPED flag is defined on FreeBSD system,
-    //  it is not supported here. See libzmq issue #331.
     if (req.ai_family == AF_INET6)
         req.ai_flags |= AI_V4MAPPED;
 #endif
@@ -526,7 +531,17 @@ int zmq::tcp_address_t::resolve_hostname (const char *hostname_, bool ipv6_, boo
 #else
     addrinfo *res;
 #endif
-    const int rc = getaddrinfo (hostname_, NULL, &req, &res);
+    int rc = getaddrinfo (hostname_, NULL, &req, &res);
+
+#if defined AI_V4MAPPED
+    // Some OS do have AI_V4MAPPED defined but it is not supported in getaddrinfo()
+    // returning EAI_BADFLAGS. Detect this and retry
+    if (rc == EAI_BADFLAGS && (req.ai_flags & AI_V4MAPPED)) {
+        req.ai_flags &= ~AI_V4MAPPED;
+        rc = getaddrinfo(hostname_, NULL, &req, &res);
+    }
+#endif
+
     if (rc) {
         switch (rc) {
         case EAI_MEMORY:
