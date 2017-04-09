@@ -178,6 +178,8 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
 
 //  On these platforms, network interface name can be queried
 //  using getifaddrs function.
+//  This function relies on pre-assigned destination address sockaddr_in6
+//     when ipv6_ and is_src_ flags are set
 int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_src_)
 {
     //  Get the addresses.
@@ -210,6 +212,15 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
             continue;
 
         const int family = ifp->ifa_addr->sa_family;
+
+        // If destination address is link-local, check if Scope Id is equal
+        // before picking up an address
+        if (ipv6_ && is_src_ && family == AF_INET6
+                && IN6_IS_ADDR_LINKLOCAL (&(address.ipv6.sin6_addr))
+                && ((struct sockaddr_in6 *)ifp->ifa_addr)->sin6_scope_id != address.ipv6.sin6_scope_id) {
+            continue;
+        }
+
         if (family == (ipv6_ ? AF_INET6 : AF_INET)
         && !strcmp (nic_, ifp->ifa_name)) {
             if (is_src_)
@@ -286,6 +297,8 @@ int zmq::tcp_address_t::wchar_to_utf8(const WCHAR * src, char ** dest) const {
     return 0;
 }
 
+//  This function relies on pre-assigned destination address sockaddr_in6
+//     when ipv6_ and is_src_ flags are set
 int zmq::tcp_address_t::resolve_nic_name(const char *nic_, bool ipv6_, bool is_src_)
 {
     int rc;
@@ -337,6 +350,17 @@ int zmq::tcp_address_t::resolve_nic_name(const char *nic_, bool ipv6_, bool is_s
 
                 while (current_unicast_address) {
                     ADDRESS_FAMILY family = current_unicast_address->Address.lpSockaddr->sa_family;
+
+                    // If destination address is link-local, check if Scope Id is equal
+                    // before picking up an address
+                    if (ipv6_ && is_src_ && family == AF_INET6) {
+                        struct sockaddr_in6 *ifa_addr = (struct sockaddr_in6 *)(current_unicast_address->Address.lpSockaddr);
+                        if (IN6_IS_ADDR_LINKLOCAL (&(address.ipv6.sin6_addr))
+                                && ifa_addr->sin6_scope_id != address.ipv6.sin6_scope_id) {
+                            current_unicast_address = current_unicast_address->Next;
+                            continue;
+                        }
+                    }
 
                     if (family == (ipv6_ ? AF_INET6 : AF_INET)) {
                         if (is_src_)
@@ -593,14 +617,15 @@ zmq::tcp_address_t::~tcp_address_t ()
 
 int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_, bool is_src_)
 {
+
+    std::string src_name;
     if (!is_src_) {
         // Test the ';' to know if we have a source address in name_
+        // Source address resolution is done after destination address resolution
+        // since IPv6 Scope Id should be taken into account when selecting a source address
         const char *src_delimiter = strrchr (name_, ';');
         if (src_delimiter) {
-            std::string src_name (name_, src_delimiter - name_);
-            const int rc = resolve (src_name.c_str (), local_, ipv6_, true);
-            if (rc != 0)
-                return -1;
+            src_name.insert (0, name_, src_delimiter - name_);
             name_ = src_delimiter + 1;
             _has_src_addr = true;
         }
@@ -642,11 +667,17 @@ int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_, boo
 #endif
         else
             zone_id = (uint32_t) atoi (if_str.c_str ());
+
         if (zone_id == 0) {
             errno = EINVAL;
             return -1;
         }
 
+        // Check both src and dst addresses have the same scope
+        if (ipv6_ && is_src_ && zone_id != address.ipv6.sin6_scope_id) {
+            errno = EINVAL;
+            return -1;
+        }
     }
 
     //  Allow 0 specifically, to detect invalid port error in atoi if not
@@ -688,6 +719,13 @@ int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_, boo
         }
         else
             address.ipv4.sin_port = htons (port);
+    }
+
+    // We have destination address set, it is possible now to make source address resolution
+    if (_has_src_addr && !is_src_) {
+            const int rc = resolve (src_name.c_str (), local_, ipv6_, true);
+            if (rc != 0)
+                return -1;
     }
 
     return 0;
