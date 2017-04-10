@@ -321,11 +321,14 @@ void zmq::tcp_assert_tuning_error(zmq::fd_t s_, int rc_)
     zmq_assert (rc == 0);
     if (err != 0) {
         wsa_assert (err == WSAECONNREFUSED
-                 || err == WSAETIMEDOUT
+                 || err == WSAECONNRESET
                  || err == WSAECONNABORTED
+                 || err == WSAEINTR
+                 || err == WSAETIMEDOUT
                  || err == WSAEHOSTUNREACH
                  || err == WSAENETUNREACH
                  || err == WSAENETDOWN
+                 || err == WSAENETRESET
                  || err == WSAEACCES
                  || err == WSAEINVAL
                  || err == WSAEADDRINUSE);
@@ -346,6 +349,7 @@ void zmq::tcp_assert_tuning_error(zmq::fd_t s_, int rc_)
             errno == EHOSTUNREACH ||
             errno == ENETUNREACH ||
             errno == ENETDOWN ||
+            errno == ENETRESET ||
             errno == EINVAL);
     }
 #endif
