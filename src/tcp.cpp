@@ -53,7 +53,7 @@ int zmq::tune_tcp_socket (fd_t s_)
     int nodelay = 1;
     int rc = setsockopt (s_, IPPROTO_TCP, TCP_NODELAY, (char*) &nodelay,
         sizeof (int));
-    tcp_assert_tuning_error(s_, rc);
+    tcp_assert_tuning_error (s_, rc);
     if (rc != 0)
         return rc;
 
@@ -62,7 +62,7 @@ int zmq::tune_tcp_socket (fd_t s_)
     int nodelack = 1;
     rc = setsockopt (s_, IPPROTO_TCP, TCP_NODELACK, (char*) &nodelack,
         sizeof (int));
-    tcp_assert_tuning_error(s_, rc);
+    tcp_assert_tuning_error (s_, rc);
 #endif
     return rc;
 }
@@ -71,7 +71,7 @@ int zmq::set_tcp_send_buffer (fd_t sockfd_, int bufsize_)
 {
     const int rc = setsockopt (sockfd_, SOL_SOCKET, SO_SNDBUF,
         (char*) &bufsize_, sizeof bufsize_);
-    tcp_assert_tuning_error(sockfd_, rc);
+    tcp_assert_tuning_error (sockfd_, rc);
     return rc;
 }
 
@@ -79,7 +79,7 @@ int zmq::set_tcp_receive_buffer (fd_t sockfd_, int bufsize_)
 {
     const int rc = setsockopt (sockfd_, SOL_SOCKET, SO_RCVBUF,
         (char *) &bufsize_, sizeof bufsize_);
-    tcp_assert_tuning_error(sockfd_, rc);
+    tcp_assert_tuning_error (sockfd_, rc);
     return rc;
 }
 
@@ -106,9 +106,9 @@ int zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_,
         keepalive_opts.keepaliveinterval = keepalive_intvl_ != -1 ?
                                             keepalive_intvl_ * 1000 : 1000;
         DWORD num_bytes_returned;
-        int rc = WSAIoctl(s_, SIO_KEEPALIVE_VALS, &keepalive_opts,
-            sizeof(keepalive_opts), NULL, 0, &num_bytes_returned, NULL, NULL);
-        tcp_assert_tuning_error(s_, rc);
+        int rc = WSAIoctl (s_, SIO_KEEPALIVE_VALS, &keepalive_opts,
+            sizeof (keepalive_opts), NULL, 0, &num_bytes_returned, NULL, NULL);
+        tcp_assert_tuning_error (s_, rc);
         if (rc == SOCKET_ERROR)
             return rc;
     }
@@ -117,7 +117,7 @@ int zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_,
     if (keepalive_ != -1) {
         int rc = setsockopt (s_, SOL_SOCKET, SO_KEEPALIVE,
                 (char*) &keepalive_, sizeof (int));
-        tcp_assert_tuning_error(s_, rc);
+        tcp_assert_tuning_error (s_, rc);
         if (rc != 0)
             return rc;
 
@@ -125,7 +125,7 @@ int zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_,
         if (keepalive_cnt_ != -1) {
             int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPCNT,
                     &keepalive_cnt_, sizeof (int));
-            tcp_assert_tuning_error(s_, rc);
+            tcp_assert_tuning_error (s_, rc);
             if (rc != 0)
                 return rc;
         }
@@ -135,7 +135,7 @@ int zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_,
         if (keepalive_idle_ != -1) {
             int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPIDLE,
                     &keepalive_idle_, sizeof (int));
-            tcp_assert_tuning_error(s_, rc);
+            tcp_assert_tuning_error (s_, rc);
             if (rc != 0)
                 return rc;
         }
@@ -144,7 +144,7 @@ int zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_,
         if (keepalive_idle_ != -1) {
             int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPALIVE,
                     &keepalive_idle_, sizeof (int));
-            tcp_assert_tuning_error(s_, rc);
+            tcp_assert_tuning_error (s_, rc);
             if (rc != 0)
                 return rc;
         }
@@ -155,7 +155,7 @@ int zmq::tune_tcp_keepalives (fd_t s_, int keepalive_, int keepalive_cnt_,
         if (keepalive_intvl_ != -1) {
             int rc = setsockopt (s_, IPPROTO_TCP, TCP_KEEPINTVL,
                     &keepalive_intvl_, sizeof (int));
-            tcp_assert_tuning_error(s_, rc);
+            tcp_assert_tuning_error (s_, rc);
             if (rc != 0)
                 return rc;
         }
@@ -178,14 +178,14 @@ int zmq::tune_tcp_maxrt (fd_t sockfd_, int timeout_)
     // msdn says it's supported in >= Vista, >= Windows Server 2003
     timeout_ /= 1000;    // in seconds
     int rc = setsockopt (sockfd_, IPPROTO_TCP, TCP_MAXRT, (char*) &timeout_,
-        sizeof(timeout_));
-    tcp_assert_tuning_error(sockfd_, rc);
+        sizeof (timeout_));
+    tcp_assert_tuning_error (sockfd_, rc);
     return rc;
 // FIXME: should be ZMQ_HAVE_TCP_USER_TIMEOUT
 #elif defined (TCP_USER_TIMEOUT)
     int rc = setsockopt (sockfd_, IPPROTO_TCP, TCP_USER_TIMEOUT, &timeout_,
-        sizeof(timeout_));
-    tcp_assert_tuning_error(sockfd_, rc);
+        sizeof (timeout_));
+    tcp_assert_tuning_error (sockfd_, rc);
     return rc;
 #endif
     return 0;
@@ -199,7 +199,7 @@ int zmq::tune_tcp_maxrt (fd_t sockfd_, int timeout_)
 
     //  If not a single byte can be written to the socket in non-blocking mode
     //  we'll get an error (this may happen during the speculative write).
-    const int last_error = WSAGetLastError();
+    const int last_error = WSAGetLastError ();
     if (nbytes == SOCKET_ERROR && last_error == WSAEWOULDBLOCK)
         return 0;
 
@@ -261,7 +261,7 @@ int zmq::tcp_read (fd_t s_, void *data_, size_t size_)
     //  If not a single byte can be read from the socket in non-blocking mode
     //  we'll get an error (this may happen during the speculative read).
     if (rc == SOCKET_ERROR) {
-        const int last_error = WSAGetLastError();
+        const int last_error = WSAGetLastError ();
         if (last_error == WSAEWOULDBLOCK) {
             errno = EAGAIN;
         }
@@ -300,7 +300,7 @@ int zmq::tcp_read (fd_t s_, void *data_, size_t size_)
 #endif
 }
 
-void zmq::tcp_assert_tuning_error(zmq::fd_t s_, int rc_)
+void zmq::tcp_assert_tuning_error (zmq::fd_t s_, int rc_)
 {
     if (rc_ == 0)
         return;

@@ -63,7 +63,7 @@ namespace zmq
 
     //  Asserts that an internal error did not occur.  Does not assert
     //  on network errors such as reset or aborted connections.
-    void tcp_assert_tuning_error(fd_t s_, int rc_);
+    void tcp_assert_tuning_error (fd_t s_, int rc_);
 }
 
 #endif
