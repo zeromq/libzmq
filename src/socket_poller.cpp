@@ -599,9 +599,9 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_, int n_ev
             // SOCKETS are continuous from the beginning of fd_array in fd_set.
             // We just need to copy fd_count elements of fd_array.
             // We gain huge memcpy() improvement if number of used SOCKETs is much lower than FD_SETSIZE.
-            memcpy (&inset, &pollset_in, sizeof (pollset_in.fd_count) + sizeof(*(pollset_in.fd_array)) * pollset_in.fd_count);
-            memcpy (&outset, &pollset_out, sizeof (pollset_out.fd_count) + sizeof (*(pollset_out.fd_array)) * pollset_out.fd_count);
-            memcpy (&errset, &pollset_err, sizeof (pollset_err.fd_count) + sizeof (*(pollset_err.fd_array)) * pollset_err.fd_count);
+            memcpy (&inset,  &pollset_in,  (char *) (pollset_in.fd_array  + pollset_in.fd_count ) - (char *) &pollset_in );
+            memcpy (&outset, &pollset_out, (char *) (pollset_out.fd_array + pollset_out.fd_count) - (char *) &pollset_out);
+            memcpy (&errset, &pollset_err, (char *) (pollset_err.fd_array + pollset_err.fd_count) - (char *) &pollset_err);
             int rc = select (0, &inset, &outset, &errset, ptimeout);
             if (unlikely (rc == SOCKET_ERROR)) {
                 errno = zmq::wsa_error_to_errno (WSAGetLastError ());
