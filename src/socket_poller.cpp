@@ -46,9 +46,18 @@ zmq::socket_poller_t::socket_poller_t () :
 #endif
 {
 #if defined ZMQ_POLL_BASED_ON_SELECT
+#if defined ZMQ_HAVE_WINDOWS
+    // On Windows fd_set contains array of SOCKETs, each 4 bytes.
+    // For large fd_sets memset() could be expensive and it is unnecessary.
+    // It is enough to set fd_count to 0, exactly what FD_ZERO() macro does.
+    FD_ZERO (&pollset_in);
+    FD_ZERO (&pollset_out);
+    FD_ZERO (&pollset_err);
+#else
     memset(&pollset_in, 0, sizeof(pollset_in));
-    memset(&pollset_out, 0, sizeof(pollset_in));
-    memset(&pollset_err, 0, sizeof(pollset_in));
+    memset(&pollset_out, 0, sizeof(pollset_out));
+    memset(&pollset_err, 0, sizeof(pollset_err));
+#endif
 #endif
 }
 
@@ -585,10 +594,14 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_, int n_ev
 
         //  Wait for events. Ignore interrupts if there's infinite timeout.
         while (true) {
-            memcpy (&inset, &pollset_in, sizeof (fd_set));
-            memcpy (&outset, &pollset_out, sizeof (fd_set));
-            memcpy (&errset, &pollset_err, sizeof (fd_set));
 #if defined ZMQ_HAVE_WINDOWS
+            // On Windows we don't need to copy the whole fd_set.
+            // SOCKETS are continuous from the beginning of fd_array in fd_set.
+            // We just need to copy fd_count elements of fd_array.
+            // We gain huge memcpy() improvement if number of used SOCKETs is much lower than FD_SETSIZE.
+            memcpy (&inset, &pollset_in, sizeof (pollset_in.fd_count) + sizeof(*(pollset_in.fd_array)) * pollset_in.fd_count);
+            memcpy (&outset, &pollset_out, sizeof (pollset_out.fd_count) + sizeof (*(pollset_out.fd_array)) * pollset_out.fd_count);
+            memcpy (&errset, &pollset_err, sizeof (pollset_err.fd_count) + sizeof (*(pollset_err.fd_array)) * pollset_err.fd_count);
             int rc = select (0, &inset, &outset, &errset, ptimeout);
             if (unlikely (rc == SOCKET_ERROR)) {
                 errno = zmq::wsa_error_to_errno (WSAGetLastError ());
@@ -596,6 +609,9 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_, int n_ev
                 return -1;
             }
 #else
+            memcpy (&inset, &pollset_in, sizeof (fd_set));
+            memcpy (&outset, &pollset_out, sizeof (fd_set));
+            memcpy (&errset, &pollset_err, sizeof (fd_set));
             int rc = select (maxfd + 1, &inset, &outset, &errset, ptimeout);
             if (unlikely (rc == -1)) {
                 errno_assert (errno == EINTR || errno == EBADF);
