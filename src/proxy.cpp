@@ -60,14 +60,16 @@
 
 //  PROXY_CLEANUP() must not be used before these variables are initialized.
 #define PROXY_CLEANUP()\
-    delete poller_all;\
-    delete poller_in;\
-    delete poller_control;\
-    delete poller_receive_blocked;\
-    delete poller_send_blocked;\
-    delete poller_both_blocked;\
-    delete poller_frontend_only;\
-    delete poller_backend_only\
+    do {\
+        delete poller_all;\
+        delete poller_in;\
+        delete poller_control;\
+        delete poller_receive_blocked;\
+        delete poller_send_blocked;\
+        delete poller_both_blocked;\
+        delete poller_frontend_only;\
+        delete poller_backend_only;\
+    } while (0)
 
 
 #define CHECK_RC_EXIT_ON_FAILURE()\
