@@ -52,7 +52,7 @@
 #include "socket_base.hpp"
 #include "err.hpp"
 
-int capture(
+int capture (
         class zmq::socket_base_t *capture_,
         zmq::msg_t& msg_,
         int more_ = 0)
@@ -66,14 +66,14 @@ int capture(
         rc = ctrl.copy (msg_);
         if (unlikely (rc < 0))
             return -1;
-        rc = capture_->send (&ctrl, more_? ZMQ_SNDMORE: 0);
+        rc = capture_->send (&ctrl, more_ ? ZMQ_SNDMORE : 0);
         if (unlikely (rc < 0))
             return -1;
     }
     return 0;
 }
 
-int forward(
+int forward (
         class zmq::socket_base_t *from_,
         class zmq::socket_base_t *to_,
         class zmq::socket_base_t *capture_,
@@ -92,11 +92,11 @@ int forward(
             return -1;
 
         //  Copy message to capture socket if any
-        rc = capture(capture_, msg_, more);
+        rc = capture (capture_, msg_, more);
         if (unlikely (rc < 0))
             return -1;
 
-        rc = to_->send (&msg_, more? ZMQ_SNDMORE: 0);
+        rc = to_->send (&msg_, more ? ZMQ_SNDMORE : 0);
         if (unlikely (rc < 0))
             return -1;
         if (more == 0)
@@ -174,21 +174,21 @@ int zmq::proxy (
             if (msg.size () == 5 && memcmp (msg.data (), "PAUSE", 5) == 0)
                 state = paused;
             else
-            if (msg.size () == 6 && memcmp (msg.data (), "RESUME", 6) == 0)
-                state = active;
-            else
-            if (msg.size () == 9 && memcmp (msg.data (), "TERMINATE", 9) == 0)
-                state = terminated;
-            else {
-                //  This is an API error, so we assert
-                puts ("E: invalid command sent to proxy");
-                zmq_assert (false);
-            }
+                if (msg.size () == 6 && memcmp (msg.data (), "RESUME", 6) == 0)
+                    state = active;
+                else
+                    if (msg.size () == 9 && memcmp (msg.data (), "TERMINATE", 9) == 0)
+                        state = terminated;
+                    else {
+                        //  This is an API error, so we assert
+                        puts ("E: invalid command sent to proxy");
+                        zmq_assert (false);
+                    }
         }
         //  Process a request
         if (state == active
-        &&  items [0].revents & ZMQ_POLLIN
-        &&  (frontend_ == backend_ || itemsout [1].revents & ZMQ_POLLOUT)) {
+        && items [0].revents & ZMQ_POLLIN
+        && (frontend_ == backend_ || itemsout [1].revents & ZMQ_POLLOUT)) {
             rc = forward (frontend_, backend_, capture_, msg);
             if (unlikely (rc < 0))
                 return close_and_return (&msg, -1);
