@@ -71,10 +71,12 @@
 
 
 #define CHECK_RC_EXIT_ON_FAILURE()\
-    if (rc < 0) {\
-        PROXY_CLEANUP();\
-        return close_and_return (&msg, -1);\
-    }
+    do {\
+        if (rc < 0) {\
+            PROXY_CLEANUP();\
+            return close_and_return (&msg, -1);\
+        }\
+    } while(0)
 
 #endif //  ZMQ_HAVE_POLLER
 
