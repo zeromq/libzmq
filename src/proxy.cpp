@@ -319,7 +319,7 @@ int zmq::proxy (
                 if (msg.size () == 6 && memcmp (msg.data (), "RESUME", 6) == 0) {
                     state = active;
                     poller_wait = poller_in;
-                } else
+                } else {
                     if (msg.size () == 9 && memcmp (msg.data (), "TERMINATE", 9) == 0)
                         state = terminated;
                     else {
@@ -327,7 +327,8 @@ int zmq::proxy (
                         puts ("E: invalid command sent to proxy");
                         zmq_assert (false);
                     }
-                    control_in = false;
+                }
+            control_in = false;
         }
 
         if (state == active) {
