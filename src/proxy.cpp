@@ -69,7 +69,7 @@
         delete poller_both_blocked;\
         delete poller_frontend_only;\
         delete poller_backend_only;\
-    } while (0)
+    } while (false)
 
 
 #define CHECK_RC_EXIT_ON_FAILURE()\
@@ -78,7 +78,7 @@
             PROXY_CLEANUP();\
             return close_and_return (&msg, -1);\
         }\
-    } while(0)
+    } while (false)
 
 #endif //  ZMQ_HAVE_POLLER
 
