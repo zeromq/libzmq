@@ -46,6 +46,16 @@ cmake -H. -B<build dir> -G"Visual Studio 14 2015 Win64" \
    -DCMAKE_SYSTEM_NAME=WindowsStore -DCMAKE_SYSTEM_VERSION=10.0 \
    -DENABLE_CURVE=OFF -DZMQ_BUILD_TESTS=OFF
 
+In VS 2012 it is mandatory to increase the default stack size of 1 MB to
+at least 2 MB due to implementation of std::map intermittently requiring
+substantial amount of stack and causing stack overflow. ZeroMQ generally
+needs more stack when FD_SETSIZE is higher.
+In all Windows builds it is recommended to start with at least 2 MB stack
+size unless application using ZeroMQ is using large number of threads which
+can cause substantial consumption of virtual address space, especially if
+32 bit build is used.
+Generally, programmer needs to tune the stack to balance memory consumption
+but never get into situation that stack is overflown.
 
 Basic Installation
 ==================
