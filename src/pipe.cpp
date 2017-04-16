@@ -223,6 +223,14 @@ bool zmq::pipe_t::write (msg_t *msg_)
     if (unlikely (!check_write ()))
         return false;
 
+    // call will close9) msg_, we need to take ownership of any metadata
+    // while in pipe
+    if (msg_->is_vsm()) {
+        zmq::metadata_t* metadata = msg_->metadata();
+        if (unlikely(metadata != 0))
+            metadata->add_ref();
+    }
+
     bool more = msg_->flags () & msg_t::more ? true : false;
     const bool is_identity = msg_->is_identity ();
     outpipe->write (*msg_, more);
