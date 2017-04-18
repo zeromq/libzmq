@@ -77,6 +77,10 @@
 #include "pgm_socket.hpp"
 #endif
 
+#if defined ZMQ_HAVE_SYSTEMD
+#include <systemd/sd-daemon.h>
+#endif
+
 #include "pair.hpp"
 #include "pub.hpp"
 #include "sub.hpp"
@@ -484,6 +488,30 @@ int zmq::socket_base_t::add_signaler(signaler_t *s_)
     return 0;
 }
 
+#if defined ZMQ_HAVE_SYSTEMD
+static int s_open_socket_sd (int domain_, int type_, int protocol_)
+{
+
+    static int listen_fds = -1;
+    static int fd = SD_LISTEN_FDS_START;
+
+    if (listen_fds == -1)
+        listen_fds = sd_listen_fds (1);
+
+    errno_assert (listen_fds >= 0);
+
+    // we don't have LISTEN_FDS or we run out of created sockets
+    if (listen_fds == 0 || fd >= (SD_LISTEN_FDS_START + listen_fds))
+        return 0;
+
+    //TODO: check more properties of the socket??
+    if (sd_is_socket (fd, domain_, type_, -1) <= 0)
+        return -1;
+
+    return fd++;
+}
+#endif
+
 int zmq::socket_base_t::remove_signaler(signaler_t *s_)
 {
     scoped_optional_lock_t sync_lock(thread_safe ? &sync : NULL);
@@ -519,6 +547,24 @@ int zmq::socket_base_t::bind (const char *addr_)
     if (parse_uri (addr_, protocol, address) || check_protocol (protocol)) {
         return -1;
     }
+
+#if defined ZMQ_HAVE_SYSTEMD
+    //  Aquire listening socket from systemd - unless use_fd is already specified
+    if (options.use_fd == -1 && protocol == "ipc") {
+
+       int fd = s_open_socket_sd (AF_UNIX, SOCK_STREAM, 0);
+       // TODO: do we want to call sd_is function to check if the socket is the expected one?
+       if (fd > 0) {
+           int r = setsockopt (ZMQ_USE_FD, &fd, sizeof (fd));
+           errno_assert (r != -1);
+       }
+       else
+       if (fd == -1) {
+           EXIT_MUTEX ();
+           return -1;
+       }
+    }
+#endif
 
     if (protocol == "inproc") {
         const endpoint_t endpoint = { this, options };

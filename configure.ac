@@ -552,6 +552,26 @@ fi
 
 AM_CONDITIONAL(HAVE_VMCI, test "x$have_vmci_ext" != "xno")
 
+# build with libsystemd support
+have_systemd_library="no"
+AC_ARG_WITH([systemd], [AS_HELP_STRING([--with-systemd],
+            [build libzmq with systemd socket activation (experimental) [default=no]])],
+            [with_systemd_ext=$withval],
+            [with_systemd_ext=no])
+
+# conditionally require libsystemd package
+if test "x$with_systemd_ext" != "xno"; then
+    PKG_CHECK_MODULES([libsystemd], [libsystemd >= 200], [ have_systemd_library="yes" ],
+        AC_MSG_ERROR(libsystemd is not installed. Install it, then run configure again)
+        ])
+fi
+
+if test "x$have_systemd_library" = "xyes"; then
+    AC_DEFINE(ZMQ_HAVE_SYSTEMD, [1], [Have systemd support])
+fi
+
+AM_CONDITIONAL(HAVE_SYSTEMD, test "x$have_systemd_library" = "xyes")
+
 # Set -Wall, -Werror and -pedantic
 AC_LANG_PUSH([C++])
 
