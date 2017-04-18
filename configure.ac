@@ -230,6 +230,10 @@ case "${host_os}" in
         LIBZMQ_CHECK_LANG_FLAG_PREPEND([-Wno-uninitialized])
         AC_LANG_POP([C++])
         ;;
+    *haiku*)
+        AC_DEFINE(ZMQ_HAVE_HAIKU, 1, [Have Haiku OS])
+        AC_CHECK_LIB(network, socket)
+        ;;
     *netbsd*)
         # Define on NetBSD to enable all library features
         CPPFLAGS="-D_NETBSD_SOURCE $CPPFLAGS"
