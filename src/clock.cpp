@@ -61,14 +61,14 @@
 int alt_clock_gettime (int clock_id, timespec *ts)
 {
     // The clock_id specified is not supported on this system.
-    if (clock_id != CLOCK_REALTIME) {
+    if (clock_id != CLOCK_MONOTONIC) {
         errno = EINVAL;
         return -1;
     }
 
     clock_serv_t cclock;
     mach_timespec_t mts;
-    host_get_clock_service (mach_host_self (), CALENDAR_CLOCK, &cclock);
+    host_get_clock_service (mach_host_self (), SYSTEM_CLOCK, &cclock);
     clock_get_time (cclock, &mts);
     mach_port_deallocate (mach_task_self (), cclock);
     ts->tv_sec = mts.tv_sec;
@@ -162,7 +162,7 @@ uint64_t zmq::clock_t::now_us ()
     //  Use POSIX clock_gettime function to get precise monotonic time.
     struct timespec tv;
 
-#if defined ZMQ_HAVE_OSX && __MAC_OS_X_VERSION_MIN_REQUIRED < 101200 // less than macOS 10.12    
+#if defined ZMQ_HAVE_OSX && __MAC_OS_X_VERSION_MIN_REQUIRED < 101200 // less than macOS 10.12
     int rc = alt_clock_gettime (CLOCK_MONOTONIC, &tv);
 #else
     int rc = clock_gettime (CLOCK_MONOTONIC, &tv);
