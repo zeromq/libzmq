@@ -58,11 +58,11 @@
 #include <time.h>
 #include <sys/time.h>
 
-int alt_clock_gettime (timespec *ts)
+int alt_clock_gettime (int clock_id, timespec *ts)
 {
     clock_serv_t cclock;
     mach_timespec_t mts;
-    host_get_clock_service (mach_host_self (), SYSTEM_CLOCK, &cclock);
+    host_get_clock_service (mach_host_self (), clock_id, &cclock);
     clock_get_time (cclock, &mts);
     mach_port_deallocate (mach_task_self (), cclock);
     ts->tv_sec = mts.tv_sec;
@@ -157,7 +157,7 @@ uint64_t zmq::clock_t::now_us ()
     struct timespec tv;
 
 #if defined ZMQ_HAVE_OSX && __MAC_OS_X_VERSION_MIN_REQUIRED < 101200 // less than macOS 10.12
-    int rc = alt_clock_gettime (&tv);
+    int rc = alt_clock_gettime (SYSTEM_CLOCK, &tv);
 #else
     int rc = clock_gettime (CLOCK_MONOTONIC, &tv);
 #endif
@@ -244,7 +244,7 @@ uint64_t zmq::clock_t::rdtsc ()
 #else
     struct timespec ts;
     #if defined ZMQ_HAVE_OSX && __MAC_OS_X_VERSION_MIN_REQUIRED < 101200 // less than macOS 10.12
-        alt_clock_gettime (&ts);
+        alt_clock_gettime (SYSTEM_CLOCK, &ts);
     #else
         clock_gettime (CLOCK_MONOTONIC, &ts);
     #endif
