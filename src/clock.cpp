@@ -58,14 +58,8 @@
 #include <time.h>
 #include <sys/time.h>
 
-int alt_clock_gettime (int clock_id, timespec *ts)
+int alt_clock_gettime (timespec *ts)
 {
-    // The clock_id specified is not supported on this system.
-    if (clock_id != CLOCK_MONOTONIC) {
-        errno = EINVAL;
-        return -1;
-    }
-
     clock_serv_t cclock;
     mach_timespec_t mts;
     host_get_clock_service (mach_host_self (), SYSTEM_CLOCK, &cclock);
@@ -163,7 +157,7 @@ uint64_t zmq::clock_t::now_us ()
     struct timespec tv;
 
 #if defined ZMQ_HAVE_OSX && __MAC_OS_X_VERSION_MIN_REQUIRED < 101200 // less than macOS 10.12
-    int rc = alt_clock_gettime (CLOCK_MONOTONIC, &tv);
+    int rc = alt_clock_gettime (&tv);
 #else
     int rc = clock_gettime (CLOCK_MONOTONIC, &tv);
 #endif
@@ -250,7 +244,7 @@ uint64_t zmq::clock_t::rdtsc ()
 #else
     struct timespec ts;
     #if defined ZMQ_HAVE_OSX && __MAC_OS_X_VERSION_MIN_REQUIRED < 101200 // less than macOS 10.12
-        alt_clock_gettime (CLOCK_MONOTONIC, &ts);
+        alt_clock_gettime (&ts);
     #else
         clock_gettime (CLOCK_MONOTONIC, &ts);
     #endif
