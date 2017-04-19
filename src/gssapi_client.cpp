@@ -166,6 +166,10 @@ zmq::mechanism_t::status_t zmq::gssapi_client_t::status () const
 
 int zmq::gssapi_client_t::initialize_context ()
 {
+    // principal was specified but credentials could not be acquired
+    if (principal_name != NULL && cred == NULL)
+        return -1;
+
     // First time through, import service_name into target_name
     if (target_name == GSS_C_NO_NAME) {
         send_tok.value = service_name;
