@@ -183,13 +183,10 @@ int zmq::session_base_t::read_zap_msg (msg_t *msg_)
 
 int zmq::session_base_t::write_zap_msg (msg_t *msg_)
 {
-    if (zap_pipe == NULL) {
+    if (zap_pipe == NULL || !zap_pipe->write (msg_)) {
         errno = ENOTCONN;
         return -1;
     }
-
-    const bool ok = zap_pipe->write (msg_);
-    zmq_assert (ok);
 
     if ((msg_->flags () & msg_t::more) == 0)
         zap_pipe->flush ();
@@ -356,9 +353,10 @@ int zmq::session_base_t::zap_connect ()
         rc = id.init ();
         errno_assert (rc == 0);
         id.set_flags (msg_t::identity);
-        bool ok = zap_pipe->write (&id);
-        zmq_assert (ok);
-        zap_pipe->flush ();
+        if (zap_pipe->write (&id))
+            zap_pipe->flush ();
+        else
+            return -1;
     }
 
     return 0;

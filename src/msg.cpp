@@ -46,7 +46,7 @@
 typedef char zmq_msg_size_check
     [2 * ((sizeof (zmq::msg_t) == sizeof (zmq_msg_t)) != 0) - 1];
 
-bool zmq::msg_t::check ()
+bool zmq::msg_t::check () const
 {
      return u.base.type >= type_min && u.base.type <= type_max;
 }
@@ -241,7 +241,7 @@ int zmq::msg_t::close ()
 
     if (is_zcmsg())
     {
-        zmq_assert( u.zclmsg.content->ffn );
+        zmq_assert(u.zclmsg.content->ffn);
 
         //  If the content is not shared, or if it is shared and the reference
         //  count has dropped to zero, deallocate it.
@@ -355,7 +355,7 @@ void *zmq::msg_t::data ()
     }
 }
 
-size_t zmq::msg_t::size ()
+size_t zmq::msg_t::size () const
 {
     //  Check the validity of the message.
     zmq_assert (check ());
@@ -375,7 +375,7 @@ size_t zmq::msg_t::size ()
     }
 }
 
-unsigned char zmq::msg_t::flags ()
+unsigned char zmq::msg_t::flags () const
 {
     return u.base.flags;
 }

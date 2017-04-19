@@ -412,6 +412,7 @@ void zmq::ctx_t::start_thread (thread_t &thread_, thread_fn *tfn_, void *arg_) c
 {
     thread_.start(tfn_, arg_);
     thread_.setSchedulingParameters(thread_priority, thread_sched_policy);
+    thread_.setThreadName ("ZMQ background");
 }
 
 void zmq::ctx_t::send_command (uint32_t tid_, const command_t &command_)

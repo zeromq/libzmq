@@ -147,7 +147,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
     }
 
     const int family = ifr.ifr_addr.sa_family;
-    if ((family == AF_INET || (ipv6_ && family == AF_INET6))
+    if (family == (ipv6_ ? AF_INET6 : AF_INET)
         && !strcmp (nic_, ifr.ifr_name))
     {
         if (is_src_)
@@ -210,7 +210,7 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
             continue;
 
         const int family = ifp->ifa_addr->sa_family;
-        if ((family == AF_INET || (ipv6_ && family == AF_INET6))
+        if (family == (ipv6_ ? AF_INET6 : AF_INET)
         && !strcmp (nic_, ifp->ifa_name)) {
             if (is_src_)
                 memcpy (&source_address, ifp->ifa_addr,
@@ -240,12 +240,16 @@ int zmq::tcp_address_t::resolve_nic_name (const char *nic_, bool ipv6_, bool is_
 #include <netioapi.h>
 
 int zmq::tcp_address_t::get_interface_name(unsigned long index, char ** dest) const {
-    char * buffer = (char*)malloc(IF_MAX_STRING_SIZE);
+#ifdef ZMQ_HAVE_WINDOWS_UWP
+	char * buffer = (char*)malloc(1024);
+#else
+	char * buffer = (char*)malloc(IF_MAX_STRING_SIZE);
+#endif
     alloc_assert(buffer);
 
     char * if_name_result = NULL;
 
-#ifndef ZMQ_HAVE_WINDOWS_TARGET_XP
+#if !defined ZMQ_HAVE_WINDOWS_TARGET_XP && !defined ZMQ_HAVE_WINDOWS_UWP 
     if_name_result = if_indextoname(index, buffer);
 #endif
 
@@ -334,9 +338,7 @@ int zmq::tcp_address_t::resolve_nic_name(const char *nic_, bool ipv6_, bool is_s
                 while (current_unicast_address) {
                     ADDRESS_FAMILY family = current_unicast_address->Address.lpSockaddr->sa_family;
 
-                    if (family == AF_INET ||
-                        (ipv6_ && family == AF_INET6)
-                        ) {
+                    if (family == (ipv6_ ? AF_INET6 : AF_INET)) {
                         if (is_src_)
                             memcpy(&source_address, current_unicast_address->Address.lpSockaddr,
                                    (family == AF_INET) ? sizeof(struct sockaddr_in)
@@ -446,12 +448,10 @@ int zmq::tcp_address_t::resolve_interface (const char *interface_, bool ipv6_, b
     //  service-name irregularity due to indeterminate socktype.
     req.ai_flags = AI_PASSIVE | AI_NUMERICHOST;
 
-#if defined AI_V4MAPPED && !defined ZMQ_HAVE_FREEBSD && !defined ZMQ_HAVE_DRAGONFLY
+#if defined AI_V4MAPPED
     //  In this API we only require IPv4-mapped addresses when
     //  no native IPv6 interfaces are available (~AI_ALL).
     //  This saves an additional DNS roundtrip for IPv4 addresses.
-    //  Note: While the AI_V4MAPPED flag is defined on FreeBSD system,
-    //  it is not supported here. See libzmq issue #331.
     if (req.ai_family == AF_INET6)
         req.ai_flags |= AI_V4MAPPED;
 #endif
@@ -461,10 +461,19 @@ int zmq::tcp_address_t::resolve_interface (const char *interface_, bool ipv6_, b
 
     rc = getaddrinfo(interface_, NULL, &req, &res);
 
+#if defined AI_V4MAPPED
+    // Some OS do have AI_V4MAPPED defined but it is not supported in getaddrinfo()
+    // returning EAI_BADFLAGS. Detect this and retry
+    if (rc == EAI_BADFLAGS && (req.ai_flags & AI_V4MAPPED)) {
+        req.ai_flags &= ~AI_V4MAPPED;
+        rc = getaddrinfo(interface_, NULL, &req, &res);
+    }
+#endif
+
 #if defined ZMQ_HAVE_WINDOWS
     //  Resolve specific case on Windows platform when using IPv4 address
     //  with ZMQ_IPv6 socket option.
-    if ((req.ai_family = AF_INET6) && (rc == WSAHOST_NOT_FOUND)) {
+    if ((req.ai_family == AF_INET6) && (rc == WSAHOST_NOT_FOUND)) {
         req.ai_family = AF_INET;
         rc = getaddrinfo(interface_, NULL, &req, &res);
     }
@@ -507,12 +516,10 @@ int zmq::tcp_address_t::resolve_hostname (const char *hostname_, bool ipv6_, boo
     //  doesn't really matter, since it's not included in the addr-output.
     req.ai_socktype = SOCK_STREAM;
 
-#if defined AI_V4MAPPED && !defined ZMQ_HAVE_FREEBSD && !defined ZMQ_HAVE_DRAGONFLY
+#if defined AI_V4MAPPED
     //  In this API we only require IPv4-mapped addresses when
     //  no native IPv6 interfaces are available.
     //  This saves an additional DNS roundtrip for IPv4 addresses.
-    //  Note: While the AI_V4MAPPED flag is defined on FreeBSD system,
-    //  it is not supported here. See libzmq issue #331.
     if (req.ai_family == AF_INET6)
         req.ai_flags |= AI_V4MAPPED;
 #endif
@@ -524,7 +531,17 @@ int zmq::tcp_address_t::resolve_hostname (const char *hostname_, bool ipv6_, boo
 #else
     addrinfo *res;
 #endif
-    const int rc = getaddrinfo (hostname_, NULL, &req, &res);
+    int rc = getaddrinfo (hostname_, NULL, &req, &res);
+
+#if defined AI_V4MAPPED
+    // Some OS do have AI_V4MAPPED defined but it is not supported in getaddrinfo()
+    // returning EAI_BADFLAGS. Detect this and retry
+    if (rc == EAI_BADFLAGS && (req.ai_flags & AI_V4MAPPED)) {
+        req.ai_flags &= ~AI_V4MAPPED;
+        rc = getaddrinfo(hostname_, NULL, &req, &res);
+    }
+#endif
+
     if (rc) {
         switch (rc) {
         case EAI_MEMORY:
@@ -613,7 +630,7 @@ int zmq::tcp_address_t::resolve (const char *name_, bool local_, bool ipv6_, boo
         std::string if_str = addr_str.substr(pos + 1);
         addr_str = addr_str.substr(0, pos);
         if (isalpha (if_str.at (0)))
-#if !defined ZMQ_HAVE_WINDOWS_TARGET_XP
+#if !defined ZMQ_HAVE_WINDOWS_TARGET_XP && !defined ZMQ_HAVE_WINDOWS_UWP 
             zone_id = if_nametoindex(if_str.c_str());
 #else
             // The function 'if_nametoindex' is not supported on Windows XP.

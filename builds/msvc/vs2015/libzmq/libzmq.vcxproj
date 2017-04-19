@@ -64,8 +64,11 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="$(ProjectDir)..\..\properties\$(Configuration).props" />
     <Import Project="$(ProjectDir)..\..\properties\Output.props" />
-    <Import Project="$(ProjectDir)..\..\vs2015\$(ProjectName)\$(ProjectName).props" />
+    <Import Project="$(ProjectDir)$(ProjectName).props" />
   </ImportGroup>
+  <PropertyGroup>
+    <Option-tweet>true</Option-tweet>
+  </PropertyGroup>
   <ItemGroup>
     <ClInclude Include="..\..\platform.hpp" />
     <ClInclude Include="..\..\resource.h" />

@@ -13,32 +13,32 @@ environment:
   matrix:
     - platform: Win32
       configuration: Release
-      WITH_SODIUM: ON
-      WITH_TWEETNACL: ON
+      WITH_LIBSODIUM: ON
+      ENABLE_CURVE: ON
     - platform: Win32
       configuration: Debug
-      WITH_SODIUM: ON
-      WITH_TWEETNACL: ON
+      WITH_LIBSODIUM: ON
+      ENABLE_CURVE: ON
     - platform: x64
       configuration: Release
-      WITH_SODIUM: ON
-      WITH_TWEETNACL: ON
+      WITH_LIBSODIUM: ON
+      ENABLE_CURVE: ON
     - platform: x64
       configuration: Debug
-      WITH_SODIUM: ON
-      WITH_TWEETNACL: ON
+      WITH_LIBSODIUM: ON
+      ENABLE_CURVE: ON
     - platform: Win32
       configuration: Release
-      WITH_SODIUM: OFF
-      WITH_TWEETNACL: OFF
+      WITH_LIBSODIUM: OFF
+      ENABLE_CURVE: OFF
     - platform: Win32
       configuration: Release
-      WITH_SODIUM: ON
-      WITH_TWEETNACL: OFF
+      WITH_LIBSODIUM: ON
+      ENABLE_CURVE: OFF
     - platform: Win32
       configuration: Release
-      WITH_SODIUM: OFF
-      WITH_TWEETNACL: ON
+      WITH_LIBSODIUM: OFF
+      ENABLE_CURVE: ON
 
 matrix:
   fast_finish: false
@@ -66,7 +66,7 @@ before_build:
   - cmd: set LIBZMQ_BUILDDIR=C:\projects\build_libzmq
   - cmd: md "%LIBZMQ_BUILDDIR%"
   - cd "%LIBZMQ_BUILDDIR%"
-  - cmd: cmake -D CMAKE_INCLUDE_PATH="%SODIUM_INCLUDE_DIR%" -D CMAKE_LIBRARY_PATH="%SODIUM_LIBRARY_DIR%" -D WITH_SODIUM="%WITH_SODIUM%" -D WITH_TWEETNACL="%WITH_TWEETNACL%" -D CMAKE_C_FLAGS_RELEASE="/MT" -D CMAKE_C_FLAGS_DEBUG="/MTd" -D WITH_SODIUM="%WITH_SODIUM%" -G "%CMAKE_GENERATOR%" "%APPVEYOR_BUILD_FOLDER%"
+  - cmd: cmake -D CMAKE_INCLUDE_PATH="%SODIUM_INCLUDE_DIR%" -D CMAKE_LIBRARY_PATH="%SODIUM_LIBRARY_DIR%" -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -D ENABLE_CURVE="%ENABLE_CURVE%" -D CMAKE_C_FLAGS_RELEASE="/MT" -D CMAKE_C_FLAGS_DEBUG="/MTd" -D WITH_LIBSODIUM="%WITH_LIBSODIUM%" -G "%CMAKE_GENERATOR%" "%APPVEYOR_BUILD_FOLDER%"
 
 build:
   parallel: true

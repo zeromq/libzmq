@@ -75,7 +75,7 @@ namespace zmq
 
         int wait (event_t *event, int n_events, long timeout);
 
-        inline int size (void) { return items.size (); };
+        inline int size (void) { return static_cast <int> (items.size ()); };
 
         //  Return false if object is not a socket.
         bool check_tag ();
@@ -87,7 +87,7 @@ namespace zmq
         uint32_t tag;
 
         //  Signaler used for thread safe sockets polling
-        signaler_t signaler;
+        signaler_t* signaler;
 
         typedef struct item_t {
             socket_base_t *socket;

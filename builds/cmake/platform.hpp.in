@@ -29,13 +29,17 @@
 #cmakedefine ZMQ_HAVE_TCP_KEEPIDLE
 #cmakedefine ZMQ_HAVE_TCP_KEEPINTVL
 #cmakedefine ZMQ_HAVE_TCP_KEEPALIVE
+#cmakedefine ZMQ_HAVE_PTHREAD_SETNAME_1
+#cmakedefine ZMQ_HAVE_PTHREAD_SETNAME_2
+#cmakedefine ZMQ_HAVE_PTHREAD_SETNAME_3
+#cmakedefine ZMQ_HAVE_PTHREAD_SET_NAME
 
 #cmakedefine ZMQ_HAVE_OPENPGM
 #cmakedefine ZMQ_MAKE_VALGRIND_HAPPY
 
 #cmakedefine ZMQ_HAVE_CURVE
 #cmakedefine ZMQ_USE_TWEETNACL
-#cmakedefine HAVE_LIBSODIUM
+#cmakedefine ZMQ_USE_LIBSODIUM
 
 #ifdef _AIX
   #define ZMQ_HAVE_AIX
@@ -90,5 +94,6 @@
 #endif
 
 #cmakedefine ZMQ_HAVE_WINDOWS
+#cmakedefine ZMQ_HAVE_WINDOWS_UWP
 
 #endif

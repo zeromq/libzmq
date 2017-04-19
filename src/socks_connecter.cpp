@@ -390,7 +390,7 @@ zmq::fd_t zmq::socks_connecter_t::check_proxy_connection ()
     socklen_t len = sizeof err;
 #endif
 
-    const int rc = getsockopt (s, SOL_SOCKET, SO_ERROR, (char*) &err, &len);
+    int rc = getsockopt (s, SOL_SOCKET, SO_ERROR, (char*) &err, &len);
 
     //  Assert if the error was caused by 0MQ bug.
     //  Networking problems are OK. No need to assert.
@@ -427,10 +427,12 @@ zmq::fd_t zmq::socks_connecter_t::check_proxy_connection ()
     }
 #endif
 
-    tune_tcp_socket (s);
-    tune_tcp_keepalives (s, options.tcp_keepalive, options.tcp_keepalive_cnt,
+    rc = tune_tcp_socket (s);
+    rc = rc | tune_tcp_keepalives (s, options.tcp_keepalive, options.tcp_keepalive_cnt,
         options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
-
+    if (rc != 0)
+        return -1;
+    
     return 0;
 }
 

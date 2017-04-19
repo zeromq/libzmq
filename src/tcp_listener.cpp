@@ -97,10 +97,14 @@ void zmq::tcp_listener_t::in_event ()
         return;
     }
 
-    tune_tcp_socket (fd);
-    tune_tcp_keepalives (fd, options.tcp_keepalive, options.tcp_keepalive_cnt,
-            options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
-    tune_tcp_maxrt (fd, options.tcp_maxrt);
+    int rc = tune_tcp_socket (fd);
+    rc = rc | tune_tcp_keepalives (fd, options.tcp_keepalive, options.tcp_keepalive_cnt,
+        options.tcp_keepalive_idle, options.tcp_keepalive_intvl);
+    rc = rc | tune_tcp_maxrt (fd, options.tcp_maxrt);
+    if (rc != 0) {
+        socket->event_accept_failed (endpoint, zmq_errno());
+        return;
+    }
 
     //  Create the engine object for this connection.
     stream_engine_t *engine = new (std::nothrow)
@@ -189,7 +193,7 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
         errno = wsa_error_to_errno (WSAGetLastError ());
         return -1;
     }
-#if !defined _WIN32_WCE
+#if !defined _WIN32_WCE && !defined ZMQ_HAVE_WINDOWS_UWP
     //  On Windows, preventing sockets to be inherited by child processes.
     BOOL brc = SetHandleInformation ((HANDLE) s, HANDLE_FLAG_INHERIT, 0);
     win_assert (brc);
@@ -288,7 +292,7 @@ zmq::fd_t zmq::tcp_listener_t::accept ()
             last_error == WSAENOBUFS);
         return retired_fd;
     }
-#if !defined _WIN32_WCE
+#if !defined _WIN32_WCE && !defined ZMQ_HAVE_WINDOWS_UWP
     //  On Windows, preventing sockets to be inherited by child processes.
     BOOL brc = SetHandleInformation ((HANDLE) sock, HANDLE_FLAG_INHERIT, 0);
     win_assert (brc);

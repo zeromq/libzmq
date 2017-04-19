@@ -84,6 +84,10 @@ static zmq::mutex_t compatible_get_tick_count64_mutex;
 
 ULONGLONG compatible_get_tick_count64()
 {
+#ifdef ZMQ_HAVE_WINDOWS_UWP
+  const ULONGLONG result = ::GetTickCount64();
+  return result;
+#else
   zmq::scoped_lock_t locker(compatible_get_tick_count64_mutex);
 
   static DWORD s_wrap = 0;
@@ -97,19 +101,24 @@ ULONGLONG compatible_get_tick_count64()
   const ULONGLONG result = (static_cast<ULONGLONG>(s_wrap) << 32) + static_cast<ULONGLONG>(current_tick);
 
   return result;
+#endif
 }
 
 f_compatible_get_tick_count64 init_compatible_get_tick_count64()
 {
   f_compatible_get_tick_count64 func = NULL;
+#if !defined ZMQ_HAVE_WINDOWS_UWP
+
   HMODULE module = ::LoadLibraryA("Kernel32.dll");
   if (module != NULL)
     func = reinterpret_cast<f_compatible_get_tick_count64>(::GetProcAddress(module, "GetTickCount64"));
-
+#endif
   if (func == NULL)
     func = compatible_get_tick_count64;
 
+#if !defined ZMQ_HAVE_WINDOWS_UWP
   ::FreeLibrary(module);
+#endif
 
   return func;
 }
@@ -240,7 +249,11 @@ uint64_t zmq::clock_t::rdtsc ()
     return(tsc);
 #else
     struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
+    #if defined ZMQ_HAVE_OSX && __MAC_OS_X_VERSION_MIN_REQUIRED < 101200 // less than macOS 10.12
+        alt_clock_gettime (CLOCK_MONOTONIC, &ts);
+    #else
+        clock_gettime (CLOCK_MONOTONIC, &ts);
+    #endif
     return (uint64_t)(ts.tv_sec) * 1000000000 + ts.tv_nsec;
 #endif
 }

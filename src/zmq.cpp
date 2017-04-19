@@ -674,17 +674,17 @@ void *zmq_msg_data (zmq_msg_t *msg_)
     return ((zmq::msg_t*) msg_)->data ();
 }
 
-size_t zmq_msg_size (zmq_msg_t *msg_)
+size_t zmq_msg_size (const zmq_msg_t *msg_)
 {
     return ((zmq::msg_t*) msg_)->size ();
 }
 
-int zmq_msg_more (zmq_msg_t *msg_)
+int zmq_msg_more (const zmq_msg_t *msg_)
 {
     return zmq_msg_get (msg_, ZMQ_MORE);
 }
 
-int zmq_msg_get (zmq_msg_t *msg_, int property_)
+int zmq_msg_get (const zmq_msg_t *msg_, int property_)
 {
     const char* fd_string;
 
@@ -735,7 +735,7 @@ const char *zmq_msg_group (zmq_msg_t *msg_)
 
 //  Get message metadata string
 
-const char *zmq_msg_gets (zmq_msg_t *msg_, const char *property_)
+const char *zmq_msg_gets (const zmq_msg_t *msg_, const char *property_)
 {
     zmq::metadata_t *metadata = ((zmq::msg_t *) msg_)->metadata ();
     const char *value = NULL;
@@ -757,10 +757,9 @@ inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     // implement zmq_poll on top of zmq_poller
     int rc;
     zmq_poller_event_t *events;
-    events = new zmq_poller_event_t[nitems_];
+    zmq::socket_poller_t poller;
+    events = new (std::nothrow) zmq_poller_event_t[nitems_];
     alloc_assert(events);
-    void *poller = zmq_poller_new ();
-    alloc_assert(poller);
 
     bool repeat_items = false;
     //  Register sockets with poller
@@ -780,12 +779,11 @@ inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
                 }
             }
             if (modify) {
-                rc = zmq_poller_modify (poller, items_[i].socket, e);
+                rc = zmq_poller_modify (&poller, items_[i].socket, e);
             } else {
-                rc = zmq_poller_add (poller, items_[i].socket, NULL, e);
+                rc = zmq_poller_add (&poller, items_[i].socket, NULL, e);
             }
             if (rc < 0) {
-                zmq_poller_destroy (&poller);
                 delete [] events;
                 return rc;
             }
@@ -800,12 +798,11 @@ inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
                 }
             }
             if (modify) {
-                rc = zmq_poller_modify_fd (poller, items_[i].fd, e);
+                rc = zmq_poller_modify_fd (&poller, items_[i].fd, e);
             } else {
-                rc = zmq_poller_add_fd (poller, items_[i].fd, NULL, e);
+                rc = zmq_poller_add_fd (&poller, items_[i].fd, NULL, e);
             }
             if (rc < 0) {
-                zmq_poller_destroy (&poller);
                 delete [] events;
                 return rc;
             }
@@ -813,9 +810,8 @@ inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     }
 
     //  Wait for events
-    rc = zmq_poller_wait_all (poller, events, nitems_, timeout_);
+    rc = zmq_poller_wait_all (&poller, events, nitems_, timeout_);
     if (rc < 0) {
-        zmq_poller_destroy (&poller);
         delete [] events;
         if (zmq_errno() == ETIMEDOUT) {
             return 0;
@@ -851,7 +847,6 @@ inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     }
 
     //  Cleanup
-    zmq_poller_destroy (&poller);
     delete [] events;
     return rc;
 }
@@ -1115,10 +1110,14 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
 
         //  Wait for events. Ignore interrupts if there's infinite timeout.
         while (true) {
-            memcpy (&inset, &pollset_in, sizeof (fd_set));
-            memcpy (&outset, &pollset_out, sizeof (fd_set));
-            memcpy (&errset, &pollset_err, sizeof (fd_set));
 #if defined ZMQ_HAVE_WINDOWS
+            // On Windows we don't need to copy the whole fd_set.
+            // SOCKETS are continuous from the beginning of fd_array in fd_set.
+            // We just need to copy fd_count elements of fd_array.
+            // We gain huge memcpy() improvement if number of used SOCKETs is much lower than FD_SETSIZE.
+            memcpy (&inset,  &pollset_in , (char *) (pollset_in.fd_array  + pollset_in.fd_count ) - (char *) &pollset_in );
+            memcpy (&outset, &pollset_out, (char *) (pollset_out.fd_array + pollset_out.fd_count) - (char *) &pollset_out);
+            memcpy (&errset, &pollset_err, (char *) (pollset_err.fd_array + pollset_err.fd_count) - (char *) &pollset_err);
             int rc = select (0, &inset, &outset, &errset, ptimeout);
             if (unlikely (rc == SOCKET_ERROR)) {
                 errno = zmq::wsa_error_to_errno (WSAGetLastError ());
@@ -1126,6 +1125,9 @@ int zmq_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
                 return -1;
             }
 #else
+            memcpy (&inset,  &pollset_in,  sizeof (fd_set));
+            memcpy (&outset, &pollset_out, sizeof (fd_set));
+            memcpy (&errset, &pollset_err, sizeof (fd_set));
             int rc = select (maxfd + 1, &inset, &outset, &errset, ptimeout);
             if (unlikely (rc == -1)) {
                 errno_assert (errno == EINTR || errno == EBADF);

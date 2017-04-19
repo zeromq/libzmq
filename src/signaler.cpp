@@ -187,9 +187,14 @@ void zmq::signaler_t::send ()
     errno_assert (sz == sizeof (inc));
 #elif defined ZMQ_HAVE_WINDOWS
     unsigned char dummy = 0;
-    int nbytes = ::send (w, (char *) &dummy, sizeof (dummy), 0);
-    wsa_assert (nbytes != SOCKET_ERROR);
-    zmq_assert (nbytes == sizeof (dummy));
+    while (true) {
+        int nbytes = ::send (w, (char*) &dummy, sizeof (dummy), 0);
+        wsa_assert (nbytes != SOCKET_ERROR);
+        if (unlikely (nbytes == SOCKET_ERROR))
+            continue;
+        zmq_assert (nbytes == sizeof (dummy));
+        break;
+    }
 #else
     unsigned char dummy = 0;
     while (true) {
@@ -400,7 +405,7 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     }
 
 #elif defined ZMQ_HAVE_WINDOWS
-#   if !defined _WIN32_WCE
+#   if !defined _WIN32_WCE && !defined ZMQ_HAVE_WINDOWS_UWP
     //  Windows CE does not manage security attributes
     SECURITY_DESCRIPTOR sd;
     SECURITY_ATTRIBUTES sa;
@@ -429,7 +434,7 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     int event_signaler_port = 5905;
 
     if (signaler_port == event_signaler_port) {
-#       if !defined _WIN32_WCE
+#       if !defined _WIN32_WCE && !defined ZMQ_HAVE_WINDOWS_UWP
         sync = CreateEventW (&sa, FALSE, TRUE, L"Global\\zmq-signaler-port-sync");
 #       else
         sync = CreateEventW (NULL, FALSE, TRUE, L"Global\\zmq-signaler-port-sync");
@@ -449,7 +454,7 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
         swprintf (mutex_name, MAX_PATH, L"Global\\zmq-signaler-port-%d", signaler_port);
 #       endif
 
-#       if !defined _WIN32_WCE
+#       if !defined _WIN32_WCE && !defined ZMQ_HAVE_WINDOWS_UWP
         sync = CreateMutexW (&sa, FALSE, mutex_name);
 #       else
         sync = CreateMutexW (NULL, FALSE, mutex_name);
@@ -528,6 +533,8 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     if (*r_ != INVALID_SOCKET) {
         size_t dummy_size = 1024 * 1024;        //  1M to overload default receive buffer
         unsigned char *dummy = (unsigned char *) malloc (dummy_size);
+        wsa_assert (dummy);
+
         int still_to_send = (int) dummy_size;
         int still_to_recv = (int) dummy_size;
         while (still_to_send || still_to_recv) {
@@ -568,7 +575,7 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
     }
 
     if (*r_ != INVALID_SOCKET) {
-#   if !defined _WIN32_WCE
+#   if !defined _WIN32_WCE && !defined ZMQ_HAVE_WINDOWS_UWP
         //  On Windows, preventing sockets to be inherited by child processes.
         BOOL brc = SetHandleInformation ((HANDLE) *r_, HANDLE_FLAG_INHERIT, 0);
         win_assert (brc);

@@ -401,16 +401,36 @@ zmq::select_t::fds_set_t::fds_set_t ()
 
 zmq::select_t::fds_set_t::fds_set_t (const fds_set_t& other_)
 {
+#if defined ZMQ_HAVE_WINDOWS
+    // On Windows we don't need to copy the whole fd_set.
+    // SOCKETS are continuous from the beginning of fd_array in fd_set.
+    // We just need to copy fd_count elements of fd_array.
+    // We gain huge memcpy() improvement if number of used SOCKETs is much lower than FD_SETSIZE.
+    memcpy (&read,  &other_.read,  (char *) (other_.read.fd_array  + other_.read.fd_count ) - (char *) &other_.read );
+    memcpy (&write, &other_.write, (char *) (other_.write.fd_array + other_.write.fd_count) - (char *) &other_.write);
+    memcpy (&error, &other_.error, (char *) (other_.error.fd_array + other_.error.fd_count) - (char *) &other_.error);
+#else
     memcpy (&read, &other_.read, sizeof other_.read);
     memcpy (&write, &other_.write, sizeof other_.write);
     memcpy (&error, &other_.error, sizeof other_.error);
+#endif
 }
 
 zmq::select_t::fds_set_t& zmq::select_t::fds_set_t::operator= (const fds_set_t& other_)
 {
+#if defined ZMQ_HAVE_WINDOWS
+    // On Windows we don't need to copy the whole fd_set.
+    // SOCKETS are continuous from the beginning of fd_array in fd_set.
+    // We just need to copy fd_count elements of fd_array.
+    // We gain huge memcpy() improvement if number of used SOCKETs is much lower than FD_SETSIZE.
+    memcpy (&read,  &other_.read,  (char *) (other_.read.fd_array  + other_.read.fd_count ) - (char *) &other_.read );
+    memcpy (&write, &other_.write, (char *) (other_.write.fd_array + other_.write.fd_count) - (char *) &other_.write);
+    memcpy (&error, &other_.error, (char *) (other_.error.fd_array + other_.error.fd_count) - (char *) &other_.error);
+#else
     memcpy (&read, &other_.read, sizeof other_.read);
     memcpy (&write, &other_.write, sizeof other_.write);
     memcpy (&error, &other_.error, sizeof other_.error);
+#endif
     return *this;
 }
 

@@ -311,11 +311,11 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
                               hello_nonce, cn_client, secret_key);
     if (rc != 0) {
         //  Temporary support for security debugging
-        puts("CURVE I: cannot open client HELLO -- wrong server key?");
+        puts ("CURVE I: cannot open client HELLO -- wrong server key?");
         errno = EPROTO;
         return -1;
     }
-    
+
     state = send_welcome;
     return rc;
 }
@@ -491,21 +491,21 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
 
     //  Use ZAP protocol (RFC 27) to authenticate the user.
     rc = session->zap_connect ();
-    if (rc == 0) {
-        send_zap_request (client_key);
-        rc = receive_and_process_zap_reply ();
-        if (rc == 0)
-            state = status_code == "200"
-                ? send_ready
-                : send_error;
-        else
-        if (errno == EAGAIN)
-            state = expect_zap_reply;
-        else
-            return -1;
-    }
+    if (rc != 0)
+        return -1;
+    rc = send_zap_request (client_key);
+    if (rc != 0)
+        return -1;
+    rc = receive_and_process_zap_reply ();
+    if (rc == 0)
+        state = status_code == "200"
+            ? send_ready
+            : send_error;
     else
-        state = send_ready;
+    if (errno == EAGAIN)
+        state = expect_zap_reply;
+    else
+        return -1;
 
     return parse_metadata (initiate_plaintext + crypto_box_ZEROBYTES + 128,
                            clen - crypto_box_ZEROBYTES - 128);
@@ -569,7 +569,7 @@ int zmq::curve_server_t::produce_error (msg_t *msg_) const
     return 0;
 }
 
-void zmq::curve_server_t::send_zap_request (const uint8_t *key)
+int zmq::curve_server_t::send_zap_request (const uint8_t *key)
 {
     int rc;
     msg_t msg;
@@ -579,7 +579,8 @@ void zmq::curve_server_t::send_zap_request (const uint8_t *key)
     errno_assert (rc == 0);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
+    if (rc != 0)
+        return close_and_return (&msg, -1);
 
     //  Version frame
     rc = msg.init_size (3);
@@ -587,7 +588,8 @@ void zmq::curve_server_t::send_zap_request (const uint8_t *key)
     memcpy (msg.data (), "1.0", 3);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
+    if (rc != 0)
+        return close_and_return (&msg, -1);
 
     //  Request ID frame
     rc = msg.init_size (1);
@@ -595,7 +597,8 @@ void zmq::curve_server_t::send_zap_request (const uint8_t *key)
     memcpy (msg.data (), "1", 1);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
+    if (rc != 0)
+        return close_and_return (&msg, -1);
 
     //  Domain frame
     rc = msg.init_size (options.zap_domain.length ());
@@ -603,7 +606,8 @@ void zmq::curve_server_t::send_zap_request (const uint8_t *key)
     memcpy (msg.data (), options.zap_domain.c_str (), options.zap_domain.length ());
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
+    if (rc != 0)
+        return close_and_return (&msg, -1);
 
     //  Address frame
     rc = msg.init_size (peer_address.length ());
@@ -611,7 +615,8 @@ void zmq::curve_server_t::send_zap_request (const uint8_t *key)
     memcpy (msg.data (), peer_address.c_str (), peer_address.length ());
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
+    if (rc != 0)
+        return close_and_return (&msg, -1);
 
     //  Identity frame
     rc = msg.init_size (options.identity_size);
@@ -619,7 +624,8 @@ void zmq::curve_server_t::send_zap_request (const uint8_t *key)
     memcpy (msg.data (), options.identity, options.identity_size);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
+    if (rc != 0)
+        return close_and_return (&msg, -1);
 
     //  Mechanism frame
     rc = msg.init_size (5);
@@ -627,14 +633,18 @@ void zmq::curve_server_t::send_zap_request (const uint8_t *key)
     memcpy (msg.data (), "CURVE", 5);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
+    if (rc != 0)
+        return close_and_return (&msg, -1);
 
     //  Credentials frame
     rc = msg.init_size (crypto_box_PUBLICKEYBYTES);
     errno_assert (rc == 0);
     memcpy (msg.data (), key, crypto_box_PUBLICKEYBYTES);
     rc = session->write_zap_msg (&msg);
-    errno_assert (rc == 0);
+    if (rc != 0)
+        return close_and_return (&msg, -1);
+
+    return 0;
 }
 
 int zmq::curve_server_t::receive_and_process_zap_reply ()
@@ -651,26 +661,21 @@ int zmq::curve_server_t::receive_and_process_zap_reply ()
     for (int i = 0; i < 7; i++) {
         rc = session->read_zap_msg (&msg [i]);
         if (rc == -1)
-            break;
+            return close_and_return (msg, -1);
         if ((msg [i].flags () & msg_t::more) == (i < 6? 0: msg_t::more)) {
             //  Temporary support for security debugging
             puts ("CURVE I: ZAP handler sent incomplete reply message");
             errno = EPROTO;
-            rc = -1;
-            break;
+            return close_and_return (msg, -1);
         }
     }
-
-    if (rc != 0)
-        goto error;
 
     //  Address delimiter frame
     if (msg [0].size () > 0) {
         //  Temporary support for security debugging
         puts ("CURVE I: ZAP handler sent malformed reply message");
         errno = EPROTO;
-        rc = -1;
-        goto error;
+        return close_and_return (msg, -1);
     }
 
     //  Version frame
@@ -678,8 +683,7 @@ int zmq::curve_server_t::receive_and_process_zap_reply ()
         //  Temporary support for security debugging
         puts ("CURVE I: ZAP handler sent bad version number");
         errno = EPROTO;
-        rc = -1;
-        goto error;
+        return close_and_return (msg, -1);
     }
 
     //  Request id frame
@@ -687,8 +691,7 @@ int zmq::curve_server_t::receive_and_process_zap_reply ()
         //  Temporary support for security debugging
         puts ("CURVE I: ZAP handler sent bad request ID");
         errno = EPROTO;
-        rc = -1;
-        goto error;
+        return close_and_return (msg, -1);
     }
 
     //  Status code frame
@@ -696,8 +699,7 @@ int zmq::curve_server_t::receive_and_process_zap_reply ()
         //  Temporary support for security debugging
         puts ("CURVE I: ZAP handler rejected client authentication");
         errno = EACCES;
-        rc = -1;
-        goto error;
+        return close_and_return (msg, -1);
     }
 
     //  Save status code
@@ -710,13 +712,16 @@ int zmq::curve_server_t::receive_and_process_zap_reply ()
     rc = parse_metadata (static_cast <const unsigned char*> (msg [6].data ()),
                          msg [6].size (), true);
 
-error:
+    if (rc != 0)
+        return close_and_return (msg, -1);
+
+    //  Close all reply frames
     for (int i = 0; i < 7; i++) {
         const int rc2 = msg [i].close ();
         errno_assert (rc2 == 0);
     }
 
-    return rc;
+    return 0;
 }
 
 #endif

@@ -6,7 +6,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
-  
+
   <!-- Configuration -->
 
   <ItemDefinitionGroup>
@@ -15,7 +15,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>Advapi32.lib;Rpcrt4.lib;Ws2_32.lib;Iphlpapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>    
+    </Link>
   </ItemDefinitionGroup>
 
   <!-- Dependencies -->
@@ -28,15 +28,15 @@
   
   <PropertyGroup Condition="'$(DefaultLinkage)' == 'dynamic'">
     <Linkage-libzmq>dynamic</Linkage-libzmq>
-    <Linkage-libsodium>dynamic</Linkage-libsodium>
+    <!--<Linkage-libsodium>dynamic</Linkage-libsodium>-->
   </PropertyGroup>
   <PropertyGroup Condition="'$(DefaultLinkage)' == 'ltcg'">
     <Linkage-libzmq>ltcg</Linkage-libzmq>
-    <Linkage-libsodium>ltcg</Linkage-libsodium>
+    <!--<Linkage-libsodium>ltcg</Linkage-libsodium>-->
   </PropertyGroup>
   <PropertyGroup Condition="'$(DefaultLinkage)' == 'static'">
     <Linkage-libzmq>static</Linkage-libzmq>
-    <Linkage-libsodium>static</Linkage-libsodium>
+    <!--<Linkage-libsodium>static</Linkage-libsodium>-->
   </PropertyGroup>
 
   <!-- Messages -->
