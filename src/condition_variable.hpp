@@ -82,8 +82,8 @@ namespace zmq
 #else
 
 #ifdef ZMQ_HAVE_WINDOWS_TARGET_XP
-#include <condition_variable> 
-#include <mutex> 
+#include <condition_variable>
+#include <mutex>
 #endif
 
 namespace zmq
@@ -149,7 +149,7 @@ namespace zmq
 		inline int wait(mutex_t* mutex_, int timeout_)
 		{
 			std::unique_lock<std::mutex> lck(mtx);  // lock mtx
-			mutex_->unlock();                       // unlock mutex_ 
+			mutex_->unlock();                       // unlock mutex_
 			int res = 0;
 			if(timeout_ == -1) {
 				cv.wait(lck);                       // unlock mtx and wait cv.notify_all(), lock mtx after cv.notify_all()
@@ -214,9 +214,9 @@ namespace zmq
                 struct timespec timeout;
 
 #if defined ZMQ_HAVE_OSX && __MAC_OS_X_VERSION_MIN_REQUIRED < 101200 // less than macOS 10.12
-                alt_clock_gettime(CLOCK_REALTIME, &timeout);
+                alt_clock_gettime(SYSTEM_CLOCK, &timeout);
 #else
-                clock_gettime(CLOCK_REALTIME, &timeout);
+                clock_gettime(CLOCK_MONOTONIC, &timeout);
 #endif
 
                 timeout.tv_sec += timeout_ / 1000;
