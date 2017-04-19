@@ -214,9 +214,9 @@ namespace zmq
                 struct timespec timeout;
 
 #if defined ZMQ_HAVE_OSX && __MAC_OS_X_VERSION_MIN_REQUIRED < 101200 // less than macOS 10.12
-                alt_clock_gettime(CALENDAR_CLOCK, &timeout);
+                alt_clock_gettime(SYSTEM_CLOCK, &timeout);
 #else
-                clock_gettime(CLOCK_REALTIME, &timeout);
+                clock_gettime(CLOCK_MONOTONIC, &timeout);
 #endif
 
                 timeout.tv_sec += timeout_ / 1000;
