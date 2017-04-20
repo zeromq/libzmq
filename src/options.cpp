@@ -69,6 +69,8 @@ zmq::options_t::options_t () :
     tcp_keepalive_intvl (-1),
     mechanism (ZMQ_NULL),
     as_server (0),
+    gss_principal_nt (ZMQ_GSSAPI_NT_HOSTBASED),
+    gss_service_principal_nt (ZMQ_GSSAPI_NT_HOSTBASED),
     gss_plaintext (false),
     socket_id (0),
     conflate (false),
@@ -506,6 +508,22 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         case ZMQ_GSSAPI_PLAINTEXT:
             if (is_int && (value == 0 || value == 1)) {
                 gss_plaintext = (value != 0);
+                return 0;
+            }
+            break;
+        case ZMQ_GSSAPI_PRINCIPAL_NAMETYPE:
+            if (is_int && (value == ZMQ_GSSAPI_NT_HOSTBASED
+                        || value == ZMQ_GSSAPI_NT_USER_NAME
+                        || value == ZMQ_GSSAPI_NT_KRB5_PRINCIPAL)) {
+                gss_principal_nt = value;
+                return 0;
+            }
+            break;
+        case ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE:
+            if (is_int && (value == ZMQ_GSSAPI_NT_HOSTBASED
+                        || value == ZMQ_GSSAPI_NT_USER_NAME
+                        || value == ZMQ_GSSAPI_NT_KRB5_PRINCIPAL)) {
+                gss_service_principal_nt = value;
                 return 0;
             }
             break;

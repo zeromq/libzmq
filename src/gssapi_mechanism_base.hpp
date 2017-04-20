@@ -79,10 +79,14 @@ namespace zmq
         //  the  established security context.
         int decode_message (msg_t *msg_);
 
+	//  Convert ZMQ_GSSAPI_NT values to GSSAPI name_type
+	static const gss_OID convert_nametype (int zmq_name_type_);
+
         //  Acquire security context credentials from the
         //  underlying mechanism.
         static int acquire_credentials (char * principal_name_,
-                                        gss_cred_id_t * cred_);
+                                        gss_cred_id_t * cred_,
+					int zmq_name_type_);
 
     protected:
         //  Opaque GSSAPI token for outgoing data

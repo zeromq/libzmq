@@ -51,6 +51,7 @@ zmq::gssapi_client_t::gssapi_client_t (const options_t &options_) :
     service_name = static_cast <char *>(malloc(service_size+1));
     assert(service_name);
     memcpy(service_name, options_.gss_service_principal.c_str(), service_size+1 );
+    service_name_type = convert_nametype (options_.gss_service_principal_nt);
 
     maj_stat = GSS_S_COMPLETE;
     if(!options_.gss_principal.empty())
@@ -60,7 +61,8 @@ zmq::gssapi_client_t::gssapi_client_t (const options_t &options_) :
         assert(principal_name);
         memcpy(principal_name, options_.gss_principal.c_str(), principal_size+1 );
 
-        if (acquire_credentials (principal_name, &cred) != 0)
+        if (acquire_credentials (principal_name, &cred,
+                                 options_.gss_principal_nt) != 0)
             maj_stat = GSS_S_FAILURE;
     }
 
@@ -175,7 +177,7 @@ int zmq::gssapi_client_t::initialize_context ()
         send_tok.value = service_name;
         send_tok.length = strlen(service_name) + 1;
         OM_uint32 maj = gss_import_name(&min_stat, &send_tok,
-                                        GSS_C_NT_HOSTBASED_SERVICE,
+                                        service_name_type,
                                         &target_name);
 
         if (maj != GSS_S_COMPLETE)
