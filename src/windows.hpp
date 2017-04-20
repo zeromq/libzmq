@@ -83,7 +83,7 @@ struct tcp_keepalive {
 #include <process.h>
 #endif
 
-#if ZMQ_USE_POLL
+#if defined ZMQ_USE_POLL
 static inline int poll(struct pollfd *pfd, unsigned long nfds, int timeout) { return WSAPoll(pfd, nfds, timeout); }
 #endif
 
