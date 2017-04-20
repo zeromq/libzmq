@@ -338,7 +338,7 @@ int zmq::gssapi_mechanism_base_t::acquire_credentials (char * service_name_, gss
         return -1;
 
     maj_stat = gss_acquire_cred (&min_stat, server_name, 0,
-                                 GSS_C_NO_OID_SET, GSS_C_ACCEPT,
+                                 GSS_C_NO_OID_SET, GSS_C_BOTH,
                                  cred_, NULL, NULL);
 
     if (maj_stat != GSS_S_COMPLETE)
