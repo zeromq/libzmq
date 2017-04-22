@@ -103,7 +103,7 @@ namespace zmq
         //  Checks whether messages can be written to the pipe. If the pipe is
         //  closed or if writing the message would cause high watermark the
         //  function returns false.
-        bool check_write ();
+        bool check_write () const;
 
         //  Writes a message to the underlying pipe. Returns false if the
         //  message does not pass check_write. If false, the message object
@@ -168,6 +168,9 @@ namespace zmq
 
         //  Destructor is private. Pipe objects destroy themselves.
         ~pipe_t ();
+
+        // Process outpipe state
+        void process_out_pipe_state();
 
         //  Underlying pipes for both directions.
         upipe_t *inpipe;
