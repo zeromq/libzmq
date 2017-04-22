@@ -44,6 +44,26 @@ ZMQ_GSSAPI_PLAINTEXT option.  Both the client and server must set this option
 to the same value.
 
 
+PRINCIPAL NAMES
+---------------
+Principal names specified with the ZMQ_GSSAPI_SERVICE_PRINCIPAL or
+ZMQ_GSSAPI_PRINCIPAL options are interpreted as "host based" name types
+by default.  The ZMQ_GSSAPI_PRINCIPAL_NAMETYPE and
+ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE options may be used to change the
+name type to one of:
+
+*ZMQ_GSSAPI_NT_HOSTBASED*::
+The name should be of the form "service" or "service@hostname",
+which will parse into a principal of "service/hostname"
+in the local realm.  This is the default name type.
+*ZMQ_GSSAPI_NT_USER_NAME*::
+The name should be a local username, which will parse into a single-component
+principal in the local realm.
+*ZMQ_GSSAPI_NT_KRB5_PRINCIPAL*::
+The name is a principal name string.  This name type only works with
+the krb5 GSSAPI mechanism.
+
+
 SEE ALSO
 --------
 linkzmq:zmq_setsockopt[3]

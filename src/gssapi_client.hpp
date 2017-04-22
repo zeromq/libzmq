@@ -68,6 +68,8 @@ namespace zmq
         //  Human-readable principal name of the service we are connecting to
         char * service_name;
 
+	gss_OID service_name_type;
+
         //  Current FSM state
         state_t state;
 

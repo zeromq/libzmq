@@ -59,7 +59,8 @@ zmq::gssapi_server_t::gssapi_server_t (session_base_t *session_,
         assert(principal_name);
         memcpy(principal_name, options_.gss_principal.c_str(), principal_size+1 );
 
-        if (acquire_credentials (principal_name, &cred) != 0)
+        if (acquire_credentials (principal_name, &cred,
+                                 options_.gss_principal_nt) != 0)
             maj_stat = GSS_S_FAILURE;
     }
 }
