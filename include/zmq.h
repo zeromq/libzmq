@@ -446,11 +446,6 @@ ZMQ_EXPORT int zmq_socket_monitor (void *s, const char *addr, int events);
 /*  Deprecated I/O multiplexing. Prefer using zmq_poller API                  */
 /******************************************************************************/
 
-#define ZMQ_POLLIN 1
-#define ZMQ_POLLOUT 2
-#define ZMQ_POLLERR 4
-#define ZMQ_POLLPRI 8
-
 typedef struct zmq_pollitem_t
 {
     void *socket;
@@ -588,6 +583,11 @@ ZMQ_EXPORT const char *zmq_msg_group(zmq_msg_t *msg);
 /******************************************************************************/
 /*  Poller polling on sockets,fd and thread-safe sockets                      */
 /******************************************************************************/
+
+#define ZMQ_POLLIN 1
+#define ZMQ_POLLOUT 2
+#define ZMQ_POLLERR 4
+#define ZMQ_POLLPRI 8
 
 #define ZMQ_HAVE_POLLER
 
