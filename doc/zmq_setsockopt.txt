@@ -249,6 +249,39 @@ Option value unit:: N/A
 Default value:: not set
 Applicable socket types:: all, when using TCP transport
 
+ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE: Set name type of service principal
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the name type of the GSSAPI service principal.  A value of
+'ZMQ_GSSAPI_NT_HOSTBASED' (0) means the name specified with
+'ZMQ_GSSAPI_SERVICE_PRINCIPAL' is interpreted as a host based name.  A value
+of 'ZMQ_GSSAPI_NT_USER_NAME' (1) means it is interpreted as a local user name.
+A value of 'ZMQ_GSSAPI_NT_KRB5_PRINCIPAL' (2) means it is interpreted as an
+unparsed principal name string (valid only with the krb5 GSSAPI mechanism).
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1, 2
+Default value:: 0 (ZMQ_GSSAPI_NT_HOSTBASED)
+Applicable socket types:: all, when using TCP or IPC transport
+
+ZMQ_GSSAPI_PRINCIPAL_NAMETYPE: Set name type of principal
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the name type of the GSSAPI principal.  A value of
+'ZMQ_GSSAPI_NT_HOSTBASED' (0) means the name specified with
+'ZMQ_GSSAPI_PRINCIPAL' is interpreted as a host based name.  A value of
+'ZMQ_GSSAPI_NT_USER_NAME' (1) means it is interpreted as a local user name.
+A value of 'ZMQ_GSSAPI_NT_KRB5_PRINCIPAL' (2) means it is interpreted as an
+unparsed principal name string (valid only with the krb5 GSSAPI mechanism).
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1, 2
+Default value:: 0 (ZMQ_GSSAPI_NT_HOSTBASED)
+Applicable socket types:: all, when using TCP or IPC transport
 
 ZMQ_HANDSHAKE_IVL: Set maximum handshake interval
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
