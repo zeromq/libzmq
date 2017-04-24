@@ -965,6 +965,20 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
                 return 0;
             }
             break;
+#ifdef ZMQ_BUILD_DRAFT_API
+        case ZMQ_GSSAPI_PRINCIPAL_NAMETYPE:
+            if (is_int) {
+                *value = gss_principal_nt;
+                return 0;
+            }
+            break;
+        case ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE:
+            if (is_int) {
+                *value = gss_service_principal_nt;
+                return 0;
+            }
+            break;
+#endif
 #endif
 
         case ZMQ_HANDSHAKE_IVL:
