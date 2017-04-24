@@ -86,7 +86,7 @@ namespace zmq
         //  underlying mechanism.
         static int acquire_credentials (char * principal_name_,
                                         gss_cred_id_t * cred_,
-					int zmq_name_type_);
+					gss_OID name_type_);
 
     protected:
         //  Opaque GSSAPI token for outgoing data

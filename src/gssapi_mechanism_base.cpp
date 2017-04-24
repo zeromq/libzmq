@@ -320,9 +320,9 @@ int zmq::gssapi_mechanism_base_t::process_ready (msg_t *msg_)
     bytes_left -= 6;
     return parse_metadata (ptr, bytes_left);
 }
-
 const gss_OID zmq::gssapi_mechanism_base_t::convert_nametype (int zmq_nametype)
 {
+#ifdef ZMQ_BUILD_DRAFT_API
     switch (zmq_nametype) {
         case ZMQ_GSSAPI_NT_HOSTBASED:
             return GSS_C_NT_HOSTBASED_SERVICE;
@@ -335,22 +335,22 @@ const gss_OID zmq::gssapi_mechanism_base_t::convert_nametype (int zmq_nametype)
             return GSS_C_NT_USER_NAME;
 #endif
     }
+#endif
     return NULL;
 }
 
-int zmq::gssapi_mechanism_base_t::acquire_credentials (char * service_name_, gss_cred_id_t * cred_, int zmq_name_type_)
+int zmq::gssapi_mechanism_base_t::acquire_credentials (char * service_name_, gss_cred_id_t * cred_, gss_OID name_type_)
 {
     OM_uint32 maj_stat;
     OM_uint32 min_stat;
     gss_name_t server_name;
-    gss_OID name_type = convert_nametype (zmq_name_type_);
 
     gss_buffer_desc name_buf;
     name_buf.value = service_name_;
     name_buf.length = strlen ((char *) name_buf.value) + 1;
 
     maj_stat = gss_import_name (&min_stat, &name_buf,
-                                name_type, &server_name);
+                                name_type_, &server_name);
 
     if (maj_stat != GSS_S_COMPLETE)
         return -1;
