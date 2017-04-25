@@ -52,11 +52,7 @@ zmq::gssapi_client_t::gssapi_client_t (const options_t &options_) :
     assert(service_name);
     memcpy(service_name, options_.gss_service_principal.c_str(), service_size+1 );
 
-#ifdef ZMQ_BUILD_DRAFT_API
     service_name_type = convert_nametype (options_.gss_service_principal_nt);
-#else
-    service_name_type = GSS_C_NT_HOSTBASED_SERVICE;
-#endif
     maj_stat = GSS_S_COMPLETE;
     if(!options_.gss_principal.empty())
     {
@@ -65,11 +61,7 @@ zmq::gssapi_client_t::gssapi_client_t (const options_t &options_) :
         assert(principal_name);
         memcpy(principal_name, options_.gss_principal.c_str(), principal_size+1 );
 
-#ifdef ZMQ_BUILD_DRAFT_API
         gss_OID name_type = convert_nametype (options_.gss_principal_nt);
-#else
-        gss_OID name_type = GSS_C_NT_HOSTBASED_SERVICE;
-#endif
         if (acquire_credentials (principal_name, &cred, name_type) != 0)
             maj_stat = GSS_S_FAILURE;
     }
