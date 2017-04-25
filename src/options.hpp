@@ -198,11 +198,11 @@ namespace zmq
         //  Principals for GSSAPI mechanism
         std::string gss_principal;
         std::string gss_service_principal;
-#ifdef ZMQ_BUILD_DRAFT_API
+
 	//  Name types GSSAPI principals
 	int gss_principal_nt;
 	int gss_service_principal_nt;
-#endif
+
         //  If true, gss encryption will be disabled
         bool gss_plaintext;
 

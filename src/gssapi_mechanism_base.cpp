@@ -322,7 +322,6 @@ int zmq::gssapi_mechanism_base_t::process_ready (msg_t *msg_)
 }
 const gss_OID zmq::gssapi_mechanism_base_t::convert_nametype (int zmq_nametype)
 {
-#ifdef ZMQ_BUILD_DRAFT_API
     switch (zmq_nametype) {
         case ZMQ_GSSAPI_NT_HOSTBASED:
             return GSS_C_NT_HOSTBASED_SERVICE;
@@ -335,7 +334,6 @@ const gss_OID zmq::gssapi_mechanism_base_t::convert_nametype (int zmq_nametype)
             return GSS_C_NT_USER_NAME;
 #endif
     }
-#endif
     return NULL;
 }
 

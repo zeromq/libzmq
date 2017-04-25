@@ -69,10 +69,8 @@ zmq::options_t::options_t () :
     tcp_keepalive_intvl (-1),
     mechanism (ZMQ_NULL),
     as_server (0),
-#ifdef ZMQ_BUILD_DRAFT_API
     gss_principal_nt (ZMQ_GSSAPI_NT_HOSTBASED),
     gss_service_principal_nt (ZMQ_GSSAPI_NT_HOSTBASED),
-#endif
     gss_plaintext (false),
     socket_id (0),
     conflate (false),
@@ -513,7 +511,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 return 0;
             }
             break;
-#ifdef ZMQ_BUILD_DRAFT_API
+
         case ZMQ_GSSAPI_PRINCIPAL_NAMETYPE:
             if (is_int && (value == ZMQ_GSSAPI_NT_HOSTBASED
                         || value == ZMQ_GSSAPI_NT_USER_NAME
@@ -522,6 +520,7 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 return 0;
             }
             break;
+
         case ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE:
             if (is_int && (value == ZMQ_GSSAPI_NT_HOSTBASED
                         || value == ZMQ_GSSAPI_NT_USER_NAME
@@ -530,7 +529,6 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
                 return 0;
             }
             break;
-#endif
 #endif
 
         case ZMQ_HANDSHAKE_IVL:
@@ -965,7 +963,7 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
                 return 0;
             }
             break;
-#ifdef ZMQ_BUILD_DRAFT_API
+
         case ZMQ_GSSAPI_PRINCIPAL_NAMETYPE:
             if (is_int) {
                 *value = gss_principal_nt;
@@ -978,7 +976,6 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
                 return 0;
             }
             break;
-#endif
 #endif
 
         case ZMQ_HANDSHAKE_IVL:

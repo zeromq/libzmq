@@ -635,8 +635,8 @@ ZMQ_EXPORT int   zmq_timers_execute (void *timers);
 /*  GSSAPI socket options to set name type                                    */
 /******************************************************************************/
 
-#define ZMQ_GSSAPI_PRINCIPAL_NAMETYPE 1090
-#define ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE 1091
+#define ZMQ_GSSAPI_PRINCIPAL_NAMETYPE 90
+#define ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE 91
 
 /*  GSSAPI principal name types                                               */
 #define ZMQ_GSSAPI_NT_HOSTBASED 0
