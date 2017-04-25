@@ -368,13 +368,6 @@ ZMQ_EXPORT const char *zmq_msg_gets (const zmq_msg_t *msg, const char *property)
 #define ZMQ_VMCI_BUFFER_MAX_SIZE 87
 #define ZMQ_VMCI_CONNECT_TIMEOUT 88
 #define ZMQ_USE_FD 89
-#define ZMQ_GSSAPI_PRINCIPAL_NAMETYPE 90
-#define ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE 91
-
-/*  GSSAPI principal name types                                               */
-#define ZMQ_GSSAPI_NT_HOSTBASED 0
-#define ZMQ_GSSAPI_NT_USER_NAME 1
-#define ZMQ_GSSAPI_NT_KRB5_PRINCIPAL 2
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1
@@ -637,6 +630,18 @@ ZMQ_EXPORT int   zmq_timers_set_interval (void *timers, int timer_id, size_t int
 ZMQ_EXPORT int   zmq_timers_reset (void *timers, int timer_id);
 ZMQ_EXPORT long  zmq_timers_timeout (void *timers);
 ZMQ_EXPORT int   zmq_timers_execute (void *timers);
+
+/******************************************************************************/
+/*  GSSAPI socket options to set name type                                    */
+/******************************************************************************/
+
+#define ZMQ_GSSAPI_PRINCIPAL_NAMETYPE 1090
+#define ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE 1091
+
+/*  GSSAPI principal name types                                               */
+#define ZMQ_GSSAPI_NT_HOSTBASED 0
+#define ZMQ_GSSAPI_NT_USER_NAME 1
+#define ZMQ_GSSAPI_NT_KRB5_PRINCIPAL 2
 
 #endif // ZMQ_BUILD_DRAFT_API
 
