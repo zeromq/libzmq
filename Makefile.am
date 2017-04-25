@@ -717,6 +717,14 @@ tests_test_term_endpoint_tipc_LDADD = src/libzmq.la
 
 endif
 
+if BUILD_GSSAPI
+test_apps += tests/test_security_gssapi
+
+tests_test_security_gssapi_SOURCES = tests/test_security_gssapi.cpp
+tests_test_security_gssapi_LDADD = src/libzmq.la
+
+endif
+
 if ON_LINUX
 test_apps += tests/test_abstract_ipc
 
