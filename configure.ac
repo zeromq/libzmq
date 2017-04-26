@@ -431,6 +431,7 @@ if test "x$require_libgssapi_krb5_ext" != "xno"; then
         AC_DEFINE(HAVE_LIBGSSAPI_KRB5, [1], [Enabled GSSAPI security]),
         AC_MSG_ERROR(libgssapi_krb5 is needed for GSSAPI security))
 fi
+AM_CONDITIONAL(BUILD_GSSAPI, test "x$require_libgssapi_krb5_ext" != "xno")
 
 # Select curve encryption library, defaults to tweetnacl
 # To use libsodium instead, use --with-libsodium (must be installed)
