@@ -67,8 +67,6 @@ const char *zmq_msg_group(zmq_msg_t *msg);
 /*  Poller polling on sockets,fd and thread-safe sockets                      */
 /******************************************************************************/
 
-#define ZMQ_HAVE_POLLER
-
 typedef struct zmq_poller_event_t
 {
     void *socket;
@@ -102,8 +100,6 @@ int zmq_poller_remove_fd (void *poller, int fd);
 /******************************************************************************/
 /*  Scheduling timers                                                         */
 /******************************************************************************/
-
-#define ZMQ_HAVE_TIMERS
 
 typedef void (zmq_timer_fn)(int timer_id, void *arg);
 
