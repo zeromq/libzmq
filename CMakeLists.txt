@@ -674,19 +674,19 @@ foreach (txt ${docs})
   string (REGEX REPLACE ".*/(.*)\\.txt" "\\1.html" html ${txt})
   set (src ${txt})
   set (dst doc/${html})
-  add_custom_command (
-    OUTPUT  ${dst}
-    COMMAND ${ASCIIDOC_EXECUTABLE}
-    -d manpage
-    -b xhtml11
-    -f ${CMAKE_CURRENT_SOURCE_DIR}/doc/asciidoc.conf
-    -azmq_version=${ZMQ_VERSION}
-    -o ${dst}
-    ${src}
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${src}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    COMMENT "Generating ${html}")
   if (WITH_DOC)
+    add_custom_command (
+      OUTPUT  ${dst}
+      COMMAND ${ASCIIDOC_EXECUTABLE}
+      -d manpage
+      -b xhtml11
+      -f ${CMAKE_CURRENT_SOURCE_DIR}/doc/asciidoc.conf
+      -azmq_version=${ZMQ_VERSION}
+      -o ${dst}
+      ${src}
+      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${src}
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+      COMMENT "Generating ${html}")
     list (APPEND html-docs ${CMAKE_CURRENT_BINARY_DIR}/${dst})
   endif ()
 endforeach ()
