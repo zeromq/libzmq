@@ -177,16 +177,8 @@ autoreconf -fi
 %{_libdir}/libzmq.so
 
 %{_mandir}/man3/zmq*
-%{_mandir}/man7/zmq_curve.7.gz
-%{_mandir}/man7/zmq_inproc.7.gz
-%{_mandir}/man7/zmq_ipc.7.gz
-%{_mandir}/man7/zmq_null.7.gz
-%{_mandir}/man7/zmq_pgm.7.gz
-%{_mandir}/man7/zmq_plain.7.gz
-%{_mandir}/man7/zmq_tcp.7.gz
-%{_mandir}/man7/zmq_tipc.7.gz
-%{_mandir}/man7/zmq_udp.7.gz
-%{_mandir}/man7/zmq_vmci.7.gz
+# skip man7/zmq.7.gz
+%{_mandir}/man7/zmq_*
 
 %files -n libzmq-tools
 %defattr(-,root,root,-)
