@@ -9,10 +9,20 @@ os:
 dist: trusty
 
 env:
-- BUILD_TYPE=default CURVE=tweetnacl DRAFT=enabled
-- BUILD_TYPE=android CURVE=tweetnacl
-- BUILD_TYPE=cmake CURVE=tweetnacl
-- BUILD_TYPE=default
+  matrix:
+    - BUILD_TYPE=default CURVE=tweetnacl DRAFT=enabled
+    - BUILD_TYPE=android CURVE=tweetnacl
+    - BUILD_TYPE=cmake CURVE=tweetnacl
+    - BUILD_TYPE=default
+  # tokens to deploy releases on OBS and create/delete temporary branch on Github.
+  # 1) Create a token on https://github.com/settings/tokens/new with "public_repo"
+  #    capability and encrypt it with travis encrypt --org -r zeromq/libzmq GH_TOKEN="<token>"
+  # 2) Create 2 OBS tokens with osc token --create network:messaging:zeromq:release-<stable|draft> libzmq
+  #    encrypt them with travis encrypt --org -r zeromq/libzmq OBS_<STABLE|DRAFT>_TOKEN="<token>"
+  global:
+    - secure: aaIs9Y44FYp9VFCqa6LLD4illBH4aUfbS0zzzbAQ5xJvD6NfBsMiKEIhf/kRNCHAtP+1VfQVOejTD6/i08ALsVr3cZD9oB/t7874tz2/jeZUIhRNo+1KwyaVqNg0yUSV6ASIoq4aOfuGnjBlezNQ8LQ2bjQB2m4Enl5wxoYcYdA=
+    - secure: YFrcedBIKe0NR1WC6qQi9phZgtnzOiBIXm40TirvCtstV4eVnSouKgtQfLLArZ4o2tjflq4grQQNo1rJatvyi5YPOXsMcndsni18S+4Ffu8qbECdtPrK52vBweuf7q9oV9Ydax0Fm4bEqEMOZ2/mRBy3nK+mgsE3upeMwyWR0Zw=
+    - secure: lbZSzmqN39QdJwewKOZgq/1ijPKuyx9MFrGzMqXj2+eOSlaZS/tNavHMdKJOev+qJGK9wxmwzxOxS10AiH+AvN7WBacXX4ZtudjScz2HKJRDWTKyzMbzyScq51afniItzrsm+Vo8NHkenNFkux0sSbh0aHlpkLwrGQu+WZWcDN4=
 
 matrix:
   include:
