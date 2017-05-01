@@ -37,12 +37,12 @@ int main (void)
 
     void *sb = zmq_socket (ctx, ZMQ_PAIR);
     assert (sb);
-    int rc = zmq_bind (sb, "ipc:///tmp/tester");
+    int rc = zmq_bind (sb, "ipc:///tmp/test_pair_ipc");
     assert (rc == 0);
 
     void *sc = zmq_socket (ctx, ZMQ_PAIR);
     assert (sc);
-    rc = zmq_connect (sc, "ipc:///tmp/tester");
+    rc = zmq_connect (sc, "ipc:///tmp/test_pair_ipc");
     assert (rc == 0);
     
     bounce (sb, sc);

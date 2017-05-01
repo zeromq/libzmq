@@ -64,14 +64,14 @@ void test_req_rep ()
     void *sb = zmq_socket (ctx, ZMQ_REP);
     assert (sb);
 
-    pre_allocate_sock(sb, "/tmp/tester");
+    pre_allocate_sock(sb, "/tmp/test_use_fd_ipc");
 
-    int rc = zmq_bind (sb, "ipc:///tmp/tester");
+    int rc = zmq_bind (sb, "ipc:///tmp/test_use_fd_ipc");
     assert (rc == 0);
 
     void *sc = zmq_socket (ctx, ZMQ_REQ);
     assert (sc);
-    rc = zmq_connect (sc, "ipc:///tmp/tester");
+    rc = zmq_connect (sc, "ipc:///tmp/test_use_fd_ipc");
     assert (rc == 0);
 
     bounce (sb, sc);
@@ -85,7 +85,7 @@ void test_req_rep ()
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    rc = unlink ("/tmp/tester");
+    rc = unlink ("/tmp/test_use_fd_ipc");
     assert (rc == 0);
 }
 
@@ -97,14 +97,14 @@ void test_pair ()
     void *sb = zmq_socket (ctx, ZMQ_PAIR);
     assert (sb);
 
-    pre_allocate_sock(sb, "/tmp/tester");
+    pre_allocate_sock(sb, "/tmp/test_use_fd_ipc");
 
-    int rc = zmq_bind (sb, "ipc:///tmp/tester");
+    int rc = zmq_bind (sb, "ipc:///tmp/test_use_fd_ipc");
     assert (rc == 0);
 
     void *sc = zmq_socket (ctx, ZMQ_PAIR);
     assert (sc);
-    rc = zmq_connect (sc, "ipc:///tmp/tester");
+    rc = zmq_connect (sc, "ipc:///tmp/test_use_fd_ipc");
     assert (rc == 0);
 
     bounce (sb, sc);
@@ -118,7 +118,7 @@ void test_pair ()
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    rc = unlink ("/tmp/tester");
+    rc = unlink ("/tmp/test_use_fd_ipc");
     assert (rc == 0);
 }
 
@@ -131,14 +131,14 @@ void test_client_server ()
     void *sb = zmq_socket (ctx, ZMQ_SERVER);
     assert (sb);
 
-    pre_allocate_sock(sb, "/tmp/tester");
+    pre_allocate_sock(sb, "/tmp/test_use_fd_ipc");
 
-    int rc = zmq_bind (sb, "ipc:///tmp/tester");
+    int rc = zmq_bind (sb, "ipc:///tmp/test_use_fd_ipc");
     assert (rc == 0);
 
     void *sc = zmq_socket (ctx, ZMQ_CLIENT);
     assert (sc);
-    rc = zmq_connect (sc, "ipc:///tmp/tester");
+    rc = zmq_connect (sc, "ipc:///tmp/test_use_fd_ipc");
     assert (rc == 0);
 
     zmq_msg_t msg;
@@ -199,7 +199,7 @@ void test_client_server ()
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
-    rc = unlink ("/tmp/tester");
+    rc = unlink ("/tmp/test_use_fd_ipc");
     assert (rc == 0);
 #endif
 }
