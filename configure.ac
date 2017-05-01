@@ -127,6 +127,22 @@ if test "x$zmq_militant" = "xyes"; then
     AC_DEFINE(ZMQ_ACT_MILITANT, 1, [Enable militant API assertions])
 fi
 
+# Memory mis-use detection
+AC_MSG_CHECKING([whether to enable ASan])
+AC_ARG_ENABLE(address-sanitizer, [AS_HELP_STRING([--enable-address-sanitizer=yes/no],
+                  [Build with GCC Address Sanitizer instrumentation])],
+                  [ZMQ_ASAN="$enableval"])
+
+if test "x${ZMQ_ASAN}" == "xyes"; then
+    CFLAGS="${CFLAGS} -fsanitize=address"
+    CXXFLAGS="${CXXFLAGS} -fsanitize=address"
+
+    AM_CONDITIONAL(ENABLE_ASAN, true)
+    AC_MSG_RESULT([yes])
+else
+    AM_CONDITIONAL(ENABLE_ASAN, false)
+    AC_MSG_RESULT([no])
+fi
 
 # By default compiling with -Werror except OSX.
 libzmq_werror="yes"

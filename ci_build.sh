@@ -16,8 +16,7 @@ if [ $BUILD_TYPE == "default" ]; then
     CONFIG_OPTS+=("--prefix=${BUILD_PREFIX}")
 
     if [ -n "$ADDRESS_SANITIZER" ] && [ "$ADDRESS_SANITIZER" == "enabled" ]; then
-        CONFIG_OPTS+=("CFLAGS=-fsanitize=address")
-        CONFIG_OPTS+=("CXXFLAGS=-fsanitize=address")
+        CONFIG_OPTS+=("--enable-address-sanitizer=yes")
     fi
 
     if [ -z $CURVE ]; then
