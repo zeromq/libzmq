@@ -31,4 +31,4 @@ elif [ $CURVE == "libsodium" ]; then
 fi
 
 # Build, check, and install from local source
-( cd ../..; mkdir build_cmake && cd build_cmake && PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig cmake "${CMAKE_OPTS[@]}" .. && make all VERBOSE=1 && make install && make test ) || exit 1
+( cd ../..; mkdir build_cmake && cd build_cmake && PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig cmake "${CMAKE_OPTS[@]}" .. && make -j5 all VERBOSE=1 && make install && make -j5 test ) || exit 1
