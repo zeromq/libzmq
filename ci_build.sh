@@ -17,6 +17,11 @@ if [ $BUILD_TYPE == "default" ]; then
 
     if [ -n "$ADDRESS_SANITIZER" ] && [ "$ADDRESS_SANITIZER" == "enabled" ]; then
         CONFIG_OPTS+=("--enable-address-sanitizer=yes")
+        CONFIG_OPTS+=("CXX=g++-6")
+        CONFIG_OPTS+=("CC=gcc-6")
+        # workaround for linker problem with ASAN options in GCC
+        # http://stackoverflow.com/questions/37603238/fsanitize-not-using-gold-linker-in-gcc-6-1
+        CONFIG_OPTS+=("LDFLAGS=-fuse-ld=gold")
     fi
 
     if [ -z $CURVE ]; then

@@ -57,6 +57,14 @@ matrix:
     os: osx
   - env: BUILD_TYPE=default CURVE=tweetnacl DRAFT=enabled ADDRESS_SANITIZER=enabled
     os: linux
+    dist: trusty
+    addons:
+      apt:
+        sources:
+        - sourceline: 'ppa:ubuntu-toolchain-r/test'
+        packages:
+        - g++-6
+        - gcc-6
 
 sudo: required
 
