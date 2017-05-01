@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -35,9 +35,11 @@ void test_stream_2_stream(){
     int ret;
     char buff[256];
     char msg[] = "hi 1";
-    const char *bindip = "tcp://127.0.0.1:5556";
+    const char *bindip = "tcp://127.0.0.1:*";
     int disabled = 0;
     int zero = 0;
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
     void *ctx = zmq_ctx_new ();
 
     //  Set up listener STREAM.
@@ -49,6 +51,8 @@ void test_stream_2_stream(){
     assert (0 == ret);
     ret = zmq_bind (rbind, bindip);
     assert(0 == ret);
+    ret = zmq_getsockopt (rbind, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
+    assert (0 == ret);
 
     //  Set up connection stream.
     rconn1 = zmq_socket (ctx, ZMQ_STREAM);
@@ -59,7 +63,7 @@ void test_stream_2_stream(){
     //  Do the connection.
     ret = zmq_setsockopt (rconn1, ZMQ_CONNECT_RID, "conn1", 6);
     assert (0 == ret);
-    ret = zmq_connect (rconn1, bindip);
+    ret = zmq_connect (rconn1, my_endpoint);
 
 /*  Uncomment to test assert on duplicate rid.
     //  Test duplicate connect attempt.
@@ -83,7 +87,7 @@ void test_stream_2_stream(){
     assert ('h' == buff[128]);
 
     // Handle close of the socket.
-    ret = zmq_unbind (rbind, bindip);
+    ret = zmq_unbind (rbind, my_endpoint);
     assert(0 == ret);
     ret = zmq_close (rbind);
     assert(0 == ret);
@@ -98,8 +102,10 @@ void test_router_2_router(bool named){
     int ret;
     char buff[256];
     char msg[] = "hi 1";
-    const char *bindip = "tcp://127.0.0.1:5556";
+    const char *bindip = "tcp://127.0.0.1:*";
     int zero = 0;
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
     void *ctx = zmq_ctx_new ();
 
     //  Create bind socket.
@@ -108,6 +114,8 @@ void test_router_2_router(bool named){
     ret = zmq_setsockopt (rbind, ZMQ_LINGER, &zero, sizeof (zero));
     assert (0 == ret);
     ret = zmq_bind (rbind, bindip);
+    assert (0 == ret);
+    ret = zmq_getsockopt (rbind, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
     assert (0 == ret);
 
     //  Create connection socket.
@@ -125,7 +133,7 @@ void test_router_2_router(bool named){
     //  Make call to connect using a connect_rid.
     ret = zmq_setsockopt (rconn1, ZMQ_CONNECT_RID, "conn1", 6);
     assert (0 == ret);
-    ret = zmq_connect (rconn1, bindip);
+    ret = zmq_connect (rconn1, my_endpoint);
     assert (0 == ret);
 /*  Uncomment to test assert on duplicate rid
     //  Test duplicate connect attempt.
@@ -169,7 +177,7 @@ void test_router_2_router(bool named){
     ret = zmq_recv (rconn1, buff+128, 128, 0);
     assert (3 == ret && 'o' == buff[128]);
 
-    ret = zmq_unbind (rbind, bindip);
+    ret = zmq_unbind (rbind, my_endpoint);
     assert(0 == ret);
     ret = zmq_close (rbind);
     assert(0 == ret);

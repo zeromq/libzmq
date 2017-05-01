@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -196,13 +196,14 @@ int test_unsubscribe_manual()
 }
 
 
-int test_xpub_proxy_unsubscribe_on_disconnect(const char *frontend,
-                                              const char *backend)
+int test_xpub_proxy_unsubscribe_on_disconnect(void)
 {
-    assert (frontend && backend);
-
     const char* topic = "1";
     const char* payload = "X";
+
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint_backend[MAX_SOCKET_STRING];
+    char my_endpoint_frontend[MAX_SOCKET_STRING];
 
     int manual = 1;
 
@@ -212,22 +213,29 @@ int test_xpub_proxy_unsubscribe_on_disconnect(const char *frontend,
     // proxy frontend
     void *xsub_proxy = zmq_socket (ctx, ZMQ_XSUB);
     assert (xsub_proxy);
-    assert (zmq_bind (xsub_proxy, frontend) == 0);
+    assert (zmq_bind (xsub_proxy, "tcp://127.0.0.1:*") == 0);
+    int rc = zmq_getsockopt (xsub_proxy, ZMQ_LAST_ENDPOINT, my_endpoint_frontend,
+            &len);
+    assert (rc == 0);
 
     // proxy backend
     void *xpub_proxy = zmq_socket (ctx, ZMQ_XPUB);
     assert (xpub_proxy);
     assert (zmq_setsockopt (xpub_proxy, ZMQ_XPUB_MANUAL, &manual, 4) == 0);
-    assert (zmq_bind (xpub_proxy, backend) == 0);
+    assert (zmq_bind (xpub_proxy, "tcp://127.0.0.1:*") == 0);
+    len = MAX_SOCKET_STRING;
+    rc = zmq_getsockopt (xpub_proxy, ZMQ_LAST_ENDPOINT, my_endpoint_backend,
+            &len);
+    assert (rc == 0);
 
     // publisher
     void *pub = zmq_socket (ctx, ZMQ_PUB);
-    assert (zmq_connect (pub, frontend) == 0);
+    assert (zmq_connect (pub, my_endpoint_frontend) == 0);
 
     // first subscriber subscribes
     void *sub1 = zmq_socket (ctx, ZMQ_SUB);
     assert (sub1);
-    assert (zmq_connect (sub1, backend) == 0);
+    assert (zmq_connect (sub1, my_endpoint_backend) == 0);
     assert (zmq_setsockopt (sub1, ZMQ_SUBSCRIBE, topic, 1) == 0);
 
     // wait
@@ -244,7 +252,7 @@ int test_xpub_proxy_unsubscribe_on_disconnect(const char *frontend,
     // second subscriber subscribes
     void *sub2 = zmq_socket (ctx, ZMQ_SUB);
     assert (sub2);
-    assert (zmq_connect (sub2, backend) == 0);
+    assert (zmq_connect (sub2, my_endpoint_backend) == 0);
     assert (zmq_setsockopt (sub2, ZMQ_SUBSCRIBE, topic, 1) == 0);
 
     // wait
@@ -335,13 +343,15 @@ int test_xpub_proxy_unsubscribe_on_disconnect(const char *frontend,
     return 0;
 }
 
-int test_missing_subscriptions(const char *frontend, const char *backend)
+int test_missing_subscriptions(void)
 {
-    assert (frontend && backend);
-
     const char* topic1 = "1";
     const char* topic2 = "2";
     const char* payload = "X";
+
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint_backend[MAX_SOCKET_STRING];
+    char my_endpoint_frontend[MAX_SOCKET_STRING];
 
     int manual = 1;
 
@@ -351,17 +361,24 @@ int test_missing_subscriptions(const char *frontend, const char *backend)
     // proxy frontend
     void *xsub_proxy = zmq_socket (ctx, ZMQ_XSUB);
     assert (xsub_proxy);
-    assert (zmq_bind (xsub_proxy, frontend) == 0);
+    assert (zmq_bind (xsub_proxy, "tcp://127.0.0.1:*") == 0);
+    int rc = zmq_getsockopt (xsub_proxy, ZMQ_LAST_ENDPOINT, my_endpoint_frontend,
+            &len);
+    assert (rc == 0);
 
     // proxy backend
     void *xpub_proxy = zmq_socket (ctx, ZMQ_XPUB);
     assert (xpub_proxy);
     assert (zmq_setsockopt (xpub_proxy, ZMQ_XPUB_MANUAL, &manual, 4) == 0);
-    assert (zmq_bind (xpub_proxy, backend) == 0);
+    assert (zmq_bind (xpub_proxy, "tcp://127.0.0.1:*") == 0);
+    len = MAX_SOCKET_STRING;
+    rc = zmq_getsockopt (xpub_proxy, ZMQ_LAST_ENDPOINT, my_endpoint_backend,
+            &len);
+    assert (rc == 0);
 
     // publisher
     void *pub = zmq_socket (ctx, ZMQ_PUB);
-    assert (zmq_connect (pub, frontend) == 0);
+    assert (zmq_connect (pub, my_endpoint_frontend) == 0);
 
     // Here's the problem: because subscribers subscribe in quick succession,
     // the proxy is unable to confirm the first subscription before receiving
@@ -370,13 +387,13 @@ int test_missing_subscriptions(const char *frontend, const char *backend)
     // first subscriber
     void *sub1 = zmq_socket (ctx, ZMQ_SUB);
     assert (sub1);
-    assert (zmq_connect (sub1, backend) == 0);
+    assert (zmq_connect (sub1, my_endpoint_backend) == 0);
     assert (zmq_setsockopt (sub1, ZMQ_SUBSCRIBE, topic1, 1) == 0);
 
     // second subscriber
     void *sub2 = zmq_socket (ctx, ZMQ_SUB);
     assert (sub2);
-    assert (zmq_connect (sub2, backend) == 0);
+    assert (zmq_connect (sub2, my_endpoint_backend) == 0);
     assert (zmq_setsockopt (sub2, ZMQ_SUBSCRIBE, topic2, 1) == 0);
 
     // wait
@@ -456,20 +473,8 @@ int main(void)
     setup_test_environment ();
     test_basic ();
     test_unsubscribe_manual ();
-
-    const char *frontend;
-    const char *backend;
-
-#if !defined ZMQ_HAVE_WINDOWS && !defined ZMQ_HAVE_OPENVMS
-    frontend = "ipc://frontend";
-    backend = "ipc://backend";
-    test_xpub_proxy_unsubscribe_on_disconnect (frontend, backend);
-    test_missing_subscriptions (frontend, backend);
-#endif
-    frontend = "tcp://127.0.0.1:5560";
-    backend = "tcp://127.0.0.1:5561";
-    test_xpub_proxy_unsubscribe_on_disconnect (frontend, backend);
-    test_missing_subscriptions (frontend, backend);
+    test_xpub_proxy_unsubscribe_on_disconnect ();
+    test_missing_subscriptions ();
 
     return 0;
 }

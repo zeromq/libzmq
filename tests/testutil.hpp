@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -42,6 +42,17 @@
 //  get test failures on slower systems due to binds/connects not
 //  settled. Tested to work reliably at 1 msec on a fast PC.
 #define SETTLE_TIME 300         //  In msec
+//  Commonly used buffer size for ZMQ_LAST_ENDPOINT
+#define MAX_SOCKET_STRING sizeof("tcp://127.0.0.1:65536")
+
+//  We need to test codepaths with non-random bind ports. List them here to
+//  keep them unique, to allow parallel test runs.
+#define ENDPOINT_0 "tcp://127.0.0.1:5555"
+#define ENDPOINT_1 "tcp://127.0.0.1:5556"
+#define ENDPOINT_2 "tcp://127.0.0.1:5557"
+#define ENDPOINT_3 "tcp://127.0.0.1:5558"
+#define ENDPOINT_4 "udp://127.0.0.1:5559"
+#define ENDPOINT_5 "udp://127.0.0.1:5560"
 
 #undef NDEBUG
 #include <time.h>

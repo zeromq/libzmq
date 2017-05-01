@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of 0MQ.
 
@@ -102,7 +102,8 @@ mock_handshake (raw_socket fd) {
 }
 
 static void
-prep_server_socket(void * ctx, int set_heartbeats, void ** server_out, void ** mon_out)
+prep_server_socket(void * ctx, int set_heartbeats, void ** server_out, void ** mon_out,
+        char *endpoint, size_t ep_length)
 {
     int rc;
     //  We'll be using this socket in raw mode
@@ -119,7 +120,9 @@ prep_server_socket(void * ctx, int set_heartbeats, void ** server_out, void ** m
         assert (rc == 0);
     }
 
-    rc = zmq_bind (server, "tcp://127.0.0.1:5556");
+    rc = zmq_bind (server, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, endpoint, &ep_length);
     assert (rc == 0);
 
     //  Create and connect a socket for collecting monitor events on dealer
@@ -145,19 +148,21 @@ static void
 test_heartbeat_timeout (void)
 {
     int rc;
+    char my_endpoint[MAX_SOCKET_STRING];
 
     //  Set up our context and sockets
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
     void * server, * server_mon;
-    prep_server_socket (ctx, 1, &server, &server_mon);
+    prep_server_socket (ctx, 1, &server, &server_mon, my_endpoint,
+            MAX_SOCKET_STRING);
 
     struct sockaddr_in ip4addr;
     raw_socket s;
 
     ip4addr.sin_family = AF_INET;
-    ip4addr.sin_port = htons (5556);
+    ip4addr.sin_port = htons (atoi (strrchr (my_endpoint, ':') + 1));
 #if defined (ZMQ_HAVE_WINDOWS) && (_WIN32_WINNT < 0x0600)
     ip4addr.sin_addr.s_addr = inet_addr ("127.0.0.1");
 #else
@@ -200,13 +205,15 @@ static void
 test_heartbeat_ttl (void)
 {
     int rc, value;
+    char my_endpoint[MAX_SOCKET_STRING];
 
     //  Set up our context and sockets
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
     void * server, * server_mon, *client;
-    prep_server_socket (ctx, 0, &server, &server_mon);
+    prep_server_socket (ctx, 0, &server, &server_mon, my_endpoint,
+            MAX_SOCKET_STRING);
 
     client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client != NULL);
@@ -222,7 +229,7 @@ test_heartbeat_ttl (void)
     rc = zmq_setsockopt (client, ZMQ_HEARTBEAT_IVL, &value, sizeof (value));
     assert (rc == 0);
 
-    rc = zmq_connect (client, "tcp://localhost:5556");
+    rc = zmq_connect (client, my_endpoint);
     assert (rc == 0);
 
     // By now everything should report as connected
@@ -255,16 +262,18 @@ static void
 test_heartbeat_notimeout (void)
 {
     int rc;
+    char my_endpoint[MAX_SOCKET_STRING];
 
     //  Set up our context and sockets
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
     void * server, * server_mon;
-    prep_server_socket(ctx, 1, &server, &server_mon);
+    prep_server_socket(ctx, 1, &server, &server_mon, my_endpoint,
+            MAX_SOCKET_STRING);
 
     void * client = zmq_socket (ctx, ZMQ_DEALER);
-    rc = zmq_connect (client, "tcp://127.0.0.1:5556");
+    rc = zmq_connect (client, my_endpoint);
 
     // Give it a sec to connect and handshake
     msleep (SETTLE_TIME);

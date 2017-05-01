@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -173,7 +173,12 @@ int main (void)
     assert (rc == 0);
     rc = zmq_setsockopt (server, ZMQ_IDENTITY, "IDENT", 6);
     assert (rc == 0);
-    rc = zmq_bind (server, "tcp://127.0.0.1:9998");
+    rc = zmq_bind (server, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
+    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
     assert (rc == 0);
 
 #ifdef ZMQ_BUILD_DRAFT_API
@@ -200,7 +205,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, client_secret, 41);
     assert (rc == 0);
-    rc = zmq_connect (client, "tcp://localhost:9998");
+    rc = zmq_connect (client, my_endpoint);
     assert (rc == 0);
     bounce (server, client);
     rc = zmq_close (client);
@@ -222,7 +227,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, client_secret, 41);
     assert (rc == 0);
-    rc = zmq_connect (client, "tcp://localhost:9998");
+    rc = zmq_connect (client, my_endpoint);
     assert (rc == 0);
     expect_bounce_fail (server, client);
     close_zero_linger (client);
@@ -242,7 +247,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, client_secret, 41);
     assert (rc == 0);
-    rc = zmq_connect (client, "tcp://localhost:9998");
+    rc = zmq_connect (client, my_endpoint);
     assert (rc == 0);
     expect_bounce_fail (server, client);
     close_zero_linger (client);
@@ -262,7 +267,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, garbage_key, 41);
     assert (rc == 0);
-    rc = zmq_connect (client, "tcp://localhost:9998");
+    rc = zmq_connect (client, my_endpoint);
     assert (rc == 0);
     expect_bounce_fail (server, client);
     close_zero_linger (client);
@@ -286,7 +291,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, bogus_secret, 41);
     assert (rc == 0);
-    rc = zmq_connect (client, "tcp://localhost:9998");
+    rc = zmq_connect (client, my_endpoint);
     assert (rc == 0);
     expect_bounce_fail (server, client);
     close_zero_linger (client);
@@ -300,7 +305,7 @@ int main (void)
     //  This must be caught by the curve_server class, not passed to ZAP
     client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
-    rc = zmq_connect (client, "tcp://localhost:9998");
+    rc = zmq_connect (client, my_endpoint);
     assert (rc == 0);
     expect_bounce_fail (server, client);
     close_zero_linger (client);
@@ -325,8 +330,12 @@ int main (void)
     struct sockaddr_in ip4addr;
     int s;
 
+    unsigned short int port;
+    rc = sscanf(my_endpoint, "tcp://127.0.0.1:%hu", &port);
+    assert (rc == 1);
+
     ip4addr.sin_family = AF_INET;
-    ip4addr.sin_port = htons (9998);
+    ip4addr.sin_port = htons (port);
 #if defined (ZMQ_HAVE_WINDOWS) && (_WIN32_WINNT < 0x0600)
     ip4addr.sin_addr.s_addr = inet_addr ("127.0.0.1");
 #else

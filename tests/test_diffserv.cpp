@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -35,6 +35,8 @@ int main (void)
     int tos = 0x28;
     int o_tos;
     size_t tos_size = sizeof(tos);
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
 
     setup_test_environment();
     void *ctx = zmq_ctx_new ();
@@ -44,8 +46,11 @@ int main (void)
     assert (sb);
     rc = zmq_setsockopt (sb, ZMQ_TOS, &tos, tos_size);
     assert (rc == 0);
-    rc = zmq_bind (sb, "tcp://127.0.0.1:5560");
+    rc = zmq_bind (sb, "tcp://127.0.0.1:*");
     assert (rc == 0);
+    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
+    assert (rc == 0);
+
     rc = zmq_getsockopt (sb, ZMQ_TOS, &o_tos, &tos_size);
     assert (rc == 0);
     assert (o_tos == tos);
@@ -55,7 +60,7 @@ int main (void)
     tos = 0x58;
     rc = zmq_setsockopt (sc, ZMQ_TOS, &tos, tos_size);
     assert (rc == 0);
-    rc = zmq_connect (sc, "tcp://127.0.0.1:5560");
+    rc = zmq_connect (sc, my_endpoint);
     assert (rc == 0);
     rc = zmq_getsockopt (sc, ZMQ_TOS, &o_tos, &tos_size);
     assert (rc == 0);

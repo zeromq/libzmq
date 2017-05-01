@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -32,29 +32,37 @@
 int main (void)
 {
     setup_test_environment();
+    size_t len = MAX_SOCKET_STRING;
+    char endpoint1[MAX_SOCKET_STRING];
+    char endpoint2[MAX_SOCKET_STRING];
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
     //  Create a req/rep device.
     void *dealer = zmq_socket (ctx, ZMQ_DEALER);
     assert (dealer);
-    int rc = zmq_bind (dealer, "tcp://127.0.0.1:5560");
+    int rc = zmq_bind (dealer, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+    rc = zmq_getsockopt (dealer, ZMQ_LAST_ENDPOINT, endpoint1, &len);
     assert (rc == 0);
     void *router = zmq_socket (ctx, ZMQ_ROUTER);
     assert (router);
-    rc = zmq_bind (router, "tcp://127.0.0.1:5561");
+    rc = zmq_bind (router, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+    len = MAX_SOCKET_STRING;
+    rc = zmq_getsockopt (router, ZMQ_LAST_ENDPOINT, endpoint2, &len);
     assert (rc == 0);
 
     //  Create a worker.
     void *rep = zmq_socket (ctx, ZMQ_REP);
     assert (rep);
-    rc = zmq_connect (rep, "tcp://127.0.0.1:5560");
+    rc = zmq_connect (rep, endpoint1);
     assert (rc == 0);
 
     //  Create a client.
     void *req = zmq_socket (ctx, ZMQ_REQ);
     assert (req);
-    rc = zmq_connect (req, "tcp://127.0.0.1:5561");
+    rc = zmq_connect (req, endpoint2);
     assert (rc == 0);
 
     //  Send a request.

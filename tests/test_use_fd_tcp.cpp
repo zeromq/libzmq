@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2016-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -32,7 +32,7 @@
 #if !defined (ZMQ_HAVE_WINDOWS)
 #include <netdb.h>
 
-void pre_allocate_sock (void *zmq_socket, const char *address,
+uint16_t pre_allocate_sock (void *zmq_socket, const char *address,
         const char *port)
 {
     struct addrinfo *addr, hint;
@@ -65,25 +65,34 @@ void pre_allocate_sock (void *zmq_socket, const char *address,
             sizeof (s_pre));
     assert(rc == 0);
 
+    struct sockaddr_in sin;
+    socklen_t len = sizeof(sin);
+    rc = getsockname(s_pre, (struct sockaddr *)&sin, &len);
+    assert (rc != -1);
+
     freeaddrinfo(addr);
+
+    return ntohs(sin.sin_port);
 }
 
 void test_req_rep ()
 {
+    char my_endpoint[MAX_SOCKET_STRING];
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
     void *sb = zmq_socket (ctx, ZMQ_REP);
     assert (sb);
 
-    pre_allocate_sock(sb, "127.0.0.1", "5560");
+    uint16_t port = pre_allocate_sock(sb, "127.0.0.1", "0");
+    sprintf (my_endpoint, "tcp://127.0.0.1:%u", port);
 
-    int rc = zmq_bind (sb, "tcp://127.0.0.1:5560");
+    int rc = zmq_bind (sb, my_endpoint);
     assert (rc == 0);
 
     void *sc = zmq_socket (ctx, ZMQ_REQ);
     assert (sc);
-    rc = zmq_connect (sc, "tcp://127.0.0.1:5560");
+    rc = zmq_connect (sc, my_endpoint);
     assert (rc == 0);
 
     bounce (sb, sc);
@@ -100,20 +109,22 @@ void test_req_rep ()
 
 void test_pair ()
 {
+    char my_endpoint[MAX_SOCKET_STRING];
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
     void *sb = zmq_socket (ctx, ZMQ_PAIR);
     assert (sb);
 
-    pre_allocate_sock(sb, "127.0.0.1", "5560");
+    uint16_t port = pre_allocate_sock(sb, "127.0.0.1", "0");
+    sprintf (my_endpoint, "tcp://127.0.0.1:%u", port);
 
-    int rc = zmq_bind (sb, "tcp://127.0.0.1:5560");
+    int rc = zmq_bind (sb, my_endpoint);
     assert (rc == 0);
 
     void *sc = zmq_socket (ctx, ZMQ_PAIR);
     assert (sc);
-    rc = zmq_connect (sc, "tcp://127.0.0.1:5560");
+    rc = zmq_connect (sc, my_endpoint);
     assert (rc == 0);
 
     bounce (sb, sc);
@@ -131,20 +142,22 @@ void test_pair ()
 void test_client_server ()
 {
 #if defined(ZMQ_SERVER) && defined(ZMQ_CLIENT)
+    char my_endpoint[MAX_SOCKET_STRING];
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
     void *sb = zmq_socket (ctx, ZMQ_SERVER);
     assert (sb);
 
-    pre_allocate_sock(sb, "127.0.0.1", "5560");
+    uint16_t port = pre_allocate_sock(sb, "127.0.0.1", "0");
+    sprintf (my_endpoint, "tcp://127.0.0.1:%u", port);
 
-    int rc = zmq_bind (sb, "tcp://127.0.0.1:5560");
+    int rc = zmq_bind (sb, my_endpoint);
     assert (rc == 0);
 
     void *sc = zmq_socket (ctx, ZMQ_CLIENT);
     assert (sc);
-    rc = zmq_connect (sc, "tcp://127.0.0.1:5560");
+    rc = zmq_connect (sc, my_endpoint);
     assert (rc == 0);
 
     zmq_msg_t msg;

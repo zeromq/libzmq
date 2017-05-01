@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -32,12 +32,17 @@
 int main (void)
 {
     setup_test_environment();
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
     void *ctx = zmq_ctx_new ();
     assert (ctx);
     void *router = zmq_socket (ctx, ZMQ_ROUTER);
     assert (router);
 
-    int rc = zmq_bind (router, "tcp://127.0.0.1:5560");
+    int rc = zmq_bind (router, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+
+    rc = zmq_getsockopt (router, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
     assert (rc == 0);
 
     // Enable the handover flag
@@ -50,7 +55,7 @@ int main (void)
     assert (dealer_one);
     rc = zmq_setsockopt (dealer_one, ZMQ_IDENTITY, "X", 1);
     assert (rc == 0);
-    rc = zmq_connect (dealer_one, "tcp://127.0.0.1:5560");
+    rc = zmq_connect (dealer_one, my_endpoint);
     assert (rc == 0);
     
     //  Get message from dealer to know when connection is ready
@@ -68,7 +73,7 @@ int main (void)
     assert (dealer_two);
     rc = zmq_setsockopt (dealer_two, ZMQ_IDENTITY, "X", 1);
     assert (rc == 0);
-    rc = zmq_connect (dealer_two, "tcp://127.0.0.1:5560");
+    rc = zmq_connect (dealer_two, my_endpoint);
     assert (rc == 0);
 
     //  Get message from dealer to know when connection is ready

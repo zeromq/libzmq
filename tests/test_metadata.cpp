@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -79,6 +79,8 @@ zap_handler (void *handler)
 int main (void)
 {
     setup_test_environment();
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
@@ -97,9 +99,11 @@ int main (void)
     assert (client);
     rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, "DOMAIN", 6);
     assert (rc == 0);
-    rc = zmq_bind (server, "tcp://127.0.0.1:9001");
+    rc = zmq_bind (server, "tcp://127.0.0.1:*");
     assert (rc == 0);
-    rc = zmq_connect (client, "tcp://127.0.0.1:9001");
+    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
+    assert (rc == 0);
+    rc = zmq_connect (client, my_endpoint);
     assert (rc == 0);
 
     s_send (client, "This is a message");

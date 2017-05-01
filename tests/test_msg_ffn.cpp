@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -41,16 +41,21 @@ int main (void) {
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
+
     void *router = zmq_socket (ctx, ZMQ_ROUTER);
     assert (router);
 
-    int rc = zmq_bind (router, "tcp://127.0.0.1:5555");
+    int rc = zmq_bind (router, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+    rc = zmq_getsockopt (router, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
     assert (rc == 0);
 
     void *dealer = zmq_socket (ctx, ZMQ_DEALER);
     assert (dealer);
 
-    rc = zmq_connect (dealer, "tcp://127.0.0.1:5555");
+    rc = zmq_connect (dealer, my_endpoint);
     assert (rc == 0);
 
     // Test that creating and closing a message triggers ffn
