@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -97,6 +97,8 @@ zap_handler (void *ctx)
 int main (void)
 {
     setup_test_environment();
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
@@ -111,7 +113,9 @@ int main (void)
     int as_server = 1;
     rc = zmq_setsockopt (server, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
     assert (rc == 0);
-    rc = zmq_bind (server, "tcp://127.0.0.1:9998");
+    rc = zmq_bind (server, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
     assert (rc == 0);
 
     char username [256];
@@ -126,7 +130,7 @@ int main (void)
     strcpy (password, "password");
     rc = zmq_setsockopt (client, ZMQ_PLAIN_PASSWORD, password, strlen (password));
     assert (rc == 0);
-    rc = zmq_connect (client, "tcp://localhost:9998");
+    rc = zmq_connect (client, my_endpoint);
     assert (rc == 0);
     bounce (server, client);
     rc = zmq_close (client);
@@ -139,7 +143,7 @@ int main (void)
     as_server = 1;
     rc = zmq_setsockopt (client, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
     assert (rc == 0);
-    rc = zmq_connect (client, "tcp://localhost:9998");
+    rc = zmq_connect (client, my_endpoint);
     assert (rc == 0);
     expect_bounce_fail (server, client);
     close_zero_linger (client);
@@ -153,7 +157,7 @@ int main (void)
     assert (rc == 0);
     rc = zmq_setsockopt (client, ZMQ_PLAIN_PASSWORD, password, strlen (password));
     assert (rc == 0);
-    rc = zmq_connect (client, "tcp://localhost:9998");
+    rc = zmq_connect (client, my_endpoint);
     assert (rc == 0);
     expect_bounce_fail (server, client);
     close_zero_linger (client);
@@ -162,8 +166,12 @@ int main (void)
     struct sockaddr_in ip4addr;
     int s;
 
+    unsigned short int port;
+    rc = sscanf(my_endpoint, "tcp://127.0.0.1:%hu", &port);
+    assert (rc == 1);
+
     ip4addr.sin_family = AF_INET;
-    ip4addr.sin_port = htons (9998);
+    ip4addr.sin_port = htons (port);
 #if defined (ZMQ_HAVE_WINDOWS) && (_WIN32_WINNT < 0x0600)
     ip4addr.sin_addr.s_addr = inet_addr ("127.0.0.1");
 #else

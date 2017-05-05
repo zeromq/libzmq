@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -32,6 +32,8 @@
 int main (void)
 {
     setup_test_environment();
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
@@ -49,10 +51,12 @@ int main (void)
     rc = zmq_setsockopt (req, ZMQ_RCVTIMEO, &rcvtimeo, sizeof (int));
     assert (rc == 0);
 
-    rc = zmq_connect (req, "tcp://localhost:5555");
+    rc = zmq_bind (router, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+    rc = zmq_getsockopt (router, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
     assert (rc == 0);
 
-    rc = zmq_bind (router, "tcp://127.0.0.1:5555");
+    rc = zmq_connect (req, my_endpoint);
     assert (rc == 0);
 
     // Send a multi-part request.

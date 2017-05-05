@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -68,6 +68,8 @@ static void
 test_stream_handshake_timeout_accept (void)
 {
     int rc;
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
 
     //  Set up our context and sockets
     void *ctx = zmq_ctx_new ();
@@ -79,8 +81,6 @@ test_stream_handshake_timeout_accept (void)
 
     int zero = 0;
     rc = zmq_setsockopt (stream, ZMQ_LINGER, &zero, sizeof (zero));
-    assert (rc == 0);
-    rc = zmq_connect (stream, "tcp://localhost:5557");
     assert (rc == 0);
 
     //  We'll be using this socket to test TCP stream handshake timeout
@@ -119,7 +119,12 @@ test_stream_handshake_timeout_accept (void)
     assert (rc == 0);
 
     // bind dealer socket to accept connection from non-sending stream socket
-    rc = zmq_bind (dealer, "tcp://127.0.0.1:5557");
+    rc = zmq_bind (dealer, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+    rc = zmq_getsockopt (dealer, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
+    assert (rc == 0);
+
+    rc = zmq_connect (stream, my_endpoint);
     assert (rc == 0);
 
     // we should get ZMQ_EVENT_ACCEPTED and then ZMQ_EVENT_DISCONNECTED
@@ -145,6 +150,8 @@ static void
 test_stream_handshake_timeout_connect (void)
 {
     int rc;
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
 
     //  Set up our context and sockets
     void *ctx = zmq_ctx_new ();
@@ -157,7 +164,9 @@ test_stream_handshake_timeout_connect (void)
     int zero = 0;
     rc = zmq_setsockopt (stream, ZMQ_LINGER, &zero, sizeof (zero));
     assert (rc == 0);
-    rc = zmq_bind (stream, "tcp://127.0.0.1:5556");
+    rc = zmq_bind (stream, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+    rc = zmq_getsockopt (stream, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
     assert (rc == 0);
 
     //  We'll be using this socket to test TCP stream handshake timeout
@@ -196,7 +205,7 @@ test_stream_handshake_timeout_connect (void)
     assert (rc == 0);
 
     // connect dealer socket to non-sending stream socket
-    rc = zmq_connect (dealer, "tcp://localhost:5556");
+    rc = zmq_connect (dealer, my_endpoint);
     assert (rc == 0);
 
     // we should get ZMQ_EVENT_CONNECTED and then ZMQ_EVENT_DISCONNECTED

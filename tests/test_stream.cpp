@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -57,6 +57,8 @@ static void
 test_stream_to_dealer (void)
 {
     int rc;
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
 
     //  Set up our context and sockets
     void *ctx = zmq_ctx_new ();
@@ -72,15 +74,18 @@ test_stream_to_dealer (void)
     int enabled = 1;
     rc = zmq_setsockopt (stream, ZMQ_STREAM_NOTIFY, &enabled, sizeof (enabled));
     assert (rc == 0);
-    rc = zmq_bind (stream, "tcp://127.0.0.1:5556");
+    rc = zmq_bind (stream, "tcp://127.0.0.1:*");
     assert (rc == 0);
+    rc = zmq_getsockopt (stream, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
+    assert (rc == 0);
+
 
     //  We'll be using this socket as the other peer
     void *dealer = zmq_socket (ctx, ZMQ_DEALER);
     assert (dealer);
     rc = zmq_setsockopt (dealer, ZMQ_LINGER, &zero, sizeof (zero));
     assert (rc == 0);
-    rc = zmq_connect (dealer, "tcp://localhost:5556");
+    rc = zmq_connect (dealer, my_endpoint);
 
     //  Send a message on the dealer socket
     rc = zmq_send (dealer, "Hello", 5, 0);
@@ -232,6 +237,8 @@ static void
 test_stream_to_stream (void)
 {
     int rc;
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
     //  Set-up our context and sockets
     void *ctx = zmq_ctx_new ();
     assert (ctx);
@@ -241,14 +248,16 @@ test_stream_to_stream (void)
     int enabled = 1;
     rc = zmq_setsockopt (server, ZMQ_STREAM_NOTIFY, &enabled, sizeof (enabled));
     assert (rc == 0);
-    rc = zmq_bind (server, "tcp://127.0.0.1:9070");
+    rc = zmq_bind (server, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
     assert (rc == 0);
 
     void *client = zmq_socket (ctx, ZMQ_STREAM);
     assert (client);
     rc = zmq_setsockopt (client, ZMQ_STREAM_NOTIFY, &enabled, sizeof (enabled));
     assert (rc == 0);
-    rc = zmq_connect (client, "tcp://localhost:9070");
+    rc = zmq_connect (client, my_endpoint);
     assert (rc == 0);
     uint8_t id [256];
     size_t id_size = 256;

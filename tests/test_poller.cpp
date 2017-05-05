@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -31,6 +31,10 @@
 
 int main (void)
 {
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint_0[MAX_SOCKET_STRING];
+    char my_endpoint_1[MAX_SOCKET_STRING];
+
     setup_test_environment ();
 
     void *ctx = zmq_ctx_new ();
@@ -39,12 +43,14 @@ int main (void)
     //  Create few sockets
     void *vent = zmq_socket (ctx, ZMQ_PUSH);
     assert (vent);
-    int rc = zmq_bind (vent, "tcp://127.0.0.1:55556");
+    int rc = zmq_bind (vent, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+    rc = zmq_getsockopt (vent, ZMQ_LAST_ENDPOINT, my_endpoint_0, &len);
     assert (rc == 0);
 
     void *sink = zmq_socket (ctx, ZMQ_PULL);
     assert (sink);
-    rc = zmq_connect (sink, "tcp://127.0.0.1:55556");
+    rc = zmq_connect (sink, my_endpoint_0);
     assert (rc == 0);
 
     void *bowl = zmq_socket (ctx, ZMQ_PULL);
@@ -53,7 +59,10 @@ int main (void)
 #if defined(ZMQ_SERVER) && defined(ZMQ_CLIENT)
     void *server = zmq_socket (ctx, ZMQ_SERVER);
     assert (server);
-    rc = zmq_bind (server, "tcp://127.0.0.1:55557");
+    rc = zmq_bind (server, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+    len = MAX_SOCKET_STRING;
+    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint_1, &len);
     assert (rc == 0);
 
     void *client = zmq_socket (ctx, ZMQ_CLIENT);
@@ -96,7 +105,7 @@ int main (void)
     assert (rc == 0);
 
     //  Check we can poll an FD
-    rc = zmq_connect (bowl, "tcp://127.0.0.1:55556");
+    rc = zmq_connect (bowl, my_endpoint_0);
     assert (rc == 0);
 
 #if defined _WIN32
@@ -122,7 +131,7 @@ int main (void)
     //  Polling on thread safe sockets
     rc = zmq_poller_add (poller, server, NULL, ZMQ_POLLIN);
     assert (rc == 0);
-    rc = zmq_connect (client, "tcp://127.0.0.1:55557");
+    rc = zmq_connect (client, my_endpoint_1);
     assert (rc == 0);
     rc = zmq_send_const (client, data, 1, 0);
     assert (rc == 1);

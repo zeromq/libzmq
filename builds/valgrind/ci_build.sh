@@ -6,9 +6,9 @@ mkdir tmp
 BUILD_PREFIX=$PWD/tmp
 
 CONFIG_OPTS=()
-CONFIG_OPTS+=("CFLAGS=-I${BUILD_PREFIX}/include")
+CONFIG_OPTS+=("CFLAGS=-g")
 CONFIG_OPTS+=("CPPFLAGS=-I${BUILD_PREFIX}/include")
-CONFIG_OPTS+=("CXXFLAGS=-I${BUILD_PREFIX}/include")
+CONFIG_OPTS+=("CXXFLAGS=-g")
 CONFIG_OPTS+=("LDFLAGS=-L${BUILD_PREFIX}/lib")
 CONFIG_OPTS+=("PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig")
 CONFIG_OPTS+=("--prefix=${BUILD_PREFIX}")
@@ -22,7 +22,7 @@ elif [ $CURVE == "libsodium" ]; then
     if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list libsodium-dev >/dev/null 2>&1) || \
             (command -v brew >/dev/null 2>&1 && brew ls --versions libsodium >/dev/null 2>&1)); then
         git clone --depth 1 -b stable git://github.com/jedisct1/libsodium.git
-        ( cd libsodium; ./autogen.sh; ./configure --prefix=$BUILD_PREFIX; make check; make install)
+        ( cd libsodium; ./autogen.sh; ./configure --prefix=$BUILD_PREFIX; make install)
     fi
 fi
 

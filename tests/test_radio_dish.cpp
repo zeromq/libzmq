@@ -83,6 +83,8 @@ int msg_recv_cmp (zmq_msg_t *msg_, void *s_, const char* group_, const char* bod
 
 int main (void)
 {
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
     setup_test_environment ();
     void *ctx = zmq_ctx_new ();
     assert (ctx);
@@ -90,7 +92,9 @@ int main (void)
     void *radio = zmq_socket (ctx, ZMQ_RADIO);
     void *dish = zmq_socket (ctx, ZMQ_DISH);
 
-    int rc = zmq_bind (radio, "tcp://127.0.0.1:5556");
+    int rc = zmq_bind (radio, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+    rc = zmq_getsockopt (radio, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
     assert (rc == 0);
 
     //  Leaving a group which we didn't join
@@ -114,7 +118,7 @@ int main (void)
     assert (rc == -1);
 
     // Connecting
-    rc = zmq_connect (dish, "tcp://127.0.0.1:5556");
+    rc = zmq_connect (dish, my_endpoint);
     assert (rc == 0);
 
     msleep (SETTLE_TIME);

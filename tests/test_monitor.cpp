@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -68,6 +68,8 @@ int main (void)
 {
     setup_test_environment();
 
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
     void *ctx = zmq_ctx_new ();
     assert (ctx);
     
@@ -78,7 +80,7 @@ int main (void)
     assert (server);
 
     //  Socket monitoring only works over inproc://
-    int rc = zmq_socket_monitor (client, "tcp://127.0.0.1:9999", 0);
+    int rc = zmq_socket_monitor (client, "tcp://127.0.0.1:*", 0);
     assert (rc == -1);
     assert (zmq_errno () == EPROTONOSUPPORT);
 
@@ -101,9 +103,11 @@ int main (void)
     assert (rc == 0);
     
     //  Now do a basic ping test
-    rc = zmq_bind (server, "tcp://127.0.0.1:9998");
+    rc = zmq_bind (server, "tcp://127.0.0.1:*");
     assert (rc == 0);
-    rc = zmq_connect (client, "tcp://127.0.0.1:9998");
+    rc = zmq_getsockopt (server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
+    assert (rc == 0);
+    rc = zmq_connect (client, my_endpoint);
     assert (rc == 0);
     bounce (server, client);
 

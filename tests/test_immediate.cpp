@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
     
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -35,6 +35,8 @@ int main (void)
     int val;
     int rc;
     char buffer[16];
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
     // TEST 1. 
     // First we're going to attempt to send messages to two
     // pipes, one connected, the other not. We should see
@@ -51,7 +53,9 @@ int main (void)
     val = 0;
     rc = zmq_setsockopt(to, ZMQ_LINGER, &val, sizeof(val));
     assert (rc == 0);
-    rc = zmq_bind (to, "tcp://127.0.0.1:6555");
+    rc = zmq_bind (to, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+    rc = zmq_getsockopt (to, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
     assert (rc == 0);
 
     // Create a socket pushing to two endpoints - only 1 message should arrive.
@@ -64,7 +68,7 @@ int main (void)
     rc = zmq_connect (from, "tcp://localhost:5556");
     assert (rc == 0);
     // This pipe will 
-    rc = zmq_connect (from, "tcp://localhost:6555");
+    rc = zmq_connect (from, my_endpoint);
     assert (rc == 0);
 
     msleep (SETTLE_TIME);
@@ -112,7 +116,10 @@ int main (void)
     // Bind the valid socket
     to = zmq_socket (context, ZMQ_PULL);
     assert (to);
-    rc = zmq_bind (to, "tcp://127.0.0.1:5560");
+    rc = zmq_bind (to, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+    len = MAX_SOCKET_STRING;
+    rc = zmq_getsockopt (to, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
     assert (rc == 0);
 
     val = 0;
@@ -136,7 +143,7 @@ int main (void)
     rc = zmq_connect (from, "tcp://localhost:5561");
     assert (rc == 0);
     // Connect to the valid socket
-    rc = zmq_connect (from, "tcp://localhost:5560");
+    rc = zmq_connect (from, my_endpoint);
     assert (rc == 0);
 
     // Send 10 messages, all should be routed to the connected pipe
@@ -186,9 +193,12 @@ int main (void)
     int on = 1;
     rc = zmq_setsockopt (frontend, ZMQ_IMMEDIATE, &on, sizeof (on));
     assert (rc == 0);
-    rc = zmq_bind (backend, "tcp://127.0.0.1:5560");
+    rc = zmq_bind (backend, "tcp://127.0.0.1:*");
     assert (rc == 0);
-    rc = zmq_connect (frontend, "tcp://localhost:5560");
+    len = MAX_SOCKET_STRING;
+    rc = zmq_getsockopt (backend, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
+    assert (rc == 0);
+    rc = zmq_connect (frontend, my_endpoint);
     assert (rc == 0);
 
     //  Ping backend to frontend so we know when the connection is up
@@ -216,7 +226,7 @@ int main (void)
     assert (backend);
     rc = zmq_setsockopt (backend, ZMQ_LINGER, &zero, sizeof (zero));
     assert (rc == 0);
-    rc = zmq_bind (backend, "tcp://127.0.0.1:5560");
+    rc = zmq_bind (backend, my_endpoint);
     assert (rc == 0);
 
     //  Ping backend to frontend so we know when the connection is up

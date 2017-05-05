@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -57,6 +57,8 @@ static void bounce (void *socket)
 int main (void)
 {
     setup_test_environment ();
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
@@ -70,7 +72,9 @@ int main (void)
     rc = zmq_setsockopt (req, ZMQ_REQ_CORRELATE, &enabled, sizeof (int));
     assert (rc == 0);
 
-    rc = zmq_bind (req, "tcp://127.0.0.1:5555");
+    rc = zmq_bind (req, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+    rc = zmq_getsockopt (req, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
     assert (rc == 0);
 
     const size_t services = 5;
@@ -83,7 +87,7 @@ int main (void)
         rc = zmq_setsockopt (rep [peer], ZMQ_RCVTIMEO, &timeout, sizeof (int));
         assert (rc == 0);
 
-        rc = zmq_connect (rep [peer], "tcp://localhost:5555");
+        rc = zmq_connect (rep [peer], my_endpoint);
         assert (rc == 0);
     }
     //  We have to give the connects time to finish otherwise the requests
@@ -162,7 +166,7 @@ int main (void)
     rc = zmq_setsockopt (req, ZMQ_REQ_CORRELATE, &enabled, sizeof (int));
     assert (rc == 0);
 
-    rc = zmq_connect (req, "tcp://localhost:5555");
+    rc = zmq_connect (req, ENDPOINT_0);
     assert (rc == 0);
 
     //  Setup ROUTER socket as server but do not bind it just yet
@@ -174,7 +178,7 @@ int main (void)
     s_send_seq (req, "TO_BE_ANSWERED", SEQ_END);
 
     //  Bind server allowing it to receive messages
-    rc = zmq_bind (router, "tcp://127.0.0.1:5555");
+    rc = zmq_bind (router, ENDPOINT_0);
     assert (rc == 0);
 
     //  Read the two messages and send them back as is

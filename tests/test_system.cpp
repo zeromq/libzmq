@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -72,7 +72,7 @@ int main (void)
     void *ctx = zmq_ctx_new ();
     assert (ctx);
     void *dealer = zmq_socket (ctx, ZMQ_DEALER);
-    if (zmq_bind (dealer, "tcp://127.0.0.1:5670") == -1) {
+    if (zmq_bind (dealer, "tcp://127.0.0.1:*") == -1) {
         printf ("E: Cannot find 127.0.0.1 -- your system does not have local\n");
         printf ("E: networking. Please fix this before running libzmq checks.\n");
         return -1;

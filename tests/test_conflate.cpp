@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -31,7 +31,9 @@
 
 int main (int, char *[])
 {
-    const char *bind_to = "tcp://127.0.0.1:5555";
+    const char *bind_to = "tcp://127.0.0.1:*";
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
 
     int rc;
 
@@ -47,11 +49,13 @@ int main (int, char *[])
 
     rc = zmq_bind (s_in, bind_to);
     assert (rc == 0);
+    rc = zmq_getsockopt (s_in, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
+    assert (rc == 0);
 
     void* s_out = zmq_socket (ctx, ZMQ_PUSH);
     assert (s_out);
 
-    rc = zmq_connect (s_out, bind_to);
+    rc = zmq_connect (s_out, my_endpoint);
     assert (rc == 0);
 
     int message_count = 20;

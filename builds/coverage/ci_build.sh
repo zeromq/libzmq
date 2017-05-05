@@ -22,11 +22,11 @@ elif [ $CURVE == "libsodium" ]; then
     if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list libsodium-dev >/dev/null 2>&1) || \
             (command -v brew >/dev/null 2>&1 && brew ls --versions libsodium >/dev/null 2>&1)); then
         git clone --depth 1 -b stable git://github.com/jedisct1/libsodium.git
-        ( cd libsodium; ./autogen.sh; ./configure --prefix=$BUILD_PREFIX; make check; make install)
+        ( cd libsodium; ./autogen.sh; ./configure --prefix=$BUILD_PREFIX; make install)
     fi
 fi
 
 pip install --user cpp-coveralls
 
 # Build, check, and install from local source
-( cd ../..; ./autogen.sh && ./configure "${CONFIG_OPTS[@]}" && make -j5 && make check && coveralls --exclude tests --build-root . --gcov-options '\-lp') || exit 1
+( cd ../..; ./autogen.sh && ./configure "${CONFIG_OPTS[@]}" && make -j5 check && coveralls --exclude tests --build-root . --gcov-options '\-lp') || exit 1

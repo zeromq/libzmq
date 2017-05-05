@@ -41,7 +41,7 @@ int main (void)
     void *sc = zmq_socket (ctx, ZMQ_DEALER);
     assert (sc);
 
-    int rc = zmq_connect (sc, "tcp://127.0.0.1:7722");
+    int rc = zmq_connect (sc, ENDPOINT_3);
     assert (rc == 0);
 
     rc = zmq_send_const (sc, "foobar", 6, 0);
@@ -53,7 +53,7 @@ int main (void)
     rc = zmq_send_const (sc, "buzz", 4, 0);
     assert (rc == 4);
 
-    rc = zmq_bind (sb, "tcp://127.0.0.1:7722");
+    rc = zmq_bind (sb, ENDPOINT_3);
     assert (rc == 0);
 
     zmq_msg_t msg;

@@ -26,9 +26,9 @@ elif [ $CURVE == "libsodium" ]; then
     if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list libsodium-dev >/dev/null 2>&1) || \
             (command -v brew >/dev/null 2>&1 && brew ls --versions libsodium >/dev/null 2>&1)); then
         git clone --depth 1 -b stable git://github.com/jedisct1/libsodium.git
-        ( cd libsodium; ./autogen.sh; ./configure --prefix=$BUILD_PREFIX; make check; make install)
+        ( cd libsodium; ./autogen.sh; ./configure --prefix=$BUILD_PREFIX; make install)
     fi
 fi
 
 # Build, check, and install from local source
-( cd ../..; mkdir build_cmake && cd build_cmake && PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig cmake "${CMAKE_OPTS[@]}" .. && make all VERBOSE=1 && make install && make test ) || exit 1
+( cd ../..; mkdir build_cmake && cd build_cmake && PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig cmake "${CMAKE_OPTS[@]}" .. && make -j5 all VERBOSE=1 && make install && make -j5 test ) || exit 1

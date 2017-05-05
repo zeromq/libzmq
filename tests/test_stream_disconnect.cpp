@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -65,6 +65,9 @@ int main(int, char**)
 {
     setup_test_environment();
 
+    size_t len = MAX_SOCKET_STRING;
+    char bind_endpoint[MAX_SOCKET_STRING];
+    char connect_endpoint[MAX_SOCKET_STRING];
     void *context = zmq_ctx_new ();
     void *sockets [2];
     int rc = 0;
@@ -73,13 +76,24 @@ int main(int, char**)
     int enabled = 1;
     rc = zmq_setsockopt (sockets [SERVER], ZMQ_STREAM_NOTIFY, &enabled, sizeof (enabled));
     assert (rc == 0);
-    rc = zmq_bind (sockets [SERVER], "tcp://0.0.0.0:6666");
+    rc = zmq_bind (sockets [SERVER], "tcp://0.0.0.0:*");
     assert (rc == 0);
+    rc = zmq_getsockopt (sockets [SERVER], ZMQ_LAST_ENDPOINT, bind_endpoint,
+                         &len);
+    assert (rc == 0);
+
+    //  Apparently Windows can't connect to 0.0.0.0. A better fix would be welcome.
+#ifdef ZMQ_HAVE_WINDOWS
+    sprintf (connect_endpoint, "tcp://127.0.0.1:%s",
+                    strrchr(bind_endpoint, ':') + 1);
+#else
+    strcpy (connect_endpoint, bind_endpoint);
+#endif
 
     sockets [CLIENT] = zmq_socket (context, ZMQ_STREAM);
     rc = zmq_setsockopt (sockets [CLIENT], ZMQ_STREAM_NOTIFY, &enabled, sizeof (enabled));
     assert (rc == 0);
-    rc = zmq_connect (sockets [CLIENT], "tcp://localhost:6666");
+    rc = zmq_connect (sockets [CLIENT], connect_endpoint);
     assert (rc == 0);
 
     // wait for connect notification

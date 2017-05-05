@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -32,17 +32,21 @@
 int main (void)
 {
     setup_test_environment();
+    char my_endpoint[256];
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
     void *sb = zmq_socket (ctx, ZMQ_REP);
     assert (sb);
-    int rc = zmq_bind (sb, "ipc:///tmp/tester");
+    int rc = zmq_bind (sb, "ipc://*");
+    assert (rc == 0);
+    size_t len = sizeof(my_endpoint);
+    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
     assert (rc == 0);
 
     void *sc = zmq_socket (ctx, ZMQ_REQ);
     assert (sc);
-    rc = zmq_connect (sc, "ipc:///tmp/tester");
+    rc = zmq_connect (sc, my_endpoint);
     assert (rc == 0);
     
     bounce (sb, sc);

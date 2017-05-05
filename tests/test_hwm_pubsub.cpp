@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -157,6 +157,8 @@ void test_reset_hwm ()
     int first_count = 9999;
     int second_count = 1100;
     int hwm = 11024;
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
 
     void *ctx = zmq_ctx_new ();
     assert (ctx);
@@ -167,7 +169,9 @@ void test_reset_hwm ()
     assert (pub_socket);
     rc = zmq_setsockopt (pub_socket, ZMQ_SNDHWM, &hwm, sizeof (hwm));
     assert (rc == 0);
-    rc = zmq_bind (pub_socket, "tcp://127.0.0.1:1234");
+    rc = zmq_bind (pub_socket, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+    rc = zmq_getsockopt (pub_socket, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
     assert (rc == 0);
 
     // Set up connect socket
@@ -175,7 +179,7 @@ void test_reset_hwm ()
     assert (sub_socket);
     rc = zmq_setsockopt (sub_socket, ZMQ_RCVHWM, &hwm, sizeof (hwm));
     assert (rc == 0);
-    rc = zmq_connect (sub_socket, "tcp://127.0.0.1:1234");
+    rc = zmq_connect (sub_socket, my_endpoint);
     assert (rc == 0);
     rc = zmq_setsockopt( sub_socket, ZMQ_SUBSCRIBE, 0, 0);
     assert (rc == 0);

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -52,8 +52,8 @@ int main (void)
     int rc = zmq_setsockopt (sb, ZMQ_LINGER, &val, sizeof (val));
     assert (rc == 0);
 
-    do_bind_and_verify (sb, "tcp://127.0.0.1:5560");
-    do_bind_and_verify (sb, "tcp://127.0.0.1:5561");
+    do_bind_and_verify (sb, ENDPOINT_1);
+    do_bind_and_verify (sb, ENDPOINT_2);
 
     rc = zmq_close (sb);
     assert (rc == 0);

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -50,18 +50,36 @@
 #define QT_CLIENTS    3
 #define is_verbose 0
 
+struct thread_data {
+    void *ctx;
+    int id;
+};
+
 static void
-client_task (void *ctx)
+client_task (void *db)
 {
-    void *client = zmq_socket (ctx, ZMQ_DEALER);
+    struct thread_data *databag = (struct thread_data *)db;
+    // Endpoint socket gets random port to avoid test failing when port in use
+    void *endpoint = zmq_socket (databag->ctx, ZMQ_PAIR);
+    assert (endpoint);
+    int linger = 0;
+    int rc = zmq_setsockopt (endpoint, ZMQ_LINGER, &linger, sizeof (linger));
+    assert (rc == 0);
+    char endpoint_source [256];
+    sprintf (endpoint_source, "inproc://endpoint%d", databag->id);
+    rc = zmq_connect (endpoint, endpoint_source);
+    assert (rc == 0);
+    char *my_endpoint = s_recv (endpoint);
+    assert (my_endpoint);
+
+    void *client = zmq_socket (databag->ctx, ZMQ_DEALER);
     assert (client);
 
     // Control socket receives terminate command from main over inproc
-    void *control = zmq_socket (ctx, ZMQ_SUB);
+    void *control = zmq_socket (databag->ctx, ZMQ_SUB);
     assert (control);
-    int rc = zmq_setsockopt (control, ZMQ_SUBSCRIBE, "", 0);
+    rc = zmq_setsockopt (control, ZMQ_SUBSCRIBE, "", 0);
     assert (rc == 0);
-    int linger = 0;
     rc = zmq_setsockopt (control, ZMQ_LINGER, &linger, sizeof (linger));
     assert (rc == 0);
     rc = zmq_connect (control, "inproc://control");
@@ -76,7 +94,7 @@ client_task (void *ctx)
     linger = 0;
     rc = zmq_setsockopt (client, ZMQ_LINGER, &linger, sizeof (linger));
     assert (rc == 0);
-    rc = zmq_connect (client, "tcp://127.0.0.1:5563");
+    rc = zmq_connect (client, my_endpoint);
     assert (rc == 0);
 
     zmq_pollitem_t items [] = { { client, 0, ZMQ_POLLIN, 0 }, { control, 0, ZMQ_POLLIN, 0 } };
@@ -117,6 +135,9 @@ client_task (void *ctx)
     assert (rc == 0);
     rc = zmq_close (control);
     assert (rc == 0);
+    rc = zmq_close (endpoint);
+    assert (rc == 0);
+    free (my_endpoint);
 }
 
 // This is our server task.
@@ -131,12 +152,16 @@ void
 server_task (void *ctx)
 {
     // Frontend socket talks to clients over TCP
+    size_t len = MAX_SOCKET_STRING;
+    char my_endpoint[MAX_SOCKET_STRING];
     void *frontend = zmq_socket (ctx, ZMQ_ROUTER);
     assert (frontend);
     int linger = 0;
     int rc = zmq_setsockopt (frontend, ZMQ_LINGER, &linger, sizeof (linger));
     assert (rc == 0);
-    rc = zmq_bind (frontend, "tcp://127.0.0.1:5563");
+    rc = zmq_bind (frontend, "tcp://127.0.0.1:*");
+    assert (rc == 0);
+    rc = zmq_getsockopt (frontend, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
     assert (rc == 0);
 
     // Backend socket talks to workers over inproc
@@ -163,6 +188,25 @@ server_task (void *ctx)
     for (thread_nbr = 0; thread_nbr < QT_WORKERS; thread_nbr++)
         threads[thread_nbr] = zmq_threadstart (&server_worker, ctx);
 
+    // Endpoint socket sends random port to avoid test failing when port in use
+    void *endpoint_receivers [QT_CLIENTS];
+    char endpoint_source [256];
+    for (int i = 0; i < QT_CLIENTS; ++i) {
+        endpoint_receivers [i] = zmq_socket (ctx, ZMQ_PAIR);
+        assert (endpoint_receivers [i]);
+        rc = zmq_setsockopt (endpoint_receivers [i], ZMQ_LINGER, &linger,
+                sizeof (linger));
+        assert (rc == 0);
+        sprintf (endpoint_source, "inproc://endpoint%d", i);
+        rc = zmq_bind (endpoint_receivers [i], endpoint_source);
+        assert (rc == 0);
+    }
+
+    for (int i = 0; i < QT_CLIENTS; ++i) {
+        rc = s_send (endpoint_receivers [i], my_endpoint);
+        assert (rc > 0);
+    }
+
     // Connect backend to frontend via a proxy
     rc = zmq_proxy_steerable (frontend, backend, NULL, control);
     assert (rc == 0);
@@ -176,6 +220,10 @@ server_task (void *ctx)
     assert (rc == 0);
     rc = zmq_close (control);
     assert (rc == 0);
+    for (int i = 0; i < QT_CLIENTS; ++i) {
+        rc = zmq_close(endpoint_receivers [i]);
+        assert (rc == 0);
+    }
 }
 
 // Each worker task works on one request at a time and sends a random number
@@ -262,8 +310,12 @@ int main (void)
     assert (rc == 0);
 
     void *threads [QT_CLIENTS + 1];
-    for (int i = 0; i < QT_CLIENTS; i++)
-        threads[i] = zmq_threadstart  (&client_task, ctx);
+    struct thread_data databags [QT_CLIENTS + 1];
+    for (int i = 0; i < QT_CLIENTS; i++) {
+        databags [i].ctx = ctx;
+        databags [i].id = i;
+        threads[i] = zmq_threadstart  (&client_task, &databags [i]);
+    }
     threads[QT_CLIENTS] = zmq_threadstart  (&server_task, ctx);
     msleep (500); // Run for 500 ms then quit
 

@@ -8,16 +8,20 @@ if [ $BUILD_TYPE == "default" ]; then
     BUILD_PREFIX=$PWD/tmp
 
     CONFIG_OPTS=()
-    CONFIG_OPTS+=("CFLAGS=-I${BUILD_PREFIX}/include")
+    CONFIG_OPTS+=("CFLAGS=-g")
     CONFIG_OPTS+=("CPPFLAGS=-I${BUILD_PREFIX}/include")
-    CONFIG_OPTS+=("CXXFLAGS=-I${BUILD_PREFIX}/include")
+    CONFIG_OPTS+=("CXXFLAGS=-g")
     CONFIG_OPTS+=("LDFLAGS=-L${BUILD_PREFIX}/lib")
     CONFIG_OPTS+=("PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig")
     CONFIG_OPTS+=("--prefix=${BUILD_PREFIX}")
 
     if [ -n "$ADDRESS_SANITIZER" ] && [ "$ADDRESS_SANITIZER" == "enabled" ]; then
-        CONFIG_OPTS+=("CFLAGS=-fsanitize=address")
-        CONFIG_OPTS+=("CXXFLAGS=-fsanitize=address")
+        CONFIG_OPTS+=("--enable-address-sanitizer=yes")
+        CONFIG_OPTS+=("CXX=g++-6")
+        CONFIG_OPTS+=("CC=gcc-6")
+        # workaround for linker problem with ASAN options in GCC
+        # http://stackoverflow.com/questions/37603238/fsanitize-not-using-gold-linker-in-gcc-6-1
+        CONFIG_OPTS+=("LDFLAGS=-fuse-ld=gold")
     fi
 
     if [ -z $CURVE ]; then
@@ -28,7 +32,7 @@ if [ $BUILD_TYPE == "default" ]; then
         if ! ((command -v dpkg-query >/dev/null 2>&1 && dpkg-query --list libsodium-dev >/dev/null 2>&1) || \
                 (command -v brew >/dev/null 2>&1 && brew ls --versions libsodium >/dev/null 2>&1)); then
             git clone --depth 1 -b stable git://github.com/jedisct1/libsodium.git
-            ( cd libsodium; ./autogen.sh; ./configure --prefix=$BUILD_PREFIX; make check; make install)
+            ( cd libsodium; ./autogen.sh; ./configure --prefix=$BUILD_PREFIX; make install)
         fi
     fi
 
@@ -43,7 +47,7 @@ if [ $BUILD_TYPE == "default" ]; then
         ./autogen.sh &&
         ./configure "${CONFIG_OPTS[@]}" &&
         export DISTCHECK_CONFIGURE_FLAGS="${CONFIG_OPTS[@]}" &&
-        make VERBOSE=1 distcheck
+        make VERBOSE=1 -j5 distcheck
     ) || exit 1
 else
     cd ./builds/${BUILD_TYPE} && ./ci_build.sh
