@@ -29,48 +29,9 @@
 
 #include "testutil.hpp"
 
-void test_leak (void)
+int main (void)
 {
-    char my_endpoint[256];
-    void *ctx = zmq_ctx_new ();
-    assert (ctx);
-
-    void *sb = zmq_socket (ctx, ZMQ_REP);
-    assert (sb);
-    int rc = zmq_bind (sb, "ipc://*");
-    assert (rc == 0);
-    size_t len = sizeof(my_endpoint);
-    rc = zmq_getsockopt (sb, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
-    assert (rc == 0);
-
-    void *sc = zmq_socket (ctx, ZMQ_REQ);
-    assert (sc);
-    rc = zmq_connect (sc, my_endpoint);
-    assert (rc == 0);
-
-    rc = s_send (sc, "leakymsg");
-    assert (rc == strlen ("leakymsg"));
-
-    char *buf = s_recv (sb);
-    free (buf);
-
-    rc = zmq_close (sc);
-    assert (rc == 0);
-
-    msleep (SETTLE_TIME);
-
-    rc = s_send (sb, "leakymsg");
-    assert (rc == strlen ("leakymsg"));
-
-    rc = zmq_close (sb);
-    assert (rc == 0);
-
-    rc = zmq_ctx_term (ctx);
-    assert (rc == 0);
-}
-
-void test_simple (void)
-{
+    setup_test_environment();
     char my_endpoint[256];
     void *ctx = zmq_ctx_new ();
     assert (ctx);
@@ -98,15 +59,6 @@ void test_simple (void)
 
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
-}
-
-int main (void)
-{
-    setup_test_environment();
-
-    test_simple ();
-
-    test_leak ();
 
     return 0 ;
 }

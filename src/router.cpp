@@ -273,9 +273,6 @@ int zmq::router_t::xsend (msg_t *msg_)
             // Message failed to send - we must close it ourselves.
             int rc = msg_->close ();
             errno_assert (rc == 0);
-            // HWM was checked before, so the pipe must be gone. Roll back
-            // messages that were piped, for example REP labels.
-            current_out->rollback ();
             current_out = NULL;
         } else {
           if (!more_out) {
