@@ -150,6 +150,10 @@ int main (void)
     assert (event.socket == server);
     assert (event.user_data == NULL);
     assert (event.events == ZMQ_POLLOUT);
+
+    //  Stop polling server
+    rc = zmq_poller_remove (poller, server);
+    assert (rc == 0);
 #endif
 
     //  Destory sockets, poller and ctx    
