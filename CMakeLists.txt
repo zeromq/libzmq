@@ -741,6 +741,9 @@ if (BUILD_STATIC)
 endif()
 
 if (MSVC)
+  # Suppress linker warnings caused by #ifdef omission
+  # of file content.
+  set( CMAKE_STATIC_LINKER_FLAGS /ignore:4221 )
   if (BUILD_SHARED)
     add_library (libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs} ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.in)
     target_link_libraries (libzmq ${OPTIONAL_LIBRARIES})
