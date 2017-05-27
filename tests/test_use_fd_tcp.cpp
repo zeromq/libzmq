@@ -179,8 +179,10 @@ void test_client_server ()
     rc = zmq_msg_recv (&msg, sb, 0);
     assert (rc == 1);
 
+#ifdef ZMQ_BUILD_DRAFT_API
     uint32_t routing_id = zmq_msg_routing_id (&msg);
     assert (routing_id != 0);
+#endif
 
     rc = zmq_msg_close (&msg);
     assert (rc == 0);
@@ -191,8 +193,10 @@ void test_client_server ()
     data = (char *)zmq_msg_data (&msg);
     data[0] = 2;
 
+#ifdef ZMQ_BUILD_DRAFT_API
     rc = zmq_msg_set_routing_id (&msg, routing_id);
     assert (rc == 0);
+#endif
 
     rc = zmq_msg_send (&msg, sb, ZMQ_SNDMORE);
     assert (rc == -1);
@@ -203,8 +207,10 @@ void test_client_server ()
     rc = zmq_msg_recv (&msg, sc, 0);
     assert (rc == 1);
 
+#ifdef ZMQ_BUILD_DRAFT_API
     routing_id = zmq_msg_routing_id (&msg);
     assert (routing_id == 0);
+#endif
 
     rc = zmq_msg_close (&msg);
     assert (rc == 0);
