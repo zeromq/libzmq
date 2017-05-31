@@ -133,7 +133,9 @@ namespace zmq
         void event_closed (const std::string &addr_, zmq::fd_t fd_);
         void event_close_failed (const std::string &addr_, int err_);
         void event_disconnected (const std::string &addr_, zmq::fd_t fd_);
-        void event_handshake_failed(const std::string &addr_, int err_);
+        void event_handshake_failed_no_detail(const std::string &addr_, int err_);
+        void event_handshake_failed_protocol(const std::string &addr_, int err_);
+        void event_handshake_failed_encryption(const std::string &addr_, int err_);
         void event_handshake_succeed(const std::string &addr_, int err_);
 
     protected:
