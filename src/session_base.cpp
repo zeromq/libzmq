@@ -506,6 +506,11 @@ void zmq::session_base_t::reconnect ()
         pipe->terminate (false);
         terminating_pipes.insert (pipe);
         pipe = NULL;
+
+        if (has_linger_timer) {
+            cancel_timer (linger_timer_id);
+            has_linger_timer = false;
+        }
     }
 
     reset ();
