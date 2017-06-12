@@ -521,7 +521,7 @@ void zmq::session_base_t::reconnect ()
 
     //  For subscriber sockets we hiccup the inbound pipe, which will cause
     //  the socket object to resend all the subscriptions.
-    if (pipe && (options.type == ZMQ_SUB || options.type == ZMQ_XSUB))
+    if (pipe && (options.type == ZMQ_SUB || options.type == ZMQ_XSUB || options.type == ZMQ_DISH))
         pipe->hiccup ();
 }
 
