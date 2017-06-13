@@ -490,6 +490,9 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     zmq_assert (rc == 0);
 
     //  Use ZAP protocol (RFC 27) to authenticate the user.
+    //  Note that rc will be -1 only if ZAP is not set up (Stonehouse pattern -
+    //  encryption without authentication), but if it was requested and it does
+    //  not work properly the program will abort.
     rc = session->zap_connect ();
     if (rc != 0)
         return -1;

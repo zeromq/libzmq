@@ -189,6 +189,9 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     }
 
     //  Use ZAP protocol (RFC 27) to authenticate the user.
+    //  Note that there is no point to PLAIN if ZAP is not set up to handle the
+    //  username and password, so if ZAP is not configured it is considered a
+    //  failure.
     int rc = session->zap_connect ();
     if (rc != 0)
         return -1;

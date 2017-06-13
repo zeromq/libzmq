@@ -120,6 +120,8 @@ int zmq::gssapi_server_t::process_handshake_command (msg_t *msg_)
 
     if (security_context_established) {
         //  Use ZAP protocol (RFC 27) to authenticate the user.
+        //  Note that rc will be -1 only if ZAP is not set up, but if it was
+        //  requested and it does not work properly the program will abort.
         int rc = session->zap_connect ();
         if (rc != 0)
             return -1;
