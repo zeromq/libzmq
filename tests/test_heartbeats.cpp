@@ -102,7 +102,32 @@ mock_handshake (raw_socket fd) {
 }
 
 static void
-prep_server_socket(void * ctx, int set_heartbeats, void ** server_out, void ** mon_out,
+setup_curve (void * socket, int is_server) {
+    const char *secret_key;
+    const char *public_key;
+    const char *server_key;
+
+    if (is_server) {
+        secret_key = "JTKVSB%%)wK0E.X)V>+}o?pNmC{O&4W4b!Ni{Lh6";
+        public_key = "rq:rM>}U?@Lns47E1%kR.o@n%FcmmsL/@{H8]yf7";
+        server_key = NULL;
+    }
+    else {
+        secret_key = "D:)Q[IlAW!ahhC2ac:9*A}h:p?([4%wOTJ%JR%cs";
+        public_key = "Yne@$w-vo<fVvi]a<NY6T1ed:M$fCG*[IaLV{hID";
+        server_key = "rq:rM>}U?@Lns47E1%kR.o@n%FcmmsL/@{H8]yf7";
+    }
+
+    zmq_setsockopt (socket, ZMQ_CURVE_SECRETKEY, secret_key, strlen(secret_key));
+    zmq_setsockopt (socket, ZMQ_CURVE_PUBLICKEY, public_key, strlen(public_key));
+    if (is_server)
+        zmq_setsockopt (socket, ZMQ_CURVE_SERVER, &is_server, sizeof(is_server));
+    else
+        zmq_setsockopt (socket, ZMQ_CURVE_SERVERKEY, server_key, strlen(server_key));
+}
+
+static void
+prep_server_socket(void * ctx, int set_heartbeats, int is_curve, void ** server_out, void ** mon_out,
         char *endpoint, size_t ep_length)
 {
     int rc;
@@ -119,6 +144,9 @@ prep_server_socket(void * ctx, int set_heartbeats, void ** server_out, void ** m
         rc = zmq_setsockopt (server, ZMQ_HEARTBEAT_IVL, &value, sizeof(value));
         assert (rc == 0);
     }
+
+    if (is_curve)
+        setup_curve(server, 1);
 
     rc = zmq_bind (server, "tcp://127.0.0.1:*");
     assert (rc == 0);
@@ -155,7 +183,7 @@ test_heartbeat_timeout (void)
     assert (ctx);
 
     void * server, * server_mon;
-    prep_server_socket (ctx, 1, &server, &server_mon, my_endpoint,
+    prep_server_socket (ctx, 1, 0, &server, &server_mon, my_endpoint,
             MAX_SOCKET_STRING);
 
     struct sockaddr_in ip4addr;
@@ -212,7 +240,7 @@ test_heartbeat_ttl (void)
     assert (ctx);
 
     void * server, * server_mon, *client;
-    prep_server_socket (ctx, 0, &server, &server_mon, my_endpoint,
+    prep_server_socket (ctx, 0, 0, &server, &server_mon, my_endpoint,
             MAX_SOCKET_STRING);
 
     client = zmq_socket (ctx, ZMQ_DEALER);
@@ -259,7 +287,7 @@ test_heartbeat_ttl (void)
 // exchanged normally. There should be an accepted event on the server,
 // and then no event afterwards.
 static void
-test_heartbeat_notimeout (void)
+test_heartbeat_notimeout (int is_curve)
 {
     int rc;
     char my_endpoint[MAX_SOCKET_STRING];
@@ -269,10 +297,12 @@ test_heartbeat_notimeout (void)
     assert (ctx);
 
     void * server, * server_mon;
-    prep_server_socket(ctx, 1, &server, &server_mon, my_endpoint,
+    prep_server_socket(ctx, 1, is_curve, &server, &server_mon, my_endpoint,
             MAX_SOCKET_STRING);
 
     void * client = zmq_socket (ctx, ZMQ_DEALER);
+    if (is_curve)
+        setup_curve(client, 0);
     rc = zmq_connect (client, my_endpoint);
 
     // Give it a sec to connect and handshake
@@ -304,5 +334,8 @@ int main (void)
     setup_test_environment ();
     test_heartbeat_timeout ();
     test_heartbeat_ttl ();
-    test_heartbeat_notimeout ();
+    // Run this test without curve
+    test_heartbeat_notimeout (0);
+    // Then rerun it with curve
+    test_heartbeat_notimeout (1);
 }
