@@ -34,6 +34,7 @@
 #include "pipe.hpp"
 #include "err.hpp"
 #include "msg.hpp"
+#include "macros.hpp"
 
 zmq::xpub_t::xpub_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     socket_base_t (parent_, tid_, sid_),
@@ -203,6 +204,13 @@ int zmq::xpub_t::xsetsockopt (int option_, const void *optval_,
     return 0;
 }
 
+static void stub (unsigned char *data_, size_t size_, void *arg_)
+{
+    LIBZMQ_UNUSED(data_);
+    LIBZMQ_UNUSED(size_);
+    LIBZMQ_UNUSED(arg_);
+}
+
 void zmq::xpub_t::xpipe_terminated (pipe_t *pipe_)
 {
     if (manual)
@@ -210,6 +218,10 @@ void zmq::xpub_t::xpipe_terminated (pipe_t *pipe_)
         //  Remove the pipe from the trie and send corresponding manual
         //  unsubscriptions upstream.
         manual_subscriptions.rm (pipe_, send_unsubscription, this, false);
+        //  Remove pipe without actually sending the message as it was taken
+        //  care of by the manual call above. subscriptions is the real mtrie,
+        //  so the pipe must be removed from there or it will be left over.
+        subscriptions.rm (pipe_, stub, NULL, false);
     }
     else
     {
