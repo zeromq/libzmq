@@ -37,12 +37,10 @@ int test_basic()
     //  Create a publisher
     void *pub = zmq_socket (ctx, ZMQ_XPUB);
     assert (pub);
-    int rc = zmq_bind (pub, "inproc://soname");
-    assert (rc == 0);
-
-    //  set pub socket options
     int manual = 1;
-    rc = zmq_setsockopt(pub, ZMQ_XPUB_MANUAL, &manual, 4);
+    int rc = zmq_setsockopt(pub, ZMQ_XPUB_MANUAL, &manual, 4);
+    assert (rc == 0);
+    rc = zmq_bind (pub, "inproc://soname");
     assert (rc == 0);
 
     //  Create a subscriber
