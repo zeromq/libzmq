@@ -410,6 +410,8 @@ void zmq::pipe_t::terminate (bool delay_)
     //  There are still pending messages available, but the user calls
     //  'terminate'. We can act as if all the pending messages were read.
     else if (state == waiting_for_delimiter && !delay) {
+        //  Drop any unfinished outbound messages.
+        rollback ();
         outpipe = NULL;
         send_pipe_term_ack (peer);
         state = term_ack_sent;
