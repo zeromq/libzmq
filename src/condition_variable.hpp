@@ -39,9 +39,22 @@
 #ifdef ZMQ_HAVE_WINDOWS
 
 #include "windows.hpp"
+#if defined(_MSC_VER)
+#if _MSC_VER >= 1800
+#define _SUPPORT_CONDITION_VARIABLE 1
+#else
+#define _SUPPORT_CONDITION_VARIABLE 0
+#endif
+#else
+#if _cplusplus >= 201103L
+#define _SUPPORT_CONDITION_VARIABLE 1
+#else
+#define _SUPPORT_CONDITION_VARIABLE 0
+#endif
+#endif
 
 // Condition variable is supported from Windows Vista only, to use condition variable define _WIN32_WINNT to 0x0600
-#if _WIN32_WINNT < 0x0600
+#if _WIN32_WINNT < 0x0600 && !_SUPPORT_CONDITION_VARIABLE
 
 namespace zmq
 {
@@ -81,7 +94,7 @@ namespace zmq
 
 #else
 
-#ifdef ZMQ_HAVE_WINDOWS_TARGET_XP
+#if _SUPPORT_CONDITION_VARIABLE || defined(ZMQ_HAVE_WINDOWS_TARGET_XP)
 #include <condition_variable>
 #include <mutex>
 #endif
@@ -89,7 +102,7 @@ namespace zmq
 namespace zmq
 {
 
-#ifndef ZMQ_HAVE_WINDOWS_TARGET_XP
+#if !defined(ZMQ_HAVE_WINDOWS_TARGET_XP) && _WIN32_WINNT >= 0x0600
     class condition_variable_t
     {
     public:
