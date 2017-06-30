@@ -57,22 +57,23 @@ extern "C" {
 #endif
 #include <stddef.h>
 #include <stdio.h>
-#if defined _WIN32
+
 //  Set target version to Windows Server 2008, Windows Vista or higher.
 //  Windows XP (0x0501) is supported but without client & server socket types.
-#ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0600
-#endif
+//  To use XP, user must explicitly define _WIN32_WINNT to 0x0501.
+//  If user defines _WIN32_WINNT then it's his responsibility to be aware of the limitations.
+#if defined _WIN32
+#   if !defined _WIN32_WINNT
+#       if defined ZMQ_HAVE_WINDOWS_UWP
+#           define _WIN32_WINNT 0x0A00 // Windows 10. _WIN32_WINNT_WIN10.
+#       else
+#           define _WIN32_WINNT 0x0600 // Windows Vista, Windows Server 2008. _WIN32_WINNT_WIN6, _WIN32_WINNT_VISTA, _WIN32_WINNT_WS08, _WIN32_WINNT_LONGHORN.
+#       endif
+#   endif
 
-#ifdef __MINGW32__
-//  Require Windows XP or higher with MinGW for getaddrinfo().
-#if(_WIN32_WINNT >= 0x0600)
-#else
-#undef _WIN32_WINNT
-#define _WIN32_WINNT 0x0600
-#endif
-#endif
-#include <winsock2.h>
+#   if defined __MINGW32__
+#       include <winsock2.h>
+#   endif
 #endif
 
 /*  Handle DSO symbol visibility                                             */
