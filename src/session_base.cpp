@@ -323,7 +323,8 @@ void zmq::session_base_t::process_plug ()
 //  security flaw.
 int zmq::session_base_t::zap_connect ()
 {
-    zmq_assert (zap_pipe == NULL);
+    if (zap_pipe != NULL)
+        return 0;
 
     endpoint_t peer = find_endpoint ("inproc://zeromq.zap.01");
     if (peer.socket == NULL) {
