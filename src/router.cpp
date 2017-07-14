@@ -423,10 +423,19 @@ bool zmq::router_t::xhas_in ()
 
 bool zmq::router_t::xhas_out ()
 {
-    //  In theory, ROUTER socket is always ready for writing. Whether actual
-    //  attempt to write succeeds depends on which pipe the message is going
-    //  to be routed to.
-    return true;
+    //  In theory, ROUTER socket is always ready for writing (except when
+    //  MANDATORY is set). Whether actual attempt to write succeeds depends
+    //  on whitch pipe the message is going to be routed to.
+
+    if(!mandatory)
+        return true;
+
+    bool has_out = false;
+    outpipes_t::iterator it;
+    for (it = outpipes.begin (); it != outpipes.end (); ++it)
+        has_out |= it->second.pipe->check_hwm();
+
+    return has_out;
 }
 
 zmq::blob_t zmq::router_t::get_credential () const
