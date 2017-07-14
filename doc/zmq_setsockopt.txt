@@ -745,6 +745,11 @@ code if the SNDHWM is reached and ZMQ_DONTWAIT was used. Without ZMQ_DONTWAIT
 it will block until the SNDTIMEO is reached or a spot in the send queue opens
 up.
 
+When ZMQ_ROUTER_MANDATORY is set to `1`, 'ZMQ_POLLOUT' events will be generated
+if one or more messages can be sent to at least one of the peers. If
+ZMQ_ROUTER_MANDATORY is set to `0`, the socket will generate a 'ZMQ_POLLOUT'
+event on every call to 'zmq_poll'.
+
 [horizontal]
 Option value type:: int
 Option value unit:: 0, 1
