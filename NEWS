@@ -3,6 +3,9 @@
 
 * Fixed #2254 - zmq 4.1.6 cannot pub msg to a zmq 2.x
 
+* Fixed #2623 - ZMQ_ROUTER: with ZMQ_ROUTER_MANDATORY, ZMQ_POLLOUT will now
+                now return true only if at least one pipe is ready for writing
+
 
 0MQ version 4.1.6 stable, released on 2016/11/01
 ================================================
