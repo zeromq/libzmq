@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -45,12 +45,7 @@
 #include "pipe.hpp"
 #include "err.hpp"
 #include "msg.hpp"
-
-#if defined (ZMQ_USE_TWEETNACL)
-#   include "tweetnacl.h"
-#elif defined (ZMQ_USE_LIBSODIUM)
-#   include "sodium.h"
-#endif
+#include "random.hpp"
 
 #ifdef ZMQ_HAVE_VMCI
 #include <vmci_sockets.h>
@@ -91,15 +86,8 @@ zmq::ctx_t::ctx_t () :
     vmci_family = -1;
 #endif
 
-    scoped_lock_t locker(crypto_sync);
-#if defined (ZMQ_USE_TWEETNACL)
-    // allow opening of /dev/urandom
-    unsigned char tmpbytes[4];
-    randombytes(tmpbytes, 4);
-#elif defined (ZMQ_USE_LIBSODIUM)
-    int rc = sodium_init ();
-    zmq_assert (rc != -1);
-#endif
+    //  Initialise crypto library, if needed.
+    zmq::random_open ();
 }
 
 bool zmq::ctx_t::check_tag ()
@@ -131,11 +119,8 @@ zmq::ctx_t::~ctx_t ()
     //  corresponding io_thread/socket objects.
     free (slots);
 
-    //  If we've done any Curve encryption, we may have a file handle
-    //  to /dev/urandom open that needs to be cleaned up.
-#ifdef ZMQ_HAVE_CURVE
-    randombytes_close ();
-#endif
+    //  De-initialise crypto library, if needed.
+    zmq::random_close ();
 
     //  Remove the tag, so that the object is considered dead.
     tag = ZMQ_CTX_TAG_VALUE_BAD;

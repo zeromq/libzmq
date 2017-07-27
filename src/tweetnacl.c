@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2016-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -898,26 +898,27 @@ int randombytes_close(void)
     return rc;
 }
 
+int sodium_init (void)
+{
+    return 0;
+}
+
 #else
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <assert.h>
 
 static int fd = -1;
 
 void randombytes (unsigned char *x,unsigned long long xlen)
 {
     int i;
-    if (fd == -1) {
-        for (;;) {
-            fd = open("/dev/urandom",O_RDONLY);
-            if (fd != -1)
-                break;
-            sleep (1);
-        }
-    }
+    //  Require that random_open has already been called, to avoid
+    //  race conditions.
+    assert (fd != -1);
     while (xlen > 0) {
         if (xlen < 1048576)
             i = xlen;
@@ -934,6 +935,7 @@ void randombytes (unsigned char *x,unsigned long long xlen)
     }
 }
 
+//  Do not call manually! Use random_close from random.hpp
 int randombytes_close (void)
 {
     int rc = -1;
@@ -942,6 +944,20 @@ int randombytes_close (void)
         rc = 0;
     }
     return rc;
+}
+
+//  Do not call manually! Use random_open from random.hpp
+int sodium_init (void)
+{
+    if (fd == -1) {
+        for (;;) {
+            fd = open("/dev/urandom",O_RDONLY);
+            if (fd != -1)
+                break;
+            sleep (1);
+        }
+    }
+    return 0;
 }
 
 #endif
