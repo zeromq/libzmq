@@ -913,8 +913,9 @@ void randombytes (unsigned char *x,unsigned long long xlen)
     if (fd == -1) {
         for (;;) {
             fd = open("/dev/urandom",O_RDONLY);
-            if (fd != -1) break;
-                sleep (1);
+            if (fd != -1)
+                break;
+            sleep (1);
         }
     }
     while (xlen > 0) {
