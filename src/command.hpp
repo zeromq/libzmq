@@ -44,10 +44,11 @@ namespace zmq
     //  This structure defines the commands that can be sent between threads.
 
 #ifdef _MSC_VER
-    __declspec(align(64)) struct command_t
-#else
-    struct command_t
+#pragma warning(push)
+#pragma warning(disable: 4324) // C4324: alignment padding warnings
+    __declspec(align(64))
 #endif
+    struct command_t
     {
         //  Object to process the command.
         zmq::object_t *destination;
@@ -170,6 +171,7 @@ namespace zmq
         } args;
 #ifdef _MSC_VER
     };
+#pragma warning(pop)
 #else
     } __attribute__((aligned(64)));
 #endif
