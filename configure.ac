@@ -699,6 +699,12 @@ LIBZMQ_CHECK_TCP_KEEPALIVE([
         [Whether TCP_KEEPALIVE is supported.])
     ])
 
+LIBZMQ_CHECK_GETRANDOM([
+    AC_DEFINE([ZMQ_HAVE_GETRANDOM],
+        [1],
+        [Whether getrandom is supported.])
+    ])
+
 AM_CONDITIONAL(HAVE_FORK, test "x$ac_cv_func_fork" = "xyes")
 
 if test "x$cross_compiling" = "xyes"; then

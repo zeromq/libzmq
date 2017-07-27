@@ -331,6 +331,7 @@ if (NOT CMAKE_CROSSCOMPILING)
   zmq_check_tcp_keepalive ()
   zmq_check_tcp_tipc ()
   zmq_check_pthread_setname ()
+  zmq_check_getrandom ()
 endif ()
 
 if (    CMAKE_SYSTEM_NAME MATCHES "Linux"

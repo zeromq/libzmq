@@ -89,7 +89,7 @@ static zmq::mutex_t random_sync;
 void zmq::random_open (void)
 {
 #if defined (ZMQ_USE_LIBSODIUM) || \
-        (defined (ZMQ_USE_TWEETNACL) && !defined (ZMQ_HAVE_WINDOWS))
+        (defined (ZMQ_USE_TWEETNACL) && !defined (ZMQ_HAVE_WINDOWS) && !defined (ZMQ_HAVE_GETRANDOM))
     scoped_lock_t locker (random_sync);
 
     if (random_refcount == 0) {
@@ -106,7 +106,7 @@ void zmq::random_open (void)
 void zmq::random_close (void)
 {
 #if defined (ZMQ_USE_LIBSODIUM) || \
-        (defined (ZMQ_USE_TWEETNACL) && !defined (ZMQ_HAVE_WINDOWS))
+        (defined (ZMQ_USE_TWEETNACL) && !defined (ZMQ_HAVE_WINDOWS) && !defined (ZMQ_HAVE_GETRANDOM))
     scoped_lock_t locker (random_sync);
     --random_refcount;
 

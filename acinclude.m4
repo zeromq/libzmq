@@ -830,6 +830,29 @@ int main (int argc, char *argv [])
 }])
 
 dnl ################################################################################
+dnl # LIBZMQ_CHECK_GETRANDOM([action-if-found], [action-if-not-found])  #
+dnl # Checks if getrandom is supported                                  #
+dnl ################################################################################
+AC_DEFUN([LIBZMQ_CHECK_GETRANDOM], [{
+    AC_CACHE_CHECK([whether getrandom is supported], [libzmq_cv_getrandom],
+        [AC_TRY_RUN([/* thread-local storage test */
+#include <sys/random.h>
+
+int main (int argc, char *argv [])
+{
+    char buf[4];
+    getrandom(buf, 4, 0);
+}
+        ],
+        [libzmq_cv_getrandom="yes"],
+        [libzmq_cv_getrandom="no"],
+        [libzmq_cv_getrandom="not during cross-compile"]
+        )]
+    )
+    AS_IF([test "x$libzmq_cv_getrandom" = "xyes"], [$1], [$2])
+}])
+
+dnl ################################################################################
 dnl # LIBZMQ_CHECK_POLLER_KQUEUE([action-if-found], [action-if-not-found])         #
 dnl # Checks kqueue polling system                                                 #
 dnl ################################################################################

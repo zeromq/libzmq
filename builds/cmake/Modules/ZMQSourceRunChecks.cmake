@@ -245,3 +245,19 @@ int main(int argc, char *argv [])
     ZMQ_HAVE_PTHREAD_SET_NAME)
   set(CMAKE_REQUIRED_FLAGS ${SAVE_CMAKE_REQUIRED_FLAGS})
 endmacro()
+
+
+macro(zmq_check_getrandom)
+  message(STATUS "Checking whether getrandom is supported")
+  check_c_source_runs(
+    "
+#include <sys/random.h>
+
+int main (int argc, char *argv [])
+{
+    char buf[4];
+    getrandom(buf, 4, 0);
+}
+"
+    ZMQ_HAVE_GETRANDOM)
+endmacro()
