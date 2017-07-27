@@ -662,6 +662,12 @@ LIBZMQ_CHECK_SOCK_CLOEXEC([
         [Whether SOCK_CLOEXEC is defined and functioning.])
     ])
 
+LIBZMQ_CHECK_O_CLOEXEC([
+    AC_DEFINE([ZMQ_HAVE_O_CLOEXEC],
+        [1],
+        [Whether O_CLOEXEC is defined and functioning.])
+    ])
+
 # TCP keep-alives Checks.
 LIBZMQ_CHECK_SO_KEEPALIVE([
     AC_DEFINE([ZMQ_HAVE_SO_KEEPALIVE],

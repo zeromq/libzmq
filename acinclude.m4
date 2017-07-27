@@ -615,6 +615,31 @@ int main (int argc, char *argv [])
 }])
 
 dnl ################################################################################
+dnl # LIBZMQ_CHECK_O_CLOEXEC([action-if-found], [action-if-not-found])          #
+dnl # Check if O_CLOEXEC is supported                                           #
+dnl ################################################################################
+AC_DEFUN([LIBZMQ_CHECK_O_CLOEXEC], [{
+    AC_CACHE_CHECK([whether O_CLOEXEC is supported], [libzmq_cv_o_cloexec],
+        [AC_TRY_RUN([/* O_CLOEXEC test */
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+int main (int argc, char *argv [])
+{
+    int s = open ("/dev/null", O_CLOEXEC | O_RDONLY);
+    return (s == -1);
+}
+        ],
+        [libzmq_cv_o_cloexec="yes"],
+        [libzmq_cv_o_cloexec="no"],
+        [libzmq_cv_o_cloexec="not during cross-compile"]
+        )]
+    )
+    AS_IF([test "x$libzmq_cv_o_cloexec" = "xyes"], [$1], [$2])
+}])
+
+dnl ################################################################################
 dnl # LIBZMQ_CHECK_EVENTFD_CLOEXEC([action-if-found], [action-if-not-found])          #
 dnl # Check if EFD_CLOEXEC is supported                                           #
 dnl ################################################################################

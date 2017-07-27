@@ -323,6 +323,7 @@ endif ()
 #-----------------------------------------------------------------------------
 if (NOT CMAKE_CROSSCOMPILING)
   zmq_check_sock_cloexec ()
+  zmq_check_o_cloexec ()
   zmq_check_so_keepalive ()
   zmq_check_tcp_keepcnt ()
   zmq_check_tcp_keepidle ()

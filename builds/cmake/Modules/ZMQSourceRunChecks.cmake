@@ -31,6 +31,23 @@ int main(int argc, char *argv [])
     ZMQ_HAVE_EVENTFD_CLOEXEC)
 endmacro()
 
+macro(zmq_check_o_cloexec)
+  message(STATUS "Checking whether O_CLOEXEC is supported")
+  check_c_source_runs(
+    "
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+int main(int argc, char *argv [])
+{
+    int s = open ("/dev/null", O_CLOEXEC | O_RDONLY);
+    return (s == -1);
+}
+"
+    ZMQ_HAVE_O_CLOEXEC)
+endmacro()
+
 # TCP keep-alives Checks.
 
 macro(zmq_check_so_keepalive)

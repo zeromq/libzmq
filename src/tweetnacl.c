@@ -951,11 +951,19 @@ int sodium_init (void)
 {
     if (fd == -1) {
         for (;;) {
-            fd = open("/dev/urandom",O_RDONLY);
+            int flags = O_RDONLY;
+#ifdef ZMQ_HAVE_O_CLOEXEC
+            flags |= O_CLOEXEC;
+#endif
+            fd = open ("/dev/urandom", flags);
             if (fd != -1)
                 break;
             sleep (1);
         }
+#if !defined ZMQ_HAVE_O_CLOEXEC && defined FD_CLOEXEC
+        int rc = fcntl (fd, F_SETFD, FD_CLOEXEC);
+        assert (rc != -1);
+#endif
     }
     return 0;
 }
