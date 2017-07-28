@@ -662,6 +662,12 @@ LIBZMQ_CHECK_SOCK_CLOEXEC([
         [Whether SOCK_CLOEXEC is defined and functioning.])
     ])
 
+LIBZMQ_CHECK_O_CLOEXEC([
+    AC_DEFINE([ZMQ_HAVE_O_CLOEXEC],
+        [1],
+        [Whether O_CLOEXEC is defined and functioning.])
+    ])
+
 # TCP keep-alives Checks.
 LIBZMQ_CHECK_SO_KEEPALIVE([
     AC_DEFINE([ZMQ_HAVE_SO_KEEPALIVE],
@@ -691,6 +697,12 @@ LIBZMQ_CHECK_TCP_KEEPALIVE([
     AC_DEFINE([ZMQ_HAVE_TCP_KEEPALIVE],
         [1],
         [Whether TCP_KEEPALIVE is supported.])
+    ])
+
+LIBZMQ_CHECK_GETRANDOM([
+    AC_DEFINE([ZMQ_HAVE_GETRANDOM],
+        [1],
+        [Whether getrandom is supported.])
     ])
 
 AM_CONDITIONAL(HAVE_FORK, test "x$ac_cv_func_fork" = "xyes")

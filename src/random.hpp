@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -41,6 +41,12 @@ namespace zmq
     //  Generates random value.
     uint32_t generate_random ();
 
+    //  [De-]Initialise crypto library, if needed.
+    //  Serialised and refcounted, so that it can be called
+    //  from multiple threads, each with its own context, and from
+    //  the various zmq_utils curve functions safely.
+    void random_open ();
+    void random_close ();
 }
 
 #endif

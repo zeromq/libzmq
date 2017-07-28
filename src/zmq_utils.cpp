@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -35,6 +35,7 @@
 #include "thread.hpp"
 #include "atomic_counter.hpp"
 #include "atomic_ptr.hpp"
+#include "random.hpp"
 #include <assert.h>
 #include <new>
 #include <stdint.h>
@@ -217,9 +218,13 @@ int zmq_curve_keypair (char *z85_public_key, char *z85_secret_key)
     uint8_t public_key [32];
     uint8_t secret_key [32];
 
+    zmq::random_open ();
+
     int res = crypto_box_keypair (public_key, secret_key);
     zmq_z85_encode (z85_public_key, public_key, 32);
     zmq_z85_encode (z85_secret_key, secret_key, 32);
+
+    zmq::random_close ();
 
     return res;
 #else
@@ -246,12 +251,16 @@ int zmq_curve_public (char *z85_public_key, const char *z85_secret_key)
     uint8_t public_key[32];
     uint8_t secret_key[32];
 
+    zmq::random_open ();
+
     if (zmq_z85_decode (secret_key, z85_secret_key) == NULL)
         return -1;
 
     // Return codes are suppressed as none of these can actually fail.
     crypto_scalarmult_base (public_key, secret_key);
     zmq_z85_encode (z85_public_key, public_key, 32);
+
+    zmq::random_close ();
 
     return 0;
 #else
