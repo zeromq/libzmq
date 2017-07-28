@@ -56,6 +56,9 @@ namespace zmq
     // Return 0 on success, -1 if the connection has been closed by the peer
     int set_nosigpipe (fd_t s_);
 
+    // Binds the underlying socket to the given device, eg. VRF or interface
+    void bind_to_device (fd_t s_, std::string &bound_device_);
+
 }
 
 #endif

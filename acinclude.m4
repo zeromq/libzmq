@@ -683,6 +683,33 @@ int main (int, char **)
 }])
 
 dnl ################################################################################
+dnl # LIBZMQ_CHECK_SO_BINDTODEVICE([action-if-found], [action-if-not-found])          #
+dnl # Check if SO_BINDTODEVICE is supported                                           #
+dnl ################################################################################
+AC_DEFUN([LIBZMQ_CHECK_SO_BINDTODEVICE], [{
+    AC_CACHE_CHECK([whether SO_BINDTODEVICE is supported], [libzmq_cv_so_bindtodevice],
+        [AC_TRY_RUN([/* SO_BINDTODEVICE test */
+#include <sys/socket.h>
+
+int main (int argc, char *argv [])
+{
+/* Actually making the setsockopt() call requires CAP_NET_RAW */
+#ifndef SO_BINDTODEVICE
+    return 1;
+#else
+    return 0;
+#endif
+}
+        ],
+        [libzmq_cv_so_bindtodevice="yes"],
+        [libzmq_cv_so_bindtodevice="no"],
+        [libzmq_cv_so_bindtodevice="not during cross-compile"]
+        )]
+    )
+    AS_IF([test "x$libzmq_cv_so_bindtodevice" = "xyes"], [$1], [$2])
+}])
+
+dnl ################################################################################
 dnl # LIBZMQ_CHECK_SO_KEEPALIVE([action-if-found], [action-if-not-found])          #
 dnl # Check if SO_KEEPALIVE is supported                                           #
 dnl ################################################################################

@@ -48,6 +48,25 @@ int main(int argc, char *argv [])
     ZMQ_HAVE_O_CLOEXEC)
 endmacro()
 
+macro(zmq_check_so_bindtodevice)
+  message(STATUS "Checking whether SO_BINDTODEVICE is supported")
+  check_c_source_runs(
+"
+#include <sys/socket.h>
+
+int main(int argc, char *argv [])
+{
+/* Actually making the setsockopt() call requires CAP_NET_RAW */
+#ifndef SO_BINDTODEVICE
+    return 1;
+#else
+    return 0;
+#endif
+}
+"
+    ZMQ_HAVE_SO_BINDTODEVICE)
+endmacro()
+
 # TCP keep-alives Checks.
 
 macro(zmq_check_so_keepalive)

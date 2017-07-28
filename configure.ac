@@ -668,6 +668,12 @@ LIBZMQ_CHECK_O_CLOEXEC([
         [Whether O_CLOEXEC is defined and functioning.])
     ])
 
+LIBZMQ_CHECK_SO_BINDTODEVICE([
+    AC_DEFINE([ZMQ_HAVE_SO_BINDTODEVICE],
+        [1],
+        [Whether SO_BINDTODEVICE is supported.])
+    ])
+
 # TCP keep-alives Checks.
 LIBZMQ_CHECK_SO_KEEPALIVE([
     AC_DEFINE([ZMQ_HAVE_SO_KEEPALIVE],
