@@ -46,6 +46,9 @@
 #define ZMQ_SCATTER 17
 #define ZMQ_DGRAM 18
 
+/*  DRAFT Socket options.                                                     */
+#define ZMQ_BINDTODEVICE 90
+
 /*  DRAFT 0MQ socket events and monitoring                                    */
 #define ZMQ_EVENT_HANDSHAKE_FAILED  0x0800
 #define ZMQ_EVENT_HANDSHAKE_SUCCEED 0x1000

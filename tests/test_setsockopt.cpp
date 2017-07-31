@@ -113,10 +113,11 @@ void test_setsockopt_use_fd ()
 #define BOUNDDEVBUFSZ 16
 void test_setsockopt_bindtodevice ()
 {
-    int rc;
     void *ctx = zmq_ctx_new ();
     void *socket = zmq_socket (ctx, ZMQ_PUSH);
 
+#ifdef ZMQ_BINDTODEVICE
+    int rc;
     char devname[BOUNDDEVBUFSZ];
     size_t buflen = BOUNDDEVBUFSZ;
 
@@ -137,6 +138,7 @@ void test_setsockopt_bindtodevice ()
     rc = zmq_getsockopt (socket, ZMQ_BINDTODEVICE, devname, &buflen);
     assert(rc == 0);
     assert(!strncmp("testdev", devname, buflen));
+#endif
 
     zmq_close (socket);
     zmq_ctx_term (ctx);
