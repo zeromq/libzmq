@@ -368,6 +368,7 @@ ZMQ_EXPORT const char *zmq_msg_gets (const zmq_msg_t *msg, const char *property)
 #define ZMQ_VMCI_BUFFER_MAX_SIZE 87
 #define ZMQ_VMCI_CONNECT_TIMEOUT 88
 #define ZMQ_USE_FD 89
+#define ZMQ_BINDTODEVICE 90
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1

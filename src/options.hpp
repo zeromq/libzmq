@@ -240,6 +240,9 @@ namespace zmq
         //  will be used as the File Descriptor instead of allocating a new
         //  one via the socket () system call.
         int use_fd;
+
+        // Device to bind the underlying socket to, eg. VRF or interface
+        std::string bound_device;
     };
 }
 

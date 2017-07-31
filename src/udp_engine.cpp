@@ -123,6 +123,10 @@ void zmq::udp_engine_t::plug (io_thread_t* io_thread_, session_base_t *session_)
         errno_assert (rc == 0);
 #endif
 
+	// Bind the socket to a device if applicable
+	if (!options.bound_device.empty ())
+		bind_to_device (fd, options.bound_device);
+
         rc = bind (fd, address->resolved.udp_addr->bind_addr (),
                        address->resolved.udp_addr->bind_addrlen ());
 #ifdef ZMQ_HAVE_WINDOWS
