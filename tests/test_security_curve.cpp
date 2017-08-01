@@ -95,9 +95,10 @@ void assert_no_more_monitor_events_with_timeout(void *monitor, int timeout)
 {
     int event_count = 0;
     int event;
-    while (event = get_monitor_event_with_timeout(monitor, NULL, NULL, timeout))
+    while ((event = get_monitor_event_with_timeout(monitor, NULL, NULL, timeout)) != -1)
     {
-        fprintf(stderr, "Unexpected monitor event: %i\n", event);
+        ++event_count;
+        fprintf(stderr, "Unexpected monitor event: %x\n", event);
     }
     assert(event_count == 0);
 }
