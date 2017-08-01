@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2007-2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -233,8 +233,6 @@ namespace zmq
         int vmci_family;
         mutex_t vmci_sync;
 #endif
-
-        mutex_t crypto_sync;
     };
 
 }

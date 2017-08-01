@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2016 Contributors as noted in the AUTHORS file
+    Copyright (c) 2016-2017 Contributors as noted in the AUTHORS file
 
     This file is part of libzmq, the ZeroMQ core engine in C++.
 
@@ -52,7 +52,10 @@ typedef i64 gf[16];
 extern "C" {
 #endif
 void randombytes (unsigned char *, unsigned long long);
+//  Do not call manually! Use random_close from random.hpp
 int randombytes_close (void);
+//  Do not call manually! Use random_open from random.hpp
+int sodium_init (void);
 
 int crypto_box_keypair(u8 *y,u8 *x);
 int crypto_box_afternm(u8 *c,const u8 *m,u64 d,const u8 *n,const u8 *k);

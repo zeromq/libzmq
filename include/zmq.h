@@ -561,6 +561,9 @@ ZMQ_EXPORT void zmq_threadclose (void* thread);
 #define ZMQ_SCATTER 17
 #define ZMQ_DGRAM 18
 
+/*  DRAFT Socket options.                                                     */
+#define ZMQ_BINDTODEVICE 90
+
 /*  DRAFT 0MQ socket events and monitoring                                    */
 #define ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL   0x0800
 #define ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL    0x1000

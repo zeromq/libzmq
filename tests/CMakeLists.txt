@@ -134,7 +134,7 @@ if(WIN32)
     add_definitions(-DZMQ_CUSTOM_PLATFORM_HPP)
     add_definitions(-D_WINSOCK_DEPRECATED_NO_WARNINGS)
     # Same name on 64bit systems
-    link_libraries(Ws2_32.lib)
+    link_libraries(ws2_32.lib)
 endif()
 
 # add library and include dirs for all targets

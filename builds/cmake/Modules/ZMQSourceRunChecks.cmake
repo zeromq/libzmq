@@ -31,6 +31,42 @@ int main(int argc, char *argv [])
     ZMQ_HAVE_EVENTFD_CLOEXEC)
 endmacro()
 
+macro(zmq_check_o_cloexec)
+  message(STATUS "Checking whether O_CLOEXEC is supported")
+  check_c_source_runs(
+    "
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+int main(int argc, char *argv [])
+{
+    int s = open ("/dev/null", O_CLOEXEC | O_RDONLY);
+    return (s == -1);
+}
+"
+    ZMQ_HAVE_O_CLOEXEC)
+endmacro()
+
+macro(zmq_check_so_bindtodevice)
+  message(STATUS "Checking whether SO_BINDTODEVICE is supported")
+  check_c_source_runs(
+"
+#include <sys/socket.h>
+
+int main(int argc, char *argv [])
+{
+/* Actually making the setsockopt() call requires CAP_NET_RAW */
+#ifndef SO_BINDTODEVICE
+    return 1;
+#else
+    return 0;
+#endif
+}
+"
+    ZMQ_HAVE_SO_BINDTODEVICE)
+endmacro()
+
 # TCP keep-alives Checks.
 
 macro(zmq_check_so_keepalive)
@@ -227,4 +263,20 @@ int main(int argc, char *argv [])
 "
     ZMQ_HAVE_PTHREAD_SET_NAME)
   set(CMAKE_REQUIRED_FLAGS ${SAVE_CMAKE_REQUIRED_FLAGS})
+endmacro()
+
+
+macro(zmq_check_getrandom)
+  message(STATUS "Checking whether getrandom is supported")
+  check_c_source_runs(
+    "
+#include <sys/random.h>
+
+int main (int argc, char *argv [])
+{
+    char buf[4];
+    getrandom(buf, 4, 0);
+}
+"
+    ZMQ_HAVE_GETRANDOM)
 endmacro()

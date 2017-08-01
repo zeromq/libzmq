@@ -389,9 +389,12 @@ int zmq::wsa_error_to_errno (int errcode)
 #include <libunwind.h>
 #include <dlfcn.h>
 #include <cxxabi.h>
+#include "mutex.hpp"
 
 void zmq::print_backtrace (void)
 {
+    static zmq::mutex_t mtx;
+    mtx.lock ();
     Dl_info dl_info;
     unw_cursor_t cursor;
     unw_context_t ctx;
@@ -429,8 +432,10 @@ void zmq::print_backtrace (void)
                 rc ? func_name : demangled_name, (unsigned long) offset);
         free (demangled_name);
     }
-
+    puts ("");
+    
     fflush (stdout);
+    mtx.unlock ();
 }
 
 #else

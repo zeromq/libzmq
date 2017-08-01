@@ -110,9 +110,44 @@ void test_setsockopt_use_fd ()
     zmq_ctx_term (ctx);
 }
 
+#define BOUNDDEVBUFSZ 16
+void test_setsockopt_bindtodevice ()
+{
+    void *ctx = zmq_ctx_new ();
+    void *socket = zmq_socket (ctx, ZMQ_PUSH);
+
+#ifdef ZMQ_BINDTODEVICE
+    int rc;
+    char devname[BOUNDDEVBUFSZ];
+    size_t buflen = BOUNDDEVBUFSZ;
+
+    rc = zmq_getsockopt (socket, ZMQ_BINDTODEVICE, devname, &buflen);
+    assert(rc == 0);
+    assert(devname[0] == '\0');
+    assert(buflen == 1);
+
+    sprintf(devname, "testdev");
+    buflen = strlen(devname);
+
+    rc = zmq_setsockopt (socket, ZMQ_BINDTODEVICE, devname, buflen);
+    assert(rc == 0);
+
+    buflen = BOUNDDEVBUFSZ;
+    memset(devname, 0, buflen);
+
+    rc = zmq_getsockopt (socket, ZMQ_BINDTODEVICE, devname, &buflen);
+    assert(rc == 0);
+    assert(!strncmp("testdev", devname, buflen));
+#endif
+
+    zmq_close (socket);
+    zmq_ctx_term (ctx);
+}
+
 int main (void)
 {
     test_setsockopt_tcp_recv_buffer ();
     test_setsockopt_tcp_send_buffer ();
     test_setsockopt_use_fd ();
+    test_setsockopt_bindtodevice ();
 }

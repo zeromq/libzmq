@@ -315,21 +315,25 @@ void zmq::session_base_t::process_plug ()
         start_connecting (false);
 }
 
+//  This functions can return 0 on success or -1 and errno=ECONNREFUSED if ZAP
+//  is not setup (IE: inproc://zeromq.zap.01 does not exist in the same context)
+//  or it aborts on any other error. In other words, either ZAP is not
+//  configured or if it is configured it MUST be configured correctly and it
+//  MUST work, otherwise authentication cannot be guaranteed and it would be a
+//  security flaw.
 int zmq::session_base_t::zap_connect ()
 {
-    zmq_assert (zap_pipe == NULL);
+    if (zap_pipe != NULL)
+        return 0;
 
     endpoint_t peer = find_endpoint ("inproc://zeromq.zap.01");
     if (peer.socket == NULL) {
         errno = ECONNREFUSED;
         return -1;
     }
-    if (peer.options.type != ZMQ_REP
-    &&  peer.options.type != ZMQ_ROUTER
-    &&  peer.options.type != ZMQ_SERVER) {
-        errno = ECONNREFUSED;
-        return -1;
-    }
+    zmq_assert (peer.options.type == ZMQ_REP ||
+            peer.options.type == ZMQ_ROUTER ||
+            peer.options.type == ZMQ_SERVER);
 
     //  Create a bi-directional pipe that will connect
     //  session with zap socket.
@@ -353,10 +357,9 @@ int zmq::session_base_t::zap_connect ()
         rc = id.init ();
         errno_assert (rc == 0);
         id.set_flags (msg_t::identity);
-        if (zap_pipe->write (&id))
-            zap_pipe->flush ();
-        else
-            return -1;
+        bool ok = zap_pipe->write (&id);
+        zmq_assert (ok);
+        zap_pipe->flush ();
     }
 
     return 0;
@@ -506,6 +509,11 @@ void zmq::session_base_t::reconnect ()
         pipe->terminate (false);
         terminating_pipes.insert (pipe);
         pipe = NULL;
+
+        if (has_linger_timer) {
+            cancel_timer (linger_timer_id);
+            has_linger_timer = false;
+        }
     }
 
     reset ();
@@ -516,7 +524,7 @@ void zmq::session_base_t::reconnect ()
 
     //  For subscriber sockets we hiccup the inbound pipe, which will cause
     //  the socket object to resend all the subscriptions.
-    if (pipe && (options.type == ZMQ_SUB || options.type == ZMQ_XSUB))
+    if (pipe && (options.type == ZMQ_SUB || options.type == ZMQ_XSUB || options.type == ZMQ_DISH))
         pipe->hiccup ();
 }
 

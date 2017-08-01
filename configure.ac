@@ -662,6 +662,18 @@ LIBZMQ_CHECK_SOCK_CLOEXEC([
         [Whether SOCK_CLOEXEC is defined and functioning.])
     ])
 
+LIBZMQ_CHECK_O_CLOEXEC([
+    AC_DEFINE([ZMQ_HAVE_O_CLOEXEC],
+        [1],
+        [Whether O_CLOEXEC is defined and functioning.])
+    ])
+
+LIBZMQ_CHECK_SO_BINDTODEVICE([
+    AC_DEFINE([ZMQ_HAVE_SO_BINDTODEVICE],
+        [1],
+        [Whether SO_BINDTODEVICE is supported.])
+    ])
+
 # TCP keep-alives Checks.
 LIBZMQ_CHECK_SO_KEEPALIVE([
     AC_DEFINE([ZMQ_HAVE_SO_KEEPALIVE],
@@ -693,6 +705,12 @@ LIBZMQ_CHECK_TCP_KEEPALIVE([
         [Whether TCP_KEEPALIVE is supported.])
     ])
 
+LIBZMQ_CHECK_GETRANDOM([
+    AC_DEFINE([ZMQ_HAVE_GETRANDOM],
+        [1],
+        [Whether getrandom is supported.])
+    ])
+
 AM_CONDITIONAL(HAVE_FORK, test "x$ac_cv_func_fork" = "xyes")
 
 if test "x$cross_compiling" = "xyes"; then
@@ -721,16 +739,28 @@ else
     AC_SUBST(pkg_config_defines, "")
 fi
 
-PKG_CHECK_MODULES(LIBUNWIND, [libunwind],
-    [
-        AC_DEFINE(HAVE_LIBUNWIND, 1, [The libunwind library is to be used])
-        AC_SUBST([LIBUNWIND_CFLAGS])
-        AC_SUBST([LIBUNWIND_LIBS])
-        AC_CHECK_LIB([dl], [dladdr])
-    ],
-    [
-        AC_MSG_WARN([Cannot find libunwind])
-    ])
+AC_ARG_ENABLE([libunwind],
+    [AS_HELP_STRING([--enable-libunwind],
+        [enable libunwind [default=auto]])],
+    [enable_libunwind=$enableval],
+    [enable_libunwind="auto"])
+
+if test "x$enable_libunwind" != "xno"; then
+    PKG_CHECK_MODULES(LIBUNWIND, [libunwind],
+        [
+            AC_DEFINE(HAVE_LIBUNWIND, 1, [The libunwind library is to be used])
+            AC_SUBST([LIBUNWIND_CFLAGS])
+            AC_SUBST([LIBUNWIND_LIBS])
+            AC_CHECK_LIB([dl], [dladdr])
+        ],
+        [
+            if test "x$enable_libunwind" = "xyes"; then
+                AC_MSG_ERROR([Cannot find libunwind])
+            else
+                AC_MSG_WARN([Cannot find libunwind])
+            fi
+        ])
+fi
 
 # Subst LIBZMQ_EXTRA_CFLAGS & CXXFLAGS & LDFLAGS
 AC_SUBST(LIBZMQ_EXTRA_CFLAGS)

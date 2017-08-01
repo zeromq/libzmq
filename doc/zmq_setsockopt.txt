@@ -70,6 +70,24 @@ Default value:: 100
 Applicable socket types:: all, only for connection-oriented transports.
 
 
+ZMQ_BINDTODEVICE: Set name of device to bind the socket to
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_BINDTODEVICE' option binds this socket to a particular device, eg.
+an interface or VRF. If a socket is bound to an interface, only packets
+received from that particular interface are processed by the socket. If device
+is a VRF device, then subsequent binds/connects to that socket use addresses
+in the VRF routing table.
+
+NOTE: requires setting CAP_NET_RAW on the compiled program.
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: character string
+Option value unit:: N/A
+Default value:: not set
+Applicable socket types:: all, when using TCP or UDP transports.
+
+
 ZMQ_CONNECT_RID: Assign the next outbound connection id 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_CONNECT_RID' option sets the peer id of the next host connected 
@@ -744,6 +762,11 @@ routed or the peers SNDHWM is reached.  A value of `1` returns an
 code if the SNDHWM is reached and ZMQ_DONTWAIT was used. Without ZMQ_DONTWAIT
 it will block until the SNDTIMEO is reached or a spot in the send queue opens
 up.
+
+When ZMQ_ROUTER_MANDATORY is set to `1`, 'ZMQ_POLLOUT' events will be generated
+if one or more messages can be sent to at least one of the peers. If
+ZMQ_ROUTER_MANDATORY is set to `0`, the socket will generate a 'ZMQ_POLLOUT'
+event on every call to 'zmq_poll'.
 
 [horizontal]
 Option value type:: int

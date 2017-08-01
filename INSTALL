@@ -57,6 +57,17 @@ can cause substantial consumption of virtual address space, especially if
 Generally, programmer needs to tune the stack to balance memory consumption
 but never get into situation that stack is overflown.
 
+Windows Builds - Wine
+=====================
+
+To use Windows binaries on *nix via Wine, it is necessary to ensure that the
+kernel TCP buffers are large enough. On some systems, like OS X, they are too
+small by default.
+They need to be set to at least one MB as a workaround for issue:
+https://github.com/zeromq/libzmq/issues/1608
+
+sudo sysctl -w net.inet.tcp.sendspace=1300000
+
 Basic Installation
 ==================
 

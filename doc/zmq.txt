@@ -108,7 +108,7 @@ Message manipulation::
 
 Sockets
 ~~~~~~~
-0MQ sockets present an abstraction of a asynchronous _message queue_, with the
+0MQ sockets present an abstraction of an asynchronous _message queue_, with the
 exact queueing semantics depending on the socket type in use. See
 linkzmq:zmq_socket[3] for the socket types provided.
 

@@ -63,6 +63,23 @@ Default value:: 100
 Applicable socket types:: all, only for connection-oriented transports
 
 
+ZMQ_BINDTODEVICE: Retrieve name of device the socket is bound to
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_BINDTODEVICE' option retrieves the name of the device this socket is
+bound to, eg. an interface or VRF. If a socket is bound to an interface, only
+packets received from that interface are processed by the socket. If device
+is a VRF device, then subsequent binds/connects to that socket use addresses
+in the VRF routing table.
+
+NOTE: in DRAFT state, not yet available in stable releases.
+
+[horizontal]
+Option value type:: character string
+Option value unit:: N/A
+Default value:: not set
+Applicable socket types:: all, when using TCP or UDP transports.
+
+
 ZMQ_CONNECT_TIMEOUT: Retrieve connect() timeout
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Retrieves how long to wait before timing-out a connect() system call.

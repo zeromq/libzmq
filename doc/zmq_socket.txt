@@ -504,15 +504,22 @@ prepend a message part containing the _identity_ of the originating peer to the
 message before passing it to the application. Messages received are fair-queued
 from among all connected peers. When sending messages a 'ZMQ_ROUTER' socket shall
 remove the first part of the message and use it to determine the _identity_ of
-the peer the message shall be routed to. If the peer does not exist anymore
-the message shall be silently discarded by default, unless 'ZMQ_ROUTER_MANDATORY'
-socket option is set to '1'.
+the peer the message shall be routed to. If the peer does not exist anymore, or
+has never existed, the message shall be silently discarded. However, if
+'ZMQ_ROUTER_MANDATORY' socket option is set to '1', the socket shall fail
+with EHOSTUNREACH in both cases.
 
 When a 'ZMQ_ROUTER' socket enters the 'mute' state due to having reached the
 high water mark for all peers, then any messages sent to the socket shall be dropped
 until the mute state ends. Likewise, any messages routed to a peer for which
-the individual high water mark has been reached shall also be dropped,
-unless 'ZMQ_ROUTER_MANDATORY' socket option is set.
+the individual high water mark has been reached shall also be dropped. If,
+'ZMQ_ROUTER_MANDATORY' is set to '1', the socket shall block or return EAGAIN in
+both cases.
+
+When a 'ZMQ_ROUTER' socket has 'ZMQ_ROUTER_MANDATORY' flag set to '1', the
+socket shall generate 'ZMQ_POLLIN' events upon reception of messages from one
+or more peers. Likewise, the socket shall generate 'ZMQ_POLLOUT' events when
+at least one message can be sent to one or more peers.
 
 When a 'ZMQ_REQ' socket is connected to a 'ZMQ_ROUTER' socket, in addition to the
 _identity_ of the originating peer each message received shall contain an empty

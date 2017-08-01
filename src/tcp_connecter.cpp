@@ -305,6 +305,10 @@ int zmq::tcp_connecter_t::open ()
     if (options.tos != 0)
         set_ip_type_of_service (s, options.tos);
 
+    // Bind the socket to a device if applicable
+    if (!options.bound_device.empty ())
+        bind_to_device (s, options.bound_device);
+
     // Set the socket to non-blocking mode so that we get async connect().
     unblock_socket (s);
 

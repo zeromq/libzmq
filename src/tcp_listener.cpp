@@ -212,6 +212,10 @@ int zmq::tcp_listener_t::set_address (const char *addr_)
     if (options.tos != 0)
         set_ip_type_of_service (s, options.tos);
 
+    // Bind the socket to a device if applicable
+    if (!options.bound_device.empty ())
+        bind_to_device (s, options.bound_device);
+
     //  Set the socket buffer limits for the underlying socket.
     if (options.sndbuf >= 0)
         set_tcp_send_buffer (s, options.sndbuf);
