@@ -58,7 +58,7 @@ get_monitor_event (void *monitor, int *value, char **address, int recv_flag)
     zmq_msg_t msg;
     zmq_msg_init (&msg);
     if (zmq_msg_recv (&msg, monitor, recv_flag) == -1)
-        return -1;              //  Interruped, presumably
+        return -1;              //  Interrupted, presumably
     assert (zmq_msg_more (&msg));
 
     uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
@@ -69,7 +69,7 @@ get_monitor_event (void *monitor, int *value, char **address, int recv_flag)
     //  Second frame in message contains event address
     zmq_msg_init (&msg);
     if (zmq_msg_recv (&msg, monitor, recv_flag) == -1)
-        return -1;              //  Interruped, presumably
+        return -1;              //  Interrupted, presumably
     assert (!zmq_msg_more (&msg));
 
     if (address) {
@@ -140,10 +140,12 @@ static void zap_handler (void *handler)
 
 int main (void)
 {
-#ifndef ZMQ_HAVE_CURVE
-    printf ("CURVE encryption not installed, skipping test\n");
-    return 0;
-#endif
+    if (!zmq_has("curve"))
+    {
+      printf("CURVE encryption not installed, skipping test\n");
+      return 0;
+    }
+
     //  Generate new keypairs for this test
     int rc = zmq_curve_keypair (client_public, client_secret);
     assert (rc == 0);
@@ -219,10 +221,14 @@ int main (void)
     int event = get_monitor_event (server_mon, NULL, NULL, 0);
     assert (event == ZMQ_EVENT_HANDSHAKE_SUCCEED);
 
+    int timeout = 250;
+
     // This event has to be the last one
-    Sleep(250);
-    event = get_monitor_event (server_mon, NULL, NULL, ZMQ_DONTWAIT);
+    zmq_setsockopt(server_mon, ZMQ_RCVTIMEO, &timeout, sizeof(timeout));
+    event = get_monitor_event (server_mon, NULL, NULL, 0);
     assert (event == -1);
+
+    zmq_setsockopt(server_mon, ZMQ_RCVTIMEO, 0, 0);
 #endif
 
     //  Check CURVE security with a garbage server key
@@ -259,10 +265,15 @@ int main (void)
     // This enables to flush the incoming monitoring events that disturbs the test.
     // Even though the client socket is closed, the server still handles HELLO
     // messages.
-    Sleep(250);
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    zmq_setsockopt(server_mon, ZMQ_RCVTIMEO, &timeout, sizeof(timeout));
+
     do {
-        event = get_monitor_event(server_mon, NULL, NULL, ZMQ_DONTWAIT);
+        event = get_monitor_event(server_mon, NULL, NULL, 0);
     } while(event != -1);
+    zmq_setsockopt(server_mon, ZMQ_RCVTIMEO, 0, 0);
+#endif
 
     client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
