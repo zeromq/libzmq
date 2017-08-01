@@ -368,7 +368,6 @@ ZMQ_EXPORT const char *zmq_msg_gets (const zmq_msg_t *msg, const char *property)
 #define ZMQ_VMCI_BUFFER_MAX_SIZE 87
 #define ZMQ_VMCI_CONNECT_TIMEOUT 88
 #define ZMQ_USE_FD 89
-#define ZMQ_BINDTODEVICE 90
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1
@@ -561,6 +560,9 @@ ZMQ_EXPORT void zmq_threadclose (void* thread);
 #define ZMQ_GATHER 16
 #define ZMQ_SCATTER 17
 #define ZMQ_DGRAM 18
+
+/*  DRAFT Socket options.                                                     */
+#define ZMQ_BINDTODEVICE 90
 
 /*  DRAFT 0MQ socket events and monitoring                                    */
 #define ZMQ_EVENT_HANDSHAKE_FAILED  0x0800
