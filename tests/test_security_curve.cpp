@@ -217,11 +217,11 @@ int main (void)
     rc = zmq_close (client);
     assert (rc == 0);
 
+    int timeout = 250;
+
 #ifdef ZMQ_BUILD_DRAFT_API
     int event = get_monitor_event (server_mon, NULL, NULL, 0);
     assert (event == ZMQ_EVENT_HANDSHAKE_SUCCEED);
-
-    int timeout = 250;
 
     // This event has to be the last one
     zmq_setsockopt(server_mon, ZMQ_RCVTIMEO, &timeout, sizeof(timeout));
@@ -406,7 +406,7 @@ int main (void)
     send (s, "\x01\x00", 2, 0);
     // send sneaky message that shouldn't be received
     send (s, "\x08\x00sneaky\0", 9, 0);
-    int timeout = 250;
+
     zmq_setsockopt (server, ZMQ_RCVTIMEO, &timeout, sizeof (timeout));
     char *buf = s_recv (server);
     if (buf != NULL) {
