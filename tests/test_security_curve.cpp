@@ -270,6 +270,10 @@ int main (void)
     event = get_monitor_event (server_mon, NULL, NULL, 0);
     assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
 
+    // TODO apparently three times... check if this is correct
+    event = get_monitor_event (server_mon, NULL, NULL, 0);
+    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
+
     assert_no_more_monitor_events_with_timeout(server_mon, timeout);
 #endif
 
