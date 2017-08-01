@@ -81,6 +81,15 @@ get_monitor_event (void *monitor, int *value, char **address, int recv_flag)
     }
     return event;
 }
+
+int get_monitor_event_with_timeout(void *monitor, int *value, char **address, int timeout)
+{
+    zmq_setsockopt (monitor, ZMQ_RCVTIMEO, &timeout, sizeof(timeout));
+    int res = get_monitor_event(monitor, value, address, 0);
+    zmq_setsockopt (monitor, ZMQ_RCVTIMEO, 0, 0);
+    return res;
+}
+
 #endif
 
 
@@ -225,7 +234,7 @@ int main (void)
 
     // This event has to be the last one
     zmq_setsockopt(server_mon, ZMQ_RCVTIMEO, &timeout, sizeof(timeout));
-    event = get_monitor_event (server_mon, NULL, NULL, 0);
+    event = get_monitor_event_with_timeout (server_mon, NULL, NULL, timeout);
     assert (event == -1);
 
     zmq_setsockopt(server_mon, ZMQ_RCVTIMEO, 0, 0);
@@ -255,7 +264,7 @@ int main (void)
     assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
 
     // This event has to be the last one
-    event = get_monitor_event(server_mon, NULL, NULL, ZMQ_DONTWAIT);
+    event = get_monitor_event_with_timeout (server_mon, NULL, NULL, timeout);
     assert (event == -1);
 #endif
 
@@ -267,12 +276,9 @@ int main (void)
     // messages.
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    zmq_setsockopt(server_mon, ZMQ_RCVTIMEO, &timeout, sizeof(timeout));
-
     do {
-        event = get_monitor_event(server_mon, NULL, NULL, 0);
+        event = get_monitor_event_with_timeout (server_mon, NULL, NULL, timeout);
     } while(event != -1);
-    zmq_setsockopt(server_mon, ZMQ_RCVTIMEO, 0, 0);
 #endif
 
     client = zmq_socket (ctx, ZMQ_DEALER);
@@ -296,7 +302,7 @@ int main (void)
     assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
 
     // This event has to be the last one
-    event = get_monitor_event(server_mon, NULL, NULL, ZMQ_DONTWAIT);
+    event = get_monitor_event_with_timeout (server_mon, NULL, NULL, timeout);
     assert(event == -1);
 #endif
 
@@ -323,7 +329,7 @@ int main (void)
     assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
 
     // This event has to be the last one
-    event = get_monitor_event(server_mon, NULL, NULL, ZMQ_DONTWAIT);
+    event = get_monitor_event_with_timeout (server_mon, NULL, NULL, timeout);
     assert(event == -1);
 #endif
 
@@ -351,7 +357,7 @@ int main (void)
     assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL); // ZAP handle the error,  not curve_server
 
     // This event has to be the last one
-    event = get_monitor_event(server_mon, NULL, NULL, ZMQ_DONTWAIT);
+    event = get_monitor_event_with_timeout (server_mon, NULL, NULL, timeout);
     assert (event == -1);
 #endif
 
