@@ -38,7 +38,6 @@
 #   include <netinet/in.h>
 #   include <arpa/inet.h>
 #   include <unistd.h>
-#include "test_security_curve.h"
 #endif
 
 //  We'll generate random test keys at startup
