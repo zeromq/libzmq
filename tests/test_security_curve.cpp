@@ -38,6 +38,7 @@
 #   include <netinet/in.h>
 #   include <arpa/inet.h>
 #   include <unistd.h>
+#include "test_security_curve.h"
 #endif
 
 //  We'll generate random test keys at startup
@@ -90,6 +91,16 @@ int get_monitor_event_with_timeout(void *monitor, int *value, char **address, in
     return res;
 }
 
+void assert_no_more_monitor_events_with_timeout(void *monitor, int timeout)
+{
+    int event_count = 0;
+    int event;
+    while (event = get_monitor_event_with_timeout(monitor, NULL, NULL, timeout))
+    {
+        fprintf(stderr, "Unexpected monitor event: %i\n", event);
+    }
+    assert(event_count == 0);
+}
 #endif
 
 
@@ -232,12 +243,7 @@ int main (void)
     int event = get_monitor_event (server_mon, NULL, NULL, 0);
     assert (event == ZMQ_EVENT_HANDSHAKE_SUCCEED);
 
-    // This event has to be the last one
-    zmq_setsockopt(server_mon, ZMQ_RCVTIMEO, &timeout, sizeof(timeout));
-    event = get_monitor_event_with_timeout (server_mon, NULL, NULL, timeout);
-    assert (event == -1);
-
-    zmq_setsockopt(server_mon, ZMQ_RCVTIMEO, 0, 0);
+    assert_no_more_monitor_events_with_timeout(server_mon, timeout);
 #endif
 
     //  Check CURVE security with a garbage server key
@@ -263,9 +269,7 @@ int main (void)
     event = get_monitor_event (server_mon, NULL, NULL, 0);
     assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
 
-    // This event has to be the last one
-    event = get_monitor_event_with_timeout (server_mon, NULL, NULL, timeout);
-    assert (event == -1);
+    assert_no_more_monitor_events_with_timeout(server_mon, timeout);
 #endif
 
     //  Check CURVE security with a garbage client public key
@@ -301,9 +305,7 @@ int main (void)
     event = get_monitor_event (server_mon, NULL, NULL, 0);
     assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
 
-    // This event has to be the last one
-    event = get_monitor_event_with_timeout (server_mon, NULL, NULL, timeout);
-    assert(event == -1);
+    assert_no_more_monitor_events_with_timeout(server_mon, timeout);
 #endif
 
     //  Check CURVE security with a garbage client secret key
@@ -328,9 +330,7 @@ int main (void)
     event = get_monitor_event (server_mon, NULL, NULL, 0);
     assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
 
-    // This event has to be the last one
-    event = get_monitor_event_with_timeout (server_mon, NULL, NULL, timeout);
-    assert(event == -1);
+    assert_no_more_monitor_events_with_timeout(server_mon, timeout);
 #endif
 
     //  Check CURVE security with bogus client credentials
@@ -356,9 +356,7 @@ int main (void)
     event = get_monitor_event(server_mon, NULL, NULL, 0);
     assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL); // ZAP handle the error,  not curve_server
 
-    // This event has to be the last one
-    event = get_monitor_event_with_timeout (server_mon, NULL, NULL, timeout);
-    assert (event == -1);
+    assert_no_more_monitor_events_with_timeout(server_mon, timeout);
 #endif
 
     //  Check CURVE security with NULL client credentials
