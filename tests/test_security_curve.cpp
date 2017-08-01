@@ -176,6 +176,8 @@ int main (void)
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
+    // TODO test cases should be isolated against each other, each test case should start with a fresh ctx
+
     //  Spawn ZAP handler
     //  We create and bind ZAP socket in main thread to avoid case
     //  where child thread does not start up fast enough.
@@ -260,18 +262,25 @@ int main (void)
     rc = zmq_connect (client, my_endpoint);
     assert (rc == 0);
     expect_bounce_fail (server, client);
-    close_zero_linger (client);
+    close_zero_linger(client);
+
+#define assert_monitor_event(monitor, expected_event)                          \
+  {                                                                            \
+    event = get_monitor_event(monitor, NULL, NULL, 0);                         \
+    if (event != expected_event) {                                             \
+      fprintf(stderr, "Unexpected event: %x\n", event);                        \
+      assert(false);                                                           \
+    }                                                                          \
+  }
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    event = get_monitor_event (server_mon, NULL, NULL, 0);
-    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
+    assert_monitor_event (server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
     // Two times because expect_bounce_fail involves two exchanges
-    event = get_monitor_event (server_mon, NULL, NULL, 0);
-    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
+    assert_monitor_event (server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
 
     // TODO apparently three times... check if this is correct
-    event = get_monitor_event (server_mon, NULL, NULL, 0);
-    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
+    // TODO probably, there may be an arbitrary number of events as the peer retries sending
+    assert_monitor_event (server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
 
     assert_no_more_monitor_events_with_timeout(server_mon, timeout);
 #endif
