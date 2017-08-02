@@ -289,6 +289,8 @@ void zmq::stream_engine_t::in_event ()
 {
     zmq_assert (!io_error);
 
+    bool was_handshaking = handshaking;
+
     //  If still handshaking, receive and process the greeting message.
     if (unlikely (handshaking))
         if (!handshake ())
@@ -303,8 +305,9 @@ void zmq::stream_engine_t::in_event ()
         return;
     }
 
-    //  If there's no data to process in the buffer...
-    if (!insize) {
+    //  If there's no data to process in the buffer... 
+    //  But skip if we were handshaking, then the data at hand was already consumed by the handshake
+    if (!insize && !was_handshaking) {
 
         //  Retrieve the buffer and read as much data as possible.
         //  Note that buffer can be arbitrarily large. However, we assume
@@ -982,19 +985,20 @@ void zmq::stream_engine_t::error (error_reason_t reason)
     }
     zmq_assert (session);
 #ifdef ZMQ_BUILD_DRAFT_API
+    int err = errno;
     if(mechanism == NULL) {
         if(reason == protocol_error)
-            socket->event_handshake_failed_protocol(endpoint, (int) s);
+            socket->event_handshake_failed_protocol(endpoint, err);
         else
-            socket->event_handshake_failed_no_detail(endpoint, (int) s);
+            socket->event_handshake_failed_no_detail(endpoint, err);
     }
     else if(mechanism->status() == mechanism_t::handshaking) {
         if(mechanism->error_detail() == mechanism_t::protocol)
-            socket->event_handshake_failed_protocol(endpoint, (int) s);
+            socket->event_handshake_failed_protocol(endpoint, err);
         else if(mechanism->error_detail() == mechanism_t::encryption)
-            socket->event_handshake_failed_encryption(endpoint, (int) s);
+            socket->event_handshake_failed_encryption(endpoint, err);
         else
-            socket->event_handshake_failed_no_detail(endpoint, (int) s);
+            socket->event_handshake_failed_no_detail(endpoint, err);
     }
 #endif
     socket->event_disconnected (endpoint, (int) s);
