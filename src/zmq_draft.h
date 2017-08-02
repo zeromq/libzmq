@@ -51,9 +51,10 @@
 
 /*  DRAFT 0MQ socket events and monitoring                                    */
 #define ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL   0x0800
-#define ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL    0x1000
+#define ZMQ_EVENT_HANDSHAKE_SUCCEED            0x1000
 #define ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION  0x2000
-#define ZMQ_EVENT_HANDSHAKE_SUCCEED            0x4000
+#define ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP        0x4000
+#define ZMQ_EVENT_HANDSHAKE_FAILED_ZAP         0x8000
 
 /*  DRAFT Context options                                                     */
 #define ZMQ_MSG_T_SIZE 6
