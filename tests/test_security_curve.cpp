@@ -286,12 +286,12 @@ int main (void)
     // Two times because expect_bounce_fail involves two exchanges
     assert_monitor_event(server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
 
-    // TODO apparently three times... check if this is correct
     // TODO may there be an arbitrary number of events as the peer retries
     // sending?
-    assert_monitor_event(server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
-
-    assert_no_more_monitor_events_with_timeout(server_mon, timeout);
+    while ((event = get_monitor_event_with_timeout(server_mon, NULL, NULL, timeout)) != -1)
+    {
+      assert(event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
+    }
 #endif
 
     //  Check CURVE security with a garbage client public key
