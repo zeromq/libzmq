@@ -301,6 +301,9 @@ int main (void)
 
     //  Check CURVE security with a garbage server key
     //  This will be caught by the curve_server class, not passed to ZAP
+#ifndef ZMQ_BUILD_DRAFT_API
+    void *server_mon = NULL; // dummy
+#endif
 
     char garbage_key [] = "0000000000000000000000000000000000000000";
     test_wrong_key(ctx, server, server_mon, my_endpoint, garbage_key, client_public, client_secret);
