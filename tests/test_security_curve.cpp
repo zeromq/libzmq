@@ -90,22 +90,37 @@ int get_monitor_event_with_timeout(void *monitor, int *value, char **address, in
     return res;
 }
 
-void assert_no_more_monitor_events_with_timeout(void *monitor, int timeout)
-{
-    int event_count = 0;
-    int event;
-    while ((event = get_monitor_event_with_timeout(monitor, NULL, NULL, timeout)) != -1)
-    {
-        ++event_count;
-        fprintf(stderr, "Unexpected monitor event: %x\n", event);
-    }
-    assert(event_count == 0);
-}
+// assert_* are macros rather than functions, to allow assertion failures be
+// attributed to the causing source code line
+#define assert_no_more_monitor_events_with_timeout(monitor, timeout)           \
+  {                                                                            \
+    int event_count = 0;                                                       \
+    int event;                                                                 \
+    while ((event = get_monitor_event_with_timeout((monitor), NULL, NULL,      \
+                                                   (timeout))) != -1) {        \
+      ++event_count;                                                           \
+      fprintf(stderr, "Unexpected monitor event: %x\n", event);                \
+    }                                                                          \
+    assert(event_count == 0);                                                  \
+  }
+
+#define assert_monitor_event(monitor, expected_events)                         \
+  {                                                                            \
+    event = get_monitor_event(monitor, NULL, NULL, 0);                         \
+    if (event != -1 && (event & (expected_events)) == 0) {                     \
+      fprintf(stderr, "Unexpected event: %x\n", event);                        \
+      while ((event = get_monitor_event(monitor, NULL, NULL, (timeout))) !=    \
+             -1) {                                                             \
+        fprintf(stderr, "Further event: %x\n", event);                         \
+      }                                                                        \
+      assert(false);                                                           \
+    }                                                                          \
+  }
+
 #endif
 
-
 //  --------------------------------------------------------------------------
-//  This methods receives and validates ZAP requestes (allowing or denying
+//  This methods receives and validates ZAP requests (allowing or denying
 //  each client connection).
 
 static void zap_handler (void *handler)
@@ -265,41 +280,17 @@ int main (void)
     close_zero_linger(client);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-// this is a macro, not a function, to allow assertion failures be attributed to
-// the causing source code line
-#define assert_monitor_event(monitor, expected_events)                         \
-  {                                                                            \
-    event = get_monitor_event(monitor, NULL, NULL, 0);                         \
-    if (event != -1 && (event & (expected_events)) == 0) {                     \
-      fprintf(stderr, "Unexpected event: %x\n", event);                        \
-      while ((event = get_monitor_event(monitor, NULL, NULL, timeout)) !=      \
-             -1) {                                                             \
-        fprintf(stderr, "Further event: %x\n", event);                         \
-      }                                                                        \
-      assert(false);                                                           \
-    }                                                                          \
-  }
-
     // TODO added ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL as an option, but not sure if it is correct
     assert_monitor_event(server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL |
                                          ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
     // Two times because expect_bounce_fail involves two exchanges
     assert_monitor_event(server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
-
-    // TODO may there be an arbitrary number of events as the peer retries
-    // sending?
-    while ((event = get_monitor_event_with_timeout(server_mon, NULL, NULL, timeout)) != -1)
-    {
-      assert(event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
-    }
 #endif
 
-    //  Check CURVE security with a garbage client public key
-    //  This will be caught by the curve_server class, not passed to ZAP
-    
-    // This enables to flush the incoming monitoring events that disturbs the test.
-    // Even though the client socket is closed, the server still handles HELLO
-    // messages.
+    // This enables to flush the incoming monitoring events that disturbs the 
+    // following test case. Even though the client socket is closed, the server 
+    // still handles HELLO messages.
+    // TODO: this could be avoided by setting up a new context as suggested above
 
 #ifdef ZMQ_BUILD_DRAFT_API
     do {
@@ -307,6 +298,9 @@ int main (void)
     } while(event != -1);
 #endif
 
+    //  Check CURVE security with a garbage client public key
+    //  This will be caught by the curve_server class, not passed to ZAP
+    
     client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
     rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, server_public, 41);
