@@ -289,8 +289,6 @@ void zmq::stream_engine_t::in_event ()
 {
     zmq_assert (!io_error);
 
-    bool was_handshaking = handshaking;
-
     //  If still handshaking, receive and process the greeting message.
     if (unlikely (handshaking))
         if (!handshake ())
@@ -306,8 +304,7 @@ void zmq::stream_engine_t::in_event ()
     }
 
     //  If there's no data to process in the buffer... 
-    //  But skip if we were handshaking, then the data at hand was already consumed by the handshake
-    if (!insize && !was_handshaking) {
+    if (!insize) {
 
         //  Retrieve the buffer and read as much data as possible.
         //  Note that buffer can be arbitrarily large. However, we assume
@@ -316,9 +313,11 @@ void zmq::stream_engine_t::in_event ()
         size_t bufsize = 0;
         decoder->get_buffer (&inpos, &bufsize);
 
+        errno = 0;
         const int rc = tcp_read (s, inpos, bufsize);
 
         if (rc == 0) {
+            // connection closed by peer
             error (connection_error);
             return;
         }
@@ -787,12 +786,13 @@ int zmq::stream_engine_t::next_handshake_command (msg_t *msg_)
 #ifdef ZMQ_BUILD_DRAFT_API
         if(mechanism->status() == mechanism_t::error)
         {
+            int err = errno;
             if(mechanism->error_detail() == mechanism_t::protocol)
-                socket->event_handshake_failed_protocol(endpoint, 0);
+                socket->event_handshake_failed_protocol(endpoint, err);
             else if(mechanism->error_detail() == mechanism_t::encryption)
-                socket->event_handshake_failed_encryption(endpoint, 0);
+                socket->event_handshake_failed_encryption(endpoint, err);
             else
-                socket->event_handshake_failed_no_detail(endpoint, 0);
+                socket->event_handshake_failed_no_detail(endpoint, err);
         }
 #endif
 
@@ -992,7 +992,7 @@ void zmq::stream_engine_t::error (error_reason_t reason)
         else
             socket->event_handshake_failed_no_detail(endpoint, err);
     }
-    else if(mechanism->status() == mechanism_t::handshaking) {
+    else if(handshaking) {
         if(mechanism->error_detail() == mechanism_t::protocol)
             socket->event_handshake_failed_protocol(endpoint, err);
         else if(mechanism->error_detail() == mechanism_t::encryption)
