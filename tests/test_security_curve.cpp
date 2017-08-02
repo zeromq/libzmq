@@ -106,8 +106,8 @@ int get_monitor_event_with_timeout(void *monitor, int *value, char **address, in
 
 #define assert_monitor_event(monitor, expected_events)                         \
   {                                                                            \
-    int event, err;                                                            \
-    event = get_monitor_event(monitor, &err, NULL, 0);                         \
+    int err;                                                                   \
+    int event = get_monitor_event(monitor, &err, NULL, 0);                     \
     if (event != -1 && (event & (expected_events)) == 0) {                     \
       fprintf(stderr, "Unexpected event: %x (err = %i)\n", event, err);        \
       while ((event = get_monitor_event(monitor, NULL, NULL, (timeout))) !=    \
@@ -189,7 +189,6 @@ void test_wrong_key(void *ctx, void *server, void *server_mon, char *my_endpoint
     close_zero_linger(client);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    int event;
     int timeout = 250;
 
     assert_monitor_event(server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
@@ -201,8 +200,14 @@ void test_wrong_key(void *ctx, void *server, void *server_mon, char *my_endpoint
     // still handles HELLO messages.
     // TODO: this could be avoided by setting up a new context as suggested above
 
+    int event;
     do {
-        event = get_monitor_event_with_timeout (server_mon, NULL, NULL, timeout);
+        int err;
+        event = get_monitor_event_with_timeout (server_mon, &err, NULL, timeout);
+        if (event != -1)
+        {
+          fprintf(stderr, "Flushed event: %x (errno = %i)\n", event, err);
+        }
     } while(event != -1);
 #endif
 
@@ -262,7 +267,8 @@ int main (void)
     //  Monitor handshake events on the server
     rc = zmq_socket_monitor (server, "inproc://monitor-server",
             ZMQ_EVENT_HANDSHAKE_SUCCEED | ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL |
-            ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL | ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
+            ZMQ_EVENT_HANDSHAKE_FAILED_ZAP |ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP | 
+            ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
     assert (rc == 0);
 
     //  Create socket for collecting monitor events
@@ -336,6 +342,7 @@ int main (void)
 
 #ifdef ZMQ_BUILD_DRAFT_API
     event = get_monitor_event(server_mon, NULL, NULL, 0);
+    // TODO add another error type ZMQ_EVENT_HANDSHAKE_FAILED_AUTH for this case?
     assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL); // ZAP handle the error,  not curve_server
 
     assert_no_more_monitor_events_with_timeout(server_mon, timeout);
@@ -353,7 +360,7 @@ int main (void)
 #ifdef ZMQ_BUILD_DRAFT_API
     event = get_monitor_event(server_mon, NULL, NULL, 0);
 
-    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL);
+    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP);
 #endif
 
     //  Check CURVE security with PLAIN client credentials
