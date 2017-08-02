@@ -172,6 +172,42 @@ static void zap_handler (void *handler)
     zmq_close (handler);
 }
 
+void test_wrong_key(void *ctx, void *server, void *server_mon, char *my_endpoint, char *server_public, char *client_public, char *client_secret)
+{
+    void *client = zmq_socket (ctx, ZMQ_DEALER);
+    assert (client);
+    int rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, server_public, 41);
+    assert (rc == 0);
+    rc = zmq_setsockopt (client, ZMQ_CURVE_PUBLICKEY, client_public, 41);
+    assert (rc == 0);
+    rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, client_secret, 41);
+    assert (rc == 0);
+    rc = zmq_connect (client, my_endpoint);
+    assert (rc == 0);
+    expect_bounce_fail (server, client);
+    close_zero_linger(client);
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    int event;
+    int timeout = 250;
+
+    // TODO added ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL as an option, but not sure if it is correct
+    assert_monitor_event(server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL |
+                                         ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
+    // Two times because expect_bounce_fail involves two exchanges
+    assert_monitor_event(server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
+
+    // This enables to flush the incoming monitoring events that disturbs the 
+    // following test case. Even though the client socket is closed, the server 
+    // still handles HELLO messages.
+    // TODO: this could be avoided by setting up a new context as suggested above
+
+    do {
+        event = get_monitor_event_with_timeout (server_mon, NULL, NULL, timeout);
+    } while(event != -1);
+#endif
+
+}
 
 int main (void)
 {
@@ -265,90 +301,18 @@ int main (void)
 
     //  Check CURVE security with a garbage server key
     //  This will be caught by the curve_server class, not passed to ZAP
+
     char garbage_key [] = "0000000000000000000000000000000000000000";
-    client = zmq_socket (ctx, ZMQ_DEALER);
-    assert (client);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, garbage_key, 41);
-    assert (rc == 0);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_PUBLICKEY, client_public, 41);
-    assert (rc == 0);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, client_secret, 41);
-    assert (rc == 0);
-    rc = zmq_connect (client, my_endpoint);
-    assert (rc == 0);
-    expect_bounce_fail (server, client);
-    close_zero_linger(client);
-
-#ifdef ZMQ_BUILD_DRAFT_API
-    // TODO added ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL as an option, but not sure if it is correct
-    assert_monitor_event(server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL |
-                                         ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
-    // Two times because expect_bounce_fail involves two exchanges
-    assert_monitor_event(server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
-#endif
-
-    // This enables to flush the incoming monitoring events that disturbs the 
-    // following test case. Even though the client socket is closed, the server 
-    // still handles HELLO messages.
-    // TODO: this could be avoided by setting up a new context as suggested above
-
-#ifdef ZMQ_BUILD_DRAFT_API
-    do {
-        event = get_monitor_event_with_timeout (server_mon, NULL, NULL, timeout);
-    } while(event != -1);
-#endif
+    test_wrong_key(ctx, server, server_mon, my_endpoint, garbage_key, client_public, client_secret);
 
     //  Check CURVE security with a garbage client public key
     //  This will be caught by the curve_server class, not passed to ZAP
+    test_wrong_key(ctx, server, server_mon, my_endpoint, server_public, garbage_key, client_secret);
     
-    client = zmq_socket (ctx, ZMQ_DEALER);
-    assert (client);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, server_public, 41);
-    assert (rc == 0);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_PUBLICKEY, garbage_key, 41);
-    assert (rc == 0);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, client_secret, 41);
-    assert (rc == 0);
-    rc = zmq_connect (client, my_endpoint);
-    assert (rc == 0);
-    expect_bounce_fail (server, client);
-    close_zero_linger (client);
-
-#ifdef ZMQ_BUILD_DRAFT_API
-    event = get_monitor_event (server_mon, NULL, NULL, 0);
-    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
-    // Two times because expect_bounce_fail involves two exchanges
-    event = get_monitor_event (server_mon, NULL, NULL, 0);
-    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
-
-    assert_no_more_monitor_events_with_timeout(server_mon, timeout);
-#endif
-
     //  Check CURVE security with a garbage client secret key
     //  This will be caught by the curve_server class, not passed to ZAP
-    client = zmq_socket (ctx, ZMQ_DEALER);
-    assert (client);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, server_public, 41);
-    assert (rc == 0);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_PUBLICKEY, client_public, 41);
-    assert (rc == 0);
-    rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, garbage_key, 41);
-    assert (rc == 0);
-    rc = zmq_connect (client, my_endpoint);
-    assert (rc == 0);
-    expect_bounce_fail (server, client);
-    close_zero_linger (client);
-
-#ifdef ZMQ_BUILD_DRAFT_API
-    event = get_monitor_event (server_mon, NULL, NULL, 0);
-    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
-    // Two times because expect_bounce_fail involves two exchanges
-    event = get_monitor_event (server_mon, NULL, NULL, 0);
-    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
-
-    assert_no_more_monitor_events_with_timeout(server_mon, timeout);
-#endif
-
+    test_wrong_key(ctx, server, server_mon, my_endpoint, server_public, client_public, garbage_key);
+    
     //  Check CURVE security with bogus client credentials
     //  This must be caught by the ZAP handler
     char bogus_public [41];
