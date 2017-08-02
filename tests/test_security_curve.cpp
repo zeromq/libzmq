@@ -95,20 +95,21 @@ int get_monitor_event_with_timeout(void *monitor, int *value, char **address, in
 #define assert_no_more_monitor_events_with_timeout(monitor, timeout)           \
   {                                                                            \
     int event_count = 0;                                                       \
-    int event;                                                                 \
-    while ((event = get_monitor_event_with_timeout((monitor), NULL, NULL,      \
+    int event, err;                                                            \
+    while ((event = get_monitor_event_with_timeout((monitor), &err, NULL,      \
                                                    (timeout))) != -1) {        \
       ++event_count;                                                           \
-      fprintf(stderr, "Unexpected monitor event: %x\n", event);                \
+      fprintf(stderr, "Unexpected event: %x (err = %i)\n", event, err);        \
     }                                                                          \
     assert(event_count == 0);                                                  \
   }
 
 #define assert_monitor_event(monitor, expected_events)                         \
   {                                                                            \
-    event = get_monitor_event(monitor, NULL, NULL, 0);                         \
+    int event, err;                                                            \
+    event = get_monitor_event(monitor, &err, NULL, 0);                         \
     if (event != -1 && (event & (expected_events)) == 0) {                     \
-      fprintf(stderr, "Unexpected event: %x\n", event);                        \
+      fprintf(stderr, "Unexpected event: %x (err = %i)\n", event, err);        \
       while ((event = get_monitor_event(monitor, NULL, NULL, (timeout))) !=    \
              -1) {                                                             \
         fprintf(stderr, "Further event: %x\n", event);                         \
