@@ -56,7 +56,8 @@ namespace zmq
         //  Provides more details when in status_t::error
         enum error_detail_t {
             no_detail,
-            protocol,
+            zmtp,
+            zap,
             encryption
         };
 

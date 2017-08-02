@@ -313,11 +313,11 @@ void zmq::stream_engine_t::in_event ()
         size_t bufsize = 0;
         decoder->get_buffer (&inpos, &bufsize);
 
-        errno = 0;
         const int rc = tcp_read (s, inpos, bufsize);
 
         if (rc == 0) {
             // connection closed by peer
+            errno = EPIPE;
             error (connection_error);
             return;
         }
@@ -497,6 +497,7 @@ bool zmq::stream_engine_t::handshake ()
         const int n = tcp_read (s, greeting_recv + greeting_bytes_read,
                                 greeting_size - greeting_bytes_read);
         if (n == 0) {
+            errno = EPIPE;
             error (connection_error);
             return false;
         }
@@ -787,8 +788,10 @@ int zmq::stream_engine_t::next_handshake_command (msg_t *msg_)
         if(mechanism->status() == mechanism_t::error)
         {
             int err = errno;
-            if(mechanism->error_detail() == mechanism_t::protocol)
-                socket->event_handshake_failed_protocol(endpoint, err);
+            if(mechanism->error_detail() == mechanism_t::zmtp)
+                socket->event_handshake_failed_zmtp(endpoint, err);
+            else if(mechanism->error_detail() == mechanism_t::zap)
+                socket->event_handshake_failed_zap(endpoint, err);
             else if(mechanism->error_detail() == mechanism_t::encryption)
                 socket->event_handshake_failed_encryption(endpoint, err);
             else
@@ -988,13 +991,15 @@ void zmq::stream_engine_t::error (error_reason_t reason)
     int err = errno;
     if(mechanism == NULL) {
         if(reason == protocol_error)
-            socket->event_handshake_failed_protocol(endpoint, err);
+            socket->event_handshake_failed_zmtp(endpoint, err);
         else
             socket->event_handshake_failed_no_detail(endpoint, err);
     }
     else if(handshaking) {
-        if(mechanism->error_detail() == mechanism_t::protocol)
-            socket->event_handshake_failed_protocol(endpoint, err);
+        if(mechanism->error_detail() == mechanism_t::zmtp)
+            socket->event_handshake_failed_zmtp(endpoint, err);
+        else if(mechanism->error_detail() == mechanism_t::zap)
+            socket->event_handshake_failed_zap(endpoint, err);
         else if(mechanism->error_detail() == mechanism_t::encryption)
             socket->event_handshake_failed_encryption(endpoint, err);
         else

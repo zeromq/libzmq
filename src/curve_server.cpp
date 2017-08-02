@@ -103,7 +103,7 @@ int zmq::curve_server_t::process_handshake_command (msg_t *msg_)
             break;
         default:
             // CURVE I: invalid handshake command
-            current_error_detail = protocol;
+            current_error_detail = zmtp;
             errno = EPROTO;
             rc = -1;
             break;
@@ -175,7 +175,7 @@ int zmq::curve_server_t::decode (msg_t *msg_)
 
     if (msg_->size () < 33) {
         // CURVE I : invalid CURVE client, sent malformed command
-        current_error_detail = protocol;
+        current_error_detail = zmtp;
         errno = EPROTO;
         return -1;
     }
@@ -183,7 +183,7 @@ int zmq::curve_server_t::decode (msg_t *msg_)
     const uint8_t *message = static_cast <uint8_t *> (msg_->data ());
     if (memcmp (message, "\x07MESSAGE", 8)) {
         // CURVE I: invalid CURVE client, did not send MESSAGE
-        current_error_detail = protocol;
+        current_error_detail = zmtp;
         errno = EPROTO;
         return -1;
     }
@@ -274,7 +274,7 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
 {
     if (msg_->size () != 200) {
         // CURVE I: client HELLO is not correct size
-        current_error_detail = protocol;
+        current_error_detail = zmtp;
         errno = EPROTO;
         return -1;
     }
@@ -282,7 +282,7 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
     const uint8_t * const hello = static_cast <uint8_t *> (msg_->data ());
     if (memcmp (hello, "\x05HELLO", 6)) {
         // CURVE I: client HELLO has invalid command name
-        current_error_detail = protocol;
+        current_error_detail = zmtp;
         errno = EPROTO;
         return -1;
     }
@@ -292,7 +292,7 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
 
     if (major != 1 || minor != 0) {
         // CURVE I: client HELLO has unknown version number
-        current_error_detail = protocol;
+        current_error_detail = zmtp;
         errno = EPROTO;
         return -1;
     }
@@ -391,7 +391,7 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
 {
     if (msg_->size () < 257) {
         // CURVE I: client INITIATE is not correct size
-        current_error_detail = protocol;
+        current_error_detail = zmtp;
         errno = EPROTO;
         return -1;
     }
@@ -399,7 +399,7 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     const uint8_t *initiate = static_cast <uint8_t *> (msg_->data ());
     if (memcmp (initiate, "\x08INITIATE", 9)) {
         // CURVE I: client INITIATE has invalid command name
-        current_error_detail = protocol;
+        current_error_detail = zmtp;
         errno = EPROTO;
         return -1;
     }
@@ -675,7 +675,7 @@ int zmq::curve_server_t::receive_and_process_zap_reply ()
             return close_and_return (msg, -1);
         if ((msg [i].flags () & msg_t::more) == (i < 6? 0: msg_t::more)) {
             // CURVE I : ZAP handler sent incomplete reply message
-            current_error_detail = protocol;
+            current_error_detail = zap;
             errno = EPROTO;
             return close_and_return (msg, -1);
         }
@@ -684,7 +684,7 @@ int zmq::curve_server_t::receive_and_process_zap_reply ()
     //  Address delimiter frame
     if (msg [0].size () > 0) {
         // CURVE I: ZAP handler sent malformed reply message
-        current_error_detail = protocol;
+        current_error_detail = zap;
         errno = EPROTO;
         return close_and_return (msg, -1);
     }
@@ -692,7 +692,7 @@ int zmq::curve_server_t::receive_and_process_zap_reply ()
     //  Version frame
     if (msg [1].size () != 3 || memcmp (msg [1].data (), "1.0", 3)) {
         // CURVE I: ZAP handler sent bad version number
-        current_error_detail = protocol;
+        current_error_detail = zap;
         errno = EPROTO;
         return close_and_return (msg, -1);
     }
@@ -700,15 +700,15 @@ int zmq::curve_server_t::receive_and_process_zap_reply ()
     //  Request id frame
     if (msg [2].size () != 1 || memcmp (msg [2].data (), "1", 1)) {
         // CURVE I: ZAP handler sent bad request ID
-        current_error_detail = protocol;
+        current_error_detail = zap;
         errno = EPROTO;
         return close_and_return (msg, -1);
     }
 
     //  Status code frame
     if (msg [3].size () != 3) {
-        // CURVE I: ZAP handler rejected client authentication
-        current_error_detail = protocol;
+        // CURVE I: ZAP handler sent invalid status code
+        current_error_detail = zap;
         errno = EACCES;
         return close_and_return (msg, -1);
     }
