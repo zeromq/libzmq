@@ -191,9 +191,7 @@ void test_wrong_key(void *ctx, void *server, void *server_mon, char *my_endpoint
     int event;
     int timeout = 250;
 
-    // TODO added ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL as an option, but not sure if it is correct
-    assert_monitor_event(server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL |
-                                         ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
+    assert_monitor_event(server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
     // Two times because expect_bounce_fail involves two exchanges
     assert_monitor_event(server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
 
