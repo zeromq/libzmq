@@ -270,7 +270,7 @@ int main (void)
 #define assert_monitor_event(monitor, expected_events)                         \
   {                                                                            \
     event = get_monitor_event(monitor, NULL, NULL, 0);                         \
-    if (event != -1 && (event & expected_events) != 0) {                       \
+    if (event != -1 && (event & (expected_events)) == 0) {                     \
       fprintf(stderr, "Unexpected event: %x\n", event);                        \
       while ((event = get_monitor_event(monitor, NULL, NULL, timeout)) !=      \
              -1) {                                                             \
