@@ -202,7 +202,7 @@ void test_garbage_key (void *ctx,
     close_zero_linger (client);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    int timeout = 1000;
+    int timeout = 5000;
 
     int handshake_failed_encryption_event_count = 0;
     int handshake_failed_client_closed = 0;
@@ -236,7 +236,7 @@ void test_garbage_key (void *ctx,
     assert (handshake_failed_encryption_event_count == 2
             || handshake_failed_client_closed == 1);
 
-    // Even though the client socket is closed, the server still handles HELLO 
+    // Even though the client socket is closed, the server still handles HELLO
     // messages. Output them for diagnostic purposes.
 
     do {
@@ -291,9 +291,11 @@ void setup_context_and_server_side (void **ctx,
     assert (rc == 0);
 
 #ifdef ZMQ_BUILD_DRAFT_API
+    char monitor_endpoint[] = "inproc://monitor-server";
+
     //  Monitor handshake events on the server
     rc = zmq_socket_monitor (
-      *server, "inproc://monitor-server",
+      *server, monitor_endpoint,
       ZMQ_EVENT_HANDSHAKE_SUCCEEDED | ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL
         | ZMQ_EVENT_HANDSHAKE_FAILED_ZAP | ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP
         | ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
@@ -304,7 +306,7 @@ void setup_context_and_server_side (void **ctx,
     assert (*server_mon);
 
     //  Connect it to the inproc endpoints so they'll get events
-    rc = zmq_connect (*server_mon, "inproc://monitor-server");
+    rc = zmq_connect (*server_mon, monitor_endpoint);
     assert (rc == 0);
 #endif
 }
