@@ -1706,9 +1706,9 @@ void zmq::socket_base_t::event_handshake_failed_encryption(const std::string &ad
     event(addr_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
 }
 
-void zmq::socket_base_t::event_handshake_succeed(const std::string &addr_, int err_)
+void zmq::socket_base_t::event_handshake_succeeded(const std::string &addr_, int err_)
 {
-    event(addr_, err_, ZMQ_EVENT_HANDSHAKE_SUCCEED);
+    event(addr_, err_, ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
 }
 
 void zmq::socket_base_t::event(const std::string &addr_, intptr_t value_, int type_)
