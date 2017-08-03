@@ -202,7 +202,7 @@ void test_garbage_key (void *ctx,
     close_zero_linger (client);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    int timeout = 250;
+    int timeout = 1000;
 
     int handshake_failed_encryption_event_count = 0;
     int handshake_failed_client_closed = 0;
@@ -236,8 +236,8 @@ void test_garbage_key (void *ctx,
     assert (handshake_failed_encryption_event_count == 2
             || handshake_failed_client_closed == 1);
 
-    // Even though the client socket is closed, the server
-    // still handles HELLO messages. Output them for diagnostic purposes.
+    // Even though the client socket is closed, the server still handles HELLO 
+    // messages. Output them for diagnostic purposes.
 
     do {
         int err;
