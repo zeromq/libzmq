@@ -208,7 +208,10 @@ void test_garbage_key(void *ctx, void *server, void *server_mon, char *my_endpoi
       case ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL:
         // ignore errors with EPIPE, which happen sporadically
         if (err == EPIPE)
+        {
+          fprintf (stderr, "Ignored event: %x (err = %i)\n", event, err);
           continue;
+        }
       default:
         fprintf (stderr, "Unexpected event: %x (err = %i)\n", event, err);
         assert (false);
@@ -472,18 +475,21 @@ int main(void)
 
     //  Check CURVE security with a garbage server key
     //  This will be caught by the curve_server class, not passed to ZAP
+    fprintf(stderr, "test_garbage_server_key\n");
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint);
     test_garbage_key(ctx, server, server_mon, my_endpoint, garbage_key, client_public, client_secret);
     shutdown_context_and_server_side(ctx, zap_thread, server, server_mon);
 
     //  Check CURVE security with a garbage client public key
     //  This will be caught by the curve_server class, not passed to ZAP
+    fprintf(stderr, "test_garbage_client_public_key\n");
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint);
     test_garbage_key(ctx, server, server_mon, my_endpoint, server_public, garbage_key, client_secret);
     shutdown_context_and_server_side(ctx, zap_thread, server, server_mon);
     
     //  Check CURVE security with a garbage client secret key
     //  This will be caught by the curve_server class, not passed to ZAP
+    fprintf(stderr, "test_garbage_client_secret_key\n");
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint);
     test_garbage_key(ctx, server, server_mon, my_endpoint, server_public, client_public, garbage_key);
     shutdown_context_and_server_side(ctx, zap_thread, server, server_mon);
