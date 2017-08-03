@@ -28,23 +28,23 @@
 */
 
 #include "testutil.hpp"
-#if defined(ZMQ_HAVE_WINDOWS)
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <stdexcept>
-#define close closesocket
+#if defined (ZMQ_HAVE_WINDOWS)
+#  include <winsock2.h>
+#  include <ws2tcpip.h>
+#  include <stdexcept>
+#  define close closesocket
 #else
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
+#  include <sys/socket.h>
+#  include <netinet/in.h>
+#  include <arpa/inet.h>
+#  include <unistd.h>
 #endif
 
 //  We'll generate random test keys at startup
-static char client_public[41];
-static char client_secret[41];
-static char server_public[41];
-static char server_secret[41];
+static char client_public [41];
+static char client_secret [41];
+static char server_public [41];
+static char server_secret [41];
 
 #ifdef ZMQ_BUILD_DRAFT_API
 //  Read one event off the monitor socket; return value and address
@@ -79,7 +79,7 @@ get_monitor_event (void *monitor, int *value, char **address, int recv_flag)
         size_t size = zmq_msg_size (&msg);
         *address = (char *) malloc (size + 1);
         memcpy (*address, data, size);
-        *address[size] = 0;
+        *address [size] = 0;
     }
     return event;
 }
@@ -145,11 +145,11 @@ static void zap_handler (void *handler)
         char *address = s_recv (handler);
         char *identity = s_recv (handler);
         char *mechanism = s_recv (handler);
-        uint8_t client_key[32];
+        uint8_t client_key [32];
         int size = zmq_recv (handler, client_key, 32, 0);
         assert (size == 32);
 
-        char client_key_text[41];
+        char client_key_text [41];
         zmq_z85_encode (client_key_text, client_key, 32);
 
         assert (streq (version, "1.0"));
@@ -293,7 +293,7 @@ void setup_context_and_server_side (void **ctx,
     assert (rc == 0);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    char monitor_endpoint[] = "inproc://monitor-server";
+    char monitor_endpoint [] = "inproc://monitor-server";
 
     //  Monitor handshake events on the server
     rc = zmq_socket_monitor (
@@ -359,8 +359,8 @@ void test_curve_security_with_bogus_client_credentials (
   void *ctx, char *my_endpoint, void *server, void *server_mon, int timeout)
 {
     //  This must be caught by the ZAP handler
-    char bogus_public[41];
-    char bogus_secret[41];
+    char bogus_public [41];
+    char bogus_secret [41];
     zmq_curve_keypair (bogus_public, bogus_secret);
 
     void *client = zmq_socket (ctx, ZMQ_DEALER);
@@ -499,7 +499,7 @@ int main (void)
     void *zap_thread;
     void *server;
     void *server_mon;
-    char my_endpoint[MAX_SOCKET_STRING];
+    char my_endpoint [MAX_SOCKET_STRING];
 
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
                                    &server_mon, my_endpoint);
@@ -507,7 +507,7 @@ int main (void)
                                                 server_mon, timeout);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon);
 
-    char garbage_key[] = "0000000000000000000000000000000000000000";
+    char garbage_key [] = "0000000000000000000000000000000000000000";
 
     //  Check CURVE security with a garbage server key
     //  This will be caught by the curve_server class, not passed to ZAP
