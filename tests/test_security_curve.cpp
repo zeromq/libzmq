@@ -575,8 +575,16 @@ void test_curve_security_zap_unsuccessful (void *ctx,
 void test_curve_security_zap_protocol_error(
   void *ctx, char *my_endpoint, void *server, void *server_mon, int timeout)
 {
-  test_curve_security_zap_unsuccessful(ctx, my_endpoint, server, server_mon, timeout, ZMQ_EVENT_HANDSHAKE_FAILED_ZAP, EPROTO);
+    test_curve_security_zap_unsuccessful (
+      ctx, my_endpoint, server, server_mon, timeout,
+#ifdef ZMQ_BUILD_DRAFT_API
+      ZMQ_EVENT_HANDSHAKE_FAILED_ZAP, EPROTO
+#else
+      0, 0
+#endif
+    );
 }
+
 void test_curve_security_invalid_keysize (void *ctx)
 {
     //  Check return codes for invalid buffer sizes
@@ -721,7 +729,12 @@ int main (void)
     //  code, and the status text is completely lost
     test_curve_security_zap_unsuccessful (
       ctx, my_endpoint, server, server_mon, timeout,
-      ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL, EAGAIN);
+#ifdef ZMQ_BUILD_DRAFT_API
+      ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL, EAGAIN
+#else
+      0, 0
+#endif
+    );
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon);
 
     ctx = zmq_ctx_new ();
