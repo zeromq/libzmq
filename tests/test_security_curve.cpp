@@ -137,7 +137,13 @@ int get_monitor_event_with_timeout (void *monitor,
 enum zap_protocol_t
 {
   zap_ok,
-  zap_wrong_version
+  // ZAP-compliant non-standard cases
+  zap_status_internal_error,
+  // ZAP protocol errors
+  zap_wrong_version,
+  zap_wrong_request_id,
+  zap_status_invalid,
+  zap_too_many_parts
 };
 
 static void zap_handler_generic (void *handler, zap_protocol_t zap_protocol)
@@ -164,13 +170,24 @@ static void zap_handler_generic (void *handler, zap_protocol_t zap_protocol)
         assert (streq (mechanism, "CURVE"));
         assert (streq (identity, "IDENT"));
 
-        s_sendmore (handler, zap_protocol == zap_wrong_version ? "foo" : version);
-        s_sendmore (handler, sequence);
+        s_sendmore (handler, zap_protocol == zap_wrong_version
+                               ? "invalid_version"
+                               : version);
+        s_sendmore (handler, zap_protocol == zap_wrong_request_id
+                               ? "invalid_request_id"
+                               : sequence);
 
         if (streq (client_key_text, client_public)) {
-            s_sendmore (handler, "200");
+            s_sendmore (handler, zap_protocol == zap_status_internal_error
+                                   ? "500"
+                                   : (zap_protocol == zap_status_invalid
+                                        ? "invalid_status"
+                                        : "200"));
             s_sendmore (handler, "OK");
             s_sendmore (handler, "anonymous");
+            if (zap_protocol == zap_too_many_parts) {
+                s_sendmore (handler, "");
+            }
             s_send (handler, "");
         } else {
             s_sendmore (handler, "400");
@@ -196,6 +213,26 @@ static void zap_handler (void *handler)
 static void zap_handler_wrong_version (void *handler)
 {
   zap_handler_generic (handler, zap_wrong_version);
+}
+
+static void zap_handler_wrong_request_id (void *handler)
+{
+  zap_handler_generic (handler, zap_wrong_request_id);
+}
+
+static void zap_handler_wrong_status_invalid (void *handler)
+{
+  zap_handler_generic (handler, zap_status_invalid);
+}
+
+static void zap_handler_wrong_status_internal_error (void *handler)
+{
+  zap_handler_generic (handler, zap_status_internal_error);
+}
+
+static void zap_handler_too_many_parts (void *handler)
+{
+  zap_handler_generic (handler, zap_too_many_parts);
 }
 
 void test_garbage_key (void *ctx,
@@ -492,10 +529,15 @@ void test_curve_security_unauthenticated_message (char *my_endpoint,
     close (s);
 }
 
-void test_curve_security_zap_protocol_error (
-  void *ctx, char *my_endpoint, void *server, void *server_mon, int timeout)
+void test_curve_security_zap_unsuccessful (void *ctx,
+                                           char *my_endpoint,
+                                           void *server,
+                                           void *server_mon,
+                                           int timeout,
+                                           int expected_event,
+                                           int expected_err)
 {
-    // TODO duplicated with test_curve_security_with_valid_credentials
+    // TODO remove code duplication
     void *client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
     int rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, server_public, 41);
@@ -510,17 +552,31 @@ void test_curve_security_zap_protocol_error (
     close_zero_linger (client);
 
 #ifdef ZMQ_BUILD_DRAFT_API
+    int count_of_expected_events = 0;
+
     int event;
     int err;
     while (
       (event = get_monitor_event_with_timeout (server_mon, &err, NULL, timeout))
       != -1) {
-        assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ZAP);
-        assert(err == EPROTO);
+        if (event == expected_event) {
+            ++count_of_expected_events;
+            if (err != expected_err) {
+                fprintf (stderr, "Unexpected event: %x (err = %i)\n", event,
+                         err);
+                assert (false);
+            }
+        }
     }
+    assert (count_of_expected_events > 0);
 #endif
 }
 
+void test_curve_security_zap_protocol_error(
+  void *ctx, char *my_endpoint, void *server, void *server_mon, int timeout)
+{
+  test_curve_security_zap_unsuccessful(ctx, my_endpoint, server, server_mon, timeout, ZMQ_EVENT_HANDSHAKE_FAILED_ZAP, EPROTO);
+}
 void test_curve_security_invalid_keysize (void *ctx)
 {
     //  Check return codes for invalid buffer sizes
@@ -620,12 +676,52 @@ int main (void)
     test_curve_security_unauthenticated_message (my_endpoint, server, timeout);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon);
 
-    // Invalid ZAP protocol tests
+    //  Invalid ZAP protocol tests
 
-    // wrong version
+    //  wrong version
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
-                                   &server_mon, my_endpoint, &zap_handler_wrong_version);
-    test_curve_security_zap_protocol_error (ctx, my_endpoint, server, server_mon, timeout);
+                                   &server_mon, my_endpoint,
+                                   &zap_handler_wrong_version);
+    test_curve_security_zap_protocol_error (ctx, my_endpoint, server,
+                                            server_mon, timeout);
+    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon);
+
+    //  wrong request id
+    setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
+                                   &server_mon, my_endpoint,
+                                   &zap_handler_wrong_request_id);
+    test_curve_security_zap_protocol_error (ctx, my_endpoint, server,
+                                            server_mon, timeout);
+    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon);
+
+    //  status invalid (not a 3-digit number)
+    setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
+                                   &server_mon, my_endpoint,
+                                   &zap_handler_wrong_status_invalid);
+    test_curve_security_zap_protocol_error (ctx, my_endpoint, server,
+                                            server_mon, timeout);
+    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon);
+
+    //  too many parts
+    setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
+                                   &server_mon, my_endpoint,
+                                   &zap_handler_too_many_parts);
+    test_curve_security_zap_protocol_error (ctx, my_endpoint, server,
+                                            server_mon, timeout);
+    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon);
+
+    //  ZAP non-standard cases
+
+    //  status 500 internal error
+    setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
+                                   &server_mon, my_endpoint,
+                                   &zap_handler_wrong_status_internal_error);
+
+    //  TODO is this usable? EAGAIN does not appear to be an appropriate error 
+    //  code, and the status text is completely lost
+    test_curve_security_zap_unsuccessful (
+      ctx, my_endpoint, server, server_mon, timeout,
+      ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL, EAGAIN);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon);
 
     ctx = zmq_ctx_new ();
