@@ -202,7 +202,7 @@ void test_garbage_key (void *ctx,
     close_zero_linger (client);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    int timeout = 5000;
+    int timeout = -1;
 
     int handshake_failed_encryption_event_count = 0;
     int handshake_failed_client_closed = 0;
@@ -211,6 +211,7 @@ void test_garbage_key (void *ctx,
     while (
       (event = get_monitor_event_with_timeout (server_mon, &err, NULL, timeout))
       != -1) {
+        timeout = 250;
         switch (event) {
             case ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION:
                 ++handshake_failed_encryption_event_count;
