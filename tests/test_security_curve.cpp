@@ -196,6 +196,7 @@ void test_garbage_key(void *ctx, void *server, void *server_mon, char *my_endpoi
     int timeout = 250;
 
     int handshake_failed_encryption_event_count = 0;
+    int handshake_failed_client_closed = 0;
     int err;
     int event;
     while ((event = get_monitor_event_with_timeout (server_mon, &err, NULL, timeout)) != -1)
@@ -210,6 +211,7 @@ void test_garbage_key(void *ctx, void *server, void *server_mon, char *my_endpoi
         if (err == EPIPE)
         {
           fprintf (stderr, "Ignored event: %x (err = %i)\n", event, err);
+          ++handshake_failed_client_closed;
           continue;
         }
       default:
@@ -221,7 +223,7 @@ void test_garbage_key(void *ctx, void *server, void *server_mon, char *my_endpoi
     }
 
     // Two times because expect_bounce_fail involves two exchanges
-    assert (handshake_failed_encryption_event_count == 2);
+    assert (handshake_failed_encryption_event_count == 2 || handshake_failed_client_closed == 1);
 
     // Even though the client socket is closed, the server 
     // still handles HELLO messages. Output them for diagnostic purposes.
