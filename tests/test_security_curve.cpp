@@ -423,7 +423,8 @@ void test_curve_security_with_null_client_credentials (void *ctx,
 #endif
 }
 
-void test_curve_security_with_plain_client_credentials (void *ctx, void *server)
+void test_curve_security_with_plain_client_credentials (void *ctx, void *server,
+                                                        char *my_endpoint)
 {
     //  This must be caught by the curve_server class, not passed to ZAP
     void *client = zmq_socket (ctx, ZMQ_DEALER);
@@ -432,7 +433,7 @@ void test_curve_security_with_plain_client_credentials (void *ctx, void *server)
     assert (rc == 0);
     rc = zmq_setsockopt (client, ZMQ_PLAIN_PASSWORD, "password", 8);
     assert (rc == 0);
-    rc = zmq_connect (client, "tcp://localhost:9998");
+    rc = zmq_connect (client, my_endpoint);
     assert (rc == 0);
     expect_bounce_fail (server, client);
     close_zero_linger (client);
@@ -566,7 +567,7 @@ int main (void)
 
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
                                    &server_mon, my_endpoint);
-    test_curve_security_with_plain_client_credentials (ctx, server);
+    test_curve_security_with_plain_client_credentials (ctx, server, my_endpoint);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon);
 
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
