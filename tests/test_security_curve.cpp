@@ -266,7 +266,7 @@ int main (void)
 #ifdef ZMQ_BUILD_DRAFT_API
     //  Monitor handshake events on the server
     rc = zmq_socket_monitor (server, "inproc://monitor-server",
-            ZMQ_EVENT_HANDSHAKE_SUCCEED | ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL |
+            ZMQ_EVENT_HANDSHAKE_SUCCEEDED | ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL |
             ZMQ_EVENT_HANDSHAKE_FAILED_ZAP |ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP | 
             ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
     assert (rc == 0);
@@ -299,7 +299,7 @@ int main (void)
 
 #ifdef ZMQ_BUILD_DRAFT_API
     int event = get_monitor_event (server_mon, NULL, NULL, 0);
-    assert (event == ZMQ_EVENT_HANDSHAKE_SUCCEED);
+    assert (event == ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
 
     assert_no_more_monitor_events_with_timeout(server_mon, timeout);
 #endif

@@ -881,7 +881,7 @@ void zmq::stream_engine_t::mechanism_ready ()
     }
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    socket->event_handshake_succeed(endpoint, 0);
+    socket->event_handshake_succeeded(endpoint, 0);
 #endif
 }
 
