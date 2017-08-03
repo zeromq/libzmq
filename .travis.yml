@@ -53,8 +53,6 @@ matrix:
         - libsodium-dev
         - asciidoc
         - xmlto
-  - env: BUILD_TYPE=default CURVE=libsodium
-    os: osx
   - env: BUILD_TYPE=default CURVE=libsodium DRAFT=enabled
     os: linux
     addons:
