@@ -709,7 +709,7 @@ int zmq::curve_server_t::receive_and_process_zap_reply ()
     if (msg [3].size () != 3) {
         // CURVE I: ZAP handler sent invalid status code
         current_error_detail = zap;
-        errno = EACCES;
+        errno = EPROTO;
         return close_and_return (msg, -1);
     }
 
