@@ -317,9 +317,9 @@ void shutdown_context_and_server_side (void *ctx,
 #ifdef ZMQ_BUILD_DRAFT_API
     close_zero_linger (server_mon);
 #endif
-    int rc = zmq_close (server);
-    assert (rc == 0);
-    rc = zmq_ctx_term (ctx);
+    close_zero_linger (server);
+
+    int rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
     //  Wait until ZAP handler terminates
