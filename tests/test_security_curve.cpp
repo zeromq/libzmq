@@ -134,7 +134,13 @@ int get_monitor_event_with_timeout (void *monitor,
 //  This methods receives and validates ZAP requests (allowing or denying
 //  each client connection).
 
-static void zap_handler (void *handler)
+enum zap_protocol_t
+{
+  zap_ok,
+  zap_wrong_version
+};
+
+static void zap_handler_generic (void *handler, zap_protocol_t zap_protocol)
 {
     //  Process ZAP requests forever
     while (true) {
@@ -158,7 +164,7 @@ static void zap_handler (void *handler)
         assert (streq (mechanism, "CURVE"));
         assert (streq (identity, "IDENT"));
 
-        s_sendmore (handler, version);
+        s_sendmore (handler, zap_protocol == zap_wrong_version ? "foo" : version);
         s_sendmore (handler, sequence);
 
         if (streq (client_key_text, client_public)) {
@@ -180,6 +186,16 @@ static void zap_handler (void *handler)
         free (mechanism);
     }
     zmq_close (handler);
+}
+
+static void zap_handler (void *handler)
+{
+  zap_handler_generic (handler, zap_ok);
+}
+
+static void zap_handler_wrong_version (void *handler)
+{
+  zap_handler_generic (handler, zap_wrong_version);
 }
 
 void test_garbage_key (void *ctx,
@@ -273,7 +289,8 @@ void setup_context_and_server_side (void **ctx,
                                     void **zap_thread,
                                     void **server,
                                     void **server_mon,
-                                    char *my_endpoint)
+                                    char *my_endpoint,
+                                    zmq_thread_fn zap_handler_ = &zap_handler)
 {
     *ctx = zmq_ctx_new ();
     assert (*ctx);
@@ -285,7 +302,7 @@ void setup_context_and_server_side (void **ctx,
     assert (*handler);
     int rc = zmq_bind (*handler, "inproc://zeromq.zap.01");
     assert (rc == 0);
-    *zap_thread = zmq_threadstart (&zap_handler, *handler);
+    *zap_thread = zmq_threadstart (zap_handler_, *handler);
 
     //  Server socket will accept connections
     *server = zmq_socket (*ctx, ZMQ_DEALER);
@@ -475,6 +492,35 @@ void test_curve_security_unauthenticated_message (char *my_endpoint,
     close (s);
 }
 
+void test_curve_security_zap_protocol_error (
+  void *ctx, char *my_endpoint, void *server, void *server_mon, int timeout)
+{
+    // TODO duplicated with test_curve_security_with_valid_credentials
+    void *client = zmq_socket (ctx, ZMQ_DEALER);
+    assert (client);
+    int rc = zmq_setsockopt (client, ZMQ_CURVE_SERVERKEY, server_public, 41);
+    assert (rc == 0);
+    rc = zmq_setsockopt (client, ZMQ_CURVE_PUBLICKEY, client_public, 41);
+    assert (rc == 0);
+    rc = zmq_setsockopt (client, ZMQ_CURVE_SECRETKEY, client_secret, 41);
+    assert (rc == 0);
+    rc = zmq_connect (client, my_endpoint);
+    assert (rc == 0);
+    expect_bounce_fail (server, client);
+    close_zero_linger (client);
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    int event;
+    int err;
+    while (
+      (event = get_monitor_event_with_timeout (server_mon, &err, NULL, timeout))
+      != -1) {
+        assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ZAP);
+        assert(err == EPROTO);
+    }
+#endif
+}
+
 void test_curve_security_invalid_keysize (void *ctx)
 {
     //  Check return codes for invalid buffer sizes
@@ -572,6 +618,14 @@ int main (void)
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
                                    &server_mon, my_endpoint);
     test_curve_security_unauthenticated_message (my_endpoint, server, timeout);
+    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon);
+
+    // Invalid ZAP protocol tests
+
+    // wrong version
+    setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
+                                   &server_mon, my_endpoint, &zap_handler_wrong_version);
+    test_curve_security_zap_protocol_error (ctx, my_endpoint, server, server_mon, timeout);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon);
 
     ctx = zmq_ctx_new ();
