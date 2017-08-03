@@ -78,7 +78,7 @@ matrix:
 sudo: required
 
 before_install:
-- if [ $TRAVIS_OS_NAME == "osx" ] ; then brew update; brew install binutils ; fi
+- if [ $TRAVIS_OS_NAME == "osx" -a $BUILD_TYPE == "android" ] ; then brew install binutils ; fi
 - if [ $TRAVIS_OS_NAME == "osx" -a $CURVE == "libsodium" ] ; then brew install libsodium ; fi
 
 before_script:
