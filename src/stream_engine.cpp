@@ -785,17 +785,16 @@ int zmq::stream_engine_t::next_handshake_command (msg_t *msg_)
         if (rc == 0)
             msg_->set_flags (msg_t::command);
 #ifdef ZMQ_BUILD_DRAFT_API
-        if(mechanism->status() == mechanism_t::error)
-        {
+        if (mechanism->status () == mechanism_t::error) {
             int err = errno;
-            if(mechanism->error_detail() == mechanism_t::zmtp)
-                socket->event_handshake_failed_zmtp(endpoint, err);
-            else if(mechanism->error_detail() == mechanism_t::zap)
-                socket->event_handshake_failed_zap(endpoint, err);
-            else if(mechanism->error_detail() == mechanism_t::encryption)
-                socket->event_handshake_failed_encryption(endpoint, err);
+            if (mechanism->error_detail () == mechanism_t::zmtp)
+                socket->event_handshake_failed_zmtp (endpoint, err);
+            else if (mechanism->error_detail () == mechanism_t::zap)
+                socket->event_handshake_failed_zap (endpoint, err);
+            else if (mechanism->error_detail () == mechanism_t::encryption)
+                socket->event_handshake_failed_encryption (endpoint, err);
             else
-                socket->event_handshake_failed_no_detail(endpoint, err);
+                socket->event_handshake_failed_no_detail (endpoint, err);
         }
 #endif
 
@@ -881,7 +880,7 @@ void zmq::stream_engine_t::mechanism_ready ()
     }
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    socket->event_handshake_succeeded(endpoint, 0);
+    socket->event_handshake_succeeded (endpoint, 0);
 #endif
 }
 
@@ -989,21 +988,20 @@ void zmq::stream_engine_t::error (error_reason_t reason)
     zmq_assert (session);
 #ifdef ZMQ_BUILD_DRAFT_API
     int err = errno;
-    if(mechanism == NULL) {
-        if(reason == protocol_error)
-            socket->event_handshake_failed_zmtp(endpoint, err);
+    if (mechanism == NULL) {
+        if (reason == protocol_error)
+            socket->event_handshake_failed_zmtp (endpoint, err);
         else
-            socket->event_handshake_failed_no_detail(endpoint, err);
-    }
-    else if(mechanism->status() == mechanism_t::handshaking) {
-        if(mechanism->error_detail() == mechanism_t::zmtp)
-            socket->event_handshake_failed_zmtp(endpoint, err);
-        else if(mechanism->error_detail() == mechanism_t::zap)
-            socket->event_handshake_failed_zap(endpoint, err);
-        else if(mechanism->error_detail() == mechanism_t::encryption)
-            socket->event_handshake_failed_encryption(endpoint, err);
+            socket->event_handshake_failed_no_detail (endpoint, err);
+    } else if (mechanism->status () == mechanism_t::handshaking) {
+        if (mechanism->error_detail () == mechanism_t::zmtp)
+            socket->event_handshake_failed_zmtp (endpoint, err);
+        else if (mechanism->error_detail () == mechanism_t::zap)
+            socket->event_handshake_failed_zap (endpoint, err);
+        else if (mechanism->error_detail () == mechanism_t::encryption)
+            socket->event_handshake_failed_encryption (endpoint, err);
         else
-            socket->event_handshake_failed_no_detail(endpoint, err);
+            socket->event_handshake_failed_no_detail (endpoint, err);
     }
 #endif
     socket->event_disconnected (endpoint, (int) s);

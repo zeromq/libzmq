@@ -1686,29 +1686,34 @@ void zmq::socket_base_t::event_disconnected (const std::string &addr_, zmq::fd_t
     event(addr_, fd_, ZMQ_EVENT_DISCONNECTED);
 }
 
-void zmq::socket_base_t::event_handshake_failed_no_detail(const std::string &addr_, int err_)
+void zmq::socket_base_t::event_handshake_failed_no_detail (
+  const std::string &addr_, int err_)
 {
-    event(addr_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL);
+    event (addr_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL);
 }
 
-void zmq::socket_base_t::event_handshake_failed_zmtp(const std::string &addr_, int err_)
+void zmq::socket_base_t::event_handshake_failed_zmtp (const std::string &addr_,
+                                                      int err_)
 {
-    event(addr_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP);
+    event (addr_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP);
 }
 
-void zmq::socket_base_t::event_handshake_failed_zap(const std::string &addr_, int err_)
+void zmq::socket_base_t::event_handshake_failed_zap (const std::string &addr_,
+                                                     int err_)
 {
-    event(addr_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_ZAP);
+    event (addr_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_ZAP);
 }
 
-void zmq::socket_base_t::event_handshake_failed_encryption(const std::string &addr_, int err_)
+void zmq::socket_base_t::event_handshake_failed_encryption (
+  const std::string &addr_, int err_)
 {
-    event(addr_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
+    event (addr_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
 }
 
-void zmq::socket_base_t::event_handshake_succeeded(const std::string &addr_, int err_)
+void zmq::socket_base_t::event_handshake_succeeded (const std::string &addr_,
+                                                    int err_)
 {
-    event(addr_, err_, ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
+    event (addr_, err_, ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
 }
 
 void zmq::socket_base_t::event(const std::string &addr_, intptr_t value_, int type_)
