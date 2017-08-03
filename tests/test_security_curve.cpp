@@ -229,7 +229,8 @@ void test_garbage_key (void *ctx,
                          err);
                 assert (false);
         }
-        if (handshake_failed_encryption_event_count == 2)
+        if (handshake_failed_encryption_event_count == 2
+            || handshake_failed_client_closed == 1)
             break;
     }
 
