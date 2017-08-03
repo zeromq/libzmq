@@ -57,8 +57,11 @@ get_monitor_event (void *monitor, int *value, char **address, int recv_flag)
     //  First frame in message contains event number and value
     zmq_msg_t msg;
     zmq_msg_init (&msg);
-    if (zmq_msg_recv (&msg, monitor, recv_flag) == -1)
-        return -1;              //  Interrupted, presumably
+    if (zmq_msg_recv(&msg, monitor, recv_flag) == -1)
+    {
+        assert(errno == EAGAIN);
+        return -1;              //  timed out or no message available
+    }
     assert (zmq_msg_more (&msg));
 
     uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
@@ -68,8 +71,8 @@ get_monitor_event (void *monitor, int *value, char **address, int recv_flag)
 
     //  Second frame in message contains event address
     zmq_msg_init (&msg);
-    if (zmq_msg_recv (&msg, monitor, recv_flag) == -1)
-        return -1;              //  Interrupted, presumably
+    int res = zmq_msg_recv(&msg, monitor, recv_flag) == -1;
+    assert(res != -1);
     assert (!zmq_msg_more (&msg));
 
     if (address) {
@@ -108,7 +111,8 @@ int get_monitor_event_with_timeout(void *monitor, int *value, char **address, in
   {                                                                            \
     int err;                                                                   \
     int event = get_monitor_event(monitor, &err, NULL, 0);                     \
-    if (event != -1 && (event & (expected_events)) == 0) {                     \
+    assert(event != -1);                                                       \
+    if ((event & (expected_events)) == 0) {                                    \
       fprintf(stderr, "Unexpected event: %x (err = %i)\n", event, err);        \
       while ((event = get_monitor_event(monitor, NULL, NULL, (timeout))) !=    \
              -1) {                                                             \
@@ -173,7 +177,7 @@ static void zap_handler (void *handler)
     zmq_close (handler);
 }
 
-void test_wrong_key(void *ctx, void *server, void *server_mon, char *my_endpoint, char *server_public, char *client_public, char *client_secret)
+void test_garbage_key(void *ctx, void *server, void *server_mon, char *my_endpoint, char *server_public, char *client_public, char *client_secret)
 {
     void *client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
@@ -191,16 +195,36 @@ void test_wrong_key(void *ctx, void *server, void *server_mon, char *my_endpoint
 #ifdef ZMQ_BUILD_DRAFT_API
     int timeout = 250;
 
-    assert_monitor_event(server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
+    int handshake_failed_encryption_event_count = 0;
+    int err;
+    int event;
+    while ((event = get_monitor_event_with_timeout (server_mon, &err, NULL, timeout)) != -1)
+    {
+      switch (event)
+      {
+      case ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION:
+        ++handshake_failed_encryption_event_count;
+        break;
+      case ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL:
+        // ignore errors with EPIPE, which happen sporadically
+        if (err == EPIPE)
+          continue;
+      default:
+        fprintf (stderr, "Unexpected event: %x (err = %i)\n", event, err);
+        assert (false);
+      }    
+      if (handshake_failed_encryption_event_count == 2)
+        break;
+    }
+
     // Two times because expect_bounce_fail involves two exchanges
-    assert_monitor_event(server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
+    assert (handshake_failed_encryption_event_count == 2);
 
     // This enables to flush the incoming monitoring events that disturbs the 
     // following test case. Even though the client socket is closed, the server 
     // still handles HELLO messages.
     // TODO: this could be avoided by setting up a new context as suggested above
 
-    int event;
     do {
         int err;
         event = get_monitor_event_with_timeout (server_mon, &err, NULL, timeout);
@@ -311,15 +335,15 @@ int main (void)
 #endif
 
     char garbage_key [] = "0000000000000000000000000000000000000000";
-    test_wrong_key(ctx, server, server_mon, my_endpoint, garbage_key, client_public, client_secret);
+    test_garbage_key(ctx, server, server_mon, my_endpoint, garbage_key, client_public, client_secret);
 
     //  Check CURVE security with a garbage client public key
     //  This will be caught by the curve_server class, not passed to ZAP
-    test_wrong_key(ctx, server, server_mon, my_endpoint, server_public, garbage_key, client_secret);
+    test_garbage_key(ctx, server, server_mon, my_endpoint, server_public, garbage_key, client_secret);
     
     //  Check CURVE security with a garbage client secret key
     //  This will be caught by the curve_server class, not passed to ZAP
-    test_wrong_key(ctx, server, server_mon, my_endpoint, server_public, client_public, garbage_key);
+    test_garbage_key(ctx, server, server_mon, my_endpoint, server_public, client_public, garbage_key);
     
     //  Check CURVE security with bogus client credentials
     //  This must be caught by the ZAP handler

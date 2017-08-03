@@ -995,7 +995,7 @@ void zmq::stream_engine_t::error (error_reason_t reason)
         else
             socket->event_handshake_failed_no_detail(endpoint, err);
     }
-    else if(handshaking) {
+    else if(mechanism->status() == mechanism_t::handshaking) {
         if(mechanism->error_detail() == mechanism_t::zmtp)
             socket->event_handshake_failed_zmtp(endpoint, err);
         else if(mechanism->error_detail() == mechanism_t::zap)
