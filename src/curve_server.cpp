@@ -703,7 +703,7 @@ int zmq::curve_server_t::receive_and_process_zap_reply ()
     if (msg [3].size () != 3) {
         //  Temporary support for security debugging
         puts ("CURVE I: ZAP handler rejected client authentication");
-        errno = EACCES;
+        errno = EPROTO;
         return close_and_return (msg, -1);
     }
 
