@@ -91,7 +91,9 @@ int get_monitor_event_with_timeout (void *monitor,
 {
     zmq_setsockopt (monitor, ZMQ_RCVTIMEO, &timeout, sizeof (timeout));
     int res = get_monitor_event (monitor, value, address, 0);
-    zmq_setsockopt (monitor, ZMQ_RCVTIMEO, 0, 0);
+    int timeout_infinite = -1;
+    zmq_setsockopt (monitor, ZMQ_RCVTIMEO, &timeout_infinite,
+                    sizeof (timeout_infinite));
     return res;
 }
 
@@ -208,9 +210,11 @@ void test_garbage_key (void *ctx,
     int handshake_failed_client_closed = 0;
     int err;
     int event;
+    int event_count = 0;
     while (
       (event = get_monitor_event_with_timeout (server_mon, &err, NULL, timeout))
       != -1) {
+        ++event_count;
         timeout = 250;
         switch (event) {
             case ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION:
@@ -233,6 +237,12 @@ void test_garbage_key (void *ctx,
             || handshake_failed_client_closed == 1)
             break;
     }
+    fprintf (stderr,
+             "event_count == %i, "
+             "handshake_failed_encryption_event_count == %i, "
+             "handshake_failed_client_closed = %i\n",
+             event_count, handshake_failed_encryption_event_count,
+             handshake_failed_client_closed);
 
     // Two times because expect_bounce_fail involves two exchanges
     assert (handshake_failed_encryption_event_count == 2
