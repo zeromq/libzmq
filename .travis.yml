@@ -55,6 +55,19 @@ matrix:
         - xmlto
   - env: BUILD_TYPE=default CURVE=libsodium
     os: osx
+  - env: BUILD_TYPE=default CURVE=libsodium DRAFT=enabled
+    os: linux
+    addons:
+      apt:
+        sources:
+        - sourceline: 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_14.04/ ./'
+          key_url: 'http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_14.04/Release.key'
+        packages:
+        - libsodium-dev
+        - asciidoc
+        - xmlto
+  - env: BUILD_TYPE=default CURVE=libsodium DRAFT=enabled
+    os: osx
   - env: BUILD_TYPE=default CURVE=tweetnacl DRAFT=enabled ADDRESS_SANITIZER=enabled
     os: linux
     dist: trusty
