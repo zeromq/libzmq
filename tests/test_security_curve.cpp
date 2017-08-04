@@ -141,6 +141,7 @@ enum zap_protocol_t
 {
   zap_ok,
   // ZAP-compliant non-standard cases
+  zap_status_temporary_failure,
   zap_status_internal_error,
   // ZAP protocol errors
   zap_wrong_version,
@@ -210,11 +211,21 @@ static void zap_handler_generic (void *ctx, zap_protocol_t zap_protocol)
                                : sequence);
 
         if (streq (client_key_text, valid_client_public)) {
-            s_sendmore (handler, zap_protocol == zap_status_internal_error
-                                   ? "500"
-                                   : (zap_protocol == zap_status_invalid
-                                        ? "invalid_status"
-                                        : "200"));
+            char *status_code;
+            switch (zap_protocol) {
+                case zap_status_internal_error:
+                    status_code = "500";
+                    break;
+                case zap_status_temporary_failure:
+                    status_code = "300";
+                    break;
+                case zap_status_invalid:
+                    status_code = "invalid_status";
+                    break;
+                default:
+                    status_code = "200";
+            }
+            s_sendmore (handler, status_code);
             s_sendmore (handler, "OK");
             s_sendmore (handler, "anonymous");
             if (zap_protocol == zap_too_many_parts) {
@@ -263,6 +274,11 @@ static void zap_handler_wrong_request_id (void *ctx)
 static void zap_handler_wrong_status_invalid (void *ctx)
 {
     zap_handler_generic (ctx, zap_status_invalid);
+}
+
+static void zap_handler_wrong_status_temporary_failure (void *ctx)
+{
+    zap_handler_generic (ctx, zap_status_temporary_failure);
 }
 
 static void zap_handler_wrong_status_internal_error (void *ctx)
@@ -322,6 +338,7 @@ int expect_monitor_event_multiple (void *server_mon,
 {
     int count_of_expected_events = 0;
     int client_closed_connection = 0;
+    //  infinite timeout at the start
     int timeout = -1;
 
     int event;
@@ -801,17 +818,28 @@ int main (void)
 
     //  ZAP non-standard cases
 
-    //  status 500 internal error
+    //  status 300 temporary failure
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
                                    &server_mon, my_endpoint,
-                                   &zap_handler_wrong_status_internal_error);
-
-    //  TODO is this usable? EAGAIN does not appear to be an appropriate error 
-    //  code, and the status text is completely lost
+                                   &zap_handler_wrong_status_temporary_failure);
     test_curve_security_zap_unsuccessful (ctx, my_endpoint, server, server_mon,
 #ifdef ZMQ_BUILD_DRAFT_API
                                           ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL,
                                           EAGAIN
+#else
+                                          0, 0
+#endif
+    );
+    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon);
+
+    //  status 500 internal error
+    setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
+                                   &server_mon, my_endpoint,
+                                   &zap_handler_wrong_status_internal_error);
+    test_curve_security_zap_unsuccessful (ctx, my_endpoint, server, server_mon,
+#ifdef ZMQ_BUILD_DRAFT_API
+                                          ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL,
+                                          EFAULT
 #else
                                           0, 0
 #endif
