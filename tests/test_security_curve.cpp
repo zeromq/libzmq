@@ -530,8 +530,21 @@ void test_curve_security_with_bogus_client_credentials (
                                          bogus_secret, my_endpoint, server);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    int err;
-    int event = get_monitor_event_with_timeout (server_mon, &err, NULL, 0);
+    test_curve_security_zap_unsuccessful (ctx, my_endpoint, server, server_mon,
+#ifdef ZMQ_BUILD_DRAFT_API
+                                          ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL,
+                                          EFAULT
+#else
+                                          0, 0
+#endif
+    );
+    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
+            handler);
+
+    //  status 500 internal error
+    setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
+                                   &server_mon, my_endpoint,
+                                   &zap_handler_wrong_status_internal_error);
     // TODO add another event type ZMQ_EVENT_HANDSHAKE_FAILED_AUTH for this case?
     assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL
             && err == EACCES); // ZAP handle the error,  not curve_server
