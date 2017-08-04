@@ -169,6 +169,9 @@ foreach(test ${tests})
   set_tests_properties(${test} PROPERTIES TIMEOUT 10)
 endforeach()
 
+#override timeout for these tests
+set_tests_properties(test_security_curve PROPERTIES TIMEOUT 20)
+
 #Check whether all tests in the current folder are present
 file(READ "${CMAKE_CURRENT_LIST_FILE}" CURRENT_LIST_FILE_CONTENT)
 file(GLOB ALL_TEST_SOURCES "test_*.cpp")
