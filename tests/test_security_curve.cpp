@@ -295,8 +295,9 @@ int expect_monitor_event_multiple (void *server_mon,
       != -1) {
         timeout = 250;
 
-        // ignore errors with EPIPE, which happen sporadically, see above
-        if (event == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL && err == EPIPE) {
+        // ignore errors with EPIPE/ECONNRESET, which happen sporadically, see above
+        if (event == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL
+            && (err == EPIPE || err == ECONNRESET)) {
             fprintf (stderr, "Ignored event: %x (err = %i)\n", event, err);
             client_closed_connection = 1;
             break;
