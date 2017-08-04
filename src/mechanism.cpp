@@ -61,9 +61,8 @@ void zmq::mechanism_t::peer_identity (msg_t *msg_)
 void zmq::mechanism_t::set_user_id (const void *data_, size_t size_)
 {
     user_id = blob_t (static_cast <const unsigned char*> (data_), size_);
-    zap_properties.insert (
-        metadata_t::dict_t::value_type (
-            "User-Id", std::string ((char *) data_, size_)));
+    zap_properties.insert (metadata_t::dict_t::value_type (
+      ZMQ_MSG_PROPERTY_USER_ID, std::string ((char *) data_, size_)));
 }
 
 zmq::blob_t zmq::mechanism_t::get_user_id () const
@@ -127,10 +126,10 @@ int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
         ptr_ += value_length;
         bytes_left -= value_length;
 
-        if (name == "Identity" && options.recv_identity)
+        if (name == ZMQ_MSG_PROPERTY_IDENTITY && options.recv_identity)
             set_peer_identity (value, value_length);
         else
-        if (name == "Socket-Type") {
+        if (name == ZMQ_MSG_PROPERTY_SOCKET_TYPE) {
             const std::string socket_type ((char *) value, value_length);
             if (!check_socket_type (socket_type)) {
                 errno = EINVAL;

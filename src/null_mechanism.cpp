@@ -109,13 +109,15 @@ int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
 
     //  Add socket type property
     const char *socket_type = socket_type_string (options.type);
-    ptr += add_property (ptr, "Socket-Type", socket_type, strlen (socket_type));
+    ptr += add_property (ptr, ZMQ_MSG_PROPERTY_SOCKET_TYPE, socket_type,
+                         strlen (socket_type));
 
     //  Add identity property
     if (options.type == ZMQ_REQ
     ||  options.type == ZMQ_DEALER
     ||  options.type == ZMQ_ROUTER)
-        ptr += add_property (ptr, "Identity", options.identity, options.identity_size);
+        ptr += add_property (ptr, ZMQ_MSG_PROPERTY_IDENTITY, options.identity,
+                             options.identity_size);
 
     const size_t command_size = ptr - command_buffer;
     const int rc = msg_->init_size (command_size);
