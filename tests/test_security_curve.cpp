@@ -335,8 +335,7 @@ int expect_monitor_event_multiple (void *server_mon,
         // to the peer and then tries to read the socket before the peer reads
         // ECONNABORTED happens when a client aborts a connection via RST/timeout
         if (event == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL &&
-                (err == EPIPE || err == ECONNRESET || err == ECONNABORTED)) {
-            fprintf (stderr, "Ignored event: %x (err = %i)\n", event, err);
+                (err == EPIPE || err == ECONNRESET || err == ECONNABORTED)) {            fprintf (stderr, "Ignored event: %x (err = %i)\n", event, err);
             client_closed_connection = 1;
             break;
         }
@@ -618,7 +617,7 @@ void test_curve_security_zap_unsuccessful (void *ctx,
     int events_received = 0;
 #ifdef ZMQ_BUILD_DRAFT_API
     events_received =
-      expect_monitor_event_multiple (server_mon, expected_event, expected_err);
+    expect_monitor_event_multiple (server_mon, expected_event, expected_err);
 #endif
 
     // there may be more than one ZAP request due to repeated attempts by the client
