@@ -248,9 +248,7 @@ int zmq::curve_server_t::zap_msg_available ()
     }
     const int rc = receive_and_process_zap_reply ();
     if (rc == 0)
-        state = status_code == "200"
-            ? send_ready
-            : send_error;
+        handle_zap_status_code ();
     return rc;
 }
 
@@ -506,9 +504,7 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
             return -1;
         rc = receive_and_process_zap_reply ();
         if (rc == 0)
-            state = status_code == "200"
-                ? send_ready
-                : send_error;
+            handle_zap_status_code ();
         else
         if (errno == EAGAIN)
             state = expect_zap_reply;
@@ -708,8 +704,11 @@ int zmq::curve_server_t::receive_and_process_zap_reply ()
         return close_and_return (msg, -1);
     }
 
-    //  Status code frame
-    if (msg [3].size () != 3) {
+    //  Status code frame, only 200, 300, 400 and 500 are valid status codes
+    char *status_code_data = static_cast <char*> (msg [3].data());
+    if (msg [3].size () != 3 || status_code_data [0] < '2'
+          || status_code_data [0] > '5' || status_code_data [1] != '0'
+          || status_code_data [2] != '0') {
         // CURVE I: ZAP handler sent invalid status code
         current_error_detail = zap;
         errno = EPROTO;
@@ -736,6 +735,30 @@ int zmq::curve_server_t::receive_and_process_zap_reply ()
     }
 
     return 0;
+}
+
+void zmq::curve_server_t::handle_zap_status_code ()
+{
+    if (status_code == "200") {
+        state = send_ready;
+    } else {
+        state = send_error;
+        // TODO how do we get the endpoint address here?
+
+        int err = 0;
+        switch (status_code[0]) {
+            case '3':
+                err = EAGAIN;
+                break;
+            case '4':
+                err = EACCES;
+                break;
+            case '5':
+                err = EFAULT;
+                break;
+        }
+        session->get_socket ()->event_handshake_failed_no_detail ("", err);
+    }
 }
 
 #endif

@@ -107,7 +107,7 @@ int get_monitor_event_with_timeout (void *monitor,
                      wait_time);
         }
     } else {
-        zmq_setsockopt (monitor, ZMQ_RCVTIMEO, &timeout, sizeof (timeout));
+    zmq_setsockopt (monitor, ZMQ_RCVTIMEO, &timeout, sizeof (timeout));
         res = get_monitor_event_internal (monitor, value, address, 0);
     }
     int timeout_infinite = -1;
@@ -530,11 +530,11 @@ void test_curve_security_with_bogus_client_credentials (
                                          bogus_secret, my_endpoint, server);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    int event = get_monitor_event_with_timeout (server_mon, NULL, NULL, -1);
+    int err;
+    int event = get_monitor_event_with_timeout (server_mon, &err, NULL, 0);
     // TODO add another event type ZMQ_EVENT_HANDSHAKE_FAILED_AUTH for this case?
-    assert (
-      event
-      == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL); // ZAP handle the error,  not curve_server
+    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL
+            && err == EACCES); // ZAP handle the error,  not curve_server
 
     assert_no_more_monitor_events_with_timeout (server_mon, timeout);
 #endif
@@ -639,7 +639,7 @@ void test_curve_security_zap_unsuccessful (void *ctx,
     int events_received = 0;
 #ifdef ZMQ_BUILD_DRAFT_API
     events_received =
-    expect_monitor_event_multiple (server_mon, expected_event, expected_err);
+      expect_monitor_event_multiple (server_mon, expected_event, expected_err);
 #endif
 
     // there may be more than one ZAP request due to repeated attempts by the client
