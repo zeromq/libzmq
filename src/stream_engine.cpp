@@ -1023,7 +1023,8 @@ void zmq::stream_engine_t::set_handshake_timer ()
 
 bool zmq::stream_engine_t::init_properties (properties_t & properties) {
     if (peer_address.empty()) return false;
-    properties.insert (std::make_pair("Peer-Address", peer_address));
+    properties.insert (
+      std::make_pair (ZMQ_MSG_PROPERTY_PEER_ADDRESS, peer_address));
 
     //  Private property to support deprecated SRCFD
     std::ostringstream stream;

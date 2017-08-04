@@ -27,7 +27,6 @@ function:
 
     Socket-Type
     Identity
-    Resource
 
 Additionally, when available for the underlying transport, the *Peer-Address*
 property will return the IP address of the remote endpoint as returned by
