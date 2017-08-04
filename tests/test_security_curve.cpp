@@ -639,7 +639,7 @@ void test_curve_security_zap_unsuccessful (void *ctx,
     int events_received = 0;
 #ifdef ZMQ_BUILD_DRAFT_API
     events_received =
-    expect_monitor_event_multiple (server_mon, expected_event, expected_err);
+      expect_monitor_event_multiple (server_mon, expected_event, expected_err);
 #endif
 
     // there may be more than one ZAP request due to repeated attempts by the client
@@ -832,22 +832,6 @@ int main (void)
     );
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
             handler);
-
-    //  status 500 internal error    
-    setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
-                                   &server_mon, my_endpoint,
-                                   &zap_handler_wrong_status_internal_error);
-    test_curve_security_zap_unsuccessful (ctx, my_endpoint, server, server_mon,
-#ifdef ZMQ_BUILD_DRAFT_API
-                                          ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL,
-                                          EFAULT
-#else
-                                          0, 0
-#endif
-    );
-    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
-            handler);
-
     //  status 500 internal error
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
                                    &server_mon, my_endpoint,
