@@ -272,6 +272,48 @@ void expect_new_client_curve_bounce_fail (void *ctx,
     close_zero_linger (client);
 }
 
+#ifdef ZMQ_BUILD_DRAFT_API
+//  expects that one or more occurrences of the expected event are received 
+//  via the specified socket monitor
+//  returns the number of occurrences of the expected event
+//  interrupts, if a ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL/EPIPE occurs; 
+//  in this case, 0 is returned
+//  this should be investigated further, see 
+//  https://github.com/zeromq/libzmq/issues/2644
+int expect_monitor_event_multiple (void *server_mon,
+                                   int expected_event,
+                                   int expected_err = -1)
+{
+    int count_of_expected_events = 0;
+    int client_closed_connection = 0;
+    int timeout = -1;
+
+    int event;
+    int err;
+    while (
+      (event = get_monitor_event_with_timeout (server_mon, &err, NULL, timeout))
+      != -1) {
+        timeout = 250;
+
+        // ignore errors with EPIPE, which happen sporadically, see above
+        if (event == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL && err == EPIPE) {
+            fprintf (stderr, "Ignored event: %x (err = %i)\n", event, err);
+            client_closed_connection = 1;
+            break;
+        }
+        if (event != expected_event
+            || (-1 != expected_err && err != expected_err)) {
+            fprintf (stderr, "Unexpected event: %x (err = %i)\n", event, err);
+            assert (false);
+        }
+        ++count_of_expected_events;
+    }
+    assert (count_of_expected_events > 0 || client_closed_connection);
+
+    return count_of_expected_events;
+}
+#endif
+
 void test_garbage_key(void *ctx,
                        void *server,
                        void *server_mon,
@@ -284,67 +326,19 @@ void test_garbage_key(void *ctx,
                                          client_secret, my_endpoint, server);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    int timeout = -1;
+    int handshake_failed_encryption_event_count =
+      expect_monitor_event_multiple (server_mon,
+                                     ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
 
-    int handshake_failed_encryption_event_count = 0;
-    int handshake_failed_client_closed = 0;
-    int err;
-    int event;
-    int event_count = 0;
-    while (
-      (event = get_monitor_event_with_timeout (server_mon, &err, NULL, timeout))
-      != -1) {
-        ++event_count;
-        timeout = 250;
-        switch (event) {
-            case ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION:
-                ++handshake_failed_encryption_event_count;
-                break;
-            case ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL:
-                // ignore errors with EPIPE, which happen sporadically
-                if (err == EPIPE) {
-                    fprintf (stderr, "Ignored event: %x (err = %i)\n", event,
-                             err);
-                    ++handshake_failed_client_closed;
-                    continue;
-                }
-            default:
-                fprintf (stderr, "Unexpected event: %x (err = %i)\n", event,
-                         err);
-                assert (false);
-        }
-        if (handshake_failed_encryption_event_count == 2
-            || handshake_failed_client_closed == 1)
-            break;
-    }
-    fprintf (stderr,
-             "event_count == %i, "
-             "handshake_failed_encryption_event_count == %i, "
-             "handshake_failed_client_closed = %i\n",
-             event_count, handshake_failed_encryption_event_count,
-             handshake_failed_client_closed);
-
-    // handshake_failed_encryption_event_count should be two because 
+    // handshake_failed_encryption_event_count should be at least two because 
     // expect_bounce_fail involves two exchanges
     // however, with valgrind we see only one event (maybe the next one takes 
     // very long, or does not happen at all because something else takes very 
     // long)
-    // cases where handshake_failed_client_closed == 1 should be 
-    // investigated further, see https://github.com/zeromq/libzmq/issues/2644
-    assert (handshake_failed_encryption_event_count >= 1
-            || handshake_failed_client_closed == 1);
 
-    // Even though the client socket is closed, the server still handles HELLO
-    // messages. Output them for diagnostic purposes.
-
-    do {
-        int err;
-        event =
-          get_monitor_event_with_timeout (server_mon, &err, NULL, timeout);
-        if (event != -1) {
-            fprintf (stderr, "Flushed event: %x (errno = %i)\n", event, err);
-        }
-    } while (event != -1);
+    fprintf (stderr,
+             "count of ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION events: %i\n",
+             handshake_failed_encryption_event_count);
 #endif
 }
 
@@ -560,7 +554,6 @@ void test_curve_security_zap_unsuccessful (void *ctx,
                                            char *my_endpoint,
                                            void *server,
                                            void *server_mon,
-                                           int timeout,
                                            int expected_event,
                                            int expected_err)
 {
@@ -569,38 +562,23 @@ void test_curve_security_zap_unsuccessful (void *ctx,
       my_endpoint, server);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    int count_of_expected_events = 0;
-
-    int event;
-    int err;
-    while (
-      (event = get_monitor_event_with_timeout (server_mon, &err, NULL, timeout))
-      != -1) {
-        if (event == expected_event) {
-            ++count_of_expected_events;
-            if (err != expected_err) {
-                fprintf (stderr, "Unexpected event: %x (err = %i)\n", event,
-                         err);
-                assert (false);
-            }
-        }
-    }
-    assert (count_of_expected_events > 0);
+    expect_monitor_event_multiple (server_mon, expected_event, expected_err);
 #endif
 
     // there may be more than one ZAP request due to repeated attempts by the client
     assert (1 <= zmq_atomic_counter_value (zap_requests_handled));
 }
 
-void test_curve_security_zap_protocol_error(
-  void *ctx, char *my_endpoint, void *server, void *server_mon, int timeout)
+void test_curve_security_zap_protocol_error (void *ctx,
+                                             char *my_endpoint,
+                                             void *server,
+                                             void *server_mon)
 {
-    test_curve_security_zap_unsuccessful (
-      ctx, my_endpoint, server, server_mon, timeout,
+    test_curve_security_zap_unsuccessful (ctx, my_endpoint, server, server_mon,
 #ifdef ZMQ_BUILD_DRAFT_API
-      ZMQ_EVENT_HANDSHAKE_FAILED_ZAP, EPROTO
+                                          ZMQ_EVENT_HANDSHAKE_FAILED_ZAP, EPROTO
 #else
-      0, 0
+                                          0, 0
 #endif
     );
 }
@@ -712,7 +690,7 @@ int main (void)
                                    &server_mon, my_endpoint,
                                    &zap_handler_wrong_version);
     test_curve_security_zap_protocol_error (ctx, my_endpoint, server,
-                                            server_mon, timeout);
+                                            server_mon);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon);
 
     //  wrong request id
@@ -720,7 +698,7 @@ int main (void)
                                    &server_mon, my_endpoint,
                                    &zap_handler_wrong_request_id);
     test_curve_security_zap_protocol_error (ctx, my_endpoint, server,
-                                            server_mon, timeout);
+                                            server_mon);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon);
 
     //  status invalid (not a 3-digit number)
@@ -728,7 +706,7 @@ int main (void)
                                    &server_mon, my_endpoint,
                                    &zap_handler_wrong_status_invalid);
     test_curve_security_zap_protocol_error (ctx, my_endpoint, server,
-                                            server_mon, timeout);
+                                            server_mon);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon);
 
     //  too many parts
@@ -736,7 +714,7 @@ int main (void)
                                    &server_mon, my_endpoint,
                                    &zap_handler_too_many_parts);
     test_curve_security_zap_protocol_error (ctx, my_endpoint, server,
-                                            server_mon, timeout);
+                                            server_mon);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon);
 
     //  ZAP non-standard cases
@@ -748,12 +726,12 @@ int main (void)
 
     //  TODO is this usable? EAGAIN does not appear to be an appropriate error 
     //  code, and the status text is completely lost
-    test_curve_security_zap_unsuccessful (
-      ctx, my_endpoint, server, server_mon, timeout,
+    test_curve_security_zap_unsuccessful (ctx, my_endpoint, server, server_mon,
 #ifdef ZMQ_BUILD_DRAFT_API
-      ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL, EAGAIN
+                                          ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL,
+                                          EAGAIN
 #else
-      0, 0
+                                          0, 0
 #endif
     );
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon);
