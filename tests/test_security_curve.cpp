@@ -417,9 +417,11 @@ void test_curve_security_with_null_client_credentials (void *ctx,
     close_zero_linger (client);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    int event = get_monitor_event (server_mon, NULL, NULL, 0);
+    int err;
+    int event = get_monitor_event (server_mon, &err, NULL, 0);
 
-    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP);
+    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP
+            || (event == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL && err == EPIPE));
 #endif
 }
 
@@ -436,6 +438,8 @@ void test_curve_security_with_plain_client_credentials (void *ctx, void *server)
     assert (rc == 0);
     expect_bounce_fail (server, client);
     close_zero_linger (client);
+
+    // TODO add assertion here as in test_curve_security_with_null_client_credentials
 }
 
 void test_curve_security_unauthenticated_message (char *my_endpoint,
