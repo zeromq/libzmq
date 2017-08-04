@@ -784,6 +784,9 @@ int zmq::stream_engine_t::next_handshake_command (msg_t *msg_)
 
         if (rc == 0)
             msg_->set_flags (msg_t::command);
+
+#if 0
+        // FIXME emitting the event here leads to extra EAGAIN errors
 #ifdef ZMQ_BUILD_DRAFT_API
         if (mechanism->status () == mechanism_t::error) {
             int err = errno;
@@ -796,6 +799,7 @@ int zmq::stream_engine_t::next_handshake_command (msg_t *msg_)
             else
                 socket->event_handshake_failed_no_detail (endpoint, err);
         }
+#endif
 #endif
 
         return rc;

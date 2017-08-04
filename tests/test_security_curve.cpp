@@ -526,11 +526,11 @@ void test_curve_security_with_bogus_client_credentials (
                                          bogus_secret, my_endpoint, server);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    int event = get_monitor_event (server_mon, NULL, NULL, 0);
+    int err;
+    int event = get_monitor_event (server_mon, &err, NULL, 0);
     // TODO add another event type ZMQ_EVENT_HANDSHAKE_FAILED_AUTH for this case?
-    assert (
-      event
-      == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL); // ZAP handle the error,  not curve_server
+    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL
+            && err == EACCES); // ZAP handle the error,  not curve_server
 
     assert_no_more_monitor_events_with_timeout (server_mon, timeout);
 #endif
