@@ -210,6 +210,7 @@ static void zap_handler_generic (void *ctx, zap_protocol_t zap_protocol)
                                : sequence);
 
         if (streq (client_key_text, valid_client_public)) {
+            const char *status_code;
             switch (zap_protocol) {
                 case zap_status_internal_error:
                     status_code = "500";
