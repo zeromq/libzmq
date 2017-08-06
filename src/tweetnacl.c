@@ -933,7 +933,7 @@ void randombytes (unsigned char *x,unsigned long long xlen)
             i = 1048576;
 
 #ifdef ZMQ_HAVE_GETRANDOM
-        i = getrandom (x, i);
+        i = getrandom (x, i, 0);
 #else
         i = read(fd,x,i);
 #endif
