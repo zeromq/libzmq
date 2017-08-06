@@ -276,8 +276,8 @@ void expect_new_client_curve_bounce_fail (void *ctx,
 //  expects that one or more occurrences of the expected event are received 
 //  via the specified socket monitor
 //  returns the number of occurrences of the expected event
-//  interrupts, if a ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL/EPIPE occurs; 
-//  in this case, 0 is returned
+//  interrupts, if a ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL/EPIPE/ECONNRESET
+//  occurs; in this case, 0 is returned
 //  this should be investigated further, see 
 //  https://github.com/zeromq/libzmq/issues/2644
 int expect_monitor_event_multiple (void *server_mon,
@@ -295,8 +295,11 @@ int expect_monitor_event_multiple (void *server_mon,
       != -1) {
         timeout = 250;
 
-        // ignore errors with EPIPE, which happen sporadically, see above
-        if (event == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL && err == EPIPE) {
+        // ignore errors with EPIPE/ECONNRESET, which happen sporadically
+        // ECONNRESET can happen on very slow machines, when the engine writes
+        // to the peer and then tries to read the socket before the peer reads
+        if (event == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL &&
+                (err == EPIPE || err == ECONNRESET)) {
             fprintf (stderr, "Ignored event: %x (err = %i)\n", event, err);
             client_closed_connection = 1;
             break;

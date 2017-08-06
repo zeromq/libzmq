@@ -415,16 +415,16 @@ void zmq::print_backtrace (void)
         if (unw_get_proc_info (&cursor, &p_info))
             break;
 
+        rc = unw_get_proc_name (&cursor, func_name, 256, &offset);
+        if (rc == -UNW_ENOINFO)
+            strcpy(func_name, "?");
+
         addr = (void *)(p_info.start_ip + offset);
 
         if (dladdr (addr, &dl_info) && dl_info.dli_fname)
             file_name = dl_info.dli_fname;
         else
             file_name = "?";
-
-        rc = unw_get_proc_name (&cursor, func_name, 256, &offset);
-        if (rc == -UNW_ENOINFO)
-            strcpy(func_name, "?");
 
         demangled_name = abi::__cxa_demangle (func_name, NULL, NULL, &rc);
 
