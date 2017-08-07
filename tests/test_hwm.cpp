@@ -53,9 +53,12 @@ int test_defaults ()
 
     // Send until we block
     int send_count = 0;
-    while (send_count < MAX_SENDS && zmq_send (connect_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
+    while (send_count < MAX_SENDS
+           && zmq_send (connect_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
         ++send_count;
 
+    msleep (SETTLE_TIME);
+    
     // Now receive all sent messages
     int recv_count = 0;
     while (zmq_recv (bind_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
