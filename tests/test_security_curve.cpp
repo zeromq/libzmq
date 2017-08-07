@@ -282,11 +282,6 @@ static void zap_handler_wrong_status_temporary_failure (void *ctx)
 
 static void zap_handler_wrong_status_internal_error (void *ctx)
 {
-    zap_handler_generic (ctx, zap_status_temporary_failure);
-}
-
-static void zap_handler_wrong_status_internal_error (void *ctx)
-{
     zap_handler_generic (ctx, zap_status_internal_error);
 }
 
@@ -822,9 +817,11 @@ int main (void)
                                           0, 0
 #endif
     );
-    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon);
+    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
+            handler);
 
-    //  status 500 internal error    setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
+    //  status 500 internal error    
+    setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
                                    &server_mon, my_endpoint,
                                    &zap_handler_wrong_status_internal_error);
     test_curve_security_zap_unsuccessful (ctx, my_endpoint, server, server_mon,
@@ -835,7 +832,8 @@ int main (void)
                                           0, 0
 #endif
     );
-    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon);
+    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
+            handler);
 
     //  status 500 internal error
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
