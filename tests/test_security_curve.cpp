@@ -564,12 +564,15 @@ void test_curve_security_zap_unsuccessful (void *ctx,
       ctx, valid_server_public, valid_client_public, valid_client_secret,
       my_endpoint, server);
 
+    int events_received = 0;
 #ifdef ZMQ_BUILD_DRAFT_API
-    expect_monitor_event_multiple (server_mon, expected_event, expected_err);
+    events_received =
+      expect_monitor_event_multiple (server_mon, expected_event, expected_err);
 #endif
 
     // there may be more than one ZAP request due to repeated attempts by the client
-    assert (1 <= zmq_atomic_counter_value (zap_requests_handled));
+    assert (events_received == 0
+            || 1 <= zmq_atomic_counter_value (zap_requests_handled));
 }
 
 void test_curve_security_zap_protocol_error (void *ctx,
