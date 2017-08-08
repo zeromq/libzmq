@@ -107,7 +107,7 @@ int get_monitor_event_with_timeout (void *monitor,
                      wait_time);
         }
     } else {
-    zmq_setsockopt (monitor, ZMQ_RCVTIMEO, &timeout, sizeof (timeout));
+        zmq_setsockopt (monitor, ZMQ_RCVTIMEO, &timeout, sizeof (timeout));
         res = get_monitor_event_internal (monitor, value, address, 0);
     }
     int timeout_infinite = -1;
@@ -703,7 +703,6 @@ int main (void)
     void *server_mon;
     char my_endpoint [MAX_SOCKET_STRING];
 
-#if 0
     fprintf (stderr, "test_curve_security_with_valid_credentials\n");
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
                                    &server_mon, my_endpoint);
@@ -807,7 +806,6 @@ int main (void)
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
             handler);
 
-#endif
     //  too many parts
     fprintf (stderr, "test_curve_security_zap_protocol_error too_many_parts\n");
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
