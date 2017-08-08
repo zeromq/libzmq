@@ -550,7 +550,6 @@ void expect_zmtp_failure (void *client, char *my_endpoint, void *server, void *s
     expect_bounce_fail (server, client);
     close_zero_linger (client);
 
-
 #ifdef ZMQ_BUILD_DRAFT_API
     expect_monitor_event_multiple (server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP);
 #endif
@@ -607,7 +606,7 @@ int connect_vanilla_socket (char *my_endpoint)
     return s;
 }
 
-void test_curve_security_unauthenticated_message(char *my_endpoint,
+void test_curve_security_unauthenticated_message (char *my_endpoint,
                                                   void *server,
                                                   int timeout)
 {
@@ -626,6 +625,68 @@ void test_curve_security_unauthenticated_message(char *my_endpoint,
     }
     close (s);
 }
+
+template <size_t N> void send (int fd, const char (&data) [N])
+{
+    int res = send (fd, data, N - 1, 0);
+    assert (res == N - 1);
+}
+
+void test_curve_security_invalid_hello_wrong_length (char *my_endpoint,
+                                                     void *server,
+                                                     void *server_mon,
+                                                     int timeout)
+{
+    int s = connect_vanilla_socket (my_endpoint);
+
+    // send GREETING
+    send (s, "\xff\0\0\0\0\0\0\0\0\x7f"); // signature
+    send (s, "\x03\x00"); // version 3.0
+    send (s, "CURVE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"); // mechanism CURVE
+    send (s, "\0"); // as-server == false
+    send (s, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
+
+    // send CURVE HELLO of wrong size
+    send(s, "\x04\x05HELLO");
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    expect_monitor_event_multiple (server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP,
+                                   EPROTO);
+#endif
+
+    close (s);
+}
+
+void test_curve_security_invalid_hello_command_name (char *my_endpoint,
+                                                     void *server,
+                                                     void *server_mon,
+                                                     int timeout)
+{
+    int s = connect_vanilla_socket (my_endpoint);
+
+    // send GREETING
+    send (s, "\xff\0\0\0\0\0\0\0\0\x7f"); // signature
+    send (s, "\x03\x00"); // version 3.0
+    send (s, "CURVE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"); // mechanism CURVE
+    send (s, "\0"); // as-server == false
+    send (s, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
+
+    // send CURVE HELLO with a misspelled command name (but correct length)
+    const size_t hello_length = 200;
+    char hello[hello_length + 2];
+    memset (hello, 0, hello_length + 2);
+    memcpy (hello, "\x04\xC8HELLA", 7);
+    int res = send (s, hello, hello_length + 2, 0);
+    assert (res == hello_length + 2);
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    expect_monitor_event_multiple (server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP,
+                                   EPROTO);
+#endif
+
+    close (s);
+}
+
 
 void test_curve_security_zap_unsuccessful (void *ctx,
                                            char *my_endpoint,
@@ -854,6 +915,22 @@ int main (void)
     );
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
             handler);
+
+    fprintf (stderr, "test_curve_security_invalid_hello_wrong_length\n");
+    setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
+                                   &server_mon, my_endpoint);
+    test_curve_security_invalid_hello_wrong_length (my_endpoint, server,
+                                                    server_mon, timeout);
+    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
+                                      handler);
+
+    fprintf (stderr, "test_curve_security_invalid_hello_command_name\n");
+    setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
+                                   &server_mon, my_endpoint);
+    test_curve_security_invalid_hello_command_name (my_endpoint, server,
+                                                    server_mon, timeout);
+    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
+                                      handler);
 
     ctx = zmq_ctx_new ();
     test_curve_security_invalid_keysize (ctx);
