@@ -79,6 +79,7 @@ namespace zmq
         void restart_input ();
         void restart_output ();
         void zap_msg_available ();
+        const char *get_endpoint () const;
 
         //  i_poll_events interface implementation.
         void in_event ();

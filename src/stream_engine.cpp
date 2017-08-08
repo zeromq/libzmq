@@ -784,19 +784,6 @@ int zmq::stream_engine_t::next_handshake_command (msg_t *msg_)
 
         if (rc == 0)
             msg_->set_flags (msg_t::command);
-#ifdef ZMQ_BUILD_DRAFT_API
-        if (mechanism->status () == mechanism_t::error) {
-            int err = errno;
-            if (mechanism->error_detail () == mechanism_t::zmtp)
-                socket->event_handshake_failed_zmtp (endpoint, err);
-            else if (mechanism->error_detail () == mechanism_t::zap)
-                socket->event_handshake_failed_zap (endpoint, err);
-            else if (mechanism->error_detail () == mechanism_t::encryption)
-                socket->event_handshake_failed_encryption (endpoint, err);
-            else
-                socket->event_handshake_failed_no_detail (endpoint, err);
-        }
-#endif
 
         return rc;
     }
@@ -834,6 +821,11 @@ void zmq::stream_engine_t::zap_msg_available ()
         restart_input ();
     if (output_stopped)
         restart_output ();
+}
+
+const char *zmq::stream_engine_t::get_endpoint () const
+{
+    return endpoint.c_str ();
 }
 
 void zmq::stream_engine_t::mechanism_ready ()

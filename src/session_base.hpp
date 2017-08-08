@@ -97,6 +97,7 @@ namespace zmq
         int write_zap_msg (msg_t *msg_);
 
         socket_base_t *get_socket ();
+        const char *get_endpoint () const;
 
     protected:
 

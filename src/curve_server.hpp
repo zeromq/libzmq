@@ -131,6 +131,7 @@ namespace zmq
 
         int send_zap_request (const uint8_t *key);
         int receive_and_process_zap_reply ();
+        void handle_zap_status_code ();
     };
 
 }

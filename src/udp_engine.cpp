@@ -289,6 +289,11 @@ void zmq::udp_engine_t::out_event()
        reset_pollout (handle);
 }
 
+const char *zmq::udp_engine_t::get_endpoint () const
+{
+    return "";
+}
+
 void zmq::udp_engine_t::restart_output()
 {
     //  If we don't support send we just drop all messages

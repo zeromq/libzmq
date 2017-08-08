@@ -141,6 +141,7 @@ enum zap_protocol_t
 {
   zap_ok,
   // ZAP-compliant non-standard cases
+  zap_status_temporary_failure,
   zap_status_internal_error,
   // ZAP protocol errors
   zap_wrong_version,
@@ -210,11 +211,21 @@ static void zap_handler_generic (void *ctx, zap_protocol_t zap_protocol)
                                : sequence);
 
         if (streq (client_key_text, valid_client_public)) {
-            s_sendmore (handler, zap_protocol == zap_status_internal_error
-                                   ? "500"
-                                   : (zap_protocol == zap_status_invalid
-                                        ? "invalid_status"
-                                        : "200"));
+            const char *status_code;
+            switch (zap_protocol) {
+                case zap_status_internal_error:
+                    status_code = "500";
+                    break;
+                case zap_status_temporary_failure:
+                    status_code = "300";
+                    break;
+                case zap_status_invalid:
+                    status_code = "invalid_status";
+                    break;
+                default:
+                    status_code = "200";
+            }
+            s_sendmore (handler, status_code);
             s_sendmore (handler, "OK");
             s_sendmore (handler, "anonymous");
             if (zap_protocol == zap_too_many_parts) {
@@ -263,6 +274,11 @@ static void zap_handler_wrong_request_id (void *ctx)
 static void zap_handler_wrong_status_invalid (void *ctx)
 {
     zap_handler_generic (ctx, zap_status_invalid);
+}
+
+static void zap_handler_wrong_status_temporary_failure (void *ctx)
+{
+    zap_handler_generic (ctx, zap_status_temporary_failure);
 }
 
 static void zap_handler_wrong_status_internal_error (void *ctx)
@@ -322,6 +338,7 @@ int expect_monitor_event_multiple (void *server_mon,
 {
     int count_of_expected_events = 0;
     int client_closed_connection = 0;
+    //  infinite timeout at the start
     int timeout = -1;
 
     int event;
@@ -512,18 +529,17 @@ void test_curve_security_with_bogus_client_credentials (
     expect_new_client_curve_bounce_fail (ctx, valid_server_public, bogus_public,
                                          bogus_secret, my_endpoint, server);
 
+    int event_count = 0;
 #ifdef ZMQ_BUILD_DRAFT_API
-    int event = get_monitor_event_with_timeout (server_mon, NULL, NULL, -1);
     // TODO add another event type ZMQ_EVENT_HANDSHAKE_FAILED_AUTH for this case?
-    assert (
-      event
-      == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL); // ZAP handle the error,  not curve_server
-
-    assert_no_more_monitor_events_with_timeout (server_mon, timeout);
+    event_count = expect_monitor_event_multiple (
+      server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL, EACCES);
+    assert (event_count <= 1);
 #endif
 
     // there may be more than one ZAP request due to repeated attempts by the client
-    assert (1 <= zmq_atomic_counter_value (zap_requests_handled));
+    assert (0 == event_count
+            || 1 <= zmq_atomic_counter_value (zap_requests_handled));
 }
 
 void expect_zmtp_failure (void *client, char *my_endpoint, void *server, void *server_mon)
@@ -534,12 +550,9 @@ void expect_zmtp_failure (void *client, char *my_endpoint, void *server, void *s
     expect_bounce_fail (server, client);
     close_zero_linger (client);
 
-#ifdef ZMQ_BUILD_DRAFT_API
-    int err;
-    int event = get_monitor_event_with_timeout (server_mon, &err, NULL, -1);
 
-    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP
-            || (event == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL && err == EPIPE));
+#ifdef ZMQ_BUILD_DRAFT_API
+    expect_monitor_event_multiple (server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP);
 #endif
 
     assert (0 == zmq_atomic_counter_value (zap_requests_handled));
@@ -622,7 +635,7 @@ void test_curve_security_zap_unsuccessful (void *ctx,
     int events_received = 0;
 #ifdef ZMQ_BUILD_DRAFT_API
     events_received =
-    expect_monitor_event_multiple (server_mon, expected_event, expected_err);
+      expect_monitor_event_multiple (server_mon, expected_event, expected_err);
 #endif
 
     // there may be more than one ZAP request due to repeated attempts by the client
@@ -801,17 +814,34 @@ int main (void)
 
     //  ZAP non-standard cases
 
-    //  status 500 internal error
+    //  TODO make these observable on the client side as well (they are 
+    //  transmitted as an ERROR message)
+
+    //  status 300 temporary failure
+    fprintf (stderr, "test_curve_security_zap_unsuccessful status 300\n");
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
                                    &server_mon, my_endpoint,
-                                   &zap_handler_wrong_status_internal_error);
-
-    //  TODO is this usable? EAGAIN does not appear to be an appropriate error 
-    //  code, and the status text is completely lost
+                                   &zap_handler_wrong_status_temporary_failure);
     test_curve_security_zap_unsuccessful (ctx, my_endpoint, server, server_mon,
 #ifdef ZMQ_BUILD_DRAFT_API
                                           ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL,
                                           EAGAIN
+#else
+                                          0, 0
+#endif
+    );
+    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
+            handler);
+
+    //  status 500 internal error
+    fprintf (stderr, "test_curve_security_zap_unsuccessful status 500\n");
+    setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
+                                   &server_mon, my_endpoint,
+                                   &zap_handler_wrong_status_internal_error);
+    test_curve_security_zap_unsuccessful (ctx, my_endpoint, server, server_mon,
+#ifdef ZMQ_BUILD_DRAFT_API
+                                          ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL,
+                                          EFAULT
 #else
                                           0, 0
 #endif

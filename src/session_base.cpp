@@ -113,6 +113,11 @@ zmq::session_base_t::session_base_t (class io_thread_t *io_thread_,
 {
 }
 
+const char *zmq::session_base_t::get_endpoint () const
+{
+    return engine->get_endpoint ();
+}
+
 zmq::session_base_t::~session_base_t ()
 {
     zmq_assert (!pipe);
