@@ -152,6 +152,11 @@ void zmq::pgm_receiver_t::restart_input ()
     in_event ();
 }
 
+const char *zmq::pgm_receiver_t::get_endpoint () const
+{
+    return "";
+}
+
 void zmq::pgm_receiver_t::in_event ()
 {
     // Read data from the underlying pgm_socket.
