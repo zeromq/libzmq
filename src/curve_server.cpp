@@ -739,14 +739,15 @@ int zmq::curve_server_t::receive_and_process_zap_reply ()
 
 void zmq::curve_server_t::handle_zap_status_code ()
 {
-    if (status_code == "200") {
+    //  we can assume here that status_code is a valid ZAP status code, 
+    //  i.e. 200, 300, 400 or 500
+    if (status_code [0] == '2') {
         state = send_ready;
     } else {
         state = send_error;
-        // TODO how do we get the endpoint address here?
 
         int err = 0;
-        switch (status_code[0]) {
+        switch (status_code [0]) {
             case '3':
                 err = EAGAIN;
                 break;
@@ -757,7 +758,11 @@ void zmq::curve_server_t::handle_zap_status_code ()
                 err = EFAULT;
                 break;
         }
-        session->get_socket ()->event_handshake_failed_no_detail ("", err);
+        //  TODO use event_handshake_failed_zap here? but this is not a ZAP 
+        //  protocol error
+        
+        session->get_socket ()->event_handshake_failed_no_detail (
+          session->get_endpoint (), err);
     }
 }
 
