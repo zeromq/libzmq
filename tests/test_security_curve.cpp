@@ -276,7 +276,8 @@ static void zap_handler_wrong_status_invalid (void *ctx)
     zap_handler_generic (ctx, zap_status_invalid);
 }
 
-static void zap_handler_wrong_status_temporary_failure (void *ctx){
+static void zap_handler_wrong_status_temporary_failure (void *ctx)
+{
     zap_handler_generic (ctx, zap_status_temporary_failure);
 }
 
@@ -531,18 +532,6 @@ void test_curve_security_with_bogus_client_credentials (
 #ifdef ZMQ_BUILD_DRAFT_API
     int err;
     int event = get_monitor_event (server_mon, &err, NULL, 0);
-
-
-
-
-
-
-
-
-
-
-
-
     // TODO add another event type ZMQ_EVENT_HANDSHAKE_FAILED_AUTH for this case?
     assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL
             && err == EACCES); // ZAP handle the error,  not curve_server
