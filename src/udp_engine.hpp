@@ -44,10 +44,9 @@ namespace zmq
             void in_event ();
             void out_event ();
 
-            const char * get_endpoint() const;
+            const char *get_endpoint () const;
 
-    private:
-
+        private:
             int resolve_raw_address (char *addr_, size_t length_);
             void sockaddr_to_msg (zmq::msg_t *msg, sockaddr_in* addr);
 
