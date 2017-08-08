@@ -584,13 +584,10 @@ void test_curve_security_with_plain_client_credentials (void *ctx,
     expect_zmtp_failure (client, my_endpoint, server, server_mon);
 }
 
-void test_curve_security_unauthenticated_message (char *my_endpoint,
-                                                  void *server,
-                                                  int timeout)
+int connect_vanilla_socket (char *my_endpoint)
 {
-    // Unauthenticated messages from a vanilla socket shouldn't be received
-    struct sockaddr_in ip4addr;
     int s;
+    struct sockaddr_in ip4addr;
 
     unsigned short int port;
     int rc = sscanf (my_endpoint, "tcp://127.0.0.1:%hu", &port);
@@ -607,6 +604,15 @@ void test_curve_security_unauthenticated_message (char *my_endpoint,
     s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
     rc = connect (s, (struct sockaddr *) &ip4addr, sizeof (ip4addr));
     assert (rc > -1);
+    return s;
+}
+
+void test_curve_security_unauthenticated_message(char *my_endpoint,
+                                                  void *server,
+                                                  int timeout)
+{
+    // Unauthenticated messages from a vanilla socket shouldn't be received
+    int s = connect_vanilla_socket(my_endpoint);
     // send anonymous ZMTP/1.0 greeting
     send (s, "\x01\x00", 2, 0);
     // send sneaky message that shouldn't be received
