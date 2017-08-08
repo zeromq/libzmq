@@ -657,6 +657,38 @@ void test_curve_security_invalid_hello_wrong_length (char *my_endpoint,
     close (s);
 }
 
+const size_t hello_length = 200;
+
+void prepare_hello (char (&hello) [hello_length + 2])
+{
+    memset (hello, 0, hello_length + 2);
+    memcpy (hello, "\x04\xC8", 2);         //  header
+    memcpy (hello + 2, "\x05HELLO", 6);    //  command name
+    memcpy (hello + 2 + 6, "\x01\x00", 2); //  version
+
+    char transient_client_private [41];
+    char transient_client_public [41];
+    uint8_t transient_client_private_decoded [32];
+    uint8_t transient_client_public_decoded [32];
+    zmq_curve_keypair(transient_client_public, transient_client_private);
+
+    zmq_z85_decode (transient_client_public_decoded, transient_client_public);
+    zmq_z85_decode (transient_client_private_decoded, transient_client_private);
+    memcpy (hello + 2 + 80, transient_client_public_decoded, 32);
+
+    memcpy (hello + 2 + 112, "CurveZMQHELLO---", 16); // nonce prefix
+    // TODO generate random nonce
+}
+
+void send_greeting(int s)
+{
+    send (s, "\xff\0\0\0\0\0\0\0\0\x7f"); // signature
+    send (s, "\x03\x00"); // version 3.0
+    send (s, "CURVE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"); // mechanism CURVE
+    send (s, "\0"); // as-server == false
+    send (s, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
+}
+
 void test_curve_security_invalid_hello_command_name (char *my_endpoint,
                                                      void *server,
                                                      void *server_mon,
@@ -664,18 +696,13 @@ void test_curve_security_invalid_hello_command_name (char *my_endpoint,
 {
     int s = connect_vanilla_socket (my_endpoint);
 
-    // send GREETING
-    send (s, "\xff\0\0\0\0\0\0\0\0\x7f"); // signature
-    send (s, "\x03\x00"); // version 3.0
-    send (s, "CURVE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"); // mechanism CURVE
-    send (s, "\0"); // as-server == false
-    send (s, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
+    send_greeting (s);
 
-    // send CURVE HELLO with a misspelled command name (but correct length)
-    const size_t hello_length = 200;
+    // send CURVE HELLO with a misspelled command name (but otherwise correct)
     char hello[hello_length + 2];
-    memset (hello, 0, hello_length + 2);
-    memcpy (hello, "\x04\xC8HELLA", 7);
+    prepare_hello(hello);
+    hello[7] = 'X'; 
+
     int res = send (s, hello, hello_length + 2, 0);
     assert (res == hello_length + 2);
 
@@ -687,6 +714,30 @@ void test_curve_security_invalid_hello_command_name (char *my_endpoint,
     close (s);
 }
 
+void test_curve_security_invalid_hello_version (char *my_endpoint,
+                                                     void *server,
+                                                     void *server_mon,
+                                                     int timeout)
+{
+    int s = connect_vanilla_socket (my_endpoint);
+
+    send_greeting (s);
+
+    // send CURVE HELLO with a misspelled command name (but otherwise correct)
+    char hello[hello_length + 2];
+    prepare_hello(hello);
+    hello[2 + 6] = 2; 
+
+    int res = send (s, hello, hello_length + 2, 0);
+    assert (res == hello_length + 2);
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    expect_monitor_event_multiple (server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP,
+                                   EPROTO);
+#endif
+
+    close (s);
+}
 
 void test_curve_security_zap_unsuccessful (void *ctx,
                                            char *my_endpoint,
@@ -929,6 +980,14 @@ int main (void)
                                    &server_mon, my_endpoint);
     test_curve_security_invalid_hello_command_name (my_endpoint, server,
                                                     server_mon, timeout);
+    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
+                                      handler);
+
+    fprintf (stderr, "test_curve_security_invalid_hello_command_version\n");
+    setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
+                                   &server_mon, my_endpoint);
+    test_curve_security_invalid_hello_version (my_endpoint, server, server_mon,
+                                               timeout);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 
