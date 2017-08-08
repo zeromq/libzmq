@@ -46,6 +46,8 @@ namespace zmq
 
             virtual void zap_msg_available () {};
 
+            virtual const char *get_endpoint () const;
+
             // i_poll_events interface implementation.
             // (we only need in_event() for NormEvent notification)
             // (i.e., don't have any output events or timers (yet))

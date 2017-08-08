@@ -728,5 +728,9 @@ zmq::norm_engine_t::NormRxStreamState* zmq::norm_engine_t::NormRxStreamState::Li
     return nextItem;
 }  // end zmq::norm_engine_t::NormRxStreamState::List::Iterator::GetNextItem()
 
+const char *zmq::norm_engine_t::get_endpoint () const
+{
+    return "";
+}
 
 #endif // ZMQ_HAVE_NORM

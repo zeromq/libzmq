@@ -136,6 +136,11 @@ void zmq::pgm_sender_t::restart_input ()
     zmq_assert (false);
 }
 
+const char *zmq::pgm_sender_t::get_endpoint () const
+{
+    return "";
+}
+
 zmq::pgm_sender_t::~pgm_sender_t ()
 {
     int rc = msg.close ();
