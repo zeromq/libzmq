@@ -529,18 +529,17 @@ void test_curve_security_with_bogus_client_credentials (
     expect_new_client_curve_bounce_fail (ctx, valid_server_public, bogus_public,
                                          bogus_secret, my_endpoint, server);
 
+    int event_count = 0;
 #ifdef ZMQ_BUILD_DRAFT_API
-    int err;
-    int event = get_monitor_event_with_timeout (server_mon, &err, NULL, 0);
     // TODO add another event type ZMQ_EVENT_HANDSHAKE_FAILED_AUTH for this case?
-    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL
-            && err == EACCES); // ZAP handle the error,  not curve_server
-
-    assert_no_more_monitor_events_with_timeout (server_mon, timeout);
+    event_count = expect_monitor_event_multiple (
+      server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL, EACCES);
+    assert (event_count <= 1);
 #endif
 
     // there may be more than one ZAP request due to repeated attempts by the client
-    assert (1 <= zmq_atomic_counter_value (zap_requests_handled));
+    assert (0 == event_count
+            || 1 <= zmq_atomic_counter_value (zap_requests_handled));
 }
 
 void expect_zmtp_failure (void *client, char *my_endpoint, void *server, void *server_mon)
@@ -551,12 +550,9 @@ void expect_zmtp_failure (void *client, char *my_endpoint, void *server, void *s
     expect_bounce_fail (server, client);
     close_zero_linger (client);
 
-#ifdef ZMQ_BUILD_DRAFT_API
-    int err;
-    int event = get_monitor_event_with_timeout (server_mon, &err, NULL, -1);
 
-    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP
-            || (event == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL && err == EPIPE));
+#ifdef ZMQ_BUILD_DRAFT_API
+    expect_monitor_event_multiple (server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP);
 #endif
 
     assert (0 == zmq_atomic_counter_value (zap_requests_handled));
@@ -639,7 +635,7 @@ void test_curve_security_zap_unsuccessful (void *ctx,
     int events_received = 0;
 #ifdef ZMQ_BUILD_DRAFT_API
     events_received =
-    expect_monitor_event_multiple (server_mon, expected_event, expected_err);
+      expect_monitor_event_multiple (server_mon, expected_event, expected_err);
 #endif
 
     // there may be more than one ZAP request due to repeated attempts by the client
