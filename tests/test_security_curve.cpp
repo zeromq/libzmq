@@ -40,6 +40,9 @@
 #  include <unistd.h>
 #endif
 
+#define ZMQ_USE_TWEETNACL
+#include "../src/tweetnacl.h"
+
 //  We'll generate random test keys at startup
 static char valid_client_public [41];
 static char valid_client_secret [41];
@@ -626,10 +629,28 @@ void test_curve_security_unauthenticated_message (char *my_endpoint,
     close (s);
 }
 
+void send_all (int fd, const char *data, size_t size)
+{
+    while (size > 0) {
+        int res = send (fd, data, size, 0);
+        assert (res > 0);
+        size -= res;
+        data += res;
+    }
+}
+
 template <size_t N> void send (int fd, const char (&data) [N])
 {
-    int res = send (fd, data, N - 1, 0);
-    assert (res == N - 1);
+    send_all (fd, data, N - 1);
+}
+
+void send_greeting(int s)
+{
+    send (s, "\xff\0\0\0\0\0\0\0\0\x7f"); // signature
+    send (s, "\x03\x00"); // version 3.0
+    send (s, "CURVE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"); // mechanism CURVE
+    send (s, "\0"); // as-server == false
+    send (s, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
 }
 
 void test_curve_security_invalid_hello_wrong_length (char *my_endpoint,
@@ -640,11 +661,7 @@ void test_curve_security_invalid_hello_wrong_length (char *my_endpoint,
     int s = connect_vanilla_socket (my_endpoint);
 
     // send GREETING
-    send (s, "\xff\0\0\0\0\0\0\0\0\x7f"); // signature
-    send (s, "\x03\x00"); // version 3.0
-    send (s, "CURVE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"); // mechanism CURVE
-    send (s, "\0"); // as-server == false
-    send (s, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
+    send_greeting (s);
 
     // send CURVE HELLO of wrong size
     send(s, "\x04\x05HELLO");
@@ -666,27 +683,32 @@ void prepare_hello (char (&hello) [hello_length + 2])
     memcpy (hello + 2, "\x05HELLO", 6);    //  command name
     memcpy (hello + 2 + 6, "\x01\x00", 2); //  version
 
-    char transient_client_private [41];
+    char transient_client_secret [41];
     char transient_client_public [41];
-    uint8_t transient_client_private_decoded [32];
+    uint8_t transient_client_secret_decoded [32];
     uint8_t transient_client_public_decoded [32];
-    zmq_curve_keypair(transient_client_public, transient_client_private);
+    zmq_curve_keypair(transient_client_public, transient_client_secret);
 
     zmq_z85_decode (transient_client_public_decoded, transient_client_public);
-    zmq_z85_decode (transient_client_private_decoded, transient_client_private);
+    zmq_z85_decode (transient_client_secret_decoded, transient_client_secret);
     memcpy (hello + 2 + 80, transient_client_public_decoded, 32);
 
-    memcpy (hello + 2 + 112, "CurveZMQHELLO---", 16); // nonce prefix
-    // TODO generate random nonce
-}
+    // memcpy (hello + 2 + 112, "CurveZMQHELLO---", 16); // nonce prefix
+    hello [2 + 112] = 1; // nonce
 
-void send_greeting(int s)
-{
-    send (s, "\xff\0\0\0\0\0\0\0\0\x7f"); // signature
-    send (s, "\x03\x00"); // version 3.0
-    send (s, "CURVE\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"); // mechanism CURVE
-    send (s, "\0"); // as-server == false
-    send (s, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
+    uint8_t hello_plaintext[crypto_box_ZEROBYTES + 64];
+    uint8_t hello_box[crypto_box_BOXZEROBYTES + 80];
+
+    memset (hello_plaintext, 0, sizeof hello_plaintext);
+
+    uint8_t valid_server_public_decoded [32];
+    zmq_z85_decode (valid_server_public_decoded, valid_server_public);
+    int rc = crypto_box (hello_box, hello_plaintext, sizeof hello_plaintext,
+                         (uint8_t*)hello + 2 + 112, valid_server_public_decoded,
+                         transient_client_secret_decoded);
+    assert (rc != -1);
+
+    memcpy (hello + 2 + 112 + 8, hello_box + crypto_box_BOXZEROBYTES, 80);
 }
 
 void test_curve_security_invalid_hello_command_name (char *my_endpoint,
@@ -703,8 +725,7 @@ void test_curve_security_invalid_hello_command_name (char *my_endpoint,
     prepare_hello(hello);
     hello[7] = 'X'; 
 
-    int res = send (s, hello, hello_length + 2, 0);
-    assert (res == hello_length + 2);
+    send_all (s, hello, hello_length + 2);
 
 #ifdef ZMQ_BUILD_DRAFT_API
     expect_monitor_event_multiple (server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP,
@@ -974,7 +995,6 @@ int main (void)
                                                     server_mon, timeout);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
-
     fprintf (stderr, "test_curve_security_invalid_hello_command_name\n");
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
                                    &server_mon, my_endpoint);
