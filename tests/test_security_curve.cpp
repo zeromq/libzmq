@@ -40,7 +40,6 @@
 #  include <unistd.h>
 #endif
 
-#define ZMQ_USE_TWEETNACL
 #include "../src/tweetnacl.h"
 
 //  We'll generate random test keys at startup
@@ -693,8 +692,10 @@ void prepare_hello (char (&hello) [hello_length + 2])
     zmq_z85_decode (transient_client_secret_decoded, transient_client_secret);
     memcpy (hello + 2 + 80, transient_client_public_decoded, 32);
 
-    // memcpy (hello + 2 + 112, "CurveZMQHELLO---", 16); // nonce prefix
-    hello [2 + 112] = 1; // nonce
+    uint8_t hello_nonce [24];
+    memcpy (hello_nonce, "CurveZMQHELLO---", 16); // nonce prefix
+    hello_nonce [16] = 1; // nonce
+    memcpy (hello + 2 + 112, hello_nonce + 16, 8);
 
     uint8_t hello_plaintext[crypto_box_ZEROBYTES + 64];
     uint8_t hello_box[crypto_box_BOXZEROBYTES + 80];
@@ -704,7 +705,7 @@ void prepare_hello (char (&hello) [hello_length + 2])
     uint8_t valid_server_public_decoded [32];
     zmq_z85_decode (valid_server_public_decoded, valid_server_public);
     int rc = crypto_box (hello_box, hello_plaintext, sizeof hello_plaintext,
-                         (uint8_t*)hello + 2 + 112, valid_server_public_decoded,
+                         hello_nonce, valid_server_public_decoded,
                          transient_client_secret_decoded);
     assert (rc != -1);
 
