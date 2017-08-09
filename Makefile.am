@@ -373,7 +373,6 @@ test_apps = \
 	tests/test_ctx_destroy \
 	tests/test_security_null \
 	tests/test_security_plain \
-	tests/test_security_curve \
 	tests/test_iov \
 	tests/test_spec_req \
 	tests/test_spec_rep \
@@ -520,9 +519,6 @@ tests_test_security_null_LDADD = src/libzmq.la
 tests_test_security_plain_SOURCES = tests/test_security_plain.cpp
 tests_test_security_plain_LDADD = src/libzmq.la
 
-tests_test_security_curve_SOURCES = tests/test_security_curve.cpp
-tests_test_security_curve_LDADD = src/libzmq.la
-
 tests_test_spec_req_SOURCES = tests/test_spec_req.cpp
 tests_test_spec_req_LDADD = src/libzmq.la
 
@@ -618,6 +614,16 @@ tests_test_base85_LDADD = src/libzmq.la
 
 tests_test_sodium_SOURCES = tests/test_sodium.cpp
 tests_test_sodium_LDADD = src/libzmq.la
+
+if HAVE_CURVE
+
+test_apps += \
+	tests/test_security_curve
+
+	tests_test_security_curve_SOURCES = tests/test_security_curve.cpp src/tweetnacl.c
+tests_test_security_curve_LDADD = src/libzmq.la
+
+endif
 
 if !ON_MINGW
 if !ON_CYGWIN
