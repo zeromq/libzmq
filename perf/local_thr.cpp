@@ -49,7 +49,7 @@ int main (int argc, char *argv [])
     zmq_msg_t msg;
     void *watch;
     unsigned long elapsed;
-    unsigned long throughput;
+    double throughput;
     double megabits;
     int curve = 0;
 
@@ -138,7 +138,7 @@ int main (int argc, char *argv [])
         return -1;
     }
 
-    throughput = (unsigned long)
+    throughput = 
         ((double) message_count / (double) elapsed * 1000000);
     megabits = ((double) throughput * message_size * 8) / 1000000;
 
