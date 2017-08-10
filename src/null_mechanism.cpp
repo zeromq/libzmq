@@ -335,7 +335,7 @@ int zmq::null_mechanism_t::receive_and_process_zap_reply ()
     //  Status code frame
     if (msg [3].size () != 3) {
         //  Temporary support for security debugging
-        puts ("NULL I: ZAP handler rejected client authentication");
+        puts ("NULL I: ZAP handler sent bad status code");
         errno = EPROTO;
         return close_and_return (msg, -1);
     }
