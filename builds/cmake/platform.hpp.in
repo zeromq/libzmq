@@ -40,6 +40,7 @@
 #cmakedefine ZMQ_HAVE_CURVE
 #cmakedefine ZMQ_USE_TWEETNACL
 #cmakedefine ZMQ_USE_LIBSODIUM
+#cmakedefine SODIUM_STATIC
 
 #ifdef _AIX
   #define ZMQ_HAVE_AIX
