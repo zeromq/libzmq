@@ -36,7 +36,7 @@
 #define ZMQ_ATOMIC_COUNTER_MUTEX
 #elif defined ZMQ_HAVE_ATOMIC_INTRINSICS
 #define ZMQ_ATOMIC_COUNTER_INTRINSIC
-#elif (defined ZMQ_CXX11 && defined __cplusplus && __cplusplus >= 201103L)
+#elif (defined __cplusplus && __cplusplus >= 201103L)
 #define ZMQ_ATOMIC_COUNTER_CXX11
 #elif (defined __i386__ || defined __x86_64__) && defined __GNUC__
 #define ZMQ_ATOMIC_COUNTER_X86
@@ -69,8 +69,22 @@ namespace zmq
 
     //  This class represents an integer that can be incremented/decremented
     //  in atomic fashion.
+    //
+    //  In zmq::shared_message_memory_allocator a buffer with an atomic_counter_t
+    //  at the start is allocated. If the class does not align to pointer size,
+    //  access to pointers in structures in the buffer will cause SIGBUS on
+    //  architectures that do not allow mis-aligned pointers (eg: SPARC).
+    //  Force the compiler to align to pointer size, which will cause the object
+    //  to grow from 4 bytes to 8 bytes on 64 bit architectures (when not using
+    //  mutexes).
 
+#if defined (_MSC_VER) && (defined (_M_X64) || defined (_M_ARM64))
+    class __declspec (align (8)) atomic_counter_t
+#elif defined (_MSC_VER) && (defined (_M_IX86) || defined (_M_ARM_ARMV7VE))
+    class __declspec (align (4)) atomic_counter_t
+#else
     class atomic_counter_t
+#endif
     {
     public:
 
@@ -212,7 +226,13 @@ namespace zmq
         atomic_counter_t (const atomic_counter_t&);
         const atomic_counter_t& operator = (const atomic_counter_t&);
 #endif
+#if defined (__GNUC__) || defined ( __INTEL_COMPILER) || \
+        (defined (__SUNPRO_C) && __SUNPRO_C >= 0x590) || \
+        (defined (__SUNPRO_CC) && __SUNPRO_CC >= 0x590)
+    } __attribute__ ((aligned (sizeof (void *))));
+#else
     };
+#endif
 
 }
 

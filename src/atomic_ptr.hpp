@@ -34,7 +34,7 @@
 #define ZMQ_ATOMIC_PTR_MUTEX
 #elif defined ZMQ_HAVE_ATOMIC_INTRINSICS
 #define ZMQ_ATOMIC_PTR_INTRINSIC
-#elif (defined ZMQ_CXX11 && defined __cplusplus && __cplusplus >= 201103L)
+#elif (defined __cplusplus && __cplusplus >= 201103L)
 #define ZMQ_ATOMIC_PTR_CXX11
 #elif (defined __i386__ || defined __x86_64__) && defined __GNUC__
 #define ZMQ_ATOMIC_PTR_X86
