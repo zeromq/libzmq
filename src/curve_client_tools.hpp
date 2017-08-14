@@ -133,6 +133,83 @@ struct curve_client_tools_t
         return 0;
     }
 
+    static int produce_initiate (void *data,
+                                 size_t size,
+                                 const uint64_t cn_nonce,
+                                 const uint8_t *server_key,
+                                 const uint8_t *public_key,
+                                 const uint8_t *secret_key,
+                                 const uint8_t *cn_public,
+                                 const uint8_t *cn_secret,
+                                 const uint8_t *cn_server,
+                                 const uint8_t *cn_cookie,
+                                 const uint8_t *metadata_plaintext,
+                                 const size_t metadata_length)
+    {
+        const size_t max_metadata_length = 256;
+        zmq_assert (metadata_length < max_metadata_length);
+
+        uint8_t vouch_nonce[crypto_box_NONCEBYTES];
+        uint8_t vouch_plaintext[crypto_box_ZEROBYTES + 64];
+        uint8_t vouch_box[crypto_box_BOXZEROBYTES + 80];
+
+        //  Create vouch = Box [C',S](C->S')
+        memset (vouch_plaintext, 0, crypto_box_ZEROBYTES);
+        memcpy (vouch_plaintext + crypto_box_ZEROBYTES, cn_public, 32);
+        memcpy (vouch_plaintext + crypto_box_ZEROBYTES + 32, server_key,
+                32);
+
+        memcpy (vouch_nonce, "VOUCH---", 8);
+        randombytes (vouch_nonce + 8, 16);
+
+        int rc = crypto_box (vouch_box, vouch_plaintext, sizeof vouch_plaintext,
+                             vouch_nonce, cn_server, secret_key);
+        if (rc == -1)
+            return -1;
+
+        uint8_t initiate_nonce[crypto_box_NONCEBYTES];
+        uint8_t
+          initiate_box[crypto_box_BOXZEROBYTES + 144 + max_metadata_length];
+        uint8_t
+          initiate_plaintext[crypto_box_ZEROBYTES + 128 + max_metadata_length];
+
+        //  Create Box [C + vouch + metadata](C'->S')
+        memset (initiate_plaintext, 0, crypto_box_ZEROBYTES);
+        memcpy (initiate_plaintext + crypto_box_ZEROBYTES, public_key,
+                32);
+        memcpy (initiate_plaintext + crypto_box_ZEROBYTES + 32, vouch_nonce + 8,
+                16);
+        memcpy (initiate_plaintext + crypto_box_ZEROBYTES + 48,
+                vouch_box + crypto_box_BOXZEROBYTES, 80);
+        memcpy (initiate_plaintext + crypto_box_ZEROBYTES + 48 + 80,
+                metadata_plaintext, metadata_length);
+
+        memcpy (initiate_nonce, "CurveZMQINITIATE", 16);
+        put_uint64 (initiate_nonce + 16, cn_nonce);
+
+        rc = crypto_box (initiate_box, initiate_plaintext,
+                         crypto_box_ZEROBYTES + 128 + metadata_length,
+                         initiate_nonce, cn_server, cn_secret);
+        if (rc == -1)
+            return -1;
+
+        uint8_t *initiate = static_cast<uint8_t *> (data);
+
+        zmq_assert (size
+                    == 113 + 128 + crypto_box_BOXZEROBYTES + metadata_length);
+
+        memcpy (initiate, "\x08INITIATE", 9);
+        //  Cookie provided by the server in the WELCOME command
+        memcpy (initiate + 9, cn_cookie, 96);
+        //  Short nonce, prefixed by "CurveZMQINITIATE"
+        memcpy (initiate + 105, initiate_nonce + 16, 8);
+        //  Box [C + vouch + metadata](C'->S')
+        memcpy (initiate + 113, initiate_box + crypto_box_BOXZEROBYTES,
+                128 + metadata_length + crypto_box_BOXZEROBYTES);
+
+        return 0;
+    }
+
     static bool is_handshake_command_welcome (const uint8_t *msg_data,
                                               const size_t msg_size)
     {
@@ -176,6 +253,17 @@ struct curve_client_tools_t
     {
         return process_welcome (msg_data, msg_size, server_key, cn_secret,
                                 cn_server, cn_cookie, cn_precom);
+    }
+
+    int produce_initiate (void *data,
+                          size_t size,
+                          const uint64_t cn_nonce,
+                          const uint8_t *metadata_plaintext,
+                          const size_t metadata_length)
+    {
+        return produce_initiate (
+          data, size, cn_nonce, server_key, public_key, secret_key, cn_public,
+          cn_secret, cn_server, cn_cookie, metadata_plaintext, metadata_length);
     }
 
     //  Our public key (C)

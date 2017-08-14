@@ -676,10 +676,8 @@ void test_curve_security_invalid_hello_wrong_length (char *my_endpoint,
 
 const size_t hello_length = 200;
 
-void prepare_hello (char (&hello)[hello_length + 2])
+zmq::curve_client_tools_t make_curve_client_tools ()
 {
-    memcpy (hello, "\x04\xC8", 2); //  header
-
     uint8_t valid_client_secret_decoded[32];
     uint8_t valid_client_public_decoded[32];
 
@@ -689,12 +687,40 @@ void prepare_hello (char (&hello)[hello_length + 2])
     uint8_t valid_server_public_decoded[32];
     zmq_z85_decode (valid_server_public_decoded, valid_server_public);
 
-    zmq::curve_client_tools_t tools (valid_client_public_decoded,
-                                     valid_client_secret_decoded,
-                                     valid_server_public_decoded);
-    int rc = tools.produce_hello(hello + 2, 0);
+    return zmq::curve_client_tools_t (valid_client_public_decoded,
+                                      valid_client_secret_decoded,
+                                      valid_server_public_decoded);
+}
 
-    assert (rc != -1);
+uint64_t htonll (uint64_t value)
+{
+    // The answer is 42
+    static const int num = 42;
+
+    // Check the endianness
+    if (*reinterpret_cast<const char *> (&num) == num) {
+        const uint32_t high_part = htonl (static_cast<uint32_t> (value >> 32));
+        const uint32_t low_part =
+          htonl (static_cast<uint32_t> (value & 0xFFFFFFFFLL));
+
+        return (static_cast<uint64_t> (low_part) << 32) | high_part;
+    } else {
+        return value;
+    }
+}
+
+template <size_t N> void send_command (int s, char (&command)[N])
+{
+  if (N < 256) {
+    send(s, "\x04");
+    char len = (char)N;
+    send_all(s, &len, 1);
+  } else {
+    send(s, "\x06");
+    uint64_t len = htonll (N);
+    send_all (s, (char*)&len, 8);
+  }
+  send_all (s, command, N);
 }
 
 void test_curve_security_invalid_hello_command_name (char *my_endpoint,
@@ -706,12 +732,15 @@ void test_curve_security_invalid_hello_command_name (char *my_endpoint,
 
     send_greeting (s);
 
-    // send CURVE HELLO with a misspelled command name (but otherwise correct)
-    char hello[hello_length + 2];
-    prepare_hello (hello);
-    hello[7] = 'X'; 
+    zmq::curve_client_tools_t tools = make_curve_client_tools ();
 
-    send_all (s, hello, hello_length + 2);
+    // send CURVE HELLO with a misspelled command name (but otherwise correct)
+    char hello[hello_length];
+    int rc = tools.produce_hello (hello, 0);
+    assert (rc == 0);
+    hello[5] = 'X';
+
+    send_command(s, hello);
 
 #ifdef ZMQ_BUILD_DRAFT_API
     expect_monitor_event_multiple (server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP,
@@ -730,13 +759,15 @@ void test_curve_security_invalid_hello_version (char *my_endpoint,
 
     send_greeting (s);
 
-    // send CURVE HELLO with a wrong version number (but otherwise correct)
-    char hello[hello_length + 2];
-    prepare_hello (hello);
-    hello[2 + 6] = 2; 
+    zmq::curve_client_tools_t tools = make_curve_client_tools ();
 
-    int res = send (s, hello, hello_length + 2, 0);
-    assert (res == hello_length + 2);
+    // send CURVE HELLO with a wrong version number (but otherwise correct)
+    char hello[hello_length];
+    int rc = tools.produce_hello (hello, 0);
+    assert (rc == 0);
+    hello[6] = 2;
+
+    send_command (s, hello);
 
 #ifdef ZMQ_BUILD_DRAFT_API
     expect_monitor_event_multiple (server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP,
@@ -756,20 +787,51 @@ void flush_read(int fd)
     assert (res != -1);
 }
 
+void recv_all(int fd, uint8_t *data, size_t len)
+{
+  size_t received = 0;
+  while (received < len)
+  {
+    int res = recv(fd, (char*)data, len, 0);
+    assert(res > 0);
+
+    data += res;
+    received += res;
+  }
+}
+
+void recv_greeting (int fd)
+{
+    uint8_t greeting[64];
+    recv_all (fd, greeting, 64);
+    //  TODO assert anything about the greeting received from the server?
+}
+
+int connect_exchange_greeting_and_send_hello (char *my_endpoint,
+                                     zmq::curve_client_tools_t &tools)
+{
+    int s = connect_vanilla_socket (my_endpoint);
+
+    send_greeting (s);
+    recv_greeting (s);
+
+    // send valid CURVE HELLO
+    char hello[hello_length];
+    int rc = tools.produce_hello (hello, 0);
+    assert (rc == 0);
+
+    send_command (s, hello);
+    return s;
+}
+
 void test_curve_security_invalid_initiate_length (char *my_endpoint,
                                                   void *server,
                                                   void *server_mon,
                                                   int timeout)
 {
-    int s = connect_vanilla_socket (my_endpoint);
+    zmq::curve_client_tools_t tools = make_curve_client_tools ();
 
-    send_greeting (s);
-
-    // send valid CURVE HELLO
-    char hello[hello_length + 2];
-    prepare_hello(hello);
-
-    send_all (s, hello, hello_length + 2);
+    int s = connect_exchange_greeting_and_send_hello (my_endpoint, tools);
 
     // receive but ignore WELCOME
     flush_read (s);
@@ -780,6 +842,41 @@ void test_curve_security_invalid_initiate_length (char *my_endpoint,
 #endif
 
     send(s, "\x04\x08INITIATE");
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    expect_monitor_event_multiple (server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP,
+                                   EPROTO);
+#endif
+
+    close (s);
+}
+
+void test_curve_security_invalid_initiate_command_name (char *my_endpoint,
+                                                        void *server,
+                                                        void *server_mon,
+                                                        int timeout)
+{
+    zmq::curve_client_tools_t tools = make_curve_client_tools ();
+
+    int s = connect_exchange_greeting_and_send_hello (my_endpoint, tools);
+
+    // receive but ignore WELCOME
+    uint8_t welcome[168 + 2];
+    recv_all (s, welcome, 168 + 2);
+    
+    int res = tools.process_welcome (welcome + 2, 168);
+    assert (res == 0);
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    res = get_monitor_event_with_timeout (server_mon, NULL, NULL, timeout);
+    assert (res == -1);
+#endif
+
+    char initiate [257];
+    tools.produce_initiate (initiate, 257, 1, nullptr, 0);
+    initiate[5] = 'X';
+
+    send_command (s, initiate);
 
 #ifdef ZMQ_BUILD_DRAFT_API
     expect_monitor_event_multiple (server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP,
@@ -1045,6 +1142,14 @@ int main (void)
                                    &server_mon, my_endpoint);
     test_curve_security_invalid_initiate_length (my_endpoint, server,
                                                  server_mon, timeout);
+    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
+                                      handler);
+
+    fprintf (stderr, "test_curve_security_invalid_initiate_command_name\n");
+    setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
+                                   &server_mon, my_endpoint);
+    test_curve_security_invalid_initiate_command_name (my_endpoint, server,
+                                                       server_mon, timeout);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 
