@@ -150,14 +150,67 @@ struct curve_client_tools_t
     {
         return is_handshake_command (msg_data, msg_size, "\5ERROR");
     }
-private:
-  template <size_t N>
-  static bool is_handshake_command (const uint8_t *msg_data,
-                                    const size_t msg_size,
-                                    const char (&prefix)[N])
-  {
-      return msg_size >= (N - 1) && !memcmp (msg_data, prefix, N - 1);
-  }
+
+    //  non-static functions
+    curve_client_tools_t (
+      const uint8_t (&curve_public_key)[crypto_box_PUBLICKEYBYTES],
+      const uint8_t (&curve_secret_key)[crypto_box_SECRETKEYBYTES],
+      const uint8_t (&curve_server_key)[crypto_box_PUBLICKEYBYTES])
+    {
+        int rc;
+        memcpy (public_key, curve_public_key, crypto_box_PUBLICKEYBYTES);
+        memcpy (secret_key, curve_secret_key, crypto_box_SECRETKEYBYTES);
+        memcpy (server_key, curve_server_key, crypto_box_PUBLICKEYBYTES);
+
+        //  Generate short-term key pair
+        rc = crypto_box_keypair (cn_public, cn_secret);
+        zmq_assert (rc == 0);
+    }
+
+    int produce_hello (void *data, const uint64_t cn_nonce) const
+    {
+        return produce_hello (data, server_key, cn_nonce, cn_public, cn_secret);
+    }
+
+    int process_welcome (const uint8_t *msg_data, size_t msg_size)
+    {
+        return process_welcome (msg_data, msg_size, server_key, cn_secret,
+                                cn_server, cn_cookie, cn_precom);
+    }
+
+    //  Our public key (C)
+    uint8_t public_key[crypto_box_PUBLICKEYBYTES];
+
+    //  Our secret key (c)
+    uint8_t secret_key[crypto_box_SECRETKEYBYTES];
+
+    //  Our short-term public key (C')
+    uint8_t cn_public[crypto_box_PUBLICKEYBYTES];
+
+    //  Our short-term secret key (c')
+    uint8_t cn_secret[crypto_box_SECRETKEYBYTES];
+
+    //  Server's public key (S)
+    uint8_t server_key[crypto_box_PUBLICKEYBYTES];
+
+    //  Server's short-term public key (S')
+    uint8_t cn_server[crypto_box_PUBLICKEYBYTES];
+
+    //  Cookie received from server
+    uint8_t cn_cookie[16 + 80];
+
+    //  Intermediary buffer used to speed up boxing and unboxing.
+    uint8_t cn_precom[crypto_box_BEFORENMBYTES];
+
+
+  private:
+    template <size_t N>
+    static bool is_handshake_command (const uint8_t *msg_data,
+                                      const size_t msg_size,
+                                      const char (&prefix)[N])
+    {
+        return msg_size >= (N - 1) && !memcmp (msg_data, prefix, N - 1);
+    }
 };
 }
 

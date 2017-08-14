@@ -32,14 +32,9 @@
 
 #ifdef ZMQ_HAVE_CURVE
 
-#if defined (ZMQ_USE_TWEETNACL)
-#   include "tweetnacl.h"
-#elif defined (ZMQ_USE_LIBSODIUM)
-#   include "sodium.h"
-#endif
-
 #include "mechanism.hpp"
 #include "options.hpp"
+#include "curve_client_tools.hpp"
 
 namespace zmq
 {
@@ -75,29 +70,8 @@ namespace zmq
         //  Current FSM state
         state_t state;
 
-        //  Our public key (C)
-        uint8_t public_key [crypto_box_PUBLICKEYBYTES];
-
-        //  Our secret key (c)
-        uint8_t secret_key [crypto_box_SECRETKEYBYTES];
-
-        //  Our short-term public key (C')
-        uint8_t cn_public [crypto_box_PUBLICKEYBYTES];
-
-        //  Our short-term secret key (c')
-        uint8_t cn_secret [crypto_box_SECRETKEYBYTES];
-
-        //  Server's public key (S)
-        uint8_t server_key [crypto_box_PUBLICKEYBYTES];
-
-        //  Server's short-term public key (S')
-        uint8_t cn_server [crypto_box_PUBLICKEYBYTES];
-
-        //  Cookie received from server
-        uint8_t cn_cookie [16 + 80];
-
-        //  Intermediary buffer used to speed up boxing and unboxing.
-        uint8_t cn_precom [crypto_box_BEFORENMBYTES];
+        //  CURVE protocol tools
+        curve_client_tools_t tools;
 
         //  Nonce
         uint64_t cn_nonce;
