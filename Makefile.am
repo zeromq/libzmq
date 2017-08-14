@@ -620,8 +620,13 @@ if HAVE_CURVE
 test_apps += \
 	tests/test_security_curve
 
-	tests_test_security_curve_SOURCES = tests/test_security_curve.cpp src/tweetnacl.c
-tests_test_security_curve_LDADD = src/libzmq.la
+tests_test_security_curve_SOURCES = \
+	tests/test_security_curve.cpp \
+	src/tweetnacl.c \
+	src/err.cpp
+
+tests_test_security_curve_LDADD = \
+	src/libzmq.la
 
 endif
 

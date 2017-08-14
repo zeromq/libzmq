@@ -680,21 +680,19 @@ void prepare_hello (char (&hello)[hello_length + 2])
 {
     memcpy (hello, "\x04\xC8", 2); //  header
 
-    char transient_client_secret[41];
-    char transient_client_public[41];
-    uint8_t transient_client_secret_decoded[32];
-    uint8_t transient_client_public_decoded[32];
-    zmq_curve_keypair (transient_client_public, transient_client_secret);
+    uint8_t valid_client_secret_decoded[32];
+    uint8_t valid_client_public_decoded[32];
 
-    zmq_z85_decode (transient_client_public_decoded, transient_client_public);
-    zmq_z85_decode (transient_client_secret_decoded, transient_client_secret);
+    zmq_z85_decode (valid_client_public_decoded, valid_client_public);
+    zmq_z85_decode (valid_client_secret_decoded, valid_client_secret);
 
     uint8_t valid_server_public_decoded[32];
     zmq_z85_decode (valid_server_public_decoded, valid_server_public);
 
-    int rc = zmq::curve_client_tools_t::produce_hello (
-      hello + 2, valid_server_public_decoded, 0,
-      transient_client_public_decoded, transient_client_secret_decoded);
+    zmq::curve_client_tools_t tools (valid_client_public_decoded,
+                                     valid_client_secret_decoded,
+                                     valid_server_public_decoded);
+    int rc = tools.produce_hello(hello + 2, 0);
 
     assert (rc != -1);
 }
@@ -710,7 +708,7 @@ void test_curve_security_invalid_hello_command_name (char *my_endpoint,
 
     // send CURVE HELLO with a misspelled command name (but otherwise correct)
     char hello[hello_length + 2];
-    prepare_hello(hello);
+    prepare_hello (hello);
     hello[7] = 'X'; 
 
     send_all (s, hello, hello_length + 2);
@@ -734,7 +732,7 @@ void test_curve_security_invalid_hello_version (char *my_endpoint,
 
     // send CURVE HELLO with a wrong version number (but otherwise correct)
     char hello[hello_length + 2];
-    prepare_hello(hello);
+    prepare_hello (hello);
     hello[2 + 6] = 2; 
 
     int res = send (s, hello, hello_length + 2, 0);
