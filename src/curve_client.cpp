@@ -88,13 +88,13 @@ int zmq::curve_client_t::process_handshake_command (msg_t *msg_)
     const size_t msg_size = msg_->size ();
 
     int rc = 0;
-    if (msg_size >= 8 && !memcmp (msg_data, "\7WELCOME", 8))
+    if (curve_client_tools_t::is_handshake_command_welcome (msg_data, msg_size))
         rc = process_welcome (msg_data, msg_size);
-    else
-    if (msg_size >= 6 && !memcmp (msg_data, "\5READY", 6))
+    else if (curve_client_tools_t::is_handshake_command_ready (msg_data,
+                                                               msg_size))
         rc = process_ready (msg_data, msg_size);
-    else
-    if (msg_size >= 6 && !memcmp (msg_data, "\5ERROR", 6))
+    else if (curve_client_tools_t::is_handshake_command_error (msg_data,
+                                                               msg_size))
         rc = process_error (msg_data, msg_size);
     else {
         errno = EPROTO;
@@ -256,39 +256,17 @@ int zmq::curve_client_t::produce_hello (msg_t *msg_)
     return 0;
 }
 
-int zmq::curve_client_t::process_welcome (
-        const uint8_t *msg_data, size_t msg_size)
+int zmq::curve_client_t::process_welcome (const uint8_t *msg_data,
+                                          size_t msg_size)
 {
-    if (msg_size != 168) {
+    int rc = curve_client_tools_t::process_welcome (
+      msg_data, msg_size, server_key, cn_secret, cn_server, cn_cookie,
+      cn_precom);
+
+    if (rc == -1) {
         errno = EPROTO;
         return -1;
     }
-
-    uint8_t welcome_nonce [crypto_box_NONCEBYTES];
-    uint8_t welcome_plaintext [crypto_box_ZEROBYTES + 128];
-    uint8_t welcome_box [crypto_box_BOXZEROBYTES + 144];
-
-    //  Open Box [S' + cookie](C'->S)
-    memset (welcome_box, 0, crypto_box_BOXZEROBYTES);
-    memcpy (welcome_box + crypto_box_BOXZEROBYTES, msg_data + 24, 144);
-
-    memcpy (welcome_nonce, "WELCOME-", 8);
-    memcpy (welcome_nonce + 8, msg_data + 8, 16);
-
-    int rc = crypto_box_open (welcome_plaintext, welcome_box,
-                              sizeof welcome_box,
-                              welcome_nonce, server_key, cn_secret);
-    if (rc != 0) {
-        errno = EPROTO;
-        return -1;
-    }
-
-    memcpy (cn_server, welcome_plaintext + crypto_box_ZEROBYTES, 32);
-    memcpy (cn_cookie, welcome_plaintext + crypto_box_ZEROBYTES + 32, 16 + 80);
-
-    //  Message independent precomputation
-    rc = crypto_box_beforenm (cn_precom, cn_server, cn_secret);
-    zmq_assert (rc == 0);
 
     state = send_initiate;
 
