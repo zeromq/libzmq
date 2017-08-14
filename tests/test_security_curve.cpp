@@ -737,21 +737,64 @@ void test_curve_security_invalid_hello_command_name (char *my_endpoint,
 }
 
 void test_curve_security_invalid_hello_version (char *my_endpoint,
-                                                     void *server,
-                                                     void *server_mon,
-                                                     int timeout)
+                                                void *server,
+                                                void *server_mon,
+                                                int timeout)
 {
     int s = connect_vanilla_socket (my_endpoint);
 
     send_greeting (s);
 
-    // send CURVE HELLO with a misspelled command name (but otherwise correct)
+    // send CURVE HELLO with a wrong version number (but otherwise correct)
     char hello[hello_length + 2];
     prepare_hello(hello);
     hello[2 + 6] = 2; 
 
     int res = send (s, hello, hello_length + 2, 0);
     assert (res == hello_length + 2);
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    expect_monitor_event_multiple (server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP,
+                                   EPROTO);
+#endif
+
+    close (s);
+}
+
+void flush_read(int fd)
+{
+    int res;
+    char buf[256];
+
+    while ((res = recv (fd, buf, 256, 0)) == 256) {
+    }
+    assert (res != -1);
+}
+
+void test_curve_security_invalid_initiate_length (char *my_endpoint,
+                                                  void *server,
+                                                  void *server_mon,
+                                                  int timeout)
+{
+    int s = connect_vanilla_socket (my_endpoint);
+
+    send_greeting (s);
+
+    // send valid CURVE HELLO
+    char hello[hello_length + 2];
+    prepare_hello(hello);
+
+    send_all (s, hello, hello_length + 2);
+
+    // receive but ignore WELCOME
+    flush_read (s);
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    int res = get_monitor_event_with_timeout (server_mon, NULL, NULL, timeout);
+    assert (res == -1);
+#endif
+
+    send(s, "\x04\x08INITIATE");
 
 #ifdef ZMQ_BUILD_DRAFT_API
     expect_monitor_event_multiple (server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP,
@@ -1009,6 +1052,14 @@ int main (void)
                                    &server_mon, my_endpoint);
     test_curve_security_invalid_hello_version (my_endpoint, server, server_mon,
                                                timeout);
+    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
+                                      handler);
+
+    fprintf (stderr, "test_curve_security_invalid_initiate_command_length\n");
+    setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
+                                   &server_mon, my_endpoint);
+    test_curve_security_invalid_initiate_length (my_endpoint, server,
+                                                 server_mon, timeout);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 
