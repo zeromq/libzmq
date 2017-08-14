@@ -241,7 +241,11 @@ int zmq::curve_client_t::produce_hello (msg_t *msg_)
 
     rc = tools.produce_hello (msg_->data (), cn_nonce);
     if (rc == -1) {
-        msg_->close ();
+        // TODO this is somewhat inconsistent: we call init_size, but we may 
+        // not close msg_; i.e. we assume that msg_ is initialized but empty 
+        // (if it were non-empty, calling init_size might cause a leak!)
+
+        // msg_->close ();
         return -1;
     }
 
