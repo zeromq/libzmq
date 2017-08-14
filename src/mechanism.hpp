@@ -107,8 +107,10 @@ namespace zmq
         //  property in the wire protocol.
         const char *socket_type_string (int socket_type) const;
 
-        size_t add_property (unsigned char *ptr, const char *name,
-            const void *value, size_t value_len) const;
+        static size_t add_property (unsigned char *ptr,
+                                    const char *name,
+                                    const void *value,
+                                    size_t value_len);
 
         //  Parses a metadata.
         //  Metadata consists of a list of properties consisting of

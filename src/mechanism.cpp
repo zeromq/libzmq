@@ -83,7 +83,7 @@ const char *zmq::mechanism_t::socket_type_string (int socket_type) const
 }
 
 size_t zmq::mechanism_t::add_property (unsigned char *ptr, const char *name,
-    const void *value, size_t value_len) const
+    const void *value, size_t value_len) 
 {
     const size_t name_len = strlen (name);
     zmq_assert (name_len <= 255);
