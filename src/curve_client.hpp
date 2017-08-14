@@ -38,14 +38,6 @@
 #   include "sodium.h"
 #endif
 
-#if crypto_box_NONCEBYTES != 24 \
-||  crypto_box_PUBLICKEYBYTES != 32 \
-||  crypto_box_SECRETKEYBYTES != 32 \
-||  crypto_box_ZEROBYTES != 32 \
-||  crypto_box_BOXZEROBYTES != 16
-#   error "CURVE library not built properly"
-#endif
-
 #include "mechanism.hpp"
 #include "options.hpp"
 

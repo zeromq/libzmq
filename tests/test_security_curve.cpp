@@ -41,6 +41,7 @@
 #endif
 
 #include "../src/tweetnacl.h"
+#include "../src/curve_client_tools.hpp"
 
 //  We'll generate random test keys at startup
 static char valid_client_public [41];
@@ -675,41 +676,27 @@ void test_curve_security_invalid_hello_wrong_length (char *my_endpoint,
 
 const size_t hello_length = 200;
 
-void prepare_hello (char (&hello) [hello_length + 2])
+void prepare_hello (char (&hello)[hello_length + 2])
 {
-    memset (hello, 0, hello_length + 2);
-    memcpy (hello, "\x04\xC8", 2);         //  header
-    memcpy (hello + 2, "\x05HELLO", 6);    //  command name
-    memcpy (hello + 2 + 6, "\x01\x00", 2); //  version
+    memcpy (hello, "\x04\xC8", 2); //  header
 
-    char transient_client_secret [41];
-    char transient_client_public [41];
-    uint8_t transient_client_secret_decoded [32];
-    uint8_t transient_client_public_decoded [32];
-    zmq_curve_keypair(transient_client_public, transient_client_secret);
+    char transient_client_secret[41];
+    char transient_client_public[41];
+    uint8_t transient_client_secret_decoded[32];
+    uint8_t transient_client_public_decoded[32];
+    zmq_curve_keypair (transient_client_public, transient_client_secret);
 
     zmq_z85_decode (transient_client_public_decoded, transient_client_public);
     zmq_z85_decode (transient_client_secret_decoded, transient_client_secret);
-    memcpy (hello + 2 + 80, transient_client_public_decoded, 32);
 
-    uint8_t hello_nonce [24];
-    memcpy (hello_nonce, "CurveZMQHELLO---", 16); // nonce prefix
-    hello_nonce [16] = 1; // nonce
-    memcpy (hello + 2 + 112, hello_nonce + 16, 8);
-
-    uint8_t hello_plaintext[crypto_box_ZEROBYTES + 64];
-    uint8_t hello_box[crypto_box_BOXZEROBYTES + 80];
-
-    memset (hello_plaintext, 0, sizeof hello_plaintext);
-
-    uint8_t valid_server_public_decoded [32];
+    uint8_t valid_server_public_decoded[32];
     zmq_z85_decode (valid_server_public_decoded, valid_server_public);
-    int rc = crypto_box (hello_box, hello_plaintext, sizeof hello_plaintext,
-                         hello_nonce, valid_server_public_decoded,
-                         transient_client_secret_decoded);
-    assert (rc != -1);
 
-    memcpy (hello + 2 + 112 + 8, hello_box + crypto_box_BOXZEROBYTES, 80);
+    int rc = zmq::curve_client_tools_t::produce_hello (
+      hello + 2, valid_server_public_decoded, 0,
+      transient_client_public_decoded, transient_client_secret_decoded);
+
+    assert (rc != -1);
 }
 
 void test_curve_security_invalid_hello_command_name (char *my_endpoint,
