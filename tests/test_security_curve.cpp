@@ -876,7 +876,7 @@ void test_curve_security_invalid_initiate_command_name (char *my_endpoint,
 #endif
 
     char initiate [257];
-    tools.produce_initiate (initiate, 257, 1, nullptr, 0);
+    tools.produce_initiate (initiate, 257, 1, NULL, 0);
     initiate[5] = 'X';
 
     send_command (s, initiate);
