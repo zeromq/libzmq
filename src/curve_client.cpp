@@ -271,33 +271,23 @@ int zmq::curve_client_t::process_welcome (const uint8_t *msg_data,
 
 int zmq::curve_client_t::produce_initiate (msg_t *msg_)
 {
-    //  Assume here that metadata is limited to 256 bytes
-    //  FIXME see https://github.com/zeromq/libzmq/issues/2681
-    uint8_t metadata_plaintext [256];
+    const size_t metadata_length = basic_properties_len ();
+    unsigned char *metadata_plaintext =
+      (unsigned char *) malloc (metadata_length);
+    alloc_assert (metadata_plaintext);
 
-    //  Metadata starts after vouch
-    uint8_t *ptr = metadata_plaintext;
-
-    //  Add socket type property
-    const char *socket_type = socket_type_string (options.type);
-    ptr += add_property (ptr, ZMQ_MSG_PROPERTY_SOCKET_TYPE, socket_type,
-                         strlen (socket_type));
-
-    //  Add identity property
-    if (options.type == ZMQ_REQ || options.type == ZMQ_DEALER
-        || options.type == ZMQ_ROUTER)
-        ptr += add_property (ptr, ZMQ_MSG_PROPERTY_IDENTITY, options.identity,
-                             options.identity_size);
-
-    const size_t metadata_length = ptr - metadata_plaintext;
+    add_basic_properties (metadata_plaintext, metadata_length);
 
     size_t msg_size = 113 + 128 + crypto_box_BOXZEROBYTES + metadata_length;
     int rc = msg_->init_size (msg_size);
     errno_assert (rc == 0);
 
-    if (-1
-        == tools.produce_initiate (msg_->data (), msg_size, cn_nonce,
-                                   metadata_plaintext, metadata_length)) {
+    rc = tools.produce_initiate (msg_->data (), msg_size, cn_nonce,
+                                 metadata_plaintext, metadata_length);
+
+    free (metadata_plaintext);
+
+    if (-1 == rc) {
         // TODO see comment in produce_hello
         return -1;
     }
@@ -318,8 +308,11 @@ int zmq::curve_client_t::process_ready (
     const size_t clen = (msg_size - 14) + crypto_box_BOXZEROBYTES;
 
     uint8_t ready_nonce [crypto_box_NONCEBYTES];
-    uint8_t ready_plaintext [crypto_box_ZEROBYTES + 256];
-    uint8_t ready_box [crypto_box_BOXZEROBYTES + 16 + 256];
+    uint8_t *ready_plaintext = (uint8_t *) malloc (crypto_box_ZEROBYTES + clen);
+    alloc_assert (ready_plaintext);
+    uint8_t *ready_box =
+      (uint8_t *) malloc (crypto_box_BOXZEROBYTES + 16 + clen);
+    alloc_assert (ready_box);
 
     memset (ready_box, 0, crypto_box_BOXZEROBYTES);
     memcpy (ready_box + crypto_box_BOXZEROBYTES,
@@ -331,6 +324,7 @@ int zmq::curve_client_t::process_ready (
 
     int rc = crypto_box_open_afternm (ready_plaintext, ready_box,
                                       clen, ready_nonce, tools.cn_precom);
+    free (ready_box);
 
     if (rc != 0) {
         errno = EPROTO;
@@ -339,6 +333,8 @@ int zmq::curve_client_t::process_ready (
 
     rc = parse_metadata (ready_plaintext + crypto_box_ZEROBYTES,
                          clen - crypto_box_ZEROBYTES);
+    free (ready_plaintext);
+
     if (rc == 0)
         state = connected;
 

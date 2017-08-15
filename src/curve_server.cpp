@@ -542,34 +542,32 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
 
 int zmq::curve_server_t::produce_ready (msg_t *msg_)
 {
+    const size_t metadata_length = basic_properties_len ();
     uint8_t ready_nonce [crypto_box_NONCEBYTES];
-    uint8_t ready_plaintext [crypto_box_ZEROBYTES + 256];
-    uint8_t ready_box [crypto_box_BOXZEROBYTES + 16 + 256];
+
+    uint8_t *ready_plaintext =
+      (uint8_t *) malloc (crypto_box_ZEROBYTES + metadata_length);
+    alloc_assert (ready_plaintext);
 
     //  Create Box [metadata](S'->C')
     memset (ready_plaintext, 0, crypto_box_ZEROBYTES);
     uint8_t *ptr = ready_plaintext + crypto_box_ZEROBYTES;
 
-    //  Add socket type property
-    const char *socket_type = socket_type_string (options.type);
-    ptr += add_property (ptr, ZMQ_MSG_PROPERTY_SOCKET_TYPE, socket_type,
-                         strlen (socket_type));
-
-    //  Add identity property
-    if (options.type == ZMQ_REQ
-    ||  options.type == ZMQ_DEALER
-    ||  options.type == ZMQ_ROUTER)
-        ptr += add_property (ptr, ZMQ_MSG_PROPERTY_IDENTITY, options.identity,
-                             options.identity_size);
-
+    ptr += add_basic_properties (ptr, metadata_length);
     const size_t mlen = ptr - ready_plaintext;
 
     memcpy (ready_nonce, "CurveZMQREADY---", 16);
     put_uint64 (ready_nonce + 16, cn_nonce);
 
-    int rc = crypto_box_afternm (ready_box, ready_plaintext,
-                                 mlen, ready_nonce, cn_precom);
+    uint8_t *ready_box =
+      (uint8_t *) malloc (crypto_box_BOXZEROBYTES + 16 + metadata_length);
+    alloc_assert (ready_box);
+
+    int rc = crypto_box_afternm (ready_box, ready_plaintext, mlen, ready_nonce,
+                                 cn_precom);
     zmq_assert (rc == 0);
+
+    free (ready_plaintext);
 
     rc = msg_->init_size (14 + mlen - crypto_box_BOXZEROBYTES);
     errno_assert (rc == 0);
@@ -582,6 +580,7 @@ int zmq::curve_server_t::produce_ready (msg_t *msg_)
     //  Box [metadata](S'->C')
     memcpy (ready + 14, ready_box + crypto_box_BOXZEROBYTES,
             mlen - crypto_box_BOXZEROBYTES);
+    free (ready_box);
 
     cn_nonce++;
 

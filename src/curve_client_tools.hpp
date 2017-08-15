@@ -146,9 +146,6 @@ struct curve_client_tools_t
                                  const uint8_t *metadata_plaintext,
                                  const size_t metadata_length)
     {
-        const size_t max_metadata_length = 256;
-        zmq_assert (metadata_length < max_metadata_length);
-
         uint8_t vouch_nonce[crypto_box_NONCEBYTES];
         uint8_t vouch_plaintext[crypto_box_ZEROBYTES + 64];
         uint8_t vouch_box[crypto_box_BOXZEROBYTES + 80];
@@ -168,10 +165,12 @@ struct curve_client_tools_t
             return -1;
 
         uint8_t initiate_nonce[crypto_box_NONCEBYTES];
-        uint8_t
-          initiate_box[crypto_box_BOXZEROBYTES + 144 + max_metadata_length];
-        uint8_t
-          initiate_plaintext[crypto_box_ZEROBYTES + 128 + max_metadata_length];
+        uint8_t *initiate_box = (uint8_t *) malloc (
+          crypto_box_BOXZEROBYTES + 144 + metadata_length);
+        alloc_assert (initiate_box);
+        uint8_t *initiate_plaintext =
+          (uint8_t *) malloc (crypto_box_ZEROBYTES + 128 + metadata_length);
+        alloc_assert (initiate_plaintext);
 
         //  Create Box [C + vouch + metadata](C'->S')
         memset (initiate_plaintext, 0, crypto_box_ZEROBYTES);
@@ -190,6 +189,8 @@ struct curve_client_tools_t
         rc = crypto_box (initiate_box, initiate_plaintext,
                          crypto_box_ZEROBYTES + 128 + metadata_length,
                          initiate_nonce, cn_server, cn_secret);
+        free (initiate_plaintext);
+
         if (rc == -1)
             return -1;
 
@@ -206,6 +207,7 @@ struct curve_client_tools_t
         //  Box [C + vouch + metadata](C'->S')
         memcpy (initiate + 113, initiate_box + crypto_box_BOXZEROBYTES,
                 128 + metadata_length + crypto_box_BOXZEROBYTES);
+        free (initiate_box);
 
         return 0;
     }

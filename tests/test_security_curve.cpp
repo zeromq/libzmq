@@ -44,6 +44,15 @@
 #include "../src/curve_client_tools.hpp"
 #include "../src/random.hpp"
 
+
+const char large_identity[] = "0123456789012345678901234567890123456789"
+                              "0123456789012345678901234567890123456789"
+                              "0123456789012345678901234567890123456789"
+                              "0123456789012345678901234567890123456789"
+                              "0123456789012345678901234567890123456789"
+                              "0123456789012345678901234567890123456789"
+                              "012345678901234";
+
 //  We'll generate random test keys at startup
 static char valid_client_public [41];
 static char valid_client_secret [41];
@@ -154,7 +163,9 @@ enum zap_protocol_t
   zap_too_many_parts
 };
 
-static void zap_handler_generic (void *ctx, zap_protocol_t zap_protocol)
+static void zap_handler_generic (void *ctx,
+                                 zap_protocol_t zap_protocol,
+                                 const char *expected_identity = "IDENT")
 {
     void *control = zmq_socket (ctx, ZMQ_REQ);
     assert (control);
@@ -205,7 +216,7 @@ static void zap_handler_generic (void *ctx, zap_protocol_t zap_protocol)
 
         assert (streq (version, "1.0"));
         assert (streq (mechanism, "CURVE"));
-        assert (streq (identity, "IDENT"));
+        assert (streq (identity, expected_identity));
 
         s_sendmore (handler, zap_protocol == zap_wrong_version
                                ? "invalid_version"
@@ -263,6 +274,11 @@ static void zap_handler_generic (void *ctx, zap_protocol_t zap_protocol)
 static void zap_handler (void *ctx)
 {
     zap_handler_generic (ctx, zap_ok);
+}
+
+static void zap_handler_large_identity (void *ctx)
+{
+    zap_handler_generic (ctx, zap_ok, large_identity);
 }
 
 static void zap_handler_wrong_version (void *ctx)
@@ -412,7 +428,8 @@ void setup_context_and_server_side (void **ctx,
                                     void **server,
                                     void **server_mon,
                                     char *my_endpoint,
-                                    zmq_thread_fn zap_handler_ = &zap_handler)
+                                    zmq_thread_fn zap_handler_ = &zap_handler,
+                                    const char *identity = "IDENT")
 {
     *ctx = zmq_ctx_new ();
     assert (*ctx);
@@ -444,7 +461,7 @@ void setup_context_and_server_side (void **ctx,
     rc = zmq_setsockopt (*server, ZMQ_CURVE_SECRETKEY, valid_server_secret, 41);
     assert (rc == 0);
 
-    rc = zmq_setsockopt (*server, ZMQ_IDENTITY, "IDENT", 6);
+    rc = zmq_setsockopt (*server, ZMQ_IDENTITY, identity, strlen(identity));
     assert (rc == 0);
 
     rc = zmq_bind (*server, "tcp://127.0.0.1:*");
@@ -1231,6 +1248,15 @@ int main (void)
       my_endpoint, server, server_mon, timeout);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
+
+    //  test with a large identity (resulting in large metadata)
+    fprintf (stderr, "test_curve_security_with_valid_credentials (large identity)\n");
+    setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
+                                   &server_mon, my_endpoint, &zap_handler_large_identity, large_identity);
+    test_curve_security_with_valid_credentials (ctx, my_endpoint, server,
+                                                server_mon, timeout);
+    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
+            handler);
 
     ctx = zmq_ctx_new ();
     test_curve_security_invalid_keysize (ctx);
