@@ -280,13 +280,14 @@ int zmq::curve_client_t::produce_initiate (msg_t *msg_)
 
     //  Add socket type property
     const char *socket_type = socket_type_string (options.type);
-    ptr += add_property (ptr, ZMQ_MSG_PROPERTY_SOCKET_TYPE, socket_type,
+    ptr += add_property (ptr, 256, ZMQ_MSG_PROPERTY_SOCKET_TYPE, socket_type,
                          strlen (socket_type));
 
     //  Add identity property
     if (options.type == ZMQ_REQ || options.type == ZMQ_DEALER
         || options.type == ZMQ_ROUTER)
-        ptr += add_property (ptr, ZMQ_MSG_PROPERTY_IDENTITY, options.identity,
+        ptr += add_property (ptr, 256 - (ptr - metadata_plaintext),
+                             ZMQ_MSG_PROPERTY_IDENTITY, options.identity,
                              options.identity_size);
 
     const size_t metadata_length = ptr - metadata_plaintext;

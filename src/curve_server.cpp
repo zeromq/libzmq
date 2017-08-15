@@ -542,9 +542,10 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
 
 int zmq::curve_server_t::produce_ready (msg_t *msg_)
 {
+    const size_t max_metadata_len = 256;
     uint8_t ready_nonce [crypto_box_NONCEBYTES];
-    uint8_t ready_plaintext [crypto_box_ZEROBYTES + 256];
-    uint8_t ready_box [crypto_box_BOXZEROBYTES + 16 + 256];
+    uint8_t ready_plaintext [crypto_box_ZEROBYTES + max_metadata_len];
+    uint8_t ready_box [crypto_box_BOXZEROBYTES + 16 + max_metadata_len];
 
     //  Create Box [metadata](S'->C')
     memset (ready_plaintext, 0, crypto_box_ZEROBYTES);
@@ -552,15 +553,17 @@ int zmq::curve_server_t::produce_ready (msg_t *msg_)
 
     //  Add socket type property
     const char *socket_type = socket_type_string (options.type);
-    ptr += add_property (ptr, ZMQ_MSG_PROPERTY_SOCKET_TYPE, socket_type,
-                         strlen (socket_type));
+    ptr += add_property (ptr, max_metadata_len, ZMQ_MSG_PROPERTY_SOCKET_TYPE,
+                         socket_type, strlen (socket_type));
 
     //  Add identity property
     if (options.type == ZMQ_REQ
     ||  options.type == ZMQ_DEALER
     ||  options.type == ZMQ_ROUTER)
-        ptr += add_property (ptr, ZMQ_MSG_PROPERTY_IDENTITY, options.identity,
-                             options.identity_size);
+        ptr += add_property (
+          ptr,
+          max_metadata_len - (ptr - ready_plaintext - crypto_box_ZEROBYTES),
+          ZMQ_MSG_PROPERTY_IDENTITY, options.identity, options.identity_size);
 
     const size_t mlen = ptr - ready_plaintext;
 

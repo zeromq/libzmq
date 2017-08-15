@@ -108,6 +108,7 @@ namespace zmq
         const char *socket_type_string (int socket_type) const;
 
         static size_t add_property (unsigned char *ptr,
+                                    size_t ptr_capacity,
                                     const char *name,
                                     const void *value,
                                     size_t value_len);

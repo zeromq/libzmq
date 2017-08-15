@@ -82,11 +82,19 @@ const char *zmq::mechanism_t::socket_type_string (int socket_type) const
     return names [socket_type];
 }
 
-size_t zmq::mechanism_t::add_property (unsigned char *ptr, const char *name,
-    const void *value, size_t value_len) 
+size_t zmq::mechanism_t::add_property (unsigned char *ptr,
+                                       size_t ptr_capacity,
+                                       const char *name,
+                                       const void *value,
+                                       size_t value_len)
 {
     const size_t name_len = strlen (name);
     zmq_assert (name_len <= 255);
+    const size_t total_len = 1 + name_len + 4 + value_len;
+    zmq_assert (total_len <= ptr_capacity);
+    //  TODO probably, this should not be an assertion, but result in an 
+    //  errno error EINVAL, but this requires additional changes
+
     *ptr++ = static_cast <unsigned char> (name_len);
     memcpy (ptr, name, name_len);
     ptr += name_len;
@@ -95,7 +103,7 @@ size_t zmq::mechanism_t::add_property (unsigned char *ptr, const char *name,
     ptr += 4;
     memcpy (ptr, value, value_len);
 
-    return 1 + name_len + 4 + value_len;
+    return total_len;
 }
 
 int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,

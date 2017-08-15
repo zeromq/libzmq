@@ -98,7 +98,9 @@ int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
         return 0;
     }
 
-    unsigned char *const command_buffer = (unsigned char *) malloc (512);
+    const size_t command_buffer_size = 512;
+    unsigned char *const command_buffer =
+      (unsigned char *) malloc (command_buffer_size);
     alloc_assert (command_buffer);
 
     unsigned char *ptr = command_buffer;
@@ -109,14 +111,16 @@ int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
 
     //  Add socket type property
     const char *socket_type = socket_type_string (options.type);
-    ptr += add_property (ptr, ZMQ_MSG_PROPERTY_SOCKET_TYPE, socket_type,
+    ptr += add_property (ptr, command_buffer_size - (ptr - command_buffer),
+                         ZMQ_MSG_PROPERTY_SOCKET_TYPE, socket_type,
                          strlen (socket_type));
 
     //  Add identity property
     if (options.type == ZMQ_REQ
     ||  options.type == ZMQ_DEALER
     ||  options.type == ZMQ_ROUTER)
-        ptr += add_property (ptr, ZMQ_MSG_PROPERTY_IDENTITY, options.identity,
+        ptr += add_property (ptr, command_buffer_size - (ptr - command_buffer),
+                             ZMQ_MSG_PROPERTY_IDENTITY, options.identity,
                              options.identity_size);
 
     const size_t command_size = ptr - command_buffer;
