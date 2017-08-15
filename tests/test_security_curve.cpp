@@ -934,7 +934,7 @@ void test_curve_security_invalid_initiate_command_encrypted_content (
 
     char initiate [257];
     tools.produce_initiate (initiate, 257, 1, NULL, 0);
-    // make garbage from encrypted cookie
+    // make garbage from encrypted content
     initiate[150] = !initiate[150];
 
     send_command (s, initiate);
@@ -1216,7 +1216,7 @@ int main (void)
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 
-    fprintf (stderr, "test_curve_security_invalid_initiate_command_name\n");
+    fprintf (stderr, "test_curve_security_invalid_initiate_command_encrypted_cookie\n");
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
                                    &server_mon, my_endpoint);
     test_curve_security_invalid_initiate_command_encrypted_cookie (
@@ -1224,7 +1224,7 @@ int main (void)
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 
-    fprintf (stderr, "test_curve_security_invalid_initiate_command_name\n");
+    fprintf (stderr, "test_curve_security_invalid_initiate_command_encrypted_content\n");
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
                                    &server_mon, my_endpoint);
     test_curve_security_invalid_initiate_command_encrypted_content (

@@ -442,6 +442,9 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     //  Check cookie plain text is as expected [C' + s']
     if (memcmp (cookie_plaintext + crypto_secretbox_ZEROBYTES, cn_client, 32)
     ||  memcmp (cookie_plaintext + crypto_secretbox_ZEROBYTES + 32, cn_secret, 32)) {
+        // TODO this case is very hard to test, as it would require a modified
+        //  client that knows the server's secret temporary cookie key
+
         // CURVE I: client INITIATE cookie is not valid
         current_error_detail = encryption;
         errno = EPROTO;
@@ -499,6 +502,9 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
 
     //  What we decrypted must be the client's short-term public key
     if (memcmp (vouch_plaintext + crypto_box_ZEROBYTES, cn_client, 32)) {
+        // TODO this case is very hard to test, as it would require a modified
+        //  client that knows the server's secret short-term key
+
         // CURVE I: invalid handshake from client (public key)
         current_error_detail = encryption;
         errno = EPROTO;
