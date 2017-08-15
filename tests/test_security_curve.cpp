@@ -676,6 +676,7 @@ void test_curve_security_invalid_hello_wrong_length (char *my_endpoint,
 }
 
 const size_t hello_length = 200;
+const size_t welcome_length = 168;
 
 zmq::curve_client_tools_t make_curve_client_tools ()
 {
@@ -854,20 +855,20 @@ void test_curve_security_invalid_initiate_length (char *my_endpoint,
     close (s);
 }
 
-void test_curve_security_invalid_initiate_command_name (char *my_endpoint,
-                                                        void *server,
-                                                        void *server_mon,
-                                                        int timeout)
+int connect_exchange_greeting_and_hello_welcome (
+  char *my_endpoint,
+  void *server_mon,
+  int timeout,
+  zmq::curve_client_tools_t &tools)
 {
-    zmq::curve_client_tools_t tools = make_curve_client_tools ();
-
-    int s = connect_exchange_greeting_and_send_hello (my_endpoint, tools);
+    int s = connect_exchange_greeting_and_send_hello (
+      my_endpoint, tools);
 
     // receive but ignore WELCOME
-    uint8_t welcome[168 + 2];
-    recv_all (s, welcome, 168 + 2);
+    uint8_t welcome[welcome_length + 2];
+    recv_all (s, welcome, welcome_length + 2);
     
-    int res = tools.process_welcome (welcome + 2, 168);
+    int res = tools.process_welcome (welcome + 2, welcome_length);
     assert (res == 0);
 
 #ifdef ZMQ_BUILD_DRAFT_API
@@ -875,8 +876,21 @@ void test_curve_security_invalid_initiate_command_name (char *my_endpoint,
     assert (res == -1);
 #endif
 
+    return s;
+}
+
+void test_curve_security_invalid_initiate_command_name (char *my_endpoint,
+                                                        void *server,
+                                                        void *server_mon,
+                                                        int timeout)
+{
+    zmq::curve_client_tools_t tools = make_curve_client_tools ();
+    int s = connect_exchange_greeting_and_hello_welcome (
+      my_endpoint, server_mon, timeout, tools);
+
     char initiate [257];
     tools.produce_initiate (initiate, 257, 1, NULL, 0);
+    // modify command name
     initiate[5] = 'X';
 
     send_command (s, initiate);
@@ -884,6 +898,50 @@ void test_curve_security_invalid_initiate_command_name (char *my_endpoint,
 #ifdef ZMQ_BUILD_DRAFT_API
     expect_monitor_event_multiple (server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP,
                                    EPROTO);
+#endif
+
+    close (s);
+}
+
+void test_curve_security_invalid_initiate_command_encrypted_cookie (
+  char *my_endpoint, void *server, void *server_mon, int timeout)
+{
+    zmq::curve_client_tools_t tools = make_curve_client_tools ();
+    int s = connect_exchange_greeting_and_hello_welcome (
+      my_endpoint, server_mon, timeout, tools);
+
+    char initiate [257];
+    tools.produce_initiate (initiate, 257, 1, NULL, 0);
+    // make garbage from encrypted cookie
+    initiate[30] = !initiate[30];
+
+    send_command (s, initiate);
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    expect_monitor_event_multiple (
+      server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION, EPROTO);
+#endif
+
+    close (s);
+}
+
+void test_curve_security_invalid_initiate_command_encrypted_content (
+  char *my_endpoint, void *server, void *server_mon, int timeout)
+{
+    zmq::curve_client_tools_t tools = make_curve_client_tools ();
+    int s = connect_exchange_greeting_and_hello_welcome (
+      my_endpoint, server_mon, timeout, tools);
+
+    char initiate [257];
+    tools.produce_initiate (initiate, 257, 1, NULL, 0);
+    // make garbage from encrypted cookie
+    initiate[150] = !initiate[150];
+
+    send_command (s, initiate);
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    expect_monitor_event_multiple (
+      server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION, EPROTO);
 #endif
 
     close (s);
@@ -969,6 +1027,7 @@ int main (void)
     void *server_mon;
     char my_endpoint [MAX_SOCKET_STRING];
 
+#if 0
     fprintf (stderr, "test_curve_security_with_valid_credentials\n");
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
                                    &server_mon, my_endpoint);
@@ -1155,6 +1214,23 @@ int main (void)
                                    &server_mon, my_endpoint);
     test_curve_security_invalid_initiate_command_name (my_endpoint, server,
                                                        server_mon, timeout);
+    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
+                                      handler);
+#endif 
+
+    fprintf (stderr, "test_curve_security_invalid_initiate_command_name\n");
+    setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
+                                   &server_mon, my_endpoint);
+    test_curve_security_invalid_initiate_command_encrypted_cookie (
+      my_endpoint, server, server_mon, timeout);
+    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
+                                      handler);
+
+    fprintf (stderr, "test_curve_security_invalid_initiate_command_name\n");
+    setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
+                                   &server_mon, my_endpoint);
+    test_curve_security_invalid_initiate_command_encrypted_content (
+      my_endpoint, server, server_mon, timeout);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 
