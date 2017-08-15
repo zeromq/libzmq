@@ -102,6 +102,12 @@ int zmq::curve_server_t::process_handshake_command (msg_t *msg_)
             rc = process_initiate (msg_);
             break;
         default:
+            // TODO I think this is not a case reachable with a misbehaving 
+            // client. It is not an "invalid handshake command", but would be 
+            // trying to process a handshake command in an invalid state, 
+            // which is purely under control of this peer. 
+            // Therefore, it should be changed to zmq_assert (false);
+
             // CURVE I: invalid handshake command
             current_error_detail = zmtp;
             errno = EPROTO;
@@ -242,6 +248,9 @@ int zmq::curve_server_t::decode (msg_t *msg_)
 
 int zmq::curve_server_t::zap_msg_available ()
 {
+    //  TODO I don't think that it is possible that this is called in any 
+    //  state other than expect_zap_reply. It should be changed to
+    //  zmq_assert (state == expect_zap_reply);
     if (state != expect_zap_reply) {
         errno = EFSM;
         return -1;
@@ -371,6 +380,13 @@ int zmq::curve_server_t::produce_welcome (msg_t *msg_)
     rc = crypto_box (welcome_ciphertext, welcome_plaintext,
                      sizeof welcome_plaintext,
                      welcome_nonce, cn_client, secret_key);
+
+    //  TODO I think we should change this back to zmq_assert (rc == 0);
+    //  as it was before https://github.com/zeromq/libzmq/pull/1832
+    //  The reason given there was that secret_key might be 0ed.
+    //  But if it were, we would never get this far, since we could
+    //  not have opened the client's hello box with a 0ed key.
+
     if (rc == -1)
         return -1;
 
@@ -426,6 +442,9 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     //  Check cookie plain text is as expected [C' + s']
     if (memcmp (cookie_plaintext + crypto_secretbox_ZEROBYTES, cn_client, 32)
     ||  memcmp (cookie_plaintext + crypto_secretbox_ZEROBYTES + 32, cn_secret, 32)) {
+        // TODO this case is very hard to test, as it would require a modified
+        //  client that knows the server's secret temporary cookie key
+
         // CURVE I: client INITIATE cookie is not valid
         current_error_detail = encryption;
         errno = EPROTO;
@@ -483,6 +502,9 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
 
     //  What we decrypted must be the client's short-term public key
     if (memcmp (vouch_plaintext + crypto_box_ZEROBYTES, cn_client, 32)) {
+        // TODO this case is very hard to test, as it would require a modified
+        //  client that knows the server's secret short-term key
+
         // CURVE I: invalid handshake from client (public key)
         current_error_detail = encryption;
         errno = EPROTO;
@@ -581,6 +603,11 @@ int zmq::curve_server_t::produce_error (msg_t *msg_) const
 
 int zmq::curve_server_t::send_zap_request (const uint8_t *key)
 {
+    // TODO  I don't think the rc can be -1 anywhere below.
+    // It might only be -1 if the HWM was exceeded, but on the ZAP socket, 
+    // the HWM is disabled. They should be changed to zmq_assert (rc == 0);
+    // The method's return type can be changed to void then.
+
     int rc;
     msg_t msg;
 

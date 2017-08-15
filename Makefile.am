@@ -37,6 +37,7 @@ src_libzmq_la_SOURCES = \
 	src/ctx.hpp \
 	src/curve_client.cpp \
 	src/curve_client.hpp \
+	src/curve_client_tools.hpp \
 	src/curve_server.cpp \
 	src/curve_server.hpp \
 	src/dbuffer.hpp \
@@ -373,7 +374,6 @@ test_apps = \
 	tests/test_ctx_destroy \
 	tests/test_security_null \
 	tests/test_security_plain \
-	tests/test_security_curve \
 	tests/test_iov \
 	tests/test_spec_req \
 	tests/test_spec_rep \
@@ -520,9 +520,6 @@ tests_test_security_null_LDADD = src/libzmq.la
 tests_test_security_plain_SOURCES = tests/test_security_plain.cpp
 tests_test_security_plain_LDADD = src/libzmq.la
 
-tests_test_security_curve_SOURCES = tests/test_security_curve.cpp
-tests_test_security_curve_LDADD = src/libzmq.la
-
 tests_test_spec_req_SOURCES = tests/test_spec_req.cpp
 tests_test_spec_req_LDADD = src/libzmq.la
 
@@ -618,6 +615,37 @@ tests_test_base85_LDADD = src/libzmq.la
 
 tests_test_sodium_SOURCES = tests/test_sodium.cpp
 tests_test_sodium_LDADD = src/libzmq.la
+
+if HAVE_CURVE
+
+test_apps += \
+	tests/test_security_curve
+
+tests_test_security_curve_SOURCES = \
+	tests/test_security_curve.cpp \
+	tests/testutil.hpp \
+	src/curve_client_tools.hpp \
+	src/clock.hpp \
+	src/clock.cpp \
+	src/random.hpp \
+	src/random.cpp \
+	src/err.hpp \
+	src/err.cpp
+
+if USE_TWEETNACL
+tests_test_security_curve_SOURCES += \
+	src/tweetnacl.c
+endif
+
+tests_test_security_curve_LDADD = \
+	src/libzmq.la
+
+if USE_LIBSODIUM
+tests_test_security_curve_LDADD += \
+	${sodium_LIBS}
+endif
+
+endif
 
 if !ON_MINGW
 if !ON_CYGWIN

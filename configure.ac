@@ -498,6 +498,7 @@ AM_CONDITIONAL(ENABLE_CURVE_KEYGEN, test "x$enable_curve" = "xyes" -a "x$zmq_ena
 
 AM_CONDITIONAL(USE_LIBSODIUM, test "$curve_library" = "libsodium")
 AM_CONDITIONAL(USE_TWEETNACL, test "$curve_library" = "tweetnacl")
+AM_CONDITIONAL(HAVE_CURVE, test "x$curve_library" != "x")
 
 # build using pgm
 have_pgm_library="no"

@@ -37,21 +37,17 @@
 #include "err.hpp"
 #include "curve_client.hpp"
 #include "wire.hpp"
+#include "curve_client_tools.hpp"
 
 zmq::curve_client_t::curve_client_t (const options_t &options_) :
     mechanism_t (options_),
     state (send_hello),
-    cn_nonce(1),
-    cn_peer_nonce(1)
+    tools (options_.curve_public_key,
+           options_.curve_secret_key,
+           options_.curve_server_key),
+    cn_nonce (1),
+    cn_peer_nonce (1)
 {
-    int rc;
-    memcpy (public_key, options_.curve_public_key, crypto_box_PUBLICKEYBYTES);
-    memcpy (secret_key, options_.curve_secret_key, crypto_box_SECRETKEYBYTES);
-    memcpy (server_key, options_.curve_server_key, crypto_box_PUBLICKEYBYTES);
-
-    //  Generate short-term key pair
-    rc = crypto_box_keypair (cn_public, cn_secret);
-    zmq_assert (rc == 0);
 }
 
 zmq::curve_client_t::~curve_client_t ()
@@ -87,13 +83,13 @@ int zmq::curve_client_t::process_handshake_command (msg_t *msg_)
     const size_t msg_size = msg_->size ();
 
     int rc = 0;
-    if (msg_size >= 8 && !memcmp (msg_data, "\7WELCOME", 8))
+    if (curve_client_tools_t::is_handshake_command_welcome (msg_data, msg_size))
         rc = process_welcome (msg_data, msg_size);
-    else
-    if (msg_size >= 6 && !memcmp (msg_data, "\5READY", 6))
+    else if (curve_client_tools_t::is_handshake_command_ready (msg_data,
+                                                               msg_size))
         rc = process_ready (msg_data, msg_size);
-    else
-    if (msg_size >= 6 && !memcmp (msg_data, "\5ERROR", 6))
+    else if (curve_client_tools_t::is_handshake_command_error (msg_data,
+                                                               msg_size))
         rc = process_error (msg_data, msg_size);
     else {
         errno = EPROTO;
@@ -137,8 +133,8 @@ int zmq::curve_client_t::encode (msg_t *msg_)
     uint8_t *message_box = static_cast <uint8_t *> (malloc (mlen));
     alloc_assert (message_box);
 
-    int rc = crypto_box_afternm (message_box, message_plaintext,
-                                 mlen, message_nonce, cn_precom);
+    int rc = crypto_box_afternm (message_box, message_plaintext, mlen,
+                                 message_nonce, tools.cn_precom);
     zmq_assert (rc == 0);
 
     rc = msg_->close ();
@@ -199,8 +195,8 @@ int zmq::curve_client_t::decode (msg_t *msg_)
     memcpy (message_box + crypto_box_BOXZEROBYTES,
             message + 16, msg_->size () - 16);
 
-    int rc = crypto_box_open_afternm (message_plaintext, message_box,
-                                      clen, message_nonce, cn_precom);
+    int rc = crypto_box_open_afternm (message_plaintext, message_box, clen,
+                                      message_nonce, tools.cn_precom);
     if (rc == 0) {
         rc = msg_->close ();
         zmq_assert (rc == 0);
@@ -240,77 +236,33 @@ zmq::mechanism_t::status_t zmq::curve_client_t::status () const
 
 int zmq::curve_client_t::produce_hello (msg_t *msg_)
 {
-    uint8_t hello_nonce [crypto_box_NONCEBYTES];
-    uint8_t hello_plaintext [crypto_box_ZEROBYTES + 64];
-    uint8_t hello_box [crypto_box_BOXZEROBYTES + 80];
-
-    //  Prepare the full nonce
-    memcpy (hello_nonce, "CurveZMQHELLO---", 16);
-    put_uint64 (hello_nonce + 16, cn_nonce);
-
-    //  Create Box [64 * %x0](C'->S)
-    memset (hello_plaintext, 0, sizeof hello_plaintext);
-
-    int rc = crypto_box (hello_box, hello_plaintext,
-                         sizeof hello_plaintext,
-                         hello_nonce, server_key, cn_secret);
-    if (rc == -1)
-        return -1;
-
-    rc = msg_->init_size (200);
+    int rc = msg_->init_size (200);
     errno_assert (rc == 0);
-    uint8_t *hello = static_cast <uint8_t *> (msg_->data ());
 
-    memcpy (hello, "\x05HELLO", 6);
-    //  CurveZMQ major and minor version numbers
-    memcpy (hello + 6, "\1\0", 2);
-    //  Anti-amplification padding
-    memset (hello + 8, 0, 72);
-    //  Client public connection key
-    memcpy (hello + 80, cn_public, crypto_box_PUBLICKEYBYTES);
-    //  Short nonce, prefixed by "CurveZMQHELLO---"
-    memcpy (hello + 112, hello_nonce + 16, 8);
-    //  Signature, Box [64 * %x0](C'->S)
-    memcpy (hello + 120, hello_box + crypto_box_BOXZEROBYTES, 80);
+    rc = tools.produce_hello (msg_->data (), cn_nonce);
+    if (rc == -1) {
+        // TODO this is somewhat inconsistent: we call init_size, but we may 
+        // not close msg_; i.e. we assume that msg_ is initialized but empty 
+        // (if it were non-empty, calling init_size might cause a leak!)
+
+        // msg_->close ();
+        return -1;
+    }
 
     cn_nonce++;
 
     return 0;
 }
 
-int zmq::curve_client_t::process_welcome (
-        const uint8_t *msg_data, size_t msg_size)
+int zmq::curve_client_t::process_welcome (const uint8_t *msg_data,
+                                          size_t msg_size)
 {
-    if (msg_size != 168) {
+    int rc = tools.process_welcome (msg_data, msg_size);
+
+    if (rc == -1) {
         errno = EPROTO;
         return -1;
     }
-
-    uint8_t welcome_nonce [crypto_box_NONCEBYTES];
-    uint8_t welcome_plaintext [crypto_box_ZEROBYTES + 128];
-    uint8_t welcome_box [crypto_box_BOXZEROBYTES + 144];
-
-    //  Open Box [S' + cookie](C'->S)
-    memset (welcome_box, 0, crypto_box_BOXZEROBYTES);
-    memcpy (welcome_box + crypto_box_BOXZEROBYTES, msg_data + 24, 144);
-
-    memcpy (welcome_nonce, "WELCOME-", 8);
-    memcpy (welcome_nonce + 8, msg_data + 8, 16);
-
-    int rc = crypto_box_open (welcome_plaintext, welcome_box,
-                              sizeof welcome_box,
-                              welcome_nonce, server_key, cn_secret);
-    if (rc != 0) {
-        errno = EPROTO;
-        return -1;
-    }
-
-    memcpy (cn_server, welcome_plaintext + crypto_box_ZEROBYTES, 32);
-    memcpy (cn_cookie, welcome_plaintext + crypto_box_ZEROBYTES + 32, 16 + 80);
-
-    //  Message independent precomputation
-    rc = crypto_box_beforenm (cn_precom, cn_server, cn_secret);
-    zmq_assert (rc == 0);
 
     state = send_initiate;
 
@@ -319,40 +271,12 @@ int zmq::curve_client_t::process_welcome (
 
 int zmq::curve_client_t::produce_initiate (msg_t *msg_)
 {
-    uint8_t vouch_nonce [crypto_box_NONCEBYTES];
-    uint8_t vouch_plaintext [crypto_box_ZEROBYTES + 64];
-    uint8_t vouch_box [crypto_box_BOXZEROBYTES + 80];
-
-    //  Create vouch = Box [C',S](C->S')
-    memset (vouch_plaintext, 0, crypto_box_ZEROBYTES);
-    memcpy (vouch_plaintext + crypto_box_ZEROBYTES, cn_public, 32);
-    memcpy (vouch_plaintext + crypto_box_ZEROBYTES + 32, server_key, 32);
-
-    memcpy (vouch_nonce, "VOUCH---", 8);
-    randombytes (vouch_nonce + 8, 16);
-
-    int rc = crypto_box (vouch_box, vouch_plaintext,
-                         sizeof vouch_plaintext,
-                         vouch_nonce, cn_server, secret_key);
-    if (rc == -1)
-        return -1;
-
     //  Assume here that metadata is limited to 256 bytes
-    uint8_t initiate_nonce [crypto_box_NONCEBYTES];
-    uint8_t initiate_plaintext [crypto_box_ZEROBYTES + 128 + 256];
-    uint8_t initiate_box [crypto_box_BOXZEROBYTES + 144 + 256];
-
-    //  Create Box [C + vouch + metadata](C'->S')
-    memset (initiate_plaintext, 0, crypto_box_ZEROBYTES);
-    memcpy (initiate_plaintext + crypto_box_ZEROBYTES,
-            public_key, 32);
-    memcpy (initiate_plaintext + crypto_box_ZEROBYTES + 32,
-            vouch_nonce + 8, 16);
-    memcpy (initiate_plaintext + crypto_box_ZEROBYTES + 48,
-            vouch_box + crypto_box_BOXZEROBYTES, 80);
+    //  FIXME see https://github.com/zeromq/libzmq/issues/2681
+    uint8_t metadata_plaintext [256];
 
     //  Metadata starts after vouch
-    uint8_t *ptr = initiate_plaintext + crypto_box_ZEROBYTES + 128;
+    uint8_t *ptr = metadata_plaintext;
 
     //  Add socket type property
     const char *socket_type = socket_type_string (options.type);
@@ -360,35 +284,24 @@ int zmq::curve_client_t::produce_initiate (msg_t *msg_)
                          strlen (socket_type));
 
     //  Add identity property
-    if (options.type == ZMQ_REQ
-    ||  options.type == ZMQ_DEALER
-    ||  options.type == ZMQ_ROUTER)
+    if (options.type == ZMQ_REQ || options.type == ZMQ_DEALER
+        || options.type == ZMQ_ROUTER)
         ptr += add_property (ptr, ZMQ_MSG_PROPERTY_IDENTITY, options.identity,
                              options.identity_size);
 
-    const size_t mlen = ptr - initiate_plaintext;
+    const size_t metadata_length = ptr - metadata_plaintext;
 
-    memcpy (initiate_nonce, "CurveZMQINITIATE", 16);
-    put_uint64 (initiate_nonce + 16, cn_nonce);
-
-    rc = crypto_box (initiate_box, initiate_plaintext,
-                     mlen, initiate_nonce, cn_server, cn_secret);
-    if (rc == -1)
-        return -1;
-
-    rc = msg_->init_size (113 + mlen - crypto_box_BOXZEROBYTES);
+    size_t msg_size = 113 + 128 + crypto_box_BOXZEROBYTES + metadata_length;
+    int rc = msg_->init_size (msg_size);
     errno_assert (rc == 0);
 
-    uint8_t *initiate = static_cast <uint8_t *> (msg_->data ());
+    if (-1
+        == tools.produce_initiate (msg_->data (), msg_size, cn_nonce,
+                                   metadata_plaintext, metadata_length)) {
+        // TODO see comment in produce_hello
+        return -1;
+    }
 
-    memcpy (initiate, "\x08INITIATE", 9);
-    //  Cookie provided by the server in the WELCOME command
-    memcpy (initiate + 9, cn_cookie, 96);
-    //  Short nonce, prefixed by "CurveZMQINITIATE"
-    memcpy (initiate + 105, initiate_nonce + 16, 8);
-    //  Box [C + vouch + metadata](C'->S')
-    memcpy (initiate + 113, initiate_box + crypto_box_BOXZEROBYTES,
-            mlen - crypto_box_BOXZEROBYTES);
     cn_nonce++;
 
     return 0;
@@ -417,7 +330,7 @@ int zmq::curve_client_t::process_ready (
     cn_peer_nonce = get_uint64(msg_data + 6);
 
     int rc = crypto_box_open_afternm (ready_plaintext, ready_box,
-                                      clen, ready_nonce, cn_precom);
+                                      clen, ready_nonce, tools.cn_precom);
 
     if (rc != 0) {
         errno = EPROTO;
