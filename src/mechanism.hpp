@@ -112,6 +112,15 @@ namespace zmq
                                     const char *name,
                                     const void *value,
                                     size_t value_len);
+        static size_t property_len (const char *name,
+                                    size_t value_len);
+
+        size_t add_basic_properties (unsigned char *ptr, size_t ptr_capacity) const;
+        size_t basic_properties_len () const;
+
+        void make_command_with_basic_properties (msg_t *msg_,
+                                                 void *prefix,
+                                                 size_t prefix_len) const;
 
         //  Parses a metadata.
         //  Metadata consists of a list of properties consisting of
