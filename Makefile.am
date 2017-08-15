@@ -20,6 +20,8 @@ include_HEADERS = \
 	include/zmq_utils.h
 
 src_libzmq_la_SOURCES = \
+	src/ysstream.cpp \
+	src/ysstream.hpp \
 	src/address.cpp \
 	src/address.hpp \
 	src/array.hpp \

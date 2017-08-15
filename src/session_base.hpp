@@ -97,6 +97,7 @@ namespace zmq
         int write_zap_msg (msg_t *msg_);
 
         socket_base_t *get_socket ();
+        const char *get_endpoint () const;
 
     protected:
 
@@ -104,6 +105,8 @@ namespace zmq
             zmq::socket_base_t *socket_, const options_t &options_,
             address_t *addr_);
         virtual ~session_base_t ();
+        
+        void pipe_rollback();
 
     private:
 

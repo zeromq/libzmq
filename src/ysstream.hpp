@@ -13,7 +13,7 @@
 
 #ifndef YSSTREAM_H
 #define YSSTREAM_H
-
+#include "../include/zmq.h"
 #include "stream.hpp"
 namespace zmq {
 

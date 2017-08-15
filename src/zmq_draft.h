@@ -46,9 +46,15 @@
 #define ZMQ_SCATTER 17
 #define ZMQ_DGRAM 18
 
+/*  DRAFT Socket options.                                                     */
+#define ZMQ_BINDTODEVICE 90
+
 /*  DRAFT 0MQ socket events and monitoring                                    */
-#define ZMQ_EVENT_HANDSHAKE_FAILED  0x0800
-#define ZMQ_EVENT_HANDSHAKE_SUCCEED 0x1000
+#define ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL   0x0800
+#define ZMQ_EVENT_HANDSHAKE_SUCCEEDED          0x1000
+#define ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION  0x2000
+#define ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP        0x4000
+#define ZMQ_EVENT_HANDSHAKE_FAILED_ZAP         0x8000
 
 /*  DRAFT Context options                                                     */
 #define ZMQ_MSG_T_SIZE 6
@@ -62,6 +68,12 @@ int zmq_msg_set_routing_id(zmq_msg_t *msg, uint32_t routing_id);
 uint32_t zmq_msg_routing_id(zmq_msg_t *msg);
 int zmq_msg_set_group(zmq_msg_t *msg, const char *group);
 const char *zmq_msg_group(zmq_msg_t *msg);
+
+/*  DRAFT Msg property names.                                                 */
+#define ZMQ_MSG_PROPERTY_IDENTITY      "Identity"
+#define ZMQ_MSG_PROPERTY_SOCKET_TYPE   "Socket-Type"
+#define ZMQ_MSG_PROPERTY_USER_ID       "User-Id"
+#define ZMQ_MSG_PROPERTY_PEER_ADDRESS  "Peer-Address"
 
 /******************************************************************************/
 /*  Poller polling on sockets,fd and thread-safe sockets                      */

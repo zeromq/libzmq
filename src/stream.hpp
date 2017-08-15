@@ -58,7 +58,7 @@ namespace zmq
         void xwrite_activated (zmq::pipe_t *pipe_);
         void xpipe_terminated (zmq::pipe_t *pipe_);
         int xsetsockopt (int option_, const void *optval_, size_t optvallen_);
-    private:
+    protected:
         //  Generate peer's id and update lookup map
         void identify_peer (pipe_t *pipe_);
 
@@ -77,7 +77,7 @@ namespace zmq
 
         //  Holds the prefetched message.
         msg_t prefetched_msg;
-
+        
         struct outpipe_t
         {
             zmq::pipe_t *pipe;
@@ -98,6 +98,7 @@ namespace zmq
         //  algorithm. This value is the next ID to use (if not used already).
         uint32_t next_rid;
 
+    private:
         stream_t (const stream_t&);
         const stream_t &operator = (const stream_t&);
     };

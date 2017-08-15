@@ -303,7 +303,7 @@ void zmq::stream_engine_t::in_event ()
         return;
     }
 
-    //  If there's no data to process in the buffer...
+    //  If there's no data to process in the buffer... 
     if (!insize) {
 
         //  Retrieve the buffer and read as much data as possible.
@@ -316,6 +316,8 @@ void zmq::stream_engine_t::in_event ()
         const int rc = tcp_read (s, inpos, bufsize);
 
         if (rc == 0) {
+            // connection closed by peer
+            errno = EPIPE;
             error (connection_error);
             return;
         }
@@ -495,6 +497,7 @@ bool zmq::stream_engine_t::handshake ()
         const int n = tcp_read (s, greeting_recv + greeting_bytes_read,
                                 greeting_size - greeting_bytes_read);
         if (n == 0) {
+            errno = EPIPE;
             error (connection_error);
             return false;
         }
@@ -781,10 +784,6 @@ int zmq::stream_engine_t::next_handshake_command (msg_t *msg_)
 
         if (rc == 0)
             msg_->set_flags (msg_t::command);
-#ifdef ZMQ_BUILD_DRAFT_API
-        if(mechanism->status() == mechanism_t::error)
-            socket->event_handshake_failed(endpoint, 0);
-#endif
 
         return rc;
     }
@@ -822,6 +821,11 @@ void zmq::stream_engine_t::zap_msg_available ()
         restart_input ();
     if (output_stopped)
         restart_output ();
+}
+
+const char *zmq::stream_engine_t::get_endpoint () const
+{
+    return endpoint.c_str ();
 }
 
 void zmq::stream_engine_t::mechanism_ready ()
@@ -868,7 +872,7 @@ void zmq::stream_engine_t::mechanism_ready ()
     }
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    socket->event_handshake_succeed(endpoint, 0);
+    socket->event_handshake_succeeded (endpoint, 0);
 #endif
 }
 
@@ -975,8 +979,22 @@ void zmq::stream_engine_t::error (error_reason_t reason)
     }
     zmq_assert (session);
 #ifdef ZMQ_BUILD_DRAFT_API
-    if(mechanism == NULL || mechanism->status() == mechanism_t::handshaking)
-        socket->event_handshake_failed(endpoint, (int) s);
+    int err = errno;
+    if (mechanism == NULL) {
+        if (reason == protocol_error)
+            socket->event_handshake_failed_zmtp (endpoint, err);
+        else
+            socket->event_handshake_failed_no_detail (endpoint, err);
+    } else if (mechanism->status () == mechanism_t::handshaking) {
+        if (mechanism->error_detail () == mechanism_t::zmtp)
+            socket->event_handshake_failed_zmtp (endpoint, err);
+        else if (mechanism->error_detail () == mechanism_t::zap)
+            socket->event_handshake_failed_zap (endpoint, err);
+        else if (mechanism->error_detail () == mechanism_t::encryption)
+            socket->event_handshake_failed_encryption (endpoint, err);
+        else
+            socket->event_handshake_failed_no_detail (endpoint, err);
+    }
 #endif
     socket->event_disconnected (endpoint, (int) s);
     session->flush ();
@@ -997,7 +1015,8 @@ void zmq::stream_engine_t::set_handshake_timer ()
 
 bool zmq::stream_engine_t::init_properties (properties_t & properties) {
     if (peer_address.empty()) return false;
-    properties.insert (std::make_pair("Peer-Address", peer_address));
+    properties.insert (
+      std::make_pair (ZMQ_MSG_PROPERTY_PEER_ADDRESS, peer_address));
 
     //  Private property to support deprecated SRCFD
     std::ostringstream stream;

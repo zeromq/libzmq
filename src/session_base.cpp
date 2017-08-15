@@ -49,6 +49,7 @@
 #include "req.hpp"
 #include "radio.hpp"
 #include "dish.hpp"
+#include "ysstream.hpp"
 
 zmq::session_base_t *zmq::session_base_t::create (class io_thread_t *io_thread_,
     bool active_, class socket_base_t *socket_, const options_t &options_,
@@ -68,6 +69,10 @@ zmq::session_base_t *zmq::session_base_t::create (class io_thread_t *io_thread_,
         s = new (std::nothrow) dish_session_t (io_thread_, active_,
             socket_, options_, addr_);
             break;
+    case ZMQ_YSSTREAM:
+    s = new (std::nothrow) ysstream_session_t (io_thread_, active_,
+        socket_, options_, addr_);
+        break;
     case ZMQ_DEALER:
     case ZMQ_REP:
     case ZMQ_ROUTER:
@@ -113,6 +118,11 @@ zmq::session_base_t::session_base_t (class io_thread_t *io_thread_,
 {
 }
 
+const char *zmq::session_base_t::get_endpoint () const
+{
+    return engine->get_endpoint ();
+}
+
 zmq::session_base_t::~session_base_t ()
 {
     zmq_assert (!pipe);
@@ -129,6 +139,11 @@ zmq::session_base_t::~session_base_t ()
         engine->terminate ();
 
     LIBZMQ_DELETE(addr);
+}
+
+void zmq::session_base_t::pipe_rollback() {
+    pipe->rollback();
+    pipe->flush();
 }
 
 void zmq::session_base_t::attach_pipe (pipe_t *pipe_)

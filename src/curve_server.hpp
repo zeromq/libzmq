@@ -74,6 +74,7 @@ namespace zmq
         virtual int decode (msg_t *msg_);
         virtual int zap_msg_available ();
         virtual status_t status () const;
+        virtual error_detail_t error_detail () const;
 
     private:
 
@@ -97,6 +98,9 @@ namespace zmq
 
         //  Status code as received from ZAP handler
         std::string status_code;
+
+        //  Details about the current error state
+        error_detail_t current_error_detail;
 
         uint64_t cn_nonce;
         uint64_t cn_peer_nonce;
@@ -127,6 +131,7 @@ namespace zmq
 
         int send_zap_request (const uint8_t *key);
         int receive_and_process_zap_reply ();
+        void handle_zap_status_code ();
     };
 
 }

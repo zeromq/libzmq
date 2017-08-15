@@ -96,6 +96,7 @@
 #include "gather.hpp"
 #include "scatter.hpp"
 #include "dgram.hpp"
+#include "ysstream.hpp"
 
 
 
@@ -165,6 +166,9 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
             break;
         case ZMQ_DGRAM:
             s = new (std::nothrow) dgram_t (parent_, tid_, sid_);
+            break;
+        case ZMQ_YSSTREAM:
+            s = new (std::nothrow) ysstream_t (parent_, tid_, sid_);
             break;
         default:
             errno = EINVAL;
@@ -1686,14 +1690,34 @@ void zmq::socket_base_t::event_disconnected (const std::string &addr_, zmq::fd_t
     event(addr_, fd_, ZMQ_EVENT_DISCONNECTED);
 }
 
-void zmq::socket_base_t::event_handshake_failed(const std::string &addr_, int err_)
+void zmq::socket_base_t::event_handshake_failed_no_detail (
+  const std::string &addr_, int err_)
 {
-    event(addr_, err_, ZMQ_EVENT_HANDSHAKE_FAILED);
+    event (addr_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL);
 }
 
-void zmq::socket_base_t::event_handshake_succeed(const std::string &addr_, int err_)
+void zmq::socket_base_t::event_handshake_failed_zmtp (const std::string &addr_,
+                                                      int err_)
 {
-    event(addr_, err_, ZMQ_EVENT_HANDSHAKE_SUCCEED);
+    event (addr_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP);
+}
+
+void zmq::socket_base_t::event_handshake_failed_zap (const std::string &addr_,
+                                                     int err_)
+{
+    event (addr_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_ZAP);
+}
+
+void zmq::socket_base_t::event_handshake_failed_encryption (
+  const std::string &addr_, int err_)
+{
+    event (addr_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
+}
+
+void zmq::socket_base_t::event_handshake_succeeded (const std::string &addr_,
+                                                    int err_)
+{
+    event (addr_, err_, ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
 }
 
 void zmq::socket_base_t::event(const std::string &addr_, intptr_t value_, int type_)

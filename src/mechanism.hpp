@@ -53,6 +53,14 @@ namespace zmq
             error
         };
 
+        //  Provides more details when in status_t::error
+        enum error_detail_t {
+            no_detail,
+            zmtp,
+            zap,
+            encryption
+        };
+
         mechanism_t (const options_t &options_);
 
         virtual ~mechanism_t ();
@@ -72,6 +80,10 @@ namespace zmq
 
         //  Returns the status of this mechanism.
         virtual status_t status () const = 0;
+
+        //  Returns details about of the current error of the mechanism.
+        //  Returned value does not makes sense if the current status is not error.
+        virtual error_detail_t error_detail () const { return no_detail; }
 
         void set_peer_identity (const void *id_ptr, size_t id_size);
 

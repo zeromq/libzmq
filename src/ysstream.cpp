@@ -11,10 +11,20 @@
  * Created on 2017年7月31日, 下午3:09
  */
 
-#include "ysstream.h"
-#include "zmq.h"
+
+
 #include <iostream>
 #include <string>
+
+#include "precompiled.hpp"
+#include "macros.hpp"
+#include "ysstream.hpp"
+//#include "stream.hpp"
+#include "pipe.hpp"
+#include "wire.hpp"
+#include "random.hpp"
+#include "likely.hpp"
+#include "err.hpp"
 using namespace std;
 
 zmq::ysstream_t::ysstream_t(zmq::ctx_t *parent_, uint32_t tid_, int sid)
@@ -51,7 +61,7 @@ int zmq::ysstream_t::prepare_package(msg_t& srcmsg_
     mHead.wTotal = htons(nPackCount);
 
     int nIndexCount = 0;
-    for (int nIndex = 0; nIndex < body_size;) {
+    for (size_t nIndex = 0; nIndex < body_size;) {
         msg_t msg_;
         msg_.init_size(sizeof (NtPkgHead) + body_size);
         msg_.set_flags(srcmsg_.flags());
@@ -256,19 +266,19 @@ int zmq::ysstream_session_t::push_msg(msg_t* msg_) {
     char* tail = buffer + last_left + msg_->size();
     while (pos < tail) {
         //assert(*pos == 0xff);
-        if (pos == tail) {
-            int i = 0;
-        }
+        //if (pos == tail) {
+            //int i = 0;
+        //}
 
-        if (tail - pos < sizeof (NtPkgHead)) {
+        if (tail - pos < (int)sizeof (NtPkgHead)) {
             break;
         }
         NtPkgHead* phead = (NtPkgHead*) pos;
         body_size = ntohs(phead->wLen);
-        unsigned char c = phead->bStartFlag;
-        if (c != 255) {
-            int i = 0;
-        }
+        //unsigned char c = phead->bStartFlag;
+        //if (c != 255) {
+            //int i = 0;
+        //}
 
         if (pos + body_size > tail)
             break;
