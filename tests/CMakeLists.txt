@@ -179,7 +179,12 @@ endif()
 
 #add additional required files
 if(ZMQ_HAVE_CURVE)
-  target_sources(test_security_curve PRIVATE "../src/tweetnacl.c" "../src/err.cpp")
+  target_sources(test_security_curve PRIVATE 
+	"../src/tweetnacl.c" 
+	"../src/err.cpp" 
+	"../src/random.cpp" 
+	"../src/clock.cpp"
+	)
   target_compile_definitions(test_security_curve PRIVATE "-DZMQ_USE_TWEETNACL")
 endif()
 

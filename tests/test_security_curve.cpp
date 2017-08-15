@@ -42,6 +42,7 @@
 
 #include "../src/tweetnacl.h"
 #include "../src/curve_client_tools.hpp"
+#include "../src/random.hpp"
 
 //  We'll generate random test keys at startup
 static char valid_client_public [41];
@@ -947,6 +948,8 @@ int main (void)
         return 0;
     }
 
+    zmq::random_open ();
+
     //  Generate new keypairs for these tests
     int rc = zmq_curve_keypair (valid_client_public, valid_client_secret);
     assert (rc == 0);
@@ -1157,6 +1160,8 @@ int main (void)
     test_curve_security_invalid_keysize (ctx);
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
+
+    zmq::random_close ();
 
     return 0;
 }

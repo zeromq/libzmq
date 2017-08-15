@@ -626,6 +626,10 @@ tests_test_security_curve_SOURCES = \
 	tests/testutil.hpp \
 	src/tweetnacl.c \
 	src/curve_client_tools.hpp \
+	src/clock.hpp \
+	src/clock.cpp \
+	src/random.hpp \
+	src/random.cpp \
 	src/err.hpp \
 	src/err.cpp
 
