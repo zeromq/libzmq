@@ -42,11 +42,11 @@
 zmq::curve_client_t::curve_client_t (const options_t &options_) :
     mechanism_t (options_),
     state (send_hello),
-    cn_nonce (1),
-    cn_peer_nonce (1),
     tools (options_.curve_public_key,
            options_.curve_secret_key,
-           options_.curve_server_key)
+           options_.curve_server_key),
+    cn_nonce (1),
+    cn_peer_nonce (1)
 {
 }
 
