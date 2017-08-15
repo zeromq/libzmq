@@ -153,7 +153,7 @@ size_t zmq::mechanism_t::basic_properties_len() const
 }
 
 void zmq::mechanism_t::make_command_with_basic_properties (
-  msg_t *msg_, void *prefix, size_t prefix_len) const
+  msg_t *msg_, const char *prefix, size_t prefix_len) const
 {
     const size_t command_size = prefix_len + basic_properties_len ();
     const int rc = msg_->init_size (command_size);

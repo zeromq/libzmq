@@ -119,7 +119,7 @@ namespace zmq
         size_t basic_properties_len () const;
 
         void make_command_with_basic_properties (msg_t *msg_,
-                                                 void *prefix,
+                                                 const char *prefix,
                                                  size_t prefix_len) const;
 
         //  Parses a metadata.
