@@ -641,7 +641,7 @@ tests_test_security_curve_LDADD = \
 	src/libzmq.la
 
 if USE_LIBSODIUM
-tests_test_security_curve_LIBADD = \
+tests_test_security_curve_LDADD += \
 	${sodium_LIBS}
 endif
 
