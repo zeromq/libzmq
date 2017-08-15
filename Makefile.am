@@ -624,7 +624,6 @@ test_apps += \
 tests_test_security_curve_SOURCES = \
 	tests/test_security_curve.cpp \
 	tests/testutil.hpp \
-	src/tweetnacl.c \
 	src/curve_client_tools.hpp \
 	src/clock.hpp \
 	src/clock.cpp \
@@ -633,8 +632,18 @@ tests_test_security_curve_SOURCES = \
 	src/err.hpp \
 	src/err.cpp
 
+if USE_TWEETNACL
+tests_test_security_curve_SOURCES += \
+	src/tweetnacl.c
+endif
+
 tests_test_security_curve_LDADD = \
 	src/libzmq.la
+
+if USE_LIBSODIUM
+tests_test_security_curve_LIBADD = \
+	${sodium_LIBS}
+endif
 
 endif
 
