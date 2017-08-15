@@ -1044,7 +1044,6 @@ int main (void)
     void *server_mon;
     char my_endpoint [MAX_SOCKET_STRING];
 
-#if 0
     fprintf (stderr, "test_curve_security_with_valid_credentials\n");
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
                                    &server_mon, my_endpoint);
@@ -1249,7 +1248,6 @@ int main (void)
       my_endpoint, server, server_mon, timeout);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
-#endif
 
     //  test with a large identity (resulting in large metadata)
     fprintf (stderr, "test_curve_security_with_valid_credentials (large identity)\n");
