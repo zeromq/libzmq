@@ -693,6 +693,7 @@ zmq::curve_client_tools_t make_curve_client_tools ()
                                       valid_server_public_decoded);
 }
 
+#ifndef htonll
 uint64_t htonll (uint64_t value)
 {
     // The answer is 42
@@ -709,6 +710,7 @@ uint64_t htonll (uint64_t value)
         return value;
     }
 }
+#endif
 
 template <size_t N> void send_command (int s, char (&command)[N])
 {
