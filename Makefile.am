@@ -37,6 +37,7 @@ src_libzmq_la_SOURCES = \
 	src/ctx.hpp \
 	src/curve_client.cpp \
 	src/curve_client.hpp \
+	src/curve_client_tools.hpp \
 	src/curve_server.cpp \
 	src/curve_server.hpp \
 	src/dbuffer.hpp \
@@ -622,7 +623,10 @@ test_apps += \
 
 tests_test_security_curve_SOURCES = \
 	tests/test_security_curve.cpp \
+	tests/testutil.hpp \
 	src/tweetnacl.c \
+	src/curve_client_tools.hpp \
+	src/err.hpp \
 	src/err.cpp
 
 tests_test_security_curve_LDADD = \
