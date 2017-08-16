@@ -105,7 +105,8 @@ int zap_client_t::send_zap_request (const char *mechanism,
     rc = msg.init_size (mechanism_length);
     errno_assert (rc == 0);
     memcpy (msg.data (), mechanism, mechanism_length);
-    msg.set_flags (msg_t::more);
+    if (credentials)
+        msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     if (rc != 0)
         return close_and_return (&msg, -1);
