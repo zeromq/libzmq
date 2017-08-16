@@ -194,7 +194,7 @@ zmq::mechanism_t::status_t zmq::null_mechanism_t::status () const
 
 int zmq::null_mechanism_t::send_zap_request ()
 {
-    return zap_client.send_zap_request ("NULL", 4, NULL, 0);
+    return zap_client.send_zap_request ("NULL", 4, NULL, NULL, 0);
 }
 
 int zmq::null_mechanism_t::receive_and_process_zap_reply ()

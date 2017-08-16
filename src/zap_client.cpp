@@ -34,10 +34,29 @@
 
 namespace zmq
 {
+zap_client_t::zap_client_t (session_base_t *const session_,
+                            const std::string &peer_address_,
+                            const options_t &options_) :
+    session (session_),
+    peer_address (peer_address_),
+    options (options_)
+{
+}
+
 int zap_client_t::send_zap_request (const char *mechanism,
                                     size_t mechanism_length,
                                     const uint8_t *credentials,
                                     size_t credentials_size)
+{
+    return send_zap_request (mechanism, mechanism_length, &credentials,
+                             &credentials_size, 1);
+}
+
+int zap_client_t::send_zap_request (const char *mechanism,
+                                    size_t mechanism_length,
+                                    const uint8_t **credentials,
+                                    size_t *credentials_sizes,
+                                    size_t credentials_count)
 {
     // TODO  I don't think the rc can be -1 anywhere below.
     // It might only be -1 if the HWM was exceeded, but on the ZAP socket,
@@ -105,18 +124,19 @@ int zap_client_t::send_zap_request (const char *mechanism,
     rc = msg.init_size (mechanism_length);
     errno_assert (rc == 0);
     memcpy (msg.data (), mechanism, mechanism_length);
-    if (credentials)
+    if (credentials_count)
         msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     if (rc != 0)
         return close_and_return (&msg, -1);
 
-    //  Credentials frame
-    //  Skip if credential is NULL
-    if (credentials) {
-        rc = msg.init_size (credentials_size);
+    //  Credentials frames
+    for (size_t i = 0; i < credentials_count; ++i) {
+        rc = msg.init_size (credentials_sizes[i]);
         errno_assert (rc == 0);
-        memcpy (msg.data (), credentials, credentials_size);
+        if (i < credentials_count - 1)
+            msg.set_flags (msg_t::more);
+        memcpy (msg.data (), credentials[i], credentials_sizes[i]);
         rc = session->write_zap_msg (&msg);
         if (rc != 0)
             return close_and_return (&msg, -1);

@@ -39,17 +39,18 @@ class zap_client_t
   public:
     zap_client_t (session_base_t *const session_,
                   const std::string &peer_address_,
-                  const options_t &options_) :
-        session (session_),
-        peer_address (peer_address_),
-        options (options_)
-    {
-    }
+                  const options_t &options_);
 
     int send_zap_request (const char *mechanism,
                           size_t mechanism_length,
                           const uint8_t *credentials,
                           size_t credentials_size);
+
+    int send_zap_request (const char *mechanism,
+                          size_t mechanism_length,
+                          const uint8_t **credentials,
+                          size_t *credentials_sizes,
+                          size_t credentials_count);
 
   private:
     session_base_t *const session;

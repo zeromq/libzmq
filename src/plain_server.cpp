@@ -43,6 +43,7 @@ zmq::plain_server_t::plain_server_t (session_base_t *session_,
     mechanism_t (options_),
     session (session_),
     peer_address (peer_address_),
+    zap_client (session, peer_address, options),
     state (waiting_for_hello)
 {
 }
@@ -259,89 +260,12 @@ int zmq::plain_server_t::produce_error (msg_t *msg_) const
 int zmq::plain_server_t::send_zap_request (const std::string &username,
                                            const std::string &password)
 {
-    int rc;
-    msg_t msg;
-
-    //  Address delimiter frame
-    rc = msg.init ();
-    errno_assert (rc == 0);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Version frame
-    rc = msg.init_size (3);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), "1.0", 3);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Request id frame
-    rc = msg.init_size (1);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), "1", 1);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Domain frame
-    rc = msg.init_size (options.zap_domain.length ());
-    errno_assert (rc == 0);
-    memcpy (msg.data (), options.zap_domain.c_str (), options.zap_domain.length ());
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Address frame
-    rc = msg.init_size (peer_address.length ());
-    errno_assert (rc == 0);
-    memcpy (msg.data (), peer_address.c_str (), peer_address.length ());
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Identity frame
-    rc = msg.init_size (options.identity_size);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), options.identity, options.identity_size);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Mechanism frame
-    rc = msg.init_size (5);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), "PLAIN", 5);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Username frame
-    rc = msg.init_size (username.length ());
-    errno_assert (rc == 0);
-    memcpy (msg.data (), username.c_str (), username.length ());
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Password frame
-    rc = msg.init_size (password.length ());
-    errno_assert (rc == 0);
-    memcpy (msg.data (), password.c_str (), password.length ());
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    return 0;
+    const uint8_t *credentials[] = {
+      reinterpret_cast<const uint8_t *> (username.c_str ()),
+      reinterpret_cast<const uint8_t *> (password.c_str ())};
+    size_t credentials_sizes[] = {username.size (), password.size ()};
+    return zap_client.send_zap_request ("PLAIN", 5, credentials,
+                                        credentials_sizes, 2);
 }
 
 int zmq::plain_server_t::receive_and_process_zap_reply ()
