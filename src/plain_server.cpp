@@ -172,16 +172,7 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     rc = send_zap_request (username, password);
     if (rc != 0)
         return -1;
-    rc = receive_and_process_zap_reply ();
-    if (rc == 0)
-        handle_zap_status_code ();
-    else
-    if (errno == EAGAIN)
-        state = waiting_for_zap_reply;
-    else
-        return -1;
-
-    return 0;
+    return receive_and_process_zap_reply () == -1 ? -1 : 0;
 }
 
 int zmq::plain_server_t::produce_welcome (msg_t *msg_) const

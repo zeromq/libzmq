@@ -492,15 +492,9 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
         if (rc != 0)
             return -1;
         rc = receive_and_process_zap_reply ();
-        if (rc == 0)
-            handle_zap_status_code ();
-        else
-        if (errno == EAGAIN)
-            state = waiting_for_zap_reply;
-        else
+        if (rc == -1)
             return -1;
-    }
-    else
+    } else
         state = sending_ready;
 
     return parse_metadata (initiate_plaintext + crypto_box_ZEROBYTES + 128,
@@ -571,14 +565,6 @@ int zmq::curve_server_t::send_zap_request (const uint8_t *key)
 {
     return zap_client_t::send_zap_request ("CURVE", 5, key,
                                            crypto_box_PUBLICKEYBYTES);
-}
-
-int zmq::curve_server_t::receive_and_process_zap_reply ()
-{
-    int rc = zap_client_t::receive_and_process_zap_reply ();
-    if (rc == -1 && errno == EPROTO)
-        current_error_detail = zap;
-    return rc;
 }
 
 #endif

@@ -130,7 +130,7 @@ int zmq::gssapi_server_t::process_handshake_command (msg_t *msg_)
                 return -1;
             rc = receive_and_process_zap_reply ();
             if (rc != 0) {
-                if (errno != EAGAIN)
+                if (rc == -1)
                     return -1;
                 expecting_zap_reply = true;
             }
@@ -192,7 +192,7 @@ int zmq::gssapi_server_t::zap_msg_available ()
     const int rc = receive_and_process_zap_reply ();
     if (rc == 0)
         state = send_ready;
-    return rc;
+    return rc == -1 ? -1 : 0;
 }
 
 zmq::mechanism_t::status_t zmq::gssapi_server_t::status () const

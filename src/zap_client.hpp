@@ -54,8 +54,8 @@ class zap_client_t : public virtual mechanism_t
                           size_t *credentials_sizes,
                           size_t credentials_count);
 
-
-    int receive_and_process_zap_reply ();
+    virtual int receive_and_process_zap_reply ();
+    virtual void handle_zap_status_code () {}
 
   protected:
     session_base_t *const session;
@@ -85,12 +85,13 @@ class zap_client_common_handshake_t : public zap_client_t
                                    const options_t &options_,
                                    state_t zap_reply_ok_state);
 
-    // methods from mechanism_t
+    //  methods from mechanism_t
     status_t status () const;
     int zap_msg_available ();
     error_detail_t error_detail () const;
 
-    // own methods
+    //  zap_client_t methods
+    int receive_and_process_zap_reply ();
     void handle_zap_status_code ();
 
     //  Current FSM state

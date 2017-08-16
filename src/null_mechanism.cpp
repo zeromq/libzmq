@@ -79,7 +79,7 @@ int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
             return -1;
         zap_request_sent = true;
         rc = receive_and_process_zap_reply ();
-        if (rc != 0)
+        if (rc == -1 || rc == 1)
             return -1;
         zap_reply_received = true;
     }
@@ -170,7 +170,7 @@ int zmq::null_mechanism_t::zap_msg_available ()
     const int rc = receive_and_process_zap_reply ();
     if (rc == 0)
         zap_reply_received = true;
-    return rc;
+    return rc == -1 ? -1 : 0;
 }
 
 zmq::mechanism_t::status_t zmq::null_mechanism_t::status () const

@@ -159,8 +159,12 @@ int zap_client_t::receive_and_process_zap_reply ()
 
     for (int i = 0; i < 7; i++) {
         rc = session->read_zap_msg (&msg[i]);
-        if (rc == -1)
+        if (rc == -1) {
+            if (errno == EAGAIN) {
+                return 1;
+            }
             return close_and_return (msg, -1);
+        }
         if ((msg[i].flags () & msg_t::more) == (i < 6 ? 0 : msg_t::more)) {
             // CURVE I : ZAP handler sent incomplete reply message
             errno = EPROTO;
@@ -209,14 +213,17 @@ int zap_client_t::receive_and_process_zap_reply ()
     rc = parse_metadata (static_cast<const unsigned char *> (msg[6].data ()),
                          msg[6].size (), true);
 
-    if (rc != 0)
+    if (rc != 0) {
         return close_and_return (msg, -1);
+    }
 
     //  Close all reply frames
     for (int i = 0; i < 7; i++) {
         const int rc2 = msg[i].close ();
         errno_assert (rc2 == 0);
     }
+
+    handle_zap_status_code ();
 
     return 0;
 }
@@ -253,12 +260,7 @@ int zap_client_common_handshake_t::zap_msg_available ()
         errno = EFSM;
         return -1;
     }
-    const int rc = receive_and_process_zap_reply ();
-    if (rc == 0)
-        handle_zap_status_code ();
-    else if (errno == EPROTO)
-        current_error_detail = mechanism_t::zap;
-    return rc;
+    return receive_and_process_zap_reply () == -1 ? -1 : 0;
 }
 
 void zap_client_common_handshake_t::handle_zap_status_code ()
@@ -295,4 +297,21 @@ mechanism_t::error_detail_t zap_client_common_handshake_t::error_detail () const
     return current_error_detail;
 }
 
+int zap_client_common_handshake_t::receive_and_process_zap_reply ()
+{
+    int rc = zap_client_t::receive_and_process_zap_reply ();
+    switch (rc) {
+        case -1:
+            if (errno == EPROTO)
+                current_error_detail = mechanism_t::zap;
+            break;
+        case 1:
+            // TODO shouldn't the state already be this?
+            state = waiting_for_zap_reply;
+            break;
+        case 0:
+            break;
+    }
+    return rc;
+}
 }
