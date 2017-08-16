@@ -52,11 +52,8 @@ namespace zmq
         // mechanism implementation
         virtual int next_handshake_command (msg_t *msg_);
         virtual int process_handshake_command (msg_t *msg_);
-        virtual int zap_msg_available ();
 
     private:
-
-        state_t state;
 
         int produce_welcome (msg_t *msg_) const;
         int produce_ready (msg_t *msg_) const;

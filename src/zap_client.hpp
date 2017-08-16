@@ -68,13 +68,6 @@ class zap_client_t : public virtual mechanism_t
 class zap_client_common_handshake_t : public zap_client_t
 {
   protected:
-    zap_client_common_handshake_t (session_base_t *const session_,
-                                   const std::string &peer_address_,
-                                   const options_t &options_);
-
-    // methods from mechanism_t
-    status_t status () const;
-
     enum state_t
     {
         waiting_for_hello,
@@ -87,8 +80,28 @@ class zap_client_common_handshake_t : public zap_client_t
         ready
     };
 
+    zap_client_common_handshake_t (session_base_t *const session_,
+                                   const std::string &peer_address_,
+                                   const options_t &options_,
+                                   state_t zap_reply_ok_state);
+
+    // methods from mechanism_t
+    status_t status () const;
+    int zap_msg_available ();
+    error_detail_t error_detail () const;
+
+    // own methods
+    void handle_zap_status_code ();
+
     //  Current FSM state
     state_t state;
+
+    //  Details about the current error state
+    //  TODO remove this
+    error_detail_t current_error_detail;
+
+  private:
+    const state_t zap_reply_ok_state;
 };
 }
 

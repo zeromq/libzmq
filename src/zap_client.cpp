@@ -224,9 +224,13 @@ int zap_client_t::receive_and_process_zap_reply ()
 zap_client_common_handshake_t::zap_client_common_handshake_t (
   session_base_t *const session_,
   const std::string &peer_address_,
-  const options_t &options_) :
+  const options_t &options_,
+  state_t zap_reply_ok_state_) :
+    mechanism_t (options_),
     zap_client_t (session_, peer_address_, options_),
-    state (waiting_for_hello)
+    state (waiting_for_hello),
+    current_error_detail (no_detail),
+    zap_reply_ok_state (zap_reply_ok_state_)
 {
 }
 
@@ -239,4 +243,56 @@ zmq::mechanism_t::status_t zap_client_common_handshake_t::status () const
     else
         return mechanism_t::handshaking;
 }
+
+int zap_client_common_handshake_t::zap_msg_available ()
+{
+    //  TODO I don't think that it is possible that this is called in any
+    //  state other than expect_zap_reply. It should be changed to
+    //  zmq_assert (state == expect_zap_reply);
+    if (state != waiting_for_zap_reply) {
+        errno = EFSM;
+        return -1;
+    }
+    const int rc = receive_and_process_zap_reply ();
+    if (rc == 0)
+        handle_zap_status_code ();
+    else if (errno == EPROTO)
+        current_error_detail = mechanism_t::zap;
+    return rc;
+}
+
+void zap_client_common_handshake_t::handle_zap_status_code ()
+{
+    //  we can assume here that status_code is a valid ZAP status code,
+    //  i.e. 200, 300, 400 or 500
+    if (status_code[0] == '2') {
+        state = zap_reply_ok_state;
+    } else {
+        state = sending_error;
+
+        int err = 0;
+        switch (status_code[0]) {
+            case '3':
+                err = EAGAIN;
+                break;
+            case '4':
+                err = EACCES;
+                break;
+            case '5':
+                err = EFAULT;
+                break;
+        }
+        //  TODO use event_handshake_failed_zap here? but this is not a ZAP
+        //  protocol error
+
+        session->get_socket ()->event_handshake_failed_no_detail (
+          session->get_endpoint (), err);
+    }
+}
+
+mechanism_t::error_detail_t zap_client_common_handshake_t::error_detail () const
+{
+    return current_error_detail;
+}
+
 }

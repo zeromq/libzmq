@@ -41,7 +41,8 @@ zmq::plain_server_t::plain_server_t (session_base_t *session_,
                                      const std::string &peer_address_,
                                      const options_t &options_) :
     mechanism_t (options_),
-    zap_client_common_handshake_t (session_, peer_address_, options_)
+    zap_client_common_handshake_t (
+      session_, peer_address_, options_, sending_welcome)
 {
 }
 
@@ -100,20 +101,6 @@ int zmq::plain_server_t::process_handshake_command (msg_t *msg_)
         rc = msg_->init ();
         errno_assert (rc == 0);
     }
-    return rc;
-}
-
-int zmq::plain_server_t::zap_msg_available ()
-{
-    if (state != waiting_for_zap_reply) {
-        errno = EFSM;
-        return -1;
-    }
-    const int rc = receive_and_process_zap_reply ();
-    if (rc == 0)
-        state = status_code == "200"
-            ? sending_welcome
-            : sending_error;
     return rc;
 }
 
@@ -187,9 +174,7 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
         return -1;
     rc = receive_and_process_zap_reply ();
     if (rc == 0)
-        state = status_code == "200"
-            ? sending_welcome
-            : sending_error;
+        handle_zap_status_code ();
     else
     if (errno == EAGAIN)
         state = waiting_for_zap_reply;

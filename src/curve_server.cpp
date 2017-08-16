@@ -42,8 +42,8 @@ zmq::curve_server_t::curve_server_t (session_base_t *session_,
                                      const std::string &peer_address_,
                                      const options_t &options_) :
     mechanism_t (options_),
-    zap_client_common_handshake_t (session_, peer_address_, options_),
-    current_error_detail (no_detail),
+    zap_client_common_handshake_t (
+      session_, peer_address_, options_, sending_ready),
     cn_nonce (1),
     cn_peer_nonce (1)
 {
@@ -242,26 +242,6 @@ int zmq::curve_server_t::decode (msg_t *msg_)
     free (message_box);
 
     return rc;
-}
-
-int zmq::curve_server_t::zap_msg_available ()
-{
-    //  TODO I don't think that it is possible that this is called in any 
-    //  state other than expect_zap_reply. It should be changed to
-    //  zmq_assert (state == expect_zap_reply);
-    if (state != waiting_for_zap_reply) {
-        errno = EFSM;
-        return -1;
-    }
-    const int rc = receive_and_process_zap_reply ();
-    if (rc == 0)
-        handle_zap_status_code ();
-    return rc;
-}
-
-zmq::mechanism_t::error_detail_t zmq::curve_server_t::error_detail() const
-{
-    return current_error_detail;
 }
 
 int zmq::curve_server_t::process_hello (msg_t *msg_)
@@ -599,35 +579,6 @@ int zmq::curve_server_t::receive_and_process_zap_reply ()
     if (rc == -1 && errno == EPROTO)
         current_error_detail = zap;
     return rc;
-}
-
-void zmq::curve_server_t::handle_zap_status_code ()
-{
-    //  we can assume here that status_code is a valid ZAP status code, 
-    //  i.e. 200, 300, 400 or 500
-    if (status_code [0] == '2') {
-        state = sending_ready;
-    } else {
-        state = sending_error;
-
-        int err = 0;
-        switch (status_code [0]) {
-            case '3':
-                err = EAGAIN;
-                break;
-            case '4':
-                err = EACCES;
-                break;
-            case '5':
-                err = EFAULT;
-                break;
-        }
-        //  TODO use event_handshake_failed_zap here? but this is not a ZAP 
-        //  protocol error
-        
-        session->get_socket ()->event_handshake_failed_no_detail (
-          session->get_endpoint (), err);
-    }
 }
 
 #endif
