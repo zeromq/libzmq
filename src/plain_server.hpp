@@ -40,7 +40,7 @@ namespace zmq
     class msg_t;
     class session_base_t;
 
-    class plain_server_t : public zap_client_t
+    class plain_server_t : public zap_client_common_handshake_t
     {
     public:
 
@@ -53,7 +53,6 @@ namespace zmq
         virtual int next_handshake_command (msg_t *msg_);
         virtual int process_handshake_command (msg_t *msg_);
         virtual int zap_msg_available ();
-        virtual status_t status () const;
 
     private:
 

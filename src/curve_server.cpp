@@ -42,8 +42,7 @@ zmq::curve_server_t::curve_server_t (session_base_t *session_,
                                      const std::string &peer_address_,
                                      const options_t &options_) :
     mechanism_t (options_),
-    zap_client_t (session_, peer_address_, options_),
-    state (waiting_for_hello),
+    zap_client_common_handshake_t (session_, peer_address_, options_),
     current_error_detail (no_detail),
     cn_nonce (1),
     cn_peer_nonce (1)
@@ -258,17 +257,6 @@ int zmq::curve_server_t::zap_msg_available ()
     if (rc == 0)
         handle_zap_status_code ();
     return rc;
-}
-
-zmq::mechanism_t::status_t zmq::curve_server_t::status () const
-{
-    if (state == ready)
-        return mechanism_t::ready;
-    else
-    if (state == error_sent)
-        return mechanism_t::error;
-    else
-        return mechanism_t::handshaking;
 }
 
 zmq::mechanism_t::error_detail_t zmq::curve_server_t::error_detail() const

@@ -59,7 +59,7 @@ namespace zmq
     class msg_t;
     class session_base_t;
 
-    class curve_server_t : public zap_client_t
+    class curve_server_t : public zap_client_common_handshake_t
     {
     public:
 
@@ -74,13 +74,9 @@ namespace zmq
         virtual int encode (msg_t *msg_);
         virtual int decode (msg_t *msg_);
         virtual int zap_msg_available ();
-        virtual status_t status () const;
         virtual error_detail_t error_detail () const;
 
     private:
-
-        //  Current FSM state
-        state_t state;
 
         //  Details about the current error state
         error_detail_t current_error_detail;

@@ -63,6 +63,17 @@ class zap_client_t : public virtual mechanism_t
 
     //  Status code as received from ZAP handler
     std::string status_code;
+};
+
+class zap_client_common_handshake_t : public zap_client_t
+{
+  protected:
+    zap_client_common_handshake_t (session_base_t *const session_,
+                                   const std::string &peer_address_,
+                                   const options_t &options_);
+
+    // methods from mechanism_t
+    status_t status () const;
 
     enum state_t
     {
@@ -75,6 +86,9 @@ class zap_client_t : public virtual mechanism_t
         error_sent,
         ready
     };
+
+    //  Current FSM state
+    state_t state;
 };
 }
 
