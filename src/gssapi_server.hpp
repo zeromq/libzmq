@@ -33,6 +33,7 @@
 #ifdef HAVE_LIBGSSAPI_KRB5
 
 #include "gssapi_mechanism_base.hpp"
+#include "zap_client.hpp"
 
 namespace zmq
 {
@@ -72,6 +73,8 @@ namespace zmq
         session_base_t * const session;
 
         const std::string peer_address;
+
+        zap_client_t zap_client;
 
         //  Current FSM state
         state_t state;
