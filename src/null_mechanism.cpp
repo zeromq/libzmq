@@ -45,6 +45,7 @@ zmq::null_mechanism_t::null_mechanism_t (session_base_t *session_,
     mechanism_t (options_),
     session (session_),
     peer_address (peer_address_),
+    zap_client (session, peer_address, options),
     ready_command_sent (false),
     error_command_sent (false),
     ready_command_received (false),
@@ -193,71 +194,7 @@ zmq::mechanism_t::status_t zmq::null_mechanism_t::status () const
 
 int zmq::null_mechanism_t::send_zap_request ()
 {
-    int rc;
-    msg_t msg;
-
-    //  Address delimiter frame
-    rc = msg.init ();
-    errno_assert (rc == 0);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Version frame
-    rc = msg.init_size (3);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), "1.0", 3);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Request id frame
-    rc = msg.init_size (1);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), "1", 1);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Domain frame
-    rc = msg.init_size (options.zap_domain.length ());
-    errno_assert (rc == 0);
-    memcpy (msg.data (), options.zap_domain.c_str (), options.zap_domain.length ());
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Address frame
-    rc = msg.init_size (peer_address.length ());
-    errno_assert (rc == 0);
-    memcpy (msg.data (), peer_address.c_str (), peer_address.length ());
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Identity frame
-    rc = msg.init_size (options.identity_size);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), options.identity, options.identity_size);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Mechanism frame
-    rc = msg.init_size (4);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), "NULL", 4);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    return 0;
+    return zap_client.send_zap_request ("NULL", 4, NULL, 0);
 }
 
 int zmq::null_mechanism_t::receive_and_process_zap_reply ()

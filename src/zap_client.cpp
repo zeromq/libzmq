@@ -111,12 +111,15 @@ int zap_client_t::send_zap_request (const char *mechanism,
         return close_and_return (&msg, -1);
 
     //  Credentials frame
-    rc = msg.init_size (credentials_size);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), credentials, credentials_size);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
+    //  Skip if credential is NULL
+    if (credentials) {
+        rc = msg.init_size (credentials_size);
+        errno_assert (rc == 0);
+        memcpy (msg.data (), credentials, credentials_size);
+        rc = session->write_zap_msg (&msg);
+        if (rc != 0)
+            return close_and_return (&msg, -1);
+    }
 
     return 0;
 }
