@@ -44,10 +44,11 @@ zmq::curve_server_t::curve_server_t (session_base_t *session_,
     mechanism_t (options_),
     session (session_),
     peer_address (peer_address_),
+    zap_client (session, peer_address, options),
     state (expect_hello),
     current_error_detail (no_detail),
     cn_nonce (1),
-    cn_peer_nonce(1)
+    cn_peer_nonce (1)
 {
     int rc;
     //  Fetch our secret key from socket options
@@ -602,85 +603,8 @@ int zmq::curve_server_t::produce_error (msg_t *msg_) const
 
 int zmq::curve_server_t::send_zap_request (const uint8_t *key)
 {
-    // TODO  I don't think the rc can be -1 anywhere below.
-    // It might only be -1 if the HWM was exceeded, but on the ZAP socket, 
-    // the HWM is disabled. They should be changed to zmq_assert (rc == 0);
-    // The method's return type can be changed to void then.
-
-    int rc;
-    msg_t msg;
-
-    //  Address delimiter frame
-    rc = msg.init ();
-    errno_assert (rc == 0);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Version frame
-    rc = msg.init_size (3);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), "1.0", 3);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Request ID frame
-    rc = msg.init_size (1);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), "1", 1);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Domain frame
-    rc = msg.init_size (options.zap_domain.length ());
-    errno_assert (rc == 0);
-    memcpy (msg.data (), options.zap_domain.c_str (), options.zap_domain.length ());
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Address frame
-    rc = msg.init_size (peer_address.length ());
-    errno_assert (rc == 0);
-    memcpy (msg.data (), peer_address.c_str (), peer_address.length ());
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Identity frame
-    rc = msg.init_size (options.identity_size);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), options.identity, options.identity_size);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Mechanism frame
-    rc = msg.init_size (5);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), "CURVE", 5);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Credentials frame
-    rc = msg.init_size (crypto_box_PUBLICKEYBYTES);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), key, crypto_box_PUBLICKEYBYTES);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    return 0;
+    return zap_client.send_zap_request ("CURVE", 5, key,
+                                        crypto_box_PUBLICKEYBYTES);
 }
 
 int zmq::curve_server_t::receive_and_process_zap_reply ()

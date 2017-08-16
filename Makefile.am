@@ -242,6 +242,8 @@ src_libzmq_la_SOURCES = \
 	src/decoder_allocators.hpp \
 	src/socket_poller.cpp \
 	src/socket_poller.hpp \
+	src/zap_client.cpp \
+	src/zap_client.hpp \
 	src/zmq_draft.h
 
 if USE_TWEETNACL
