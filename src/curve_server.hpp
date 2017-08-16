@@ -59,7 +59,7 @@ namespace zmq
     class msg_t;
     class session_base_t;
 
-    class curve_server_t : public mechanism_t
+    class curve_server_t : public zap_client_t
     {
     public:
 
@@ -90,17 +90,8 @@ namespace zmq
             connected
         };
 
-        session_base_t * const session;
-
-        const std::string peer_address;
-
-        zap_client_t zap_client;
-
         //  Current FSM state
         state_t state;
-
-        //  Status code as received from ZAP handler
-        std::string status_code;
 
         //  Details about the current error state
         error_detail_t current_error_detail;

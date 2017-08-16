@@ -43,9 +43,7 @@ zmq::null_mechanism_t::null_mechanism_t (session_base_t *session_,
                                          const std::string &peer_address_,
                                          const options_t &options_) :
     mechanism_t (options_),
-    session (session_),
-    peer_address (peer_address_),
-    zap_client (session, peer_address, options),
+    zap_client_t (session_, peer_address_, options_),
     ready_command_sent (false),
     error_command_sent (false),
     ready_command_received (false),
@@ -86,15 +84,14 @@ int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
         zap_reply_received = true;
     }
 
-    if (zap_reply_received
-    &&  strncmp (status_code, "200", sizeof status_code) != 0) {
-        const int rc = msg_->init_size (6 + 1 + sizeof status_code);
+    if (zap_reply_received && status_code != "200") {
+        const size_t status_code_len = 3;
+        const int rc = msg_->init_size (6 + 1 + status_code_len);
         zmq_assert (rc == 0);
-        unsigned char *msg_data =
-            static_cast <unsigned char *> (msg_->data ());
+        unsigned char *msg_data = static_cast<unsigned char *> (msg_->data ());
         memcpy (msg_data, "\5ERROR", 6);
-        msg_data [6] = sizeof status_code;
-        memcpy (msg_data + 7, status_code, sizeof status_code);
+        msg_data [6] = status_code_len;
+        memcpy (msg_data + 7, status_code.c_str (), status_code_len);
         error_command_sent = true;
         return 0;
     }
@@ -194,82 +191,6 @@ zmq::mechanism_t::status_t zmq::null_mechanism_t::status () const
 
 int zmq::null_mechanism_t::send_zap_request ()
 {
-    return zap_client.send_zap_request ("NULL", 4, NULL, NULL, 0);
+    return zap_client_t::send_zap_request ("NULL", 4, NULL, NULL, 0);
 }
 
-int zmq::null_mechanism_t::receive_and_process_zap_reply ()
-{
-    int rc = 0;
-    msg_t msg [7];  //  ZAP reply consists of 7 frames
-
-    //  Initialize all reply frames
-    for (int i = 0; i < 7; i++) {
-        rc = msg [i].init ();
-        errno_assert (rc == 0);
-    }
-
-    for (int i = 0; i < 7; i++) {
-        rc = session->read_zap_msg (&msg [i]);
-        if (rc == -1)
-            return close_and_return (msg, -1);
-        if ((msg [i].flags () & msg_t::more) == (i < 6? 0: msg_t::more)) {
-            //  Temporary support for security debugging
-            puts ("NULL I: ZAP handler sent incomplete reply message");
-            errno = EPROTO;
-            return close_and_return (msg, -1);
-        }
-    }
-
-    //  Address delimiter frame
-    if (msg [0].size () > 0) {
-        //  Temporary support for security debugging
-        puts ("NULL I: ZAP handler sent malformed reply message");
-        errno = EPROTO;
-        return close_and_return (msg, -1);
-    }
-
-    //  Version frame
-    if (msg [1].size () != 3 || memcmp (msg [1].data (), "1.0", 3)) {
-        //  Temporary support for security debugging
-        puts ("NULL I: ZAP handler sent bad version number");
-        errno = EPROTO;
-        return close_and_return (msg, -1);
-    }
-
-    //  Request id frame
-    if (msg [2].size () != 1 || memcmp (msg [2].data (), "1", 1)) {
-        //  Temporary support for security debugging
-        puts ("NULL I: ZAP handler sent bad request ID");
-        errno = EPROTO;
-        return close_and_return (msg, -1);
-    }
-
-    //  Status code frame
-    if (msg [3].size () != 3) {
-        //  Temporary support for security debugging
-        puts ("NULL I: ZAP handler sent bad status code");
-        errno = EPROTO;
-        return close_and_return (msg, -1);
-    }
-
-    //  Save status code
-    memcpy (status_code, msg [3].data (), sizeof status_code);
-
-    //  Save user id
-    set_user_id (msg [5].data (), msg [5].size ());
-
-    //  Process metadata frame
-    rc = parse_metadata (static_cast <const unsigned char*> (msg [6].data ()),
-                         msg [6].size (), true);
-
-    if (rc != 0)
-        return close_and_return (msg, -1);
-
-    //  Close all reply frames
-    for (int i = 0; i < 7; i++) {
-        const int rc2 = msg [i].close ();
-        errno_assert (rc2 == 0);
-    }
-
-    return 0;
-}

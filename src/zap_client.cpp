@@ -31,15 +31,16 @@
 
 #include "zap_client.hpp"
 #include "msg.hpp"
+#include "session_base.hpp"
 
 namespace zmq
 {
 zap_client_t::zap_client_t (session_base_t *const session_,
                             const std::string &peer_address_,
                             const options_t &options_) :
+    mechanism_t (options_),
     session (session_),
-    peer_address (peer_address_),
-    options (options_)
+    peer_address (peer_address_)
 {
 }
 
@@ -140,6 +141,81 @@ int zap_client_t::send_zap_request (const char *mechanism,
         rc = session->write_zap_msg (&msg);
         if (rc != 0)
             return close_and_return (&msg, -1);
+    }
+
+    return 0;
+}
+
+int zap_client_t::receive_and_process_zap_reply ()
+{
+    int rc = 0;
+    msg_t msg[7]; //  ZAP reply consists of 7 frames
+
+    //  Initialize all reply frames
+    for (int i = 0; i < 7; i++) {
+        rc = msg[i].init ();
+        errno_assert (rc == 0);
+    }
+
+    for (int i = 0; i < 7; i++) {
+        rc = session->read_zap_msg (&msg[i]);
+        if (rc == -1)
+            return close_and_return (msg, -1);
+        if ((msg[i].flags () & msg_t::more) == (i < 6 ? 0 : msg_t::more)) {
+            // CURVE I : ZAP handler sent incomplete reply message
+            errno = EPROTO;
+            return close_and_return (msg, -1);
+        }
+    }
+
+    //  Address delimiter frame
+    if (msg[0].size () > 0) {
+        // CURVE I: ZAP handler sent malformed reply message
+        errno = EPROTO;
+        return close_and_return (msg, -1);
+    }
+
+    //  Version frame
+    if (msg[1].size () != 3 || memcmp (msg[1].data (), "1.0", 3)) {
+        // CURVE I: ZAP handler sent bad version number
+        errno = EPROTO;
+        return close_and_return (msg, -1);
+    }
+
+    //  Request id frame
+    if (msg[2].size () != 1 || memcmp (msg[2].data (), "1", 1)) {
+        // CURVE I: ZAP handler sent bad request ID
+        errno = EPROTO;
+        return close_and_return (msg, -1);
+    }
+
+    //  Status code frame, only 200, 300, 400 and 500 are valid status codes
+    char *status_code_data = static_cast<char *> (msg[3].data ());
+    if (msg[3].size () != 3 || status_code_data[0] < '2'
+        || status_code_data[0] > '5' || status_code_data[1] != '0'
+        || status_code_data[2] != '0') {
+        // CURVE I: ZAP handler sent invalid status code
+        errno = EPROTO;
+        return close_and_return (msg, -1);
+    }
+
+    //  Save status code
+    status_code.assign (static_cast<char *> (msg[3].data ()), 3);
+
+    //  Save user id
+    set_user_id (msg[5].data (), msg[5].size ());
+
+    //  Process metadata frame
+    rc = parse_metadata (static_cast<const unsigned char *> (msg[6].data ()),
+                         msg[6].size (), true);
+
+    if (rc != 0)
+        return close_and_return (msg, -1);
+
+    //  Close all reply frames
+    for (int i = 0; i < 7; i++) {
+        const int rc2 = msg[i].close ();
+        errno_assert (rc2 == 0);
     }
 
     return 0;

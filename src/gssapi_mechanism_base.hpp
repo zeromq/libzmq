@@ -50,7 +50,7 @@ namespace zmq
     /// process context-level GSSAPI tokens (via INITIATE commands)
     /// and per-message GSSAPI tokens (via MESSAGE commands).
     class gssapi_mechanism_base_t:
-        public mechanism_t
+        public virtual mechanism_t
     {
     public:
         gssapi_mechanism_base_t (const options_t &options_);

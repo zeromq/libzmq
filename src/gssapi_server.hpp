@@ -41,8 +41,8 @@ namespace zmq
     class msg_t;
     class session_base_t;
 
-    class gssapi_server_t :
-        public gssapi_mechanism_base_t
+    class gssapi_server_t 
+      : public gssapi_mechanism_base_t, public zap_client_t
     {
     public:
 
@@ -89,7 +89,6 @@ namespace zmq
         int produce_next_token (msg_t *msg_);
         int process_next_token (msg_t *msg_);
         int send_zap_request ();
-        int receive_and_process_zap_reply();
     };
 
 }

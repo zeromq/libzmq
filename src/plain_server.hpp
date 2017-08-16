@@ -40,7 +40,7 @@ namespace zmq
     class msg_t;
     class session_base_t;
 
-    class plain_server_t : public mechanism_t
+    class plain_server_t : public zap_client_t
     {
     public:
 
@@ -68,15 +68,6 @@ namespace zmq
             ready
         };
 
-        session_base_t * const session;
-
-        const std::string peer_address;
-
-        zap_client_t zap_client;
-
-        //  Status code as received from ZAP handler
-        std::string status_code;
-
         state_t state;
 
         int produce_welcome (msg_t *msg_) const;
@@ -88,7 +79,6 @@ namespace zmq
 
         int send_zap_request(const std::string &username,
                              const std::string &password);
-        int receive_and_process_zap_reply ();
     };
 
 }

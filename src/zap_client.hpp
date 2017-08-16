@@ -30,11 +30,13 @@
 #ifndef __ZMQ_ZAP_CLIENT_HPP_INCLUDED__
 #define __ZMQ_ZAP_CLIENT_HPP_INCLUDED__
 
-#include "session_base.hpp"
+#include "mechanism.hpp"
 
 namespace zmq
 {
-class zap_client_t
+class session_base_t;
+
+class zap_client_t : public virtual mechanism_t
 {
   public:
     zap_client_t (session_base_t *const session_,
@@ -52,10 +54,15 @@ class zap_client_t
                           size_t *credentials_sizes,
                           size_t credentials_count);
 
-  private:
+
+    int receive_and_process_zap_reply ();
+
+  protected:
     session_base_t *const session;
-    const std::string &peer_address;
-    const options_t &options;
+    const std::string peer_address;
+
+    //  Status code as received from ZAP handler
+    std::string status_code;
 };
 }
 
