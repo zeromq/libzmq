@@ -68,7 +68,7 @@ int zmq::plain_server_t::next_handshake_command (msg_t *msg_)
         case sending_error:
             rc = produce_error (msg_);
             if (rc == 0)
-                state = error_command_sent;
+                state = error_sent;
             break;
         default:
             errno = EAGAIN;
@@ -109,7 +109,7 @@ zmq::mechanism_t::status_t zmq::plain_server_t::status () const
     if (state == ready)
         return mechanism_t::ready;
     else
-    if (state == error_command_sent)
+    if (state == error_sent)
         return mechanism_t::error;
     else
         return mechanism_t::handshaking;

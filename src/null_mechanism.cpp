@@ -181,7 +181,7 @@ zmq::mechanism_t::status_t zmq::null_mechanism_t::status () const
         ready_command_received || error_command_received;
 
     if (ready_command_sent && ready_command_received)
-        return ready;
+        return mechanism_t::ready;
     else
     if (command_sent && command_received)
         return error;

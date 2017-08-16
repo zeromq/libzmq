@@ -79,17 +79,6 @@ namespace zmq
 
     private:
 
-        enum state_t {
-            expect_hello,
-            send_welcome,
-            expect_initiate,
-            expect_zap_reply,
-            send_ready,
-            send_error,
-            error_sent,
-            connected
-        };
-
         //  Current FSM state
         state_t state;
 

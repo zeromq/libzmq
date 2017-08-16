@@ -57,17 +57,6 @@ namespace zmq
 
     private:
 
-        enum state_t {
-            waiting_for_hello,
-            sending_welcome,
-            waiting_for_initiate,
-            sending_ready,
-            waiting_for_zap_reply,
-            sending_error,
-            error_command_sent,
-            ready
-        };
-
         state_t state;
 
         int produce_welcome (msg_t *msg_) const;

@@ -43,7 +43,7 @@ zmq::curve_server_t::curve_server_t (session_base_t *session_,
                                      const options_t &options_) :
     mechanism_t (options_),
     zap_client_t (session_, peer_address_, options_),
-    state (expect_hello),
+    state (waiting_for_hello),
     current_error_detail (no_detail),
     cn_nonce (1),
     cn_peer_nonce (1)
@@ -66,17 +66,17 @@ int zmq::curve_server_t::next_handshake_command (msg_t *msg_)
     int rc = 0;
 
     switch (state) {
-        case send_welcome:
+        case sending_welcome:
             rc = produce_welcome (msg_);
             if (rc == 0)
-                state = expect_initiate;
+                state = waiting_for_initiate;
             break;
-        case send_ready:
+        case sending_ready:
             rc = produce_ready (msg_);
             if (rc == 0)
-                state = connected;
+                state = ready;
             break;
-        case send_error:
+        case sending_error:
             rc = produce_error (msg_);
             if (rc == 0)
                 state = error_sent;
@@ -94,10 +94,10 @@ int zmq::curve_server_t::process_handshake_command (msg_t *msg_)
     int rc = 0;
 
     switch (state) {
-        case expect_hello:
+        case waiting_for_hello:
             rc = process_hello (msg_);
             break;
-        case expect_initiate:
+        case waiting_for_initiate:
             rc = process_initiate (msg_);
             break;
         default:
@@ -124,7 +124,7 @@ int zmq::curve_server_t::process_handshake_command (msg_t *msg_)
 
 int zmq::curve_server_t::encode (msg_t *msg_)
 {
-    zmq_assert (state == connected);
+    zmq_assert (state == ready);
 
     const size_t mlen = crypto_box_ZEROBYTES + 1 + msg_->size ();
 
@@ -176,7 +176,7 @@ int zmq::curve_server_t::encode (msg_t *msg_)
 
 int zmq::curve_server_t::decode (msg_t *msg_)
 {
-    zmq_assert (state == connected);
+    zmq_assert (state == ready);
 
     if (msg_->size () < 33) {
         // CURVE I : invalid CURVE client, sent malformed command
@@ -250,7 +250,7 @@ int zmq::curve_server_t::zap_msg_available ()
     //  TODO I don't think that it is possible that this is called in any 
     //  state other than expect_zap_reply. It should be changed to
     //  zmq_assert (state == expect_zap_reply);
-    if (state != expect_zap_reply) {
+    if (state != waiting_for_zap_reply) {
         errno = EFSM;
         return -1;
     }
@@ -262,7 +262,7 @@ int zmq::curve_server_t::zap_msg_available ()
 
 zmq::mechanism_t::status_t zmq::curve_server_t::status () const
 {
-    if (state == connected)
+    if (state == ready)
         return mechanism_t::ready;
     else
     if (state == error_sent)
@@ -328,7 +328,7 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
         return -1;
     }
 
-    state = send_welcome;
+    state = sending_welcome;
     return rc;
 }
 
@@ -528,12 +528,12 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
             handle_zap_status_code ();
         else
         if (errno == EAGAIN)
-            state = expect_zap_reply;
+            state = waiting_for_zap_reply;
         else
             return -1;
     }
     else
-        state = send_ready;
+        state = sending_ready;
 
     return parse_metadata (initiate_plaintext + crypto_box_ZEROBYTES + 128,
                            clen - crypto_box_ZEROBYTES - 128);
@@ -618,9 +618,9 @@ void zmq::curve_server_t::handle_zap_status_code ()
     //  we can assume here that status_code is a valid ZAP status code, 
     //  i.e. 200, 300, 400 or 500
     if (status_code [0] == '2') {
-        state = send_ready;
+        state = sending_ready;
     } else {
-        state = send_error;
+        state = sending_error;
 
         int err = 0;
         switch (status_code [0]) {

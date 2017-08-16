@@ -63,6 +63,18 @@ class zap_client_t : public virtual mechanism_t
 
     //  Status code as received from ZAP handler
     std::string status_code;
+
+    enum state_t
+    {
+        waiting_for_hello,
+        sending_welcome,
+        waiting_for_initiate,
+        waiting_for_zap_reply,
+        sending_ready,
+        sending_error,
+        error_sent,
+        ready
+    };
 };
 }
 
