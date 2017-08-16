@@ -81,6 +81,8 @@ namespace zmq {
         int last_left;
         char* buffer;
         char* pos;
+        std::string merge_string;
+        bool merge_start;
 
         ysstream_session_t(const ysstream_session_t&);
         const ysstream_session_t &operator=(const ysstream_session_t&);

@@ -67,12 +67,14 @@ int zmq::ysstream_t::prepare_package(msg_t& srcmsg_
     int nIndexCount = 0;
     for (size_t nIndex = 0; nIndex < body_size;) {
         msg_t msg_;
-        msg_.init_size(sizeof (NtPkgHead) + body_size);
-        msg_.set_flags(srcmsg_.flags());
+        
         unsigned int uiBufLen = body_size - nIndex;
         if (uiBufLen > RMQ_MAX_PACKET_SIZE)
             uiBufLen = RMQ_MAX_PACKET_SIZE;
 
+        msg_.init_size(sizeof (NtPkgHead) + uiBufLen);
+        msg_.set_flags(srcmsg_.flags());
+        
         mHead.wLen = htons(sizeof (NtPkgHead) + uiBufLen);
         mHead.wCurSeq = htons(nIndexCount);
         nIndexCount++;
@@ -90,9 +92,18 @@ int zmq::ysstream_t::prepare_package(msg_t& srcmsg_
                 current_out->flush();
         } else {
             for(outpipes_t::iterator it = outpipes.begin(); it != outpipes.end(); it++) {
+                if (!it->second.pipe->check_write()) {
+                        it->second.active = false;
+                        it->second.pipe->rollback();
+                        msg_.close();
+                        errno = EAGAIN;
+                        continue;
+                }
                 bool ok = it->second.pipe->write(&msg_);
                 if (likely(ok))
                     it->second.pipe->flush();
+                else
+                    msg_.close();
             }
         }
         
@@ -325,10 +336,11 @@ zmq::ysstream_session_t::ysstream_session_t(zmq::io_thread_t* io_thread_, bool c
     last_left = 0;
     buffer = new char[8192 * 8];
     pos = buffer;
+    merge_start = false;
 }
 
 zmq::ysstream_session_t::~ysstream_session_t() {
-
+    delete [] buffer;
 }
 
 int zmq::ysstream_session_t::push_msg(msg_t* msg_) {
@@ -337,16 +349,25 @@ int zmq::ysstream_session_t::push_msg(msg_t* msg_) {
     size_t size = msg_->size();
     int body_size = 0;
     if (size == 0) {
+        memset(buffer,0,8192 * 8);
+        left = 0;
+        last_left = 0;
+        pos = buffer;
+        merge_start = false;
+        
+        pipe_rollback();
         msg_t msg_1;
-            msg_1.init_size(sizeof (unsigned short));
-            unsigned short cmd = 0;
-            msg_1.set_flags(msg_t::more);
-            memcpy(msg_1.data(), &cmd, sizeof (unsigned short));
-            ret = session_base_t::push_msg(&msg_1);
-            //msg_1.close();
-            if (ret == 0) {
-                session_base_t::push_msg(msg_);
-            }
+        msg_1.init_size(sizeof (unsigned short));
+        unsigned short cmd = 0;
+        msg_1.set_flags(msg_t::more);
+        memcpy(msg_1.data(), &cmd, sizeof (unsigned short));
+        ret = session_base_t::push_msg(&msg_1);
+        //msg_1.close();
+        if (ret == 0) {
+            ret = session_base_t::push_msg(msg_);
+        }
+        if(ret != 0)
+            pipe_rollback();
         msg_->close();
         return 0;
     }
@@ -372,34 +393,63 @@ int zmq::ysstream_session_t::push_msg(msg_t* msg_) {
         if (pos + body_size > tail)
             break;
         else {
-            msg_t msg_1;
-            msg_1.init_size(sizeof (phead->wCmd));
-            // forward metadata (if any)
-            metadata_t *metadata = msg_->metadata();
-            if (metadata)
-                msg_1.set_metadata(metadata);
+            //flag whether msg is spit part
+            if(!merge_start) {
+                msg_t msg_1;
+                msg_1.init_size(sizeof (phead->wCmd));
+                // forward metadata (if any)
+                metadata_t *metadata = msg_->metadata();
+                if (metadata)
+                    msg_1.set_metadata(metadata);
 
-            unsigned short cmd = ntohs(phead->wCmd);
-            msg_1.set_flags(msg_t::more);
-            memcpy(msg_1.data(), &cmd, sizeof (unsigned short));
-            ret = session_base_t::push_msg(&msg_1);
-            if (ret == -1) {
-                msg_1.close();
-                break;
+                unsigned short cmd = ntohs(phead->wCmd);
+                msg_1.set_flags(msg_t::more);
+                memcpy(msg_1.data(), &cmd, sizeof (unsigned short));
+                ret = session_base_t::push_msg(&msg_1);
+                if (ret == -1) {
+                    msg_1.close();
+                    break;
+                }
             }
 
             msg_t msg_2;
             msg_2.init_size(body_size - sizeof (NtPkgHead));
+            metadata_t *metadata = msg_->metadata();
             if (metadata)
                 msg_2.set_metadata(metadata);
             msg_2.set_flags(msg_->flags());
 
             memcpy(msg_2.data(), pos + sizeof (NtPkgHead), body_size - sizeof (NtPkgHead));
             
-            if ((unsigned char) *pos == 255)
-                ret = session_base_t::push_msg(&msg_2);
+            if (phead->bStartFlag == 255) {
+                //msg has split parts.
+                ret = 0;
+                if(phead->bFrag == 1) {
+                    merge_start = true;
+                    merge_string.append((char*)msg_2.data(),msg_2.size());
+                    ushort wcurseq = ntohs(phead->wCurSeq);
+                    ushort wtotal = ntohs(phead->wTotal);
+                    if(wcurseq == wtotal - 1) {
+                        //send msg
+                        msg_2.close();
+                        msg_2.init_size(merge_string.size());
+                        msg_2.set_flags(msg_->flags());
+                        memcpy(msg_2.data(), merge_string.c_str(), merge_string.size());
+                        ret = session_base_t::push_msg(&msg_2);
+                        merge_string.clear();
+                        merge_start = false;
+                    } else {
+                        msg_2.close();
+                    }
+                } else {
+                    ret = session_base_t::push_msg(&msg_2);
+                }
+                if(ret == -1) {
+                    pipe_rollback();
+                }
+            }
             else {
-                printf("s");
+                zmq_assert(false&&"NtPkgHead head error");
             }
             //msg_2.close();
             if (ret == -1) {
