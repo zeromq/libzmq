@@ -42,10 +42,13 @@ namespace zmq {
         virtual int xsend(zmq::msg_t *msg_);
 
         virtual int xrecv(zmq::msg_t* msg_);
+        
+        virtual bool xhas_in();
+
 
         virtual ~ysstream_t();
     private:
-        int prepare_package(msg_t& msg_, unsigned short cmd_, void* msg_body, size_t body_size);
+        int prepare_package(msg_t& msg_, unsigned short cmd_, void* msg_body, size_t body_size, bool send_all = false);
 
         msg_t prefetched_body_msg;
 
@@ -54,6 +57,8 @@ namespace zmq {
         msg_t msg_to_send;
         
         uint16_t cmd_;
+        
+        bool send_all;
     };
 
     class ysstream_session_t : public session_base_t {

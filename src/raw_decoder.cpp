@@ -43,8 +43,9 @@ zmq::raw_decoder_t::raw_decoder_t (size_t bufsize_) :
 
 zmq::raw_decoder_t::~raw_decoder_t ()
 {
-    int rc = in_progress.close ();
-    errno_assert (rc == 0);
+    in_progress.close ();
+    //int rc = in_progress.close ();
+    //errno_assert (rc == 0);
 }
 
 void zmq::raw_decoder_t::get_buffer (unsigned char **data_, size_t *size_)

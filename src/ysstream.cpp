@@ -30,15 +30,19 @@ using namespace std;
 zmq::ysstream_t::ysstream_t(zmq::ctx_t *parent_, uint32_t tid_, int sid)
 : zmq::stream_t(parent_, tid_, sid)
 , cmd_msg_sent(false)
-, cmd_(0) {
+, cmd_(0)
+, send_all(false) {
     options.type = ZMQ_YSSTREAM;
     prefetched_body_msg.init();
     msg_to_send.init();
 }
 
 int zmq::ysstream_t::prepare_package(msg_t& srcmsg_
-        , unsigned short cmd_, void* msg_body, size_t body_size) {
+        , unsigned short cmd_, void* msg_body, size_t body_size, bool send_all) {
 
+    if(send_all && outpipes.empty())
+        return 0;
+    
     unsigned int nPackCount = 0;
     if (0 == body_size % RMQ_MAX_PACKET_SIZE) {
         nPackCount = body_size / RMQ_MAX_PACKET_SIZE;
@@ -79,9 +83,20 @@ int zmq::ysstream_t::prepare_package(msg_t& srcmsg_
         memcpy(msg_.data(), strRequest.c_str(), strRequest.size());
         //msg_.init((void*)strRequest.c_str(),strRequest.size(),NULL,NULL);
 
-        bool ok = current_out->write(&msg_);
-        if (likely(ok))
-            current_out->flush();
+        if(!send_all) {
+            zmq_assert(current_out);
+            bool ok = current_out->write(&msg_);
+            if (likely(ok))
+                current_out->flush();
+        } else {
+            for(outpipes_t::iterator it = outpipes.begin(); it != outpipes.end(); it++) {
+                bool ok = it->second.pipe->write(&msg_);
+                if (likely(ok))
+                    it->second.pipe->flush();
+            }
+        }
+        
+        
 
         //注意这条msg不能close,否刚导致对端PIPE获取不到数据
         //msg_.close();
@@ -104,20 +119,25 @@ int zmq::ysstream_t::xsend(zmq::msg_t* msg_) {
 
             //  Find the pipe associated with the identity stored in the prefix.
             //  If there's no such pipe return an error
-            blob_t identity((unsigned char*) msg_->data(), msg_->size());
-            outpipes_t::iterator it = outpipes.find(identity);
+            if(msg_->size() == 0) {
+                send_all = true;
+                
+            } else {
+                blob_t identity((unsigned char*) msg_->data(), msg_->size());
+                outpipes_t::iterator it = outpipes.find(identity);
 
-            if (it != outpipes.end()) {
-                current_out = it->second.pipe;
-                if (!current_out->check_write()) {
-                    it->second.active = false;
-                    current_out = NULL;
-                    errno = EAGAIN;
+                if (it != outpipes.end()) {
+                    current_out = it->second.pipe;
+                    if (!current_out->check_write()) {
+                        it->second.active = false;
+                        current_out = NULL;
+                        errno = EAGAIN;
+                        return -1;
+                    }
+                } else {
+                    errno = EHOSTUNREACH;
                     return -1;
                 }
-            } else {
-                errno = EHOSTUNREACH;
-                return -1;
             }
         }
 
@@ -164,12 +184,34 @@ int zmq::ysstream_t::xsend(zmq::msg_t* msg_) {
             return 0;
         }
 
-        prepare_package(*msg_, cmd_, msg_->data(), msg_->size());
+        prepare_package(*msg_, cmd_, msg_->data(), msg_->size(), false);
 
         int rc = msg_->close();
         errno_assert(rc == 0);
         
         current_out = NULL;
+    } else if(send_all) {
+        
+        // Close the remote connection if user has asked to do so
+        // by sending zero length message.
+        // Pending messages in the pipe will be dropped (on receiving term- ack)
+        if (msg_->size() == 0) {
+            for(outpipes_t::iterator it = outpipes.begin(); it != outpipes.end(); it++) {
+                it->second.pipe->terminate(false);
+            }
+            int rc = msg_->close();
+            errno_assert(rc == 0);
+            rc = msg_->init();
+            errno_assert(rc == 0);
+            send_all = false;
+            return 0;
+        }
+        prepare_package(*msg_, cmd_, msg_->data(), msg_->size(), send_all);
+
+        int rc = msg_->close();
+        errno_assert(rc == 0);
+        send_all = false;
+        
     } else {
         int rc = msg_->close();
         errno_assert(rc == 0);
@@ -237,6 +279,43 @@ int zmq::ysstream_t::xrecv(zmq::msg_t* msg_) {
     return 0;
 }
 
+bool zmq::ysstream_t::xhas_in() {
+    //  We may already have a message pre-fetched.
+    if (prefetched)
+        return true;
+
+    //  Try to read the next message.
+    //  The message, if read, is kept in the pre-fetch buffer.
+    pipe_t *pipe = NULL;
+    int rc = fq.recvpipe (&prefetched_msg, &pipe);
+    if (rc != 0)
+        return false;
+    rc = fq.recvpipe(&prefetched_body_msg, &pipe);
+    if (rc != 0)
+        return false;
+
+    zmq_assert (pipe != NULL);
+    zmq_assert ((prefetched_msg.flags () & msg_t::more) != 0);
+    zmq_assert ((prefetched_body_msg.flags () & msg_t::more) == 0);
+
+    blob_t identity = pipe->get_identity ();
+    rc = prefetched_id.init_size (identity.size ());
+    errno_assert (rc == 0);
+
+    // forward metadata (if any)
+    metadata_t *metadata = prefetched_msg.metadata();
+    if (metadata)
+        prefetched_id.set_metadata(metadata);
+
+    memcpy (prefetched_id.data (), identity.data (), identity.size ());
+    prefetched_id.set_flags (msg_t::more);
+
+    prefetched = true;
+    identity_sent = false;
+
+    return true;
+}
+
 zmq::ysstream_t::~ysstream_t() {
 }
 
@@ -258,6 +337,16 @@ int zmq::ysstream_session_t::push_msg(msg_t* msg_) {
     size_t size = msg_->size();
     int body_size = 0;
     if (size == 0) {
+        msg_t msg_1;
+            msg_1.init_size(sizeof (unsigned short));
+            unsigned short cmd = 0;
+            msg_1.set_flags(msg_t::more);
+            memcpy(msg_1.data(), &cmd, sizeof (unsigned short));
+            ret = session_base_t::push_msg(&msg_1);
+            //msg_1.close();
+            if (ret == 0) {
+                session_base_t::push_msg(msg_);
+            }
         msg_->close();
         return 0;
     }
@@ -294,8 +383,8 @@ int zmq::ysstream_session_t::push_msg(msg_t* msg_) {
             msg_1.set_flags(msg_t::more);
             memcpy(msg_1.data(), &cmd, sizeof (unsigned short));
             ret = session_base_t::push_msg(&msg_1);
-            //msg_1.close();
             if (ret == -1) {
+                msg_1.close();
                 break;
             }
 
@@ -306,9 +395,12 @@ int zmq::ysstream_session_t::push_msg(msg_t* msg_) {
             msg_2.set_flags(msg_->flags());
 
             memcpy(msg_2.data(), pos + sizeof (NtPkgHead), body_size - sizeof (NtPkgHead));
-
+            
             if ((unsigned char) *pos == 255)
                 ret = session_base_t::push_msg(&msg_2);
+            else {
+                printf("s");
+            }
             //msg_2.close();
             if (ret == -1) {
                 break;
