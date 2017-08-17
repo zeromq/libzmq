@@ -372,12 +372,28 @@ int zmq::ysstream_session_t::push_msg(msg_t* msg_) {
         last_left = 0;
         pos = buffer;
         merge_start = false;
-        
-        //pipe_rollback();
+        std::string swapstr;
+        merge_string.swap(swapstr);
+
+
+//        pipe_rollback();
+//        msg_t msg_1;
+//        msg_1.init_size(sizeof (unsigned short));
+//        unsigned short cmd = 0;
+//        msg_1.set_flags(msg_t::more);
+//        memcpy(msg_1.data(), &cmd, sizeof (unsigned short));
+//        ret = session_base_t::push_msg(&msg_1);
+//
+//        if (ret == 0) {
+//            ret = session_base_t::push_msg(msg_);
+//        }
+//        if(ret != 0)
+//            pipe_rollback();
         
         return 0;
     }
 
+    char* last_pos = pos;
     memcpy(buffer + last_left, msg_->data(), msg_->size());
     char* tail = buffer + last_left + msg_->size();
     while (pos < tail) {
@@ -404,9 +420,9 @@ int zmq::ysstream_session_t::push_msg(msg_t* msg_) {
                 msg_t msg_1;
                 msg_1.init_size(sizeof (phead->wCmd));
                 // forward metadata (if any)
-                metadata_t *metadata = msg_->metadata();
-                if (metadata)
-                    msg_1.set_metadata(metadata);
+                //metadata_t *metadata = msg_->metadata();
+                //if (metadata)
+                    //msg_1.set_metadata(metadata);
 
                 unsigned short cmd = ntohs(phead->wCmd);
                 msg_1.set_flags(msg_t::more);
@@ -470,7 +486,8 @@ int zmq::ysstream_session_t::push_msg(msg_t* msg_) {
     left = tail - pos;
     assert(left >= 0);
     if (ret == -1) {
-        //left = last_left;
+        left = last_left;
+        pos = last_pos;
         pipe_rollback();
     } else {
         memmove((void*) buffer, (void*) pos, left);
