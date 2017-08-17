@@ -87,11 +87,12 @@ void test_zap_protocol_error (void *ctx,
                               void *server,
                               void *server_mon,
                               socket_config_fn socket_config_,
-                              void *socket_config_data_)
+                              void *socket_config_data_,
+                              int expected_error)
 {
     test_zap_unsuccessful (ctx, my_endpoint, server, server_mon,
 #ifdef ZMQ_BUILD_DRAFT_API
-                           ZMQ_EVENT_HANDSHAKE_FAILED_ZAP, EPROTO,
+                           ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL, expected_error,
 #else
                            0, 0,
 #endif
@@ -119,7 +120,13 @@ void test_zap_errors (socket_config_fn server_socket_config_,
       &zap_handler_wrong_version, server_socket_config_,
       server_socket_config_data_);
     test_zap_protocol_error (ctx, my_endpoint, server, server_mon,
-                             client_socket_config_, client_socket_config_data_);
+                             client_socket_config_, client_socket_config_data_,
+#ifdef ZMQ_BUILD_DRAFT_API
+                             ZMQ_PROTOCOL_ERROR_ZAP_BAD_VERSION
+#else
+                             0
+#endif
+    );
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 
@@ -130,7 +137,13 @@ void test_zap_errors (socket_config_fn server_socket_config_,
       &zap_handler_wrong_request_id, server_socket_config_,
       server_socket_config_data_);
     test_zap_protocol_error (ctx, my_endpoint, server, server_mon,
-                             client_socket_config_, client_socket_config_data_);
+                             client_socket_config_, client_socket_config_data_,
+#ifdef ZMQ_BUILD_DRAFT_API
+                             ZMQ_PROTOCOL_ERROR_ZAP_BAD_REQUEST_ID
+#else
+                             0
+#endif
+    );
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 
@@ -141,7 +154,13 @@ void test_zap_errors (socket_config_fn server_socket_config_,
       &zap_handler_wrong_status_invalid, server_socket_config_,
       server_socket_config_data_);
     test_zap_protocol_error (ctx, my_endpoint, server, server_mon,
-                             client_socket_config_, client_socket_config_data_);
+                             client_socket_config_, client_socket_config_data_,
+#ifdef ZMQ_BUILD_DRAFT_API
+                             ZMQ_PROTOCOL_ERROR_ZAP_INVALID_STATUS_CODE
+#else
+                             0
+#endif
+    );
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 
@@ -152,7 +171,13 @@ void test_zap_errors (socket_config_fn server_socket_config_,
       &zap_handler_too_many_parts, server_socket_config_,
       server_socket_config_data_);
     test_zap_protocol_error (ctx, my_endpoint, server, server_mon,
-                             client_socket_config_, client_socket_config_data_);
+                             client_socket_config_, client_socket_config_data_,
+#ifdef ZMQ_BUILD_DRAFT_API
+                             ZMQ_PROTOCOL_ERROR_ZAP_MALFORMED_REPLY
+#else
+                             0
+#endif
+    );
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 
@@ -169,7 +194,7 @@ void test_zap_errors (socket_config_fn server_socket_config_,
       server_socket_config_data_);
     test_zap_unsuccessful (ctx, my_endpoint, server, server_mon,
 #ifdef ZMQ_BUILD_DRAFT_API
-                           ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL, EAGAIN,
+                           ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 300,
 #else
                            0, 0,
 #endif
@@ -184,7 +209,7 @@ void test_zap_errors (socket_config_fn server_socket_config_,
       &zap_handler_wrong_status_internal_error, server_socket_config_);
     test_zap_unsuccessful (ctx, my_endpoint, server, server_mon,
 #ifdef ZMQ_BUILD_DRAFT_API
-                           ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL, EFAULT,
+                           ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 500,
 #else
                            0, 0,
 #endif

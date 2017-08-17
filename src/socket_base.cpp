@@ -1692,22 +1692,16 @@ void zmq::socket_base_t::event_handshake_failed_no_detail (
     event (addr_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL);
 }
 
-void zmq::socket_base_t::event_handshake_failed_zmtp (const std::string &addr_,
-                                                      int err_)
-{
-    event (addr_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP);
-}
-
-void zmq::socket_base_t::event_handshake_failed_zap (const std::string &addr_,
-                                                     int err_)
-{
-    event (addr_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_ZAP);
-}
-
-void zmq::socket_base_t::event_handshake_failed_encryption (
+void zmq::socket_base_t::event_handshake_failed_protocol (
   const std::string &addr_, int err_)
 {
-    event (addr_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
+    event (addr_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL);
+}
+
+void zmq::socket_base_t::event_handshake_failed_auth (const std::string &addr_,
+                                                      int err_)
+{
+    event (addr_, err_, ZMQ_EVENT_HANDSHAKE_FAILED_AUTH);
 }
 
 void zmq::socket_base_t::event_handshake_succeeded (const std::string &addr_,

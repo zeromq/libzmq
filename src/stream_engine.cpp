@@ -702,6 +702,8 @@ bool zmq::stream_engine_t::handshake ()
         }
 #endif
         else {
+            session->get_socket ()->event_handshake_failed_protocol (
+              session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MECHANISM_MISMATCH);
             error (protocol_error);
             return false;
         }
@@ -979,21 +981,12 @@ void zmq::stream_engine_t::error (error_reason_t reason)
     }
     zmq_assert (session);
 #ifdef ZMQ_BUILD_DRAFT_API
-    int err = errno;
-    if (mechanism == NULL) {
-        if (reason == protocol_error)
-            socket->event_handshake_failed_zmtp (endpoint, err);
-        else
-            socket->event_handshake_failed_no_detail (endpoint, err);
-    } else if (mechanism->status () == mechanism_t::handshaking) {
-        if (mechanism->error_detail () == mechanism_t::zmtp)
-            socket->event_handshake_failed_zmtp (endpoint, err);
-        else if (mechanism->error_detail () == mechanism_t::zap)
-            socket->event_handshake_failed_zap (endpoint, err);
-        else if (mechanism->error_detail () == mechanism_t::encryption)
-            socket->event_handshake_failed_encryption (endpoint, err);
-        else
-            socket->event_handshake_failed_no_detail (endpoint, err);
+    // protocol errors have been signaled already at the point where they occurred
+    if (reason != protocol_error
+        && (mechanism == NULL
+            || mechanism->status () == mechanism_t::handshaking)) {
+        int err = errno;
+        socket->event_handshake_failed_no_detail (endpoint, err);
     }
 #endif
     socket->event_disconnected (endpoint, (int) s);

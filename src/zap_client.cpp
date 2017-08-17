@@ -40,8 +40,7 @@ zap_client_t::zap_client_t (session_base_t *const session_,
                             const options_t &options_) :
     mechanism_t (options_),
     session (session_),
-    peer_address (peer_address_),
-    current_error_detail (no_detail)
+    peer_address (peer_address_)
 {
 }
 
@@ -155,34 +154,35 @@ int zap_client_t::receive_and_process_zap_reply ()
             return close_and_return (msg, -1);
         }
         if ((msg[i].flags () & msg_t::more) == (i < 6 ? 0 : msg_t::more)) {
-            // CURVE I : ZAP handler sent incomplete reply message
+            session->get_socket ()->event_handshake_failed_protocol (
+              session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZAP_MALFORMED_REPLY);
             errno = EPROTO;
-            current_error_detail = mechanism_t::zap;
             return close_and_return (msg, -1);
         }
     }
 
     //  Address delimiter frame
     if (msg[0].size () > 0) {
-        // CURVE I: ZAP handler sent malformed reply message
+        //  TODO can a ZAP handler produce such a message at all?
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZAP_UNSPECIFIED);
         errno = EPROTO;
-        current_error_detail = mechanism_t::zap;
         return close_and_return (msg, -1);
     }
 
     //  Version frame
     if (msg[1].size () != 3 || memcmp (msg[1].data (), "1.0", 3)) {
-        // CURVE I: ZAP handler sent bad version number
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZAP_BAD_VERSION);
         errno = EPROTO;
-        current_error_detail = mechanism_t::zap;
         return close_and_return (msg, -1);
     }
 
     //  Request id frame
     if (msg[2].size () != 1 || memcmp (msg[2].data (), "1", 1)) {
-        // CURVE I: ZAP handler sent bad request ID
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZAP_BAD_REQUEST_ID);
         errno = EPROTO;
-        current_error_detail = mechanism_t::zap;
         return close_and_return (msg, -1);
     }
 
@@ -191,9 +191,9 @@ int zap_client_t::receive_and_process_zap_reply ()
     if (msg[3].size () != 3 || status_code_data[0] < '2'
         || status_code_data[0] > '5' || status_code_data[1] != '0'
         || status_code_data[2] != '0') {
-        // CURVE I: ZAP handler sent invalid status code
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZAP_INVALID_STATUS_CODE);
         errno = EPROTO;
-        current_error_detail = mechanism_t::zap;
         return close_and_return (msg, -1);
     }
 
@@ -208,6 +208,9 @@ int zap_client_t::receive_and_process_zap_reply ()
                          msg[6].size (), true);
 
     if (rc != 0) {
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZAP_INVALID_METADATA);
+        errno = EPROTO;
         return close_and_return (msg, -1);
     }
 
@@ -226,30 +229,23 @@ void zap_client_t::handle_zap_status_code ()
 {
     //  we can assume here that status_code is a valid ZAP status code,
     //  i.e. 200, 300, 400 or 500
-    int err = 0;
+    int status_code_numeric = 0;
     switch (status_code[0]) {
         case '2':
             return;
         case '3':
-            err = EAGAIN;
+            status_code_numeric = 300;
             break;
         case '4':
-            err = EACCES;
+            status_code_numeric = 400;
             break;
         case '5':
-            err = EFAULT;
+            status_code_numeric = 500;
             break;
     }
-    //  TODO use event_handshake_failed_zap here? but this is not a ZAP
-    //  protocol error
 
-    session->get_socket ()->event_handshake_failed_no_detail (
-      session->get_endpoint (), err);
-}
-
-mechanism_t::error_detail_t zap_client_t::error_detail () const
-{
-    return current_error_detail;
+    session->get_socket ()->event_handshake_failed_auth (
+      session->get_endpoint (), status_code_numeric);
 }
 
 zap_client_common_handshake_t::zap_client_common_handshake_t (

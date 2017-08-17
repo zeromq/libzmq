@@ -57,19 +57,12 @@ class zap_client_t : public virtual mechanism_t
     virtual int receive_and_process_zap_reply ();
     virtual void handle_zap_status_code ();
 
-    //  methods from mechanism_t
-    error_detail_t error_detail () const;
-
   protected:
     session_base_t *const session;
     const std::string peer_address;
 
     //  Status code as received from ZAP handler
     std::string status_code;
-
-    //  Details about the current error state
-    //  TODO remove this
-    error_detail_t current_error_detail;
 };
 
 class zap_client_common_handshake_t : public zap_client_t
