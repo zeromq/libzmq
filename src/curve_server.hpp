@@ -104,7 +104,6 @@ namespace zmq
         int produce_error (msg_t *msg_) const;
 
         void send_zap_request (const uint8_t *key);
-        int check_basic_command_structure (msg_t *msg_);
     };
 
 }

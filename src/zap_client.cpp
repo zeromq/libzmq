@@ -248,6 +248,18 @@ void zap_client_t::handle_zap_status_code ()
       session->get_endpoint (), status_code_numeric);
 }
 
+int zap_client_t::check_basic_command_structure (msg_t *msg_)
+{
+    if (msg_->size () <= 1 || msg_->size () <= ((uint8_t *) msg_->data ())[0]) {
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_UNSPECIFIED);
+        errno = EPROTO;
+        return -1;
+    }
+    return 0;
+}
+
 zap_client_common_handshake_t::zap_client_common_handshake_t (
   session_base_t *const session_,
   const std::string &peer_address_,

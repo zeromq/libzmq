@@ -182,15 +182,17 @@ int zmq::curve_server_t::decode (msg_t *msg_)
     if (rc == -1)
       return -1;
 
+    const size_t size = msg_->size ();
     const uint8_t *message = static_cast <uint8_t *> (msg_->data ());
-    if (memcmp (message, "\x07MESSAGE", 8)) {
+    
+    if (size < 8 || memcmp (message, "\x07MESSAGE", 8)) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         return -1;
     }
 
-    if (msg_->size () < 33) {
+    if (size < 33) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (),
           ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_MESSAGE);
@@ -259,15 +261,17 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
     if (rc == -1)
       return -1;
 
+    const size_t size = msg_->size ();
     const uint8_t * const hello = static_cast <uint8_t *> (msg_->data ());
-    if (memcmp (hello, "\x05HELLO", 6)) {
+
+    if (size < 6 || memcmp (hello, "\x05HELLO", 6)) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         return -1;
     }
 
-    if (msg_->size () != 200) {
+    if (size != 200) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
         errno = EPROTO;
@@ -388,15 +392,17 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     if (rc == -1)
       return -1;
 
+    const size_t size = msg_->size ();
     const uint8_t *initiate = static_cast <uint8_t *> (msg_->data ());
-    if (memcmp (initiate, "\x08INITIATE", 9)) {
+
+    if (size < 9 || memcmp (initiate, "\x08INITIATE", 9)) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         return -1;
     }
 
-    if (msg_->size () < 257) {
+    if (size < 257) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (),
           ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_INITIATE);
@@ -438,7 +444,7 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
         return -1;
     }
 
-    const size_t clen = (msg_->size () - 113) + crypto_box_BOXZEROBYTES;
+    const size_t clen = (size - 113) + crypto_box_BOXZEROBYTES;
 
     uint8_t initiate_nonce [crypto_box_NONCEBYTES];
     uint8_t initiate_plaintext [crypto_box_ZEROBYTES + 128 + 256];
@@ -585,18 +591,6 @@ int zmq::curve_server_t::produce_error (msg_t *msg_) const
 void zmq::curve_server_t::send_zap_request (const uint8_t *key)
 {
     zap_client_t::send_zap_request ("CURVE", 5, key, crypto_box_PUBLICKEYBYTES);
-}
-
-int zmq::curve_server_t::check_basic_command_structure (msg_t *msg_)
-{
-    if (msg_->size () <= 1 || msg_->size () <= ((uint8_t *) msg_->data ())[0]) {
-        session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (),
-          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_UNSPECIFIED);
-        errno = EPROTO;
-        return -1;
-    }
-    return 0;
 }
 
 #endif
