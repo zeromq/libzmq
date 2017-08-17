@@ -74,11 +74,9 @@ int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
             errno = EAGAIN;
             return -1;
         }
-        int rc = send_zap_request ();
-        if (rc != 0)
-            return -1;
+        send_zap_request ();
         zap_request_sent = true;
-        rc = receive_and_process_zap_reply ();
+        int rc = receive_and_process_zap_reply ();
         if (rc == -1 || rc == 1)
             return -1;
         zap_reply_received = true;
@@ -189,8 +187,8 @@ zmq::mechanism_t::status_t zmq::null_mechanism_t::status () const
         return handshaking;
 }
 
-int zmq::null_mechanism_t::send_zap_request ()
+void zmq::null_mechanism_t::send_zap_request ()
 {
-    return zap_client_t::send_zap_request ("NULL", 4, NULL, NULL, 0);
+    zap_client_t::send_zap_request ("NULL", 4, NULL, NULL, 0);
 }
 

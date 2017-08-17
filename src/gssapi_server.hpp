@@ -88,7 +88,7 @@ namespace zmq
         void accept_context ();
         int produce_next_token (msg_t *msg_);
         int process_next_token (msg_t *msg_);
-        int send_zap_request ();
+        void send_zap_request ();
     };
 
 }

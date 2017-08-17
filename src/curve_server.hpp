@@ -103,7 +103,7 @@ namespace zmq
         int produce_ready (msg_t *msg_);
         int produce_error (msg_t *msg_) const;
 
-        int send_zap_request (const uint8_t *key);
+        void send_zap_request (const uint8_t *key);
     };
 
 }

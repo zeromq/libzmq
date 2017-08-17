@@ -45,25 +45,23 @@ zap_client_t::zap_client_t (session_base_t *const session_,
 {
 }
 
-int zap_client_t::send_zap_request (const char *mechanism,
+void zap_client_t::send_zap_request (const char *mechanism,
                                     size_t mechanism_length,
                                     const uint8_t *credentials,
                                     size_t credentials_size)
 {
-    return send_zap_request (mechanism, mechanism_length, &credentials,
-                             &credentials_size, 1);
+    send_zap_request (mechanism, mechanism_length, &credentials,
+                      &credentials_size, 1);
 }
 
-int zap_client_t::send_zap_request (const char *mechanism,
+void zap_client_t::send_zap_request (const char *mechanism,
                                     size_t mechanism_length,
                                     const uint8_t **credentials,
                                     size_t *credentials_sizes,
                                     size_t credentials_count)
 {
-    // TODO  I don't think the rc can be -1 anywhere below.
-    // It might only be -1 if the HWM was exceeded, but on the ZAP socket,
-    // the HWM is disabled. They should be changed to zmq_assert (rc == 0);
-    // The method's return type can be changed to void then.
+    // write_zap_msg cannot fail. It could only fail if the HWM was exceeded, 
+    // but on the ZAP socket, the HWM is disabled. 
 
     int rc;
     msg_t msg;
@@ -73,8 +71,7 @@ int zap_client_t::send_zap_request (const char *mechanism,
     errno_assert (rc == 0);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
+    errno_assert (rc == 0);
 
     //  Version frame
     rc = msg.init_size (3);
@@ -82,8 +79,7 @@ int zap_client_t::send_zap_request (const char *mechanism,
     memcpy (msg.data (), "1.0", 3);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
+    errno_assert (rc == 0);
 
     //  Request ID frame
     rc = msg.init_size (1);
@@ -91,8 +87,7 @@ int zap_client_t::send_zap_request (const char *mechanism,
     memcpy (msg.data (), "1", 1);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
+    errno_assert (rc == 0);
 
     //  Domain frame
     rc = msg.init_size (options.zap_domain.length ());
@@ -101,8 +96,7 @@ int zap_client_t::send_zap_request (const char *mechanism,
             options.zap_domain.length ());
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
+    errno_assert (rc == 0);
 
     //  Address frame
     rc = msg.init_size (peer_address.length ());
@@ -110,8 +104,7 @@ int zap_client_t::send_zap_request (const char *mechanism,
     memcpy (msg.data (), peer_address.c_str (), peer_address.length ());
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
+    errno_assert (rc == 0);
 
     //  Identity frame
     rc = msg.init_size (options.identity_size);
@@ -119,8 +112,7 @@ int zap_client_t::send_zap_request (const char *mechanism,
     memcpy (msg.data (), options.identity, options.identity_size);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
+    errno_assert (rc == 0);
 
     //  Mechanism frame
     rc = msg.init_size (mechanism_length);
@@ -129,8 +121,7 @@ int zap_client_t::send_zap_request (const char *mechanism,
     if (credentials_count)
         msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
+    errno_assert (rc == 0);
 
     //  Credentials frames
     for (size_t i = 0; i < credentials_count; ++i) {
@@ -140,11 +131,8 @@ int zap_client_t::send_zap_request (const char *mechanism,
             msg.set_flags (msg_t::more);
         memcpy (msg.data (), credentials[i], credentials_sizes[i]);
         rc = session->write_zap_msg (&msg);
-        if (rc != 0)
-            return close_and_return (&msg, -1);
+        errno_assert (rc == 0);
     }
-
-    return 0;
 }
 
 int zap_client_t::receive_and_process_zap_reply ()
@@ -288,13 +276,7 @@ zmq::mechanism_t::status_t zap_client_common_handshake_t::status () const
 
 int zap_client_common_handshake_t::zap_msg_available ()
 {
-    //  TODO I don't think that it is possible that this is called in any
-    //  state other than expect_zap_reply. It should be changed to
-    //  zmq_assert (state == expect_zap_reply);
-    if (state != waiting_for_zap_reply) {
-        errno = EFSM;
-        return -1;
-    }
+    zmq_assert (state == waiting_for_zap_reply);
     return receive_and_process_zap_reply () == -1 ? -1 : 0;
 }
 

@@ -62,8 +62,8 @@ namespace zmq
         int process_hello (msg_t *msg_);
         int process_initiate (msg_t *msg_);
 
-        int send_zap_request(const std::string &username,
-                             const std::string &password);
+        void send_zap_request (const std::string &username,
+                               const std::string &password);
     };
 
 }

@@ -70,7 +70,7 @@ namespace zmq
         int process_error_command (
             const unsigned char *cmd_data, size_t data_size);
 
-        int send_zap_request ();
+        void send_zap_request ();
     };
 
 }

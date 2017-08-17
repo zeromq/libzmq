@@ -488,9 +488,7 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     //  not work properly the program will abort.
     rc = session->zap_connect ();
     if (rc == 0) {
-        rc = send_zap_request (client_key);
-        if (rc != 0)
-            return -1;
+        send_zap_request (client_key);
         rc = receive_and_process_zap_reply ();
         if (rc == -1)
             return -1;
@@ -561,10 +559,9 @@ int zmq::curve_server_t::produce_error (msg_t *msg_) const
     return 0;
 }
 
-int zmq::curve_server_t::send_zap_request (const uint8_t *key)
+void zmq::curve_server_t::send_zap_request (const uint8_t *key)
 {
-    return zap_client_t::send_zap_request ("CURVE", 5, key,
-                                           crypto_box_PUBLICKEYBYTES);
+    zap_client_t::send_zap_request ("CURVE", 5, key, crypto_box_PUBLICKEYBYTES);
 }
 
 #endif

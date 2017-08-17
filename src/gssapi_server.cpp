@@ -125,9 +125,7 @@ int zmq::gssapi_server_t::process_handshake_command (msg_t *msg_)
         bool expecting_zap_reply = false;
         int rc = session->zap_connect ();
         if (rc == 0) {
-            rc = send_zap_request ();
-            if (rc != 0)
-                return -1;
+            send_zap_request ();
             rc = receive_and_process_zap_reply ();
             if (rc != 0) {
                 if (rc == -1)
@@ -151,16 +149,14 @@ int zmq::gssapi_server_t::process_handshake_command (msg_t *msg_)
     return 0;
 }
 
-int zmq::gssapi_server_t::send_zap_request ()
+void zmq::gssapi_server_t::send_zap_request ()
 {
     gss_buffer_desc principal;
     gss_display_name (&min_stat, target_name, &principal, NULL);
-    int rc = zap_client_t::send_zap_request ("GSSAPI", 6, principal.value,
-                                             principal.length);
+    zap_client_t::send_zap_request ("GSSAPI", 6, principal.value,
+                                    principal.length);
 
     gss_release_buffer (&min_stat, &principal);
-
-    return rc;
 }
 
 int zmq::gssapi_server_t::encode (msg_t *msg_)

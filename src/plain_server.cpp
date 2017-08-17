@@ -169,9 +169,7 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     int rc = session->zap_connect ();
     if (rc != 0)
         return -1;
-    rc = send_zap_request (username, password);
-    if (rc != 0)
-        return -1;
+    send_zap_request (username, password);
     return receive_and_process_zap_reply () == -1 ? -1 : 0;
 }
 
@@ -219,13 +217,13 @@ int zmq::plain_server_t::produce_error (msg_t *msg_) const
     return 0;
 }
 
-int zmq::plain_server_t::send_zap_request (const std::string &username,
-                                           const std::string &password)
+void zmq::plain_server_t::send_zap_request (const std::string &username,
+                                            const std::string &password)
 {
     const uint8_t *credentials[] = {
       reinterpret_cast<const uint8_t *> (username.c_str ()),
       reinterpret_cast<const uint8_t *> (password.c_str ())};
     size_t credentials_sizes[] = {username.size (), password.size ()};
-    return zap_client_t::send_zap_request ("PLAIN", 5, credentials,
-                                           credentials_sizes, 2);
+    zap_client_t::send_zap_request ("PLAIN", 5, credentials, credentials_sizes,
+                                    2);
 }
