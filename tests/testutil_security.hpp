@@ -36,6 +36,19 @@
 
 typedef void(socket_config_fn) (void *, void *);
 
+const char *test_zap_domain = "ZAPTEST";
+
+//  NULL specific functions
+void socket_config_null_client (void *server, void *server_secret)
+{
+}
+
+void socket_config_null_server (void *server, void *server_secret)
+{
+    int rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, test_zap_domain, 7);
+    assert (rc == 0);
+}
+
 //  CURVE specific functions
 
 //  We'll generate random test keys at startup
@@ -148,15 +161,34 @@ void zap_handler_generic (void *ctx,
         char *address = s_recv (handler);
         char *identity = s_recv (handler);
         char *mechanism = s_recv (handler);
-        uint8_t client_key[32];
-        int size = zmq_recv (handler, client_key, 32, 0);
-        assert (size == 32);
+        bool authentication_succeeded = false;
+        if (streq (mechanism, "CURVE")) {
+            uint8_t client_key[32];
+            int size = zmq_recv (handler, client_key, 32, 0);
+            assert (size == 32);
 
-        char client_key_text[41];
-        zmq_z85_encode (client_key_text, client_key, 32);
+            char client_key_text[41];
+            zmq_z85_encode (client_key_text, client_key, 32);
+
+            authentication_succeeded =
+              streq (client_key_text, valid_client_public);
+        }
+        else if (streq(mechanism, "PLAIN"))
+        {
+          // TODO
+          authentication_succeeded = true;
+        }
+        else if (streq(mechanism, "NULL"))
+        {
+          authentication_succeeded = true;
+        }
+        else
+        {
+            fprintf (stderr, "Unsupported mechanism: %s\n", mechanism);
+            assert (false);
+        }
 
         assert (streq (version, "1.0"));
-        assert (streq (mechanism, "CURVE"));
         assert (streq (identity, expected_identity));
 
         s_sendmore (handler, zap_protocol == zap_wrong_version
@@ -166,7 +198,7 @@ void zap_handler_generic (void *ctx,
                                ? "invalid_request_id"
                                : sequence);
 
-        if (streq (client_key_text, valid_client_public)) {
+        if (authentication_succeeded) {
             const char *status_code;
             switch (zap_protocol) {
                 case zap_status_internal_error:
