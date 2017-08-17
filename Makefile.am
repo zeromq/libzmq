@@ -523,7 +523,10 @@ tests_test_security_null_LDADD = src/libzmq.la
 tests_test_security_plain_SOURCES = tests/test_security_plain.cpp
 tests_test_security_plain_LDADD = src/libzmq.la
 
-tests_test_security_zap_SOURCES = tests/test_security_zap.cpp
+tests_test_security_zap_SOURCES = \
+	tests/test_security_zap.cpp \
+	tests/testutil_security.hpp \
+	tests/testutil.hpp
 tests_test_security_zap_LDADD = src/libzmq.la
 
 tests_test_spec_req_SOURCES = tests/test_spec_req.cpp
@@ -629,6 +632,7 @@ test_apps += \
 
 tests_test_security_curve_SOURCES = \
 	tests/test_security_curve.cpp \
+	tests/testutil_security.hpp \
 	tests/testutil.hpp \
 	src/curve_client_tools.hpp \
 	src/clock.hpp \
