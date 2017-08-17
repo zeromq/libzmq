@@ -55,7 +55,10 @@ class zap_client_t : public virtual mechanism_t
                           size_t credentials_count);
 
     virtual int receive_and_process_zap_reply ();
-    virtual void handle_zap_status_code () {}
+    virtual void handle_zap_status_code ();
+
+    //  methods from mechanism_t
+    error_detail_t error_detail () const;
 
   protected:
     session_base_t *const session;
@@ -63,6 +66,10 @@ class zap_client_t : public virtual mechanism_t
 
     //  Status code as received from ZAP handler
     std::string status_code;
+
+    //  Details about the current error state
+    //  TODO remove this
+    error_detail_t current_error_detail;
 };
 
 class zap_client_common_handshake_t : public zap_client_t
@@ -88,7 +95,6 @@ class zap_client_common_handshake_t : public zap_client_t
     //  methods from mechanism_t
     status_t status () const;
     int zap_msg_available ();
-    error_detail_t error_detail () const;
 
     //  zap_client_t methods
     int receive_and_process_zap_reply ();
@@ -96,10 +102,6 @@ class zap_client_common_handshake_t : public zap_client_t
 
     //  Current FSM state
     state_t state;
-
-    //  Details about the current error state
-    //  TODO remove this
-    error_detail_t current_error_detail;
 
   private:
     const state_t zap_reply_ok_state;

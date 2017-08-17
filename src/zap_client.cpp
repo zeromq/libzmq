@@ -40,7 +40,8 @@ zap_client_t::zap_client_t (session_base_t *const session_,
                             const options_t &options_) :
     mechanism_t (options_),
     session (session_),
-    peer_address (peer_address_)
+    peer_address (peer_address_),
+    current_error_detail (no_detail)
 {
 }
 
@@ -168,6 +169,7 @@ int zap_client_t::receive_and_process_zap_reply ()
         if ((msg[i].flags () & msg_t::more) == (i < 6 ? 0 : msg_t::more)) {
             // CURVE I : ZAP handler sent incomplete reply message
             errno = EPROTO;
+            current_error_detail = mechanism_t::zap;
             return close_and_return (msg, -1);
         }
     }
@@ -176,6 +178,7 @@ int zap_client_t::receive_and_process_zap_reply ()
     if (msg[0].size () > 0) {
         // CURVE I: ZAP handler sent malformed reply message
         errno = EPROTO;
+        current_error_detail = mechanism_t::zap;
         return close_and_return (msg, -1);
     }
 
@@ -183,6 +186,7 @@ int zap_client_t::receive_and_process_zap_reply ()
     if (msg[1].size () != 3 || memcmp (msg[1].data (), "1.0", 3)) {
         // CURVE I: ZAP handler sent bad version number
         errno = EPROTO;
+        current_error_detail = mechanism_t::zap;
         return close_and_return (msg, -1);
     }
 
@@ -190,6 +194,7 @@ int zap_client_t::receive_and_process_zap_reply ()
     if (msg[2].size () != 1 || memcmp (msg[2].data (), "1", 1)) {
         // CURVE I: ZAP handler sent bad request ID
         errno = EPROTO;
+        current_error_detail = mechanism_t::zap;
         return close_and_return (msg, -1);
     }
 
@@ -200,6 +205,7 @@ int zap_client_t::receive_and_process_zap_reply ()
         || status_code_data[2] != '0') {
         // CURVE I: ZAP handler sent invalid status code
         errno = EPROTO;
+        current_error_detail = mechanism_t::zap;
         return close_and_return (msg, -1);
     }
 
@@ -228,6 +234,36 @@ int zap_client_t::receive_and_process_zap_reply ()
     return 0;
 }
 
+void zap_client_t::handle_zap_status_code ()
+{
+    //  we can assume here that status_code is a valid ZAP status code,
+    //  i.e. 200, 300, 400 or 500
+    int err = 0;
+    switch (status_code[0]) {
+        case '2':
+            return;
+        case '3':
+            err = EAGAIN;
+            break;
+        case '4':
+            err = EACCES;
+            break;
+        case '5':
+            err = EFAULT;
+            break;
+    }
+    //  TODO use event_handshake_failed_zap here? but this is not a ZAP
+    //  protocol error
+
+    session->get_socket ()->event_handshake_failed_no_detail (
+      session->get_endpoint (), err);
+}
+
+mechanism_t::error_detail_t zap_client_t::error_detail () const
+{
+    return current_error_detail;
+}
+
 zap_client_common_handshake_t::zap_client_common_handshake_t (
   session_base_t *const session_,
   const std::string &peer_address_,
@@ -236,7 +272,6 @@ zap_client_common_handshake_t::zap_client_common_handshake_t (
     mechanism_t (options_),
     zap_client_t (session_, peer_address_, options_),
     state (waiting_for_hello),
-    current_error_detail (no_detail),
     zap_reply_ok_state (zap_reply_ok_state_)
 {
 }
@@ -265,53 +300,23 @@ int zap_client_common_handshake_t::zap_msg_available ()
 
 void zap_client_common_handshake_t::handle_zap_status_code ()
 {
+    zap_client_t::handle_zap_status_code ();
+
     //  we can assume here that status_code is a valid ZAP status code,
     //  i.e. 200, 300, 400 or 500
     if (status_code[0] == '2') {
         state = zap_reply_ok_state;
     } else {
         state = sending_error;
-
-        int err = 0;
-        switch (status_code[0]) {
-            case '3':
-                err = EAGAIN;
-                break;
-            case '4':
-                err = EACCES;
-                break;
-            case '5':
-                err = EFAULT;
-                break;
-        }
-        //  TODO use event_handshake_failed_zap here? but this is not a ZAP
-        //  protocol error
-
-        session->get_socket ()->event_handshake_failed_no_detail (
-          session->get_endpoint (), err);
     }
-}
-
-mechanism_t::error_detail_t zap_client_common_handshake_t::error_detail () const
-{
-    return current_error_detail;
 }
 
 int zap_client_common_handshake_t::receive_and_process_zap_reply ()
 {
     int rc = zap_client_t::receive_and_process_zap_reply ();
-    switch (rc) {
-        case -1:
-            if (errno == EPROTO)
-                current_error_detail = mechanism_t::zap;
-            break;
-        case 1:
-            // TODO shouldn't the state already be this?
-            state = waiting_for_zap_reply;
-            break;
-        case 0:
-            break;
-    }
+    if (rc == 1)
+        // TODO shouldn't the state already be this?
+        state = waiting_for_zap_reply;
     return rc;
 }
 }
