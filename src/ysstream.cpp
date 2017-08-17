@@ -373,20 +373,8 @@ int zmq::ysstream_session_t::push_msg(msg_t* msg_) {
         pos = buffer;
         merge_start = false;
         
-        pipe_rollback();
-        msg_t msg_1;
-        msg_1.init_size(sizeof (unsigned short));
-        unsigned short cmd = 0;
-        msg_1.set_flags(msg_t::more);
-        memcpy(msg_1.data(), &cmd, sizeof (unsigned short));
-        ret = session_base_t::push_msg(&msg_1);
-        //msg_1.close();
-        if (ret == 0) {
-            ret = session_base_t::push_msg(msg_);
-        }
-        if(ret != 0)
-            pipe_rollback();
-        //msg_->close();
+        //pipe_rollback();
+        
         return 0;
     }
 
