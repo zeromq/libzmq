@@ -376,6 +376,7 @@ test_apps = \
 	tests/test_ctx_destroy \
 	tests/test_security_null \
 	tests/test_security_plain \
+	tests/test_security_zap \
 	tests/test_iov \
 	tests/test_spec_req \
 	tests/test_spec_rep \
@@ -521,6 +522,9 @@ tests_test_security_null_LDADD = src/libzmq.la
 
 tests_test_security_plain_SOURCES = tests/test_security_plain.cpp
 tests_test_security_plain_LDADD = src/libzmq.la
+
+tests_test_security_zap_SOURCES = tests/test_security_zap.cpp
+tests_test_security_zap_LDADD = src/libzmq.la
 
 tests_test_spec_req_SOURCES = tests/test_spec_req.cpp
 tests_test_spec_req_LDADD = src/libzmq.la

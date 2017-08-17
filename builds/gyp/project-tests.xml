@@ -33,6 +33,7 @@
     <test name = "test_security_null" />
     <test name = "test_security_plain" />
     <test name = "test_security_curve" />
+    <test name = "test_security_zap" />
     <test name = "test_iov" />
     <test name = "test_spec_req" />
     <test name = "test_spec_rep" />
