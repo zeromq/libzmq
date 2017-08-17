@@ -638,9 +638,13 @@ tests_test_security_curve_SOURCES += \
 endif
 
 tests_test_security_curve_LDADD = \
-	src/libzmq.la
+	src/libzmq.la $(LIBUNWIND_LIBS)
+tests_test_security_curve_CPPFLAGS = \
+	${LIBUNWIND_CFLAGS}
 
 if USE_LIBSODIUM
+tests_test_security_curve_CPPFLAGS += \
+	${sodium_CFLAGS}
 tests_test_security_curve_LDADD += \
 	${sodium_LIBS}
 endif
