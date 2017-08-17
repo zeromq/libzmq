@@ -33,6 +33,9 @@ zmq::ysstream_t::ysstream_t(zmq::ctx_t *parent_, uint32_t tid_, int sid)
 , cmd_(0)
 , send_all(false) {
     options.type = ZMQ_YSSTREAM;
+    options.raw_notify = true;
+    options.sndhwm = 10000;
+    options.rcvhwm = 10000;
     prefetched_body_msg.init();
     msg_to_send.init();
 }
@@ -91,11 +94,15 @@ int zmq::ysstream_t::prepare_package(msg_t& srcmsg_
             if (likely(ok))
                 current_out->flush();
         } else {
+            if(!msg_.is_vsm())
+                msg_.add_refs(outpipes.size() - 1);
+            int failed = 0;
             for(outpipes_t::iterator it = outpipes.begin(); it != outpipes.end(); it++) {
                 if (!it->second.pipe->check_write()) {
                         it->second.active = false;
                         it->second.pipe->rollback();
-                        msg_.close();
+                        //msg_.close();
+                        ++failed;
                         errno = EAGAIN;
                         continue;
                 }
@@ -103,8 +110,10 @@ int zmq::ysstream_t::prepare_package(msg_t& srcmsg_
                 if (likely(ok))
                     it->second.pipe->flush();
                 else
-                    msg_.close();
+                    ++failed;
             }
+            if(!msg_.is_vsm())
+                msg_.rm_refs(failed);
         }
         
         
@@ -327,6 +336,15 @@ bool zmq::ysstream_t::xhas_in() {
     return true;
 }
 
+void zmq::ysstream_t::xattach_pipe(zmq::pipe_t* pipe_, bool subscribe_to_all_) {
+    zmq_assert (pipe_);
+
+    //  Don't delay pipe termination as there is no one
+    //  to receive the delimiter.
+    pipe_->set_nodelay ();
+    stream_t::xattach_pipe(pipe_,subscribe_to_all_);
+}
+
 zmq::ysstream_t::~ysstream_t() {
 }
 
@@ -368,7 +386,7 @@ int zmq::ysstream_session_t::push_msg(msg_t* msg_) {
         }
         if(ret != 0)
             pipe_rollback();
-        msg_->close();
+        //msg_->close();
         return 0;
     }
 
@@ -436,6 +454,8 @@ int zmq::ysstream_session_t::push_msg(msg_t* msg_) {
                         msg_2.set_flags(msg_->flags());
                         memcpy(msg_2.data(), merge_string.c_str(), merge_string.size());
                         ret = session_base_t::push_msg(&msg_2);
+                        if(ret == -1)
+                            msg_2.close();
                         merge_string.clear();
                         merge_start = false;
                     } else {
