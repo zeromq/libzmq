@@ -160,6 +160,7 @@ and each message sent by Radio sockets belong to a group.
 
 Groups are null terminated strings limited to 16 chars length (including null).
 The intention is to increase the length to 40 chars (including null).
+The encoding of groups shall be UTF8.
 
 Groups are matched using exact matching (vs prefix matching of PubSub).
 
