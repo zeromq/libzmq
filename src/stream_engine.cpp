@@ -685,7 +685,8 @@ bool zmq::stream_engine_t::handshake ()
                 mechanism = new (std::nothrow)
                     curve_server_t (session, peer_address, options);
             else
-                mechanism = new (std::nothrow) curve_client_t (options);
+                mechanism =
+                  new (std::nothrow) curve_client_t (session, options);
             alloc_assert (mechanism);
         }
 #endif

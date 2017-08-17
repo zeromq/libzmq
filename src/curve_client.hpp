@@ -46,7 +46,7 @@ namespace zmq
     {
     public:
 
-        curve_client_t (const options_t &options_);
+        curve_client_t (session_base_t *session_, const options_t &options_);
         virtual ~curve_client_t ();
 
         // mechanism implementation
@@ -66,6 +66,8 @@ namespace zmq
             error_received,
             connected
         };
+
+        session_base_t *session;
 
         //  Current FSM state
         state_t state;
