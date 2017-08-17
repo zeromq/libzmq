@@ -242,6 +242,8 @@ src_libzmq_la_SOURCES = \
 	src/decoder_allocators.hpp \
 	src/socket_poller.cpp \
 	src/socket_poller.hpp \
+	src/zap_client.cpp \
+	src/zap_client.hpp \
 	src/zmq_draft.h
 
 if USE_TWEETNACL
@@ -374,6 +376,7 @@ test_apps = \
 	tests/test_ctx_destroy \
 	tests/test_security_null \
 	tests/test_security_plain \
+	tests/test_security_zap \
 	tests/test_iov \
 	tests/test_spec_req \
 	tests/test_spec_rep \
@@ -520,6 +523,12 @@ tests_test_security_null_LDADD = src/libzmq.la
 tests_test_security_plain_SOURCES = tests/test_security_plain.cpp
 tests_test_security_plain_LDADD = src/libzmq.la
 
+tests_test_security_zap_SOURCES = \
+	tests/test_security_zap.cpp \
+	tests/testutil_security.hpp \
+	tests/testutil.hpp
+tests_test_security_zap_LDADD = src/libzmq.la
+
 tests_test_spec_req_SOURCES = tests/test_spec_req.cpp
 tests_test_spec_req_LDADD = src/libzmq.la
 
@@ -623,6 +632,7 @@ test_apps += \
 
 tests_test_security_curve_SOURCES = \
 	tests/test_security_curve.cpp \
+	tests/testutil_security.hpp \
 	tests/testutil.hpp \
 	src/curve_client_tools.hpp \
 	src/clock.hpp \

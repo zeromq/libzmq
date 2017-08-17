@@ -42,12 +42,10 @@ zmq::curve_server_t::curve_server_t (session_base_t *session_,
                                      const std::string &peer_address_,
                                      const options_t &options_) :
     mechanism_t (options_),
-    session (session_),
-    peer_address (peer_address_),
-    state (expect_hello),
-    current_error_detail (no_detail),
+    zap_client_common_handshake_t (
+      session_, peer_address_, options_, sending_ready),
     cn_nonce (1),
-    cn_peer_nonce(1)
+    cn_peer_nonce (1)
 {
     int rc;
     //  Fetch our secret key from socket options
@@ -67,17 +65,17 @@ int zmq::curve_server_t::next_handshake_command (msg_t *msg_)
     int rc = 0;
 
     switch (state) {
-        case send_welcome:
+        case sending_welcome:
             rc = produce_welcome (msg_);
             if (rc == 0)
-                state = expect_initiate;
+                state = waiting_for_initiate;
             break;
-        case send_ready:
+        case sending_ready:
             rc = produce_ready (msg_);
             if (rc == 0)
-                state = connected;
+                state = ready;
             break;
-        case send_error:
+        case sending_error:
             rc = produce_error (msg_);
             if (rc == 0)
                 state = error_sent;
@@ -95,10 +93,10 @@ int zmq::curve_server_t::process_handshake_command (msg_t *msg_)
     int rc = 0;
 
     switch (state) {
-        case expect_hello:
+        case waiting_for_hello:
             rc = process_hello (msg_);
             break;
-        case expect_initiate:
+        case waiting_for_initiate:
             rc = process_initiate (msg_);
             break;
         default:
@@ -125,7 +123,7 @@ int zmq::curve_server_t::process_handshake_command (msg_t *msg_)
 
 int zmq::curve_server_t::encode (msg_t *msg_)
 {
-    zmq_assert (state == connected);
+    zmq_assert (state == ready);
 
     const size_t mlen = crypto_box_ZEROBYTES + 1 + msg_->size ();
 
@@ -177,7 +175,7 @@ int zmq::curve_server_t::encode (msg_t *msg_)
 
 int zmq::curve_server_t::decode (msg_t *msg_)
 {
-    zmq_assert (state == connected);
+    zmq_assert (state == ready);
 
     if (msg_->size () < 33) {
         // CURVE I : invalid CURVE client, sent malformed command
@@ -246,37 +244,6 @@ int zmq::curve_server_t::decode (msg_t *msg_)
     return rc;
 }
 
-int zmq::curve_server_t::zap_msg_available ()
-{
-    //  TODO I don't think that it is possible that this is called in any 
-    //  state other than expect_zap_reply. It should be changed to
-    //  zmq_assert (state == expect_zap_reply);
-    if (state != expect_zap_reply) {
-        errno = EFSM;
-        return -1;
-    }
-    const int rc = receive_and_process_zap_reply ();
-    if (rc == 0)
-        handle_zap_status_code ();
-    return rc;
-}
-
-zmq::mechanism_t::status_t zmq::curve_server_t::status () const
-{
-    if (state == connected)
-        return mechanism_t::ready;
-    else
-    if (state == error_sent)
-        return mechanism_t::error;
-    else
-        return mechanism_t::handshaking;
-}
-
-zmq::mechanism_t::error_detail_t zmq::curve_server_t::error_detail() const
-{
-    return current_error_detail;
-}
-
 int zmq::curve_server_t::process_hello (msg_t *msg_)
 {
     if (msg_->size () != 200) {
@@ -329,7 +296,7 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
         return -1;
     }
 
-    state = send_welcome;
+    state = sending_welcome;
     return rc;
 }
 
@@ -521,20 +488,12 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     //  not work properly the program will abort.
     rc = session->zap_connect ();
     if (rc == 0) {
-        rc = send_zap_request (client_key);
-        if (rc != 0)
-            return -1;
+        send_zap_request (client_key);
         rc = receive_and_process_zap_reply ();
-        if (rc == 0)
-            handle_zap_status_code ();
-        else
-        if (errno == EAGAIN)
-            state = expect_zap_reply;
-        else
+        if (rc == -1)
             return -1;
-    }
-    else
-        state = send_ready;
+    } else
+        state = sending_ready;
 
     return parse_metadata (initiate_plaintext + crypto_box_ZEROBYTES + 128,
                            clen - crypto_box_ZEROBYTES - 128);
@@ -600,196 +559,9 @@ int zmq::curve_server_t::produce_error (msg_t *msg_) const
     return 0;
 }
 
-int zmq::curve_server_t::send_zap_request (const uint8_t *key)
+void zmq::curve_server_t::send_zap_request (const uint8_t *key)
 {
-    // TODO  I don't think the rc can be -1 anywhere below.
-    // It might only be -1 if the HWM was exceeded, but on the ZAP socket, 
-    // the HWM is disabled. They should be changed to zmq_assert (rc == 0);
-    // The method's return type can be changed to void then.
-
-    int rc;
-    msg_t msg;
-
-    //  Address delimiter frame
-    rc = msg.init ();
-    errno_assert (rc == 0);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Version frame
-    rc = msg.init_size (3);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), "1.0", 3);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Request ID frame
-    rc = msg.init_size (1);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), "1", 1);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Domain frame
-    rc = msg.init_size (options.zap_domain.length ());
-    errno_assert (rc == 0);
-    memcpy (msg.data (), options.zap_domain.c_str (), options.zap_domain.length ());
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Address frame
-    rc = msg.init_size (peer_address.length ());
-    errno_assert (rc == 0);
-    memcpy (msg.data (), peer_address.c_str (), peer_address.length ());
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Identity frame
-    rc = msg.init_size (options.identity_size);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), options.identity, options.identity_size);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Mechanism frame
-    rc = msg.init_size (5);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), "CURVE", 5);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Credentials frame
-    rc = msg.init_size (crypto_box_PUBLICKEYBYTES);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), key, crypto_box_PUBLICKEYBYTES);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    return 0;
-}
-
-int zmq::curve_server_t::receive_and_process_zap_reply ()
-{
-    int rc = 0;
-    msg_t msg [7];  //  ZAP reply consists of 7 frames
-
-    //  Initialize all reply frames
-    for (int i = 0; i < 7; i++) {
-        rc = msg [i].init ();
-        errno_assert (rc == 0);
-    }
-
-    for (int i = 0; i < 7; i++) {
-        rc = session->read_zap_msg (&msg [i]);
-        if (rc == -1)
-            return close_and_return (msg, -1);
-        if ((msg [i].flags () & msg_t::more) == (i < 6? 0: msg_t::more)) {
-            // CURVE I : ZAP handler sent incomplete reply message
-            current_error_detail = zap;
-            errno = EPROTO;
-            return close_and_return (msg, -1);
-        }
-    }
-
-    //  Address delimiter frame
-    if (msg [0].size () > 0) {
-        // CURVE I: ZAP handler sent malformed reply message
-        current_error_detail = zap;
-        errno = EPROTO;
-        return close_and_return (msg, -1);
-    }
-
-    //  Version frame
-    if (msg [1].size () != 3 || memcmp (msg [1].data (), "1.0", 3)) {
-        // CURVE I: ZAP handler sent bad version number
-        current_error_detail = zap;
-        errno = EPROTO;
-        return close_and_return (msg, -1);
-    }
-
-    //  Request id frame
-    if (msg [2].size () != 1 || memcmp (msg [2].data (), "1", 1)) {
-        // CURVE I: ZAP handler sent bad request ID
-        current_error_detail = zap;
-        errno = EPROTO;
-        return close_and_return (msg, -1);
-    }
-
-    //  Status code frame, only 200, 300, 400 and 500 are valid status codes
-    char *status_code_data = static_cast <char*> (msg [3].data());
-    if (msg [3].size () != 3 || status_code_data [0] < '2'
-          || status_code_data [0] > '5' || status_code_data [1] != '0'
-          || status_code_data [2] != '0') {
-        // CURVE I: ZAP handler sent invalid status code
-        current_error_detail = zap;
-        errno = EPROTO;
-        return close_and_return (msg, -1);
-    }
-
-    //  Save status code
-    status_code.assign (static_cast <char *> (msg [3].data ()), 3);
-
-    //  Save user id
-    set_user_id (msg [5].data (), msg [5].size ());
-
-    //  Process metadata frame
-    rc = parse_metadata (static_cast <const unsigned char*> (msg [6].data ()),
-                         msg [6].size (), true);
-
-    if (rc != 0)
-        return close_and_return (msg, -1);
-
-    //  Close all reply frames
-    for (int i = 0; i < 7; i++) {
-        const int rc2 = msg [i].close ();
-        errno_assert (rc2 == 0);
-    }
-
-    return 0;
-}
-
-void zmq::curve_server_t::handle_zap_status_code ()
-{
-    //  we can assume here that status_code is a valid ZAP status code, 
-    //  i.e. 200, 300, 400 or 500
-    if (status_code [0] == '2') {
-        state = send_ready;
-    } else {
-        state = send_error;
-
-        int err = 0;
-        switch (status_code [0]) {
-            case '3':
-                err = EAGAIN;
-                break;
-            case '4':
-                err = EACCES;
-                break;
-            case '5':
-                err = EFAULT;
-                break;
-        }
-        //  TODO use event_handshake_failed_zap here? but this is not a ZAP 
-        //  protocol error
-        
-        session->get_socket ()->event_handshake_failed_no_detail (
-          session->get_endpoint (), err);
-    }
+    zap_client_t::send_zap_request ("CURVE", 5, key, crypto_box_PUBLICKEYBYTES);
 }
 
 #endif

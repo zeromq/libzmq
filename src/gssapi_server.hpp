@@ -33,6 +33,7 @@
 #ifdef HAVE_LIBGSSAPI_KRB5
 
 #include "gssapi_mechanism_base.hpp"
+#include "zap_client.hpp"
 
 namespace zmq
 {
@@ -40,8 +41,8 @@ namespace zmq
     class msg_t;
     class session_base_t;
 
-    class gssapi_server_t :
-        public gssapi_mechanism_base_t
+    class gssapi_server_t 
+      : public gssapi_mechanism_base_t, public zap_client_t
     {
     public:
 
@@ -73,6 +74,8 @@ namespace zmq
 
         const std::string peer_address;
 
+        zap_client_t zap_client;
+
         //  Current FSM state
         state_t state;
 
@@ -85,8 +88,7 @@ namespace zmq
         void accept_context ();
         int produce_next_token (msg_t *msg_);
         int process_next_token (msg_t *msg_);
-        int send_zap_request ();
-        int receive_and_process_zap_reply();
+        void send_zap_request ();
     };
 
 }

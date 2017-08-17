@@ -32,6 +32,7 @@
 
 #include "mechanism.hpp"
 #include "options.hpp"
+#include "zap_client.hpp"
 
 namespace zmq
 {
@@ -39,7 +40,7 @@ namespace zmq
     class msg_t;
     class session_base_t;
 
-    class plain_server_t : public mechanism_t
+    class plain_server_t : public zap_client_common_handshake_t
     {
     public:
 
@@ -51,30 +52,8 @@ namespace zmq
         // mechanism implementation
         virtual int next_handshake_command (msg_t *msg_);
         virtual int process_handshake_command (msg_t *msg_);
-        virtual int zap_msg_available ();
-        virtual status_t status () const;
 
     private:
-
-        enum state_t {
-            waiting_for_hello,
-            sending_welcome,
-            waiting_for_initiate,
-            sending_ready,
-            waiting_for_zap_reply,
-            sending_error,
-            error_command_sent,
-            ready
-        };
-
-        session_base_t * const session;
-
-        const std::string peer_address;
-
-        //  Status code as received from ZAP handler
-        std::string status_code;
-
-        state_t state;
 
         int produce_welcome (msg_t *msg_) const;
         int produce_ready (msg_t *msg_) const;
@@ -83,9 +62,8 @@ namespace zmq
         int process_hello (msg_t *msg_);
         int process_initiate (msg_t *msg_);
 
-        int send_zap_request(const std::string &username,
-                             const std::string &password);
-        int receive_and_process_zap_reply ();
+        void send_zap_request (const std::string &username,
+                               const std::string &password);
     };
 
 }

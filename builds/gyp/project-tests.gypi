@@ -375,6 +375,17 @@
       ],
     },
     {
+      'target_name': 'test_security_zap',
+      'type': 'executable',
+      'sources': [
+        '../../tests/test_security_zap.cpp',
+        '../../tests/testutil.hpp'
+      ],
+      'dependencies': [
+        'libzmq'
+      ],
+    },
+    {
       'target_name': 'test_iov',
       'type': 'executable',
       'sources': [

@@ -51,6 +51,7 @@
 
 #include "mechanism.hpp"
 #include "options.hpp"
+#include "zap_client.hpp"
 
 namespace zmq
 {
@@ -58,7 +59,7 @@ namespace zmq
     class msg_t;
     class session_base_t;
 
-    class curve_server_t : public mechanism_t
+    class curve_server_t : public zap_client_common_handshake_t
     {
     public:
 
@@ -72,35 +73,8 @@ namespace zmq
         virtual int process_handshake_command (msg_t *msg_);
         virtual int encode (msg_t *msg_);
         virtual int decode (msg_t *msg_);
-        virtual int zap_msg_available ();
-        virtual status_t status () const;
-        virtual error_detail_t error_detail () const;
 
     private:
-
-        enum state_t {
-            expect_hello,
-            send_welcome,
-            expect_initiate,
-            expect_zap_reply,
-            send_ready,
-            send_error,
-            error_sent,
-            connected
-        };
-
-        session_base_t * const session;
-
-        const std::string peer_address;
-
-        //  Current FSM state
-        state_t state;
-
-        //  Status code as received from ZAP handler
-        std::string status_code;
-
-        //  Details about the current error state
-        error_detail_t current_error_detail;
 
         uint64_t cn_nonce;
         uint64_t cn_peer_nonce;
@@ -129,9 +103,7 @@ namespace zmq
         int produce_ready (msg_t *msg_);
         int produce_error (msg_t *msg_) const;
 
-        int send_zap_request (const uint8_t *key);
-        int receive_and_process_zap_reply ();
-        void handle_zap_status_code ();
+        void send_zap_request (const uint8_t *key);
     };
 
 }

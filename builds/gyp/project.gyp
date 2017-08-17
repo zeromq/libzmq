@@ -272,6 +272,8 @@
         '../../src/ypipe_base.hpp',
         '../../src/ypipe_conflate.hpp',
         '../../src/yqueue.hpp',
+        '../../src/zap_client.cpp',
+        '../../src/zap_client.hpp',
         '../../src/zmq.cpp',
         '../../src/zmq_utils.cpp'
       ],

@@ -34,6 +34,7 @@ set(tests
         test_ctx_destroy
         test_security_null
         test_security_plain
+        test_security_zap
         test_iov
         test_spec_req
         test_spec_rep
@@ -184,9 +185,15 @@ if(ZMQ_HAVE_CURVE)
 	"../src/err.cpp" 
 	"../src/random.cpp" 
 	"../src/clock.cpp"
+	"testutil_security.hpp"
 	)
   target_compile_definitions(test_security_curve PRIVATE "-DZMQ_USE_TWEETNACL")
 endif()
+
+target_sources(test_security_zap PRIVATE 
+  "testutil_security.hpp"
+)
+set_tests_properties(test_security_zap PROPERTIES TIMEOUT 60)
 
 #Check whether all tests in the current folder are present
 file(READ "${CMAKE_CURRENT_LIST_FILE}" CURRENT_LIST_FILE_CONTENT)

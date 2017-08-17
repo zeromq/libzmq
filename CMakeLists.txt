@@ -565,7 +565,8 @@ set (cxx-sources
         udp_engine.cpp
         udp_address.cpp
         scatter.cpp
-        gather.cpp)
+        gather.cpp
+		zap_client.cpp)
 
 set (rc-sources version.rc)
 
