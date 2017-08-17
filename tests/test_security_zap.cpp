@@ -201,6 +201,10 @@ int main (void)
     test_zap_errors (&socket_config_null_server, NULL,
                      &socket_config_null_client, NULL);
 
+    fprintf (stderr, "PLAIN mechanism\n");
+    test_zap_errors (&socket_config_plain_server, NULL,
+                     &socket_config_plain_client, NULL);
+
     if (zmq_has ("curve")) {
         fprintf (stderr, "CURVE mechanism\n");
         setup_testutil_security_curve ();

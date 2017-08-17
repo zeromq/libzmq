@@ -49,6 +49,26 @@ void socket_config_null_server (void *server, void *server_secret)
     assert (rc == 0);
 }
 
+//  PLAIN specific functions
+const char *test_plain_username = "testuser";
+const char *test_plain_password = "testpass";
+
+void socket_config_plain_client (void *server, void *server_secret)
+{
+    int rc = zmq_setsockopt (server, ZMQ_PLAIN_PASSWORD, test_plain_password, 8);
+    assert (rc == 0);
+
+    rc = zmq_setsockopt (server, ZMQ_PLAIN_USERNAME, test_plain_username, 8);
+    assert (rc == 0);
+}
+
+void socket_config_plain_server (void *server, void *server_secret)
+{
+    int as_server = 1;
+    int rc = zmq_setsockopt (server, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
+    assert (rc == 0);
+}
+
 //  CURVE specific functions
 
 //  We'll generate random test keys at startup
@@ -175,12 +195,23 @@ void zap_handler_generic (void *ctx,
         }
         else if (streq(mechanism, "PLAIN"))
         {
-          // TODO
-          authentication_succeeded = true;
+            char client_username[32];
+            int size = zmq_recv (handler, client_username, 32, 0);
+            assert (size > 0);
+            client_username [size] = 0;
+            
+            char client_password[32];
+            size = zmq_recv (handler, client_password, 32, 0);
+            assert (size > 0);
+            client_password [size] = 0;
+
+            authentication_succeeded =
+              streq (test_plain_username, client_username)
+              && streq (test_plain_password, client_password);
         }
         else if (streq(mechanism, "NULL"))
         {
-          authentication_succeeded = true;
+            authentication_succeeded = true;
         }
         else
         {
