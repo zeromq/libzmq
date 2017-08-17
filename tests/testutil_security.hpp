@@ -336,12 +336,15 @@ void setup_context_and_server_side (
     int rc = zmq_bind (*handler, "inproc://handler-control");
     assert (rc == 0);
 
-    *zap_thread = zmq_threadstart (zap_handler_, *ctx);
+    if (zap_handler_) {
+        *zap_thread = zmq_threadstart (zap_handler_, *ctx);
 
-    char *buf = s_recv (*handler);
-    assert (buf);
-    assert (streq (buf, "GO"));
-    free (buf);
+        char *buf = s_recv (*handler);
+        assert (buf);
+        assert (streq (buf, "GO"));
+        free (buf);
+    } else
+        *zap_thread = NULL;
 
     //  Server socket will accept connections
     *server = zmq_socket (*ctx, ZMQ_DEALER);
@@ -386,7 +389,8 @@ void shutdown_context_and_server_side (void *ctx,
     close_zero_linger (server);
 
     //  Wait until ZAP handler terminates
-    zmq_threadclose (zap_thread);
+    if (zap_thread)
+      zmq_threadclose (zap_thread);
 
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);

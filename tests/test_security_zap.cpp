@@ -266,6 +266,20 @@ void test_zap_errors (socket_config_fn server_socket_config_,
                                       client_socket_config_data_);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
+    //  no ZAP handler
+    fprintf (stderr, "test_zap_unsuccessful no ZAP handler started\n");
+    setup_context_and_server_side (
+      &ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint,
+      NULL, server_socket_config_);
+    test_zap_unsuccessful (ctx, my_endpoint, server, server_mon,
+#ifdef ZMQ_BUILD_DRAFT_API
+                           ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL, EFAULT,
+#else
+                           0, 0,
+#endif
+                           client_socket_config_, client_socket_config_data_);
+    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
+                                      handler);
 }
 
 int main (void)
