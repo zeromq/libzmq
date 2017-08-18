@@ -251,7 +251,9 @@ struct curve_client_tools_t
         return produce_hello (data, server_key, cn_nonce, cn_public, cn_secret);
     }
 
-    int process_welcome (const uint8_t *msg_data, size_t msg_size)
+    int process_welcome (const uint8_t *msg_data,
+                         size_t msg_size,
+                         uint8_t *cn_precom)
     {
         return process_welcome (msg_data, msg_size, server_key, cn_secret,
                                 cn_server, cn_cookie, cn_precom);
@@ -288,10 +290,6 @@ struct curve_client_tools_t
 
     //  Cookie received from server
     uint8_t cn_cookie[16 + 80];
-
-    //  Intermediary buffer used to speed up boxing and unboxing.
-    uint8_t cn_precom[crypto_box_BEFORENMBYTES];
-
 
   private:
     template <size_t N>

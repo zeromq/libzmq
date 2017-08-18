@@ -491,7 +491,8 @@ int connect_exchange_greeting_and_hello_welcome (
     uint8_t welcome[welcome_length + 2];
     recv_all (s, welcome, welcome_length + 2);
     
-    int res = tools.process_welcome (welcome + 2, welcome_length);
+    uint8_t cn_precom [crypto_box_BEFORENMBYTES];
+    int res = tools.process_welcome (welcome + 2, welcome_length, cn_precom);
     assert (res == 0);
 
 #ifdef ZMQ_BUILD_DRAFT_API

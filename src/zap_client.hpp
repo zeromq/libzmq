@@ -30,7 +30,7 @@
 #ifndef __ZMQ_ZAP_CLIENT_HPP_INCLUDED__
 #define __ZMQ_ZAP_CLIENT_HPP_INCLUDED__
 
-#include "mechanism.hpp"
+#include "mechanism_base.hpp"
 
 namespace zmq
 {

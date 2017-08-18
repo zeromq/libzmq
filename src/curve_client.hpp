@@ -32,7 +32,7 @@
 
 #ifdef ZMQ_HAVE_CURVE
 
-#include "mechanism.hpp"
+#include "curve_mechanism_base.hpp"
 #include "options.hpp"
 #include "curve_client_tools.hpp"
 
@@ -42,7 +42,7 @@ namespace zmq
     class msg_t;
     class session_base_t;
 
-    class curve_client_t : public mechanism_base_t
+    class curve_client_t : public curve_mechanism_base_t
     {
     public:
 
@@ -72,11 +72,7 @@ namespace zmq
 
         //  CURVE protocol tools
         curve_client_tools_t tools;
-
-        //  Nonce
-        uint64_t cn_nonce;
-        uint64_t cn_peer_nonce;
-
+       
         int produce_hello (msg_t *msg_);
         int process_welcome (const uint8_t *cmd_data, size_t data_size);
         int produce_initiate (msg_t *msg_);
