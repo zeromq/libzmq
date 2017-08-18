@@ -4,6 +4,7 @@ Priority: optional
 Maintainer: libzmq Developers <zeromq-dev@lists.zeromq.org>
 Build-Depends: debhelper (>= 9),
  dh-autoreconf,
+ libkrb5-dev,
  libpgm-dev,
  libsodium-dev,
  libunwind-dev | libunwind8-dev | libunwind7-dev,
