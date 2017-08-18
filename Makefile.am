@@ -307,6 +307,11 @@ src_libzmq_la_CPPFLAGS += ${pgm_CFLAGS}
 src_libzmq_la_LIBADD += ${pgm_LIBS}
 endif
 
+if BUILD_GSSAPI
+src_libzmq_la_CPPFLAGS += ${gssapi_krb5_CFLAGS}
+src_libzmq_la_LIBADD += ${gssapi_krb5_LIBS}
+endif
+
 if ENABLE_PERF
 noinst_PROGRAMS = \
 	perf/local_lat \
