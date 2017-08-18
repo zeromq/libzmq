@@ -103,6 +103,17 @@ void test_change_after_connected()
     zmq_ctx_term(ctx);
 }
 
+int send_until_wouldblock (void *socket)
+{
+    int send_count = 0;
+    while (send_count < MAX_SENDS
+           && zmq_send (socket, &send_count, sizeof (send_count), ZMQ_DONTWAIT)
+                == sizeof (send_count)) {
+        ++send_count;
+    }
+    return send_count;
+}
+
 void test_decrease_when_full()
 {
     int rc;
@@ -115,50 +126,50 @@ void test_decrease_when_full()
     rc = zmq_setsockopt(connect_socket, ZMQ_RCVHWM, &val, sizeof(val));
     assert(rc == 0);
 
-    val = 100;
-    rc = zmq_setsockopt(bind_socket, ZMQ_SNDHWM, &val, sizeof(val));
-    assert(rc == 0);
+    int sndhwm = 100;
+    rc = zmq_setsockopt (bind_socket, ZMQ_SNDHWM, &sndhwm, sizeof (sndhwm));
+    assert (rc == 0);
 
     zmq_bind(bind_socket, "inproc://a");
     zmq_connect(connect_socket, "inproc://a");
 
     // Fill up to hwm
-    int send_count = 0;
-    while (send_count < MAX_SENDS && zmq_send(bind_socket, &send_count, sizeof(send_count), ZMQ_DONTWAIT) == sizeof(send_count))
-        ++send_count;
-    assert(send_count == 101);
+    int send_count = send_until_wouldblock(bind_socket);
+    assert (send_count <= sndhwm + 1 && send_count > (sndhwm / 2));
 
-    // Descrease snd hwm
-    val = 70;
-    rc = zmq_setsockopt(bind_socket, ZMQ_SNDHWM, &val, sizeof(val));
+    // Decrease snd hwm
+    sndhwm = 70;
+    rc = zmq_setsockopt(bind_socket, ZMQ_SNDHWM, &sndhwm, sizeof(sndhwm));
     assert(rc == 0);
 
-    size_t placeholder = sizeof(val);
-    val = 0;
-    rc = zmq_getsockopt(bind_socket, ZMQ_SNDHWM, &val, &placeholder);
+    int sndhwm_read = 0;
+    size_t sndhwm_read_size = sizeof(sndhwm_read);
+    rc = zmq_getsockopt(bind_socket, ZMQ_SNDHWM, &sndhwm_read, &sndhwm_read_size);
     assert(rc == 0);
-    assert(val == 70);
+    assert(sndhwm_read == sndhwm);
+
+    msleep (SETTLE_TIME);
 
     // Read out all data (should get up to previous hwm worth so none were dropped)
     int read_count = 0;
     int read_data = 0;
-    while (read_count < MAX_SENDS && zmq_recv(connect_socket, &read_data, sizeof(read_data), ZMQ_DONTWAIT) == sizeof(read_data)) {
+    while (
+      read_count < MAX_SENDS
+      && zmq_recv (connect_socket, &read_data, sizeof (read_data), ZMQ_DONTWAIT)
+           == sizeof (read_data)) {
         assert(read_count == read_data);
         ++read_count;
     }
 
-    assert(read_count == 101);
+    assert(read_count == send_count);
 
     // Give io thread some time to catch up
     msleep (SETTLE_TIME);
 
     // Fill up to new hwm
-    send_count = 0;
-    while (send_count < MAX_SENDS && zmq_send(bind_socket, &send_count, sizeof(send_count), ZMQ_DONTWAIT) == sizeof(send_count))
-        ++send_count;
-
-    // Really this should be 71, but the lwm stuff kicks in doesn't seem quite right
-    assert(send_count > 0);
+    send_count = send_until_wouldblock (bind_socket);
+    fprintf(stderr, "sndhwm==%i, send_count==%i\n", sndhwm, send_count);
+    assert (send_count <= sndhwm + 1 && send_count > (sndhwm / 2));
 
     zmq_close(bind_socket);
     zmq_close(connect_socket);
