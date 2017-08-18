@@ -242,7 +242,7 @@ void test_vanilla_socket (void *ctx, void *server, void *server_mon, char *endpo
 #endif
 
     s = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    int rc = connect (s, (struct sockaddr*) &ip4addr, sizeof (ip4addr));
+    rc = connect (s, (struct sockaddr*) &ip4addr, sizeof (ip4addr));
     assert (rc > -1);
     // send anonymous ZMTP/1.0 greeting
     send (s, "\x01\x00", 2, 0);
