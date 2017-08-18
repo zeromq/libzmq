@@ -181,12 +181,18 @@ int zmq::gssapi_mechanism_base_t::decode_message (msg_t *msg_)
     maj_stat = gss_unwrap(&min_stat, context, &wrapped, &plaintext,
                           &state, (gss_qop_t *) NULL);
 
-    //  TODO I don't think it is a good idea to use zmq_assert here. If 
-    //  decryption fails, gss_unwrap returns GSS_S_BAD_SIG. This opens up 
-    //  to DoS attacks by clients! Instead, a 
-    //  ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC event should be emitted.
-
-    zmq_assert(maj_stat == GSS_S_COMPLETE);
+    if (maj_stat != GSS_S_COMPLETE)
+    {
+        //  TODO is it correct to release the plaintext buffer if gss_unwrap 
+        //  did not succeed?
+        gss_release_buffer (&min_stat, &plaintext);
+        free (wrapped);
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
+        errno = EPROTO;
+        return -1;
+    }
     zmq_assert(state);
 
     // Re-initialize msg_ for plaintext
