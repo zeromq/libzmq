@@ -40,7 +40,7 @@
 zmq::plain_server_t::plain_server_t (session_base_t *session_,
                                      const std::string &peer_address_,
                                      const options_t &options_) :
-    mechanism_t (options_),
+    mechanism_base_t (session_, options_),
     zap_client_common_handshake_t (
       session_, peer_address_, options_, sending_welcome)
 {
@@ -89,8 +89,9 @@ int zmq::plain_server_t::process_handshake_command (msg_t *msg_)
             rc = process_initiate (msg_);
             break;
         default:
-            //  Temporary support for security debugging
-            puts ("PLAIN I: invalid handshake command");
+            //  TODO see comment in curve_server_t::process_handshake_command
+            session->get_socket ()->event_handshake_failed_protocol (
+              session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNSPECIFIED);
             errno = EPROTO;
             rc = -1;
             break;
@@ -106,12 +107,16 @@ int zmq::plain_server_t::process_handshake_command (msg_t *msg_)
 
 int zmq::plain_server_t::process_hello (msg_t *msg_)
 {
+    int rc = check_basic_command_structure (msg_);
+    if (rc == -1)
+      return -1;
+
     const unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
-    size_t bytes_left = msg_->size ();
+    int bytes_left = msg_->size ();
 
     if (bytes_left < 6 || memcmp (ptr, "\x05HELLO", 6)) {
-        //  Temporary support for security debugging
-        puts ("PLAIN I: invalid PLAIN client, did not send HELLO");
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         return -1;
     }
@@ -119,17 +124,19 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     bytes_left -= 6;
 
     if (bytes_left < 1) {
-        //  Temporary support for security debugging
-        puts ("PLAIN I: invalid PLAIN client, did not send username");
+        //  PLAIN I: invalid PLAIN client, did not send username
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
         errno = EPROTO;
         return -1;
     }
-    const size_t username_length = static_cast <size_t> (*ptr++);
+    const uint8_t username_length = *ptr++;
     bytes_left -= 1;
 
-    if (bytes_left < username_length) {
-        //  Temporary support for security debugging
-        puts ("PLAIN I: invalid PLAIN client, sent malformed username");
+    if (bytes_left < (int)username_length) {
+        //  PLAIN I: invalid PLAIN client, sent malformed username
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
         errno = EPROTO;
         return -1;
     }
@@ -137,17 +144,19 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     ptr += username_length;
     bytes_left -= username_length;
     if (bytes_left < 1) {
-        //  Temporary support for security debugging
-        puts ("PLAIN I: invalid PLAIN client, did not send password");
+        //  PLAIN I: invalid PLAIN client, did not send password
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
         errno = EPROTO;
         return -1;
     }
 
-    const size_t password_length = static_cast <size_t> (*ptr++);
+    const uint8_t password_length = *ptr++;
     bytes_left -= 1;
-    if (bytes_left < password_length) {
-        //  Temporary support for security debugging
-        puts ("PLAIN I: invalid PLAIN client, sent malformed password");
+    if (bytes_left < (int)password_length) {
+        //  PLAIN I: invalid PLAIN client, sent malformed password
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
         errno = EPROTO;
         return -1;
     }
@@ -156,8 +165,9 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     ptr += password_length;
     bytes_left -= password_length;
     if (bytes_left > 0) {
-        //  Temporary support for security debugging
-        puts ("PLAIN I: invalid PLAIN client, sent extraneous data");
+        //  PLAIN I: invalid PLAIN client, sent extraneous data
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
         errno = EPROTO;
         return -1;
     }
@@ -166,7 +176,7 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     //  Note that there is no point to PLAIN if ZAP is not set up to handle the
     //  username and password, so if ZAP is not configured it is considered a
     //  failure.
-    int rc = session->zap_connect ();
+    rc = session->zap_connect ();
     if (rc != 0)
         return -1;
     send_zap_request (username, password);
@@ -187,8 +197,8 @@ int zmq::plain_server_t::process_initiate (msg_t *msg_)
     const size_t bytes_left = msg_->size ();
 
     if (bytes_left < 9 || memcmp (ptr, "\x08INITIATE", 9)) {
-        //  Temporary support for security debugging
-        puts ("PLAIN I: invalid PLAIN client, did not send INITIATE");
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         return -1;
     }

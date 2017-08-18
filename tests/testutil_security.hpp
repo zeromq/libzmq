@@ -331,11 +331,11 @@ void setup_context_and_server_side (
     char monitor_endpoint [] = "inproc://monitor-server";
 
     //  Monitor handshake events on the server
-    rc = zmq_socket_monitor (
-      *server, monitor_endpoint,
-      ZMQ_EVENT_HANDSHAKE_SUCCEEDED | ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL
-        | ZMQ_EVENT_HANDSHAKE_FAILED_ZAP | ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP
-        | ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
+    rc = zmq_socket_monitor (*server, monitor_endpoint,
+                             ZMQ_EVENT_HANDSHAKE_SUCCEEDED
+                               | ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL
+                               | ZMQ_EVENT_HANDSHAKE_FAILED_AUTH
+                               | ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL);
     assert (rc == 0);
 
     //  Create socket for collecting monitor events
@@ -514,7 +514,11 @@ int expect_monitor_event_multiple (void *server_mon,
         }
         if (event != expected_event
             || (-1 != expected_err && err != expected_err)) {
-            fprintf (stderr, "Unexpected event: %x (err = %i)\n", event, err);
+            fprintf (
+              stderr,
+              "Unexpected event: 0x%x, value = %i/0x%x (expected: 0x%x, value "
+              "= %i/0x%x)\n",
+              event, err, err, expected_event, expected_err, expected_err);
             assert (false);
         }
         ++count_of_expected_events;

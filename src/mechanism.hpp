@@ -38,10 +38,11 @@
 namespace zmq
 {
 
+    class msg_t;
+    class session_base_t;
+
     //  Abstract class representing security mechanism.
     //  Different mechanism extends this class.
-
-    class msg_t;
 
     class mechanism_t
     {
@@ -51,14 +52,6 @@ namespace zmq
             handshaking,
             ready,
             error
-        };
-
-        //  Provides more details when in status_t::error
-        enum error_detail_t {
-            no_detail,
-            zmtp,
-            zap,
-            encryption
         };
 
         mechanism_t (const options_t &options_);
@@ -80,10 +73,6 @@ namespace zmq
 
         //  Returns the status of this mechanism.
         virtual status_t status () const = 0;
-
-        //  Returns details about of the current error of the mechanism.
-        //  Returned value does not makes sense if the current status is not error.
-        virtual error_detail_t error_detail () const { return no_detail; }
 
         void set_peer_identity (const void *id_ptr, size_t id_size);
 

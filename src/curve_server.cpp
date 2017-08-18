@@ -41,11 +41,11 @@
 zmq::curve_server_t::curve_server_t (session_base_t *session_,
                                      const std::string &peer_address_,
                                      const options_t &options_) :
-    mechanism_t (options_),
+    mechanism_base_t (session_, options_),
     zap_client_common_handshake_t (
       session_, peer_address_, options_, sending_ready),
-    cn_nonce (1),
-    cn_peer_nonce (1)
+    curve_mechanism_base_t (
+      session_, options_, "CurveZMQMESSAGES", "CurveZMQMESSAGEC")
 {
     int rc;
     //  Fetch our secret key from socket options
@@ -107,7 +107,8 @@ int zmq::curve_server_t::process_handshake_command (msg_t *msg_)
             // Therefore, it should be changed to zmq_assert (false);
 
             // CURVE I: invalid handshake command
-            current_error_detail = zmtp;
+            session->get_socket ()->event_handshake_failed_protocol (
+              session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNSPECIFIED);
             errno = EPROTO;
             rc = -1;
             break;
@@ -124,139 +125,34 @@ int zmq::curve_server_t::process_handshake_command (msg_t *msg_)
 int zmq::curve_server_t::encode (msg_t *msg_)
 {
     zmq_assert (state == ready);
-
-    const size_t mlen = crypto_box_ZEROBYTES + 1 + msg_->size ();
-
-    uint8_t message_nonce [crypto_box_NONCEBYTES];
-    memcpy (message_nonce, "CurveZMQMESSAGES", 16);
-    put_uint64 (message_nonce + 16, cn_nonce);
-
-    uint8_t flags = 0;
-    if (msg_->flags () & msg_t::more)
-        flags |= 0x01;
-    if (msg_->flags () & msg_t::command)
-        flags |= 0x02;
-
-    uint8_t *message_plaintext = static_cast <uint8_t *> (malloc (mlen));
-    alloc_assert (message_plaintext);
-
-    memset (message_plaintext, 0, crypto_box_ZEROBYTES);
-    message_plaintext [crypto_box_ZEROBYTES] = flags;
-    memcpy (message_plaintext + crypto_box_ZEROBYTES + 1,
-            msg_->data (), msg_->size ());
-
-    uint8_t *message_box = static_cast <uint8_t *> (malloc (mlen));
-    alloc_assert (message_box);
-
-    int rc = crypto_box_afternm (message_box, message_plaintext,
-                                 mlen, message_nonce, cn_precom);
-    zmq_assert (rc == 0);
-
-    rc = msg_->close ();
-    zmq_assert (rc == 0);
-
-    rc = msg_->init_size (16 + mlen - crypto_box_BOXZEROBYTES);
-    zmq_assert (rc == 0);
-
-    uint8_t *message = static_cast <uint8_t *> (msg_->data ());
-
-    memcpy (message, "\x07MESSAGE", 8);
-    memcpy (message + 8, message_nonce + 16, 8);
-    memcpy (message + 16, message_box + crypto_box_BOXZEROBYTES,
-            mlen - crypto_box_BOXZEROBYTES);
-
-    free (message_plaintext);
-    free (message_box);
-
-    cn_nonce++;
-
-    return 0;
+    return curve_mechanism_base_t::encode (msg_);
 }
 
 int zmq::curve_server_t::decode (msg_t *msg_)
 {
     zmq_assert (state == ready);
-
-    if (msg_->size () < 33) {
-        // CURVE I : invalid CURVE client, sent malformed command
-        current_error_detail = zmtp;
-        errno = EPROTO;
-        return -1;
-    }
-
-    const uint8_t *message = static_cast <uint8_t *> (msg_->data ());
-    if (memcmp (message, "\x07MESSAGE", 8)) {
-        // CURVE I: invalid CURVE client, did not send MESSAGE
-        current_error_detail = zmtp;
-        errno = EPROTO;
-        return -1;
-    }
-
-    uint8_t message_nonce [crypto_box_NONCEBYTES];
-    memcpy (message_nonce, "CurveZMQMESSAGEC", 16);
-    memcpy (message_nonce + 16, message + 8, 8);
-    uint64_t nonce = get_uint64(message + 8);
-    if (nonce <= cn_peer_nonce) {
-        errno = EPROTO;
-        return -1;
-    }
-    cn_peer_nonce = nonce;
-
-    const size_t clen = crypto_box_BOXZEROBYTES + msg_->size () - 16;
-
-    uint8_t *message_plaintext = static_cast <uint8_t *> (malloc (clen));
-    alloc_assert (message_plaintext);
-
-    uint8_t *message_box = static_cast <uint8_t *> (malloc (clen));
-    alloc_assert (message_box);
-
-    memset (message_box, 0, crypto_box_BOXZEROBYTES);
-    memcpy (message_box + crypto_box_BOXZEROBYTES,
-            message + 16, msg_->size () - 16);
-
-    int rc = crypto_box_open_afternm (message_plaintext, message_box,
-                                      clen, message_nonce, cn_precom);
-    if (rc == 0) {
-        rc = msg_->close ();
-        zmq_assert (rc == 0);
-
-        rc = msg_->init_size (clen - 1 - crypto_box_ZEROBYTES);
-        zmq_assert (rc == 0);
-
-        const uint8_t flags = message_plaintext [crypto_box_ZEROBYTES];
-        if (flags & 0x01)
-            msg_->set_flags (msg_t::more);
-        if (flags & 0x02)
-            msg_->set_flags (msg_t::command);
-
-        memcpy (msg_->data (),
-                message_plaintext + crypto_box_ZEROBYTES + 1,
-                msg_->size ());
-    }
-    else {
-        // CURVE I : connection key used for MESSAGE is wrong
-        current_error_detail = encryption;
-        errno = EPROTO;
-    }
-    free (message_plaintext);
-    free (message_box);
-
-    return rc;
+    return curve_mechanism_base_t::decode (msg_);
 }
 
 int zmq::curve_server_t::process_hello (msg_t *msg_)
 {
-    if (msg_->size () != 200) {
-        // CURVE I: client HELLO is not correct size
-        current_error_detail = zmtp;
+    int rc = check_basic_command_structure (msg_);
+    if (rc == -1)
+      return -1;
+
+    const size_t size = msg_->size ();
+    const uint8_t * const hello = static_cast <uint8_t *> (msg_->data ());
+
+    if (size < 6 || memcmp (hello, "\x05HELLO", 6)) {
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         return -1;
     }
 
-    const uint8_t * const hello = static_cast <uint8_t *> (msg_->data ());
-    if (memcmp (hello, "\x05HELLO", 6)) {
-        // CURVE I: client HELLO has invalid command name
-        current_error_detail = zmtp;
+    if (size != 200) {
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
         errno = EPROTO;
         return -1;
     }
@@ -266,7 +162,8 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
 
     if (major != 1 || minor != 0) {
         // CURVE I: client HELLO has unknown version number
-        current_error_detail = zmtp;
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
         errno = EPROTO;
         return -1;
     }
@@ -286,12 +183,12 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
     memcpy (hello_box + crypto_box_BOXZEROBYTES, hello + 120, 80);
 
     //  Open Box [64 * %x0](C'->S)
-    int rc = crypto_box_open (hello_plaintext, hello_box,
-                              sizeof hello_box,
-                              hello_nonce, cn_client, secret_key);
+    rc = crypto_box_open (hello_plaintext, hello_box, sizeof hello_box,
+                          hello_nonce, cn_client, secret_key);
     if (rc != 0) {
         // CURVE I: cannot open client HELLO -- wrong server key?
-        current_error_detail = encryption;
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
         errno = EPROTO;
         return -1;
     }
@@ -345,8 +242,8 @@ int zmq::curve_server_t::produce_welcome (msg_t *msg_)
             cookie_ciphertext + crypto_secretbox_BOXZEROBYTES, 80);
 
     rc = crypto_box (welcome_ciphertext, welcome_plaintext,
-                     sizeof welcome_plaintext,
-                     welcome_nonce, cn_client, secret_key);
+                     sizeof welcome_plaintext, welcome_nonce, cn_client,
+                     secret_key);
 
     //  TODO I think we should change this back to zmq_assert (rc == 0);
     //  as it was before https://github.com/zeromq/libzmq/pull/1832
@@ -370,17 +267,24 @@ int zmq::curve_server_t::produce_welcome (msg_t *msg_)
 
 int zmq::curve_server_t::process_initiate (msg_t *msg_)
 {
-    if (msg_->size () < 257) {
-        // CURVE I: client INITIATE is not correct size
-        current_error_detail = zmtp;
+    int rc = check_basic_command_structure (msg_);
+    if (rc == -1)
+      return -1;
+
+    const size_t size = msg_->size ();
+    const uint8_t *initiate = static_cast <uint8_t *> (msg_->data ());
+
+    if (size < 9 || memcmp (initiate, "\x08INITIATE", 9)) {
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         return -1;
     }
 
-    const uint8_t *initiate = static_cast <uint8_t *> (msg_->data ());
-    if (memcmp (initiate, "\x08INITIATE", 9)) {
-        // CURVE I: client INITIATE has invalid command name
-        current_error_detail = zmtp;
+    if (size < 257) {
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_INITIATE);
         errno = EPROTO;
         return -1;
     }
@@ -396,12 +300,12 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     memcpy (cookie_nonce, "COOKIE--", 8);
     memcpy (cookie_nonce + 8, initiate + 9, 16);
 
-    int rc = crypto_secretbox_open (cookie_plaintext, cookie_box,
-                                    sizeof cookie_box,
-                                    cookie_nonce, cookie_key);
+    rc = crypto_secretbox_open (cookie_plaintext, cookie_box, sizeof cookie_box,
+                                cookie_nonce, cookie_key);
     if (rc != 0) {
         // CURVE I: cannot open client INITIATE cookie
-        current_error_detail = encryption;
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
         errno = EPROTO;
         return -1;
     }
@@ -413,12 +317,13 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
         //  client that knows the server's secret temporary cookie key
 
         // CURVE I: client INITIATE cookie is not valid
-        current_error_detail = encryption;
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
         errno = EPROTO;
         return -1;
     }
 
-    const size_t clen = (msg_->size () - 113) + crypto_box_BOXZEROBYTES;
+    const size_t clen = (size - 113) + crypto_box_BOXZEROBYTES;
 
     uint8_t initiate_nonce [crypto_box_NONCEBYTES];
     uint8_t initiate_plaintext [crypto_box_ZEROBYTES + 128 + 256];
@@ -437,7 +342,8 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
                           clen, initiate_nonce, cn_client, cn_secret);
     if (rc != 0) {
         // CURVE I: cannot open client INITIATE
-        current_error_detail = encryption;
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
         errno = EPROTO;
         return -1;
     }
@@ -462,7 +368,8 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
                           vouch_nonce, client_key, cn_secret);
     if (rc != 0) {
         // CURVE I: cannot open client INITIATE vouch
-        current_error_detail = encryption;
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
         errno = EPROTO;
         return -1;
     }
@@ -473,7 +380,8 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
         //  client that knows the server's secret short-term key
 
         // CURVE I: invalid handshake from client (public key)
-        current_error_detail = encryption;
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_KEY_EXCHANGE);
         errno = EPROTO;
         return -1;
     }

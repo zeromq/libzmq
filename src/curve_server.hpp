@@ -32,34 +32,18 @@
 
 #ifdef ZMQ_HAVE_CURVE
 
-#if defined (ZMQ_USE_TWEETNACL)
-#   include "tweetnacl.h"
-#elif defined (ZMQ_USE_LIBSODIUM)
-#   include "sodium.h"
-#endif
-
-#if crypto_box_NONCEBYTES != 24 \
-||  crypto_box_PUBLICKEYBYTES != 32 \
-||  crypto_box_SECRETKEYBYTES != 32 \
-||  crypto_box_ZEROBYTES != 32 \
-||  crypto_box_BOXZEROBYTES != 16 \
-||  crypto_secretbox_NONCEBYTES != 24 \
-||  crypto_secretbox_ZEROBYTES != 32 \
-||  crypto_secretbox_BOXZEROBYTES != 16
-#   error "CURVE library not built properly"
-#endif
-
-#include "mechanism.hpp"
+#include "curve_mechanism_base.hpp"
 #include "options.hpp"
 #include "zap_client.hpp"
 
 namespace zmq
 {
-
-    class msg_t;
-    class session_base_t;
-
-    class curve_server_t : public zap_client_common_handshake_t
+#ifdef _MSC_VER
+#pragma warning (push)
+#pragma warning (disable: 4250)
+#endif
+    class curve_server_t : public zap_client_common_handshake_t,
+                           public curve_mechanism_base_t
     {
     public:
 
@@ -76,9 +60,6 @@ namespace zmq
 
     private:
 
-        uint64_t cn_nonce;
-        uint64_t cn_peer_nonce;
-
         //  Our secret key (s)
         uint8_t secret_key [crypto_box_SECRETKEYBYTES];
 
@@ -94,9 +75,6 @@ namespace zmq
         //  Key used to produce cookie
         uint8_t cookie_key [crypto_secretbox_KEYBYTES];
 
-        //  Intermediary buffer used to speed up boxing and unboxing.
-        uint8_t cn_precom [crypto_box_BEFORENMBYTES];
-
         int process_hello (msg_t *msg_);
         int produce_welcome (msg_t *msg_);
         int process_initiate (msg_t *msg_);
@@ -105,6 +83,9 @@ namespace zmq
 
         void send_zap_request (const uint8_t *key);
     };
+#ifdef _MSC_VER
+#pragma warning (pop)
+#endif
 
 }
 

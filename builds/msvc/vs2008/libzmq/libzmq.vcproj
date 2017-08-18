@@ -121,6 +121,7 @@
       <File RelativePath="..\..\..\..\src\kqueue.cpp" />
       <File RelativePath="..\..\..\..\src\lb.cpp" />
       <File RelativePath="..\..\..\..\src\mailbox.cpp" />
+      <File RelativePath="..\..\..\..\src\mechanism_base.cpp" />
       <File RelativePath="..\..\..\..\src\mechanism.cpp" />
       <File RelativePath="..\..\..\..\src\metadata.cpp" />
       <File RelativePath="..\..\..\..\src\msg.cpp" />
@@ -173,6 +174,7 @@
       <File RelativePath="..\..\..\..\src\udp_engine.cpp" />
       <File RelativePath="..\..\..\..\src\xpub.cpp" />
       <File RelativePath="..\..\..\..\src\xsub.cpp" />
+      <File RelativePath="..\..\..\..\src\zap_client.cpp" />
       <File RelativePath="..\..\..\..\src\zmq.cpp" />
       <File RelativePath="..\..\..\..\src\zmq_utils.cpp" />
     </Filter>

@@ -35,6 +35,7 @@
 #include "msg.hpp"
 #include "err.hpp"
 #include "wire.hpp"
+#include "session_base.hpp"
 
 zmq::mechanism_t::mechanism_t (const options_t &options_) :
     options (options_)

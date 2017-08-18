@@ -38,6 +38,8 @@ src_libzmq_la_SOURCES = \
 	src/curve_client.cpp \
 	src/curve_client.hpp \
 	src/curve_client_tools.hpp \
+	src/curve_mechanism_base.cpp \
+	src/curve_mechanism_base.hpp \
 	src/curve_server.cpp \
 	src/curve_server.hpp \
 	src/dbuffer.hpp \
@@ -97,6 +99,8 @@ src_libzmq_la_SOURCES = \
 	src/mailbox_safe.hpp \
 	src/mechanism.cpp \
 	src/mechanism.hpp  \
+	src/mechanism_base.cpp \
+	src/mechanism_base.hpp  \
 	src/metadata.cpp \
 	src/metadata.hpp \
 	src/msg.cpp \

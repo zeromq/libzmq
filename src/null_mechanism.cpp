@@ -42,7 +42,7 @@
 zmq::null_mechanism_t::null_mechanism_t (session_base_t *session_,
                                          const std::string &peer_address_,
                                          const options_t &options_) :
-    mechanism_t (options_),
+    mechanism_base_t (session_, options_),
     zap_client_t (session_, peer_address_, options_),
     ready_command_sent (false),
     error_command_sent (false),
@@ -104,8 +104,9 @@ int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
 int zmq::null_mechanism_t::process_handshake_command (msg_t *msg_)
 {
     if (ready_command_received || error_command_received) {
-        //  Temporary support for security debugging
-        puts ("NULL I: client sent invalid NULL handshake (duplicate READY)");
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         return -1;
     }
@@ -121,8 +122,9 @@ int zmq::null_mechanism_t::process_handshake_command (msg_t *msg_)
     if (data_size >= 6 && !memcmp (cmd_data, "\5ERROR", 6))
         rc = process_error_command (cmd_data, data_size);
     else {
-        //  Temporary support for security debugging
-        puts ("NULL I: client sent invalid NULL handshake (not READY)");
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         rc = -1;
     }
@@ -147,11 +149,19 @@ int zmq::null_mechanism_t::process_error_command (
         const unsigned char *cmd_data, size_t data_size)
 {
     if (data_size < 7) {
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_ERROR);
+
         errno = EPROTO;
         return -1;
     }
     const size_t error_reason_len = static_cast <size_t> (cmd_data [6]);
     if (error_reason_len > data_size - 7) {
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_ERROR);
+
         errno = EPROTO;
         return -1;
     }
@@ -191,4 +201,3 @@ void zmq::null_mechanism_t::send_zap_request ()
 {
     zap_client_t::send_zap_request ("NULL", 4, NULL, NULL, 0);
 }
-

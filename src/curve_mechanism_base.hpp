@@ -27,53 +27,53 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_PLAIN_CLIENT_HPP_INCLUDED__
-#define __ZMQ_PLAIN_CLIENT_HPP_INCLUDED__
+#ifndef __ZMQ_CURVE_MECHANISM_BASE_HPP_INCLUDED__
+#define __ZMQ_CURVE_MECHANISM_BASE_HPP_INCLUDED__
+
+#ifdef ZMQ_HAVE_CURVE
+
+#if defined(ZMQ_USE_TWEETNACL)
+#include "tweetnacl.h"
+#elif defined(ZMQ_USE_LIBSODIUM)
+#include "sodium.h"
+#endif
+
+#if crypto_box_NONCEBYTES != 24 || crypto_box_PUBLICKEYBYTES != 32             \
+  || crypto_box_SECRETKEYBYTES != 32 || crypto_box_ZEROBYTES != 32             \
+  || crypto_box_BOXZEROBYTES != 16 || crypto_secretbox_NONCEBYTES != 24        \
+  || crypto_secretbox_ZEROBYTES != 32 || crypto_secretbox_BOXZEROBYTES != 16
+#error "CURVE library not built properly"
+#endif
 
 #include "mechanism_base.hpp"
 #include "options.hpp"
 
 namespace zmq
 {
+class curve_mechanism_base_t : public virtual mechanism_base_t
+{
+  public:
+    curve_mechanism_base_t (session_base_t *session_,
+                            const options_t &options_,
+                            const char *encode_nonce_prefix_,
+                            const char *decode_nonce_prefix_);
 
-    class msg_t;
+    // mechanism implementation
+    virtual int encode (msg_t *msg_);
+    virtual int decode (msg_t *msg_);
 
-    class plain_client_t : public mechanism_base_t
-    {
-      public:
-        plain_client_t (session_base_t *const session_,
-                        const options_t &options_);
-        virtual ~plain_client_t ();
+  protected:
+    const char *encode_nonce_prefix;
+    const char *decode_nonce_prefix;
 
-        // mechanism implementation
-        virtual int next_handshake_command (msg_t *msg_);
-        virtual int process_handshake_command (msg_t *msg_);
-        virtual status_t status () const;
+    uint64_t cn_nonce;
+    uint64_t cn_peer_nonce;
 
-      private:
-
-        enum state_t {
-            sending_hello,
-            waiting_for_welcome,
-            sending_initiate,
-            waiting_for_ready,
-            error_command_received,
-            ready
-        };
-
-        state_t state;
-
-        int produce_hello (msg_t *msg_) const;
-        int produce_initiate (msg_t *msg_) const;
-
-        int process_welcome (
-            const unsigned char *cmd_data, size_t data_size);
-        int process_ready (
-            const unsigned char *cmd_data, size_t data_size);
-        int process_error (
-            const unsigned char *cmd_data, size_t data_size);
-    };
-
+    //  Intermediary buffer used to speed up boxing and unboxing.
+    uint8_t cn_precom [crypto_box_BEFORENMBYTES];
+};
 }
+
+#endif
 
 #endif

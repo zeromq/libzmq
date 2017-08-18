@@ -45,19 +45,18 @@ namespace zmq
       : public gssapi_mechanism_base_t, public zap_client_t
     {
     public:
+      gssapi_server_t (session_base_t *session_,
+                       const std::string &peer_address,
+                       const options_t &options_);
+      virtual ~gssapi_server_t ();
 
-        gssapi_server_t (session_base_t *session_,
-                            const std::string &peer_address,
-                            const options_t &options_);
-        virtual ~gssapi_server_t ();
-
-        // mechanism implementation
-        virtual int next_handshake_command (msg_t *msg_);
-        virtual int process_handshake_command (msg_t *msg_);
-        virtual int encode (msg_t *msg_);
-        virtual int decode (msg_t *msg_);
-        virtual int zap_msg_available ();
-        virtual status_t status () const;
+      // mechanism implementation
+      virtual int next_handshake_command (msg_t *msg_);
+      virtual int process_handshake_command (msg_t *msg_);
+      virtual int encode (msg_t *msg_);
+      virtual int decode (msg_t *msg_);
+      virtual int zap_msg_available ();
+      virtual status_t status () const;
 
     private:
 

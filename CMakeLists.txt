@@ -484,6 +484,7 @@ set (cxx-sources
         client.cpp
         clock.cpp
         ctx.cpp
+        curve_mechanism_base.cpp
         curve_client.cpp
         curve_server.cpp
         dealer.cpp
@@ -504,6 +505,7 @@ set (cxx-sources
         mailbox.cpp
         mailbox_safe.cpp
         mechanism.cpp
+        mechanism_base.cpp
         metadata.cpp
         msg.cpp
         mtrie.cpp

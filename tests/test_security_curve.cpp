@@ -103,7 +103,8 @@ void test_garbage_key(void *ctx,
 #ifdef ZMQ_BUILD_DRAFT_API
     int handshake_failed_encryption_event_count =
       expect_monitor_event_multiple (server_mon,
-                                     ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION);
+                                     ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL,
+                                     ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
 
     // handshake_failed_encryption_event_count should be at least two because 
     // expect_bounce_fail involves two exchanges
@@ -149,9 +150,8 @@ void test_curve_security_with_bogus_client_credentials (
 
     int event_count = 0;
 #ifdef ZMQ_BUILD_DRAFT_API
-    // TODO add another event type ZMQ_EVENT_HANDSHAKE_FAILED_AUTH for this case?
     event_count = expect_monitor_event_multiple (
-      server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL, EACCES);
+      server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 400);
     assert (event_count <= 1);
 #endif
 
@@ -160,7 +160,10 @@ void test_curve_security_with_bogus_client_credentials (
             || 1 <= zmq_atomic_counter_value (zap_requests_handled));
 }
 
-void expect_zmtp_failure (void *client, char *my_endpoint, void *server, void *server_mon)
+void expect_zmtp_mechanism_mismatch (void *client,
+                                     char *my_endpoint,
+                                     void *server,
+                                     void *server_mon)
 {
     //  This must be caught by the curve_server class, not passed to ZAP
     int rc = zmq_connect (client, my_endpoint);
@@ -169,7 +172,9 @@ void expect_zmtp_failure (void *client, char *my_endpoint, void *server, void *s
     close_zero_linger (client);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    expect_monitor_event_multiple (server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP);
+    expect_monitor_event_multiple (server_mon,
+                                   ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL,
+                                   ZMQ_PROTOCOL_ERROR_ZMTP_MECHANISM_MISMATCH);
 #endif
 
     assert (0 == zmq_atomic_counter_value (zap_requests_handled));
@@ -183,7 +188,7 @@ void test_curve_security_with_null_client_credentials (void *ctx,
     void *client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
 
-    expect_zmtp_failure (client, my_endpoint, server, server_mon);
+    expect_zmtp_mechanism_mismatch (client, my_endpoint, server, server_mon);
 }
 
 void test_curve_security_with_plain_client_credentials (void *ctx,
@@ -198,7 +203,7 @@ void test_curve_security_with_plain_client_credentials (void *ctx,
     rc = zmq_setsockopt (client, ZMQ_PLAIN_PASSWORD, "password", 8);
     assert (rc == 0);
 
-    expect_zmtp_failure (client, my_endpoint, server, server_mon);
+    expect_zmtp_mechanism_mismatch (client, my_endpoint, server, server_mon);
 }
 
 int connect_vanilla_socket (char *my_endpoint)
@@ -279,11 +284,12 @@ void test_curve_security_invalid_hello_wrong_length (char *my_endpoint,
     send_greeting (s);
 
     // send CURVE HELLO of wrong size
-    send(s, "\x04\x05HELLO");
+    send(s, "\x04\x06\x05HELLO");
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    expect_monitor_event_multiple (server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP,
-                                   EPROTO);
+    expect_monitor_event_multiple (
+      server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL,
+      ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
 #endif
 
     close (s);
@@ -361,8 +367,9 @@ void test_curve_security_invalid_hello_command_name (char *my_endpoint,
     send_command(s, hello);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    expect_monitor_event_multiple (server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP,
-                                   EPROTO);
+    expect_monitor_event_multiple (server_mon,
+                                   ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL,
+                                   ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
 #endif
 
     close (s);
@@ -388,8 +395,9 @@ void test_curve_security_invalid_hello_version (char *my_endpoint,
     send_command (s, hello);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    expect_monitor_event_multiple (server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP,
-                                   EPROTO);
+    expect_monitor_event_multiple (
+      server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL,
+      ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
 #endif
 
     close (s);
@@ -459,11 +467,12 @@ void test_curve_security_invalid_initiate_length (char *my_endpoint,
     assert (res == -1);
 #endif
 
-    send(s, "\x04\x08INITIATE");
+    send(s, "\x04\x09\x08INITIATE");
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    expect_monitor_event_multiple (server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP,
-                                   EPROTO);
+    expect_monitor_event_multiple (
+      server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL,
+      ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_INITIATE);
 #endif
 
     close (s);
@@ -482,7 +491,8 @@ int connect_exchange_greeting_and_hello_welcome (
     uint8_t welcome[welcome_length + 2];
     recv_all (s, welcome, welcome_length + 2);
     
-    int res = tools.process_welcome (welcome + 2, welcome_length);
+    uint8_t cn_precom [crypto_box_BEFORENMBYTES];
+    int res = tools.process_welcome (welcome + 2, welcome_length, cn_precom);
     assert (res == 0);
 
 #ifdef ZMQ_BUILD_DRAFT_API
@@ -510,8 +520,9 @@ void test_curve_security_invalid_initiate_command_name (char *my_endpoint,
     send_command (s, initiate);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    expect_monitor_event_multiple (server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP,
-                                   EPROTO);
+    expect_monitor_event_multiple (server_mon,
+                                   ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL,
+                                   ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
 #endif
 
     close (s);
@@ -532,8 +543,9 @@ void test_curve_security_invalid_initiate_command_encrypted_cookie (
     send_command (s, initiate);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    expect_monitor_event_multiple (
-      server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION, EPROTO);
+    expect_monitor_event_multiple (server_mon,
+                                   ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL,
+                                   ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
 #endif
 
     close (s);
@@ -554,8 +566,9 @@ void test_curve_security_invalid_initiate_command_encrypted_content (
     send_command (s, initiate);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    expect_monitor_event_multiple (
-      server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION, EPROTO);
+    expect_monitor_event_multiple (server_mon,
+                                   ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL,
+                                   ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
 #endif
 
     close (s);
@@ -648,7 +661,6 @@ int main (void)
                                                        server_mon, timeout);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
-
     fprintf (stderr, "test_curve_security_with_null_client_credentials\n");
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
                                    &server_mon, my_endpoint);
@@ -664,7 +676,6 @@ int main (void)
                                                        server_mon);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
-
     fprintf (stderr, "test_curve_security_unauthenticated_message\n");
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
                                    &server_mon, my_endpoint);
