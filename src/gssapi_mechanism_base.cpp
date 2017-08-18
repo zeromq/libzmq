@@ -186,7 +186,7 @@ int zmq::gssapi_mechanism_base_t::decode_message (msg_t *msg_)
         //  TODO is it correct to release the plaintext buffer if gss_unwrap 
         //  did not succeed?
         gss_release_buffer (&min_stat, &plaintext);
-        free (wrapped);
+        free (wrapped.value);
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (),
           ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
