@@ -41,7 +41,7 @@
 zmq::curve_server_t::curve_server_t (session_base_t *session_,
                                      const std::string &peer_address_,
                                      const options_t &options_) :
-    mechanism_t (options_),
+    mechanism_base_t (session_, options_),
     zap_client_common_handshake_t (
       session_, peer_address_, options_, sending_ready),
     cn_nonce (1),

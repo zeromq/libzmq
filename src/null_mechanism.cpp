@@ -42,7 +42,7 @@
 zmq::null_mechanism_t::null_mechanism_t (session_base_t *session_,
                                          const std::string &peer_address_,
                                          const options_t &options_) :
-    mechanism_t (options_),
+    mechanism_base_t (session_, options_),
     zap_client_t (session_, peer_address_, options_),
     ready_command_sent (false),
     error_command_sent (false),

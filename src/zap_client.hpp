@@ -34,9 +34,7 @@
 
 namespace zmq
 {
-class session_base_t;
-
-class zap_client_t : public virtual mechanism_t
+class zap_client_t : public virtual mechanism_base_t
 {
   public:
     zap_client_t (session_base_t *const session_,
@@ -56,10 +54,7 @@ class zap_client_t : public virtual mechanism_t
 
     virtual int receive_and_process_zap_reply ();
     virtual void handle_zap_status_code ();
-
-    int check_basic_command_structure (msg_t *msg_);
   protected:
-    session_base_t *const session;
     const std::string peer_address;
 
     //  Status code as received from ZAP handler

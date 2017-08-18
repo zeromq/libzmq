@@ -35,6 +35,7 @@
 #include "msg.hpp"
 #include "err.hpp"
 #include "wire.hpp"
+#include "session_base.hpp"
 
 zmq::mechanism_t::mechanism_t (const options_t &options_) :
     options (options_)
@@ -281,3 +282,24 @@ bool zmq::mechanism_t::check_socket_type (const std::string& type_) const
     }
     return false;
 }
+
+zmq::mechanism_base_t::mechanism_base_t (session_base_t *const session_,
+                                         const options_t &options_) :
+    mechanism_t (options_),
+    session (session_)
+{
+
+}
+
+int zmq::mechanism_base_t::check_basic_command_structure (msg_t *msg_)
+{
+    if (msg_->size () <= 1 || msg_->size () <= ((uint8_t *) msg_->data ())[0]) {
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_UNSPECIFIED);
+        errno = EPROTO;
+        return -1;
+    }
+    return 0;
+}
+

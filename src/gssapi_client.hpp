@@ -38,13 +38,12 @@ namespace zmq
 {
 
     class msg_t;
+    class session_base_t;
 
-    class gssapi_client_t :
-        public gssapi_mechanism_base_t
+    class gssapi_client_t : public gssapi_mechanism_base_t
     {
-    public:
-
-        gssapi_client_t (const options_t &options_);
+      public:
+        gssapi_client_t (session_base_t *session_, const options_t &options_);
         virtual ~gssapi_client_t ();
 
         // mechanism implementation

@@ -42,7 +42,7 @@ namespace zmq
     class msg_t;
     class session_base_t;
 
-    class curve_client_t : public mechanism_t
+    class curve_client_t : public mechanism_base_t
     {
     public:
 
@@ -66,8 +66,6 @@ namespace zmq
             error_received,
             connected
         };
-
-        session_base_t *session;
 
         //  Current FSM state
         state_t state;

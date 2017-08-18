@@ -45,7 +45,7 @@
 zmq::gssapi_server_t::gssapi_server_t (session_base_t *session_,
                                        const std::string &peer_address_,
                                        const options_t &options_) :
-    mechanism_t (options_),
+    mechanism_base_t (session_, options_),
     gssapi_mechanism_base_t (options_),
     zap_client_t (session_, peer_address_, options_),
     state (recv_next_token),

@@ -41,8 +41,7 @@
 
 zmq::curve_client_t::curve_client_t (session_base_t *session_,
                                      const options_t &options_) :
-    mechanism_t (options_),
-    session (session_),
+    mechanism_base_t (session_, options_),
     state (send_hello),
     tools (options_.curve_public_key,
            options_.curve_secret_key,
@@ -166,20 +165,23 @@ int zmq::curve_client_t::encode (msg_t *msg_)
 int zmq::curve_client_t::decode (msg_t *msg_)
 {
     zmq_assert (state == connected);
+    int rc = check_basic_command_structure (msg_);
+    if (rc == -1)
+        return rc;
 
-    if (msg_->size () < 33) {
+    const uint8_t *message = static_cast <uint8_t *> (msg_->data ());
+    if (msg_->size() < 8 || memcmp (message, "\x07MESSAGE", 8)) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (),
-          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_MESSAGE); // TODO message may not be a MESSAGE at all
+          ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         return -1;
     }
 
-    const uint8_t *message = static_cast <uint8_t *> (msg_->data ());
-    if (memcmp (message, "\x07MESSAGE", 8)) {
+    if (msg_->size () < 33) {
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (),
-          ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
+          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_MESSAGE);
         errno = EPROTO;
         return -1;
     }
@@ -209,8 +211,8 @@ int zmq::curve_client_t::decode (msg_t *msg_)
     memcpy (message_box + crypto_box_BOXZEROBYTES,
             message + 16, msg_->size () - 16);
 
-    int rc = crypto_box_open_afternm (message_plaintext, message_box, clen,
-                                      message_nonce, tools.cn_precom);
+    rc = crypto_box_open_afternm (message_plaintext, message_box, clen,
+                                  message_nonce, tools.cn_precom);
     if (rc == 0) {
         rc = msg_->close ();
         zmq_assert (rc == 0);

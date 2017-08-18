@@ -40,8 +40,11 @@
 #include "gssapi_mechanism_base.hpp"
 #include "wire.hpp"
 
-zmq::gssapi_mechanism_base_t::gssapi_mechanism_base_t (const options_t & options_) :
-    mechanism_t(options_),
+zmq::gssapi_mechanism_base_t::gssapi_mechanism_base_t (
+  session_base_t *session_,
+  const std::string &peer_address_,
+  const options_t &options_) :
+    mechanism_base_t (session_, options_),
     send_tok (),
     recv_tok (),
     /// FIXME remove? in_buf (),
