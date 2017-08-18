@@ -288,6 +288,30 @@ void zap_handler (void *ctx)
     zap_handler_generic (ctx, zap_ok);
 }
 
+void setup_handshake_socket_monitor (void *ctx,
+                                     void *server,
+                                     void **server_mon,
+                                     const char *monitor_endpoint)
+{
+#ifdef ZMQ_BUILD_DRAFT_API
+    //  Monitor handshake events on the server
+    int rc = zmq_socket_monitor (server, monitor_endpoint,
+                                 ZMQ_EVENT_HANDSHAKE_SUCCEEDED
+                                   | ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL
+                                   | ZMQ_EVENT_HANDSHAKE_FAILED_AUTH
+                                   | ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL);
+    assert (rc == 0);
+
+    //  Create socket for collecting monitor events
+    *server_mon = zmq_socket (ctx, ZMQ_PAIR);
+    assert (*server_mon);
+
+    //  Connect it to the inproc endpoints so they'll get events
+    rc = zmq_connect (*server_mon, monitor_endpoint);
+    assert (rc == 0);
+#endif
+}
+
 void setup_context_and_server_side (
   void **ctx,
   void **handler,
@@ -335,25 +359,9 @@ void setup_context_and_server_side (
     rc = zmq_getsockopt (*server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
     assert (rc == 0);
 
-#ifdef ZMQ_BUILD_DRAFT_API
-    char monitor_endpoint [] = "inproc://monitor-server";
-
-    //  Monitor handshake events on the server
-    rc = zmq_socket_monitor (*server, monitor_endpoint,
-                             ZMQ_EVENT_HANDSHAKE_SUCCEEDED
-                               | ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL
-                               | ZMQ_EVENT_HANDSHAKE_FAILED_AUTH
-                               | ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL);
-    assert (rc == 0);
-
-    //  Create socket for collecting monitor events
-    *server_mon = zmq_socket (*ctx, ZMQ_PAIR);
-    assert (*server_mon);
-
-    //  Connect it to the inproc endpoints so they'll get events
-    rc = zmq_connect (*server_mon, monitor_endpoint);
-    assert (rc == 0);
-#endif
+    const char server_monitor_endpoint [] = "inproc://monitor-server";
+    setup_handshake_socket_monitor (*ctx, *server, server_mon,
+                                    server_monitor_endpoint);
 }
 
 void shutdown_context_and_server_side (void *ctx,
@@ -389,7 +397,8 @@ void shutdown_context_and_server_side (void *ctx,
 void *create_and_connect_client (void *ctx,
                                  char *my_endpoint,
                                  socket_config_fn socket_config_,
-                                 void *socket_config_data_)
+                                 void *socket_config_data_,
+                                 void **client_mon = NULL)
 {
     void *client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
@@ -399,6 +408,12 @@ void *create_and_connect_client (void *ctx,
     int rc = zmq_connect (client, my_endpoint);
     assert (rc == 0);
 
+    if (client_mon)
+    {
+        setup_handshake_socket_monitor (ctx, client, client_mon,
+                                        "inproc://client-monitor");
+    }
+
     return client;
 }
 
@@ -406,10 +421,11 @@ void expect_new_client_bounce_fail (void *ctx,
                                     char *my_endpoint,
                                     void *server,
                                     socket_config_fn socket_config_,
-                                    void *socket_config_data_)
+                                    void *socket_config_data_,
+                                    void **client_mon = NULL)
 {
     void *client = create_and_connect_client (ctx, my_endpoint, socket_config_,
-                                              socket_config_data_);
+                                              socket_config_data_, client_mon);
     expect_bounce_fail (server, client);
     close_zero_linger (client);
 }
@@ -484,6 +500,19 @@ int get_monitor_event_with_timeout (void *monitor,
 }
 
 #ifdef ZMQ_BUILD_DRAFT_API
+
+void print_unexpected_event (int event,
+                             int err,
+                             int expected_event,
+                             int expected_err)
+{
+  fprintf(
+    stderr,
+    "Unexpected event: 0x%x, value = %i/0x%x (expected: 0x%x, value "
+    "= %i/0x%x)\n",
+    event, err, err, expected_event, expected_err, expected_err);
+}
+
 //  expects that one or more occurrences of the expected event are received 
 //  via the specified socket monitor
 //  returns the number of occurrences of the expected event
@@ -497,16 +526,22 @@ int expect_monitor_event_multiple (void *server_mon,
 {
     int count_of_expected_events = 0;
     int client_closed_connection = 0;
-    //  infinite timeout at the start
-    int timeout = -1;
+    int timeout = 250;
+    int wait_time = 0;
 
     int event;
     int err;
     while (
       (event = get_monitor_event_with_timeout (server_mon, &err, NULL, timeout))
-      != -1) {
-        timeout = 250;
-
+      != -1 || !count_of_expected_events) {
+        if (event == -1) {
+            wait_time += timeout;
+            fprintf (stderr,
+                     "Still waiting for first event after %ims (expected event "
+                     "%x (value %i/%x))\n",
+                     wait_time, expected_event, expected_err, expected_err);
+            continue;
+        }
         // ignore errors with EPIPE/ECONNRESET/ECONNABORTED, which can happen
         // ECONNRESET can happen on very slow machines, when the engine writes
         // to the peer and then tries to read the socket before the peer reads
@@ -522,11 +557,7 @@ int expect_monitor_event_multiple (void *server_mon,
         }
         if (event != expected_event
             || (-1 != expected_err && err != expected_err)) {
-            fprintf (
-              stderr,
-              "Unexpected event: 0x%x, value = %i/0x%x (expected: 0x%x, value "
-              "= %i/0x%x)\n",
-              event, err, err, expected_event, expected_err, expected_err);
+            print_unexpected_event (event, err, expected_event, expected_err);
             assert (false);
         }
         ++count_of_expected_events;
@@ -535,6 +566,31 @@ int expect_monitor_event_multiple (void *server_mon,
 
     return count_of_expected_events;
 }
+
+// assert_* are macros rather than functions, to allow assertion failures be
+// attributed to the causing source code line
+#define assert_no_more_monitor_events_with_timeout(monitor, timeout)           \
+    {                                                                          \
+        int event_count = 0;                                                   \
+        int event, err;                                                        \
+        while ((event = get_monitor_event_with_timeout ((monitor), &err, NULL, \
+                                                        (timeout)))            \
+               != -1) {                                                        \
+            if (event == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL                  \
+                && (err == EPIPE || err == ECONNRESET                          \
+                    || err == ECONNABORTED)) {                                 \
+                fprintf (stderr,                                               \
+                         "Ignored event (skipping any further events): %x "    \
+                         "(err = %i)\n",                                       \
+                         event, err);                                          \
+                continue;                                                      \
+            }                                                                  \
+            ++event_count;                                                     \
+            print_unexpected_event (event, err, 0, 0);                         \
+        }                                                                      \
+        assert (event_count == 0);                                             \
+    }
+
 #endif
 
 #endif
