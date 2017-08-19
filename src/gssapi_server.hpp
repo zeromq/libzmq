@@ -73,8 +73,6 @@ namespace zmq
 
         const std::string peer_address;
 
-        zap_client_t zap_client;
-
         //  Current FSM state
         state_t state;
 

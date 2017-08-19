@@ -41,7 +41,7 @@ override_dh_clean:
 	rm -f config.log
 
 override_dh_auto_configure:
-	dh_auto_configure -- --with-pgm --with-libsodium --enable-drafts=$(DRAFTS)
+	dh_auto_configure -- --with-pgm --with-libsodium --enable-drafts=$(DRAFTS) --with-libgssapi_krb5=yes
 
 override_dh_auto_test:
 ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))

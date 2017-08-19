@@ -37,7 +37,7 @@
 #endif
 #include <gssapi/gssapi_krb5.h>
 
-#include "mechanism.hpp"
+#include "mechanism_base.hpp"
 #include "options.hpp"
 
 namespace zmq
@@ -53,7 +53,6 @@ namespace zmq
     {
       public:
         gssapi_mechanism_base_t (session_base_t *session_,
-                                 const std::string &peer_address_,
                                  const options_t &options_);
         virtual ~gssapi_mechanism_base_t () = 0;
 

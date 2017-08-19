@@ -46,8 +46,10 @@ zmq::gssapi_server_t::gssapi_server_t (session_base_t *session_,
                                        const std::string &peer_address_,
                                        const options_t &options_) :
     mechanism_base_t (session_, options_),
-    gssapi_mechanism_base_t (options_),
+    gssapi_mechanism_base_t (session_, options_),
     zap_client_t (session_, peer_address_, options_),
+    session (session_),
+    peer_address (peer_address_),
     state (recv_next_token),
     security_context_established (false)
 {
@@ -156,7 +158,8 @@ void zmq::gssapi_server_t::send_zap_request ()
 {
     gss_buffer_desc principal;
     gss_display_name (&min_stat, target_name, &principal, NULL);
-    zap_client_t::send_zap_request ("GSSAPI", 6, principal.value,
+    zap_client_t::send_zap_request ("GSSAPI", 6,
+                                    reinterpret_cast<const uint8_t *> (principal.value),
                                     principal.length);
 
     gss_release_buffer (&min_stat, &principal);
