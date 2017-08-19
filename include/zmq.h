@@ -565,7 +565,9 @@ ZMQ_EXPORT void zmq_threadclose (void* thread);
 #define ZMQ_DGRAM 18
 
 /*  DRAFT Socket options.                                                     */
-#define ZMQ_BINDTODEVICE 90
+#define ZMQ_GSSAPI_PRINCIPAL_NAMETYPE 90
+#define ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE 91
+#define ZMQ_BINDTODEVICE 92
 
 /*  DRAFT 0MQ socket events and monitoring                                    */
 /*  Unspecified system errors during handshake. Event value is an errno.      */
@@ -677,11 +679,8 @@ ZMQ_EXPORT long  zmq_timers_timeout (void *timers);
 ZMQ_EXPORT int   zmq_timers_execute (void *timers);
 
 /******************************************************************************/
-/*  GSSAPI socket options to set name type                                    */
+/*  GSSAPI definitions                                                        */
 /******************************************************************************/
-
-#define ZMQ_GSSAPI_PRINCIPAL_NAMETYPE 90
-#define ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE 91
 
 /*  GSSAPI principal name types                                               */
 #define ZMQ_GSSAPI_NT_HOSTBASED 0
