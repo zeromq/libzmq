@@ -140,6 +140,8 @@ void test_curve_security_with_valid_credentials (
 void test_curve_security_with_bogus_client_credentials (
   void *ctx, char *my_endpoint, void *server, void *server_mon, int timeout)
 {
+    LIBZMQ_UNUSED (timeout);
+
     //  This must be caught by the ZAP handler
     char bogus_public [41];
     char bogus_secret [41];
@@ -278,6 +280,9 @@ void test_curve_security_invalid_hello_wrong_length (char *my_endpoint,
                                                      void *server_mon,
                                                      int timeout)
 {
+    LIBZMQ_UNUSED (server);
+    LIBZMQ_UNUSED (timeout);
+
     int s = connect_vanilla_socket (my_endpoint);
 
     // send GREETING
@@ -352,6 +357,9 @@ void test_curve_security_invalid_hello_command_name (char *my_endpoint,
                                                      void *server_mon,
                                                      int timeout)
 {
+    LIBZMQ_UNUSED (server);
+    LIBZMQ_UNUSED (timeout);
+
     int s = connect_vanilla_socket (my_endpoint);
 
     send_greeting (s);
@@ -380,6 +388,9 @@ void test_curve_security_invalid_hello_version (char *my_endpoint,
                                                 void *server_mon,
                                                 int timeout)
 {
+    LIBZMQ_UNUSED (server);
+    LIBZMQ_UNUSED (timeout);
+
     int s = connect_vanilla_socket (my_endpoint);
 
     send_greeting (s);
@@ -455,6 +466,8 @@ void test_curve_security_invalid_initiate_length (char *my_endpoint,
                                                   void *server_mon,
                                                   int timeout)
 {
+    LIBZMQ_UNUSED (server);
+
     zmq::curve_client_tools_t tools = make_curve_client_tools ();
 
     int s = connect_exchange_greeting_and_send_hello (my_endpoint, tools);
@@ -465,6 +478,8 @@ void test_curve_security_invalid_initiate_length (char *my_endpoint,
 #ifdef ZMQ_BUILD_DRAFT_API
     int res = get_monitor_event_with_timeout (server_mon, NULL, NULL, timeout);
     assert (res == -1);
+#else
+    LIBZMQ_UNUSED (timeout);
 #endif
 
     send(s, "\x04\x09\x08INITIATE");
@@ -508,6 +523,8 @@ void test_curve_security_invalid_initiate_command_name (char *my_endpoint,
                                                         void *server_mon,
                                                         int timeout)
 {
+    LIBZMQ_UNUSED (server);
+
     zmq::curve_client_tools_t tools = make_curve_client_tools ();
     int s = connect_exchange_greeting_and_hello_welcome (
       my_endpoint, server_mon, timeout, tools);
@@ -531,6 +548,8 @@ void test_curve_security_invalid_initiate_command_name (char *my_endpoint,
 void test_curve_security_invalid_initiate_command_encrypted_cookie (
   char *my_endpoint, void *server, void *server_mon, int timeout)
 {
+    LIBZMQ_UNUSED (server);
+
     zmq::curve_client_tools_t tools = make_curve_client_tools ();
     int s = connect_exchange_greeting_and_hello_welcome (
       my_endpoint, server_mon, timeout, tools);
@@ -554,6 +573,8 @@ void test_curve_security_invalid_initiate_command_encrypted_cookie (
 void test_curve_security_invalid_initiate_command_encrypted_content (
   char *my_endpoint, void *server, void *server_mon, int timeout)
 {
+    LIBZMQ_UNUSED (server);
+
     zmq::curve_client_tools_t tools = make_curve_client_tools ();
     int s = connect_exchange_greeting_and_hello_welcome (
       my_endpoint, server_mon, timeout, tools);

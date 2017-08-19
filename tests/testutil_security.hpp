@@ -41,10 +41,14 @@ const char *test_zap_domain = "ZAPTEST";
 //  NULL specific functions
 void socket_config_null_client (void *server, void *server_secret)
 {
+    LIBZMQ_UNUSED (server);
+    LIBZMQ_UNUSED (server_secret);
 }
 
 void socket_config_null_server (void *server, void *server_secret)
 {
+    LIBZMQ_UNUSED (server_secret);
+
     int rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, test_zap_domain, 7);
     assert (rc == 0);
 }
@@ -55,6 +59,8 @@ const char *test_plain_password = "testpass";
 
 void socket_config_plain_client (void *server, void *server_secret)
 {
+    LIBZMQ_UNUSED (server_secret);
+
     int rc = zmq_setsockopt (server, ZMQ_PLAIN_PASSWORD, test_plain_password, 8);
     assert (rc == 0);
 
@@ -64,6 +70,8 @@ void socket_config_plain_client (void *server, void *server_secret)
 
 void socket_config_plain_server (void *server, void *server_secret)
 {
+    LIBZMQ_UNUSED (server_secret);
+
     int as_server = 1;
     int rc = zmq_setsockopt (server, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
     assert (rc == 0);
