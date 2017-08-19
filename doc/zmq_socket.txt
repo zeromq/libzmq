@@ -74,10 +74,6 @@ after which either peer can send messages asynchronously, to the other.
 
 The client-server pattern is formally defined by http://rfc.zeromq.org/spec:41.
 
-Note: this pattern is meant to eventually deprecate the use of 'ZMQ_DEALER' and
-'ZMQ_ROUTER' to build client-server architectures, as well as 'ZMQ_REP' and
-'ZMQ_REQ' for request-reply.
-
 ZMQ_CLIENT
 ^^^^^^^^^^
 A 'ZMQ_CLIENT' socket talks to a 'ZMQ_SERVER' socket. Either peer can connect,
@@ -165,9 +161,6 @@ The encoding of groups shall be UTF8.
 Groups are matched using exact matching (vs prefix matching of PubSub).
 
 NOTE: Radio-dish is still in draft phase.
-
-Note: this pattern is meant to eventually deprecate the use of 'ZMQ_PUB' and
-'ZMQ_SUB' to build pub-sub architectures.
 
 ZMQ_RADIO
 ^^^^^^^
@@ -428,8 +421,6 @@ to one or more ZMQ_REP _services_, and receiving subsequent replies to each
 request sent.
 
 The request-reply pattern is formally defined by http://rfc.zeromq.org/spec:28.
-
-Note: this pattern will be deprecated in favor of the client-server pattern.
 
 ZMQ_REQ
 ^^^^^^^

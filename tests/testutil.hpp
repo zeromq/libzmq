@@ -86,6 +86,8 @@
 #   endif
 #endif
 
+#define LIBZMQ_UNUSED(object) (void)object
+
 //  Bounce a message from client to server and back
 //  For REQ/REP or DEALER/DEALER pairs only
 void
