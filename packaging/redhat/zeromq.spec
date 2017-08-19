@@ -201,6 +201,11 @@ autoreconf -fi
 %{_bindir}/curve_keygen
 
 %changelog
+* Sat Aug 19 2017 Luca Boccassi <luca.boccassi@gmail.com>
+- Fix parsing and usage of conditionals for sodium/pgm/krb5 so that they work
+  in OBS
+- Do not ship libzmq.la anymore, it's not needed and causes overlinking
+
 * Sun Nov 06 2016 Luca Boccassi <luca.boccassi@gmail.com>
 - Add libzmq-tool to package curve_keygen in /usr/bin
 
