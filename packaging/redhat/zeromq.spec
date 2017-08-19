@@ -80,6 +80,9 @@ Requires:      libstdc++
 %{!?_with_gnu_ld: %{!?_without_gnu_ld: %define _with_gnu_ld --with-gnu_ld}}
 %endif
 
+# We do not want to ship libzmq.la
+%define _unpackaged_files_terminate_build 0
+
 %description
 The 0MQ lightweight messaging kernel is a library which extends the
 standard socket interfaces with features traditionally provided by
@@ -185,7 +188,6 @@ autoreconf -fi
 %{_includedir}/zmq.h
 %{_includedir}/zmq_utils.h
 
-%{_libdir}/libzmq.la
 %{_libdir}/libzmq.a
 %{_libdir}/pkgconfig/libzmq.pc
 %{_libdir}/libzmq.so
