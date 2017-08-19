@@ -158,7 +158,8 @@ void zmq::gssapi_server_t::send_zap_request ()
 {
     gss_buffer_desc principal;
     gss_display_name (&min_stat, target_name, &principal, NULL);
-    zap_client_t::send_zap_request ("GSSAPI", 6, principal.value,
+    zap_client_t::send_zap_request ("GSSAPI", 6,
+                                    reinterpret_cast<const uint8_t *> (principal.value),
                                     principal.length);
 
     gss_release_buffer (&min_stat, &principal);
