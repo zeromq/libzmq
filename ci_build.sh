@@ -40,6 +40,10 @@ if [ $BUILD_TYPE == "default" ]; then
         CONFIG_OPTS+=("--with-libgssapi_krb5=yes")
     fi
 
+    if [ -n "$PGM" ] && [ "$PGM" == "enabled" ]; then
+        CONFIG_OPTS+=("--with-pgm=yes")
+    fi
+
     if [ -z $DRAFT ] || [ $DRAFT == "disabled" ]; then
         CONFIG_OPTS+=("--enable-drafts=no")
     elif [ $DRAFT == "enabled" ]; then

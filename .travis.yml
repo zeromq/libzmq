@@ -41,7 +41,7 @@ matrix:
       apt:
         packages:
         - valgrind
-  - env: BUILD_TYPE=default CURVE=libsodium GSSAPI=enabled
+  - env: BUILD_TYPE=default CURVE=libsodium GSSAPI=enabled PGM=enabled
     os: linux
     addons:
       apt:
@@ -50,10 +50,11 @@ matrix:
           key_url: 'http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_14.04/Release.key'
         packages:
         - libkrb5-dev
+        - libpgm-dev
         - libsodium-dev
         - asciidoc
         - xmlto
-  - env: BUILD_TYPE=default CURVE=libsodium DRAFT=enabled GSSAPI=enabled
+  - env: BUILD_TYPE=default CURVE=libsodium DRAFT=enabled GSSAPI=enabled PGM=enabled
     os: linux
     addons:
       apt:
@@ -62,6 +63,7 @@ matrix:
           key_url: 'http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_14.04/Release.key'
         packages:
         - libkrb5-dev
+        - libpgm-dev
         - libsodium-dev
   - env: BUILD_TYPE=default CURVE=libsodium DRAFT=enabled
     os: osx
