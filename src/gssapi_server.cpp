@@ -48,6 +48,8 @@ zmq::gssapi_server_t::gssapi_server_t (session_base_t *session_,
     mechanism_base_t (session_, options_),
     gssapi_mechanism_base_t (session_, options_),
     zap_client_t (session_, peer_address_, options_),
+    session (session_),
+    peer_address (peer_address_),
     state (recv_next_token),
     security_context_established (false)
 {
