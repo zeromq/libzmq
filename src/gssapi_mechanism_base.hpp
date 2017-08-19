@@ -37,7 +37,7 @@
 #endif
 #include <gssapi/gssapi_krb5.h>
 
-#include "mechanism.hpp"
+#include "mechanism_base.hpp"
 #include "options.hpp"
 
 namespace zmq
