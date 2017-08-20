@@ -68,6 +68,7 @@ set(tests
         test_base85
         test_bind_after_connect_tcp
         test_sodium
+        test_monitor
 )
 if(ZMQ_HAVE_CURVE)
   list(APPEND tests 
@@ -75,7 +76,6 @@ if(ZMQ_HAVE_CURVE)
 endif()
 if(NOT WIN32)
   list(APPEND tests
-          test_monitor
           test_ipc_wildcard
           test_pair_ipc
           test_reqrep_ipc
