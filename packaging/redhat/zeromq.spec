@@ -80,6 +80,9 @@ Requires:      libstdc++
 %{!?_with_gnu_ld: %{!?_without_gnu_ld: %define _with_gnu_ld --with-gnu_ld}}
 %endif
 
+# We do not want to ship libzmq.la
+%define _unpackaged_files_terminate_build 0
+
 %description
 The 0MQ lightweight messaging kernel is a library which extends the
 standard socket interfaces with features traditionally provided by
@@ -185,7 +188,6 @@ autoreconf -fi
 %{_includedir}/zmq.h
 %{_includedir}/zmq_utils.h
 
-%{_libdir}/libzmq.la
 %{_libdir}/libzmq.a
 %{_libdir}/pkgconfig/libzmq.pc
 %{_libdir}/libzmq.so
@@ -199,6 +201,11 @@ autoreconf -fi
 %{_bindir}/curve_keygen
 
 %changelog
+* Sat Aug 19 2017 Luca Boccassi <luca.boccassi@gmail.com>
+- Fix parsing and usage of conditionals for sodium/pgm/krb5 so that they work
+  in OBS
+- Do not ship libzmq.la anymore, it's not needed and causes overlinking
+
 * Sun Nov 06 2016 Luca Boccassi <luca.boccassi@gmail.com>
 - Add libzmq-tool to package curve_keygen in /usr/bin
 
