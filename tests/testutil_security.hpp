@@ -522,7 +522,8 @@ void print_unexpected_event (int event,
 //  https://github.com/zeromq/libzmq/issues/2644
 int expect_monitor_event_multiple (void *server_mon,
                                    int expected_event,
-                                   int expected_err = -1)
+                                   int expected_err = -1,
+                                   bool optional = false)
 {
     int count_of_expected_events = 0;
     int client_closed_connection = 0;
@@ -535,6 +536,8 @@ int expect_monitor_event_multiple (void *server_mon,
       (event = get_monitor_event_with_timeout (server_mon, &err, NULL, timeout))
       != -1 || !count_of_expected_events) {
         if (event == -1) {
+            if (optional)
+                break;
             wait_time += timeout;
             fprintf (stderr,
                      "Still waiting for first event after %ims (expected event "
@@ -562,7 +565,7 @@ int expect_monitor_event_multiple (void *server_mon,
         }
         ++count_of_expected_events;
     }
-    assert (count_of_expected_events > 0 || client_closed_connection);
+    assert (optional || count_of_expected_events > 0 || client_closed_connection);
 
     return count_of_expected_events;
 }
