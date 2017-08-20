@@ -74,6 +74,7 @@ get_monitor_event (void *monitor, int *value, char **address)
     uint16_t event = *(uint16_t *) (data);
     if (value)
         *value = *(uint32_t *) (data + 2);
+    zmq_msg_close (&msg);
 
     //  Second frame in message contains event address
     zmq_msg_init (&msg);
@@ -88,6 +89,8 @@ get_monitor_event (void *monitor, int *value, char **address)
         memcpy (*address, data, size);
         *address [size] = 0;
     }
+    zmq_msg_close (&msg);
+
     return event;
 }
 #endif
