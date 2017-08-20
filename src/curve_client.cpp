@@ -275,17 +275,21 @@ int zmq::curve_client_t::process_error (
     }
     if (msg_size < 7) {
         session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_ERROR);
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_ERROR);
         errno = EPROTO;
         return -1;
     }
     const size_t error_reason_len = static_cast <size_t> (msg_data [6]);
     if (error_reason_len > msg_size - 7) {
         session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_ERROR);
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_ERROR);
         errno = EPROTO;
         return -1;
     }
+    const char *error_reason = reinterpret_cast<const char *> (msg_data) + 7;
+    handle_error_reason (error_reason, error_reason_len);
     state = error_received;
     return 0;
 }

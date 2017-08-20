@@ -52,3 +52,14 @@ int zmq::mechanism_base_t::check_basic_command_structure (msg_t *msg_)
     return 0;
 }
 
+void zmq::mechanism_base_t::handle_error_reason (const char *error_reason,
+                                                 int error_reason_len)
+{
+    if (error_reason_len == 3 && error_reason[1] == '0'
+        && error_reason[2] == '0' && error_reason[0] >= '3'
+        && error_reason[0] <= '5') {
+        // it is a ZAP status code, so emit an authentication failure event
+        session->get_socket ()->event_handshake_failed_auth (
+          session->get_endpoint (), (error_reason[0] - '0') * 100);
+    }
+}

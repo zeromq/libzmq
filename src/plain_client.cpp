@@ -86,9 +86,8 @@ int zmq::plain_client_t::process_handshake_command (msg_t *msg_)
     if (data_size >= 6 && !memcmp (cmd_data, "\5ERROR", 6))
         rc = process_error (cmd_data, data_size);
     else {
-        //  TODO see comment in curve_server_t::process_handshake_command
         session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNSPECIFIED);
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         rc = -1;
     }
@@ -215,6 +214,8 @@ int zmq::plain_client_t::process_error (
         errno = EPROTO;
         return -1;
     }
+    const char *error_reason = reinterpret_cast<const char *> (cmd_data) + 7;
+    handle_error_reason (error_reason, error_reason_len);
     state = error_command_received;
     return 0;
 }

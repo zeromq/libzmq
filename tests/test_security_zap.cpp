@@ -66,10 +66,11 @@ void test_zap_unsuccessful (void *ctx,
                             int expected_event,
                             int expected_err,
                             socket_config_fn socket_config_,
-                            void *socket_config_data_)
+                            void *socket_config_data_,
+                            void **client_mon = NULL)
 {
     expect_new_client_bounce_fail (ctx, my_endpoint, server, socket_config_,
-                                   socket_config_data_);
+                                   socket_config_data_, client_mon);
 
     int events_received = 0;
 #ifdef ZMQ_BUILD_DRAFT_API
@@ -77,7 +78,8 @@ void test_zap_unsuccessful (void *ctx,
       expect_monitor_event_multiple (server_mon, expected_event, expected_err);
 #endif
 
-    // there may be more than one ZAP request due to repeated attempts by the client
+    //  there may be more than one ZAP request due to repeated attempts by the 
+    //  client (actually only in case if ZAP status code 300)
     assert (events_received == 0
             || 1 <= zmq_atomic_counter_value (zap_requests_handled));
 }
@@ -97,6 +99,62 @@ void test_zap_protocol_error (void *ctx,
                            0, 0,
 #endif
                            socket_config_, socket_config_data_);
+}
+
+void test_zap_unsuccessful_status_300 (void *ctx,
+                                       char *my_endpoint,
+                                       void *server,
+                                       void *server_mon,
+                                       socket_config_fn client_socket_config_,
+                                       void *client_socket_config_data_)
+{
+    void *client_mon;
+    test_zap_unsuccessful (ctx, my_endpoint, server, server_mon,
+#ifdef ZMQ_BUILD_DRAFT_API
+                           ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 300,
+#else
+                           0, 0,
+#endif
+                           client_socket_config_, client_socket_config_data_,
+                           &client_mon);
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    assert_no_more_monitor_events_with_timeout (client_mon, 250);
+
+    int rc = zmq_close (client_mon);
+    assert (rc == 0);
+#endif
+}
+
+void test_zap_unsuccessful_status_500 (void *ctx,
+                                       char *my_endpoint,
+                                       void *server,
+                                       void *server_mon,
+                                       socket_config_fn client_socket_config_,
+                                       void *client_socket_config_data_)
+{
+    void *client_mon;
+    test_zap_unsuccessful (ctx, my_endpoint, server, server_mon,
+#ifdef ZMQ_BUILD_DRAFT_API
+                           ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 500,
+#else
+                           0, 0,
+#endif
+                           client_socket_config_, client_socket_config_data_,
+                           &client_mon);
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    int events_received = 0;
+    events_received = expect_monitor_event_multiple (
+      client_mon, ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 500, true);
+    
+    // this should actually be events_received == 1, but this is not always
+    // true, see https://github.com/zeromq/libzmq/issues/2705
+    assert (events_received <= 1);
+
+    int rc = zmq_close (client_mon);
+    assert (rc == 0);
+#endif
 }
 
 void test_zap_errors (socket_config_fn server_socket_config_,
@@ -192,13 +250,9 @@ void test_zap_errors (socket_config_fn server_socket_config_,
       &ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint,
       &zap_handler_wrong_status_temporary_failure, server_socket_config_,
       server_socket_config_data_);
-    test_zap_unsuccessful (ctx, my_endpoint, server, server_mon,
-#ifdef ZMQ_BUILD_DRAFT_API
-                           ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 300,
-#else
-                           0, 0,
-#endif
-                           client_socket_config_, client_socket_config_data_);
+    test_zap_unsuccessful_status_300 (ctx, my_endpoint, server, server_mon,
+                                      client_socket_config_,
+                                      client_socket_config_data_);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 
@@ -207,13 +261,9 @@ void test_zap_errors (socket_config_fn server_socket_config_,
     setup_context_and_server_side (
       &ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint,
       &zap_handler_wrong_status_internal_error, server_socket_config_);
-    test_zap_unsuccessful (ctx, my_endpoint, server, server_mon,
-#ifdef ZMQ_BUILD_DRAFT_API
-                           ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 500,
-#else
-                           0, 0,
-#endif
-                           client_socket_config_, client_socket_config_data_);
+    test_zap_unsuccessful_status_500 (ctx, my_endpoint, server, server_mon,
+                                      client_socket_config_,
+                                      client_socket_config_data_);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 }

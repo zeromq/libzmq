@@ -83,15 +83,21 @@ int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
     }
 
     if (zap_reply_received && status_code != "200") {
-        const size_t status_code_len = 3;
-        const int rc = msg_->init_size (6 + 1 + status_code_len);
-        zmq_assert (rc == 0);
-        unsigned char *msg_data = static_cast<unsigned char *> (msg_->data ());
-        memcpy (msg_data, "\5ERROR", 6);
-        msg_data [6] = status_code_len;
-        memcpy (msg_data + 7, status_code.c_str (), status_code_len);
         error_command_sent = true;
-        return 0;
+        if (status_code != "300") {
+            const size_t status_code_len = 3;
+            const int rc = msg_->init_size (6 + 1 + status_code_len);
+            zmq_assert (rc == 0);
+            unsigned char *msg_data =
+              static_cast<unsigned char *> (msg_->data ());
+            memcpy (msg_data, "\5ERROR", 6);
+            msg_data[6] = status_code_len;
+            memcpy (msg_data + 7, status_code.c_str (), status_code_len);
+            return 0;
+        } else {
+            errno = EAGAIN;
+            return -1;
+        }
     }
 
     make_command_with_basic_properties (msg_, "\5READY", 6);
@@ -165,6 +171,8 @@ int zmq::null_mechanism_t::process_error_command (
         errno = EPROTO;
         return -1;
     }
+    const char *error_reason = reinterpret_cast<const char *> (cmd_data) + 7;
+    handle_error_reason (error_reason, error_reason_len);
     error_command_received = true;
     return 0;
 }
