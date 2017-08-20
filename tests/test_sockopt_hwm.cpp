@@ -114,6 +114,14 @@ int send_until_wouldblock (void *socket)
     return send_count;
 }
 
+int test_fill_up_to_hwm (void *socket, int sndhwm)
+{
+    int send_count = send_until_wouldblock (socket);
+    fprintf(stderr, "sndhwm==%i, send_count==%i\n", sndhwm, send_count);
+    assert (send_count <= sndhwm + 1 && send_count > (sndhwm / 10));
+    return send_count;
+}
+
 void test_decrease_when_full()
 {
     int rc;
@@ -134,8 +142,7 @@ void test_decrease_when_full()
     zmq_connect(connect_socket, "inproc://a");
 
     // Fill up to hwm
-    int send_count = send_until_wouldblock(bind_socket);
-    assert (send_count <= sndhwm + 1 && send_count > (sndhwm / 2));
+    int send_count = test_fill_up_to_hwm (bind_socket, sndhwm);
 
     // Decrease snd hwm
     sndhwm = 70;
@@ -167,9 +174,7 @@ void test_decrease_when_full()
     msleep (SETTLE_TIME);
 
     // Fill up to new hwm
-    send_count = send_until_wouldblock (bind_socket);
-    fprintf(stderr, "sndhwm==%i, send_count==%i\n", sndhwm, send_count);
-    assert (send_count <= sndhwm + 1 && send_count > (sndhwm / 2));
+    test_fill_up_to_hwm (bind_socket, sndhwm);
 
     zmq_close(bind_socket);
     zmq_close(connect_socket);
