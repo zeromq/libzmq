@@ -499,6 +499,22 @@ int get_monitor_event_with_timeout (void *monitor,
     return res;
 }
 
+int get_monitor_event (void *monitor, int *value, char **address)
+{
+    return get_monitor_event_with_timeout (monitor, value, address, -1);
+}
+
+void expect_monitor_event (void *monitor, int expected_event)
+{
+    int event = get_monitor_event (monitor, NULL, NULL);
+    if (event != expected_event)
+    {
+        fprintf (stderr, "Expected monitor event %x but received %x\n",
+                 expected_event, event);
+        assert (event == expected_event);
+    }
+}
+
 #ifdef ZMQ_BUILD_DRAFT_API
 
 void print_unexpected_event (int event,
