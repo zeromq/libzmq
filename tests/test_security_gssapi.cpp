@@ -74,6 +74,7 @@ get_monitor_event (void *monitor, int *value, char **address)
     uint16_t event = *(uint16_t *) (data);
     if (value)
         *value = *(uint32_t *) (data + 2);
+    zmq_msg_close (&msg);
 
     //  Second frame in message contains event address
     zmq_msg_init (&msg);
@@ -88,6 +89,8 @@ get_monitor_event (void *monitor, int *value, char **address)
         memcpy (*address, data, size);
         *address [size] = 0;
     }
+    zmq_msg_close (&msg);
+
     return event;
 }
 #endif
@@ -216,8 +219,10 @@ void test_null_creds (void *ctx, void *server, void *server_mon, char *endpoint)
     close_zero_linger (client);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    int event = get_monitor_event (server_mon, NULL, NULL);
-    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_AUTH);
+    int error;
+    int event = get_monitor_event (server_mon, &error, NULL);
+    assert (event == ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL);
+    assert (error == ZMQ_PROTOCOL_ERROR_ZMTP_MECHANISM_MISMATCH);
 #endif
 }
 
@@ -318,7 +323,8 @@ int main (void)
 #ifdef ZMQ_BUILD_DRAFT_API
     //  Monitor handshake events on the server
     rc = zmq_socket_monitor (server, "inproc://monitor-server",
-            ZMQ_EVENT_HANDSHAKE_SUCCEEDED | ZMQ_EVENT_HANDSHAKE_FAILED_AUTH);
+            ZMQ_EVENT_HANDSHAKE_SUCCEEDED | ZMQ_EVENT_HANDSHAKE_FAILED_AUTH |
+            ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL);
     assert (rc == 0);
 #endif
 
