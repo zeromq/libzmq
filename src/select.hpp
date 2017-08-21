@@ -151,6 +151,9 @@ namespace zmq
         //  Checks if an fd_entry_t is retired.
         static bool is_retired_fd (const fd_entry_t &entry);
 
+        static fd_entries_t::iterator
+        find_fd_entry_by_handle (fd_entries_t &fd_entries, handle_t handle_);
+
         //  If true, thread is shutting down.
         bool stopping;
 

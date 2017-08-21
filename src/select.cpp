@@ -90,6 +90,20 @@ zmq::select_t::handle_t zmq::select_t::add_fd (fd_t fd_, i_poll_events *events_)
     return fd_;
 }
 
+zmq::select_t::fd_entries_t::iterator
+zmq::select_t::find_fd_entry_by_handle (fd_entries_t &fd_entries,
+                                        handle_t handle_)
+{
+    fd_entries_t::iterator fd_entry_it;
+    for (fd_entry_it = fd_entries.begin (); fd_entry_it != fd_entries.end ();
+         ++fd_entry_it)
+        if (fd_entry_it->fd == handle_)
+            break;
+    zmq_assert (fd_entry_it != fd_entries.end ());
+
+    return fd_entry_it;
+}
+
 void zmq::select_t::rm_fd (handle_t handle_)
 {
 #if defined ZMQ_HAVE_WINDOWS
@@ -99,40 +113,23 @@ void zmq::select_t::rm_fd (handle_t handle_)
     family_entries_t::iterator family_entry_it = family_entries.find (family);
     family_entry_t& family_entry = family_entry_it->second;
 
+    fd_entries_t::iterator fd_entry_it =
+      find_fd_entry_by_handle (family_entry.fd_entries, handle_);
     if (family_entry_it != current_family_entry_it) {
         //  Family is not currently being iterated and can be safely
         //  modified in-place. So later it can be skipped without
         //  re-verifying its content.
-        fd_entries_t::iterator fd_entry_it;
-        for (fd_entry_it = family_entry.fd_entries.begin ();
-              fd_entry_it != family_entry.fd_entries.end (); ++fd_entry_it)
-            if (fd_entry_it->fd == handle_)
-                break;
-        zmq_assert (fd_entry_it != family_entry.fd_entries.end ());
-
         family_entry.fd_entries.erase (fd_entry_it);
-        family_entry.fds_set.remove_fd (handle_);
     } else {
         //  Otherwise mark removed entries as retired. It will be cleaned up
         //  at the end of the iteration. See zmq::select_t::loop
-        fd_entries_t::iterator fd_entry_it;
-        for (fd_entry_it = family_entry.fd_entries.begin ();
-              fd_entry_it != family_entry.fd_entries.end (); ++fd_entry_it)
-            if (fd_entry_it->fd == handle_)
-                break;
-        zmq_assert (fd_entry_it != family_entry.fd_entries.end ());
-
         fd_entry_it->fd = retired_fd;
-        family_entry.fds_set.remove_fd (handle_);
         family_entry.retired = true;
     }
+    family_entry.fds_set.remove_fd (handle_);
 #else
-    fd_entries_t::iterator fd_entry_it;
-    for (fd_entry_it = fd_entries.begin ();
-          fd_entry_it != fd_entries.end (); ++fd_entry_it)
-        if (fd_entry_it->fd == handle_)
-            break;
-    zmq_assert (fd_entry_it != fd_entries.end ());
+    fd_entries_t::iterator fd_entry_it =
+      find_fd_entry_by_handle (fd_entries, handle_);
 
     fd_entry_it->fd = retired_fd;
     fds_set.remove_fd (handle_);
