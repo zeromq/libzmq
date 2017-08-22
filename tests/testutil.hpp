@@ -396,4 +396,13 @@ is_ipv6_available(void)
 #endif // _WIN32_WINNT < 0x0600
 }
 
+#if defined (ZMQ_HAVE_WINDOWS)
+
+int close (int fd)
+{
+    return closesocket (fd);
+}
+
+#endif
+
 #endif
