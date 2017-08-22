@@ -69,6 +69,7 @@ set(tests
         test_bind_after_connect_tcp
         test_sodium
         test_monitor
+		test_socket_null
 )
 if(ZMQ_HAVE_CURVE)
   list(APPEND tests 
