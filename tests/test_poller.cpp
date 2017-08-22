@@ -165,6 +165,66 @@ void test_null_event_pointers (void *ctx)
     assert (rc == 0);
 }
 
+void test_add_modify_remove_corner_cases(void *ctx)
+{
+    void *poller = zmq_poller_new ();
+    assert (poller != NULL);
+
+    void *zeromq_socket = zmq_socket (ctx, ZMQ_PAIR);
+    assert (zeromq_socket != NULL);
+
+    int rc = zmq_poller_add (poller, zeromq_socket, NULL, ZMQ_POLLIN);
+    assert (rc == 0);
+
+    //  attempt to add the same socket twice
+    rc = zmq_poller_add (poller, zeromq_socket, NULL, ZMQ_POLLIN);
+    assert (rc == -1 && errno == EINVAL);
+
+    rc = zmq_poller_remove (poller, zeromq_socket);
+    assert (rc == 0);
+
+    //  attempt to remove socket that is not present
+    rc = zmq_poller_remove (poller, zeromq_socket);
+    assert (rc == -1 && errno == EINVAL);
+
+    //  attempt to modify socket that is not present
+    rc = zmq_poller_modify (poller, zeromq_socket, ZMQ_POLLIN);
+    assert (rc == -1 && errno == EINVAL);
+
+    //  add a socket with no events
+    //  TODO should this really be legal? it does not make any sense...
+    rc = zmq_poller_add (poller, zeromq_socket, NULL, 0);
+    assert (rc == 0);
+
+    fd_t plain_socket = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    rc = zmq_poller_add_fd (poller, plain_socket, NULL, ZMQ_POLLIN);
+    assert (rc == 0);
+
+    //  attempt to add the same plain socket twice
+    rc = zmq_poller_add_fd (poller, plain_socket, NULL, ZMQ_POLLIN);
+    assert (rc == -1 && errno == EINVAL);
+
+    rc = zmq_poller_remove_fd (poller, plain_socket);
+    assert (rc == 0);
+
+    //  attempt to remove plain socket that is not present
+    rc = zmq_poller_remove_fd (poller, plain_socket);
+    assert (rc == -1 && errno == EINVAL);
+
+    //  attempt to modify plain socket that is not present
+    rc = zmq_poller_modify_fd (poller, plain_socket, ZMQ_POLLIN);
+    assert (rc == -1 && errno == EINVAL);
+
+    rc = zmq_poller_destroy (&poller);
+    assert (rc == 0);
+
+    rc = zmq_close (zeromq_socket);
+    assert (rc == 0);
+
+    rc = close (plain_socket);
+    assert (rc == 0);
+}
+
 void test_wait_corner_cases (void *ctx)
 {
     void *poller = zmq_poller_new ();
@@ -332,6 +392,7 @@ int main (void)
     test_null_socket_pointers ();
     test_null_event_pointers (ctx);
 
+    test_add_modify_remove_corner_cases (ctx);
     test_wait_corner_cases (ctx);
 
     rc = zmq_poller_destroy (&poller);

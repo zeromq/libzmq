@@ -47,11 +47,6 @@ void initialise_network (void)
         throw std::runtime_error("Could not start WSA");
 }
 
-int close (int fd)
-{
-    return closesocket (fd);
-}
-
 #else
 
 void initialise_network (void)
