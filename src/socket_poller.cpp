@@ -400,6 +400,11 @@ int zmq::socket_poller_t::rebuild ()
 
 int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_, int n_events_, long timeout_)
 {
+    if (items.empty () && timeout_ < 0) {
+        errno = EFAULT;
+        return -1;
+    }
+
     if (need_rebuild)
         if (rebuild () == -1)
             return -1;

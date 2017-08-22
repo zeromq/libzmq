@@ -180,20 +180,16 @@ void test_wait_corner_cases (void *ctx)
     int rc = zmq_poller_wait(poller, &event, 0);
     assert (rc == -1 && errno == ETIMEDOUT);
 
-    //  TODO this can never return, and should yield an error
-#if 0
+    //  this can never return since no socket was registered, and should yield an error
     rc = zmq_poller_wait(poller, &event, -1);
-    assert (rc == 0);
-#endif
+    assert (rc == -1 && errno == EFAULT);
 
     rc = zmq_poller_wait_all (poller, &event, 0, 0);
     assert (rc == -1 && errno == ETIMEDOUT);
 
-    //  TODO this can never return, and should yield an error
-#if 0
+    //  this can never return since no socket was registered, and should yield an error
     rc = zmq_poller_wait_all (poller, &event, 0, -1);
-    assert (rc == 0);
-#endif
+    assert (rc == -1 && errno == EFAULT);
 
     rc = zmq_poller_destroy (&poller);
     assert (rc == 0);
