@@ -417,7 +417,8 @@ test_apps = \
 	tests/test_pub_invert_matching \
 	tests/test_base85 \
 	tests/test_bind_after_connect_tcp \
-	tests/test_sodium
+	tests/test_sodium \
+	tests/test_socket_null
 
 tests_test_ancillaries_SOURCES = tests/test_ancillaries.cpp
 tests_test_ancillaries_LDADD = src/libzmq.la
@@ -633,6 +634,9 @@ tests_test_base85_LDADD = src/libzmq.la
 
 tests_test_sodium_SOURCES = tests/test_sodium.cpp
 tests_test_sodium_LDADD = src/libzmq.la
+
+tests_test_socket_null_SOURCES = tests/test_socket_null.cpp
+tests_test_socket_null_LDADD = src/libzmq.la
 
 if HAVE_CURVE
 
