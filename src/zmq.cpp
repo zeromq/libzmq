@@ -813,7 +813,7 @@ inline int zmq_poller_poll (zmq_pollitem_t *items_, int nitems_, long timeout_)
     rc = zmq_poller_wait_all (&poller, events, nitems_, timeout_);
     if (rc < 0) {
         delete [] events;
-        if (zmq_errno() == ETIMEDOUT) {
+        if (zmq_errno() == EAGAIN) {
             return 0;
         }
         return rc;

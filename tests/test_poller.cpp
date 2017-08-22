@@ -170,18 +170,16 @@ void test_wait_corner_cases (void *ctx)
     void *poller = zmq_poller_new ();
     assert (poller != NULL);
 
-    //  TODO zmq_poller_wait should return EAGAIN instead of ETIMEDOUT (like all other zmq functions)
-
     zmq_poller_event_t event;
     int rc = zmq_poller_wait(poller, &event, 0);
-    assert (rc == -1 && errno == ETIMEDOUT);
+    assert (rc == -1 && errno == EAGAIN);
 
     //  this can never return since no socket was registered, and should yield an error
     rc = zmq_poller_wait(poller, &event, -1);
     assert (rc == -1 && errno == EFAULT);
 
     rc = zmq_poller_wait_all (poller, &event, 0, 0);
-    assert (rc == -1 && errno == ETIMEDOUT);
+    assert (rc == -1 && errno == EAGAIN);
 
     //  this can never return since no socket was registered, and should yield an error
     rc = zmq_poller_wait_all (poller, &event, 0, -1);
@@ -238,7 +236,7 @@ int main (void)
     // waiting on poller with no registered sockets should report error
     rc = zmq_poller_wait (poller, &event, 0);
     assert (rc == -1);
-    assert (errno == ETIMEDOUT);
+    assert (errno == EAGAIN);
 
     // register sink
     rc = zmq_poller_add (poller, sink, sink, ZMQ_POLLIN);
@@ -260,7 +258,7 @@ int main (void)
     //  We expect timed out
     rc = zmq_poller_wait (poller, &event, 0);
     assert (rc == -1);
-    assert (errno == ETIMEDOUT);
+    assert (errno == EAGAIN);
 
     //  Stop polling sink
     rc = zmq_poller_remove (poller, sink);

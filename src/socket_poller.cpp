@@ -415,7 +415,7 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_, int n_ev
         // no event occured within the specified timeout. Otherwise the caller
         // needs to check the return value AND the event to avoid using the
         // nullified event data.
-        errno = ETIMEDOUT;
+        errno = EAGAIN;
         if (timeout_ == 0)
             return -1;
 #if defined ZMQ_HAVE_WINDOWS
@@ -550,7 +550,7 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_, int n_ev
         if (now >= end)
             break;
     }
-    errno = ETIMEDOUT;
+    errno = EAGAIN;
     return -1;
 
 #elif defined ZMQ_POLL_BASED_ON_SELECT
@@ -560,7 +560,7 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_, int n_ev
         // no event occured within the specified timeout. Otherwise the caller
         // needs to check the return value AND the event to avoid using the
         // nullified event data.
-        errno = ETIMEDOUT;
+        errno = EAGAIN;
         if (timeout_ == 0)
             return -1;
 #if defined ZMQ_HAVE_WINDOWS
@@ -711,7 +711,7 @@ int zmq::socket_poller_t::wait (zmq::socket_poller_t::event_t *events_, int n_ev
             break;
     }
 
-    errno = ETIMEDOUT;
+    errno = EAGAIN;
     return -1;
 
 #else
