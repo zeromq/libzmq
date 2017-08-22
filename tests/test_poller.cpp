@@ -29,6 +29,78 @@
 
 #include "testutil.hpp"
 
+void test_null_poller_pointers (void *ctx)
+{
+    int rc = zmq_poller_destroy (NULL);
+    assert (rc == -1 && errno == EFAULT);
+    void *null_poller = NULL;
+    rc = zmq_poller_destroy (&null_poller);
+    assert (rc == -1 && errno == EFAULT);
+
+    void *socket = zmq_socket (ctx, ZMQ_PAIR);
+    assert (socket != NULL);
+
+    rc = zmq_poller_add (NULL, socket, NULL, ZMQ_POLLIN);
+    assert (rc == -1 && errno == EFAULT);
+    rc = zmq_poller_add (&null_poller, socket, NULL, ZMQ_POLLIN);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_poller_modify (NULL, socket, ZMQ_POLLIN);
+    assert (rc == -1 && errno == EFAULT);
+    rc = zmq_poller_modify (&null_poller, socket, ZMQ_POLLIN);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_poller_remove (NULL, socket);
+    assert (rc == -1 && errno == EFAULT);
+    rc = zmq_poller_remove (&null_poller, socket);
+    assert (rc == -1 && errno == EFAULT);
+
+#ifdef _WIN32
+    SOCKET fd;
+#else
+    int fd;
+#endif
+    size_t fd_size = sizeof fd;
+    rc = zmq_getsockopt(socket, ZMQ_FD, &fd, &fd_size);
+    assert (rc == 0);
+
+    rc = zmq_poller_add_fd (NULL, fd, NULL, ZMQ_POLLIN);
+    assert (rc == -1 && errno == EFAULT);
+    rc = zmq_poller_add_fd (&null_poller, fd, NULL, ZMQ_POLLIN);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_poller_modify_fd (NULL, fd, ZMQ_POLLIN);
+    assert (rc == -1 && errno == EFAULT);
+    rc = zmq_poller_modify_fd (&null_poller, fd, ZMQ_POLLIN);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_poller_remove_fd (NULL, fd);
+    assert (rc == -1 && errno == EFAULT);
+    rc = zmq_poller_remove_fd (&null_poller, fd);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_close (socket);
+    assert (rc == 0);
+}
+
+void test_null_socket_pointers ()
+{
+    void *poller = zmq_poller_new ();
+    assert (poller != NULL);
+
+    int rc = zmq_poller_add (poller, NULL, NULL, ZMQ_POLLIN);
+    assert (rc == -1 && errno == ENOTSOCK);
+
+    rc = zmq_poller_modify (poller, NULL, ZMQ_POLLIN);
+    assert (rc == -1 && errno == ENOTSOCK);
+
+    rc = zmq_poller_remove (poller, NULL);
+    assert (rc == -1 && errno == ENOTSOCK);
+
+    rc = zmq_poller_destroy (&poller);
+    assert (rc == 0);
+}
+
 int main (void)
 {
     size_t len = MAX_SOCKET_STRING;
@@ -70,22 +142,22 @@ int main (void)
 #endif
 
     //  Set up poller
-    void* poller = zmq_poller_new ();
+    void *poller = zmq_poller_new ();
     zmq_poller_event_t event;
 
     // waiting on poller with no registered sockets should report error
-    rc = zmq_poller_wait(poller, &event, 0);
+    rc = zmq_poller_wait (poller, &event, 0);
     assert (rc == -1);
     assert (errno == ETIMEDOUT);
 
     // register sink
     rc = zmq_poller_add (poller, sink, sink, ZMQ_POLLIN);
     assert (rc == 0);
-    
+
     //  Send a message
     char data[1] = {'H'};
     rc = zmq_send_const (vent, data, 1, 0);
-    assert (rc == 1);   
+    assert (rc == 1);
 
     //  We expect a message only on the sink
     rc = zmq_poller_wait (poller, &event, -1);
@@ -111,7 +183,7 @@ int main (void)
 #if defined _WIN32
     SOCKET fd;
     size_t fd_size = sizeof (SOCKET);
-#else 
+#else
     int fd;
     size_t fd_size = sizeof (int);
 #endif
@@ -138,12 +210,12 @@ int main (void)
     rc = zmq_poller_wait (poller, &event, 500);
     assert (rc == 0);
     assert (event.socket == server);
-    assert (event.user_data == NULL); 
+    assert (event.user_data == NULL);
     rc = zmq_recv (server, data, 1, 0);
-    assert (rc == 1);    
+    assert (rc == 1);
 
     //  Polling on pollout
-    rc = zmq_poller_modify (poller, server, ZMQ_POLLOUT | ZMQ_POLLIN); 
+    rc = zmq_poller_modify (poller, server, ZMQ_POLLOUT | ZMQ_POLLIN);
     assert (rc == 0);
     rc = zmq_poller_wait (poller, &event, 0);
     assert (rc == 0);
@@ -156,7 +228,7 @@ int main (void)
     assert (rc == 0);
 #endif
 
-    //  Destory sockets, poller and ctx    
+    //  Destory sockets, poller and ctx
     rc = zmq_close (sink);
     assert (rc == 0);
     rc = zmq_close (vent);
@@ -170,15 +242,11 @@ int main (void)
     assert (rc == 0);
 #endif
 
-    // Test error - null poller pointers
-    rc = zmq_poller_destroy (NULL);
-    assert (rc == -1 && errno == EFAULT);
-    void *null_poller = NULL;
-    rc = zmq_poller_destroy (&null_poller);
-    assert (rc == -1 && errno == EFAULT);
+    test_null_poller_pointers (ctx);
+    test_null_socket_pointers ();
 
     rc = zmq_poller_destroy (&poller);
-    assert(rc == 0);
+    assert (rc == 0);
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
