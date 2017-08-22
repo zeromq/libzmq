@@ -89,6 +89,17 @@ void test_null_poller_pointers (void *ctx)
     rc = zmq_poller_remove_fd (&null_poller, fd);
     assert (rc == -1 && errno == EFAULT);
 
+    zmq_poller_event_t event;
+    rc = zmq_poller_wait (NULL, &event, 0);
+    assert (rc == -1 && errno == EFAULT);
+    rc = zmq_poller_wait (&null_poller, &event, 0);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_poller_wait_all (NULL, &event, 1, 0);
+    assert (rc == -1 && errno == EFAULT);
+    rc = zmq_poller_wait_all (&null_poller, &event, 1, 0);
+    assert (rc == -1 && errno == EFAULT);
+
     rc = zmq_close (socket);
     assert (rc == 0);
 }
@@ -117,6 +128,72 @@ void test_null_socket_pointers ()
 
     rc = zmq_poller_remove_fd (poller, null_socket_fd);
     assert (rc == -1 && errno == ENOTSOCK);
+
+    rc = zmq_poller_destroy (&poller);
+    assert (rc == 0);
+}
+
+void test_null_event_pointers (void *ctx)
+{
+    void *socket = zmq_socket (ctx, ZMQ_PAIR);
+    assert (socket != NULL);
+
+    void *poller = zmq_poller_new ();
+    assert (poller != NULL);
+
+    int rc = zmq_poller_add (poller, socket, NULL, ZMQ_POLLIN);
+    assert (rc == 0);
+
+    //  TODO this causes an assertion, which is not consistent with the 
+    //  behavior for other NULL parameters
+#if 0
+    rc = zmq_poller_wait(poller, NULL, 0);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_poller_wait_all (poller, NULL, 1, 0);
+    assert (rc == -1 && errno == EFAULT);
+#endif
+
+    //  TODO this causes an assertion, which is not consistent if the number 
+    //  of events may be 0, the pointer should be allowed to by NULL in that 
+    //  case too
+#if 0
+    rc = zmq_poller_wait_all (poller, NULL, 0, 0);
+    assert (rc == 0);
+#endif
+
+    rc = zmq_poller_destroy (&poller);
+    assert (rc == 0);
+
+    rc = zmq_close (socket);
+    assert (rc == 0);
+}
+
+void test_wait_corner_cases (void *ctx)
+{
+    void *poller = zmq_poller_new ();
+    assert (poller != NULL);
+
+    //  TODO zmq_poller_wait should return EAGAIN instead of ETIMEDOUT (like all other zmq functions)
+
+    zmq_poller_event_t event;
+    int rc = zmq_poller_wait(poller, &event, 0);
+    assert (rc == -1 && errno == ETIMEDOUT);
+
+    //  TODO this can never return, and should yield an error
+#if 0
+    rc = zmq_poller_wait(poller, &event, -1);
+    assert (rc == 0);
+#endif
+
+    rc = zmq_poller_wait_all (poller, &event, 0, 0);
+    assert (rc == -1 && errno == ETIMEDOUT);
+
+    //  TODO this can never return, and should yield an error
+#if 0
+    rc = zmq_poller_wait_all (poller, &event, 0, -1);
+    assert (rc == 0);
+#endif
 
     rc = zmq_poller_destroy (&poller);
     assert (rc == 0);
@@ -249,7 +326,7 @@ int main (void)
     assert (rc == 0);
 #endif
 
-    //  Destory sockets, poller and ctx
+    //  Destroy sockets, poller and ctx
     rc = zmq_close (sink);
     assert (rc == 0);
     rc = zmq_close (vent);
@@ -265,6 +342,9 @@ int main (void)
 
     test_null_poller_pointers (ctx);
     test_null_socket_pointers ();
+    test_null_event_pointers (ctx);
+
+    test_wait_corner_cases (ctx);
 
     rc = zmq_poller_destroy (&poller);
     assert (rc == 0);
