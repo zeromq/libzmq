@@ -29,6 +29,20 @@
 
 #include "testutil.hpp"
 
+// duplicated from fd.hpp
+#ifdef ZMQ_HAVE_WINDOWS
+#if defined _MSC_VER &&_MSC_VER <= 1400
+    typedef UINT_PTR fd_t;
+    enum {retired_fd = (fd_t)(~0)};
+#else
+    typedef SOCKET fd_t;
+    enum {retired_fd = (fd_t)INVALID_SOCKET};
+#endif
+#else
+    typedef int fd_t;
+    enum {retired_fd = -1};
+#endif
+
 void test_null_poller_pointers (void *ctx)
 {
     int rc = zmq_poller_destroy (NULL);
@@ -55,11 +69,7 @@ void test_null_poller_pointers (void *ctx)
     rc = zmq_poller_remove (&null_poller, socket);
     assert (rc == -1 && errno == EFAULT);
 
-#ifdef _WIN32
-    SOCKET fd;
-#else
-    int fd;
-#endif
+    fd_t fd;
     size_t fd_size = sizeof fd;
     rc = zmq_getsockopt(socket, ZMQ_FD, &fd, &fd_size);
     assert (rc == 0);
@@ -95,6 +105,17 @@ void test_null_socket_pointers ()
     assert (rc == -1 && errno == ENOTSOCK);
 
     rc = zmq_poller_remove (poller, NULL);
+    assert (rc == -1 && errno == ENOTSOCK);
+
+    fd_t null_socket_fd = retired_fd;
+    
+    rc = zmq_poller_add_fd (poller, null_socket_fd, NULL, ZMQ_POLLIN);
+    assert (rc == -1 && errno == ENOTSOCK);
+
+    rc = zmq_poller_modify_fd (poller, null_socket_fd, ZMQ_POLLIN);
+    assert (rc == -1 && errno == ENOTSOCK);
+
+    rc = zmq_poller_remove_fd (poller, null_socket_fd);
     assert (rc == -1 && errno == ENOTSOCK);
 
     rc = zmq_poller_destroy (&poller);
