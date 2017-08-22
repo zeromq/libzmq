@@ -1270,7 +1270,7 @@ int zmq_poller_add_fd (void *poller_, int fd_, void *user_data_, short events_)
         return -1;
     }
     if (fd_ == zmq::retired_fd) {
-        errno = ENOTSOCK;
+        errno = EBADF;
         return -1;
     }
 
@@ -1306,7 +1306,7 @@ int zmq_poller_modify_fd (void *poller_, int fd_, short events_)
         return -1;
     }
     if (fd_ == zmq::retired_fd) {
-        errno = ENOTSOCK;
+        errno = EBADF;
         return -1;
     }
 
@@ -1341,7 +1341,7 @@ int zmq_poller_remove_fd (void *poller_, int fd_)
         return -1;
     }
     if (fd_ == zmq::retired_fd) {
-        errno = ENOTSOCK;
+        errno = EBADF;
         return -1;
     }
 

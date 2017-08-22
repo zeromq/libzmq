@@ -121,13 +121,13 @@ void test_null_socket_pointers ()
     fd_t null_socket_fd = retired_fd;
     
     rc = zmq_poller_add_fd (poller, null_socket_fd, NULL, ZMQ_POLLIN);
-    assert (rc == -1 && errno == ENOTSOCK);
+    assert (rc == -1 && errno == EBADF);
 
     rc = zmq_poller_modify_fd (poller, null_socket_fd, ZMQ_POLLIN);
-    assert (rc == -1 && errno == ENOTSOCK);
+    assert (rc == -1 && errno == EBADF);
 
     rc = zmq_poller_remove_fd (poller, null_socket_fd);
-    assert (rc == -1 && errno == ENOTSOCK);
+    assert (rc == -1 && errno == EBADF);
 
     rc = zmq_poller_destroy (&poller);
     assert (rc == 0);
