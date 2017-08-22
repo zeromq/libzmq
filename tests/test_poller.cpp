@@ -178,6 +178,9 @@ void test_wait_corner_cases (void *ctx)
     rc = zmq_poller_wait(poller, &event, -1);
     assert (rc == -1 && errno == EFAULT);
 
+    rc = zmq_poller_wait_all (poller, &event, -1, 0);
+    assert (rc == -1 && errno == EINVAL);
+
     rc = zmq_poller_wait_all (poller, &event, 0, 0);
     assert (rc == -1 && errno == EAGAIN);
 
@@ -268,13 +271,8 @@ int main (void)
     rc = zmq_connect (bowl, my_endpoint_0);
     assert (rc == 0);
 
-#if defined _WIN32
-    SOCKET fd;
-    size_t fd_size = sizeof (SOCKET);
-#else
-    int fd;
-    size_t fd_size = sizeof (int);
-#endif
+    fd_t fd;
+    size_t fd_size = sizeof (fd);
 
     rc = zmq_getsockopt (bowl, ZMQ_FD, &fd, &fd_size);
     assert (rc == 0);
