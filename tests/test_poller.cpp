@@ -144,15 +144,11 @@ void test_null_event_pointers (void *ctx)
     int rc = zmq_poller_add (poller, socket, NULL, ZMQ_POLLIN);
     assert (rc == 0);
 
-    //  TODO this causes an assertion, which is not consistent with the 
-    //  behavior for other NULL parameters
-#if 0
-    rc = zmq_poller_wait(poller, NULL, 0);
+    rc = zmq_poller_wait (poller, NULL, 0);
     assert (rc == -1 && errno == EFAULT);
 
     rc = zmq_poller_wait_all (poller, NULL, 1, 0);
     assert (rc == -1 && errno == EFAULT);
-#endif
 
     //  TODO this causes an assertion, which is not consistent if the number 
     //  of events may be 0, the pointer should be allowed to by NULL in that 

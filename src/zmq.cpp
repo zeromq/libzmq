@@ -1349,27 +1349,33 @@ int zmq_poller_remove_fd (void *poller_, int fd_)
 }
 
 
-int zmq_poller_wait (void *poller_, zmq_poller_event_t *event, long timeout_)
+int zmq_poller_wait (void *poller_, zmq_poller_event_t *event_, long timeout_)
 {
     if (!poller_ || !((zmq::socket_poller_t*)poller_)->check_tag ()) {
         errno = EFAULT;
         return -1;
     }
+    if (!event_) {
+        errno = EFAULT;
+        return -1;
+    }
 
-    zmq_assert (event != NULL);
-
-    int rc = zmq_poller_wait_all(poller_, event, 1, timeout_);
+    int rc = zmq_poller_wait_all(poller_, event_, 1, timeout_);
 
     if (rc < 0) {
-        memset (event, 0, sizeof(zmq_poller_event_t));
+        memset (event_, 0, sizeof(zmq_poller_event_t));
     }
     // wait_all returns number of events, but we return 0 for any success
     return rc >= 0 ? 0 : rc;
 }
 
-int zmq_poller_wait_all (void *poller_, zmq_poller_event_t *events, int n_events, long timeout_)
+int zmq_poller_wait_all (void *poller_, zmq_poller_event_t *events_, int n_events, long timeout_)
 {
     if (!poller_ || !((zmq::socket_poller_t*)poller_)->check_tag ()) {
+        errno = EFAULT;
+        return -1;
+    }
+    if (!events_) {
         errno = EFAULT;
         return -1;
     }
@@ -1378,9 +1384,7 @@ int zmq_poller_wait_all (void *poller_, zmq_poller_event_t *events, int n_events
         return -1;
     }
 
-    zmq_assert (events != NULL);
-
-    int rc = ((zmq::socket_poller_t*)poller_)->wait ((zmq::socket_poller_t::event_t *)events, n_events, timeout_);
+    int rc = ((zmq::socket_poller_t*)poller_)->wait ((zmq::socket_poller_t::event_t *)events_, n_events, timeout_);
 
     return rc;
 }
