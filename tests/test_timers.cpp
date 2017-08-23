@@ -48,6 +48,59 @@ int sleep_and_execute(void *timers_)
     return zmq_timers_execute(timers_);
 }
 
+void test_null_timer_pointers ()
+{
+    void *timers = NULL;
+
+    int rc = zmq_timers_destroy (&timers);
+    assert (rc == -1 && errno == EFAULT);
+
+//  TODO this currently triggers an access violation
+#if 0
+  rc = zmq_timers_destroy (NULL);
+  assert (rc == -1 && errno == EFAULT);
+#endif
+
+    const size_t dummy_interval = 100;
+    const int dummy_timer_id = 1;
+
+    rc = zmq_timers_add (timers, dummy_interval, &handler, NULL);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_timers_add (&timers, dummy_interval, &handler, NULL);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_timers_cancel (timers, dummy_timer_id);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_timers_cancel (&timers, dummy_timer_id);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_timers_set_interval (timers, dummy_timer_id, dummy_interval);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_timers_set_interval (&timers, dummy_timer_id, dummy_interval);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_timers_reset (timers, dummy_timer_id);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_timers_reset (&timers, dummy_timer_id);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_timers_timeout (timers);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_timers_timeout (&timers);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_timers_execute (timers);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_timers_execute (&timers);
+    assert (rc == -1 && errno == EFAULT);
+}
+
 int main (void)
 {
     setup_test_environment ();
@@ -114,6 +167,8 @@ int main (void)
 
     rc = zmq_timers_destroy (&timers);
     assert (rc == 0);
+
+    test_null_timer_pointers ();
 
     return 0;
 }
