@@ -29,17 +29,6 @@
 
 #include "testutil.hpp"
 
-void sleep_ (long timeout_)
-{
-#if defined ZMQ_HAVE_WINDOWS
-    Sleep (timeout_ > 0 ? timeout_ : INFINITE);
-#elif defined ZMQ_HAVE_ANDROID
-    usleep (timeout_ * 1000);
-#else
-    usleep (timeout_ * 1000);
-#endif
-}
-
 void handler (int timer_id, void* arg)
 {
     (void) timer_id;               //  Stop 'unused' compiler warnings
@@ -52,11 +41,107 @@ int sleep_and_execute(void *timers_)
 
     //  Sleep methods are inaccurate, so we sleep in a loop until time arrived
     while (timeout > 0) {
-        sleep_ (timeout);
+        msleep (timeout);
         timeout = zmq_timers_timeout(timers_);
     }
 
     return zmq_timers_execute(timers_);
+}
+
+void test_null_timer_pointers ()
+{
+    void *timers = NULL;
+
+    int rc = zmq_timers_destroy (&timers);
+    assert (rc == -1 && errno == EFAULT);
+
+//  TODO this currently triggers an access violation
+#if 0
+  rc = zmq_timers_destroy (NULL);
+  assert (rc == -1 && errno == EFAULT);
+#endif
+
+    const size_t dummy_interval = 100;
+    const int dummy_timer_id = 1;
+
+    rc = zmq_timers_add (timers, dummy_interval, &handler, NULL);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_timers_add (&timers, dummy_interval, &handler, NULL);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_timers_cancel (timers, dummy_timer_id);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_timers_cancel (&timers, dummy_timer_id);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_timers_set_interval (timers, dummy_timer_id, dummy_interval);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_timers_set_interval (&timers, dummy_timer_id, dummy_interval);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_timers_reset (timers, dummy_timer_id);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_timers_reset (&timers, dummy_timer_id);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_timers_timeout (timers);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_timers_timeout (&timers);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_timers_execute (timers);
+    assert (rc == -1 && errno == EFAULT);
+
+    rc = zmq_timers_execute (&timers);
+    assert (rc == -1 && errno == EFAULT);
+}
+
+void test_corner_cases ()
+{
+    void *timers = zmq_timers_new ();
+    assert (timers);
+
+    const size_t dummy_interval = SIZE_MAX;
+    const int dummy_timer_id = 1;
+
+    //  attempt to cancel non-existent timer
+    int rc = zmq_timers_cancel (timers, dummy_timer_id);
+    assert (rc == -1 && errno == EINVAL);
+
+    //  attempt to set interval of non-existent timer
+    rc = zmq_timers_set_interval (timers, dummy_timer_id, dummy_interval);
+    assert (rc == -1 && errno == EINVAL);
+
+    //  attempt to reset non-existent timer
+    rc = zmq_timers_reset (timers, dummy_timer_id);
+    assert (rc == -1 && errno == EINVAL);
+
+    //  attempt to add NULL handler
+    rc = zmq_timers_add (timers, dummy_interval, NULL, NULL);
+    assert (rc == -1 && errno == EFAULT);
+
+    int timer_id = zmq_timers_add (timers, dummy_interval, handler, NULL);
+    assert (timer_id != -1);
+
+    //  attempt to cancel timer twice
+    //  TODO should this case really be an error? canceling twice could be allowed
+    rc = zmq_timers_cancel (timers, timer_id);
+    assert (rc == 0);
+
+    rc = zmq_timers_cancel (timers, timer_id);
+    assert (rc == -1 && errno == EINVAL);
+
+    //  timeout without any timers active
+    rc = zmq_timers_timeout(timers);
+    assert (rc == -1);
+
+    rc = zmq_timers_destroy (&timers);
+    assert (rc == 0);
 }
 
 int main (void)
@@ -77,7 +162,9 @@ int main (void)
     assert (!timer_invoked);
 
     //  Wait half the time and check again
-    sleep_ (zmq_timers_timeout (timers) / 2);
+    long timeout = zmq_timers_timeout(timers);
+    assert (rc != -1);
+    msleep (timeout / 2);
     rc = zmq_timers_execute (timers);
     assert (rc == 0);
     assert (!timer_invoked);
@@ -89,15 +176,17 @@ int main (void)
     timer_invoked = false;
 
     //  Wait half the time and check again
-    long timeout = zmq_timers_timeout (timers);
-    sleep_ (timeout / 2);
+    timeout = zmq_timers_timeout (timers);
+    assert (rc != -1);
+    msleep (timeout / 2);
     rc = zmq_timers_execute (timers);
     assert (rc == 0);
     assert (!timer_invoked);
 
     // Reset timer and wait half of the time left
     rc = zmq_timers_reset (timers, timer_id);
-    sleep_ (timeout / 2);
+    assert (rc == 0);
+    msleep (timeout / 2);
     rc = zmq_timers_execute (timers);
     assert (rc == 0);
     assert (!timer_invoked);
@@ -109,7 +198,8 @@ int main (void)
     timer_invoked = false;
 
     // reschedule
-    zmq_timers_set_interval (timers, timer_id, 50);
+    rc = zmq_timers_set_interval (timers, timer_id, 50);
+    assert (rc == 0);
     rc = sleep_and_execute(timers);
     assert (rc == 0);
     assert (timer_invoked);
@@ -117,14 +207,19 @@ int main (void)
 
     // cancel timer
     timeout = zmq_timers_timeout (timers);
-    zmq_timers_cancel (timers, timer_id);
-    sleep_ (timeout * 2);
+    assert (rc != -1);
+    rc = zmq_timers_cancel (timers, timer_id);
+    assert (rc == 0);
+    msleep (timeout * 2);
     rc = zmq_timers_execute (timers);
     assert (rc == 0);
     assert (!timer_invoked);
 
     rc = zmq_timers_destroy (&timers);
     assert (rc == 0);
+
+    test_null_timer_pointers ();
+    test_corner_cases ();
 
     return 0;
 }
