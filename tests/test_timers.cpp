@@ -29,17 +29,6 @@
 
 #include "testutil.hpp"
 
-void sleep_ (long timeout_)
-{
-#if defined ZMQ_HAVE_WINDOWS
-    Sleep (timeout_ > 0 ? timeout_ : INFINITE);
-#elif defined ZMQ_HAVE_ANDROID
-    usleep (timeout_ * 1000);
-#else
-    usleep (timeout_ * 1000);
-#endif
-}
-
 void handler (int timer_id, void* arg)
 {
     (void) timer_id;               //  Stop 'unused' compiler warnings
@@ -52,7 +41,7 @@ int sleep_and_execute(void *timers_)
 
     //  Sleep methods are inaccurate, so we sleep in a loop until time arrived
     while (timeout > 0) {
-        sleep_ (timeout);
+        msleep (timeout);
         timeout = zmq_timers_timeout(timers_);
     }
 
@@ -77,7 +66,7 @@ int main (void)
     assert (!timer_invoked);
 
     //  Wait half the time and check again
-    sleep_ (zmq_timers_timeout (timers) / 2);
+    msleep (zmq_timers_timeout (timers) / 2);
     rc = zmq_timers_execute (timers);
     assert (rc == 0);
     assert (!timer_invoked);
@@ -90,14 +79,14 @@ int main (void)
 
     //  Wait half the time and check again
     long timeout = zmq_timers_timeout (timers);
-    sleep_ (timeout / 2);
+    msleep (timeout / 2);
     rc = zmq_timers_execute (timers);
     assert (rc == 0);
     assert (!timer_invoked);
 
     // Reset timer and wait half of the time left
     rc = zmq_timers_reset (timers, timer_id);
-    sleep_ (timeout / 2);
+    msleep (timeout / 2);
     rc = zmq_timers_execute (timers);
     assert (rc == 0);
     assert (!timer_invoked);
@@ -118,7 +107,7 @@ int main (void)
     // cancel timer
     timeout = zmq_timers_timeout (timers);
     zmq_timers_cancel (timers, timer_id);
-    sleep_ (timeout * 2);
+    msleep (timeout * 2);
     rc = zmq_timers_execute (timers);
     assert (rc == 0);
     assert (!timer_invoked);
