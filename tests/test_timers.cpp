@@ -136,6 +136,10 @@ void test_corner_cases ()
     rc = zmq_timers_cancel (timers, timer_id);
     assert (rc == -1 && errno == EINVAL);
 
+    //  timeout without any timers active
+    rc = zmq_timers_timeout(timers);
+    assert (rc == -1);
+
     rc = zmq_timers_destroy (&timers);
     assert (rc == 0);
 }
