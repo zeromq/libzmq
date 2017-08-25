@@ -167,18 +167,25 @@ void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_
 
 void zmq::thread_t::setThreadName(const char *name_)
 {
+/* The thread name is a cosmetic string, added to ease debugging of
+ * multi-threaded applications. It is not a big issue if this value
+ * can not be set for any reason (such as Permission denied in some
+ * cases where the application changes its EUID, etc.) The value of
+ * "int rc" is retained where available, to help debuggers stepping
+ * through code to see its value - but otherwise it is ignored.
+ */
     if (!name_)
         return;
 
 #if defined(ZMQ_HAVE_PTHREAD_SETNAME_1)
     int rc = pthread_setname_np(name_);
-    posix_assert (rc);
+    if(rc) return;
 #elif defined(ZMQ_HAVE_PTHREAD_SETNAME_2)
     int rc = pthread_setname_np(descriptor, name_);
-    posix_assert (rc);
+    if(rc) return;
 #elif defined(ZMQ_HAVE_PTHREAD_SETNAME_3)
     int rc = pthread_setname_np(descriptor, name_, NULL);
-    posix_assert (rc);
+    if(rc) return;
 #elif defined(ZMQ_HAVE_PTHREAD_SET_NAME)
     pthread_set_name_np(descriptor, name_);
 #endif
