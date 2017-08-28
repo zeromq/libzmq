@@ -112,7 +112,7 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
       return -1;
 
     const unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
-    int bytes_left = msg_->size ();
+    size_t bytes_left = msg_->size ();
 
     if (bytes_left < 6 || memcmp (ptr, "\x05HELLO", 6)) {
         session->get_socket ()->event_handshake_failed_protocol (
@@ -133,7 +133,7 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     const uint8_t username_length = *ptr++;
     bytes_left -= 1;
 
-    if (bytes_left < (int)username_length) {
+    if (bytes_left < username_length) {
         //  PLAIN I: invalid PLAIN client, sent malformed username
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
@@ -153,7 +153,7 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
 
     const uint8_t password_length = *ptr++;
     bytes_left -= 1;
-    if (bytes_left < (int)password_length) {
+    if (bytes_left < password_length) {
         //  PLAIN I: invalid PLAIN client, sent malformed password
         session->get_socket ()->event_handshake_failed_protocol (
           session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
