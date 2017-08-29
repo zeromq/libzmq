@@ -1389,6 +1389,16 @@ int zmq_poller_wait_all (void *poller_, zmq_poller_event_t *events_, int n_event
     return rc;
 }
 
+//  Peer-specific state
+
+int zmq_socket_get_peer_state (void *socket,
+                               const void *identity,
+                               size_t identity_size)
+{
+    errno = ENOTSUP;
+    return -1;
+}
+
 //  Timers
 
 void *zmq_timers_new (void)
