@@ -65,13 +65,24 @@ void test_get_peer_state ()
     rc = zmq_connect (dealer2, my_endpoint);
     assert (rc == 0);
 
-    //  Get message from dealer to know when connection is ready
+    //  Get message from both dealers to know when connection is ready
     char buffer[255];
     rc = zmq_send (dealer1, "Hello", 5, 0);
     assert (rc == 5);
     rc = zmq_recv (router, buffer, 255, 0);
     assert (rc == 1);
     assert (buffer[0] == 'X');
+    rc = zmq_recv (router, buffer, 255, 0);
+    assert (rc == 5);
+
+    rc = zmq_send (dealer2, "Hello", 5, 0);
+    assert (rc == 5);
+    rc = zmq_recv (router, buffer, 255, 0);
+    assert (rc == 1);
+    assert (buffer[0] == 'Y');
+    rc = zmq_recv (router, buffer, 255, 0);
+    assert (rc == 5);
+
 
     void *poller = zmq_poller_new ();
     assert (poller);
@@ -92,6 +103,8 @@ void test_get_peer_state ()
         for (size_t i = 0; i < event_size; ++i) {
             if (events[i].socket == router) {
                 rc = zmq_socket_get_peer_state (router, "X", 1);
+                if (rc == -1)
+                    printf ("zmq_socket_get_peer_state failed: %i\n", errno);
                 assert (rc != -1);
                 if (rc & ZMQ_POLLOUT) {
                     rc = zmq_send (router, "X", 1, ZMQ_SNDMORE);
@@ -100,6 +113,8 @@ void test_get_peer_state ()
                     assert (rc == 5);
                 }
                 rc = zmq_socket_get_peer_state (router, "Y", 1);
+                if (rc == -1)
+                    printf ("zmq_socket_get_peer_state failed: %i\n", errno);
                 assert (rc != -1);
                 if (rc & ZMQ_POLLOUT) {
                     rc = zmq_send (router, "Y", 1, ZMQ_SNDMORE);
@@ -115,6 +130,7 @@ void test_get_peer_state ()
             // never read from dealer2, so its pipe becomes full eventually
         }
     }
+    zmq_poller_destroy (&poller);
 
     rc = zmq_close (router);
     assert (rc == 0);
