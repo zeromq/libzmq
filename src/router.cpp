@@ -443,6 +443,27 @@ zmq::blob_t zmq::router_t::get_credential () const
     return fq.get_credential ();
 }
 
+int zmq::router_t::get_peer_state (const void *identity,
+                                   size_t identity_size) const
+{
+    int res = 0;
+
+    blob_t identity_blob ((unsigned char *) identity, identity_size);
+    outpipes_t::const_iterator it = outpipes.find (identity_blob);
+    if (it == outpipes.end ()) {
+        errno = EHOSTUNREACH;
+        return -1;
+    }
+
+    const outpipe_t &outpipe = it->second;
+    if (outpipe.pipe->check_hwm ())
+        res |= ZMQ_POLLOUT;
+
+    /** \todo does it make any sense to check the inpipe as well? */
+
+    return res;
+}
+
 bool zmq::router_t::identify_peer (pipe_t *pipe_)
 {
     msg_t msg;

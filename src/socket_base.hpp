@@ -138,6 +138,11 @@ namespace zmq
         void event_handshake_failed_auth(const std::string &addr_, int err_);
         void event_handshake_succeeded(const std::string &addr_, int err_);
 
+        //  Query the state of a specific peer. The default implementation
+        //  always returns an ENOTSUP error.
+        virtual int get_peer_state (const void *identity,
+                                    size_t identity_size) const;
+
     protected:
 
         socket_base_t (zmq::ctx_t *parent_, uint32_t tid_, int sid_, bool thread_safe_ = false);
@@ -179,7 +184,6 @@ namespace zmq
 
         //  Delay actual destruction of the socket.
         void process_destroy ();
-
 
         // Next assigned name on a zmq_connect() call used by ROUTER and STREAM socket types
         std::string connect_rid;
