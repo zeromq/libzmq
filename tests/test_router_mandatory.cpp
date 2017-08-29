@@ -29,9 +29,8 @@
 
 #include "testutil.hpp"
 
-int main (void)
+void test_basic ()
 {
-    setup_test_environment();
     size_t len = MAX_SOCKET_STRING;
     char my_endpoint[MAX_SOCKET_STRING];
     void *ctx = zmq_ctx_new ();
@@ -55,7 +54,8 @@ int main (void)
     //  Send a message to an unknown peer with mandatory routing
     //  This will fail
     int mandatory = 1;
-    rc = zmq_setsockopt (router, ZMQ_ROUTER_MANDATORY, &mandatory, sizeof (mandatory));
+    rc = zmq_setsockopt (router, ZMQ_ROUTER_MANDATORY, &mandatory,
+                         sizeof (mandatory));
     assert (rc == 0);
     rc = zmq_send (router, "UNKNOWN", 7, ZMQ_SNDMORE);
     assert (rc == -1 && errno == EHOSTUNREACH);
@@ -69,12 +69,12 @@ int main (void)
     assert (rc == 0);
 
     //  Get message from dealer to know when connection is ready
-    char buffer [255];
+    char buffer[255];
     rc = zmq_send (dealer, "Hello", 5, 0);
     assert (rc == 5);
     rc = zmq_recv (router, buffer, 255, 0);
     assert (rc == 1);
-    assert (buffer [0] ==  'X');
+    assert (buffer[0] == 'X');
 
     //  Send a message to connected dealer now
     //  It should work
@@ -82,7 +82,7 @@ int main (void)
     assert (rc == 1);
     rc = zmq_send (router, "Hello", 5, 0);
     assert (rc == 5);
-    
+
     rc = zmq_close (router);
     assert (rc == 0);
 
@@ -91,6 +91,13 @@ int main (void)
 
     rc = zmq_ctx_term (ctx);
     assert (rc == 0);
+}
 
-    return 0 ;
+int main (void)
+{
+    setup_test_environment ();
+
+    test_basic ();
+
+    return 0;
 }
