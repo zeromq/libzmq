@@ -29,6 +29,26 @@
 
 #include "testutil.hpp"
 
+#ifdef ZMQ_BUILD_DRAFT_API
+bool send_msg_to_peer_if_ready (void *router, const char *peer_identity)
+{
+    int rc = zmq_socket_get_peer_state (router, peer_identity, 1);
+    if (rc == -1)
+        printf ("zmq_socket_get_peer_state failed for %s: %i\n", peer_identity,
+                errno);
+    assert (rc != -1);
+    if (rc & ZMQ_POLLOUT) {
+        rc = zmq_send (router, peer_identity, 1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
+        assert (rc == 1);
+        rc = zmq_send (router, "Hello", 5, ZMQ_DONTWAIT);
+        assert (rc == 5);
+
+        return true;
+    }
+    return false;
+}
+#endif
+
 void test_get_peer_state ()
 {
 #ifdef ZMQ_BUILD_DRAFT_API
@@ -59,18 +79,24 @@ void test_get_peer_state ()
 
     //  Lower HWMs to allow doing the test with fewer messages
     int hwm = 100;
-    zmq_setsockopt (router, ZMQ_SNDHWM, &hwm, sizeof (int));
-    zmq_setsockopt (dealer1, ZMQ_RCVHWM, &hwm, sizeof (int));
-    zmq_setsockopt (dealer2, ZMQ_RCVHWM, &hwm, sizeof (int));
+    rc = zmq_setsockopt (router, ZMQ_SNDHWM, &hwm, sizeof (int));
+    assert (rc == 0);
+    rc = zmq_setsockopt (dealer1, ZMQ_RCVHWM, &hwm, sizeof (int));
+    assert (rc == 0);
+    rc = zmq_setsockopt (dealer2, ZMQ_RCVHWM, &hwm, sizeof (int));
+    assert (rc == 0);
+
+    const char *dealer1_identity = "X";
+    const char *dealer2_identity = "Y";
 
     //  Name dealer1 "X" and connect it to our router
-    rc = zmq_setsockopt (dealer1, ZMQ_IDENTITY, "X", 1);
+    rc = zmq_setsockopt (dealer1, ZMQ_IDENTITY, dealer1_identity, 1);
     assert (rc == 0);
     rc = zmq_connect (dealer1, my_endpoint);
     assert (rc == 0);
 
     //  Name dealer2 "Y" and connect it to our router
-    rc = zmq_setsockopt (dealer2, ZMQ_IDENTITY, "Y", 1);
+    rc = zmq_setsockopt (dealer2, ZMQ_IDENTITY, dealer2_identity, 1);
     assert (rc == 0);
     rc = zmq_connect (dealer2, my_endpoint);
     assert (rc == 0);
@@ -81,7 +107,7 @@ void test_get_peer_state ()
     assert (rc == 5);
     rc = zmq_recv (router, buffer, 255, 0);
     assert (rc == 1);
-    assert (buffer[0] == 'X');
+    assert (0 == memcmp (buffer, dealer1_identity, rc));
     rc = zmq_recv (router, buffer, 255, 0);
     assert (rc == 5);
 
@@ -89,7 +115,7 @@ void test_get_peer_state ()
     assert (rc == 5);
     rc = zmq_recv (router, buffer, 255, 0);
     assert (rc == 1);
-    assert (buffer[0] == 'Y');
+    assert (0 == memcmp (buffer, dealer2_identity, rc));
     rc = zmq_recv (router, buffer, 255, 0);
     assert (rc == 5);
 
@@ -107,41 +133,30 @@ void test_get_peer_state ()
     bool dealer2_blocked = false;
     size_t dealer1_sent = 0, dealer2_sent = 0, dealer1_received = 0;
     zmq_poller_event_t events[event_size];
-    for (size_t iterations = 0; iterations < count; ++iterations) {
+    for (size_t iteration = 0; iteration < count; ++iteration) {
         rc = zmq_poller_wait_all (poller, events, event_size, -1);
         assert (rc != -1);
-        for (size_t i = 0; i < event_size; ++i) {
-            if (events[i].socket == router && events[i].events & ZMQ_POLLOUT) {
-                rc = zmq_socket_get_peer_state (router, "X", 1);
-                if (rc == -1)
-                    printf ("zmq_socket_get_peer_state failed: %i\n", errno);
-                assert (rc != -1);
-                if (rc & ZMQ_POLLOUT) {
-                    rc = zmq_send (router, "X", 1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
-                    assert (rc == 1);
-                    rc = zmq_send (router, "Hello", 5, ZMQ_DONTWAIT);
-                    assert (rc == 5);
-
+        for (size_t event_no = 0; event_no < event_size; ++event_no) {
+            const zmq_poller_event_t &current_event = events[event_no];
+            if (current_event.socket == router
+                && current_event.events & ZMQ_POLLOUT) {
+                if (send_msg_to_peer_if_ready (router, dealer1_identity))
                     ++dealer1_sent;
-                }
 
-                rc = zmq_socket_get_peer_state (router, "Y", 1);
-                if (rc == -1)
-                    printf ("zmq_socket_get_peer_state failed: %i\n", errno);
-                assert (rc != -1);
-                if (rc & ZMQ_POLLOUT) {
-                    rc = zmq_send (router, "Y", 1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
-                    assert (rc == 1);
-                    rc = zmq_send (router, "Hello", 5, ZMQ_DONTWAIT);
-                    assert (rc == 5);
+                if (send_msg_to_peer_if_ready (router, dealer2_identity))
                     ++dealer2_sent;
-                } else {
+                else
                     dealer2_blocked = true;
-                }
             }
-            if (events[i].socket == dealer1 && events[i].events & ZMQ_POLLIN) {
+            if (current_event.socket == dealer1
+                && current_event.events & ZMQ_POLLIN) {
                 rc = zmq_recv (dealer1, buffer, 255, ZMQ_DONTWAIT);
                 assert (rc == 5);
+                int more;
+                size_t more_size = sizeof (more);
+                rc = zmq_getsockopt (dealer1, ZMQ_RCVMORE, &more, &more_size);
+                assert (rc == 0);
+                assert (!more);
 
                 ++dealer1_received;
             }
