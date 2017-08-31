@@ -434,13 +434,19 @@ void zmq::session_base_t::engine_error (
     switch (reason) {
         case stream_engine_t::timeout_error:
         case stream_engine_t::connection_error:
-            if (active)
+            if (active) {
                 reconnect ();
-            else
-                terminate ();
-            break;
+                break;
+            }
         case stream_engine_t::protocol_error:
-            terminate ();
+            if (pending) {
+                if (pipe)
+                    pipe->terminate (0);
+                if (zap_pipe)
+                    zap_pipe->terminate (0);
+            } else {
+                terminate ();
+            }
             break;
     }
 
