@@ -19,6 +19,7 @@
 #cmakedefine ZMQ_HAVE_EVENTFD
 #cmakedefine ZMQ_HAVE_EVENTFD_CLOEXEC
 #cmakedefine ZMQ_HAVE_IFADDRS
+#cmakedefine ZMQ_HAVE_SO_BINDTODEVICE
 
 #cmakedefine ZMQ_HAVE_SO_PEERCRED
 #cmakedefine ZMQ_HAVE_LOCAL_PEERCRED
@@ -40,6 +41,7 @@
 #cmakedefine ZMQ_HAVE_CURVE
 #cmakedefine ZMQ_USE_TWEETNACL
 #cmakedefine ZMQ_USE_LIBSODIUM
+#cmakedefine SODIUM_STATIC
 
 #ifdef _AIX
   #define ZMQ_HAVE_AIX

@@ -58,10 +58,11 @@ int test_defaults (int send_hwm, int msgCnt)
     while (send_count < msgCnt && zmq_send (pub_socket, NULL, 0, ZMQ_DONTWAIT) == 0)
         ++send_count;
 
+    msleep (SETTLE_TIME);
+
     // Now receive all sent messages
     int recv_count = 0;
-    while (0 == zmq_recv (sub_socket, NULL, 0, ZMQ_DONTWAIT))
-    {
+    while (0 == zmq_recv (sub_socket, NULL, 0, ZMQ_DONTWAIT)) {
         ++recv_count;
     }
 

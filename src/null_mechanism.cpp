@@ -42,9 +42,8 @@
 zmq::null_mechanism_t::null_mechanism_t (session_base_t *session_,
                                          const std::string &peer_address_,
                                          const options_t &options_) :
-    mechanism_t (options_),
-    session (session_),
-    peer_address (peer_address_),
+    mechanism_base_t (session_, options_),
+    zap_client_t (session_, peer_address_, options_),
     ready_command_sent (false),
     error_command_sent (false),
     ready_command_received (false),
@@ -75,55 +74,33 @@ int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
             errno = EAGAIN;
             return -1;
         }
-        int rc = send_zap_request ();
-        if (rc != 0)
-            return -1;
+        send_zap_request ();
         zap_request_sent = true;
-        rc = receive_and_process_zap_reply ();
-        if (rc != 0)
+        int rc = receive_and_process_zap_reply ();
+        if (rc == -1 || rc == 1)
             return -1;
         zap_reply_received = true;
     }
 
-    if (zap_reply_received
-    &&  strncmp (status_code, "200", sizeof status_code) != 0) {
-        const int rc = msg_->init_size (6 + 1 + sizeof status_code);
-        zmq_assert (rc == 0);
-        unsigned char *msg_data =
-            static_cast <unsigned char *> (msg_->data ());
-        memcpy (msg_data, "\5ERROR", 6);
-        msg_data [6] = sizeof status_code;
-        memcpy (msg_data + 7, status_code, sizeof status_code);
+    if (zap_reply_received && status_code != "200") {
         error_command_sent = true;
-        return 0;
+        if (status_code != "300") {
+            const size_t status_code_len = 3;
+            const int rc = msg_->init_size (6 + 1 + status_code_len);
+            zmq_assert (rc == 0);
+            unsigned char *msg_data =
+              static_cast<unsigned char *> (msg_->data ());
+            memcpy (msg_data, "\5ERROR", 6);
+            msg_data[6] = status_code_len;
+            memcpy (msg_data + 7, status_code.c_str (), status_code_len);
+            return 0;
+        } else {
+            errno = EAGAIN;
+            return -1;
+        }
     }
 
-    unsigned char *const command_buffer = (unsigned char *) malloc (512);
-    alloc_assert (command_buffer);
-
-    unsigned char *ptr = command_buffer;
-
-    //  Add mechanism string
-    memcpy (ptr, "\5READY", 6);
-    ptr += 6;
-
-    //  Add socket type property
-    const char *socket_type = socket_type_string (options.type);
-    ptr += add_property (ptr, ZMQ_MSG_PROPERTY_SOCKET_TYPE, socket_type,
-                         strlen (socket_type));
-
-    //  Add identity property
-    if (options.type == ZMQ_REQ
-    ||  options.type == ZMQ_DEALER
-    ||  options.type == ZMQ_ROUTER)
-        ptr += add_property (ptr, ZMQ_MSG_PROPERTY_IDENTITY, options.identity,
-                             options.identity_size);
-
-    const size_t command_size = ptr - command_buffer;
-    const int rc = msg_->init_size (command_size);
-    errno_assert (rc == 0);
-    memcpy (msg_->data (), command_buffer, command_size);
-    free (command_buffer);
+    make_command_with_basic_properties (msg_, "\5READY", 6);
 
     ready_command_sent = true;
 
@@ -133,8 +110,9 @@ int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
 int zmq::null_mechanism_t::process_handshake_command (msg_t *msg_)
 {
     if (ready_command_received || error_command_received) {
-        //  Temporary support for security debugging
-        puts ("NULL I: client sent invalid NULL handshake (duplicate READY)");
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         return -1;
     }
@@ -150,8 +128,9 @@ int zmq::null_mechanism_t::process_handshake_command (msg_t *msg_)
     if (data_size >= 6 && !memcmp (cmd_data, "\5ERROR", 6))
         rc = process_error_command (cmd_data, data_size);
     else {
-        //  Temporary support for security debugging
-        puts ("NULL I: client sent invalid NULL handshake (not READY)");
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         rc = -1;
     }
@@ -176,14 +155,24 @@ int zmq::null_mechanism_t::process_error_command (
         const unsigned char *cmd_data, size_t data_size)
 {
     if (data_size < 7) {
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_ERROR);
+
         errno = EPROTO;
         return -1;
     }
     const size_t error_reason_len = static_cast <size_t> (cmd_data [6]);
     if (error_reason_len > data_size - 7) {
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_ERROR);
+
         errno = EPROTO;
         return -1;
     }
+    const char *error_reason = reinterpret_cast<const char *> (cmd_data) + 7;
+    handle_error_reason (error_reason, error_reason_len);
     error_command_received = true;
     return 0;
 }
@@ -197,7 +186,7 @@ int zmq::null_mechanism_t::zap_msg_available ()
     const int rc = receive_and_process_zap_reply ();
     if (rc == 0)
         zap_reply_received = true;
-    return rc;
+    return rc == -1 ? -1 : 0;
 }
 
 zmq::mechanism_t::status_t zmq::null_mechanism_t::status () const
@@ -208,7 +197,7 @@ zmq::mechanism_t::status_t zmq::null_mechanism_t::status () const
         ready_command_received || error_command_received;
 
     if (ready_command_sent && ready_command_received)
-        return ready;
+        return mechanism_t::ready;
     else
     if (command_sent && command_received)
         return error;
@@ -216,148 +205,7 @@ zmq::mechanism_t::status_t zmq::null_mechanism_t::status () const
         return handshaking;
 }
 
-int zmq::null_mechanism_t::send_zap_request ()
+void zmq::null_mechanism_t::send_zap_request ()
 {
-    int rc;
-    msg_t msg;
-
-    //  Address delimiter frame
-    rc = msg.init ();
-    errno_assert (rc == 0);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Version frame
-    rc = msg.init_size (3);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), "1.0", 3);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Request id frame
-    rc = msg.init_size (1);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), "1", 1);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Domain frame
-    rc = msg.init_size (options.zap_domain.length ());
-    errno_assert (rc == 0);
-    memcpy (msg.data (), options.zap_domain.c_str (), options.zap_domain.length ());
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Address frame
-    rc = msg.init_size (peer_address.length ());
-    errno_assert (rc == 0);
-    memcpy (msg.data (), peer_address.c_str (), peer_address.length ());
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Identity frame
-    rc = msg.init_size (options.identity_size);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), options.identity, options.identity_size);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Mechanism frame
-    rc = msg.init_size (4);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), "NULL", 4);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    return 0;
-}
-
-int zmq::null_mechanism_t::receive_and_process_zap_reply ()
-{
-    int rc = 0;
-    msg_t msg [7];  //  ZAP reply consists of 7 frames
-
-    //  Initialize all reply frames
-    for (int i = 0; i < 7; i++) {
-        rc = msg [i].init ();
-        errno_assert (rc == 0);
-    }
-
-    for (int i = 0; i < 7; i++) {
-        rc = session->read_zap_msg (&msg [i]);
-        if (rc == -1)
-            return close_and_return (msg, -1);
-        if ((msg [i].flags () & msg_t::more) == (i < 6? 0: msg_t::more)) {
-            //  Temporary support for security debugging
-            puts ("NULL I: ZAP handler sent incomplete reply message");
-            errno = EPROTO;
-            return close_and_return (msg, -1);
-        }
-    }
-
-    //  Address delimiter frame
-    if (msg [0].size () > 0) {
-        //  Temporary support for security debugging
-        puts ("NULL I: ZAP handler sent malformed reply message");
-        errno = EPROTO;
-        return close_and_return (msg, -1);
-    }
-
-    //  Version frame
-    if (msg [1].size () != 3 || memcmp (msg [1].data (), "1.0", 3)) {
-        //  Temporary support for security debugging
-        puts ("NULL I: ZAP handler sent bad version number");
-        errno = EPROTO;
-        return close_and_return (msg, -1);
-    }
-
-    //  Request id frame
-    if (msg [2].size () != 1 || memcmp (msg [2].data (), "1", 1)) {
-        //  Temporary support for security debugging
-        puts ("NULL I: ZAP handler sent bad request ID");
-        errno = EPROTO;
-        return close_and_return (msg, -1);
-    }
-
-    //  Status code frame
-    if (msg [3].size () != 3) {
-        //  Temporary support for security debugging
-        puts ("NULL I: ZAP handler sent bad status code");
-        errno = EPROTO;
-        return close_and_return (msg, -1);
-    }
-
-    //  Save status code
-    memcpy (status_code, msg [3].data (), sizeof status_code);
-
-    //  Save user id
-    set_user_id (msg [5].data (), msg [5].size ());
-
-    //  Process metadata frame
-    rc = parse_metadata (static_cast <const unsigned char*> (msg [6].data ()),
-                         msg [6].size (), true);
-
-    if (rc != 0)
-        return close_and_return (msg, -1);
-
-    //  Close all reply frames
-    for (int i = 0; i < 7; i++) {
-        const int rc2 = msg [i].close ();
-        errno_assert (rc2 == 0);
-    }
-
-    return 0;
+    zap_client_t::send_zap_request ("NULL", 4, NULL, NULL, 0);
 }

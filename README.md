@@ -16,7 +16,51 @@ protocols and more.
 
 ## Building and installation
 
-See the INSTALL file included with the distribution.
+### Linux
+
+For Linux users, pre-built binary packages are available for most distributions.
+Note that DRAFT APIs can change at any time without warning, pick a STABLE build to
+avoid having them enabled.
+
+#### Latest releases
+
+##### DEB
+
+[![OBS release stable](https://img.shields.io/badge/OBS%20master-stable-yellow.svg)](http://software.opensuse.org/download.html?project=network%3Amessaging%3Azeromq%3Arelease-stable&package=libzmq3-dev)
+[![OBS release draft](https://img.shields.io/badge/OBS%20master-draft-yellow.svg)](http://software.opensuse.org/download.html?project=network%3Amessaging%3Azeromq%3Arelease-draft&package=libzmq3-dev)
+
+##### RPM
+
+[![OBS release stable](https://img.shields.io/badge/OBS%20master-stable-yellow.svg)](http://software.opensuse.org/download.html?project=network%3Amessaging%3Azeromq%3Arelease-stable&package=zeromq-devel)
+[![OBS release draft](https://img.shields.io/badge/OBS%20master-draft-yellow.svg)](http://software.opensuse.org/download.html?project=network%3Amessaging%3Azeromq%3Arelease-draft&package=zeromq-devel)
+
+#### Bleeding edge packages
+
+##### DEB
+
+[![OBS release stable](https://img.shields.io/badge/OBS%20master-stable-yellow.svg)](http://software.opensuse.org/download.html?project=network%3Amessaging%3Azeromq%3Agit-stable&package=libzmq3-dev)
+[![OBS release draft](https://img.shields.io/badge/OBS%20master-draft-yellow.svg)](http://software.opensuse.org/download.html?project=network%3Amessaging%3Azeromq%3Agit-draft&package=libzmq3-dev)
+
+##### RPM
+
+[![OBS release stable](https://img.shields.io/badge/OBS%20master-stable-yellow.svg)](http://software.opensuse.org/download.html?project=network%3Amessaging%3Azeromq%3Agit-stable&package=zeromq-devel)
+[![OBS release draft](https://img.shields.io/badge/OBS%20master-draft-yellow.svg)](http://software.opensuse.org/download.html?project=network%3Amessaging%3Azeromq%3Agit-draft&package=zeromq-devel)
+
+#### Example: Debian 9 latest release, no DRAFT apis
+
+    echo "deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/Debian_9.0/ ./" >> /etc/apt/sources.list
+    wget https://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/Debian_9.0/Release.key -O- | sudo apt-key add
+    apt-get install libzmq3-dev
+
+### OSX
+
+For OSX users, packages are available via brew.
+
+    brew install zeromq
+
+### Build from sources
+
+To build from sources, see the INSTALL file included with the distribution.
 
 ## Resources
 

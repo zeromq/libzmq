@@ -24,9 +24,26 @@ BuildRequires:  autoconf automake libtool libsodium-devel glib2-devel
 BuildRequires:  e2fsprogs-devel
 BuildRoot:      %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 %endif
+%bcond_with pgm
 %if %{with pgm}
 BuildRequires:  openpgm-devel
+%define PGM yes
+%else
+%define PGM no
+%endif
+%bcond_with libgssapi_krb5
+%if %{with libgssapi_krb5}
 BuildRequires:  krb5-devel
+%define GSSAPI yes
+%else
+%define GSSAPI no
+%endif
+%bcond_with libsodium
+%if %{with libsodium}
+BuildRequires:  libsodium-devel
+%define SODIUM yes
+%else
+%define SODIUM no
 %endif
 BuildRequires: gcc, make, gcc-c++, libstdc++-devel, asciidoc, xmlto
 Requires:      libstdc++
@@ -62,6 +79,9 @@ Requires:      libstdc++
 %{!?_with_pic: %{!?_without_pic: %define _with_pic --with-pic}}
 %{!?_with_gnu_ld: %{!?_without_gnu_ld: %define _with_gnu_ld --with-gnu_ld}}
 %endif
+
+# We do not want to ship libzmq.la
+%define _unpackaged_files_terminate_build 0
 
 %description
 The 0MQ lightweight messaging kernel is a library which extends the
@@ -126,12 +146,9 @@ sed -i "s/openpgm-[0-9].[0-9]/%{openpgm_pc}/g" \
 %build
 autoreconf -fi
 %configure --enable-drafts=%{DRAFTS} \
-    %{?_with_libsodium} \
-    %{?_without_libsodium} \
-    %{?_with_pgm} \
-    %{?_without_pgm} \
-    %{?_with_libgssapi_krb5} \
-    %{?_without_libgssapi_krb5} \
+    --with-pgm=%{PGM} \
+    --with-libsodium=%{SODIUM} \
+    --with-libgssapi_krb5=%{GSSAPI} \
     %{?_with_pic} \
     %{?_without_pic} \
     %{?_with_gnu_ld} \
@@ -171,7 +188,6 @@ autoreconf -fi
 %{_includedir}/zmq.h
 %{_includedir}/zmq_utils.h
 
-%{_libdir}/libzmq.la
 %{_libdir}/libzmq.a
 %{_libdir}/pkgconfig/libzmq.pc
 %{_libdir}/libzmq.so
@@ -185,6 +201,11 @@ autoreconf -fi
 %{_bindir}/curve_keygen
 
 %changelog
+* Sat Aug 19 2017 Luca Boccassi <luca.boccassi@gmail.com>
+- Fix parsing and usage of conditionals for sodium/pgm/krb5 so that they work
+  in OBS
+- Do not ship libzmq.la anymore, it's not needed and causes overlinking
+
 * Sun Nov 06 2016 Luca Boccassi <luca.boccassi@gmail.com>
 - Add libzmq-tool to package curve_keygen in /usr/bin
 

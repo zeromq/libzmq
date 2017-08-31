@@ -99,17 +99,28 @@ ZMQ_EVENT_MONITOR_STOPPED
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 Monitoring on this socket ended.
 
-ZMQ_EVENT_HANDSHAKE_FAILED
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-The ZMTP security mechanism handshake failed.
-The event value is unspecified.
-NOTE: in DRAFT state, not yet available in stable releases.
-
-ZMQ_EVENT_HANDSHAKE_SUCCEED
+ZMQ_EVENT_HANDSHAKE_SUCCEEDED
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The ZMTP security mechanism handshake succeeded.
 The event value is unspecified.
 NOTE: in DRAFT state, not yet available in stable releases.
+
+ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The ZMTP security mechanism handshake failed due to some mechanism protocol 
+error, either between the ZMTP mechanism peers, or between the mechanism 
+server and the ZAP handler. This indicates a configuration or implementation 
+error in either peer resp. the ZAP handler.
+The event value is one of the ZMQ_PROTOCOL_ERROR_* values.
+NOTE: in DRAFT state, not yet available in stable releases.
+
+ZMQ_EVENT_HANDSHAKE_FAILED_AUTH
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The ZMTP security mechanism handshake failed due to an authentication failure.
+The event value is the status code returned by the ZAP handler (i.e. 300, 
+400 or 500).
+NOTE: in DRAFT state, not yet available in stable releases.
+
 
 
 RETURN VALUE

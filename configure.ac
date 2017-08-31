@@ -442,10 +442,12 @@ AC_ARG_WITH([libgssapi_krb5], [AS_HELP_STRING([--with-libgssapi_krb5],
 
 # conditionally require libgssapi_krb5
 if test "x$require_libgssapi_krb5_ext" != "xno"; then
-    AC_CHECK_HEADERS(gssapi/gssapi_generic.h)
-    AC_SEARCH_LIBS([gss_init_sec_context], [gssapi_krb5 gssapi],
-        AC_DEFINE(HAVE_LIBGSSAPI_KRB5, [1], [Enabled GSSAPI security]),
-        AC_MSG_ERROR(libgssapi_krb5 is needed for GSSAPI security))
+    PKG_CHECK_MODULES([gssapi_krb5], [krb5-gssapi], [], [
+        AC_CHECK_HEADERS(gssapi/gssapi_generic.h)
+        AC_SEARCH_LIBS([gss_init_sec_context], [gssapi_krb5 gssapi],
+            AC_DEFINE(HAVE_LIBGSSAPI_KRB5, [1], [Enabled GSSAPI security]),
+            AC_MSG_ERROR(libgssapi_krb5 is needed for GSSAPI security))
+    ])
 fi
 AM_CONDITIONAL(BUILD_GSSAPI, test "x$require_libgssapi_krb5_ext" != "xno")
 
@@ -498,6 +500,7 @@ AM_CONDITIONAL(ENABLE_CURVE_KEYGEN, test "x$enable_curve" = "xyes" -a "x$zmq_ena
 
 AM_CONDITIONAL(USE_LIBSODIUM, test "$curve_library" = "libsodium")
 AM_CONDITIONAL(USE_TWEETNACL, test "$curve_library" = "tweetnacl")
+AM_CONDITIONAL(HAVE_CURVE, test "x$curve_library" != "x")
 
 # build using pgm
 have_pgm_library="no"

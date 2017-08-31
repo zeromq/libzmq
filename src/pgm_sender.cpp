@@ -39,6 +39,7 @@
 #include "err.hpp"
 #include "wire.hpp"
 #include "stdint.hpp"
+#include "macros.hpp"
 
 zmq::pgm_sender_t::pgm_sender_t (io_thread_t *parent_,
       const options_t &options_) :
@@ -73,6 +74,7 @@ int zmq::pgm_sender_t::init (bool udp_encapsulation_, const char *network_)
 
 void zmq::pgm_sender_t::plug (io_thread_t *io_thread_, session_base_t *session_)
 {
+    LIBZMQ_UNUSED (io_thread_);
     //  Allocate 2 fds for PGM socket.
     fd_t downlink_socket_fd = retired_fd;
     fd_t uplink_socket_fd = retired_fd;

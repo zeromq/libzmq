@@ -47,14 +47,46 @@
 #define ZMQ_DGRAM 18
 
 /*  DRAFT Socket options.                                                     */
-#define ZMQ_BINDTODEVICE 90
+#define ZMQ_GSSAPI_PRINCIPAL_NAMETYPE 90
+#define ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE 91
+#define ZMQ_BINDTODEVICE 92
 
 /*  DRAFT 0MQ socket events and monitoring                                    */
-#define ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL   0x0800
+/*  Unspecified system errors during handshake. Event value is an errno.      */
+#define ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL   0x0800 
+/*  Handshake complete successfully with successful authentication (if        *
+ *  enabled). Event value is unused.                                          */
 #define ZMQ_EVENT_HANDSHAKE_SUCCEEDED          0x1000
-#define ZMQ_EVENT_HANDSHAKE_FAILED_ENCRYPTION  0x2000
-#define ZMQ_EVENT_HANDSHAKE_FAILED_ZMTP        0x4000
-#define ZMQ_EVENT_HANDSHAKE_FAILED_ZAP         0x8000
+/*  Protocol errors between ZMTP peers or between server and ZAP handler.     *
+ *  Event value is one of ZMQ_PROTOCOL_ERROR_*                                */
+#define ZMQ_EVENT_HANDSHAKE_FAILED_PROTOCOL    0x2000
+/*  Failed authentication requests. Event value is the numeric ZAP status     *
+ *  code, i.e. 300, 400 or 500.                                               */
+#define ZMQ_EVENT_HANDSHAKE_FAILED_AUTH        0x4000
+
+#define ZMQ_PROTOCOL_ERROR_ZMTP_UNSPECIFIED 0x10000000
+#define ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND 0x10000001
+#define ZMQ_PROTOCOL_ERROR_ZMTP_INVALID_SEQUENCE 0x10000002
+#define ZMQ_PROTOCOL_ERROR_ZMTP_KEY_EXCHANGE 0x10000003
+#define ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_UNSPECIFIED 0x10000011
+#define ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_MESSAGE 0x10000012
+#define ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO 0x10000013
+#define ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_INITIATE 0x10000014
+#define ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_ERROR 0x10000015
+#define ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_READY 0x10000016
+#define ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_WELCOME 0x10000017
+#define ZMQ_PROTOCOL_ERROR_ZMTP_INVALID_METADATA 0x10000018
+
+// the following two may be due to erroneous configuration of a peer
+#define ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC 0x11000001
+#define ZMQ_PROTOCOL_ERROR_ZMTP_MECHANISM_MISMATCH 0x11000002
+
+#define ZMQ_PROTOCOL_ERROR_ZAP_UNSPECIFIED     0x20000000
+#define ZMQ_PROTOCOL_ERROR_ZAP_MALFORMED_REPLY 0x20000001
+#define ZMQ_PROTOCOL_ERROR_ZAP_BAD_REQUEST_ID 0x20000002
+#define ZMQ_PROTOCOL_ERROR_ZAP_BAD_VERSION 0x20000003
+#define ZMQ_PROTOCOL_ERROR_ZAP_INVALID_STATUS_CODE 0x20000004
+#define ZMQ_PROTOCOL_ERROR_ZAP_INVALID_METADATA 0x20000005
 
 /*  DRAFT Context options                                                     */
 #define ZMQ_MSG_T_SIZE 6
@@ -125,11 +157,8 @@ long  zmq_timers_timeout (void *timers);
 int   zmq_timers_execute (void *timers);
 
 /******************************************************************************/
-/*  GSSAPI socket options to set name type                                    */
+/*  GSSAPI definitions                                                        */
 /******************************************************************************/
-
-#define ZMQ_GSSAPI_PRINCIPAL_NAMETYPE 90
-#define ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE 91
 
 /*  GSSAPI principal name types                                               */
 #define ZMQ_GSSAPI_NT_HOSTBASED 0

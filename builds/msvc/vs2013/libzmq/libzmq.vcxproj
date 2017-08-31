@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
     <ProjectGuid>{641C5F36-32EE-4323-B740-992B651CF9D6}</ProjectGuid>
@@ -180,6 +180,7 @@
     <ClCompile Include="..\..\..\..\src\clock.cpp" />
     <ClCompile Include="..\..\..\..\src\ctx.cpp" />
     <ClCompile Include="..\..\..\..\src\curve_client.cpp" />
+    <ClCompile Include="..\..\..\..\src\curve_mechanism_base.cpp" />
     <ClCompile Include="..\..\..\..\src\curve_server.cpp" />
     <ClCompile Include="..\..\..\..\src\dealer.cpp" />
     <ClCompile Include="..\..\..\..\src\decoder_allocators.cpp" />
@@ -205,6 +206,7 @@
     <ClCompile Include="..\..\..\..\src\mailbox.cpp" />
     <ClCompile Include="..\..\..\..\src\mailbox_safe.cpp" />
     <ClCompile Include="..\..\..\..\src\mechanism.cpp" />
+    <ClCompile Include="..\..\..\..\src\mechanism_base.cpp" />
     <ClCompile Include="..\..\..\..\src\metadata.cpp" />
     <ClCompile Include="..\..\..\..\src\msg.cpp" />
     <ClCompile Include="..\..\..\..\src\mtrie.cpp" />
@@ -266,6 +268,7 @@
     <ClCompile Include="..\..\..\..\src\v2_encoder.cpp" />
     <ClCompile Include="..\..\..\..\src\xpub.cpp" />
     <ClCompile Include="..\..\..\..\src\xsub.cpp" />
+    <ClCompile Include="..\..\..\..\src\zap_client.cpp" />
     <ClCompile Include="..\..\..\..\src\zmq.cpp" />
     <ClCompile Include="..\..\..\..\src\zmq_utils.cpp" />
   </ItemGroup>

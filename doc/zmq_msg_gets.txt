@@ -27,11 +27,15 @@ function:
 
     Socket-Type
     Identity
-    Resource
 
 Additionally, when available for the underlying transport, the *Peer-Address*
 property will return the IP address of the remote endpoint as returned by
 getnameinfo(2).
+
+The names of these properties are also defined in _zmq.h_ as
+_ZMQ_MSG_PROPERTY_SOCKET_TYPE_ _ZMQ_MSG_PROPERTY_IDENTITY_, and 
+_ZMQ_MSG_PROPERTY_PEER_ADDRESS_.
+Currently, these definitions are only available as a DRAFT API.
 
 Other properties may be defined based on the underlying security mechanism,
 see ZAP authenticated connection sample below.
@@ -59,7 +63,7 @@ zmq_msg_t msg;
 zmq_msg_init (&msg);
 rc = zmq_msg_recv (&msg, dealer, 0);
 assert (rc != -1);
-const char *user_id = zmq_msg_gets (&msg, "User-Id");
+const char *user_id = zmq_msg_gets (&msg, ZMQ_MSG_PROPERTY_USER_ID);
 zmq_msg_close (&msg);
 ----
 

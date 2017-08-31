@@ -228,5 +228,8 @@ void zmq::bind_to_device (fd_t s_, std::string &bound_device_)
 #else
     errno_assert (rc == 0);
 #endif
+#else
+    LIBZMQ_UNUSED (s_);
+    LIBZMQ_UNUSED (bound_device_);
 #endif
 }

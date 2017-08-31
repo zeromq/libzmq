@@ -31,11 +31,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "timers.hpp"
 #include "err.hpp"
 
-zmq::timers_t::timers_t () :
-tag (0xCAFEDADA),
-next_timer_id (0)
-{
+#include <algorithm>
 
+zmq::timers_t::timers_t () : tag (0xCAFEDADA), next_timer_id (0)
+{
 }
 
 zmq::timers_t::~timers_t ()
@@ -49,20 +48,45 @@ bool zmq::timers_t::check_tag ()
     return tag == 0xCAFEDADA;
 }
 
-int zmq::timers_t::add (size_t interval_, timers_timer_fn handler_, void* arg_)
+int zmq::timers_t::add (size_t interval_, timers_timer_fn handler_, void *arg_)
 {
-    uint64_t when = clock.now_ms() + interval_;
+    if (!handler_) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    uint64_t when = clock.now_ms () + interval_;
     timer_t timer = {++next_timer_id, interval_, handler_, arg_};
     timers.insert (timersmap_t::value_type (when, timer));
 
     return timer.timer_id;
 }
 
+struct zmq::timers_t::match_by_id
+{
+    match_by_id (int timer_id_) : timer_id (timer_id_) {}
+
+    bool operator() (timersmap_t::value_type const &entry) const
+    {
+        return entry.second.timer_id == timer_id;
+    }
+
+  private:
+    int timer_id;
+};
+
 int zmq::timers_t::cancel (int timer_id_)
 {
-    cancelled_timers_t::iterator it = cancelled_timers.find (timer_id_);
+    // check first if timer exists at all
+    if (timers.end ()
+        == std::find_if (timers.begin (), timers.end (),
+                         match_by_id (timer_id_))) {
+        errno = EINVAL;
+        return -1;
+    }
 
-    if (it != cancelled_timers.end ()) {
+    // check if timer was already canceled
+    if (cancelled_timers.count (timer_id_)) {
         errno = EINVAL;
         return -1;
     }
@@ -74,32 +98,35 @@ int zmq::timers_t::cancel (int timer_id_)
 
 int zmq::timers_t::set_interval (int timer_id_, size_t interval_)
 {
-    for (timersmap_t::iterator it = timers.begin (); it != timers.end (); ++it) {
-        if (it->second.timer_id == timer_id_) {
-            timer_t timer = it->second;
-            timer.interval = interval_;
-            uint64_t when = clock.now_ms() + interval_;
-            timers.erase (it);
-                timers.insert (timersmap_t::value_type (when, timer));
+    const timersmap_t::iterator end = timers.end ();
+    const timersmap_t::iterator it =
+      std::find_if (timers.begin (), end, match_by_id (timer_id_));
+    if (it != end) {
+        timer_t timer = it->second;
+        timer.interval = interval_;
+        uint64_t when = clock.now_ms () + interval_;
+        timers.erase (it);
+        timers.insert (timersmap_t::value_type (when, timer));
 
-            return 0;
-        }
+        return 0;
     }
 
     errno = EINVAL;
     return -1;
 }
 
-int zmq::timers_t::reset (int timer_id_) {
-    for (timersmap_t::iterator it = timers.begin (); it != timers.end (); ++it) {
-        if (it->second.timer_id == timer_id_) {
-            timer_t timer = it->second;
-            uint64_t when = clock.now_ms() + timer.interval;
-            timers.erase (it);
-            timers.insert (timersmap_t::value_type (when, timer));
+int zmq::timers_t::reset (int timer_id_)
+{
+    const timersmap_t::iterator end = timers.end ();
+    const timersmap_t::iterator it =
+      std::find_if (timers.begin (), end, match_by_id (timer_id_));
+    if (it != end) {
+        timer_t timer = it->second;
+        uint64_t when = clock.now_ms () + timer.interval;
+        timers.erase (it);
+        timers.insert (timersmap_t::value_type (when, timer));
 
-            return 0;
-        }
+        return 0;
     }
 
     errno = EINVAL;
@@ -110,10 +137,11 @@ long zmq::timers_t::timeout ()
 {
     timersmap_t::iterator it = timers.begin ();
 
-    uint64_t now = clock.now_ms();
+    uint64_t now = clock.now_ms ();
 
     while (it != timers.end ()) {
-        cancelled_timers_t::iterator cancelled_it = cancelled_timers.find (it->second.timer_id);
+        cancelled_timers_t::iterator cancelled_it =
+          cancelled_timers.find (it->second.timer_id);
 
         //  Live timer, lets return the timeout
         if (cancelled_it == cancelled_timers.end ()) {
@@ -123,7 +151,7 @@ long zmq::timers_t::timeout ()
                 return 0;
         }
 
-        // Let's remove it from the begining of the list
+        // Let's remove it from the beginning of the list
         timersmap_t::iterator old = it;
         ++it;
         timers.erase (old);
@@ -138,10 +166,11 @@ int zmq::timers_t::execute ()
 {
     timersmap_t::iterator it = timers.begin ();
 
-    uint64_t now = clock.now_ms();
+    uint64_t now = clock.now_ms ();
 
     while (it != timers.end ()) {
-        cancelled_timers_t::iterator cancelled_it = cancelled_timers.find (it->second.timer_id);
+        cancelled_timers_t::iterator cancelled_it =
+          cancelled_timers.find (it->second.timer_id);
 
         //  Dead timer, lets remove it and continue
         if (cancelled_it != cancelled_timers.end ()) {
@@ -154,7 +183,7 @@ int zmq::timers_t::execute ()
 
         //  Map is ordered, if we have to wait for current timer we can stop.
         if (it->first > now)
-        break;
+            break;
 
         timer_t timer = it->second;
 

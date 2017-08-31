@@ -81,7 +81,7 @@ namespace zmq
         bool check_tag ();
 
     private:
-        int rebuild ();
+        void rebuild ();
 
         //  Used to check whether the object is a socket_poller.
         uint32_t tag;

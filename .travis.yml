@@ -11,7 +11,6 @@ dist: trusty
 env:
   matrix:
     - BUILD_TYPE=default CURVE=tweetnacl DRAFT=enabled
-    - BUILD_TYPE=android CURVE=tweetnacl
     - BUILD_TYPE=cmake CURVE=tweetnacl
     - BUILD_TYPE=default
   # tokens to deploy releases on OBS and create/delete temporary branch on Github.
@@ -42,7 +41,7 @@ matrix:
       apt:
         packages:
         - valgrind
-  - env: BUILD_TYPE=default CURVE=libsodium
+  - env: BUILD_TYPE=default CURVE=libsodium GSSAPI=enabled PGM=enabled
     os: linux
     addons:
       apt:
@@ -50,10 +49,23 @@ matrix:
         - sourceline: 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_14.04/ ./'
           key_url: 'http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_14.04/Release.key'
         packages:
+        - libkrb5-dev
+        - libpgm-dev
         - libsodium-dev
         - asciidoc
         - xmlto
-  - env: BUILD_TYPE=default CURVE=libsodium
+  - env: BUILD_TYPE=default CURVE=libsodium DRAFT=enabled GSSAPI=enabled PGM=enabled
+    os: linux
+    addons:
+      apt:
+        sources:
+        - sourceline: 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_14.04/ ./'
+          key_url: 'http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_14.04/Release.key'
+        packages:
+        - libkrb5-dev
+        - libpgm-dev
+        - libsodium-dev
+  - env: BUILD_TYPE=default CURVE=libsodium DRAFT=enabled
     os: osx
   - env: BUILD_TYPE=default CURVE=tweetnacl DRAFT=enabled ADDRESS_SANITIZER=enabled
     os: linux
@@ -65,11 +77,14 @@ matrix:
         packages:
         - g++-6
         - gcc-6
+  - env: BUILD_TYPE=android CURVE=tweetnacl
+    os: linux
+    dist: trusty
 
 sudo: required
 
 before_install:
-- if [ $TRAVIS_OS_NAME == "osx" ] ; then brew update; brew install binutils ; fi
+- if [ $TRAVIS_OS_NAME == "osx" -a $BUILD_TYPE == "android" ] ; then brew install binutils ; fi
 - if [ $TRAVIS_OS_NAME == "osx" -a $CURVE == "libsodium" ] ; then brew install libsodium ; fi
 
 before_script:
