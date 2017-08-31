@@ -33,6 +33,7 @@
 #ifdef HAVE_LIBGSSAPI_KRB5
 
 #include "gssapi_mechanism_base.hpp"
+#include "zap_client.hpp"
 
 namespace zmq
 {
@@ -40,23 +41,22 @@ namespace zmq
     class msg_t;
     class session_base_t;
 
-    class gssapi_server_t :
-        public gssapi_mechanism_base_t
+    class gssapi_server_t 
+      : public gssapi_mechanism_base_t, public zap_client_t
     {
     public:
+      gssapi_server_t (session_base_t *session_,
+                       const std::string &peer_address,
+                       const options_t &options_);
+      virtual ~gssapi_server_t ();
 
-        gssapi_server_t (session_base_t *session_,
-                            const std::string &peer_address,
-                            const options_t &options_);
-        virtual ~gssapi_server_t ();
-
-        // mechanism implementation
-        virtual int next_handshake_command (msg_t *msg_);
-        virtual int process_handshake_command (msg_t *msg_);
-        virtual int encode (msg_t *msg_);
-        virtual int decode (msg_t *msg_);
-        virtual int zap_msg_available ();
-        virtual status_t status () const;
+      // mechanism implementation
+      virtual int next_handshake_command (msg_t *msg_);
+      virtual int process_handshake_command (msg_t *msg_);
+      virtual int encode (msg_t *msg_);
+      virtual int decode (msg_t *msg_);
+      virtual int zap_msg_available ();
+      virtual status_t status () const;
 
     private:
 
@@ -85,8 +85,7 @@ namespace zmq
         void accept_context ();
         int produce_next_token (msg_t *msg_);
         int process_next_token (msg_t *msg_);
-        int send_zap_request ();
-        int receive_and_process_zap_reply();
+        void send_zap_request ();
     };
 
 }

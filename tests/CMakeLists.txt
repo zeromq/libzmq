@@ -34,7 +34,7 @@ set(tests
         test_ctx_destroy
         test_security_null
         test_security_plain
-        test_security_curve
+        test_security_zap
         test_iov
         test_spec_req
         test_spec_rep
@@ -68,10 +68,15 @@ set(tests
         test_base85
         test_bind_after_connect_tcp
         test_sodium
+        test_monitor
+		test_socket_null
 )
+if(ZMQ_HAVE_CURVE)
+  list(APPEND tests 
+          test_security_curve)
+endif()
 if(NOT WIN32)
   list(APPEND tests
-          test_monitor
           test_ipc_wildcard
           test_pair_ipc
           test_reqrep_ipc
@@ -168,6 +173,28 @@ foreach(test ${tests})
   endif()
   set_tests_properties(${test} PROPERTIES TIMEOUT 10)
 endforeach()
+
+#override timeout for these tests
+if(ZMQ_HAVE_CURVE)
+  set_tests_properties(test_security_curve PROPERTIES TIMEOUT 60)
+endif()
+
+#add additional required files
+if(ZMQ_HAVE_CURVE)
+  target_sources(test_security_curve PRIVATE 
+	"../src/tweetnacl.c" 
+	"../src/err.cpp" 
+	"../src/random.cpp" 
+	"../src/clock.cpp"
+	"testutil_security.hpp"
+	)
+  target_compile_definitions(test_security_curve PRIVATE "-DZMQ_USE_TWEETNACL")
+endif()
+
+target_sources(test_security_zap PRIVATE 
+  "testutil_security.hpp"
+)
+set_tests_properties(test_security_zap PROPERTIES TIMEOUT 60)
 
 #Check whether all tests in the current folder are present
 file(READ "${CMAKE_CURRENT_LIST_FILE}" CURRENT_LIST_FILE_CONTENT)

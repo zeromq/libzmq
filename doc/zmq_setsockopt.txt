@@ -822,7 +822,7 @@ in linkzmq:zmq_socket[3] for details on the exact action taken for each socket
 type.
 
 NOTE: 0MQ does not guarantee that the socket will accept as many as ZMQ_SNDHWM
-messages, and the actual limit may be as much as 60-70% lower depending on the
+messages, and the actual limit may be as much as 90% lower depending on the
 flow of messages on the socket.
 
 [horizontal]

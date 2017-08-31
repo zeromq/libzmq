@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -152,6 +152,7 @@
     <ClCompile Include="..\..\..\src\clock.cpp" />
     <ClCompile Include="..\..\..\src\ctx.cpp" />
     <ClCompile Include="..\..\..\src\curve_client.cpp" />
+    <ClCompile Include="..\..\..\src\curve_mechanism_base.cpp" />
     <ClCompile Include="..\..\..\src\curve_server.cpp" />
     <ClCompile Include="..\..\..\src\dealer.cpp" />
     <ClCompile Include="..\..\..\src\decoder_allocators.cpp" />
@@ -177,6 +178,7 @@
     <ClCompile Include="..\..\..\src\mailbox.cpp" />
     <ClCompile Include="..\..\..\src\mailbox_safe.cpp" />
     <ClCompile Include="..\..\..\src\mechanism.cpp" />
+    <ClCompile Include="..\..\..\src\mechanism_base.cpp" />
     <ClCompile Include="..\..\..\src\metadata.cpp" />
     <ClCompile Include="..\..\..\src\msg.cpp" />
     <ClCompile Include="..\..\..\src\mtrie.cpp" />
@@ -242,6 +244,7 @@
     <ClCompile Include="..\..\..\src\vmci_listener.cpp" />
     <ClCompile Include="..\..\..\src\xpub.cpp" />
     <ClCompile Include="..\..\..\src\xsub.cpp" />
+    <ClCompile Include="..\..\..\src\zap_client.cpp" />
     <ClCompile Include="..\..\..\src\zmq.cpp" />
   </ItemGroup>
   <ItemGroup>

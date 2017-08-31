@@ -86,6 +86,8 @@
 #   endif
 #endif
 
+#define LIBZMQ_UNUSED(object) (void)object
+
 //  Bounce a message from client to server and back
 //  For REQ/REP or DEALER/DEALER pairs only
 void
@@ -393,5 +395,14 @@ is_ipv6_available(void)
     return ipv6;
 #endif // _WIN32_WINNT < 0x0600
 }
+
+#if defined (ZMQ_HAVE_WINDOWS)
+
+int close (int fd)
+{
+    return closesocket (fd);
+}
+
+#endif
 
 #endif

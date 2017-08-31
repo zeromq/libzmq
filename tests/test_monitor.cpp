@@ -28,41 +28,7 @@
 */
 
 #include "testutil.hpp"
-
-//  Read one event off the monitor socket; return value and address
-//  by reference, if not null, and event number by value. Returns -1
-//  in case of error.
-
-static int
-get_monitor_event (void *monitor, int *value, char **address)
-{
-    //  First frame in message contains event number and value
-    zmq_msg_t msg; 
-    zmq_msg_init (&msg);
-    if (zmq_msg_recv (&msg, monitor, 0) == -1)
-        return -1;              //  Interruped, presumably
-    assert (zmq_msg_more (&msg));
-    
-    uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
-    uint16_t event = *(uint16_t *) (data);
-    if (value)
-        *value = *(uint32_t *) (data + 2);
-
-    //  Second frame in message contains event address
-    zmq_msg_init (&msg);
-    if (zmq_msg_recv (&msg, monitor, 0) == -1)
-        return -1;              //  Interruped, presumably
-    assert (!zmq_msg_more (&msg));
-    
-    if (address) {
-        uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
-        size_t size = zmq_msg_size (&msg);
-        *address = (char *) malloc (size + 1);
-        memcpy (*address, data, size);
-        *address [size] = 0;
-    }
-    return event;
-}
+#include "testutil_security.hpp"
 
 int main (void)
 {
@@ -121,20 +87,15 @@ int main (void)
         event = get_monitor_event (client_mon, NULL, NULL);
     assert (event == ZMQ_EVENT_CONNECTED);
 #ifdef ZMQ_BUILD_DRAFT_API
-    event = get_monitor_event (client_mon, NULL, NULL);
-    assert (event == ZMQ_EVENT_HANDSHAKE_SUCCEED);
+    expect_monitor_event (client_mon, ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
 #endif
-    event = get_monitor_event (client_mon, NULL, NULL);
-    assert (event == ZMQ_EVENT_MONITOR_STOPPED);
+    expect_monitor_event (client_mon, ZMQ_EVENT_MONITOR_STOPPED);
 
     //  This is the flow of server events
-    event = get_monitor_event (server_mon, NULL, NULL);
-    assert (event == ZMQ_EVENT_LISTENING);
-    event = get_monitor_event (server_mon, NULL, NULL);
-    assert (event == ZMQ_EVENT_ACCEPTED);
+    expect_monitor_event (server_mon, ZMQ_EVENT_LISTENING);
+    expect_monitor_event (server_mon, ZMQ_EVENT_ACCEPTED);
 #ifdef ZMQ_BUILD_DRAFT_API
-    event = get_monitor_event (server_mon, NULL, NULL);
-    assert (event == ZMQ_EVENT_HANDSHAKE_SUCCEED);
+    expect_monitor_event (server_mon, ZMQ_EVENT_HANDSHAKE_SUCCEEDED);
 #endif
     event = get_monitor_event (server_mon, NULL, NULL);
     //  Sometimes the server sees the client closing before it gets closed.

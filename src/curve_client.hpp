@@ -32,22 +32,9 @@
 
 #ifdef ZMQ_HAVE_CURVE
 
-#if defined (ZMQ_USE_TWEETNACL)
-#   include "tweetnacl.h"
-#elif defined (ZMQ_USE_LIBSODIUM)
-#   include "sodium.h"
-#endif
-
-#if crypto_box_NONCEBYTES != 24 \
-||  crypto_box_PUBLICKEYBYTES != 32 \
-||  crypto_box_SECRETKEYBYTES != 32 \
-||  crypto_box_ZEROBYTES != 32 \
-||  crypto_box_BOXZEROBYTES != 16
-#   error "CURVE library not built properly"
-#endif
-
-#include "mechanism.hpp"
+#include "curve_mechanism_base.hpp"
 #include "options.hpp"
+#include "curve_client_tools.hpp"
 
 namespace zmq
 {
@@ -55,11 +42,11 @@ namespace zmq
     class msg_t;
     class session_base_t;
 
-    class curve_client_t : public mechanism_t
+    class curve_client_t : public curve_mechanism_base_t
     {
     public:
 
-        curve_client_t (const options_t &options_);
+        curve_client_t (session_base_t *session_, const options_t &options_);
         virtual ~curve_client_t ();
 
         // mechanism implementation
@@ -83,34 +70,9 @@ namespace zmq
         //  Current FSM state
         state_t state;
 
-        //  Our public key (C)
-        uint8_t public_key [crypto_box_PUBLICKEYBYTES];
-
-        //  Our secret key (c)
-        uint8_t secret_key [crypto_box_SECRETKEYBYTES];
-
-        //  Our short-term public key (C')
-        uint8_t cn_public [crypto_box_PUBLICKEYBYTES];
-
-        //  Our short-term secret key (c')
-        uint8_t cn_secret [crypto_box_SECRETKEYBYTES];
-
-        //  Server's public key (S)
-        uint8_t server_key [crypto_box_PUBLICKEYBYTES];
-
-        //  Server's short-term public key (S')
-        uint8_t cn_server [crypto_box_PUBLICKEYBYTES];
-
-        //  Cookie received from server
-        uint8_t cn_cookie [16 + 80];
-
-        //  Intermediary buffer used to speed up boxing and unboxing.
-        uint8_t cn_precom [crypto_box_BEFORENMBYTES];
-
-        //  Nonce
-        uint64_t cn_nonce;
-        uint64_t cn_peer_nonce;
-
+        //  CURVE protocol tools
+        curve_client_tools_t tools;
+       
         int produce_hello (msg_t *msg_);
         int process_welcome (const uint8_t *cmd_data, size_t data_size);
         int produce_initiate (msg_t *msg_);

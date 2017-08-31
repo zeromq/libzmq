@@ -32,6 +32,7 @@
 
 #include "mechanism.hpp"
 #include "options.hpp"
+#include "zap_client.hpp"
 
 namespace zmq
 {
@@ -39,7 +40,7 @@ namespace zmq
     class msg_t;
     class session_base_t;
 
-    class null_mechanism_t : public mechanism_t
+    class null_mechanism_t : public zap_client_t
     {
     public:
 
@@ -56,12 +57,6 @@ namespace zmq
 
     private:
 
-        session_base_t * const session;
-
-        char status_code [3];
-
-        const std::string peer_address;
-
         bool ready_command_sent;
         bool error_command_sent;
         bool ready_command_received;
@@ -75,8 +70,7 @@ namespace zmq
         int process_error_command (
             const unsigned char *cmd_data, size_t data_size);
 
-        int send_zap_request ();
-        int receive_and_process_zap_reply ();
+        void send_zap_request ();
     };
 
 }

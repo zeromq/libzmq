@@ -40,8 +40,10 @@
 #include "gssapi_client.hpp"
 #include "wire.hpp"
 
-zmq::gssapi_client_t::gssapi_client_t (const options_t &options_) :
-    gssapi_mechanism_base_t (options_),
+zmq::gssapi_client_t::gssapi_client_t (session_base_t *session_,
+                                       const options_t &options_) :
+    mechanism_base_t (session_, options_),
+    gssapi_mechanism_base_t (session_, options_),
     state (call_next_init),
     token_ptr (GSS_C_NO_BUFFER),
     mechs (),
@@ -123,6 +125,9 @@ int zmq::gssapi_client_t::process_handshake_command (msg_t *msg_)
     }
 
     if (state != recv_next_token) {
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         return -1;
     }

@@ -39,6 +39,9 @@ src_libzmq_la_SOURCES = \
 	src/ctx.hpp \
 	src/curve_client.cpp \
 	src/curve_client.hpp \
+	src/curve_client_tools.hpp \
+	src/curve_mechanism_base.cpp \
+	src/curve_mechanism_base.hpp \
 	src/curve_server.cpp \
 	src/curve_server.hpp \
 	src/dbuffer.hpp \
@@ -98,6 +101,8 @@ src_libzmq_la_SOURCES = \
 	src/mailbox_safe.hpp \
 	src/mechanism.cpp \
 	src/mechanism.hpp  \
+	src/mechanism_base.cpp \
+	src/mechanism_base.hpp  \
 	src/metadata.cpp \
 	src/metadata.hpp \
 	src/msg.cpp \
@@ -243,6 +248,8 @@ src_libzmq_la_SOURCES = \
 	src/decoder_allocators.hpp \
 	src/socket_poller.cpp \
 	src/socket_poller.hpp \
+	src/zap_client.cpp \
+	src/zap_client.hpp \
 	src/zmq_draft.h
 
 if USE_TWEETNACL
@@ -300,6 +307,11 @@ endif
 if HAVE_PGM
 src_libzmq_la_CPPFLAGS += ${pgm_CFLAGS}
 src_libzmq_la_LIBADD += ${pgm_LIBS}
+endif
+
+if BUILD_GSSAPI
+src_libzmq_la_CPPFLAGS += ${gssapi_krb5_CFLAGS}
+src_libzmq_la_LIBADD += ${gssapi_krb5_LIBS}
 endif
 
 if ENABLE_PERF
@@ -375,7 +387,7 @@ test_apps = \
 	tests/test_ctx_destroy \
 	tests/test_security_null \
 	tests/test_security_plain \
-	tests/test_security_curve \
+	tests/test_security_zap \
 	tests/test_iov \
 	tests/test_spec_req \
 	tests/test_spec_rep \
@@ -407,7 +419,8 @@ test_apps = \
 	tests/test_pub_invert_matching \
 	tests/test_base85 \
 	tests/test_bind_after_connect_tcp \
-	tests/test_sodium
+	tests/test_sodium \
+	tests/test_socket_null
 
 tests_test_ancillaries_SOURCES = tests/test_ancillaries.cpp
 tests_test_ancillaries_LDADD = src/libzmq.la
@@ -522,8 +535,11 @@ tests_test_security_null_LDADD = src/libzmq.la
 tests_test_security_plain_SOURCES = tests/test_security_plain.cpp
 tests_test_security_plain_LDADD = src/libzmq.la
 
-tests_test_security_curve_SOURCES = tests/test_security_curve.cpp
-tests_test_security_curve_LDADD = src/libzmq.la
+tests_test_security_zap_SOURCES = \
+	tests/test_security_zap.cpp \
+	tests/testutil_security.hpp \
+	tests/testutil.hpp
+tests_test_security_zap_LDADD = src/libzmq.la
 
 tests_test_spec_req_SOURCES = tests/test_spec_req.cpp
 tests_test_spec_req_LDADD = src/libzmq.la
@@ -620,6 +636,45 @@ tests_test_base85_LDADD = src/libzmq.la
 
 tests_test_sodium_SOURCES = tests/test_sodium.cpp
 tests_test_sodium_LDADD = src/libzmq.la
+
+tests_test_socket_null_SOURCES = tests/test_socket_null.cpp
+tests_test_socket_null_LDADD = src/libzmq.la
+
+if HAVE_CURVE
+
+test_apps += \
+	tests/test_security_curve
+
+tests_test_security_curve_SOURCES = \
+	tests/test_security_curve.cpp \
+	tests/testutil_security.hpp \
+	tests/testutil.hpp \
+	src/curve_client_tools.hpp \
+	src/clock.hpp \
+	src/clock.cpp \
+	src/random.hpp \
+	src/random.cpp \
+	src/err.hpp \
+	src/err.cpp
+
+if USE_TWEETNACL
+tests_test_security_curve_SOURCES += \
+	src/tweetnacl.c
+endif
+
+tests_test_security_curve_LDADD = \
+	src/libzmq.la $(LIBUNWIND_LIBS)
+tests_test_security_curve_CPPFLAGS = \
+	${LIBUNWIND_CFLAGS}
+
+if USE_LIBSODIUM
+tests_test_security_curve_CPPFLAGS += \
+	${sodium_CFLAGS}
+tests_test_security_curve_LDADD += \
+	${sodium_LIBS}
+endif
+
+endif
 
 if !ON_MINGW
 if !ON_CYGWIN

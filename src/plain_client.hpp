@@ -30,7 +30,7 @@
 #ifndef __ZMQ_PLAIN_CLIENT_HPP_INCLUDED__
 #define __ZMQ_PLAIN_CLIENT_HPP_INCLUDED__
 
-#include "mechanism.hpp"
+#include "mechanism_base.hpp"
 #include "options.hpp"
 
 namespace zmq
@@ -38,11 +38,11 @@ namespace zmq
 
     class msg_t;
 
-    class plain_client_t : public mechanism_t
+    class plain_client_t : public mechanism_base_t
     {
-    public:
-
-        plain_client_t (const options_t &options_);
+      public:
+        plain_client_t (session_base_t *const session_,
+                        const options_t &options_);
         virtual ~plain_client_t ();
 
         // mechanism implementation
@@ -50,7 +50,7 @@ namespace zmq
         virtual int process_handshake_command (msg_t *msg_);
         virtual status_t status () const;
 
-    private:
+      private:
 
         enum state_t {
             sending_hello,

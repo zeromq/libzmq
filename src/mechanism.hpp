@@ -38,10 +38,11 @@
 namespace zmq
 {
 
+    class msg_t;
+    class session_base_t;
+
     //  Abstract class representing security mechanism.
     //  Different mechanism extends this class.
-
-    class msg_t;
 
     class mechanism_t
     {
@@ -107,8 +108,20 @@ namespace zmq
         //  property in the wire protocol.
         const char *socket_type_string (int socket_type) const;
 
-        size_t add_property (unsigned char *ptr, const char *name,
-            const void *value, size_t value_len) const;
+        static size_t add_property (unsigned char *ptr,
+                                    size_t ptr_capacity,
+                                    const char *name,
+                                    const void *value,
+                                    size_t value_len);
+        static size_t property_len (const char *name,
+                                    size_t value_len);
+
+        size_t add_basic_properties (unsigned char *ptr, size_t ptr_capacity) const;
+        size_t basic_properties_len () const;
+
+        void make_command_with_basic_properties (msg_t *msg_,
+                                                 const char *prefix,
+                                                 size_t prefix_len) const;
 
         //  Parses a metadata.
         //  Metadata consists of a list of properties consisting of

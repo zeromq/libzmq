@@ -40,8 +40,10 @@
 #include "gssapi_mechanism_base.hpp"
 #include "wire.hpp"
 
-zmq::gssapi_mechanism_base_t::gssapi_mechanism_base_t (const options_t & options_) :
-    mechanism_t(options_),
+zmq::gssapi_mechanism_base_t::gssapi_mechanism_base_t (
+  session_base_t *session_,
+  const options_t &options_) :
+    mechanism_base_t (session_, options_),
     send_tok (),
     recv_tok (),
     /// FIXME remove? in_buf (),
@@ -125,8 +127,15 @@ int zmq::gssapi_mechanism_base_t::decode_message (msg_t *msg_)
     const uint8_t *ptr = static_cast <uint8_t *> (msg_->data ());
     size_t bytes_left = msg_->size ();
 
+    int rc = check_basic_command_structure (msg_);
+    if (rc == -1)
+        return rc;
+
     // Get command string
     if (bytes_left < 8 || memcmp (ptr, "\x07MESSAGE", 8)) {
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         return -1;
     }
@@ -135,6 +144,9 @@ int zmq::gssapi_mechanism_base_t::decode_message (msg_t *msg_)
 
     // Get token length
     if (bytes_left < 4) {
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_MESSAGE);
         errno = EPROTO;
         return -1;
     }
@@ -145,6 +157,9 @@ int zmq::gssapi_mechanism_base_t::decode_message (msg_t *msg_)
 
     // Get token value
     if (bytes_left < wrapped.length) {
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_MESSAGE);
         errno = EPROTO;
         return -1;
     }
@@ -165,11 +180,20 @@ int zmq::gssapi_mechanism_base_t::decode_message (msg_t *msg_)
     maj_stat = gss_unwrap(&min_stat, context, &wrapped, &plaintext,
                           &state, (gss_qop_t *) NULL);
 
-    zmq_assert(maj_stat == GSS_S_COMPLETE);
+    if (maj_stat != GSS_S_COMPLETE)
+    {
+        gss_release_buffer (&min_stat, &plaintext);
+        free (wrapped.value);
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
+        errno = EPROTO;
+        return -1;
+    }
     zmq_assert(state);
 
     // Re-initialize msg_ for plaintext
-    int rc = msg_->close ();
+    rc = msg_->close ();
     zmq_assert (rc == 0);
 
     rc = msg_->init_size (plaintext.length-1);
@@ -187,6 +211,9 @@ int zmq::gssapi_mechanism_base_t::decode_message (msg_t *msg_)
     free(wrapped.value);
 
     if (bytes_left > 0) {
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_MESSAGE);
         errno = EPROTO;
         return -1;
     }
@@ -228,8 +255,15 @@ int zmq::gssapi_mechanism_base_t::process_initiate (msg_t *msg_, void **token_va
     const uint8_t *ptr = static_cast <uint8_t *> (msg_->data ());
     size_t bytes_left = msg_->size ();
 
+    int rc = check_basic_command_structure (msg_);
+    if (rc == -1)
+        return rc;
+
     // Get command string
     if (bytes_left < 9 || memcmp (ptr, "\x08INITIATE", 9)) {
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         return -1;
     }
@@ -238,6 +272,9 @@ int zmq::gssapi_mechanism_base_t::process_initiate (msg_t *msg_, void **token_va
 
     // Get token length
     if (bytes_left < 4) {
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_INITIATE);
         errno = EPROTO;
         return -1;
     }
@@ -247,6 +284,9 @@ int zmq::gssapi_mechanism_base_t::process_initiate (msg_t *msg_, void **token_va
 
     // Get token value
     if (bytes_left < token_length_) {
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_INITIATE);
         errno = EPROTO;
         return -1;
     }
@@ -261,6 +301,9 @@ int zmq::gssapi_mechanism_base_t::process_initiate (msg_t *msg_, void **token_va
     }
 
     if (bytes_left > 0) {
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_INITIATE);
         errno = EPROTO;
         return -1;
     }
@@ -270,32 +313,7 @@ int zmq::gssapi_mechanism_base_t::process_initiate (msg_t *msg_, void **token_va
 
 int zmq::gssapi_mechanism_base_t::produce_ready (msg_t *msg_)
 {
-    unsigned char * const command_buffer = (unsigned char *) malloc (512);
-    alloc_assert (command_buffer);
-
-    unsigned char *ptr = command_buffer;
-
-    //  Add command name
-    memcpy (ptr, "\x05READY", 6);
-    ptr += 6;
-
-    //  Add socket type property
-    const char *socket_type = socket_type_string (options.type);
-    ptr += add_property (ptr, ZMQ_MSG_PROPERTY_SOCKET_TYPE, socket_type,
-                         strlen (socket_type));
-
-    //  Add identity property
-    if (options.type == ZMQ_REQ
-    ||  options.type == ZMQ_DEALER
-    ||  options.type == ZMQ_ROUTER)
-        ptr += add_property (ptr, ZMQ_MSG_PROPERTY_IDENTITY, options.identity,
-                             options.identity_size);
-
-    const size_t command_size = ptr - command_buffer;
-    const int rc = msg_->init_size (command_size);
-    errno_assert (rc == 0);
-    memcpy (msg_->data (), command_buffer, command_size);
-    free (command_buffer);
+    make_command_with_basic_properties (msg_, "\5READY", 6);
 
     if (do_encryption)
         return encode_message (msg_);
@@ -314,14 +332,28 @@ int zmq::gssapi_mechanism_base_t::process_ready (msg_t *msg_)
     const unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
     size_t bytes_left = msg_->size ();
 
+    int rc = check_basic_command_structure (msg_);
+    if (rc == -1)
+        return rc;
+
     if (bytes_left < 6 || memcmp (ptr, "\x05READY", 6)) {
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         return -1;
     }
     ptr += 6;
     bytes_left -= 6;
-    return parse_metadata (ptr, bytes_left);
+    rc = parse_metadata (ptr, bytes_left);
+    if (rc == -1)
+              session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_INVALID_METADATA);
+
+    return rc;
 }
+
 const gss_OID zmq::gssapi_mechanism_base_t::convert_nametype (int zmq_nametype)
 {
     switch (zmq_nametype) {

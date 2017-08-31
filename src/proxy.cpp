@@ -271,13 +271,13 @@ int zmq::proxy (
         //  If one of receiving end's queue is full ('ZMQ_POLLOUT' not available),
         //  'poller_wait' is pointed to 'poller_receive_blocked', 'poller_send_blocked' or 'poller_both_blocked'.
         rc = poller_wait->wait (events, 3, -1);
-        if (rc < 0 && errno == ETIMEDOUT)
+        if (rc < 0 && errno == EAGAIN)
             rc = 0;
         CHECK_RC_EXIT_ON_FAILURE ();
 
         //  Some of events waited for by 'poller_wait' have arrived, now poll for everything without blocking.
         rc = poller_all->wait (events, 3, 0);
-        if (rc < 0 && errno == ETIMEDOUT)
+        if (rc < 0 && errno == EAGAIN)
             rc = 0;
         CHECK_RC_EXIT_ON_FAILURE ();
 

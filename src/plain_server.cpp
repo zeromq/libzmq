@@ -40,10 +40,9 @@
 zmq::plain_server_t::plain_server_t (session_base_t *session_,
                                      const std::string &peer_address_,
                                      const options_t &options_) :
-    mechanism_t (options_),
-    session (session_),
-    peer_address (peer_address_),
-    state (waiting_for_hello)
+    mechanism_base_t (session_, options_),
+    zap_client_common_handshake_t (
+      session_, peer_address_, options_, sending_welcome)
 {
 }
 
@@ -69,7 +68,7 @@ int zmq::plain_server_t::next_handshake_command (msg_t *msg_)
         case sending_error:
             rc = produce_error (msg_);
             if (rc == 0)
-                state = error_command_sent;
+                state = error_sent;
             break;
         default:
             errno = EAGAIN;
@@ -90,8 +89,9 @@ int zmq::plain_server_t::process_handshake_command (msg_t *msg_)
             rc = process_initiate (msg_);
             break;
         default:
-            //  Temporary support for security debugging
-            puts ("PLAIN I: invalid handshake command");
+            //  TODO see comment in curve_server_t::process_handshake_command
+            session->get_socket ()->event_handshake_failed_protocol (
+              session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNSPECIFIED);
             errno = EPROTO;
             rc = -1;
             break;
@@ -105,39 +105,18 @@ int zmq::plain_server_t::process_handshake_command (msg_t *msg_)
     return rc;
 }
 
-zmq::mechanism_t::status_t zmq::plain_server_t::status () const
-{
-    if (state == ready)
-        return mechanism_t::ready;
-    else
-    if (state == error_command_sent)
-        return mechanism_t::error;
-    else
-        return mechanism_t::handshaking;
-}
-
-int zmq::plain_server_t::zap_msg_available ()
-{
-    if (state != waiting_for_zap_reply) {
-        errno = EFSM;
-        return -1;
-    }
-    const int rc = receive_and_process_zap_reply ();
-    if (rc == 0)
-        state = status_code == "200"
-            ? sending_welcome
-            : sending_error;
-    return rc;
-}
-
 int zmq::plain_server_t::process_hello (msg_t *msg_)
 {
+    int rc = check_basic_command_structure (msg_);
+    if (rc == -1)
+      return -1;
+
     const unsigned char *ptr = static_cast <unsigned char *> (msg_->data ());
     size_t bytes_left = msg_->size ();
 
     if (bytes_left < 6 || memcmp (ptr, "\x05HELLO", 6)) {
-        //  Temporary support for security debugging
-        puts ("PLAIN I: invalid PLAIN client, did not send HELLO");
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         return -1;
     }
@@ -145,17 +124,19 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     bytes_left -= 6;
 
     if (bytes_left < 1) {
-        //  Temporary support for security debugging
-        puts ("PLAIN I: invalid PLAIN client, did not send username");
+        //  PLAIN I: invalid PLAIN client, did not send username
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
         errno = EPROTO;
         return -1;
     }
-    const size_t username_length = static_cast <size_t> (*ptr++);
+    const uint8_t username_length = *ptr++;
     bytes_left -= 1;
 
     if (bytes_left < username_length) {
-        //  Temporary support for security debugging
-        puts ("PLAIN I: invalid PLAIN client, sent malformed username");
+        //  PLAIN I: invalid PLAIN client, sent malformed username
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
         errno = EPROTO;
         return -1;
     }
@@ -163,17 +144,19 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     ptr += username_length;
     bytes_left -= username_length;
     if (bytes_left < 1) {
-        //  Temporary support for security debugging
-        puts ("PLAIN I: invalid PLAIN client, did not send password");
+        //  PLAIN I: invalid PLAIN client, did not send password
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
         errno = EPROTO;
         return -1;
     }
 
-    const size_t password_length = static_cast <size_t> (*ptr++);
+    const uint8_t password_length = *ptr++;
     bytes_left -= 1;
     if (bytes_left < password_length) {
-        //  Temporary support for security debugging
-        puts ("PLAIN I: invalid PLAIN client, sent malformed password");
+        //  PLAIN I: invalid PLAIN client, sent malformed password
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
         errno = EPROTO;
         return -1;
     }
@@ -182,8 +165,9 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     ptr += password_length;
     bytes_left -= password_length;
     if (bytes_left > 0) {
-        //  Temporary support for security debugging
-        puts ("PLAIN I: invalid PLAIN client, sent extraneous data");
+        //  PLAIN I: invalid PLAIN client, sent extraneous data
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
         errno = EPROTO;
         return -1;
     }
@@ -192,24 +176,11 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     //  Note that there is no point to PLAIN if ZAP is not set up to handle the
     //  username and password, so if ZAP is not configured it is considered a
     //  failure.
-    int rc = session->zap_connect ();
+    rc = session->zap_connect ();
     if (rc != 0)
         return -1;
-    rc = send_zap_request (username, password);
-    if (rc != 0)
-        return -1;
-    rc = receive_and_process_zap_reply ();
-    if (rc == 0)
-        state = status_code == "200"
-            ? sending_welcome
-            : sending_error;
-    else
-    if (errno == EAGAIN)
-        state = waiting_for_zap_reply;
-    else
-        return -1;
-
-    return 0;
+    send_zap_request (username, password);
+    return receive_and_process_zap_reply () == -1 ? -1 : 0;
 }
 
 int zmq::plain_server_t::produce_welcome (msg_t *msg_) const
@@ -226,8 +197,8 @@ int zmq::plain_server_t::process_initiate (msg_t *msg_)
     const size_t bytes_left = msg_->size ();
 
     if (bytes_left < 9 || memcmp (ptr, "\x08INITIATE", 9)) {
-        //  Temporary support for security debugging
-        puts ("PLAIN I: invalid PLAIN client, did not send INITIATE");
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         return -1;
     }
@@ -239,32 +210,7 @@ int zmq::plain_server_t::process_initiate (msg_t *msg_)
 
 int zmq::plain_server_t::produce_ready (msg_t *msg_) const
 {
-    unsigned char * const command_buffer = (unsigned char *) malloc (512);
-    alloc_assert (command_buffer);
-
-    unsigned char *ptr = command_buffer;
-
-    //  Add command name
-    memcpy (ptr, "\x05READY", 6);
-    ptr += 6;
-
-    //  Add socket type property
-    const char *socket_type = socket_type_string (options.type);
-    ptr += add_property (ptr, ZMQ_MSG_PROPERTY_SOCKET_TYPE, socket_type,
-                         strlen (socket_type));
-
-    //  Add identity property
-    if (options.type == ZMQ_REQ
-    ||  options.type == ZMQ_DEALER
-    ||  options.type == ZMQ_ROUTER)
-        ptr += add_property (ptr, ZMQ_MSG_PROPERTY_IDENTITY, options.identity,
-                             options.identity_size);
-
-    const size_t command_size = ptr - command_buffer;
-    const int rc = msg_->init_size (command_size);
-    errno_assert (rc == 0);
-    memcpy (msg_->data (), command_buffer, command_size);
-    free (command_buffer);
+    make_command_with_basic_properties (msg_, "\5READY", 6);
 
     return 0;
 }
@@ -281,167 +227,13 @@ int zmq::plain_server_t::produce_error (msg_t *msg_) const
     return 0;
 }
 
-int zmq::plain_server_t::send_zap_request (const std::string &username,
-                                           const std::string &password)
+void zmq::plain_server_t::send_zap_request (const std::string &username,
+                                            const std::string &password)
 {
-    int rc;
-    msg_t msg;
-
-    //  Address delimiter frame
-    rc = msg.init ();
-    errno_assert (rc == 0);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Version frame
-    rc = msg.init_size (3);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), "1.0", 3);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Request id frame
-    rc = msg.init_size (1);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), "1", 1);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Domain frame
-    rc = msg.init_size (options.zap_domain.length ());
-    errno_assert (rc == 0);
-    memcpy (msg.data (), options.zap_domain.c_str (), options.zap_domain.length ());
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Address frame
-    rc = msg.init_size (peer_address.length ());
-    errno_assert (rc == 0);
-    memcpy (msg.data (), peer_address.c_str (), peer_address.length ());
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Identity frame
-    rc = msg.init_size (options.identity_size);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), options.identity, options.identity_size);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Mechanism frame
-    rc = msg.init_size (5);
-    errno_assert (rc == 0);
-    memcpy (msg.data (), "PLAIN", 5);
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Username frame
-    rc = msg.init_size (username.length ());
-    errno_assert (rc == 0);
-    memcpy (msg.data (), username.c_str (), username.length ());
-    msg.set_flags (msg_t::more);
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    //  Password frame
-    rc = msg.init_size (password.length ());
-    errno_assert (rc == 0);
-    memcpy (msg.data (), password.c_str (), password.length ());
-    rc = session->write_zap_msg (&msg);
-    if (rc != 0)
-        return close_and_return (&msg, -1);
-
-    return 0;
-}
-
-int zmq::plain_server_t::receive_and_process_zap_reply ()
-{
-    int rc = 0;
-    msg_t msg [7];  //  ZAP reply consists of 7 frames
-
-    //  Initialize all reply frames
-    for (int i = 0; i < 7; i++) {
-        rc = msg [i].init ();
-        errno_assert (rc == 0);
-    }
-
-    for (int i = 0; i < 7; i++) {
-        rc = session->read_zap_msg (&msg [i]);
-        if (rc == -1)
-            return close_and_return (msg, -1);
-        if ((msg [i].flags () & msg_t::more) == (i < 6? 0: msg_t::more)) {
-            //  Temporary support for security debugging
-            puts ("PLAIN I: ZAP handler sent incomplete reply message");
-            errno = EPROTO;
-            return close_and_return (msg, -1);
-        }
-    }
-
-    //  Address delimiter frame
-    if (msg [0].size () > 0) {
-        //  Temporary support for security debugging
-        puts ("PLAIN I: ZAP handler sent malformed reply message");
-        errno = EPROTO;
-        return close_and_return (msg, -1);
-    }
-
-    //  Version frame
-    if (msg [1].size () != 3 || memcmp (msg [1].data (), "1.0", 3)) {
-        //  Temporary support for security debugging
-        puts ("PLAIN I: ZAP handler sent bad version number");
-        errno = EPROTO;
-        return close_and_return (msg, -1);
-    }
-
-    //  Request id frame
-    if (msg [2].size () != 1 || memcmp (msg [2].data (), "1", 1)) {
-        //  Temporary support for security debugging
-        puts ("PLAIN I: ZAP handler sent bad request ID");
-        errno = EPROTO;
-        return close_and_return (msg, -1);
-    }
-
-    //  Status code frame
-    if (msg [3].size () != 3) {
-        //  Temporary support for security debugging
-        puts ("PLAIN I: ZAP handler rejected client authentication");
-        errno = EACCES;
-        return close_and_return (msg, -1);
-    }
-
-    //  Save status code
-    status_code.assign (static_cast <char *> (msg [3].data ()), 3);
-
-    //  Save user id
-    set_user_id (msg [5].data (), msg [5].size ());
-
-    //  Process metadata frame
-    rc = parse_metadata (static_cast <const unsigned char*> (msg [6].data ()),
-                         msg [6].size (), true);
-
-    if (rc != 0)
-        return close_and_return (msg, -1);
-
-    //  Close all reply frames
-    for (int i = 0; i < 7; i++) {
-        const int rc2 = msg [i].close ();
-        errno_assert (rc2 == 0);
-    }
-
-    return 0;
+    const uint8_t *credentials[] = {
+      reinterpret_cast<const uint8_t *> (username.c_str ()),
+      reinterpret_cast<const uint8_t *> (password.c_str ())};
+    size_t credentials_sizes[] = {username.size (), password.size ()};
+    zap_client_t::send_zap_request ("PLAIN", 5, credentials, credentials_sizes,
+                                    2);
 }

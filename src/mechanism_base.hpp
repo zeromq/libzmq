@@ -27,45 +27,25 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __ZMQ_PLAIN_SERVER_HPP_INCLUDED__
-#define __ZMQ_PLAIN_SERVER_HPP_INCLUDED__
+#ifndef __ZMQ_MECHANISM_BASE_HPP_INCLUDED__
+#define __ZMQ_MECHANISM_BASE_HPP_INCLUDED__
 
 #include "mechanism.hpp"
-#include "options.hpp"
-#include "zap_client.hpp"
 
 namespace zmq
 {
+class mechanism_base_t : public mechanism_t
+{
+  protected:
+    mechanism_base_t (session_base_t *const session_,
+                      const options_t &options_);
 
-    class msg_t;
-    class session_base_t;
+    session_base_t *const session;
 
-    class plain_server_t : public zap_client_common_handshake_t
-    {
-    public:
+    int check_basic_command_structure (msg_t *msg_);
 
-        plain_server_t (session_base_t *session_,
-                        const std::string &peer_address_,
-                        const options_t &options_);
-        virtual ~plain_server_t ();
-
-        // mechanism implementation
-        virtual int next_handshake_command (msg_t *msg_);
-        virtual int process_handshake_command (msg_t *msg_);
-
-    private:
-
-        int produce_welcome (msg_t *msg_) const;
-        int produce_ready (msg_t *msg_) const;
-        int produce_error (msg_t *msg_) const;
-
-        int process_hello (msg_t *msg_);
-        int process_initiate (msg_t *msg_);
-
-        void send_zap_request (const std::string &username,
-                               const std::string &password);
-    };
-
+    void handle_error_reason (const char *error_reason, size_t error_reason_len);
+};
 }
 
 #endif

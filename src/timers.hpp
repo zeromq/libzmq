@@ -102,6 +102,8 @@ namespace zmq
 
             timers_t (const timers_t&);
             const timers_t &operator = (const timers_t&);
+
+            struct match_by_id;
         };
     }
 
