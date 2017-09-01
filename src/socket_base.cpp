@@ -224,6 +224,9 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t tid_, int sid_, bool
 int zmq::socket_base_t::get_peer_state (const void *identity,
                                         size_t identity_size) const
 {
+    LIBZMQ_UNUSED (identity);
+    LIBZMQ_UNUSED (identity_size);
+
     //  Only ROUTER sockets support this
     errno = ENOTSUP;
     return -1;
