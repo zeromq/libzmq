@@ -99,22 +99,19 @@ zmq::select_t::find_fd_entry_by_handle (fd_entries_t &fd_entries,
          ++fd_entry_it)
         if (fd_entry_it->fd == handle_)
             break;
-    zmq_assert (fd_entry_it != fd_entries.end ());
 
     return fd_entry_it;
 }
 
-void zmq::select_t::rm_fd (handle_t handle_)
+bool zmq::select_t::try_remove_fd_entry (
+  family_entries_t::iterator family_entry_it, zmq::fd_t &handle_)
 {
-#if defined ZMQ_HAVE_WINDOWS
-    u_short family = get_fd_family (handle_);
-    wsa_assert (family != AF_UNSPEC);
-
-    family_entries_t::iterator family_entry_it = family_entries.find (family);
-    family_entry_t& family_entry = family_entry_it->second;
+    family_entry_t &family_entry = family_entry_it->second;
 
     fd_entries_t::iterator fd_entry_it =
       find_fd_entry_by_handle (family_entry.fd_entries, handle_);
+    if (fd_entry_it == family_entry.fd_entries.end ())
+        return false;
     if (family_entry_it != current_family_entry_it) {
         //  Family is not currently being iterated and can be safely
         //  modified in-place. So later it can be skipped without
@@ -127,9 +124,35 @@ void zmq::select_t::rm_fd (handle_t handle_)
         family_entry.retired = true;
     }
     family_entry.fds_set.remove_fd (handle_);
+    return true;
+}
+
+void zmq::select_t::rm_fd (handle_t handle_)
+{
+#if defined ZMQ_HAVE_WINDOWS
+    u_short family = get_fd_family (handle_);
+    if (family != AF_UNSPEC) {
+        family_entries_t::iterator family_entry_it =
+          family_entries.find (family);
+
+        int removed = try_remove_fd_entry (family_entry_it, handle_);
+        assert (removed);
+    } else {
+        //  get_fd_family may fail and return AF_UNSPEC if the socket was not
+        //  successfully connected. In that case, we need to look for the
+        //  socket in all family_entries.
+        family_entries_t::iterator end = family_entries.end ();
+        for (family_entries_t::iterator family_entry_it =
+               family_entries.begin ();
+             family_entry_it != end; ++family_entry_it) {
+            if (try_remove_fd_entry (family_entry_it, handle_))
+                break;
+        }
+    }
 #else
     fd_entries_t::iterator fd_entry_it =
       find_fd_entry_by_handle (fd_entries, handle_);
+    assert (fd_entry_it != fd_entries.end ());
 
     fd_entry_it->fd = retired_fd;
     fds_set.remove_fd (handle_);
