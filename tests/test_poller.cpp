@@ -225,7 +225,7 @@ void test_add_modify_remove_corner_cases(void *ctx)
     assert (rc == 0);
 }
 
-void test_wait_corner_cases (void *ctx)
+void test_wait_corner_cases (void)
 {
     void *poller = zmq_poller_new ();
     assert (poller != NULL);
@@ -393,7 +393,7 @@ int main (void)
     test_null_event_pointers (ctx);
 
     test_add_modify_remove_corner_cases (ctx);
-    test_wait_corner_cases (ctx);
+    test_wait_corner_cases ();
 
     rc = zmq_poller_destroy (&poller);
     assert (rc == 0);
