@@ -147,7 +147,20 @@ link_libraries(libzmq ${OPTIONAL_LIBRARIES})
 include_directories("${CMAKE_SOURCE_DIR}/../include")
 
 foreach(test ${tests})
-  add_executable(${test} ${test}.cpp)
+  # target_sources not supported before CMake 3.1
+  if (ZMQ_HAVE_CURVE AND ${test} MATCHES test_security_curve)
+    add_executable(${test} ${test}.cpp
+        "../src/tweetnacl.c"
+        "../src/err.cpp"
+        "../src/random.cpp"
+        "../src/clock.cpp"
+        "testutil_security.hpp")
+  elseif (${test} MATCHES test_security_zap)
+    add_executable(${test} ${test}.cpp
+        "testutil_security.hpp")
+  else ()
+    add_executable(${test} ${test}.cpp)
+  endif ()
   if(WIN32)
     # This is the output for Debug dynamic builds on Visual Studio 6.0
     # You should provide the correct directory, don't know how to do it automatically
@@ -179,21 +192,11 @@ if(ZMQ_HAVE_CURVE)
   set_tests_properties(test_security_curve PROPERTIES TIMEOUT 60)
 endif()
 
-#add additional required files
+#add additional required flags
 if(ZMQ_HAVE_CURVE)
-  target_sources(test_security_curve PRIVATE 
-	"../src/tweetnacl.c" 
-	"../src/err.cpp" 
-	"../src/random.cpp" 
-	"../src/clock.cpp"
-	"testutil_security.hpp"
-	)
   target_compile_definitions(test_security_curve PRIVATE "-DZMQ_USE_TWEETNACL")
 endif()
 
-target_sources(test_security_zap PRIVATE 
-  "testutil_security.hpp"
-)
 set_tests_properties(test_security_zap PROPERTIES TIMEOUT 60)
 
 #Check whether all tests in the current folder are present
