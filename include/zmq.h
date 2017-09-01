@@ -661,6 +661,10 @@ ZMQ_EXPORT int zmq_poller_modify_fd (void *poller, int fd, short events);
 ZMQ_EXPORT int zmq_poller_remove_fd (void *poller, int fd);
 #endif
 
+ZMQ_EXPORT int zmq_socket_get_peer_state (void *socket,
+                                          const void *identity,
+                                          size_t identity_size);
+
 /******************************************************************************/
 /*  Scheduling timers                                                         */
 /******************************************************************************/

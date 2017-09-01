@@ -64,6 +64,7 @@ namespace zmq
         void xread_activated (zmq::pipe_t *pipe_);
         void xwrite_activated (zmq::pipe_t *pipe_);
         void xpipe_terminated (zmq::pipe_t *pipe_);
+        int get_peer_state (const void *identity, size_t identity_size) const;
 
     protected:
 
