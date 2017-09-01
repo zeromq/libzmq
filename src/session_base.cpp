@@ -433,11 +433,13 @@ void zmq::session_base_t::engine_error (
 
     switch (reason) {
         case stream_engine_t::timeout_error:
+            /* FALLTHROUGH */
         case stream_engine_t::connection_error:
             if (active) {
                 reconnect ();
                 break;
             }
+            /* FALLTHROUGH */
         case stream_engine_t::protocol_error:
             if (pending) {
                 if (pipe)
