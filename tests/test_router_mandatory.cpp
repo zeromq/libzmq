@@ -62,13 +62,8 @@ void test_get_peer_state ()
     rc = zmq_setsockopt (router, ZMQ_ROUTER_MANDATORY, &mandatory,
                          sizeof (mandatory));
 
-    rc = zmq_bind (router, "tcp://127.0.0.1:*");
-    assert (rc == 0);
-
-    size_t my_endpoint_len = MAX_SOCKET_STRING;
-    char my_endpoint[MAX_SOCKET_STRING];
-    rc =
-      zmq_getsockopt (router, ZMQ_LAST_ENDPOINT, my_endpoint, &my_endpoint_len);
+    const char *my_endpoint = "inproc://test_get_peer_state";
+    rc = zmq_bind (router, my_endpoint);
     assert (rc == 0);
 
     void *dealer1 = zmq_socket (ctx, ZMQ_DEALER);
