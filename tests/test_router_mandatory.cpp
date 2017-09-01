@@ -177,6 +177,45 @@ void test_get_peer_state ()
 #endif
 }
 
+void test_get_peer_state_corner_cases ()
+{
+#ifdef ZMQ_BUILD_DRAFT_API
+    const char peer_identity[] = "foo";
+
+    //  call get_peer_state with NULL socket
+    int rc =
+      zmq_socket_get_peer_state (NULL, peer_identity, strlen (peer_identity));
+    assert (rc == -1 && errno == ENOTSOCK);
+
+    void *ctx = zmq_ctx_new ();
+    assert (ctx);
+    void *dealer = zmq_socket (ctx, ZMQ_DEALER);
+    assert (dealer);
+    void *router = zmq_socket (ctx, ZMQ_ROUTER);
+    assert (router);
+
+    //  call get_peer_state with a non-ROUTER socket
+    rc =
+      zmq_socket_get_peer_state (dealer, peer_identity, strlen (peer_identity));
+    assert (rc == -1 && errno == ENOTSUP);
+
+    //  call get_peer_state for an unknown identity
+    rc =
+      zmq_socket_get_peer_state (router, peer_identity, strlen (peer_identity));
+    assert (rc == -1 && errno == EHOSTUNREACH);
+
+    rc = zmq_close (router);
+    assert (rc == 0);
+
+    rc = zmq_close (dealer);
+    assert (rc == 0);
+
+    rc = zmq_ctx_term (ctx);
+    assert (rc == 0);
+
+#endif
+}
+
 void test_basic ()
 {
     size_t len = MAX_SOCKET_STRING;
@@ -247,6 +286,7 @@ int main (void)
 
     test_basic ();
     test_get_peer_state ();
+    test_get_peer_state_corner_cases ();
 
     return 0;
 }
