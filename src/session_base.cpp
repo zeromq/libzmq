@@ -374,7 +374,7 @@ bool zmq::session_base_t::zap_enabled ()
 {
     return (
          options.mechanism != ZMQ_NULL ||
-        (options.mechanism == ZMQ_NULL && options.zap_domain.length() > 0)
+         !options.zap_domain.empty()
     );
 }
 
