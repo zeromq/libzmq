@@ -166,7 +166,7 @@ void zmq::mechanism_t::make_command_with_basic_properties (
     memcpy (ptr, prefix, prefix_len);
     ptr += prefix_len;
 
-    ptr += add_basic_properties (
+    add_basic_properties (
       ptr, command_size - (ptr - (unsigned char *) msg_->data ()));
 }
 
