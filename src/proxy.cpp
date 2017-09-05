@@ -179,9 +179,6 @@ int reply_stats(
     if (unlikely (rc < 0))
         return close_and_return (&stats_msg1, -1);
 
-    stats_msg1.close();
-
-
     // second part: backend stats
 
     rc = stats_msg2.init_size( sizeof(zmq_socket_stats_t) );
@@ -193,7 +190,6 @@ int reply_stats(
     if (unlikely (rc < 0))
         return close_and_return (&stats_msg2, -1);
 
-    stats_msg2.close();
     return 0;
 }
 
