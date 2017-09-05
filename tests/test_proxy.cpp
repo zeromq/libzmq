@@ -57,9 +57,9 @@ struct thread_data {
 
 typedef struct
 {
-    uint64_t pkts_in;
+    uint64_t msg_in;
     uint64_t bytes_in;
-    uint64_t pkts_out;
+    uint64_t msg_out;
     uint64_t bytes_out;
 } zmq_socket_stats_t;
 
@@ -337,6 +337,68 @@ server_worker (void *ctx)
     assert (rc == 0);
 }
 
+// Utility function to interrogate the proxy:
+
+void check_proxy_stats(void *control_proxy)
+{
+    zmq_proxy_stats_t total_stats;
+    int rc;
+
+    rc = zmq_send (control_proxy, "STATISTICS", 10, 0);
+    assert (rc == 10);
+
+    // first frame of the reply contains FRONTEND stats:
+
+    zmq_msg_t stats_msg;
+    rc = zmq_msg_init (&stats_msg);
+    assert (rc == 0);
+    rc = zmq_recvmsg (control_proxy, &stats_msg, 0);
+    assert (rc == sizeof(zmq_socket_stats_t));
+
+    memcpy(&total_stats.frontend, zmq_msg_data(&stats_msg), zmq_msg_size(&stats_msg));
+
+
+    // second frame of the reply contains BACKEND stats:
+
+    int more;
+    size_t moresz = sizeof more;
+    rc = zmq_getsockopt (control_proxy, ZMQ_RCVMORE, &more, &moresz);
+    assert (rc == 0 && more == 1);
+
+    rc = zmq_recvmsg (control_proxy, &stats_msg, 0);
+    assert (rc == sizeof(zmq_socket_stats_t));
+
+    memcpy(&total_stats.backend, zmq_msg_data(&stats_msg), zmq_msg_size(&stats_msg));
+
+    rc = zmq_getsockopt (control_proxy, ZMQ_RCVMORE, &more, &moresz);
+    assert (rc == 0 && more == 0);
+
+
+    // check stats
+
+    if (is_verbose)
+    {
+        printf ("frontend: pkts_in=%lu bytes_in=%lu  pkts_out=%lu bytes_out=%lu\n",
+                total_stats.frontend.msg_in, total_stats.frontend.bytes_in,
+                total_stats.frontend.msg_out, total_stats.frontend.bytes_out);
+        printf ("backend: pkts_in=%lu bytes_in=%lu  pkts_out=%lu bytes_out=%lu\n",
+                total_stats.backend.msg_in, total_stats.backend.bytes_in,
+                total_stats.backend.msg_out, total_stats.backend.bytes_out);
+
+        printf ("clients sent out %d requests\n", zmq_atomic_counter_value(g_clients_pkts_out));
+        printf ("workers sent out %d replies\n", zmq_atomic_counter_value(g_workers_pkts_out));
+    }
+    assert( total_stats.frontend.msg_in == (unsigned)zmq_atomic_counter_value(g_clients_pkts_out) );
+    assert( total_stats.frontend.msg_out == (unsigned)zmq_atomic_counter_value(g_workers_pkts_out) );
+    assert( total_stats.backend.msg_in == (unsigned)zmq_atomic_counter_value(g_workers_pkts_out) );
+    assert( total_stats.backend.msg_out == (unsigned)zmq_atomic_counter_value(g_clients_pkts_out) );
+
+    rc = zmq_msg_close (&stats_msg);
+    assert (rc == 0);
+}
+
+
+
 // The main thread simply starts several clients and a server, and then
 // waits for the server to finish.
 
@@ -389,37 +451,7 @@ int main (void)
 
     if (is_verbose)
         printf ("retrieving stats from the proxy\n");
-
-    rc = zmq_send (control_proxy, "STATISTICS", 10, 0);
-    assert (rc == 10);
-
-    zmq_msg_t stats_msg;
-    rc = zmq_msg_init (&stats_msg);
-    assert (rc == 0);
-
-    rc = zmq_recvmsg (control_proxy, &stats_msg, 0);
-    assert (rc == sizeof(zmq_proxy_stats_t));
-
-    zmq_proxy_stats_t* stats = (zmq_proxy_stats_t*)zmq_msg_data(&stats_msg);
-    if (is_verbose)
-    {
-        printf ("frontend: pkts_in=%lu bytes_in=%lu  pkts_out=%lu bytes_out=%lu\n",
-                stats->frontend.pkts_in, stats->frontend.bytes_in,
-                stats->frontend.pkts_out, stats->frontend.bytes_out);
-        printf ("backend: pkts_in=%lu bytes_in=%lu  pkts_out=%lu bytes_out=%lu\n",
-                stats->backend.pkts_in, stats->backend.bytes_in,
-                stats->backend.pkts_out, stats->backend.bytes_out);
-
-        printf ("clients sent out %d requests\n", zmq_atomic_counter_value(g_clients_pkts_out));
-        printf ("workers sent out %d replies\n", zmq_atomic_counter_value(g_workers_pkts_out));
-    }
-    assert( stats->frontend.pkts_in == (unsigned)zmq_atomic_counter_value(g_clients_pkts_out) );
-    assert( stats->frontend.pkts_out == (unsigned)zmq_atomic_counter_value(g_workers_pkts_out) );
-    assert( stats->backend.pkts_in == (unsigned)zmq_atomic_counter_value(g_workers_pkts_out) );
-    assert( stats->backend.pkts_out == (unsigned)zmq_atomic_counter_value(g_clients_pkts_out) );
-
-    rc = zmq_msg_close (&stats_msg);
-    assert (rc == 0);
+    check_proxy_stats(control_proxy);
 
     if (is_verbose)
         printf ("shutting down all clients and server workers\n");
@@ -427,7 +459,7 @@ int main (void)
     assert (rc == 9);
 
     if (is_verbose)
-        printf ("shutting down the proxy now\n");
+        printf ("shutting down the proxy\n");
     rc = zmq_send (control_proxy, "TERMINATE", 9, 0);
     assert (rc == 9);
 

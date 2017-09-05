@@ -87,9 +87,9 @@
 
 typedef struct
 {
-    uint64_t pkts_in;
+    uint64_t msg_in;
     uint64_t bytes_in;
-    uint64_t pkts_out;
+    uint64_t msg_out;
     uint64_t bytes_out;
 } zmq_socket_stats_t;
 
@@ -153,9 +153,9 @@ int forward (
     }
 
     // A multipart message counts as 1 packet:
-    from_stats->pkts_in++;
+    from_stats->msg_in++;
     from_stats->bytes_in+=complete_msg_size;
-    to_stats->pkts_out++;
+    to_stats->msg_out++;
     to_stats->bytes_out+=complete_msg_size;
 
     return 0;
@@ -166,23 +166,35 @@ int reply_stats(
         zmq_socket_stats_t* frontend_stats,
         zmq_socket_stats_t* backend_stats)
 {
-    zmq::msg_t stats_msg;
-    int rc = stats_msg.init_size( sizeof(zmq_socket_stats_t)*2 );
-    if (unlikely (rc < 0)) {
-        return close_and_return (&stats_msg, -1);
-    }
+    // first part: frontend stats
 
-    uint8_t* pdata = (uint8_t*)stats_msg.data();
-    memcpy( pdata + 0,                          (const void*) frontend_stats, sizeof(zmq_socket_stats_t) );
-    memcpy( pdata + sizeof(zmq_socket_stats_t), (const void*) backend_stats,  sizeof(zmq_socket_stats_t) );
+    zmq::msg_t stats_msg1, stats_msg2;
+    int rc = stats_msg1.init_size( sizeof(zmq_socket_stats_t) );
+    if (unlikely (rc < 0))
+        return close_and_return (&stats_msg1, -1);
 
-    rc = control_->send (&stats_msg, 0);
-    if (unlikely (rc < 0)) {
-        return close_and_return (&stats_msg, -1);
-    }
+    memcpy( stats_msg1.data(), (const void*) frontend_stats, sizeof(zmq_socket_stats_t) );
 
-    rc = stats_msg.close();
-    return rc;
+    rc = control_->send (&stats_msg1, ZMQ_SNDMORE);
+    if (unlikely (rc < 0))
+        return close_and_return (&stats_msg1, -1);
+
+    stats_msg1.close();
+
+
+    // second part: backend stats
+
+    rc = stats_msg2.init_size( sizeof(zmq_socket_stats_t) );
+    if (unlikely (rc < 0))
+        return close_and_return (&stats_msg2, -1);
+    memcpy( stats_msg2.data(), (const void*) backend_stats,  sizeof(zmq_socket_stats_t) );
+
+    rc = control_->send (&stats_msg2, 0);
+    if (unlikely (rc < 0))
+        return close_and_return (&stats_msg2, -1);
+
+    stats_msg2.close();
+    return 0;
 }
 
 
