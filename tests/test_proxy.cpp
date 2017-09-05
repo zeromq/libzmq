@@ -451,9 +451,11 @@ int main (void)
     msleep(500); // Wait for all clients and workers to STOP
 
 
+#ifdef ZMQ_BUILD_DRAFT_API
     if (is_verbose)
         printf ("retrieving stats from the proxy\n");
     check_proxy_stats(control_proxy);
+#endif
 
     if (is_verbose)
         printf ("shutting down all clients and server workers\n");
