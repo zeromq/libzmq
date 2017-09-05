@@ -55,6 +55,24 @@ struct thread_data {
     int id;
 };
 
+typedef struct
+{
+    uint64_t msg_in;
+    uint64_t bytes_in;
+    uint64_t msg_out;
+    uint64_t bytes_out;
+} zmq_socket_stats_t;
+
+typedef struct
+{
+    zmq_socket_stats_t frontend;
+    zmq_socket_stats_t backend;
+} zmq_proxy_stats_t;
+
+void *g_clients_pkts_out = NULL;
+void *g_workers_pkts_out = NULL;
+
+
 static void
 client_task (void *db)
 {
@@ -100,6 +118,7 @@ client_task (void *db)
     zmq_pollitem_t items [] = { { client, 0, ZMQ_POLLIN, 0 }, { control, 0, ZMQ_POLLIN, 0 } };
     int request_nbr = 0;
     bool run = true;
+    bool keep_sending = true;
     while (run) {
         // Tick once per 200 ms, pulling in arriving messages
         int centitick;
@@ -119,16 +138,32 @@ client_task (void *db)
             }
             if (items [1].revents & ZMQ_POLLIN) {
                 rc = zmq_recv (control, content, CONTENT_SIZE_MAX, 0);
-                if (is_verbose) printf("client receive - identity = %s    command = %s\n", identity, content);
-                if (memcmp (content, "TERMINATE", 9) == 0) {
-                    run = false;
-                    break;
+
+                if (rc > 0)
+                {
+                    content[rc] = 0;        // NULL-terminate the command string
+                    if (is_verbose) printf("client receive - identity = %s    command = %s\n", identity, content);
+                    if (memcmp (content, "TERMINATE", 9) == 0) {
+                        run = false;
+                        break;
+                    }
+                    if (memcmp (content, "STOP", 4) == 0) {
+                        keep_sending = false;
+                        break;
+                    }
                 }
             }
         }
-        sprintf(content, "request #%03d", ++request_nbr); // CONTENT_SIZE
-        rc = zmq_send (client, content, CONTENT_SIZE, 0);
-        assert (rc == CONTENT_SIZE);
+
+        if (keep_sending)
+        {
+            sprintf(content, "request #%03d", ++request_nbr); // CONTENT_SIZE
+            if (is_verbose) printf("client send - identity = %s    request #%03d\n", identity, request_nbr);
+            zmq_atomic_counter_inc(g_clients_pkts_out);
+
+            rc = zmq_send (client, content, CONTENT_SIZE, 0);
+            assert (rc == CONTENT_SIZE);
+        }
     }
 
     rc = zmq_close (client);
@@ -173,13 +208,11 @@ server_task (void *ctx)
     assert (rc == 0);
 
     // Control socket receives terminate command from main over inproc
-    void *control = zmq_socket (ctx, ZMQ_SUB);
+    void *control = zmq_socket (ctx, ZMQ_REP);
     assert (control);
-    rc = zmq_setsockopt (control, ZMQ_SUBSCRIBE, "", 0);
-    assert (rc == 0);
     rc = zmq_setsockopt (control, ZMQ_LINGER, &linger, sizeof (linger));
     assert (rc == 0);
-    rc = zmq_connect (control, "inproc://control");
+    rc = zmq_connect (control, "inproc://control_proxy");
     assert (rc == 0);
 
     // Launch pool of worker threads, precise number is not critical
@@ -255,13 +288,17 @@ server_worker (void *ctx)
     char identity [ID_SIZE_MAX];      // the size received is the size sent
 
     bool run = true;
+    bool keep_sending = true;
     while (run) {
         rc = zmq_recv (control, content, CONTENT_SIZE_MAX, ZMQ_DONTWAIT); // usually, rc == -1 (no message)
         if (rc > 0) {
+            content[rc] = 0;        // NULL-terminate the command string
             if (is_verbose)
                 printf("server_worker receives command = %s\n", content);
             if (memcmp (content, "TERMINATE", 9) == 0)
                 run = false;
+            if (memcmp (content, "STOP", 4) == 0)
+                keep_sending = false;
         }
         // The DEALER socket gives us the reply envelope and message
         // if we don't poll, we have to use ZMQ_DONTWAIT, if we poll, we can block-receive with 0
@@ -273,15 +310,22 @@ server_worker (void *ctx)
                 printf ("server receive - identity = %s    content = %s\n", identity, content);
 
             // Send 0..4 replies back
-            int reply, replies = rand() % 5;
-            for (reply = 0; reply < replies; reply++) {
-                // Sleep for some fraction of a second
-                msleep (rand () % 10 + 1);
-                //  Send message from server to client
-                rc = zmq_send (worker, identity, ID_SIZE, ZMQ_SNDMORE);
-                assert (rc == ID_SIZE);
-                rc = zmq_send (worker, content, CONTENT_SIZE, 0);
-                assert (rc == CONTENT_SIZE);
+            if (keep_sending)
+            {
+                int reply, replies = rand() % 5;
+                for (reply = 0; reply < replies; reply++) {
+                    // Sleep for some fraction of a second
+                    msleep (rand () % 10 + 1);
+
+                    //  Send message from server to client
+                    if (is_verbose) printf("server send - identity = %s    reply\n", identity);
+                    zmq_atomic_counter_inc(g_workers_pkts_out);
+
+                    rc = zmq_send (worker, identity, ID_SIZE, ZMQ_SNDMORE);
+                    assert (rc == ID_SIZE);
+                    rc = zmq_send (worker, content, CONTENT_SIZE, 0);
+                    assert (rc == CONTENT_SIZE);
+                }
             }
         }
     }
@@ -290,6 +334,68 @@ server_worker (void *ctx)
     rc = zmq_close (control);
     assert (rc == 0);
 }
+
+// Utility function to interrogate the proxy:
+
+void check_proxy_stats(void *control_proxy)
+{
+    zmq_proxy_stats_t total_stats;
+    int rc;
+
+    rc = zmq_send (control_proxy, "STATISTICS", 10, 0);
+    assert (rc == 10);
+
+    // first frame of the reply contains FRONTEND stats:
+
+    zmq_msg_t stats_msg;
+    rc = zmq_msg_init (&stats_msg);
+    assert (rc == 0);
+    rc = zmq_recvmsg (control_proxy, &stats_msg, 0);
+    assert (rc == sizeof(zmq_socket_stats_t));
+
+    memcpy(&total_stats.frontend, zmq_msg_data(&stats_msg), zmq_msg_size(&stats_msg));
+
+
+    // second frame of the reply contains BACKEND stats:
+
+    int more;
+    size_t moresz = sizeof more;
+    rc = zmq_getsockopt (control_proxy, ZMQ_RCVMORE, &more, &moresz);
+    assert (rc == 0 && more == 1);
+
+    rc = zmq_recvmsg (control_proxy, &stats_msg, 0);
+    assert (rc == sizeof(zmq_socket_stats_t));
+
+    memcpy(&total_stats.backend, zmq_msg_data(&stats_msg), zmq_msg_size(&stats_msg));
+
+    rc = zmq_getsockopt (control_proxy, ZMQ_RCVMORE, &more, &moresz);
+    assert (rc == 0 && more == 0);
+
+
+    // check stats
+
+    if (is_verbose)
+    {
+        printf ("frontend: pkts_in=%lu bytes_in=%lu  pkts_out=%lu bytes_out=%lu\n",
+                total_stats.frontend.msg_in, total_stats.frontend.bytes_in,
+                total_stats.frontend.msg_out, total_stats.frontend.bytes_out);
+        printf ("backend: pkts_in=%lu bytes_in=%lu  pkts_out=%lu bytes_out=%lu\n",
+                total_stats.backend.msg_in, total_stats.backend.bytes_in,
+                total_stats.backend.msg_out, total_stats.backend.bytes_out);
+
+        printf ("clients sent out %d requests\n", zmq_atomic_counter_value(g_clients_pkts_out));
+        printf ("workers sent out %d replies\n", zmq_atomic_counter_value(g_workers_pkts_out));
+    }
+    assert( total_stats.frontend.msg_in == (unsigned)zmq_atomic_counter_value(g_clients_pkts_out) );
+    assert( total_stats.frontend.msg_out == (unsigned)zmq_atomic_counter_value(g_workers_pkts_out) );
+    assert( total_stats.backend.msg_in == (unsigned)zmq_atomic_counter_value(g_workers_pkts_out) );
+    assert( total_stats.backend.msg_out == (unsigned)zmq_atomic_counter_value(g_clients_pkts_out) );
+
+    rc = zmq_msg_close (&stats_msg);
+    assert (rc == 0);
+}
+
+
 
 // The main thread simply starts several clients and a server, and then
 // waits for the server to finish.
@@ -300,6 +406,11 @@ int main (void)
 
     void *ctx = zmq_ctx_new ();
     assert (ctx);
+
+    g_clients_pkts_out = zmq_atomic_counter_new ();
+    g_workers_pkts_out = zmq_atomic_counter_new ();
+
+
     // Control socket receives terminate command from main over inproc
     void *control = zmq_socket (ctx, ZMQ_PUB);
     assert (control);
@@ -307,6 +418,14 @@ int main (void)
     int rc = zmq_setsockopt (control, ZMQ_LINGER, &linger, sizeof (linger));
     assert (rc == 0);
     rc = zmq_bind (control, "inproc://control");
+    assert (rc == 0);
+
+    // Control socket receives terminate command from main over inproc
+    void *control_proxy = zmq_socket (ctx, ZMQ_REQ);
+    assert (control_proxy);
+    rc = zmq_setsockopt (control_proxy, ZMQ_LINGER, &linger, sizeof (linger));
+    assert (rc == 0);
+    rc = zmq_bind (control_proxy, "inproc://control_proxy");
     assert (rc == 0);
 
     void *threads [QT_CLIENTS + 1];
@@ -319,10 +438,33 @@ int main (void)
     threads[QT_CLIENTS] = zmq_threadstart  (&server_task, ctx);
     msleep (500); // Run for 500 ms then quit
 
+
+    if (is_verbose)
+        printf ("stopping all clients and server workers\n");
+    rc = zmq_send (control, "STOP", 4, 0);
+    assert (rc == 4);
+
+    msleep(500); // Wait for all clients and workers to STOP
+
+
+    if (is_verbose)
+        printf ("retrieving stats from the proxy\n");
+    check_proxy_stats(control_proxy);
+
+    if (is_verbose)
+        printf ("shutting down all clients and server workers\n");
     rc = zmq_send (control, "TERMINATE", 9, 0);
     assert (rc == 9);
 
+    if (is_verbose)
+        printf ("shutting down the proxy\n");
+    rc = zmq_send (control_proxy, "TERMINATE", 9, 0);
+    assert (rc == 9);
+
+
     rc = zmq_close (control);
+    assert (rc == 0);
+    rc = zmq_close (control_proxy);
     assert (rc == 0);
 
     for (int i = 0; i < QT_CLIENTS + 1; i++)
