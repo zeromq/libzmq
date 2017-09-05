@@ -377,11 +377,15 @@ void check_proxy_stats(void *control_proxy)
     if (is_verbose)
     {
         printf ("frontend: pkts_in=%lu bytes_in=%lu  pkts_out=%lu bytes_out=%lu\n",
-                total_stats.frontend.msg_in, total_stats.frontend.bytes_in,
-                total_stats.frontend.msg_out, total_stats.frontend.bytes_out);
+                (unsigned long int)total_stats.frontend.msg_in,
+                (unsigned long int)total_stats.frontend.bytes_in,
+                (unsigned long int)total_stats.frontend.msg_out,
+                (unsigned long int)total_stats.frontend.bytes_out);
         printf ("backend: pkts_in=%lu bytes_in=%lu  pkts_out=%lu bytes_out=%lu\n",
-                total_stats.backend.msg_in, total_stats.backend.bytes_in,
-                total_stats.backend.msg_out, total_stats.backend.bytes_out);
+                (unsigned long int)total_stats.backend.msg_in,
+                (unsigned long int)total_stats.backend.bytes_in,
+                (unsigned long int)total_stats.backend.msg_out,
+                (unsigned long int)total_stats.backend.bytes_out);
 
         printf ("clients sent out %d requests\n", zmq_atomic_counter_value(g_clients_pkts_out));
         printf ("workers sent out %d replies\n", zmq_atomic_counter_value(g_workers_pkts_out));
