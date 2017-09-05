@@ -82,6 +82,21 @@
 
 #endif //  ZMQ_HAVE_POLLER
 
+
+// Control socket messages
+
+typedef struct
+{
+    uint64_t pkts_in;
+    uint64_t bytes_in;
+    uint64_t pkts_out;
+    uint64_t bytes_out;
+} zmq_socket_stats_t;
+
+
+
+// Utility functions
+
 int capture (
         class zmq::socket_base_t *capture_,
         zmq::msg_t& msg_,
@@ -104,17 +119,20 @@ int capture (
 }
 
 int forward (
-        class zmq::socket_base_t *from_,
-        class zmq::socket_base_t *to_,
+        class zmq::socket_base_t *from_, zmq_socket_stats_t* from_stats,
+        class zmq::socket_base_t *to_, zmq_socket_stats_t* to_stats,
         class zmq::socket_base_t *capture_,
         zmq::msg_t& msg_)
 {
     int more;
     size_t moresz;
+    size_t complete_msg_size = 0;
     while (true) {
         int rc = from_->recv (&msg_, 0);
         if (unlikely (rc < 0))
             return -1;
+
+        complete_msg_size += msg_.size();
 
         moresz = sizeof more;
         rc = from_->getsockopt (ZMQ_RCVMORE, &more, &moresz);
@@ -129,11 +147,44 @@ int forward (
         rc = to_->send (&msg_, more ? ZMQ_SNDMORE : 0);
         if (unlikely (rc < 0))
             return -1;
+
         if (more == 0)
             break;
     }
+
+    // A multipart message counts as 1 packet:
+    from_stats->pkts_in++;
+    from_stats->bytes_in+=complete_msg_size;
+    to_stats->pkts_out++;
+    to_stats->bytes_out+=complete_msg_size;
+
     return 0;
 }
+
+int reply_stats(
+        class zmq::socket_base_t *control_,
+        zmq_socket_stats_t* frontend_stats,
+        zmq_socket_stats_t* backend_stats)
+{
+    zmq::msg_t stats_msg;
+    int rc = stats_msg.init_size( sizeof(zmq_socket_stats_t)*2 );
+    if (unlikely (rc < 0)) {
+        return close_and_return (&stats_msg, -1);
+    }
+
+    uint8_t* pdata = (uint8_t*)stats_msg.data();
+    memcpy( pdata + 0,                          (const void*) frontend_stats, sizeof(zmq_socket_stats_t) );
+    memcpy( pdata + sizeof(zmq_socket_stats_t), (const void*) backend_stats,  sizeof(zmq_socket_stats_t) );
+
+    rc = control_->send (&stats_msg, 0);
+    if (unlikely (rc < 0)) {
+        return close_and_return (&stats_msg, -1);
+    }
+
+    rc = stats_msg.close();
+    return rc;
+}
+
 
 #ifdef ZMQ_HAVE_POLLER
 
@@ -168,6 +219,10 @@ int zmq::proxy (
     bool backend_out = false;
     bool control_in = false;
     zmq::socket_poller_t::event_t events [3];
+    zmq_socket_stats_t frontend_stats;
+    zmq_socket_stats_t backend_stats;
+    memset(&frontend_stats, 0, sizeof(frontend_stats));
+    memset(&backend_stats, 0, sizeof(backend_stats));
 
     //  Don't allocate these pollers from stack because they will take more than 900 kB of stack!
     //  On Windows this blows up default stack of 1 MB and aborts the program.
@@ -323,9 +378,16 @@ int zmq::proxy (
                     if (msg.size () == 9 && memcmp (msg.data (), "TERMINATE", 9) == 0)
                         state = terminated;
                     else {
-                        //  This is an API error, we assert
-                        puts ("E: invalid command sent to proxy");
-                        zmq_assert (false);
+                        if (msg.size () == 10 && memcmp (msg.data (), "STATISTICS", 10) == 0)
+                        {
+                            rc = reply_stats(control_, &frontend_stats, &backend_stats);
+                            CHECK_RC_EXIT_ON_FAILURE ();
+                        }
+                        else {
+                            //  This is an API error, we assert
+                            puts ("E: invalid command sent to proxy");
+                            zmq_assert (false);
+                        }
                     }
                 }
             control_in = false;
@@ -336,7 +398,7 @@ int zmq::proxy (
             //  Process a request, 'ZMQ_POLLIN' on 'frontend_' and 'ZMQ_POLLOUT' on 'backend_'.
             //  In case of frontend_==backend_ there's no 'ZMQ_POLLOUT' event.
             if (frontend_in && (backend_out || frontend_equal_to_backend)) {
-                rc = forward (frontend_, backend_, capture_, msg);
+                rc = forward (frontend_, &frontend_stats, backend_, &backend_stats, capture_, msg);
                 CHECK_RC_EXIT_ON_FAILURE ();
                 request_processed = true;
                 frontend_in = backend_out = false;
@@ -347,7 +409,7 @@ int zmq::proxy (
             //  covers all of the cases. 'backend_in' is always false if frontend_==backend_ due to
             //  design in 'for' event processing loop.
             if (backend_in && frontend_out) {
-                rc = forward (backend_, frontend_, capture_, msg);
+                rc = forward (backend_, &backend_stats, frontend_, &frontend_stats, capture_, msg);
                 CHECK_RC_EXIT_ON_FAILURE ();
                 reply_processed = true;
                 backend_in = frontend_out = false;
@@ -443,6 +505,11 @@ int zmq::proxy (
         { backend_, 0, ZMQ_POLLOUT, 0 }
     };
 
+    zmq_socket_stats_t frontend_stats;
+    memset(&frontend_stats, 0, sizeof(frontend_stats));
+    zmq_socket_stats_t backend_stats;
+    memset(&backend_stats, 0, sizeof(backend_stats));
+
     //  Proxy can be in these three states
     enum {
         active,
@@ -491,16 +558,24 @@ int zmq::proxy (
                     if (msg.size () == 9 && memcmp (msg.data (), "TERMINATE", 9) == 0)
                         state = terminated;
                     else {
-                        //  This is an API error, so we assert
-                        puts ("E: invalid command sent to proxy");
-                        zmq_assert (false);
+                        if (msg.size () == 10 && memcmp (msg.data (), "STATISTICS", 10) == 0)
+                        {
+                            rc = reply_stats(control_, &frontend_stats, &backend_stats);
+                            if (unlikely (rc < 0))
+                                return -1;
+                        }
+                        else {
+                            //  This is an API error, we assert
+                            puts ("E: invalid command sent to proxy");
+                            zmq_assert (false);
+                        }
                     }
         }
         //  Process a request
         if (state == active
         && items [0].revents & ZMQ_POLLIN
         && (frontend_ == backend_ || itemsout [1].revents & ZMQ_POLLOUT)) {
-            rc = forward (frontend_, backend_, capture_, msg);
+            rc = forward (frontend_, &frontend_stats, backend_, &backend_stats, capture_, msg);
             if (unlikely (rc < 0))
                 return close_and_return (&msg, -1);
         }
@@ -509,7 +584,7 @@ int zmq::proxy (
         &&  frontend_ != backend_
         &&  items [1].revents & ZMQ_POLLIN
         &&  itemsout [0].revents & ZMQ_POLLOUT) {
-            rc = forward (backend_, frontend_, capture_, msg);
+            rc = forward (backend_, &backend_stats, frontend_, &frontend_stats, capture_, msg);
             if (unlikely (rc < 0))
                 return close_and_return (&msg, -1);
         }
