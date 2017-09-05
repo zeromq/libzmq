@@ -48,7 +48,7 @@
 #define ID_SIZE_MAX 32
 #define QT_WORKERS    5
 #define QT_CLIENTS    3
-#define is_verbose 1
+#define is_verbose 0
 
 struct thread_data {
     void *ctx;
@@ -210,8 +210,6 @@ server_task (void *ctx)
     // Control socket receives terminate command from main over inproc
     void *control = zmq_socket (ctx, ZMQ_REP);
     assert (control);
-    /*rc = zmq_setsockopt (control, ZMQ_SUBSCRIBE, "", 0);
-    assert (rc == 0);*/
     rc = zmq_setsockopt (control, ZMQ_LINGER, &linger, sizeof (linger));
     assert (rc == 0);
     rc = zmq_connect (control, "inproc://control_proxy");

@@ -154,9 +154,9 @@ int forward (
 
     // A multipart message counts as 1 packet:
     from_stats->msg_in++;
-    from_stats->bytes_in+=complete_msg_size;
+    from_stats->bytes_in += complete_msg_size;
     to_stats->msg_out++;
-    to_stats->bytes_out+=complete_msg_size;
+    to_stats->bytes_out += complete_msg_size;
 
     return 0;
 }
@@ -169,11 +169,11 @@ int reply_stats(
     // first part: frontend stats
 
     zmq::msg_t stats_msg1, stats_msg2;
-    int rc = stats_msg1.init_size( sizeof(zmq_socket_stats_t) );
+    int rc = stats_msg1.init_size (sizeof(zmq_socket_stats_t));
     if (unlikely (rc < 0))
         return close_and_return (&stats_msg1, -1);
 
-    memcpy( stats_msg1.data(), (const void*) frontend_stats, sizeof(zmq_socket_stats_t) );
+    memcpy (stats_msg1.data(), (const void*) frontend_stats, sizeof(zmq_socket_stats_t));
 
     rc = control_->send (&stats_msg1, ZMQ_SNDMORE);
     if (unlikely (rc < 0))
@@ -181,10 +181,10 @@ int reply_stats(
 
     // second part: backend stats
 
-    rc = stats_msg2.init_size( sizeof(zmq_socket_stats_t) );
+    rc = stats_msg2.init_size (sizeof(zmq_socket_stats_t));
     if (unlikely (rc < 0))
         return close_and_return (&stats_msg2, -1);
-    memcpy( stats_msg2.data(), (const void*) backend_stats,  sizeof(zmq_socket_stats_t) );
+    memcpy (stats_msg2.data(), (const void*) backend_stats, sizeof(zmq_socket_stats_t));
 
     rc = control_->send (&stats_msg2, 0);
     if (unlikely (rc < 0))
@@ -570,7 +570,7 @@ int zmq::proxy (
                         {
                             rc = reply_stats(control_, &frontend_stats, &backend_stats);
                             if (unlikely (rc < 0))
-                                return -1;
+                                return close_and_return (&msg, -1);
                         }
                         else {
                             //  This is an API error, we assert
