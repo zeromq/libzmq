@@ -99,13 +99,25 @@ bool zmq::socket_poller_t::check_tag ()
 }
 
 int zmq::socket_poller_t::add (socket_base_t *socket_,
-                               void *user_data_,
+#ifdef ZMQ_BUILD_DRAFT_API
+                               void *routing_id,
+                               int routing_id_len,
+#endif // ZMQ_BUILD_DRAFT_API
+
+                               void* user_data_,
                                short events_)
 {
     for (items_t::iterator it = items.begin (); it != items.end (); ++it) {
+#if ! defined(ZMQ_BUILD_DRAFT_API)
         if (it->socket == socket_) {
-            errno = EINVAL;
-            return -1;
+#else
+        if (it->socket == socket_ && it->routing_id_len == routing_id_len) {
+            if(memcmp(it->routing_id, routing_id, routing_id_len) == 0)
+#endif // ZMQ_BUILD_DRAFT_API
+            {
+                errno = EINVAL;
+                return -1;
+            }
         }
     }
 
@@ -132,6 +144,10 @@ int zmq::socket_poller_t::add (socket_base_t *socket_,
         0,
         user_data_,
         events_
+#ifdef ZMQ_BUILD_DRAFT_API
+        , routing_id,
+        routing_id_len
+#endif // ZMQ_BUILD_DRAFT_API
 #if defined ZMQ_POLL_BASED_ON_POLL
         ,
         -1
@@ -157,6 +173,10 @@ int zmq::socket_poller_t::add_fd (fd_t fd_, void *user_data_, short events_)
         fd_,
         user_data_,
         events_
+#ifdef ZMQ_BUILD_DRAFT_API
+        , NULL,
+        0
+#endif // ZMQ_BUILD_DRAFT_API
 #if defined ZMQ_POLL_BASED_ON_POLL
         ,
         -1
@@ -168,13 +188,23 @@ int zmq::socket_poller_t::add_fd (fd_t fd_, void *user_data_, short events_)
     return 0;
 }
 
-int zmq::socket_poller_t::modify (socket_base_t *socket_, short events_)
+int zmq::socket_poller_t::modify (socket_base_t  *socket_,
+#ifdef ZMQ_BUILD_DRAFT_API
+                               void *routing_id,
+                               int routing_id_len,
+#endif // ZMQ_BUILD_DRAFT_API
+                               short events_)
 {
     items_t::iterator it;
 
     for (it = items.begin (); it != items.end (); ++it) {
-        if (it->socket == socket_)
-            break;
+        if (it->socket != socket_)
+            continue;
+#ifdef ZMQ_BUILD_DRAFT_API
+        if(it->routing_id_len == routing_id_len &&
+            memcmp(it->routing_id, routing_id, routing_id_len) == 0)
+#endif // ZMQ_BUILD_DRAFT_API
+        break;
     }
 
     if (it == items.end ()) {
@@ -210,13 +240,24 @@ int zmq::socket_poller_t::modify_fd (fd_t fd_, short events_)
 }
 
 
-int zmq::socket_poller_t::remove (socket_base_t *socket_)
+int zmq::socket_poller_t::remove (socket_base_t *socket_
+#ifdef ZMQ_BUILD_DRAFT_API
+                               , void *routing_id,
+                               int routing_id_len
+#endif // ZMQ_BUILD_DRAFT_API
+                               )
 {
     items_t::iterator it;
 
     for (it = items.begin (); it != items.end (); ++it) {
-        if (it->socket == socket_)
-            break;
+        if (it->socket != socket_)
+            continue;
+
+#ifdef ZMQ_BUILD_DRAFT_API
+        if(it->routing_id_len == routing_id_len
+            && memcmp(it->routing_id, routing_id, routing_id_len) == 0)
+#endif // ZMQ_BUILD_DRAFT_API
+        break;
     }
 
     if (it == items.end ()) {
@@ -392,6 +433,11 @@ void zmq::socket_poller_t::zero_trail_events (
         events_[i].fd = 0;
         events_[i].user_data = NULL;
         events_[i].events = 0;
+
+#ifdef ZMQ_BUILD_DRAFT_API
+        events_[i].routing_id = NULL;
+        events_[i].routing_id_len = 0;
+#endif // ZMQ_BUILD_DRAFT_API
     }
 }
 
@@ -412,17 +458,42 @@ int zmq::socket_poller_t::check_events (zmq::socket_poller_t::event_t *events_,
         //  The poll item is a 0MQ socket. Retrieve pending events
         //  using the ZMQ_EVENTS socket option.
         if (it->socket) {
-            size_t events_size = sizeof (uint32_t);
+            size_t events_size;
             uint32_t events;
-            if (it->socket->getsockopt (ZMQ_EVENTS, &events, &events_size)
-                == -1) {
-                return -1;
+
+#ifdef ZMQ_BUILD_DRAFT_API
+            if (it->routing_id_len == 0){
+#endif // ZMQ_BUILD_DRAFT_API
+                //  Regular poller item
+                events_size = sizeof (uint32_t);
+                if (it->socket->getsockopt (ZMQ_EVENTS, &events, &events_size)
+                                           == -1) {
+                    return -1;
+                }
+#ifdef ZMQ_BUILD_DRAFT_API
+            } else {
+                //  Peer poller item
+                zmq_gso_peer_events_t peer_events;
+                peer_events.routing_id = it->routing_id;
+                peer_events.routing_id_len = it->routing_id_len;
+                events_size = ZMQ_GSO_PEER_EVENTS_SIZE;
+
+                if (it->socket->getsockopt (ZMQ_PEER_EVENTS,
+                                           (void*)&peer_events,
+                                           &events_size) == -1)
+                    return -1;
+                events = peer_events.events;
             }
+#endif // ZMQ_BUILD_DRAFT_API
 
             if (it->events & events) {
                 events_[found].socket = it->socket;
                 events_[found].user_data = it->user_data;
                 events_[found].events = it->events & events;
+#ifdef ZMQ_BUILD_DRAFT_API
+                events_[found].routing_id = it->routing_id;
+                events_[found].routing_id_len = it->routing_id_len;
+#endif // ZMQ_BUILD_DRAFT_API
                 ++found;
             }
         }
@@ -460,6 +531,10 @@ int zmq::socket_poller_t::check_events (zmq::socket_poller_t::event_t *events_,
                 events_[found].user_data = it->user_data;
                 events_[found].fd = it->fd;
                 events_[found].events = events;
+#ifdef ZMQ_BUILD_DRAFT_API
+                events_[found].routing_id = NULL;
+                events_[found].routing_id_len = 0;
+#endif // ZMQ_BUILD_DRAFT_API
                 ++found;
             }
         }

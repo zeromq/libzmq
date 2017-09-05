@@ -89,6 +89,13 @@ class socket_base_t : public own_t,
     int term_endpoint (const char *addr_);
     int send (zmq::msg_t *msg_, int flags_);
     int recv (zmq::msg_t *msg_, int flags_);
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    //  Mute a specific routing-id
+    virtual int mute_peer (const void *routing_id, const int routing_id_len,
+                                const bool mute);
+#endif // ZMQ_BUILD_DRAFT_API
+
     void add_signaler (signaler_t *s);
     void remove_signaler (signaler_t *s);
     int close ();
@@ -137,10 +144,12 @@ class socket_base_t : public own_t,
     void event_handshake_failed_auth (const std::string &addr_, int err_);
     void event_handshake_succeeded (const std::string &addr_, int err_);
 
+#ifdef ZMQ_BUILD_DRAFT_API
     //  Query the state of a specific peer. The default implementation
     //  always returns an ENOTSUP error.
-    virtual int get_peer_state (const void *identity,
-                                size_t identity_size) const;
+    virtual int get_peer_state (const void *routing_id,
+                                 size_t routing_id_len) const;
+#endif // ZMQ_BUILD_DRAFT_API
 
   protected:
     socket_base_t (zmq::ctx_t *parent_,

@@ -228,16 +228,31 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_,
     }
 }
 
-int zmq::socket_base_t::get_peer_state (const void *routing_id_,
-                                        size_t routing_id_size_) const
-{
-    LIBZMQ_UNUSED (routing_id_);
-    LIBZMQ_UNUSED (routing_id_size_);
+#ifdef ZMQ_BUILD_DRAFT_API
+
+int zmq::socket_base_t::mute_peer (const void *routing_id,
+                                const int routing_id_size,
+                                const bool mute){
+    LIBZMQ_UNUSED (routing_id);
+    LIBZMQ_UNUSED (routing_id_size);
 
     //  Only ROUTER sockets support this
     errno = ENOTSUP;
     return -1;
 }
+
+int zmq::socket_base_t::get_peer_state (const void *routing_id,
+                                        size_t routing_id_size) const
+{
+    LIBZMQ_UNUSED (routing_id);
+    LIBZMQ_UNUSED (routing_id_size);
+
+    //  Only ROUTER sockets support this
+    errno = ENOTSUP;
+    return -1;
+}
+
+#endif // ZMQ_BUILD_DRAFT_API
 
 zmq::socket_base_t::~socket_base_t ()
 {
@@ -424,6 +439,11 @@ int zmq::socket_base_t::getsockopt (int option_,
         return do_getsockopt<int> (optval_, optvallen_,
                                    (has_out () ? ZMQ_POLLOUT : 0)
                                      | (has_in () ? ZMQ_POLLIN : 0));
+    }
+
+    if (option_ == ZMQ_PEER_EVENTS) {
+            errno = EINVAL;
+            return -1;
     }
 
     if (option_ == ZMQ_LAST_ENDPOINT) {

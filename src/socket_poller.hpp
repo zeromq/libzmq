@@ -64,13 +64,41 @@ class socket_poller_t
     {
         socket_base_t *socket;
         fd_t fd;
+#ifdef ZMQ_BUILD_DRAFT_API
+        void *routing_id;
+        int routing_id_len;
+#endif // ZMQ_BUILD_DRAFT_API
         void *user_data;
         short events;
     } event_t;
 
-    int add (socket_base_t *socket, void *user_data, short events);
-    int modify (socket_base_t *socket, short events);
-    int remove (socket_base_t *socket);
+    int add (socket_base_t *socket,
+#ifdef ZMQ_BUILD_DRAFT_API
+                    void *routing_id, int routing_id_len,
+#endif // ZMQ_BUILD_DRAFT_API
+                    void *user_data, short events);
+    int modify (socket_base_t *socket,
+#ifdef ZMQ_BUILD_DRAFT_API
+                    void *routing_id, int routing_id_len,
+#endif // ZMQ_BUILD_DRAFT_API
+                    short events);
+    int remove (socket_base_t *socket
+#ifdef ZMQ_BUILD_DRAFT_API
+                    , void *routing_id, int routing_id_len
+#endif // ZMQ_BUILD_DRAFT_API
+                    );
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    inline int add (socket_base_t *socket, void *user_data, short events) {
+        return add(socket, NULL, 0, user_data, events);
+    };
+    inline int modify (socket_base_t *socket, short events) {
+        return modify(socket, NULL, 0, events);
+    };
+    inline int remove (socket_base_t *socket) {
+        return remove(socket, NULL, 0);
+    };
+#endif // ZMQ_BUILD_DRAFT_API
 
     int add_fd (fd_t fd, void *user_data, short events);
     int modify_fd (fd_t fd, short events);
@@ -115,6 +143,11 @@ class socket_poller_t
         fd_t fd;
         void *user_data;
         short events;
+#ifdef ZMQ_BUILD_DRAFT_API
+        void *routing_id;
+        int routing_id_len;
+#endif // ZMQ_BUILD_DRAFT_API
+
 #if defined ZMQ_POLL_BASED_ON_POLL
         int pollfd_index;
 #endif

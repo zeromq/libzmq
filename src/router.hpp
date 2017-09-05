@@ -61,7 +61,9 @@ class router_t : public socket_base_t
     void xread_activated (zmq::pipe_t *pipe_);
     void xwrite_activated (zmq::pipe_t *pipe_);
     void xpipe_terminated (zmq::pipe_t *pipe_);
+#ifdef ZMQ_BUILD_DRAFT_API
     int get_peer_state (const void *identity, size_t identity_size) const;
+#endif // ZMQ_BUILD_DRAFT_API
 
   protected:
     //  Rollback any message parts that were sent but not yet flushed.

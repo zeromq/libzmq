@@ -442,6 +442,7 @@ const zmq::blob_t &zmq::router_t::get_credential () const
     return fq.get_credential ();
 }
 
+#ifdef ZMQ_BUILD_DRAFT_API
 int zmq::router_t::get_peer_state (const void *routing_id_,
                                    size_t routing_id_size_) const
 {
@@ -462,6 +463,7 @@ int zmq::router_t::get_peer_state (const void *routing_id_,
 
     return res;
 }
+#endif // ZMQ_BUILD_DRAFT_API
 
 bool zmq::router_t::identify_peer (pipe_t *pipe_)
 {

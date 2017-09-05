@@ -266,6 +266,13 @@ ZMQ_EXPORT int zmq_msg_init_data (
   zmq_msg_t *msg, void *data, size_t size, zmq_free_fn *ffn, void *hint);
 ZMQ_EXPORT int zmq_msg_send (zmq_msg_t *msg, void *s, int flags);
 ZMQ_EXPORT int zmq_msg_recv (zmq_msg_t *msg, void *s, int flags);
+
+#ifdef ZMQ_BUILD_DRAFT_API
+ZMQ_EXPORT int zmq_mute_peer (void *s_, const void *routing_id,
+				    const int routing_id_len,
+                                    int mute);
+#endif //ZMQ_BUILD_DRAFT_API
+
 ZMQ_EXPORT int zmq_msg_close (zmq_msg_t *msg);
 ZMQ_EXPORT int zmq_msg_move (zmq_msg_t *dest, zmq_msg_t *src);
 ZMQ_EXPORT int zmq_msg_copy (zmq_msg_t *dest, zmq_msg_t *src);
@@ -376,6 +383,23 @@ ZMQ_EXPORT const char *zmq_msg_gets (const zmq_msg_t *msg,
 #define ZMQ_GSSAPI_PRINCIPAL_NAMETYPE 90
 #define ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE 91
 #define ZMQ_BINDTODEVICE 92
+
+#define ZMQ_PEER_EVENTS 93
+
+#ifdef ZMQ_BUILD_DRAFT_API
+
+/*  getsockopt additional struct to recover peer events                       */
+typedef struct zmq_gso_peer_events_t
+{
+    void *routing_id;
+    int routing_id_len;
+    short events;
+    short reserved;
+}  zmq_gso_peer_events_t;
+
+#define ZMQ_GSO_PEER_EVENTS_SIZE sizeof(zmq_gso_peer_events_t)
+
+#endif //ZMQ_BUILD_DRAFT_API
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1
@@ -670,20 +694,41 @@ typedef struct zmq_poller_event_t
 #else
     int fd;
 #endif
+
+#ifdef ZMQ_BUILD_DRAFT_API
+    void *routing_id;
+    int routing_id_len;
+#endif //ZMQ_BUILD_DRAFT_API
+
     void *user_data;
     short events;
 } zmq_poller_event_t;
 
 ZMQ_EXPORT void *zmq_poller_new (void);
-ZMQ_EXPORT int zmq_poller_destroy (void **poller_p);
-ZMQ_EXPORT int
-zmq_poller_add (void *poller, void *socket, void *user_data, short events);
-ZMQ_EXPORT int zmq_poller_modify (void *poller, void *socket, short events);
-ZMQ_EXPORT int zmq_poller_remove (void *poller, void *socket);
-ZMQ_EXPORT int
-zmq_poller_wait (void *poller, zmq_poller_event_t *event, long timeout);
-ZMQ_EXPORT int zmq_poller_wait_all (void *poller,
-                                    zmq_poller_event_t *events,
+ZMQ_EXPORT int  zmq_poller_destroy (void **poller_p);
+ZMQ_EXPORT int  zmq_poller_add (void *poller, void *socket, void *user_data,
+                                    short events);
+ZMQ_EXPORT int  zmq_poller_modify (void *poller, void *socket, short events);
+ZMQ_EXPORT int  zmq_poller_remove (void *poller, void *socket);
+
+#ifdef ZMQ_BUILD_DRAFT_API
+ZMQ_EXPORT int  zmq_poller_add_peer (void *poller, void *socket,
+                                    void *routing_id,
+                                    int routing_id_len,
+                                    void *user_data,
+                                    short events);
+ZMQ_EXPORT int  zmq_poller_modify_peer (void *poller, void *socket,
+                                    void *routing_id,
+                                    int routing_id_len,
+                                    short events);
+ZMQ_EXPORT int  zmq_poller_remove_peer (void *poller, void *socket,
+                                    void *routing_id,
+                                    int routing_id_len);
+#endif //ZMQ_BUILD_DRAFT_API
+
+ZMQ_EXPORT int  zmq_poller_wait (void *poller, zmq_poller_event_t *event,
+                                    long timeout);
+ZMQ_EXPORT int  zmq_poller_wait_all (void *poller, zmq_poller_event_t *events,
                                     int n_events,
                                     long timeout);
 
@@ -699,9 +744,11 @@ ZMQ_EXPORT int zmq_poller_modify_fd (void *poller, int fd, short events);
 ZMQ_EXPORT int zmq_poller_remove_fd (void *poller, int fd);
 #endif
 
+#ifdef ZMQ_BUILD_DRAFT_API
 ZMQ_EXPORT int zmq_socket_get_peer_state (void *socket,
                                           const void *routing_id,
-                                          size_t routing_id_size);
+                                          const size_t routing_id_size);
+#endif //ZMQ_BUILD_DRAFT_API
 
 /******************************************************************************/
 /*  Scheduling timers                                                         */

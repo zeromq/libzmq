@@ -115,6 +115,14 @@ const char *zmq_msg_group (zmq_msg_t *msg);
 #define ZMQ_MSG_PROPERTY_PEER_ADDRESS "Peer-Address"
 
 /******************************************************************************/
+/* Per peer functions                                                         */
+/******************************************************************************/
+
+int zmq_mute_peer (void *s_, const void *routing_id, const int routing_id_len,
+                                     int mute);
+
+
+/******************************************************************************/
 /*  Poller polling on sockets,fd and thread-safe sockets                      */
 /******************************************************************************/
 
@@ -131,15 +139,20 @@ typedef struct zmq_poller_event_t
 } zmq_poller_event_t;
 
 void *zmq_poller_new (void);
-int zmq_poller_destroy (void **poller_p);
-int zmq_poller_add (void *poller, void *socket, void *user_data, short events);
-int zmq_poller_modify (void *poller, void *socket, short events);
-int zmq_poller_remove (void *poller, void *socket);
-int zmq_poller_wait (void *poller, zmq_poller_event_t *event, long timeout);
-int zmq_poller_wait_all (void *poller,
-                         zmq_poller_event_t *events,
-                         int n_events,
-                         long timeout);
+int  zmq_poller_destroy (void **poller_p);
+int  zmq_poller_add (void *poller, void *socket, void *user_data, short events);
+int  zmq_poller_add_peer (void *poller, void *socket, void *zid, int zid_len,
+                              void *user_data, short events);
+int  zmq_poller_modify (void *poller, void *socket, short events);
+int  zmq_poller_modify_peer (void *poller, void *socket, void *zid, int zid_len,
+                              short events);
+int  zmq_poller_remove (void *poller, void *socket);
+int  zmq_poller_remove_peer (void *poller, void *socket, void *zid,
+                              int zid_len);
+int  zmq_poller_wait (void *poller, zmq_poller_event_t *event, long timeout);
+int  zmq_poller_wait_all (void *poller, zmq_poller_event_t *events,
+                              int n_events,
+                              long timeout);
 
 #if defined _WIN32
 int zmq_poller_add_fd (void *poller, SOCKET fd, void *user_data, short events);
