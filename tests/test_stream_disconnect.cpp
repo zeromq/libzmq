@@ -57,7 +57,7 @@ bool has_more (void* socket)
 
 bool get_identity (void* socket, char* data, size_t* size)
 {
-    int rc = zmq_getsockopt (socket, ZMQ_IDENTITY, data, size);
+    int rc = zmq_getsockopt (socket, ZMQ_ROUTING_ID, data, size);
     return rc == 0;
 }
 
@@ -140,7 +140,7 @@ int main(int, char**)
     // Send initial message.
     char blob_data [256];
     size_t blob_size = sizeof(blob_data);
-    rc = zmq_getsockopt (sockets [CLIENT], ZMQ_IDENTITY, blob_data, &blob_size);
+    rc = zmq_getsockopt (sockets [CLIENT], ZMQ_ROUTING_ID, blob_data, &blob_size);
     assert (rc != -1);
     assert(blob_size > 0);
     zmq_msg_t msg;

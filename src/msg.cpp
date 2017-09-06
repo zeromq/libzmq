@@ -413,9 +413,9 @@ void zmq::msg_t::reset_metadata ()
     }
 }
 
-bool zmq::msg_t::is_identity () const
+bool zmq::msg_t::is_routing_id () const
 {
-    return (u.base.flags & identity) == identity;
+    return (u.base.flags & routing_id) == routing_id;
 }
 
 bool zmq::msg_t::is_credential () const

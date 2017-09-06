@@ -58,7 +58,7 @@ void test_fair_queue_in (void *ctx)
 
         char *str = strdup("A");
         str [0] += peer;
-        rc = zmq_setsockopt (senders [peer], ZMQ_IDENTITY, str, 2);
+        rc = zmq_setsockopt (senders [peer], ZMQ_ROUTING_ID, str, 2);
         assert (rc == 0);
         free (str);
 
@@ -130,7 +130,7 @@ void test_destroy_queue_on_disconnect (void *ctx)
     void *B = zmq_socket (ctx, ZMQ_DEALER);
     assert (B);
 
-    rc = zmq_setsockopt (B, ZMQ_IDENTITY, "B", 2);
+    rc = zmq_setsockopt (B, ZMQ_ROUTING_ID, "B", 2);
     assert (rc == 0);
 
     rc = zmq_connect (B, connect_address);

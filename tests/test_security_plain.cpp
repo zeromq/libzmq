@@ -108,7 +108,7 @@ int main (void)
     //  Server socket will accept connections
     void *server = zmq_socket (ctx, ZMQ_DEALER);
     assert (server);
-    int rc = zmq_setsockopt (server, ZMQ_IDENTITY, "IDENT", 6);
+    int rc = zmq_setsockopt (server, ZMQ_ROUTING_ID, "IDENT", 6);
     assert (rc == 0);
     int as_server = 1;
     rc = zmq_setsockopt (server, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
