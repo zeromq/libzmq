@@ -161,34 +161,44 @@ int forward (
     return 0;
 }
 
+static int loop_and_send_multipart_stat (zmq::socket_base_t *control_,
+        uint64_t stat, bool first, bool more)
+{
+    int rc;
+    zmq::msg_t msg;
+
+    //  VSM of 8 bytes can't fail to init
+    msg.init_size (sizeof (uint64_t));
+    memcpy (msg.data (), (const void *)&stat, sizeof (uint64_t));
+
+    //  if the first message is handled to the pipe successfully then the HWM
+    //  is not full, which means failures are due to interrupts (on Windows pipes
+    //  are TCP sockets), so keep retrying
+    do {
+        rc = control_->send (&msg, more ? ZMQ_SNDMORE : 0);
+    } while (!first && rc != 0 && errno == EAGAIN);
+
+    return rc;
+}
+
 int reply_stats(
         class zmq::socket_base_t *control_,
         zmq_socket_stats_t* frontend_stats,
         zmq_socket_stats_t* backend_stats)
 {
-    // first part: frontend stats
+    // first part: frontend stats - the first send might fail due to HWM
+    if (loop_and_send_multipart_stat (control_, frontend_stats->msg_in, true, true) != 0)
+        return -1;
 
-    zmq::msg_t stats_msg1, stats_msg2;
-    int rc = stats_msg1.init_size (sizeof(zmq_socket_stats_t));
-    if (unlikely (rc < 0))
-        return close_and_return (&stats_msg1, -1);
-
-    memcpy (stats_msg1.data(), (const void*) frontend_stats, sizeof(zmq_socket_stats_t));
-
-    rc = control_->send (&stats_msg1, ZMQ_SNDMORE);
-    if (unlikely (rc < 0))
-        return close_and_return (&stats_msg1, -1);
+    loop_and_send_multipart_stat (control_, frontend_stats->bytes_in, false, true);
+    loop_and_send_multipart_stat (control_, frontend_stats->msg_out, false, true);
+    loop_and_send_multipart_stat (control_, frontend_stats->bytes_out, false, true);
 
     // second part: backend stats
-
-    rc = stats_msg2.init_size (sizeof(zmq_socket_stats_t));
-    if (unlikely (rc < 0))
-        return close_and_return (&stats_msg2, -1);
-    memcpy (stats_msg2.data(), (const void*) backend_stats, sizeof(zmq_socket_stats_t));
-
-    rc = control_->send (&stats_msg2, 0);
-    if (unlikely (rc < 0))
-        return close_and_return (&stats_msg2, -1);
+    loop_and_send_multipart_stat (control_, backend_stats->msg_in, true, true);
+    loop_and_send_multipart_stat (control_, backend_stats->bytes_in, false, true);
+    loop_and_send_multipart_stat (control_, backend_stats->msg_out, false, true);
+    loop_and_send_multipart_stat (control_, backend_stats->bytes_out, false, false);
 
     return 0;
 }
