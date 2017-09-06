@@ -335,6 +335,28 @@ server_worker (void *ctx)
     assert (rc == 0);
 }
 
+uint64_t recv_stat (void *sock, bool last)
+{
+    uint64_t res;
+    zmq_msg_t stats_msg;
+
+    int rc = zmq_msg_init (&stats_msg);
+    assert (rc == 0);
+    rc = zmq_recvmsg (sock, &stats_msg, 0);
+    assert (rc == sizeof(uint64_t));
+    memcpy(&res, zmq_msg_data(&stats_msg), zmq_msg_size(&stats_msg));
+    rc = zmq_msg_close (&stats_msg);
+    assert (rc == 0);
+
+    int more;
+    size_t moresz = sizeof more;
+    rc = zmq_getsockopt (sock, ZMQ_RCVMORE, &more, &moresz);
+    assert (rc == 0);
+    assert ((last && !more) || (!last && more));
+
+    return res;
+}
+
 // Utility function to interrogate the proxy:
 
 void check_proxy_stats(void *control_proxy)
@@ -346,31 +368,16 @@ void check_proxy_stats(void *control_proxy)
     assert (rc == 10);
 
     // first frame of the reply contains FRONTEND stats:
-
-    zmq_msg_t stats_msg;
-    rc = zmq_msg_init (&stats_msg);
-    assert (rc == 0);
-    rc = zmq_recvmsg (control_proxy, &stats_msg, 0);
-    assert (rc == sizeof(zmq_socket_stats_t));
-
-    memcpy(&total_stats.frontend, zmq_msg_data(&stats_msg), zmq_msg_size(&stats_msg));
-
+    total_stats.frontend.msg_in = recv_stat (control_proxy, false);
+    total_stats.frontend.bytes_in = recv_stat (control_proxy, false);
+    total_stats.frontend.msg_out = recv_stat (control_proxy, false);
+    total_stats.frontend.bytes_out = recv_stat (control_proxy, false);
 
     // second frame of the reply contains BACKEND stats:
-
-    int more;
-    size_t moresz = sizeof more;
-    rc = zmq_getsockopt (control_proxy, ZMQ_RCVMORE, &more, &moresz);
-    assert (rc == 0 && more == 1);
-
-    rc = zmq_recvmsg (control_proxy, &stats_msg, 0);
-    assert (rc == sizeof(zmq_socket_stats_t));
-
-    memcpy(&total_stats.backend, zmq_msg_data(&stats_msg), zmq_msg_size(&stats_msg));
-
-    rc = zmq_getsockopt (control_proxy, ZMQ_RCVMORE, &more, &moresz);
-    assert (rc == 0 && more == 0);
-
+    total_stats.backend.msg_in = recv_stat (control_proxy, false);
+    total_stats.backend.bytes_in = recv_stat (control_proxy, false);
+    total_stats.backend.msg_out = recv_stat (control_proxy, false);
+    total_stats.backend.bytes_out = recv_stat (control_proxy, true);
 
     // check stats
 
@@ -394,9 +401,6 @@ void check_proxy_stats(void *control_proxy)
     assert( total_stats.frontend.msg_out == (unsigned)zmq_atomic_counter_value(g_workers_pkts_out) );
     assert( total_stats.backend.msg_in == (unsigned)zmq_atomic_counter_value(g_workers_pkts_out) );
     assert( total_stats.backend.msg_out == (unsigned)zmq_atomic_counter_value(g_clients_pkts_out) );
-
-    rc = zmq_msg_close (&stats_msg);
-    assert (rc == 0);
 }
 
 
