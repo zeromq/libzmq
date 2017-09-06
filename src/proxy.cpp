@@ -171,7 +171,7 @@ static int loop_and_send_multipart_stat (zmq::socket_base_t *control_,
     msg.init_size (sizeof (uint64_t));
     memcpy (msg.data (), (const void *)&stat, sizeof (uint64_t));
 
-    //  if the first message is handled to the pipe successfully then the HWM
+    //  if the first message is handed to the pipe successfully then the HWM
     //  is not full, which means failures are due to interrupts (on Windows pipes
     //  are TCP sockets), so keep retrying
     do {
@@ -195,7 +195,7 @@ int reply_stats(
     loop_and_send_multipart_stat (control_, frontend_stats->bytes_out, false, true);
 
     // second part: backend stats
-    loop_and_send_multipart_stat (control_, backend_stats->msg_in, true, true);
+    loop_and_send_multipart_stat (control_, backend_stats->msg_in, false, true);
     loop_and_send_multipart_stat (control_, backend_stats->bytes_in, false, true);
     loop_and_send_multipart_stat (control_, backend_stats->msg_out, false, true);
     loop_and_send_multipart_stat (control_, backend_stats->bytes_out, false, false);
