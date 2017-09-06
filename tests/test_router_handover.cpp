@@ -53,7 +53,7 @@ int main (void)
     //  Create dealer called "X" and connect it to our router
     void *dealer_one = zmq_socket (ctx, ZMQ_DEALER);
     assert (dealer_one);
-    rc = zmq_setsockopt (dealer_one, ZMQ_IDENTITY, "X", 1);
+    rc = zmq_setsockopt (dealer_one, ZMQ_ROUTING_ID, "X", 1);
     assert (rc == 0);
     rc = zmq_connect (dealer_one, my_endpoint);
     assert (rc == 0);
@@ -71,7 +71,7 @@ int main (void)
     // Now create a second dealer that uses the same identity
     void *dealer_two = zmq_socket (ctx, ZMQ_DEALER);
     assert (dealer_two);
-    rc = zmq_setsockopt (dealer_two, ZMQ_IDENTITY, "X", 1);
+    rc = zmq_setsockopt (dealer_two, ZMQ_ROUTING_ID, "X", 1);
     assert (rc == 0);
     rc = zmq_connect (dealer_two, my_endpoint);
     assert (rc == 0);

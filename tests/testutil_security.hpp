@@ -81,7 +81,7 @@ void socket_config_plain_server (void *server, void *server_secret)
 
     rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, test_zap_domain,
                          strlen (test_zap_domain));
-    assert(rc == 0);
+    assert (rc == 0);
 }
 
 //  CURVE specific functions
@@ -113,7 +113,7 @@ void socket_config_curve_server (void *server, void *server_secret)
 
     rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, test_zap_domain,
                          strlen (test_zap_domain));
-    assert(rc == 0);
+    assert (rc == 0);
 }
 
 struct curve_client_data_t
@@ -202,8 +202,7 @@ void zap_handler_generic (void *ctx,
         char *version = s_recv (handler);
         if (!version)
             break; //  Terminating - peer's socket closed
-        if (zap_protocol == zap_disconnect)
-        {
+        if (zap_protocol == zap_disconnect) {
             free (version);
             break;
         }
@@ -225,15 +224,15 @@ void zap_handler_generic (void *ctx,
             authentication_succeeded =
               streq (client_key_text, valid_client_public);
         } else if (streq (mechanism, "PLAIN")) {
-            char client_username [32];
+            char client_username[32];
             int size = zmq_recv (handler, client_username, 32, 0);
             assert (size > 0);
-            client_username [size] = 0;
+            client_username[size] = 0;
 
-            char client_password [32];
+            char client_password[32];
             size = zmq_recv (handler, client_password, 32, 0);
             assert (size > 0);
-            client_password [size] = 0;
+            client_password[size] = 0;
 
             authentication_succeeded =
               streq (test_plain_username, client_username)
@@ -283,7 +282,7 @@ void zap_handler_generic (void *ctx,
             s_sendmore (handler, "Invalid client public key");
             s_sendmore (handler, "");
             if (zap_protocol != zap_do_not_send)
-                s_send(handler, "");
+                s_send (handler, "");
         }
         free (version);
         free (sequence);
@@ -298,10 +297,9 @@ void zap_handler_generic (void *ctx,
     assert (rc == 0);
     close_zero_linger (handler);
 
-    if (zap_protocol != zap_disconnect)
-    {
-        rc = s_send(control, "STOPPED");
-        assert(rc == 7);
+    if (zap_protocol != zap_disconnect) {
+        rc = s_send (control, "STOPPED");
+        assert (rc == 7);
     }
     close_zero_linger (control);
 }
@@ -560,7 +558,7 @@ void setup_context_and_server_side (
 
     socket_config_ (*server, socket_config_data_);
 
-    rc = zmq_setsockopt (*server, ZMQ_IDENTITY, identity, strlen (identity));
+    rc = zmq_setsockopt (*server, ZMQ_ROUTING_ID, identity, strlen (identity));
     assert (rc == 0);
 
     rc = zmq_bind (*server, "tcp://127.0.0.1:*");
@@ -570,7 +568,7 @@ void setup_context_and_server_side (
     rc = zmq_getsockopt (*server, ZMQ_LAST_ENDPOINT, my_endpoint, &len);
     assert (rc == 0);
 
-    const char server_monitor_endpoint [] = "inproc://monitor-server";
+    const char server_monitor_endpoint[] = "inproc://monitor-server";
     setup_handshake_socket_monitor (*ctx, *server, server_mon,
                                     server_monitor_endpoint);
 }
@@ -592,7 +590,7 @@ void shutdown_context_and_server_side (void *ctx,
         rc = zmq_unbind (zap_control, "inproc://handler-control");
         assert (rc == 0);
     }
-    close_zero_linger(zap_control);
+    close_zero_linger (zap_control);
 
 #ifdef ZMQ_BUILD_DRAFT_API
     close_zero_linger (server_mon);

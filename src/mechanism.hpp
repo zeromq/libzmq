@@ -74,9 +74,9 @@ namespace zmq
         //  Returns the status of this mechanism.
         virtual status_t status () const = 0;
 
-        void set_peer_identity (const void *id_ptr, size_t id_size);
+        void set_peer_routing_id (const void *id_ptr, size_t id_size);
 
-        void peer_identity (msg_t *msg_);
+        void peer_routing_id (msg_t *msg_);
 
         void set_user_id (const void *user_id, size_t size);
 
@@ -138,7 +138,7 @@ namespace zmq
 
     private:
 
-        blob_t identity;
+        blob_t routing_id;
 
         blob_t user_id;
 

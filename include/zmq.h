@@ -299,7 +299,7 @@ ZMQ_EXPORT const char *zmq_msg_gets (const zmq_msg_t *msg, const char *property)
 
 /*  Socket options.                                                           */
 #define ZMQ_AFFINITY 4
-#define ZMQ_IDENTITY 5
+#define ZMQ_ROUTING_ID 5
 #define ZMQ_SUBSCRIBE 6
 #define ZMQ_UNSUBSCRIBE 7
 #define ZMQ_RATE 8
@@ -390,6 +390,7 @@ ZMQ_EXPORT const char *zmq_msg_gets (const zmq_msg_t *msg, const char *property)
 #define ZMQ_GROUP_MAX_LENGTH        15
 
 /*  Deprecated options and aliases                                            */
+#define ZMQ_IDENTITY                ZMQ_ROUTING_ID
 #define ZMQ_TCP_ACCEPT_FILTER       38
 #define ZMQ_IPC_FILTER_PID          58
 #define ZMQ_IPC_FILTER_UID          59
@@ -620,6 +621,7 @@ ZMQ_EXPORT int zmq_msg_set_group(zmq_msg_t *msg, const char *group);
 ZMQ_EXPORT const char *zmq_msg_group(zmq_msg_t *msg);
 
 /*  DRAFT Msg property names.                                                 */
+// TODO the name of the define AND its value are now inconsistent with the new term "routing id"
 #define ZMQ_MSG_PROPERTY_IDENTITY      "Identity"
 #define ZMQ_MSG_PROPERTY_SOCKET_TYPE   "Socket-Type"
 #define ZMQ_MSG_PROPERTY_USER_ID       "User-Id"
@@ -662,8 +664,8 @@ ZMQ_EXPORT int zmq_poller_remove_fd (void *poller, int fd);
 #endif
 
 ZMQ_EXPORT int zmq_socket_get_peer_state (void *socket,
-                                          const void *identity,
-                                          size_t identity_size);
+                                          const void *routing_id,
+                                          size_t routing_id_size);
 
 /******************************************************************************/
 /*  Scheduling timers                                                         */

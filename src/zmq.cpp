@@ -1359,14 +1359,14 @@ int zmq_poller_wait_all (void *poller_, zmq_poller_event_t *events_, int n_event
 //  Peer-specific state
 
 int zmq_socket_get_peer_state (void *s_,
-                               const void *identity,
-                               size_t identity_size)
+                               const void *routing_id_,
+                               size_t routing_id_size_)
 {
     zmq::socket_base_t *s = as_socket_base_t (s_);
     if (!s)
         return -1;
 
-    return s->get_peer_state (identity, identity_size);
+    return s->get_peer_state (routing_id_, routing_id_size_);
 }
 
 //  Timers

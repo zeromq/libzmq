@@ -82,7 +82,7 @@ void test_req_only_listens_to_current_peer (void *ctx)
     void *req = zmq_socket (ctx, ZMQ_REQ);
     assert (req);
 
-    int rc = zmq_setsockopt(req, ZMQ_IDENTITY, "A", 2);
+    int rc = zmq_setsockopt(req, ZMQ_ROUTING_ID, "A", 2);
     assert (rc == 0);
 
     rc = zmq_bind (req, bind_address);

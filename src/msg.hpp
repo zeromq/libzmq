@@ -79,7 +79,7 @@ namespace zmq
             more = 1,           //  Followed by more parts
             command = 2,        //  Command frame (see ZMTP spec)
             credential = 32,
-            identity = 64,
+            routing_id = 64,
             shared = 128
         };
 
@@ -109,7 +109,7 @@ namespace zmq
         metadata_t *metadata () const;
         void set_metadata (metadata_t *metadata_);
         void reset_metadata ();
-        bool is_identity () const;
+        bool is_routing_id () const;
         bool is_credential () const;
         bool is_delimiter () const;
         bool is_join () const;

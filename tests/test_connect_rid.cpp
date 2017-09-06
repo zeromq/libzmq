@@ -126,8 +126,8 @@ void test_router_2_router(bool named){
 
     //  If we're in named mode, set some identities.
     if (named) {
-        ret = zmq_setsockopt (rbind, ZMQ_IDENTITY, "X", 1);
-        ret = zmq_setsockopt (rconn1, ZMQ_IDENTITY, "Y", 1);
+        ret = zmq_setsockopt (rbind, ZMQ_ROUTING_ID, "X", 1);
+        ret = zmq_setsockopt (rconn1, ZMQ_ROUTING_ID, "Y", 1);
     }
 
     //  Make call to connect using a connect_rid.
