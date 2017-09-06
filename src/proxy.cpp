@@ -195,7 +195,7 @@ int reply_stats(
     loop_and_send_multipart_stat (control_, frontend_stats->bytes_out, false, true);
 
     // second part: backend stats
-    loop_and_send_multipart_stat (control_, backend_stats->msg_in, true, true);
+    loop_and_send_multipart_stat (control_, backend_stats->msg_in, false, true);
     loop_and_send_multipart_stat (control_, backend_stats->bytes_in, false, true);
     loop_and_send_multipart_stat (control_, backend_stats->msg_out, false, true);
     loop_and_send_multipart_stat (control_, backend_stats->bytes_out, false, false);
