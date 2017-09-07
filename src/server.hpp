@@ -85,7 +85,7 @@ namespace zmq
 
         //  Routing IDs are generated. It's a simple increment and wrap-over
         //  algorithm. This value is the next ID to use (if not used already).
-        uint32_t next_rid;
+        uint32_t next_routing_id;
 
         server_t (const server_t&);
         const server_t &operator = (const server_t&);
