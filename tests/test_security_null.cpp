@@ -52,7 +52,7 @@ zap_handler (void *handler)
         char *sequence = s_recv (handler);
         char *domain = s_recv (handler);
         char *address = s_recv (handler);
-        char *identity = s_recv (handler);
+        char *routing_id = s_recv (handler);
         char *mechanism = s_recv (handler);
 
         assert (streq (version, "1.0"));
@@ -76,7 +76,7 @@ zap_handler (void *handler)
         free (sequence);
         free (domain);
         free (address);
-        free (identity);
+        free (routing_id);
         free (mechanism);
     }
     close_zero_linger (handler);

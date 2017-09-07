@@ -57,12 +57,12 @@ int main (void)
  
     //  Repeat often enough to be sure this works as it should
     for (int cycle = 0; cycle < 100; cycle++) {
-        //  Create dealer with unique explicit identity
+        //  Create dealer with unique explicit routing id
         //  We assume the router learns this out-of-band
         void *dealer = zmq_socket (ctx2, ZMQ_DEALER);
-        char identity [10];
-        sprintf (identity, "%09d", cycle);
-        rc = zmq_setsockopt (dealer, ZMQ_ROUTING_ID, identity, 10);
+        char routing_id [10];
+        sprintf (routing_id, "%09d", cycle);
+        rc = zmq_setsockopt (dealer, ZMQ_ROUTING_ID, routing_id, 10);
         assert (rc == 0);
         int rcvtimeo = 1000;
         rc = zmq_setsockopt (dealer, ZMQ_RCVTIMEO, &rcvtimeo, sizeof (int));
@@ -77,7 +77,7 @@ int main (void)
         //  a very slow system).
         for (int attempt = 0; attempt < 500; attempt++) {
             zmq_poll (0, 0, 2);
-            rc = zmq_send (router, identity, 10, ZMQ_SNDMORE);
+            rc = zmq_send (router, routing_id, 10, ZMQ_SNDMORE);
             if (rc == -1 && errno == EHOSTUNREACH)
                 continue;
             assert (rc == 10);

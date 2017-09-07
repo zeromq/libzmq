@@ -111,7 +111,7 @@ static void zap_handler (void *handler)
         char *sequence = s_recv (handler);
         char *domain = s_recv (handler);
         char *address = s_recv (handler);
-        char *identity = s_recv (handler);
+        char *routing_id = s_recv (handler);
         char *mechanism = s_recv (handler);
         char *principal = s_recv (handler);
 
@@ -139,7 +139,7 @@ static void zap_handler (void *handler)
         free (sequence);
         free (domain);
         free (address);
-        free (identity);
+        free (routing_id);
         free (mechanism);
         free (principal);
     }

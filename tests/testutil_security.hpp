@@ -163,7 +163,7 @@ void *zap_requests_handled;
 
 void zap_handler_generic (void *ctx,
                           zap_protocol_t zap_protocol,
-                          const char *expected_identity = "IDENT")
+                          const char *expected_routing_id = "IDENT")
 {
     void *control = zmq_socket (ctx, ZMQ_REQ);
     assert (control);
@@ -210,7 +210,7 @@ void zap_handler_generic (void *ctx,
         char *sequence = s_recv (handler);
         char *domain = s_recv (handler);
         char *address = s_recv (handler);
-        char *identity = s_recv (handler);
+        char *routing_id = s_recv (handler);
         char *mechanism = s_recv (handler);
         bool authentication_succeeded = false;
         if (streq (mechanism, "CURVE")) {
@@ -245,7 +245,7 @@ void zap_handler_generic (void *ctx,
         }
 
         assert (streq (version, "1.0"));
-        assert (streq (identity, expected_identity));
+        assert (streq (routing_id, expected_routing_id));
 
         s_sendmore (handler, zap_protocol == zap_wrong_version
                                ? "invalid_version"
@@ -288,7 +288,7 @@ void zap_handler_generic (void *ctx,
         free (sequence);
         free (domain);
         free (address);
-        free (identity);
+        free (routing_id);
         free (mechanism);
 
         zmq_atomic_counter_inc (zap_requests_handled);
@@ -528,7 +528,7 @@ void setup_context_and_server_side (
   zmq_thread_fn zap_handler_ = &zap_handler,
   socket_config_fn socket_config_ = &socket_config_curve_server,
   void *socket_config_data_ = valid_server_secret,
-  const char *identity = "IDENT")
+  const char *routing_id = "IDENT")
 {
     *ctx = zmq_ctx_new ();
     assert (*ctx);
@@ -558,7 +558,8 @@ void setup_context_and_server_side (
 
     socket_config_ (*server, socket_config_data_);
 
-    rc = zmq_setsockopt (*server, ZMQ_ROUTING_ID, identity, strlen (identity));
+    rc =
+      zmq_setsockopt (*server, ZMQ_ROUTING_ID, routing_id, strlen (routing_id));
     assert (rc == 0);
 
     rc = zmq_bind (*server, "tcp://127.0.0.1:*");

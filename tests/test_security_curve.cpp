@@ -45,7 +45,7 @@
 #include "../src/curve_client_tools.hpp"
 #include "../src/random.hpp"
 
-const char large_identity[] = "0123456789012345678901234567890123456789"
+const char large_routing_id[] = "0123456789012345678901234567890123456789"
                               "0123456789012345678901234567890123456789"
                               "0123456789012345678901234567890123456789"
                               "0123456789012345678901234567890123456789"
@@ -53,9 +53,9 @@ const char large_identity[] = "0123456789012345678901234567890123456789"
                               "0123456789012345678901234567890123456789"
                               "012345678901234";
 
-static void zap_handler_large_identity (void *ctx)
+static void zap_handler_large_routing_id (void *ctx)
 {
-    zap_handler_generic (ctx, zap_ok, large_identity);
+    zap_handler_generic (ctx, zap_ok, large_routing_id);
 }
 
 void expect_new_client_curve_bounce_fail (void *ctx,
@@ -769,13 +769,13 @@ int main (void)
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 
-    //  test with a large identity (resulting in large metadata)
+    //  test with a large routing id (resulting in large metadata)
     fprintf (stderr,
-             "test_curve_security_with_valid_credentials (large identity)\n");
+             "test_curve_security_with_valid_credentials (large routing id)\n");
     setup_context_and_server_side (
       &ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint,
-      &zap_handler_large_identity, &socket_config_curve_server,
-      &valid_server_secret, large_identity);
+      &zap_handler_large_routing_id, &socket_config_curve_server,
+      &valid_server_secret, large_routing_id);
     test_curve_security_with_valid_credentials (ctx, my_endpoint, server,
                                                 server_mon, timeout);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,

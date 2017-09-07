@@ -54,7 +54,7 @@ int main (void)
     rc = zmq_send (sc, "B", 1, 0);
     assert (rc == 1);
 
-    //  Identity comes first.
+    //  Routing id comes first.
     zmq_msg_t msg;
     rc = zmq_msg_init (&msg);
     assert (rc == 0);

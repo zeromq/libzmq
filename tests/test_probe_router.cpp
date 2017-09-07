@@ -56,7 +56,7 @@ int main (void)
     rc = zmq_connect (client, my_endpoint);
     assert (rc == 0);
 
-    //  We expect an identity=X + empty message from client
+    //  We expect a routing id=X + empty message from client
     unsigned char buffer [255];
     rc = zmq_recv (server, buffer, 255, 0);
     assert (rc == 1);

@@ -44,8 +44,8 @@
 
 #define CONTENT_SIZE 13
 #define CONTENT_SIZE_MAX 32
-#define ID_SIZE 10
-#define ID_SIZE_MAX 32
+#define ROUTING_ID_SIZE 10
+#define ROUTING_ID_SIZE_MAX 32
 #define QT_WORKERS    5
 #define QT_CLIENTS    3
 #define is_verbose 0
@@ -104,10 +104,10 @@ client_task (void *db)
     assert (rc == 0);
 
     char content [CONTENT_SIZE_MAX];
-    // Set random identity to make tracing easier
-    char identity [ID_SIZE];
-    sprintf (identity, "%04X-%04X", rand() % 0xFFFF, rand() % 0xFFFF);
-    rc = zmq_setsockopt (client, ZMQ_IDENTITY, identity, ID_SIZE); // includes '\0' as an helper for printf
+    // Set random routing id to make tracing easier
+    char routing_id [ROUTING_ID_SIZE];
+    sprintf (routing_id, "%04X-%04X", rand() % 0xFFFF, rand() % 0xFFFF);
+    rc = zmq_setsockopt (client, ZMQ_ROUTING_ID, routing_id, ROUTING_ID_SIZE); // includes '\0' as an helper for printf
     assert (rc == 0);
     linger = 0;
     rc = zmq_setsockopt (client, ZMQ_LINGER, &linger, sizeof (linger));
@@ -129,7 +129,7 @@ client_task (void *db)
                 size_t sz = sizeof (rcvmore);
                 rc = zmq_recv (client, content, CONTENT_SIZE_MAX, 0);
                 assert (rc == CONTENT_SIZE);
-                if (is_verbose) printf("client receive - identity = %s    content = %s\n", identity, content);
+                if (is_verbose) printf("client receive - routing_id = %s    content = %s\n", routing_id, content);
                 //  Check that message is still the same
                 assert (memcmp (content, "request #", 9) == 0);
                 rc = zmq_getsockopt (client, ZMQ_RCVMORE, &rcvmore, &sz);
@@ -142,7 +142,7 @@ client_task (void *db)
                 if (rc > 0)
                 {
                     content[rc] = 0;        // NULL-terminate the command string
-                    if (is_verbose) printf("client receive - identity = %s    command = %s\n", identity, content);
+                    if (is_verbose) printf("client receive - routing_id = %s    command = %s\n", routing_id, content);
                     if (memcmp (content, "TERMINATE", 9) == 0) {
                         run = false;
                         break;
@@ -158,7 +158,7 @@ client_task (void *db)
         if (keep_sending)
         {
             sprintf(content, "request #%03d", ++request_nbr); // CONTENT_SIZE
-            if (is_verbose) printf("client send - identity = %s    request #%03d\n", identity, request_nbr);
+            if (is_verbose) printf("client send - routing_id = %s    request #%03d\n", routing_id, request_nbr);
             zmq_atomic_counter_inc(g_clients_pkts_out);
 
             rc = zmq_send (client, content, CONTENT_SIZE, 0);
@@ -285,7 +285,7 @@ server_worker (void *ctx)
     assert (rc == 0);
 
     char content [CONTENT_SIZE_MAX]; //    bigger than what we need to check that
-    char identity [ID_SIZE_MAX];      // the size received is the size sent
+    char routing_id [ROUTING_ID_SIZE_MAX];      // the size received is the size sent
 
     bool run = true;
     bool keep_sending = true;
@@ -302,12 +302,12 @@ server_worker (void *ctx)
         }
         // The DEALER socket gives us the reply envelope and message
         // if we don't poll, we have to use ZMQ_DONTWAIT, if we poll, we can block-receive with 0
-        rc = zmq_recv (worker, identity, ID_SIZE_MAX, ZMQ_DONTWAIT);
-        if (rc == ID_SIZE) {
+        rc = zmq_recv (worker, routing_id, ROUTING_ID_SIZE_MAX, ZMQ_DONTWAIT);
+        if (rc == ROUTING_ID_SIZE) {
             rc = zmq_recv (worker, content, CONTENT_SIZE_MAX, 0);
             assert (rc == CONTENT_SIZE);
             if (is_verbose)
-                printf ("server receive - identity = %s    content = %s\n", identity, content);
+                printf ("server receive - routing_id = %s    content = %s\n", routing_id, content);
 
             // Send 0..4 replies back
             if (keep_sending)
@@ -318,11 +318,11 @@ server_worker (void *ctx)
                     msleep (rand () % 10 + 1);
 
                     //  Send message from server to client
-                    if (is_verbose) printf("server send - identity = %s    reply\n", identity);
+                    if (is_verbose) printf("server send - routing_id = %s    reply\n", routing_id);
                     zmq_atomic_counter_inc(g_workers_pkts_out);
 
-                    rc = zmq_send (worker, identity, ID_SIZE, ZMQ_SNDMORE);
-                    assert (rc == ID_SIZE);
+                    rc = zmq_send (worker, routing_id, ROUTING_ID_SIZE, ZMQ_SNDMORE);
+                    assert (rc == ROUTING_ID_SIZE);
                     rc = zmq_send (worker, content, CONTENT_SIZE, 0);
                     assert (rc == CONTENT_SIZE);
                 }
