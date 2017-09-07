@@ -142,8 +142,8 @@ int zmq_poller_remove_fd (void *poller, int fd);
 #endif
 
 int zmq_socket_get_peer_state (void *socket,
-                               const void *routing_id,
-                               size_t routing_id_size);
+                               const void *identity,
+                               size_t identity_size);
 
 /******************************************************************************/
 /*  Scheduling timers                                                         */

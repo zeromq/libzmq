@@ -61,13 +61,13 @@ void test_stream_2_stream(){
     assert (0 == ret);
 
     //  Do the connection.
-    ret = zmq_setsockopt (rconn1, ZMQ_CONNECT_ROUTING_ID, "conn1", 6);
+    ret = zmq_setsockopt (rconn1, ZMQ_CONNECT_RID, "conn1", 6);
     assert (0 == ret);
     ret = zmq_connect (rconn1, my_endpoint);
 
-/*  Uncomment to test assert on duplicate routing id.
+/*  Uncomment to test assert on duplicate rid.
     //  Test duplicate connect attempt.
-    ret = zmq_setsockopt (rconn1, ZMQ_CONNECT_ROUTING_ID, "conn1", 6);
+    ret = zmq_setsockopt (rconn1, ZMQ_CONNECT_RID, "conn1", 6);
     assert (0 == ret);
     ret = zmq_connect (rconn1, bindip);
     assert (0 == ret);
@@ -126,18 +126,18 @@ void test_router_2_router(bool named){
 
     //  If we're in named mode, set some identities.
     if (named) {
-        ret = zmq_setsockopt (rbind, ZMQ_ROUTING_ID, "X", 1);
-        ret = zmq_setsockopt (rconn1, ZMQ_ROUTING_ID, "Y", 1);
+        ret = zmq_setsockopt (rbind, ZMQ_IDENTITY, "X", 1);
+        ret = zmq_setsockopt (rconn1, ZMQ_IDENTITY, "Y", 1);
     }
 
-    //  Make call to connect using a connect_routing_id.
-    ret = zmq_setsockopt (rconn1, ZMQ_CONNECT_ROUTING_ID, "conn1", 6);
+    //  Make call to connect using a connect_rid.
+    ret = zmq_setsockopt (rconn1, ZMQ_CONNECT_RID, "conn1", 6);
     assert (0 == ret);
     ret = zmq_connect (rconn1, my_endpoint);
     assert (0 == ret);
-/*  Uncomment to test assert on duplicate routing id
+/*  Uncomment to test assert on duplicate rid
     //  Test duplicate connect attempt.
-    ret = zmq_setsockopt (rconn1, ZMQ_CONNECT_ROUTING_ID, "conn1", 6);
+    ret = zmq_setsockopt (rconn1, ZMQ_CONNECT_RID, "conn1", 6);
     assert (0 == ret);
     ret = zmq_connect (rconn1, bindip);
     assert (0 == ret);

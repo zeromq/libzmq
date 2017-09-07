@@ -85,13 +85,13 @@ void test_get_peer_state ()
     const char *dealer2_identity = "Y";
 
     //  Name dealer1 "X" and connect it to our router
-    rc = zmq_setsockopt (dealer1, ZMQ_ROUTING_ID, dealer1_identity, 1);
+    rc = zmq_setsockopt (dealer1, ZMQ_IDENTITY, dealer1_identity, 1);
     assert (rc == 0);
     rc = zmq_connect (dealer1, my_endpoint);
     assert (rc == 0);
 
     //  Name dealer2 "Y" and connect it to our router
-    rc = zmq_setsockopt (dealer2, ZMQ_ROUTING_ID, dealer2_identity, 1);
+    rc = zmq_setsockopt (dealer2, ZMQ_IDENTITY, dealer2_identity, 1);
     assert (rc == 0);
     rc = zmq_connect (dealer2, my_endpoint);
     assert (rc == 0);
@@ -250,7 +250,7 @@ void test_basic ()
     //  Create dealer called "X" and connect it to our router
     void *dealer = zmq_socket (ctx, ZMQ_DEALER);
     assert (dealer);
-    rc = zmq_setsockopt (dealer, ZMQ_ROUTING_ID, "X", 1);
+    rc = zmq_setsockopt (dealer, ZMQ_IDENTITY, "X", 1);
     assert (rc == 0);
     rc = zmq_connect (dealer, my_endpoint);
     assert (rc == 0);

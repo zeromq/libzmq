@@ -104,10 +104,10 @@ void zap_client_t::send_zap_request (const char *mechanism,
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);
 
-    //  Routing id frame
-    rc = msg.init_size (options.routing_id_size);
+    //  Identity frame
+    rc = msg.init_size (options.identity_size);
     errno_assert (rc == 0);
-    memcpy (msg.data (), options.routing_id, options.routing_id_size);
+    memcpy (msg.data (), options.identity, options.identity_size);
     msg.set_flags (msg_t::more);
     rc = session->write_zap_msg (&msg);
     errno_assert (rc == 0);

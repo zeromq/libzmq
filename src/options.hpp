@@ -70,9 +70,9 @@ namespace zmq
         //  I/O thread affinity.
         uint64_t affinity;
 
-        //  Socket routing id.
-        unsigned char routing_id_size;
-        unsigned char routing_id [256];
+        //  Socket identity
+        unsigned char identity_size;
+        unsigned char identity [256];
 
         //  Maximum transfer rate [kb/s]. Default 100kb/s.
         int rate;
@@ -144,7 +144,7 @@ namespace zmq
         bool invert_matching;
 
         //  If true, the identity message is forwarded to the socket.
-        bool recv_routing_id;
+        bool recv_identity;
 
         // if true, router socket accepts non-zmq tcp connections
         bool raw_socket;

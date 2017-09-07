@@ -46,17 +46,17 @@ zmq::mechanism_t::~mechanism_t ()
 {
 }
 
-void zmq::mechanism_t::set_peer_routing_id (const void *id_ptr, size_t id_size)
+void zmq::mechanism_t::set_peer_identity (const void *id_ptr, size_t id_size)
 {
-    routing_id = blob_t (static_cast <const unsigned char*> (id_ptr), id_size);
+    identity = blob_t (static_cast <const unsigned char*> (id_ptr), id_size);
 }
 
-void zmq::mechanism_t::peer_routing_id (msg_t *msg_)
+void zmq::mechanism_t::peer_identity (msg_t *msg_)
 {
-    const int rc = msg_->init_size (routing_id.size ());
+    const int rc = msg_->init_size (identity.size ());
     errno_assert (rc == 0);
-    memcpy (msg_->data (), routing_id.data (), routing_id.size ());
-    msg_->set_flags (msg_t::routing_id);
+    memcpy (msg_->data (), identity.data (), identity.size ());
+    msg_->set_flags (msg_t::identity);
 }
 
 void zmq::mechanism_t::set_user_id (const void *data_, size_t size_)
@@ -132,12 +132,12 @@ size_t zmq::mechanism_t::add_basic_properties (unsigned char *buf,
                          ZMQ_MSG_PROPERTY_SOCKET_TYPE, socket_type,
                          strlen (socket_type));
 
-    //  Add routing id property
+    //  Add identity property
     if (options.type == ZMQ_REQ || options.type == ZMQ_DEALER
         || options.type == ZMQ_ROUTER)
         ptr += add_property (ptr, buf_capacity - (ptr - buf),
-                             ZMQ_MSG_PROPERTY_ROUTING_ID, options.routing_id,
-                             options.routing_id_size);
+                             ZMQ_MSG_PROPERTY_IDENTITY, options.identity,
+                             options.identity_size);
 
     return ptr - buf;
 }
@@ -148,8 +148,8 @@ size_t zmq::mechanism_t::basic_properties_len() const
     return property_len (ZMQ_MSG_PROPERTY_SOCKET_TYPE, strlen (socket_type))
            + ((options.type == ZMQ_REQ || options.type == ZMQ_DEALER
                || options.type == ZMQ_ROUTER)
-                ? property_len (ZMQ_MSG_PROPERTY_ROUTING_ID,
-                                options.routing_id_size)
+                ? property_len (ZMQ_MSG_PROPERTY_IDENTITY,
+                                options.identity_size)
                 : 0);
 }
 
@@ -199,8 +199,8 @@ int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
         ptr_ += value_length;
         bytes_left -= value_length;
 
-        if (name == ZMQ_MSG_PROPERTY_ROUTING_ID && options.recv_routing_id)
-            set_peer_routing_id (value, value_length);
+        if (name == ZMQ_MSG_PROPERTY_IDENTITY && options.recv_identity)
+            set_peer_identity (value, value_length);
         else
         if (name == ZMQ_MSG_PROPERTY_SOCKET_TYPE) {
             const std::string socket_type ((char *) value, value_length);

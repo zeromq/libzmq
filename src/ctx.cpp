@@ -529,7 +529,7 @@ void zmq::ctx_t::connect_inproc_sockets (zmq::socket_base_t *bind_socket_,
     bind_socket_->inc_seqnum();
     pending_connection_.bind_pipe->set_tid (bind_socket_->get_tid ());
 
-    if (!bind_options.recv_routing_id) {
+    if (!bind_options.recv_identity) {
         msg_t msg;
         const bool ok = pending_connection_.bind_pipe->read (&msg);
         zmq_assert (ok);
@@ -569,16 +569,16 @@ void zmq::ctx_t::connect_inproc_sockets (zmq::socket_base_t *bind_socket_,
     // When a ctx is terminated all pending inproc connection will be
     // connected, but the socket will already be closed and the pipe will be
     // in waiting_for_delimiter state, which means no more writes can be done
-    // and the routing id write fails and causes an assert. Check if the socket
+    // and the identity write fails and causes an assert. Check if the socket
     // is open before sending.
-    if (pending_connection_.endpoint.options.recv_routing_id &&
+    if (pending_connection_.endpoint.options.recv_identity &&
             pending_connection_.endpoint.socket->check_tag ()) {
-        msg_t routing_id;
-        const int rc = routing_id.init_size (bind_options.routing_id_size);
+        msg_t id;
+        const int rc = id.init_size (bind_options.identity_size);
         errno_assert (rc == 0);
-        memcpy (routing_id.data (), bind_options.routing_id, bind_options.routing_id_size);
-        routing_id.set_flags (msg_t::routing_id);
-        const bool written = pending_connection_.bind_pipe->write (&routing_id);
+        memcpy (id.data (), bind_options.identity, bind_options.identity_size);
+        id.set_flags (msg_t::identity);
+        const bool written = pending_connection_.bind_pipe->write (&id);
         zmq_assert (written);
         pending_connection_.bind_pipe->flush ();
     }

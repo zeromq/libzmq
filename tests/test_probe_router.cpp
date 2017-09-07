@@ -48,7 +48,7 @@ int main (void)
     //  Create client and connect to server, doing a probe
     void *client = zmq_socket (ctx, ZMQ_ROUTER);
     assert (client);
-    rc = zmq_setsockopt (client, ZMQ_ROUTING_ID, "X", 1);
+    rc = zmq_setsockopt (client, ZMQ_IDENTITY, "X", 1);
     assert (rc == 0);
     int probe = 1;
     rc = zmq_setsockopt (client, ZMQ_PROBE_ROUTER, &probe, sizeof (probe));
