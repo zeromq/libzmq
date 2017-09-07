@@ -622,8 +622,7 @@ ZMQ_EXPORT int zmq_msg_set_group(zmq_msg_t *msg, const char *group);
 ZMQ_EXPORT const char *zmq_msg_group(zmq_msg_t *msg);
 
 /*  DRAFT Msg property names.                                                 */
-// TODO the name of the define AND its value are now inconsistent with the new term "routing id"
-#define ZMQ_MSG_PROPERTY_IDENTITY      "Identity"
+#define ZMQ_MSG_PROPERTY_ROUTING_ID    "Routing-Id"
 #define ZMQ_MSG_PROPERTY_SOCKET_TYPE   "Socket-Type"
 #define ZMQ_MSG_PROPERTY_USER_ID       "User-Id"
 #define ZMQ_MSG_PROPERTY_PEER_ADDRESS  "Peer-Address"
