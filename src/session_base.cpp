@@ -356,12 +356,12 @@ int zmq::session_base_t::zap_connect ()
 
     send_bind (peer.socket, new_pipes [1], false);
 
-    //  Send empty identity if required by the peer.
-    if (peer.options.recv_identity) {
+    //  Send empty routing id if required by the peer.
+    if (peer.options.recv_routing_id) {
         msg_t id;
         rc = id.init ();
         errno_assert (rc == 0);
-        id.set_flags (msg_t::identity);
+        id.set_flags (msg_t::routing_id);
         bool ok = zap_pipe->write (&id);
         zmq_assert (ok);
         zap_pipe->flush ();

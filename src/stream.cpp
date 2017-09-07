@@ -39,22 +39,22 @@
 zmq::stream_t::stream_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     socket_base_t (parent_, tid_, sid_),
     prefetched (false),
-    identity_sent (false),
+    routing_id_sent (false),
     current_out (NULL),
     more_out (false),
-    next_rid (generate_random ())
+    next_integral_routing_id (generate_random ())
 {
     options.type = ZMQ_STREAM;
     options.raw_socket = true;
 
-    prefetched_id.init ();
+    prefetched_routing_id.init ();
     prefetched_msg.init ();
 }
 
 zmq::stream_t::~stream_t ()
 {
     zmq_assert (outpipes.empty ());
-    prefetched_id.close ();
+    prefetched_routing_id.close ();
     prefetched_msg.close ();
 }
 
@@ -70,7 +70,7 @@ void zmq::stream_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 
 void zmq::stream_t::xpipe_terminated (pipe_t *pipe_)
 {
-    outpipes_t::iterator it = outpipes.find (pipe_->get_identity ());
+    outpipes_t::iterator it = outpipes.find (pipe_->get_routing_id ());
     zmq_assert (it != outpipes.end ());
     outpipes.erase (it);
     fq.pipe_terminated (pipe_);
@@ -107,10 +107,10 @@ int zmq::stream_t::xsend (msg_t *msg_)
         //  TODO: The connections should be killed instead.
         if (msg_->flags () & msg_t::more) {
 
-            //  Find the pipe associated with the identity stored in the prefix.
+            //  Find the pipe associated with the routing id stored in the prefix.
             //  If there's no such pipe return an error
-            blob_t identity ((unsigned char*) msg_->data (), msg_->size ());
-            outpipes_t::iterator it = outpipes.find (identity);
+            blob_t routing_id ((unsigned char*) msg_->data (), msg_->size ());
+            outpipes_t::iterator it = outpipes.find (routing_id);
 
             if (it != outpipes.end ()) {
                 current_out = it->second.pipe;
@@ -183,9 +183,9 @@ int zmq::stream_t::xsetsockopt (int option_, const void *optval_,
     if (is_int) memcpy(&value, optval_, sizeof (int));
 
     switch (option_) {
-        case ZMQ_CONNECT_RID:
+        case ZMQ_CONNECT_ROUTING_ID:
             if (optval_ && optvallen_) {
-                connect_rid.assign ((char*) optval_, optvallen_);
+                connect_routing_id.assign ((char*) optval_, optvallen_);
                 return 0;
             }
             break;
@@ -207,10 +207,10 @@ int zmq::stream_t::xsetsockopt (int option_, const void *optval_,
 int zmq::stream_t::xrecv (msg_t *msg_)
 {
     if (prefetched) {
-        if (!identity_sent) {
-            int rc = msg_->move (prefetched_id);
+        if (!routing_id_sent) {
+            int rc = msg_->move (prefetched_routing_id);
             errno_assert (rc == 0);
-            identity_sent = true;
+            routing_id_sent = true;
         }
         else {
             int rc = msg_->move (prefetched_msg);
@@ -231,10 +231,10 @@ int zmq::stream_t::xrecv (msg_t *msg_)
     //  We have received a frame with TCP data.
     //  Rather than sending this frame, we keep it in prefetched
     //  buffer and send a frame with peer's ID.
-    blob_t identity = pipe->get_identity ();
+    blob_t routing_id = pipe->get_routing_id ();
     rc = msg_->close();
     errno_assert (rc == 0);
-    rc = msg_->init_size (identity.size ());
+    rc = msg_->init_size (routing_id.size ());
     errno_assert (rc == 0);
 
     // forward metadata (if any)
@@ -242,11 +242,11 @@ int zmq::stream_t::xrecv (msg_t *msg_)
     if (metadata)
         msg_->set_metadata(metadata);
 
-    memcpy (msg_->data (), identity.data (), identity.size ());
+    memcpy (msg_->data (), routing_id.data (), routing_id.size ());
     msg_->set_flags (msg_t::more);
 
     prefetched = true;
-    identity_sent = true;
+    routing_id_sent = true;
 
     return 0;
 }
@@ -267,20 +267,20 @@ bool zmq::stream_t::xhas_in ()
     zmq_assert (pipe != NULL);
     zmq_assert ((prefetched_msg.flags () & msg_t::more) == 0);
 
-    blob_t identity = pipe->get_identity ();
-    rc = prefetched_id.init_size (identity.size ());
+    blob_t routing_id = pipe->get_routing_id ();
+    rc = prefetched_routing_id.init_size (routing_id.size ());
     errno_assert (rc == 0);
 
     // forward metadata (if any)
     metadata_t *metadata = prefetched_msg.metadata();
     if (metadata)
-        prefetched_id.set_metadata(metadata);
+        prefetched_routing_id.set_metadata(metadata);
 
-    memcpy (prefetched_id.data (), identity.data (), identity.size ());
-    prefetched_id.set_flags (msg_t::more);
+    memcpy (prefetched_routing_id.data (), routing_id.data (), routing_id.size ());
+    prefetched_routing_id.set_flags (msg_t::more);
 
     prefetched = true;
-    identity_sent = false;
+    routing_id_sent = false;
 
     return true;
 }
@@ -295,27 +295,27 @@ bool zmq::stream_t::xhas_out ()
 
 void zmq::stream_t::identify_peer (pipe_t *pipe_)
 {
-    //  Always assign identity for raw-socket
+    //  Always assign routing id for raw-socket
     unsigned char buffer [5];
     buffer [0] = 0;
-    blob_t identity;
-    if (connect_rid.length ()) {
-        identity = blob_t ((unsigned char*) connect_rid.c_str(),
-            connect_rid.length ());
-        connect_rid.clear ();
-        outpipes_t::iterator it = outpipes.find (identity);
+    blob_t routing_id;
+    if (connect_routing_id.length ()) {
+        routing_id = blob_t ((unsigned char*) connect_routing_id.c_str(),
+            connect_routing_id.length ());
+        connect_routing_id.clear ();
+        outpipes_t::iterator it = outpipes.find (routing_id);
         zmq_assert (it == outpipes.end ());
     }
     else {
-        put_uint32 (buffer + 1, next_rid++);
-        identity = blob_t (buffer, sizeof buffer);
-        memcpy (options.identity, identity.data (), identity.size ());
-        options.identity_size = (unsigned char) identity.size ();
+        put_uint32 (buffer + 1, next_integral_routing_id++);
+        routing_id = blob_t (buffer, sizeof buffer);
+        memcpy (options.routing_id, routing_id.data (), routing_id.size ());
+        options.routing_id_size = (unsigned char) routing_id.size ();
     }
-    pipe_->set_identity (identity);
+    pipe_->set_router_socket_routing_id (routing_id);
     //  Add the record into output pipes lookup table
     outpipe_t outpipe = {pipe_, true};
     const bool ok = outpipes.insert (
-        outpipes_t::value_type (identity, outpipe)).second;
+        outpipes_t::value_type (routing_id, outpipe)).second;
     zmq_assert (ok);
 }

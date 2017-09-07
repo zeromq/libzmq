@@ -92,7 +92,7 @@ zmq::pipe_t::pipe_t (object_t *parent_, upipe_t *inpipe_, upipe_t *outpipe_,
     sink (NULL),
     state (active),
     delay (true),
-    routing_id(0),
+    server_socket_routing_id (0),
     conflate (conflate_)
 {
 }
@@ -115,24 +115,24 @@ void zmq::pipe_t::set_event_sink (i_pipe_events *sink_)
     sink = sink_;
 }
 
-void zmq::pipe_t::set_routing_id (uint32_t routing_id_)
+void zmq::pipe_t::set_server_socket_routing_id (uint32_t server_socket_routing_id_)
 {
-    routing_id = routing_id_;
+    server_socket_routing_id = server_socket_routing_id_;
 }
 
-uint32_t zmq::pipe_t::get_routing_id ()
+uint32_t zmq::pipe_t::get_server_socket_routing_id ()
 {
-    return routing_id;
+    return server_socket_routing_id;
 }
 
-void zmq::pipe_t::set_identity (const blob_t &identity_)
+void zmq::pipe_t::set_router_socket_routing_id (const blob_t &router_socket_routing_id_)
 {
-    identity = identity_;
+    router_socket_routing_id = router_socket_routing_id_;
 }
 
-zmq::blob_t zmq::pipe_t::get_identity ()
+zmq::blob_t zmq::pipe_t::get_routing_id ()
 {
-    return identity;
+    return router_socket_routing_id;
 }
 
 zmq::blob_t zmq::pipe_t::get_credential () const
@@ -194,7 +194,7 @@ read_message:
         return false;
     }
 
-    if (!(msg_->flags () & msg_t::more) && !msg_->is_identity ())
+    if (!(msg_->flags () & msg_t::more) && !msg_->is_routing_id ())
         msgs_read++;
 
     if (lwm > 0 && msgs_read % lwm == 0)
@@ -224,9 +224,9 @@ bool zmq::pipe_t::write (msg_t *msg_)
         return false;
 
     bool more = msg_->flags () & msg_t::more ? true : false;
-    const bool is_identity = msg_->is_identity ();
+    const bool is_routing_id = msg_->is_routing_id ();
     outpipe->write (*msg_, more);
-    if (!more && !is_identity)
+    if (!more && !is_routing_id)
         msgs_written++;
 
     return true;

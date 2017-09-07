@@ -383,26 +383,26 @@ non-0MQ peer, when using the tcp:// transport. A 'ZMQ_STREAM' socket can
 act as client and/or server, sending and/or receiving TCP data asynchronously.
 
 When receiving TCP data, a 'ZMQ_STREAM' socket shall prepend a message part
-containing the _identity_ of the originating peer to the message before passing
+containing the _routing id_ of the originating peer to the message before passing
 it to the application. Messages received are fair-queued from among all
 connected peers.
 
 When sending TCP data, a 'ZMQ_STREAM' socket shall remove the first part of the
-message and use it to determine the _identity_ of the peer the message shall be
+message and use it to determine the _routing id_ of the peer the message shall be
 routed to, and unroutable messages shall cause an EHOSTUNREACH or EAGAIN error.
 
 To open a connection to a server, use the zmq_connect call, and then fetch the
-socket identity using the ZMQ_IDENTITY zmq_getsockopt call.
+socket routing id using the zmq_getsockopt call with the ZMQ_ROUTING_ID option.
 
-To close a specific connection, send the identity frame followed by a
+To close a specific connection, send the routing id frame followed by a
 zero-length message (see EXAMPLE section).
 
 When a connection is made, a zero-length message will be received by the
 application.  Similarly, when the peer disconnects (or the connection is lost),
 a zero-length message will be received by the application.
 
-You must send one identity frame followed by one data frame. The ZMQ_SNDMORE
-flag is required for identity frames but is ignored on data frames.
+You must send one routing id frame followed by one data frame. The ZMQ_SNDMORE
+flag is required for routing id frames but is ignored on data frames.
 
 [horizontal]
 .Summary of ZMQ_STREAM characteristics
@@ -492,10 +492,10 @@ ZMQ_ROUTER
 ^^^^^^^^^^
 A socket of type 'ZMQ_ROUTER' is an advanced socket type used for extending
 request/reply sockets. When receiving messages a 'ZMQ_ROUTER' socket shall
-prepend a message part containing the _identity_ of the originating peer to the
+prepend a message part containing the _routing id_ of the originating peer to the
 message before passing it to the application. Messages received are fair-queued
 from among all connected peers. When sending messages a 'ZMQ_ROUTER' socket shall
-remove the first part of the message and use it to determine the _identity_ of
+remove the first part of the message and use it to determine the _routing id _ of
 the peer the message shall be routed to. If the peer does not exist anymore, or
 has never existed, the message shall be silently discarded. However, if
 'ZMQ_ROUTER_MANDATORY' socket option is set to '1', the socket shall fail
@@ -514,9 +514,9 @@ or more peers. Likewise, the socket shall generate 'ZMQ_POLLOUT' events when
 at least one message can be sent to one or more peers.
 
 When a 'ZMQ_REQ' socket is connected to a 'ZMQ_ROUTER' socket, in addition to the
-_identity_ of the originating peer each message received shall contain an empty
+_routing id_ of the originating peer each message received shall contain an empty
 _delimiter_ message part. Hence, the entire structure of each received message
-as seen by the application becomes: one or more _identity_ parts, _delimiter_
+as seen by the application becomes: one or more _routing id_ parts, _delimiter_
 part, one or more _body parts_. When sending replies to a 'ZMQ_REQ' socket the
 application must include the _delimiter_ part.
 
@@ -559,16 +559,16 @@ void *socket = zmq_socket (ctx, ZMQ_STREAM);
 assert (socket);
 int rc = zmq_bind (socket, "tcp://*:8080");
 assert (rc == 0);
-/* Data structure to hold the ZMQ_STREAM ID */
-uint8_t id [256];
-size_t id_size = 256;
+/* Data structure to hold the ZMQ_STREAM routing id */
+uint8_t routing_id [256];
+size_t routing_id_size = 256;
 /* Data structure to hold the ZMQ_STREAM received data */
 uint8_t raw [256];
 size_t raw_size = 256;
 while (1) {
-	/*  Get HTTP request; ID frame and then request */
-	id_size = zmq_recv (socket, id, 256, 0);
-	assert (id_size > 0);
+	/*  Get HTTP request; routing id frame and then request */
+	routing_id_size = zmq_recv (socket, routing_id, 256, 0);
+	assert (routing_id_size > 0);
 	do {
 		raw_size = zmq_recv (socket, raw, 256, 0);
 		assert (raw_size >= 0);
@@ -579,11 +579,11 @@ while (1) {
 		"Content-Type: text/plain\r\n"
 		"\r\n"
 		"Hello, World!";
-	/* Sends the ID frame followed by the response */
-	zmq_send (socket, id, id_size, ZMQ_SNDMORE);
+	/* Sends the routing id frame followed by the response */
+	zmq_send (socket, routing_id, routing_id_size, ZMQ_SNDMORE);
 	zmq_send (socket, http_response, strlen (http_response), 0);
-	/* Closes the connection by sending the ID frame followed by a zero response */
-	zmq_send (socket, id, id_size, ZMQ_SNDMORE);
+	/* Closes the connection by sending the routing id frame followed by a zero response */
+	zmq_send (socket, routing_id, routing_id_size, ZMQ_SNDMORE);
 	zmq_send (socket, 0, 0, 0);
 }
 zmq_close (socket);

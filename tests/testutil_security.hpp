@@ -349,7 +349,7 @@ void setup_context_and_server_side (
 
     socket_config_ (*server, socket_config_data_);
 
-    rc = zmq_setsockopt (*server, ZMQ_IDENTITY, identity, strlen(identity));
+    rc = zmq_setsockopt (*server, ZMQ_ROUTING_ID, identity, strlen(identity));
     assert (rc == 0);
 
     rc = zmq_bind (*server, "tcp://127.0.0.1:*");

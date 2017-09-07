@@ -70,10 +70,10 @@ namespace zmq
 
         //  If true, the receiver got the message part with
         //  the peer's identity.
-        bool identity_sent;
+        bool routing_id_sent;
 
         //  Holds the prefetched identity.
-        msg_t prefetched_id;
+        msg_t prefetched_routing_id;
 
         //  Holds the prefetched message.
         msg_t prefetched_msg;
@@ -96,7 +96,7 @@ namespace zmq
 
         //  Routing IDs are generated. It's a simple increment and wrap-over
         //  algorithm. This value is the next ID to use (if not used already).
-        uint32_t next_rid;
+        uint32_t next_integral_routing_id;
 
         stream_t (const stream_t&);
         const stream_t &operator = (const stream_t&);
