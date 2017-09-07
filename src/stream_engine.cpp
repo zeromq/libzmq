@@ -520,7 +520,7 @@ bool zmq::stream_engine_t::handshake ()
 
         //  Inspect the right-most bit of the 10th byte (which coincides
         //  with the 'flags' field if a regular message was sent).
-        //  Zero indicates this is a header of routing id message
+        //  Zero indicates this is a header of a routing id message
         //  (i.e. the peer is using the unversioned protocol).
         if (!(greeting_recv [9] & 0x01))
             break;

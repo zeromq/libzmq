@@ -183,9 +183,9 @@ int zmq::stream_t::xsetsockopt (int option_, const void *optval_,
     if (is_int) memcpy(&value, optval_, sizeof (int));
 
     switch (option_) {
-        case ZMQ_CONNECT_RID:
+        case ZMQ_CONNECT_ROUTING_ID:
             if (optval_ && optvallen_) {
-                connect_rid.assign ((char*) optval_, optvallen_);
+                connect_routing_id.assign ((char*) optval_, optvallen_);
                 return 0;
             }
             break;
@@ -299,10 +299,10 @@ void zmq::stream_t::identify_peer (pipe_t *pipe_)
     unsigned char buffer [5];
     buffer [0] = 0;
     blob_t routing_id;
-    if (connect_rid.length ()) {
-        routing_id = blob_t ((unsigned char*) connect_rid.c_str(),
-            connect_rid.length ());
-        connect_rid.clear ();
+    if (connect_routing_id.length ()) {
+        routing_id = blob_t ((unsigned char*) connect_routing_id.c_str(),
+            connect_routing_id.length ());
+        connect_routing_id.clear ();
         outpipes_t::iterator it = outpipes.find (routing_id);
         zmq_assert (it == outpipes.end ());
     }
@@ -312,7 +312,7 @@ void zmq::stream_t::identify_peer (pipe_t *pipe_)
         memcpy (options.routing_id, routing_id.data (), routing_id.size ());
         options.routing_id_size = (unsigned char) routing_id.size ();
     }
-    pipe_->set_routing_id (routing_id);
+    pipe_->set_router_socket_routing_id (routing_id);
     //  Add the record into output pipes lookup table
     outpipe_t outpipe = {pipe_, true};
     const bool ok = outpipes.insert (

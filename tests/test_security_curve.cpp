@@ -656,7 +656,7 @@ int main (void)
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
                                    &server_mon, my_endpoint);
     test_null_key (ctx, server, server_mon, my_endpoint, null_key,
-                      valid_client_public, valid_client_secret);
+                   valid_client_public, valid_client_secret);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 
@@ -666,7 +666,7 @@ int main (void)
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
                                    &server_mon, my_endpoint);
     test_null_key (ctx, server, server_mon, my_endpoint, valid_server_public,
-                      null_key, valid_client_secret);
+                   null_key, valid_client_secret);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 
@@ -676,7 +676,7 @@ int main (void)
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
                                    &server_mon, my_endpoint);
     test_null_key (ctx, server, server_mon, my_endpoint, valid_server_public,
-                      valid_client_public, null_key);
+                   valid_client_public, null_key);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 
@@ -750,7 +750,8 @@ int main (void)
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 
-    fprintf (stderr, "test_curve_security_invalid_initiate_command_encrypted_cookie\n");
+    fprintf (stderr,
+             "test_curve_security_invalid_initiate_command_encrypted_cookie\n");
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
                                    &server_mon, my_endpoint);
     test_curve_security_invalid_initiate_command_encrypted_cookie (
@@ -758,7 +759,9 @@ int main (void)
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 
-    fprintf (stderr, "test_curve_security_invalid_initiate_command_encrypted_content\n");
+    fprintf (
+      stderr,
+      "test_curve_security_invalid_initiate_command_encrypted_content\n");
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
                                    &server_mon, my_endpoint);
     test_curve_security_invalid_initiate_command_encrypted_content (
@@ -767,15 +770,16 @@ int main (void)
                                       handler);
 
     //  test with a large identity (resulting in large metadata)
-    fprintf (stderr, "test_curve_security_with_valid_credentials (large identity)\n");
+    fprintf (stderr,
+             "test_curve_security_with_valid_credentials (large identity)\n");
     setup_context_and_server_side (
       &ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint,
-      &zap_handler_large_identity, &socket_config_curve_server, &valid_server_secret,
-      large_identity);
+      &zap_handler_large_identity, &socket_config_curve_server,
+      &valid_server_secret, large_identity);
     test_curve_security_with_valid_credentials (ctx, my_endpoint, server,
                                                 server_mon, timeout);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
-            handler);
+                                      handler);
 
     ctx = zmq_ctx_new ();
     test_curve_security_invalid_keysize (ctx);

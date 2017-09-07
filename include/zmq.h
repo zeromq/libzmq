@@ -345,7 +345,7 @@ ZMQ_EXPORT const char *zmq_msg_gets (const zmq_msg_t *msg, const char *property)
 #define ZMQ_ZAP_DOMAIN 55
 #define ZMQ_ROUTER_HANDOVER 56
 #define ZMQ_TOS 57
-#define ZMQ_CONNECT_RID 61
+#define ZMQ_CONNECT_ROUTING_ID 61
 #define ZMQ_GSSAPI_SERVER 62
 #define ZMQ_GSSAPI_PRINCIPAL 63
 #define ZMQ_GSSAPI_SERVICE_PRINCIPAL 64
@@ -391,6 +391,7 @@ ZMQ_EXPORT const char *zmq_msg_gets (const zmq_msg_t *msg, const char *property)
 
 /*  Deprecated options and aliases                                            */
 #define ZMQ_IDENTITY                ZMQ_ROUTING_ID
+#define ZMQ_CONNECT_RID             ZMQ_CONNECT_ROUTING_ID
 #define ZMQ_TCP_ACCEPT_FILTER       38
 #define ZMQ_IPC_FILTER_PID          58
 #define ZMQ_IPC_FILTER_UID          59
