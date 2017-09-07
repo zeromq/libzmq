@@ -90,22 +90,29 @@ Applicable socket types:: all, when using TCP or UDP transports.
 
 ZMQ_CONNECT_RID: Assign the next outbound connection id 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_CONNECT_RID' option sets the peer id of the next host connected 
-via the zmq_connect() call, and immediately readies that connection for 
-data transfer with the named id.  This option applies only to the first
-subsequent call to zmq_connect(), calls thereafter use default connection 
-behaviour. 
+This option name is now deprecated. Use ZMQ_CONNECT_ROUTING_ID instead. 
+ZMQ_CONNECT_RID remains as an alias for now. 
 
-Typical use is to set this socket option ahead of each zmq_connect() attempt 
-to a new host. Each connection MUST be assigned a unique name. Assigning a 
-name that is already in use is not allowed. 
+
+ZMQ_CONNECT_ROUTING_ID: Assign the next outbound routing id 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_CONNECT_ROUTING_ID' option sets the peer id of the peer connected 
+via the next zmq_connect() call, such that that connection is immediately ready for 
+data transfer with the given routing id.  This option applies only to the first
+subsequent call to zmq_connect(), zmq_connect() calls thereafter use the default 
+connection behaviour. 
+
+Typical use is to set this socket option ahead of each zmq_connect() call. 
+Each connection MUST be assigned a unique routing id. Assigning a 
+routing id that is already in use is not allowed. 
 
 Useful when connecting ROUTER to ROUTER, or STREAM to STREAM, as it 
-allows for immediate sending to peers. Outbound id framing requirements 
+allows for immediate sending to peers. Outbound routing id framing requirements 
 for ROUTER and STREAM sockets apply.
 
-The peer id should be from 1 to 255 bytes long and MAY NOT start with 
-binary zero.
+The routing id must be from 1 to 255 bytes long and MAY NOT start with 
+a zero byte (such routing ids are reserved for internal use by the 0MQ 
+infrastructure).
 
 [horizontal]
 Option value type:: binary data
