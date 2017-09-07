@@ -75,7 +75,7 @@ int zmq::req_t::xsend (msg_t *msg_)
         message_begins = true;
     }
 
-    //  First part of the request is the request routing id.
+    //  First part of the request is the request identity.
     if (message_begins) {
         reply_pipe = NULL;
 

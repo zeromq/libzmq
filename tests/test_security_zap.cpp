@@ -280,11 +280,13 @@ int main (void)
     test_zap_errors (&socket_config_plain_server, NULL,
                      &socket_config_plain_client, NULL);
 
-    fprintf (stderr, "CURVE mechanism\n");
-    setup_testutil_security_curve ();
+    if (zmq_has ("curve")) {
+        fprintf (stderr, "CURVE mechanism\n");
+        setup_testutil_security_curve ();
 
-    curve_client_data_t curve_client_data = {
-      valid_server_public, valid_client_public, valid_client_secret};
-    test_zap_errors (&socket_config_curve_server, valid_server_secret,
-                     &socket_config_curve_client, &curve_client_data);
+        curve_client_data_t curve_client_data = {
+          valid_server_public, valid_client_public, valid_client_secret};
+        test_zap_errors (&socket_config_curve_server, valid_server_secret,
+                         &socket_config_curve_client, &curve_client_data);
+    }
 }

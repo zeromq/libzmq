@@ -90,29 +90,22 @@ Applicable socket types:: all, when using TCP or UDP transports.
 
 ZMQ_CONNECT_RID: Assign the next outbound connection id 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This option name is now deprecated. Use ZMQ_CONNECT_ROUTING_ID instead. 
-ZMQ_CONNECT_RID remains as an alias for now. 
+The 'ZMQ_CONNECT_RID' option sets the peer id of the next host connected 
+via the zmq_connect() call, and immediately readies that connection for 
+data transfer with the named id.  This option applies only to the first
+subsequent call to zmq_connect(), calls thereafter use default connection 
+behaviour. 
 
-
-ZMQ_CONNECT_ROUTING_ID: Assign the next outbound routing id 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_CONNECT_ROUTING_ID' option sets the peer id of the peer connected 
-via the next zmq_connect() call, such that that connection is immediately ready for 
-data transfer with the given routing id.  This option applies only to the first
-subsequent call to zmq_connect(), zmq_connect() calls thereafter use the default 
-connection behaviour. 
-
-Typical use is to set this socket option ahead of each zmq_connect() call. 
-Each connection MUST be assigned a unique routing id. Assigning a 
-routing id that is already in use is not allowed. 
+Typical use is to set this socket option ahead of each zmq_connect() attempt 
+to a new host. Each connection MUST be assigned a unique name. Assigning a 
+name that is already in use is not allowed. 
 
 Useful when connecting ROUTER to ROUTER, or STREAM to STREAM, as it 
-allows for immediate sending to peers. Outbound routing id framing requirements 
+allows for immediate sending to peers. Outbound id framing requirements 
 for ROUTER and STREAM sockets apply.
 
-The routing id must be from 1 to 255 bytes long and MAY NOT start with 
-a zero byte (such routing ids are reserved for internal use by the 0MQ 
-infrastructure).
+The peer id should be from 1 to 255 bytes long and MAY NOT start with 
+binary zero.
 
 [horizontal]
 Option value type:: binary data
@@ -312,7 +305,7 @@ ZMQ_HANDSHAKE_IVL: Set maximum handshake interval
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_HANDSHAKE_IVL' option shall set the maximum handshake interval for
 the specified 'socket'. Handshaking is the exchange of socket configuration
-information (socket type, routing id, security) that occurs when a connection
+information (socket type, identity, security) that occurs when a connection
 is first opened, only for connection-oriented transports. If handshaking does
 not complete within the configured time, the connection shall be closed.
 The value 0 means no handshake time limit.
@@ -371,8 +364,22 @@ Applicable socket types:: all, when using connection-oriented transports
 
 ZMQ_IDENTITY: Set socket identity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This option name is now deprecated. Use ZMQ_ROUTING_ID instead. 
-ZMQ_IDENTITY remains as an alias for now. 
+The 'ZMQ_IDENTITY' option shall set the identity of the specified 'socket'
+when connecting to a ROUTER socket. The identity should be from 1 to 255
+bytes long and may contain any values.
+
+If two clients use the same identity when connecting to a ROUTER, the
+results shall depend on the ZMQ_ROUTER_HANDOVER option setting. If that
+is not set (or set to the default of zero), the ROUTER socket shall reject
+clients trying to connect with an already-used identity. If that option
+is set to 1, the ROUTER socket shall hand-over the connection to the new
+client and disconnect the existing one.
+
+[horizontal]
+Option value type:: binary data
+Option value unit:: N/A
+Default value:: NULL
+Applicable socket types:: ZMQ_REQ, ZMQ_REP, ZMQ_ROUTER, ZMQ_DEALER.
 
 
 ZMQ_IMMEDIATE: Queue messages only to completed connections
@@ -730,12 +737,12 @@ Default value:: 0
 Applicable socket types:: ZMQ_REQ
 
 
-ZMQ_ROUTER_HANDOVER: handle duplicate client routing ids on ROUTER sockets
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-If two clients use the same routing id when connecting to a ROUTER, the
+ZMQ_ROUTER_HANDOVER: handle duplicate client identities on ROUTER sockets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+If two clients use the same identity when connecting to a ROUTER, the
 results shall depend on the ZMQ_ROUTER_HANDOVER option setting. If that
 is not set (or set to the default of zero), the ROUTER socket shall reject
-clients trying to connect with an already-used routing id. If that option
+clients trying to connect with an already-used identity. If that option
 is set to 1, the ROUTER socket shall hand-over the connection to the new
 client and disconnect the existing one.
 
@@ -775,7 +782,7 @@ raw mode, and when using the tcp:// transport, it will read and write TCP data
 without 0MQ framing. This lets 0MQ applications talk to non-0MQ applications.
 When using raw mode, you cannot set explicit identities, and the ZMQ_SNDMORE
 flag is ignored when sending data messages. In raw mode you can close a specific
-connection by sending it a zero-length message (following the routing id frame).
+connection by sending it a zero-length message (following the identity frame).
 
 NOTE: This option is deprecated, please use ZMQ_STREAM sockets instead.
 
@@ -784,28 +791,6 @@ Option value type:: int
 Option value unit:: 0, 1
 Default value:: 0
 Applicable socket types:: ZMQ_ROUTER
-
-
-ZMQ_ROUTING_ID: Set socket routing id
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_ROUTING_ID' option shall set the routing id of the specified 'socket'
-when connecting to a ROUTER socket. 
-
-A routing id must be at least one byte and at most 255 bytes long. Identities
-starting with a zero byte are reserved for use by the 0MQ infrastructure.
-
-If two clients use the same routing id when connecting to a ROUTER, the
-results shall depend on the ZMQ_ROUTER_HANDOVER option setting. If that
-is not set (or set to the default of zero), the ROUTER socket shall reject
-clients trying to connect with an already-used routing id. If that option
-is set to 1, the ROUTER socket shall hand-over the connection to the new
-client and disconnect the existing one.
-
-[horizontal]
-Option value type:: binary data
-Option value unit:: N/A
-Default value:: NULL
-Applicable socket types:: ZMQ_REQ, ZMQ_REP, ZMQ_ROUTER, ZMQ_DEALER.
 
 
 ZMQ_SNDBUF: Set kernel transmit buffer size

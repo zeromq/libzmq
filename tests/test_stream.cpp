@@ -277,7 +277,7 @@ test_stream_to_stream (void)
 
     //  Sent HTTP request on client socket
     //  Get server identity
-    rc = zmq_getsockopt (client, ZMQ_ROUTING_ID, id, &id_size);
+    rc = zmq_getsockopt (client, ZMQ_IDENTITY, id, &id_size);
     assert (rc == 0);
     //  First frame is server identity
     rc = zmq_send (client, id, id_size, ZMQ_SNDMORE);

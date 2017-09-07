@@ -62,7 +62,7 @@ int main (void)
         void *dealer = zmq_socket (ctx2, ZMQ_DEALER);
         char identity [10];
         sprintf (identity, "%09d", cycle);
-        rc = zmq_setsockopt (dealer, ZMQ_ROUTING_ID, identity, 10);
+        rc = zmq_setsockopt (dealer, ZMQ_IDENTITY, identity, 10);
         assert (rc == 0);
         int rcvtimeo = 1000;
         rc = zmq_setsockopt (dealer, ZMQ_RCVTIMEO, &rcvtimeo, sizeof (int));

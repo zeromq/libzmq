@@ -299,7 +299,7 @@ ZMQ_EXPORT const char *zmq_msg_gets (const zmq_msg_t *msg, const char *property)
 
 /*  Socket options.                                                           */
 #define ZMQ_AFFINITY 4
-#define ZMQ_ROUTING_ID 5
+#define ZMQ_IDENTITY 5
 #define ZMQ_SUBSCRIBE 6
 #define ZMQ_UNSUBSCRIBE 7
 #define ZMQ_RATE 8
@@ -345,7 +345,7 @@ ZMQ_EXPORT const char *zmq_msg_gets (const zmq_msg_t *msg, const char *property)
 #define ZMQ_ZAP_DOMAIN 55
 #define ZMQ_ROUTER_HANDOVER 56
 #define ZMQ_TOS 57
-#define ZMQ_CONNECT_ROUTING_ID 61
+#define ZMQ_CONNECT_RID 61
 #define ZMQ_GSSAPI_SERVER 62
 #define ZMQ_GSSAPI_PRINCIPAL 63
 #define ZMQ_GSSAPI_SERVICE_PRINCIPAL 64
@@ -390,8 +390,6 @@ ZMQ_EXPORT const char *zmq_msg_gets (const zmq_msg_t *msg, const char *property)
 #define ZMQ_GROUP_MAX_LENGTH        15
 
 /*  Deprecated options and aliases                                            */
-#define ZMQ_IDENTITY                ZMQ_ROUTING_ID
-#define ZMQ_CONNECT_RID             ZMQ_CONNECT_ROUTING_ID
 #define ZMQ_TCP_ACCEPT_FILTER       38
 #define ZMQ_IPC_FILTER_PID          58
 #define ZMQ_IPC_FILTER_UID          59
@@ -622,7 +620,7 @@ ZMQ_EXPORT int zmq_msg_set_group(zmq_msg_t *msg, const char *group);
 ZMQ_EXPORT const char *zmq_msg_group(zmq_msg_t *msg);
 
 /*  DRAFT Msg property names.                                                 */
-#define ZMQ_MSG_PROPERTY_ROUTING_ID    "Routing-Id"
+#define ZMQ_MSG_PROPERTY_IDENTITY      "Identity"
 #define ZMQ_MSG_PROPERTY_SOCKET_TYPE   "Socket-Type"
 #define ZMQ_MSG_PROPERTY_USER_ID       "User-Id"
 #define ZMQ_MSG_PROPERTY_PEER_ADDRESS  "Peer-Address"
@@ -664,8 +662,8 @@ ZMQ_EXPORT int zmq_poller_remove_fd (void *poller, int fd);
 #endif
 
 ZMQ_EXPORT int zmq_socket_get_peer_state (void *socket,
-                                          const void *routing_id,
-                                          size_t routing_id_size);
+                                          const void *identity,
+                                          size_t identity_size);
 
 /******************************************************************************/
 /*  Scheduling timers                                                         */

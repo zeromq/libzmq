@@ -221,11 +221,11 @@ zmq::socket_base_t::socket_base_t (ctx_t *parent_, uint32_t tid_, int sid_, bool
     }
 }
 
-int zmq::socket_base_t::get_peer_state (const void *routing_id_,
-                                        size_t routing_id_size_) const
+int zmq::socket_base_t::get_peer_state (const void *identity,
+                                        size_t identity_size) const
 {
-    LIBZMQ_UNUSED (routing_id_);
-    LIBZMQ_UNUSED (routing_id_size_);
+    LIBZMQ_UNUSED (identity);
+    LIBZMQ_UNUSED (identity_size);
 
     //  Only ROUTER sockets support this
     errno = ENOTSUP;
@@ -764,14 +764,14 @@ int zmq::socket_base_t::connect (const char *addr_)
 
         if (!peer.socket) {
             //  The peer doesn't exist yet so we don't know whether
-            //  to send the routing id message or not. To resolve this,
-            //  we always send our routing id and drop it later if
+            //  to send the identity message or not. To resolve this,
+            //  we always send our identity and drop it later if
             //  the peer doesn't expect it.
             msg_t id;
-            rc = id.init_size (options.routing_id_size);
+            rc = id.init_size (options.identity_size);
             errno_assert (rc == 0);
-            memcpy (id.data (), options.routing_id, options.routing_id_size);
-            id.set_flags (msg_t::routing_id);
+            memcpy (id.data (), options.identity, options.identity_size);
+            id.set_flags (msg_t::identity);
             bool written = new_pipes [0]->write (&id);
             zmq_assert (written);
             new_pipes [0]->flush ();
@@ -780,25 +780,25 @@ int zmq::socket_base_t::connect (const char *addr_)
             pend_connection (std::string (addr_), endpoint, new_pipes);
         }
         else {
-            //  If required, send the routing id of the local socket to the peer.
-            if (peer.options.recv_routing_id) {
+            //  If required, send the identity of the local socket to the peer.
+            if (peer.options.recv_identity) {
                 msg_t id;
-                rc = id.init_size (options.routing_id_size);
+                rc = id.init_size (options.identity_size);
                 errno_assert (rc == 0);
-                memcpy (id.data (), options.routing_id, options.routing_id_size);
-                id.set_flags (msg_t::routing_id);
+                memcpy (id.data (), options.identity, options.identity_size);
+                id.set_flags (msg_t::identity);
                 bool written = new_pipes [0]->write (&id);
                 zmq_assert (written);
                 new_pipes [0]->flush ();
             }
 
-            //  If required, send the routing id of the peer to the local socket.
-            if (options.recv_routing_id) {
+            //  If required, send the identity of the peer to the local socket.
+            if (options.recv_identity) {
                 msg_t id;
-                rc = id.init_size (peer.options.routing_id_size);
+                rc = id.init_size (peer.options.identity_size);
                 errno_assert (rc == 0);
-                memcpy (id.data (), peer.options.routing_id, peer.options.routing_id_size);
-                id.set_flags (msg_t::routing_id);
+                memcpy (id.data (), peer.options.identity, peer.options.identity_size);
+                id.set_flags (msg_t::identity);
                 bool written = new_pipes [1]->write (&id);
                 zmq_assert (written);
                 new_pipes [1]->flush ();
@@ -1591,9 +1591,9 @@ void zmq::socket_base_t::pipe_terminated (pipe_t *pipe_)
 
 void zmq::socket_base_t::extract_flags (msg_t *msg_)
 {
-    //  Test whether routing_id flag is valid for this socket type.
-    if (unlikely (msg_->flags () & msg_t::routing_id))
-        zmq_assert (options.recv_routing_id);
+    //  Test whether IDENTITY flag is valid for this socket type.
+    if (unlikely (msg_->flags () & msg_t::identity))
+        zmq_assert (options.recv_identity);
 
     //  Remove MORE flag.
     rcvmore = msg_->flags () & msg_t::more ? true : false;
