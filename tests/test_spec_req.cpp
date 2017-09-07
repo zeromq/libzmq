@@ -167,7 +167,7 @@ void test_req_message_format (void *ctx)
     zmq_msg_t msg;
     zmq_msg_init (&msg);
 
-    // Receive peer identity
+    // Receive peer routing id
     rc = zmq_msg_recv (&msg, router, 0);
     assert (rc != -1);
     assert (zmq_msg_size (&msg) > 0);

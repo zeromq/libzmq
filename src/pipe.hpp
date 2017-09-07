@@ -226,10 +226,10 @@ namespace zmq
         //  asks us to.
         bool delay;
 
-        //  Identity of the writer. Used uniquely by the reader side.
+        //  Routing id of the writer. Used uniquely by the reader side.
         blob_t router_socket_routing_id;
 
-        //  Identity of the writer. Used uniquely by the reader side.
+        //  Routing id of the writer. Used uniquely by the reader side.
         int server_socket_routing_id;
 
         //  Pipe's credential.
