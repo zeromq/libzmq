@@ -38,7 +38,7 @@
 
 zmq::server_t::server_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     socket_base_t (parent_, tid_, sid_, true),
-    next_rid (generate_random ())
+    next_routing_id (generate_random ())
 {
     options.type = ZMQ_SERVER;
 }
@@ -54,9 +54,9 @@ void zmq::server_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 
     zmq_assert (pipe_);
 
-    uint32_t routing_id = next_rid++;
+    uint32_t routing_id = next_routing_id++;
     if (!routing_id)
-        routing_id = next_rid++;        //  Never use RID zero
+        routing_id = next_routing_id++;        //  Never use Routing ID zero
 
     pipe_->set_server_socket_routing_id (routing_id);
     //  Add the record into output pipes lookup table
