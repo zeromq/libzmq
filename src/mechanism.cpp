@@ -121,6 +121,9 @@ size_t zmq::mechanism_t::property_len (const char *name, size_t value_len)
     return ::property_len (name_len (name), value_len);
 }
 
+#define ZMTP_PROPERTY_SOCKET_TYPE "Socket-Type"
+#define ZMTP_PROPERTY_IDENTITY "Identity"
+
 size_t zmq::mechanism_t::add_basic_properties (unsigned char *buf,
                                                size_t buf_capacity) const
 {
@@ -129,14 +132,14 @@ size_t zmq::mechanism_t::add_basic_properties (unsigned char *buf,
     //  Add socket type property
     const char *socket_type = socket_type_string (options.type);
     ptr += add_property (ptr, buf_capacity,
-                         ZMQ_MSG_PROPERTY_SOCKET_TYPE, socket_type,
+                         ZMTP_PROPERTY_SOCKET_TYPE, socket_type,
                          strlen (socket_type));
 
-    //  Add routing id property
+    //  Add identity (aka routing id) property
     if (options.type == ZMQ_REQ || options.type == ZMQ_DEALER
         || options.type == ZMQ_ROUTER)
         ptr += add_property (ptr, buf_capacity - (ptr - buf),
-                             ZMQ_MSG_PROPERTY_ROUTING_ID, options.routing_id,
+                             ZMTP_PROPERTY_IDENTITY, options.routing_id,
                              options.routing_id_size);
 
     return ptr - buf;
@@ -145,10 +148,10 @@ size_t zmq::mechanism_t::add_basic_properties (unsigned char *buf,
 size_t zmq::mechanism_t::basic_properties_len() const
 {
     const char *socket_type = socket_type_string (options.type);
-    return property_len (ZMQ_MSG_PROPERTY_SOCKET_TYPE, strlen (socket_type))
+    return property_len (ZMTP_PROPERTY_SOCKET_TYPE, strlen (socket_type))
            + ((options.type == ZMQ_REQ || options.type == ZMQ_DEALER
                || options.type == ZMQ_ROUTER)
-                ? property_len (ZMQ_MSG_PROPERTY_ROUTING_ID,
+                ? property_len (ZMTP_PROPERTY_IDENTITY,
                                 options.routing_id_size)
                 : 0);
 }
@@ -199,10 +202,10 @@ int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
         ptr_ += value_length;
         bytes_left -= value_length;
 
-        if (name == ZMQ_MSG_PROPERTY_ROUTING_ID && options.recv_routing_id)
+        if (name == ZMTP_PROPERTY_IDENTITY && options.recv_routing_id)
             set_peer_routing_id (value, value_length);
         else
-        if (name == ZMQ_MSG_PROPERTY_SOCKET_TYPE) {
+        if (name == ZMTP_PROPERTY_SOCKET_TYPE) {
             const std::string socket_type ((char *) value, value_length);
             if (!check_socket_type (socket_type)) {
                 errno = EINVAL;
