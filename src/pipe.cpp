@@ -92,7 +92,7 @@ zmq::pipe_t::pipe_t (object_t *parent_, upipe_t *inpipe_, upipe_t *outpipe_,
     sink (NULL),
     state (active),
     delay (true),
-    integral_routing_id(0),
+    server_socket_routing_id (0),
     conflate (conflate_)
 {
 }
@@ -115,24 +115,24 @@ void zmq::pipe_t::set_event_sink (i_pipe_events *sink_)
     sink = sink_;
 }
 
-void zmq::pipe_t::set_integral_routing_id (uint32_t integral_routing_id_)
+void zmq::pipe_t::set_server_socket_routing_id (uint32_t server_socket_routing_id_)
 {
-    integral_routing_id = integral_routing_id_;
+    server_socket_routing_id = server_socket_routing_id_;
 }
 
-uint32_t zmq::pipe_t::get_integral_routing_id ()
+uint32_t zmq::pipe_t::get_server_socket_routing_id ()
 {
-    return integral_routing_id;
+    return server_socket_routing_id;
 }
 
-void zmq::pipe_t::set_routing_id (const blob_t &routing_id_)
+void zmq::pipe_t::set_router_socket_routing_id (const blob_t &router_socket_routing_id_)
 {
-    routing_id = routing_id_;
+    router_socket_routing_id = router_socket_routing_id_;
 }
 
 zmq::blob_t zmq::pipe_t::get_routing_id ()
 {
-    return routing_id;
+    return router_socket_routing_id;
 }
 
 zmq::blob_t zmq::pipe_t::get_credential () const

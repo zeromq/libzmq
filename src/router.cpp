@@ -102,9 +102,9 @@ int zmq::router_t::xsetsockopt (int option_, const void *optval_,
     if (is_int) memcpy(&value, optval_, sizeof (int));
 
     switch (option_) {
-        case ZMQ_CONNECT_RID:
+        case ZMQ_CONNECT_ROUTING_ID:
             if (optval_ && optvallen_) {
-                connect_rid.assign ((char *) optval_, optvallen_);
+                connect_routing_id.assign ((char *) optval_, optvallen_);
                 return 0;
             }
             break;
@@ -470,10 +470,10 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
     blob_t routing_id;
     bool ok;
 
-    if (connect_rid.length()) {
-        routing_id = blob_t ((unsigned char*) connect_rid.c_str (),
-            connect_rid.length());
-        connect_rid.clear ();
+    if (connect_routing_id.length()) {
+        routing_id = blob_t ((unsigned char*) connect_routing_id.c_str (),
+            connect_routing_id.length());
+        connect_routing_id.clear ();
         outpipes_t::iterator it = outpipes.find (routing_id);
         if (it != outpipes.end ())
             zmq_assert(false); //  Not allowed to duplicate an existing rid
@@ -519,7 +519,7 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
                     put_uint32 (buf + 1, next_integral_routing_id++);
                     blob_t new_routing_id = blob_t (buf, sizeof buf);
 
-                    it->second.pipe->set_routing_id (new_routing_id);
+                    it->second.pipe->set_router_socket_routing_id (new_routing_id);
                     outpipe_t existing_outpipe =
                         {it->second.pipe, it->second.active};
 
@@ -540,7 +540,7 @@ bool zmq::router_t::identify_peer (pipe_t *pipe_)
         }
     }
 
-    pipe_->set_routing_id (routing_id);
+    pipe_->set_router_socket_routing_id (routing_id);
     //  Add the record into output pipes lookup table
     outpipe_t outpipe = {pipe_, true};
     ok = outpipes.insert (outpipes_t::value_type (routing_id, outpipe)).second;
