@@ -81,6 +81,21 @@ namespace zmq
         bool check_tag ();
 
     private:
+        void zero_trail_events (zmq::socket_poller_t::event_t *events_,
+                                                          int n_events_,
+                                                          int found);
+#if defined ZMQ_POLL_BASED_ON_POLL
+        int check_events (zmq::socket_poller_t::event_t *events_,
+                                                          int n_events_);
+#elif defined ZMQ_POLL_BASED_ON_SELECT
+        int check_events (zmq::socket_poller_t::event_t *events_, int n_events_,
+                                                          fd_set& inset,
+                                                          fd_set& outset,
+                                                          fd_set& errset);
+#endif
+        int adjust_timeout (zmq::clock_t& clock, long timeout_, uint64_t& now,
+                                                          uint64_t& end,
+                                                          bool& first_pass);
         void rebuild ();
 
         //  Used to check whether the object is a socket_poller.
