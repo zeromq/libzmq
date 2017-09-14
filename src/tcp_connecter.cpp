@@ -332,6 +332,7 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
             && err != WSAETIMEDOUT
             && err != WSAECONNABORTED
             && err != WSAEHOSTUNREACH
+            && err != WSAEHOSTDOWN
             && err != WSAENETUNREACH
             && err != WSAENETDOWN
             && err != WSAEACCES
@@ -354,6 +355,7 @@ zmq::fd_t zmq::tcp_connecter_t::connect ()
             errno == ECONNRESET ||
             errno == ETIMEDOUT ||
             errno == EHOSTUNREACH ||
+            errno == EHOSTDOWN ||
             errno == ENETUNREACH ||
             errno == ENETDOWN ||
             errno == EINVAL);
