@@ -16,6 +16,8 @@ addons:
       key_url: 'http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_14.04/Release.key'
     packages:
     - libsodium-dev
+    - asciidoc
+    - xmlto
 
 env:
  global:
