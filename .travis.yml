@@ -7,6 +7,15 @@ os:
 - osx
 
 sudo: false
+dist: trusty
+
+addons:
+  apt:
+    sources:
+    - sourceline: 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_14.04/ ./'
+      key_url: 'http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_14.04/Release.key'
+    packages:
+    - libsodium-dev
 
 env:
  global:
@@ -21,13 +30,7 @@ env:
 before_install:
 # workaround for Travis OSX CI bug, hasn't been fixed in a month so time for a hack
 - if [ $TRAVIS_OS_NAME == "osx" ] ; then brew uninstall libtool && brew install libtool ; fi
-
-#   Build required projects first
-before_script:
-- mkdir tmp
-#   libsodium
-- git clone --depth 1 -b stable git://github.com/jedisct1/libsodium.git
-- ( cd libsodium; ./autogen.sh; ./configure --prefix=${BUILD_PREFIX}; make check; make install )
+- if [ $TRAVIS_OS_NAME == "osx" ] ; then brew install libsodium ; fi
 
 # ZMQ stress tests need more open socket (files) than the usual default
 # On OSX, it seems the way to set the max files limit is constantly changing, so
