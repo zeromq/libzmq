@@ -27,7 +27,7 @@ before_install:
 # ZMQ stress tests need more open socket (files) than the usual default
 # On OSX, it seems the way to set the max files limit is constantly changing, so
 # try to use all known knobs to ensure compatibility across various versions
-- if [ $TRAVIS_OS_NAME == "osx" ] ; then sudo sysctl -w kern.maxfiles=64000 ; sudo sysctl -w kern.maxfilesperproc=64000 ; sudo launchctl limit maxfiles 64000 64000 ; fi ; ulimit -n 64000
+- if [ $TRAVIS_OS_NAME == "osx" ] ; then sudo sysctl -w kern.maxfiles=64000 ; sudo sysctl -w kern.maxfilesperproc=64000 ; sudo launchctl limit maxfiles 64000 64000 ; fi
 
 #   Build and check this project
 script:
