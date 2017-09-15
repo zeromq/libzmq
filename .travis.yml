@@ -19,13 +19,7 @@ addons:
 
 env:
  global:
-  - BUILD_PREFIX=$PWD/tmp
-  - CFLAGS=-I${BUILD_PREFIX}/include
-  - CPPFLAGS=-I${BUILD_PREFIX}/include
-  - CXXFLAGS=-I${BUILD_PREFIX}/include
-  - LDFLAGS=-L${BUILD_PREFIX}/lib
-  - PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig
-  - DISTCHECK_CONFIGURE_FLAGS="--with-libsodium --prefix=${BUILD_PREFIX}"
+  - DISTCHECK_CONFIGURE_FLAGS="--with-libsodium"
 
 before_install:
 - if [ $TRAVIS_OS_NAME == "osx" ] ; then brew install libsodium ; fi
@@ -37,7 +31,7 @@ before_install:
 
 #   Build and check this project
 script:
-- ./autogen.sh && ./configure --with-libsodium --prefix=${BUILD_PREFIX} && make distcheck
+- ./autogen.sh && ./configure --with-libsodium && make distcheck
 
 # Deploy tags
 before_deploy:
