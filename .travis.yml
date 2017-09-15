@@ -28,8 +28,6 @@ env:
   - DISTCHECK_CONFIGURE_FLAGS="--with-libsodium --prefix=${BUILD_PREFIX}"
 
 before_install:
-# workaround for Travis OSX CI bug, hasn't been fixed in a month so time for a hack
-- if [ $TRAVIS_OS_NAME == "osx" ] ; then brew uninstall libtool && brew install libtool ; fi
 - if [ $TRAVIS_OS_NAME == "osx" ] ; then brew install libsodium ; fi
 
 # ZMQ stress tests need more open socket (files) than the usual default
