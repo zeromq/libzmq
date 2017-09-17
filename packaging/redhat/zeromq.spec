@@ -144,6 +144,8 @@ sed -i "s/openpgm-[0-9].[0-9]/%{openpgm_pc}/g" \
     configure*
 
 %build
+# Workaround for automake < 1.14 bug
+mkdir -p config
 autoreconf -fi
 %configure --enable-drafts=%{DRAFTS} \
     --with-pgm=%{PGM} \
