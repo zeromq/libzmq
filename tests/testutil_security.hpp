@@ -153,7 +153,8 @@ enum zap_protocol_t
     zap_wrong_version,
     zap_wrong_request_id,
     zap_status_invalid,
-    zap_too_many_parts
+    zap_too_many_parts,
+    zap_disconnect
 };
 
 void *zap_requests_handled;
@@ -196,6 +197,8 @@ void zap_handler_generic (void *ctx,
         char *version = s_recv (handler);
         if (!version)
             break; //  Terminating - peer's socket closed
+        if (zap_protocol == zap_disconnect)
+            break;
 
         char *sequence = s_recv (handler);
         char *domain = s_recv (handler);
@@ -285,8 +288,11 @@ void zap_handler_generic (void *ctx,
     assert (rc == 0);
     close_zero_linger (handler);
 
-    rc = s_send (control, "STOPPED");
-    assert (rc == 7);
+    if (zap_protocol != zap_disconnect)
+    {
+        rc = s_send(control, "STOPPED");
+        assert(rc == 7);
+    }
     close_zero_linger (control);
 }
 
@@ -321,7 +327,7 @@ void setup_handshake_socket_monitor (void *ctx,
 
 void setup_context_and_server_side (
   void **ctx,
-  void **handler,
+  void **zap_control,
   void **zap_thread,
   void **server,
   void **server_mon,
@@ -338,15 +344,15 @@ void setup_context_and_server_side (
     zap_requests_handled = zmq_atomic_counter_new ();
     assert (zap_requests_handled != NULL);
 
-    *handler = zmq_socket (*ctx, ZMQ_REP);
-    assert (*handler);
-    int rc = zmq_bind (*handler, "inproc://handler-control");
+    *zap_control = zmq_socket (*ctx, ZMQ_REP);
+    assert (*zap_control);
+    int rc = zmq_bind (*zap_control, "inproc://handler-control");
     assert (rc == 0);
 
     if (zap_handler_) {
         *zap_thread = zmq_threadstart (zap_handler_, *ctx);
 
-        char *buf = s_recv (*handler);
+        char *buf = s_recv (*zap_control);
         assert (buf);
         assert (streq (buf, "GO"));
         free (buf);
@@ -374,20 +380,24 @@ void setup_context_and_server_side (
                                     server_monitor_endpoint);
 }
 
-void shutdown_context_and_server_side (
-  void *ctx, void *zap_thread, void *server, void *server_mon, void *handler)
+void shutdown_context_and_server_side (void *ctx,
+                                       void *zap_thread,
+                                       void *server,
+                                       void *server_mon,
+                                       void *zap_control,
+                                       bool zap_handler_stopped = false)
 {
-    if (zap_thread) {
-        int rc = s_send (handler, "STOP");
+    if (zap_thread && !zap_handler_stopped) {
+        int rc = s_send (zap_control, "STOP");
         assert (rc == 4);
-        char *buf = s_recv (handler);
+        char *buf = s_recv (zap_control);
         assert (buf);
         assert (streq (buf, "STOPPED"));
         free (buf);
-        rc = zmq_unbind (handler, "inproc://handler-control");
+        rc = zmq_unbind (zap_control, "inproc://handler-control");
         assert (rc == 0);
     }
-    close_zero_linger(handler);
+    close_zero_linger(zap_control);
 
 #ifdef ZMQ_BUILD_DRAFT_API
     close_zero_linger (server_mon);
@@ -576,7 +586,8 @@ int expect_monitor_event_multiple (void *server_mon,
         // to the peer and then tries to read the socket before the peer reads
         // ECONNABORTED happens when a client aborts a connection via RST/timeout
         if (event == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL
-            && (err == EPIPE || err == ECONNRESET || err == ECONNABORTED)) {
+            && ((err == EPIPE && expected_err != EPIPE) || err == ECONNRESET
+                || err == ECONNABORTED)) {
             fprintf (stderr,
                      "Ignored event (skipping any further events): %x (err = "
                      "%i == %s)\n",
