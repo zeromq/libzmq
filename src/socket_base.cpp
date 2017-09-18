@@ -96,6 +96,7 @@
 #include "gather.hpp"
 #include "scatter.hpp"
 #include "dgram.hpp"
+#include "ysstream.hpp"
 
 
 
@@ -165,6 +166,9 @@ zmq::socket_base_t *zmq::socket_base_t::create (int type_, class ctx_t *parent_,
             break;
         case ZMQ_DGRAM:
             s = new (std::nothrow) dgram_t (parent_, tid_, sid_);
+            break;
+        case ZMQ_YSSTREAM:
+            s = new (std::nothrow) ysstream_t (parent_, tid_, sid_);
             break;
         default:
             errno = EINVAL;

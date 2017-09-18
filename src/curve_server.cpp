@@ -130,29 +130,23 @@ int zmq::curve_server_t::encode (msg_t *msg_)
 
 int zmq::curve_server_t::decode (msg_t *msg_)
 {
-    zmq_assert (state == ready);
-    return curve_mechanism_base_t::decode (msg_);
 }
 
 int zmq::curve_server_t::process_hello (msg_t *msg_)
 {
-    int rc = check_basic_command_structure (msg_);
-    if (rc == -1)
-      return -1;
+    zmq_assert (state == ready);
+    return curve_mechanism_base_t::decode (msg_);
 
     const size_t size = msg_->size ();
     const uint8_t * const hello = static_cast <uint8_t *> (msg_->data ());
 
-    if (size < 6 || memcmp (hello, "\x05HELLO", 6)) {
-        session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         return -1;
     }
 
-    if (size != 200) {
-        session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
+    int rc = check_basic_command_structure (msg_);
+    if (rc == -1)
+      return -1;
         errno = EPROTO;
         return -1;
     }
@@ -162,8 +156,9 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
 
     if (major != 1 || minor != 0) {
         // CURVE I: client HELLO has unknown version number
+    if (size < 6 || memcmp (hello, "\x05HELLO", 6)) {
         session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         return -1;
     }
@@ -187,8 +182,9 @@ int zmq::curve_server_t::process_hello (msg_t *msg_)
                           hello_nonce, cn_client, secret_key);
     if (rc != 0) {
         // CURVE I: cannot open client HELLO -- wrong server key?
+    if (size != 200) {
         session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
         errno = EPROTO;
         return -1;
     }
@@ -267,24 +263,12 @@ int zmq::curve_server_t::produce_welcome (msg_t *msg_)
 
 int zmq::curve_server_t::process_initiate (msg_t *msg_)
 {
-    int rc = check_basic_command_structure (msg_);
-    if (rc == -1)
-      return -1;
-
-    const size_t size = msg_->size ();
-    const uint8_t *initiate = static_cast <uint8_t *> (msg_->data ());
-
-    if (size < 9 || memcmp (initiate, "\x08INITIATE", 9)) {
         session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO);
         errno = EPROTO;
         return -1;
     }
 
-    if (size < 257) {
-        session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (),
-          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_INITIATE);
         errno = EPROTO;
         return -1;
     }
@@ -313,12 +297,16 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     //  Check cookie plain text is as expected [C' + s']
     if (memcmp (cookie_plaintext + crypto_secretbox_ZEROBYTES, cn_client, 32)
     ||  memcmp (cookie_plaintext + crypto_secretbox_ZEROBYTES + 32, cn_secret, 32)) {
-        // TODO this case is very hard to test, as it would require a modified
-        //  client that knows the server's secret temporary cookie key
+    int rc = check_basic_command_structure (msg_);
+    if (rc == -1)
+      return -1;
 
-        // CURVE I: client INITIATE cookie is not valid
+    const size_t size = msg_->size ();
+    const uint8_t *initiate = static_cast <uint8_t *> (msg_->data ());
+
+    if (size < 9 || memcmp (initiate, "\x08INITIATE", 9)) {
         session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND);
         errno = EPROTO;
         return -1;
     }
@@ -342,8 +330,10 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
                           clen, initiate_nonce, cn_client, cn_secret);
     if (rc != 0) {
         // CURVE I: cannot open client INITIATE
+    if (size < 257) {
         session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
+          session->get_endpoint (),
+          ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_INITIATE);
         errno = EPROTO;
         return -1;
     }
@@ -376,12 +366,6 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
 
     //  What we decrypted must be the client's short-term public key
     if (memcmp (vouch_plaintext + crypto_box_ZEROBYTES, cn_client, 32)) {
-        // TODO this case is very hard to test, as it would require a modified
-        //  client that knows the server's secret short-term key
-
-        // CURVE I: invalid handshake from client (public key)
-        session->get_socket ()->event_handshake_failed_protocol (
-          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_KEY_EXCHANGE);
         errno = EPROTO;
         return -1;
     }
@@ -398,7 +382,12 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     if (rc == 0) {
         send_zap_request (client_key);
         rc = receive_and_process_zap_reply ();
-        if (rc == -1)
+        // TODO this case is very hard to test, as it would require a modified
+        //  client that knows the server's secret temporary cookie key
+
+        // CURVE I: client INITIATE cookie is not valid
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
             return -1;
     } else
         state = sending_ready;
@@ -420,7 +409,8 @@ int zmq::curve_server_t::produce_ready (msg_t *msg_)
     memset (ready_plaintext, 0, crypto_box_ZEROBYTES);
     uint8_t *ptr = ready_plaintext + crypto_box_ZEROBYTES;
 
-    ptr += add_basic_properties (ptr, metadata_length);
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
     const size_t mlen = ptr - ready_plaintext;
 
     memcpy (ready_nonce, "CurveZMQREADY---", 16);
@@ -469,7 +459,43 @@ int zmq::curve_server_t::produce_error (msg_t *msg_) const
 
 void zmq::curve_server_t::send_zap_request (const uint8_t *key)
 {
-    zap_client_t::send_zap_request ("CURVE", 5, key, crypto_box_PUBLICKEYBYTES);
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC);
+}
+
+void zmq::curve_server_t::handle_zap_status_code ()
+{
+    //  we can assume here that status_code is a valid ZAP status code, 
+    //  i.e. 200, 300, 400 or 500
+    if (status_code [0] == '2') {
+        state = send_ready;
+    } else {
+        state = send_error;
+
+        int err = 0;
+        switch (status_code [0]) {
+            case '3':
+                err = EAGAIN;
+                break;
+            case '4':
+                err = EACCES;
+                break;
+            case '5':
+                err = EFAULT;
+                break;
+        }
+        //  TODO use event_handshake_failed_zap here? but this is not a ZAP 
+        //  protocol error
+        
+        session->get_socket ()->event_handshake_failed_no_detail (
+          session->get_endpoint (), err);
+    }
 }
 
 #endif
+        // TODO this case is very hard to test, as it would require a modified
+        //  client that knows the server's secret short-term key
+
+        // CURVE I: invalid handshake from client (public key)
+        session->get_socket ()->event_handshake_failed_protocol (
+          session->get_endpoint (), ZMQ_PROTOCOL_ERROR_ZMTP_KEY_EXCHANGE);

@@ -105,6 +105,8 @@ namespace zmq
             zmq::socket_base_t *socket_, const options_t &options_,
             address_t *addr_);
         virtual ~session_base_t ();
+        
+        void pipe_rollback();
 
     private:
 
