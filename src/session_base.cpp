@@ -536,6 +536,11 @@ void zmq::session_base_t::reconnect ()
     //  Reconnect.
     if (options.reconnect_ivl != -1)
         start_connecting (true);
+    else {
+        std::string *ep = new (std::string);
+        addr->to_string (*ep);
+        send_term_endpoint (socket, ep);
+    }
 
     //  For subscriber sockets we hiccup the inbound pipe, which will cause
     //  the socket object to resend all the subscriptions.

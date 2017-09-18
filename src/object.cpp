@@ -134,6 +134,10 @@ void zmq::object_t::process_command (command_t &cmd_)
         process_term_ack ();
         break;
 
+    case command_t::term_endpoint:
+        process_term_endpoint (cmd_.args.term_endpoint.endpoint);
+        break;
+
     case command_t::reap:
         process_reap (cmd_.args.reap.socket);
         break;
@@ -332,6 +336,16 @@ void zmq::object_t::send_term_ack (own_t *destination_)
     send_command (cmd);
 }
 
+void zmq::object_t::send_term_endpoint (own_t *destination_,
+        std::string *endpoint_)
+{
+    command_t cmd;
+    cmd.destination = destination_;
+    cmd.type = command_t::term_endpoint;
+    cmd.args.term_endpoint.endpoint = endpoint_;
+    send_command (cmd);
+}
+
 void zmq::object_t::send_reap (class socket_base_t *socket_)
 {
     command_t cmd;
@@ -431,6 +445,11 @@ void zmq::object_t::process_term (int)
 }
 
 void zmq::object_t::process_term_ack ()
+{
+    zmq_assert (false);
+}
+
+void zmq::object_t::process_term_endpoint (std::string *)
 {
     zmq_assert (false);
 }

@@ -418,6 +418,7 @@ test_apps = \
 	tests/test_base85 \
 	tests/test_bind_after_connect_tcp \
 	tests/test_sodium \
+	tests/test_reconnect_ivl \
 	tests/test_socket_null
 
 tests_test_ancillaries_SOURCES = tests/test_ancillaries.cpp
@@ -637,6 +638,9 @@ tests_test_sodium_LDADD = src/libzmq.la
 
 tests_test_socket_null_SOURCES = tests/test_socket_null.cpp
 tests_test_socket_null_LDADD = src/libzmq.la
+
+tests_test_reconnect_ivl_SOURCES = tests/test_reconnect_ivl.cpp
+tests_test_reconnect_ivl_LDADD = src/libzmq.la
 
 if HAVE_CURVE
 

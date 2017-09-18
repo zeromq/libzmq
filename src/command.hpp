@@ -30,6 +30,7 @@
 #ifndef __ZMQ_COMMAND_HPP_INCLUDED__
 #define __ZMQ_COMMAND_HPP_INCLUDED__
 
+#include <string>
 #include "stdint.hpp"
 
 namespace zmq
@@ -69,6 +70,7 @@ namespace zmq
             term_req,
             term,
             term_ack,
+            term_endpoint,
             reap,
             reaped,
             inproc_connected,
@@ -152,6 +154,12 @@ namespace zmq
             //  shut down.
             struct {
             } term_ack;
+
+            //  Sent by session_base (I/O thread) to socket (application thread)
+            //  to ask to disconnect the endpoint.
+            struct {
+                std::string *endpoint;
+            } term_endpoint;
 
             //  Transfers the ownership of the closed socket
             //  to the reaper thread.

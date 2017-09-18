@@ -250,6 +250,7 @@ namespace zmq
         void process_stop ();
         void process_bind (zmq::pipe_t *pipe_);
         void process_term (int linger_);
+        void process_term_endpoint (std::string *endpoint_);
 
         void update_pipe_options(int option_);
 

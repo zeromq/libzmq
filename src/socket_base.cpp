@@ -1425,6 +1425,12 @@ void zmq::socket_base_t::process_term (int linger_)
     own_t::process_term (linger_);
 }
 
+void zmq::socket_base_t::process_term_endpoint (std::string *endpoint_)
+{
+    term_endpoint (endpoint_->c_str());
+    delete endpoint_;
+}
+
 void zmq::socket_base_t::update_pipe_options(int option_)
 {
     if (option_ == ZMQ_SNDHWM || option_ == ZMQ_RCVHWM)
