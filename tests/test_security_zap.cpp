@@ -64,6 +64,16 @@ static void zap_handler_disconnect (void *ctx)
     zap_handler_generic (ctx, zap_disconnect);
 }
 
+static void zap_handler_do_not_recv (void *ctx)
+{
+    zap_handler_generic (ctx, zap_do_not_recv);
+}
+
+static void zap_handler_do_not_send (void *ctx)
+{
+    zap_handler_generic (ctx, zap_do_not_send);
+}
+
 int expect_new_client_bounce_fail_and_count_monitor_events (
   void *ctx,
   char *my_endpoint,
@@ -344,8 +354,42 @@ void test_zap_errors (socket_config_fn server_socket_config_,
       0, 0,
 #endif
       client_socket_config_, client_socket_config_data_);
-    shutdown_context_and_server_side(ctx, zap_thread, server, server_mon,
-        handler, true);
+    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
+                                      handler, true);
+
+    //  ZAP handler does not read request
+    fprintf (stderr,
+             "test_zap_unsuccessful ZAP handler does not read request\n");
+    setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
+        &server_mon, my_endpoint, &zap_handler_do_not_recv,
+        server_socket_config_);
+    test_zap_unsuccessful_no_handler (
+      ctx, my_endpoint, server, server_mon,
+#ifdef ZMQ_BUILD_DRAFT_API
+      ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL, EPIPE,
+#else
+      0, 0,
+#endif
+      client_socket_config_, client_socket_config_data_);
+    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
+                                      handler);
+
+    //  ZAP handler does not send reply
+    fprintf (stderr,
+             "test_zap_unsuccessful ZAP handler does not write reply\n");
+    setup_context_and_server_side (
+      &ctx, &handler, &zap_thread, &server, &server_mon, my_endpoint,
+      &zap_handler_do_not_send, server_socket_config_);
+    test_zap_unsuccessful_no_handler (
+      ctx, my_endpoint, server, server_mon,
+#ifdef ZMQ_BUILD_DRAFT_API
+      ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL, EPIPE,
+#else
+      0, 0,
+#endif
+      client_socket_config_, client_socket_config_data_);
+    shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
+                                      handler);
 }
 
 int main (void)

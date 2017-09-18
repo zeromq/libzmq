@@ -154,7 +154,9 @@ enum zap_protocol_t
     zap_wrong_request_id,
     zap_status_invalid,
     zap_too_many_parts,
-    zap_disconnect
+    zap_disconnect,
+    zap_do_not_recv,
+    zap_do_not_send
 };
 
 void *zap_requests_handled;
@@ -182,8 +184,11 @@ void zap_handler_generic (void *ctx,
       {handler, 0, ZMQ_POLLIN, 0},
     };
 
+    // if ordered not to receive the request, ignore the second poll item
+    const int numitems = (zap_protocol == zap_do_not_recv) ? 1 : 2;
+
     //  Process ZAP requests forever
-    while (zmq_poll (items, 2, -1) >= 0) {
+    while (zmq_poll (items, numitems, -1) >= 0) {
         if (items[0].revents & ZMQ_POLLIN) {
             char *buf = s_recv (control);
             assert (buf);
@@ -198,7 +203,10 @@ void zap_handler_generic (void *ctx,
         if (!version)
             break; //  Terminating - peer's socket closed
         if (zap_protocol == zap_disconnect)
+        {
+            free (version);
             break;
+        }
 
         char *sequence = s_recv (handler);
         char *domain = s_recv (handler);
@@ -268,12 +276,14 @@ void zap_handler_generic (void *ctx,
             if (zap_protocol == zap_too_many_parts) {
                 s_sendmore (handler, "");
             }
-            s_send (handler, "");
+            if (zap_protocol != zap_do_not_send)
+                s_send (handler, "");
         } else {
             s_sendmore (handler, "400");
             s_sendmore (handler, "Invalid client public key");
             s_sendmore (handler, "");
-            s_send (handler, "");
+            if (zap_protocol != zap_do_not_send)
+                s_send(handler, "");
         }
         free (version);
         free (sequence);
