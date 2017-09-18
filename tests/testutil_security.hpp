@@ -49,7 +49,8 @@ void socket_config_null_server (void *server, void *server_secret)
 {
     LIBZMQ_UNUSED (server_secret);
 
-    int rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, test_zap_domain, 7);
+    int rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, test_zap_domain,
+                             strlen (test_zap_domain));
     assert (rc == 0);
 }
 
@@ -61,7 +62,8 @@ void socket_config_plain_client (void *server, void *server_secret)
 {
     LIBZMQ_UNUSED (server_secret);
 
-    int rc = zmq_setsockopt (server, ZMQ_PLAIN_PASSWORD, test_plain_password, 8);
+    int rc =
+      zmq_setsockopt (server, ZMQ_PLAIN_PASSWORD, test_plain_password, 8);
     assert (rc == 0);
 
     rc = zmq_setsockopt (server, ZMQ_PLAIN_USERNAME, test_plain_username, 8);
@@ -73,8 +75,13 @@ void socket_config_plain_server (void *server, void *server_secret)
     LIBZMQ_UNUSED (server_secret);
 
     int as_server = 1;
-    int rc = zmq_setsockopt (server, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
+    int rc =
+      zmq_setsockopt (server, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
     assert (rc == 0);
+
+    rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, test_zap_domain,
+                         strlen (test_zap_domain));
+    assert(rc == 0);
 }
 
 //  CURVE specific functions
@@ -97,11 +104,16 @@ void setup_testutil_security_curve ()
 void socket_config_curve_server (void *server, void *server_secret)
 {
     int as_server = 1;
-    int rc = zmq_setsockopt (server, ZMQ_CURVE_SERVER, &as_server, sizeof (int));
+    int rc =
+      zmq_setsockopt (server, ZMQ_CURVE_SERVER, &as_server, sizeof (int));
     assert (rc == 0);
 
     rc = zmq_setsockopt (server, ZMQ_CURVE_SECRETKEY, server_secret, 41);
     assert (rc == 0);
+
+    rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, test_zap_domain,
+                         strlen (test_zap_domain));
+    assert(rc == 0);
 }
 
 struct curve_client_data_t
@@ -133,15 +145,18 @@ void socket_config_curve_client (void *client, void *data)
 
 enum zap_protocol_t
 {
-  zap_ok,
-  // ZAP-compliant non-standard cases
-  zap_status_temporary_failure,
-  zap_status_internal_error,
-  // ZAP protocol errors
-  zap_wrong_version,
-  zap_wrong_request_id,
-  zap_status_invalid,
-  zap_too_many_parts
+    zap_ok,
+    // ZAP-compliant non-standard cases
+    zap_status_temporary_failure,
+    zap_status_internal_error,
+    // ZAP protocol errors
+    zap_wrong_version,
+    zap_wrong_request_id,
+    zap_status_invalid,
+    zap_too_many_parts,
+    zap_disconnect,
+    zap_do_not_recv,
+    zap_do_not_send
 };
 
 void *zap_requests_handled;
@@ -165,11 +180,15 @@ void zap_handler_generic (void *ctx,
     assert (rc == 2);
 
     zmq_pollitem_t items[] = {
-      {control, 0, ZMQ_POLLIN, 0}, {handler, 0, ZMQ_POLLIN, 0},
+      {control, 0, ZMQ_POLLIN, 0},
+      {handler, 0, ZMQ_POLLIN, 0},
     };
 
+    // if ordered not to receive the request, ignore the second poll item
+    const int numitems = (zap_protocol == zap_do_not_recv) ? 1 : 2;
+
     //  Process ZAP requests forever
-    while (zmq_poll (items, 2, -1) >= 0) {
+    while (zmq_poll (items, numitems, -1) >= 0) {
         if (items[0].revents & ZMQ_POLLIN) {
             char *buf = s_recv (control);
             assert (buf);
@@ -183,6 +202,11 @@ void zap_handler_generic (void *ctx,
         char *version = s_recv (handler);
         if (!version)
             break; //  Terminating - peer's socket closed
+        if (zap_protocol == zap_disconnect)
+        {
+            free (version);
+            break;
+        }
 
         char *sequence = s_recv (handler);
         char *domain = s_recv (handler);
@@ -200,15 +224,13 @@ void zap_handler_generic (void *ctx,
 
             authentication_succeeded =
               streq (client_key_text, valid_client_public);
-        }
-        else if (streq(mechanism, "PLAIN"))
-        {
-            char client_username[32];
+        } else if (streq (mechanism, "PLAIN")) {
+            char client_username [32];
             int size = zmq_recv (handler, client_username, 32, 0);
             assert (size > 0);
             client_username [size] = 0;
-            
-            char client_password[32];
+
+            char client_password [32];
             size = zmq_recv (handler, client_password, 32, 0);
             assert (size > 0);
             client_password [size] = 0;
@@ -216,13 +238,9 @@ void zap_handler_generic (void *ctx,
             authentication_succeeded =
               streq (test_plain_username, client_username)
               && streq (test_plain_password, client_password);
-        }
-        else if (streq(mechanism, "NULL"))
-        {
+        } else if (streq (mechanism, "NULL")) {
             authentication_succeeded = true;
-        }
-        else
-        {
+        } else {
             fprintf (stderr, "Unsupported mechanism: %s\n", mechanism);
             assert (false);
         }
@@ -258,12 +276,14 @@ void zap_handler_generic (void *ctx,
             if (zap_protocol == zap_too_many_parts) {
                 s_sendmore (handler, "");
             }
-            s_send (handler, "");
+            if (zap_protocol != zap_do_not_send)
+                s_send (handler, "");
         } else {
             s_sendmore (handler, "400");
             s_sendmore (handler, "Invalid client public key");
             s_sendmore (handler, "");
-            s_send (handler, "");
+            if (zap_protocol != zap_do_not_send)
+                s_send(handler, "");
         }
         free (version);
         free (sequence);
@@ -278,8 +298,11 @@ void zap_handler_generic (void *ctx,
     assert (rc == 0);
     close_zero_linger (handler);
 
-    rc = s_send (control, "STOPPED");
-    assert (rc == 7);
+    if (zap_protocol != zap_disconnect)
+    {
+        rc = s_send(control, "STOPPED");
+        assert(rc == 7);
+    }
     close_zero_linger (control);
 }
 
@@ -314,7 +337,7 @@ void setup_handshake_socket_monitor (void *ctx,
 
 void setup_context_and_server_side (
   void **ctx,
-  void **handler,
+  void **zap_control,
   void **zap_thread,
   void **server,
   void **server_mon,
@@ -331,17 +354,20 @@ void setup_context_and_server_side (
     zap_requests_handled = zmq_atomic_counter_new ();
     assert (zap_requests_handled != NULL);
 
-    *handler = zmq_socket (*ctx, ZMQ_REP);
-    assert (*handler);
-    int rc = zmq_bind (*handler, "inproc://handler-control");
+    *zap_control = zmq_socket (*ctx, ZMQ_REP);
+    assert (*zap_control);
+    int rc = zmq_bind (*zap_control, "inproc://handler-control");
     assert (rc == 0);
 
-    *zap_thread = zmq_threadstart (zap_handler_, *ctx);
+    if (zap_handler_) {
+        *zap_thread = zmq_threadstart (zap_handler_, *ctx);
 
-    char *buf = s_recv (*handler);
-    assert (buf);
-    assert (streq (buf, "GO"));
-    free (buf);
+        char *buf = s_recv (*zap_control);
+        assert (buf);
+        assert (streq (buf, "GO"));
+        free (buf);
+    } else
+        *zap_thread = NULL;
 
     //  Server socket will accept connections
     *server = zmq_socket (*ctx, ZMQ_DEALER);
@@ -349,7 +375,7 @@ void setup_context_and_server_side (
 
     socket_config_ (*server, socket_config_data_);
 
-    rc = zmq_setsockopt (*server, ZMQ_IDENTITY, identity, strlen(identity));
+    rc = zmq_setsockopt (*server, ZMQ_IDENTITY, identity, strlen (identity));
     assert (rc == 0);
 
     rc = zmq_bind (*server, "tcp://127.0.0.1:*");
@@ -368,17 +394,20 @@ void shutdown_context_and_server_side (void *ctx,
                                        void *zap_thread,
                                        void *server,
                                        void *server_mon,
-                                       void *handler)
+                                       void *zap_control,
+                                       bool zap_handler_stopped = false)
 {
-    int rc = s_send (handler, "STOP");
-    assert (rc == 4);
-    char *buf = s_recv (handler);
-    assert (buf);
-    assert (streq (buf, "STOPPED"));
-    free (buf);
-    rc = zmq_unbind (handler, "inproc://handler-control");
-    assert (rc == 0);
-    close_zero_linger (handler);
+    if (zap_thread && !zap_handler_stopped) {
+        int rc = s_send (zap_control, "STOP");
+        assert (rc == 4);
+        char *buf = s_recv (zap_control);
+        assert (buf);
+        assert (streq (buf, "STOPPED"));
+        free (buf);
+        rc = zmq_unbind (zap_control, "inproc://handler-control");
+        assert (rc == 0);
+    }
+    close_zero_linger(zap_control);
 
 #ifdef ZMQ_BUILD_DRAFT_API
     close_zero_linger (server_mon);
@@ -386,9 +415,10 @@ void shutdown_context_and_server_side (void *ctx,
     close_zero_linger (server);
 
     //  Wait until ZAP handler terminates
-    zmq_threadclose (zap_thread);
+    if (zap_thread)
+        zmq_threadclose (zap_thread);
 
-    rc = zmq_ctx_term (ctx);
+    int rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
     zmq_atomic_counter_destroy (&zap_requests_handled);
@@ -408,8 +438,7 @@ void *create_and_connect_client (void *ctx,
     int rc = zmq_connect (client, my_endpoint);
     assert (rc == 0);
 
-    if (client_mon)
-    {
+    if (client_mon) {
         setup_handshake_socket_monitor (ctx, client, client_mon,
                                         "inproc://client-monitor");
     }
@@ -436,8 +465,10 @@ void expect_new_client_bounce_fail (void *ctx,
 //  by reference, if not null, and event number by value. Returns -1
 //  in case of error.
 
-static int
-get_monitor_event_internal (void *monitor, int *value, char **address, int recv_flag)
+static int get_monitor_event_internal (void *monitor,
+                                       int *value,
+                                       char **address,
+                                       int recv_flag)
 {
     //  First frame in message contains event number and value
     zmq_msg_t msg;
@@ -507,8 +538,7 @@ int get_monitor_event (void *monitor, int *value, char **address)
 void expect_monitor_event (void *monitor, int expected_event)
 {
     int event = get_monitor_event (monitor, NULL, NULL);
-    if (event != expected_event)
-    {
+    if (event != expected_event) {
         fprintf (stderr, "Expected monitor event %x but received %x\n",
                  expected_event, event);
         assert (event == expected_event);
@@ -522,19 +552,18 @@ void print_unexpected_event (int event,
                              int expected_event,
                              int expected_err)
 {
-  fprintf(
-    stderr,
-    "Unexpected event: 0x%x, value = %i/0x%x (expected: 0x%x, value "
-    "= %i/0x%x)\n",
-    event, err, err, expected_event, expected_err, expected_err);
+    fprintf (stderr,
+             "Unexpected event: 0x%x, value = %i/0x%x (expected: 0x%x, value "
+             "= %i/0x%x)\n",
+             event, err, err, expected_event, expected_err, expected_err);
 }
 
-//  expects that one or more occurrences of the expected event are received 
+//  expects that one or more occurrences of the expected event are received
 //  via the specified socket monitor
 //  returns the number of occurrences of the expected event
 //  interrupts, if a ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL with EPIPE, ECONNRESET
 //  or ECONNABORTED occurs; in this case, 0 is returned
-//  this should be investigated further, see 
+//  this should be investigated further, see
 //  https://github.com/zeromq/libzmq/issues/2644
 int expect_monitor_event_multiple (void *server_mon,
                                    int expected_event,
@@ -550,14 +579,15 @@ int expect_monitor_event_multiple (void *server_mon,
     int err;
     while (
       (event = get_monitor_event_with_timeout (server_mon, &err, NULL, timeout))
-      != -1 || !count_of_expected_events) {
+        != -1
+      || !count_of_expected_events) {
         if (event == -1) {
             if (optional)
                 break;
             wait_time += timeout;
             fprintf (stderr,
                      "Still waiting for first event after %ims (expected event "
-                     "%x (value %i/%x))\n",
+                     "%x (value %i/0x%x))\n",
                      wait_time, expected_event, expected_err, expected_err);
             continue;
         }
@@ -565,12 +595,13 @@ int expect_monitor_event_multiple (void *server_mon,
         // ECONNRESET can happen on very slow machines, when the engine writes
         // to the peer and then tries to read the socket before the peer reads
         // ECONNABORTED happens when a client aborts a connection via RST/timeout
-        if (event == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL &&
-                (err == EPIPE || err == ECONNRESET || err == ECONNABORTED)) {
-            fprintf (
-              stderr,
-              "Ignored event (skipping any further events): %x (err = %i)\n",
-              event, err);
+        if (event == ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL
+            && ((err == EPIPE && expected_err != EPIPE) || err == ECONNRESET
+                || err == ECONNABORTED)) {
+            fprintf (stderr,
+                     "Ignored event (skipping any further events): %x (err = "
+                     "%i == %s)\n",
+                     event, err, zmq_strerror (err));
             client_closed_connection = 1;
             break;
         }
@@ -581,7 +612,8 @@ int expect_monitor_event_multiple (void *server_mon,
         }
         ++count_of_expected_events;
     }
-    assert (optional || count_of_expected_events > 0 || client_closed_connection);
+    assert (optional || count_of_expected_events > 0
+            || client_closed_connection);
 
     return count_of_expected_events;
 }
@@ -600,8 +632,8 @@ int expect_monitor_event_multiple (void *server_mon,
                     || err == ECONNABORTED)) {                                 \
                 fprintf (stderr,                                               \
                          "Ignored event (skipping any further events): %x "    \
-                         "(err = %i)\n",                                       \
-                         event, err);                                          \
+                         "(err = %i == %s)\n",                                 \
+                         event, err, zmq_strerror (err));                      \
                 continue;                                                      \
             }                                                                  \
             ++event_count;                                                     \

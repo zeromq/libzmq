@@ -45,6 +45,8 @@ class mechanism_base_t : public mechanism_t
     int check_basic_command_structure (msg_t *msg_);
 
     void handle_error_reason (const char *error_reason, size_t error_reason_len);
+
+    bool zap_required() const;
 };
 }
 

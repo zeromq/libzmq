@@ -44,6 +44,10 @@ zmq::plain_server_t::plain_server_t (session_base_t *session_,
     zap_client_common_handshake_t (
       session_, peer_address_, options_, sending_welcome)
 {
+    //  Note that there is no point to PLAIN if ZAP is not set up to handle the
+    //  username and password, so if ZAP is not configured it is considered a
+    //  failure.
+    zmq_assert (zap_required());
 }
 
 zmq::plain_server_t::~plain_server_t ()
@@ -173,13 +177,20 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     }
 
     //  Use ZAP protocol (RFC 27) to authenticate the user.
-    //  Note that there is no point to PLAIN if ZAP is not set up to handle the
-    //  username and password, so if ZAP is not configured it is considered a
-    //  failure.
     rc = session->zap_connect ();
-    if (rc != 0)
+    if (rc != 0) {
+        session->get_socket ()->event_handshake_failed_no_detail (
+          session->get_endpoint (), EFAULT);
         return -1;
+    }
+
     send_zap_request (username, password);
+    state = waiting_for_zap_reply;
+
+    //  TODO actually, it is quite unlikely that we can read the ZAP 
+    //  reply already, but removing this has some strange side-effect
+    //  (probably because the pipe's in_active flag is true until a read 
+    //  is attempted)
     return receive_and_process_zap_reply () == -1 ? -1 : 0;
 }
 

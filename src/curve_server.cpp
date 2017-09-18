@@ -390,18 +390,29 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     rc = crypto_box_beforenm (cn_precom, cn_client, cn_secret);
     zmq_assert (rc == 0);
 
-    //  Use ZAP protocol (RFC 27) to authenticate the user.
-    //  Note that rc will be -1 only if ZAP is not set up (Stonehouse pattern -
-    //  encryption without authentication), but if it was requested and it does
-    //  not work properly the program will abort.
-    rc = session->zap_connect ();
-    if (rc == 0) {
-        send_zap_request (client_key);
-        rc = receive_and_process_zap_reply ();
-        if (rc == -1)
+    if (zap_required ()) {
+        //  Use ZAP protocol (RFC 27) to authenticate the user.
+        rc = session->zap_connect ();
+        if (rc == 0) {
+            send_zap_request (client_key);
+            state = waiting_for_zap_reply;
+
+            //  TODO actually, it is quite unlikely that we can read the ZAP 
+            //  reply already, but removing this has some strange side-effect
+            //  (probably because the pipe's in_active flag is true until a read 
+            //  is attempted)
+            rc = receive_and_process_zap_reply ();
+            if (rc == -1)
+                return -1;
+        } else {
+            session->get_socket ()->event_handshake_failed_no_detail (
+              session->get_endpoint (), EFAULT);
             return -1;
-    } else
+        }
+    } else {
+        //  This supports the Stonehouse pattern (encryption without authentication).
         state = sending_ready;
+    }
 
     return parse_metadata (initiate_plaintext + crypto_box_ZEROBYTES + 128,
                            clen - crypto_box_ZEROBYTES - 128);

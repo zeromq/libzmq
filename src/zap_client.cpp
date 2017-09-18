@@ -299,10 +299,7 @@ void zap_client_common_handshake_t::handle_zap_status_code ()
 
 int zap_client_common_handshake_t::receive_and_process_zap_reply ()
 {
-    int rc = zap_client_t::receive_and_process_zap_reply ();
-    if (rc == 1)
-        // TODO shouldn't the state already be this?
-        state = waiting_for_zap_reply;
-    return rc;
+    zmq_assert (state == waiting_for_zap_reply);
+    return zap_client_t::receive_and_process_zap_reply ();
 }
 }

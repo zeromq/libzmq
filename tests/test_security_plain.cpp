@@ -109,6 +109,9 @@ int main (void)
     void *server = zmq_socket (ctx, ZMQ_DEALER);
     assert (server);
     int rc = zmq_setsockopt (server, ZMQ_IDENTITY, "IDENT", 6);
+    const char domain[] = "test";
+    assert (rc == 0);
+    rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, domain, strlen (domain));
     assert (rc == 0);
     int as_server = 1;
     rc = zmq_setsockopt (server, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
@@ -141,6 +144,8 @@ int main (void)
     client = zmq_socket (ctx, ZMQ_DEALER);
     assert (client);
     as_server = 1;
+    rc = zmq_setsockopt(client, ZMQ_ZAP_DOMAIN, domain, strlen (domain));
+    assert (rc == 0);
     rc = zmq_setsockopt (client, ZMQ_PLAIN_SERVER, &as_server, sizeof (int));
     assert (rc == 0);
     rc = zmq_connect (client, my_endpoint);

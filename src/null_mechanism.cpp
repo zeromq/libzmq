@@ -48,15 +48,9 @@ zmq::null_mechanism_t::null_mechanism_t (session_base_t *session_,
     error_command_sent (false),
     ready_command_received (false),
     error_command_received (false),
-    zap_connected (false),
     zap_request_sent (false),
     zap_reply_received (false)
 {
-    //  NULL mechanism only uses ZAP if there's a domain defined
-    //  This prevents ZAP requests on naive sockets
-    if (options.zap_domain.size () > 0
-    &&  session->zap_connect () == 0)
-        zap_connected = true;
 }
 
 zmq::null_mechanism_t::~null_mechanism_t ()
@@ -69,16 +63,31 @@ int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
         errno = EAGAIN;
         return -1;
     }
-    if (zap_connected && !zap_reply_received) {
+
+    if (zap_required() && !zap_reply_received) {
         if (zap_request_sent) {
             errno = EAGAIN;
             return -1;
         }
+        int rc = session->zap_connect();
+        if (rc == -1)
+        {
+            session->get_socket()->event_handshake_failed_no_detail (
+                session->get_endpoint(),
+                EFAULT);
+            return -1;
+        }
         send_zap_request ();
         zap_request_sent = true;
-        int rc = receive_and_process_zap_reply ();
-        if (rc == -1 || rc == 1)
+
+        //  TODO actually, it is quite unlikely that we can read the ZAP 
+        //  reply already, but removing this has some strange side-effect
+        //  (probably because the pipe's in_active flag is true until a read 
+        //  is attempted)
+        rc = receive_and_process_zap_reply ();
+        if (rc != 0)
             return -1;
+
         zap_reply_received = true;
     }
 

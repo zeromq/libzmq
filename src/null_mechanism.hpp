@@ -61,7 +61,6 @@ namespace zmq
         bool error_command_sent;
         bool ready_command_received;
         bool error_command_received;
-        bool zap_connected;
         bool zap_request_sent;
         bool zap_reply_received;
 
