@@ -63,3 +63,8 @@ void zmq::mechanism_base_t::handle_error_reason (const char *error_reason,
           session->get_endpoint (), (error_reason[0] - '0') * 100);
     }
 }
+
+bool zmq::mechanism_base_t::zap_required() const
+{
+    return !options.zap_domain.empty ();
+}

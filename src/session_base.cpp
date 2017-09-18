@@ -286,8 +286,10 @@ void zmq::session_base_t::read_activated (pipe_t *pipe_)
 
     if (likely (pipe_ == pipe))
         engine->restart_output ();
-    else
+    else {
+        // i.e. pipe_ == zap_pipe
         engine->zap_msg_available ();
+    }
 }
 
 void zmq::session_base_t::write_activated (pipe_t *pipe_)

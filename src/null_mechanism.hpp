@@ -55,8 +55,6 @@ namespace zmq
         virtual int zap_msg_available ();
         virtual status_t status () const;
 
-        bool zap_required () const;
-
     private:
 
         bool ready_command_sent;

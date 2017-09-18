@@ -79,9 +79,15 @@ int zmq::null_mechanism_t::next_handshake_command (msg_t *msg_)
         }
         send_zap_request ();
         zap_request_sent = true;
+
+        //  TODO actually, it is quite unlikely that we can read the ZAP 
+        //  reply already, but removing this has some strange side-effect
+        //  (probably because the pipe's in_active flag is true until a read 
+        //  is attempted)
         rc = receive_and_process_zap_reply ();
-        if (rc == -1 || rc == 1)
+        if (rc != 0)
             return -1;
+
         zap_reply_received = true;
     }
 
@@ -206,13 +212,6 @@ zmq::mechanism_t::status_t zmq::null_mechanism_t::status () const
         return error;
     else
         return handshaking;
-}
-
-bool zmq::null_mechanism_t::zap_required() const
-{
-    //  NULL mechanism only uses ZAP if there's a domain defined
-    //  This prevents ZAP requests on naive sockets
-    return options.zap_domain.size() > 0;
 }
 
 void zmq::null_mechanism_t::send_zap_request ()

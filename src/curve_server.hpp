@@ -82,7 +82,6 @@ namespace zmq
         int produce_error (msg_t *msg_) const;
 
         void send_zap_request (const uint8_t *key);
-        bool zap_required () const;
     };
 #ifdef _MSC_VER
 #pragma warning (pop)
