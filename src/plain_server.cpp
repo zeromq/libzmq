@@ -178,7 +178,11 @@ int zmq::plain_server_t::process_hello (msg_t *msg_)
     //  failure.
     rc = session->zap_connect ();
     if (rc != 0)
+    {
+        session->get_socket()->event_handshake_failed_no_detail(
+            session->get_endpoint(), EFAULT);
         return -1;
+    }
     send_zap_request (username, password);
     return receive_and_process_zap_reply () == -1 ? -1 : 0;
 }

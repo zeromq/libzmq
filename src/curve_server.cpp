@@ -394,12 +394,18 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     //  Note that rc will be -1 only if ZAP is not set up (Stonehouse pattern -
     //  encryption without authentication), but if it was requested and it does
     //  not work properly the program will abort.
-    rc = session->zap_connect ();
-    if (rc == 0) {
-        send_zap_request (client_key);
-        rc = receive_and_process_zap_reply ();
-        if (rc == -1)
+    if (zap_required ()) {
+        rc = session->zap_connect ();
+        if (rc == 0) {
+            send_zap_request (client_key);
+            rc = receive_and_process_zap_reply ();
+            if (rc == -1)
+                return -1;
+        } else {
+            session->get_socket ()->event_handshake_failed_no_detail (
+              session->get_endpoint (), EFAULT);
             return -1;
+        }
     } else
         state = sending_ready;
 
@@ -470,6 +476,12 @@ int zmq::curve_server_t::produce_error (msg_t *msg_) const
 void zmq::curve_server_t::send_zap_request (const uint8_t *key)
 {
     zap_client_t::send_zap_request ("CURVE", 5, key, crypto_box_PUBLICKEYBYTES);
+}
+
+bool zmq::curve_server_t::zap_required () const
+{
+    // TODO: make this explicit by a separate option zap_required (uniformly across all mechanisms)
+    return !options.zap_domain.empty();
 }
 
 #endif
