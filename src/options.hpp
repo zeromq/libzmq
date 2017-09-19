@@ -143,7 +143,7 @@ namespace zmq
         //  sockets.
         bool invert_matching;
 
-        //  If true, the identity message is forwarded to the socket.
+        //  If true, the routing id message is forwarded to the socket.
         bool recv_routing_id;
 
         // if true, router socket accepts non-zmq tcp connections
