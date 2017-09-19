@@ -82,16 +82,19 @@ int expect_new_client_bounce_fail_and_count_monitor_events (
   void *socket_config_data_,
   void **client_mon,
   void *server_mon,
-  int expected_event,
-  int expected_err)
+  int expected_server_event,
+  int expected_server_value,
+  int expected_client_event = 0,
+  int expected_client_value = 0)
 {
-    expect_new_client_bounce_fail (ctx, my_endpoint, server, socket_config_,
-                                   socket_config_data_, client_mon);
+    expect_new_client_bounce_fail (
+      ctx, my_endpoint, server, socket_config_, socket_config_data_, client_mon,
+      expected_client_event, expected_client_value);
 
     int events_received = 0;
 #ifdef ZMQ_BUILD_DRAFT_API
-    events_received =
-      expect_monitor_event_multiple (server_mon, expected_event, expected_err);
+    events_received = expect_monitor_event_multiple (
+      server_mon, expected_server_event, expected_server_value);
 #endif
 
     return events_received;
@@ -101,20 +104,23 @@ void test_zap_unsuccessful (void *ctx,
                             char *my_endpoint,
                             void *server,
                             void *server_mon,
-                            int expected_event,
-                            int expected_err,
+                            int expected_server_event,
+                            int expected_server_value,
                             socket_config_fn socket_config_,
                             void *socket_config_data_,
-                            void **client_mon = NULL)
+                            void **client_mon = NULL,
+                            int expected_client_event = 0,
+                            int expected_client_value = 0)
 {
-    int events_received =
+    int server_events_received =
       expect_new_client_bounce_fail_and_count_monitor_events (
         ctx, my_endpoint, server, socket_config_, socket_config_data_,
-        client_mon, server_mon, expected_event, expected_err);
+        client_mon, server_mon, expected_server_event, expected_server_value,
+        expected_client_event, expected_client_value);
 
     //  there may be more than one ZAP request due to repeated attempts by the
     //  client (actually only in case if ZAP status code 300)
-    assert (events_received == 0
+    assert (server_events_received == 0
             || 1 <= zmq_atomic_counter_value (zap_requests_handled));
 }
 
@@ -177,7 +183,8 @@ void test_zap_unsuccessful_status_300 (void *ctx,
                            &client_mon);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    assert_no_more_monitor_events_with_timeout (client_mon, 250);
+    // we can use a 0 timeout here, since the client socket is already closed
+    assert_no_more_monitor_events_with_timeout (client_mon, 0);
 
     int rc = zmq_close (client_mon);
     assert (rc == 0);
@@ -191,7 +198,6 @@ void test_zap_unsuccessful_status_500 (void *ctx,
                                        socket_config_fn client_socket_config_,
                                        void *client_socket_config_data_)
 {
-    void *client_mon;
     test_zap_unsuccessful (ctx, my_endpoint, server, server_mon,
 #ifdef ZMQ_BUILD_DRAFT_API
                            ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 500,
@@ -199,20 +205,13 @@ void test_zap_unsuccessful_status_500 (void *ctx,
                            0, 0,
 #endif
                            client_socket_config_, client_socket_config_data_,
-                           &client_mon);
-
+                           NULL,
 #ifdef ZMQ_BUILD_DRAFT_API
-    int events_received = 0;
-    events_received = expect_monitor_event_multiple (
-      client_mon, ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 500, true);
-
-    // this should actually be events_received == 1, but this is not always
-    // true, see https://github.com/zeromq/libzmq/issues/2705
-    assert (events_received <= 1);
-
-    int rc = zmq_close (client_mon);
-    assert (rc == 0);
+                           ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 500
+#else
+                           0, 0
 #endif
+    );
 }
 
 void test_zap_errors (socket_config_fn server_socket_config_,

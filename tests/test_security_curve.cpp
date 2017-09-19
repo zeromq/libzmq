@@ -64,13 +64,15 @@ void expect_new_client_curve_bounce_fail (void *ctx,
                                           char *client_secret,
                                           char *my_endpoint,
                                           void *server,
-                                          void **client_mon = NULL)
+                                          void **client_mon = NULL,
+                                          int expected_client_event = 0,
+                                          int expected_client_value = 0)
 {
     curve_client_data_t curve_client_data = {server_public, client_public,
                                              client_secret};
-    expect_new_client_bounce_fail (ctx, my_endpoint, server,
-                                   socket_config_curve_client,
-                                   &curve_client_data, client_mon);
+    expect_new_client_bounce_fail (
+      ctx, my_endpoint, server, socket_config_curve_client, &curve_client_data,
+      client_mon, expected_client_event, expected_client_value);
 }
 
 void test_null_key (void *ctx,
@@ -143,25 +145,21 @@ void test_curve_security_with_bogus_client_credentials (
     char bogus_secret [41];
     zmq_curve_keypair (bogus_public, bogus_secret);
 
-    void *client_mon;
     expect_new_client_curve_bounce_fail (ctx, valid_server_public, bogus_public,
                                          bogus_secret, my_endpoint, server,
-                                         &client_mon);
+                                         NULL,
+#ifdef ZMQ_BUILD_DRAFT_API
+                                         ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 400
+#else
+                                         0, 0
+#endif
+    );
 
     int server_event_count = 0; 
 #ifdef ZMQ_BUILD_DRAFT_API
     server_event_count = expect_monitor_event_multiple (
       server_mon, ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 400);
     assert (server_event_count <= 1);
-
-    int client_event_count = expect_monitor_event_multiple (
-      client_mon, ZMQ_EVENT_HANDSHAKE_FAILED_AUTH, 400, true);
-    // this should actually be client_event_count == 1, but this is not always
-    // true, see https://github.com/zeromq/libzmq/issues/2705
-    assert (client_event_count <= 1);
-
-    int rc = zmq_close (client_mon);
-    assert (rc == 0);
 #endif
 
     // there may be more than one ZAP request due to repeated attempts by the client
