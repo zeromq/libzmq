@@ -822,7 +822,8 @@ ZMQ_ZAP_DOMAIN: Retrieve RFC 27 authentication domain
 
 The 'ZMQ_ZAP_DOMAIN' option shall retrieve the last ZAP domain set for
 the socket. The returned value shall be a NULL-terminated string and MAY
-be empty. The returned size SHALL include the terminating null byte.
+be empty. An empty string means that ZAP authentication is disabled. 
+The returned size SHALL include the terminating null byte.
 
 [horizontal]
 Option value type:: character string

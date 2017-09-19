@@ -1064,16 +1064,15 @@ Applicable socket types:: ZMQ_XPUB
 
 ZMQ_ZAP_DOMAIN: Set RFC 27 authentication domain
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Sets the domain for ZAP (ZMQ RFC 27) authentication. For NULL security (the
-default on all tcp:// connections), ZAP authentication only happens if you
-set a non-empty domain. For PLAIN and CURVE security, ZAP requests are always
-made, if there is a ZAP handler present. See http://rfc.zeromq.org/spec:27
-for more details.
+Sets the domain for ZAP (ZMQ RFC 27) authentication. A ZAP domain must be 
+specified to enable authentication. When the ZAP domain is empty, which is 
+the default, ZAP authentication is disabled.
+See http://rfc.zeromq.org/spec:27 for more details.
 
 [horizontal]
 Option value type:: character string
 Option value unit:: N/A
-Default value:: not set
+Default value:: empty
 Applicable socket types:: all, when using TCP transport
 
 
