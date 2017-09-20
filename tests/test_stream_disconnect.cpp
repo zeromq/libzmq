@@ -55,9 +55,9 @@ bool has_more (void* socket)
     return more != 0;
 }
 
-bool get_identity (void* socket, char* data, size_t* size)
+bool get_routing_id (void* socket, char* data, size_t* size)
 {
-    int rc = zmq_getsockopt (socket, ZMQ_IDENTITY, data, size);
+    int rc = zmq_getsockopt (socket, ZMQ_ROUTING_ID, data, size);
     return rc == 0;
 }
 
@@ -97,7 +97,7 @@ int main(int, char**)
     assert (rc == 0);
 
     // wait for connect notification
-    // Server: Grab the 1st frame (peer identity).
+    // Server: Grab the 1st frame (peer routing id).
     zmq_msg_t peer_frame;
     rc = zmq_msg_init (&peer_frame);
     assert (rc == 0);
@@ -118,7 +118,7 @@ int main(int, char**)
     rc = zmq_msg_close (&data_frame);
     assert (rc == 0);
 
-    // Client: Grab the 1st frame (peer identity).
+    // Client: Grab the 1st frame (peer routing id).
     rc = zmq_msg_init (&peer_frame);
     assert (rc == 0);
     rc = zmq_msg_recv (&peer_frame, sockets [CLIENT], 0);
@@ -140,7 +140,7 @@ int main(int, char**)
     // Send initial message.
     char blob_data [256];
     size_t blob_size = sizeof(blob_data);
-    rc = zmq_getsockopt (sockets [CLIENT], ZMQ_IDENTITY, blob_data, &blob_size);
+    rc = zmq_getsockopt (sockets [CLIENT], ZMQ_ROUTING_ID, blob_data, &blob_size);
     assert (rc != -1);
     assert(blob_size > 0);
     zmq_msg_t msg;
@@ -176,7 +176,7 @@ int main(int, char**)
         if (items [SERVER].revents & ZMQ_POLLIN) {
             assert (dialog [step].turn == CLIENT);
 
-            // Grab the 1st frame (peer identity).
+            // Grab the 1st frame (peer routing id).
             zmq_msg_t peer_frame;
             rc = zmq_msg_init (&peer_frame);
             assert (rc == 0);
@@ -237,7 +237,7 @@ int main(int, char**)
         if (items [CLIENT].revents & ZMQ_POLLIN) {
             assert (dialog [step].turn == SERVER);
 
-            // Grab the 1st frame (peer identity).
+            // Grab the 1st frame (peer routing id).
             zmq_msg_t peer_frame;
             rc = zmq_msg_init (&peer_frame);
             assert (rc == 0);

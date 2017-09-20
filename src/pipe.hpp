@@ -85,12 +85,12 @@ namespace zmq
         void set_event_sink (i_pipe_events *sink_);
 
         //  Pipe endpoint can store an routing ID to be used by its clients.
-        void set_routing_id (uint32_t routing_id_);
-        uint32_t get_routing_id ();
+        void set_server_socket_routing_id (uint32_t routing_id_);
+        uint32_t get_server_socket_routing_id ();
 
         //  Pipe endpoint can store an opaque ID to be used by its clients.
-        void set_identity (const blob_t &identity_);
-        blob_t get_identity ();
+        void set_router_socket_routing_id (const blob_t &identity_);
+        blob_t get_routing_id ();
 
         blob_t get_credential () const;
 
@@ -226,11 +226,11 @@ namespace zmq
         //  asks us to.
         bool delay;
 
-        //  Identity of the writer. Used uniquely by the reader side.
-        blob_t identity;
+        //  Routing id of the writer. Used uniquely by the reader side.
+        blob_t router_socket_routing_id;
 
-        //  Identity of the writer. Used uniquely by the reader side.
-        int routing_id;
+        //  Routing id of the writer. Used uniquely by the reader side.
+        int server_socket_routing_id;
 
         //  Pipe's credential.
         blob_t credential;

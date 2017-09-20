@@ -67,7 +67,7 @@ int main (void)
     //  Create dealer called "X" and connect it to our router, configure HWM
     void *dealer = zmq_socket (ctx, ZMQ_DEALER);
     assert (dealer);
-    rc = zmq_setsockopt (dealer, ZMQ_IDENTITY, "X", 1);
+    rc = zmq_setsockopt (dealer, ZMQ_ROUTING_ID, "X", 1);
     assert (rc == 0);
     int rcvhwm = 1;
     rc = zmq_setsockopt (dealer, ZMQ_RCVHWM, &rcvhwm, sizeof (rcvhwm));

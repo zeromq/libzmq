@@ -53,7 +53,7 @@ int main (void)
     //  Create dealer called "X" and connect it to our router
     void *dealer_one = zmq_socket (ctx, ZMQ_DEALER);
     assert (dealer_one);
-    rc = zmq_setsockopt (dealer_one, ZMQ_IDENTITY, "X", 1);
+    rc = zmq_setsockopt (dealer_one, ZMQ_ROUTING_ID, "X", 1);
     assert (rc == 0);
     rc = zmq_connect (dealer_one, my_endpoint);
     assert (rc == 0);
@@ -68,10 +68,10 @@ int main (void)
     rc = zmq_recv (router, buffer, 255, 0);
     assert (rc == 5);
 
-    // Now create a second dealer that uses the same identity
+    // Now create a second dealer that uses the same routing id
     void *dealer_two = zmq_socket (ctx, ZMQ_DEALER);
     assert (dealer_two);
-    rc = zmq_setsockopt (dealer_two, ZMQ_IDENTITY, "X", 1);
+    rc = zmq_setsockopt (dealer_two, ZMQ_ROUTING_ID, "X", 1);
     assert (rc == 0);
     rc = zmq_connect (dealer_two, my_endpoint);
     assert (rc == 0);
@@ -85,7 +85,7 @@ int main (void)
     rc = zmq_recv (router, buffer, 255, 0);
     assert (rc == 5);
 
-    //  Send a message to 'X' identity. This should be delivered 
+    //  Send a message to 'X' routing id. This should be delivered 
     //  to the second dealer, instead of the first beccause of the handover.
     rc = zmq_send (router, "X", 1, ZMQ_SNDMORE);
     assert (rc == 1);

@@ -99,8 +99,8 @@ namespace zmq
         //  Detects the protocol used by the peer.
         bool handshake ();
 
-        int identity_msg (msg_t *msg_);
-        int process_identity_msg (msg_t *msg_);
+        int routing_id_msg (msg_t *msg_);
+        int process_routing_id_msg (msg_t *msg_);
 
         int next_handshake_command (msg_t *msg);
         int process_handshake_command (msg_t *msg);

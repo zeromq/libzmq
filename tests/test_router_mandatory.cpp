@@ -30,15 +30,15 @@
 #include "testutil.hpp"
 
 #ifdef ZMQ_BUILD_DRAFT_API
-bool send_msg_to_peer_if_ready (void *router, const char *peer_identity)
+bool send_msg_to_peer_if_ready (void *router, const char *peer_routing_id)
 {
-    int rc = zmq_socket_get_peer_state (router, peer_identity, 1);
+    int rc = zmq_socket_get_peer_state (router, peer_routing_id, 1);
     if (rc == -1)
-        printf ("zmq_socket_get_peer_state failed for %s: %i\n", peer_identity,
+        printf ("zmq_socket_get_peer_state failed for %s: %i\n", peer_routing_id,
                 errno);
     assert (rc != -1);
     if (rc & ZMQ_POLLOUT) {
-        rc = zmq_send (router, peer_identity, 1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
+        rc = zmq_send (router, peer_routing_id, 1, ZMQ_SNDMORE | ZMQ_DONTWAIT);
         assert (rc == 1);
         rc = zmq_send (router, "Hello", 5, ZMQ_DONTWAIT);
         assert (rc == 5);
@@ -81,17 +81,17 @@ void test_get_peer_state ()
     rc = zmq_setsockopt (dealer2, ZMQ_RCVHWM, &hwm, sizeof (int));
     assert (rc == 0);
 
-    const char *dealer1_identity = "X";
-    const char *dealer2_identity = "Y";
+    const char *dealer1_routing_id = "X";
+    const char *dealer2_routing_id = "Y";
 
     //  Name dealer1 "X" and connect it to our router
-    rc = zmq_setsockopt (dealer1, ZMQ_IDENTITY, dealer1_identity, 1);
+    rc = zmq_setsockopt (dealer1, ZMQ_ROUTING_ID, dealer1_routing_id, 1);
     assert (rc == 0);
     rc = zmq_connect (dealer1, my_endpoint);
     assert (rc == 0);
 
     //  Name dealer2 "Y" and connect it to our router
-    rc = zmq_setsockopt (dealer2, ZMQ_IDENTITY, dealer2_identity, 1);
+    rc = zmq_setsockopt (dealer2, ZMQ_ROUTING_ID, dealer2_routing_id, 1);
     assert (rc == 0);
     rc = zmq_connect (dealer2, my_endpoint);
     assert (rc == 0);
@@ -102,7 +102,7 @@ void test_get_peer_state ()
     assert (rc == 5);
     rc = zmq_recv (router, buffer, 255, 0);
     assert (rc == 1);
-    assert (0 == memcmp (buffer, dealer1_identity, rc));
+    assert (0 == memcmp (buffer, dealer1_routing_id, rc));
     rc = zmq_recv (router, buffer, 255, 0);
     assert (rc == 5);
 
@@ -110,7 +110,7 @@ void test_get_peer_state ()
     assert (rc == 5);
     rc = zmq_recv (router, buffer, 255, 0);
     assert (rc == 1);
-    assert (0 == memcmp (buffer, dealer2_identity, rc));
+    assert (0 == memcmp (buffer, dealer2_routing_id, rc));
     rc = zmq_recv (router, buffer, 255, 0);
     assert (rc == 5);
 
@@ -135,10 +135,10 @@ void test_get_peer_state ()
             const zmq_poller_event_t &current_event = events[event_no];
             if (current_event.socket == router
                 && current_event.events & ZMQ_POLLOUT) {
-                if (send_msg_to_peer_if_ready (router, dealer1_identity))
+                if (send_msg_to_peer_if_ready (router, dealer1_routing_id))
                     ++dealer1_sent;
 
-                if (send_msg_to_peer_if_ready (router, dealer2_identity))
+                if (send_msg_to_peer_if_ready (router, dealer2_routing_id))
                     ++dealer2_sent;
                 else
                     dealer2_blocked = true;
@@ -180,11 +180,11 @@ void test_get_peer_state ()
 void test_get_peer_state_corner_cases ()
 {
 #ifdef ZMQ_BUILD_DRAFT_API
-    const char peer_identity[] = "foo";
+    const char peer_routing_id[] = "foo";
 
     //  call get_peer_state with NULL socket
     int rc =
-      zmq_socket_get_peer_state (NULL, peer_identity, strlen (peer_identity));
+      zmq_socket_get_peer_state (NULL, peer_routing_id, strlen (peer_routing_id));
     assert (rc == -1 && errno == ENOTSOCK);
 
     void *ctx = zmq_ctx_new ();
@@ -196,12 +196,12 @@ void test_get_peer_state_corner_cases ()
 
     //  call get_peer_state with a non-ROUTER socket
     rc =
-      zmq_socket_get_peer_state (dealer, peer_identity, strlen (peer_identity));
+      zmq_socket_get_peer_state (dealer, peer_routing_id, strlen (peer_routing_id));
     assert (rc == -1 && errno == ENOTSUP);
 
-    //  call get_peer_state for an unknown identity
+    //  call get_peer_state for an unknown routing id
     rc =
-      zmq_socket_get_peer_state (router, peer_identity, strlen (peer_identity));
+      zmq_socket_get_peer_state (router, peer_routing_id, strlen (peer_routing_id));
     assert (rc == -1 && errno == EHOSTUNREACH);
 
     rc = zmq_close (router);
@@ -250,7 +250,7 @@ void test_basic ()
     //  Create dealer called "X" and connect it to our router
     void *dealer = zmq_socket (ctx, ZMQ_DEALER);
     assert (dealer);
-    rc = zmq_setsockopt (dealer, ZMQ_IDENTITY, "X", 1);
+    rc = zmq_setsockopt (dealer, ZMQ_ROUTING_ID, "X", 1);
     assert (rc == 0);
     rc = zmq_connect (dealer, my_endpoint);
     assert (rc == 0);

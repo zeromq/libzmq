@@ -46,17 +46,17 @@ zmq::mechanism_t::~mechanism_t ()
 {
 }
 
-void zmq::mechanism_t::set_peer_identity (const void *id_ptr, size_t id_size)
+void zmq::mechanism_t::set_peer_routing_id (const void *id_ptr, size_t id_size)
 {
-    identity = blob_t (static_cast <const unsigned char*> (id_ptr), id_size);
+    routing_id = blob_t (static_cast <const unsigned char*> (id_ptr), id_size);
 }
 
-void zmq::mechanism_t::peer_identity (msg_t *msg_)
+void zmq::mechanism_t::peer_routing_id (msg_t *msg_)
 {
-    const int rc = msg_->init_size (identity.size ());
+    const int rc = msg_->init_size (routing_id.size ());
     errno_assert (rc == 0);
-    memcpy (msg_->data (), identity.data (), identity.size ());
-    msg_->set_flags (msg_t::identity);
+    memcpy (msg_->data (), routing_id.data (), routing_id.size ());
+    msg_->set_flags (msg_t::routing_id);
 }
 
 void zmq::mechanism_t::set_user_id (const void *data_, size_t size_)
@@ -121,6 +121,9 @@ size_t zmq::mechanism_t::property_len (const char *name, size_t value_len)
     return ::property_len (name_len (name), value_len);
 }
 
+#define ZMTP_PROPERTY_SOCKET_TYPE "Socket-Type"
+#define ZMTP_PROPERTY_IDENTITY "Identity"
+
 size_t zmq::mechanism_t::add_basic_properties (unsigned char *buf,
                                                size_t buf_capacity) const
 {
@@ -129,15 +132,15 @@ size_t zmq::mechanism_t::add_basic_properties (unsigned char *buf,
     //  Add socket type property
     const char *socket_type = socket_type_string (options.type);
     ptr += add_property (ptr, buf_capacity,
-                         ZMQ_MSG_PROPERTY_SOCKET_TYPE, socket_type,
+                         ZMTP_PROPERTY_SOCKET_TYPE, socket_type,
                          strlen (socket_type));
 
-    //  Add identity property
+    //  Add identity (aka routing id) property
     if (options.type == ZMQ_REQ || options.type == ZMQ_DEALER
         || options.type == ZMQ_ROUTER)
         ptr += add_property (ptr, buf_capacity - (ptr - buf),
-                             ZMQ_MSG_PROPERTY_IDENTITY, options.identity,
-                             options.identity_size);
+                             ZMTP_PROPERTY_IDENTITY, options.routing_id,
+                             options.routing_id_size);
 
     return ptr - buf;
 }
@@ -145,11 +148,11 @@ size_t zmq::mechanism_t::add_basic_properties (unsigned char *buf,
 size_t zmq::mechanism_t::basic_properties_len() const
 {
     const char *socket_type = socket_type_string (options.type);
-    return property_len (ZMQ_MSG_PROPERTY_SOCKET_TYPE, strlen (socket_type))
+    return property_len (ZMTP_PROPERTY_SOCKET_TYPE, strlen (socket_type))
            + ((options.type == ZMQ_REQ || options.type == ZMQ_DEALER
                || options.type == ZMQ_ROUTER)
-                ? property_len (ZMQ_MSG_PROPERTY_IDENTITY,
-                                options.identity_size)
+                ? property_len (ZMTP_PROPERTY_IDENTITY,
+                                options.routing_id_size)
                 : 0);
 }
 
@@ -199,10 +202,10 @@ int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
         ptr_ += value_length;
         bytes_left -= value_length;
 
-        if (name == ZMQ_MSG_PROPERTY_IDENTITY && options.recv_identity)
-            set_peer_identity (value, value_length);
+        if (name == ZMTP_PROPERTY_IDENTITY && options.recv_routing_id)
+            set_peer_routing_id (value, value_length);
         else
-        if (name == ZMQ_MSG_PROPERTY_SOCKET_TYPE) {
+        if (name == ZMTP_PROPERTY_SOCKET_TYPE) {
             const std::string socket_type ((char *) value, value_length);
             if (!check_socket_type (socket_type)) {
                 errno = EINVAL;

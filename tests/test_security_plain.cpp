@@ -57,14 +57,14 @@ zap_handler (void *ctx)
         char *sequence = s_recv (zap);
         char *domain = s_recv (zap);
         char *address = s_recv (zap);
-        char *identity = s_recv (zap);
+        char *routing_id = s_recv (zap);
         char *mechanism = s_recv (zap);
         char *username = s_recv (zap);
         char *password = s_recv (zap);
 
         assert (streq (version, "1.0"));
         assert (streq (mechanism, "PLAIN"));
-        assert (streq (identity, "IDENT"));
+        assert (streq (routing_id, "IDENT"));
 
         s_sendmore (zap, version);
         s_sendmore (zap, sequence);
@@ -85,7 +85,7 @@ zap_handler (void *ctx)
         free (sequence);
         free (domain);
         free (address);
-        free (identity);
+        free (routing_id);
         free (mechanism);
         free (username);
         free (password);
@@ -108,7 +108,7 @@ int main (void)
     //  Server socket will accept connections
     void *server = zmq_socket (ctx, ZMQ_DEALER);
     assert (server);
-    int rc = zmq_setsockopt (server, ZMQ_IDENTITY, "IDENT", 6);
+    int rc = zmq_setsockopt (server, ZMQ_ROUTING_ID, "IDENT", 6);
     const char domain[] = "test";
     assert (rc == 0);
     rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, domain, strlen (domain));

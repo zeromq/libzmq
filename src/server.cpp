@@ -38,7 +38,7 @@
 
 zmq::server_t::server_t (class ctx_t *parent_, uint32_t tid_, int sid_) :
     socket_base_t (parent_, tid_, sid_, true),
-    next_rid (generate_random ())
+    next_routing_id (generate_random ())
 {
     options.type = ZMQ_SERVER;
 }
@@ -54,11 +54,11 @@ void zmq::server_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 
     zmq_assert (pipe_);
 
-    uint32_t routing_id = next_rid++;
+    uint32_t routing_id = next_routing_id++;
     if (!routing_id)
-        routing_id = next_rid++;        //  Never use RID zero
+        routing_id = next_routing_id++;        //  Never use Routing ID zero
 
-    pipe_->set_routing_id (routing_id);
+    pipe_->set_server_socket_routing_id (routing_id);
     //  Add the record into output pipes lookup table
     outpipe_t outpipe = {pipe_, true};
     bool ok = outpipes.insert (outpipes_t::value_type (routing_id, outpipe)).second;
@@ -69,7 +69,7 @@ void zmq::server_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
 
 void zmq::server_t::xpipe_terminated (pipe_t *pipe_)
 {
-    outpipes_t::iterator it = outpipes.find (pipe_->get_routing_id ());
+    outpipes_t::iterator it = outpipes.find (pipe_->get_server_socket_routing_id ());
     zmq_assert (it != outpipes.end ());
     outpipes.erase (it);
     fq.pipe_terminated (pipe_);
@@ -159,7 +159,7 @@ int zmq::server_t::xrecv (msg_t *msg_)
 
     zmq_assert (pipe != NULL);
 
-    uint32_t routing_id = pipe->get_routing_id ();
+    uint32_t routing_id = pipe->get_server_socket_routing_id ();
     msg_->set_routing_id (routing_id);
 
     return 0;

@@ -289,7 +289,7 @@ ZMQ_HANDSHAKE_IVL: Retrieve maximum handshake interval
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_HANDSHAKE_IVL' option shall retrieve the maximum handshake interval
 for the specified 'socket'. Handshaking is the exchange of socket configuration
-information (socket type, identity, security) that occurs when a connection
+information (socket type, routing id, security) that occurs when a connection
 is first opened, only for connection-oriented transports. If handshaking does
 not complete within the configured time, the connection shall be closed.
 The value 0 means no handshake time limit.
@@ -303,19 +303,8 @@ Applicable socket types:: all but ZMQ_STREAM, only for connection-oriented trans
 
 ZMQ_IDENTITY: Retrieve socket identity
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_IDENTITY' option shall retrieve the identity of the specified 'socket'.
-Socket identity is used only by request/reply pattern. Namely, it can be used
-in tandem with ROUTER socket to route messages to the peer with specific
-identity.
-
-Identity should be at least one byte and at most 255 bytes long. Identities
-starting with binary zero are reserved for use by 0MQ infrastructure.
-
-[horizontal]
-Option value type:: binary data
-Option value unit:: N/A
-Default value:: NULL
-Applicable socket types:: ZMQ_REP, ZMQ_REQ, ZMQ_ROUTER, ZMQ_DEALER.
+This option name is now deprecated. Use ZMQ_ROUTING_ID instead. 
+ZMQ_IDENTITY remains as an alias for now. 
 
 
 ZMQ_IMMEDIATE: Retrieve attach-on-connect value
@@ -654,6 +643,23 @@ Option value type:: int
 Option value unit:: milliseconds
 Default value:: 10000
 Applicable socket types:: all, when using multicast transports
+
+
+ZMQ_ROUTING_ID: Retrieve socket routing id
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_ROUTING_ID' option shall retrieve the routing id of the specified 'socket'.
+Routing ids are used only by the request/reply pattern. Specifically, it can be used
+in tandem with ROUTER socket to route messages to the peer with a specific
+routing id.
+
+A routing id must be at least one byte and at most 255 bytes long. Identities
+starting with a zero byte are reserved for use by the 0MQ infrastructure.
+
+[horizontal]
+Option value type:: binary data
+Option value unit:: N/A
+Default value:: NULL
+Applicable socket types:: ZMQ_REP, ZMQ_REQ, ZMQ_ROUTER, ZMQ_DEALER.
 
 
 ZMQ_SNDBUF: Retrieve kernel transmit buffer size

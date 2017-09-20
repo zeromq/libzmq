@@ -48,7 +48,7 @@ zmq::options_t::options_t () :
     sndhwm (1000),
     rcvhwm (1000),
     affinity (0),
-    identity_size (0),
+    routing_id_size (0),
     rate (100),
     recovery_ivl (10000),
     multicast_hops (1),
@@ -70,7 +70,7 @@ zmq::options_t::options_t () :
     immediate (0),
     filter (false),
     invert_matching(false),
-    recv_identity (false),
+    recv_routing_id (false),
     raw_socket (false),
     raw_notify (true),
     tcp_keepalive (-1),
@@ -166,11 +166,11 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
             }
             break;
 
-        case ZMQ_IDENTITY:
-            //  Identity is any binary string from 1 to 255 octets
+        case ZMQ_ROUTING_ID:
+            //  Routing id is any binary string from 1 to 255 octets
             if (optvallen_ > 0 && optvallen_ < 256) {
-                identity_size = (unsigned char) optvallen_;
-                memcpy (identity, optval_, identity_size);
+                routing_id_size = (unsigned char) optvallen_;
+                memcpy (routing_id, optval_, routing_id_size);
                 return 0;
             }
             break;
@@ -679,10 +679,10 @@ int zmq::options_t::getsockopt (int option_, void *optval_, size_t *optvallen_) 
             }
             break;
 
-        case ZMQ_IDENTITY:
-            if (*optvallen_ >= identity_size) {
-                memcpy (optval_, identity, identity_size);
-                *optvallen_ = identity_size;
+        case ZMQ_ROUTING_ID:
+            if (*optvallen_ >= routing_id_size) {
+                memcpy (optval_, routing_id, routing_id_size);
+                *optvallen_ = routing_id_size;
                 return 0;
             }
             break;

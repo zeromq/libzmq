@@ -92,16 +92,16 @@ test_stream_to_dealer (void)
     assert (rc == 5);
 
     //  Connecting sends a zero message
-    //  First frame is identity
-    zmq_msg_t identity;
-    rc = zmq_msg_init (&identity);
+    //  First frame is routing id
+    zmq_msg_t routing_id;
+    rc = zmq_msg_init (&routing_id);
     assert (rc == 0);
-    rc = zmq_msg_recv (&identity, stream, 0);
+    rc = zmq_msg_recv (&routing_id, stream, 0);
     assert (rc > 0);
-    assert (zmq_msg_more (&identity));
+    assert (zmq_msg_more (&routing_id));
 
     //  Verify the existence of Peer-Address metadata
-    char const *peer_address = zmq_msg_gets (&identity, "Peer-Address");
+    char const *peer_address = zmq_msg_gets (&routing_id, "Peer-Address");
     assert (peer_address != 0);
     assert (streq (peer_address, "127.0.0.1"));
 
@@ -111,18 +111,18 @@ test_stream_to_dealer (void)
     assert (rc == 0);
 
     //  Verify the existence of Peer-Address metadata
-    peer_address = zmq_msg_gets (&identity, "Peer-Address");
+    peer_address = zmq_msg_gets (&routing_id, "Peer-Address");
     assert (peer_address != 0);
     assert (streq (peer_address, "127.0.0.1"));
 
     //  Real data follows
-    //  First frame is identity
-    rc = zmq_msg_recv (&identity, stream, 0);
+    //  First frame is routing id
+    rc = zmq_msg_recv (&routing_id, stream, 0);
     assert (rc > 0);
-    assert (zmq_msg_more (&identity));
+    assert (zmq_msg_more (&routing_id));
 
     //  Verify the existence of Peer-Address metadata
-    peer_address = zmq_msg_gets (&identity, "Peer-Address");
+    peer_address = zmq_msg_gets (&routing_id, "Peer-Address");
     assert (peer_address != 0);
     assert (streq (peer_address, "127.0.0.1"));
 
@@ -132,7 +132,7 @@ test_stream_to_dealer (void)
     assert (memcmp (buffer, greeting.signature, 10) == 0);
 
     //  Send our own protocol greeting
-    rc = zmq_msg_send (&identity, stream, ZMQ_SNDMORE);
+    rc = zmq_msg_send (&routing_id, stream, ZMQ_SNDMORE);
     assert (rc > 0);
     rc = zmq_send (stream, &greeting, sizeof (greeting), 0);
     assert (rc == sizeof (greeting));
@@ -141,10 +141,10 @@ test_stream_to_dealer (void)
     //  We want the rest of greeting along with the Ready command
     int bytes_read = 0;
     while (bytes_read < 97) {
-        //  First frame is the identity of the connection (each time)
-        rc = zmq_msg_recv (&identity, stream, 0);
+        //  First frame is the routing id of the connection (each time)
+        rc = zmq_msg_recv (&routing_id, stream, 0);
         assert (rc > 0);
-        assert (zmq_msg_more (&identity));
+        assert (zmq_msg_more (&routing_id));
         //  Second frame contains the next chunk of data
         rc = zmq_recv (stream, buffer + bytes_read, 255 - bytes_read, 0);
         assert (rc >= 0);
@@ -167,16 +167,16 @@ test_stream_to_dealer (void)
     memcpy (buffer + 30, "\10Identity\0\0\0\0", 13);
 
     //  Send Ready command
-    rc = zmq_msg_send (&identity, stream, ZMQ_SNDMORE);
+    rc = zmq_msg_send (&routing_id, stream, ZMQ_SNDMORE);
     assert (rc > 0);
     rc = zmq_send (stream, buffer, 43, 0);
     assert (rc == 43);
 
     //  Now we expect the data from the DEALER socket
-    //  First frame is, again, the identity of the connection
-    rc = zmq_msg_recv (&identity, stream, 0);
+    //  First frame is, again, the routing id of the connection
+    rc = zmq_msg_recv (&routing_id, stream, 0);
     assert (rc > 0);
-    assert (zmq_msg_more (&identity));
+    assert (zmq_msg_more (&routing_id));
 
     //  Third frame contains Hello message from DEALER
     rc = zmq_recv (stream, buffer, sizeof buffer, 0);
@@ -188,7 +188,7 @@ test_stream_to_dealer (void)
     assert (memcmp (buffer + 2, "Hello", 5) == 0);
 
     //  Send "World" back to DEALER
-    rc = zmq_msg_send (&identity, stream, ZMQ_SNDMORE);
+    rc = zmq_msg_send (&routing_id, stream, ZMQ_SNDMORE);
     assert (rc > 0);
     byte world [] = { 0, 5, 'W', 'o', 'r', 'l', 'd' };
     rc = zmq_send (stream, world, sizeof (world), 0);
@@ -209,7 +209,7 @@ test_stream_to_dealer (void)
     memset (msgin, 0, 9 + size);
     bytes_read = 0;
     while (bytes_read < 9 + size) {
-        //  Get identity frame
+        //  Get routing id frame
         rc = zmq_recv (stream, buffer, 256, 0);
         assert (rc > 0);
         //  Get next chunk
@@ -264,22 +264,22 @@ test_stream_to_stream (void)
     uint8_t buffer [256];
 
     //  Connecting sends a zero message
-    //  Server: First frame is identity, second frame is zero
+    //  Server: First frame is routing id, second frame is zero
     id_size = zmq_recv (server, id, 256, 0);
     assert (id_size > 0);
     rc = zmq_recv (server, buffer, 256, 0);
     assert (rc == 0);
-    //  Client: First frame is identity, second frame is zero
+    //  Client: First frame is routing id, second frame is zero
     id_size = zmq_recv (client, id, 256, 0);
     assert (id_size > 0);
     rc = zmq_recv (client, buffer, 256, 0);
     assert (rc == 0);
 
     //  Sent HTTP request on client socket
-    //  Get server identity
-    rc = zmq_getsockopt (client, ZMQ_IDENTITY, id, &id_size);
+    //  Get server routing id
+    rc = zmq_getsockopt (client, ZMQ_ROUTING_ID, id, &id_size);
     assert (rc == 0);
-    //  First frame is server identity
+    //  First frame is server routing id
     rc = zmq_send (client, id, id_size, ZMQ_SNDMORE);
     assert (rc == (int) id_size);
     //  Second frame is HTTP GET request

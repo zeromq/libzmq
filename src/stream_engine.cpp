@@ -81,8 +81,8 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_,
     options (options_),
     endpoint (endpoint_),
     plugged (false),
-    next_msg (&stream_engine_t::identity_msg),
-    process_msg (&stream_engine_t::process_identity_msg),
+    next_msg (&stream_engine_t::routing_id_msg),
+    process_msg (&stream_engine_t::process_routing_id_msg),
     io_error (false),
     subscription_required (false),
     mechanism (NULL),
@@ -229,11 +229,11 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
         // start optional timer, to prevent handshake hanging on no input
         set_handshake_timer ();
 
-        //  Send the 'length' and 'flags' fields of the identity message.
+        //  Send the 'length' and 'flags' fields of the routing id message.
         //  The 'length' field is encoded in the long format.
         outpos = greeting_send;
         outpos [outsize++] = 0xff;
-        put_uint64 (&outpos [outsize], options.identity_size + 1);
+        put_uint64 (&outpos [outsize], options.routing_id_size + 1);
         outsize += 8;
         outpos [outsize++] = 0x7f;
     }
@@ -520,7 +520,7 @@ bool zmq::stream_engine_t::handshake ()
 
         //  Inspect the right-most bit of the 10th byte (which coincides
         //  with the 'flags' field if a regular message was sent).
-        //  Zero indicates this is a header of identity message
+        //  Zero indicates this is a header of a routing id message
         //  (i.e. the peer is using the unversioned protocol).
         if (!(greeting_recv [9] & 0x01))
             break;
@@ -575,7 +575,7 @@ bool zmq::stream_engine_t::handshake ()
     const size_t revision_pos = 10;
 
     //  Is the peer using ZMTP/1.0 with no revision number?
-    //  If so, we send and receive rest of identity message
+    //  If so, we send and receive rest of routing id message
     if (greeting_recv [0] != 0xff || !(greeting_recv [9] & 0x01)) {
         if (session->zap_enabled ()) {
            // reject ZMTP 1.0 connections if ZAP is enabled
@@ -593,14 +593,14 @@ bool zmq::stream_engine_t::handshake ()
         //  Since there is no way to tell the encoder to
         //  skip the message header, we simply throw that
         //  header data away.
-        const size_t header_size = options.identity_size + 1 >= 255 ? 10 : 2;
+        const size_t header_size = options.routing_id_size + 1 >= 255 ? 10 : 2;
         unsigned char tmp [10], *bufferp = tmp;
 
-        //  Prepare the identity message and load it into encoder.
+        //  Prepare the routing id message and load it into encoder.
         //  Then consume bytes we have already sent to the peer.
-        const int rc = tx_msg.init_size (options.identity_size);
+        const int rc = tx_msg.init_size (options.routing_id_size);
         zmq_assert (rc == 0);
-        memcpy (tx_msg.data (), options.identity, options.identity_size);
+        memcpy (tx_msg.data (), options.routing_id, options.routing_id_size);
         encoder->load_msg (&tx_msg);
         size_t buffer_size = encoder->encode (&bufferp, header_size);
         zmq_assert (buffer_size == header_size);
@@ -615,12 +615,12 @@ bool zmq::stream_engine_t::handshake ()
         if (options.type == ZMQ_PUB || options.type == ZMQ_XPUB)
             subscription_required = true;
 
-        //  We are sending our identity now and the next message
+        //  We are sending our routing id now and the next message
         //  will come from the socket.
         next_msg = &stream_engine_t::pull_msg_from_session;
 
-        //  We are expecting identity message.
-        process_msg = &stream_engine_t::process_identity_msg;
+        //  We are expecting routing id message.
+        process_msg = &stream_engine_t::process_routing_id_msg;
     }
     else
     if (greeting_recv [revision_pos] == ZMTP_1_0) {
@@ -729,20 +729,20 @@ bool zmq::stream_engine_t::handshake ()
     return true;
 }
 
-int zmq::stream_engine_t::identity_msg (msg_t *msg_)
+int zmq::stream_engine_t::routing_id_msg (msg_t *msg_)
 {
-    int rc = msg_->init_size (options.identity_size);
+    int rc = msg_->init_size (options.routing_id_size);
     errno_assert (rc == 0);
-    if (options.identity_size > 0)
-        memcpy (msg_->data (), options.identity, options.identity_size);
+    if (options.routing_id_size > 0)
+        memcpy (msg_->data (), options.routing_id, options.routing_id_size);
     next_msg = &stream_engine_t::pull_msg_from_session;
     return 0;
 }
 
-int zmq::stream_engine_t::process_identity_msg (msg_t *msg_)
+int zmq::stream_engine_t::process_routing_id_msg (msg_t *msg_)
 {
-    if (options.recv_identity) {
-        msg_->set_flags (msg_t::identity);
+    if (options.recv_routing_id) {
+        msg_->set_flags (msg_t::routing_id);
         int rc = session->push_msg (msg_);
         errno_assert (rc == 0);
     }
@@ -839,14 +839,14 @@ void zmq::stream_engine_t::mechanism_ready ()
         has_heartbeat_timer = true;
     }
 
-    if (options.recv_identity) {
-        msg_t identity;
-        mechanism->peer_identity (&identity);
-        const int rc = session->push_msg (&identity);
+    if (options.recv_routing_id) {
+        msg_t routing_id;
+        mechanism->peer_routing_id (&routing_id);
+        const int rc = session->push_msg (&routing_id);
         if (rc == -1 && errno == EAGAIN) {
             // If the write is failing at this stage with
             // an EAGAIN the pipe must be being shut down,
-            // so we can just bail out of the identity set.
+            // so we can just bail out of the routing id set.
             return;
         }
         errno_assert (rc == 0);

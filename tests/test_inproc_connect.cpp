@@ -372,7 +372,7 @@ void test_simultaneous_connect_bind_threads ()
     assert (rc == 0);
 }
 
-void test_identity ()
+void test_routing_id ()
 {
     //  Create the infrastructure
     void *ctx = zmq_ctx_new ();
@@ -381,13 +381,13 @@ void test_identity ()
     void *sc = zmq_socket (ctx, ZMQ_DEALER);
     assert (sc);
 
-    int rc = zmq_connect (sc, "inproc://identity");
+    int rc = zmq_connect (sc, "inproc://routing_id");
     assert (rc == 0);
 
     void *sb = zmq_socket (ctx, ZMQ_ROUTER);
     assert (sb);
 
-    rc = zmq_bind (sb, "inproc://identity");
+    rc = zmq_bind (sb, "inproc://routing_id");
     assert (rc == 0);
 
     //  Send 2-part message.
@@ -396,7 +396,7 @@ void test_identity ()
     rc = zmq_send (sc, "B", 1, 0);
     assert (rc == 1);
 
-    //  Identity comes first.
+    //  Routing id comes first.
     zmq_msg_t msg;
     rc = zmq_msg_init (&msg);
     assert (rc == 0);
@@ -527,7 +527,7 @@ int main (void)
     test_multiple_connects ();
     test_multiple_threads ();
     test_simultaneous_connect_bind_threads ();
-    test_identity ();
+    test_routing_id ();
     test_connect_only ();
     test_unbind ();
     test_shutdown_during_pend ();
