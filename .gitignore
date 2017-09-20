@@ -139,6 +139,7 @@ test_base85
 test_bind_after_connect_tcp
 test_sodium
 test_zmq_poll_fd
+test_reconnect_ivl
 tests/test*.log
 tests/test*.trs
 src/platform.hpp*
