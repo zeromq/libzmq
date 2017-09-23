@@ -7,36 +7,33 @@ os:
 - osx
 
 sudo: false
+dist: trusty
+
+addons:
+  apt:
+    sources:
+    - sourceline: 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_14.04/ ./'
+      key_url: 'http://download.opensuse.org/repositories/network:/messaging:/zeromq:/git-stable/xUbuntu_14.04/Release.key'
+    packages:
+    - libsodium-dev
+    - asciidoc
+    - xmlto
 
 env:
  global:
-  - BUILD_PREFIX=$PWD/tmp
-  - CFLAGS=-I${BUILD_PREFIX}/include
-  - CPPFLAGS=-I${BUILD_PREFIX}/include
-  - CXXFLAGS=-I${BUILD_PREFIX}/include
-  - LDFLAGS=-L${BUILD_PREFIX}/lib
-  - PKG_CONFIG_PATH=${BUILD_PREFIX}/lib/pkgconfig
-  - DISTCHECK_CONFIGURE_FLAGS="--with-libsodium --prefix=${BUILD_PREFIX}"
+  - DISTCHECK_CONFIGURE_FLAGS="--with-libsodium"
 
 before_install:
-# workaround for Travis OSX CI bug, hasn't been fixed in a month so time for a hack
-- if [ $TRAVIS_OS_NAME == "osx" ] ; then brew uninstall libtool && brew install libtool ; fi
-
-#   Build required projects first
-before_script:
-- mkdir tmp
-#   libsodium
-- git clone --depth 1 -b stable git://github.com/jedisct1/libsodium.git
-- ( cd libsodium; ./autogen.sh; ./configure --prefix=${BUILD_PREFIX}; make check; make install )
+- if [ $TRAVIS_OS_NAME == "osx" ] ; then brew install libsodium ; fi
 
 # ZMQ stress tests need more open socket (files) than the usual default
 # On OSX, it seems the way to set the max files limit is constantly changing, so
 # try to use all known knobs to ensure compatibility across various versions
-- if [ $TRAVIS_OS_NAME == "osx" ] ; then sudo sysctl -w kern.maxfiles=64000 ; sudo sysctl -w kern.maxfilesperproc=64000 ; sudo launchctl limit maxfiles 64000 64000 ; fi ; ulimit -n 64000
+- if [ $TRAVIS_OS_NAME == "osx" ] ; then sudo sysctl -w kern.maxfiles=64000 ; sudo sysctl -w kern.maxfilesperproc=64000 ; sudo launchctl limit maxfiles 64000 64000 ; ulimit -n 64000 ; fi
 
 #   Build and check this project
 script:
-- ./autogen.sh && ./configure --with-libsodium --prefix=${BUILD_PREFIX} && make distcheck
+- ./autogen.sh && ./configure --with-libsodium && make distcheck
 
 # Deploy tags
 before_deploy:
