@@ -19,8 +19,12 @@ IF NOT EXIST %environment% GOTO no_tools
 
 @ECHO %ACTION% %solution%
 
+SET __CURRENT_DIR__=%CD%
 CALL %environment% x86 >%SystemDrive%\nul 2>&1
 ECHO Platform=x86 2> %log%
+CD /D %__CURRENT_DIR__%
+SET __CURRENT_DIR__=
+
 
 ECHO Configuration=DynDebug
 msbuild /m /v:n /p:Configuration=DynDebug /p:Platform=Win32 %solution% %target%>> %log% || GOTO error
@@ -35,8 +39,12 @@ msbuild /m /v:n /p:Configuration=StaticDebug /p:Platform=Win32 %solution% %targe
 ECHO Configuration=StaticRelease
 msbuild /m /v:n /p:Configuration=StaticRelease /p:Platform=Win32 %solution% %target%>> %log% || GOTO error
 
+SET __CURRENT_DIR__=%CD%
 CALL %environment% x86_amd64 >%SystemDrive%\nul 2>&1
 ECHO Platform=x64
+CD /D %__CURRENT_DIR__%
+SET __CURRENT_DIR__=
+
 
 ECHO Configuration=DynDebug
 msbuild /m /v:n /p:Configuration=DynDebug /p:Platform=x64 %solution% %target%>> %log% || GOTO error
