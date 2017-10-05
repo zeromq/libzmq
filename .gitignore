@@ -47,6 +47,7 @@ test_last_endpoint
 test_pair_inproc
 test_pair_ipc
 test_pair_tcp
+test_rebind_ipc
 test_reqrep_inproc
 test_reqrep_ipc
 test_reqrep_tcp
