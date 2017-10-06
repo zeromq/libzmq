@@ -80,6 +80,7 @@ if(NOT WIN32)
   list(APPEND tests
           test_ipc_wildcard
           test_pair_ipc
+          test_rebind_ipc
           test_reqrep_ipc
           test_proxy
           test_proxy_single_socket

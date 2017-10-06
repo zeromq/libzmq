@@ -804,6 +804,17 @@
       ],
     },
     {
+      'target_name': 'test_rebind_ipc',
+      'type': 'executable',
+      'sources': [
+        '../../tests/test_rebind_ipc.cpp',
+        '../../tests/testutil.hpp'
+      ],
+      'dependencies': [
+        'libzmq'
+      ],
+    },
+    {
       'target_name': 'test_reqrep_ipc',
       'type': 'executable',
       'sources': [

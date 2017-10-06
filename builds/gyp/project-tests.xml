@@ -72,6 +72,7 @@
     <test name = "test_udp" />
     <test name = "test_shutdown_stress" />
     <test name = "test_pair_ipc" />
+    <test name = "test_rebind_ipc" />
     <test name = "test_reqrep_ipc" />
     <test name = "test_use_fd_ipc" />
     <test name = "test_use_fd_tcp" />
