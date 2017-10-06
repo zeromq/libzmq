@@ -1,5 +1,5 @@
 # ===========================================================================
-#     http://www.gnu.org/software/autoconf-archive/ax_code_coverage.html
+#     https://www.gnu.org/software/autoconf-archive/ax_code_coverage.html
 # ===========================================================================
 #
 # SYNOPSIS
@@ -9,9 +9,9 @@
 # DESCRIPTION
 #
 #   Defines CODE_COVERAGE_CPPFLAGS, CODE_COVERAGE_CFLAGS,
-#   CODE_COVERAGE_CXXFLAGS and CODE_COVERAGE_LDFLAGS which should be
-#   included in the CPPFLAGS, CFLAGS CXXFLAGS and LIBS/LDFLAGS variables of
-#   every build target (program or library) which should be built with code
+#   CODE_COVERAGE_CXXFLAGS and CODE_COVERAGE_LIBS which should be included
+#   in the CPPFLAGS, CFLAGS CXXFLAGS and LIBS/LIBADD variables of every
+#   build target (program or library) which should be built with code
 #   coverage support. Also defines CODE_COVERAGE_RULES which should be
 #   substituted in your Makefile; and $enable_code_coverage which can be
 #   used in subsequent configure output. CODE_COVERAGE_ENABLED is defined
@@ -21,7 +21,7 @@
 #   Test also for gcov program and create GCOV variable that could be
 #   substituted.
 #
-#   Note that all optimisation flags in CFLAGS must be disabled when code
+#   Note that all optimization flags in CFLAGS must be disabled when code
 #   coverage is enabled.
 #
 #   Usage example:
@@ -33,7 +33,7 @@
 #   Makefile.am:
 #
 #     @CODE_COVERAGE_RULES@
-#     my_program_LIBS = ... $(CODE_COVERAGE_LDFLAGS) ...
+#     my_program_LIBS = ... $(CODE_COVERAGE_LIBS) ...
 #     my_program_CPPFLAGS = ... $(CODE_COVERAGE_CPPFLAGS) ...
 #     my_program_CFLAGS = ... $(CODE_COVERAGE_CFLAGS) ...
 #     my_program_CXXFLAGS = ... $(CODE_COVERAGE_CXXFLAGS) ...
@@ -44,6 +44,11 @@
 #   check-code-coverage` in that directory will run the module's test suite
 #   (`make check`) and build a code coverage report detailing the code which
 #   was touched, then print the URI for the report.
+#
+#   In earlier versions of this macro, CODE_COVERAGE_LDFLAGS was defined
+#   instead of CODE_COVERAGE_LIBS. They are both still defined, but use of
+#   CODE_COVERAGE_LIBS is preferred for clarity; CODE_COVERAGE_LDFLAGS is
+#   deprecated. They have the same value.
 #
 #   This code was derived from Makefile.decl in GLib, originally licenced
 #   under LGPLv2.1+.
@@ -68,9 +73,9 @@
 #   General Public License for more details.
 #
 #   You should have received a copy of the GNU Lesser General Public License
-#   along with this program. If not, see <http://www.gnu.org/licenses/>.
+#   along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#serial 16
+#serial 25
 
 AC_DEFUN([AX_CODE_COVERAGE],[
 	dnl Check for --enable-code-coverage
@@ -106,56 +111,56 @@ AC_DEFUN([AX_CODE_COVERAGE],[
 			AC_MSG_ERROR([not compiling with gcc, which is required for gcov code coverage])
 		])
 
-		# List of supported lcov versions.
-		lcov_version_list="1.6 1.7 1.8 1.9 1.10 1.11 1.12"
-
 		AC_CHECK_PROG([LCOV], [lcov], [lcov])
 		AC_CHECK_PROG([GENHTML], [genhtml], [genhtml])
 
-		AS_IF([ test "$LCOV" ], [
-			AC_CACHE_CHECK([for lcov version], ax_cv_lcov_version, [
-				ax_cv_lcov_version=invalid
-				lcov_version=`$LCOV -v 2>/dev/null | $SED -e 's/^.* //'`
-				for lcov_check_version in $lcov_version_list; do
-					if test "$lcov_version" = "$lcov_check_version"; then
-						ax_cv_lcov_version="$lcov_check_version (ok)"
-					fi
-				done
-			])
-		], [
-			lcov_msg="To enable code coverage reporting you must have one of the following lcov versions installed: $lcov_version_list"
-			AC_MSG_ERROR([$lcov_msg])
+		AS_IF([ test -z "$LCOV" ], [
+			AC_MSG_ERROR([To enable code coverage reporting you must have lcov installed])
 		])
-
-		case $ax_cv_lcov_version in
-			""|invalid[)]
-				lcov_msg="You must have one of the following versions of lcov: $lcov_version_list (found: $lcov_version)."
-				AC_MSG_ERROR([$lcov_msg])
-				LCOV="exit 0;"
-			;;
-		esac
 
 		AS_IF([ test -z "$GENHTML" ], [
 			AC_MSG_ERROR([Could not find genhtml from the lcov package])
 		])
 
 		dnl Build the code coverage flags
+		dnl Define CODE_COVERAGE_LDFLAGS for backwards compatibility
 		CODE_COVERAGE_CPPFLAGS="-DNDEBUG"
 		CODE_COVERAGE_CFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
 		CODE_COVERAGE_CXXFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
-
-		dnl Libgcov is not required for the LLVM GCOV frontend
-		case "`$GCOV -version`" in
-			*LLVM*)
-				CODE_COVERAGE_LDFLAGS="";;
-			*)
-				CODE_COVERAGE_LDFLAGS="-lgcov";;
-		esac
+		CODE_COVERAGE_LIBS="-lgcov"
+		CODE_COVERAGE_LDFLAGS="$CODE_COVERAGE_LIBS"
 
 		AC_SUBST([CODE_COVERAGE_CPPFLAGS])
 		AC_SUBST([CODE_COVERAGE_CFLAGS])
 		AC_SUBST([CODE_COVERAGE_CXXFLAGS])
+		AC_SUBST([CODE_COVERAGE_LIBS])
 		AC_SUBST([CODE_COVERAGE_LDFLAGS])
+
+		[CODE_COVERAGE_RULES_CHECK='
+	-$(A''M_V_at)$(MAKE) $(AM_MAKEFLAGS) -k check
+	$(A''M_V_at)$(MAKE) $(AM_MAKEFLAGS) code-coverage-capture
+']
+		[CODE_COVERAGE_RULES_CAPTURE='
+	$(code_coverage_v_lcov_cap)$(LCOV) $(code_coverage_quiet) $(addprefix --directory ,$(CODE_COVERAGE_DIRECTORY)) --capture --output-file "$(CODE_COVERAGE_OUTPUT_FILE).tmp" --test-name "$(call code_coverage_sanitize,$(PACKAGE_NAME)-$(PACKAGE_VERSION))" --no-checksum --compat-libtool $(CODE_COVERAGE_LCOV_SHOPTS) $(CODE_COVERAGE_LCOV_OPTIONS)
+	$(code_coverage_v_lcov_ign)$(LCOV) $(code_coverage_quiet) $(addprefix --directory ,$(CODE_COVERAGE_DIRECTORY)) --remove "$(CODE_COVERAGE_OUTPUT_FILE).tmp" "/tmp/*" $(CODE_COVERAGE_IGNORE_PATTERN) --output-file "$(CODE_COVERAGE_OUTPUT_FILE)" $(CODE_COVERAGE_LCOV_SHOPTS) $(CODE_COVERAGE_LCOV_RMOPTS)
+	-@rm -f $(CODE_COVERAGE_OUTPUT_FILE).tmp
+	$(code_coverage_v_genhtml)LANG=C $(GENHTML) $(code_coverage_quiet) $(addprefix --prefix ,$(CODE_COVERAGE_DIRECTORY)) --output-directory "$(CODE_COVERAGE_OUTPUT_DIRECTORY)" --title "$(PACKAGE_NAME)-$(PACKAGE_VERSION) Code Coverage" --legend --show-details "$(CODE_COVERAGE_OUTPUT_FILE)" $(CODE_COVERAGE_GENHTML_OPTIONS)
+	@echo "file://$(abs_builddir)/$(CODE_COVERAGE_OUTPUT_DIRECTORY)/index.html"
+']
+		[CODE_COVERAGE_RULES_CLEAN='
+clean: code-coverage-clean
+distclean: code-coverage-clean
+code-coverage-clean:
+	-$(LCOV) --directory $(top_builddir) -z
+	-rm -rf $(CODE_COVERAGE_OUTPUT_FILE) $(CODE_COVERAGE_OUTPUT_FILE).tmp $(CODE_COVERAGE_OUTPUT_DIRECTORY)
+	-find . \( -name "*.gcda" -o -name "*.gcno" -o -name "*.gcov" \) -delete
+']
+	], [
+		[CODE_COVERAGE_RULES_CHECK='
+	@echo "Need to reconfigure with --enable-code-coverage"
+']
+		CODE_COVERAGE_RULES_CAPTURE="$CODE_COVERAGE_RULES_CHECK"
+		CODE_COVERAGE_RULES_CLEAN=''
 	])
 
 [CODE_COVERAGE_RULES='
@@ -213,8 +218,11 @@ CODE_COVERAGE_LCOV_RMOPTS ?= $(CODE_COVERAGE_LCOV_RMOPTS_DEFAULT)
 CODE_COVERAGE_GENHTML_OPTIONS_DEFAULT ?=\
 $(if $(CODE_COVERAGE_BRANCH_COVERAGE),\
 --rc genhtml_branch_coverage=$(CODE_COVERAGE_BRANCH_COVERAGE))
-CODE_COVERAGE_GENHTML_OPTIONS ?= $(CODE_COVERAGE_GENHTML_OPTIONS_DEFAULTS)
+CODE_COVERAGE_GENHTML_OPTIONS ?= $(CODE_COVERAGE_GENHTML_OPTIONS_DEFAULT)
 CODE_COVERAGE_IGNORE_PATTERN ?=
+
+GITIGNOREFILES ?=
+GITIGNOREFILES += $(CODE_COVERAGE_OUTPUT_FILE) $(CODE_COVERAGE_OUTPUT_DIRECTORY)
 
 code_coverage_v_lcov_cap = $(code_coverage_v_lcov_cap_$(V))
 code_coverage_v_lcov_cap_ = $(code_coverage_v_lcov_cap_$(AM_DEFAULT_VERBOSITY))
@@ -235,40 +243,15 @@ code_coverage_quiet_0 = --quiet
 code_coverage_sanitize = $(subst -,_,$(subst .,_,$(1)))
 
 # Use recursive makes in order to ignore errors during check
-check-code-coverage:
-ifeq ($(CODE_COVERAGE_ENABLED),yes)
-	-$(A''M_V_at)$(MAKE) $(AM_MAKEFLAGS) -k check
-	$(A''M_V_at)$(MAKE) $(AM_MAKEFLAGS) code-coverage-capture
-else
-	@echo "Need to reconfigure with --enable-code-coverage"
-endif
+check-code-coverage:'"$CODE_COVERAGE_RULES_CHECK"'
 
 # Capture code coverage data
-code-coverage-capture: code-coverage-capture-hook
-ifeq ($(CODE_COVERAGE_ENABLED),yes)
-	$(code_coverage_v_lcov_cap)$(LCOV) $(code_coverage_quiet) $(addprefix --directory ,$(CODE_COVERAGE_DIRECTORY)) --capture --output-file "$(CODE_COVERAGE_OUTPUT_FILE).tmp" --test-name "$(call code_coverage_sanitize,$(PACKAGE_NAME)-$(PACKAGE_VERSION))" --no-checksum --compat-libtool $(CODE_COVERAGE_LCOV_SHOPTS) $(CODE_COVERAGE_LCOV_OPTIONS)
-	$(code_coverage_v_lcov_ign)$(LCOV) $(code_coverage_quiet) $(addprefix --directory ,$(CODE_COVERAGE_DIRECTORY)) --remove "$(CODE_COVERAGE_OUTPUT_FILE).tmp" "/tmp/*" $(CODE_COVERAGE_IGNORE_PATTERN) --output-file "$(CODE_COVERAGE_OUTPUT_FILE)" $(CODE_COVERAGE_LCOV_SHOPTS) $(CODE_COVERAGE_LCOV_RMOPTS)
-	-@rm -f $(CODE_COVERAGE_OUTPUT_FILE).tmp
-	$(code_coverage_v_genhtml)LANG=C $(GENHTML) $(code_coverage_quiet) $(addprefix --prefix ,$(CODE_COVERAGE_DIRECTORY)) --output-directory "$(CODE_COVERAGE_OUTPUT_DIRECTORY)" --title "$(PACKAGE_NAME)-$(PACKAGE_VERSION) Code Coverage" --legend --show-details "$(CODE_COVERAGE_OUTPUT_FILE)" $(CODE_COVERAGE_GENHTML_OPTIONS)
-	@echo "file://$(abs_builddir)/$(CODE_COVERAGE_OUTPUT_DIRECTORY)/index.html"
-else
-	@echo "Need to reconfigure with --enable-code-coverage"
-endif
+code-coverage-capture: code-coverage-capture-hook'"$CODE_COVERAGE_RULES_CAPTURE"'
 
 # Hook rule executed before code-coverage-capture, overridable by the user
 code-coverage-capture-hook:
 
-ifeq ($(CODE_COVERAGE_ENABLED),yes)
-clean: code-coverage-clean
-distclean: code-coverage-clean
-code-coverage-clean:
-	-$(LCOV) --directory $(top_builddir) -z
-	-rm -rf $(CODE_COVERAGE_OUTPUT_FILE) $(CODE_COVERAGE_OUTPUT_FILE).tmp $(CODE_COVERAGE_OUTPUT_DIRECTORY)
-	-find . \( -name "*.gcda" -o -name "*.gcno" -o -name "*.gcov" \) -delete
-endif
-
-GITIGNOREFILES ?=
-GITIGNOREFILES += $(CODE_COVERAGE_OUTPUT_FILE) $(CODE_COVERAGE_OUTPUT_DIRECTORY)
+'"$CODE_COVERAGE_RULES_CLEAN"'
 
 A''M_DISTCHECK_CONFIGURE_FLAGS ?=
 A''M_DISTCHECK_CONFIGURE_FLAGS += --disable-code-coverage
