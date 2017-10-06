@@ -29,7 +29,7 @@
 
 #include "testutil.hpp"
 
-static const char* SOCKET_ADDR = "ipc:///tmp/tester";
+static const char* SOCKET_ADDR = "ipc:///tmp/test_rebind_ipc";
 
 
 int main (void)
