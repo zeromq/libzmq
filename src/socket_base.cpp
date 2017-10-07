@@ -1143,7 +1143,7 @@ int zmq::socket_base_t::send (msg_t *msg_, int flags_)
 
     //  In case of non-blocking send we'll simply propagate
     //  the error - including EAGAIN - up the stack.
-    if (flags_ & ZMQ_DONTWAIT || options.sndtimeo == 0) {
+    if ((flags_ & ZMQ_DONTWAIT) || options.sndtimeo == 0) {
         return -1;
     }
 
@@ -1224,7 +1224,7 @@ int zmq::socket_base_t::recv (msg_t *msg_, int flags_)
     //  For non-blocking recv, commands are processed in case there's an
     //  activate_reader command already waiting in a command pipe.
     //  If it's not, return EAGAIN.
-    if (flags_ & ZMQ_DONTWAIT || options.rcvtimeo == 0) {
+    if ((flags_ & ZMQ_DONTWAIT) || options.rcvtimeo == 0) {
         if (unlikely (process_commands (0, false) != 0)) {
             return -1;
         }
