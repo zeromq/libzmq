@@ -902,21 +902,21 @@ int zmq::socket_base_t::connect (const char *addr_)
     }
 #endif
 
-if (protocol  == "udp") {
-    if (options.type != ZMQ_RADIO) {
-        errno = ENOCOMPATPROTO;
-        LIBZMQ_DELETE(paddr);
-        return -1;
-    }
+    if (protocol  == "udp") {
+        if (options.type != ZMQ_RADIO) {
+            errno = ENOCOMPATPROTO;
+            LIBZMQ_DELETE(paddr);
+            return -1;
+        }
 
-    paddr->resolved.udp_addr = new (std::nothrow) udp_address_t ();
-    alloc_assert (paddr->resolved.udp_addr);
-    rc = paddr->resolved.udp_addr->resolve (address.c_str(), false);
-    if (rc != 0) {
-        LIBZMQ_DELETE(paddr);
-        return -1;
+        paddr->resolved.udp_addr = new (std::nothrow) udp_address_t ();
+        alloc_assert (paddr->resolved.udp_addr);
+        rc = paddr->resolved.udp_addr->resolve (address.c_str(), false);
+        if (rc != 0) {
+            LIBZMQ_DELETE(paddr);
+            return -1;
+        }
     }
-}
 
 // TBD - Should we check address for ZMQ_HAVE_NORM???
 
