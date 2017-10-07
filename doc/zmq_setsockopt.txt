@@ -1081,7 +1081,9 @@ ZMQ_ZAP_DOMAIN: Set RFC 27 authentication domain
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Sets the domain for ZAP (ZMQ RFC 27) authentication. A ZAP domain must be 
 specified to enable authentication. When the ZAP domain is empty, which is 
-the default, ZAP authentication is disabled.
+the default, ZAP authentication is disabled. This is not compatible with
+previous versions of libzmq, so it can be controlled by ZMQ_ZAP_ENFORCE_DOMAIN
+which for now is disabled by default.
 See http://rfc.zeromq.org/spec:27 for more details.
 
 [horizontal]
@@ -1089,6 +1091,22 @@ Option value type:: character string
 Option value unit:: N/A
 Default value:: empty
 Applicable socket types:: all, when using TCP transport
+
+
+ZMQ_ZAP_ENFORCE_DOMAIN: Set ZAP domain handling to strictly adhere the RFC
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The ZAP (ZMQ RFC 27) authentication protocol specifies that a domain must
+always be set. Older versions of libzmq did not follow the spec and allowed
+an empty domain to be set.
+This option can be used to enabled or disable the stricter, backward
+incompatible behaviour. For now it is disabled by default, but in a future
+version it will be enabled by default.
+
+[horizontal]
+Option value type:: int
+Option value unit:: 0, 1
+Default value:: 0
+Applicable socket types:: all, when using ZAP
 
 
 ZMQ_TCP_ACCEPT_FILTER: Assign filters to allow new TCP connections

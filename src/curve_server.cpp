@@ -390,7 +390,9 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
     rc = crypto_box_beforenm (cn_precom, cn_client, cn_secret);
     zmq_assert (rc == 0);
 
-    if (zap_required ()) {
+    //  Given this is a backward-incompatible change, it's behind a socket
+    //  option disabled by default.
+    if (zap_required () || !options.zap_enforce_domain) {
         //  Use ZAP protocol (RFC 27) to authenticate the user.
         rc = session->zap_connect ();
         if (rc == 0) {
@@ -404,6 +406,10 @@ int zmq::curve_server_t::process_initiate (msg_t *msg_)
             rc = receive_and_process_zap_reply ();
             if (rc == -1)
                 return -1;
+        } else if (!options.zap_enforce_domain) {
+            //  This supports the Stonehouse pattern (encryption without
+            //  authentication) in legacy mode (domain set but no handler).
+            state = sending_ready;
         } else {
             session->get_socket ()->event_handshake_failed_no_detail (
               session->get_endpoint (), EFAULT);

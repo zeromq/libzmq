@@ -47,7 +47,10 @@ zmq::plain_server_t::plain_server_t (session_base_t *session_,
     //  Note that there is no point to PLAIN if ZAP is not set up to handle the
     //  username and password, so if ZAP is not configured it is considered a
     //  failure.
-    zmq_assert (zap_required());
+    //  Given this is a backward-incompatible change, it's behind a socket
+    //  option disabled by default.
+    if (options.zap_enforce_domain)
+        zmq_assert (zap_required());
 }
 
 zmq::plain_server_t::~plain_server_t ()

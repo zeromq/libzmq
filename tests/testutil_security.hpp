@@ -114,6 +114,13 @@ void socket_config_curve_server (void *server, void *server_secret)
     rc = zmq_setsockopt (server, ZMQ_ZAP_DOMAIN, test_zap_domain,
                          strlen (test_zap_domain));
     assert (rc == 0);
+
+#ifdef ZMQ_ZAP_ENFORCE_DOMAIN
+    int required = 1;
+    rc = zmq_setsockopt (server, ZMQ_ZAP_ENFORCE_DOMAIN, &required,
+            sizeof (int));
+    assert (rc == 0);
+#endif
 }
 
 struct curve_client_data_t

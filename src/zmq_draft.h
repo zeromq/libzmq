@@ -50,6 +50,7 @@
 #define ZMQ_GSSAPI_PRINCIPAL_NAMETYPE 90
 #define ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE 91
 #define ZMQ_BINDTODEVICE 92
+#define ZMQ_ZAP_ENFORCE_DOMAIN 93
 
 /*  DRAFT 0MQ socket events and monitoring                                    */
 /*  Unspecified system errors during handshake. Event value is an errno.      */

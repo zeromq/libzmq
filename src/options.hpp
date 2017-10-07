@@ -242,6 +242,9 @@ namespace zmq
 
         // Device to bind the underlying socket to, eg. VRF or interface
         std::string bound_device;
+
+        //  Enforce a non-empty ZAP domain requirement for PLAIN auth
+        bool zap_enforce_domain;
     };
 }
 

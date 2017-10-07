@@ -324,6 +324,7 @@ void test_zap_errors (socket_config_fn server_socket_config_,
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
 
+#ifdef ZMQ_ZAP_ENFORCE_DOMAIN
     //  no ZAP handler
     fprintf (stderr, "test_zap_unsuccessful no ZAP handler started\n");
     setup_context_and_server_side (&ctx, &handler, &zap_thread, &server,
@@ -339,6 +340,7 @@ void test_zap_errors (socket_config_fn server_socket_config_,
       client_socket_config_, client_socket_config_data_);
     shutdown_context_and_server_side (ctx, zap_thread, server, server_mon,
                                       handler);
+#endif
 
     //  ZAP handler disconnecting on first message
     fprintf(stderr, "test_zap_unsuccessful ZAP handler disconnects\n");
