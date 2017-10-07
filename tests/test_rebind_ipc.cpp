@@ -29,7 +29,7 @@
 
 #include "testutil.hpp"
 
-static const char* SOCKET_ADDR = "ipc:///tmp/tester";
+static const char* SOCKET_ADDR = "ipc:///tmp/test_rebind_ipc";
 
 
 int main (void)
@@ -39,9 +39,12 @@ int main (void)
     void *ctx = zmq_ctx_new ();
     assert (ctx);
 
-    void *sb = zmq_socket (ctx, ZMQ_PUSH);
-    assert (sb);
-    int rc = zmq_bind (sb, SOCKET_ADDR);
+    void *sb0 = zmq_socket (ctx, ZMQ_PUSH);
+    assert (sb0);
+    void *sb1 = zmq_socket (ctx, ZMQ_PUSH);
+    assert (sb1);
+
+    int rc = zmq_bind (sb0, SOCKET_ADDR);
     assert (rc == 0);
 
     void *sc = zmq_socket (ctx, ZMQ_PULL);
@@ -49,22 +52,20 @@ int main (void)
     rc = zmq_connect (sc, SOCKET_ADDR);
     assert (rc == 0);
 
-    rc = zmq_send (sb, "42", 2, 0);
+    rc = zmq_send (sb0, "42", 2, 0);
     assert (rc == 2);
 
     char buffer [2];
     rc = zmq_recv(sc, buffer, 2, 0);
     assert (rc == 2);
 
-    rc = zmq_close (sb);
+    rc = zmq_close (sb0);
     assert (rc == 0);
 
-    sb = zmq_socket (ctx, ZMQ_PUSH);
-    assert (sb);
-    rc = zmq_bind (sb, SOCKET_ADDR);
+    rc = zmq_bind (sb1, SOCKET_ADDR);
     assert (rc == 0);
 
-    rc = zmq_send (sb, "42", 2, 0);
+    rc = zmq_send (sb1, "42", 2, 0);
     assert (rc == 2);
 
     rc = zmq_recv(sc, buffer, 2, 0);
@@ -73,7 +74,7 @@ int main (void)
     rc = zmq_close (sc);
     assert (rc == 0);
 
-    rc = zmq_close (sb);
+    rc = zmq_close (sb1);
     assert (rc == 0);
 
     rc = zmq_ctx_term (ctx);

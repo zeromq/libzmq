@@ -289,6 +289,7 @@ error:
 int zmq::ipc_listener_t::close ()
 {
     zmq_assert (s != retired_fd);
+    int fd_for_event = s;
     int rc = ::close (s);
     errno_assert (rc == 0);
 
@@ -308,7 +309,7 @@ int zmq::ipc_listener_t::close ()
         }
     }
 
-    socket->event_closed (endpoint, s);
+    socket->event_closed (endpoint, fd_for_event);
     return 0;
 }
 
