@@ -166,7 +166,6 @@ namespace zmq
 
         // IPC accept() filters
 #       if defined ZMQ_HAVE_SO_PEERCRED || defined ZMQ_HAVE_LOCAL_PEERCRED
-        bool zap_ipc_creds;
         typedef std::set <uid_t> ipc_uid_accept_filters_t;
         ipc_uid_accept_filters_t ipc_uid_accept_filters;
         typedef std::set <gid_t> ipc_gid_accept_filters_t;
@@ -243,6 +242,9 @@ namespace zmq
 
         // Device to bind the underlying socket to, eg. VRF or interface
         std::string bound_device;
+
+        //  Enforce a non-empty ZAP domain requirement for PLAIN auth
+        bool zap_enforce_domain;
     };
 }
 
