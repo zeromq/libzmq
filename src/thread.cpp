@@ -87,6 +87,8 @@ void zmq::thread_t::setThreadName(const char *name_)
 
 #include <signal.h>
 #include <unistd.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 extern "C"
 {
@@ -101,8 +103,8 @@ extern "C"
         rc = pthread_sigmask (SIG_BLOCK, &signal_set, NULL);
         posix_assert (rc);
 #endif
-
         zmq::thread_t *self = (zmq::thread_t*) arg_;
+        self->applySchedulingParameters();
         self->tfn (self->arg);
         return NULL;
     }
@@ -122,7 +124,14 @@ void zmq::thread_t::stop ()
     posix_assert (rc);
 }
 
-void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_)
+void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_, int affinity_)
+{
+    thread_priority=priority_;
+    thread_sched_policy=schedulingPolicy_;
+    thread_affinity=affinity_;
+}
+
+void zmq::thread_t::applySchedulingParameters()         // to be called in secondary thread context
 {
 #if defined _POSIX_THREAD_PRIORITY_SCHEDULING && _POSIX_THREAD_PRIORITY_SCHEDULING >= 0
     int policy = 0;
@@ -136,14 +145,17 @@ void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_
     int rc = pthread_getschedparam(descriptor, &policy, &param);
     posix_assert (rc);
 
-    if(priority_ != -1)
+    if(thread_sched_policy != -1)
     {
-        param.sched_priority = priority_;
+        policy = thread_sched_policy;
     }
 
-    if(schedulingPolicy_ != -1)
+    if(thread_priority != -1)
     {
-        policy = schedulingPolicy_;
+        param.sched_priority = thread_priority;
+
+        if (policy == SCHED_OTHER)
+            param.sched_priority = 0;   // this is the only supported priority for SCHED_OTHER!
     }
 
 #ifdef __NetBSD__
@@ -158,6 +170,33 @@ void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_
 #endif
 
     posix_assert (rc);
+
+    if (thread_sched_policy == SCHED_OTHER)
+    {
+        // in this case the thread priority setting can be only zero for the
+
+#define SETPRIORITY_MAX_PRIO                (-20)       // highest prio
+#define SETPRIORITY_MEDIUM_PRIO             (+0)
+
+        int prio = (thread_priority != ZMQ_THREAD_PRIORITY_DFLT) ? SETPRIORITY_MAX_PRIO : SETPRIORITY_MEDIUM_PRIO;
+        //rc = setpriority(PRIO_PROCESS, 0 /* calling process */, prio);
+        rc = nice(prio);
+        errno_assert (rc != -1);
+    }
+
+    if (thread_affinity != -1)        // FIXME in this place and places above I think it would be better to use the various ZMQ_*_DFLT preproc symbols instead of -1 directly
+    {
+        cpu_set_t cpuset;
+        CPU_ZERO(&cpuset);
+        for (unsigned int cpuidx=0; cpuidx<sizeof(int)*8; cpuidx++)
+        {
+            int cpubit = (1 << cpuidx);
+            if ( (thread_affinity & cpubit) != 0 )
+                CPU_SET( cpuidx , &cpuset );
+        }
+        rc = sched_setaffinity(0 /* use calling thread PID */, sizeof(cpu_set_t), &cpuset);
+        posix_assert (rc);
+    }
 #else
 
     LIBZMQ_UNUSED (priority_);

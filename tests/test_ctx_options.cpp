@@ -55,6 +55,30 @@ int main (void)
     rc = zmq_ctx_set (ctx, ZMQ_IPV6, true);
     assert (zmq_ctx_get (ctx, ZMQ_IPV6) == 1);
     
+
+
+    // set context options that alter the background thread CPU scheduling/affinity settings:
+    // NOTE: SCHED_OTHER is the default Linux scheduler
+
+    rc = zmq_ctx_set(ctx, ZMQ_THREAD_SCHED_POLICY, SCHED_OTHER);
+    assert (rc == 0);
+
+    // in theory SCHED_OTHER supports only the static priority 0 but quoting the docs
+    //     http://man7.org/linux/man-pages/man7/sched.7.html
+    //  The thread to run is chosen from the static priority 0 list based on
+    // a dynamic priority that is determined only inside this list.  The
+    // dynamic priority is based on the nice value [...]
+    // The nice value can be modified using nice(2), setpriority(2), or sched_setattr(2).
+    // ZMQ will internally use setpriority(2) to set the nice value when using SCHED_OTHER
+    rc = zmq_ctx_set(ctx, ZMQ_THREAD_PRIORITY, 1);
+    assert (rc == 0);
+
+    int cpu_affinity_test = 2;          // this should result in background threads being placed only on the
+                                        // first CPU available on this system
+    rc = zmq_ctx_set(ctx, ZMQ_THREAD_AFFINITY, cpu_affinity_test);
+    assert (rc == 0);
+
+
     void *router = zmq_socket (ctx, ZMQ_ROUTER);
     int value;
     size_t optsize = sizeof (int);
@@ -66,6 +90,10 @@ int main (void)
     assert (value == -1);
     rc = zmq_close (router);
     assert (rc == 0);
+
+
+
+    sleep(100);
     
     rc = zmq_ctx_set (ctx, ZMQ_BLOCKY, false);
     assert (zmq_ctx_get (ctx, ZMQ_BLOCKY) == 0);

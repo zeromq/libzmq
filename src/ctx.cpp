@@ -76,7 +76,8 @@ zmq::ctx_t::ctx_t () :
     blocky (true),
     ipv6 (false),
     thread_priority (ZMQ_THREAD_PRIORITY_DFLT),
-    thread_sched_policy (ZMQ_THREAD_SCHED_POLICY_DFLT)
+    thread_sched_policy (ZMQ_THREAD_SCHED_POLICY_DFLT),
+    thread_affinity (ZMQ_THREAD_AFFINITY_DFLT)
 {
 #ifdef HAVE_FORK
     pid = getpid();
@@ -250,6 +251,11 @@ int zmq::ctx_t::set (int option_, int optval_)
         thread_sched_policy = optval_;
     }
     else
+    if (option_ == ZMQ_THREAD_AFFINITY && optval_ >= 0) {
+        scoped_lock_t locker(opt_sync);
+        thread_affinity = optval_;
+    }
+    else
     if (option_ == ZMQ_BLOCKY && optval_ >= 0) {
         scoped_lock_t locker(opt_sync);
         blocky = (optval_ != 0);
@@ -395,8 +401,8 @@ zmq::object_t *zmq::ctx_t::get_reaper ()
 
 void zmq::ctx_t::start_thread (thread_t &thread_, thread_fn *tfn_, void *arg_) const
 {
+    thread_.setSchedulingParameters(thread_priority, thread_sched_policy, thread_affinity);
     thread_.start(tfn_, arg_);
-    thread_.setSchedulingParameters(thread_priority, thread_sched_policy);
 #ifndef ZMQ_HAVE_ANDROID
     thread_.setThreadName ("ZMQ background");
 #endif

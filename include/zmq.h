@@ -557,6 +557,10 @@ ZMQ_EXPORT void zmq_threadclose (void* thread);
 
 #ifdef ZMQ_BUILD_DRAFT_API
 
+/* DRAFT Context options */
+#define ZMQ_THREAD_AFFINITY 6
+#define ZMQ_THREAD_AFFINITY_DFLT -1
+
 /*  DRAFT Socket types.                                                       */
 #define ZMQ_SERVER 12
 #define ZMQ_CLIENT 13
