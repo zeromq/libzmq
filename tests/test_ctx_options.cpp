@@ -73,8 +73,10 @@ int main (void)
     rc = zmq_ctx_set(ctx, ZMQ_THREAD_PRIORITY, 1);
     assert (rc == 0);
 
-    int cpu_affinity_test = 2;          // this should result in background threads being placed only on the
-                                        // first CPU available on this system
+    int cpu_affinity_test = (1 << 0);
+         // this should result in background threads being placed only on the
+         // first CPU available on this system; try experimenting with other values
+         // (e.g., 1<<5 to use CPU index 5) and use "top -H" or "taskset -pc" to see the result
     rc = zmq_ctx_set(ctx, ZMQ_THREAD_AFFINITY, cpu_affinity_test);
     assert (rc == 0);
 
@@ -91,9 +93,9 @@ int main (void)
     rc = zmq_close (router);
     assert (rc == 0);
 
-
-
-    sleep(100);
+    // this is useful when you want to use an external tool (like top or taskset) to view
+    // properties of the background threads
+    //sleep(100);
     
     rc = zmq_ctx_set (ctx, ZMQ_BLOCKY, false);
     assert (zmq_ctx_get (ctx, ZMQ_BLOCKY) == 0);
