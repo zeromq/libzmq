@@ -70,11 +70,12 @@ void zmq::thread_t::stop ()
     win_assert (rc2 != 0);
 }
 
-void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_)
+void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_, int affinity_)
 {
     // not implemented
     LIBZMQ_UNUSED (priority_);
     LIBZMQ_UNUSED (schedulingPolicy_);
+    LIBZMQ_UNUSED (affinity_);
 }
 
 void zmq::thread_t::setThreadName(const char *name_)
@@ -171,17 +172,16 @@ void zmq::thread_t::applySchedulingParameters()         // to be called in secon
 
     posix_assert (rc);
 
-    if (thread_sched_policy == SCHED_OTHER)
+    if (thread_sched_policy == SCHED_OTHER &&
+            thread_priority != ZMQ_THREAD_PRIORITY_DFLT)
     {
-        // in this case the thread priority setting can be only zero for the
-
-#define SETPRIORITY_MAX_PRIO                (-20)       // highest prio
-#define SETPRIORITY_MEDIUM_PRIO             (+0)
-
-        int prio = (thread_priority != ZMQ_THREAD_PRIORITY_DFLT) ? SETPRIORITY_MAX_PRIO : SETPRIORITY_MEDIUM_PRIO;
-        //rc = setpriority(PRIO_PROCESS, 0 /* calling process */, prio);
-        rc = nice(prio);
-        errno_assert (rc != -1);
+        // assume the user wants to decrease the thread's nice value
+        // i.e., increase the chance of this thread being scheduled: try setting that to
+        // maximum priority.
+        // IMPORTANT: ignore return code: EPERM is typically returned for unprivileged processes
+        //            (CAP_SYS_NICE capability is required or RLIMIT_NICE resource limit should be set)
+        //            but in that case there is no much we can do
+        rc = nice(-20);
     }
 
     if (thread_affinity != -1)        // FIXME in this place and places above I think it would be better to use the various ZMQ_*_DFLT preproc symbols instead of -1 directly
@@ -201,6 +201,7 @@ void zmq::thread_t::applySchedulingParameters()         // to be called in secon
 
     LIBZMQ_UNUSED (priority_);
     LIBZMQ_UNUSED (schedulingPolicy_);
+    LIBZMQ_UNUSED (affinity_);
 #endif
 }
 

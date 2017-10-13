@@ -95,7 +95,7 @@ int main (void)
 
     // this is useful when you want to use an external tool (like top or taskset) to view
     // properties of the background threads
-    //sleep(100);
+    sleep(100);
     
     rc = zmq_ctx_set (ctx, ZMQ_BLOCKY, false);
     assert (zmq_ctx_get (ctx, ZMQ_BLOCKY) == 0);
