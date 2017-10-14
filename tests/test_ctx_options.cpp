@@ -28,7 +28,10 @@
 */
 
 #include <limits>
+#include <unistd.h>
 #include "testutil.hpp"
+
+#define WAIT_FOR_BACKGROUND_THREAD_INSPECTION             (0)
 
 int main (void)
 {
@@ -56,20 +59,21 @@ int main (void)
     assert (zmq_ctx_get (ctx, ZMQ_IPV6) == 1);
     
 
-
+#ifdef SCHED_OTHER
     // set context options that alter the background thread CPU scheduling/affinity settings:
     // NOTE: SCHED_OTHER is the default Linux scheduler
 
     rc = zmq_ctx_set(ctx, ZMQ_THREAD_SCHED_POLICY, SCHED_OTHER);
     assert (rc == 0);
+#endif
 
     // in theory SCHED_OTHER supports only the static priority 0 but quoting the docs
     //     http://man7.org/linux/man-pages/man7/sched.7.html
-    //  The thread to run is chosen from the static priority 0 list based on
+    // "The thread to run is chosen from the static priority 0 list based on
     // a dynamic priority that is determined only inside this list.  The
     // dynamic priority is based on the nice value [...]
-    // The nice value can be modified using nice(2), setpriority(2), or sched_setattr(2).
-    // ZMQ will internally use setpriority(2) to set the nice value when using SCHED_OTHER
+    // The nice value can be modified using nice(2), setpriority(2), or sched_setattr(2)."
+    // ZMQ will internally use nice(2) to set the nice value when using SCHED_OTHER
     rc = zmq_ctx_set(ctx, ZMQ_THREAD_PRIORITY, 1);
     assert (rc == 0);
 
@@ -93,10 +97,12 @@ int main (void)
     rc = zmq_close (router);
     assert (rc == 0);
 
+#if WAIT_FOR_BACKGROUND_THREAD_INSPECTION
     // this is useful when you want to use an external tool (like top or taskset) to view
     // properties of the background threads
     sleep(100);
-    
+#endif
+
     rc = zmq_ctx_set (ctx, ZMQ_BLOCKY, false);
     assert (zmq_ctx_get (ctx, ZMQ_BLOCKY) == 0);
     router = zmq_socket (ctx, ZMQ_ROUTER);

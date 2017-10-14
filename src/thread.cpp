@@ -146,17 +146,24 @@ void zmq::thread_t::applySchedulingParameters()         // to be called in secon
     int rc = pthread_getschedparam(descriptor, &policy, &param);
     posix_assert (rc);
 
-    if(thread_sched_policy != -1)
+    if(thread_sched_policy != ZMQ_THREAD_SCHED_POLICY_DFLT)
     {
         policy = thread_sched_policy;
     }
 
-    if(thread_priority != -1)
-    {
-        param.sched_priority = thread_priority;
+    /* Quoting docs:
+       "Linux allows the static priority range 1 to 99 for the SCHED_FIFO and
+       SCHED_RR policies, and the priority 0 for the remaining policies."
+       Other policies may use the "nice value" in place of the priority:
+    */
+    bool use_nice_instead_priority = (policy != SCHED_FIFO) && (policy != SCHED_RR);
 
-        if (policy == SCHED_OTHER)
-            param.sched_priority = 0;   // this is the only supported priority for SCHED_OTHER!
+    if(thread_priority != ZMQ_THREAD_PRIORITY_DFLT)
+    {
+        if (use_nice_instead_priority)
+            param.sched_priority = 0;                   // this is the only supported priority for most scheduling policies
+        else
+            param.sched_priority = thread_priority;     // user should provide a value between 1 and 99
     }
 
 #ifdef __NetBSD__
@@ -172,19 +179,21 @@ void zmq::thread_t::applySchedulingParameters()         // to be called in secon
 
     posix_assert (rc);
 
-    if (thread_sched_policy == SCHED_OTHER &&
+    if (use_nice_instead_priority &&
             thread_priority != ZMQ_THREAD_PRIORITY_DFLT)
     {
         // assume the user wants to decrease the thread's nice value
         // i.e., increase the chance of this thread being scheduled: try setting that to
         // maximum priority.
+        rc = nice(-20);
+
         // IMPORTANT: ignore return code: EPERM is typically returned for unprivileged processes
         //            (CAP_SYS_NICE capability is required or RLIMIT_NICE resource limit should be set)
         //            but in that case there is no much we can do
-        rc = nice(-20);
+
     }
 
-    if (thread_affinity != -1)        // FIXME in this place and places above I think it would be better to use the various ZMQ_*_DFLT preproc symbols instead of -1 directly
+    if (thread_affinity != ZMQ_THREAD_AFFINITY_DFLT)
     {
         cpu_set_t cpuset;
         CPU_ZERO(&cpuset);
