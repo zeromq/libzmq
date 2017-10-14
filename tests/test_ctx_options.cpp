@@ -28,10 +28,14 @@
 */
 
 #include <limits>
-#include <unistd.h>
 #include "testutil.hpp"
 
 #define WAIT_FOR_BACKGROUND_THREAD_INSPECTION             (0)
+
+#if WAIT_FOR_BACKGROUND_THREAD_INSPECTION
+#include <unistd.h>         // for sleep()
+#endif
+
 
 int main (void)
 {
