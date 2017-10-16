@@ -214,6 +214,7 @@ namespace zmq
         //  Thread scheduling parameters.
         int thread_priority;
         int thread_sched_policy;
+        int thread_affinity;
 
         //  Synchronisation of access to context options.
         mutex_t opt_sync;

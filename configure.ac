@@ -659,6 +659,22 @@ AC_COMPILE_IFELSE(
 		AC_MSG_RESULT([no])
 ])
 
+
+# pthread_setaffinity_np is non-posix:
+AC_MSG_CHECKING([whether pthread_setaffinity_np() exists])
+AC_COMPILE_IFELSE(
+	[AC_LANG_PROGRAM(
+		[[#include <pthread.h>]],
+		[[cpu_set_t test; pthread_setaffinity_np (pthread_self(), sizeof(cpu_set_t), &test); return 0;]])
+	],[
+		AC_MSG_RESULT([yes])
+		AC_DEFINE(ZMQ_HAVE_PTHREAD_SET_AFFINITY, [1],
+		    [Whether pthread_setaffinity_np() exists])
+	],[
+		AC_MSG_RESULT([no])
+])
+
+
 LIBZMQ_CHECK_SOCK_CLOEXEC([
     AC_DEFINE([ZMQ_HAVE_SOCK_CLOEXEC],
         [1],

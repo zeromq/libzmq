@@ -265,6 +265,25 @@ int main(int argc, char *argv [])
   set(CMAKE_REQUIRED_FLAGS ${SAVE_CMAKE_REQUIRED_FLAGS})
 endmacro()
 
+macro(zmq_check_pthread_setaffinity)
+  message(STATUS "Checking pthread_setaffinity signature")
+  set(SAVE_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
+  set(CMAKE_REQUIRED_FLAGS "-D_GNU_SOURCE -Werror -pthread")
+  check_c_source_runs(
+    "
+#include <pthread.h>
+
+int main(int argc, char *argv [])
+{
+    cpu_set_t test; 
+    pthread_setaffinity_np (pthread_self(), sizeof(cpu_set_t), &test);
+    return 0;
+}
+"
+    ZMQ_HAVE_PTHREAD_SETAFFINITY)
+  set(CMAKE_REQUIRED_FLAGS ${SAVE_CMAKE_REQUIRED_FLAGS})
+endmacro()
+
 
 macro(zmq_check_getrandom)
   message(STATUS "Checking whether getrandom is supported")

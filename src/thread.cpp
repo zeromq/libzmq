@@ -70,11 +70,12 @@ void zmq::thread_t::stop ()
     win_assert (rc2 != 0);
 }
 
-void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_)
+void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_, int affinity_)
 {
     // not implemented
     LIBZMQ_UNUSED (priority_);
     LIBZMQ_UNUSED (schedulingPolicy_);
+    LIBZMQ_UNUSED (affinity_);
 }
 
 void zmq::thread_t::setThreadName(const char *name_)
@@ -87,6 +88,8 @@ void zmq::thread_t::setThreadName(const char *name_)
 
 #include <signal.h>
 #include <unistd.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 extern "C"
 {
@@ -101,8 +104,8 @@ extern "C"
         rc = pthread_sigmask (SIG_BLOCK, &signal_set, NULL);
         posix_assert (rc);
 #endif
-
         zmq::thread_t *self = (zmq::thread_t*) arg_;
+        self->applySchedulingParameters();
         self->tfn (self->arg);
         return NULL;
     }
@@ -122,7 +125,14 @@ void zmq::thread_t::stop ()
     posix_assert (rc);
 }
 
-void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_)
+void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_, int affinity_)
+{
+    thread_priority=priority_;
+    thread_sched_policy=schedulingPolicy_;
+    thread_affinity=affinity_;
+}
+
+void zmq::thread_t::applySchedulingParameters()         // to be called in secondary thread context
 {
 #if defined _POSIX_THREAD_PRIORITY_SCHEDULING && _POSIX_THREAD_PRIORITY_SCHEDULING >= 0
     int policy = 0;
@@ -136,14 +146,24 @@ void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_
     int rc = pthread_getschedparam(descriptor, &policy, &param);
     posix_assert (rc);
 
-    if(priority_ != -1)
+    if(thread_sched_policy != ZMQ_THREAD_SCHED_POLICY_DFLT)
     {
-        param.sched_priority = priority_;
+        policy = thread_sched_policy;
     }
 
-    if(schedulingPolicy_ != -1)
+    /* Quoting docs:
+       "Linux allows the static priority range 1 to 99 for the SCHED_FIFO and
+       SCHED_RR policies, and the priority 0 for the remaining policies."
+       Other policies may use the "nice value" in place of the priority:
+    */
+    bool use_nice_instead_priority = (policy != SCHED_FIFO) && (policy != SCHED_RR);
+
+    if(thread_priority != ZMQ_THREAD_PRIORITY_DFLT)
     {
-        policy = schedulingPolicy_;
+        if (use_nice_instead_priority)
+            param.sched_priority = 0;                   // this is the only supported priority for most scheduling policies
+        else
+            param.sched_priority = thread_priority;     // user should provide a value between 1 and 99
     }
 
 #ifdef __NetBSD__
@@ -158,10 +178,36 @@ void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_
 #endif
 
     posix_assert (rc);
-#else
 
-    LIBZMQ_UNUSED (priority_);
-    LIBZMQ_UNUSED (schedulingPolicy_);
+    if (use_nice_instead_priority &&
+            thread_priority != ZMQ_THREAD_PRIORITY_DFLT)
+    {
+        // assume the user wants to decrease the thread's nice value
+        // i.e., increase the chance of this thread being scheduled: try setting that to
+        // maximum priority.
+        rc = nice(-20);
+
+        errno_assert (rc != -1);
+        // IMPORTANT: EPERM is typically returned for unprivileged processes: that's because
+        //            CAP_SYS_NICE capability is required or RLIMIT_NICE resource limit should be changed to avoid EPERM!
+
+    }
+
+#ifdef ZMQ_HAVE_PTHREAD_SET_AFFINITY
+    if (thread_affinity != ZMQ_THREAD_AFFINITY_DFLT)
+    {
+        cpu_set_t cpuset;
+        CPU_ZERO(&cpuset);
+        for (unsigned int cpuidx=0; cpuidx<sizeof(int)*8; cpuidx++)
+        {
+            int cpubit = (1 << cpuidx);
+            if ( (thread_affinity & cpubit) != 0 )
+                CPU_SET( cpuidx , &cpuset );
+        }
+        rc = pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
+        posix_assert (rc);
+    }
+#endif
 #endif
 }
 
