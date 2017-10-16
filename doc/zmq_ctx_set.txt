@@ -74,6 +74,16 @@ This option only applies before creating any sockets on the context.
 Default value:: -1
 
 
+ZMQ_THREAD_AFFINITY: Set CPU affinity for I/O threads
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_THREAD_AFFINITY' argument sets CPU affinity for the internal
+context's thread pool. This option is only supported on Linux.
+This option only applies before creating any sockets on the context.
+
+[horizontal]
+Default value:: -1
+
+
 ZMQ_MAX_MSGSZ: Set maximum message size
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_MAX_MSGSZ' argument sets the maximum allowed size
