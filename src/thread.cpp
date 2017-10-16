@@ -187,12 +187,13 @@ void zmq::thread_t::applySchedulingParameters()         // to be called in secon
         // maximum priority.
         rc = nice(-20);
 
-        // IMPORTANT: ignore return code: EPERM is typically returned for unprivileged processes
-        //            (CAP_SYS_NICE capability is required or RLIMIT_NICE resource limit should be set)
-        //            but in that case there is no much we can do
+        errno_assert (rc != -1);
+        // IMPORTANT: EPERM is typically returned for unprivileged processes: that's because
+        //            CAP_SYS_NICE capability is required or RLIMIT_NICE resource limit should be changed to avoid EPERM!
 
     }
 
+#ifdef ZMQ_HAVE_PTHREAD_SET_AFFINITY
     if (thread_affinity != ZMQ_THREAD_AFFINITY_DFLT)
     {
         cpu_set_t cpuset;
@@ -203,14 +204,10 @@ void zmq::thread_t::applySchedulingParameters()         // to be called in secon
             if ( (thread_affinity & cpubit) != 0 )
                 CPU_SET( cpuidx , &cpuset );
         }
-        rc = sched_setaffinity(0 /* use calling thread PID */, sizeof(cpu_set_t), &cpuset);
+        rc = pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
         posix_assert (rc);
     }
-#else
-
-    LIBZMQ_UNUSED (priority_);
-    LIBZMQ_UNUSED (schedulingPolicy_);
-    LIBZMQ_UNUSED (affinity_);
+#endif
 #endif
 }
 
