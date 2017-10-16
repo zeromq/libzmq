@@ -537,19 +537,29 @@ AC_ARG_WITH([norm],
 AC_MSG_CHECKING("with_norm_ext = ${with_norm_ext}")
 
 if test "x$with_norm_ext" != "xno"; then
-    AC_MSG_RESULT([yes])
-    AC_DEFINE(ZMQ_HAVE_NORM, 1, [Have NORM protocol extension])
+    PKG_CHECK_MODULES([norm], [norm], [ have_norm_library="yes" ], [
+        AC_MSG_RESULT([yes])
 
-    if test "x$with_norm_ext" != "xyes"; then
-        norm_path="${with_norm_ext}"
-        LIBZMQ_EXTRA_CXXFLAGS="-I${norm_path}/include ${LIBZMQ_EXTRA_CXXFLAGS}"
-        LIBZMQ_EXTRA_LDFLAGS="-L${norm_path}/lib ${LIBZMQ_EXTRA_LDFLAGS}"
-    fi
-    LIBS="-L${norm_path}/lib -lnorm $LIBS"
-    PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -lnorm"
+        norm_LIBS=""
+        norm_CFLAGS=""
+        if test "x$with_norm_ext" != "xyes"; then
+            norm_path="${with_norm_ext}"
+            norm_CFLAGS="${norm_CFLAGS} -I${norm_path}/include"
+            norm_LIBS="${norm_LIBS} -L${norm_path}/lib"
+        fi
+        norm_LIBS="${norm_LIBS} -lnorm"
+        have_norm_library="yes"
+        AC_SUBST(norm_LIBS)
+        AC_SUBST(norm_CFLAGS)
+    ])
 else
     AC_MSG_RESULT([no])
 fi
+if test "x$have_norm_library" = "xyes"; then
+    AC_DEFINE(ZMQ_HAVE_NORM, [1], [Have NORM protocol extension])
+    PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE $norm_LIBS"
+fi
+AM_CONDITIONAL(HAVE_NORM, test "x$have_norm_library" = "xyes")
 
 # build using vmci
 have_vmci_library="no"
