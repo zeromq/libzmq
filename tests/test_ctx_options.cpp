@@ -81,7 +81,7 @@ void test_ctx_thread_opts(void* ctx)
     assert (rc == -1 && errno == EINVAL);
     rc = zmq_ctx_set(ctx, ZMQ_THREAD_PRIORITY, ZMQ_THREAD_PRIORITY_DFLT);
     assert (rc == -1 && errno == EINVAL);
-#if ZMQ_BUILD_DRAFT_API
+#ifdef ZMQ_THREAD_AFFINITY
     rc = zmq_ctx_set(ctx, ZMQ_THREAD_AFFINITY, ZMQ_THREAD_AFFINITY_DFLT);
     assert (rc == -1 && errno == EINVAL);
 #endif
@@ -113,7 +113,7 @@ void test_ctx_thread_opts(void* ctx)
     }
 
 
-#if ZMQ_BUILD_DRAFT_API
+#ifdef ZMQ_THREAD_AFFINITY
     // test affinity:
 
     int cpu_affinity_test = (1 << 0);
@@ -145,7 +145,7 @@ int main (void)
 #endif
     assert (zmq_ctx_get (ctx, ZMQ_IO_THREADS) == ZMQ_IO_THREADS_DFLT);
     assert (zmq_ctx_get (ctx, ZMQ_IPV6) == 0);
-#if defined (ZMQ_BUILD_DRAFT_AP)
+#if defined (ZMQ_MSG_T_SIZE)
     assert (zmq_ctx_get (ctx, ZMQ_MSG_T_SIZE) == sizeof (zmq_msg_t));
 #endif
 
