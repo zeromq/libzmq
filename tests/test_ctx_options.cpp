@@ -81,8 +81,10 @@ void test_ctx_thread_opts(void* ctx)
     assert (rc == -1 && errno == EINVAL);
     rc = zmq_ctx_set(ctx, ZMQ_THREAD_PRIORITY, ZMQ_THREAD_PRIORITY_DFLT);
     assert (rc == -1 && errno == EINVAL);
+#if ZMQ_BUILD_DRAFT_API
     rc = zmq_ctx_set(ctx, ZMQ_THREAD_AFFINITY, ZMQ_THREAD_AFFINITY_DFLT);
     assert (rc == -1 && errno == EINVAL);
+#endif
 
 
     // test scheduling policy:
@@ -111,6 +113,7 @@ void test_ctx_thread_opts(void* ctx)
     }
 
 
+#if ZMQ_BUILD_DRAFT_API
     // test affinity:
 
     int cpu_affinity_test = (1 << 0);
@@ -120,6 +123,7 @@ void test_ctx_thread_opts(void* ctx)
 
     rc = zmq_ctx_set(ctx, ZMQ_THREAD_AFFINITY, cpu_affinity_test);
     assert (rc == 0);
+#endif
 }
 
 
