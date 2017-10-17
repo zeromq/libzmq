@@ -90,6 +90,21 @@ This option only applies before creating any sockets on the context.
 Default value:: -1
 
 
+ZMQ_THREAD_NAME_PREFIX: Set name prefix for I/O threads
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_THREAD_NAME_PREFIX' argument sets a numeric prefix to each thread
+created for the internal context's thread pool. This option is only supported on Linux.
+This option is useful to help  debugging done via "top -H" or "gdb"; in case
+multiple processes on the system are using ZeroMQ it is useful to provide through
+this context option an application-specific prefix to distinguish ZeroMQ background
+threads that belong to different processes.
+This option only applies before creating any sockets on the context.
+
+[horizontal]
+Default value:: -1
+
+
+
 ZMQ_MAX_MSGSZ: Set maximum message size
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_MAX_MSGSZ' argument sets the maximum allowed size
