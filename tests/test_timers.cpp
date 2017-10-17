@@ -27,6 +27,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#define __STDC_LIMIT_MACROS // to define SIZE_MAX with older compilers
 #include "testutil.hpp"
 
 void handler (int timer_id, void* arg)
