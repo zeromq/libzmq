@@ -44,6 +44,10 @@ if [ $BUILD_TYPE == "default" ]; then
         CONFIG_OPTS+=("--with-pgm=yes")
     fi
 
+    if [ -n "$NORM" ] && [ "$NORM" == "enabled" ]; then
+        CONFIG_OPTS+=("--with-norm=yes")
+    fi
+
     if [ -z $DRAFT ] || [ $DRAFT == "disabled" ]; then
         CONFIG_OPTS+=("--enable-drafts=no")
     elif [ $DRAFT == "enabled" ]; then
