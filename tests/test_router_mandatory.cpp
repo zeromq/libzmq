@@ -123,15 +123,15 @@ void test_get_peer_state ()
     rc = zmq_poller_add (poller, dealer1, NULL, ZMQ_POLLIN);
     assert (rc == 0);
 
-    const size_t count = 10000;
-    const size_t event_size = 2;
+    const unsigned int count = 10000;
+    const unsigned int event_size = 2;
     bool dealer2_blocked = false;
-    size_t dealer1_sent = 0, dealer2_sent = 0, dealer1_received = 0;
+    unsigned int dealer1_sent = 0, dealer2_sent = 0, dealer1_received = 0;
     zmq_poller_event_t events[event_size];
-    for (size_t iteration = 0; iteration < count; ++iteration) {
+    for (unsigned int iteration = 0; iteration < count; ++iteration) {
         rc = zmq_poller_wait_all (poller, events, event_size, -1);
         assert (rc != -1);
-        for (size_t event_no = 0; event_no < event_size; ++event_no) {
+        for (unsigned int event_no = 0; event_no < event_size; ++event_no) {
             const zmq_poller_event_t &current_event = events[event_no];
             if (current_event.socket == router
                 && current_event.events & ZMQ_POLLOUT) {
@@ -158,7 +158,7 @@ void test_get_peer_state ()
             // never read from dealer2, so its pipe becomes full eventually
         }
     }
-    printf ("dealer1_sent = %zu, dealer2_sent = %zu, dealer1_received = %zu\n",
+    printf ("dealer1_sent = %u, dealer2_sent = %u, dealer1_received = %u\n",
             dealer1_sent, dealer2_sent, dealer1_received);
     assert (dealer2_blocked);
     zmq_poller_destroy (&poller);

@@ -91,7 +91,7 @@ Default value:: -1
 
 
 ZMQ_THREAD_NAME_PREFIX: Set name prefix for I/O threads
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The 'ZMQ_THREAD_NAME_PREFIX' argument sets a numeric prefix to each thread
 created for the internal context's thread pool. This option is only supported on Linux.
 This option is useful to help  debugging done via "top -H" or "gdb"; in case
