@@ -288,6 +288,7 @@ case "${host_os}" in
 
         if test "x$enable_static" = "xyes"; then
             CPPFLAGS="-DZMQ_STATIC $CPPFLAGS"
+            PKGCFG_LIBS_PRIVATE="$PKGCFG_LIBS_PRIVATE -liphlpapi"
         fi
 	# Set FD_SETSIZE to 16384
 	CPPFLAGS=" -DFD_SETSIZE=16384 $CPPFLAGS"
