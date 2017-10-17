@@ -124,6 +124,14 @@ void test_ctx_thread_opts(void* ctx)
     rc = zmq_ctx_set(ctx, ZMQ_THREAD_AFFINITY, cpu_affinity_test);
     assert (rc == 0);
 #endif
+
+
+#ifdef ZMQ_THREAD_NAME_PREFIX
+    // test thread name prefix:
+
+    rc = zmq_ctx_set(ctx, ZMQ_THREAD_NAME_PREFIX, 1234);
+    assert (rc == 0);
+#endif
 }
 
 

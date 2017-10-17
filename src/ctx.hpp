@@ -211,10 +211,11 @@ namespace zmq
         //  Is IPv6 enabled on this context?
         bool ipv6;
 
-        //  Thread scheduling parameters.
+        //  Thread parameters.
         int thread_priority;
         int thread_sched_policy;
         int thread_affinity;
+        std::string thread_name_prefix;
 
         //  Synchronisation of access to context options.
         mutex_t opt_sync;
