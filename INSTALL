@@ -57,6 +57,16 @@ can cause substantial consumption of virtual address space, especially if
 Generally, programmer needs to tune the stack to balance memory consumption
 but never get into situation that stack is overflown.
 
+Windows Builds - Static
+=======================
+
+When linking statically with libzmq your CFLAGS and/or CPPFLAGS need to include
+`-DZMQ_STATIC` otherwise `__dclspec(dllimport)` will be set for all functions
+and the build will fail.
+
+This is a workaround for issue:
+https://github.com/zeromq/libzmq/issues/2788
+
 Windows Builds - Wine
 =====================
 
