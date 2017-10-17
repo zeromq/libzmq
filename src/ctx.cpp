@@ -36,6 +36,7 @@
 #include <limits>
 #include <climits>
 #include <new>
+#include <sstream>
 #include <string.h>
 
 #include "ctx.hpp"
@@ -256,6 +257,13 @@ int zmq::ctx_t::set (int option_, int optval_)
         thread_affinity = optval_;
     }
     else
+    if (option_ == ZMQ_THREAD_NAME_PREFIX && optval_ >= 0) {
+        std::ostringstream s;
+        s << optval_;
+        scoped_lock_t locker(opt_sync);
+        thread_name_prefix = s.str();
+    }
+    else
     if (option_ == ZMQ_BLOCKY && optval_ >= 0) {
         scoped_lock_t locker(opt_sync);
         blocky = (optval_ != 0);
@@ -401,11 +409,16 @@ zmq::object_t *zmq::ctx_t::get_reaper ()
 
 void zmq::ctx_t::start_thread (thread_t &thread_, thread_fn *tfn_, void *arg_) const
 {
+    static unsigned int nthreads_started = 0;
+
     thread_.setSchedulingParameters(thread_priority, thread_sched_policy, thread_affinity);
     thread_.start(tfn_, arg_);
 #ifndef ZMQ_HAVE_ANDROID
-    thread_.setThreadName ("ZMQ background");
+    std::ostringstream s;
+    s << thread_name_prefix << "/ZMQbg/" << nthreads_started;
+    thread_.setThreadName (s.str().c_str());
 #endif
+    nthreads_started++;
 }
 
 void zmq::ctx_t::send_command (uint32_t tid_, const command_t &command_)
