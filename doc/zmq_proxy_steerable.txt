@@ -22,9 +22,20 @@ control flow provided by the socket passed as the fourth argument "control".
 If the control socket is not NULL, the proxy supports control flow. If 
 'PAUSE' is received on this socket, the proxy suspends its activities. If 
 'RESUME' is received, it goes on. If 'TERMINATE' is received, it terminates
-smoothly. At start, the proxy runs normally as if zmq_proxy was used.
+smoothly. If 'STATISTICS' is received, the proxy will reply on the control socket
+sending 8 unsigned integers 64-bit wide that provide the
+ - number of messages received by the frontend socket
+ - number of bytes received by the frontend socket
+ - number of messages sent out the frontend socket
+ - number of bytes sent out the frontend socket
+ - number of messages received by the backend socket
+ - number of bytes received by the backend socket
+ - number of messages sent out the backend socket
+ - number of bytes sent out the backend socket
 
-If the control socket is NULL, the function behave exactly as if zmq_proxy
+At start, the proxy runs normally as if zmq_proxy was used.
+
+If the control socket is NULL, the function behave exactly as if linkzmq:zmq_proxy[3]
 had been called.
 
 
