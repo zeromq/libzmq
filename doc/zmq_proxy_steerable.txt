@@ -23,7 +23,8 @@ If the control socket is not NULL, the proxy supports control flow. If
 'PAUSE' is received on this socket, the proxy suspends its activities. If 
 'RESUME' is received, it goes on. If 'TERMINATE' is received, it terminates
 smoothly. If 'STATISTICS' is received, the proxy will reply on the control socket
-sending 8 unsigned integers 64-bit wide that provide the
+sending a multipart message with 8 frames, each with an unsigned integer 64-bit
+wide that provide in the following order:
  - number of messages received by the frontend socket
  - number of bytes received by the frontend socket
  - number of messages sent out the frontend socket
