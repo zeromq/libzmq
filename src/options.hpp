@@ -124,7 +124,7 @@ namespace zmq
         //  Maximal size of message to handle.
         int64_t maxmsgsize;
 
-        // The timeout for send/recv operations for this socket.
+        // The timeout for send/recv operations for this socket, in milliseconds.
         int rcvtimeo;
         int sndtimeo;
 
