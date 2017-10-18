@@ -21,6 +21,10 @@ behaviour for discarding messages sent by the application with _zmq_send()_ but
 not yet physically transferred to the network depends on the value of the
 _ZMQ_LINGER_ socket option for the specified 'socket'.
 
+_zmq_close()_ must be called exactly once for each socket. If it is never called,
+_zmq_ctx_term()_ will block forever. If it is called multiple times for the same 
+socket or if _socket_ does not point to a socket, the behaviour is undefined.
+
 NOTE: The default setting of _ZMQ_LINGER_ does not discard unsent messages;
 this behaviour may cause the application to block when calling _zmq_ctx_term()_.
 For details refer to linkzmq:zmq_setsockopt[3] and linkzmq:zmq_ctx_term[3].
@@ -28,15 +32,7 @@ For details refer to linkzmq:zmq_setsockopt[3] and linkzmq:zmq_ctx_term[3].
 
 RETURN VALUE
 ------------
-The _zmq_close()_ function shall return zero if successful. Otherwise it shall
-return `-1` and set 'errno' to one of the values defined below.
-
-
-ERRORS
-------
-*ENOTSOCK*::
-The provided 'socket' was invalid.
-
+The _zmq_close()_ function always returns zero.
 
 SEE ALSO
 --------
