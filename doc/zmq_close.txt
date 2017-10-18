@@ -37,7 +37,7 @@ return `-1` and set 'errno' to one of the values defined below.
 
 
 ERRORS
--------
+------
 *ENOTSOCK*::
 The provided 'socket' was NULL.
 
