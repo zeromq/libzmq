@@ -50,10 +50,15 @@ namespace zmq
     struct reference_tag_t {};
 
     //  Object to hold dynamically allocated opaque binary data.
+    //  On modern compilers, it will be movable but not copyable. Copies 
+    //  must be explicitly created by set_deep_copy.
+    //  On older compilers, it is copyable for syntactical reasons.
     struct blob_t
     {
+        //  Creates an empty blob_t.
         blob_t () : data_ (0), size_ (0), owned_ (true) {}
 
+        //  Creates a blob_t of a given size, with uninitialized content.
         blob_t (const size_t size)
             : data_ ((unsigned char*)malloc (size))
             , size_ (size)
@@ -61,7 +66,9 @@ namespace zmq
         {
         }
 
-        blob_t (const unsigned char * const data, const size_t size)
+        //  Creates a blob_t of a given size, an initializes content by copying 
+        // from another buffer.
+        blob_t(const unsigned char * const data, const size_t size)
             : data_ ((unsigned char*)malloc (size))
             , size_ (size)
             , owned_ (true)
@@ -69,6 +76,10 @@ namespace zmq
             memcpy(data_, data, size_);
         }
 
+        //  Creates a blob_t for temporary use that only references a 
+        //  pre-allocated block of data.
+        //  Use with caution and ensure that the blob_t will not outlive
+        //  the referenced data.
         blob_t (unsigned char * const data, const size_t size, reference_tag_t)
             : data_ (data)
             , size_ (size)
@@ -76,21 +87,26 @@ namespace zmq
         {
         }
 
+        //  Returns the size of the blob_t.
         size_t size () const { return size_;  }
         
-        const unsigned char *data () const {
+        //  Returns a pointer to the data of the blob_t.
+        const unsigned char *data() const {
             return data_;
         }
 
-        unsigned char *data () {
+        //  Returns a pointer to the data of the blob_t.
+        unsigned char *data() {
             return data_;
         }
 
-        bool operator < (blob_t const &other) const {
+        //  Defines an order relationship on blob_t.
+        bool operator< (blob_t const &other) const {
             int cmpres = memcmp (data_, other.data_, std::min (size_, other.size_));
             return cmpres < 0 || (cmpres == 0 && size_ < other.size_);
         }
 
+        //  Sets a blob_t to a deep copy of another blob_t.
         void set_deep_copy (blob_t const &other)
         {               
             clear ();
@@ -100,7 +116,8 @@ namespace zmq
             memcpy (data_, other.data_, size_);
         }
 
-        void set(const unsigned char * const data, const size_t size)
+        //  Sets a blob_t to a copy of a given buffer.
+        void set (const unsigned char * const data, const size_t size)
         {
             clear ();
             data_ = (unsigned char*)malloc (size);
@@ -109,6 +126,7 @@ namespace zmq
             memcpy (data_, data, size_);
         }
 
+        //  Empties a blob_t.
         void clear () {
             if (owned_) { free (data_); }
             data_ = 0; size_ = 0;
@@ -153,7 +171,7 @@ namespace zmq
                 set_deep_copy (other);
             }
             return *this;
-    }
+        }
 #endif
 
     private:
