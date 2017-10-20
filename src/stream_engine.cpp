@@ -901,7 +901,7 @@ int zmq::stream_engine_t::write_credential (msg_t *msg_)
     zmq_assert (mechanism != NULL);
     zmq_assert (session != NULL);
 
-    const blob_t credential = mechanism->get_user_id ();
+    const blob_t &credential = mechanism->get_user_id ();
     if (credential.size () > 0) {
         msg_t msg;
         int rc = msg.init_size (credential.size ());

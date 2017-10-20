@@ -69,7 +69,7 @@ void zmq::dgram_t::xpipe_terminated (pipe_t *pipe_)
 {
     if (pipe_ == pipe) {
         if (last_in == pipe) {
-            saved_credential = last_in->get_credential ();
+            saved_credential.set_deep_copy (last_in->get_credential ());
             last_in = NULL;
         }
         pipe = NULL;
@@ -171,7 +171,7 @@ bool zmq::dgram_t::xhas_out ()
     return pipe->check_write ();
 }
 
-zmq::blob_t zmq::dgram_t::get_credential () const
+const zmq::blob_t &zmq::dgram_t::get_credential () const
 {
     return last_in? last_in->get_credential (): saved_credential;
 }

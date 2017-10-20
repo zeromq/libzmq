@@ -229,7 +229,7 @@ bool zmq::dish_t::xhas_in ()
     }
 }
 
-zmq::blob_t zmq::dish_t::get_credential () const
+const zmq::blob_t &zmq::dish_t::get_credential () const
 {
     return fq.get_credential ();
 }

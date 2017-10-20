@@ -170,7 +170,7 @@ namespace zmq
         //  Returns the credential for the peer from which we have received
         //  the last message. If no message has been received yet,
         //  the function returns empty credential.
-        virtual blob_t get_credential () const;
+        virtual const blob_t &get_credential () const;
 
         //  i_pipe_events will be forwarded to these functions.
         virtual void xread_activated (pipe_t *pipe_);

@@ -127,15 +127,15 @@ uint32_t zmq::pipe_t::get_server_socket_routing_id ()
 
 void zmq::pipe_t::set_router_socket_routing_id (const blob_t &router_socket_routing_id_)
 {
-    router_socket_routing_id = router_socket_routing_id_;
+    router_socket_routing_id.set_deep_copy (router_socket_routing_id_);
 }
 
-zmq::blob_t zmq::pipe_t::get_routing_id ()
+const zmq::blob_t &zmq::pipe_t::get_routing_id ()
 {
     return router_socket_routing_id;
 }
 
-zmq::blob_t zmq::pipe_t::get_credential () const
+const zmq::blob_t &zmq::pipe_t::get_credential () const
 {
     return credential;
 }
@@ -182,7 +182,7 @@ read_message:
     //  If this is a credential, save a copy and receive next message.
     if (unlikely (msg_->is_credential ())) {
         const unsigned char *data = static_cast <const unsigned char *> (msg_->data ());
-        credential = blob_t (data, msg_->size ());
+        credential.set (data, msg_->size ());
         const int rc = msg_->close ();
         zmq_assert (rc == 0);
         goto read_message;
