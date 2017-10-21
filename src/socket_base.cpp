@@ -1491,9 +1491,11 @@ int zmq::socket_base_t::xrecv (msg_t *)
     return -1;
 }
 
-zmq::blob_t zmq::socket_base_t::get_credential () const
+static const zmq::blob_t empty_blob;
+
+const zmq::blob_t &zmq::socket_base_t::get_credential () const
 {
-    return blob_t ();
+    return empty_blob;
 }
 
 void zmq::socket_base_t::xread_activated (pipe_t *)

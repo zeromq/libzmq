@@ -178,7 +178,7 @@ bool zmq::server_t::xhas_out ()
     return true;
 }
 
-zmq::blob_t zmq::server_t::get_credential () const
+const zmq::blob_t &zmq::server_t::get_credential () const
 {
     return fq.get_credential ();
 }

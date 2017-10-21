@@ -66,7 +66,7 @@ namespace zmq
 
     protected:
 
-        blob_t get_credential () const;
+        const blob_t &get_credential () const;
 
     private:
 

@@ -90,9 +90,9 @@ namespace zmq
 
         //  Pipe endpoint can store an opaque ID to be used by its clients.
         void set_router_socket_routing_id (const blob_t &identity_);
-        blob_t get_routing_id ();
+        const blob_t &get_routing_id ();
 
-        blob_t get_credential () const;
+        const blob_t &get_credential () const;
 
         //  Returns true if there is at least one message to read in the pipe.
         bool check_read ();

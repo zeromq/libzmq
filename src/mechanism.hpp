@@ -80,7 +80,7 @@ namespace zmq
 
         void set_user_id (const void *user_id, size_t size);
 
-        blob_t get_user_id () const;
+        const blob_t &get_user_id () const;
 
         const metadata_t::dict_t& get_zmtp_properties () {
             return zmtp_properties;

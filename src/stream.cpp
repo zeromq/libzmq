@@ -231,7 +231,7 @@ int zmq::stream_t::xrecv (msg_t *msg_)
     //  We have received a frame with TCP data.
     //  Rather than sending this frame, we keep it in prefetched
     //  buffer and send a frame with peer's ID.
-    blob_t routing_id = pipe->get_routing_id ();
+    const blob_t &routing_id = pipe->get_routing_id ();
     rc = msg_->close();
     errno_assert (rc == 0);
     rc = msg_->init_size (routing_id.size ());
@@ -267,7 +267,7 @@ bool zmq::stream_t::xhas_in ()
     zmq_assert (pipe != NULL);
     zmq_assert ((prefetched_msg.flags () & msg_t::more) == 0);
 
-    blob_t routing_id = pipe->get_routing_id ();
+    const blob_t &routing_id = pipe->get_routing_id ();
     rc = prefetched_routing_id.init_size (routing_id.size ());
     errno_assert (rc == 0);
 
@@ -300,7 +300,7 @@ void zmq::stream_t::identify_peer (pipe_t *pipe_)
     buffer [0] = 0;
     blob_t routing_id;
     if (connect_routing_id.length ()) {
-        routing_id = blob_t ((unsigned char*) connect_routing_id.c_str(),
+        routing_id.set ((unsigned char*) connect_routing_id.c_str(),
             connect_routing_id.length ());
         connect_routing_id.clear ();
         outpipes_t::iterator it = outpipes.find (routing_id);
@@ -308,14 +308,14 @@ void zmq::stream_t::identify_peer (pipe_t *pipe_)
     }
     else {
         put_uint32 (buffer + 1, next_integral_routing_id++);
-        routing_id = blob_t (buffer, sizeof buffer);
+        routing_id.set (buffer, sizeof buffer);
         memcpy (options.routing_id, routing_id.data (), routing_id.size ());
         options.routing_id_size = (unsigned char) routing_id.size ();
     }
     pipe_->set_router_socket_routing_id (routing_id);
     //  Add the record into output pipes lookup table
     outpipe_t outpipe = {pipe_, true};
-    const bool ok = outpipes.insert (
-        outpipes_t::value_type (routing_id, outpipe)).second;
+    const bool ok = outpipes.ZMQ_MAP_INSERT_OR_EMPLACE (
+        ZMQ_MOVE(routing_id), outpipe).second;
     zmq_assert (ok);
 }

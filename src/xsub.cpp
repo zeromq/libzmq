@@ -210,7 +210,7 @@ bool zmq::xsub_t::xhas_in ()
     }
 }
 
-zmq::blob_t zmq::xsub_t::get_credential () const
+const zmq::blob_t &zmq::xsub_t::get_credential () const
 {
     return fq.get_credential ();
 }

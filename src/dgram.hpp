@@ -56,7 +56,7 @@ namespace zmq
         int xrecv (zmq::msg_t *msg_);
         bool xhas_in ();
         bool xhas_out ();
-        blob_t get_credential () const;
+        const blob_t &get_credential () const;
         void xread_activated (zmq::pipe_t *pipe_);
         void xwrite_activated (zmq::pipe_t *pipe_);
         void xpipe_terminated (zmq::pipe_t *pipe_);

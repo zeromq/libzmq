@@ -324,11 +324,11 @@ void zmq::xpub_t::send_unsubscription (unsigned char *data_, size_t size_,
     if (self->options.type != ZMQ_PUB) {
         //  Place the unsubscription to the queue of pending (un)subscriptions
         //  to be retrieved by the user later on.
-        blob_t unsub (size_ + 1, 0);
-        unsub [0] = 0;
+        blob_t unsub (size_ + 1);
+        *unsub.data() = 0;
         if (size_ > 0)
-            memcpy (&unsub [1], data_, size_);
-        self->pending_data.push_back (unsub);
+            memcpy (unsub.data() + 1, data_, size_);
+        self->pending_data.ZMQ_PUSH_OR_EMPLACE_BACK (ZMQ_MOVE(unsub));
         self->pending_metadata.push_back (NULL);
         self->pending_flags.push_back (0);
 

@@ -94,7 +94,7 @@ bool zmq::client_t::xhas_out ()
     return lb.has_out ();
 }
 
-zmq::blob_t zmq::client_t::get_credential () const
+const zmq::blob_t &zmq::client_t::get_credential () const
 {
     return fq.get_credential ();
 }

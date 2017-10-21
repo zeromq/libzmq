@@ -48,7 +48,7 @@ zmq::mechanism_t::~mechanism_t ()
 
 void zmq::mechanism_t::set_peer_routing_id (const void *id_ptr, size_t id_size)
 {
-    routing_id = blob_t (static_cast <const unsigned char*> (id_ptr), id_size);
+    routing_id.set (static_cast <const unsigned char*> (id_ptr), id_size);
 }
 
 void zmq::mechanism_t::peer_routing_id (msg_t *msg_)
@@ -61,12 +61,12 @@ void zmq::mechanism_t::peer_routing_id (msg_t *msg_)
 
 void zmq::mechanism_t::set_user_id (const void *data_, size_t size_)
 {
-    user_id = blob_t (static_cast <const unsigned char*> (data_), size_);
+    user_id.set (static_cast <const unsigned char*> (data_), size_);
     zap_properties.insert (metadata_t::dict_t::value_type (
       ZMQ_MSG_PROPERTY_USER_ID, std::string ((char *) data_, size_)));
 }
 
-zmq::blob_t zmq::mechanism_t::get_user_id () const
+const zmq::blob_t &zmq::mechanism_t::get_user_id () const
 {
     return user_id;
 }

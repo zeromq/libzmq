@@ -56,7 +56,7 @@ namespace zmq
         int recv (msg_t *msg_);
         int recvpipe (msg_t *msg_, pipe_t **pipe_);
         bool has_in ();
-        blob_t get_credential () const;
+        const blob_t &get_credential () const;
 
     private:
 
