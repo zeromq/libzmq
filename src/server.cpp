@@ -61,7 +61,7 @@ void zmq::server_t::xattach_pipe (pipe_t *pipe_, bool subscribe_to_all_)
     pipe_->set_server_socket_routing_id (routing_id);
     //  Add the record into output pipes lookup table
     outpipe_t outpipe = {pipe_, true};
-    bool ok = outpipes.insert (outpipes_t::value_type (routing_id, outpipe)).second;
+    bool ok = outpipes.ZMQ_MAP_INSERT_OR_EMPLACE (routing_id, outpipe).second;
     zmq_assert (ok);
 
     fq.attach (pipe_);

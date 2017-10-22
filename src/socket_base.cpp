@@ -817,7 +817,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         last_endpoint.assign (addr_);
 
         // remember inproc connections for disconnect
-        inprocs.insert (inprocs_t::value_type (std::string (addr_), new_pipes [0]));
+        inprocs.ZMQ_MAP_INSERT_OR_EMPLACE (addr_, new_pipes [0]);
 
         options.connected = true;
         return 0;
@@ -1004,7 +1004,7 @@ void zmq::socket_base_t::add_endpoint (const char *addr_, own_t *endpoint_, pipe
 {
     //  Activate the session. Make it a child of this socket.
     launch_child (endpoint_);
-    endpoints.insert (endpoints_t::value_type (std::string (addr_), endpoint_pipe_t (endpoint_, pipe)));
+    endpoints.ZMQ_MAP_INSERT_OR_EMPLACE (addr_, endpoint_pipe_t (endpoint_, pipe));
 }
 
 int zmq::socket_base_t::term_endpoint (const char *addr_)

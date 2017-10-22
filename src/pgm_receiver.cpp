@@ -206,7 +206,7 @@ void zmq::pgm_receiver_t::in_event ()
         //  New peer. Add it to the list of know but unjoint peers.
         if (it == peers.end ()) {
             peer_info_t peer_info = {false, NULL};
-            it = peers.insert (peers_t::value_type (*tsi, peer_info)).first;
+            it = peers.ZMQ_MAP_INSERT_OR_EMPLACE (*tsi, peer_info).first;
         }
 
         insize = static_cast <size_t> (received);
