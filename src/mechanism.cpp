@@ -62,8 +62,8 @@ void zmq::mechanism_t::peer_routing_id (msg_t *msg_)
 void zmq::mechanism_t::set_user_id (const void *data_, size_t size_)
 {
     user_id.set (static_cast <const unsigned char*> (data_), size_);
-    zap_properties.insert (metadata_t::dict_t::value_type (
-      ZMQ_MSG_PROPERTY_USER_ID, std::string ((char *) data_, size_)));
+    zap_properties.ZMQ_MAP_INSERT_OR_EMPLACE (
+      ZMQ_MSG_PROPERTY_USER_ID, std::string ((char *) data_, size_));
 }
 
 const zmq::blob_t &zmq::mechanism_t::get_user_id () const
@@ -218,13 +218,11 @@ int zmq::mechanism_t::parse_metadata (const unsigned char *ptr_,
                 return -1;
         }
         if (zap_flag)
-            zap_properties.insert (
-                metadata_t::dict_t::value_type (
-                    name, std::string ((char *) value, value_length)));
+            zap_properties.ZMQ_MAP_INSERT_OR_EMPLACE (
+                    name, std::string ((char *) value, value_length));
         else
-            zmtp_properties.insert (
-                metadata_t::dict_t::value_type (
-                    name, std::string ((char *) value, value_length)));
+            zmtp_properties.ZMQ_MAP_INSERT_OR_EMPLACE (
+                    name, std::string ((char *) value, value_length));
     }
     if (bytes_left > 0) {
         errno = EPROTO;

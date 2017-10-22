@@ -76,7 +76,7 @@ void zmq::radio_t::xread_activated (pipe_t *pipe_)
             std::string group = std::string (msg.group ());
 
             if (msg.is_join ())
-                subscriptions.insert (subscriptions_t::value_type (group, pipe_));
+                subscriptions.ZMQ_MAP_INSERT_OR_EMPLACE (ZMQ_MOVE(group), pipe_);
             else {
                 std::pair<subscriptions_t::iterator, subscriptions_t::iterator> range =
                     subscriptions.equal_range (group);

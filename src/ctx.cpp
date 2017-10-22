@@ -451,7 +451,8 @@ int zmq::ctx_t::register_endpoint (const char *addr_,
 {
     scoped_lock_t locker(endpoints_sync);
 
-    const bool inserted = endpoints.insert (endpoints_t::value_type (std::string (addr_), endpoint_)).second;
+    const bool inserted = endpoints.ZMQ_MAP_INSERT_OR_EMPLACE (addr_, 
+        endpoint_).second;
     if (!inserted) {
         errno = EADDRINUSE;
         return -1;
@@ -524,7 +525,7 @@ void zmq::ctx_t::pend_connection (const std::string &addr_,
     if (it == endpoints.end ()) {
         //  Still no bind.
         endpoint_.socket->inc_seqnum ();
-        pending_connections.insert (pending_connections_t::value_type (addr_, pending_connection));
+        pending_connections.ZMQ_MAP_INSERT_OR_EMPLACE (addr_, pending_connection);
     } else {
         //  Bind has happened in the mean time, connect directly
         connect_inproc_sockets(it->second.socket, it->second.options, pending_connection, connect_side);
