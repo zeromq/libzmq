@@ -49,10 +49,9 @@
 
 #ifdef __MINGW32__
 //  Require Windows XP or higher with MinGW for getaddrinfo().
-#if(_WIN32_WINNT >= 0x0600)
+#if(_WIN32_WINNT >= 0x0501)
 #else
-#undef _WIN32_WINNT
-#define _WIN32_WINNT 0x0600
+#error You need at least Windows XP target
 #endif
 #endif
 
