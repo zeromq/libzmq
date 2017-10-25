@@ -258,10 +258,11 @@ void zmq::select_t::loop ()
             family because Windows seems to handle them properly.
             See get_fd_family for details.
         */
-        wsa_events_t wsa_events;
 
         //  If there is just one family, there is no reason to use WSA events.
         if (family_entries.size () > 1) {
+            wsa_events_t wsa_events;
+
             for (family_entries_t::iterator family_entry_it = family_entries.begin ();
                   family_entry_it != family_entries.end (); ++family_entry_it) {
                 family_entry_t& family_entry = family_entry_it->second;
@@ -290,11 +291,7 @@ void zmq::select_t::loop ()
                     wsa_assert (rc != SOCKET_ERROR);
                 }
             }
-        }
-#endif
 
-#if defined ZMQ_HAVE_WINDOWS
-        if (family_entries.size () > 1) {
             rc = WSAWaitForMultipleEvents (4, wsa_events.events, FALSE,
                 timeout ? timeout : INFINITE, FALSE);
             wsa_assert (rc != (int)WSA_WAIT_FAILED);
