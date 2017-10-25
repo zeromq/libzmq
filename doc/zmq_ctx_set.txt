@@ -76,15 +76,25 @@ This option only applies before creating any sockets on the context.
 Default value:: -1
 
 
-ZMQ_THREAD_AFFINITY: Set CPU affinity for I/O threads
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The 'ZMQ_THREAD_AFFINITY' argument sets CPU affinity for the internal
+ZMQ_THREAD_AFFINITY_CPU_ADD: Add a CPU to list of affinity for I/O threads
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_THREAD_AFFINITY_CPU_ADD' argument adds a specific CPU to the affinity list for the internal
 context's thread pool. This option is only supported on Linux.
-On Linux, each bit of the 'option_value' argument will represent an enabled
-CPU in the corresponding cpu_set_t; for example the value 0x1 will set affinity
-of all context's thread pool to CPU 0; the value 0x110 will set affinity
-of all context's thread pool to CPU 1 and 2.
 This option only applies before creating any sockets on the context.
+The default affinity list is empty and means that no explicit CPU-affinity will be set on
+internal context's threads.
+
+[horizontal]
+Default value:: -1
+
+
+ZMQ_THREAD_AFFINITY_CPU_REMOVE: Remove a CPU to list of affinity for I/O threads
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The 'ZMQ_THREAD_AFFINITY_CPU_REMOVE' argument removes a specific CPU to the affinity list for the internal
+context's thread pool. This option is only supported on Linux.
+This option only applies before creating any sockets on the context.
+The default affinity list is empty and means that no explicit CPU-affinity will be set on
+internal context's threads.
 
 [horizontal]
 Default value:: -1

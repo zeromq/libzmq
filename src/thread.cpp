@@ -70,12 +70,12 @@ void zmq::thread_t::stop ()
     win_assert (rc2 != 0);
 }
 
-void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_, int affinity_)
+void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_, const std::set<int>& affinity_cpus_)
 {
     // not implemented
     LIBZMQ_UNUSED (priority_);
     LIBZMQ_UNUSED (schedulingPolicy_);
-    LIBZMQ_UNUSED (affinity_);
+    LIBZMQ_UNUSED (affinity_cpus_);
 }
 
 void zmq::thread_t::setThreadName(const char *name_)
@@ -125,11 +125,11 @@ void zmq::thread_t::stop ()
     posix_assert (rc);
 }
 
-void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_, int affinity_)
+void zmq::thread_t::setSchedulingParameters(int priority_, int schedulingPolicy_, const std::set<int>& affinity_cpus_)
 {
     thread_priority=priority_;
     thread_sched_policy=schedulingPolicy_;
-    thread_affinity=affinity_;
+    thread_affinity_cpus=affinity_cpus_;
 }
 
 void zmq::thread_t::applySchedulingParameters()         // to be called in secondary thread context
@@ -194,15 +194,13 @@ void zmq::thread_t::applySchedulingParameters()         // to be called in secon
     }
 
 #ifdef ZMQ_HAVE_PTHREAD_SET_AFFINITY
-    if (thread_affinity != ZMQ_THREAD_AFFINITY_DFLT)
+    if (!thread_affinity_cpus.empty())
     {
         cpu_set_t cpuset;
         CPU_ZERO(&cpuset);
-        for (unsigned int cpuidx=0; cpuidx<sizeof(int)*8; cpuidx++)
+        for (std::set<int>::const_iterator it = thread_affinity_cpus.begin(); it != thread_affinity_cpus.end(); it++)
         {
-            int cpubit = (1 << cpuidx);
-            if ( (thread_affinity & cpubit) != 0 )
-                CPU_SET( cpuidx , &cpuset );
+            CPU_SET( (int)(*it) , &cpuset );
         }
         rc = pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
         posix_assert (rc);

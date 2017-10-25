@@ -214,7 +214,7 @@ namespace zmq
         //  Thread parameters.
         int thread_priority;
         int thread_sched_policy;
-        int thread_affinity;
+        std::set<int> thread_affinity_cpus;
         std::string thread_name_prefix;
 
         //  Synchronisation of access to context options.
