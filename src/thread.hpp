@@ -33,6 +33,7 @@
 #ifndef ZMQ_HAVE_WINDOWS
 #include <pthread.h>
 #endif
+#include <set>
 
 namespace zmq
 {
@@ -55,7 +56,6 @@ namespace zmq
             , arg(NULL)
             , thread_priority(ZMQ_THREAD_PRIORITY_DFLT)
             , thread_sched_policy(ZMQ_THREAD_SCHED_POLICY_DFLT)
-            , thread_affinity(ZMQ_THREAD_AFFINITY_DFLT)
         {
         }
 
@@ -68,7 +68,7 @@ namespace zmq
 
         // Sets the thread scheduling parameters. Only implemented for
         // pthread. Has no effect on other platforms.
-        void setSchedulingParameters(int priority_, int schedulingPolicy_, int affinity_);
+        void setSchedulingParameters(int priority_, int schedulingPolicy_, const std::set<int>& affinity_cpus_);
 
         // Sets the thread name, 16 characters max including terminating NUL.
         // Only implemented for pthread. Has no effect on other platforms.
@@ -91,7 +91,7 @@ namespace zmq
         //  Thread scheduling parameters.
         int thread_priority;
         int thread_sched_policy;
-        int thread_affinity;
+        std::set<int> thread_affinity_cpus;
 
         thread_t (const thread_t&);
         const thread_t &operator = (const thread_t&);

@@ -77,8 +77,7 @@ zmq::ctx_t::ctx_t () :
     blocky (true),
     ipv6 (false),
     thread_priority (ZMQ_THREAD_PRIORITY_DFLT),
-    thread_sched_policy (ZMQ_THREAD_SCHED_POLICY_DFLT),
-    thread_affinity (ZMQ_THREAD_AFFINITY_DFLT)
+    thread_sched_policy (ZMQ_THREAD_SCHED_POLICY_DFLT)
 {
 #ifdef HAVE_FORK
     pid = getpid();
@@ -252,9 +251,20 @@ int zmq::ctx_t::set (int option_, int optval_)
         thread_sched_policy = optval_;
     }
     else
-    if (option_ == ZMQ_THREAD_AFFINITY && optval_ >= 0) {
+    if (option_ == ZMQ_THREAD_AFFINITY_CPU_ADD && optval_ >= 0) {
         scoped_lock_t locker(opt_sync);
-        thread_affinity = optval_;
+        thread_affinity_cpus.insert( optval_ );
+    }
+    else
+    if (option_ == ZMQ_THREAD_AFFINITY_CPU_REMOVE && optval_ >= 0) {
+        scoped_lock_t locker(opt_sync);
+        std::set<int>::iterator it = thread_affinity_cpus.find( optval_ );
+        if (it != thread_affinity_cpus.end()) {
+            thread_affinity_cpus.erase( it );
+        } else {
+            errno = EINVAL;
+            rc = -1;
+        }
     }
     else
     if (option_ == ZMQ_THREAD_NAME_PREFIX && optval_ >= 0) {
@@ -411,11 +421,13 @@ void zmq::ctx_t::start_thread (thread_t &thread_, thread_fn *tfn_, void *arg_) c
 {
     static unsigned int nthreads_started = 0;
 
-    thread_.setSchedulingParameters(thread_priority, thread_sched_policy, thread_affinity);
+    thread_.setSchedulingParameters(thread_priority, thread_sched_policy, thread_affinity_cpus);
     thread_.start(tfn_, arg_);
 #ifndef ZMQ_HAVE_ANDROID
     std::ostringstream s;
-    s << thread_name_prefix << "/ZMQbg/" << nthreads_started;
+    if (!thread_name_prefix.empty())
+        s << thread_name_prefix << "/";
+    s << "ZMQbg/" << nthreads_started;
     thread_.setThreadName (s.str().c_str());
 #endif
     nthreads_started++;

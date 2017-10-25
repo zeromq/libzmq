@@ -81,10 +81,6 @@ void test_ctx_thread_opts(void* ctx)
     assert (rc == -1 && errno == EINVAL);
     rc = zmq_ctx_set(ctx, ZMQ_THREAD_PRIORITY, ZMQ_THREAD_PRIORITY_DFLT);
     assert (rc == -1 && errno == EINVAL);
-#ifdef ZMQ_THREAD_AFFINITY
-    rc = zmq_ctx_set(ctx, ZMQ_THREAD_AFFINITY, ZMQ_THREAD_AFFINITY_DFLT);
-    assert (rc == -1 && errno == EINVAL);
-#endif
 
 
     // test scheduling policy:
@@ -113,16 +109,27 @@ void test_ctx_thread_opts(void* ctx)
     }
 
 
-#ifdef ZMQ_THREAD_AFFINITY
+#ifdef ZMQ_THREAD_AFFINITY_CPU_ADD
     // test affinity:
 
-    int cpu_affinity_test = (1 << 0);
-         // this should result in background threads being placed only on the
-         // first CPU available on this system; try experimenting with other values
-         // (e.g., 1<<5 to use CPU index 5) and use "top -H" or "taskset -pc" to see the result
+     // this should result in background threads being placed only on the
+     // first CPU available on this system; try experimenting with other values
+     // (e.g., 5 to use CPU index 5) and use "top -H" or "taskset -pc" to see the result
 
-    rc = zmq_ctx_set(ctx, ZMQ_THREAD_AFFINITY, cpu_affinity_test);
-    assert (rc == 0);
+    int cpus_add[] = { 0, 1 };
+    for (unsigned int idx=0; idx < sizeof(cpus_add)/sizeof(cpus_add[0]); idx++)
+    {
+        rc = zmq_ctx_set(ctx, ZMQ_THREAD_AFFINITY_CPU_ADD, cpus_add[idx]);
+        assert (rc == 0);
+    }
+
+    // you can also remove CPUs from list of affinities:
+    int cpus_remove[] = { 1 };
+    for (unsigned int idx=0; idx < sizeof(cpus_remove)/sizeof(cpus_remove[0]); idx++)
+    {
+        rc = zmq_ctx_set(ctx, ZMQ_THREAD_AFFINITY_CPU_REMOVE, cpus_remove[idx]);
+        assert (rc == 0);
+    }
 #endif
 
 
