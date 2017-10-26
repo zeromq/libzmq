@@ -97,7 +97,7 @@ namespace zmq
             fds_set_t ();
             fds_set_t (const fds_set_t& other_);
             fds_set_t& operator=(const fds_set_t& other_);
-            //  Convinient method to descriptor from all sets.
+            //  Convenience method to descriptor from all sets.
             void remove_fd (const fd_t& fd_);
 
             fd_set read;
@@ -132,6 +132,8 @@ namespace zmq
             WSAEVENT events [4];
         };
 #endif
+
+        void trigger_events(const fd_entries_t &fd_entries_, const fds_set_t &local_fds_set_, int event_count_);
 
 #if defined ZMQ_HAVE_WINDOWS
         family_entries_t family_entries;
