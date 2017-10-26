@@ -148,8 +148,13 @@ namespace zmq
 #endif
 
 #if defined ZMQ_HAVE_WINDOWS
+        static const size_t fd_family_cache_size = 8;
+        std::pair<fd_t, u_short> fd_family_cache [fd_family_cache_size];
+
+        u_short get_fd_family (fd_t fd_);
+
         //  Socket's family or AF_UNSPEC on error.
-        static u_short get_fd_family (fd_t fd_);
+        static u_short determine_fd_family (fd_t fd_);
 #endif
         //  Checks if an fd_entry_t is retired.
         static bool is_retired_fd (const fd_entry_t &entry);

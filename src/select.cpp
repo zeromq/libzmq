@@ -58,6 +58,10 @@ zmq::select_t::select_t (const zmq::ctx_t &ctx_) :
 #endif
     stopping (false)
 {
+#if defined ZMQ_HAVE_WINDOWS
+    for (size_t i = 0; i < fd_family_cache_size; ++i)
+        fd_family_cache[i] = std::make_pair(retired_fd, 0);
+#endif
 }
 
 zmq::select_t::~select_t ()
@@ -466,7 +470,36 @@ bool zmq::select_t::is_retired_fd (const fd_entry_t &entry)
 #if defined ZMQ_HAVE_WINDOWS
 u_short zmq::select_t::get_fd_family (fd_t fd_)
 {
-    //  Use sockaddr_storage instead of sockaddr to accomodate differect structure sizes
+    // cache the results of determine_fd_family, as this is frequently called
+    // for the same sockets, and determine_fd_family is expensive
+    size_t i;
+    for (i = 0; i < fd_family_cache_size; ++i)
+    {
+        const std::pair<fd_t, u_short> &entry = fd_family_cache[i];
+        if (entry.first == fd_)
+        {
+            return entry.second;
+        }
+        if (entry.first == retired_fd)
+            break;
+    }
+
+    std::pair<fd_t, u_short> res = std::make_pair(fd_, determine_fd_family (fd_));
+    if (i < fd_family_cache_size) {
+        fd_family_cache [i] = res;
+    }
+    else {
+        // just overwrite a random entry
+        // could be optimized by some LRU strategy
+        fd_family_cache [rand() % fd_family_cache_size] = res;
+    }
+
+    return res.second;
+}
+
+u_short zmq::select_t::determine_fd_family (fd_t fd_)
+{
+    //  Use sockaddr_storage instead of sockaddr to accommodate different structure sizes
     sockaddr_storage addr = { 0 };
     int addr_size = sizeof addr;
 
