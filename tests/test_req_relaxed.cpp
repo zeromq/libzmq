@@ -54,6 +54,16 @@ static void bounce (void *socket)
     } while (more);
 }
 
+static int get_events (void *socket)
+{
+    int rc;
+    int events;
+    size_t events_size = sizeof(events);
+    rc = zmq_getsockopt (socket, ZMQ_EVENTS, &events, &events_size);
+    assert (rc == 0);
+    return events;
+}
+
 int main (void)
 {
     setup_test_environment ();
@@ -97,13 +107,22 @@ int main (void)
 
     //  Case 1: Second send() before a reply arrives in a pipe.
 
+    int events = get_events (req);
+    assert(events == ZMQ_POLLOUT);
+
     //  Send a request, ensure it arrives, don't send a reply
     s_send_seq (req, "A", "B", SEQ_END);
     s_recv_seq (rep [0], "A", "B", SEQ_END);
 
+    events = get_events (req);
+    assert(events == ZMQ_POLLOUT);
+
     //  Send another request on the REQ socket
     s_send_seq (req, "C", "D", SEQ_END);
     s_recv_seq (rep [1], "C", "D", SEQ_END);
+
+    events = get_events (req);
+    assert(events == ZMQ_POLLOUT);
 
     //  Send a reply to the first request - that should be discarded by the REQ
     s_send_seq (rep [0], "WRONG", SEQ_END);
@@ -111,7 +130,6 @@ int main (void)
     //  Send the expected reply
     s_send_seq (rep [1], "OK", SEQ_END);
     s_recv_seq (req, "OK", SEQ_END);
-
 
     //  Another standard req-rep cycle, just to check
     s_send_seq (req, "E", SEQ_END);

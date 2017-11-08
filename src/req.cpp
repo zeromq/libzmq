@@ -213,7 +213,7 @@ bool zmq::req_t::xhas_in ()
 
 bool zmq::req_t::xhas_out ()
 {
-    if (receiving_reply)
+    if (receiving_reply && strict)
         return false;
 
     return dealer_t::xhas_out ();
