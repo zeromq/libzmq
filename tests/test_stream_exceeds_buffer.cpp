@@ -41,6 +41,7 @@ int main()
     const int msgsize = 8193;
     char sndbuf[msgsize] = "\xde\xad\xbe\xef";
     unsigned char rcvbuf[msgsize];
+    char my_endpoint[MAX_SOCKET_STRING];
 
     int server_sock = socket(AF_INET, SOCK_STREAM, 0);
     assert(server_sock!=-1);
@@ -52,18 +53,29 @@ int main()
     memset(&saddr, 0, sizeof(saddr));
     saddr.sin_family = AF_INET;
     saddr.sin_addr.s_addr = INADDR_ANY;
+#if !defined (_WIN32_WINNT) || (_WIN32_WINNT >= 0x0600)
+    saddr.sin_port = 0;
+#else
     saddr.sin_port = htons(12345);
+#endif
 
     rc = bind(server_sock, (struct sockaddr *)&saddr, sizeof(saddr));
     assert(rc!=-1);
     rc = listen(server_sock, 1);
     assert(rc!=-1);
 
+#if !defined (_WIN32_WINNT) || (_WIN32_WINNT >= 0x0600)
+    socklen_t saddr_len = sizeof (saddr);
+    rc = getsockname (server_sock, (struct sockaddr *)&saddr, &saddr_len);
+    assert (rc != -1);
+#endif
+    sprintf (my_endpoint, "tcp://127.0.0.1:%d", ntohs(saddr.sin_port));
+
     void *zctx = zmq_ctx_new();
     assert(zctx);
     void *zsock = zmq_socket(zctx, ZMQ_STREAM);
     assert(zsock);
-    rc = zmq_connect(zsock, "tcp://127.0.0.1:12345");
+    rc = zmq_connect(zsock, my_endpoint);
     assert(rc!=-1);
 
     int client_sock = accept(server_sock, NULL, NULL);
