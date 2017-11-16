@@ -46,7 +46,7 @@ override_dh_auto_configure:
 override_dh_auto_test:
 ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
 ifneq ($(DO_TEST), no)
-	-dh_auto_test -- VERBOSE=1
+	dh_auto_test -- VERBOSE=1
 else
 	-dh_auto_test -- VERBOSE=1
 endif

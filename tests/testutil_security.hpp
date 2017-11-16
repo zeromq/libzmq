@@ -518,6 +518,9 @@ void setup_handshake_socket_monitor (void *ctx,
     //  Create socket for collecting monitor events
     *server_mon = zmq_socket (ctx, ZMQ_PAIR);
     assert (*server_mon);
+    int linger = 0;
+    rc = zmq_setsockopt (*server_mon, ZMQ_LINGER, &linger, sizeof(linger));
+    assert (rc == 0);
 
     //  Connect it to the inproc endpoints so they'll get events
     rc = zmq_connect (*server_mon, monitor_endpoint);
@@ -548,6 +551,9 @@ void setup_context_and_server_side (
     assert (*zap_control);
     int rc = zmq_bind (*zap_control, "inproc://handler-control");
     assert (rc == 0);
+    int linger = 0;
+    rc = zmq_setsockopt (*zap_control, ZMQ_LINGER, &linger, sizeof(linger));
+    assert (rc == 0);
 
     if (zap_handler_) {
         *zap_thread = zmq_threadstart (zap_handler_, *ctx);
@@ -562,6 +568,8 @@ void setup_context_and_server_side (
     //  Server socket will accept connections
     *server = zmq_socket (*ctx, ZMQ_DEALER);
     assert (*server);
+    rc = zmq_setsockopt (*server, ZMQ_LINGER, &linger, sizeof(linger));
+    assert (rc == 0);
 
     socket_config_ (*server, socket_config_data_);
 
@@ -598,18 +606,21 @@ void shutdown_context_and_server_side (void *ctx,
         rc = zmq_unbind (zap_control, "inproc://handler-control");
         assert (rc == 0);
     }
-    close_zero_linger (zap_control);
+    int rc = zmq_close (zap_control);
+    assert (rc == 0);
 
 #ifdef ZMQ_BUILD_DRAFT_API
-    close_zero_linger (server_mon);
+    rc = zmq_close (server_mon);
+    assert (rc == 0);
 #endif
-    close_zero_linger (server);
+    rc = zmq_close (server);
+    assert (rc == 0);
 
     //  Wait until ZAP handler terminates
     if (zap_thread)
         zmq_threadclose (zap_thread);
 
-    int rc = zmq_ctx_term (ctx);
+    rc = zmq_ctx_term (ctx);
     assert (rc == 0);
 
     zmq_atomic_counter_destroy (&zap_requests_handled);
