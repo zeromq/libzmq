@@ -573,7 +573,7 @@ ZMQ_EXPORT void zmq_threadclose (void* thread);
 
 /*  DRAFT 0MQ socket events and monitoring                                    */
 /*  Unspecified system errors during handshake. Event value is an errno.      */
-#define ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL   0x0800 
+#define ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL   0x0800
 /*  Handshake complete successfully with successful authentication (if        *
  *  enabled). Event value is unused.                                          */
 #define ZMQ_EVENT_HANDSHAKE_SUCCEEDED          0x1000
