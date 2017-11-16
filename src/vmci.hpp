@@ -30,7 +30,6 @@
 #ifndef __ZMQ_VMCI_HPP_INCLUDED__
 #define __ZMQ_VMCI_HPP_INCLUDED__
 
-#include <stdint.h>
 #include <string>
 
 #include "platform.hpp"

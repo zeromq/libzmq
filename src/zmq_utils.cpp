@@ -38,7 +38,6 @@
 #include "random.hpp"
 #include <assert.h>
 #include <new>
-#include <stdint.h>
 
 #if !defined ZMQ_HAVE_WINDOWS
 #include <unistd.h>
