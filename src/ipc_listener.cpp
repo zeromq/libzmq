@@ -382,7 +382,7 @@ zmq::fd_t zmq::ipc_listener_t::accept ()
     //  The situation where connection cannot be accepted due to insufficient
     //  resources is considered valid and treated by ignoring the connection.
     zmq_assert (s != retired_fd);
-#if defined ZMQ_HAVE_SOCK_CLOEXEC
+#if defined ZMQ_HAVE_SOCK_CLOEXEC && defined HAVE_ACCEPT4
     fd_t sock = ::accept4 (s, NULL, NULL, SOCK_CLOEXEC);
 #else
     fd_t sock = ::accept (s, NULL, NULL);
@@ -394,7 +394,7 @@ zmq::fd_t zmq::ipc_listener_t::accept ()
         return retired_fd;
     }
 
-#if !defined ZMQ_HAVE_SOCK_CLOEXEC && defined FD_CLOEXEC
+#if (!defined ZMQ_HAVE_SOCK_CLOEXEC || !defined HAVE_ACCEPT4) && defined FD_CLOEXEC
     //  Race condition can cause socket not to be closed (if fork happens
     //  between accept and this point).
     int rc = fcntl (sock, F_SETFD, FD_CLOEXEC);

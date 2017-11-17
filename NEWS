@@ -212,6 +212,9 @@
 
 * Fixed #2809 - optimize select() usage on Windows
 
+* Fixed #2816 - add CMake and autoconf check for accept4, as it is not
+  available on old Linux releases, and fallback to accept + FD_CLOEXEC
+
 * Fixed #2824 - ZMQ_REQ socket does not report ZMQ_POLLOUT when ZMQ_REQ_RELAXED
   is set
 

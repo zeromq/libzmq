@@ -621,7 +621,7 @@ AC_LANG_POP([C++])
 
 # Checks for library functions.
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS(perror gettimeofday clock_gettime memset socket getifaddrs freeifaddrs fork posix_memalign mkdtemp)
+AC_CHECK_FUNCS(perror gettimeofday clock_gettime memset socket getifaddrs freeifaddrs fork posix_memalign mkdtemp accept4)
 AC_CHECK_HEADERS([alloca.h])
 
 # pthread_setname is non-posix, and there are at least 4 different implementations
