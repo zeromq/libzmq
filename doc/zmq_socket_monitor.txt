@@ -99,8 +99,17 @@ ZMQ_EVENT_MONITOR_STOPPED
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 Monitoring on this socket ended.
 
+DRAFT events - subject to change without notice
+-----------------------------------------------
+
+ZMQ_EVENT_HANDSHAKE_FAILED_NO_DETAIL
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Unspecified error during handshake.
+The event value is an errno.
+NOTE: in DRAFT state, not yet available in stable releases.
+
 ZMQ_EVENT_HANDSHAKE_SUCCEEDED
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The ZMTP security mechanism handshake succeeded.
 The event value is unspecified.
 NOTE: in DRAFT state, not yet available in stable releases.
@@ -111,7 +120,27 @@ The ZMTP security mechanism handshake failed due to some mechanism protocol
 error, either between the ZMTP mechanism peers, or between the mechanism 
 server and the ZAP handler. This indicates a configuration or implementation 
 error in either peer resp. the ZAP handler.
-The event value is one of the ZMQ_PROTOCOL_ERROR_* values.
+The event value is one of the ZMQ_PROTOCOL_ERROR_* values:
+ZMQ_PROTOCOL_ERROR_ZMTP_UNSPECIFIED
+ZMQ_PROTOCOL_ERROR_ZMTP_UNEXPECTED_COMMAND
+ZMQ_PROTOCOL_ERROR_ZMTP_INVALID_SEQUENCE
+ZMQ_PROTOCOL_ERROR_ZMTP_KEY_EXCHANGE
+ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_UNSPECIFIED
+ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_MESSAGE
+ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_HELLO
+ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_INITIATE
+ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_ERROR
+ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_READY
+ZMQ_PROTOCOL_ERROR_ZMTP_MALFORMED_COMMAND_WELCOME
+ZMQ_PROTOCOL_ERROR_ZMTP_INVALID_METADATA
+ZMQ_PROTOCOL_ERROR_ZMTP_CRYPTOGRAPHIC
+ZMQ_PROTOCOL_ERROR_ZMTP_MECHANISM_MISMATCH
+ZMQ_PROTOCOL_ERROR_ZAP_UNSPECIFIED
+ZMQ_PROTOCOL_ERROR_ZAP_MALFORMED_REPLY
+ZMQ_PROTOCOL_ERROR_ZAP_BAD_REQUEST_ID
+ZMQ_PROTOCOL_ERROR_ZAP_BAD_VERSION
+ZMQ_PROTOCOL_ERROR_ZAP_INVALID_STATUS_CODE
+ZMQ_PROTOCOL_ERROR_ZAP_INVALID_METADATA
 NOTE: in DRAFT state, not yet available in stable releases.
 
 ZMQ_EVENT_HANDSHAKE_FAILED_AUTH
