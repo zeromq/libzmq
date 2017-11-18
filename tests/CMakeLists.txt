@@ -145,8 +145,12 @@ if(WIN32)
 endif()
 
 # add library and include dirs for all targets
-link_libraries(libzmq ${OPTIONAL_LIBRARIES})
-include_directories("${CMAKE_SOURCE_DIR}/../include")
+if (BUILD_SHARED)
+link_libraries(libzmq ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+else ()
+link_libraries(libzmq-static ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+endif ()
+include_directories("${CMAKE_SOURCE_DIR}/../include" "${CMAKE_BINARY_DIR}")
 
 foreach(test ${tests})
   # target_sources not supported before CMake 3.1
