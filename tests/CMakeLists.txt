@@ -195,7 +195,8 @@ if(ZMQ_HAVE_CURVE)
 endif()
 
 #add additional required flags
-if(ZMQ_HAVE_CURVE)
+#ZMQ_USE_TWEETNACL will already be defined when not using sodium
+if(ZMQ_HAVE_CURVE AND NOT ZMQ_USE_TWEETNACL)
   target_compile_definitions(test_security_curve PRIVATE "-DZMQ_USE_TWEETNACL")
 endif()
 
