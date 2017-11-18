@@ -236,6 +236,10 @@ set (CMAKE_REQUIRED_INCLUDES stdlib.h)
 check_function_exists (mkdtemp HAVE_MKDTEMP)
 set (CMAKE_REQUIRED_INCLUDES)
 
+set (CMAKE_REQUIRED_INCLUDES sys/socket.h)
+check_function_exists (accept4 HAVE_ACCEPT4)
+set (CMAKE_REQUIRED_INCLUDES)
+
 add_definitions (-D_REENTRANT -D_THREAD_SAFE)
 add_definitions (-DZMQ_CUSTOM_PLATFORM_HPP)
 
