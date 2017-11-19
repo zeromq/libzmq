@@ -144,8 +144,11 @@ else
     AC_MSG_RESULT([no])
 fi
 
-# By default compiling with -Werror except OSX.
-libzmq_werror="yes"
+# By default compiling with -Werror except OSX and on Solaris when building
+# with libsodium.
+AC_ARG_ENABLE([Werror],
+    [AS_HELP_STRING([--disable-Werror], [disable Werror compiler flag [default=enabled]])],
+    [libzmq_werror=$enableval], [libzmq_werror=yes])
 
 # By default use DSO visibility
 libzmq_dso_visibility="yes"
