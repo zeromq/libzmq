@@ -86,8 +86,8 @@ matrix:
 sudo: required
 
 before_install:
-- if [ $TRAVIS_OS_NAME == "osx" -a $BUILD_TYPE == "android" ] ; then brew install binutils ; fi
-- if [ $TRAVIS_OS_NAME == "osx" -a $CURVE == "libsodium" ] ; then brew install libsodium ; fi
+- if [ $TRAVIS_OS_NAME == "osx" -a $BUILD_TYPE == "android" ] ; then brew update; brew install binutils ; fi
+- if [ $TRAVIS_OS_NAME == "osx" -a $CURVE == "libsodium" ] ; then brew update; brew install libsodium ; fi
 
 before_script:
 # ZMQ stress tests need more open socket (files) than the usual default

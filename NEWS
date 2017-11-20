@@ -79,6 +79,9 @@
 * Add new autoconf --disable-libunwind option to stop building with libunwind
   even if it is available.
 
+* Add new autoconf --disable-Werror option to avoid building with the Werror
+  flag.
+
 * Use pkg-config as the first method for finding and building with external
   optional dependencies such as libnorm, libpgm and gssapi.
 

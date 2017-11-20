@@ -145,8 +145,12 @@ if(WIN32)
 endif()
 
 # add library and include dirs for all targets
-link_libraries(libzmq ${OPTIONAL_LIBRARIES})
-include_directories("${CMAKE_SOURCE_DIR}/../include")
+if (BUILD_SHARED)
+link_libraries(libzmq ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+else ()
+link_libraries(libzmq-static ${OPTIONAL_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+endif ()
+include_directories("${CMAKE_SOURCE_DIR}/../include" "${CMAKE_BINARY_DIR}")
 
 foreach(test ${tests})
   # target_sources not supported before CMake 3.1
@@ -195,7 +199,8 @@ if(ZMQ_HAVE_CURVE)
 endif()
 
 #add additional required flags
-if(ZMQ_HAVE_CURVE)
+#ZMQ_USE_TWEETNACL will already be defined when not using sodium
+if(ZMQ_HAVE_CURVE AND NOT ZMQ_USE_TWEETNACL)
   target_compile_definitions(test_security_curve PRIVATE "-DZMQ_USE_TWEETNACL")
 endif()
 
