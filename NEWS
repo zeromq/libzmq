@@ -225,6 +225,11 @@
 
 * Fixed #2840 - fix building with VS2008
 
+* Fixed #2845 - correct the ZMQ_LINGER documentation to accurately reflect that
+  the default value is -1 (infinite). It never was 30 second in any released
+  version, it was only changed briefly and then changed back, but the manpage
+  was not reverted.
+
 0MQ version 4.2.2 stable, released on 2017/02/18
 =============================================
 
