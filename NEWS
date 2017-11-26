@@ -15,6 +15,11 @@
   ZMQ_CONNECT_RID are still available to keep backward compatibility, and will
   be removed in a future release after further advance notice.
 
+* DRAFT API change: zmq_poller_wait, zmq_poller_wait_all and zmq_poller_poll
+  have been changed to be inline with other existing APIs that have a timeout
+  to return EAGAIN instead of ETIMEDOUT as the errno value.
+  See #2713 for details.
+
 * Existing non-DRAFT socket types ZMQ_REP/REQ, ZMQ_ROUTER/DEALER and
   ZMQPUB/SUB, that were previously declared deprecated, have been reinstated
   as stable and supported. See #2699 for details.
