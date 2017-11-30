@@ -10,6 +10,18 @@
     <param name="filename">zeromq</param>
   </service>
 
+  <!-- embed zmq.hpp like Debian and Ubuntu do -->
+  <service name="download_url">
+    <param name="protocol">https</param>
+    <param name="host">github.com</param>
+    <param name="path">zeromq/cppzmq/archive/master.zip</param>
+  </service>
+  <service name="extract_file">
+    <param name="archive">*master.zip</param>
+    <param name="files">*/zmq.hpp</param>
+    <param name="outfilename">debian.zmq.hpp</param>
+  </service>
+
   <!-- extract redhat packaging -->
   <service name="extract_file">
     <param name="archive">*.tar</param>
