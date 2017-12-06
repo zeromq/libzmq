@@ -965,8 +965,12 @@ endif ()
 
 include(CMakePackageConfigHelpers)
 
-# GNUInstallDirs "DATADIR" wrong here; CMake search path wants "share".
-set(ZEROMQ_CMAKECONFIG_INSTALL_DIR "share/cmake/${PROJECT_NAME}" CACHE STRING "install path for ZeroMQConfig.cmake")
+if (WIN32)
+  set(ZEROMQ_CMAKECONFIG_INSTALL_DIR "CMake" CACHE STRING "install path for ZeroMQConfig.cmake")
+else()
+  # GNUInstallDirs "DATADIR" wrong here; CMake search path wants "share".
+  set(ZEROMQ_CMAKECONFIG_INSTALL_DIR "share/cmake/${PROJECT_NAME}" CACHE STRING "install path for ZeroMQConfig.cmake")
+endif()
 
 if (NOT CMAKE_VERSION VERSION_LESS 3.0)
   export(EXPORT ${PROJECT_NAME}-targets
