@@ -746,16 +746,12 @@ if (BUILD_STATIC)
   list(APPEND target_outputs "libzmq-static")
 endif()
 
-# avoid building everything twice for shared + static
-add_library (objects OBJECT ${sources})
-set_property(TARGET objects PROPERTY POSITION_INDEPENDENT_CODE ON)
-
 if (MSVC)
   # Suppress linker warnings caused by #ifdef omission
   # of file content.
   set( CMAKE_STATIC_LINKER_FLAGS /ignore:4221 )
   if (BUILD_SHARED)
-    add_library (libzmq SHARED $<TARGET_OBJECTS:objects> ${public_headers} ${html-docs} ${readme-docs} ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.in ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
+    add_library (libzmq SHARED ${sources} ${public_headers} ${html-docs} ${readme-docs} ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.in ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
     target_link_libraries (libzmq ${OPTIONAL_LIBRARIES})
     set_target_properties (libzmq PROPERTIES
       PUBLIC_HEADER "${public_headers}"
@@ -768,7 +764,7 @@ if (MSVC)
   endif()
   
   if (BUILD_STATIC)
-    add_library (libzmq-static STATIC $<TARGET_OBJECTS:objects> ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
+    add_library (libzmq-static STATIC ${sources} ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
     set_target_properties (libzmq-static PROPERTIES
       PUBLIC_HEADER "${public_headers}"
       RELEASE_POSTFIX "${MSVC_TOOLSET}-mt-s-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
@@ -778,6 +774,11 @@ if (MSVC)
       OUTPUT_NAME "libzmq")
   endif()
 else ()
+  # avoid building everything twice for shared + static
+  # only on *nix, as Windows needs different preprocessor defines in static builds
+  add_library (objects OBJECT ${sources})
+  set_property(TARGET objects PROPERTY POSITION_INDEPENDENT_CODE ON)
+
   if (BUILD_SHARED)
     add_library (libzmq SHARED $<TARGET_OBJECTS:objects> ${public_headers} ${html-docs} ${readme-docs} ${zmq-pkgconfig} ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
     target_link_libraries (libzmq ${OPTIONAL_LIBRARIES})
@@ -812,9 +813,16 @@ else ()
       OUTPUT_NAME "zmq"
       PREFIX "lib")
   endif()
+
+  target_include_directories (objects
+    PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+      $<INSTALL_INTERFACE:include>
+  )
 endif ()
 
-foreach (target ${target_outputs} objects)
+foreach (target ${target_outputs})
   target_include_directories (${target}
     PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
