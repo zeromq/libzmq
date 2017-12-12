@@ -235,6 +235,8 @@
   version, it was only changed briefly and then changed back, but the manpage
   was not reverted.
 
+* Fixed #2861 - CMake/MSVC: export ZMQ_STATIC when needed.
+
 0MQ version 4.2.2 stable, released on 2017/02/18
 =============================================
 
