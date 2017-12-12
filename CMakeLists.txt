@@ -772,6 +772,11 @@ if (MSVC)
       DEBUG_POSTFIX "${MSVC_TOOLSET}-mt-sgd-${ZMQ_VERSION_MAJOR}_${ZMQ_VERSION_MINOR}_${ZMQ_VERSION_PATCH}"
       COMPILE_FLAGS "/DZMQ_STATIC"
       OUTPUT_NAME "libzmq")
+
+    target_compile_definitions(libzmq-static
+      PUBLIC ZMQ_STATIC
+      )
+
   endif()
 else ()
   # avoid building everything twice for shared + static
