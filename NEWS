@@ -1,4 +1,4 @@
-0MQ version 4.2.3 stable, released on 20xx/xx/xx
+0MQ version 4.2.3 stable, released on 2017/12/13
 ================================================
 
 * API change: previously ZMQ_POLLOUT on a ZMQ_ROUTER socket returned always
