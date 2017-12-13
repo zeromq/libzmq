@@ -1,7 +1,7 @@
 .#  Generate NuGet nuspec file (for subsequent packing).
 .#
 .#  This is a code generator built using the iMatix GSL code generation
-.#  language. See https://github.com/imatix/gsl for details. This script
+.#  language. See https://github.com/zeromq/gsl for details. This script
 .#  is licensed under MIT/X11.
 .#
 .echo "Generating package.nuspec from template."
