@@ -792,7 +792,7 @@ else ()
                           COMPILE_DEFINITIONS "DLL_EXPORT"
                           PUBLIC_HEADER "${public_headers}"
                           VERSION ${ZMQ_VERSION}
-                          SOVERSION "5.1.3"
+                          SOVERSION "5.1.4"
                           OUTPUT_NAME "zmq"
                           PREFIX "lib")
     if (ZMQ_BUILD_FRAMEWORK)
