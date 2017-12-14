@@ -39,6 +39,10 @@
 #include "windows.hpp"
 #endif
 
+#if defined ZMQ_HAVE_OPENBSD
+#define ucred sockpeercred
+#endif
+
 // 0MQ definitions and exported functions
 #include "../include/zmq.h"
 
