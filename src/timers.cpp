@@ -50,7 +50,7 @@ bool zmq::timers_t::check_tag ()
 
 int zmq::timers_t::add (size_t interval_, timers_timer_fn handler_, void *arg_)
 {
-    if (!handler_) {
+    if (handler_ == NULL) {
         errno = EFAULT;
         return -1;
     }
