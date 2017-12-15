@@ -34,7 +34,7 @@
 #include <string.h>
 #include <algorithm>
 
-#if __cplusplus >= 201103L || defined(_MSC_VER) && _MSC_VER >= 1700
+#if __cplusplus >= 201103L || defined(_MSC_VER) && _MSC_VER > 1700
 #define ZMQ_HAS_MOVE_SEMANTICS
 #define ZMQ_MAP_INSERT_OR_EMPLACE(k, v) emplace (k,v)
 #define ZMQ_PUSH_OR_EMPLACE_BACK emplace_back
