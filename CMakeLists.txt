@@ -180,6 +180,7 @@ include (CheckCSourceCompiles)
 include (CheckCSourceRuns)
 include (CMakeDependentOption)
 include (CheckCXXSymbolExists)
+include (CheckSymbolExists)
 
 check_include_files (ifaddrs.h ZMQ_HAVE_IFADDRS)
 check_include_files (windows.h ZMQ_HAVE_WINDOWS)
@@ -193,13 +194,25 @@ if (ZMQ_HAVE_EVENTFD AND NOT CMAKE_CROSSCOMPILING)
   zmq_check_efd_cloexec ()
 endif ()
 
-check_library_exists (ws2_32 fopen "" HAVE_WS2_32) # TODO: Why doesn't something logical like WSAStartup work?
-check_library_exists (ws2 fopen "" HAVE_WS2)
-check_library_exists (rpcrt4 fopen "" HAVE_RPCRT4) # UuidCreateSequential
-check_library_exists (iphlpapi fopen "" HAVE_IPHLAPI) # GetAdaptersAddresses
 
-check_cxx_symbol_exists (SO_PEERCRED sys/socket.h ZMQ_HAVE_SO_PEERCRED)
-check_cxx_symbol_exists (LOCAL_PEERCRED sys/socket.h ZMQ_HAVE_LOCAL_PEERCRED)
+if (ZMQ_HAVE_WINDOWS)
+  # Cannot use check_library_exists because the symbol is always declared as char(*)(void)
+  set(CMAKE_REQUIRED_LIBRARIES "ws2_32.lib")
+  check_symbol_exists (WSAStartup "WinSock2.h" HAVE_WS2_32)
+
+  set(CMAKE_REQUIRED_LIBRARIES "rpcrt4.lib")
+  check_symbol_exists (UuidCreateSequential "Rpc.h" HAVE_RPCRT4)
+
+  set(CMAKE_REQUIRED_LIBRARIES "iphlpapi.lib")
+  check_symbol_exists (GetAdaptersAddresses "winsock2.h;Iphlpapi.h" HAVE_IPHLAPI)
+
+  set(CMAKE_REQUIRED_LIBRARIES "")
+  # TODO: This not the symbol we're looking for. What is the symbol?
+  check_library_exists (ws2 fopen "" HAVE_WS2)
+else()
+  check_cxx_symbol_exists (SO_PEERCRED sys/socket.h ZMQ_HAVE_SO_PEERCRED)
+  check_cxx_symbol_exists (LOCAL_PEERCRED sys/socket.h ZMQ_HAVE_LOCAL_PEERCRED)
+endif()
 
 find_library (RT_LIBRARY rt)
 
@@ -398,15 +411,15 @@ if (MSVC)
 else ()
   if (WITH_OPENPGM)
     #  message (FATAL_ERROR "WITH_OPENPGM not implemented")
-    
+
     if (NOT OPENPGM_PKGCONFIG_NAME)
       SET (OPENPGM_PKGCONFIG_NAME "openpgm-5.2")
     endif(NOT OPENPGM_PKGCONFIG_NAME)
-    
-    SET (OPENPGM_PKGCONFIG_NAME ${OPENPGM_PKGCONFIG_NAME} CACHE STRING 
+
+    SET (OPENPGM_PKGCONFIG_NAME ${OPENPGM_PKGCONFIG_NAME} CACHE STRING
       "Name pkg-config shall use to find openpgm libraries and include paths"
       FORCE )
-    
+
     find_package(PkgConfig)
     pkg_check_modules (OPENPGM  ${OPENPGM_PKGCONFIG_NAME})
 
@@ -421,7 +434,7 @@ else ()
     if (HAVE_FLAG_VISIBILITY_HIDDEN)
 
     elseif (HAVE_FLAG_LDSCOPE_HIDDEN)
-    
+
     endif ()
   endif ()
 endif ()
@@ -762,7 +775,7 @@ if (MSVC)
       COMPILE_DEFINITIONS "DLL_EXPORT"
       OUTPUT_NAME "libzmq")
   endif()
-  
+
   if (BUILD_STATIC)
     add_library (libzmq-static STATIC ${sources} ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
     set_target_properties (libzmq-static PROPERTIES
