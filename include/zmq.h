@@ -121,10 +121,20 @@ extern "C" {
     #include <poll.h>
 #endif
 
+/* Advise the linker to automatically pull dependencies in */
 #if defined _WIN32
 #   if defined _MSC_VER
-#       pragma comment(lib, "ws2_32.lib")
-#       pragma comment(lib, "iphlpapi.lib")
+#       if (HAVE_WS2_32)
+#           pragma comment(lib, "ws2_32.lib")
+#       elif (HAVE_WS2)
+#           pragma comment(lib, "ws2.lib")
+#       endif  // HAVE_WS2_32
+#       if (HAVE_IPHLAPI)
+#           pragma comment(lib, "iphlpapi.lib")
+#       endif  // HAVE_IPHLAPI
+#       if (HAVE_RPCRT4)
+#           pragma comment(lib, "rpcrt4.lib")
+#       endif  // HAVE_RPCRT4
 #   endif  // _MSC_VER
 #endif  // _WIN32
 
