@@ -823,7 +823,7 @@ int zmq::socket_base_t::connect (const char *addr_)
         return 0;
     }
     bool is_single_connect = (options.type == ZMQ_DEALER ||
-                              options.type == ZMQ_SUB ||
+                              options.type == ZMQ_SUB    || options.type == ZMQ_PUB ||
                               options.type == ZMQ_REQ);
     if (unlikely (is_single_connect)) {
         const endpoints_t::iterator it = endpoints.find (addr_);
