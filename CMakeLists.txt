@@ -870,7 +870,7 @@ if (BUILD_SHARED)
   endif ()
 
   if (RT_LIBRARY)
-    target_link_libraries (libzmq ${RT_LIBRARY})
+    target_link_libraries (libzmq -lrt)
   endif ()
 endif ()
 
@@ -894,7 +894,7 @@ if (BUILD_SHARED)
       target_link_libraries (${perf-tool} libzmq ${OPTIONAL_LIBRARIES})
 
       if (RT_LIBRARY)
-        target_link_libraries (${perf-tool} ${RT_LIBRARY})
+        target_link_libraries (${perf-tool} -lrt)
       endif ()
 
       if (ZMQ_BUILD_FRAMEWORK)
