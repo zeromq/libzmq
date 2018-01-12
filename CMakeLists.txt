@@ -1002,7 +1002,7 @@ if (NOT CMAKE_VERSION VERSION_LESS 3.0)
   export(EXPORT ${PROJECT_NAME}-targets
          FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Targets.cmake")
 endif()
-configure_package_config_file(${PROJECT_NAME}Config.cmake.in
+configure_package_config_file(builds/cmake/${PROJECT_NAME}Config.cmake.in
                               "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
                               INSTALL_DESTINATION ${ZEROMQ_CMAKECONFIG_INSTALL_DIR})
 write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake

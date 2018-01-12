@@ -869,7 +869,7 @@ endif
 EXTRA_DIST = \
 	FindSodium.cmake \
 	CMakeLists.txt \
-	ZeroMQConfig.cmake.in \
+	builds/cmake/ZeroMQConfig.cmake.in \
 	autogen.sh	\
 	version.sh	\
 	src/libzmq.pc.cmake.in \
