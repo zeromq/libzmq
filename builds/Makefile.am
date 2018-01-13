@@ -16,12 +16,10 @@ EXTRA_DIST = \
 	mingw32/Makefile.mingw32 \
 	mingw32/platform.hpp \
 	cmake/Modules \
-	cmake/Modules/FindAsciiDoc.cmake \
-	cmake/Modules/TestZMQVersion.cmake \
-	cmake/Modules/ZMQSourceRunChecks.cmake \
 	cmake/NSIS.template32.in \
-	cmake/platform.hpp.in \
 	cmake/NSIS.template64.in \
+	cmake/ZeroMQConfig.cmake.in \
+	cmake/platform.hpp.in \
 	valgrind/valgrind.supp \
 	valgrind/vg \
 	nuget/readme.nuget \
