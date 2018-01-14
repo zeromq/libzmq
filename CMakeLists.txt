@@ -4,6 +4,8 @@ cmake_minimum_required (VERSION 2.8.12)
 project (ZeroMQ)
 
 list (INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}")
+set (ZMQ_CMAKE_MODULES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/Modules)
+list (APPEND CMAKE_MODULE_PATH ${ZMQ_CMAKE_MODULES_DIR})
 
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=gnu++11" COMPILER_SUPPORTS_CXX11)
@@ -164,9 +166,6 @@ if (POLLER STREQUAL "kqueue"
 else ()
     message (FATAL_ERROR "Invalid polling method")
 endif ()
-
-set (ZMQ_CMAKE_MODULES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake/Modules)
-list (APPEND CMAKE_MODULE_PATH ${ZMQ_CMAKE_MODULES_DIR})
 
 include (TestZMQVersion)
 if (NOT CMAKE_CROSSCOMPILING)
@@ -1002,7 +1001,7 @@ if (NOT CMAKE_VERSION VERSION_LESS 3.0)
   export(EXPORT ${PROJECT_NAME}-targets
          FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Targets.cmake")
 endif()
-configure_package_config_file(${PROJECT_NAME}Config.cmake.in
+configure_package_config_file(builds/cmake/${PROJECT_NAME}Config.cmake.in
                               "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
                               INSTALL_DESTINATION ${ZEROMQ_CMAKECONFIG_INSTALL_DIR})
 write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake

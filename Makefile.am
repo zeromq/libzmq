@@ -867,9 +867,7 @@ XFAIL_TESTS += test_ipc_wildcard \
 endif
 
 EXTRA_DIST = \
-	FindSodium.cmake \
 	CMakeLists.txt \
-	ZeroMQConfig.cmake.in \
 	autogen.sh	\
 	version.sh	\
 	src/libzmq.pc.cmake.in \
