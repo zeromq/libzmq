@@ -57,6 +57,8 @@ zmq::poll_t::~poll_t ()
 
 zmq::poll_t::handle_t zmq::poll_t::add_fd (fd_t fd_, i_poll_events *events_)
 {
+    zmq_assert (fd_ != retired_fd);
+
     //  If the file descriptor table is too small expand it.
     fd_table_t::size_type sz = fd_table.size ();
     if (sz <= (fd_table_t::size_type) fd_) {
