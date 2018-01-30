@@ -77,17 +77,6 @@ pipeline {
 // Note: your Jenkins setup may benefit from similar setup on side of agents:
 //        PATH="/usr/lib64/ccache:/usr/lib/ccache:/usr/bin:/bin:${PATH}"
     stages {
-        stage ('cppcheck') {
-                    when { expression { return ( params.DO_CPPCHECK ) } }
-                    steps {
-                        dir("tmp") {
-                            deleteDir()
-                        }
-                        sh 'cppcheck --std=c++11 --enable=all --inconclusive --xml --xml-version=2 . 2>cppcheck.xml'
-                        archiveArtifacts artifacts: '**/cppcheck.xml'
-                        sh 'rm -f cppcheck.xml'
-                    }
-        }
         stage ('prepare') {
                     steps {
                         dir("tmp") {
@@ -164,6 +153,23 @@ pipeline {
         }
         stage ('check') {
             parallel {
+                stage ('cppcheck') {
+                    when { expression { return ( params.DO_CPPCHECK ) } }
+                    steps {
+                        dir("tmp/test-cppcheck") {
+                            deleteDir()
+                            unstash 'prepped'
+                            sh 'cppcheck --std=c++11 --enable=all --inconclusive --xml --xml-version=2 . 2>cppcheck.xml'
+                            archiveArtifacts artifacts: '**/cppcheck.xml'
+                            sh 'rm -f cppcheck.xml'
+                            script {
+                                if ( params.DO_CLEANUP_AFTER_BUILD ) {
+                                    deleteDir()
+                                }
+                            }
+                        }
+                    }
+                }
                 stage ('check with DRAFT') {
                     when { expression { return ( params.DO_BUILD_WITH_DRAFT_API && params.DO_TEST_CHECK ) } }
                     steps {
