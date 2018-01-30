@@ -84,6 +84,8 @@ pipeline {
         stage ('prepare') {
                     steps {
                         dir("tmp") {
+                            sh 'if [ -s Makefile ]; then make -k distclean || true ; fi'
+                            sh 'chmod -R u+w .'
                             deleteDir()
                         }
                         sh './autogen.sh'
