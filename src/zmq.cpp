@@ -161,7 +161,12 @@ void *zmq_ctx_new (void)
 
     //  Create 0MQ context.
     zmq::ctx_t *ctx = new (std::nothrow) zmq::ctx_t;
-    alloc_assert (ctx);
+    if (ctx) {
+        if (!ctx->valid ()) {
+            delete ctx;
+            return NULL;
+        }
+    }
     return ctx;
 }
 

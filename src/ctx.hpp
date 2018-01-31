@@ -133,7 +133,10 @@ namespace zmq
 
         ~ctx_t ();
 
+        bool valid() const;
+
     private:
+        bool start();
 
         struct pending_connection_t
         {

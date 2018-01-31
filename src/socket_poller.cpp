@@ -111,8 +111,19 @@ int zmq::socket_poller_t::add (socket_base_t *socket_, void* user_data_, short e
     zmq_assert (rc == 0);
 
     if (thread_safe) {
-        if (signaler == NULL)
-            signaler = new signaler_t ();
+        if (signaler == NULL) {
+            signaler = new (std::nothrow) signaler_t ();
+            if (!signaler) {
+                errno = ENOMEM;
+                return -1;
+            }
+            if (!signaler->valid ()) {
+                delete signaler;
+                signaler = NULL;
+                errno = EMFILE;
+                return -1;
+            }
+        }
 
         rc = socket_->add_signaler (signaler);
         zmq_assert (rc == 0);

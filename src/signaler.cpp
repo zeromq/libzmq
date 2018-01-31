@@ -372,6 +372,11 @@ int zmq::signaler_t::recv_failable ()
     return 0;
 }
 
+bool zmq::signaler_t::valid () const
+{
+    return w != retired_fd;
+}
+
 #ifdef HAVE_FORK
 void zmq::signaler_t::forked ()
 {
@@ -398,7 +403,7 @@ int zmq::signaler_t::make_fdpair (fd_t *r_, fd_t *w_)
         errno_assert (errno == ENFILE || errno == EMFILE);
         *w_ = *r_ = -1;
         return -1;
-    }
+    } 
     else {
         *w_ = *r_ = fd;
         return 0;
