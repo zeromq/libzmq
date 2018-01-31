@@ -166,6 +166,9 @@ class select_t : public poller_base_t
     static fd_entries_t::iterator
     find_fd_entry_by_handle (fd_entries_t &fd_entries, handle_t handle_);
 
+    //  If true, start has been called.
+    bool started;
+
     //  If true, thread is shutting down.
     bool stopping;
 

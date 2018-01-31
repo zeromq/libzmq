@@ -55,6 +55,7 @@ zmq::select_t::select_t (const zmq::ctx_t &ctx_) :
 #else
     maxfd (retired_fd),
 #endif
+    started (false),
     stopping (false)
 {
 #if defined ZMQ_HAVE_WINDOWS
@@ -65,7 +66,10 @@ zmq::select_t::select_t (const zmq::ctx_t &ctx_) :
 
 zmq::select_t::~select_t ()
 {
-    worker.stop ();
+    if (started) {
+        stop ();
+        worker.stop ();
+    }
 }
 
 zmq::select_t::handle_t zmq::select_t::add_fd (fd_t fd_, i_poll_events *events_)
@@ -257,6 +261,7 @@ void zmq::select_t::reset_pollout (handle_t handle_)
 void zmq::select_t::start ()
 {
     ctx.start_thread (worker, worker_routine, this);
+    started = true;
 }
 
 void zmq::select_t::stop ()

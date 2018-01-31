@@ -36,9 +36,13 @@
 zmq::reaper_t::reaper_t (class ctx_t *ctx_, uint32_t tid_) :
     object_t (ctx_, tid_),
     mailbox_handle((poller_t::handle_t)NULL),
+    poller (NULL),
     sockets (0),
     terminating (false)
 {
+    if (!mailbox.valid ())
+        return;
+
     poller = new (std::nothrow) poller_t (*ctx_);
     alloc_assert (poller);
 
@@ -64,13 +68,17 @@ zmq::mailbox_t *zmq::reaper_t::get_mailbox ()
 
 void zmq::reaper_t::start ()
 {
+    zmq_assert (mailbox.valid ());
+
     //  Start the thread.
     poller->start ();
 }
 
 void zmq::reaper_t::stop ()
 {
-    send_stop ();
+    if (get_mailbox ()->valid ()) {
+        send_stop ();
+    }
 }
 
 void zmq::reaper_t::in_event ()

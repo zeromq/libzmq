@@ -127,6 +127,11 @@ zmq::ctx_t::~ctx_t ()
     tag = ZMQ_CTX_TAG_VALUE_BAD;
 }
 
+bool zmq::ctx_t::valid () const
+{
+    return term_mailbox.valid ();
+}
+
 int zmq::ctx_t::terminate ()
 {
     slot_sync.lock();
@@ -146,7 +151,6 @@ int zmq::ctx_t::terminate ()
     terminating = saveTerminating;
 
     if (!starting) {
-
 #ifdef HAVE_FORK
         if (pid != getpid ()) {
             // we are a forked child process. Close all file descriptors
@@ -320,47 +324,83 @@ int zmq::ctx_t::get (int option_)
     return rc;
 }
 
+bool zmq::ctx_t::start ()
+{
+    //  Initialise the array of mailboxes. Additional three slots are for
+    //  zmq_ctx_term thread and reaper thread.
+    opt_sync.lock ();
+    int mazmq = max_sockets;
+    int ios = io_thread_count;
+    opt_sync.unlock ();
+    slot_count = mazmq + ios + 2;
+    slots = (i_mailbox **) malloc (sizeof (i_mailbox *) * slot_count);
+    if (!slots) {
+        errno = ENOMEM;
+        goto fail;
+    }
+
+    //  Initialise the infrastructure for zmq_ctx_term thread.
+    slots[term_tid] = &term_mailbox;
+
+    //  Create the reaper thread.
+    reaper = new (std::nothrow) reaper_t (this, reaper_tid);
+    if (!reaper) {
+        errno = ENOMEM;
+        goto fail_cleanup_slots;
+    }
+    if (!reaper->get_mailbox ()->valid ())
+        goto fail_cleanup_reaper;
+    slots[reaper_tid] = reaper->get_mailbox ();
+    reaper->start ();
+
+    //  Create I/O thread objects and launch them.
+    for (int32_t i = (int32_t) slot_count - 1; i >= (int32_t) 2; i--) {
+        slots[i] = NULL;
+    }
+
+    for (int i = 2; i != ios + 2; i++) {
+        io_thread_t *io_thread = new (std::nothrow) io_thread_t (this, i);
+        if (!io_thread) {
+            errno = ENOMEM;
+            goto fail_cleanup_reaper;
+        }
+        if (!io_thread->get_mailbox ()->valid ()) {
+            delete io_thread;
+            goto fail_cleanup_reaper;
+        }
+        io_threads.push_back (io_thread);
+        slots [i] = io_thread->get_mailbox ();
+        io_thread->start ();
+    }
+
+    //  In the unused part of the slot array, create a list of empty slots.
+    for (int32_t i = (int32_t) slot_count - 1; i >= (int32_t) ios + 2; i--) {
+        empty_slots.push_back (i);
+    }
+
+    starting = false;
+    return true;
+
+fail_cleanup_reaper:
+    reaper->stop ();
+    delete reaper;
+    reaper = NULL;
+
+fail_cleanup_slots:
+    free (slots);
+    slots = NULL;
+
+fail:
+    return false;
+}
+
 zmq::socket_base_t *zmq::ctx_t::create_socket (int type_)
 {
-    scoped_lock_t locker(slot_sync);
+    scoped_lock_t locker (slot_sync);
 
     if (unlikely (starting)) {
-
-        starting = false;
-        //  Initialise the array of mailboxes. Additional three slots are for
-        //  zmq_ctx_term thread and reaper thread.
-        opt_sync.lock ();
-        int mazmq = max_sockets;
-        int ios = io_thread_count;
-        opt_sync.unlock ();
-        slot_count = mazmq + ios + 2;
-        slots = (i_mailbox **) malloc (sizeof (i_mailbox*) * slot_count);
-        alloc_assert (slots);
-
-        //  Initialise the infrastructure for zmq_ctx_term thread.
-        slots [term_tid] = &term_mailbox;
-
-        //  Create the reaper thread.
-        reaper = new (std::nothrow) reaper_t (this, reaper_tid);
-        alloc_assert (reaper);
-        slots [reaper_tid] = reaper->get_mailbox ();
-        reaper->start ();
-
-        //  Create I/O thread objects and launch them.
-        for (int i = 2; i != ios + 2; i++) {
-            io_thread_t *io_thread = new (std::nothrow) io_thread_t (this, i);
-            alloc_assert (io_thread);
-            io_threads.push_back (io_thread);
-            slots [i] = io_thread->get_mailbox ();
-            io_thread->start ();
-        }
-
-        //  In the unused part of the slot array, create a list of empty slots.
-        for (int32_t i = (int32_t) slot_count - 1;
-              i >= (int32_t) ios + 2; i--) {
-            empty_slots.push_back (i);
-            slots [i] = NULL;
-        }
+        if (!start ())
+            return NULL;
     }
 
     //  Once zmq_ctx_term() was called, we can't create new sockets.
