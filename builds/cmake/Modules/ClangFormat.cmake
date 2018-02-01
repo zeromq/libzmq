@@ -1,7 +1,14 @@
 # additional target to perform clang-format run, requires clang-format
 
 # get all project files
-file(GLOB_RECURSE ALL_SOURCE_FILES RELATIVE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR}/*.cpp ${CMAKE_SOURCE_DIR}/*.h ${CMAKE_SOURCE_DIR}/*.hpp )
+file(GLOB_RECURSE ALL_SOURCE_FILES 
+     RELATIVE ${CMAKE_CURRENT_BINARY_DIR} 
+     ${CMAKE_SOURCE_DIR}/src/*.cpp ${CMAKE_SOURCE_DIR}/src/*.h ${CMAKE_SOURCE_DIR}/src/*.hpp 
+     ${CMAKE_SOURCE_DIR}/tests/*.cpp ${CMAKE_SOURCE_DIR}/tests/*.h ${CMAKE_SOURCE_DIR}/tests/*.hpp 
+     ${CMAKE_SOURCE_DIR}/perf/*.cpp ${CMAKE_SOURCE_DIR}/perf/*.h ${CMAKE_SOURCE_DIR}/perf/*.hpp 
+     ${CMAKE_SOURCE_DIR}/tools/*.cpp ${CMAKE_SOURCE_DIR}/tools/*.h ${CMAKE_SOURCE_DIR}/tools/*.hpp 
+     ${CMAKE_SOURCE_DIR}/include/*.h
+    )
 
 if("${CLANG_FORMAT}" STREQUAL "")
   set(CLANG_FORMAT "clang-format")
