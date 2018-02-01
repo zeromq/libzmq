@@ -1138,3 +1138,5 @@ if (MSVC_VERSION EQUAL 1600)
     file (APPEND "${ZMQ_SLN_FILENAME}" "\n# This should be regenerated!\n")
   endif ()
 endif ()
+
+include(ClangFormat)

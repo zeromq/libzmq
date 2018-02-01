@@ -84,6 +84,8 @@ matrix:
   - env: BUILD_TYPE=android CURVE=tweetnacl
     os: linux
     dist: trusty
+  - env: BUILD_TYPE=cmake DO_CLANG_FORMAT_CHECK=1
+    os: linux
 
 sudo: required
 
