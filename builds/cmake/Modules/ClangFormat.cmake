@@ -30,14 +30,12 @@ add_custom_target(
         clang-format-check
         COMMAND chmod +x clang-format-check.sh
         COMMAND ./clang-format-check.sh
-        #COMMAND ${CLANG_FORMAT} -style=file -output-replacements-xml ${ALL_SOURCE_FILES} >clang-format-replacements.xml
-        #COMMAND grep \"<replacement \" clang-format-replacements.xml >/dev/null && exit 1
-        COMMENT "Checking correct formatting according to .clang-format file"
+        COMMENT "Checking correct formatting according to .clang-format file using ${CLANG_FORMAT}"
 )
 
 add_custom_target(
         clang-format-diff
         COMMAND ${CLANG_FORMAT} -style=file -i ${ALL_SOURCE_FILES}
         COMMAND git diff ${ALL_SOURCE_FILES}
-        COMMENT "Formatting with clang-format and showing differences with latest commit"
+        COMMENT "Formatting with clang-format (using ${CLANG_FORMAT}) and showing differences with latest commit"
 )

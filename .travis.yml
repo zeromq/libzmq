@@ -84,8 +84,14 @@ matrix:
   - env: BUILD_TYPE=android CURVE=tweetnacl
     os: linux
     dist: trusty
-  - env: BUILD_TYPE=cmake DO_CLANG_FORMAT_CHECK=1
+  - env: BUILD_TYPE=cmake DO_CLANG_FORMAT_CHECK=1 CLANG_FORMAT=/usr/local/clang-5.0.0/bin/clang-format
     os: linux
+    addons:
+    apt:
+      sources:
+        - llvm-toolchain-trusty-5.0
+      packages:
+        - clang-5.0
 
 sudo: required
 
